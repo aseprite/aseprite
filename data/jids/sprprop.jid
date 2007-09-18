@@ -1,0 +1,28 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Sprite Properties") name="sprite_properties">
+  <box vertical>
+    <box horizontal expansive>
+      <box vertical homogeneous>
+        <label text=_("File name:") />
+        <label text=_("Type:") />
+        <label text=_("Size:") />
+        <label text=_("Frames:") />
+      </box>
+      <box vertical homogeneous expansive>
+        <entry maxsize=256 name="name" />
+        <label text="" name="type" />
+        <label text="" name="size" />
+        <entry maxsize=4 name="frames" />
+      </box>
+    </box>
+    <button text=_("Constant Frame-Rate Speed") name="speed" />
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

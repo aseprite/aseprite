@@ -1,0 +1,23 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Point Properties") name="point_properties">
+  <box vertical>
+    <box horizontal expansive>
+      <box vertical homogeneous>
+        <label text=_("X:") />
+        <label text=_("Y:") />
+      </box>
+      <box vertical homogeneous expansive>
+        <entry maxsize="32" name="x" />
+        <entry maxsize="32" name="y" />
+      </box>
+    </box>
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

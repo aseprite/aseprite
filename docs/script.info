@@ -1,0 +1,3031 @@
+This is script.info, produced by makeinfo version 4.3 from script.texi.
+
+ This is the Info version of the ASE Scripting manual  By David
+A. Capello 
+
+
+File: script.info,  Node: Top,  Prev: (dir),  Up: (dir)
+
+     
+                         ASE Scripting 0.4
+     
+                      By David A. Capello, 2005.
+     
+  #include <std_disclaimer.h>  "I do not accept responsibility
+for any effects, adverse or otherwise, that this code may have on
+you, your computer, your sanity, your dog, and anything else that you
+can think of. Use it at your own risk."    
+
+* Menu:
+
+* Introduction::            Introduction
+* Basic::                   Basic Lua Programming
+* ImgType::                 ImgType
+* Standard::                Standard routines
+* String::                  String routines
+* Math::                    Math routines
+* File::                    File routines
+* Objects::                 Objects
+* Image::                   Image
+* Frame::                   Frame
+* Layer::                   Layer
+* Mask::                    Mask
+* Path::                    Path
+* Sprite::                  Sprite
+* Stock::                   Stock
+* Undo::                    Undo
+* Effect::                  Effect
+* ConvMatr::                ConvMatr
+* Curve::                   Curve
+* CurvePoint::              CurvePoint
+* JEvent::                  JEvent
+* JList::                   JList
+* JRect::                   JRect
+* JRegion::                 JRegion
+* JWidget::                 JWidget
+* Index::                   Index
+  
+
+
+File: script.info,  Node: Introduction,  Next: Basic,  Up: Top
+
+Introduction
+************
+
+ ASE has scripting facilities.  You can make a script (a text file)
+with a set of routines to make images, effects, or anything you
+think.  ASE uses Lua library to do this, so you should know program
+in Lua, anyway, it's really simple, so you'll not have any
+inconvenient.  The complete reference of Lua language is in
+lua-5.0.pdf. Also, you need a text editor to write Lua scripts (the
+Windows Notepad can be used). 
+
+* Menu:
+
+* Warning about Lua::
+
+
+File: script.info,  Node: Warning about Lua,  Next: Comments,  Up: Introduction
+
+Warning about Lua
+=================
+
+      You should known that ASE uses a patched version of Lua, where
+     you can use the != operator instead of ~=
+          
+          if current_sprite != nil then
+            -- we can use the current_sprite variable...
+          end
+       
+
+
+File: script.info,  Node: Basic,  Next: ImgType,  Prev: Introduction,  Up: Top
+
+Basic Lua Programming
+*********************
+
+
+
+* Menu:
+
+* Comments::
+* Example 1::
+* Example 2::
+* Example 3::
+* Example 4::
+* Example 5::
+* Example 6::
+
+
+File: script.info,  Node: Comments,  Next: Example 1,  Prev: Warning about Lua,  Up: Basic
+
+Comments
+========
+
+      Comments start with -
+          
+          -- this line will be never parsed
+      Or you can comment multiple lines
+          
+          --[[
+          blah blah blah...
+          ]]--
+     
+
+
+File: script.info,  Node: Example 1,  Next: Example 2,  Prev: Comments,  Up: Basic
+
+Example 1
+=========
+
+          
+          local a = 4
+          local b = 5
+          print ("a+b is: " .. (a+b))
+       Here we define two variables "a" and "b" with the values "4"
+     and "5" respectively.  Then we print the string "a+b is: "
+     follower by the result of the operation a+b (4+5) that is 9, so
+     the final message is:
+          
+          a+b is: 9
+      Also we could use:
+          
+          print (a.."+"..b.." is: "..(a+b))
+      To print:
+          
+          4+5 is: 9
+     
+
+
+File: script.info,  Node: Example 2,  Next: Example 3,  Prev: Example 1,  Up: Basic
+
+Example 2
+=========
+
+          
+          function add (a, b)
+            return a+b
+          end
+          print ("1+2 = " .. add (1, 2))
+      With the "function" keyword you define a new function, in this
+     case the "add" function, the names between parenthesis indicate
+     the arguments (parameters) that you must give to that routine.
+     
+
+
+File: script.info,  Node: Example 3,  Next: Example 4,  Prev: Example 2,  Up: Basic
+
+Example 3
+=========
+
+          
+          for c = 1, 10 do
+            print (c)
+          end
+      This repeat the block between the "do" keyword and the "end"
+     keyword 10 times (from 1 to 10 inclusive).  So this print:
+          
+          1
+          2
+          3
+          4
+          5
+          6
+          7
+          8
+          9
+          10
+     
+
+
+File: script.info,  Node: Example 4,  Next: Example 5,  Prev: Example 3,  Up: Basic
+
+Example 4
+=========
+
+          
+          for c = 1, 10 do
+            if c == 5 then
+              break
+            end
+            print (c)
+          end
+      In this case when "c" come to 5 the for is breaked so the
+     other iterations aren't made.  This print:
+          
+          1
+          2
+          3
+          4
+     
+
+
+File: script.info,  Node: Example 5,  Next: Example 6,  Prev: Example 4,  Up: Basic
+
+Example 5
+=========
+
+          
+          for c = 1, 5 do
+            if c != 3 then
+              print ("c isn't 3 (c is " .. c .. ")")
+            else
+              print ("c is 3")
+            end
+          end
+      The != operator means "not equal" (negation of equality).  You
+     can use the original Lua operator ~= too.  This print:
+          
+          c isn't 3 (c is 1)
+          c isn't 3 (c is 2)
+          c is 3
+          c isn't 3 (c is 4)
+          c isn't 3 (c is 5)
+     
+
+
+File: script.info,  Node: Example 6,  Next: IMAGE_RGB,  Prev: Example 5,  Up: Basic
+
+Example 6
+=========
+
+          
+          local done = false
+          local a = 1
+          while not done do
+            print (a)
+            if a == 3 then
+              done = true
+            end
+            a = a + 1
+          end
+      This print:
+          
+          1
+          2
+          3
+      And can be implemented in this way too:
+          
+          local a = 1
+          while a <= 3 do
+            print (a)
+            a = a + 1
+          end
+       
+
+
+File: script.info,  Node: ImgType,  Next: Standard,  Prev: Basic,  Up: Top
+
+ImgType
+*******
+
+ The imgtype (image-type) is the format of each pixel in a image.
+Sprites have a lot of images, but all images must have the same
+imgtype. The know imgtypes are: RGB, Grayscale, Indexed, Bitmap. 
+
+* Menu:
+
+* IMAGE_RGB::
+* IMAGE_GRAYSCALE::
+* IMAGE_INDEXED::
+* IMAGE_BITMAP::
+
+
+File: script.info,  Node: IMAGE_RGB,  Next: IMAGE_GRAYSCALE,  Prev: Example 6,  Up: ImgType
+
+IMAGE_RGB
+=========
+
+      Means that the image have four components (channels or bytes)
+     per pixel, where the values of these components can be between 0
+     and 255 (256 differents tones), where 255 the maximum
+     intensity.  RGB is RGBA really: 
+        * R: Red.
+
+        * G: Green.
+
+        * B: Blue.
+
+        * A: Alpha (transparency or opacity).
+      (0,0,0,0) is mask color, (0,0,0,255) is black, and
+     (255,255,255,255) is white. 
+
+
+File: script.info,  Node: IMAGE_GRAYSCALE,  Next: IMAGE_INDEXED,  Prev: IMAGE_RGB,  Up: ImgType
+
+IMAGE_GRAYSCALE
+===============
+
+      The image has two channels (two bytes) per pixel. 
+        * K: Luminance (or black channel)
+
+        * A: Alpha (transparency or opacity).
+      (0,0) is mask color, (0,255) is black, (255,255) is white. 
+
+
+File: script.info,  Node: IMAGE_INDEXED,  Next: IMAGE_BITMAP,  Prev: IMAGE_GRAYSCALE,  Up: ImgType
+
+IMAGE_INDEXED
+=============
+
+      Image uses one byte per pixel: 
+        * Index: index of the color that we must use from the
+          color-palette.
+       In this imgtype, each pixel hasn't the color information,
+     only has a reference to the color-palette (from 0 to 255, 256
+     colors), so the RGB information about the color is found in the
+     color-palette and not in the image.  The index=0 is the mask
+     color. 
+
+
+File: script.info,  Node: IMAGE_BITMAP,  Next: MAX,  Prev: IMAGE_INDEXED,  Up: ImgType
+
+IMAGE_BITMAP
+============
+
+      An internal imgtype to handle masks, where a pixel is a bit,
+     and 8 pixels are a byte. 1 means selected, 0 deselected.  
+     
+
+
+File: script.info,  Node: Standard,  Next: String,  Prev: ImgType,  Up: Top
+
+Standard routines
+*****************
+
+
+
+* Menu:
+
+* MAX::
+* MIN::
+* MID::
+* include::
+* print::
+* rand::
+
+
+File: script.info,  Node: MAX,  Next: MIN,  Prev: IMAGE_BITMAP,  Up: Standard
+
+MAX
+===
+
+double MAX (double x, double y);
+     Returns the maximum value. 
+
+
+File: script.info,  Node: MIN,  Next: MID,  Prev: MAX,  Up: Standard
+
+MIN
+===
+
+double MIN (double x, double y);
+     Returns the minimum value. 
+
+
+File: script.info,  Node: MID,  Next: include,  Prev: MIN,  Up: Standard
+
+MID
+===
+
+double MID (double x, double y, double z);
+     Limits the y value to x and z.  
+
+
+File: script.info,  Node: include,  Next: print,  Prev: MID,  Up: Standard
+
+include
+=======
+
+void include (const char *filename);
+
+void dofile (const char *filename);
+     Process the script that is in the file with the given filename.
+     It's searched in the current and in the "data/scripts"
+     directories. 
+
+
+File: script.info,  Node: print,  Next: rand,  Prev: include,  Up: Standard
+
+print
+=====
+
+void print (const char *buf);
+     Prints a message in the console, this is useful mainly to debug
+     scripts or to show errors. 
+
+
+File: script.info,  Node: rand,  Next: _,  Prev: print,  Up: Standard
+
+rand
+====
+
+double rand (double min, double max);
+     Returns a random number between min and max values.   
+
+
+File: script.info,  Node: String,  Next: Math,  Prev: Standard,  Up: Top
+
+String routines
+***************
+
+
+
+* Menu:
+
+* _::
+* strcmp::
+
+
+File: script.info,  Node: _,  Next: strcmp,  Prev: rand,  Up: String
+
+_
+=
+
+const char *_ (const char *msgid);
+     Tries to translate the string msgid to the current language, the
+     entry must exists in the .po file. 
+
+
+File: script.info,  Node: strcmp,  Next: Constants,  Prev: _,  Up: String
+
+strcmp
+======
+
+int strcmp (const char *s1, const char *s2);
+     Compares the two strings s1 and s2. It returns an integer less
+     than, equal to, or greater than zero if s1 is found,
+     respectively, to be less than, to match, or be greater than s2.
+       
+
+
+File: script.info,  Node: Math,  Next: File,  Prev: String,  Up: Top
+
+Math routines
+*************
+
+
+
+* Menu:
+
+* Constants::
+* Routines::
+* fabs::
+* ceil::
+* floor::
+* exp::
+* log::
+* log10::
+* pow::
+* sqrt::
+* hypot::
+* cos::
+* sin::
+* tan::
+* acos::
+* asin::
+* atan::
+* atan2::
+* cosh::
+* sinh::
+* tanh::
+
+
+File: script.info,  Node: Constants,  Next: Routines,  Prev: strcmp,  Up: Math
+
+Constants
+=========
+
+      PI: the ratio of a circle's circumference to its diameter
+     (3.141592...). 
+
+
+File: script.info,  Node: Routines,  Next: fabs,  Prev: Constants,  Up: Math
+
+Routines
+========
+
+     
+
+
+File: script.info,  Node: fabs,  Next: ceil,  Prev: Routines,  Up: Math
+
+fabs
+====
+
+double fabs (double x);
+     Return the absolute value of the number x. 
+
+
+File: script.info,  Node: ceil,  Next: floor,  Prev: fabs,  Up: Math
+
+ceil
+====
+
+double ceil (double x);
+     This funtion rounds x up to the nearest integer.  See also:
+ *Note floor::.
+
+
+
+File: script.info,  Node: floor,  Next: exp,  Prev: ceil,  Up: Math
+
+floor
+=====
+
+double floor (double x);
+     This funtion rounds x down to the nearest integer.  See also:
+ *Note ceil::.
+
+
+
+File: script.info,  Node: exp,  Next: log,  Prev: floor,  Up: Math
+
+exp
+===
+
+double exp (double x);
+     Returns the value of e (the base of natural logarithms) raised to
+     the power of x.  See also:
+ *Note log::.
+
+
+
+File: script.info,  Node: log,  Next: log10,  Prev: exp,  Up: Math
+
+log
+===
+
+double log (double x);
+     Returns the natural logarithm of x.  See also:
+ *Note exp::.
+ *Note log10::.
+
+
+
+File: script.info,  Node: log10,  Next: pow,  Prev: log,  Up: Math
+
+log10
+=====
+
+double log10 (double x);
+     Returns the base-10 logarithm of x.  See also:
+ *Note log::.
+
+
+
+File: script.info,  Node: pow,  Next: sqrt,  Prev: log10,  Up: Math
+
+pow
+===
+
+double pow (double x, double y);
+     Returns the value of x raised to the power of y.  See also:
+ *Note sqrt::.
+
+
+
+File: script.info,  Node: sqrt,  Next: hypot,  Prev: pow,  Up: Math
+
+sqrt
+====
+
+double sqrt (double x);
+     Returns the non-negative square root of x.  See also:
+ *Note hypot::.
+ *Note pow::.
+
+
+
+File: script.info,  Node: hypot,  Next: cos,  Prev: sqrt,  Up: Math
+
+hypot
+=====
+
+double hypot (double x, double y);
+     Returns the sqrt(x*x + y*y).  This is the length of the
+     hypotenuse of a right-angle triangle with sides of length x and
+     y, or the distance of the point (x, y) from the origin.  See
+also:
+ *Note sqrt::.
+
+
+
+File: script.info,  Node: cos,  Next: sin,  Prev: hypot,  Up: Math
+
+cos
+===
+
+double cos (double x);
+     Returns the cosine of x, where x is given in radians.  See
+also:
+ *Note sin::.
+ *Note tan::.
+ *Note acos::.
+
+
+
+File: script.info,  Node: sin,  Next: tan,  Prev: cos,  Up: Math
+
+sin
+===
+
+double sin (double x);
+     Returns the sine of x, where x is given in radians.  See also:
+ *Note cos::.
+ *Note tan::.
+ *Note asin::.
+
+
+
+File: script.info,  Node: tan,  Next: acos,  Prev: sin,  Up: Math
+
+tan
+===
+
+double tan (double x);
+     Returns the tangent of x, where x is given in radians.  See
+also:
+ *Note cos::.
+ *Note sin::.
+ *Note atan::.
+
+
+
+File: script.info,  Node: acos,  Next: asin,  Prev: tan,  Up: Math
+
+acos
+====
+
+double acos (double x);
+     Returns the arc cosine in radians and the value is mathematically
+     defined to be between 0 and PI (inclusive).  See also:
+ *Note cos::.
+
+
+
+File: script.info,  Node: asin,  Next: atan,  Prev: acos,  Up: Math
+
+asin
+====
+
+double asin (double x);
+     Returns the arc sine in radians and the value is mathematically
+     defined to be between -PI/2 and PI/2 (inclusive).  See also:
+ *Note sin::.
+
+
+
+File: script.info,  Node: atan,  Next: atan2,  Prev: asin,  Up: Math
+
+atan
+====
+
+double atan (double x);
+     Returns the arc tangent in radians and the value is
+     mathematically defined to be between -PI/2 and PI/2
+     (inclusive).  See also:
+ *Note tan::.
+ *Note atan2::.
+
+
+
+File: script.info,  Node: atan2,  Next: cosh,  Prev: atan,  Up: Math
+
+atan2
+=====
+
+double atan2 (double y, double x);
+     Returns the result in radians, which is between -PI and PI
+     (inclusive).  See also:
+ *Note atan::.
+
+
+
+File: script.info,  Node: cosh,  Next: sinh,  Prev: atan2,  Up: Math
+
+cosh
+====
+
+double cosh (double x);
+     Returns the hyperbolic cosine of x, which is defined
+     mathematically as (exp(x) + exp(-x)) / 2. 
+
+
+File: script.info,  Node: sinh,  Next: tanh,  Prev: cosh,  Up: Math
+
+sinh
+====
+
+double sinh (double x);
+     Returns the hyperbolic sine of x, which is defined mathematically
+     as (exp(x) - exp(-x)) / 2. 
+
+
+File: script.info,  Node: tanh,  Next: file_exists,  Prev: sinh,  Up: Math
+
+tanh
+====
+
+double tanh (double x);
+     Returns the hyperbolic tangent of x, which is defined
+     mathematically as sinh(x) / cosh(x).   
+
+
+File: script.info,  Node: File,  Next: Objects,  Prev: Math,  Up: Top
+
+File routines
+*************
+
+
+
+* Menu:
+
+* file_exists::
+* get_filename::
+
+
+File: script.info,  Node: file_exists,  Next: get_filename,  Prev: tanh,  Up: File
+
+file_exists
+===========
+
+bool file_exists (const char *filename);
+     Checks whether a file matching the given name exists, returning
+     true if it does. 
+
+
+File: script.info,  Node: get_filename,  Next: Image fields,  Prev: file_exists,  Up: File
+
+get_filename
+============
+
+char *get_filename (const char *filename);
+     When passed a completely specified file path, this returns a
+     pointer to the filename portion. Both ´\´ and ´/´ are recognized
+     as directory separators.   
+
+
+File: script.info,  Node: Objects,  Next: Image,  Prev: File,  Up: Top
+
+Objects
+*******
+
+ There are a special type of variables in Lua scripts: objects
+(represented with user-data).  Each object can be of some of these
+types: 
+   * Graphics objects: Image, Frame, Layer, Mask, Path, Sprite, Stock,
+     Undo.
+
+   * Effect objects: Effect, ConvMatr, Curve, CurvePoint.
+
+   * GUI objects: JEvent, JList, JRect, JRegion, JWidget.
+  
+
+
+File: script.info,  Node: Image,  Next: Frame,  Prev: Objects,  Up: Top
+
+Image
+*****
+
+ An image, has width and height, an image-type (RGB, Grayscale,
+etc.), and contains the image data (pixels, pixmap, or bitmap). 
+
+* Menu:
+
+* Image fields::
+* Image methods::
+* image_new::
+* image_new_copy::
+* image_free::
+* image_getpixel::
+* image_putpixel::
+* image_clear::
+* image_copy::
+* image_merge::
+* image_crop::
+* image_hline::
+* image_vline::
+* image_rect::
+* image_rectfill::
+* image_line::
+* image_ellipse::
+* image_ellipsefill::
+* image_convert::
+* image_count_diff::
+
+
+File: script.info,  Node: Image fields,  Next: Image methods,  Prev: get_filename,  Up: Image
+
+Image fields
+============
+
+     
+        * [number] image.imgtype
+           See sprite.imgtype
+
+        * [number] image.w
+           [number] image.h
+           The width and height (in pixels) of this image.
+     
+
+
+File: script.info,  Node: Image methods,  Next: image_new,  Prev: Image fields,  Up: Image
+
+Image methods
+=============
+
+     
+
+
+File: script.info,  Node: image_new,  Next: image_new_copy,  Prev: Image methods,  Up: Image
+
+image_new
+=========
+
+Image *image_new (int imgtype, int w, int h);
+     Creates a new image 
+
+
+File: script.info,  Node: image_new_copy,  Next: image_free,  Prev: image_new,  Up: Image
+
+image_new_copy
+==============
+
+Image *image_new_copy (Image *image);
+     
+
+
+File: script.info,  Node: image_free,  Next: image_getpixel,  Prev: image_new_copy,  Up: Image
+
+image_free
+==========
+
+void image_free (Image *image);
+     
+
+
+File: script.info,  Node: image_getpixel,  Next: image_putpixel,  Prev: image_free,  Up: Image
+
+image_getpixel
+==============
+
+int image_getpixel (Image *image, int x, int y);
+     
+
+
+File: script.info,  Node: image_putpixel,  Next: image_clear,  Prev: image_getpixel,  Up: Image
+
+image_putpixel
+==============
+
+void image_putpixel (Image *image, int x, int y, int color);
+     
+
+
+File: script.info,  Node: image_clear,  Next: image_copy,  Prev: image_putpixel,  Up: Image
+
+image_clear
+===========
+
+void image_clear (Image *image, int color);
+     
+
+
+File: script.info,  Node: image_copy,  Next: image_merge,  Prev: image_clear,  Up: Image
+
+image_copy
+==========
+
+void image_copy (Image *dst, Image *src, int x, int y);
+     
+
+
+File: script.info,  Node: image_merge,  Next: image_crop,  Prev: image_copy,  Up: Image
+
+image_merge
+===========
+
+void image_merge (Image *dst, Image *src, int x, int y, int opacity, int blend_mode);
+     
+
+
+File: script.info,  Node: image_crop,  Next: image_hline,  Prev: image_merge,  Up: Image
+
+image_crop
+==========
+
+Image *image_crop (Image *image, int x, int y, int w, int h);
+     
+
+
+File: script.info,  Node: image_hline,  Next: image_vline,  Prev: image_crop,  Up: Image
+
+image_hline
+===========
+
+void image_hline (Image *image, int x1, int y, int x2, int color);
+     
+
+
+File: script.info,  Node: image_vline,  Next: image_rect,  Prev: image_hline,  Up: Image
+
+image_vline
+===========
+
+void image_vline (Image *image, int x, int y1, int y2, int color);
+     
+
+
+File: script.info,  Node: image_rect,  Next: image_rectfill,  Prev: image_vline,  Up: Image
+
+image_rect
+==========
+
+void image_rect (Image *image, int x1, int y1, int x2, int y2, int color);
+     
+
+
+File: script.info,  Node: image_rectfill,  Next: image_line,  Prev: image_rect,  Up: Image
+
+image_rectfill
+==============
+
+void image_rectfill (Image *image, int x1, int y1, int x2, int y2, int color);
+     
+
+
+File: script.info,  Node: image_line,  Next: image_ellipse,  Prev: image_rectfill,  Up: Image
+
+image_line
+==========
+
+void image_line (Image *image, int x1, int y1, int x2, int y2, int color);
+     
+
+
+File: script.info,  Node: image_ellipse,  Next: image_ellipsefill,  Prev: image_line,  Up: Image
+
+image_ellipse
+=============
+
+void image_ellipse (Image *image, int x1, int y1, int x2, int y2, int color);
+     
+
+
+File: script.info,  Node: image_ellipsefill,  Next: image_convert,  Prev: image_ellipse,  Up: Image
+
+image_ellipsefill
+=================
+
+void image_ellipsefill (Image *image, int x1, int y1, int x2, int y2, int color);
+     
+
+
+File: script.info,  Node: image_convert,  Next: image_count_diff,  Prev: image_ellipsefill,  Up: Image
+
+image_convert
+=============
+
+void image_convert (Image *dst, Image *src);
+     
+
+
+File: script.info,  Node: image_count_diff,  Next: frame_new,  Prev: image_convert,  Up: Image
+
+image_count_diff
+================
+
+int image_count_diff (Image *i1, Image *i2);
+       
+
+
+File: script.info,  Node: Frame,  Next: Layer,  Prev: Image,  Up: Top
+
+Frame
+*****
+
+ A frame of animation, it contains the position, opacity and a
+reference (by index) to some image in the image's stock of the layer
+where this frame is. Remember this, a frame doesn't contain the
+image, only a reference to it. 
+
+* Menu:
+
+* frame_new::
+* frame_new_copy::
+* frame_free::
+* frame_is_link::
+* frame_set_frpos::
+* frame_set_image::
+* frame_set_position::
+* frame_set_opacity::
+
+
+File: script.info,  Node: frame_new,  Next: frame_new_copy,  Prev: image_count_diff,  Up: Frame
+
+frame_new
+=========
+
+Frame *frame_new (int frpos, int image, int x, int y, int opacity);
+     
+
+
+File: script.info,  Node: frame_new_copy,  Next: frame_free,  Prev: frame_new,  Up: Frame
+
+frame_new_copy
+==============
+
+Frame *frame_new_copy (Frame *frame);
+     
+
+
+File: script.info,  Node: frame_free,  Next: frame_is_link,  Prev: frame_new_copy,  Up: Frame
+
+frame_free
+==========
+
+void frame_free (Frame *frame);
+     
+
+
+File: script.info,  Node: frame_is_link,  Next: frame_set_frpos,  Prev: frame_free,  Up: Frame
+
+frame_is_link
+=============
+
+Frame *frame_is_link (Frame *frame, Layer *layer);
+     
+
+
+File: script.info,  Node: frame_set_frpos,  Next: frame_set_image,  Prev: frame_is_link,  Up: Frame
+
+frame_set_frpos
+===============
+
+void frame_set_frpos (Frame *frame, int frpos);
+     
+
+
+File: script.info,  Node: frame_set_image,  Next: frame_set_position,  Prev: frame_set_frpos,  Up: Frame
+
+frame_set_image
+===============
+
+void frame_set_image (Frame *frame, int image);
+     
+
+
+File: script.info,  Node: frame_set_position,  Next: frame_set_opacity,  Prev: frame_set_image,  Up: Frame
+
+frame_set_position
+==================
+
+void frame_set_position (Frame *frame, int x, int y);
+     
+
+
+File: script.info,  Node: frame_set_opacity,  Next: layer_new,  Prev: frame_set_position,  Up: Frame
+
+frame_set_opacity
+=================
+
+void frame_set_opacity (Frame *frame, int opacity);
+       
+
+
+File: script.info,  Node: Layer,  Next: Mask,  Prev: Frame,  Up: Top
+
+Layer
+*****
+
+ A layer can be two things: a normal layer (also called image
+layer), or a layer set.  A layer set is a group of child layers
+(like "sprite.set").  A normal layer is a complete different thing.
+ A normal layer has a stock of images and a list of frames, each
+frame has a reference to the image's stock, so each frame uses some
+image of the stock.  If two frames uses the same stock images, the
+first frame is called the "original frame" and all other frames are
+called "links". 
+
+* Menu:
+
+* layer_new::
+* layer_set_new::
+* layer_new_copy::
+* layer_new_with_image::
+* layer_free::
+* layer_is_image::
+* layer_is_set::
+* layer_get_prev::
+* layer_get_next::
+* layer_set_name::
+* layer_set_blend_mode::
+* layer_add_frame::
+* layer_remove_frame::
+* layer_get_frame::
+* layer_add_layer::
+* layer_remove_layer::
+* layer_move_layer::
+* layer_render::
+* layer_flatten::
+
+
+File: script.info,  Node: layer_new,  Next: layer_set_new,  Prev: frame_set_opacity,  Up: Layer
+
+layer_new
+=========
+
+Layer *layer_new (int imgtype);
+     
+
+
+File: script.info,  Node: layer_set_new,  Next: layer_new_copy,  Prev: layer_new,  Up: Layer
+
+layer_set_new
+=============
+
+Layer *layer_set_new (void);
+     
+
+
+File: script.info,  Node: layer_new_copy,  Next: layer_new_with_image,  Prev: layer_set_new,  Up: Layer
+
+layer_new_copy
+==============
+
+Layer *layer_new_copy (Layer *layer);
+     
+
+
+File: script.info,  Node: layer_new_with_image,  Next: layer_free,  Prev: layer_new_copy,  Up: Layer
+
+layer_new_with_image
+====================
+
+Layer *layer_new_with_image (int imgtype, int x, int y, int w, int h, int frpos);
+     
+
+
+File: script.info,  Node: layer_free,  Next: layer_is_image,  Prev: layer_new_with_image,  Up: Layer
+
+layer_free
+==========
+
+void layer_free (Layer *layer);
+     
+
+
+File: script.info,  Node: layer_is_image,  Next: layer_is_set,  Prev: layer_free,  Up: Layer
+
+layer_is_image
+==============
+
+bool layer_is_image (Layer *layer);
+     
+
+
+File: script.info,  Node: layer_is_set,  Next: layer_get_prev,  Prev: layer_is_image,  Up: Layer
+
+layer_is_set
+============
+
+bool layer_is_set (Layer *layer);
+     
+
+
+File: script.info,  Node: layer_get_prev,  Next: layer_get_next,  Prev: layer_is_set,  Up: Layer
+
+layer_get_prev
+==============
+
+Layer *layer_get_prev (Layer *layer);
+     
+
+
+File: script.info,  Node: layer_get_next,  Next: layer_set_name,  Prev: layer_get_prev,  Up: Layer
+
+layer_get_next
+==============
+
+Layer *layer_get_next (Layer *layer);
+     
+
+
+File: script.info,  Node: layer_set_name,  Next: layer_set_blend_mode,  Prev: layer_get_next,  Up: Layer
+
+layer_set_name
+==============
+
+void layer_set_name (Layer *layer, const char *name);
+     
+
+
+File: script.info,  Node: layer_set_blend_mode,  Next: layer_add_frame,  Prev: layer_set_name,  Up: Layer
+
+layer_set_blend_mode
+====================
+
+void layer_set_blend_mode (Layer *layer, int blend_mode);
+     
+
+
+File: script.info,  Node: layer_add_frame,  Next: layer_remove_frame,  Prev: layer_set_blend_mode,  Up: Layer
+
+layer_add_frame
+===============
+
+void layer_add_frame (Layer *layer, Frame *frame);
+     
+
+
+File: script.info,  Node: layer_remove_frame,  Next: layer_get_frame,  Prev: layer_add_frame,  Up: Layer
+
+layer_remove_frame
+==================
+
+void layer_remove_frame (Layer *layer, Frame *frame);
+     
+
+
+File: script.info,  Node: layer_get_frame,  Next: layer_add_layer,  Prev: layer_remove_frame,  Up: Layer
+
+layer_get_frame
+===============
+
+Frame *layer_get_frame (Layer *layer, int frpos);
+     
+
+
+File: script.info,  Node: layer_add_layer,  Next: layer_remove_layer,  Prev: layer_get_frame,  Up: Layer
+
+layer_add_layer
+===============
+
+void layer_add_layer (Layer *set, Layer *layer);
+     
+
+
+File: script.info,  Node: layer_remove_layer,  Next: layer_move_layer,  Prev: layer_add_layer,  Up: Layer
+
+layer_remove_layer
+==================
+
+void layer_remove_layer (Layer *set, Layer *layer);
+     
+
+
+File: script.info,  Node: layer_move_layer,  Next: layer_render,  Prev: layer_remove_layer,  Up: Layer
+
+layer_move_layer
+================
+
+void layer_move_layer (Layer *set, Layer *layer, Layer *after);
+     
+
+
+File: script.info,  Node: layer_render,  Next: layer_flatten,  Prev: layer_move_layer,  Up: Layer
+
+layer_render
+============
+
+void layer_render (Layer *layer, Image *image, int x, int y, int frpos);
+     
+
+
+File: script.info,  Node: layer_flatten,  Next: mask_new,  Prev: layer_render,  Up: Layer
+
+layer_flatten
+=============
+
+Layer *layer_flatten (Layer *layer, int imgtype, int x, int y, int w, int h, int frmin, int frmax);
+       
+
+
+File: script.info,  Node: Mask,  Next: Path,  Prev: Layer,  Up: Top
+
+Mask
+****
+
+
+
+* Menu:
+
+* mask_new::
+* mask_new_copy::
+* mask_free::
+* mask_is_empty::
+* mask_set_name::
+* mask_move::
+* mask_none::
+* mask_invert::
+* mask_replace::
+* mask_union::
+* mask_subtract::
+* mask_intersect::
+* mask_merge::
+* mask_by_color::
+* mask_crop::
+
+
+File: script.info,  Node: mask_new,  Next: mask_new_copy,  Prev: layer_flatten,  Up: Mask
+
+mask_new
+========
+
+Mask *mask_new (void);
+     
+
+
+File: script.info,  Node: mask_new_copy,  Next: mask_free,  Prev: mask_new,  Up: Mask
+
+mask_new_copy
+=============
+
+Mask *mask_new_copy (Mask *mask);
+     
+
+
+File: script.info,  Node: mask_free,  Next: mask_is_empty,  Prev: mask_new_copy,  Up: Mask
+
+mask_free
+=========
+
+void mask_free (Mask *mask);
+     
+
+
+File: script.info,  Node: mask_is_empty,  Next: mask_set_name,  Prev: mask_free,  Up: Mask
+
+mask_is_empty
+=============
+
+bool mask_is_empty (Mask *mask);
+     
+
+
+File: script.info,  Node: mask_set_name,  Next: mask_move,  Prev: mask_is_empty,  Up: Mask
+
+mask_set_name
+=============
+
+void mask_set_name (Mask *mask, const char *name);
+     
+
+
+File: script.info,  Node: mask_move,  Next: mask_none,  Prev: mask_set_name,  Up: Mask
+
+mask_move
+=========
+
+void mask_move (Mask *mask, int x, int y);
+     
+
+
+File: script.info,  Node: mask_none,  Next: mask_invert,  Prev: mask_move,  Up: Mask
+
+mask_none
+=========
+
+void mask_none (Mask *mask);
+     
+
+
+File: script.info,  Node: mask_invert,  Next: mask_replace,  Prev: mask_none,  Up: Mask
+
+mask_invert
+===========
+
+void mask_invert (Mask *mask);
+     
+
+
+File: script.info,  Node: mask_replace,  Next: mask_union,  Prev: mask_invert,  Up: Mask
+
+mask_replace
+============
+
+void mask_replace (Mask *mask, int x, int y, int w, int h);
+     
+
+
+File: script.info,  Node: mask_union,  Next: mask_subtract,  Prev: mask_replace,  Up: Mask
+
+mask_union
+==========
+
+void mask_union (Mask *mask, int x, int y, int w, int h);
+     
+
+
+File: script.info,  Node: mask_subtract,  Next: mask_intersect,  Prev: mask_union,  Up: Mask
+
+mask_subtract
+=============
+
+void mask_subtract (Mask *mask, int x, int y, int w, int h);
+     
+
+
+File: script.info,  Node: mask_intersect,  Next: mask_merge,  Prev: mask_subtract,  Up: Mask
+
+mask_intersect
+==============
+
+void mask_intersect (Mask *mask, int x, int y, int w, int h);
+     
+
+
+File: script.info,  Node: mask_merge,  Next: mask_by_color,  Prev: mask_intersect,  Up: Mask
+
+mask_merge
+==========
+
+void mask_merge (Mask *dst, Mask *src);
+     
+
+
+File: script.info,  Node: mask_by_color,  Next: mask_crop,  Prev: mask_merge,  Up: Mask
+
+mask_by_color
+=============
+
+void mask_by_color (Mask *mask, Image *image, int color, int fuzziness);
+     
+
+
+File: script.info,  Node: mask_crop,  Next: path_new,  Prev: mask_by_color,  Up: Mask
+
+mask_crop
+=========
+
+void mask_crop (Mask *mask, Image *image);
+       
+
+
+File: script.info,  Node: Path,  Next: Sprite,  Prev: Mask,  Up: Top
+
+Path
+****
+
+
+
+* Menu:
+
+* path_new::
+* path_free::
+* path_set_join::
+* path_set_cap::
+* path_moveto::
+* path_lineto::
+* path_curveto::
+* path_close::
+* path_move::
+* path_stroke::
+* path_fill::
+
+
+File: script.info,  Node: path_new,  Next: path_free,  Prev: mask_crop,  Up: Path
+
+path_new
+========
+
+Path *path_new (const char *name);
+     
+
+
+File: script.info,  Node: path_free,  Next: path_set_join,  Prev: path_new,  Up: Path
+
+path_free
+=========
+
+void path_free (Path *path);
+     
+
+
+File: script.info,  Node: path_set_join,  Next: path_set_cap,  Prev: path_free,  Up: Path
+
+path_set_join
+=============
+
+void path_set_join (Path *path, int join);
+     
+        * PATH_JOIN_MITER
+          
+
+        * PATH_JOIN_ROUND
+          
+
+        * PATH_JOIN_BEVEL
+          
+      
+
+
+File: script.info,  Node: path_set_cap,  Next: path_moveto,  Prev: path_set_join,  Up: Path
+
+path_set_cap
+============
+
+void path_set_cap (Path *path, int cap);
+     
+        * PATH_CAP_BUTT
+          
+
+        * PATH_CAP_ROUND
+          
+
+        * PATH_CAP_SQUARE
+          
+      
+
+
+File: script.info,  Node: path_moveto,  Next: path_lineto,  Prev: path_set_cap,  Up: Path
+
+path_moveto
+===========
+
+void path_moveto (Path *path, double x, double y);
+     
+
+
+File: script.info,  Node: path_lineto,  Next: path_curveto,  Prev: path_moveto,  Up: Path
+
+path_lineto
+===========
+
+void path_lineto (Path *path, double x, double y);
+     
+
+
+File: script.info,  Node: path_curveto,  Next: path_close,  Prev: path_lineto,  Up: Path
+
+path_curveto
+============
+
+void path_curveto (Path *path, double control_x1, double control_y1, double control_x2, double control_y2, double end_x, double end_y);
+     
+
+
+File: script.info,  Node: path_close,  Next: path_move,  Prev: path_curveto,  Up: Path
+
+path_close
+==========
+
+void path_close (Path *path);
+     
+
+
+File: script.info,  Node: path_move,  Next: path_stroke,  Prev: path_close,  Up: Path
+
+path_move
+=========
+
+void path_move (Path *path, double x, double y);
+     
+
+
+File: script.info,  Node: path_stroke,  Next: path_fill,  Prev: path_move,  Up: Path
+
+path_stroke
+===========
+
+void path_stroke (Path *path, Image *image, int color, double brush_size);
+     
+
+
+File: script.info,  Node: path_fill,  Next: sprite_new,  Prev: path_stroke,  Up: Path
+
+path_fill
+=========
+
+void path_fill (Path *path, Image *image, int color);
+       
+
+
+File: script.info,  Node: Sprite,  Next: Stock,  Prev: Path,  Up: Top
+
+Sprite
+******
+
+ The sprite is the main object of ASE (remember Allegro "Sprite"
+Editor), and it's the structure that contains all data: layers,
+frames, stocks, images, masks, paths, and undo information are inside
+the same sprite.  There are a global variable of Sprite type:
+current_sprite.  This could be "nil" if there aren't a selected
+sprite in the moment.  You should known about the difference
+between the "current_sprite" in scripts and the sprite in the current
+editor.  Because when you select a sprite with "set_current_sprite",
+only the "current_sprite" global pointer is set, but the sprite in
+the current editor is maintain intact.  So when ASE runs a script,
+the "current_sprite" will be pointing to the sprite in the current
+editor, but if you change the "current_sprite" (with
+"set_current_sprite" routine) you'll not get that sprite in the
+editor (use "sprite_show" function instead). 
+
+* Menu:
+
+* sprite_new::
+* sprite_new_copy::
+* sprite_new_flatten_copy::
+* sprite_new_with_layer::
+* sprite_free::
+* sprite_lock::
+* sprite_unlock::
+* sprite_is_locked::
+* sprite_is_modified::
+* sprite_was_saved::
+* sprite_set_filename::
+* sprite_set_size::
+* sprite_set_frames::
+* sprite_set_speed::
+* sprite_set_path::
+* sprite_set_mask::
+* sprite_set_layer::
+* sprite_set_frpos::
+* sprite_set_imgtype::
+* sprite_add_path::
+* sprite_remove_path::
+* sprite_add_mask::
+* sprite_remove_mask::
+* sprite_request_mask::
+* sprite_render::
+
+
+File: script.info,  Node: sprite_new,  Next: sprite_new_copy,  Prev: path_fill,  Up: Sprite
+
+sprite_new
+==========
+
+Sprite *sprite_new (int imgtype, int w, int h);
+     
+
+
+File: script.info,  Node: sprite_new_copy,  Next: sprite_new_flatten_copy,  Prev: sprite_new,  Up: Sprite
+
+sprite_new_copy
+===============
+
+Sprite *sprite_new_copy (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_new_flatten_copy,  Next: sprite_new_with_layer,  Prev: sprite_new_copy,  Up: Sprite
+
+sprite_new_flatten_copy
+=======================
+
+Sprite *sprite_new_flatten_copy (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_new_with_layer,  Next: sprite_free,  Prev: sprite_new_flatten_copy,  Up: Sprite
+
+sprite_new_with_layer
+=====================
+
+Sprite *sprite_new_with_layer (int imgtype, int w, int h);
+     
+
+
+File: script.info,  Node: sprite_free,  Next: sprite_lock,  Prev: sprite_new_with_layer,  Up: Sprite
+
+sprite_free
+===========
+
+void sprite_free (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_lock,  Next: sprite_unlock,  Prev: sprite_free,  Up: Sprite
+
+sprite_lock
+===========
+
+void sprite_lock (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_unlock,  Next: sprite_is_locked,  Prev: sprite_lock,  Up: Sprite
+
+sprite_unlock
+=============
+
+void sprite_unlock (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_is_locked,  Next: sprite_is_modified,  Prev: sprite_unlock,  Up: Sprite
+
+sprite_is_locked
+================
+
+bool sprite_is_locked (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_is_modified,  Next: sprite_was_saved,  Prev: sprite_is_locked,  Up: Sprite
+
+sprite_is_modified
+==================
+
+bool sprite_is_modified (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_was_saved,  Next: sprite_set_filename,  Prev: sprite_is_modified,  Up: Sprite
+
+sprite_was_saved
+================
+
+void sprite_was_saved (Sprite *sprite);
+     
+
+
+File: script.info,  Node: sprite_set_filename,  Next: sprite_set_size,  Prev: sprite_was_saved,  Up: Sprite
+
+sprite_set_filename
+===================
+
+void sprite_set_filename (Sprite *sprite, const char *filename);
+     
+
+
+File: script.info,  Node: sprite_set_size,  Next: sprite_set_frames,  Prev: sprite_set_filename,  Up: Sprite
+
+sprite_set_size
+===============
+
+void sprite_set_size (Sprite *sprite, int w, int h);
+     
+
+
+File: script.info,  Node: sprite_set_frames,  Next: sprite_set_speed,  Prev: sprite_set_size,  Up: Sprite
+
+sprite_set_frames
+=================
+
+void sprite_set_frames (Sprite *sprite, int frames);
+     
+
+
+File: script.info,  Node: sprite_set_speed,  Next: sprite_set_path,  Prev: sprite_set_frames,  Up: Sprite
+
+sprite_set_speed
+================
+
+void sprite_set_speed (Sprite *sprite, int speed);
+     
+
+
+File: script.info,  Node: sprite_set_path,  Next: sprite_set_mask,  Prev: sprite_set_speed,  Up: Sprite
+
+sprite_set_path
+===============
+
+void sprite_set_path (Sprite *sprite, Path *path);
+     
+
+
+File: script.info,  Node: sprite_set_mask,  Next: sprite_set_layer,  Prev: sprite_set_path,  Up: Sprite
+
+sprite_set_mask
+===============
+
+void sprite_set_mask (Sprite *sprite, Mask *mask);
+     
+
+
+File: script.info,  Node: sprite_set_layer,  Next: sprite_set_frpos,  Prev: sprite_set_mask,  Up: Sprite
+
+sprite_set_layer
+================
+
+void sprite_set_layer (Sprite *sprite, Layer *layer);
+     
+
+
+File: script.info,  Node: sprite_set_frpos,  Next: sprite_set_imgtype,  Prev: sprite_set_layer,  Up: Sprite
+
+sprite_set_frpos
+================
+
+void sprite_set_frpos (Sprite *sprite, int frpos);
+     
+
+
+File: script.info,  Node: sprite_set_imgtype,  Next: sprite_add_path,  Prev: sprite_set_frpos,  Up: Sprite
+
+sprite_set_imgtype
+==================
+
+void sprite_set_imgtype (Sprite *sprite, int imgtype, int dithering_method);
+     
+
+
+File: script.info,  Node: sprite_add_path,  Next: sprite_remove_path,  Prev: sprite_set_imgtype,  Up: Sprite
+
+sprite_add_path
+===============
+
+void sprite_add_path (Sprite *sprite, Path *path);
+     
+
+
+File: script.info,  Node: sprite_remove_path,  Next: sprite_add_mask,  Prev: sprite_add_path,  Up: Sprite
+
+sprite_remove_path
+==================
+
+void sprite_remove_path (Sprite *sprite, Path *path);
+     
+
+
+File: script.info,  Node: sprite_add_mask,  Next: sprite_remove_mask,  Prev: sprite_remove_path,  Up: Sprite
+
+sprite_add_mask
+===============
+
+void sprite_add_mask (Sprite *sprite, Mask *mask);
+     
+
+
+File: script.info,  Node: sprite_remove_mask,  Next: sprite_request_mask,  Prev: sprite_add_mask,  Up: Sprite
+
+sprite_remove_mask
+==================
+
+void sprite_remove_mask (Sprite *sprite, Mask *mask);
+     
+
+
+File: script.info,  Node: sprite_request_mask,  Next: sprite_render,  Prev: sprite_remove_mask,  Up: Sprite
+
+sprite_request_mask
+===================
+
+Mask *sprite_request_mask (Sprite *sprite, const char *name);
+     
+
+
+File: script.info,  Node: sprite_render,  Next: stock_new,  Prev: sprite_request_mask,  Up: Sprite
+
+sprite_render
+=============
+
+void sprite_render (Sprite *sprite, Image *image, int x, int y);
+       
+
+
+File: script.info,  Node: Stock,  Next: Undo,  Prev: Sprite,  Up: Top
+
+Stock
+*****
+
+ Stock of images.  Each image layer has its own image's stock to
+provide images to its frames. 
+
+* Menu:
+
+* stock_new::
+* stock_new_copy::
+* stock_free::
+* stock_add_image::
+* stock_remove_image::
+* stock_replace_image::
+* stock_get_image::
+
+
+File: script.info,  Node: stock_new,  Next: stock_new_copy,  Prev: sprite_render,  Up: Stock
+
+stock_new
+=========
+
+Stock *stock_new (int imgtype);
+     
+
+
+File: script.info,  Node: stock_new_copy,  Next: stock_free,  Prev: stock_new,  Up: Stock
+
+stock_new_copy
+==============
+
+Stock *stock_new_copy (Stock *stock);
+     
+
+
+File: script.info,  Node: stock_free,  Next: stock_add_image,  Prev: stock_new_copy,  Up: Stock
+
+stock_free
+==========
+
+void stock_free (Stock *stock);
+     
+
+
+File: script.info,  Node: stock_add_image,  Next: stock_remove_image,  Prev: stock_free,  Up: Stock
+
+stock_add_image
+===============
+
+int stock_add_image (Stock *stock, Image *image);
+     
+
+
+File: script.info,  Node: stock_remove_image,  Next: stock_replace_image,  Prev: stock_add_image,  Up: Stock
+
+stock_remove_image
+==================
+
+void stock_remove_image (Stock *stock, Image *image);
+     
+
+
+File: script.info,  Node: stock_replace_image,  Next: stock_get_image,  Prev: stock_remove_image,  Up: Stock
+
+stock_replace_image
+===================
+
+void stock_replace_image (Stock *stock, int index, Image *image);
+     
+
+
+File: script.info,  Node: stock_get_image,  Next: undo_new,  Prev: stock_replace_image,  Up: Stock
+
+stock_get_image
+===============
+
+Image *stock_get_image (Stock *stock, int index);
+       
+
+
+File: script.info,  Node: Undo,  Next: Effect,  Prev: Stock,  Up: Top
+
+Undo
+****
+
+
+
+* Menu:
+
+* undo_new::
+* undo_free::
+* undo_enable::
+* undo_disable::
+* undo_is_enabled::
+* undo_is_disabled::
+* undo_can_undo::
+* undo_can_redo::
+* undo_undo::
+* undo_redo::
+* undo_open::
+* undo_close::
+* undo_image::
+* undo_flip::
+* undo_add_image::
+* undo_remove_image::
+* undo_replace_image::
+* undo_add_frame::
+* undo_remove_frame::
+* undo_add_layer::
+* undo_remove_layer::
+* undo_move_layer::
+* undo_set_layer::
+* undo_set_mask::
+
+
+File: script.info,  Node: undo_new,  Next: undo_free,  Prev: stock_get_image,  Up: Undo
+
+undo_new
+========
+
+Undo *undo_new (Sprite *sprite);
+     
+
+
+File: script.info,  Node: undo_free,  Next: undo_enable,  Prev: undo_new,  Up: Undo
+
+undo_free
+=========
+
+void undo_free (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_enable,  Next: undo_disable,  Prev: undo_free,  Up: Undo
+
+undo_enable
+===========
+
+void undo_enable (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_disable,  Next: undo_is_enabled,  Prev: undo_enable,  Up: Undo
+
+undo_disable
+============
+
+void undo_disable (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_is_enabled,  Next: undo_is_disabled,  Prev: undo_disable,  Up: Undo
+
+undo_is_enabled
+===============
+
+bool undo_is_enabled (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_is_disabled,  Next: undo_can_undo,  Prev: undo_is_enabled,  Up: Undo
+
+undo_is_disabled
+================
+
+bool undo_is_disabled (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_can_undo,  Next: undo_can_redo,  Prev: undo_is_disabled,  Up: Undo
+
+undo_can_undo
+=============
+
+bool undo_can_undo (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_can_redo,  Next: undo_undo,  Prev: undo_can_undo,  Up: Undo
+
+undo_can_redo
+=============
+
+bool undo_can_redo (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_undo,  Next: undo_redo,  Prev: undo_can_redo,  Up: Undo
+
+undo_undo
+=========
+
+void undo_undo (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_redo,  Next: undo_open,  Prev: undo_undo,  Up: Undo
+
+undo_redo
+=========
+
+void undo_redo (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_open,  Next: undo_close,  Prev: undo_redo,  Up: Undo
+
+undo_open
+=========
+
+void undo_open (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_close,  Next: undo_image,  Prev: undo_open,  Up: Undo
+
+undo_close
+==========
+
+void undo_close (Undo *undo);
+     
+
+
+File: script.info,  Node: undo_image,  Next: undo_flip,  Prev: undo_close,  Up: Undo
+
+undo_image
+==========
+
+void undo_image (Undo *undo, Image *image, int x, int y, int w, int h);
+     
+
+
+File: script.info,  Node: undo_flip,  Next: undo_add_image,  Prev: undo_image,  Up: Undo
+
+undo_flip
+=========
+
+void undo_flip (Undo *undo, Image *image, int x1, int y1, int x2, int y2, int horz);
+     
+
+
+File: script.info,  Node: undo_add_image,  Next: undo_remove_image,  Prev: undo_flip,  Up: Undo
+
+undo_add_image
+==============
+
+void undo_add_image (Undo *undo, Stock *stock, Image *image);
+     
+
+
+File: script.info,  Node: undo_remove_image,  Next: undo_replace_image,  Prev: undo_add_image,  Up: Undo
+
+undo_remove_image
+=================
+
+void undo_remove_image (Undo *undo, Stock *stock, Image *image);
+     
+
+
+File: script.info,  Node: undo_replace_image,  Next: undo_add_frame,  Prev: undo_remove_image,  Up: Undo
+
+undo_replace_image
+==================
+
+void undo_replace_image (Undo *undo, Stock *stock, int index);
+     
+
+
+File: script.info,  Node: undo_add_frame,  Next: undo_remove_frame,  Prev: undo_replace_image,  Up: Undo
+
+undo_add_frame
+==============
+
+void undo_add_frame (Undo *undo, Layer *layer, Frame *frame);
+     
+
+
+File: script.info,  Node: undo_remove_frame,  Next: undo_add_layer,  Prev: undo_add_frame,  Up: Undo
+
+undo_remove_frame
+=================
+
+void undo_remove_frame (Undo *undo, Layer *layer, Frame *frame);
+     
+
+
+File: script.info,  Node: undo_add_layer,  Next: undo_remove_layer,  Prev: undo_remove_frame,  Up: Undo
+
+undo_add_layer
+==============
+
+void undo_add_layer (Undo *undo, Layer *set, Layer *layer);
+     
+
+
+File: script.info,  Node: undo_remove_layer,  Next: undo_move_layer,  Prev: undo_add_layer,  Up: Undo
+
+undo_remove_layer
+=================
+
+void undo_remove_layer (Undo *undo, Layer *layer);
+     
+
+
+File: script.info,  Node: undo_move_layer,  Next: undo_set_layer,  Prev: undo_remove_layer,  Up: Undo
+
+undo_move_layer
+===============
+
+void undo_move_layer (Undo *undo, Layer *layer);
+     
+
+
+File: script.info,  Node: undo_set_layer,  Next: undo_set_mask,  Prev: undo_move_layer,  Up: Undo
+
+undo_set_layer
+==============
+
+void undo_set_layer (Undo *undo, Sprite *sprite);
+     
+
+
+File: script.info,  Node: undo_set_mask,  Next: effect_new,  Prev: undo_set_layer,  Up: Undo
+
+undo_set_mask
+=============
+
+void undo_set_mask (Undo *undo, Sprite *sprite);
+       
+
+
+File: script.info,  Node: Effect,  Next: ConvMatr,  Prev: Undo,  Up: Top
+
+Effect
+******
+
+
+
+* Menu:
+
+* effect_new::
+* effect_free::
+* effect_load_target::
+* effect_set_target::
+* effect_set_target_rgb::
+* effect_set_target_grayscale::
+* effect_set_target_indexed::
+* effect_begin::
+* effect_begin_for_preview::
+* effect_apply_step::
+* effect_apply::
+* effect_flush::
+* effect_apply_to_image::
+* effect_apply_to_target::
+
+
+File: script.info,  Node: effect_new,  Next: effect_free,  Prev: undo_set_mask,  Up: Effect
+
+effect_new
+==========
+
+Effect *effect_new (Sprite *sprite, const char *name);
+     
+
+
+File: script.info,  Node: effect_free,  Next: effect_load_target,  Prev: effect_new,  Up: Effect
+
+effect_free
+===========
+
+void effect_free (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_load_target,  Next: effect_set_target,  Prev: effect_free,  Up: Effect
+
+effect_load_target
+==================
+
+void effect_load_target (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_set_target,  Next: effect_set_target_rgb,  Prev: effect_load_target,  Up: Effect
+
+effect_set_target
+=================
+
+void effect_set_target (Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index);
+     
+
+
+File: script.info,  Node: effect_set_target_rgb,  Next: effect_set_target_grayscale,  Prev: effect_set_target,  Up: Effect
+
+effect_set_target_rgb
+=====================
+
+void effect_set_target_rgb (Effect *effect, bool r, bool g, bool b, bool a);
+     
+
+
+File: script.info,  Node: effect_set_target_grayscale,  Next: effect_set_target_indexed,  Prev: effect_set_target_rgb,  Up: Effect
+
+effect_set_target_grayscale
+===========================
+
+void effect_set_target_grayscale (Effect *effect, bool k, bool a);
+     
+
+
+File: script.info,  Node: effect_set_target_indexed,  Next: effect_begin,  Prev: effect_set_target_grayscale,  Up: Effect
+
+effect_set_target_indexed
+=========================
+
+void effect_set_target_indexed (Effect *effect, bool r, bool g, bool b, bool index);
+     
+
+
+File: script.info,  Node: effect_begin,  Next: effect_begin_for_preview,  Prev: effect_set_target_indexed,  Up: Effect
+
+effect_begin
+============
+
+void effect_begin (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_begin_for_preview,  Next: effect_apply_step,  Prev: effect_begin,  Up: Effect
+
+effect_begin_for_preview
+========================
+
+void effect_begin_for_preview (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_apply_step,  Next: effect_apply,  Prev: effect_begin_for_preview,  Up: Effect
+
+effect_apply_step
+=================
+
+int effect_apply_step (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_apply,  Next: effect_flush,  Prev: effect_apply_step,  Up: Effect
+
+effect_apply
+============
+
+void effect_apply (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_flush,  Next: effect_apply_to_image,  Prev: effect_apply,  Up: Effect
+
+effect_flush
+============
+
+void effect_flush (Effect *effect);
+     
+
+
+File: script.info,  Node: effect_apply_to_image,  Next: effect_apply_to_target,  Prev: effect_flush,  Up: Effect
+
+effect_apply_to_image
+=====================
+
+void effect_apply_to_image (Effect *effect, Image *image, int x, int y);
+     
+
+
+File: script.info,  Node: effect_apply_to_target,  Next: convmatr_new,  Prev: effect_apply_to_image,  Up: Effect
+
+effect_apply_to_target
+======================
+
+void effect_apply_to_target (Effect *effect);
+       
+
+
+File: script.info,  Node: ConvMatr,  Next: Curve,  Prev: Effect,  Up: Top
+
+ConvMatr
+********
+
+
+
+* Menu:
+
+* convmatr_new::
+* convmatr_new_string::
+* convmatr_free::
+* Convolution Matrix Effect::
+* set_convmatr::
+* get_convmatr::
+* get_convmatr_by_name::
+
+
+File: script.info,  Node: convmatr_new,  Next: convmatr_new_string,  Prev: effect_apply_to_target,  Up: ConvMatr
+
+convmatr_new
+============
+
+ConvMatr *convmatr_new (int w, int h);
+     
+
+
+File: script.info,  Node: convmatr_new_string,  Next: convmatr_free,  Prev: convmatr_new,  Up: ConvMatr
+
+convmatr_new_string
+===================
+
+ConvMatr *convmatr_new_string (const char *format);
+     
+
+
+File: script.info,  Node: convmatr_free,  Next: Convolution Matrix Effect,  Prev: convmatr_new_string,  Up: ConvMatr
+
+convmatr_free
+=============
+
+void convmatr_free (ConvMatr *convmatr);
+     
+
+
+File: script.info,  Node: Convolution Matrix Effect,  Next: set_convmatr,  Prev: convmatr_free,  Up: ConvMatr
+
+Convolution Matrix Effect
+=========================
+
+     
+
+
+File: script.info,  Node: set_convmatr,  Next: get_convmatr,  Prev: Convolution Matrix Effect,  Up: ConvMatr
+
+set_convmatr
+============
+
+void set_convmatr (ConvMatr *convmatr);
+     
+
+
+File: script.info,  Node: get_convmatr,  Next: get_convmatr_by_name,  Prev: set_convmatr,  Up: ConvMatr
+
+get_convmatr
+============
+
+ConvMatr *get_convmatr (void);
+     
+
+
+File: script.info,  Node: get_convmatr_by_name,  Next: curve_new,  Prev: get_convmatr,  Up: ConvMatr
+
+get_convmatr_by_name
+====================
+
+ConvMatr *get_convmatr_by_name (const char *name);
+       
+
+
+File: script.info,  Node: Curve,  Next: CurvePoint,  Prev: ConvMatr,  Up: Top
+
+Curve
+*****
+
+ Curve is a type to represent a function y=f(x). It's mainly used in
+color-curve effect. 
+
+* Menu:
+
+* curve_new::
+* curve_free::
+* curve_add_point::
+* curve_remove_point::
+* Color Curve Effect::
+* set_color_curve::
+
+
+File: script.info,  Node: curve_new,  Next: curve_free,  Prev: get_convmatr_by_name,  Up: Curve
+
+curve_new
+=========
+
+Curve *curve_new (int type);
+     Creates a new curve, type can be CURVE_LINEAR or CURVE_SPLINE. 
+
+
+File: script.info,  Node: curve_free,  Next: curve_add_point,  Prev: curve_new,  Up: Curve
+
+curve_free
+==========
+
+void curve_free (Curve *curve);
+     
+
+
+File: script.info,  Node: curve_add_point,  Next: curve_remove_point,  Prev: curve_free,  Up: Curve
+
+curve_add_point
+===============
+
+void curve_add_point (Curve *curve, CurvePoint *point);
+     
+
+
+File: script.info,  Node: curve_remove_point,  Next: Color Curve Effect,  Prev: curve_add_point,  Up: Curve
+
+curve_remove_point
+==================
+
+void curve_remove_point (Curve *curve, CurvePoint *point);
+     
+
+
+File: script.info,  Node: Color Curve Effect,  Next: set_color_curve,  Prev: curve_remove_point,  Up: Curve
+
+Color Curve Effect
+==================
+
+     
+
+
+File: script.info,  Node: set_color_curve,  Next: curve_point_new,  Prev: Color Curve Effect,  Up: Curve
+
+set_color_curve
+===============
+
+void set_color_curve (Curve *curve);
+       
+
+
+File: script.info,  Node: CurvePoint,  Next: JEvent,  Prev: Curve,  Up: Top
+
+CurvePoint
+**********
+
+
+
+* Menu:
+
+* curve_point_new::
+* curve_point_free::
+
+
+File: script.info,  Node: curve_point_new,  Next: curve_point_free,  Prev: set_color_curve,  Up: CurvePoint
+
+curve_point_new
+===============
+
+CurvePoint *curve_point_new (int x, int y);
+     
+
+
+File: script.info,  Node: curve_point_free,  Next: JRect fields,  Prev: curve_point_new,  Up: CurvePoint
+
+curve_point_free
+================
+
+void curve_point_free (CurvePoint *point);
+       
+
+
+File: script.info,  Node: JEvent,  Next: JList,  Prev: CurvePoint,  Up: Top
+
+JEvent
+******
+
+  
+
+
+File: script.info,  Node: JList,  Next: JRect,  Prev: JEvent,  Up: Top
+
+JList
+*****
+
+  
+
+
+File: script.info,  Node: JRect,  Next: JRegion,  Prev: JList,  Up: Top
+
+JRect
+*****
+
+
+
+* Menu:
+
+* JRect fields::
+
+
+File: script.info,  Node: JRect fields,  Prev: curve_point_free,  Up: JRect
+
+JRect fields
+============
+
+     
+        * [number] rect.x
+           [number] rect.y
+           Position of the upper-left corner of the rectangle.
+
+        * [number] rect.w
+           [number] rect.h
+           Size of the rectangle (width and height).
+        
+
+
+File: script.info,  Node: JRegion,  Next: JWidget,  Prev: JRect,  Up: Top
+
+JRegion
+*******
+
+  
+
+
+File: script.info,  Node: JWidget,  Next: Index,  Prev: JRegion,  Up: Top
+
+JWidget
+*******
+
+  
+
+
+File: script.info,  Node: Index,  Prev: JWidget,  Up: Top
+
+Index
+*****
+
+
+
+* Menu:
+
+* _::
+* acos::
+* asin::
+* atan::
+* atan2::
+* ceil::
+* Color Curve Effect::
+* Comments::
+* Constants::
+* convmatr_free::
+* convmatr_new::
+* convmatr_new_string::
+* Convolution Matrix Effect::
+* cos::
+* cosh::
+* curve_add_point::
+* curve_free::
+* curve_new::
+* curve_point_free::
+* curve_point_new::
+* curve_remove_point::
+* effect_apply::
+* effect_apply_step::
+* effect_apply_to_image::
+* effect_apply_to_target::
+* effect_begin::
+* effect_begin_for_preview::
+* effect_flush::
+* effect_free::
+* effect_load_target::
+* effect_new::
+* effect_set_target::
+* effect_set_target_grayscale::
+* effect_set_target_indexed::
+* effect_set_target_rgb::
+* Example 1::
+* Example 2::
+* Example 3::
+* Example 4::
+* Example 5::
+* Example 6::
+* exp::
+* fabs::
+* file_exists::
+* floor::
+* frame_free::
+* frame_is_link::
+* frame_new::
+* frame_new_copy::
+* frame_set_frpos::
+* frame_set_image::
+* frame_set_opacity::
+* frame_set_position::
+* get_convmatr::
+* get_convmatr_by_name::
+* get_filename::
+* hypot::
+* Image fields::
+* Image methods::
+* IMAGE_BITMAP::
+* image_clear::
+* image_convert::
+* image_copy::
+* image_count_diff::
+* image_crop::
+* image_ellipse::
+* image_ellipsefill::
+* image_free::
+* image_getpixel::
+* IMAGE_GRAYSCALE::
+* image_hline::
+* IMAGE_INDEXED::
+* image_line::
+* image_merge::
+* image_new::
+* image_new_copy::
+* image_putpixel::
+* image_rect::
+* image_rectfill::
+* IMAGE_RGB::
+* image_vline::
+* include::
+* JRect fields::
+* layer_add_frame::
+* layer_add_layer::
+* layer_flatten::
+* layer_free::
+* layer_get_frame::
+* layer_get_next::
+* layer_get_prev::
+* layer_is_image::
+* layer_is_set::
+* layer_move_layer::
+* layer_new::
+* layer_new_copy::
+* layer_new_with_image::
+* layer_remove_frame::
+* layer_remove_layer::
+* layer_render::
+* layer_set_blend_mode::
+* layer_set_name::
+* layer_set_new::
+* log::
+* log10::
+* mask_by_color::
+* mask_crop::
+* mask_free::
+* mask_intersect::
+* mask_invert::
+* mask_is_empty::
+* mask_merge::
+* mask_move::
+* mask_new::
+* mask_new_copy::
+* mask_none::
+* mask_replace::
+* mask_set_name::
+* mask_subtract::
+* mask_union::
+* MAX::
+* MID::
+* MIN::
+* path_close::
+* path_curveto::
+* path_fill::
+* path_free::
+* path_lineto::
+* path_move::
+* path_moveto::
+* path_new::
+* path_set_cap::
+* path_set_join::
+* path_stroke::
+* pow::
+* print::
+* rand::
+* Routines::
+* set_color_curve::
+* set_convmatr::
+* sin::
+* sinh::
+* sprite_add_mask::
+* sprite_add_path::
+* sprite_free::
+* sprite_is_locked::
+* sprite_is_modified::
+* sprite_lock::
+* sprite_new::
+* sprite_new_copy::
+* sprite_new_flatten_copy::
+* sprite_new_with_layer::
+* sprite_remove_mask::
+* sprite_remove_path::
+* sprite_render::
+* sprite_request_mask::
+* sprite_set_filename::
+* sprite_set_frames::
+* sprite_set_frpos::
+* sprite_set_imgtype::
+* sprite_set_layer::
+* sprite_set_mask::
+* sprite_set_path::
+* sprite_set_size::
+* sprite_set_speed::
+* sprite_unlock::
+* sprite_was_saved::
+* sqrt::
+* stock_add_image::
+* stock_free::
+* stock_get_image::
+* stock_new::
+* stock_new_copy::
+* stock_remove_image::
+* stock_replace_image::
+* strcmp::
+* tan::
+* tanh::
+* undo_add_frame::
+* undo_add_image::
+* undo_add_layer::
+* undo_can_redo::
+* undo_can_undo::
+* undo_close::
+* undo_disable::
+* undo_enable::
+* undo_flip::
+* undo_free::
+* undo_image::
+* undo_is_disabled::
+* undo_is_enabled::
+* undo_move_layer::
+* undo_new::
+* undo_open::
+* undo_redo::
+* undo_remove_frame::
+* undo_remove_image::
+* undo_remove_layer::
+* undo_replace_image::
+* undo_set_layer::
+* undo_set_mask::
+* undo_undo::
+* Warning about Lua::
+  
+
+
+
+Tag Table:
+Node: Top155
+Node: Introduction1587
+Node: Warning about Lua2143
+Node: Basic2520
+Node: Comments2764
+Node: Example 13087
+Node: Example 23700
+Node: Example 34150
+Node: Example 44623
+Node: Example 55062
+Node: Example 65665
+Node: ImgType6254
+Node: IMAGE_RGB6634
+Node: IMAGE_GRAYSCALE7198
+Node: IMAGE_INDEXED7551
+Node: IMAGE_BITMAP8101
+Node: Standard8362
+Node: MAX8552
+Node: MIN8711
+Node: MID8861
+Node: include9030
+Node: print9351
+Node: rand9579
+Node: String9766
+Node: _9907
+Node: strcmp10134
+Node: Math10481
+Node: Constants10812
+Node: Routines11004
+Node: fabs11111
+Node: ceil11273
+Node: floor11467
+Node: exp11664
+Node: log11890
+Node: log1012081
+Node: pow12261
+Node: sqrt12460
+Node: hypot12662
+Node: cos13006
+Node: sin13229
+Node: tan13448
+Node: acos13671
+Node: asin13928
+Node: atan14190
+Node: atan214478
+Node: cosh14713
+Node: sinh14930
+Node: tanh15144
+Node: File15367
+Node: file_exists15517
+Node: get_filename15765
+Node: Objects16105
+Node: Image16549
+Node: Image fields17144
+Node: Image methods17466
+Node: image_new17597
+Node: image_new_copy17789
+Node: image_free17959
+Node: image_getpixel18120
+Node: image_putpixel18306
+Node: image_clear18505
+Node: image_copy18677
+Node: image_merge18856
+Node: image_crop19066
+Node: image_hline19251
+Node: image_vline19443
+Node: image_rect19635
+Node: image_rectfill19836
+Node: image_line20048
+Node: image_ellipse20251
+Node: image_ellipsefill20466
+Node: image_convert20696
+Node: image_count_diff20884
+Node: Frame21074
+Node: frame_new21564
+Node: frame_new_copy21760
+Node: frame_free21930
+Node: frame_is_link22090
+Node: frame_set_frpos22276
+Node: frame_set_image22468
+Node: frame_set_position22665
+Node: frame_set_opacity22876
+Node: Layer23081
+Node: layer_new24057
+Node: layer_set_new24217
+Node: layer_new_copy24379
+Node: layer_new_with_image24563
+Node: layer_free24800
+Node: layer_is_image24967
+Node: layer_is_set25138
+Node: layer_get_prev25307
+Node: layer_get_next25484
+Node: layer_set_name25663
+Node: layer_set_blend_mode25864
+Node: layer_add_frame26082
+Node: layer_remove_frame26287
+Node: layer_get_frame26496
+Node: layer_add_layer26695
+Node: layer_remove_layer26893
+Node: layer_move_layer27101
+Node: layer_render27314
+Node: layer_flatten27523
+Node: Mask27757
+Node: mask_new28108
+Node: mask_new_copy28251
+Node: mask_free28411
+Node: mask_is_empty28563
+Node: mask_set_name28727
+Node: mask_move28909
+Node: mask_none29071
+Node: mask_invert29217
+Node: mask_replace29372
+Node: mask_union29559
+Node: mask_subtract29742
+Node: mask_intersect29936
+Node: mask_merge30133
+Node: mask_by_color30300
+Node: mask_crop30501
+Node: Path30666
+Node: path_new30943
+Node: path_free31090
+Node: path_set_join31237
+Node: path_set_cap31535
+Node: path_moveto31828
+Node: path_lineto32005
+Node: path_curveto32182
+Node: path_close32445
+Node: path_move32596
+Node: path_stroke32763
+Node: path_fill32959
+Node: Sprite33135
+Node: sprite_new34691
+Node: sprite_new_copy34865
+Node: sprite_new_flatten_copy35057
+Node: sprite_new_with_layer35284
+Node: sprite_free35512
+Node: sprite_lock35684
+Node: sprite_unlock35848
+Node: sprite_is_locked36023
+Node: sprite_is_modified36214
+Node: sprite_was_saved36414
+Node: sprite_set_filename36611
+Node: sprite_set_size36836
+Node: sprite_set_frames37042
+Node: sprite_set_speed37249
+Node: sprite_set_path37452
+Node: sprite_set_mask37651
+Node: sprite_set_layer37850
+Node: sprite_set_frpos38055
+Node: sprite_set_imgtype38260
+Node: sprite_add_path38494
+Node: sprite_remove_path38698
+Node: sprite_add_mask38908
+Node: sprite_remove_mask39112
+Node: sprite_request_mask39326
+Node: sprite_render39548
+Node: Stock39756
+Node: stock_new40095
+Node: stock_new_copy40252
+Node: stock_free40422
+Node: stock_add_image40584
+Node: stock_remove_image40778
+Node: stock_replace_image40991
+Node: stock_get_image41218
+Node: Undo41415
+Node: undo_new41962
+Node: undo_free42113
+Node: undo_enable42258
+Node: undo_disable42413
+Node: undo_is_enabled42577
+Node: undo_is_disabled42755
+Node: undo_can_undo42937
+Node: undo_can_redo43108
+Node: undo_undo43272
+Node: undo_redo43420
+Node: undo_open43564
+Node: undo_close43709
+Node: undo_image43858
+Node: undo_flip44049
+Node: undo_add_image44255
+Node: undo_remove_image44455
+Node: undo_replace_image44673
+Node: undo_add_frame44891
+Node: undo_remove_frame45100
+Node: undo_add_layer45314
+Node: undo_remove_layer45520
+Node: undo_move_layer45721
+Node: undo_set_layer45916
+Node: undo_set_mask46106
+Node: Effect46292
+Node: effect_new46729
+Node: effect_free46910
+Node: effect_load_target47078
+Node: effect_set_target47274
+Node: effect_set_target_rgb47529
+Node: effect_set_target_grayscale47785
+Node: effect_set_target_indexed48051
+Node: effect_begin48322
+Node: effect_begin_for_preview48515
+Node: effect_apply_step48736
+Node: effect_apply48935
+Node: effect_flush49108
+Node: effect_apply_to_image49285
+Node: effect_apply_to_target49527
+Node: ConvMatr49748
+Node: convmatr_new50012
+Node: convmatr_new_string50202
+Node: convmatr_free50410
+Node: Convolution Matrix Effect50608
+Node: set_convmatr50782
+Node: get_convmatr50969
+Node: get_convmatr_by_name51142
+Node: Curve51352
+Node: curve_new51672
+Node: curve_free51893
+Node: curve_add_point52050
+Node: curve_remove_point52250
+Node: Color Curve Effect52467
+Node: set_color_curve52625
+Node: CurvePoint52815
+Node: curve_point_new52973
+Node: curve_point_free53169
+Node: JEvent53367
+Node: JList53468
+Node: JRect53562
+Node: JRect fields53681
+Node: JRegion54037
+Node: JWidget54138
+Node: Index54239
+
+End Tag Table

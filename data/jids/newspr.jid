@@ -1,0 +1,48 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("New Sprite") name="new_sprite">
+  <box vertical>
+    <box horizontal>
+      <box vertical expansive>
+        <separator text=_("Size:") left horizontal />
+        <box vertical expansive>
+          <box horizontal>
+            <box vertical homogeneous>
+              <label text=_("Width:") />
+              <label text=_("Height:") />
+            </box>
+            <box vertical homogeneous expansive>
+              <entry expansive name="width" maxsize=8 />
+              <entry expansive name="height" maxsize=8 />
+            </box>
+          </box>
+        </box>
+      </box>
+      <box vertical>
+        <separator text=_("Type:") left horizontal />
+        <box vertical homogeneous>
+          <radio name="radio1" text=_("&RGB") group=1 />
+	  <radio name="radio2" text=_("&Grayscale") group=1 />
+	  <radio name="radio3" text=_("&Indexed") group=1 />
+	</box>
+      </box>
+    </box>
+    <separator text=_("Background:") left horizontal />
+    <view maxsize expansive>
+      <listbox name="bg_box">
+        <listitem text=_("Transparent (mask color)") />
+        <listitem text=_("Black") />
+        <listitem text=_("White") />
+        <listitem text=_("Bright Pink") />
+        <listitem text=_("Custom") />
+      </listbox>
+    </view>
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="ok_button" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

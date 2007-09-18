@@ -1,0 +1,1 @@
+This file is needed because some unzip programs skip empty directories.

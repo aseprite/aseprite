@@ -1,0 +1,193 @@
+/* jinete - a GUI library
+ * Copyright (C) 2003-2005 by David A. Capello
+ *
+ * Jinete is gift-ware.
+ */
+
+#include <allegro.h>
+#include <stdio.h>
+
+#include "jinete.h"
+
+static JList windows;
+
+static JWidget my_button_new(const char *text, int color);
+static int my_button_get_color(JWidget widget);
+static bool my_button_msg_proc(JWidget widget, JMessage msg);
+
+static void new_palette_window(JWidget widget);
+
+static bool hooked_window1_msg_proc(JWidget widget, JMessage msg);
+static bool hooked_window_bg_msg_proc(JWidget widget, JMessage msg);
+
+int main (int argc, char *argv[])
+{
+  JWidget manager, window1, box1, button1, button2, button3, button4, button5;
+
+  allegro_init();
+  if (set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0) < 0) {
+    allegro_message("%s\n", allegro_error);
+    return 1;
+  }
+  install_timer();
+  install_keyboard();
+  install_mouse();
+
+  manager = jmanager_new();
+  ji_set_standard_theme();
+
+  windows = jlist_new();
+  window1 = jwindow_new("Colors");
+  box1 = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
+  button1 = my_button_new("&Red", makecol (255, 0, 0));
+  button2 = my_button_new("&Green", makecol (0, 128, 0));
+  button3 = my_button_new("&Blue", makecol (0, 0, 255));
+  button4 = jbutton_new("&Palette");
+  button5 = jbutton_new("&Close");
+
+  jbutton_set_bevel(button4, 4, 4, 0, 0);
+  jbutton_set_bevel(button5, 0, 0, 4, 4);
+
+  jwidget_add_hook(window1, JI_WIDGET, hooked_window1_msg_proc, NULL);
+  jbutton_add_command(button4, new_palette_window);
+
+  jwidget_add_child (box1, button1);
+  jwidget_add_child (box1, button2);
+  jwidget_add_child (box1, button3);
+  jwidget_add_child (box1, button4);
+  jwidget_add_child (box1, button5);
+  jwidget_add_child (window1, box1);
+
+  jwindow_open_bg(window1);
+
+  jmanager_run(manager);
+  jlist_free(windows);
+  jmanager_free(manager);
+  return 0;
+}
+
+END_OF_MAIN();
+
+static JWidget my_button_new(const char *text, int color)
+{
+  JWidget widget = jbutton_new (text);
+
+  widget->user_data[0] = (void *)color;
+
+  jwidget_add_hook (widget, JI_WIDGET, my_button_msg_proc, NULL);
+  jwidget_set_align (widget, JI_LEFT | JI_BOTTOM);
+
+  return widget;
+}
+
+static int my_button_get_color(JWidget widget)
+{
+  return (int)widget->user_data[0];
+}
+
+static bool my_button_msg_proc(JWidget widget, JMessage msg)
+{
+  if (msg->type == JM_DRAW) {
+    JRect rect = jwidget_get_rect (widget);
+    int color = my_button_get_color (widget);
+    int bg, c1, c2;
+
+    /* with mouse */
+    if (jwidget_has_mouse (widget))
+      bg = JI_COLOR_SHADE (color, 64, 64, 64);
+    /* without mouse */
+    else
+      bg = color;
+
+    /* selected */
+    if (jwidget_is_selected (widget)) {
+      c1 = JI_COLOR_SHADE (color, -128, -128, -128);
+      c2 = JI_COLOR_SHADE (color, 128, 128, 128);
+    }
+    /* non-selected */
+    else {
+      c1 = JI_COLOR_SHADE (color, 128, 128, 128);
+      c2 = JI_COLOR_SHADE (color, -128, -128, -128);
+    }
+
+    /* 1st border */
+    if (jwidget_has_focus (widget))
+      jdraw_rect (rect, makecol (0, 0, 0));
+    else
+      jdraw_rectedge (rect, c1, c2);
+
+    /* 2nd border */
+    jrect_shrink (rect, 1);
+    if (jwidget_has_focus (widget))
+      jdraw_rectedge (rect, c1, c2);
+    else
+      jdraw_rect (rect, bg);
+
+    /* background */
+    jrect_shrink (rect, 1);
+    jdraw_rectfill (rect, bg);
+
+    /* text */
+    jdraw_widget_text (widget, makecol (255, 255, 255), bg, FALSE);
+
+    jrect_free (rect);
+    return TRUE;
+  }
+  /* button select signal */
+  else if (msg->type == JM_SIGNAL &&
+	   msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
+    int color = my_button_get_color(widget);
+    JWidget alert = jalert_new("#%02x%02x%02x"
+			       "<<Red:   %d"
+			       "<<Green: %d"
+			       "<<Blue:  %d"
+			       "||&Close",
+			       getr(color), getg(color), getb(color),
+			       getr(color), getg(color), getb(color));
+
+    jlist_append(windows, alert);
+    jwidget_add_hook(alert, JI_WIDGET, hooked_window_bg_msg_proc, NULL);
+    jwindow_open_bg(alert);
+
+    /* return TRUE to avoid close the window */
+    return TRUE;
+  }
+  else
+    return FALSE;
+}
+
+static void new_palette_window(JWidget widget)
+{
+  JWidget window = jwindow_new ("Palette");
+  JWidget box = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
+  JWidget button;
+  int c, color;
+
+  for (c=0; c<8; c++) {
+    color = makecol (rand () % 255, rand () % 255, rand () % 255);
+    button = my_button_new ("", color);
+    jwidget_add_child (box, button);
+  }
+  jwidget_add_child (window, box);
+
+  jlist_append(windows, window);
+  jwidget_add_hook(window, JI_WIDGET, hooked_window_bg_msg_proc, NULL);
+  jwindow_open_bg(window);
+}
+
+static bool hooked_window1_msg_proc(JWidget widget, JMessage msg)
+{
+  if (msg->type == JM_CLOSE) {
+    JLink link, next;
+    JI_LIST_FOR_EACH_SAFE(windows, link, next) /* close all windows */
+      jwindow_close(link->data, NULL);
+  }
+  return FALSE;
+}
+
+static bool hooked_window_bg_msg_proc(JWidget widget, JMessage msg)
+{
+  if (msg->type == JM_CLOSE)
+    jlist_remove(windows, widget);
+  return FALSE;
+}

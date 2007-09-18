@@ -1,0 +1,1719 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><head><title>
+ASE Scripting Manual
+</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css" title="Default"><!--
+A.xref:link {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.xref:visited {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.xref:hover {
+	color:           blue;
+	text-decoration: underline;
+	background:      rgb(220, 220, 220);
+}
+A.xref:active {
+	color:           red;
+	text-decoration: none;
+	background:      rgb(255, 204, 50);
+}
+A.eref:link {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.eref:visited {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.eref:hover {
+	color:           blue;
+	text-decoration: underline;
+	background:      rgb(255, 165, 214);
+}
+A.eref:active {
+	color:           red;
+	text-decoration: none;
+	background:      rgb(255, 204, 50);
+}
+A.autotype:link {
+	color:           rgb(64, 64, 255);
+	text-decoration: none;
+	background:      transparent;
+}
+A.autotype:visited {
+	color:           rgb(64, 64, 255);
+	text-decoration: none;
+	background:      transparent;
+}
+A.autotype:hover {
+	color:           rgb(64, 64, 255);
+	text-decoration: underline;
+	background:      transparent;
+}
+A.autotype:active {
+	color:           red;
+	text-decoration: none;
+	background:      transparent;
+}
+blockquote.xref {
+	font-family:     helvetica, verdana, serif;
+	font-size:       smaller;
+	border:          thin solid rgb(220, 220, 220);
+	color:           black;
+	background:      rgb(240, 240, 240);
+}
+blockquote.eref {
+	font-family:     helvetica, verdana, serif;
+	font-size:       smaller;
+	border:          thin solid rgb(255, 165, 214);
+	color:           black;
+	background:      rgb(255, 201, 230);
+}
+blockquote.code {
+	border:          thin solid rgb(255, 234, 190);
+	color:           black;
+	background:      rgb(255, 255, 205);
+}
+blockquote.text {
+	border:          thin solid rgb(190, 234, 255);
+	color:           black;
+	background:      rgb(225, 255, 255);
+}
+div.al-api {
+	padding-left:    0.5em;
+	color:           black;
+	background:      rgb(255, 234, 100);
+	font-weight:     bold;
+	border-bottom:   medium solid rgb(255, 204, 51);
+	border-left:     medium solid rgb(255, 204, 51);
+	margin-top:      2em;
+}
+div.al-api-cont {
+	padding-left:    0.5em;
+	color:           black;
+	background:      rgb(255, 234, 100);
+	font-weight:     bold;
+	border-bottom:   medium solid rgb(255, 204, 51);
+	border-left:     medium solid rgb(255, 204, 51);
+	margin-top:      -1em;
+}
+div.faq-shift-to-right {
+	margin-left: 2em;
+}
+div.al-back-to-contents {
+	text-align:      center;
+	font-family:     sans-serif;
+	margin-top:      1em;
+	font-weight:     bold;
+	/* Removing the  comments of the next line create longer pages */
+	/* margin-bottom:   100em; */
+}
+
+
+--></style>
+</head><body bgcolor=white text=black link="#0000ee" alink="#ff0000" vlink="#551a8b">
+<pre>
+
+                    ASE Scripting 0.4
+
+                 By <a href="http://www.davidcapello.com.ar/">David A. Capello</a>, 2005.
+
+</pre>
+
+
+<p><br>
+#include &lt;std_disclaimer.h&gt;
+<blockquote class="text"><i>
+   "I do not accept responsibility for any effects, adverse or otherwise,
+    that this code may have on you, your computer, your sanity, your dog,
+    and anything else that you can think of. Use it at your own risk."
+</i></blockquote>
+
+
+<p><br>
+<h1><a name="Contents">Contents</a></h1>
+
+<p>
+<ul>
+<li><a href="#Introduction">Introduction</a>
+<li><a href="#Basic Lua Programming">Basic Lua Programming</a>
+<li><a href="#ImgType">ImgType</a>
+<li><a href="#Standard routines">Standard routines</a>
+<li><a href="#String routines">String routines</a>
+<li><a href="#Math routines">Math routines</a>
+<li><a href="#File routines">File routines</a>
+<li><a href="#Objects">Objects</a>
+<li><a href="#Image">Image</a>
+<li><a href="#Frame">Frame</a>
+<li><a href="#Layer">Layer</a>
+<li><a href="#Mask">Mask</a>
+<li><a href="#Path">Path</a>
+<li><a href="#Sprite">Sprite</a>
+<li><a href="#Stock">Stock</a>
+<li><a href="#Undo">Undo</a>
+<li><a href="#Effect">Effect</a>
+<li><a href="#ConvMatr">ConvMatr</a>
+<li><a href="#Curve">Curve</a>
+<li><a href="#CurvePoint">CurvePoint</a>
+<li><a href="#JEvent">JEvent</a>
+<li><a href="#JList">JList</a>
+<li><a href="#JRect">JRect</a>
+<li><a href="#JRegion">JRegion</a>
+<li><a href="#JWidget">JWidget</a>
+<li><a href="#Index">Index</a>
+</ul>
+<ul>
+<li><a href="#Introduction">Introduction</a>
+<li><a href="#Basic Lua Programming">Basic Lua Programming</a>
+<li><a href="#ImgType">ImgType</a>
+<li><a href="#Standard routines">Standard routines</a>
+<ul>
+<li><a href="#dofile">dofile</a>
+<li><a href="#include">include</a>
+<li><a href="#MAX">MAX</a>
+<li><a href="#MID">MID</a>
+<li><a href="#MIN">MIN</a>
+<li><a href="#print">print</a>
+<li><a href="#rand">rand</a>
+</ul>
+<li><a href="#String routines">String routines</a>
+<ul>
+<li><a href="#_">_</a>
+<li><a href="#strcmp">strcmp</a>
+</ul>
+<li><a href="#Math routines">Math routines</a>
+<ul>
+<li><a href="#acos">acos</a>
+<li><a href="#asin">asin</a>
+<li><a href="#atan">atan</a>
+<li><a href="#atan2">atan2</a>
+<li><a href="#ceil">ceil</a>
+<li><a href="#cos">cos</a>
+<li><a href="#cosh">cosh</a>
+<li><a href="#exp">exp</a>
+<li><a href="#fabs">fabs</a>
+<li><a href="#floor">floor</a>
+<li><a href="#hypot">hypot</a>
+<li><a href="#log">log</a>
+<li><a href="#log10">log10</a>
+<li><a href="#pow">pow</a>
+<li><a href="#sin">sin</a>
+<li><a href="#sinh">sinh</a>
+<li><a href="#sqrt">sqrt</a>
+<li><a href="#tan">tan</a>
+<li><a href="#tanh">tanh</a>
+</ul>
+<li><a href="#File routines">File routines</a>
+<ul>
+<li><a href="#file_exists">file_exists</a>
+<li><a href="#get_filename">get_filename</a>
+</ul>
+<li><a href="#Objects">Objects</a>
+<li><a href="#Image">Image</a>
+<ul>
+<li><a href="#image_clear">image_clear</a>
+<li><a href="#image_convert">image_convert</a>
+<li><a href="#image_copy">image_copy</a>
+<li><a href="#image_count_diff">image_count_diff</a>
+<li><a href="#image_crop">image_crop</a>
+<li><a href="#image_ellipse">image_ellipse</a>
+<li><a href="#image_ellipsefill">image_ellipsefill</a>
+<li><a href="#image_free">image_free</a>
+<li><a href="#image_getpixel">image_getpixel</a>
+<li><a href="#image_hline">image_hline</a>
+<li><a href="#image_line">image_line</a>
+<li><a href="#image_merge">image_merge</a>
+<li><a href="#image_new">image_new</a>
+<li><a href="#image_new_copy">image_new_copy</a>
+<li><a href="#image_putpixel">image_putpixel</a>
+<li><a href="#image_rect">image_rect</a>
+<li><a href="#image_rectfill">image_rectfill</a>
+<li><a href="#image_vline">image_vline</a>
+</ul>
+<li><a href="#Frame">Frame</a>
+<ul>
+<li><a href="#frame_free">frame_free</a>
+<li><a href="#frame_is_link">frame_is_link</a>
+<li><a href="#frame_new">frame_new</a>
+<li><a href="#frame_new_copy">frame_new_copy</a>
+<li><a href="#frame_set_frpos">frame_set_frpos</a>
+<li><a href="#frame_set_image">frame_set_image</a>
+<li><a href="#frame_set_opacity">frame_set_opacity</a>
+<li><a href="#frame_set_position">frame_set_position</a>
+</ul>
+<li><a href="#Layer">Layer</a>
+<ul>
+<li><a href="#layer_add_frame">layer_add_frame</a>
+<li><a href="#layer_add_layer">layer_add_layer</a>
+<li><a href="#layer_flatten">layer_flatten</a>
+<li><a href="#layer_free">layer_free</a>
+<li><a href="#layer_get_frame">layer_get_frame</a>
+<li><a href="#layer_get_next">layer_get_next</a>
+<li><a href="#layer_get_prev">layer_get_prev</a>
+<li><a href="#layer_is_image">layer_is_image</a>
+<li><a href="#layer_is_set">layer_is_set</a>
+<li><a href="#layer_move_layer">layer_move_layer</a>
+<li><a href="#layer_new">layer_new</a>
+<li><a href="#layer_new_copy">layer_new_copy</a>
+<li><a href="#layer_new_with_image">layer_new_with_image</a>
+<li><a href="#layer_remove_frame">layer_remove_frame</a>
+<li><a href="#layer_remove_layer">layer_remove_layer</a>
+<li><a href="#layer_render">layer_render</a>
+<li><a href="#layer_set_blend_mode">layer_set_blend_mode</a>
+<li><a href="#layer_set_name">layer_set_name</a>
+<li><a href="#layer_set_new">layer_set_new</a>
+</ul>
+<li><a href="#Mask">Mask</a>
+<ul>
+<li><a href="#mask_by_color">mask_by_color</a>
+<li><a href="#mask_crop">mask_crop</a>
+<li><a href="#mask_free">mask_free</a>
+<li><a href="#mask_intersect">mask_intersect</a>
+<li><a href="#mask_invert">mask_invert</a>
+<li><a href="#mask_is_empty">mask_is_empty</a>
+<li><a href="#mask_merge">mask_merge</a>
+<li><a href="#mask_move">mask_move</a>
+<li><a href="#mask_new">mask_new</a>
+<li><a href="#mask_new_copy">mask_new_copy</a>
+<li><a href="#mask_none">mask_none</a>
+<li><a href="#mask_replace">mask_replace</a>
+<li><a href="#mask_set_name">mask_set_name</a>
+<li><a href="#mask_subtract">mask_subtract</a>
+<li><a href="#mask_union">mask_union</a>
+</ul>
+<li><a href="#Path">Path</a>
+<ul>
+<li><a href="#path_close">path_close</a>
+<li><a href="#path_curveto">path_curveto</a>
+<li><a href="#path_fill">path_fill</a>
+<li><a href="#path_free">path_free</a>
+<li><a href="#path_lineto">path_lineto</a>
+<li><a href="#path_move">path_move</a>
+<li><a href="#path_moveto">path_moveto</a>
+<li><a href="#path_new">path_new</a>
+<li><a href="#path_set_cap">path_set_cap</a>
+<li><a href="#path_set_join">path_set_join</a>
+<li><a href="#path_stroke">path_stroke</a>
+</ul>
+<li><a href="#Sprite">Sprite</a>
+<ul>
+<li><a href="#sprite_add_mask">sprite_add_mask</a>
+<li><a href="#sprite_add_path">sprite_add_path</a>
+<li><a href="#sprite_free">sprite_free</a>
+<li><a href="#sprite_is_locked">sprite_is_locked</a>
+<li><a href="#sprite_is_modified">sprite_is_modified</a>
+<li><a href="#sprite_lock">sprite_lock</a>
+<li><a href="#sprite_new">sprite_new</a>
+<li><a href="#sprite_new_copy">sprite_new_copy</a>
+<li><a href="#sprite_new_flatten_copy">sprite_new_flatten_copy</a>
+<li><a href="#sprite_new_with_layer">sprite_new_with_layer</a>
+<li><a href="#sprite_remove_mask">sprite_remove_mask</a>
+<li><a href="#sprite_remove_path">sprite_remove_path</a>
+<li><a href="#sprite_render">sprite_render</a>
+<li><a href="#sprite_request_mask">sprite_request_mask</a>
+<li><a href="#sprite_set_filename">sprite_set_filename</a>
+<li><a href="#sprite_set_frames">sprite_set_frames</a>
+<li><a href="#sprite_set_frpos">sprite_set_frpos</a>
+<li><a href="#sprite_set_imgtype">sprite_set_imgtype</a>
+<li><a href="#sprite_set_layer">sprite_set_layer</a>
+<li><a href="#sprite_set_mask">sprite_set_mask</a>
+<li><a href="#sprite_set_path">sprite_set_path</a>
+<li><a href="#sprite_set_size">sprite_set_size</a>
+<li><a href="#sprite_set_speed">sprite_set_speed</a>
+<li><a href="#sprite_unlock">sprite_unlock</a>
+<li><a href="#sprite_was_saved">sprite_was_saved</a>
+</ul>
+<li><a href="#Stock">Stock</a>
+<ul>
+<li><a href="#stock_add_image">stock_add_image</a>
+<li><a href="#stock_free">stock_free</a>
+<li><a href="#stock_get_image">stock_get_image</a>
+<li><a href="#stock_new">stock_new</a>
+<li><a href="#stock_new_copy">stock_new_copy</a>
+<li><a href="#stock_remove_image">stock_remove_image</a>
+<li><a href="#stock_replace_image">stock_replace_image</a>
+</ul>
+<li><a href="#Undo">Undo</a>
+<ul>
+<li><a href="#undo_add_frame">undo_add_frame</a>
+<li><a href="#undo_add_image">undo_add_image</a>
+<li><a href="#undo_add_layer">undo_add_layer</a>
+<li><a href="#undo_can_redo">undo_can_redo</a>
+<li><a href="#undo_can_undo">undo_can_undo</a>
+<li><a href="#undo_close">undo_close</a>
+<li><a href="#undo_disable">undo_disable</a>
+<li><a href="#undo_enable">undo_enable</a>
+<li><a href="#undo_flip">undo_flip</a>
+<li><a href="#undo_free">undo_free</a>
+<li><a href="#undo_image">undo_image</a>
+<li><a href="#undo_is_disabled">undo_is_disabled</a>
+<li><a href="#undo_is_enabled">undo_is_enabled</a>
+<li><a href="#undo_move_layer">undo_move_layer</a>
+<li><a href="#undo_new">undo_new</a>
+<li><a href="#undo_open">undo_open</a>
+<li><a href="#undo_redo">undo_redo</a>
+<li><a href="#undo_remove_frame">undo_remove_frame</a>
+<li><a href="#undo_remove_image">undo_remove_image</a>
+<li><a href="#undo_remove_layer">undo_remove_layer</a>
+<li><a href="#undo_replace_image">undo_replace_image</a>
+<li><a href="#undo_set_layer">undo_set_layer</a>
+<li><a href="#undo_set_mask">undo_set_mask</a>
+<li><a href="#undo_undo">undo_undo</a>
+</ul>
+<li><a href="#Effect">Effect</a>
+<ul>
+<li><a href="#effect_apply">effect_apply</a>
+<li><a href="#effect_apply_step">effect_apply_step</a>
+<li><a href="#effect_apply_to_image">effect_apply_to_image</a>
+<li><a href="#effect_apply_to_target">effect_apply_to_target</a>
+<li><a href="#effect_begin">effect_begin</a>
+<li><a href="#effect_begin_for_preview">effect_begin_for_preview</a>
+<li><a href="#effect_flush">effect_flush</a>
+<li><a href="#effect_free">effect_free</a>
+<li><a href="#effect_load_target">effect_load_target</a>
+<li><a href="#effect_new">effect_new</a>
+<li><a href="#effect_set_target">effect_set_target</a>
+<li><a href="#effect_set_target_grayscale">effect_set_target_grayscale</a>
+<li><a href="#effect_set_target_indexed">effect_set_target_indexed</a>
+<li><a href="#effect_set_target_rgb">effect_set_target_rgb</a>
+</ul>
+<li><a href="#ConvMatr">ConvMatr</a>
+<ul>
+<li><a href="#convmatr_free">convmatr_free</a>
+<li><a href="#convmatr_new">convmatr_new</a>
+<li><a href="#convmatr_new_string">convmatr_new_string</a>
+<li><a href="#get_convmatr">get_convmatr</a>
+<li><a href="#get_convmatr_by_name">get_convmatr_by_name</a>
+<li><a href="#set_convmatr">set_convmatr</a>
+</ul>
+<li><a href="#Curve">Curve</a>
+<ul>
+<li><a href="#curve_add_point">curve_add_point</a>
+<li><a href="#curve_free">curve_free</a>
+<li><a href="#curve_new">curve_new</a>
+<li><a href="#curve_remove_point">curve_remove_point</a>
+<li><a href="#set_color_curve">set_color_curve</a>
+</ul>
+<li><a href="#CurvePoint">CurvePoint</a>
+<ul>
+<li><a href="#curve_point_free">curve_point_free</a>
+<li><a href="#curve_point_new">curve_point_new</a>
+</ul>
+<li><a href="#JEvent">JEvent</a>
+<li><a href="#JList">JList</a>
+<li><a href="#JRect">JRect</a>
+<li><a href="#JRegion">JRegion</a>
+<li><a href="#JWidget">JWidget</a>
+<li><a href="#Index">Index</a>
+</ul>
+
+
+
+<p><br>
+<h1><a name="Introduction">Introduction</a></h1>
+
+<p>
+  ASE has scripting facilities.  You can make a script (a text file)
+  with a set of routines to make images, effects, or anything you
+  think.  ASE uses Lua library to do this, so you should know program
+  in Lua, anyway, it's really simple, so you'll not have any
+  inconvenient.
+
+<p>
+  The complete reference of Lua language is in <a href="lua-5.0.pdf">lua-5.0.pdf</a>. Also, you
+  need a text editor to write Lua scripts (the Windows Notepad can
+  be used).
+
+<p>
+<br><center><h2><a name="Warning about Lua">Warning about Lua</a></h2></center><p>
+
+<p>
+  You should known that ASE uses a patched version of Lua, where you
+  can use the != operator instead of ~=
+<blockquote class="code"><pre>
+    if current_sprite != nil then
+      -- we can use the current_sprite variable...
+    end
+</pre></blockquote>
+
+
+<p><br>
+<h1><a name="Basic Lua Programming">Basic Lua Programming</a></h1>
+
+<p>
+<br><center><h2><a name="Comments">Comments</a></h2></center><p>
+
+<p>
+  Comments start with --
+<blockquote class="code"><pre>
+    -- this line will be never parsed
+</pre></blockquote>
+  Or you can comment multiple lines
+<blockquote class="code"><pre>
+    --[[
+    blah blah blah...
+    ]]--
+</pre></blockquote>
+<br><center><h2><a name="Example 1">Example 1</a></h2></center><p>
+<blockquote class="code"><pre>
+    local a = 4
+    local b = 5
+    print ("a+b is: " .. (a+b))
+</pre></blockquote>
+
+<p>
+  Here we define two variables "a" and "b" with the values "4" and "5"
+  respectively.  Then we print the string "a+b is: " follower by the
+  result of the operation a+b (4+5) that is 9, so the final message is:
+<blockquote class="text"><pre>
+    a+b is: 9
+</pre></blockquote>
+  Also we could use:
+<blockquote class="code"><pre>
+    print (a.."+"..b.." is: "..(a+b))
+</pre></blockquote>
+  To print:
+<blockquote class="text"><pre>
+    4+5 is: 9
+</pre></blockquote>
+<br><center><h2><a name="Example 2">Example 2</a></h2></center><p>
+<blockquote class="code"><pre>
+    function add (a, b)
+      return a+b
+    end
+    print ("1+2 = " .. add (1, 2))
+</pre></blockquote>
+  With the "function" keyword you define a new function, in this case
+  the "add" function, the names between parenthesis indicate the
+  arguments (parameters) that you must give to that routine.
+
+<p>
+<br><center><h2><a name="Example 3">Example 3</a></h2></center><p>
+<blockquote class="code"><pre>
+    for c = 1, 10 do
+      print (c)
+    end
+</pre></blockquote>
+  This repeat the block between the "do" keyword and the "end" keyword
+  10 times (from 1 to 10 inclusive).
+
+<p>
+  So this print:
+<blockquote class="text"><pre>
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    10
+</pre></blockquote>
+<br><center><h2><a name="Example 4">Example 4</a></h2></center><p>
+<blockquote class="code"><pre>
+    for c = 1, 10 do
+      if c == 5 then
+        break
+      end
+      print (c)
+    end
+</pre></blockquote>
+  In this case when "c" come to 5 the for is breaked so the other
+  iterations aren't made.  This print:
+<blockquote class="text"><pre>
+    1
+    2
+    3
+    4
+</pre></blockquote>
+<br><center><h2><a name="Example 5">Example 5</a></h2></center><p>
+<blockquote class="code"><pre>
+    for c = 1, 5 do
+      if c != 3 then
+        print ("c isn't 3 (c is " .. c .. ")")
+      else
+        print ("c is 3")
+      end
+    end
+</pre></blockquote>
+  The != operator means "not equal" (negation of equality).  You can
+  use the original Lua operator ~= too.
+
+<p>
+  This print:
+<blockquote class="text"><pre>
+    c isn't 3 (c is 1)
+    c isn't 3 (c is 2)
+    c is 3
+    c isn't 3 (c is 4)
+    c isn't 3 (c is 5)
+</pre></blockquote>
+<br><center><h2><a name="Example 6">Example 6</a></h2></center><p>
+<blockquote class="code"><pre>
+    local done = false
+    local a = 1
+    while not done do
+      print (a)
+      if a == 3 then
+        done = true
+      end
+      a = a + 1
+    end
+</pre></blockquote>
+  This print:
+<blockquote class="text"><pre>
+    1
+    2
+    3
+</pre></blockquote>
+  And can be implemented in this way too:
+<blockquote class="code"><pre>
+    local a = 1
+    while a &lt;= 3 do
+      print (a)
+      a = a + 1
+    end
+</pre></blockquote>
+
+
+<p><br>
+<h1><a name="ImgType">ImgType</a></h1>
+
+<p>
+  The imgtype (image-type) is the format of each pixel in a image.
+  Sprites have a lot of images, but all images must have the same
+  imgtype. The know imgtypes are: RGB, Grayscale, Indexed, Bitmap.
+
+<p>
+<br><center><h2><a name="IMAGE_RGB">IMAGE_RGB</a></h2></center><p>
+
+<p>
+  Means that the image have four components (channels or bytes) per
+  pixel, where the values of these components can be between 0 and 255
+  (256 differents tones), where 255 the maximum intensity.
+
+<p>
+  RGB is RGBA really:
+<ul><li>
+    R: Red.
+<li>
+    G: Green.
+<li>
+    B: Blue.
+<li>
+    A: Alpha (transparency or opacity).
+</ul>
+  (0,0,0,0) is mask color, (0,0,0,255) is black, and (255,255,255,255)
+  is white.
+
+<p>
+<br><center><h2><a name="IMAGE_GRAYSCALE">IMAGE_GRAYSCALE</a></h2></center><p>
+
+<p>
+  The image has two channels (two bytes) per pixel.
+<ul><li>
+    K: Luminance (or black channel)
+<li>
+    A: Alpha (transparency or opacity).
+</ul>
+  (0,0) is mask color, (0,255) is black, (255,255) is white.
+
+<p>
+<br><center><h2><a name="IMAGE_INDEXED">IMAGE_INDEXED</a></h2></center><p>
+
+<p>
+  Image uses one byte per pixel:
+<ul><li>
+    Index: index of the color that we must use from the color-palette.
+</ul>
+
+<p>
+  In this imgtype, each pixel hasn't the color information, only has a
+  reference to the color-palette (from 0 to 255, 256 colors), so the
+  RGB information about the color is found in the color-palette and
+  not in the image.
+
+<p>
+  The index=0 is the mask color.
+
+<p>
+<br><center><h2><a name="IMAGE_BITMAP">IMAGE_BITMAP</a></h2></center><p>
+
+<p>
+  An internal imgtype to handle masks, where a pixel is a bit, and 8
+  pixels are a byte. 1 means selected, 0 deselected.
+
+
+
+<p><br>
+<h1><a name="Standard routines">Standard routines</a></h1>
+
+<p><br>
+<div class="al-api"><b>double <a name="MAX">MAX</a> (double x, double y);</b></div><br>
+  Returns the maximum value.
+
+<p><br>
+<div class="al-api"><b>double <a name="MIN">MIN</a> (double x, double y);</b></div><br>
+  Returns the minimum value.
+
+<p><br>
+<div class="al-api"><b>double <a name="MID">MID</a> (double x, double y, double z);</b></div><br>
+  Limits the y value to x and z. 
+
+<p><br>
+<div class="al-api"><b>void <a name="include">include</a> (const char *filename);</b></div><br>
+<div class="al-api-cont"><b>void <a name="dofile">dofile</a> (const char *filename);</b></div><br>
+  Process the script that is in the file with the given filename. It's
+  searched in the current and in the "data/scripts" directories.
+
+<p><br>
+<div class="al-api"><b>void <a name="print">print</a> (const char *buf);</b></div><br>
+  Prints a message in the console, this is useful mainly to debug
+  scripts or to show errors.
+
+<p><br>
+<div class="al-api"><b>double <a name="rand">rand</a> (double min, double max);</b></div><br>
+  Returns a random number between min and max values.
+
+
+
+<p><br>
+<h1><a name="String routines">String routines</a></h1>
+
+<p><br>
+<div class="al-api"><b>const char *<a name="_">_</a> (const char *msgid);</b></div><br>
+  Tries to translate the string msgid to the current language, the
+  entry must exists in the .po file.
+
+<p><br>
+<div class="al-api"><b>int <a name="strcmp">strcmp</a> (const char *s1, const char *s2);</b></div><br>
+  Compares the two strings s1 and s2. It returns an integer less than,
+  equal to, or greater than zero if s1 is found, respectively, to be
+  less than, to match, or be greater than s2.
+
+
+
+<p><br>
+<h1><a name="Math routines">Math routines</a></h1>
+
+<p>
+<br><center><h2><a name="Constants">Constants</a></h2></center><p>
+
+<p>
+  PI: the ratio of a circle's circumference to its diameter (3.141592...).
+
+<p>
+<br><center><h2><a name="Routines">Routines</a></h2></center><p>
+
+<p><br>
+<div class="al-api"><b>double <a name="fabs">fabs</a> (double x);</b></div><br>
+  Return the absolute value of the number x.
+
+<p><br>
+<div class="al-api"><b>double <a name="ceil">ceil</a> (double x);</b></div><br>
+  This funtion rounds x up to the nearest integer.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#floor">floor</a>.</blockquote>
+<div class="al-api"><b>double <a name="floor">floor</a> (double x);</b></div><br>
+  This funtion rounds x down to the nearest integer.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#ceil">ceil</a>.</blockquote>
+<div class="al-api"><b>double <a name="exp">exp</a> (double x);</b></div><br>
+  Returns the value of e (the base of natural logarithms) raised to
+  the power of x.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#log">log</a>.</blockquote>
+<div class="al-api"><b>double <a name="log">log</a> (double x);</b></div><br>
+  Returns the natural logarithm of x.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#exp">exp</a>,
+<a class="xref" href="#log10">log10</a>.</blockquote>
+<div class="al-api"><b>double <a name="log10">log10</a> (double x);</b></div><br>
+  Returns the base-10 logarithm of x.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#log">log</a>.</blockquote>
+<div class="al-api"><b>double <a name="pow">pow</a> (double x, double y);</b></div><br>
+  Returns the value of x raised to the power of y.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#sqrt">sqrt</a>.</blockquote>
+<div class="al-api"><b>double <a name="sqrt">sqrt</a> (double x);</b></div><br>
+  Returns the non-negative square root of x.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#hypot">hypot</a>,
+<a class="xref" href="#pow">pow</a>.</blockquote>
+<div class="al-api"><b>double <a name="hypot">hypot</a> (double x, double y);</b></div><br>
+  Returns the sqrt(x*x + y*y).  This is the length of the hypotenuse
+  of a right-angle triangle with sides of length x and y, or the
+  distance of the point (x, y) from the origin.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#sqrt">sqrt</a>.</blockquote>
+<div class="al-api"><b>double <a name="cos">cos</a> (double x);</b></div><br>
+  Returns the cosine of x, where x is given in radians.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#sin">sin</a>,
+<a class="xref" href="#tan">tan</a>,
+<a class="xref" href="#acos">acos</a>.</blockquote>
+<div class="al-api"><b>double <a name="sin">sin</a> (double x);</b></div><br>
+  Returns the sine of x, where x is given in radians.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#cos">cos</a>,
+<a class="xref" href="#tan">tan</a>,
+<a class="xref" href="#asin">asin</a>.</blockquote>
+<div class="al-api"><b>double <a name="tan">tan</a> (double x);</b></div><br>
+  Returns the tangent of x, where x is given in radians.
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#cos">cos</a>,
+<a class="xref" href="#sin">sin</a>,
+<a class="xref" href="#atan">atan</a>.</blockquote>
+<div class="al-api"><b>double <a name="acos">acos</a> (double x);</b></div><br>
+  Returns the arc cosine in radians and the value is mathematically
+  defined to be between 0 and PI (inclusive).
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#cos">cos</a>.</blockquote>
+<div class="al-api"><b>double <a name="asin">asin</a> (double x);</b></div><br>
+  Returns the arc sine in radians and the value is mathematically
+  defined to be between -PI/2 and PI/2 (inclusive).
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#sin">sin</a>.</blockquote>
+<div class="al-api"><b>double <a name="atan">atan</a> (double x);</b></div><br>
+  Returns the arc tangent in radians and the value is mathematically
+  defined to be between -PI/2 and PI/2 (inclusive).
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#tan">tan</a>,
+<a class="xref" href="#atan2">atan2</a>.</blockquote>
+<div class="al-api"><b>double <a name="atan2">atan2</a> (double y, double x);</b></div><br>
+  Returns the result in radians, which is between -PI and PI
+  (inclusive).
+
+
+<blockquote class="xref"><em><b>See also:</b></em>
+<a class="xref" href="#atan">atan</a>.</blockquote>
+<div class="al-api"><b>double <a name="cosh">cosh</a> (double x);</b></div><br>
+  Returns the hyperbolic cosine of x, which is defined mathematically
+  as (exp(x) + exp(-x)) / 2.
+
+<p><br>
+<div class="al-api"><b>double <a name="sinh">sinh</a> (double x);</b></div><br>
+  Returns the hyperbolic sine of x, which is defined mathematically as
+  (exp(x) - exp(-x)) / 2.
+
+<p><br>
+<div class="al-api"><b>double <a name="tanh">tanh</a> (double x);</b></div><br>
+  Returns the hyperbolic tangent of x, which is defined mathematically
+  as sinh(x) / cosh(x).
+
+
+
+<p><br>
+<h1><a name="File routines">File routines</a></h1>
+
+<p><br>
+<div class="al-api"><b>bool <a name="file_exists">file_exists</a> (const char *filename);</b></div><br>
+  Checks whether a file matching the given name exists, returning true
+  if it does.
+
+<p><br>
+<div class="al-api"><b>char *<a name="get_filename">get_filename</a> (const char *filename);</b></div><br>
+  When passed a completely specified file path, this returns a pointer
+  to the filename portion. Both ´\´ and ´/´ are recognized as directory
+  separators.
+  
+
+
+<p><br>
+<h1><a name="Objects">Objects</a></h1>
+
+<p>
+  There are a special type of variables in Lua scripts: objects
+  (represented with user-data).  Each object can be of some of these
+  types:
+<ul><li>
+  Graphics objects: Image, Frame, Layer, Mask, Path, Sprite, Stock, Undo.
+<li>
+  Effect objects: Effect, ConvMatr, Curve, CurvePoint.
+<li>
+  GUI objects: JEvent, JList, JRect, JRegion, JWidget.
+</ul>
+
+
+<p><br>
+<h1><a name="Image">Image</a></h1>
+
+<p>
+  An image, has width and height, an image-type (RGB, Grayscale, etc.),
+  and contains the image data (pixels, pixmap, or bitmap).
+
+<p>
+<br><center><h2><a name="Image fields">Image fields</a></h2></center><p>
+<ul><li>
+  [number] image.imgtype<br>
+    See sprite.imgtype
+<li>
+  [number] image.w<br>
+  [number] image.h<br>
+    The width and height (in pixels) of this image.
+</ul>
+<br><center><h2><a name="Image methods">Image methods</a></h2></center><p>
+
+<p><br>
+<div class="al-api"><b>Image *<a name="image_new">image_new</a> (int imgtype, int w, int h);</b></div><br>
+  Creates a new image
+
+<p><br>
+<div class="al-api"><b>Image *<a name="image_new_copy">image_new_copy</a> (Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_free">image_free</a> (Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="image_getpixel">image_getpixel</a> (Image *image, int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_putpixel">image_putpixel</a> (Image *image, int x, int y, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_clear">image_clear</a> (Image *image, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_copy">image_copy</a> (Image *dst, Image *src, int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_merge">image_merge</a> (Image *dst, Image *src, int x, int y, int opacity, int blend_mode);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Image *<a name="image_crop">image_crop</a> (Image *image, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_hline">image_hline</a> (Image *image, int x1, int y, int x2, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_vline">image_vline</a> (Image *image, int x, int y1, int y2, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_rect">image_rect</a> (Image *image, int x1, int y1, int x2, int y2, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_rectfill">image_rectfill</a> (Image *image, int x1, int y1, int x2, int y2, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_line">image_line</a> (Image *image, int x1, int y1, int x2, int y2, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_ellipse">image_ellipse</a> (Image *image, int x1, int y1, int x2, int y2, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="image_ellipsefill">image_ellipsefill</a> (Image *image, int x1, int y1, int x2, int y2, int color);</b></div><br>
+                        
+<p><br>
+<div class="al-api"><b>void <a name="image_convert">image_convert</a> (Image *dst, Image *src);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="image_count_diff">image_count_diff</a> (Image *i1, Image *i2);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Frame">Frame</a></h1>
+
+<p>
+  A frame of animation, it contains the position, opacity and a reference
+  (by index) to some image in the image's stock of the layer where this
+  frame is. Remember this, a frame doesn't contain the image, only a
+  reference to it.
+
+<p><br>
+<div class="al-api"><b>Frame *<a name="frame_new">frame_new</a> (int frpos, int image, int x, int y, int opacity);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Frame *<a name="frame_new_copy">frame_new_copy</a> (Frame *frame);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="frame_free">frame_free</a> (Frame *frame);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Frame *<a name="frame_is_link">frame_is_link</a> (Frame *frame, Layer *layer);</b></div><br>
+ 
+<p><br>
+<div class="al-api"><b>void <a name="frame_set_frpos">frame_set_frpos</a> (Frame *frame, int frpos);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="frame_set_image">frame_set_image</a> (Frame *frame, int image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="frame_set_position">frame_set_position</a> (Frame *frame, int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="frame_set_opacity">frame_set_opacity</a> (Frame *frame, int opacity);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Layer">Layer</a></h1>
+
+<p>
+  A layer can be two things: a normal layer (also called image layer),
+  or a layer set.  A layer set is a group of child layers (like
+  "sprite.set").  A normal layer is a complete different thing.
+
+<p>
+  A normal layer has a stock of images and a list of frames, each
+  frame has a reference to the image's stock, so each frame uses some
+  image of the stock.  If two frames uses the same stock images, the
+  first frame is called the "original frame" and all other frames are
+  called "links".
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_new">layer_new</a> (int imgtype);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_set_new">layer_set_new</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_new_copy">layer_new_copy</a> (Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_new_with_image">layer_new_with_image</a> (int imgtype, int x, int y, int w, int h,
+                             int frpos);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_free">layer_free</a> (Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="layer_is_image">layer_is_image</a> (Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="layer_is_set">layer_is_set</a> (Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_get_prev">layer_get_prev</a> (Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_get_next">layer_get_next</a> (Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_set_name">layer_set_name</a> (Layer *layer, const char *name);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_set_blend_mode">layer_set_blend_mode</a> (Layer *layer, int blend_mode);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_add_frame">layer_add_frame</a> (Layer *layer, Frame *frame);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_remove_frame">layer_remove_frame</a> (Layer *layer, Frame *frame);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Frame *<a name="layer_get_frame">layer_get_frame</a> (Layer *layer, int frpos);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_add_layer">layer_add_layer</a> (Layer *set, Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_remove_layer">layer_remove_layer</a> (Layer *set, Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_move_layer">layer_move_layer</a> (Layer *set, Layer *layer, Layer *after);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="layer_render">layer_render</a> (Layer *layer, Image *image, int x, int y, int frpos);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Layer *<a name="layer_flatten">layer_flatten</a> (Layer *layer, int imgtype, int x, int y, int w, int h,
+                      int frmin, int frmax);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Mask">Mask</a></h1>
+
+<p><br>
+<div class="al-api"><b>Mask *<a name="mask_new">mask_new</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Mask *<a name="mask_new_copy">mask_new_copy</a> (Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_free">mask_free</a> (Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="mask_is_empty">mask_is_empty</a> (Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_set_name">mask_set_name</a> (Mask *mask, const char *name);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_move">mask_move</a> (Mask *mask, int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_none">mask_none</a> (Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_invert">mask_invert</a> (Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_replace">mask_replace</a> (Mask *mask, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_union">mask_union</a> (Mask *mask, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_subtract">mask_subtract</a> (Mask *mask, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_intersect">mask_intersect</a> (Mask *mask, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_merge">mask_merge</a> (Mask *dst, Mask *src);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_by_color">mask_by_color</a> (Mask *mask, Image *image, int color, int fuzziness);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="mask_crop">mask_crop</a> (Mask *mask, Image *image);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Path">Path</a></h1>
+
+<p><br>
+<div class="al-api"><b>Path *<a name="path_new">path_new</a> (const char *name);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_free">path_free</a> (Path *path);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_set_join">path_set_join</a> (Path *path, int join);</b></div><br>
+<ul><li>
+  PATH_JOIN_MITER<br>
+<li>
+  PATH_JOIN_ROUND<br>
+<li>
+  PATH_JOIN_BEVEL<br>
+</ul>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_set_cap">path_set_cap</a> (Path *path, int cap);</b></div><br>
+<ul><li>
+  PATH_CAP_BUTT<br>
+<li>
+  PATH_CAP_ROUND<br>
+<li>
+  PATH_CAP_SQUARE<br>
+</ul>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_moveto">path_moveto</a> (Path *path, double x, double y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_lineto">path_lineto</a> (Path *path, double x, double y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_curveto">path_curveto</a> (Path *path, double control_x1, double control_y1, double control_x2, double control_y2, double end_x, double end_y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_close">path_close</a> (Path *path);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_move">path_move</a> (Path *path, double x, double y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_stroke">path_stroke</a> (Path *path, Image *image, int color, double brush_size);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="path_fill">path_fill</a> (Path *path, Image *image, int color);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Sprite">Sprite</a></h1>
+
+<p>
+  The sprite is the main object of ASE (remember Allegro "Sprite"
+  Editor), and it's the structure that contains all data: layers,
+  frames, stocks, images, masks, paths, and undo information are
+  inside the same sprite.
+
+<p>
+  There are a global variable of Sprite type: current_sprite.  This
+  could be "nil" if there aren't a selected sprite in the moment.
+
+<p>
+  You should known about the difference between the "current_sprite"
+  in scripts and the sprite in the current editor.  Because when you
+  select a sprite with "set_current_sprite", only the "current_sprite"
+  global pointer is set, but the sprite in the current editor is
+  maintain intact.  So when ASE runs a script, the "current_sprite"
+  will be pointing to the sprite in the current editor, but if you
+  change the "current_sprite" (with "set_current_sprite" routine)
+  you'll not get that sprite in the editor (use "sprite_show" function
+  instead).
+
+<p><br>
+<div class="al-api"><b>Sprite *<a name="sprite_new">sprite_new</a> (int imgtype, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Sprite *<a name="sprite_new_copy">sprite_new_copy</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Sprite *<a name="sprite_new_flatten_copy">sprite_new_flatten_copy</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Sprite *<a name="sprite_new_with_layer">sprite_new_with_layer</a> (int imgtype, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_free">sprite_free</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_lock">sprite_lock</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_unlock">sprite_unlock</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="sprite_is_locked">sprite_is_locked</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="sprite_is_modified">sprite_is_modified</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_was_saved">sprite_was_saved</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_filename">sprite_set_filename</a> (Sprite *sprite, const char *filename);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_size">sprite_set_size</a> (Sprite *sprite, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_frames">sprite_set_frames</a> (Sprite *sprite, int frames);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_speed">sprite_set_speed</a> (Sprite *sprite, int speed);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_path">sprite_set_path</a> (Sprite *sprite, Path *path);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_mask">sprite_set_mask</a> (Sprite *sprite, Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_layer">sprite_set_layer</a> (Sprite *sprite, Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_frpos">sprite_set_frpos</a> (Sprite *sprite, int frpos);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_set_imgtype">sprite_set_imgtype</a> (Sprite *sprite, int imgtype, int dithering_method);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_add_path">sprite_add_path</a> (Sprite *sprite, Path *path);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_remove_path">sprite_remove_path</a> (Sprite *sprite, Path *path);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_add_mask">sprite_add_mask</a> (Sprite *sprite, Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_remove_mask">sprite_remove_mask</a> (Sprite *sprite, Mask *mask);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Mask *<a name="sprite_request_mask">sprite_request_mask</a> (Sprite *sprite, const char *name);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="sprite_render">sprite_render</a> (Sprite *sprite, Image *image, int x, int y);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Stock">Stock</a></h1>
+
+<p>
+  Stock of images.  Each image layer has its own image's stock to
+  provide images to its frames.
+
+<p><br>
+<div class="al-api"><b>Stock *<a name="stock_new">stock_new</a> (int imgtype);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Stock *<a name="stock_new_copy">stock_new_copy</a> (Stock *stock);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="stock_free">stock_free</a> (Stock *stock);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="stock_add_image">stock_add_image</a> (Stock *stock, Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="stock_remove_image">stock_remove_image</a> (Stock *stock, Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="stock_replace_image">stock_replace_image</a> (Stock *stock, int index, Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>Image *<a name="stock_get_image">stock_get_image</a> (Stock *stock, int index);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Undo">Undo</a></h1>
+
+<p><br>
+<div class="al-api"><b>Undo *<a name="undo_new">undo_new</a> (Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_free">undo_free</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_enable">undo_enable</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_disable">undo_disable</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="undo_is_enabled">undo_is_enabled</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="undo_is_disabled">undo_is_disabled</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="undo_can_undo">undo_can_undo</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="undo_can_redo">undo_can_redo</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_undo">undo_undo</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_redo">undo_redo</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_open">undo_open</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_close">undo_close</a> (Undo *undo);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_image">undo_image</a> (Undo *undo, Image *image, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_flip">undo_flip</a> (Undo *undo, Image *image, int x1, int y1, int x2, int y2,
+                int horz);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_add_image">undo_add_image</a> (Undo *undo, Stock *stock, Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_remove_image">undo_remove_image</a> (Undo *undo, Stock *stock, Image *image);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_replace_image">undo_replace_image</a> (Undo *undo, Stock *stock, int index);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_add_frame">undo_add_frame</a> (Undo *undo, Layer *layer, Frame *frame);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_remove_frame">undo_remove_frame</a> (Undo *undo, Layer *layer, Frame *frame);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_add_layer">undo_add_layer</a> (Undo *undo, Layer *set, Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_remove_layer">undo_remove_layer</a> (Undo *undo, Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_move_layer">undo_move_layer</a> (Undo *undo, Layer *layer);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_set_layer">undo_set_layer</a> (Undo *undo, Sprite *sprite);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="undo_set_mask">undo_set_mask</a> (Undo *undo, Sprite *sprite);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Effect">Effect</a></h1>
+
+<p><br>
+<div class="al-api"><b>Effect *<a name="effect_new">effect_new</a> (Sprite *sprite, const char *name);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_free">effect_free</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_load_target">effect_load_target</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_set_target">effect_set_target</a> (Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_set_target_rgb">effect_set_target_rgb</a> (Effect *effect, bool r, bool g, bool b, bool a);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_set_target_grayscale">effect_set_target_grayscale</a> (Effect *effect, bool k, bool a);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_set_target_indexed">effect_set_target_indexed</a> (Effect *effect, bool r, bool g, bool b, bool index);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_begin">effect_begin</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_begin_for_preview">effect_begin_for_preview</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="effect_apply_step">effect_apply_step</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_apply">effect_apply</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_flush">effect_flush</a> (Effect *effect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_apply_to_image">effect_apply_to_image</a> (Effect *effect, Image *image, int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="effect_apply_to_target">effect_apply_to_target</a> (Effect *effect);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="ConvMatr">ConvMatr</a></h1>
+
+<p><br>
+<div class="al-api"><b>ConvMatr *<a name="convmatr_new">convmatr_new</a> (int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>ConvMatr *<a name="convmatr_new_string">convmatr_new_string</a> (const char *format);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="convmatr_free">convmatr_free</a> (ConvMatr *convmatr);</b></div><br>
+
+<p>
+<br><center><h2><a name="Convolution Matrix Effect">Convolution Matrix Effect</a></h2></center><p>
+
+<p><br>
+<div class="al-api"><b>void <a name="set_convmatr">set_convmatr</a> (ConvMatr *convmatr);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>ConvMatr *<a name="get_convmatr">get_convmatr</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>ConvMatr *<a name="get_convmatr_by_name">get_convmatr_by_name</a> (const char *name);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Curve">Curve</a></h1>
+
+<p>
+  Curve is a type to represent a function y=f(x). It's mainly used in
+  color-curve effect.
+
+<p><br>
+<div class="al-api"><b>Curve *<a name="curve_new">curve_new</a> (int type);</b></div><br>
+  Creates a new curve, type can be CURVE_LINEAR or CURVE_SPLINE.
+
+<p><br>
+<div class="al-api"><b>void <a name="curve_free">curve_free</a> (Curve *curve);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="curve_add_point">curve_add_point</a> (Curve *curve, CurvePoint *point);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="curve_remove_point">curve_remove_point</a> (Curve *curve, CurvePoint *point);</b></div><br>
+
+<p>
+<br><center><h2><a name="Color Curve Effect">Color Curve Effect</a></h2></center><p>
+
+<p><br>
+<div class="al-api"><b>void <a name="set_color_curve">set_color_curve</a> (Curve *curve);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="CurvePoint">CurvePoint</a></h1>
+
+<p><br>
+<div class="al-api"><b>CurvePoint *<a name="curve_point_new">curve_point_new</a> (int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="curve_point_free">curve_point_free</a> (CurvePoint *point);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="JEvent">JEvent</a></h1>
+
+
+
+<p><br>
+<h1><a name="JList">JList</a></h1>
+
+
+
+<p><br>
+<h1><a name="JRect">JRect</a></h1>
+
+<p>
+<br><center><h2><a name="JRect fields">JRect fields</a></h2></center><p>
+<ul><li>
+  [number] rect.x<br>
+  [number] rect.y<br>
+    Position of the upper-left corner of the rectangle.
+<li>
+  [number] rect.w<br>
+  [number] rect.h<br>
+    Size of the rectangle (width and height).
+</ul>
+
+
+
+<p><br>
+<h1><a name="JRegion">JRegion</a></h1>
+
+
+
+<p><br>
+<h1><a name="JWidget">JWidget</a></h1>
+
+
+
+<p><br>
+<h1><a name="Index">Index</a></h1>
+
+<p>
+<li><a href="#MAX">MAX</a>
+<li><a href="#MID">MID</a>
+<li><a href="#MIN">MIN</a>
+<li><a href="#_">_</a>
+<li><a href="#acos">acos</a>
+<li><a href="#asin">asin</a>
+<li><a href="#atan">atan</a>
+<li><a href="#atan2">atan2</a>
+<li><a href="#ceil">ceil</a>
+<li><a href="#convmatr_free">convmatr_free</a>
+<li><a href="#convmatr_new">convmatr_new</a>
+<li><a href="#convmatr_new_string">convmatr_new_string</a>
+<li><a href="#cos">cos</a>
+<li><a href="#cosh">cosh</a>
+<li><a href="#curve_add_point">curve_add_point</a>
+<li><a href="#curve_free">curve_free</a>
+<li><a href="#curve_new">curve_new</a>
+<li><a href="#curve_point_free">curve_point_free</a>
+<li><a href="#curve_point_new">curve_point_new</a>
+<li><a href="#curve_remove_point">curve_remove_point</a>
+<li><a href="#dofile">dofile</a>
+<li><a href="#effect_apply">effect_apply</a>
+<li><a href="#effect_apply_step">effect_apply_step</a>
+<li><a href="#effect_apply_to_image">effect_apply_to_image</a>
+<li><a href="#effect_apply_to_target">effect_apply_to_target</a>
+<li><a href="#effect_begin">effect_begin</a>
+<li><a href="#effect_begin_for_preview">effect_begin_for_preview</a>
+<li><a href="#effect_flush">effect_flush</a>
+<li><a href="#effect_free">effect_free</a>
+<li><a href="#effect_load_target">effect_load_target</a>
+<li><a href="#effect_new">effect_new</a>
+<li><a href="#effect_set_target">effect_set_target</a>
+<li><a href="#effect_set_target_grayscale">effect_set_target_grayscale</a>
+<li><a href="#effect_set_target_indexed">effect_set_target_indexed</a>
+<li><a href="#effect_set_target_rgb">effect_set_target_rgb</a>
+<li><a href="#exp">exp</a>
+<li><a href="#fabs">fabs</a>
+<li><a href="#file_exists">file_exists</a>
+<li><a href="#floor">floor</a>
+<li><a href="#frame_free">frame_free</a>
+<li><a href="#frame_is_link">frame_is_link</a>
+<li><a href="#frame_new">frame_new</a>
+<li><a href="#frame_new_copy">frame_new_copy</a>
+<li><a href="#frame_set_frpos">frame_set_frpos</a>
+<li><a href="#frame_set_image">frame_set_image</a>
+<li><a href="#frame_set_opacity">frame_set_opacity</a>
+<li><a href="#frame_set_position">frame_set_position</a>
+<li><a href="#get_convmatr">get_convmatr</a>
+<li><a href="#get_convmatr_by_name">get_convmatr_by_name</a>
+<li><a href="#get_filename">get_filename</a>
+<li><a href="#hypot">hypot</a>
+<li><a href="#image_clear">image_clear</a>
+<li><a href="#image_convert">image_convert</a>
+<li><a href="#image_copy">image_copy</a>
+<li><a href="#image_count_diff">image_count_diff</a>
+<li><a href="#image_crop">image_crop</a>
+<li><a href="#image_ellipse">image_ellipse</a>
+<li><a href="#image_ellipsefill">image_ellipsefill</a>
+<li><a href="#image_free">image_free</a>
+<li><a href="#image_getpixel">image_getpixel</a>
+<li><a href="#image_hline">image_hline</a>
+<li><a href="#image_line">image_line</a>
+<li><a href="#image_merge">image_merge</a>
+<li><a href="#image_new">image_new</a>
+<li><a href="#image_new_copy">image_new_copy</a>
+<li><a href="#image_putpixel">image_putpixel</a>
+<li><a href="#image_rect">image_rect</a>
+<li><a href="#image_rectfill">image_rectfill</a>
+<li><a href="#image_vline">image_vline</a>
+<li><a href="#include">include</a>
+<li><a href="#layer_add_frame">layer_add_frame</a>
+<li><a href="#layer_add_layer">layer_add_layer</a>
+<li><a href="#layer_flatten">layer_flatten</a>
+<li><a href="#layer_free">layer_free</a>
+<li><a href="#layer_get_frame">layer_get_frame</a>
+<li><a href="#layer_get_next">layer_get_next</a>
+<li><a href="#layer_get_prev">layer_get_prev</a>
+<li><a href="#layer_is_image">layer_is_image</a>
+<li><a href="#layer_is_set">layer_is_set</a>
+<li><a href="#layer_move_layer">layer_move_layer</a>
+<li><a href="#layer_new">layer_new</a>
+<li><a href="#layer_new_copy">layer_new_copy</a>
+<li><a href="#layer_new_with_image">layer_new_with_image</a>
+<li><a href="#layer_remove_frame">layer_remove_frame</a>
+<li><a href="#layer_remove_layer">layer_remove_layer</a>
+<li><a href="#layer_render">layer_render</a>
+<li><a href="#layer_set_blend_mode">layer_set_blend_mode</a>
+<li><a href="#layer_set_name">layer_set_name</a>
+<li><a href="#layer_set_new">layer_set_new</a>
+<li><a href="#log">log</a>
+<li><a href="#log10">log10</a>
+<li><a href="#mask_by_color">mask_by_color</a>
+<li><a href="#mask_crop">mask_crop</a>
+<li><a href="#mask_free">mask_free</a>
+<li><a href="#mask_intersect">mask_intersect</a>
+<li><a href="#mask_invert">mask_invert</a>
+<li><a href="#mask_is_empty">mask_is_empty</a>
+<li><a href="#mask_merge">mask_merge</a>
+<li><a href="#mask_move">mask_move</a>
+<li><a href="#mask_new">mask_new</a>
+<li><a href="#mask_new_copy">mask_new_copy</a>
+<li><a href="#mask_none">mask_none</a>
+<li><a href="#mask_replace">mask_replace</a>
+<li><a href="#mask_set_name">mask_set_name</a>
+<li><a href="#mask_subtract">mask_subtract</a>
+<li><a href="#mask_union">mask_union</a>
+<li><a href="#path_close">path_close</a>
+<li><a href="#path_curveto">path_curveto</a>
+<li><a href="#path_fill">path_fill</a>
+<li><a href="#path_free">path_free</a>
+<li><a href="#path_lineto">path_lineto</a>
+<li><a href="#path_move">path_move</a>
+<li><a href="#path_moveto">path_moveto</a>
+<li><a href="#path_new">path_new</a>
+<li><a href="#path_set_cap">path_set_cap</a>
+<li><a href="#path_set_join">path_set_join</a>
+<li><a href="#path_stroke">path_stroke</a>
+<li><a href="#pow">pow</a>
+<li><a href="#print">print</a>
+<li><a href="#rand">rand</a>
+<li><a href="#set_color_curve">set_color_curve</a>
+<li><a href="#set_convmatr">set_convmatr</a>
+<li><a href="#sin">sin</a>
+<li><a href="#sinh">sinh</a>
+<li><a href="#sprite_add_mask">sprite_add_mask</a>
+<li><a href="#sprite_add_path">sprite_add_path</a>
+<li><a href="#sprite_free">sprite_free</a>
+<li><a href="#sprite_is_locked">sprite_is_locked</a>
+<li><a href="#sprite_is_modified">sprite_is_modified</a>
+<li><a href="#sprite_lock">sprite_lock</a>
+<li><a href="#sprite_new">sprite_new</a>
+<li><a href="#sprite_new_copy">sprite_new_copy</a>
+<li><a href="#sprite_new_flatten_copy">sprite_new_flatten_copy</a>
+<li><a href="#sprite_new_with_layer">sprite_new_with_layer</a>
+<li><a href="#sprite_remove_mask">sprite_remove_mask</a>
+<li><a href="#sprite_remove_path">sprite_remove_path</a>
+<li><a href="#sprite_render">sprite_render</a>
+<li><a href="#sprite_request_mask">sprite_request_mask</a>
+<li><a href="#sprite_set_filename">sprite_set_filename</a>
+<li><a href="#sprite_set_frames">sprite_set_frames</a>
+<li><a href="#sprite_set_frpos">sprite_set_frpos</a>
+<li><a href="#sprite_set_imgtype">sprite_set_imgtype</a>
+<li><a href="#sprite_set_layer">sprite_set_layer</a>
+<li><a href="#sprite_set_mask">sprite_set_mask</a>
+<li><a href="#sprite_set_path">sprite_set_path</a>
+<li><a href="#sprite_set_size">sprite_set_size</a>
+<li><a href="#sprite_set_speed">sprite_set_speed</a>
+<li><a href="#sprite_unlock">sprite_unlock</a>
+<li><a href="#sprite_was_saved">sprite_was_saved</a>
+<li><a href="#sqrt">sqrt</a>
+<li><a href="#stock_add_image">stock_add_image</a>
+<li><a href="#stock_free">stock_free</a>
+<li><a href="#stock_get_image">stock_get_image</a>
+<li><a href="#stock_new">stock_new</a>
+<li><a href="#stock_new_copy">stock_new_copy</a>
+<li><a href="#stock_remove_image">stock_remove_image</a>
+<li><a href="#stock_replace_image">stock_replace_image</a>
+<li><a href="#strcmp">strcmp</a>
+<li><a href="#tan">tan</a>
+<li><a href="#tanh">tanh</a>
+<li><a href="#undo_add_frame">undo_add_frame</a>
+<li><a href="#undo_add_image">undo_add_image</a>
+<li><a href="#undo_add_layer">undo_add_layer</a>
+<li><a href="#undo_can_redo">undo_can_redo</a>
+<li><a href="#undo_can_undo">undo_can_undo</a>
+<li><a href="#undo_close">undo_close</a>
+<li><a href="#undo_disable">undo_disable</a>
+<li><a href="#undo_enable">undo_enable</a>
+<li><a href="#undo_flip">undo_flip</a>
+<li><a href="#undo_free">undo_free</a>
+<li><a href="#undo_image">undo_image</a>
+<li><a href="#undo_is_disabled">undo_is_disabled</a>
+<li><a href="#undo_is_enabled">undo_is_enabled</a>
+<li><a href="#undo_move_layer">undo_move_layer</a>
+<li><a href="#undo_new">undo_new</a>
+<li><a href="#undo_open">undo_open</a>
+<li><a href="#undo_redo">undo_redo</a>
+<li><a href="#undo_remove_frame">undo_remove_frame</a>
+<li><a href="#undo_remove_image">undo_remove_image</a>
+<li><a href="#undo_remove_layer">undo_remove_layer</a>
+<li><a href="#undo_replace_image">undo_replace_image</a>
+<li><a href="#undo_set_layer">undo_set_layer</a>
+<li><a href="#undo_set_mask">undo_set_mask</a>
+<li><a href="#undo_undo">undo_undo</a>
+
+
+
+
+</body>
+</html>

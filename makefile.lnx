@@ -1,0 +1,57 @@
+# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+
+ifndef CONFIGURED
+include makefile.cfg
+endif
+
+.PHONY = cfgtest
+
+ifndef CONFIGURED
+cfgtest:
+	@echo You must configure ASE: edit \"makefile.cfg\" or run \"fix.sh\" script
+endif
+
+######################################################################
+# Flags for GCC in GNU/Linux system
+
+CFLAGS = 
+LFLAGS = `allegro-config --libs`
+
+######################################################################
+# GCC stuff
+
+CC = gcc
+OBJ = .o
+LIB = .a
+EXE =
+SUBMAKEFILE = makefile.lnx
+OBJ_DIR = obj/unix
+JINETE_SUFFIX = unix
+
+include makefile.lst
+include makefile.gcc
+
+######################################################################
+# General rules
+
+.PHONY = default all clean distclean install uninstall
+
+default: all
+
+all: $(ASE)
+
+clean:
+	-rm -f $(ALL_OBJS) $(ALL_LIBS)
+
+distclean: clean
+	-rm -f $(ASE)
+
+install:
+	cp ase $(DEFAULT_PREFIX)/bin
+	cp -r data $(DEFAULT_PREFIX)/share/ase
+
+uninstall:
+	-rm  -vf $(DEFAULT_PREFIX)/bin/ase
+	-rm -rvf $(DEFAULT_PREFIX)/share/ase
+
+-include makefile.dep

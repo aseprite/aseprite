@@ -1,0 +1,15 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Invert Color") name="invert_color">
+  <box vertical>
+    <box vertical expansive name="target" />
+    <check text=_("&Preview") name="preview" />
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

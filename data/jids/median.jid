@@ -1,0 +1,30 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Median Blur") name="median">
+  <box vertical>
+    <box horizontal>
+      <box horizontal expansive>
+        <box vertical homogeneous>
+          <label text=_("Width:") />
+          <label text=_("Height:") />
+        </box>
+        <box vertical homogeneous expansive>
+          <entry expansive name="width" maxsize=4 />
+          <entry expansive name="height" maxsize=4 />
+        </box>
+      </box>
+      <box vertical>
+        <box name="target" />
+        <check text=_("&Preview") name="preview" />
+        <check text=_("&Tiled") name="tiled" />
+      </box>
+    </box>
+    <box horizontal homogeneous expansive>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

@@ -1,0 +1,60 @@
+# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+
+.PHONY = _default
+_default: default
+
+######################################################################
+# Setup CFLAGS and LFLAGS for GCC
+
+ifndef CONFIGURED
+
+CFLAGS += -I$(JINETE_DIR)/include -I$(JINETE_DIR)/freetype/include -Wall \
+	  -Wno-deprecated-declarations
+LFLAGS := -L$(LIB_DIR) -lji $(LFLAGS)
+
+ifdef PROFILE
+  CFLAGS += -pg
+  LFLAGS += -pg
+else
+ifdef DEBUGMODE
+  CFLAGS += -g
+  LFLAGS += -g
+else
+  CFLAGS += -s -O3
+  LFLAGS += -s -O3
+endif
+endif
+
+endif
+
+######################################################################
+# Rules to make the library
+
+VPATH = $(JINETE_DIR)/src			\
+	$(JINETE_DIR)/src/themes		\
+	$(JINETE_DIR)/freetype/src/base		\
+	$(JINETE_DIR)/freetype/src/autohint	\
+	$(JINETE_DIR)/freetype/src/cache	\
+	$(JINETE_DIR)/freetype/src/cff		\
+	$(JINETE_DIR)/freetype/src/cid		\
+	$(JINETE_DIR)/freetype/src/pcf		\
+	$(JINETE_DIR)/freetype/src/psaux	\
+	$(JINETE_DIR)/freetype/src/pshinter	\
+	$(JINETE_DIR)/freetype/src/psnames	\
+	$(JINETE_DIR)/freetype/src/raster	\
+	$(JINETE_DIR)/freetype/src/sfnt		\
+	$(JINETE_DIR)/freetype/src/smooth	\
+	$(JINETE_DIR)/freetype/src/truetype	\
+	$(JINETE_DIR)/freetype/src/type1	\
+	$(JINETE_DIR)/freetype/src/winfonts	\
+	$(JINETE_DIR)/examples
+
+$(OBJ_DIR)/%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(JINETE_LIB): $(JINETE_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(JINETE_DIR)/examples/%$(EXE): $(OBJ_DIR)/%$(OBJ) $(JINETE_LIB)
+	gcc -o $@ $< $(LFLAGS)

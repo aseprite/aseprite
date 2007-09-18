@@ -1,0 +1,2267 @@
+\input texinfo
+@documentlanguage es
+@setfilename script.info
+@settitle ASE Scripting Manual
+@setchapternewpage odd
+@paragraphindent 0
+@setchapternewpage off
+
+@ifinfo
+This is the Info version of the ASE Scripting manual
+
+By David A. Capello
+@end ifinfo
+
+@node Top, , (dir), (dir)
+@titlepage
+@example
+
+                    ASE Scripting 0.4
+
+                 By David A. Capello, 2005.
+
+@end example
+
+
+#include <std_disclaimer.h>
+
+"I do not accept responsibility for any effects, adverse or otherwise,
+that this code may have on you, your computer, your sanity, your dog,
+and anything else that you can think of. Use it at your own risk."
+
+@end titlepage
+@ifinfo
+@example
+
+                    ASE Scripting 0.4
+
+                 By David A. Capello, 2005.
+
+@end example
+
+
+#include <std_disclaimer.h>
+
+"I do not accept responsibility for any effects, adverse or otherwise,
+that this code may have on you, your computer, your sanity, your dog,
+and anything else that you can think of. Use it at your own risk."
+
+@end ifinfo
+
+
+
+@menu
+* Introduction::            Introduction
+* Basic::                   Basic Lua Programming
+* ImgType::                 ImgType
+* Standard::                Standard routines
+* String::                  String routines
+* Math::                    Math routines
+* File::                    File routines
+* Objects::                 Objects
+* Image::                   Image
+* Frame::                   Frame
+* Layer::                   Layer
+* Mask::                    Mask
+* Path::                    Path
+* Sprite::                  Sprite
+* Stock::                   Stock
+* Undo::                    Undo
+* Effect::                  Effect
+* ConvMatr::                ConvMatr
+* Curve::                   Curve
+* CurvePoint::              CurvePoint
+* JEvent::                  JEvent
+* JList::                   JList
+* JRect::                   JRect
+* JRegion::                 JRegion
+* JWidget::                 JWidget
+* Index::                   Index
+@end menu
+
+
+
+@node Introduction, Basic, , Top
+@chapter Introduction
+
+ASE has scripting facilities.  You can make a script (a text file)
+with a set of routines to make images, effects, or anything you
+think.  ASE uses Lua library to do this, so you should know program
+in Lua, anyway, it's really simple, so you'll not have any
+inconvenient.
+
+The complete reference of Lua language is in lua-5.0.pdf. Also, you
+need a text editor to write Lua scripts (the Windows Notepad can
+be used).
+
+@menu
+* Warning about Lua::
+@end menu
+@node Warning about Lua, Comments, , Introduction
+@section Warning about Lua
+@ftable @asis
+
+You should known that ASE uses a patched version of Lua, where you
+can use the != operator instead of ~=
+@example
+
+if current_sprite != nil then
+  -- we can use the current_sprite variable...
+end
+@end example
+
+
+
+@end ftable
+@node Basic, ImgType, Introduction, Top
+@chapter Basic Lua Programming
+
+@menu
+* Comments::
+* Example 1::
+* Example 2::
+* Example 3::
+* Example 4::
+* Example 5::
+* Example 6::
+@end menu
+@node Comments, Example 1, Warning about Lua, Basic
+@section Comments
+@ftable @asis
+
+Comments start with --
+@example
+
+-- this line will be never parsed
+@end example
+
+Or you can comment multiple lines
+@example
+
+--[[
+blah blah blah...
+]]--
+@end example
+
+@end ftable
+@node Example 1, Example 2, Comments, Basic
+@section Example 1
+@ftable @asis
+@example
+
+local a = 4
+local b = 5
+print ("a+b is: " .. (a+b))
+@end example
+
+
+Here we define two variables "a" and "b" with the values "4" and "5"
+respectively.  Then we print the string "a+b is: " follower by the
+result of the operation a+b (4+5) that is 9, so the final message is:
+@example
+
+a+b is: 9
+@end example
+
+Also we could use:
+@example
+
+print (a.."+"..b.." is: "..(a+b))
+@end example
+
+To print:
+@example
+
+4+5 is: 9
+@end example
+
+@end ftable
+@node Example 2, Example 3, Example 1, Basic
+@section Example 2
+@ftable @asis
+@example
+
+function add (a, b)
+  return a+b
+end
+print ("1+2 = " .. add (1, 2))
+@end example
+
+With the "function" keyword you define a new function, in this case
+the "add" function, the names between parenthesis indicate the
+arguments (parameters) that you must give to that routine.
+
+@end ftable
+@node Example 3, Example 4, Example 2, Basic
+@section Example 3
+@ftable @asis
+@example
+
+for c = 1, 10 do
+  print (c)
+end
+@end example
+
+This repeat the block between the "do" keyword and the "end" keyword
+10 times (from 1 to 10 inclusive).
+
+So this print:
+@example
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+@end example
+
+@end ftable
+@node Example 4, Example 5, Example 3, Basic
+@section Example 4
+@ftable @asis
+@example
+
+for c = 1, 10 do
+  if c == 5 then
+    break
+  end
+  print (c)
+end
+@end example
+
+In this case when "c" come to 5 the for is breaked so the other
+iterations aren't made.  This print:
+@example
+
+1
+2
+3
+4
+@end example
+
+@end ftable
+@node Example 5, Example 6, Example 4, Basic
+@section Example 5
+@ftable @asis
+@example
+
+for c = 1, 5 do
+  if c != 3 then
+    print ("c isn't 3 (c is " .. c .. ")")
+  else
+    print ("c is 3")
+  end
+end
+@end example
+
+The != operator means "not equal" (negation of equality).  You can
+use the original Lua operator ~= too.
+
+This print:
+@example
+
+c isn't 3 (c is 1)
+c isn't 3 (c is 2)
+c is 3
+c isn't 3 (c is 4)
+c isn't 3 (c is 5)
+@end example
+
+@end ftable
+@node Example 6, IMAGE_RGB, Example 5, Basic
+@section Example 6
+@ftable @asis
+@example
+
+local done = false
+local a = 1
+while not done do
+  print (a)
+  if a == 3 then
+    done = true
+  end
+  a = a + 1
+end
+@end example
+
+This print:
+@example
+
+1
+2
+3
+@end example
+
+And can be implemented in this way too:
+@example
+
+local a = 1
+while a <= 3 do
+  print (a)
+  a = a + 1
+end
+@end example
+
+
+
+@end ftable
+@node ImgType, Standard, Basic, Top
+@chapter ImgType
+
+The imgtype (image-type) is the format of each pixel in a image.
+Sprites have a lot of images, but all images must have the same
+imgtype. The know imgtypes are: RGB, Grayscale, Indexed, Bitmap.
+
+@menu
+* IMAGE_RGB::
+* IMAGE_GRAYSCALE::
+* IMAGE_INDEXED::
+* IMAGE_BITMAP::
+@end menu
+@node IMAGE_RGB, IMAGE_GRAYSCALE, Example 6, ImgType
+@section IMAGE_RGB
+@ftable @asis
+
+Means that the image have four components (channels or bytes) per
+pixel, where the values of these components can be between 0 and 255
+(256 differents tones), where 255 the maximum intensity.
+
+RGB is RGBA really:
+
+@itemize @bullet
+@item 
+R: Red.
+@item 
+G: Green.
+@item 
+B: Blue.
+@item 
+A: Alpha (transparency or opacity).
+@end itemize
+
+(0,0,0,0) is mask color, (0,0,0,255) is black, and (255,255,255,255)
+is white.
+
+@end ftable
+@node IMAGE_GRAYSCALE, IMAGE_INDEXED, IMAGE_RGB, ImgType
+@section IMAGE_GRAYSCALE
+@ftable @asis
+
+The image has two channels (two bytes) per pixel.
+
+@itemize @bullet
+@item 
+K: Luminance (or black channel)
+@item 
+A: Alpha (transparency or opacity).
+@end itemize
+
+(0,0) is mask color, (0,255) is black, (255,255) is white.
+
+@end ftable
+@node IMAGE_INDEXED, IMAGE_BITMAP, IMAGE_GRAYSCALE, ImgType
+@section IMAGE_INDEXED
+@ftable @asis
+
+Image uses one byte per pixel:
+
+@itemize @bullet
+@item 
+Index: index of the color that we must use from the color-palette.
+@end itemize
+
+
+In this imgtype, each pixel hasn't the color information, only has a
+reference to the color-palette (from 0 to 255, 256 colors), so the
+RGB information about the color is found in the color-palette and
+not in the image.
+
+The index=0 is the mask color.
+
+@end ftable
+@node IMAGE_BITMAP, MAX, IMAGE_INDEXED, ImgType
+@section IMAGE_BITMAP
+@ftable @asis
+
+An internal imgtype to handle masks, where a pixel is a bit, and 8
+pixels are a byte. 1 means selected, 0 deselected.
+
+
+
+@end ftable
+@node Standard, String, ImgType, Top
+@chapter Standard routines
+
+@menu
+* MAX::
+* MIN::
+* MID::
+* include::
+* print::
+* rand::
+@end menu
+@node MAX, MIN, IMAGE_BITMAP, Standard
+@section MAX
+@ftable @asis
+@item @t{double MAX (double x, double y);}
+Returns the maximum value.
+
+@end ftable
+@node MIN, MID, MAX, Standard
+@section MIN
+@ftable @asis
+@item @t{double MIN (double x, double y);}
+Returns the minimum value.
+
+@end ftable
+@node MID, include, MIN, Standard
+@section MID
+@ftable @asis
+@item @t{double MID (double x, double y, double z);}
+Limits the y value to x and z. 
+
+@end ftable
+@node include, print, MID, Standard
+@section include
+@ftable @asis
+@item @t{void include (const char *filename);}
+@end ftable
+@ftable @asis
+@item @t{void dofile (const char *filename);}
+Process the script that is in the file with the given filename. It's
+searched in the current and in the "data/scripts" directories.
+
+@end ftable
+@node print, rand, include, Standard
+@section print
+@ftable @asis
+@item @t{void print (const char *buf);}
+Prints a message in the console, this is useful mainly to debug
+scripts or to show errors.
+
+@end ftable
+@node rand, _, print, Standard
+@section rand
+@ftable @asis
+@item @t{double rand (double min, double max);}
+Returns a random number between min and max values.
+
+
+
+@end ftable
+@node String, Math, Standard, Top
+@chapter String routines
+
+@menu
+* _::
+* strcmp::
+@end menu
+@node _, strcmp, rand, String
+@section _
+@ftable @asis
+@item @t{const char *_ (const char *msgid);}
+Tries to translate the string msgid to the current language, the
+entry must exists in the .po file.
+
+@end ftable
+@node strcmp, Constants, _, String
+@section strcmp
+@ftable @asis
+@item @t{int strcmp (const char *s1, const char *s2);}
+Compares the two strings s1 and s2. It returns an integer less than,
+equal to, or greater than zero if s1 is found, respectively, to be
+less than, to match, or be greater than s2.
+
+
+
+@end ftable
+@node Math, File, String, Top
+@chapter Math routines
+
+@menu
+* Constants::
+* Routines::
+* fabs::
+* ceil::
+* floor::
+* exp::
+* log::
+* log10::
+* pow::
+* sqrt::
+* hypot::
+* cos::
+* sin::
+* tan::
+* acos::
+* asin::
+* atan::
+* atan2::
+* cosh::
+* sinh::
+* tanh::
+@end menu
+@node Constants, Routines, strcmp, Math
+@section Constants
+@ftable @asis
+
+PI: the ratio of a circle's circumference to its diameter (3.141592...).
+
+@end ftable
+@node Routines, fabs, Constants, Math
+@section Routines
+@ftable @asis
+
+@end ftable
+@node fabs, ceil, Routines, Math
+@section fabs
+@ftable @asis
+@item @t{double fabs (double x);}
+Return the absolute value of the number x.
+
+@end ftable
+@node ceil, floor, fabs, Math
+@section ceil
+@ftable @asis
+@item @t{double ceil (double x);}
+This funtion rounds x up to the nearest integer.
+
+@end ftable
+See also:@*
+@xref{floor}.@*
+@node floor, exp, ceil, Math
+@section floor
+@ftable @asis
+@item @t{double floor (double x);}
+This funtion rounds x down to the nearest integer.
+
+@end ftable
+See also:@*
+@xref{ceil}.@*
+@node exp, log, floor, Math
+@section exp
+@ftable @asis
+@item @t{double exp (double x);}
+Returns the value of e (the base of natural logarithms) raised to
+the power of x.
+
+@end ftable
+See also:@*
+@xref{log}.@*
+@node log, log10, exp, Math
+@section log
+@ftable @asis
+@item @t{double log (double x);}
+Returns the natural logarithm of x.
+
+@end ftable
+See also:@*
+@xref{exp}.@*
+@xref{log10}.@*
+@node log10, pow, log, Math
+@section log10
+@ftable @asis
+@item @t{double log10 (double x);}
+Returns the base-10 logarithm of x.
+
+@end ftable
+See also:@*
+@xref{log}.@*
+@node pow, sqrt, log10, Math
+@section pow
+@ftable @asis
+@item @t{double pow (double x, double y);}
+Returns the value of x raised to the power of y.
+
+@end ftable
+See also:@*
+@xref{sqrt}.@*
+@node sqrt, hypot, pow, Math
+@section sqrt
+@ftable @asis
+@item @t{double sqrt (double x);}
+Returns the non-negative square root of x.
+
+@end ftable
+See also:@*
+@xref{hypot}.@*
+@xref{pow}.@*
+@node hypot, cos, sqrt, Math
+@section hypot
+@ftable @asis
+@item @t{double hypot (double x, double y);}
+Returns the sqrt(x*x + y*y).  This is the length of the hypotenuse
+of a right-angle triangle with sides of length x and y, or the
+distance of the point (x, y) from the origin.
+
+@end ftable
+See also:@*
+@xref{sqrt}.@*
+@node cos, sin, hypot, Math
+@section cos
+@ftable @asis
+@item @t{double cos (double x);}
+Returns the cosine of x, where x is given in radians.
+
+@end ftable
+See also:@*
+@xref{sin}.@*
+@xref{tan}.@*
+@xref{acos}.@*
+@node sin, tan, cos, Math
+@section sin
+@ftable @asis
+@item @t{double sin (double x);}
+Returns the sine of x, where x is given in radians.
+
+@end ftable
+See also:@*
+@xref{cos}.@*
+@xref{tan}.@*
+@xref{asin}.@*
+@node tan, acos, sin, Math
+@section tan
+@ftable @asis
+@item @t{double tan (double x);}
+Returns the tangent of x, where x is given in radians.
+
+@end ftable
+See also:@*
+@xref{cos}.@*
+@xref{sin}.@*
+@xref{atan}.@*
+@node acos, asin, tan, Math
+@section acos
+@ftable @asis
+@item @t{double acos (double x);}
+Returns the arc cosine in radians and the value is mathematically
+defined to be between 0 and PI (inclusive).
+
+@end ftable
+See also:@*
+@xref{cos}.@*
+@node asin, atan, acos, Math
+@section asin
+@ftable @asis
+@item @t{double asin (double x);}
+Returns the arc sine in radians and the value is mathematically
+defined to be between -PI/2 and PI/2 (inclusive).
+
+@end ftable
+See also:@*
+@xref{sin}.@*
+@node atan, atan2, asin, Math
+@section atan
+@ftable @asis
+@item @t{double atan (double x);}
+Returns the arc tangent in radians and the value is mathematically
+defined to be between -PI/2 and PI/2 (inclusive).
+
+@end ftable
+See also:@*
+@xref{tan}.@*
+@xref{atan2}.@*
+@node atan2, cosh, atan, Math
+@section atan2
+@ftable @asis
+@item @t{double atan2 (double y, double x);}
+Returns the result in radians, which is between -PI and PI
+(inclusive).
+
+@end ftable
+See also:@*
+@xref{atan}.@*
+@node cosh, sinh, atan2, Math
+@section cosh
+@ftable @asis
+@item @t{double cosh (double x);}
+Returns the hyperbolic cosine of x, which is defined mathematically
+as (exp(x) + exp(-x)) / 2.
+
+@end ftable
+@node sinh, tanh, cosh, Math
+@section sinh
+@ftable @asis
+@item @t{double sinh (double x);}
+Returns the hyperbolic sine of x, which is defined mathematically as
+(exp(x) - exp(-x)) / 2.
+
+@end ftable
+@node tanh, file_exists, sinh, Math
+@section tanh
+@ftable @asis
+@item @t{double tanh (double x);}
+Returns the hyperbolic tangent of x, which is defined mathematically
+as sinh(x) / cosh(x).
+
+
+
+@end ftable
+@node File, Objects, Math, Top
+@chapter File routines
+
+@menu
+* file_exists::
+* get_filename::
+@end menu
+@node file_exists, get_filename, tanh, File
+@section file_exists
+@ftable @asis
+@item @t{bool file_exists (const char *filename);}
+Checks whether a file matching the given name exists, returning true
+if it does.
+
+@end ftable
+@node get_filename, Image fields, file_exists, File
+@section get_filename
+@ftable @asis
+@item @t{char *get_filename (const char *filename);}
+When passed a completely specified file path, this returns a pointer
+to the filename portion. Both ´\´ and ´/´ are recognized as directory
+separators.
+
+
+
+@end ftable
+@node Objects, Image, File, Top
+@chapter Objects
+
+There are a special type of variables in Lua scripts: objects
+(represented with user-data).  Each object can be of some of these
+types:
+
+@itemize @bullet
+@item 
+Graphics objects: Image, Frame, Layer, Mask, Path, Sprite, Stock, Undo.
+@item 
+Effect objects: Effect, ConvMatr, Curve, CurvePoint.
+@item 
+GUI objects: JEvent, JList, JRect, JRegion, JWidget.
+@end itemize
+
+
+
+@node Image, Frame, Objects, Top
+@chapter Image
+
+An image, has width and height, an image-type (RGB, Grayscale, etc.),
+and contains the image data (pixels, pixmap, or bitmap).
+
+@menu
+* Image fields::
+* Image methods::
+* image_new::
+* image_new_copy::
+* image_free::
+* image_getpixel::
+* image_putpixel::
+* image_clear::
+* image_copy::
+* image_merge::
+* image_crop::
+* image_hline::
+* image_vline::
+* image_rect::
+* image_rectfill::
+* image_line::
+* image_ellipse::
+* image_ellipsefill::
+* image_convert::
+* image_count_diff::
+@end menu
+@node Image fields, Image methods, get_filename, Image
+@section Image fields
+@ftable @asis
+
+@itemize @bullet
+@item 
+[number] image.imgtype@*
+See sprite.imgtype
+@item 
+[number] image.w@*
+[number] image.h@*
+The width and height (in pixels) of this image.
+@end itemize
+
+@end ftable
+@node Image methods, image_new, Image fields, Image
+@section Image methods
+@ftable @asis
+
+@end ftable
+@node image_new, image_new_copy, Image methods, Image
+@section image_new
+@ftable @asis
+@item @t{Image *image_new (int imgtype, int w, int h);}
+Creates a new image
+
+@end ftable
+@node image_new_copy, image_free, image_new, Image
+@section image_new_copy
+@ftable @asis
+@item @t{Image *image_new_copy (Image *image);}
+
+@end ftable
+@node image_free, image_getpixel, image_new_copy, Image
+@section image_free
+@ftable @asis
+@item @t{void image_free (Image *image);}
+
+@end ftable
+@node image_getpixel, image_putpixel, image_free, Image
+@section image_getpixel
+@ftable @asis
+@item @t{int image_getpixel (Image *image, int x, int y);}
+
+@end ftable
+@node image_putpixel, image_clear, image_getpixel, Image
+@section image_putpixel
+@ftable @asis
+@item @t{void image_putpixel (Image *image, int x, int y, int color);}
+
+@end ftable
+@node image_clear, image_copy, image_putpixel, Image
+@section image_clear
+@ftable @asis
+@item @t{void image_clear (Image *image, int color);}
+
+@end ftable
+@node image_copy, image_merge, image_clear, Image
+@section image_copy
+@ftable @asis
+@item @t{void image_copy (Image *dst, Image *src, int x, int y);}
+
+@end ftable
+@node image_merge, image_crop, image_copy, Image
+@section image_merge
+@ftable @asis
+@item @t{void image_merge (Image *dst, Image *src, int x, int y, int opacity, int blend_mode);}
+
+@end ftable
+@node image_crop, image_hline, image_merge, Image
+@section image_crop
+@ftable @asis
+@item @t{Image *image_crop (Image *image, int x, int y, int w, int h);}
+
+@end ftable
+@node image_hline, image_vline, image_crop, Image
+@section image_hline
+@ftable @asis
+@item @t{void image_hline (Image *image, int x1, int y, int x2, int color);}
+
+@end ftable
+@node image_vline, image_rect, image_hline, Image
+@section image_vline
+@ftable @asis
+@item @t{void image_vline (Image *image, int x, int y1, int y2, int color);}
+
+@end ftable
+@node image_rect, image_rectfill, image_vline, Image
+@section image_rect
+@ftable @asis
+@item @t{void image_rect (Image *image, int x1, int y1, int x2, int y2, int color);}
+
+@end ftable
+@node image_rectfill, image_line, image_rect, Image
+@section image_rectfill
+@ftable @asis
+@item @t{void image_rectfill (Image *image, int x1, int y1, int x2, int y2, int color);}
+
+@end ftable
+@node image_line, image_ellipse, image_rectfill, Image
+@section image_line
+@ftable @asis
+@item @t{void image_line (Image *image, int x1, int y1, int x2, int y2, int color);}
+
+@end ftable
+@node image_ellipse, image_ellipsefill, image_line, Image
+@section image_ellipse
+@ftable @asis
+@item @t{void image_ellipse (Image *image, int x1, int y1, int x2, int y2, int color);}
+
+@end ftable
+@node image_ellipsefill, image_convert, image_ellipse, Image
+@section image_ellipsefill
+@ftable @asis
+@item @t{void image_ellipsefill (Image *image, int x1, int y1, int x2, int y2, int color);}
+
+@end ftable
+@node image_convert, image_count_diff, image_ellipsefill, Image
+@section image_convert
+@ftable @asis
+@item @t{void image_convert (Image *dst, Image *src);}
+
+@end ftable
+@node image_count_diff, frame_new, image_convert, Image
+@section image_count_diff
+@ftable @asis
+@item @t{int image_count_diff (Image *i1, Image *i2);}
+
+
+
+@end ftable
+@node Frame, Layer, Image, Top
+@chapter Frame
+
+A frame of animation, it contains the position, opacity and a reference
+(by index) to some image in the image's stock of the layer where this
+frame is. Remember this, a frame doesn't contain the image, only a
+reference to it.
+
+@menu
+* frame_new::
+* frame_new_copy::
+* frame_free::
+* frame_is_link::
+* frame_set_frpos::
+* frame_set_image::
+* frame_set_position::
+* frame_set_opacity::
+@end menu
+@node frame_new, frame_new_copy, image_count_diff, Frame
+@section frame_new
+@ftable @asis
+@item @t{Frame *frame_new (int frpos, int image, int x, int y, int opacity);}
+
+@end ftable
+@node frame_new_copy, frame_free, frame_new, Frame
+@section frame_new_copy
+@ftable @asis
+@item @t{Frame *frame_new_copy (Frame *frame);}
+
+@end ftable
+@node frame_free, frame_is_link, frame_new_copy, Frame
+@section frame_free
+@ftable @asis
+@item @t{void frame_free (Frame *frame);}
+
+@end ftable
+@node frame_is_link, frame_set_frpos, frame_free, Frame
+@section frame_is_link
+@ftable @asis
+@item @t{Frame *frame_is_link (Frame *frame, Layer *layer);}
+
+@end ftable
+@node frame_set_frpos, frame_set_image, frame_is_link, Frame
+@section frame_set_frpos
+@ftable @asis
+@item @t{void frame_set_frpos (Frame *frame, int frpos);}
+
+@end ftable
+@node frame_set_image, frame_set_position, frame_set_frpos, Frame
+@section frame_set_image
+@ftable @asis
+@item @t{void frame_set_image (Frame *frame, int image);}
+
+@end ftable
+@node frame_set_position, frame_set_opacity, frame_set_image, Frame
+@section frame_set_position
+@ftable @asis
+@item @t{void frame_set_position (Frame *frame, int x, int y);}
+
+@end ftable
+@node frame_set_opacity, layer_new, frame_set_position, Frame
+@section frame_set_opacity
+@ftable @asis
+@item @t{void frame_set_opacity (Frame *frame, int opacity);}
+
+
+
+@end ftable
+@node Layer, Mask, Frame, Top
+@chapter Layer
+
+A layer can be two things: a normal layer (also called image layer),
+or a layer set.  A layer set is a group of child layers (like
+"sprite.set").  A normal layer is a complete different thing.
+
+A normal layer has a stock of images and a list of frames, each
+frame has a reference to the image's stock, so each frame uses some
+image of the stock.  If two frames uses the same stock images, the
+first frame is called the "original frame" and all other frames are
+called "links".
+
+@menu
+* layer_new::
+* layer_set_new::
+* layer_new_copy::
+* layer_new_with_image::
+* layer_free::
+* layer_is_image::
+* layer_is_set::
+* layer_get_prev::
+* layer_get_next::
+* layer_set_name::
+* layer_set_blend_mode::
+* layer_add_frame::
+* layer_remove_frame::
+* layer_get_frame::
+* layer_add_layer::
+* layer_remove_layer::
+* layer_move_layer::
+* layer_render::
+* layer_flatten::
+@end menu
+@node layer_new, layer_set_new, frame_set_opacity, Layer
+@section layer_new
+@ftable @asis
+@item @t{Layer *layer_new (int imgtype);}
+
+@end ftable
+@node layer_set_new, layer_new_copy, layer_new, Layer
+@section layer_set_new
+@ftable @asis
+@item @t{Layer *layer_set_new (void);}
+
+@end ftable
+@node layer_new_copy, layer_new_with_image, layer_set_new, Layer
+@section layer_new_copy
+@ftable @asis
+@item @t{Layer *layer_new_copy (Layer *layer);}
+
+@end ftable
+@node layer_new_with_image, layer_free, layer_new_copy, Layer
+@section layer_new_with_image
+@ftable @asis
+@item @t{Layer *layer_new_with_image (int imgtype, int x, int y, int w, int h, int frpos);}
+
+@end ftable
+@node layer_free, layer_is_image, layer_new_with_image, Layer
+@section layer_free
+@ftable @asis
+@item @t{void layer_free (Layer *layer);}
+
+@end ftable
+@node layer_is_image, layer_is_set, layer_free, Layer
+@section layer_is_image
+@ftable @asis
+@item @t{bool layer_is_image (Layer *layer);}
+
+@end ftable
+@node layer_is_set, layer_get_prev, layer_is_image, Layer
+@section layer_is_set
+@ftable @asis
+@item @t{bool layer_is_set (Layer *layer);}
+
+@end ftable
+@node layer_get_prev, layer_get_next, layer_is_set, Layer
+@section layer_get_prev
+@ftable @asis
+@item @t{Layer *layer_get_prev (Layer *layer);}
+
+@end ftable
+@node layer_get_next, layer_set_name, layer_get_prev, Layer
+@section layer_get_next
+@ftable @asis
+@item @t{Layer *layer_get_next (Layer *layer);}
+
+@end ftable
+@node layer_set_name, layer_set_blend_mode, layer_get_next, Layer
+@section layer_set_name
+@ftable @asis
+@item @t{void layer_set_name (Layer *layer, const char *name);}
+
+@end ftable
+@node layer_set_blend_mode, layer_add_frame, layer_set_name, Layer
+@section layer_set_blend_mode
+@ftable @asis
+@item @t{void layer_set_blend_mode (Layer *layer, int blend_mode);}
+
+@end ftable
+@node layer_add_frame, layer_remove_frame, layer_set_blend_mode, Layer
+@section layer_add_frame
+@ftable @asis
+@item @t{void layer_add_frame (Layer *layer, Frame *frame);}
+
+@end ftable
+@node layer_remove_frame, layer_get_frame, layer_add_frame, Layer
+@section layer_remove_frame
+@ftable @asis
+@item @t{void layer_remove_frame (Layer *layer, Frame *frame);}
+
+@end ftable
+@node layer_get_frame, layer_add_layer, layer_remove_frame, Layer
+@section layer_get_frame
+@ftable @asis
+@item @t{Frame *layer_get_frame (Layer *layer, int frpos);}
+
+@end ftable
+@node layer_add_layer, layer_remove_layer, layer_get_frame, Layer
+@section layer_add_layer
+@ftable @asis
+@item @t{void layer_add_layer (Layer *set, Layer *layer);}
+
+@end ftable
+@node layer_remove_layer, layer_move_layer, layer_add_layer, Layer
+@section layer_remove_layer
+@ftable @asis
+@item @t{void layer_remove_layer (Layer *set, Layer *layer);}
+
+@end ftable
+@node layer_move_layer, layer_render, layer_remove_layer, Layer
+@section layer_move_layer
+@ftable @asis
+@item @t{void layer_move_layer (Layer *set, Layer *layer, Layer *after);}
+
+@end ftable
+@node layer_render, layer_flatten, layer_move_layer, Layer
+@section layer_render
+@ftable @asis
+@item @t{void layer_render (Layer *layer, Image *image, int x, int y, int frpos);}
+
+@end ftable
+@node layer_flatten, mask_new, layer_render, Layer
+@section layer_flatten
+@ftable @asis
+@item @t{Layer *layer_flatten (Layer *layer, int imgtype, int x, int y, int w, int h, int frmin, int frmax);}
+
+
+
+@end ftable
+@node Mask, Path, Layer, Top
+@chapter Mask
+
+@menu
+* mask_new::
+* mask_new_copy::
+* mask_free::
+* mask_is_empty::
+* mask_set_name::
+* mask_move::
+* mask_none::
+* mask_invert::
+* mask_replace::
+* mask_union::
+* mask_subtract::
+* mask_intersect::
+* mask_merge::
+* mask_by_color::
+* mask_crop::
+@end menu
+@node mask_new, mask_new_copy, layer_flatten, Mask
+@section mask_new
+@ftable @asis
+@item @t{Mask *mask_new (void);}
+
+@end ftable
+@node mask_new_copy, mask_free, mask_new, Mask
+@section mask_new_copy
+@ftable @asis
+@item @t{Mask *mask_new_copy (Mask *mask);}
+
+@end ftable
+@node mask_free, mask_is_empty, mask_new_copy, Mask
+@section mask_free
+@ftable @asis
+@item @t{void mask_free (Mask *mask);}
+
+@end ftable
+@node mask_is_empty, mask_set_name, mask_free, Mask
+@section mask_is_empty
+@ftable @asis
+@item @t{bool mask_is_empty (Mask *mask);}
+
+@end ftable
+@node mask_set_name, mask_move, mask_is_empty, Mask
+@section mask_set_name
+@ftable @asis
+@item @t{void mask_set_name (Mask *mask, const char *name);}
+
+@end ftable
+@node mask_move, mask_none, mask_set_name, Mask
+@section mask_move
+@ftable @asis
+@item @t{void mask_move (Mask *mask, int x, int y);}
+
+@end ftable
+@node mask_none, mask_invert, mask_move, Mask
+@section mask_none
+@ftable @asis
+@item @t{void mask_none (Mask *mask);}
+
+@end ftable
+@node mask_invert, mask_replace, mask_none, Mask
+@section mask_invert
+@ftable @asis
+@item @t{void mask_invert (Mask *mask);}
+
+@end ftable
+@node mask_replace, mask_union, mask_invert, Mask
+@section mask_replace
+@ftable @asis
+@item @t{void mask_replace (Mask *mask, int x, int y, int w, int h);}
+
+@end ftable
+@node mask_union, mask_subtract, mask_replace, Mask
+@section mask_union
+@ftable @asis
+@item @t{void mask_union (Mask *mask, int x, int y, int w, int h);}
+
+@end ftable
+@node mask_subtract, mask_intersect, mask_union, Mask
+@section mask_subtract
+@ftable @asis
+@item @t{void mask_subtract (Mask *mask, int x, int y, int w, int h);}
+
+@end ftable
+@node mask_intersect, mask_merge, mask_subtract, Mask
+@section mask_intersect
+@ftable @asis
+@item @t{void mask_intersect (Mask *mask, int x, int y, int w, int h);}
+
+@end ftable
+@node mask_merge, mask_by_color, mask_intersect, Mask
+@section mask_merge
+@ftable @asis
+@item @t{void mask_merge (Mask *dst, Mask *src);}
+
+@end ftable
+@node mask_by_color, mask_crop, mask_merge, Mask
+@section mask_by_color
+@ftable @asis
+@item @t{void mask_by_color (Mask *mask, Image *image, int color, int fuzziness);}
+
+@end ftable
+@node mask_crop, path_new, mask_by_color, Mask
+@section mask_crop
+@ftable @asis
+@item @t{void mask_crop (Mask *mask, Image *image);}
+
+
+
+@end ftable
+@node Path, Sprite, Mask, Top
+@chapter Path
+
+@menu
+* path_new::
+* path_free::
+* path_set_join::
+* path_set_cap::
+* path_moveto::
+* path_lineto::
+* path_curveto::
+* path_close::
+* path_move::
+* path_stroke::
+* path_fill::
+@end menu
+@node path_new, path_free, mask_crop, Path
+@section path_new
+@ftable @asis
+@item @t{Path *path_new (const char *name);}
+
+@end ftable
+@node path_free, path_set_join, path_new, Path
+@section path_free
+@ftable @asis
+@item @t{void path_free (Path *path);}
+
+@end ftable
+@node path_set_join, path_set_cap, path_free, Path
+@section path_set_join
+@ftable @asis
+@item @t{void path_set_join (Path *path, int join);}
+
+@itemize @bullet
+@item 
+PATH_JOIN_MITER@*
+@item 
+PATH_JOIN_ROUND@*
+@item 
+PATH_JOIN_BEVEL@*
+@end itemize
+
+
+@end ftable
+@node path_set_cap, path_moveto, path_set_join, Path
+@section path_set_cap
+@ftable @asis
+@item @t{void path_set_cap (Path *path, int cap);}
+
+@itemize @bullet
+@item 
+PATH_CAP_BUTT@*
+@item 
+PATH_CAP_ROUND@*
+@item 
+PATH_CAP_SQUARE@*
+@end itemize
+
+
+@end ftable
+@node path_moveto, path_lineto, path_set_cap, Path
+@section path_moveto
+@ftable @asis
+@item @t{void path_moveto (Path *path, double x, double y);}
+
+@end ftable
+@node path_lineto, path_curveto, path_moveto, Path
+@section path_lineto
+@ftable @asis
+@item @t{void path_lineto (Path *path, double x, double y);}
+
+@end ftable
+@node path_curveto, path_close, path_lineto, Path
+@section path_curveto
+@ftable @asis
+@item @t{void path_curveto (Path *path, double control_x1, double control_y1, double control_x2, double control_y2, double end_x, double end_y);}
+
+@end ftable
+@node path_close, path_move, path_curveto, Path
+@section path_close
+@ftable @asis
+@item @t{void path_close (Path *path);}
+
+@end ftable
+@node path_move, path_stroke, path_close, Path
+@section path_move
+@ftable @asis
+@item @t{void path_move (Path *path, double x, double y);}
+
+@end ftable
+@node path_stroke, path_fill, path_move, Path
+@section path_stroke
+@ftable @asis
+@item @t{void path_stroke (Path *path, Image *image, int color, double brush_size);}
+
+@end ftable
+@node path_fill, sprite_new, path_stroke, Path
+@section path_fill
+@ftable @asis
+@item @t{void path_fill (Path *path, Image *image, int color);}
+
+
+
+@end ftable
+@node Sprite, Stock, Path, Top
+@chapter Sprite
+
+The sprite is the main object of ASE (remember Allegro "Sprite"
+Editor), and it's the structure that contains all data: layers,
+frames, stocks, images, masks, paths, and undo information are
+inside the same sprite.
+
+There are a global variable of Sprite type: current_sprite.  This
+could be "nil" if there aren't a selected sprite in the moment.
+
+You should known about the difference between the "current_sprite"
+in scripts and the sprite in the current editor.  Because when you
+select a sprite with "set_current_sprite", only the "current_sprite"
+global pointer is set, but the sprite in the current editor is
+maintain intact.  So when ASE runs a script, the "current_sprite"
+will be pointing to the sprite in the current editor, but if you
+change the "current_sprite" (with "set_current_sprite" routine)
+you'll not get that sprite in the editor (use "sprite_show" function
+instead).
+
+@menu
+* sprite_new::
+* sprite_new_copy::
+* sprite_new_flatten_copy::
+* sprite_new_with_layer::
+* sprite_free::
+* sprite_lock::
+* sprite_unlock::
+* sprite_is_locked::
+* sprite_is_modified::
+* sprite_was_saved::
+* sprite_set_filename::
+* sprite_set_size::
+* sprite_set_frames::
+* sprite_set_speed::
+* sprite_set_path::
+* sprite_set_mask::
+* sprite_set_layer::
+* sprite_set_frpos::
+* sprite_set_imgtype::
+* sprite_add_path::
+* sprite_remove_path::
+* sprite_add_mask::
+* sprite_remove_mask::
+* sprite_request_mask::
+* sprite_render::
+@end menu
+@node sprite_new, sprite_new_copy, path_fill, Sprite
+@section sprite_new
+@ftable @asis
+@item @t{Sprite *sprite_new (int imgtype, int w, int h);}
+
+@end ftable
+@node sprite_new_copy, sprite_new_flatten_copy, sprite_new, Sprite
+@section sprite_new_copy
+@ftable @asis
+@item @t{Sprite *sprite_new_copy (Sprite *sprite);}
+
+@end ftable
+@node sprite_new_flatten_copy, sprite_new_with_layer, sprite_new_copy, Sprite
+@section sprite_new_flatten_copy
+@ftable @asis
+@item @t{Sprite *sprite_new_flatten_copy (Sprite *sprite);}
+
+@end ftable
+@node sprite_new_with_layer, sprite_free, sprite_new_flatten_copy, Sprite
+@section sprite_new_with_layer
+@ftable @asis
+@item @t{Sprite *sprite_new_with_layer (int imgtype, int w, int h);}
+
+@end ftable
+@node sprite_free, sprite_lock, sprite_new_with_layer, Sprite
+@section sprite_free
+@ftable @asis
+@item @t{void sprite_free (Sprite *sprite);}
+
+@end ftable
+@node sprite_lock, sprite_unlock, sprite_free, Sprite
+@section sprite_lock
+@ftable @asis
+@item @t{void sprite_lock (Sprite *sprite);}
+
+@end ftable
+@node sprite_unlock, sprite_is_locked, sprite_lock, Sprite
+@section sprite_unlock
+@ftable @asis
+@item @t{void sprite_unlock (Sprite *sprite);}
+
+@end ftable
+@node sprite_is_locked, sprite_is_modified, sprite_unlock, Sprite
+@section sprite_is_locked
+@ftable @asis
+@item @t{bool sprite_is_locked (Sprite *sprite);}
+
+@end ftable
+@node sprite_is_modified, sprite_was_saved, sprite_is_locked, Sprite
+@section sprite_is_modified
+@ftable @asis
+@item @t{bool sprite_is_modified (Sprite *sprite);}
+
+@end ftable
+@node sprite_was_saved, sprite_set_filename, sprite_is_modified, Sprite
+@section sprite_was_saved
+@ftable @asis
+@item @t{void sprite_was_saved (Sprite *sprite);}
+
+@end ftable
+@node sprite_set_filename, sprite_set_size, sprite_was_saved, Sprite
+@section sprite_set_filename
+@ftable @asis
+@item @t{void sprite_set_filename (Sprite *sprite, const char *filename);}
+
+@end ftable
+@node sprite_set_size, sprite_set_frames, sprite_set_filename, Sprite
+@section sprite_set_size
+@ftable @asis
+@item @t{void sprite_set_size (Sprite *sprite, int w, int h);}
+
+@end ftable
+@node sprite_set_frames, sprite_set_speed, sprite_set_size, Sprite
+@section sprite_set_frames
+@ftable @asis
+@item @t{void sprite_set_frames (Sprite *sprite, int frames);}
+
+@end ftable
+@node sprite_set_speed, sprite_set_path, sprite_set_frames, Sprite
+@section sprite_set_speed
+@ftable @asis
+@item @t{void sprite_set_speed (Sprite *sprite, int speed);}
+
+@end ftable
+@node sprite_set_path, sprite_set_mask, sprite_set_speed, Sprite
+@section sprite_set_path
+@ftable @asis
+@item @t{void sprite_set_path (Sprite *sprite, Path *path);}
+
+@end ftable
+@node sprite_set_mask, sprite_set_layer, sprite_set_path, Sprite
+@section sprite_set_mask
+@ftable @asis
+@item @t{void sprite_set_mask (Sprite *sprite, Mask *mask);}
+
+@end ftable
+@node sprite_set_layer, sprite_set_frpos, sprite_set_mask, Sprite
+@section sprite_set_layer
+@ftable @asis
+@item @t{void sprite_set_layer (Sprite *sprite, Layer *layer);}
+
+@end ftable
+@node sprite_set_frpos, sprite_set_imgtype, sprite_set_layer, Sprite
+@section sprite_set_frpos
+@ftable @asis
+@item @t{void sprite_set_frpos (Sprite *sprite, int frpos);}
+
+@end ftable
+@node sprite_set_imgtype, sprite_add_path, sprite_set_frpos, Sprite
+@section sprite_set_imgtype
+@ftable @asis
+@item @t{void sprite_set_imgtype (Sprite *sprite, int imgtype, int dithering_method);}
+
+@end ftable
+@node sprite_add_path, sprite_remove_path, sprite_set_imgtype, Sprite
+@section sprite_add_path
+@ftable @asis
+@item @t{void sprite_add_path (Sprite *sprite, Path *path);}
+
+@end ftable
+@node sprite_remove_path, sprite_add_mask, sprite_add_path, Sprite
+@section sprite_remove_path
+@ftable @asis
+@item @t{void sprite_remove_path (Sprite *sprite, Path *path);}
+
+@end ftable
+@node sprite_add_mask, sprite_remove_mask, sprite_remove_path, Sprite
+@section sprite_add_mask
+@ftable @asis
+@item @t{void sprite_add_mask (Sprite *sprite, Mask *mask);}
+
+@end ftable
+@node sprite_remove_mask, sprite_request_mask, sprite_add_mask, Sprite
+@section sprite_remove_mask
+@ftable @asis
+@item @t{void sprite_remove_mask (Sprite *sprite, Mask *mask);}
+
+@end ftable
+@node sprite_request_mask, sprite_render, sprite_remove_mask, Sprite
+@section sprite_request_mask
+@ftable @asis
+@item @t{Mask *sprite_request_mask (Sprite *sprite, const char *name);}
+
+@end ftable
+@node sprite_render, stock_new, sprite_request_mask, Sprite
+@section sprite_render
+@ftable @asis
+@item @t{void sprite_render (Sprite *sprite, Image *image, int x, int y);}
+
+
+
+@end ftable
+@node Stock, Undo, Sprite, Top
+@chapter Stock
+
+Stock of images.  Each image layer has its own image's stock to
+provide images to its frames.
+
+@menu
+* stock_new::
+* stock_new_copy::
+* stock_free::
+* stock_add_image::
+* stock_remove_image::
+* stock_replace_image::
+* stock_get_image::
+@end menu
+@node stock_new, stock_new_copy, sprite_render, Stock
+@section stock_new
+@ftable @asis
+@item @t{Stock *stock_new (int imgtype);}
+
+@end ftable
+@node stock_new_copy, stock_free, stock_new, Stock
+@section stock_new_copy
+@ftable @asis
+@item @t{Stock *stock_new_copy (Stock *stock);}
+
+@end ftable
+@node stock_free, stock_add_image, stock_new_copy, Stock
+@section stock_free
+@ftable @asis
+@item @t{void stock_free (Stock *stock);}
+
+@end ftable
+@node stock_add_image, stock_remove_image, stock_free, Stock
+@section stock_add_image
+@ftable @asis
+@item @t{int stock_add_image (Stock *stock, Image *image);}
+
+@end ftable
+@node stock_remove_image, stock_replace_image, stock_add_image, Stock
+@section stock_remove_image
+@ftable @asis
+@item @t{void stock_remove_image (Stock *stock, Image *image);}
+
+@end ftable
+@node stock_replace_image, stock_get_image, stock_remove_image, Stock
+@section stock_replace_image
+@ftable @asis
+@item @t{void stock_replace_image (Stock *stock, int index, Image *image);}
+
+@end ftable
+@node stock_get_image, undo_new, stock_replace_image, Stock
+@section stock_get_image
+@ftable @asis
+@item @t{Image *stock_get_image (Stock *stock, int index);}
+
+
+
+@end ftable
+@node Undo, Effect, Stock, Top
+@chapter Undo
+
+@menu
+* undo_new::
+* undo_free::
+* undo_enable::
+* undo_disable::
+* undo_is_enabled::
+* undo_is_disabled::
+* undo_can_undo::
+* undo_can_redo::
+* undo_undo::
+* undo_redo::
+* undo_open::
+* undo_close::
+* undo_image::
+* undo_flip::
+* undo_add_image::
+* undo_remove_image::
+* undo_replace_image::
+* undo_add_frame::
+* undo_remove_frame::
+* undo_add_layer::
+* undo_remove_layer::
+* undo_move_layer::
+* undo_set_layer::
+* undo_set_mask::
+@end menu
+@node undo_new, undo_free, stock_get_image, Undo
+@section undo_new
+@ftable @asis
+@item @t{Undo *undo_new (Sprite *sprite);}
+
+@end ftable
+@node undo_free, undo_enable, undo_new, Undo
+@section undo_free
+@ftable @asis
+@item @t{void undo_free (Undo *undo);}
+
+@end ftable
+@node undo_enable, undo_disable, undo_free, Undo
+@section undo_enable
+@ftable @asis
+@item @t{void undo_enable (Undo *undo);}
+
+@end ftable
+@node undo_disable, undo_is_enabled, undo_enable, Undo
+@section undo_disable
+@ftable @asis
+@item @t{void undo_disable (Undo *undo);}
+
+@end ftable
+@node undo_is_enabled, undo_is_disabled, undo_disable, Undo
+@section undo_is_enabled
+@ftable @asis
+@item @t{bool undo_is_enabled (Undo *undo);}
+
+@end ftable
+@node undo_is_disabled, undo_can_undo, undo_is_enabled, Undo
+@section undo_is_disabled
+@ftable @asis
+@item @t{bool undo_is_disabled (Undo *undo);}
+
+@end ftable
+@node undo_can_undo, undo_can_redo, undo_is_disabled, Undo
+@section undo_can_undo
+@ftable @asis
+@item @t{bool undo_can_undo (Undo *undo);}
+
+@end ftable
+@node undo_can_redo, undo_undo, undo_can_undo, Undo
+@section undo_can_redo
+@ftable @asis
+@item @t{bool undo_can_redo (Undo *undo);}
+
+@end ftable
+@node undo_undo, undo_redo, undo_can_redo, Undo
+@section undo_undo
+@ftable @asis
+@item @t{void undo_undo (Undo *undo);}
+
+@end ftable
+@node undo_redo, undo_open, undo_undo, Undo
+@section undo_redo
+@ftable @asis
+@item @t{void undo_redo (Undo *undo);}
+
+@end ftable
+@node undo_open, undo_close, undo_redo, Undo
+@section undo_open
+@ftable @asis
+@item @t{void undo_open (Undo *undo);}
+
+@end ftable
+@node undo_close, undo_image, undo_open, Undo
+@section undo_close
+@ftable @asis
+@item @t{void undo_close (Undo *undo);}
+
+@end ftable
+@node undo_image, undo_flip, undo_close, Undo
+@section undo_image
+@ftable @asis
+@item @t{void undo_image (Undo *undo, Image *image, int x, int y, int w, int h);}
+
+@end ftable
+@node undo_flip, undo_add_image, undo_image, Undo
+@section undo_flip
+@ftable @asis
+@item @t{void undo_flip (Undo *undo, Image *image, int x1, int y1, int x2, int y2, int horz);}
+
+@end ftable
+@node undo_add_image, undo_remove_image, undo_flip, Undo
+@section undo_add_image
+@ftable @asis
+@item @t{void undo_add_image (Undo *undo, Stock *stock, Image *image);}
+
+@end ftable
+@node undo_remove_image, undo_replace_image, undo_add_image, Undo
+@section undo_remove_image
+@ftable @asis
+@item @t{void undo_remove_image (Undo *undo, Stock *stock, Image *image);}
+
+@end ftable
+@node undo_replace_image, undo_add_frame, undo_remove_image, Undo
+@section undo_replace_image
+@ftable @asis
+@item @t{void undo_replace_image (Undo *undo, Stock *stock, int index);}
+
+@end ftable
+@node undo_add_frame, undo_remove_frame, undo_replace_image, Undo
+@section undo_add_frame
+@ftable @asis
+@item @t{void undo_add_frame (Undo *undo, Layer *layer, Frame *frame);}
+
+@end ftable
+@node undo_remove_frame, undo_add_layer, undo_add_frame, Undo
+@section undo_remove_frame
+@ftable @asis
+@item @t{void undo_remove_frame (Undo *undo, Layer *layer, Frame *frame);}
+
+@end ftable
+@node undo_add_layer, undo_remove_layer, undo_remove_frame, Undo
+@section undo_add_layer
+@ftable @asis
+@item @t{void undo_add_layer (Undo *undo, Layer *set, Layer *layer);}
+
+@end ftable
+@node undo_remove_layer, undo_move_layer, undo_add_layer, Undo
+@section undo_remove_layer
+@ftable @asis
+@item @t{void undo_remove_layer (Undo *undo, Layer *layer);}
+
+@end ftable
+@node undo_move_layer, undo_set_layer, undo_remove_layer, Undo
+@section undo_move_layer
+@ftable @asis
+@item @t{void undo_move_layer (Undo *undo, Layer *layer);}
+
+@end ftable
+@node undo_set_layer, undo_set_mask, undo_move_layer, Undo
+@section undo_set_layer
+@ftable @asis
+@item @t{void undo_set_layer (Undo *undo, Sprite *sprite);}
+
+@end ftable
+@node undo_set_mask, effect_new, undo_set_layer, Undo
+@section undo_set_mask
+@ftable @asis
+@item @t{void undo_set_mask (Undo *undo, Sprite *sprite);}
+
+
+
+@end ftable
+@node Effect, ConvMatr, Undo, Top
+@chapter Effect
+
+@menu
+* effect_new::
+* effect_free::
+* effect_load_target::
+* effect_set_target::
+* effect_set_target_rgb::
+* effect_set_target_grayscale::
+* effect_set_target_indexed::
+* effect_begin::
+* effect_begin_for_preview::
+* effect_apply_step::
+* effect_apply::
+* effect_flush::
+* effect_apply_to_image::
+* effect_apply_to_target::
+@end menu
+@node effect_new, effect_free, undo_set_mask, Effect
+@section effect_new
+@ftable @asis
+@item @t{Effect *effect_new (Sprite *sprite, const char *name);}
+
+@end ftable
+@node effect_free, effect_load_target, effect_new, Effect
+@section effect_free
+@ftable @asis
+@item @t{void effect_free (Effect *effect);}
+
+@end ftable
+@node effect_load_target, effect_set_target, effect_free, Effect
+@section effect_load_target
+@ftable @asis
+@item @t{void effect_load_target (Effect *effect);}
+
+@end ftable
+@node effect_set_target, effect_set_target_rgb, effect_load_target, Effect
+@section effect_set_target
+@ftable @asis
+@item @t{void effect_set_target (Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index);}
+
+@end ftable
+@node effect_set_target_rgb, effect_set_target_grayscale, effect_set_target, Effect
+@section effect_set_target_rgb
+@ftable @asis
+@item @t{void effect_set_target_rgb (Effect *effect, bool r, bool g, bool b, bool a);}
+
+@end ftable
+@node effect_set_target_grayscale, effect_set_target_indexed, effect_set_target_rgb, Effect
+@section effect_set_target_grayscale
+@ftable @asis
+@item @t{void effect_set_target_grayscale (Effect *effect, bool k, bool a);}
+
+@end ftable
+@node effect_set_target_indexed, effect_begin, effect_set_target_grayscale, Effect
+@section effect_set_target_indexed
+@ftable @asis
+@item @t{void effect_set_target_indexed (Effect *effect, bool r, bool g, bool b, bool index);}
+
+@end ftable
+@node effect_begin, effect_begin_for_preview, effect_set_target_indexed, Effect
+@section effect_begin
+@ftable @asis
+@item @t{void effect_begin (Effect *effect);}
+
+@end ftable
+@node effect_begin_for_preview, effect_apply_step, effect_begin, Effect
+@section effect_begin_for_preview
+@ftable @asis
+@item @t{void effect_begin_for_preview (Effect *effect);}
+
+@end ftable
+@node effect_apply_step, effect_apply, effect_begin_for_preview, Effect
+@section effect_apply_step
+@ftable @asis
+@item @t{int effect_apply_step (Effect *effect);}
+
+@end ftable
+@node effect_apply, effect_flush, effect_apply_step, Effect
+@section effect_apply
+@ftable @asis
+@item @t{void effect_apply (Effect *effect);}
+
+@end ftable
+@node effect_flush, effect_apply_to_image, effect_apply, Effect
+@section effect_flush
+@ftable @asis
+@item @t{void effect_flush (Effect *effect);}
+
+@end ftable
+@node effect_apply_to_image, effect_apply_to_target, effect_flush, Effect
+@section effect_apply_to_image
+@ftable @asis
+@item @t{void effect_apply_to_image (Effect *effect, Image *image, int x, int y);}
+
+@end ftable
+@node effect_apply_to_target, convmatr_new, effect_apply_to_image, Effect
+@section effect_apply_to_target
+@ftable @asis
+@item @t{void effect_apply_to_target (Effect *effect);}
+
+
+
+@end ftable
+@node ConvMatr, Curve, Effect, Top
+@chapter ConvMatr
+
+@menu
+* convmatr_new::
+* convmatr_new_string::
+* convmatr_free::
+* Convolution Matrix Effect::
+* set_convmatr::
+* get_convmatr::
+* get_convmatr_by_name::
+@end menu
+@node convmatr_new, convmatr_new_string, effect_apply_to_target, ConvMatr
+@section convmatr_new
+@ftable @asis
+@item @t{ConvMatr *convmatr_new (int w, int h);}
+
+@end ftable
+@node convmatr_new_string, convmatr_free, convmatr_new, ConvMatr
+@section convmatr_new_string
+@ftable @asis
+@item @t{ConvMatr *convmatr_new_string (const char *format);}
+
+@end ftable
+@node convmatr_free, Convolution Matrix Effect, convmatr_new_string, ConvMatr
+@section convmatr_free
+@ftable @asis
+@item @t{void convmatr_free (ConvMatr *convmatr);}
+
+@end ftable
+@node Convolution Matrix Effect, set_convmatr, convmatr_free, ConvMatr
+@section Convolution Matrix Effect
+@ftable @asis
+
+@end ftable
+@node set_convmatr, get_convmatr, Convolution Matrix Effect, ConvMatr
+@section set_convmatr
+@ftable @asis
+@item @t{void set_convmatr (ConvMatr *convmatr);}
+
+@end ftable
+@node get_convmatr, get_convmatr_by_name, set_convmatr, ConvMatr
+@section get_convmatr
+@ftable @asis
+@item @t{ConvMatr *get_convmatr (void);}
+
+@end ftable
+@node get_convmatr_by_name, curve_new, get_convmatr, ConvMatr
+@section get_convmatr_by_name
+@ftable @asis
+@item @t{ConvMatr *get_convmatr_by_name (const char *name);}
+
+
+
+@end ftable
+@node Curve, CurvePoint, ConvMatr, Top
+@chapter Curve
+
+Curve is a type to represent a function y=f(x). It's mainly used in
+color-curve effect.
+
+@menu
+* curve_new::
+* curve_free::
+* curve_add_point::
+* curve_remove_point::
+* Color Curve Effect::
+* set_color_curve::
+@end menu
+@node curve_new, curve_free, get_convmatr_by_name, Curve
+@section curve_new
+@ftable @asis
+@item @t{Curve *curve_new (int type);}
+Creates a new curve, type can be CURVE_LINEAR or CURVE_SPLINE.
+
+@end ftable
+@node curve_free, curve_add_point, curve_new, Curve
+@section curve_free
+@ftable @asis
+@item @t{void curve_free (Curve *curve);}
+
+@end ftable
+@node curve_add_point, curve_remove_point, curve_free, Curve
+@section curve_add_point
+@ftable @asis
+@item @t{void curve_add_point (Curve *curve, CurvePoint *point);}
+
+@end ftable
+@node curve_remove_point, Color Curve Effect, curve_add_point, Curve
+@section curve_remove_point
+@ftable @asis
+@item @t{void curve_remove_point (Curve *curve, CurvePoint *point);}
+
+@end ftable
+@node Color Curve Effect, set_color_curve, curve_remove_point, Curve
+@section Color Curve Effect
+@ftable @asis
+
+@end ftable
+@node set_color_curve, curve_point_new, Color Curve Effect, Curve
+@section set_color_curve
+@ftable @asis
+@item @t{void set_color_curve (Curve *curve);}
+
+
+
+@end ftable
+@node CurvePoint, JEvent, Curve, Top
+@chapter CurvePoint
+
+@menu
+* curve_point_new::
+* curve_point_free::
+@end menu
+@node curve_point_new, curve_point_free, set_color_curve, CurvePoint
+@section curve_point_new
+@ftable @asis
+@item @t{CurvePoint *curve_point_new (int x, int y);}
+
+@end ftable
+@node curve_point_free, JRect fields, curve_point_new, CurvePoint
+@section curve_point_free
+@ftable @asis
+@item @t{void curve_point_free (CurvePoint *point);}
+
+
+
+@end ftable
+@node JEvent, JList, CurvePoint, Top
+@chapter JEvent
+
+
+
+@node JList, JRect, JEvent, Top
+@chapter JList
+
+
+
+@node JRect, JRegion, JList, Top
+@chapter JRect
+
+@menu
+* JRect fields::
+@end menu
+@node JRect fields, , curve_point_free, JRect
+@section JRect fields
+@ftable @asis
+
+@itemize @bullet
+@item 
+[number] rect.x@*
+[number] rect.y@*
+Position of the upper-left corner of the rectangle.
+@item 
+[number] rect.w@*
+[number] rect.h@*
+Size of the rectangle (width and height).
+@end itemize
+
+
+
+
+@end ftable
+@node JRegion, JWidget, JRect, Top
+@chapter JRegion
+
+
+
+@node JWidget, Index, JRegion, Top
+@chapter JWidget
+
+
+
+@ifinfo
+@node Index, , JWidget, Top
+@chapter Index
+
+@menu
+* _::
+* acos::
+* asin::
+* atan::
+* atan2::
+* ceil::
+* Color Curve Effect::
+* Comments::
+* Constants::
+* convmatr_free::
+* convmatr_new::
+* convmatr_new_string::
+* Convolution Matrix Effect::
+* cos::
+* cosh::
+* curve_add_point::
+* curve_free::
+* curve_new::
+* curve_point_free::
+* curve_point_new::
+* curve_remove_point::
+* effect_apply::
+* effect_apply_step::
+* effect_apply_to_image::
+* effect_apply_to_target::
+* effect_begin::
+* effect_begin_for_preview::
+* effect_flush::
+* effect_free::
+* effect_load_target::
+* effect_new::
+* effect_set_target::
+* effect_set_target_grayscale::
+* effect_set_target_indexed::
+* effect_set_target_rgb::
+* Example 1::
+* Example 2::
+* Example 3::
+* Example 4::
+* Example 5::
+* Example 6::
+* exp::
+* fabs::
+* file_exists::
+* floor::
+* frame_free::
+* frame_is_link::
+* frame_new::
+* frame_new_copy::
+* frame_set_frpos::
+* frame_set_image::
+* frame_set_opacity::
+* frame_set_position::
+* get_convmatr::
+* get_convmatr_by_name::
+* get_filename::
+* hypot::
+* Image fields::
+* Image methods::
+* IMAGE_BITMAP::
+* image_clear::
+* image_convert::
+* image_copy::
+* image_count_diff::
+* image_crop::
+* image_ellipse::
+* image_ellipsefill::
+* image_free::
+* image_getpixel::
+* IMAGE_GRAYSCALE::
+* image_hline::
+* IMAGE_INDEXED::
+* image_line::
+* image_merge::
+* image_new::
+* image_new_copy::
+* image_putpixel::
+* image_rect::
+* image_rectfill::
+* IMAGE_RGB::
+* image_vline::
+* include::
+* JRect fields::
+* layer_add_frame::
+* layer_add_layer::
+* layer_flatten::
+* layer_free::
+* layer_get_frame::
+* layer_get_next::
+* layer_get_prev::
+* layer_is_image::
+* layer_is_set::
+* layer_move_layer::
+* layer_new::
+* layer_new_copy::
+* layer_new_with_image::
+* layer_remove_frame::
+* layer_remove_layer::
+* layer_render::
+* layer_set_blend_mode::
+* layer_set_name::
+* layer_set_new::
+* log::
+* log10::
+* mask_by_color::
+* mask_crop::
+* mask_free::
+* mask_intersect::
+* mask_invert::
+* mask_is_empty::
+* mask_merge::
+* mask_move::
+* mask_new::
+* mask_new_copy::
+* mask_none::
+* mask_replace::
+* mask_set_name::
+* mask_subtract::
+* mask_union::
+* MAX::
+* MID::
+* MIN::
+* path_close::
+* path_curveto::
+* path_fill::
+* path_free::
+* path_lineto::
+* path_move::
+* path_moveto::
+* path_new::
+* path_set_cap::
+* path_set_join::
+* path_stroke::
+* pow::
+* print::
+* rand::
+* Routines::
+* set_color_curve::
+* set_convmatr::
+* sin::
+* sinh::
+* sprite_add_mask::
+* sprite_add_path::
+* sprite_free::
+* sprite_is_locked::
+* sprite_is_modified::
+* sprite_lock::
+* sprite_new::
+* sprite_new_copy::
+* sprite_new_flatten_copy::
+* sprite_new_with_layer::
+* sprite_remove_mask::
+* sprite_remove_path::
+* sprite_render::
+* sprite_request_mask::
+* sprite_set_filename::
+* sprite_set_frames::
+* sprite_set_frpos::
+* sprite_set_imgtype::
+* sprite_set_layer::
+* sprite_set_mask::
+* sprite_set_path::
+* sprite_set_size::
+* sprite_set_speed::
+* sprite_unlock::
+* sprite_was_saved::
+* sqrt::
+* stock_add_image::
+* stock_free::
+* stock_get_image::
+* stock_new::
+* stock_new_copy::
+* stock_remove_image::
+* stock_replace_image::
+* strcmp::
+* tan::
+* tanh::
+* undo_add_frame::
+* undo_add_image::
+* undo_add_layer::
+* undo_can_redo::
+* undo_can_undo::
+* undo_close::
+* undo_disable::
+* undo_enable::
+* undo_flip::
+* undo_free::
+* undo_image::
+* undo_is_disabled::
+* undo_is_enabled::
+* undo_move_layer::
+* undo_new::
+* undo_open::
+* undo_redo::
+* undo_remove_frame::
+* undo_remove_image::
+* undo_remove_layer::
+* undo_replace_image::
+* undo_set_layer::
+* undo_set_mask::
+* undo_undo::
+* Warning about Lua::
+@end menu
+@end ifinfo
+
+@contents
+@bye
+
+

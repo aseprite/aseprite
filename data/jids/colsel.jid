@@ -1,0 +1,47 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Color Selection") name="color_selection">
+<!--   <box horizontal> -->
+    <box vertical expansive>
+      <box horizontal>
+        <box vertical homogeneous>
+	  <label text="R" />
+	  <label text="G" />
+	  <label text="B" />
+        </box>
+        <box vertical homogeneous expansive>
+	  <slider min="0" max="255" name="red" />
+	  <slider min="0" max="255" name="green" />
+	  <slider min="0" max="255" name="blue" />
+        </box>
+        <box vertical homogeneous>
+	  <label text="H" />
+	  <label text="S" />
+	  <label text="V" />
+        </box>
+        <box vertical homogeneous expansive>
+	  <slider min="0" max="255" name="hue" />
+	  <slider min="0" max="255" name="saturation" />
+	  <slider min="0" max="255" name="value" />
+        </box>
+      </box>
+      <box horizontal>
+	<label text="A" />
+	<slider min="0" max="255" expansive name="alpha" />
+      </box>
+      <view name="palette_editor" expansive /> <!-- custom-widget -->
+      <box name="color_viewer" expansive /> <!-- custom-widget -->
+      <box horizontal homogeneous>
+	<button text=_("&OK") name="button_ok" magnetic />
+	<button text=_("&Cancel") />
+      </box>
+    </box>
+<!--     <box vertical> -->
+<!--       <view name="palette_editor" expansive /> <\!-- custom-widget -\-> -->
+<!--       <box name="color_viewer" expansive /> <\!-- custom-widget -\-> -->
+<!--     </box> -->
+<!--   </box> -->
+</window>

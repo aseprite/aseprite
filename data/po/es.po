@@ -1,0 +1,1445 @@
+# Spanish ASE translation.
+# Copyright (C) 2001-2004 David A. Capello
+# This file is distributed under the same license as the ASE package.
+# David A. Capello <dacap@users.sourceforge.net>, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ase 0.4\n"
+"POT-Creation-Date: 2004-09-19 19:45-0300\n"
+"PO-Revision-Date: 2004-10-26 22:47-0300\n"
+"Last-Translator: David A. Capello <dacap@users.sourceforge.net>\n"
+"Language-Team: Spanish <es@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: data/jids/newspr.jid:6
+msgid "New Sprite"
+msgstr "Nuevo Sprite"
+
+#: data/jids/newspr.jid:10 data/jids/sprprop.jid:12 data/jids/toolconf.jid:25
+#: data/jids/drawtext.jid:11 src/dialogs/gfxsel.c:86
+msgid "Size:"
+msgstr "Tamaño:"
+
+#: data/jids/newspr.jid:14 data/jids/median.jid:11 data/jids/convmatr.jid:40
+#: data/jids/mapgen.jid:14 data/jids/newlay.jid:11 src/dialogs/canvasze.c:64
+msgid "Width:"
+msgstr "Ancho:"
+
+#: data/jids/newspr.jid:15 data/jids/median.jid:12 data/jids/convmatr.jid:41
+#: data/jids/mapgen.jid:15 data/jids/newlay.jid:12 src/dialogs/canvasze.c:65
+msgid "Height:"
+msgstr "Alto:"
+
+#: data/jids/newspr.jid:25 data/jids/sprprop.jid:11
+msgid "Type:"
+msgstr "Tipo:"
+
+#: data/jids/newspr.jid:27 data/jids/imgtype.jid:14
+msgid "&RGB"
+msgstr "&RGB"
+
+#: data/jids/newspr.jid:28 data/jids/imgtype.jid:15
+msgid "&Grayscale"
+msgstr "Escala de &Grises"
+
+#: data/jids/newspr.jid:29 data/jids/imgtype.jid:16
+msgid "&Indexed"
+msgstr "&Indexado"
+
+#: data/jids/newspr.jid:33
+msgid "Background:"
+msgstr "Fondo:"
+
+#: data/jids/newspr.jid:36
+msgid "Transparent (mask color)"
+msgstr "Transparente (mask color)"
+
+#: data/jids/newspr.jid:37
+msgid "Black"
+msgstr "Negro"
+
+#: data/jids/newspr.jid:38
+msgid "White"
+msgstr "Blanco"
+
+#: data/jids/newspr.jid:39
+msgid "Bright Pink"
+msgstr "Rosa Claro"
+
+#: data/jids/newspr.jid:40
+msgid "Custom"
+msgstr "Personalizado"
+
+#: data/jids/newspr.jid:44 data/jids/sprprop.jid:28 data/jids/options.jid:49
+#: data/jids/imgtype.jid:22 data/jids/colsel.jid:54 data/jids/pntprop.jid:19
+#: data/jids/replcol.jid:32 data/jids/median.jid:26 data/jids/convmatr.jid:11
+#: data/jids/convmatr.jid:62 data/jids/colcurv.jid:11 data/jids/mapgen.jid:38
+#: data/jids/dupspr.jid:20 data/jids/frmprop.jid:23 data/jids/invrtcol.jid:11
+#: data/jids/newlay.jid:21 data/jids/newlay.jid:34 data/jids/drawtext.jid:33
+#: data/scripts/born/confjpeg.lua:26 data/scripts/born/testjid.lua:17
+#: data/scripts/born/testjid.lua:40 data/scripts/born/layprop.lua:25
+#: src/dialogs/gfxsel.c:95 src/dialogs/filesel.c:213
+#: src/dialogs/maskrepo.c:122 src/dialogs/canvasze.c:74
+#: src/dialogs/maskcol.c:89
+msgid "&OK"
+msgstr "&Aceptar"
+
+#: data/jids/newspr.jid:45 data/jids/sprprop.jid:29 data/jids/options.jid:51
+#: data/jids/imgtype.jid:23 data/jids/colsel.jid:55 data/jids/pntprop.jid:20
+#: data/jids/replcol.jid:33 data/jids/median.jid:27 data/jids/convmatr.jid:12
+#: data/jids/convmatr.jid:63 data/jids/colcurv.jid:12 data/jids/mapgen.jid:39
+#: data/jids/dupspr.jid:21 data/jids/frmprop.jid:24 data/jids/invrtcol.jid:12
+#: data/jids/newlay.jid:22 data/jids/newlay.jid:35 data/jids/drawtext.jid:34
+#: data/scripts/born/confjpeg.lua:27 data/scripts/born/testjid.lua:18
+#: data/scripts/born/layprop.lua:26 src/console/console.c:58
+#: src/dialogs/gfxsel.c:96 src/dialogs/filesel.c:214
+#: src/dialogs/maskrepo.c:123 src/dialogs/canvasze.c:75
+#: src/dialogs/maskcol.c:90
+msgid "&Cancel"
+msgstr "&Cancelar"
+
+#: data/jids/sprprop.jid:6
+msgid "Sprite Properties"
+msgstr "Propiedades del Sprite"
+
+#: data/jids/sprprop.jid:10
+msgid "File name:"
+msgstr "Nombre del archivo:"
+
+#: data/jids/sprprop.jid:13
+msgid "Frames:"
+msgstr "Cuadros:"
+
+#: data/jids/sprprop.jid:14
+msgid "Speed:"
+msgstr "Velocidad:"
+
+#: data/jids/sprprop.jid:23
+msgid "milliseconds between frames"
+msgstr "milisegundos por cuadro"
+
+#: data/jids/options.jid:6 src/core/app.c:723
+msgid "Options"
+msgstr "Opciones"
+
+#: data/jids/options.jid:11
+msgid "Mouse Speed:"
+msgstr "Velocidad del Ratón:"
+
+#: data/jids/options.jid:14 data/jids/pntprop.jid:10
+msgid "X:"
+msgstr "X:"
+
+#: data/jids/options.jid:15 data/jids/pntprop.jid:11
+msgid "Y:"
+msgstr "Y:"
+
+#: data/jids/options.jid:22
+msgid "Lock X/Y"
+msgstr "Bloquear X/Y"
+
+#: data/jids/options.jid:26
+msgid "Movement Delay (milliseconds):"
+msgstr "Retrazo del Movimiento (milisegundos)"
+
+#: data/jids/options.jid:28
+msgid "Smooth auto-scroll"
+msgstr "Dezplazamiento-automático suave"
+
+#: data/jids/options.jid:29
+msgid "Real-time ordered dithering"
+msgstr "Fusionado de colores en tiempo-real"
+
+#: data/jids/options.jid:36
+msgid "Change GUI Font"
+msgstr "Cambiar Fuente del GUI"
+
+#: data/jids/options.jid:37
+msgid "Change Language"
+msgstr "Cambiar Lenguaje"
+
+#: data/jids/options.jid:39
+msgid "2 Click Movement"
+msgstr "2 Clicks para Mover"
+
+#: data/jids/options.jid:40
+msgid "2 Click Drawing"
+msgstr "2 Clicks para Dibujar"
+
+#: data/jids/options.jid:46
+msgid "Ask to load backed up sessions"
+msgstr "Preguntar para cargar sesiones respaldadas"
+
+#: data/jids/options.jid:50 data/jids/colsel.jid:50
+msgid "&Save"
+msgstr "&Guardar"
+
+#: data/jids/imgtype.jid:6
+msgid "Convert Image Type"
+msgstr "Convertir Tipo de Imagen"
+
+#: data/jids/imgtype.jid:10
+msgid "From:"
+msgstr "Desde:"
+
+#: data/jids/imgtype.jid:13
+msgid "To:"
+msgstr "A:"
+
+#: data/jids/imgtype.jid:18
+msgid "&No Dithering"
+msgstr "&Sin Fusionado"
+
+#: data/jids/imgtype.jid:19
+msgid "&Ordered Dither"
+msgstr "&Fusionado de Color Ordenado"
+
+#: data/jids/colsel.jid:6
+msgid "Color Selection"
+msgstr "Selección de Color"
+
+#: data/jids/colsel.jid:48
+msgid "&Ramp"
+msgstr "&Rampa"
+
+#: data/jids/colsel.jid:49
+msgid "&Load"
+msgstr "&Cargar"
+
+#: data/jids/colsel.jid:63
+msgid "&Quantize"
+msgstr "C&uantizar"
+
+#: data/jids/toolconf.jid:6
+msgid "Tools Setup"
+msgstr "Configuración de Herramientas"
+
+#: data/jids/toolconf.jid:10
+msgid "General:"
+msgstr "General:"
+
+#: data/jids/toolconf.jid:11
+msgid "Filled"
+msgstr "Relleno"
+
+#: data/jids/toolconf.jid:12
+msgid "Tiled"
+msgstr "Alicatado"
+
+#: data/jids/toolconf.jid:13
+msgid "Onionskin"
+msgstr "Papel Cebolla"
+
+#: data/jids/toolconf.jid:14
+msgid "Grid:"
+msgstr "Grilla:"
+
+#: data/jids/toolconf.jid:15
+msgid "Snap to Grid"
+msgstr "Ajustar a Grilla"
+
+#: data/jids/toolconf.jid:16
+msgid "View Grid"
+msgstr "Ver Grilla"
+
+#: data/jids/toolconf.jid:17
+msgid "Set &Grid"
+msgstr "Cambiar &Grilla"
+
+#: data/jids/toolconf.jid:18
+msgid "Cursor:"
+msgstr "Cursor:"
+
+#: data/jids/toolconf.jid:22
+msgid "Brush:"
+msgstr "Brocha"
+
+#: data/jids/toolconf.jid:26
+msgid "Angle:"
+msgstr "Ángulo:"
+
+#: data/jids/toolconf.jid:38
+msgid "Glass Dirty:"
+msgstr "Suciedad del Vidrio:"
+
+#: data/jids/toolconf.jid:40
+msgid "Spray:"
+msgstr "Spray:"
+
+#: data/jids/toolconf.jid:43
+msgid "Spray Width:"
+msgstr "Ancho del Spray:"
+
+#: data/jids/toolconf.jid:44
+msgid "Air Speed:"
+msgstr "Velocidad del Aire:"
+
+#: data/jids/toolconf.jid:53 data/jids/playfli.jid:13
+#: data/scripts/born/mask.lua:175 src/dialogs/about.c:65 src/dialogs/tips.c:90
+#: src/dialogs/repo.c:57
+msgid "&Close"
+msgstr "&Cerrar"
+
+#: data/jids/pntprop.jid:6
+msgid "Point Properties"
+msgstr "Propiedades del Punto"
+
+#: data/jids/replcol.jid:6
+msgid "Replace Color"
+msgstr "Reemplazar Color"
+
+#: data/jids/replcol.jid:11
+msgid "Get:"
+msgstr "Agarrar:"
+
+#: data/jids/replcol.jid:12
+msgid "Put:"
+msgstr "Colocar:"
+
+#: data/jids/replcol.jid:28 src/dialogs/maskcol.c:84
+msgid "Fuzziness:"
+msgstr "Difusión:"
+
+#: data/jids/replcol.jid:35 data/jids/median.jid:21 data/jids/convmatr.jid:14
+#: data/jids/colcurv.jid:14 data/jids/mapgen.jid:36 data/jids/invrtcol.jid:9
+#: src/dialogs/maskcol.c:88
+msgid "&Preview"
+msgstr "Vista &Previa"
+
+#: data/jids/median.jid:6
+msgid "Median Blur"
+msgstr "Difuminado por Mediana"
+
+#: data/jids/median.jid:22 data/jids/convmatr.jid:15 data/jids/mapgen.jid:37
+msgid "&Tiled"
+msgstr "Alica&tado"
+
+#: data/jids/convmatr.jid:6
+msgid "Convolution Matrix"
+msgstr "Matriz de Convolución"
+
+#: data/jids/convmatr.jid:19
+msgid "&Reload Stock"
+msgstr "&Recargar Stock"
+
+#: data/jids/convmatr.jid:20
+msgid "&Generate"
+msgstr "&Generar"
+
+#: data/jids/convmatr.jid:25
+msgid "Generate New Matrix"
+msgstr "Generar Nueva Matriz"
+
+#: data/jids/convmatr.jid:29
+msgid "X axis"
+msgstr "Eje X"
+
+#: data/jids/convmatr.jid:33
+msgid "Y axis"
+msgstr "Eje Y"
+
+#: data/jids/convmatr.jid:48
+msgid "Div:"
+msgstr "Div:"
+
+#: data/jids/convmatr.jid:49
+msgid "Bias:"
+msgstr "Bias:"
+
+#: data/jids/convmatr.jid:56 data/jids/convmatr.jid:57
+msgid "Auto"
+msgstr "Auto"
+
+#: data/jids/colcurv.jid:6
+msgid "Color Curve"
+msgstr "Curva de Color"
+
+#: data/jids/mapgen.jid:6
+msgid "Map Generator"
+msgstr "Generar Mapa"
+
+#: data/jids/mapgen.jid:24
+msgid "Seed:"
+msgstr "Semilla:"
+
+#: data/jids/mapgen.jid:30
+msgid "Fractal Factor:"
+msgstr "Factor del Fractal:"
+
+#: data/jids/playfli.jid:6
+msgid "Play FLI/FLC"
+msgstr "Reproducir FLC/FLI"
+
+#: data/jids/playfli.jid:8
+msgid "Loop"
+msgstr "Bucle"
+
+#: data/jids/playfli.jid:9
+msgid "Fullscreen"
+msgstr "Pantalla completa"
+
+#: data/jids/playfli.jid:10
+msgid "&Open"
+msgstr "&Abrir"
+
+#: data/jids/playfli.jid:12
+msgid "&Play"
+msgstr "&Reproducir"
+
+#: data/jids/dupspr.jid:6
+msgid "Duplicate Sprite"
+msgstr "Duplicar Sprite"
+
+#: data/jids/dupspr.jid:10
+msgid "Duplicate:"
+msgstr "Duplicar:"
+
+#: data/jids/dupspr.jid:11
+msgid "As:"
+msgstr "Como:"
+
+#: data/jids/dupspr.jid:18
+msgid "Duplicate merged layers only"
+msgstr "Duplicar con capas mezcladas solamente"
+
+#: data/jids/frmprop.jid:6
+msgid "Frame Properties"
+msgstr "Propiedades del Cuadro"
+
+#: data/jids/frmprop.jid:10
+msgid "Frame position:"
+msgstr "Posición del cuadro:"
+
+#: data/jids/frmprop.jid:11
+msgid "X position:"
+msgstr "Posición X:"
+
+#: data/jids/frmprop.jid:12
+msgid "Y position:"
+msgstr "Posición Y:"
+
+#: data/jids/frmprop.jid:13
+msgid "Opacity:"
+msgstr "Opacidad:"
+
+#: data/jids/invrtcol.jid:6
+msgid "Invert Color"
+msgstr "Invertir Color"
+
+#: data/jids/newlay.jid:6
+msgid "New Image Layer"
+msgstr "Nueva Capa de Imagen"
+
+#: data/jids/newlay.jid:10 data/jids/newlay.jid:30
+#: data/scripts/born/layprop.lua:23 src/dialogs/filesel.c:211
+#: src/dialogs/maskrepo.c:120
+msgid "Name:"
+msgstr "Nombre:"
+
+#: data/jids/newlay.jid:15
+msgid "New Layer"
+msgstr "Nueva Capa"
+
+#: data/jids/newlay.jid:27
+msgid "New Layer Set"
+msgstr "Nueva Conjunto de Capas"
+
+#: data/jids/newlay.jid:31
+msgid "New Set"
+msgstr "Nuevo Conjunto"
+
+#: data/jids/drawtext.jid:6
+msgid "Draw Text"
+msgstr "Dibujar Texto"
+
+#: data/jids/drawtext.jid:10
+msgid "Font:"
+msgstr "Fuente:"
+
+#: data/jids/drawtext.jid:18
+msgid "Fixed Size:"
+msgstr "Tamaño Fijo:"
+
+#: data/jids/drawtext.jid:25
+msgid "Text:"
+msgstr "Texto:"
+
+#: data/jids/drawtext.jid:26 src/dialogs/maskcol.c:77
+msgid "Color:"
+msgstr "Color:"
+
+#: data/scripts/born/closespr.lua:10 data/scripts/born/mask.lua:211
+#: data/scripts/born/savespr.lua:22 src/dialogs/colsel.c:301
+msgid "Warning"
+msgstr "Aviso"
+
+#: data/scripts/born/closespr.lua:11
+msgid "Saving changes in:"
+msgstr "Guardando cambios en:"
+
+#: data/scripts/born/closespr.lua:13
+msgid "&Save||&Discard||&Cancel"
+msgstr "&Guardar||&Descartar||&Cancelar"
+
+#: data/scripts/born/confjpeg.lua:13
+msgid "Configure JPEG Compression"
+msgstr "Configure la Compresión JPEG"
+
+#: data/scripts/born/confjpeg.lua:19
+msgid "Quality:"
+msgstr "Calidad:"
+
+#: data/scripts/born/confjpeg.lua:20
+msgid "Smooth:"
+msgstr "Suavidad:"
+
+#: data/scripts/born/confjpeg.lua:21
+msgid "Method:"
+msgstr "Método:"
+
+#: data/scripts/born/confjpeg.lua:30
+msgid "Slow"
+msgstr "Lento"
+
+#: data/scripts/born/confjpeg.lua:31
+msgid "Fast"
+msgstr "Rápido"
+
+#: data/scripts/born/confjpeg.lua:32
+msgid "Float"
+msgstr "Flotante"
+
+#: data/scripts/born/testjid.lua:7
+msgid "Open a JID file"
+msgstr "Abrir un archivo JID"
+
+#: data/scripts/born/testjid.lua:11
+msgid "Test Widget"
+msgstr "Probar Widget"
+
+#: data/scripts/born/testjid.lua:15
+msgid "Widget Name:"
+msgstr "Nombre del Widget:"
+
+#: data/scripts/born/testjid.lua:39
+msgid "Error<<Error loading widget:"
+msgstr "Error<<Error cargando widget:"
+
+#: data/scripts/born/layer.lua:31
+msgid "Layer"
+msgstr "Capa"
+
+#: data/scripts/born/exit.lua:15
+msgid ""
+"Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No"
+msgstr ""
+"Aviso<<Existen sprites con cambios.<<Desea salir de todas formas?||&Sí||&No"
+
+#: data/scripts/born/mask.lua:170
+msgid "Load .msk File"
+msgstr "Cargar archivo .msk"
+
+#: data/scripts/born/mask.lua:174
+msgid "Error<<Error loading .msk file"
+msgstr "Error<<Error cargando archivo .msk"
+
+#: data/scripts/born/mask.lua:203
+msgid "Save .msk File"
+msgstr "Guardar archivo .msk"
+
+#: data/scripts/born/mask.lua:211 data/scripts/born/savespr.lua:23
+#: src/dialogs/colsel.c:302
+msgid "File exists, overwrite it?"
+msgstr "El archivo existe, sobreescribirlo?"
+
+#: data/scripts/born/mask.lua:213 data/scripts/born/savespr.lua:25
+#: src/dialogs/colsel.c:304
+msgid "&Yes||&No||&Cancel"
+msgstr "&Sí||&No||&Cancelar"
+
+#: data/scripts/born/loadfile.lua:7
+msgid "Load Script File (.lua)"
+msgstr "Cargar Archivo Script (.lua)"
+
+#: data/scripts/born/layprop.lua:19
+msgid "Layer Properties"
+msgstr "Propiedades de la Capa"
+
+#: data/scripts/born/layprop.lua:30
+msgid "Blend mode:"
+msgstr "Modo de mezcla:"
+
+#: data/scripts/born/layprop.lua:34
+msgid "Normal"
+msgstr "Normal"
+
+#: data/scripts/born/layprop.lua:35
+msgid "Dissolve"
+msgstr "Disolver"
+
+#: data/scripts/born/layprop.lua:36
+msgid "Multiply"
+msgstr "Multiplicar"
+
+#: data/scripts/born/layprop.lua:37
+msgid "Screen"
+msgstr "Pantalla"
+
+#: data/scripts/born/layprop.lua:38
+msgid "Overlay"
+msgstr "Superponer"
+
+#: data/scripts/born/layprop.lua:39
+msgid "Hard Light"
+msgstr ""
+
+#: data/scripts/born/layprop.lua:40
+msgid "Dodge"
+msgstr ""
+
+#: data/scripts/born/layprop.lua:41
+msgid "Burn"
+msgstr "Quemar"
+
+#: data/scripts/born/layprop.lua:42
+msgid "Darken"
+msgstr "Obscurecer"
+
+#: data/scripts/born/layprop.lua:43
+msgid "Lighten"
+msgstr "Alumbrar"
+
+#: data/scripts/born/layprop.lua:44
+msgid "Addition"
+msgstr "Sumar"
+
+#: data/scripts/born/layprop.lua:45 src/modules/tools.c:1031
+msgid "Subtract"
+msgstr "Sustraer"
+
+#: data/scripts/born/layprop.lua:46
+msgid "Difference"
+msgstr "Diferencia"
+
+#: data/scripts/born/layprop.lua:47
+msgid "Hue"
+msgstr "Tinte"
+
+#: data/scripts/born/layprop.lua:48
+msgid "Saturation"
+msgstr "Saturación"
+
+#: data/scripts/born/layprop.lua:49 src/widgets/colbar.c:425
+msgid "Color"
+msgstr "Color"
+
+#: data/scripts/born/layprop.lua:50
+msgid "Luminosity"
+msgstr "Luminosidad"
+
+#: data/scripts/born/imgtype.lua:24 src/modules/color.c:437
+msgid "RGB"
+msgstr "RGB"
+
+#: data/scripts/born/imgtype.lua:28
+msgid "Grayscale"
+msgstr "Escala de Grises"
+
+#: data/scripts/born/imgtype.lua:32
+msgid "Indexed"
+msgstr "Indexado"
+
+#: data/scripts/born/openspr.lua:19
+msgid "Open Sprite"
+msgstr "Abrir Sprite"
+
+#: data/scripts/born/playfli.lua:7
+msgid "Open a FLI/FLC file"
+msgstr "Abrir un archivo FLI/FLC"
+
+#: data/scripts/born/savespr.lua:13
+msgid "Save Sprite"
+msgstr "Guardar Sprite"
+
+#: data/scripts/born/savespr.lua:48
+msgid "Error saving sprite file: "
+msgstr "Error guardando sprite en archivo: "
+
+#: data/scripts/born/rootmenu.lua:7
+msgid ""
+"Warning<<If you try to reload the root-menu<<you will lost the current one."
+"<<Do you want continue?||&Load||&Cancel"
+msgstr ""
+"Aviso<<Si intenta recargar el menú raíz<<perderá el menú actual.<<Desea "
+"continuar?||&Recargar||&Cancelar"
+
+#: data/scripts/born/newlay.lua:32 data/scripts/born/newlay.lua:59
+#: src/dialogs/gfxsel.c:73
+msgid "Error<<Not enough memory||&Close"
+msgstr "Error<<No hay memoria suficiente||&Cerrar"
+
+#: data/scripts/born/session.lua:7
+msgid "Load .ses File"
+msgstr "Cargar Archivo .ses"
+
+#: data/scripts/born/session.lua:10
+msgid ""
+"Session Manager<<Session loaded succefully<<Go to the \"List\" menu to see "
+"the loaded sprites||&OK"
+msgstr ""
+"Gestor de Sesiones<<La sesión se pudo cargar con éxito<<Vaya al menú \"Lista"
+"\" para ver los sprites cargados||&Aceptar"
+
+#: data/scripts/born/session.lua:12
+msgid "Session Manager<<Error loading session||&OK"
+msgstr "Gestor de Sesiones<<Error cargando la sesión||&Aceptar"
+
+#: data/scripts/born/session.lua:18
+msgid "Save .ses File"
+msgstr "Guardar Archivo .ses"
+
+#: data/scripts/born/session.lua:21
+msgid "Session Manager<<Session saved succefully||&OK"
+msgstr "Gestor de Sesiones<<La sesión se pudo guardar con éxito||&Aceptar"
+
+#: data/scripts/born/session.lua:23
+msgid "Session Manager<<Error saving session||&OK"
+msgstr "Gestor de Sesiones<<Error guardando la sesión||&Aceptar"
+
+#: data/scripts/born/session.lua:29
+#, fuzzy
+msgid ""
+"Session Manager<<There is a backed up session (maybe a previous crash).<<Do "
+"you want to download it?||Never &ask||&No||&Yes"
+msgstr "Gestor de Sesiones<<Hay una sesion respaldada (tal vez un fallo del sistema anterior)<<Desea cargarla?||Nunca &preguntar||&No||&Sí"
+
+#: data/scripts/gens/spiral.lua:22 data/scripts/gens/terrain.lua:22
+#: src/file/file.c:83 src/file/fli.c:84
+msgid "Background"
+msgstr "Fondo"
+
+#: src/core/app.c:111
+msgid "ASE core initialization error.\n"
+msgstr "Error inicializando el núcleo de ASE.\n"
+
+#: src/core/app.c:117
+msgid "ASE configuration initialization error.\n"
+msgstr "Error inicializando la configuración de ASE.\n"
+
+#: src/core/app.c:148
+#, c-format
+msgid "Error loading default palette from `%s'\n"
+msgstr "Error cargando la paleta por defecto desde `%s'\n"
+
+#: src/core/app.c:264
+#, c-format
+msgid "Error<<Error loading file \"%s\"||&Close"
+msgstr "Error<<Error cargando archivo \"%s\".||&Cerrar"
+
+#: src/core/app.c:266
+#, c-format
+msgid "Error loading file \"%s\"\n"
+msgstr "Error cargando archivo \"%s\"\n"
+
+#: src/core/app.c:308
+msgid ""
+"Console mode is unavailable (you should compile with readline library)\n"
+msgstr ""
+"El modo consola no está disponible (debería compilar con la librería "
+"readline)\n"
+
+#: src/core/app.c:352
+#, c-format
+msgid ""
+"ASE is copyright (C) 2001-2004 by David A. Capello\n"
+"Report bugs to <%s>.\n"
+msgstr ""
+"ASE es copyright (C) 2001, 2002, 2003, 2004 por David A. Capello\n"
+"Reporte errores y fallos a <%s>\n"
+
+#. for `null'
+#: src/core/app.c:402 src/core/app.c:517
+msgid "Nothing"
+msgstr "Nada"
+
+#. for `clipboard'
+#: src/core/app.c:412
+msgid "Clipboard"
+msgstr "Portapapeles"
+
+#: src/core/app.c:447
+msgid "More"
+msgstr "Más"
+
+#: src/core/app.c:645
+#, c-format
+msgid "%s: option \"res\" requires an argument\n"
+msgstr "%s: opción \\\"res\\\" requiere un argumento\n"
+
+#: src/core/app.c:702 src/dialogs/about.c:57
+msgid "The Ultimate Sprites Factory"
+msgstr "La Última Fábrica de Sprites"
+
+#: src/core/app.c:707
+msgid "Usage:"
+msgstr "Modo de empledo:"
+
+#: src/core/app.c:707
+msgid "OPTION"
+msgstr "OPCIÓN"
+
+#: src/core/app.c:707
+msgid "FILE"
+msgstr "FICHERO"
+
+#: src/core/app.c:724
+msgid "Just process commands in the arguments"
+msgstr "Sólo procesar comandos en los argumentos"
+
+#: src/core/app.c:725
+msgid "Process a script expression in the given string"
+msgstr "Procesar expresión script in la cadena dada"
+
+#: src/core/app.c:726
+msgid "Process a script file"
+msgstr "Procesar script desde archivo"
+
+#: src/core/app.c:727
+msgid "Open in console mode"
+msgstr "Abrir en modo consola"
+
+#: src/core/app.c:728
+msgid "Use a specify palette by default"
+msgstr "Usar un paleta por defecto específica"
+
+#: src/core/app.c:729
+msgid "Change the resolution to use"
+msgstr "Cambiar la resolución a usar"
+
+#: src/core/app.c:730
+msgid "Output libraries used and exits"
+msgstr "Mostrar las librerías utilizadas y salir"
+
+#: src/core/app.c:731
+msgid "Explain what is being done (in stderr or a log file)"
+msgstr "Explica qué ocurre (en stderr o en un archivo de registro)"
+
+#: src/core/app.c:732
+msgid "Display this help and exits"
+msgstr "Muestra la ayuda y sale"
+
+#: src/core/app.c:733
+msgid "Output version information and exit"
+msgstr "Informa la versión y finaliza"
+
+#: src/core/app.c:738
+msgid "Report bugs to"
+msgstr "Reportar errores y fallos a"
+
+#: src/core/app.c:739
+msgid "Find more information in the ASE's official web site at:"
+msgstr "Encuentre más información en el sitio oficial de ASE en:"
+
+#: src/core/app.c:743
+#, c-format
+msgid "Try \"%s --help\" for more information.\n"
+msgstr "Pruebe \"%s --help\" para más información.\n"
+
+#: src/console/readline.c:47
+#, c-format
+msgid ""
+"ASE %s - Readline Mode\n"
+"Report bugs to <%s>\n"
+"\n"
+msgstr ""
+"ASE %s - Modo Readline\n"
+"Reporte errores y fallos a <%s>\n"
+
+#: src/console/console.c:51
+msgid "Processing..."
+msgstr "Procesando..."
+
+#: src/modules/tools.c:188
+msgid "Tool"
+msgstr "Herramienta"
+
+#: src/modules/tools.c:275
+msgid "Marker"
+msgstr "Marcador"
+
+#: src/modules/tools.c:296
+msgid "Dots"
+msgstr "Puntos"
+
+#: src/modules/tools.c:317
+msgid "Pencil"
+msgstr "Pincel"
+
+#: src/modules/tools.c:333
+msgid "Brush"
+msgstr "Brocha"
+
+#: src/modules/tools.c:367
+msgid "Floodfill"
+msgstr "Relleno"
+
+#: src/modules/tools.c:410
+msgid "Spray"
+msgstr "Spray"
+
+#: src/modules/tools.c:431
+msgid "Line"
+msgstr "Línea"
+
+#: src/modules/tools.c:510
+msgid "Rectangle"
+msgstr "Rectángulo"
+
+#: src/modules/tools.c:555
+msgid "Ellipse"
+msgstr "Elipse"
+
+#: src/modules/tools.c:638 src/widgets/editor/editor.c:786
+msgid "Pos"
+msgstr "Pos"
+
+#: src/modules/tools.c:639
+msgid "Start"
+msgstr "Salida"
+
+#: src/modules/tools.c:640
+msgid "End"
+msgstr "Extremo"
+
+#: src/modules/tools.c:641 src/widgets/editor/editor.c:787
+msgid "Size"
+msgstr "Tamaño"
+
+#: src/modules/tools.c:652
+msgid ""
+"Warning<<The active layer is hidden,<<make it visible and try again||&Close"
+msgstr ""
+"Aviso<<La capa activa está escondida,<<hágala visible y pruebe nuevamente||"
+"&Cerrar"
+
+#: src/modules/tools.c:660
+msgid "Warning<<The active layer is locked,<<unlock it and try again||&Close"
+msgstr ""
+"Aviso<<La capa activa está bloqueada,<<desbloqueela y pruebe nuevamente||"
+"&Cerrar"
+
+#: src/modules/tools.c:1023
+msgid "Replace"
+msgstr "Reemplazar"
+
+#: src/modules/tools.c:1025
+msgid "Intersect"
+msgstr "Intersección"
+
+#: src/modules/tools.c:1029
+msgid "Union"
+msgstr "Unión"
+
+#: src/modules/color.c:425
+msgid "Mask"
+msgstr "Máscara"
+
+#: src/modules/color.c:430 src/modules/color.c:452
+msgid "Gray"
+msgstr "Gris"
+
+#: src/modules/color.c:432 src/modules/color.c:447 src/modules/color.c:457
+msgid "Alpha"
+msgstr "Alpha"
+
+#: src/modules/color.c:444 src/modules/color.c:462
+msgid "Index"
+msgstr "Índice"
+
+#: src/modules/color.c:469
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: src/modules/gui.c:74
+msgid "Error installing timer handler\n"
+msgstr "Error instalando temporalizador\n"
+
+#: src/modules/gui.c:80
+msgid "Error installing mouse handler\n"
+msgstr "Error instalando controlador del ratón\n"
+
+#: src/modules/gui.c:86
+msgid "Error installing keyboard handler\n"
+msgstr "Error instalando controlador del teclado\n"
+
+#: src/modules/gui.c:107
+#, c-format
+msgid ""
+"Error setting graphics mode\n"
+"%s\n"
+"Try \"ase -res WIDTHxHEIGHTxBPP\"\n"
+msgstr ""
+"Error cambiando modo gráfico\n"
+"%s\n"
+"Pruebe \"ase -res ANCHOxALTOxBPP\"\n"
+
+#: src/modules/gui.c:352 src/script/script.c:183
+#, c-format
+msgid "File not found: \"%s\"\n"
+msgstr "Archivo no encontrado: \"%s\"\n"
+
+#: src/modules/gui.c:358
+#, c-format
+msgid "Error loading widget: \"%s\"\n"
+msgstr "Error cargando widget: \"%s\"\n"
+
+#: src/modules/gui.c:446
+#, c-format
+msgid "Widget %s not found.\n"
+msgstr "Widget %s no encontrado.\n"
+
+#: src/modules/editors.c:257
+msgid "Error<<You can't split the editor more||&Close"
+msgstr "Error<<No puede divir este editor más||&Cerrar"
+
+#: src/util/setgfx.c:76
+#, c-format
+msgid "Error in `gfx_mode', invalid card: \"%s\"\n"
+msgstr "Error en `gfx_mode', tarjeta inválida: \"%s\"\n"
+
+#: src/util/setgfx.c:81
+#, c-format
+msgid "Error in `set_gfx', invalid screen size: %dx%d\n"
+msgstr "Error en `gfx_mode', tamaño de pantalla inválido: %dx%d\n"
+
+#: src/util/setgfx.c:87
+#, c-format
+msgid "Error in `gfx_mode', invalid color depth: %d\n"
+msgstr "Error en `gfx_mode', profundidad de color inválida: %d\n"
+
+#: src/util/setgfx.c:100
+msgid "FATAL ERROR: Unable to restore the old graphics mode!\n"
+msgstr "ERROR FATAL: No se puede reestablecer el modo de video anterior\n"
+
+#: src/util/setgfx.c:112
+#, c-format
+msgid "Error setting graphics mode: %dx%d %d bpp\n"
+msgstr "Error cambiando al modo gráfico: %dx%d %d bpp\n"
+
+#: src/util/clipbrd.c:130
+msgid "Can't copying an image portion from the current layer\n"
+msgstr "No se puede copiar un porción de imagen desde la capa actual\n"
+
+#: src/util/clipbrd.c:145
+msgid ""
+"You can't copy sprites of different image types.\n"
+"You should select the clipboard sprite, and change the image type of it.\n"
+msgstr ""
+"No puede copiar sprites de diferentes tipos de imagen.  Debería\n"
+"seleccionar el sprite del Portapapeles (clipboard), y cambiar su tipo\n"
+"de imagen.\n"
+
+#: src/util/frame.c:71
+msgid "Not enough memory.\n"
+msgstr "No hay memoria suficiente.\n"
+
+#: src/util/frame.c:190
+msgid "Error: You can't link a frame from other layer\n"
+msgstr "Error: No puede enlazar un cuadro de una capa a otra\n"
+
+#: src/util/crop.c:90 src/util/crop.c:106 src/util/crop.c:118
+#: src/file/jpeg.c:498
+msgid "Not enough memory\n"
+msgstr "No hay memoria suficiente\n"
+
+#: src/widgets/editor/editor.c:794
+msgid "Frame"
+msgstr "Cuadro"
+
+#: src/widgets/curvedit.c:470
+#, c-format
+msgid "Error<<Loading %s file||&OK"
+msgstr "Error<<Cargando archivo %s||&Aceptar"
+
+#: src/dialogs/colcurve.c:86 src/dialogs/replcol.c:95 src/dialogs/median.c:90
+#: src/dialogs/convmatr.c:107 src/dialogs/invrtcol.c:81
+msgid "Error creating the effect applicator for this sprite\n"
+msgstr "Error creando un aplicador de efectos para este sprite\n"
+
+#. make the window
+#: src/dialogs/about.c:54
+msgid "About ASE"
+msgstr "Acerca de ASE"
+
+#: src/dialogs/about.c:60
+msgid "by David A. Capello"
+msgstr "por David A. Capello"
+
+#: src/dialogs/options.c:207 src/dialogs/drawtext.c:273
+msgid "Open Font (TTF or Allegro bitmap format)"
+msgstr "Abrir Fuente (TTF o en formato Allegro)"
+
+#: src/dialogs/options.c:230
+#, c-format
+msgid "GUI Font: %s"
+msgstr "Fuente GUI: %s"
+
+#: src/dialogs/options.c:231
+msgid "*Default*"
+msgstr ""
+
+#: src/dialogs/gfxsel.c:78
+msgid "Select Graphics Mode"
+msgstr "Seleccionar Modo Gráfico"
+
+#: src/dialogs/gfxsel.c:85
+msgid "Card:"
+msgstr "Tarjeta:"
+
+#: src/dialogs/gfxsel.c:124
+msgid "8 bpp (256 colors)"
+msgstr "8 bpp (256 colores)"
+
+#: src/dialogs/gfxsel.c:125
+msgid "15 bpp (32K colors)"
+msgstr "15 bpp (32 mil colores)"
+
+#: src/dialogs/gfxsel.c:126
+msgid "16 bpp (64K colors)"
+msgstr "16 bpp (64 mil colores)"
+
+#: src/dialogs/gfxsel.c:127
+msgid "24 bpp (16M colors)"
+msgstr "24 bpp (16.7 millones de colores)"
+
+#: src/dialogs/gfxsel.c:128
+msgid "32 bpp (16M colors)"
+msgstr "32 bpp (16.7 millones de colores)"
+
+#: src/dialogs/gfxsel.c:223
+msgid "Autodetect"
+msgstr "Autodetectar"
+
+#: src/dialogs/gfxsel.c:224
+msgid "Autodetect fullscreen"
+msgstr "Autodetectar en pantalla completa"
+
+#: src/dialogs/gfxsel.c:225
+msgid "Autodetect windowed"
+msgstr "Autodetectar en ventana"
+
+#: src/dialogs/tips.c:91
+msgid "&Previous"
+msgstr "&Anterior"
+
+#: src/dialogs/tips.c:92
+msgid "&Next"
+msgstr "&Próximo"
+
+#: src/dialogs/tips.c:95
+msgid "Show me it in the start up"
+msgstr "Mostrar tips al iniciar"
+
+#: src/dialogs/tips.c:311
+msgid "Error loading tips file."
+msgstr "Error cargando archivo de tips."
+
+#: src/dialogs/tips.c:404
+#, c-format
+msgid "Error loading image %s"
+msgstr "Error cargando imagen %s"
+
+#: src/dialogs/tips.c:421
+#, c-format
+msgid "Error loading palette %s"
+msgstr "Error cargando paleta %s"
+
+#. print a informative text
+#: src/dialogs/view.c:73
+msgid "Rendering..."
+msgstr "Renderizando..."
+
+#: src/dialogs/filesel.c:208
+msgid "Make Directory"
+msgstr "Crear un Directorio"
+
+#: src/dialogs/filesel.c:212
+msgid "New Directory"
+msgstr "Nuevo Directorio"
+
+#: src/dialogs/filesel.c:244
+msgid "Error<<Error making the directory||&Close"
+msgstr "Error<<Error creando el directorio||&Cerrar"
+
+#: src/dialogs/maskrepo.c:52 src/file/file.c:469
+msgid "Mask Repository"
+msgstr "Repositorio de Máscaras"
+
+#: src/dialogs/maskrepo.c:53
+msgid "&Replace"
+msgstr "&Reemplazar"
+
+#: src/dialogs/maskrepo.c:116
+msgid "New Mask"
+msgstr "Nueva Máscara"
+
+#: src/dialogs/maskrepo.c:121
+msgid "Current Mask"
+msgstr "Máscara Actual"
+
+#: src/dialogs/maskrepo.c:147
+msgid ""
+"Error<<You can't have two masks with<<the same name in the repository||&OK"
+msgstr ""
+"Error<<No puede tener dos máscaras con<<el mismo nombre dentro del "
+"repositorio||&Aceptar"
+
+#: src/dialogs/toolconf.c:301
+msgid ""
+"Error<<You must select a sprite with mask.<<The boundaries of the mask will "
+"be used<<to specify the grid area.||&OK"
+msgstr ""
+"Error<<Debe seleccionar un sprite con máscara.<<Los límites de la máscara "
+"serán utilizados<<para especificar el área de la grilla.||&Aceptar"
+
+#: src/dialogs/canvasze.c:57
+msgid "Canvas Size"
+msgstr "Tamaño del Canvas"
+
+#: src/dialogs/maskcol.c:72
+msgid "Mask by Color"
+msgstr "Enmascarar por Color"
+
+#: src/dialogs/colsel.c:277
+msgid "Load Palette"
+msgstr "Cargar Paleta"
+
+#: src/dialogs/colsel.c:281
+msgid "Error<<Loading palette file||&Close"
+msgstr "Error<<Error cargando archivo con la paleta de colores.||&Cerrar"
+
+#: src/dialogs/colsel.c:297
+msgid "Save Palette"
+msgstr "Guardar la Paleta"
+
+#: src/dialogs/colsel.c:317
+msgid "Error<<Saving palette file||&Close"
+msgstr "Error<<Error guardando archivo con la paleta de colores.||&Cerrar"
+
+#: src/dialogs/bookmrks.c:44
+msgid "Bookmarks"
+msgstr ""
+
+#: src/dialogs/bookmrks.c:45
+msgid "&Go"
+msgstr "&Ir"
+
+#: src/dialogs/repo.c:55
+msgid "&Add"
+msgstr "&Agregar"
+
+#: src/dialogs/repo.c:56
+msgid "&Delete"
+msgstr "&Borrar"
+
+#: src/dialogs/drawtext.c:120 src/dialogs/drawtext.c:264
+msgid "Error loading font.\n"
+msgstr "Error cargando fuente.\n"
+
+#: src/dialogs/drawtext.c:143
+msgid "Error rendering text.\n"
+msgstr "Error renderizando texto.\n"
+
+#: src/file/ase.c:173
+msgid "Error reading header\n"
+msgstr "Error leyendo cabecera.\n"
+
+#: src/file/ase.c:182
+msgid "Error creating sprite with file spec\n"
+msgstr "Error creando sprite con las especificaciones del archivo\n"
+
+#: src/file/ase.c:227
+msgid "Warning: was found a color chunk in non-8bpp file\n"
+msgstr ""
+"Aviso: fue encontrado un \"chunk\" de colores en un archivo que no es de 8 "
+"bpp\n"
+
+#: src/file/ase.c:255
+msgid "Warning: error loading a mask chunk\n"
+msgstr "Aviso: error cargando \"chunk\" de máscara\\n\"\n"
+
+#: src/file/ase.c:265
+#, c-format
+msgid "Warning: Unsupported chunk type %d (skipping)\n"
+msgstr "Aviso: Tipo de \"chunk\" no soportado %d (salteándolo)\n"
+
+#: src/file/ase.c:688
+#, c-format
+msgid "Frame %d didn't found layer with index %d\n"
+msgstr "El cuadro %d no encontró la capa con índice %d\n"
+
+#: src/file/file.c:102
+msgid "Error: called two times \"file_sequence_image ()\".\n"
+msgstr "Error: se llamó dos veces a \"file_sequence_image ()\".\n"
+
+#: src/file/file.c:108
+msgid "Not enough memory to allocate a bitmap.\n"
+msgstr "No hay memoria suficiente para alojar un bitmap.\n"
+
+#: src/file/file.c:179
+#, c-format
+msgid "Load file type \"%s\" isn't supported\n"
+msgstr "Cargar archivos \"%s\" no está soportado\n"
+
+#: src/file/file.c:237
+#, c-format
+msgid ""
+"Notice<<Possible animation with:<<%s<<Load the sequence of bitmaps?||&Agree||"
+"&Skip"
+msgstr ""
+"Aviso<<Posible animación con:<<%s<<Cargar la secuencia de bitmaps?||"
+"&Aceptar||&Omitir"
+
+#: src/file/file.c:364
+#, c-format
+msgid "Error loading \"%s\"\n"
+msgstr "Error cargando \"%s\"\n"
+
+#: src/file/file.c:394
+#, c-format
+msgid "Save file type \"%s\" isn't supported\n"
+msgstr "Guardar archivos \"%s\" no está soportado\n"
+
+#: src/file/file.c:409
+msgid "RGB format"
+msgstr "Formato RGB"
+
+#: src/file/file.c:413 src/file/file.c:423
+msgid "Alpha channel"
+msgstr "Canal Alpha"
+
+#: src/file/file.c:419
+msgid "Grayscale format"
+msgstr "Formato de Escala de Grises"
+
+#: src/file/file.c:429
+msgid "Indexed format"
+msgstr "Formato Indexado"
+
+#: src/file/file.c:440
+msgid "Frames"
+msgstr "Cuadros"
+
+#: src/file/file.c:447
+msgid "Layers"
+msgstr "Capas"
+
+#: src/file/file.c:475
+msgid "Path Repository"
+msgstr "Repositorio de Paths (caminos)"
+
+#: src/file/file.c:483
+#, c-format
+msgid "Error<<File type \"%s\" doesn't support:%s||&Close"
+msgstr "Error<<El tipo de archivo \"%s\" no soporta:%s||&Cerrar"
+
+#: src/file/file.c:487
+#, c-format
+msgid ""
+"Warning<<File type \"%s\" doesn't support:%s<<Do you want continue?||&Yes||"
+"&No"
+msgstr ""
+"Aviso<<El tipo de archivo \"%s\" no soporta:%s<<Desea continuar de todos "
+"modos?||&Sí||&No"
+
+#: src/file/file.c:569
+msgid "Not enough memory for the temporary bitmap.\n"
+msgstr "No hay memoria suficiente para un bitmap temporario.\n"
+
+#: src/file/file.c:583
+#, c-format
+msgid "Error saving \"%s\"\n"
+msgstr "Error guardando \"%s\"\n"
+
+#: src/file/bmp.c:513 src/file/jpeg.c:103 src/file/jpeg.c:414
+#: src/file/tga.c:202
+msgid "Error opening file.\n"
+msgstr "Error abriendo archivo.\n"
+
+#: src/file/bmp.c:640 src/file/jpeg.c:257 src/file/pcx.c:190
+#: src/file/tga.c:402
+msgid "Error creating file.\n"
+msgstr "Error creando archivo.\n"
+
+#: src/file/bmp.c:715 src/file/pcx.c:300 src/file/tga.c:479
+msgid "Error writing bytes.\n"
+msgstr "Error escribiendo bytes.\n"
+
+#: src/file/fli.c:74 src/file/fli.c:178
+msgid "Not enough memory for temporary bitmaps.\n"
+msgstr "No hay memoria suficiente para bitmaps temporarios.\n"
+
+#: src/file/jpeg.c:295
+msgid "Not enough memory for the buffer.\n"
+msgstr "No hay memoria suficiente para el buffer.\n"
+
+#: src/file/jpeg.c:305
+msgid "Not enough memory for buffer scanlines.\n"
+msgstr "No hay memoria suficiente para el buffer de scanlines.\n"
+
+#. skip manufacturer ID
+#. skip version flag
+#. skip encoding flag
+#. we like 8 bit color planes
+#: src/file/pcx.c:65
+msgid "This PCX doesn't have 8 bit color planes.\n"
+msgstr "Este PCX no tiene planos de colores de 8 bits\n"
+
+#: src/file/pcx.c:168 src/file/tga.c:378
+msgid "Error reading bytes.\n"
+msgstr "Error leyendo bytes.\n"
+
+#~ msgid "Error<<Loading %s file||&Close"
+#~ msgstr "Error<<Error cargando archivo %s.||&Cerrar"
+
+#~ msgid "Error loading window from \"median.jid\"\n"
+#~ msgstr "Error cargando ventana desde \"median.jid\"\n"
+
+#~ msgid "Error loading window from \"replcol.jid\"\n"
+#~ msgstr "Error cargando ventana desde \"replcol.jid\"\n"
+
+#~ msgid "Error loading window from \"colcurv.jid\"\n"
+#~ msgstr "Error cargando ventana desde \"colcurv.jid\"\n"
+
+#~ msgid "Error loading window from \"invrtcol.jid\"\n"
+#~ msgstr "Error cargando ventana desde \"invrtcol.jid\"\n"
+
+#~ msgid "Error loading window from \"convmatr.jid\"\n"
+#~ msgstr "Error cargando ventana desde \"convmatr.jid\"\n"
+
+#~ msgid "You can't add a new frame here, already there is one.\n"
+#~ msgstr "No puede agregar un cuadro aquí, ya existe uno.\n"
+
+#~ msgid "Quantize Method"
+#~ msgstr "Método para Cuantizar"
+
+#~ msgid "Bad usage of plugin_set_gfx_mode ()\n"
+#~ msgstr "Mala utilización de plugin_set_gfx_mode ()\n"
+
+#~ msgid "Error"
+#~ msgstr "Error"
+
+#~ msgid "Not enough memory"
+#~ msgstr "No hay memoria suficiente"
+
+#~ msgid "Foreground"
+#~ msgstr "Primer Plano"
+
+#~ msgid "Help"
+#~ msgstr "Ayuda"
+
+#~ msgid "Sorry, this must be written"
+#~ msgstr "Lo siento, esto debe ser escrito"

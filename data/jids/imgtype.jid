@@ -1,0 +1,26 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Convert Image Type") name="image_type">
+  <box vertical>
+    <box vertical expansive>
+      <box horizontal>
+        <label text=_("From:") />
+        <label text="" name="from" />
+      </box>
+      <label text=_("To:") />
+      <radio name="imgtype1" text=_("&RGB") group=1 />
+      <radio name="imgtype2" text=_("&Grayscale") group=1 />
+      <radio name="imgtype3" text=_("&Indexed") group=1 />
+      <separator horizontal />
+      <radio name="dither1" text=_("&No Dithering") group=2 />
+      <radio name="dither2" text=_("&Ordered Dither") group=2 />
+    </box>
+    <box horizontal expansive homogeneous>
+      <button text=_("&OK") name="ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

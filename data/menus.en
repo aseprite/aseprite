@@ -1,0 +1,272 @@
+# allegro-sprite-editor menus				-*- Shell-script -*-
+# Copyright (C) 2001-2005, 2007 by David A. Capello
+#
+# Loader in "src/modules/rootmenu.c"
+# Check methods in "src/modules/chkmthds.c"
+#
+# See "src/script/bindings.src" for the list of available script routines
+#
+# Format:
+# -------
+#
+# # <- comment
+# sub-menu {
+#   menu-item = check_method script_expression [keyboard_bindings...] ;
+#   sprite-list-menu SPRITE_LIST ;
+#   recent-list-menu RECENT_LIST ;
+#   ----
+#   layer-menu LAYER_POPUP {
+#     ...
+#   }
+#   frame-menu FRAME_POPUP {
+#     ...
+#   }
+#   undo-action UNDO_ACCEL = ... ; 
+#   redo-action REDO_ACCEL = ... ; 
+#   open-film-editor-action FILMEDITOR_ACCEL = ... ; 
+#   screenshot-action SCREENSHOT_ACCEL = ... ; 
+#   ...
+# }
+#
+# References:
+# -----------
+#
+# script_expression:
+#   The script string to be run.
+#
+# keyboard_bindings:
+#   Keys shorcuts for the menu (must be between <...>).
+#   The characters between <...> can not have spaces.
+#   The first key shortcut will be showed in the program.
+#
+# ----:
+#   Is a separator
+#
+# check_method:
+#   A name of a method to check when this options should be available
+#   on interactive mode:
+#
+#   always          - always is enabled
+#   has_sprite      - only when we are editing a sprite
+#   has_layer       - only when we are editing a layer
+#   has_layerimage  - only when we are editing a layer (of "image" type)
+#   has_image       - only when we are editing a image
+#   can_undo        - only when we can undo
+#   can_redo        - only when we can redo
+#   has_path        - sprite has a working path
+#   has_mask        - sprite has a region marked
+#   has_imagemask   - sprite has a region marked in a image layer
+#   has_clipboard   - only when the clipboard can be used in
+#                     the current sprite
+#
+#   menu_bar        - menu bar visibility
+#   status_bar      - status bar visibility
+#   color_bar       - color bar visibility
+#   tool_bar        - tool bar visibility
+#
+#   tool_marker     - current tool is marker?
+#   tool_dots       - current tool is dots?
+#   tool_pencil     - current tool is pencil?
+#   tool_brush      - current tool is brush?
+#   tool_floodfill  - current tool is floodfill?
+#   tool_spray      - current tool is spray?
+#   tool_line       - current tool is line?
+#   tool_rectangle  - current tool is rectangle?
+#   tool_ellipse    - current tool is ellipse?
+#
+#   is_rec	    - controls the check status if is recording-screen on/off
+#   is_movingframe  - when the user moves a frame in the film editor
+#
+
+- {
+  "&Tips" = always "GUI_Tips(true)" <F1> ;
+  "&About" = always "GUI_About()" ;
+  "&Refresh" = always "app_refresh_screen()" <F5> ;
+  ----
+  "&Screen Saver" = always "GUI_ScreenSaver()" ;
+  "Set &Graphics Mode" {
+    "&Select" = always "set_gfx(\"interactive\", 0, 0, 0)" ;
+    ----
+    "320x200 8" = always "set_gfx(\"autodetect\", 320, 200, 8)" ;
+    "320x240 8" = always "set_gfx(\"autodetect\", 320, 240, 8)" ;
+    "640x480 8" = always "set_gfx(\"autodetect\", 640, 480, 8)" ;
+    "800x600 8" = always "set_gfx(\"autodetect\", 800, 600, 8)" ;
+    ----
+    "320x200 16" = always "set_gfx(\"autodetect\", 320, 200, 16)" ;
+    "320x240 16" = always "set_gfx(\"autodetect\", 320, 240, 16)" ;
+    "640x480 16" = always "set_gfx(\"autodetect\", 640, 480, 16)" ;
+    "800x600 16" = always "set_gfx(\"autodetect\", 800, 600, 16)" ;
+  }
+  ----
+  "Screen Sh&ot" SCREENSHOT_ACCEL = always "screen_shot()" <F12> ;
+  "Recording Screen" = is_rec "GUI_SwitchREC()" ;
+  ----
+  "Reload &Menus" = always "GUI_ReloadMenus()" ;
+  ----
+  "Load Session" = always "GUI_LoadSession()" ;
+  "Save Session" = always "GUI_SaveSession()" ;
+}
+
+&File {
+  "&New" = always "GUI_NewSprite()" <Ctrl+N> ;
+  "&Open" = always "GUI_OpenSprite()" <Ctrl+O> <F3> ;
+  "Open &Recent" RECENT_LIST ;
+  ----
+  "&Save" = has_sprite "GUI_SaveSprite()" <Ctrl+S> <F2> ;
+  "&Close" = has_sprite "GUI_CloseSprite()" <Ctrl+W> ;
+  ----
+  "E&xit" = always "GUI_Exit()" <Ctrl+Q> <Esc> ;
+}
+
+&Edit {
+  "&Undo" UNDO_ACCEL = can_undo "GUI_Undo()" <Ctrl+Z> <Ctrl+U> ;
+  "&Redo" REDO_ACCEL = can_redo "GUI_Redo()" <Ctrl+R> ;
+  ----
+  "Cu&t" = has_imagemask "cut_to_clipboard()" <Ctrl+X> <Shift+Del> ;
+  "&Copy" = has_imagemask "copy_to_clipboard()" <Ctrl+C> <Ctrl+Ins> ;
+  "&Paste" = has_clipboard "paste_from_clipboard(true, 0, 0, 0, 0)" <Ctrl+V> <Shift+Ins> ;
+  "C&lear" = has_image "GUI_EditClear()" <Ctrl+B> <Ctrl+Del> ;
+  ----
+  "Quick &Move" = has_imagemask "quick_move()" <Shift+M> ;
+  "Quick C&opy" = has_imagemask "quick_copy()" <Shift+C> ;
+#  "Quick S&wap" = has_imagemask "quick_swap()" <Shift+S> ;
+  ----
+  "Flip &Horizontal" = has_image "GUI_FlipHorizontal()" <Shift+H> ;
+  "Flip &Vertical" = has_image "GUI_FlipVertical()" <Shift+V> ;
+  ----
+  "R&eplace Color" = has_image "GUI_ReplaceColor()" </> ;
+  "&Invert" = has_image "GUI_InvertColor()" <Ctrl+I> ;
+}
+
+&Sprite {
+  "&Properties" = has_sprite "GUI_SpriteProperties()" <Ctrl+P> ;
+  ----
+  "&Duplicate" = has_sprite "GUI_DuplicateSprite()" ;
+  "Image &Type" = has_sprite "GUI_ImageType()" ;
+  ----
+  #"&Image Resize" = has_sprite "print(\"Unavailable\")" ;
+  #"&Canvas Resize" = has_sprite "canvas_resize()" ;
+  "Cr&op" = has_mask "crop_sprite()" ;
+  "&Auto Crop" = has_sprite "autocrop_sprite()" ;
+}
+
+&Layer LAYER_POPUP {
+  "&Properties" = has_layer "GUI_LayerProperties()" <Shift+P> ;
+  ----
+  "&New" = has_sprite "GUI_NewLayer()" <Shift+N> ;
+  "New &Set" = has_sprite "GUI_NewLayerSet()" ;
+  "&Remove" = has_layer "GUI_RemoveLayer()" ;
+  ----
+  "&Duplicate" = has_layer "GUI_DuplicateLayer()" ;
+  "&Merge Down" = has_layer "GUI_MergeDown()" ;
+  "&Flatten" = has_layer "FlattenLayers()" ;
+  "Cr&op" = has_mask "crop_layer()" ;
+}
+
+F&rame FRAME_POPUP {
+  "&Properties" = has_image "GUI_FrameProperties()" <Ctrl+Shift+P> ;
+  "&Remove" = has_image "GUI_RemoveFrame()" ;
+  ----
+  "&New" = has_layerimage "new_frame()" <Ctrl+Shift+N> ;
+  "&Move" = is_movingframe "move_frame()" ;
+  "&Copy" = is_movingframe "copy_frame()" ;
+  "&Link" = is_movingframe "link_frame()" ;
+  ----
+  "Cr&op" = has_imagemask "crop_frame()" ;
+}
+
+&Mask {
+  "&All" = has_sprite "MaskAll()" <Ctrl+A> ;
+  "&Deselect" = has_mask "DeselectMask()" <Ctrl+D> ;
+  "&Reselect" = has_sprite "ReselectMask()" <Shift+Ctrl+D> ;
+  "&Invert" = has_sprite "InvertMask()" <Shift+Ctrl+I> ;
+#    "&Shrink" = has_imagemask "selection(current_sprite, SEL_SHRINK)" ;
+  ----
+  "&Color" = has_image "GUI_MaskColor()" <?> ;
+  "S&pecial" {
+    "Stretch &Bottom" = has_mask "StretchMaskBottom()" ;
+  }
+  ----
+  "Repositor&y" = has_sprite "GUI_MaskRepository()" <Shift+Ctrl+M> ;
+  "&Load" = has_sprite "GUI_LoadMask()" ;
+  "&Save" = has_mask "GUI_SaveMask()" ;
+}
+
+# XXX
+# &Path {
+#   "&Repository" = has_sprite "print(\"Unavailable\")" <Shift+Ctrl+P> ;
+#   "&Load" = has_sprite "print(\"Unavailable\")" ;
+#   "&Save" = has_path "print(\"Unavailable\")" ;
+# }
+
+&Tool {
+  "&Drawing Tool" {
+    "&Configure" = always "GUI_ToolsConfiguration()" <C> ;
+    ----
+    "&Marker" = tool_marker "select_tool(\"Marker\")" <M> ;
+    "&Dots" = tool_dots "select_tool(\"Dots\")" <D> ;
+    "&Pencil" = tool_pencil "select_tool(\"Pencil\")" <P> ;
+    "&Brush (real pencil)" = tool_brush "select_tool(\"Brush\")" <B> ;
+    "&Floodfill" = tool_floodfill "select_tool(\"Floodfill\")" <F> ;
+    "&Spray" = tool_spray "select_tool(\"Spray\")" <S> ;
+    "&Line" = tool_line "select_tool(\"Line\")" <L> ;
+    "&Rectangle" = tool_rectangle "select_tool(\"Rectangle\")" <R> ;
+    "&Ellipse" = tool_ellipse "select_tool(\"Ellipse\")" <E> ;
+#     "&Oval" = tool_path "select_tool(\"Oval\")" <O> ;
+  }
+  &Filters FILTERS_POPUP {
+    "Convolution &Matrix" = has_image "GUI_ConvolutionMatrix()" <F9> ;
+    "&Color Curve" = has_image "GUI_ColorCurve()" <Ctrl+M> <F10> ;
+    #"&Gaussian Blur" = has_image "gaussian_blur(current_sprite)" ;
+    #"&Vector Map" = has_image "GUI_VectorMap()" ;
+    ----
+    "&Despeckle (median filter)" = has_image "GUI_MedianFilter()" ;
+  }
+#   "Make &Undo Animation" = has_sprite
+#                           "sprite = make_undo_animation(current_sprite)
+#                            if sprite ~= nil then select_sprite(sprite) end" ;
+  &Scripts {
+    "Load script &file" = always "GUI_LoadScriptFile()" <Ctrl+0> ;
+    ----
+    "aselogo.lua" = always "include(\"examples/aselogo.lua\")" ;
+    "cosy.lua" = always "include(\"examples/cosy.lua\")" ;
+    "dacap.lua" = always "include(\"examples/dacap.lua\")" ;
+    "shell.lua" = always "include(\"examples/shell.lua\")" ;
+    "spiral.lua" = always "include(\"examples/spiral.lua\")" ;
+    "terrain.lua" = always "include(\"examples/terrain.lua\")" ;
+  }
+  ----
+  "Draw &Text" = has_sprite "GUI_DrawText()" ;
+  "&MapGen" = always "GUI_MapGen()" ;
+  "&Play FLI/FLC File" = always "GUI_PlayFLI()" ;
+#   ----
+#   "Test &JID File" = always "GUI_TestJID()" ;
+  ----
+  "&Options" = always "GUI_Options()" <Shift+Ctrl+O> ;
+}
+
+&View {
+  "&Tiled" = has_sprite "view_tiled()" <F8> ;
+  "&Normal" = has_sprite "view_normal()" <F7> ;
+  "&Fullscreen" = has_sprite "view_fullscreen()" ;
+  ----
+  "&Menu Bar" = menu_bar "app_switch(app_get_menu_bar())" <Ctrl+F1> ;
+  "&Status Bar" = status_bar "app_switch(app_get_status_bar())" <Ctrl+F2> ;
+  "&Color Bar" = color_bar "app_switch(app_get_color_bar())" <Ctrl+F3> ;
+  "T&ool Bar" = tool_bar "app_switch(app_get_tool_bar())" <Ctrl+F4> ;
+  ----
+  &Editor {
+    "Make &Unique" = always "make_unique_editor(current_editor)" <Ctrl+1> ;
+    ----
+    "Split &Vertically" = always "split_editor(current_editor, JI_VERTICAL)" <Ctrl+2> ;
+    "Split &Horizontally" = always "split_editor(current_editor, JI_HORIZONTAL)" <Ctrl+3> ;
+    ----
+    "&Close" = always "close_editor(current_editor)" <Ctrl+4> ;
+  }
+  "Fi&lm Editor" FILMEDITOR_ACCEL = has_sprite "switch_between_film_and_sprite_editor()" <Tab> ;
+  "&Palette Editor" = always "show_palette_editor()" <F4> ;
+  ----
+  "F&ilters Popup Menu" = always "show_filters_popup_menu()" <X> ;
+}
+
+L&ist SPRITE_LIST ;

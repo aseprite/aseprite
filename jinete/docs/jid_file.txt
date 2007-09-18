@@ -1,0 +1,80 @@
+======================================================================
+Format for .jid files
+======================================================================
+
+  General format:
+
+    <widget_type [id="..."]
+		 [expansive]
+		 [width="percentage of screen width"]
+		 [height="percentage of screen height"]
+		 [magnet]
+		 [noborders]
+       ...>
+      widgets children...
+    </widget_type>
+
+======================================================================
+Supported widget types
+======================================================================
+
+<box [horizontal | vertical]
+     [homogeneous]>
+  children...
+</box>
+
+<button text="..."
+        [left | center | right]
+        [top | middle | bottom]>
+
+<check text="..."
+       [left | center | right]
+       [top | middle | bottom]>
+
+<entry max_size="..."
+       [text="..."] />
+
+<label text="..."
+       [left | center | right]
+       [top | middle | bottom]>
+
+<listbox>
+  <listitem text="...">
+  children...
+</listbox>
+
+<panel [horizontal | vertical]>
+  children...
+</panel>
+
+<radio text="..." group="..."
+       [left | center | right]
+       [top | middle | bottom] />
+
+<separator [text="..."]
+	   [left | center | right]
+	   [top | middle | bottom]
+	   [horizontal | vertical]>
+  children...
+</separator>
+
+<slider min="..." max="..." />
+
+<textbox [wordwrap]>
+  text...
+</textbox>
+
+<view [maxsize]>
+  a viewable widget (like a listbox)
+</view>
+
+<window text="..."
+        [desktop]>
+  children...
+</window>
+
+======================================================================
+Example
+======================================================================
+
+  See the exfile.c file.

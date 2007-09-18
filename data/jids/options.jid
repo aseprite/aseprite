@@ -1,0 +1,54 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Options") name="options">
+  <box vertical>
+    <box horizontal>
+      <box vertical>
+
+	<label text=_("Mouse Speed:") />
+	<box horizontal>
+	  <box vertical homogeneous>
+            <label text=_("X:") />
+            <label text=_("Y:") />
+	  </box>
+	  <box vertical homogeneous expansive>
+            <slider min="-8" max="8" name="mouse_x" />
+            <slider min="-8" max="8" name="mouse_y" />
+	  </box>
+	</box>
+	<check text=_("Lock X/Y") name="lock_axis" />
+
+	<separator horizontal />
+
+	<label text=_("Movement Delay (milliseconds):") />
+	<slider min="0" max="1000" name="move_delay" />
+	<check text=_("Smooth auto-scroll") name="smooth" />
+	<check text=_("Real-time ordered dithering") name="dither" />
+
+      </box>
+      <separator vertical />
+      <box vertical>
+
+	<label text="" name="label_font" />
+	<button text=_("Change GUI Font") name="button_font" />
+	<button text=_("Change Language") name="button_lang" />
+	<separator horizontal />
+	<check text=_("2 Click Movement") name="move_click2" />
+	<check text=_("2 Click Drawing") name="draw_click2" />
+
+      </box>
+    </box>
+
+    <separator horizontal />
+    <check text=_("Ask to load backed up sessions") name="askbkpses" />
+
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Save") name="button_save" />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

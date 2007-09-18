@@ -1,0 +1,66 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Convolution Matrix") name="convolution_matrix">
+  <box vertical>
+    <box horizontal expansive>
+      <view expansive name="view" /><!-- custom widget -->
+      <box vertical>
+        <button text=_("&OK") name="button_ok" magnetic />
+        <button text=_("&Cancel") />
+        <box name="target" />
+        <check text=_("&Preview") name="preview" />
+        <check text=_("&Tiled") name="tiled" />
+      </box>
+    </box>
+    <box horizontal>
+      <button text=_("&Reload Stock") name="reload" />
+      <button text=_("&Generate") name="generate" />
+    </box>
+  </box>
+</window>
+
+<window text=_("Generate New Matrix") name="generate_convolution_matrix">
+  <box vertical>
+    <box horizontal expansive homogeneous>
+      <box vertical expansive>
+        <label text=_("X axis") />
+        <view expansive name="view_x" /><!-- custom widget -->
+      </box>
+      <box vertical expansive>
+        <label text=_("Y axis") />
+        <view expansive name="view_y" /><!-- custom widget -->
+      </box>
+    </box>
+    <box horizontal homogeneous>
+      <box horizontal>
+        <box vertical homogeneous>
+          <label text=_("Width:") />
+          <label text=_("Height:") />
+	</box>
+        <box vertical homogeneous expansive>
+          <slider min="1" max="31" name="width" />
+          <slider min="1" max="31" name="height" />
+	</box>
+        <box vertical homogeneous>
+          <label text=_("Div:") />
+          <label text=_("Bias:") />
+	</box>
+        <box vertical homogeneous expansive>
+          <entry maxsize=32 name="div" />
+          <entry maxsize=32 name="bias" />
+	</box>
+        <box vertical homogeneous>
+          <check text=_("Auto") name="div_auto" />
+          <check text=_("Auto") name="bias_auto" />
+	</box>
+      </box>
+    </box>
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

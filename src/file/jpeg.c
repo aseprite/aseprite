@@ -1,0 +1,578 @@
+/* ase -- allegro-sprite-editor: the ultimate sprites factory
+ * Copyright (C) 2001-2005, 2007  David A. Capello
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "config.h"
+
+#ifndef USE_PRECOMPILED_HEADER
+
+#include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "console/console.h"
+#include "core/app.h"
+#include "core/cfg.h"
+#include "core/core.h"
+#include "file/file.h"
+#include "raster/raster.h"
+#include "script/script.h"
+
+#endif
+
+/**********************************************************************/
+
+#if defined HAVE_LIBJPEG
+#include <jpeglib.h>
+#elif defined HAVE_JPGALLEG
+#include <jpgalleg.h>
+#endif
+
+/**********************************************************************/
+
+#if defined HAVE_LIBJPEG || HAVE_JPGALLEG
+
+static Sprite *load_jpeg(const char *filename);
+static int save_jpeg(Sprite *sprite);
+
+static int configure_jpeg(void);
+
+FileType filetype_jpeg =
+{
+  "jpeg",
+  "jpeg,jpg",
+  load_jpeg,
+  save_jpeg,
+  FILE_SUPPORT_RGB |
+  FILE_SUPPORT_GRAY |
+  FILE_SUPPORT_SEQUENCES
+};
+
+#endif
+
+/**********************************************************************/
+
+#if defined HAVE_LIBJPEG
+
+static void progress_monitor(j_common_ptr cinfo)
+{
+  if (cinfo->progress->pass_limit > 1)
+    do_progress(100 *
+		(cinfo->progress->pass_counter) /
+		(cinfo->progress->pass_limit-1));
+}
+
+struct error_mgr {
+  struct jpeg_error_mgr pub;
+  jmp_buf setjmp_buffer;
+};
+
+static void error_exit(j_common_ptr cinfo)
+{
+  /* Display the message.  */
+  (*cinfo->err->output_message)(cinfo);
+
+  /* Return control to the setjmp point.  */
+  longjmp(((struct error_mgr *)cinfo->err)->setjmp_buffer, 1);
+}
+
+static void output_message(j_common_ptr cinfo)
+{
+  char buffer[JMSG_LENGTH_MAX];
+
+  /* Format the message.  */
+  (*cinfo->err->format_message)(cinfo, buffer);
+
+  /* Put in the log file if.  */
+  PRINTF("JPEG library: \"%s\"\n", buffer);
+
+  /* Leave the message for the application.  */
+  console_printf("%s\n", buffer);
+}
+
+static Sprite *load_jpeg(const char *filename)
+{
+  struct jpeg_decompress_struct cinfo;
+  struct error_mgr jerr;
+  struct jpeg_progress_mgr progress;
+  Image *image;
+  FILE *file;
+  JDIMENSION num_scanlines;
+  JSAMPARRAY buffer;
+  JDIMENSION buffer_height;
+  int c;
+
+  file = fopen(filename, "rb");
+  if (!file) {
+    if (!file_sequence_sprite())
+      console_printf(_("Error opening file.\n"));
+    return NULL;
+  }
+
+  /* initialize the JPEG decompression object with error handling */
+  cinfo.err = jpeg_std_error(&jerr.pub);
+
+  jerr.pub.error_exit = error_exit;
+  jerr.pub.output_message = output_message;
+
+  /* establish the setjmp return context for error_exit to use */
+  if (setjmp(jerr.setjmp_buffer)) {
+    jpeg_destroy_decompress(&cinfo);
+    fclose(file);
+    return NULL;
+  }
+
+  jpeg_create_decompress(&cinfo);
+
+  /* specify data source for decompression */
+  jpeg_stdio_src(&cinfo, file);
+
+  /* read file header, set default decompression parameters */
+  jpeg_read_header(&cinfo, TRUE);
+
+  if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
+    cinfo.out_color_space = JCS_GRAYSCALE;
+  else
+    cinfo.out_color_space = JCS_RGB;
+
+  /* start decompressor */
+  jpeg_start_decompress(&cinfo);
+
+  /* create the image */
+  image = file_sequence_image((cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
+								  IMAGE_GRAYSCALE),
+			      cinfo.output_width,
+			      cinfo.output_height);
+  if (!image) {
+    jpeg_destroy_decompress(&cinfo);
+    fclose(file);
+    return NULL;
+  }
+
+  /* create the buffer */
+  buffer_height = cinfo.rec_outbuf_height;
+  buffer = jmalloc(sizeof(JSAMPROW) * buffer_height);
+  if (!buffer) {
+    jpeg_destroy_decompress(&cinfo);
+    fclose(file);
+    return NULL;
+  }
+
+  for (c=0; c<(int)buffer_height; c++) {
+    buffer[c] = jmalloc(sizeof(JSAMPLE) *
+			cinfo.output_width * cinfo.output_components);
+    if (!buffer[c]) {
+      for (c--; c>=0; c--)
+        jfree(buffer[c]);
+      jfree(buffer);
+      jpeg_destroy_decompress(&cinfo);
+      fclose(file);
+      return NULL;
+    }
+  }
+
+  /* generate a grayscale palette if is necessary */
+  if (image->imgtype == IMAGE_GRAYSCALE)
+    for (c=0; c<256; c++)
+      file_sequence_set_color(c, c >> 2, c >> 2, c >> 2);
+
+  /* for progress bar */
+  progress.progress_monitor = progress_monitor;
+  cinfo.progress = &progress;
+
+  /* read each scan line */
+  while (cinfo.output_scanline < cinfo.output_height) {
+/*     if (plugin_want_close())  */
+/*       break; */
+
+    num_scanlines = jpeg_read_scanlines(&cinfo, buffer, buffer_height);
+
+    /* RGB */
+    if (image->imgtype == IMAGE_RGB) {
+      unsigned char *src_address;
+      unsigned long *dst_address;
+      int x, y, r, g, b;
+
+      for (y=0; y<(int)num_scanlines; y++) {
+        src_address = ((unsigned char **)buffer)[y];
+        dst_address = ((unsigned long **)image->line)[cinfo.output_scanline-1+y];
+
+        for (x=0; x<image->w; x++) {
+          r = *(src_address++);
+          g = *(src_address++);
+          b = *(src_address++);
+          *(dst_address++) = _rgba (r, g, b, 255);
+        }
+      }
+    }
+    /* Grayscale */
+    else {
+      unsigned char *src_address;
+      unsigned short *dst_address;
+      int x, y;
+
+      for (y=0; y<(int)num_scanlines; y++) {
+        src_address = ((unsigned char **)buffer)[y];
+        dst_address = ((unsigned short **)image->line)[cinfo.output_scanline-1+y];
+
+        for (x=0; x<image->w; x++)
+          *(dst_address++) = _graya(*(src_address++), 255);
+      }
+    }
+  }
+
+  /* destroy all data */
+  for (c=0; c<(int)buffer_height; c++)
+    jfree(buffer[c]);
+  jfree(buffer);
+
+  jpeg_finish_decompress(&cinfo);
+  jpeg_destroy_decompress(&cinfo);
+
+  fclose(file);
+  return file_sequence_sprite();
+}
+
+static int save_jpeg(Sprite *sprite)
+{
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+  struct jpeg_progress_mgr progress;
+  FILE *file;
+  JSAMPARRAY buffer;
+  JDIMENSION buffer_height;
+  Image *image;
+  int c;
+  int smooth;
+  int quality;
+  J_DCT_METHOD method;
+
+  /* Configure JPEG compression only in the first frame.  */
+  if (sprite->frpos == 0 && configure_jpeg() < 0)
+    return 0;
+
+  /* Options.  */
+  smooth = get_config_int("JPEG", "Smooth", 0);
+  quality = get_config_int("JPEG", "Quality", 100);
+  method = get_config_int("JPEG", "Method", JDCT_DEFAULT);
+
+  /* Open the file for write in it.  */
+  file = fopen(sprite->filename, "wb");
+  if (!file) {
+    console_printf(_("Error creating file.\n"));
+    return -1;
+  }
+
+  image = file_sequence_image_to_save();
+
+  /* Allocate and initialize JPEG compression object.  */
+  cinfo.err = jpeg_std_error(&jerr);
+  jpeg_create_compress(&cinfo);
+
+  /* Specify data destination file.  */
+  jpeg_stdio_dest(&cinfo, file);
+
+  /* Set parameters for compression.  */
+  cinfo.image_width = image->w;
+  cinfo.image_height = image->h;
+
+  if (image->imgtype == IMAGE_GRAYSCALE) {
+    cinfo.input_components = 1;
+    cinfo.in_color_space = JCS_GRAYSCALE;
+  }
+  else {
+    cinfo.input_components = 3;
+    cinfo.in_color_space = JCS_RGB;
+  }
+
+  jpeg_set_defaults(&cinfo);
+  jpeg_set_quality(&cinfo, quality, TRUE);
+  cinfo.dct_method = method;
+  cinfo.smoothing_factor = smooth;
+
+  /* Start compressor.  */
+  jpeg_start_compress(&cinfo, TRUE);
+
+  /* Create the buffer.  */
+  buffer_height = 1;
+  buffer = jmalloc(sizeof(JSAMPROW) * buffer_height);
+  if (!buffer) {
+    console_printf(_("Not enough memory for the buffer.\n"));
+    jpeg_destroy_compress(&cinfo);
+    fclose(file);
+    return -1;
+  }
+
+  for (c=0; c<(int)buffer_height; c++) {
+    buffer[c] = jmalloc(sizeof(JSAMPLE) *
+			cinfo.image_width * cinfo.num_components);
+    if (!buffer[c]) {
+      console_printf(_("Not enough memory for buffer scanlines.\n"));
+      for (c--; c>=0; c--)
+        jfree(buffer[c]);
+      jfree(buffer);
+      jpeg_destroy_compress(&cinfo);
+      fclose(file);
+      return -1;
+    }
+  }
+
+  /* For progress bar.  */
+  progress.progress_monitor = progress_monitor;
+  cinfo.progress = &progress;
+
+  /* Write each scan line.  */
+  while (cinfo.next_scanline < cinfo.image_height) {
+    /* RGB */
+    if (image->imgtype == IMAGE_RGB) {
+      unsigned long *src_address;
+      unsigned char *dst_address;
+      int x, y;
+      for (y=0; y<(int)buffer_height; y++) {
+        src_address = ((unsigned long **)image->line)[cinfo.next_scanline+y];
+        dst_address = ((unsigned char **)buffer)[y];
+        for (x=0; x<image->w; x++) {
+          c = *(src_address++);
+          *(dst_address++) = _rgba_getr(c);
+          *(dst_address++) = _rgba_getg(c);
+          *(dst_address++) = _rgba_getb(c);
+        }
+      }
+    }
+    /* Grayscale */
+    else {
+      unsigned short *src_address;
+      unsigned char *dst_address;
+      int x, y;
+      for (y=0; y<(int)buffer_height; y++) {
+        src_address = ((unsigned short **)image->line)[cinfo.next_scanline+y];
+        dst_address = ((unsigned char **)buffer)[y];
+        for (x=0; x<image->w; x++)
+          *(dst_address++) = _graya_getk(*(src_address++));
+      }
+    }
+    jpeg_write_scanlines(&cinfo, buffer, buffer_height);
+  }
+
+  /* Destroy all data.  */
+  for (c=0; c<(int)buffer_height; c++)
+    jfree(buffer[c]);
+  jfree(buffer);
+
+  /* Finish compression.  */
+  jpeg_finish_compress(&cinfo);
+
+  /* Release JPEG compression object.  */
+  jpeg_destroy_compress(&cinfo);
+
+  /* We can close the output file.  */
+  fclose(file);
+
+  /* All fine.  */
+  return 0;
+}
+
+/**********************************************************************/
+
+#elif defined HAVE_JPGALLEG
+
+static bool initialised = FALSE;
+
+static Sprite *load_jpeg(const char *filename)
+{
+  BITMAP *bmp;
+  Image *image;
+
+  if (!initialised) {
+    initialised = TRUE;
+    if (jpgalleg_init() < 0)
+      return NULL;
+  }
+
+  /* load the bitmap */
+
+  set_color_conversion(COLORCONV_NONE);
+  bmp = load_jpg_ex(filename, NULL, do_progress);
+  set_color_conversion(COLORCONV_TOTAL);
+
+  if (!bmp) {
+    if (!file_sequence_sprite())
+      console_printf(_("Error opening file.\n"));
+    return NULL;
+  }
+
+  /* create the image */
+  image = file_sequence_image
+    (bitmap_color_depth(bmp) == 24 ? IMAGE_RGB:
+				     IMAGE_GRAYSCALE, bmp->w, bmp->h);
+  if (!image) {
+    destroy_bitmap(bmp);
+    return NULL;
+  }
+
+  if (bitmap_color_depth(bmp) == 24) {
+    /* RGB */
+    unsigned char *src_address;
+    unsigned long *dst_address;
+    int r, g, b, x, y;
+
+    for (y=0; y<image->h; y++) {
+      src_address = ((unsigned char **)bmp->line)[y];
+      dst_address = ((unsigned long **)image->lines)[y];
+      
+      for (x=0; x<image->w; x++) {
+        r = *src_address++;
+        g = *src_address++;
+        b = *src_address++;
+        *(dst_address++) = _rgba(r, g, b, 255);
+      }
+    }
+  }
+  else {
+    /* Greyscale */
+    unsigned char *src_address;
+    unsigned short *dst_address;
+    int x, y, i;
+
+    for (y=0; y<image->h; y++) {
+      src_address = ((unsigned char **)bmp->line)[y];
+      dst_address = ((unsigned short **)image->lines)[y];
+
+      for (x=0; x<image->w; x++)
+        *(dst_address++) = _graya(*(src_address++), 255);
+    }
+
+    /* palette */
+    for (i=0; i<256; i++)
+      file_sequence_set_color(i, i>>2, i>>2, i>>2);
+  }
+
+  destroy_bitmap(bmp);
+
+  return file_sequence_sprite();
+}
+
+static int save_jpeg(Sprite *sprite)
+{
+  Image *image;
+  BITMAP *bmp;
+  int flags;
+  /* options */
+  int smooth;
+  int quality;
+  int method;
+
+  if (!initialised) {
+    initialised = TRUE;
+    if (jpgalleg_init() < 0)
+      return -1;
+  }
+
+  /* configure */
+  if (configure_jpeg() < 0)
+    return 0;
+
+  /* options */
+  smooth = get_config_int("JPEG", "Smooth", 0);
+  quality = get_config_int("JPEG", "Quality", 100);
+  method = get_config_int("JPEG", "Method", 0);
+
+  /* get image to save */
+  image = file_sequence_image_to_save();
+  bmp = create_bitmap_ex(32, image->w, image->h);
+  if (!bmp) {
+    console_printf(_("Not enough memory\n"));
+    return -1;
+  }
+
+  /* RGB */
+  if (image->imgtype == IMAGE_RGB) {
+    unsigned long *src_address = image->bytes;
+    unsigned long *dst_address = bmp->dat;
+    int c, r, g, b, size = image->w * image->h;
+
+    flags = JPG_SAMPLING_444;
+
+    for (c=0; c<size; c++) {
+      r = _rgba_getr(*(src_address));
+      g = _rgba_getg(*(src_address));
+      b = _rgba_getb(*(src_address++));
+      *(dst_address++) = makeacol32 (r, g, b, 255);
+    }
+  }
+  /* Grayscale */
+  else if (image->imgtype == IMAGE_GRAYSCALE) {
+    unsigned short *src_address = image->bytes;
+    unsigned long *dst_address = bmp->dat;
+    int c, k, size = image->w * image->h;
+
+    flags = JPG_GREYSCALE;
+
+    for (c=0; c<size; c++) {
+      k = _graya_getk(*src_address++);
+      *(dst_address++) = makeacol32(k, k, k, 255);
+    }
+  }
+  else {
+    destroy_bitmap(bmp);
+    return -1;
+  }
+
+  /* XXX ToDo: what about JPG optimization settings? */
+  
+  if (save_jpg_ex(sprite->filename, bmp, NULL, quality, flags, do_progress) < 0)
+    return -1;
+
+  destroy_bitmap(bmp);
+  return 0;
+}
+
+/**********************************************************************/
+
+#else
+
+FileType filetype_jpeg = { "jpeg", "jpeg,jpg", NULL, NULL, 0 };
+
+#endif
+
+/**********************************************************************/
+
+#if defined HAVE_LIBJPEG || HAVE_JPGALLEG
+
+static int configure_jpeg(void)
+{
+  /* interactive mode */
+  if (is_interactive()) {
+    lua_State *L = get_lua_state();
+    int ret;
+
+    /* call the ConfigureJPEG() script routine, it must return "true"
+       to save the image */
+    lua_pushstring(L, "ConfigureJPEG");
+    lua_gettable(L, LUA_GLOBALSINDEX);
+    do_script_raw(L, 0, 1);
+    ret = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    if (!ret)
+      return -1;
+  }
+
+  return 0;
+}
+
+#endif

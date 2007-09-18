@@ -1,0 +1,136 @@
+===================================
+AUTHOR
+===================================
+
+  David A. Capello <dacap@users.sourceforge.net>
+  Programmer, design, graphics, tester, and the maintainer of the package.
+  Releases the DOS, Windows, and source distributions.
+
+===================================
+THANKFULNESS
+===================================
+
+  Some people don't contribute to this project in a directly way but
+  their work are indispensable:
+  ------------------------------------------------------------------
+
+  Álvaro González: For the other routine to generate optimised
+  palettes (used in old versions of ASE).
+
+  Angelo Mottola: For the routines to load/save JPEG files with
+  JPGalleg (alternative use instead of libjpeg).
+
+  Ben Davis: For his optimised palette generation routine.
+
+  Billy Biggs and Lauris Kaplinski: For the help with the alpha
+  blending routines.
+
+  Csaba Biegl: For his ellipse routine in the GRX library (used in old
+  versions of ASE).
+
+  David Turner, Robert Wilhelm, and Werner Lemberg: For the FreeType
+  project.
+  <http://www.freetype.org/>
+
+  Derek Liauw Kie Fa and Robert J Ohannessian for 2xSaI.
+
+  DJ Delorie: For the DJGPP port to DOS of the GNU software.
+  <http://www.delorie.com/djgpp/>
+
+  Elias Pschernig: For his excelent bresenham ellipse algorithm and to
+  report some nasty keyboard bugs. And his patch to load/save GIF files.
+
+  Elver Loho: For port ASE to BeOS.
+
+  Gary Oberbrunner: For his code to quantize RGB images with ordered
+  dither method.
+
+  Javier Gonzalez: For his AllegroFont wrapper.
+
+  Jens Ch. Restemeier: For GFLI, his code to save FLI files is just
+  "amazing".
+
+  Jerry Coffin and HenkJan Wolthuis: For the hash table routines.
+
+  Johan Halmén and Anders "Trezker" Andersson for mapgen.
+  <http://edu.loviisa.fi/~lg/jh/mapgen/>
+  <http://www.angelfire.com/art/dumlesoft/Projects.html>
+
+  Jordan Russell and Martijn Laan: For Inno Setup.
+  <http://www.innosetup.com/>
+
+  Juraj Michalek: For the support to ASE in his portal.
+  <http://games.linux.sk/>
+
+  Matthew Leverton: For his Allegro portal.
+  <http://www.allegro.cc/>
+
+  Max Maischein: For the documents about various file formats of the
+  Animator and Animator Pro.
+
+  Mike Haaland: For his documentation about the FLI/FLC, COL, PIC, and
+  MSK files format.
+
+  Paúl Andrés Jiménez (Ceniza): For his help in the translation of
+  FULL-SCREEN.txt document.
+
+  Peter Wang: For his Red Pixel II game, it was very helpful for the
+  scripting routines.
+  <http://redpixel.sourceforge.net/>
+
+  Raph Levien: For his excelent work with the libart library.
+  <http://www.levien.com/libart/>
+
+  Richard M. Stallman: For the Free Software Foundation, GNU and
+  Emacs, and everyone who contributed with free software.
+  <http://www.fsf.org/>
+  <http://www.gnu.org/>
+  <http://www.emacs.org/>
+
+  Robert Höhne: For the RHIDE enviroment.
+  <http://www.lanet.lv/~pavenis/rhide.html>
+
+  Salvador Eduardo Tropea: For the SETEdit editor (although I don't
+  use it anymore, but the first months in Linux without it would be
+  impossible :-)
+  <http://setedit.sourceforge.net/>
+
+  Shawn Hargreaves: And hundreds of people who helped in the Allegro
+  library.
+  <http://alleg.sourceforge.net/>
+
+  Spencer Kimball and Peter Mattis: And a lot of people who
+  contributed with The GIMP and GTK+.  I personally "borrow" source
+  code for differents task in the program.
+  <http://www.gimp.org/>
+  <http://www.gtk.org/>
+
+  The Independent JPEG Group: For the JPEG library to load/save Jpeg
+  files.
+  <ftp://ftp.uu.net/graphics/jpeg/>
+
+  The Open Group: For XFree86.
+  <http://www.x.org/>
+
+  Waldemar Celes, Roberto Ierusalimschy, and Luiz Henrique de
+  Figueiredo: For their excelent work with Lua.
+  <http://www.lua.org/>
+
+  And thanks for all the ideas and bugs report of:
+    Álvaro González (Kronoman X)
+    Angelo Mottola
+    Ben Davis (entheh)
+    Carl Olsson
+    Christer Sandberg
+    Elias Pschernig (networm)
+    Elio Cuevas Gómez
+    Emmanuel Rousseau (God_Cells)
+    Hernán Echegoyemberry
+    Jonathan Taylor
+    Jorge Ramírez Flores
+    Juraj Michalek
+    Manuel De Miguel Moreno
+    Mateusz Czaplinski
+    Nathan Smith (whitedoor)
+    Peter Wang (tjaden)
+    Robert J Ohannessian (Bob)

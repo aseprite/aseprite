@@ -1,0 +1,58 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<!-- default 0.2 layout --> 
+<window noborders desktop text="Main Window" name="main_window">
+  <box noborders vertical>
+    <box noborders horizontal name="menu_bar" />
+    <box noborders horizontal expansive>
+      <box noborders vertical name="color_bar" />
+      <box noborders horizontal name="editor" expansive />
+      <box noborders vertical name="tool_bar" />
+    </box>
+    <box noborders horizontal name="status_bar" />
+  </box>
+</window>
+
+<!-- old 0.1.2 layout -->
+<window noborders desktop text="Main Window" name="main_window_alt1">
+  <box noborders vertical>
+    <box noborders horizontal name="menu_bar" />
+    <box noborders horizontal expansive>
+      <box noborders vertical name="color_bar" />
+      <box noborders vertical expansive>
+        <box noborders horizontal expansive>
+          <box noborders horizontal name="editor" expansive />
+          <box noborders vertical name="tool_bar" />
+	</box>
+        <box noborders horizontal name="status_bar" />
+      </box>
+    </box>
+  </box>
+</window>
+
+<!-- alternative layout like Windows apps -->
+<window noborders desktop text="Main Window" name="main_window_alt2">
+  <box noborders vertical>
+    <box noborders horizontal name="menu_bar" />
+    <box noborders horizontal name="tool_bar" />
+    <box noborders horizontal name="editor" expansive />
+    <box noborders horizontal name="color_bar" />
+    <box noborders horizontal name="status_bar" />
+  </box>
+</window>
+
+<!-- alternative layout like Corel -->
+<window noborders desktop text="Main Window" name="main_window_alt3">
+  <box noborders vertical>
+    <box noborders horizontal name="menu_bar" />
+    <box horizontal expansive>
+      <box noborders vertical name="tool_bar" />
+      <box noborders horizontal name="editor" expansive />
+    </box>
+    <box noborders horizontal name="color_bar" />
+    <box noborders horizontal name="status_bar" />
+  </box>
+</window>

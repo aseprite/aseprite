@@ -1,0 +1,16 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Play FLI/FLC") name="play_fli">
+  <box vertical>
+    <check text=_("Loop") name="loop" />
+    <check text=_("Fullscreen") name="fullscreen" />
+    <button text=_("&Open") name="button_open" />
+    <box horizontal homogeneous expansive>
+      <button text=_("&Play") name="button_play" magnetic />
+      <button text=_("&Close") />
+    </box>
+  </box>
+</window>

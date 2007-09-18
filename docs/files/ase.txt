@@ -1,0 +1,217 @@
+ASE Files (.ASE) Format description
+Copyright (C) 2004-2005 by David A. Capello
+----------------------------------------------------------------------
+
+1. References
+2. Introduction
+3. Header
+4. Frames
+5. New chunk types
+6. File Format Changes
+
+========================================
+1. References
+========================================
+
+ASE files use Intel (little-endian) byte order.
+
+BYTE		An 8-bit unsigned integer value
+WORD		A 16-bit unsigned integer value
+DWORD		A 32-bit unsigned integer value
+LONG		A 32-bit signed integer value
+DOUBLE		A 64-bit floating point value
+BYTE[n]		"n" bytes.
+RECT		Four LONGs (in the order: x-pos, y-pos, width, heigth)
+STRING		length=WORD (how many characters to read next)
+                string=BYTE[length]
+		The \0 character isn't included.
+
+
+========================================
+2. Introduction
+========================================
+
+The format is the same as FLI/FLC files, with a different magic number
+and a different set of chunks (but the new chunks doesn't collided
+with the FLI/FLC ones).  Also, the color depth can be 8, 16 or 32 for
+Indexed, Grayscale and RGB respectively.  The palette isn't included
+for color depths more than 8, but when the sprite is 8 bpp, the
+palette is in an old FLI color chunk (type=11).  See fli.txt for
+details.
+
+
+========================================
+3. Header
+========================================
+
+A 128-byte header (same as FLC/FLI header, but with other magic
+number):
+
+DWORD		File size
+WORD		Magic number (0xA5E0)
+WORD		Frames
+WORD		Width in pixels
+WORD		Height in pixels
+WORD		Color depth (bits per pixel)
+DWORD		Flags (must be 0)
+WORD		Speed (milliseconds between frame, like in FLC files)
+		!!! This field is deprecated, you should use the
+		frame duration field from each frame header.
+DWORD		Set be 0
+DWORD		Set be 0
+BYTE[100]	For future (set to zero)
+
+
+========================================
+4. Frames
+========================================
+
+After the header come the "frames" data. Each frame has this little
+header of 16 bytes:
+
+  DWORD		Bytes in this frame
+  WORD		Magic number (always 0xF1FA)
+  WORD		Number of "chunks" in frame
+  WORD		Frame duration (in milliseconds)		[NEW FIELD!!!]
+  BYTE[6]	For future (set to zero)
+
+Then each chunk format is:
+
+  DWORD		Chunk size
+  WORD		Chunk type
+  BYTE[]	Chunk data
+
+
+========================================
+5. New chunk types
+========================================
+
+Layer Chunk (0x2004)
+----------------------------------------
+
+  In the first frame should be a set of layer chunks to determine the
+  entire layers layout:
+
+  WORD		Flags (1=readable, 2=writeable)
+  WORD		Layer type (0=normal (image) layer, 1=layer set)
+  WORD          Layer child level (see NOTE.1)
+  WORD		Default layer width in pixels (ignored)
+  WORD		Default layer height in pixels (ignored)
+  WORD		Blend mode (always 0 for layer set)
+                  BLEND_MODE_NORMAL = 0
+                  BLEND_MODE_DISSOLVE = 1
+		  BLEND_MODE_MULTIPLY = 2
+		  BLEND_MODE_SCREEN = 3
+		  BLEND_MODE_OVERLAY = 4
+		  BLEND_MODE_HARD_LIGHT = 5
+		  BLEND_MODE_DODGE = 6
+		  BLEND_MODE_BURN = 7
+		  BLEND_MODE_DARKEN = 8
+		  BLEND_MODE_LIGHTEN = 9
+		  BLEND_MODE_ADDITION = 10
+		  BLEND_MODE_SUBTRACT = 11
+		  BLEND_MODE_DIFFERENCE = 12
+		  BLEND_MODE_HUE = 13
+		  BLEND_MODE_SATURATION = 14
+		  BLEND_MODE_COLOR = 15
+		  BLEND_MODE_LUMINOSITY = 16
+		  BLEND_MODE_COPY = 17
+  BYTE[4]	For future (set to zero)
+  STRING	Layer name
+
+
+Frame Chunk (0x2005)
+----------------------------------------
+
+  This chunk determine where to put a real ASE frame in the specified
+  layer.
+
+  WORD		Layer index (see NOTE.2)
+  WORD		X position
+  WORD		Y position
+  BYTE		Opacity level
+  WORD		Frame type
+  BYTE[7]	For future (set to zero)
+
+  + For frame type = 0 (raw image):
+
+    WORD	Width in pixels
+    WORD	Height in pixels
+    BYTE[]	Pixel data (see NOTE.3)
+
+  + For frame type = 1 (linked image):
+
+    WORD	Frame position to link with
+
+  + For frame type = 2 (RLE compressed image, only for Indexed images):
+
+    WORD	Width in pixels
+    WORD	Height in pixels
+    XXXXX	-todo-
+
+
+Mask Chunk (0x2016)
+----------------------------------------
+
+  WORD		X position
+  WORD		Y position
+  WORD		Width
+  WORD		Height
+  BYTE[8]	For future (set to zero)
+  STRING	Mask name
+  BYTE[]	Bit map data (size = height*((width+7)/8))
+                Each byte contains 8 pixels (the leftmost pixels are
+		packed into the high order bits)
+
+
+Path Chunk (0x2017)
+----------------------------------------
+
+
+Notes
+----------------------------------------
+
+NOTE.1: The child level is used to show the relationship of this
+        layer with the last one read, for example:
+
+  Layer name and hierarchy	Child Level
+  -----------------------------------------------
+  - Background			0
+    `- Layer1			1
+  - Foreground			0
+    |- My set1			1
+    |  `- Layer2		2
+    `- Layer3			1
+
+NOTE.2: The layer index is a number to identify any layer in the
+        sprite, for example:
+
+  Layer name and hierarchy	Layer index
+  -----------------------------------------------
+  - Background			0
+    `- Layer1			1
+  - Foreground			2
+    |- My set1			3
+    |  `- Layer2		4
+    `- Layer3			5
+
+NOTE.3: The raw pixel data is saved row by row from top to bottom, and
+        each scanline is from pixel by pixel from left to right.
+	In RGB images, each pixel have 4 bytes in the order R, G, B, A.
+	In Grayscale images, each pixel have 2 bytes in the order K, A.
+	In Indexed images, each pixel have 1 bytes (the index).
+
+
+========================================
+File Format Changes
+========================================
+
+  1) The first change from the first release of the new .ase format,
+     is the new frame duration field. This is because now each frame
+     can have different duration.
+
+     How to read both formats (old and new one)?  You should set all
+     frames durations to the "speed" field read from the main ASE
+     header.  Then, if you found a frame with the frame-duration
+     field > 0, you should update the frame's duration with that
+     value.

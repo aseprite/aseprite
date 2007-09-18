@@ -1,0 +1,42 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Map Generator") name="mapgen">
+  <panel horizontal>
+    <view name="mapview" expansive /><!-- custom-widget -->
+    <box vertical>
+
+      <box horizontal>
+	<box horizontal expansive>
+          <box vertical homogeneous>
+            <label text=_("Width:") />
+            <label text=_("Height:") />
+          </box>
+          <box vertical homogeneous expansive>
+            <entry expansive name="width" maxsize=8 />
+            <entry expansive name="height" maxsize=8 />
+          </box>
+	</box>
+      </box>
+
+      <label text=_("Seed:") />
+      <box horizontal>
+        <entry expansive name="seed" maxsize=32 />
+        <button text="&Random" name="random_seed" />
+      </box>
+
+      <label text=_("Fractal Factor:") />
+      <box horizontal>
+	<entry expansive name="fractal_factor" maxsize=32 />
+        <button text="sqrt2" name="sqrt2_factor" />
+      </box>
+
+      <check text=_("&Preview") name="preview" />
+      <check text=_("&Tiled") name="tiled" />
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

@@ -1,0 +1,23 @@
+======================================================================
+		    ALLEGRO-SPRITE-EDITOR WARNING
+======================================================================
+
+	 THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY !!!
+
+	See README.txt and COPYING files for more information.
+	       Remember to report "bugs" and errors to:
+
+		    ase-help@lists.sourceforge.net
+
+======================================================================
+	       ADVERTENCIA SOBRE ALLEGRO-SPRITE-EDITOR
+======================================================================
+
+	 ESTE PROGRAMA ES DISTRIBUIDO SIN GARANTIA ALGUNA !!!
+
+	 Mire los ficheros README-es.txt y COPYING para mayor
+	  información. Recuerde reportar errores y "bugs" a:
+
+		    ase-help@lists.sourceforge.net
+
+======================================================================

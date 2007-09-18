@@ -1,0 +1,27 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Frame Properties") name="frame_properties">
+  <box vertical>
+    <box horizontal expansive>
+      <box vertical homogeneous>
+        <label text=_("Frame position:") />
+        <label text=_("X position:") />
+        <label text=_("Y position:") />
+        <label text=_("Opacity:") />
+      </box>
+      <box vertical homogeneous expansive>
+        <entry maxsize=32 name="frpos" />
+        <entry maxsize=32 name="xpos" />
+        <entry maxsize=32 name="ypos" />
+        <slider min=0 max=255 name="opacity" />
+      </box>
+    </box>
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

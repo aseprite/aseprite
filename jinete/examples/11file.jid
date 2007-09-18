@@ -1,0 +1,72 @@
+<window desktop name="Window1" text="My Window">
+  <panel vertical>
+    <panel expansive horizontal>
+      <view expansive>
+        <box vertical>
+          <label text="First label" center />
+          <label text="Second label" center />
+	  <label text="Third label" center />
+	  <label text="Fourth label" center />
+          <check text="My check" />
+          <button name="Poll" text="&Poll" />
+          <box horizontal homogeneous>
+            <button text="&OK" />
+            <button text="&Close" />
+          </box>
+        </box>
+      </view>
+      <box vertical>
+        <view expansive>
+          <box vertical>
+	    <separator text="First Radio Group" horizontal vertical>
+              <box vertical>
+                <radio text="Check1.1" group=1 />
+                <radio text="Check1.2" group=1 />
+                <radio text="Check1.3" group=1 />
+                <radio text="Check1.4" group=1 />
+	      </box>
+	    </separator>
+	    <separator text="Second Radio Group" center horizontal vertical>
+              <box vertical>
+                <radio text="Check2.1" group=2 />
+                <radio text="Check2.2" group=2 />
+                <radio text="Check2.3" group=2 />
+                <radio text="Check2.4" group=2 />
+	      </box>
+	    </separator>
+	    <separator text="Third Radio Group" right horizontal vertical>
+              <box vertical>
+                <radio text="Check3.1" group=3 />
+                <radio text="Check3.2" group=3 />
+                <radio text="Check3.3" group=3 />
+                <radio text="Check3.4" group=3 />
+	      </box>
+	    </separator>
+          </box>
+        </view>
+      </box>
+    </panel>
+    <view expansive>
+      <listbox>
+        <listitem text="Item1" />
+        <listitem text="Item2" />
+        <listitem text="Item3" />
+        <listitem text="Item4" />
+        <listitem text="Item5" />
+      </listbox>
+    </view>
+  </panel>
+</window>
+
+<window name="Window2" text="Answer this poll">
+  <box vertical homogeneous>
+    <label text="&Select an option" />
+    <radio name="Option1" text="Jinete is amazing!!!" group=1 />
+    <radio name="Option2" text="I see ugly GUIs, but like Jinete, no one" group=1 />
+    <radio name="Option3" text="I prefer Allegro GUI" group=1 />
+    <box horizontal homogeneous>
+      <button name="Select" text="&Select" />
+      <button text="&Cancel" />
+    </box>
+  </box>
+</window>

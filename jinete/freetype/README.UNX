@@ -1,0 +1,104 @@
+
+SPECIAL NOTE FOR UNIX USERS
+===========================
+
+  If  you are installing  this release  of FreeType  on a  system that
+  already uses release  2.0.5 (or even an older  version), you have to
+  perform a few special steps to ensure that everything goes well.
+
+
+  I. Enable the TrueType bytecode hinter if you need it
+  -----------------------------------------------------
+
+    The  TrueType  bytecode  interpreter  is disabled  in  all  public
+    releases  of  the  FreeType  packages  for  patents  reasons  (see
+    http://www.freetype.org/patents.html for more details).
+    
+    However, many Linux distributions do enable the interpreter in the
+    FreeType packages (DEB/RPM/etc.) they produce for their platforms.
+    If you are using TrueType  fonts on your system, you most probably
+    want to enable it manually by doing the following:
+    
+      - open the file "include/freetype/config/ftoption.h"
+      
+      - locate a line that says:
+      
+          #undef TT_CONFIG_OPTION_BYTECODE_ITNERPRETER
+
+      - change it to:
+
+          #define TT_CONFIG_OPTION_BYTECODE_INTERPRETER
+
+    of course, this must be done _before_ compiling the library
+
+
+  II. Determine the correct installation path
+  -------------------------------------------
+  
+    By  default,  the  source  package  will install  the  library  in
+    "/usr/local".   However, many Unix  distributions now  install the
+    library in  "/usr", since FreeType  is becoming a  critical system
+    component.
+
+    If FreeType is already installed on your system, type
+    
+      freetype-config --prefix
+       
+    on the command line.  This  should return the installation path to
+    use below  (e.g. "/usr"  or "/usr/local").  Otherwise,  simply use
+    "/usr".
+
+    Then, to build and install the library, type:
+    
+      make setup unix CFG="--prefix=<yourprefix>"
+      make
+      make install            (as root)
+    
+    where "<yourprefix>"  must be replaced  by the prefix  returned by
+    the "freetype-config" command.
+
+
+  III. Take care of XFree86 version 4
+  -----------------------------------
+  
+    Certain recent Linux distributions will install _several_ versions
+    of FreeType on your system.   For example, on a fresh Mandrake 8.1
+    system, you can find the following files:
+    
+      /usr/lib/libfreetype.so             which links to
+      /usr/lib/libfreetype.6.1.0.so
+    
+    and
+    
+      /usr/X11R6/lib/libfreetype.so       which links to
+      /usr/X11R6/lib/libfreetype.6.0.so
+    
+    Note that these  files correspond to two distinct  versions of the
+    library!   It seems  that  this  surprising issue  is  due to  the
+    install  scripts  of recent  XFree86  servers  (from 4.1.0)  which
+    irremediably install  their own (dated) version of  the library in
+    "/usr/X11R6/lib".
+    
+    In certain _rare_  cases you may experience minor  problems if you
+    install this release  of the library in "/usr"  only, namely, that
+    certain  applications will  not  benefit from  the  bug fixes  and
+    rendering improvements you'd expect.
+    
+    There are two good ways to deal with this situation:
+    
+      - Install  the library  _twice_, in  "/usr" and  in "/usr/X11R6"
+        (you  have to do  that each  time you  install a  new FreeType
+        release though).
+      
+      - Change the link in /usr/X11R6/lib/libfreetype.so to point to
+
+          /usr/lib/libfreetype.so,
+
+        and get rid of
+
+          /usr/X11R6/lib/libfreetype.6.0.so
+
+    The FreeType Team  is not responsible for this  problem, so please
+    contact  either  the  XFree86   development  team  or  your  Linux
+    distributor to help clear this issue in case the information given
+    here doesn't help.

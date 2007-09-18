@@ -1,0 +1,38 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Replace Color") name="replace_color">
+  <box horizontal>
+    <box vertical expansive>
+      <box horizontal expansive>
+        <box vertical homogeneous>
+          <label text=_("Get:") />
+          <label text=_("Put:") />
+        </box>
+        <box vertical homogeneous expansive>
+          <box horizontal expansive>
+            <box vertical homogeneous expansive name="color_buttons_box" />
+            <box vertical homogeneous>
+              <button text="1" name="button1_1" />
+              <button text="1" name="button2_1" />
+            </box>
+            <box vertical homogeneous>
+              <button text="2" name="button1_2" />
+              <button text="2" name="button2_2" />
+            </box>
+          </box>
+        </box>
+      </box>
+      <label text=_("Fuzziness:") />
+      <slider min=0 max=255 name="fuzziness" />
+    </box>
+    <box vertical>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+      <box name="target" />
+      <check text=_("&Preview") name="preview" />
+    </box>
+  </box>
+</window>

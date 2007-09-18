@@ -1,0 +1,238 @@
+# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+
+######################################################################
+# ASE
+
+ASE = ase$(EXE)
+
+ASE_SOURCES =					\
+	src/console/console.c			\
+	src/core/app.c				\
+	src/core/config.c			\
+	src/core/cfg.c				\
+	src/core/core.c				\
+	src/core/dirs.c				\
+	src/core/modules.c			\
+	src/core/shutdown.c			\
+	src/dialogs/about.c			\
+	src/dialogs/canvasze.c			\
+	src/dialogs/colsel.c			\
+	src/dialogs/dfrlen.c			\
+	src/dialogs/dmapgen.c			\
+	src/dialogs/dpaledit.c			\
+	src/dialogs/drawtext.c			\
+	src/dialogs/effect/dcolcurv.c		\
+	src/dialogs/effect/dconvmtr.c		\
+	src/dialogs/effect/dinvcol.c		\
+	src/dialogs/effect/dmedian.c		\
+	src/dialogs/effect/dreplcol.c		\
+	src/dialogs/filesel.c			\
+	src/dialogs/filmedit.c			\
+	src/dialogs/gfxsel.c			\
+	src/dialogs/maskcol.c			\
+	src/dialogs/maskrepo.c			\
+	src/dialogs/minipal.c			\
+	src/dialogs/options.c			\
+	src/dialogs/playfli.c			\
+	src/dialogs/quick.c			\
+	src/dialogs/repo.c			\
+	src/dialogs/scrsaver.c			\
+	src/dialogs/tips.c			\
+	src/dialogs/toolconf.c			\
+	src/dialogs/vectmap.c			\
+	src/dialogs/viewspr.c			\
+	src/effect/colcurve.c			\
+	src/effect/convmatr.c			\
+	src/effect/effect.c			\
+	src/effect/invrtcol.c			\
+	src/effect/median.c			\
+	src/effect/replcol.c			\
+	src/file/ase.c				\
+	src/file/bmp.c				\
+	src/file/file.c				\
+	src/file/fli.c				\
+	src/file/ico.c				\
+	src/file/jpeg.c				\
+	src/file/pcx.c				\
+	src/file/tga.c				\
+	src/file/gif.c				\
+	src/file/gif/format.c			\
+	src/file/gif/lzw.c			\
+	src/intl/intl.c				\
+	src/intl/msgids.c			\
+	src/main.c				\
+	src/modules/chkmthds.c			\
+	src/modules/color.c			\
+	src/modules/editors.c			\
+	src/modules/gfx.c			\
+	src/modules/gui.c			\
+	src/modules/palette.c			\
+	src/modules/recent.c			\
+	src/modules/render.c			\
+	src/modules/rootmenu.c			\
+	src/modules/sprites.c			\
+	src/modules/tools.c			\
+	src/modules/tools2.c			\
+	src/raster/algo.c			\
+	src/raster/algofill.c			\
+	src/raster/blend.c			\
+	src/raster/brush.c			\
+	src/raster/dirty.c			\
+	src/raster/frame.c			\
+	src/raster/gfxobj.c			\
+	src/raster/image.c			\
+	src/raster/layer.c			\
+	src/raster/mask.c			\
+	src/raster/path.c			\
+	src/raster/quant.c			\
+	src/raster/rotate.c			\
+	src/raster/sprite.c			\
+	src/raster/stock.c			\
+	src/raster/undo.c			\
+	src/script/bindings.c			\
+	src/script/script.c			\
+	src/util/autocrop.c			\
+	src/util/boundary.c			\
+	src/util/clipbrd.c			\
+	src/util/col_file.c			\
+	src/util/crop.c				\
+	src/util/filetoks.c			\
+	src/util/flip.c				\
+	src/util/frmove.c			\
+	src/util/hash.c				\
+	src/util/mapgen.c			\
+	src/util/misc.c				\
+	src/util/msk_file.c			\
+	src/util/pic_file.c			\
+	src/util/quantize.c			\
+	src/util/recscr.c			\
+	src/util/scrshot.c			\
+	src/util/session.c			\
+	src/util/setgfx.c			\
+	src/util/thmbnail.c			\
+	src/widgets/colbar.c			\
+	src/widgets/colbut.c			\
+	src/widgets/colview.c			\
+	src/widgets/curvedit.c			\
+	src/widgets/editor/click.c		\
+	src/widgets/editor/cursor.c		\
+	src/widgets/editor/editor.c		\
+	src/widgets/editor/keys.c		\
+	src/widgets/groupbut.c			\
+	src/widgets/menu.c			\
+	src/widgets/paledit.c			\
+	src/widgets/preview.c			\
+	src/widgets/statebar.c			\
+	src/widgets/target.c			\
+	src/widgets/toolbar.c
+
+ASE_OBJS = $(addprefix $(OBJ_DIR)/,					  \
+		       $(addsuffix $(OBJ),				  \
+                                   $(notdir $(basename $(ASE_SOURCES)))))
+
+######################################################################
+# Lua
+
+LIBLUA_LIB = $(OBJ_DIR)/liblua$(LIB)
+LIBLUA_DIR = third_party/lua
+LIBLUA_SOURCES =				\
+        $(LIBLUA_DIR)/src/lapi.c		\
+        $(LIBLUA_DIR)/src/lcode.c		\
+        $(LIBLUA_DIR)/src/ldebug.c		\
+        $(LIBLUA_DIR)/src/ldo.c			\
+        $(LIBLUA_DIR)/src/ldump.c		\
+        $(LIBLUA_DIR)/src/lfunc.c		\
+        $(LIBLUA_DIR)/src/lgc.c			\
+        $(LIBLUA_DIR)/src/llex.c		\
+        $(LIBLUA_DIR)/src/lmem.c		\
+        $(LIBLUA_DIR)/src/lobject.c		\
+        $(LIBLUA_DIR)/src/lopcodes.c		\
+        $(LIBLUA_DIR)/src/lparser.c		\
+        $(LIBLUA_DIR)/src/lstate.c		\
+        $(LIBLUA_DIR)/src/lstring.c		\
+        $(LIBLUA_DIR)/src/ltable.c		\
+        $(LIBLUA_DIR)/src/ltests.c		\
+        $(LIBLUA_DIR)/src/ltm.c			\
+        $(LIBLUA_DIR)/src/lundump.c		\
+        $(LIBLUA_DIR)/src/lvm.c			\
+        $(LIBLUA_DIR)/src/lzio.c		\
+        $(LIBLUA_DIR)/src/lib/lauxlib.c		\
+        $(LIBLUA_DIR)/src/lib/lbaselib.c
+
+LIBLUA_OBJS = $(addprefix $(OBJ_DIR)/,					     \
+		       $(addsuffix $(OBJ),				     \
+                                   $(notdir $(basename $(LIBLUA_SOURCES)))))
+
+######################################################################
+# GFli
+
+LIBGFLI_LIB = $(OBJ_DIR)/libgfli$(LIB)
+LIBGFLI_DIR = third_party/gfli
+LIBGFLI_SOURCES =				\
+	$(LIBGFLI_DIR)/gfli.c
+
+LIBGFLI_OBJS = $(addprefix $(OBJ_DIR)/,						  \
+			   $(addsuffix $(OBJ),					  \
+				       $(notdir $(basename $(LIBGFLI_SOURCES)))))
+
+######################################################################
+# Libart
+
+LIBART_LIB = $(OBJ_DIR)/libart$(LIB)
+LIBART_DIR = third_party/libart_lgpl
+LIBART_SOURCES =				\
+	$(LIBART_DIR)/art_affine.c		\
+	$(LIBART_DIR)/art_alphagamma.c		\
+	$(LIBART_DIR)/art_bpath.c		\
+	$(LIBART_DIR)/art_gray_svp.c		\
+	$(LIBART_DIR)/art_misc.c		\
+	$(LIBART_DIR)/art_pixbuf.c		\
+	$(LIBART_DIR)/art_rect.c		\
+	$(LIBART_DIR)/art_rect_svp.c		\
+	$(LIBART_DIR)/art_rect_uta.c		\
+	$(LIBART_DIR)/art_render.c		\
+	$(LIBART_DIR)/art_render_gradient.c	\
+	$(LIBART_DIR)/art_render_svp.c		\
+	$(LIBART_DIR)/art_rgba.c		\
+	$(LIBART_DIR)/art_rgb_affine.c		\
+	$(LIBART_DIR)/art_rgb_affine_private.c	\
+	$(LIBART_DIR)/art_rgb_bitmap_affine.c	\
+	$(LIBART_DIR)/art_rgb.c			\
+	$(LIBART_DIR)/art_rgb_pixbuf_affine.c	\
+	$(LIBART_DIR)/art_rgb_rgba_affine.c	\
+	$(LIBART_DIR)/art_rgb_svp.c		\
+	$(LIBART_DIR)/art_svp.c			\
+	$(LIBART_DIR)/art_svp_ops.c		\
+	$(LIBART_DIR)/art_svp_point.c		\
+	$(LIBART_DIR)/art_svp_render_aa.c	\
+	$(LIBART_DIR)/art_svp_vpath.c		\
+	$(LIBART_DIR)/art_svp_vpath_stroke.c	\
+	$(LIBART_DIR)/art_svp_wind.c		\
+	$(LIBART_DIR)/art_uta.c			\
+	$(LIBART_DIR)/art_uta_ops.c		\
+	$(LIBART_DIR)/art_uta_rect.c		\
+	$(LIBART_DIR)/art_uta_svp.c		\
+	$(LIBART_DIR)/art_uta_vpath.c		\
+	$(LIBART_DIR)/art_vpath_bpath.c		\
+	$(LIBART_DIR)/art_vpath.c		\
+	$(LIBART_DIR)/art_vpath_dash.c		\
+	$(LIBART_DIR)/art_vpath_svp.c		\
+	$(LIBART_DIR)/libart-features.c
+
+LIBART_OBJS = $(addprefix $(OBJ_DIR)/,						\
+			  $(addsuffix $(OBJ),					\
+				      $(notdir $(basename $(LIBART_SOURCES)))))
+
+######################################################################
+# All objects and libraries
+
+ALL_OBJS =					\
+	$(ASE_OBJS)				\
+	$(LIBLUA_OBJS)				\
+	$(LIBGFLI_OBJS)				\
+	$(LIBART_OBJS)
+
+ALL_LIBS =					\
+	$(LIBLUA_LIB)				\
+	$(LIBGFLI_LIB)				\
+	$(LIBART_LIB)

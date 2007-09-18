@@ -1,0 +1,153 @@
+In order to build the library, read the `BUILD' document in the `docs'
+directory.  This is only a quick starter.
+
+
+I. From the command line
+------------------------
+
+  There  are two ways  to quickly  build FreeType  2 from  the command
+  line.
+
+  The first, and favorite one, is to use the "Jam" build tool.  Jam is
+  a highly  portable replacement for  Make whose control files  do not
+  depend on the current platform or compiler toolset.
+
+  For more information, please see:
+
+    http://www.freetype.org/jam/index.html
+
+  The second one is to use "GNU Make" (and NO OTHER MAKE TOOL).
+
+
+  1. Building FT2 with "Jam"
+  --------------------------
+
+    Once you've  got *our version* of  the Jam tool  installed on your
+    system, simply go to the top-level FT2 directory, then type
+
+      "jam"
+
+    on the command line.  This will  build the library and place it in
+    the "objs" directory.
+
+    By default,  a static  library is built.   On Unix systems,  it is
+    possible to  build a shared library through  the "libtool" script.
+    You need to have libtool  installed on your system, then re-define
+    a few environment variables before invoking Jam, as in
+
+       export CC="libtool --mode=compile cc"
+       export LINK="libtool --mode=link cc"
+       jam
+
+    In  later releases  of  FT2, building  shared  libraries with  Jam
+    should become automatic.
+
+
+  2. Building FT2 with "GNU Make"
+  -------------------------------
+
+  You need  to have  GNU Make (version  3.78.1 or newer)  installed on
+  your system to compile the library from the command line.  This will
+  _NOT_ work with other make tools (including BSD make)!
+
+  [Well, this is not  really correct.  Recently, a perl implementation
+  of make called `makepp' has appeared which can also build FreeType 2
+  successfully on Unix platforms.  See http://LNC.usc.edu/~holt/makepp
+  for more details.]
+
+  - Go to the `freetype2' directory.
+
+  - Unix (any C compiler should work):
+
+      - make setup (don't worry, this will invoke a configure script)
+      - make
+      - make install
+
+    Alternatively,  you can  pass parameters  to the  configure script
+    within the CFG variable, as in:
+
+      - make setup CFG="--prefix=/usr"
+      - make
+      - make install
+
+    If the  configure script isn't run,  try to add `unix' as a target
+    on the command line, e.g.:
+
+      - make setup unix CFG="--prefix=/opt/experimental"
+
+
+  - Windows:
+
+    We provide a  version of GNU Make for Win32  on the FreeType site.
+    See http://www.freetype.org/download.html for details.
+
+    - gcc (Mingw, _not_ CygWin):
+
+        - make setup
+        - make
+
+
+    - Visual C++:
+
+        - make setup visualc
+        - make
+
+
+    - other compilers:
+
+        - make setup bcc32    -> Borland C++ 32 bits
+        - make setup intelc   -> Intel C++
+        - make setup watcom   -> Watcom C++
+        - make setup lcc      -> Win32-LCC
+
+
+II. In your own environment (IDE)
+---------------------------------
+
+  You need to add  the directories "freetype2/include" to your include
+  path when compiling the library.
+
+  FreeType  2 is  made  of several  components;  each one  of them  is
+  located   in  a  subdirectory   of  "freetype2/src".   For  example,
+  `freetype2/src/truetype/' contains the TrueType font driver.
+
+  DO NOT COMPILE ALL C FILES!  Rather, compile the following ones:
+
+    -- base components (required)
+
+      src/base/ftsystem.c
+      src/base/ftinit.c
+      src/base/ftdebug.c
+      src/base/ftbase.c
+      src/base/ftglyph.c
+      src/base/ftbbox.c
+      src/base/ftmm.c
+
+      src/base/ftmac.c        -- only on the Macintosh
+
+    -- other components are optional
+
+      src/autohint/autohint.c -- auto hinting module
+      src/cache/ftcache.c     -- cache sub-system (in beta)
+      src/sfnt/sfnt.c         -- SFNT files support
+                                 (TrueType & OpenType)
+      src/cff/cff.c           -- CFF/OpenType font driver
+      src/psnames/psnames.c   -- Postscript glyph names support
+      src/psaux/psaux.c       -- Postscript Type 1 parsing
+      src/truetype/truetype.c -- TrueType font driver
+      src/type1/type1.c       -- Type 1 font driver
+      src/cid/type1cid.c      -- Type 1 CID-keyed font driver
+      src/winfonts/winfonts.c -- Windows FONT / FNT font driver
+
+    Note:
+
+       `truetype.c' needs `sfnt.c' and `psnames.c'
+       `type1.c'    needs `psaux.c' and `psnames.c'
+       `type1cid.c' needs `psaux.c' and `psnames.c'
+       `cff.c'      needs `sfnt.c', `psaux.c', and `psnames.c'
+
+       etc.
+
+For more information, please consult "docs/BUILD".
+
+--- end of INSTALL --

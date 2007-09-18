@@ -1,0 +1,13 @@
+Sprite's Editor
+----------------------------------------------------------------------
+
+  click.c
+    The click-interface: To control mouse-loops inside editors (like
+    the drawing-tools or layer-movement).
+
+  cursor.c
+    Drawing-cursor routines: To control draw/clean the drawing cursor
+    (that cursor that is inside the editor).
+
+  editor.c  
+    The sprite's editor widget.

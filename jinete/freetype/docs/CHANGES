@@ -1,0 +1,1449 @@
+LATEST CHANGES BETWEEN 2.0.6 and 2.0.5
+
+  I. IMPORTANT BUG FIXES
+
+    - It wasn't possible to load embedded bitmaps when the auto-hinter was
+      used.  This is now fixed.
+
+    - The TrueType font driver didn't load some composites properly (the
+      sub-glyphs were slightly shifted, and this was only noticeable when
+      using monochrome rendering).
+
+    - Various fixes to the auto-hinter.  They merely improve the output of
+      sans-serif fonts.  Note that there are still problems with serifed
+      fonts and composites (accented characters).
+
+    - All scalable font drivers erroneously returned un-fitted glyph
+      advances when hinting was requested.  This created problems for a
+      number of layout applications.  This is a very old bug that got
+      undetected mainly because most test/demo program perform rounding
+      explicitly or implicitly (through the cache).
+
+    - FT_Glyph_To_Bitmap() did erroneously modify the source glyph in
+      certain cases.
+
+    - "glnames.py" still contained a bug that made FreeType return invalid
+      names for certain glyphs.
+
+
+    - the library crashed when loading certain Type 1 fonts like "sadn.pfb"
+      ("Stalingrad Normal"), which appear to contain pathetic font info
+      dictionaries..
+
+    - the TrueType glyph loader is now much more paranoid and checks everything
+      when loading a given glyph image. This was necessary to avoid problems
+      (crashes and/or memory overwrites) with broken fonts that came from a
+      really buggy automatic font converter..
+
+
+  II. IMPORTANT UPDATES AND NEW FEATURES
+
+    - Important updates to the Mac-specific parts of the library.
+
+    - The caching sub-system has been completely re-designed, and its API
+      has evolved (the old one is still supported for backwards
+      compatibility).
+
+      The documentation for it is not yet completed, sorry.  For now, you
+      are encouraged to continue using the old API.  However, the ftview
+      demo program in the ft2demos package has already been updated to use
+      the new caching functions.
+
+    - A new charmap cache is provided too.  See FTC_CMapCache().  This is
+      useful to perform character code -> glyph index translations quickly,
+      without the need for an opened FT_Face.
+
+    - A NEW POSTSCRIPT HINTER module has been added to support native hints
+      in the following formats: PostScript Type 1, PostScript CID, and
+      CFF/CEF.
+
+      Please test!  Note that the auto-hinter produces better results for a
+      number of badly-hinted fonts (mostly auto-generated ones) though.
+
+    - A memory debugger is now part of the standard FreeType sources.  To
+      enable it, define FT_DEBUG_MEMORY in <freetype/config/ftoption.h>, and
+      recompile the library.
+
+      Additionally, define the _environment_ variable FT_DEBUG_MEMORY and
+      run any program using FreeType.  When the library is exited, a summary
+      of memory footprints and possible leaks will be displayed.
+
+      This works transparently with _any_ program that uses FreeType. 
+      However, you will need a lot of memory to use this (allocated blocks
+      are never released to the heap to detect double deletes easily).
+
+
+  III. MISCELLANEOUS
+
+    - We are aware of subtle differences between the output of FreeType
+      versions 1 and 2 when it comes to monochrome TrueType-hinted glyphs. 
+      These are most probably due to small differences in the monochrome
+      rasterizers and will be worked out in an upcoming release.
+
+
+    - We have decided to fork the sources in a "stable" branch, and an
+      "unstable" one, since FreeType is becoming a critical component of
+      many Unix systems.
+      
+      The next bug-fix releases of the library will be named 2.0.7,
+      2.0.8, etc.. while the "2.1" branch will contain a version of the
+      sources where we'll start major reworking of the library's internals,
+      in order to produce FreeType 2.2.0 (or even 3.0) in a more distant
+      future.
+      
+      We also hope that this scheme will allow much more frequent releases
+      than in the past
+
+
+============================================================================
+
+LATEST CHANGES BETWEEN 2.0.5 and 2.0.4
+
+  NOTE THAT 2.0.5 DOES NOT CONTAIN THE POSTSCRIPT HINTER.  THIS MODULE WILL
+  BE PART OF THE NEXT RELEASE (EITHER 2.0.6 or 2.1)
+
+  - Fixed a bug that made certain glyphs, like "Cacute", "cacute" and
+    "lslash" unavailable from Unicode charmaps of Postscript fonts.  This
+    prevented the correct display of Polish text, for example.
+
+  - The kerning table of Type 1 fonts was loaded by FreeType, when its AFM
+    file was attached to its face, but the FT_FACE_FLAG_HAS_KERNING bit
+    flags was not set correctly, preventing FT_Get_Kerning to return
+    meaningful values.
+
+  - Improved SFNT (TrueType & OpenType) charmap support.  Slightly better
+    performance, as well as support for the new formats defined by the
+    OpenType 1.3 specification (8, 10, and 12)
+
+  - Fixed a serious typo in "src/base/ftcalc.c" which caused invalid
+    computations in certain rare cases, producing ugly artefacts.
+
+  - The size of the EM square is computed with a more accurate algorithm
+    for Postscript fonts.  The old one caused slight errors with embedded
+    fonts found in PDF documents.
+
+  - Fixed a bug in the cache manager that prevented normal LRU behaviour
+    within the cache manager, causing unnecessary reloads (for FT_Face and
+    FT_Size objects only).
+
+  - Added a new function named "FT_Get_Name_Index" to retrieve the glyph
+    index of a given glyph name, when found in a face.
+
+  - Added a new function named "FT_Get_Postscript_Name" to retrieve the
+    "unique" Postscript font name of a given face.
+
+  - Added a new public header size named FT_SIZES_H (or
+    <freetype/ftsizes.h>) providing new FT_Size-management functions:
+    FT_New_Size, FT_Activate_Size, FT_Done_Size.
+
+  - Fixed a reallocation bug that generated a dangling pointer (and possibly
+    memory leaks) with Postscript fonts (in src/psaux/psobjs.c).
+
+  - Many fixes for 16-bit correctness.
+
+  - Removed many pedantic compiler warnings from the sources.
+
+  - Added an Amiga build directory in "builds/amiga".
+
+============================================================================
+
+LATEST CHANGES BETWEEN 2.0.4 and 2.0.3
+
+  - Fixed a rather annoying bug that was introduced in 2.0.3.  Namely, the
+    font transformation set through FT_Set_Transform was applied twice to
+    auto-hinted glyphs, resulting in incorrectly rotated text output.
+
+  - Fixed _many_ compiler warnings.  FT2 should now compile cleanly with
+    Visual C++'s most pedantic warning level (/W4).  It already compiled
+    fine with GCC and a few other compilers.
+
+  - Fixed a bug that prevented the linear advance width of composite
+    TrueType glyphs to be correctly returned.
+
+  - Fixed the Visual C++ project files located in "builds/win32/visualc"
+    (previous versions used older names of the library).
+
+  - Many 32-bit constants have an "L" appended to their value, in order
+    to improve the 16-bitness of the code.  Someone is actually trying to
+    use FT2 on an Atari ST machine!
+
+  - Updated the "builds/detect.mk" file in order to automatically build
+    FT2 on AIX systems.  AIX uses "/usr/sbin/init" instead of "/sbin/init"
+    and wasn't previously detected as a Unix platform by the FreeType build
+    system.
+
+  - Updated the Unix-specific portions of the build system (new libtool
+    version, etc.).
+
+  - The SFNT kerning lodaer now ensures that the table is sorted (since some
+    problem fonts do not meet this requirement).
+
+============================================================================
+
+LATEST CHANGES BETWEEN 2.0.3 and 2.0.2
+
+  I. CHANGES TO THE MODULES / FONT DRIVERS
+
+    - THE AUTO-HINTER HAS BEEN SLIGHTLY IMPROVED, in order to fix several
+      annoying artefacts, mainly:
+
+        - Blue zone alignement of horizontal stems wasn't performed
+          correctly, resulting in artefacts like the "d" being placed one
+          pixel below the "b" in some fonts like Time New Roman.
+
+        - Overshoot thresholding wasn't performed correctly, creating
+          unpleasant artefacts at large character pixel sizes.
+
+        - Composite glyph loading has been simplified.  This gets rid
+          of various artefacts where the components of a composite glyphs
+          were not correctly spaced.
+
+      These are the last changes to the current auto-hinting module.  A new
+      hinting sub-system is currently in the work in order to support native
+      hints in Type 1 / CFF / OpenType fonts, as well as globally improve
+      rendering.
+
+    - The PCF driver has been fixed.  It reported invalid glyph dimensions
+      for the fonts available on Solaris.
+
+    - The Type 1, CID and CFF drivers have been modified to fix the
+      computation of the EM size.
+
+    - The Type 1 driver has been fixed to avoid a dangerous bug that
+      crashed the library with non-conforming fonts (i.e. ones that do not
+      place the .notdef glyph at position 0).
+
+    - The TrueType driver had a rather subtle bug (dangling pointer when
+      loading composite glyphs) that could crash the library in rare
+      occasions!
+
+
+  II. HIGH-LEVEL API CHANGES
+
+    - The error code enumeration values have been changed.  An error value
+      is decomposed in a generic error code, and a module number.  see
+      <freetype/fterrors.h> for details.
+
+    - A new public header file has been introduced, named FT_TRIGONOMETRY_H
+      (include/freetype/fttrig.h), providing trigonometric functions to
+      compute sines, cosines, arctangents, etc. with 16.16 fixed precision.
+      The implementation is based on the CORDIC algorithm and is very fast
+      while being sufficiently accurate.
+
+
+  III. INTERNALS
+
+    - Added BeOS-specific files in the old build sub-system.  Note that
+      no changes were required to compile the library with Jam.
+
+    - The configuration is now capable of automatically detecting 64-bit
+      integers on a set of predefined compilers (GCC, Visual C++, Borland
+      C++) and will use them by default.  This provides a small performance
+      boost.
+
+    - A small memory leak that happened when opening 0-sized files (duh!)
+      have been fixed.
+
+    - Fixed bezier stack depth bug in the routines provided by the
+      FT_BBOX_H header file.  Also fixed similar bugs in the rasterizers.
+
+    - The outline bounding box code has been rewritten to use direct
+      computations, instead of bezier sub-division, to compute the exact
+      bounding box of glyphs.  This is slightly slower but more accurate.
+
+    - The build system has been improved and fixed, mainly to support "make"
+      on Windows 2000 correctly, avoid problems with "make distclean" on non
+      Unix systems, etc.
+
+    - Hexadecimal constants have been suffixed with "U" to avoid problems
+      with certain compilers on 64-bit platforms.
+
+    - A new directory named "src/tools" has been created.  It contains
+      Python scripts and simple unit test programs used to develop the
+      library.
+
+    - The DocMaker tool has been moved from "docs" to "src/tools" and
+      has been updated with the following:
+
+         - Now accepts the "--title=XXXX" or "-t XXXX" option from the
+           command line to set the project's name in the generated API
+           reference.
+
+         - Now accepts the "--output=DIR" or "-o DIR" option from the
+           command line to set the output directory for all generated HTML
+           files.
+
+         - Now accepts the "--prefix=XXXX" or "-p XXX" option from the
+           command line to set the file prefix to use for all generated HTML
+           files.
+
+         - Now generates the current time/data on each generated page
+           in order to distinguish between versions.
+
+      DocMaker can be used with other projects now, not only FT2 (e.g. MLib,
+      FTLayout, etc.).
+
+===========================================================================
+
+LATEST CHANGES BETWEEN 2.0.2 and 2.0.1
+
+
+  I. CHANGES TO THE MODULES / FONT DRIVERS
+
+    - THE TRUETYPE BYTECODE INTERPRETER IS NOW TURNED OFF, in order to
+      avoid legal problems  with the Apple patents.  It  seems that we
+      mistakenly  turned this option  on in  previous releases  of the
+      build.
+
+      Note that if  you want to use the  bytecode interpreter in order
+      to get high-quality TrueType  rendering, you will need to toggle
+      by        hand        the        definition        of        the
+      TT_CONFIG_OPTION_BYTECODE_INTERPRETER   macro    in   the   file
+      "include/freetype/config/ftoption.h".
+
+    - The CFF driver has been improved by Tom Kacvinsky and Sander van
+      der Wal:
+
+      * Support for "seac" emulation.
+      * Support for "dotsection".
+      * Support for retrieving glyph names through
+        "FT_Get_Glyph_Name".
+
+      The first two items are necessary to correctly a large number of
+      Type 1 fonts converted to the CFF formats by Adobe Acrobat.
+
+    - The Type 1 driver was also improved by Tom & others:
+
+      * Better EM size computation.
+      * Better support for synthetic (transformed) fonts.
+      * The  Type 1  driver returns  the charstrings  corresponding to
+        each glyph in the  "glyph->control_data" field after a call to
+        "FT_Load_Glyph" (thanks Ha Shao).
+
+    - Various other bugfixes, including the following:
+
+      * Fixed a nasty memory leak in the Type 1 driver.
+      * The autohinter  and the pcf  driver used static  writable data
+        when they shouldn't.
+      * Many casts were added to  make the code more 64-bits safe.  It
+        also now compiles on Windows XP 64-bits without warnings.
+      * Some incorrect writable statics were removed in the "autohint"
+        and "pcf" drivers.  FreeType 2 now compiles on Epoc again.
+
+
+  II. CHANGES TO THE HIGH-LEVEL API
+
+    - The library header files inclusion scheme has been changed.  The
+      old scheme looked like:
+
+        #include <freetype/freetype.h>
+        #include <freetype/ftglyph.h>
+        #include <freetype/ftcache.h>
+        #include <freetype/cache/ftimage.h>
+
+      Now you should use:
+
+        #include <ft2build.h>
+        #include FT_FREETYPE_H
+        #include FT_GLYPH_H
+        #include FT_CACHE_H
+        #include FT_CACHE_IMAGE_H
+
+      NOTE THAT  THE OLD  INCLUSION SCHEME WILL  STILL WORK  WITH THIS
+      RELEASE.  HOWEVER, WE  DO NOT GUARANTEE THAT THIS  WILL STILL BE
+      TRUE IN THE NEXT ONE (A.K.A. FREETYPE 2.1).
+
+      The  file <ft2build.h>  is used  to define  the  header filename
+      macros.  The complete and  commented list of macros is available
+      in the API reference under the section name "Header File Macros"
+      in Chapter I.
+
+      For more information, see section I of the following document:
+
+        http://www.freetype.org/
+          freetype2/docs/tutorial/step1.html
+
+      or
+
+        http://freetype.sourceforge.net/
+          freetype2/docs/tutorial/step1.html
+
+    - Many, many comments have been added to the public source file in
+      order to  automatically generate  the API Reference  through the
+      "docmaker.py" Python script.
+
+      The latter has been updated  to support the grouping of sections
+      in chapters and better index sort.  See:
+
+        http://www.freetype.org/freetype2/docs/reference/ft2-toc.html
+
+
+  III. CHANGES TO THE BUILD PROCESS
+
+    - If you  are not  building FreeType 2  with its own  build system
+      (but with your own Makefiles or project files), you will need to
+      be  aware that  the  build  process has  changed  a little  bit.
+
+      You don't  need to put the  "src" directory in  the include path
+      when  compiling  any FT2  component.   Instead,  simply put  the
+      component's directory in the current include path.
+
+      So, if you were doing something like:
+
+        cc -c -Iinclude -Isrc src/base/ftbase.c
+
+      change the line to:
+
+        cc -c -Iinclude -Isrc/base src/base/ftbase.c
+
+      If you were doing something like:
+
+        cd src/base
+        cc -c -I../../include -I.. ftbase.c
+
+      change it to:
+
+        cd src/base
+        cc -c -I../../include ftbase.c
+
+
+======================================================================
+
+LATEST CHANGES BETWEEN 2.0.1 and 2.0
+
+  2.0.1 introduces a few changes:
+
+    - Fixed many bugs related to  the support of CFF / OpenType fonts.
+      These  formats are  now much  better supported  though  there is
+      still work planned to  deal with charset tables and PDF-embedded
+      CFF files that use the old "seac" command.
+
+    - The  library could not  be compiled  in debug  mode with  a very
+      small  number   of  C  compilers   whose  pre-processors  didn't
+      implement the "##"  directive correctly (i.e. per se  the ANSI C
+      specification!)  An elegant fix was found.
+
+    - Added  support for  the  free Borland  command-line C++  Builder
+      compiler.   Use "make  setup bcc32".   Also fixed  a  few source
+      lines that generated new warnings with BCC32.
+
+    - Fixed a bug in FT_Outline_Get_BBox when computing the extrema of
+      a conic Bezier arc.
+
+    - Updated the INSTALL file to add IDE compilation.
+
+    - Other  minor bug  fixes,  from  invalid Type  1  style flags  to
+      correct   support   of  synthetic   (obliqued)   fonts  in   the
+      auto-hinter, better support for embedded bitmaps in a SFNT font.
+
+    - Fixed some problems with "freetype-config".
+
+  Finally, the "standard" scheme for including FreeType headers is now
+  gradually changing,  but this will  be explained in a  later release
+  (probably 2.0.2).
+
+  And very  special thanks to Tom Kacvinsky  and YAMANO-UCHI Hidetoshi
+  for their contributions!
+
+
+======================================================================
+
+CHANGES BETWEEN beta8 and 2.0
+
+  - Changed  the default  installation  path for  public headers  from
+    "include/freetype" to "include/freetype2".
+
+    Also added a new "freetype-config" that is automatically generated
+    and installed  on Unix and  Cygwin systems.  The script  itself is
+    used to retrieve the current  install path, C compilation flags as
+    well as linker flags.
+
+  - Fixed several small bugs:
+
+    * Incorrect max advance width for fixed-pitch Type 1 fonts.
+    * Incorrect glyph names for certain TrueType fonts.
+    * The  glyph advance  was not  copied when  FT_Glyph_To_Bitmap was
+      called.
+    * The  linearHoriAdvance  and  linerVertAdvance  fields  were  not
+      correctly returned for glyphs processed by the auto-hinter.
+    * "type1z"  renamed back to  "type1"; the  old "type1"  module has
+      been removed.
+
+  - Revamped the  build system  to make it  a lot more  generic.  This
+    will  allow us  to  re-use  nearly un-modified  in  lots of  other
+    projects (including FreeType Layout).
+
+  - Changed "cid" to use "psaux" too.
+
+  - Added the  cache sub-system.  See <freetype/ftcache.h>  as well as
+    the sources  in "src/cache".  Note  that it compiles but  is still
+    untested for now.
+
+  - Updated "docs/docmaker.py", a draft  API reference is available at
+    http://www.freetype.org/ft2api.html.
+
+  - Changed "type1" to use "psaux".
+
+  - Created a  new module named  "psaux" to hold  the Type 1 &  Type 2
+    parsing routines.  It should be  used by "type1", "cid", and "cff"
+    in the future.
+
+  - Fixed an important bug in "FT_Glyph_Get_CBox".
+
+  - Fixed  some compiler  warnings  that happened  since the  TrueType
+    bytecode decoder was deactivated by default.
+
+  - Fixed two memory leaks:
+
+    * The    memory   manager   (16    bytes)   isn't    released   in
+      FT_Done_FreeType!
+    * Using custom input streams, the  copy of the original stream was
+      never released.
+
+  - Fixed the  auto-hinter by performing automatic  computation of the
+    "filling direction" of each glyph.   This is done through a simple
+    and  fast approximation, and  seems to  work (problems  spotted by
+    Werner though).  The Arphic fonts are a lot nicer though there are
+    still a lot of things to do to handle Asian fonts correctly.
+
+
+======================================================================
+
+BETA-8 (RELEASE CANDIDATE) CHANGES
+
+  - Deactivated the TrueType bytecode interpreter by default.
+
+  - Deactivated the "src/type1" font driver.  Now "src/type1z" is used
+    by default.
+
+  - Updates to the build system.  We now compile the library correctly
+    under  Unix  system  through  "configure" which  is  automatically
+    called on the first "make" invocation.
+
+  - Added the auto-hinting module!  Fixing some bugs here and there.
+
+  - Found some bugs in the  composite loader (seac) of the Type1-based
+    font drivers.
+
+  - Renamed the directory "freetype2/config" to "freetype2/builds" and
+    updated all relevant files.
+
+  - Found a memory leak in the "type1" driver.
+
+  - Incorporated Tom's patches to  support flex operators correctly in
+    OpenType/CFF fonts.  Now all I need is to support pure CFF and CEF
+    fonts to be done with this driver :-)
+
+  - Added the  Windows FNT/FON driver in "src/winfonts".   For now, it
+    always  "simulates"   a  Unicode  charmap,  so   it  shouldn't  be
+    considered completed right now.
+
+    It  is there  to be  more a  proof of  concept than  anything else
+    anyway.  The driver is a single  C source file, that compiles to 3
+    Kb of code.
+
+    I'm  still working on  the PCF/BDF  drivers, but  I'm too  lazy to
+    finish them now.
+
+  - CHANGES TO THE HIGH-LEVEL API
+
+    * FT_Get_Kerning has a new parameter that allows you to select the
+      coordinates of the kerning  vector (font units, scaled, scaled +
+      grid-fitted).
+    * The  outline functions are  now in <freetype/ftoutln.h>  and not
+      part of <freetype/freetype.h> anymore.
+    * <freetype/ftmodule.h>    now     contains    declarations    for
+       FT_New_Library, FT_Done_Library, FT_Add_Default_Modules.
+    * The so-called convenience  functions have moved from "ftoutln.c"
+      to  "ftglyph.c",  and  are  thus available  with  this  optional
+      component    of   the   library.     They   are    declared   in
+      <freetype/ftglyph.h> now.
+    * Anti-aliased  rendering is now  the default  for FT_Render_Glyph
+      (i.e. corresponds to render_mode == 0 == ft_render_mode_normal).
+      To generate a monochrome bitmap, use ft_render_mode_mono, or the
+      FT_LOAD_MONOCHROME     flag    in    FT_Load_Glyph/FT_Load_Char.
+      FT_LOAD_ANTI_ALIAS is still defined, but values to 0.
+    * <freetype/freetype.h>  now include <freetype/config/ftconfig.h>,
+      solving a few headaches :-)
+    * The type FT_GlyphSlotRec has now a "library" field.
+
+  - CHANGES TO THE "ftglyph.h" API
+
+    This API has  been severely modified in order  to make it simpler,
+    clearer, and more  efficient.  It certainly now looks  like a real
+    "glyph factory"  object, and allows client  applications to manage
+    (i.e.  transform,  bbox  and  render) glyph  images  without  ever
+    knowing their original format.
+
+  - Added  support  for CID-keyed  fonts  to  the  CFF driver.   Maybe
+    support for pure CFF + CEF fonts should come in?
+
+  - Cleaned up  source code in order  to avoid two  functions with the
+    same name.  Also  changed the names of the  files in "type1z" from
+    "t1XXXX" to "z1XXXX" in order to avoid any conflicts.
+
+    "make multi" now works well :-)
+
+    Also removed the use of "cidafm" for now, even if the source files
+    are  still there.  This  functionality will  certainly  go into  a
+    specific module.
+
+  - ADDED SUPPORT FOR THE AUTO-HINTER
+
+    It  works :-) I  have a  demo program  which simply  is a  copy of
+    "ftview"       that      does       a      `FT_Add_Module(library,
+    &autohinter_module_class)' after  library initialization, and Type
+    1 & OpenType/CFF fonts are now hinted.
+
+    CID  fonts are  not hinted,  as they  include no  charmap  and the
+    auto-hinter doesn't include  "generic" global metrics computations
+    yet.
+
+    Now, I need to release this thing to the FreeType 2 source.
+
+  - CHANGES TO THE RENDERER MODULES
+
+    The  monochrome  and smooth  renderers  are  now  in two  distinct
+    directories, namely "src/raster1" and "src/smooth".  Note that the
+    old "src/renderer" is now gone.
+
+    I ditched  the 5-gray-levels renderers.  Basically,  it involved a
+    simple #define toggle in 'src/raster1/ftraster.c'.
+
+    FT_Render_Glyph,  FT_Outline_Render  &  FT_Outline_Get_Bitmap  now
+    select the best renderer  available, depending on render mode.  If
+    the current renderer for a  given glyph image format isn't capable
+    of supporting  the render mode, another  one will be  found in the
+    library's list.   This means that client applications  do not need
+    to  switch or  set  the  renderers themselves  (as  in the  latest
+    change), they'll get what they want automatically.  At last.
+
+    Changed the demo programs accordingly.
+
+  - MAJOR INTERNAL REDESIGN:
+
+    A lot of internal modifications  have been performed lately on the
+    source in order to provide the following enhancements:
+
+    * More generic module support:
+
+      The FT_Module  type is  now defined to  represent a handle  to a
+      given  module.   The  file  <freetype/ftmodule.h>  contains  the
+      FT_Module_Class definition, as well as the module-loading public
+      API.
+
+      The  FT_Driver type  is still  defined, and  still  represents a
+      pointer to  a font driver.  Note that  FT_Add_Driver is replaced
+      by FT_Add_Module, FT_Get_Driver by FT_Get_Module, etc.
+
+    * Support for generic glyph image types:
+
+      The FT_Renderer  type is a pointer  to a module  used to perform
+      various operations on glyph image.
+
+      Each renderer is  capable of handling images in  a single format
+      (e.g. ft_glyph_format_outline).  Its functions are used to:
+
+      - transform an glyph image
+      - render a glyph image into a bitmap
+      - return the control box (dimensions) of a given glyph image
+
+      The scan converters "ftraster.c" and "ftgrays.c" have been moved
+      to the new directory "src/renderer", and are used to provide two
+      default renderer modules.
+
+      One corresponds  to the "standard" scan-converter,  the other to
+      the "smooth" one.
+
+      he  current  renderer  can  be  set  through  the  new  function
+      FT_Set_Renderer.
+
+      The old raster-related function FT_Set_Raster, FT_Get_Raster and
+      FT_Set_Raster_Mode have now disappeared, in favor of the new:
+
+        FT_Get_Renderer
+        FT_Set_Renderer
+
+      See the file <freetype/ftrender.h> for more details.
+
+      These  changes  were  necessary  to properly  support  different
+      scalable formats in the future, like bi-color glyphs, etc.
+
+    * Glyph loader object:
+
+      A  new  internal  object,  called  a  'glyph  loader'  has  been
+      introduced in the base layer.  It is used by all scalable format
+      font drivers to load glyphs and composites.
+
+      This object  has been  created to reduce  the code size  of each
+      driver,  as  each  one  of  them  basically  re-implemented  its
+      functionality.
+
+      See <freetype/internal/ftobjs.h> and the FT_GlyphLoader type for
+      more information.
+
+    * FT_GlyphSlot has new fields:
+
+      In  order   to  support  extended  features   (see  below),  the
+      FT_GlyphSlot structure has a few new fields:
+
+      linearHoriAdvance:
+
+        This  field  gives  the   linearly  scaled  (i.e.  scaled  but
+        unhinted) advance  width for the  glyph, expressed as  a 16.16
+        fixed pixel value.  This is useful to perform WYSIWYG text.
+
+      linearVertAdvance:
+        This field  gives the linearly  scaled advance height  for the
+        glyph  (relevant in  vertical  glyph layouts  only).  This  is
+        useful to perform WYSIWYG text.
+
+        Note that  the two above field replace  the removed "metrics2"
+        field in the glyph slot.
+
+      advance:
+        This field is a vector  that gives the transformed advance for
+        the glyph.   By default, it corresponds to  the advance width,
+        unless  FT_LOAD_VERTICAL_LAYOUT  was  specified  when  calling
+        FT_Load_Glyph or FT_Load_Char.
+
+      bitmap_left:
+        This  field gives  the  distance in  integer  pixels from  the
+        current pen position  to the left-most pixel of  a glyph image
+        IF IT IS  A BITMAP.  It is only valid  when the "format" field
+        is set to "ft_glyph_format_bitmap", for example, after calling
+        the new function FT_Render_Glyph.
+
+      bitmap_top:
+        This  field gives  the  distance in  integer  pixels from  the
+        current pen position (located on the baseline) to the top-most
+        pixel of the  glyph image IF IT IS  A BITMAP.  Positive values
+        correspond to upwards Y.
+
+      loader:
+        This  is a  new  private  field for  the  glyph slot.   Client
+        applications should not touch it.
+
+
+    * Support for transforms and direct rendering in FT_Load_Glyph:
+
+      Most of the functionality found in <freetype/ftglyph.h> has been
+      moved to the core library. Hence, the following:
+
+      - A   transform   can   be   specified  for   a   face   through
+        FT_Set_Transform.  this transform  is applied by FT_Load_Glyph
+        to  scalable glyph  images (i.e.  NOT TO  BITMAPS)  before the
+        function returns, unless the bit flag FT_LOAD_IGNORE_TRANSFORM
+        was set in the load flags.
+
+      - Once  a  glyph image  has  been  loaded,  it can  be  directly
+        converted  to  a  bitmap  by  using  the  new  FT_Render_Glyph
+        function.  Note that this  function takes the glyph image from
+        the glyph slot,  and converts it to a  bitmap whose properties
+        are returned  in "face.glyph.bitmap", "face.glyph.bitmap_left"
+        and "face.glyph.bitmap_top".  The  original native image might
+        be lost after the conversion.
+
+      - When using the new  bit flag FT_LOAD_RENDER, the FT_Load_Glyph
+        and   FT_Load_Char   functions   will   call   FT_Render_Glyph
+        automatically when needed.
+
+  - Reformatted all  modules source  code in order  to get rid  of the
+    basic data types redifinitions (i.e. "TT_Int" instead of "FT_Int",
+    "T1_Fixed"  instead  of  "FT_Fixed").  Hence  the  format-specific
+    prefixes like  "TT_", "T1_",  "T2_" and "CID_"  are only  used for
+    relevant structures.
+
+
+======================================================================
+
+OLD CHANGES FOR BETA 7
+
+  - bug-fixed the  OpenType/CFF parser. It  now loads and  displays my
+    two  fonts nicely,  but I'm  pretty certain  that more  testing is
+    needed :-)
+
+  - fixed the crummy Type 1 hinter, it now handles accented characters
+    correctly (well, the accent is  not always well placed, but that's
+    another problem..)
+
+  - added the CID-keyed Type 1  driver in "src/cid". Works pretty well
+    for only 13 Kb of code  ;-) Doesn't read AFM files though, nor the
+    really useful CMAP files..
+
+  - fixed two bugs in the smooth renderer (src/base/ftgrays.c). Thanks
+    to Boris Letocha for spotting them and providing a fix..
+
+  - fixed potential "divide by zero" bugs in ftcalc.c.. my god..
+
+  - added source  code for  the OpenType/CFF driver  (still incomplete
+    though..)
+
+  - modified the  SFNT driver slightly  to perform more  robust header
+    checks  in TT_Load_SFNT_Header. This  prevents certain  font files
+    (e.g.  some  Type  1  Multiple  Masters)  from  being  incorrectly
+    "recognized" as TrueType font files..
+
+  - moved a lot of stuff from  the TrueType driver to the SFNT module,
+    this   allows   greater   code   re-use   between   font   drivers
+    (e.g. TrueType, OpenType, Compact-TrueType, etc..)
+
+  - added a tiny segment cache to the SFNT Charmap 4 decoder, in order
+    to minimally speed it up..
+
+  - added support for Multiple Master fonts in "type1z". There is also
+    a  new file  named  <freetype/ftmm.h> which  defines functions  to
+    manage them from client applications.
+
+    The new file "src/base/ftmm.c" is also optional to the engine..
+
+  - various  formatting changes (e.g.  EXPORT_DEF ->  FT_EXPORT_DEF) +
+    small bug fixes in FT_Load_Glyph, the "type1" driver, etc..
+
+  - a minor fix to the Type 1 driver to let them apply the font matrix
+    correctly (used for many oblique fonts..)
+
+  - some fixes for 64-bit systems (mainly changing some FT_TRACE calls
+    to use %p instead of %lx).. Thanks to Karl Robillard
+
+  - fixed  some bugs  in  the sbit  loader (src/base/sfnt/ttsbit.c)  +
+    added  a new flag,  FT_LOAD_CROP_BITMAP to  query that  bitmaps be
+    cropped when  loaded from a file  (maybe I should  move the bitmap
+    cropper to the base layer ??).
+
+  - changed the default  number of gray levels of  the smooth renderer
+    to 256  (instead of  the previous 128).  Of course, the  human eye
+    can't see any difference ;-)
+
+  - removed TT_MAX_SUBGLYPHS,  there is no static limit  on the number
+    of subglyphs in a TrueType font now..
+
+
+======================================================================
+
+OLD CHANGES 16 May 2000
+
+  - tagged "BETA-6"  in the  CVS tree. This  one is a  serious release
+    candidate even though it doesn't incorporate the auto-hinter yet..
+
+  - various obsolete files were removed, and copyright header updated
+
+  - finally  updated  the  standard   raster  to  fix  the  monochrome
+    rendering bug + re-enable  support for 5-gray levels anti-aliasing
+    (suck, suck..)
+
+  - created new header files, and modified sources accordingly:
+
+     <freetype/fttypes.h>
+       - simple FreeType types, without the API
+     <freetype/internal/ftmemory.h>
+       - definition of memory-management macros
+
+  - added   the   "DSIG"   (OpenType   Digital   Signature)   tag   to
+    <freetype/tttags.h>
+
+  - light update/cleaning of the build system + changes to the sources
+    in  order  to  get  rid  of _all_  compiler  warnings  with  three
+    compilers, i.e:
+
+    gcc with "-ansi -pedantic -Wall -W", Visual C++ with "/W3 /WX" and
+    LCC
+
+    IMPORTANT NOTE FOR WIN32-LCC USERS:
+    |
+    |  It seems the C pre-processor  that comes with LCC is broken, it
+    |  doesn't  recognize  the  ANSI  standard  directives  #  and  ##
+    |  correctly when one of the  argument is a macro. Also, something
+    |  like:
+    |
+    |     #define F(x)  print##x
+    |
+    |     F(("hello"))
+    |
+    |  will get incorrectly translated to:
+    |
+    |     print "hello")
+    |
+    |  by its pre-processor. For  this reason, you simply cannot build
+    |  FreeType 2 in debug mode with this compiler..
+
+  - yet another massive grunt work. I've changed the definition of the
+    EXPORT_DEF,  EXPORT_FUNC, BASE_DEF &  BASE_FUNC macros.  These now
+    take an argument, which is the function's return value type.
+
+    This  is necessary to  compile FreeType  as a  DLL on  Windows and
+    OS/2.  Depending on the compiler used, a compiler-specific keyword
+    like  __export or __system  must be  placed before  (VisualC++) or
+    after (BorlandC++) the type..
+
+    Of course, this needed a lot of changes throughout the source code
+    to make it compile again... All cleaned up now, apparently..
+
+    Note also  that there is a  new EXPORT_VAR macro  defined to allow
+    the   _declaration_    of   an   exportable    public   (constant)
+    variable.  This  is  the   case  of  the  raster  interfaces  (see
+    ftraster.h and ftgrays.h), as well as each module's interface (see
+    sfdriver.h, psdriver.h, etc..)
+
+  - new feature: it  is now possible to pass  extra parameters to font
+                 drivers  when creating  a new  face object.  For now,
+                 this capability is unused.  It could however prove to
+                 be useful in a near future..
+
+      the FT_Open_Args structure was  changes, as well as the internal
+      driver interface  (the specific "init_face"  module function has
+      now a different signature).
+
+  - updated the tutorial (not finished though).
+
+  - updated the top-level BUILD  document
+
+  - fixed  a  potential memory  leak  that  could  occur when  loading
+    embedded bitmaps.
+
+  - added     the     declaration     of     FT_New_Memory_Face     in
+    <freetype/freetype.h>, as  it was  missing from the  public header
+    (the implementation was already in "ftobjs.c").
+
+  - the file <freetype/fterrors.h> has been seriously updated in order
+    to allow the automatic generation of error message tables. See the
+    comments within it for more information.
+
+  - major directory  hierarchy re-organisation. This was  done for two
+    things:
+
+      * first,  to ease  the "manual"  compilation of  the  library by
+        requiring at lot less include paths :-)
+
+      * second,  to  allow  external  programs to  effectively  access
+        internal  data  fields. For  example,  this  can be  extremely
+        useful if  someone wants  to write a  font producer or  a font
+        manager on top of FreeType.
+
+    Basically, you  should now use  the 'freetype/' prefix  for header
+    inclusion, as in:
+
+        #include <freetype/freetype.h>
+        #include <freetype/ftglyph.h>
+
+    Some new include sub-directories are available:
+
+     a. the  "freetype/config" directory,  contains two files  used to
+        configure the build of the library. Client applications should
+        not need to look at these normally, but they can if they want.
+
+        #include <freetype/config/ftoption.h>
+        #include <freetype/config/ftconfig.h>
+
+     b. the "freetype/internal"  directory, contains header files that
+        describes library  internals. These are the  header files that
+        were  previously  found  in  the "src/base"  and  "src/shared"
+        directories.
+
+
+    As  usual, the build  system and  the demos  have been  updated to
+    reflect the change..
+
+    Here's a layout of the new directory hierarchy:
+
+    TOP
+      include/
+         freetype/
+            freetype.h
+            ...
+            config/
+              ftoption.h
+              ftconfig.h
+              ftmodule.h
+
+            internal/
+              ftobjs.h
+              ftstream.h
+              ftcalc.h
+              ...
+
+      src/
+         base/
+            ...
+
+         sfnt/
+         psnames/
+         truetype/
+         type1/
+         type1z/
+
+
+    Compiling a module is now  much easier, for example, the following
+    should work when in the TOP directory on an ANSI build:
+
+       gcc -c -I./include -I./src/base src/base/ftbase.c
+       gcc -c -I./include -I./src/sfnt src/sfnt/sfnt.c
+       etc..
+
+    (of course, using -Iconfig/<system> if you provide system-specific
+     configuration files).
+
+  - updated the structure of FT_Outline_Funcs in order to allow direct
+    coordinate scaling within  the outline decomposition routine (this
+    is  important for virtual  "on" points  with TrueType  outlines) +
+    updates to the rasters to support this..
+
+  - updated  the OS/2  table  loading code  in "src/sfnt/ttload.c"  in
+    order to support version 2 of the table (see OpenType 1.2 spec)
+
+  - created  "include/tttables.h"  and  "include/t1tables.h" to  allow
+    client applications to access some of  the SFNT and T1 tables of a
+    face  with  a  procedural  interface (see  FT_Get_Sfnt_Table())  +
+    updates to internal source files to reflect the change..
+
+  - some  cleanups in  the source  code to  get rid  of  warnings when
+    compiling with the "-Wall -W -ansi -pedantic" options in gcc.
+
+  - debugged and moved the smooth renderer to "src/base/ftgrays.c" and
+    its header to "include/ftgrays.h"
+
+  - updated TT_MAX_SUBGLYPHS  to 96 as some CJK  fonts have composites
+    with up to 80 sub-glyphs !! Thanks to Werner
+
+
+======================================================================
+
+OLD CHANGES - 14-apr-2000
+
+  - fixed  a bug  in  the  TrueType glyph  loader  that prevented  the
+    correct loading of some CJK glyphs in mingli.ttf
+
+  - improved the standard Type 1 hinter in "src/type1"
+
+  - fixed two bugs  in the experimental Type 1  driver in "src/type1z"
+    to handle the new XFree86 4.0 fonts (and a few other ones..)
+
+  - the smooth  renderer is now  complete and supports  sub-banding to
+    render large glyphs at high speed. However, it is still located in
+    "demos/src/ftgrays.c" and should move to the library itself in the
+    next  beta..   NOTE:  The  smooth  renderer   doesn't  compile  in
+    stand-alone mode anymore, but this should be fixed RSN..
+
+  - introduced convenience  functions to  more easily deal  with glyph
+    images, see  "include/ftglyph.h" for more details, as  well as the
+    new  demo program  named "demos/src/ftstring.c"  that demonstrates
+    its use
+
+  - implemented  FT_LOAD_NO_RECURSE in  both the  TrueType and  Type 1
+    drivers  (this  is required  by  the  auto-hinter  to improve  its
+    results).
+
+  - changed   the  raster   interface,  in   order  to   allow  client
+    applications to provide their own span-drawing callbacks. However,
+    only the smooth renderer  supports this. See "FT_Raster_Params" in
+    the file "include/ftimage.h"
+
+  - fixed  a small bug  in FT_MulFix  that caused  incorrect transform
+    computation!
+
+  - Note: The tutorial is out-of-date, grumpf.. :-(
+
+
+======================================================================
+
+OLD CHANGES - 12-mar-2000
+
+  - changed  the  layout  of  configuration  files  :  now,  all  ANSI
+    configuration         files         are         located         in
+    "freetype2/config".  System-specific over-rides  can be  placed in
+    "freetype2/config/<system>".
+
+  - moved all configuration macros to "config/ftoption.h"
+
+  - improvements in the Type 1 driver with AFM support
+
+  - changed the fields  in the FT_Outline structure :  the old "flags"
+    array is re-named "tags", while all ancient flags are encoded into
+    a single unsigned int named "flags".
+
+  - introduced     new      flags     in     FT_Outline.flags     (see
+    ft_outline_.... enums in "ftimage.h").
+
+  - changed outline functions to "FT_Outline_<action>" syntax
+
+  - added a smooth anti-alias renderer to the demonstration programs
+
+  - added Mac graphics driver (thanks Just)
+
+  - FT_Open_Face  changed  in  order   to  received  a  pointer  to  a
+    FT_Open_Args descriptor..
+
+  - various  cleanups,  a  few  more API  functions  implemented  (see
+    FT_Attach_File)
+
+  - updated some docs
+
+
+======================================================================
+
+OLD CHANGES - 22-feb-2000
+
+  - introduced the "psnames" module. It is used to:
+
+      o convert  a Postscript glyph  name into the  equivalent Unicode
+        character code (used by the  Type 1 driver(s) to synthetize on
+        the fly a Unicode charmap).
+
+      o provide an  interface to retrieve the Postscript  names of the
+        Macintosh,  Adobe  Standard &  Adobe  Expert character  codes.
+        (the Macintosh  names are  used by the  SFNT-module postscript
+        names support routines, while the other two tables are used by
+        the Type 1 driver(s)).
+
+  - introduced the "type1z" alternate Type  1 driver. This is a (still
+    experimental) driver  for the Type  1 format that  will ultimately
+    replace the one  in "src/type1". It uses pattern  matching to load
+    data from the  font, instead of a finite  state analyzer. It works
+    much better than the "old"  driver with "broken" fonts. It is also
+    much smaller (under 15 Kb).
+
+  - the  Type 1  drivers (both  in "src/type1"  and  "src/type1z") are
+    nearly  complete.  They  both  provide automatic  Unicode  charmap
+    synthesis through  the "psnames" module. No  re-encoding vector is
+    needed.  (note  that they  still  leak  memory  due to  some  code
+    missing, and I'm getting lazy).
+
+    Trivial AFM support has been added to read kerning information but
+    wasn't exactly tested as it should ;-)
+
+  - The TrueType  glyph loader has  been seriously rewritten  (see the
+    file  "src/truetype/ttgload.c". It  is now  much, much  simpler as
+    well as  easier to read,  maintain and understand  :-) Preliminary
+    versions introduced a  memory leak that has been  reported by Jack
+    Davis, and is now fixed..
+
+  - introduced  the new  "ft_glyph_format_plotter", used  to represent
+    stroked outlines  like Windows "Vector" fonts, and  certain Type 1
+    fonts  like "Hershey".  The corresponding  raster will  be written
+    soon.
+
+  - FT_New_Memory_Face  is  gone.  Likewise,  FT_Open_Face has  a  new
+    interface that uses a structure  to describe the input stream, the
+    driver (if required), etc..
+
+
+TODO
+
+  - Write FT_Get_Glyph_Bitmap and FT_Load_Glyph_Bitmap
+
+  - Add a function like FT_Load_Character( face, char_code, load_flags
+    )  that  would really  embbed  a  call  to FT_Get_Char_Index  then
+    FT_Load_Glyph to ease developer's work.
+
+  - Update the tutorial!
+
+  - consider adding  support for Multiple  Master fonts in the  Type 1
+    drivers.
+
+  - Test the AFM routines of the  Type 1 drivers to check that kerning
+    information is returned correctly.
+
+  - write a decent auto-gridding component  !! We need this to release
+    FreeType 2.0 gold !
+
+
+less urgent needs:
+
+  - add a CFF/Type2 driver
+  - add a BDF driver
+  - add a FNT/PCF/HBF driver
+  - add a Speedo driver from the X11 sources
+
+
+======================================================================
+
+OLDER CHANGES - 27-jan-2000
+
+  - updated the  "sfnt" module  interface to allow  several SFNT-based
+    drivers to co-exist peacefully
+
+  - updated  the "T1_Face"  type  to better  separate Postscript  font
+    content  from the  rest of  the FT_Face  structure. Might  be used
+    later by the CFF/Type2 driver..
+
+  - added an experimental replacement Type 1 driver featuring advanced
+    (and speedy) pattern matching to retrieve the data from postscript
+    fonts.
+
+  - very minor  changes in the implementation  of FT_Set_Char_Size and
+    FT_Set_Pixel_Sizes (they now implement default to ligthen the font
+    driver's code).
+
+
+======================================================================
+
+OLD MESSAGE
+
+This file summarizes the changes that occured since the last "beta" of
+FreeType 2.  Because  the list is important, it  has been divided into
+separate sections:
+
+Table Of Contents:
+
+    I   High-Level Interface (easier !)
+   II   Directory Structure
+  III   Glyph Image Formats
+   IV   Build System
+    V   Portability
+   VI   Font Drivers
+
+
+----------------------------------------------------------------------
+
+High-Level Interface:
+
+  The high-level API has been considerably simplified.  Here is how:
+
+    - resource objects have disappeared.  this means that face objects
+      can now be created with  a single function call (see FT_New_Face
+      and FT_Open_Face)
+
+    - when calling  either FT_New_Face  & FT_Open_Face, a  size object
+      and a glyph slot object  are automatically created for the face,
+      and can  be accessed  through "face->glyph" and  "face->size" if
+      one really  needs to.   In most cases,  there's no need  to call
+      FT_New_Size or FT_New_Glyph.
+
+    - similarly,  FT_Load_Glyph  now  only  takes  a  "face"  argument
+      (instead  of a  glyph  slot  and a  size).  Also, it's  "result"
+      parameter is  gone, as the glyph  image type is  returned in the
+      field "face->glyph.format"
+
+    - the list  of available  charmaps is directly  accessible through
+      "face->charmaps",  counting "face->num_charmaps"  elements. Each
+      charmap  has an  'encoding'  field which  specifies which  known
+      encoding it deals with. Valid values are, for example :
+
+          ft_encoding_unicode      (for ASCII, Latin-1 and Unicode)
+          ft_encoding_apple_roman
+          ft_encoding_sjis
+          ft_encoding_adobe_standard
+          ft_encoding_adobe_expert
+
+      other  values may  be added  in the  future. Each  charmap still
+      holds  its "platform_id"  and "encoding_id"  values in  case the
+      encoding is too exotic for the current library
+
+
+----------------------------------------------------------------------
+
+Directory Structure:
+
+  Should seem obvious to most of you:
+
+     freetype/
+         config/        -- configuration sub-makefiles
+            ansi/
+            unix/       -- platform-specific configuration files
+            win32/
+            os2/
+            msdos/
+
+         include/       -- public header  files, those to  be included
+                           directly by client apps
+
+         src/           -- sources of the library
+           base/        -- the base layer
+           sfnt/        -- the sfnt "driver"  (see the drivers section
+                           below)
+           truetype/    -- the truetype driver
+           type1/       -- the type1 driver
+           shared/      -- some header files shared between drivers
+
+         demos/         -- demos/tools
+
+         docs/          -- documentation (a bit empty for now)
+
+
+----------------------------------------------------------------------
+
+Glyph Image Formats:
+
+  Drivers are now able to  register new glyph image formats within the
+  library.  For  now, the  base layer supports  of course  bitmaps and
+  vector  outlines, but  one  could imagine  something different  like
+  colored bitmaps, bi-color vectors or wathever else (Metafonts anyone
+  ??).
+
+  See  the   file  `include/ftimage.h'.   Note  also  that   the  type
+  FT_Raster_Map  is gone,  and  is now  replaced  by FT_Bitmap,  which
+  should encompass all known bitmap types.
+
+  Each new  image format  must provide at  least one "raster",  i.e. a
+  module capable of  transforming the glyph image into  a bitmap. It's
+  also possible  to change the default  raster used for  a given glyph
+  image format.
+
+  The default outline  scan-converter now uses 128 levels  of grays by
+  default,  which tends  to smooth  many  things. Note  that the  demo
+  programs have been updated significantly in order to display these..
+
+
+----------------------------------------------------------------------
+
+Build system:
+
+  You still need  GNU Make to build the library.  The build system has
+  been very seriously re-vamped in order to provide things like :
+
+   - automatic host platform  detection (reverting to 'config/ansi' if
+     it is not detected, with pseudo-standard compilation flags)
+
+   - the ability to compile from the Makefiles with very different and
+     exotic compilers. Note that  linking the library can be difficult
+     for some platforms.
+
+     For example, the file `config/win32/lcclib.bat' is invoked by the
+     build system to create the ".lib" file with LCC-Win32 because its
+     librarian  has too  many flaws  to be  invoked directly  from the
+     Makefile.
+
+  Here's how it works:
+
+  - the first time you type `make',  the build system runs a series of
+    sub-makefiles in order to detect your host platform. It then dumps
+    what  it found,  and  creates  a file  called  `config.mk' in  the
+    current  directory. This  is a  sub-Makefile used  to  define many
+    important Make variables used to build the library.
+
+  - the second time, the build system detects the `config.mk' then use
+    it  to  build the  library.  All object  files  go  into 'obj'  by
+    default,  as well  as the  library file,  but this  can  easily be
+    changed.
+
+  Note that  you can run "make  setup" to force  another host platform
+  detection  even   if  a  `config.mk'  is  present   in  the  current
+  directory.  Another solution  is  simply to  delete  the file,  then
+  re-run make.
+
+  Finally, the  default compiler  for all platforms  is gcc  (for now,
+  this will hopefully changed in  the future). You can however specify
+  a different  compiler by specifying  it after the 'setup'  target as
+  in:
+
+      gnumake setup lcc         on Win32 to use the LCC compiler
+      gnumake setup visualc     on Win32 to use Visual C++
+
+  See  the file  `config/<system>/detect.mk' for  a list  of supported
+  compilers for your platforms.
+
+  It should be relatively easy  to write new detection rules files and
+  config.mk..
+
+  Finally, to  build the demo programs,  go to `demos'  and launch GNU
+  Make, it will use the `config.mk'  in the top directory to build the
+  test programs..
+
+
+----------------------------------------------------------------------
+
+Portability:
+
+  In  the  previous  beta,  a  single FT_System  object  was  used  to
+  encompass  all  low-level  operations like  thread  synchronisation,
+  memory management and i/o access. This has been greatly simplified:
+
+    - thread synchronisation  has been dropped, for  the simple reason
+      that the library  is already re-entrant, and that  if you really
+      need  two  threads accessing  the  same  FT_Library, you  should
+      really synchronize access to it yourself with a simple mutex.
+
+    - memory  management is  performed  through a  very simple  object
+      called "FT_Memory",  which really is a table  containing a table
+      of pointers to  functions like malloc, realloc and  free as well
+      as some user data (closure).
+
+    - resources have disappeared (they created more problems than they
+      solved), and  i/o management have  been simplified greatly  as a
+      result. Streams are defined through FT_Stream objects, which can
+      be either memory-based or disk-based.
+
+      Note that  each face  has its own  stream, which is  closed only
+      when  the  face object  is  destroyed.  Hence,  a function  like
+      TT_Flush_Face in  1.x cannot be directly  supported. However, if
+      you really need something like  this, you can easily tailor your
+      own streams  to achieve the same  feature at a  lower level (and
+      use FT_Open_Face instead of FT_New_Face to create the face).
+
+  See the file  "include/ftsystem.h" for more details, as  well as the
+  implementations found in "config/unix" and "config/ansi".
+
+
+----------------------------------------------------------------------
+
+Font Drivers:
+
+  The  Font Driver  interface has  been modified  in order  to support
+  extensions & versioning.
+
+
+  The  list of  the font  drivers that  are statically  linked  to the
+  library at compile time is  managed through a new configuration file
+  called `config/<platform>/ftmodule.h'.
+
+  This file is autogenerated when invoking `make modules'. This target
+  will parse  all sub-directories of 'src', looking  for a "module.mk"
+  rules file, used to describe the driver to the build system.
+
+  Hence, one  should call  `make modules' each  time a font  driver is
+  added or removed from the `src' directory.
+
+  Finally, this version provides a "pseudo-driver" in `src/sfnt'. This
+  driver doesn't  support font  files directly, but  provides services
+  used by  all TrueType-like font  drivers. Hence, its code  is shared
+  between  the TrueType  & OpenType  font formats,  and  possibly more
+  formats to come if we're lucky..
+
+
+----------------------------------------------------------------------
+
+Extensions support:
+
+  The extensions support is inspired by the one found in 1.x.
+
+  Now, each font driver has  its own "extension registry", which lists
+  which extensions  are available  for the font  faces managed  by the
+  driver.
+
+  Extension ids are  now strings, rather than 4-byte  tags, as this is
+  usually more readable..
+
+  Each extension has:
+    - some data, associated to each face object
+    - an interface (table of function pointers)
+
+  An extension  that is format-specific should  simply register itself
+  to the correct font driver. Here is some example code:
+
+   // Registering an extensions
+   //
+   FT_Error  FT_Init_XXXX_Extension( FT_Library  library )
+   {
+     FT_DriverInterface*  tt_driver;
+
+     driver = FT_Get_Driver( library, "truetype" );
+     if (!driver) return FT_Err_Unimplemented_Feature;
+
+     return FT_Register_Extension( driver, &extension_class );
+   }
+
+
+   // Implementing the extensions
+   //
+   FT_Error  FT_Proceed_Extension_XXX( FT_Face  face )
+   {
+     FT_XXX_Extension            ext;
+     FT_XXX_Extension_Interface  ext_interface;
+
+     ext = FT_Get_Extension( face, "extensionid", &ext_interface );
+     if (!ext) return error;
+
+     return ext_interface->do_it(ext);
+   }
+
+--- end of CHANGES ---

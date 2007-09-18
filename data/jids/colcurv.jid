@@ -1,0 +1,18 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Color Curve") name="color_curve">
+  <box vertical>
+    <box horizontal expansive>
+      <view expansive name="curve" /><!-- custom widget -->
+      <box vertical>
+        <button text=_("&OK") name="button_ok" magnetic />
+        <button text=_("&Cancel") />
+        <box name="target" />
+        <check text=_("&Preview") name="preview" />
+      </box>
+    </box>
+  </box>
+</window>

@@ -1,0 +1,153 @@
+/* ase -- allegro-sprite-editor: the ultimate sprites factory
+ * Copyright (C) 2001-2005  David A. Capello
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "config.h"
+
+#ifndef USE_PRECOMPILED_HEADER
+
+#include "effect/effect.h"
+#include "modules/color.h"
+#include "raster/image.h"
+
+#endif
+
+static struct {
+  int from, to;
+  int fuzziness;
+} data;
+
+void set_replace_colors (int from, int to, int fuzziness)
+{
+  data.from = from;
+  data.to = to;
+  data.fuzziness = MID (0, fuzziness, 255);
+}
+
+void apply_replace_color4 (Effect *effect)
+{
+  unsigned long *src_address;
+  unsigned long *dst_address;
+  int src_r, src_g, src_b, src_a;
+  int dst_r, dst_g, dst_b, dst_a;
+  int x, c;
+
+  src_address = ((unsigned long **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((unsigned long **)effect->dst->line)[effect->row+effect->y]+effect->x;
+
+  dst_r = _rgba_getr (data.from);
+  dst_g = _rgba_getg (data.from);
+  dst_b = _rgba_getb (data.from);
+  dst_a = _rgba_geta (data.from);
+
+  for (x=0; x<effect->w; x++) {
+    if (effect->mask_address) {
+      if (!((*effect->mask_address) & (1<<effect->d.rem))) {
+	src_address++;
+	dst_address++;
+	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	continue;
+      }
+      else
+	_image_bitmap_next_bit (effect->d, effect->mask_address);
+    }
+
+    c = *(src_address++);
+
+    src_r = _rgba_getr (c);
+    src_g = _rgba_getg (c);
+    src_b = _rgba_getb (c);
+    src_a = _rgba_geta (c);
+
+    if ((src_r >= dst_r-data.fuzziness) && (src_r <= dst_r+data.fuzziness) &&
+        (src_g >= dst_g-data.fuzziness) && (src_g <= dst_g+data.fuzziness) &&
+        (src_b >= dst_b-data.fuzziness) && (src_b <= dst_b+data.fuzziness) &&
+        (src_a >= dst_a-data.fuzziness) && (src_a <= dst_a+data.fuzziness))
+      *(dst_address++) = data.to;
+    else
+      *(dst_address++) = c;
+  }
+}
+
+void apply_replace_color2 (Effect *effect)
+{
+  unsigned short *src_address;
+  unsigned short *dst_address;
+  int src_k, src_a;
+  int dst_k, dst_a;
+  int x, c;
+
+  src_address = ((unsigned short **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((unsigned short **)effect->dst->line)[effect->row+effect->y]+effect->x;
+
+  dst_k = _graya_getk (data.from);
+  dst_a = _graya_geta (data.from);
+
+  for (x=0; x<effect->w; x++) {
+    if (effect->mask_address) {
+      if (!((*effect->mask_address) & (1<<effect->d.rem))) {
+	src_address++;
+	dst_address++;
+	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	continue;
+      }
+      else
+	_image_bitmap_next_bit (effect->d, effect->mask_address);
+    }
+
+    c = *(src_address++);
+
+    src_k = _graya_getk (c);
+    src_a = _graya_geta (c);
+
+    if ((src_k >= dst_k-data.fuzziness) && (src_k <= dst_k+data.fuzziness) &&
+        (src_a >= dst_a-data.fuzziness) && (src_a <= dst_a+data.fuzziness))
+      *(dst_address++) = data.to;
+    else
+      *(dst_address++) = c;
+  }
+}
+
+void apply_replace_color1 (Effect *effect)
+{
+  unsigned char *src_address;
+  unsigned char *dst_address;
+  int x, c;
+
+  src_address = ((unsigned char **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((unsigned char **)effect->dst->line)[effect->row+effect->y]+effect->x;
+
+  for (x=0; x<effect->w; x++) {
+    if (effect->mask_address) {
+      if (!((*effect->mask_address) & (1<<effect->d.rem))) {
+	src_address++;
+	dst_address++;
+	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	continue;
+      }
+      else
+	_image_bitmap_next_bit (effect->d, effect->mask_address);
+    }
+
+    c = *(src_address++);
+
+    if ((c >= data.from-data.fuzziness) && (c <= data.from+data.fuzziness))
+      *(dst_address++) = data.to;
+    else
+      *(dst_address++) = c;
+  }
+}

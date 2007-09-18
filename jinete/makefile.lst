@@ -1,0 +1,124 @@
+# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+
+ifndef JINETE_DIR
+JINETE_DIR = .
+endif
+
+ifndef OBJ_DIR
+OBJ_DIR = $(JINETE_DIR)/obj/$(JINETE_SUFFIX)
+endif
+
+ifndef LIB_DIR
+LIB_DIR = $(JINETE_DIR)/lib/$(JINETE_SUFFIX)
+endif
+
+######################################################################
+# Jinete
+
+JINETE_LIB = $(LIB_DIR)/libji$(LIB)
+
+JINETE_SOURCES =				\
+	$(JINETE_DIR)/src/jaccel.c		\
+	$(JINETE_DIR)/src/jalert.c		\
+	$(JINETE_DIR)/src/jbox.c		\
+	$(JINETE_DIR)/src/jbutton.c		\
+	$(JINETE_DIR)/src/jclipbrd.c		\
+	$(JINETE_DIR)/src/jcombox.c		\
+	$(JINETE_DIR)/src/jdraw.c		\
+	$(JINETE_DIR)/src/jentry.c		\
+	$(JINETE_DIR)/src/jfile.c		\
+	$(JINETE_DIR)/src/jfilesel.c		\
+	$(JINETE_DIR)/src/jfont.c		\
+	$(JINETE_DIR)/src/jfontbmp.c		\
+	$(JINETE_DIR)/src/jhook.c		\
+	$(JINETE_DIR)/src/jimage.c		\
+	$(JINETE_DIR)/src/jintern.c		\
+	$(JINETE_DIR)/src/jlabel.c		\
+	$(JINETE_DIR)/src/jlist.c		\
+	$(JINETE_DIR)/src/jlistbox.c		\
+	$(JINETE_DIR)/src/jmanager.c		\
+	$(JINETE_DIR)/src/jmem.c		\
+	$(JINETE_DIR)/src/jmenu.c		\
+	$(JINETE_DIR)/src/jmessage.c		\
+	$(JINETE_DIR)/src/jpanel.c		\
+	$(JINETE_DIR)/src/jqckmenu.c		\
+	$(JINETE_DIR)/src/jrect.c		\
+	$(JINETE_DIR)/src/jregion.c		\
+	$(JINETE_DIR)/src/jsep.c		\
+	$(JINETE_DIR)/src/jslider.c		\
+	$(JINETE_DIR)/src/jsystem.c		\
+	$(JINETE_DIR)/src/jtextbox.c		\
+	$(JINETE_DIR)/src/jtheme.c		\
+	$(JINETE_DIR)/src/jview.c		\
+	$(JINETE_DIR)/src/jwidget.c		\
+	$(JINETE_DIR)/src/jwindow.c		\
+	$(JINETE_DIR)/src/themes/jsimple.c	\
+	$(JINETE_DIR)/src/themes/jstand.c
+
+JINETE_SOURCES +=					\
+	$(JINETE_DIR)/freetype/src/base/ftsystem.c	\
+	$(JINETE_DIR)/freetype/src/base/ftdebug.c	\
+	$(JINETE_DIR)/freetype/src/base/ftinit.c	\
+	$(JINETE_DIR)/freetype/src/base/ftbase.c	\
+	$(JINETE_DIR)/freetype/src/base/ftglyph.c	\
+	$(JINETE_DIR)/freetype/src/base/ftmm.c		\
+	$(JINETE_DIR)/freetype/src/base/ftbbox.c	\
+	$(JINETE_DIR)/freetype/src/autohint/autohint.c	\
+	$(JINETE_DIR)/freetype/src/cache/ftcache.c	\
+	$(JINETE_DIR)/freetype/src/cff/cff.c		\
+	$(JINETE_DIR)/freetype/src/cid/type1cid.c	\
+	$(JINETE_DIR)/freetype/src/pcf/pcf.c		\
+	$(JINETE_DIR)/freetype/src/psaux/psaux.c	\
+	$(JINETE_DIR)/freetype/src/pshinter/pshinter.c	\
+	$(JINETE_DIR)/freetype/src/psnames/psmodule.c	\
+	$(JINETE_DIR)/freetype/src/raster/raster.c	\
+	$(JINETE_DIR)/freetype/src/sfnt/sfnt.c		\
+	$(JINETE_DIR)/freetype/src/smooth/smooth.c	\
+	$(JINETE_DIR)/freetype/src/truetype/truetype.c	\
+	$(JINETE_DIR)/freetype/src/type1/type1.c	\
+	$(JINETE_DIR)/freetype/src/winfonts/winfnt.c
+
+JINETE_OBJS = $(addprefix $(OBJ_DIR)/,						\
+			  $(addsuffix $(OBJ),					\
+				      $(notdir $(basename $(JINETE_SOURCES)))))
+
+######################################################################
+# Examples
+
+JINETE_EXAMPLES_SOURCES =			\
+	$(JINETE_DIR)/examples/00hello.c	\
+	$(JINETE_DIR)/examples/01simple.c	\
+	$(JINETE_DIR)/examples/02label.c	\
+	$(JINETE_DIR)/examples/03slider.c	\
+	$(JINETE_DIR)/examples/04alert.c	\
+	$(JINETE_DIR)/examples/05fsel.c		\
+	$(JINETE_DIR)/examples/06entry.c	\
+	$(JINETE_DIR)/examples/07panel.c	\
+	$(JINETE_DIR)/examples/08txtbox.c	\
+	$(JINETE_DIR)/examples/09lists.c	\
+	$(JINETE_DIR)/examples/10chcks.c	\
+	$(JINETE_DIR)/examples/11file.c		\
+	$(JINETE_DIR)/examples/12qckmnu.c	\
+	$(JINETE_DIR)/examples/13menu.c		\
+	$(JINETE_DIR)/examples/14win.c		\
+	$(JINETE_DIR)/examples/15colbut.c	\
+	$(JINETE_DIR)/examples/16theme.c	\
+	$(JINETE_DIR)/examples/17theme.c	\
+	$(JINETE_DIR)/examples/18tips.c		\
+	$(JINETE_DIR)/examples/19game.c		\
+	$(JINETE_DIR)/examples/20combo.c	\
+	$(JINETE_DIR)/examples/21manage.c
+
+JINETE_EXAMPLES_SOURCES =\
+	$(JINETE_DIR)/examples/09lists.c
+# 	$(JINETE_DIR)/examples/16theme.c\
+# 	$(JINETE_DIR)/examples/17theme.c\
+# 	$(JINETE_DIR)/examples/20combo.c
+
+JINETE_EXAMPLES_OBJS =							\
+  $(addprefix $(OBJ_DIR)/,						\
+	$(addsuffix $(OBJ),						\
+		$(notdir $(basename $(JINETE_EXAMPLES_SOURCES)))))
+
+JINETE_EXAMPLES_EXES =						\
+  $(addsuffix $(EXE), $(basename $(JINETE_EXAMPLES_SOURCES)))

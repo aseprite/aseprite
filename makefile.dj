@@ -1,0 +1,49 @@
+# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+
+ifndef CONFIGURED
+include makefile.cfg
+endif
+
+.PHONY = cfgtest
+
+ifndef CONFIGURED
+cfgtest:
+	@echo You must configure ASE: edit \"makefile.cfg\" or run \"fix.sh\" script
+endif
+
+######################################################################
+# Flags for DJGPP
+
+CFLAGS =
+LFLAGS = -lalleg
+
+######################################################################
+# GCC stuff
+
+CC = gcc
+OBJ = .o
+LIB = .a
+EXE = .exe
+SUBMAKEFILE = makefile.dj
+OBJ_DIR = obj/djgpp
+JINETE_SUFFIX = djgpp
+
+include makefile.lst
+include makefile.gcc
+
+######################################################################
+# General rules
+
+.PHONY = default all clean distclean
+
+default: all
+
+all: $(ASE)
+
+clean:
+	-rm -f $(ALL_OBJS) $(ALL_LIBS)
+
+distclean: clean
+	-rm -f $(ASE)
+
+-include makefile.dep

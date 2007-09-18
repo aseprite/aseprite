@@ -1,0 +1,103 @@
+======================================================================
+ASE Hacking Notes
+======================================================================
+
+Add a new file to compile
+----------------------------------------------------------------------
+
+  Remember that if you add a new file to compile, it should have a
+  different name of any other file name in the source code tree. Also,
+  you must add it in the ASE_SOURCES variable of the makefile.lst.
+
+
+Add a new load/save file type
+----------------------------------------------------------------------
+
+  Look at the "src/file/" directory. You have two options to make a
+  new load/save routines:
+    - Use the sequence API (src/file/file.h);
+    - Use directly the sprite API (src/raster/sprite.h);
+
+  The sequence API should be used only for images that don't support
+  animation and that are plain images (don't have layers), like BMP,
+  PCX, TGA, or JPEG format. This is useful to handle sequences of
+  bitmaps like spr00.pcx, spr01.pcx, spr02.pcx automatically (you
+  don't worry about that, you just write the code to load/save one
+  file).
+
+  In the other hand, you should use directly the raster API
+  (src/raster/) if your format support animation or layers, like FLI,
+  or GIF formats.
+
+
+Hook palette's changes
+----------------------------------------------------------------------
+
+  With the routines (from "src/modules/palette.c"):
+
+    void hook_palette_changes(void (*proc)(void));
+    void unhook_palette_changes(void (*proc)(void));
+
+  The hooks are installed in the tail (it's important see the order of
+  modules in "src/core/modules.c").
+
+  Then when you use "set_current_palette", the routine
+  "call_palette_hooks" will call the hooks from the first to the last
+  one.
+
+
+Update the icon of buttons when the bitmap is destroyed in palette changes
+----------------------------------------------------------------------
+
+  NOTE: This is only for buttons with a BITMAP
+        from "get_gfx()" (src/modules/gfx.c).
+
+  When the palette changes, all graphics from "src/modules/gfx.c" are
+  regenerated.  If one button was using one of these BITMAP, that will
+  be a problem, because that pointer is pointing to a freed memory
+  area.
+
+  To update this icon pointer, you can use this is routine:
+
+    void add_gfxicon_to_button(JWidget button, int gfx_id, int icon_align);
+
+  This routine save in "user_data[3]" of "button" the "gfx_id", and
+  when the palette changes, the icon will be restored making a:
+
+    jbutton_set_icon(button, get_gfx(gfx_id));
+
+  Also, the routine will hook the destroy signal to remove
+  automatically this button from the "list of buttons to fixup"
+  ("icon_buttons" in "src/modules/gui.c").
+
+
+Reload the fonts
+----------------------------------------------------------------------
+
+  The routine "reload_default_font" in "src/modules/gui.c" reloads the
+  font indicated in the configuration string "/options/default_font",
+  also if it doesn't exist, the routine will try to load the
+  "data/fonts/default.pcx" font (finally, ASE uses the Allegro font if
+  no one was found).
+
+  This routine uses the "_ji_set_font_of_all_widgets" to change the
+  "text_font" property of EVERY widget.
+
+
+Undo
+----------------------------------------------------------------------
+
+  NOTE.1: Every undo action must be added in the "sprite.undo"
+  structure before to do the operation in the sprite. E.g:
+
+    undo_remove_layer(sprite.undo, sprite.layer);
+    layer_remove_layer(sprite.layer.parent, sprite.layer);
+
+  The only exception for this is "undo_add_image":
+
+    stock_add_image(stock, image);
+    undo_add_image(undo, stock, image);
+
+
+----------------------------------------------------------------------
+			   Copyright (C) 2003-2005 by David A. Capello

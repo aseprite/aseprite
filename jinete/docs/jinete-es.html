@@ -1,0 +1,2568 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><head><title>
+Jinete Manual
+</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<style type="text/css" title="Default"><!--
+A.xref:link {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.xref:visited {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.xref:hover {
+	color:           blue;
+	text-decoration: underline;
+	background:      rgb(220, 220, 220);
+}
+A.xref:active {
+	color:           red;
+	text-decoration: none;
+	background:      rgb(255, 204, 50);
+}
+A.eref:link {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.eref:visited {
+	color:           blue;
+	text-decoration: none;
+	background:      transparent;
+}
+A.eref:hover {
+	color:           blue;
+	text-decoration: underline;
+	background:      rgb(255, 165, 214);
+}
+A.eref:active {
+	color:           red;
+	text-decoration: none;
+	background:      rgb(255, 204, 50);
+}
+A.autotype:link {
+	color:           rgb(64, 64, 255);
+	text-decoration: none;
+	background:      transparent;
+}
+A.autotype:visited {
+	color:           rgb(64, 64, 255);
+	text-decoration: none;
+	background:      transparent;
+}
+A.autotype:hover {
+	color:           rgb(64, 64, 255);
+	text-decoration: underline;
+	background:      transparent;
+}
+A.autotype:active {
+	color:           red;
+	text-decoration: none;
+	background:      transparent;
+}
+blockquote.xref {
+	font-family:     helvetica, verdana, serif;
+	font-size:       smaller;
+	border:          thin solid rgb(220, 220, 220);
+	color:           black;
+	background:      rgb(240, 240, 240);
+}
+blockquote.eref {
+	font-family:     helvetica, verdana, serif;
+	font-size:       smaller;
+	border:          thin solid rgb(255, 165, 214);
+	color:           black;
+	background:      rgb(255, 201, 230);
+}
+blockquote.code {
+	border:          thin solid rgb(255, 234, 190);
+	color:           black;
+	background:      rgb(255, 255, 205);
+}
+blockquote.text {
+	border:          thin solid rgb(190, 234, 255);
+	color:           black;
+	background:      rgb(225, 255, 255);
+}
+div.al-api {
+	padding-left:    0.5em;
+	color:           black;
+	background:      rgb(255, 234, 100);
+	font-weight:     bold;
+	border-bottom:   medium solid rgb(255, 204, 51);
+	border-left:     medium solid rgb(255, 204, 51);
+	margin-top:      2em;
+}
+div.al-api-cont {
+	padding-left:    0.5em;
+	color:           black;
+	background:      rgb(255, 234, 100);
+	font-weight:     bold;
+	border-bottom:   medium solid rgb(255, 204, 51);
+	border-left:     medium solid rgb(255, 204, 51);
+	margin-top:      -1em;
+}
+div.faq-shift-to-right {
+	margin-left: 2em;
+}
+div.al-back-to-contents {
+	text-align:      center;
+	font-family:     sans-serif;
+	margin-top:      1em;
+	font-weight:     bold;
+	/* Removing the  comments of the next line create longer pages */
+	/* margin-bottom:   100em; */
+}
+
+
+--></style>
+</head><body bgcolor=white text=black link="#0000ee" alink="#ff0000" vlink="#551a8b">
+<pre>
+
+                       Jinete 0.4
+
+                      A GUI library.
+
+                 By <a href="http://www.davidcapello.com.ar/">David A. Capello</a>, 2005.
+
+</pre>
+
+
+<p><br>
+#include &lt;std_disclaimer.h&gt;
+<blockquote class="text"><i>
+   "No me responsabilizo de ningún efecto, adverso u otro que este código
+    pueda tener sobre usted, su ordenador, su salud, su perro, o cualquier
+    otra cosa que pueda imaginar. Uselo bajo su propia responsabilidad."
+</i></blockquote>
+
+
+<p><br>
+<h1><a name="Contenidos">Contenidos</a></h1>
+
+<p>
+<ul>
+<li><a href="#Introducción">Introducción</a>
+<li><a href="#Copyright">Copyright</a>
+<li><a href="#Funcionamiento General">Funcionamiento General</a>
+<li><a href="#Rutinas Básicas">Rutinas Básicas</a>
+<li><a href="#Widget">Widget</a>
+<li><a href="#JHook (gancho)">JHook (gancho)</a>
+<li><a href="#Message (mensaje)">Message (mensaje)</a>
+<li><a href="#Signal (señales)">Signal (señales)</a>
+<li><a href="#Manager (gestor)">Manager (gestor)</a>
+<li><a href="#Window (ventana)">Window (ventana)</a>
+<li><a href="#Box (caja)">Box (caja)</a>
+<li><a href="#Label (etiqueta)">Label (etiqueta)</a>
+<li><a href="#Button (botón)">Button (botón)</a>
+<li><a href="#Check (caja de comprobación)">Check (caja de comprobación)</a>
+<li><a href="#Theme (tema)">Theme (tema)</a>
+<li><a href="#Archivos JID">Archivos JID</a>
+<li><a href="#Font (fuente)">Font (fuente)</a>
+<li><a href="#JList - Listas Enlazadas">JList - Listas Enlazadas</a>
+<li><a href="#JRect - Rectángulos">JRect - Rectángulos</a>
+<li><a href="#JRegion - Regiones">JRegion - Regiones</a>
+<li><a href="#Funciones Internas">Funciones Internas</a>
+<li><a href="#Actualizaciones">Actualizaciones</a>
+<li><a href="#Agradecimientos">Agradecimientos</a>
+<li><a href="#Índice">Índice</a>
+</ul>
+<ul>
+<li><a href="#Introducción">Introducción</a>
+<li><a href="#Copyright">Copyright</a>
+<li><a href="#Funcionamiento General">Funcionamiento General</a>
+<li><a href="#Rutinas Básicas">Rutinas Básicas</a>
+<ul>
+<li><a href="#jfree">jfree</a>
+<li><a href="#jmalloc">jmalloc</a>
+<li><a href="#jmalloc0">jmalloc0</a>
+<li><a href="#jnew">jnew</a>
+<li><a href="#jnew0">jnew0</a>
+<li><a href="#jrealloc">jrealloc</a>
+<li><a href="#jrenew">jrenew</a>
+</ul>
+<li><a href="#Widget">Widget</a>
+<ul>
+<li><a href="#ji_register_widget_type">ji_register_widget_type</a>
+<li><a href="#jwidget_add_child">jwidget_add_child</a>
+<li><a href="#jwidget_add_childs">jwidget_add_childs</a>
+<li><a href="#jwidget_add_hook">jwidget_add_hook</a>
+<li><a href="#jwidget_autodestroy">jwidget_autodestroy</a>
+<li><a href="#jwidget_capture_mouse">jwidget_capture_mouse</a>
+<li><a href="#jwidget_check_underscored">jwidget_check_underscored</a>
+<li><a href="#jwidget_close_window">jwidget_close_window</a>
+<li><a href="#jwidget_decorative">jwidget_decorative</a>
+<li><a href="#jwidget_deselect">jwidget_deselect</a>
+<li><a href="#jwidget_dirty">jwidget_dirty</a>
+<li><a href="#jwidget_disable">jwidget_disable</a>
+<li><a href="#jwidget_emit_signal">jwidget_emit_signal</a>
+<li><a href="#jwidget_enable">jwidget_enable</a>
+<li><a href="#jwidget_expansive">jwidget_expansive</a>
+<li><a href="#jwidget_find_name">jwidget_find_name</a>
+<li><a href="#jwidget_flush_redraw">jwidget_flush_redraw</a>
+<li><a href="#jwidget_focusrest">jwidget_focusrest</a>
+<li><a href="#jwidget_free">jwidget_free</a>
+<li><a href="#jwidget_get_align">jwidget_get_align</a>
+<li><a href="#jwidget_get_bg_color">jwidget_get_bg_color</a>
+<li><a href="#jwidget_get_child_position">jwidget_get_child_position</a>
+<li><a href="#jwidget_get_children">jwidget_get_children</a>
+<li><a href="#jwidget_get_data">jwidget_get_data</a>
+<li><a href="#jwidget_get_drawable_region">jwidget_get_drawable_region</a>
+<li><a href="#jwidget_get_font">jwidget_get_font</a>
+<li><a href="#jwidget_get_hook">jwidget_get_hook</a>
+<li><a href="#jwidget_get_name">jwidget_get_name</a>
+<li><a href="#jwidget_get_parent">jwidget_get_parent</a>
+<li><a href="#jwidget_get_parents">jwidget_get_parents</a>
+<li><a href="#jwidget_get_position">jwidget_get_position</a>
+<li><a href="#jwidget_get_region">jwidget_get_region</a>
+<li><a href="#jwidget_get_text">jwidget_get_text</a>
+<li><a href="#jwidget_get_text_height">jwidget_get_text_height</a>
+<li><a href="#jwidget_get_text_length">jwidget_get_text_length</a>
+<li><a href="#jwidget_get_texticon_info">jwidget_get_texticon_info</a>
+<li><a href="#jwidget_get_theme">jwidget_get_theme</a>
+<li><a href="#jwidget_get_type">jwidget_get_type</a>
+<li><a href="#jwidget_get_window">jwidget_get_window</a>
+<li><a href="#jwidget_hard_capture_mouse">jwidget_hard_capture_mouse</a>
+<li><a href="#jwidget_has_capture">jwidget_has_capture</a>
+<li><a href="#jwidget_has_child">jwidget_has_child</a>
+<li><a href="#jwidget_has_focus">jwidget_has_focus</a>
+<li><a href="#jwidget_has_mouse">jwidget_has_mouse</a>
+<li><a href="#jwidget_hide">jwidget_hide</a>
+<li><a href="#jwidget_init_theme">jwidget_init_theme</a>
+<li><a href="#jwidget_is_autodestroy">jwidget_is_autodestroy</a>
+<li><a href="#jwidget_is_decorative">jwidget_is_decorative</a>
+<li><a href="#jwidget_is_deselected">jwidget_is_deselected</a>
+<li><a href="#jwidget_is_disabled">jwidget_is_disabled</a>
+<li><a href="#jwidget_is_enabled">jwidget_is_enabled</a>
+<li><a href="#jwidget_is_expansive">jwidget_is_expansive</a>
+<li><a href="#jwidget_is_focusrest">jwidget_is_focusrest</a>
+<li><a href="#jwidget_is_hidden">jwidget_is_hidden</a>
+<li><a href="#jwidget_is_magnetic">jwidget_is_magnetic</a>
+<li><a href="#jwidget_is_selected">jwidget_is_selected</a>
+<li><a href="#jwidget_is_visible">jwidget_is_visible</a>
+<li><a href="#jwidget_magnetic">jwidget_magnetic</a>
+<li><a href="#jwidget_new">jwidget_new</a>
+<li><a href="#jwidget_noborders">jwidget_noborders</a>
+<li><a href="#jwidget_pick">jwidget_pick</a>
+<li><a href="#jwidget_redraw_region">jwidget_redraw_region</a>
+<li><a href="#jwidget_release_mouse">jwidget_release_mouse</a>
+<li><a href="#jwidget_remove_child">jwidget_remove_child</a>
+<li><a href="#jwidget_replace_child">jwidget_replace_child</a>
+<li><a href="#jwidget_request_size">jwidget_request_size</a>
+<li><a href="#jwidget_select">jwidget_select</a>
+<li><a href="#jwidget_send_message">jwidget_send_message</a>
+<li><a href="#jwidget_send_message_after_type">jwidget_send_message_after_type</a>
+<li><a href="#jwidget_set_align">jwidget_set_align</a>
+<li><a href="#jwidget_set_bg_color">jwidget_set_bg_color</a>
+<li><a href="#jwidget_set_border">jwidget_set_border</a>
+<li><a href="#jwidget_set_font">jwidget_set_font</a>
+<li><a href="#jwidget_set_name">jwidget_set_name</a>
+<li><a href="#jwidget_set_position">jwidget_set_position</a>
+<li><a href="#jwidget_set_static_size">jwidget_set_static_size</a>
+<li><a href="#jwidget_set_text">jwidget_set_text</a>
+<li><a href="#jwidget_set_theme">jwidget_set_theme</a>
+<li><a href="#jwidget_show">jwidget_show</a>
+<li><a href="#jwidget_signal_off">jwidget_signal_off</a>
+<li><a href="#jwidget_signal_on">jwidget_signal_on</a>
+</ul>
+<li><a href="#JHook (gancho)">JHook (gancho)</a>
+<li><a href="#Message (mensaje)">Message (mensaje)</a>
+<li><a href="#Signal (señales)">Signal (señales)</a>
+<li><a href="#Manager (gestor)">Manager (gestor)</a>
+<ul>
+<li><a href="#ji_get_default_manager">ji_get_default_manager</a>
+<li><a href="#jmanager_attract_focus">jmanager_attract_focus</a>
+<li><a href="#jmanager_close_window">jmanager_close_window</a>
+<li><a href="#jmanager_dispatch_draw_messages">jmanager_dispatch_draw_messages</a>
+<li><a href="#jmanager_dispatch_messages">jmanager_dispatch_messages</a>
+<li><a href="#jmanager_free">jmanager_free</a>
+<li><a href="#jmanager_free_capture">jmanager_free_capture</a>
+<li><a href="#jmanager_free_focus">jmanager_free_focus</a>
+<li><a href="#jmanager_free_mouse">jmanager_free_mouse</a>
+<li><a href="#jmanager_free_widget">jmanager_free_widget</a>
+<li><a href="#jmanager_get_capture">jmanager_get_capture</a>
+<li><a href="#jmanager_get_focus">jmanager_get_focus</a>
+<li><a href="#jmanager_get_mouse">jmanager_get_mouse</a>
+<li><a href="#jmanager_new">jmanager_new</a>
+<li><a href="#jmanager_open_window">jmanager_open_window</a>
+<li><a href="#jmanager_poll">jmanager_poll</a>
+<li><a href="#jmanager_refresh_screen">jmanager_refresh_screen</a>
+<li><a href="#jmanager_remove_message">jmanager_remove_message</a>
+<li><a href="#jmanager_remove_messages_for">jmanager_remove_messages_for</a>
+<li><a href="#jmanager_run">jmanager_run</a>
+<li><a href="#jmanager_send_message">jmanager_send_message</a>
+<li><a href="#jmanager_set_capture">jmanager_set_capture</a>
+<li><a href="#jmanager_set_focus">jmanager_set_focus</a>
+<li><a href="#jmanager_set_mouse">jmanager_set_mouse</a>
+</ul>
+<li><a href="#Window (ventana)">Window (ventana)</a>
+<ul>
+<li><a href="#jwindow_center">jwindow_center</a>
+<li><a href="#jwindow_close">jwindow_close</a>
+<li><a href="#jwindow_get_killer">jwindow_get_killer</a>
+<li><a href="#jwindow_get_manager">jwindow_get_manager</a>
+<li><a href="#jwindow_is_desktop">jwindow_is_desktop</a>
+<li><a href="#jwindow_is_foreground">jwindow_is_foreground</a>
+<li><a href="#jwindow_is_toplevel">jwindow_is_toplevel</a>
+<li><a href="#jwindow_mobile">jwindow_mobile</a>
+<li><a href="#jwindow_new">jwindow_new</a>
+<li><a href="#jwindow_new_desktop">jwindow_new_desktop</a>
+<li><a href="#jwindow_open">jwindow_open</a>
+<li><a href="#jwindow_open_bg">jwindow_open_bg</a>
+<li><a href="#jwindow_open_fg">jwindow_open_fg</a>
+<li><a href="#jwindow_position">jwindow_position</a>
+<li><a href="#jwindow_remap">jwindow_remap</a>
+</ul>
+<li><a href="#Box (caja)">Box (caja)</a>
+<ul>
+<li><a href="#jbox_new">jbox_new</a>
+</ul>
+<li><a href="#Label (etiqueta)">Label (etiqueta)</a>
+<ul>
+<li><a href="#jlabel_new">jlabel_new</a>
+</ul>
+<li><a href="#Button (botón)">Button (botón)</a>
+<ul>
+<li><a href="#jbutton_add_command">jbutton_add_command</a>
+<li><a href="#jbutton_add_command_data">jbutton_add_command_data</a>
+<li><a href="#jbutton_get_bevel">jbutton_get_bevel</a>
+<li><a href="#jbutton_new">jbutton_new</a>
+<li><a href="#jbutton_set_bevel">jbutton_set_bevel</a>
+<li><a href="#jbutton_set_icon">jbutton_set_icon</a>
+<li><a href="#jbutton_set_icon_align">jbutton_set_icon_align</a>
+</ul>
+<li><a href="#Check (caja de comprobación)">Check (caja de comprobación)</a>
+<ul>
+<li><a href="#jcheck_new">jcheck_new</a>
+<li><a href="#jcheck_set_icon_align">jcheck_set_icon_align</a>
+</ul>
+<li><a href="#Theme (tema)">Theme (tema)</a>
+<li><a href="#Archivos JID">Archivos JID</a>
+<ul>
+<li><a href="#ji_load_widget">ji_load_widget</a>
+</ul>
+<li><a href="#Font (fuente)">Font (fuente)</a>
+<ul>
+<li><a href="#ji_font_char_len">ji_font_char_len</a>
+<li><a href="#ji_font_get_aa_mode">ji_font_get_aa_mode</a>
+<li><a href="#ji_font_get_available_fixed_sizes">ji_font_get_available_fixed_sizes</a>
+<li><a href="#ji_font_get_char_extra_spacing">ji_font_get_char_extra_spacing</a>
+<li><a href="#ji_font_get_size">ji_font_get_size</a>
+<li><a href="#ji_font_is_fixed">ji_font_is_fixed</a>
+<li><a href="#ji_font_is_scalable">ji_font_is_scalable</a>
+<li><a href="#ji_font_load">ji_font_load</a>
+<li><a href="#ji_font_set_aa_mode">ji_font_set_aa_mode</a>
+<li><a href="#ji_font_set_char_extra_spacing">ji_font_set_char_extra_spacing</a>
+<li><a href="#ji_font_set_size">ji_font_set_size</a>
+<li><a href="#ji_font_text_len">ji_font_text_len</a>
+</ul>
+<li><a href="#JList - Listas Enlazadas">JList - Listas Enlazadas</a>
+<ul>
+<li><a href="#jlist_alloc">jlist_alloc</a>
+<li><a href="#jlist_append">jlist_append</a>
+<li><a href="#jlist_concat">jlist_concat</a>
+<li><a href="#jlist_copy">jlist_copy</a>
+<li><a href="#jlist_delete_link">jlist_delete_link</a>
+<li><a href="#jlist_find">jlist_find</a>
+<li><a href="#jlist_find_custom">jlist_find_custom</a>
+<li><a href="#jlist_first">jlist_first</a>
+<li><a href="#jlist_foreach">jlist_foreach</a>
+<li><a href="#jlist_free">jlist_free</a>
+<li><a href="#jlist_free_1">jlist_free_1</a>
+<li><a href="#jlist_index">jlist_index</a>
+<li><a href="#jlist_insert">jlist_insert</a>
+<li><a href="#jlist_insert_before">jlist_insert_before</a>
+<li><a href="#jlist_insert_sorted">jlist_insert_sorted</a>
+<li><a href="#jlist_last">jlist_last</a>
+<li><a href="#jlist_length">jlist_length</a>
+<li><a href="#jlist_next">jlist_next</a>
+<li><a href="#jlist_nth">jlist_nth</a>
+<li><a href="#jlist_nth_data">jlist_nth_data</a>
+<li><a href="#jlist_nth_prev">jlist_nth_prev</a>
+<li><a href="#jlist_position">jlist_position</a>
+<li><a href="#jlist_prepend">jlist_prepend</a>
+<li><a href="#jlist_previous">jlist_previous</a>
+<li><a href="#jlist_remove">jlist_remove</a>
+<li><a href="#jlist_remove_all">jlist_remove_all</a>
+<li><a href="#jlist_remove_link">jlist_remove_link</a>
+<li><a href="#jlist_reverse">jlist_reverse</a>
+<li><a href="#jlist_sort">jlist_sort</a>
+<li><a href="#jlist_sort_with_data">jlist_sort_with_data</a>
+</ul>
+<li><a href="#JRect - Rectángulos">JRect - Rectángulos</a>
+<ul>
+<li><a href="#jrect_add">jrect_add</a>
+<li><a href="#jrect_copy">jrect_copy</a>
+<li><a href="#jrect_free">jrect_free</a>
+<li><a href="#jrect_has_intersection">jrect_has_intersection</a>
+<li><a href="#jrect_intersect">jrect_intersect</a>
+<li><a href="#jrect_new">jrect_new</a>
+<li><a href="#jrect_new_copy">jrect_new_copy</a>
+<li><a href="#jrect_replace">jrect_replace</a>
+<li><a href="#jrect_shrink">jrect_shrink</a>
+<li><a href="#jrect_stretch">jrect_stretch</a>
+</ul>
+<li><a href="#JRegion - Regiones">JRegion - Regiones</a>
+<ul>
+<li><a href="#jregion_add">jregion_add</a>
+<li><a href="#jregion_add2">jregion_add2</a>
+<li><a href="#jregion_clear">jregion_clear</a>
+<li><a href="#jregion_free">jregion_free</a>
+<li><a href="#jregion_intersect">jregion_intersect</a>
+<li><a href="#jregion_intersect2">jregion_intersect2</a>
+<li><a href="#jregion_join">jregion_join</a>
+<li><a href="#jregion_move">jregion_move</a>
+<li><a href="#jregion_new">jregion_new</a>
+<li><a href="#jregion_new_copy">jregion_new_copy</a>
+<li><a href="#jregion_subtract">jregion_subtract</a>
+<li><a href="#jregion_subtract2">jregion_subtract2</a>
+</ul>
+<li><a href="#Funciones Internas">Funciones Internas</a>
+<ul>
+<li><a href="#_ji_font_exit">_ji_font_exit</a>
+<li><a href="#_ji_font_init">_ji_font_init</a>
+<li><a href="#_ji_free_all_widgets">_ji_free_all_widgets</a>
+<li><a href="#_ji_free_widget">_ji_free_widget</a>
+<li><a href="#_ji_get_new_widget">_ji_get_new_widget</a>
+<li><a href="#_ji_get_widget_array">_ji_get_widget_array</a>
+<li><a href="#_ji_get_widget_by_id">_ji_get_widget_by_id</a>
+<li><a href="#_ji_is_valid_widget">_ji_is_valid_widget</a>
+<li><a href="#_ji_system_exit">_ji_system_exit</a>
+<li><a href="#_ji_system_init">_ji_system_init</a>
+<li><a href="#_jwindow_is_moving">_jwindow_is_moving</a>
+</ul>
+<li><a href="#Actualizaciones">Actualizaciones</a>
+<li><a href="#Agradecimientos">Agradecimientos</a>
+<li><a href="#Índice">Índice</a>
+</ul>
+
+
+
+<p><br>
+<h1><a name="Introducción">Introducción</a></h1>
+
+<p>
+  Jinete es una librería que proporciona un Interfaz Gráfico de
+  Usuario (GUI por sus siglas en inglés), sencilla y rápida tanto de
+  usar, como de programar y diseñar diálogos.  Conjuntamente con la
+  librería Allegro, se encarga de controlar los eventos que produce el
+  usuario a través del ratón (mouse) y el teclado.
+
+
+
+<p><br>
+<h1><a name="Copyright">Copyright</a></h1>
+
+<p>
+  Jinete es gift-ware (software-regalo).  Puede usar, modificar,
+  redistribuir, y generalmente modificarlo de cualquier forma que
+  desee, y no debe darme nada a cambio. Si redistribuye partes de este
+  código o hace una aplicación con él, sería bonito que mencionase
+  Jinete en alguna parte de los créditos, pero no está obligado a
+  hacerlo.
+
+
+
+<p><br>
+<h1><a name="Funcionamiento General">Funcionamiento General</a></h1>
+
+<p>
+  El GUI se maneja a través de widgets (controles u objetos gráficos).
+  Cada widget puede contener varios widgets hijos, donde cada uno de
+  éstos tiene un puntero a su único padre; siendo el padre raíz de
+  todos los widgets: el manager (gestor) principal del GUI (el cual
+  también es un widget).
+
+<p>
+  Jinete es controlado con el manager principal, el cual es creado por
+  primera y única vez a través de la primer llamada de jmanager_new,
+  y deberá ser eliminado mediante jmanager_free.
+
+<p>
+  Los managers sólo pueden contener ventanas dentro, mientras que las
+  ventanas pueden contener todo tipo de widgets, inclusive otros
+  managers alternativos (o sub-managers) los cuales a su vez pueden
+  contener otras ventanas (con Jinete puede lograr algo así como la
+  MDI de Windows).
+
+<p>
+  El manager principal controla los mensajes y los despacha a los
+  demás widgets. Cabe destacar que todo mensaje enviado a través de
+  jmanager_send_message no es procesado de inmediato, dicho mensaje
+  solo se guardará en una cola para luego ser despachado (si espera
+  una respuesta inmediata, vea jmanager_dispatch_messages o
+  jwidget_send_message).
+
+<p>
+<ul><li>
+  Foco de entrada (jmanager_get_focus):<br>
+    Es un puntero a un widget que indica que será el encargado de
+    recibir la entrada del teclado. Por lo menos, será el primero en
+    tener la oportunidad de procesarla, si él no la utiliza, se enviará
+    el mensaje a otros widgets. El foco de entrada se mueve con la tecla
+    TAB.
+<li>
+  Widget con el mouse (jmanager_get_mouse):<br>
+    Un puntero al widget que tiene el mouse encima.
+<li>
+  Widget con el mouse capturado (jmanager_get_capture):<br>
+    Un puntero al widget que capturó el mouse. Generalmente cuando se le
+    hace click encima de un widget, éste captura el mouse para que siga
+    recibiendo la entrada del mouse hasta que el usuario suelte el
+    botón.
+</ul>
+
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_new">jmanager_new</a>,
+<a class="xref" href="#ji_manager_free">ji_manager_free</a>,
+<a class="xref" href="#jmanager_send_message">jmanager_send_message</a>,
+<a class="xref" href="#ji_manager_dispatch_messages">ji_manager_dispatch_messages</a>.</blockquote>
+<h1><a name="Rutinas Básicas">Rutinas Básicas</a></h1>
+
+<p><br>
+<div class="al-api"><b>void *<a name="jmalloc">jmalloc</a>  (unsigned long n_bytes);</b></div><br>
+<div class="al-api-cont"><b>void *<a name="jmalloc0">jmalloc0</a> (unsigned long n_bytes);</b></div><br>
+<div class="al-api-cont"><b>void *<a name="jrealloc">jrealloc</a> (void *mem, unsigned long n_bytes);</b></div><br>
+<div class="al-api-cont"><b>void  <a name="jfree">jfree</a>    (void *mem);</b></div><br>
+  Equivalentes a malloc, calloc, realloc, y free respectivamente.
+
+<p><br>
+<div class="al-api"><b>#define <a name="jnew">jnew</a>(struct_type, n_structs)</b></div><br>
+<div class="al-api-cont"><b>#define <a name="jnew0">jnew0</a>(struct_type, n_structs)</b></div><br>
+<div class="al-api-cont"><b>#define <a name="jrenew">jrenew</a>(struct_type, mem, n_structs)</b></div><br>
+  Equivalente a usar:
+<blockquote class="code"><pre>
+    struct_type *mem1 = malloc (sizeof (struct_type) * n_structs).
+</pre></blockquote>
+
+
+<p><br>
+<h1><a name="Widget">Widget</a></h1>
+
+<p>
+  Los widgets son los componentes, objetos o controles del interfaz
+  gráfico; un botón, o una ventana son ejemplos de widgets. En Jinete,
+  el tipo JWidget representa dicho controles:
+<blockquote class="code"><pre>
+    typedef struct jwidget *JWidget;
+</pre></blockquote>
+  Es decir que JWidget en realidad se trata de un puntero a una
+  estructura jwidget definida en el archivo "jinete/widget.h".
+
+<p>
+  En general, la gran mayoría de los tipos en Jinete (definidos en
+  "jinete/base.h") se tratan de punteros a estructuras definidas en
+  cada uno de los archivos de cabecera particulares.
+
+<p>
+  Para modificar el comportamiento de un widget, se deben agregar
+  ganchos ("hooks", JHook en Jinete), los cuales se encargan de
+  interceptar mensajes.
+
+<p>
+  Los campos de la estructura jwidget son:
+<ul><li>
+  JID id;<br>
+    Código de identificación. Es un número con el cual puede identificar
+    a un widget (por lo menos mientras éste exista). Al liberar el widget
+    (con jwidget_free), su ID quedará disponible para un próximo widget
+    que se cree (mediante jwidget_new).
+<li>
+  int type;<br>
+    Tipo de widget. Puede ser JI_WIDGET para indicar un tipo de widget
+    anónimo, o puede ser JI_BUTTON si se creó desde jbutton_new, o
+    JI_WINDOW si se utilizó jwindow_new, etc.
+<p>
+    Es el valor que se le pasa a la función jwidget_new (puede tratarse
+    de un valor devuelto por ji_register_widget_type).
+<li>
+  char *name;
+    Nombre del widget (generalmente NULL si no es que es un widget
+    cargado desde un archivo .jid). Es útil para buscar el widget
+    desde su padre utilizando la rutina jwidget_find_name.
+<li>
+  JRect pos;<br>
+    Ubicación del widget: esquina superior-izquierda (x, y) y tamaño (w, h).
+    Es una posición ABSOLUTA en la pantalla, NO ES UNA POSICIÓN RELATIVA.
+<li>
+  struct { int l, t, r, b; } border_width;<br>
+    Tamaño de los bordes izquierdo, superior, derecho e inferior (left,
+    top, right, bottom).
+<li>
+  int child_spacing;<br>
+    Separación entre los hijos del widget.
+<li>
+  int flags;<br>
+    Banderas o propiedades del widget.
+<li>
+  int emit_signals;<br>
+    Contador que indica si el widget debe o no generar señales (si
+    emit_signals es igual a 0, las señales se emiten).
+<li>
+  int static_w, static_h;<br>
+    Tamaño estático del widget por defecto (si es que no se intercepta
+    el mensaje JM_REQSIZE, se utilizará este tamaño como el tamaño
+    necesario por el widget).
+<li>
+  JList children;<br>
+    Lista de widgets hijos. Son los controles que están contenidos en
+    este widget. La función jwidget_add_child sirve para agregar hijos
+    dentro de un widget.
+<li>
+  JTheme theme;<br>
+    Tema o estilo que utiliza el widget (inicializándolo al tema por
+    defecto a través de la función ji_get_theme).
+<li>
+  JWidget parent;<br>
+    Puntero al widget padre.
+<li>
+  JList hooks;<br>
+    Lista de ganchos (JHook).
+<li>
+  JDrawWidget draw_method;<br>
+    Función encargada de dibujar el widget, al inicializar un widget,
+    se intenta extraer desde el tema activo (ji_get_theme) un método
+    correspondiente para este tipo de widget (widget->draw_type).
+
+    Si el mensaje JM_DRAW no es interceptado, esta rutina será utilizada
+    para dibujar el widget.
+<li>
+  int align;<br>
+    Alineamiento u orientación del widget (generalmente alineación del texto).
+<li>
+  int text_size;<br>
+  char *text;<br>
+    Texto del widget.
+<li>
+  FONT *text_font;<br>
+    Tipo de fuente para dibujar texto (este campo es inicializado con
+    el valor "ji_get_theme ()->default_font").
+<li>
+  int bg_color;<br>
+    Color de fondo del widget (si es -1, se utiliza el del padre, y así
+    sucesivamente).
+<li>
+  BITMAP *icon;<br>
+    Ícono del widget (XXX).
+<li>
+  int icon_align;<br>
+    Alineamiento del ícono (XXX).
+<li>
+  void *theme_data[4];<br>
+    Datos para el tema.
+<li>
+  void *user_data[4];<br>
+    Datos para el usuario.
+</ul>
+
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_register_widget_type">ji_register_widget_type</a> (void);</b></div><br>
+  Retorna un número entero positivo para identificar un nuevo tipo de
+  widget. Debería utilizarlo sólo si necesita conocer en alguna parte
+  de su código que un determinado widget es del tipo que debería ser.
+
+<p>
+  Retornará valores continuos a JI_USER_WIDGET.
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jwidget_new">jwidget_new</a> (int type);</b></div><br>
+  Crea un nuevo "widget" de tipo "type" listo para ser utilizado.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_free">jwidget_free</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_free">jwidget_free</a> (JWidget widget);</b></div><br>
+  Libera el "widget", dejando su espacio disponible para próximos
+  controles que así lo necesiten. Note que esta función no libera
+  memoria, solo deja su espacio disponible para que otro posible
+  futuro widget lo utilice. Sólo la función _ji_free_all_widgets
+  libera toda la memoria ocupada por todos los widgets. Dicha función
+  es llamada al borrar el primer "manager" creado.
+
+<p>
+  Los widgets hijos también son eliminados (recursivamente). El campo
+  "widget->specific_data" también es eliminado (mediante jfree).
+
+<p>
+  Envía el mensaje JM_DESTROY al widget inmediatamente.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_new">jwidget_new</a>,
+<a class="xref" href="#_ji_free_all_widgets">_ji_free_all_widgets</a>,
+<a class="xref" href="#Manager">Manager</a>,
+<a class="xref" href="#JM_DESTROY">JM_DESTROY</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_init_theme">jwidget_init_theme</a> (JWidget widget);</b></div><br>
+  Inicializa el widget a su tema (estilo) correspondiente haciendo uso
+  de la función init_widget de la estructura jtheme.
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_add_hook">jwidget_add_hook</a> (JWidget widget, int type,
+                         JMessageFunc msg_proc, void *data);</b></div><br>
+  Crea un nuevo gancho (hook) para interceptar mensajes.  Cada gancho
+  tiene un tipo ("type"), que puede ser anónimo (JI_WIDGET) o puede
+  ser de un tipo personalizado (algún tipo devuelto mediante
+  ji_register_widget_type). Este tipo luego es utilizado para obtener
+  los datos "data".
+
+<p>
+  El "msg_proc" es un puntero a una función encargada de recibir cada
+  mensaje y procesarlo. Esta función debe retornar FALSE si no utiliza
+  un determinado mensaje y/o quiere dejarle el paso a un posible
+  "msg_proc" padre que se encuentre en el widget.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#ji_register_widget_type">ji_register_widget_type</a>,
+<a class="xref" href="#jwidget_get_hook">jwidget_get_hook</a>,
+<a class="xref" href="#jwidget_get_data">jwidget_get_data</a>.</blockquote>
+<div class="al-api"><b>JHook <a name="jwidget_get_hook">jwidget_get_hook</a> (JWidget widget, int type);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void *<a name="jwidget_get_data">jwidget_get_data</a> (JWidget widget, int type);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="jwidget_get_type">jwidget_get_type</a> (JWidget widget);</b></div><br>
+  Devuelve el tipo de widget que es "widget". Puede ser igual a
+  JI_WIDGET si se trata de un tipo anónimo de widget, o alguno de los
+  widgets estándares (como JI_BOX, JI_BUTTON, JI_WINDOW, etc.), o
+  finalmente debería tratarse de algún tipo creado por el usuario
+  mediante ji_register_widget_type ().
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#ji_register_widget_type">ji_register_widget_type</a>.</blockquote>
+<div class="al-api"><b>const char *<a name="jwidget_get_name">jwidget_get_name</a> (JWidget widget);</b></div><br>
+  Obtiene el nombre del widget. Generalmente los widgets nunca tendrán
+  nombre al menos que sean cargados desde un archivo .jid.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_set_name">jwidget_set_name</a>,
+<a class="xref" href="#ji_load_widget">ji_load_widget</a>,
+<a class="xref" href="#Archivos JID">Archivos JID</a>.</blockquote>
+<div class="al-api"><b>const char *<a name="jwidget_get_text">jwidget_get_text</a> (JWidget widget);</b></div><br>
+  Retorna un puntero al texto actual del widget, el cual puede ser
+  tanto una etiqueta que lleve un botón, el título de una ventana,
+  etc.
+
+<p>
+  No utilice el puntero si es que lo consiguió antes de una llamada a
+  jwidget_set_text. EVITE SIEMPRE hacer esto:
+<blockquote class="code"><pre>
+    const char *text = jwidget_get_text (widget);
+    jwidget_set_text (widget, "Hola");
+    printf (text);
+</pre></blockquote>
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_set_text">jwidget_set_text</a>.</blockquote>
+<div class="al-api"><b>int <a name="jwidget_get_align">jwidget_get_align</a> (JWidget widget);</b></div><br>
+  Devuelve el alineamiento del widget (widget->align).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_set_align">jwidget_set_align</a>.</blockquote>
+<div class="al-api"><b>FONT *<a name="jwidget_get_font">jwidget_get_font</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_set_name">jwidget_set_name</a> (JWidget widget, const char *name);</b></div><br>
+  Cambia el nombre del widget, generalmente útil si piensa luego usar
+  jwidget_find_name desde otra función o gancho.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_find_name">jwidget_find_name</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_set_text">jwidget_set_text</a> (JWidget widget, const char *text);</b></div><br>
+  Cambia el texto del widget. Está función también se encarga de
+  ensuciar el widget mediante jwidget_dirty.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_text">jwidget_get_text</a>,
+<a class="xref" href="#jwidget_dirty">jwidget_dirty</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_set_align">jwidget_set_align</a> (JWidget widget, int align);</b></div><br>
+  Cambia el alineamiento del widget (widget->align = align).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_align">jwidget_get_align</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_set_font">jwidget_set_font</a> (JWidget widget, FONT *font);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_magnetic">jwidget_magnetic</a> (JWidget widget, bool state);</b></div><br>
+  Cambia el estado de magnetismo del widget. Un widget magnética es
+  la que obtiene el foco de entrada por defecto. Generalmente los
+  botones de "Aceptar" o "Continuar" suelen tener esta propiedad,
+  teniendo la posibilidad de capturar la tecla <Enter> y utilizarla
+  para suponer que se quiso presionar dicho botón (sin necesidad de
+  poseer el foco de entrada).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_is_magnetic">jwidget_is_magnetic</a>,
+<a class="xref" href="#jmanager_attract_focus">jmanager_attract_focus</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_expansive">jwidget_expansive</a> (JWidget widget, bool state);</b></div><br>
+  Cambia el estado de expansión del widget. Un widget expansivo es
+  el que acapara mayor espacio en el widget padre. Útil únicamente
+  cuando el widget padre es una caja (box).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_is_expansive">jwidget_is_expansive</a>,
+<a class="xref" href="#jbox_new">jbox_new</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_decorative">jwidget_decorative</a> (JWidget widget, bool state);</b></div><br>
+  Cambia el estado de decoración del widget. Un widget decorativo es
+  un objeto especial el cual sirve para decorar las ventanas. Sólo
+  los temas deberían utilizar esta función, ya que es útil para
+  agregar un botón que cierre la ventana, o para minimizarla, o
+  para maximizarla/restaurarla, etc.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_is_decorative">jwidget_is_decorative</a>,
+<a class="xref" href="#Window (ventana)">Window (ventana)</a>,
+<a class="xref" href="#Theme (tema)">Theme (tema)</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_autodestroy">jwidget_autodestroy</a> (JWidget widget, bool state);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_focusrest">jwidget_focusrest</a> (JWidget widget, bool state);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_is_magnetic">jwidget_is_magnetic</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_is_expansive">jwidget_is_expansive</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_is_decorative">jwidget_is_decorative</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_is_autodestroy">jwidget_is_autodestroy</a> (JWidget widget);</b></div><br>
+  Devuelve TRUE si el widget es lo que preguntamos que sea (magnética,
+  expansiva, decorativa, o autodestructiva).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_magnetic">jwidget_magnetic</a>,
+<a class="xref" href="#jwidget_expansive">jwidget_expansive</a>,
+<a class="xref" href="#jwidget_decorative">jwidget_decorative</a>,
+<a class="xref" href="#jwidget_autodestroy">jwidget_autodestroy</a>.</blockquote>
+<div class="al-api"><b>bool <a name="jwidget_is_focusrest">jwidget_is_focusrest</a> (JWidget widget);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_focusrest">jwidget_focusrest</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_dirty">jwidget_dirty</a> (JWidget widget);</b></div><br>
+  Ensucia el widget para que sea redibujado en una próxima llamada a
+  jmanager_poll. Sólo colocará una bandera que le dirá al manager
+  que genere los mensajes necesarios para dibujar las partes visibles
+  del widget. Emite la señal JM_DIRTY.
+
+<p>
+  Si desea redibujar un widget de forma instantánea:
+<blockquote class="code"><pre>
+    jwidget_dirty (widget);
+    jwidget_flush_redraw (widget);
+    jmanager_dispatch_draw_messages ();
+</pre></blockquote>
+  Tenga en cuenta, que muchas funciones que cambian el estado del
+  widget, suelen llamar a jwidget_dirty para redibujar el widget con
+  su nuevo estado.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_poll">jmanager_poll</a>,
+<a class="xref" href="#JI_SIGNAL_DIRTY">JI_SIGNAL_DIRTY</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_show">jwidget_show</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jwidget_hide">jwidget_hide</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_enable">jwidget_enable</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jwidget_disable">jwidget_disable</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_select">jwidget_select</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jwidget_deselect">jwidget_deselect</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_is_visible">jwidget_is_visible</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_is_hidden">jwidget_is_hidden</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_is_enabled">jwidget_is_enabled</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_is_disabled">jwidget_is_disabled</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_is_selected">jwidget_is_selected</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_is_deselected">jwidget_is_deselected</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_has_focus">jwidget_has_focus</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_has_mouse">jwidget_has_mouse</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="jwidget_has_capture">jwidget_has_capture</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_add_child">jwidget_add_child</a> (JWidget widget, JWidget child);</b></div><br>
+  Agrega un nuevo widget hijo "child" dentro del widget padre
+  "widget".
+
+<p>
+  Emite la señal JI_SIGNAL_NEW_PARENT para "child", y
+  JI_SIGNAL_ADD_CHILD para "widget".
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_remove_child">jwidget_remove_child</a>,
+<a class="xref" href="#jwidget_replace_child">jwidget_replace_child</a>,
+<a class="xref" href="#JI_SIGNAL_NEW_PARENT">JI_SIGNAL_NEW_PARENT</a>,
+<a class="xref" href="#JI_SIGNAL_ADD_CHILD">JI_SIGNAL_ADD_CHILD</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_add_childs">jwidget_add_childs</a> (JWidget widget, ...);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_add_child">jwidget_add_child</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_remove_child">jwidget_remove_child</a> (JWidget widget, JWidget child);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_add_child">jwidget_add_child</a>,
+<a class="xref" href="#jwidget_replace_child">jwidget_replace_child</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_replace_child">jwidget_replace_child</a> (JWidget widget, JWidget old, JWidget new);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_add_child">jwidget_add_child</a>,
+<a class="xref" href="#jwidget_remove_child">jwidget_remove_child</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jwidget_get_parent">jwidget_get_parent</a> (JWidget widget);</b></div><br>
+  Devuelve un puntero al widget padre. Es equivalente a utilizar
+  widget->parent directamente.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_parents">jwidget_get_parents</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jwidget_get_window">jwidget_get_window</a> (JWidget widget);</b></div><br>
+  Recorre los padres del widget hasta encontrar la ventana a la que
+  pertenece, devolviendo dicho puntero o NULL si es que no se pudo
+  encontrar una ventana padre.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_get_manager">jwindow_get_manager</a>.</blockquote>
+<div class="al-api"><b>JList <a name="jwidget_get_parents">jwidget_get_parents</a> (JWidget widget, bool ascendant);</b></div><br>
+  Retornar una list de los padres de "widget". Si "ascendant" es TRUE
+  retorna desde el widget hasta el padre. Si "ascendant" es FALSE
+  retorna desde el padre hasta "widget".
+
+<p>
+  Deberá liberar la lista devuelta mediante jlist_free.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_parent">jwidget_get_parent</a>,
+<a class="xref" href="#jlist_free">jlist_free</a>.</blockquote>
+<div class="al-api"><b>JList <a name="jwidget_get_children">jwidget_get_children</a> (JWidget widget);</b></div><br>
+
+<p>
+  Deberá liberar la lista devuelta mediante jlist_free.
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jwidget_pick">jwidget_pick</a> (JWidget widget, int x, int y);</b></div><br>
+  Busca un widget dentro de "widget" que se encuentre en la posición
+  (x, y), partiendo desde el "widget", pasando por todos sus hijos.
+
+<p>
+  Devolverá el widget más lejano de "widget" (el hijo más profundo) si
+  es que éste se abarca el punto (x, y).
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_has_child">jwidget_has_child</a> (JWidget widget, JWidget child);</b></div><br>
+  Devuelve TRUE si el "widget" posee dentro el widget hijo "child".
+  Está función sólo mira por los hijos de "widget", nunca baja a los
+  hijos de sus hijos.
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_request_size">jwidget_request_size</a> (JWidget widget, int *w, int *h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JRect <a name="jwidget_get_position">jwidget_get_position</a> (JWidget widget);</b></div><br>
+  Retorna la posición del widget.
+
+<p>
+  El rectángulo devuelto JRect deberá ser liberado mediante jrect_free.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_region">jwidget_get_region</a>,
+<a class="xref" href="#jrect_free">jrect_free</a>.</blockquote>
+<div class="al-api"><b>JRect <a name="jwidget_get_child_position">jwidget_get_child_position</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JRegion <a name="jwidget_get_region">jwidget_get_region</a> (JWidget widget);</b></div><br>
+
+<p>
+  Deberá liberar la región devuelta mediante jregion_free.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_position">jwidget_get_position</a>,
+<a class="xref" href="#jwidget_get_drawable_region">jwidget_get_drawable_region</a>,
+<a class="xref" href="#jregion_free">jregion_free</a>.</blockquote>
+<div class="al-api"><b>JRegion <a name="jwidget_get_drawable_region">jwidget_get_drawable_region</a> (JWidget widget, int flags);</b></div><br>
+
+<p>
+  Deberá liberar la región devuelta mediante jregion_free.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_get_region">jwidget_get_region</a>,
+<a class="xref" href="#jregion_free">jregion_free</a>.</blockquote>
+<div class="al-api"><b>int <a name="jwidget_get_bg_color">jwidget_get_bg_color</a> (JWidget widget);</b></div><br>
+  Devuelve el color de fondo de este widget (o si es -1 pregunta por
+  el color del padre).
+
+<p><br>
+<div class="al-api"><b>JTheme <a name="jwidget_get_theme">jwidget_get_theme</a> (JWidget widget);</b></div><br>
+  Devuelve un puntero al tema que utiliza dicho widget.
+
+<p><br>
+<div class="al-api"><b>int <a name="jwidget_get_text_length">jwidget_get_text_length</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>int <a name="jwidget_get_text_height">jwidget_get_text_height</a> (JWidget widget);</b></div><br>
+  Retorna las medidas del texto del widget en píxeles. Puede ser
+  equivalente a utilizar:
+<blockquote class="code"><pre>
+    int length = ji_font_text_len (widget->text_font, widget->text);
+    int height = text_height (widget->text_font);
+</pre></blockquote>
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#ji_font_text_len">ji_font_text_len</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwidget_get_texticon_info">jwidget_get_texticon_info</a> (JWidget widget,
+                                  JRect box, JRect text, JRect icon,
+                                  int icon_w, int icon_h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_noborders">jwidget_noborders</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_set_border">jwidget_set_border</a> (JWidget widget, int l, int t, int r, int b);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_set_position">jwidget_set_position</a> (JWidget widget, JRect rect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_set_static_size">jwidget_set_static_size</a> (JWidget widget, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_set_bg_color">jwidget_set_bg_color</a> (JWidget widget, int color);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_set_theme">jwidget_set_theme</a> (JWidget widget, JTheme theme);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_flush_redraw">jwidget_flush_redraw</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_redraw_region">jwidget_redraw_region</a> (JWidget widget, const JRegion region);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_signal_on">jwidget_signal_on</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jwidget_signal_off">jwidget_signal_off</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="jwidget_emit_signal">jwidget_emit_signal</a> (JWidget widget, int signal_num);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_send_message">jwidget_send_message</a> (JWidget widget, JMessage msg);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwidget_send_message_after_type">jwidget_send_message_after_type</a> (JWidget widget,
+                                        JMessage msg, int type);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_close_window">jwidget_close_window</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_capture_mouse">jwidget_capture_mouse</a> (JWidget widget);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jwidget_hard_capture_mouse">jwidget_hard_capture_mouse</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jwidget_release_mouse">jwidget_release_mouse</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jwidget_find_name">jwidget_find_name</a> (JWidget widget, const char *name);</b></div><br>
+  Busca por el widget hijo con el nombre "name" dentro del widget
+  "widget". Útil para obtener widgets hijos cargados desde un archivo
+  .jid.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_set_name">jwidget_set_name</a>,
+<a class="xref" href="#Archivos JID">Archivos JID</a>.</blockquote>
+<div class="al-api"><b>bool <a name="jwidget_check_underscored">jwidget_check_underscored</a> (JWidget widget, int ascii);</b></div><br>
+
+<p>
+<br><center><h2><a name="Widget's flags">Widget's flags</a></h2></center><p>
+
+<p>
+  Valores posibles para las banderas widget->flags. Evite usar estos
+  valores directamente, en su lugar intente usar las funciones
+  "jwidget_is_..." donde sea posible.
+<ul><li>
+  JI_DIRTY<br>
+    El widget está "sucio" (necesita ser redibujado en su totalidad).
+<li>
+  JI_HIDDEN<br>
+    El widget está escondido.
+<li>
+  JI_SELECTED<br>
+    El widget está seleccinado.
+<li>
+  JI_DISABLED<br>
+    El widget está deshabilitado.
+<li>
+  JI_HASFOCUS<br>
+    El widget tiene el foco de entrada (o alguno de sus hijos lo
+    tiene). Esta bandera sólo la pueden conseguir widgets que sean
+    JI_FOCUSREST.
+<li>
+  JI_HASMOUSE<br>
+    El widget tiene el mouse (o alguno de sus hijos lo tiene).
+<li>
+  JI_HASCAPTURE<br>
+    El widget tiene el mouse capturado.
+<li>
+  JI_FOCUSREST<br>
+    El widget es un descanso para el foco, es decir, puede recibir el
+    foco de entrada ya que lo utilizará para algo. Por ejemplo: un botón
+    es focus-rest, pero una etiqueta (label) o una caja (box) no lo son.
+<li>
+  JI_MAGNETIC<br>
+    El widget es magnético (recibe el foco de entrada por defecto).
+<li>
+  JI_EXPANSIVE<br>
+    El widget es expansivo: intenta obtener el mayor lugar posible si su
+    padre es una caja (box).
+<li>
+  JI_DECORATIVE<br>
+    El widget es decorativo (ver jwidget_decorative).
+<li>
+  JI_AUTODESTROY<br>
+    El widget es auto-destructivo (ver jwidget_autodestroy).
+<li>
+  JI_HARDCAPTURE<br>
+    El widget capturó el mouse en una forma "dura". Cuando se utiliza
+    jwidget_hard_capture_mouse, el widget con el mouse
+    (jmanager_get_mouse) será siempre el mismo widget que capturó el
+    mouse, es imposible que cambie a otro widget.
+
+    Cuando utiliza jwidget_capture_mouse, el widget con el mouse puede
+    cambiar a otro widget, pero los mensajes del mouse siguen siendo
+    enviados al que posee la captura.
+</ul>
+
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_decorative">jwidget_decorative</a>,
+<a class="xref" href="#jwidget_autodestroy">jwidget_autodestroy</a>,
+<a class="xref" href="#jwidget_hard_capture_mouse">jwidget_hard_capture_mouse</a>.</blockquote>
+<h1><a name="JHook (gancho)">JHook (gancho)</a></h1>
+
+<p>
+<ul><li>
+int type;<br>
+<li>
+JMessageFunc msg_proc;<br>
+  Función encargada de procesar los mensajes, debe retornar TRUE si el
+  mensaje se utilizó y no se desea que el mismo sea procesado por los
+  siguientes "ganchos" consecutivos, o FALSE en caso contrario.
+<li>
+void *data;<br>
+</ul>
+
+
+<p><br>
+<h1><a name="Message (mensaje)">Message (mensaje)</a></h1>
+
+<p>
+  Cuando se genera un mensaje, al ser despachado se comienza enviando
+  el mismo a los ganchos de los widgets receptores, comenzando del
+  primer gancho (el cual sería el último gancho agregado) hasta el
+  último gancho del widget.
+
+<p>
+  Recuerde que si intercepta un mensaje, debe retornar TRUE indicando
+  que el mensaje fue utilizado, así frena el enviado de mensajes a
+  otros ganchos.  Esto es válido para todos los mensajes menos para
+  JM_DESTROY.  Ya que devolviendo TRUE, los ganchos próximos no
+  recibirán dicho mensaje y es posible que algo de memoria no se
+  libere.
+
+<p>
+<br><center><h2><a name="JM_OPEN">JM_OPEN</a></h2></center><p>
+
+<p>
+  Es enviado a todos los widgets de una ventana cuando está es abierta
+  en un determinado manager.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#JM_CLOSE">JM_CLOSE</a>.</blockquote>
+<br><center><h2><a name="JM_CLOSE">JM_CLOSE</a></h2></center><p>
+
+<p>
+  Cuando una ventana es cerrada, este mensaje se envía a todos los
+  widgets de la misma.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#JM_OPEN">JM_OPEN</a>,
+<a class="xref" href="#JM_DESTROY">JM_DESTROY</a>.</blockquote>
+<br><center><h2><a name="JM_DESTROY">JM_DESTROY</a></h2></center><p>
+
+<p>
+  Se envía al eliminar el widget mediante jwidget_free. Un widget
+  recibe una única vez este mensaje (siendo además el último mensaje
+  que recibirá). Recuerde retornar FALSE para no frenar el envío del
+  mensaje a los ganchos próximos.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#JM_CLOSE">JM_CLOSE</a>.</blockquote>
+<br><center><h2><a name="JM_DRAW">JM_DRAW</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_IDLE">JM_IDLE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_SIGNAL">JM_SIGNAL</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_REQSIZE">JM_REQSIZE</a></h2></center><p>
+
+<p>
+  Mensaje utilizado para obtener el tamaño necesario para el widget.
+  Debe rellenar las variables msg->reqsize.w y msg->reqsize.h, y
+  retornar TRUE si así lo hizo.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_request_size">jwidget_request_size</a>.</blockquote>
+<br><center><h2><a name="JM_SETPOS">JM_SETPOS</a></h2></center><p>
+
+<p>
+  Mensaje utilizado para cambiar el tamaño del widget, si lo intercepta,
+  deberá hacer un "jrect_copy (widget->pos, &amp;msg->setpos.rect)".
+
+<p>
+  Enganchar este mensaje es útil solamente si piensa reacomodar los
+  hijos cada vez que cambie la posición del widget (es decir, siempre
+  que un widget acepte hijos, deberá hacer su propio comportamiento
+  para acomodar el widget y a sus respectivos widgets hijos).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_set_position">jwidget_set_position</a>.</blockquote>
+<br><center><h2><a name="JM_DRAWRGN">JM_DRAWRGN</a></h2></center><p>
+
+<p>
+  Puede cambiar la forma de redibujar una región de un widget
+  (jwidget_redraw_region). Por ahora sólo los managers necesitan
+  interceptar este mensaje.
+
+<p>
+<br><center><h2><a name="JM_DIRTYCHILDREN">JM_DIRTYCHILDREN</a></h2></center><p>
+
+<p>
+  También puede cambiar la forma de "ensuciar" los widgets hijos.  Por
+  ejemplo, las list-boxes (cuadros de lista) necesitan enganchar este
+  mensaje para redibujar únicamente los ítems que estén dentro del
+  área de visible (para optimizar la velocidad de proceso).
+
+<p>
+<br><center><h2><a name="JM_CHAR">JM_CHAR</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_KEYPRESSED">JM_KEYPRESSED</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_KEYRELEASED">JM_KEYRELEASED</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_FOCUSENTER">JM_FOCUSENTER</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_FOCUSLEAVE">JM_FOCUSLEAVE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_BUTTONPRESSED">JM_BUTTONPRESSED</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_BUTTONRELEASED">JM_BUTTONRELEASED</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_DOUBLECLICK">JM_DOUBLECLICK</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_MOUSEENTER">JM_MOUSEENTER</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_MOUSELEAVE">JM_MOUSELEAVE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_MOTION">JM_MOTION</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JM_WHEEL">JM_WHEEL</a></h2></center><p>
+
+
+
+<p><br>
+<h1><a name="Signal (señales)">Signal (señales)</a></h1>
+
+<p>
+  Las señales son un buen método de enganchar determinadas funciones
+  que controlan a las widgets. Es decir que podemos saber cuando
+  ocurre determinado cambio en un widget (por ejemplo si un widget fue
+  eliminado, o si un botón cambio de estado).
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_DIRTY">JI_SIGNAL_DIRTY</a></h2></center><p>
+
+<p>
+  Se envia cuando un widget determinado es ensuciado.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_dirty">jwidget_dirty</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_ENABLE">JI_SIGNAL_ENABLE</a></h2></center><p>
+
+<p>
+  Al cambiar el estado de un widget a activado.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_enable">jwidget_enable</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_DISABLE">JI_SIGNAL_DISABLE</a></h2></center><p>
+
+<p>
+  Al cambiar el estado de un widget a desactivado.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_disable">jwidget_disable</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_SELECT">JI_SIGNAL_SELECT</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_select">jwidget_select</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_DESELECT">JI_SIGNAL_DESELECT</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_deselect">jwidget_deselect</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_SHOW">JI_SIGNAL_SHOW</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_show">jwidget_show</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_HIDE">JI_SIGNAL_HIDE</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_hide">jwidget_hide</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_ADD_CHILD">JI_SIGNAL_ADD_CHILD</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_add_child">jwidget_add_child</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_REMOVE_CHILD">JI_SIGNAL_REMOVE_CHILD</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_remove_child">jwidget_remove_child</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_NEW_PARENT">JI_SIGNAL_NEW_PARENT</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_add_child">jwidget_add_child</a>,
+<a class="xref" href="#jwidget_remove_child">jwidget_remove_child</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_GET_TEXT">JI_SIGNAL_GET_TEXT</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#JI_SIGNAL_SET_TEXT">JI_SIGNAL_SET_TEXT</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_SET_TEXT">JI_SIGNAL_SET_TEXT</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#JI_SIGNAL_GET_TEXT">JI_SIGNAL_GET_TEXT</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_INIT_THEME">JI_SIGNAL_INIT_THEME</a></h2></center><p>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_init_theme">jwidget_init_theme</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_CHECK_CHANGE">JI_SIGNAL_CHECK_CHANGE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_RADIO_CHANGE">JI_SIGNAL_RADIO_CHANGE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_ENTRY_CHANGE">JI_SIGNAL_ENTRY_CHANGE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_LISTBOX_CHANGE">JI_SIGNAL_LISTBOX_CHANGE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_LISTBOX_SELECT">JI_SIGNAL_LISTBOX_SELECT</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_MENUITEM_SELECT">JI_SIGNAL_MENUITEM_SELECT</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_SLIDER_CHANGE">JI_SIGNAL_SLIDER_CHANGE</a></h2></center><p>
+
+
+
+<p><br>
+<h1><a name="Manager (gestor)">Manager (gestor)</a></h1>
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="ji_get_default_manager">ji_get_default_manager</a> (void);</b></div><br>
+  Retorna un puntero del manager principal, el primer manager creado
+  con jmanager_new.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_new">jmanager_new</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jmanager_new">jmanager_new</a> (void);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_free">jmanager_free</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_free">jmanager_free</a> (JWidget manager);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_new">jmanager_new</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_run">jmanager_run</a> (JWidget manager);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_poll">jmanager_poll</a>.</blockquote>
+<div class="al-api"><b>bool <a name="jmanager_poll">jmanager_poll</a> (JWidget manager, bool all_windows);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_run">jmanager_run</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_send_message">jmanager_send_message</a> (const JMessage msg);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_dispatch_messages">jmanager_dispatch_messages</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jmanager_get_focus">jmanager_get_focus</a> (void);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_set_focus">jmanager_set_focus</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jmanager_get_mouse">jmanager_get_mouse</a> (void);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_set_mouse">jmanager_set_mouse</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jmanager_get_capture">jmanager_get_capture</a> (void);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_set_capture">jmanager_set_capture</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_set_focus">jmanager_set_focus</a> (JWidget widget);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_get_focus">jmanager_get_focus</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_set_mouse">jmanager_set_mouse</a> (JWidget widget);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_get_mouse">jmanager_get_mouse</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_set_capture">jmanager_set_capture</a> (JWidget widget);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_get_capture">jmanager_get_capture</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_attract_focus">jmanager_attract_focus</a> (JWidget widget);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwidget_magnetic">jwidget_magnetic</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_free_focus">jmanager_free_focus</a> (void);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jmanager_free_mouse">jmanager_free_mouse</a> (void);</b></div><br>
+<div class="al-api-cont"><b>void <a name="jmanager_free_capture">jmanager_free_capture</a> (void);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jmanager_set_focus">jmanager_set_focus</a>,
+<a class="xref" href="#ji_manager_set_mouse">ji_manager_set_mouse</a>,
+<a class="xref" href="#ji_manager_set_capture">ji_manager_set_capture</a>.</blockquote>
+<div class="al-api"><b>void <a name="jmanager_free_widget">jmanager_free_widget</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_remove_message">jmanager_remove_message</a> (JMessage msg);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_remove_messages_for">jmanager_remove_messages_for</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_refresh_screen">jmanager_refresh_screen</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_dispatch_messages">jmanager_dispatch_messages</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_dispatch_draw_messages">jmanager_dispatch_draw_messages</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_open_window">jmanager_open_window</a> (JWidget manager, JWidget window);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jmanager_close_window">jmanager_close_window</a> (JWidget manager, JWidget window, bool sendtokill);</b></div><br>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_MANAGER_EXTERNAL_CLOSE">JI_SIGNAL_MANAGER_EXTERNAL_CLOSE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_MANAGER_ADD_WINDOW">JI_SIGNAL_MANAGER_ADD_WINDOW</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_MANAGER_REMOVE_WINDOW">JI_SIGNAL_MANAGER_REMOVE_WINDOW</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_MANAGER_IDLE">JI_SIGNAL_MANAGER_IDLE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_MANAGER_LOSTCHAR">JI_SIGNAL_MANAGER_LOSTCHAR</a></h2></center><p>
+
+
+
+<p><br>
+<h1><a name="Window (ventana)">Window (ventana)</a></h1>
+
+<p>
+  Una ventana es un tipo de widget especial en una caja rectangular que
+  representa un cuadro de diálogo (entre el usuario y el programa) el
+  cual el usuario puede mover o cambiar de tamaño a su antojo.
+
+<p>
+  En Jinete, la ventana incluye sólo los rebordes y la barra de título,
+  usted debe agregarle los widgets hijos mediante jwidget_add_child.
+  La posición de los hijos es puesta en el área cliente (el área dentro
+  de los bordes de la ventana), por lo que deberá agregar sólo un widget
+  dentro de la ventana (generalmente una caja (box)) la cual contendrá
+  los demás widgets.
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jwindow_new">jwindow_new</a> (const char *text);</b></div><br>
+  Crea una nueva ventana con el texto "text" en la barra de título.
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jwindow_new_desktop">jwindow_new_desktop</a> (void);</b></div><br>
+  Crea una nueva ventana de tipo desktop (escritorio). Los escritorios
+  ocupan toda la pantalla (o mejor dicho, todo el tamaño del manager
+  padre).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_is_desktop">jwindow_is_desktop</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jwindow_get_killer">jwindow_get_killer</a> (JWidget window);</b></div><br>
+  Devuelve el puntero al widget que "mató" (cerró) la ventana
+  "window". Puede que este puntero sea NULL en el caso de que algún
+  ente anónimo haya cerrado la ventana (como el botón "x" para
+  cerrarla, o la tecla <Esc>).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_close">jwindow_close</a>.</blockquote>
+<div class="al-api"><b>JWidget <a name="jwindow_get_manager">jwindow_get_manager</a> (JWidget window);</b></div><br>
+  Devuelve el manager en el cual la ventana "window" se encuentra
+  dentro.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_open">jwindow_open</a>,
+<a class="xref" href="#jmanager_open_window">jmanager_open_window</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwindow_mobile">jwindow_mobile</a> (JWidget window, bool mobile);</b></div><br>
+  Cambia el estado de movilidad de la ventana "window". Si una ventana
+  es móvil, significa que el usuario puede cambiarle la posición y su
+  tamaño.
+
+<p><br>
+<div class="al-api"><b>void <a name="jwindow_remap">jwindow_remap</a> (JWidget window);</b></div><br>
+  XXX
+
+<p>
+  Esta función generalmente no es necesaria utilizarla si usted usa
+  jwindow_center o jwindow_position antes. Será necesaria en casos
+  especiales donde usted necesite saber el tamaño mínimo que necesita
+  la ventana antes de abrirla.
+
+<p><br>
+<div class="al-api"><b>void <a name="jwindow_center">jwindow_center</a> (JWidget window);</b></div><br>
+  Cambia la posición de la ventana "window" al centro el manager
+  principal (el manager principal tiene el tamaño de la pantalla
+  física, o mejor dicho, del modo de video actual).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_position">jwindow_position</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwindow_position">jwindow_position</a> (JWidget window, int x, int y);</b></div><br>
+  Posiciona la ventana a otro punto (x, y). Note que esta función
+  difiere de jwidget_set_position en el sentido de que sólo desplaza
+  la ventana (y sus widgets hijos) a la nueva posición.
+
+<p><br>
+<div class="al-api"><b>void <a name="jwindow_open">jwindow_open</a> (JWidget window);</b></div><br>
+  Abre la ventana en el manager por defecto para ser procesadas por
+  próximas llamadas a jmanager_poll.
+
+<p>
+  No debería usar esta función a menos que sepa lo que está
+  haciendo. Generalmente nunca la deberá llamar directamente, en
+  cambio, las funciones jwindow_open_fg o jwindow_open_bg son las
+  comúnmente utilizadas (y las mismas suelen utilizar jwindow_open).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_open_fg">jwindow_open_fg</a>,
+<a class="xref" href="#jwindow_open_bg">jwindow_open_bg</a>,
+<a class="xref" href="#ji_get_default_manager">ji_get_default_manager</a>,
+<a class="xref" href="#jmanager_poll">jmanager_poll</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwindow_open_fg">jwindow_open_fg</a> (JWidget window);</b></div><br>
+  Abre la ventana en primer plano (foreground), paralizando las demás
+  ventanas abiertas, y esperando una respuesta del usuario
+  inmediata. Cuando la ventana se cierra se vuelve a donde la función
+  se llamó.
+
+<p>
+  Útil cuando necesita hacer cosas como:
+<blockquote class="code"><pre>
+    jwindow_open_fg (window);
+    if (jwindow_get_killer (window) == boton_aceptar) {
+      ...
+    }
+    jwidget_free (window);
+</pre></blockquote>
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_open_bg">jwindow_open_bg</a>,
+<a class="xref" href="#jwindow_get_killer">jwindow_get_killer</a>,
+<a class="xref" href="#jwidget_free">jwidget_free</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwindow_open_bg">jwindow_open_bg</a> (JWidget window);</b></div><br>
+  Abre la ventana y la deja ejecutándose en segundo plano
+  (background).
+
+<p>
+  Esta función sólo coloca la bandera auto-destroy a la ventana y
+  llama a la función jwindow_open. La bandera auto-destroy hace que
+  la ventana, al ser cerrada, sea automáticamente liberada
+  (jwidget_free) por el mismo manager antes que por nosotros.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_open">jwindow_open</a>,
+<a class="xref" href="#jwindow_open_fg">jwindow_open_fg</a>,
+<a class="xref" href="#jwidget_free">jwidget_free</a>,
+<a class="xref" href="#jwidget_autodestroy">jwidget_autodestroy</a>.</blockquote>
+<div class="al-api"><b>void <a name="jwindow_close">jwindow_close</a> (JWidget window, JWidget killer);</b></div><br>
+  Cierra la ventana "window" forzosamente. El paramentro "killer"
+  indica quien "mató" (cerró) la ventana, esto es debido a que esta
+  función generalmente se utiliza dentro de un "msg_proc" de un widget
+  especial que se encarga de cerrar la ventana (por ejemplo un botón,
+  que al presionarlo, su acción por defecto es matar a su ventana
+  padre).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_open">jwindow_open</a>,
+<a class="xref" href="#jwindow_get_killer">jwindow_get_killer</a>.</blockquote>
+<div class="al-api"><b>bool <a name="jwindow_is_toplevel">jwindow_is_toplevel</a> (JWidget window);</b></div><br>
+  Retorna TRUE si la ventana "window" se encuentra encima de todas las
+  ventanas.
+
+<p><br>
+<div class="al-api"><b>bool <a name="jwindow_is_foreground">jwindow_is_foreground</a> (JWidget window);</b></div><br>
+  Retorna TRUE si la ventana se ejecuta en primer plano (foreground).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_open_fg">jwindow_open_fg</a>.</blockquote>
+<div class="al-api"><b>bool <a name="jwindow_is_desktop">jwindow_is_desktop</a> (JWidget window);</b></div><br>
+  Retorna TRUE si la ventana es de tipo escritorio (desktop).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jwindow_new_desktop">jwindow_new_desktop</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_WINDOW_CLOSE">JI_SIGNAL_WINDOW_CLOSE</a></h2></center><p>
+
+<p>
+<br><center><h2><a name="JI_SIGNAL_WINDOW_RESIZE">JI_SIGNAL_WINDOW_RESIZE</a></h2></center><p>
+
+
+<p><br>
+<h1><a name="Box (caja)">Box (caja)</a></h1>
+
+<p>
+  Una caja (box) es uno de los widgets más sencillos de manejar y a su
+  vez, uno de los más útiles. Sirve para disponer los widgets hijos de
+  forma horizontal o vertical, acomodándolos a nuestro antojo, pero sin
+  tener que preocuparnos por el tamaño que necesita cada widget
+  en particular.
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jbox_new">jbox_new</a> (int align);</b></div><br>
+  Crea una nueva caja (box) con las propiedades de alineamiento de "align".
+
+<p>
+  "align" debe poseer uno de estos dos valores:
+<ul><li>
+  JI_HORIZONTAL o JI_VERTICAL:<br>
+    Indica si queremos ordenar los widgets de forma horizontal o
+    vertical respectivamente.
+</ul>
+  Y puede o no estar en combinación con:
+<ul><li>
+  JI_HOMOGENEOUS<br>
+    Indica que todos los widgets hijos deben poseer el mismo tamaño.
+    Generalmente el máximo tamaño necesario por el widget hijo más
+    grande que se encuentre dentro de la caja (box).
+</ul>
+
+
+
+<p><br>
+<h1><a name="Label (etiqueta)">Label (etiqueta)</a></h1>
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jlabel_new">jlabel_new</a> (const char *text);</b></div><br>
+  Crea una nueva widget de tipo etiqueta (label) con el texto "text".
+  Las etiquetas sirven para mostrar un mensaje, o indicar qué
+  significa un widget de al lado.
+
+
+
+<p><br>
+<h1><a name="Button (botón)">Button (botón)</a></h1>
+
+<p>
+  Un botón es un widget que al ser presionado cierra la ventana donde
+  está, ó ejecuta alguna acción o comando (como abrir otra nueva ventana).
+
+<p>
+  Un botón, sin que usted intercepte ninguna señal, ni mensaje,
+  siempre cerrará la ventana, tal es así, que luego puede preguntar
+  por jwindow_get_killer() y le devolverá un puntero a dicho botón.
+
+<p>
+  Hay muchas formas de cambiar este comportamiento por defecto, la más
+  cómoda es utilizando las funciones ji_button_add_command, así la
+  ventana no será cerrada y en su lugar se llamará al comando
+  especificado.  También, utilizando jwidget_add_hook() puede
+  interceptar el mensaje JM_SIGNAL cuando se envía la señal
+  JI_SIGNAL_BUTTON_SELECT.
+
+<p>
+  Para que no queden dudas, cuando un botón es presionado:
+<ul><li>
+    Primero se envía la señal JI_SIGNAL_BUTTON_SELECT<br>
+<li>
+    Si retorna FALSE, significa que la señal no fue utilizada, por lo
+    tanto debemos ejecutar el comportamiento por defecto: si se agregaron
+    comandos al botón mediante jbutton_add_command(), se ejecutarán los
+    comandos, ahora, si el botón no tiene comando alguno, se cerrará la
+    ventana.
+</ul>
+<div class="al-api"><b>JWidget <a name="jbutton_new">jbutton_new</a> (const char *text);</b></div><br>
+  Crea un nuevo botón con el texto "text". Recuerde que por defecto,
+  si es que no agrega ningún comando, los botones cierran la ventana
+
+<p>
+  Puede saber que botón cerró la ventana utilizando jwindow_get_killer.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jbutton_add_command">jbutton_add_command</a>,
+<a class="xref" href="#jwindow_get_killer">jwindow_get_killer</a>.</blockquote>
+<div class="al-api"><b>void <a name="jbutton_set_icon">jbutton_set_icon</a> (JWidget button, struct BITMAP *icon);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jbutton_set_icon_align">jbutton_set_icon_align</a> (JWidget button, int icon_align);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jbutton_set_bevel">jbutton_set_bevel</a> (JWidget button, int b0, int b1, int b2, int b3);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jbutton_get_bevel">jbutton_get_bevel</a> (JWidget button, int *b4);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jbutton_add_command">jbutton_add_command</a> (JWidget button,
+                            void (*command) (JWidget button));</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jbutton_add_command_data">jbutton_add_command_data</a>,
+<a class="xref" href="#JI_SIGNAL_BUTTON_SELECT">JI_SIGNAL_BUTTON_SELECT</a>.</blockquote>
+<div class="al-api"><b>void <a name="jbutton_add_command_data">jbutton_add_command_data</a> (JWidget button,
+                                 void (*command) (JWidget button,
+                                                  void *data),
+                                 void *data);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jbutton_add_command">jbutton_add_command</a>,
+<a class="xref" href="#JI_SIGNAL_BUTTON_SELECT">JI_SIGNAL_BUTTON_SELECT</a>.</blockquote>
+<br><center><h2><a name="JI_SIGNAL_BUTTON_SELECT">JI_SIGNAL_BUTTON_SELECT</a></h2></center><p>
+
+<p>
+  Esta señal se envía a los handlers del botón cuando el mismo es
+  presionado (seleccionado).  Deberá retornar TRUE para indicar que
+  utilizó dicha señal, si es que no quiere ejecutar el comportamiento
+  por defecto del botón: llamar los comandos si es que existen o
+  cerrar la ventana en caso contrario.
+
+
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#Button (botón)">Button (botón)</a>,
+<a class="xref" href="#jwidget_add_hook">jwidget_add_hook</a>.</blockquote>
+<h1><a name="Check (caja de comprobación)">Check (caja de comprobación)</a></h1>
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="jcheck_new">jcheck_new</a> (const char *text);</b></div><br>
+  Crea una nueva caja de comprobación. Sirven para representar
+  opciones booleanas (valores verdadero o falso).
+
+<p><br>
+<div class="al-api"><b>void <a name="jcheck_set_icon_align">jcheck_set_icon_align</a> (JWidget check, int icon_align);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Theme (tema)">Theme (tema)</a></h1>
+
+
+
+<p><br>
+<h1><a name="Archivos JID">Archivos JID</a></h1>
+
+<p>
+  En un archivo .jid puede definir la estructura de una ventana (o de
+  cualquier tipo de widget).
+
+<p>
+  Ejemplo:
+
+<p>
+  En "archivo.jid":
+<blockquote class="code"><pre>
+    &lt;window desktop name="ventana1" text="Mi Ventana"&gt;
+      &lt;box vertical>
+        &lt;label expansive name="mensaje" text="Su mensaje" /&gt;
+        &lt;box horizontal homogeneous&gt;
+          &lt;button text="&amp;Aceptar" name="boton_aceptar" /&gt;
+          &lt;button text="&amp;Cancelar" /&gt;
+        &lt;/box&gt;
+      &lt;/box&gt;
+    &lt;/window&gt;
+</pre></blockquote>
+  En un "archivo.c":
+<blockquote class="code"><pre>
+    JWidget ventana1 = ji_load_widget ("archivo.jid", "ventana1");
+    JWidget boton_aceptar = jwidget_find_name (ventana1, "boton_aceptar");
+
+    jwindow_open_fg (ventana1);
+    if (jwindow_get_killer (ventana1) == boton_aceptar) {
+      ...
+    }
+</pre></blockquote>
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="ji_load_widget">ji_load_widget</a> (const char *filename, const char *name);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Font (fuente)">Font (fuente)</a></h1>
+
+<p><br>
+<div class="al-api"><b>FONT *<a name="ji_font_load">ji_font_load</a> (const char *filepathname);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_get_size">ji_font_get_size</a> (FONT *f);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_set_size">ji_font_set_size</a> (FONT *f, int height);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_get_aa_mode">ji_font_get_aa_mode</a> (FONT *f);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_set_aa_mode">ji_font_set_aa_mode</a> (FONT *f, int mode);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="ji_font_is_fixed">ji_font_is_fixed</a> (FONT *f);</b></div><br>
+<div class="al-api-cont"><b>bool <a name="ji_font_is_scalable">ji_font_is_scalable</a> (FONT *f);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>const int *<a name="ji_font_get_available_fixed_sizes">ji_font_get_available_fixed_sizes</a> (FONT *f, int *n);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_get_char_extra_spacing">ji_font_get_char_extra_spacing</a> (FONT *f);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="ji_font_set_char_extra_spacing">ji_font_set_char_extra_spacing</a> (FONT *f, int spacing);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_char_len">ji_font_char_len</a> (FONT *f, int chr);</b></div><br>
+  Retorna la longitud (ancho) de un caracter en pixeles.
+
+<p><br>
+<div class="al-api"><b>int <a name="ji_font_text_len">ji_font_text_len</a> (FONT *f, const char *text);</b></div><br>
+  Retorna la longitud (ancho) del texto "text" en pixeles. Recuerde
+  que esta función interpreta el caracter '&amp;' como un subrayado.
+  Ejemplo: La longitud "&amp;OK" es igual a la de "OK".
+
+
+
+<p><br>
+<h1><a name="JList - Listas Enlazadas">JList - Listas Enlazadas</a></h1>
+
+<p>
+  Las listas enlazadas se manejan a través de los punteros JList:
+<blockquote class="code"><pre>
+    typedef struct jlist *JList;
+</pre></blockquote>
+  La estructura jlist se define:
+<blockquote class="code"><pre>
+    struct jlist
+    {
+      void *data;
+      JList next;
+      JList prev;
+    };
+</pre></blockquote>
+  La mayoría de funciones reciben como primer parámetro el puntero al
+  primer elemento de la lista (el cual puede estar apuntado a NULL) y
+  devuelven un nuevo puntero (por las dudas si la cabecera cambió).
+
+<p>
+  Por ejemplo:
+<blockquote class="code"><pre>
+    JList lista = NULL;
+    lista = jlist_append (lista, (void *)2);
+    lista = jlist_append (lista, (void *)3);
+    lista = jlist_prepend (lista, (void *)1);
+    jlist_free (lista);
+</pre></blockquote>
+  Generará la lista (1, 2, 3).
+
+<p>
+  (Nota: si alguna vez programó con la librería GLib, las funciones
+   g_list_* hacen exáctamente lo mismo que sus respectivas jlist_*).
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_alloc">jlist_alloc</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jlist_free">jlist_free</a> (JList list);</b></div><br>
+  Libera la memoria utilizada por toda la lista "list". Esta función no
+  borra los datos contenidos en cada nodo (se supone que antes de
+  llamar esta rutina, usted ya se encargó de eso).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jlist_free_1">jlist_free_1</a>.</blockquote>
+<div class="al-api"><b>void <a name="jlist_free_1">jlist_free_1</a> (JList list);</b></div><br>
+  Libera la memoria utilizada únicamente por el nodo "list". Esta
+  función no borra los datos contenidos en el puntero list->data.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jlist_free">jlist_free</a>,
+<a class="xref" href="#ji_list_alloc">ji_list_alloc</a>.</blockquote>
+<div class="al-api"><b>JList <a name="jlist_append">jlist_append</a> (JList list, void *data);</b></div><br>
+  Agrega un nuevo elemento con los datos "data" al final de la lista.
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_prepend">jlist_prepend</a> (JList list, void *data);</b></div><br>
+  Agrega un nuevo elemento con los datos "data" al comienzo de la lista.
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_insert">jlist_insert</a> (JList list, void *data, int position);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_insert_sorted">jlist_insert_sorted</a> (JList list, void *data, JCompareFunc func);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_insert_before">jlist_insert_before</a> (JList list, JList sibling, void *data);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_concat">jlist_concat</a> (JList list1, JList list2);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_remove">jlist_remove</a> (JList list, const void *data);</b></div><br>
+  Remueve la primer ocurrencia de "data" en la lista recorriéndola
+  hacia delante. El nodo es eliminado (mediante free), los datos no.
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_remove_all">jlist_remove_all</a> (JList list, const void *data);</b></div><br>
+  Remueve todas las ocurrencias de "data" en la lista recorriéndola
+  hacia delante. Los nodos son eliminados (mediante free), los datos
+  no.
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_remove_link">jlist_remove_link</a> (JList list, JList llink);</b></div><br>
+  Remueve el nodo "llink" de la lista "list". El nodo NO es liberado
+  (aquí se supone que luego usted llamará un jlist_free_1).
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jlist_delete_link">jlist_delete_link</a>,
+<a class="xref" href="#ji_list_free_1">ji_list_free_1</a>.</blockquote>
+<div class="al-api"><b>JList <a name="jlist_delete_link">jlist_delete_link</a> (JList list, JList link);</b></div><br>
+  Remueve el nodo "link" de la lista "list". El nodo será eliminado,
+  los datos no.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jlist_remove_link">jlist_remove_link</a>.</blockquote>
+<div class="al-api"><b>JList <a name="jlist_reverse">jlist_reverse</a> (JList list);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_copy">jlist_copy</a> (JList list);</b></div><br>
+  Copia la lista generando una completamente nueva con cada elemento
+  apuntado a los mismos datos que la anterior lista.
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_nth">jlist_nth</a> (JList list, unsigned int n);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_nth_prev">jlist_nth_prev</a> (JList list, unsigned int n);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_find">jlist_find</a> (JList list, const void *data);</b></div><br>
+  Busca el nodo en el cual se encuentra los datos "data".
+
+<p>
+  Esta función recorre desde "list" hacia delante.
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_find_custom">jlist_find_custom</a> (JList list, const void *data, JCompareFunc func);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="jlist_position">jlist_position</a> (JList list, JList llink);</b></div><br>
+  Devuelve la posición (el índice) en que se encuentra el nodo
+  "llink". Siendo list la posición 0, list->next la 1,
+  list->next->next la 2, etc.
+
+<p>
+  Retorna -1 si no se encontró.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jlist_index">jlist_index</a>.</blockquote>
+<div class="al-api"><b>int <a name="jlist_index">jlist_index</a> (JList list, const void *data);</b></div><br>
+  Devuelve el índice en que se encuentra el nodo con los datos
+  "data". Siendo list el índice 0, list->next el 1, list->next->next
+  el 2, etc.
+
+<p>
+  Retorna -1 si no se encontró.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jlist_position">jlist_position</a>.</blockquote>
+<div class="al-api"><b>JList <a name="jlist_last">jlist_last</a> (JList list);</b></div><br>
+  Retorna un puntero al último elemento de la lista (puede devolver
+  NULL si list es NULL).
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_first">jlist_first</a> (JList list);</b></div><br>
+  Retorna el primer elemento de la lista (esta función está hecha por
+  las dudas si "list" no apunta ya al primer elemento).
+
+<p><br>
+<div class="al-api"><b>unsigned int <a name="jlist_length">jlist_length</a> (JList list);</b></div><br>
+  Retorna la cantidad de nodos que contiene la lista "list".
+
+<p><br>
+<div class="al-api"><b>void <a name="jlist_foreach">jlist_foreach</a> (JList list, JFunc func, void *user_data);</b></div><br>
+  Por cada nodo de la lista "list" llamará a la función "func".
+  El Ejemplo:
+<blockquote class="code"><pre>
+    void mi_funcion (void *data, void *user_data)
+    {
+      printf ("%d\n", (int)data);
+    }
+
+    ...
+
+    JList lista = NULL;
+    lista = jlist_append (lista, (void *)2);
+    lista = jlist_append (lista, (void *)3);
+    lista = jlist_prepend (lista, (void *)1);
+    jlist_foreach (lista, mi_funcion, NULL);
+    jlist_free (lista);
+</pre></blockquote>
+  Imprime:
+<blockquote class="text"><pre>
+    1
+    2
+    3
+</pre></blockquote>
+<div class="al-api"><b>JList <a name="jlist_sort">jlist_sort</a> (JList list, JCompareFunc compare_func);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JList <a name="jlist_sort_with_data">jlist_sort_with_data</a> (JList list,
+                              JCompareDataFunc compare_func,
+                              void *user_data);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void *<a name="jlist_nth_data">jlist_nth_data</a> (JList list, unsigned int n);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>#define <a name="jlist_previous">jlist_previous</a>(list)</b></div><br>
+<div class="al-api-cont"><b>#define <a name="jlist_next">jlist_next</a>(list)</b></div><br>
+  Devuelve el anterior o el siguiente nodo del elemento "list" de una
+  lista cualquiera. Utilizar esta función es lo mismo que usar
+  list->prev o list->next, con la única diferencia que antes se hace
+  un chequeo de que list sea distinto de NULL.
+
+
+
+<p><br>
+<h1><a name="JRect - Rectángulos">JRect - Rectángulos</a></h1>
+
+<blockquote class="code"><pre>
+    struct jrect
+    {
+      int x, y, w, h;
+    };
+</pre></blockquote>
+<div class="al-api"><b>JRect <a name="jrect_new">jrect_new</a> (int x, int y, int w, int h);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_free">jrect_free</a>.</blockquote>
+<div class="al-api"><b>JRect <a name="jrect_new_copy">jrect_new_copy</a> (const JRect rect);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_new">jrect_new</a>,
+<a class="xref" href="#jrect_copy">jrect_copy</a>.</blockquote>
+<div class="al-api"><b>void <a name="jrect_free">jrect_free</a> (JRect rect);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_new">jrect_new</a>.</blockquote>
+<div class="al-api"><b>void <a name="jrect_copy">jrect_copy</a> (JRect dst, const JRect src);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_new_copy">jrect_new_copy</a>.</blockquote>
+<div class="al-api"><b>void <a name="jrect_replace">jrect_replace</a> (JRect rect, int x, int y, int w, int h);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jrect_add">jrect_add</a> (JRect rect, const JRect other);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="jrect_intersect">jrect_intersect</a> (JRect rect, const JRect other);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_has_intersection">jrect_has_intersection</a>.</blockquote>
+<div class="al-api"><b>void <a name="jrect_shrink">jrect_shrink</a> (JRect rect, int border);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_stretch">jrect_stretch</a>.</blockquote>
+<div class="al-api"><b>void <a name="jrect_stretch">jrect_stretch</a> (JRect rect, int border);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_shrink">jrect_shrink</a>.</blockquote>
+<div class="al-api"><b>#define <a name="jrect_has_intersection">jrect_has_intersection</a>(rect, other)</b></div><br>
+
+
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jrect_intersect">jrect_intersect</a>.</blockquote>
+<h1><a name="JRegion - Regiones">JRegion - Regiones</a></h1>
+
+<p>
+  En Jinete, una región es un conjunto de rectángulos, una lista
+  enlazada de rectángulos.
+<blockquote class="code"><pre>
+    typedef struct jregion JRegion;
+
+    struct jregion
+    {
+      JList rects;
+    };
+</pre></blockquote>
+<div class="al-api"><b>JRegion <a name="jregion_new">jregion_new</a> (void);</b></div><br>
+  Crea una nueva región vacía. Usted deberá eliminar la región
+  devuelta mediante jregion_free.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jregion_free">jregion_free</a>.</blockquote>
+<div class="al-api"><b>JRegion <a name="jregion_new_copy">jregion_new_copy</a> (const JRegion region);</b></div><br>
+  Crea una nueva copia de region. Usted deberá eliminar la región
+  devuelta mediante jregion_free.
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jregion_new">jregion_new</a>.</blockquote>
+<div class="al-api"><b>void <a name="jregion_free">jregion_free</a> (JRegion region);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jregion_new">jregion_new</a>,
+<a class="xref" href="#ji_region_clear">ji_region_clear</a>.</blockquote>
+<div class="al-api"><b>void <a name="jregion_clear">jregion_clear</a> (JRegion region);</b></div><br>
+
+
+<blockquote class="xref"><em><b>Vea también:</b></em>
+<a class="xref" href="#jregion_free">jregion_free</a>.</blockquote>
+<div class="al-api"><b>void <a name="jregion_move">jregion_move</a> (JRegion region, int x, int y);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_join">jregion_join</a> (JRegion region, JRegion other);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_add">jregion_add</a> (JRegion region, const JRect rect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_subtract">jregion_subtract</a> (JRegion region, const JRect rect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_intersect">jregion_intersect</a> (JRegion region, const JRect rect);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_add2">jregion_add2</a> (JRegion region, const JRegion other);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_subtract2">jregion_subtract2</a> (JRegion region, const JRegion other);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="jregion_intersect2">jregion_intersect2</a> (JRegion region, const JRegion other);</b></div><br>
+
+
+
+<p><br>
+<h1><a name="Funciones Internas">Funciones Internas</a></h1>
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="_ji_get_widget_by_id">_ji_get_widget_by_id</a> (JID widget_id);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>JWidget *<a name="_ji_get_widget_array">_ji_get_widget_array</a> (int *nwidgets);</b></div><br>
+  Devuelve un puntero al arreglo interno que maneja todos los widgets.
+  A "nwidgets" le será asignado la cantidad de elementos del arreglo de
+  widgets.
+
+<p><br>
+<div class="al-api"><b>JWidget <a name="_ji_get_new_widget">_ji_get_new_widget</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>void <a name="_ji_free_widget">_ji_free_widget</a> (JWidget widget);</b></div><br>
+  Libera el widget para que pueda ser utilizado por otro nuevo
+  widget. Esta función no borra nada del widget, es utilizada por
+  jwidget_free, así que no debería utilizarla NUNCA.
+
+<p><br>
+<div class="al-api"><b>void <a name="_ji_free_all_widgets">_ji_free_all_widgets</a> (void);</b></div><br>
+  Libera la memoria utilizada por todas las widgets. Nunca llame esta
+  función directamente.  Usted no debería preocuparse por utilizarla
+  debido a que se llama internamente cuando sea necesario (cuando se
+  elimina el primer "manager" creado).
+
+<p><br>
+<div class="al-api"><b>bool <a name="_ji_is_valid_widget">_ji_is_valid_widget</a> (JWidget widget);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="_ji_system_init">_ji_system_init</a> (void);</b></div><br>
+<div class="al-api-cont"><b>void <a name="_ji_system_exit">_ji_system_exit</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>int <a name="_ji_font_init">_ji_font_init</a> (void);</b></div><br>
+<div class="al-api-cont"><b>void <a name="_ji_font_exit">_ji_font_exit</a> (void);</b></div><br>
+
+<p><br>
+<div class="al-api"><b>bool <a name="_jwindow_is_moving">_jwindow_is_moving</a> (void);</b></div><br>
+  Devuelve TRUE si en este momento el usuario está moviendo una
+  ventana.
+
+
+
+<p><br>
+<h1><a name="Actualizaciones">Actualizaciones</a></h1>
+
+<p>
+  Jinete comenzó con Allegro Sprite Editor (ASE) y continuará muy cerca
+  de él. Vea la página de ASE para tener noticias sobre esta librería:
+
+<p>
+    <a href="http://ase.sourceforge.net/">http://ase.sourceforge.net/</a>
+
+<p>
+  Si quiere saber más sobre el autor:
+
+<p>
+    <a href="http://www.davidcapello.com.ar/">http://www.davidcapello.com.ar/</a>
+
+
+
+<p><br>
+<h1><a name="Agradecimientos">Agradecimientos</a></h1>
+
+<p>
+  Gracias a:
+<ul><li>
+    Shawn Hargreaves y a todos los que ayudaron con Allegro.
+<li>
+    Richard M. Stallman y todo el mundo que participa en las proyectos GNU
+    como GCC, Emacs, etc.
+<li>
+    David Turner, Robert Wilhelm, y Werner Lemberg por The FreeType library.
+</ul>
+
+
+<p><br>
+<h1><a name="Índice">Índice</a></h1>
+
+<p>
+<li><a href="#_ji_font_exit">_ji_font_exit</a>
+<li><a href="#_ji_font_init">_ji_font_init</a>
+<li><a href="#_ji_free_all_widgets">_ji_free_all_widgets</a>
+<li><a href="#_ji_free_widget">_ji_free_widget</a>
+<li><a href="#_ji_get_new_widget">_ji_get_new_widget</a>
+<li><a href="#_ji_get_widget_array">_ji_get_widget_array</a>
+<li><a href="#_ji_get_widget_by_id">_ji_get_widget_by_id</a>
+<li><a href="#_ji_is_valid_widget">_ji_is_valid_widget</a>
+<li><a href="#_ji_system_exit">_ji_system_exit</a>
+<li><a href="#_ji_system_init">_ji_system_init</a>
+<li><a href="#_jwindow_is_moving">_jwindow_is_moving</a>
+<li><a href="#jbox_new">jbox_new</a>
+<li><a href="#jbutton_add_command">jbutton_add_command</a>
+<li><a href="#jbutton_add_command_data">jbutton_add_command_data</a>
+<li><a href="#jbutton_get_bevel">jbutton_get_bevel</a>
+<li><a href="#jbutton_new">jbutton_new</a>
+<li><a href="#jbutton_set_bevel">jbutton_set_bevel</a>
+<li><a href="#jbutton_set_icon">jbutton_set_icon</a>
+<li><a href="#jbutton_set_icon_align">jbutton_set_icon_align</a>
+<li><a href="#jcheck_new">jcheck_new</a>
+<li><a href="#jcheck_set_icon_align">jcheck_set_icon_align</a>
+<li><a href="#jfree">jfree</a>
+<li><a href="#ji_font_char_len">ji_font_char_len</a>
+<li><a href="#ji_font_get_aa_mode">ji_font_get_aa_mode</a>
+<li><a href="#ji_font_get_available_fixed_sizes">ji_font_get_available_fixed_sizes</a>
+<li><a href="#ji_font_get_char_extra_spacing">ji_font_get_char_extra_spacing</a>
+<li><a href="#ji_font_get_size">ji_font_get_size</a>
+<li><a href="#ji_font_is_fixed">ji_font_is_fixed</a>
+<li><a href="#ji_font_is_scalable">ji_font_is_scalable</a>
+<li><a href="#ji_font_load">ji_font_load</a>
+<li><a href="#ji_font_set_aa_mode">ji_font_set_aa_mode</a>
+<li><a href="#ji_font_set_char_extra_spacing">ji_font_set_char_extra_spacing</a>
+<li><a href="#ji_font_set_size">ji_font_set_size</a>
+<li><a href="#ji_font_text_len">ji_font_text_len</a>
+<li><a href="#ji_get_default_manager">ji_get_default_manager</a>
+<li><a href="#ji_load_widget">ji_load_widget</a>
+<li><a href="#ji_register_widget_type">ji_register_widget_type</a>
+<li><a href="#jlabel_new">jlabel_new</a>
+<li><a href="#jlist_alloc">jlist_alloc</a>
+<li><a href="#jlist_append">jlist_append</a>
+<li><a href="#jlist_concat">jlist_concat</a>
+<li><a href="#jlist_copy">jlist_copy</a>
+<li><a href="#jlist_delete_link">jlist_delete_link</a>
+<li><a href="#jlist_find">jlist_find</a>
+<li><a href="#jlist_find_custom">jlist_find_custom</a>
+<li><a href="#jlist_first">jlist_first</a>
+<li><a href="#jlist_foreach">jlist_foreach</a>
+<li><a href="#jlist_free">jlist_free</a>
+<li><a href="#jlist_free_1">jlist_free_1</a>
+<li><a href="#jlist_index">jlist_index</a>
+<li><a href="#jlist_insert">jlist_insert</a>
+<li><a href="#jlist_insert_before">jlist_insert_before</a>
+<li><a href="#jlist_insert_sorted">jlist_insert_sorted</a>
+<li><a href="#jlist_last">jlist_last</a>
+<li><a href="#jlist_length">jlist_length</a>
+<li><a href="#jlist_next">jlist_next</a>
+<li><a href="#jlist_nth">jlist_nth</a>
+<li><a href="#jlist_nth_data">jlist_nth_data</a>
+<li><a href="#jlist_nth_prev">jlist_nth_prev</a>
+<li><a href="#jlist_position">jlist_position</a>
+<li><a href="#jlist_prepend">jlist_prepend</a>
+<li><a href="#jlist_previous">jlist_previous</a>
+<li><a href="#jlist_remove">jlist_remove</a>
+<li><a href="#jlist_remove_all">jlist_remove_all</a>
+<li><a href="#jlist_remove_link">jlist_remove_link</a>
+<li><a href="#jlist_reverse">jlist_reverse</a>
+<li><a href="#jlist_sort">jlist_sort</a>
+<li><a href="#jlist_sort_with_data">jlist_sort_with_data</a>
+<li><a href="#jmalloc">jmalloc</a>
+<li><a href="#jmalloc0">jmalloc0</a>
+<li><a href="#jmanager_attract_focus">jmanager_attract_focus</a>
+<li><a href="#jmanager_close_window">jmanager_close_window</a>
+<li><a href="#jmanager_dispatch_draw_messages">jmanager_dispatch_draw_messages</a>
+<li><a href="#jmanager_dispatch_messages">jmanager_dispatch_messages</a>
+<li><a href="#jmanager_free">jmanager_free</a>
+<li><a href="#jmanager_free_capture">jmanager_free_capture</a>
+<li><a href="#jmanager_free_focus">jmanager_free_focus</a>
+<li><a href="#jmanager_free_mouse">jmanager_free_mouse</a>
+<li><a href="#jmanager_free_widget">jmanager_free_widget</a>
+<li><a href="#jmanager_get_capture">jmanager_get_capture</a>
+<li><a href="#jmanager_get_focus">jmanager_get_focus</a>
+<li><a href="#jmanager_get_mouse">jmanager_get_mouse</a>
+<li><a href="#jmanager_new">jmanager_new</a>
+<li><a href="#jmanager_open_window">jmanager_open_window</a>
+<li><a href="#jmanager_poll">jmanager_poll</a>
+<li><a href="#jmanager_refresh_screen">jmanager_refresh_screen</a>
+<li><a href="#jmanager_remove_message">jmanager_remove_message</a>
+<li><a href="#jmanager_remove_messages_for">jmanager_remove_messages_for</a>
+<li><a href="#jmanager_run">jmanager_run</a>
+<li><a href="#jmanager_send_message">jmanager_send_message</a>
+<li><a href="#jmanager_set_capture">jmanager_set_capture</a>
+<li><a href="#jmanager_set_focus">jmanager_set_focus</a>
+<li><a href="#jmanager_set_mouse">jmanager_set_mouse</a>
+<li><a href="#jnew">jnew</a>
+<li><a href="#jnew0">jnew0</a>
+<li><a href="#jrealloc">jrealloc</a>
+<li><a href="#jrect_add">jrect_add</a>
+<li><a href="#jrect_copy">jrect_copy</a>
+<li><a href="#jrect_free">jrect_free</a>
+<li><a href="#jrect_has_intersection">jrect_has_intersection</a>
+<li><a href="#jrect_intersect">jrect_intersect</a>
+<li><a href="#jrect_new">jrect_new</a>
+<li><a href="#jrect_new_copy">jrect_new_copy</a>
+<li><a href="#jrect_replace">jrect_replace</a>
+<li><a href="#jrect_shrink">jrect_shrink</a>
+<li><a href="#jrect_stretch">jrect_stretch</a>
+<li><a href="#jregion_add">jregion_add</a>
+<li><a href="#jregion_add2">jregion_add2</a>
+<li><a href="#jregion_clear">jregion_clear</a>
+<li><a href="#jregion_free">jregion_free</a>
+<li><a href="#jregion_intersect">jregion_intersect</a>
+<li><a href="#jregion_intersect2">jregion_intersect2</a>
+<li><a href="#jregion_join">jregion_join</a>
+<li><a href="#jregion_move">jregion_move</a>
+<li><a href="#jregion_new">jregion_new</a>
+<li><a href="#jregion_new_copy">jregion_new_copy</a>
+<li><a href="#jregion_subtract">jregion_subtract</a>
+<li><a href="#jregion_subtract2">jregion_subtract2</a>
+<li><a href="#jrenew">jrenew</a>
+<li><a href="#jwidget_add_child">jwidget_add_child</a>
+<li><a href="#jwidget_add_childs">jwidget_add_childs</a>
+<li><a href="#jwidget_add_hook">jwidget_add_hook</a>
+<li><a href="#jwidget_autodestroy">jwidget_autodestroy</a>
+<li><a href="#jwidget_capture_mouse">jwidget_capture_mouse</a>
+<li><a href="#jwidget_check_underscored">jwidget_check_underscored</a>
+<li><a href="#jwidget_close_window">jwidget_close_window</a>
+<li><a href="#jwidget_decorative">jwidget_decorative</a>
+<li><a href="#jwidget_deselect">jwidget_deselect</a>
+<li><a href="#jwidget_dirty">jwidget_dirty</a>
+<li><a href="#jwidget_disable">jwidget_disable</a>
+<li><a href="#jwidget_emit_signal">jwidget_emit_signal</a>
+<li><a href="#jwidget_enable">jwidget_enable</a>
+<li><a href="#jwidget_expansive">jwidget_expansive</a>
+<li><a href="#jwidget_find_name">jwidget_find_name</a>
+<li><a href="#jwidget_flush_redraw">jwidget_flush_redraw</a>
+<li><a href="#jwidget_focusrest">jwidget_focusrest</a>
+<li><a href="#jwidget_free">jwidget_free</a>
+<li><a href="#jwidget_get_align">jwidget_get_align</a>
+<li><a href="#jwidget_get_bg_color">jwidget_get_bg_color</a>
+<li><a href="#jwidget_get_child_position">jwidget_get_child_position</a>
+<li><a href="#jwidget_get_children">jwidget_get_children</a>
+<li><a href="#jwidget_get_data">jwidget_get_data</a>
+<li><a href="#jwidget_get_drawable_region">jwidget_get_drawable_region</a>
+<li><a href="#jwidget_get_font">jwidget_get_font</a>
+<li><a href="#jwidget_get_hook">jwidget_get_hook</a>
+<li><a href="#jwidget_get_name">jwidget_get_name</a>
+<li><a href="#jwidget_get_parent">jwidget_get_parent</a>
+<li><a href="#jwidget_get_parents">jwidget_get_parents</a>
+<li><a href="#jwidget_get_position">jwidget_get_position</a>
+<li><a href="#jwidget_get_region">jwidget_get_region</a>
+<li><a href="#jwidget_get_text">jwidget_get_text</a>
+<li><a href="#jwidget_get_text_height">jwidget_get_text_height</a>
+<li><a href="#jwidget_get_text_length">jwidget_get_text_length</a>
+<li><a href="#jwidget_get_texticon_info">jwidget_get_texticon_info</a>
+<li><a href="#jwidget_get_theme">jwidget_get_theme</a>
+<li><a href="#jwidget_get_type">jwidget_get_type</a>
+<li><a href="#jwidget_get_window">jwidget_get_window</a>
+<li><a href="#jwidget_hard_capture_mouse">jwidget_hard_capture_mouse</a>
+<li><a href="#jwidget_has_capture">jwidget_has_capture</a>
+<li><a href="#jwidget_has_child">jwidget_has_child</a>
+<li><a href="#jwidget_has_focus">jwidget_has_focus</a>
+<li><a href="#jwidget_has_mouse">jwidget_has_mouse</a>
+<li><a href="#jwidget_hide">jwidget_hide</a>
+<li><a href="#jwidget_init_theme">jwidget_init_theme</a>
+<li><a href="#jwidget_is_autodestroy">jwidget_is_autodestroy</a>
+<li><a href="#jwidget_is_decorative">jwidget_is_decorative</a>
+<li><a href="#jwidget_is_deselected">jwidget_is_deselected</a>
+<li><a href="#jwidget_is_disabled">jwidget_is_disabled</a>
+<li><a href="#jwidget_is_enabled">jwidget_is_enabled</a>
+<li><a href="#jwidget_is_expansive">jwidget_is_expansive</a>
+<li><a href="#jwidget_is_focusrest">jwidget_is_focusrest</a>
+<li><a href="#jwidget_is_hidden">jwidget_is_hidden</a>
+<li><a href="#jwidget_is_magnetic">jwidget_is_magnetic</a>
+<li><a href="#jwidget_is_selected">jwidget_is_selected</a>
+<li><a href="#jwidget_is_visible">jwidget_is_visible</a>
+<li><a href="#jwidget_magnetic">jwidget_magnetic</a>
+<li><a href="#jwidget_new">jwidget_new</a>
+<li><a href="#jwidget_noborders">jwidget_noborders</a>
+<li><a href="#jwidget_pick">jwidget_pick</a>
+<li><a href="#jwidget_redraw_region">jwidget_redraw_region</a>
+<li><a href="#jwidget_release_mouse">jwidget_release_mouse</a>
+<li><a href="#jwidget_remove_child">jwidget_remove_child</a>
+<li><a href="#jwidget_replace_child">jwidget_replace_child</a>
+<li><a href="#jwidget_request_size">jwidget_request_size</a>
+<li><a href="#jwidget_select">jwidget_select</a>
+<li><a href="#jwidget_send_message">jwidget_send_message</a>
+<li><a href="#jwidget_send_message_after_type">jwidget_send_message_after_type</a>
+<li><a href="#jwidget_set_align">jwidget_set_align</a>
+<li><a href="#jwidget_set_bg_color">jwidget_set_bg_color</a>
+<li><a href="#jwidget_set_border">jwidget_set_border</a>
+<li><a href="#jwidget_set_font">jwidget_set_font</a>
+<li><a href="#jwidget_set_name">jwidget_set_name</a>
+<li><a href="#jwidget_set_position">jwidget_set_position</a>
+<li><a href="#jwidget_set_static_size">jwidget_set_static_size</a>
+<li><a href="#jwidget_set_text">jwidget_set_text</a>
+<li><a href="#jwidget_set_theme">jwidget_set_theme</a>
+<li><a href="#jwidget_show">jwidget_show</a>
+<li><a href="#jwidget_signal_off">jwidget_signal_off</a>
+<li><a href="#jwidget_signal_on">jwidget_signal_on</a>
+<li><a href="#jwindow_center">jwindow_center</a>
+<li><a href="#jwindow_close">jwindow_close</a>
+<li><a href="#jwindow_get_killer">jwindow_get_killer</a>
+<li><a href="#jwindow_get_manager">jwindow_get_manager</a>
+<li><a href="#jwindow_is_desktop">jwindow_is_desktop</a>
+<li><a href="#jwindow_is_foreground">jwindow_is_foreground</a>
+<li><a href="#jwindow_is_toplevel">jwindow_is_toplevel</a>
+<li><a href="#jwindow_mobile">jwindow_mobile</a>
+<li><a href="#jwindow_new">jwindow_new</a>
+<li><a href="#jwindow_new_desktop">jwindow_new_desktop</a>
+<li><a href="#jwindow_open">jwindow_open</a>
+<li><a href="#jwindow_open_bg">jwindow_open_bg</a>
+<li><a href="#jwindow_open_fg">jwindow_open_fg</a>
+<li><a href="#jwindow_position">jwindow_position</a>
+<li><a href="#jwindow_remap">jwindow_remap</a>
+
+
+
+
+</body>
+</html>

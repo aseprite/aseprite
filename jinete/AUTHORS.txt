@@ -1,0 +1,5 @@
+David A. Capello <dacap@users.sourceforge.net>
+
+freetype/
+  The FreeType library
+  Copyright (C) by David Turner, Robert Wilhelm, and Werner Lemberg.

@@ -1,0 +1,11 @@
+
+FreeType comes with two licenses from which you can choose the one which
+fits your needs best:
+
+  . The FreeType License, in file `docs/FTL.txt'.
+
+  . The GNU General Public License, in file `docs/GPL.txt'.
+
+The contributed PCF driver comes with a license similar to that of X Window
+System which is compatible to the above two licenses (see file
+src/pcf/readme).

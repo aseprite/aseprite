@@ -1,0 +1,362 @@
+/* jinete - a GUI library
+ * Copyright (C) 2003-2005 by David A. Capello
+ *
+ * Jinete is gift-ware.
+ */
+
+#include <allegro.h>
+#include <math.h>
+
+#include "jinete.h"
+
+/* GUI */
+void init_gui(void);
+void shutdown_gui(void);
+bool update_gui(void);
+void draw_gui();
+float get_speed(void);
+float get_reaction_pos(void);
+bool get_back_to_center();
+
+/* Game */
+void play_game(void);
+
+/**********************************************************************/
+/* Main routine */
+
+int main(int argc, char *argv[])
+{
+  /* Allegro stuff */
+  allegro_init();
+  if (set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0) < 0) {
+    allegro_message("%s\n", allegro_error);
+    return 1;
+  }
+  install_timer();
+  install_keyboard();
+  install_mouse();
+
+  rgb_map = jmalloc(sizeof(RGB_MAP));
+  color_map = jmalloc(sizeof(COLOR_MAP));
+
+  create_rgb_table(rgb_map, default_palette, NULL);
+  create_trans_table(color_map, default_palette, 128, 128, 128, NULL);
+
+  init_gui();
+  play_game();
+  shutdown_gui();
+
+  jfree(rgb_map);
+  jfree(color_map);
+  return 0;
+}
+
+END_OF_MAIN();
+
+/**********************************************************************/
+/* GUI handle */
+
+static JWidget window, manager, entry, check;
+
+static bool my_manager_hook(JWidget widget, JMessage msg);
+
+void init_gui(void)
+{
+  JWidget box1, box2, label, button;
+
+  /* Jinete initialization */
+  manager = jmanager_new();
+  ji_set_standard_theme();
+
+  /* hook manager behavior */
+  jwidget_add_hook(manager, JI_WIDGET, my_manager_hook, NULL);
+
+  /* create main window */
+  window = jwindow_new("Game Manager");
+  box1 = jbox_new(JI_VERTICAL);
+  box2 = jbox_new(JI_HORIZONTAL);
+  label = jlabel_new("Speed:");
+  entry = jentry_new(8, "4");
+  check = jcheck_new("AI/Center after hit");
+  button = jbutton_new("&Game Over");
+
+  jwidget_expansive(box2, TRUE);
+  jwidget_expansive(entry, TRUE);
+
+  jwidget_add_child(window, box1);
+  jwidget_add_childs(box1, box2, check, button, NULL);
+  jwidget_add_childs(box2, label, entry, NULL);
+
+  jwindow_open(window);
+}
+
+void shutdown_gui(void)
+{
+  jwidget_free(window);
+  jmanager_free(manager);
+  manager = NULL;
+}
+
+bool update_gui(void)
+{
+  return !jmanager_poll(manager, TRUE);
+}
+
+void draw_gui()
+{
+  jwidget_dirty(manager);
+  jwidget_flush_redraw(manager);
+  jmanager_dispatch_draw_messages();
+}
+
+float get_speed(void)
+{
+  float speed = strtod(jwidget_get_text(entry), NULL);
+  return speed;
+}
+
+float get_reaction_pos(void)
+{
+  return window->rc->x1-2;
+}
+
+bool get_back_to_center()
+{
+  return jwidget_is_selected(check);
+}
+
+static bool my_manager_hook(JWidget widget, JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_CHAR:
+    case JM_KEYPRESSED:
+      /* don't use UP & DOWN keys for focus movement */
+      if (msg->key.scancode == KEY_UP || msg->key.scancode == KEY_DOWN) {
+	/* returning TRUE means that we use that keys (we don't use
+	   that keys here, but the game use them) */
+	return TRUE;
+      }
+      break;
+
+    case JM_DRAW:
+      /* draw nothing (this avoid the default behavior: paint with the
+	 desktop color of the current manager's theme) */
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**********************************************************************/
+/* Game handle */
+
+#define BS 8			/* ball size */
+#define PS 40			/* player size */
+
+static float ball_x, ball_y;
+static float ball_dx, ball_dy;
+static int p_y1, p_y2;
+
+static int count = 0;
+static void count_inc(void)
+{
+  count++;
+}
+
+END_OF_STATIC_FUNCTION(count_inc);
+
+static void update_game(void);
+static void draw_game(BITMAP *bmp);
+static bool move_ball(float *x, float *y, float *dx, float *dy);
+static void calc_ball_dest(float *y);
+
+void play_game(void)
+{
+  bool gameover = FALSE;
+  bool trans_mode = FALSE;
+  BITMAP *bmp, *bmp2;
+
+  /* create a temporary bitmap to make double-buffered technique */
+  bmp = create_bitmap(SCREEN_W, SCREEN_H);
+  bmp2 = create_bitmap(SCREEN_W, SCREEN_H);
+
+  /* set Jinete output screen bitmap */
+  ji_set_screen(bmp);
+  show_mouse(NULL);
+
+  /* init game state */
+  ball_x = SCREEN_W / 2;
+  ball_y = SCREEN_H / 2;
+  ball_dx = cos(AL_PI/4);
+  ball_dy = sin(AL_PI/4);
+  p_y1 = p_y2 = SCREEN_H / 2 - PS / 2;
+
+  LOCK_VARIABLE(count);
+  LOCK_FUNCTION(count_inc);
+  install_int_ex(count_inc, BPS_TO_TIMER(60));
+
+  while (!gameover) {
+    while (count > 0 && !gameover) {
+      update_game();
+      gameover = update_gui();
+      count--;
+    }
+
+    /* use transparent bitmap */
+    if (jwidget_pick(manager, mouse_x, mouse_y) == manager) {
+      if (!trans_mode) {
+	trans_mode = TRUE;
+	ji_set_screen(bmp2);
+	show_mouse(NULL);
+      }
+    }
+    else if (trans_mode) {
+      trans_mode = FALSE;
+      ji_set_screen(bmp);
+      show_mouse(NULL);
+    }
+
+    /* draw game state */
+    draw_game(bmp);
+
+    /* draw GUI */
+    if (trans_mode)
+      clear(bmp2);
+    draw_gui();
+
+    /* blit to screen (with the mouse on it) */
+    show_mouse(ji_screen);
+    freeze_mouse_flag = TRUE;
+    if (trans_mode)
+      draw_trans_sprite (bmp, bmp2, 0, 0);
+    blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    freeze_mouse_flag = FALSE;
+    show_mouse(NULL);
+  }
+
+  ji_set_screen(screen);
+  destroy_bitmap(bmp);
+  destroy_bitmap(bmp2);
+}
+
+static void update_game(void)
+{
+  float y, angle;
+
+  /* move ball */
+  if (!move_ball(&ball_x, &ball_y, &ball_dx, &ball_dy)) {
+    /* some player loses */
+    ball_x = SCREEN_W / 2;
+    ball_y = SCREEN_H / 2;
+    ball_dx = cos(AL_PI/4);
+    ball_dy = sin(AL_PI/4);
+  }
+
+  /* collision ball<->player */
+  if (ball_dx < 0) {
+    if (ball_x >= 2 && ball_y+BS/2 >= p_y1-PS/2 &&
+	ball_x <= 12 && ball_y-BS/2 <= p_y1-PS/2+PS-1) {
+      angle = -AL_PI/4 + AL_PI/2 * (ball_y-(p_y1-PS/2))/PS;
+      ball_dx = cos(angle);
+      ball_dy = sin(angle);
+    }
+  }
+  else if (ball_dx > 0) {
+    if (ball_x >= SCREEN_W-1-12 && ball_y+BS/2 >= p_y2-PS/2 &&
+	ball_x <= SCREEN_W-1-2 && ball_y-BS/2 <= p_y2-PS/2+PS-1) {
+      angle = -AL_PI*3/4 - AL_PI/2 * (ball_y-(p_y2-PS/2))/PS;
+      ball_dx = cos(angle);
+      ball_dy = sin(angle);
+    }
+  }
+
+  /* player */
+  if (key[KEY_UP])
+    p_y1 -= 4;
+  if (key[KEY_DOWN])
+    p_y1 += 4;
+
+  /* IA */
+  if (ball_dx > 0 && ball_x > get_reaction_pos())
+    calc_ball_dest(&y);
+  else if (get_back_to_center())
+    y = SCREEN_H/2;
+  else
+    y = p_y2;
+
+  if (p_y2 > y) {
+    p_y2 -= 4;
+    if (p_y2 < y)
+      p_y2 = y;
+  }
+  else if (p_y2 < y) {
+    p_y2 += 4;
+    if (p_y2 > y)
+      p_y2 = y;
+  }
+
+  /* limit players movement */
+  p_y1 = MID(PS/2, p_y1, SCREEN_H-1-PS/2);
+  p_y2 = MID(PS/2, p_y2, SCREEN_H-1-PS/2);
+}
+
+static void draw_game(BITMAP *bmp)
+{
+  float x = get_reaction_pos();
+
+  /* clear screen */
+  clear(bmp);
+
+  /* reaction position */
+  vline(bmp, x, 0, SCREEN_H-1, makecol(255, 255, 255));
+  textout(bmp, font, "AI reaction position", x+2, 0, makecol(255, 255, 255));
+
+  /* draw ball */
+  rectfill(bmp,
+	   ball_x-BS/2, ball_y-BS/2,
+	   ball_x-BS/2+BS-1, ball_y-BS/2+BS-1, makecol(255, 255, 255));
+
+  /* draw left & right players */
+  rectfill(bmp,
+	   2, p_y1-PS/2,
+	   12, p_y1-PS/2+PS-1, makecol(255, 255, 255));
+  rectfill(bmp,
+	   SCREEN_W-1-12, p_y2-PS/2,
+	   SCREEN_W-1-2, p_y2-PS/2+PS-1, makecol(255, 255, 255));
+}
+
+static bool move_ball(float *x, float *y, float *dx, float *dy)
+{
+  float speed = get_speed();
+
+  /* ball movement */
+  *x += (*dx) * speed;
+  *y += (*dy) * speed;
+
+  /* bouncing with walls */
+  if (*dy < 0 && (*y)-BS/2 < 0)
+    *dy = -(*dy);
+  else if (*dy > 0 && (*y)+BS/2 > SCREEN_H-1)
+    *dy = -(*dy);
+
+  /* ball goes out of screen */
+  if (*x < 0 || *x > SCREEN_W-1)
+    return FALSE;
+  else
+    return TRUE;
+}
+
+static void calc_ball_dest(float *y)
+{
+  float speed = get_speed();
+  float x = ball_x;
+  float dx = ball_dx;
+  float dy = ball_dy;
+
+  *y = ball_y;
+
+  if (speed >= 1)
+    while (move_ball(&x, y, &dx, &dy));
+}
+

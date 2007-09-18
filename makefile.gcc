@@ -1,0 +1,135 @@
+# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+
+.PHONY = _default
+_default: default
+
+######################################################################
+# Setup CFLAGS and LFLAGS for GCC
+
+CFLAGS += -Wall -I. -Isrc -Ijinete/include -Ithird_party \
+	  -I$(JINETE_DIR)/freetype/include \
+          -I$(LIBLUA_DIR)/include \
+	  -I$(LIBGFLI_DIR) \
+	  -Wno-deprecated-declarations
+
+LFLAGS += $(JINETE_LIB) $(LIBLUA_LIB) $(LIBGFLI_LIB) $(LIBART_LIB)
+
+ifdef PROFILE
+  CFLAGS += -pg
+  LFLAGS += -pg
+else
+ifdef DEBUGMODE
+  CFLAGS += -g
+  LFLAGS += -g
+else
+  CFLAGS += -s -O3
+  LFLAGS += -s -O3
+endif
+endif
+
+ifdef DEFAULT_PREFIX
+  CFLAGS += -DDEFAULT_PREFIX="\"$(DEFAULT_PREFIX)\""
+endif
+
+ifdef USE_PRECOMPILED_HEADER
+  CFLAGS += -DUSE_PRECOMPILED_HEADER
+endif
+
+ifdef HAVE_LIBJPEG
+  CFLAGS += -DHAVE_LIBJPEG
+  LFLAGS += -ljpeg
+endif
+
+ifdef HAVE_JPGALLEG
+  CFLAGS += -DHAVE_JPGALLEG
+  LFLAGS += -ljpgal
+endif
+
+######################################################################
+# Rules to make Jinete
+
+JINETE_DIR = jinete
+include $(JINETE_DIR)/makefile.lst
+include $(JINETE_DIR)/makefile.gcc
+
+######################################################################
+# Rules to make third party libraries
+
+$(LIBLUA_LIB): $(LIBLUA_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(LIBGFLI_LIB): $(LIBGFLI_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(LIBART_LIB): $(LIBART_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+######################################################################
+# Rules to build objects and the application
+
+VPATH = src					\
+	src/console				\
+	src/core				\
+	src/dialogs				\
+	src/dialogs/effect			\
+	src/effect				\
+	src/file				\
+	src/file/gif				\
+	src/intl				\
+	src/modules				\
+	src/raster				\
+	src/script				\
+	src/util				\
+	src/widgets				\
+	src/widgets/editor			\
+	$(LIBLUA_DIR)/src			\
+	$(LIBLUA_DIR)/src/lib			\
+	$(LIBGFLI_DIR)				\
+	$(LIBART_DIR)				\
+	$(JINETE_DIR)/src			\
+	$(JINETE_DIR)/src/themes		\
+	$(JINETE_DIR)/freetype/src/base		\
+	$(JINETE_DIR)/freetype/src/autohint	\
+	$(JINETE_DIR)/freetype/src/cache	\
+	$(JINETE_DIR)/freetype/src/cff		\
+	$(JINETE_DIR)/freetype/src/cid		\
+	$(JINETE_DIR)/freetype/src/pcf		\
+	$(JINETE_DIR)/freetype/src/psaux	\
+	$(JINETE_DIR)/freetype/src/pshinter	\
+	$(JINETE_DIR)/freetype/src/psnames	\
+	$(JINETE_DIR)/freetype/src/raster	\
+	$(JINETE_DIR)/freetype/src/sfnt		\
+	$(JINETE_DIR)/freetype/src/smooth	\
+	$(JINETE_DIR)/freetype/src/truetype	\
+	$(JINETE_DIR)/freetype/src/type1	\
+	$(JINETE_DIR)/freetype/src/winfonts	\
+	$(JINETE_DIR)/examples
+
+ifdef USE_PRECOMPILED_HEADER
+ASE_DEPS = config.h.gch
+else
+ASE_DEPS = 
+endif
+ASE_DEPS += $(ASE_OBJS) $(JINETE_LIB) $(LIBART_LIB) $(LIBGFLI_LIB) $(LIBLUA_LIB)
+
+ifdef USE_PRECOMPILED_HEADER
+config.h.gch: config.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+endif
+
+$(OBJ_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+ifndef WITHICON
+$(ASE): $(ASE_DEPS)
+	$(CC) -o $@ $(ASE_OBJS) $(LFLAGS) $(LFLAGS_LAST)
+else
+$(OBJ_DIR)/%.res: src/%.rc
+	$(WINDRES) -O coff -o $@ -i $<
+
+$(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
+	$(CC) -o $@ $(ASE_OBJS) $(OBJ_DIR)/icon.res $(LFLAGS) $(LFLAGS_LAST)
+endif

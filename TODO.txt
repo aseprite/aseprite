@@ -1,0 +1,79 @@
+High priority work
+------------------
+
+- GUI using double buffering.
+- add support for PNG files.
+- ver por el nuevo load_font de Allegro.
+- borrar src/core/config.c
+- search for XXX (XXXX is supposed to be high priority);
+- complete palette operations, and palette editor (it needs a slider
+  or something to move between palette changes);
+- fix undo of big chunks (more than limit):
+  + how to reproduce the error? create an RGB image of 800x600, add a
+    layer, add a frame, move the new frame to the other layer, undo,
+    there is the bug.
+- fix quantize (one palette for all frames, one palette per frame)
+- fix Jinete examples:
+  + 05fsel
+  + 09lists
+  + 20combo
+  + 21manage
+- fix "tiled mode" when it's used in frames that doesn't have the same
+  size of the sprite;
+- add "size" to GUI font (for TTF fonts);
+- layer movement (between sets) in filmeditor;
+- quick swap;
+  + the regions mustn't be overlapped;
+- options to change the curve type (in curedit.c);
+- canvas size;
+  + with the current crop this isn't necessary anymore;
+  + anyway, it's a good way to expand the graphics
+- gauss blur;
+- pal-operations (sort, quantize, gamma by color-curves, etc.);
+- RGB and HSV effects;
+- color-curve stock;
+- fix algo_ellipsefill;
+- view_tiled() should support animation playback (partial support:
+  with left and right keys).
+- when press Plus/Minus pad in the editor and the configuration tool
+  window is active, the slider of the "Brush Size" must be updated.
+- make keys like 9, 0, + Pad, - Pad configurable.
+- drawing tools:
+  + real-spray;
+  + Animator Pro like: oval, petal, rpoly, star, poly, spiral;
+- Add suppport to load old .ase files:
+  + I don't think so, nobody tell me "I need load an old .ase file!!!"
+
+Wish-list
+---------
+
+- Mateusz Czaplinski ideas:
+  + when move selections, will be good the possibility to see relative
+    position from the starting point of movement;
+  + make drawing the 'marching-ants-rectangle' a prioritaire thing to
+    draw (when move it).
+- default Windowed mode? (idea from Robert J Ohannessian);
+  + I don't think so: ASE was, is and will be better in FULL-SCREEN modes;
+  + Maybe a recordable "card" in the configuration file will be enough;
+  + See docs/FULLSCR.txt;
+  + if double buffering is implemented, that is the answer (double buffering
+    with a backbuffer of 320x240 and a realscreen of 640x480).
+- for Jinete:
+  + add columns handle to list-boxes;
+  + add icons handle to all widgets (mainly button, list-items, and labels);
+  + add tree widget;
+
+Low priority stuff
+------------------
+
+- test routines: load/save_pic_file, load/save_msk_file,
+  load/save_col_file.
+- fix the fli reader (both Allegro and Gfli): when a frame hasn't
+  chunks means that it's looks like the last frame;
+- talk with Ben Davis, his "quantize.c" has memory leaks (test it
+  more, I don't think so);
+- talk with Elias Pschernig, his "do_ellipse_diameter" (algo_ellipse)
+  has a bug with ellipses of some dimensions (I made a test, and a
+  various sizes have errors).
+- optimize the *_to_allegro image methods (I profiled ASE, and these
+  are the more slow routines in all the program);

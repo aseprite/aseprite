@@ -1,0 +1,60 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("Palette Editor") name="palette_editor">
+  <box vertical>
+    <box horizontal expansive>
+      <box vertical>
+	<view name="palette_editor" expansive /> <!-- custom-widget -->
+	<slider min="1" max="256" name="columns" />
+      </box>
+      <box vertical expansive>
+	<box horizontal>
+          <box vertical homogeneous>
+	    <label text="R" />
+	    <label text="G" />
+	    <label text="B" />
+          </box>
+          <box vertical homogeneous expansive>
+	    <slider min="0" max="255" name="red" />
+	    <slider min="0" max="255" name="green" />
+	    <slider min="0" max="255" name="blue" />
+          </box>
+          <box vertical homogeneous>
+	    <label text="H" />
+	    <label text="S" />
+	    <label text="V" />
+          </box>
+          <box vertical homogeneous expansive>
+	    <slider min="0" max="255" name="hue" />
+	    <slider min="0" max="255" name="saturation" />
+	    <slider min="0" max="255" name="value" />
+          </box>
+	</box>
+	<box name="color_viewer" expansive /> <!-- custom-widget -->
+	<button text=_("Select &All") name="select_all" />
+	<box vertical>
+	  <box horizontal homogeneous>
+	    <button text=_("&Undo") name="undo" />
+	    <button text=_("&Redo") name="redo" />
+	  </box>
+	  <box horizontal homogeneous>
+	    <button text=_("&Load") name="load" />
+	    <button text=_("&Save") name="save" />
+	  </box>
+	  <box horizontal homogeneous>
+	    <button text=_("&Ramp") name="ramp" />
+	    <button text=_("&Quantize") name="quantize" />
+	  </box>
+	</box>
+      </box>
+    </box>
+    <slider min="0" max="1" name="frpos" />
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="button_ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>

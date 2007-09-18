@@ -1,0 +1,211 @@
+/* ase -- allegro-sprite-editor: the ultimate sprites factory
+ * Copyright (C) 2001-2005  David A. Capello
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "config.h"
+
+#ifndef USE_PRECOMPILED_HEADER
+
+#include <allegro/file.h>
+#include <allegro/system.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "jinete/base.h"
+
+#include "core/core.h"
+#include "core/dirs.h"
+
+#endif
+
+#undef UNIX_LIKE
+#if defined ALLEGRO_UNIX || \
+    defined ALLEGRO_LINUX || \
+    defined ALLEGRO_MACOSX || \
+    defined ALLEGRO_BEOS || \
+    defined ALLEGRO_QNX
+#define UNIX_LIKE
+#endif
+
+DIRS *dirs_new(void)
+{
+  DIRS *dirs;
+
+  dirs = jmalloc(sizeof(DIRS));
+  if (!dirs)
+    return NULL;
+
+  dirs->path = NULL;
+  dirs->next = NULL;
+
+  return dirs;
+}
+
+void dirs_free(DIRS *dirs)
+{
+  DIRS *iter, *next;
+
+  for (iter = dirs; iter; iter = next) {
+    next = iter->next;
+    if (iter->path)
+      jfree(iter->path);
+
+    jfree(iter);
+  }
+}
+
+void dirs_add_path(DIRS *dirs, const char *path)
+{
+  if (!dirs->path) {
+    dirs->path = jstrdup(path);
+  }
+  else {
+    DIRS *new_one, *last_one;
+
+    for (last_one = dirs; last_one->next; last_one = last_one->next) ;
+
+    new_one = dirs_new();
+    if (!new_one)
+      return;
+
+    new_one->path = jstrdup(path);
+    if (!new_one->path) {
+      free(new_one);
+      return;
+    }
+
+    last_one->next = new_one;
+  }
+}
+
+void dirs_cat_dirs(DIRS *dirs, DIRS *more)
+{
+  DIRS *last_one;
+
+  if (!dirs->path) {
+    dirs->path = more->path;
+    more = more->next;
+  }
+
+  for (last_one = dirs; last_one->next; last_one = last_one->next) ;
+
+  last_one->next = more;
+}
+
+DIRS *filename_in_bindir(const char *filename)
+{
+  char buf[1024], path[1024];
+  DIRS *dirs;
+
+  get_executable_name(path, sizeof(path));
+  replace_filename(buf, path, filename, sizeof(buf));
+
+  dirs = dirs_new();
+  dirs_add_path(dirs, buf);
+
+  return dirs;
+}
+
+DIRS *filename_in_datadir(const char *filename)
+{
+  DIRS *dirs = dirs_new();
+
+#if defined UNIX_LIKE || defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
+
+  char buf[1024];
+
+# if defined UNIX_LIKE
+
+  /* $HOME/.ase/filename */
+  sprintf(buf, ".ase/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_homedir(buf));
+
+#   ifdef DEFAULT_PREFIX
+
+      /* $PREFIX/ase/filename */
+      sprintf(buf, "%s/share/ase/%s", DEFAULT_PREFIX, filename);
+      dirs_add_path(dirs, buf);
+
+#   endif
+
+# endif
+
+  /* $BINDIR/data/filename */
+  sprintf(buf, "data/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_bindir(buf));
+
+#else
+
+  /* filename */
+  dirs_add_path(dirs, filename);
+
+#endif
+
+  return dirs;
+}
+
+DIRS *filename_in_homedir(const char *filename)
+{
+  DIRS *dirs = dirs_new();
+
+#if defined UNIX_LIKE
+
+  char *env = getenv("HOME");
+  char buf[1024];
+
+  if ((env) && (*env)) {
+    /* $HOME/filename */
+    sprintf(buf, "%s/%s", env, filename);
+    dirs_add_path(dirs, buf);
+  }
+  else {
+    PRINTF("You don't have set $HOME variable\n");
+    dirs_add_path(dirs, filename);
+  }
+
+#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
+
+  /* $PREFIX/data/filename */
+  dirs_cat_dirs(dirs, filename_in_datadir(filename));
+
+#else
+
+  /* filename */
+  dirs_add_path(dirs, filename);
+
+#endif
+
+  return dirs;
+}
+
+DIRS *cfg_filename_dirs(void)
+{
+  DIRS *dirs = dirs_new();
+
+#if defined UNIX_LIKE
+
+  /* $HOME/.aserc */
+  dirs_cat_dirs(dirs, filename_in_homedir(".aserc"));
+
+#endif
+
+  /* $BINDIR/ase.cfg */
+  dirs_cat_dirs(dirs, filename_in_bindir("ase.cfg"));
+
+  return dirs;
+}

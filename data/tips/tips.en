@@ -1,0 +1,120 @@
+# allegro-sprite-editor tips
+# Copyright (C) 2001-2005  David A. Capello
+
+ **********************************************************************
+\palette aselogo.pcx
+\image aselogo.pcx
+Allegro Sprite Editor
+
+Welcome to ASE
+
+You can find more information about the keyboard shortcuts in the
+"docs/QuickHelp.html" file.
+
+Report bugs to:
+
+ase-help@lists.sourceforge.net
+ **********************************************************************
+\split
+\image nodither.pcx
+This is the old drawing method for RGB images.  Without dithering.
+\next
+\image dither.pcx
+Now, you can configure to use this new ordered dithering method.
+\done
+
+See "Tool/Options" menu or press <Ctrl+Shift+O>.
+ **********************************************************************
+Use the <1>, <2>, <3>, <4>, <5> and <6> keys to set the zoom in the
+current editor's viewport.
+
+\image zoom.pcx
+ **********************************************************************
+You can get a color from the sprite using the <9> or <0> keys to
+set the left or right color respectively.
+ **********************************************************************
+\image sprprop.pcx
+
+You can modify the quantity of sprite's animation frames using the
+"Sprite/Properties" menu or pressing <Ctrl+P>.
+ **********************************************************************
+You can add new animation frames pressing <Ctrl+Shift+N> or using
+"Frame/New" menu.
+ **********************************************************************
+Do you want edit frames and layers?  Use the film editor:
+
+\image filmedit.pcx
+
+Go to "View/Film Editor" menu or press TAB when you are
+editing a sprite.
+ **********************************************************************
+You can use the onionskin feature to edit animations (press <C> to see
+the "Tools Setup" window):
+
+\image onion.pcx
+
+Remember that only the current layer is used as onionskin, also, it's
+useful only when this layer has the mask color as background.
+ **********************************************************************
+When you apply some effect (like Convolution Matrix, or Color Curves),
+you can choose the target channels:
+\split
+\image tar_rgb.pcx
+* R: Red channel
+* G: Green channel
+* B: Blue channel
+* A: Alpha channel
+\next
+\image tar_gray.pcx
+* K: Black channel
+* A: Alpha channel
+\next
+\image tar_indx.pcx
+* R: Red channel
+* G: Green channel
+* B: Blue channel
+* Index: Use directly the index
+\done
+
+Also you will be able to specify to what images apply the effect:
+
+\split
+\image tar_1.pcx
+Current frame in current layer
+\next
+\image tar_2.pcx
+All frames of current layer
+\next
+\image tar_3.pcx
+Current frames of all layers
+\next
+\image tar_4.pcx
+All frames in all layers
+\done
+ **********************************************************************
+\image colcurv.pcx
+
+In the "Color Curve" window, you can use the <Ins> and <Del> keys to
+insert or remove vertices respectively.  Also, if you press in a
+vertex with the right mouse button, the "Point Properties" window (to
+change the coordinates manually) will be appears.
+ **********************************************************************
+\image minipal.pcx
+
+Select a color in the color-bar using the <Ctrl> key will show you
+this mini-palette.
+ **********************************************************************
+\image lua.pcx
+
+Do you want to write Lua scripts to generate images or create
+repetitive tasks?  You can find the documentation in
+"docs/scripts/README.txt".  Also you can look for "data/scripts/gens/"
+directory for some examples.
+ **********************************************************************
+\palette sprite.pcx
+\image sprite.pcx
+And remember look for updates in:
+
+http://ase.sourceforge.net/
+
+Copyright (C) 2001-2005 by David A. Capello

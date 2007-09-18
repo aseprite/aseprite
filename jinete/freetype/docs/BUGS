@@ -1,0 +1,269 @@
+List of known FreeType 2 Bugs
+-----------------------------
+
+"Identifier" is a string to uniquely identify the bug.  A more detailed
+description of the bug is found below the table of opened bugs.
+
+"Date" is the date when the bug was first reported or entered in this
+document.  Dates are in _European_ format, i.e day/month/year.
+
+"Opened By" is the name of the person who first spotted the bug. Note that
+we can use abbreviations here, like:
+
+  "David" for David Turner
+  "Werner" for Werner Lemberg
+  etc.
+
+"Reproduceable" indicates whether the bug could be reproduced by the
+development team or not (it can be specific to a given platform), whether it
+always happens, or only sporadically, etc.
+
+
+
+I. Opened bugs
+==============
+
+
+Identifier                 Date       Opened by                Reproduceable
+------------------------------------------------------------------------------
+NO-CID-CMAPS            13-09-2001     David                     always
+BAD-TT-RENDERING        12-09-2001     Paul Pedriana             ?
+BAD-THIN-LINES          13-09-2001     David                     ?
+NOT-WINDOWS-METRICS     07-10-2001     David                     always
+ADVANCED-COMPOSITES     25-10-2001     George Williams           always
+
+--------------------END-OF-OPENED-BUGS-TABLE----------------------------------
+
+
+
+II. Table of closed bugs
+========================
+
+
+Identifier                Date         Closed by                Closure date
+------------------------------------------------------------------------------
+BAD-TTNAMEID.H          12-09-2001     Antoine                   N/A
+BAD-T1-CHARMAP          15-06-2001     David                     2.0.5
+BAD-UNIXXXX-NAMES       30-07-2001     David                     2.0.5
+GLYPH_TO_BITMAP-BUG     05-12-2001     David                     05-12-2001
+AUTOHINT-NO-SBITS       13-09-2001     David                     2.0.6
+TT-GLYPH-CRASH          01-01-2002     David                     2.0.6
+T1-FONT-CRASH           01-01-2002     David                     2.0.6
+BAD-ADVANCES            30-11-2001     David                     2.0.6
+GLYPH-TO-BITMAP-BUG     15-12-2001     David                     2.0.6
+--------------------END-OF-CLOSED-BUGS-TABLE----------------------------------
+
+
+
+III. Bug descriptions
+=====================
+
+--- START OF OPENED BUGS ---
+
+
+NO-CID-CMAPS
+
+  Not exactly a bug, but the CFF font driver doesn't build a Unicode charmap
+  from the contents of font files, which prevents efficiently using fonts in
+  this format.
+
+
+
+BAD-TT-RENDERING
+
+  According to Paul Pedriana <PPedriana@maxis.com>, there is a rather
+  important difference between the rendering of TrueType-hinted glyphs of
+  current FT2 and old betas.
+
+  Tests and comparisons show a _major_ discrepancy of monochrome truetype
+  bytecode-hinted glyphs!  Something seems to be really broken here!
+
+  Some of this has been fixed in 2.0.6; there was a bug in the TrueType
+  loader that prevented it from loading composites correctly.  However,
+  there are still _subtle_ differences between FT1 and FT2 when it comes to
+  monochrome TrueType-hinted glyphs (the major differences are gone though !!)
+
+
+
+BAD-THIN-LINES
+
+  It seems that the anti-aliased renderer in FreeType has problems rendering
+  extremely thin straight lines correctly, at least when using the
+  FT_Outline_Render() function.
+
+
+
+NOT-WINDOWS-METRICS
+
+  FreeType doesn't always return the same metrics as Windows for ascender,
+  descender, and text height, depending on character pixel sizes.  A lot of
+  testing on Windows is needed to debug this properly.  It might be due to a
+  rounding bug when computing the "x_scale" and "y_scale" values.
+
+
+
+ADVANCED-COMPOSITES
+
+  Provided by George Williams <pfaedit@users.sourceforge.net>:
+
+    I notice that truetype/ttgload.c only supports Apple's definition of
+    offsets for composite glyphs.  Apple and Microsoft behave differently if
+    there is a scale factor.  OpenType defines some bits to disambiguate.
+    
+    (A problem in both 2.0.4 and 2.0.5.)
+    
+    Apple says (http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html) that if
+    flags&ARGS_ARE_XY is set then the offsets should be scaled by the scale
+    factors (as you have done), but they also say something very cryptic
+    about what happens when the component is rotated at 45° (which you do
+    not support) -- See the "Important" note at the bottom.
+    
+    The old truetype spec from Microsoft did not mention this.  The OpenType
+    spec (http://www.microsoft.com/typography/otspec/glyf.htm,
+    http://partners.adobe.com/asn/developer/opentype/glyf.html) defines two
+    new bits to disambiguate:
+
+      SCALED_COMPONENT_OFFSET 11 
+      Composite designed to have the component offset scaled (designed for
+      Apple rasterizer)
+
+      UNSCALED_COMPONENT_OFFSET 12 
+      Composite designed not to have the component offset scaled (designed
+      for the Microsoft TrueType rasterizer)
+    
+    Perhaps you could add a load_flag to allow the user to define the
+    default setting?
+
+  David says:
+  
+    Wow, I was not even aware of this, it will probably take a little time
+    to implement since I don't have any font that implement these
+    "features", and also because I believe that we're running out of bits
+    for "load_flag", some other way to set preferences is probably needed.
+
+
+
+--- END OF OPENED BUGS ---
+
+
+BAD-TTNAMEID.H
+
+  The file "ttnameid.h" contains various constant macro definitions
+  corresponding to important values defined by the TrueType specification.
+
+  Joe Man <trmetal@yahoo.com.hk> reports that:
+
+    According to the information from TrueType v1.66:
+
+      Platform ID = 3 (Microsoft)
+      the Encoding ID of GB2312 = 4
+      the Encoding ID of big5 = 3
+
+    However, I have found that in ttnameid.h:
+
+      TT_MS_ID_GB2312 = 3
+      TT_MS_ID_BIG_5 = 4
+
+    Which one is correct?
+
+  Antoine replied that this was a bug in the TT 1.66 specification, and that
+  FreeType followed the most recent TrueType/OpenType specification here.
+
+
+AUTOHINT-SBITS
+
+  When trying to load a glyph, with the auto-hinter activated (i.e., when
+  using FT_LOAD_FORCE_AUTOHINT, or when the font driver doesn't provide its
+  own hinter), embedded bitmaps are _never_ loaded, unlike the default
+  behaviour described by the API specification.
+
+  This seems to be a bug in FT_Load_Glyph(), but there is no way to solve it
+  efficiently without making a few important internal changes to the
+  library's design (more importantly, to the font driver interface).
+
+  This has been corrected with a hack in FT_Load_Glyph().  More important
+  internal changes should help get rid of it with a clean solution in a
+  further release like FreeType 2.1.
+
+
+BAD-T1-CHARMAP
+
+  Type1 driver doesn't read "cacute" and "lslash" characters from iso8859-2
+  charset.  Those characters are mapped as MAC-one in glnames.py, so they
+  cannot be shown in Adobe Type1 fonts.
+
+  (This was due to a bug in the "glnames.py" script used to generate the
+  table of glyph names in 'src/psaux/pstables.h'.)
+
+
+BAD-UNIXXXX-NAMES
+
+  Glyph names like uniXXXX are not recognized as they should be.  It seems
+  that code in psmodule.c for uniXXXX glyph names was never tested.  The
+  patch is very simple.
+  
+  (A simple bug that was left un-noticed due to the fact that I don't have
+  any Postscript font that use this convention, unfortunately.)
+
+
+GLYPH_TO_BITMAP-BUG
+
+  Calling FT_Glyph_To_Bitmap() sometimes modifies the original glyph
+  outline, creating weird alignment artefacts.
+  
+  This subtle bug was really in the file `src/smooth/ftsmooth.c'. 
+  Basically, the outline was shifted before rendering it into a new bitmap
+  buffer.  However, it wasn't properly un-shifted after that operation.
+
+  This was only noticeable with certain glyphs or certain fonts; it crept in
+  a long time ago.
+                  
+  The same bug has been fixed in src/raster/ftrender1.c also.
+                  
+
+
+TT-GLYPH-CRASH
+
+  The library crashed when trying to load certain glyphs from an
+  automatically generated TrueType file (tt1095m_.ttf submitted by
+  Scott Long).
+  
+  It turned out that the font contained invalid glyph data (i.e. was broken),
+  but the TrueType glyph loader in FreeType wasn't paranoid enough, which
+  resulted in nasty memory overwrites all over the place.
+
+
+
+T1-FONT-CRASH
+
+  The library crashed when trying to load the "Stalingrad Regular" face
+  from the "sadn.pfb" font file provided by Anthony Fok (and the Gnome-Print
+  team I believe).
+  
+  This was due to the fact that the font missed a full font name entry,
+  though boasted a family name and postscript name. The Type 1 face loader
+  didn't check for these pathetic cases and seg-faulted..
+
+
+
+BAD-ADVANCES
+
+  All scalable font drivers returned un-fitted glyph advances when
+  FT_LOAD_DEFAULT was used, which was incorrect. This problem was pretty
+  old but hadn't been spotted because all test programs actually
+  explicitely or implicitely (i.e. through the cache) rounded the advance
+  widths of glyphs..
+  
+  This resulted in poor rendering of a number of client applications
+  however (it's strange to see they took so long to notice the devel team ?)
+
+
+
+GLYPH-TO-BITMAP-BUG
+
+  the FT_Glyph_ToBitmap did incorrectly modify the source glyph in certain
+  cases, which resulted in random behaviour and bad text rendering. This was
+  spotted to bugs in both the monochrome and smooth rasterizer..
+
+
+=== end of file ===

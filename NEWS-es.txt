@@ -1,0 +1,255 @@
+===================================
+NOTICIAS
+===================================
+
+0.5
+---
+
+- Se agregaron funcionalidades solicitadas por Carl Olsson:
+  + mejor soporte cuando "Ajustar a Grilla" está activado para
+    las herramientas de dibujo que se controlan con cajas (como
+    rectángulo, elipse, etc).
+  + al manejar una selección flotante (al pegar el portapapeles)
+    la opción "Ajustar a Grilla" tiene efecto sobre el movimiento
+    de la imagen.
+  + agregado movimiento a nivel de subpixel para los cursores con 
+    demasiado zoom en el editor, para saber dónde estamos dentro
+    del pixel.
+- Soporte para grabar archivos GIF por defecto.
+- Arreglada la compilación con Allegro 4.2.1 (y arreglado un bug en
+  Allegro con key_shifts).
+- Ahora el estado ventana/pantalla-completa es guardado por
+  la aplicación (gracias a Manuel De Miguel Moreno por reportarlo).
+
+0.4
+---
+
+- Modo consola ya no existe.
+- Cambiado el atajo de teclado para el Editor de Película: tecla TAB.
+- Nueva característica: Cada cuadro de animación tiene duración.
+- Nuevo Editor de Paleta (tecla F4).
+- Ahora los sprites soportan multiples paletas: Cada cuadro puede
+  tener su propia palette de colores.
+- Agregado soporte para cargar archivos GIF (por Elias Pschernig).
+- Agregado una combo-box al cuadro de selección de archivos para
+  manejar bookmarks ("Favoritos").
+- Hay rotación!!!  Ahora puede rotar y escalar al pegar desde el
+  clipboard (portapapeles).
+
+0.3.1
+-----
+
+- Arreglada la creación de archivos de sesión cuando una excepción
+  (error fatal) ocurre bajo Windows.
+- Agregados los ficheros es.po y tips.es.
+
+0.3
+---
+
+- Agregado la administración de sesiones (si ocurre algún fallo la
+  sesión es guardada automáticamente).
+- Se agregó una herramienta para dibujar texto (finalmente).
+- Más documentación y tips.
+- Mejorado el proceso para agregar cuadros de animación.a
+- Se arreglaron algunos bugs importantes.
+- Se agregó la utilidad mapgen (código original por Johan Halmén y
+  Anders Andersson).
+- Soporte para el lenguage Español (ahora funciona en Windows también).
+- Código interno mejorado (principalmente las partes de la GUI, y los
+  nombres de las funciones).
+
+0.2.4
+-----
+
+- Undo más estable: con límites y sin el extraño comportamiento del
+  rehacer-después-de-sobreescribir-el-deshacer.
+- Nueveo filtro por mediana para reducir el ruido de las imágenes.
+- Actualizado el soporte alternativo para leer y escribir archivos
+  JPEG mediante la librería JPGalleg 2.3, gracias a Angelo Mottola por esto.
+- Se arreglaron algunos problemas con el teclado: la tecla Alt ya no puede
+  ser utilizada para atajos del teclado.  Alguna combinaciones cambiaron:
+  + <~> a <`>             (abre el editor de película)
+  + <Ctrl+/> a <?>        (enmascara por color)
+  + <Ctrl+~> a <Ctrl+4>   (cierra el editor actualx)
+- Agregado Cortar, Copiar, Pegar!
+- Agregado AutoCrop (antes conocido como Trim).
+
+0.2.3
+-----
+
+- Se arregló la rutina para grabar archivos JPG.
+- Arregladas y mejoradas varias partes de la GUI.
+
+0.2.2
+-----
+
+- Se agregó algo de documentación para escribir scripts en Lua.
+- El Editor de Película (The Film Editor) fue mejorado.
+- Arreglados algunos errores con el cursor gráfico, algunons problemas
+  con el teclado y varios bugs menores.
+- Nuevos tips con texto e imágenes.  Esto será muy útil para los
+  principiantes.
+- La función del papel cebolla (onionskin) está lista.
+- Agregado (de modo opcional) el fusionado de colores ordenado para
+  dibujar imágenes RGB en 8 bpp.
+- Nuevas acciones: Merge Down, New Frame, Copy Frame, cambiar Image
+  Type!, Load Script File.
+- Optimizado la velocidad de dibujado en modo alicatado (tiled).
+
+0.2.1
+-----
+
+- Arreglada la versión de Windows: el spray y algunos errores
+  guardando nombres de ficheros en el archivo de configuración.
+- Agregado soporte libintl y la traducción al Español del programa
+  (sólo para Linux, pero tengo planes de hacer esto andar en Windows).
+- Más soporte undo: insertar/remover capas y modificaciones en la
+  máscara.
+- Los filtros Matriz de Convolución y Curva de Color están de vuelta.
+- Se agregaron más operaciones básicas (con soporte de undo): aplanar
+  capas, duplicar capa, duplicar sprite, flip horizontal/vertical,
+  recortar cuadro.
+- Nuevo formato .ASE (en estado alpha, por favor pruébelo!).
+- Rutinas para script más simples: ahora hay una capa de rutinas de
+  alto nivel (fáciles de usar y comprender), y un juego de rutinas de
+  bajo nivel (para scripts internos o trabajos más específicos).
+- Se removió todo el código relacionado con interpolación entre
+  key-frames (cuadros claves): sí, luego de estar pensando un largo
+  rato, esto hace muy complicada la edición de la animación (así la
+  "elegante interpolación spline" fue eliminada).
+- El editor de sprites fue optimizado para ser más rápido al mover el
+  scroll.
+- El Editor de Película (The Film Editor) está casi listo para
+  controlar capas y cuadros.
+- Arreglados los filtros usando máscaras con capas desplazadas.
+- Soporte para aplicar filtros a varias cuadros/capas al mismo tiempo.
+- Diferentes disposiciones de la pantalla fueron agregadas en main.jid
+  (mire FAQ.txt para saber como cambiar entre ellas).
+- La barra de herramientas está devuelta!
+
+0.2
+---
+
+- Arreglados varios bugs.
+- Soporte opcional para archivos JPEG con la librería JPGalleg 2.0.
+- Agregados modos de dibujado: Opaque (opaco/normal), Glass
+  (vidrio/transparente), Semi (patrón).
+- Agregados los tipos de brochas: Circle (círculo), Square (cuadrado),
+  Line (línea).
+- Implementado un sistema de "paleta-falsa" para hacer al GUI
+  utilizable con cualquier paleta de colores (principalmente para
+  evitar las situaciones de "pantalla negra" al abrir sprites con
+  paletas "feas").
+- El editor de la paleta de colores tiene mejoras (como la posibilidad
+  de mover los colores seleccionados).
+- El archivo "menus" cambió un poco.  Algunos atajos del teclado se
+  modificaron (y otro nuevos se agregaron), puede verlos en el archivo
+  "docs/QuickHelp.html".  De todos modos, intenté dejar la
+  compatibilidad con los comandos más usados.
+- Soporte completo de scripts con Lua-5.0.  Los sprites y el GUI son
+  controlables desde los mismos scripts, para darle una idea, varias
+  acciones en los menús están programadas directamente con scripts.
+- Control de selección completo (regiones de máscara).  Puede
+  seleccionar areas irregulares (agregar, substraer, cruzar, y
+  seleccionar por color), guardar y cargarlas en el viejo formato .MSK
+  del Animator Pro.
+- Soporte para editores multiples.  Ahora puede editar una imágen con
+  zoom y ver los resultados en otros editores (actualizados en tiempo
+  real).  - Nuevo núcleo de para controlar gráficos.  Todo lo
+  relacionado a sprite/imágenes/capas/propiedades/key fue
+  reprogramado.  El cambio más importante, se hizo al nivel de
+  propiedad/keyframes (cada propiedad puede tener interpolación lineal
+  o con curvas beziers, además de una bandera de finalización de la
+  curva para hacer movimientos circulares o patrones de movimientos).
+  - Nuevo GUI.  Tanto los gráficos como el código interno fueron
+  reestructurados completamente, hice una nueva librería de GUI:
+  Jinete.
+
+0.1.2
+-----
+
+- Nuevo efecto RLE Gaussian Blur (desde el código de The GIMP).
+- Los modos de mezcla (blender modes) están devuelta: Normal,
+  Multiply, Screen, Overlay, Hard Light, Darken, Lighten, Addition,
+  Subtract, Difference, Hue, Saturation, Color, Luminosity.
+- Mejor GUI: con colores, ahora debería de ser menos aburrido :-)
+- Agregado un diálogo para seleccionar *cualquier* modo de video
+  gráfico (esto podría ser útil para modos de video con ventanas).
+- Nuevamente se volvió a los makefiles al estilo Allegro. Bueno,
+  bueno, el estilo GNU fue el peor cambio en ASE, pero ahora está
+  arreglado :-)
+- Eliminada la capacidad de cargar archivos .DLL o .so de
+  plug-ins. Luego de semanas pensándolo, decidí por sacar esta
+  característica ya que es muy complicado de hacer un buen sistema
+  para agregar nuevos plug-ins con la implementación del menú
+  actual. La mayoría de usuarios son solo "usuarios" y no copiarán el
+  plug-in y modificarán luego el archivo "menus" para agregar el
+  script que llame a la acción del plug-in. Además, esto me salva de
+  miles de dolores de cabezas :-)
+- Agregada la aplicación de filtros multiples: Ahora, se puede aplicar
+  los efectos a cada capa, a cada cuadro de animación, o ambos.
+- Agregado la lista de archivos usados recientemente ("Recent Files").
+- Nuevas rutinas en los scripts para manejar "paths" (rutas).
+- Nuevo tipo de selección: "shrink", para encoger la selección a los
+  límites de la capa bitmap actual.
+- Nueva acción "trim_sprite".
+
+0.1.0
+-----
+
+- Eliminada la herramienta `move' para mover capas (era redundante).
+- Nueva interface para cargar Plug-Ins en forma dinámica (DLL, .so).
+- Nuevo soporte completo para cargar/guardar archivos JPEG (RGB/grayscale):
+  a través de la Independent JPEG Group's JPEG Library.
+- Nuevas acciones:
+  + trim_layer_bitmap: recorta la capa actual por los límites de la selección.
+  + merge_down: para mezclar la capa activa con la próxima.
+  + make_undo_animation: para crear una animación desde la operaciones
+    para deshacer (para ver la progresión del gráfico).
+  + undo_history: para deshacer/rehacer varias operaciones a la vez.
+  + color_curve: para hacer efectos de conversión de color pixel por pixel.
+- Mejorado el comando `Reemplazar Color' (con `tolerancia' y `vista previa').
+- Una nueva barra-de-capas optimizada, para manejar sobre todo
+  las propiedades y los cuadros claves.
+- Varias cosas reescritas a Plug-Ins:
+  + los formatos de archivos,
+  + las acciones de los menús (también, ahora estas acciones pueden ser
+    utilizadas desde los "guiones" o "scripts").
+- Reemplazado el viejo sistema de "profundidad de color" por el nuevo
+  "tipo de imagen". Desde ahora, una imagen puede ser:
+  RGB (rojo, verde, azul), Grayscale (escala de grises), o Indexed
+  (256 colores).
+- Nueva Libreria ASE, con un nuevo diseño para manejar:
+  imágenes, capas, bitmaps, propiedades, cuadros claves, etc.
+- Código fuente al estilo GNU: con configure.in, Makefile.am, etc.
+
+0.0.7
+-----
+
+- Nuevas rutinas para "guionado" (script): request(), apply_filter(),
+  load_sprite(), y save_sprite().
+- Soporte para cargar archivos FLI/FLC y guardar FLC. Sí! Ahora con ASE
+  puede hacer animaciones FLC con un buen rendimiento de compresión.
+- Agregada la posibilidad de cargar/guardar secuencias de bitmaps:
+  como por ejemplo ani00.pcx, ani01.pcx, ani02.pcx, etc.
+- Más funcionalidad para `deshacer'. Reescribí todo el sistem de `undo'
+  por completo.
+- Nueva herramienta de selección rectangular. Ahora puede cortar, copiar,
+  pegar, y borrar.
+- Nueva compresión RLE para 8 bpp en los archivos .ase.
+- Soporte para cargar ficheros .ase de las versiones `0.0.6' y
+  `0.0.7 CVS (fases importante)': Le recomiendo que actualice todos sus
+  archivos .ase a la nueva versión `0.0.7' release.
+- Nuevas propiedades para los cuadros claves (keyframes): ahora cada keyframe
+  tiene su propia posición y valor alpha, con esto puede hacer animaciones de
+  objetos moviendo sólo los keyframes (todos los cuadros intermedios serán
+  calculados automáticamente).
+- Ahora el programa recuerda la configuración (a través de `ase.cfg').
+- Agregado un nuevo modo para dibujar "mosaicado" (tiled).
+- Nuevo modo de edición en pantalla completa. Con la barra de capas
+  (layer-bar) a la que se le puede cambiar el tamaño.
+- Agregada la opción para dibujar un cuadro previo en modo transparente.
+- Eliminada la propiedad de `fondo' de las capas: desde ahora, una capa
+  será transparente siempre. Con esto son arreglados una tonelada de problemas
+  con las rutinas para cargar/guardar archivos de las versiones anteriores.
+- Nuevo comando `reload_menus' (para recargar los menús).

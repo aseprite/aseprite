@@ -1,0 +1,38 @@
+<!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
+<!-- Copyright (C) 2001-2005 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text=_("New Image Layer") name="new_layer">
+  <box vertical>
+    <box horizontal>
+      <box vertical homogeneous>
+        <label text=_("Name:") />
+        <label text=_("Width:") />
+        <label text=_("Height:") />
+      </box>
+      <box vertical homogeneous>
+        <entry maxsize=256 text=_("New Layer") name="name" />
+        <entry maxsize=4 name="width" />
+        <entry maxsize=4 name="height" />
+      </box>
+    </box>
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>
+
+<window text=_("New Layer Set") name="new_layer_set">
+  <box vertical>
+    <box horizontal>
+      <label text=_("Name:") />
+      <entry maxsize=256 text=_("New Set") name="name" />
+    </box>
+    <box horizontal homogeneous>
+      <button text=_("&OK") name="ok" magnetic />
+      <button text=_("&Cancel") />
+    </box>
+  </box>
+</window>
