@@ -1,0 +1,15 @@
+This is the LGPL'd component of libart. All functions needed for
+running the Gnome canvas, and for printing support, will be going in
+here. The GPL'd component will be getting various enhanced functions
+for specific applications.
+
+Libart is free software. It is also for sale. For information about
+licensing libart, please contact Raph Levien
+<raph@acm.org>. Contributions to the codebase are also very welcome,
+but the copyright must be assigned in writing to preserve the
+licensing flexibility.
+
+
+For more information about libart, see the web page:
+
+   http://www.levien.com/libart/
