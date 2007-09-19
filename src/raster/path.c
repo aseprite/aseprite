@@ -232,7 +232,7 @@ typedef struct _ArtBitmapSVPData ArtBitmapSVPData;
 struct _ArtBitmapSVPData
 {
   Image *image;
-  void *address;
+  unsigned char *address;
   int shift;
   int x0, x1;
   int color;
@@ -315,7 +315,7 @@ static void art_image_svp_callback(void *callback_data, int y, int start,
       (*data->hline) (data->image, x0, y, x1-1, color, g);
   }
 
-  ((unsigned char *)data->address) += data->image->w << data->shift;
+  data->address += data->image->w << data->shift;
 }
 
 /**
