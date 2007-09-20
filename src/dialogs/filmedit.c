@@ -634,7 +634,7 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	/* show the dialog to change the frlen (frame duration time)? */
 	if (msg->mouse.y < FRMSIZE) {
 	  jwidget_release_mouse (widget);
-	  GUI_FrameLength(current_sprite->frpos);
+	  dialogs_frame_length(current_sprite->frpos);
 	  jwidget_dirty(widget);
 	  return TRUE;
 	}

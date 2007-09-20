@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ static JWidget check_preview, preview;
 static bool hooked_msg_proc (JWidget widget, JMessage msg);
 static void make_preview (void);
 
-void GUI_ColorCurve (void)
+void dialogs_color_curve(void)
 {
   JWidget window, button_ok;
   JWidget view_curve, curve_editor;

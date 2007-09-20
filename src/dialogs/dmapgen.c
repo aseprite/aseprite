@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ static int change_hook (JWidget widget, int user_data);
 static JWidget image_viewer_new (Image *image);
 static bool image_viewer_msg_proc (JWidget widget, JMessage msg);
 
-void GUI_MapGen (void)
+void dialogs_mapgen(void)
 {
   JWidget window, view_map, check_tiled, button_ok;
   Sprite *sprite, *old_sprite = current_sprite;

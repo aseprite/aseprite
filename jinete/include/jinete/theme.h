@@ -1,5 +1,5 @@
 /* jinete - a GUI library
- * Copyright (C) 2003-2005 by David A. Capello
+ * Copyright (C) 2003-2005, 2007 by David A. Capello
  *
  * Jinete is gift-ware.
  */
@@ -12,6 +12,7 @@
 JI_BEGIN_DECLS
 
 struct FONT;
+struct BITMAP;
 
 struct jtheme
 {
@@ -25,7 +26,7 @@ struct jtheme
   int scrollbar_size;
   void (*destroy)(void);
   void (*regen)(void);
-  void (*set_cursor)(int type);
+  struct BITMAP *(*set_cursor)(int type, int *focus_x, int *focus_y);
   void (*init_widget)(JWidget widget);
   JRegion (*get_window_mask)(JWidget widget);
   void (*map_decorative_widget)(JWidget widget);

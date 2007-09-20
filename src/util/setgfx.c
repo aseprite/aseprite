@@ -124,22 +124,19 @@ int set_gfx(const char *_card, int w, int h, int depth)
   else {
     gui_setup_screen();
 
-    /* set the configuration */
-    save_gui_config();
-
     /* set to a black palette */
     set_current_palette(black_palette, TRUE);
 
     /* restore palette all screen stuff */
     app_refresh_screen();
   }
-
+  
   /* setup mouse */
-  show_mouse(ji_screen);
+/*   show_mouse(ji_screen); */
   _setup_mouse_speed();
 
   /* redraw top window */
-  if(app_get_top_window()) {
+  if (app_get_top_window()) {
     jwindow_remap(app_get_top_window());
     jmanager_refresh_screen();
   }

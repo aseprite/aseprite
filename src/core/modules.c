@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@
 typedef struct Module
 {
   const char *name;
-  int (*init) (void);
-  void (*exit) (void);
+  int (*init)(void);
+  void (*exit)(void);
   int reqs;
   int installed;
 } Module;
@@ -70,16 +70,16 @@ static Module module[] =
   DEF_MODULE(editors,		REQUIRE_INTERFACE),
 };
 
-static int modules = sizeof (module) / sizeof (Module);
+static int modules = sizeof(module) / sizeof(Module);
 
-int modules_init (int requirements)
+int modules_init(int requirements)
 {
   int c;
 
   for (c=0; c<modules; c++)
     if (module[c].reqs & requirements) {
-      PRINTF ("Installing module: %s\n", module[c].name);
-      if ((*module[c].init) () < 0)
+      PRINTF("Installing module: %s\n", module[c].name);
+      if ((*module[c].init)() < 0)
 	return -1;
       module[c].installed = TRUE;
     }
@@ -87,14 +87,14 @@ int modules_init (int requirements)
   return 0;
 }
 
-void modules_exit (void)
+void modules_exit(void)
 {
   int c;
 
   for (c=modules-1; c>=0; c--)
     if (module[c].installed) {
-      PRINTF ("Unstalling module: %s\n", module[c].name);
-      (*module[c].exit) ();
+      PRINTF("Unstalling module: %s\n", module[c].name);
+      (*module[c].exit)();
       module[c].installed = FALSE;
     }
 }

@@ -62,7 +62,7 @@ static int set_grid_button_select_hook(JWidget widget, int user_data);
 static int cursor_button_change_hook(JWidget widget, int user_data);
 static int onionskin_check_change_hook(JWidget widget, int user_data);
 
-void GUI_ToolsConfiguration(void)
+void dialogs_tools_configuration(void)
 {
   JWidget filled, tiled, use_grid, view_grid, set_grid;
   JWidget brush_size, brush_angle, glass_dirty;

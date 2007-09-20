@@ -20,8 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include <allegro/color.h>
-#include <allegro/file.h>
+#include <allegro.h>
 
 #include "raster/image.h"
 
@@ -30,7 +29,13 @@
 /* loads a COL file (Animator and Animator Pro format) */
 RGB *load_col_file(const char *filename)
 {
+#if (MAKE_VERSION(4, 2, 0) < MAKE_VERSION(ALLEGRO_VERSION,		\
+					  ALLEGRO_SUB_VERSION,		\
+					  ALLEGRO_WIP_VERSION))
+  int size = file_size(filename);
+#else
   int size = file_size_ex(filename);
+#endif
   int pro = (size == 768)? FALSE: TRUE;	/* is Animator Pro format? */
   div_t d = div(size-8, 3);
   RGB *palette = NULL;

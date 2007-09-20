@@ -14,6 +14,6 @@ struct _bindings_constants {
 
 extern struct _bindings_constants bindings_constants[];
 
-void register_bindings (lua_State *L);
+void register_bindings(lua_State *L);
 
 #endif /* SCRIPT_GENBINDS_H */

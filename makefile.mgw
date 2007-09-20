@@ -16,11 +16,12 @@ endif
 
 CFLAGS =
 # LFLAGS = -Wl,--subsystem,windows
-LFLAGS = -mconsole
-# LFLAGS = -mwindows
+# LFLAGS = -mconsole
+LFLAGS = -mwindows
 #LFLAGS_LAST = -lalleg -lmoldname-msvc
 # LFLAGS_LAST = -lalleg -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lshlwapi -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32 -lodbc32 -lcomctl32 -lsecur32 -lmsimg32
-LFLAGS_LAST = -lalleg
+# LFLAGS_LAST = -lalleg
+LFLAGS_LAST = -lalld
 WITHICON = 1
 
 ######################################################################

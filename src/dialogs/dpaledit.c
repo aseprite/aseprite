@@ -63,7 +63,7 @@ static int palette_editor_change_signal (JWidget widget, int user_data);
 
 static void set_new_palette (RGB *palette);
 
-void show_palette_editor(void)
+void dialogs_palette_editor(void)
 {
   JWidget window, color_viewer_box, palette_editor_view;
   JWidget slider_columns, button_ok;

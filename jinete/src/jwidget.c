@@ -28,13 +28,13 @@ int ji_register_widget_type (void)
 /* creates a new widget with an unique JID */
 JWidget jwidget_new (int type)
 {
-  JWidget widget = _ji_get_new_widget ();
+  JWidget widget = _ji_get_new_widget();
   if (!widget)
     return NULL;
 
   widget->type = type;
   widget->name = NULL;
-  widget->rc = jrect_new (0, 0, 0, 0);
+  widget->rc = jrect_new(0, 0, 0, 0);
   widget->border_width.l = 0;
   widget->border_width.t = 0;
   widget->border_width.r = 0;
@@ -828,6 +828,8 @@ void jwidget_get_texticon_info (JWidget widget,
   int box_x, box_y, box_w, box_h, icon_x, icon_y;
   int text_x, text_y, text_w, text_h;
 
+  text_x = text_y = 0;
+
   /* size of the text */
   if (widget->text) {
     text_w = jwidget_get_text_length (widget);
@@ -941,18 +943,18 @@ void jwidget_set_rect (JWidget widget, JRect rect)
   jmessage_free (msg);
 }
 
-void jwidget_set_static_size (JWidget widget, int w, int h)
+void jwidget_set_static_size(JWidget widget, int w, int h)
 {
   widget->static_w = w;
   widget->static_h = h;
 }
 
-void jwidget_set_bg_color (JWidget widget, int color)
+void jwidget_set_bg_color(JWidget widget, int color)
 {
   widget->bg_color = color;
 }
 
-void jwidget_set_theme (JWidget widget, JTheme theme)
+void jwidget_set_theme(JWidget widget, JTheme theme)
 {
   widget->theme = theme;
   /* XXX mmhhh... maybe some JStyle in JWidget should be great */
@@ -1062,11 +1064,11 @@ void jwidget_invalidate_region(JWidget widget, const JRegion region)
 }
 
 void jwidget_scroll(JWidget widget, int dx, int dy, const JRect rect,
-		      JRegion update_region)
+		    JRegion update_region)
 {
   JRegion reg1 = jwidget_get_drawable_region(widget,
-					       JI_GDR_CUTTOPWINDOWS |
-					       JI_GDR_USECHILDAREA);
+					     JI_GDR_CUTTOPWINDOWS |
+					     JI_GDR_USECHILDAREA);
   JRegion reg2 = jregion_new(rect, 0);
 
   jregion_intersect(reg1, reg1, reg2);
@@ -1202,25 +1204,25 @@ void jwidget_capture_mouse(JWidget widget)
   if (!jmanager_get_capture()) {
     jmanager_set_capture(widget);
 
-    if (jmanager_get_capture () == widget)
+    if (jmanager_get_capture() == widget)
       widget->flags &= ~JI_HARDCAPTURE;
   }
 }
 
-void jwidget_hard_capture_mouse (JWidget widget)
+void jwidget_hard_capture_mouse(JWidget widget)
 {
-  if (!jmanager_get_capture ()) {
-    jmanager_set_capture (widget);
+  if (!jmanager_get_capture()) {
+    jmanager_set_capture(widget);
 
-    if (jmanager_get_capture () == widget)
+    if (jmanager_get_capture() == widget)
       widget->flags |= JI_HARDCAPTURE;
   }
 }
 
-void jwidget_release_mouse (JWidget widget)
+void jwidget_release_mouse(JWidget widget)
 {
-  if (jmanager_get_capture () == widget) {
-    jmanager_free_capture ();
+  if (jmanager_get_capture() == widget) {
+    jmanager_free_capture();
 
     widget->flags &= ~JI_HARDCAPTURE;
   }
@@ -1351,7 +1353,7 @@ static bool widget_msg_proc (JWidget widget, JMessage msg)
       }
 #else
       if (!(widget->flags & JI_HIDDEN)) /* is visible? */
-	jwidget_invalidate_region (widget, msg->drawrgn.region);
+	jwidget_invalidate_region(widget, msg->drawrgn.region);
 #endif
       return TRUE;
 

@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -323,6 +323,9 @@ static int save_GIF(Sprite *sprite)
     gif->frames[i].disposal_method = 2;
     gif->frames[i].transparent_index = 0;
   }
+
+  /* avoid compilation warnings */
+  x1 = y1 = x2 = y2 = 0;
 
   for (i = 0; i < sprite->frames; i++) {
     /* frame palette */

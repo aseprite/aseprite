@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #ifndef DIALOGS_OPTIONS_H
 #define DIALOGS_OPTIONS_H
 
-void GUI_SelectLanguage (bool force);
-void GUI_Options (void);
+void dialogs_select_language(bool force);
+void dialogs_options(void);
 
-void _setup_mouse_speed (void);
+void _setup_mouse_speed(void);
 
 #endif /* DIALOGS_OPTIONS_H */
 

@@ -21,10 +21,6 @@
 
 #include "jinete/base.h"
 
-#define DEFAULT_GFX_WIDTH	320
-#define DEFAULT_GFX_HEIGHT	240
-#define DEFAULT_GFX_DEPTH	8
-
 #define HOOK(widget, signal, signal_handler, user_data)			\
   hook_signal ((widget), (signal), (signal_handler), (int)(user_data))
 
@@ -33,12 +29,9 @@ struct Sprite;
 int init_module_gui(void);
 void exit_module_gui(void);
 
-void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen);
-void save_gui_config(void);
-
 void GUI_Refresh(struct Sprite *sprite);
 
-void run_gui(void);
+void gui_run(void);
 void gui_feedback(void);
 void gui_setup_screen(void);
 

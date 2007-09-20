@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 #ifndef CORE_SHUTDOWN_H
 #define CORE_SHUTDOWN_H
 
-void init_shutdown_handler (void);
-void remove_shutdown_handler (void);
+void init_shutdown_handler(void);
+void remove_shutdown_handler(void);
 
 #endif /* CORE_SHUTDOWN_H */
 

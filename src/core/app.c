@@ -171,79 +171,79 @@ void app_loop(void)
     PRINTF("GUI mode\n");
 
     /* setup the GUI screen */
-    ji_mouse_set_cursor (JI_CURSOR_NORMAL);
-    jmanager_refresh_screen ();
+    ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+    jmanager_refresh_screen();
 
     /* load main window */
-    top_window = load_widget ("main.jid", "main_window");
+    top_window = load_widget("main.jid", "main_window");
     if (!top_window)
       return;
 
-    box_menu_bar = jwidget_find_name (top_window, "menu_bar");
-    box_editors = jwidget_find_name (top_window, "editor");
-    box_color_bar = jwidget_find_name (top_window, "color_bar");
-    box_tool_bar = jwidget_find_name (top_window, "tool_bar");
-    box_status_bar = jwidget_find_name (top_window, "status_bar");
+    box_menu_bar = jwidget_find_name(top_window, "menu_bar");
+    box_editors = jwidget_find_name(top_window, "editor");
+    box_color_bar = jwidget_find_name(top_window, "color_bar");
+    box_tool_bar = jwidget_find_name(top_window, "tool_bar");
+    box_status_bar = jwidget_find_name(top_window, "status_bar");
 
-    menu_bar = jmenubar_new ();
-    status_bar = status_bar_new ();
-    color_bar = color_bar_new (box_color_bar->align);
-    tool_bar = tool_bar_new (box_tool_bar->align);
-    view = editor_view_new ();
-    editor = create_new_editor ();
+    menu_bar = jmenubar_new();
+    status_bar = status_bar_new();
+    color_bar = color_bar_new(box_color_bar->align);
+    tool_bar = tool_bar_new(box_tool_bar->align);
+    view = editor_view_new();
+    editor = create_new_editor();
 
     /* configure all widgets to expansives */
-    jwidget_expansive (menu_bar, TRUE);
-    jwidget_expansive (status_bar, TRUE);
-    jwidget_expansive (color_bar, TRUE);
-    jwidget_expansive (tool_bar, TRUE);
-    jwidget_expansive (view, TRUE);
+    jwidget_expansive(menu_bar, TRUE);
+    jwidget_expansive(status_bar, TRUE);
+    jwidget_expansive(color_bar, TRUE);
+    jwidget_expansive(tool_bar, TRUE);
+    jwidget_expansive(view, TRUE);
 
     /* prepare the first editor */
-    jview_attach (view, editor);
+    jview_attach(view, editor);
 
     /* setup the menus */
-    jmenubar_set_menu (menu_bar, get_root_menu ());
+    jmenubar_set_menu(menu_bar, get_root_menu());
 
     /* start text of status bar */
-    app_default_status_bar_message ();
+    app_default_status_bar_message();
 
     /* add the widgets in the boxes */
-    jwidget_add_child (box_menu_bar, menu_bar);
-    jwidget_add_child (box_editors, view);
-    jwidget_add_child (box_color_bar, color_bar);
-    jwidget_add_child (box_tool_bar, tool_bar);
-    jwidget_add_child (box_status_bar, status_bar);
+    jwidget_add_child(box_menu_bar, menu_bar);
+    jwidget_add_child(box_editors, view);
+    jwidget_add_child(box_color_bar, color_bar);
+    jwidget_add_child(box_tool_bar, tool_bar);
+    jwidget_add_child(box_status_bar, status_bar);
 
     /* layout */
-    if (!get_config_bool ("Layout", "MenuBar", TRUE)) jwidget_hide (menu_bar);
-    if (!get_config_bool ("Layout", "StatusBar", TRUE)) jwidget_hide (status_bar);
-    if (!get_config_bool ("Layout", "ColorBar", TRUE)) jwidget_hide (color_bar);
-    if (!get_config_bool ("Layout", "ToolBar", TRUE)) jwidget_hide (tool_bar);
+    if (!get_config_bool("Layout", "MenuBar", TRUE)) jwidget_hide(menu_bar);
+    if (!get_config_bool("Layout", "StatusBar", TRUE)) jwidget_hide(status_bar);
+    if (!get_config_bool("Layout", "ColorBar", TRUE)) jwidget_hide(color_bar);
+    if (!get_config_bool("Layout", "ToolBar", TRUE)) jwidget_hide(tool_bar);
 
     /* prepare the window */
-    jwindow_remap (top_window);
+    jwindow_remap(top_window);
 
     /* rebuild menus */
-    app_realloc_sprite_list ();
-    app_realloc_recent_list ();
+    app_realloc_sprite_list();
+    app_realloc_recent_list();
 
     /* set current editor */
-    set_current_editor (editor);
+    set_current_editor(editor);
 
     /* open the window */
-    jwindow_open (top_window);
+    jwindow_open(top_window);
 
     /* refresh the screen */
-    jmanager_refresh_screen ();
+    jmanager_refresh_screen();
   }
 
   /* load all startup scripts */
-  load_all_scripts ();
+  load_all_scripts();
 
   /* set background mode for non-GUI modes */
   if (!(ase_mode & MODE_GUI))
-    set_display_switch_mode (SWITCH_BACKAMNESIA);
+    set_display_switch_mode(SWITCH_BACKAMNESIA);
 
   /* procress commands */
   PRINTF("Processing commands...\n");
@@ -257,36 +257,36 @@ void app_loop(void)
 	Sprite *sprite;
 
 	/* load the sprite */
-	sprite = sprite_load (command->data);
+	sprite = sprite_load(command->data);
 	if (!sprite) {
 	  /* error */
 	  if (ase_mode & MODE_GUI)
-	    jalert (_("Error<<Error loading file \"%s\"||&Close"), command->data);
+	    jalert(_("Error<<Error loading file \"%s\"||&Close"), command->data);
 	  else
-	    user_printf (_("Error loading file \"%s\"\n"), command->data);
+	    user_printf(_("Error loading file \"%s\"\n"), command->data);
 	}
 	else {
 	  /* mount and select the sprite */
-	  sprite_mount (sprite);
-	  set_current_sprite (sprite);
+	  sprite_mount(sprite);
+	  set_current_sprite(sprite);
 
 	  if (ase_mode & MODE_GUI) {
 	    /* show it */
-	    set_sprite_in_more_reliable_editor (get_first_sprite ());
+	    set_sprite_in_more_reliable_editor(get_first_sprite());
 
 	    /* recent file */
-	    recent_file (command->data);
+	    recent_file(command->data);
 	  }
 	}
 	break;
       }
 
       case DO_SCRIPT_FILE:
-	do_script_file (command->data);
+	do_script_file(command->data);
 	break;
 
       case DO_SCRIPT_EXPR:
-	do_script_expr (command->data);
+	do_script_expr(command->data);
 	break;
     }
     command_free(command);
@@ -301,13 +301,13 @@ void app_loop(void)
   /* run the GUI */
   else if (ase_mode & MODE_GUI) {
     /* select language */
-    GUI_SelectLanguage(FALSE);
+    dialogs_select_language(FALSE);
 
     /* show tips? */
     if (!current_sprite)
-      GUI_Tips(FALSE);
+      dialogs_tips(FALSE);
 
-    run_gui();
+    gui_run();
   }
 
   /* destroy GUI widgets */
@@ -350,8 +350,8 @@ void app_exit(void)
   /* final copyright message */
   if (ase_mode & MODE_GUI) {
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    printf(_("ASE is copyright (C) 2001-2005, 2007 by David A. Capello\n"
-	     "Report bugs to <%s>.\n"), BUGREPORT);
+    printf("ASE - " COPYRIGHT "\n%s <%s>.\n",
+	   _("Report bugs to"), BUGREPORT);
   }
 
   intl_exit();
@@ -675,7 +675,7 @@ static void usage(int status)
     /* copyright */
     console_printf
       ("ase %s -- allegro-sprite-editor, %s\n"
-       "Copyright (C) 2001-2005, 2007 David A. Capello\n\n",
+       COPYRIGHT "\n\n",
        VERSION, _("The Ultimate Sprites Factory"));
 
     /* usage */

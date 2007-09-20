@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* #define GUI_DOUBLE_BUFFERED */
-
 #include "config.h"
 
 #ifndef USE_PRECOMPILED_HEADER
@@ -51,15 +49,30 @@
 
 #endif
 
+#define GUI_DEFAULT_WIDTH	640
+#define GUI_DEFAULT_HEIGHT	480
+#define GUI_DEFAULT_DEPTH	8
+#define GUI_DEFAULT_FULLSCREEN	FALSE
+#define GUI_DEFAULT_SCALE	2
+
 #define REBUILD_LOCK		1
 #define REBUILD_ROOT_MENU	2
 #define REBUILD_SPRITE_LIST	4
 #define REBUILD_RECENT_LIST	8
+#define REBUILD_FULLREFRESH	16
 
 static JWidget manager = NULL;
 
 static int next_idle_flags = 0;
 static JList icon_buttons;
+
+/* default GUI screen configuration */
+static bool double_buffering;
+static int screen_scaling;
+
+/* load & save graphics configuration */
+static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen);
+static void save_gui_config(void);
 
 static bool button_with_icon_msg_proc(JWidget widget, JMessage msg);
 static bool manager_msg_proc(JWidget widget, JMessage msg);
@@ -71,7 +84,7 @@ static void regen_theme_and_fixup_icons(void);
  */
 static void display_switch_in_callback()
 {
-  GUI_Refresh(current_sprite);
+  next_idle_flags |= REBUILD_FULLREFRESH;
 }
 
 /**
@@ -111,28 +124,37 @@ int init_module_gui(void)
   autodetect = fullscreen ? GFX_AUTODETECT_FULLSCREEN:
 			    GFX_AUTODETECT_WINDOWED;
 
-  if (!w) w = DEFAULT_GFX_WIDTH;
-  if (!h) h = DEFAULT_GFX_HEIGHT;
+  if (!w) w = GUI_DEFAULT_WIDTH;
+  if (!h) h = GUI_DEFAULT_HEIGHT;
   if (!bpp) {
     bpp = desktop_color_depth();
     if (!bpp)
-      bpp = DEFAULT_GFX_DEPTH;
+      bpp = GUI_DEFAULT_DEPTH;
   }
 
-  /* try original mode */
-  set_color_depth(bpp);
-  if (set_gfx_mode(autodetect, w, h, 0, 0) < 0) {
-    /* try the same resolution but with 8 bpp */
-    set_color_depth(bpp = 8);
+  while (screen_scaling > 0) {
+    /* try original mode */
+    set_color_depth(bpp);
     if (set_gfx_mode(autodetect, w, h, 0, 0) < 0) {
-      /* try 320x200 in 8 bpp */
-      if (set_gfx_mode(autodetect, w = 320, h = 200, 0, 0) < 0) {
-	user_printf(_("Error setting graphics mode\n%s\n"
-		      "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
-	return -1;
-      }
-    }
+      /* try the same resolution but with 8 bpp */
+      set_color_depth(bpp = 8);
+      if (set_gfx_mode(autodetect, w, h, 0, 0) < 0) {
+	/* try 320x200 in 8 bpp */
+	if (set_gfx_mode(autodetect, w = 320, h = 200, 0, 0) < 0) {
+	  if (screen_scaling == 1) {
+	    user_printf(_("Error setting graphics mode\n%s\n"
+			  "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
+	    return -1;
+	  }
+	  else
+	    --screen_scaling;
+	} else break;
+      } else break;
+    } else break;
   }
+
+  /* double buffering is required when screen scaling is used */
+  double_buffering = (screen_scaling > 1);
 
   /* create the default-manager */
   manager = jmanager_new();
@@ -171,12 +193,12 @@ int init_module_gui(void)
 
 void exit_module_gui(void)
 {
-#ifdef GUI_DOUBLE_BUFFERED
-  BITMAP *old_bmp = ji_screen;
-  ji_set_screen(screen);
-  if (old_bmp && old_bmp != screen)
-    destroy_bitmap(old_bmp);
-#endif
+  if (double_buffering) {
+    BITMAP *old_bmp = ji_screen;
+    ji_set_screen(screen);
+    if (old_bmp && old_bmp != screen)
+      destroy_bitmap(old_bmp);
+  }
 
   jlist_free(icon_buttons);
 
@@ -190,20 +212,23 @@ void exit_module_gui(void)
   remove_timer();
 }
 
-void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
+static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
 {
   *w = get_config_int("GfxMode", "Width", 0);
   *h = get_config_int("GfxMode", "Height", 0);
   *bpp = get_config_int("GfxMode", "Depth", 0);
-  *fullscreen = get_config_bool("GfxMode", "FullScreen", TRUE);
+  *fullscreen = get_config_bool("GfxMode", "FullScreen", GUI_DEFAULT_FULLSCREEN);
+  screen_scaling = get_config_int("GfxMode", "Scale", GUI_DEFAULT_SCALE);
+  screen_scaling = MAX(1, screen_scaling);
 }
 
-void save_gui_config(void)
+static void save_gui_config(void)
 {
-  set_config_int("GfxMode", "Width", JI_SCREEN_W);
-  set_config_int("GfxMode", "Height", JI_SCREEN_H);
+  set_config_int("GfxMode", "Width", SCREEN_W);
+  set_config_int("GfxMode", "Height", SCREEN_H);
   set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
   set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? FALSE: TRUE);
+  set_config_int("GfxMode", "Scale", screen_scaling);
 }
 
 void GUI_Refresh(Sprite *sprite)
@@ -223,9 +248,9 @@ void GUI_Refresh(Sprite *sprite)
   }
 }
 
-void run_gui(void)
+void gui_run(void)
 {
-  jmanager_run (manager);
+  jmanager_run(manager);
 }
 
 void gui_feedback(void)
@@ -249,21 +274,30 @@ void gui_feedback(void)
       next_idle_flags ^= REBUILD_RECENT_LIST;
       app_realloc_recent_list();
     }
+
+    if (next_idle_flags & REBUILD_FULLREFRESH) {
+      next_idle_flags ^= REBUILD_FULLREFRESH;
+      GUI_Refresh(current_sprite);
+    }
   }
 
   /* record file if is necessary */
   rec_screen_poll();
 
-#ifdef GUI_DOUBLE_BUFFERED
-  if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
-    blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+  /* double buffering? */
+  if (double_buffering) {
+    jmanager_dispatch_draw_messages();
+    ji_mouse_draw_cursor();
+
+    if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
+      blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    }
+    else {
+      stretch_blit(ji_screen, screen,
+		   0, 0, ji_screen->w, ji_screen->h,
+		   0, 0, SCREEN_W, SCREEN_H);
+    }
   }
-  else {
-    stretch_blit(ji_screen, screen,
-		 0, 0, ji_screen->w, ji_screen->h,
-		 0, 0, SCREEN_W, SCREEN_H);
-  }
-#endif
 
   /* don't eat CPU... rest some time */
   rest(1);
@@ -271,14 +305,19 @@ void gui_feedback(void)
 
 void gui_setup_screen(void)
 {
-#ifdef GUI_DOUBLE_BUFFERED
-  BITMAP *old_bmp = ji_screen;
-  ji_set_screen(create_bitmap(SCREEN_W, SCREEN_H));
-  if (old_bmp && old_bmp != screen)
-    destroy_bitmap(old_bmp);
-#else
-  ji_set_screen(screen);
-#endif
+  if (double_buffering) {
+    BITMAP *old_bmp = ji_screen;
+    ji_set_screen(create_bitmap(SCREEN_W / screen_scaling,
+				SCREEN_H / screen_scaling));
+    if (old_bmp && old_bmp != screen)
+      destroy_bitmap(old_bmp);
+  }
+  else {
+    ji_set_screen(screen);
+  }
+
+  /* set the configuration */
+  save_gui_config();
 }
 
 void reload_default_font(void)
@@ -424,7 +463,9 @@ void rebuild_recent_list(void)
 {
   next_idle_flags |= REBUILD_RECENT_LIST;
 }
+
 
+
 /**********************************************************************/
 /* hook signals */
 
@@ -494,19 +535,19 @@ bool get_widgets(JWidget window, ...)
   char *name;
   va_list ap;
 
-  va_start (ap, window);
-  while ((name = va_arg (ap, char *))) {
-    widget = va_arg (ap, JWidget *);
+  va_start(ap, window);
+  while ((name = va_arg(ap, char *))) {
+    widget = va_arg(ap, JWidget *);
     if (!widget)
       break;
 
-    *widget = jwidget_find_name (window, name);
+    *widget = jwidget_find_name(window, name);
     if (!*widget) {
-      console_printf (_("Widget %s not found.\n"), name);
+      console_printf(_("Widget %s not found.\n"), name);
       return FALSE;
     }
   }
-  va_end (ap);
+  va_end(ap);
 
   return TRUE;
 }

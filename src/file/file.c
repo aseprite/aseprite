@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,8 +51,8 @@ static struct {
 static PALETTE file_palette;
 static char file_extensions[512];
 
-static FileType *get_filetype (const char *extension);
-static int split_filename (const char *filename, char *left, char *right, int *width);
+static FileType *get_filetype(const char *extension);
+static int split_filename(const char *filename, char *left, char *right, int *width);
 
 void file_sequence_set_color(int index, int r, int g, int b)
 {
@@ -68,7 +68,7 @@ void file_sequence_get_color(int index, int *r, int *g, int *b)
   *b = file_palette[index].b;
 }
 
-Image *file_sequence_image (int imgtype, int w, int h)
+Image *file_sequence_image(int imgtype, int w, int h)
 {
   Sprite *sprite;
   Image *image;
@@ -76,20 +76,20 @@ Image *file_sequence_image (int imgtype, int w, int h)
 
   /* create the image */
   if (!file_sequence.sprite) {
-    sprite = sprite_new (imgtype, w, h);
+    sprite = sprite_new(imgtype, w, h);
     if (!sprite)
       return NULL;
 
-    layer = layer_new (imgtype);
+    layer = layer_new(imgtype);
     if (!layer) {
-      sprite_free (sprite);
+      sprite_free(sprite);
       return NULL;
     }
 
-    layer_set_name (layer, _("Background"));
+    layer_set_name(layer, _("Background"));
 
     /* add the layer */
-    layer_add_layer (sprite->set, layer);
+    layer_add_layer(sprite->set, layer);
 
     /* done */
     file_sequence.sprite = sprite;
@@ -105,13 +105,13 @@ Image *file_sequence_image (int imgtype, int w, int h)
   /* create a bitmap */
 
   if (file_sequence.last_frame) {
-    console_printf (_("Error: called two times \"file_sequence_image ()\".\n"));
+    console_printf(_("Error: called two times \"file_sequence_image ()\".\n"));
     return NULL;
   }
 
   image = image_new (imgtype, w, h);
   if (!image) {
-    console_printf (_("Not enough memory to allocate a bitmap.\n"));
+    console_printf(_("Not enough memory to allocate a bitmap.\n"));
     return NULL;
   }
 
@@ -121,17 +121,17 @@ Image *file_sequence_image (int imgtype, int w, int h)
   return image;
 }
 
-Sprite *file_sequence_sprite (void)
+Sprite *file_sequence_sprite(void)
 {
   return file_sequence.sprite;
 }
 
-Image *file_sequence_image_to_save (void)
+Image *file_sequence_image_to_save(void)
 {
   return file_sequence.image;
 }
 
-const char *get_readable_extensions (void)
+const char *get_readable_extensions(void)
 {
   int c;
 
@@ -150,7 +150,7 @@ const char *get_readable_extensions (void)
   return file_extensions;
 }
 
-const char *get_writeable_extensions (void)
+const char *get_writeable_extensions(void)
 {
   int c;
 
@@ -169,7 +169,7 @@ const char *get_writeable_extensions (void)
   return file_extensions;
 }
 
-Sprite *sprite_load (const char *filename)
+Sprite *sprite_load(const char *filename)
 {
   char extension[32];
   FileType *file;

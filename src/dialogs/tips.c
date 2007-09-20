@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ static void prev_command (JWidget widget, void *data);
 static void next_command (JWidget widget, void *data);
 static int check_signal (JWidget widget, int user_data);
 
-void GUI_Tips (bool forced)
+void dialogs_tips(bool forced)
 {
   JWidget window, vbox, hbox, box;
   JWidget button_close, button_prev, button_next;
@@ -64,7 +64,7 @@ void GUI_Tips (bool forced)
   PALETTE old_pal;
 
   /* don't show it? */
-  if (!forced && !get_config_bool ("Tips", "Show", TRUE))
+  if (!forced && !get_config_bool("Tips", "Show", TRUE))
     return;
 
   /* next page */
@@ -86,79 +86,83 @@ void GUI_Tips (bool forced)
     }
   }
 
-  window = jwindow_new ("Allegro Sprite Editor");
-  vbox = jbox_new (JI_VERTICAL);
-  hbox = jbox_new (JI_HORIZONTAL);
-  box = jbox_new (0);
-  button_close = jbutton_new (_("&Close"));
-  button_prev = jbutton_new (_("&Previous"));
-  button_next = jbutton_new (_("&Next"));
-  view = jview_new ();
-  tips = tips_new ();
-  check = jcheck_new (_("Show me it in the start up"));
+  window = jwindow_new("Allegro Sprite Editor");
+  vbox = jbox_new(JI_VERTICAL);
+  hbox = jbox_new(JI_HORIZONTAL);
+  box = jbox_new(0);
+  button_close = jbutton_new(_("&Close"));
+  button_prev = jbutton_new(_("&Previous"));
+  button_next = jbutton_new(_("&Next"));
+  view = jview_new();
+  tips = tips_new();
+  check = jcheck_new(_("Show me it in the start up"));
 
-  jbutton_add_command_data (button_prev, prev_command, tips);
-  jbutton_add_command_data (button_next, next_command, tips);
+  jwidget_set_static_size(button_close, 50, 0);
+  jwidget_set_static_size(button_prev, 50, 0);
+  jwidget_set_static_size(button_next, 50, 0);
 
-  HOOK (check, JI_SIGNAL_CHECK_CHANGE, check_signal, 0);
+  jbutton_add_command_data(button_prev, prev_command, tips);
+  jbutton_add_command_data(button_next, next_command, tips);
 
-  if (get_config_bool ("Tips", "Show", TRUE))
-    jwidget_select (check);
+  HOOK(check, JI_SIGNAL_CHECK_CHANGE, check_signal, 0);
 
-  jview_attach (view, tips);
+  if (get_config_bool("Tips", "Show", TRUE))
+    jwidget_select(check);
 
-  jwidget_expansive (view, TRUE);
-  jwidget_expansive (box, TRUE);
+  jview_attach(view, tips);
 
-  jwidget_add_child (vbox, view);
-  jwidget_add_child (hbox, button_close);
-  jwidget_add_child (box, check);
-  jwidget_add_child (hbox, box);
-  jwidget_add_child (hbox, button_prev);
-  jwidget_add_child (hbox, button_next);
-  jwidget_add_child (vbox, hbox);
-  jwidget_add_child (window, vbox);
+  jwidget_expansive(view, TRUE);
+  jwidget_expansive(box, TRUE);
+
+  jwidget_add_child(vbox, view);
+  jwidget_add_child(hbox, button_close);
+  jwidget_add_child(box, check);
+  jwidget_add_child(hbox, box);
+  jwidget_add_child(hbox, button_prev);
+  jwidget_add_child(hbox, button_next);
+  jwidget_add_child(vbox, hbox);
+  jwidget_add_child(window, vbox);
 
   if (JI_SCREEN_W > 320)
-    jwidget_set_static_size (window,
-			       MIN (400, JI_SCREEN_W-32),
-			       MIN (300, JI_SCREEN_H-32));
+    jwidget_set_static_size(window,
+			    MIN(400, JI_SCREEN_W-32),
+			    MIN(300, JI_SCREEN_H-32));
   else
-    jwidget_set_static_size (window, 282, 182);
+    jwidget_set_static_size(window, 282, 182);
 
   /* open the window */
-  jwindow_open (window);
-  jwidget_set_static_size (window, 0, 0);
+  jwindow_open(window);
+  jwidget_set_static_size(window, 0, 0);
 
   /* load first page */
-  memcpy (old_pal, current_palette, sizeof (PALETTE));
-  tips_load_page (tips);
+  memcpy(old_pal, current_palette, sizeof (PALETTE));
+  tips_load_page(tips);
 
   /* run the window */
-  jwindow_open_fg (window);
-  jwidget_free (window);
+  jwindow_open_fg(window);
+  jwidget_free(window);
 
   /* restore the palette */
-  set_current_palette (old_pal, TRUE);
-  jmanager_refresh_screen ();
+  set_current_palette(old_pal, TRUE);
+  jmanager_refresh_screen();
 }
 
 /***********************************************************************
 				Tips
  ***********************************************************************/
 
-static JWidget tips_new (void)
+static JWidget tips_new(void)
 {
-  JWidget widget = jwidget_new (tips_type ());
+  JWidget widget = jwidget_new(tips_type());
 
-  jwidget_add_hook (widget, tips_type (), tips_msg_proc, NULL);
-  jwidget_focusrest (widget, TRUE);
-  jwidget_noborders (widget);
+  jwidget_add_hook(widget, tips_type(), tips_msg_proc, NULL);
+  jwidget_focusrest(widget, TRUE);
+  jwidget_noborders(widget);
 
   return widget;
 }
 
-static int tips_type (void)
+static int tips_type(void)
 {
   static int type = 0;
   if (!type)
@@ -166,13 +170,28 @@ static int tips_type (void)
   return type;
 }
 
-static bool tips_msg_proc (JWidget widget, JMessage msg)
+static bool tips_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
     case JM_REQSIZE:
       tips_request_size (widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
+
+    case JM_WHEEL:
+      {
+	JWidget view = jwidget_get_view(widget);
+	JRect vp = jview_get_viewport_position(view);
+	int dz = ji_mouse_z(1) - ji_mouse_z(0);
+	int scroll_x, scroll_y;
+
+	jview_get_scroll(view, &scroll_x, &scroll_y);
+	jview_set_scroll(view, scroll_x, scroll_y + dz * jrect_h(vp)/3);
+
+	jrect_free(vp);
+      }
+      break;
+      
   }
 
   return FALSE;

@@ -4,11 +4,11 @@
 # Spanish menus (see menus.en for more information)
 
 - {
-  "&Tips" = always "GUI_Tips(true)" <F1> ;
-  "&Acerca de" = always "GUI_About()" ;
+  "&Tips" = always "dialogs_tips(true)" <F1> ;
+  "&Acerca de" = always "dialogs_about()" ;
   "&Refrescar" = always "app_refresh_screen()" <F5> ;
   ----
-  "&Protector de Pantalla" = always "GUI_ScreenSaver()" ;
+  "&Protector de Pantalla" = always "dialogs_screen_saver()" ;
   "Cambiar Modo &Gráfico" {
     "&Seleccionar" = always "set_gfx(\"interactive\", 0, 0, 0)" ;
     ----
@@ -24,9 +24,9 @@
   }
   ----
   "Screen Sh&ot" SCREENSHOT_ACCEL = always "screen_shot()" <F12> ;
-  "G&rabar Pantalla" = is_rec "GUI_SwitchREC()" ;
+  "G&rabar Pantalla" = is_rec "switch_recording_screen()" ;
   ----
-  "Recargar los &Menus" = always "GUI_ReloadMenus()" ;
+  "Recargar los &Menus" = always "rebuild_root_menu_with_alert()" ;
   ----
   "Cargar Sesión" = always "GUI_LoadSession()" ;
   "Guardar Sesión" = always "GUI_SaveSession()" ;
@@ -59,8 +59,8 @@
   "Flip &Horizontal" = has_image "GUI_FlipHorizontal()" <Shift+H> ;
   "Flip &Vertical" = has_image "GUI_FlipVertical()" <Shift+V> ;
   ----
-  "Reemplazar Color" = has_image "GUI_ReplaceColor()" </> ;
-  "Invertir" = has_image "GUI_InvertColor()" <Ctrl+I> ;
+  "Reemplazar Color" = has_image "dialogs_replace_color()" </> ;
+  "Invertir" = has_image "dialogs_invert_color()" <Ctrl+I> ;
 }
 
 &Sprite {
@@ -106,12 +106,12 @@ F&rame FRAME_POPUP {
   "&Reseleccionar" = has_sprite "ReselectMask()" <Shift+Ctrl+D> ;
   "&Invertir" = has_sprite "InvertMask()" <Shift+Ctrl+I> ;
   ----
-  "&Color" = has_image "GUI_MaskColor()" <?> ;
+  "&Color" = has_image "dialogs_mask_color()" <?> ;
   "&Especial" {
     "Estirar &Fondo" = has_mask "StretchMaskBottom()" ;
   }
   ----
-  "Repositorio" = has_sprite "GUI_MaskRepository()" <Shift+Ctrl+M> ;
+  "Repositorio" = has_sprite "dialogs_mask_repository()" <Shift+Ctrl+M> ;
   "Cargar" = has_sprite "GUI_LoadMask()" ;
   "Guardar" = has_mask "GUI_SaveMask()" ;
 }
@@ -125,7 +125,7 @@ F&rame FRAME_POPUP {
 
 &Tool {
   "&Herramientas de Dibujo" {
-    "&Configurar" = always "GUI_ToolsConfiguration()" <C> ;
+    "&Configurar" = always "dialogs_tools_configuration()" <C> ;
     ----
     "&Marcador" = tool_marker "select_tool(\"Marker\")" <M> ;
     "Puntos" = tool_dots "select_tool(\"Dots\")" <D> ;
@@ -138,11 +138,11 @@ F&rame FRAME_POPUP {
     "&Elipse" = tool_ellipse "select_tool(\"Ellipse\")" <E> ;
   }
   &Filtros FILTERS_POPUP {
-    "&Matriz de Convolución" = has_image "GUI_ConvolutionMatrix()" <F9> ;
-    "&Curva de Color" = has_image "GUI_ColorCurve()" <Ctrl+M> <F10> ;
-#     "Mapa de &Vectores" = has_image "GUI_VectorMap()" <F11> ;
+    "&Matriz de Convolución" = has_image "dialogs_convolution_matrix()" <F9> ;
+    "&Curva de Color" = has_image "dialogs_color_curve()" <Ctrl+M> <F10> ;
+#     "Mapa de &Vectores" = has_image "dialogs_vector_map()" <F11> ;
     ----
-    "&Reducción de ruido (filtrado por mediana)" = has_image "GUI_MedianFilter()" ;
+    "&Reducción de ruido (filtrado por mediana)" = has_image "dialogs_median_filter()" ;
   }
   &Scripts {
     "Cargar script desde &archivo" = always "GUI_LoadScriptFile()" <Ctrl+0> ;
@@ -155,11 +155,11 @@ F&rame FRAME_POPUP {
     "terrain.lua" = always "include(\"examples/terrain.lua\")" ;
   }
   ----
-  "Dibujar &Texto" = has_sprite "GUI_DrawText()" ;
-  "&MapGen" = always "GUI_MapGen()" ;
+  "Dibujar &Texto" = has_sprite "dialogs_draw_text()" ;
+  "&MapGen" = always "dialogs_mapgen()" ;
   "&Reproducir Archivo FLI/FLC" = always "GUI_PlayFLI()" ;
   ----
-  "&Opciones" = always "GUI_Options()" <Shift+Ctrl+O> ;
+  "&Opciones" = always "dialogs_options()" <Shift+Ctrl+O> ;
 }
 
 &Ver {
@@ -180,8 +180,8 @@ F&rame FRAME_POPUP {
     ----
     "&Cerrar" = always "close_editor(current_editor)" <Ctrl+4> ;
   }
-  "E&ditor de Película" FILMEDITOR_ACCEL = has_sprite "switch_between_film_and_sprite_editor()" <TAB>
-  "&Paleta de Colores" = always "show_palette_editor()" <F4> ;
+  "E&ditor de Película" FILMEDITOR_ACCEL = has_sprite "switch_between_film_and_sprite_editor()" <Tab> ;
+  "&Paleta de Colores" = always "dialogs_palette_editor()" <F4> ;
   ----
   "Popup Menu de &Filtros" = always "show_filters_popup_menu()" <X> ;
 }

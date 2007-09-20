@@ -29,7 +29,7 @@
 /* Information for "ident".  */
 
 const char ase_ident[] =
-    "$ASE: " VERSION " Copyright (C) 2001-2005, 2007 David A. Capello $\n"
+    "$ASE: " VERSION " " COPYRIGHT " $\n"
     "$Date: 2007/09/09 03:37:55 $\n"
     "$Website: " WEBSITE " $\n";
 

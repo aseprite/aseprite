@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,6 @@
 #ifndef DIALOGS_VECTMAP_H
 #define DIALOGS_VECTMAP_H
 
-void GUI_VectorMap (void);
+void dialogs_vector_map(void);
 
 #endif /* DIALOGS_VECTMAP_H */

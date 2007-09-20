@@ -1,0 +1,55 @@
+   Y2K compliance in libpng:
+   =========================
+
+      September 8, 2007
+
+      Since the PNG Development group is an ad-hoc body, we can't make
+      an official declaration.
+
+      This is your unofficial assurance that libpng from version 0.71 and
+      upward through 1.2.20 are Y2K compliant.  It is my belief that earlier
+      versions were also Y2K compliant.
+
+      Libpng only has three year fields.  One is a 2-byte unsigned integer
+      that will hold years up to 65535.  The other two hold the date in text
+      format, and will hold years up to 9999.
+
+      The integer is
+          "png_uint_16 year" in png_time_struct.
+
+      The strings are
+          "png_charp time_buffer" in png_struct and
+          "near_time_buffer", which is a local character string in png.c.
+
+      There are seven time-related functions:
+
+          png_convert_to_rfc_1123() in png.c
+            (formerly png_convert_to_rfc_1152() in error)
+          png_convert_from_struct_tm() in pngwrite.c, called in pngwrite.c
+          png_convert_from_time_t() in pngwrite.c
+          png_get_tIME() in pngget.c
+          png_handle_tIME() in pngrutil.c, called in pngread.c
+          png_set_tIME() in pngset.c
+          png_write_tIME() in pngwutil.c, called in pngwrite.c
+
+      All appear to handle dates properly in a Y2K environment.  The
+      png_convert_from_time_t() function calls gmtime() to convert from system
+      clock time, which returns (year - 1900), which we properly convert to
+      the full 4-digit year.  There is a possibility that applications using
+      libpng are not passing 4-digit years into the png_convert_to_rfc_1123()
+      function, or that they are incorrectly passing only a 2-digit year
+      instead of "year - 1900" into the png_convert_from_struct_tm() function,
+      but this is not under our control.  The libpng documentation has always
+      stated that it works with 4-digit years, and the APIs have been
+      documented as such.
+
+      The tIME chunk itself is also Y2K compliant.  It uses a 2-byte unsigned
+      integer to hold the year, and can hold years as large as 65535.
+
+      zlib, upon which libpng depends, is also Y2K compliant.  It contains
+      no date-related code.
+
+
+         Glenn Randers-Pehrson
+         libpng maintainer
+         PNG Development Group

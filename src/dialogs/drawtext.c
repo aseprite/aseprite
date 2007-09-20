@@ -52,7 +52,7 @@ static FONT *my_load_font(const char *filename);
 static void button_font_command(JWidget widget);
 static void update_button_text(void);
 
-void GUI_DrawText(void)
+void dialogs_draw_text(void)
 {
   Image *image, *dest_image;
   JWidget window, button_ok, color_box, color_but;
@@ -175,17 +175,17 @@ Image *RenderText (const char *fontname, int size, int color, const char *text)
 
 static Image *render_text (FONT *f, const char *text, int color)
 {
-#define DO(type, colfunc)			\
-  {						\
-    register int c;				\
-    unsigned long *src = bmp->dat;		\
-    type *dst = image->dat;			\
-    for (i=0; i<pixels; i++) {			\
-      c = *src;					\
-      *dst = colfunc;				\
-      src++;					\
-      dst++;					\
-    }						\
+#define DO(type, colfunc)				\
+  {							\
+    register int c;					\
+    unsigned long *src = (unsigned long *)bmp->dat;	\
+    type *dst = (type *)image->dat;			\
+    for (i=0; i<pixels; i++) {				\
+      c = *src;						\
+      *dst = colfunc;					\
+      src++;						\
+      dst++;						\
+    }							\
   }
 
   int i, pixels, w, h;
@@ -220,19 +220,19 @@ static Image *render_text (FONT *f, const char *text, int color)
   switch (image->imgtype) {
 
     case IMAGE_RGB:
-      DO (unsigned long, _rgba (_rgba_getr (color),
-				_rgba_getg (color),
-				_rgba_getb (color), getg32 (c)));
+      DO(unsigned long, _rgba(_rgba_getr(color),
+			      _rgba_getg(color),
+			      _rgba_getb(color), getg32(c)));
       break;
 
     case IMAGE_GRAYSCALE:
-      DO (unsigned short, _graya (_graya_getk (color), getg32 (c)));
+      DO(unsigned short, _graya(_graya_getk(color), getg32(c)));
       break;
 
     case IMAGE_INDEXED:
-      use_current_sprite_rgb_map ();
-      DO (unsigned char, c == makecol32 (255, 0, 255) ? 0: color);
-      restore_rgb_map ();
+      use_current_sprite_rgb_map();
+      DO(unsigned char, c == makecol32(255, 0, 255) ? 0: color);
+      restore_rgb_map();
       break;
   }
 

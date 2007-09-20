@@ -42,10 +42,15 @@ THANKFULNESS
 
   Elver Loho: For port ASE to BeOS.
 
+  Frank J. T. Wojcik, Guy Eric Schalnat, Andreas Dilger, Glenn
+  Randers-Pehrson: For libpng.
+
   Gary Oberbrunner: For his code to quantize RGB images with ordered
   dither method.
 
   Javier Gonzalez: For his AllegroFont wrapper.
+
+  Jean-loup Gailly and Mark Adler: For zlib
 
   Jens Ch. Restemeier: For GFLI, his code to save FLI files is just
   "amazing".

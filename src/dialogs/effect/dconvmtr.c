@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ static int preview_change_hook (JWidget widget, int user_data);
 static int tiled_change_hook (JWidget widget, int user_data);
 static void make_preview (void);
 
-void GUI_ConvolutionMatrix (void)
+void dialogs_convolution_matrix(void)
 {
   JWidget window, button_ok;
   JWidget view_convmatr, list_convmatr;

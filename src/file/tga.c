@@ -345,19 +345,19 @@ static Sprite *load_TGA (const char *filename)
       case 2:
         if (bpp == 32) {
           if (compressed) {
-            rle_tga_read32 (image->line[yc], image_width, f);
+            rle_tga_read32(image->line[yc], image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               pack_fread(rgb, 4, f);
               *(((unsigned long **)image->line)[yc]+x) =
-                _rgba (rgb[2], rgb[1], rgb[0], rgb[3]);
+                _rgba(rgb[2], rgb[1], rgb[0], rgb[3]);
             }
           }
         }
         else if (bpp == 24) {
           if (compressed) {
-            rle_tga_read24 (image->line[yc], image_width, f);
+            rle_tga_read24(image->line[yc], image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {

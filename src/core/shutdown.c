@@ -50,36 +50,36 @@ static bool do_shutdown = FALSE;
 #endif
 #endif
 
-static void do_shutdown_exit (void);
+static void do_shutdown_exit(void);
 #ifdef ALLEGRO_MINGW32
-static void signal_handler (int sig);
+static void signal_handler(int sig);
 #endif
 
-void init_shutdown_handler (void)
+void init_shutdown_handler(void)
 {
   atexit(do_shutdown_exit);
   _add_exit_func(do_shutdown_exit, "do_shutdown_exit");
 
 #ifdef ALLEGRO_MINGW32
-  old_sig_abrt = signal (SIGABRT, signal_handler);
-  old_sig_fpe  = signal (SIGFPE,  signal_handler);
-  old_sig_ill  = signal (SIGILL,  signal_handler);
-  old_sig_segv = signal (SIGSEGV, signal_handler);
-  old_sig_term = signal (SIGTERM, signal_handler);
-  old_sig_int  = signal (SIGINT,  signal_handler);
+  old_sig_abrt = signal(SIGABRT, signal_handler);
+  old_sig_fpe  = signal(SIGFPE,  signal_handler);
+  old_sig_ill  = signal(SIGILL,  signal_handler);
+  old_sig_segv = signal(SIGSEGV, signal_handler);
+  old_sig_term = signal(SIGTERM, signal_handler);
+  old_sig_int  = signal(SIGINT,  signal_handler);
 #ifdef SIGQUIT
-  old_sig_quit = signal (SIGQUIT, signal_handler);
+  old_sig_quit = signal(SIGQUIT, signal_handler);
 #endif
 #endif
 
   do_shutdown = TRUE;
 }
 
-void remove_shutdown_handler (void)
+void remove_shutdown_handler(void)
 {
   do_shutdown = FALSE;
 
-  _remove_exit_func (do_shutdown_exit);
+  _remove_exit_func(do_shutdown_exit);
 
 #if defined(ALLEGRO_WINDOWS) && !defined(_MSC_VER)
   /* remove emergency exit signal handlers */
@@ -95,7 +95,7 @@ void remove_shutdown_handler (void)
 #endif
 }
 
-static void do_shutdown_exit (void)
+static void do_shutdown_exit(void)
 {
   char buf[1024], path[1024], name[1024];
   int c;
@@ -143,10 +143,10 @@ static void do_shutdown_exit (void)
 }
 
 #ifdef ALLEGRO_MINGW32
-static void signal_handler (int num)
+static void signal_handler(int num)
 {
-  do_shutdown_exit ();
-  fprintf (stderr, "Shutting down ASE due to signal #%d\n", num);
-  raise (num);
+  do_shutdown_exit();
+  fprintf(stderr, "Shutting down ASE due to signal #%d\n", num);
+  raise(num);
 }
 #endif

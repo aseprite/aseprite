@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -248,7 +248,7 @@ static ImageMethods alleg_methods =
 /**********************************************************************/
 #endif
 
-Image *image_new (int imgtype, int w, int h)
+Image *image_new(int imgtype, int w, int h)
 {
   Image *image = (Image *)gfxobj_new(GFXOBJ_IMAGE, sizeof(Image));
   if (!image)

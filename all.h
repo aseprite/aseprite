@@ -85,6 +85,7 @@
 #include "modules/sprites.h"
 #include "modules/tools.h"
 #include "modules/tools2.h"
+#include "png.h"
 #include "raster/algo.h"
 #include "raster/blend.h"
 #include "raster/brush.h"
@@ -135,6 +136,7 @@
 #include "widgets/statebar.h"
 #include "widgets/target.h"
 #include "widgets/toolbar.h"
+#include "zlib.h"
 #include <allegro.h>
 #include <allegro/base.h>
 #include <allegro/color.h>

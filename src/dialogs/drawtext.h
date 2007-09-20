@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 
 struct Image;
 
-void GUI_DrawText (void);
+void dialogs_draw_text(void);
 
-struct Image *RenderText (const char *fontname, int size, int color, const char *text);
+struct Image *RenderText(const char *fontname, int size, int color, const char *text);
 
 #endif /* DIALOGS_DRAWTEXT_H */
 

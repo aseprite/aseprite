@@ -33,7 +33,7 @@
 #endif
 
 /* show the language selection dialog */
-void GUI_SelectLanguage (bool force)
+void dialogs_select_language(bool force)
 {
   bool select_language = get_config_bool ("Options", "SelectLanguage", TRUE);
 
@@ -77,7 +77,7 @@ static void button_lang_command (JWidget widget);
 static void set_label_font_text (void);
 
 /* shows option dialog */
-void GUI_Options (void)
+void dialogs_options(void)
 {
   JWidget window, move_delay, check_smooth, check_dither;
   JWidget button_font, button_lang, button_ok, button_save;
@@ -222,12 +222,12 @@ static void button_font_command (JWidget widget)
   }
 }
 
-static void button_lang_command (JWidget widget)
+static void button_lang_command(JWidget widget)
 {
-  GUI_SelectLanguage (TRUE);
+  dialogs_select_language(TRUE);
 }
 
-static void set_label_font_text (void)
+static void set_label_font_text(void)
 {
   const char *default_font = get_config_string ("Options", "DefaultFont", "");
   char buf[1024];

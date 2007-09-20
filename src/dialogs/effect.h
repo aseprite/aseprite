@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #ifndef DIALOGS_EFFECT_H
 #define DIALOGS_EFFECT_H
 
-void GUI_ColorCurve (void);
-void GUI_ConvolutionMatrix (void);
-void GUI_InvertColor (void);
-void GUI_MedianFilter (void);
-void GUI_ReplaceColor (void);
+void dialogs_color_curve(void);
+void dialogs_convolution_matrix(void);
+void dialogs_invert_color(void);
+void dialogs_median_filter(void);
+void dialogs_replace_color(void);
 
 #endif /* DIALOGS_EFFECT_H */

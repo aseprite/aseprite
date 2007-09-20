@@ -62,7 +62,7 @@ static BITMAP *icons_bitmap[ICONS] = {
 
 static void theme_destroy(void);
 static void theme_regen(void);
-static void theme_set_cursor(int type);
+static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y);
 static void theme_init_widget(JWidget widget);
 static JRegion theme_get_window_mask(JWidget widget);
 static void theme_map_decorative_widget(JWidget widget);
@@ -183,28 +183,33 @@ static void theme_regen (void)
   }
 }
 
-static void theme_set_cursor (int type)
+static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
 {
+  BITMAP *sprite = NULL;
   int icon_index = type-1+FIRST_CURSOR;
+
+  *focus_x = 0;
+  *focus_y = 0;
 
   if (icon_index >= FIRST_CURSOR && icon_index <= LAST_CURSOR) {
     if (icons_bitmap[icon_index])
-      set_mouse_sprite (icons_bitmap[icon_index]);
+      sprite = icons_bitmap[icon_index];
 
     switch (type) {
       case JI_CURSOR_NULL:
       case JI_CURSOR_NORMAL:
-      case JI_CURSOR_NORMAL_ADD:set_mouse_sprite_focus ( 0,  0); break;
-      case JI_CURSOR_HAND:	set_mouse_sprite_focus ( 5,  3); break;
-      case JI_CURSOR_MOVE:	set_mouse_sprite_focus ( 8,  8); break;
-/*       case JI_CURSOR_SIZE_TL:	set_mouse_sprite_focus (15, 15); break; */
-/*       case JI_CURSOR_SIZE_T:	set_mouse_sprite_focus ( 8, 15); break; */
-/*       case JI_CURSOR_SIZE_TR:	set_mouse_sprite_focus ( 0, 15); break; */
-/*       case JI_CURSOR_SIZE_L:	set_mouse_sprite_focus (15,  8); break; */
-/*       case JI_CURSOR_SIZE_R:	set_mouse_sprite_focus ( 0,  8); break; */
-/*       case JI_CURSOR_SIZE_BL:	set_mouse_sprite_focus (15,  0); break; */
-/*       case JI_CURSOR_SIZE_B:	set_mouse_sprite_focus ( 8,  0); break; */
-/*       case JI_CURSOR_SIZE_BR:	set_mouse_sprite_focus ( 0,  0); break; */
+      case JI_CURSOR_NORMAL_ADD:
+	*focus_x = 0;
+	*focus_y = 0;
+	break;
+      case JI_CURSOR_HAND:
+	*focus_x = 5;
+	*focus_y = 3;
+	break;
+      case JI_CURSOR_MOVE:
+	*focus_x = 8;
+	*focus_y = 8;
+	break;
       case JI_CURSOR_SIZE_TL:
       case JI_CURSOR_SIZE_T:
       case JI_CURSOR_SIZE_TR:
@@ -212,12 +217,17 @@ static void theme_set_cursor (int type)
       case JI_CURSOR_SIZE_R:
       case JI_CURSOR_SIZE_BL:
       case JI_CURSOR_SIZE_B:
-      case JI_CURSOR_SIZE_BR:  set_mouse_sprite_focus (8, 8); break;
+      case JI_CURSOR_SIZE_BR:
+	*focus_x = 8;
+	*focus_y = 8;
+	break;
     }
   }
+
+  return sprite;
 }
 
-static void theme_init_widget (JWidget widget)
+static void theme_init_widget(JWidget widget)
 {
 #define BORDER(n)				\
   widget->border_width.l = n;			\
@@ -238,35 +248,37 @@ static void theme_init_widget (JWidget widget)
   switch (widget->draw_type) {
 
     case JI_BOX:
-      BORDER (0);
-      widget->child_spacing = 2;
+      BORDER(0);
+/*       widget->child_spacing = 2; */
+      widget->child_spacing = 4;
       break;
 
     case JI_BUTTON:
-      BORDER (4);
+      BORDER(4);
       widget->child_spacing = 0;
       break;
 
     case JI_CHECK:
-      BORDER (2);
-      widget->child_spacing = 2;
+      BORDER(2);
+/*       widget->child_spacing = 2; */
+      widget->child_spacing = 4;
       break;
 
     case JI_ENTRY:
-      BORDER (3);
+      BORDER(3);
       break;
 
     case JI_LABEL:
-      BORDER (1);
+      BORDER(1);
       break;
 
     case JI_LISTBOX:
-      BORDER (0);
+      BORDER(0);
       widget->child_spacing = 0;
       break;
 
     case JI_LISTITEM:
-      BORDER (1);
+      BORDER(1);
       break;
 
     case JI_MENU:
@@ -288,7 +300,8 @@ static void theme_init_widget (JWidget widget)
 
     case JI_RADIO:
       BORDER (2);
-      widget->child_spacing = 2;
+/*       widget->child_spacing = 2; */
+      widget->child_spacing = 4;
       break;
 
     case JI_SEPARATOR:
@@ -342,7 +355,8 @@ static void theme_init_widget (JWidget widget)
     case JI_WINDOW:
       if (!jwindow_is_desktop (widget)) {
 	if (widget->text) {
-	  BORDER4(4, 4+jwidget_get_text_height(widget)+4, 4, 4);
+/* 	  BORDER4(4, 4+jwidget_get_text_height(widget)+4, 4, 4); */
+	  BORDER4(6, 4+jwidget_get_text_height(widget)+4, 6, 6);
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
 	    JWidget button = jbutton_new("x");
@@ -362,7 +376,8 @@ static void theme_init_widget (JWidget widget)
       else {
 	BORDER (0);
       }
-      widget->child_spacing = 2;
+/*       widget->child_spacing = 2; */
+      widget->child_spacing = 4;
       break;
 
     default:

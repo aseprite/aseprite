@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,19 +21,19 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   Mask *mask = NULL;
   int redraw;
 
-  allegro_init ();
-  set_gfx_mode (GFX_AUTODETECT, 320, 200, 0, 0);
-  install_timer ();
-  install_keyboard ();
-  install_mouse ();
+  allegro_init();
+  set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0);
+  install_timer();
+  install_keyboard();
+  install_mouse();
 
-  set_mouse_sprite_focus (0, 0);
-  show_mouse (screen);
+  set_mouse_sprite_focus(0, 0);
+  show_mouse(screen);
 
   redraw = TRUE;
   do {

@@ -318,27 +318,27 @@ static bool method_tool_rectangle (JWidget menuitem)
   return TRUE;
 }
 
-static bool method_tool_ellipse (JWidget menuitem)
+static bool method_tool_ellipse(JWidget menuitem)
 {
   if (current_tool == &ase_tool_ellipse)
-    jwidget_select (menuitem);
+    jwidget_select(menuitem);
   else
-    jwidget_deselect (menuitem);
+    jwidget_deselect(menuitem);
 
   return TRUE;
 }
 
-static bool method_is_rec (JWidget menuitem)
+static bool method_is_rec(JWidget menuitem)
 {
-  if (is_rec_screen ())
-    jwidget_select (menuitem);
+  if (is_rec_screen())
+    jwidget_select(menuitem);
   else
-    jwidget_deselect (menuitem);
+    jwidget_deselect(menuitem);
 
   return TRUE;
 }
 
-static bool method_is_movingframe (JWidget menuitem)
+static bool method_is_movingframe(JWidget menuitem)
 {
   return is_movingframe ();
 }

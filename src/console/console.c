@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,11 +40,13 @@ static int console_counter = 0;
 static bool console_locked;
 static bool want_close_flag = FALSE;
 
-void console_open (void)
+void console_open(void)
 {
   console_counter++;
 
-  if (!screen ||
+  /* TODO verify if the ji_screen works */
+/*   if (!screen || */
+  if (!ji_screen ||
       !is_interactive () ||
       wid_console ||
       console_counter > 1)
@@ -125,12 +127,12 @@ void console_printf (const char *format, ...)
     if (!console_locked) {
       console_locked = TRUE;
 
-      jwidget_set_static_size (wid_view, SCREEN_W*9/10, SCREEN_H*6/10);
-      jwidget_show (wid_view);
+      jwidget_set_static_size(wid_view, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
+      jwidget_show(wid_view);
 
-      jwindow_remap (wid_console);
-      jwindow_center (wid_console);
-      jwidget_dirty (wid_console);
+      jwindow_remap(wid_console);
+      jwindow_center(wid_console);
+      jwidget_dirty(wid_console);
     }
 
     text = jwidget_get_text (wid_textbox);
@@ -187,8 +189,8 @@ void add_progress (int max)
 
 void del_progress (void)
 {
-  JWidget status_bar = app_get_status_bar ();
+  JWidget status_bar = app_get_status_bar();
 
   if (status_bar)
-    status_bar_del_progress (status_bar);
+    status_bar_del_progress(status_bar);
 }

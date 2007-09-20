@@ -69,8 +69,8 @@ struct Image
   GfxObj gfxobj;
   int imgtype;
   int w, h;
-  void *dat;			/* pixmap data */
-  void **line;			/* start of each scanline */
+  unsigned char *dat;		/* pixmap data */
+  unsigned char **line;		/* start of each scanline */
   struct ImageMethods *method;
   /* struct BITMAP *bmp; */
 };

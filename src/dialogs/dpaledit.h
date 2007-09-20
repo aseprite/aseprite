@@ -19,7 +19,7 @@
 #ifndef DIALOGS_DPALEDIT_H
 #define DIALOGS_DPALEDIT_H
 
-void show_palette_editor (void);
+void dialogs_palette_editor(void);
 
 #endif /* DIALOGS_DPALEDIT_H */
 

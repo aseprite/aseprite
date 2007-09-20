@@ -116,12 +116,12 @@ JWidget jmanager_new(void)
       old_readed_key[c] = 0;
   }
 
-  widget = jwidget_new (JI_MANAGER);
+  widget = jwidget_new(JI_MANAGER);
 
-  jwidget_add_hook (widget, JI_MANAGER, manager_msg_proc, NULL);
+  jwidget_add_hook(widget, JI_MANAGER, manager_msg_proc, NULL);
 
-  jrect_replace (widget->rc, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
-  jwidget_show (widget);
+  jrect_replace(widget->rc, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
+  jwidget_show(widget);
 
   /* default manager is the first one (and is ever visible) */
   if (!default_manager)
@@ -472,17 +472,17 @@ void jmanager_dispatch_draw_messages(void)
   dispatch_msgs(TRUE);
 }
 
-JWidget jmanager_get_focus (void)
+JWidget jmanager_get_focus(void)
 {
   return focus_widget;
 }
 
-JWidget jmanager_get_mouse (void)
+JWidget jmanager_get_mouse(void)
 {
   return mouse_widget;
 }
 
-JWidget jmanager_get_capture (void)
+JWidget jmanager_get_capture(void)
 {
   return capture_widget;
 }
@@ -683,12 +683,12 @@ void jmanager_free_focus(void)
   jmanager_set_focus(NULL);
 }
 
-void jmanager_free_mouse (void)
+void jmanager_free_mouse(void)
 {
   jmanager_set_mouse(NULL);
 }
 
-void jmanager_free_capture (void)
+void jmanager_free_capture(void)
 {
   if (capture_widget) {
     capture_widget->flags &= ~JI_HASCAPTURE;
@@ -696,7 +696,7 @@ void jmanager_free_capture (void)
   }
 }
 
-void jmanager_free_widget (JWidget widget)
+void jmanager_free_widget(JWidget widget)
 {
   /* break any relationship with the GUI manager */
   if (jwidget_has_capture (widget))
@@ -709,33 +709,33 @@ void jmanager_free_widget (JWidget widget)
     jmanager_free_focus ();
 }
 
-void jmanager_remove_message (JMessage msg)
+void jmanager_remove_message(JMessage msg)
 {
   jlist_remove(msg_queue, msg);
 }
 
-void jmanager_remove_messages_for (JWidget widget)
+void jmanager_remove_messages_for(JWidget widget)
 {
   JLink link;
   JI_LIST_FOR_EACH(msg_queue, link)
     remove_msgs_for(widget, link->data);
 }
 
-void jmanager_refresh_screen (void)
+void jmanager_refresh_screen(void)
 {
   if (default_manager)
-    jwidget_invalidate (default_manager);
+    jwidget_invalidate(default_manager);
 }
 
 /* configures the window for begin the loop */
-void _jmanager_open_window (JWidget manager, JWidget window)
+void _jmanager_open_window(JWidget manager, JWidget window)
 {
   JMessage msg;
 
   /* free all widgets of special states */
-  jmanager_free_capture ();
-  jmanager_free_mouse ();
-  jmanager_free_focus ();
+  jmanager_free_capture();
+  jmanager_free_mouse();
+  jmanager_free_focus();
 
   /* add the window to manager */
   jlist_prepend(manager->children, window);
@@ -745,17 +745,17 @@ void _jmanager_open_window (JWidget manager, JWidget window)
   jwidget_emit_signal(manager, JI_SIGNAL_MANAGER_ADD_WINDOW);
 
   /* broadcast the open message */
-  msg = jmessage_new (JM_OPEN);
-  jmessage_broadcast_to_children (msg, window);
-  jmanager_send_message (msg);
-  jmessage_free (msg);
+  msg = jmessage_new(JM_OPEN);
+  jmessage_broadcast_to_children(msg, window);
+  jmanager_send_message(msg);
+  jmessage_free(msg);
 
   /* update the new windows list to show */
   jlist_append(new_windows, window);
 }
 
 void _jmanager_close_window(JWidget manager, JWidget window,
-			      bool sendtokill, bool redraw_background)
+			    bool sendtokill, bool redraw_background)
 {
   JMessage msg;
   JRegion reg1;

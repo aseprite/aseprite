@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ static int target_change_hook (JWidget widget, int user_data);
 static int preview_change_hook (JWidget widget, int user_data);
 static void make_preview (void);
 
-void GUI_InvertColor (void)
+void dialogs_invert_color(void)
 {
   JWidget window, box_target, target_button, button_ok;
   Sprite *sprite = current_sprite;

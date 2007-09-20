@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DIALOGS_DFRLEN_H
 #define DIALOGS_DFRLEN_H
 
-void GUI_FrameLength(int frpos);
+void dialogs_frame_length(int frpos);
 
 #endif /* DIALOGS_DFRLEN_H */
 

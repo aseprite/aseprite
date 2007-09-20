@@ -465,7 +465,7 @@ static void button_request_size(JWidget widget, int *w, int *h)
   }
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			      button->icon_align, icon_w, icon_h);
+			    button->icon_align, icon_w, icon_h);
 
   *w = widget->border_width.l + jrect_w(&box) + widget->border_width.r;
   *h = widget->border_width.t + jrect_h(&box) + widget->border_width.b;

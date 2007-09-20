@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@
 
 #include "jinete/base.h"
 
-bool is_rec_screen (void);
+bool is_rec_screen(void);
 
-void rec_screen_on (void);
-void rec_screen_off (void);
+void rec_screen_on(void);
+void rec_screen_off(void);
 
-void rec_screen_poll (void);
+void rec_screen_poll(void);
 
 #endif /* UTIL_RECSCR_H */
 

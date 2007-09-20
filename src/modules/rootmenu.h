@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,19 +29,19 @@ enum {
   ACCEL_MAX
 };
 
-int init_module_rootmenu (void);
-void exit_module_rootmenu (void);
+int init_module_rootmenu(void);
+void exit_module_rootmenu(void);
 
-int load_root_menu (void);
+int load_root_menu(void);
 
-JWidget get_root_menu (void);
+JWidget get_root_menu(void);
 
-JWidget get_sprite_list_menuitem (void);
-JWidget get_recent_list_menuitem (void);
-JWidget get_layer_popup_menuitem (void);
-JWidget get_frame_popup_menuitem (void);
+JWidget get_sprite_list_menuitem(void);
+JWidget get_recent_list_menuitem(void);
+JWidget get_layer_popup_menuitem(void);
+JWidget get_frame_popup_menuitem(void);
 
-int check_for_accel (int accel_type, JMessage msg);
-void show_filters_popup_menu (void);
+int check_for_accel(int accel_type, JMessage msg);
+void show_filters_popup_menu(void);
 
 #endif /* MODULES_ROOTMENU_H */

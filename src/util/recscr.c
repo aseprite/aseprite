@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,12 +43,12 @@ static unsigned char *omap;
 static unsigned char *cmap;
 static BITMAP *old_bmp;
 
-bool is_rec_screen (void)
+bool is_rec_screen(void)
 {
   return rec_file ? TRUE: FALSE;
 }
 
-void rec_screen_on (void)
+void rec_screen_on(void)
 {
   char buf[512];
   int c;
@@ -103,7 +103,7 @@ void rec_screen_on (void)
   rec_clock = ji_clock;
 }
 
-void rec_screen_off (void)
+void rec_screen_off(void)
 {
   if (rec_file) {
     /* write the header and close the file */

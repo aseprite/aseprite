@@ -180,7 +180,7 @@ int editor_keys_toget_pixels(JWidget widget, int scancode)
       int x, y;
 
       /* pixel position to get */
-      screen_to_editor (widget, ji_mouse_x (0), ji_mouse_y (0), &x, &y);
+      screen_to_editor(widget, ji_mouse_x(0), ji_mouse_y(0), &x, &y);
 
       /* get the color from the image */
       color = color_from_image(editor->sprite->imgtype,

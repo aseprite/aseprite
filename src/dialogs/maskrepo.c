@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,10 +49,10 @@ static bool use_listitem (RepoDlg *repo_dlg);
 static bool add_listitem (RepoDlg *repo_dlg, int *added);
 static bool delete_listitem (RepoDlg *repo_dlg, int *kill);
 
-void GUI_MaskRepository (void)
+void dialogs_mask_repository(void)
 {
   RepoDlg repo_dlg = {
-    "/mask_repository",
+    "MaskRepository",
     _("Mask Repository"),
     _("&Replace"),
     load_listbox,

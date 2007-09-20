@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,13 +89,13 @@ static Sprite *load_FLI(const char *filename)
   h = fli_header.height;
 
   /* create the bitmaps */
-  bmp = image_new (IMAGE_INDEXED, w, h);
-  old = image_new (IMAGE_INDEXED, w, h);
+  bmp = image_new(IMAGE_INDEXED, w, h);
+  old = image_new(IMAGE_INDEXED, w, h);
   if ((!bmp) || (!old)) {
-    console_printf (_("Not enough memory for temporary bitmaps.\n"));
-    if (bmp) image_free (bmp);
-    if (old) image_free (old);
-    fclose (f);
+    console_printf(_("Not enough memory for temporary bitmaps.\n"));
+    if (bmp) image_free(bmp);
+    if (old) image_free(old);
+    fclose(f);
     return NULL;
   }
 

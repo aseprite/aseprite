@@ -1,5 +1,5 @@
 /* jinete - a GUI library
- * Copyright (C) 2003-2005 by David A. Capello
+ * Copyright (C) 2003-2005, 2007 by David A. Capello
  *
  * Jinete is gift-ware.
  */
@@ -266,16 +266,31 @@ static JWidget convert_tag_to_widget(Tag *tag)
 
   /* the widget was created? */
   if (widget) {
-    Attr *name = tag_get_attr (tag, "name");
-    Attr *expansive = tag_get_attr (tag, "expansive");
-    Attr *magnetic = tag_get_attr (tag, "magnetic");
-    Attr *noborders = tag_get_attr (tag, "noborders");
+    Attr *name = tag_get_attr(tag, "name");
+    Attr *expansive = tag_get_attr(tag, "expansive");
+    Attr *magnetic = tag_get_attr(tag, "magnetic");
+    Attr *noborders = tag_get_attr(tag, "noborders");
+    Attr *width = tag_get_attr(tag, "width");
+    Attr *height = tag_get_attr(tag, "height");
     JLink link;
 
-    if (name) jwidget_set_name (widget, name->value);
-    if (expansive) jwidget_expansive (widget, TRUE);
-    if (magnetic) jwidget_magnetic (widget, TRUE);
-    if (noborders) jwidget_noborders (widget);
+    if (name)
+      jwidget_set_name(widget, name->value);
+
+    if (expansive)
+      jwidget_expansive(widget, TRUE);
+
+    if (magnetic)
+      jwidget_magnetic(widget, TRUE);
+
+    if (noborders)
+      jwidget_noborders(widget);
+
+    if (width || height) {
+      int w = (width) ? strtol(width->value, NULL, 10): 0;
+      int h = (height) ? strtol(height->value, NULL, 10): 0;
+      jwidget_set_static_size(widget, w, h);
+    }
 
     /* children */
     JI_LIST_FOR_EACH(tag->sub_tags, link) {

@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ static int preview_change_hook (JWidget widget, int user_data);
 static Mask *gen_mask (void);
 static void mask_preview (void);
 
-void GUI_MaskColor (void)
+void dialogs_mask_color(void)
 {
   JWidget window, box1, box2, box3, box4;
   JWidget label_color, button_1, button_2;

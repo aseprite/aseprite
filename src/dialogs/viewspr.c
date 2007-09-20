@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,13 +63,13 @@ static void view_sprite(int flags)
     JRect vp;
     int bg_color, index_bg_color = -1;
 
-    jmanager_free_mouse ();
+    jmanager_free_mouse();
 
-    vp = jview_get_viewport_position (view);
-    jview_get_scroll (view, &scroll_x, &scroll_y);
+    vp = jview_get_viewport_position(view);
+    jview_get_scroll(view, &scroll_x, &scroll_y);
 
-    old_mouse_x = ji_mouse_x (0);
-    old_mouse_y = ji_mouse_y (0);
+    old_mouse_x = ji_mouse_x(0);
+    old_mouse_y = ji_mouse_y(0);
 
     bmp = create_bitmap (sprite->w, sprite->h);
     if (bmp) {

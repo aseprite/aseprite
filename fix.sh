@@ -1,6 +1,6 @@
-#! /bin/sh
+#! /bin/bash
 
-function readln ()
+readln()
 {
   echo -n "$1 [$2] "
   read ans
@@ -103,7 +103,7 @@ case "$platform" in
   "*"       ) exit ;;
 esac
 
-function gen_makefile ()
+gen_makefile()
 {
   makefile=$1
 

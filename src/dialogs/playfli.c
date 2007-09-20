@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,12 +176,13 @@ static void my_play_fli (const char *filename, bool loop, bool fullscreen,
     }
 
     if (fullscreen)
-      stretch_blit (bmp, ji_screen,
-		    0, 0, fli_header.width, fli_header.height, x, y, w, h);
+      stretch_blit(bmp, ji_screen,
+		   0, 0, fli_header.width, fli_header.height, x, y, w, h);
     else
-      blit (bmp, ji_screen, 0, 0, x, y, w, h);
+      blit(bmp, ji_screen, 0, 0, x, y, w, h);
 
-    gui_feedback ();
+    jmanager_refresh_screen();
+    gui_feedback();
 
     do {
       if ((*callback) ()) {

@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DIALOGS_MASKREPO_H
 #define DIALOGS_MASKREPO_H
 
-void GUI_MaskRepository (void);
+void dialogs_mask_repository(void);
 
 #endif /* DIALOGS_MASKREPO_H */
 

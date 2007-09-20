@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 #endif
 
-void GUI_ScreenSaver (void)
+void dialogs_screen_saver(void)
 {
   int r_value, g_value, b_value;
   int r_delta, g_delta, b_delta;
@@ -39,17 +39,20 @@ void GUI_ScreenSaver (void)
   PALETTE backup;
   int c;
 
-  if (!is_interactive ())
+  if (!is_interactive())
     return;
 
   /* hide the mouse */
-  scare_mouse ();
+  ji_mouse_set_cursor(JI_CURSOR_NULL);
 
   /* get the current color palette */
-  get_palette (backup);
+  get_palette(backup);
+
+  /* flush drawing messages (useful when we are using double-buffering) */
+  gui_feedback();
 
   /* clear the screen */
-  clear (ji_screen);
+  clear(ji_screen);
 
   /* start the values */
   r_value = (rand() & 0x3F);
@@ -98,8 +101,8 @@ void GUI_ScreenSaver (void)
     v3.y = (rand()%(JI_SCREEN_H+64)) - 32;
 
     /* vertical-retrace */
-    vsync ();
-    set_palette_range (palette, 0, PAL_SIZE-1, FALSE);
+    vsync();
+    set_palette_range(palette, 0, PAL_SIZE-1, FALSE);
 
     /* colors */
     v1.c = palette_color[rand()%256];
@@ -107,32 +110,30 @@ void GUI_ScreenSaver (void)
     v3.c = palette_color[rand()%256];
 
     /* draw a triangle */
-    triangle3d_f (ji_screen,
-		  (bitmap_color_depth (ji_screen) == 8)?
-		  POLYTYPE_GCOL: POLYTYPE_GRGB, NULL, &v1, &v2, &v3);
+    triangle3d_f(ji_screen,
+		 (bitmap_color_depth(ji_screen) == 8)?
+		 POLYTYPE_GCOL: POLYTYPE_GRGB, NULL, &v1, &v2, &v3);
 
     /* poll GUI */
-    ji_mouse_poll ();
-    gui_feedback ();
-  } while ((!keypressed ()) && (!ji_mouse_b (0)));
+    ji_mouse_poll();
+    gui_feedback();
+  } while ((!keypressed()) && (!ji_mouse_b(0)));
 
   /* clear the screen */
-  clear (ji_screen);
+  clear(ji_screen);
 
   /* restore the color palette */
-  set_palette (backup);
-
-  /* show the mouse cursor */
-  unscare_mouse ();
+  set_palette(backup);
 
   /* wait while the user has pushed some mouse button */
   do {
-    ji_mouse_poll ();
-    gui_feedback ();
-  } while (ji_mouse_b (0));
+    ji_mouse_poll();
+    gui_feedback();
+  } while (ji_mouse_b(0));
+
+  jmanager_refresh_screen();
+  ji_mouse_set_cursor(JI_CURSOR_NORMAL);
 
   /* clear again the keyboard buffer */
-  clear_keybuf ();
-
-  jmanager_refresh_screen ();
+  clear_keybuf();
 }

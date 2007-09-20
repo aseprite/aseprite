@@ -1,5 +1,5 @@
 -- ase -- allegro-sprite-editor: the ultimate sprites factory
--- Copyright (C) 2001-2005 by David A. Capello
+-- Copyright (C) 2001-2005, 2007 by David A. Capello
 
 function GUI_SpriteProperties()
   -- get current sprite
@@ -60,7 +60,7 @@ function GUI_SpriteProperties()
       GUI_Refresh(sprite)
       break
     elseif killer == jwidget_find_name(window, "speed") then
-      GUI_FrameLength(-1)
+      dialogs_frame_length(-1)
     else
       break
     end

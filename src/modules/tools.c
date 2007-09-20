@@ -83,7 +83,7 @@ static void update_cursor_color (void)
 {
   if (cursor_color) {
     if (ji_screen)
-      _cursor_color = get_color_for_allegro(bitmap_color_depth (ji_screen),
+      _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
 					    cursor_color);
     else
       _cursor_color = 0;

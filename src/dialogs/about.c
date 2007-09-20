@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,9 +36,9 @@
 
 #endif
 
-void GUI_About(void)
+void dialogs_about(void)
 {
-  JWidget window, box1, label1, label2, label3, label4, label5;
+  JWidget window, box1, label1, label2, label3, label4;
   JWidget separator1, button1;
 
   if (!is_interactive())
@@ -49,15 +49,14 @@ void GUI_About(void)
   label1 = jlabel_new("Allegro Sprite Editor - " VERSION);
   label2 = jlabel_new(_("The Ultimate Sprites Factory"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
-  label3 = jlabel_new("Copyright (C) 2001-2005");
-  label4 = jlabel_new(_("by David A. Capello"));
-  label5 = jlabel_new("http://ase.sourceforge.net/");
+  label3 = jlabel_new(COPYRIGHT);
+  label4 = jlabel_new("http://ase.sourceforge.net/");
   button1 = jbutton_new(_("&Close"));
 
   jwidget_magnetic(button1, TRUE);
 
-  jwidget_add_childs(box1, label1, label2, separator1,
-		     label3, label4, label5, button1, NULL);
+  jwidget_add_childs(box1, label1, label2, separator1, label3, label4,
+		     button1, NULL);
   jwidget_add_child(window, box1);
 
   jwindow_open_fg(window);

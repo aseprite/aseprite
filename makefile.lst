@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2005, 2007 by David A. Capello		-*-Makefile-*-
 
 ######################################################################
 # ASE
@@ -54,6 +54,7 @@ ASE_SOURCES =					\
 	src/file/ico.c				\
 	src/file/jpeg.c				\
 	src/file/pcx.c				\
+	src/file/png_file.c			\
 	src/file/tga.c				\
 	src/file/gif.c				\
 	src/file/gif/format.c			\
@@ -224,15 +225,66 @@ LIBART_OBJS = $(addprefix $(OBJ_DIR)/,						\
 				      $(notdir $(basename $(LIBART_SOURCES)))))
 
 ######################################################################
+# LibPNG
+
+LIBPNG_LIB = $(OBJ_DIR)/libpng$(LIB)
+LIBPNG_DIR = third_party/libpng
+LIBPNG_SOURCES =				\
+	$(LIBPNG_DIR)/png.c			\
+	$(LIBPNG_DIR)/pngerror.c		\
+	$(LIBPNG_DIR)/pngget.c			\
+	$(LIBPNG_DIR)/pngmem.c			\
+	$(LIBPNG_DIR)/pngpread.c		\
+	$(LIBPNG_DIR)/pngread.c			\
+	$(LIBPNG_DIR)/pngrio.c			\
+	$(LIBPNG_DIR)/pngrtran.c		\
+	$(LIBPNG_DIR)/pngrutil.c		\
+	$(LIBPNG_DIR)/pngset.c			\
+	$(LIBPNG_DIR)/pngtrans.c		\
+	$(LIBPNG_DIR)/pngwio.c			\
+	$(LIBPNG_DIR)/pngwrite.c		\
+	$(LIBPNG_DIR)/pngwtran.c		\
+	$(LIBPNG_DIR)/pngwutil.c
+
+LIBPNG_OBJS = $(addprefix $(OBJ_DIR)/,						\
+			  $(addsuffix $(OBJ),					\
+				      $(notdir $(basename $(LIBPNG_SOURCES)))))
+
+######################################################################
+# ZLib
+
+ZLIB_LIB = $(OBJ_DIR)/libzlib$(LIB)
+ZLIB_DIR = third_party/zlib
+ZLIB_SOURCES =					\
+	$(ZLIB_DIR)/adler32.c			\
+	$(ZLIB_DIR)/compress.c			\
+	$(ZLIB_DIR)/crc32.c			\
+	$(ZLIB_DIR)/deflate.c			\
+	$(ZLIB_DIR)/gzio.c			\
+	$(ZLIB_DIR)/infback.c			\
+	$(ZLIB_DIR)/inffast.c			\
+	$(ZLIB_DIR)/inflate.c			\
+	$(ZLIB_DIR)/inftrees.c			\
+	$(ZLIB_DIR)/trees.c			\
+	$(ZLIB_DIR)/uncompr.c			\
+	$(ZLIB_DIR)/zutil.c
+
+ZLIB_OBJS = $(addprefix $(OBJ_DIR)/,						\
+			  $(addsuffix $(OBJ),					\
+				      $(notdir $(basename $(ZLIB_SOURCES)))))
+
+######################################################################
 # All objects and libraries
 
 ALL_OBJS =					\
 	$(ASE_OBJS)				\
 	$(LIBLUA_OBJS)				\
 	$(LIBGFLI_OBJS)				\
-	$(LIBART_OBJS)
+	$(LIBART_OBJS)				\
+	$(LIBPNG_OBJS)
 
 ALL_LIBS =					\
 	$(LIBLUA_LIB)				\
 	$(LIBGFLI_LIB)				\
-	$(LIBART_LIB)
+	$(LIBART_LIB)				\
+	$(LIBPNG_LIB)

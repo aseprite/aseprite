@@ -1,3 +1,5 @@
+#include <allegro.h>
+
 #include "format.h"
 #include "lzw.h"
 
@@ -390,7 +392,13 @@ gif_load_animation (const char *filename, void (*progress) (int))
 {
     PACKFILE *file;
     GIF_ANIMATION *gif = NULL;
-    int size = file_size (filename);
+#if (MAKE_VERSION(4, 2, 0) < MAKE_VERSION(ALLEGRO_VERSION,		\
+					  ALLEGRO_SUB_VERSION,		\
+					  ALLEGRO_WIP_VERSION))
+    int size = file_size(filename);
+#else
+    int size = file_size_ex(filename);
+#endif
 
     file = pack_fopen (filename, "r");
     if (file)

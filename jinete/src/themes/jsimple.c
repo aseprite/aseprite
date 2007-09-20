@@ -14,7 +14,7 @@
 
 static void theme_destroy (void);
 static void theme_regen (void);
-static void theme_set_cursor (int type);
+static BITMAP *theme_set_cursor (int type, int *focus_x, int *focus_y);
 static void theme_init_widget (JWidget widget);
 static JRegion theme_get_window_mask (JWidget widget);
 static void theme_map_decorative_widget (JWidget widget);
@@ -97,9 +97,11 @@ static void theme_regen (void)
   theme->textbox_bg_color = makecol(255,255,255);
 }
 
-static void theme_set_cursor (int type)
+static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
 {
-  set_mouse_sprite (NULL);
+  *focus_x = 0;
+  *focus_y = 0;
+  return NULL;
 }
 
 static void theme_init_widget (JWidget widget)

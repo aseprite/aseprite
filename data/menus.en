@@ -79,11 +79,11 @@
 #
 
 - {
-  "&Tips" = always "GUI_Tips(true)" <F1> ;
-  "&About" = always "GUI_About()" ;
+  "&Tips" = always "dialogs_tips(true)" <F1> ;
+  "&About" = always "dialogs_about()" ;
   "&Refresh" = always "app_refresh_screen()" <F5> ;
   ----
-  "&Screen Saver" = always "GUI_ScreenSaver()" ;
+  "&Screen Saver" = always "dialogs_screen_saver()" ;
   "Set &Graphics Mode" {
     "&Select" = always "set_gfx(\"interactive\", 0, 0, 0)" ;
     ----
@@ -99,9 +99,9 @@
   }
   ----
   "Screen Sh&ot" SCREENSHOT_ACCEL = always "screen_shot()" <F12> ;
-  "Recording Screen" = is_rec "GUI_SwitchREC()" ;
+  "Recording Screen" = is_rec "switch_recording_screen()" ;
   ----
-  "Reload &Menus" = always "GUI_ReloadMenus()" ;
+  "Reload &Menus" = always "rebuild_root_menu_with_alert()" ;
   ----
   "Load Session" = always "GUI_LoadSession()" ;
   "Save Session" = always "GUI_SaveSession()" ;
@@ -134,8 +134,8 @@
   "Flip &Horizontal" = has_image "GUI_FlipHorizontal()" <Shift+H> ;
   "Flip &Vertical" = has_image "GUI_FlipVertical()" <Shift+V> ;
   ----
-  "R&eplace Color" = has_image "GUI_ReplaceColor()" </> ;
-  "&Invert" = has_image "GUI_InvertColor()" <Ctrl+I> ;
+  "R&eplace Color" = has_image "dialogs_replace_color()" </> ;
+  "&Invert" = has_image "dialogs_invert_color()" <Ctrl+I> ;
 }
 
 &Sprite {
@@ -182,12 +182,12 @@ F&rame FRAME_POPUP {
   "&Invert" = has_sprite "InvertMask()" <Shift+Ctrl+I> ;
 #    "&Shrink" = has_imagemask "selection(current_sprite, SEL_SHRINK)" ;
   ----
-  "&Color" = has_image "GUI_MaskColor()" <?> ;
+  "&Color" = has_image "dialogs_mask_color()" <?> ;
   "S&pecial" {
     "Stretch &Bottom" = has_mask "StretchMaskBottom()" ;
   }
   ----
-  "Repositor&y" = has_sprite "GUI_MaskRepository()" <Shift+Ctrl+M> ;
+  "Repositor&y" = has_sprite "dialogs_mask_repository()" <Shift+Ctrl+M> ;
   "&Load" = has_sprite "GUI_LoadMask()" ;
   "&Save" = has_mask "GUI_SaveMask()" ;
 }
@@ -201,7 +201,7 @@ F&rame FRAME_POPUP {
 
 &Tool {
   "&Drawing Tool" {
-    "&Configure" = always "GUI_ToolsConfiguration()" <C> ;
+    "&Configure" = always "dialogs_tools_configuration()" <C> ;
     ----
     "&Marker" = tool_marker "select_tool(\"Marker\")" <M> ;
     "&Dots" = tool_dots "select_tool(\"Dots\")" <D> ;
@@ -215,12 +215,12 @@ F&rame FRAME_POPUP {
 #     "&Oval" = tool_path "select_tool(\"Oval\")" <O> ;
   }
   &Filters FILTERS_POPUP {
-    "Convolution &Matrix" = has_image "GUI_ConvolutionMatrix()" <F9> ;
-    "&Color Curve" = has_image "GUI_ColorCurve()" <Ctrl+M> <F10> ;
+    "Convolution &Matrix" = has_image "dialogs_convolution_matrix()" <F9> ;
+    "&Color Curve" = has_image "dialogs_color_curve()" <Ctrl+M> <F10> ;
     #"&Gaussian Blur" = has_image "gaussian_blur(current_sprite)" ;
-    #"&Vector Map" = has_image "GUI_VectorMap()" ;
+    #"&Vector Map" = has_image "dialogs_vector_map()" ;
     ----
-    "&Despeckle (median filter)" = has_image "GUI_MedianFilter()" ;
+    "&Despeckle (median filter)" = has_image "dialogs_median_filter()" ;
   }
 #   "Make &Undo Animation" = has_sprite
 #                           "sprite = make_undo_animation(current_sprite)
@@ -236,13 +236,13 @@ F&rame FRAME_POPUP {
     "terrain.lua" = always "include(\"examples/terrain.lua\")" ;
   }
   ----
-  "Draw &Text" = has_sprite "GUI_DrawText()" ;
-  "&MapGen" = always "GUI_MapGen()" ;
+  "Draw &Text" = has_sprite "dialogs_draw_text()" ;
+  "&MapGen" = always "dialogs_mapgen()" ;
   "&Play FLI/FLC File" = always "GUI_PlayFLI()" ;
 #   ----
 #   "Test &JID File" = always "GUI_TestJID()" ;
   ----
-  "&Options" = always "GUI_Options()" <Shift+Ctrl+O> ;
+  "&Options" = always "dialogs_options()" <Shift+Ctrl+O> ;
 }
 
 &View {
@@ -264,7 +264,7 @@ F&rame FRAME_POPUP {
     "&Close" = always "close_editor(current_editor)" <Ctrl+4> ;
   }
   "Fi&lm Editor" FILMEDITOR_ACCEL = has_sprite "switch_between_film_and_sprite_editor()" <Tab> ;
-  "&Palette Editor" = always "show_palette_editor()" <F4> ;
+  "&Palette Editor" = always "dialogs_palette_editor()" <F4> ;
   ----
   "F&ilters Popup Menu" = always "show_filters_popup_menu()" <X> ;
 }

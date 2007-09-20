@@ -28,6 +28,9 @@ static const char *(*strings_hook)(const char *msgid) = NULL;
 /* Current mouse cursor type.  */
 
 static int m_cursor;
+static BITMAP *sprite_cursor = NULL;
+static int focus_x;
+static int focus_y;
 
 /* Mouse information (button and position).  */
 
@@ -46,6 +49,7 @@ static volatile int click_mouse_b = 0;
 
 /* Local routines.  */
 
+static void set_cursor(BITMAP *bmp, int x, int y);
 static void clock_inc(void);
 static void check_click(void);
 
@@ -103,7 +107,17 @@ static void check_click(void)
     click_level = JI_CLICK_NOT;
 }
 
-END_OF_STATIC_FUNCTION (check_click);
+END_OF_STATIC_FUNCTION(check_click);
+
+static void set_cursor(BITMAP *bmp, int x, int y)
+{
+  sprite_cursor = bmp;
+  focus_x = x;
+  focus_y = y;
+
+  set_mouse_sprite(bmp);
+  set_mouse_sprite_focus(x, y);
+}
 
 int _ji_system_init(void)
 {
@@ -146,7 +160,7 @@ void ji_set_screen(BITMAP *bmp)
   ji_mouse_set_cursor(JI_CURSOR_NULL);
   ji_screen = bmp;
 
-  if(ji_screen) {
+  if (ji_screen) {
     JWidget manager = ji_get_default_manager();
 
     /* update default-manager size */
@@ -181,23 +195,50 @@ int ji_mouse_get_cursor(void)
 
 int ji_mouse_set_cursor(int type)
 {
-  JTheme theme = ji_get_theme ();
+  JTheme theme = ji_get_theme();
   int old = m_cursor;
 
   m_cursor = type;
 
   if (m_cursor == JI_CURSOR_NULL) {
-    show_mouse (NULL);
-    set_mouse_sprite (NULL);
+    show_mouse(NULL);
+    set_cursor(NULL, 0, 0);
   }
   else {
-    show_mouse (NULL);
-    if (theme->set_cursor)
-      (*theme->set_cursor) (m_cursor);
-    show_mouse (ji_screen);
+    show_mouse(NULL);
+    if (theme->set_cursor) {
+      BITMAP *sprite;
+      int x = 0;
+      int y = 0;
+
+      sprite = (*theme->set_cursor)(m_cursor, &x, &y);
+      set_cursor(sprite, x, y);
+    }
+    if (ji_screen == screen)
+      show_mouse(ji_screen);
   }
 
   return old;
+}
+
+/**
+ * Use this routine if your "ji_screen" isn't Allegro's "screen" so
+ * you must to draw the cursor by your self using this routine.
+ */
+void ji_mouse_draw_cursor()
+{
+  if (sprite_cursor != NULL) {
+    int x = m_x[0]-focus_x;
+    int y = m_y[0]-focus_y;
+    JRect rect = jrect_new(x, y,
+			   x+sprite_cursor->w,
+			   y+sprite_cursor->h);
+
+    jwidget_invalidate_rect(ji_get_default_manager(), rect);
+    draw_sprite(ji_screen, sprite_cursor, x, y);
+
+    jrect_free(rect);
+  }
 }
 
 /* Returns TRUE if the mouse moved.  */
@@ -209,17 +250,30 @@ bool ji_mouse_poll(void)
   m_y[1] = m_y[0];
   m_z[1] = m_z[0];
 
-  poll_mouse ();
+  poll_mouse();
 
   m_b[0] = mouse_b;
-  m_x[0] = mouse_x;
-  m_y[0] = mouse_y;
   m_z[0] = mouse_z;
 
-  if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
-    poll_mouse ();
+  if (ji_screen == screen) {
     m_x[0] = mouse_x;
     m_y[0] = mouse_y;
+  }
+  else {
+    m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
+    m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
+  }
+
+  if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
+    poll_mouse();
+    if (ji_screen == screen) {
+      m_x[0] = mouse_x;
+      m_y[0] = mouse_y;
+    }
+    else {
+      m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
+      m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
+    }
     moved = TRUE;
   }
 
@@ -234,8 +288,17 @@ bool ji_mouse_poll(void)
 void ji_mouse_set_position(int x, int y)
 {
   moved = TRUE;
-  position_mouse(m_x[0] = m_x[1] = x,
-		 m_y[0] = m_y[1] = y);
+
+  m_x[0] = m_x[1] = x;
+  m_y[0] = m_y[1] = y;
+
+  if (ji_screen == screen) {
+    position_mouse(x, y);
+  }
+  else {
+    position_mouse(SCREEN_W * x / JI_SCREEN_W,
+		   SCREEN_H * y / JI_SCREEN_H);
+  }
 }
 
 int ji_mouse_x(int antique) { return m_x[antique & 1]; }

@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include <allegro/file.h>
+#include <allegro.h>
 
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -29,10 +29,16 @@
 #endif
 
 /* loads a MSK file (Animator and Animator Pro format) */
-Mask *load_msk_file (const char *filename)
+Mask *load_msk_file(const char *filename)
 {
-  int size, orig_size = file_size_ex(filename);
-  int i, c, u, v, byte, magic;
+#if (MAKE_VERSION(4, 2, 0) < MAKE_VERSION(ALLEGRO_VERSION,		\
+					  ALLEGRO_SUB_VERSION,		\
+					  ALLEGRO_WIP_VERSION))
+  int orig_size = file_size(filename);
+#else
+  int orig_size = file_size_ex(filename);
+#endif
+  int i, c, u, v, byte, magic, size;
   Mask *mask = NULL;
   PACKFILE *f;
 
@@ -92,10 +98,10 @@ Mask *load_msk_file (const char *filename)
 }
 
 /* saves an Animator Pro MSK file (really a PIC file) */
-int save_msk_file (Mask *mask, const char *filename)
+int save_msk_file(Mask *mask, const char *filename)
 {
   if (mask->bitmap)
-    return save_pic_file (filename, mask->x, mask->y, NULL, mask->bitmap);
+    return save_pic_file(filename, mask->x, mask->y, NULL, mask->bitmap);
   else
     return -1;
 }

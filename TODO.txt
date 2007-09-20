@@ -52,12 +52,6 @@ Wish-list
     position from the starting point of movement;
   + make drawing the 'marching-ants-rectangle' a prioritaire thing to
     draw (when move it).
-- default Windowed mode? (idea from Robert J Ohannessian);
-  + I don't think so: ASE was, is and will be better in FULL-SCREEN modes;
-  + Maybe a recordable "card" in the configuration file will be enough;
-  + See docs/FULLSCR.txt;
-  + if double buffering is implemented, that is the answer (double buffering
-    with a backbuffer of 320x240 and a realscreen of 640x480).
 - for Jinete:
   + add columns handle to list-boxes;
   + add icons handle to all widgets (mainly button, list-items, and labels);

@@ -1,5 +1,5 @@
 /* jinete - a GUI library
- * Copyright (C) 2003-2005 by David A. Capello
+ * Copyright (C) 2003-2005, 2007 by David A. Capello
  *
  * Jinete is gift-ware.
  */
@@ -65,6 +65,7 @@ enum {
 
 int ji_mouse_get_cursor(void);
 int ji_mouse_set_cursor(int type);
+void ji_mouse_draw_cursor();
 
 bool ji_mouse_poll(void);
 void ji_mouse_set_position(int x, int y);

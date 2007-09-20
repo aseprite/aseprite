@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2005, 2007 by David A. Capello		-*-Makefile-*-
 
 .PHONY = _default
 _default: default
@@ -10,9 +10,13 @@ CFLAGS += -Wall -I. -Isrc -Ijinete/include -Ithird_party \
 	  -I$(JINETE_DIR)/freetype/include \
           -I$(LIBLUA_DIR)/include \
 	  -I$(LIBGFLI_DIR) \
-	  -Wno-deprecated-declarations
+	  -I$(LIBPNG_DIR) \
+	  -I$(ZLIB_DIR) \
+	  -Wno-deprecated-declarations \
+	  -DPNG_NO_MMX_CODE
 
-LFLAGS += $(JINETE_LIB) $(LIBLUA_LIB) $(LIBGFLI_LIB) $(LIBART_LIB)
+LFLAGS += $(JINETE_LIB) $(LIBLUA_LIB) $(LIBGFLI_LIB) $(LIBART_LIB) \
+	  $(LIBPNG_LIB) $(ZLIB_LIB)
 
 ifdef PROFILE
   CFLAGS += -pg
@@ -67,6 +71,14 @@ $(LIBART_LIB): $(LIBART_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
+$(LIBPNG_LIB): $(LIBPNG_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(ZLIB_LIB): $(ZLIB_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
 ######################################################################
 # Rules to build objects and the application
 
@@ -89,6 +101,8 @@ VPATH = src					\
 	$(LIBLUA_DIR)/src/lib			\
 	$(LIBGFLI_DIR)				\
 	$(LIBART_DIR)				\
+	$(LIBPNG_DIR)				\
+	$(ZLIB_DIR)				\
 	$(JINETE_DIR)/src			\
 	$(JINETE_DIR)/src/themes		\
 	$(JINETE_DIR)/freetype/src/base		\
@@ -113,7 +127,8 @@ ASE_DEPS = config.h.gch
 else
 ASE_DEPS = 
 endif
-ASE_DEPS += $(ASE_OBJS) $(JINETE_LIB) $(LIBART_LIB) $(LIBGFLI_LIB) $(LIBLUA_LIB)
+ASE_DEPS += $(ASE_OBJS) $(JINETE_LIB) $(LIBART_LIB) $(LIBGFLI_LIB) \
+	    $(LIBLUA_LIB) $(LIBPNG_LIB) $(ZLIB_LIB)
 
 ifdef USE_PRECOMPILED_HEADER
 config.h.gch: config.h
