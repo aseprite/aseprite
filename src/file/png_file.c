@@ -20,7 +20,6 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 
