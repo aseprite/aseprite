@@ -1,3 +1,8 @@
+2007-09-19  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/gui.c (display_switch_in_callback): Fixed (now it
+	only activate a flag to redraw the screen in the next GUI IDLE).
+
 2007-09-18  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/dialogs/tips.c (tips_msg_proc): Added scrolling with mouse
