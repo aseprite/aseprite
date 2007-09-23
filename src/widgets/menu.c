@@ -29,6 +29,7 @@
 #include "jinete/message.h"
 #include "jinete/widget.h"
 
+#include "commands/commands.h"
 #include "core/core.h"
 #include "modules/chkmthds.h"
 #include "modules/gui.h"
@@ -38,57 +39,44 @@
 
 typedef struct MenuItem
 {
-  char *script;
-  CheckMethod check_method;
+  Command *command;
+  char *argument;
 } MenuItem;
 
-static int menuitem_type (void);
-static bool menuitem_msg_proc (JWidget widget, JMessage msg);
+static int menuitem_type(void);
+static bool menuitem_msg_proc(JWidget widget, JMessage msg);
 
 /**
  * A widget that represent a menu item of the application.
  *
- * It's like a jmenuitem, but it has a extra properties: the script to
- * be executed and a method to check the status of the menu-item.
+ * It's like a jmenuitem, but it has a extra properties: the name of
+ * the command to be executed when it's clicked (also that command is
+ * used to check the availability of the command).
  * 
  * @see jmenuitem_new
  */
-JWidget menuitem_new(const char *text)
+JWidget menuitem_new(const char *text,
+		     Command *command,
+		     const char *argument)
 {
   JWidget widget = jmenuitem_new(text);
   MenuItem *menuitem = jnew0(MenuItem, 1);
 
-  jwidget_add_hook(widget, menuitem_type(),
-		   menuitem_msg_proc, menuitem);
+  menuitem->command = command;
+  menuitem->argument = argument ? jstrdup(argument): NULL;
+
+  jwidget_add_hook(widget,
+		   menuitem_type(),
+		   menuitem_msg_proc,
+		   menuitem);
 
   return widget;
 }
 
-const char *menuitem_get_script(JWidget widget)
+Command *menuitem_get_command(JWidget widget)
 {
   MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
-
-  return menuitem->script;
-}
-
-void menuitem_set_script(JWidget widget, const char *format, ...)
-{
-  MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
-  char buf[4096];
-  va_list ap;
-
-  va_start(ap, format);
-  vsprintf(buf, format, ap);
-  va_end(ap);
-
-  menuitem->script = jstrdup(buf);
-}
-
-void menuitem_set_check_method(JWidget widget, CheckMethod check_method)
-{
-  MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
-
-  menuitem->check_method = check_method;
+  return menuitem->command;
 }
 
 static int menuitem_type(void)
@@ -104,13 +92,9 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY: {
-      MenuItem *menuitem = jwidget_get_data (widget, menuitem_type ());
-
-      if (menuitem->script) {
-	jfree(menuitem->script);
-	menuitem->script = NULL;
-      }
-
+      MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
+      if (menuitem->argument)
+	jfree(menuitem->argument);
       jfree(menuitem);
       break;
     }
@@ -118,14 +102,20 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
     case JM_OPEN: {
       MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
 
-      if (menuitem->check_method) {
-	/* call the check method */
-	if ((*menuitem->check_method)(widget))
-	  /* enable the widget */
+      if (menuitem->command) {
+	/* enabled? */
+	if (command_is_enabled(menuitem->command,
+			       menuitem->argument))
 	  jwidget_enable(widget);
 	else
-	  /* disable it */
 	  jwidget_disable(widget);
+
+	/* selected? */
+	if (command_is_selected(menuitem->command,
+				menuitem->argument))
+	  jwidget_select(widget);
+	else
+	  jwidget_deselect(widget);
       }
       break;
     }
@@ -133,31 +123,20 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
     case JM_CLOSE: {
       MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
 
-      /* enable (to get the keyboard bindinds) */
-      if (menuitem->check_method)
-	jwidget_enable(widget);
+      /* disable the menu (the keyboard shortcuts are processed by "manager_msg_proc") */
+      if (menuitem->command)
+	jwidget_disable(widget);
       break;
     }
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_MENUITEM_SELECT) {
-	/* call the script of the selected menu item */
 	MenuItem *menuitem = jwidget_get_data(widget, menuitem_type());
 
-	if (menuitem->script) {
-	  if (menuitem->check_method) {
-	    /* call the check method */
-	    if (!(*menuitem->check_method)(widget))
-	      return FALSE;
-	  }
-
-	  PRINTF("Calling menu \"%s\" script\n", widget->text);
-
-	  rebuild_lock();
-	  do_script_expr(menuitem->script);
-	  rebuild_unlock();
-
-	  PRINTF("Done with menu call\n");
+	if (menuitem->command && command_is_enabled(menuitem->command,
+						    menuitem->argument)) {
+	  command_execute(menuitem->command,
+			  menuitem->argument);
 	  return TRUE;
 	}
       }

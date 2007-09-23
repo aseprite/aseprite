@@ -20,13 +20,13 @@
 #define WIDGETS_MENU_H
 
 #include "jinete/base.h"
-#include "modules/chkmthds.h"
 
-JWidget menuitem_new(const char *text);
+struct Command;
 
-const char *menuitem_get_script(JWidget menuitem);
-void menuitem_set_script(JWidget menuitem, const char *format, ...);
+JWidget menuitem_new(const char *text,
+		     struct Command *command,
+		     const char *argument);
 
-void menuitem_set_check_method(JWidget menuitem, CheckMethod check_method);
+Command *menuitem_get_command(JWidget menuitem);
 
 #endif /* WIDGETS_MENU_H */
