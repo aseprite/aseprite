@@ -183,7 +183,7 @@ F&rame FRAME_POPUP {
   "E&ditor de Película" FILMEDITOR_ACCEL = has_sprite "switch_between_film_and_sprite_editor()" <Tab> ;
   "&Paleta de Colores" = always "dialogs_palette_editor()" <F4> ;
   ----
-  "Popup Menu de &Filtros" = always "show_filters_popup_menu()" <X> ;
+  "Popup Menu de &Filtros" = always "show_fx_popup_menu()" <X> ;
 }
 
 L&ista SPRITE_LIST ;

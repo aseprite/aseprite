@@ -31,6 +31,7 @@
 #include "jinete.h"
 #include "jinete/intern.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -54,23 +55,24 @@
 #include "util/recscr.h"
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
-#include "widgets/menu.h"
+#include "widgets/menuitem.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
 
 #endif
 
+/* options */
 enum {
   OPEN_GFX_FILE,
   DO_SCRIPT_FILE,
   DO_SCRIPT_EXPR,
 };
 
-typedef struct Command
+typedef struct Option
 {
   int type;
   char *data;
-} Command;
+} Option;
 
 static char *exe_name;		      /* name of the program */
 
@@ -84,14 +86,14 @@ static JWidget status_bar = NULL;     /* the status bar widget */
 static JWidget color_bar = NULL;      /* the color bar widget */
 static JWidget tool_bar = NULL;	      /* the tool bar widget */
 
-static JList commands;		/* list of "Command" structures */
+static JList options; /* list of "Option" structures (options to execute) */
 static char *palette_filename = NULL;
 
-static int check_args (int argc, char *argv[]);
-static void usage (int status);
+static int check_args(int argc, char *argv[]);
+static void usage(int status);
 
-static Command *command_new (int type, const char *data);
-static void command_free (Command *command);
+static Option *option_new(int type, const char *data);
+static void option_free(Option *option);
 
 /* install and load all initial stuff */
 int app_init(int argc, char *argv[])
@@ -99,22 +101,22 @@ int app_init(int argc, char *argv[])
   exe_name = argv[0];
 
   /* Initialize language suppport.  */
-  intl_init ();
+  intl_init();
 
   /* install the `core' of ASE application */
-  if (core_init () < 0) {
-    user_printf (_("ASE core initialization error.\n"));
+  if (core_init() < 0) {
+    user_printf(_("ASE core initialization error.\n"));
     return -1;
   }
 
   /* init configuration */
-  ase_config_init ();
+  ase_config_init();
 
   /* load the language file */
-  intl_load_lang ();
+  intl_load_lang();
 
   /* search options in the arguments */
-  if (check_args (argc, argv) < 0)
+  if (check_args(argc, argv) < 0)
     return -1;
 
   /* GUI is the default mode */
@@ -161,7 +163,7 @@ int app_init(int argc, char *argv[])
 /* runs ASE main dialog */
 void app_loop(void)
 {
-  Command *command;
+  Option *option;
   JLink link;
 
   /* initialize GUI interface */
@@ -245,25 +247,25 @@ void app_loop(void)
   if (!(ase_mode & MODE_GUI))
     set_display_switch_mode(SWITCH_BACKAMNESIA);
 
-  /* procress commands */
-  PRINTF("Processing commands...\n");
+  /* procress options */
+  PRINTF("Processing options...\n");
 
-  JI_LIST_FOR_EACH(commands, link) {
-    command = link->data;
+  JI_LIST_FOR_EACH(options, link) {
+    option = link->data;
 
-    switch (command->type) {
+    switch (option->type) {
 
       case OPEN_GFX_FILE: {
 	Sprite *sprite;
 
 	/* load the sprite */
-	sprite = sprite_load(command->data);
+	sprite = sprite_load(option->data);
 	if (!sprite) {
 	  /* error */
 	  if (ase_mode & MODE_GUI)
-	    jalert(_("Error<<Error loading file \"%s\"||&Close"), command->data);
+	    jalert(_("Error<<Error loading file \"%s\"||&Close"), option->data);
 	  else
-	    user_printf(_("Error loading file \"%s\"\n"), command->data);
+	    user_printf(_("Error loading file \"%s\"\n"), option->data);
 	}
 	else {
 	  /* mount and select the sprite */
@@ -275,24 +277,24 @@ void app_loop(void)
 	    set_sprite_in_more_reliable_editor(get_first_sprite());
 
 	    /* recent file */
-	    recent_file(command->data);
+	    recent_file(option->data);
 	  }
 	}
 	break;
       }
 
       case DO_SCRIPT_FILE:
-	do_script_file(command->data);
+	do_script_file(option->data);
 	break;
 
       case DO_SCRIPT_EXPR:
-	do_script_expr(command->data);
+	do_script_expr(option->data);
 	break;
     }
-    command_free(command);
+    option_free(option);
   }
 
-  jlist_free(commands);
+  jlist_free(options);
 
   /* just batch mode */
   if (ase_mode & MODE_BATCH) {
@@ -377,7 +379,7 @@ void app_refresh_screen(void)
    you should use rebuild_sprite_list () instead (src/gui/gui.c) */
 void app_realloc_sprite_list(void)
 {
-  JWidget list_menuitem = get_sprite_list_menuitem ();
+  JWidget list_menuitem = get_sprite_list_menuitem();
   JWidget menuitem;
   Sprite *sprite;
   JLink link;
@@ -386,8 +388,10 @@ void app_realloc_sprite_list(void)
 
   /* update the sprite-list menu */
   if (list_menuitem) {
-    Sprite *clipboard = get_clipboard_sprite ();
+    Command *cmd_select_file = command_get_by_name(CMD_SELECT_FILE);
+    Sprite *clipboard = get_clipboard_sprite();
     JWidget submenu;
+    char buf[256];
     int c, count = 0;
 
     submenu = jmenuitem_get_submenu (list_menuitem);
@@ -396,30 +400,31 @@ void app_realloc_sprite_list(void)
       jwidget_free (submenu);
     }
 
-    submenu = jmenu_new ();
-    jmenuitem_set_submenu (list_menuitem, submenu);
+    submenu = jmenu_new();
+    jmenuitem_set_submenu(list_menuitem, submenu);
 
     /* for `null' */
-    menuitem = menuitem_new (_("Nothing"));
-    menuitem_set_script (menuitem, "ShowSpriteByID (0)");
+    menuitem = menuitem_new(_("Nothing"), cmd_select_file, NULL);
 
-    if (!current_sprite)
-      jwidget_select (menuitem);
+/*     if (!current_sprite) */
+/*       jwidget_select(menuitem); */
 
-    jwidget_add_child (submenu, menuitem);
+    jwidget_add_child(submenu, menuitem);
     count++;
 
     /* for `clipboard' */
-    menuitem = menuitem_new (_("Clipboard"));
-    menuitem_set_script (menuitem, "ShowSpriteByID (%d)",
-			 clipboard ? clipboard->gfxobj.id: 0);
+    if (clipboard)
+      usprintf(buf, "%d", clipboard->gfxobj.id);
 
-    if (!clipboard)
-      jwidget_disable (menuitem);
-    else if (current_sprite == clipboard)
-      jwidget_select (menuitem);
+    menuitem = menuitem_new(_("Clipboard"), cmd_select_file,
+			    clipboard ? buf: NULL);
 
-    jwidget_add_child (submenu, menuitem);
+/*     if (!clipboard) */
+/*       jwidget_disable(menuitem); */
+/*     else if (current_sprite == clipboard) */
+/*       jwidget_select(menuitem); */
+
+    jwidget_add_child(submenu, menuitem);
     count++;
 
     /* insert a separator */
@@ -432,7 +437,7 @@ void app_realloc_sprite_list(void)
     }
 
     if (c > 0) {
-      jwidget_add_child (submenu, ji_separator_new (NULL, JI_HORIZONTAL));
+      jwidget_add_child(submenu, ji_separator_new(NULL, JI_HORIZONTAL));
       count++;
 
       /* insert all other sprites */
@@ -445,21 +450,23 @@ void app_realloc_sprite_list(void)
 	/* `count' limit -- XXXX how I know the height of menu-items? */
 /* 	if (count >= SCREEN_H/(text_height (font)+4)-2) { */
 	if (count >= 14) {
-	  menuitem = menuitem_new (_("More"));
-	  jwidget_add_child (submenu, menuitem);
+	  menuitem = menuitem_new(_("More"), NULL, NULL);
+	  jwidget_add_child(submenu, menuitem);
 
 	  submenu = jmenu_new ();
-	  jmenuitem_set_submenu (menuitem, submenu);
+	  jmenuitem_set_submenu(menuitem, submenu);
 	  count = 0;
 	}
 
-	menuitem = menuitem_new (get_filename (sprite->filename));
-	menuitem_set_script (menuitem, "ShowSpriteByID (%d)", sprite->gfxobj.id);
+	usprintf(buf, "%d", sprite->gfxobj.id);
+
+	menuitem = menuitem_new(get_filename(sprite->filename),
+				cmd_select_file, buf);
 
 	if (current_sprite == sprite)
-	  jwidget_select (menuitem);
+	  jwidget_select(menuitem);
 
-	jwidget_add_child (submenu, menuitem);
+	jwidget_add_child(submenu, menuitem);
 	count++;
       }
     }
@@ -478,6 +485,7 @@ void app_realloc_recent_list(void)
 
   /* update the recent file list menu item */
   if (list_menuitem) {
+    Command *cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
     JWidget submenu;
 
     submenu = jmenuitem_get_submenu (list_menuitem);
@@ -486,37 +494,26 @@ void app_realloc_recent_list(void)
       jwidget_free (submenu);
     }
 
-    submenu = jmenu_new ();
-    jmenuitem_set_submenu (list_menuitem, submenu);
+    submenu = jmenu_new();
+    jmenuitem_set_submenu(list_menuitem, submenu);
 
     if (jlist_first(get_recent_files_list())) {
-      const char *s, *filename;
-      char path[1024];
+      const char *filename;
       JLink link;
-      int ch;
 
       JI_LIST_FOR_EACH(get_recent_files_list(), link) {
 	filename = link->data;
 
-	ustrcpy(path, empty_string);
-
-	s = filename;
-	while ((ch = ugetxc(&s)))
-	  if (ch == '\\')
-	    ustrcat(path, "\\\\");
-	  else
-	    uinsert(path, ustrlen(path), ch);
-
-	menuitem = menuitem_new(get_filename(filename));
-	menuitem_set_script(menuitem, "sprite_recent_load (\"%s\")", path);
-
-	jwidget_add_child (submenu, menuitem);
+	menuitem = menuitem_new(get_filename(filename),
+				cmd_open_file,
+				filename);
+	jwidget_add_child(submenu, menuitem);
       }
     }
     else {
-      menuitem = menuitem_new (_("Nothing"));
-      jwidget_disable (menuitem);
-      jwidget_add_child (submenu, menuitem);
+      menuitem = menuitem_new(_("Nothing"), NULL, NULL);
+      jwidget_disable(menuitem);
+      jwidget_add_child(submenu, menuitem);
     }
   }
 }
@@ -557,8 +554,7 @@ void app_switch(JWidget widget)
 void app_default_status_bar_message(void)
 {
   status_bar_set_text(app_get_status_bar(), 250,
-		      "ASE " VERSION ", "
-		      "Copyright (C) 2001-2005 David A. Capello");
+		      "ASE " VERSION ", " COPYRIGHT);
 }
 
 /* looks the inpunt arguments in the command line */
@@ -567,7 +563,7 @@ static int check_args(int argc, char *argv[])
   int i, n, len;
   char *arg;
 
-  commands = jlist_new();
+  options = jlist_new();
 
   for (i=1; i<argc; i++) {
     arg = argv[i];
@@ -584,14 +580,14 @@ static int check_args(int argc, char *argv[])
       /* do script expression */
       else if (strncmp (arg+n, "exp", len) == 0) {
         if (++i < argc)
-          jlist_append(commands, command_new(DO_SCRIPT_EXPR, argv[i]));
+          jlist_append(options, option_new(DO_SCRIPT_EXPR, argv[i]));
         else
           usage (1);
       }
       /* open script file */
       else if (strncmp (arg+n, "file", len) == 0) {
         if (++i < argc)
-          jlist_append(commands, command_new(DO_SCRIPT_FILE, argv[i]));
+          jlist_append(options, option_new(DO_SCRIPT_FILE, argv[i]));
         else
           usage (1);
       }
@@ -661,7 +657,7 @@ static int check_args(int argc, char *argv[])
     }
     /* graphic file to open */
     else if (n == 0)
-      jlist_append(commands, command_new(OPEN_GFX_FILE, argv[i]));
+      jlist_append(options, option_new(OPEN_GFX_FILE, argv[i]));
   }
 
   return 0;
@@ -713,27 +709,27 @@ static void usage(int status)
   }
   /* how to show options */
   else {
-    console_printf (_("Try \"%s --help\" for more information.\n"), exe_name);
+    console_printf(_("Try \"%s --help\" for more information.\n"), exe_name);
   }
-  exit (status);
+  exit(status);
 }
 
-static Command *command_new (int type, const char *data)
+static Option *option_new(int type, const char *data)
 {
-  Command *command;
+  Option *option;
 
-  command = jnew (Command, 1);
-  if (!command)
+  option = jnew(Option, 1);
+  if (!option)
     return NULL;
 
-  command->type = type;
-  command->data = jstrdup (data);
+  option->type = type;
+  option->data = jstrdup(data);
 
-  return command;
+  return option;
 }
 
-static void command_free (Command *command)
+static void option_free(Option *option)
 {
-  jfree (command->data);
-  jfree (command);
+  jfree(option->data);
+  jfree(option);
 }

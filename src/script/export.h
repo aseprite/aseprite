@@ -107,7 +107,7 @@ void intl_set_lang(const char *lang);
 
 /* modules/rootmenu.c */
 
-void show_filters_popup_menu(void);
+void show_fx_popup_menu(void);
 
 /* modules/tools.c */
 
@@ -309,7 +309,6 @@ int set_gfx(const char *card, int w, int h, int depth);
 
 /* dialogs/... */
 
-void dialogs_about(void);
 void dialogs_color_curve(void);
 void dialogs_convolution_matrix(void);
 void dialogs_draw_text(void);
@@ -858,7 +857,7 @@ void jentry_deselect_text(JWidget entry);
 
 /* Image ************************************************************/
 
-/* JWidget ji_image_new(struct BITMAP *bmp, int align); */
+/* JWidget jimage_new(struct BITMAP *bmp, int align); */
 
 /* Label ************************************************************/
 
@@ -942,10 +941,10 @@ void jmessage_set_sub_msg(JMessage msg, JMessage sub_msg);
 
 /* Panel ************************************************************/
 
-JWidget ji_panel_new(int align);
+JWidget jpanel_new(int align);
 
-double ji_panel_get_pos(JWidget panel);
-void ji_panel_set_pos(JWidget panel, double pos);
+double jpanel_get_pos(JWidget panel);
+void jpanel_set_pos(JWidget panel, double pos);
 
 /* QuickMenu ********************************************************/
 

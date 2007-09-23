@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2005, 2007 by David A. Capello		-*-Makefile-*-
 
 ifndef JINETE_DIR
 JINETE_DIR = .
@@ -46,12 +46,14 @@ JINETE_SOURCES =				\
 	$(JINETE_DIR)/src/jregion.c		\
 	$(JINETE_DIR)/src/jsep.c		\
 	$(JINETE_DIR)/src/jslider.c		\
+	$(JINETE_DIR)/src/jstream.c		\
 	$(JINETE_DIR)/src/jsystem.c		\
 	$(JINETE_DIR)/src/jtextbox.c		\
 	$(JINETE_DIR)/src/jtheme.c		\
 	$(JINETE_DIR)/src/jview.c		\
 	$(JINETE_DIR)/src/jwidget.c		\
 	$(JINETE_DIR)/src/jwindow.c		\
+	$(JINETE_DIR)/src/jxml.c		\
 	$(JINETE_DIR)/src/themes/jsimple.c	\
 	$(JINETE_DIR)/src/themes/jstand.c
 
@@ -107,13 +109,11 @@ JINETE_EXAMPLES_SOURCES =			\
 	$(JINETE_DIR)/examples/18tips.c		\
 	$(JINETE_DIR)/examples/19game.c		\
 	$(JINETE_DIR)/examples/20combo.c	\
-	$(JINETE_DIR)/examples/21manage.c
+	$(JINETE_DIR)/examples/21manage.c	\
+	$(JINETE_DIR)/examples/22xml.c
 
-JINETE_EXAMPLES_SOURCES =\
-	$(JINETE_DIR)/examples/09lists.c
-# 	$(JINETE_DIR)/examples/16theme.c\
-# 	$(JINETE_DIR)/examples/17theme.c\
-# 	$(JINETE_DIR)/examples/20combo.c
+JINETE_EXAMPLES_SOURCES =			\
+	$(JINETE_DIR)/examples/22xml.c
 
 JINETE_EXAMPLES_OBJS =							\
   $(addprefix $(OBJ_DIR)/,						\

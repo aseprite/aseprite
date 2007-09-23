@@ -5,172 +5,179 @@ NEWS
 0.6
 ---
 
-- Added support for PNG files (through libpng).
-- Finally screen scaling supported (with double-buffering). This means
++ New XML format for the menus. Restructured all the menus (more user
+  friendly?)
++ Added menu customization through UI (Tools/Customize).
+- Removed menu scripting customization.
+- Removed screen saver.
++ GUI enhanced: more borders for windows, and more spacing between
+  widgets.
++ Added support for PNG files (through libpng).
++ Finally screen scaling supported (with double-buffering). This means
   that you can use a screen of 320x240 between a window of 640x480
   (screen-scaling x2). This is the new default video mode for ASE.
-- Fixed compilations errors for 4.x
-- Fixed menus.es
++ Fixed compilations errors for 4.x
++ Fixed menus.es
 
 0.5
 ---
 
-- Added features-requested by Carl Olsson:
++ Added features-requested by Carl Olsson:
   + better "snap to grid" support for box-like tools (rectangle,
     ellipse, etc.).
   + floating selection now "snap to grid" also.
   + added a subpixel movement for zoomed-cursors in the editor, to
     known where we are inside the pixel.
-- Better support for the mouse wheel and middle button in the
++ Better support for the mouse wheel and middle button in the
   sprite-editor (to scroll and zoom).
-- GIF support to save file fully supported by default.
-- Fixed compilation with Allegro 4.2.3 SVN (and fixed a bug in Allegro
++ GIF support to save file fully supported by default.
++ Fixed compilation with Allegro 4.2.3 SVN (and fixed a bug in Allegro
   with key_shifts).
-- Now the full-screen or windowed state is remembered (thanks
++ Now the full-screen or windowed state is remembered (thanks
   to Manuel De Miguel Moreno to report it).
 
 0.4
 ---
 
 - Removed the console mode.
-- Changed Film Editor shortcut: TAB key.
-- New feature: Each animation frame has duration.
-- New Palette Editor (F4 key).
-- Now sprites support multiple palettes: Each frame can has its own
++ Changed Film Editor shortcut: TAB key.
++ New feature: Each animation frame has duration.
++ New Palette Editor (F4 key).
++ Now sprites support multiple palettes: Each frame can has its own
   color palette.
-- Added support to load GIF files (by Elias Pschernig).
-- Added a combobox to file-selection to handle the bookmarks.
-- Added rotation!!!  Now you can scale and rotate what you paste from
++ Added support to load GIF files (by Elias Pschernig).
++ Added a combobox to file-selection to handle the bookmarks.
++ Added rotation!!!  Now you can scale and rotate what you paste from
   the clipboard.
 
 0.3.1
 -----
 
-- Fixed the creation of session files when an exception (fatal error)
++ Fixed the creation of session files when an exception (fatal error)
   happens in Windows.
-- Added es.po and tips.es files.
++ Added es.po and tips.es files.
 
 0.3
 ---
 
-- Added session manager (if the program crashes the session is saved
++ Added session manager (if the program crashes the session is saved
   automatically).
-- Added a tool to draw text (finally).
-- More documentation and tips.
-- Improved the frame adding process.
-- Fixed important bugs.
-- Added a mapgen utility (original code by Johan Halmén and Anders
++ Added a tool to draw text (finally).
++ More documentation and tips.
++ Improved the frame adding process.
++ Fixed important bugs.
++ Added a mapgen utility (original code by Johan Halmén and Anders
   Andersson).
-- Spanish language support (now works in Windows too).
-- Internal code improved (mainly GUI parts, and functions names).
++ Spanish language support (now works in Windows too).
++ Internal code improved (mainly GUI parts, and functions names).
 
 0.2.4
 -----
 
-- More stable undo: with limit and without the strange
++ More stable undo: with limit and without the strange
   redo-after-overwrite-undo feature.
-- New median filter to despeckle images.
-- Updated alternative support to load/save JPEG files with JPGalleg 2.3
++ New median filter to despeckle images.
++ Updated alternative support to load/save JPEG files with JPGalleg 2.3
   library, thanks to Angelo Mottola for this.
-- Fixed problems with non-US keyboards: the Alt key can't be used for
++ Fixed problems with non-US keyboards: the Alt key can't be used for
   shortcuts.  Some combinations changes:
   + <~> to <`>             (open film editor)
   + <Ctrl+/> to <?>        (mask by color)
   + <Ctrl+~> to <Ctrl+4>   (close current editor)
-- Added Cut, Copy, Paste!
-- Added AutoCrop (before known as Trim).
++ Added Cut, Copy, Paste!
++ Added AutoCrop (before known as Trim).
 
 0.2.3
 -----
 
-- Fixed routine to save JPG files.
-- Fixed and improved various parts of GUI.
++ Fixed routine to save JPG files.
++ Fixed and improved various parts of GUI.
 
 0.2.2
 -----
 
-- Added some documentation to write Lua scripts.
-- Film Editor was improved.
-- Fixed errors with the graphics cursor, some keyboard problems, and
++ Added some documentation to write Lua scripts.
++ Film Editor was improved.
++ Fixed errors with the graphics cursor, some keyboard problems, and
   various minor bugs.
-- New tips with text and images.  This will be very useful for
++ New tips with text and images.  This will be very useful for
   beginners.
-- Onionskin feature is done.
-- Added (optional) ordered dithering to render RGB images in 8 bpp.
-- New actions: Merge Down, New Frame, Copy Frame, change Image Type!,
++ Onionskin feature is done.
++ Added (optional) ordered dithering to render RGB images in 8 bpp.
++ New actions: Merge Down, New Frame, Copy Frame, change Image Type!,
   Load Script File.
-- Optimized the drawing speed with tiled mode.
++ Optimized the drawing speed with tiled mode.
 
 0.2.1
 -----
 
-- Fixed in Windows version: spray and some errors saving file-names in
++ Fixed in Windows version: spray and some errors saving file-names in
   the configuration file.
-- Added libintl support and the Spanish translation (only for Linux,
++ Added libintl support and the Spanish translation (only for Linux,
   but I have planned make this usable in Windows).
-- More undo support: insert/remove layers and mask modifications.
-- Filters Convolution Matrix and Color Curve are back.
-- Added more basic operations (with undo support): flatten layers,
++ More undo support: insert/remove layers and mask modifications.
++ Filters Convolution Matrix and Color Curve are back.
++ Added more basic operations (with undo support): flatten layers,
   duplicate layer, duplicate sprite, horizontal/vertical flip, crop
   frame.
-- New .ASE format (in alpha status, please test it!).
-- Easy script routines: now are a high-level layer of routines (easy
++ New .ASE format (in alpha status, please test it!).
++ Easy script routines: now are a high-level layer of routines (easy
   to use and understand), and the low-level routine's set (for
   internal or more specific works).
 - Removed all the interpolation stuff between key-frames: yes, after
   thinking, this make too hard the animation edition (so the "fancy
   spline interpolation" was removed).
-- Optimized the editor's speed in scroll movements.
-- The Film Editor is almost done for layers and frames handle.
-- Fixed filters using mask with displaced layers.
-- Support to apply filters to various frames/layers at the same time.
-- Added differents screen layouts in main.jid (see FAQ.txt to see how
++ Optimized the editor's speed in scroll movements.
++ The Film Editor is almost done for layers and frames handle.
++ Fixed filters using mask with displaced layers.
++ Support to apply filters to various frames/layers at the same time.
++ Added differents screen layouts in main.jid (see FAQ.txt to see how
   change between them).
-- The tool bar is back!
++ The tool bar is back!
 
 0.2
 ---
 
-- Fixed a lot of bugs.
-- Added optional support for JPEG with JPGalleg 2.0 library.
-- Added draw mode: Opaque (normal), Glass (transparent), Semi
++ Fixed a lot of bugs.
++ Added optional support for JPEG with JPGalleg 2.0 library.
++ Added draw mode: Opaque (normal), Glass (transparent), Semi
   (pattern).
-- Added brush types: Circle, Square, Line.
-- Implemented a fake-palette system to make the GUI usable with any
++ Added brush types: Circle, Square, Line.
++ Implemented a fake-palette system to make the GUI usable with any
   sprite palette (mainly to avoid "black-screen" situations when open
   sprites with ugly palettes).
-- The palette editor has more improvements (like the possibility to
++ The palette editor has more improvements (like the possibility to
   move the selection range).
-- "menus" file modified a bit.  Some keyboard bindings have change
++ "menus" file modified a bit.  Some keyboard bindings have change
   (and new ones added), you can see the "docs/QuickHelp.html" file for
   more help.  Anyway, I try to leave the compability in the more used
   commands.
-- Full scripting support with Lua-5.0.  Sprites and GUI controllable
++ Full scripting support with Lua-5.0.  Sprites and GUI controllable
   from same scripts, to give you an idea, various of menus actions are
   programmed directly with scripts.
-- Complete selection handle (mask regions).  You can select irregular
++ Complete selection handle (mask regions).  You can select irregular
   areas (add, subtract, intersect, by color), save and load them in
   the .MSK Animator Pro format.
-- Multiple editors.  Now you will be able to edit an image with zoom
++ Multiple editors.  Now you will be able to edit an image with zoom
   and see the results in other editors (updated in real-time).
-- New Gfx-core.  All sprite/image/layer/prop/key stuff was
++ New Gfx-core.  All sprite/image/layer/prop/key stuff was
   reprogrammed.  The more big change, was to property/keyframe level
   (the properties can be with lineal or spline interpolation, also,
   have a ending flag to make circular movements or patterns of movement).
-- New GUI.  The look and the internal code was reestructured
++ New GUI.  The look and the internal code was reestructured
   completelly, I made a new GUI library: Jinete (rider).
 
 0.1.2
 -----
 
-- New RLE Gaussian Blur effect (from The GIMP source code).
-- Blender modes are back!: Normal, Multiply, Screen, Overlay,
++ New RLE Gaussian Blur effect (from The GIMP source code).
++ Blender modes are back!: Normal, Multiply, Screen, Overlay,
   Hard Light, Darken, Lighten, Addition, Subtract, Difference, Hue,
   Saturation, Color, Luminosity.
-- Better the GUI look: With colors, this should be less boring :-)
-- Added a graphics selection dialog where you can specify any
++ Better the GUI look: With colors, this should be less boring :-)
++ Added a graphics selection dialog where you can specify any
   resolution (this could be useful for windowed modes).
-- Back again to the good-and-peaceful-allegro-like makefiles. Ok, ok,
++ Back again to the good-and-peaceful-allegro-like makefiles. Ok, ok,
   the GNU style was the worst change in ASE, but now is fixed :-)
 - Removed the .DLL or .so capability for plug-ins. After some weeks of
   thinking, I decide to strip off this feature because is too hard to
@@ -179,138 +186,138 @@ NEWS
   the plug-in and modify the `menus' to add a new entry with a little
   script-string to call the new plug-in action. Also, this save me a
   lot of headaches :-)
-- Added multiple filter application: Now, you can apply effects to
++ Added multiple filter application: Now, you can apply effects to
   every layer, to every animation frame, or both.
-- Added the "Recent Files" list.
-- A complete set of scripts routines to handle paths.
-- New selection type: "shrink", to shrink the selection to the current
++ Added the "Recent Files" list.
++ A complete set of scripts routines to handle paths.
++ New selection type: "shrink", to shrink the selection to the current
   layer bitmap bounds.
-- New "trim_sprite" action.
++ New "trim_sprite" action.
 
 0.1.0
 -----
 
 - Removed the `move' tool to displace layers (it was redundant).
-- New interface to load Plug-Ins in a dynamic way (DLL, .so).
-- Complete new support for JPEG files (RGB/grayscale) load/save:
++ New interface to load Plug-Ins in a dynamic way (DLL, .so).
++ Complete new support for JPEG files (RGB/grayscale) load/save:
   athwart the Independent JPEG Group's JPEG Library.
-- New actions:
++ New actions:
   + trim_layer_bitmap: trim the current layer to the selection bounds.
   + merge_down: to merge the current layer with the next one.
   + make_undo_animation: to make an animation from the undo
     operations (to see all the progression of the graphics).
   + undo_history: to undo/redo various operations.
   + color_curve: to make color conversion effects pixel by pixel.
-- Improved the `Color Replace' command (with `tolerance' and `preview').
-- A new optimized layer-bar, to handle all the keyframe/properties stuff.
-- Various things rewritten to Plug-Ins:
++ Improved the `Color Replace' command (with `tolerance' and `preview').
++ A new optimized layer-bar, to handle all the keyframe/properties stuff.
++ Various things rewritten to Plug-Ins:
   + file formats,
   + actions for menus (also, now these actions can be used from scripts).
-- Replaced the old `color depth' system to the new `image types':
++ Replaced the old `color depth' system to the new `image types':
   From now, an image can be: RGB, Grayscale, or Indexed type.
-- New ASE Library, with a complete new design to handle:
++ New ASE Library, with a complete new design to handle:
   images, layers, bitmaps, properties, keyframes, etc.
-- Source code to GNU style: with configure.in, Makefile.am, etc.
++ Source code to GNU style: with configure.in, Makefile.am, etc.
 
 0.0.7
 -----
 
-- New scripts routines: request(), apply_filter(), load_sprite(),
++ New scripts routines: request(), apply_filter(), load_sprite(),
   and save_sprite().
-- Support to load FLI/FLC and to save FLC files. Yes! Now with ASE
++ Support to load FLI/FLC and to save FLC files. Yes! Now with ASE
   you can make FLC animations with a good compression performance.
-- Added the posibility to load/save sequences of bitmaps: like ani00.pcx,
++ Added the posibility to load/save sequences of bitmaps: like ani00.pcx,
   ani01.pcx, ani02.pcx, etc.
-- More undo functionality. I re-wrote the entire `undo' system.
-- New rectangular-selection tool: Now you can cut, copy, paste and clear.
-- New RLE compression for 8 bpp in .ase files.
-- Support to load .ase files of `0.0.6' and `0.0.7 CVS (important stage)':
++ More undo functionality. I re-wrote the entire `undo' system.
++ New rectangular-selection tool: Now you can cut, copy, paste and clear.
++ New RLE compression for 8 bpp in .ase files.
++ Support to load .ase files of `0.0.6' and `0.0.7 CVS (important stage)':
   I recommend you upgrade all your .ase files to the `0.0.7 release' version.
-- New properties for keyframes: now each keyframe has its position and alpha,
++ New properties for keyframes: now each keyframe has its position and alpha,
   with this you can make animations of objects moving only the keyframes
   (all the intermediate frames will be calculate automatically).
-- Now the program remember the configuration (through `ase.cfg').
-- Added a new draw-tiled mode.
-- New full-screen editing mode. With resizable layer-bar.
-- Added an options to draw the previous frame in transparent mode.
++ Now the program remember the configuration (through `ase.cfg').
++ Added a new draw-tiled mode.
++ New full-screen editing mode. With resizable layer-bar.
++ Added an options to draw the previous frame in transparent mode.
 - Removed the `background' properties of layers: from now, a layer
   will be transparent (masked-blitting) ever. With this are fixed
   a lot of problems with load/save routines in old versions.
-- New `reload_menus' command.
++ New `reload_menus' command.
 
 0.0.6
 -----
 
 - I still don't recommend you the .ase format (just for temporary usage):
   there are planes to change it.
-- Scripting capability athwart Lua language (http://www.lua.org/):
++ Scripting capability athwart Lua language (http://www.lua.org/):
   now, you can make automatic tasks programming your own scripts
   (included some scripts as example).
-- Independent `alpha' (global transparency) and `blender-mode' for
++ Independent `alpha' (global transparency) and `blender-mode' for
   each layer (like in GIMP and Adobe Photoshop).
-- Improved the layer/frame-control:
++ Improved the layer/frame-control:
   Now add/remove/move/copy layer and frames are really-very-easy
   with the new layer-panel (like in Macromedia Flash).
-- More easy tool-configuration.
-- New drawing tool: real-pencil, with a unique and original algorithm.
++ More easy tool-configuration.
++ New drawing tool: real-pencil, with a unique and original algorithm.
 - Removed all the use of the Allegro GUI.
-- New original (and ugly) GUI look:
++ New original (and ugly) GUI look:
   now, the colors are in harmony for the eyes.
 
 0.0.5
 -----
 
-- More facilities to handle colors with different `alpha'.
-- New animation control: need test (see `bugs.txt' to report errors).
-- Optimized the color-selection dialog: now you can make gammas
++ More facilities to handle colors with different `alpha'.
++ New animation control: need test (see `bugs.txt' to report errors).
++ Optimized the color-selection dialog: now you can make gammas
   between *four* colors.
-- Added a `preview' in the apply-filter dialog.
-- New improved gui system (for the users and for the developers).
-- New `tile' and `reload' option for the filters.
-- New view-tile option in tool-menu (for make tileable patterns).
++ Added a `preview' in the apply-filter dialog.
++ New improved gui system (for the users and for the developers).
++ New `tile' and `reload' option for the filters.
++ New view-tile option in tool-menu (for make tileable patterns).
 
 0.0.4
 -----
 
-- Modificable draw properties:
++ Modificable draw properties:
   thickness, alpha color, spray random factor, and spray radius.
-- Undo support for all tools.
-- Multiple drawing tools support:
++ Undo support for all tools.
++ Multiple drawing tools support:
   pixel, pencil, fill, spray, line, rectangle, and ellipse;
-- New improved layer control.
-- A lot of optimizations in the status bar.
-- New duplicate sprite option.
-- New session manager, for load and save your work. Other utility of this,
++ New improved layer control.
++ A lot of optimizations in the status bar.
++ New duplicate sprite option.
++ New session manager, for load and save your work. Other utility of this,
   is if the program crash for any reason, it auto-backups your data.
 - Bad news: the old .ase format is incompatible with the new one:
   I recommend you don't save in .ase until the 0.1 release.
-- New "visible" property for hide and show the layers.
-- New change color-depth function.
-- Added a set-gfx-mode option in the system-menu.
-- New duplicate layer support.
++ New "visible" property for hide and show the layers.
++ New change color-depth function.
++ Added a set-gfx-mode option in the system-menu.
++ New duplicate layer support.
 
 0.0.3
 -----
 
-- New .ase format (for save the layers).
-- More keyboard shorcuts (with a new `keys.txt').
-- New layers operations: insert, move and remove.
-- RGBA (alpha channel) bitmaps support.
-- New filter capability, with some examples of filters.
-- An incredible new way to create dialogs (for programmers only).
-- More "Windows friendly" text files.
-- New optimized status bar.
-- New improved look of the GUI.
++ New .ase format (for save the layers).
++ More keyboard shorcuts (with a new `keys.txt').
++ New layers operations: insert, move and remove.
++ RGBA (alpha channel) bitmaps support.
++ New filter capability, with some examples of filters.
++ An incredible new way to create dialogs (for programmers only).
++ More "Windows friendly" text files.
++ New optimized status bar.
++ New improved look of the GUI.
 
 0.0.2
 -----
 
-- New "infinite" Undo & Redo support.
-- Some importants bug fixed.
++ New "infinite" Undo & Redo support.
++ Some importants bug fixed.
 
 0.0.1
 -----
 
-- One tool: interactive line.
-- Color selection support.
++ One tool: interactive line.
++ Color selection support.
 - Poor palette modification capability.

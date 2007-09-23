@@ -3,7 +3,8 @@ LEGAL ISSUES
 ===================================
 
 - ASE is distributed under GPL license.
-- Allegro and Jinete are gift-ware (doesn't have restrictions).
+- Allegro is giftware license (similar to MIT license).
+- Jinete is under BSD license.
 - ALFONT is under LGPL terms.
 - quantize.c is copyright by Ben Davis (you need his authorization to
   use his code in your own program).
@@ -15,5 +16,9 @@ LEGAL ISSUES
 - Libart 2.3.3 is distributed under LGPL license.
 - Libintl is distributed under LGPL license.
 - The FreeType Project is distributed under FTL license.
+- zlib & Libpng are under the ZLIB license.
 
-You can find all these licenses in the "docs/licenses" directory.
+You can find all these licenses in the "docs/licenses" directory,
+or you can found them in:
+
+  http://www.opensource.org/licenses/alphabetical

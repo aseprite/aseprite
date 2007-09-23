@@ -42,6 +42,6 @@ JWidget get_layer_popup_menuitem(void);
 JWidget get_frame_popup_menuitem(void);
 
 int check_for_accel(int accel_type, JMessage msg);
-void show_filters_popup_menu(void);
+void show_fx_popup_menu(void);
 
 #endif /* MODULES_ROOTMENU_H */

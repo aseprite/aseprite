@@ -555,9 +555,9 @@ static int bind_intl_set_lang(lua_State *L)
   return 0;
 }
 
-static int bind_show_filters_popup_menu(lua_State *L)
+static int bind_show_fx_popup_menu(lua_State *L)
 {
-  show_filters_popup_menu();
+  show_fx_popup_menu();
   return 0;
 }
 
@@ -4251,33 +4251,33 @@ static int bind_jmessage_set_sub_msg(lua_State *L)
   return 0;
 }
 
-static int bind_ji_panel_new(lua_State *L)
+static int bind_jpanel_new(lua_State *L)
 {
   JWidget return_value;
   int align;
   GetArg(1, align, int, number);
-  return_value = ji_panel_new(align);
+  return_value = jpanel_new(align);
   push_userdata(L, Type_JWidget, return_value);
   return 1;
 }
 
-static int bind_ji_panel_get_pos(lua_State *L)
+static int bind_jpanel_get_pos(lua_State *L)
 {
   double return_value;
   JWidget panel;
   GetUD(1, panel, JWidget);
-  return_value = ji_panel_get_pos(panel);
+  return_value = jpanel_get_pos(panel);
   lua_pushnumber(L, return_value);
   return 1;
 }
 
-static int bind_ji_panel_set_pos(lua_State *L)
+static int bind_jpanel_set_pos(lua_State *L)
 {
   JWidget panel;
   double pos;
   GetUD(1, panel, JWidget);
   GetArg(2, pos, double, number);
-  ji_panel_set_pos(panel, pos);
+  jpanel_set_pos(panel, pos);
   return 0;
 }
 
@@ -5767,7 +5767,7 @@ const luaL_reg bindings_routines[] = {
   { "intl_load_lang", bind_intl_load_lang },
   { "intl_get_lang", bind_intl_get_lang },
   { "intl_set_lang", bind_intl_set_lang },
-  { "show_filters_popup_menu", bind_show_filters_popup_menu },
+  { "show_fx_popup_menu", bind_show_fx_popup_menu },
   { "select_tool", bind_select_tool },
   { "get_brush_type", bind_get_brush_type },
   { "get_brush_size", bind_get_brush_size },
@@ -6151,9 +6151,9 @@ const luaL_reg bindings_routines[] = {
   { "jmessage_broadcast_to_children", bind_jmessage_broadcast_to_children },
   { "jmessage_broadcast_to_parents", bind_jmessage_broadcast_to_parents },
   { "jmessage_set_sub_msg", bind_jmessage_set_sub_msg },
-  { "ji_panel_new", bind_ji_panel_new },
-  { "ji_panel_get_pos", bind_ji_panel_get_pos },
-  { "ji_panel_set_pos", bind_ji_panel_set_pos },
+  { "jpanel_new", bind_jpanel_new },
+  { "jpanel_get_pos", bind_jpanel_get_pos },
+  { "jpanel_set_pos", bind_jpanel_set_pos },
   { "jradio_new", bind_jradio_new },
   { "jradio_get_group", bind_jradio_get_group },
   { "jradio_deselect_group", bind_jradio_deselect_group },

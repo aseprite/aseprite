@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,26 +124,25 @@ DIRS *filename_in_bindir(const char *filename)
 DIRS *filename_in_datadir(const char *filename)
 {
   DIRS *dirs = dirs_new();
-
-#if defined UNIX_LIKE || defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
-
   char buf[1024];
 
-# if defined UNIX_LIKE
+#if defined UNIX_LIKE
 
   /* $HOME/.ase/filename */
   sprintf(buf, ".ase/%s", filename);
   dirs_cat_dirs(dirs, filename_in_homedir(buf));
 
-#   ifdef DEFAULT_PREFIX
+  /* $BINDIR/data/filename */
+  sprintf(buf, "data/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_bindir(buf));
+  
+  #ifdef DEFAULT_PREFIX
+    /* $PREFIX/ase/filename */
+    sprintf(buf, "%s/share/ase/%s", DEFAULT_PREFIX, filename);
+    dirs_add_path(dirs, buf);
+  #endif
 
-      /* $PREFIX/ase/filename */
-      sprintf(buf, "%s/share/ase/%s", DEFAULT_PREFIX, filename);
-      dirs_add_path(dirs, buf);
-
-#   endif
-
-# endif
+#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
   /* $BINDIR/data/filename */
   sprintf(buf, "data/%s", filename);

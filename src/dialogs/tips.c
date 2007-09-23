@@ -220,9 +220,9 @@ static void tips_request_size(JWidget widget, int *w, int *h)
 
 static JWidget tips_image_new(BITMAP *bmp)
 {
-  JWidget widget = ji_image_new (bmp, JI_CENTER | JI_MIDDLE);
+  JWidget widget = jimage_new(bmp, JI_CENTER | JI_MIDDLE);
   jwidget_add_hook(widget, tips_image_type (),
-		     tips_image_msg_proc, bmp);
+		   tips_image_msg_proc, bmp);
   return widget;
 }
 

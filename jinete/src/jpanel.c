@@ -1,7 +1,32 @@
-/* jinete - a GUI library
- * Copyright (C) 2003-2005 by David A. Capello
+/* Jinete - a GUI library
+ * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * All rights reserved.
  *
- * Jinete is gift-ware.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of the Jinete nor the names of its contributors may
+ *     be used to endorse or promote products derived from this software
+ *     without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "jinete/list.h"
@@ -20,7 +45,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg);
 static void panel_request_size(JWidget widget, int *w, int *h);
 static void panel_set_position(JWidget widget, JRect rect);
 
-JWidget ji_panel_new(int align)
+JWidget jpanel_new(int align)
 {
   JWidget widget = jwidget_new(JI_PANEL);
   Panel *panel = jnew(Panel, 1);
@@ -35,14 +60,14 @@ JWidget ji_panel_new(int align)
   return widget;
 }
 
-double ji_panel_get_pos(JWidget widget)
+double jpanel_get_pos(JWidget widget)
 {
   Panel *panel = jwidget_get_data(widget, JI_PANEL);
 
   return panel->pos;
 }
 
-void ji_panel_set_pos(JWidget widget, double pos)
+void jpanel_set_pos(JWidget widget, double pos)
 {
   Panel *panel = jwidget_get_data(widget, JI_PANEL);
 
@@ -133,7 +158,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	    100.0 * (msg->mouse.y-widget->rc->y1) / jrect_h(widget->rc);
 	}
 
-	panel->pos = MID (0, panel->pos, 100);
+	panel->pos = MID(0, panel->pos, 100);
 
 	jwidget_set_rect(widget, widget->rc);
 	jwidget_dirty(widget);

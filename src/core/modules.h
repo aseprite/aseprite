@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 #define REQUIRE_INTERFACE    1
 #define REQUIRE_SCRIPTING    2
 
-int modules_init (int requirements);
-void modules_exit (void);
+int modules_init(int requirements);
+void modules_exit(void);
 
 #endif /* CORE_MODULES_H */
 

@@ -117,59 +117,59 @@ void switch_between_film_and_sprite_editor (void)
   if (!is_interactive ())
     return;
 
-  window = jwindow_new_desktop ();
-  box1 = jbox_new (JI_VERTICAL);
-  panel1 = ji_panel_new (JI_HORIZONTAL);
-  layer_view = jview_new ();
-  frame_view = jview_new ();
-  layer_box = layer_box_new ();
-  frame_box = frame_box_new ();
+  window = jwindow_new_desktop();
+  box1 = jbox_new(JI_VERTICAL);
+  panel1 = jpanel_new(JI_HORIZONTAL);
+  layer_view = jview_new();
+  frame_view = jview_new();
+  layer_box = layer_box_new();
+  frame_box = frame_box_new();
 
-  layer_box_data (layer_box)->frame_box = frame_box_data (frame_box);
-  frame_box_data (frame_box)->layer_box = layer_box_data (layer_box);
+  layer_box_data(layer_box)->frame_box = frame_box_data(frame_box);
+  frame_box_data(frame_box)->layer_box = layer_box_data(layer_box);
 
-  jwidget_expansive (panel1, TRUE);
+  jwidget_expansive(panel1, TRUE);
 
-  jview_attach (layer_view, layer_box);
-  jview_attach (frame_view, frame_box);
-  jview_without_bars (layer_view);
-  jview_without_bars (frame_view);
+  jview_attach(layer_view, layer_box);
+  jview_attach(frame_view, frame_box);
+  jview_without_bars(layer_view);
+  jview_without_bars(frame_view);
 
-  jwidget_add_child (panel1, layer_view);
-  jwidget_add_child (panel1, frame_view);
-  jwidget_add_child (box1, panel1);
-  jwidget_add_child (window, box1);
+  jwidget_add_child(panel1, layer_view);
+  jwidget_add_child(panel1, frame_view);
+  jwidget_add_child(box1, panel1);
+  jwidget_add_child(window, box1);
 
   /* load window configuration */
-  ji_panel_set_pos (panel1, get_config_float ("LayerWindow", "PanelPos", 50));
-  jwindow_remap (window);
+  jpanel_set_pos(panel1, get_config_float ("LayerWindow", "PanelPos", 50));
+  jwindow_remap(window);
 
   /* center scrolls in selected layer/frpos */
   if (sprite->layer) {
     JWidget widget = layer_view;
-    JRect vp1 = jview_get_viewport_position (layer_view);
-    JRect vp2 = jview_get_viewport_position (frame_view);
+    JRect vp1 = jview_get_viewport_position(layer_view);
+    JRect vp2 = jview_get_viewport_position(frame_view);
     int y, pos;
 
-    get_layer_pos (sprite->set, sprite->layer, &pos);
+    get_layer_pos(sprite->set, sprite->layer, &pos);
     y = LAYSIZE+LAYSIZE*pos+LAYSIZE/2-jrect_h(vp1)/2;
 
-    jview_set_scroll (layer_view, 0, y);
-    jview_set_scroll (frame_view,
-			sprite->frpos*FRMSIZE+FRMSIZE/2-jrect_w(vp2)/2, y);
+    jview_set_scroll(layer_view, 0, y);
+    jview_set_scroll(frame_view,
+		     sprite->frpos*FRMSIZE+FRMSIZE/2-jrect_w(vp2)/2, y);
 
-    jrect_free (vp1);
-    jrect_free (vp2);
+    jrect_free(vp1);
+    jrect_free(vp2);
   }
 
   /* show the window */
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
   /* save window configuration */
-  set_config_float ("LayerWindow", "PanelPos", ji_panel_get_pos (panel1));
+  set_config_float("LayerWindow", "PanelPos", jpanel_get_pos(panel1));
 
   /* destroy the window */
-  jwidget_free (window);
+  jwidget_free(window);
 
   /* destroy thumbnails */
   destroy_thumbnails();

@@ -266,7 +266,7 @@ F&rame FRAME_POPUP {
   "Fi&lm Editor" FILMEDITOR_ACCEL = has_sprite "switch_between_film_and_sprite_editor()" <Tab> ;
   "&Palette Editor" = always "dialogs_palette_editor()" <F4> ;
   ----
-  "F&ilters Popup Menu" = always "show_filters_popup_menu()" <X> ;
+  "F&ilters Popup Menu" = always "show_fx_popup_menu()" <X> ;
 }
 
 L&ist SPRITE_LIST ;

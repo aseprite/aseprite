@@ -83,6 +83,7 @@ $(ZLIB_LIB): $(ZLIB_OBJS)
 # Rules to build objects and the application
 
 VPATH = src					\
+	src/commands				\
 	src/console				\
 	src/core				\
 	src/dialogs				\

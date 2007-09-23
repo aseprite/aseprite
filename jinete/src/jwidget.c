@@ -1,7 +1,32 @@
-/* jinete - a GUI library
- * Copyright (C) 2003-2005, 2007 by David A. Capello
+/* Jinete - a GUI library
+ * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * All rights reserved.
  *
- * Jinete is gift-ware.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of the Jinete nor the names of its contributors may
+ *     be used to endorse or promote products derived from this software
+ *     without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* #define REPORT_SIGNALS */
@@ -26,7 +51,7 @@ int ji_register_widget_type (void)
 }
 
 /* creates a new widget with an unique JID */
-JWidget jwidget_new (int type)
+JWidget jwidget_new(int type)
 {
   JWidget widget = _ji_get_new_widget();
   if (!widget)
@@ -75,7 +100,7 @@ JWidget jwidget_new (int type)
   return widget;
 }
 
-void jwidget_free (JWidget widget)
+void jwidget_free(JWidget widget)
 {
   JLink link, next;
   JMessage msg;
@@ -208,28 +233,28 @@ int jwidget_get_type(JWidget widget)
   return widget->type;
 }
 
-const char *jwidget_get_name (JWidget widget)
+const char *jwidget_get_name(JWidget widget)
 {
   return widget->name;
 }
 
-const char *jwidget_get_text (JWidget widget)
+const char *jwidget_get_text(JWidget widget)
 {
   jwidget_emit_signal(widget, JI_SIGNAL_GET_TEXT);
   return widget->text;
 }
 
-int jwidget_get_align (JWidget widget)
+int jwidget_get_align(JWidget widget)
 {
   return widget->align;
 }
 
-FONT *jwidget_get_font (JWidget widget)
+FONT *jwidget_get_font(JWidget widget)
 {
   return widget->text_font;
 }
 
-void jwidget_set_name (JWidget widget, const char *name)
+void jwidget_set_name(JWidget widget, const char *name)
 {
   if (widget->name)
     jfree (widget->name);
@@ -237,7 +262,7 @@ void jwidget_set_name (JWidget widget, const char *name)
   widget->name = name ? jstrdup (name) : NULL;
 }
 
-void jwidget_set_text (JWidget widget, const char *text)
+void jwidget_set_text(JWidget widget, const char *text)
 {
   if (text) {
     /* more space needed */
@@ -264,14 +289,14 @@ void jwidget_set_text (JWidget widget, const char *text)
   }
 }
 
-void jwidget_set_align (JWidget widget, int align)
+void jwidget_set_align(JWidget widget, int align)
 {
   widget->align = align;
 
   jwidget_dirty (widget);
 }
 
-void jwidget_set_font (JWidget widget, FONT *font)
+void jwidget_set_font(JWidget widget, FONT *font)
 {
   widget->text_font = font;
 
@@ -288,7 +313,7 @@ void jwidget_set_font (JWidget widget, FONT *font)
 /**********************************************************************/
 /* behavior properties */
 
-void jwidget_magnetic (JWidget widget, bool state)
+void jwidget_magnetic(JWidget widget, bool state)
 {
   if (state)
     widget->flags |= JI_MAGNETIC;
@@ -296,7 +321,7 @@ void jwidget_magnetic (JWidget widget, bool state)
     widget->flags &= ~JI_MAGNETIC;
 }
 
-void jwidget_expansive (JWidget widget, bool state)
+void jwidget_expansive(JWidget widget, bool state)
 {
   if (state)
     widget->flags |= JI_EXPANSIVE;
@@ -304,7 +329,7 @@ void jwidget_expansive (JWidget widget, bool state)
     widget->flags &= ~JI_EXPANSIVE;
 }
 
-void jwidget_decorative (JWidget widget, bool state)
+void jwidget_decorative(JWidget widget, bool state)
 {
   if (state)
     widget->flags |= JI_DECORATIVE;
@@ -312,7 +337,7 @@ void jwidget_decorative (JWidget widget, bool state)
     widget->flags &= ~JI_DECORATIVE;
 }
 
-void jwidget_autodestroy (JWidget widget, bool state)
+void jwidget_autodestroy(JWidget widget, bool state)
 {
   JLink link;
 
@@ -325,7 +350,7 @@ void jwidget_autodestroy (JWidget widget, bool state)
     jwidget_autodestroy(link->data, state);
 }
 
-void jwidget_focusrest (JWidget widget, bool state)
+void jwidget_focusrest(JWidget widget, bool state)
 {
   if (state)
     widget->flags |= JI_FOCUSREST;
@@ -333,27 +358,27 @@ void jwidget_focusrest (JWidget widget, bool state)
     widget->flags &= ~JI_FOCUSREST;
 }
 
-bool jwidget_is_magnetic (JWidget widget)
+bool jwidget_is_magnetic(JWidget widget)
 {
   return (widget->flags & JI_MAGNETIC) ? TRUE: FALSE;
 }
 
-bool jwidget_is_expansive (JWidget widget)
+bool jwidget_is_expansive(JWidget widget)
 {
   return (widget->flags & JI_EXPANSIVE) ? TRUE: FALSE;
 }
 
-bool jwidget_is_decorative (JWidget widget)
+bool jwidget_is_decorative(JWidget widget)
 {
   return (widget->flags & JI_DECORATIVE) ? TRUE: FALSE;
 }
 
-bool jwidget_is_autodestroy (JWidget widget)
+bool jwidget_is_autodestroy(JWidget widget)
 {
   return (widget->flags & JI_AUTODESTROY) ? TRUE: FALSE;
 }
 
-bool jwidget_is_focusrest (JWidget widget)
+bool jwidget_is_focusrest(JWidget widget)
 {
   return (widget->flags & JI_FOCUSREST) ? TRUE: FALSE;
 }
@@ -361,7 +386,7 @@ bool jwidget_is_focusrest (JWidget widget)
 /**********************************************************************/
 /* status properties */
 
-void jwidget_dirty (JWidget widget)
+void jwidget_dirty(JWidget widget)
 {
 #if 0
   /* is visible? */
@@ -383,7 +408,7 @@ void jwidget_dirty (JWidget widget)
 #endif
 }
 
-void jwidget_show (JWidget widget)
+void jwidget_show(JWidget widget)
 {
   if (widget->flags & JI_HIDDEN) {
     widget->flags &= ~JI_HIDDEN;
@@ -393,7 +418,7 @@ void jwidget_show (JWidget widget)
   }
 }
 
-void jwidget_hide (JWidget widget)
+void jwidget_hide(JWidget widget)
 {
   if (!(widget->flags & JI_HIDDEN)) {
     jmanager_free_widget (widget); /* free from mananger */
@@ -403,7 +428,7 @@ void jwidget_hide (JWidget widget)
   }
 }
 
-void jwidget_enable (JWidget widget)
+void jwidget_enable(JWidget widget)
 {
   if (widget->flags & JI_DISABLED) {
     widget->flags &= ~JI_DISABLED;
@@ -413,7 +438,7 @@ void jwidget_enable (JWidget widget)
   }
 }
 
-void jwidget_disable (JWidget widget)
+void jwidget_disable(JWidget widget)
 {
   if (!(widget->flags & JI_DISABLED)) {
     jmanager_free_widget (widget); /* free from the manager */
@@ -425,7 +450,7 @@ void jwidget_disable (JWidget widget)
   }
 }
 
-void jwidget_select (JWidget widget)
+void jwidget_select(JWidget widget)
 {
   if (!(widget->flags & JI_SELECTED)) {
     widget->flags |= JI_SELECTED;
@@ -435,7 +460,7 @@ void jwidget_select (JWidget widget)
   }
 }
 
-void jwidget_deselect (JWidget widget)
+void jwidget_deselect(JWidget widget)
 {
   if (widget->flags & JI_SELECTED) {
     widget->flags &= ~JI_SELECTED;
@@ -492,17 +517,17 @@ bool jwidget_is_deselected(JWidget widget)
 /**********************************************************************/
 /* properties with manager */
 
-bool jwidget_has_focus (JWidget widget)
+bool jwidget_has_focus(JWidget widget)
 {
   return (widget->flags & JI_HASFOCUS) ? TRUE: FALSE;
 }
 
-bool jwidget_has_mouse (JWidget widget)
+bool jwidget_has_mouse(JWidget widget)
 {
   return (widget->flags & JI_HASMOUSE) ? TRUE: FALSE;
 }
 
-bool jwidget_has_capture (JWidget widget)
+bool jwidget_has_capture(JWidget widget)
 {
   return (widget->flags & JI_HASCAPTURE) ? TRUE: FALSE;
 }
@@ -510,7 +535,7 @@ bool jwidget_has_capture (JWidget widget)
 /**********************************************************************/
 /* children handle */
 
-void jwidget_add_child (JWidget widget, JWidget child)
+void jwidget_add_child(JWidget widget, JWidget child)
 {
   jlist_append(widget->children, child);
   child->parent = widget;
@@ -532,7 +557,7 @@ void jwidget_add_childs(JWidget widget, ...)
   va_end(ap);
 }
 
-void jwidget_remove_child (JWidget widget, JWidget child)
+void jwidget_remove_child(JWidget widget, JWidget child)
 {
   jlist_remove(widget->children, child);
   child->parent = NULL;
@@ -636,7 +661,7 @@ bool jwidget_has_child(JWidget widget, JWidget child)
 /**********************************************************************/
 /* position and geometry */
 
-void jwidget_request_size (JWidget widget, int *w, int *h)
+void jwidget_request_size(JWidget widget, int *w, int *h)
 {
   JMessage msg = jmessage_new(JM_REQSIZE);
   jwidget_send_message(widget, msg);
@@ -786,7 +811,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
   return region;
 }
 
-int jwidget_get_bg_color (JWidget widget)
+int jwidget_get_bg_color(JWidget widget)
 {
   if (widget->bg_color < 0 && widget->parent)
     return jwidget_get_bg_color (widget->parent);
@@ -794,12 +819,12 @@ int jwidget_get_bg_color (JWidget widget)
     return widget->bg_color;
 }
 
-JTheme jwidget_get_theme (JWidget widget)
+JTheme jwidget_get_theme(JWidget widget)
 {
   return widget->theme;
 }
 
-int jwidget_get_text_length (JWidget widget)
+int jwidget_get_text_length(JWidget widget)
 {
 #if 1
   return ji_font_text_len (widget->text_font, widget->text);
@@ -808,14 +833,14 @@ int jwidget_get_text_length (JWidget widget)
 #endif
 }
 
-int jwidget_get_text_height (JWidget widget)
+int jwidget_get_text_height(JWidget widget)
 {
   return text_height (widget->text_font);
 }
 
-void jwidget_get_texticon_info (JWidget widget,
-				  JRect box, JRect text, JRect icon,
-				  int icon_align, int icon_w, int icon_h)
+void jwidget_get_texticon_info(JWidget widget,
+			       JRect box, JRect text, JRect icon,
+			       int icon_align, int icon_w, int icon_h)
 {
 #define SETRECT(r)				\
   if (r) {					\
@@ -914,7 +939,7 @@ void jwidget_get_texticon_info (JWidget widget,
   SETRECT (icon);
 }
 
-void jwidget_noborders (JWidget widget)
+void jwidget_noborders(JWidget widget)
 {
   widget->border_width.l = 0;
   widget->border_width.t = 0;
@@ -925,7 +950,7 @@ void jwidget_noborders (JWidget widget)
   jwidget_dirty (widget);
 }
 
-void jwidget_set_border (JWidget widget, int l, int t, int r, int b)
+void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
 {
   widget->border_width.l = l;
   widget->border_width.t = t;
@@ -935,7 +960,7 @@ void jwidget_set_border (JWidget widget, int l, int t, int r, int b)
   jwidget_dirty (widget);
 }
 
-void jwidget_set_rect (JWidget widget, JRect rect)
+void jwidget_set_rect(JWidget widget, JRect rect)
 {
   JMessage msg = jmessage_new (JM_SETPOS);
   jrect_copy (&msg->setpos.rect, rect);

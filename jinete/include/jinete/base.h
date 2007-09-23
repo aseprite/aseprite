@@ -1,7 +1,32 @@
-/* jinete - a GUI library
- * Copyright (C) 2003-2005, 2007 by David A. Capello
+/* Jinete - a GUI library
+ * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * All rights reserved.
  *
- * Jinete is gift-ware.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of the Jinete nor the names of its contributors may
+ *     be used to endorse or promote products derived from this software
+ *     without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef JINETE_BASE_H
@@ -207,10 +232,16 @@ typedef struct jquickmenu	*JQuickMenu;
 typedef struct jlink		*JLink;
 typedef struct jlist		*JList;
 typedef union  jmessage		*JMessage;
+typedef struct jstream		*JStream;
 typedef struct jrect		*JRect;
 typedef struct jregion		*JRegion;
 typedef struct jtheme		*JTheme;
 typedef struct jwidget		*JWidget;
+typedef struct jxml		*JXml;
+typedef struct jxmlattr		*JXmlAttr;
+typedef struct jxmlnode		*JXmlNode;
+typedef struct jxmlelem		*JXmlElem;
+typedef struct jxmltext		*JXmlText;
 
 typedef void (*JFunc)            (void *data, void *user_data);
 typedef int  (*JCompareFunc)     (const void *a, const void *b);
@@ -219,19 +250,19 @@ typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
 typedef void (*JDrawFunc)	 (JWidget widget);
 
 /* memory routines */
-void *jmalloc  (unsigned long n_bytes);
-void *jmalloc0 (unsigned long n_bytes);
-void *jrealloc (void *mem, unsigned long n_bytes);
-void  jfree    (void *mem);
+void *jmalloc (unsigned long n_bytes);
+void *jmalloc0(unsigned long n_bytes);
+void *jrealloc(void *mem, unsigned long n_bytes);
+void  jfree   (void *mem);
 
-char *jstrdup  (const char *string);
+char *jstrdup (const char *string);
 
 #define jnew(struct_type, n_structs)					\
-    ((struct_type *)jmalloc (sizeof (struct_type) * (n_structs)))
+    ((struct_type *)jmalloc(sizeof (struct_type) * (n_structs)))
 #define jnew0(struct_type, n_structs)					\
-    ((struct_type *)jmalloc0 (sizeof (struct_type) * (n_structs)))
+    ((struct_type *)jmalloc0(sizeof (struct_type) * (n_structs)))
 #define jrenew(struct_type, mem, n_structs)				\
-    ((struct_type *)jrealloc ((mem), (sizeof (struct_type) * (n_structs))))
+    ((struct_type *)jrealloc((mem), (sizeof (struct_type) * (n_structs))))
 
 JI_END_DECLS
 

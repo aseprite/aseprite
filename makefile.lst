@@ -6,6 +6,92 @@
 ASE = ase$(EXE)
 
 ASE_SOURCES =					\
+	src/commands/cmd_about.c		\
+	src/commands/cmd_advanced_mode.c	\
+	src/commands/cmd_auto_crop_sprite.c	\
+	src/commands/cmd_brush_tool.c		\
+	src/commands/cmd_change_image_type.c	\
+	src/commands/cmd_clear.c		\
+	src/commands/cmd_close_all_files.c	\
+	src/commands/cmd_close_editor.c		\
+	src/commands/cmd_close_file.c		\
+	src/commands/cmd_color_curve.c		\
+	src/commands/cmd_configure_screen.c	\
+	src/commands/cmd_configure_tools.c	\
+	src/commands/cmd_convolution_matrix.c	\
+	src/commands/cmd_copy.c			\
+	src/commands/cmd_copy_frame.c		\
+	src/commands/cmd_crop_frame.c		\
+	src/commands/cmd_crop_layer.c		\
+	src/commands/cmd_crop_sprite.c		\
+	src/commands/cmd_customize.c		\
+	src/commands/cmd_cut.c			\
+	src/commands/cmd_deselect_mask.c	\
+	src/commands/cmd_despeckle.c		\
+	src/commands/cmd_dots_tool.c		\
+	src/commands/cmd_draw_text.c		\
+	src/commands/cmd_duplicate_layer.c	\
+	src/commands/cmd_duplicate_sprite.c	\
+	src/commands/cmd_ellipse_tool.c		\
+	src/commands/cmd_exit.c			\
+	src/commands/cmd_film_editor.c		\
+	src/commands/cmd_flatten_layers.c	\
+	src/commands/cmd_flip_horizontal.c	\
+	src/commands/cmd_flip_vertical.c	\
+	src/commands/cmd_floodfill_tool.c	\
+	src/commands/cmd_frame_properties.c	\
+	src/commands/cmd_invert_color.c		\
+	src/commands/cmd_invert_mask.c		\
+	src/commands/cmd_layer_properties.c	\
+	src/commands/cmd_line_tool.c		\
+	src/commands/cmd_link_frame.c		\
+	src/commands/cmd_load_mask.c		\
+	src/commands/cmd_load_session.c		\
+	src/commands/cmd_make_unique_editor.c	\
+	src/commands/cmd_mapgen.c		\
+	src/commands/cmd_marker_tool.c		\
+	src/commands/cmd_mask_all.c		\
+	src/commands/cmd_mask_by_color.c	\
+	src/commands/cmd_mask_repository.c	\
+	src/commands/cmd_merge_down_layer.c	\
+	src/commands/cmd_move_frame.c		\
+	src/commands/cmd_new_file.c		\
+	src/commands/cmd_new_frame.c		\
+	src/commands/cmd_new_layer.c		\
+	src/commands/cmd_new_layer_set.c	\
+	src/commands/cmd_open_file.c		\
+	src/commands/cmd_options.c		\
+	src/commands/cmd_palette_editor.c	\
+	src/commands/cmd_paste.c		\
+	src/commands/cmd_pencil_tool.c		\
+	src/commands/cmd_play_flic.c		\
+	src/commands/cmd_preview_fit_to_screen.c	\
+	src/commands/cmd_preview_normal.c	\
+	src/commands/cmd_preview_tiled.c	\
+	src/commands/cmd_quick_copy.c		\
+	src/commands/cmd_quick_move.c		\
+	src/commands/cmd_record_screen.c	\
+	src/commands/cmd_rectangle_tool.c	\
+	src/commands/cmd_redo.c			\
+	src/commands/cmd_refresh.c		\
+	src/commands/cmd_remove_frame.c		\
+	src/commands/cmd_remove_layer.c		\
+	src/commands/cmd_replace_color.c	\
+	src/commands/cmd_reselect_mask.c	\
+	src/commands/cmd_run_script.c		\
+	src/commands/cmd_save_file.c		\
+	src/commands/cmd_save_file_as.c		\
+	src/commands/cmd_save_mask.c		\
+	src/commands/cmd_save_session.c		\
+	src/commands/cmd_screen_shot.c		\
+	src/commands/cmd_select_file.c		\
+	src/commands/cmd_split_editor_horizontally.c	\
+	src/commands/cmd_split_editor_vertically.c	\
+	src/commands/cmd_spray_tool.c		\
+	src/commands/cmd_sprite_properties.c	\
+	src/commands/cmd_tips.c			\
+	src/commands/cmd_undo.c			\
+	src/commands/commands.c			\
 	src/console/console.c			\
 	src/core/app.c				\
 	src/core/config.c			\
@@ -120,7 +206,7 @@ ASE_SOURCES =					\
 	src/widgets/editor/editor.c		\
 	src/widgets/editor/keys.c		\
 	src/widgets/groupbut.c			\
-	src/widgets/menu.c			\
+	src/widgets/menuitem.c			\
 	src/widgets/paledit.c			\
 	src/widgets/preview.c			\
 	src/widgets/statebar.c			\

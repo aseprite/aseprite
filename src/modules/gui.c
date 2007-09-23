@@ -26,6 +26,7 @@
 #include "jinete.h"
 #include "jinete/intern.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -117,6 +118,7 @@ int init_module_gui(void)
 #if !defined(ALLEGRO_DOS)
   three_finger_flag = FALSE;
 #endif
+  three_finger_flag = TRUE;	/* TODO remove this line */
 
   /* set the graphics mode... */
   load_gui_config(&w, &h, &bpp, &fullscreen);
@@ -684,36 +686,71 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       gui_feedback();
       break;
 
-    case JM_CHAR:
-      if (check_for_accel(ACCEL_FOR_SCREENSHOT, msg)) {
+    case JM_CHAR: {
+      Command *command = command_get_by_key(msg);
+
+      /* the screen shot is available in everywhere */
+      if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {
 	screen_shot();
 	return TRUE;
       }
-      else if (check_for_accel(ACCEL_FOR_FILMEDITOR, msg)) {
-	if (current_sprite) {
-	  JWidget child;
-	  JLink link;
-	  bool dofilm = FALSE;
+      /* all other keys are only available in the main-window */
+      else {
+	JWidget child;
+	JLink link;
 
-	  JI_LIST_FOR_EACH(widget->children, link) {
-	    child = link->data;
+	JI_LIST_FOR_EACH(widget->children, link) {
+	  child = link->data;
 
-	    if (jwindow_is_foreground(child)) {
- 	      break;
-	    }
-	    else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
-	      dofilm = TRUE;
-	      break;
-	    }
+	  /* there are a foreground window executing? */
+	  if (jwindow_is_foreground(child)) {
+	    break;
 	  }
-
-	  if (dofilm) {
-	    switch_between_film_and_sprite_editor();
-	    return TRUE;
+	  /* is it the desktop and the top-window= */
+	  else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
+	    /* ok, so we can execute the command represented by the
+	       pressed-key in the message... */
+	    if (command) {
+	      if (command_is_enabled(command, NULL)) {
+		command_execute(command, NULL);
+		return TRUE;
+	      }
+	    }
+	    break;
 	  }
 	}
       }
       break;
+    }
+      /* TODO remove this */
+/*       if (check_for_accel(ACCEL_FOR_SCREENSHOT, msg)) { */
+/* 	screen_shot(); */
+/* 	return TRUE; */
+/*       } */
+/*       else if (check_for_accel(ACCEL_FOR_FILMEDITOR, msg)) { */
+/* 	if (current_sprite) { */
+/* 	  JWidget child; */
+/* 	  JLink link; */
+/* 	  bool dofilm = FALSE; */
+
+/* 	  JI_LIST_FOR_EACH(widget->children, link) { */
+/* 	    child = link->data; */
+
+/* 	    if (jwindow_is_foreground(child)) { */
+/*  	      break; */
+/* 	    } */
+/* 	    else if (jwindow_is_desktop(child) && child == app_get_top_window()) { */
+/* 	      dofilm = TRUE; */
+/* 	      break; */
+/* 	    } */
+/* 	  } */
+
+/* 	  if (dofilm) { */
+/* 	    switch_between_film_and_sprite_editor(); */
+/* 	    return TRUE; */
+/* 	  } */
+/* 	} */
+/*       } */
   }
 
   return FALSE;

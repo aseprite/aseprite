@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ static char *log_filename = NULL;
 static FILE *log_fileptr = NULL;
 #endif
 
-int core_init (void)
+int core_init(void)
 {
 #ifdef NEED_LOG
   char buf[512];
@@ -59,22 +59,22 @@ int core_init (void)
   DIRS *dirs;
 
   for (;;) {
-    sprintf (buf, "log%04d.txt", count++);
-    dirs = filename_in_bindir (buf);
-    if (!exists (dirs->path))
+    sprintf(buf, "log%04d.txt", count++);
+    dirs = filename_in_bindir(buf);
+    if (!exists(dirs->path))
       break;
     else
-      dirs_free (dirs);
+      dirs_free(dirs);
   }
 
-  log_filename = jstrdup (dirs->path);
-  dirs_free (dirs);
+  log_filename = jstrdup(dirs->path);
+  dirs_free(dirs);
 #endif
 
   return 0;
 }
 
-void core_exit (void)
+void core_exit(void)
 {
 #ifdef NEED_LOG
   if (log_fileptr) {
@@ -89,7 +89,7 @@ void core_exit (void)
 #endif
 }
 
-void verbose_printf (const char *format, ...)
+void verbose_printf(const char *format, ...)
 {
   if (!(ase_mode & MODE_VERBOSE))
     return;
@@ -97,28 +97,29 @@ void verbose_printf (const char *format, ...)
 #ifdef NEED_LOG
   if (!log_fileptr)
     if (log_filename)
-      log_fileptr = fopen (log_filename, "w");
+      log_fileptr = fopen(log_filename, "w");
 
   if (log_fileptr)
 #endif
     {
       va_list ap;
-      va_start (ap, format);
+      va_start(ap, format);
 
 #ifndef NO_STDERR
-      vfprintf (stderr, format, ap);
+      vfprintf(stderr, format, ap);
+      fflush(stderr);
 #endif
 
 #ifdef NEED_LOG
-      vfprintf (log_fileptr, format, ap);
-      fflush (log_fileptr);
+      vfprintf(log_fileptr, format, ap);
+      fflush(log_fileptr);
 #endif
 
-      va_end (ap);
+      va_end(ap);
     }
 }
 
-bool is_interactive (void)
+bool is_interactive(void)
 {
   return ase_mode & MODE_GUI;
 }

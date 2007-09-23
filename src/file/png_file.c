@@ -123,7 +123,7 @@ static Sprite *load_png(const char *filename)
    * was compiled with a compatible version of the library
    */
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
-				   report_png_error, report_png_error);
+ 				   report_png_error, report_png_error);
   if (png_ptr == NULL) {
     console_printf("png_create_read_struct\n");
     fclose(fp);

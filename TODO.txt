@@ -25,6 +25,7 @@ High priority work
 - quick swap;
   + the regions mustn't be overlapped;
 - options to change the curve type (in curedit.c);
+- sprite resize;
 - canvas size;
   + with the current crop this isn't necessary anymore;
   + anyway, it's a good way to expand the graphics

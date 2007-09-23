@@ -16,10 +16,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_ABOUT_H
-#define DIALOGS_ABOUT_H
+#ifndef WIDGETS_MENUITEM_H
+#define WIDGETS_MENUITEM_H
 
-void dialogs_about(void);
+#include "jinete/base.h"
 
-#endif /* DIALOGS_ABOUT_H */
+struct Command;
 
+JWidget menuitem_new(const char *text,
+		     struct Command *command,
+		     const char *argument);
+
+Command *menuitem_get_command(JWidget menuitem);
+
+#endif /* WIDGETS_MENUITEM_H */

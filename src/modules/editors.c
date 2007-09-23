@@ -41,12 +41,12 @@ JWidget box_editors = NULL;
 
 static JList editors;		/* list of "Editor" structures */
 
-static int is_sprite_in_some_editor (Sprite *sprite);
-static Sprite *get_more_reliable_sprite (void);
-static JWidget find_next_editor (JWidget widget);
-static int count_parents (JWidget widget);
+static int is_sprite_in_some_editor(Sprite *sprite);
+static Sprite *get_more_reliable_sprite(void);
+static JWidget find_next_editor(JWidget widget);
+static int count_parents(JWidget widget);
 
-int init_module_editors (void)
+int init_module_editors(void)
 {
   editors = jlist_new();
   return 0;
@@ -269,7 +269,7 @@ void split_editor(JWidget editor, int align)
 
   /* create a new box to contain both editors, and a new view to put
      the new editor */
-  new_panel = ji_panel_new(align);
+  new_panel = jpanel_new(align);
   new_view = editor_view_new();
   new_editor = create_new_editor();
 

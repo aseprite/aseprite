@@ -1,7 +1,32 @@
-/* jinete - a GUI library
- * Copyright (C) 2003-2005 by David A. Capello
+/* Jinete - a GUI library
+ * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * All rights reserved.
  *
- * Jinete is gift-ware.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of the Jinete nor the names of its contributors may
+ *     be used to endorse or promote products derived from this software
+ *     without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <allegro/keyboard.h>
@@ -17,24 +42,24 @@
 #include "jinete/view.h"
 #include "jinete/widget.h"
 
-static bool textbox_msg_proc (JWidget widget, JMessage msg);
-static void textbox_request_size (JWidget widget, int *w, int *h);
+static bool textbox_msg_proc(JWidget widget, JMessage msg);
+static void textbox_request_size(JWidget widget, int *w, int *h);
 
-JWidget jtextbox_new (const char *text, int align)
+JWidget jtextbox_new(const char *text, int align)
 {
-  JWidget widget = jwidget_new (JI_TEXTBOX);
+  JWidget widget = jwidget_new(JI_TEXTBOX);
 
-  jwidget_add_hook (widget, JI_TEXTBOX, textbox_msg_proc, NULL);
-  jwidget_focusrest (widget, TRUE);
-  jwidget_set_align (widget, align);
-  jwidget_set_text (widget, text);
+  jwidget_add_hook(widget, JI_TEXTBOX, textbox_msg_proc, NULL);
+  jwidget_focusrest(widget, TRUE);
+  jwidget_set_align(widget, align);
+  jwidget_set_text(widget, text);
 
-  jwidget_init_theme (widget);
+  jwidget_init_theme(widget);
 
   return widget;
 }
 
-static bool textbox_msg_proc (JWidget widget, JMessage msg)
+static bool textbox_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -44,117 +69,117 @@ static bool textbox_msg_proc (JWidget widget, JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT) {
-	JWidget view = jwidget_get_view (widget);
+	JWidget view = jwidget_get_view(widget);
 	if (view)
-	  jview_update (view);
+	  jview_update(view);
       }
       break;
 
     case JM_CHAR:
-      if (jwidget_has_focus (widget)) {
-	JWidget view = jwidget_get_view (widget);
+      if (jwidget_has_focus(widget)) {
+	JWidget view = jwidget_get_view(widget);
 	if (view) {
-	  JRect vp = jview_get_viewport_position (view);
-	  int textheight = jwidget_get_text_height (widget);
+	  JRect vp = jview_get_viewport_position(view);
+	  int textheight = jwidget_get_text_height(widget);
 	  int scroll_x, scroll_y;
 
-	  jview_get_scroll (view, &scroll_x, &scroll_y);
+	  jview_get_scroll(view, &scroll_x, &scroll_y);
 
 	  switch (msg->key.scancode) {
 
 	    case KEY_LEFT:
-	      jview_set_scroll (view, scroll_x-jrect_w(vp)/2, scroll_y);
+	      jview_set_scroll(view, scroll_x-jrect_w(vp)/2, scroll_y);
 	      break;
 
 	    case KEY_RIGHT:
-	      jview_set_scroll (view, scroll_x+jrect_w(vp)/2, scroll_y);
+	      jview_set_scroll(view, scroll_x+jrect_w(vp)/2, scroll_y);
 	      break;
 
 	    case KEY_UP:
-	      jview_set_scroll (view, scroll_x, scroll_y-jrect_h(vp)/2);
+	      jview_set_scroll(view, scroll_x, scroll_y-jrect_h(vp)/2);
 	      break;
 
 	    case KEY_DOWN:
-	      jview_set_scroll (view, scroll_x, scroll_y+jrect_h(vp)/2);
+	      jview_set_scroll(view, scroll_x, scroll_y+jrect_h(vp)/2);
 	      break;
 
 	    case KEY_PGUP:
-	      jview_set_scroll (view, scroll_x,
-				  scroll_y-(jrect_h(vp)-textheight));
+	      jview_set_scroll(view, scroll_x,
+			       scroll_y-(jrect_h(vp)-textheight));
 	      break;
 
 	    case KEY_PGDN:
-	      jview_set_scroll (view, scroll_x,
-				  scroll_y+(jrect_h(vp)-textheight));
+	      jview_set_scroll(view, scroll_x,
+			       scroll_y+(jrect_h(vp)-textheight));
 	      break;
 
 	    case KEY_HOME:
-	      jview_set_scroll (view, scroll_x, 0);
+	      jview_set_scroll(view, scroll_x, 0);
 	      break;
 
 	    case KEY_END:
-	      jview_set_scroll (view, scroll_x,
-				  jrect_h(widget->rc) - jrect_h(vp));
+	      jview_set_scroll(view, scroll_x,
+			       jrect_h(widget->rc) - jrect_h(vp));
 	      break;
 
 	    default:
 	      jrect_free (vp);
 	      return FALSE;
 	  }
-	  jrect_free (vp);
+	  jrect_free(vp);
 	}
 	return TRUE;
       }
       break;
 
     case JM_BUTTONPRESSED: {
-      JWidget view = jwidget_get_view (widget);
+      JWidget view = jwidget_get_view(widget);
       if (view) {
-	jwidget_hard_capture_mouse (widget);
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jwidget_hard_capture_mouse(widget);
+	ji_mouse_set_cursor(JI_CURSOR_MOVE);
 	return TRUE;
       }
       break;
     }
 
     case JM_MOTION: {
-      JWidget view = jwidget_get_view (widget);
-      if (view && jwidget_has_capture (widget)) {
-	JRect vp = jview_get_viewport_position (view);
+      JWidget view = jwidget_get_view(widget);
+      if (view && jwidget_has_capture(widget)) {
+	JRect vp = jview_get_viewport_position(view);
 	int scroll_x, scroll_y;
 
-	jview_get_scroll (view, &scroll_x, &scroll_y);
-	jview_set_scroll (view,
-			    scroll_x + ji_mouse_x (1) - ji_mouse_x (0),
-			    scroll_y + ji_mouse_y (1) - ji_mouse_y (0));
+	jview_get_scroll(view, &scroll_x, &scroll_y);
+	jview_set_scroll(view,
+			 scroll_x + ji_mouse_x(1) - ji_mouse_x(0),
+			 scroll_y + ji_mouse_y(1) - ji_mouse_y(0));
 
-	ji_mouse_control_infinite_scroll (vp);
-	jrect_free (vp);
+	ji_mouse_control_infinite_scroll(vp);
+	jrect_free(vp);
       }
       break;
     }
 
     case JM_BUTTONRELEASED: {
-      JWidget view = jwidget_get_view (widget);
-      if (view && jwidget_has_capture (widget)) {
-	jwidget_release_mouse (widget);
-	ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+      JWidget view = jwidget_get_view(widget);
+      if (view && jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
+	ji_mouse_set_cursor(JI_CURSOR_NORMAL);
 	return TRUE;
       }
       break;
     }
 
     case JM_WHEEL: {
-      JWidget view = jwidget_get_view (widget);
+      JWidget view = jwidget_get_view(widget);
       if (view) {
 	int scroll_x, scroll_y;
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
 	jview_set_scroll(view,
-			   scroll_x,
-			   scroll_y +
-			   (ji_mouse_z (1) - ji_mouse_z (0))
-			   *jwidget_get_text_height(widget)*3);
+			 scroll_x,
+			 scroll_y +
+			 (ji_mouse_z(1) - ji_mouse_z(0))
+			 *jwidget_get_text_height(widget)*3);
       }
       break;
     }
@@ -163,7 +188,7 @@ static bool textbox_msg_proc (JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static void textbox_request_size (JWidget widget, int *w, int *h)
+static void textbox_request_size(JWidget widget, int *w, int *h)
 {
   /* XXX */
 /*   *w = widget->border_width.l + widget->border_width.r; */
@@ -171,23 +196,23 @@ static void textbox_request_size (JWidget widget, int *w, int *h)
   *w = 0;
   *h = 0;
 
-  _ji_theme_textbox_draw (NULL, widget, w, h);
+  _ji_theme_textbox_draw(NULL, widget, w, h);
 
   if (widget->align & JI_WORDWRAP) {
-    JWidget view = jwidget_get_view (widget);
+    JWidget view = jwidget_get_view(widget);
     int width, min = *w;
 
     if (view) {
-      JRect vp = jview_get_viewport_position (view);
+      JRect vp = jview_get_viewport_position(view);
       width = jrect_w(vp);
-      jrect_free (vp);
+      jrect_free(vp);
     }
     else {
       width = jrect_w(widget->rc);
     }
 
-    *w = MAX (min, width);
-    _ji_theme_textbox_draw (NULL, widget, w, h);
+    *w = MAX(min, width);
+    _ji_theme_textbox_draw(NULL, widget, w, h);
 
     *w = min;
   }

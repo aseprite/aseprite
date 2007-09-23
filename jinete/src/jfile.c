@@ -1,7 +1,32 @@
-/* jinete - a GUI library
- * Copyright (C) 2003-2005, 2007 by David A. Capello
+/* Jinete - a GUI library
+ * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * All rights reserved.
  *
- * Jinete is gift-ware.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in
+ *     the documentation and/or other materials provided with the
+ *     distribution.
+ *   * Neither the name of the Jinete nor the names of its contributors may
+ *     be used to endorse or promote products derived from this software
+ *     without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdio.h>
@@ -187,8 +212,8 @@ static JWidget convert_tag_to_widget(Tag *tag)
     Attr *horizontal = tag_get_attr(tag, "horizontal");
     Attr *vertical = tag_get_attr(tag, "vertical");
 
-    widget = ji_panel_new(horizontal ? JI_HORIZONTAL:
-			  vertical ? JI_VERTICAL: 0);
+    widget = jpanel_new(horizontal ? JI_HORIZONTAL:
+			vertical ? JI_VERTICAL: 0);
   }
   /* radio */
   else if (strcmp(tag->name, "radio") == 0) {
@@ -483,24 +508,25 @@ static Tag *tag_new(const char *name)
   return tag;
 }
 
-static Tag *tag_new_from_string (char *tag_string)
+static Tag *tag_new_from_string(char *tag_string)
 {
   char c, *s;
   Tag *tag;
 
   /* find the end of the tag-name */
-  for (s=tag_string; *s && !IS_BLANK (*s); s++);
+  for (s=tag_string; *s && !IS_BLANK (*s); s++)
+    ;
 
   /* create the new tag with the found name */
   c = *s;
   *s = 0;
-  tag = tag_new (tag_string);
+  tag = tag_new(tag_string);
   *s = c;
 
   /* continue reading attributes */
   while (*s) {
     /* jump white spaces */
-    while (*s && IS_BLANK (*s))
+    while (*s && IS_BLANK(*s))
       s++;
 
     /* isn't end of string? */
@@ -512,7 +538,7 @@ static Tag *tag_new_from_string (char *tag_string)
       Attr *attr;
 
       /* read the attribute-name */
-      while (*s && !IS_BLANK (*s) && *s != '=')
+      while (*s && !IS_BLANK(*s) && *s != '=')
 	s++;
 
       c = *s;
@@ -548,7 +574,7 @@ static Tag *tag_new_from_string (char *tag_string)
 	}
 	else {
 	  /* read the attribute-value */
-	  while (*s && !IS_BLANK (*s))
+	  while (*s && !IS_BLANK(*s))
 	    s++;
 	}
 

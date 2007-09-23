@@ -30,10 +30,10 @@ enum {
 
 extern int ase_mode;
 
-int core_init (void);
-void core_exit (void);
+int core_init(void);
+void core_exit(void);
 
-void verbose_printf (const char *format, ...);
-bool is_interactive (void);
+void verbose_printf(const char *format, ...);
+bool is_interactive(void);
 
 #endif /* CORE_H */

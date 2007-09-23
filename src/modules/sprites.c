@@ -57,7 +57,7 @@ int init_module_sprites(void)
   return 0;
 }
 
-void exit_module_sprites (void)
+void exit_module_sprites(void)
 {
   if (clipboard_sprite) {
     sprite_free(clipboard_sprite);

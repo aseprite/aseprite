@@ -1,3 +1,21 @@
+2007-09-23  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_new_sprite.c: Added (based on newspr.lua).
+
+	* src/commands/cmd_exit.c (command_execute_exit): Added (based on
+	exit.lua).
+
+2007-09-21  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/menu.c (menuitem_new): Modified to use only
+	commands. No more scripts for menus.
+
+	* src/modules/commands.c: Added commands.
+
+2007-09-20  David A. Capello  <dacap@users.sourceforge.net>
+
+	* jinete/src/jxml.c: Added routines to load XML files.
+
 2007-09-19  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/modules/gui.c (display_switch_in_callback): Fixed (now it

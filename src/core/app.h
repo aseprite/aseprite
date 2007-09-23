@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,26 +21,26 @@
 
 #include "jinete/base.h"
 
-int app_init (int argc, char *argv[]);
-void app_loop (void);
-void app_exit (void);
+int app_init(int argc, char *argv[]);
+void app_loop(void);
+void app_exit(void);
 
-void app_refresh_screen (void);
+void app_refresh_screen(void);
 
-void app_realloc_sprite_list (void);
-void app_realloc_recent_list (void);
+void app_realloc_sprite_list(void);
+void app_realloc_recent_list(void);
 
-int app_get_current_image_type (void);
+int app_get_current_image_type(void);
 
-JWidget app_get_top_window (void);
-JWidget app_get_menu_bar (void);
-JWidget app_get_status_bar (void);
-JWidget app_get_color_bar (void);
-JWidget app_get_tool_bar (void);
+JWidget app_get_top_window(void);
+JWidget app_get_menu_bar(void);
+JWidget app_get_status_bar(void);
+JWidget app_get_color_bar(void);
+JWidget app_get_tool_bar(void);
 
-void app_switch (JWidget widget);
+void app_switch(JWidget widget);
 
-void app_default_status_bar_message (void);
+void app_default_status_bar_message(void);
 
 #endif /* CORE_APP_H */
 

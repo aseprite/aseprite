@@ -23,6 +23,7 @@
 
 #include "allegro.h"
 
+/* Only for Allegro < 4.2 */
 #if ((ALLEGRO_VERSION == 4 && ALLEGRO_SUB_VERSION < 2) || (ALLEGRO_VERSION < 4))
 #include "allegro/internal/aintern.h"
 
