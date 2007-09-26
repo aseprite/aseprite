@@ -1,5 +1,5 @@
 # allegro-sprite-editor tips
-# Copyright (C) 2001-2005  David A. Capello
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007  David A. Capello
 
  **********************************************************************
 \palette aselogo.pcx
@@ -119,4 +119,4 @@ Y recuerde buscar actualizaciones en:
 
 http://ase.sourceforge.net/
 
-Copyright (C) 2001-2005 por David A. Capello
+Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 por David A. Capello
