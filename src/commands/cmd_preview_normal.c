@@ -25,12 +25,22 @@
 
 #endif
 
-bool command_enabled_preview_normal(const char *argument)
+bool command_enabled_preview(const char *argument)
 {
   return current_sprite != NULL;
+}
+
+void command_execute_preview_fit_to_screen(const char *argument)
+{
+  preview_sprite(PREVIEW_FIT_ON_SCREEN);
 }
 
 void command_execute_preview_normal(const char *argument)
 {
   preview_sprite(0);
+}
+
+void command_execute_preview_tiled(const char *argument)
+{
+  preview_sprite(PREVIEW_TILED);
 }
