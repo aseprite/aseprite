@@ -309,22 +309,22 @@ static void theme_init_widget(JWidget widget)
     case JI_MENU:
     case JI_MENUBAR:
     case JI_MENUBOX:
-      BORDER (0);
+      BORDER(0);
       widget->child_spacing = 0;
       break;
 
     case JI_MENUITEM:
-      BORDER (2);
+      BORDER(2);
       widget->child_spacing = 18;
       break;
 
     case JI_PANEL:
-      BORDER (0);
+      BORDER(0);
       widget->child_spacing = 3;
       break;
 
     case JI_RADIO:
-      BORDER (2);
+      BORDER(2);
 /*       widget->child_spacing = 2; */
       widget->child_spacing = 4;
       break;
@@ -353,17 +353,17 @@ static void theme_init_widget(JWidget widget)
       break;
 
     case JI_SLIDER:
-      BORDER (4);
+      BORDER(4);
       widget->child_spacing = jwidget_get_text_height (widget);
       break;
 
     case JI_TEXTBOX:
-      BORDER (2);
+      BORDER(2);
       widget->child_spacing = 0;
       break;
 
     case JI_VIEW:
-      BORDER (2);
+      BORDER(2);
       widget->child_spacing = 0;
       break;
 
@@ -373,15 +373,14 @@ static void theme_init_widget(JWidget widget)
       break;
 
     case JI_VIEW_VIEWPORT:
-      BORDER (0);
+      BORDER(0);
       widget->child_spacing = 0;
       break;
 
     case JI_WINDOW:
       if (!jwindow_is_desktop (widget)) {
 	if (widget->text) {
-/* 	  BORDER4(4, 4+jwidget_get_text_height(widget)+4, 4, 4); */
-	  BORDER4(6, 4+jwidget_get_text_height(widget)+4, 6, 6);
+	  BORDER4(6, 4+jwidget_get_text_height(widget)+6, 6, 6);
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
 	    JWidget button = jbutton_new("x");
@@ -395,13 +394,12 @@ static void theme_init_widget(JWidget widget)
 #endif
 	}
 	else if (!(widget->flags & JI_INITIALIZED)) {
-	  BORDER (3);
+	  BORDER(3);
 	}
       }
       else {
 	BORDER (0);
       }
-/*       widget->child_spacing = 2; */
       widget->child_spacing = 4;
       break;
 
@@ -1355,7 +1353,8 @@ static void theme_draw_window(JWidget widget)
       int bg = makecol(44, 76, 145);
 
       jrect_shrink(pos, 1);
-      pos->y2 = cpos->y1-1;
+/*       pos->y2 = cpos->y1-1; */
+      pos->y2 = cpos->y1-3;
       jdraw_rectfill(pos, bg);
 
       jrect_stretch(pos, 1);

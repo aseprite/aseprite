@@ -64,7 +64,7 @@
 
 static JWidget manager = NULL;
 
-static int next_idle_flags = 0;
+static volatile int next_idle_flags = 0;
 static JList icon_buttons;
 
 /* default GUI screen configuration */
@@ -87,6 +87,8 @@ static void display_switch_in_callback()
 {
   next_idle_flags |= REBUILD_FULLREFRESH;
 }
+
+END_OF_STATIC_FUNCTION(display_switch_in_callback);
 
 /**
  * Initializes GUI.
@@ -173,6 +175,8 @@ int init_module_gui(void)
 
   /* add a hook to display-switch so when the user returns to the
      screen it's completelly refreshed/redrawn */
+  LOCK_VARIABLE(next_idle_flags);
+  LOCK_FUNCTION(display_switch_in_callback);
   set_display_switch_callback(SWITCH_IN, display_switch_in_callback);
 
   /* set graphics options for next time */
@@ -288,8 +292,8 @@ void gui_feedback(void)
 
   /* double buffering? */
   if (double_buffering) {
-    jmanager_dispatch_draw_messages();
-    ji_mouse_draw_cursor();
+/*     jmanager_dispatch_draw_messages(); */
+    jmouse_draw_cursor();
 
     if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
       blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
@@ -299,6 +303,8 @@ void gui_feedback(void)
 		   0, 0, ji_screen->w, ji_screen->h,
 		   0, 0, SCREEN_W, SCREEN_H);
     }
+
+/*     jmanager_dispatch_draw_messages(); */
   }
 
   /* don't eat CPU... rest some time */
@@ -688,6 +694,8 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_CHAR: {
       Command *command = command_get_by_key(msg);
+      if (!command)
+	break;
 
       /* the screen shot is available in everywhere */
       if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {
@@ -710,11 +718,9 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	  else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
 	    /* ok, so we can execute the command represented by the
 	       pressed-key in the message... */
-	    if (command) {
-	      if (command_is_enabled(command, NULL)) {
-		command_execute(command, NULL);
-		return TRUE;
-	      }
+	    if (command_is_enabled(command, NULL)) {
+	      command_execute(command, NULL);
+	      return TRUE;
 	    }
 	    break;
 	  }

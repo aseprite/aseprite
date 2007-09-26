@@ -41,13 +41,13 @@
 #define DO_GOTODEST		2
 
 #define MOUSE_IN(pos)						\
-  ((ji_mouse_x(0) >= pos->x1) && (ji_mouse_x(0) < pos->x2) &&	\
-   (ji_mouse_y(0) >= pos->y1) && (ji_mouse_y(0) < pos->y2))
+  ((jmouse_x(0) >= pos->x1) && (jmouse_x(0) < pos->x2) &&	\
+   (jmouse_y(0) >= pos->y1) && (jmouse_y(0) < pos->y2))
 
-#define MBOX(widget)							\
+#define MBOX(widget)						\
   ((MenuBox *)jwidget_get_data(((JWidget)widget), JI_MENUBOX))
 
-#define MITEM(widget)							\
+#define MITEM(widget)						\
   ((MenuItem *)jwidget_get_data(((JWidget)widget), JI_MENUITEM))
 
 /* JWidget *menuitem */
@@ -56,7 +56,7 @@
    (!jlist_empty(MITEM(menuitem)->submenu->children)))
 
 /* MenuBox *menubox_data */
-#define HAS_MENU(menubox_data)						\
+#define HAS_MENU(menubox_data)					\
   ((menubox_data->menu) && (!jlist_empty(menubox_data->menu->children)))
 
 typedef struct MenuBox
@@ -227,8 +227,8 @@ void jmenu_popup(JWidget menu, int x, int y)
   JWidget window, menubox;
 
   do {
-    ji_mouse_poll();
-  } while (ji_mouse_b(0));
+    jmouse_poll();
+  } while (jmouse_b(0));
 
   was_clicked = TRUE;
   current_level = 1;
@@ -715,7 +715,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	/* mouse outside the box? */
 	if (!MOUSE_IN (widget->rc)) {
 	  /* control button press outside the menubox */
-	  if (ji_mouse_b (0) || was_clicked) {
+	  if (jmouse_b(0) || was_clicked) {
 	    JWidget picked_menubox = widget;
 	    JWidget open_menubox = NULL;
 	    JWidget picked = pick_menuitem (&picked_menubox, &open_menubox);
@@ -750,7 +750,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	  }
 
 	  /* control button-released outside menubox */
-	  if ((!ji_mouse_b (0)) && (ji_mouse_b (1))) {
+	  if ((!jmouse_b(0)) && (jmouse_b(1))) {
 	    JWidget picked =
 	      jwidget_pick
 		   (menubox->parent_menuitem ?
@@ -1123,7 +1123,7 @@ static JWidget pick_menuitem(JWidget *_menubox, JWidget *open_menubox)
     if (MOUSE_IN(menubox->rc)) {
       *_menubox = menubox;
       picked = jwidget_pick(MBOX(menubox)->menu,
-			    ji_mouse_x(0), ji_mouse_y(0));
+			    jmouse_x(0), jmouse_y(0));
       if (picked->type != JI_MENUITEM)
 	picked = NULL;
       break;

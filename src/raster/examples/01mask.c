@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	  xend = mouse_x;
 	  yend = mouse_y;
 
-	  scare_mouse ();
+	  jmouse_hide();
 
 	  if (xold >= 0) {
 	    xor_mode (TRUE);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	  rect (screen, xbeg, ybeg, xold = xend, yold = yend, 0xff);
 	  xor_mode (FALSE);
 
-	  unscare_mouse ();
+	  jmouse_show ();
 	}
       }
 
@@ -134,11 +134,11 @@ int main(int argc, char *argv[])
 	}
       }
 
-      scare_mouse ();
-      blit (bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-      unscare_mouse ();
+      jmouse_hide();
+      blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+      jmouse_show();
 
-      destroy_bitmap (bmp);
+      destroy_bitmap(bmp);
     }
   } while (!key[KEY_ESC]);
   return 0;

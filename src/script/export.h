@@ -97,8 +97,6 @@ JWidget app_get_status_bar(void);
 JWidget app_get_color_bar(void);
 JWidget app_get_tool_bar(void);
 
-void app_switch(JWidget widget);
-
 /* intl/intl.c */
 
 void intl_load_lang(void);
@@ -886,8 +884,6 @@ void jmanager_run(JWidget manager);
 bool jmanager_poll(JWidget manager, bool all_windows);
 
 void jmanager_send_message(JMessage msg);
-void jmanager_dispatch_messages(void);
-void jmanager_dispatch_draw_messages(void);
 
 JWidget jmanager_get_focus(void);
 JWidget jmanager_get_mouse(void);

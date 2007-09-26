@@ -233,24 +233,24 @@ static bool interactive_transform(JWidget widget,
 {
 /* #define UPDATE2()							\ */
 /*   jmanager_dispatch_messages ();					\ */
-/*   scare_mouse ();							\ */
+/*   jmouse_hide();							\ */
 /*   blit (ji_screen, bmp1, vp->x, vp->y, 0, 0, vp->w, vp->h);		\ */
 /*   draw_box (ji_screen, vp->x, vp->y, vp->x+vp->w-1, vp->y+vp->h-1,		\ */
 /* 	    x1, y1, x2, y2, preview, mode, angle, cx-vp->x, cy-vp->y);	\ */
 /*   update_status_bar (widget, image, x1, y1, x2, y2, angle);		\ */
-/*   unscare_mouse (); */
+/*   jmouse_show(); */
 
 #define UPDATE()							\
-  scare_mouse();							\
+  jmouse_hide();							\
   old_screen = ji_screen;						\
   ji_screen = bmp1;							\
-  jmanager_dispatch_draw_messages();					\
+  jmanager_dispatch_messages();						\
   ji_screen = old_screen;						\
   REDRAW();								\
-  unscare_mouse();
+  jmouse_show();
 
 #define REDRAW()							\
-  scare_mouse();							\
+  jmouse_hide();							\
   blit(bmp1, bmp2, vp->x1, vp->y1, 0, 0, jrect_w(vp), jrect_h(vp));	\
   draw_box(bmp2,							\
 	   0, 0, jrect_w(vp)-1, jrect_h(vp)-1,				\
@@ -258,7 +258,7 @@ static bool interactive_transform(JWidget widget,
 	   preview, mode, angle, cx-vp->x1, cy-vp->y1);			\
   blit(bmp2, ji_screen, 0, 0, vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)); \
   update_status_bar(widget, image, x1, y1, x2, y2, angle);		\
-  unscare_mouse();
+  jmouse_show();
 
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
@@ -282,9 +282,9 @@ static bool interactive_transform(JWidget widget,
   bmp1 = create_bitmap(JI_SCREEN_W, JI_SCREEN_H);
   bmp2 = create_bitmap(jrect_w(vp), jrect_h(vp));
 
-  scare_mouse();
+  jmouse_hide();
   blit(ji_screen, bmp1, 0, 0, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
-  unscare_mouse();
+  jmouse_show();
 
   /* generate the preview bitmap (for fast-blitting) */
   preview = create_bitmap(image->w, image->h);
@@ -337,7 +337,7 @@ static bool interactive_transform(JWidget widget,
     }
 
     /* mouse moved */
-    if (ji_mouse_poll()) {
+    if (jmouse_poll()) {
       int in_left, in_center, in_right;
       int in_top, in_middle, in_bottom;
       int in_box;
@@ -348,63 +348,63 @@ static bool interactive_transform(JWidget widget,
 		   x1, y1, x2, y2, angle, cx, cy);
 
       if (in_box) {
-	ji_mouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
 	action = ACTION_MOVE;
       }
       else {
 	/* top */
 	if (in_top && in_left) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_TL);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_TL);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_TL: ACTION_ROTATE_TL;
 	}
 	else if (in_top && in_center) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_T);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_T);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_T: ACTION_ROTATE_T;
 	}
 	else if (in_top && in_right) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_TR);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_TR);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_TR: ACTION_ROTATE_TR;
 	}
 	/* middle */
 	else if (in_middle && in_left) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_L);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_L);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_L: ACTION_ROTATE_L;
 	}
 	else if (in_middle && in_right) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_R);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_R);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_R: ACTION_ROTATE_R;
 	}
 	/* bottom */
 	else if (in_bottom && in_left) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_BL);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_BL);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_BL: ACTION_ROTATE_BL;
 	}
 	else if (in_bottom && in_center) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_B);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_B);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_B: ACTION_ROTATE_B;
 	}
 	else if (in_bottom && in_right) {
-	  ji_mouse_set_cursor(JI_CURSOR_SIZE_BR);
+	  jmouse_set_cursor(JI_CURSOR_SIZE_BR);
 	  action = mode == SCALE_MODE ? ACTION_SCALE_BR: ACTION_ROTATE_BR;
 	}
 	/* normal */
 	else {
-	  ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+	  jmouse_set_cursor(JI_CURSOR_NORMAL);
 	  action = ACTION_SETMODE;
 	}
       }
     }
 
     /* button pressed */
-    if (ji_mouse_b(0)) {
+    if (jmouse_b(0)) {
       /* left button+shift || middle button = scroll movement */
-      if ((ji_mouse_b(0) == 1 && (key_shifts & KB_SHIFT_FLAG)) ||
-	  (ji_mouse_b(0) == 4)) {
+      if ((jmouse_b(0) == 1 && (key_shifts & KB_SHIFT_FLAG)) ||
+	  (jmouse_b(0) == 4)) {
 	JWidget view = jwidget_get_view(widget);
 	int scroll_x, scroll_y;
 
-	x = ji_mouse_x(0) - ji_mouse_x(1);
-	y = ji_mouse_y(0) - ji_mouse_y(1);
+	x = jmouse_x(0) - jmouse_x(1);
+	y = jmouse_y(0) - jmouse_y(1);
 
 /* 	screen_to_editor (widget, x1, y1, &x1, &y1); */
 /* 	screen_to_editor (widget, x2, y2, &x2, &y2); */
@@ -417,7 +417,7 @@ static bool interactive_transform(JWidget widget,
 /* 	editor_to_screen (widget, x1, y1, &x1, &y1); */
 /* 	editor_to_screen (widget, x2, y2, &x2, &y2); */
 
-	ji_mouse_control_infinite_scroll(vp);
+	jmouse_control_infinite_scroll(vp);
 
 	jwidget_dirty(view);
 	jwidget_flush_redraw(view);
@@ -444,7 +444,7 @@ static bool interactive_transform(JWidget widget,
 /* 	  x2 += cx - ncx; */
 /* 	  y2 += cy - ncy; */
 
-/* 	  scare_mouse (); */
+/* 	  jmouse_hide(); */
 /* 	  blit (bmp1, bmp2, 0, 0, 0, 0, vp->w, vp->h); */
 /* 	  draw_box (bmp2, */
 /* 		    0, 0, vp->w-1, vp->h-1, */
@@ -452,11 +452,11 @@ static bool interactive_transform(JWidget widget,
 /* 		    preview, mode, angle, cx-vp->x, cy-vp->y); */
 /* 	  blit (bmp2, ji_screen, 0, 0, vp->x, vp->y, vp->w, vp->h); */
 /* 	  update_status_bar (widget, image, x1, y1, x2, y2, angle); */
-/* 	  unscare_mouse (); */
+/* 	  jmouse_show(); */
 /* 	} */
       }
       /* right button = paste */
-      else if (ji_mouse_b(0) == 2) {
+      else if (jmouse_b(0) == 2) {
 	done = DONE_PASTE; 		/* paste */
       }
       /* change mode */
@@ -466,17 +466,17 @@ static bool interactive_transform(JWidget widget,
 
 	do {
 	  poll_keyboard();
-	  ji_mouse_poll();
+	  jmouse_poll();
 	  gui_feedback();
-	} while (ji_mouse_b(0));
+	} while (jmouse_b(0));
       }
       /* modify selection */
       else {
-	int mx = ji_mouse_x(0);
-	int my = ji_mouse_y(0);
+	int mx = jmouse_x(0);
+	int my = jmouse_y(0);
 	fixed angle1 = angle;
-	fixed angle2 = fixatan2(itofix(ji_mouse_y(0)-cy),
-				itofix(ji_mouse_x(0)-cx));
+	fixed angle2 = fixatan2(itofix(jmouse_y(0)-cy),
+				itofix(jmouse_x(0)-cx));
 	angle2 = fixsub(0, angle2);
 
 	u1 = x1;
@@ -486,18 +486,18 @@ static bool interactive_transform(JWidget widget,
 
 	do {
 	  poll_keyboard();
-	  if (ji_mouse_poll()) {
+	  if (jmouse_poll()) {
 
 	    if (action == ACTION_MOVE) {
-	      x = ji_mouse_x(0) - mx;
-	      y = ji_mouse_y(0) - my;
+	      x = jmouse_x(0) - mx;
+	      y = jmouse_y(0) - my;
 	    }
 	    else if (action >= ACTION_SCALE_TL &&
 		     action <= ACTION_SCALE_BR) {
-	      x = fixtoi(fixmul(itofix(ji_mouse_x(0) - mx), fixcos(angle)))
-		+ fixtoi(fixmul(itofix(ji_mouse_y(0) - my),-fixsin(angle)));
-	      y = fixtoi(fixmul(itofix(ji_mouse_x(0) - mx), fixsin(angle)))
-		+ fixtoi(fixmul(itofix(ji_mouse_y(0) - my), fixcos(angle)));
+	      x = fixtoi(fixmul(itofix(jmouse_x(0) - mx), fixcos(angle)))
+		+ fixtoi(fixmul(itofix(jmouse_y(0) - my),-fixsin(angle)));
+	      y = fixtoi(fixmul(itofix(jmouse_x(0) - mx), fixsin(angle)))
+		+ fixtoi(fixmul(itofix(jmouse_y(0) - my), fixcos(angle)));
 	    }
 	    else
 	      x = y = 0;
@@ -552,8 +552,8 @@ static bool interactive_transform(JWidget widget,
 	      case ACTION_ROTATE_BL:
 	      case ACTION_ROTATE_B:
 	      case ACTION_ROTATE_BR:
-		angle = fixatan2(itofix(ji_mouse_y(0)-cy),
-				 itofix(ji_mouse_x(0)-cx));
+		angle = fixatan2(itofix(jmouse_y(0)-cy),
+				 itofix(jmouse_x(0)-cx));
 		angle &= 255<<16;
 		angle = fixsub(0, angle);
 
@@ -580,7 +580,7 @@ static bool interactive_transform(JWidget widget,
 	  }
 
 	  gui_feedback();
-	} while (ji_mouse_b(0));
+	} while (jmouse_b(0));
 
 	/* recenter the pivot (cx, cy) */
 	{
@@ -778,8 +778,8 @@ static void fill_in_vars(int *in_box,
 			 int cx, int cy)
 {
   MATRIX m;
-  int mx = ji_mouse_x (0);
-  int my = ji_mouse_y (0);
+  int mx = jmouse_x(0);
+  int my = jmouse_y(0);
   fixed fx, fy, fz;
 
   get_rotation_matrix (&m, 0, 0, fixsub (0, angle));
@@ -802,11 +802,11 @@ static void update_status_bar(JWidget editor, Image *image,
   int u1, v1, u2, v2;
   int iangle = 360*(fixtoi (angle & (255<<16)))/256;
 
-  screen_to_editor (editor, x1, y1, &u1, &v1);
-  screen_to_editor (editor, x2, y2, &u2, &v2);
+  screen_to_editor(editor, x1, y1, &u1, &v1);
+  screen_to_editor(editor, x2, y2, &u2, &v2);
 
   status_bar_set_text
-    (app_get_status_bar (), 0,
+    (app_get_status_bar(), 0,
      "Pos: %3d %3d Size: %3d %3d Orig: %3d %3d (%.02f%% %.02f%%) Angle: %3d",
      u1, v1, u2-u1, v2-v1,
      image->w, image->h,
@@ -814,6 +814,6 @@ static void update_status_bar(JWidget editor, Image *image,
      (double)(v2-v1)*100/image->h,
      iangle);
 
-  jwidget_flush_redraw (app_get_status_bar ());
-  jmanager_dispatch_messages ();
+  jwidget_flush_redraw(app_get_status_bar());
+  jmanager_dispatch_messages();
 }

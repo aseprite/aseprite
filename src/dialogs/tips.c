@@ -182,7 +182,7 @@ static bool tips_msg_proc(JWidget widget, JMessage msg)
       {
 	JWidget view = jwidget_get_view(widget);
 	JRect vp = jview_get_viewport_position(view);
-	int dz = ji_mouse_z(1) - ji_mouse_z(0);
+	int dz = jmouse_z(1) - jmouse_z(0);
 	int scroll_x, scroll_y;
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
@@ -221,7 +221,7 @@ static void tips_request_size(JWidget widget, int *w, int *h)
 static JWidget tips_image_new(BITMAP *bmp)
 {
   JWidget widget = jimage_new(bmp, JI_CENTER | JI_MIDDLE);
-  jwidget_add_hook(widget, tips_image_type (),
+  jwidget_add_hook(widget, tips_image_type(),
 		   tips_image_msg_proc, bmp);
   return widget;
 }
@@ -234,15 +234,15 @@ static int tips_image_type(void)
   return type;
 }
 
-static bool tips_image_msg_proc (JWidget widget, JMessage msg)
+static bool tips_image_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_DESTROY)
-    destroy_bitmap (jwidget_get_data (widget, tips_image_type ()));
+    destroy_bitmap(jwidget_get_data(widget, tips_image_type()));
 
   return FALSE;
 }
 
-static FILE *tips_open_file (void)
+static FILE *tips_open_file(void)
 {
   char filename[1024];
   DIRS *dirs, *dir;
@@ -290,7 +290,7 @@ static int tips_count_pages (void)
   return page;
 }
 
-static void tips_load_page (JWidget widget)
+static void tips_load_page(JWidget widget)
 {
   int use_page = get_config_int("Tips", "Page", 0);
   char buf[1024];
@@ -301,8 +301,8 @@ static void tips_load_page (JWidget widget)
   /* destroy old page */
   if (!jlist_empty(widget->children)) {
     JWidget child = jlist_first(widget->children)->data;
-    jwidget_remove_child (widget, child);
-    jwidget_free (child);
+    jwidget_remove_child(widget, child);
+    jwidget_free(child);
   }
 
   /* set default palette */
@@ -310,32 +310,32 @@ static void tips_load_page (JWidget widget)
 
   f = tips_open_file();
   if (!f) {
-    jwidget_add_child (widget, jlabel_new (_("Error loading tips file.")));
+    jwidget_add_child(widget, jlabel_new(_("Error loading tips file.")));
     return;
   }
 
-  while (fgets (buf, sizeof (buf), f)) {
+  while (fgets(buf, sizeof(buf), f)) {
     if (*buf == 12) {
       /* read this page */
       if (use_page == page) {
-	JWidget vbox = tips_load_box (f, buf, sizeof (buf), &take);
+	JWidget vbox = tips_load_box(f, buf, sizeof (buf), &take);
 	if (vbox)
-	  jwidget_add_child (widget, vbox);
+	  jwidget_add_child(widget, vbox);
 	break;
       }
       page++;
     }
   }
 
-  fclose (f);
+  fclose(f);
 
-  jview_update (jwidget_get_view (widget));
-  jview_set_scroll (jwidget_get_view (widget), 0, 0);
+  jview_update(jwidget_get_view(widget));
+  jview_set_scroll(jwidget_get_view(widget), 0, 0);
 
-  jmanager_refresh_screen ();
+  jmanager_refresh_screen();
 }
 
-static JWidget tips_load_box (FILE *f, char *buf, int sizeof_buf, int *take)
+static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 {
   JWidget vbox = jbox_new (JI_VERTICAL);
 
@@ -432,7 +432,7 @@ static JWidget tips_load_box (FILE *f, char *buf, int sizeof_buf, int *take)
 
       /* read more text (to generate a paragraph) */
       if (*text != '*') {
-	while (fgets (buf, sizeof_buf, f)) {
+	while (fgets(buf, sizeof_buf, f)) {
 	  if (*buf == 12 || *buf == '\\') {
 	    *take = FALSE;
 	    break;
@@ -442,8 +442,8 @@ static JWidget tips_load_box (FILE *f, char *buf, int sizeof_buf, int *take)
 	    continue;
 
 	  /* remove trailing space chars */
-	  while (*buf && isspace (ugetat (buf, -1)))
-	    usetat (buf, -1, 0);
+	  while (*buf && isspace(ugetat (buf, -1)))
+	    usetat(buf, -1, 0);
 
 	  /* empty? */
 	  if (!*buf) {
@@ -452,20 +452,20 @@ static JWidget tips_load_box (FILE *f, char *buf, int sizeof_buf, int *take)
 	  }
 
 	  /* add chars */
-	  text = jrealloc (text, strlen (text) + 1 + strlen (buf) + 1);
-	  strcat (text, " ");
-	  strcpy (text+strlen (text), buf);
+	  text = jrealloc(text, strlen (text) + 1 + strlen (buf) + 1);
+	  strcat(text, " ");
+	  strcpy(text+strlen (text), buf);
 	}
 
 	/* add the textbox */
-	jwidget_add_child (vbox, jtextbox_new (text, JI_WORDWRAP | JI_CENTER));
+	jwidget_add_child(vbox, jtextbox_new(text, JI_WORDWRAP | JI_CENTER));
       }
       else {
 	/* add a label */
-	jwidget_add_child (vbox, jtextbox_new (text+2, JI_WORDWRAP | JI_LEFT));
+	jwidget_add_child(vbox, jtextbox_new(text+2, JI_WORDWRAP | JI_LEFT));
       }
 
-      jfree (text);
+      jfree(text);
     }
   }
 
@@ -475,20 +475,20 @@ static JWidget tips_load_box (FILE *f, char *buf, int sizeof_buf, int *take)
   return vbox;
 }
 
-static BITMAP *tips_load_image (const char *filename, PALETTE pal)
+static BITMAP *tips_load_image(const char *filename, PALETTE pal)
 {
   BITMAP *bmp = NULL;
   DIRS *dir, *dirs;
 
-  dirs = filename_in_datadir (filename);
+  dirs = filename_in_datadir(filename);
 
   for (dir=dirs; dir; dir=dir->next) {
-    bmp = load_bitmap (dir->path, pal);
+    bmp = load_bitmap(dir->path, pal);
     if (bmp)
       break;
   }
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 
   return bmp;
 }

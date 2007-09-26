@@ -66,7 +66,7 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
 
     /* zoom */
     if (zoom >= 0) {
-      screen_to_editor(widget, ji_mouse_x(0), ji_mouse_y(0), &x, &y);
+      screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
       x = editor->offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
       y = editor->offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
@@ -81,7 +81,7 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
 	editor_update(widget);
 	editor_set_scroll(widget, x, y, use_refresh_region);
 
-	ji_mouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
+	jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
 	jrect_free(vp);
     	return TRUE;
       }
@@ -180,7 +180,7 @@ int editor_keys_toget_pixels(JWidget widget, int scancode)
       int x, y;
 
       /* pixel position to get */
-      screen_to_editor(widget, ji_mouse_x(0), ji_mouse_y(0), &x, &y);
+      screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
       /* get the color from the image */
       color = color_from_image(editor->sprite->imgtype,

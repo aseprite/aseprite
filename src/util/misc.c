@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -291,10 +291,10 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   delay = MID (0, delay, 1000);
   delay = JI_TICKS_PER_SEC * delay / 1000;
 
-  hide_drawing_cursor (editor);
-  ji_mouse_set_cursor (JI_CURSOR_MOVE);
+  hide_drawing_cursor(editor);
+  jmouse_set_cursor(JI_CURSOR_MOVE);
 
-  editor_click_start (editor, mode, &start_x, &start_y, &start_b);
+  editor_click_start(editor, mode, &start_x, &start_y, &start_b);
 
   do {
     if (update) {
@@ -302,21 +302,21 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
       frame->y = begin_y - start_y + new_y;
 
       /* update layer-bounds */
-      scare_mouse ();
-      editor_update_layer_boundary (editor);
-      editor_draw_layer_boundary_safe (editor);
-      unscare_mouse ();
+      jmouse_hide();
+      editor_update_layer_boundary(editor);
+      editor_draw_layer_boundary_safe(editor);
+      jmouse_show();
 
       /* update status bar */
       status_bar_set_text
-	(app_get_status_bar (), 0,
+	(app_get_status_bar(), 0,
 	 "Pos %3d %3d Offset %3d %3d",
 	 (int)frame->x,
 	 (int)frame->y,
 	 (int)(frame->x - begin_x),
 	 (int)(frame->y - begin_y));
-      jwidget_flush_redraw (app_get_status_bar ());
-      jmanager_dispatch_messages ();
+      jwidget_flush_redraw(app_get_status_bar());
+      jmanager_dispatch_messages();
 
       /* update clock */
       quiet_clock = ji_clock;
@@ -325,7 +325,7 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
 
     /* call the user's routine */
     if (callback) {
-      if ((*callback) ())
+      if ((*callback)())
 	quiet_clock = delay;
     }
 
@@ -333,28 +333,28 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
        for some time */
     if ((quiet_clock >= 0) && (ji_clock-quiet_clock >= delay)) {
       quiet_clock = -1;
-      jwidget_dirty (editor);
-      jwidget_flush_redraw (editor);
-      jmanager_dispatch_messages ();
+      jwidget_dirty(editor);
+      jwidget_flush_redraw(editor);
+      jmanager_dispatch_messages();
     }
 
-    gui_feedback ();
-  } while (editor_click (editor, &new_x, &new_y, &update, NULL));
+    gui_feedback();
+  } while (editor_click(editor, &new_x, &new_y, &update, NULL));
 
   /* the position was changed */
-  if (!editor_click_cancel (editor)) {
-    if (use_undo && undo_is_enabled (sprite->undo)) {
+  if (!editor_click_cancel(editor)) {
+    if (use_undo && undo_is_enabled(sprite->undo)) {
       new_x = frame->x;
       new_y = frame->y;
 
-      undo_open (sprite->undo);
+      undo_open(sprite->undo);
       frame->x = begin_x;
       frame->y = begin_y;
-      undo_int (sprite->undo, (GfxObj *)frame, &frame->x);
-      undo_int (sprite->undo, (GfxObj *)frame, &frame->y);
+      undo_int(sprite->undo, (GfxObj *)frame, &frame->x);
+      undo_int(sprite->undo, (GfxObj *)frame, &frame->y);
       frame->x = new_x;
       frame->y = new_y;
-      undo_close (sprite->undo);
+      undo_close(sprite->undo);
     }
 
     ret = TRUE;
@@ -371,9 +371,9 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   GUI_Refresh(sprite);
 
   /* restore the cursor */
-  show_drawing_cursor (editor);
+  show_drawing_cursor(editor);
 
-  editor_click_done (editor);
+  editor_click_done(editor);
 
   return ret;
 }

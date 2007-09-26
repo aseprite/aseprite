@@ -1,9 +1,29 @@
+2007-09-26  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_open_file.c (command_execute_open_file):
+	Added (based on openspr.lua).
+
+	* jinete/src/jmanager.c (jmanager_dispatch_draw_messages): Removed.
+	(dispatch_msgs): Fixed for ji_screen != screen.
+
+2007-09-25  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/editor/editor.c (editor_msg_proc): Fixed wheel
+	behavior (only when the editor is in standby state).
+
+	* jinete/src/jsystem.c (jmouse_hide, jmouse_show): Added (replaced
+	scare/unscare_mouse by these functions). Renamed ji_mouse -> jmouse.
+
 2007-09-23  David A. Capello  <dacap@users.sourceforge.net>
 
-	* src/commands/cmd_new_sprite.c: Added (based on newspr.lua).
+	* src/commands/cmd_close_file.c: Added (based on closespr.lua and
+	sprite.lua).
 
-	* src/commands/cmd_exit.c (command_execute_exit): Added (based on
-	exit.lua).
+	* src/commands/cmd_about.c: Added (based on dialogs/about.c).
+
+	* src/commands/cmd_new_file.c: Added (based on newspr.lua).
+
+	* src/commands/cmd_exit.c: Added (based on exit.lua).
 
 2007-09-21  David A. Capello  <dacap@users.sourceforge.net>
 

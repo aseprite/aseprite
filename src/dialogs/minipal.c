@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,18 +62,18 @@ void ji_minipal_new (JWidget color_bar, int x, int y)
 
 static int paledit_change_signal (JWidget widget, int user_data)
 {
-  if (ji_mouse_b (0)) {
+  if (jmouse_b(0)) {
     PaletteEditor *paledit = palette_editor_data (widget);
     JWidget color_bar = (JWidget)user_data;
 
     if (paledit->color[0] == paledit->color[1]) {
       char *color = color_index (paledit->color[1]);
 
-      color_bar_set_color (color_bar,
-			   ji_mouse_b (0) == 1 ? 0: 1,
-			   color, FALSE);
+      color_bar_set_color(color_bar,
+			  jmouse_b(0) == 1 ? 0: 1,
+			  color, FALSE);
 
-      jfree (color);
+      jfree(color);
     }
     else {
       bool array[256];

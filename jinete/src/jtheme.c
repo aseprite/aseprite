@@ -163,14 +163,18 @@ void ji_regen_theme(void)
 {
   if (ji_current_theme) {
     /* hide the cursor */
-    show_mouse(NULL);
-    set_mouse_sprite(NULL);
+/*     if () { */
+/*       show_mouse(NULL); */
+/*       set_mouse_sprite(NULL); */
+/*     } */
+    int type = jmouse_get_cursor();
+    jmouse_set_cursor(JI_CURSOR_NULL);
 
     if (ji_current_theme->regen)
       (*ji_current_theme->regen)();
 
     /* ok, reset the mouse cursor */
-    ji_mouse_set_cursor(ji_mouse_get_cursor());
+    jmouse_set_cursor(type);
   }
 }
 

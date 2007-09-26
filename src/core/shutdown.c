@@ -28,6 +28,7 @@
 
 #include "jinete/base.h"
 #include "jinete/list.h"
+#include "jinete/system.h"
 
 #include "modules/sprites.h"
 #include "util/session.h"
@@ -122,11 +123,11 @@ static void do_shutdown_exit(void)
     }
 
     if (screen) {
-      scare_mouse();
+      jmouse_hide();
       text_mode(makecol(0, 0, 0));
       textprintf(screen, font, 0, 0, makecol(255, 255, 255),
 		 "Saving session in %s", get_filename(buf));
-      unscare_mouse();
+      jmouse_show();
     }
     else
       printf("Saving session in %s", get_filename (buf));

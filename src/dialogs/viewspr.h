@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,10 @@
 #ifndef DIALOGS_VIEWSPR_H
 #define DIALOGS_VIEWSPR_H
 
-void view_tiled(void);
-void view_normal(void);
-void view_fullscreen(void);
+#define PREVIEW_TILED		1
+#define PREVIEW_FIT_ON_SCREEN	2
+
+void preview_sprite(int flags);
 
 #endif /* DIALOGS_VIEWSPR_H */
 

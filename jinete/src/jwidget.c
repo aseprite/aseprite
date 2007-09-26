@@ -1102,9 +1102,9 @@ void jwidget_scroll(JWidget widget, int dx, int dy, const JRect rect,
   jregion_translate(reg1, -dx, -dy);
   jregion_intersect(reg2, reg2, reg1);
 
-  scare_mouse();
+  jmouse_hide();
   ji_blit_region(reg2, dx, dy);
-  unscare_mouse();
+  jmouse_show();
 
   if (!update_region) {
     jregion_union(widget->update_region, widget->update_region, reg1);

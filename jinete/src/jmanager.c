@@ -76,7 +76,7 @@ static void manager_request_size(JWidget widget, int *w, int *h);
 static void manager_set_position(JWidget widget, JRect rect);
 static void manager_redraw_region(JWidget widget, JRegion region);
 
-static void dispatch_msgs(bool force_draw);
+static void dispatch_msgs(void);
 static void destroy_window(JWidget window);
 static void remove_msgs_for(JWidget widget, JMessage msg);
 static void generate_proc_windows_list(void);
@@ -163,7 +163,7 @@ void jmanager_free(JWidget widget)
   /* finish with main manager */
   if (default_manager == widget) {
     /* no more cursor */
-    ji_mouse_set_cursor(JI_CURSOR_NULL);
+    jmouse_set_cursor(JI_CURSOR_NULL);
 
     /* XXX destroy the AUTODESTROY windows in these lists */
     jlist_free(new_windows);
@@ -219,7 +219,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     first_time_poll = FALSE;
 
     jmanager_refresh_screen();
-    ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(JI_CURSOR_NORMAL);
   }
 
   /* first check */
@@ -256,14 +256,14 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     generate_proc_windows_list();
 
   /* update mouse status */
-  mousemove = ji_mouse_poll();
+  mousemove = jmouse_poll();
 
   /* get the widget under the mouse */
   widget = NULL;
 
   JI_LIST_FOR_EACH(proc_windows_list, link) {
     window = link->data;
-    widget = jwidget_pick(window, ji_mouse_x(0), ji_mouse_y(0));
+    widget = jwidget_pick(window, jmouse_x(0), jmouse_y(0));
     if (widget)
       break;
   }
@@ -282,7 +282,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     /* XXX rigid marshal */
 
     /* reset double click status */
-    ji_mouse_set_click_level(JI_CLICK_NOT);
+    jmouse_set_click_level(JI_CLICK_NOT);
 
     /* send the mouse movement message */
     if (capture_widget)
@@ -295,7 +295,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   }
 
   /* mouse wheel */
-  if (ji_mouse_z (0) != ji_mouse_z (1)) {
+  if (jmouse_z(0) != jmouse_z(1)) {
     msg = new_mouse_msg(JM_WHEEL);
     /* XXX rigid marshal */
 
@@ -310,16 +310,16 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   }
 
   /* mouse clicks */
-  if ((ji_mouse_b (0) != ji_mouse_b (1)) &&
-      ((!ji_mouse_b (0)) || (!ji_mouse_b (1)))) {
+  if ((jmouse_b(0) != jmouse_b(1)) &&
+      ((!jmouse_b(0)) || (!jmouse_b(1)))) {
     /* press and release button messages */
-    msg = new_mouse_msg((!ji_mouse_b (1))? JM_BUTTONPRESSED:
-					   JM_BUTTONRELEASED);
+    msg = new_mouse_msg((!jmouse_b(1))? JM_BUTTONPRESSED:
+					JM_BUTTONRELEASED);
     /* XXX rigid marshal */
 
     if (msg->type == JM_BUTTONPRESSED)
-      if (ji_mouse_get_click_level () == JI_CLICK_NOT)
-	ji_mouse_set_click_level (JI_CLICK_START);
+      if (jmouse_get_click_level() == JI_CLICK_NOT)
+	jmouse_set_click_level(JI_CLICK_START);
 
     if (capture_widget)
       jmessage_broadcast_to_parents (msg, capture_widget);
@@ -360,7 +360,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
       jmessage_broadcast_to_parents(msg, mouse_widget);
     }
     else {
-      ji_mouse_set_click_level(JI_CLICK_NOT);
+      jmouse_set_click_level(JI_CLICK_NOT);
 
       /* maybe someone want catch this lost click (menus use this to
 	 down to parents) */
@@ -377,11 +377,11 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   }
 
   /* double clicks */
-  if (ji_mouse_get_click_level () == JI_CLICK_AGAIN) {
+  if (jmouse_get_click_level() == JI_CLICK_AGAIN) {
     msg = new_mouse_msg(JM_DOUBLECLICK);
     /* XXX rigid marshal */
 
-    ji_mouse_set_click_level(JI_CLICK_NOT);
+    jmouse_set_click_level(JI_CLICK_NOT);
 
     if (capture_widget)
       jmessage_broadcast_to_parents(msg, capture_widget);
@@ -489,12 +489,7 @@ void jmanager_send_message(const JMessage msg)
 
 void jmanager_dispatch_messages(void)
 {
-  dispatch_msgs(FALSE);
-}
-
-void jmanager_dispatch_draw_messages(void)
-{
-  dispatch_msgs(TRUE);
+  dispatch_msgs();
 }
 
 JWidget jmanager_get_focus(void)
@@ -724,14 +719,14 @@ void jmanager_free_capture(void)
 void jmanager_free_widget(JWidget widget)
 {
   /* break any relationship with the GUI manager */
-  if (jwidget_has_capture (widget))
-    jmanager_free_capture ();
+  if (jwidget_has_capture(widget))
+    jmanager_free_capture();
 
-  if (jwidget_has_mouse (widget))
-    jmanager_free_mouse ();
+  if (jwidget_has_mouse(widget))
+    jmanager_free_mouse();
 
-  if (jwidget_has_focus (widget) || (widget == focus_widget))
-    jmanager_free_focus ();
+  if (jwidget_has_focus(widget) || (widget == focus_widget))
+    jmanager_free_focus();
 }
 
 void jmanager_remove_message(JMessage msg)
@@ -995,7 +990,7 @@ static void manager_redraw_region(JWidget widget, JRegion region)
 			Internal routines
  **********************************************************************/
 
-static void dispatch_msgs (bool force_draw)
+static void dispatch_msgs(void)
 {
   JMessage msg, first_msg;
   JLink link, link2, next;
@@ -1008,25 +1003,6 @@ static void dispatch_msgs (bool force_draw)
   link = jlist_first(msg_queue);
   while (link != msg_queue->end) {
     msg = link->data;
-
-    /* if ji_screen isn't the screen (maybe the user want to double
-       buffered or something) */
-    if (ji_screen != screen) {
-      /* the force_draw is false, we must skip all "Draw" messages */
-      if (!force_draw) {
-	if (msg->type == JM_DRAW) {
-	  link = link->next;
-	  continue;
-	}
-      }
-      /* the force_draw is TRUE, we must process only the "Draw" messages */
-      else {
-	if (msg->type != JM_DRAW) {
-	  link = link->next;
-	  continue;
-	}
-      }
-    }
 
 #ifdef LIMIT_DISPATCH_TIME
     if (ji_clock-t > JI_TICKS_PER_SEC/4)
@@ -1080,7 +1056,7 @@ static void dispatch_msgs (bool force_draw)
 	     msg->type <= JM_WHEEL) ? msg_name[msg->type]:
 				      "Unknown";
 
-	  printf ("Event: %s (%d)\n", string, widget->id);
+	  printf("Event: %s (%d)\n", string, widget->id);
 	}
 #endif
 
@@ -1090,7 +1066,7 @@ static void dispatch_msgs (bool force_draw)
 	  if (widget->flags & JI_HIDDEN)
 	    continue;
 
-	  scare_mouse();
+	  jmouse_hide();
 	  acquire_bitmap(ji_screen);
 
 	  /* set clip */
@@ -1114,7 +1090,7 @@ static void dispatch_msgs (bool force_draw)
 	  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
 
 	  release_bitmap(ji_screen);
-	  unscare_mouse();
+	  jmouse_show();
 	}
 
 	if (done)		/* XXX use marshal? */
@@ -1219,12 +1195,12 @@ static JMessage new_mouse_msg(int type)
 {
   JMessage msg = jmessage_new(type);
 
-  msg->mouse.x = ji_mouse_x(0);
-  msg->mouse.y = ji_mouse_y(0);
+  msg->mouse.x = jmouse_x(0);
+  msg->mouse.y = jmouse_y(0);
   msg->mouse.flags =
-    type == JM_DOUBLECLICK    ? ji_mouse_get_click_button():
-    type == JM_BUTTONRELEASED ? ji_mouse_b(1):
-				ji_mouse_b(0);
+    type == JM_DOUBLECLICK    ? jmouse_get_click_button():
+    type == JM_BUTTONRELEASED ? jmouse_b(1):
+				jmouse_b(0);
   msg->mouse.left = msg->mouse.flags & 1 ? TRUE: FALSE;
   msg->mouse.right = msg->mouse.flags & 2 ? TRUE: FALSE;
   msg->mouse.middle = msg->mouse.flags & 4 ? TRUE: FALSE;

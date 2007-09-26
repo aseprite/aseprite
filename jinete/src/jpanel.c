@@ -144,15 +144,15 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	Panel *panel = jwidget_get_data(widget, JI_PANEL);
 
 	if (widget->align & JI_HORIZONTAL) {
-	  if (ji_mouse_get_cursor() != JI_CURSOR_SIZE_L)
-	    ji_mouse_set_cursor(JI_CURSOR_SIZE_L);
+	  if (jmouse_get_cursor() != JI_CURSOR_SIZE_L)
+	    jmouse_set_cursor(JI_CURSOR_SIZE_L);
 
 	  panel->pos =
 	    100.0 * (msg->mouse.x-widget->rc->x1) / jrect_w(widget->rc);
 	}
 	else {
-	  if (ji_mouse_get_cursor() != JI_CURSOR_SIZE_T)
-	    ji_mouse_set_cursor(JI_CURSOR_SIZE_T);
+	  if (jmouse_get_cursor() != JI_CURSOR_SIZE_T)
+	    jmouse_set_cursor(JI_CURSOR_SIZE_T);
 
 	  panel->pos =
 	    100.0 * (msg->mouse.y-widget->rc->y1) / jrect_h(widget->rc);
@@ -199,18 +199,18 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
 	if (change_cursor) {
 	  if (widget->align & JI_HORIZONTAL) {
-	    if (ji_mouse_get_cursor() != JI_CURSOR_SIZE_L)
-	      ji_mouse_set_cursor(JI_CURSOR_SIZE_L);
+	    if (jmouse_get_cursor() != JI_CURSOR_SIZE_L)
+	      jmouse_set_cursor(JI_CURSOR_SIZE_L);
 	  }
 	  else {
-	    if (ji_mouse_get_cursor() != JI_CURSOR_SIZE_T)
-	      ji_mouse_set_cursor(JI_CURSOR_SIZE_T);
+	    if (jmouse_get_cursor() != JI_CURSOR_SIZE_T)
+	      jmouse_set_cursor(JI_CURSOR_SIZE_T);
 	  }
 	  return TRUE;
 	}
 	else {
-	  if (ji_mouse_get_cursor() != JI_CURSOR_NORMAL)
-	    ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+	  if (jmouse_get_cursor() != JI_CURSOR_NORMAL)
+	    jmouse_set_cursor(JI_CURSOR_NORMAL);
 	}
       }
       break;
@@ -218,7 +218,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
     case JM_BUTTONRELEASED:
       if (jwidget_has_capture(widget)) {
 	jwidget_release_mouse(widget);
-	ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
 	return TRUE;
       }
       break;

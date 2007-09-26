@@ -56,9 +56,9 @@ void editor_click_start(JWidget widget, int mode, int *x, int *y, int *b)
   click_mode = mode;
   click_first = TRUE;
 
-  click_start_x = click_last_x = ji_mouse_x(0);
-  click_start_y = click_last_y = ji_mouse_y(0);
-  click_start_b = click_last_b = ji_mouse_b(0) ? ji_mouse_b(0): 1;
+  click_start_x = click_last_x = jmouse_x(0);
+  click_start_y = click_last_y = jmouse_y(0);
+  click_start_b = click_last_b = jmouse_b(0) ? jmouse_b(0): 1;
 
   click_prev_last_b = click_last_b;
 
@@ -85,25 +85,25 @@ int editor_click(JWidget widget, int *x, int *y, int *update,
 
     if (click_mode == MODE_CLICKANDCLICK) {
       do {
-	ji_mouse_poll();
+	jmouse_poll();
 	gui_feedback();
-      } while (ji_mouse_b(0));
+      } while (jmouse_b(0));
 
-      ji_mouse_set_position(click_start_x, click_start_y);
+      jmouse_set_position(click_start_x, click_start_y);
       clear_keybuf();
     }
   }
 
-  *update = ji_mouse_poll();
+  *update = jmouse_poll();
 
   if (!editor_cursor_is_subpixel(widget))
     screen_to_editor(widget, click_last_x, click_last_y, &prev_x, &prev_y);
 
   click_prev_last_b = click_last_b;
 
-  click_last_x = ji_mouse_x(0);
-  click_last_y = ji_mouse_y(0);
-  click_last_b = ji_mouse_b(0);
+  click_last_x = jmouse_x(0);
+  click_last_y = jmouse_y(0);
+  click_last_b = jmouse_b(0);
 
   screen_to_editor(widget, click_last_x, click_last_y, x, y);
 
@@ -113,7 +113,7 @@ int editor_click(JWidget widget, int *x, int *y, int *update,
     JRect vp = jview_get_viewport_position(view);
 
     /* update scroll */
-    if (ji_mouse_control_infinite_scroll(vp)) {
+    if (jmouse_control_infinite_scroll(vp)) {
       int scroll_x, scroll_y;
 
       if (scroll_callback)
@@ -121,27 +121,27 @@ int editor_click(JWidget widget, int *x, int *y, int *update,
 
       /* smooth scroll movement */
       if (get_config_bool("Options", "MoveSmooth", TRUE)) {
-	ji_mouse_set_position(MID(vp->x1+1, click_last_x, vp->x2-2),
-			      MID(vp->y1+1, click_last_y, vp->y2-2));
+	jmouse_set_position(MID(vp->x1+1, click_last_x, vp->x2-2),
+			    MID(vp->y1+1, click_last_y, vp->y2-2));
       }
       /* this is better for high resolutions: scroll movement by big steps */
       else {
-	ji_mouse_set_position((click_last_x != ji_mouse_x(0)) ?
-			      (click_last_x + (vp->x1+vp->x2)/2)/2: ji_mouse_x(0),
+	jmouse_set_position((click_last_x != jmouse_x(0)) ?
+			    (click_last_x + (vp->x1+vp->x2)/2)/2: jmouse_x(0),
 
-			      (click_last_y != ji_mouse_y(0)) ?
-			      (click_last_y + (vp->y1+vp->y2)/2)/2: ji_mouse_y(0));
+			    (click_last_y != jmouse_y(0)) ?
+			    (click_last_y + (vp->y1+vp->y2)/2)/2: jmouse_y(0));
       }
 
       jview_get_scroll(view, &scroll_x, &scroll_y);
       editor_set_scroll(widget,
-			scroll_x+click_last_x-ji_mouse_x(0),
-			scroll_y+click_last_y-ji_mouse_y(0), TRUE);
+			scroll_x+click_last_x-jmouse_x(0),
+			scroll_y+click_last_y-jmouse_y(0), TRUE);
 
 /*       editor_refresh_region(widget); */
 
-      click_last_x = ji_mouse_x(0);
-      click_last_y = ji_mouse_y(0);
+      click_last_x = jmouse_x(0);
+      click_last_y = jmouse_y(0);
 
       if (scroll_callback)
 	(*scroll_callback)(FALSE);
@@ -166,11 +166,11 @@ int editor_click(JWidget widget, int *x, int *y, int *update,
       click_prev_last_b = click_last_b;
 
       do {
-	ji_mouse_poll();
+	jmouse_poll();
 	gui_feedback();
-      } while (ji_mouse_b(0));
+      } while (jmouse_b(0));
 
-      ji_mouse_set_position(click_last_x, click_last_y);
+      jmouse_set_position(click_last_x, click_last_y);
       clear_keybuf();
 
       return FALSE;
@@ -185,7 +185,7 @@ int editor_click(JWidget widget, int *x, int *y, int *update,
   }
 }
 
-int editor_click_cancel (JWidget widget)
+int editor_click_cancel(JWidget widget)
 {
   return (click_start_b != click_prev_last_b);
 }

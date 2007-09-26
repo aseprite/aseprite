@@ -20,14 +20,17 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "dialogs/viewspr.h"
 #include "modules/sprites.h"
-#include "raster/sprite.h"
 
 #endif
 
+bool command_enabled_preview_fit_to_screen(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_preview_fit_to_screen(const char *argument)
 {
+  preview_sprite(PREVIEW_FIT_ON_SCREEN);
 }

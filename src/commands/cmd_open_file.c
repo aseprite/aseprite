@@ -20,14 +20,40 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
-#include "modules/sprites.h"
+#include "dialogs/filesel.h"
+#include "file/file.h"
 #include "raster/sprite.h"
+#include "modules/recent.h"
+#include "modules/sprites.h"
 
 #endif
 
 void command_execute_open_file(const char *argument)
 {
+  char *filename;
+
+  /* interactive */
+  if (!argument) {
+    filename = GUI_FileSelect(_("Open Sprite"), "",
+			      get_readable_extensions());
+  }
+  /* load the file specified in the argument */
+  else {
+    filename = (char *)argument;
+  }
+
+  if (filename) {
+    Sprite *sprite = sprite_load(filename);
+    if (sprite) {
+      recent_file(filename);
+      sprite_mount(sprite);
+      sprite_show(sprite);
+    }
+    else {
+      unrecent_file(filename);
+    }
+
+    if (filename != argument)
+      jfree(filename);
+  }
 }

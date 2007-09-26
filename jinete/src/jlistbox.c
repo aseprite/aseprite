@@ -239,10 +239,10 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
 	jview_set_scroll(view,
-			   scroll_x,
-			   scroll_y +
-			   (ji_mouse_z (1) - ji_mouse_z (0))
-			   *jwidget_get_text_height(widget)*3);
+			 scroll_x,
+			 scroll_y +
+			 (jmouse_z(1) - jmouse_z(0))
+			 *jwidget_get_text_height(widget)*3);
       }
       break;
     }

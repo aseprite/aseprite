@@ -27,20 +27,11 @@
 #include "jinete.h"
 
 #include "commands/commands.h"
-/* #include "core/app.h" */
-/* #include "core/core.h" */
-/* #include "core/dirs.h" */
-/* #include "intl/intl.h" */
-/* #include "modules/chkmthds.h" */
-/* #include "modules/rootmenu.h" */
-/* #include "util/hash.h" */
-/* #include "util/filetoks.h" */
-/* #include "widgets/menu.h" */
 
 #endif
 
 #define CMD0(name) { #name, NULL, NULL, command_execute_##name, NULL }
-/* #define CMD1(name) { #name, NULL, NULL, NULL, NULL } */
+#define CMD1(name) { #name, command_enabled_##name, NULL, command_execute_##name, NULL }
 /* #define CMD2(name) { #name, NULL, NULL, NULL, NULL } */
 /* #define CMD3(name) { #name, NULL, NULL, NULL, NULL } */
 /* #define CMD4(name) { #name, NULL, NULL, NULL, NULL } */
@@ -53,6 +44,7 @@ void command_execute_change_image_type(const char *argument);
 void command_execute_clear(const char *argument);
 void command_execute_close_all_files(const char *argument);
 void command_execute_close_editor(const char *argument);
+bool command_enabled_close_file(const char *argument);
 void command_execute_close_file(const char *argument);
 void command_execute_color_curve(const char *argument);
 void command_execute_configure_screen(const char *argument);
@@ -72,7 +64,6 @@ void command_execute_draw_text(const char *argument);
 void command_execute_duplicate_layer(const char *argument);
 void command_execute_duplicate_sprite(const char *argument);
 void command_execute_ellipse_tool(const char *argument);
-void command_execute_exit(const char *argument);
 void command_execute_exit(const char *argument);
 void command_execute_film_editor(const char *argument);
 void command_execute_flatten_layers(const char *argument);
@@ -106,8 +97,11 @@ void command_execute_palette_editor(const char *argument);
 void command_execute_paste(const char *argument);
 void command_execute_pencil_tool(const char *argument);
 void command_execute_play_flic(const char *argument);
+bool command_enabled_preview_fit_to_screen(const char *argument);
 void command_execute_preview_fit_to_screen(const char *argument);
+bool command_enabled_preview_normal(const char *argument);
 void command_execute_preview_normal(const char *argument);
+bool command_enabled_preview_tiled(const char *argument);
 void command_execute_preview_tiled(const char *argument);
 void command_execute_quick_copy(const char *argument);
 void command_execute_quick_move(const char *argument);
@@ -135,10 +129,10 @@ void command_execute_undo(const char *argument);
 
 static Command commands[] = {
   CMD0(new_file),
-  { CMD_OPEN_FILE, NULL, NULL, NULL, NULL },
+  CMD0(open_file),
   { CMD_SAVE_FILE, NULL, NULL, NULL, NULL },
   { CMD_SAVE_FILE_AS, NULL, NULL, NULL, NULL },
-  { CMD_CLOSE_FILE, NULL, NULL, NULL, NULL },
+  CMD1(close_file),
   { CMD_CLOSE_ALL_FILES, NULL, NULL, NULL, NULL },
   { CMD_SCREEN_SHOT, NULL, NULL, NULL, NULL },
   { CMD_RECORD_SCREEN, NULL, NULL, NULL, NULL },
@@ -160,14 +154,14 @@ static Command commands[] = {
   { CMD_INVERT_COLOR, NULL, NULL, NULL, NULL },
   { CMD_REFRESH, NULL, NULL, NULL, NULL },
   { CMD_CONFIGURE_SCREEN, NULL, NULL, NULL, NULL },
-  { CMD_ADVANCED_MODE, NULL, NULL, NULL, NULL },
+  CMD0(advanced_mode),
   { CMD_MAKE_UNIQUE_EDITOR, NULL, NULL, NULL, NULL },
   { CMD_SPLIT_EDITOR_VERTICALLY, NULL, NULL, NULL, NULL },
   { CMD_SPLIT_EDITOR_HORIZONTALLY, NULL, NULL, NULL, NULL },
   { CMD_CLOSE_EDITOR, NULL, NULL, NULL, NULL },
-  { CMD_PREVIEW_TILED, NULL, NULL, NULL, NULL },
-  { CMD_PREVIEW_NORMAL, NULL, NULL, NULL, NULL },
-  { CMD_PREVIEW_FIT_TO_SCREEN, NULL, NULL, NULL, NULL },
+  CMD1(preview_tiled),
+  CMD1(preview_normal),
+  CMD1(preview_fit_to_screen),
   { CMD_SPRITE_PROPERTIES, NULL, NULL, NULL, NULL },
   { CMD_DUPLICATE_SPRITE, NULL, NULL, NULL, NULL },
   { CMD_CHANGE_IMAGE_TYPE, NULL, NULL, NULL, NULL },
@@ -215,7 +209,7 @@ static Command commands[] = {
   { CMD_PLAY_FLIC, NULL, NULL, NULL, NULL },
   { CMD_MAPGEN, NULL, NULL, NULL, NULL },
   { CMD_RUN_SCRIPT, NULL, NULL, NULL, NULL },
-  { CMD_TIPS, NULL, NULL, NULL, NULL },
+  CMD0(tips),
   { CMD_CUSTOMIZE, NULL, NULL, NULL, NULL },
   { CMD_OPTIONS, NULL, NULL, NULL, NULL },
   { NULL, NULL, NULL, NULL, NULL }

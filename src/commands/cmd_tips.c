@@ -20,14 +20,13 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/base.h"
 
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "dialogs/tips.h"
 
 #endif
 
 void command_execute_tips(const char *argument)
 {
+  dialogs_tips(TRUE);
 }

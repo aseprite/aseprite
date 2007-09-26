@@ -264,26 +264,26 @@ static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
     case JM_BUTTONPRESSED: {
       JWidget view = jwidget_get_view (widget);
       if (view) {
-	jwidget_hard_capture_mouse (widget);
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jwidget_hard_capture_mouse(widget);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
 	return TRUE;
       }
       break;
     }
 
     case JM_MOTION: {
-      JWidget view = jwidget_get_view (widget);
-      if (view && jwidget_has_capture (widget)) {
+      JWidget view = jwidget_get_view(widget);
+      if (view && jwidget_has_capture(widget)) {
 	JRect vp = jview_get_viewport_position (view);
 	int scroll_x, scroll_y;
 
-	jview_get_scroll (view, &scroll_x, &scroll_y);
-	jview_set_scroll (view,
-			    scroll_x + ji_mouse_x (1) - ji_mouse_x (0),
-			    scroll_y + ji_mouse_y (1) - ji_mouse_y (0));
+	jview_get_scroll(view, &scroll_x, &scroll_y);
+	jview_set_scroll(view,
+			 scroll_x + jmouse_x(1) - jmouse_x(0),
+			 scroll_y + jmouse_y(1) - jmouse_y(0));
 
-	ji_mouse_control_infinite_scroll (vp);
-	jrect_free (vp);
+	jmouse_control_infinite_scroll(vp);
+	jrect_free(vp);
       }
       break;
     }
@@ -292,7 +292,7 @@ static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
       JWidget view = jwidget_get_view (widget);
       if (view && jwidget_has_capture (widget)) {
 	jwidget_release_mouse (widget);
-	ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
 	return TRUE;
       }
       break;

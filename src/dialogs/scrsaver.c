@@ -43,7 +43,7 @@ void dialogs_screen_saver(void)
     return;
 
   /* hide the mouse */
-  ji_mouse_set_cursor(JI_CURSOR_NULL);
+  jmouse_set_cursor(JI_CURSOR_NULL);
 
   /* get the current color palette */
   get_palette(backup);
@@ -115,9 +115,9 @@ void dialogs_screen_saver(void)
 		 POLYTYPE_GCOL: POLYTYPE_GRGB, NULL, &v1, &v2, &v3);
 
     /* poll GUI */
-    ji_mouse_poll();
+    jmouse_poll();
     gui_feedback();
-  } while ((!keypressed()) && (!ji_mouse_b(0)));
+  } while ((!keypressed()) && (!jmouse_b(0)));
 
   /* clear the screen */
   clear(ji_screen);
@@ -127,12 +127,12 @@ void dialogs_screen_saver(void)
 
   /* wait while the user has pushed some mouse button */
   do {
-    ji_mouse_poll();
+    jmouse_poll();
     gui_feedback();
-  } while (ji_mouse_b(0));
+  } while (jmouse_b(0));
 
   jmanager_refresh_screen();
-  ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+  jmouse_set_cursor(JI_CURSOR_NORMAL);
 
   /* clear again the keyboard buffer */
   clear_keybuf();

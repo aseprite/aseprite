@@ -10,9 +10,6 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 
-/* sprite.lua */
-void CloseSprite(void);
-
 /* layer.lua */
 const char *GetUniqueLayerName(void);
 

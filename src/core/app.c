@@ -173,7 +173,7 @@ void app_loop(void)
     PRINTF("GUI mode\n");
 
     /* setup the GUI screen */
-    ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_cursor(JI_CURSOR_NORMAL);
     jmanager_refresh_screen();
 
     /* load main window */
@@ -569,37 +569,37 @@ static int check_args(int argc, char *argv[])
     arg = argv[i];
 
     for (n=0; arg[n] == '-'; n++);
-    len = strlen (arg+n);
+    len = strlen(arg+n);
 
     /* option */
     if ((n > 0) && (len > 0)) {
       /* use in batch mode only */
-      if (strncmp (arg+n, "batch", len) == 0) {
+      if (strncmp(arg+n, "batch", len) == 0) {
         ase_mode |= MODE_BATCH;
       }
       /* do script expression */
-      else if (strncmp (arg+n, "exp", len) == 0) {
+      else if (strncmp(arg+n, "exp", len) == 0) {
         if (++i < argc)
           jlist_append(options, option_new(DO_SCRIPT_EXPR, argv[i]));
         else
           usage (1);
       }
       /* open script file */
-      else if (strncmp (arg+n, "file", len) == 0) {
+      else if (strncmp(arg+n, "file", len) == 0) {
         if (++i < argc)
           jlist_append(options, option_new(DO_SCRIPT_FILE, argv[i]));
         else
-          usage (1);
+          usage(1);
       }
       /* use other palette file */
-      else if (strncmp (arg+n, "palette", len) == 0) {
+      else if (strncmp(arg+n, "palette", len) == 0) {
         if (++i < argc)
 	  palette_filename = argv[i];
         else
-          usage (1);
+          usage(1);
       }
       /* video resolution */
-      else if (strncmp (arg+n, "resolution", len) == 0) {
+      else if (strncmp(arg+n, "resolution", len) == 0) {
         if (++i < argc) {
 	  int c, num1=0, num2=0, num3=0;
 	  char *tok;
@@ -608,26 +608,26 @@ static int check_args(int argc, char *argv[])
 	     resolución algo como esto: 320x240[x8] o [8] */
 	  c = 0;
 
-	  for (tok=ustrtok (argv[i], "x"); tok;
-	       tok=ustrtok (NULL, "x")) {
+	  for (tok=ustrtok(argv[i], "x"); tok;
+	       tok=ustrtok(NULL, "x")) {
 	    switch (c) {
-	      case 0: num1 = ustrtol (tok, NULL, 10); break;
-	      case 1: num2 = ustrtol (tok, NULL, 10); break;
-	      case 2: num3 = ustrtol (tok, NULL, 10); break;
+	      case 0: num1 = ustrtol(tok, NULL, 10); break;
+	      case 1: num2 = ustrtol(tok, NULL, 10); break;
+	      case 2: num3 = ustrtol(tok, NULL, 10); break;
 	    }
 	    c++;
 	  }
 
 	  switch (c) {
 	    case 1:
-	      set_config_int ("GfxMode", "Depth", num1);
+	      set_config_int("GfxMode", "Depth", num1);
 	      break;
 	    case 2:
 	    case 3:
-	      set_config_int ("GfxMode", "Width", num1);
-	      set_config_int ("GfxMode", "Height", num2);
+	      set_config_int("GfxMode", "Width", num1);
+	      set_config_int("GfxMode", "Height", num2);
 	      if (c == 3)
-		set_config_int ("GfxMode", "Depth", num3);
+		set_config_int("GfxMode", "Depth", num3);
 	      break;
 	  }
 	}

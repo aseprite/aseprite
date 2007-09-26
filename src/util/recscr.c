@@ -97,7 +97,7 @@ void rec_screen_on(void)
   old_bmp = NULL;
 
   /* set the position of the mouse in the center of the screen */
-  ji_mouse_set_position (JI_SCREEN_W/2, JI_SCREEN_H/2);
+  jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
   /* start the clock */
   rec_clock = ji_clock;

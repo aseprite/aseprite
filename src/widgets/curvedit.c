@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -172,8 +172,8 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
       switch (msg->key.scancode) {
 
 	case KEY_INSERT: {
-	  int x = SCR2EDIT_X (ji_mouse_x (0));
-	  int y = SCR2EDIT_Y (ji_mouse_y (0));
+	  int x = SCR2EDIT_X (jmouse_x(0));
+	  int y = SCR2EDIT_Y (jmouse_y(0));
 	  CurvePoint *point = curve_point_new (x, y); 
 
 	  /* XXXX undo? */
@@ -187,12 +187,12 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	case KEY_DEL: {
 	  CurvePoint *point = curve_editor_get_more_close_point
 	    (widget,
-	     SCR2EDIT_X (ji_mouse_x (0)),
-	     SCR2EDIT_Y (ji_mouse_y (0)),
+	     SCR2EDIT_X(jmouse_x(0)),
+	     SCR2EDIT_Y(jmouse_y(0)),
 	     NULL, NULL);
 
 	  /* XXXX undo? */
-	  curve_remove_point (curve_editor->curve, point);
+	  curve_remove_point(curve_editor->curve, point);
 
 	  jwidget_dirty (widget);
 	  jwidget_emit_signal (widget, SIGNAL_CURVE_EDITOR_CHANGE);
@@ -269,12 +269,12 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
       /* change scroll */
       if (msg->any.shifts & KB_SHIFT_FLAG) {
 	curve_editor->status = STATUS_SCROLLING;
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
       }
       /* scaling */
 /*       else if (msg->shifts & KB_CTRL_FLAG) { */
 /* 	curve_editor->status = STATUS_SCALING; */
-/* 	ji_mouse_set_cursor (JI_CURSOR_MOVE); */
+/* 	jmouse_set_cursor(JI_CURSOR_MOVE); */
 /*       } */
       /* show manual-entry dialog */
       else if (msg->mouse.right) {
@@ -306,7 +306,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 					    &curve_editor->edit_y);
 
 	curve_editor->status = STATUS_MOVING_POINT;
-	ji_mouse_set_cursor(JI_CURSOR_HAND);
+	jmouse_set_cursor(JI_CURSOR_HAND);
       }
 
       jwidget_capture_mouse(widget);
@@ -321,12 +321,12 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	    JRect vp = jview_get_viewport_position (view);
 	    int scroll_x, scroll_y;
 
-	    jview_get_scroll (view, &scroll_x, &scroll_y);
-	    jview_set_scroll (view,
-				scroll_x+ji_mouse_x (1)-ji_mouse_x (0),
-				scroll_y+ji_mouse_y (1)-ji_mouse_y (0));
+	    jview_get_scroll(view, &scroll_x, &scroll_y);
+	    jview_set_scroll(view,
+			     scroll_x+jmouse_x(1)-jmouse_x(0),
+			     scroll_y+jmouse_y(1)-jmouse_y(0));
 
-	    ji_mouse_control_infinite_scroll (vp);
+	    jmouse_control_infinite_scroll(vp);
 	    jrect_free (vp);
 	    break;
 	  }
@@ -342,7 +342,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 /* 				scroll_x-(vp.x+vp.w/2), */
 /* 				scroll_y-(vp.y+vp.h/2)); */
 
-/* 	    ji_mouse_control_infinite_scroll (vp.x, vp.y, vp.w, vp.h); */
+/* 	    jmouse_control_infinite_scroll(vp.x, vp.y, vp.w, vp.h); */
 /* 	    break; */
 /* 	  } */
 
@@ -400,19 +400,19 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	switch (curve_editor->status) {
 
 	  case STATUS_SCROLLING:
-	    ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+	    jmouse_set_cursor(JI_CURSOR_NORMAL);
 	    break;
 
 /* 	  case STATUS_SCALING: */
-/* 	    ji_mouse_set_cursor (JI_CURSOR_NORMAL); */
+/* 	    jmouse_set_cursor(JI_CURSOR_NORMAL); */
 /* 	    break; */
 
 	  case STATUS_MOVING_POINT:
-	    ji_mouse_set_cursor (JI_CURSOR_NORMAL);
-	    jwidget_emit_signal (widget, SIGNAL_CURVE_EDITOR_CHANGE);
+	    jmouse_set_cursor(JI_CURSOR_NORMAL);
+	    jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 
 	    curve_editor->edit_point = NULL;
-	    jwidget_dirty (widget);
+	    jwidget_dirty(widget);
 	    break;
 	}
 

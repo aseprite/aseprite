@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,13 +101,13 @@ int main (int argc, char *argv[])
     if (redraw) {
       redraw = FALSE;
 
-      scare_mouse ();
-      clear (bmp);
-      image_to_allegro (image, bmp, 0, 0);
-      text_mode (0);
-      textout (bmp, font, "R:restore image", 0, 0, 15);
-      blit (bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-      unscare_mouse ();
+      jmouse_hide();
+      clear(bmp);
+      image_to_allegro(image, bmp, 0, 0);
+      text_mode(0);
+      textout(bmp, font, "R:restore image", 0, 0, 15);
+      blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+      jmouse_show();
     }
   } while (!key[KEY_ESC]);
   return 0;

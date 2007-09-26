@@ -1012,7 +1012,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
       }
 
       /* draw the cursor in the screen */
-      editor_draw_cursor(widget, ji_mouse_x(0), ji_mouse_y(0));
+      editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
 
       /* update the state-bar */
       if (jwidget_is_visible(status_bar)) {

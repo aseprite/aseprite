@@ -341,7 +341,7 @@ static bool window_msg_proc (JWidget widget, JMessage msg)
     case JM_BUTTONRELEASED:
       if (jwidget_has_capture (widget)) {
 	jwidget_release_mouse (widget);
-	ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
 
 	window_action = WINDOW_NONE;
 	return TRUE;
@@ -600,8 +600,8 @@ static int setup_cursor (JWidget widget, int x, int y)
       cursor = JI_CURSOR_SIZE_B;
   }
 
-  if (ji_mouse_get_cursor () != cursor)
-    ji_mouse_set_cursor (cursor);
+  if (jmouse_get_cursor() != cursor)
+    jmouse_set_cursor(cursor);
 
   jrect_free (pos);
   jrect_free (cpos);
@@ -699,7 +699,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 /*     jregion_union(manager_refresh_region, manager_refresh_region, reg1); */
   
     /* move the window's graphics */
-    scare_mouse ();
+    jmouse_hide();
     set_clip(ji_screen,
 	     man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
 /*     blit (ji_screen, ji_screen, */
@@ -713,7 +713,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 		   widget->rc->x1 - old_pos->x1,
 		   widget->rc->y1 - old_pos->y1);
     set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-    unscare_mouse();
+    jmouse_show();
 
     jregion_free(reg1);
     jregion_free(reg2);

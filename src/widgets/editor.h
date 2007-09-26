@@ -43,7 +43,7 @@ typedef struct Editor
   int cursor_editor_y;
 
   /* for the mouse */
-  unsigned retarded_mouseenter : 1;
+  unsigned lagged_mouseenter : 1;
 
   /* offset for the sprite */
   int offset_x;

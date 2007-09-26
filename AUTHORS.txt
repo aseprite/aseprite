@@ -135,6 +135,7 @@ THANKFULNESS
     Jorge Ramírez Flores
     Juraj Michalek
     Manuel De Miguel Moreno
+    Manuel Quiñones
     Mateusz Czaplinski
     Nathan Smith (whitedoor)
     Peter Wang (tjaden)

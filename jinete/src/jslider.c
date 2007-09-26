@@ -137,9 +137,9 @@ static bool slider_msg_proc (JWidget widget, JMessage msg)
       slider_press_left = msg->mouse.left;
 
       if (slider_press_left)
-	ji_mouse_set_cursor (JI_CURSOR_HAND);
+	jmouse_set_cursor(JI_CURSOR_HAND);
       else
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
 
     case JM_MOTION:
       if (jwidget_has_capture (widget)) {
@@ -172,8 +172,8 @@ static bool slider_msg_proc (JWidget widget, JMessage msg)
 
 	/* for right click */
 	if ((!slider_press_left) &&
-	    (ji_mouse_control_infinite_scroll (rect))) {
-	  slider_press_x = ji_mouse_x (0);
+	    (jmouse_control_infinite_scroll(rect))) {
+	  slider_press_x = jmouse_x(0);
 	  slider_press_value = slider->value;
 	}
 
@@ -187,7 +187,7 @@ static bool slider_msg_proc (JWidget widget, JMessage msg)
 	jwidget_deselect (widget);
 	jwidget_release_mouse (widget);
 
-	ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
       }
       break;
 
@@ -237,7 +237,7 @@ static bool slider_msg_proc (JWidget widget, JMessage msg)
 
     case JM_WHEEL:
       if (jwidget_is_enabled(widget)) {
-	int value = slider->value + ji_mouse_z(0) - ji_mouse_z(1);
+	int value = slider->value + jmouse_z(0) - jmouse_z(1);
 
 	value = MID(slider->min, value, slider->max);
 

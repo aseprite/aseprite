@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -386,19 +386,19 @@ static bool color_bar_msg_proc (JWidget widget, JMessage msg)
       const char *src;
       char *dst;
 
-      while (ji_mouse_b (0))
-	ji_mouse_poll ();
+      while (jmouse_b(0))
+	jmouse_poll();
 
       /* get the color from the table */
-      src = color_bar_get_color (widget, num);
+      src = color_bar_get_color(widget, num);
 
       /* change this color with the color-select dialog */
-      dst = ji_color_select (app_get_current_image_type (), src);
+      dst = ji_color_select(app_get_current_image_type(), src);
 
       /* set the color of the table */
       if (dst) {
-	color_bar_set_color (widget, num, dst, FALSE);
-	jfree (dst);
+	color_bar_set_color(widget, num, dst, FALSE);
+	jfree(dst);
       }
       return TRUE;
     }

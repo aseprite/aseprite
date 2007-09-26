@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/intern.h"
@@ -65,6 +66,7 @@ static int m_y[2];
 static int m_z[2];
 
 static bool moved;
+static int mouse_scares = 0;
 
 /* For double click management.  */
 
@@ -162,7 +164,7 @@ int _ji_system_init(void)
       (install_int(check_click, 20) < 0))
     return -1;
 
-  ji_mouse_poll();
+  jmouse_poll();
 
   moved = TRUE;
   m_cursor = JI_CURSOR_NULL;
@@ -180,9 +182,9 @@ void _ji_system_exit(void)
 
 void ji_set_screen(BITMAP *bmp)
 {
-  int cursor = ji_mouse_get_cursor(); /* get mouse cursor */
+  int cursor = jmouse_get_cursor(); /* get mouse cursor */
 
-  ji_mouse_set_cursor(JI_CURSOR_NULL);
+  jmouse_set_cursor(JI_CURSOR_NULL);
   ji_screen = bmp;
 
   if (ji_screen) {
@@ -196,7 +198,7 @@ void ji_set_screen(BITMAP *bmp)
       jrect_free(rect);
     }
 
-    ji_mouse_set_cursor(cursor);	/* restore mouse cursor */
+    jmouse_set_cursor(cursor);	/* restore mouse cursor */
   }
 }
 
@@ -213,16 +215,15 @@ const char *ji_translate_string(const char *msgid)
     return msgid;
 }
 
-int ji_mouse_get_cursor(void)
+int jmouse_get_cursor(void)
 {
   return m_cursor;
 }
 
-int ji_mouse_set_cursor(int type)
+int jmouse_set_cursor(int type)
 {
   JTheme theme = ji_get_theme();
   int old = m_cursor;
-
   m_cursor = type;
 
   if (m_cursor == JI_CURSOR_NULL) {
@@ -231,14 +232,16 @@ int ji_mouse_set_cursor(int type)
   }
   else {
     show_mouse(NULL);
+
     if (theme->set_cursor) {
       BITMAP *sprite;
       int x = 0;
       int y = 0;
 
-      sprite = (*theme->set_cursor)(m_cursor, &x, &y);
+      sprite = (*theme->set_cursor)(type, &x, &y);
       set_cursor(sprite, x, y);
     }
+
     if (ji_screen == screen)
       show_mouse(ji_screen);
   }
@@ -250,9 +253,9 @@ int ji_mouse_set_cursor(int type)
  * Use this routine if your "ji_screen" isn't Allegro's "screen" so
  * you must to draw the cursor by your self using this routine.
  */
-void ji_mouse_draw_cursor()
+void jmouse_draw_cursor()
 {
-  if (sprite_cursor != NULL) {
+  if (sprite_cursor != NULL && mouse_scares == 0) {
     int x = m_x[0]-focus_x;
     int y = m_y[0]-focus_y;
     JRect rect = jrect_new(x, y,
@@ -260,15 +263,44 @@ void ji_mouse_draw_cursor()
 			   y+sprite_cursor->h);
 
     jwidget_invalidate_rect(ji_get_default_manager(), rect);
+    /* rectfill(ji_screen, rect->x1, rect->y1, rect->x2-1, rect->y2-1, makecol(0, 0, 255)); */
     draw_sprite(ji_screen, sprite_cursor, x, y);
 
     jrect_free(rect);
   }
 }
 
+void jmouse_hide()
+{
+  assert(mouse_scares >= 0);
+  if (ji_screen == screen)
+    scare_mouse();
+  mouse_scares++;
+}
+
+void jmouse_show()
+{
+  assert(mouse_scares > 0);
+  mouse_scares--;
+  if (ji_screen == screen)
+    unscare_mouse();
+}
+
+bool jmouse_is_hidden()
+{
+  assert(mouse_scares >= 0);
+  return mouse_scares > 0;
+}
+
+bool jmouse_is_shown()
+{
+  assert(mouse_scares >= 0);
+  return mouse_scares == 0;
+}
+
 /* Returns TRUE if the mouse moved.  */
 
-bool ji_mouse_poll(void)
+bool jmouse_poll(void)
 {
   m_b[1] = m_b[0];
   m_x[1] = m_x[0];
@@ -310,7 +342,7 @@ bool ji_mouse_poll(void)
     return FALSE;
 }
 
-void ji_mouse_set_position(int x, int y)
+void jmouse_set_position(int x, int y)
 {
   moved = TRUE;
 
@@ -326,17 +358,17 @@ void ji_mouse_set_position(int x, int y)
   }
 }
 
-int ji_mouse_x(int antique) { return m_x[antique & 1]; }
-int ji_mouse_y(int antique) { return m_y[antique & 1]; }
-int ji_mouse_z(int antique) { return m_z[antique & 1]; }
-int ji_mouse_b(int antique) { return m_b[antique & 1]; }
+int jmouse_x(int antique) { return m_x[antique & 1]; }
+int jmouse_y(int antique) { return m_y[antique & 1]; }
+int jmouse_z(int antique) { return m_z[antique & 1]; }
+int jmouse_b(int antique) { return m_b[antique & 1]; }
 
-bool ji_mouse_control_infinite_scroll(JRect rect)
+bool jmouse_control_infinite_scroll(JRect rect)
 {
   int x, y, u, v;
 
-  u = ji_mouse_x(0);
-  v = ji_mouse_y(0);
+  u = jmouse_x(0);
+  v = jmouse_y(0);
 
   if (u <= rect->x1)
     x = rect->x2-2;
@@ -353,24 +385,24 @@ bool ji_mouse_control_infinite_scroll(JRect rect)
     y = v;
 
   if ((x != u) || (y != v)) {
-    ji_mouse_set_position(x, y);
+    jmouse_set_position(x, y);
     return TRUE;
   }
   else
     return FALSE;
 }
 
-int ji_mouse_get_click_button(void)
+int jmouse_get_click_button(void)
 {
   return click_mouse_b;
 }
 
-int ji_mouse_get_click_level(void)
+int jmouse_get_click_level(void)
 {
   return click_level;
 }
 
-void ji_mouse_set_click_level(int level)
+void jmouse_set_click_level(int level)
 {
   click_level = level;
   if (level == JI_CLICK_START) {

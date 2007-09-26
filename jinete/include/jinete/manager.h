@@ -48,7 +48,6 @@ bool jmanager_poll(JWidget manager, bool all_windows);
 
 void jmanager_send_message(const JMessage msg);
 void jmanager_dispatch_messages(void);
-void jmanager_dispatch_draw_messages(void);
 
 JWidget jmanager_get_focus(void);
 JWidget jmanager_get_mouse(void);

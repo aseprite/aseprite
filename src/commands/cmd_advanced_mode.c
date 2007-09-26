@@ -20,14 +20,14 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
 #include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
 
 #endif
 
 void command_execute_advanced_mode(const char *argument)
 {
+  app_switch(app_get_tool_bar());
+  app_switch(app_get_menu_bar());
+  app_switch(app_get_status_bar());
+  app_switch(app_get_color_bar());
 }

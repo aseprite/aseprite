@@ -26,6 +26,7 @@
 
 #include "core/app.h"
 #include "core/core.h"
+#include "dialogs/viewspr.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -36,16 +37,7 @@
 
 #endif
 
-#define JUST_ONE	1
-#define FIT_ON_SCREEN	2
-
-static void view_sprite(int flags);
-
-void view_tiled(void) { view_sprite(0); }
-void view_normal(void) { view_sprite(JUST_ONE); }
-void view_fullscreen(void) { view_sprite(JUST_ONE | FIT_ON_SCREEN); }
-
-static void view_sprite(int flags)
+void preview_sprite(int flags)
 {
   JWidget widget = current_editor;
 
@@ -68,8 +60,8 @@ static void view_sprite(int flags)
     vp = jview_get_viewport_position(view);
     jview_get_scroll(view, &scroll_x, &scroll_y);
 
-    old_mouse_x = ji_mouse_x(0);
-    old_mouse_y = ji_mouse_y(0);
+    old_mouse_x = jmouse_x(0);
+    old_mouse_y = jmouse_y(0);
 
     bmp = create_bitmap (sprite->w, sprite->h);
     if (bmp) {
@@ -78,8 +70,8 @@ static void view_sprite(int flags)
       jwidget_flush_redraw(app_get_status_bar());
       jmanager_dispatch_messages();
 
-      ji_mouse_set_cursor(JI_CURSOR_NULL);
-      ji_mouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
+      jmouse_set_cursor(JI_CURSOR_NULL);
+      jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
       /* render the sprite in the bitmap */
       image = render_sprite(sprite, 0, 0, sprite->w, sprite->h,
@@ -89,7 +81,7 @@ static void view_sprite(int flags)
 	image_free(image);
       }
 
-      if (flags & JUST_ONE)
+      if (!(flags & PREVIEW_TILED))
 	bg_color = palette_color[index_bg_color=0];
       else
 	bg_color = makecol(128, 128, 128);
@@ -103,11 +95,11 @@ static void view_sprite(int flags)
       redraw = TRUE;
       do {
 	/* update scroll */
-	if (ji_mouse_poll()) {
-	  shiftx += ji_mouse_x(0) - JI_SCREEN_W/2;
-	  shifty += ji_mouse_y(0) - JI_SCREEN_H/2;
-	  ji_mouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
-	  ji_mouse_poll();
+	if (jmouse_poll()) {
+	  shiftx += jmouse_x(0) - JI_SCREEN_W/2;
+	  shifty += jmouse_y(0) - JI_SCREEN_H/2;
+	  jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
+	  jmouse_poll();
 
 	  redraw = TRUE;
 	}
@@ -116,7 +108,7 @@ static void view_sprite(int flags)
 	  redraw = FALSE;
 
 	  /* fit on screen */
-	  if (flags & FIT_ON_SCREEN) {
+	  if (flags & PREVIEW_FIT_ON_SCREEN) {
 	    double sx, sy, scale, outw, outh;
 
 	    sx = (double)JI_SCREEN_W / (double)bmp->w;
@@ -132,7 +124,7 @@ static void view_sprite(int flags)
 	  }
 	  /* draw in normal size */
 	  else {
-	    if (flags & JUST_ONE) {
+	    if (!(flags & PREVIEW_TILED)) {
 	      x = shiftx;
 	      y = shifty;
 	    }
@@ -141,7 +133,7 @@ static void view_sprite(int flags)
 	      y = SGN(shifty) * (ABS(shifty)%h);
 	    }
 
-	    if (flags & JUST_ONE) {
+	    if (!(flags & PREVIEW_TILED)) {
 /* 	      rectfill_exclude(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, */
 /* 			       x, y, x+w-1, y+h-1, bg_color); */
 	      clear_to_color(ji_screen, bg_color);
@@ -149,7 +141,7 @@ static void view_sprite(int flags)
 
 	    if (!editor->zoom) {
 	      /* in the center */
-	      if (flags & JUST_ONE)
+	      if (!(flags & PREVIEW_TILED))
 		draw_sprite(ji_screen, bmp, x, y);
 	      /* tiled */
 	      else
@@ -159,7 +151,7 @@ static void view_sprite(int flags)
 	    }
 	    else {
 	      /* in the center */
-	      if (flags & JUST_ONE)
+	      if (!(flags & PREVIEW_TILED))
 		masked_stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, x, y, w, h);
 	      /* tiled */
 	      else
@@ -204,19 +196,19 @@ static void view_sprite(int flags)
 	  else
 	    break;
 	}
-      } while (!ji_mouse_b(0));
+      } while (!jmouse_b(0));
 
       destroy_bitmap(bmp);
     }
 
     do {
-      ji_mouse_poll();
+      jmouse_poll();
       gui_feedback();
-    } while (ji_mouse_b(0));
+    } while (jmouse_b(0));
     clear_keybuf();
 
-    ji_mouse_set_position(old_mouse_x, old_mouse_y);
-    ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+    jmouse_set_position(old_mouse_x, old_mouse_y);
+    jmouse_set_cursor(JI_CURSOR_NORMAL);
 
     jmanager_refresh_screen();
     jrect_free(vp);

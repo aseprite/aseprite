@@ -136,7 +136,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       JWidget view = jwidget_get_view(widget);
       if (view) {
 	jwidget_hard_capture_mouse(widget);
-	ji_mouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
 	return TRUE;
       }
       break;
@@ -150,10 +150,10 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
 	jview_set_scroll(view,
-			 scroll_x + ji_mouse_x(1) - ji_mouse_x(0),
-			 scroll_y + ji_mouse_y(1) - ji_mouse_y(0));
+			 scroll_x + jmouse_x(1) - jmouse_x(0),
+			 scroll_y + jmouse_y(1) - jmouse_y(0));
 
-	ji_mouse_control_infinite_scroll(vp);
+	jmouse_control_infinite_scroll(vp);
 	jrect_free(vp);
       }
       break;
@@ -163,7 +163,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       JWidget view = jwidget_get_view(widget);
       if (view && jwidget_has_capture(widget)) {
 	jwidget_release_mouse(widget);
-	ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
 	return TRUE;
       }
       break;
@@ -178,7 +178,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 	jview_set_scroll(view,
 			 scroll_x,
 			 scroll_y +
-			 (ji_mouse_z(1) - ji_mouse_z(0))
+			 (jmouse_z(1) - jmouse_z(0))
 			 *jwidget_get_text_height(widget)*3);
       }
       break;

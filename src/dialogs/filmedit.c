@@ -25,6 +25,7 @@
 #include "jinete.h"
 #include "jinete/intern.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -317,16 +318,18 @@ static bool layer_box_msg_proc (JWidget widget, JMessage msg)
       return TRUE;
     }
 
-    case JM_CHAR:
+    case JM_CHAR: {
+      Command *command = command_get_by_key(msg);
+
       /* close film editor */
-      if (check_for_accel (ACCEL_FOR_FILMEDITOR, msg) ||
-	  msg->key.scancode == KEY_ESC) {
-	jwidget_close_window (widget);
+      if ((command && (strcmp(command->name, CMD_FILM_EDITOR) == 0)) ||
+	  (msg->key.scancode == KEY_ESC)) {
+	jwidget_close_window(widget);
 	return TRUE;
       }
 
       /* undo */
-      if (check_for_accel (ACCEL_FOR_UNDO, msg)) {
+      if (command && strcmp(command->name, CMD_UNDO) == 0) {
 	if (undo_can_undo (sprite->undo)) {
 	  undo_undo (sprite->undo);
 	  destroy_thumbnails ();
@@ -336,7 +339,7 @@ static bool layer_box_msg_proc (JWidget widget, JMessage msg)
       }
 
       /* redo */
-      if (check_for_accel (ACCEL_FOR_REDO, msg)) {
+      if (command && strcmp(command->name, CMD_REDO) == 0) {
 	if (undo_can_redo (sprite->undo)) {
 	  undo_redo (sprite->undo);
 	  destroy_thumbnails ();
@@ -354,19 +357,20 @@ static bool layer_box_msg_proc (JWidget widget, JMessage msg)
 /* 	  GUI_Refresh (sprite); */
 /* 	  break; */
       break;
+    }
 
     case JM_BUTTONPRESSED:
       jwidget_hard_capture_mouse (widget);
 
       if (msg->any.shifts & KB_SHIFT_FLAG) {
 	state = STATE_SCROLLING;
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
       }
       else {
 	state = STATE_MOVING;
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
 
-	select_layer_motion (widget, layer_box, layer_box->frame_box);
+	select_layer_motion(widget, layer_box, layer_box->frame_box);
 	layer_box->layer = current_sprite->layer;
 /* 	layer_box->rect = rect; */
 /* 	layer_box->rect_data = NULL; */
@@ -390,7 +394,7 @@ static bool layer_box_msg_proc (JWidget widget, JMessage msg)
 	jwidget_release_mouse (widget);
 
 	if ((state == STATE_SCROLLING) || (state == STATE_MOVING))
-	  ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+	  jmouse_set_cursor(JI_CURSOR_NORMAL);
 
 	if (state == STATE_MOVING) {
 	  /* layer popup menu */
@@ -620,7 +624,7 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 
       if (msg->any.shifts & KB_SHIFT_FLAG) {
 	state = STATE_SCROLLING;
-	ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_MOVE);
       }
       else {
 	Frame *frame;
@@ -643,7 +647,7 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 				 current_sprite->frpos);
 	if (frame) {
 	  state = STATE_MOVING; /* now we will moving a frame */
-	  ji_mouse_set_cursor (JI_CURSOR_MOVE);
+	  jmouse_set_cursor(JI_CURSOR_MOVE);
 
 	  frame_box->layer = current_sprite->layer;
 	  frame_box->frame = frame;
@@ -651,7 +655,7 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 
 	  get_frame_rect (widget, &frame_box->rect);
 
-	  scare_mouse ();
+	  jmouse_hide();
 	  frame_box->rect_data = rectsave
 	    (ji_screen,
 	     frame_box->rect.x1, frame_box->rect.y1,
@@ -660,7 +664,7 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 		      frame_box->rect.x1, frame_box->rect.y1,
 		      frame_box->rect.x2-1, frame_box->rect.y2-1,
 		      makecol (0, 0, 0), makecol (255, 255, 255));
-	  unscare_mouse ();
+	  jmouse_show();
 	}
       }
 
@@ -671,29 +675,29 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	  control_scroll_motion (widget, frame_box->layer_box, frame_box);
 	/* move */
 	else if (state == STATE_MOVING) {
-	  scare_mouse ();
+	  jmouse_hide();
 
-	  rectrestore (frame_box->rect_data);
-	  rectdiscard (frame_box->rect_data);
+	  rectrestore(frame_box->rect_data);
+	  rectdiscard(frame_box->rect_data);
 
-	  select_frpos_motion (widget);
-	  select_layer_motion (widget, frame_box->layer_box, frame_box);
+	  select_frpos_motion(widget);
+	  select_layer_motion(widget, frame_box->layer_box, frame_box);
 
-	  get_frame_rect (widget, &frame_box->rect);
+	  get_frame_rect(widget, &frame_box->rect);
 
-	  jwidget_flush_redraw (widget);
+	  jwidget_flush_redraw(widget);
 
 	  frame_box->rect_data = rectsave
 	    (ji_screen,
 	     frame_box->rect.x1, frame_box->rect.y1,
 	     frame_box->rect.x2-1, frame_box->rect.y2-1);
 
-	  rectdotted (ji_screen,
-		      frame_box->rect.x1, frame_box->rect.y1,
-		      frame_box->rect.x2-1, frame_box->rect.y2-1,
-		      makecol (0, 0, 0), makecol (255, 255, 255));
+	  rectdotted(ji_screen,
+		     frame_box->rect.x1, frame_box->rect.y1,
+		     frame_box->rect.x2-1, frame_box->rect.y2-1,
+		     makecol (0, 0, 0), makecol (255, 255, 255));
 
-	  unscare_mouse ();
+	  jmouse_show();
 	}
 	/* select */
 	else if (state == STATE_SELECTING) {
@@ -709,14 +713,14 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	jwidget_release_mouse (widget);
 
 	if ((state == STATE_SCROLLING) || (state == STATE_MOVING))
-	  ji_mouse_set_cursor (JI_CURSOR_NORMAL);
+	  jmouse_set_cursor(JI_CURSOR_NORMAL);
 
 	if ((state == STATE_SELECTING) || (state == STATE_MOVING)) {
 	  if (state == STATE_MOVING) {
-	    scare_mouse ();
-	    rectrestore (frame_box->rect_data);
-	    rectdiscard (frame_box->rect_data);
-	    unscare_mouse ();
+	    jmouse_hide();
+	    rectrestore(frame_box->rect_data);
+	    rectdiscard(frame_box->rect_data);
+	    jmouse_show();
 	  }
 
 	  set_frame_to_handle (frame_box->layer, frame_box->frame);
@@ -864,9 +868,9 @@ static Layer *get_layer_in_pos(Layer *layer, int pos)
 static void select_frpos_motion(JWidget widget)
 {
   Sprite *sprite = current_sprite;
-  int frpos = (ji_mouse_x (0) - widget->rc->x1) / FRMSIZE;
+  int frpos = (jmouse_x(0) - widget->rc->x1) / FRMSIZE;
 
-  frpos = MID (0, frpos, sprite->frames-1);
+  frpos = MID(0, frpos, sprite->frames-1);
 
   /* the frame change */
   if (sprite->frpos != frpos) {
@@ -891,8 +895,7 @@ static void select_frpos_motion(JWidget widget)
       scroll_change = FALSE;
 
     if (scroll_change)
-      ji_mouse_set_position(widget->rc->x1+frpos*FRMSIZE+FRMSIZE/2,
-			    ji_mouse_y (0));
+      jmouse_set_position(widget->rc->x1+frpos*FRMSIZE+FRMSIZE/2, jmouse_y(0));
 
     jwidget_dirty(widget);
     jrect_free(vp);
@@ -910,7 +913,7 @@ static void select_layer_motion(JWidget widget,
   get_layer_pos(sprite->set, sprite->layer, &current_layer);
 
   /* get new selected pos */
-  layer = (ji_mouse_y (0) - (widget->rc->y1 + LAYSIZE)) / LAYSIZE;
+  layer = (jmouse_y(0) - (widget->rc->y1 + LAYSIZE)) / LAYSIZE;
   layer = MID(0, layer, count_layers(sprite->set)-1);
 
   /* the layer change? */
@@ -940,8 +943,8 @@ static void select_layer_motion(JWidget widget,
       scroll_change = FALSE;
 
     if (scroll_change)
-      ji_mouse_set_position(ji_mouse_x (0),
-			    widget->rc->y1+LAYSIZE+layer*LAYSIZE+LAYSIZE/2);
+      jmouse_set_position(jmouse_x(0),
+			  widget->rc->y1+LAYSIZE+layer*LAYSIZE+LAYSIZE/2);
 
     jwidget_dirty(layer_box->widget);
     jwidget_dirty(frame_box->widget);
@@ -966,22 +969,22 @@ static void control_scroll_motion (JWidget widget,
 
   /* horizontal scroll for layer_box */
   if (widget == layer_box->widget)
-    scroll1_x += ji_mouse_x (1)-ji_mouse_x (0);
+    scroll1_x += jmouse_x(1)-jmouse_x(0);
   /* horizontal scroll for frame_box */
   else
-    scroll2_x += ji_mouse_x (1)-ji_mouse_x (0);
+    scroll2_x += jmouse_x(1)-jmouse_x(0);
 
   jview_set_scroll(view1,
 		     scroll1_x,
 		     /* vertical scroll */
-		     scroll1_y+ji_mouse_y (1)-ji_mouse_y (0));
+		     scroll1_y+jmouse_y(1)-jmouse_y(0));
 
   jview_set_scroll(view2,
-		     scroll2_x,
-		     /* vertical scroll */
-		     scroll2_y+ji_mouse_y (1)-ji_mouse_y (0));
+		   scroll2_x,
+		   /* vertical scroll */
+		   scroll2_y+jmouse_y(1)-jmouse_y(0));
 
-  ji_mouse_control_infinite_scroll(vp);
+  jmouse_control_infinite_scroll(vp);
   jrect_free(vp);
 }
 

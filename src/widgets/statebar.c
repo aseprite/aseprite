@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,32 +51,32 @@ enum {
   ACTION_LAST,
 };
 
-static bool status_bar_msg_proc (JWidget widget, JMessage msg);
+static bool status_bar_msg_proc(JWidget widget, JMessage msg);
 
-static int slider_change_signal (JWidget widget, int user_data);
-static void button_command (JWidget widget, void *data);
+static int slider_change_signal(JWidget widget, int user_data);
+static void button_command(JWidget widget, void *data);
 
-static void update_from_layer (StatusBar *status_bar);
+static void update_from_layer(StatusBar *status_bar);
 
-static void play_animation (void);
+static void play_animation(void);
 
-JWidget status_bar_new (void)
+JWidget status_bar_new(void)
 {
 #define BUTTON_NEW(name, text, data)					\
-  (name) = jbutton_new (text);					\
+  (name) = jbutton_new(text);						\
   (name)->user_data[0] = status_bar;					\
-  jbutton_add_command_data ((name), button_command, (void *)(data));
+  jbutton_add_command_data((name), button_command, (void *)(data));
 
 #define ICON_NEW(name, icon, action)					\
-  BUTTON_NEW ((name), NULL, (action));					\
-  add_gfxicon_to_button ((name), (icon), JI_CENTER | JI_MIDDLE);
+  BUTTON_NEW((name), NULL, (action));					\
+  add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);
 
-  JWidget widget = jwidget_new (status_bar_type ());
-  StatusBar *status_bar = jnew (StatusBar, 1);
+  JWidget widget = jwidget_new(status_bar_type());
+  StatusBar *status_bar = jnew(StatusBar, 1);
 
-  jwidget_add_hook (widget, status_bar_type (),
-		      status_bar_msg_proc, status_bar);
-  jwidget_focusrest (widget, TRUE);
+  jwidget_add_hook(widget, status_bar_type(),
+		   status_bar_msg_proc, status_bar);
+  jwidget_focusrest(widget, TRUE);
 
   {
     JWidget box1, box2;
@@ -91,27 +91,27 @@ JWidget status_bar_new (void)
     box2 = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
     BUTTON_NEW (status_bar->b_layer, "*Current Layer*", ACTION_LAYER);
     status_bar->slider = jslider_new (0, 255, 255);
-    ICON_NEW (status_bar->b_first, GFX_ANI_FIRST, ACTION_FIRST);
-    ICON_NEW (status_bar->b_prev, GFX_ANI_PREV, ACTION_PREV);
-    ICON_NEW (status_bar->b_play, GFX_ANI_PLAY, ACTION_PLAY);
-    ICON_NEW (status_bar->b_next, GFX_ANI_NEXT, ACTION_NEXT);
-    ICON_NEW (status_bar->b_last, GFX_ANI_LAST, ACTION_LAST);
+    ICON_NEW(status_bar->b_first, GFX_ANI_FIRST, ACTION_FIRST);
+    ICON_NEW(status_bar->b_prev, GFX_ANI_PREV, ACTION_PREV);
+    ICON_NEW(status_bar->b_play, GFX_ANI_PLAY, ACTION_PLAY);
+    ICON_NEW(status_bar->b_next, GFX_ANI_NEXT, ACTION_NEXT);
+    ICON_NEW(status_bar->b_last, GFX_ANI_LAST, ACTION_LAST);
 
-    HOOK (status_bar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_signal, 0);
-    jwidget_set_static_size (status_bar->slider, JI_SCREEN_W/5, 0);
+    HOOK(status_bar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_signal, 0);
+    jwidget_set_static_size(status_bar->slider, JI_SCREEN_W/5, 0);
 
-    jwidget_noborders (box1);
-    jwidget_noborders (box2);
+    jwidget_noborders(box1);
+    jwidget_noborders(box2);
 
-    jwidget_expansive (status_bar->b_layer, TRUE);
-    jwidget_add_child (box1, status_bar->b_layer);
-    jwidget_add_child (box1, status_bar->slider);
-    jwidget_add_child (box2, status_bar->b_first);
-    jwidget_add_child (box2, status_bar->b_prev);
-    jwidget_add_child (box2, status_bar->b_play);
-    jwidget_add_child (box2, status_bar->b_next);
-    jwidget_add_child (box2, status_bar->b_last);
-    jwidget_add_child (box1, box2);
+    jwidget_expansive(status_bar->b_layer, TRUE);
+    jwidget_add_child(box1, status_bar->b_layer);
+    jwidget_add_child(box1, status_bar->slider);
+    jwidget_add_child(box2, status_bar->b_first);
+    jwidget_add_child(box2, status_bar->b_prev);
+    jwidget_add_child(box2, status_bar->b_play);
+    jwidget_add_child(box2, status_bar->b_next);
+    jwidget_add_child(box2, status_bar->b_last);
+    jwidget_add_child(box1, box2);
 
     status_bar->commands_box = box1;
   }
@@ -119,20 +119,20 @@ JWidget status_bar_new (void)
   return widget;
 }
 
-int status_bar_type (void)
+int status_bar_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-StatusBar *status_bar_data (JWidget widget)
+StatusBar *status_bar_data(JWidget widget)
 {
-  return jwidget_get_data (widget, status_bar_type ());
+  return jwidget_get_data(widget, status_bar_type());
 }
 
-void status_bar_set_text (JWidget widget, int msecs, const char *format, ...)
+void status_bar_set_text(JWidget widget, int msecs, const char *format, ...)
 {
   StatusBar *status_bar = status_bar_data (widget);
 
@@ -153,7 +153,7 @@ void status_bar_set_text (JWidget widget, int msecs, const char *format, ...)
   }
 }
 
-void status_bar_do_progress (JWidget widget, int progress)
+void status_bar_do_progress(JWidget widget, int progress)
 {
   StatusBar *status_bar = status_bar_data(widget);
   int n = status_bar->nprogress-1;
@@ -168,7 +168,7 @@ void status_bar_do_progress (JWidget widget, int progress)
   }
 }
 
-void status_bar_add_progress (JWidget widget, int max)
+void status_bar_add_progress(JWidget widget, int max)
 {
   StatusBar *status_bar = status_bar_data(widget);
   int n = status_bar->nprogress++;
@@ -179,7 +179,7 @@ void status_bar_add_progress (JWidget widget, int max)
   jwidget_dirty(widget);
 }
 
-void status_bar_del_progress (JWidget widget)
+void status_bar_del_progress(JWidget widget)
 {
   StatusBar *status_bar = status_bar_data (widget);
 
@@ -197,37 +197,37 @@ void status_bar_del_progress (JWidget widget)
   status_bar->nprogress--;
 }
 
-void status_bar_update (JWidget widget)
+void status_bar_update(JWidget widget)
 {
   StatusBar *status_bar = status_bar_data (widget);
 
   update_from_layer (status_bar);
 }
 
-static bool status_bar_msg_proc (JWidget widget, JMessage msg)
+static bool status_bar_msg_proc(JWidget widget, JMessage msg)
 {
-  StatusBar *status_bar = status_bar_data (widget);
+  StatusBar *status_bar = status_bar_data(widget);
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (status_bar);
+      jfree(status_bar);
       break;
 
     case JM_REQSIZE:
       msg->reqsize.w = msg->reqsize.h =
-	2 + jwidget_get_text_height (widget) + 2;
+	2 + jwidget_get_text_height(widget) + 2;
       return TRUE;
 
     case JM_SETPOS:
-      jrect_copy (widget->rc, &msg->setpos.rect);
-      jwidget_set_rect (status_bar->commands_box, widget->rc);
+      jrect_copy(widget->rc, &msg->setpos.rect);
+      jwidget_set_rect(status_bar->commands_box, widget->rc);
       return TRUE;
 
     case JM_CLOSE:
-      if (!jwidget_has_child (widget, status_bar->commands_box)) {
+      if (!jwidget_has_child(widget, status_bar->commands_box)) {
 	/* append the "commands_box" to destroy it in the jwidget_free */
-	jwidget_add_child (widget, status_bar->commands_box);
+	jwidget_add_child(widget, status_bar->commands_box);
       }
       break;
 
@@ -341,7 +341,7 @@ static bool status_bar_msg_proc (JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static int slider_change_signal (JWidget widget, int user_data)
+static int slider_change_signal(JWidget widget, int user_data)
 {
   Sprite *sprite = current_sprite;
 
@@ -363,7 +363,7 @@ static int slider_change_signal (JWidget widget, int user_data)
   return FALSE;
 }
 
-static void button_command (JWidget widget, void *data)
+static void button_command(JWidget widget, void *data)
 {
   Sprite *sprite = current_sprite;
 
@@ -373,7 +373,7 @@ static void button_command (JWidget widget, void *data)
     switch ((int)data) {
 
       case ACTION_LAYER:
-	do_script_expr ("GUI_LayerProperties ()");
+	do_script_expr("GUI_LayerProperties()");
 	break;
 
       case ACTION_FIRST:
@@ -406,7 +406,7 @@ static void button_command (JWidget widget, void *data)
   }
 }
 
-static void update_from_layer (StatusBar *status_bar)
+static void update_from_layer(StatusBar *status_bar)
 {
   Sprite *sprite = current_sprite;
   Frame *frame;
@@ -458,7 +458,7 @@ static void play_animation(void)
   if (sprite->frames < 2)
     return;
 
-  scare_mouse();
+  jmouse_hide();
 
   old_frpos = sprite->frpos;
 
@@ -510,5 +510,5 @@ static void play_animation(void)
   clear_keybuf();
   remove_int(speed_timer_callback);
 
-  unscare_mouse();
+  jmouse_show();
 }

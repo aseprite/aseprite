@@ -41,7 +41,7 @@ JWidget get_recent_list_menuitem(void);
 JWidget get_layer_popup_menuitem(void);
 JWidget get_frame_popup_menuitem(void);
 
-int check_for_accel(int accel_type, JMessage msg);
+/* int check_for_accel(int accel_type, JMessage msg); */
 void show_fx_popup_menu(void);
 
 #endif /* MODULES_ROOTMENU_H */

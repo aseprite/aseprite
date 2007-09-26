@@ -41,53 +41,53 @@ static void my_play_fli (const char *filename, bool loop, bool fullscreen,
 
 void play_fli_animation (const char *filename, bool loop, bool fullscreen)
 {
-  if (is_interactive ()) {
+  if (is_interactive()) {
     PALETTE backup;
 
-    jmanager_free_mouse ();
+    jmanager_free_mouse();
 
     /* hide the mouse */
-    scare_mouse ();
+    jmouse_hide();
 
     /* get the current color palette */
-    get_palette (backup);
+    get_palette(backup);
 
     /* clear the screen */
-    clear (ji_screen);
+    clear(ji_screen);
 
     /* clear the keyboard buffer */
-    clear_keybuf ();
+    clear_keybuf();
 
     /* play the fli */
-    my_play_fli (filename, loop, fullscreen, my_callback);
+    my_play_fli(filename, loop, fullscreen, my_callback);
     /* play_fli (filename, ji_screen, loop, my_callback); */
 
     /* clear the screen */
-    clear (ji_screen);
+    clear(ji_screen);
 
     /* restore the color palette */
-    set_palette (backup);
+    set_palette(backup);
 
     /* show the mouse cursor */
-    unscare_mouse ();
+    jmouse_show();
 
     /* wait while the user has pushed some mouse button */
     do {
-      ji_mouse_poll ();
-    } while (ji_mouse_b (0));
+      jmouse_poll();
+    } while (jmouse_b(0));
 
     /* clear again the keyboard buffer */
-    clear_keybuf ();
+    clear_keybuf();
 
-    jmanager_refresh_screen ();
+    jmanager_refresh_screen();
   }
 }
 
 static bool my_callback (void)
 {
-  ji_mouse_poll ();
+  jmouse_poll();
 
-  return (keypressed () || ji_mouse_b (0));
+  return (keypressed () || jmouse_b(0));
 }
 
 /**********************************************************************/
@@ -129,7 +129,7 @@ static void my_play_fli (const char *filename, bool loop, bool fullscreen,
   old = create_bitmap_ex (8, fli_header.width, fli_header.height);
 
   /* stretch routine doesn't support bitmaps of different color depths */
-  if (bitmap_color_depth (ji_screen) != 8)
+  if (bitmap_color_depth(ji_screen) != 8)
     fullscreen = FALSE;
 
   w = fli_header.width;

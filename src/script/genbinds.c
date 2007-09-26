@@ -525,14 +525,6 @@ static int bind_app_get_tool_bar(lua_State *L)
   return 1;
 }
 
-static int bind_app_switch(lua_State *L)
-{
-  JWidget widget;
-  GetUD(1, widget, JWidget);
-  app_switch(widget);
-  return 0;
-}
-
 static int bind_intl_load_lang(lua_State *L)
 {
   intl_load_lang();
@@ -1393,12 +1385,6 @@ static int bind_set_gfx(lua_State *L)
   return 1;
 }
 
-static int bind_dialogs_about(lua_State *L)
-{
-  dialogs_about();
-  return 0;
-}
-
 static int bind_dialogs_color_curve(lua_State *L)
 {
   dialogs_color_curve();
@@ -1502,24 +1488,6 @@ static int bind_dialogs_tools_configuration(lua_State *L)
 static int bind_dialogs_vector_map(lua_State *L)
 {
   dialogs_vector_map();
-  return 0;
-}
-
-static int bind_view_tiled(lua_State *L)
-{
-  view_tiled();
-  return 0;
-}
-
-static int bind_view_normal(lua_State *L)
-{
-  view_normal();
-  return 0;
-}
-
-static int bind_view_fullscreen(lua_State *L)
-{
-  view_fullscreen();
   return 0;
 }
 
@@ -3951,18 +3919,6 @@ static int bind_jmanager_send_message(lua_State *L)
   return 0;
 }
 
-static int bind_jmanager_dispatch_messages(lua_State *L)
-{
-  jmanager_dispatch_messages();
-  return 0;
-}
-
-static int bind_jmanager_dispatch_draw_messages(lua_State *L)
-{
-  jmanager_dispatch_draw_messages();
-  return 0;
-}
-
 static int bind_jmanager_get_focus(lua_State *L)
 {
   JWidget return_value;
@@ -5763,7 +5719,6 @@ const luaL_reg bindings_routines[] = {
   { "app_get_status_bar", bind_app_get_status_bar },
   { "app_get_color_bar", bind_app_get_color_bar },
   { "app_get_tool_bar", bind_app_get_tool_bar },
-  { "app_switch", bind_app_switch },
   { "intl_load_lang", bind_intl_load_lang },
   { "intl_get_lang", bind_intl_get_lang },
   { "intl_set_lang", bind_intl_set_lang },
@@ -5873,7 +5828,6 @@ const luaL_reg bindings_routines[] = {
   { "rec_screen_off", bind_rec_screen_off },
   { "screen_shot", bind_screen_shot },
   { "set_gfx", bind_set_gfx },
-  { "dialogs_about", bind_dialogs_about },
   { "dialogs_color_curve", bind_dialogs_color_curve },
   { "dialogs_convolution_matrix", bind_dialogs_convolution_matrix },
   { "dialogs_draw_text", bind_dialogs_draw_text },
@@ -5891,9 +5845,6 @@ const luaL_reg bindings_routines[] = {
   { "dialogs_tips", bind_dialogs_tips },
   { "dialogs_tools_configuration", bind_dialogs_tools_configuration },
   { "dialogs_vector_map", bind_dialogs_vector_map },
-  { "view_tiled", bind_view_tiled },
-  { "view_normal", bind_view_normal },
-  { "view_fullscreen", bind_view_fullscreen },
   { "RenderText", bind_RenderText },
   { "_rgba_getr", bind__rgba_getr },
   { "_rgba_getg", bind__rgba_getg },
@@ -6116,8 +6067,6 @@ const luaL_reg bindings_routines[] = {
   { "jmanager_run", bind_jmanager_run },
   { "jmanager_poll", bind_jmanager_poll },
   { "jmanager_send_message", bind_jmanager_send_message },
-  { "jmanager_dispatch_messages", bind_jmanager_dispatch_messages },
-  { "jmanager_dispatch_draw_messages", bind_jmanager_dispatch_draw_messages },
   { "jmanager_get_focus", bind_jmanager_get_focus },
   { "jmanager_get_mouse", bind_jmanager_get_mouse },
   { "jmanager_get_capture", bind_jmanager_get_capture },
@@ -6463,14 +6412,6 @@ void register_bindings(lua_State *L)
 /*======================================================================*/
 /* Lua -> C                                                             */
 /*======================================================================*/
-
-void CloseSprite(void)
-{
-  lua_State *L = get_lua_state();
-  lua_pushstring(L, "CloseSprite");
-  lua_gettable(L, LUA_GLOBALSINDEX);
-  do_script_raw(L, 0, 0);
-}
 
 const char *GetUniqueLayerName(void)
 {

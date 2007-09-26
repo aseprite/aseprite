@@ -88,23 +88,29 @@ enum {
   JI_CURSORS
 };
 
-int ji_mouse_get_cursor(void);
-int ji_mouse_set_cursor(int type);
-void ji_mouse_draw_cursor();
+int jmouse_get_cursor(void);
+int jmouse_set_cursor(int type);
+void jmouse_draw_cursor();
 
-bool ji_mouse_poll(void);
-void ji_mouse_set_position(int x, int y);
+void jmouse_hide();
+void jmouse_show();
 
-int ji_mouse_b(int antique);
-int ji_mouse_x(int antique);
-int ji_mouse_y(int antique);
-int ji_mouse_z(int antique);
+bool jmouse_is_hidden();
+bool jmouse_is_shown();
 
-bool ji_mouse_control_infinite_scroll(JRect rect);
+bool jmouse_poll(void);
+void jmouse_set_position(int x, int y);
 
-int ji_mouse_get_click_button(void);
-int ji_mouse_get_click_level(void);
-void ji_mouse_set_click_level(int level);
+int jmouse_b(int antique);
+int jmouse_x(int antique);
+int jmouse_y(int antique);
+int jmouse_z(int antique);
+
+bool jmouse_control_infinite_scroll(JRect rect);
+
+int jmouse_get_click_button(void);
+int jmouse_get_click_level(void);
+void jmouse_set_click_level(int level);
 
 JI_END_DECLS
 
