@@ -16,8 +16,7 @@ NEWS
 + Finally screen scaling supported (with double-buffering). This means
   that you can use a screen of 320x240 between a window of 640x480
   (screen-scaling x2). This is the new default video mode for ASE.
-+ Fixed compilations errors for 4.x
-+ Fixed menus.es
++ Fixed compilations errors for Allegro 4.2
 
 0.5
 ---

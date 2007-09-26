@@ -1,0 +1,214 @@
+<!-- Copyright (C) 2007 by David A. Capello -->
+<gui>
+    <keyboard>
+	<!-- file -->
+	<key command="new_file" shortcut="Ctrl+N" />
+	<key command="open_file" shortcut="Ctrl+O" />
+	<key command="open_file" shortcut="F3" />
+	<key command="save_file" shortcut="Ctrl+S" />
+	<key command="save_file" shortcut="F2" />
+	<key command="save_file_as" shortcut="Shift+Ctrl+S" />
+	<key command="save_file_as" shortcut="Shift+F2" />
+	<key command="close_file" shortcut="Ctrl+W" />
+	<key command="close_all_files" shortcut="Shift+Ctrl+W" />
+	<key command="screen_shot" shortcut="F12" />
+	<key command="exit" shortcut="Ctrl+Q" />
+	<key command="exit" shortcut="Esc" />
+	<!-- edit -->
+	<key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
+	<key command="redo" shortcut="Ctrl+R" />
+	<key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
+	<key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
+	<key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
+	<key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
+	<key command="quick_move" shortcut="Shift+M" />
+	<key command="quick_copy" shortcut="Shift+C" />
+	<key command="flip_horizontal" shortcut="Shift+H" />
+	<key command="flip_vertical" shortcut="Shift+V" />
+	<key command="replace_color" shortcut="Shift+R" />
+	<key command="invert_color" shortcut="Ctrl+I" />
+	<!-- view -->
+	<key command="refresh" shortcut="F5" />
+	<key command="advanced_mode" shortcut="A" />
+	<key command="make_unique_editor" shortcut="Ctrl+1" />
+	<key command="split_editor_vertically" shortcut="Ctrl+2" />
+	<key command="split_editor_horizontally" shortcut="Ctrl+3" />
+	<key command="close_editor" shortcut="Ctrl+4" />
+	<key command="preview_fit_to_screen" shortcut="F6" />
+	<key command="preview_normal" shortcut="F7" />
+	<key command="preview_tiled" shortcut="F8" />
+	<!-- sprite -->
+	<key command="sprite_properties" shortcut="Ctrl+P" />
+	<!-- layer -->
+	<key command="layer_properties" shortcut="Shift+P" />
+	<key command="new_layer" shortcut="Shift+N" />
+	<!-- frame -->
+	<key command="frame_properties" shortcut="Shift+Ctrl+P" />
+	<key command="new_frame" shortcut="Ctrl+Shift+N" />
+	<!-- mask -->
+	<key command="mask_all" shortcut="Ctrl+A" />
+	<key command="deselect_mask" shortcut="Ctrl+D" />
+	<key command="reselect_mask" shortcut="Shift+Ctrl+D" />
+	<key command="invert_mask" shortcut="Shift+Ctrl+I" />
+	<!-- tools -->
+	<key command="configure_tools" shortcut="C" />
+	<key command="marker_tool" shortcut="M" />
+	<key command="dots_tool" shortcut="D" />
+	<key command="pencil_tool" shortcut="P" />
+	<key command="brush_tool" shortcut="B" />
+	<key command="spray_tool" shortcut="S" />
+	<key command="floodfill_tool" shortcut="F" />
+	<key command="line_tool" shortcut="L" />
+	<key command="rectangle_tool" shortcut="R" />
+	<key command="ellipse_tool" shortcut="E" />
+	<key command="film_editor" shortcut="Tab" />
+	<key command="palette_editor" shortcut="F4" />
+	<key command="convolution_matrix" shortcut="F9" />
+	<key command="color_curve" shortcut="Ctrl+M" />
+	<key command="color_curve" shortcut="F10" />
+	<key command="run_script" shortcut="Ctrl+0" />
+	<key command="tips" shortcut="F1" />
+	<key command="options" shortcut="Shift+Ctrl+O" />
+    </keyboard>
+    <menu id="main_menu">
+	<menu name="&File">
+	    <item command="new_file" name="&New" />
+	    <item command="open_file" name="&Open" />
+	    <item id="recent_list" name="Open &Recent" />
+	    <separator />
+	    <item command="save_file" name="&Save" />
+	    <item command="save_file_as" name="Save &As..." />
+	    <item command="close_file" name="&Close" />
+	    <item command="close_all_files" name="Close All" />
+	    <separator />
+	    <menu name="Ca&pture">
+		<item command="screen_shot" name="Screen Shot" />
+		<item command="record_screen" name="Record Screen" />
+	    </menu>
+	    <menu name="Sessions">
+		<item command="load_session" name="Load Session" />
+		<item command="save_session" name="Save Session" />
+	    </menu>
+	    <separator />
+	    <item command="about" name="About" />
+	    <item command="exit" name="E&xit" />
+	</menu>
+	<menu name="&Edit">
+	    <item command="undo" name="&Undo" />
+	    <item command="redo" name="&Redo" />
+	    <separator />
+	    <item command="cut" name="Cu&t" />
+	    <item command="copy" name="&Copy" />
+	    <item command="paste" name="&Paste" />
+	    <item command="clear" name="C&lear" />
+	    <separator />
+	    <item command="quick_move" name="Quick &Move" />
+	    <item command="quick_copy" name="Quick C&opy" />
+	    <separator />
+	    <item command="flip_horizontal" name="Flip &Horizontal" />
+	    <item command="flip_vertical" name="Flip &Vertical" />
+	    <separator />
+	    <item command="replace_color" name="R&eplace Color" />
+	    <item command="invert_color" name="&Invert" />
+	</menu>
+	<menu name="&View">
+	    <item command="refresh" name="&Refresh" />
+	    <item command="configure_screen" name="Configure &Screen" />
+	    <item command="advanced_mode" name="&Advanced Mode" />
+	    <menu name="&Editor">
+		<item command="make_unique_editor" name="Make &Unique" />
+		<separator />
+		<item command="split_editor_vertically" name="Split &Vertically" />
+		<item command="split_editor_horizontally" name="Split &Horizontally" />
+		<separator />
+		<item command="close_editor" name="&Close" />
+	    </menu>
+	    <separator />
+	    <menu name="&Preview">
+		<item command="preview_fit_to_screen" name="&Fit to screen" />
+		<item command="preview_normal" name="&Normal" />
+		<item command="preview_tiled" name="&Tiled" />
+	    </menu>
+	</menu>
+	<menu name="Spr&ite">
+	    <item command="sprite_properties" name="&Properties" />
+	    <separator />
+	    <item command="duplicate_sprite" name="&Duplicate" />
+	    <item command="change_image_type" name="Image &Type" />
+	    <separator />
+	    <item command="crop_sprite" name="Cr&op" />
+	    <item command="auto_crop_sprite" name="&Auto Crop" />
+	</menu>
+	<menu name="&Layer" id="layer_popup">
+	    <item command="layer_properties" name="&Properties" />
+	    <separator />
+	    <item command="new_layer" name="&New" />
+	    <item command="new_layer_set" name="New &Set" />
+	    <item command="remove_layer" name="&Remove" />
+	    <separator />
+	    <item command="duplicate_layer" name="&Duplicate" />
+	    <item command="merge_down_layer" name="&Merge Down" />
+	    <item command="flatten_layers" name="&Flatten" />
+	    <item command="crop_layer" name="Cr&op" />
+	</menu>
+	<menu name="F&rame" id="frame_popup">
+	    <item command="frame_properties" name="&Properties" />
+	    <item command="remove_frame" name="&Remove" />
+	    <separator />
+	    <item command="new_frame" name="&New" />
+	    <item command="move_frame" name="&Move" />
+	    <item command="copy_frame" name="&Copy" />
+	    <item command="link_frame" name="&Link" />
+	    <separator />
+	    <item command="crop_frame" name="Cr&op" />
+	</menu>
+	<menu name="&Select">
+	    <item command="mask_all" name="&All" />
+	    <item command="deselect_mask" name="&Deselect" />
+	    <item command="reselect_mask" name="&Reselect" />
+	    <item command="invert_mask" name="&Inverse" />
+	    <separator />
+	    <item command="mask_by_color" name="&Color Range" />
+	    <separator />
+	    <item command="mask_repository" name="Repositor&y" />
+	    <item command="load_mask" name="&Load" />
+	    <item command="save_mask" name="&Save" />
+	</menu>
+	<menu name="&Tools">
+	    <menu name="&Drawing Tool">
+		<item command="configure_tools" name="&Configure" />
+		<separator />
+		<item command="marker_tool" name="&Marker" />
+		<item command="dots_tool" name="&Dots" />
+		<item command="pencil_tool" name="&Pencil" />
+		<item command="brush_tool" name="&Brush" />
+		<item command="spray_tool" name="&Spray" />
+		<item command="floodfill_tool" name="&Floodfill" />
+		<separator />
+		<item command="line_tool" name="&Line" />
+		<item command="rectangle_tool" name="&Rectangle" />
+		<item command="ellipse_tool" name="&Ellipse" />
+		<!-- <item name=#     "&Oval" command=#     "oval_tool" /> -->
+		<!-- <item name=#     "&Bezier" command=#     "bezier_tool" /> -->
+	    </menu>
+	    <item command="film_editor" name="&Film Editor" />
+	    <item command="palette_editor" name="&Palette Editor" />
+	    <separator />
+	    <menu name="F&X" id="fx_popup">
+		<item command="convolution_matrix" name="Convolution &Matrix" />
+		<item command="color_curve" name="&Color Curve" />
+		<separator />
+		<item command="despeckle" name="&Despeckle (median filter)" />
+	    </menu>
+	    <item command="draw_text" name="Draw &Text" />
+	    <item command="play_flic" name="Pla&y FLI/FLC File" />
+	    <item command="mapgen" name="&MapGen" />
+	    <item command="run_script" name="Run &Script" />
+	    <separator />
+	    <item command="tips" name="T&ips" />
+	    <item command="customize" name="&Customize" />
+	    <item command="options" name="&Options" />
+	</menu>
+	<item id="sprite_list" name="L&ist" />
+    </menu>
+</gui>

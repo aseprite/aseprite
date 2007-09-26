@@ -1,7 +1,6 @@
 High priority work
 ------------------
 
-- GUI using double buffering.
 - add support for PNG files.
 - ver por el nuevo load_font de Allegro.
 - borrar src/core/config.c
