@@ -35,34 +35,34 @@
 /* show the language selection dialog */
 void dialogs_select_language(bool force)
 {
-  bool select_language = get_config_bool ("Options", "SelectLanguage", TRUE);
+  bool select_language = get_config_bool("Options", "SelectLanguage", TRUE);
 
   if (force || select_language) {
-    JWidget window = jwindow_new ("Select Language");
-    JWidget box = jbox_new (JI_HORIZONTAL + JI_HOMOGENEOUS);
-    JWidget button_en = jbutton_new ("English");
-    JWidget button_es = jbutton_new ("Español");
+    JWidget window = jwindow_new("Select Language");
+    JWidget box = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
+    JWidget button_en = jbutton_new("English");
+    JWidget button_es = jbutton_new("Español");
     JWidget killer;
 
-    jwidget_add_child (window, box);
-    jwidget_add_child (box, button_en);
-    jwidget_add_child (box, button_es);
+    jwidget_add_child(window, box);
+    jwidget_add_child(box, button_en);
+    jwidget_add_child(box, button_es);
 
-    jwindow_open_fg (window);
-    killer = jwindow_get_killer (window);
+    jwindow_open_fg(window);
+    killer = jwindow_get_killer(window);
 
     /* en */
     if (killer == button_en) {
-      intl_set_lang ("en");
-      set_config_bool ("Options", "SelectLanguage", FALSE);
+      intl_set_lang("en");
+      set_config_bool("Options", "SelectLanguage", FALSE);
     }
     /* es */
     else if (killer == button_es) {
-      intl_set_lang ("es");
-      set_config_bool ("Options", "SelectLanguage", FALSE);
+      intl_set_lang("es");
+      set_config_bool("Options", "SelectLanguage", FALSE);
     }
 
-    jwidget_free (window);
+    jwidget_free(window);
   }
 }
 

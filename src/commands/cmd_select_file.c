@@ -20,6 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro/debug.h>
+#include <allegro/unicode.h>
+
 #include "jinete.h"
 
 #include "core/app.h"
@@ -28,6 +31,41 @@
 
 #endif
 
+bool command_enabled_select_file(const char *argument)
+{
+  if (argument) {
+    int sprite_id = ustrtol(argument, NULL, 10);
+    GfxObj *gfxobj = gfxobj_find(sprite_id);
+    return
+      gfxobj && gfxobj->type == GFXOBJ_SPRITE;
+  }
+  else
+    return TRUE;
+}
+
+bool command_selected_select_file(const char *argument)
+{
+  if (argument) {
+    int sprite_id = ustrtol(argument, NULL, 10);
+    GfxObj *gfxobj = gfxobj_find(sprite_id);
+    return
+      gfxobj && gfxobj->type == GFXOBJ_SPRITE &&
+      current_sprite == (Sprite *)gfxobj;
+  }
+  else
+    return current_sprite == NULL;
+}
+
 void command_execute_select_file(const char *argument)
 {
+  if (argument) {
+    int sprite_id = ustrtol(argument, NULL, 10);
+    GfxObj *gfxobj = gfxobj_find(sprite_id);
+    ASSERT(gfxobj != NULL);
+
+    sprite_show((Sprite *)gfxobj);
+  }
+  else {
+    sprite_show(NULL);
+  }
 }

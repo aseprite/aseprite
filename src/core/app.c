@@ -217,12 +217,6 @@ void app_loop(void)
     jwidget_add_child(box_tool_bar, tool_bar);
     jwidget_add_child(box_status_bar, status_bar);
 
-    /* layout */
-    if (!get_config_bool("Layout", "MenuBar", TRUE)) jwidget_hide(menu_bar);
-    if (!get_config_bool("Layout", "StatusBar", TRUE)) jwidget_hide(status_bar);
-    if (!get_config_bool("Layout", "ColorBar", TRUE)) jwidget_hide(color_bar);
-    if (!get_config_bool("Layout", "ToolBar", TRUE)) jwidget_hide(tool_bar);
-
     /* prepare the window */
     jwindow_remap(top_window);
 
@@ -318,12 +312,6 @@ void app_loop(void)
     if (is_rec_screen())
       rec_screen_off();
 
-    /* save layout */
-    set_config_bool("Layout", "MenuBar", !(menu_bar->flags & JI_HIDDEN));
-    set_config_bool("Layout", "StatusBar", !(status_bar->flags & JI_HIDDEN));
-    set_config_bool("Layout", "ColorBar", !(color_bar->flags & JI_HIDDEN));
-    set_config_bool("Layout", "ToolBar", !(tool_bar->flags & JI_HIDDEN));
-
     /* remove the root-menu from the menu-bar (because the rootmenu
        module should destroy it) */
     jmenubar_set_menu(menu_bar, NULL);
@@ -417,7 +405,7 @@ void app_realloc_sprite_list(void)
       usprintf(buf, "%d", clipboard->gfxobj.id);
 
     menuitem = menuitem_new(_("Clipboard"), cmd_select_file,
-			    clipboard ? buf: NULL);
+			    clipboard ? buf: "0");
 
 /*     if (!clipboard) */
 /*       jwidget_disable(menuitem); */
@@ -531,25 +519,6 @@ JWidget app_get_menu_bar(void) { return menu_bar; }
 JWidget app_get_status_bar(void) { return status_bar; }
 JWidget app_get_color_bar(void) { return color_bar; }
 JWidget app_get_tool_bar(void) { return tool_bar; }
-
-void app_switch(JWidget widget)
-{
-  JWidget parent = jwidget_get_parent(widget);
-
-  if (jwidget_is_visible(widget)) {
-    jwidget_hide(widget);
-    if (parent)
-      jwidget_hide(parent);
-  }
-  else {
-    jwidget_show(widget);
-    if (parent)
-      jwidget_show(parent);
-  }
-
-  jwindow_remap(top_window);
-  jwidget_dirty(top_window);
-}
 
 void app_default_status_bar_message(void)
 {

@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,13 +66,16 @@ void ase_config_exit(void)
 
 bool get_config_bool(const char *section, const char *name, bool value)
 {
-  return (ustrcmp(get_config_string(section, name, value ? "TRUE": "FALSE"),
-		  "TRUE") == 0) ? TRUE: FALSE;
+  const char *got = get_config_string(section, name, value ? "yes": "no");
+  return (got &&
+	  (ustricmp(got, "yes") == 0 ||
+	   ustricmp(got, "true") == 0 ||
+	   ustricmp(got, "1") == 0)) ? TRUE: FALSE;
 }
 
 void set_config_bool(const char *section, const char *name, bool value)
 {
-  set_config_string(section, name, value ? "TRUE": "FALSE");
+  set_config_string(section, name, value ? "yes": "no");
 }
 
 void get_config_rect(const char *section, const char *name, JRect rect)

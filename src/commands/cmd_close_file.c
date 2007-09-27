@@ -30,6 +30,12 @@
 
 #endif
 
+static bool close_current_sprite(void);
+
+/* ======================== */
+/* close_file               */
+/* ======================== */
+
 bool command_enabled_close_file(const char *argument)
 {
   return current_sprite != NULL;
@@ -37,16 +43,39 @@ bool command_enabled_close_file(const char *argument)
 
 void command_execute_close_file(const char *argument)
 {
+  close_current_sprite();
+}
+
+/* ======================== */
+/* close_all_files          */
+/* ======================== */
+
+bool command_enabled_close_all_files(const char *argument)
+{
+  return !jlist_empty(get_sprite_list());
+}
+
+void command_execute_close_all_files(const char *argument)
+{
+  while (close_current_sprite())
+    ;
+}
+
+/**
+ * Closes the current sprite, asking to the user if to save it if it's
+ * modified.
+ */
+static bool close_current_sprite(void)
+{
   Sprite *sprite = current_sprite;
 
   /* see if the sprite has changes */
   while (sprite_is_modified(sprite)) {
     /* ask what want to do the user with the changes in the sprite */
-    int ret = jalert("%s<<%s<<%s||%s",
-		     _("Warning"),
-		     _("Saving changes in:"),
+    int ret = jalert("%s<<%s<<%s||%s||%s||%s",
+		     _("Warning"), _("Saving changes in:"),
 		     get_filename(sprite->filename),
-		     _("&Save||&Discard||&Cancel"));
+		     _("&Save"), _("&Discard"), _("&Cancel"));
 
     if (ret == 1) {
       /* "save": save the changes */
@@ -54,7 +83,7 @@ void command_execute_close_file(const char *argument)
     }
     else if (ret != 2) {
       /* "cancel" or "ESC" */
-      return; /* we back doing nothing */
+      return FALSE; /* we back doing nothing */
     }
     else {
       /* "discard" */
@@ -65,4 +94,5 @@ void command_execute_close_file(const char *argument)
   /* closes the sprite */
   sprite_unmount(sprite);
   sprite_free(sprite);
+  return TRUE;
 }

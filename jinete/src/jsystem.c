@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/intern.h"
@@ -272,7 +271,7 @@ void jmouse_draw_cursor()
 
 void jmouse_hide()
 {
-  assert(mouse_scares >= 0);
+  ASSERT(mouse_scares >= 0);
   if (ji_screen == screen)
     scare_mouse();
   mouse_scares++;
@@ -280,7 +279,7 @@ void jmouse_hide()
 
 void jmouse_show()
 {
-  assert(mouse_scares > 0);
+  ASSERT(mouse_scares > 0);
   mouse_scares--;
   if (ji_screen == screen)
     unscare_mouse();
@@ -288,13 +287,13 @@ void jmouse_show()
 
 bool jmouse_is_hidden()
 {
-  assert(mouse_scares >= 0);
+  ASSERT(mouse_scares >= 0);
   return mouse_scares > 0;
 }
 
 bool jmouse_is_shown()
 {
-  assert(mouse_scares >= 0);
+  ASSERT(mouse_scares >= 0);
   return mouse_scares == 0;
 }
 

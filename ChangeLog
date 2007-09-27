@@ -1,4 +1,29 @@
+2007-09-27  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_drawing_tools.c: Added. All change of
+	drawing-tool is in this file.
+
+	* jinete/src/jaccel.c (jaccel_new_copy): Added to fix an error of
+	double freed (from 'menuitems' and from 'commands').
+
+	* src/commands/commands.c (command_reset_keys): Added to fix a
+	error of duplicate accelerators..
+
+	* src/commands/cmd_sprite_editor.c: Added with the four main
+	commands for the editor of sprites: close_editor,
+	make_unique_editor, split_editor_horizontally,
+	split_editor_vertically.
+
 2007-09-26  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_preview.c: Added.
+
+	* src/dialogs/viewspr.c: Removed.
+
+	* src/commands/cmd_advanced_mode.c (command_execute_advanced_mode):
+	Added a warning message.
+
+	* src/core/app.c (app_switch): Removed.
 
 	* src/commands/cmd_open_file.c (command_execute_open_file):
 	Added (based on openspr.lua).

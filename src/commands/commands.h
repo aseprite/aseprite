@@ -127,5 +127,6 @@ void command_execute(Command *command, const char *argument);
 
 bool command_is_key_pressed(Command *command, JMessage msg);
 void command_add_key(Command *command, const char *string);
+void command_reset_keys();
 
 #endif /* COMMANDS_COMMANDS_H */

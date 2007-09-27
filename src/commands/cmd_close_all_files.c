@@ -28,6 +28,28 @@
 
 #endif
 
+bool command_enabled_close_all_file(const char *argument)
+{
+  return !jlist_empty(get_sprite_list());
+}
+
 void command_execute_close_all_files(const char *argument)
 {
+  Sprite *sprite = get_first_sprite();
+  Sprite *clipboard = get_clipboard_sprite();
+
+  while (sprite) {
+    sprite = current_sprite;
+    
+    /* check if this sprite is modified */
+    if (sprite_is_modified(sprite) &&
+	(!clipboard || sprite->gfxobj.id != clipboard->gfxobj.id)) {
+      command_execute_close_file();
+      break;
+    }
+    sprite = get_next_sprite(sprite);
+  }
+
+  /* close the window */
+  jwindow_close(app_get_top_window(), 0);
 }

@@ -3,7 +3,6 @@ High priority work
 
 - add support for PNG files.
 - ver por el nuevo load_font de Allegro.
-- borrar src/core/config.c
 - search for XXX (XXXX is supposed to be high priority);
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);
@@ -41,8 +40,6 @@ High priority work
 - drawing tools:
   + real-spray;
   + Animator Pro like: oval, petal, rpoly, star, poly, spiral;
-- Add suppport to load old .ase files:
-  + I don't think so, nobody tell me "I need load an old .ase file!!!"
 
 Wish-list
 ---------

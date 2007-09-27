@@ -731,7 +731,6 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "dialogs/tips.h"
 #include "dialogs/toolconf.h"
 #include "dialogs/vectmap.h"
-#include "dialogs/viewspr.h"
 #include "file/file.h"
 #include "intl/intl.h"
 #include "modules/rootmenu.h"

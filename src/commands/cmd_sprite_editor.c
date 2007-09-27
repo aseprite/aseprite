@@ -20,14 +20,26 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "modules/editors.h"
 
 #endif
 
-void command_execute_line_tool(const char *argument)
+void command_execute_close_editor(const char *argument)
 {
+  close_editor(current_editor);
+}
+
+void command_execute_make_unique_editor(const char *argument)
+{
+  make_unique_editor(current_editor);
+}
+
+void command_execute_split_editor_horizontally(const char *argument)
+{
+  split_editor(current_editor, JI_HORIZONTAL);
+}
+
+void command_execute_split_editor_vertically(const char *argument)
+{
+  split_editor(current_editor, JI_VERTICAL);
 }

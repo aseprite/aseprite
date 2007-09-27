@@ -38,6 +38,9 @@
 #  include <stdio.h>
 #endif
 #include <allegro.h>
+#ifdef ALLEGRO_WINDOWS
+#include <winalleg.h>
+#endif
 
 #include "jinete.h"
 #include "jinete/intern.h"
@@ -1238,6 +1241,9 @@ void jwidget_hard_capture_mouse(JWidget widget)
 {
   if (!jmanager_get_capture()) {
     jmanager_set_capture(widget);
+#ifdef ALLEGRO_WINDOWS
+    SetCapture(win_get_window());
+#endif
 
     if (jmanager_get_capture() == widget)
       widget->flags |= JI_HARDCAPTURE;
@@ -1248,6 +1254,9 @@ void jwidget_release_mouse(JWidget widget)
 {
   if (jmanager_get_capture() == widget) {
     jmanager_free_capture();
+#ifdef ALLEGRO_WINDOWS
+    ReleaseCapture();
+#endif
 
     widget->flags &= ~JI_HARDCAPTURE;
   }

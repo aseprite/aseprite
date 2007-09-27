@@ -32,8 +32,8 @@
 
 #define CMD0(name) { #name, NULL, NULL, command_execute_##name, NULL }
 #define CMD1(name) { #name, command_enabled_##name, NULL, command_execute_##name, NULL }
-/* #define CMD2(name) { #name, NULL, NULL, NULL, NULL } */
-/* #define CMD3(name) { #name, NULL, NULL, NULL, NULL } */
+#define CMD2(name,name2) { #name, command_enabled_##name2, NULL, command_execute_##name, NULL }
+#define CMD3(name) { #name, command_enabled_##name, command_selected_##name, command_execute_##name, NULL }
 /* #define CMD4(name) { #name, NULL, NULL, NULL, NULL } */
 
 void command_execute_about(const char *argument);
@@ -42,6 +42,7 @@ void command_execute_auto_crop_sprite(const char *argument);
 void command_execute_brush_tool(const char *argument);
 void command_execute_change_image_type(const char *argument);
 void command_execute_clear(const char *argument);
+bool command_enabled_close_all_files(const char *argument);
 void command_execute_close_all_files(const char *argument);
 void command_execute_close_editor(const char *argument);
 bool command_enabled_close_file(const char *argument);
@@ -97,11 +98,9 @@ void command_execute_palette_editor(const char *argument);
 void command_execute_paste(const char *argument);
 void command_execute_pencil_tool(const char *argument);
 void command_execute_play_flic(const char *argument);
-bool command_enabled_preview_fit_to_screen(const char *argument);
+bool command_enabled_preview(const char *argument);
 void command_execute_preview_fit_to_screen(const char *argument);
-bool command_enabled_preview_normal(const char *argument);
 void command_execute_preview_normal(const char *argument);
-bool command_enabled_preview_tiled(const char *argument);
 void command_execute_preview_tiled(const char *argument);
 void command_execute_quick_copy(const char *argument);
 void command_execute_quick_move(const char *argument);
@@ -119,6 +118,8 @@ void command_execute_save_file_as(const char *argument);
 void command_execute_save_mask(const char *argument);
 void command_execute_save_session(const char *argument);
 void command_execute_screen_shot(const char *argument);
+bool command_enabled_select_file(const char *argument);
+bool command_selected_select_file(const char *argument);
 void command_execute_select_file(const char *argument);
 void command_execute_split_editor_horizontally(const char *argument);
 void command_execute_split_editor_vertically(const char *argument);
@@ -133,7 +134,7 @@ static Command commands[] = {
   { CMD_SAVE_FILE, NULL, NULL, NULL, NULL },
   { CMD_SAVE_FILE_AS, NULL, NULL, NULL, NULL },
   CMD1(close_file),
-  { CMD_CLOSE_ALL_FILES, NULL, NULL, NULL, NULL },
+  CMD1(close_all_files),
   { CMD_SCREEN_SHOT, NULL, NULL, NULL, NULL },
   { CMD_RECORD_SCREEN, NULL, NULL, NULL, NULL },
   { CMD_LOAD_SESSION, NULL, NULL, NULL, NULL },
@@ -155,13 +156,13 @@ static Command commands[] = {
   { CMD_REFRESH, NULL, NULL, NULL, NULL },
   { CMD_CONFIGURE_SCREEN, NULL, NULL, NULL, NULL },
   CMD0(advanced_mode),
-  { CMD_MAKE_UNIQUE_EDITOR, NULL, NULL, NULL, NULL },
-  { CMD_SPLIT_EDITOR_VERTICALLY, NULL, NULL, NULL, NULL },
-  { CMD_SPLIT_EDITOR_HORIZONTALLY, NULL, NULL, NULL, NULL },
-  { CMD_CLOSE_EDITOR, NULL, NULL, NULL, NULL },
-  CMD1(preview_tiled),
-  CMD1(preview_normal),
-  CMD1(preview_fit_to_screen),
+  CMD0(make_unique_editor),
+  CMD0(split_editor_vertically),
+  CMD0(split_editor_horizontally),
+  CMD0(close_editor),
+  CMD2(preview_tiled,preview),
+  CMD2(preview_normal,preview),
+  CMD2(preview_fit_to_screen,preview),
   { CMD_SPRITE_PROPERTIES, NULL, NULL, NULL, NULL },
   { CMD_DUPLICATE_SPRITE, NULL, NULL, NULL, NULL },
   { CMD_CHANGE_IMAGE_TYPE, NULL, NULL, NULL, NULL },
@@ -212,6 +213,7 @@ static Command commands[] = {
   CMD0(tips),
   { CMD_CUSTOMIZE, NULL, NULL, NULL, NULL },
   { CMD_OPTIONS, NULL, NULL, NULL, NULL },
+  CMD3(select_file),
   { NULL, NULL, NULL, NULL, NULL }
 
 };
@@ -287,4 +289,16 @@ void command_add_key(Command *command, const char *string)
 
   usprintf(buf, "<%s>", string);
   jaccel_add_keys_from_string(command->accel, buf);
+}
+
+void command_reset_keys()
+{
+  Command *cmd;
+
+  for (cmd=commands; cmd->name; cmd++) {
+    if (cmd->accel) {
+      jaccel_free(cmd->accel);
+      cmd->accel = NULL;
+    }
+  }
 }

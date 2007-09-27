@@ -23,7 +23,6 @@
 #include "core/core.h"
 #include "core/modules.h"
 #include "effect/effect.h"
-#include "modules/chkmthds.h"
 #include "modules/color.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -65,7 +64,6 @@ static Module module[] =
   DEF_MODULE(render,		REQUIRE_INTERFACE),
   DEF_MODULE(gui,		REQUIRE_INTERFACE),
   DEF_MODULE(recent,		REQUIRE_INTERFACE),
-  DEF_MODULE(check_methods,	REQUIRE_INTERFACE),
   DEF_MODULE(rootmenu,		REQUIRE_INTERFACE),
   DEF_MODULE(editors,		REQUIRE_INTERFACE),
 };

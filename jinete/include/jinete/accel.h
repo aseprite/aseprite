@@ -37,6 +37,7 @@
 JI_BEGIN_DECLS
 
 JAccel jaccel_new(void);
+JAccel jaccel_new_copy(JAccel accel);
 void jaccel_free(JAccel accel);
 
 void jaccel_add_key(JAccel accel, int shifts, int ascii, int scancode);

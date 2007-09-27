@@ -208,9 +208,19 @@ void jmenuitem_set_submenu(JWidget widget, JWidget widget_menu)
   menuitem->submenu = widget_menu;
 }
 
+/**
+ * Changes the keyboard shortcuts (accelerators) for the specified
+ * widget (a menu-item).
+ *
+ * @warning The specified @a accel will be freed automatically when
+ *          the menu-item'll receive JM_DESTROY message.
+ */
 void jmenuitem_set_accel(JWidget widget, JAccel accel)
 {
   MenuItem *menuitem = MITEM (widget);
+
+  if (menuitem->accel)
+    jaccel_free(menuitem->accel);
 
   menuitem->accel = accel;
 }

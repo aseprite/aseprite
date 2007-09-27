@@ -30,4 +30,9 @@
 
 void command_execute_split_editor_horizontally(const char *argument)
 {
+    "Make &Unique" = always "make_unique_editor(current_editor)" <Ctrl+1> ;
+    ----
+    "Split &Vertically" = always "split_editor(current_editor, JI_VERTICAL)" <Ctrl+2> ;
+    "Split &Horizontally" = always "split_editor(current_editor, JI_HORIZONTAL)" <Ctrl+3> ;
+    ----
 }

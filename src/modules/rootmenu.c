@@ -31,7 +31,6 @@
 #include "core/core.h"
 #include "core/dirs.h"
 #include "intl/intl.h"
-#include "modules/chkmthds.h"
 #include "modules/rootmenu.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
@@ -45,7 +44,6 @@ static JWidget recent_list_menuitem;
 static JWidget layer_popup_menuitem;
 static JWidget frame_popup_menuitem;
 static JWidget filters_popup_menuitem;
-/* static JWidget accel_menuitem[ACCEL_MAX]; */
 
 static JWidget convert_xmlelem_to_menu(JXmlElem elem);
 static JWidget convert_xmlelem_to_menuitem(JXmlElem elem);
@@ -66,6 +64,7 @@ void exit_module_rootmenu(void)
   frame_popup_menuitem = 0;
   filters_popup_menuitem = 0;
 
+  command_reset_keys();
   jwidget_free(root_menu);
 }
 
@@ -80,8 +79,10 @@ int load_root_menu(void)
     jmenubar_set_menu(app_get_menu_bar(), NULL);
 
   /* destroy `root-menu' if it exists */
-  if (root_menu)
+  if (root_menu) {
+    command_reset_keys();
     jwidget_free(root_menu);
+  }
 
   /* create a new empty-menu */
   root_menu = NULL;
@@ -209,19 +210,6 @@ JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
 JWidget get_layer_popup_menuitem(void) { return layer_popup_menuitem; }
 JWidget get_frame_popup_menuitem(void) { return frame_popup_menuitem; }
 
-/* int check_for_accel(int accel_type, JMessage msg) */
-/* { */
-/*   if (accel_menuitem[accel_type]) { */
-/*     JAccel accel = jmenuitem_get_accel(accel_menuitem[accel_type]); */
-/*     if (accel) */
-/*       return jaccel_check(accel, */
-/* 			  msg->any.shifts, */
-/* 			  msg->key.ascii, */
-/* 			  msg->key.scancode); */
-/*   } */
-/*   return FALSE; */
-/* } */
-
 void show_fx_popup_menu(void)
 {
   if (is_interactive() &&
@@ -328,7 +316,7 @@ static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *comm
 
     if (jwidget_get_type(menuitem) == JI_MENUITEM) {
       if (menuitem_get_command(menuitem) == command) {
-	jmenuitem_set_accel(menuitem, command->accel);
+	jmenuitem_set_accel(menuitem, jaccel_new_copy(command->accel));
       }
 
       submenu = jmenuitem_get_submenu(menuitem);

@@ -61,6 +61,24 @@ JAccel jaccel_new(void)
   return accel;
 }
 
+JAccel jaccel_new_copy(JAccel accel)
+{
+  KeyCombo *key;
+  JAccel copy;
+  JLink link;
+
+  copy = jaccel_new();
+  if (!copy)
+    return NULL;
+
+  JI_LIST_FOR_EACH(accel->key_list, link) {
+    key = (KeyCombo *)link->data;
+    jaccel_add_key(copy, key->shifts, key->ascii, key->scancode);
+  }
+
+  return copy;
+}
+
 void jaccel_free(JAccel accel)
 {
   JLink link;

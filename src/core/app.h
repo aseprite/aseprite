@@ -38,8 +38,6 @@ JWidget app_get_status_bar(void);
 JWidget app_get_color_bar(void);
 JWidget app_get_tool_bar(void);
 
-void app_switch(JWidget widget);
-
 void app_default_status_bar_message(void);
 
 #endif /* CORE_APP_H */
