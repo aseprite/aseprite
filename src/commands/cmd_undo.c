@@ -20,14 +20,21 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 
 #endif
 
+bool command_enabled_undo(const char *argument)
+{
+  return current_sprite != NULL && undo_can_undo(current_sprite->undo);
+}
+
 void command_execute_undo(const char *argument)
 {
+  undo_undo(current_sprite->undo);
+  sprite_generate_mask_boundaries(current_sprite);
+  GUI_Refresh(current_sprite);
 }

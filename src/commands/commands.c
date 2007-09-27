@@ -106,6 +106,7 @@ void command_execute_quick_copy(const char *argument);
 void command_execute_quick_move(const char *argument);
 void command_execute_record_screen(const char *argument);
 void command_execute_rectangle_tool(const char *argument);
+bool command_enabled_redo(const char *argument);
 void command_execute_redo(const char *argument);
 void command_execute_refresh(const char *argument);
 void command_execute_remove_frame(const char *argument);
@@ -127,6 +128,7 @@ void command_execute_split_editor_vertically(const char *argument);
 void command_execute_spray_tool(const char *argument);
 void command_execute_sprite_properties(const char *argument);
 void command_execute_tips(const char *argument);
+bool command_enabled_undo(const char *argument);
 void command_execute_undo(const char *argument);
 
 static Command commands[] = {
@@ -142,8 +144,8 @@ static Command commands[] = {
   { CMD_SAVE_SESSION, NULL, NULL, NULL, NULL },
   CMD0(about),
   CMD0(exit),
-  { CMD_UNDO, NULL, NULL, NULL, NULL },
-  { CMD_REDO, NULL, NULL, NULL, NULL },
+  CMD1(undo),
+  CMD1(redo),
   { CMD_CUT, NULL, NULL, NULL, NULL },
   { CMD_COPY, NULL, NULL, NULL, NULL },
   { CMD_PASTE, NULL, NULL, NULL, NULL },
