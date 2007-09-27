@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.6
+version=0.9
 distdir=ase-$version
 
 freetype_files="jinete/freetype/ChangeLog			     \
@@ -177,7 +177,7 @@ exit
 ######################################################################
 # Files for binary distributions
 
-function def_common_files ()
+function def_common_files()
 {
   txt_files="							     \
 $1/*.txt							     \

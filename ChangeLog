@@ -1,5 +1,12 @@
 2007-09-27  David A. Capello  <dacap@users.sourceforge.net>
 
+	* jinete/src/jsystem.c (jmouse_poll): Now (in Windows) we continue
+	getting mouse feedback even when the cursor is outside of the
+	window.
+
+	* src/commands/cmd_close_file.c (command_execute_close_all_files):
+	Fixed.
+
 	* src/commands/cmd_drawing_tools.c: Added. All change of
 	drawing-tool is in this file.
 
@@ -15,6 +22,10 @@
 	split_editor_vertically.
 
 2007-09-26  David A. Capello  <dacap@users.sourceforge.net>
+
+	* jinete/src/jwidget.c (jwidget_hard_capture_mouse): Added usage
+	of SetCapture() (in Windows, to really capture the mouse in OS
+	level).
 
 	* src/commands/cmd_preview.c: Added.
 

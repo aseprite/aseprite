@@ -2,17 +2,18 @@
 NEWS
 ===================================
 
-0.6
+0.9
 ---
 
-+ New XML format for the menus. Restructured all the menus (more user
-  friendly?)
-+ Added menu customization through UI (Tools/Customize).
++ Restructured all the menus (more user friendly options).
++ New XML format for the menus.
 - Removed menu scripting customization.
 - Removed screen saver.
-+ GUI enhanced: more borders for windows, and more spacing between
-  widgets.
++ GUI enhanced:
+  + more borders for windows and more spacing between widgets.
+  + better mouse behavior (in Windows).
 + Added support for PNG files (through libpng).
++ Finished the support for ICO files.
 + Finally screen scaling supported (with double-buffering). This means
   that you can use a screen of 320x240 between a window of 640x480
   (screen-scaling x2). This is the new default video mode for ASE.

@@ -30,4 +30,5 @@
 
 void command_execute_customize(const char *argument)
 {
+  jalert("Customize<<This functionality will be available in ASE 1.0||&OK");
 }

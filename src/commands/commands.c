@@ -114,6 +114,7 @@ void command_execute_replace_color(const char *argument);
 void command_execute_reselect_mask(const char *argument);
 void command_execute_run_script(const char *argument);
 void command_execute_save_file(const char *argument);
+bool command_enabled_save_file_as(const char *argument);
 void command_execute_save_file_as(const char *argument);
 void command_execute_save_mask(const char *argument);
 void command_execute_save_session(const char *argument);
@@ -132,7 +133,7 @@ static Command commands[] = {
   CMD0(new_file),
   CMD0(open_file),
   { CMD_SAVE_FILE, NULL, NULL, NULL, NULL },
-  { CMD_SAVE_FILE_AS, NULL, NULL, NULL, NULL },
+  CMD1(save_file_as),
   CMD1(close_file),
   CMD1(close_all_files),
   { CMD_SCREEN_SHOT, NULL, NULL, NULL, NULL },
@@ -211,8 +212,8 @@ static Command commands[] = {
   { CMD_MAPGEN, NULL, NULL, NULL, NULL },
   { CMD_RUN_SCRIPT, NULL, NULL, NULL, NULL },
   CMD0(tips),
-  { CMD_CUSTOMIZE, NULL, NULL, NULL, NULL },
-  { CMD_OPTIONS, NULL, NULL, NULL, NULL },
+  CMD0(customize),
+  CMD0(options),
   CMD3(select_file),
   { NULL, NULL, NULL, NULL, NULL }
 

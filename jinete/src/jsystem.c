@@ -30,6 +30,9 @@
  */
 
 #include <allegro.h>
+#ifdef ALLEGRO_WINDOWS
+#include <winalleg.h>
+#endif
 
 #include "jinete/intern.h"
 #include "jinete/manager.h"
@@ -78,6 +81,7 @@ static volatile int click_mouse_b = 0;
 static void set_cursor(BITMAP *bmp, int x, int y);
 static void clock_inc(void);
 static void check_click(void);
+static void update_mouse_position(void);
 
 static void clock_inc(void)
 {
@@ -297,8 +301,11 @@ bool jmouse_is_shown()
   return mouse_scares == 0;
 }
 
-/* Returns TRUE if the mouse moved.  */
-
+/**
+ * Updates the mouse information (position, wheel and buttons).
+ * 
+ * @return Returns TRUE if the mouse moved.
+ */
 bool jmouse_poll(void)
 {
   m_b[1] = m_b[0];
@@ -311,25 +318,11 @@ bool jmouse_poll(void)
   m_b[0] = mouse_b;
   m_z[0] = mouse_z;
 
-  if (ji_screen == screen) {
-    m_x[0] = mouse_x;
-    m_y[0] = mouse_y;
-  }
-  else {
-    m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
-    m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
-  }
+  update_mouse_position();
 
   if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
     poll_mouse();
-    if (ji_screen == screen) {
-      m_x[0] = mouse_x;
-      m_y[0] = mouse_y;
-    }
-    else {
-      m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
-      m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
-    }
+    update_mouse_position();
     moved = TRUE;
   }
 
@@ -409,3 +402,55 @@ void jmouse_set_click_level(int level)
     click_mouse_b = m_b[0];
   }
 }
+
+static void update_mouse_position(void)
+{
+  if (ji_screen == screen) {
+    m_x[0] = mouse_x;
+    m_y[0] = mouse_y;
+  }
+  else {
+    m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
+    m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
+  }
+
+#ifdef ALLEGRO_WINDOWS
+  /* this help us (in windows) to get mouse feedback when we capture
+     the mouse but we are outside the Allegro window */
+  {
+    POINT pt;
+    RECT rc;
+
+    if (GetCursorPos(&pt) && GetClientRect(win_get_window(), &rc)) {
+      MapWindowPoints(win_get_window(), NULL, (POINT *)&rc, 2);
+
+      if (!PtInRect(&rc, pt)) {
+	/* if the mouse is free we can hide the cursor putting the
+	   mouse outside the screen (right-bottom corder) */
+	if (!jmanager_get_capture()) {
+	  m_x[0] = JI_SCREEN_W+focus_x;
+	  m_y[0] = JI_SCREEN_H+focus_y;
+	}
+	/* if the mouse is captured we can put it in the edges of the screen */
+	else {
+	  pt.x -= rc.left;
+	  pt.y -= rc.top;
+
+	  if (ji_screen == screen) {
+	    m_x[0] = pt.x;
+	    m_y[0] = pt.y;
+	  }
+	  else {
+	    m_x[0] = JI_SCREEN_W * pt.x / SCREEN_W;
+	    m_y[0] = JI_SCREEN_H * pt.y / SCREEN_H;
+	  }
+
+	  m_x[0] = MID(0, m_x[0], JI_SCREEN_W-1);
+	  m_y[0] = MID(0, m_y[0], JI_SCREEN_H-1);
+	}
+      }
+    }
+  }
+#endif
+}
+

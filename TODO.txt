@@ -44,6 +44,7 @@ High priority work
 Wish-list
 ---------
 
+- Add menu customization through UI (Tools/Customize).
 - Mateusz Czaplinski ideas:
   + when move selections, will be good the possibility to see relative
     position from the starting point of movement;

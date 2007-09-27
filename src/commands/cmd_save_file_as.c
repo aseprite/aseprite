@@ -20,14 +20,73 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include <allegro.h>
 
-#include "core/app.h"
+#include "jinete/alert.h"
+
+#include "console/console.h"
+/* #include "core/app.h" */
+#include "dialogs/filesel.h"
+#include "file/file.h"
+#include "modules/recent.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
+bool command_enabled_save_file_as(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_save_file_as(const char *argument)
 {
+  char filename[4096];
+  char *newfilename;
+  int ret;
+
+  ustrcpy(filename, current_sprite->filename);
+		
+  for (;;) {
+    newfilename = GUI_FileSelect(_("Save Sprite"), filename,
+				 get_writeable_extensions());
+    if (!newfilename)
+      return;
+    ustrcpy(filename, newfilename);
+    jfree(newfilename);
+
+    /* does the file exist? */
+    if (exists(filename)) {
+      /* ask if the user wants overwrite the file? */
+      ret = jalert("%s<<%s<<%s||%s||%s||%s",
+		   _("Warning"),
+		   _("File exists, overwrite it?"),
+		   get_filename(filename),
+		   _("&Yes"), _("&No"), _("&Cancel"));
+    }
+    else
+      break;
+
+    /* "yes": we must continue with the operation... */
+    if (ret == 1)
+      break;
+    /* "cancel" or <esc> per example: we back doing nothing */
+    else if (ret != 2)
+      return;
+
+    /* "no": we must back to select other file-name */
+  }
+
+  sprite_set_filename(current_sprite, filename);
+  rebuild_sprite_list();
+
+  if (sprite_save(current_sprite) == 0) {
+    recent_file(filename);
+    sprite_was_saved(current_sprite);
+  }
+  else {
+    unrecent_file(filename);
+    console_printf("%s: %s", _("Error saving sprite file"), filename);
+  }
 }

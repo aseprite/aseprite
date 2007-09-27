@@ -57,7 +57,11 @@ bool command_enabled_close_all_files(const char *argument)
 
 void command_execute_close_all_files(const char *argument)
 {
-  while (close_current_sprite())
+  if (!current_sprite)
+    sprite_show(get_first_sprite());
+
+  while (current_sprite != NULL &&
+	 close_current_sprite())
     ;
 }
 
