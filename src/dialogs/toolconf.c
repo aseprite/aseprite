@@ -295,8 +295,10 @@ static int set_grid_button_select_hook(JWidget widget, int user_data)
   Sprite *sprite = current_sprite;
 
   if (sprite && sprite->mask && sprite->mask->bitmap) {
-    JRect rect = jrect_new(sprite->mask->x, sprite->mask->y,
-			   sprite->mask->w, sprite->mask->h);
+    JRect rect = jrect_new(sprite->mask->x,
+			   sprite->mask->y,
+			   sprite->mask->x+sprite->mask->w,
+			   sprite->mask->y+sprite->mask->h);
     set_grid(rect);
     jrect_free(rect);
 
