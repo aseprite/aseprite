@@ -1,5 +1,11 @@
 2007-09-30  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/commands/cmd_sprite_properties.c (command_execute_sprite_properties): Done.
+
+	* src/dialogs/dfrlen.c: Removed (all in cmd_sprite_properties).
+
+	* data/scripts/sprprop.lua: Removed.
+
 	* data/scripts/edit.lua: Removed.
 
 	* src/commands/cmd_refresh.c (command_execute_refresh): Added.

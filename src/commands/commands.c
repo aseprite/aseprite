@@ -81,6 +81,7 @@ void command_execute_preview_fit_to_screen(const char *argument);
 void command_execute_preview_normal(const char *argument);
 void command_execute_preview_tiled(const char *argument);
 /* sprite */
+bool command_enabled_sprite_properties(const char *argument);
 void command_execute_sprite_properties(const char *argument);
 void command_execute_duplicate_sprite(const char *argument);
 void command_execute_change_image_type(const char *argument);
@@ -194,7 +195,7 @@ static Command commands[] = {
   CMD_EXE_ENA2(preview_tiled, preview),
   CMD_EXE_ENA2(preview_normal, preview),
   CMD_EXE_ENA2(preview_fit_to_screen, preview),
-  { CMD_SPRITE_PROPERTIES, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(sprite_properties),
   { CMD_DUPLICATE_SPRITE, NULL, NULL, NULL, NULL },
   { CMD_CHANGE_IMAGE_TYPE, NULL, NULL, NULL, NULL },
   { CMD_CROP_SPRITE, NULL, NULL, NULL, NULL },

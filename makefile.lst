@@ -83,7 +83,6 @@ ASE_SOURCES =					\
 	src/core/modules.c			\
 	src/dialogs/canvasze.c			\
 	src/dialogs/colsel.c			\
-	src/dialogs/dfrlen.c			\
 	src/dialogs/dmapgen.c			\
 	src/dialogs/dpaledit.c			\
 	src/dialogs/drawtext.c			\

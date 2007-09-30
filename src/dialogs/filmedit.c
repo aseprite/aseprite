@@ -29,7 +29,6 @@
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
-#include "dialogs/dfrlen.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
@@ -638,6 +637,7 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	/* show the dialog to change the frlen (frame duration time)? */
 	if (msg->mouse.y < FRMSIZE) {
 	  jwidget_release_mouse (widget);
+	  /* TODO remove this, make a better UI */
 	  dialogs_frame_length(current_sprite->frpos);
 	  jwidget_dirty(widget);
 	  return TRUE;

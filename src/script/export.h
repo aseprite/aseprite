@@ -290,7 +290,6 @@ void dialogs_color_curve(void);
 void dialogs_convolution_matrix(void);
 void dialogs_draw_text(void);
 void switch_between_film_and_sprite_editor(void);
-void dialogs_frame_length (int frpos);
 void dialogs_invert_color(void);
 void dialogs_mapgen(void);
 void dialogs_mask_color(void);

@@ -717,7 +717,6 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #ifndef USE_PRECOMPILED_HEADER
 
 #include "dialogs/canvasze.h"
-#include "dialogs/dfrlen.h"
 #include "dialogs/dmapgen.h"
 #include "dialogs/drawtext.h"
 #include "dialogs/effect.h"
