@@ -27,11 +27,13 @@
 #include "jinete/list.h"
 
 #include "console/console.h"
+#include "core/app.h"
 #include "core/core.h"
 #include "file/file.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "raster/raster.h"
+#include "widgets/statebar.h"
 
 #endif
 
@@ -250,7 +252,7 @@ Sprite *sprite_load(const char *filename)
 		  get_filename(filename)) != 1)) {
 	/* if the user replies "Skip", we need just one file name */
 	while (jlist_length(file_names) > 1)
-	  jlist_delete_link (file_names, jlist_last (file_names));
+	  jlist_delete_link(file_names, jlist_last(file_names));
       }
     }
 
@@ -281,13 +283,13 @@ Sprite *sprite_load(const char *filename)
 	/* error reading the first frame */
 	if ((!sprite) || (!file_sequence.last_frame)) {
 	  if (file_sequence.last_image)
-	    image_free (file_sequence.last_image);
+	    image_free(file_sequence.last_image);
 
 	  if (file_sequence.last_frame)
-	    frame_free (file_sequence.last_frame);
+	    frame_free(file_sequence.last_frame);
 
 	  if (file_sequence.sprite) {
-	    sprite_free (file_sequence.sprite);
+	    sprite_free(file_sequence.sprite);
 	    file_sequence.sprite = NULL;
 	  }
 
@@ -296,10 +298,10 @@ Sprite *sprite_load(const char *filename)
 	/* read ok */
 	else {
 	  /* add the keyframe */
-	  SEQUENCE_IMAGE ();
+	  SEQUENCE_IMAGE();
 
 	  /* the first palette will be the palette to use */
-/* 	  memcpy (first_palette, file_palette, sizeof (PALETTE)); */
+/* 	  memcpy(first_palette, file_palette, sizeof(PALETTE)); */
 	}
       }
       /* for other frames */
@@ -333,10 +335,10 @@ Sprite *sprite_load(const char *filename)
 	}
       }
 
-      if (frames > 1)
-	do_progress (c);
-
       c++;
+
+      if (frames > 1)
+	do_progress(c);
     }
 
     if (frames > 1)
@@ -375,6 +377,7 @@ Sprite *sprite_load(const char *filename)
 
     /* set the filename */
     sprite_set_filename(sprite, filename);
+    sprite_mark_as_saved(sprite);
 
     rebuild_sprite_list();
   }
@@ -485,17 +488,17 @@ int sprite_save(Sprite *sprite)
   }
 
   /* show the confirmation alert */
-  if (ugetc (buf)) {
-    if (is_interactive ()) {
+  if (ugetc(buf)) {
+    if (is_interactive()) {
       if (fatal)
-	ret = jalert (_("Error<<File type \"%s\" doesn't support:%s"
-			"||&Close"),
-		      file->name, buf);
+	ret = jalert(_("Error<<File type \"%s\" doesn't support:%s"
+		       "||&Close"),
+		     file->name, buf);
       else
-	ret = jalert (_("Warning<<File type \"%s\" doesn't support:%s"
-			"<<Do you want continue?"
-			"||&Yes||&No"),
-		      file->name, buf);
+	ret = jalert(_("Warning<<File type \"%s\" doesn't support:%s"
+		       "<<Do you want continue?"
+		       "||&Yes||&No"),
+		     file->name, buf);
 
       if ((fatal) || (ret != 1))
 	return 0;
@@ -548,15 +551,15 @@ int sprite_save(Sprite *sprite)
 
 	for (sprite->frpos=0; sprite->frpos<sprite->frames; sprite->frpos++) {
 	  /* draw all the sprite in this frame in the image */
-	  image_clear (image, 0);
-	  sprite_render (sprite, image, 0, 0);
+	  image_clear(image, 0);
+	  sprite_render(sprite, image, 0, 0);
 
 	  /* get the name for this image */
-	  usprintf (buf, "%s%0*d%s", left, width, start_from+sprite->frpos, right);
+	  usprintf(buf, "%s%0*d%s", left, width, start_from+sprite->frpos, right);
 
 	  /* save the image */
 	  file_sequence.image = image;
-	  ustrcpy (sprite->filename, buf);
+	  ustrcpy(sprite->filename, buf);
 
 	  palette_copy(file_palette, sprite_get_palette(sprite, sprite->frpos));
 
@@ -568,10 +571,10 @@ int sprite_save(Sprite *sprite)
 	  if (ret != 0)
 	    break;
 
-	  do_progress (sprite->frpos);
+	  do_progress(sprite->frpos);
 	}
 
-	del_progress ();
+	del_progress();
       }
 
       /* destroy the image */
@@ -593,6 +596,9 @@ int sprite_save(Sprite *sprite)
 
   if (ret != 0)
     console_printf(_("Error saving \"%s\"\n"), sprite->filename);
+  else
+    status_bar_set_text(app_get_status_bar(), 1000,
+			"File saved: %s", get_filename(sprite->filename));
 
   return ret;
 }

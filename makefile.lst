@@ -21,7 +21,6 @@ ASE_SOURCES =					\
 	src/commands/cmd_crop_frame.c		\
 	src/commands/cmd_crop_layer.c		\
 	src/commands/cmd_crop_sprite.c		\
-	src/commands/cmd_customize.c		\
 	src/commands/cmd_cut.c			\
 	src/commands/cmd_deselect_mask.c	\
 	src/commands/cmd_despeckle.c		\
@@ -41,11 +40,9 @@ ASE_SOURCES =					\
 	src/commands/cmd_layer_properties.c	\
 	src/commands/cmd_link_frame.c		\
 	src/commands/cmd_load_mask.c		\
-	src/commands/cmd_load_session.c		\
 	src/commands/cmd_mapgen.c		\
 	src/commands/cmd_mask_all.c		\
 	src/commands/cmd_mask_by_color.c	\
-	src/commands/cmd_mask_repository.c	\
 	src/commands/cmd_merge_down_layer.c	\
 	src/commands/cmd_move_frame.c		\
 	src/commands/cmd_new_file.c		\
@@ -71,7 +68,6 @@ ASE_SOURCES =					\
 	src/commands/cmd_save_file.c		\
 	src/commands/cmd_save_file_as.c		\
 	src/commands/cmd_save_mask.c		\
-	src/commands/cmd_save_session.c		\
 	src/commands/cmd_screen_shot.c		\
 	src/commands/cmd_select_file.c		\
 	src/commands/cmd_sprite_properties.c	\
@@ -85,7 +81,6 @@ ASE_SOURCES =					\
 	src/core/core.c				\
 	src/core/dirs.c				\
 	src/core/modules.c			\
-	src/core/shutdown.c			\
 	src/dialogs/canvasze.c			\
 	src/dialogs/colsel.c			\
 	src/dialogs/dfrlen.c			\
@@ -101,7 +96,6 @@ ASE_SOURCES =					\
 	src/dialogs/filmedit.c			\
 	src/dialogs/gfxsel.c			\
 	src/dialogs/maskcol.c			\
-	src/dialogs/maskrepo.c			\
 	src/dialogs/minipal.c			\
 	src/dialogs/options.c			\
 	src/dialogs/playfli.c			\
@@ -109,7 +103,6 @@ ASE_SOURCES =					\
 	src/dialogs/repo.c			\
 	src/dialogs/scrsaver.c			\
 	src/dialogs/tips.c			\
-	src/dialogs/toolconf.c			\
 	src/dialogs/vectmap.c			\
 	src/effect/colcurve.c			\
 	src/effect/convmatr.c			\
@@ -176,8 +169,6 @@ ASE_SOURCES =					\
 	src/util/pic_file.c			\
 	src/util/quantize.c			\
 	src/util/recscr.c			\
-	src/util/scrshot.c			\
-	src/util/session.c			\
 	src/util/setgfx.c			\
 	src/util/thmbnail.c			\
 	src/widgets/colbar.c			\

@@ -20,14 +20,21 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/base.h"
 
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "util/recscr.h"
 
 #endif
 
+bool command_checked_record_screen(const char *argument)
+{
+  return is_rec_screen();
+}
+
 void command_execute_record_screen(const char *argument)
 {
+  if (is_rec_screen())
+    rec_screen_off();
+  else
+    rec_screen_on();
 }

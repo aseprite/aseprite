@@ -20,14 +20,11 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
 #include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
 
 #endif
 
 void command_execute_refresh(const char *argument)
 {
+  app_refresh_screen();
 }

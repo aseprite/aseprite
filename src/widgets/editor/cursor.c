@@ -64,6 +64,7 @@ enum { CURSOR_CROSS_ONE   = 1,
        CURSOR_BRUSH	  = 2 };
 
 static int cursor_type;
+static int cursor_negative;
 
 static int saved_pixel[MAX_SAVED];
 static int saved_pixel_n;
@@ -102,10 +103,8 @@ void editor_draw_cursor(JWidget widget, int x, int y)
   limit_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
 
   /* get cursor color */
-  if (is_cursor_mask())
-    color = -1;
-  else
-    color = get_raw_cursor_color();
+  cursor_negative = is_cursor_mask();
+  color = get_raw_cursor_color();
 
   /* cursor in the screen (view) */
   editor->cursor_screen_x = x;
@@ -328,7 +327,7 @@ static void savepixel(BITMAP *bmp, int x, int y, int color)
 static void drawpixel(BITMAP *bmp, int x, int y, int color)
 {
   if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y)) {
-    if (color < 0) {
+    if (cursor_negative) {
       int r, g, b, c = saved_pixel[saved_pixel_n++];
 
       r = getr(c);

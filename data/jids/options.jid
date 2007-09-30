@@ -1,5 +1,5 @@
 <!-- ase -- allegro-sprite-editor: the ultimate sprites factory -->
-<!-- Copyright (C) 2001-2005 by David A. Capello -->
+<!-- Copyright (C) 2001-2005, 2007 by David A. Capello -->
 
 <!-- Read "LEGAL.txt" for more information. -->
 
@@ -41,9 +41,6 @@
 
       </box>
     </box>
-
-    <separator horizontal />
-    <check text=_("Ask to load backed up sessions") name="askbkpses" />
 
     <box horizontal homogeneous>
       <button text=_("&OK") name="button_ok" magnetic />

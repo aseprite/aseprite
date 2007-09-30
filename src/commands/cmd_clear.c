@@ -20,14 +20,26 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
+#include "util/misc.h"
 
 #endif
 
+bool command_enabled_clear(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_clear(const char *argument)
 {
+  /* get current sprite */
+  Sprite *sprite = current_sprite;
+
+  /* clear the mask */
+  ClearMask();
+
+  /* refresh the sprite */
+  GUI_Refresh(sprite);
 }

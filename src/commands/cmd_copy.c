@@ -20,14 +20,31 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/base.h"
 
-#include "core/app.h"
 #include "modules/sprites.h"
+#include "raster/layer.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
+#include "util/clipbrd.h"
+#include "util/misc.h"
 
 #endif
 
+bool command_enabled_copy(const char *argument)
+{
+  if ((!current_sprite) ||
+      (!current_sprite->layer) ||
+      (!current_sprite->layer->readable) ||
+      (!current_sprite->layer->writeable) ||
+      (!current_sprite->mask) ||
+      (!current_sprite->mask->bitmap))
+    return FALSE;
+  else
+    return GetImage() ? TRUE: FALSE;
+}
+
 void command_execute_copy(const char *argument)
 {
+  copy_to_clipboard();
 }

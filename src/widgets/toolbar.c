@@ -25,7 +25,7 @@
 #include "jinete/hook.h"
 #include "jinete/widget.h"
 
-#include "dialogs/toolconf.h"
+#include "commands/commands.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/tools.h"
@@ -71,8 +71,10 @@ JWidget tool_bar_new(int align)
 
   if (align == JI_HORIZONTAL)
     group = group_button_new(len, 1, c, ICONS_LIST);
-  else
+  else {
+/*     group = group_button_new(1, len, c, ICONS_LIST); */
     group = group_button_new(1, len, c, ICONS_LIST);
+  }
 
   jwidget_expansive(box, TRUE);
   jwidget_expansive(fillbox, TRUE);
@@ -106,12 +108,12 @@ static int group_change_signal(JWidget widget, int user_data)
   int c = group_button_get_selected(widget);
 
   if (current_tool != ase_tools_list[c])
-    select_tool(ase_tools_list[c]->name);
+    select_tool(ase_tools_list[c]);
 
   return FALSE;
 }
 
 static void conf_command(JWidget widget)
 {
-  dialogs_tools_configuration();
+  command_execute(command_get_by_name(CMD_CONFIGURE_TOOLS), NULL);
 }

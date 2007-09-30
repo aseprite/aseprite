@@ -3,8 +3,7 @@ AUTHOR
 ===================================
 
   David A. Capello <dacap@users.sourceforge.net>
-  Programmer, design, graphics, tester, and the maintainer of the package.
-  Releases the DOS, Windows, and source distributions.
+  Programmer, design, graphics, tester and the maintainer.
 
 ===================================
 THANKFULNESS
@@ -135,7 +134,7 @@ THANKFULNESS
     Jorge Ramírez Flores
     Juraj Michalek
     Manuel De Miguel Moreno
-    Manuel Quiñones
+    Manuel Quiñones (manuq)
     Mateusz Czaplinski
     Nathan Smith (whitedoor)
     Peter Wang (tjaden)

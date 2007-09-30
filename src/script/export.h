@@ -107,10 +107,6 @@ void intl_set_lang(const char *lang);
 
 void show_fx_popup_menu(void);
 
-/* modules/tools.c */
-
-void select_tool(const char *tool_name);
-
 /* Brush *get_brush (void); */
 int get_brush_type(void);
 int get_brush_size(void);
@@ -266,13 +262,6 @@ int save_msk_file(Mask *mask, const char *filename);
 
 void sprite_quantize(Sprite *sprite);
 
-/* util/session.c */
-
-bool load_session(const char *filename);
-bool save_session(const char *filename);
-
-bool is_backup_session(void);
-
 /* modules/gui.c */
 
 void GUI_Refresh(Sprite *sprite);
@@ -291,16 +280,6 @@ void quick_swap(void);
 
 void play_fli_animation(const char *filename, bool loop, bool fullscreen);
 
-/* util/recscr.c */
-
-bool is_rec_screen(void);
-void rec_screen_on(void);
-void rec_screen_off(void);
-
-/* util/scrshot.c */
-
-void screen_shot(void);
-
 /* util/setgfx.c */
 
 int set_gfx(const char *card, int w, int h, int depth);
@@ -315,7 +294,6 @@ void dialogs_frame_length (int frpos);
 void dialogs_invert_color(void);
 void dialogs_mapgen(void);
 void dialogs_mask_color(void);
-void dialogs_mask_repository(void);
 void dialogs_median_filter(void);
 void dialogs_options(void);
 void dialogs_palette_editor(void);
@@ -323,14 +301,7 @@ void dialogs_replace_color(void);
 void dialogs_screen_saver(void);
 void dialogs_select_language(bool force);
 void dialogs_tips(bool forced);
-void dialogs_tools_configuration(void);
 void dialogs_vector_map(void);
-
-/* dialogs/view.c */
-
-void view_tiled(void);
-void view_normal(void);
-void view_fullscreen(void);
 
 /* dialogs/drawtext.c */
 
@@ -533,7 +504,8 @@ Sprite *sprite_new_with_layer(int imgtype, int w, int h);
 void sprite_free(Sprite *sprite);
 
 bool sprite_is_modified(Sprite *sprite);
-void sprite_was_saved(Sprite *sprite);
+bool sprite_is_associated_to_file(Sprite *sprite);
+void sprite_mark_as_saved(Sprite *sprite);
 
 void sprite_set_filename(Sprite *sprite, const char *filename);
 void sprite_set_size(Sprite *sprite, int w, int h);

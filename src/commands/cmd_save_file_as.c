@@ -47,7 +47,7 @@ void command_execute_save_file_as(const char *argument)
   int ret;
 
   ustrcpy(filename, current_sprite->filename);
-		
+
   for (;;) {
     newfilename = GUI_FileSelect(_("Save Sprite"), filename,
 				 get_writeable_extensions());
@@ -83,10 +83,12 @@ void command_execute_save_file_as(const char *argument)
 
   if (sprite_save(current_sprite) == 0) {
     recent_file(filename);
-    sprite_was_saved(current_sprite);
+    sprite_mark_as_saved(current_sprite);
   }
   else {
     unrecent_file(filename);
-    console_printf("%s: %s", _("Error saving sprite file"), filename);
+    console_printf("%s: %s",
+		   _("Error saving sprite file"),
+		   filename);
   }
 }

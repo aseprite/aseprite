@@ -21,6 +21,7 @@
 
 #include "jinete/base.h"
 
+/* file */
 #define CMD_NEW_FILE			"new_file"
 #define CMD_OPEN_FILE			"open_file"
 #define CMD_SAVE_FILE			"save_file"
@@ -29,10 +30,9 @@
 #define CMD_CLOSE_ALL_FILES		"close_all_files"
 #define CMD_SCREEN_SHOT			"screen_shot"
 #define CMD_RECORD_SCREEN		"record_screen"
-#define CMD_LOAD_SESSION		"load_session"
-#define CMD_SAVE_SESSION		"save_session"
 #define CMD_ABOUT			"about"
 #define CMD_EXIT			"exit"
+/* edit */
 #define CMD_UNDO			"undo"
 #define CMD_REDO			"redo"
 #define CMD_CUT				"cut"
@@ -45,6 +45,7 @@
 #define CMD_FLIP_VERTICAL		"flip_vertical"
 #define CMD_REPLACE_COLOR		"replace_color"
 #define CMD_INVERT_COLOR		"invert_color"
+/* view */
 #define CMD_REFRESH			"refresh"
 #define CMD_CONFIGURE_SCREEN		"configure_screen"
 #define CMD_ADVANCED_MODE		"advanced_mode"
@@ -55,11 +56,13 @@
 #define CMD_PREVIEW_TILED		"preview_tiled"
 #define CMD_PREVIEW_NORMAL		"preview_normal"
 #define CMD_PREVIEW_FIT_TO_SCREEN	"preview_fit_to_screen"
+/* sprite */
 #define CMD_SPRITE_PROPERTIES		"sprite_properties"
 #define CMD_DUPLICATE_SPRITE		"duplicate_sprite"
 #define CMD_CHANGE_IMAGE_TYPE		"change_image_type"
 #define CMD_CROP_SPRITE			"crop_sprite"
 #define CMD_AUTO_CROP_SPRITE		"auto_crop_sprite"
+/* layer */
 #define CMD_LAYER_PROPERTIES		"layer_properties"
 #define CMD_NEW_LAYER			"new_layer"
 #define CMD_NEW_LAYER_SET		"new_layer_set"
@@ -68,6 +71,7 @@
 #define CMD_MERGE_DOWN_LAYER		"merge_down_layer"
 #define CMD_FLATTEN_LAYERS		"flatten_layers"
 #define CMD_CROP_LAYER			"crop_layer"
+/* frame */
 #define CMD_FRAME_PROPERTIES		"frame_properties"
 #define CMD_REMOVE_FRAME		"remove_frame"
 #define CMD_NEW_FRAME			"new_frame"
@@ -75,14 +79,15 @@
 #define CMD_COPY_FRAME			"copy_frame"
 #define CMD_LINK_FRAME			"link_frame"
 #define CMD_CROP_FRAME			"crop_frame"
+/* select */
 #define CMD_MASK_ALL			"mask_all"
 #define CMD_DESELECT_MASK		"deselect_mask"
 #define CMD_RESELECT_MASK		"reselect_mask"
 #define CMD_INVERT_MASK			"invert_mask"
 #define CMD_MASK_BY_COLOR		"mask_by_color"
-#define CMD_MASK_REPOSITORY		"mask_repository"
 #define CMD_LOAD_MASK			"load_mask"
 #define CMD_SAVE_MASK			"save_mask"
+/* tools */
 #define CMD_CONFIGURE_TOOLS		"configure_tools"
 #define CMD_MARKER_TOOL			"marker_tool"
 #define CMD_DOTS_TOOL			"dots_tool"
@@ -98,23 +103,24 @@
 #define CMD_CONVOLUTION_MATRIX		"convolution_matrix"
 #define CMD_COLOR_CURVE			"color_curve"
 #define CMD_DESPECKLE			"despeckle"
-#define CMD_DRAW_TEXT			"draw_text"
-#define CMD_PLAY_FLIC			"play_flic"
-#define CMD_MAPGEN			"mapgen"
+/* #define CMD_DRAW_TEXT			"draw_text" */
+/* #define CMD_PLAY_FLIC			"play_flic" */
+/* #define CMD_MAPGEN			"mapgen" */
 #define CMD_RUN_SCRIPT			"run_script"
 #define CMD_TIPS			"tips"
-#define CMD_CUSTOMIZE			"customize"
 #define CMD_OPTIONS			"options"
+/* internal commands */
 #define CMD_SELECT_FILE			"select_file"
+
 
 typedef struct Command Command;
 
 struct Command
 {
   const char *name;
-  bool (*enabled)(const char *argument);
-  bool (*selected)(const char *argument);
-  void (*execute)(const char *argument);
+  bool (*enabled)(const char *argument); /* preconditions to execute the command */
+  bool (*checked)(const char *argument); /* should the menu-item be checked? */
+  void (*execute)(const char *argument); /* execute the command (after check the preconditions) */
   JAccel accel;
 };
 
@@ -122,7 +128,7 @@ Command *command_get_by_name(const char *name);
 Command *command_get_by_key(JMessage msg);
 
 bool command_is_enabled(Command *command, const char *argument);
-bool command_is_selected(Command *command, const char *argument);
+bool command_is_checked(Command *command, const char *argument);
 void command_execute(Command *command, const char *argument);
 
 bool command_is_key_pressed(Command *command, JMessage msg);

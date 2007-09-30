@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ Sprite *sprite_new(int imgtype, int w, int h)
 
   /* main properties */
   strcpy(sprite->filename, "Sprite");
+  sprite->associated_to_file = FALSE;
   sprite->imgtype = imgtype;
   sprite->w = w;
   sprite->h = h;
@@ -241,15 +242,21 @@ void sprite_free(Sprite *sprite)
   gfxobj_free((GfxObj *)sprite);
 }
 
-int sprite_is_modified(Sprite *sprite)
+bool sprite_is_modified(Sprite *sprite)
 {
   return (sprite->undo->diff_count ==
 	  sprite->undo->diff_saved) ? FALSE: TRUE;
 }
 
-void sprite_was_saved(Sprite *sprite)
+bool sprite_is_associated_to_file(Sprite *sprite)
+{
+  return sprite->associated_to_file;
+}
+
+void sprite_mark_as_saved(Sprite *sprite)
 {
   sprite->undo->diff_saved = sprite->undo->diff_count;
+  sprite->associated_to_file = TRUE;
 }
 
 RGB *sprite_get_palette(Sprite *sprite, int frpos)

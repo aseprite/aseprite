@@ -81,7 +81,7 @@ void dialogs_options(void)
 {
   JWidget window, move_delay, check_smooth, check_dither;
   JWidget button_font, button_lang, button_ok, button_save;
-  JWidget move_click2, draw_click2, askbkpses, killer;
+  JWidget move_click2, draw_click2, killer;
   int x, y, old_x, old_y;
   char *default_font;
 
@@ -109,7 +109,6 @@ void dialogs_options(void)
 		    "draw_click2", &draw_click2,
 		    "button_font", &button_font,
 		    "button_lang", &button_lang,
-		    "askbkpses", &askbkpses,
 		    "button_ok", &button_ok,
 		    "button_save", &button_save, NULL)) {
     jwidget_free (window);
@@ -124,8 +123,6 @@ void dialogs_options(void)
     jwidget_select (move_click2);
   if (get_config_bool ("Options", "DrawClick2", FALSE))
     jwidget_select (draw_click2);
-  if (get_config_bool ("Options", "AskBkpSes", TRUE))
-    jwidget_select (askbkpses);
 
   jslider_set_value (move_delay,
 		       get_config_int ("Options", "MoveDelay", 250));
@@ -154,7 +151,6 @@ void dialogs_options(void)
     set_config_bool ("Options", "MoveSmooth", jwidget_is_selected (check_smooth));
     set_config_bool ("Options", "MoveClick2", jwidget_is_selected (move_click2));
     set_config_bool ("Options", "DrawClick2", jwidget_is_selected (draw_click2));
-    set_config_bool ("Options", "AskBkpSes", jwidget_is_selected (askbkpses));
 
     if (get_config_bool ("Options", "Dither", FALSE)
 	!= jwidget_is_selected (check_dither)) {

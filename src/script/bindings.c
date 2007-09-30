@@ -723,13 +723,11 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "dialogs/effect.h"
 #include "dialogs/filmedit.h"
 #include "dialogs/maskcol.h"
-#include "dialogs/maskrepo.h"
 #include "dialogs/options.h"
 #include "dialogs/playfli.h"
 #include "dialogs/quick.h"
 #include "dialogs/scrsaver.h"
 #include "dialogs/tips.h"
-#include "dialogs/toolconf.h"
 #include "dialogs/vectmap.h"
 #include "file/file.h"
 #include "intl/intl.h"
@@ -743,8 +741,6 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "util/msk_file.h"
 #include "util/quantize.h"
 #include "util/recscr.h"
-#include "util/scrshot.h"
-#include "util/session.h"
 #include "util/setgfx.h"
 
 #endif

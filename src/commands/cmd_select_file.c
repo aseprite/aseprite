@@ -33,17 +33,18 @@
 
 bool command_enabled_select_file(const char *argument)
 {
+  /* with argument, the argument specified the ID of the GfxObj */
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj *gfxobj = gfxobj_find(sprite_id);
-    return
-      gfxobj && gfxobj->type == GFXOBJ_SPRITE;
+    return gfxobj && gfxobj->type == GFXOBJ_SPRITE;
   }
+  /* argument=NULL, means the select "Nothing" option  */
   else
     return TRUE;
 }
 
-bool command_selected_select_file(const char *argument)
+bool command_checked_select_file(const char *argument)
 {
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);

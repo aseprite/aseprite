@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.9
+version=0.6
 distdir=ase-$version
 
 freetype_files="jinete/freetype/ChangeLog			     \
@@ -110,7 +110,6 @@ ase_files="all.h						     \
 	   data/po/*.po						     \
 	   data/scripts/*.lua					     \
 	   data/scripts/examples/*.lua				     \
-	   data/session/*.txt					     \
 	   data/tips/*.pcx					     \
 	   data/tips/tips.en					     \
 	   data/tips/tips.es					     \
@@ -190,7 +189,6 @@ $1/data/menus.es						     \
 $1/data/po/es.po						     \
 $1/data/scripts/*.lua						     \
 $1/data/scripts/examples/*.lua					     \
-$1/data/session/*.txt						     \
 $1/data/tips/*.en						     \
 $1/data/tips/*.es						     \
 $1/docs/*.html							     \

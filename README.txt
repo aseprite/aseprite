@@ -71,8 +71,6 @@ FEATURES
 
   - Unique tiled drawing mode to draw patterns and textures in seconds.
 
-  - Save and load entire work's sessions (in `.ses' files).
-
   - Scripting capabilities with Lua language (http://www.lua.org).
 
 

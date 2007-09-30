@@ -20,14 +20,40 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 
 #endif
 
+bool command_enabled_reselect_mask(const char *argument)
+{
+  return
+    current_sprite != NULL &&
+    sprite_request_mask(current_sprite, "*deselected*") != NULL;
+}
+
 void command_execute_reselect_mask(const char *argument)
 {
+  Sprite *sprite = current_sprite;
+  Mask *mask;
+
+  /* request *deselected* mask */
+  mask = sprite_request_mask(sprite, "*deselected*");
+
+  /* undo */
+  if (undo_is_enabled(sprite->undo))
+    undo_set_mask(sprite->undo, sprite);
+
+  /* set the mask */
+  sprite_set_mask(sprite, mask);
+
+  /* remove the *deselected* mask */
+  sprite_remove_mask(sprite, mask);
+  mask_free(mask);
+
+  sprite_generate_mask_boundaries(sprite);
+  GUI_Refresh(sprite);
 }

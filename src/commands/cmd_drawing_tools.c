@@ -20,11 +20,11 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include <allegro/unicode.h>
 
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "jinete/base.h"
+
+#include "modules/tools.h"
 
 #endif
 
@@ -32,70 +32,124 @@
 /* brush_tool               */
 /* ======================== */
 
+bool command_checked_brush_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_brush;
+}
+
 void command_execute_brush_tool(const char *argument)
 {
+  select_tool(&ase_tool_brush);
 }
 
 /* ======================== */
 /* dots_tool                */
 /* ======================== */
 
+bool command_checked_dots_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_dots;
+}
+
 void command_execute_dots_tool(const char *argument)
 {
+  select_tool(&ase_tool_dots);
 }
 
 /* ======================== */
 /* ellipse_tool             */
 /* ======================== */
 
+bool command_checked_ellipse_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_ellipse;
+}
+
 void command_execute_ellipse_tool(const char *argument)
 {
+  select_tool(&ase_tool_ellipse);
 }
 
 /* ======================== */
 /* floodfill_tool           */
 /* ======================== */
 
+bool command_checked_floodfill_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_floodfill;
+}
+
 void command_execute_floodfill_tool(const char *argument)
 {
+  select_tool(&ase_tool_floodfill);
 }
 
 /* ======================== */
 /* line_tool                */
 /* ======================== */
 
+bool command_checked_line_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_line;
+}
+
 void command_execute_line_tool(const char *argument)
 {
+  select_tool(&ase_tool_line);
 }
 
 /* ======================== */
 /* marker_tool              */
 /* ======================== */
 
+bool command_checked_marker_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_marker;
+}
+
 void command_execute_marker_tool(const char *argument)
 {
+  select_tool(&ase_tool_marker);
 }
 
 /* ======================== */
 /* pencil_tool              */
 /* ======================== */
 
+bool command_checked_pencil_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_pencil;
+}
+
 void command_execute_pencil_tool(const char *argument)
 {
+  select_tool(&ase_tool_pencil);
 }
 
 /* ======================== */
 /* rectangle_tool           */
 /* ======================== */
 
+bool command_checked_rectangle_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_rectangle;
+}
+
 void command_execute_rectangle_tool(const char *argument)
 {
+  select_tool(&ase_tool_rectangle);
 }
 
 /* ======================== */
 /* spray_tool               */
 /* ======================== */
 
+bool command_checked_spray_tool(const char *argument)
+{
+  return current_tool && current_tool == &ase_tool_spray;
+}
+
 void command_execute_spray_tool(const char *argument)
 {
+  select_tool(&ase_tool_spray);
 }

@@ -20,14 +20,48 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/alert.h"
 
-#include "core/app.h"
+#include "dialogs/filesel.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
+#include "util/msk_file.h"
 
 #endif
 
+bool command_enabled_load_mask(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_load_mask(const char *argument)
 {
+  /* get current sprite */
+  Sprite *sprite = current_sprite;
+  char *filename = GUI_FileSelect(_("Load .msk File"), "", "msk");
+  if (filename) {
+    Mask *mask = load_msk_file(filename);
+    if (!mask) {
+      jalert("%s<<%s<<%s||%s",
+	     _("Error"), _("Error loading .msk file"),
+	     filename, _("&Close"));
+
+      jfree(filename);
+      return;
+    }
+
+    /* undo */
+    if (undo_is_enabled(sprite->undo))
+      undo_set_mask(sprite->undo, sprite);
+
+    sprite_set_mask(sprite, mask);
+    mask_free(mask);
+
+    sprite_generate_mask_boundaries(sprite);
+    GUI_Refresh(sprite);
+    jfree(filename);
+  }
 }

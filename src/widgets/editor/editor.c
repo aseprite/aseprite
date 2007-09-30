@@ -560,8 +560,8 @@ void editor_draw_grid(JWidget widget)
   screen_to_editor(widget, x2, y2, &u2, &v2);
 
   jrect_moveto(grid,
-		 (grid->x1 % jrect_w(grid)) - jrect_w(grid),
-		 (grid->y1 % jrect_h(grid)) - jrect_h(grid));
+	       (grid->x1 % jrect_w(grid)) - jrect_w(grid),
+	       (grid->y1 % jrect_h(grid)) - jrect_h(grid));
 
   u1 = ((u1-grid->x1) / jrect_w(grid)) - 1;
   v1 = ((v1-grid->y1) / jrect_h(grid)) - 1;

@@ -37,7 +37,6 @@
 #include "core/cfg.h"
 #include "core/core.h"
 #include "core/modules.h"
-#include "core/shutdown.h"
 #include "dialogs/options.h"
 #include "dialogs/tips.h"
 #include "file/file.h"
@@ -153,9 +152,6 @@ int app_init(int argc, char *argv[])
   /* set system palette to the default one */
   set_current_palette (NULL, TRUE);
 
-  /* add the abnormal program exit handler */
-  init_shutdown_handler ();
-
   /* ok */
   return 0;
 }
@@ -238,8 +234,9 @@ void app_loop(void)
   load_all_scripts();
 
   /* set background mode for non-GUI modes */
-  if (!(ase_mode & MODE_GUI))
-    set_display_switch_mode(SWITCH_BACKAMNESIA);
+/*   if (!(ase_mode & MODE_GUI)) */
+/*     set_display_switch_mode(SWITCH_BACKAMNESIA); */
+    set_display_switch_mode(SWITCH_BACKGROUND);
 
   /* procress options */
   PRINTF("Processing options...\n");
@@ -333,9 +330,6 @@ void app_exit(void)
   ase_config_exit();
   core_exit();
   _ji_font_exit();
-
-  /* remove the shutdown handler */
-  remove_shutdown_handler();
 
   /* final copyright message */
   if (ase_mode & MODE_GUI) {

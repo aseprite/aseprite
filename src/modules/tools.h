@@ -74,7 +74,8 @@ int init_module_tools(void);
 void exit_module_tools(void);
 
 void refresh_tools_names(void);
-void select_tool(const char *tool_name);
+void select_tool(Tool *tool);
+void select_tool_by_name(const char *tool_name);
 
 struct Brush *get_brush(void);
 int get_brush_type(void);

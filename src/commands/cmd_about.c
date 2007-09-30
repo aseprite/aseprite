@@ -20,32 +20,112 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro.h>
+
 #include "jinete.h"
 
 #include "core/core.h"
+#include "core/dirs.h"
 
 #endif
 
+static char *read_authors_txt(const char *filename);
+
 void command_execute_about(const char *argument)
 {
-  JWidget window, box1, label1, label2, label3, label4;
-  JWidget separator1, button1;
+  JWidget window, box1, label1, label2, separator1;
+  JWidget textbox, view, separator2;
+  JWidget label3, label4, box2, box3, box4, button1;
+  char *authors_txt = read_authors_txt("AUTHORS.txt");
 
-  window = jwindow_new(_("About ASE"));
+  if (authors_txt)
+    window = jwindow_new_desktop();
+  else
+    window = jwindow_new(_("About ASE"));
+
   box1 = jbox_new(JI_VERTICAL);
   label1 = jlabel_new("Allegro Sprite Editor - " VERSION);
   label2 = jlabel_new(_("The Ultimate Sprites Factory"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
+
+  if (authors_txt) {
+    view = jview_new();
+    textbox = jtextbox_new(authors_txt, JI_LEFT);
+    separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
+    jfree(authors_txt);
+  }
+  else {
+    view = textbox = NULL;
+  }
+
   label3 = jlabel_new(COPYRIGHT);
   label4 = jlabel_new("http://ase.sourceforge.net/");
+  box2 = jbox_new(JI_HORIZONTAL);
+  box3 = jbox_new(JI_HORIZONTAL);
+  box4 = jbox_new(JI_HORIZONTAL);
   button1 = jbutton_new(_("&Close"));
-
+  
   jwidget_magnetic(button1, TRUE);
 
-  jwidget_add_childs(box1, label1, label2, separator1, label3, label4,
-		     button1, NULL);
+  jwidget_add_childs(box1, label1, label2, separator1, NULL);
+  if (textbox) {
+    jview_attach(view, textbox);
+    jwidget_expansive(view, TRUE);
+    jwidget_set_static_size(view, JI_SCREEN_W/3, JI_SCREEN_H/4);
+    jwidget_add_childs(box1, view, separator2, NULL);
+  }
+  jwidget_expansive(box3, TRUE);
+  jwidget_expansive(box4, TRUE);
+  jwidget_add_childs(box2, box3, button1, box4, NULL);
+  jwidget_add_childs(box1, label3, label4, NULL);
+  jwidget_add_child(box1, box2);
   jwidget_add_child(window, box1);
+
+  jwidget_set_border(button1,
+		     button1->border_width.l+16,
+		     button1->border_width.t,
+		     button1->border_width.r+16,
+		     button1->border_width.b);
 
   jwindow_open_fg(window);
   jwidget_free(window);
 }
+
+static char *read_authors_txt(const char *filename)
+{
+  DIRS *dirs, *dir;
+  char *txt = NULL;
+
+  dirs = filename_in_bindir(filename);
+  dirs_cat_dirs(dirs, filename_in_datadir(filename));
+
+  /* search the configuration file from first to last path */
+  for (dir=dirs; dir && !txt; dir=dir->next) {
+    PRINTF("Triying opening %s\n", dir->path);
+    if ((dir->path) && exists(dir->path)) {
+      int size;
+      FILE *f;
+
+#if (MAKE_VERSION(4, 2, 0) < MAKE_VERSION(ALLEGRO_VERSION,		\
+					  ALLEGRO_SUB_VERSION,		\
+					  ALLEGRO_WIP_VERSION))
+      size = file_size(dir->path);
+#else
+      size = file_size_ex(dir->path);
+#endif
+
+      if (size > 0) {
+	f = fopen(dir->path, "r");
+	if (f) {
+	  txt = jmalloc0(size+2);
+	  fread(txt, 1, size, f);
+	  fclose(f);
+	}
+      }
+    }
+  }
+
+  dirs_free(dirs);
+  return txt;
+}
+

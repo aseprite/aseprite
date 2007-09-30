@@ -20,14 +20,46 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include <allegro.h>
 
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "jinete/system.h"
+
+#include "core/core.h"
 
 #endif
 
 void command_execute_screen_shot(const char *argument)
 {
+  int old_flag;
+  char buf[512];
+  PALETTE pal;
+  BITMAP *bmp;
+  int c;
+
+  /* save the active flag which indicate if the mouse is freeze or not */
+  old_flag = freeze_mouse_flag;
+
+  /* freeze the mouse obligatory */
+  freeze_mouse_flag = TRUE;
+
+  /* get the active palette color */
+  get_palette(pal);
+
+  /* get a file name for the capture */
+  for (c=0; c<10000; c++) {
+    usprintf(buf, "shot%04d.%s", c, "pcx");
+    if (!exists(buf))
+      break;
+  }
+
+  if (ji_screen != screen)
+    jmouse_draw_cursor();
+
+  /* save in a bitmap the visible screen portion */
+  bmp = create_sub_bitmap(ji_screen, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
+  save_bitmap(buf, bmp, pal);
+  destroy_bitmap(bmp);
+
+  /* restore the freeze flag by the previous value */
+  freeze_mouse_flag = old_flag;
 }

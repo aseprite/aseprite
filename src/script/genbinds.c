@@ -553,14 +553,6 @@ static int bind_show_fx_popup_menu(lua_State *L)
   return 0;
 }
 
-static int bind_select_tool(lua_State *L)
-{
-  const char *tool_name;
-  GetArg(1, tool_name, const char *, string);
-  select_tool(tool_name);
-  return 0;
-}
-
 static int bind_get_brush_type(lua_State *L)
 {
   int return_value;
@@ -1259,34 +1251,6 @@ static int bind_sprite_quantize(lua_State *L)
   return 0;
 }
 
-static int bind_load_session(lua_State *L)
-{
-  bool return_value;
-  const char *filename;
-  GetArg(1, filename, const char *, string);
-  return_value = load_session(filename);
-  lua_pushboolean(L, return_value);
-  return 1;
-}
-
-static int bind_save_session(lua_State *L)
-{
-  bool return_value;
-  const char *filename;
-  GetArg(1, filename, const char *, string);
-  return_value = save_session(filename);
-  lua_pushboolean(L, return_value);
-  return 1;
-}
-
-static int bind_is_backup_session(lua_State *L)
-{
-  bool return_value;
-  return_value = is_backup_session();
-  lua_pushboolean(L, return_value);
-  return 1;
-}
-
 static int bind_GUI_Refresh(lua_State *L)
 {
   Sprite *sprite;
@@ -1340,32 +1304,6 @@ static int bind_play_fli_animation(lua_State *L)
   GetArg(2, loop, bool, boolean);
   GetArg(3, fullscreen, bool, boolean);
   play_fli_animation(filename, loop, fullscreen);
-  return 0;
-}
-
-static int bind_is_rec_screen(lua_State *L)
-{
-  bool return_value;
-  return_value = is_rec_screen();
-  lua_pushboolean(L, return_value);
-  return 1;
-}
-
-static int bind_rec_screen_on(lua_State *L)
-{
-  rec_screen_on();
-  return 0;
-}
-
-static int bind_rec_screen_off(lua_State *L)
-{
-  rec_screen_off();
-  return 0;
-}
-
-static int bind_screen_shot(lua_State *L)
-{
-  screen_shot();
   return 0;
 }
 
@@ -1427,12 +1365,6 @@ static int bind_dialogs_mask_color(lua_State *L)
   return 0;
 }
 
-static int bind_dialogs_mask_repository(lua_State *L)
-{
-  dialogs_mask_repository();
-  return 0;
-}
-
 static int bind_dialogs_median_filter(lua_State *L)
 {
   dialogs_median_filter();
@@ -1476,12 +1408,6 @@ static int bind_dialogs_tips(lua_State *L)
   bool forced;
   GetArg(1, forced, bool, boolean);
   dialogs_tips(forced);
-  return 0;
-}
-
-static int bind_dialogs_tools_configuration(lua_State *L)
-{
-  dialogs_tools_configuration();
   return 0;
 }
 
@@ -2597,11 +2523,21 @@ static int bind_sprite_is_modified(lua_State *L)
   return 1;
 }
 
-static int bind_sprite_was_saved(lua_State *L)
+static int bind_sprite_is_associated_to_file(lua_State *L)
+{
+  bool return_value;
+  Sprite *sprite;
+  GetUD(1, sprite, Sprite);
+  return_value = sprite_is_associated_to_file(sprite);
+  lua_pushboolean(L, return_value);
+  return 1;
+}
+
+static int bind_sprite_mark_as_saved(lua_State *L)
 {
   Sprite *sprite;
   GetUD(1, sprite, Sprite);
-  sprite_was_saved(sprite);
+  sprite_mark_as_saved(sprite);
   return 0;
 }
 
@@ -5723,7 +5659,6 @@ const luaL_reg bindings_routines[] = {
   { "intl_get_lang", bind_intl_get_lang },
   { "intl_set_lang", bind_intl_set_lang },
   { "show_fx_popup_menu", bind_show_fx_popup_menu },
-  { "select_tool", bind_select_tool },
   { "get_brush_type", bind_get_brush_type },
   { "get_brush_size", bind_get_brush_size },
   { "get_brush_angle", bind_get_brush_angle },
@@ -5812,9 +5747,6 @@ const luaL_reg bindings_routines[] = {
   { "load_msk_file", bind_load_msk_file },
   { "save_msk_file", bind_save_msk_file },
   { "sprite_quantize", bind_sprite_quantize },
-  { "load_session", bind_load_session },
-  { "save_session", bind_save_session },
-  { "is_backup_session", bind_is_backup_session },
   { "GUI_Refresh", bind_GUI_Refresh },
   { "rebuild_root_menu", bind_rebuild_root_menu },
   { "rebuild_sprite_list", bind_rebuild_sprite_list },
@@ -5823,10 +5755,6 @@ const luaL_reg bindings_routines[] = {
   { "quick_copy", bind_quick_copy },
   { "quick_swap", bind_quick_swap },
   { "play_fli_animation", bind_play_fli_animation },
-  { "is_rec_screen", bind_is_rec_screen },
-  { "rec_screen_on", bind_rec_screen_on },
-  { "rec_screen_off", bind_rec_screen_off },
-  { "screen_shot", bind_screen_shot },
   { "set_gfx", bind_set_gfx },
   { "dialogs_color_curve", bind_dialogs_color_curve },
   { "dialogs_convolution_matrix", bind_dialogs_convolution_matrix },
@@ -5835,7 +5763,6 @@ const luaL_reg bindings_routines[] = {
   { "dialogs_invert_color", bind_dialogs_invert_color },
   { "dialogs_mapgen", bind_dialogs_mapgen },
   { "dialogs_mask_color", bind_dialogs_mask_color },
-  { "dialogs_mask_repository", bind_dialogs_mask_repository },
   { "dialogs_median_filter", bind_dialogs_median_filter },
   { "dialogs_options", bind_dialogs_options },
   { "dialogs_palette_editor", bind_dialogs_palette_editor },
@@ -5843,7 +5770,6 @@ const luaL_reg bindings_routines[] = {
   { "dialogs_screen_saver", bind_dialogs_screen_saver },
   { "dialogs_select_language", bind_dialogs_select_language },
   { "dialogs_tips", bind_dialogs_tips },
-  { "dialogs_tools_configuration", bind_dialogs_tools_configuration },
   { "dialogs_vector_map", bind_dialogs_vector_map },
   { "RenderText", bind_RenderText },
   { "_rgba_getr", bind__rgba_getr },
@@ -5934,7 +5860,8 @@ const luaL_reg bindings_routines[] = {
   { "sprite_new_with_layer", bind_sprite_new_with_layer },
   { "sprite_free", bind_sprite_free },
   { "sprite_is_modified", bind_sprite_is_modified },
-  { "sprite_was_saved", bind_sprite_was_saved },
+  { "sprite_is_associated_to_file", bind_sprite_is_associated_to_file },
+  { "sprite_mark_as_saved", bind_sprite_mark_as_saved },
   { "sprite_set_filename", bind_sprite_set_filename },
   { "sprite_set_size", bind_sprite_set_size },
   { "sprite_set_frames", bind_sprite_set_frames },

@@ -103,15 +103,13 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
       if (menuitem->command) {
 	/* enabled? */
-	if (command_is_enabled(menuitem->command,
-			       menuitem->argument))
+	if (command_is_enabled(menuitem->command, menuitem->argument))
 	  jwidget_enable(widget);
 	else
 	  jwidget_disable(widget);
 
 	/* selected? */
-	if (command_is_selected(menuitem->command,
-				menuitem->argument))
+	if (command_is_checked(menuitem->command, menuitem->argument))
 	  jwidget_select(widget);
 	else
 	  jwidget_deselect(widget);
@@ -134,8 +132,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 	if (menuitem->command && command_is_enabled(menuitem->command,
 						    menuitem->argument)) {
-	  command_execute(menuitem->command,
-			  menuitem->argument);
+	  command_execute(menuitem->command, menuitem->argument);
 	  return TRUE;
 	}
       }

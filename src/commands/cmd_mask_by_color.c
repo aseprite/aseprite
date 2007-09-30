@@ -20,14 +20,19 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/base.h"
 
-#include "core/app.h"
+#include "dialogs/maskcol.h"
 #include "modules/sprites.h"
-#include "raster/sprite.h"
 
 #endif
 
+bool command_enabled_mask_by_color(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_mask_by_color(const char *argument)
 {
+  dialogs_mask_color();
 }

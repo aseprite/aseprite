@@ -327,6 +327,8 @@ static int save_GIF(Sprite *sprite)
   /* avoid compilation warnings */
   x1 = y1 = x2 = y2 = 0;
 
+  add_progress(2);
+  add_progress(sprite->frames);
   for (i = 0; i < sprite->frames; i++) {
     /* frame palette */
     palette_copy(npal, sprite_get_palette(sprite, i));
@@ -440,10 +442,17 @@ static int save_GIF(Sprite *sprite)
     /* update the old image and color-map to the new ones to compare later */
     image_copy(old, bmp, 0, 0);
     palette_copy(opal, npal);
+
+    do_progress(i);
   }
+  del_progress();
+  do_progress(1);
 
   add_progress(100);
   ret = gif_save_animation(sprite->filename, gif, do_progress);
+  del_progress();
+
+  do_progress(2);
   del_progress();
 
   gif_destroy_animation(gif);

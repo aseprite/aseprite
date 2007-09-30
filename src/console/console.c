@@ -28,6 +28,7 @@
 
 #include "core/app.h"
 #include "core/core.h"
+#include "modules/gui.h"
 #include "widgets/statebar.h"
 
 #endif
@@ -104,7 +105,7 @@ void console_close (void)
   }
 }
 
-void console_printf (const char *format, ...)
+void console_printf(const char *format, ...)
 {
   char buf[1024];
   va_list ap;
@@ -168,29 +169,35 @@ void user_printf (const char *format, ...)
   allegro_message (buf);
 }
 
-void do_progress (int progress)
+void do_progress(int progress)
 {
-  JWidget status_bar = app_get_status_bar ();
+  JWidget status_bar = app_get_status_bar();
 
   if (status_bar) {
-    status_bar_do_progress (status_bar, progress);
-    jwidget_flush_redraw (status_bar);
-    jmanager_dispatch_messages ();
+    status_bar_do_progress(status_bar, progress);
+
+    jwidget_flush_redraw(status_bar);
+    jmanager_dispatch_messages();
+    gui_feedback();
   }
 }
 
-void add_progress (int max)
+void add_progress(int max)
 {
-  JWidget status_bar = app_get_status_bar ();
+  JWidget status_bar = app_get_status_bar();
 
   if (status_bar)
-    status_bar_add_progress (status_bar, max);
+    status_bar_add_progress(status_bar, max);
+
+  jmouse_hide();
 }
 
-void del_progress (void)
+void del_progress(void)
 {
   JWidget status_bar = app_get_status_bar();
 
   if (status_bar)
     status_bar_del_progress(status_bar);
+
+  jmouse_show();
 }

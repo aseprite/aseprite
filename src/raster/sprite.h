@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ struct Sprite
 {
   GfxObj gfxobj;
   char filename[512];		/* sprite's file name */
+  bool associated_to_file;	/* true if this sprite is associated
+				   to a file in the file-system */
   int imgtype;			/* image type */
   int w, h;			/* image width/height size (in pixels) */
   int frames;			/* how many frames has this sprite */
@@ -68,8 +70,9 @@ Sprite *sprite_new_flatten_copy(const Sprite *sprite);
 Sprite *sprite_new_with_layer(int imgtype, int w, int h);
 void sprite_free(Sprite *sprite);
 
-int sprite_is_modified(Sprite *sprite);
-void sprite_was_saved(Sprite *sprite);
+bool sprite_is_modified(Sprite *sprite);
+bool sprite_is_associated_to_file(Sprite *sprite);
+void sprite_mark_as_saved(Sprite *sprite);
 
 RGB *sprite_get_palette(Sprite *sprite, int frpos);
 void sprite_set_palette(Sprite *sprite, RGB *rgb, int frpos);

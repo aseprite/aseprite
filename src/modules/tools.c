@@ -79,7 +79,7 @@ static int _cursor_mask;
 static Image *tool_image = NULL;
 static int tool_color;
 
-static void update_cursor_color (void)
+static void update_cursor_color(void)
 {
   if (cursor_color) {
     if (ji_screen)
@@ -126,6 +126,7 @@ int init_module_tools(void)
 
   grid = jrect_new(0, 0, 16, 16);
   get_config_rect("Tools", "GridRect", grid);
+  set_grid(grid);
 
   glass_dirty = MID(0, glass_dirty, 255);
   spray_width = MID(1, spray_width, 320);
@@ -137,7 +138,7 @@ int init_module_tools(void)
   return 0;
 }
 
-void exit_module_tools (void)
+void exit_module_tools(void)
 {
   set_config_string("Tools", "CursorColor", cursor_color);
   set_config_int("Tools", "GlassDirty", glass_dirty);
@@ -162,7 +163,7 @@ void exit_module_tools (void)
   unhook_palette_changes(update_cursor_color);
 }
 
-void refresh_tools_names (void)
+void refresh_tools_names(void)
 {
   int c;
 
@@ -170,26 +171,33 @@ void refresh_tools_names (void)
     ase_tools_list[c]->translated_name = _(ase_tools_list[c]->name);
 }
 
-void select_tool (const char *tool_name)
+void select_tool(Tool *tool)
+{
+  ASSERT(tool != NULL);
+  
+  current_tool = tool;
+
+  /* update status-bar */
+  if (app_get_status_bar() &&
+      jwidget_is_visible(app_get_status_bar()))
+    status_bar_set_text(app_get_status_bar(), 500, "%s: %s",
+			_("Tool"), current_tool->translated_name);
+
+  /* update tool-bar */
+  if (app_get_tool_bar())
+    tool_bar_update(app_get_tool_bar());
+}
+
+void select_tool_by_name(const char *tool_name)
 {
   int c;
 
   for (c=0; ase_tools_list[c]; c++) {
-    if (ustricmp (ase_tools_list[c]->name, tool_name) == 0) {
+    if (ustricmp(ase_tools_list[c]->name, tool_name) == 0) {
       if (current_tool == ase_tools_list[c])
 	return;
 
-      current_tool = ase_tools_list[c];
-
-      /* update status-bar */
-      if (app_get_status_bar () &&
-	  jwidget_is_visible (app_get_status_bar ()))
-	status_bar_set_text (app_get_status_bar (), 500, "%s: %s",
-			     _("Tool"), current_tool->translated_name);
-
-      /* update tool-bar */
-      if (app_get_tool_bar ())
-	tool_bar_update (app_get_tool_bar ());
+      select_tool(ase_tools_list[c]);
       break;
     }
   }
@@ -207,8 +215,16 @@ bool get_filled_mode(void) { return filled_mode; }
 bool get_tiled_mode(void) { return tiled_mode; }
 bool get_use_grid(void) { return use_grid; }
 bool get_view_grid(void) { return view_grid; }
-JRect get_grid(void) { return jrect_new_copy (grid); }
-bool get_onionskin(void) { return onionskin; }
+
+JRect get_grid(void)
+{
+  return jrect_new_copy (grid);
+}
+
+bool get_onionskin(void)
+{
+  return onionskin;
+}
 
 void set_brush_type(int type) { brush_set_type (brush, type); }
 void set_brush_size(int size) { brush_set_size (brush, size); }
@@ -221,8 +237,18 @@ void set_filled_mode(bool status) { filled_mode = status; }
 void set_tiled_mode(bool status) { tiled_mode = status; }
 void set_use_grid(bool status) { use_grid = status; }
 void set_view_grid(bool status) { view_grid = status; }
-void set_grid(JRect rect) { jrect_copy (grid, rect); }
-void set_onionskin(bool status) { onionskin = status; }
+
+void set_grid(JRect rect)
+{
+  jrect_copy(grid, rect);
+  if (grid->x2 <= grid->x1) grid->x2 = grid->x1+1;
+  if (grid->y2 <= grid->y1) grid->y2 = grid->y1+1;
+}
+
+void set_onionskin(bool status)
+{
+  onionskin = status;
+}
 
 int get_raw_cursor_color(void)
 {

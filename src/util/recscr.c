@@ -53,20 +53,22 @@ void rec_screen_on(void)
   char buf[512];
   int c;
 
-  if (!is_interactive ()
-      || (bitmap_color_depth (ji_screen) != 8)
-      || (rec_file))
-    return;
+/*   if (!is_interactive() */
+/* /\*       || (bitmap_color_depth(ji_screen) != 8) *\/ */
+/*       || (rec_file)) */
+/*     return; */
+
+  ASSERT(rec_file == NULL);
 
   /* get a file name for the record */
   for (c=0; c<10000; c++) {
-    usprintf (buf, "rec%04d.%s", c, "flc");
-    if (!exists (buf))
+    usprintf(buf, "rec%04d.%s", c, "flc");
+    if (!exists(buf))
       break;
   }
 
   /* open the file */
-  rec_file = fopen (buf, "wb");
+  rec_file = fopen(buf, "wb");
   if (!rec_file)
     return;
 
@@ -90,8 +92,8 @@ void rec_screen_on(void)
   fli_header->oframe1 = fli_header->oframe2 = 0;
 
   /* prepare maps */
-  omap = jmalloc (768);
-  cmap = jmalloc (768);
+  omap = jmalloc(768);
+  cmap = jmalloc(768);
 
   /* prepare old bitmap */
   old_bmp = NULL;
@@ -107,23 +109,23 @@ void rec_screen_off(void)
 {
   if (rec_file) {
     /* write the header and close the file */
-    fli_write_header (rec_file, fli_header);
-    fclose (rec_file);
+    fli_write_header(rec_file, fli_header);
+    fclose(rec_file);
     rec_file = NULL;
 
     /* free memory */
     if (old_bmp)
-      destroy_bitmap (old_bmp);
+      destroy_bitmap(old_bmp);
 
-    jfree (fli_header);
-    jfree (cmap);
-    jfree (omap);
+    jfree(fli_header);
+    jfree(cmap);
+    jfree(omap);
   }
 }
 
 void rec_screen_poll (void)
 {
-  if (!is_interactive () || !rec_file)
+  if (!is_interactive() || !rec_file)
     return;
   else if (ji_clock-rec_clock > JI_TICKS_PER_SEC/FRAMES_PER_SECOND) {
     int old_flag;
@@ -144,24 +146,26 @@ void rec_screen_poll (void)
     }
 
     /* save in a bitmap the visible screen portion */
-    bmp = create_bitmap (JI_SCREEN_W, JI_SCREEN_H);
-    blit (ji_screen, bmp, 0, 0, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
+    bmp = create_bitmap_ex(8, JI_SCREEN_W, JI_SCREEN_H);
+    if (ji_screen != screen)
+      jmouse_draw_cursor();
+    blit(ji_screen, bmp, 0, 0, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
 
     /* write the frame in FLC file */
     if (old_bmp)
-      fli_write_frame (rec_file, fli_header,
-		       (unsigned char *)old_bmp->dat, omap,
-		       (unsigned char *)bmp->dat, cmap, W_ALL);
+      fli_write_frame(rec_file, fli_header,
+		      (unsigned char *)old_bmp->dat, omap,
+		      (unsigned char *)bmp->dat, cmap, W_ALL);
     else
-      fli_write_frame (rec_file, fli_header, NULL, NULL,
-		       (unsigned char *)bmp->dat, cmap, W_ALL);
+      fli_write_frame(rec_file, fli_header, NULL, NULL,
+		      (unsigned char *)bmp->dat, cmap, W_ALL);
 
     /* copy this palette to the old one */
-    memcpy (omap, cmap, 768);
+    memcpy(omap, cmap, 768);
 
     /* fixup old bitmap */
     if (old_bmp)
-      destroy_bitmap (old_bmp);
+      destroy_bitmap(old_bmp);
 
     old_bmp = bmp;
 

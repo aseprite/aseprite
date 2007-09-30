@@ -1184,9 +1184,9 @@ static void theme_draw_slider (JWidget widget)
 #endif
 }
 
-static void theme_draw_textbox (JWidget widget)
+static void theme_draw_textbox(JWidget widget)
 {
-  _ji_theme_textbox_draw (ji_screen, widget, NULL, NULL);
+  _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL);
 }
 
 static void theme_draw_view(JWidget widget)

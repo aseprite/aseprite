@@ -20,14 +20,21 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
+#include "util/clipbrd.h"
 
 #endif
 
+bool command_enabled_paste(const char *argument)
+{
+  Sprite *sprite = current_sprite;
+  Sprite *clipboard = get_clipboard_sprite();
+
+  return (sprite && clipboard && (clipboard != sprite));
+}
+
 void command_execute_paste(const char *argument)
 {
+  paste_from_clipboard();
 }

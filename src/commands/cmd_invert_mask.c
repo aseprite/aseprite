@@ -20,14 +20,63 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "commands/commands.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/image.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 
 #endif
 
+bool command_enabled_invert_mask(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_invert_mask(const char *argument)
 {
+  Sprite *sprite = current_sprite;
+  Mask *mask;
+
+  /* change the selection */
+  if (!sprite->mask->bitmap) {
+    command_execute(command_get_by_name(CMD_MASK_ALL), argument);
+  }
+  else {
+    /* undo */
+    if (undo_is_enabled(sprite->undo))
+      undo_set_mask(sprite->undo, sprite);
+
+    /* create a new mask */
+    mask = mask_new();
+
+    /* select all the sprite area */
+    mask_replace(mask, 0, 0, sprite->w, sprite->h);
+
+    /* remove in the new mask the current sprite marked region */
+    image_rectfill(mask->bitmap,
+		   sprite->mask->x, sprite->mask->y,
+		   sprite->mask->x + sprite->mask->w-1,
+		   sprite->mask->y + sprite->mask->h-1, 0);
+
+    /* invert the current mask in the sprite */
+    mask_invert(sprite->mask);
+    if (sprite->mask->bitmap) {
+      /* copy the inverted region in the new mask */
+      image_copy(mask->bitmap, sprite->mask->bitmap,
+		 sprite->mask->x, sprite->mask->y);
+    }
+
+    /* we need only need the area inside the sprite */
+    mask_intersect(mask, 0, 0, sprite->w, sprite->h);
+
+    /* set the new mask */
+    sprite_set_mask(sprite, mask);
+    mask_free(mask);
+
+    sprite_generate_mask_boundaries(sprite);
+    GUI_Refresh(sprite);
+  }
 }

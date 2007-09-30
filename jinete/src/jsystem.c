@@ -417,7 +417,7 @@ static void update_mouse_position(void)
 #ifdef ALLEGRO_WINDOWS
   /* this help us (in windows) to get mouse feedback when we capture
      the mouse but we are outside the Allegro window */
-  {
+  if (is_windowed_mode()) {
     POINT pt;
     RECT rc;
 

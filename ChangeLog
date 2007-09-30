@@ -1,4 +1,68 @@
+2007-09-30  David A. Capello  <dacap@users.sourceforge.net>
+
+	* data/scripts/edit.lua: Removed.
+
+	* src/commands/cmd_refresh.c (command_execute_refresh): Added.
+
+2007-09-29  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/dialogs/toolconf.c (dialogs_tools_configuration):
+	Removed (now all the code is in cmd_configure_tools.c).
+
+	* src/commands/cmd_about.c (command_execute_about): Now it show
+	the AUTHORS.txt file.
+
+	* data/scripts/selspr.lua: Removed.
+
+	* data/scripts/rootmenu.lua: Removed.
+
+	* src/util/scrshot.c: Removed.
+
+	* src/commands/cmd_screen_shot.c (command_execute_screen_shot): Done.
+
+	* src/commands/cmd_clear.c (command_execute_clear): Done.
+
+	* data/scripts/mask.lua: Removed.
+
+	* src/commands/cmd_invert_mask.c (command_execute_invert_mask): Added.
+
+	* src/commands/cmd_reselect_mask.c (command_execute_reselect_mask): Added.
+
+	* src/commands/cmd_deselect_mask.c (command_execute_deselect_mask): Added.
+
+	* src/commands/cmd_mask_all.c (command_execute_mask_all): Added.
+
+	* src/commands/cmd_mask_by_color.c (command_execute_mask_by_color): Added.
+
+	* src/dialogs/toolconf.c (set_grid_button_select_hook): Fixed a
+	bug using an invalid rectangle for set_grid().
+
+	* src/commands/cmd_drawing_tools.c: Added all commands to select
+	each tool.
+
+2007-09-28  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_load_mask.c (command_execute_load_mask): Added.
+
+	* src/commands/cmd_save_mask.c (command_execute_save_mask): Added.
+
+	* src/commands/cmd_copy.c (command_execute_copy): Added.
+
+	* src/commands/cmd_cut.c (command_execute_cut): Added.
+
+	* src/file/gif.c (save_GIF): Better progress bar.
+
+	* src/core/shutdown.c: Removed (it was only for sessions).
+
+	* src/util/session.c: Removed all session stuff.
+
+	* src/commands/cmd_save_file.c (command_execute_save_file): Added.
+
 2007-09-27  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_undo.c (command_execute_undo): Added.
+
+	* src/commands/cmd_redo.c (command_execute_redo): Added.
 
 	* jinete/src/jsystem.c (jmouse_poll): Now (in Windows) we continue
 	getting mouse feedback even when the cursor is outside of the

@@ -45,7 +45,6 @@
 #include "raster/sprite.h"
 #include "script/script.h"
 #include "util/recscr.h"
-#include "util/scrshot.h"
 #include "widgets/editor.h"
 
 #endif
@@ -306,9 +305,6 @@ void gui_feedback(void)
 
 /*     jmanager_dispatch_draw_messages(); */
   }
-
-  /* don't eat CPU... rest some time */
-  rest(1);
 }
 
 void gui_setup_screen(void)
@@ -690,6 +686,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_IDLE:
       gui_feedback();
+      rest(1);			/* don't eat CPU... rest some time */
       break;
 
     case JM_CHAR: {
@@ -699,8 +696,10 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
       /* the screen shot is available in everywhere */
       if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {
-	screen_shot();
-	return TRUE;
+	if (command_is_enabled(command, NULL)) {
+	  command_execute(command, NULL);
+	  return TRUE;
+	}
       }
       /* all other keys are only available in the main-window */
       else {

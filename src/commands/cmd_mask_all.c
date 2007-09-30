@@ -20,14 +20,30 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 
 #endif
 
+bool command_enabled_mask_all(const char *argument)
+{
+  return current_sprite != NULL;
+}
+  
 void command_execute_mask_all(const char *argument)
 {
+  Sprite *sprite = current_sprite;
+
+  /* undo */
+  if (undo_is_enabled(sprite->undo))
+    undo_set_mask(sprite->undo, sprite);
+
+  /* change the selection */
+  mask_replace(sprite->mask, 0, 0, sprite->w, sprite->h);
+
+  sprite_generate_mask_boundaries(sprite);
+  GUI_Refresh(sprite);
 }

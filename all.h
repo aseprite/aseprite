@@ -121,7 +121,6 @@
 #include "util/quantize.h"
 #include "util/recscr.h"
 #include "util/scrshot.h"
-#include "util/session.h"
 #include "util/setgfx.h"
 #include "util/thmbnail.h"
 #include "widgets/colbar.h"

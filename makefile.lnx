@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2005, 2007 by David A. Capello		-*-Makefile-*-
 
 ifndef CONFIGURED
 include makefile.cfg
@@ -49,6 +49,7 @@ distclean: clean
 install:
 	cp ase $(DEFAULT_PREFIX)/bin
 	cp -r data $(DEFAULT_PREFIX)/share/ase
+	cp AUTHORS.txt $(DEFAULT_PREFIX)/share/ase
 
 uninstall:
 	-rm  -vf $(DEFAULT_PREFIX)/bin/ase

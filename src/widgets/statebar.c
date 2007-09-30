@@ -386,7 +386,7 @@ static void button_command(JWidget widget, void *data)
 	break;
 
       case ACTION_PLAY:
-	play_animation ();
+	play_animation();
 	break;
 
       case ACTION_NEXT:
@@ -465,7 +465,7 @@ static void play_animation(void)
   LOCK_VARIABLE(speed_timer);
   LOCK_FUNCTION(speed_timer_callback);
 
-  clear_keybuf ();
+  clear_keybuf();
 
   /* clear all the screen */
   clear_bitmap(ji_screen);
@@ -480,10 +480,11 @@ static void play_animation(void)
     editor_draw_sprite_safe(current_editor, 0, 0, sprite->w, sprite->h);
 
     do {
-      poll_mouse ();
-      poll_keyboard ();
+      poll_mouse();
+      poll_keyboard();
       if (keypressed() || mouse_b)
 	done = TRUE;
+      gui_feedback();
     } while (!done && (speed_timer <= 0));
 
     if (!done) {
@@ -493,6 +494,7 @@ static void play_animation(void)
 
       speed_timer--;
     }
+    gui_feedback();
   }
 
   /* if right-click or ESC */
@@ -503,6 +505,7 @@ static void play_animation(void)
   /* refresh all */
   set_current_palette(sprite_get_palette(sprite, sprite->frpos), TRUE);
   jmanager_refresh_screen();
+  gui_feedback();
 
   while (mouse_b)
     poll_mouse();

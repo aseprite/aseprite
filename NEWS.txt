@@ -2,13 +2,17 @@
 NEWS
 ===================================
 
-0.9
+0.6
 ---
 
 + Restructured all the menus (more user friendly options).
+  - Temporaly removed a lot of complex functionality: 
+    Mask-Repository (but you can use .msk files yet), Draw-Text,
+    Play-FLI/FLC.
 + New XML format for the menus.
 - Removed menu scripting customization.
 - Removed screen saver.
+- Removed sessions.
 + GUI enhanced:
   + more borders for windows and more spacing between widgets.
   + better mouse behavior (in Windows).

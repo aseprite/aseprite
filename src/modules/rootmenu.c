@@ -229,8 +229,8 @@ static JWidget convert_xmlelem_to_menu(JXmlElem elem)
   JI_LIST_FOR_EACH(((JXmlNode)elem)->children, link) {
     JXmlNode child = (JXmlNode)link->data;
 
-    PRINTF("convert_xmlelem_to_menu: child->value = %p (%s)\n",
-	   child->value, child->value ? child->value: "");
+/*     PRINTF("convert_xmlelem_to_menu: child->value = %p (%s)\n", */
+/* 	   child->value, child->value ? child->value: ""); */
 
     if (child->type == JI_XML_ELEM) {
       menuitem = convert_xmlelem_to_menuitem((JXmlElem)child);
