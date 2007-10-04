@@ -59,6 +59,7 @@
 	<key command="spray_tool" shortcut="S" />
 	<key command="floodfill_tool" shortcut="F" />
 	<key command="line_tool" shortcut="L" />
+	<key command="bezier_tool" shortcut="V" />
 	<key command="rectangle_tool" shortcut="R" />
 	<key command="ellipse_tool" shortcut="E" />
 	<key command="film_editor" shortcut="Tab" />
@@ -84,10 +85,6 @@
 	    <menu name="Ca&pture">
 		<item command="screen_shot" name="Screen Shot" />
 		<item command="record_screen" name="Record Screen" />
-	    </menu>
-	    <menu name="Sessions">
-		<item command="load_session" name="Load Session" />
-		<item command="save_session" name="Save Session" />
 	    </menu>
 	    <separator />
 	    <item command="about" name="About" />
@@ -137,7 +134,7 @@
 	    <item command="change_image_type" name="Image &Type" />
 	    <separator />
 	    <item command="crop_sprite" name="Cr&op" />
-	    <item command="auto_crop_sprite" name="&Auto Crop" />
+	    <item command="autocrop_sprite" name="&Autocrop" />
 	</menu>
 	<menu name="&Layer" id="layer_popup">
 	    <item command="layer_properties" name="&Properties" />
@@ -170,9 +167,8 @@
 	    <separator />
 	    <item command="mask_by_color" name="&Color Range" />
 	    <separator />
-	    <item command="mask_repository" name="Repositor&y" />
-	    <item command="load_mask" name="&Load" />
-	    <item command="save_mask" name="&Save" />
+	    <item command="load_mask" name="&Load from MSK file" />
+	    <item command="save_mask" name="&Save to MSK file" />
 	</menu>
 	<menu name="&Tools">
 	    <menu name="&Drawing Tool">
@@ -186,10 +182,10 @@
 		<item command="floodfill_tool" name="&Floodfill" />
 		<separator />
 		<item command="line_tool" name="&Line" />
+<!-- 		<item command="bezier_tool" name="&Bezier" /> -->
 		<item command="rectangle_tool" name="&Rectangle" />
 		<item command="ellipse_tool" name="&Ellipse" />
-		<!-- <item name=#     "&Oval" command=#     "oval_tool" /> -->
-		<!-- <item name=#     "&Bezier" command=#     "bezier_tool" /> -->
+<!-- 		<item command="oval_tool" name="&Oval" /> -->
 	    </menu>
 	    <item command="film_editor" name="&Film Editor" />
 	    <item command="palette_editor" name="&Palette Editor" />
@@ -200,13 +196,14 @@
 		<separator />
 		<item command="despeckle" name="&Despeckle (median filter)" />
 	    </menu>
-	    <item command="draw_text" name="Draw &Text" />
-	    <item command="play_flic" name="Pla&y FLI/FLC File" />
-	    <item command="mapgen" name="&MapGen" />
-	    <item command="run_script" name="Run &Script" />
+<!-- 	    <item command="draw_text" name="Draw &Text" /> -->
+<!-- 	    <item command="play_flic" name="Pla&y FLI/FLC File" /> -->
+<!-- 	    <item command="mapgen" name="&MapGen" /> -->
+	    <menu name="Scripting">
+		<item command="run_script" name="Run &Script" />
+	    </menu>
 	    <separator />
 	    <item command="tips" name="T&ips" />
-	    <item command="customize" name="&Customize" />
 	    <item command="options" name="&Options" />
 	</menu>
 	<item id="sprite_list" name="L&ist" />

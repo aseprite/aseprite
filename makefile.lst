@@ -8,7 +8,6 @@ ASE = ase$(EXE)
 ASE_SOURCES =					\
 	src/commands/cmd_about.c		\
 	src/commands/cmd_advanced_mode.c	\
-	src/commands/cmd_auto_crop_sprite.c	\
 	src/commands/cmd_change_image_type.c	\
 	src/commands/cmd_clear.c		\
 	src/commands/cmd_close_file.c		\
@@ -18,9 +17,7 @@ ASE_SOURCES =					\
 	src/commands/cmd_convolution_matrix.c	\
 	src/commands/cmd_copy.c			\
 	src/commands/cmd_copy_frame.c		\
-	src/commands/cmd_crop_frame.c		\
-	src/commands/cmd_crop_layer.c		\
-	src/commands/cmd_crop_sprite.c		\
+	src/commands/cmd_crop.c			\
 	src/commands/cmd_cut.c			\
 	src/commands/cmd_deselect_mask.c	\
 	src/commands/cmd_despeckle.c		\

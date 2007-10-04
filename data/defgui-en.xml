@@ -134,7 +134,7 @@
 	    <item command="change_image_type" name="Image &Type" />
 	    <separator />
 	    <item command="crop_sprite" name="Cr&op" />
-	    <item command="auto_crop_sprite" name="&Auto Crop" />
+	    <item command="autocrop_sprite" name="&Auto Crop" />
 	</menu>
 	<menu name="&Layer" id="layer_popup">
 	    <item command="layer_properties" name="&Properties" />

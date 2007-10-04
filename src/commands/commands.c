@@ -85,8 +85,10 @@ bool command_enabled_sprite_properties(const char *argument);
 void command_execute_sprite_properties(const char *argument);
 void command_execute_duplicate_sprite(const char *argument);
 void command_execute_change_image_type(const char *argument);
+bool command_enabled_crop_sprite(const char *argument);
 void command_execute_crop_sprite(const char *argument);
-void command_execute_auto_crop_sprite(const char *argument);
+bool command_enabled_autocrop_sprite(const char *argument);
+void command_execute_autocrop_sprite(const char *argument);
 /* layer */
 void command_execute_layer_properties(const char *argument);
 void command_execute_new_layer(const char *argument);
@@ -95,6 +97,7 @@ void command_execute_remove_layer(const char *argument);
 void command_execute_duplicate_layer(const char *argument);
 void command_execute_merge_down_layer(const char *argument);
 void command_execute_flatten_layers(const char *argument);
+bool command_enabled_crop_layer(const char *argument);
 void command_execute_crop_layer(const char *argument);
 /* frame */
 void command_execute_frame_properties(const char *argument);
@@ -103,6 +106,7 @@ void command_execute_new_frame(const char *argument);
 void command_execute_move_frame(const char *argument);
 void command_execute_copy_frame(const char *argument);
 void command_execute_link_frame(const char *argument);
+bool command_enabled_crop_frame(const char *argument);
 void command_execute_crop_frame(const char *argument);
 /* select */
 bool command_enabled_mask_all(const char *argument);
@@ -198,8 +202,8 @@ static Command commands[] = {
   CMD_EXE_ENA(sprite_properties),
   { CMD_DUPLICATE_SPRITE, NULL, NULL, NULL, NULL },
   { CMD_CHANGE_IMAGE_TYPE, NULL, NULL, NULL, NULL },
-  { CMD_CROP_SPRITE, NULL, NULL, NULL, NULL },
-  { CMD_AUTO_CROP_SPRITE, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(crop_sprite),
+  CMD_EXE_ENA(autocrop_sprite),
   { CMD_LAYER_PROPERTIES, NULL, NULL, NULL, NULL },
   { CMD_NEW_LAYER, NULL, NULL, NULL, NULL },
   { CMD_NEW_LAYER_SET, NULL, NULL, NULL, NULL },
@@ -207,14 +211,14 @@ static Command commands[] = {
   { CMD_DUPLICATE_LAYER, NULL, NULL, NULL, NULL },
   { CMD_MERGE_DOWN_LAYER, NULL, NULL, NULL, NULL },
   { CMD_FLATTEN_LAYERS, NULL, NULL, NULL, NULL },
-  { CMD_CROP_LAYER, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(crop_layer),
   { CMD_FRAME_PROPERTIES, NULL, NULL, NULL, NULL },
   { CMD_REMOVE_FRAME, NULL, NULL, NULL, NULL },
   { CMD_NEW_FRAME, NULL, NULL, NULL, NULL },
   { CMD_MOVE_FRAME, NULL, NULL, NULL, NULL },
   { CMD_COPY_FRAME, NULL, NULL, NULL, NULL },
   { CMD_LINK_FRAME, NULL, NULL, NULL, NULL },
-  { CMD_CROP_FRAME, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(crop_frame),
   CMD_EXE_ENA(mask_all),
   CMD_EXE_ENA(deselect_mask),
   CMD_EXE_ENA(reselect_mask),
