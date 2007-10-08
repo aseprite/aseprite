@@ -682,7 +682,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
     return;
   }
   /* error, the active layer is locked */
-  else if (!editor->sprite->layer->writeable) {
+  else if (!editor->sprite->layer->writable) {
     jalert(_("Warning"
 	     "<<The active layer is locked,"
 	     "<<unlock it and try again"
@@ -1193,7 +1193,7 @@ void do_tool_points(Sprite *sprite, Tool *tool, const char *_color,
   /* we have a image layer to paint in? */
   /* error, the active layer is not visible */
   /* error, the active layer is locked */
-  if (!image || !sprite->layer->readable || !sprite->layer->writeable)
+  if (!image || !sprite->layer->readable || !sprite->layer->writable)
     return;
 
   /* select the hline procedure */

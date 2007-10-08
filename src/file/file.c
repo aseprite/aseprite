@@ -152,7 +152,7 @@ const char *get_readable_extensions(void)
   return file_extensions;
 }
 
-const char *get_writeable_extensions(void)
+const char *get_writable_extensions(void)
 {
   int c;
 

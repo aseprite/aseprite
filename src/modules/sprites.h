@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,15 +30,15 @@ struct Stock;
 
 extern struct Sprite *current_sprite;
 
-int init_module_sprites (void);
-void exit_module_sprites (void);
+int init_module_sprites(void);
+void exit_module_sprites(void);
 
-JList get_sprite_list (void);
-struct Sprite *get_first_sprite (void);
-struct Sprite *get_next_sprite (struct Sprite *sprite);
+JList get_sprite_list(void);
+struct Sprite *get_first_sprite(void);
+struct Sprite *get_next_sprite(struct Sprite *sprite);
 
-struct Sprite *get_clipboard_sprite (void);
-void set_clipboard_sprite (struct Sprite *sprite);
+struct Sprite *get_clipboard_sprite(void);
+void set_clipboard_sprite(struct Sprite *sprite);
 
 void sprite_mount(struct Sprite *sprite);
 void sprite_unmount(struct Sprite *sprite);
@@ -48,7 +48,7 @@ void set_current_sprite(struct Sprite *sprite);
 void send_sprite_to_top(struct Sprite *sprite);
 void sprite_show(struct Sprite *sprite);
 
-struct Stock *sprite_get_images (struct Sprite *sprite, int target, int write, int **x, int **y);
+struct Stock *sprite_get_images(struct Sprite *sprite, int target, int write, int **x, int **y);
 
 #endif /* MODULES_SPRITES_H */
 

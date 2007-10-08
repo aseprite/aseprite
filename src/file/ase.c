@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,15 +190,15 @@ Sprite *ase_file_read_f (FILE *f)
   }
 
   /* set frames and speed */
-  sprite_set_frames (sprite, header.frames);
-  sprite_set_speed (sprite, header.speed);
+  sprite_set_frames(sprite, header.frames);
+  sprite_set_speed(sprite, header.speed);
 
   /* prepare variables for layer chunks */
   last_layer = sprite->set;
   current_level = -1;
 
   /* progress */
-  add_progress (header.size);
+  add_progress(header.size);
 
   /* read frame by frame to end-of-file */
   for (frpos=0; frpos<sprite->frames; frpos++) {
@@ -627,7 +627,7 @@ static Layer *ase_file_read_layer_chunk (FILE *f, int imgtype, Layer **previous_
   if (layer) {
     /* flags */
     layer->readable = (flags & 1) ? TRUE: FALSE;
-    layer->writeable = (flags & 2) ? TRUE: FALSE;
+    layer->writable = (flags & 2) ? TRUE: FALSE;
 
     /* name */
     if (name)
@@ -660,7 +660,7 @@ static void ase_file_write_layer_chunk (FILE *f, Layer *layer)
   ase_file_write_start_chunk (f, ASE_FILE_CHUNK_LAYER);
 
   /* flags */
-  fputw ((layer->readable & 1) | ((layer->writeable & 1) << 1), f);
+  fputw ((layer->readable & 1) | ((layer->writable & 1) << 1), f);
 
   /* layer type */
   fputw (layer_is_image (layer) ? 0:

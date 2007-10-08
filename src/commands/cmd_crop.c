@@ -97,7 +97,7 @@ static bool command_enabled_crop(const char *argument)
   if ((!current_sprite) ||
       (!current_sprite->layer) ||
       (!current_sprite->layer->readable) ||
-      (!current_sprite->layer->writeable) ||
+      (!current_sprite->layer->writable) ||
       (!current_sprite->mask) ||
       (!current_sprite->mask->bitmap))
     return FALSE;

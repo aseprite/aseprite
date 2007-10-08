@@ -957,10 +957,10 @@ static int bind_get_readable_extensions(lua_State *L)
   return 1;
 }
 
-static int bind_get_writeable_extensions(lua_State *L)
+static int bind_get_writable_extensions(lua_State *L)
 {
   const char *return_value;
-  return_value = get_writeable_extensions();
+  return_value = get_writable_extensions();
   lua_pushstring(L, return_value);
   return 1;
 }
@@ -1152,12 +1152,6 @@ static int bind_set_frame_to_handle(lua_State *L)
   GetUD(1, layer, Layer);
   GetUD(2, frame, Frame);
   set_frame_to_handle(layer, frame);
-  return 0;
-}
-
-static int bind_new_frame(lua_State *L)
-{
-  new_frame();
   return 0;
 }
 
@@ -5708,7 +5702,7 @@ const luaL_reg bindings_routines[] = {
   { "sprite_load", bind_sprite_load },
   { "sprite_save", bind_sprite_save },
   { "get_readable_extensions", bind_get_readable_extensions },
-  { "get_writeable_extensions", bind_get_writeable_extensions },
+  { "get_writable_extensions", bind_get_writable_extensions },
   { "set_current_editor", bind_set_current_editor },
   { "update_editors_with_sprite", bind_update_editors_with_sprite },
   { "editors_draw_sprite", bind_editors_draw_sprite },
@@ -5734,7 +5728,6 @@ const luaL_reg bindings_routines[] = {
   { "flip_horizontal", bind_flip_horizontal },
   { "flip_vertical", bind_flip_vertical },
   { "set_frame_to_handle", bind_set_frame_to_handle },
-  { "new_frame", bind_new_frame },
   { "move_frame", bind_move_frame },
   { "copy_frame", bind_copy_frame },
   { "link_frame", bind_link_frame },

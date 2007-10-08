@@ -22,12 +22,19 @@
 
 #include "jinete.h"
 
-#include "core/app.h"
+/* #include "core/app.h" */
 #include "modules/sprites.h"
-#include "raster/sprite.h"
+/* #include "raster/sprite.h" */
+#include "dialogs/filmedit.h"
 
 #endif
 
+bool command_enabled_film_editor(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_film_editor(const char *argument)
 {
+  switch_between_film_and_sprite_editor();
 }

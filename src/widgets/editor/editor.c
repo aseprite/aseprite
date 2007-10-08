@@ -1099,7 +1099,7 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
       else if (msg->mouse.left && has_only_shifts(msg, KB_CTRL_FLAG)) {
 	if ((editor->sprite->layer) &&
 	    (editor->sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) &&
-	    (editor->sprite->layer->writeable)) {
+	    (editor->sprite->layer->writable)) {
 	  bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
 
 	  interactive_move_layer(click2 ? MODE_CLICKANDCLICK:

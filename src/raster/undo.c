@@ -72,8 +72,9 @@ enum {
   UNDO_TYPE_MOVE_LAYER,
   UNDO_TYPE_SET_LAYER,
 
-  /* undo management */
+  /* misc */
   UNDO_TYPE_SET_MASK,
+  UNDO_TYPE_SET_FRAMES,
 };
 
 typedef struct UndoChunk
@@ -151,6 +152,9 @@ static void redo_set_layer(UndoStream *stream, UndoChunk *chunk, int state);
 static void chunk_set_mask(UndoStream *stream, Sprite *sprite);
 static void redo_set_mask(UndoStream *stream, UndoChunk *chunk, int state);
 
+static void chunk_set_frames(UndoStream *stream, Sprite *sprite);
+static void redo_set_frames(UndoStream *stream, UndoChunk *chunk, int state);
+
 static UndoAction undo_actions[] = { /* in UNDO_TYPEs order */
   { "Open", redo_open },
   { "Close", redo_close },
@@ -168,6 +172,7 @@ static UndoAction undo_actions[] = { /* in UNDO_TYPEs order */
   { "Move layer", redo_move_layer },
   { "Set layer", redo_set_layer },
   { "Set mask", redo_set_mask },
+  { "Set frames", redo_set_frames },
 };
 
 /* UndoChunk */
@@ -318,7 +323,7 @@ static void run_undo(Undo *undo, int state, int discard_tail)
       else if (chunk->type == UNDO_TYPE_CLOSE)
 	level--;
 
-      undo_chunk_free (chunk);
+      undo_chunk_free(chunk);
 
       if (state == DO_UNDO)
 	undo->diff_count--;
@@ -386,7 +391,7 @@ static void update_undo(Undo *undo)
 
   /* "undo" is too big? */
   while (groups > 1 && undo->undo_stream->size > undo->size_limit) {
-    run_undo (undo, DO_UNDO, TRUE);
+    run_undo(undo, DO_UNDO, TRUE);
     groups--;
   }
 }
@@ -1174,6 +1179,44 @@ static void redo_set_mask(UndoStream *stream, UndoChunk *chunk, int state)
 
 /***********************************************************************
 
+  "set_frames"
+
+     DWORD		sprite ID
+     DWORD		frames
+
+***********************************************************************/
+
+void undo_set_frames(Undo *undo, Sprite *sprite)
+{
+  chunk_set_frames(undo->undo_stream, sprite);
+  update_undo(undo);
+}
+
+static void chunk_set_frames(UndoStream *stream, Sprite *sprite)
+{
+  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_SET_FRAMES);
+
+  undo_chunk_put32(chunk, sprite->gfxobj.id);
+  undo_chunk_put32(chunk, sprite->frames);
+
+  undo_stream_push_chunk(stream, chunk);
+}
+
+static void redo_set_frames(UndoStream *stream, UndoChunk *chunk, int state)
+{
+  unsigned long sprite_id = undo_chunk_get32(chunk);
+  Sprite *sprite = (Sprite *)gfxobj_find(sprite_id);
+
+  if (sprite) {
+    int frames = undo_chunk_get32(chunk);
+
+    chunk_set_frames(stream, sprite);
+    sprite_set_frames(sprite, frames);
+  }
+}
+
+/***********************************************************************
+
   Helper routines for UndoChunk
 
 ***********************************************************************/
@@ -1426,7 +1469,7 @@ static Layer *undo_chunk_read_layer(UndoChunk *chunk)
       layer->readable = TRUE;
 
     if (flags & 2)
-      layer->writeable = TRUE;
+      layer->writable = TRUE;
 
     _gfxobj_set_id((GfxObj *)layer, layer_id);
   }
@@ -1444,7 +1487,7 @@ static void undo_chunk_write_layer(UndoChunk *chunk, Layer *layer)
   undo_chunk_put32(chunk, layer->gfxobj.id); /* ID */
   undo_chunk_write_string(chunk, layer->name); /* name */
   undo_chunk_put8(chunk, (((layer->readable)?1:0) |
-			  (((layer->writeable)?1:0)<<1))); /* properties */
+			  (((layer->writable)?1:0)<<1))); /* properties */
   undo_chunk_put32(chunk, layer->gfxobj.type); /* type */
 
   switch (layer->gfxobj.type) {

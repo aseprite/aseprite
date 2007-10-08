@@ -210,7 +210,7 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
   if (!layer->readable)
     return stock;
 
-  if (write && !layer->writeable)
+  if (write && !layer->writable)
     return stock;
 
   switch (layer->gfxobj.type) {
@@ -267,7 +267,7 @@ static void layer_get_pos (Sprite *sprite, Layer *layer, int target, int write, 
   if (!layer->readable)
     return;
 
-  if (write && !layer->writeable)
+  if (write && !layer->writable)
     return;
 
   switch (layer->gfxobj.type) {

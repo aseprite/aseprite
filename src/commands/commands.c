@@ -102,9 +102,13 @@ void command_execute_crop_layer(const char *argument);
 /* frame */
 void command_execute_frame_properties(const char *argument);
 void command_execute_remove_frame(const char *argument);
+bool command_enabled_new_frame(const char *argument);
 void command_execute_new_frame(const char *argument);
+bool command_enabled_move_frame(const char *argument);
 void command_execute_move_frame(const char *argument);
+bool command_enabled_copy_frame(const char *argument);
 void command_execute_copy_frame(const char *argument);
+bool command_enabled_link_frame(const char *argument);
 void command_execute_link_frame(const char *argument);
 bool command_enabled_crop_frame(const char *argument);
 void command_execute_crop_frame(const char *argument);
@@ -143,6 +147,7 @@ bool command_checked_rectangle_tool(const char *argument);
 void command_execute_rectangle_tool(const char *argument);
 bool command_checked_ellipse_tool(const char *argument);
 void command_execute_ellipse_tool(const char *argument);
+bool command_enabled_film_editor(const char *argument);
 void command_execute_film_editor(const char *argument);
 void command_execute_palette_editor(const char *argument);
 void command_execute_convolution_matrix(const char *argument);
@@ -214,10 +219,10 @@ static Command commands[] = {
   CMD_EXE_ENA(crop_layer),
   { CMD_FRAME_PROPERTIES, NULL, NULL, NULL, NULL },
   { CMD_REMOVE_FRAME, NULL, NULL, NULL, NULL },
-  { CMD_NEW_FRAME, NULL, NULL, NULL, NULL },
-  { CMD_MOVE_FRAME, NULL, NULL, NULL, NULL },
-  { CMD_COPY_FRAME, NULL, NULL, NULL, NULL },
-  { CMD_LINK_FRAME, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(new_frame),
+  CMD_EXE_ENA(move_frame),
+  CMD_EXE_ENA(copy_frame),
+  CMD_EXE_ENA(link_frame),
   CMD_EXE_ENA(crop_frame),
   CMD_EXE_ENA(mask_all),
   CMD_EXE_ENA(deselect_mask),
@@ -236,7 +241,7 @@ static Command commands[] = {
   CMD_EXE_CHK(line_tool),
   CMD_EXE_CHK(rectangle_tool),
   CMD_EXE_CHK(ellipse_tool),
-  { CMD_FILM_EDITOR, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(film_editor),
   { CMD_PALETTE_EDITOR, NULL, NULL, NULL, NULL },
   { CMD_CONVOLUTION_MATRIX, NULL, NULL, NULL, NULL },
   { CMD_COLOR_CURVE, NULL, NULL, NULL, NULL },

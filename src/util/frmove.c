@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,58 +47,6 @@ void set_frame_to_handle (Layer *layer, Frame *frame)
 {
   handle_layer = layer;
   handle_frame = frame;
-}
-
-void new_frame (void)
-{
-  int bg, image_index;
-  Frame *frame;
-  Image *image;
-
-  if (!current_sprite ||
-      !current_sprite->layer ||
-      !layer_is_image (current_sprite->layer))
-    return;
-
-  while (layer_get_frame (current_sprite->layer, current_sprite->frpos))
-    current_sprite->frpos++;
-
-  if (current_sprite->frpos >= current_sprite->frames)
-    sprite_set_frames(current_sprite, current_sprite->frpos+1);
-
-  /* create a new empty frame with a new clean image */
-
-  image = image_new (current_sprite->imgtype,
-		     current_sprite->w,
-		     current_sprite->h);
-  if (!image) {
-    console_printf (_("Not enough memory.\n"));
-    return;
-  }
-
-  /* background color (right color) */
-  bg = get_color_for_image (image->imgtype,
-			    color_bar_get_color (app_get_color_bar (), 1));
-  image_clear (image, bg);
-
-  /* add the image in the stock */
-  image_index = stock_add_image (current_sprite->layer->stock, image);
-
-  undo_open (current_sprite->undo);
-  undo_add_image (current_sprite->undo,
-		  current_sprite->layer->stock, image);
-
-  /* add the frame in the layer */
-  frame = frame_new (current_sprite->frpos, image_index);
-  undo_add_frame (current_sprite->undo, current_sprite->layer, frame);
-  layer_add_frame (current_sprite->layer, frame);
-
-  undo_close (current_sprite->undo);
-
-  GUI_Refresh (current_sprite);
-
-  handle_layer = NULL;
-  handle_frame = NULL;
 }
 
 void move_frame (void)

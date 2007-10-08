@@ -284,8 +284,8 @@ static int metatable_index(lua_State *L)
 			 Type_Layer: Type_Sprite, layer->parent);
 	else if (strcmp (index, "readable") == 0)
 	  lua_pushboolean (L, layer->readable);
-	else if (strcmp (index, "writeable") == 0)
-	  lua_pushboolean (L, layer->writeable);
+	else if (strcmp (index, "writable") == 0)
+	  lua_pushboolean (L, layer->writable);
 	else if (strcmp (index, "prev") == 0)
 	  push_userdata (L, Type_Layer, layer_get_prev (layer));
 	else if (strcmp (index, "next") == 0)

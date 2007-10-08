@@ -177,7 +177,7 @@ Sprite *sprite_load(const char *filename);
 int sprite_save(Sprite *sprite);
 
 char *get_readable_extensions(void);
-char *get_writeable_extensions(void);
+char *get_writable_extensions(void);
 
 /* modules/editors.c */
 
@@ -234,7 +234,6 @@ void flip_vertical(void);
 
 void set_frame_to_handle(Layer *layer, Frame *frame);
 
-void new_frame(void);
 void move_frame(void);
 void copy_frame(void);
 void link_frame(void);

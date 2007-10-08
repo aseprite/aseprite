@@ -23,7 +23,7 @@
 #include "jinete/alert.h"
 
 #include "dialogs/filesel.h"
-#include "modules/gui.h"
+#include "modules/gui.h" 
 #include "modules/sprites.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"

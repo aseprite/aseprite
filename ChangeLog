@@ -1,3 +1,10 @@
+2007-10-07  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_new_frame.c (command_execute_new_frame): Added
+	from new_frame() routine (now with undo of everything).
+
+	* src/raster/undo.c (undo_set_frames): Added.
+
 2007-10-03  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/commands/cmd_crop.c: Added with crop_sprite/layer/frame &

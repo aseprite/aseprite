@@ -50,7 +50,7 @@ void command_execute_save_file_as(const char *argument)
 
   for (;;) {
     newfilename = GUI_FileSelect(_("Save Sprite"), filename,
-				 get_writeable_extensions());
+				 get_writable_extensions());
     if (!newfilename)
       return;
     ustrcpy(filename, newfilename);

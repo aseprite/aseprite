@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,15 +35,15 @@ struct Stock
   bool ref;		/* this is a reference (non-original) stock? */
 };
 
-Stock *stock_new (int imgtype);
-Stock *stock_new_ref (int imgtype);
-Stock *stock_new_copy (const Stock *stock);
-void stock_free (Stock *stock);
+Stock *stock_new(int imgtype);
+Stock *stock_new_ref(int imgtype);
+Stock *stock_new_copy(const Stock *stock);
+void stock_free(Stock *stock);
 
-int stock_add_image (Stock *stock, struct Image *image);
-void stock_remove_image (Stock *stock, struct Image *image);
-void stock_replace_image (Stock *stock, int index, Image *image);
+int stock_add_image(Stock *stock, struct Image *image);
+void stock_remove_image(Stock *stock, struct Image *image);
+void stock_replace_image(Stock *stock, int index, Image *image);
 
-struct Image *stock_get_image (Stock *stock, int index);
+struct Image *stock_get_image(Stock *stock, int index);
 
 #endif /* RASTER_STOCK_H */

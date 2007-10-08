@@ -1,5 +1,5 @@
 ASE Files (.ASE) Format description
-Copyright (C) 2004-2005 by David A. Capello
+Copyright (C) 2004-2005, 2007 by David A. Capello
 ----------------------------------------------------------------------
 
 1. References
@@ -92,7 +92,7 @@ Layer Chunk (0x2004)
   In the first frame should be a set of layer chunks to determine the
   entire layers layout:
 
-  WORD		Flags (1=readable, 2=writeable)
+  WORD		Flags (1=readable, 2=writable)
   WORD		Layer type (0=normal (image) layer, 1=layer set)
   WORD          Layer child level (see NOTE.1)
   WORD		Default layer width in pixels (ignored)
@@ -199,7 +199,7 @@ NOTE.3: The raw pixel data is saved row by row from top to bottom, and
         each scanline is from pixel by pixel from left to right.
 	In RGB images, each pixel have 4 bytes in the order R, G, B, A.
 	In Grayscale images, each pixel have 2 bytes in the order K, A.
-	In Indexed images, each pixel have 1 bytes (the index).
+	In Indexed images, each pixel have 1 byte (the index).
 
 
 ========================================

@@ -56,6 +56,6 @@ void command_execute_save_file(const char *argument)
      save-as dialog to the user to select for first time the file-name
      for this sprite */
   else {
-    command_execute(command_get_by_name(CMD_SAVE_FILE), argument);
+    command_execute(command_get_by_name(CMD_SAVE_FILE_AS), argument);
   }
 }

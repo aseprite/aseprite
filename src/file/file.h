@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,16 +50,16 @@ void file_sequence_set_color(int index, int r, int g, int b);
 void file_sequence_get_color(int index, int *r, int *g, int *b);
 struct Image *file_sequence_image(int imgtype, int w, int h);
 struct Sprite *file_sequence_sprite(void);
-struct Image *file_sequence_image_to_save (void);
+struct Image *file_sequence_image_to_save(void);
 
 /* available extensions for each load/save operation */
 
-const char *get_readable_extensions (void);
-const char *get_writeable_extensions (void);
+const char *get_readable_extensions(void);
+const char *get_writable_extensions(void);
 
 /* mainly routines to load/save images */
 
-struct Sprite *sprite_load (const char *filename);
-int sprite_save (struct Sprite *sprite);
+struct Sprite *sprite_load(const char *filename);
+int sprite_save(struct Sprite *sprite);
 
 #endif /* FILE_H */

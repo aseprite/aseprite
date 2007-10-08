@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ static int has_frames (Layer *layer, int frpos);
 						\
     layer->parent = NULL;			\
     layer->readable = TRUE;			\
-    layer->writeable = TRUE;			\
+    layer->writable = TRUE;			\
 						\
     layer->imgtype = 0;				\
     layer->blend_mode = 0;			\
@@ -171,7 +171,7 @@ Layer *layer_new_copy(const Layer *layer)
   if (layer_copy) {
     layer_set_name(layer_copy, layer->name);
     layer_copy->readable = layer->readable;
-    layer_copy->writeable = layer->writeable;
+    layer_copy->writable = layer->writable;
   }
 
   return layer_copy;

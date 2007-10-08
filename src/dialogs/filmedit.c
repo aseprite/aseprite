@@ -329,20 +329,20 @@ static bool layer_box_msg_proc (JWidget widget, JMessage msg)
 
       /* undo */
       if (command && strcmp(command->name, CMD_UNDO) == 0) {
-	if (undo_can_undo (sprite->undo)) {
-	  undo_undo (sprite->undo);
-	  destroy_thumbnails ();
-	  jmanager_refresh_screen ();
+	if (undo_can_undo(sprite->undo)) {
+	  undo_undo(sprite->undo);
+	  destroy_thumbnails();
+	  jmanager_refresh_screen();
 	}
 	return TRUE;
       }
 
       /* redo */
       if (command && strcmp(command->name, CMD_REDO) == 0) {
-	if (undo_can_redo (sprite->undo)) {
-	  undo_redo (sprite->undo);
-	  destroy_thumbnails ();
-	  jmanager_refresh_screen ();
+	if (undo_can_redo(sprite->undo)) {
+	  undo_redo(sprite->undo);
+	  destroy_thumbnails();
+	  jmanager_refresh_screen();
 	}
 	return TRUE;
       }
@@ -612,9 +612,9 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	y += h;
       }
 
-      blit (bmp, ji_screen, 0, 0, vp->x1, vp->y1, jrect_w(vp), jrect_h(vp));
-      destroy_bitmap (bmp);
-      jrect_free (vp);
+      blit(bmp, ji_screen, 0, 0, vp->x1, vp->y1, jrect_w(vp), jrect_h(vp));
+      destroy_bitmap(bmp);
+      jrect_free(vp);
       return TRUE;
     }
 
@@ -660,10 +660,10 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	    (ji_screen,
 	     frame_box->rect.x1, frame_box->rect.y1,
 	     frame_box->rect.x2-1, frame_box->rect.y2-1);
-	  rectdotted (ji_screen,
-		      frame_box->rect.x1, frame_box->rect.y1,
-		      frame_box->rect.x2-1, frame_box->rect.y2-1,
-		      makecol (0, 0, 0), makecol (255, 255, 255));
+	  rectdotted(ji_screen,
+		     frame_box->rect.x1, frame_box->rect.y1,
+		     frame_box->rect.x2-1, frame_box->rect.y2-1,
+		     makecol (0, 0, 0), makecol (255, 255, 255));
 	  jmouse_show();
 	}
       }
@@ -695,22 +695,22 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	  rectdotted(ji_screen,
 		     frame_box->rect.x1, frame_box->rect.y1,
 		     frame_box->rect.x2-1, frame_box->rect.y2-1,
-		     makecol (0, 0, 0), makecol (255, 255, 255));
+		     makecol(0, 0, 0), makecol(255, 255, 255));
 
 	  jmouse_show();
 	}
 	/* select */
 	else if (state == STATE_SELECTING) {
-	  select_frpos_motion (widget);
-	  select_layer_motion (widget, frame_box->layer_box, frame_box);
+	  select_frpos_motion(widget);
+	  select_layer_motion(widget, frame_box->layer_box, frame_box);
 	}
 	return TRUE;
       }
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture (widget)) {
-	jwidget_release_mouse (widget);
+      if (jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
 
 	if ((state == STATE_SCROLLING) || (state == STATE_MOVING))
 	  jmouse_set_cursor(JI_CURSOR_NORMAL);
@@ -723,23 +723,23 @@ static bool frame_box_msg_proc (JWidget widget, JMessage msg)
 	    jmouse_show();
 	  }
 
-	  set_frame_to_handle (frame_box->layer, frame_box->frame);
+	  set_frame_to_handle(frame_box->layer, frame_box->frame);
 
 	  if (msg->mouse.right) {
-	    JWidget popup_menuitem = get_frame_popup_menuitem ();
+	    JWidget popup_menuitem = get_frame_popup_menuitem();
 
-	    if (popup_menuitem && jmenuitem_get_submenu (popup_menuitem)) {
+	    if (popup_menuitem && jmenuitem_get_submenu(popup_menuitem)) {
 	      /* show the frame pop-up menu */
-	      jmenu_popup (jmenuitem_get_submenu (popup_menuitem),
-			   msg->mouse.x, msg->mouse.y);
+	      jmenu_popup(jmenuitem_get_submenu(popup_menuitem),
+			  msg->mouse.x, msg->mouse.y);
 
-	      jview_update (jwidget_get_view (frame_box->widget));
-	      jview_update (jwidget_get_view (frame_box->layer_box->widget));
+	      jview_update(jwidget_get_view (frame_box->widget));
+	      jview_update(jwidget_get_view (frame_box->layer_box->widget));
 	    }
 	  }
 	  else if (state == STATE_MOVING) {
-	    move_frame ();
-	    jwidget_dirty (widget);
+	    move_frame();
+	    jwidget_dirty(widget);
 	  }
 	}
 

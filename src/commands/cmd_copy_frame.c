@@ -28,6 +28,11 @@
 
 #endif
 
+bool command_enabled_copy_frame(const char *argument)
+{
+  return FALSE;
+}
+
 void command_execute_copy_frame(const char *argument)
 {
 }

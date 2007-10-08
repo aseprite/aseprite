@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ struct Layer
   char name[256];		/* layer name */
   GfxObj *parent;		/* parent object */
   unsigned readable : 1;
-  unsigned writeable : 1;
+  unsigned writable : 1;
 
   /* for GFXOBJ_LAYER_IMAGE */
   int imgtype;			/* image type */
@@ -54,27 +54,27 @@ struct Layer
   /* int blend_mode; */
 };
 
-Layer *layer_new (int imgtype);
-Layer *layer_set_new (void);
+Layer *layer_new(int imgtype);
+Layer *layer_set_new(void);
 /* Layer *layer_new_text (const char *text); */
-Layer *layer_new_copy (const Layer *layer);
-Layer *layer_new_with_image (int imgtype, int x, int y, int w, int h, int frpos);
-void layer_free (Layer *layer);
+Layer *layer_new_copy(const Layer *layer);
+Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos);
+void layer_free(Layer *layer);
 
-int layer_is_image (const Layer *layer);
-int layer_is_set (const Layer *layer);
+int layer_is_image(const Layer *layer);
+int layer_is_set(const Layer *layer);
 
-Layer *layer_get_prev (Layer *layer);
-Layer *layer_get_next (Layer *layer);
+Layer *layer_get_prev(Layer *layer);
+Layer *layer_get_next(Layer *layer);
 
-void layer_set_name (Layer *layer, const char *name);
-void layer_set_blend_mode (Layer *layer, int blend_mode);
-void layer_set_parent (Layer *layer, GfxObj *gfxobj);
+void layer_set_name(Layer *layer, const char *name);
+void layer_set_blend_mode(Layer *layer, int blend_mode);
+void layer_set_parent(Layer *layer, GfxObj *gfxobj);
 
 /* for LAYER_IMAGE */
-void layer_add_frame (Layer *layer, struct Frame *frame);
-void layer_remove_frame (Layer *layer, struct Frame *frame);
-struct Frame *layer_get_frame (Layer *layer, int frpos);
+void layer_add_frame(Layer *layer, struct Frame *frame);
+void layer_remove_frame(Layer *layer, struct Frame *frame);
+struct Frame *layer_get_frame(Layer *layer, int frpos);
 
 /* for LAYER_SET */
 void layer_add_layer(Layer *set, Layer *layer);
