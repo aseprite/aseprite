@@ -95,9 +95,9 @@ int load_root_menu(void)
   dirs = filename_in_datadir("usergui.xml");
   {
     char buf[256];
-    sprintf(buf, "defgui-%s.xml", intl_get_lang());
+    sprintf(buf, "gui-%s.xml", intl_get_lang());
     dirs_cat_dirs(dirs, filename_in_datadir(buf));
-    dirs_cat_dirs(dirs, filename_in_datadir("defgui-en.xml"));
+    dirs_cat_dirs(dirs, filename_in_datadir("gui-en.xml"));
   }
 
   for (dir=dirs; dir; dir=dir->next) {

@@ -225,11 +225,6 @@ void crop_sprite(void);
 void crop_layer(void);
 void crop_frame(void);
 
-/* util/flip.c */
-
-void flip_horizontal(void);
-void flip_vertical(void);
-
 /* util/frame.c */
 
 void set_frame_to_handle(Layer *layer, Frame *frame);
@@ -285,17 +280,12 @@ int set_gfx(const char *card, int w, int h, int depth);
 
 /* dialogs/... */
 
-void dialogs_color_curve(void);
-void dialogs_convolution_matrix(void);
 void dialogs_draw_text(void);
 void switch_between_film_and_sprite_editor(void);
-void dialogs_invert_color(void);
 void dialogs_mapgen(void);
 void dialogs_mask_color(void);
-void dialogs_median_filter(void);
 void dialogs_options(void);
 void dialogs_palette_editor(void);
-void dialogs_replace_color(void);
 void dialogs_screen_saver(void);
 void dialogs_select_language(bool force);
 void dialogs_tips(bool forced);

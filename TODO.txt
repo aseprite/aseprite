@@ -1,9 +1,10 @@
 High priority work
 ------------------
 
+- search for XXX (XXXX is supposed to be high priority);
+  + replace XXX to TODO;
 - add support for PNG files.
 - ver por el nuevo load_font de Allegro.
-- search for XXX (XXXX is supposed to be high priority);
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);
 - fix undo of big chunks (more than limit):
@@ -44,7 +45,14 @@ High priority work
 Wish-list
 ---------
 
-- Add menu customization through UI (Tools/Customize).
+- my wish-list:
+  + keyboard shortcuts for snap-to-grid and view-grid
+  + different snap-to-grid for paste operation
+  + better dialogs: widder buttons, more borders.
+  + better film editor
+    + "middle mouse button" for the film editor.
+  + don't use LINKs when load a sequence of bitmaps.
+- add menu customization through UI (Tools/Customize).
 - Mateusz Czaplinski ideas:
   + when move selections, will be good the possibility to see relative
     position from the starting point of movement;

@@ -21,8 +21,6 @@
 	<key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
 	<key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
 	<key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
-	<key command="quick_move" shortcut="Shift+M" />
-	<key command="quick_copy" shortcut="Shift+C" />
 	<key command="flip_horizontal" shortcut="Shift+H" />
 	<key command="flip_vertical" shortcut="Shift+V" />
 	<key command="replace_color" shortcut="Shift+R" />
@@ -98,9 +96,6 @@
 	    <item command="copy" name="&Copy" />
 	    <item command="paste" name="&Paste" />
 	    <item command="clear" name="C&lear" />
-	    <separator />
-	    <item command="quick_move" name="Quick &Move" />
-	    <item command="quick_copy" name="Quick C&opy" />
 	    <separator />
 	    <item command="flip_horizontal" name="Flip &Horizontal" />
 	    <item command="flip_vertical" name="Flip &Vertical" />

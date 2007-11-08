@@ -287,7 +287,7 @@ static int metatable_index(lua_State *L)
 	else if (strcmp (index, "writable") == 0)
 	  lua_pushboolean (L, layer->writable);
 	else if (strcmp (index, "prev") == 0)
-	  push_userdata (L, Type_Layer, layer_get_prev (layer));
+ 	  push_userdata (L, Type_Layer, layer_get_prev (layer));
 	else if (strcmp (index, "next") == 0)
 	  push_userdata (L, Type_Layer, layer_get_next (layer));
 	else {
@@ -719,7 +719,6 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "dialogs/canvasze.h"
 #include "dialogs/dmapgen.h"
 #include "dialogs/drawtext.h"
-#include "dialogs/effect.h"
 #include "dialogs/filmedit.h"
 #include "dialogs/maskcol.h"
 #include "dialogs/options.h"
@@ -734,7 +733,6 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "util/autocrop.h"
 #include "util/clipbrd.h"
 #include "util/crop.h"
-#include "util/flip.h"
 #include "util/frmove.h"
 #include "util/mapgen.h"
 #include "util/msk_file.h"

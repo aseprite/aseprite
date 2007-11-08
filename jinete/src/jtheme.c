@@ -146,7 +146,6 @@ void ji_set_standard_theme(void)
 {
   if (!ji_standard_theme) {
     ji_standard_theme = jtheme_new_standard();
-/*     ji_standard_theme = jtheme_new_simple(); */
     if (!ji_standard_theme)
       return;
   }

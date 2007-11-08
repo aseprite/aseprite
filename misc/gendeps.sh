@@ -27,10 +27,10 @@ rm -f makefile.dep
 $GCC $CFLAGS jinete/src/*.c					     \
     src/*.c							     \
     src/commands/*.c						     \
+    src/commands/fx/*.c						     \
     src/console/*.c						     \
     src/core/*.c						     \
     src/dialogs/*.c						     \
-    src/dialogs/effect/*.c					     \
     src/effect/*.c						     \
     src/file/*.c						     \
     src/intl/*.c						     \

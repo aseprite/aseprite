@@ -63,11 +63,13 @@ bool command_enabled_paste(const char *argument);
 void command_execute_paste(const char *argument);
 bool command_enabled_clear(const char *argument);
 void command_execute_clear(const char *argument);
-void command_execute_quick_move(const char *argument);
-void command_execute_quick_copy(const char *argument);
+bool command_enabled_flip_horizontal(const char *argument);
 void command_execute_flip_horizontal(const char *argument);
+bool command_enabled_flip_vertical(const char *argument);
 void command_execute_flip_vertical(const char *argument);
+bool command_enabled_replace_color(const char *argument);
 void command_execute_replace_color(const char *argument);
+bool command_enabled_invert_color(const char *argument);
 void command_execute_invert_color(const char *argument);
 void command_execute_refresh(const char *argument);
 void command_execute_configure_screen(const char *argument);
@@ -150,8 +152,11 @@ void command_execute_ellipse_tool(const char *argument);
 bool command_enabled_film_editor(const char *argument);
 void command_execute_film_editor(const char *argument);
 void command_execute_palette_editor(const char *argument);
+bool command_enabled_convolution_matrix(const char *argument);
 void command_execute_convolution_matrix(const char *argument);
+bool command_enabled_color_curve(const char *argument);
 void command_execute_color_curve(const char *argument);
+bool command_enabled_despeckle(const char *argument);
 void command_execute_despeckle(const char *argument);
 /* void command_execute_draw_text(const char *argument); */
 /* void command_execute_play_flic(const char *argument); */
@@ -188,12 +193,10 @@ static Command commands[] = {
   CMD_EXE_ENA(copy),
   CMD_EXE_ENA(paste),
   CMD_EXE_ENA(clear),
-  { CMD_QUICK_MOVE, NULL, NULL, NULL, NULL },
-  { CMD_QUICK_COPY, NULL, NULL, NULL, NULL },
-  { CMD_FLIP_HORIZONTAL, NULL, NULL, NULL, NULL },
-  { CMD_FLIP_VERTICAL, NULL, NULL, NULL, NULL },
-  { CMD_REPLACE_COLOR, NULL, NULL, NULL, NULL },
-  { CMD_INVERT_COLOR, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(flip_horizontal),
+  CMD_EXE_ENA(flip_vertical),
+  CMD_EXE_ENA(replace_color),
+  CMD_EXE_ENA(invert_color),
   CMD_EXE(refresh),
   { CMD_CONFIGURE_SCREEN, NULL, NULL, NULL, NULL },
   CMD_EXE(advanced_mode),
@@ -243,9 +246,9 @@ static Command commands[] = {
   CMD_EXE_CHK(ellipse_tool),
   CMD_EXE_ENA(film_editor),
   { CMD_PALETTE_EDITOR, NULL, NULL, NULL, NULL },
-  { CMD_CONVOLUTION_MATRIX, NULL, NULL, NULL, NULL },
-  { CMD_COLOR_CURVE, NULL, NULL, NULL, NULL },
-  { CMD_DESPECKLE, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(convolution_matrix),
+  CMD_EXE_ENA(color_curve),
+  CMD_EXE_ENA(despeckle),
 /*   { CMD_DRAW_TEXT, NULL, NULL, NULL, NULL }, */
 /*   { CMD_PLAY_FLIC, NULL, NULL, NULL, NULL }, */
 /*   { CMD_MAPGEN, NULL, NULL, NULL, NULL }, */

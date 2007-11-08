@@ -102,8 +102,8 @@ ase_files="all.h						     \
 	   *.txt						     \
 	   data/aseicon.*					     \
 	   data/convmatr.def					     \
-	   data/defgui-en.xml					     \
-	   data/defgui-es.xml					     \
+	   data/gui-en.xml					     \
+	   data/gui-es.xml					     \
 	   data/fonts/*.pcx					     \
 	   data/jids/*.jid					     \
 	   data/palettes/*.col					     \

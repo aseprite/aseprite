@@ -84,10 +84,10 @@ $(ZLIB_LIB): $(ZLIB_OBJS)
 
 VPATH = src					\
 	src/commands				\
+	src/commands/fx				\
 	src/console				\
 	src/core				\
 	src/dialogs				\
-	src/dialogs/effect			\
 	src/effect				\
 	src/file				\
 	src/file/gif				\

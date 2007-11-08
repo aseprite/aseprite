@@ -1133,18 +1133,6 @@ static int bind_crop_frame(lua_State *L)
   return 0;
 }
 
-static int bind_flip_horizontal(lua_State *L)
-{
-  flip_horizontal();
-  return 0;
-}
-
-static int bind_flip_vertical(lua_State *L)
-{
-  flip_vertical();
-  return 0;
-}
-
 static int bind_set_frame_to_handle(lua_State *L)
 {
   Layer *layer;
@@ -1317,18 +1305,6 @@ static int bind_set_gfx(lua_State *L)
   return 1;
 }
 
-static int bind_dialogs_color_curve(lua_State *L)
-{
-  dialogs_color_curve();
-  return 0;
-}
-
-static int bind_dialogs_convolution_matrix(lua_State *L)
-{
-  dialogs_convolution_matrix();
-  return 0;
-}
-
 static int bind_dialogs_draw_text(lua_State *L)
 {
   dialogs_draw_text();
@@ -1338,12 +1314,6 @@ static int bind_dialogs_draw_text(lua_State *L)
 static int bind_switch_between_film_and_sprite_editor(lua_State *L)
 {
   switch_between_film_and_sprite_editor();
-  return 0;
-}
-
-static int bind_dialogs_invert_color(lua_State *L)
-{
-  dialogs_invert_color();
   return 0;
 }
 
@@ -1359,12 +1329,6 @@ static int bind_dialogs_mask_color(lua_State *L)
   return 0;
 }
 
-static int bind_dialogs_median_filter(lua_State *L)
-{
-  dialogs_median_filter();
-  return 0;
-}
-
 static int bind_dialogs_options(lua_State *L)
 {
   dialogs_options();
@@ -1374,12 +1338,6 @@ static int bind_dialogs_options(lua_State *L)
 static int bind_dialogs_palette_editor(lua_State *L)
 {
   dialogs_palette_editor();
-  return 0;
-}
-
-static int bind_dialogs_replace_color(lua_State *L)
-{
-  dialogs_replace_color();
   return 0;
 }
 
@@ -5725,8 +5683,6 @@ const luaL_reg bindings_routines[] = {
   { "crop_sprite", bind_crop_sprite },
   { "crop_layer", bind_crop_layer },
   { "crop_frame", bind_crop_frame },
-  { "flip_horizontal", bind_flip_horizontal },
-  { "flip_vertical", bind_flip_vertical },
   { "set_frame_to_handle", bind_set_frame_to_handle },
   { "move_frame", bind_move_frame },
   { "copy_frame", bind_copy_frame },
@@ -5749,17 +5705,12 @@ const luaL_reg bindings_routines[] = {
   { "quick_swap", bind_quick_swap },
   { "play_fli_animation", bind_play_fli_animation },
   { "set_gfx", bind_set_gfx },
-  { "dialogs_color_curve", bind_dialogs_color_curve },
-  { "dialogs_convolution_matrix", bind_dialogs_convolution_matrix },
   { "dialogs_draw_text", bind_dialogs_draw_text },
   { "switch_between_film_and_sprite_editor", bind_switch_between_film_and_sprite_editor },
-  { "dialogs_invert_color", bind_dialogs_invert_color },
   { "dialogs_mapgen", bind_dialogs_mapgen },
   { "dialogs_mask_color", bind_dialogs_mask_color },
-  { "dialogs_median_filter", bind_dialogs_median_filter },
   { "dialogs_options", bind_dialogs_options },
   { "dialogs_palette_editor", bind_dialogs_palette_editor },
-  { "dialogs_replace_color", bind_dialogs_replace_color },
   { "dialogs_screen_saver", bind_dialogs_screen_saver },
   { "dialogs_select_language", bind_dialogs_select_language },
   { "dialogs_tips", bind_dialogs_tips },

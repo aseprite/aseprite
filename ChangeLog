@@ -1,7 +1,21 @@
+2007-11-07  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_color_curve.c: Done. Removed src/dialogs/effect/dcolcurv.c
+
+	* src/commands/cmd_convolution_matrix.c: Done. Removed src/dialogs/effect/dconvmtr.c
+
+	* src/commands/cmd_despeckle.c: Done. Removed src/dialogs/effect/dmedian.c
+
+	* src/commands/cmd_replace_color.c: Done. Removed src/dialogs/effect/dreplcol.c
+
+	* src/commands/cmd_invert_color.c: Done. Removed src/dialogs/effect/dinvcol.c
+
+	* src/commands/cmd_flip.c: Done. Removed src/util/flip.c
+
 2007-10-07  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/commands/cmd_new_frame.c (command_execute_new_frame): Added
-	from new_frame() routine (now with undo of everything).
+	from new_frame() routine (now with undo of sprite_set_frames).
 
 	* src/raster/undo.c (undo_set_frames): Added.
 

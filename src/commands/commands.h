@@ -39,8 +39,6 @@
 #define CMD_COPY			"copy"
 #define CMD_PASTE			"paste"
 #define CMD_CLEAR			"clear"
-#define CMD_QUICK_MOVE			"quick_move"
-#define CMD_QUICK_COPY			"quick_copy"
 #define CMD_FLIP_HORIZONTAL		"flip_horizontal"
 #define CMD_FLIP_VERTICAL		"flip_vertical"
 #define CMD_REPLACE_COLOR		"replace_color"
