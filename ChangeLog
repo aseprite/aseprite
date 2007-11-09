@@ -1,4 +1,23 @@
+2007-11-09  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/script/functions.c: Added: NewLayer(Set), RemoveLayer,
+	FlattenLayers, RemoveFrame.
+
+2007-11-08  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_merge_down_layer.c: Done.
+
+	* src/commands/cmd_remove_layer.c: Done.
+
+	* src/commands/cmd_new_layer_set.c: Done.
+
+	* src/commands/cmd_new_layer.c: Done.
+
 2007-11-07  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_duplicate_sprite.c: Done.
+
+	* src/commands/cmd_change_image_type.c: Done.
 
 	* src/commands/cmd_color_curve.c: Done. Removed src/dialogs/effect/dcolcurv.c
 

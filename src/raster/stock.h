@@ -42,7 +42,7 @@ void stock_free(Stock *stock);
 
 int stock_add_image(Stock *stock, struct Image *image);
 void stock_remove_image(Stock *stock, struct Image *image);
-void stock_replace_image(Stock *stock, int index, Image *image);
+void stock_replace_image(Stock *stock, int index, struct Image *image);
 
 struct Image *stock_get_image(Stock *stock, int index);
 

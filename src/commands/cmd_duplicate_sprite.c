@@ -20,14 +20,67 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro.h>
+
 #include "jinete.h"
 
 #include "core/app.h"
+#include "core/cfg.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
+bool command_enabled_duplicate_sprite(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_duplicate_sprite(const char *argument)
 {
+  JWidget window, src_name, dst_name, flatten;
+  Sprite *sprite = current_sprite;
+  Sprite *sprite_copy;
+  char buf[1024];
+
+  /* load the window widget */
+  window = load_widget("dupspr.jid", "duplicate_sprite");
+  if (!window)
+    return;
+
+  src_name = jwidget_find_name(window, "src_name");
+  dst_name = jwidget_find_name(window, "dst_name");
+  flatten = jwidget_find_name(window, "flatten");
+
+  jwidget_set_text(src_name, get_filename(sprite->filename));
+
+  sprintf(buf, "%s %s", sprite->filename, _("Copy"));
+  jwidget_set_text(dst_name, buf);
+
+  if (get_config_bool("DuplicateSprite", "Flatten", FALSE))
+    jwidget_select(flatten);
+
+  /* open the window */
+  jwindow_open_fg(window);
+
+  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
+    set_config_bool("DuplicateSprite", "Flatten",
+		    jwidget_is_selected(flatten));
+    
+    if (jwidget_is_selected(flatten))
+      sprite_copy = sprite_new_flatten_copy(sprite);
+    else
+      sprite_copy = sprite_new_copy(sprite);
+
+    if (sprite_copy != NULL) {
+      sprite_set_filename(sprite_copy, jwidget_get_text(dst_name));
+
+      sprite_mount(sprite_copy);
+      set_current_sprite(sprite_copy);
+      sprite_show(sprite_copy);
+    }
+  }
+
+  jwidget_free(window);
 }

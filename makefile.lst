@@ -143,6 +143,7 @@ ASE_SOURCES =						\
 	src/raster/stock.c				\
 	src/raster/undo.c				\
 	src/script/bindings.c				\
+	src/script/functions.c				\
 	src/script/script.c				\
 	src/util/autocrop.c				\
 	src/util/boundary.c				\

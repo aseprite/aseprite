@@ -6284,66 +6284,6 @@ void register_bindings(lua_State *L)
 /* Lua -> C                                                             */
 /*======================================================================*/
 
-const char *GetUniqueLayerName(void)
-{
-  lua_State *L = get_lua_state();
-  const char *return_value;
-  lua_pushstring(L, "GetUniqueLayerName");
-  lua_gettable(L, LUA_GLOBALSINDEX);
-  do_script_raw(L, 0, 1);
-  return_value = lua_tostring(L, -1);
-  lua_pop(L, 1);
-  return return_value;
-}
-
-Layer *NewLayer(const char *name, int x, int y, int w, int h)
-{
-  lua_State *L = get_lua_state();
-  Layer *return_value;
-  lua_pushstring(L, "NewLayer");
-  lua_gettable(L, LUA_GLOBALSINDEX);
-  lua_pushstring(L, name);
-  lua_pushnumber(L, x);
-  lua_pushnumber(L, y);
-  lua_pushnumber(L, w);
-  lua_pushnumber(L, h);
-  do_script_raw(L, 5, 1);
-  return_value = to_userdata(L, Type_Layer, -1);
-  lua_pop(L, 1);
-  return return_value;
-}
-
-Layer *NewLayerSet(const char *name)
-{
-  lua_State *L = get_lua_state();
-  Layer *return_value;
-  lua_pushstring(L, "NewLayerSet");
-  lua_gettable(L, LUA_GLOBALSINDEX);
-  lua_pushstring(L, name);
-  do_script_raw(L, 1, 1);
-  return_value = to_userdata(L, Type_Layer, -1);
-  lua_pop(L, 1);
-  return return_value;
-}
-
-void RemoveLayer(void)
-{
-  lua_State *L = get_lua_state();
-  lua_pushstring(L, "RemoveLayer");
-  lua_gettable(L, LUA_GLOBALSINDEX);
-  do_script_raw(L, 0, 0);
-}
-
-void RemoveFrame(Layer *layer, Frame *frame)
-{
-  lua_State *L = get_lua_state();
-  lua_pushstring(L, "RemoveFrame");
-  lua_gettable(L, LUA_GLOBALSINDEX);
-  push_userdata(L, Type_Layer, layer);
-  push_userdata(L, Type_Frame, frame);
-  do_script_raw(L, 2, 0);
-}
-
 void MaskAll(void)
 {
   lua_State *L = get_lua_state();

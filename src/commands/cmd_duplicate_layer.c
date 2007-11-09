@@ -22,12 +22,64 @@
 
 #include "jinete.h"
 
+#include "console/console.h"
 #include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 
 #endif
 
+static Layer *DuplicateLayer(void);
+
+bool command_enabled_duplicate_layer(const char *argument)
+{
+  return
+    current_sprite != NULL &&
+    current_sprite->layer != NULL;
+}
+
 void command_execute_duplicate_layer(const char *argument)
 {
+  if (DuplicateLayer() != NULL)
+    GUI_Refresh(current_sprite);
+}
+
+static Layer *DuplicateLayer(void)
+{
+  Sprite *sprite = current_sprite;
+  Layer *layer_copy;
+  char buf[1024];
+
+  if (!sprite || !sprite->layer)
+    return NULL;
+
+  layer_copy = layer_new_copy(sprite->layer);
+  if (!layer_copy) {
+    console_printf("Not enough memory");
+    return NULL;
+  }
+
+  sprintf(buf, "%s %s", layer_copy->name, _("Copy"));
+  layer_set_name(layer_copy, buf);
+
+  if (undo_is_enabled(sprite->undo)) {
+    undo_open(sprite->undo);
+    undo_add_layer(sprite->undo, (Layer *)sprite->layer->parent, layer_copy);
+  }
+
+  layer_add_layer((Layer *)sprite->layer->parent, layer_copy);
+
+  if (undo_is_enabled(sprite->undo)) {
+    undo_move_layer(sprite->undo, layer_copy);
+    undo_set_layer(sprite->undo, sprite);
+    undo_close(sprite->undo);
+  }
+
+  layer_move_layer((Layer *)sprite->layer->parent, layer_copy, sprite->layer);
+  sprite_set_layer(sprite, layer_copy);
+
+  return layer_copy;
 }

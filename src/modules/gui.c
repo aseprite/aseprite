@@ -305,6 +305,8 @@ void gui_feedback(void)
 
 /*     jmanager_dispatch_draw_messages(); */
   }
+
+  rest(0);			/* don't eat CPU... rest some time */
 }
 
 void gui_setup_screen(void)
@@ -686,7 +688,6 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_IDLE:
       gui_feedback();
-      rest(1);			/* don't eat CPU... rest some time */
       break;
 
     case JM_CHAR: {

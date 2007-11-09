@@ -85,24 +85,35 @@ void command_execute_preview_tiled(const char *argument);
 /* sprite */
 bool command_enabled_sprite_properties(const char *argument);
 void command_execute_sprite_properties(const char *argument);
+bool command_enabled_duplicate_sprite(const char *argument);
 void command_execute_duplicate_sprite(const char *argument);
+bool command_enabled_change_image_type(const char *argument);
 void command_execute_change_image_type(const char *argument);
 bool command_enabled_crop_sprite(const char *argument);
 void command_execute_crop_sprite(const char *argument);
 bool command_enabled_autocrop_sprite(const char *argument);
 void command_execute_autocrop_sprite(const char *argument);
 /* layer */
+bool command_enabled_layer_properties(const char *argument);
 void command_execute_layer_properties(const char *argument);
+bool command_enabled_new_layer(const char *argument);
 void command_execute_new_layer(const char *argument);
+bool command_enabled_new_layer_set(const char *argument);
 void command_execute_new_layer_set(const char *argument);
+bool command_enabled_remove_layer(const char *argument);
 void command_execute_remove_layer(const char *argument);
+bool command_enabled_duplicate_layer(const char *argument);
 void command_execute_duplicate_layer(const char *argument);
+bool command_enabled_merge_down_layer(const char *argument);
 void command_execute_merge_down_layer(const char *argument);
+bool command_enabled_flatten_layers(const char *argument);
 void command_execute_flatten_layers(const char *argument);
 bool command_enabled_crop_layer(const char *argument);
 void command_execute_crop_layer(const char *argument);
 /* frame */
+bool command_enabled_frame_properties(const char *argument);
 void command_execute_frame_properties(const char *argument);
+bool command_enabled_remove_frame(const char *argument);
 void command_execute_remove_frame(const char *argument);
 bool command_enabled_new_frame(const char *argument);
 void command_execute_new_frame(const char *argument);
@@ -208,20 +219,20 @@ static Command commands[] = {
   CMD_EXE_ENA2(preview_normal, preview),
   CMD_EXE_ENA2(preview_fit_to_screen, preview),
   CMD_EXE_ENA(sprite_properties),
-  { CMD_DUPLICATE_SPRITE, NULL, NULL, NULL, NULL },
-  { CMD_CHANGE_IMAGE_TYPE, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(duplicate_sprite),
+  CMD_EXE_ENA(change_image_type),
   CMD_EXE_ENA(crop_sprite),
   CMD_EXE_ENA(autocrop_sprite),
-  { CMD_LAYER_PROPERTIES, NULL, NULL, NULL, NULL },
-  { CMD_NEW_LAYER, NULL, NULL, NULL, NULL },
-  { CMD_NEW_LAYER_SET, NULL, NULL, NULL, NULL },
-  { CMD_REMOVE_LAYER, NULL, NULL, NULL, NULL },
-  { CMD_DUPLICATE_LAYER, NULL, NULL, NULL, NULL },
-  { CMD_MERGE_DOWN_LAYER, NULL, NULL, NULL, NULL },
-  { CMD_FLATTEN_LAYERS, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(layer_properties),
+  CMD_EXE_ENA(new_layer),
+  CMD_EXE_ENA(new_layer_set),
+  CMD_EXE_ENA(remove_layer),
+  CMD_EXE_ENA(duplicate_layer),
+  CMD_EXE_ENA(merge_down_layer),
+  CMD_EXE_ENA(flatten_layers),
   CMD_EXE_ENA(crop_layer),
-  { CMD_FRAME_PROPERTIES, NULL, NULL, NULL, NULL },
-  { CMD_REMOVE_FRAME, NULL, NULL, NULL, NULL },
+  CMD_EXE_ENA(frame_properties),
+  CMD_EXE_ENA(remove_frame),
   CMD_EXE_ENA(new_frame),
   CMD_EXE_ENA(move_frame),
   CMD_EXE_ENA(copy_frame),

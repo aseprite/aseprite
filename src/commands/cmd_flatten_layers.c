@@ -20,14 +20,17 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
 #include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "script/functions.h"
 
 #endif
 
+bool command_enabled_flatten_layers(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_flatten_layers(const char *argument)
 {
+  FlattenLayers();
 }

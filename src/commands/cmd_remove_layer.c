@@ -20,14 +20,19 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
+bool command_enabled_remove_layer(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_remove_layer(const char *argument)
 {
+  RemoveLayer();
+  GUI_Refresh(current_sprite);
 }

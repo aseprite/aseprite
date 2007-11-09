@@ -1,5 +1,5 @@
 /* ase -- allegro-sprite-editor: the ultimate sprites factory
- * Copyright (C) 2001-2005  David A. Capello
+ * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,14 +29,14 @@ enum {
 
 struct Image;
 
-struct Image *image_set_imgtype (struct Image *image, int imgtype,
-				 int dithering_method,
-				 RGB_MAP *rgb_map,
-				 RGB *palette);
+struct Image *image_set_imgtype(struct Image *image, int imgtype,
+				int dithering_method,
+				RGB_MAP *rgb_map,
+				RGB *palette);
 
-struct Image *image_rgb_to_indexed (struct Image *src_image,
-				    int offsetx, int offsety,
-				    RGB_MAP *rgb_map,
-				    RGB *palette);
+struct Image *image_rgb_to_indexed(struct Image *src_image,
+				   int offsetx, int offsety,
+				   RGB_MAP *rgb_map,
+				   RGB *palette);
 
 #endif /* RASTER_QUANT_H */

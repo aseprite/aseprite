@@ -23,11 +23,39 @@
 #include "jinete.h"
 
 #include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
 
 #endif
 
+bool command_enabled_new_layer_set(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_new_layer_set(const char *argument)
 {
+  JWidget window;
+  Sprite *sprite = current_sprite; /* get current sprite */
+
+  /* load the window widget */
+  window = load_widget("newlay.jid", "new_layer_set");
+  if (!window)
+    return;
+
+  jwindow_open_fg(window);
+
+  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
+    const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
+    Layer *layer = NewLayerSet(name);
+    if (!layer) {
+      jalert(_("Error<<Not enough memory||&Close"));
+      return;
+    }
+    GUI_Refresh(sprite);
+  }
+
+  jwidget_free(window);
 }

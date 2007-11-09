@@ -20,14 +20,26 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
-
-#include "core/app.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/frame.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
+#include "script/functions.h"
 
 #endif
 
+bool command_enabled_remove_frame(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
 void command_execute_remove_frame(const char *argument)
 {
+  Sprite *sprite = current_sprite;
+  Frame *frame = layer_get_frame(sprite->layer, sprite->frpos);
+  if (frame) {
+    RemoveFrame(sprite->layer, frame);
+    GUI_Refresh(sprite);
+  }
 }

@@ -10,16 +10,6 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 
-/* layer.lua */
-const char *GetUniqueLayerName(void);
-
-Layer *NewLayer(const char *name, int x, int y, int w, int h);
-Layer *NewLayerSet(const char *name);
-void RemoveLayer(void);
-
-/* remfrm.lua */
-void RemoveFrame(Layer *layer, Frame *frame);
-
 /* mask.lua */
 void MaskAll(void);
 void DeselectMask(void);

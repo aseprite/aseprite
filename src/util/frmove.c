@@ -32,7 +32,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "script/import.h"
+#include "script/functions.h"
 #include "util/frmove.h"
 #include "widgets/colbar.h"
 
