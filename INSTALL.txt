@@ -3,10 +3,16 @@ COMPILATION
 ===================================
 
   Before compile, you must configure what ASE should use, what
-  libraries are available, etc.  You can run the fix.sh script, answer
-  some questions and done: the main makefile is created. Or you could
-  edit the makefile.cfg, uncomment CONFIGURED=1 and uncomment the
-  necessary options, and then run "makefile -f makefile.lnx".
+  libraries are available, etc.  You can run the "fix.sh" script,
+  answer some questions and done: the main makefile is created,
+  just do
+
+    make
+
+  Or you could edit the "makefile.cfg", uncomment CONFIGURED=1 and
+  uncomment the necessary options, and then run
+
+    makefile -f makefile.lnx
 
 
 ===================================
@@ -17,9 +23,9 @@ INSTALLATION
 
   1) Running ASE from its source directory.
 
-  2) Install ASE in the directory that you specify in the fix.sh question:
+  2) Install ASE in the directory that you specified in the "fix.sh" question:
      "Where do you want install ASE by default?" (generally "/usr/local")
-     (in the makefile.cfg, it's the DEFAULT_PREFIX variable)
+     (in the "makefile.cfg", it's the DEFAULT_PREFIX variable)
 
      Run "make install" (it only works in Unix like systems)
 

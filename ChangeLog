@@ -1,3 +1,13 @@
+2007-11-14  David A. Capello  <dacap@users.sourceforge.net>
+
+	* INSTALL.txt: Clarified "COMPILATION" section (thanks to Manuel
+	Quiñones).
+
+2007-11-13  David A. Capello  <dacap@users.sourceforge.net>
+
+	* jinete/src/jfilesel.c: Better file selector (separated file name
+	and path).
+
 2007-11-09  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/script/functions.c: Added: NewLayer(Set), RemoveLayer,
