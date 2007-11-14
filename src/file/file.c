@@ -177,14 +177,14 @@ Sprite *sprite_load(const char *filename)
   FileType *file;
   Sprite *sprite;
 
-  ustrcpy (extension, get_extension(filename));
-  ustrlwr (extension);
+  ustrcpy(extension, get_extension(filename));
+  ustrlwr(extension);
 
-  PRINTF ("Loading file \"%s\" (%s)\n", filename, extension);
+  PRINTF("Loading file \"%s\" (%s)\n", filename, extension);
 
   file = get_filetype (extension);
   if ((!file) || (!file->load)) {
-    console_printf (_("Load file type \"%s\" isn't supported\n"), extension);
+    console_printf(_("Format \"%s\" isn't supported to open\n"), extension);
     return NULL;
   }
 
@@ -318,21 +318,25 @@ Sprite *sprite_load(const char *filename)
 	}
 
 	/* compare the old frame with the new one */
-	if (image_count_diff (old_image, file_sequence.last_image)) {
-	  SEQUENCE_IMAGE ();
+#if USE_LINK /* TODO this should be configurable through a check-box */
+	if (image_count_diff(old_image, file_sequence.last_image)) {
+	  SEQUENCE_IMAGE();
 	}
 	/* we don't need this image */
 	else {
-	  image_free (file_sequence.last_image);
+	  image_free(file_sequence.last_image);
 
 	  /* but add a link frame */
 	  file_sequence.last_frame->image = index;
-	  layer_add_frame (file_sequence.layer,
-			   file_sequence.last_frame);
+	  layer_add_frame(file_sequence.layer,
+			  file_sequence.last_frame);
 
 	  file_sequence.last_image = NULL;
 	  file_sequence.last_frame = NULL;
 	}
+#else
+	SEQUENCE_IMAGE();
+#endif
       }
 
       c++;
@@ -399,7 +403,7 @@ int sprite_save(Sprite *sprite)
 
   file = get_filetype(extension);
   if ((!file) || (!file->save)) {
-    console_printf (_("Save file type \"%s\" isn't supported\n"), extension);
+    console_printf (_("Format \"%s\" isn't supported to save\n"), extension);
     return -1;
   }
 
@@ -491,11 +495,11 @@ int sprite_save(Sprite *sprite)
   if (ugetc(buf)) {
     if (is_interactive()) {
       if (fatal)
-	ret = jalert(_("Error<<File type \"%s\" doesn't support:%s"
+	ret = jalert(_("Error<<File format \"%s\" doesn't support:%s"
 		       "||&Close"),
 		     file->name, buf);
       else
-	ret = jalert(_("Warning<<File type \"%s\" doesn't support:%s"
+	ret = jalert(_("Warning<<File format \"%s\" doesn't support:%s"
 		       "<<Do you want continue?"
 		       "||&Yes||&No"),
 		     file->name, buf);
@@ -581,12 +585,12 @@ int sprite_save(Sprite *sprite)
       image_free (image);
     }
     else {
-      console_printf (_("Not enough memory for the temporary bitmap.\n"));
+      console_printf(_("Not enough memory for the temporary bitmap.\n"));
     }
 
     sprite->frpos = old_frpos;
-    ustrcpy (sprite->filename, old_filename);
-    jfree (old_filename);
+    ustrcpy(sprite->filename, old_filename);
+    jfree(old_filename);
   }
   /* direct save */
   else {
