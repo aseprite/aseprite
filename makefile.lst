@@ -46,8 +46,6 @@ ASE_SOURCES =						\
 	src/commands/cmd_paste.c			\
 	src/commands/cmd_play_flic.c			\
 	src/commands/cmd_preview.c			\
-	src/commands/cmd_quick_copy.c			\
-	src/commands/cmd_quick_move.c			\
 	src/commands/cmd_record_screen.c		\
 	src/commands/cmd_redo.c				\
 	src/commands/cmd_refresh.c			\
