@@ -50,6 +50,5 @@
 	</box>
       </box>
     </box>
-    <button text=_("&Close") />
   </box>
 </window>

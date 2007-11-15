@@ -2,17 +2,15 @@
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007  David A. Capello
 
  **********************************************************************
-\palette aselogo.pcx
-\image aselogo.pcx
-Allegro Sprite Editor
+\palette ase.pcx
+\image ase.pcx
 
-Welcome to ASE
+Welcome to ASE 0.6
 
-You can find more information about the keyboard shortcuts in the
-"docs/QuickHelp.html" file.
+You can find help in ASE Wiki:
+http://www.allegrospriteeditor.com.ar/wiki/
 
 Report bugs to:
-
 ase-help@lists.sourceforge.net
  **********************************************************************
 \split
@@ -115,6 +113,6 @@ directory for some examples.
 \image sprite.pcx
 And remember look for updates in:
 
-http://ase.sourceforge.net/
+http://www.allegrospriteeditor.com.ar/
 
 Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 by David A. Capello

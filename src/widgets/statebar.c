@@ -27,6 +27,7 @@
 
 #include "jinete.h"
 
+#include "commands/commands.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -373,7 +374,7 @@ static void button_command(JWidget widget, void *data)
     switch ((int)data) {
 
       case ACTION_LAYER:
-	do_script_expr("GUI_LayerProperties()");
+	command_execute(command_get_by_name(CMD_LAYER_PROPERTIES), NULL);
 	break;
 
       case ACTION_FIRST:

@@ -438,21 +438,21 @@ static bool entry_msg_proc (JWidget widget, JMessage msg)
 	    }
 	}
 
-	if (ustrcmp (widget->text, text) != 0) {
-	  jwidget_set_text (widget, text);
-	  jwidget_emit_signal (widget, JI_SIGNAL_ENTRY_CHANGE);
+	if (ustrcmp(widget->text, text) != 0) {
+	  jwidget_set_text(widget, text);
+	  jwidget_emit_signal(widget, JI_SIGNAL_ENTRY_CHANGE);
 	}
 
-	jfree (text);
+	jfree(text);
 
-	jentry_set_cursor_pos (widget, entry->cursor);
-	jwidget_dirty (widget);
+	jentry_set_cursor_pos(widget, entry->cursor);
+	jwidget_dirty(widget);
 	return TRUE;
       }
       break;
 
     case JM_BUTTONPRESSED:
-      jwidget_capture_mouse (widget);
+      jwidget_capture_mouse(widget);
 
     case JM_MOTION:
       if (jwidget_has_capture (widget)) {
@@ -469,17 +469,17 @@ static bool entry_msg_proc (JWidget widget, JMessage msg)
 	    entry->cursor = --entry->scroll;
 	    move = FALSE;
 	    dirty = TRUE;
-	    jwidget_dirty (widget);
+	    jwidget_dirty(widget);
 	  }
 	}
 	/* forward scroll */
 	else if (msg->mouse.x >= widget->rc->x2) {
-	  if (entry->scroll < ustrlen (text)) {
+	  if (entry->scroll < ustrlen(text)) {
 	    entry->scroll++;
 	    x = widget->rc->x1 + widget->border_width.l;
 	    for (c=entry->scroll; ; c++) {
-	      x += CHARACTER_LENGTH (widget->text_font,
-				     (c < ustrlen (text))? ugetat (text, c): ' ');
+	      x += CHARACTER_LENGTH(widget->text_font,
+				    (c < ustrlen (text))? ugetat (text, c): ' ');
 	      if (x > widget->rc->x2-widget->border_width.r) {
 		c--;
 		break;
@@ -506,8 +506,10 @@ static bool entry_msg_proc (JWidget widget, JMessage msg)
 	}
 
 	/* move selection */
-	if (entry->recent_focused)
+	if (entry->recent_focused) {
 	  entry->recent_focused = FALSE;
+	  entry->select = entry->cursor;
+	}
 	else if (msg->type == JM_BUTTONPRESSED)
 	  entry->select = entry->cursor;
 
@@ -527,17 +529,17 @@ static bool entry_msg_proc (JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_DOUBLECLICK:
-      entry_forward_word (widget);
+      entry_forward_word(widget);
       entry->select = entry->cursor;
-      entry_backward_word (widget);
-      jwidget_dirty (widget);
+      entry_backward_word(widget);
+      jwidget_dirty(widget);
       return TRUE;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       /* XXX theme stuff */
-      if (jwidget_is_enabled (widget))
-	jwidget_dirty (widget);
+      if (jwidget_is_enabled(widget))
+	jwidget_dirty(widget);
       break;
   }
 

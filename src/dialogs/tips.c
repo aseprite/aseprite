@@ -123,12 +123,12 @@ void dialogs_tips(bool forced)
   jwidget_add_child(vbox, hbox);
   jwidget_add_child(window, vbox);
 
-  if (JI_SCREEN_W > 320)
+/*   if (JI_SCREEN_W > 320) */
     jwidget_set_static_size(window,
 			    MIN(400, JI_SCREEN_W-32),
-			    MIN(300, JI_SCREEN_H-32));
-  else
-    jwidget_set_static_size(window, 282, 182);
+			    MIN(300, JI_SCREEN_H-16));
+/*   else */
+/*     jwidget_set_static_size(window, 282, 200); */
 
   /* open the window */
   jwindow_open(window);

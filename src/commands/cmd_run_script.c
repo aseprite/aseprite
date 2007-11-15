@@ -22,12 +22,15 @@
 
 #include "jinete.h"
 
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "script/script.h"
 
 #endif
 
 void command_execute_run_script(const char *argument)
 {
+  char *filename = ji_file_select(_("Load Script File(.lua)"), "", "lua");
+  if (filename) {
+    do_script_file(filename);
+    jfree(filename);
+  }
 }

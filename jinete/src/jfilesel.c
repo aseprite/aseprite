@@ -63,10 +63,10 @@ typedef struct Extension
   char *text;
 } Extension;
 
-static JWidget listbox1, listbox2, entry_path;
+static JWidget listbox1, listbox2, entry_path, entry_name;
 static JList paths, files;
 
-static char current_path[512];
+static char current_path[1024];
 static JList extensions;	/* list of supported Extensions */
 
 static bool filesel_msg_proc(JWidget entry, JMessage msg);
@@ -95,12 +95,13 @@ char *ji_file_select(const char *message,
 		     const char *init_path,
 		     const char *exts)
 {
-  return ji_file_select_ex (message, init_path, exts, NULL);
+  return ji_file_select_ex(message, init_path, exts, NULL);
 }
 
 /* customizable widgets: 
    widget_extension can have childs with these widget's names:
-      "entry"
+      "path"
+      "name"
       "left"
       "top"
       "right"
@@ -111,26 +112,28 @@ char *ji_file_select_ex(const char *message,
 			const char *exts,
 			JWidget widget_extension)
 {
-  JWidget window, box1, box2, box3, panel, view1, view2;
+  JWidget window, box1, box2, box3, box4, panel, view1, view2;
   JWidget button_select, button_cancel, tmp;
-  int size = 256;
-  char buf[512];
+  int size = 1024;
+  char buf[1024];
   JLink link;
   char *s;
   char *selected_filename;
-  bool entry_created;
+  bool entry_path_created;
+  bool entry_name_created;
 
   generate_extensions(exts);
 
-  ustrcpy (current_path, init_path);
-  ustrcpy (get_filename (current_path), empty_string);
+  ustrcpy(current_path, init_path);
+  ustrcpy(get_filename(current_path), empty_string);
 
-  ustrcpy (buf, init_path);
+  ustrcpy(buf, init_path);
 
-  window = jwindow_new (message);
+  window = jwindow_new(message);
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  box4 = jbox_new(JI_VERTICAL | JI_EXPANSIVE);
   panel = jpanel_new(JI_HORIZONTAL);
   view1 = jview_new();
   view2 = jview_new();
@@ -141,19 +144,29 @@ char *ji_file_select_ex(const char *message,
 
   /* create input widget (entry_path) */
   entry_path = NULL;
-  entry_created = FALSE;
+  entry_name = NULL;
+  entry_path_created = FALSE;
+  entry_name_created = FALSE;
 
-  if (widget_extension)
-    entry_path = jwidget_find_name (widget_extension, "entry");
+  if (widget_extension) {
+    entry_path = jwidget_find_name(widget_extension, "path");
+    entry_name = jwidget_find_name(widget_extension, "name");
+  }
 
   if (!entry_path) {
-    entry_path = jentry_new (size-1, NULL);
-    entry_created = TRUE;
+    entry_path = jentry_new(size-1, NULL);
+    entry_path_created = TRUE;
+  }
+
+  if (!entry_name) {
+    entry_name = jentry_new(size-1, NULL);
+    entry_name_created = TRUE;
   }
 
   /* add hook */
   jwidget_add_hook(button_select, filesel_type(), filesel_msg_proc, NULL);
   jwidget_add_hook(entry_path, filesel_type(), filesel_msg_proc, NULL);
+  jwidget_add_hook(entry_name, filesel_type(), filesel_msg_proc, NULL);
   jwidget_add_hook(listbox1, filesel_type(), filesel_msg_proc, listbox2);
   jwidget_add_hook(listbox2, filesel_type(), filesel_msg_proc, listbox1);
 
@@ -167,23 +180,35 @@ char *ji_file_select_ex(const char *message,
   jwidget_expansive(box2, TRUE);
 
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "top")))
-    jwidget_add_child (box1, tmp);
-  if (entry_created)
-    jwidget_add_child (box1, entry_path);
+    jwidget_add_child(box1, tmp);
+  if (entry_path_created)
+    jwidget_add_child(box1, entry_path);
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "left")))
-    jwidget_add_child (box2, tmp);
-  jwidget_add_child (panel, view1);
-  jwidget_add_child (panel, view2);
-  jwidget_add_child (box2, panel);
+    jwidget_add_child(box2, tmp);
+  jwidget_add_child(panel, view1);
+  jwidget_add_child(panel, view2);
+  if (!entry_name_created)
+    jwidget_add_child(box2, panel);
+  else {
+    JWidget subbox1 = jbox_new(JI_VERTICAL);
+    JWidget subbox2 = jbox_new(JI_HORIZONTAL);
+    jwidget_expansive(entry_name, TRUE);
+    jwidget_add_child(box2, subbox1);
+    jwidget_add_child(subbox1, panel);
+    jwidget_add_child(subbox1, subbox2);
+    jwidget_add_child(subbox2, jlabel_new(ji_translate_string("File name:")));
+    jwidget_add_child(subbox2, entry_name);
+  }
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "right")))
-    jwidget_add_child (box2, tmp);
-  jwidget_add_child (box1, box2);
-  jwidget_add_child (box3, button_select);
-  jwidget_add_child (box3, button_cancel);
-  jwidget_add_child (box1, box3);
+    jwidget_add_child(box2, tmp);
+  jwidget_add_child(box1, box2);
+  jwidget_add_child(box3, box4);
+  jwidget_add_child(box3, button_select);
+  jwidget_add_child(box3, button_cancel);
+  jwidget_add_child(box1, box3);
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "bottom")))
-    jwidget_add_child (box1, tmp);
-  jwidget_add_child (window, box1);
+    jwidget_add_child(box1, tmp);
+  jwidget_add_child(window, box1);
 
   /* magnetic */
   jwidget_magnetic(button_select, TRUE);
@@ -199,10 +224,13 @@ char *ji_file_select_ex(const char *message,
 
   /* put the current directory in the entry */
   jlistbox_select_child(listbox1, NULL);
+
+  s = get_filename(buf);
+  if (s > buf) *(s-1) = 0;
   jwidget_set_text(entry_path, buf);
+  jwidget_set_text(entry_name, s);
 
   /* select the filename */
-  s = get_filename(buf);
   JI_LIST_FOR_EACH(listbox2->children, link) {
     if (ustrcmp(s, jwidget_get_text(link->data)) == 0) {
       jlistbox_select_child(listbox2, link->data);
@@ -218,16 +246,25 @@ char *ji_file_select_ex(const char *message,
   /* button "select"? */
   if ((jwindow_get_killer(window) == button_select) ||
       (jwindow_get_killer(window) == listbox2) ||
-      (jwindow_get_killer(window) == entry_path)) {
+      (jwindow_get_killer(window) == entry_path) ||
+      (jwindow_get_killer(window) == entry_name)) {
     /* copy the new name */
-    selected_filename = jstrdup(jwidget_get_text(entry_path));
+    selected_filename = jmalloc(1024);
+
+    ustrcpy(selected_filename, jwidget_get_text(entry_path));
+    put_backslash(selected_filename);
+    ustrcat(selected_filename, jwidget_get_text(entry_name));
+
+    fix_filename_slashes(selected_filename);
   }
   else {
     /* nothing selected */
     selected_filename = NULL;
   }
 
-  if (widget_extension && (tmp = jwidget_find_name(widget_extension, "entry")))
+  if (widget_extension && (tmp = jwidget_find_name(widget_extension, "path")))
+    jwidget_remove_child(tmp->parent, tmp);
+  if (widget_extension && (tmp = jwidget_find_name(widget_extension, "name")))
     jwidget_remove_child(tmp->parent, tmp);
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "left")))
     jwidget_remove_child(tmp->parent, tmp);
@@ -254,29 +291,30 @@ void ji_file_select_refresh_listbox(void)
   fill_listbox_with_files(current_path, sizeof(current_path));
 }
 
-void ji_file_select_enter_to_path (const char *path)
+void ji_file_select_enter_to_path(const char *path)
 {
-  jwidget_set_text (entry_path, path);
-  enter_to_path_in_entry ();
+  jwidget_set_text(entry_path, path);
+  jwidget_set_text(entry_name, "");
+  enter_to_path_in_entry();
 }
 
-bool ji_dir_exists (const char *filename)
+bool ji_dir_exists(const char *filename)
 {
   struct al_ffblk info;
-  char buf[512];
+  char buf[1024];
   int ret;
 
-  ustrcpy (buf, filename);
-  put_backslash (buf);
-  ustrcat (buf, "*.*");
+  ustrcpy(buf, filename);
+  put_backslash(buf);
+  ustrcat(buf, "*.*");
 
-  ret = al_findfirst (buf, &info, FA_ALL);
-  al_findclose (&info);
+  ret = al_findfirst(buf, &info, FA_ALL);
+  al_findclose(&info);
 
   return (ret == 0);
 }
 
-static bool filesel_msg_proc (JWidget widget, JMessage msg)
+static bool filesel_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -284,43 +322,49 @@ static bool filesel_msg_proc (JWidget widget, JMessage msg)
       switch (msg->signal.num) {
 
 	case JI_SIGNAL_BUTTON_SELECT:
-	  if (!enter_to_path_in_entry ())
-	    jwidget_close_window (widget);
+	  if (!enter_to_path_in_entry())
+	    jwidget_close_window(widget);
 	  return TRUE;
 
 	case JI_SIGNAL_LISTBOX_SELECT: {
-	  const char *text;
+	  char filename[1024];
 	  int attr;
-	  enter_to_path_in_entry ();
-	  jmanager_set_focus (widget);
+	  enter_to_path_in_entry();
+	  jmanager_set_focus(widget);
 
 	  /* close the window when we double-click in a normal file */
-	  text = jwidget_get_text (entry_path);
-	  if (file_exists (text, FA_ALL, &attr)) {
+	  ustrcpy(filename, jwidget_get_text(entry_path));
+	  put_backslash(filename);
+	  ustrcat(filename, jwidget_get_text(entry_name));
+
+	  if (file_exists(filename, FA_ALL, &attr)) {
 	    if (!(attr & FA_DIREC))
-	      jwidget_close_window (widget);
+	      jwidget_close_window(widget);
 	  }
 	  break;
 	}
 
 	case JI_SIGNAL_LISTBOX_CHANGE: {
-	  JWidget the_other_listbox = jwidget_get_data (widget,
-							  filesel_type ());
-	  JWidget item = jlistbox_get_selected_child (widget);
-	  const char *filename = item ? jwidget_get_text (item):
+	  JWidget the_other_listbox = jwidget_get_data(widget,
+						       filesel_type());
+	  JWidget item = jlistbox_get_selected_child(widget);
+	  const char *filename = item ? jwidget_get_text(item):
 					empty_string;
-	  char buf[512];
 
-	  jwidget_signal_off (the_other_listbox);
-	  jlistbox_select_child (the_other_listbox, 0);
-	  jwidget_signal_on (the_other_listbox);
+	  jwidget_signal_off(the_other_listbox);
+	  jlistbox_select_child(the_other_listbox, 0);
+	  jwidget_signal_on(the_other_listbox);
 
-	  /* get `current_path + current_item_in_list' */
-	  replace_filename (buf, current_path, filename, sizeof (buf));
+	  jwidget_set_text(entry_path, current_path);
+	  jwidget_set_text(entry_name, filename);
+	  jentry_select_text(entry_name, 0, -1);
+	  break;
+	}
 
-	  /* set the text in the edit box */
-	  jwidget_set_text (entry_path, buf);
-	  jentry_select_text (entry_path, get_filename (buf)-buf, -1);
+	case JI_SIGNAL_ENTRY_CHANGE: {
+	  if (widget == entry_path) {
+	    jwidget_set_text(entry_name, "");
+	  }
 	  break;
 	}
       }
@@ -330,12 +374,12 @@ static bool filesel_msg_proc (JWidget widget, JMessage msg)
       if ((jwidget_has_focus (widget)) &&
 	  ((msg->key.scancode == KEY_ENTER) ||
 	   (msg->key.scancode == KEY_ENTER_PAD))) {
-	if (enter_to_path_in_entry ()) {
-	  jmanager_set_focus (widget);
+	if (enter_to_path_in_entry()) {
+	  jmanager_set_focus(widget);
 	  return TRUE;
 	}
 	else {
-	  jwidget_close_window (widget);
+	  jwidget_close_window(widget);
 	  return TRUE;
 	}
       }
@@ -345,59 +389,62 @@ static bool filesel_msg_proc (JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static bool enter_to_path_in_entry (void)
+static bool enter_to_path_in_entry(void)
 {
-  const char *filename = jwidget_get_text (entry_path);
-  char buf[512], path[512], from[512];
+  char buf[1024], path[1024], from[1024];
+  const char *filename;
   JLink link;
 
-  jmanager_set_focus (entry_path);
+  jmanager_set_focus(entry_path);
 
-  fix_filename_path (path, filename, sizeof (path));
-  fixup_filename (buf, from, path);
-  ustrcpy (path, buf);
+  fix_filename_path(path, jwidget_get_text(entry_path), sizeof(path));
+  put_backslash(path);
+  ustrcat(path, jwidget_get_text(entry_name));
+
+  fixup_filename(buf, from, path);
+  ustrcpy(path, buf);
 
 #ifdef HAVE_DRIVES
   if (ugetat (buf, -1) == DEVICE_SEPARATOR) {
-    uinsert (path, ustrlen (path), OTHER_PATH_SEPARATOR);
-    ustrcat (buf, "./");
+    uinsert(path, ustrlen (path), OTHER_PATH_SEPARATOR);
+    ustrcat(buf, "./");
   }
   else if ((ugetat (buf, -1) == OTHER_PATH_SEPARATOR) &&
 	   (ugetat (buf, -2) == DEVICE_SEPARATOR)) {
-    uremove (buf, -1);
-    ustrcat (buf, "./");
+    uremove(buf, -1);
+    ustrcat(buf, "./");
   }
 #endif
 
-  if (ji_dir_exists (buf)) {
-    ustrcpy (buf, path);
-    put_backslash (buf);
+  if (ji_dir_exists(buf)) {
+    ustrcpy(buf, path);
+    put_backslash(buf);
 
-    ustrcpy (current_path, buf);
+    ustrcpy(current_path, buf);
 
     /* make the new list of files */
-    fill_listbox_with_files (buf, sizeof (buf));
+    fill_listbox_with_files(buf, sizeof(buf));
 
     /* change the edit text */
-    jwidget_set_text (entry_path, buf);
-    jentry_select_text (entry_path, 0, -1);
+    jwidget_set_text(entry_path, buf);
+    jentry_select_text(entry_path, 0, -1);
 
     /* select the filename */
-    if (!ugetat (from, 0))
-      ustrcpy (from, "..");
+    if (!ugetat(from, 0))
+      ustrcpy(from, "..");
 
     JI_LIST_FOR_EACH(listbox1->children, link) {
       filename = jwidget_get_text(link->data);
 
 #ifdef HAVE_DRIVES
-      if (ustricmp (filename, from) == 0)
+      if (ustricmp(filename, from) == 0)
 #else
-      if (ustrcmp (filename, from) == 0)
+      if (ustrcmp(filename, from) == 0)
 #endif
 	{
 	  JWidget listitem = jlistbox_get_selected_child(listbox1);
 	  if (listitem)
-	    jwidget_deselect (listitem);
+	    jwidget_deselect(listitem);
 	  jlistbox_select_child(listbox1, link->data);
 	  jlistbox_center_scroll(listbox1);
 	  break;
@@ -415,7 +462,7 @@ static void fill_listbox_callback(const char *filename, int attrib, int param)
   const char *other_filename;
   JList *list;
   JLink link;
-  char buf[512];
+  char buf[1024];
   bool found;
 
   errno = 0;
@@ -428,11 +475,11 @@ static void fill_listbox_callback(const char *filename, int attrib, int param)
   /* only files with an acceptable extension */
   else {
     list = &files;
-    found = check_extension(get_extension (filename));
+    found = check_extension(get_extension(filename));
   }
 
   if (found) {
-    ustrzcpy(buf, sizeof (buf), get_filename(filename));
+    ustrzcpy(buf, sizeof(buf), get_filename(filename));
     fix_filename_case(buf);
 
     if (attrib & FA_DIREC) {
@@ -452,7 +499,7 @@ static void fill_listbox_callback(const char *filename, int attrib, int param)
 
 static void fill_listbox_with_files(char *path, int size)
 {
-  char buf[512], tmp[32];
+  char buf[1024], tmp[32];
   int ch, attr;
   JList list;
   JLink link;
@@ -505,8 +552,8 @@ static void fill_listbox_with_files(char *path, int size)
 
   for_each_file(buf, FA_TO_SHOW, fill_listbox_callback, 0);
 
-  JI_LIST_FOR_EACH(paths, link) jwidget_add_child (listbox1, link->data);
-  JI_LIST_FOR_EACH(files, link) jwidget_add_child (listbox2, link->data);
+  JI_LIST_FOR_EACH(paths, link) jwidget_add_child(listbox1, link->data);
+  JI_LIST_FOR_EACH(files, link) jwidget_add_child(listbox2, link->data);
 
   jlist_free(paths);
   jlist_free(files);
@@ -524,7 +571,7 @@ static void fill_listbox_with_files(char *path, int size)
 
 static void generate_extensions(const char *exts)
 {
-  char *tok, buf[512];
+  char *tok, buf[1024];
   Extension *ext;
 
   extensions = jlist_new();
@@ -564,7 +611,7 @@ static void generate_extensions(const char *exts)
   }
 }
 
-static bool check_extension (const char *filename_ext)
+static bool check_extension(const char *filename_ext)
 {
   Extension *ext;
   JLink link;
@@ -581,18 +628,18 @@ static bool check_extension (const char *filename_ext)
     switch (ext->type) {
 
       case EQUAL_TO_TEXT:
-	if (ustricmp (ext->text, filename_ext) == 0)
+	if (ustricmp(ext->text, filename_ext) == 0)
 	  return TRUE;
 	break;
 
       case START_WITH_TEXT:
-	if (my_ustrnicmp (ext->text, filename_ext, ext->size) == 0)
+	if (my_ustrnicmp(ext->text, filename_ext, ext->size) == 0)
 	  return TRUE;
 	break;
 
       case END_WITH_TEXT:
 	if (len >= ext->size &&
-	    my_ustrnicmp (ext->text, filename_ext+len-ext->size, ext->size) == 0)
+	    my_ustrnicmp(ext->text, filename_ext+len-ext->size, ext->size) == 0)
 	  return TRUE;
 	break;
     }

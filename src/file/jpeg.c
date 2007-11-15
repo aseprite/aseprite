@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "jinete.h"
+
 #include "console/console.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -553,26 +555,86 @@ FileType filetype_jpeg = { "jpeg", "jpeg,jpg", NULL, NULL, 0 };
 
 #if defined HAVE_LIBJPEG || HAVE_JPGALLEG
 
+/**
+ * Shows the JPEG configuration dialog.
+ */
 static int configure_jpeg(void)
 {
+  JWidget window, box1, box2, box3, box4, box5;
+  JWidget label_quality, label_smooth, label_method;
+  JWidget slider_quality, slider_smooth, view_method;
+  JWidget list_method, button_ok, button_cancel;
+  int ret, quality, smooth, method;
+
   /* interactive mode */
-  if (is_interactive()) {
-    lua_State *L = get_lua_state();
-    int ret;
+  if (!is_interactive())
+    return 0;
 
-    /* call the ConfigureJPEG() script routine, it must return "true"
-       to save the image */
-    lua_pushstring(L, "ConfigureJPEG");
-    lua_gettable(L, LUA_GLOBALSINDEX);
-    do_script_raw(L, 0, 1);
-    ret = lua_toboolean(L, -1);
-    lua_pop(L, 1);
+  /* configuration parameters */
+  quality = get_config_int("JPEG", "Quality", 100);
+  smooth = get_config_int("JPEG", "Smooth", 0);
+  method = get_config_int("JPEG", "Method", 0);
 
-    if (!ret)
-      return -1;
+  /* widgets */
+  window = jwindow_new(_("Configure JPEG Compression"));
+  box1 = jbox_new(JI_VERTICAL);
+  box2 = jbox_new(JI_HORIZONTAL);
+  box3 = jbox_new(JI_VERTICAL + JI_HOMOGENEOUS);
+  box4 = jbox_new(JI_VERTICAL + JI_HOMOGENEOUS);
+  box5 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
+  label_quality = jlabel_new(_("Quality:"));
+  label_smooth = jlabel_new(_("Smooth:"));
+  label_method = jlabel_new(_("Method:"));
+  slider_quality = jslider_new(0, 100, quality);
+  slider_smooth = jslider_new(0, 100, smooth);
+  view_method = jview_new();
+  list_method = jlistbox_new();
+  button_ok = jbutton_new(_("&OK"));
+  button_cancel = jbutton_new(_("&Cancel"));
+
+  jwidget_add_child(list_method, jlistitem_new(_("Slow")));
+  jwidget_add_child(list_method, jlistitem_new(_("Fast")));
+  jwidget_add_child(list_method, jlistitem_new(_("Float")));
+  jlistbox_select_index(list_method, method);
+
+    jview_attach(view_method, list_method);
+  jview_maxsize(view_method);
+
+  jwidget_expansive(box4, TRUE);
+  jwidget_expansive(view_method, TRUE);
+
+  jwidget_add_child(box3, label_quality);
+  jwidget_add_child(box3, label_smooth);
+  jwidget_add_child(box4, slider_quality);
+  jwidget_add_child(box4, slider_smooth);
+  jwidget_add_child(box2, box3);
+  jwidget_add_child(box2, box4);
+  jwidget_add_child(box1, box2);
+  jwidget_add_child(box1, label_method);
+  jwidget_add_child(box1, view_method);
+  jwidget_add_child(box5, button_ok);
+  jwidget_add_child(box5, button_cancel);
+  jwidget_add_child(box1, box5);
+  jwidget_add_child(window, box1);
+
+  jwindow_open_fg(window);
+
+  if (jwindow_get_killer(window) == button_ok) {
+    ret = TRUE;
+
+    quality = jslider_get_value(slider_quality);
+    smooth = jslider_get_value(slider_smooth);
+    method = jlistbox_get_selected_index(list_method);
+
+    set_config_int("JPEG", "Quality", quality);
+    set_config_int("JPEG", "Smooth", smooth);
+    set_config_int("JPEG", "Method", method);
   }
+  else
+    ret = FALSE;
 
-  return 0;
+  jwidget_free(window);
+  return ret;
 }
 
 #endif

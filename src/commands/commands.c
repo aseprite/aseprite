@@ -171,7 +171,6 @@ bool command_enabled_despeckle(const char *argument);
 void command_execute_despeckle(const char *argument);
 /* void command_execute_draw_text(const char *argument); */
 /* void command_execute_play_flic(const char *argument); */
-/* void command_execute_mapgen(const char *argument); */
 void command_execute_run_script(const char *argument);
 void command_execute_tips(const char *argument);
 void command_execute_options(const char *argument);
@@ -263,7 +262,7 @@ static Command commands[] = {
 /*   { CMD_DRAW_TEXT, NULL, NULL, NULL, NULL }, */
 /*   { CMD_PLAY_FLIC, NULL, NULL, NULL, NULL }, */
 /*   { CMD_MAPGEN, NULL, NULL, NULL, NULL }, */
-  { CMD_RUN_SCRIPT, NULL, NULL, NULL, NULL },
+  CMD_EXE(run_script),
   CMD_EXE(tips),
   CMD_EXE(options),
   CMD_EXE_ENA_CHK(select_file),

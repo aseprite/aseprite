@@ -121,6 +121,7 @@ THANKFULNESS
   <http://www.lua.org/>
 
   And thanks for all the ideas and bugs report of:
+    Alex Winter
     Álvaro González (Kronoman X)
     Angelo Mottola
     Ben Davis (entheh)
@@ -137,5 +138,6 @@ THANKFULNESS
     Manuel Quiñones (manuq)
     Mateusz Czaplinski
     Nathan Smith (whitedoor)
+    Nora Amendez
     Peter Wang (tjaden)
     Robert J Ohannessian (Bob)

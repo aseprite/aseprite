@@ -15,8 +15,7 @@ endif
 # Flags for MinGW
 
 CFLAGS =
-# LFLAGS = -mwindows
-LFLAGS = -mconsole
+LFLAGS = -mwindows
 ifdef DEBUGMODE
   LFLAGS_LAST = -lalld
 else

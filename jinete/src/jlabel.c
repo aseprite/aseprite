@@ -35,19 +35,19 @@
 
 static bool label_msg_proc (JWidget widget, JMessage msg);
 
-JWidget jlabel_new (const char *text)
+JWidget jlabel_new(const char *text)
 {
-  JWidget widget = jwidget_new (JI_LABEL);
+  JWidget widget = jwidget_new(JI_LABEL);
 
-  jwidget_add_hook (widget, JI_LABEL, label_msg_proc, NULL);
-  jwidget_set_align (widget, JI_LEFT | JI_MIDDLE);
-  jwidget_set_text (widget, text);
-  jwidget_init_theme (widget);
+  jwidget_add_hook(widget, JI_LABEL, label_msg_proc, NULL);
+  jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
+  jwidget_set_text(widget, text);
+  jwidget_init_theme(widget);
 
   return widget;
 }
 
-static bool label_msg_proc (JWidget widget, JMessage msg)
+static bool label_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 

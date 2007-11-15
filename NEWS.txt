@@ -5,10 +5,10 @@ NEWS
 0.6
 ---
 
++ Better file selector.
 + Restructured all the menus (more user friendly options).
   - Temporaly removed a lot of complex functionality: 
-    Mask-Repository (but you can use .msk files yet), Draw-Text,
-    Play-FLI/FLC.
+    Mask-Repository (but you can use .msk files yet), Draw-Text.
 + New XML format for the menus.
 - Removed menu scripting customization.
 - Removed screen saver.

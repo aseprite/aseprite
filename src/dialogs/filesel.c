@@ -73,7 +73,7 @@ char *GUI_FileSelect(const char *message,
 {
   JWidget box_left, button_home;
   JWidget button_fonts, button_palettes, button_mkdir;
-  JWidget box_top, box_top2, combobox, add_bookmark, del_bookmark, entry;
+  JWidget box_top, box_top2, combobox, add_bookmark, del_bookmark, entry_path;
   JWidget widget_extension;
   char buf[512], *selected_filename;
 
@@ -136,7 +136,7 @@ char *GUI_FileSelect(const char *message,
   box_top = jbox_new(JI_HORIZONTAL);
   box_top2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
   combobox = jcombobox_new();
-  entry = jcombobox_get_entry_widget(combobox);
+  entry_path = jcombobox_get_entry_widget(combobox);
   add_bookmark = jbutton_new("+");
   del_bookmark = jbutton_new("-");
 
@@ -168,7 +168,7 @@ char *GUI_FileSelect(const char *message,
   widget_extension = jwidget_new(JI_WIDGET);
   jwidget_set_name(box_left, "left");
   jwidget_set_name(box_top, "top");
-  jwidget_set_name(entry, "entry");
+  jwidget_set_name(entry_path, "path");
   jwidget_add_childs(widget_extension, box_left, box_top, NULL);
 
   /* call the jinete file selector */
@@ -310,7 +310,7 @@ static void home_command(JWidget widget)
     get_executable_name (path, sizeof (path));
     *get_filename (path) = 0;
 
-    ji_file_select_enter_to_path (path);
+    ji_file_select_enter_to_path(path);
   }
 }
 

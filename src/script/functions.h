@@ -19,10 +19,17 @@
 #ifndef SCRIPT_FUNCTIONS_H
 #define SCRIPT_FUNCTIONS_H
 
+struct Sprite;
 struct Layer;
 struct Frame;
 
-/* Layer */
+/* ======================================= */
+/* Sprite                                  */
+/* ======================================= */
+
+/* ======================================= */
+/* Layer                                   */
+/* ======================================= */
 
 char *GetUniqueLayerName(void);
 
@@ -32,7 +39,9 @@ void RemoveLayer(void);
 
 struct Layer *FlattenLayers(void);
 
-/* Frame */
+/* ======================================= */
+/* Frame                                   */
+/* ======================================= */
 
 void RemoveFrame(struct Layer *layer, struct Frame *frame);
 

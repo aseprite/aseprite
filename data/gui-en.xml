@@ -192,10 +192,12 @@
 		<item command="despeckle" name="&Despeckle (median filter)" />
 	    </menu>
 <!-- 	    <item command="draw_text" name="Draw &Text" /> -->
-<!-- 	    <item command="play_flic" name="Pla&y FLI/FLC File" /> -->
 <!-- 	    <item command="mapgen" name="&MapGen" /> -->
 	    <menu name="Scripting">
 		<item command="run_script" name="Run &Script" />
+	    </menu>
+	    <menu name="Extras">
+		<item command="play_flic" name="Pla&y FLI/FLC File" />
 	    </menu>
 	    <separator />
 	    <item command="tips" name="T&ips" />
