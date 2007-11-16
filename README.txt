@@ -1,5 +1,5 @@
 
- ase -- allegro-sprite-editor: the ultimate sprites factory
+ ASE - Allegro Sprite Editor
  Copyright (C) 2001-2005, 2007 by David A. Capello
  --------------------------------------------------------------
  See the "AUTHORS.txt" file for a complete list of contributors
@@ -119,11 +119,11 @@ UPDATES
     http://sourceforge.net/project/showfiles.php?group_id=20848
 
   Also, if you want to get the last development version of ASE from
-  the CVS repository, which is the version more prone to have errors,
+  the SVN repository, which is the version more prone to have errors,
   but is the more updated in the tools area, you can browse it file by
   file in this address:
 
-    http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/ase
+    http://ase.svn.sourceforge.net/viewvc/ase/
 
   Or you can download it completelly to your disk with a program which
   control CVS, as follow-up:

@@ -1,5 +1,5 @@
--- ase -- allegro-sprite-editor: the ultimate sprites factory
--- Copyright (C) 2001-2005 by David A. Capello
+-- ASE -- Allegro Sprite Editor
+-- Copyright (C) 2001-2005, 2007 by David A. Capello
 
 ----------------------------------------------------------------------
 -- Convolution Matrix

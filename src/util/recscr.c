@@ -1,4 +1,4 @@
-/* ase -- allegro-sprite-editor: the ultimate sprites factory
+/* ASE - Allegro Sprite Editor
  * Copyright (C) 2001-2005, 2007  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
