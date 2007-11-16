@@ -8,13 +8,14 @@ ASE = ase$(EXE)
 ASE_SOURCES =						\
 	src/commands/cmd_about.c			\
 	src/commands/cmd_advanced_mode.c		\
+	src/commands/cmd_cel_properties.c		\
 	src/commands/cmd_change_image_type.c		\
 	src/commands/cmd_clear.c			\
 	src/commands/cmd_close_file.c			\
 	src/commands/cmd_configure_screen.c		\
 	src/commands/cmd_configure_tools.c		\
 	src/commands/cmd_copy.c				\
-	src/commands/cmd_copy_frame.c			\
+	src/commands/cmd_copy_cel.c			\
 	src/commands/cmd_crop.c				\
 	src/commands/cmd_cut.c				\
 	src/commands/cmd_deselect_mask.c		\
@@ -26,18 +27,17 @@ ASE_SOURCES =						\
 	src/commands/cmd_film_editor.c			\
 	src/commands/cmd_flatten_layers.c		\
 	src/commands/cmd_flip.c				\
-	src/commands/cmd_frame_properties.c		\
 	src/commands/cmd_invert_mask.c			\
 	src/commands/cmd_layer_properties.c		\
-	src/commands/cmd_link_frame.c			\
+	src/commands/cmd_link_cel.c			\
 	src/commands/cmd_load_mask.c			\
 	src/commands/cmd_mapgen.c			\
 	src/commands/cmd_mask_all.c			\
 	src/commands/cmd_mask_by_color.c		\
 	src/commands/cmd_merge_down_layer.c		\
-	src/commands/cmd_move_frame.c			\
+	src/commands/cmd_move_cel.c			\
+	src/commands/cmd_new_cel.c			\
 	src/commands/cmd_new_file.c			\
-	src/commands/cmd_new_frame.c			\
 	src/commands/cmd_new_layer.c			\
 	src/commands/cmd_new_layer_set.c		\
 	src/commands/cmd_open_file.c			\
@@ -49,7 +49,7 @@ ASE_SOURCES =						\
 	src/commands/cmd_record_screen.c		\
 	src/commands/cmd_redo.c				\
 	src/commands/cmd_refresh.c			\
-	src/commands/cmd_remove_frame.c			\
+	src/commands/cmd_remove_cel.c			\
 	src/commands/cmd_remove_layer.c			\
 	src/commands/cmd_reselect_mask.c		\
 	src/commands/cmd_run_script.c			\
