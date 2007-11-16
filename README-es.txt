@@ -1,7 +1,7 @@
 
  ASE - Allegro Sprite Editor
- Copyright (C) 2001-2005, 2007 por David A. Capello
- ------------------------------------------------------------------------
+ Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 por David A. Capello
+ ---------------------------------------------------------------------
  Mire el fichero "AUTHORS.txt" para la lista completa de colaboradores
 
 
@@ -125,33 +125,20 @@ ACTUALIZACIONES
     http://sourceforge.net/project/showfiles.php?group_id=20848
 
   También, si desea obtener la última versión en desarrollo de ASE desde el
-  repositorio CVS, la cual por sierto es la más propensa a tener errores pero
+  repositorio SVN, la cual por sierto es la más propensa a tener errores pero
   es la que más actualizada está con respecto a las herramientas, la puede
   explorar archivo por archivo en esta dirección:
 
-    http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/ase
+    http://ase.svn.sourceforge.net/viewvc/ase/
 
-  O la puede bajar completamente a su disco con un programa que controle CVS,
+  O la puede bajar completamente a su disco con un programa que controle SVN,
   de la siguiente forma:
 
-    1) Debemos ingresar al repositorio de forma anónima (cuando le pregunte
-       por la contraseña, solamente presione <enter>):
+    svn checkout svn co https://ase.svn.sourceforge.net/svnroot/ase/trunk ase
 
-         cvs -d :pserver:anonymous@cvs.ase.sourceforge.net:/cvsroot/ase login
-
-    2) Realizamos el primer checkout, lo que significa que sacaremos una
-       copia "fresca" de ASE:
-
-         cvs -z3 -d :pserver:anonymous@cvs.ase.sourceforge.net:/cvsroot/ase checkout gnuase
-
-    3) Una vez esto, cada vez que quiera actualizar la copia local con la
-       del repositorio, deberá ejecutar en el directorio gnuase/:
-
-         cvs update -Pd
-
-  AVISO: Cuando obtenga la versión CVS, no borre los directorios CVS
+  AVISO: Cuando obtenga la versión SVN, no borre los directorios .svn
   ni el contenido dentro de ellos, ya que es para uso interno del
-  programa cvs.
+  programa svn.
 
 
 ===================================
@@ -177,4 +164,4 @@ INFORMACIÓN DE CONTACTO
 
 
  ----------------------------------------------------------------------------
- Copyright (C) 2001-2005 por David A. Capello
+ Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 por David A. Capello

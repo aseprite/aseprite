@@ -26,8 +26,8 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/blend.h"
+#include "raster/cel.h"
 #include "raster/image.h"
-#include "raster/frame.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
@@ -85,7 +85,7 @@ Layer *NewLayer(const char *name, int x, int y, int w, int h)
   Sprite *sprite = current_sprite;
   Layer *layer = NULL;
   Image *image;
-  Frame *frame;
+  Cel *cel;
   int index;
 
   if (sprite && name) {
@@ -114,12 +114,12 @@ Layer *NewLayer(const char *name, int x, int y, int w, int h)
     /* add image in the layer stock */
     index = stock_add_image(layer->stock, image);
 
-    /* create a new frame in the current frpos */
-    frame = frame_new(sprite->frpos, index);
-    frame_set_position(frame, x, y);
+    /* create a new cel in the current frame */
+    cel = cel_new(sprite->frpos, index);
+    cel_set_position(cel, x, y);
 
-    /* add frame */
-    layer_add_frame(layer, frame);
+    /* add cel */
+    layer_add_cel(layer, cel);
 
     /* undo stuff */
     if (undo_is_enabled(sprite->undo)) {
@@ -244,13 +244,15 @@ Layer *FlattenLayers(void)
 
   JI_LIST_FOR_EACH_SAFE(sprite->set->layers, link, next) {
     if (link->data != flat_layer) {
+      Layer *old_layer = link->data;
+
       /* undo */
       if (undo_is_enabled(sprite->undo))
-	undo_remove_layer(sprite->undo, link->data);
+	undo_remove_layer(sprite->undo, old_layer);
 
       /* remove and destroy this layer */
-      layer_remove_layer(sprite->set, link->data);
-      layer_free(link->data);
+      layer_remove_layer(sprite->set, old_layer);
+      layer_free(old_layer);
     }
   }
 
@@ -264,24 +266,24 @@ Layer *FlattenLayers(void)
 }
 
 /* ======================================= */
-/* Frame                                   */
+/* Cel                                     */
 /* ======================================= */
 
-void RemoveFrame(Layer *layer, Frame *frame)
+void RemoveCel(Layer *layer, Cel *cel)
 {
   Sprite *sprite = current_sprite;
   Image *image;
-  Frame *it;
+  Cel *it;
   int frpos;
   bool used;
 
-  if (sprite != NULL && layer_is_image(layer) && frame != NULL) {
-    /* find if the image that use the frame to remove, is used by
-       another frames */
+  if (sprite != NULL && layer_is_image(layer) && cel != NULL) {
+    /* find if the image that use the cel to remove, is used by
+       another cels */
     used = FALSE;
     for (frpos=0; frpos<sprite->frames; ++frpos) {
-      it = layer_get_frame(layer, frpos);
-      if (it != NULL && it != frame && it->image == frame->image) {
+      it = layer_get_cel(layer, frpos);
+      if (it != NULL && it != cel && it->image == cel->image) {
 	used = TRUE;
 	break;
       }
@@ -289,18 +291,18 @@ void RemoveFrame(Layer *layer, Frame *frame)
 
     undo_open(sprite->undo);
     if (!used) {
-      /* if the image is only used by this frame, we can remove the
+      /* if the image is only used by this cel, we can remove the
 	 image from the stock */
-      image = stock_get_image(layer->stock, frame->image);
+      image = stock_get_image(layer->stock, cel->image);
       undo_remove_image(sprite->undo, layer->stock, image);
       stock_remove_image(layer->stock, image);
       image_free(image);
     }
-    undo_remove_frame(sprite->undo, layer, frame);
+    undo_remove_cel(sprite->undo, layer, cel);
     undo_close(sprite->undo);
 
-    /* remove the frame */
-    layer_remove_frame(layer, frame);
-    frame_free(frame);
+    /* remove the cel */
+    layer_remove_cel(layer, cel);
+    cel_free(cel);
   }
 }

@@ -19,7 +19,7 @@
 #ifndef UTIL_SETGFX_H
 #define UTIL_SETGFX_H
 
-int set_gfx (const char *card, int w, int h, int depth);
+int set_gfx(const char *card, int w, int h, int depth);
 
 #endif /* UTIL_SETGFX_H */
 

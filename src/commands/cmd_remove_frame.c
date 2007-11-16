@@ -22,24 +22,24 @@
 
 #include "modules/gui.h"
 #include "modules/sprites.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "script/functions.h"
 
 #endif
 
-bool command_enabled_remove_frame(const char *argument)
+bool command_enabled_remove_cel(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_remove_frame(const char *argument)
+void command_execute_remove_cel(const char *argument)
 {
   Sprite *sprite = current_sprite;
-  Frame *frame = layer_get_frame(sprite->layer, sprite->frpos);
-  if (frame) {
-    RemoveFrame(sprite->layer, frame);
+  Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
+  if (cel) {
+    RemoveCel(sprite->layer, cel);
     GUI_Refresh(sprite);
   }
 }

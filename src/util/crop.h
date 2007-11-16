@@ -21,7 +21,7 @@
 
 void crop_sprite(void);
 void crop_layer(void);
-void crop_frame(void);
+void crop_cel(void);
 
 #endif /* UTIL_CROP_H */
 

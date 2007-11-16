@@ -41,6 +41,7 @@ static int rec_clock;
 static s_fli_header *fli_header;
 static unsigned char *omap;
 static unsigned char *cmap;
+static BITMAP *new_bmp;
 static BITMAP *old_bmp;
 
 bool is_rec_screen(void)
@@ -76,11 +77,11 @@ void rec_screen_on(void)
   fseek(rec_file, 128, SEEK_SET);
 
   /* prepare fli header */
-  fli_header = jnew (s_fli_header, 1);
+  fli_header = jnew(s_fli_header, 1);
   fli_header->filesize = 0;
   fli_header->frames = 0;
-  fli_header->width = JI_SCREEN_W;
-  fli_header->height = JI_SCREEN_H;
+  fli_header->width = SCREEN_W;
+  fli_header->height = SCREEN_H;
   fli_header->magic = HEADER_FLC;
   fli_header->depth = 8;
   fli_header->flags = 3;
@@ -96,6 +97,7 @@ void rec_screen_on(void)
   cmap = jmalloc(768);
 
   /* prepare old bitmap */
+  new_bmp = NULL;
   old_bmp = NULL;
 
   /* set the position of the mouse in the center of the screen */
@@ -114,8 +116,8 @@ void rec_screen_off(void)
     rec_file = NULL;
 
     /* free memory */
-    if (old_bmp)
-      destroy_bitmap(old_bmp);
+    if (new_bmp) destroy_bitmap(new_bmp);
+    if (old_bmp) destroy_bitmap(old_bmp);
 
     jfree(fli_header);
     jfree(cmap);
@@ -123,13 +125,13 @@ void rec_screen_off(void)
   }
 }
 
-void rec_screen_poll (void)
+void rec_screen_poll(void)
 {
   if (!is_interactive() || !rec_file)
     return;
   else if (ji_clock-rec_clock > JI_TICKS_PER_SEC/FRAMES_PER_SECOND) {
+    BITMAP *t;
     int old_flag;
-    BITMAP *bmp;
     int c, i;
 
     /* save the active flag which indicate if the mouse is freeze or not */
@@ -146,28 +148,31 @@ void rec_screen_poll (void)
     }
 
     /* save in a bitmap the visible screen portion */
-    bmp = create_bitmap_ex(8, JI_SCREEN_W, JI_SCREEN_H);
-    if (ji_screen != screen)
-      jmouse_draw_cursor();
-    blit(ji_screen, bmp, 0, 0, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
+    if (!new_bmp) new_bmp = create_bitmap_ex(8, SCREEN_W, SCREEN_H);
+/*     if (ji_screen != screen) */
+/*       jmouse_draw_cursor(); */
+    blit(screen, new_bmp, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
     /* write the frame in FLC file */
     if (old_bmp)
       fli_write_frame(rec_file, fli_header,
 		      (unsigned char *)old_bmp->dat, omap,
-		      (unsigned char *)bmp->dat, cmap, W_ALL);
+		      (unsigned char *)new_bmp->dat, cmap, W_ALL);
     else
       fli_write_frame(rec_file, fli_header, NULL, NULL,
-		      (unsigned char *)bmp->dat, cmap, W_ALL);
+		      (unsigned char *)new_bmp->dat, cmap, W_ALL);
 
     /* copy this palette to the old one */
     memcpy(omap, cmap, 768);
 
     /* fixup old bitmap */
-    if (old_bmp)
-      destroy_bitmap(old_bmp);
+/*     if (old_bmp) */
+/*       destroy_bitmap(old_bmp); */
 
-    old_bmp = bmp;
+    /* swap bitmaps */
+    t = old_bmp;
+    old_bmp = new_bmp;
+    new_bmp = t;
 
     /* restore the freeze flag by the previous value */
     freeze_mouse_flag = old_flag;

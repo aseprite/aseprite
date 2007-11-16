@@ -25,14 +25,14 @@
 #include "jinete/list.h"
 
 #include "raster/blend.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/stock.h"
 
 #endif
 
-static int has_frames (Layer *layer, int frpos);
+static int has_cels(Layer *layer, int frpos);
 
 #define LAYER_INIT(name_string)			\
   do {						\
@@ -45,7 +45,7 @@ static int has_frames (Layer *layer, int frpos);
     layer->imgtype = 0;				\
     layer->blend_mode = 0;			\
     layer->stock = NULL;			\
-    layer->frames = NULL;			\
+    layer->cels = NULL;				\
 						\
     layer->layers = NULL;			\
   } while (0);
@@ -62,7 +62,7 @@ Layer *layer_new(int imgtype)
   layer->imgtype = imgtype;
   layer->blend_mode = BLEND_MODE_NORMAL;
   layer->stock = stock_new(imgtype);
-  layer->frames = jlist_new();
+  layer->cels = jlist_new();
 
   return layer;
 }
@@ -110,7 +110,7 @@ Layer *layer_new_copy(const Layer *layer)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Frame *frame_copy;
+      Cel *cel_copy;
       JLink link;
 
       layer_copy = layer_new(layer->imgtype);
@@ -127,14 +127,14 @@ Layer *layer_new_copy(const Layer *layer)
 	return NULL;
       }
 
-      /* copy frames */
-      JI_LIST_FOR_EACH(layer->frames, link) {
-	frame_copy = frame_new_copy(link->data);
-	if (!frame_copy) {
+      /* copy cels */
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	cel_copy = cel_new_copy(link->data);
+	if (!cel_copy) {
 	  layer_free(layer_copy);
 	  return NULL;
 	}
-	layer_add_frame(layer_copy, frame_copy);
+	layer_add_cel(layer_copy, cel_copy);
       }
       break;
     }
@@ -180,7 +180,7 @@ Layer *layer_new_copy(const Layer *layer)
 Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos)
 {
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   Image *image;
   int index;
 
@@ -206,12 +206,12 @@ Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos)
   /* add image in the layer stock */
   index = stock_add_image(layer->stock, image);
 
-  /* create the frame */
-  frame = frame_new(frpos, index);
-  frame_set_position (frame, x, y);
+  /* create the cel */
+  cel = cel_new(frpos, index);
+  cel_set_position(cel, x, y);
 
-  /* add the frame in the layer */
-  layer_add_frame(layer, frame);
+  /* add the cel in the layer */
+  layer_add_cel(layer, cel);
 
   return layer;
 }
@@ -227,11 +227,11 @@ void layer_free (Layer *layer)
       if (layer->stock)
 	stock_free(layer->stock);
 
-      /* remove frames */
-      JI_LIST_FOR_EACH(layer->frames, link)
-	frame_free(link->data);
+      /* remove cels */
+      JI_LIST_FOR_EACH(layer->cels, link)
+	cel_free(link->data);
 
-      jlist_free(layer->frames);
+      jlist_free(layer->cels);
       break;
     }
 
@@ -243,6 +243,7 @@ void layer_free (Layer *layer)
     }
 
     case GFXOBJ_LAYER_TEXT:
+      /* TODO */
 /*       if (layer->text) */
 /* 	r_free (layer->text); */
 
@@ -256,13 +257,13 @@ void layer_free (Layer *layer)
 }
 
 /* returns TRUE if "layer" is a normal layer type (an image layer)  */
-int layer_is_image (const Layer *layer)
+int layer_is_image(const Layer *layer)
 {
   return (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) ? TRUE: FALSE;
 }
 
 /* returns TRUE if "layer" is a set of layers */
-int layer_is_set (const Layer *layer)
+int layer_is_set(const Layer *layer)
 {
   return (layer->gfxobj.type == GFXOBJ_LAYER_SET) ? TRUE: FALSE;
 }
@@ -290,51 +291,51 @@ Layer *layer_get_next(Layer *layer)
   return NULL;
 }
 
-void layer_set_name (Layer *layer, const char *name)
+void layer_set_name(Layer *layer, const char *name)
 {
-  strcpy (layer->name, name);
+  strcpy(layer->name, name);
 }
 
-void layer_set_blend_mode (Layer *layer, int blend_mode)
+void layer_set_blend_mode(Layer *layer, int blend_mode)
 {
   if (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)
     layer->blend_mode = blend_mode;
 }
 
-void layer_set_parent (Layer *layer, GfxObj *gfxobj)
+void layer_set_parent(Layer *layer, GfxObj *gfxobj)
 {
   layer->parent = gfxobj;
 }
 
-void layer_add_frame(Layer *layer, Frame *frame)
+void layer_add_cel(Layer *layer, Cel *cel)
 {
   if (layer_is_image(layer)) {
     JLink link;
 
-    JI_LIST_FOR_EACH(layer->frames, link)
-      if (((Frame *)link->data)->frpos >= frame->frpos)
+    JI_LIST_FOR_EACH(layer->cels, link)
+      if (((Cel *)link->data)->frpos >= cel->frpos)
 	break;
 
-    jlist_insert_before(layer->frames, link, frame);
+    jlist_insert_before(layer->cels, link, cel);
   }
 }
 
-void layer_remove_frame(Layer *layer, Frame *frame)
+void layer_remove_cel(Layer *layer, Cel *cel)
 {
   if (layer_is_image(layer))
-    jlist_remove(layer->frames, frame);
+    jlist_remove(layer->cels, cel);
 }
 
-Frame *layer_get_frame(Layer *layer, int frpos)
+Cel *layer_get_cel(Layer *layer, int frpos)
 {
   if (layer_is_image(layer)) {
-    Frame *frame;
+    Cel *cel;
     JLink link;
 
-    JI_LIST_FOR_EACH(layer->frames, link) {
-      frame = link->data;
-      if (frame->frpos == frpos)
-	return frame;
+    JI_LIST_FOR_EACH(layer->cels, link) {
+      cel = link->data;
+      if (cel->frpos == frpos)
+	return cel;
     }
   }
 
@@ -379,21 +380,21 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frpos)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Frame *frame = layer_get_frame (layer, frpos);
+      Cel *cel = layer_get_cel(layer, frpos);
       Image *src_image;
 
-      if (frame) {
-	if ((frame->image >= 0) &&
-	    (frame->image < layer->stock->nimage))
-	  src_image = layer->stock->image[frame->image];
+      if (cel) {
+	if ((cel->image >= 0) &&
+	    (cel->image < layer->stock->nimage))
+	  src_image = layer->stock->image[cel->image];
 	else
 	  src_image = NULL;
 
 	if (src_image) {
 	  image_merge(image, src_image,
-		      frame->x + x,
-		      frame->y + y,
-		      MID (0, frame->opacity, 255),
+		      cel->x + x,
+		      cel->y + y,
+		      MID (0, cel->opacity, 255),
 		      layer->blend_mode);
 	}
       }
@@ -413,16 +414,18 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frpos)
   }
 }
 
-/* returns a new layer (flat_layer) with all "layer" rendered frames
-   by frame from "frmin" to "frmax" (inclusive).  "layer" can be a set
-   of layers, so the routines flatten all childs to the unique output
-   layer */
+/**
+ * Returns a new layer (flat_layer) with all "layer" rendered frame
+ * by frame from "frmin" to "frmax" (inclusive).  "layer" can be a set
+ * of layers, so the routines flatten all childs to the unique output
+ * layer.
+ */
 Layer *layer_flatten(Layer *layer, int imgtype,
 		     int x, int y, int w, int h, int frmin, int frmax)
 {
   Layer *flat_layer;
   Image *image;
-  Frame *frame;
+  Cel *cel;
   int frpos;
 
   flat_layer = layer_new(imgtype);
@@ -432,8 +435,8 @@ Layer *layer_flatten(Layer *layer, int imgtype,
   layer_set_name(flat_layer, "Flat Layer");
 
   for (frpos=frmin; frpos<=frmax; frpos++) {
-    /* this "frpos" has frames to render */
-    if (has_frames(layer, frpos)) {
+    /* does this "frpos" have cels to render? */
+    if (has_cels(layer, frpos)) {
       /* create a new image */
       image = image_new(imgtype, w, h);
       if (!image) {
@@ -441,11 +444,11 @@ Layer *layer_flatten(Layer *layer, int imgtype,
 	return NULL;
       }
 
-      /* create the new frame for the output layer (add the image to
+      /* create the new cel for the output layer (add the image to
 	 stock too) */
-      frame = frame_new(frpos, stock_add_image(flat_layer->stock, image));
-      frame_set_position(frame, x, y);
-      if (!frame) {
+      cel = cel_new(frpos, stock_add_image(flat_layer->stock, image));
+      cel_set_position(cel, x, y);
+      if (!cel) {
 	layer_free(flat_layer);
 	image_free(image);
 	return NULL;
@@ -454,15 +457,15 @@ Layer *layer_flatten(Layer *layer, int imgtype,
       /* clear the image and render this frame */
       image_clear(image, 0);
       layer_render(layer, image, -x, -y, frpos);
-      layer_add_frame(flat_layer, frame);
+      layer_add_cel(flat_layer, cel);
     }
   }
 
   return flat_layer;
 }
 
-/* returns TRUE if the "layer" (or him childs) has frames to render in frpos */
-static int has_frames(Layer *layer, int frpos)
+/* returns TRUE if the "layer" (or him childs) has cels to render in frpos */
+static int has_cels(Layer *layer, int frpos)
 {
   if (!layer->readable)
     return FALSE;
@@ -470,18 +473,19 @@ static int has_frames(Layer *layer, int frpos)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE:
-      return layer_get_frame(layer, frpos) ? TRUE: FALSE;
+      return layer_get_cel(layer, frpos) ? TRUE: FALSE;
 
     case GFXOBJ_LAYER_SET: {
       JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	if (has_frames(link->data, frpos))
+      JI_LIST_FOR_EACH(layer->layers, link) {
+	if (has_cels(link->data, frpos))
 	  return TRUE;
+      }
       break;
     }
 
     case GFXOBJ_LAYER_TEXT:
-      /* XXX */
+      /* TODO */
       break;
   }
 

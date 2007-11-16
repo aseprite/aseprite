@@ -1,7 +1,7 @@
 
  ASE - Allegro Sprite Editor
- Copyright (C) 2001-2005, 2007 by David A. Capello
- --------------------------------------------------------------
+ Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 by David A. Capello
+ --------------------------------------------------------------------
  See the "AUTHORS.txt" file for a complete list of contributors
 
 
@@ -126,25 +126,12 @@ UPDATES
     http://ase.svn.sourceforge.net/viewvc/ase/
 
   Or you can download it completelly to your disk with a program which
-  control CVS, as follow-up:
+  control SVN, as follow-up:
 
-    1) We must input to the repository in anonymous form (when you be
-       asked for the password, just press <enter>):
+    svn checkout svn co https://ase.svn.sourceforge.net/svnroot/ase/trunk ase
 
-         cvs -d :pserver:anonymous@cvs.ase.sourceforge.net:/cvsroot/ase login
-
-    2) We make the first checkout, which means that we fetch a "fresh"
-       copy of ASE:
-
-         cvs -z3 -d :pserver:anonymous@cvs.ase.sourceforge.net:/cvsroot/ase checkout gnuase
-
-    3) Then, whenever you want update your copy with the repository
-       one, you will must execute in the gnuase/ directory:
-
-         cvs update -Pd
-
-  WARNING: When you obtain the CVS version, don't remove the CVS
-  directories, they are for exclusive use of the cvs program.
+  WARNING: When you obtain the SVN version, don't remove the .svn
+  directories, they are for exclusive use of the svn program.
 
 
 ===================================
@@ -170,4 +157,4 @@ CONTACT INFO
 
 
  ----------------------------------------------------------------------------
- Copyright (C) 2001-2005 by David A. Capello
+ Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 by David A. Capello

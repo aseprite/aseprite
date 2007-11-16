@@ -54,7 +54,7 @@ enum {
 
   /* graphic objects */
   Type_Image,
-  Type_Frame,
+  Type_Cel,
   Type_Layer,
   Type_Mask,
   Type_Path,
@@ -249,20 +249,20 @@ static int metatable_index(lua_State *L)
 	break;
       }
 
-      case Type_Frame: {
-	Frame *frame = userdata->ptr;
+      case Type_Cel: {
+	Cel *cel = userdata->ptr;
 
 	if (strcmp (index, "frpos") == 0)
-	  lua_pushnumber (L, frame->frpos);
+	  lua_pushnumber (L, cel->frpos);
 	else if (strcmp (index, "image") == 0)
-	  lua_pushnumber (L, frame->image);
+	  lua_pushnumber (L, cel->image);
 	else if (strcmp (index, "x") == 0)
-	  lua_pushnumber (L, frame->x);
+	  lua_pushnumber (L, cel->x);
 	else if (strcmp (index, "y") == 0)
-	  lua_pushnumber (L, frame->y);
+	  lua_pushnumber (L, cel->y);
 	else if (strcmp (index, "opacity") == 0)
-	  lua_pushnumber (L, frame->opacity);
-	/* XXXX */
+	  lua_pushnumber (L, cel->opacity);
+	/* TODO */
 /* 	else if (strcmp (index, "next") == 0) */
 /* 	  lua_pushnumber (L, ); */
 /* 	else if (strcmp (index, "prev") == 0) */
@@ -303,9 +303,9 @@ static int metatable_index(lua_State *L)
 		lua_pushnumber (L, layer->blend_mode);
 	      else if (strcmp (index, "stock") == 0)
 		push_userdata (L, Type_Stock, layer->stock);
-	      else if (strcmp (index, "frames") == 0)
-		push_userdata (L, Type_Frame,
-			       jlist_first_data(layer->frames));
+	      else if (strcmp (index, "cels") == 0)
+		push_userdata(L, Type_Cel,
+			      jlist_first_data(layer->cels));
 	      else
 		return 0;
 	      break;
@@ -731,9 +731,9 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "intl/intl.h"
 #include "modules/rootmenu.h"
 #include "util/autocrop.h"
+#include "util/celmove.h"
 #include "util/clipbrd.h"
 #include "util/crop.h"
-#include "util/frmove.h"
 #include "util/mapgen.h"
 #include "util/msk_file.h"
 #include "util/quantize.h"

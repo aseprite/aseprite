@@ -82,8 +82,8 @@ static Sprite *load_GIF(const char *filename)
 {
   GIF_ANIMATION *gif = NULL;
   Sprite *sprite = NULL;
-  Frame *frame = NULL;
   Layer *layer = NULL;
+  Cel *cel = NULL;
   Image *image = NULL;
   Image *current_image_old = NULL;
   Image *current_image = NULL;
@@ -168,7 +168,7 @@ static Sprite *load_GIF(const char *filename)
     /* copy new palette to old palette */
     palette_copy(opal, npal);
 
-    frame = frame_new(i, 0);
+    cel = cel_new(i, 0);
     image = image_new(IMAGE_INDEXED,
 #ifdef LOAD_GIF_STRUCTURE
 		      gif->frames[i].w,
@@ -177,21 +177,21 @@ static Sprite *load_GIF(const char *filename)
 		      sprite->w, sprite->h
 #endif
 		      );
-    if (!frame || !image) {
-      if (frame) frame_free(frame);
+    if (!cel || !image) {
+      if (cel) cel_free(cel);
       if (image) image_free(image);
-      console_printf(_("Error creating frame %d.\n"), i);
+      console_printf(_("Error creating cel %d.\n"), i);
       break;
     }
 
-    frame_set_position(frame,
+    cel_set_position(cel,
 #ifdef LOAD_GIF_STRUCTURE
-		       gif->frames[i].xoff,
-		       gif->frames[i].yoff
+		     gif->frames[i].xoff,
+		     gif->frames[i].yoff
 #else
-		       0, 0
+		     0, 0
 #endif
-		       );
+		     );
 
     image_copy(current_image_old, current_image, 0, 0);
     render_gif_frame(gif->frames+i, current_image,
@@ -207,8 +207,8 @@ static Sprite *load_GIF(const char *filename)
 	       0, 0
 #endif
 	       );
-    frame->image = stock_add_image(layer->stock, image);
-    layer_add_frame(layer, frame);
+    cel->image = stock_add_image(layer->stock, image);
+    layer_add_cel(layer, cel);
 
 #ifdef LOAD_GIF_STRUCTURE
     /* when load the GIF structure, the disposal method is ever

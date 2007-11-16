@@ -76,17 +76,17 @@ void command_execute_crop_layer(const char *argument)
 }
 
 /* ======================== */
-/* crop_frame               */
+/* crop_cel               */
 /* ======================== */
 
-bool command_enabled_crop_frame(const char *argument)
+bool command_enabled_crop_cel(const char *argument)
 {
   return command_enabled_crop(argument);
 }
 
-void command_execute_crop_frame(const char *argument)
+void command_execute_crop_cel(const char *argument)
 {
-  crop_frame();
+  crop_cel();
 }
 
 /**********************************************************************/

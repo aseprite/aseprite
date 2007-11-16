@@ -130,7 +130,7 @@ static Sprite *load_FLI(const char *filename)
 
       /* add the new frame */
       index = stock_add_image(layer->stock, image_new_copy(bmp));
-      layer_add_frame(layer, frame_new(frpos_out, index));
+      layer_add_cel(layer, cel_new(frpos_out, index));
 
       /* first frame or the palette changes */
       if ((frpos_in == 0) || (memcmp(omap, cmap, 768) != 0))
@@ -142,7 +142,7 @@ static Sprite *load_FLI(const char *filename)
       SETPAL();
 
       /* add link */
-      layer_add_frame(layer, frame_new(frpos_out, index));
+      layer_add_cel(layer, cel_new(frpos_out, index));
     }
     /* the palette and the image don't change: add duration to the last added frame */
     else {

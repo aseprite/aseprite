@@ -16,15 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_FRMOVE_H
-#define UTIL_FRMOVE_H
+#ifndef RASTER_CEL_H
+#define RASTER_CEL_H
 
-void set_frame_to_handle (Layer *layer, Frame *frame);
+#include "raster/gfxobj.h"
 
-void new_frame (void);
-void move_frame (void);
-void copy_frame (void);
-void link_frame (void);
+struct Layer;
 
-#endif /* UTIL_FRMOVE_H */
+typedef struct Cel Cel;
 
+struct Cel
+{
+  GfxObj gfxobj;
+  int frpos;			/* frame position */
+  int image;			/* image index of stock */
+  int x, y;			/* X/Y screen position */
+  int opacity;			/* opacity level */
+};
+
+Cel *cel_new(int frpos, int image);
+Cel *cel_new_copy(const Cel *cel);
+void cel_free(Cel *cel);
+
+Cel *cel_is_link(Cel *cel, struct Layer *layer);
+
+void cel_set_frpos(Cel *cel, int frpos);
+void cel_set_image(Cel *cel, int image);
+void cel_set_position(Cel *cel, int x, int y);
+void cel_set_opacity(Cel *cel, int opacity);
+
+#endif /* RASTER_FRAME_H */

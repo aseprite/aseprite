@@ -75,17 +75,18 @@ struct Image
   /* struct BITMAP *bmp; */
 };
 
-typedef struct ImageMethods {
-  int (*init) (Image *image);
-  int (*getpixel) (const Image *image, int x, int y);
-  void (*putpixel) (Image *image, int x, int y, int color);
-  void (*clear) (Image *image, int color);
-  void (*copy) (Image *dst, const Image *src, int x, int y);
-  void (*merge) (Image *dst, const Image *src, int x, int y, int opacity,
-		 int blend_mode);
-  void (*hline) (Image *image, int x1, int y, int x2, int color);
-  void (*rectfill) (Image *image, int x1, int y1, int x2, int y2, int color);
-  void (*to_allegro) (const Image *image, struct BITMAP *bmp, int x, int y);
+typedef struct ImageMethods
+{
+  int (*init)(Image *image);
+  int (*getpixel)(const Image *image, int x, int y);
+  void (*putpixel)(Image *image, int x, int y, int color);
+  void (*clear)(Image *image, int color);
+  void (*copy)(Image *dst, const Image *src, int x, int y);
+  void (*merge)(Image *dst, const Image *src, int x, int y, int opacity,
+		int blend_mode);
+  void (*hline)(Image *image, int x1, int y, int x2, int color);
+  void (*rectfill)(Image *image, int x1, int y1, int x2, int y2, int color);
+  void (*to_allegro)(const Image *image, struct BITMAP *bmp, int x, int y);
 } ImageMethods;
 
 Image *image_new(int imgtype, int w, int h);

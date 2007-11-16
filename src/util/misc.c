@@ -38,7 +38,7 @@
 #include "modules/sprites.h"
 #include "modules/tools2.h"
 #include "raster/blend.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -51,39 +51,39 @@
 
 #endif
 
-Image *GetImage (void)
+Image *GetImage(void)
 {
   Sprite *sprite = current_sprite;
   Image *image = NULL;
 
   if (sprite && sprite->layer && layer_is_image (sprite->layer)) {
-    Frame *frame = layer_get_frame (sprite->layer, sprite->frpos);
+    Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
 
-    if (frame) {
-      if ((frame->image >= 0) &&
-	  (frame->image < sprite->layer->stock->nimage))
-	image = sprite->layer->stock->image[frame->image];
+    if (cel) {
+      if ((cel->image >= 0) &&
+	  (cel->image < sprite->layer->stock->nimage))
+	image = sprite->layer->stock->image[cel->image];
     }
   }
 
   return image;
 }
 
-Image *GetImage2 (Sprite *sprite, int *x, int *y, int *opacity)
+Image *GetImage2(Sprite *sprite, int *x, int *y, int *opacity)
 {
   Image *image = NULL;
 
   if (sprite && sprite->layer && layer_is_image (sprite->layer)) {
-    Frame *frame = layer_get_frame (sprite->layer, sprite->frpos);
+    Cel *cel = layer_get_cel (sprite->layer, sprite->frpos);
 
-    if (frame) {
-      if ((frame->image >= 0) &&
-	  (frame->image < sprite->layer->stock->nimage))
-	image = sprite->layer->stock->image[frame->image];
+    if (cel) {
+      if ((cel->image >= 0) &&
+	  (cel->image < sprite->layer->stock->nimage))
+	image = sprite->layer->stock->image[cel->image];
 
-      if (x) *x = frame->x;
-      if (y) *y = frame->y;
-      if (opacity) *opacity = MID (0, frame->opacity, 255);
+      if (x) *x = cel->x;
+      if (y) *y = cel->y;
+      if (opacity) *opacity = MID(0, cel->opacity, 255);
     }
   }
 
@@ -128,7 +128,7 @@ void LoadPalette(const char *filename)
 }
 
 /* clears the mask region in the current sprite with the BG color */
-void ClearMask (void)
+void ClearMask(void)
 {
   Sprite *sprite = current_sprite;
   int x, y, u, v, putx, puty;
@@ -184,25 +184,25 @@ void ClearMask (void)
 
 /* returns a new layer created from the current mask in the current
    sprite, the layer isn't added to the sprite */
-Layer *NewLayerFromMask (void)
+Layer *NewLayerFromMask(void)
 {
   Sprite *sprite = current_sprite;
   unsigned char *address;
   int x, y, u, v, getx, gety;
   Image *dst, *src = GetImage2 (sprite, &x, &y, NULL);
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   div_t d;
 
   if (!sprite || !sprite->mask || !sprite->mask->bitmap || !src)
     return NULL;
 
-  dst = image_new (sprite->imgtype, sprite->mask->w, sprite->mask->h);
+  dst = image_new(sprite->imgtype, sprite->mask->w, sprite->mask->h);
   if (!dst)
     return NULL;
 
   /* clear the new image */
-  image_clear (dst, 0);
+  image_clear(dst, 0);
 
   /* copy the masked zones */
   for (v=0; v<sprite->mask->h; v++) {
@@ -224,37 +224,36 @@ Layer *NewLayerFromMask (void)
     }
   }
 
-  layer = layer_new (sprite->imgtype);
+  layer = layer_new(sprite->imgtype);
   if (!layer) {
     image_free (dst);
     return NULL;
   }
 
-  layer_set_blend_mode (layer, BLEND_MODE_NORMAL);
+  layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
-  frame = frame_new (sprite->frpos,
-		     stock_add_image (layer->stock, dst));
-  frame_set_position (frame, sprite->mask->x, sprite->mask->y);
+  cel = cel_new(sprite->frpos, stock_add_image(layer->stock, dst));
+  cel_set_position(cel, sprite->mask->x, sprite->mask->y);
 
-  layer_add_frame (layer, frame);
+  layer_add_cel(layer, cel);
 
   return layer;
 }
 
-Image *GetLayerImage (Layer *layer, int *x, int *y, int frpos)
+Image *GetLayerImage(Layer *layer, int *x, int *y, int frpos)
 {
   Image *image = NULL;
 
   if (layer_is_image (layer)) {
-    Frame *frame = layer_get_frame (layer, frpos);
+    Cel *cel = layer_get_cel(layer, frpos);
 
-    if (frame) {
-      if ((frame->image >= 0) &&
-	  (frame->image < layer->stock->nimage))
-	image = layer->stock->image[frame->image];
+    if (cel) {
+      if ((cel->image >= 0) &&
+	  (cel->image < layer->stock->nimage))
+	image = layer->stock->image[cel->image];
 
-      if (x) *x = frame->x;
-      if (y) *y = frame->y;
+      if (x) *x = cel->x;
+      if (y) *y = cel->y;
     }
   }
 
@@ -269,7 +268,7 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   JWidget editor = current_editor;
   Sprite *sprite = editor_get_sprite (editor);
   Layer *layer = sprite->layer;
-  Frame *frame = layer_get_frame (layer, sprite->frpos);
+  Cel *cel = layer_get_cel(layer, sprite->frpos);
   int start_x, new_x;
   int start_y, new_y;
   int start_b;
@@ -281,11 +280,11 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   int begin_y;
   int delay;
 
-  if (!frame)
+  if (!cel)
     return FALSE;
 
-  begin_x = frame->x;
-  begin_y = frame->y;
+  begin_x = cel->x;
+  begin_y = cel->y;
 
   delay = get_config_int ("Options", "MoveDelay", 250);
   delay = MID (0, delay, 1000);
@@ -298,8 +297,8 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
 
   do {
     if (update) {
-      frame->x = begin_x - start_x + new_x;
-      frame->y = begin_y - start_y + new_y;
+      cel->x = begin_x - start_x + new_x;
+      cel->y = begin_y - start_y + new_y;
 
       /* update layer-bounds */
       jmouse_hide();
@@ -311,10 +310,10 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
       status_bar_set_text
 	(app_get_status_bar(), 0,
 	 "Pos %3d %3d Offset %3d %3d",
-	 (int)frame->x,
-	 (int)frame->y,
-	 (int)(frame->x - begin_x),
-	 (int)(frame->y - begin_y));
+	 (int)cel->x,
+	 (int)cel->y,
+	 (int)(cel->x - begin_x),
+	 (int)(cel->y - begin_y));
       jwidget_flush_redraw(app_get_status_bar());
       jmanager_dispatch_messages();
 
@@ -344,16 +343,16 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   /* the position was changed */
   if (!editor_click_cancel(editor)) {
     if (use_undo && undo_is_enabled(sprite->undo)) {
-      new_x = frame->x;
-      new_y = frame->y;
+      new_x = cel->x;
+      new_y = cel->y;
 
       undo_open(sprite->undo);
-      frame->x = begin_x;
-      frame->y = begin_y;
-      undo_int(sprite->undo, (GfxObj *)frame, &frame->x);
-      undo_int(sprite->undo, (GfxObj *)frame, &frame->y);
-      frame->x = new_x;
-      frame->y = new_y;
+      cel->x = begin_x;
+      cel->y = begin_y;
+      undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
+      undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
+      cel->x = new_x;
+      cel->y = new_y;
       undo_close(sprite->undo);
     }
 
@@ -361,8 +360,8 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   }
   /* the position wasn't changed */
   else {
-    frame->x = begin_x;
-    frame->y = begin_y;
+    cel->x = begin_x;
+    cel->y = begin_y;
 
     ret = FALSE;
   }

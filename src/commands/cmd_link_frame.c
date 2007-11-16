@@ -28,11 +28,11 @@
 
 #endif
 
-bool command_enabled_link_frame(const char *argument)
+bool command_enabled_link_cel(const char *argument)
 {
   return FALSE;
 }
 
-void command_execute_link_frame(const char *argument)
+void command_execute_link_cel(const char *argument)
 {
 }

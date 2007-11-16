@@ -24,8 +24,8 @@
 #include "jinete/widget.h"
 
 #include "effect/effect.h"
-#include "modules/render.h"
 #include "raster/sprite.h"
+#include "util/render.h"
 #include "widgets/preview.h"
 
 #endif
@@ -35,61 +35,61 @@ typedef struct Preview
   Effect *effect;
 } Preview;
 
-static bool preview_msg_proc (JWidget widget, JMessage msg);
+static bool preview_msg_proc(JWidget widget, JMessage msg);
 
-JWidget preview_new (Effect *effect)
+JWidget preview_new(Effect *effect)
 {
-  JWidget widget = jwidget_new (preview_type ());
-  Preview *preview = jnew (Preview, 1);
+  JWidget widget = jwidget_new(preview_type());
+  Preview *preview = jnew(Preview, 1);
 
   preview->effect = effect;
 
-  jwidget_add_hook (widget, preview_type (), preview_msg_proc, preview);
-  jwidget_hide (widget);
+  jwidget_add_hook(widget, preview_type(), preview_msg_proc, preview);
+  jwidget_hide(widget);
 
   return widget;
 }
 
-int preview_type (void)
+int preview_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-void preview_restart (JWidget widget)
+void preview_restart(JWidget widget)
 {
-  effect_begin_for_preview (preview_get_effect (widget));
+  effect_begin_for_preview(preview_get_effect(widget));
 }
 
-Effect *preview_get_effect (JWidget widget)
+Effect *preview_get_effect(JWidget widget)
 {
-  return ((Preview *)jwidget_get_data (widget, preview_type ()))->effect;
+  return ((Preview *)jwidget_get_data(widget, preview_type()))->effect;
 }
 
-static bool preview_msg_proc (JWidget widget, JMessage msg)
+static bool preview_msg_proc(JWidget widget, JMessage msg)
 {
-  Effect *effect = preview_get_effect (widget);
+  Effect *effect = preview_get_effect(widget);
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (jwidget_get_data (widget, preview_type ()));
+      jfree(jwidget_get_data(widget, preview_type()));
       break;
 
     case JM_OPEN:
-      set_preview_image (effect->sprite->layer, effect->dst);
+      set_preview_image(effect->sprite->layer, effect->dst);
       break;
 
     case JM_CLOSE:
-      set_preview_image (NULL, NULL);
+      set_preview_image(NULL, NULL);
       break;
 
     case JM_IDLE:
       if (effect) {
-	if (effect_apply_step (effect))
-	  effect_flush (effect);
+	if (effect_apply_step(effect))
+	  effect_flush(effect);
       }
       break;
   }

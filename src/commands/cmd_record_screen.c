@@ -20,7 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro/gfx.h>
+
 #include "jinete/base.h"
+#include "jinete/alert.h"
 
 #include "util/recscr.h"
 
@@ -35,6 +38,13 @@ void command_execute_record_screen(const char *argument)
 {
   if (is_rec_screen())
     rec_screen_off();
-  else
+  else if (bitmap_color_depth(screen) == 8
+	   || jalert(_("Warning"
+		       "<<The display isn't in a 8 bpp resolution, the recording."
+		       "<<process can be really slow. It's recommended to use a"
+		       "<<8 bpp to make it faster."
+		       "<<Do you want to continue anyway?"
+		       "||Yes||No")) == 1) {
     rec_screen_on();
+  }
 }

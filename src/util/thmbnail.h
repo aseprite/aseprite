@@ -19,19 +19,19 @@
 #ifndef UTIL_THMBNAIL_H
 #define UTIL_THMBNAIL_H
 
-struct Frame;
+struct Cel;
 struct BITMAP;
 
 #define THUMBNAIL_W	32
 #define THUMBNAIL_H	32
 
 typedef struct Thumbnail {
-  struct Frame *frame;
+  struct Cel *cel;
   struct BITMAP *bmp;
 } Thumbnail;
 
-void destroy_thumbnails (void);
-struct BITMAP *generate_thumbnail (struct Frame *frame, struct Layer *layer);
+void destroy_thumbnails(void);
+struct BITMAP *generate_thumbnail(struct Cel *cel, struct Layer *layer);
 
 #endif /* UTIL_THMBNAIL_H */
 

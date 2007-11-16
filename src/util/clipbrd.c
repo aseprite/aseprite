@@ -35,7 +35,7 @@
 #include "modules/sprites.h"
 #include "modules/tools.h"
 #include "modules/tools2.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/rotate.h"
@@ -97,12 +97,12 @@ bool has_clipboard_image(int *w, int *h)
 {
   Sprite *clipboard = get_clipboard_sprite ();
   Image *image = NULL;
-  Frame *frame;
+  Cel *cel;
 
   if (clipboard) {
-    frame = layer_get_frame (clipboard->layer, clipboard->frpos);
-    if (frame)
-      image = stock_get_image (clipboard->layer->stock, frame->image);
+    cel = layer_get_cel(clipboard->layer, clipboard->frpos);
+    if (cel)
+      image = stock_get_image(clipboard->layer->stock, cel->image);
   }
 
   if (image) {
@@ -158,7 +158,7 @@ void copy_to_clipboard(void)
 void paste_from_clipboard(void)
 {
   Sprite *clipboard = get_clipboard_sprite();
-  Frame *frame;
+  Cel *cel;
   Image *image;
   Image *dest_image;
   int xout[4], yout[4];
@@ -173,11 +173,11 @@ void paste_from_clipboard(void)
     return;
   }
 
-  frame = layer_get_frame(clipboard->layer, clipboard->frpos);
-  if (!frame)
+  cel = layer_get_cel(clipboard->layer, clipboard->frpos);
+  if (!cel)
     return;
 
-  image = stock_get_image(clipboard->layer->stock, frame->image);
+  image = stock_get_image(clipboard->layer->stock, cel->image);
   if (!image)
     return;
 

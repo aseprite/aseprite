@@ -691,7 +691,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
     case JM_IDLE:
       gui_feedback();
       /* don't eat CPU... rest some time */
-      rest(0);
+      rest(1);
       break;
 
     case JM_CHAR: {

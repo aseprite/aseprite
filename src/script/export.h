@@ -223,15 +223,15 @@ void paste_from_clipboard(void);
 
 void crop_sprite(void);
 void crop_layer(void);
-void crop_frame(void);
+void crop_cel(void);
 
-/* util/frame.c */
+/* util/celmove.c */
 
-void set_frame_to_handle(Layer *layer, Frame *frame);
+void set_cel_to_handle(Layer *layer, Cel *cel);
 
-void move_frame(void);
-void copy_frame(void);
-void link_frame(void);
+void move_cel(void);
+void copy_cel(void);
+void link_cel(void);
 
 /* util/mapgen.c */
 
@@ -303,7 +303,7 @@ Image *RenderText(const char *fontname, int size, int color, const char *text);
 
 #define GFXOBJ_IMAGE
 #define GFXOBJ_STOCK
-#define GFXOBJ_FRAME
+#define GFXOBJ_CEL
 #define GFXOBJ_LAYER_IMAGE
 #define GFXOBJ_LAYER_SET
 #define GFXOBJ_LAYER_TEXT
@@ -387,18 +387,18 @@ void image_scale(Image *dst, Image *src, int x, int y, int w, int h);
 void image_rotate(Image *dst, Image *src, int x, int y, int w, int h, int cx, int cy, double angle);
 void image_parallelogram(Image *bmp, Image *sprite, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
-/* Frame ************************************************************/
+/* Cel ************************************************************/
 
-Frame *frame_new(int frpos, int image);
-Frame *frame_new_copy(Frame *frame);
-void frame_free(Frame *frame);
+Cel *cel_new(int frpos, int image);
+Cel *cel_new_copy(Cel *cel);
+void cel_free(Cel *cel);
 
-Frame *frame_is_link(Frame *frame, Layer *layer);
+Cel *cel_is_link(Cel *cel, Layer *layer);
  
-void frame_set_frpos(Frame *frame, int frpos);
-void frame_set_image(Frame *frame, int image);
-void frame_set_position(Frame *frame, int x, int y);
-void frame_set_opacity(Frame *frame, int opacity);
+void cel_set_frpos(Cel *cel, int frpos);
+void cel_set_image(Cel *cel, int image);
+void cel_set_position(Cel *cel, int x, int y);
+void cel_set_opacity(Cel *cel, int opacity);
 
 /* Layer ************************************************************/
 
@@ -420,9 +420,9 @@ void layer_set_blend_mode(Layer *layer, int blend_mode);
 /* void layer_set_parent(Layer *layer, GfxObj *gfxobj); */
 
 /* for LAYER_IMAGE */
-void layer_add_frame(Layer *layer, Frame *frame);
-void layer_remove_frame(Layer *layer, Frame *frame);
-Frame *layer_get_frame(Layer *layer, int frpos);
+void layer_add_cel(Layer *layer, Cel *cel);
+void layer_remove_cel(Layer *layer, Cel *cel);
+Cel *layer_get_cel(Layer *layer, int frpos);
 
 /* for LAYER_SET */
 void layer_add_layer(Layer *set, Layer *layer);
@@ -554,8 +554,8 @@ void undo_flip(Undo *undo, Image *image, int x1, int y1, int x2, int y2, int hor
 void undo_add_image(Undo *undo, Stock *stock, Image *image);
 void undo_remove_image(Undo *undo, Stock *stock, Image *image);
 void undo_replace_image(Undo *undo, Stock *stock, int index);
-void undo_add_frame(Undo *undo, Layer *layer, Frame *frame);
-void undo_remove_frame(Undo *undo, Layer *layer, Frame *frame);
+void undo_add_cel(Undo *undo, Layer *layer, Cel *cel);
+void undo_remove_cel(Undo *undo, Layer *layer, Cel *cel);
 void undo_add_layer(Undo *undo, Layer *set, Layer *layer);
 void undo_remove_layer(Undo *undo, Layer *layer);
 void undo_move_layer(Undo *undo, Layer *layer);

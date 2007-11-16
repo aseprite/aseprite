@@ -31,13 +31,23 @@ STRING		length=WORD (how many characters to read next)
 2. Introduction
 ========================================
 
-The format is the same as FLI/FLC files, with a different magic number
-and a different set of chunks (but the new chunks doesn't collided
-with the FLI/FLC ones).  Also, the color depth can be 8, 16 or 32 for
-Indexed, Grayscale and RGB respectively.  The palette isn't included
-for color depths more than 8, but when the sprite is 8 bpp, the
-palette is in an old FLI color chunk (type=11).  See fli.txt for
+The format is much like FLI/FLC files, but with different magic number
+and differents chunks.  Also, the color depth can be 8, 16 or 32 for
+Indexed, Grayscale and RGB respectively, and the images are more easy
+to read (there aren't differences with old frames).  The palette isn't
+included for color depths more than 8, but when the sprite is 8 bpp,
+the palette is in an old FLI color chunk (type=11).  See fli.txt for
 details.
+
+To read the sprite, just do this:
+* Read the ASE header (section 3)
+* For each frame do (how many frames? the ASE header has that
+  information):
+  + Read the frame header (section 4)
+  + For each chunk in this frame (how many chunks? the frame header
+    has that information)
+    - Read the chunk (it should be layer information, a cel or a
+      palette)
 
 
 ========================================
@@ -55,8 +65,8 @@ WORD		Height in pixels
 WORD		Color depth (bits per pixel)
 DWORD		Flags (must be 0)
 WORD		Speed (milliseconds between frame, like in FLC files)
-		!!! This field is deprecated, you should use the
-		frame duration field from each frame header.
+		DEPRECATED!!!: you should use the frame duration
+                               field from each frame header
 DWORD		Set be 0
 DWORD		Set be 0
 BYTE[100]	For future (set to zero)
@@ -71,8 +81,8 @@ header of 16 bytes:
 
   DWORD		Bytes in this frame
   WORD		Magic number (always 0xF1FA)
-  WORD		Number of "chunks" in frame
-  WORD		Frame duration (in milliseconds)		[NEW FIELD!!!]
+  WORD		Number of "chunks" in this frame
+  WORD		Frame duration (in milliseconds)	[NEW FIELD!!!]
   BYTE[6]	For future (set to zero)
 
 Then each chunk format is:
@@ -120,37 +130,37 @@ Layer Chunk (0x2004)
   STRING	Layer name
 
 
-Frame Chunk (0x2005)
+Cel Chunk (0x2005)
 ----------------------------------------
 
-  This chunk determine where to put a real ASE frame in the specified
-  layer.
+  This chunk determine where to put a cel in the specified
+  layer/frame.
 
   WORD		Layer index (see NOTE.2)
   WORD		X position
   WORD		Y position
   BYTE		Opacity level
-  WORD		Frame type
+  WORD		Cel type
   BYTE[7]	For future (set to zero)
 
-  + For frame type = 0 (raw image):
+  + For cel type = 0 (Raw Cel):
 
     WORD	Width in pixels
     WORD	Height in pixels
     BYTE[]	Pixel data (see NOTE.3)
 
-  + For frame type = 1 (linked image):
+  + For cel type = 1 (Linked Cel):
 
     WORD	Frame position to link with
 
-  + For frame type = 2 (RLE compressed image, only for Indexed images):
+  + For cel type = 2 (RLE compressed image, only for Indexed images):
 
     WORD	Width in pixels
     WORD	Height in pixels
     XXXXX	-todo-
 
 
-Mask Chunk (0x2016)
+Mask Chunk (0x2016) DEPRECATED!!!
 ----------------------------------------
 
   WORD		X position
@@ -213,5 +223,5 @@ File Format Changes
      How to read both formats (old and new one)?  You should set all
      frames durations to the "speed" field read from the main ASE
      header.  Then, if you found a frame with the frame-duration
-     field > 0, you should update the frame's duration with that
-     value.
+     field > 0, you should update the duration of the frame with
+     that value.

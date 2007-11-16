@@ -33,7 +33,7 @@
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/sprites.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "script/script.h"
@@ -349,11 +349,11 @@ static int slider_change_signal(JWidget widget, int user_data)
   if (sprite) {
     if ((sprite->layer) &&
 	(sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)) {
-      Frame *frame = layer_get_frame (sprite->layer, sprite->frpos);
+      Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
 
-      if (frame) {
+      if (cel) {
 	/* update the opacity */
-	frame->opacity = jslider_get_value (widget);
+	cel->opacity = jslider_get_value(widget);
 
 	/* update the editors */
 	GUI_Refresh(sprite);
@@ -410,30 +410,30 @@ static void button_command(JWidget widget, void *data)
 static void update_from_layer(StatusBar *status_bar)
 {
   Sprite *sprite = current_sprite;
-  Frame *frame;
+  Cel *cel;
 
   /* layer button */
   if (sprite && sprite->layer) {
     char buf[512];
-    usprintf (buf, "[%d] %s", sprite->frpos, sprite->layer->name);
-    jwidget_set_text (status_bar->b_layer, buf);
-    jwidget_enable (status_bar->b_layer);
+    usprintf(buf, "[%d] %s", sprite->frpos, sprite->layer->name);
+    jwidget_set_text(status_bar->b_layer, buf);
+    jwidget_enable(status_bar->b_layer);
   }
   else {
-    jwidget_set_text (status_bar->b_layer, "Nothing");
-    jwidget_disable (status_bar->b_layer);
+    jwidget_set_text(status_bar->b_layer, "Nothing");
+    jwidget_disable(status_bar->b_layer);
   }
 
   /* opacity layer */
   if (sprite && sprite->layer &&
       sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE &&
-      (frame = layer_get_frame (sprite->layer, sprite->frpos))) {
-    jslider_set_value (status_bar->slider, MID (0, frame->opacity, 255));
-    jwidget_enable (status_bar->slider);
+      (cel = layer_get_cel(sprite->layer, sprite->frpos))) {
+    jslider_set_value(status_bar->slider, MID(0, cel->opacity, 255));
+    jwidget_enable(status_bar->slider);
   }
   else {
-    jslider_set_value (status_bar->slider, 0);
-    jwidget_disable (status_bar->slider);
+    jslider_set_value(status_bar->slider, 0);
+    jwidget_disable(status_bar->slider);
   }
 }
 

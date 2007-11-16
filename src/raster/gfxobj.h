@@ -22,7 +22,7 @@
 #include "jinete/base.h"
 
 enum {
-  GFXOBJ_FRAME,
+  GFXOBJ_CEL,
   GFXOBJ_IMAGE,
   GFXOBJ_LAYER_IMAGE,
   GFXOBJ_LAYER_SET,

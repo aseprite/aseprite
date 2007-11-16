@@ -110,21 +110,21 @@ bool command_enabled_flatten_layers(const char *argument);
 void command_execute_flatten_layers(const char *argument);
 bool command_enabled_crop_layer(const char *argument);
 void command_execute_crop_layer(const char *argument);
-/* frame */
-bool command_enabled_frame_properties(const char *argument);
-void command_execute_frame_properties(const char *argument);
-bool command_enabled_remove_frame(const char *argument);
-void command_execute_remove_frame(const char *argument);
-bool command_enabled_new_frame(const char *argument);
-void command_execute_new_frame(const char *argument);
-bool command_enabled_move_frame(const char *argument);
-void command_execute_move_frame(const char *argument);
-bool command_enabled_copy_frame(const char *argument);
-void command_execute_copy_frame(const char *argument);
-bool command_enabled_link_frame(const char *argument);
-void command_execute_link_frame(const char *argument);
-bool command_enabled_crop_frame(const char *argument);
-void command_execute_crop_frame(const char *argument);
+/* cel */
+bool command_enabled_cel_properties(const char *argument);
+void command_execute_cel_properties(const char *argument);
+bool command_enabled_remove_cel(const char *argument);
+void command_execute_remove_cel(const char *argument);
+bool command_enabled_new_cel(const char *argument);
+void command_execute_new_cel(const char *argument);
+bool command_enabled_move_cel(const char *argument);
+void command_execute_move_cel(const char *argument);
+bool command_enabled_copy_cel(const char *argument);
+void command_execute_copy_cel(const char *argument);
+bool command_enabled_link_cel(const char *argument);
+void command_execute_link_cel(const char *argument);
+bool command_enabled_crop_cel(const char *argument);
+void command_execute_crop_cel(const char *argument);
 /* select */
 bool command_enabled_mask_all(const char *argument);
 void command_execute_mask_all(const char *argument);
@@ -230,13 +230,13 @@ static Command commands[] = {
   CMD_EXE_ENA(merge_down_layer),
   CMD_EXE_ENA(flatten_layers),
   CMD_EXE_ENA(crop_layer),
-  CMD_EXE_ENA(frame_properties),
-  CMD_EXE_ENA(remove_frame),
-  CMD_EXE_ENA(new_frame),
-  CMD_EXE_ENA(move_frame),
-  CMD_EXE_ENA(copy_frame),
-  CMD_EXE_ENA(link_frame),
-  CMD_EXE_ENA(crop_frame),
+  CMD_EXE_ENA(cel_properties),
+  CMD_EXE_ENA(remove_cel),
+  CMD_EXE_ENA(new_cel),
+  CMD_EXE_ENA(move_cel),
+  CMD_EXE_ENA(copy_cel),
+  CMD_EXE_ENA(link_cel),
+  CMD_EXE_ENA(crop_cel),
   CMD_EXE_ENA(mask_all),
   CMD_EXE_ENA(deselect_mask),
   CMD_EXE_ENA(reselect_mask),

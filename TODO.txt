@@ -45,13 +45,17 @@ High priority work
 Wish-list
 ---------
 
-- my wish-list:
+- dacap wish-list:
   + keyboard shortcuts for snap-to-grid and view-grid
   + different snap-to-grid for paste operation
   + better dialogs: widder buttons, more borders.
   + better film editor
     + "middle mouse button" for the film editor.
   + don't use LINKs when load a sequence of bitmaps.
+- manuq wish-list:
+  + sprite/layer/frame/cel (distintion between "frame" and "cel")
+  + layer-with-constant-cel
+  + onion skin for all layers in a frame
 - add menu customization through UI (Tools/Customize).
 - Mateusz Czaplinski ideas:
   + when move selections, will be good the possibility to see relative

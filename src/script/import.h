@@ -5,7 +5,7 @@
 #include "jinete/base.h"
 
 #include "effect/colcurve.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"

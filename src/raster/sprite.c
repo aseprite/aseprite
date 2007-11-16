@@ -459,14 +459,14 @@ void sprite_add_mask (Sprite *sprite, Mask *mask)
 }
 
 /* removes a mask from the sprites's repository */
-void sprite_remove_mask (Sprite *sprite, Mask *mask)
+void sprite_remove_mask(Sprite *sprite, Mask *mask)
 {
   /* remove the mask from the repository */
   jlist_remove(sprite->repository.masks, mask);
 }
 
 /* returns a mask from the sprite's repository searching it by its name */
-Mask *sprite_request_mask (Sprite *sprite, const char *name)
+Mask *sprite_request_mask(Sprite *sprite, const char *name)
 {
   Mask *mask;
   JLink link;

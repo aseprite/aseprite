@@ -25,7 +25,7 @@
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -58,7 +58,7 @@ void command_execute_merge_down_layer(const char *argument)
 {
   Sprite *sprite = current_sprite;
   Layer *src_layer, *dst_layer;
-  Frame *src_frame, *dst_frame;
+  Cel *src_cel, *dst_cel;
   Image *src_image, *dst_image;
   int frpos, index;
 
@@ -70,17 +70,17 @@ void command_execute_merge_down_layer(const char *argument)
 
   for (frpos=0; frpos<sprite->frames; ++frpos) {
     /* get frames */
-    src_frame = layer_get_frame(src_layer, frpos);
-    dst_frame = layer_get_frame(dst_layer, frpos);
+    src_cel = layer_get_cel(src_layer, frpos);
+    dst_cel = layer_get_cel(dst_layer, frpos);
 
     /* get images */
-    if (src_frame)
-      src_image = stock_get_image(src_layer->stock, src_frame->image);
+    if (src_cel)
+      src_image = stock_get_image(src_layer->stock, src_cel->image);
     else
       src_image = NULL;
 
-    if (dst_frame)
-      dst_image = stock_get_image(dst_layer->stock, dst_frame->image);
+    if (dst_cel)
+      dst_image = stock_get_image(dst_layer->stock, dst_cel->image);
     else
       dst_image = NULL;
 
@@ -88,43 +88,43 @@ void command_execute_merge_down_layer(const char *argument)
     if (src_image) {
       /* no destination image */
       if (!dst_image) {
-	/* copy this frame to the destination layer */
+	/* copy this cel to the destination layer */
 	dst_image = image_new_copy(src_image);
 	index = stock_add_image(dst_layer->stock, dst_image);
 	if (undo_is_enabled(sprite->undo)) {
 	  undo_add_image(sprite->undo, dst_layer->stock, dst_image);
 	}
-	dst_frame = frame_new(frpos, index);
-	frame_set_position(dst_frame, src_frame->x, src_frame->y);
-	frame_set_opacity(dst_frame, src_frame->opacity);
+	dst_cel = cel_new(frpos, index);
+	cel_set_position(dst_cel, src_cel->x, src_cel->y);
+	cel_set_opacity(dst_cel, src_cel->opacity);
 	if (undo_is_enabled(sprite->undo)) {
-	  undo_add_frame(sprite->undo, dst_layer, dst_frame);
+	  undo_add_cel(sprite->undo, dst_layer, dst_cel);
 	}
-	layer_add_frame(dst_layer, dst_frame);
+	layer_add_cel(dst_layer, dst_cel);
       }
       /* with destination */
       else {
-	int x1 = MIN(src_frame->x, dst_frame->x);
-	int y1 = MIN(src_frame->y, dst_frame->y);
-	int x2 = MAX(src_frame->x+src_image->w-1, dst_frame->x+dst_image->w-1);
-	int y2 = MAX(src_frame->y+src_image->h-1, dst_frame->y+dst_image->h-1);
+	int x1 = MIN(src_cel->x, dst_cel->x);
+	int y1 = MIN(src_cel->y, dst_cel->y);
+	int x2 = MAX(src_cel->x+src_image->w-1, dst_cel->x+dst_image->w-1);
+	int y2 = MAX(src_cel->y+src_image->h-1, dst_cel->y+dst_image->h-1);
 	Image *new_image = image_crop(dst_image,
-				      x1-dst_frame->x,
-				      y1-dst_frame->y,
+				      x1-dst_cel->x,
+				      y1-dst_cel->y,
 				      x2-x1+1, y2-y1+1);
 
 	/* merge src_image in new_image */
 	image_merge(new_image, src_image,
-		    src_frame->x-x1,
-		    src_frame->y-y1,
-		    src_frame->opacity,
+		    src_cel->x-x1,
+		    src_cel->y-y1,
+		    src_cel->opacity,
 		    src_layer->blend_mode);
 
-	frame_set_position(dst_frame, x1, y1);
+	cel_set_position(dst_cel, x1, y1);
 	if (undo_is_enabled(sprite->undo)) {
-	  undo_replace_image(sprite->undo, dst_layer->stock, dst_frame->image);
+	  undo_replace_image(sprite->undo, dst_layer->stock, dst_cel->image);
 	}
-	stock_replace_image(dst_layer->stock, dst_frame->image, new_image);
+	stock_replace_image(dst_layer->stock, dst_cel->image, new_image);
 
 	image_free(dst_image);
       }

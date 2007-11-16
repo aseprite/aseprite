@@ -30,9 +30,9 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/render.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "util/render.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 

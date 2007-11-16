@@ -23,6 +23,7 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
+#include "script/functions.h"
 
 #endif
 

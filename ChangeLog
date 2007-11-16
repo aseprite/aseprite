@@ -1,3 +1,10 @@
+2007-11-16  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/cel.c: Renamed "frame" to "cel" to avoid
+	confusion (Manuel Quiñones advice)
+
+	* src/modules/render.[ch]: Moved to util/.
+
 2007-11-14  David A. Capello  <dacap@users.sourceforge.net>
 
 	* INSTALL.txt: Clarified "COMPILATION" section (thanks to Manuel

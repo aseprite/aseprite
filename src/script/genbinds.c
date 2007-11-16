@@ -1127,37 +1127,37 @@ static int bind_crop_layer(lua_State *L)
   return 0;
 }
 
-static int bind_crop_frame(lua_State *L)
+static int bind_crop_cel(lua_State *L)
 {
-  crop_frame();
+  crop_cel();
   return 0;
 }
 
-static int bind_set_frame_to_handle(lua_State *L)
+static int bind_set_cel_to_handle(lua_State *L)
 {
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   GetUD(1, layer, Layer);
-  GetUD(2, frame, Frame);
-  set_frame_to_handle(layer, frame);
+  GetUD(2, cel, Cel);
+  set_cel_to_handle(layer, cel);
   return 0;
 }
 
-static int bind_move_frame(lua_State *L)
+static int bind_move_cel(lua_State *L)
 {
-  move_frame();
+  move_cel();
   return 0;
 }
 
-static int bind_copy_frame(lua_State *L)
+static int bind_copy_cel(lua_State *L)
 {
-  copy_frame();
+  copy_cel();
   return 0;
 }
 
-static int bind_link_frame(lua_State *L)
+static int bind_link_cel(lua_State *L)
 {
-  link_frame();
+  link_cel();
   return 0;
 }
 
@@ -1805,87 +1805,87 @@ static int bind_image_parallelogram(lua_State *L)
   return 0;
 }
 
-static int bind_frame_new(lua_State *L)
+static int bind_cel_new(lua_State *L)
 {
-  Frame *return_value;
+  Cel *return_value;
   int frpos;
   int image;
   GetArg(1, frpos, int, number);
   GetArg(2, image, int, number);
-  return_value = frame_new(frpos, image);
-  push_userdata(L, Type_Frame, return_value);
+  return_value = cel_new(frpos, image);
+  push_userdata(L, Type_Cel, return_value);
   return 1;
 }
 
-static int bind_frame_new_copy(lua_State *L)
+static int bind_cel_new_copy(lua_State *L)
 {
-  Frame *return_value;
-  Frame *frame;
-  GetUD(1, frame, Frame);
-  return_value = frame_new_copy(frame);
-  push_userdata(L, Type_Frame, return_value);
+  Cel *return_value;
+  Cel *cel;
+  GetUD(1, cel, Cel);
+  return_value = cel_new_copy(cel);
+  push_userdata(L, Type_Cel, return_value);
   return 1;
 }
 
-static int bind_frame_free(lua_State *L)
+static int bind_cel_free(lua_State *L)
 {
-  Frame *frame;
-  GetUD(1, frame, Frame);
-  frame_free(frame);
+  Cel *cel;
+  GetUD(1, cel, Cel);
+  cel_free(cel);
   return 0;
 }
 
-static int bind_frame_is_link(lua_State *L)
+static int bind_cel_is_link(lua_State *L)
 {
-  Frame *return_value;
-  Frame *frame;
+  Cel *return_value;
+  Cel *cel;
   Layer *layer;
-  GetUD(1, frame, Frame);
+  GetUD(1, cel, Cel);
   GetUD(2, layer, Layer);
-  return_value = frame_is_link(frame, layer);
-  push_userdata(L, Type_Frame, return_value);
+  return_value = cel_is_link(cel, layer);
+  push_userdata(L, Type_Cel, return_value);
   return 1;
 }
 
-static int bind_frame_set_frpos(lua_State *L)
+static int bind_cel_set_frpos(lua_State *L)
 {
-  Frame *frame;
+  Cel *cel;
   int frpos;
-  GetUD(1, frame, Frame);
+  GetUD(1, cel, Cel);
   GetArg(2, frpos, int, number);
-  frame_set_frpos(frame, frpos);
+  cel_set_frpos(cel, frpos);
   return 0;
 }
 
-static int bind_frame_set_image(lua_State *L)
+static int bind_cel_set_image(lua_State *L)
 {
-  Frame *frame;
+  Cel *cel;
   int image;
-  GetUD(1, frame, Frame);
+  GetUD(1, cel, Cel);
   GetArg(2, image, int, number);
-  frame_set_image(frame, image);
+  cel_set_image(cel, image);
   return 0;
 }
 
-static int bind_frame_set_position(lua_State *L)
+static int bind_cel_set_position(lua_State *L)
 {
-  Frame *frame;
+  Cel *cel;
   int x;
   int y;
-  GetUD(1, frame, Frame);
+  GetUD(1, cel, Cel);
   GetArg(2, x, int, number);
   GetArg(3, y, int, number);
-  frame_set_position(frame, x, y);
+  cel_set_position(cel, x, y);
   return 0;
 }
 
-static int bind_frame_set_opacity(lua_State *L)
+static int bind_cel_set_opacity(lua_State *L)
 {
-  Frame *frame;
+  Cel *cel;
   int opacity;
-  GetUD(1, frame, Frame);
+  GetUD(1, cel, Cel);
   GetArg(2, opacity, int, number);
-  frame_set_opacity(frame, opacity);
+  cel_set_opacity(cel, opacity);
   return 0;
 }
 
@@ -2005,35 +2005,35 @@ static int bind_layer_set_blend_mode(lua_State *L)
   return 0;
 }
 
-static int bind_layer_add_frame(lua_State *L)
+static int bind_layer_add_cel(lua_State *L)
 {
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   GetUD(1, layer, Layer);
-  GetUD(2, frame, Frame);
-  layer_add_frame(layer, frame);
+  GetUD(2, cel, Cel);
+  layer_add_cel(layer, cel);
   return 0;
 }
 
-static int bind_layer_remove_frame(lua_State *L)
+static int bind_layer_remove_cel(lua_State *L)
 {
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   GetUD(1, layer, Layer);
-  GetUD(2, frame, Frame);
-  layer_remove_frame(layer, frame);
+  GetUD(2, cel, Cel);
+  layer_remove_cel(layer, cel);
   return 0;
 }
 
-static int bind_layer_get_frame(lua_State *L)
+static int bind_layer_get_cel(lua_State *L)
 {
-  Frame *return_value;
+  Cel *return_value;
   Layer *layer;
   int frpos;
   GetUD(1, layer, Layer);
   GetArg(2, frpos, int, number);
-  return_value = layer_get_frame(layer, frpos);
-  push_userdata(L, Type_Frame, return_value);
+  return_value = layer_get_cel(layer, frpos);
+  push_userdata(L, Type_Cel, return_value);
   return 1;
 }
 
@@ -2931,27 +2931,27 @@ static int bind_undo_replace_image(lua_State *L)
   return 0;
 }
 
-static int bind_undo_add_frame(lua_State *L)
+static int bind_undo_add_cel(lua_State *L)
 {
   Undo *undo;
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   GetUD(1, undo, Undo);
   GetUD(2, layer, Layer);
-  GetUD(3, frame, Frame);
-  undo_add_frame(undo, layer, frame);
+  GetUD(3, cel, Cel);
+  undo_add_cel(undo, layer, cel);
   return 0;
 }
 
-static int bind_undo_remove_frame(lua_State *L)
+static int bind_undo_remove_cel(lua_State *L)
 {
   Undo *undo;
   Layer *layer;
-  Frame *frame;
+  Cel *cel;
   GetUD(1, undo, Undo);
   GetUD(2, layer, Layer);
-  GetUD(3, frame, Frame);
-  undo_remove_frame(undo, layer, frame);
+  GetUD(3, cel, Cel);
+  undo_remove_cel(undo, layer, cel);
   return 0;
 }
 
@@ -5682,11 +5682,11 @@ const luaL_reg bindings_routines[] = {
   { "paste_from_clipboard", bind_paste_from_clipboard },
   { "crop_sprite", bind_crop_sprite },
   { "crop_layer", bind_crop_layer },
-  { "crop_frame", bind_crop_frame },
-  { "set_frame_to_handle", bind_set_frame_to_handle },
-  { "move_frame", bind_move_frame },
-  { "copy_frame", bind_copy_frame },
-  { "link_frame", bind_link_frame },
+  { "crop_cel", bind_crop_cel },
+  { "set_cel_to_handle", bind_set_cel_to_handle },
+  { "move_cel", bind_move_cel },
+  { "copy_cel", bind_copy_cel },
+  { "link_cel", bind_link_cel },
   { "mapgen", bind_mapgen },
   { "GetImage", bind_GetImage },
   { "GetImage2", bind_GetImage2 },
@@ -5745,14 +5745,14 @@ const luaL_reg bindings_routines[] = {
   { "image_scale", bind_image_scale },
   { "image_rotate", bind_image_rotate },
   { "image_parallelogram", bind_image_parallelogram },
-  { "frame_new", bind_frame_new },
-  { "frame_new_copy", bind_frame_new_copy },
-  { "frame_free", bind_frame_free },
-  { "frame_is_link", bind_frame_is_link },
-  { "frame_set_frpos", bind_frame_set_frpos },
-  { "frame_set_image", bind_frame_set_image },
-  { "frame_set_position", bind_frame_set_position },
-  { "frame_set_opacity", bind_frame_set_opacity },
+  { "cel_new", bind_cel_new },
+  { "cel_new_copy", bind_cel_new_copy },
+  { "cel_free", bind_cel_free },
+  { "cel_is_link", bind_cel_is_link },
+  { "cel_set_frpos", bind_cel_set_frpos },
+  { "cel_set_image", bind_cel_set_image },
+  { "cel_set_position", bind_cel_set_position },
+  { "cel_set_opacity", bind_cel_set_opacity },
   { "layer_new", bind_layer_new },
   { "layer_set_new", bind_layer_set_new },
   { "layer_new_copy", bind_layer_new_copy },
@@ -5764,9 +5764,9 @@ const luaL_reg bindings_routines[] = {
   { "layer_get_next", bind_layer_get_next },
   { "layer_set_name", bind_layer_set_name },
   { "layer_set_blend_mode", bind_layer_set_blend_mode },
-  { "layer_add_frame", bind_layer_add_frame },
-  { "layer_remove_frame", bind_layer_remove_frame },
-  { "layer_get_frame", bind_layer_get_frame },
+  { "layer_add_cel", bind_layer_add_cel },
+  { "layer_remove_cel", bind_layer_remove_cel },
+  { "layer_get_cel", bind_layer_get_cel },
   { "layer_add_layer", bind_layer_add_layer },
   { "layer_remove_layer", bind_layer_remove_layer },
   { "layer_move_layer", bind_layer_move_layer },
@@ -5847,8 +5847,8 @@ const luaL_reg bindings_routines[] = {
   { "undo_add_image", bind_undo_add_image },
   { "undo_remove_image", bind_undo_remove_image },
   { "undo_replace_image", bind_undo_replace_image },
-  { "undo_add_frame", bind_undo_add_frame },
-  { "undo_remove_frame", bind_undo_remove_frame },
+  { "undo_add_cel", bind_undo_add_cel },
+  { "undo_remove_cel", bind_undo_remove_cel },
   { "undo_add_layer", bind_undo_add_layer },
   { "undo_remove_layer", bind_undo_remove_layer },
   { "undo_move_layer", bind_undo_move_layer },
@@ -6120,7 +6120,7 @@ struct _bindings_constants bindings_constants[] = {
   { "PI", PI },
   { "GFXOBJ_IMAGE", GFXOBJ_IMAGE },
   { "GFXOBJ_STOCK", GFXOBJ_STOCK },
-  { "GFXOBJ_FRAME", GFXOBJ_FRAME },
+  { "GFXOBJ_CEL", GFXOBJ_CEL },
   { "GFXOBJ_LAYER_IMAGE", GFXOBJ_LAYER_IMAGE },
   { "GFXOBJ_LAYER_SET", GFXOBJ_LAYER_SET },
   { "GFXOBJ_LAYER_TEXT", GFXOBJ_LAYER_TEXT },

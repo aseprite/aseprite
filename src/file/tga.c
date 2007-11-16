@@ -369,7 +369,7 @@ static Sprite *load_TGA (const char *filename)
         }
         else {
           if (compressed) {
-            rle_tga_read16 (image->line[yc], image_width, f);
+            rle_tga_read16(image->line[yc], image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {

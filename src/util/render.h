@@ -16,33 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_FRAME_H
-#define RASTER_FRAME_H
+#ifndef UTIL_RENDER_H
+#define UTIL_RENDER_H
 
-#include "raster/gfxobj.h"
-
+struct Image;
 struct Layer;
+struct Sprite;
 
-typedef struct Frame Frame;
+void set_preview_image(struct Layer *layer, struct Image *drawable);
 
-struct Frame
-{
-  GfxObj gfxobj;
-  int frpos;			/* frame position */
-  int image;			/* image index of stock */
-  int x, y;			/* X/Y screen position */
-  int opacity;			/* opacity level */
-};
+struct Image *render_sprite(struct Sprite *sprite,
+			    int source_x, int source_y,
+			    int width, int height,
+			    int frpos, int zoom);
 
-Frame *frame_new (int frpos, int image);
-Frame *frame_new_copy (const Frame *frame);
-void frame_free (Frame *frame);
-
-Frame *frame_is_link (Frame *frame, struct Layer *layer);
-
-void frame_set_frpos (Frame *frame, int frpos);
-void frame_set_image (Frame *frame, int image);
-void frame_set_position (Frame *frame, int x, int y);
-void frame_set_opacity (Frame *frame, int opacity);
-
-#endif /* RASTER_FRAME_H */
+#endif /* UTIL_RENDER_H */

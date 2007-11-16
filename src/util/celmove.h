@@ -16,21 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_RENDER_H
-#define MODULES_RENDER_H
+#ifndef UTIL_CELMOVE_H
+#define UTIL_CELMOVE_H
 
-struct Image;
+struct Cel;
 struct Layer;
-struct Sprite;
 
-int init_module_render (void);
-void exit_module_render (void);
+void set_cel_to_handle(struct Layer *layer, struct Cel *cel);
 
-void set_preview_image (struct Layer *layer, struct Image *drawable);
+void new_cel(void);
+void move_cel(void);
+void copy_cel(void);
+void link_cel(void);
 
-struct Image *render_sprite (struct Sprite *sprite,
-			     int source_x, int source_y,
-			     int width, int height,
-			     int frpos, int zoom);
+#endif /* UTIL_CELMOVE_H */
 
-#endif /* MODULES_RENDER_H */

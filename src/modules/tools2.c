@@ -120,13 +120,13 @@ void SetDrawMode (const char *string)
                 rectangle, ellipse
      uses the current FG color
  */
-void ToolTrace (const char *string)
+void ToolTrace(const char *string)
 {
   Sprite *sprite = current_sprite;
 
   if (sprite) {
     Tool *old_current_tool = current_tool;
-    char *copy = jstrdup (string);
+    char *copy = jstrdup(string);
     char *tok;
     int count;
     int npoints = 0;
@@ -137,19 +137,19 @@ void ToolTrace (const char *string)
 	 tok=strtok (NULL, " "), count++) {
       switch (count) {
 	case 0:
-	  select_tool (tok);
+	  select_tool(tok);
 	  break;
 	default: {
 	  int u, v;
 	  char *s;
 
-	  u = (int)strtod (tok, &s);
+	  u = (int)strtod(tok, &s);
 	  if (s && *s == ',') {
-	    v = (int)strtod (s+1, &s);
+	    v = (int)strtod(s+1, &s);
 
 	    npoints++;
-	    x = jrealloc (x, sizeof (int)*npoints);
-	    y = jrealloc (y, sizeof (int)*npoints);
+	    x = jrealloc(x, sizeof (int)*npoints);
+	    y = jrealloc(y, sizeof (int)*npoints);
 	    x[npoints-1] = u;
 	    y[npoints-1] = v;
 	  }
@@ -159,14 +159,14 @@ void ToolTrace (const char *string)
     }
 
     if (npoints > 0) {
-      do_tool_points (sprite, current_tool, get_fg_color (), npoints, x, y);
-      jfree (x);
-      jfree (y);
+      do_tool_points(sprite, current_tool, get_fg_color(), npoints, x, y);
+      jfree(x);
+      jfree(y);
     }
 
-    select_tool (old_current_tool->name);
+    select_tool(old_current_tool->name);
 
-    jfree (copy);
+    jfree(copy);
   }
 }
 
@@ -198,7 +198,7 @@ static int cfg_jpeg_smooth;
 static int cfg_jpeg_quality;
 static int cfg_jpeg_method;
 
-void ResetConfig (void)
+void ResetConfig(void)
 {
   JRect rect;
 

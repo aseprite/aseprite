@@ -45,7 +45,7 @@ static struct {
   Layer *layer;
   int frpos;
   Image *last_image;
-  Frame *last_frame;
+  Cel *last_cel;
   /* to save */
   Image *image;
 } file_sequence;
@@ -106,7 +106,7 @@ Image *file_sequence_image(int imgtype, int w, int h)
 
   /* create a bitmap */
 
-  if (file_sequence.last_frame) {
+  if (file_sequence.last_cel) {
     console_printf(_("Error: called two times \"file_sequence_image ()\".\n"));
     return NULL;
   }
@@ -118,7 +118,7 @@ Image *file_sequence_image(int imgtype, int w, int h)
   }
 
   file_sequence.last_image = image;
-  file_sequence.last_frame = frame_new(file_sequence.frpos++, 0);
+  file_sequence.last_cel = cel_new(file_sequence.frpos++, 0);
 
   return image;
 }
@@ -198,17 +198,17 @@ Sprite *sprite_load(const char *filename)
       index = stock_add_image(file_sequence.layer->stock,		\
 			      file_sequence.last_image);		\
 									\
-      file_sequence.last_frame->image = index;				\
+      file_sequence.last_cel->image = index;				\
 									\
-      layer_add_frame(file_sequence.layer,				\
-		      file_sequence.last_frame);			\
+      layer_add_cel(file_sequence.layer,				\
+		    file_sequence.last_cel);				\
 									\
       sprite_set_palette(file_sequence.sprite, file_palette, c);	\
 									\
       old_image = file_sequence.last_image;				\
 									\
       file_sequence.last_image = NULL;					\
-      file_sequence.last_frame = NULL;					\
+      file_sequence.last_cel = NULL;					\
     } while (0)
 
     char buf[512], left[512], right[512];
@@ -264,7 +264,7 @@ Sprite *sprite_load(const char *filename)
     file_sequence.layer = NULL;
     file_sequence.frpos = 0;
     file_sequence.last_image = NULL;
-    file_sequence.last_frame = NULL;
+    file_sequence.last_cel = NULL;
 
     /* load the sequence */
     c = 0;
@@ -281,12 +281,12 @@ Sprite *sprite_load(const char *filename)
       /* for the first frame */
       if (!old_image) {
 	/* error reading the first frame */
-	if ((!sprite) || (!file_sequence.last_frame)) {
+	if ((!sprite) || (!file_sequence.last_cel)) {
 	  if (file_sequence.last_image)
 	    image_free(file_sequence.last_image);
 
-	  if (file_sequence.last_frame)
-	    frame_free(file_sequence.last_frame);
+	  if (file_sequence.last_cel)
+	    cel_free(file_sequence.last_cel);
 
 	  if (file_sequence.sprite) {
 	    sprite_free(file_sequence.sprite);
@@ -307,12 +307,12 @@ Sprite *sprite_load(const char *filename)
       /* for other frames */
       else {
 	/* all done (or maybe not enough memory) */
-	if ((!sprite) || (!file_sequence.last_frame)) {
+	if ((!sprite) || (!file_sequence.last_cel)) {
 	  if (file_sequence.last_image)
-	    image_free (file_sequence.last_image);
+	    image_free(file_sequence.last_image);
 
-	  if (file_sequence.last_frame)
-	    frame_free (file_sequence.last_frame);
+	  if (file_sequence.last_cel)
+	    cel_free(file_sequence.last_cel);
 
 	  break;
 	}
@@ -327,12 +327,12 @@ Sprite *sprite_load(const char *filename)
 	  image_free(file_sequence.last_image);
 
 	  /* but add a link frame */
-	  file_sequence.last_frame->image = index;
+	  file_sequence.last_cel->image = index;
 	  layer_add_frame(file_sequence.layer,
-			  file_sequence.last_frame);
+			  file_sequence.last_cel);
 
 	  file_sequence.last_image = NULL;
-	  file_sequence.last_frame = NULL;
+	  file_sequence.last_cel = NULL;
 	}
 #else
 	SEQUENCE_IMAGE();

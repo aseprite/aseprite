@@ -28,11 +28,11 @@
 
 #endif
 
-bool command_enabled_copy_frame(const char *argument)
+bool command_enabled_copy_cel(const char *argument)
 {
   return FALSE;
 }
 
-void command_execute_copy_frame(const char *argument)
+void command_execute_copy_cel(const char *argument)
 {
 }

@@ -28,11 +28,11 @@
 
 #endif
 
-bool command_enabled_move_frame(const char *argument)
+bool command_enabled_move_cel(const char *argument)
 {
   return FALSE;
 }
 
-void command_execute_move_frame(const char *argument)
+void command_execute_move_cel(const char *argument)
 {
 }

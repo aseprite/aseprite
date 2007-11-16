@@ -22,7 +22,7 @@
 #include "jinete/base.h"
 #include "raster/gfxobj.h"
 
-struct Frame;
+struct Cel;
 struct Image;
 struct Stock;
 
@@ -40,7 +40,7 @@ struct Layer
   int imgtype;			/* image type */
   int blend_mode;		/* constant blend mode */
   struct Stock *stock;		/* stock to get images */
-  JList frames;			/* list of frames */
+  JList cels;			/* list of cels */
 
   /* for GFXOBJ_LAYER_SET */
   JList layers;
@@ -72,9 +72,9 @@ void layer_set_blend_mode(Layer *layer, int blend_mode);
 void layer_set_parent(Layer *layer, GfxObj *gfxobj);
 
 /* for LAYER_IMAGE */
-void layer_add_frame(Layer *layer, struct Frame *frame);
-void layer_remove_frame(Layer *layer, struct Frame *frame);
-struct Frame *layer_get_frame(Layer *layer, int frpos);
+void layer_add_cel(Layer *layer, struct Cel *cel);
+void layer_remove_cel(Layer *layer, struct Cel *cel);
+struct Cel *layer_get_cel(Layer *layer, int frpos);
 
 /* for LAYER_SET */
 void layer_add_layer(Layer *set, Layer *layer);

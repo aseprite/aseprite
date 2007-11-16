@@ -21,7 +21,7 @@
 
 struct Sprite;
 struct Layer;
-struct Frame;
+struct Cel;
 
 /* ======================================= */
 /* Sprite                                  */
@@ -40,9 +40,9 @@ void RemoveLayer(void);
 struct Layer *FlattenLayers(void);
 
 /* ======================================= */
-/* Frame                                   */
+/* Cel                                     */
 /* ======================================= */
 
-void RemoveFrame(struct Layer *layer, struct Frame *frame);
+void RemoveCel(struct Layer *layer, struct Cel *cel);
 
 #endif /* SCRIPT_FUNCTIONS_H */

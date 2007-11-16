@@ -29,7 +29,6 @@
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/recent.h"
-#include "modules/render.h"
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
@@ -61,7 +60,6 @@ static Module module[] =
   DEF_MODULE(effect,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
   DEF_MODULE(tools,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
   DEF_MODULE(graphics,		REQUIRE_INTERFACE),
-  DEF_MODULE(render,		REQUIRE_INTERFACE),
   DEF_MODULE(gui,		REQUIRE_INTERFACE),
   DEF_MODULE(recent,		REQUIRE_INTERFACE),
   DEF_MODULE(rootmenu,		REQUIRE_INTERFACE),

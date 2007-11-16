@@ -27,6 +27,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "script/functions.h"
 
 #endif
 

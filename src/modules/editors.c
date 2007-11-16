@@ -52,7 +52,7 @@ int init_module_editors(void)
   return 0;
 }
 
-void exit_module_editors (void)
+void exit_module_editors(void)
 {
   jlist_free(editors);
 }
@@ -391,7 +391,7 @@ void make_unique_editor(JWidget editor)
   editor_update(editor);
 }
 
-static int is_sprite_in_some_editor (Sprite *sprite)
+static int is_sprite_in_some_editor(Sprite *sprite)
 {
   JWidget widget;
   JLink link;

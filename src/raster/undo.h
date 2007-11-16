@@ -23,8 +23,8 @@
 
 #include "raster/gfxobj.h"
 
+struct Cel;
 struct Dirty;
-struct Frame;
 struct Image;
 struct Layer;
 struct Mask;
@@ -70,8 +70,8 @@ void undo_dirty(Undo *undo, struct Dirty *dirty);
 void undo_add_image(Undo *undo, struct Stock *stock, struct Image *image);
 void undo_remove_image(Undo *undo, struct Stock *stock, struct Image *image);
 void undo_replace_image(Undo *undo, struct Stock *stock, int index);
-void undo_add_frame(Undo *undo, struct Layer *layer, struct Frame *frame);
-void undo_remove_frame(Undo *undo, struct Layer *layer, struct Frame *frame);
+void undo_add_cel(Undo *undo, struct Layer *layer, struct Cel *cel);
+void undo_remove_cel(Undo *undo, struct Layer *layer, struct Cel *cel);
 void undo_add_layer(Undo *undo, struct Layer *set, struct Layer *layer);
 void undo_remove_layer(Undo *undo, struct Layer *layer);
 void undo_move_layer(Undo *undo, struct Layer *layer);

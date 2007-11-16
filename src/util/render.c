@@ -37,24 +37,15 @@ static int global_opacity = 255;
 static Layer *selected_layer = NULL;
 static Image *rastering_image = NULL;
 
-static void render_layer (Layer *layer, Image *image,
-			  int source_x, int source_y,
-			  int zoom,
-			  int frpos,
-			  void (*zoomed_func)(Image *, Image *, int, int, int, int, int));
+static void render_layer(Layer *layer, Image *image,
+			 int source_x, int source_y,
+			 int zoom,
+			 int frpos,
+			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int));
 
-static void merge_zoomed_image1 (Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-static void merge_zoomed_image2 (Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-static void merge_zoomed_image4 (Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-
-int init_module_render (void)
-{
-  return 0;
-}
-
-void exit_module_render (void)
-{
-}
+static void merge_zoomed_image1(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
+static void merge_zoomed_image2(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
+static void merge_zoomed_image4(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
 
 void set_preview_image (Layer *layer, Image *image)
 {
@@ -66,10 +57,10 @@ void set_preview_image (Layer *layer, Image *image)
    return image, all positions must have the zoom applied
    (sorce_x<<zoom, dest_x<<zoom, width<<zoom, etc.)
 */
-Image *render_sprite (Sprite *sprite,
-		      int source_x, int source_y,
-		      int width, int height,
-		      int frpos, int zoom)
+Image *render_sprite(Sprite *sprite,
+		     int source_x, int source_y,
+		     int width, int height,
+		     int frpos, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   int need_grid, depth;
@@ -172,11 +163,11 @@ Image *render_sprite (Sprite *sprite,
   return image;
 }
 
-static void render_layer (Layer *layer, Image *image,
-			  int source_x, int source_y,
-			  int zoom,
-			  int frpos,
-			  void (*zoomed_func)(Image *, Image *, int, int, int, int, int))
+static void render_layer(Layer *layer, Image *image,
+			 int source_x, int source_y,
+			 int zoom,
+			 int frpos,
+			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int))
 {
   /* we can't read from this layer */
   if (!layer->readable)
@@ -200,13 +191,13 @@ static void render_layer (Layer *layer, Image *image,
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Frame *frame = layer_get_frame (layer, frpos);
+      Cel *cel = layer_get_cel(layer, frpos);
       Image *src_image;
 
-      if (frame) {
-	if ((frame->image >= 0) &&
-	    (frame->image < layer->stock->nimage))
-	  src_image = layer->stock->image[frame->image];
+      if (cel) {
+	if ((cel->image >= 0) &&
+	    (cel->image < layer->stock->nimage))
+	  src_image = layer->stock->image[cel->image];
 	else
 	  src_image = NULL;
 
@@ -217,22 +208,20 @@ static void render_layer (Layer *layer, Image *image,
 	  if ((selected_layer == layer) && (rastering_image))
 	    src_image = rastering_image;
 
-	  output_opacity = MID (0, frame->opacity, 255);
-	  output_opacity = INT_MULT (output_opacity, global_opacity, t);
+	  output_opacity = MID(0, cel->opacity, 255);
+	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
 	  if (zoom == 0) {
-	    image_merge
-	      (image, src_image,
-	       frame->x - source_x,
-	       frame->y - source_y,
-	       output_opacity, layer->blend_mode);
+	    image_merge (image, src_image,
+			 cel->x - source_x,
+			 cel->y - source_y,
+			 output_opacity, layer->blend_mode);
 	  }
 	  else {
-	    (*zoomed_func)
-	      (image, src_image,
-	       (frame->x << zoom) - source_x,
-	       (frame->y << zoom) - source_y,
-	       output_opacity, layer->blend_mode, zoom);
+	    (*zoomed_func) (image, src_image,
+			    (cel->x << zoom) - source_x,
+			    (cel->y << zoom) - source_y,
+			    output_opacity, layer->blend_mode, zoom);
 	  }
 	}
       }

@@ -25,7 +25,7 @@
 #include "console/console.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
-#include "raster/frame.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -77,10 +77,10 @@ void crop_layer(void)
   if ((sprite) && (!mask_is_empty(sprite->mask)) &&
       (sprite->layer) && (layer_is_image(sprite->layer))) {
     Layer *layer = sprite->layer;
-    Frame *frame;
+    Cel *cel;
     Image *image;
     Layer *new_layer;
-    Frame *new_frame;
+    Cel *new_cel;
     Image *new_image;
     Layer *set = (Layer *)layer->parent;
     JLink link;
@@ -94,36 +94,36 @@ void crop_layer(void)
     layer_set_name (new_layer, layer->name);
     layer_set_blend_mode (new_layer, layer->blend_mode);
 
-    JI_LIST_FOR_EACH(layer->frames, link) {
-      frame = link->data;
-      image = stock_get_image(layer->stock, frame->image);
+    JI_LIST_FOR_EACH(layer->cels, link) {
+      cel = link->data;
+      image = stock_get_image(layer->stock, cel->image);
       if (!image)
 	continue;
 
-      new_frame = frame_new_copy(frame);
-      if (!new_frame) {
+      new_cel = cel_new_copy(cel);
+      if (!new_cel) {
 	layer_free(new_layer);
 	console_printf(_("Not enough memory\n"));
 	return;
       }
 
       new_image = image_crop(image,
-			     sprite->mask->x-frame->x,
-			     sprite->mask->y-frame->y,
+			     sprite->mask->x-cel->x,
+			     sprite->mask->y-cel->y,
 			     sprite->mask->w,
 			     sprite->mask->h);
       if (!new_image) {
 	layer_free(new_layer);
-	frame_free(new_frame);
+	cel_free(new_cel);
 	console_printf(_("Not enough memory\n"));
 	return;
       }
 
-      new_frame->image = stock_add_image(new_layer->stock, new_image);
-      new_frame->x = sprite->mask->x;
-      new_frame->y = sprite->mask->y;
+      new_cel->image = stock_add_image(new_layer->stock, new_image);
+      new_cel->x = sprite->mask->x;
+      new_cel->y = sprite->mask->y;
 
-      layer_add_frame(new_layer, new_frame);
+      layer_add_cel(new_layer, new_cel);
     }
 
     /* add the new layer */
@@ -160,34 +160,34 @@ void crop_layer(void)
   }
 }
 
-void crop_frame(void)
+void crop_cel(void)
 {
   Sprite *sprite = current_sprite;
-  Image *image = GetImage ();
+  Image *image = GetImage();
 
   if ((sprite) && (!mask_is_empty (sprite->mask)) && (image)) {
-    Frame *frame = layer_get_frame (sprite->layer, sprite->frpos);
+    Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
 
     /* undo */
     undo_open(sprite->undo);
-    undo_int(sprite->undo, (GfxObj *)frame, &frame->x);
-    undo_int(sprite->undo, (GfxObj *)frame, &frame->y);
-    undo_replace_image(sprite->undo, sprite->layer->stock, frame->image);
+    undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
+    undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
+    undo_replace_image(sprite->undo, sprite->layer->stock, cel->image);
     undo_close(sprite->undo);
 
     /* replace the image */
-    sprite->layer->stock->image[frame->image] =
+    sprite->layer->stock->image[cel->image] =
       image_crop(image,
-		 sprite->mask->x-frame->x,
-		 sprite->mask->y-frame->y,
+		 sprite->mask->x-cel->x,
+		 sprite->mask->y-cel->y,
 		 sprite->mask->w,
 		 sprite->mask->h);
 
     image_free(image);		/* destroy the old image */
 
-    /* change the frame position */
-    frame->x = sprite->mask->x;
-    frame->y = sprite->mask->y;
+    /* change the cel position */
+    cel->x = sprite->mask->x;
+    cel->y = sprite->mask->y;
 
     GUI_Refresh(sprite);
   }
@@ -200,19 +200,19 @@ static void displace_layers(Undo *undo, Layer *layer, int x, int y)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Frame *frame;
+      Cel *cel;
       JLink link;
 
-      JI_LIST_FOR_EACH(layer->frames, link) {
-	frame = link->data;
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	cel = link->data;
 
 	if (undo_is_enabled(undo)) {
-	  undo_int(undo, (GfxObj *)frame, &frame->x);
-	  undo_int(undo, (GfxObj *)frame, &frame->y);
+	  undo_int(undo, (GfxObj *)cel, &cel->x);
+	  undo_int(undo, (GfxObj *)cel, &cel->y);
 	}
 
-	frame->x += x;
-	frame->y += y;
+	cel->x += x;
+	cel->y += y;
       }
       break;
     }
@@ -225,7 +225,7 @@ static void displace_layers(Undo *undo, Layer *layer, int x, int y)
     }
 
     case GFXOBJ_LAYER_TEXT:
-      /* XXX */
+      /* TODO */
       break;
   }
 }
