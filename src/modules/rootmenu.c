@@ -43,6 +43,7 @@ static JWidget sprite_list_menuitem;
 static JWidget recent_list_menuitem;
 static JWidget layer_popup_menuitem;
 static JWidget frame_popup_menuitem;
+static JWidget cel_popup_menuitem;
 static JWidget filters_popup_menuitem;
 
 static JWidget convert_xmlelem_to_menu(JXmlElem elem);
@@ -58,11 +59,12 @@ int init_module_rootmenu(void)
 
 void exit_module_rootmenu(void)
 {
-  sprite_list_menuitem = 0;
-  recent_list_menuitem = 0;
-  layer_popup_menuitem = 0;
-  frame_popup_menuitem = 0;
-  filters_popup_menuitem = 0;
+  sprite_list_menuitem = NULL;
+  recent_list_menuitem = NULL;
+  layer_popup_menuitem = NULL;
+  frame_popup_menuitem = NULL;
+  cel_popup_menuitem = NULL;
+  filters_popup_menuitem = NULL;
 
   command_reset_keys();
   jwidget_free(root_menu);
@@ -86,11 +88,12 @@ int load_root_menu(void)
 
   /* create a new empty-menu */
   root_menu = NULL;
-  sprite_list_menuitem = 0;
-  recent_list_menuitem = 0;
-  layer_popup_menuitem = 0;
-  frame_popup_menuitem = 0;
-  filters_popup_menuitem = 0;
+  sprite_list_menuitem = NULL;
+  recent_list_menuitem = NULL;
+  layer_popup_menuitem = NULL;
+  frame_popup_menuitem = NULL;
+  cel_popup_menuitem = NULL;
+  filters_popup_menuitem = NULL;
 
   dirs = filename_in_datadir("usergui.xml");
   {
@@ -209,6 +212,7 @@ JWidget get_sprite_list_menuitem(void) { return sprite_list_menuitem; }
 JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
 JWidget get_layer_popup_menuitem(void) { return layer_popup_menuitem; }
 JWidget get_frame_popup_menuitem(void) { return frame_popup_menuitem; }
+JWidget get_cel_popup_menuitem(void) { return cel_popup_menuitem; }
 
 void show_fx_popup_menu(void)
 {
@@ -281,6 +285,10 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
     /* frame popup menu */
     else if (strcmp(id, "frame_popup") == 0) {
       frame_popup_menuitem = menuitem;
+    }
+    /* cel popup menu */
+    else if (strcmp(id, "cel_popup") == 0) {
+      cel_popup_menuitem = menuitem;
     }
     /* filters popup menu */
     else if (strcmp(id, "fx_popup") == 0) {

@@ -57,7 +57,7 @@ Image *GetImage(void)
   Image *image = NULL;
 
   if (sprite && sprite->layer && layer_is_image (sprite->layer)) {
-    Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
+    Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
     if (cel) {
       if ((cel->image >= 0) &&
@@ -74,7 +74,7 @@ Image *GetImage2(Sprite *sprite, int *x, int *y, int *opacity)
   Image *image = NULL;
 
   if (sprite && sprite->layer && layer_is_image (sprite->layer)) {
-    Cel *cel = layer_get_cel (sprite->layer, sprite->frpos);
+    Cel *cel = layer_get_cel (sprite->layer, sprite->frame);
 
     if (cel) {
       if ((cel->image >= 0) &&
@@ -232,7 +232,7 @@ Layer *NewLayerFromMask(void)
 
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
-  cel = cel_new(sprite->frpos, stock_add_image(layer->stock, dst));
+  cel = cel_new(sprite->frame, stock_add_image(layer->stock, dst));
   cel_set_position(cel, sprite->mask->x, sprite->mask->y);
 
   layer_add_cel(layer, cel);
@@ -240,12 +240,12 @@ Layer *NewLayerFromMask(void)
   return layer;
 }
 
-Image *GetLayerImage(Layer *layer, int *x, int *y, int frpos)
+Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
 {
   Image *image = NULL;
 
   if (layer_is_image (layer)) {
-    Cel *cel = layer_get_cel(layer, frpos);
+    Cel *cel = layer_get_cel(layer, frame);
 
     if (cel) {
       if ((cel->image >= 0) &&
@@ -268,7 +268,7 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   JWidget editor = current_editor;
   Sprite *sprite = editor_get_sprite (editor);
   Layer *layer = sprite->layer;
-  Cel *cel = layer_get_cel(layer, sprite->frpos);
+  Cel *cel = layer_get_cel(layer, sprite->frame);
   int start_x, new_x;
   int start_y, new_y;
   int start_b;
@@ -367,7 +367,7 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   }
 
   /* redraw the sprite in all editors */
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 
   /* restore the cursor */
   show_drawing_cursor(editor);

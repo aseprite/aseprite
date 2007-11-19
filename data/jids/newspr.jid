@@ -36,7 +36,7 @@
         <listitem text=_("Transparent (mask color)") />
         <listitem text=_("Black") />
         <listitem text=_("White") />
-        <listitem text=_("Bright Pink") />
+        <listitem text=_("Magenta") />
         <listitem text=_("Custom") />
       </listbox>
     </view>

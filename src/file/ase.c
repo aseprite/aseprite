@@ -876,8 +876,8 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, int layer_
     }
 
     case ASE_FILE_LINK_CEL:
-      /* linked frame position */
-      fputw(link->frpos, f);
+      /* linked cel to another frame */
+      fputw(link->frame, f);
       break;
 
     case ASE_FILE_RLE_COMPRESSED_CEL:

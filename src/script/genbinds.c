@@ -1233,11 +1233,11 @@ static int bind_sprite_quantize(lua_State *L)
   return 0;
 }
 
-static int bind_GUI_Refresh(lua_State *L)
+static int bind_update_screen_for_sprite(lua_State *L)
 {
   Sprite *sprite;
   GetUD(1, sprite, Sprite);
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
   return 0;
 }
 
@@ -1808,11 +1808,11 @@ static int bind_image_parallelogram(lua_State *L)
 static int bind_cel_new(lua_State *L)
 {
   Cel *return_value;
-  int frpos;
+  int frame;
   int image;
-  GetArg(1, frpos, int, number);
+  GetArg(1, frame, int, number);
   GetArg(2, image, int, number);
-  return_value = cel_new(frpos, image);
+  return_value = cel_new(frame, image);
   push_userdata(L, Type_Cel, return_value);
   return 1;
 }
@@ -1847,13 +1847,13 @@ static int bind_cel_is_link(lua_State *L)
   return 1;
 }
 
-static int bind_cel_set_frpos(lua_State *L)
+static int bind_cel_set_frame(lua_State *L)
 {
   Cel *cel;
-  int frpos;
+  int frame;
   GetUD(1, cel, Cel);
-  GetArg(2, frpos, int, number);
-  cel_set_frpos(cel, frpos);
+  GetArg(2, frame, int, number);
+  cel_set_frame(cel, frame);
   return 0;
 }
 
@@ -2029,10 +2029,10 @@ static int bind_layer_get_cel(lua_State *L)
 {
   Cel *return_value;
   Layer *layer;
-  int frpos;
+  int frame;
   GetUD(1, layer, Layer);
-  GetArg(2, frpos, int, number);
-  return_value = layer_get_cel(layer, frpos);
+  GetArg(2, frame, int, number);
+  return_value = layer_get_cel(layer, frame);
   push_userdata(L, Type_Cel, return_value);
   return 1;
 }
@@ -2075,13 +2075,13 @@ static int bind_layer_render(lua_State *L)
   Image *image;
   int x;
   int y;
-  int frpos;
+  int frame;
   GetUD(1, layer, Layer);
   GetUD(2, image, Image);
   GetArg(3, x, int, number);
   GetArg(4, y, int, number);
-  GetArg(5, frpos, int, number);
-  layer_render(layer, image, x, y, frpos);
+  GetArg(5, frame, int, number);
+  layer_render(layer, image, x, y, frame);
   return 0;
 }
 
@@ -2529,11 +2529,11 @@ static int bind_sprite_set_frlen(lua_State *L)
 {
   Sprite *sprite;
   int msecs;
-  int frpos;
+  int frame;
   GetUD(1, sprite, Sprite);
   GetArg(2, msecs, int, number);
-  GetArg(3, frpos, int, number);
-  sprite_set_frlen(sprite, msecs, frpos);
+  GetArg(3, frame, int, number);
+  sprite_set_frlen(sprite, msecs, frame);
   return 0;
 }
 
@@ -2541,10 +2541,10 @@ static int bind_sprite_get_frlen(lua_State *L)
 {
   int return_value;
   Sprite *sprite;
-  int frpos;
+  int frame;
   GetUD(1, sprite, Sprite);
-  GetArg(2, frpos, int, number);
-  return_value = sprite_get_frlen(sprite, frpos);
+  GetArg(2, frame, int, number);
+  return_value = sprite_get_frlen(sprite, frame);
   lua_pushnumber(L, return_value);
   return 1;
 }
@@ -2589,13 +2589,13 @@ static int bind_sprite_set_layer(lua_State *L)
   return 0;
 }
 
-static int bind_sprite_set_frpos(lua_State *L)
+static int bind_sprite_set_frame(lua_State *L)
 {
   Sprite *sprite;
-  int frpos;
+  int frame;
   GetUD(1, sprite, Sprite);
-  GetArg(2, frpos, int, number);
-  sprite_set_frpos(sprite, frpos);
+  GetArg(2, frame, int, number);
+  sprite_set_frame(sprite, frame);
   return 0;
 }
 
@@ -5696,7 +5696,7 @@ const luaL_reg bindings_routines[] = {
   { "load_msk_file", bind_load_msk_file },
   { "save_msk_file", bind_save_msk_file },
   { "sprite_quantize", bind_sprite_quantize },
-  { "GUI_Refresh", bind_GUI_Refresh },
+  { "update_screen_for_sprite", bind_update_screen_for_sprite },
   { "rebuild_root_menu", bind_rebuild_root_menu },
   { "rebuild_sprite_list", bind_rebuild_sprite_list },
   { "rebuild_recent_list", bind_rebuild_recent_list },
@@ -5749,7 +5749,7 @@ const luaL_reg bindings_routines[] = {
   { "cel_new_copy", bind_cel_new_copy },
   { "cel_free", bind_cel_free },
   { "cel_is_link", bind_cel_is_link },
-  { "cel_set_frpos", bind_cel_set_frpos },
+  { "cel_set_frame", bind_cel_set_frame },
   { "cel_set_image", bind_cel_set_image },
   { "cel_set_position", bind_cel_set_position },
   { "cel_set_opacity", bind_cel_set_opacity },
@@ -5815,7 +5815,7 @@ const luaL_reg bindings_routines[] = {
   { "sprite_set_path", bind_sprite_set_path },
   { "sprite_set_mask", bind_sprite_set_mask },
   { "sprite_set_layer", bind_sprite_set_layer },
-  { "sprite_set_frpos", bind_sprite_set_frpos },
+  { "sprite_set_frame", bind_sprite_set_frame },
   { "sprite_set_imgtype", bind_sprite_set_imgtype },
   { "sprite_add_path", bind_sprite_add_path },
   { "sprite_remove_path", bind_sprite_remove_path },

@@ -44,7 +44,7 @@ bool command_enabled_duplicate_layer(const char *argument)
 void command_execute_duplicate_layer(const char *argument)
 {
   if (DuplicateLayer() != NULL)
-    GUI_Refresh(current_sprite);
+    update_screen_for_sprite(current_sprite);
 }
 
 static Layer *DuplicateLayer(void)

@@ -39,7 +39,7 @@ bool command_enabled_cel_properties(const char *argument)
 
 void command_execute_cel_properties(const char *argument)
 {
-  JWidget window, entry_frpos, entry_xpos, entry_ypos, slider_opacity, button_ok;
+  JWidget window, entry_frame, entry_xpos, entry_ypos, slider_opacity, button_ok;
   Sprite *sprite;
   Layer *layer;
   Cel *cel;
@@ -56,44 +56,50 @@ void command_execute_cel_properties(const char *argument)
     return;
 
   /* get current cel */
-  cel = layer_get_cel(layer, sprite->frpos);
+  cel = layer_get_cel(layer, sprite->frame);
   if (!cel)
     return;
 
-  window = load_widget("frmprop.jid", "frame_properties");
+  window = load_widget("celprop.jid", "cel_properties");
   if (!window)
     return;
 
-  entry_frpos = jwidget_find_name(window, "frpos");
+  entry_frame = jwidget_find_name(window, "frame");
   entry_xpos = jwidget_find_name(window, "xpos");
   entry_ypos = jwidget_find_name(window, "ypos");
   slider_opacity = jwidget_find_name(window, "opacity");
   button_ok = jwidget_find_name(window, "ok");
 
-  sprintf(buf, "%d", cel->frpos); jwidget_set_text(entry_frpos, buf);
-  sprintf(buf, "%d", cel->x); jwidget_set_text(entry_xpos, buf);
-  sprintf(buf, "%d", cel->y); jwidget_set_text(entry_ypos, buf);
+  sprintf(buf, "%d", cel->frame+1);
+  jwidget_set_text(entry_frame, buf);
+
+  sprintf(buf, "%d", cel->x);
+  jwidget_set_text(entry_xpos, buf);
+
+  sprintf(buf, "%d", cel->y);
+  jwidget_set_text(entry_ypos, buf);
+
   jslider_set_value(slider_opacity, cel->opacity);
 
   while (TRUE) {
     jwindow_open_fg(window);
 
     if (jwindow_get_killer(window) == button_ok) {
-      int new_frpos, new_xpos, new_ypos;
+      int new_frame, new_xpos, new_ypos;
       Cel *existent_cel;
 
-      new_frpos = strtol(jwidget_get_text(entry_frpos), NULL, 10);
-      new_frpos = MID(0, new_frpos, sprite->frames-1);
-      existent_cel = layer_get_cel(layer, new_frpos);
-	
-      if (new_frpos != cel->frpos && existent_cel) {
+      new_frame = strtol(jwidget_get_text(entry_frame), NULL, 10);
+      new_frame = MID(0, new_frame-1, sprite->frames-1);
+      existent_cel = layer_get_cel(layer, new_frame);
+
+      if (new_frame != cel->frame && existent_cel) {
 	jalert(_("Error"
-		 "<<You can't change frame position to %d."
-		 "<<Already there is a cel in that position."
-		 "||&OK"), new_frpos);
+		 "<<You can't move the cel to frame %d."
+		 "<<There is already a cel in that position."
+		 "||&OK"), new_frame+1);
       }
       else {
-	/* WE MUST REMOVE THE FRAME BEFORE CALL frame_set_frpos() */
+	/* WE MUST REMOVE THE FRAME BEFORE CALL cel_set_frame() */
 	if (undo_is_enabled(sprite->undo)) {
 	  undo_open(sprite->undo);
 	  undo_remove_cel(sprite->undo, layer, cel);
@@ -101,17 +107,17 @@ void command_execute_cel_properties(const char *argument)
 
 	layer_remove_cel(layer, cel);
 
-	/* change frame properties */
+	/* change cel properties */
 	new_xpos = strtol(jwidget_get_text(entry_xpos), NULL, 10);
 	new_ypos = strtol(jwidget_get_text(entry_ypos), NULL, 10);
 
-	cel_set_frpos(cel, new_frpos);
+	cel_set_frame(cel, new_frame);
 	cel_set_position(cel,
 			 MID(-9999, new_xpos, 9999),
 			 MID(-9999, new_ypos, 9999));
 	cel_set_opacity(cel, jslider_get_value(slider_opacity));
 
-	/* add again the same frame */
+	/* add again the same cel */
 	if (undo_is_enabled(sprite->undo)) {
 	  undo_add_cel(sprite->undo, layer, cel);
 	  undo_close(sprite->undo);
@@ -120,8 +126,8 @@ void command_execute_cel_properties(const char *argument)
 	layer_add_cel(layer, cel);
 
 	/* set the sprite position, refresh and break the loop */
-	sprite_set_frpos(sprite, new_frpos);
-	GUI_Refresh(sprite);
+	sprite_set_frame(sprite, new_frame);
+	update_screen_for_sprite(sprite);
 	break;
       }
     }

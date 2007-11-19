@@ -110,7 +110,7 @@ void canvas_resize (void)
 
   if (jwindow_get_killer (window) == button_ok) {
     /* update editors */
-    GUI_Refresh (sprite);
+    update_screen_for_sprite(sprite);
   }
 
   /* save window configuration */

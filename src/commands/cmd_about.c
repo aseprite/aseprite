@@ -59,7 +59,7 @@ void command_execute_about(const char *argument)
   }
 
   label3 = jlabel_new(COPYRIGHT);
-  label4 = jlabel_new("http://ase.sourceforge.net/");
+  label4 = jlabel_new(WEBSITE);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL);
   box4 = jbox_new(JI_HORIZONTAL);

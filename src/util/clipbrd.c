@@ -100,7 +100,7 @@ bool has_clipboard_image(int *w, int *h)
   Cel *cel;
 
   if (clipboard) {
-    cel = layer_get_cel(clipboard->layer, clipboard->frpos);
+    cel = layer_get_cel(clipboard->layer, clipboard->frame);
     if (cel)
       image = stock_get_image(clipboard->layer->stock, cel->image);
   }
@@ -142,7 +142,7 @@ void cut_to_clipboard(void)
     console_printf ("Can't copying an image portion from the current layer\n");
   else {
     ClearMask ();
-    GUI_Refresh (current_sprite);
+    update_screen_for_sprite (current_sprite);
   }
 }
 
@@ -173,7 +173,7 @@ void paste_from_clipboard(void)
     return;
   }
 
-  cel = layer_get_cel(clipboard->layer, clipboard->frpos);
+  cel = layer_get_cel(clipboard->layer, clipboard->frame);
   if (!cel)
     return;
 
@@ -218,7 +218,7 @@ void paste_from_clipboard(void)
 			xout[2], yout[2], xout[3], yout[3]);
   }
 
-  GUI_Refresh(current_sprite);
+  update_screen_for_sprite(current_sprite);
 }
 
 /**********************************************************************/
@@ -645,11 +645,11 @@ static int low_copy(void)
 		      current_sprite->h);
   layer_add_layer(sprite->set, layer);
   sprite_set_layer(sprite, layer);
-  sprite_set_frpos(sprite, current_sprite->frpos);
+  sprite_set_frame(sprite, current_sprite->frame);
 
   sprite_set_palette(sprite,
 		     sprite_get_palette(current_sprite,
-					current_sprite->frpos), 0);
+					current_sprite->frame), 0);
 
   set_clipboard_sprite(sprite);
 

@@ -60,5 +60,5 @@ void command_execute_deselect_mask(const char *argument)
   mask_none(sprite->mask);
 
   sprite_generate_mask_boundaries(sprite);
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 }

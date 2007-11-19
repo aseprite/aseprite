@@ -44,19 +44,15 @@ bool command_enabled_new_cel(const char *argument)
     current_sprite->layer &&
     current_sprite->layer->readable &&
     current_sprite->layer->writable &&
-    layer_is_image(current_sprite->layer);
+    layer_is_image(current_sprite->layer) &&
+    !layer_get_cel(current_sprite->layer, current_sprite->frame);
 }
 
 void command_execute_new_cel(const char *argument)
 {
   int bg, image_index;
-  Cel *cel;
   Image *image;
-  int frpos;
-
-  frpos = current_sprite->frpos;
-  while (layer_get_cel(current_sprite->layer, frpos))
-    frpos++;
+  Cel *cel;
 
   /* create a new empty cel with a new clean image */
   image = image_new(current_sprite->imgtype,
@@ -76,23 +72,15 @@ void command_execute_new_cel(const char *argument)
   image_index = stock_add_image(current_sprite->layer->stock, image);
 
   undo_open(current_sprite->undo);
-
-  if (frpos >= current_sprite->frames) {
-    undo_set_frames(current_sprite->undo, current_sprite);
-    sprite_set_frames(current_sprite, frpos+1);
-  }
-  undo_int(current_sprite->undo, &current_sprite->gfxobj, &current_sprite->frpos);
-  sprite_set_frpos(current_sprite, frpos);
-
   undo_add_image(current_sprite->undo,
 		 current_sprite->layer->stock, image);
 
   /* add the cel in the layer */
-  cel = cel_new(current_sprite->frpos, image_index);
+  cel = cel_new(current_sprite->frame, image_index);
   undo_add_cel(current_sprite->undo, current_sprite->layer, cel);
   layer_add_cel(current_sprite->layer, cel);
 
   undo_close(current_sprite->undo);
 
-  GUI_Refresh(current_sprite);
+  update_screen_for_sprite(current_sprite);
 }

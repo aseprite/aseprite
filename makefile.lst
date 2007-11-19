@@ -27,6 +27,7 @@ ASE_SOURCES =						\
 	src/commands/cmd_film_editor.c			\
 	src/commands/cmd_flatten_layers.c		\
 	src/commands/cmd_flip.c				\
+	src/commands/cmd_frame_properties.c		\
 	src/commands/cmd_invert_mask.c			\
 	src/commands/cmd_layer_properties.c		\
 	src/commands/cmd_link_cel.c			\
@@ -38,6 +39,7 @@ ASE_SOURCES =						\
 	src/commands/cmd_move_cel.c			\
 	src/commands/cmd_new_cel.c			\
 	src/commands/cmd_new_file.c			\
+	src/commands/cmd_new_frame.c			\
 	src/commands/cmd_new_layer.c			\
 	src/commands/cmd_new_layer_set.c		\
 	src/commands/cmd_open_file.c			\
@@ -50,6 +52,7 @@ ASE_SOURCES =						\
 	src/commands/cmd_redo.c				\
 	src/commands/cmd_refresh.c			\
 	src/commands/cmd_remove_cel.c			\
+	src/commands/cmd_remove_frame.c			\
 	src/commands/cmd_remove_layer.c			\
 	src/commands/cmd_reselect_mask.c		\
 	src/commands/cmd_run_script.c			\
@@ -70,8 +73,8 @@ ASE_SOURCES =						\
 	src/commands/fx/cmd_replace_color.c		\
 	src/console/console.c				\
 	src/core/app.c					\
-	src/core/config.c				\
 	src/core/cfg.c					\
+	src/core/config.c				\
 	src/core/core.c					\
 	src/core/dirs.c					\
 	src/core/modules.c				\
@@ -102,14 +105,14 @@ ASE_SOURCES =						\
 	src/file/bmp.c					\
 	src/file/file.c					\
 	src/file/fli.c					\
+	src/file/gif.c					\
+	src/file/gif/format.c				\
+	src/file/gif/lzw.c				\
 	src/file/ico.c					\
 	src/file/jpeg.c					\
 	src/file/pcx.c					\
 	src/file/png_file.c				\
 	src/file/tga.c					\
-	src/file/gif.c					\
-	src/file/gif/format.c				\
-	src/file/gif/lzw.c				\
 	src/intl/intl.c					\
 	src/intl/msgids.c				\
 	src/main.c					\

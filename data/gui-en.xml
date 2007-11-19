@@ -40,9 +40,11 @@
 	<!-- layer -->
 	<key command="layer_properties" shortcut="Shift+P" />
 	<key command="new_layer" shortcut="Shift+N" />
+	<!-- frame -->
+	<key command="new_frame" shortcut="N" />
 	<!-- cel -->
 	<key command="cel_properties" shortcut="Shift+Ctrl+P" />
-	<key command="new_cel" shortcut="Ctrl+Shift+N" />
+	<key command="new_cel" shortcut="Shift+Ctrl+N" />
 	<!-- mask -->
 	<key command="mask_all" shortcut="Ctrl+A" />
 	<key command="deselect_mask" shortcut="Ctrl+D" />
@@ -143,14 +145,20 @@
 	    <item command="flatten_layers" name="&Flatten" />
 	    <item command="crop_layer" name="Cr&op" />
 	</menu>
+	<menu name="F&rame" id="frame_popup">
+	    <item command="frame_properties" name="&Properties" />
+	    <separator />
+	    <item command="new_frame" name="&New" />
+	    <item command="remove_frame" name="&Remove" />
+	</menu>
 	<menu name="&Cel" id="cel_popup">
 	    <item command="cel_properties" name="&Properties" />
-	    <item command="remove_cel" name="&Remove" />
 	    <separator />
 	    <item command="new_cel" name="&New" />
 	    <item command="move_cel" name="&Move" />
 	    <item command="copy_cel" name="&Copy" />
 	    <item command="link_cel" name="&Link" />
+	    <item command="remove_cel" name="&Remove" />
 	    <separator />
 	    <item command="crop_cel" name="Cr&op" />
 	</menu>

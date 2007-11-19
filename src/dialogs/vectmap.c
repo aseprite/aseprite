@@ -160,7 +160,7 @@ void dialogs_vector_map(void)
     }
   }
 
-  image_free (image_copy);
+  image_free(image_copy);
 
-  GUI_Refresh (sprite);
+  update_screen_for_sprite(sprite);
 }

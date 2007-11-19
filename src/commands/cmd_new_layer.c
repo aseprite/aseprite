@@ -38,16 +38,20 @@ bool command_enabled_new_layer(const char *argument)
 
 void command_execute_new_layer(const char *argument)
 {
-  JWidget window;
+  JWidget window, name_widget;
   Sprite *sprite = current_sprite; /* get current sprite */
   char buf[512];
+  int w, h;
 
   /* load the window widget */
   window = load_widget("newlay.jid", "new_layer");
   if (!window)
     return;
 
-  jwidget_set_text(jwidget_find_name(window, "name"), GetUniqueLayerName());
+  name_widget = jwidget_find_name(window, "name");
+  jwidget_set_text(name_widget, GetUniqueLayerName());
+  jwidget_request_size(name_widget, &w, &h);
+  jwidget_set_static_size(name_widget, 128, h);
 
   sprintf(buf, "%d", sprite->w);
   jwidget_set_text(jwidget_find_name(window, "width"), buf);
@@ -71,7 +75,7 @@ void command_execute_new_layer(const char *argument)
       jalert(_("Error<<Not enough memory||&Close"));
       return;
     }
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
   }
 
   jwidget_free(window);

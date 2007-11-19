@@ -1,4 +1,4 @@
-# allegro-sprite-editor tips
+# Allegro Sprite Editor tips
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007  David A. Capello
 
  **********************************************************************
@@ -40,11 +40,11 @@ el menú "Sprite/Propiedades" o presionando <Ctrl+P>.
 Puede agregar cuadros de animación presionando <Ctrl+Shift+N> o
 utilizando el menú "Frame/Nuevo".
  **********************************************************************
-¿Quiere editar los cuadros y las capas?  Use el "Editor de Película":
+¿Quiere editar los capas, cuadros y cels?  Use el "Film Editor":
 
 \image filmedit.pcx
 
-Vaya al menú "Ver/Editor de Película" o presione TAB cuando esté
+Vaya al menú "Tools/Film Editor" o presione TAB cuando esté
 editando un sprite.
  **********************************************************************
 Puede usar el papel cebolla (onionskin) para editar animaciones

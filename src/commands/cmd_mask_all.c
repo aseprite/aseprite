@@ -45,5 +45,5 @@ void command_execute_mask_all(const char *argument)
   mask_replace(sprite->mask, 0, 0, sprite->w, sprite->h);
 
   sprite_generate_mask_boundaries(sprite);
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 }

@@ -36,5 +36,5 @@ void command_execute_redo(const char *argument)
 {
   undo_redo(current_sprite->undo);
   sprite_generate_mask_boundaries(current_sprite);
-  GUI_Refresh(current_sprite);
+  update_screen_for_sprite(current_sprite);
 }

@@ -47,7 +47,7 @@ static JWidget slider_R, slider_G, slider_B;
 static JWidget slider_H, slider_S, slider_V;
 static JWidget color_viewer;
 static JWidget palette_editor;
-static JWidget slider_frpos;
+static JWidget slider_frame;
 
 static void select_all_command (JWidget widget);
 static void load_command (JWidget widget);
@@ -58,7 +58,7 @@ static void quantize_command (JWidget widget);
 static int sliderRGB_change_signal (JWidget widget, int user_data);
 static int sliderHSV_change_signal (JWidget widget, int user_data);
 static int slider_columns_change_signal (JWidget widget, int user_data);
-static int slider_frpos_change_signal (JWidget widget, int user_data);
+static int slider_frame_change_signal (JWidget widget, int user_data);
 static int palette_editor_change_signal (JWidget widget, int user_data);
 
 static void set_new_palette (RGB *palette);
@@ -71,10 +71,10 @@ void dialogs_palette_editor(void)
   JWidget button_undo, button_redo;
   JWidget button_load, button_save;
   JWidget button_ramp, button_quantize;
-  int frpos, columns;
+  int frame, columns;
   PALETTE palette;
   int imgtype = current_sprite ? current_sprite->imgtype: IMAGE_INDEXED;
-  int frpos_bak = current_sprite ? current_sprite->frpos : 0;
+  int frame_bak = current_sprite ? current_sprite->frame : 0;
 
   if (imgtype == IMAGE_GRAYSCALE) {
     jalert (_("Error<<You can't edit grayscale palette||&OK"));
@@ -94,7 +94,7 @@ void dialogs_palette_editor(void)
 		    "saturation", &slider_S,
 		    "value", &slider_V,
 		    "columns", &slider_columns,
-		    "frpos", &slider_frpos,
+		    "frame", &slider_frame,
 		    "select_all", &button_select_all,
 		    "undo", &button_undo,
 		    "redo", &button_redo,
@@ -116,9 +116,9 @@ void dialogs_palette_editor(void)
       jalert (_("Error<<Not enough memory||&OK"));
       return;
     }
-    for (frpos=0; frpos<current_sprite->frames; frpos++)
-      memcpy (palettes[frpos],
-	      sprite_get_palette (current_sprite, frpos), sizeof(PALETTE));
+    for (frame=0; frame<current_sprite->frames; frame++)
+      memcpy(palettes[frame],
+	     sprite_get_palette(current_sprite, frame), sizeof(PALETTE));
   }
   else 
     palettes = NULL;
@@ -147,30 +147,30 @@ void dialogs_palette_editor(void)
   jslider_set_value (slider_columns, columns);
   palette_editor_set_columns (palette_editor, columns);
 
-  /* frpos */
+  /* frame */
   if (current_sprite) {
-    jslider_set_range (slider_frpos, 0, current_sprite->frames-1);
-    jslider_set_value (slider_frpos, current_sprite->frpos);
+    jslider_set_range(slider_frame, 0, current_sprite->frames-1);
+    jslider_set_value(slider_frame, current_sprite->frame);
   }
   else
-    jwidget_disable (slider_frpos);
+    jwidget_disable(slider_frame);
 
   /* hook signals */
-  HOOK (slider_R, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_signal, 0);
-  HOOK (slider_G, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_signal, 0);
-  HOOK (slider_B, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_signal, 0);
-  HOOK (slider_H, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
-  HOOK (slider_S, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
-  HOOK (slider_V, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
-  HOOK (slider_columns, JI_SIGNAL_SLIDER_CHANGE, slider_columns_change_signal, 0);
-  HOOK (slider_frpos, JI_SIGNAL_SLIDER_CHANGE, slider_frpos_change_signal, 0);
-  HOOK (palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_signal, 0);
+  HOOK(slider_R, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_signal, 0);
+  HOOK(slider_G, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_signal, 0);
+  HOOK(slider_B, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_signal, 0);
+  HOOK(slider_H, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
+  HOOK(slider_S, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
+  HOOK(slider_V, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
+  HOOK(slider_columns, JI_SIGNAL_SLIDER_CHANGE, slider_columns_change_signal, 0);
+  HOOK(slider_frame, JI_SIGNAL_SLIDER_CHANGE, slider_frame_change_signal, 0);
+  HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_signal, 0);
 
-  jbutton_add_command (button_select_all, select_all_command);
-  jbutton_add_command (button_load, load_command);
-  jbutton_add_command (button_save, save_command);
-  jbutton_add_command (button_ramp, ramp_command);
-  jbutton_add_command (button_quantize, quantize_command);
+  jbutton_add_command(button_select_all, select_all_command);
+  jbutton_add_command(button_load, load_command);
+  jbutton_add_command(button_save, save_command);
+  jbutton_add_command(button_ramp, ramp_command);
+  jbutton_add_command(button_quantize, quantize_command);
 
   /* default position */
   jwindow_remap (window);
@@ -185,48 +185,48 @@ void dialogs_palette_editor(void)
   /* check the killer widget */
   if (jwindow_get_killer (window) == button_ok) {
     if (current_sprite) {
-      palette_copy (palettes[jslider_get_value(slider_frpos)],
+      palette_copy (palettes[jslider_get_value(slider_frame)],
 		    current_palette);
 
       sprite_reset_palettes (current_sprite);
-      for (frpos=0; frpos<current_sprite->frames; frpos++) {
-	if (frpos == 0 ||
-	    palette_diff (palettes[frpos], palettes[frpos-1], NULL, NULL))
-	  sprite_set_palette (current_sprite, palettes[frpos], frpos);
+      for (frame=0; frame<current_sprite->frames; frame++) {
+	if (frame == 0 ||
+	    palette_diff(palettes[frame], palettes[frame-1], NULL, NULL))
+	  sprite_set_palette(current_sprite, palettes[frame], frame);
       }
     }
     /* change the system palette */
     else
-      set_default_palette (palette);
+      set_default_palette(palette);
 
-    set_current_palette (palette, TRUE);
+    set_current_palette(palette, TRUE);
   }
   /* cancel or ESC */
   else {
     /* restore the system palette */
     if (current_sprite) {
-      current_sprite->frpos = frpos_bak;
-      set_current_palette (sprite_get_palette(current_sprite, frpos_bak), TRUE);
+      current_sprite->frame = frame_bak;
+      set_current_palette(sprite_get_palette(current_sprite, frame_bak), TRUE);
     }
     else {
-      set_current_palette (NULL, TRUE);
+      set_current_palette(NULL, TRUE);
     }
   }
 
   /* redraw the entire screen */
-  jmanager_refresh_screen ();
+  jmanager_refresh_screen();
 
   /* save columns configuration */
-  columns = jslider_get_value (slider_columns);
-  set_config_int ("PaletteEditors", "Columns", MID (1, columns, 256));
+  columns = jslider_get_value(slider_columns);
+  set_config_int("PaletteEditors", "Columns", MID (1, columns, 256));
 
   /* save window configuration */
-  save_window_pos (window, "PaletteEditor");
+  save_window_pos(window, "PaletteEditor");
 
-  jwidget_free (window);
+  jwidget_free(window);
 
   if (palettes)
-    jfree (palettes);
+    jfree(palettes);
 }
 
 static void select_all_command(JWidget widget)
@@ -405,14 +405,14 @@ static int slider_columns_change_signal(JWidget widget, int user_data)
   return FALSE;
 }
 
-static int slider_frpos_change_signal(JWidget widget, int user_data)
+static int slider_frame_change_signal(JWidget widget, int user_data)
 {
-  int old_frpos = current_sprite->frpos;
-  int new_frpos = jslider_get_value(slider_frpos);
+  int old_frame = current_sprite->frame;
+  int new_frame = jslider_get_value(slider_frame);
 
-  palette_copy(palettes[old_frpos], current_palette);
-  current_sprite->frpos = new_frpos;
-  set_new_palette(palettes[new_frpos]);
+  palette_copy(palettes[old_frame], current_palette);
+  current_sprite->frame = new_frame;
+  set_new_palette(palettes[new_frame]);
 
   return FALSE;
 }

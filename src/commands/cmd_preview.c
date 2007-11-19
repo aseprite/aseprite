@@ -116,7 +116,7 @@ static void preview_sprite(int flags)
 
       /* render the sprite in the bitmap */
       image = render_sprite(sprite, 0, 0, sprite->w, sprite->h,
-			    sprite->frpos, 0);
+			    sprite->frame, 0);
       if (image) {
 	image_to_allegro(image, bmp, 0, 0);
 	image_free(image);
@@ -209,13 +209,13 @@ static void preview_sprite(int flags)
 	  int c = readkey()>>8;
 
 	  /* change frame */
-	  if (editor_keys_toset_frpos(widget, c)) {
+	  if (editor_keys_toset_frame(widget, c)) {
 	    /* redraw */
 	    redraw = TRUE;
 
 	    /* render the sprite in the bitmap */
 	    image = render_sprite(sprite, 0, 0, sprite->w, sprite->h,
-				  sprite->frpos, 0);
+				  sprite->frame, 0);
 	    if (image) {
 	      image_to_allegro(image, bmp, 0, 0);
 	      image_free(image);

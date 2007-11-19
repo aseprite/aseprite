@@ -112,7 +112,7 @@ bool editor_cursor_is_subpixel(JWidget editor);
 /* src/gui/editor/keys.c */
 
 int editor_keys_toset_zoom(JWidget editor, int scancode);
-int editor_keys_toset_frpos(JWidget editor, int scancode);
+int editor_keys_toset_frame(JWidget editor, int scancode);
 int editor_keys_toset_brushsize(JWidget editor, int scancode);
 int editor_keys_toget_pixels(JWidget editor, int scancode);
 

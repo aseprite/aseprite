@@ -41,7 +41,7 @@ struct Sprite
   int w, h;			/* image width/height size (in pixels) */
   int frames;			/* how many frames has this sprite */
   int *frlens;			/* duration per frame */
-  int frpos;			/* selected frame position (0...frames-1) */
+  int frame;			/* current frame, range [0,frames) */
 /*   RGB *palette;			/\* sprite palette *\/ */
   JList palettes;		/* list of palettes */
   struct Layer *set;		/* layer list */
@@ -74,20 +74,20 @@ bool sprite_is_modified(Sprite *sprite);
 bool sprite_is_associated_to_file(Sprite *sprite);
 void sprite_mark_as_saved(Sprite *sprite);
 
-RGB *sprite_get_palette(Sprite *sprite, int frpos);
-void sprite_set_palette(Sprite *sprite, RGB *rgb, int frpos);
+RGB *sprite_get_palette(Sprite *sprite, int frame);
+void sprite_set_palette(Sprite *sprite, RGB *rgb, int frame);
 void sprite_reset_palettes(Sprite *sprite);
 
 void sprite_set_filename(Sprite *sprite, const char *filename);
 void sprite_set_size(Sprite *sprite, int w, int h);
 void sprite_set_frames(Sprite *sprite, int frames);
-void sprite_set_frlen(Sprite *sprite, int msecs, int frpos);
-int sprite_get_frlen(Sprite *sprite, int frpos);
+void sprite_set_frlen(Sprite *sprite, int msecs, int frame);
+int sprite_get_frlen(Sprite *sprite, int frame);
 void sprite_set_speed(Sprite *sprite, int msecs);
 void sprite_set_path(Sprite *sprite, const struct Path *path);
 void sprite_set_mask(Sprite *sprite, const struct Mask *mask);
 void sprite_set_layer(Sprite *sprite, struct Layer *layer);
-void sprite_set_frpos(Sprite *sprite, int frpos);
+void sprite_set_frame(Sprite *sprite, int frame);
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method);
 
 void sprite_add_path(Sprite *sprite, struct Path *path);

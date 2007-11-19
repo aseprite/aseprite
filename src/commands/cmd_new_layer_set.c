@@ -55,7 +55,7 @@ void command_execute_new_layer_set(const char *argument)
       jalert(_("Error<<Not enough memory||&Close"));
       return;
     }
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
   }
 
   jwidget_free(window);

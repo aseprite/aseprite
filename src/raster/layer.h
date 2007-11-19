@@ -58,7 +58,7 @@ Layer *layer_new(int imgtype);
 Layer *layer_set_new(void);
 /* Layer *layer_new_text (const char *text); */
 Layer *layer_new_copy(const Layer *layer);
-Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos);
+Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frame);
 void layer_free(Layer *layer);
 
 int layer_is_image(const Layer *layer);
@@ -74,14 +74,14 @@ void layer_set_parent(Layer *layer, GfxObj *gfxobj);
 /* for LAYER_IMAGE */
 void layer_add_cel(Layer *layer, struct Cel *cel);
 void layer_remove_cel(Layer *layer, struct Cel *cel);
-struct Cel *layer_get_cel(Layer *layer, int frpos);
+struct Cel *layer_get_cel(Layer *layer, int frame);
 
 /* for LAYER_SET */
 void layer_add_layer(Layer *set, Layer *layer);
 void layer_remove_layer(Layer *set, Layer *layer);
 void layer_move_layer(Layer *set, Layer *layer, Layer *after);
 
-void layer_render(Layer *layer, struct Image *image, int x, int y, int frpos);
+void layer_render(Layer *layer, struct Image *image, int x, int y, int frame);
 Layer *layer_flatten(Layer *layer, int imgtype,
 		     int x, int y, int w, int h, int frmin, int frmax);
 

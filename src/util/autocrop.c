@@ -34,7 +34,7 @@ void autocrop_sprite(void)
   Sprite *sprite = current_sprite;
 
   if (sprite) {
-    int old_frpos = sprite->frpos;
+    int old_frame = sprite->frame;
     Mask *old_mask = sprite->mask;
     Mask *mask;
     Image *image;
@@ -48,7 +48,7 @@ void autocrop_sprite(void)
     if (!image)
       return;
 
-    for (sprite->frpos=0; sprite->frpos<sprite->frames; sprite->frpos++) {
+    for (sprite->frame=0; sprite->frame<sprite->frames; sprite->frame++) {
       image_clear(image, 0);
       sprite_render(sprite, image, 0, 0);
 
@@ -62,7 +62,7 @@ void autocrop_sprite(void)
 	y2 = MAX(y2, v2);
       }
     }
-    sprite->frpos = old_frpos;
+    sprite->frame = old_frame;
 
     image_free(image);
 

@@ -25,7 +25,7 @@
 /* general information */
 #define PACKAGE			"ase"
 #define VERSION			"0.6"
-#define WEBSITE			"http://www.allegrospriteeditor.com.ar/"
+#define WEBSITE			"http://www.aseprite.com/"
 #define BUGREPORT		"ase-help@lists.sourceforge.net"
 #define COPYRIGHT		"Copyright (C) 2001-2005, 2007 David A. Capello"
 

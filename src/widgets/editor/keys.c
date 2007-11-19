@@ -93,38 +93,38 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
   return FALSE;
 }
 
-int editor_keys_toset_frpos(JWidget widget, int scancode)
+int editor_keys_toset_frame(JWidget widget, int scancode)
 {
   Editor *editor = editor_data (widget);
 
   if ((editor->sprite) &&
 /*       (jwidget_has_mouse (widget)) && */
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    int old_frpos = editor->sprite->frpos;
+    int old_frame = editor->sprite->frame;
 
     switch (scancode) {
       /* previous frame */
       case KEY_LEFT:
-	editor->sprite->frpos--;
-	if (editor->sprite->frpos < 0)
-	  editor->sprite->frpos = editor->sprite->frames-1;
+	editor->sprite->frame--;
+	if (editor->sprite->frame < 0)
+	  editor->sprite->frame = editor->sprite->frames-1;
 	break;
 
 	/* last frame */
       case KEY_UP:
-	editor->sprite->frpos = editor->sprite->frames-1;
+	editor->sprite->frame = editor->sprite->frames-1;
 	break;
 
 	/* next frame */
       case KEY_RIGHT:
-	editor->sprite->frpos++;
-	if (editor->sprite->frpos >= editor->sprite->frames)
-	  editor->sprite->frpos = 0;
+	editor->sprite->frame++;
+	if (editor->sprite->frame >= editor->sprite->frames)
+	  editor->sprite->frame = 0;
 	break;
 
 	/* first frame */
       case KEY_DOWN:
-	editor->sprite->frpos = 0;
+	editor->sprite->frame = 0;
 	break;
 
 	/* nothing */
@@ -132,8 +132,8 @@ int editor_keys_toset_frpos(JWidget widget, int scancode)
 	return FALSE;
     }
 
-    if (editor->sprite->frpos != old_frpos)
-      GUI_Refresh(editor->sprite);
+    if (editor->sprite->frame != old_frame)
+      update_screen_for_sprite(editor->sprite);
 
     editor_update_status_bar_for_standby(widget);
     return TRUE;

@@ -27,9 +27,11 @@
 
 #endif
 
-/* creates a new stock, the "imgtype" argument indicates that this
-   stock will contain images of that type */
-Stock *stock_new (int imgtype)
+/**
+ * Creates a new stock, the "imgtype" argument indicates that this
+ * stock will contain images of that type.
+ */
+Stock *stock_new(int imgtype)
 {
   Stock *stock = (Stock *)gfxobj_new(GFXOBJ_STOCK, sizeof(Stock));
   if (!stock)
@@ -45,20 +47,24 @@ Stock *stock_new (int imgtype)
   return stock;
 }
 
-/* creates a new stock for reference */
-Stock *stock_new_ref (int imgtype)
+/**
+ * Creates a new stock for reference.
+ */
+Stock *stock_new_ref(int imgtype)
 {
-  Stock *stock = stock_new (imgtype);
+  Stock *stock = stock_new(imgtype);
   stock->ref = TRUE;
   return stock;
 }
 
-/* creates a new copy of "stock"; if "stock" is a reference, the
-   copy'll be too, but if "stock" isn't, the new copy will be an
-   original stock (non-referenced) with copies of all images */
-Stock *stock_new_copy (const Stock *stock)
+/**
+ * Creates a new copy of "stock"; if "stock" is a reference, the
+ * copy'll be too, but if "stock" isn't, the new copy will be an
+ * original stock (non-referenced) with copies of all images
+ */
+Stock *stock_new_copy(const Stock *stock)
 {
-  Stock *stock_copy = stock_new (stock->imgtype);
+  Stock *stock_copy = stock_new(stock->imgtype);
   Image *image_copy;
   int c;
 
@@ -66,40 +72,44 @@ Stock *stock_new_copy (const Stock *stock)
 
   for (c=stock_copy->nimage; c<stock->nimage; c++) {
     if (!stock->image[c])
-      stock_add_image (stock_copy, NULL);
+      stock_add_image(stock_copy, NULL);
     else if (stock_copy->ref)
-      stock_add_image (stock_copy, stock->image[c]);
+      stock_add_image(stock_copy, stock->image[c]);
     else {
-      image_copy = image_new_copy (stock->image[c]);
+      image_copy = image_new_copy(stock->image[c]);
       if (!image_copy) {
-	stock_free (stock_copy);
+	stock_free(stock_copy);
 	return NULL;
       }
-      stock_add_image (stock_copy, image_copy);
+      stock_add_image(stock_copy, image_copy);
     }
   }
 
   return stock_copy;
 }
 
-/* destroys the stock */
-void stock_free (Stock *stock)
+/**
+ * Destroys the stock.
+ */
+void stock_free(Stock *stock)
 {
   if (!stock->ref) {
     int i;
     for (i=0; i<stock->nimage; i++) {
       if (stock->image[i])
-	image_free (stock->image[i]);
+	image_free(stock->image[i]);
     }
   }
 
-  jfree (stock->image);
+  jfree(stock->image);
 
   gfxobj_free((GfxObj *)stock);
 }
 
-/* adds a new image in the stock resizing the images-array */
-int stock_add_image (Stock *stock, Image *image)
+/**
+ * Adds a new image in the stock resizing the images-array.
+ */
+int stock_add_image(Stock *stock, Image *image)
 {
   int i = stock->nimage++;
 
@@ -112,7 +122,7 @@ int stock_add_image (Stock *stock, Image *image)
 }
 
 /* removes a image from the stock, it doesn't resize the stock */
-void stock_remove_image (Stock *stock, Image *image)
+void stock_remove_image(Stock *stock, Image *image)
 {
   int i;
 
@@ -123,22 +133,26 @@ void stock_remove_image (Stock *stock, Image *image)
     }
 }
 
-/* replaces the image in the stock in the "index" position with the
-   new "image"; you must free the old image before, e.g:
-
-     Image *old_image = stock_get_image (stock, index);
-     if (old_image) image_free (old_image);
-     stock_replace_image (stock, index, new_image);
-*/
-void stock_replace_image (Stock *stock, int index, Image *image)
+/**
+ * Replaces the image in the stock in the "index" position with the
+ * new "image"; you must free the old image before, e.g:
+ * @code
+ *   Image *old_image = stock_get_image (stock, index);
+ *   if (old_image) image_free (old_image);
+ *   stock_replace_image (stock, index, new_image);
+ * @endcode
+ */
+void stock_replace_image(Stock *stock, int index, Image *image)
 {
   /* The zero index can't be changed.  */
   if ((index > 0) && (index < stock->nimage))
     stock->image[index] = image;
 }
 
-/* returns the image in the "index" position */
-Image *stock_get_image (Stock *stock, int index)
+/**
+ * Returns the image in the "index" position
+ */
+Image *stock_get_image(Stock *stock, int index)
 {
   return ((index >= 0) && (index < stock->nimage)) ? stock->image[index]: NULL;
 }

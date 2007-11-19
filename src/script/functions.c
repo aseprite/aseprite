@@ -115,7 +115,7 @@ Layer *NewLayer(const char *name, int x, int y, int w, int h)
     index = stock_add_image(layer->stock, image);
 
     /* create a new cel in the current frame */
-    cel = cel_new(sprite->frpos, index);
+    cel = cel_new(sprite->frame, index);
     cel_set_position(cel, x, y);
 
     /* add cel */
@@ -260,7 +260,7 @@ Layer *FlattenLayers(void)
   if (undo_is_enabled(sprite->undo))
     undo_close(sprite->undo);
 
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 
   return flat_layer;
 }
@@ -274,15 +274,15 @@ void RemoveCel(Layer *layer, Cel *cel)
   Sprite *sprite = current_sprite;
   Image *image;
   Cel *it;
-  int frpos;
+  int frame;
   bool used;
 
   if (sprite != NULL && layer_is_image(layer) && cel != NULL) {
     /* find if the image that use the cel to remove, is used by
        another cels */
     used = FALSE;
-    for (frpos=0; frpos<sprite->frames; ++frpos) {
-      it = layer_get_cel(layer, frpos);
+    for (frame=0; frame<sprite->frames; ++frame) {
+      it = layer_get_cel(layer, frame);
       if (it != NULL && it != cel && it->image == cel->image) {
 	used = TRUE;
 	break;

@@ -32,7 +32,7 @@
 
 typedef struct PAL
 {
-  int frpos;
+  int frame;
   PALETTE pal;
 } PAL;
 
@@ -62,7 +62,7 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite->h = h;
   sprite->frames = 1;
   sprite->frlens = jmalloc(sizeof(int)*sprite->frames);
-  sprite->frpos = 0;
+  sprite->frame = 0;
 /*   sprite->palette = jmalloc(sizeof(PALETTE)); */
   sprite->palettes = jlist_new();
   sprite->set = layer_set_new();
@@ -109,7 +109,7 @@ Sprite *sprite_new(int imgtype, int w, int h)
       break;
   }
 
-  sprite_set_palette(sprite, pal, sprite->frpos);
+  sprite_set_palette(sprite, pal, sprite->frame);
   sprite_set_speed(sprite, 42);
 
   return sprite;
@@ -259,46 +259,46 @@ void sprite_mark_as_saved(Sprite *sprite)
   sprite->associated_to_file = TRUE;
 }
 
-RGB *sprite_get_palette(Sprite *sprite, int frpos)
+RGB *sprite_get_palette(Sprite *sprite, int frame)
 {
   RGB *rgb = NULL;
   JLink link;
   PAL *pal;
 
-  frpos = MAX(0, frpos);
+  frame = MAX(0, frame);
 
   JI_LIST_FOR_EACH(sprite->palettes, link) {
     pal = link->data;
-    if (frpos < pal->frpos)
+    if (frame < pal->frame)
       break;
     rgb = pal->pal;
-    if (frpos == pal->frpos)
+    if (frame == pal->frame)
       break;
   }
 
   return rgb;
 }
 
-void sprite_set_palette(Sprite *sprite, RGB *rgb, int frpos)
+void sprite_set_palette(Sprite *sprite, RGB *rgb, int frame)
 {
   JLink link;
   PAL *pal;
 
-  frpos = MAX(0, frpos);
+  frame = MAX(0, frame);
 
   JI_LIST_FOR_EACH(sprite->palettes, link) {
     pal = link->data;
 
-    if (frpos == pal->frpos) {
+    if (frame == pal->frame) {
       palette_copy(pal->pal, rgb);
       return;
     }
-    else if (frpos < pal->frpos)
+    else if (frame < pal->frame)
       break;
   }
 
   pal = jmalloc(sizeof(PAL));
-  pal->frpos = frpos;
+  pal->frame = frame;
   palette_copy(pal->pal, rgb);
 
   jlist_insert_before(sprite->palettes, link, pal);
@@ -345,16 +345,16 @@ void sprite_set_frames(Sprite *sprite, int frames)
   sprite->frames = frames;
 }
 
-void sprite_set_frlen(Sprite *sprite, int msecs, int frpos)
+void sprite_set_frlen(Sprite *sprite, int msecs, int frame)
 {
-  if (frpos >= 0 && frpos < sprite->frames)
-    sprite->frlens[frpos] = MID(1, msecs, 65535);
+  if (frame >= 0 && frame < sprite->frames)
+    sprite->frlens[frame] = MID(1, msecs, 65535);
 }
 
-int sprite_get_frlen(Sprite *sprite, int frpos)
+int sprite_get_frlen(Sprite *sprite, int frame)
 {
-  if (frpos >= 0 && frpos < sprite->frames)
-    return sprite->frlens[frpos];
+  if (frame >= 0 && frame < sprite->frames)
+    return sprite->frlens[frame];
   else
     return 0;
 }
@@ -391,9 +391,9 @@ void sprite_set_layer(Sprite *sprite, Layer *layer)
   sprite->layer = layer;
 }
 
-void sprite_set_frpos(Sprite *sprite, int frpos)
+void sprite_set_frame(Sprite *sprite, int frame)
 {
-  sprite->frpos = frpos;
+  sprite->frame = frame;
 }
 
 /* XXXX WARNING!: it uses the current Allegro "rgb_map" */
@@ -482,7 +482,7 @@ Mask *sprite_request_mask(Sprite *sprite, const char *name)
 
 void sprite_render(Sprite *sprite, Image *image, int x, int y)
 {
-  layer_render(sprite->set, image, x, y, sprite->frpos);
+  layer_render(sprite->set, image, x, y, sprite->frame);
 }
 
 void sprite_generate_mask_boundaries(Sprite *sprite)
@@ -577,13 +577,13 @@ static Sprite *general_copy(const Sprite *sprite)
   /* copy general properties */
   strcpy(sprite_copy->filename, sprite->filename);
 
-  sprite_set_frames(sprite_copy, sprite->frpos);
+  sprite_set_frames(sprite_copy, sprite->frame);
   memcpy(sprite_copy->frlens, sprite->frlens, sizeof(int)*sprite->frames);
 
   /* copy color palettes */
   JI_LIST_FOR_EACH(sprite->palettes, link) {
     PAL *pal = link->data;
-    sprite_set_palette(sprite_copy, pal->pal, pal->frpos);
+    sprite_set_palette(sprite_copy, pal->pal, pal->frame);
   }
 
   /* copy path */
@@ -660,11 +660,11 @@ static void layer_set_imgtype(Layer *layer, int imgtype, int dithering_method,
 
 	new_image = image_set_imgtype(old_image, imgtype, dithering_method,
 				      rgb_map,
-				      /* XXXXX */
+				      /* TODO check this out */
 				      sprite_get_palette(sprite,
-							 sprite->frpos));
+							 sprite->frame));
 	if (!new_image)
-	  return;		/* XXXX big error!!!: not enough memory!
+	  return;		/* TODO big error!!!: not enough memory!
 				 we should undo all work done */
 
 	if (undo_is_enabled(sprite->undo))
@@ -684,7 +684,7 @@ static void layer_set_imgtype(Layer *layer, int imgtype, int dithering_method,
     }
 
     case GFXOBJ_LAYER_TEXT:
-      /* XXX */
+      /* TODO */
       break;
   }
 }

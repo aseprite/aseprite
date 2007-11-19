@@ -228,7 +228,7 @@ void use_sprite_rgb_map(Sprite *sprite)
 
   regen_rgb_map = TRUE;
   create_rgb_table(my_rgb_map,
-		   sprite_get_palette(sprite, sprite->frpos), NULL);
+		   sprite_get_palette(sprite, sprite->frame), NULL);
 }
 
 void restore_rgb_map (void)

@@ -205,7 +205,7 @@ Stock *sprite_get_images (Sprite *sprite, int target, int write, int **x, int **
 static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int write)
 {
   Stock *stock = stock_new_ref(sprite->imgtype);
-  int frpos = sprite->frpos;
+  int frame = sprite->frame;
 
   if (!layer->readable)
     return stock;
@@ -219,14 +219,14 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
       Image *image;
 
       if (target & TARGET_FRAMES) {
-	for (frpos=0; frpos<sprite->frames; frpos++) {
-	  image = GetLayerImage(layer, NULL, NULL, frpos);
+	for (frame=0; frame<sprite->frames; frame++) {
+	  image = GetLayerImage(layer, NULL, NULL, frame);
 	  if (image)
 	    stock_add_image(stock, image);
 	}
       }
       else {
-	image = GetLayerImage(layer, NULL, NULL, frpos);
+	image = GetLayerImage(layer, NULL, NULL, frame);
 	if (image)
 	  stock_add_image(stock, image);
       }
@@ -262,7 +262,7 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
 
 static void layer_get_pos (Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count)
 {
-  int frpos = sprite->frpos;
+  int frame = sprite->frame;
 
   if (!layer->readable)
     return;
@@ -277,8 +277,8 @@ static void layer_get_pos (Sprite *sprite, Layer *layer, int target, int write, 
       int u, v;
 
       if (target & TARGET_FRAMES) {
-	for (frpos=0; frpos<sprite->frames; frpos++) {
-	  image = GetLayerImage (layer, &u, &v, frpos);
+	for (frame=0; frame<sprite->frames; frame++) {
+	  image = GetLayerImage (layer, &u, &v, frame);
 	  if (image) {
 	    (*x)[*count] = u;
 	    (*y)[*count] = v;
@@ -287,7 +287,7 @@ static void layer_get_pos (Sprite *sprite, Layer *layer, int target, int write, 
 	}
       }
       else {
-	image = GetLayerImage (layer, &u, &v, frpos);
+	image = GetLayerImage (layer, &u, &v, frame);
 	if (image) {
 	  (*x)[*count] = u;
 	  (*y)[*count] = v;

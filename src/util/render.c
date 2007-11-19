@@ -90,13 +90,13 @@ Image *render_sprite(Sprite *sprite,
       return NULL;
   }
 
-  if ((get_onionskin ()) && (sprite->frpos > 0))
+  if ((get_onionskin()) && (sprite->frame > 0))
     onionskin_layer = sprite->layer;
   else
     onionskin_layer = NULL;
 
   /* create a temporary bitmap to draw all to it */
-  image = image_new (sprite->imgtype, width, height);
+  image = image_new(sprite->imgtype, width, height);
   if (!image)
     return NULL;
 
@@ -106,8 +106,8 @@ Image *render_sprite(Sprite *sprite,
 
     switch (image->imgtype) {
       case IMAGE_RGB:
-        c1 = _rgba (128, 128, 128, 255);
-        c2 = _rgba (192, 192, 192, 255);
+        c1 = _rgba(128, 128, 128, 255);
+        c2 = _rgba(192, 192, 192, 255);
         break;
       case IMAGE_GRAYSCALE:
         c1 = _graya(128, 255);
@@ -142,23 +142,23 @@ Image *render_sprite(Sprite *sprite,
     v = (-source_y / 16) * 16;
     for (y=-source_y; y<height+16; y+=16) {
       for (x=-source_x; x<width+16; x+=16)
-        image_rectangle (image,
-			 x,
-			 y,
-			 x+16-1,
-			 y+16-1,
-			 ((u++)&1)? c1: c2);
+        image_rectangle(image,
+			x,
+			y,
+			x+16-1,
+			y+16-1,
+			((u++)&1)? c1: c2);
       u = (++v);
     }
 #endif
   }
   else
-    image_clear (image, 0);
+    image_clear(image, 0);
 
   color_map = NULL;
 
-  render_layer (sprite->set, image, source_x, source_y,
-		zoom, frpos, zoomed_func);
+  render_layer(sprite->set, image, source_x, source_y,
+	       zoom, frpos, zoomed_func);
 
   return image;
 }
@@ -237,7 +237,7 @@ static void render_layer(Layer *layer, Image *image,
     }
 
     case GFXOBJ_LAYER_TEXT:
-      /* XXX */
+      /* TODO */
       break;
 
 /*     case LT_FLOATING: */
@@ -268,9 +268,9 @@ static void render_layer(Layer *layer, Image *image,
   }
 }
 
-static void merge_zoomed_image1 (Image *dst, Image *src,
-				 int x, int y, int opacity,
-				 int blend_mode, int zoom)
+static void merge_zoomed_image1(Image *dst, Image *src,
+				int x, int y, int opacity,
+				int blend_mode, int zoom)
 {
   unsigned char *src_address;
   unsigned char *dst_address;
@@ -418,9 +418,9 @@ done_with_blit:;
   jfree (scanline);
 }
 
-static void merge_zoomed_image2 (Image *dst, Image *src,
-				 int x, int y, int opacity,
-				 int blend_mode, int zoom)
+static void merge_zoomed_image2(Image *dst, Image *src,
+				int x, int y, int opacity,
+				int blend_mode, int zoom)
 {
   BLEND_COLOR blender = _graya_blenders[blend_mode];
   unsigned short *src_address;
@@ -559,9 +559,9 @@ done_with_blit:;
   jfree (scanline);
 }
 
-static void merge_zoomed_image4 (Image *dst, Image *src,
-				 int x, int y, int opacity,
-				 int blend_mode, int zoom)
+static void merge_zoomed_image4(Image *dst, Image *src,
+				int x, int y, int opacity,
+				int blend_mode, int zoom)
 {
   BLEND_COLOR blender = _rgba_blenders[blend_mode];
   unsigned long *src_address;

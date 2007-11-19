@@ -348,7 +348,7 @@ void app_refresh_screen(void)
     /* update the color palette */
     set_current_palette(current_sprite ?
 			sprite_get_palette(current_sprite,
-					   current_sprite->frpos): NULL,
+					   current_sprite->frame): NULL,
 			FALSE);
 
     /* redraw the screen */

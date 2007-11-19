@@ -7,11 +7,11 @@
   <box vertical>
     <box horizontal expansive>
       <box vertical homogeneous>
-        <label text=_("Frame position:") />
-        <label text=_("Frame duration (msecs):") />
+        <label text=_("Frame number:") />
+        <label text=_("Duration (milliseconds):") />
       </box>
       <box vertical homogeneous expansive>
-        <label text="" name="frpos" />
+        <label text="" name="frame" />
         <entry maxsize=32 name="frlen" />
       </box>
     </box>

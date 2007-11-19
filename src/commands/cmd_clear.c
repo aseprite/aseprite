@@ -41,5 +41,5 @@ void command_execute_clear(const char *argument)
   ClearMask();
 
   /* refresh the sprite */
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 }

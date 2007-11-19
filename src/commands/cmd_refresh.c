@@ -20,11 +20,19 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro.h>
+
+#include "jinete/system.h"
+
 #include "core/app.h"
 
 #endif
 
 void command_execute_refresh(const char *argument)
 {
+  jmouse_hide();
+  clear_to_color(screen, makecol(0, 0, 0));
+  jmouse_show();
+
   app_refresh_screen();
 }

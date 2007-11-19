@@ -29,7 +29,7 @@ struct Sprite;
 int init_module_gui(void);
 void exit_module_gui(void);
 
-void GUI_Refresh(struct Sprite *sprite);
+void update_screen_for_sprite(struct Sprite *sprite);
 
 void gui_run(void);
 void gui_feedback(void);

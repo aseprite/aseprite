@@ -258,7 +258,7 @@ void sprite_quantize(Sprite *sprite);
 
 /* modules/gui.c */
 
-void GUI_Refresh(Sprite *sprite);
+void update_screen_for_sprite(Sprite *sprite);
 
 void rebuild_root_menu(void);
 void rebuild_sprite_list(void);
@@ -389,13 +389,13 @@ void image_parallelogram(Image *bmp, Image *sprite, int x1, int y1, int x2, int 
 
 /* Cel ************************************************************/
 
-Cel *cel_new(int frpos, int image);
+Cel *cel_new(int frame, int image);
 Cel *cel_new_copy(Cel *cel);
 void cel_free(Cel *cel);
 
 Cel *cel_is_link(Cel *cel, Layer *layer);
  
-void cel_set_frpos(Cel *cel, int frpos);
+void cel_set_frame(Cel *cel, int frame);
 void cel_set_image(Cel *cel, int image);
 void cel_set_position(Cel *cel, int x, int y);
 void cel_set_opacity(Cel *cel, int opacity);
@@ -422,14 +422,14 @@ void layer_set_blend_mode(Layer *layer, int blend_mode);
 /* for LAYER_IMAGE */
 void layer_add_cel(Layer *layer, Cel *cel);
 void layer_remove_cel(Layer *layer, Cel *cel);
-Cel *layer_get_cel(Layer *layer, int frpos);
+Cel *layer_get_cel(Layer *layer, int frame);
 
 /* for LAYER_SET */
 void layer_add_layer(Layer *set, Layer *layer);
 void layer_remove_layer(Layer *set, Layer *layer);
 void layer_move_layer(Layer *set, Layer *layer, Layer *after);
 
-void layer_render(Layer *layer, Image *image, int x, int y, int frpos);
+void layer_render(Layer *layer, Image *image, int x, int y, int frame);
 
 Layer *layer_flatten(Layer *layer, int imgtype, int x, int y, int w, int h, int frmin, int frmax);
 
@@ -498,13 +498,13 @@ void sprite_mark_as_saved(Sprite *sprite);
 void sprite_set_filename(Sprite *sprite, const char *filename);
 void sprite_set_size(Sprite *sprite, int w, int h);
 void sprite_set_frames(Sprite *sprite, int frames);
-void sprite_set_frlen(Sprite *sprite, int msecs, int frpos);
-int sprite_get_frlen(Sprite *sprite, int frpos);
+void sprite_set_frlen(Sprite *sprite, int msecs, int frame);
+int sprite_get_frlen(Sprite *sprite, int frame);
 void sprite_set_speed(Sprite *sprite, int speed);
 void sprite_set_path(Sprite *sprite, Path *path);
 void sprite_set_mask(Sprite *sprite, Mask *mask);
 void sprite_set_layer(Sprite *sprite, Layer *layer);
-void sprite_set_frpos(Sprite *sprite, int frpos);
+void sprite_set_frame(Sprite *sprite, int frame);
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method);
 
 void sprite_add_path(Sprite *sprite, Path *path);

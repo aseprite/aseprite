@@ -364,7 +364,7 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
     rendered = render_sprite(editor->sprite,
 			     source_x, source_y,
 			     width, height,
-			     editor->sprite->frpos,
+			     editor->sprite->frame,
 			     editor->zoom);
 
     if (use_dither &&
@@ -405,7 +405,7 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
   jrect_free (vp);
 }
 
-void editor_draw_sprite_safe (JWidget widget, int x1, int y1, int x2, int y2)
+void editor_draw_sprite_safe(JWidget widget, int x1, int y1, int x2, int y2)
 {
   JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
   int c, nrects = JI_REGION_NUM_RECTS(region);
@@ -816,19 +816,19 @@ void editor_update_status_bar_for_standby(JWidget widget)
 
   screen_to_editor (widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
-  status_bar_set_text (app_get_status_bar (), 0,
-		       "%s %3d %3d (%s %3d %3d) [%s %d]",
-		       _("Pos"), x, y,
-		       _("Size"),
-		       ((editor->sprite->mask->bitmap)?
-			editor->sprite->mask->w:
-			editor->sprite->w),
-		       ((editor->sprite->mask->bitmap)?
-			editor->sprite->mask->h:
-			editor->sprite->h),
-		       _("Frame"), editor->sprite->frpos);
+  status_bar_set_text(app_get_status_bar (), 0,
+		      "%s %3d %3d (%s %3d %3d) [%s %d]",
+		      _("Pos"), x, y,
+		      _("Size"),
+		      ((editor->sprite->mask->bitmap)?
+		       editor->sprite->mask->w:
+		       editor->sprite->w),
+		      ((editor->sprite->mask->bitmap)?
+		       editor->sprite->mask->h:
+		       editor->sprite->h),
+		      _("Frame"), editor->sprite->frame+1);
 
-  status_bar_update (app_get_status_bar ());
+  status_bar_update(app_get_status_bar());
 }
 
 void editor_refresh_region(JWidget widget)
@@ -1208,7 +1208,7 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
 
     case JM_CHAR:
       if (!editor_keys_toset_zoom(widget, msg->key.scancode) &&
-	  !editor_keys_toset_frpos(widget, msg->key.scancode) &&
+	  !editor_keys_toset_frame(widget, msg->key.scancode) &&
 	  !editor_keys_toset_brushsize(widget, msg->key.scancode) &&
 	  !editor_keys_toget_pixels(widget, msg->key.scancode))
 	return FALSE;
@@ -1234,9 +1234,10 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
 
 	    /* zoom */
 	    if (editor->zoom != zoom) {
-	      /* XXXX: este pedazo de código es igual que el de la rutina:
-		 editor_keys_toset_zoom, tengo que intentar unir ambos, alguna
-		 función como: editor_set_zoom_and_center_in_mouse */
+	      /* TODO: este pedazo de código es igual que el de la
+		 rutina: editor_keys_toset_zoom, tengo que intentar
+		 unir ambos, alguna función como:
+		 editor_set_zoom_and_center_in_mouse */
 	      screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
 	      x = editor->offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
@@ -1300,13 +1301,13 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
 /* request size for the editor viewport */
 /**********************************************************************/
 
-static void editor_request_size (JWidget widget, int *w, int *h)
+static void editor_request_size(JWidget widget, int *w, int *h)
 {
-  Editor *editor = editor_data (widget);
+  Editor *editor = editor_data(widget);
 
   if (editor->sprite) {
-    JWidget view = jwidget_get_view (widget);
-    JRect vp = jview_get_viewport_position (view);
+    JWidget view = jwidget_get_view(widget);
+    JRect vp = jview_get_viewport_position(view);
 
     editor->offset_x = jrect_w(vp) - 1;
     editor->offset_y = jrect_h(vp) - 1;

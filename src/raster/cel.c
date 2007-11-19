@@ -25,13 +25,13 @@
 
 #endif
 
-Cel *cel_new(int frpos, int image)
+Cel *cel_new(int frame, int image)
 {
   Cel *cel = (Cel *)gfxobj_new(GFXOBJ_CEL, sizeof(Cel));
   if (!cel)
     return NULL;
 
-  cel->frpos = frpos;
+  cel->frame = frame;
   cel->image = image;
   cel->x = 0;
   cel->y = 0;
@@ -44,7 +44,7 @@ Cel *cel_new_copy(const Cel *cel)
 {
   Cel *cel_copy;
 
-  cel_copy = cel_new(cel->frpos, cel->image);
+  cel_copy = cel_new(cel->frame, cel->image);
   if (!cel_copy)
     return NULL;
   cel_set_position(cel_copy, cel->x, cel->y);
@@ -61,10 +61,10 @@ void cel_free(Cel *cel)
 Cel *cel_is_link(Cel *cel, Layer *layer)
 {
   Cel *link;
-  int frpos;
+  int frame;
 
-  for (frpos=0; frpos<cel->frpos; frpos++) {
-    link = layer_get_cel(layer, frpos);
+  for (frame=0; frame<cel->frame; frame++) {
+    link = layer_get_cel(layer, frame);
     if (link && link->image == cel->image)
       return link;
   }
@@ -72,11 +72,13 @@ Cel *cel_is_link(Cel *cel, Layer *layer)
   return NULL;
 }
 
-/* warning, you must remove the cel from parent layer before to change
-   the frpos */
-void cel_set_frpos(Cel *cel, int frpos)
+/**
+ * @warning You have to remove the cel from the layer before to change
+ *          the frame position.
+ */
+void cel_set_frame(Cel *cel, int frame)
 {
-  cel->frpos = frpos;
+  cel->frame = frame;
 }
 
 void cel_set_image(Cel *cel, int image)

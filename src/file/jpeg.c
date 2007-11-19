@@ -264,7 +264,7 @@ static int save_jpeg(Sprite *sprite)
   J_DCT_METHOD method;
 
   /* Configure JPEG compression only in the first frame.  */
-  if (sprite->frpos == 0 && configure_jpeg() < 0)
+  if (sprite->frame == 0 && configure_jpeg() < 0)
     return 0;
 
   /* Options.  */

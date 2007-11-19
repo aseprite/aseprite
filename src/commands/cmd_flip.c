@@ -82,17 +82,17 @@ static void do_flip(int horz)
     y2 = image->h-1;
   }
   else {
-    /* apply the frame offset */
+    /* apply the cel offset */
     x1 = sprite->mask->x - x;
     y1 = sprite->mask->y - y;
     x2 = sprite->mask->x + sprite->mask->w - 1 - x;
     y2 = sprite->mask->y + sprite->mask->h - 1 - y;
 
     /* clip */
-    x1 = MID (0, x1, image->w-1);
-    y1 = MID (0, y1, image->h-1);
-    x2 = MID (0, x2, image->w-1);
-    y2 = MID (0, y2, image->h-1);
+    x1 = MID(0, x1, image->w-1);
+    y1 = MID(0, y1, image->h-1);
+    x2 = MID(0, x2, image->w-1);
+    y2 = MID(0, y2, image->h-1);
   }
 
   /* insert the undo operation */
@@ -108,5 +108,5 @@ static void do_flip(int horz)
 		     !horz? y2-y: y1+y,
 		     image_getpixel (area, x, y));
   image_free(area);
-  GUI_Refresh(current_sprite);
+  update_screen_for_sprite(current_sprite);
 }

@@ -252,16 +252,16 @@ static int metatable_index(lua_State *L)
       case Type_Cel: {
 	Cel *cel = userdata->ptr;
 
-	if (strcmp (index, "frpos") == 0)
-	  lua_pushnumber (L, cel->frpos);
-	else if (strcmp (index, "image") == 0)
-	  lua_pushnumber (L, cel->image);
-	else if (strcmp (index, "x") == 0)
-	  lua_pushnumber (L, cel->x);
-	else if (strcmp (index, "y") == 0)
-	  lua_pushnumber (L, cel->y);
-	else if (strcmp (index, "opacity") == 0)
-	  lua_pushnumber (L, cel->opacity);
+	if (strcmp(index, "frame") == 0)
+	  lua_pushnumber(L, cel->frame);
+	else if (strcmp(index, "image") == 0)
+	  lua_pushnumber(L, cel->image);
+	else if (strcmp(index, "x") == 0)
+	  lua_pushnumber(L, cel->x);
+	else if (strcmp(index, "y") == 0)
+	  lua_pushnumber(L, cel->y);
+	else if (strcmp(index, "opacity") == 0)
+	  lua_pushnumber(L, cel->opacity);
 	/* TODO */
 /* 	else if (strcmp (index, "next") == 0) */
 /* 	  lua_pushnumber (L, ); */
@@ -276,34 +276,34 @@ static int metatable_index(lua_State *L)
       case Type_Layer: {
 	Layer *layer = userdata->ptr;
 
-	if (strcmp (index, "name") == 0)
-	  lua_pushstring (L, layer->name);
-	else if (strcmp (index, "parent") == 0)
-	  push_userdata (L,
-			 layer->parent->type == GFXOBJ_LAYER_SET ?
-			 Type_Layer: Type_Sprite, layer->parent);
-	else if (strcmp (index, "readable") == 0)
-	  lua_pushboolean (L, layer->readable);
-	else if (strcmp (index, "writable") == 0)
-	  lua_pushboolean (L, layer->writable);
-	else if (strcmp (index, "prev") == 0)
- 	  push_userdata (L, Type_Layer, layer_get_prev (layer));
-	else if (strcmp (index, "next") == 0)
-	  push_userdata (L, Type_Layer, layer_get_next (layer));
+	if (strcmp(index, "name") == 0)
+	  lua_pushstring(L, layer->name);
+	else if (strcmp(index, "parent") == 0)
+	  push_userdata(L,
+			layer->parent->type == GFXOBJ_LAYER_SET ?
+			Type_Layer: Type_Sprite, layer->parent);
+	else if (strcmp(index, "readable") == 0)
+	  lua_pushboolean(L, layer->readable);
+	else if (strcmp(index, "writable") == 0)
+	  lua_pushboolean(L, layer->writable);
+	else if (strcmp(index, "prev") == 0)
+ 	  push_userdata(L, Type_Layer, layer_get_prev(layer));
+	else if (strcmp(index, "next") == 0)
+	  push_userdata(L, Type_Layer, layer_get_next(layer));
 	else {
 	  switch (layer->gfxobj.type) {
 	    case GFXOBJ_LAYER_IMAGE:
-	      if (strcmp (index, "imgtype") == 0)
-		lua_pushnumber (L, layer->imgtype);
+	      if (strcmp(index, "imgtype") == 0)
+		lua_pushnumber(L, layer->imgtype);
 /* 	      else if (strcmp (index, "w") == 0) */
 /* 		lua_pushnumber (L, layer->w); */
 /* 	      else if (strcmp (index, "h") == 0) */
 /* 		lua_pushnumber (L, layer->h); */
-	      else if (strcmp (index, "blend_mode") == 0)
-		lua_pushnumber (L, layer->blend_mode);
-	      else if (strcmp (index, "stock") == 0)
-		push_userdata (L, Type_Stock, layer->stock);
-	      else if (strcmp (index, "cels") == 0)
+	      else if (strcmp(index, "blend_mode") == 0)
+		lua_pushnumber(L, layer->blend_mode);
+	      else if (strcmp(index, "stock") == 0)
+		push_userdata(L, Type_Stock, layer->stock);
+	      else if (strcmp(index, "cels") == 0)
 		push_userdata(L, Type_Cel,
 			      jlist_first_data(layer->cels));
 	      else
@@ -361,8 +361,8 @@ static int metatable_index(lua_State *L)
 	  lua_pushnumber(L, sprite->h);
 	else if (strcmp(index, "frames") == 0)
 	  lua_pushnumber(L, sprite->frames);
-	else if (strcmp(index, "frpos") == 0)
-	  lua_pushnumber(L, sprite->frpos);
+	else if (strcmp(index, "frame") == 0)
+	  lua_pushnumber(L, sprite->frame);
 	else if (strcmp(index, "set") == 0)
 	  push_userdata(L, Type_Layer, sprite->set);
 	else if (strcmp(index, "layer") == 0)
@@ -475,24 +475,24 @@ static int metatable_newindex(lua_State *L)
 
 static int metatable_gc(lua_State *L)
 {
-  UserData *userdata = (UserData *)lua_unboxpointer (L, 1);
+  UserData *userdata = (UserData *)lua_unboxpointer(L, 1);
 
-  PRINTF ("Delete lua_Object (%p)\n", userdata->ptr);
+  PRINTF("Delete lua_Object (%p)\n", userdata->ptr);
 
-  lua_unref (L, userdata->table);
-  jfree (userdata);
+  lua_unref(L, userdata->table);
+  jfree(userdata);
 
   return 0;
 }
 
-static int metatable_eq (lua_State *L)
+static int metatable_eq(lua_State *L)
 {
-  UserData *userdata1 = (UserData *)lua_unboxpointer (L, 1);
-  UserData *userdata2 = (UserData *)lua_unboxpointer (L, 2);
+  UserData *userdata1 = (UserData *)lua_unboxpointer(L, 1);
+  UserData *userdata2 = (UserData *)lua_unboxpointer(L, 2);
   void *ptr1 = userdata1 ? userdata1->ptr: NULL;
   void *ptr2 = userdata2 ? userdata2->ptr: NULL;
 
-  lua_pushboolean (L, ptr1 == ptr2);
+  lua_pushboolean(L, ptr1 == ptr2);
   return 1;
 }
 
@@ -506,45 +506,45 @@ static int metatable_eq (lua_State *L)
 
 #include "util/misc.h"
 
-static void include (const char *filename)
+static void include(const char *filename)
 {
   if (filename)
-    do_script_file (filename);
+    do_script_file(filename);
 }
 
-static void dofile (const char *filename)
+static void dofile(const char *filename)
 {
   if (filename)
-    do_script_file (filename);
+    do_script_file(filename);
 }
 
-static void print (const char *buf)
+static void print(const char *buf)
 {
   if (buf)
-    console_printf ("%s\n", buf);
+    console_printf("%s\n", buf);
 }
 
-static int bind_rand (lua_State *L)
+static int bind_rand(lua_State *L)
 {
-  double min = lua_tonumber (L, 1);
-  double max = lua_tonumber (L, 2);
-  lua_pushnumber (L,
-		  ((rand () % (1+((int)max*1000)-((int)min*1000)))
-		   + (min*1000.0)) / 1000.0);
+  double min = lua_tonumber(L, 1);
+  double max = lua_tonumber(L, 2);
+  lua_pushnumber(L,
+		 ((rand() % (1+((int)max*1000)-((int)min*1000)))
+		  + (min*1000.0)) / 1000.0);
   return 1;
 }
 
-static int bind_GetImage2 (lua_State *L)
+static int bind_GetImage2(lua_State *L)
 {
   Sprite *sprite;
   Image *image;
   int x, y, opacity;
-  sprite = to_userdata (L, Type_Sprite, 1);
-  image = GetImage2 (sprite, &x, &y, &opacity);
-  push_userdata (L, Type_Image, image);
-  lua_pushnumber (L, x);
-  lua_pushnumber (L, y);
-  lua_pushnumber (L, opacity);
+  sprite = to_userdata(L, Type_Sprite, 1);
+  image = GetImage2(sprite, &x, &y, &opacity);
+  push_userdata(L, Type_Image, image);
+  lua_pushnumber(L, x);
+  lua_pushnumber(L, y);
+  lua_pushnumber(L, opacity);
   return 4;
 }
 

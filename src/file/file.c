@@ -515,7 +515,7 @@ int sprite_save(Sprite *sprite)
   /* use the "sequence" interface */
   if (file->flags & FILE_SUPPORT_SEQUENCES) {
     Image *image;
-    int old_frpos = sprite->frpos;
+    int old_frame = sprite->frame;
     char *old_filename = jstrdup (sprite->filename);
 
     /* create a temporary bitmap */
@@ -525,14 +525,14 @@ int sprite_save(Sprite *sprite)
       /* save one frame */
       if (sprite->frames == 1) {
 	/* draw all the sprite in the image */
-	sprite->frpos = 0;
+	sprite->frame = 0;
 	image_clear (image, 0);
 	sprite_render (sprite, image, 0, 0);
 
 	/* save the temporary image */
 	file_sequence.image = image;
 
-	palette_copy(file_palette, sprite_get_palette(sprite, sprite->frpos));
+	palette_copy(file_palette, sprite_get_palette(sprite, sprite->frame));
 
 	add_progress(100);
 	ret = (*file->save)(sprite);
@@ -553,19 +553,19 @@ int sprite_save(Sprite *sprite)
 
 	add_progress(sprite->frames);
 
-	for (sprite->frpos=0; sprite->frpos<sprite->frames; sprite->frpos++) {
+	for (sprite->frame=0; sprite->frame<sprite->frames; sprite->frame++) {
 	  /* draw all the sprite in this frame in the image */
 	  image_clear(image, 0);
 	  sprite_render(sprite, image, 0, 0);
 
 	  /* get the name for this image */
-	  usprintf(buf, "%s%0*d%s", left, width, start_from+sprite->frpos, right);
+	  usprintf(buf, "%s%0*d%s", left, width, start_from+sprite->frame, right);
 
 	  /* save the image */
 	  file_sequence.image = image;
 	  ustrcpy(sprite->filename, buf);
 
-	  palette_copy(file_palette, sprite_get_palette(sprite, sprite->frpos));
+	  palette_copy(file_palette, sprite_get_palette(sprite, sprite->frame));
 
 	  add_progress(100);
 	  ret = (*file->save)(sprite);
@@ -575,7 +575,7 @@ int sprite_save(Sprite *sprite)
 	  if (ret != 0)
 	    break;
 
-	  do_progress(sprite->frpos);
+	  do_progress(sprite->frame);
 	}
 
 	del_progress();
@@ -588,7 +588,7 @@ int sprite_save(Sprite *sprite)
       console_printf(_("Not enough memory for the temporary bitmap.\n"));
     }
 
-    sprite->frpos = old_frpos;
+    sprite->frame = old_frame;
     ustrcpy(sprite->filename, old_filename);
     jfree(old_filename);
   }

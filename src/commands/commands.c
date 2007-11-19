@@ -110,6 +110,13 @@ bool command_enabled_flatten_layers(const char *argument);
 void command_execute_flatten_layers(const char *argument);
 bool command_enabled_crop_layer(const char *argument);
 void command_execute_crop_layer(const char *argument);
+/* frame */
+bool command_enabled_frame_properties(const char *argument);
+void command_execute_frame_properties(const char *argument);
+bool command_enabled_remove_frame(const char *argument);
+void command_execute_remove_frame(const char *argument);
+bool command_enabled_new_frame(const char *argument);
+void command_execute_new_frame(const char *argument);
 /* cel */
 bool command_enabled_cel_properties(const char *argument);
 void command_execute_cel_properties(const char *argument);
@@ -187,6 +194,7 @@ void command_execute_select_file(const char *argument);
 #define CMD_EXE_CHK(name)	{ #name, NULL, command_checked_##name, command_execute_##name, NULL }
 
 static Command commands[] = {
+  /* file */
   CMD_EXE(new_file),
   CMD_EXE(open_file),
   CMD_EXE_ENA(save_file),
@@ -197,6 +205,7 @@ static Command commands[] = {
   CMD_EXE_CHK(record_screen),
   CMD_EXE(about),
   CMD_EXE(exit),
+  /* edit */
   CMD_EXE_ENA(undo),
   CMD_EXE_ENA(redo),
   CMD_EXE_ENA(cut),
@@ -207,6 +216,7 @@ static Command commands[] = {
   CMD_EXE_ENA(flip_vertical),
   CMD_EXE_ENA(replace_color),
   CMD_EXE_ENA(invert_color),
+  /* view */
   CMD_EXE(refresh),
   { CMD_CONFIGURE_SCREEN, NULL, NULL, NULL, NULL },
   CMD_EXE(advanced_mode),
@@ -217,11 +227,13 @@ static Command commands[] = {
   CMD_EXE_ENA2(preview_tiled, preview),
   CMD_EXE_ENA2(preview_normal, preview),
   CMD_EXE_ENA2(preview_fit_to_screen, preview),
+  /* sprite */
   CMD_EXE_ENA(sprite_properties),
   CMD_EXE_ENA(duplicate_sprite),
   CMD_EXE_ENA(change_image_type),
   CMD_EXE_ENA(crop_sprite),
   CMD_EXE_ENA(autocrop_sprite),
+  /* layer */
   CMD_EXE_ENA(layer_properties),
   CMD_EXE_ENA(new_layer),
   CMD_EXE_ENA(new_layer_set),
@@ -230,6 +242,11 @@ static Command commands[] = {
   CMD_EXE_ENA(merge_down_layer),
   CMD_EXE_ENA(flatten_layers),
   CMD_EXE_ENA(crop_layer),
+  /* frame */
+  CMD_EXE_ENA(frame_properties),
+  CMD_EXE_ENA(remove_frame),
+  CMD_EXE_ENA(new_frame),
+  /* cel */
   CMD_EXE_ENA(cel_properties),
   CMD_EXE_ENA(remove_cel),
   CMD_EXE_ENA(new_cel),
@@ -237,6 +254,7 @@ static Command commands[] = {
   CMD_EXE_ENA(copy_cel),
   CMD_EXE_ENA(link_cel),
   CMD_EXE_ENA(crop_cel),
+  /* mask */
   CMD_EXE_ENA(mask_all),
   CMD_EXE_ENA(deselect_mask),
   CMD_EXE_ENA(reselect_mask),
@@ -244,6 +262,7 @@ static Command commands[] = {
   CMD_EXE_ENA(mask_by_color),
   CMD_EXE_ENA(load_mask),
   CMD_EXE_ENA(save_mask),
+  /* tools */
   CMD_EXE(configure_tools),
   CMD_EXE_CHK(marker_tool),
   CMD_EXE_CHK(dots_tool),
@@ -265,6 +284,7 @@ static Command commands[] = {
   CMD_EXE(run_script),
   CMD_EXE(tips),
   CMD_EXE(options),
+  /* internal */
   CMD_EXE_ENA_CHK(select_file),
   { NULL, NULL, NULL, NULL, NULL }
 

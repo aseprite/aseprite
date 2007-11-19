@@ -35,5 +35,5 @@ bool command_enabled_remove_layer(const char *argument)
 void command_execute_remove_layer(const char *argument)
 {
   RemoveLayer();
-  GUI_Refresh(current_sprite);
+  update_screen_for_sprite(current_sprite);
 }

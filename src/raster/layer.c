@@ -32,7 +32,7 @@
 
 #endif
 
-static int has_cels(Layer *layer, int frpos);
+static bool has_cels(Layer *layer, int frame);
 
 #define LAYER_INIT(name_string)			\
   do {						\
@@ -177,7 +177,7 @@ Layer *layer_new_copy(const Layer *layer)
   return layer_copy;
 }
 
-Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos)
+Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frame)
 {
   Layer *layer;
   Cel *cel;
@@ -207,7 +207,7 @@ Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos)
   index = stock_add_image(layer->stock, image);
 
   /* create the cel */
-  cel = cel_new(frpos, index);
+  cel = cel_new(frame, index);
   cel_set_position(cel, x, y);
 
   /* add the cel in the layer */
@@ -313,7 +313,7 @@ void layer_add_cel(Layer *layer, Cel *cel)
     JLink link;
 
     JI_LIST_FOR_EACH(layer->cels, link)
-      if (((Cel *)link->data)->frpos >= cel->frpos)
+      if (((Cel *)link->data)->frame >= cel->frame)
 	break;
 
     jlist_insert_before(layer->cels, link, cel);
@@ -326,7 +326,7 @@ void layer_remove_cel(Layer *layer, Cel *cel)
     jlist_remove(layer->cels, cel);
 }
 
-Cel *layer_get_cel(Layer *layer, int frpos)
+Cel *layer_get_cel(Layer *layer, int frame)
 {
   if (layer_is_image(layer)) {
     Cel *cel;
@@ -334,7 +334,7 @@ Cel *layer_get_cel(Layer *layer, int frpos)
 
     JI_LIST_FOR_EACH(layer->cels, link) {
       cel = link->data;
-      if (cel->frpos == frpos)
+      if (cel->frame == frame)
 	return cel;
     }
   }
@@ -350,7 +350,7 @@ void layer_add_layer(Layer *set, Layer *layer)
   }
 }
 
-void layer_remove_layer (Layer *set, Layer *layer)
+void layer_remove_layer(Layer *set, Layer *layer)
 {
   if (set->gfxobj.type == GFXOBJ_LAYER_SET) {
     jlist_remove(set->layers, layer);
@@ -372,7 +372,7 @@ void layer_move_layer(Layer *set, Layer *layer, Layer *after)
   }
 }
 
-void layer_render(Layer *layer, Image *image, int x, int y, int frpos)
+void layer_render(Layer *layer, Image *image, int x, int y, int frame)
 {
   if (!layer->readable)
     return;
@@ -380,7 +380,7 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frpos)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel = layer_get_cel(layer, frpos);
+      Cel *cel = layer_get_cel(layer, frame);
       Image *src_image;
 
       if (cel) {
@@ -404,7 +404,7 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frpos)
     case GFXOBJ_LAYER_SET: {
       JLink link;
       JI_LIST_FOR_EACH(layer->layers, link)
-	layer_render(link->data, image, x, y, frpos);
+	layer_render(link->data, image, x, y, frame);
       break;
     }
 
@@ -426,7 +426,7 @@ Layer *layer_flatten(Layer *layer, int imgtype,
   Layer *flat_layer;
   Image *image;
   Cel *cel;
-  int frpos;
+  int frame;
 
   flat_layer = layer_new(imgtype);
   if (!flat_layer)
@@ -434,9 +434,9 @@ Layer *layer_flatten(Layer *layer, int imgtype,
 
   layer_set_name(flat_layer, "Flat Layer");
 
-  for (frpos=frmin; frpos<=frmax; frpos++) {
-    /* does this "frpos" have cels to render? */
-    if (has_cels(layer, frpos)) {
+  for (frame=frmin; frame<=frmax; frame++) {
+    /* does this frame have cels to render? */
+    if (has_cels(layer, frame)) {
       /* create a new image */
       image = image_new(imgtype, w, h);
       if (!image) {
@@ -446,7 +446,7 @@ Layer *layer_flatten(Layer *layer, int imgtype,
 
       /* create the new cel for the output layer (add the image to
 	 stock too) */
-      cel = cel_new(frpos, stock_add_image(flat_layer->stock, image));
+      cel = cel_new(frame, stock_add_image(flat_layer->stock, image));
       cel_set_position(cel, x, y);
       if (!cel) {
 	layer_free(flat_layer);
@@ -456,7 +456,7 @@ Layer *layer_flatten(Layer *layer, int imgtype,
 
       /* clear the image and render this frame */
       image_clear(image, 0);
-      layer_render(layer, image, -x, -y, frpos);
+      layer_render(layer, image, -x, -y, frame);
       layer_add_cel(flat_layer, cel);
     }
   }
@@ -464,8 +464,8 @@ Layer *layer_flatten(Layer *layer, int imgtype,
   return flat_layer;
 }
 
-/* returns TRUE if the "layer" (or him childs) has cels to render in frpos */
-static int has_cels(Layer *layer, int frpos)
+/* returns TRUE if the "layer" (or him childs) has cels to render in frame */
+static bool has_cels(Layer *layer, int frame)
 {
   if (!layer->readable)
     return FALSE;
@@ -473,12 +473,12 @@ static int has_cels(Layer *layer, int frpos)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE:
-      return layer_get_cel(layer, frpos) ? TRUE: FALSE;
+      return layer_get_cel(layer, frame) ? TRUE: FALSE;
 
     case GFXOBJ_LAYER_SET: {
       JLink link;
       JI_LIST_FOR_EACH(layer->layers, link) {
-	if (has_cels(link->data, frpos))
+	if (has_cels(link->data, frame))
 	  return TRUE;
       }
       break;

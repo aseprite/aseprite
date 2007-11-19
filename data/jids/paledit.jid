@@ -51,7 +51,7 @@
 	</box>
       </box>
     </box>
-    <slider min="0" max="1" name="frpos" />
+    <slider min="0" max="1" name="frame" />
     <box horizontal homogeneous>
       <button text=_("&OK") name="button_ok" magnetic />
       <button text=_("&Cancel") />

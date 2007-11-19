@@ -117,8 +117,8 @@ static void do_quick (int action)
 
   /* regenerate the boundaries (the mask was deselected) and redraw
      the sprite */
-  sprite_generate_mask_boundaries (sprite);
-  GUI_Refresh (sprite);
+  sprite_generate_mask_boundaries(sprite);
+  update_screen_for_sprite(sprite);
 
   /* move the new layer to a new position */
   ret = interactive_move_layer (MODE_CLICKANDCLICK, FALSE, my_callback);
@@ -196,7 +196,7 @@ static void do_quick (int action)
   layer_remove_layer ((Layer *)handle_layer->parent, handle_layer);
 
   /* refresh the sprite */
-  GUI_Refresh (sprite);
+  update_screen_for_sprite(sprite);
 }
 
 static int my_callback (void)

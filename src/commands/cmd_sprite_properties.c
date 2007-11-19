@@ -110,7 +110,7 @@ void command_execute_sprite_properties(const char *argument)
       sprite_set_frames(sprite, nframes);
 
       /* update sprite in editors */
-      GUI_Refresh(sprite);
+      update_screen_for_sprite(sprite);
       break;
     }
     else if (killer == speed) {
@@ -120,49 +120,5 @@ void command_execute_sprite_properties(const char *argument)
       break;
   }
 
-  jwidget_free(window);
-}
-
-/* if sprite_frpos < 0, set the frame length of all frames */
-void dialogs_frame_length(int sprite_frpos)
-{
-  JWidget window, frpos, frlen, ok;
-  char buf[64];
-
-  window = load_widget("frlen.jid", "frame_duration");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "frpos", &frpos,
-		   "frlen", &frlen,
-		   "ok", &ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
-
-  if (sprite_frpos < 0)
-    strcpy(buf, "All");
-  else
-    sprintf(buf, "%d", sprite_frpos);
-  jwidget_set_text(frpos, buf);
-
-  sprintf(buf, "%d", sprite_get_frlen(current_sprite, current_sprite->frpos));
-  jwidget_set_text(frlen, buf);
-
-  jwindow_open_fg(window);
-  if (jwindow_get_killer(window) == ok) {
-    int num = strtol(jwidget_get_text(frlen), NULL, 10);
-
-    if (sprite_frpos < 0) {
-      if (jalert("Warning"
-		 "<<Do you want change the frame-rate of all frames?"
-		 "<<(this operation can\'t be undoed)"
-		 "||&Yes||&No") == 1)
-	sprite_set_speed(current_sprite, num);
-    }
-    else
-      sprite_set_frlen(current_sprite, num, sprite_frpos);
-  }
   jwidget_free(window);
 }

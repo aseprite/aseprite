@@ -20,19 +20,19 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/base.h"
 
-#include "core/app.h"
-#include "modules/sprites.h"
-#include "raster/sprite.h"
+#include "dialogs/filmedit.h"
+#include "util/celmove.h"
 
 #endif
 
 bool command_enabled_copy_cel(const char *argument)
 {
-  return FALSE;
+  return is_movingcel();
 }
 
 void command_execute_copy_cel(const char *argument)
 {
+  copy_cel();
 }

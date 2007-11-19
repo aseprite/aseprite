@@ -1402,7 +1402,7 @@ static Cel *undo_chunk_read_cel(UndoChunk *chunk)
 static void undo_chunk_write_cel(UndoChunk *chunk, Cel *cel)
 {
   undo_chunk_put32(chunk, cel->gfxobj.id);
-  undo_chunk_put16(chunk, cel->frpos);
+  undo_chunk_put16(chunk, cel->frame);
   undo_chunk_put16(chunk, cel->image);
   undo_chunk_put16(chunk, cel->x);
   undo_chunk_put16(chunk, cel->y);

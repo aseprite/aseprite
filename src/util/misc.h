@@ -27,17 +27,17 @@ struct Layer;
 struct Sprite;
 struct Undo;
 
-struct Image *GetImage (void);
-struct Image *GetImage2 (struct Sprite *sprite, int *x, int *y, int *opacity);
+struct Image *GetImage(void);
+struct Image *GetImage2(struct Sprite *sprite, int *x, int *y, int *opacity);
 
-void LoadPalette (const char *filename);
+void LoadPalette(const char *filename);
 
-void ClearMask (void);
-struct Layer *NewLayerFromMask (void);
+void ClearMask(void);
+struct Layer *NewLayerFromMask(void);
 
-struct Image *GetLayerImage (struct Layer *layer, int *x, int *y, int frpos);
+struct Image *GetLayerImage(struct Layer *layer, int *x, int *y, int frame);
 
-int interactive_move_layer (int mode, int use_undo, int (*callback) (void));
+int interactive_move_layer(int mode, int use_undo, int (*callback) (void));
 
 #endif /* UTIL_MISC_H */
 

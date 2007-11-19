@@ -119,7 +119,7 @@ void command_execute_invert_color(const char *argument)
   effect_free(effect);
 
   /* update editors */
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "InvertColor");

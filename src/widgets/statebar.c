@@ -349,14 +349,14 @@ static int slider_change_signal(JWidget widget, int user_data)
   if (sprite) {
     if ((sprite->layer) &&
 	(sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)) {
-      Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
+      Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
       if (cel) {
 	/* update the opacity */
 	cel->opacity = jslider_get_value(widget);
 
 	/* update the editors */
-	GUI_Refresh(sprite);
+	update_screen_for_sprite(sprite);
       }
     }
   }
@@ -369,7 +369,7 @@ static void button_command(JWidget widget, void *data)
   Sprite *sprite = current_sprite;
 
   if (sprite) {
-    int old_frpos = sprite->frpos;
+    int old_frame = sprite->frame;
 
     switch ((int)data) {
 
@@ -378,12 +378,12 @@ static void button_command(JWidget widget, void *data)
 	break;
 
       case ACTION_FIRST:
-	sprite->frpos = 0;
+	sprite->frame = 0;
 	break;
 
       case ACTION_PREV:
-	if ((--sprite->frpos) < 0)
-	  sprite->frpos = sprite->frames-1;
+	if ((--sprite->frame) < 0)
+	  sprite->frame = sprite->frames-1;
 	break;
 
       case ACTION_PLAY:
@@ -391,18 +391,18 @@ static void button_command(JWidget widget, void *data)
 	break;
 
       case ACTION_NEXT:
-	if ((++sprite->frpos) >= sprite->frames)
-	  sprite->frpos = 0;
+	if ((++sprite->frame) >= sprite->frames)
+	  sprite->frame = 0;
 	break;
 
       case ACTION_LAST:
-	sprite->frpos = sprite->frames-1;
+	sprite->frame = sprite->frames-1;
 	break;
     }
 
-    if (sprite->frpos != old_frpos) {
-      update_from_layer (widget->user_data[0]);
-      GUI_Refresh (sprite);
+    if (sprite->frame != old_frame) {
+      update_from_layer(widget->user_data[0]);
+      update_screen_for_sprite(sprite);
     }
   }
 }
@@ -415,7 +415,7 @@ static void update_from_layer(StatusBar *status_bar)
   /* layer button */
   if (sprite && sprite->layer) {
     char buf[512];
-    usprintf(buf, "[%d] %s", sprite->frpos, sprite->layer->name);
+    usprintf(buf, "[%d] %s", sprite->frame, sprite->layer->name);
     jwidget_set_text(status_bar->b_layer, buf);
     jwidget_enable(status_bar->b_layer);
   }
@@ -427,7 +427,7 @@ static void update_from_layer(StatusBar *status_bar)
   /* opacity layer */
   if (sprite && sprite->layer &&
       sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE &&
-      (cel = layer_get_cel(sprite->layer, sprite->frpos))) {
+      (cel = layer_get_cel(sprite->layer, sprite->frame))) {
     jslider_set_value(status_bar->slider, MID(0, cel->opacity, 255));
     jwidget_enable(status_bar->slider);
   }
@@ -453,7 +453,7 @@ END_OF_STATIC_FUNCTION(speed_timer_callback);
 static void play_animation(void)
 {
   Sprite *sprite = current_sprite;
-  int old_frpos, msecs;
+  int old_frame, msecs;
   bool done = FALSE;
 
   if (sprite->frames < 2)
@@ -461,7 +461,7 @@ static void play_animation(void)
 
   jmouse_hide();
 
-  old_frpos = sprite->frpos;
+  old_frame = sprite->frame;
 
   LOCK_VARIABLE(speed_timer);
   LOCK_FUNCTION(speed_timer_callback);
@@ -474,10 +474,10 @@ static void play_animation(void)
   /* do animation */
   speed_timer = 0;
   while (!done) {
-    msecs = sprite_get_frlen(sprite, sprite->frpos);
+    msecs = sprite_get_frlen(sprite, sprite->frame);
     install_int_ex(speed_timer_callback, MSEC_TO_TIMER(msecs));
 
-    set_palette(sprite_get_palette(sprite, sprite->frpos));
+    set_palette(sprite_get_palette(sprite, sprite->frame));
     editor_draw_sprite_safe(current_editor, 0, 0, sprite->w, sprite->h);
 
     do {
@@ -489,9 +489,9 @@ static void play_animation(void)
     } while (!done && (speed_timer <= 0));
 
     if (!done) {
-      sprite->frpos++;
-      if (sprite->frpos >= sprite->frames)
-	sprite->frpos = 0;
+      sprite->frame++;
+      if (sprite->frame >= sprite->frames)
+	sprite->frame = 0;
 
       speed_timer--;
     }
@@ -501,10 +501,10 @@ static void play_animation(void)
   /* if right-click or ESC */
   if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC))
     /* return to the old frame position */
-    sprite->frpos = old_frpos;
+    sprite->frame = old_frame;
 
   /* refresh all */
-  set_current_palette(sprite_get_palette(sprite, sprite->frpos), TRUE);
+  set_current_palette(sprite_get_palette(sprite, sprite->frame), TRUE);
   jmanager_refresh_screen();
   gui_feedback();
 

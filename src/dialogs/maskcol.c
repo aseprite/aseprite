@@ -148,13 +148,13 @@ void dialogs_mask_color(void)
   }
 
   /* update boundaries and editors */
-  sprite_generate_mask_boundaries (sprite);
-  GUI_Refresh (sprite);
+  sprite_generate_mask_boundaries(sprite);
+  update_screen_for_sprite(sprite);
 
   /* save window configuration */
-  save_window_pos (window, "MaskColor");
+  save_window_pos(window, "MaskColor");
 
-  jwidget_free (window);
+  jwidget_free(window);
 }
 
 static void button_1_command (JWidget widget)
@@ -215,15 +215,15 @@ static void mask_preview (void)
 {
   if (jwidget_is_selected (check_preview)) {
     Sprite *sprite = current_sprite;
-    Mask *mask = gen_mask ();
+    Mask *mask = gen_mask();
     Mask *old_mask = sprite->mask;
 
     sprite->mask = mask;
 
-    sprite_generate_mask_boundaries (sprite);
-    GUI_Refresh (sprite);
+    sprite_generate_mask_boundaries(sprite);
+    update_screen_for_sprite(sprite);
 
     sprite->mask = old_mask;
-    mask_free (mask);
+    mask_free(mask);
   }
 }

@@ -139,7 +139,7 @@ void command_execute_despeckle(const char *argument)
   effect_free (effect);
 
   /* update editors */
-  GUI_Refresh (current_sprite);
+  update_screen_for_sprite (current_sprite);
 
   /* save window configuration */
   save_window_pos (window, "Median");

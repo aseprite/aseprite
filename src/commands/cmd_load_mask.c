@@ -61,7 +61,7 @@ void command_execute_load_mask(const char *argument)
     mask_free(mask);
 
     sprite_generate_mask_boundaries(sprite);
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
     jfree(filename);
   }
 }

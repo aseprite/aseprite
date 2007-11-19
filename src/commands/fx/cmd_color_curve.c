@@ -46,8 +46,8 @@
 static Curve *the_curve = NULL;
 static JWidget check_preview, preview;
 
-static bool hooked_msg_proc (JWidget widget, JMessage msg);
-static void make_preview (void);
+static bool hooked_msg_proc(JWidget widget, JMessage msg);
+static void make_preview(void);
 
 bool command_enabled_color_curve(const char *argument)
 {
@@ -65,79 +65,79 @@ void command_execute_color_curve(const char *argument)
 
   if (!the_curve) {
     /* default curve */
-    the_curve = curve_new (CURVE_LINEAR);
-    curve_add_point (the_curve, curve_point_new (0, 0));
-    curve_add_point (the_curve, curve_point_new (255, 255));
+    the_curve = curve_new(CURVE_LINEAR);
+    curve_add_point(the_curve, curve_point_new (0, 0));
+    curve_add_point(the_curve, curve_point_new (255, 255));
   }
 
-  image = GetImage ();
+  image = GetImage();
   if (!image)
     return;
 
-  window = load_widget ("colcurv.jid", "color_curve");
+  window = load_widget("colcurv.jid", "color_curve");
   if (!window)
     return;
 
-  if (!get_widgets (window,
-		    "preview", &check_preview,
-		    "button_ok", &button_ok,
-		    "curve", &view_curve,
-		    "target", &box_target, NULL)) {
-    jwidget_free (window);
+  if (!get_widgets(window,
+		   "preview", &check_preview,
+		   "button_ok", &button_ok,
+		   "curve", &view_curve,
+		   "target", &box_target, NULL)) {
+    jwidget_free(window);
     return;
   }
 
-  effect = effect_new (sprite, "color_curve");
+  effect = effect_new(sprite, "color_curve");
   if (!effect) {
-    console_printf (_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free (window);
+    console_printf(_("Error creating the effect applicator for this sprite\n"));
+    jwidget_free(window);
     return;
   }
 
-  preview = preview_new (effect);
+  preview = preview_new(effect);
 
-  set_color_curve (the_curve);
+  set_color_curve(the_curve);
 
-  curve_editor = curve_editor_new (the_curve, 0, 0, 255, 255);
-  target_button = target_button_new (sprite->imgtype, TRUE);
+  curve_editor = curve_editor_new(the_curve, 0, 0, 255, 255);
+  target_button = target_button_new(sprite->imgtype, TRUE);
 
-  if (get_config_bool ("ColorCurve", "Preview", TRUE))
-    jwidget_select (check_preview);
+  if (get_config_bool("ColorCurve", "Preview", TRUE))
+    jwidget_select(check_preview);
 
-  jview_attach (view_curve, curve_editor);
-  jwidget_set_static_size (view_curve, 64, 64);
+  jview_attach(view_curve, curve_editor);
+  jwidget_set_static_size(view_curve, 128, 64);
 
-  jwidget_add_child (box_target, target_button);
-  jwidget_add_child (window, preview);
+  jwidget_add_child(box_target, target_button);
+  jwidget_add_child(window, preview);
 
-  jwidget_add_hook (window, JI_WIDGET, hooked_msg_proc, NULL);
+  jwidget_add_hook(window, JI_WIDGET, hooked_msg_proc, NULL);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* first preview */
-  make_preview ();
+  make_preview();
 
   /* load window configuration */
-  load_window_pos (window, "ColorCurve");
+  load_window_pos(window, "ColorCurve");
 
   /* open the window */
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
-  if (jwindow_get_killer (window) == button_ok) {
-    effect_apply_to_target (effect);
+  if (jwindow_get_killer(window) == button_ok) {
+    effect_apply_to_target(effect);
   }
 
-  effect_free (effect);
+  effect_free(effect);
 
   /* update editors */
-  GUI_Refresh (sprite);
+  update_screen_for_sprite(sprite);
 
   /* save window configuration */
-  save_window_pos (window, "ColorCurve");
+  save_window_pos(window, "ColorCurve");
 
-  jwidget_free (window);
+  jwidget_free(window);
 }
 
 static bool hooked_msg_proc (JWidget widget, JMessage msg)
@@ -146,27 +146,27 @@ static bool hooked_msg_proc (JWidget widget, JMessage msg)
     switch (msg->signal.num) {
 
       case SIGNAL_CURVE_EDITOR_CHANGE:
-	set_color_curve (curve_editor_get_curve (msg->signal.from));
-	make_preview ();
+	set_color_curve(curve_editor_get_curve(msg->signal.from));
+	make_preview();
 	break;
 
       case SIGNAL_TARGET_BUTTON_CHANGE:
-	effect_load_target (preview_get_effect (preview));
-	make_preview ();
+	effect_load_target(preview_get_effect(preview));
+	make_preview();
 	break;
 
       case JI_SIGNAL_CHECK_CHANGE:
-	set_config_bool ("ColorCurve", "Preview",
-			 jwidget_is_selected (msg->signal.from));
-	make_preview ();
+	set_config_bool("ColorCurve", "Preview",
+			jwidget_is_selected(msg->signal.from));
+	make_preview();
 	break;
     }
   }
   return FALSE;
 }
 
-static void make_preview (void)
+static void make_preview(void)
 {
-  if (jwidget_is_selected (check_preview))
-    preview_restart (preview);
+  if (jwidget_is_selected(check_preview))
+    preview_restart(preview);
 }

@@ -95,41 +95,41 @@ void command_execute_convolution_matrix(const char *argument)
   if (!window)
     return;
 
-  if (!get_widgets (window,
-		    "preview", &check_preview,
-		    "tiled", &check_tiled,
-		    "button_ok", &button_ok,
-		    "view", &view_convmatr,
-		    "target", &box_target,
-		    "reload", &reload,
-		    "generate", &generate, NULL)) {
-    jwidget_free (window);
+  if (!get_widgets(window,
+		   "preview", &check_preview,
+		   "tiled", &check_tiled,
+		   "button_ok", &button_ok,
+		   "view", &view_convmatr,
+		   "target", &box_target,
+		   "reload", &reload,
+		   "generate", &generate, NULL)) {
+    jwidget_free(window);
     return;
   }
 
-  effect = effect_new (sprite, "convolution_matrix");
+  effect = effect_new(sprite, "convolution_matrix");
   if (!effect) {
-    console_printf (_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free (window);
+    console_printf(_("Error creating the effect applicator for this sprite\n"));
+    jwidget_free(window);
     return;
   }
 
-  preview = preview_new (effect);
+  preview = preview_new(effect);
 
-  list_convmatr = listbox_generate_convmatg ();
-  target_button = target_button_new (sprite->imgtype, TRUE);
+  list_convmatr = listbox_generate_convmatg();
+  target_button = target_button_new(sprite->imgtype, TRUE);
 
-  if (get_config_bool ("ConvolutionMatrix", "Preview", TRUE))
-    jwidget_select (check_preview);
+  if (get_config_bool("ConvolutionMatrix", "Preview", TRUE))
+    jwidget_select(check_preview);
 
-  if (get_tiled_mode ())
-    jwidget_select (check_tiled);
+  if (get_tiled_mode())
+    jwidget_select(check_tiled);
 
-  jview_attach (view_convmatr, list_convmatr);
-  jwidget_set_static_size (view_convmatr, 64, 64);
+  jview_attach(view_convmatr, list_convmatr);
+  jwidget_set_static_size(view_convmatr, 128, 64);
 
-  jwidget_add_child (box_target, target_button);
-  jwidget_add_child (window, preview);
+  jwidget_add_child(box_target, target_button);
+  jwidget_add_child(window, preview);
 
   HOOK (target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK (check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
@@ -160,7 +160,7 @@ void command_execute_convolution_matrix(const char *argument)
   effect_free (effect);
 
   /* update editors */
-  GUI_Refresh (sprite);
+  update_screen_for_sprite (sprite);
 
   /* save window configuration */
   save_window_pos (window, "ConvolutionMatrix");

@@ -50,6 +50,7 @@
 #include "script/script.h"
 #include "util/recscr.h"
 #include "widgets/editor.h"
+#include "widgets/statebar.h"
 
 #endif
 
@@ -240,21 +241,33 @@ static void save_gui_config(void)
   set_config_int("GfxMode", "Scale", screen_scaling);
 }
 
-void GUI_Refresh(Sprite *sprite)
+void update_screen_for_sprite(Sprite *sprite)
 {
   if (!(ase_mode & MODE_GUI))
     return;
 
+  /* without sprite */
   if (!sprite) {
-    if (set_current_palette(NULL, FALSE))
+    /* well, change to the default palette */
+    if (set_current_palette(NULL, FALSE)) {
+      /* if the palette changes, refresh the whole screen */
       jmanager_refresh_screen();
+    }
   }
+  /* with a sprite */
   else {
-    if (set_current_palette(sprite_get_palette(sprite, sprite->frpos), FALSE))
+    /* select the palette of the sprite */
+    if (set_current_palette(sprite_get_palette(sprite, sprite->frame), FALSE)) {
+      /* if the palette changes, refresh the whole screen */
       jmanager_refresh_screen();
-    else
+    }
+    else {
+      /* if it's the same palette update only the editors with the sprite */
       update_editors_with_sprite(sprite);
+    }
   }
+
+  status_bar_set_text(app_get_status_bar(), 0, "");
 }
 
 void gui_run(void)
@@ -286,7 +299,7 @@ void gui_feedback(void)
 
     if (next_idle_flags & REBUILD_FULLREFRESH) {
       next_idle_flags ^= REBUILD_FULLREFRESH;
-      GUI_Refresh(current_sprite);
+      update_screen_for_sprite(current_sprite);
     }
   }
 
@@ -691,7 +704,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
     case JM_IDLE:
       gui_feedback();
       /* don't eat CPU... rest some time */
-      rest(1);
+      rest(0); rest(1);
       break;
 
     case JM_CHAR: {

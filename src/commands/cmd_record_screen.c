@@ -40,7 +40,7 @@ void command_execute_record_screen(const char *argument)
     rec_screen_off();
   else if (bitmap_color_depth(screen) == 8
 	   || jalert(_("Warning"
-		       "<<The display isn't in a 8 bpp resolution, the recording."
+		       "<<The display isn't in a 8 bpp resolution, the recording"
 		       "<<process can be really slow. It's recommended to use a"
 		       "<<8 bpp to make it faster."
 		       "<<Do you want to continue anyway?"

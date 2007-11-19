@@ -114,7 +114,7 @@ void command_execute_layer_properties(const char *argument)
     if (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)
       layer_set_blend_mode(layer, jlistbox_get_selected_index(list_bm));
 
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
   }
 
   jwidget_free(window);

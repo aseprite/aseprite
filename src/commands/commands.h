@@ -69,6 +69,10 @@
 #define CMD_MERGE_DOWN_LAYER		"merge_down_layer"
 #define CMD_FLATTEN_LAYERS		"flatten_layers"
 #define CMD_CROP_LAYER			"crop_layer"
+/* frame */
+#define CMD_FRAME_PROPERTIES		"frame_properties"
+#define CMD_NEW_FRAME			"new_frame"
+#define CMD_REMOVE_FRAME		"remove_frame"
 /* cel */
 #define CMD_CEL_PROPERTIES		"cel_properties"
 #define CMD_REMOVE_CEL			"remove_cel"

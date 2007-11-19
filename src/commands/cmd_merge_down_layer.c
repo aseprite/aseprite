@@ -141,5 +141,5 @@ void command_execute_merge_down_layer(const char *argument)
   layer_remove_layer((Layer *)src_layer->parent, src_layer);
   layer_free(src_layer);
 
-  GUI_Refresh(sprite);
+  update_screen_for_sprite(sprite);
 }

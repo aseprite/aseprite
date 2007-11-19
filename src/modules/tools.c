@@ -1067,7 +1067,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 			      _size, ABS (x2-x1)+1, ABS (y2-y1)+1, mode);
 	}
 	else {
-	  status_bar_set_text (status_bar, 0, "%s %3d %3d", _pos, x1, y1);
+	  status_bar_set_text(status_bar, 0, "%s %3d %3d", _pos, x1, y1);
 	}
 
 	jwidget_flush_redraw(status_bar);
@@ -1140,7 +1140,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 	       MAX (y1, y2) - MIN (y1, y2) + 1);
 
       sprite_generate_mask_boundaries(editor->sprite);
-      GUI_Refresh(editor->sprite);
+      update_screen_for_sprite(editor->sprite);
     }
 
     /* draw trace ***************************************************/
@@ -1149,7 +1149,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
       if (undo_is_enabled(editor->sprite->undo))
 	undo_dirty(editor->sprite->undo, dirty);
 
-      GUI_Refresh(editor->sprite);
+      update_screen_for_sprite(editor->sprite);
     }
   }
   else {
@@ -1157,7 +1157,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
     dirty_put(dirty);
 
     /* redraw */
-    GUI_Refresh(editor->sprite);
+    update_screen_for_sprite(editor->sprite);
   }
 
   editor_click_done(widget);

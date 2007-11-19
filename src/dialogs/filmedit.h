@@ -19,9 +19,9 @@
 #ifndef DIALOGS_FILMEDIT_H
 #define DIALOGS_FILMEDIT_H
 
-bool is_movingframe (void);
+bool is_movingcel(void);
 
-void switch_between_film_and_sprite_editor (void);
+void switch_between_film_and_sprite_editor(void);
 
 #endif /* DIALOGS_FILMEDIT_H */
 

@@ -31,15 +31,20 @@
 
 bool command_enabled_remove_cel(const char *argument)
 {
-  return current_sprite != NULL;
+  return
+    current_sprite &&
+    current_sprite->layer &&
+    current_sprite->layer->readable &&
+    current_sprite->layer->writable &&
+    layer_is_image(current_sprite->layer) &&
+    layer_get_cel(current_sprite->layer, current_sprite->frame);
 }
 
 void command_execute_remove_cel(const char *argument)
 {
-  Sprite *sprite = current_sprite;
-  Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
-  if (cel) {
-    RemoveCel(sprite->layer, cel);
-    GUI_Refresh(sprite);
-  }
+  Cel *cel = layer_get_cel(current_sprite->layer,
+			   current_sprite->frame);
+
+  RemoveCel(current_sprite->layer, cel);
+  update_screen_for_sprite(current_sprite);
 }

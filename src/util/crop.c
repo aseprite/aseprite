@@ -66,7 +66,7 @@ void crop_sprite(void)
       undo_close(sprite->undo);
 
     sprite_generate_mask_boundaries(sprite);
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
   }
 }
 
@@ -156,7 +156,7 @@ void crop_layer(void)
     layer_free(layer);
 
     /* refresh */
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
   }
 }
 
@@ -166,7 +166,7 @@ void crop_cel(void)
   Image *image = GetImage();
 
   if ((sprite) && (!mask_is_empty (sprite->mask)) && (image)) {
-    Cel *cel = layer_get_cel(sprite->layer, sprite->frpos);
+    Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
     /* undo */
     undo_open(sprite->undo);
@@ -189,7 +189,7 @@ void crop_cel(void)
     cel->x = sprite->mask->x;
     cel->y = sprite->mask->y;
 
-    GUI_Refresh(sprite);
+    update_screen_for_sprite(sprite);
   }
 }
 

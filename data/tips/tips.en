@@ -1,4 +1,4 @@
-# allegro-sprite-editor tips
+# Allegro Sprite Editor tips
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007  David A. Capello
 
  **********************************************************************
@@ -36,18 +36,30 @@ set the left or right color respectively.
 You can modify the quantity of sprite's animation frames using the
 "Sprite/Properties" menu or pressing <Ctrl+P>.
  **********************************************************************
+Move through the frames with the arrows keys
+
+\split
+Left = go to previous frame
+
+Down = go to first frame
+\next
+Right = go to next frame
+
+Up = go to last frame
+\done
+ **********************************************************************
 You can add new animation frames pressing <Ctrl+Shift+N> or using
 "Frame/New" menu.
  **********************************************************************
-Do you want edit frames and layers?  Use the film editor:
+Do you want edit layers, frames and cels?  Use the film editor:
 
 \image filmedit.pcx
 
-Go to "View/Film Editor" menu or press TAB when you are
+Go to "Tools/Film Editor" menu or press TAB when you are
 editing a sprite.
  **********************************************************************
-You can use the onionskin feature to edit animations (press <C> to see
-the "Tools Setup" window):
+You can use the onionskin feature to edit animations (press <C> key to
+see the "Tools Setup" window):
 
 \image onion.pcx
 

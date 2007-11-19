@@ -35,6 +35,7 @@
 /* show the language selection dialog */
 void dialogs_select_language(bool force)
 {
+#if 0 /* No more languages by now */
   bool select_language = get_config_bool("Options", "SelectLanguage", TRUE);
 
   if (force || select_language) {
@@ -64,6 +65,10 @@ void dialogs_select_language(bool force)
 
     jwidget_free(window);
   }
+#else  /* Just english */
+  intl_set_lang("en");
+  set_config_bool("Options", "SelectLanguage", FALSE);
+#endif
 }
 
 /**********************************************************************/
@@ -71,10 +76,10 @@ void dialogs_select_language(bool force)
 
 static JWidget label_font, slider_x, slider_y, check_lockmouse;
 
-static int slider_mouse_hook (JWidget widget, int user_data);
-static void button_font_command (JWidget widget);
-static void button_lang_command (JWidget widget);
-static void set_label_font_text (void);
+static int slider_mouse_hook(JWidget widget, int user_data);
+static void button_font_command(JWidget widget);
+static void button_lang_command(JWidget widget);
+static void set_label_font_text(void);
 
 /* shows option dialog */
 void dialogs_options(void)
