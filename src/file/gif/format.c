@@ -392,7 +392,7 @@ gif_load_animation (const char *filename, void (*progress) (int))
 {
     PACKFILE *file;
     GIF_ANIMATION *gif = NULL;
-#if (MAKE_VERSION(4, 2, 0) < MAKE_VERSION(ALLEGRO_VERSION,		\
+#if (MAKE_VERSION(4, 2, 1) < MAKE_VERSION(ALLEGRO_VERSION,		\
 					  ALLEGRO_SUB_VERSION,		\
 					  ALLEGRO_WIP_VERSION))
     int size = file_size(filename);
