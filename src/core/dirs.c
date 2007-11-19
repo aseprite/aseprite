@@ -142,14 +142,18 @@ DIRS *filename_in_datadir(const char *filename)
     dirs_add_path(dirs, buf);
   #endif
 
-#endif
+#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
   /* $BINDIR/data/filename */
   sprintf(buf, "data/%s", filename);
   dirs_cat_dirs(dirs, filename_in_bindir(buf));
 
+#else
+
   /* filename */
   dirs_add_path(dirs, filename);
+
+#endif
 
   return dirs;
 }
@@ -173,13 +177,17 @@ DIRS *filename_in_homedir(const char *filename)
     dirs_add_path(dirs, filename);
   }
 
-#endif
+#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
   /* $PREFIX/data/filename */
   dirs_cat_dirs(dirs, filename_in_datadir(filename));
 
+#else
+
   /* filename */
   dirs_add_path(dirs, filename);
+
+#endif
 
   return dirs;
 }
