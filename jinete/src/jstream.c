@@ -208,8 +208,11 @@ int jstream_tell(JStream stream)
 static void stream_file_close(JStream stream)
 {
   FILE *f = JSF->file;
-  if ((f != stdin) && (f != stdout) && (f != stderr))
-    fclose(f);
+  if ((f != stdin) && (f != stdout) && (f != stderr)) {
+    /* you must to close the file, here we can't do:
+         fclose(f);
+     */
+  }
 }
 
 static bool stream_file_eof(JStream stream)
