@@ -1289,22 +1289,6 @@ static int bind_play_fli_animation(lua_State *L)
   return 0;
 }
 
-static int bind_set_gfx(lua_State *L)
-{
-  int return_value;
-  const char *card;
-  int w;
-  int h;
-  int depth;
-  GetArg(1, card, const char *, string);
-  GetArg(2, w, int, number);
-  GetArg(3, h, int, number);
-  GetArg(4, depth, int, number);
-  return_value = set_gfx(card, w, h, depth);
-  lua_pushnumber(L, return_value);
-  return 1;
-}
-
 static int bind_dialogs_draw_text(lua_State *L)
 {
   dialogs_draw_text();
@@ -5704,7 +5688,6 @@ const luaL_reg bindings_routines[] = {
   { "quick_copy", bind_quick_copy },
   { "quick_swap", bind_quick_swap },
   { "play_fli_animation", bind_play_fli_animation },
-  { "set_gfx", bind_set_gfx },
   { "dialogs_draw_text", bind_dialogs_draw_text },
   { "switch_between_film_and_sprite_editor", bind_switch_between_film_and_sprite_editor },
   { "dialogs_mapgen", bind_dialogs_mapgen },

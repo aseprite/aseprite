@@ -36,7 +36,6 @@
 #include "core/cfg.h"
 #include "core/core.h"
 #include "core/dirs.h"
-#include "dialogs/gfxsel.h"
 #include "dialogs/options.h"
 #include "dialogs/filmedit.h"
 #include "intl/msgids.h"
@@ -161,9 +160,6 @@ int init_module_gui(void)
     } else break;
   }
 
-  /* double buffering is required when screen scaling is used */
-  double_buffering = (screen_scaling > 1);
-
   /* create the default-manager */
   manager = jmanager_new();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
@@ -212,7 +208,6 @@ void exit_module_gui(void)
 
   jlist_free(icon_buttons);
 
-  destroy_gfx_cards();
   unhook_palette_changes(regen_theme_and_fixup_icons);
 
   jmanager_free(manager);
@@ -229,7 +224,7 @@ static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
   *bpp = get_config_int("GfxMode", "Depth", 0);
   *fullscreen = get_config_bool("GfxMode", "FullScreen", GUI_DEFAULT_FULLSCREEN);
   screen_scaling = get_config_int("GfxMode", "Scale", GUI_DEFAULT_SCALE);
-  screen_scaling = MAX(1, screen_scaling);
+  screen_scaling = MID(1, screen_scaling, 4);
 }
 
 static void save_gui_config(void)
@@ -239,6 +234,16 @@ static void save_gui_config(void)
   set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
   set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? FALSE: TRUE);
   set_config_int("GfxMode", "Scale", screen_scaling);
+}
+
+int get_screen_scaling(void)
+{
+  return screen_scaling;
+}
+
+void set_screen_scaling(int scaling)
+{
+  screen_scaling = scaling;
 }
 
 void update_screen_for_sprite(Sprite *sprite)
@@ -324,8 +329,18 @@ void gui_feedback(void)
   }
 }
 
+/**
+ * Sets the ji_screen variable.
+ * 
+ * This routine should be called everytime you changes the graphics
+ * mode.
+ */
 void gui_setup_screen(void)
 {
+  /* double buffering is required when screen scaling is used */
+  double_buffering = (screen_scaling > 1);
+
+  /* is double buffering active */
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
     ji_set_screen(create_bitmap(SCREEN_W / screen_scaling,

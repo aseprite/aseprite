@@ -26,6 +26,7 @@
 
 #include "jinete.h"
 
+#include "console/console.h"
 #include "commands/commands.h"
 
 #endif
@@ -218,7 +219,7 @@ static Command commands[] = {
   CMD_EXE_ENA(invert_color),
   /* view */
   CMD_EXE(refresh),
-  { CMD_CONFIGURE_SCREEN, NULL, NULL, NULL, NULL },
+  CMD_EXE(configure_screen),
   CMD_EXE(advanced_mode),
   CMD_EXE(make_unique_editor),
   CMD_EXE(split_editor_vertically),
@@ -343,10 +344,14 @@ bool command_is_checked(Command *command, const char *argument)
  */
 void command_execute(Command *command, const char *argument)
 {
+  console_open();
+
   if (command && command->execute &&
       command_is_enabled(command, argument)) {
     (*command->execute)(argument);
   }
+
+  console_close();
 }
 
 bool command_is_key_pressed(Command *command, JMessage msg)

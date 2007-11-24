@@ -85,7 +85,6 @@ ASE_SOURCES =						\
 	src/dialogs/drawtext.c				\
 	src/dialogs/filesel.c				\
 	src/dialogs/filmedit.c				\
-	src/dialogs/gfxsel.c				\
 	src/dialogs/maskcol.c				\
 	src/dialogs/minipal.c				\
 	src/dialogs/options.c				\
@@ -160,7 +159,6 @@ ASE_SOURCES =						\
 	src/util/quantize.c				\
 	src/util/recscr.c				\
 	src/util/render.c				\
-	src/util/setgfx.c				\
 	src/util/thmbnail.c				\
 	src/widgets/colbar.c				\
 	src/widgets/colbut.c				\

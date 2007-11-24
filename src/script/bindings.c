@@ -738,7 +738,6 @@ static int bind_jwidget_hook_signal (lua_State *L)
 #include "util/msk_file.h"
 #include "util/quantize.h"
 #include "util/recscr.h"
-#include "util/setgfx.h"
 
 #endif
 

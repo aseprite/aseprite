@@ -29,6 +29,9 @@ struct Sprite;
 int init_module_gui(void);
 void exit_module_gui(void);
 
+int get_screen_scaling(void);
+void set_screen_scaling(int scaling);
+
 void update_screen_for_sprite(struct Sprite *sprite);
 
 void gui_run(void);

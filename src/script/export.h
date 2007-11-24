@@ -274,10 +274,6 @@ void quick_swap(void);
 
 void play_fli_animation(const char *filename, bool loop, bool fullscreen);
 
-/* util/setgfx.c */
-
-int set_gfx(const char *card, int w, int h, int depth);
-
 /* dialogs/... */
 
 void dialogs_draw_text(void);

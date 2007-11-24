@@ -41,7 +41,6 @@ void command_execute_new_layer(const char *argument)
   JWidget window, name_widget;
   Sprite *sprite = current_sprite; /* get current sprite */
   char buf[512];
-  int w, h;
 
   /* load the window widget */
   window = load_widget("newlay.jid", "new_layer");
@@ -50,8 +49,7 @@ void command_execute_new_layer(const char *argument)
 
   name_widget = jwidget_find_name(window, "name");
   jwidget_set_text(name_widget, GetUniqueLayerName());
-  jwidget_request_size(name_widget, &w, &h);
-  jwidget_set_static_size(name_widget, 128, h);
+  jwidget_set_static_size(name_widget, 128, 0);
 
   sprintf(buf, "%d", sprite->w);
   jwidget_set_text(jwidget_find_name(window, "width"), buf);

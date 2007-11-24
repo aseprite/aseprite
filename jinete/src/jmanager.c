@@ -844,8 +844,10 @@ void _jmanager_close_window(JWidget manager, JWidget window,
   }
 
   /* update the list of windows to close */
-  if (sendtokill)
+  if (sendtokill) {
+    jlist_remove(new_windows, window); /* maybe the window is in the "new_windows" list */
     jlist_append(old_windows, window);
+  }
 }
 
 
