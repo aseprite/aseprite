@@ -138,7 +138,7 @@ static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
 
   /* add the cel in the layer */
   cel = cel_new(frame, image_index);
-  undo_add_cel(sprite->undo, sprite->layer, cel);
+  undo_add_cel(sprite->undo, layer, cel);
   layer_add_cel(layer, cel);
 
   return TRUE;
