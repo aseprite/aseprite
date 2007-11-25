@@ -103,7 +103,9 @@ static Sprite *load_png(const char *filename)
   int bit_depth, color_type, interlace_type;
   int intent, screen_gamma;
   int max_screen_colors = 256;
-/*   int pass, number_passes; */
+  int pass, number_passes;
+  int num_palette;
+  png_colorp palette;
   png_bytep row_pointer;
   Image *image;
   int imgtype;
@@ -175,135 +177,24 @@ static Sprite *load_png(const char *filename)
   /* tell libpng to strip 16 bit/color files down to 8 bits/color */
   png_set_strip_16(png_ptr);
 
-  /* Strip alpha bytes from the input data without combining with the
-   * background (not recommended).
-   */
-/*   png_set_strip_alpha(png_ptr); */
-
   /* Extract multiple pixels with bit depths of 1, 2, and 4 from a single
    * byte into separate bytes (useful for paletted and grayscale images).
    */
   png_set_packing(png_ptr);
 
-  /* Change the order of packed pixels to least significant bit first
-   * (not useful if you are using png_set_packing). */
-/*   png_set_packswap(png_ptr); */
-
-  /* Expand paletted colors into true RGB triplets */
-/*   if (color_type == PNG_COLOR_TYPE_PALETTE) */
-/*     png_set_palette_to_rgb(png_ptr); */
-
   /* Expand grayscale images to the full 8 bits from 1, 2, or 4 bits/pixel */
   if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
     png_set_gray_1_2_4_to_8(png_ptr);
 
-  /* Expand paletted or RGB images with transparency to full alpha channels
-   * so the data will be available as RGBA quartets.
-   */
-/*   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) */
-/*     png_set_tRNS_to_alpha(png_ptr); */
-
-  /* Set the background color to draw transparent and alpha images over.
-   * It is possible to set the red, green, and blue components directly
-   * for paletted images instead of supplying a palette index.  Note that
-   * even if the PNG file supplies a background, you are not required to
-   * use it - you should use the (solid) application background if it has one.
-   */
-
-/*   png_color_16 my_background, *image_background; */
-
-/*   if (png_get_bKGD(png_ptr, info_ptr, &image_background)) */
-/*     png_set_background(png_ptr, image_background, */
-/* 		       PNG_BACKGROUND_GAMMA_FILE, 1, 1.0); */
-/*   else */
-/*     png_set_background(png_ptr, &my_background, */
-/* 		       PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0); */
-
-  /* Some suggestions as to how to get a screen gamma value */
-
   /* Note that screen gamma is the display_exponent, which includes
    * the CRT_exponent and any correction for viewing conditions */
-/*   screen_gamma = 2.2;  /\* A good guess for a PC monitors in a dimly lit room *\/ */
-/*   screen_gamma = 1.7 or 1.0;  /\* A good guess for Mac systems *\/ */
   screen_gamma = 2.2;
-
-  /* Tell libpng to handle the gamma conversion for you.  The final call
-   * is a good guess for PC generated images, but it should be configurable
-   * by the user at run time by the user.  It is strongly suggested that
-   * your application support gamma correction.
-   */
-
-/*   if (png_get_sRGB(png_ptr, info_ptr, &intent)) */
-/*     png_set_gamma(png_ptr, screen_gamma, 0.45455); */
-/*   else { */
-/*     double image_gamma; */
-/*     if (png_get_gAMA(png_ptr, info_ptr, &image_gamma)) */
-/*       png_set_gamma(png_ptr, screen_gamma, image_gamma); */
-/*     else */
-/*       png_set_gamma(png_ptr, screen_gamma, 0.45455); */
-/*   } */
-
-  /* Dither RGB files down to 8 bit palette or reduce palettes
-   * to the number of colors available on your screen.
-   */
-/*   if (color_type & PNG_COLOR_MASK_COLOR) { */
-/*     int num_palette; */
-/*     png_colorp palette; */
-
-/*     /\* This reduces the image to the application supplied palette *\/ */
-/* /\*     if (/\\* we have our own palette *\\/) *\/ */
-/* /\*       { *\/ */
-/* /\* 	/\\* An array of colors to which the image should be dithered *\\/ *\/ */
-/* /\* 	png_color std_color_cube[MAX_SCREEN_COLORS]; *\/ */
-
-/* /\* 	png_set_dither(png_ptr, std_color_cube, MAX_SCREEN_COLORS, *\/ */
-/* /\* 		       MAX_SCREEN_COLORS, png_uint_16p_NULL, 0); *\/ */
-/* /\*       } *\/ */
-/*     /\* This reduces the image to the palette supplied in the file *\/ */
-/*     /\* else *\/ */
-/*     if (png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) */
-/*       { */
-/* 	png_uint_16p histogram = NULL; */
-
-/* 	png_get_hIST(png_ptr, info_ptr, &histogram); */
-
-/* 	png_set_dither(png_ptr, palette, num_palette, */
-/* 		       max_screen_colors, histogram, 0); */
-/*       } */
-/*   } */
-
-  /* invert monochrome files to have 0 as white and 1 as black */
-/*   png_set_invert_mono(png_ptr); */
-
-  /* If you want to shift the pixel values from the range [0,255] or
-   * [0,65535] to the original [0,7] or [0,31], or whatever range the
-   * colors were originally in:
-   */
-/*   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_sBIT)) { */
-/*     png_color_8p sig_bit; */
-
-/*     png_get_sBIT(png_ptr, info_ptr, &sig_bit); */
-/*     png_set_shift(png_ptr, sig_bit); */
-/*   } */
-
-  /* flip the RGB pixels to BGR (or RGBA to BGRA) */
-/*   if (color_type & PNG_COLOR_MASK_COLOR) */
-/*     png_set_bgr(png_ptr); */
-
-  /* swap the RGBA or GA data to ARGB or AG (or BGRA to ABGR) */
-/*   png_set_swap_alpha(png_ptr); */
-
-  /* swap bytes of 16 bit files to least significant byte first */
-/*   png_set_swap(png_ptr); */
-
-  /* Add filler (or alpha) byte (before/after each RGB triplet) */
-/*   png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER); */
 
   /* Turn on interlace handling.  REQUIRED if you are not using
    * png_read_image().  To see how to handle interlacing passes,
    * see the png_read_row() method below:
    */
-/*   number_passes = png_set_interlace_handling(png_ptr); */
+  number_passes = png_set_interlace_handling(png_ptr);
 
   /* Optional call to gamma correct and add the background to the palette
    * and update info structure.
@@ -314,15 +205,15 @@ static Sprite *load_png(const char *filename)
   switch (info_ptr->color_type) {
     case PNG_COLOR_TYPE_GRAY:
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-       imgtype = IMAGE_GRAYSCALE;
-       break;
+      imgtype = IMAGE_GRAYSCALE;
+      break;
     case PNG_COLOR_TYPE_PALETTE:
       imgtype = IMAGE_INDEXED;
-       break;
+      break;
     case PNG_COLOR_TYPE_RGB: 
     case PNG_COLOR_TYPE_RGB_ALPHA:
-       imgtype = IMAGE_RGB;
-       break;
+      imgtype = IMAGE_RGB;
+      break;
     default:
       console_printf("Color type not supported\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
@@ -337,15 +228,33 @@ static Sprite *load_png(const char *filename)
     fclose(fp);
     return NULL;
   }
-  
+
+  /* read palette */
+
+  if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE &&
+      png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
+    int c;
+
+    for (c = 0; c < num_palette; c++) {
+      file_sequence_set_color(c,
+			      palette[c].red / 4,
+			      palette[c].green / 4,
+			      palette[c].blue / 4);
+    }
+    for (; c < 256; c++) {
+      file_sequence_set_color(c, 0, 0, 0);
+    }
+  }
+
   /* Allocate the memory to hold the image using the fields of info_ptr. */
 
    /* The easiest way to read the image: */
   row_pointer = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
-/*   for (pass = 0; pass < number_passes; pass++) { */
+  for (pass = 0; pass < number_passes; pass++) {
     for (y = 0; y < height; y++) {
       png_read_row(png_ptr, row_pointer, png_bytepp_NULL);
-       
+
+      /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
 	unsigned char *src_address = row_pointer;
 	unsigned long *dst_address = ((unsigned long **)image->line)[y];
@@ -359,10 +268,11 @@ static Sprite *load_png(const char *filename)
 	  *(dst_address++) = _rgba(r, g, b, a);
 	}
       }
+      /* RGB */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
 	unsigned char *src_address = row_pointer;
 	unsigned long *dst_address = ((unsigned long **)image->line)[y];
-	int x, y, r, g, b;
+	int x, r, g, b;
 
 	for (x=0; x<width; x++) {
 	  r = *(src_address++);
@@ -371,14 +281,45 @@ static Sprite *load_png(const char *filename)
 	  *(dst_address++) = _rgba(r, g, b, 255);
 	}
       }
-      
+      /* GRAY_ALPHA */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+	unsigned char *src_address = row_pointer;
+	unsigned short *dst_address = ((unsigned short **)image->line)[y];
+	int x, k, a;
+
+	for (x=0; x<width; x++) {
+	  k = *(src_address++);
+	  a = *(src_address++);
+	  *(dst_address++) = _graya(k, a);
+	}
+      }
+      /* GRAY */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
+	unsigned char *src_address = row_pointer;
+	unsigned short *dst_address = ((unsigned short **)image->line)[y];
+	int x, k;
+
+	for (x=0; x<width; x++) {
+	  k = *(src_address++);
+	  *(dst_address++) = _graya(k, 255);
+	}
+      }
+      /* PALETTE */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+	unsigned char *src_address = row_pointer;
+	unsigned char *dst_address = ((unsigned char **)image->line)[y];
+	int x, c;
+
+	for (x=0; x<width; x++) {
+	  c = *(src_address++);
+	  *(dst_address++) = c;
+	}
+      }
+
       do_progress(100 * y / height);
     }
-/*   } */
+  }
   png_free(png_ptr, row_pointer);
-
-  /* read rest of file, and get additional chunks in info_ptr */
-/*   png_read_end(png_ptr, info_ptr); */
 
   /* clean up after the read, and free any memory allocated */
   png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
@@ -388,140 +329,6 @@ static Sprite *load_png(const char *filename)
 
   /* return the sprite */
   return file_sequence_sprite();
-
-#if 0
-  struct jpeg_decompress_struct cinfo;
-  struct error_mgr jerr;
-  struct jpeg_progress_mgr progress;
-  Image *image;
-  JDIMENSION num_scanlines;
-  JSAMPARRAY buffer;
-  JDIMENSION buffer_height;
-  int c;
-
-  /* initialize the JPEG decompression object with error handling */
-  cinfo.err = jpeg_std_error(&jerr.pub);
-
-  jerr.pub.error_exit = error_exit;
-  jerr.pub.output_message = output_message;
-
-  /* establish the setjmp return context for error_exit to use */
-  if (setjmp(jerr.setjmp_buffer)) {
-    jpeg_destroy_decompress(&cinfo);
-    fclose(file);
-    return NULL;
-  }
-
-  jpeg_create_decompress(&cinfo);
-
-  /* specify data source for decompression */
-  jpeg_stdio_src(&cinfo, file);
-
-  /* read file header, set default decompression parameters */
-  jpeg_read_header(&cinfo, TRUE);
-
-  if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
-    cinfo.out_color_space = JCS_GRAYSCALE;
-  else
-    cinfo.out_color_space = JCS_RGB;
-
-  /* start decompressor */
-  jpeg_start_decompress(&cinfo);
-
-  /* create the image */
-  image = file_sequence_image((cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
-								  IMAGE_GRAYSCALE),
-			      cinfo.output_width,
-			      cinfo.output_height);
-  if (!image) {
-    jpeg_destroy_decompress(&cinfo);
-    fclose(file);
-    return NULL;
-  }
-
-  /* create the buffer */
-  buffer_height = cinfo.rec_outbuf_height;
-  buffer = jmalloc(sizeof(JSAMPROW) * buffer_height);
-  if (!buffer) {
-    jpeg_destroy_decompress(&cinfo);
-    fclose(file);
-    return NULL;
-  }
-
-  for (c=0; c<(int)buffer_height; c++) {
-    buffer[c] = jmalloc(sizeof(JSAMPLE) *
-			cinfo.output_width * cinfo.output_components);
-    if (!buffer[c]) {
-      for (c--; c>=0; c--)
-        jfree(buffer[c]);
-      jfree(buffer);
-      jpeg_destroy_decompress(&cinfo);
-      fclose(file);
-      return NULL;
-    }
-  }
-
-  /* generate a grayscale palette if is necessary */
-  if (image->imgtype == IMAGE_GRAYSCALE)
-    for (c=0; c<256; c++)
-      file_sequence_set_color(c, c >> 2, c >> 2, c >> 2);
-
-  /* for progress bar */
-  progress.progress_monitor = progress_monitor;
-  cinfo.progress = &progress;
-
-  /* read each scan line */
-  while (cinfo.output_scanline < cinfo.output_height) {
-/*     if (plugin_want_close())  */
-/*       break; */
-
-    num_scanlines = jpeg_read_scanlines(&cinfo, buffer, buffer_height);
-
-    /* RGB */
-    if (image->imgtype == IMAGE_RGB) {
-      unsigned char *src_address;
-      unsigned long *dst_address;
-      int x, y, r, g, b;
-
-      for (y=0; y<(int)num_scanlines; y++) {
-        src_address = ((unsigned char **)buffer)[y];
-        dst_address = ((unsigned long **)image->line)[cinfo.output_scanline-1+y];
-
-        for (x=0; x<image->w; x++) {
-          r = *(src_address++);
-          g = *(src_address++);
-          b = *(src_address++);
-          *(dst_address++) = _rgba (r, g, b, 255);
-        }
-      }
-    }
-    /* Grayscale */
-    else {
-      unsigned char *src_address;
-      unsigned short *dst_address;
-      int x, y;
-
-      for (y=0; y<(int)num_scanlines; y++) {
-        src_address = ((unsigned char **)buffer)[y];
-        dst_address = ((unsigned short **)image->line)[cinfo.output_scanline-1+y];
-
-        for (x=0; x<image->w; x++)
-          *(dst_address++) = _graya(*(src_address++), 255);
-      }
-    }
-  }
-
-  /* destroy all data */
-  for (c=0; c<(int)buffer_height; c++)
-    jfree(buffer[c]);
-  jfree(buffer);
-
-  jpeg_finish_decompress(&cinfo);
-  jpeg_destroy_decompress(&cinfo);
-
-  fclose(file);
-  return file_sequence_sprite();
-#endif
 }
 
 static int save_png(Sprite *sprite)
