@@ -57,6 +57,7 @@ void jmanager_set_focus(JWidget widget);
 void jmanager_set_mouse(JWidget widget);
 void jmanager_set_capture(JWidget widget);
 void jmanager_attract_focus(JWidget widget);
+void jmanager_focus_first_child(JWidget widget);
 void jmanager_free_focus(void);
 void jmanager_free_mouse(void);
 void jmanager_free_capture(void);

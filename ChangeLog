@@ -1,5 +1,10 @@
 2007-11-24  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/commands/cmd_new_frame.c (copy_cel_in_next_frame): Fixed
+	undo for new frames in other layers.
+
+	* src/file/png_file.c (load_png): Finished.
+
 	* src/commands/cmd_configure_screen.c: Added the new dialog to
 	select the graphics mode.
 

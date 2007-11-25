@@ -43,6 +43,12 @@
 
 #define TOPWND(manager) (jlist_first_data((manager)->children))
 
+#define ACCEPT_FOCUS(widget)				\
+  (((widget)->flags & (JI_FOCUSREST |			\
+		       JI_DISABLED |			\
+		       JI_HIDDEN |			\
+		       JI_DECORATIVE)) == JI_FOCUSREST)
+
 enum {
   STAGE_NORMAL,
   STAGE_WANT_CLOSE,
@@ -236,7 +242,8 @@ bool jmanager_poll(JWidget manager, bool all_windows)
       jwidget_show(window);
 
       /* attract the focus to the magnetic widget */
-      jmanager_attract_focus(window);
+      /* jmanager_attract_focus(window); */
+      jmanager_focus_first_child(window);
 
       /* redraw all */
       /* jwidget_flush_redraw(window); */
@@ -696,6 +703,18 @@ void jmanager_attract_focus(JWidget widget)
   /* if magnetic widget exists and it doesn't have the focus */
   if (magnet && !jwidget_has_focus(magnet))
     jmanager_set_focus(magnet);
+}
+
+void jmanager_focus_first_child(JWidget widget)
+{
+  JWidget it;
+
+  for (it=jwidget_get_window(widget); it; it=next_widget(it)) {
+    if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, TRUE))) {
+      jmanager_set_focus(it);
+      break;
+    }
+  }
 }
 
 void jmanager_free_focus(void)
@@ -1263,13 +1282,7 @@ static void broadcast_key_msg(JWidget manager, JMessage msg)
 			    Focus Movement
  ***********************************************************************/
 
-#define ACCEPT_FOCUS(widget)				\
-  (((widget)->flags & (JI_FOCUSREST |			\
-		       JI_DISABLED |			\
-		       JI_HIDDEN |			\
-		       JI_DECORATIVE)) == JI_FOCUSREST)
-
-static bool move_focus (JWidget manager, JMessage msg)
+static bool move_focus(JWidget manager, JMessage msg)
 {
   int (*cmp)(JWidget, int, int) = NULL;
   JWidget focus = NULL;
@@ -1299,13 +1312,13 @@ static bool move_focus (JWidget manager, JMessage msg)
     c = 0;
 
     /* list's 1st element is the focused widget */
-    for (it=focus_widget; it; it=next_widget (it)) {
-      if (ACCEPT_FOCUS (it) && !(childs_accept_focus (it, TRUE)))
+    for (it=focus_widget; it; it=next_widget(it)) {
+      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, TRUE)))
 	list[c++] = it;
     }
 
-    for (it=window; it != focus_widget; it=next_widget (it)) {
-      if (ACCEPT_FOCUS (it) && !(childs_accept_focus (it, TRUE)))
+    for (it=window; it != focus_widget; it=next_widget(it)) {
+      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, TRUE)))
 	list[c++] = it;
     }
 
