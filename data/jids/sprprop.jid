@@ -3,14 +3,14 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Sprite Properties") name="sprite_properties">
+<window text="Sprite Properties" name="sprite_properties">
   <box vertical>
     <box horizontal expansive>
       <box vertical homogeneous>
-        <label text=_("File name:") />
-        <label text=_("Type:") />
-        <label text=_("Size:") />
-        <label text=_("Frames:") />
+        <label text="File name:" />
+        <label text="Type:" />
+        <label text="Size:" />
+        <label text="Frames:" />
       </box>
       <box vertical homogeneous expansive>
         <entry maxsize=256 name="name" />
@@ -19,10 +19,10 @@
         <entry maxsize=4 name="frames" />
       </box>
     </box>
-    <button text=_("Constant Frame-Rate Speed") name="speed" />
+    <button text="Constant Frame-Rate Speed" name="speed" />
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

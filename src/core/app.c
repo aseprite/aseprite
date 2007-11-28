@@ -56,6 +56,7 @@
 #include "widgets/editor.h"
 #include "widgets/menuitem.h"
 #include "widgets/statebar.h"
+#include "widgets/tabs.h"
 #include "widgets/toolbar.h"
 
 #endif
@@ -80,10 +81,12 @@ static JWidget box_menu_bar = NULL;   /* box where the menu bar is */
 static JWidget box_color_bar = NULL;  /* box where the color bar is */
 static JWidget box_tool_bar = NULL;   /* box where the tools bar is */
 static JWidget box_status_bar = NULL; /* box where the status bar is */
+static JWidget box_tabs_bar = NULL;   /* box where the tabs bar is */
 static JWidget menu_bar = NULL;	      /* the menu bar widget */
 static JWidget status_bar = NULL;     /* the status bar widget */
 static JWidget color_bar = NULL;      /* the color bar widget */
 static JWidget tool_bar = NULL;	      /* the tool bar widget */
+static JWidget tabs_bar = NULL;	      /* the tabs bar widget */
 
 static JList options; /* list of "Option" structures (options to execute) */
 static char *palette_filename = NULL;
@@ -182,19 +185,25 @@ void app_loop(void)
     box_color_bar = jwidget_find_name(top_window, "color_bar");
     box_tool_bar = jwidget_find_name(top_window, "tool_bar");
     box_status_bar = jwidget_find_name(top_window, "status_bar");
+    box_tabs_bar = jwidget_find_name(top_window, "tabs_bar");
 
     menu_bar = jmenubar_new();
     status_bar = status_bar_new();
     color_bar = color_bar_new(box_color_bar->align);
     tool_bar = tool_bar_new(box_tool_bar->align);
+    tabs_bar = tabs_new(sprite_show);
     view = editor_view_new();
     editor = create_new_editor();
+
+    /* append the NULL sprite to the tabs */
+    tabs_append_tab(tabs_bar, "Nothing", NULL);
 
     /* configure all widgets to expansives */
     jwidget_expansive(menu_bar, TRUE);
     jwidget_expansive(status_bar, TRUE);
     jwidget_expansive(color_bar, TRUE);
     jwidget_expansive(tool_bar, TRUE);
+    jwidget_expansive(tabs_bar, TRUE);
     jwidget_expansive(view, TRUE);
 
     /* prepare the first editor */
@@ -207,11 +216,12 @@ void app_loop(void)
     app_default_status_bar_message();
 
     /* add the widgets in the boxes */
-    jwidget_add_child(box_menu_bar, menu_bar);
-    jwidget_add_child(box_editors, view);
-    jwidget_add_child(box_color_bar, color_bar);
-    jwidget_add_child(box_tool_bar, tool_bar);
-    jwidget_add_child(box_status_bar, status_bar);
+    if (box_menu_bar) jwidget_add_child(box_menu_bar, menu_bar);
+    if (box_editors) jwidget_add_child(box_editors, view);
+    if (box_color_bar) jwidget_add_child(box_color_bar, color_bar);
+    if (box_tool_bar) jwidget_add_child(box_tool_bar, tool_bar);
+    if (box_status_bar) jwidget_add_child(box_status_bar, status_bar);
+    if (box_tabs_bar) jwidget_add_child(box_tabs_bar, tabs_bar);
 
     /* prepare the window */
     jwindow_remap(top_window);
@@ -361,10 +371,21 @@ void app_refresh_screen(void)
    you should use rebuild_sprite_list () instead (src/gui/gui.c) */
 void app_realloc_sprite_list(void)
 {
-  JWidget list_menuitem = get_sprite_list_menuitem();
-  JWidget menuitem;
   Sprite *sprite;
   JLink link;
+#if 1
+  PRINTF("Reallocating sprite list...\n");
+
+  /* insert all other sprites */
+  JI_LIST_FOR_EACH(get_sprite_list(), link) {
+    sprite = link->data;
+    tabs_set_text_for_tab(tabs_bar,
+			  get_filename(sprite->filename),
+			  sprite);
+  }
+#else  
+  JWidget list_menuitem = get_sprite_list_menuitem();
+  JWidget menuitem;
 
   PRINTF("Reallocating sprite list...\n");
 
@@ -453,6 +474,7 @@ void app_realloc_sprite_list(void)
       }
     }
   }
+#endif
 }
 
 /* updates the recent list menu. WARNING!: This routine can't be used
@@ -472,8 +494,8 @@ void app_realloc_recent_list(void)
 
     submenu = jmenuitem_get_submenu (list_menuitem);
     if (submenu) {
-      jmenuitem_set_submenu (list_menuitem, NULL);
-      jwidget_free (submenu);
+      jmenuitem_set_submenu(list_menuitem, NULL);
+      jwidget_free(submenu);
     }
 
     submenu = jmenu_new();
@@ -513,6 +535,7 @@ JWidget app_get_menu_bar(void) { return menu_bar; }
 JWidget app_get_status_bar(void) { return status_bar; }
 JWidget app_get_color_bar(void) { return color_bar; }
 JWidget app_get_tool_bar(void) { return tool_bar; }
+JWidget app_get_tabs_bar(void) { return tabs_bar; }
 
 void app_default_status_bar_message(void)
 {

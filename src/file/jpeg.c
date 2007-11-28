@@ -36,17 +36,7 @@
 
 #endif
 
-/**********************************************************************/
-
-#if defined HAVE_LIBJPEG
-#include <jpeglib.h>
-#elif defined HAVE_JPGALLEG
-#include <jpgalleg.h>
-#endif
-
-/**********************************************************************/
-
-#if defined HAVE_LIBJPEG || HAVE_JPGALLEG
+#include "jpeglib.h"
 
 static Sprite *load_jpeg(const char *filename);
 static int save_jpeg(Sprite *sprite);
@@ -63,12 +53,6 @@ FileType filetype_jpeg =
   FILE_SUPPORT_GRAY |
   FILE_SUPPORT_SEQUENCES
 };
-
-#endif
-
-/**********************************************************************/
-
-#if defined HAVE_LIBJPEG
 
 static void progress_monitor(j_common_ptr cinfo)
 {
@@ -388,173 +372,6 @@ static int save_jpeg(Sprite *sprite)
   return 0;
 }
 
-/**********************************************************************/
-
-#elif defined HAVE_JPGALLEG
-
-static bool initialised = FALSE;
-
-static Sprite *load_jpeg(const char *filename)
-{
-  BITMAP *bmp;
-  Image *image;
-
-  if (!initialised) {
-    initialised = TRUE;
-    if (jpgalleg_init() < 0)
-      return NULL;
-  }
-
-  /* load the bitmap */
-
-  set_color_conversion(COLORCONV_NONE);
-  bmp = load_jpg_ex(filename, NULL, do_progress);
-  set_color_conversion(COLORCONV_TOTAL);
-
-  if (!bmp) {
-    if (!file_sequence_sprite())
-      console_printf(_("Error opening file.\n"));
-    return NULL;
-  }
-
-  /* create the image */
-  image = file_sequence_image
-    (bitmap_color_depth(bmp) == 24 ? IMAGE_RGB:
-				     IMAGE_GRAYSCALE, bmp->w, bmp->h);
-  if (!image) {
-    destroy_bitmap(bmp);
-    return NULL;
-  }
-
-  if (bitmap_color_depth(bmp) == 24) {
-    /* RGB */
-    unsigned char *src_address;
-    unsigned long *dst_address;
-    int r, g, b, x, y;
-
-    for (y=0; y<image->h; y++) {
-      src_address = ((unsigned char **)bmp->line)[y];
-      dst_address = ((unsigned long **)image->lines)[y];
-      
-      for (x=0; x<image->w; x++) {
-        r = *src_address++;
-        g = *src_address++;
-        b = *src_address++;
-        *(dst_address++) = _rgba(r, g, b, 255);
-      }
-    }
-  }
-  else {
-    /* Greyscale */
-    unsigned char *src_address;
-    unsigned short *dst_address;
-    int x, y, i;
-
-    for (y=0; y<image->h; y++) {
-      src_address = ((unsigned char **)bmp->line)[y];
-      dst_address = ((unsigned short **)image->lines)[y];
-
-      for (x=0; x<image->w; x++)
-        *(dst_address++) = _graya(*(src_address++), 255);
-    }
-
-    /* palette */
-    for (i=0; i<256; i++)
-      file_sequence_set_color(i, i>>2, i>>2, i>>2);
-  }
-
-  destroy_bitmap(bmp);
-
-  return file_sequence_sprite();
-}
-
-static int save_jpeg(Sprite *sprite)
-{
-  Image *image;
-  BITMAP *bmp;
-  int flags;
-  /* options */
-  int smooth;
-  int quality;
-  int method;
-
-  if (!initialised) {
-    initialised = TRUE;
-    if (jpgalleg_init() < 0)
-      return -1;
-  }
-
-  /* configure */
-  if (configure_jpeg() < 0)
-    return 0;
-
-  /* options */
-  smooth = get_config_int("JPEG", "Smooth", 0);
-  quality = get_config_int("JPEG", "Quality", 100);
-  method = get_config_int("JPEG", "Method", 0);
-
-  /* get image to save */
-  image = file_sequence_image_to_save();
-  bmp = create_bitmap_ex(32, image->w, image->h);
-  if (!bmp) {
-    console_printf(_("Not enough memory\n"));
-    return -1;
-  }
-
-  /* RGB */
-  if (image->imgtype == IMAGE_RGB) {
-    unsigned long *src_address = image->bytes;
-    unsigned long *dst_address = bmp->dat;
-    int c, r, g, b, size = image->w * image->h;
-
-    flags = JPG_SAMPLING_444;
-
-    for (c=0; c<size; c++) {
-      r = _rgba_getr(*(src_address));
-      g = _rgba_getg(*(src_address));
-      b = _rgba_getb(*(src_address++));
-      *(dst_address++) = makeacol32 (r, g, b, 255);
-    }
-  }
-  /* Grayscale */
-  else if (image->imgtype == IMAGE_GRAYSCALE) {
-    unsigned short *src_address = image->bytes;
-    unsigned long *dst_address = bmp->dat;
-    int c, k, size = image->w * image->h;
-
-    flags = JPG_GREYSCALE;
-
-    for (c=0; c<size; c++) {
-      k = _graya_getk(*src_address++);
-      *(dst_address++) = makeacol32(k, k, k, 255);
-    }
-  }
-  else {
-    destroy_bitmap(bmp);
-    return -1;
-  }
-
-  /* XXX ToDo: what about JPG optimization settings? */
-  
-  if (save_jpg_ex(sprite->filename, bmp, NULL, quality, flags, do_progress) < 0)
-    return -1;
-
-  destroy_bitmap(bmp);
-  return 0;
-}
-
-/**********************************************************************/
-
-#else
-
-FileType filetype_jpeg = { "jpeg", "jpeg,jpg", NULL, NULL, 0 };
-
-#endif
-
-/**********************************************************************/
-
-#if defined HAVE_LIBJPEG || HAVE_JPGALLEG
-
 /**
  * Shows the JPEG configuration dialog.
  */
@@ -636,5 +453,3 @@ static int configure_jpeg(void)
   jwidget_free(window);
   return ret;
 }
-
-#endif

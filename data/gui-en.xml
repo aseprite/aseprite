@@ -1,5 +1,6 @@
 <!-- Copyright (C) 2007 by David A. Capello -->
 <gui>
+    <!-- keyboard shortcuts -->
     <keyboard>
 	<!-- file -->
 	<key command="new_file" shortcut="Ctrl+N" />
@@ -71,6 +72,8 @@
 	<key command="tips" shortcut="F1" />
 	<key command="options" shortcut="Shift+Ctrl+O" />
     </keyboard>
+
+    <!-- main bar menu -->
     <menu id="main_menu">
 	<menu name="&File">
 	    <item command="new_file" name="&New" />
@@ -127,9 +130,9 @@
 	<menu name="&Sprite">
 	    <item command="sprite_properties" name="&Properties" />
 	    <separator />
-	    <item command="duplicate_sprite" name="&Duplicate" />
-	    <item command="change_image_type" name="Image &Type" />
+	    <item command="change_image_type" name="&Color Mode" />
 	    <separator />
+	    <item command="duplicate_sprite" name="&Duplicate" />
 	    <item command="crop_sprite" name="Cr&op" />
 	    <item command="autocrop_sprite" name="&Auto Crop" />
 	</menu>
@@ -137,7 +140,7 @@
 	    <item command="layer_properties" name="&Properties" />
 	    <separator />
 	    <item command="new_layer" name="&New" />
-	    <item command="new_layer_set" name="New &Set" />
+<!-- 	    <item command="new_layer_set" name="New &Set" /> -->
 	    <item command="remove_layer" name="&Remove" />
 	    <separator />
 	    <item command="duplicate_layer" name="&Duplicate" />
@@ -211,6 +214,6 @@
 	    <item command="tips" name="T&ips" />
 	    <item command="options" name="&Options" />
 	</menu>
-	<item id="sprite_list" name="L&ist" />
     </menu>
+
 </gui>

@@ -20,8 +20,11 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro/file.h>
+
 #include "jinete/list.h"
 
+#include "core/app.h"
 #include "core/core.h"
 #include "file/file.h"
 #include "modules/editors.h"
@@ -35,6 +38,7 @@
 #include "script/bindings.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
+#include "widgets/tabs.h"
 
 #endif
 
@@ -46,8 +50,8 @@ Sprite *current_sprite = NULL;
 static JList sprites_list;
 static Sprite *clipboard_sprite;
 
-static Stock *layer_get_images (Sprite *sprite, Layer *layer, int target, int write);
-static void layer_get_pos (Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count);
+static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int write);
+static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count);
 
 int init_module_sprites(void)
 {
@@ -110,8 +114,8 @@ void set_clipboard_sprite(Sprite *sprite)
 
   clipboard_sprite = sprite;
 
-  if (is_interactive ())
-    rebuild_sprite_list ();
+  if (is_interactive())
+    rebuild_sprite_list();
 }
 
 /* adds the "sprite" in the list of sprites */
@@ -120,9 +124,14 @@ void sprite_mount(Sprite *sprite)
   /* append the sprite to the list */
   jlist_prepend(sprites_list, sprite);
 
-  /* rebuild the menu list of sprites */
-  if (is_interactive())
+  if (is_interactive()) {
+    /* add the tab for this sprite */
+    tabs_append_tab(app_get_tabs_bar(),
+		    get_filename(sprite->filename), sprite);
+
+    /* rebuild the menu list of sprites */
     rebuild_sprite_list();
+  }
 }
 
 /* removes the "sprite" from the list of sprites */
@@ -136,6 +145,9 @@ void sprite_unmount(Sprite *sprite)
     clipboard_sprite = NULL;
 
   if (is_interactive()) {
+    /* remove this sprite from tabs */
+    tabs_remove_tab(app_get_tabs_bar(), sprite);
+
     /* rebuild the menu list of sprites */
     rebuild_sprite_list();
 
@@ -161,6 +173,9 @@ void set_current_sprite(Sprite *sprite)
 {
   current_sprite = sprite;
   update_global_script_variables();
+
+  /* select the sprite in the tabs */
+  tabs_select_tab(app_get_tabs_bar(), sprite);
 }
 
 void send_sprite_to_top(Sprite *sprite)
@@ -178,7 +193,7 @@ void sprite_show(Sprite *sprite)
     set_sprite_in_more_reliable_editor(sprite);
 }
 
-Stock *sprite_get_images (Sprite *sprite, int target, int write, int **x, int **y)
+Stock *sprite_get_images(Sprite *sprite, int target, int write, int **x, int **y)
 {
   Layer *layer = (target & TARGET_LAYERS) ? sprite->set: sprite->layer;
   Stock *stock;
@@ -260,7 +275,7 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
   return stock;
 }
 
-static void layer_get_pos (Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count)
+static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count)
 {
   int frame = sprite->frame;
 

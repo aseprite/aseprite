@@ -3,36 +3,36 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("New Image Layer") name="new_layer">
+<window text="New Image Layer" name="new_layer">
   <box vertical>
     <box horizontal>
       <box vertical homogeneous>
-        <label text=_("Name:") />
-        <label text=_("Width:") />
-        <label text=_("Height:") />
+        <label text="Name:" />
+        <label text="Width:" />
+        <label text="Height:" />
       </box>
       <box vertical homogeneous>
-        <entry maxsize=256 text=_("New Layer") name="name" />
+        <entry maxsize=256 text="New Layer" name="name" />
         <entry maxsize=4 name="width" />
         <entry maxsize=4 name="height" />
       </box>
     </box>
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>
 
-<window text=_("New Layer Set") name="new_layer_set">
+<window text="New Layer Set" name="new_layer_set">
   <box vertical>
     <box horizontal>
-      <label text=_("Name:") />
-      <entry maxsize=256 text=_("New Set") name="name" />
+      <label text="Name:" />
+      <entry maxsize=256 text="New Set" name="name" />
     </box>
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

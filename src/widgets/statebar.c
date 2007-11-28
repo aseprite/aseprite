@@ -235,10 +235,10 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       JRect rect = jwidget_get_rect(widget);
 
-      jdraw_rectedge(rect, makecol(255,255,255), makecol(128,128,128));
+      jdraw_rectedge(rect, ji_color_facelight(), ji_color_faceshadow());
       jrect_shrink(rect, 1);
 
-      jdraw_rect(rect, makecol(192,192,192));
+      jdraw_rect(rect, ji_color_face());
       jrect_shrink(rect, 1);
 
       /* progress bar */
@@ -246,9 +246,10 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
 	int i, pos, x1, y1, x2, y2;
 	double x, width;
 
-	jdraw_rectedge (rect,
-			  makecol (128, 128, 128), makecol (255, 255, 255));
-	jrect_shrink (rect, 1);
+	jdraw_rectedge(rect,
+		       ji_color_faceshadow(),
+		       ji_color_facelight());
+	jrect_shrink(rect, 1);
 
 	x1 = rect->x1;
 	y1 = rect->y1;
@@ -273,19 +274,19 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	x = MID(x1, x, x2);
-	rectfill(ji_screen, x1, y1, x, y2, makecol(44,76,145));
+	rectfill(ji_screen, x1, y1, x, y2, ji_color_selected());
 	if (x < x2)
-	  rectfill(ji_screen, x+1, y1, x2, y2, makecol(255, 255, 255));
+	  rectfill(ji_screen, x+1, y1, x2, y2, ji_color_background());
       }
       /* status bar text */
       else if (widget->text) {
-	jdraw_rectfill(rect, makecol(192,192,192));
+	jdraw_rectfill(rect, ji_color_face());
 
 	text_mode(-1);
 	textout(ji_screen, widget->text_font, widget->text,
 		rect->x1+2,
 		(widget->rc->y1+widget->rc->y2)/2-text_height (widget->text_font)/2,
-		makecol (0, 0, 0));
+		ji_color_foreground());
       }
 
       jrect_free(rect);
@@ -293,33 +294,33 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_MOUSEENTER:
-      if (!jwidget_has_child (widget, status_bar->commands_box)) {
+      if (!jwidget_has_child(widget, status_bar->commands_box)) {
 	Sprite *sprite = current_sprite;
 
 	if (!sprite) {
-	  jwidget_disable (status_bar->b_first);
-	  jwidget_disable (status_bar->b_prev);
-	  jwidget_disable (status_bar->b_play);
-	  jwidget_disable (status_bar->b_next);
-	  jwidget_disable (status_bar->b_last);
+	  jwidget_disable(status_bar->b_first);
+	  jwidget_disable(status_bar->b_prev);
+	  jwidget_disable(status_bar->b_play);
+	  jwidget_disable(status_bar->b_next);
+	  jwidget_disable(status_bar->b_last);
 	}
 	else {
-	  jwidget_enable (status_bar->b_first);
-	  jwidget_enable (status_bar->b_prev);
-	  jwidget_enable (status_bar->b_play);
-	  jwidget_enable (status_bar->b_next);
-	  jwidget_enable (status_bar->b_last);
+	  jwidget_enable(status_bar->b_first);
+	  jwidget_enable(status_bar->b_prev);
+	  jwidget_enable(status_bar->b_play);
+	  jwidget_enable(status_bar->b_next);
+	  jwidget_enable(status_bar->b_last);
 	}
 
-	update_from_layer (status_bar);
+	update_from_layer(status_bar);
 
-	jwidget_add_child (widget, status_bar->commands_box);
-	jwidget_dirty (widget);
+	jwidget_add_child(widget, status_bar->commands_box);
+	jwidget_dirty(widget);
       }
       break;
 
     case JM_MOUSELEAVE:
-      if (jwidget_has_child (widget, status_bar->commands_box))
+      if (jwidget_has_child(widget, status_bar->commands_box))
 	status_bar->restore = TRUE;
       break;
 
@@ -327,13 +328,13 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
       /* if we want restore the state-bar and the slider doesn't have
 	 the capture... */
       if (status_bar->restore &&
-	  jmanager_get_capture () != status_bar->slider) {
+	  jmanager_get_capture() != status_bar->slider) {
 	/* exit from command mode */
 	status_bar->restore = FALSE;
-	jmanager_free_focus ();
+	jmanager_free_focus();
 
-	jwidget_remove_child (widget, status_bar->commands_box);
-	jwidget_dirty (widget);
+	jwidget_remove_child(widget, status_bar->commands_box);
+	jwidget_dirty(widget);
       }
       break;
     }

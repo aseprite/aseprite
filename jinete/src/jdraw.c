@@ -40,7 +40,7 @@
 #include "jinete/system.h"
 #include "jinete/widget.h"
 
-/* XXXX optional anti-aliased textout */
+/* TODO optional anti-aliased textout */
 #define SETUP_ANTIALISING(f, bg, fill_bg)				\
   ji_font_set_aa_mode (f, fill_bg ||					\
 			  bitmap_color_depth (ji_screen) == 8 ? bg: -1)

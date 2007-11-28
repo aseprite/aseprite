@@ -3,13 +3,13 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Median Blur") name="median">
+<window text="Median Blur" name="median">
   <box vertical>
     <box horizontal>
       <box horizontal expansive>
         <box vertical homogeneous>
-          <label text=_("Width:") />
-          <label text=_("Height:") />
+          <label text="Width:" />
+          <label text="Height:" />
         </box>
         <box vertical homogeneous expansive>
           <entry expansive name="width" maxsize=4 />
@@ -18,13 +18,13 @@
       </box>
       <box vertical>
         <box name="target" />
-        <check text=_("&Preview") name="preview" />
-        <check text=_("&Tiled") name="tiled" />
+        <check text="&Preview" name="preview" />
+        <check text="&Tiled" name="tiled" />
       </box>
     </box>
     <box horizontal homogeneous expansive>
-      <button text=_("&OK") name="button_ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="button_ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

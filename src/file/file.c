@@ -416,7 +416,7 @@ int sprite_save(Sprite *sprite)
 
     case IMAGE_RGB:
       if (!(file->flags & FILE_SUPPORT_RGB)) {
-	usprintf(buf+ustrlen (buf), "<<- %s", _("RGB format"));
+	usprintf(buf+ustrlen(buf), "<<- %s", _("RGB format"));
 	fatal = TRUE;
       }
       if (!(file->flags & FILE_SUPPORT_RGBA)) {
@@ -446,13 +446,13 @@ int sprite_save(Sprite *sprite)
   if (!(file->flags & (FILE_SUPPORT_FRAMES |
 		       FILE_SUPPORT_SEQUENCES))) {
     if (sprite->frames > 1)
-      usprintf(buf+ustrlen (buf), "<<- %s", _("Frames"));
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Frames"));
   }
 
   /* layers support */
   if (jlist_length(sprite->set->layers) > 1) {
     if (!(file->flags & FILE_SUPPORT_LAYERS)) {
-      usprintf(buf+ustrlen (buf), "<<- %s", _("Layers"));
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Layers"));
     }
   }
 
@@ -460,7 +460,7 @@ int sprite_save(Sprite *sprite)
   if (jlist_length(sprite->palettes) > 1) {
     if (!(file->flags & (FILE_SUPPORT_PALETTES |
 			 FILE_SUPPORT_SEQUENCES))) {
-      usprintf(buf+ustrlen (buf), "<<- %s", _("Palette changes"));
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes"));
     }
   }
 
@@ -481,13 +481,13 @@ int sprite_save(Sprite *sprite)
     }
 
     if ((count > 0) && !(file->flags & FILE_SUPPORT_MASKS_REPOSITORY)) {
-      usprintf (buf+ustrlen (buf), "<<- %s", _("Mask Repository"));
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Mask Repository"));
     }
   }
 
   if (!jlist_empty(sprite->repository.paths)) {
     if (!(file->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
-      usprintf (buf+ustrlen (buf), "<<- %s", _("Path Repository"));
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Path Repository"));
     }
   }
 

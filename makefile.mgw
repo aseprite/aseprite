@@ -55,7 +55,7 @@ default: all
 all: $(ASE)
 
 clean:
-	-rm -f $(ALL_OBJS) $(ALL_LIBS)
+	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS)
 
 distclean: clean
 	-rm -f $(ASE)

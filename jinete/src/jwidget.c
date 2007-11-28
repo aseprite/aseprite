@@ -639,9 +639,8 @@ JWidget jwidget_pick(JWidget widget, int x, int y)
   JWidget inside, picked = NULL;
   JLink link;
 
-  if (!(widget->flags & JI_DISABLED) && /* is enabled */
-      !(widget->flags & JI_HIDDEN) &&   /* is visible */
-      jrect_point_in (widget->rc, x, y)) {
+  if (!(widget->flags & JI_HIDDEN) &&   /* is visible */
+      jrect_point_in(widget->rc, x, y)) { /* the point is inside the bounds */
     picked = widget;
 
     JI_LIST_FOR_EACH(widget->children, link) {
@@ -1120,7 +1119,7 @@ void jwidget_scroll(JWidget widget, int dx, int dy, const JRect rect,
 		    widget->update_region, update_region);
   }
 
-  /* XXXXX */
+  /* TODO */
   /* refresh the update_region */
 /*   jwidget_flush_redraw(widget); */
 /*   jmanager_dispatch_messages(); */

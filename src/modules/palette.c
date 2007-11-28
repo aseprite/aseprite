@@ -49,8 +49,14 @@ static JList hooks;
 /* system color (in order of importance) */
 static RGB system_color[] =
 {
-  { 63, 63, 63, 0 }, {  0,  0,  0, 0 }, { 32, 32, 32, 0 }, { 48, 48, 48, 0 },
-  { 11, 19, 36, 0 }, { 56, 56, 56, 0 }, { 63, 63,  0, 0 }, {  0,  0, 63, 0 }
+  { 255/4, 255/4, 255/4, 0 },	/* background */
+  {   0/4,   0/4,   0/4, 0 },	/* foreground */
+  { 128/4, 128/4, 128/4, 0 },	/* disabled */
+  { 210/4, 200/4, 190/4, 0 },	/* face */
+  {  44/4,  76/4, 145/4, 0 },	/* selected */
+  { 250/4, 240/4, 230/4, 0 },	/* hotface */
+  { 255/4, 255/4,   0/4, 0 },	/* yellow */
+  {   0/4,   0/4, 255/4, 0 }	/* blue */
 };
 
 #define SYSTEM_COLORS   (sizeof(system_color) / sizeof(RGB))

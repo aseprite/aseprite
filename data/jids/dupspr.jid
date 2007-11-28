@@ -3,22 +3,22 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Duplicate Sprite") name="duplicate_sprite">
+<window text="Duplicate Sprite" name="duplicate_sprite">
   <box vertical>
     <box horizontal expansive>
       <box vertical homogeneous>
-        <label text=_("Duplicate:") />
-        <label text=_("As:") />
+        <label text="Duplicate:" />
+        <label text="As:" />
       </box>
       <box vertical homogeneous expansive>
         <label text="" name="src_name" />
         <entry maxsize="256" name="dst_name" />
       </box>
     </box>
-    <check text=_("Duplicate merged layers only") name="flatten" />
+    <check text="Duplicate merged layers only" name="flatten" />
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

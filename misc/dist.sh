@@ -214,7 +214,7 @@ $1/docs/*.pdf"
 
 # cd $dir/..
 # rm ase
-# make -f makefile.lnx CONFIGURED=1 HAVE_LIBJPEG=1
+# make -f makefile.lnx CONFIGURED=1
 # strip ase
 # def_common_files .
 # mkdir $dir/$distdir-unix
@@ -233,7 +233,7 @@ $1/docs/*.pdf"
 
 # cd $dir/..
 # rm ase.exe
-# djgpp make -f makefile.dj CONFIGURED=1 HAVE_LIBJPEG=1
+# djgpp make -f makefile.dj CONFIGURED=1
 # djgpp strip ase.exe
 # def_common_files .
 # mkdir $dir/$distdir-dos
@@ -256,7 +256,7 @@ if [ ! -f $distdir-win32.zip ] ; then
 
 cd "$dir/.."
 rm ase
-mingw32 make -f makefile.mgw CONFIGURED=1 HAVE_LIBJPEG=1
+mingw32 make -f makefile.mgw CONFIGURED=1
 mingw32 strip ase.exe
 def_common_files .
 mkdir "$dir/$distdir-win32"

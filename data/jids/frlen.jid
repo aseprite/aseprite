@@ -3,12 +3,12 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Frame Duration") name="frame_duration">
+<window text="Frame Duration" name="frame_duration">
   <box vertical>
     <box horizontal expansive>
       <box vertical homogeneous>
-        <label text=_("Frame number:") />
-        <label text=_("Duration (milliseconds):") />
+        <label text="Frame number:" />
+        <label text="Duration (milliseconds):" />
       </box>
       <box vertical homogeneous expansive>
         <label text="" name="frame" />
@@ -16,8 +16,8 @@
       </box>
     </box>
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

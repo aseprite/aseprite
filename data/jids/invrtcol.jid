@@ -3,13 +3,13 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Invert Color") name="invert_color">
+<window text="Invert Color" name="invert_color">
   <box vertical>
     <box vertical expansive name="target" />
-    <check text=_("&Preview") name="preview" />
+    <check text="&Preview" name="preview" />
     <box horizontal homogeneous>
-      <button text=_("&OK") name="button_ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="button_ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

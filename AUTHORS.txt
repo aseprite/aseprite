@@ -63,6 +63,9 @@ THANKFULNESS
   Jordan Russell and Martijn Laan: For Inno Setup.
   <http://www.innosetup.com/>
 
+  Jose Luis Torres Pantoja for his gift: the book "Digital Image
+  Processing, Gonzalez and Woods, Addison-Wesley, 2002"
+
   Juraj Michalek: For the support to ASE in his portal.
   <http://games.linux.sk/>
 

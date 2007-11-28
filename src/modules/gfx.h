@@ -35,7 +35,6 @@ struct BITMAP;
 /* graphics ids */
 enum {
   GFX_LINKFRAME,
-  GFX_KEYFRAME,
 
   GFX_ANI_FIRST,
   GFX_ANI_PREV,
@@ -79,6 +78,9 @@ enum {
   GFX_ROTATE_1,
   GFX_ROTATE_2,
   GFX_ROTATE_3,
+
+  GFX_ARROW_LEFT,
+  GFX_ARROW_RIGHT,
 
   GFX_BITMAP_COUNT,
 };

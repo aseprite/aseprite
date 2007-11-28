@@ -217,7 +217,8 @@ char *ji_file_select_ex(const char *message,
   jwidget_set_static_size(panel, JI_SCREEN_W*9/10, JI_SCREEN_H*3/5);
   jwindow_remap(window);
   jwindow_center(window);
-  jwidget_set_static_size(panel, 0, 0);
+/*   jwidget_set_static_size(panel, JI_SCREEN_W*9/10, JI_SCREEN_H*3/5); */
+/*   jwidget_set_static_size(panel, 0, 0); */
 
   /* fill the listbox with the files in the current directory */
   fill_listbox_with_files(buf, size);

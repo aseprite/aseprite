@@ -3,15 +3,15 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Color Curve") name="color_curve">
+<window text="Color Curve" name="color_curve">
   <box vertical>
     <box horizontal expansive>
       <view expansive name="curve" /><!-- custom widget -->
       <box vertical>
-        <button text=_("&OK") name="button_ok" magnetic />
-        <button text=_("&Cancel") />
+        <button text="&OK" name="button_ok" magnetic />
+        <button text="&Cancel" />
         <box name="target" />
-        <check text=_("&Preview") name="preview" />
+        <check text="&Preview" name="preview" />
       </box>
     </box>
   </box>

@@ -39,12 +39,14 @@ void command_execute_advanced_mode(const char *argument)
     jwidget_hide(app_get_menu_bar());
     jwidget_hide(app_get_status_bar());
     jwidget_hide(app_get_color_bar());
+    jwidget_hide(app_get_tabs_bar());
   }
   else {
     jwidget_show(app_get_tool_bar());
     jwidget_show(app_get_menu_bar());
     jwidget_show(app_get_status_bar());
     jwidget_show(app_get_color_bar());
+    jwidget_show(app_get_tabs_bar());
   }
 
   jwindow_remap(app_get_top_window());

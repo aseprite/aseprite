@@ -53,8 +53,8 @@
 
 #endif
 
-#define GUI_DEFAULT_WIDTH	640
-#define GUI_DEFAULT_HEIGHT	480
+#define GUI_DEFAULT_WIDTH	800
+#define GUI_DEFAULT_HEIGHT	600
 #define GUI_DEFAULT_DEPTH	8
 #define GUI_DEFAULT_FULLSCREEN	FALSE
 #define GUI_DEFAULT_SCALE	2
@@ -139,25 +139,43 @@ int init_module_gui(void)
       bpp = GUI_DEFAULT_DEPTH;
   }
 
-  while (screen_scaling > 0) {
-    /* try original mode */
+  for (;;) {
+    /* original */
     set_color_depth(bpp);
-    if (set_gfx_mode(autodetect, w, h, 0, 0) < 0) {
-      /* try the same resolution but with 8 bpp */
-      set_color_depth(bpp = 8);
-      if (set_gfx_mode(autodetect, w, h, 0, 0) < 0) {
-	/* try 320x200 in 8 bpp */
-	if (set_gfx_mode(autodetect, w = 320, h = 200, 0, 0) < 0) {
-	  if (screen_scaling == 1) {
-	    user_printf(_("Error setting graphics mode\n%s\n"
-			  "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
-	    return -1;
-	  }
-	  else
-	    --screen_scaling;
-	} else break;
-      } else break;
-    } else break;
+    if (set_gfx_mode(autodetect, w, h, 0, 0) == 0)
+      break;
+
+    /* 800x600 screen scaling=2 */
+    if (set_gfx_mode(autodetect, 800, 600, 0, 0) == 0) {
+      screen_scaling = 2;
+      break;
+    }
+
+    /* 640x480 screen scaling=2 */
+    if (set_gfx_mode(autodetect, 640, 480, 0, 0) == 0) {
+      screen_scaling = 2;
+      break;
+    }
+
+    /* 320x240 screen scaling=1 */
+    if (set_gfx_mode(autodetect, 320, 240, 0, 0) == 0) {
+      screen_scaling = 1;
+      break;
+    }
+
+    /* 320x200 screen scaling=1 */
+    if (set_gfx_mode(autodetect, 320, 200, 0, 0) == 0) {
+      screen_scaling = 1;
+      break;
+    }
+
+    if (bpp == 8) {
+      user_printf(_("Error setting graphics mode\n%s\n"
+		    "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
+      return -1;
+    }
+    else
+      bpp = 8;
   }
 
   /* create the default-manager */
@@ -377,11 +395,11 @@ void reload_default_font(void)
     dirs_add_path (dirs, default_font);
 
   /* big font */
-  if (JI_SCREEN_W > 320)
-    dirs_cat_dirs (dirs, filename_in_datadir ("fonts/default2.pcx"));
-  /* tiny font */
-  else
-    dirs_cat_dirs (dirs, filename_in_datadir ("fonts/default.pcx"));
+/*   if (JI_SCREEN_W > 320) */
+/*     dirs_cat_dirs(dirs, filename_in_datadir("fonts/default2.pcx")); */
+/*   /\* tiny font *\/ */
+/*   else */
+    dirs_cat_dirs(dirs, filename_in_datadir("fonts/default.pcx"));
 
   /* try to load the font */
   for (dir=dirs; dir; dir=dir->next) {

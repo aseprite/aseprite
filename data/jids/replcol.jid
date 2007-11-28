@@ -3,13 +3,13 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Replace Color") name="replace_color">
+<window text="Replace Color" name="replace_color">
   <box horizontal>
     <box vertical expansive>
       <box horizontal expansive>
         <box vertical homogeneous>
-          <label text=_("Get:") />
-          <label text=_("Put:") />
+          <label text="Get:" />
+          <label text="Put:" />
         </box>
         <box vertical homogeneous expansive>
           <box horizontal expansive>
@@ -25,14 +25,14 @@
           </box>
         </box>
       </box>
-      <label text=_("Fuzziness:") />
+      <label text="Fuzziness:" />
       <slider min=0 max=255 name="fuzziness" />
     </box>
     <box vertical>
-      <button text=_("&OK") name="button_ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="button_ok" magnetic />
+      <button text="&Cancel" />
       <box name="target" />
-      <check text=_("&Preview") name="preview" />
+      <check text="&Preview" name="preview" />
     </box>
   </box>
 </window>

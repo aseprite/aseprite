@@ -3,35 +3,35 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Draw Text") name="drawtext_window">
+<window text="Draw Text" name="drawtext_window">
   <box vertical>
     <box horizontal>
       <box vertical homogeneous>
-	<label text=_("Font:") />
-	<label text=_("Size:") />
+	<label text="Font:" />
+	<label text="Size:" />
       </box>
       <box vertical homogeneous expansive>
 	<button text="" name="font" />
 	<entry maxsize=8 name="size"/>
       </box>
     </box>
-<!--     <label text=_("Fixed Size:") /> -->
+<!--     <label text="Fixed Size:" /> -->
 <!--     <view expansive> -->
 <!--       <listbox /> -->
 <!--     </view> -->
     <separator horizontal />
     <box horizontal>
       <box vertical homogeneous>
-	<label text=_("Text:") />
-	<label text=_("Color:") />
+	<label text="Text:" />
+	<label text="Color:" />
       </box>
       <box vertical homogeneous expansive name="color_box">
 	<entry maxsize=256 name="text" expansive />
       </box>
     </box>
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

@@ -3,16 +3,16 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("New Sprite") name="new_sprite">
+<window text="New Sprite" name="new_sprite">
   <box vertical>
     <box horizontal>
       <box vertical expansive>
-        <separator text=_("Size:") left horizontal />
+        <separator text="Size:" left horizontal />
         <box vertical expansive>
           <box horizontal>
             <box vertical homogeneous>
-              <label text=_("Width:") />
-              <label text=_("Height:") />
+              <label text="Width:" />
+              <label text="Height:" />
             </box>
             <box vertical homogeneous expansive>
               <entry expansive name="width" maxsize=8 />
@@ -22,27 +22,27 @@
         </box>
       </box>
       <box vertical>
-        <separator text=_("Type:") left horizontal />
+        <separator text="Color Mode:" left horizontal />
         <box vertical homogeneous>
-          <radio name="radio1" text=_("&RGB") group=1 />
-	  <radio name="radio2" text=_("&Grayscale") group=1 />
-	  <radio name="radio3" text=_("&Indexed") group=1 />
+          <radio name="radio1" text="&RGB Color" group=1 />
+	  <radio name="radio2" text="&Grayscale" group=1 />
+	  <radio name="radio3" text="&Indexed" group=1 />
 	</box>
       </box>
     </box>
-    <separator text=_("Background:") left horizontal />
+    <separator text="Background:" left horizontal />
     <view maxsize expansive>
       <listbox name="bg_box">
-        <listitem text=_("Transparent (mask color)") />
-        <listitem text=_("Black") />
-        <listitem text=_("White") />
-        <listitem text=_("Magenta") />
-        <listitem text=_("Custom") />
+        <listitem text="Transparent (mask color)" />
+        <listitem text="Black" />
+        <listitem text="White" />
+        <listitem text="Magenta" />
+        <listitem text="Custom" />
       </listbox>
     </view>
     <box horizontal homogeneous>
-      <button text=_("&OK") name="ok_button" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="ok_button" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

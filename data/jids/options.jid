@@ -3,49 +3,49 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Options") name="options">
+<window text="Options" name="options">
   <box vertical>
     <box horizontal>
       <box vertical>
 
-	<label text=_("Mouse Speed:") />
+	<label text="Mouse Speed:" />
 	<box horizontal>
 	  <box vertical homogeneous>
-            <label text=_("X:") />
-            <label text=_("Y:") />
+            <label text="X:" />
+            <label text="Y:" />
 	  </box>
 	  <box vertical homogeneous expansive>
             <slider min="-8" max="8" name="mouse_x" />
             <slider min="-8" max="8" name="mouse_y" />
 	  </box>
 	</box>
-	<check text=_("Lock X/Y") name="lock_axis" />
+	<check text="Lock X/Y" name="lock_axis" />
 
 	<separator horizontal />
 
-	<label text=_("Movement Delay (milliseconds):") />
+	<label text="Movement Delay (milliseconds):" />
 	<slider min="0" max="1000" name="move_delay" />
-	<check text=_("Smooth auto-scroll") name="smooth" />
-	<check text=_("Real-time ordered dithering") name="dither" />
+	<check text="Smooth auto-scroll" name="smooth" />
+	<check text="Real-time ordered dithering" name="dither" />
 
       </box>
       <separator vertical />
       <box vertical>
 
 	<label text="" name="label_font" />
-	<button text=_("Change GUI Font") name="button_font" />
-	<button text=_("Change Language") name="button_lang" />
+	<button text="Change GUI Font" name="button_font" />
+	<button text="Change Language" name="button_lang" />
 	<separator horizontal />
-	<check text=_("2 Click Movement") name="move_click2" />
-	<check text=_("2 Click Drawing") name="draw_click2" />
+	<check text="2 Click Movement" name="move_click2" />
+	<check text="2 Click Drawing" name="draw_click2" />
 
       </box>
     </box>
 
     <box horizontal homogeneous>
-      <button text=_("&OK") name="button_ok" magnetic />
-      <button text=_("&Save") name="button_save" />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="button_ok" magnetic />
+      <button text="&Save" name="button_save" />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

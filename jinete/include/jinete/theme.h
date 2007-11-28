@@ -55,6 +55,12 @@ struct jtheme
   void (*init_widget)(JWidget widget);
   JRegion (*get_window_mask)(JWidget widget);
   void (*map_decorative_widget)(JWidget widget);
+  int (*color_foreground)(void);
+  int (*color_disabled)(void);
+  int (*color_face)(void);
+  int (*color_hotface)(void);
+  int (*color_selected)(void);
+  int (*color_background)(void);
   int nmethods;
   JDrawFunc *methods;
 };
@@ -73,6 +79,15 @@ void ji_set_theme(JTheme theme);
 void ji_set_standard_theme(void);
 JTheme ji_get_theme(void);
 void ji_regen_theme(void);
+
+int ji_color_foreground(void);
+int ji_color_disabled(void);
+int ji_color_face(void);
+int ji_color_facelight(void);
+int ji_color_faceshadow(void);
+int ji_color_hotface(void);
+int ji_color_selected(void);
+int ji_color_background(void);
 
 JI_END_DECLS
 

@@ -119,7 +119,7 @@ void jmessage_broadcast_to_parents(JMessage msg, JWidget widget);
 
 void jmessage_set_sub_msg(JMessage msg, JMessage sub_msg);
 
-/* XXX */
+/* TODO */
 /* void jmessage_set_marshal(JMessage msg, JMarshal marshal); */
 
 JI_END_DECLS

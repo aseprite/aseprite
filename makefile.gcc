@@ -9,14 +9,16 @@ _default: default
 CFLAGS += -Wall -I. -Isrc -Ijinete/include -Ithird_party \
 	  -I$(JINETE_DIR)/freetype/include \
           -I$(LIBLUA_DIR)/include \
+	  -I$(LIBJPEG_DIR) \
 	  -I$(LIBGFLI_DIR) \
 	  -I$(LIBPNG_DIR) \
 	  -I$(ZLIB_DIR) \
 	  -Wno-deprecated-declarations \
 	  -DPNG_NO_MMX_CODE
 
-LFLAGS += $(JINETE_LIB) $(LIBLUA_LIB) $(LIBGFLI_LIB) $(LIBART_LIB) \
-	  $(LIBPNG_LIB) $(ZLIB_LIB)
+#	  -I$(LIBGD_DIR) 
+
+LFLAGS += $(JINETE_LIB) $(THIRD_PARTY_LIBS)
 
 ifdef PROFILE
   CFLAGS += -pg
@@ -39,16 +41,6 @@ ifdef USE_PRECOMPILED_HEADER
   CFLAGS += -DUSE_PRECOMPILED_HEADER
 endif
 
-ifdef HAVE_LIBJPEG
-  CFLAGS += -DHAVE_LIBJPEG
-  LFLAGS += -ljpeg
-endif
-
-ifdef HAVE_JPGALLEG
-  CFLAGS += -DHAVE_JPGALLEG
-  LFLAGS += -ljpgal
-endif
-
 ######################################################################
 # Rules to make Jinete
 
@@ -59,7 +51,11 @@ include $(JINETE_DIR)/makefile.gcc
 ######################################################################
 # Rules to make third party libraries
 
-$(LIBLUA_LIB): $(LIBLUA_OBJS)
+$(LIBART_LIB): $(LIBART_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(LIBGD_LIB): $(LIBGD_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
@@ -67,7 +63,11 @@ $(LIBGFLI_LIB): $(LIBGFLI_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
-$(LIBART_LIB): $(LIBART_OBJS)
+$(LIBJPEG_LIB): $(LIBJPEG_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(LIBLUA_LIB): $(LIBLUA_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
@@ -98,10 +98,12 @@ VPATH = src					\
 	src/util				\
 	src/widgets				\
 	src/widgets/editor			\
+	$(LIBART_DIR)				\
+	$(LIBGD_DIR)				\
+	$(LIBGFLI_DIR)				\
+	$(LIBJPEG_DIR)				\
 	$(LIBLUA_DIR)/src			\
 	$(LIBLUA_DIR)/src/lib			\
-	$(LIBGFLI_DIR)				\
-	$(LIBART_DIR)				\
 	$(LIBPNG_DIR)				\
 	$(ZLIB_DIR)				\
 	$(JINETE_DIR)/src			\
@@ -128,16 +130,40 @@ ASE_DEPS = config.h.gch
 else
 ASE_DEPS = 
 endif
-ASE_DEPS += $(ASE_OBJS) $(JINETE_LIB) $(LIBART_LIB) $(LIBGFLI_LIB) \
-	    $(LIBLUA_LIB) $(LIBPNG_LIB) $(ZLIB_LIB)
+ASE_DEPS += $(ASE_OBJS) $(JINETE_LIB) $(THIRD_PARTY_LIBS)
 
 ifdef USE_PRECOMPILED_HEADER
 config.h.gch: config.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 endif
 
-$(OBJ_DIR)/%.o: %.c
+# rules to build the object files
+
+$(OBJ_DIR)/%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/art.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/gd.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -DNONDLL -DHAVE_CONFIG_H -o $@ -c $<
+
+$(OBJ_DIR)/gfli.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/jpeg.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/lua.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/png.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -I$(LIBPNG_DIR) -o $@ -c $<
+
+$(OBJ_DIR)/zlib.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+# application
 
 ifndef WITHICON
 $(ASE): $(ASE_DEPS)

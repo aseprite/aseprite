@@ -73,11 +73,11 @@ void command_execute_new_file(const char *argument)
   bg_box = jwidget_find_name(window, "bg_box");
 
   /* default values: Indexed, 320x200, Transparent */
-  imgtype = get_config_int("NewSprite", "Type", IMAGE_INDEXED);
+  imgtype = get_config_int("NewSprite", "Type", IMAGE_RGB);
   imgtype = MID(IMAGE_RGB, imgtype, IMAGE_INDEXED);
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 200);
-  bg = get_config_int("NewSprite", "Background", 0);
+  bg = get_config_int("NewSprite", "Background", 1);
 
   usprintf(buf, "%d", w); jwidget_set_text(width, buf);
   usprintf(buf, "%d", h); jwidget_set_text(height, buf);

@@ -8,7 +8,7 @@
 Bienvenido a ASE 0.6
 
 Puede encontrar ayuda en la Wiki de ASE:
-http://www.allegrospriteeditor.com.ar/wiki/
+http://www.aseprite.org/wiki/
 
 Reporte bugs y errores a:
 ase-help@lists.sourceforge.net
@@ -115,6 +115,6 @@ tareas repetitivas?  Puede buscar la documentación en
 \image sprite.pcx
 Y recuerde buscar actualizaciones en:
 
-http://www.allegrospriteeditor.com.ar/
+http://www.aseprite.org/
 
 Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 por David A. Capello

@@ -67,6 +67,7 @@ void command_execute_about(const char *argument)
   
   jwidget_magnetic(button1, TRUE);
 
+  jwidget_set_border(box1, 4, 4, 4, 4);
   jwidget_add_childs(box1, label1, label2, separator1, NULL);
   if (textbox) {
     jview_attach(view, textbox);

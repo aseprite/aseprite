@@ -3,7 +3,7 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Palette Editor") name="palette_editor">
+<window text="Palette Editor" name="palette_editor">
   <box vertical>
     <box horizontal expansive>
       <box vertical>
@@ -34,27 +34,27 @@
           </box>
 	</box>
 	<box name="color_viewer" expansive /> <!-- custom-widget -->
-	<button text=_("Select &All") name="select_all" />
+	<button text="Select &All" name="select_all" />
 	<box vertical>
 	  <box horizontal homogeneous>
-	    <button text=_("&Undo") name="undo" />
-	    <button text=_("&Redo") name="redo" />
+	    <button text="&Undo" name="undo" />
+	    <button text="&Redo" name="redo" />
 	  </box>
 	  <box horizontal homogeneous>
-	    <button text=_("&Load") name="load" />
-	    <button text=_("&Save") name="save" />
+	    <button text="&Load" name="load" />
+	    <button text="&Save" name="save" />
 	  </box>
 	  <box horizontal homogeneous>
-	    <button text=_("&Ramp") name="ramp" />
-	    <button text=_("&Quantize") name="quantize" />
+	    <button text="&Ramp" name="ramp" />
+	    <button text="&Quantize" name="quantize" />
 	  </box>
 	</box>
       </box>
     </box>
     <slider min="0" max="1" name="frame" />
     <box horizontal homogeneous>
-      <button text=_("&OK") name="button_ok" magnetic />
-      <button text=_("&Cancel") />
+      <button text="&OK" name="button_ok" magnetic />
+      <button text="&Cancel" />
     </box>
   </box>
 </window>

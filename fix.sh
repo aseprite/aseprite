@@ -42,18 +42,6 @@ readln "Do you want use precompiled header (needs GCC >= 3.4) (y/n)?" "n"
 precompiled_header=$ans
 
 ######################################################################
-# libraries
-
-readln "Do you have LibJPEG (6.2 recommended) library (y/n)?" "n"
-libjpeg=$ans
-
-if [ "$libjpeg" != "y" ] ; then
-  readln "Do you have JPGalleg (2.3 needed) library (y/n)?" "n"
-  jpgalleg=$ans
-  libjpeg=""
-fi
-
-######################################################################
 # show information
 
 case "$platform" in
@@ -79,15 +67,6 @@ fi
 
 echo -n "  Precompiled header:	"
 if [ "$precompiled_header" == "y" ] ; then echo "yes" ; else echo "no" ; fi
-
-echo -n "  JPEG suppport:	"
-if [ "$libjpeg" == "y" ] ; then
-  echo "yes (LibJPEG)"
-elif [ "$jpgalleg" == "y" ] ; then
-  echo "yes (JPGalleg)"
-else
-  echo "no"
-fi
 
 echo ""
 readln "Is it right (y/n)?" "y"
@@ -134,12 +113,6 @@ gen_makefile()
 
   if [ "$precompiled_header" != "y" ] ; then echo -n "#" >> $makefile ; fi
   echo "USE_PRECOMPILED_HEADER = 1" >> $makefile
-
-  if [ "$libjpeg" != "y" ] ; then echo -n "#" >> $makefile ; fi
-  echo "HAVE_LIBJPEG = 1" >> $makefile
-
-  if [ "$jpgalleg" != "y" ] ; then echo -n "#" >> $makefile ; fi
-  echo "HAVE_JPGALLEG = 1" >> $makefile
 
   echo "#USE_X86_INT_MULT = 1" >> $makefile
   echo "" >> $makefile

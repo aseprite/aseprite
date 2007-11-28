@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2005, 2007 by David A. Capello		-*-Makefile-*-
 
 ifndef CONFIGURED
 include makefile.cfg
@@ -41,7 +41,7 @@ default: all
 all: $(ASE)
 
 clean:
-	-rm -f $(ALL_OBJS) $(ALL_LIBS)
+	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS)
 
 distclean: clean
 	-rm -f $(ASE)

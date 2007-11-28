@@ -5,6 +5,7 @@ NEWS
 0.6
 ---
 
++ Replaced the "List" menu with the tabs selector.
 + Better file selector.
 + Restructured all the menus (more user friendly options).
   - Temporaly removed a lot of complex functionality: 

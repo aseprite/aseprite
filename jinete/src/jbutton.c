@@ -222,7 +222,7 @@ void jradio_set_group(JWidget widget, int radio_group)
 
   radio->group = radio_group;
 
-  /* XXX: update old and new groups */
+  /* TODO: update old and new groups */
 }
 
 int jradio_get_group(JWidget widget)
@@ -387,30 +387,31 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	  if (jwidget_is_enabled(widget)) {
 	    jwidget_select(widget);
 	    jwidget_capture_mouse(widget);
-	    return TRUE;
 	  }
-	  break;
+	  return TRUE;
 
 	case JI_CHECK:
-	  if (jwidget_is_selected(widget))
-	    jwidget_deselect(widget);
-	  else
-	    jwidget_select(widget);
-
-	  jwidget_capture_mouse(widget);
-	  return TRUE;
-	  break;
-
-	case JI_RADIO:
-	  if (jwidget_is_deselected(widget)) {
-	    jwidget_signal_off(widget);
-	    jwidget_select(widget);
-	    jwidget_signal_on(widget);
+	  if (jwidget_is_enabled(widget)) {
+	    if (jwidget_is_selected(widget))
+	      jwidget_deselect(widget);
+	    else
+	      jwidget_select(widget);
 
 	    jwidget_capture_mouse(widget);
-	    return TRUE;
 	  }
-	  break;
+	  return TRUE;
+
+	case JI_RADIO:
+	  if (jwidget_is_enabled(widget)) {
+	    if (jwidget_is_deselected(widget)) {
+	      jwidget_signal_off(widget);
+	      jwidget_select(widget);
+	      jwidget_signal_on(widget);
+
+	      jwidget_capture_mouse(widget);
+	    }
+	  }
+	  return TRUE;
       }
       break;
 

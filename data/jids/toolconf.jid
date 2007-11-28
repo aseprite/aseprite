@@ -3,27 +3,27 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Tools Setup") name="configure_tool">
+<window text="Tools Setup" name="configure_tool">
   <box vertical>
     <box horizontal expansive>
       <box vertical>
-        <separator text=_("General:") horizontal left />
-        <check text=_("Filled") name="filled" />
-        <check text=_("Tiled") name="tiled" />
-	<check text=_("Onionskin") name="onionskin" />
-        <separator text=_("Grid:") horizontal left />
-        <check text=_("Snap to Grid") name="use_grid" />
-        <check text=_("View Grid") name="view_grid" />
-        <button text=_("Set &Grid") name="set_grid" />
-        <separator text=_("Cursor:") horizontal left />
+        <separator text="General:" horizontal left />
+        <check text="Filled" name="filled" />
+        <check text="Tiled" name="tiled" />
+	<check text="Onionskin" name="onionskin" />
+        <separator text="Grid:" horizontal left />
+        <check text="Snap to Grid" name="use_grid" />
+        <check text="View Grid" name="view_grid" />
+        <button text="Set &Grid" name="set_grid" />
+        <separator text="Cursor:" horizontal left />
 	<box name="cursor_color_box" /><!-- custom widget -->
       </box>
       <box vertical expansive>
-        <separator text=_("Brush:") horizontal left />
+        <separator text="Brush:" horizontal left />
         <box horizontal>
           <box vertical homogeneous>
-            <label text=_("Size:") />
-            <label text=_("Angle:") />
+            <label text="Size:" />
+            <label text="Angle:" />
           </box>
           <box vertical homogeneous expansive>
             <slider min=1 max=32 name="brush_size" />
@@ -35,13 +35,13 @@
           </box>
 	  <box name="brush_preview_box" /><!-- custom widget -->
         </box>
-	<separator text=_("Glass Dirty:") horizontal left />
+	<separator text="Glass Dirty:" horizontal left />
         <slider min=0 max=255 name="glass_dirty" />
-        <separator text=_("Spray:") horizontal left />
+        <separator text="Spray:" horizontal left />
 	<box horizontal>
 	  <box vertical homogeneous>
-	    <label text=_("Spray Width:") />
-	    <label text=_("Air Speed:") />
+	    <label text="Spray Width:" />
+	    <label text="Air Speed:" />
 	  </box>
 	  <box vertical homogeneous expansive>
 	    <slider min=1 max=32 name="spray_width" />

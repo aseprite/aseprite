@@ -177,6 +177,70 @@ void ji_regen_theme(void)
   }
 }
 
+int ji_color_foreground(void)
+{
+  if (ji_current_theme && ji_current_theme->color_foreground)
+    return (*ji_current_theme->color_foreground)();
+  else
+    return makecol(0, 0, 0);
+}
+
+int ji_color_disabled(void)
+{
+  if (ji_current_theme && ji_current_theme->color_disabled)
+    return (*ji_current_theme->color_disabled)();
+  else
+    return makecol(128, 128, 128);
+}
+
+int ji_color_face(void)
+{
+  if (ji_current_theme && ji_current_theme->color_face)
+    return (*ji_current_theme->color_face)();
+  else
+    return makecol(255, 255, 255);
+}
+
+int ji_color_facelight(void)
+{
+  register int c = ji_color_face();
+  return makecol(MIN(getr(c)+64, 255),
+		 MIN(getg(c)+64, 255),
+		 MIN(getb(c)+64, 255));
+}
+
+int ji_color_faceshadow(void)
+{
+  register int c = ji_color_face();
+  return makecol(MAX(getr(c)-64, 0),
+		 MAX(getg(c)-64, 0),
+		 MAX(getb(c)-64, 0));
+}
+
+int ji_color_hotface(void)
+{
+  if (ji_current_theme && ji_current_theme->color_hotface)
+    return (*ji_current_theme->color_hotface)();
+  else
+    return makecol(255, 255, 255);
+}
+
+int ji_color_selected(void)
+{
+  if (ji_current_theme && ji_current_theme->color_selected)
+    return (*ji_current_theme->color_selected)();
+  else
+    return makecol(0, 0, 255);
+}
+
+int ji_color_background(void)
+{
+  if (ji_current_theme && ji_current_theme->color_background)
+    return (*ji_current_theme->color_background)();
+  else
+    return makecol(255, 255, 255);
+}
+
 void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
 				 int x, int y, int color)
 {
@@ -394,9 +458,9 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
 		      int fg_color, int bg_color, bool fill_bg)
 {
-  /* XXXX optional anti-aliased textout */
+  /* TODO optional anti-aliased textout */
   ji_font_set_aa_mode(f, bg_color);
   text_mode(fill_bg ? bg_color: -1);
   textout(bmp, f, text, x, y, fg_color);
-  /* XXXX */
+  /* TODO */
 }

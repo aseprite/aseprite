@@ -39,7 +39,6 @@
 
 static JWidget root_menu;
 
-static JWidget sprite_list_menuitem;
 static JWidget recent_list_menuitem;
 static JWidget layer_popup_menuitem;
 static JWidget frame_popup_menuitem;
@@ -59,7 +58,6 @@ int init_module_rootmenu(void)
 
 void exit_module_rootmenu(void)
 {
-  sprite_list_menuitem = NULL;
   recent_list_menuitem = NULL;
   layer_popup_menuitem = NULL;
   frame_popup_menuitem = NULL;
@@ -88,7 +86,6 @@ int load_root_menu(void)
 
   /* create a new empty-menu */
   root_menu = NULL;
-  sprite_list_menuitem = NULL;
   recent_list_menuitem = NULL;
   layer_popup_menuitem = NULL;
   frame_popup_menuitem = NULL;
@@ -208,7 +205,6 @@ int load_root_menu(void)
 
 JWidget get_root_menu(void) { return root_menu; }
 
-JWidget get_sprite_list_menuitem(void) { return sprite_list_menuitem; }
 JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
 JWidget get_layer_popup_menuitem(void) { return layer_popup_menuitem; }
 JWidget get_frame_popup_menuitem(void) { return frame_popup_menuitem; }
@@ -271,11 +267,8 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
   /* has it a ID? */
   id = jxmlelem_get_attr(elem, "id");
   if (id) {
-    if (strcmp(id, "sprite_list") == 0) {
-      sprite_list_menuitem = menuitem;
-    }
     /* recent list menu */
-    else if (strcmp(id, "recent_list") == 0) {
+    if (strcmp(id, "recent_list") == 0) {
       recent_list_menuitem = menuitem;
     }
     /* layer popup menu */

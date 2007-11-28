@@ -37,6 +37,7 @@ JWidget app_get_menu_bar(void);
 JWidget app_get_status_bar(void);
 JWidget app_get_color_bar(void);
 JWidget app_get_tool_bar(void);
+JWidget app_get_tabs_bar(void);
 
 void app_default_status_bar_message(void);
 

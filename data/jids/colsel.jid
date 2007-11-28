@@ -3,7 +3,7 @@
 
 <!-- Read "LEGAL.txt" for more information. -->
 
-<window text=_("Color Selection") name="color_selection">
+<window text="Color Selection" name="color_selection">
 <!--   <box horizontal> -->
     <box vertical expansive>
       <box horizontal>
@@ -35,8 +35,8 @@
       <view name="palette_editor" expansive /> <!-- custom-widget -->
       <box name="color_viewer" expansive /> <!-- custom-widget -->
       <box horizontal homogeneous>
-	<button text=_("&OK") name="button_ok" magnetic />
-	<button text=_("&Cancel") />
+	<button text="&OK" name="button_ok" magnetic />
+	<button text="&Cancel" />
       </box>
     </box>
 <!--     <box vertical> -->

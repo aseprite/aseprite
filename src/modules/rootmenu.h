@@ -36,7 +36,6 @@ int load_root_menu(void);
 
 JWidget get_root_menu(void);
 
-JWidget get_sprite_list_menuitem(void);
 JWidget get_recent_list_menuitem(void);
 JWidget get_layer_popup_menuitem(void);
 JWidget get_frame_popup_menuitem(void);

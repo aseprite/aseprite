@@ -171,7 +171,7 @@ void jmanager_free(JWidget widget)
     /* no more cursor */
     jmouse_set_cursor(JI_CURSOR_NULL);
 
-    /* XXX destroy the AUTODESTROY windows in these lists */
+    /* TODO destroy the AUTODESTROY windows in these lists */
     jlist_free(new_windows);
     jlist_free(old_windows);
 
@@ -219,7 +219,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   /* poll keyboard */
   poll_keyboard();
 
-  /* XXX check for STAGE */
+  /* TODO check for STAGE */
 
   if (first_time_poll) {
     first_time_poll = FALSE;
@@ -286,7 +286,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   /* mouse movement */
   if (mousemove) {
     msg = new_mouse_msg(JM_MOTION);
-    /* XXX rigid marshal */
+    /* TODO rigid marshal */
 
     /* reset double click status */
     jmouse_set_click_level(JI_CLICK_NOT);
@@ -304,7 +304,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   /* mouse wheel */
   if (jmouse_z(0) != jmouse_z(1)) {
     msg = new_mouse_msg(JM_WHEEL);
-    /* XXX rigid marshal */
+    /* TODO rigid marshal */
 
     /* send the mouse wheel message */
     if (capture_widget)
@@ -322,7 +322,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     /* press and release button messages */
     msg = new_mouse_msg((!jmouse_b(1))? JM_BUTTONPRESSED:
 					JM_BUTTONRELEASED);
-    /* XXX rigid marshal */
+    /* TODO rigid marshal */
 
     if (msg->type == JM_BUTTONPRESSED)
       if (jmouse_get_click_level() == JI_CLICK_NOT)
@@ -386,7 +386,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   /* double clicks */
   if (jmouse_get_click_level() == JI_CLICK_AGAIN) {
     msg = new_mouse_msg(JM_DOUBLECLICK);
-    /* XXX rigid marshal */
+    /* TODO rigid marshal */
 
     jmouse_set_click_level(JI_CLICK_NOT);
 
@@ -593,7 +593,6 @@ void jmanager_set_focus(JWidget widget)
 
 void jmanager_set_mouse(JWidget widget)
 {
-#if 1
   if ((mouse_widget != widget)
       && (!capture_widget || !(capture_widget->flags & JI_HARDCAPTURE))) {
     JList widget_parents = NULL;
@@ -658,34 +657,6 @@ void jmanager_set_mouse(JWidget widget)
 
     jlist_free(widget_parents);
   }
-#else
-  if ((mouse_widget != widget)
-      && (!capture_widget || !(capture_widget->flags & JI_HARDCAPTURE))) {
-    JMessage msg;
-
-    /* fetch the mouse */
-
-    if (mouse_widget) {
-      msg = jmessage_new(JM_MOUSELEAVE);
-      mouse_widget->flags &= ~JI_HASMOUSE;
-      jmessage_add_dest(msg, mouse_widget);
-      jmanager_send_message(msg);
-      jmessage_free(msg);
-    }
-
-    /* put the mouse */
-
-    mouse_widget = widget;
-
-    if (widget) {
-      msg = jmessage_new(JM_MOUSEENTER);
-      mouse_widget->flags |= JI_HASMOUSE;
-      jmessage_add_dest(msg, mouse_widget);
-      jmanager_send_message(msg);
-      jmessage_free(msg);
-    }
-  }
-#endif
 }
 
 void jmanager_set_capture(JWidget widget)
@@ -807,7 +778,7 @@ void _jmanager_close_window(JWidget manager, JWidget window,
   else
     reg1 = NULL;
 
-/*   jmanager_dispatch_messages (); /\* XXX WARNING!!! *\/ */
+/*   jmanager_dispatch_messages (); /\* TODO WARNING!!! *\/ */
 
   /* printf ("			%d CLOSED BY MANAGER\n", window_id); */
 
@@ -838,7 +809,7 @@ void _jmanager_close_window(JWidget manager, JWidget window,
   /* hide window */
   jwidget_hide(window);
 
-/*   jmanager_dispatch_messages(); /\* XXX WARNING!!! *\/ */
+/*   jmanager_dispatch_messages(); /\* TODO WARNING!!! *\/ */
 
   /* close message */
   msg = jmessage_new(JM_CLOSE);
@@ -846,7 +817,7 @@ void _jmanager_close_window(JWidget manager, JWidget window,
   jmanager_send_message(msg);
   jmessage_free(msg);
 
-  jmanager_dispatch_messages(); /* XXX WARNING!!! */
+  jmanager_dispatch_messages(); /* TODO WARNING!!! */
 
   /* update manager list stuff */
   jlist_remove(manager->children, window);
@@ -895,7 +866,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_CHAR:
-#if 0				/* XXX do this */
+#if 0				/* TODO do this */
       /* close desktop? */
       if (msg->key.scancode == KEY_ESC) {
 	JWidget window;
@@ -973,7 +944,7 @@ static void manager_redraw_region(JWidget widget, JRegion region)
   JRegion reg3;
   JLink link;
 
-  /* XXXX intersect with jwidget_get_drawable_region ()??? */
+  /* TODO intersect with jwidget_get_drawable_region ()??? */
   jregion_intersect(reg1, region, reg2);
 
   /* redraw windows from top to background */
@@ -1114,12 +1085,12 @@ static void dispatch_msgs(void)
 	  jmouse_show();
 	}
 
-	if (done)		/* XXX use marshal? */
+	if (done)		/* TODO use marshal? */
 	  break;
       }
 
       /* done? */
-      if (done)			/* XXX use marshal? */
+      if (done)			/* TODO use marshal? */
 	/* don't go to sub-msg */
 	msg = NULL;
       else

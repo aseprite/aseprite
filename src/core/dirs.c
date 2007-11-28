@@ -198,13 +198,13 @@ DIRS *cfg_filename_dirs(void)
 
 #if defined UNIX_LIKE
 
-  /* $HOME/.aserc */
-  dirs_cat_dirs(dirs, filename_in_homedir(".aserc"));
+  /* $HOME/.aserc-VERSION */
+  dirs_cat_dirs(dirs, filename_in_homedir(".aserc-" VERSION));
 
 #endif
 
-  /* $BINDIR/ase.cfg */
-  dirs_cat_dirs(dirs, filename_in_bindir("ase.cfg"));
+  /* $BINDIR/ase-VERSION.cfg */
+  dirs_cat_dirs(dirs, filename_in_bindir("ase-" VERSION ".cfg"));
 
   return dirs;
 }
