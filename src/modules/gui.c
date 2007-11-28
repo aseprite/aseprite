@@ -53,17 +53,28 @@
 
 #endif
 
-#define GUI_DEFAULT_WIDTH	800
-#define GUI_DEFAULT_HEIGHT	600
-#define GUI_DEFAULT_DEPTH	8
-#define GUI_DEFAULT_FULLSCREEN	FALSE
-#define GUI_DEFAULT_SCALE	2
-
 #define REBUILD_LOCK		1
 #define REBUILD_ROOT_MENU	2
 #define REBUILD_SPRITE_LIST	4
 #define REBUILD_RECENT_LIST	8
 #define REBUILD_FULLREFRESH	16
+
+/**************************************************************/
+
+static struct {
+  int width;
+  int height;
+  int scale;
+} try_resolutions[] = { { 1024, 768, 2 },
+			{  800, 600, 2 },
+			{  640, 480, 2 },
+			{  320, 240, 1 },
+			{  320, 200, 1 },
+			{    0,   0, 0 } };
+
+static int try_depths[] = { 32, 24, 16, 15, 8 };
+
+/**************************************************************/
 
 static JWidget manager = NULL;
 
@@ -98,7 +109,8 @@ END_OF_STATIC_FUNCTION(display_switch_in_callback);
  */
 int init_module_gui(void)
 {
-  int w, h, bpp, autodetect;
+  int min_possible_dsk_res;
+  int c, w, h, bpp, autodetect;
   bool fullscreen;
 
   /* install timer related stuff */
@@ -131,12 +143,45 @@ int init_module_gui(void)
   autodetect = fullscreen ? GFX_AUTODETECT_FULLSCREEN:
 			    GFX_AUTODETECT_WINDOWED;
 
-  if (!w) w = GUI_DEFAULT_WIDTH;
-  if (!h) h = GUI_DEFAULT_HEIGHT;
+  /* default resolution */
+  if (!w || !h) {
+    bool has_desktop = FALSE;
+    int dsk_w, dsk_h;
+
+    has_desktop = get_desktop_resolution(&dsk_w, &dsk_h) == 0;
+
+    /* we must extract some space for the windows borders */
+    dsk_w -= 16;
+    dsk_h -= 32;
+
+    /* try to get desktop resolution */
+    if (has_desktop) {
+      for (c=0; try_resolutions[c].width; ++c) {
+	if (try_resolutions[c].width <= dsk_w &&
+	    try_resolutions[c].height <= dsk_h) {
+	  min_possible_dsk_res = c;
+	  fullscreen = FALSE;
+	  w = try_resolutions[c].width;
+	  h = try_resolutions[c].height;
+	  screen_scaling = try_resolutions[c].scale;
+	  break;
+	}
+      }
+    }
+    /* full screen */
+    else {
+      fullscreen = TRUE;
+      w = 320;
+      h = 200;
+      screen_scaling = 1;
+    }
+  }
+
+  /* default color depth */
   if (!bpp) {
     bpp = desktop_color_depth();
     if (!bpp)
-      bpp = GUI_DEFAULT_DEPTH;
+      bpp = 8;
   }
 
   for (;;) {
@@ -145,28 +190,13 @@ int init_module_gui(void)
     if (set_gfx_mode(autodetect, w, h, 0, 0) == 0)
       break;
 
-    /* 800x600 screen scaling=2 */
-    if (set_gfx_mode(autodetect, 800, 600, 0, 0) == 0) {
-      screen_scaling = 2;
-      break;
-    }
-
-    /* 640x480 screen scaling=2 */
-    if (set_gfx_mode(autodetect, 640, 480, 0, 0) == 0) {
-      screen_scaling = 2;
-      break;
-    }
-
-    /* 320x240 screen scaling=1 */
-    if (set_gfx_mode(autodetect, 320, 240, 0, 0) == 0) {
-      screen_scaling = 1;
-      break;
-    }
-
-    /* 320x200 screen scaling=1 */
-    if (set_gfx_mode(autodetect, 320, 200, 0, 0) == 0) {
-      screen_scaling = 1;
-      break;
+    for (c=min_possible_dsk_res; try_resolutions[c].width; ++c) {
+      if (set_gfx_mode(autodetect,
+		       try_resolutions[c].width,
+		       try_resolutions[c].height, 0, 0) == 0) {
+	screen_scaling = try_resolutions[c].scale;
+	goto gfx_done;
+      }
     }
 
     if (bpp == 8) {
@@ -174,9 +204,16 @@ int init_module_gui(void)
 		    "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
       return -1;
     }
-    else
-      bpp = 8;
+    else {
+      for (c=0; try_depths[c]; ++c) {
+	if (bpp == try_depths[c]) {
+	  bpp = try_depths[c+1];
+	  break;
+	}
+      }
+    }
   }
+ gfx_done:;
 
   /* create the default-manager */
   manager = jmanager_new();
@@ -240,8 +277,8 @@ static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
   *w = get_config_int("GfxMode", "Width", 0);
   *h = get_config_int("GfxMode", "Height", 0);
   *bpp = get_config_int("GfxMode", "Depth", 0);
-  *fullscreen = get_config_bool("GfxMode", "FullScreen", GUI_DEFAULT_FULLSCREEN);
-  screen_scaling = get_config_int("GfxMode", "Scale", GUI_DEFAULT_SCALE);
+  *fullscreen = get_config_bool("GfxMode", "FullScreen", FALSE);
+  screen_scaling = get_config_int("GfxMode", "Scale", 1);
   screen_scaling = MID(1, screen_scaling, 4);
 }
 
