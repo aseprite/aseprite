@@ -139,10 +139,10 @@ static Sprite *ase_file_read(const char *filename)
   Sprite *sprite = NULL;
   FILE *f;
 
-  f = fopen (filename, "rb");
+  f = fopen(filename, "rb");
   if (f) {
-    sprite = ase_file_read_f (f);
-    fclose (f);
+    sprite = ase_file_read_f(f);
+    fclose(f);
   }
 
   return sprite;
@@ -153,10 +153,10 @@ static int ase_file_write(Sprite *sprite)
   int ret = -1;
   FILE *f;
 
-  f = fopen (sprite->filename, "wb");
+  f = fopen(sprite->filename, "wb");
   if (f) {
-    ret = ase_file_write_f (f, sprite);
-    fclose (f);
+    ret = ase_file_write_f(f, sprite);
+    fclose(f);
   }
 
   return ret;
@@ -232,26 +232,26 @@ Sprite *ase_file_read_f(FILE *f)
 	    /* console_printf ("Color chunk\n"); */
 
 	    if (sprite->imgtype == IMAGE_INDEXED) {
-	      /* XXXXX fix to read palette-per-frame */
+	      /* TODO fix to read palette-per-frame */
 	      PALETTE palette;
 	      ase_file_read_color_chunk(f, palette);
 	      sprite_set_palette(sprite, palette, 0);
 	    }
 	    else
-	      console_printf (_("Warning: was found a color chunk in non-8bpp file\n"));
+	      console_printf(_("Warning: was found a color chunk in non-8bpp file\n"));
 	    break;
 
 	  case ASE_FILE_CHUNK_LAYER: {
-	    /* console_printf ("Layer chunk\n"); */
+	    /* console_printf("Layer chunk\n"); */
 
-	    ase_file_read_layer_chunk (f, sprite->imgtype,
-				       &last_layer,
-				       &current_level);
+	    ase_file_read_layer_chunk(f, sprite->imgtype,
+				      &last_layer,
+				      &current_level);
 	    break;
 	  }
 
 	  case ASE_FILE_CHUNK_CEL: {
-	    /* console_printf ("Cel chunk\n"); */
+	    /* console_printf("Cel chunk\n"); */
 
 	    ase_file_read_cel_chunk(f, sprite, frpos, sprite->imgtype);
 	    break;
@@ -260,28 +260,28 @@ Sprite *ase_file_read_f(FILE *f)
 	  case ASE_FILE_CHUNK_MASK: {
 	    Mask *mask;
 
-	    /* console_printf ("Mask chunk\n"); */
+	    /* console_printf("Mask chunk\n"); */
 
-	    mask = ase_file_read_mask_chunk (f);
+	    mask = ase_file_read_mask_chunk(f);
 	    if (mask)
-	      sprite_add_mask (sprite, mask);
+	      sprite_add_mask(sprite, mask);
 	    else
-	      console_printf (_("Warning: error loading a mask chunk\n"));
+	      console_printf(_("Warning: error loading a mask chunk\n"));
 
 	    break;
 	  }
 
 	  case ASE_FILE_CHUNK_PATH:
-	    /* console_printf ("Path chunk\n"); */
+	    /* console_printf("Path chunk\n"); */
 	    break;
 
 	  default:
-	    console_printf (_("Warning: Unsupported chunk type %d (skipping)\n"), chunk_type);
+	    console_printf(_("Warning: Unsupported chunk type %d (skipping)\n"), chunk_type);
 	    break;
 	}
 
 	/* skip chunk size */
-	fseek (f, chunk_pos+chunk_size, SEEK_SET);
+	fseek(f, chunk_pos+chunk_size, SEEK_SET);
       }
     }
 
@@ -372,7 +372,7 @@ static int ase_file_read_header(FILE *f, ASE_Header *header)
 
 static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
 {
-  header->pos = ftell (f);
+  header->pos = ftell(f);
 
   header->size = 0;
   header->magic = ASE_FILE_MAGIC;
@@ -387,42 +387,42 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
   header->next = 0;
   header->frit = 0;
 
-  fseek (f, header->pos+128, SEEK_SET);
+  fseek(f, header->pos+128, SEEK_SET);
 }
 
-static void ase_file_write_header (FILE *f, ASE_Header *header)
+static void ase_file_write_header(FILE *f, ASE_Header *header)
 {
   header->size = ftell (f)-header->pos;
 
-  fseek (f, header->pos, SEEK_SET);
+  fseek(f, header->pos, SEEK_SET);
 
-  fputl (header->size, f);
-  fputw (header->magic, f);
-  fputw (header->frames, f);
-  fputw (header->width, f);
-  fputw (header->height, f);
-  fputw (header->depth, f);
-  fputl (header->flags, f);
-  fputw (header->speed, f);
-  fputl (header->next, f);
-  fputl (header->frit, f);
-  ase_file_write_padding (f, 100);
+  fputl(header->size, f);
+  fputw(header->magic, f);
+  fputw(header->frames, f);
+  fputw(header->width, f);
+  fputw(header->height, f);
+  fputw(header->depth, f);
+  fputl(header->flags, f);
+  fputw(header->speed, f);
+  fputl(header->next, f);
+  fputl(header->frit, f);
+  ase_file_write_padding(f, 100);
 
-  fseek (f, header->pos+header->size, SEEK_SET);
+  fseek(f, header->pos+header->size, SEEK_SET);
 }
 
 static void ase_file_read_frame_header(FILE *f, ASE_FrameHeader *frame_header)
 {
-  frame_header->size = fgetl (f);
-  frame_header->magic = fgetw (f);
-  frame_header->chunks = fgetw (f);
-  frame_header->duration = fgetw (f);
-  ase_file_read_padding (f, 6);
+  frame_header->size = fgetl(f);
+  frame_header->magic = fgetw(f);
+  frame_header->chunks = fgetw(f);
+  frame_header->duration = fgetw(f);
+  ase_file_read_padding(f, 6);
 }
 
 static void ase_file_prepare_frame_header(FILE *f, ASE_FrameHeader *frame_header)
 {
-  int pos = ftell (f);
+  int pos = ftell(f);
 
   frame_header->size = pos;
   frame_header->magic = ASE_FILE_FRAME_MAGIC;
@@ -431,25 +431,25 @@ static void ase_file_prepare_frame_header(FILE *f, ASE_FrameHeader *frame_header
 
   current_frame_header = frame_header;
 
-  fseek (f, pos+16, SEEK_SET);
+  fseek(f, pos+16, SEEK_SET);
 }
 
 static void ase_file_write_frame_header(FILE *f, ASE_FrameHeader *frame_header)
 {
   int pos = frame_header->size;
-  int end = ftell (f);
+  int end = ftell(f);
 
   frame_header->size = end-pos;
 
-  fseek (f, pos, SEEK_SET);
+  fseek(f, pos, SEEK_SET);
 
-  fputl (frame_header->size, f);
-  fputw (frame_header->magic, f);
-  fputw (frame_header->chunks, f);
-  fputw (frame_header->duration, f);
-  ase_file_write_padding (f, 6);
+  fputl(frame_header->size, f);
+  fputw(frame_header->magic, f);
+  fputw(frame_header->chunks, f);
+  fputw(frame_header->duration, f);
+  ase_file_write_padding(f, 6);
 
-  fseek (f, end, SEEK_SET);
+  fseek(f, end, SEEK_SET);
 
   current_frame_header = NULL;
 }
@@ -471,8 +471,8 @@ static void ase_file_write_cels(FILE *f, Sprite *sprite, Layer *layer, int frpos
     Cel *cel = layer_get_cel(layer, frpos);
 
     if (cel) {
-/*       console_printf ("New cel in frpos %d, in layer %d\n", */
-/* 		     frpos, sprite_layer2index (sprite, layer)); */
+/*       console_printf("New cel in frpos %d, in layer %d\n", */
+/* 		     frpos, sprite_layer2index(sprite, layer)); */
 
       ase_file_write_cel_chunk(f, cel, layer, /* index_count */
 			       sprite_layer2index(sprite, layer));
@@ -491,7 +491,7 @@ static void ase_file_read_padding(FILE *f, int bytes)
   int c;
 
   for (c=0; c<bytes; c++)
-    fgetc (f);
+    fgetc(f);
 }
 
 static void ase_file_write_padding(FILE *f, int bytes)
@@ -499,7 +499,7 @@ static void ase_file_write_padding(FILE *f, int bytes)
   int c;
 
   for (c=0; c<bytes; c++)
-    fputc (0, f);
+    fputc(0, f);
 }
 
 static char *ase_file_read_string(FILE *f)
@@ -507,16 +507,16 @@ static char *ase_file_read_string(FILE *f)
   char *string;
   int c, length;
 
-  length = fgetw (f);
+  length = fgetw(f);
   if (length == EOF)
     return NULL;
 
-  string = jmalloc (length+1);
+  string = jmalloc(length+1);
   if (!string)
     return NULL;
 
   for (c=0; c<length; c++)
-    string[c] = fgetc (f);
+    string[c] = fgetc(f);
   string[c] = 0;
 
   return string;
@@ -526,74 +526,74 @@ static void ase_file_write_string(FILE *f, const char *string)
 {
   const char *p;
 
-  fputw (strlen (string), f);
+  fputw(strlen(string), f);
 
   for (p=string; *p; p++)
-    fputc (*p, f);
+    fputc(*p, f);
 }
 
-static void ase_file_write_start_chunk (FILE *f, int type)
+static void ase_file_write_start_chunk(FILE *f, int type)
 {
   current_frame_header->chunks++;
 
   chunk_type = type;
-  chunk_start = ftell (f);
+  chunk_start = ftell(f);
 
-  fseek (f, chunk_start+6, SEEK_SET);
+  fseek(f, chunk_start+6, SEEK_SET);
 }
 
-static void ase_file_write_close_chunk (FILE *f)
+static void ase_file_write_close_chunk(FILE *f)
 {
-  int chunk_end = ftell (f);
+  int chunk_end = ftell(f);
   int chunk_size = chunk_end - chunk_start;
 
-  fseek (f, chunk_start, SEEK_SET);
-  fputl (chunk_size, f);
-  fputw (chunk_type, f);
-  fseek (f, chunk_end, SEEK_SET);
+  fseek(f, chunk_start, SEEK_SET);
+  fputl(chunk_size, f);
+  fputw(chunk_type, f);
+  fseek(f, chunk_end, SEEK_SET);
 }
 
-static void ase_file_read_color_chunk (FILE *f, RGB *pal)
+static void ase_file_read_color_chunk(FILE *f, RGB *pal)
 {
   int i, c, packets, skip, size;
 
-  packets = fgetw (f);	/* number of packets */
+  packets = fgetw(f);	/* number of packets */
   skip = 0;
 
   /* read all packets */
   for (i=0; i<packets; i++) {
-    skip += fgetc (f);
-    size = fgetc (f);
+    skip += fgetc(f);
+    size = fgetc(f);
     if (!size) size = 256;
 
     for (c=skip; c<skip+size; c++) {
-      pal[c].r = fgetc (f);
-      pal[c].g = fgetc (f);
-      pal[c].b = fgetc (f);
+      pal[c].r = fgetc(f);
+      pal[c].g = fgetc(f);
+      pal[c].b = fgetc(f);
     }
   }
 }
 
 /* writes the original color chunk in FLI files for the entire palette "pal" */
-static void ase_file_write_color_chunk (FILE *f, RGB *pal)
+static void ase_file_write_color_chunk(FILE *f, RGB *pal)
 {
   int c;
 
-  ase_file_write_start_chunk (f, ASE_FILE_CHUNK_FLI_COLOR);
+  ase_file_write_start_chunk(f, ASE_FILE_CHUNK_FLI_COLOR);
 
-  fputw (1, f);
-  fputc (0, f);
-  fputc (0, f);
+  fputw(1, f);
+  fputc(0, f);
+  fputc(0, f);
   for (c=0; c<256; c++) {
-    fputc (pal[c].r, f);
-    fputc (pal[c].g, f);
-    fputc (pal[c].b, f);
+    fputc(pal[c].r, f);
+    fputc(pal[c].g, f);
+    fputc(pal[c].b, f);
   }
 
-  ase_file_write_close_chunk (f);
+  ase_file_write_close_chunk(f);
 }
 
-static Layer *ase_file_read_layer_chunk (FILE *f, int imgtype, Layer **previous_layer, int *current_level)
+static Layer *ase_file_read_layer_chunk(FILE *f, int imgtype, Layer **previous_layer, int *current_level)
 {
   char *name;
   Layer *layer = NULL;
@@ -603,25 +603,25 @@ static Layer *ase_file_read_layer_chunk (FILE *f, int imgtype, Layer **previous_
   int child_level;
   int blend_mode;
 
-  flags = fgetw (f);
-  layer_type = fgetw (f);
-  child_level = fgetw (f);
-  fgetw (f);			/* default_width */
-  fgetw (f);			/* default_height */
-  blend_mode = fgetw (f);
+  flags = fgetw(f);
+  layer_type = fgetw(f);
+  child_level = fgetw(f);
+  fgetw(f);			/* default_width */
+  fgetw(f);			/* default_height */
+  blend_mode = fgetw(f);
 
-  ase_file_read_padding (f, 4);
-  name = ase_file_read_string (f);
+  ase_file_read_padding(f, 4);
+  name = ase_file_read_string(f);
 
   /* image layer */
   if (layer_type == 0) {
-    layer = layer_new (imgtype);
+    layer = layer_new(imgtype);
     if (layer)
-      layer_set_blend_mode (layer, blend_mode);
+      layer_set_blend_mode(layer, blend_mode);
   }
   /* layer set */
   else if (layer_type == 1) {
-    layer = layer_set_new ();
+    layer = layer_set_new();
   }
 
   if (layer) {
@@ -631,19 +631,16 @@ static Layer *ase_file_read_layer_chunk (FILE *f, int imgtype, Layer **previous_
 
     /* name */
     if (name)
-      layer_set_name (layer, name);
+      layer_set_name(layer, name);
 
     /* child level... */
 
     if (child_level == *current_level)
-      layer_add_layer ((Layer *)(*previous_layer)->parent,
-		       layer);
+      layer_add_layer((Layer *)(*previous_layer)->parent, layer);
     else if (child_level > *current_level)
-      layer_add_layer ((*previous_layer),
-		       layer);
+      layer_add_layer((*previous_layer), layer);
     else if (child_level < *current_level)
-      layer_add_layer ((Layer *)((Layer *)(*previous_layer)->parent)->parent,
-		       layer);
+      layer_add_layer((Layer *)((Layer *)(*previous_layer)->parent)->parent, layer);
 
     *previous_layer = layer;
     *current_level = child_level;
@@ -652,19 +649,19 @@ static Layer *ase_file_read_layer_chunk (FILE *f, int imgtype, Layer **previous_
   return layer;
 }
 
-static void ase_file_write_layer_chunk (FILE *f, Layer *layer)
+static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
 {
   GfxObj *parent;
   int child_level;
 
-  ase_file_write_start_chunk (f, ASE_FILE_CHUNK_LAYER);
+  ase_file_write_start_chunk(f, ASE_FILE_CHUNK_LAYER);
 
   /* flags */
-  fputw ((layer->readable & 1) | ((layer->writable & 1) << 1), f);
+  fputw((layer->readable & 1) | ((layer->writable & 1) << 1), f);
 
   /* layer type */
-  fputw (layer_is_image (layer) ? 0:
-	   layer_is_set (layer) ? 1: -1, f);
+  fputw(layer_is_image (layer) ? 0:
+	layer_is_set (layer) ? 1: -1, f);
 
   /* layer child level */
   child_level = -1;
@@ -673,20 +670,20 @@ static void ase_file_write_layer_chunk (FILE *f, Layer *layer)
     child_level++;
     parent = ((Layer *)parent)->parent;
   }
-  fputw (child_level, f);
+  fputw(child_level, f);
 
   /* width, height and blend mode */
-  fputw (0, f);
-  fputw (0, f);
-  fputw (layer_is_image (layer) ? layer->blend_mode: 0, f);
+  fputw(0, f);
+  fputw(0, f);
+  fputw(layer_is_image (layer) ? layer->blend_mode: 0, f);
 
   /* padding */
-  ase_file_write_padding (f, 4);
+  ase_file_write_padding(f, 4);
 
   /* layer name */
-  ase_file_write_string (f, layer->name);
+  ase_file_write_string(f, layer->name);
 
-  ase_file_write_close_chunk (f);
+  ase_file_write_close_chunk(f);
 
   /* console_printf ("Layer name \"%s\" child level: %d\n", layer->name, child_level); */
 }
@@ -723,11 +720,11 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frpos, int imgt
       int x, y, r, g, b, a, k;
       Image *image;
       /* read width and height */
-      int w = fgetw (f);
-      int h = fgetw (f);
+      int w = fgetw(f);
+      int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-	image = image_new (imgtype, w, h);
+	image = image_new(imgtype, w, h);
 	if (!image) {
 	  cel_free(cel);
 	  /* not enough memory for frame's image */
@@ -740,34 +737,33 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frpos, int imgt
 	  case IMAGE_RGB:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++) {
-		r = fgetc (f);
-		g = fgetc (f);
-		b = fgetc (f);
-		a = fgetc (f);
-		image->method->putpixel (image, x, y, _rgba (r, g, b, a));
+		r = fgetc(f);
+		g = fgetc(f);
+		b = fgetc(f);
+		a = fgetc(f);
+		image->method->putpixel(image, x, y, _rgba(r, g, b, a));
 	      }
-	      do_progress (ftell (f));
 	    }
+	    do_progress(ftell(f));
 	    break;
 
 	  case IMAGE_GRAYSCALE:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++) {
-		k = fgetc (f);
-		a = fgetc (f);
-		image->method->putpixel (image, x, y, _graya (k, a));
+		k = fgetc(f);
+		a = fgetc(f);
+		image->method->putpixel(image, x, y, _graya(k, a));
 	      }
-	      do_progress (ftell (f));
 	    }
+	    do_progress(ftell(f));
 	    break;
 
 	  case IMAGE_INDEXED:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++)
-		image->method->putpixel (image, x, y, fgetc (f));
-
-	      do_progress (ftell (f));
+		image->method->putpixel(image, x, y, fgetc(f));
 	    }
+	    do_progress(ftell(f));
 	    break;
 	}
 
@@ -778,7 +774,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frpos, int imgt
 
     case ASE_FILE_LINK_CEL: {
       /* read link position */
-      int link_frpos = fgetw (f);
+      int link_frpos = fgetw(f);
       Cel *link = layer_get_cel(layer, link_frpos);
 
       if (link)
@@ -834,7 +830,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, int layer_
 	  case IMAGE_RGB:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++) {
-		c = image->method->getpixel (image, x, y);
+		c = image->method->getpixel(image, x, y);
 		fputc(_rgba_getr(c), f);
 		fputc(_rgba_getg(c), f);
 		fputc(_rgba_getb(c), f);
@@ -913,7 +909,7 @@ static Mask *ase_file_read_mask_chunk(FILE *f)
   /* read image data */
   for (v=0; v<h; v++)
     for (u=0; u<(w+7)/8; u++) {
-      byte = fgetc (f);
+      byte = fgetc(f);
       for (c=0; c<8; c++)
 	image_putpixel(mask->bitmap, u*8+c, v, byte & (1<<(7-c)));
     }
@@ -954,11 +950,11 @@ int fgetw(FILE *file)
 {
   int b1, b2;
 
-  b1 = fgetc (file);
+  b1 = fgetc(file);
   if (b1 == EOF)
     return EOF;
 
-  b2 = fgetc (file);
+  b2 = fgetc(file);
   if (b2 == EOF)
     return EOF;
 
@@ -971,19 +967,19 @@ long fgetl(FILE *file)
 {
   int b1, b2, b3, b4;
 
-  b1 = fgetc (file);
+  b1 = fgetc(file);
   if (b1 == EOF)
     return EOF;
 
-  b2 = fgetc (file);
+  b2 = fgetc(file);
   if (b2 == EOF)
     return EOF;
 
-  b3 = fgetc (file);
+  b3 = fgetc(file);
   if (b3 == EOF)
     return EOF;
 
-  b4 = fgetc (file);
+  b4 = fgetc(file);
   if (b4 == EOF)
     return EOF;
 
@@ -1000,8 +996,8 @@ int fputw(int w, FILE *file)
   b2 = (w & 0xFF00) >> 8;
   b1 = w & 0x00FF;
 
-  if (fputc (b1, file) == b1)
-    if (fputc (b2, file) == b2)
+  if (fputc(b1, file) == b1)
+    if (fputc(b2, file) == b2)
       return 0;
 
   return -1;
@@ -1018,10 +1014,10 @@ int fputl(long l, FILE *file)
   b2 = (int)((l & 0x0000FF00L) >> 8);
   b1 = (int)l & 0x00FF;
 
-  if (fputc (b1, file) == b1)
-    if (fputc (b2, file) == b2)
-      if (fputc (b3, file) == b3)
-	if (fputc (b4, file) == b4)
+  if (fputc(b1, file) == b1)
+    if (fputc(b2, file) == b2)
+      if (fputc(b3, file) == b3)
+	if (fputc(b4, file) == b4)
 	  return 0;
 
   return -1;
@@ -1036,7 +1032,7 @@ static float fgetf(FILE *file)
     long l;
   } packet;
 
-  packet.l = fgetl (file);
+  packet.l = fgetl(file);
 
   return packet.f;
 }
@@ -1049,8 +1045,8 @@ static double fgetd(FILE *file)
     long l[2];
   } packet;
 
-  packet.l[0] = fgetl (file);
-  packet.l[1] = fgetl (file);
+  packet.l[0] = fgetl(file);
+  packet.l[1] = fgetl(file);
 
   return packet.d;
 }
@@ -1064,7 +1060,7 @@ static int fputf(float c, FILE *file)
   } packet;
 
   packet.f = c;
-  return fputl (packet.l, file);
+  return fputl(packet.l, file);
 }
 
 /* returns 0 in success or -1 in error */
@@ -1077,8 +1073,8 @@ static int fputd(double c, FILE *file)
 
   packet.d = c;
 
-  if (fputl (packet.l[0], file) == 0)
-    if (fputl (packet.l[1], file) == 0)
+  if (fputl(packet.l[0], file) == 0)
+    if (fputl(packet.l[1], file) == 0)
       return 0;
 
   return -1;
