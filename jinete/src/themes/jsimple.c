@@ -732,7 +732,7 @@ static void theme_draw_menuitem (JWidget widget)
   int x1, y1, x2, y2;
   JRect pos;
 
-  /* XXXX assert? */
+  /* TODO assert? */
   if (!widget->parent->parent)
     return;
 
@@ -975,7 +975,7 @@ static void theme_draw_separator (JWidget widget)
 }
 
 #if 1
-/* XXXX when Allegro 4.1 will be officially released, replace this
+/* TODO when Allegro 4.1 will be officially released, replace this
    with the get_clip_rect, add_clip_rect, set_clip_rect functions */
 static int my_add_clip_rect (BITMAP *bitmap, int x1, int y1, int x2, int y2)
 {
@@ -1072,7 +1072,7 @@ static void theme_draw_slider (JWidget widget)
 
     r = jrect_new(x1, y1, x2+1, y2+1);
 
-    /* XXXX when Allegro 4.1 will be officially released, replace this
+    /* TODO when Allegro 4.1 will be officially released, replace this
        with the get_clip_rect, add_clip_rect, set_clip_rect functions */
 
     cx1 = ji_screen->cl;
@@ -1447,7 +1447,7 @@ static void draw_textstring (const char *t, int fg_color, int bg_color,
 
     /* text */
     if (jwidget_is_disabled (widget)) {
-      /* XXXX avoid this */
+      /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
 	jdraw_text(widget->text_font, t, x, y, 0, bg_color, fill_bg);
 

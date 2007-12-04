@@ -206,7 +206,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 /* 	else */
 /* 	  jwidget_select(widget); */
 
-/* 	/\* XXX switch slider signal *\/ */
+/* 	/\* TODO switch slider signal *\/ */
 /*       } */
 
       /* TODO theme stuff */

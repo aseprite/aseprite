@@ -136,7 +136,7 @@ void ji_set_theme(JTheme theme)
   if (ji_current_theme) {
     ji_regen_theme();
 
-    /* XXX any better idea? */
+    /* TODO any better idea? */
     if (manager && jwidget_get_theme(manager) == NULL)
       jwidget_set_theme(manager, theme);
   }
@@ -343,7 +343,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
       *w = 0;
     }
     else {
-      /* XXX modificable option? I don't think so, this is very internal stuff */
+      /* TODO modificable option? I don't think so, this is very internal stuff */
 #if 0
       /* shows more information in x-scroll 0 */
       width = viewport_w;

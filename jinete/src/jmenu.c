@@ -828,8 +828,8 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
-      /* XXX theme specific!! */
-      jwidget_dirty (widget);
+      /* TODO theme specific!! */
+      jwidget_dirty(widget);
       break;
   }
 
@@ -934,7 +934,7 @@ static void open_menuitem(JWidget menuitem, bool select_first)
 
     MITEM(menuitem)->opened = TRUE; /* activate "opened" flag in the
 				       menuitem */
-    /* XXXX */
+    /* TODO */
 /*     jwidget_flush_redraw (menuitem); /\* redraw the menuitem (the */
 /* 					  highlight could be change) *\/ */
 
@@ -1008,7 +1008,7 @@ static void open_menuitem(JWidget menuitem, bool select_first)
 
     /* setup the highlight of the new menubox */
     if (select_first)
-      /* XXXX */
+      /* TODO */
 /*       set_highlight(menubox, */
       set_highlight(MBOX(menubox)->menu,
 		    jlist_first(MBOX(menubox)->menu->children)->data);
@@ -1032,7 +1032,7 @@ static void open_menuitem(JWidget menuitem, bool select_first)
     if (internal_msg & DO_GOTOBAR) {
       /* final */
       if (first_one) {
-	/* XXXX this isn't necessary */
+	/* TODO this isn't necessary */
 /* 	internal_msg ^= DO_GOTOBAR; */
 	was_clicked = FALSE;
       }

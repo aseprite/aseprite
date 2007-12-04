@@ -563,7 +563,7 @@ const int *ji_font_get_available_fixed_sizes (FONT *f, int *n)
     return af->fixed_sizes;
   }
   else
-    return NULL;		/* XXXX return text_height (...) size */
+    return NULL;		/* TODO return text_height (...) size */
 }
 
 int ji_font_get_char_extra_spacing (FONT *f)
@@ -648,7 +648,7 @@ static CACHED_GLYPH *_aa_find_glyph (AL_CONST FONT *f, int ch)
  */
 static int aa_font_height (AL_CONST FONT *f)
 {
-  /* XXXX */
+  /* TODO */
 /*   return f->height; */
   FONT_AA_DATA *af = f->data;
 
@@ -1004,7 +1004,7 @@ bool ji_font_is_scalable (FONT *f)
 
 const int *ji_font_get_available_fixed_sizes (FONT *f, int *n)
 {
-  return NULL; /* XXXX return text_height (...) size */
+  return NULL; /* TODO return text_height (...) size */
 }
 
 int ji_font_get_char_extra_spacing (FONT *f)

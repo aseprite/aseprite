@@ -190,7 +190,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
 static void textbox_request_size(JWidget widget, int *w, int *h)
 {
-  /* XXX */
+  /* TODO */
 /*   *w = widget->border_width.l + widget->border_width.r; */
 /*   *h = widget->border_width.t + widget->border_width.b; */
   *w = 0;

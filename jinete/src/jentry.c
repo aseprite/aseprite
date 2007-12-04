@@ -96,7 +96,7 @@ JWidget jentry_new (int maxsize, const char *format, ...)
   entry->readonly = FALSE;
   entry->recent_focused = FALSE;
 
-  /* XXX support for text alignment and multi-line */
+  /* TODO support for text alignment and multi-line */
   /* widget->align = JI_LEFT | JI_MIDDLE; */
   widget->text_size = maxsize+1;
   widget->text = jmalloc (widget->text_size);
@@ -537,7 +537,7 @@ static bool entry_msg_proc (JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
-      /* XXX theme stuff */
+      /* TODO theme stuff */
       if (jwidget_is_enabled(widget))
 	jwidget_dirty(widget);
       break;

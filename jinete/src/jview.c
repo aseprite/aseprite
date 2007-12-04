@@ -106,7 +106,7 @@ void jview_attach(JWidget widget, JWidget viewable_widget)
   View *view = jwidget_get_data(widget, JI_VIEW);
 
   jwidget_add_child(view->viewport, viewable_widget);
-  /* XXX */
+  /* TODO */
   /* jwidget_emit_signal(widget, JI_SIGNAL_VIEW_ATTACH); */
 }
 
@@ -374,7 +374,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      /* XXX add something to avoid this (theme specific stuff) */
+      /* TODO add something to avoid this (theme specific stuff) */
       {
 	JRegion reg1 = jwidget_get_drawable_region(widget,
 						   JI_GDR_CUTTOPWINDOWS);
@@ -594,7 +594,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
-      /* XXX add something to avoid this (theme specific stuff) */
+      /* TODO add something to avoid this (theme specific stuff) */
       jwidget_invalidate (widget);
       break;
   }

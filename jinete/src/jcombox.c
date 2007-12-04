@@ -275,22 +275,24 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
 
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
 {
+  JWidget combo_widget = widget->user_data[0];
+
   switch (msg->type) {
 
     case JM_CHAR:
-      if (jwidget_has_focus (widget)) {
-	if (!jcombobox_is_editable (widget->user_data[0])) {
+      if (jwidget_has_focus(widget)) {
+	if (!jcombobox_is_editable(combo_widget)) {
 	  if (msg->key.scancode == KEY_SPACE ||
 	      msg->key.scancode == KEY_ENTER ||
 	      msg->key.scancode == KEY_ENTER_PAD) {
-	    combobox_switch_window (widget->user_data[0]);
+	    combobox_switch_window(combo_widget);
 	    return TRUE;
 	  }
 	}
 	else {
 	  if (msg->key.scancode == KEY_ENTER ||
 	      msg->key.scancode == KEY_ENTER_PAD) {
-	    combobox_switch_window (widget->user_data[0]);
+	    combobox_switch_window(combo_widget);
 	    return TRUE;
 	  }
 	}
@@ -298,11 +300,13 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED:
-      if (jcombobox_is_clickopen (widget->user_data[0]))
-	combobox_open_window (widget->user_data[0]);
+      if (jcombobox_is_clickopen(combo_widget)) {
+	combobox_switch_window(combo_widget);
+	/* combobox_open_window(combo_widget); */
+      }
 
-      if (jcombobox_is_editable (widget->user_data[0])) {
-	jmanager_set_focus (widget);
+      if (jcombobox_is_editable(combo_widget)) {
+	jmanager_set_focus(widget);
       }
       else
 	return TRUE;
@@ -314,37 +318,54 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
 
 static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 {
+  JWidget combo_widget = widget->user_data[0];
+
   switch (msg->type) {
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_LISTBOX_CHANGE) {
 	int index = jlistbox_get_selected_index(widget);
 
-	if (IS_VALID_ITEM(widget->user_data[0], index)) {
-	  jcombobox_select_index(widget->user_data[0], index);
+	if (IS_VALID_ITEM(combo_widget, index)) {
+	  jcombobox_select_index(combo_widget, index);
 
-	  jwidget_emit_signal(widget->user_data[0], JI_SIGNAL_COMBOBOX_CHANGE);
+	  jwidget_emit_signal(combo_widget, JI_SIGNAL_COMBOBOX_CHANGE);
 	}
       }
       break;
 
     case JM_BUTTONRELEASED:
       {
-	int index = jcombobox_get_selected_index(widget->user_data[0]);
+	int index = jcombobox_get_selected_index(combo_widget);
 
-	if (IS_VALID_ITEM(widget->user_data[0], index))
-	  jwidget_emit_signal(widget->user_data[0], JI_SIGNAL_COMBOBOX_SELECT);
+	if (IS_VALID_ITEM(combo_widget, index))
+	  jwidget_emit_signal(combo_widget, JI_SIGNAL_COMBOBOX_SELECT);
 
-	combobox_close_window(widget->user_data[0]);
+	combobox_close_window(combo_widget);
       }
       return TRUE;
 
+/*     case JM_IDLE: { */
+/*       /\* if the user clicks outside the listbox *\/ */
+/*       if (!jmouse_b(1) && jmouse_b(0) && !jwidget_has_mouse(widget)) { */
+/* 	ComboBox *combobox = jwidget_get_data(combo_widget, JI_COMBOBOX); */
+
+/* 	if (combobox->entry && !jwidget_has_mouse(combobox->entry) && */
+/* 	    combobox->button && !jwidget_has_mouse(combobox->button) && */
+/* 	    combobox->window && !jwidget_has_mouse(combobox->window)) { */
+/* 	  combobox_close_window(combo_widget); */
+/* 	  return TRUE; */
+/* 	} */
+/*       } */
+/*       break; */
+/*     } */
+
     case JM_CHAR:
-      if (jwidget_has_focus (widget)) {
+      if (jwidget_has_focus(widget)) {
 	if (msg->key.scancode == KEY_SPACE ||
 	    msg->key.scancode == KEY_ENTER ||
 	    msg->key.scancode == KEY_ENTER_PAD) {
-	  combobox_close_window (widget->user_data[0]);
+	  combobox_close_window(combo_widget);
 	  return TRUE;
 	}
       }
@@ -356,52 +377,52 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 
 static void combobox_button_cmd(JWidget widget, void *data)
 {
-  combobox_switch_window ((JWidget)data);
+  combobox_switch_window((JWidget)data);
 }
 
 static void combobox_open_window(JWidget widget)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
   if (!combobox->window) {
     JWidget view, listbox;
     JLink link;
     int size;
     JRect rc;
 
-    combobox->window = jwindow_new (NULL);
-    view = jview_new ();
-    listbox = jlistbox_new ();
+    combobox->window = jwindow_new(NULL);
+    view = jview_new();
+    listbox = jlistbox_new();
 
     listbox->user_data[0] = widget;
-    jwidget_add_hook (listbox, JI_WIDGET, combobox_listbox_msg_proc, NULL);
+    jwidget_add_hook(listbox, JI_WIDGET, combobox_listbox_msg_proc, NULL);
 
     JI_LIST_FOR_EACH(combobox->items, link)
-      jwidget_add_child (listbox, jlistitem_new(link->data));
+      jwidget_add_child(listbox, jlistitem_new(link->data));
 
-    jwindow_ontop (combobox->window, TRUE);
-    jwidget_noborders (combobox->window);
+    jwindow_ontop(combobox->window, TRUE);
+    jwidget_noborders(combobox->window);
 
-    size = jlist_length (combobox->items);
+    size = jlist_length(combobox->items);
     jwidget_set_static_size
       (view,
        jrect_w(combobox->entry->rc),
-       2+(2+jwidget_get_text_height (listbox))*MID(1, size, 10)+2);
+       2+(2+jwidget_get_text_height(listbox))*MID(1, size, 10)+2);
 
-    jwidget_add_child (combobox->window, view);
-    jview_attach (view, listbox);
+    jwidget_add_child(combobox->window, view);
+    jview_attach(view, listbox);
 
-    jwidget_signal_off (listbox);
-    jlistbox_select_index (listbox, combobox->selected);
-    jwidget_signal_on (listbox);
+    jwidget_signal_off(listbox);
+    jlistbox_select_index(listbox, combobox->selected);
+    jwidget_signal_on(listbox);
 
-    jwindow_remap (combobox->window);
+    jwindow_remap(combobox->window);
 
     rc = combobox_get_windowpos(combobox);
     jwindow_position(combobox->window, rc->x1, rc->y1);
     jrect_free(rc);
 
-    jwindow_open_bg (combobox->window);
-    jmanager_set_focus (listbox);
+    jwindow_open_bg(combobox->window);
+    jmanager_set_focus(listbox);
   }
 }
 
@@ -409,7 +430,7 @@ static void combobox_close_window(JWidget widget)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
   if (combobox->window) {
-    jwindow_close (combobox->window, widget);
+    jwindow_close(combobox->window, widget);
     combobox->window = NULL;
 
     jmanager_set_focus(combobox->entry);
@@ -436,4 +457,3 @@ static JRect combobox_get_windowpos(ComboBox *combobox)
     jrect_displace(rc, 0, -(jrect_h(rc)+jrect_h(combobox->entry->rc)));
   return rc;
 }
-

@@ -123,7 +123,7 @@ void jwidget_free(JWidget widget)
 
   /* remove children */
   JI_LIST_FOR_EACH_SAFE(widget->children, link, next) {
-    /* XXXX the autodestroy flag is only useful for windows */
+    /* TODO the autodestroy flag is only useful for windows */
 /*     if (jwidget_is_autodestroy (link->data)) */
       jwidget_free(link->data);
   }
@@ -984,7 +984,7 @@ void jwidget_set_bg_color(JWidget widget, int color)
 void jwidget_set_theme(JWidget widget, JTheme theme)
 {
   widget->theme = theme;
-  /* XXX mmhhh... maybe some JStyle in JWidget should be great */
+  /* TODO mmhhh... maybe some JStyle in JWidget should be great */
   widget->text_font = widget->theme ? widget->theme->default_font: NULL;
 }
 

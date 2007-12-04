@@ -268,7 +268,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
   else if (strcmp(tag->name, "textbox") == 0) {
     Attr *wordwrap = tag_get_attr(tag, "wordwrap");
 
-    /* XXX add translatable support */
+    /* TODO add translatable support */
     widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0);
   }
   /* view */
@@ -438,7 +438,7 @@ static JList read_tags(FILE *f)
 	      jlist_remove(parent_stack, jlist_first(parent_stack)->data);
 	    }
 	    else {
-	      /* XXX error msg */
+	      /* TODO error msg */
 	      /* printf ("you must open the tag before close it\n"); */
 	    }
 

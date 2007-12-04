@@ -496,7 +496,7 @@ static JList read_nodes(JStream stream)
 	      jlist_remove(parent_stack, jlist_first_data(parent_stack));
 	    }
 	    else {
-	      /* XXX error msg */
+	      /* TODO error msg */
 	      /* printf ("you must open the tag before close it\n"); */
 	    }
 

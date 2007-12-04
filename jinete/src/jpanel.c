@@ -225,7 +225,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
 /*     case JM_MOUSEENTER: */
 /*     case JM_MOUSELEAVE: */
-      /* XXX theme stuff */
+      /* TODO theme stuff */
 /*       if (jwidget_is_enabled(widget)) */
 /* 	jwidget_dirty(widget); */
 /*       break; */
@@ -296,7 +296,7 @@ static void panel_set_position(JWidget widget, JRect rect)
     pos->x##1 = widget->rc->x##1;					\
     pos->y##1 = widget->rc->y##1;					\
     pos->x##2 = pos->x##1 + avail*panel->pos/100;			\
-    /* XXXX uncomment this to make a restricted panel */		\
+    /* TODO uncomment this to make a restricted panel */		\
     /* pos->w = MID (req1_##w, pos->w, avail-req2_##w); */		\
     pos->y##2 = pos->y##1 + jrect_##h(widget->rc);			\
 									\

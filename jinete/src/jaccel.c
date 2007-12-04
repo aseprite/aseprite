@@ -206,7 +206,7 @@ static void proc_one_word(JAccel accel, char *word)
       else if (ustricmp (tok, "Down") == 0)
 	scancode = KEY_DOWN;
 
-      /* XXX all "Pad" stuff and "PrtScr" and "Pause" */
+      /* TODO all "Pad" stuff and "PrtScr" and "Pause" */
       else if (ustricmp (tok, "Enter Pad") == 0)
 	scancode = KEY_ENTER_PAD;
     }

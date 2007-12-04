@@ -284,7 +284,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	    jwidget_deselect(widget);
 	}
 
-	/* XXX theme specific stuff */
+	/* TODO theme specific stuff */
 	jwidget_dirty(widget);
       }
       break;
@@ -454,7 +454,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	jwidget_signal_on(widget);
       }
 
-      /* XXX theme stuff */
+      /* TODO theme stuff */
       if (jwidget_is_enabled(widget))
 	jwidget_dirty(widget);
       break;

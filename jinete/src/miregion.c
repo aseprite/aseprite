@@ -1,7 +1,7 @@
 /* $XFree86: xc/programs/Xserver/mi/miregion.c,v 1.9 2003/04/23 21:51:53 tsi Exp $ */
 /***********************************************************
 
-Copyright 1987, 1988, 1989, 1998  The Open Group
+Copyright 1987, 1988, 1989, 1998, 2007  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -443,7 +443,7 @@ miRectAlloc(
 	if (n == 1)
 	{
 	    n = pRgn->data->numRects;
-	    if (n > 500) /* XXX pick numbers out of a hat */
+	    if (n > 500) /* TODO pick numbers out of a hat */
 		n = 250;
 	}
 	n += pRgn->data->numRects;
@@ -1303,7 +1303,7 @@ miRegionAppend(dstrgn, rgn)
     size = numRects;
     dnumRects = REGION_NUM_RECTS(dstrgn);
     if (!dnumRects && (size < 200))
-	size = 200; /* XXX pick numbers out of a hat */
+	size = 200; /* TODO pick numbers out of a hat */
     RECTALLOC(dstrgn, size);
     old = REGION_RECTS(rgn);
     if (!dnumRects)
