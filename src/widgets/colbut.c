@@ -22,14 +22,14 @@
 
 #include <allegro.h>
 
-#include "jinete/button.h"
-#include "jinete/draw.h"
-#include "jinete/hook.h"
-#include "jinete/message.h"
-#include "jinete/rect.h"
-#include "jinete/system.h"
-#include "jinete/theme.h"
-#include "jinete/widget.h"
+#include "jinete/jbutton.h"
+#include "jinete/jdraw.h"
+#include "jinete/jhook.h"
+#include "jinete/jmessage.h"
+#include "jinete/jrect.h"
+#include "jinete/jsystem.h"
+#include "jinete/jtheme.h"
+#include "jinete/jwidget.h"
 
 #include "dialogs/colsel.h"
 #include "modules/color.h"

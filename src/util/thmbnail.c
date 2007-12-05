@@ -24,16 +24,25 @@
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "modules/palette.h"
 #include "raster/cel.h"
 #include "raster/image.h"
-#include "raster/layer.h"
+#include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/thmbnail.h"
 
 #endif
+
+#define THUMBNAIL_W	32
+#define THUMBNAIL_H	32
+
+typedef struct Thumbnail
+{
+  Cel *cel;
+  BITMAP *bmp;
+} Thumbnail;
 
 static JList thumbnails = NULL;
 
@@ -54,7 +63,7 @@ void destroy_thumbnails(void)
   }
 }
 
-BITMAP *generate_thumbnail(Cel *cel, Layer *layer)
+BITMAP *generate_thumbnail(Cel *cel, Sprite *sprite)
 {
   Thumbnail *thumbnail;
   BITMAP *bmp;
@@ -62,15 +71,6 @@ BITMAP *generate_thumbnail(Cel *cel, Layer *layer)
 
   if (!thumbnails)
     thumbnails = jlist_new();
-
-#if 0				/* this must be done by the caller */
-  {
-    /* search original cel */
-    Cel *link_cel = cel_is_link(cel, layer);
-    if (link_cel)
-      cel = link_cel;
-  }
-#endif
 
   /* find the thumbnail */
   JI_LIST_FOR_EACH(thumbnails, link) {
@@ -83,7 +83,7 @@ BITMAP *generate_thumbnail(Cel *cel, Layer *layer)
   if (!bmp)
     return NULL;
 
-  thumbnail_create_bitmap(bmp, stock_get_image(layer->stock, cel->image));
+  thumbnail_create_bitmap(bmp, stock_get_image(sprite->stock, cel->image));
 
   thumbnail = thumbnail_new(cel, bmp);
   if (!thumbnail) {

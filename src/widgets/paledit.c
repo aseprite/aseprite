@@ -24,12 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "jinete/manager.h"
-#include "jinete/message.h"
-#include "jinete/rect.h"
-#include "jinete/system.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
+#include "jinete/jmanager.h"
+#include "jinete/jmessage.h"
+#include "jinete/jrect.h"
+#include "jinete/jsystem.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
 
 #include "modules/color.h"
 #include "modules/gui.h"
@@ -187,11 +187,11 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
       }
       /* up */
       else if (y < 0) {
-	/* XXX this should be implemented? */
+	/* TODO this should be implemented? */
       }
       /* down */
       else if (y > 0) {
-	/* XXX this should be implemented? */
+	/* TODO this should be implemented? */
       }
       break;
     }

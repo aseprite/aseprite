@@ -20,14 +20,15 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/box.h"
-#include "jinete/button.h"
-#include "jinete/hook.h"
-#include "jinete/label.h"
-#include "jinete/slider.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jbox.h"
+#include "jinete/jbutton.h"
+#include "jinete/jhook.h"
+#include "jinete/jlabel.h"
+#include "jinete/jslider.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -39,7 +40,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
-#include "widgets/colbar.h"
 #include "widgets/colbut.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
@@ -52,12 +52,12 @@ static int target_change_hook (JWidget widget, int user_data);
 static int preview_change_hook (JWidget widget, int user_data);
 static void make_preview (void);
 
-bool command_enabled_invert_color(const char *argument)
+static bool cmd_invert_color_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_invert_color(const char *argument)
+static void cmd_invert_color_execute(const char *argument)
 {
   JWidget window, box_target, target_button, button_ok;
   Sprite *sprite = current_sprite;
@@ -146,3 +146,11 @@ static void make_preview(void)
   if (jwidget_is_selected(check_preview))
     preview_restart(preview);
 }
+
+Command cmd_invert_color = {
+  CMD_INVERT_COLOR,
+  cmd_invert_color_enabled,
+  NULL,
+  cmd_invert_color_execute,
+  NULL
+};

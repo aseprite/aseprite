@@ -22,8 +22,8 @@
 
 #include <allegro.h>
 
-#include "jinete/manager.h"
-#include "jinete/system.h"
+#include "jinete/jmanager.h"
+#include "jinete/jsystem.h"
 
 #include "core/core.h"
 #include "modules/gui.h"

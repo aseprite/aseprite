@@ -20,18 +20,10 @@
 #define UTIL_THMBNAIL_H
 
 struct Cel;
-struct BITMAP;
-
-#define THUMBNAIL_W	32
-#define THUMBNAIL_H	32
-
-typedef struct Thumbnail {
-  struct Cel *cel;
-  struct BITMAP *bmp;
-} Thumbnail;
+struct Sprite;
 
 void destroy_thumbnails(void);
-struct BITMAP *generate_thumbnail(struct Cel *cel, struct Layer *layer);
+struct BITMAP *generate_thumbnail(struct Cel *cel, struct Sprite *sprite);
 
 #endif /* UTIL_THMBNAIL_H */
 

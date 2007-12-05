@@ -34,7 +34,6 @@
 #include "raster/undo.h"
 #include "script/functions.h"
 #include "util/celmove.h"
-#include "widgets/colbar.h"
 
 #endif
 
@@ -119,19 +118,21 @@ void copy_cel(void)
     /* create a new cel with a new image (a copy of the
        "handle_cel" one) from "handle_layer" to "sprite->layer" */
 
-    undo_open(sprite->undo);
+    if (undo_is_enabled(sprite->undo))
+      undo_open(sprite->undo);
 
     cel = cel_new_copy(handle_cel);
 
-    if (stock_get_image(handle_layer->stock, handle_cel->image)) {
+    if (stock_get_image(sprite->stock, handle_cel->image)) {
       /* create a copy of the image */
-      image = image_new_copy(stock_get_image(handle_layer->stock,
+      image = image_new_copy(stock_get_image(sprite->stock,
 					     handle_cel->image));
 
       /* add the image in the stock of current layer */
-      image_index = stock_add_image(sprite->layer->stock, image);
-      undo_add_image(sprite->undo,
-		     sprite->layer->stock, image);
+      image_index = stock_add_image(sprite->stock, image);
+
+      if (undo_is_enabled(sprite->undo))
+	undo_add_image(sprite->undo, sprite->stock, image);
     }
 
     /* setup the cel */
@@ -139,7 +140,8 @@ void copy_cel(void)
     cel_set_image(cel, image_index);
 
     /* add the cel in the current layer */
-    undo_add_cel(sprite->undo, sprite->layer, cel);
+    if (undo_is_enabled(sprite->undo))
+      undo_add_cel(sprite->undo, sprite->layer, cel);
     layer_add_cel(sprite->layer, cel);
 
     undo_close(sprite->undo);

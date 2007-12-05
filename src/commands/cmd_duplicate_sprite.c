@@ -22,8 +22,9 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
@@ -32,12 +33,12 @@
 
 #endif
 
-bool command_enabled_duplicate_sprite(const char *argument)
+static bool cmd_duplicate_sprite_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_duplicate_sprite(const char *argument)
+static void cmd_duplicate_sprite_execute(const char *argument)
 {
   JWidget window, src_name, dst_name, flatten;
   Sprite *sprite = current_sprite;
@@ -84,3 +85,11 @@ void command_execute_duplicate_sprite(const char *argument)
 
   jwidget_free(window);
 }
+
+Command cmd_duplicate_sprite = {
+  CMD_DUPLICATE_SPRITE,
+  cmd_duplicate_sprite_enabled,
+  NULL,
+  cmd_duplicate_sprite_execute,
+  NULL
+};

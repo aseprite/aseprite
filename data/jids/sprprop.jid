@@ -11,12 +11,14 @@
         <label text="Type:" />
         <label text="Size:" />
         <label text="Frames:" />
+        <label text="Background:" />
       </box>
       <box vertical homogeneous expansive>
-        <entry maxsize=256 name="name" />
+        <label text="" name="name" />
         <label text="" name="type" />
         <label text="" name="size" />
-        <entry maxsize=4 name="frames" />
+        <label text="" name="frames" />
+        <box vertical name="bgcolor_box" />
       </box>
     </box>
     <button text="Constant Frame-Rate Speed" name="speed" />

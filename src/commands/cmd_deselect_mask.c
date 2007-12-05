@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/mask.h"
@@ -28,14 +29,14 @@
 
 #endif
 
-bool command_enabled_deselect_mask(const char *argument)
+static bool cmd_deselect_mask_enabled(const char *argument)
 {
   return
     current_sprite != NULL &&
     !mask_is_empty(current_sprite->mask);
 }
 
-void command_execute_deselect_mask(const char *argument)
+static void cmd_deselect_mask_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
   Mask *mask;
@@ -62,3 +63,11 @@ void command_execute_deselect_mask(const char *argument)
   sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
+
+Command cmd_deselect_mask = {
+  CMD_DESELECT_MASK,
+  cmd_deselect_mask_enabled,
+  NULL,
+  cmd_deselect_mask_execute,
+  NULL
+};

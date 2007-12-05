@@ -19,7 +19,7 @@
 #ifndef DIALOGS_REPO_H
 #define DIALOGS_REPO_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 typedef struct RepoDlg {	/* a window to shows repositories
 				   (used for mask/paths repositories,

@@ -22,8 +22,8 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
-#include "jinete/intern.h"
+#include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 #include "modules/gfx.h"
 #include "modules/gui.h"

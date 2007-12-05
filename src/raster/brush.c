@@ -23,7 +23,7 @@
 #include <allegro/base.h>
 #include <math.h>
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "raster/brush.h"
 #include "raster/image.h"

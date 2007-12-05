@@ -22,8 +22,8 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
-#include "jinete/intern.h"
+#include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 #include "commands/commands.h"
 #include "core/app.h"
@@ -628,8 +628,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	      k_image = cel->image;
 
 	      cel_link = cel_is_link(cel, layer);
-	      thumbnail = generate_thumbnail(cel_link ? cel_link: cel,
-					     layer);
+	      thumbnail = generate_thumbnail(cel_link ? cel_link: cel, sprite);
 
 	      x1 = k_frame*FRMSIZE-scroll_x+FRMSIZE/2-THUMBSIZE/2;
 	      y1 = y+3;
@@ -650,8 +649,6 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	    }
 	    break;
 	  }
-	  case GFXOBJ_LAYER_TEXT:
-	    break;
 	}
 
 	y += h;

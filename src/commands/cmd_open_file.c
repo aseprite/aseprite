@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
 #include "raster/sprite.h"
@@ -28,7 +29,7 @@
 
 #endif
 
-void command_execute_open_file(const char *argument)
+static void cmd_open_file_execute(const char *argument)
 {
   char *filename;
 
@@ -57,3 +58,11 @@ void command_execute_open_file(const char *argument)
       jfree(filename);
   }
 }
+
+Command cmd_open_file = {
+  CMD_OPEN_FILE,
+  NULL,
+  NULL,
+  cmd_open_file_execute,
+  NULL
+};

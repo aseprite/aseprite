@@ -19,7 +19,7 @@
 #ifndef COMMANDS_COMMANDS_H
 #define COMMANDS_COMMANDS_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 /* file */
 #define CMD_NEW_FILE			"new_file"
@@ -59,7 +59,7 @@
 #define CMD_DUPLICATE_SPRITE		"duplicate_sprite"
 #define CMD_CHANGE_IMAGE_TYPE		"change_image_type"
 #define CMD_CROP_SPRITE			"crop_sprite"
-#define CMD_AUTO_CROP_SPRITE		"auto_crop_sprite"
+#define CMD_AUTOCROP_SPRITE		"autocrop_sprite"
 /* layer */
 #define CMD_LAYER_PROPERTIES		"layer_properties"
 #define CMD_NEW_LAYER			"new_layer"

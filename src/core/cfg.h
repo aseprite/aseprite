@@ -20,7 +20,7 @@
 #define CORE_CFG_H
 
 #include <allegro/config.h>
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 void ase_config_init(void);
 void ase_config_exit(void);

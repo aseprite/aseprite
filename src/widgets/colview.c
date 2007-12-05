@@ -23,12 +23,12 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/draw.h"
-#include "jinete/message.h"
-#include "jinete/rect.h"
-#include "jinete/system.h"
-#include "jinete/theme.h"
-#include "jinete/widget.h"
+#include "jinete/jdraw.h"
+#include "jinete/jmessage.h"
+#include "jinete/jrect.h"
+#include "jinete/jsystem.h"
+#include "jinete/jtheme.h"
+#include "jinete/jwidget.h"
 
 #include "modules/color.h"
 #include "widgets/colview.h"

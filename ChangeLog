@@ -1,3 +1,12 @@
+2007-12-03  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/sprite.h (struct Sprite): Added "stock" (now the
+	stock of images is shared between all layers).
+	(struct Sprite): Added bgcolor field:
+
+	* src/raster/layer.h (struct Layer): Removed the "stock" from the
+	layers.
+
 2007-11-28  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/modules/gui.c (init_module_gui): Better graphics-resolution

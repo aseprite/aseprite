@@ -22,7 +22,7 @@
 
 #include <string.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "modules/palette.h"
 #include "raster/raster.h"
@@ -42,8 +42,6 @@ static Layer *index2layer(Layer *layer, int index);
 static int layer2index(const Layer *layer, const Layer *find_layer);
 
 static Sprite *general_copy(const Sprite *sprite);
-static void layer_set_imgtype(Layer *layer, int imgtype, int dithering_method,
-			      Sprite *sprite);
 
 Sprite *sprite_new(int imgtype, int w, int h)
 {
@@ -60,12 +58,14 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite->imgtype = imgtype;
   sprite->w = w;
   sprite->h = h;
+  sprite->bgcolor = 0;
   sprite->frames = 1;
   sprite->frlens = jmalloc(sizeof(int)*sprite->frames);
   sprite->frame = 0;
 /*   sprite->palette = jmalloc(sizeof(PALETTE)); */
   sprite->palettes = jlist_new();
-  sprite->set = layer_set_new();
+  sprite->stock = stock_new(imgtype);
+  sprite->set = layer_set_new(sprite);
   sprite->layer = NULL;
   sprite->path = NULL;
   sprite->mask = mask_new();
@@ -163,7 +163,6 @@ Sprite *sprite_new_flatten_copy(const Sprite *sprite)
   /* flatten layers */
   if (sprite->set) {
     Layer *flat_layer = layer_flatten(sprite->set,
-				      sprite->imgtype,
 				      0, 0, sprite->w, sprite->h,
 				      0, sprite->frames-1);
     if (!flat_layer) {
@@ -172,7 +171,7 @@ Sprite *sprite_new_flatten_copy(const Sprite *sprite)
     }
 
     /* add and select the new flat layer */
-    layer_add_layer (sprite_copy->set, flat_layer);
+    layer_add_layer(sprite_copy->set, flat_layer);
     sprite_copy->layer = flat_layer;
   }
 
@@ -183,17 +182,47 @@ Sprite *sprite_new_with_layer(int imgtype, int w, int h)
 {
   Sprite *sprite;
   Layer *layer;
+  Cel *cel;
+  Image *image;
+  int index;
 
   sprite = sprite_new(imgtype, w, h);
   if (!sprite)
     return NULL;
 
-  layer = layer_new_with_image(imgtype, 0, 0, w, h, 0);
-  if (!layer) {
+  /* new image */
+  image = image_new(imgtype, w, h);
+  if (!image) {
     sprite_free(sprite);
     return NULL;
   }
 
+  /* new layer */
+  layer = layer_new(sprite);
+  if (!layer) {
+    image_free(image);
+    sprite_free(sprite);
+    return NULL;
+  }
+
+  /* clear with mask color */
+  image_clear(image, 0);
+
+  /* configure layer name and blend mode */
+  layer_set_name(layer, "Background");
+  layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
+
+  /* add image in the layer stock */
+  index = stock_add_image(sprite->stock, image);
+
+  /* create the cel */
+  cel = cel_new(0, index);
+  cel_set_position(cel, 0, 0);
+
+  /* add the cel in the layer */
+  layer_add_cel(layer, cel);
+
+  /* add the layer in the sprite */
   layer_add_layer(sprite->set, layer);
 
   sprite_set_frames(sprite, 1);
@@ -203,10 +232,16 @@ Sprite *sprite_new_with_layer(int imgtype, int w, int h)
   return sprite;
 }
 
-/* destroys the sprite */
+/**
+ * Destroys the sprite
+ */
 void sprite_free(Sprite *sprite)
 {
   JLink link;
+
+  /* destroy images' stock */
+  if (sprite->stock)
+    stock_free(sprite->stock);
 
   /* destroy paths */
   if (sprite->repository.paths) {
@@ -304,7 +339,9 @@ void sprite_set_palette(Sprite *sprite, RGB *rgb, int frame)
   jlist_insert_before(sprite->palettes, link, pal);
 }
 
-/* leaves the first palette only in the sprite */
+/**
+ * Leaves the first palette only in the sprite
+ */
 void sprite_reset_palettes(Sprite *sprite)
 {
   JLink link, next;
@@ -317,7 +354,9 @@ void sprite_reset_palettes(Sprite *sprite)
   }
 }
 
-/* changes the sprite's filename */
+/**
+ * Changes the sprite's filename
+ */
 void sprite_set_filename(Sprite *sprite, const char *filename)
 {
   strcpy(sprite->filename, filename);
@@ -329,7 +368,9 @@ void sprite_set_size(Sprite *sprite, int w, int h)
   sprite->h = h;
 }
 
-/* changes the quantity of frames */
+/**
+ * Changes the quantity of frames
+ */
 void sprite_set_frames(Sprite *sprite, int frames)
 {
   frames = MAX(1, frames);
@@ -359,7 +400,9 @@ int sprite_get_frlen(Sprite *sprite, int frame)
     return 0;
 }
 
-/* sets a constant frame-rate */
+/**
+ * Sets a constant frame-rate
+ */
 void sprite_set_speed(Sprite *sprite, int msecs)
 {
   int c;
@@ -367,7 +410,9 @@ void sprite_set_speed(Sprite *sprite, int msecs)
     sprite->frlens[c] = MID(1, msecs, 65535);
 }
 
-/* changes the current path (makes a copy of "path") */
+/**
+ * Changes the current path (makes a copy of "path")
+ */
 void sprite_set_path(Sprite *sprite, const Path *path)
 {
   if (sprite->path)
@@ -376,7 +421,9 @@ void sprite_set_path(Sprite *sprite, const Path *path)
   sprite->path = path_new_copy(path);
 }
 
-/* changes the current mask (makes a copy of "mask") */
+/**
+ * Changes the current mask (makes a copy of "mask")
+ */
 void sprite_set_mask(Sprite *sprite, const Mask *mask)
 {
   if (sprite->mask)
@@ -385,7 +432,9 @@ void sprite_set_mask(Sprite *sprite, const Mask *mask)
   sprite->mask = mask_new_copy(mask);
 }
 
-/* changes the current layer */
+/**
+ * Changes the current layer
+ */
 void sprite_set_layer(Sprite *sprite, Layer *layer)
 {
   sprite->layer = layer;
@@ -396,25 +445,58 @@ void sprite_set_frame(Sprite *sprite, int frame)
   sprite->frame = frame;
 }
 
-/* XXXX WARNING!: it uses the current Allegro "rgb_map" */
+/**
+ * @warning: it uses the current Allegro "rgb_map"
+ */
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 {
+  Image *old_image;
+  Image *new_image;
+  int c;
+
+  /* nothing to do */
   if (sprite->imgtype == imgtype)
     return;
 
+  /* if the undo is enabled, open a "big" group */
   if (undo_is_enabled(sprite->undo))
     undo_open(sprite->undo);
 
-  /* change "sprite.set" */
-  layer_set_imgtype(sprite->set, imgtype, dithering_method, sprite);
+  /* change imgtype of the stock of images */
+  if (undo_is_enabled(sprite->undo)) {
+    undo_int(sprite->undo, (GfxObj *)sprite, &imgtype);
+    undo_int(sprite->undo, (GfxObj *)sprite->stock, &sprite->stock->imgtype);
+  }
+  sprite->stock->imgtype = imgtype;
 
+  for (c=0; c<sprite->stock->nimage; c++) {
+    old_image = stock_get_image(sprite->stock, c);
+    if (!old_image)
+      continue;
+
+    new_image = image_set_imgtype(old_image, imgtype, dithering_method,
+				  rgb_map,
+				  /* TODO check this out */
+				  sprite_get_palette(sprite,
+						     sprite->frame));
+    if (!new_image)
+      return;		/* TODO big error!!!: not enough memory!
+			   we should undo all work done */
+
+    if (undo_is_enabled(sprite->undo))
+      undo_replace_image(sprite->undo, sprite->stock, c);
+
+    image_free(old_image);
+    stock_replace_image(sprite->stock, c, new_image);
+  }
+  
   /* change "sprite.imgtype" field */
   if (undo_is_enabled(sprite->undo))
     undo_int (sprite->undo, (GfxObj *)sprite, &sprite->imgtype);
 
   sprite->imgtype = imgtype;
 
-#if 0				/* XXXXX */
+#if 0				/* TODO */
   /* change "sprite.palette" */
   if (imgtype == IMAGE_GRAYSCALE) {
     int c;
@@ -431,19 +513,33 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
     undo_close(sprite->undo);
 }
 
-/* adds a path to the sprites's repository */
+/**
+ * Sets the background color of the sprite.
+ */
+void sprite_set_bgcolor(Sprite *sprite, int color)
+{
+  sprite->bgcolor = color;
+}
+
+/**
+ * Adds a path to the sprites's repository
+ */
 void sprite_add_path(Sprite *sprite, Path *path)
 {
   jlist_append(sprite->repository.paths, path);
 }
 
-/* removes a path from the sprites's repository */
+/**
+ * Removes a path from the sprites's repository
+ */
 void sprite_remove_path (Sprite *sprite, Path *path)
 {
   jlist_remove(sprite->repository.paths, path);
 }
 
-/* adds a mask to the sprites's repository */
+/**
+ * Adds a mask to the sprites's repository
+ */
 void sprite_add_mask (Sprite *sprite, Mask *mask)
 {
   /* you can't add masks to repository without name */
@@ -458,14 +554,18 @@ void sprite_add_mask (Sprite *sprite, Mask *mask)
   jlist_append(sprite->repository.masks, mask);
 }
 
-/* removes a mask from the sprites's repository */
+/**
+ * Removes a mask from the sprites's repository
+ */
 void sprite_remove_mask(Sprite *sprite, Mask *mask)
 {
   /* remove the mask from the repository */
   jlist_remove(sprite->repository.masks, mask);
 }
 
-/* returns a mask from the sprite's repository searching it by its name */
+/**
+ * Returns a mask from the sprite's repository searching it by its name
+ */
 Mask *sprite_request_mask(Sprite *sprite, const char *name)
 {
   Mask *mask;
@@ -482,6 +582,7 @@ Mask *sprite_request_mask(Sprite *sprite, const char *name)
 
 void sprite_render(Sprite *sprite, Image *image, int x, int y)
 {
+  image_rectfill(image, x, y, x+sprite->w-1, y+sprite->h-1, sprite->bgcolor);
   layer_render(sprite->set, image, x, y, sprite->frame);
 }
 
@@ -564,7 +665,9 @@ static int layer2index(const Layer *layer, const Layer *find_layer)
   }
 }
 
-/* makes a copy "sprite" without the layers (only with the empty layer set) */
+/**
+ * Makes a copy "sprite" without the layers (only with the empty layer set)
+ */
 static Sprite *general_copy(const Sprite *sprite)
 {
   Sprite *sprite_copy;
@@ -574,9 +677,17 @@ static Sprite *general_copy(const Sprite *sprite)
   if (!sprite_copy)
     return NULL;
 
+  /* copy stock */
+  stock_free(sprite_copy->stock);
+  sprite_copy->stock = stock_new_copy(sprite->stock);
+  if (!sprite_copy->stock) {
+    sprite_free(sprite_copy);
+    return NULL;
+  }
+
   /* copy general properties */
   strcpy(sprite_copy->filename, sprite->filename);
-
+  sprite_set_bgcolor(sprite_copy, sprite->bgcolor);
   sprite_set_frames(sprite_copy, sprite->frame);
   memcpy(sprite_copy->frlens, sprite->frlens, sizeof(int)*sprite->frames);
 
@@ -633,58 +744,4 @@ static Sprite *general_copy(const Sprite *sprite)
   sprite_copy->preferred.zoom = sprite->preferred.zoom;
 
   return sprite_copy;
-}
-
-/* XXXX WARNING!: it uses the current Allegro "rgb_map" */
-static void layer_set_imgtype(Layer *layer, int imgtype, int dithering_method,
-			      Sprite *sprite)
-{
-  switch (layer->gfxobj.type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      Image *old_image;
-      Image *new_image;
-      int c;
-
-      if (undo_is_enabled(sprite->undo)) {
-	undo_int(sprite->undo, (GfxObj *)layer, &layer->imgtype);
-	undo_int(sprite->undo, (GfxObj *)layer->stock, &layer->stock->imgtype);
-      }
-      layer->imgtype = imgtype;
-      layer->stock->imgtype = imgtype;
-
-      for (c=0; c<layer->stock->nimage; c++) {
-	old_image = stock_get_image(layer->stock, c);
-	if (!old_image)
-	  continue;
-
-	new_image = image_set_imgtype(old_image, imgtype, dithering_method,
-				      rgb_map,
-				      /* TODO check this out */
-				      sprite_get_palette(sprite,
-							 sprite->frame));
-	if (!new_image)
-	  return;		/* TODO big error!!!: not enough memory!
-				 we should undo all work done */
-
-	if (undo_is_enabled(sprite->undo))
-	  undo_replace_image(sprite->undo, layer->stock, c);
-
-	image_free(old_image);
-	stock_replace_image(layer->stock, c, new_image);
-      }
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	layer_set_imgtype(link->data, imgtype, dithering_method, sprite);
-      break;
-    }
-
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-      break;
-  }
 }

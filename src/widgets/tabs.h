@@ -19,7 +19,7 @@
 #ifndef WIDGETS_TABS_H
 #define WIDGETS_TABS_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 JWidget tabs_new(void (*select_callback)(void *data));
 

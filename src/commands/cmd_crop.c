@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -31,32 +32,32 @@
 
 #endif
 
-static bool command_enabled_crop(const char *argument);
+static bool cmd_crop_enabled(const char *argument);
 
 /* ======================== */
 /* crop_sprite              */
 /* ======================== */
 
-bool command_enabled_crop_sprite(const char *argument)
+static bool cmd_crop_sprite_enabled(const char *argument)
 {
-  return command_enabled_crop(argument);
+  return cmd_crop_enabled(argument);
 }
 
-void command_execute_crop_sprite(const char *argument)
+static void cmd_crop_sprite_execute(const char *argument)
 {
   crop_sprite();
 }
 
 /* ======================== */
-/* auto_crop_sprite         */
+/* autocrop_sprite          */
 /* ======================== */
 
-bool command_enabled_autocrop_sprite(const char *argument)
+static bool cmd_autocrop_sprite_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_autocrop_sprite(const char *argument)
+static void cmd_autocrop_sprite_execute(const char *argument)
 {
   autocrop_sprite();
 }
@@ -65,12 +66,12 @@ void command_execute_autocrop_sprite(const char *argument)
 /* crop_layer               */
 /* ======================== */
 
-bool command_enabled_crop_layer(const char *argument)
+static bool cmd_crop_layer_enabled(const char *argument)
 {
-  return command_enabled_crop(argument);
+  return cmd_crop_enabled(argument);
 }
 
-void command_execute_crop_layer(const char *argument)
+static void cmd_crop_layer_execute(const char *argument)
 {
   crop_layer();
 }
@@ -79,12 +80,12 @@ void command_execute_crop_layer(const char *argument)
 /* crop_cel               */
 /* ======================== */
 
-bool command_enabled_crop_cel(const char *argument)
+static bool cmd_crop_cel_enabled(const char *argument)
 {
-  return command_enabled_crop(argument);
+  return cmd_crop_enabled(argument);
 }
 
-void command_execute_crop_cel(const char *argument)
+static void cmd_crop_cel_execute(const char *argument)
 {
   crop_cel();
 }
@@ -92,7 +93,7 @@ void command_execute_crop_cel(const char *argument)
 /**********************************************************************/
 /* local */
 
-static bool command_enabled_crop(const char *argument)
+static bool cmd_crop_enabled(const char *argument)
 {
   if ((!current_sprite) ||
       (!current_sprite->layer) ||
@@ -104,3 +105,35 @@ static bool command_enabled_crop(const char *argument)
   else
     return GetImage() ? TRUE: FALSE;
 }
+
+Command cmd_crop_sprite = {
+  CMD_CROP_SPRITE,
+  cmd_crop_sprite_enabled,
+  NULL,
+  cmd_crop_sprite_execute,
+  NULL
+};
+
+Command cmd_autocrop_sprite = {
+  CMD_AUTOCROP_SPRITE,
+  cmd_autocrop_sprite_enabled,
+  NULL,
+  cmd_autocrop_sprite_execute,
+  NULL
+};
+
+Command cmd_crop_layer = {
+  CMD_CROP_LAYER,
+  cmd_crop_layer_enabled,
+  NULL,
+  cmd_crop_layer_execute,
+  NULL
+};
+
+Command cmd_crop_cel = {
+  CMD_CROP_CEL,
+  cmd_crop_cel_enabled,
+  NULL,
+  cmd_crop_cel_execute,
+  NULL
+};

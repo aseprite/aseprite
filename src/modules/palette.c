@@ -23,7 +23,7 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "modules/palette.h"
 #include "raster/blend.h"

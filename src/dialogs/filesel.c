@@ -35,7 +35,7 @@
 #include <shlobj.h>
 #endif
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "core/cfg.h"
 #include "core/dirs.h"

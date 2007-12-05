@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "console/console.h"
 #include "modules/gui.h"
@@ -85,18 +85,18 @@ void crop_layer(void)
     Layer *set = (Layer *)layer->parent;
     JLink link;
 
-    new_layer = layer_new(layer->imgtype);
+    new_layer = layer_new(sprite);
     if (!new_layer) {
       console_printf(_("Not enough memory\n"));
       return;
     }
 
-    layer_set_name (new_layer, layer->name);
-    layer_set_blend_mode (new_layer, layer->blend_mode);
+    layer_set_name(new_layer, layer->name);
+    layer_set_blend_mode(new_layer, layer->blend_mode);
 
     JI_LIST_FOR_EACH(layer->cels, link) {
       cel = link->data;
-      image = stock_get_image(layer->stock, cel->image);
+      image = stock_get_image(sprite->stock, cel->image);
       if (!image)
 	continue;
 
@@ -119,7 +119,7 @@ void crop_layer(void)
 	return;
       }
 
-      new_cel->image = stock_add_image(new_layer->stock, new_image);
+      new_cel->image = stock_add_image(sprite->stock, new_image);
       new_cel->x = sprite->mask->x;
       new_cel->y = sprite->mask->y;
 
@@ -172,11 +172,11 @@ void crop_cel(void)
     undo_open(sprite->undo);
     undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
     undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-    undo_replace_image(sprite->undo, sprite->layer->stock, cel->image);
+    undo_replace_image(sprite->undo, sprite->stock, cel->image);
     undo_close(sprite->undo);
 
     /* replace the image */
-    sprite->layer->stock->image[cel->image] =
+    sprite->stock->image[cel->image] =
       image_crop(image,
 		 sprite->mask->x-cel->x,
 		 sprite->mask->y-cel->y,
@@ -224,8 +224,5 @@ static void displace_layers(Undo *undo, Layer *layer, int x, int y)
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-      break;
   }
 }

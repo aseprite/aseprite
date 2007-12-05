@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "core/cfg.h"
 #include "dialogs/filesel.h"

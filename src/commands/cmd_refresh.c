@@ -22,13 +22,14 @@
 
 #include <allegro.h>
 
-#include "jinete/system.h"
+#include "jinete/jsystem.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 
 #endif
 
-void command_execute_refresh(const char *argument)
+static void cmd_refresh_execute(const char *argument)
 {
   jmouse_hide();
   clear_to_color(screen, makecol(0, 0, 0));
@@ -36,3 +37,11 @@ void command_execute_refresh(const char *argument)
 
   app_refresh_screen();
 }
+
+Command cmd_refresh = {
+  CMD_REFRESH,
+  NULL,
+  NULL,
+  cmd_refresh_execute,
+  NULL
+};

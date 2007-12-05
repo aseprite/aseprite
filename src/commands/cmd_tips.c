@@ -20,13 +20,22 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
+#include "commands/commands.h"
 #include "dialogs/tips.h"
 
 #endif
 
-void command_execute_tips(const char *argument)
+static void cmd_tips_execute(const char *argument)
 {
   dialogs_tips(TRUE);
 }
+
+Command cmd_tips = {
+  CMD_TIPS,
+  NULL,
+  NULL,
+  cmd_tips_execute,
+  NULL
+};

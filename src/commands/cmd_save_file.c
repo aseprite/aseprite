@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "commands/commands.h"
 #include "console/console.h"
@@ -31,12 +31,12 @@
 
 #endif
 
-bool command_enabled_save_file(const char *argument)
+static bool cmd_save_file_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_save_file(const char *argument)
+static void cmd_save_file_execute(const char *argument)
 {
   /* if the sprite is associated to a file in the file-system, we can
      save it directly without user interaction */
@@ -59,3 +59,11 @@ void command_execute_save_file(const char *argument)
     command_execute(command_get_by_name(CMD_SAVE_FILE_AS), argument);
   }
 }
+
+Command cmd_save_file = {
+  CMD_SAVE_FILE,
+  cmd_save_file_enabled,
+  NULL,
+  cmd_save_file_execute,
+  NULL
+};

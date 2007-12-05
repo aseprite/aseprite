@@ -20,13 +20,14 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "util/clipbrd.h"
 
 #endif
 
-bool command_enabled_paste(const char *argument)
+static bool cmd_paste_enabled(const char *argument)
 {
   Sprite *sprite = current_sprite;
   Sprite *clipboard = get_clipboard_sprite();
@@ -34,7 +35,15 @@ bool command_enabled_paste(const char *argument)
   return (sprite && clipboard && (clipboard != sprite));
 }
 
-void command_execute_paste(const char *argument)
+static void cmd_paste_execute(const char *argument)
 {
   paste_from_clipboard();
 }
+
+Command cmd_paste = {
+  CMD_PASTE,
+  cmd_paste_enabled,
+  NULL,
+  cmd_paste_execute,
+  NULL
+};

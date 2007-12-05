@@ -30,7 +30,6 @@
 #include "modules/tools.h"
 #include "raster/brush.h"
 #include "raster/sprite.h"
-#include "widgets/colbar.h"
 
 #endif
 

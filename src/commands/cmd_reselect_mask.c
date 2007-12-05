@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/mask.h"
@@ -28,14 +29,14 @@
 
 #endif
 
-bool command_enabled_reselect_mask(const char *argument)
+static bool cmd_reselect_mask_enabled(const char *argument)
 {
   return
     current_sprite != NULL &&
     sprite_request_mask(current_sprite, "*deselected*") != NULL;
 }
 
-void command_execute_reselect_mask(const char *argument)
+static void cmd_reselect_mask_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
   Mask *mask;
@@ -57,3 +58,11 @@ void command_execute_reselect_mask(const char *argument)
   sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
+
+Command cmd_reselect_mask = {
+  CMD_RESELECT_MASK,
+  cmd_reselect_mask_enabled,
+  NULL,
+  cmd_reselect_mask_execute,
+  NULL
+};

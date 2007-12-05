@@ -19,7 +19,7 @@
 #ifndef WIDGETS_MENUITEM_H
 #define WIDGETS_MENUITEM_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 struct Command;
 

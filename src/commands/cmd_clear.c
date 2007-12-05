@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
@@ -27,12 +28,12 @@
 
 #endif
 
-bool command_enabled_clear(const char *argument)
+static bool cmd_clear_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_clear(const char *argument)
+static void cmd_clear_execute(const char *argument)
 {
   /* get current sprite */
   Sprite *sprite = current_sprite;
@@ -43,3 +44,11 @@ void command_execute_clear(const char *argument)
   /* refresh the sprite */
   update_screen_for_sprite(sprite);
 }
+
+Command cmd_clear = {
+  CMD_CLEAR,
+  cmd_clear_enabled,
+  NULL,
+  cmd_clear_execute,
+  NULL
+};

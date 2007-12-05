@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "core/core.h"
 #include "core/dirs.h"

@@ -22,8 +22,9 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
 /* #include "core/cfg.h" */
@@ -54,7 +55,7 @@ static int old_card, old_w, old_h, old_depth, old_scaling;
 static void show_dialog(void);
 static void try_new_gfx_mode(void);
 
-void command_execute_configure_screen(const char *argument)
+static void cmd_configure_screen_execute(const char *argument)
 {
   /* get the active status */
   old_card    = gfx_driver->id;
@@ -193,3 +194,11 @@ static void try_new_gfx_mode(void)
     jmanager_refresh_screen();
   }
 }
+
+Command cmd_configure_screen = {
+  CMD_CONFIGURE_SCREEN,
+  NULL,
+  NULL,
+  cmd_configure_screen_execute,
+  NULL
+};

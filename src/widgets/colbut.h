@@ -19,7 +19,7 @@
 #ifndef WIDGETS_COLBUT_H
 #define WIDGETS_COLBUT_H
 
-/* XXX use some JI_SIGNAL_USER */
+/* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLOR_BUTTON_CHANGE   0x10001
 
 JWidget color_button_new (const char *color, int imgtype);

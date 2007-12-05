@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
@@ -27,13 +28,21 @@
 
 #endif
 
-bool command_enabled_remove_layer(const char *argument)
+static bool cmd_remove_layer_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_remove_layer(const char *argument)
+static void cmd_remove_layer_execute(const char *argument)
 {
   RemoveLayer();
   update_screen_for_sprite(current_sprite);
 }
+
+Command cmd_remove_layer = {
+  CMD_REMOVE_LAYER,
+  cmd_remove_layer_enabled,
+  NULL,
+  cmd_remove_layer_execute,
+  NULL
+};

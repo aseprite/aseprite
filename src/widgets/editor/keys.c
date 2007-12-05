@@ -22,9 +22,9 @@
 
 #include <allegro/keyboard.h>
 
-#include "jinete/system.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
+#include "jinete/jsystem.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
 
 #include "core/app.h"
 #include "modules/color.h"
@@ -55,7 +55,7 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
     y = 0;
     zoom = -1;
 
-    switch (scancode) { /* XXX make these keys configurable */
+    switch (scancode) { /* TODO make these keys configurable */
       case KEY_1: zoom = 0; break;
       case KEY_2: zoom = 1; break;
       case KEY_3: zoom = 2; break;
@@ -149,7 +149,7 @@ int editor_keys_toset_brushsize(JWidget widget, int scancode)
   if ((editor->sprite) &&
       (jwidget_has_mouse (widget)) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    /* XXX configurable keys */
+    /* TODO configurable keys */
     /* set the thickness */
     if (scancode == KEY_MINUS_PAD) {
       if (get_brush_size () > 1)
@@ -173,7 +173,7 @@ int editor_keys_toget_pixels(JWidget widget, int scancode)
   if ((editor->sprite) &&
       (jwidget_has_mouse (widget)) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    /* XXX make these keys configurable */
+    /* TODO make these keys configurable */
     /* get a color from the sprite */
     if ((scancode == KEY_9) || (scancode == KEY_0)) {
       char *color = NULL;
@@ -197,17 +197,27 @@ int editor_keys_toget_pixels(JWidget widget, int scancode)
   return FALSE;
 }
 
+/**
+ * Gets a pixel from the sprite in the specified position. If in the
+ * specified coordinates there're background this routine will return
+ * the 0 color (the mask-color).
+ */
 static int getpixel_sprite(Sprite *sprite, int x, int y)
 {
   Image *image;
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < sprite->w) && (y < sprite->h)) {
+    int old_bgcolor = sprite->bgcolor;
+    sprite->bgcolor = 0;
+    
     image = image_new(sprite->imgtype, 1, 1);
     image_clear(image, 0);
     sprite_render(sprite, image, -x, -y);
     color = image_getpixel(image, 0, 0);
     image_free(image);
+
+    sprite->bgcolor = old_bgcolor;
   }
 
   return color;

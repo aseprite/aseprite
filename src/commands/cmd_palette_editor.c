@@ -20,14 +20,28 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
-void command_execute_palette_editor(const char *argument)
+static bool cmd_palette_editor_enabled(const char *argument)
+{
+  return FALSE;
+}
+
+static void cmd_palette_editor_execute(const char *argument)
 {
 }
+
+Command cmd_palette_editor = {
+  CMD_PALETTE_EDITOR,
+  cmd_palette_editor_enabled,
+  NULL,
+  cmd_palette_editor_execute,
+  NULL
+};

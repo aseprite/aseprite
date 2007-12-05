@@ -20,8 +20,8 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/message.h"
-#include "jinete/widget.h"
+#include "jinete/jmessage.h"
+#include "jinete/jwidget.h"
 
 #include "effect/effect.h"
 #include "raster/sprite.h"

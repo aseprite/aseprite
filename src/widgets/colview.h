@@ -19,9 +19,9 @@
 #ifndef WIDGETS_COLVIEW_H
 #define WIDGETS_COLVIEW_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
-/* XXX use some JI_SIGNAL_USER */
+/* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLOR_VIEWER_SELECT   0x10002
 
 JWidget color_viewer_new (const char *color, int imgtype);

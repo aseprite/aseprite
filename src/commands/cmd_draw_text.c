@@ -20,14 +20,23 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
-void command_execute_draw_text(const char *argument)
-{
-}
+/* static void cmd_draw_text_execute(const char *argument) */
+/* { */
+/* } */
+
+/* Command cmd_draw_text = { */
+/*   CMD_DRAW_TEXT, */
+/*   cmd_draw_text_enabled, */
+/*   NULL, */
+/*   cmd_draw_text_execute, */
+/*   NULL */
+/* }; */

@@ -19,7 +19,7 @@
 #ifndef RASTER_SPRITE_H
 #define RASTER_SPRITE_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 #include <allegro/color.h>
 
@@ -28,6 +28,7 @@ struct Path;
 struct Mask;
 struct Undo;
 struct Image;
+struct Stock;
 
 typedef struct Sprite Sprite;
 
@@ -39,11 +40,13 @@ struct Sprite
 				   to a file in the file-system */
   int imgtype;			/* image type */
   int w, h;			/* image width/height size (in pixels) */
+  int bgcolor;			/* background color */
   int frames;			/* how many frames has this sprite */
   int *frlens;			/* duration per frame */
   int frame;			/* current frame, range [0,frames) */
 /*   RGB *palette;			/\* sprite palette *\/ */
   JList palettes;		/* list of palettes */
+  struct Stock *stock;		/* stock to get images */
   struct Layer *set;		/* layer list */
   struct Layer *layer;		/* current layer */
   struct Path *path;		/* working path */
@@ -89,6 +92,7 @@ void sprite_set_mask(Sprite *sprite, const struct Mask *mask);
 void sprite_set_layer(Sprite *sprite, struct Layer *layer);
 void sprite_set_frame(Sprite *sprite, int frame);
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method);
+void sprite_set_bgcolor(Sprite *sprite, int color);
 
 void sprite_add_path(Sprite *sprite, struct Path *path);
 void sprite_remove_path(Sprite *sprite, struct Path *path);

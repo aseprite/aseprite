@@ -52,7 +52,7 @@ void autocrop_sprite(void)
       image_clear(image, 0);
       sprite_render(sprite, image, 0, 0);
 
-      /* XXXX configurable (what color pixel to use as "refpixel",
+      /* TODO configurable (what color pixel to use as "refpixel",
 	 here we are using the top-left pixel by default) */
       if (get_shrink_rect(&u1, &v1, &u2, &v2,
 			  image, image_getpixel (image, 0, 0))) {

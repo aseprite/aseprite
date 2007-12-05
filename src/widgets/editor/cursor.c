@@ -22,12 +22,12 @@
 
 #include <allegro.h>
 
-#include "jinete/base.h"
-#include "jinete/list.h"
-#include "jinete/rect.h"
-#include "jinete/region.h"
-#include "jinete/system.h"
-#include "jinete/widget.h"
+#include "jinete/jbase.h"
+#include "jinete/jlist.h"
+#include "jinete/jrect.h"
+#include "jinete/jregion.h"
+#include "jinete/jsystem.h"
+#include "jinete/jwidget.h"
 
 #include "modules/color.h"
 #include "modules/tools.h"
@@ -49,7 +49,7 @@
 /**
  * Maximum quantity of colors to save pixels overlapped by the cursor.
  */
-#define MAX_SAVED   4096	/* XXX maybe more size is required for
+#define MAX_SAVED   4096	/* TODO maybe more size is required for
 				   high resolutions */
 
 static struct {

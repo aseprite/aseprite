@@ -20,7 +20,7 @@
 #define EFFECT_H
 
 #include <stdlib.h>
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 struct Image;
 struct Mask;

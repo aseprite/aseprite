@@ -22,7 +22,7 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "core/cfg.h"
 #include "dialogs/filesel.h"

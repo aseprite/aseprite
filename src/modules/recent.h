@@ -19,7 +19,7 @@
 #ifndef MODULES_RECENT_H
 #define MODULES_RECENT_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 int init_module_recent(void);
 void exit_module_recent(void);

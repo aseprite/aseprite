@@ -19,7 +19,7 @@
 #ifndef WIDGETS_COLBAR_H
 #define WIDGETS_COLBAR_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #define COLOR_BAR_COLORS   256
 

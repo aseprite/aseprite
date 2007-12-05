@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/mask.h"
@@ -28,12 +29,12 @@
 
 #endif
 
-bool command_enabled_mask_all(const char *argument)
+static bool cmd_mask_all_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
   
-void command_execute_mask_all(const char *argument)
+static void cmd_mask_all_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
@@ -47,3 +48,11 @@ void command_execute_mask_all(const char *argument)
   sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
+
+Command cmd_mask_all = {
+  CMD_MASK_ALL,
+  cmd_mask_all_enabled,
+  NULL,
+  cmd_mask_all_execute,
+  NULL
+};

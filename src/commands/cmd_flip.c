@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -37,12 +38,12 @@ static void do_flip(int horz);
 /* flip_horizontal          */
 /* ======================== */
 
-bool command_enabled_flip_horizontal(const char *argument)
+static bool cmd_flip_horizontal_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_flip_horizontal(const char *argument)
+static void cmd_flip_horizontal_execute(const char *argument)
 {
   do_flip(TRUE);
 }
@@ -51,12 +52,12 @@ void command_execute_flip_horizontal(const char *argument)
 /* flip_vertical            */
 /* ======================== */
 
-bool command_enabled_flip_vertical(const char *argument)
+static bool cmd_flip_vertical_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_flip_vertical(const char *argument)
+static void cmd_flip_vertical_execute(const char *argument)
 {
   do_flip(FALSE);
 }
@@ -110,3 +111,19 @@ static void do_flip(int horz)
   image_free(area);
   update_screen_for_sprite(current_sprite);
 }
+
+Command cmd_flip_horizontal = {
+  CMD_FLIP_HORIZONTAL,
+  cmd_flip_horizontal_enabled,
+  NULL,
+  cmd_flip_horizontal_execute,
+  NULL
+};
+
+Command cmd_flip_vertical = {
+  CMD_FLIP_VERTICAL,
+  cmd_flip_vertical_enabled,
+  NULL,
+  cmd_flip_vertical_execute,
+  NULL
+};

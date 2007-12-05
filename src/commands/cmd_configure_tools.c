@@ -22,8 +22,9 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -62,7 +63,7 @@ static int set_grid_button_select_hook(JWidget widget, int user_data);
 static int cursor_button_change_hook(JWidget widget, int user_data);
 static int onionskin_check_change_hook(JWidget widget, int user_data);
 
-void command_execute_configure_tools(const char *argument)
+static void cmd_configure_tools_execute(const char *argument)
 {
   JWidget filled, tiled, use_grid, view_grid, set_grid;
   JWidget brush_size, brush_angle, glass_dirty;
@@ -328,3 +329,11 @@ static int onionskin_check_change_hook(JWidget widget, int user_data)
   return FALSE;
 }
 
+
+Command cmd_configure_tools = {
+  CMD_CONFIGURE_TOOLS,
+  NULL,
+  NULL,
+  cmd_configure_tools_execute,
+  NULL
+};

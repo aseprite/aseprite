@@ -27,8 +27,8 @@
 #include <winalleg.h>
 #endif
 
-#include "jinete.h"
-#include "jinete/intern.h"
+#include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 #include "commands/commands.h"
 #include "console/console.h"

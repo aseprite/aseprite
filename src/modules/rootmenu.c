@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "console/console.h"

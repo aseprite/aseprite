@@ -19,7 +19,7 @@
 #ifndef EFFECT_COLCURVE_H
 #define EFFECT_COLCURVE_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 struct Effect;
 

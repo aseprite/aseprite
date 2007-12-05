@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/system.h"
+#include "jinete/jsystem.h"
 
 #include "core/core.h"
 

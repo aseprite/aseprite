@@ -19,7 +19,7 @@
 #ifndef MODULES_EDITORS_H
 #define MODULES_EDITORS_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 extern JWidget current_editor;
 extern JWidget box_editors;

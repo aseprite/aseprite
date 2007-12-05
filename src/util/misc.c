@@ -23,10 +23,10 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/list.h"
-#include "jinete/manager.h"
-#include "jinete/system.h"
-#include "jinete/widget.h"
+#include "jinete/jlist.h"
+#include "jinete/jmanager.h"
+#include "jinete/jsystem.h"
+#include "jinete/jwidget.h"
 
 #include "core/app.h"
 #include "core/cfg.h"
@@ -56,13 +56,13 @@ Image *GetImage(void)
   Sprite *sprite = current_sprite;
   Image *image = NULL;
 
-  if (sprite && sprite->layer && layer_is_image (sprite->layer)) {
+  if (sprite && sprite->layer && layer_is_image(sprite->layer)) {
     Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
     if (cel) {
       if ((cel->image >= 0) &&
-	  (cel->image < sprite->layer->stock->nimage))
-	image = sprite->layer->stock->image[cel->image];
+	  (cel->image < sprite->stock->nimage))
+	image = sprite->stock->image[cel->image];
     }
   }
 
@@ -73,13 +73,13 @@ Image *GetImage2(Sprite *sprite, int *x, int *y, int *opacity)
 {
   Image *image = NULL;
 
-  if (sprite && sprite->layer && layer_is_image (sprite->layer)) {
-    Cel *cel = layer_get_cel (sprite->layer, sprite->frame);
+  if (sprite && sprite->layer && layer_is_image(sprite->layer)) {
+    Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
     if (cel) {
       if ((cel->image >= 0) &&
-	  (cel->image < sprite->layer->stock->nimage))
-	image = sprite->layer->stock->image[cel->image];
+	  (cel->image < sprite->stock->nimage))
+	image = sprite->stock->image[cel->image];
 
       if (x) *x = cel->x;
       if (y) *y = cel->y;
@@ -224,7 +224,7 @@ Layer *NewLayerFromMask(void)
     }
   }
 
-  layer = layer_new(sprite->imgtype);
+  layer = layer_new(sprite);
   if (!layer) {
     image_free (dst);
     return NULL;
@@ -232,7 +232,7 @@ Layer *NewLayerFromMask(void)
 
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
-  cel = cel_new(sprite->frame, stock_add_image(layer->stock, dst));
+  cel = cel_new(sprite->frame, stock_add_image(sprite->stock, dst));
   cel_set_position(cel, sprite->mask->x, sprite->mask->y);
 
   layer_add_cel(layer, cel);
@@ -249,8 +249,8 @@ Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
 
     if (cel) {
       if ((cel->image >= 0) &&
-	  (cel->image < layer->stock->nimage))
-	image = layer->stock->image[cel->image];
+	  (cel->image < layer->sprite->stock->nimage))
+	image = layer->sprite->stock->image[cel->image];
 
       if (x) *x = cel->x;
       if (y) *y = cel->y;

@@ -20,19 +20,28 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
+#include "commands/commands.h"
 #include "dialogs/filmedit.h"
 #include "util/celmove.h"
 
 #endif
 
-bool command_enabled_move_cel(const char *argument)
+static bool cmd_move_cel_enabled(const char *argument)
 {
   return is_movingcel();
 }
 
-void command_execute_move_cel(const char *argument)
+static void cmd_move_cel_execute(const char *argument)
 {
   move_cel();
 }
+
+Command cmd_move_cel = {
+  CMD_MOVE_CEL,
+  cmd_move_cel_enabled,
+  NULL,
+  cmd_move_cel_execute,
+  NULL
+};

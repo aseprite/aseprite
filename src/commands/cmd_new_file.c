@@ -23,8 +23,9 @@
 #include <allegro/config.h>
 #include <allegro/unicode.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "dialogs/colsel.h"
@@ -51,7 +52,7 @@ static Sprite *new_sprite(int imgtype, int w, int h);
 /**
  * Shows the "New Sprite" dialog.
  */
-void command_execute_new_file(const char *argument)
+static void cmd_new_file_execute(const char *argument)
 {
   JWidget window, width, height, radio1, radio2, radio3, ok, bg_box;
   int imgtype, w, h, bg;
@@ -141,7 +142,8 @@ void command_execute_new_file(const char *argument)
 	usprintf(buf, "Sprite-%04d", ++_sprite_counter);
 	sprite_set_filename(sprite, buf);
 
-	image_clear(GetImage(), get_color_for_image(imgtype, color));
+	/* image_clear(GetImage(), get_color_for_image(imgtype, color)); */
+	sprite->bgcolor = get_color_for_image(imgtype, color);
 
 	sprite_show(sprite);
       }
@@ -164,3 +166,11 @@ static Sprite *new_sprite(int imgtype, int w, int h)
   set_current_sprite(sprite);
   return sprite;
 }
+
+Command cmd_new_file = {
+  CMD_NEW_FILE,
+  NULL,
+  NULL,
+  cmd_new_file_execute,
+  NULL
+};

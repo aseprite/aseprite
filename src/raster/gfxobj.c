@@ -22,8 +22,8 @@
 
 #include <string.h>
 
-#include "jinete/base.h"
-#include "jinete/list.h"
+#include "jinete/jbase.h"
+#include "jinete/jlist.h"
 
 #include "raster/gfxobj.h"
 
@@ -76,7 +76,7 @@ GfxObj *gfxobj_find (unsigned int id)
 
 void _gfxobj_set_id (GfxObj *gfxobj, int id)
 {
-  /* XXXX */
+  /* TODO */
   /* ji_assert (!gfxobj_find (id)); */
 
   gfxobj->id = id;

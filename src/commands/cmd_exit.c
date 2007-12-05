@@ -20,15 +20,16 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
-void command_execute_exit(const char *argument)
+static void cmd_exit_execute(const char *argument)
 {
   Sprite *sprite = get_first_sprite();
   Sprite *clipboard = get_clipboard_sprite();
@@ -49,3 +50,11 @@ void command_execute_exit(const char *argument)
   /* close the window */
   jwindow_close(app_get_top_window(), 0);
 }
+
+Command cmd_exit = {
+  CMD_EXIT,
+  NULL,
+  NULL,
+  cmd_exit_execute,
+  NULL
+};

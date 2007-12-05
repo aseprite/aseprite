@@ -23,11 +23,11 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/intern.h"
-#include "jinete/message.h"
-#include "jinete/rect.h"
-#include "jinete/system.h"
-#include "jinete/widget.h"
+#include "jinete/jintern.h"
+#include "jinete/jmessage.h"
+#include "jinete/jrect.h"
+#include "jinete/jsystem.h"
+#include "jinete/jwidget.h"
 
 #include "core/app.h"
 #include "core/cfg.h"

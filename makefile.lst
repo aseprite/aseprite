@@ -100,20 +100,58 @@ ASE_SOURCES =						\
 	src/effect/invrtcol.c				\
 	src/effect/median.c				\
 	src/effect/replcol.c				\
-	src/file/ase.c					\
-	src/file/bmp.c					\
+	src/file/ase_format.c				\
+	src/file/bmp_format.c				\
 	src/file/file.c					\
-	src/file/fli.c					\
-	src/file/gif.c					\
+	src/file/fli_format.c				\
 	src/file/gif/format.c				\
 	src/file/gif/lzw.c				\
-	src/file/ico.c					\
-	src/file/jpeg.c					\
-	src/file/pcx.c					\
-	src/file/png_file.c				\
-	src/file/tga.c					\
+	src/file/gif_format.c				\
+	src/file/ico_format.c				\
+	src/file/jpeg_format.c				\
+	src/file/pcx_format.c				\
+	src/file/png_format.c				\
+	src/file/tga_format.c				\
 	src/intl/intl.c					\
 	src/intl/msgids.c				\
+	src/jinete/jaccel.c				\
+	src/jinete/jalert.c				\
+	src/jinete/jbox.c				\
+	src/jinete/jbutton.c				\
+	src/jinete/jclipbrd.c				\
+	src/jinete/jcombox.c				\
+	src/jinete/jdraw.c				\
+	src/jinete/jentry.c				\
+	src/jinete/jfile.c				\
+	src/jinete/jfilesel.c				\
+	src/jinete/jfont.c				\
+	src/jinete/jfontbmp.c				\
+	src/jinete/jhook.c				\
+	src/jinete/jimage.c				\
+	src/jinete/jintern.c				\
+	src/jinete/jlabel.c				\
+	src/jinete/jlist.c				\
+	src/jinete/jlistbox.c				\
+	src/jinete/jmanager.c				\
+	src/jinete/jmem.c				\
+	src/jinete/jmenu.c				\
+	src/jinete/jmessage.c				\
+	src/jinete/jpanel.c				\
+	src/jinete/jqckmenu.c				\
+	src/jinete/jrect.c				\
+	src/jinete/jregion.c				\
+	src/jinete/jsep.c				\
+	src/jinete/jslider.c				\
+	src/jinete/jstream.c				\
+	src/jinete/jsystem.c				\
+	src/jinete/jtextbox.c				\
+	src/jinete/jtheme.c				\
+	src/jinete/jview.c				\
+	src/jinete/jwidget.c				\
+	src/jinete/jwindow.c				\
+	src/jinete/jxml.c				\
+	src/jinete/themes/jsimple.c			\
+	src/jinete/themes/jstand.c			\
 	src/main.c					\
 	src/modules/color.c				\
 	src/modules/editors.c				\
@@ -228,6 +266,38 @@ LIBART_SOURCES =				\
 LIBART_OBJS = $(addprefix $(OBJ_DIR)/art.,					\
 			  $(addsuffix $(OBJ),					\
 				      $(notdir $(basename $(LIBART_SOURCES)))))
+
+######################################################################
+# Freetype
+
+LIBFREETYPE_LIB = $(OBJ_DIR)/libfreetype$(LIB)
+LIBFREETYPE_DIR = third_party/freetype
+LIBFREETYPE_SOURCES =					\
+	$(LIBFREETYPE_DIR)/src/base/ftsystem.c		\
+	$(LIBFREETYPE_DIR)/src/base/ftdebug.c		\
+	$(LIBFREETYPE_DIR)/src/base/ftinit.c		\
+	$(LIBFREETYPE_DIR)/src/base/ftbase.c		\
+	$(LIBFREETYPE_DIR)/src/base/ftglyph.c		\
+	$(LIBFREETYPE_DIR)/src/base/ftmm.c		\
+	$(LIBFREETYPE_DIR)/src/base/ftbbox.c		\
+	$(LIBFREETYPE_DIR)/src/autohint/autohint.c	\
+	$(LIBFREETYPE_DIR)/src/cache/ftcache.c		\
+	$(LIBFREETYPE_DIR)/src/cff/cff.c		\
+	$(LIBFREETYPE_DIR)/src/cid/type1cid.c		\
+	$(LIBFREETYPE_DIR)/src/pcf/pcf.c		\
+	$(LIBFREETYPE_DIR)/src/psaux/psaux.c		\
+	$(LIBFREETYPE_DIR)/src/pshinter/pshinter.c	\
+	$(LIBFREETYPE_DIR)/src/psnames/psmodule.c	\
+	$(LIBFREETYPE_DIR)/src/raster/raster.c		\
+	$(LIBFREETYPE_DIR)/src/sfnt/sfnt.c		\
+	$(LIBFREETYPE_DIR)/src/smooth/smooth.c		\
+	$(LIBFREETYPE_DIR)/src/truetype/truetype.c	\
+	$(LIBFREETYPE_DIR)/src/type1/type1.c		\
+	$(LIBFREETYPE_DIR)/src/winfonts/winfnt.c
+
+LIBFREETYPE_OBJS = $(addprefix $(OBJ_DIR)/freetype.,					\
+			  $(addsuffix $(OBJ),						\
+				      $(notdir $(basename $(LIBFREETYPE_SOURCES)))))
 
 ######################################################################
 # GD Library
@@ -425,6 +495,7 @@ ZLIB_OBJS = $(addprefix $(OBJ_DIR)/zlib.,		\
 ALL_OBJS =					\
 	$(ASE_OBJS)				\
 	$(LIBLUA_OBJS)				\
+	$(LIBFREETYPE_OBJS)			\
 	$(LIBGFLI_OBJS)				\
 	$(LIBART_OBJS)				\
 	$(LIBPNG_OBJS)				\
@@ -432,6 +503,7 @@ ALL_OBJS =					\
 
 THIRD_PARTY_LIBS =				\
 	$(LIBART_LIB)				\
+	$(LIBFREETYPE_LIB)			\
 	$(LIBGFLI_LIB)				\
 	$(LIBJPEG_LIB)				\
 	$(LIBLUA_LIB)				\

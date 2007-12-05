@@ -23,8 +23,8 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/alert.h"
-#include "jinete/list.h"
+#include "jinete/jalert.h"
+#include "jinete/jlist.h"
 
 #include "console/console.h"
 #include "core/app.h"
@@ -37,9 +37,32 @@
 
 #endif
 
-#include "file/list.h"
+extern FileFormat format_ase;
+extern FileFormat format_bmp;
+extern FileFormat format_fli;
+extern FileFormat format_jpeg;
+extern FileFormat format_pcx;
+extern FileFormat format_tga;
+extern FileFormat format_gif;
+extern FileFormat format_ico;
+extern FileFormat format_png;
 
-static struct {
+static FileFormat *formats[] =
+{
+  &format_ase,
+  &format_bmp,
+  &format_fli,
+  &format_jpeg,
+  &format_pcx,
+  &format_tga,
+  &format_gif,
+  &format_ico,
+  &format_png,
+  NULL
+};
+
+/* structure used for the sequence of bitmaps */
+static struct file_sequence_t {
   /* to load */
   Sprite *sprite;
   Layer *layer;
@@ -53,7 +76,7 @@ static struct {
 static PALETTE file_palette;
 static char file_extensions[512];
 
-static FileType *get_filetype(const char *extension);
+static FileFormat *get_fileformat(const char *extension);
 static int split_filename(const char *filename, char *left, char *right, int *width);
 
 void file_sequence_set_color(int index, int r, int g, int b)
@@ -82,7 +105,7 @@ Image *file_sequence_image(int imgtype, int w, int h)
     if (!sprite)
       return NULL;
 
-    layer = layer_new(imgtype);
+    layer = layer_new(sprite);
     if (!layer) {
       sprite_free(sprite);
       return NULL;
@@ -140,13 +163,13 @@ const char *get_readable_extensions(void)
   /* clear the string */
   ustrcpy (file_extensions, empty_string);
 
-  /* insert file type */
-  for (c=0; filetypes[c]; c++) {
-    if (filetypes[c]->load)
-      ustrcat (file_extensions, filetypes[c]->exts);
+  /* insert file format */
+  for (c=0; formats[c]; c++) {
+    if (formats[c]->load)
+      ustrcat(file_extensions, formats[c]->exts);
 
-    if (filetypes[c+1] && filetypes[c]->load)
-      ustrcat (file_extensions, ",");
+    if (formats[c+1] && formats[c]->load)
+      ustrcat(file_extensions, ",");
   }
 
   return file_extensions;
@@ -159,13 +182,13 @@ const char *get_writable_extensions(void)
   /* clear the string */
   ustrcpy(file_extensions, empty_string);
 
-  /* insert file type */
-  for (c=0; filetypes[c]; c++) {
-    if (filetypes[c]->save)
-      ustrcat (file_extensions, filetypes[c]->exts);
+  /* insert file format */
+  for (c=0; formats[c]; c++) {
+    if (formats[c]->save)
+      ustrcat(file_extensions, formats[c]->exts);
 
-    if (filetypes[c+1] && filetypes[c]->save)
-      ustrcat (file_extensions, ",");
+    if (formats[c+1] && formats[c]->save)
+      ustrcat(file_extensions, ",");
   }
 
   return file_extensions;
@@ -174,7 +197,7 @@ const char *get_writable_extensions(void)
 Sprite *sprite_load(const char *filename)
 {
   char extension[32];
-  FileType *file;
+  FileFormat *file;
   Sprite *sprite;
 
   ustrcpy(extension, get_extension(filename));
@@ -182,7 +205,7 @@ Sprite *sprite_load(const char *filename)
 
   PRINTF("Loading file \"%s\" (%s)\n", filename, extension);
 
-  file = get_filetype (extension);
+  file = get_fileformat(extension);
   if ((!file) || (!file->load)) {
     console_printf(_("Format \"%s\" isn't supported to open\n"), extension);
     return NULL;
@@ -195,7 +218,7 @@ Sprite *sprite_load(const char *filename)
   if (file->flags & FILE_SUPPORT_SEQUENCES) {
 #define SEQUENCE_IMAGE()						\
     do {								\
-      index = stock_add_image(file_sequence.layer->stock,		\
+      index = stock_add_image(file_sequence.sprite->stock,		\
 			      file_sequence.last_image);		\
 									\
       file_sequence.last_cel->image = index;				\
@@ -355,7 +378,7 @@ Sprite *sprite_load(const char *filename)
       sprite_set_frames(sprite, c);
 
       /* restore by the first palette */
-      /* XXXXX remove this */
+      /* TODO remove this */
 /*       memcpy(sprite->palette, first_palette, sizeof(PALETTE)); */
     }
 
@@ -392,7 +415,7 @@ Sprite *sprite_load(const char *filename)
 int sprite_save(Sprite *sprite)
 {
   char extension[32], buf[2048];
-  FileType *file;
+  FileFormat *file;
   int ret = -1;
   bool fatal;
 
@@ -401,7 +424,7 @@ int sprite_save(Sprite *sprite)
 
   PRINTF ("Saving sprite \"%s\" (%s)\n", sprite->filename, extension);
 
-  file = get_filetype(extension);
+  file = get_fileformat(extension);
   if ((!file) || (!file->save)) {
     console_printf (_("Format \"%s\" isn't supported to save\n"), extension);
     return -1;
@@ -516,10 +539,10 @@ int sprite_save(Sprite *sprite)
   if (file->flags & FILE_SUPPORT_SEQUENCES) {
     Image *image;
     int old_frame = sprite->frame;
-    char *old_filename = jstrdup (sprite->filename);
+    char *old_filename = jstrdup(sprite->filename);
 
     /* create a temporary bitmap */
-    image = image_new (sprite->imgtype, sprite->w, sprite->h);
+    image = image_new(sprite->imgtype, sprite->w, sprite->h);
 
     if (image) {
       /* save one frame */
@@ -607,18 +630,18 @@ int sprite_save(Sprite *sprite)
   return ret;
 }
 
-static FileType *get_filetype(const char *extension)
+static FileFormat *get_fileformat(const char *extension)
 {
   char buf[512], *tok;
   int c;
 
-  for (c=0; filetypes[c]; c++) {
-    ustrcpy (buf, filetypes[c]->exts);
+  for (c=0; formats[c]; c++) {
+    ustrcpy(buf, formats[c]->exts);
 
-    for (tok=ustrtok (buf, ","); tok;
-	 tok=ustrtok (NULL, ",")) {
-      if (ustricmp (extension, tok) == 0)
-	return filetypes[c];
+    for (tok=ustrtok(buf, ","); tok;
+	 tok=ustrtok(NULL, ",")) {
+      if (ustricmp(extension, tok) == 0)
+	return formats[c];
     }
   }
 
@@ -686,7 +709,7 @@ static int split_filename(const char *filename, char *left, char *right, int *wi
     while (ptr >= buf)
       *(ptr--) = '0';
 
-    ret = ustrtol (buf, NULL, 10);
+    ret = ustrtol(buf, NULL, 10);
   }
 
   return ret;

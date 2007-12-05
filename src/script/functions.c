@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "console/console.h"
 #include "modules/gui.h"
@@ -63,6 +63,27 @@ static int count_layers(Layer *layer)
   return count;
 }
 
+/* internal routine */
+static void undo_remove_stock_images(Layer *layer)
+{
+  JLink link;
+  if (layer_is_set(layer)) {
+    JI_LIST_FOR_EACH(layer->layers, link)
+      undo_remove_stock_images(link->data);
+  }
+  else if (layer_is_image(layer)) {
+    JI_LIST_FOR_EACH(layer->cels, link) {
+      Cel *cel = link->data;
+
+      if (!cel_is_link(cel, layer))
+	undo_remove_image(layer->sprite->undo,
+			  layer->sprite->stock,
+			  stock_get_image(layer->sprite->stock,
+					  cel->image));
+    }
+  }
+}
+
 char *GetUniqueLayerName(void)
 {
   Sprite *sprite = current_sprite;
@@ -98,7 +119,7 @@ Layer *NewLayer(const char *name, int x, int y, int w, int h)
       return NULL;
 
     /* new layer */
-    layer = layer_new(sprite->imgtype);
+    layer = layer_new(sprite);
     if (!layer) {
       image_free(image);
       return NULL;
@@ -112,7 +133,7 @@ Layer *NewLayer(const char *name, int x, int y, int w, int h)
     layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
     /* add image in the layer stock */
-    index = stock_add_image(layer->stock, image);
+    index = stock_add_image(sprite->stock, image);
 
     /* create a new cel in the current frame */
     cel = cel_new(sprite->frame, index);
@@ -149,7 +170,7 @@ Layer *NewLayerSet(const char *name)
 
   if (sprite && name) {
     /* new layer */
-    layer = layer_set_new();
+    layer = layer_set_new(sprite);
     if (!layer)
       return NULL;
 
@@ -189,21 +210,29 @@ void RemoveLayer(void)
       layer_select = NULL;
 
     /* undo stuff */
-    if (undo_is_enabled(sprite->undo)) {
+    if (undo_is_enabled(sprite->undo))
       undo_open(sprite->undo);
-      undo_set_layer(sprite->undo, sprite);
-      undo_remove_layer(sprite->undo, layer);
-      undo_close(sprite->undo);
-    }
 
     /* select other layer */
+    if (undo_is_enabled(sprite->undo))
+      undo_set_layer(sprite->undo, sprite);
     sprite_set_layer(sprite, layer_select);
 
+    /* remove all the images of this layer from the stock */
+    if (undo_is_enabled(sprite->undo))
+      undo_remove_stock_images(layer);
+
     /* remove the layer */
+    if (undo_is_enabled(sprite->undo))
+      undo_remove_layer(sprite->undo, layer);
     layer_remove_layer(parent, layer);
 
     /* destroy the layer */
     layer_free(layer);
+
+    /* close undo */
+    if (undo_is_enabled(sprite->undo))
+      undo_close(sprite->undo);
   }
 }
 
@@ -218,8 +247,7 @@ Layer *FlattenLayers(void)
     return NULL;
 
   /* generate the flat_layer */
-  flat_layer = layer_flatten(sprite->set,
-			     sprite->imgtype, 0, 0, sprite->w, sprite->h,
+  flat_layer = layer_flatten(sprite->set, 0, 0, sprite->w, sprite->h,
 			     0, sprite->frames-1);
   if (!flat_layer) {
     console_printf("Not enough memory");
@@ -289,17 +317,25 @@ void RemoveCel(Layer *layer, Cel *cel)
       }
     }
 
-    undo_open(sprite->undo);
+    if (undo_is_enabled(sprite->undo))
+      undo_open(sprite->undo);
+
     if (!used) {
       /* if the image is only used by this cel, we can remove the
 	 image from the stock */
-      image = stock_get_image(layer->stock, cel->image);
-      undo_remove_image(sprite->undo, layer->stock, image);
-      stock_remove_image(layer->stock, image);
+      image = stock_get_image(sprite->stock, cel->image);
+
+      if (undo_is_enabled(sprite->undo))
+	undo_remove_image(sprite->undo, sprite->stock, image);
+
+      stock_remove_image(sprite->stock, image);
       image_free(image);
     }
-    undo_remove_cel(sprite->undo, layer, cel);
-    undo_close(sprite->undo);
+
+    if (undo_is_enabled(sprite->undo)) {
+      undo_remove_cel(sprite->undo, layer, cel);
+      undo_close(sprite->undo);
+    }
 
     /* remove the cel */
     layer_remove_cel(layer, cel);

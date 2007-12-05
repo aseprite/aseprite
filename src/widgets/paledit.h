@@ -21,9 +21,9 @@
 
 #include <allegro/color.h>
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
-/* XXX use some JI_SIGNAL_USER */
+/* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
 
 enum {

@@ -34,15 +34,15 @@
 typedef struct Sprite *(*FileLoad) (const char *filename);
 typedef int (*FileSave) (struct Sprite *sprite);
 
-/* load or/and save a file type */
-typedef struct FileType
+/* load or/and save a file format */
+typedef struct FileFormat
 {
-  const char *name;	/* file type name */
+  const char *name;	/* file format name */
   const char *exts;	/* extensions (e.g. "jpeg,jpg") */
   FileLoad load;	/* procedure to read a sprite in this format */
   FileSave save;	/* procedure to write a sprite in this format */
   int flags;
-} FileType;
+} FileFormat;
 
 /* routines to handle sequences */
 

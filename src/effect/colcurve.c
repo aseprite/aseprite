@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "effect/colcurve.h"
 #include "effect/effect.h"
@@ -146,7 +146,7 @@ spline_eval (int n, float x[], float y[], float y2[], float val)
     }
 
   h = x[k_hi] - x[k_lo];
-  /* XXX */
+  /* TODO */
   /* assert (h > 0.0); */
 
   a = (x[k_hi] - val) / h;

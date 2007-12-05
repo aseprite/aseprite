@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
@@ -33,12 +34,12 @@
 
 #endif
 
-bool command_enabled_change_image_type(const char *argument)
+static bool cmd_change_image_type_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_change_image_type(const char *argument)
+static void cmd_change_image_type_execute(const char *argument)
 {
   JWidget window, from, radio1, radio2, radio3, dither1, dither2;
 
@@ -102,3 +103,11 @@ void command_execute_change_image_type(const char *argument)
 
   jwidget_free(window);
 }
+
+Command cmd_change_image_type = {
+  CMD_CHANGE_IMAGE_TYPE,
+  cmd_change_image_type_enabled,
+  NULL,
+  cmd_change_image_type_execute,
+  NULL
+};

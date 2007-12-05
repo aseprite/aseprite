@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 /* #include "core/app.h" */
 #include "modules/sprites.h"
 /* #include "raster/sprite.h" */
@@ -29,12 +30,20 @@
 
 #endif
 
-bool command_enabled_film_editor(const char *argument)
+static bool cmd_film_editor_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_film_editor(const char *argument)
+static void cmd_film_editor_execute(const char *argument)
 {
   switch_between_film_and_sprite_editor();
 }
+
+Command cmd_film_editor = {
+  CMD_FILM_EDITOR,
+  cmd_film_editor_enabled,
+  NULL,
+  cmd_film_editor_execute,
+  NULL
+};

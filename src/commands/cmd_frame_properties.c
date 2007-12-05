@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 /* #include "core/app.h" */
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -34,12 +35,12 @@
 
 void dialogs_frame_length(int sprite_frame);
 
-bool command_enabled_frame_properties(const char *argument)
+static bool cmd_frame_properties_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_frame_properties(const char *argument)
+static void cmd_frame_properties_execute(const char *argument)
 {
   dialogs_frame_length(current_sprite->frame);
 }
@@ -87,3 +88,11 @@ void dialogs_frame_length(int sprite_frame)
   }
   jwidget_free(window);
 }
+
+Command cmd_frame_properties = {
+  CMD_FRAME_PROPERTIES,
+  cmd_frame_properties_enabled,
+  NULL,
+  cmd_frame_properties_execute,
+  NULL
+};

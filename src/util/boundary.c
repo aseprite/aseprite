@@ -30,7 +30,7 @@
 /**********************************************************************/
 /* for ASE */
 #include <limits.h>
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 #include "raster/image.h"
 #include "util/boundary.h"
 

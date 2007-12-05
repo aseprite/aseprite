@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "console/console.h"
 #include "core/cfg.h"

@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "core/app.h"
@@ -30,7 +30,7 @@
 
 static bool advanced_mode = FALSE;
 
-void command_execute_advanced_mode(const char *argument)
+static void cmd_advanced_mode_execute(const char *argument)
 {
   advanced_mode = !advanced_mode;
 
@@ -73,3 +73,11 @@ void command_execute_advanced_mode(const char *argument)
     }
   }
 }
+
+Command cmd_advanced_mode = {
+  CMD_ADVANCED_MODE,
+  NULL,
+  NULL,
+  cmd_advanced_mode_execute,
+  NULL
+};

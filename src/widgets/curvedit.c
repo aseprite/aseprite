@@ -25,16 +25,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "jinete/alert.h"
-#include "jinete/entry.h"
-#include "jinete/list.h"
-#include "jinete/manager.h"
-#include "jinete/message.h"
-#include "jinete/rect.h"
-#include "jinete/system.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jalert.h"
+#include "jinete/jentry.h"
+#include "jinete/jlist.h"
+#include "jinete/jmanager.h"
+#include "jinete/jmessage.h"
+#include "jinete/jrect.h"
+#include "jinete/jsystem.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
 #include "effect/colcurve.h"
 #include "modules/gui.h"
@@ -114,7 +114,7 @@ JWidget curve_editor_new (Curve *curve, int x1, int y1, int x2, int y2)
   curve_editor->status = STATUS_STANDBY;
   curve_editor->edit_point = NULL;
 
-  /* XXXX */
+  /* TODO */
   /* curve_editor->curve->type = CURVE_SPLINE; */
 
   return widget;
@@ -176,7 +176,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	  int y = SCR2EDIT_Y (jmouse_y(0));
 	  CurvePoint *point = curve_point_new (x, y); 
 
-	  /* XXXX undo? */
+	  /* TODO undo? */
 	  curve_add_point (curve_editor->curve, point);
 
 	  jwidget_dirty (widget);
@@ -191,7 +191,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	     SCR2EDIT_Y(jmouse_y(0)),
 	     NULL, NULL);
 
-	  /* XXXX undo? */
+	  /* TODO undo? */
 	  curve_remove_point(curve_editor->curve, point);
 
 	  jwidget_dirty (widget);
@@ -374,7 +374,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 /* 		curve_editor->edit_key->ny += offset_y; */
 /* 	      } */
 
-	      /* XXXX this should be optional */
+	      /* TODO this should be optional */
 	      jwidget_emit_signal (widget, SIGNAL_CURVE_EDITOR_CHANGE);
 
 	      jwidget_dirty (widget);
@@ -384,7 +384,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 
 	return TRUE;
       }
-#if 0				/* XXXX */
+#if 0				/* TODO */
       /* if the mouse move above a curve_editor, the focus change to
 	 this widget immediately */
       else if (!jwidget_has_focus (widget)) {

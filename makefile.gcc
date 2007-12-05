@@ -6,8 +6,8 @@ _default: default
 ######################################################################
 # Setup CFLAGS and LFLAGS for GCC
 
-CFLAGS += -Wall -I. -Isrc -Ijinete/include -Ithird_party \
-	  -I$(JINETE_DIR)/freetype/include \
+CFLAGS += -Wall -I. -Isrc -Ithird_party \
+	  -I$(LIBFREETYPE_DIR)/include \
           -I$(LIBLUA_DIR)/include \
 	  -I$(LIBJPEG_DIR) \
 	  -I$(LIBGFLI_DIR) \
@@ -18,7 +18,7 @@ CFLAGS += -Wall -I. -Isrc -Ijinete/include -Ithird_party \
 
 #	  -I$(LIBGD_DIR) 
 
-LFLAGS += $(JINETE_LIB) $(THIRD_PARTY_LIBS)
+LFLAGS += $(THIRD_PARTY_LIBS)
 
 ifdef PROFILE
   CFLAGS += -pg
@@ -42,16 +42,13 @@ ifdef USE_PRECOMPILED_HEADER
 endif
 
 ######################################################################
-# Rules to make Jinete
-
-JINETE_DIR = jinete
-include $(JINETE_DIR)/makefile.lst
-include $(JINETE_DIR)/makefile.gcc
-
-######################################################################
 # Rules to make third party libraries
 
 $(LIBART_LIB): $(LIBART_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
+$(LIBFREETYPE_LIB): $(LIBFREETYPE_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
@@ -92,6 +89,8 @@ VPATH = src					\
 	src/file				\
 	src/file/gif				\
 	src/intl				\
+	src/jinete				\
+	src/jinete/themes			\
 	src/modules				\
 	src/raster				\
 	src/script				\
@@ -99,38 +98,35 @@ VPATH = src					\
 	src/widgets				\
 	src/widgets/editor			\
 	$(LIBART_DIR)				\
+	$(LIBFREETYPE_DIR)/src/base		\
+	$(LIBFREETYPE_DIR)/src/autohint		\
+	$(LIBFREETYPE_DIR)/src/cache		\
+	$(LIBFREETYPE_DIR)/src/cff		\
+	$(LIBFREETYPE_DIR)/src/cid		\
+	$(LIBFREETYPE_DIR)/src/pcf		\
+	$(LIBFREETYPE_DIR)/src/psaux		\
+	$(LIBFREETYPE_DIR)/src/pshinter		\
+	$(LIBFREETYPE_DIR)/src/psnames		\
+	$(LIBFREETYPE_DIR)/src/raster		\
+	$(LIBFREETYPE_DIR)/src/sfnt		\
+	$(LIBFREETYPE_DIR)/src/smooth		\
+	$(LIBFREETYPE_DIR)/src/truetype		\
+	$(LIBFREETYPE_DIR)/src/type1		\
+	$(LIBFREETYPE_DIR)/src/winfonts		\
 	$(LIBGD_DIR)				\
 	$(LIBGFLI_DIR)				\
 	$(LIBJPEG_DIR)				\
 	$(LIBLUA_DIR)/src			\
 	$(LIBLUA_DIR)/src/lib			\
 	$(LIBPNG_DIR)				\
-	$(ZLIB_DIR)				\
-	$(JINETE_DIR)/src			\
-	$(JINETE_DIR)/src/themes		\
-	$(JINETE_DIR)/freetype/src/base		\
-	$(JINETE_DIR)/freetype/src/autohint	\
-	$(JINETE_DIR)/freetype/src/cache	\
-	$(JINETE_DIR)/freetype/src/cff		\
-	$(JINETE_DIR)/freetype/src/cid		\
-	$(JINETE_DIR)/freetype/src/pcf		\
-	$(JINETE_DIR)/freetype/src/psaux	\
-	$(JINETE_DIR)/freetype/src/pshinter	\
-	$(JINETE_DIR)/freetype/src/psnames	\
-	$(JINETE_DIR)/freetype/src/raster	\
-	$(JINETE_DIR)/freetype/src/sfnt		\
-	$(JINETE_DIR)/freetype/src/smooth	\
-	$(JINETE_DIR)/freetype/src/truetype	\
-	$(JINETE_DIR)/freetype/src/type1	\
-	$(JINETE_DIR)/freetype/src/winfonts	\
-	$(JINETE_DIR)/examples
+	$(ZLIB_DIR)
 
 ifdef USE_PRECOMPILED_HEADER
 ASE_DEPS = config.h.gch
 else
 ASE_DEPS = 
 endif
-ASE_DEPS += $(ASE_OBJS) $(JINETE_LIB) $(THIRD_PARTY_LIBS)
+ASE_DEPS += $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 
 ifdef USE_PRECOMPILED_HEADER
 config.h.gch: config.h
@@ -143,6 +139,9 @@ $(OBJ_DIR)/%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/art.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/freetype.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/gd.%$(OBJ): %.c

@@ -22,13 +22,14 @@
 
 #include <allegro.h>
 
-#include "jinete/system.h"
+#include "jinete/jsystem.h"
 
+#include "commands/commands.h"
 #include "core/core.h"
 
 #endif
 
-void command_execute_screen_shot(const char *argument)
+static void cmd_screen_shot_execute(const char *argument)
 {
   int old_flag;
   char buf[512];
@@ -63,3 +64,11 @@ void command_execute_screen_shot(const char *argument)
   /* restore the freeze flag by the previous value */
   freeze_mouse_flag = old_flag;
 }
+
+Command cmd_screen_shot = {
+  CMD_SCREEN_SHOT,
+  NULL,
+  NULL,
+  cmd_screen_shot_execute,
+  NULL
+};

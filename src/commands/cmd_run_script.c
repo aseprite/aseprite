@@ -20,13 +20,14 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "script/script.h"
 
 #endif
 
-void command_execute_run_script(const char *argument)
+static void cmd_run_script_execute(const char *argument)
 {
   char *filename = ji_file_select(_("Load Script File(.lua)"), "", "lua");
   if (filename) {
@@ -34,3 +35,11 @@ void command_execute_run_script(const char *argument)
     jfree(filename);
   }
 }
+
+Command cmd_run_script = {
+  CMD_RUN_SCRIPT,
+  NULL,
+  NULL,
+  cmd_run_script_execute,
+  NULL
+};

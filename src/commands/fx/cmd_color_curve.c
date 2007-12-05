@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -35,7 +36,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
-#include "widgets/colbar.h"
 #include "widgets/colbut.h"
 #include "widgets/curvedit.h"
 #include "widgets/preview.h"
@@ -49,12 +49,12 @@ static JWidget check_preview, preview;
 static bool hooked_msg_proc(JWidget widget, JMessage msg);
 static void make_preview(void);
 
-bool command_enabled_color_curve(const char *argument)
+static bool cmd_color_curve_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_color_curve(const char *argument)
+static void cmd_color_curve_execute(const char *argument)
 {
   JWidget window, button_ok;
   JWidget view_curve, curve_editor;
@@ -170,3 +170,11 @@ static void make_preview(void)
   if (jwidget_is_selected(check_preview))
     preview_restart(preview);
 }
+
+Command cmd_color_curve = {
+  CMD_COLOR_CURVE,
+  cmd_color_curve_enabled,
+  NULL,
+  cmd_color_curve_execute,
+  NULL
+};

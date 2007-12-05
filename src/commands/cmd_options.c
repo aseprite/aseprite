@@ -20,13 +20,22 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
+#include "commands/commands.h"
 #include "dialogs/options.h"
 
 #endif
 
-void command_execute_options(const char *argument)
+static void cmd_options_execute(const char *argument)
 {
   dialogs_options();
 }
+
+Command cmd_options = {
+  CMD_OPTIONS,
+  NULL,
+  NULL,
+  cmd_options_execute,
+  NULL
+};

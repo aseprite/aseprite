@@ -19,7 +19,7 @@
 #ifndef MODULES_SPRITES_H
 #define MODULES_SPRITES_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #define TARGET_FRAMES	1
 #define TARGET_LAYERS	2

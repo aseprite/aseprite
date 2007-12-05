@@ -21,7 +21,7 @@
 #ifndef USE_PRECOMPILED_HEADER
 
 #include <allegro.h>
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "core/app.h"
@@ -36,12 +36,12 @@ static bool close_current_sprite(void);
 /* close_file               */
 /* ======================== */
 
-bool command_enabled_close_file(const char *argument)
+static bool cmd_close_file_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_close_file(const char *argument)
+static void cmd_close_file_execute(const char *argument)
 {
   close_current_sprite();
 }
@@ -50,12 +50,12 @@ void command_execute_close_file(const char *argument)
 /* close_all_files          */
 /* ======================== */
 
-bool command_enabled_close_all_files(const char *argument)
+static bool cmd_close_all_files_enabled(const char *argument)
 {
   return !jlist_empty(get_sprite_list());
 }
 
-void command_execute_close_all_files(const char *argument)
+static void cmd_close_all_files_execute(const char *argument)
 {
   if (!current_sprite)
     sprite_show(get_first_sprite());
@@ -100,3 +100,19 @@ static bool close_current_sprite(void)
   sprite_free(sprite);
   return TRUE;
 }
+
+Command cmd_close_file = {
+  CMD_CLOSE_FILE,
+  cmd_close_file_enabled,
+  NULL,
+  cmd_close_file_execute,
+  NULL
+};
+
+Command cmd_close_all_files = {
+  CMD_CLOSE_ALL_FILES,
+  cmd_close_all_files_enabled,
+  NULL,
+  cmd_close_all_files_execute,
+  NULL
+};

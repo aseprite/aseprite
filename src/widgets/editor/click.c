@@ -22,11 +22,11 @@
 
 #include <allegro/keyboard.h>
 
-#include "jinete/rect.h"
+#include "jinete/jrect.h"
 
-#include "jinete/manager.h"
-#include "jinete/system.h"
-#include "jinete/view.h"
+#include "jinete/jmanager.h"
+#include "jinete/jsystem.h"
+#include "jinete/jview.h"
 
 #include "core/cfg.h"
 #include "modules/gui.h"

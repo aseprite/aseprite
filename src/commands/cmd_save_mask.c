@@ -22,8 +22,9 @@
 
 #include <allegro/file.h>
 
-#include "jinete/alert.h"
+#include "jinete/jalert.h"
 
+#include "commands/commands.h"
 #include "dialogs/filesel.h"
 #include "modules/sprites.h"
 #include "raster/mask.h"
@@ -32,7 +33,7 @@
 
 #endif
 
-bool command_enabled_save_mask(const char *argument)
+static bool cmd_save_mask_enabled(const char *argument)
 {
   if (!current_sprite)
     return FALSE;
@@ -41,7 +42,7 @@ bool command_enabled_save_mask(const char *argument)
 	    current_sprite->mask->bitmap) ? TRUE: FALSE;
 }
 
-void command_execute_save_mask(const char *argument)
+static void cmd_save_mask_execute(const char *argument)
 {
   /* get current sprite */
   Sprite *sprite = current_sprite;
@@ -79,3 +80,11 @@ void command_execute_save_mask(const char *argument)
 	   _("Error"), _("Error saving .msk file"),
 	   _(filename), _("&Close"));
 }
+
+Command cmd_save_mask = {
+  CMD_SAVE_MASK,
+  cmd_save_mask_enabled,
+  NULL,
+  cmd_save_mask_execute,
+  NULL
+};

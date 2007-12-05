@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -30,12 +31,12 @@
 
 #endif
 
-bool command_enabled_layer_properties(const char *argument)
+static bool cmd_layer_properties_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_layer_properties(const char *argument)
+static void cmd_layer_properties_execute(const char *argument)
 {
   JWidget window, box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
@@ -119,3 +120,11 @@ void command_execute_layer_properties(const char *argument)
 
   jwidget_free(window);
 }
+
+Command cmd_layer_properties = {
+  CMD_LAYER_PROPERTIES,
+  cmd_layer_properties_enabled,
+  NULL,
+  cmd_layer_properties_execute,
+  NULL
+};

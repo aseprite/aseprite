@@ -22,19 +22,20 @@
 
 #include <allegro/gfx.h>
 
-#include "jinete/base.h"
-#include "jinete/alert.h"
+#include "jinete/jbase.h"
+#include "jinete/jalert.h"
 
+#include "commands/commands.h"
 #include "util/recscr.h"
 
 #endif
 
-bool command_checked_record_screen(const char *argument)
+static bool cmd_record_screen_checked(const char *argument)
 {
   return is_rec_screen();
 }
 
-void command_execute_record_screen(const char *argument)
+static void cmd_record_screen_execute(const char *argument)
 {
   if (is_rec_screen())
     rec_screen_off();
@@ -48,3 +49,11 @@ void command_execute_record_screen(const char *argument)
     rec_screen_on();
   }
 }
+
+Command cmd_record_screen = {
+  CMD_RECORD_SCREEN,
+  NULL,
+  cmd_record_screen_checked,
+  cmd_record_screen_execute,
+  NULL
+};

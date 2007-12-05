@@ -19,10 +19,10 @@
 #ifndef WIDGETS_TOOLBAR_H
 #define WIDGETS_TOOLBAR_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
-JWidget tool_bar_new (int align);
+JWidget tool_bar_new(int align);
 
-void tool_bar_update (JWidget toolbar);
+void tool_bar_update(JWidget toolbar);
 
 #endif /* WIDGETS_TOOLBAR_H */

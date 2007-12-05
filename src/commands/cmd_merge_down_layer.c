@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -34,7 +35,7 @@
 
 #endif
 
-bool command_enabled_merge_down_layer(const char *argument)
+static bool cmd_merge_down_layer_enabled(const char *argument)
 {
   Layer *src_layer, *dst_layer;
   Sprite *sprite;
@@ -54,7 +55,7 @@ bool command_enabled_merge_down_layer(const char *argument)
   return TRUE;
 }
 
-void command_execute_merge_down_layer(const char *argument)
+static void cmd_merge_down_layer_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
   Layer *src_layer, *dst_layer;
@@ -75,12 +76,12 @@ void command_execute_merge_down_layer(const char *argument)
 
     /* get images */
     if (src_cel)
-      src_image = stock_get_image(src_layer->stock, src_cel->image);
+      src_image = stock_get_image(sprite->stock, src_cel->image);
     else
       src_image = NULL;
 
     if (dst_cel)
-      dst_image = stock_get_image(dst_layer->stock, dst_cel->image);
+      dst_image = stock_get_image(sprite->stock, dst_cel->image);
     else
       dst_image = NULL;
 
@@ -88,18 +89,23 @@ void command_execute_merge_down_layer(const char *argument)
     if (src_image) {
       /* no destination image */
       if (!dst_image) {
-	/* copy this cel to the destination layer */
+	/* copy this cel to the destination layer... */
+
+	/* creating a copy of the image */
 	dst_image = image_new_copy(src_image);
-	index = stock_add_image(dst_layer->stock, dst_image);
-	if (undo_is_enabled(sprite->undo)) {
-	  undo_add_image(sprite->undo, dst_layer->stock, dst_image);
-	}
+
+	/* adding it in the stock of images */
+	index = stock_add_image(sprite->stock, dst_image);
+	if (undo_is_enabled(sprite->undo))
+	  undo_add_image(sprite->undo, sprite->stock, dst_image);
+
+	/* creating a copy of the cell */
 	dst_cel = cel_new(frpos, index);
 	cel_set_position(dst_cel, src_cel->x, src_cel->y);
 	cel_set_opacity(dst_cel, src_cel->opacity);
-	if (undo_is_enabled(sprite->undo)) {
+
+	if (undo_is_enabled(sprite->undo))
 	  undo_add_cel(sprite->undo, dst_layer, dst_cel);
-	}
 	layer_add_cel(dst_layer, dst_cel);
       }
       /* with destination */
@@ -121,10 +127,10 @@ void command_execute_merge_down_layer(const char *argument)
 		    src_layer->blend_mode);
 
 	cel_set_position(dst_cel, x1, y1);
-	if (undo_is_enabled(sprite->undo)) {
-	  undo_replace_image(sprite->undo, dst_layer->stock, dst_cel->image);
-	}
-	stock_replace_image(dst_layer->stock, dst_cel->image, new_image);
+
+	if (undo_is_enabled(sprite->undo))
+	  undo_replace_image(sprite->undo, sprite->stock, dst_cel->image);
+	stock_replace_image(sprite->stock, dst_cel->image, new_image);
 
 	image_free(dst_image);
       }
@@ -143,3 +149,11 @@ void command_execute_merge_down_layer(const char *argument)
 
   update_screen_for_sprite(sprite);
 }
+
+Command cmd_merge_down_layer = {
+  CMD_MERGE_DOWN_LAYER,
+  cmd_merge_down_layer_enabled,
+  NULL,
+  cmd_merge_down_layer_execute,
+  NULL
+};

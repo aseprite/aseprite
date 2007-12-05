@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "modules/palette.h"
 #include "modules/tools.h"
@@ -31,7 +31,7 @@
 /************************************************************************/
 /* Render engine */
 
-static Layer *onionskin_layer = NULL;
+/* static Layer *onionskin_layer = NULL; */
 static int global_opacity = 255;
 
 static Layer *selected_layer = NULL;
@@ -39,8 +39,7 @@ static Image *rastering_image = NULL;
 
 static void render_layer(Layer *layer, Image *image,
 			 int source_x, int source_y,
-			 int zoom,
-			 int frpos,
+			 int frame, int zoom,
 			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int));
 
 static void merge_zoomed_image1(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
@@ -53,14 +52,17 @@ void set_preview_image (Layer *layer, Image *image)
   rastering_image = image;
 }
 
-/* Draws the `frpos' animation frame of the `source' image in the
-   return image, all positions must have the zoom applied
-   (sorce_x<<zoom, dest_x<<zoom, width<<zoom, etc.)
-*/
+/**
+ * Draws the @a frame animation frame of the @a source image in the
+ * return image, all positions must have the zoom applied
+ * (sorce_x<<zoom, dest_x<<zoom, width<<zoom, etc.)
+ *
+ * This routine is used to render the sprite 
+ */
 Image *render_sprite(Sprite *sprite,
 		     int source_x, int source_y,
 		     int width, int height,
-		     int frpos, int zoom)
+		     int frame, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   int need_grid, depth;
@@ -70,13 +72,13 @@ Image *render_sprite(Sprite *sprite,
 
     case IMAGE_RGB:
       depth = 32;
-      need_grid = TRUE;
+      need_grid = _rgba_geta(sprite->bgcolor) < 255;
       zoomed_func = merge_zoomed_image4;
       break;
 
     case IMAGE_GRAYSCALE:
       depth = 8;
-      need_grid = TRUE;
+      need_grid = _graya_geta(sprite->bgcolor) < 255;
       zoomed_func = merge_zoomed_image2;
       break;
 
@@ -90,10 +92,10 @@ Image *render_sprite(Sprite *sprite,
       return NULL;
   }
 
-  if ((get_onionskin()) && (sprite->frame > 0))
-    onionskin_layer = sprite->layer;
-  else
-    onionskin_layer = NULL;
+/*   if ((get_onionskin()) && (sprite->frame > 0)) */
+/*     onionskin_layer = sprite->layer; */
+/*   else */
+/*     onionskin_layer = NULL; */
 
   /* create a temporary bitmap to draw all to it */
   image = image_new(sprite->imgtype, width, height);
@@ -106,12 +108,12 @@ Image *render_sprite(Sprite *sprite,
 
     switch (image->imgtype) {
       case IMAGE_RGB:
-        c1 = _rgba(128, 128, 128, 255);
-        c2 = _rgba(192, 192, 192, 255);
+	c1 = _rgba_blend_normal(_rgba(128, 128, 128, 255), sprite->bgcolor, 255);
+	c2 = _rgba_blend_normal(_rgba(192, 192, 192, 255), sprite->bgcolor, 255);
         break;
       case IMAGE_GRAYSCALE:
-        c1 = _graya(128, 255);
-        c2 = _graya(192, 255);
+	c1 = _graya_blend_normal(_graya(128, 255), sprite->bgcolor, 255);
+	c2 = _graya_blend_normal(_graya(192, 255), sprite->bgcolor, 255);
         break;
 /*       case IMAGE_INDEXED: */
 /* 	c1 = rgb_map->data[16][16][16]; */
@@ -122,19 +124,19 @@ Image *render_sprite(Sprite *sprite,
 	break;
     }
 
-/* XXX modificable option: scalable-tiles */
+/* TODO modificable option: scalable-tiles */
 #define ASE_SCALABLE_TILES
 #ifdef ASE_SCALABLE_TILES
     u = (-source_x / (16<<zoom)) * (16<<zoom);
     v = (-source_y / (16<<zoom)) * (16<<zoom);
     for (y=-source_y; y<height+(16<<zoom); y+=(16<<zoom)) {
       for (x=-source_x; x<width+(16<<zoom); x+=(16<<zoom))
-        image_rectfill (image,
-			x,
-			y,
-			x+(16<<zoom)-1,
-			y+(16<<zoom)-1,
-			((u++)&1)? c1: c2);
+        image_rectfill(image,
+		       x,
+		       y,
+		       x+(16<<zoom)-1,
+		       y+(16<<zoom)-1,
+		       ((u++)&1)? c1: c2);
       u = (++v);
     }
 #else
@@ -142,62 +144,73 @@ Image *render_sprite(Sprite *sprite,
     v = (-source_y / 16) * 16;
     for (y=-source_y; y<height+16; y+=16) {
       for (x=-source_x; x<width+16; x+=16)
-        image_rectangle(image,
-			x,
-			y,
-			x+16-1,
-			y+16-1,
-			((u++)&1)? c1: c2);
+        image_rectfill(image,
+		       x,
+		       y,
+		       x+16-1,
+		       y+16-1,
+		       ((u++)&1)? c1: c2);
       u = (++v);
     }
 #endif
   }
   else
-    image_clear(image, 0);
+    image_clear(image, sprite->bgcolor);
 
   color_map = NULL;
 
+  /* onion-skin feature: draw the previous frame */
+  if (get_onionskin() && (frame > 0)) {
+    color_map = orig_trans_map;
+    global_opacity = 128;
+
+    render_layer(sprite->set, image, source_x, source_y,
+		 frame-1, zoom, zoomed_func);
+
+    color_map = NULL;
+    global_opacity = 255;
+  }
+
+  /* draw the frame */
   render_layer(sprite->set, image, source_x, source_y,
-	       zoom, frpos, zoomed_func);
+	       frame, zoom, zoomed_func);
 
   return image;
 }
 
 static void render_layer(Layer *layer, Image *image,
 			 int source_x, int source_y,
-			 int zoom,
-			 int frpos,
+			 int frame, int zoom,
 			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int))
 {
   /* we can't read from this layer */
   if (!layer->readable)
     return;
 
-  /* `onion-skin' feature */
-  if (onionskin_layer == layer) {
-    onionskin_layer = NULL;
+/*   /\* onion-skin feature *\/ */
+/*   if (onionskin_layer == layer) { */
+/*     onionskin_layer = NULL; */
 
-    color_map = orig_trans_map;
-    global_opacity = 128;
+/*     color_map = orig_trans_map; */
+/*     global_opacity = 128; */
 
-    /* render the previous frame */
-    render_layer (layer, image, source_x, source_y, zoom, frpos-1,
-		  zoomed_func);
+/*     /\* render the previous frame *\/ */
+/*     render_layer(layer, image, source_x, source_y, frame-1, zoom, zoomed_func); */
 
-    color_map = NULL;
-    global_opacity = 255;
-  }
+/*     color_map = NULL; */
+/*     global_opacity = 255; */
+/*   } */
 
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel = layer_get_cel(layer, frpos);
+      Cel *cel = layer_get_cel(layer, frame);
       Image *src_image;
 
       if (cel) {
 	if ((cel->image >= 0) &&
-	    (cel->image < layer->stock->nimage))
-	  src_image = layer->stock->image[cel->image];
+	    (cel->image < layer->sprite->stock->nimage))
+	  src_image = layer->sprite->stock->image[cel->image];
 	else
 	  src_image = NULL;
 
@@ -212,16 +225,16 @@ static void render_layer(Layer *layer, Image *image,
 	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
 	  if (zoom == 0) {
-	    image_merge (image, src_image,
-			 cel->x - source_x,
-			 cel->y - source_y,
-			 output_opacity, layer->blend_mode);
+	    image_merge(image, src_image,
+			cel->x - source_x,
+			cel->y - source_y,
+			output_opacity, layer->blend_mode);
 	  }
 	  else {
-	    (*zoomed_func) (image, src_image,
-			    (cel->x << zoom) - source_x,
-			    (cel->y << zoom) - source_y,
-			    output_opacity, layer->blend_mode, zoom);
+	    (*zoomed_func)(image, src_image,
+			   (cel->x << zoom) - source_x,
+			   (cel->y << zoom) - source_y,
+			   output_opacity, layer->blend_mode, zoom);
 	  }
 	}
       }
@@ -231,40 +244,11 @@ static void render_layer(Layer *layer, Image *image,
     case GFXOBJ_LAYER_SET: {
       JLink link;
       JI_LIST_FOR_EACH(layer->layers, link)
-	render_layer (link->data, image,
-		      source_x, source_y, zoom, frpos, zoomed_func);
+	render_layer(link->data, image, source_x, source_y,
+		     frame, zoom, zoomed_func);
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-      break;
-
-/*     case LT_FLOATING: */
-/*       { */
-/* 	LAYER_FLOATING *lay = (LAYER_FLOATING *)layer; */
-/* 	int output_opacity; */
-/* 	register int t; */
-
-/* 	output_opacity = */
-/* 	  INT_MULT (lay->opacity, global_opacity, t); */
-
-/* 	if (zoom == 0) { */
-/* 	  image_merge */
-/* 	    (image, lay->image, */
-/* 	     lay->x - source_x, */
-/* 	     lay->y - source_y, */
-/* 	     output_opacity, lay->blend_mode); */
-/* 	} */
-/* 	else { */
-/* 	  (*zoomed_func) */
-/* 	    (image, lay->image, */
-/* 	     (lay->x << zoom) - source_x, */
-/* 	     (lay->y << zoom) - source_y, */
-/* 	     output_opacity, lay->blend_mode, zoom); */
-/* 	} */
-/*       } */
-/*       break; */
   }
 }
 

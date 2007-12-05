@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/alert.h"
+#include "jinete/jalert.h"
 
+#include "commands/commands.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h" 
 #include "modules/sprites.h"
@@ -32,12 +33,12 @@
 
 #endif
 
-bool command_enabled_load_mask(const char *argument)
+static bool cmd_load_mask_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_load_mask(const char *argument)
+static void cmd_load_mask_execute(const char *argument)
 {
   /* get current sprite */
   Sprite *sprite = current_sprite;
@@ -65,3 +66,11 @@ void command_execute_load_mask(const char *argument)
     jfree(filename);
   }
 }
+
+Command cmd_load_mask = {
+  CMD_LOAD_MASK,
+  cmd_load_mask_enabled,
+  NULL,
+  cmd_load_mask_execute,
+  NULL
+};

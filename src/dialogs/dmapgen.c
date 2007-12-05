@@ -26,8 +26,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "jinete.h"
-#include "jinete/intern.h"
+#include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 #include "console/console.h"
 #include "core/cfg.h"

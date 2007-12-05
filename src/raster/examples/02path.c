@@ -19,7 +19,7 @@
 #include <allegro.h>
 #include <math.h>
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "raster/algo.h"
 #include "raster/image.h"

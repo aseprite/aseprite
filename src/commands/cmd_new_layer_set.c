@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -31,12 +32,12 @@
 
 #endif
 
-bool command_enabled_new_layer_set(const char *argument)
+static bool cmd_new_layer_set_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_new_layer_set(const char *argument)
+static void cmd_new_layer_set_execute(const char *argument)
 {
   JWidget window;
   Sprite *sprite = current_sprite; /* get current sprite */
@@ -60,3 +61,11 @@ void command_execute_new_layer_set(const char *argument)
 
   jwidget_free(window);
 }
+
+Command cmd_new_layer_set = {
+  CMD_NEW_LAYER_SET,
+  cmd_new_layer_set_enabled,
+  NULL,
+  cmd_new_layer_set_execute,
+  NULL
+};

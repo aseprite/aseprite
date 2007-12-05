@@ -24,10 +24,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/hook.h"
-#include "jinete/menu.h"
-#include "jinete/message.h"
-#include "jinete/widget.h"
+#include "jinete/jhook.h"
+#include "jinete/jmenu.h"
+#include "jinete/jmessage.h"
+#include "jinete/jwidget.h"
 
 #include "commands/commands.h"
 #include "core/core.h"

@@ -20,7 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "core/app.h"
 #include "modules/editors.h"
@@ -121,7 +121,7 @@ void editors_draw_sprite(Sprite *sprite, int x1, int y1, int x2, int y2)
   }
 }
 
-/* XXX improve this (with JRegion or something, and without
+/* TODO improve this (with JRegion or something, and without
    recursivity) */
 void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
 {

@@ -55,7 +55,7 @@ void intl_load_lang (void)
   for (dir=dirs; dir; dir=dir->next) {
     if ((dir->path) && exists (dir->path)) {
       if (msgids_load (dir->path) < 0) {
-	/* XXX error loading language file... doesn't matter */
+	/* TODO error loading language file... doesn't matter */
       }
       break;
     }

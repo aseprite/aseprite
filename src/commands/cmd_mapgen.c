@@ -20,14 +20,23 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
-void command_execute_mapgen(const char *argument)
-{
-}
+/* static void cmd_mapgen_execute(const char *argument) */
+/* { */
+/* } */
+
+/* Command cmd_mapgen = { */
+/*   CMD_MAPGEN, */
+/*   cmd_mapgen_enabled, */
+/*   NULL, */
+/*   cmd_mapgen_execute, */
+/*   NULL */
+/* }; */

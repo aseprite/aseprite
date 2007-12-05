@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "core/app.h"
 #include "core/cfg.h"

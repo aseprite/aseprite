@@ -23,7 +23,7 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "console/console.h"
 #include "core/app.h"
@@ -95,14 +95,14 @@ static void update_status_bar(JWidget editor, Image *image,
 
 bool has_clipboard_image(int *w, int *h)
 {
-  Sprite *clipboard = get_clipboard_sprite ();
+  Sprite *clipboard = get_clipboard_sprite();
   Image *image = NULL;
   Cel *cel;
 
   if (clipboard) {
     cel = layer_get_cel(clipboard->layer, clipboard->frame);
     if (cel)
-      image = stock_get_image(clipboard->layer->stock, cel->image);
+      image = stock_get_image(clipboard->stock, cel->image);
   }
 
   if (image) {
@@ -177,7 +177,7 @@ void paste_from_clipboard(void)
   if (!cel)
     return;
 
-  image = stock_get_image(clipboard->layer->stock, cel->image);
+  image = stock_get_image(clipboard->stock, cel->image);
   if (!image)
     return;
 
@@ -409,7 +409,7 @@ static bool interactive_transform(JWidget widget,
 /* 	screen_to_editor (widget, x1, y1, &x1, &y1); */
 /* 	screen_to_editor (widget, x2, y2, &x2, &y2); */
 
-	/* XXXX */
+	/* TODO */
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
 	editor_set_scroll(widget, scroll_x-x, scroll_y-y, TRUE);

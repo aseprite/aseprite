@@ -22,8 +22,9 @@
 
 #include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -56,12 +57,12 @@ static int slider_change_hook(JWidget widget, int user_data);
 static int preview_change_hook(JWidget widget, int user_data);
 static void make_preview(void);
 
-bool command_enabled_replace_color(const char *argument)
+static bool cmd_replace_color_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_replace_color(const char *argument)
+static void cmd_replace_color_execute(const char *argument)
 {
   JWidget window, color_buttons_box;
   JWidget button1_1, button1_2;
@@ -231,3 +232,11 @@ static void make_preview(void)
   if (jwidget_is_selected(check_preview))
     preview_restart(preview);
 }
+
+Command cmd_replace_color = {
+  CMD_REPLACE_COLOR,
+  cmd_replace_color_enabled,
+  NULL,
+  cmd_replace_color_execute,
+  NULL
+};

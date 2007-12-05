@@ -24,8 +24,9 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -43,7 +44,7 @@
 
 static void preview_sprite(int flags);
 
-bool command_enabled_preview(const char *argument)
+static bool cmd_preview_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
@@ -52,7 +53,7 @@ bool command_enabled_preview(const char *argument)
 /* preview_fit_to_screen    */
 /* ======================== */
 
-void command_execute_preview_fit_to_screen(const char *argument)
+static void cmd_preview_fit_to_screen_execute(const char *argument)
 {
   preview_sprite(PREVIEW_FIT_ON_SCREEN);
 }
@@ -61,7 +62,7 @@ void command_execute_preview_fit_to_screen(const char *argument)
 /* preview_normal           */
 /* ======================== */
 
-void command_execute_preview_normal(const char *argument)
+static void cmd_preview_normal_execute(const char *argument)
 {
   preview_sprite(0);
 }
@@ -70,7 +71,7 @@ void command_execute_preview_normal(const char *argument)
 /* preview_tiled            */
 /* ======================== */
 
-void command_execute_preview_tiled(const char *argument)
+static void cmd_preview_tiled_execute(const char *argument)
 {
   preview_sprite(PREVIEW_TILED);
 }
@@ -255,3 +256,27 @@ static void preview_sprite(int flags)
     jrect_free(vp);
   }
 }
+
+Command cmd_preview_fit_to_screen = {
+  CMD_PREVIEW_FIT_TO_SCREEN,
+  cmd_preview_enabled,
+  NULL,
+  cmd_preview_fit_to_screen_execute,
+  NULL
+};
+
+Command cmd_preview_normal = {
+  CMD_PREVIEW_NORMAL,
+  cmd_preview_enabled,
+  NULL,
+  cmd_preview_normal_execute,
+  NULL
+};
+
+Command cmd_preview_tiled = {
+  CMD_PREVIEW_TILED,
+  cmd_preview_enabled,
+  NULL,
+  cmd_preview_tiled_execute,
+  NULL
+};

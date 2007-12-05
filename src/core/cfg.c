@@ -24,7 +24,7 @@
 #include <allegro/file.h>
 #include <allegro/unicode.h>
 
-#include "jinete/rect.h"
+#include "jinete/jrect.h"
 
 #include "core/cfg.h"
 #include "core/core.h"

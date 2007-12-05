@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "core/app.h"
 #include "core/core.h"

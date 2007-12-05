@@ -361,7 +361,7 @@ static void art_image_svp_aa (const ArtSVP *svp,
       data.hline = blend_indexed_hline;
       break;
 
-    /* XXX make something for IMAGE_BITMAP */
+    /* TODO make something for IMAGE_BITMAP */
     default:
       return;
   }

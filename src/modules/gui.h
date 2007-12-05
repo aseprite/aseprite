@@ -19,7 +19,7 @@
 #ifndef MODULES_GUI_H
 #define MODULES_GUI_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #define HOOK(widget, signal, signal_handler, user_data)			\
   hook_signal ((widget), (signal), (signal_handler), (int)(user_data))

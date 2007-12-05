@@ -23,11 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "jinete/manager.h"
-#include "jinete/rect.h"
-#include "jinete/region.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
+#include "jinete/jmanager.h"
+#include "jinete/jrect.h"
+#include "jinete/jregion.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
 
 #include "console/console.h"
 #include "core/cfg.h"

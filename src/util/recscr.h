@@ -19,7 +19,7 @@
 #ifndef UTIL_RECSCR_H
 #define UTIL_RECSCR_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 bool is_rec_screen(void);
 

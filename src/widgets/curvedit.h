@@ -19,9 +19,9 @@
 #ifndef WIDGETS_CURVEDIT_H
 #define WIDGETS_CURVEDIT_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
-/* XXX use some JI_SIGNAL_USER */
+/* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_CURVE_EDITOR_CHANGE   0x10004
 
 struct Curve;

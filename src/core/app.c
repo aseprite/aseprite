@@ -28,8 +28,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "jinete.h"
-#include "jinete/intern.h"
+#include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 #include "commands/commands.h"
 #include "console/console.h"
@@ -450,7 +450,7 @@ void app_realloc_sprite_list(void)
 	if (sprite == clipboard)
 	  continue;
 
-	/* `count' limit -- XXXX how I know the height of menu-items? */
+	/* `count' limit -- TODO how I know the height of menu-items? */
 /* 	if (count >= SCREEN_H/(text_height (font)+4)-2) { */
 	if (count >= 14) {
 	  menuitem = menuitem_new(_("More"), NULL, NULL);

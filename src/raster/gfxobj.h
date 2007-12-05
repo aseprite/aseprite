@@ -19,14 +19,13 @@
 #ifndef RASTER_GFXOBJ_H
 #define RASTER_GFXOBJ_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 enum {
   GFXOBJ_CEL,
   GFXOBJ_IMAGE,
   GFXOBJ_LAYER_IMAGE,
   GFXOBJ_LAYER_SET,
-  GFXOBJ_LAYER_TEXT,
   GFXOBJ_MASK,
   GFXOBJ_PALETTE,
   GFXOBJ_PATH,

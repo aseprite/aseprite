@@ -1,8 +1,7 @@
 High priority work
 ------------------
 
-- search for XXX (XXXX is supposed to be high priority);
-  + replace XXX to TODO;
+- search for TODO;
 - add support for PNG files.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider

@@ -19,7 +19,7 @@
 #ifndef UTIL_CLIPBRD_H
 #define UTIL_CLIPBRD_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 struct Image;
 

@@ -20,10 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/box.h"
-#include "jinete/button.h"
-#include "jinete/hook.h"
-#include "jinete/widget.h"
+#include "jinete/jbox.h"
+#include "jinete/jbutton.h"
+#include "jinete/jhook.h"
+#include "jinete/jwidget.h"
 
 #include "commands/commands.h"
 #include "modules/gfx.h"

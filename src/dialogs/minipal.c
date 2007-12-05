@@ -22,14 +22,14 @@
 
 #include <stdio.h>
 
-#include "jinete/box.h"
-#include "jinete/button.h"
-#include "jinete/hook.h"
-#include "jinete/list.h"
-#include "jinete/rect.h"
-#include "jinete/system.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jbox.h"
+#include "jinete/jbutton.h"
+#include "jinete/jhook.h"
+#include "jinete/jlist.h"
+#include "jinete/jrect.h"
+#include "jinete/jsystem.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
 #include "modules/color.h"
 #include "modules/gui.h"

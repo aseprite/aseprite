@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "core/cfg.h"
 #include "core/dirs.h"
@@ -37,7 +37,7 @@
 
 #endif
 
-/* XXXX warning: this number could be dangerous for big filters */
+/* TODO warning: this number could be dangerous for big filters */
 #define PRECISION          (256)
 
 static struct {
@@ -96,7 +96,7 @@ ConvMatr *convmatr_new(int w, int h)
 
 ConvMatr *convmatr_new_string(const char *format)
 {
-  /* XXXX */
+  /* TODO */
   return NULL;
 }
 

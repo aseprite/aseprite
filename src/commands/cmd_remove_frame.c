@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
@@ -34,14 +35,14 @@
 
 static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame);
 
-bool command_enabled_remove_frame(const char *argument)
+static bool cmd_remove_frame_enabled(const char *argument)
 {
   return
     current_sprite != NULL &&
     current_sprite->frames > 1;
 }
 
-void command_execute_remove_frame(const char *argument)
+static void cmd_remove_frame_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
@@ -91,8 +92,13 @@ static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-      break;
   }
 }
+
+Command cmd_remove_frame = {
+  CMD_REMOVE_FRAME,
+  cmd_remove_frame_enabled,
+  NULL,
+  cmd_remove_frame_execute,
+  NULL
+};

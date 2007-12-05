@@ -19,8 +19,8 @@
 #ifndef MODULES_TOOLS_H
 #define MODULES_TOOLS_H
 
-#include "jinete/base.h"
-#include "jinete/rect.h"
+#include "jinete/jbase.h"
+#include "jinete/jrect.h"
 
 struct _GList;
 struct Brush;

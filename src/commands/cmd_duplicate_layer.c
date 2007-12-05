@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "modules/gui.h"
@@ -32,22 +33,22 @@
 
 #endif
 
-static Layer *DuplicateLayer(void);
+static Layer *duplicate_layer(void);
 
-bool command_enabled_duplicate_layer(const char *argument)
+static bool cmd_duplicate_layer_enabled(const char *argument)
 {
   return
     current_sprite != NULL &&
     current_sprite->layer != NULL;
 }
 
-void command_execute_duplicate_layer(const char *argument)
+static void cmd_duplicate_layer_execute(const char *argument)
 {
-  if (DuplicateLayer() != NULL)
+  if (duplicate_layer() != NULL)
     update_screen_for_sprite(current_sprite);
 }
 
-static Layer *DuplicateLayer(void)
+static Layer *duplicate_layer(void)
 {
   Sprite *sprite = current_sprite;
   Layer *layer_copy;
@@ -83,3 +84,11 @@ static Layer *DuplicateLayer(void)
 
   return layer_copy;
 }
+
+Command cmd_duplicate_layer = {
+  CMD_DUPLICATE_LAYER,
+  cmd_duplicate_layer_enabled,
+  NULL,
+  cmd_duplicate_layer_execute,
+  NULL
+};

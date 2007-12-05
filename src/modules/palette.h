@@ -19,7 +19,7 @@
 #ifndef MODULES_PALETTE_H
 #define MODULES_PALETTE_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 #include <allegro/color.h>
 
 struct Sprite;

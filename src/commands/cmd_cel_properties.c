@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -32,12 +33,12 @@
 
 #endif
 
-bool command_enabled_cel_properties(const char *argument)
+static bool cmd_cel_properties_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_cel_properties(const char *argument)
+static void cmd_cel_properties_execute(const char *argument)
 {
   JWidget window, entry_frame, entry_xpos, entry_ypos, slider_opacity, button_ok;
   Sprite *sprite;
@@ -137,3 +138,11 @@ void command_execute_cel_properties(const char *argument)
 
   jwidget_free(window);
 }
+
+Command cmd_cel_properties = {
+  CMD_CEL_PROPERTIES,
+  cmd_cel_properties_enabled,
+  NULL,
+  cmd_cel_properties_execute,
+  NULL
+};

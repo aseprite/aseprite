@@ -22,13 +22,13 @@
 
 #include <allegro.h>
 
-#include "jinete/box.h"
-#include "jinete/button.h"
-#include "jinete/entry.h"
-#include "jinete/hook.h"
-#include "jinete/label.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jbox.h"
+#include "jinete/jbutton.h"
+#include "jinete/jentry.h"
+#include "jinete/jhook.h"
+#include "jinete/jlabel.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
 #include "core/cfg.h"
 #include "core/core.h"
@@ -38,7 +38,6 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
-#include "widgets/colbar.h"
 #include "widgets/colbut.h"
 #include "widgets/groupbut.h"
 

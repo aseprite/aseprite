@@ -24,16 +24,16 @@
 
 #include <allegro.h>
 
-#include "jinete/draw.h"
-#include "jinete/list.h"
-#include "jinete/manager.h"
-#include "jinete/message.h"
-#include "jinete/rect.h"
-#include "jinete/region.h"
-#include "jinete/system.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jdraw.h"
+#include "jinete/jlist.h"
+#include "jinete/jmanager.h"
+#include "jinete/jmessage.h"
+#include "jinete/jrect.h"
+#include "jinete/jregion.h"
+#include "jinete/jsystem.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
 #include "core/app.h"
 #include "core/cfg.h"
@@ -240,7 +240,7 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
 /*       editor->refresh_region = jregion_new(NULL, 0); */
 /*       jregion_copy(editor->refresh_region, region); */
 /*       jregion_subtract(editor->refresh_region, editor->refresh_region, reg2); */
-      /* XXXX jwidget_validate */
+      /* TODO jwidget_validate */
       jregion_union(widget->update_region, widget->update_region, region);
       jregion_subtract(widget->update_region, widget->update_region, reg2);
 
@@ -273,6 +273,13 @@ void editor_update(JWidget widget)
   jview_update(view);
 }
 
+/**
+ * Draws the sprite of the editor in the screen using
+ * the @ref render_sprite routine.
+ *
+ * @warning You should setup the clip of the @ref ji_screen before to
+ *          call this routine.
+ */
 void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
 {
   Editor *editor = editor_data (widget);
@@ -374,7 +381,7 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
       Image *rgb_rendered = rendered;
       rendered = image_rgb_to_indexed(rgb_rendered, source_x, source_y,
 				      orig_rgb_map,
-				      /* XXXXX */
+				      /* TODO */
 /* 				      sprite_get_palette(editor->sprite, */
 /* 							 editor->sprite->frpos)); */
 				      current_palette);
@@ -402,9 +409,14 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
     }
   }
 
-  jrect_free (vp);
+  jrect_free(vp);
 }
 
+/**
+ * Draws the sprite taking care of the whole clipping region.
+ *
+ * For each rectangle calls @ref editor_draw_sprite.
+ */
 void editor_draw_sprite_safe(JWidget widget, int x1, int y1, int x2, int y2)
 {
   JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
@@ -422,24 +434,26 @@ void editor_draw_sprite_safe(JWidget widget, int x1, int y1, int x2, int y2)
   jregion_free(region);
 }
 
-/* draws the boundaries, really this routine doesn't use the "mask"
-   field of the sprite, only the "bound" field (so you can have other
-   mask in the sprite and could be showed other boundaries), to
-   regenerate boundaries, use the sprite_generate_mask_boundaries()
-   routine */
+/**
+ * Draws the boundaries, really this routine doesn't use the "mask"
+ * field of the sprite, only the "bound" field (so you can have other
+ * mask in the sprite and could be showed other boundaries), to
+ * regenerate boundaries, use the sprite_generate_mask_boundaries()
+ * routine.
+ */
 void editor_draw_mask(JWidget widget)
 {
-  Editor *editor = editor_data (widget);
-  JWidget view = jwidget_get_view (widget);
-  JRect vp = jview_get_viewport_position (view);
+  Editor *editor = editor_data(widget);
+  JWidget view = jwidget_get_view(widget);
+  JRect vp = jview_get_viewport_position(view);
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
   BoundSeg *seg;
   int c, x, y;
 
-  jview_get_scroll (view, &scroll_x, &scroll_y);
+  jview_get_scroll(view, &scroll_x, &scroll_y);
 
-  dotted_mode (editor->offset_count);
+  dotted_mode(editor->offset_count);
 
   x = vp->x1 - scroll_x + editor->offset_x;
   y = vp->y1 - scroll_y + editor->offset_y;
@@ -479,17 +493,17 @@ void editor_draw_mask(JWidget widget)
 	}
       }
 
-    line (ji_screen, x+x1, y+y1, x+x2, y+y2, 0);
+    line(ji_screen, x+x1, y+y1, x+x2, y+y2, 0);
   }
 
-  dotted_mode (-1);
+  dotted_mode(-1);
 
-  jrect_free (vp);
+  jrect_free(vp);
 }
 
 void editor_draw_mask_safe(JWidget widget)
 {
-  Editor *editor = editor_data (widget);
+  Editor *editor = editor_data(widget);
 
   if ((editor->sprite) && (editor->sprite->bound.seg)) {
     int thick = editor->cursor_thick;
@@ -843,7 +857,7 @@ void editor_refresh_region(JWidget widget)
     else
       jmouse_hide();
 
-    /* XXXX check if this work!!!! */
+    /* TODO check if this work!!!! */
 /*     jwidget_redraw_region */
 /*       (jwindow_get_manager (jwidget_get_window (widget)), */
 /*        editor->refresh_region); */

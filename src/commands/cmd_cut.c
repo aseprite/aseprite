@@ -20,8 +20,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
+#include "commands/commands.h"
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -31,7 +32,7 @@
 
 #endif
 
-bool command_enabled_cut(const char *argument)
+static bool cmd_cut_enabled(const char *argument)
 {
   if ((!current_sprite) ||
       (!current_sprite->layer) ||
@@ -44,7 +45,15 @@ bool command_enabled_cut(const char *argument)
     return GetImage() ? TRUE: FALSE;
 }
 
-void command_execute_cut(const char *argument)
+static void cmd_cut_execute(const char *argument)
 {
   cut_to_clipboard();
 }
+
+Command cmd_cut = {
+  CMD_CUT,
+  cmd_cut_enabled,
+  NULL,
+  cmd_cut_execute,
+  NULL
+};

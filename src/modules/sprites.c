@@ -22,7 +22,7 @@
 
 #include <allegro/file.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "core/app.h"
 #include "core/core.h"
@@ -267,9 +267,6 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* XXX */
-      break;
   }
 
   return stock;
@@ -319,8 +316,5 @@ static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, i
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* XXX */
-      break;
   }
 }

@@ -19,7 +19,7 @@
 #ifndef EFFECT_CONVMATR_H
 #define EFFECT_CONVMATR_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 struct Effect;
 

@@ -22,13 +22,14 @@
 
 #include <stdio.h>
 
-#include "jinete/box.h"
-#include "jinete/button.h"
-#include "jinete/entry.h"
-#include "jinete/hook.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jbox.h"
+#include "jinete/jbutton.h"
+#include "jinete/jentry.h"
+#include "jinete/jhook.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -57,12 +58,12 @@ static int preview_change_hook (JWidget widget, int user_data);
 static int tiled_change_hook (JWidget widget, int user_data);
 static void make_preview (void);
 
-bool command_enabled_despeckle(const char *argument)
+static bool cmd_despeckle_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_despeckle(const char *argument)
+static void cmd_despeckle_execute(const char *argument)
 {
   JWidget window, box_target, target_button, button_ok;
   Image *image;
@@ -196,3 +197,11 @@ static void make_preview (void)
   if (jwidget_is_selected (check_preview))
     preview_restart (preview);
 }
+
+Command cmd_despeckle = {
+  CMD_DESPECKLE,
+  cmd_despeckle_enabled,
+  NULL,
+  cmd_despeckle_execute,
+  NULL
+};

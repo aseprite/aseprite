@@ -20,19 +20,28 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
+#include "commands/commands.h"
 #include "dialogs/maskcol.h"
 #include "modules/sprites.h"
 
 #endif
 
-bool command_enabled_mask_by_color(const char *argument)
+static bool cmd_mask_by_color_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_mask_by_color(const char *argument)
+static void cmd_mask_by_color_execute(const char *argument)
 {
   dialogs_mask_color();
 }
+
+Command cmd_mask_by_color = {
+  CMD_MASK_BY_COLOR,
+  cmd_mask_by_color_enabled,
+  NULL,
+  cmd_mask_by_color_execute,
+  NULL
+};

@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "util/hash.h"
 

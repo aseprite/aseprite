@@ -20,10 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
-#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/color.h"
 #include "modules/sprites.h"
@@ -33,11 +33,10 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "widgets/colbar.h"
 
 #endif
 
-bool command_enabled_new_cel(const char *argument)
+static bool cmd_new_cel_enabled(const char *argument)
 {
   return
     current_sprite &&
@@ -48,9 +47,9 @@ bool command_enabled_new_cel(const char *argument)
     !layer_get_cel(current_sprite->layer, current_sprite->frame);
 }
 
-void command_execute_new_cel(const char *argument)
+static void cmd_new_cel_execute(const char *argument)
 {
-  int bg, image_index;
+  int image_index;
   Image *image;
   Cel *cel;
 
@@ -64,16 +63,14 @@ void command_execute_new_cel(const char *argument)
   }
 
   /* background color (right color) */
-  bg = get_color_for_image(image->imgtype,
-			   color_bar_get_color(app_get_color_bar(), 1));
-  image_clear(image, bg);
+  image_clear(image, 0);
 
   /* add the image in the stock */
-  image_index = stock_add_image(current_sprite->layer->stock, image);
+  image_index = stock_add_image(current_sprite->stock, image);
 
   undo_open(current_sprite->undo);
   undo_add_image(current_sprite->undo,
-		 current_sprite->layer->stock, image);
+		 current_sprite->stock, image);
 
   /* add the cel in the layer */
   cel = cel_new(current_sprite->frame, image_index);
@@ -84,3 +81,11 @@ void command_execute_new_cel(const char *argument)
 
   update_screen_for_sprite(current_sprite);
 }
+
+Command cmd_new_cel = {
+  CMD_NEW_CEL,
+  cmd_new_cel_enabled,
+  NULL,
+  cmd_new_cel_execute,
+  NULL
+};

@@ -19,7 +19,7 @@
 #ifndef DIALOGS_MINIPAL_H
 #define DIALOGS_MINIPAL_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 void ji_minipal_new (JWidget color_bar, int x, int y);
 

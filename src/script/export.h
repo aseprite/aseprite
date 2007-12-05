@@ -44,7 +44,7 @@ double atan2(double y, double x);
 double cosh(double x);
 double sinh(double x);
 double tanh(double x);
-/* XXX these routines aren't in MinGW math library */
+/* TODO these routines aren't in MinGW math library */
 /* double acosh (double x); */
 /* double asinh (double x); */
 /* double atanh (double x); */
@@ -302,7 +302,6 @@ Image *RenderText(const char *fontname, int size, int color, const char *text);
 #define GFXOBJ_CEL
 #define GFXOBJ_LAYER_IMAGE
 #define GFXOBJ_LAYER_SET
-#define GFXOBJ_LAYER_TEXT
 #define GFXOBJ_SPRITE
 #define GFXOBJ_MASK
 #define GFXOBJ_PATH
@@ -398,11 +397,10 @@ void cel_set_opacity(Cel *cel, int opacity);
 
 /* Layer ************************************************************/
 
-Layer *layer_new(int imgtype);
-Layer *layer_set_new(void);
+Layer *layer_new(Sprite *sprite);
+Layer *layer_set_new(Sprite *sprite);
 /* Layer *layer_text_new(const char *text); */
 Layer *layer_new_copy(Layer *layer);
-Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frpos);
 void layer_free(Layer *layer);
 
 bool layer_is_image(Layer *layer);
@@ -427,7 +425,7 @@ void layer_move_layer(Layer *set, Layer *layer, Layer *after);
 
 void layer_render(Layer *layer, Image *image, int x, int y, int frame);
 
-Layer *layer_flatten(Layer *layer, int imgtype, int x, int y, int w, int h, int frmin, int frmax);
+Layer *layer_flatten(Layer *layer, int x, int y, int w, int h, int frmin, int frmax);
 
 /* Mask *************************************************************/
 

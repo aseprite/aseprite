@@ -63,13 +63,29 @@ WORD		Frames
 WORD		Width in pixels
 WORD		Height in pixels
 WORD		Color depth (bits per pixel)
+		32 bpp = RGBA
+		16 bpp = Grayscale
+		 8 bpp = Indexed
 DWORD		Flags (must be 0)
 WORD		Speed (milliseconds between frame, like in FLC files)
 		DEPRECATED!!!: you should use the frame duration
                                field from each frame header
 DWORD		Set be 0
 DWORD		Set be 0
-BYTE[100]	For future (set to zero)
+BYTE[4]		Background color:
+		For 32 bpp
+	BYTE		Red
+	BYTE		Green
+	BYTE		Blue
+	BYTE		Alpha
+		For 16 bpp:
+	BYTE		Gray
+	BYTE		Alpha
+	BYTE[2]		Padding
+		For 8 bpp:
+	BYTE		Index
+	BYTE[3]		Padding
+BYTE[96]	For future (set to zero)
 
 
 ========================================
@@ -176,6 +192,8 @@ Mask Chunk (0x2016) DEPRECATED!!!
 
 Path Chunk (0x2017)
 ----------------------------------------
+
+  Never used.
 
 
 Notes

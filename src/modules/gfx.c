@@ -23,8 +23,8 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "jinete/intern.h"
-#include "jinete/system.h"
+#include "jinete/jintern.h"
+#include "jinete/jsystem.h"
 
 #include "console/console.h"
 #include "core/cfg.h"

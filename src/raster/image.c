@@ -269,20 +269,20 @@ Image *image_new(int imgtype, int w, int h)
 #endif
 
   if (image->method)
-    if (image->method->init (image) < 0) {
-      jfree (image);
+    if (image->method->init(image) < 0) {
+      jfree(image);
       return NULL;
     }
 
   return image;
 }
 
-Image *image_new_copy (const Image *image)
+Image *image_new_copy(const Image *image)
 {
-  return image_crop (image, 0, 0, image->w, image->h);
+  return image_crop(image, 0, 0, image->w, image->h);
 }
 
-void image_free (Image *image)
+void image_free(Image *image)
 {
 #ifndef USE_ALLEGRO_IMAGE
   if (image->dat) jfree(image->dat);
@@ -294,7 +294,7 @@ void image_free (Image *image)
   gfxobj_free((GfxObj *)image);
 }
 
-int image_depth (Image *image)
+int image_depth(Image *image)
 {
   switch (image->imgtype) {
     case IMAGE_RGB: return 32;
@@ -305,36 +305,36 @@ int image_depth (Image *image)
   }
 }
 
-int image_getpixel (const Image *image, int x, int y)
+int image_getpixel(const Image *image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
-    return image->method->getpixel (image, x, y);
+    return image->method->getpixel(image, x, y);
   else
     return -1;
 }
 
-void image_putpixel (Image *image, int x, int y, int color)
+void image_putpixel(Image *image, int x, int y, int color)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
     image->method->putpixel (image, x, y, color);
 }
 
-void image_clear (Image *image, int color)
+void image_clear(Image *image, int color)
 {
   image->method->clear (image, color);
 }
 
-void image_copy (Image *dst, const Image *src, int x, int y)
+void image_copy(Image *dst, const Image *src, int x, int y)
 {
   dst->method->copy (dst, src, x, y);
 }
 
-void image_merge (Image *dst, const Image *src, int x, int y, int opacity, int blend_mode)
+void image_merge(Image *dst, const Image *src, int x, int y, int opacity, int blend_mode)
 {
-  dst->method->merge (dst, src, x, y, opacity, blend_mode);
+  dst->method->merge(dst, src, x, y, opacity, blend_mode);
 }
 
-Image *image_crop (const Image *image, int x, int y, int w, int h)
+Image *image_crop(const Image *image, int x, int y, int w, int h)
 {
   Image *trim;
 
@@ -351,7 +351,7 @@ Image *image_crop (const Image *image, int x, int y, int w, int h)
   return trim;
 }
 
-void image_hline (Image *image, int x1, int y, int x2, int color)
+void image_hline(Image *image, int x1, int y, int x2, int color)
 {
   int t;
 
@@ -370,7 +370,7 @@ void image_hline (Image *image, int x1, int y, int x2, int color)
   image->method->hline (image, x1, y, x2, color);
 }
 
-void image_vline (Image *image, int x, int y1, int y2, int color)
+void image_vline(Image *image, int x, int y1, int y2, int color)
 {
   int t;
 
@@ -390,7 +390,7 @@ void image_vline (Image *image, int x, int y1, int y2, int color)
     image->method->putpixel (image, x, t, color);
 }
 
-void image_rect (Image *image, int x1, int y1, int x2, int y2, int color)
+void image_rect(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   int t;
 
@@ -409,15 +409,15 @@ void image_rect (Image *image, int x1, int y1, int x2, int y2, int color)
   if ((x2 < 0) || (x1 >= image->w) || (y2 < 0) || (y1 >= image->h))
     return;
 
-  image_hline (image, x1, y1, x2, color);
-  image_hline (image, x1, y2, x2, color);
+  image_hline(image, x1, y1, x2, color);
+  image_hline(image, x1, y2, x2, color);
   if (y2-y1 > 1) {
-    image_vline (image, x1, y1+1, y2-1, color);
-    image_vline (image, x2, y1+1, y2-1, color);
+    image_vline(image, x1, y1+1, y2-1, color);
+    image_vline(image, x2, y1+1, y2-1, color);
   }
 }
 
-void image_rectfill (Image *image, int x1, int y1, int x2, int y2, int color)
+void image_rectfill(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   int t;
 
@@ -441,7 +441,7 @@ void image_rectfill (Image *image, int x1, int y1, int x2, int y2, int color)
   if (x2 >= image->w) x2 = image->w-1;
   if (y2 >= image->h) y2 = image->h-1;
 
-  image->method->rectfill (image, x1, y1, x2, y2, color);
+  image->method->rectfill(image, x1, y1, x2, y2, color);
 }
 
 typedef struct Data
@@ -450,40 +450,40 @@ typedef struct Data
   int color;
 } Data;
 
-static void pixel_for_image (int x, int y, Data *data)
+static void pixel_for_image(int x, int y, Data *data)
 {
-  image_putpixel (data->image, x, y, data->color);
+  image_putpixel(data->image, x, y, data->color);
 }
 
-static void hline_for_image (int x1, int y, int x2, Data *data)
+static void hline_for_image(int x1, int y, int x2, Data *data)
 {
-  image_hline (data->image, x1, y, x2, data->color);
+  image_hline(data->image, x1, y, x2, data->color);
 }
 
-void image_line (Image *image, int x1, int y1, int x2, int y2, int color)
+void image_line(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   Data data = { image, color };
   algo_line (x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
-void image_ellipse (Image *image, int x1, int y1, int x2, int y2, int color)
+void image_ellipse(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   Data data = { image, color };
   algo_ellipse (x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
-void image_ellipsefill (Image *image, int x1, int y1, int x2, int y2, int color)
+void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   Data data = { image, color };
   algo_ellipsefill (x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
 }
 
-void image_to_allegro (Image *image, struct BITMAP *bmp, int x, int y)
+void image_to_allegro(Image *image, struct BITMAP *bmp, int x, int y)
 {
   image->method->to_allegro (image, bmp, x, y);
 }
 
-void image_convert (Image *dst, const Image *src)
+void image_convert(Image *dst, const Image *src)
 {
   int c, x, y, w, h;
   float hue, s, v;
@@ -612,7 +612,7 @@ void image_convert (Image *dst, const Image *src)
   }
 }
 
-int image_count_diff (const Image *i1, const Image *i2)
+int image_count_diff(const Image *i1, const Image *i2)
 {
   int c, size, diff = 0;
 
@@ -654,7 +654,7 @@ int image_count_diff (const Image *i1, const Image *i2)
       break;
 
     case IMAGE_BITMAP:
-      /* XXX test it */
+      /* TODO test it */
       {
 	unsigned char *address1 = (unsigned char *)i1->dat;
 	unsigned char *address2 = (unsigned char *)i2->dat;
@@ -664,8 +664,8 @@ int image_count_diff (const Image *i1, const Image *i2)
 	  if (((*address1) & (1<<d1.rem)) !=
 	      ((*address2) & (1<<d2.rem)))
 	    diff++;
-	  _image_bitmap_next_bit (d1, address1);
-	  _image_bitmap_next_bit (d2, address2);
+	  _image_bitmap_next_bit(d1, address1);
+	  _image_bitmap_next_bit(d2, address2);
 	}
       }
       break;
@@ -673,53 +673,4 @@ int image_count_diff (const Image *i1, const Image *i2)
 
   return diff;
 }
-
-/* void image_swap (Image *i1, Image *i2, int x, int y) */
-/* { */
-/*   int u, v; */
-
-/*   switch (i1->imgtype) { */
-
-/*     case IMAGE_RGB: */
-/*       { */
-/* 	unsigned long *address1 = (unsigned long *)i1->bytes; */
-/* 	unsigned long *address2 = (unsigned long *)i2->bytes; */
-/* 	unsigned long aux; */
-/* 	for (v=0; v<i2->h; v++) { */
-/* 	  address1 = ((unsigned long **)i1->lines)[v+y]+x; */
-/* 	  address2 = ((unsigned long **)i2->lines)[v]; */
-/* 	  for (u=0; u<i2->w; u++) { */
-/* 	    aux = *address1; */
-/* 	    *(address1++) = *address2; */
-/* 	    *(address2++) = aux; */
-/* 	  } */
-/* 	} */
-/*       } */
-/*       break; */
-
-/*     case IMAGE_GRAYSCALE: */
-/*       { */
-/* 	unsigned short *address1 = (unsigned short *)i1->bytes; */
-/* 	unsigned short *address2 = (unsigned short *)i2->bytes; */
-/* 	for (c=0; c<size; c++) */
-/* 	  if (*(address1++) != *(address2++)) */
-/* 	    diff++; */
-/*       } */
-/*       break; */
-
-/*     case IMAGE_INDEXED: */
-/*       { */
-/* 	unsigned char *address1 = (unsigned char *)i1->bytes; */
-/* 	unsigned char *address2 = (unsigned char *)i2->bytes; */
-/* 	for (c=0; c<size; c++) */
-/* 	  if (*(address1++) != *(address2++)) */
-/* 	    diff++; */
-/*       } */
-/*       break; */
-
-/*     case IMAGE_BITMAP: */
-/*       /\* XXX *\/ */
-/*       break; */
-/*   } */
-/* } */
 

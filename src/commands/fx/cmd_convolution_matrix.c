@@ -22,17 +22,18 @@
 
 #include <string.h>
 
-#include "jinete/box.h"
-#include "jinete/button.h"
-#include "jinete/hook.h"
-#include "jinete/label.h"
-#include "jinete/list.h"
-#include "jinete/listbox.h"
-#include "jinete/slider.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
-#include "jinete/window.h"
+#include "jinete/jbox.h"
+#include "jinete/jbutton.h"
+#include "jinete/jhook.h"
+#include "jinete/jlabel.h"
+#include "jinete/jlist.h"
+#include "jinete/jlistbox.h"
+#include "jinete/jslider.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -48,7 +49,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
-#include "widgets/colbar.h"
 #include "widgets/colbut.h"
 #include "widgets/curvedit.h"
 #include "widgets/preview.h"
@@ -72,12 +72,12 @@ static int preview_change_hook (JWidget widget, int user_data);
 static int tiled_change_hook (JWidget widget, int user_data);
 static void make_preview (void);
 
-bool command_enabled_convolution_matrix(const char *argument)
+static bool cmd_convolution_matrix_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_convolution_matrix(const char *argument)
+static void cmd_convolution_matrix_execute(const char *argument)
 {
   JWidget window, button_ok;
   JWidget view_convmatr, list_convmatr;
@@ -137,7 +137,7 @@ void command_execute_convolution_matrix(const char *argument)
   HOOK (reload, JI_SIGNAL_BUTTON_SELECT, reload_select_hook, list_convmatr);
   HOOK (generate, JI_SIGNAL_BUTTON_SELECT, generate_select_hook, 0);
 
-  /* XXXX enable this someday */
+  /* TODO enable this someday */
   jwidget_disable (generate);
 
   /* default position */
@@ -286,7 +286,7 @@ static int generate_select_hook (JWidget widget, int user_data)
   jwidget_set_static_size (view_x, 64, 64);
   jwidget_set_static_size (view_y, 64, 64);
 
-  /* XXX fix this */
+  /* TODO fix this */
   /* jwidget_get_vtable (div)->request_size = NULL; */
   /* jwidget_get_vtable (bias)->request_size = NULL; */
 
@@ -295,7 +295,7 @@ static int generate_select_hook (JWidget widget, int user_data)
 
   jwindow_open_fg (window);
 
-  /* XXX do something */
+  /* TODO do something */
 
   jwidget_free (window);
 
@@ -344,3 +344,11 @@ static void make_preview (void)
   if (jwidget_is_selected (check_preview))
     preview_restart (preview);
 }
+
+Command cmd_convolution_matrix = {
+  CMD_CONVOLUTION_MATRIX,
+  cmd_convolution_matrix_enabled,
+  NULL,
+  cmd_convolution_matrix_execute,
+  NULL
+};

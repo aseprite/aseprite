@@ -20,19 +20,28 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
+#include "commands/commands.h"
 #include "dialogs/filmedit.h"
 #include "util/celmove.h"
 
 #endif
 
-bool command_enabled_link_cel(const char *argument)
+static bool cmd_link_cel_enabled(const char *argument)
 {
   return is_movingcel();
 }
 
-void command_execute_link_cel(const char *argument)
+static void cmd_link_cel_execute(const char *argument)
 {
   link_cel();
 }
+
+Command cmd_link_cel = {
+  CMD_LINK_CEL,
+  cmd_link_cel_enabled,
+  NULL,
+  cmd_link_cel_execute,
+  NULL
+};

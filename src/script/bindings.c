@@ -22,7 +22,7 @@
 
 #include <allegro/gfx.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "console/console.h"
 #include "core/app.h"
@@ -294,15 +294,13 @@ static int metatable_index(lua_State *L)
 	  switch (layer->gfxobj.type) {
 	    case GFXOBJ_LAYER_IMAGE:
 	      if (strcmp(index, "imgtype") == 0)
-		lua_pushnumber(L, layer->imgtype);
+		lua_pushnumber(L, layer->sprite->imgtype);
 /* 	      else if (strcmp (index, "w") == 0) */
 /* 		lua_pushnumber (L, layer->w); */
 /* 	      else if (strcmp (index, "h") == 0) */
 /* 		lua_pushnumber (L, layer->h); */
 	      else if (strcmp(index, "blend_mode") == 0)
 		lua_pushnumber(L, layer->blend_mode);
-	      else if (strcmp(index, "stock") == 0)
-		push_userdata(L, Type_Stock, layer->stock);
 	      else if (strcmp(index, "cels") == 0)
 		push_userdata(L, Type_Cel,
 			      jlist_first_data(layer->cels));
@@ -315,10 +313,6 @@ static int metatable_index(lua_State *L)
 			      jlist_first_data (layer->layers));
 	      else
 		return 0;
-	      break;
-	    case GFXOBJ_LAYER_TEXT:
-	      /* XXX */
-	      return 0;
 	      break;
 	  }
 	}
@@ -359,6 +353,8 @@ static int metatable_index(lua_State *L)
 	  lua_pushnumber(L, sprite->w);
 	else if (strcmp(index, "h") == 0)
 	  lua_pushnumber(L, sprite->h);
+	else if (strcmp(index, "stock") == 0)
+	  push_userdata(L, Type_Stock, sprite->stock);
 	else if (strcmp(index, "frames") == 0)
 	  lua_pushnumber(L, sprite->frames);
 	else if (strcmp(index, "frame") == 0)

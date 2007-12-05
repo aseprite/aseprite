@@ -23,7 +23,7 @@
 #include <allegro/gfx.h>
 #include <allegro/unicode.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 #include "core/cfg.h"
 #include "dialogs/repo.h"

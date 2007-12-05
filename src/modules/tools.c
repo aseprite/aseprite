@@ -24,13 +24,13 @@
 #include <limits.h>
 #include <math.h>
 
-#include "jinete/alert.h"
-#include "jinete/list.h"
-#include "jinete/manager.h"
-#include "jinete/region.h"
-#include "jinete/system.h"
-#include "jinete/view.h"
-#include "jinete/widget.h"
+#include "jinete/jalert.h"
+#include "jinete/jlist.h"
+#include "jinete/jmanager.h"
+#include "jinete/jregion.h"
+#include "jinete/jsystem.h"
+#include "jinete/jview.h"
+#include "jinete/jwidget.h"
 
 #include "core/app.h"
 #include "core/cfg.h"
@@ -492,7 +492,7 @@ static void tool_rectangle_put (Dirty *dirty, int x1, int y1, int x2, int y2)
 
   if (filled_mode)
     dirty_rectfill (dirty, x1, y1, x2, y2);
-#else  /* XXXX rpoly */
+#else  /* TODO rpoly */
   if (x2 != x1 && y2 != y1) {
     fixed angle, new_x, new_y, old_x, old_y, fst_x, fst_y;
     fixed start = itofix (-64);

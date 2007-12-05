@@ -20,26 +20,59 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/editors.h"
 
 #endif
 
-void command_execute_close_editor(const char *argument)
+static void cmd_close_editor_execute(const char *argument)
 {
   close_editor(current_editor);
 }
 
-void command_execute_make_unique_editor(const char *argument)
+static void cmd_make_unique_editor_execute(const char *argument)
 {
   make_unique_editor(current_editor);
 }
 
-void command_execute_split_editor_horizontally(const char *argument)
+static void cmd_split_editor_horizontally_execute(const char *argument)
 {
   split_editor(current_editor, JI_HORIZONTAL);
 }
 
-void command_execute_split_editor_vertically(const char *argument)
+static void cmd_split_editor_vertically_execute(const char *argument)
 {
   split_editor(current_editor, JI_VERTICAL);
 }
+
+Command cmd_close_editor = {
+  CMD_CLOSE_EDITOR,
+  NULL,
+  NULL,
+  cmd_close_editor_execute,
+  NULL
+};
+
+Command cmd_make_unique_editor = {
+  CMD_MAKE_UNIQUE_EDITOR,
+  NULL,
+  NULL,
+  cmd_make_unique_editor_execute,
+  NULL
+};
+
+Command cmd_split_editor_horizontally = {
+  CMD_SPLIT_EDITOR_HORIZONTALLY,
+  NULL,
+  NULL,
+  cmd_split_editor_horizontally_execute,
+  NULL
+};
+
+Command cmd_split_editor_vertically = {
+  CMD_SPLIT_EDITOR_VERTICALLY,
+  NULL,
+  NULL,
+  cmd_split_editor_vertically_execute,
+  NULL
+};

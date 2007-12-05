@@ -68,7 +68,7 @@
 	<key command="convolution_matrix" shortcut="F9" />
 	<key command="color_curve" shortcut="Ctrl+M" />
 	<key command="color_curve" shortcut="F10" />
-	<key command="run_script" shortcut="Ctrl+0" />
+<!-- 	<key command="run_script" shortcut="Ctrl+0" /> -->
 	<key command="tips" shortcut="F1" />
 	<key command="options" shortcut="Shift+Ctrl+O" />
     </keyboard>
@@ -160,7 +160,7 @@
 	    <item command="new_cel" name="&New" />
 	    <item command="move_cel" name="&Move" />
 	    <item command="copy_cel" name="&Copy" />
-	    <item command="link_cel" name="&Link" />
+<!-- 	    <item command="link_cel" name="&Link" /> -->
 	    <item command="remove_cel" name="&Remove" />
 	    <separator />
 	    <item command="crop_cel" name="Cr&op" />
@@ -204,12 +204,12 @@
 	    </menu>
 <!-- 	    <item command="draw_text" name="Draw &Text" /> -->
 <!-- 	    <item command="mapgen" name="&MapGen" /> -->
-	    <menu name="Scripting">
-		<item command="run_script" name="Run &Script" />
-	    </menu>
-	    <menu name="Extras">
-		<item command="play_flic" name="Pla&y FLI/FLC File" />
-	    </menu>
+<!-- 	    <menu name="Scripting"> -->
+<!-- 		<item command="run_script" name="Run &Script" /> -->
+<!-- 	    </menu> -->
+<!-- 	    <menu name="Extras"> -->
+<!-- 		<item command="play_flic" name="Pla&y FLI/FLC File" /> -->
+<!-- 	    </menu> -->
 	    <separator />
 	    <item command="tips" name="T&ips" />
 	    <item command="options" name="&Options" />

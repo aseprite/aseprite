@@ -22,12 +22,13 @@
 
 #include <string.h>
 
-#include "jinete/list.h"
+#include "jinete/jlist.h"
 
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
+#include "raster/sprite.h"
 #include "raster/stock.h"
 
 #endif
@@ -38,20 +39,19 @@ static bool has_cels(Layer *layer, int frame);
   do {						\
     layer_set_name(layer, name_string);		\
 						\
+    layer->sprite = sprite;			\
     layer->parent = NULL;			\
     layer->readable = TRUE;			\
     layer->writable = TRUE;			\
 						\
-    layer->imgtype = 0;				\
     layer->blend_mode = 0;			\
-    layer->stock = NULL;			\
     layer->cels = NULL;				\
 						\
     layer->layers = NULL;			\
   } while (0);
 
 /* creates a new empty (without frames) normal (image) layer */
-Layer *layer_new(int imgtype)
+Layer *layer_new(Sprite *sprite)
 {
   Layer *layer = (Layer *)gfxobj_new(GFXOBJ_LAYER_IMAGE, sizeof(Layer));
   if (!layer)
@@ -59,15 +59,13 @@ Layer *layer_new(int imgtype)
 
   LAYER_INIT("Layer");
 
-  layer->imgtype = imgtype;
   layer->blend_mode = BLEND_MODE_NORMAL;
-  layer->stock = stock_new(imgtype);
   layer->cels = jlist_new();
 
   return layer;
 }
 
-Layer *layer_set_new(void)
+Layer *layer_set_new(Sprite *sprite)
 {
   Layer *layer = (Layer *)gfxobj_new(GFXOBJ_LAYER_SET, sizeof(Layer));
   if (!layer)
@@ -80,29 +78,6 @@ Layer *layer_set_new(void)
   return layer;
 }
 
-#if 0				/* XXXX */
-Layer *layer_text_new (const char *text)
-{
-  Layer *layer;
-
-  layer = jnew (Layer, 1);
-  if (!layer)
-    return NULL;
-
-  LAYER_INIT (GFXOBJ_LAYER_TEXT, "Layer Text");
-
-  /* XXX */
-  /* layer->font = NULL; */
-/*   layer->text = text ? jstrdup (text): NULL; */
-/*   layer->pos_x = prop_new ("Pos X"); */
-/*   layer->pos_y = prop_new ("Pos Y"); */
-/*   layer->opacity = prop_new ("Opacity"); */
-/*   layer->blend_mode = BLEND_MODE_NORMAL; */
-
-  return layer;
-}
-#endif
-
 Layer *layer_new_copy(const Layer *layer)
 {
   Layer *layer_copy = NULL;
@@ -113,19 +88,11 @@ Layer *layer_new_copy(const Layer *layer)
       Cel *cel_copy;
       JLink link;
 
-      layer_copy = layer_new(layer->imgtype);
+      layer_copy = layer_new(layer->sprite);
       if (!layer_copy)
 	break;
 
       layer_set_blend_mode(layer_copy, layer->blend_mode);
-
-      /* copy stock */
-      stock_free(layer_copy->stock);
-      layer_copy->stock = stock_new_copy(layer->stock);
-      if (!layer_copy->stock) {
-	layer_free (layer_copy);
-	return NULL;
-      }
 
       /* copy cels */
       JI_LIST_FOR_EACH(layer->cels, link) {
@@ -143,7 +110,7 @@ Layer *layer_new_copy(const Layer *layer)
       Layer *child_copy;
       JLink link;
 
-      layer_copy = layer_set_new();
+      layer_copy = layer_set_new(layer->sprite);
       if (!layer_copy)
 	break;
 
@@ -162,9 +129,6 @@ Layer *layer_new_copy(const Layer *layer)
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* XXX */
-      break;
   }
 
   /* copy general properties */
@@ -177,55 +141,12 @@ Layer *layer_new_copy(const Layer *layer)
   return layer_copy;
 }
 
-Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frame)
-{
-  Layer *layer;
-  Cel *cel;
-  Image *image;
-  int index;
-
-  /* new image */
-  image = image_new(imgtype, w, h);
-  if (!image)
-    return NULL;
-
-  /* new layer */
-  layer = layer_new(imgtype);
-  if (!layer) {
-    image_free (image);
-    return NULL;
-  }
-
-  /* clear with mask color */
-  image_clear(image, 0);
-
-  /* configure layer name and blend mode */
-  layer_set_name (layer, "Background");
-  layer_set_blend_mode (layer, BLEND_MODE_NORMAL);
-
-  /* add image in the layer stock */
-  index = stock_add_image(layer->stock, image);
-
-  /* create the cel */
-  cel = cel_new(frame, index);
-  cel_set_position(cel, x, y);
-
-  /* add the cel in the layer */
-  layer_add_cel(layer, cel);
-
-  return layer;
-}
-
-void layer_free (Layer *layer)
+void layer_free(Layer *layer)
 {
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       JLink link;
-
-      /* destroy images' stock */
-      if (layer->stock)
-	stock_free(layer->stock);
 
       /* remove cels */
       JI_LIST_FOR_EACH(layer->cels, link)
@@ -241,16 +162,6 @@ void layer_free (Layer *layer)
 	layer_free(link->data);
       break;
     }
-
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-/*       if (layer->text) */
-/* 	r_free (layer->text); */
-
-/*       prop_free (layer->pos_x); */
-/*       prop_free (layer->pos_y); */
-/*       prop_free (layer->opacity); */
-      break;
   }
 
   gfxobj_free((GfxObj *)layer);
@@ -385,8 +296,8 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frame)
 
       if (cel) {
 	if ((cel->image >= 0) &&
-	    (cel->image < layer->stock->nimage))
-	  src_image = layer->stock->image[cel->image];
+	    (cel->image < layer->sprite->stock->nimage))
+	  src_image = layer->sprite->stock->image[cel->image];
 	else
 	  src_image = NULL;
 
@@ -408,9 +319,6 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frame)
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* XXX */
-      break;
   }
 }
 
@@ -420,15 +328,14 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frame)
  * of layers, so the routines flatten all childs to the unique output
  * layer.
  */
-Layer *layer_flatten(Layer *layer, int imgtype,
-		     int x, int y, int w, int h, int frmin, int frmax)
+Layer *layer_flatten(Layer *layer, int x, int y, int w, int h, int frmin, int frmax)
 {
   Layer *flat_layer;
   Image *image;
   Cel *cel;
   int frame;
 
-  flat_layer = layer_new(imgtype);
+  flat_layer = layer_new(layer->sprite);
   if (!flat_layer)
     return NULL;
 
@@ -438,7 +345,7 @@ Layer *layer_flatten(Layer *layer, int imgtype,
     /* does this frame have cels to render? */
     if (has_cels(layer, frame)) {
       /* create a new image */
-      image = image_new(imgtype, w, h);
+      image = image_new(flat_layer->sprite->imgtype, w, h);
       if (!image) {
 	layer_free(flat_layer);
 	return NULL;
@@ -446,7 +353,7 @@ Layer *layer_flatten(Layer *layer, int imgtype,
 
       /* create the new cel for the output layer (add the image to
 	 stock too) */
-      cel = cel_new(frame, stock_add_image(flat_layer->stock, image));
+      cel = cel_new(frame, stock_add_image(flat_layer->sprite->stock, image));
       cel_set_position(cel, x, y);
       if (!cel) {
 	layer_free(flat_layer);
@@ -484,9 +391,6 @@ static bool has_cels(Layer *layer, int frame)
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-      break;
   }
 
   return FALSE;

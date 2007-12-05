@@ -19,7 +19,7 @@
 #ifndef CORE_APP_H
 #define CORE_APP_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 int app_init(int argc, char *argv[]);
 void app_loop(void);

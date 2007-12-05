@@ -20,14 +20,23 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
-void command_execute_play_flic(const char *argument)
-{
-}
+/* static void cmd_play_flic_execute(const char *argument) */
+/* { */
+/* } */
+
+/* Command cmd_play_flic = { */
+/*   CMD_PLAY_FLIC, */
+/*   cmd_play_flic_enabled, */
+/*   NULL, */
+/*   cmd_play_flic_execute, */
+/*   NULL */
+/* }; */

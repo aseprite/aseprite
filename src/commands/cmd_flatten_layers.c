@@ -20,17 +20,26 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include "commands/commands.h"
 #include "modules/sprites.h"
 #include "script/functions.h"
 
 #endif
 
-bool command_enabled_flatten_layers(const char *argument)
+static bool cmd_flatten_layers_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_flatten_layers(const char *argument)
+static void cmd_flatten_layers_execute(const char *argument)
 {
   FlattenLayers();
 }
+
+Command cmd_flatten_layers = {
+  CMD_FLATTEN_LAYERS,
+  cmd_flatten_layers_enabled,
+  NULL,
+  cmd_flatten_layers_execute,
+  NULL
+};

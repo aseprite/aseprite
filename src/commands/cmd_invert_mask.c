@@ -30,12 +30,12 @@
 
 #endif
 
-bool command_enabled_invert_mask(const char *argument)
+static bool cmd_invert_mask_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_invert_mask(const char *argument)
+static void cmd_invert_mask_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
   Mask *mask;
@@ -80,3 +80,11 @@ void command_execute_invert_mask(const char *argument)
     update_screen_for_sprite(sprite);
   }
 }
+
+Command cmd_invert_mask = {
+  CMD_INVERT_MASK,
+  cmd_invert_mask_enabled,
+  NULL,
+  cmd_invert_mask_execute,
+  NULL
+};

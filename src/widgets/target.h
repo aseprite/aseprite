@@ -19,9 +19,9 @@
 #ifndef WIDGETS_TARGET_H
 #define WIDGETS_TARGET_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
-/* XXX use some JI_SIGNAL_USER */
+/* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_TARGET_BUTTON_CHANGE   0x10003
 
 JWidget target_button_new (int imgtype, bool with_channels);

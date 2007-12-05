@@ -23,15 +23,16 @@
 #include <allegro/debug.h>
 #include <allegro/unicode.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
 #endif
 
-bool command_enabled_select_file(const char *argument)
+static bool cmd_select_file_enabled(const char *argument)
 {
   /* with argument, the argument specified the ID of the GfxObj */
   if (argument) {
@@ -44,7 +45,7 @@ bool command_enabled_select_file(const char *argument)
     return TRUE;
 }
 
-bool command_checked_select_file(const char *argument)
+static bool cmd_select_file_checked(const char *argument)
 {
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
@@ -57,7 +58,7 @@ bool command_checked_select_file(const char *argument)
     return current_sprite == NULL;
 }
 
-void command_execute_select_file(const char *argument)
+static void cmd_select_file_execute(const char *argument)
 {
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
@@ -70,3 +71,11 @@ void command_execute_select_file(const char *argument)
     sprite_show(NULL);
   }
 }
+
+Command cmd_select_file = {
+  CMD_SELECT_FILE,
+  cmd_select_file_enabled,
+  cmd_select_file_checked,
+  cmd_select_file_execute,
+  NULL
+};

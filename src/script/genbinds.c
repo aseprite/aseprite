@@ -1876,9 +1876,9 @@ static int bind_cel_set_opacity(lua_State *L)
 static int bind_layer_new(lua_State *L)
 {
   Layer *return_value;
-  int imgtype;
-  GetArg(1, imgtype, int, number);
-  return_value = layer_new(imgtype);
+  Sprite *sprite;
+  GetUD(1, sprite, Sprite);
+  return_value = layer_new(sprite);
   push_userdata(L, Type_Layer, return_value);
   return 1;
 }
@@ -1886,7 +1886,9 @@ static int bind_layer_new(lua_State *L)
 static int bind_layer_set_new(lua_State *L)
 {
   Layer *return_value;
-  return_value = layer_set_new();
+  Sprite *sprite;
+  GetUD(1, sprite, Sprite);
+  return_value = layer_set_new(sprite);
   push_userdata(L, Type_Layer, return_value);
   return 1;
 }
@@ -1897,26 +1899,6 @@ static int bind_layer_new_copy(lua_State *L)
   Layer *layer;
   GetUD(1, layer, Layer);
   return_value = layer_new_copy(layer);
-  push_userdata(L, Type_Layer, return_value);
-  return 1;
-}
-
-static int bind_layer_new_with_image(lua_State *L)
-{
-  Layer *return_value;
-  int imgtype;
-  int x;
-  int y;
-  int w;
-  int h;
-  int frpos;
-  GetArg(1, imgtype, int, number);
-  GetArg(2, x, int, number);
-  GetArg(3, y, int, number);
-  GetArg(4, w, int, number);
-  GetArg(5, h, int, number);
-  GetArg(6, frpos, int, number);
-  return_value = layer_new_with_image(imgtype, x, y, w, h, frpos);
   push_userdata(L, Type_Layer, return_value);
   return 1;
 }
@@ -2073,7 +2055,6 @@ static int bind_layer_flatten(lua_State *L)
 {
   Layer *return_value;
   Layer *layer;
-  int imgtype;
   int x;
   int y;
   int w;
@@ -2081,14 +2062,13 @@ static int bind_layer_flatten(lua_State *L)
   int frmin;
   int frmax;
   GetUD(1, layer, Layer);
-  GetArg(2, imgtype, int, number);
-  GetArg(3, x, int, number);
-  GetArg(4, y, int, number);
-  GetArg(5, w, int, number);
-  GetArg(6, h, int, number);
-  GetArg(7, frmin, int, number);
-  GetArg(8, frmax, int, number);
-  return_value = layer_flatten(layer, imgtype, x, y, w, h, frmin, frmax);
+  GetArg(2, x, int, number);
+  GetArg(3, y, int, number);
+  GetArg(4, w, int, number);
+  GetArg(5, h, int, number);
+  GetArg(6, frmin, int, number);
+  GetArg(7, frmax, int, number);
+  return_value = layer_flatten(layer, x, y, w, h, frmin, frmax);
   push_userdata(L, Type_Layer, return_value);
   return 1;
 }
@@ -5739,7 +5719,6 @@ const luaL_reg bindings_routines[] = {
   { "layer_new", bind_layer_new },
   { "layer_set_new", bind_layer_set_new },
   { "layer_new_copy", bind_layer_new_copy },
-  { "layer_new_with_image", bind_layer_new_with_image },
   { "layer_free", bind_layer_free },
   { "layer_is_image", bind_layer_is_image },
   { "layer_is_set", bind_layer_is_set },
@@ -6106,7 +6085,6 @@ struct _bindings_constants bindings_constants[] = {
   { "GFXOBJ_CEL", GFXOBJ_CEL },
   { "GFXOBJ_LAYER_IMAGE", GFXOBJ_LAYER_IMAGE },
   { "GFXOBJ_LAYER_SET", GFXOBJ_LAYER_SET },
-  { "GFXOBJ_LAYER_TEXT", GFXOBJ_LAYER_TEXT },
   { "GFXOBJ_SPRITE", GFXOBJ_SPRITE },
   { "GFXOBJ_MASK", GFXOBJ_MASK },
   { "GFXOBJ_PATH", GFXOBJ_PATH },

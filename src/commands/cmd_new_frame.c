@@ -20,10 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
-#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/color.h"
 #include "modules/sprites.h"
@@ -33,14 +33,13 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "widgets/colbar.h"
 
 #endif
 
 static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame);
 static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame);
 
-bool command_enabled_new_frame(const char *argument)
+static bool cmd_new_frame_enabled(const char *argument)
 {
   return
     current_sprite &&
@@ -50,7 +49,7 @@ bool command_enabled_new_frame(const char *argument)
     layer_is_image(current_sprite->layer);
 }
 
-void command_execute_new_frame(const char *argument)
+static void cmd_new_frame_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
@@ -105,9 +104,6 @@ static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
       break;
     }
 
-    case GFXOBJ_LAYER_TEXT:
-      /* TODO */
-      break;
   }
 
   return TRUE;
@@ -115,7 +111,7 @@ static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
 
 static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
 {
-  int bg, image_index;
+  int image_index;
   Image *image;
   Cel *cel;
 
@@ -126,15 +122,12 @@ static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
     return FALSE;
   }
 
-  /* background color (right color) */
-  bg = get_color_for_image(image->imgtype,
-			   color_bar_get_color(app_get_color_bar(), 1));
-  image_clear(image, bg);
+  /* background color */
+  image_clear(image, 0);
 
   /* add the image in the stock */
-  image_index = stock_add_image(layer->stock, image);
-
-  undo_add_image(sprite->undo, layer->stock, image);
+  image_index = stock_add_image(sprite->stock, image);
+  undo_add_image(sprite->undo, sprite->stock, image);
 
   /* add the cel in the layer */
   cel = cel_new(frame, image_index);
@@ -143,3 +136,11 @@ static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
 
   return TRUE;
 }
+
+Command cmd_new_frame = {
+  CMD_NEW_FRAME,
+  cmd_new_frame_enabled,
+  NULL,
+  cmd_new_frame_execute,
+  NULL
+};

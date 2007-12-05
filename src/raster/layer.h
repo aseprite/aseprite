@@ -19,12 +19,12 @@
 #ifndef RASTER_LAYER_H
 #define RASTER_LAYER_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 
 struct Cel;
 struct Image;
-struct Stock;
+struct Sprite;
 
 typedef struct Layer Layer;
 
@@ -32,33 +32,22 @@ struct Layer
 {
   GfxObj gfxobj;
   char name[256];		/* layer name */
+  struct Sprite *sprite;	/* owner of the layer */
   GfxObj *parent;		/* parent object */
   unsigned readable : 1;
   unsigned writable : 1;
 
   /* for GFXOBJ_LAYER_IMAGE */
-  int imgtype;			/* image type */
   int blend_mode;		/* constant blend mode */
-  struct Stock *stock;		/* stock to get images */
   JList cels;			/* list of cels */
 
   /* for GFXOBJ_LAYER_SET */
   JList layers;
-
-  /* XXX */
-  /* struct Font *font; */
-  /* char *text; */
-  /* struct Prop *pos_x; */
-  /* struct Prop *pos_y; */
-  /* struct Prop *opacity; */
-  /* int blend_mode; */
 };
 
-Layer *layer_new(int imgtype);
-Layer *layer_set_new(void);
-/* Layer *layer_new_text (const char *text); */
+Layer *layer_new(struct Sprite *sprite);
+Layer *layer_set_new(struct Sprite *sprite);
 Layer *layer_new_copy(const Layer *layer);
-Layer *layer_new_with_image(int imgtype, int x, int y, int w, int h, int frame);
 void layer_free(Layer *layer);
 
 int layer_is_image(const Layer *layer);
@@ -82,7 +71,6 @@ void layer_remove_layer(Layer *set, Layer *layer);
 void layer_move_layer(Layer *set, Layer *layer, Layer *after);
 
 void layer_render(Layer *layer, struct Image *image, int x, int y, int frame);
-Layer *layer_flatten(Layer *layer, int imgtype,
-		     int x, int y, int w, int h, int frmin, int frmax);
+Layer *layer_flatten(Layer *layer, int x, int y, int w, int h, int frmin, int frmax);
 
 #endif /* RASTER_LAYER_H */

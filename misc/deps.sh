@@ -19,6 +19,7 @@ CFLAGS="-I.					\
 	-Ithird_party/intl			\
 	-Ithird_party/libpng			\
 	-Ithird_party/zlib			\
+	-Ithird_party/jpeg			\
 	-Ijinete/freetype/include		\
 	-Ithird_party"
 

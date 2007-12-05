@@ -2,7 +2,7 @@
 /* Import High-level routines                                        */
 /*===================================================================*/
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "effect/colcurve.h"
 #include "raster/cel.h"

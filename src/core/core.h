@@ -19,7 +19,7 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include <jinete/base.h>
+#include "jinete/jbase.h"
 
 enum {
   MODE_VERBOSE		= 1,	/* verbose mode status */

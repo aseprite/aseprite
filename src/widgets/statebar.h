@@ -19,7 +19,7 @@
 #ifndef WIDGETS_STATEBAR_H
 #define WIDGETS_STATEBAR_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 typedef struct StatusBar
 {

@@ -19,7 +19,7 @@
 #ifndef WIDGETS_EDITOR_H
 #define WIDGETS_EDITOR_H
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5

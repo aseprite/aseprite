@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/base.h"
+#include "jinete/jbase.h"
 
 #include "util/filetoks.h"
 #include "util/hash.h"

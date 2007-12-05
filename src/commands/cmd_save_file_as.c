@@ -22,8 +22,9 @@
 
 #include <allegro.h>
 
-#include "jinete/alert.h"
+#include "jinete/jalert.h"
 
+#include "commands/commands.h"
 #include "console/console.h"
 /* #include "core/app.h" */
 #include "dialogs/filesel.h"
@@ -35,12 +36,12 @@
 
 #endif
 
-bool command_enabled_save_file_as(const char *argument)
+static bool cmd_save_file_as_enabled(const char *argument)
 {
   return current_sprite != NULL;
 }
 
-void command_execute_save_file_as(const char *argument)
+static void cmd_save_file_as_execute(const char *argument)
 {
   char filename[4096];
   char *newfilename;
@@ -92,3 +93,11 @@ void command_execute_save_file_as(const char *argument)
 		   filename);
   }
 }
+
+Command cmd_save_file_as = {
+  CMD_SAVE_FILE_AS,
+  cmd_save_file_as_enabled,
+  NULL,
+  cmd_save_file_as_execute,
+  NULL
+};

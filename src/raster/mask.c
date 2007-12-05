@@ -216,7 +216,7 @@ void mask_intersect (Mask *mask, int x, int y, int w, int h)
 
 void mask_merge (Mask *mask, const Mask *src)
 {
-  /* XXXX!!! */
+  /* TODO!!! */
 }
 
 void mask_by_color (Mask *mask, const Image *src, int color, int fuzziness)
