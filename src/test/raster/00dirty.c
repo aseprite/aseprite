@@ -35,54 +35,54 @@ int main (int argc, char *argv[])
   int mx, my, mb, ox, oy, ob;
   int c;
 
-  allegro_init ();
-  set_color_depth (8);
-  set_gfx_mode (GFX_AUTODETECT, 320, 200, 0, 0);
-  install_timer ();
-  install_keyboard ();
-  install_mouse ();
+  allegro_init();
+  set_color_depth(8);
+  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0);
+  install_timer();
+  install_keyboard();
+  install_mouse();
 
-  bmp = create_bitmap (SCREEN_W, SCREEN_H);
+  bmp = create_bitmap(SCREEN_W, SCREEN_H);
   redraw = TRUE;
 
-  image = image_new (IMAGE_INDEXED, SCREEN_W, SCREEN_H);
-  dirty = dirty_new (image, 0, 0, image->w-1, image->h-1, FALSE);
-  brush1 = brush_new ();
-  brush2 = brush_new ();
+  image = image_new(IMAGE_INDEXED, SCREEN_W, SCREEN_H);
+  dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
+  brush1 = brush_new();
+  brush2 = brush_new();
 
-  brush_set_size (brush1, 1);
-  brush_set_size (brush2, 8);
+  brush_set_size(brush1, 1);
+  brush_set_size(brush2, 8);
 
   image_clear (image, 0);
   for (c=128; c>0; c-=8)
-    image_ellipse (image,
-		   image->w/2-c, image->h/2-c/2,
-		   image->w/2+c, image->h/2+c/2, c);
+    image_ellipse(image,
+		  image->w/2-c, image->h/2-c/2,
+		  image->w/2+c, image->h/2+c/2, c);
 
   ox = mouse_x;
   oy = mouse_y;
 
-  show_mouse (screen);
+  show_mouse(screen);
 
   do {
-    poll_mouse ();
+    poll_mouse();
     mx = mouse_x;
     my = mouse_y;
     mb = mouse_b;
     if (mx != ox || my != oy || mb != ob) {
-      poll_mouse ();
+      poll_mouse();
       mx = mouse_x;
       my = mouse_y;
       mb = mouse_b;
 
       if (mb) {
-	dirty_line_brush (dirty, (mb & 2) ? brush2: brush1,
-			  ox, oy, mx, my);
+	dirty_line_brush(dirty, (mb & 2) ? brush2: brush1,
+			 ox, oy, mx, my);
 	redraw = TRUE;
       }
 
-      dirty_get (dirty);
-      algo_dirty (dirty, image, (AlgoHLine)draw_dirty);
+      dirty_get(dirty);
+      algo_dirty(dirty, image, (AlgoHLine)draw_dirty);
 
       ox = mx;
       oy = my;
@@ -91,9 +91,9 @@ int main (int argc, char *argv[])
 
     /* with R restore the image */
     if (key[KEY_R]) {
-      dirty_put (dirty);
-      dirty_free (dirty);
-      dirty = dirty_new (image, 0, 0, image->w-1, image->h-1, FALSE);
+      dirty_put(dirty);
+      dirty_free(dirty);
+      dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
       while (key[KEY_P]);
       redraw = TRUE;
     }

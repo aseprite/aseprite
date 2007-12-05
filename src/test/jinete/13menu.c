@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 static JWidget new_menuitem(const char *text, const char *accel_string);
 static bool hooked_menuitem_msg_proc(JWidget widget, JMessage msg);

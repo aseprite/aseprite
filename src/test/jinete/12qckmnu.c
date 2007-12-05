@@ -30,14 +30,38 @@
  */
 
 #include <allegro.h>
+#include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
+
+static void handle_menuitem_selected (JWidget widget, int user_data);
+
+static struct jquickmenu quickmenu[] =
+{
+  {  0, "&File",	NULL,		NULL,			  0 },
+  {  1, "&New",		NULL,		NULL,			  0 },
+  {  2, "&Sprite",	NULL,		handle_menuitem_selected, 0 },
+  {  2, "&Image",	NULL,		handle_menuitem_selected, 0 },
+  {  2, "&Font",	NULL,		handle_menuitem_selected, 0 },
+  {  2, "&Palette",	NULL,		handle_menuitem_selected, 0 },
+  {  1, "&Open",	"<Ctrl+O>",	handle_menuitem_selected, 0 },
+  {  1, "&Save",	"<Ctrl+S>",	handle_menuitem_selected, 0 },
+  {  1, NULL,		NULL,		NULL,			  0 },
+  {  1, "&Quit",	"<Ctrl+Q> <Alt+X> <Esc>", handle_menuitem_selected, 0 },
+  {  0, "&Edit",	NULL,		NULL,			  0 },
+  {  1, "Cu&t",		"<Shift+Del>",	handle_menuitem_selected, 0 },
+  {  1, "&Copy",	"<Ctrl+Ins>",	handle_menuitem_selected, 0 },
+  {  1, "&Paste",	"<Shift+Ins>",	handle_menuitem_selected, 0 },
+  {  1, "C&lear",	"<Ctrl+Del>",	handle_menuitem_selected, 0 },
+  {  0, "&Tools",	NULL,		handle_menuitem_selected, 0 },
+  {  0, "&Help",	NULL,		handle_menuitem_selected, 0 },
+  { -1, NULL,		NULL,		NULL,			  0 },
+};
 
 int main (int argc, char *argv[])
 {
-  JWidget manager, window, box1, box2, label, button_ok, button_cancel;
+  JWidget manager, window, box, button, menubar;
 
-  /* Allegro stuff */
   allegro_init ();
   if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) < 0) {
     if (set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0) < 0) {
@@ -49,26 +73,17 @@ int main (int argc, char *argv[])
   install_keyboard ();
   install_mouse ();
 
-  /* Jinete initialization */
   manager = jmanager_new ();
   ji_set_standard_theme ();
 
-  /* create main window */
-  window = jwindow_new ("Example 01");
-  box1 = jbox_new (JI_VERTICAL);
-  box2 = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
-  label = jlabel_new ("A simple window");
-  button_ok = jbutton_new ("&OK");
-  button_cancel = jbutton_new ("&Cancel");
+  window = jwindow_new ("Menus");
+  box = jbox_new (JI_VERTICAL);
+  button = jbutton_new ("&Close");
+  menubar = jmenubar_new_quickmenu (quickmenu);
 
-  jwidget_set_align (label, JI_CENTER | JI_MIDDLE);
-  jwidget_expansive (label, TRUE);
-
-  jwidget_add_child (window, box1);
-  jwidget_add_child (box1, label);
-  jwidget_add_child (box1, box2);
-  jwidget_add_child (box2, button_ok);
-  jwidget_add_child (box2, button_cancel);
+  jwidget_add_child (window, box);
+  jwidget_add_child (box, menubar);
+  jwidget_add_child (box, button);
 
   jwindow_open_bg (window);
 
@@ -77,4 +92,10 @@ int main (int argc, char *argv[])
   return 0;
 }
 
-END_OF_MAIN();
+END_OF_MAIN ();
+
+static void handle_menuitem_selected (JWidget widget, int user_data)
+{
+  printf ("Selected item: %s\n", widget->text);
+}
+

@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 static JList windows;
 

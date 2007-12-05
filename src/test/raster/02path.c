@@ -39,7 +39,7 @@ typedef struct BEZIER_PATH
   BEZIER_NODE *first, *last;
 } BEZIER_PATH;
 
-BEZIER_PATH *create_bezier_path (void)
+BEZIER_PATH *create_bezier_path(void)
 {
   BEZIER_PATH *path;
 
@@ -50,7 +50,7 @@ BEZIER_PATH *create_bezier_path (void)
   return path;
 }
 
-BEZIER_NODE *create_bezier_node (int tangent, float prev_x, float prev_y, float x, float y, float next_x, float next_y)
+BEZIER_NODE *create_bezier_node(int tangent, float prev_x, float prev_y, float x, float y, float next_x, float next_y)
 {
   BEZIER_NODE *node;
 
@@ -65,7 +65,7 @@ BEZIER_NODE *create_bezier_node (int tangent, float prev_x, float prev_y, float 
   return node;
 }
 
-void add_bezier_node (BEZIER_PATH *path, BEZIER_NODE *node)
+void add_bezier_node(BEZIER_PATH *path, BEZIER_NODE *node)
 {
   if (!path->first) {
     node->prev = NULL;
@@ -84,7 +84,7 @@ void add_bezier_node (BEZIER_PATH *path, BEZIER_NODE *node)
 #define DRAW_BEZIER_CONTROL_POINTS   4
 #define DRAW_BEZIER_CONTROL_LINES    8
 
-void draw_bezier_path (BITMAP *bmp, BEZIER_PATH *path, int flags, int color)
+void draw_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int flags, int color)
 {
   BEZIER_NODE *node;
   int points[8];
@@ -131,7 +131,7 @@ void draw_bezier_path (BITMAP *bmp, BEZIER_PATH *path, int flags, int color)
 
 typedef struct Point { int x, y; } Point;
 
-static void add_shape_seg (int x1, int y1, int x2, int y2, JList *shape)
+static void add_shape_seg(int x1, int y1, int x2, int y2, JList *shape)
 {
   Point *point = jnew (Point, 1);
   point->x = x2;
@@ -139,7 +139,7 @@ static void add_shape_seg (int x1, int y1, int x2, int y2, JList *shape)
   *shape = jlist_append (*shape, point);
 }
 
-void draw_filled_bezier_path (BITMAP *bmp, BEZIER_PATH *path, int color)
+void draw_filled_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int color)
 {
   BEZIER_NODE *node;
   JList it, shape = NULL;
@@ -149,34 +149,34 @@ void draw_filled_bezier_path (BITMAP *bmp, BEZIER_PATH *path, int color)
   for (node=path->first; node; node=node->next) {
     /* draw the bezier spline */
     if (node->next) {
-      algo_spline (node->x,
-		   node->y,
-		   node->next_x,
-		   node->next_y,
-		   node->next->prev_x,
-		   node->next->prev_y,
-		   node->next->x,
-		   node->next->y,
-		   (void *)&shape, (AlgoLine)add_shape_seg);
+      algo_spline(node->x,
+		  node->y,
+		  node->next_x,
+		  node->next_y,
+		  node->next->prev_x,
+		  node->next->prev_y,
+		  node->next->x,
+		  node->next->y,
+		  (void *)&shape, (AlgoLine)add_shape_seg);
     }
 
     if (node == path->last)
       break;
   }
 
-  vertices = jlist_length (shape);
+  vertices = jlist_length(shape);
   if (vertices > 0) {
-    points = jmalloc (sizeof (int) * vertices * 2);
+    points = jmalloc(sizeof (int) * vertices * 2);
     for (c=0, it=shape; it; it=it->next) {
       points[c++] = ((Point *)it->data)->x;
       points[c++] = ((Point *)it->data)->y;
     }
-    polygon (bmp, vertices, points, color);
-    ji_free (points);
+    polygon(bmp, vertices, points, color);
+    ji_free(points);
   }
 
   for (it=shape; it; it=it->next)
-    jfree (it->data);
+    jfree(it->data);
 }
 
 void draw_art_filled_bezier_path (BITMAP *bmp, BEZIER_PATH *path)

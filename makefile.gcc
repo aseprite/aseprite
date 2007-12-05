@@ -133,7 +133,8 @@ config.h.gch: config.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 endif
 
-# rules to build the object files
+######################################################################
+# Rules to build the object files
 
 $(OBJ_DIR)/%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -162,7 +163,8 @@ $(OBJ_DIR)/png.%$(OBJ): %.c
 $(OBJ_DIR)/zlib.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-# application
+######################################################################
+# Application
 
 ifndef WITHICON
 $(ASE): $(ASE_DEPS)
@@ -174,3 +176,19 @@ $(OBJ_DIR)/%.res: src/%.rc
 $(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
 	$(CC) -o $@ $(ASE_OBJS) $(OBJ_DIR)/icon.res $(LFLAGS) $(LFLAGS_LAST)
 endif
+
+######################################################################
+# Rules to make tests
+
+TESTS = $(addsuffix $(EXE),						\
+		$(basename						\
+			$(wildcard src/test/raster/*.c)			\
+			$(wildcard src/test/jinete/*.c)))
+
+src/test/raster/%$(EXE): src/test/raster/%.c $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
+
+src/test/jinete/%$(EXE): src/test/jinete/%.c $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
+
+test: $(TESTS)

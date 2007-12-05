@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <math.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 /* GUI */
 void init_gui(void);

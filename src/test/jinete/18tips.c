@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 void jwidget_add_tip (JWidget widget, const char *text);
 

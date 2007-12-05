@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   int redraw;
 
   allegro_init();
-  set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0);
+  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0);
   install_timer();
   install_keyboard();
   install_mouse();

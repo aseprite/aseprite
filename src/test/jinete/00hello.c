@@ -6,7 +6,7 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 int main(int argc, char *argv[])
 {

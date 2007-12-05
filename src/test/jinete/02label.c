@@ -30,16 +30,14 @@
  */
 
 #include <allegro.h>
+#include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 int main (int argc, char *argv[])
 {
-  JWidget manager1, manager2, manager3, window1, window2, window3;
-  JWidget view2, view3;
-  JRect rect;
+  JWidget manager, window, box, label1, label2, label3, label4;
 
-  /* Allegro stuff */
   allegro_init ();
   if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) < 0) {
     if (set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0) < 0) {
@@ -51,49 +49,33 @@ int main (int argc, char *argv[])
   install_keyboard ();
   install_mouse ();
 
-  /* Jinete initialization */
-  manager1 = jmanager_new();
-  ji_set_standard_theme();
-  manager2 = jmanager_new();
-  manager3 = jmanager_new();
+  manager = jmanager_new ();
+  ji_set_standard_theme ();
 
-  window1 = jwindow_new("Window1");
-  window2 = jwindow_new("Window2");
-  window3 = jwindow_new("Window3");
-  view2 = jview_new();
-  view3 = jview_new();
+  window = jwindow_new ("Example 02");
+  box = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
+  label1 = jlabel_new ("&Left Top");
+  label2 = jlabel_new ("&Center Middle");
+  label3 = jlabel_new ("&Right Bottom");
+  label4 = jlabel_new ("&Disabled");
 
-  jview_attach(view2, manager2);
-  jview_attach(view3, manager3);
+  jwidget_set_align (label1, JI_LEFT | JI_TOP);
+  jwidget_set_align (label2, JI_CENTER | JI_MIDDLE);
+  jwidget_set_align (label3, JI_RIGHT | JI_BOTTOM);
+  jwidget_set_align (label4, JI_CENTER | JI_BOTTOM);
 
-  jwidget_add_child(window1, view2);
-  jwidget_add_child(window2, view3);
+  jwidget_disable (label4);
 
-  jwindow_remap(window1);
-  jwindow_remap(window2);
-  jwindow_remap(window3);
+  jwidget_add_child (window, box);
+  jwidget_add_child (box, label1);
+  jwidget_add_child (box, label2);
+  jwidget_add_child (box, label3);
+  jwidget_add_child (box, label4);
 
-  rect = jrect_new(JI_SCREEN_W/2-100, JI_SCREEN_H/2-70,
-		   JI_SCREEN_W/2+100, JI_SCREEN_H/2+70);
-  jwidget_set_rect(window1, rect);
-  jrect_free(rect);
+  jwindow_open_bg (window);
 
-  rect = jrect_new(JI_SCREEN_W/2-90, JI_SCREEN_H/2-50,
-		   JI_SCREEN_W/2+90, JI_SCREEN_H/2+50);
-  jwidget_set_rect(window2, rect);
-  jrect_free(rect);
-
-  rect = jrect_new(JI_SCREEN_W/2-80, JI_SCREEN_H/2-30,
-		   JI_SCREEN_W/2+80, JI_SCREEN_H/2+30);
-  jwidget_set_rect(window3, rect);
-  jrect_free(rect);
-
-  jwindow_open_bg(window1);
-  _jmanager_open_window(manager2, window2);
-  _jmanager_open_window(manager3, window3);
-
-  jmanager_run(manager1);
-  jmanager_free(manager1);
+  jmanager_run (manager);
+  jmanager_free (manager);
   return 0;
 }
 

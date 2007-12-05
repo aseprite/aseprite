@@ -30,15 +30,13 @@
  */
 
 #include <allegro.h>
-#include "jinete.h"
+
+#include "jinete/jinete.h"
 
 int main (int argc, char *argv[])
 {
-  JWidget manager, desktop, box, view, sub_manager, button, window;
-  char buf[256];
-  int c;
+  JWidget manager, window, box1, box2, view1, view2, button;
 
-  /* Allegro stuff */
   allegro_init();
   if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) < 0) {
     if (set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0) < 0) {
@@ -50,48 +48,29 @@ int main (int argc, char *argv[])
   install_keyboard();
   install_mouse();
 
-  /* Jinete initialization */
   manager = jmanager_new();
   ji_set_standard_theme();
 
-  /* create desktop */
-  desktop = jwindow_new_desktop();
-  box = jbox_new(JI_VERTICAL);
-  view = jview_new();
-  sub_manager = jmanager_new();
-  button = jbutton_new("&Close All");
+  window = jwindow_new("Example 07");
+  box1 = jbox_new(JI_VERTICAL);
+  box2 = jpanel_new(JI_HORIZONTAL);
+  view1 = jview_new();
+  view2 = jview_new();
+  button = jbutton_new("&Close");
 
-  jview_attach(view, sub_manager);
-  jwidget_expansive(view, TRUE);
+  jwidget_expansive (view1, TRUE);
+  jwidget_expansive (view2, TRUE);
+  jwidget_expansive (box2, TRUE);
 
-  jwidget_add_child (desktop, box);
-  jwidget_add_child (box, view);
-  jwidget_add_child (box, button);
+  jwidget_add_child (window, box1);
+  jwidget_add_childs (box1, box2, button, 0);
+  jwidget_add_childs (box2, view1, view2, 0);
 
-  jwindow_open_bg(desktop);
-
-  /* generate 128 windows in random positions */
-  for (c=0; c<128; c++) {
-    usprintf(buf, "Window (%d)", c+1);
-
-    window = jwindow_new(buf);
-    button = jbutton_new("&Close");
-
-    jwidget_add_child (window, button);
-    jwidget_autodestroy(window, TRUE);
-
-    jwindow_remap(window);
-    jwindow_position
-      (window,
-       sub_manager->rc->x1 + (rand () % (jrect_w(sub_manager->rc) - jrect_w(window->rc))),
-       sub_manager->rc->y1 + (rand () % (jrect_h(sub_manager->rc) - jrect_h(window->rc))));
-
-    _jmanager_open_window (sub_manager, window);
-  }
+  jwindow_open_bg (window);
 
   jmanager_run (manager);
   jmanager_free (manager);
   return 0;
 }
 
-END_OF_MAIN();
+END_OF_MAIN ();

@@ -31,7 +31,7 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 FONT *my_font = NULL;
 

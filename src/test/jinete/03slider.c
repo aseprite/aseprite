@@ -31,12 +31,12 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-  JWidget manager;
-  int ret;
+  JWidget manager, window, box;
+  JWidget slider1, slider2, slider3, slider4, slider5, button1;
 
   /* Allegro stuff */
   allegro_init();
@@ -54,38 +54,37 @@ int main (int argc, char *argv[])
   manager = jmanager_new();
   ji_set_standard_theme();
 
-  jmanager_refresh_screen();
-  ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+  window = jwindow_new("Example 03");
+  box = jbox_new(JI_VERTICAL);
+  slider1 = jslider_new(0, 1, 0);
+  slider2 = jslider_new(0, 2, 0);
+  slider3 = jslider_new(0, 10, 0);
+  slider4 = jslider_new(0, 63, 1);
+  slider5 = jslider_new(0, 255, 1);
+  button1 = jbutton_new("&Close");
 
-  jalert("Normal==First Alert||&Ok");
-  jalert ("Error"
-	  "==This is a long text line"
-	  "--"
-	  "<<Left text"
-	  "==Centre text"
-	  ">>Right text"
-	  "||&Continue");
+  jwidget_set_static_size(slider1, 128, 0);
+  jwidget_set_static_size(slider2, 128, 0);
+  jwidget_set_static_size(slider3, 128, 0);
+  jwidget_set_static_size(slider4, 128, 0);
+  jwidget_set_static_size(slider5, 128, 0);
 
-  do {
-    ret = jalert ("Warning"
-		  "<<Select some option:"
-		  "--"
-		  "<<Yes: first option"
-		  "<<No: second option"
-		  "<<Cancel: third option"
-		  "--"
-		  "||&Yes||&No||&Cancel");
+  jwidget_expansive(slider1, TRUE);
+  jwidget_expansive(slider2, TRUE);
+  jwidget_expansive(slider3, TRUE);
+  jwidget_expansive(slider4, TRUE);
+  jwidget_expansive(slider5, TRUE);
 
-  } while (jalert ("Progress"
-		   "<<You select \"%s\""
-		   "<<Are you sure?"
-		   "||&Yeah||&Hmmm...",
-		   ret == 1 ? "Yes":
-		   ret == 2 ? "No":
-		   ret == 3 ? "Cancel": "Nothing") != 1);
+  jwidget_add_child(window, box);
+  jwidget_add_childs(box,
+		     slider1, slider2, slider3,
+		     slider4, slider5, button1, NULL);
 
-  jmanager_free (manager);
+  jwindow_open_bg(window);
+
+  jmanager_run(manager);
+  jmanager_free(manager);
   return 0;
 }
 
-END_OF_MAIN ();
+END_OF_MAIN();

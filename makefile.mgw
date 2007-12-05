@@ -32,7 +32,6 @@ LIB = .a
 EXE = .exe
 SUBMAKEFILE = makefile.mgw
 OBJ_DIR = obj/mingw32
-JINETE_SUFFIX = mingw32
 
 ifndef CROSSCOMPILE
   DLLWRAP = dllwrap

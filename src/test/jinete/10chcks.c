@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <stdio.h>
 
-#include "jinete.h"
+#include "jinete/jinete/jinete.h"
 
 static JWidget check, radio[12];
 
@@ -84,7 +84,7 @@ int main (int argc, char *argv[])
   radio[11] = jradio_new ("Bottom", 4);
 
   for (c=0; c<12; c++)
-    jwidget_add_hook (radio[c], JI_WIDGET, hooked_check_msg_proc, NULL);
+    jwidget_add_hook(radio[c], JI_WIDGET, hooked_check_msg_proc, NULL);
 
   jwidget_add_child (window, box1);
   jwidget_add_child (box1, check);

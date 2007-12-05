@@ -6,7 +6,7 @@
 
 #include <allegro.h>
 
-#include "jinete.h"
+#include "jinete/jinete.h"
 
 static char *xml_src =
   "<root>"				"\n"

@@ -5,7 +5,7 @@
 
 ASE = ase$(EXE)
 
-ASE_SOURCES =						\
+COMMON_SOURCES =					\
 	src/commands/cmd_about.c			\
 	src/commands/cmd_advanced_mode.c		\
 	src/commands/cmd_cel_properties.c		\
@@ -152,7 +152,6 @@ ASE_SOURCES =						\
 	src/jinete/jxml.c				\
 	src/jinete/themes/jsimple.c			\
 	src/jinete/themes/jstand.c			\
-	src/main.c					\
 	src/modules/color.c				\
 	src/modules/editors.c				\
 	src/modules/gfx.c				\
@@ -214,6 +213,12 @@ ASE_SOURCES =						\
 	src/widgets/tabs.c				\
 	src/widgets/target.c				\
 	src/widgets/toolbar.c
+
+COMMON_OBJS = $(addprefix $(OBJ_DIR)/,			\
+	     $(addsuffix $(OBJ),			\
+	       $(notdir $(basename $(COMMON_SOURCES)))))
+
+ASE_SOURCES = src/main.c $(COMMON_SOURCES)
 
 ASE_OBJS = $(addprefix $(OBJ_DIR)/,			\
 	     $(addsuffix $(OBJ),			\

@@ -26,7 +26,6 @@ LIB = .a
 EXE = .exe
 SUBMAKEFILE = makefile.dj
 OBJ_DIR = obj/djgpp
-JINETE_SUFFIX = djgpp
 
 include makefile.lst
 include makefile.gcc

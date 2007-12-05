@@ -26,7 +26,6 @@ LIB = .a
 EXE =
 SUBMAKEFILE = makefile.lnx
 OBJ_DIR = obj/unix
-JINETE_SUFFIX = unix
 
 include makefile.lst
 include makefile.gcc
