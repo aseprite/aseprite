@@ -40,40 +40,40 @@ int main (int argc, char *argv[])
 {
   JWidget manager, window, box, check1, check2, button1, button2;
 
-  allegro_init ();
+  allegro_init();
   if (set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0) < 0) {
     if (set_gfx_mode(GFX_AUTODETECT, 320, 200, 0, 0) < 0) {
       allegro_message("%s\n", allegro_error);
       return 1;
     }
   }
-  install_timer ();
-  install_keyboard ();
-  install_mouse ();
+  install_timer();
+  install_keyboard();
+  install_mouse();
 
-  manager = jmanager_new ();
-  ji_set_standard_theme ();
+  manager = jmanager_new();
+  ji_set_standard_theme();
 
-  window = jwindow_new ("Example 18");
-  box = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
-  check1 = jcheck_new ("Check &1");
-  check2 = jcheck_new ("Check &2");
-  button1 = jbutton_new ("&OK");
-  button2 = jbutton_new ("&Cancel");
+  window = jwindow_new("Example 18");
+  box = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
+  check1 = jcheck_new("Check &1");
+  check2 = jcheck_new("Check &2");
+  button1 = jbutton_new("&OK");
+  button2 = jbutton_new("&Cancel");
 
-  jwidget_add_tip (button1, "This is a tip for \"OK\" button");
-  jwidget_add_tip (button2, "This is a tip for the \"Cancel\" button");
+  jwidget_add_tip(button1, "This is a tip for \"OK\" button");
+  jwidget_add_tip(button2, "This is a tip for the \"Cancel\" button");
 
-  jwidget_add_child (window, box);
-  jwidget_add_child (box, check1);
-  jwidget_add_child (box, check2);
-  jwidget_add_child (box, button1);
-  jwidget_add_child (box, button2);
+  jwidget_add_child(window, box);
+  jwidget_add_child(box, check1);
+  jwidget_add_child(box, check2);
+  jwidget_add_child(box, button1);
+  jwidget_add_child(box, button2);
 
-  jwindow_open_bg (window);
+  jwindow_open_bg(window);
 
-  jmanager_run (manager);
-  jmanager_free (manager);
+  jmanager_run(manager);
+  jmanager_free(manager);
   return 0;
 }
 
@@ -82,11 +82,11 @@ END_OF_MAIN();
 /**********************************************************************/
 /* tip */
 
-static int tip_type (void);
-static bool tip_hook (JWidget widget, JMessage msg);
+static int tip_type(void);
+static bool tip_hook(JWidget widget, JMessage msg);
 
-static JWidget tip_window_new (const char *text);
-static bool tip_window_hook (JWidget widget, JMessage msg);
+static JWidget tip_window_new(const char *text);
+static bool tip_window_hook(JWidget widget, JMessage msg);
 
 typedef struct TipData {
   int time;
@@ -135,11 +135,11 @@ static bool tip_hook(JWidget widget, JMessage msg)
 	JWidget window = tip_window_new (tip->text);
 	int w = jrect_w(window->rc);
 	int h = jrect_h(window->rc);
-	jwindow_remap (window);
-	jwindow_position (window,
-			    MID (0, ji_mouse_x (0)-w/2, JI_SCREEN_W-w),
-			    MID (0, ji_mouse_y (0)-h/2, JI_SCREEN_H-h));
-	jwindow_open (window);
+	jwindow_remap(window);
+	jwindow_position(window,
+			 MID(0, jmouse_x(0)-w/2, JI_SCREEN_W-w),
+			 MID(0, jmouse_y(0)-h/2, JI_SCREEN_H-h));
+	jwindow_open(window);
 
 	tip->time = -1;
       }
@@ -159,8 +159,9 @@ static JWidget tip_window_new(const char *text)
   jwidget_set_align(window, JI_CENTER | JI_MIDDLE);
 
   /* remove decorative widgets */
-  JI_LIST_EACH_SAFE(window->children, link, next)
+  JI_LIST_FOR_EACH_SAFE(window->children, link, next) {
     jwidget_free(link->data);
+  }
 
   jwidget_add_hook(window, JI_WIDGET, tip_window_hook, NULL);
   jwidget_init_theme(window);

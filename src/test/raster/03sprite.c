@@ -54,15 +54,16 @@ void test ()
 
   /* build the layers */
   {
-    Layer *layer = layer_new (sprite->imgtype);
+    Layer *layer = layer_new(sprite);
 
     /* add this layer to the sprite */
-    layer_add_layer (sprite->set, layer);
+    layer_add_layer(sprite->set, layer);
 
     /* build the "stock" and the properties */
     {
       int i, c, image_index;
       Image *image;
+      Cel *cel;
 
       for (i=0; i<32; i++) {
 	/* make the image */
@@ -79,30 +80,31 @@ void test ()
 	}
 
 	/* add the new image in the stock */
-	image_index = stock_add_image (layer->stock, image);
+	image_index = stock_add_image(sprite->stock, image);
 
-	/* image property */
-	layer_add_frame (layer,
-			 frame_new (i, /* frpos */
-				    image_index, /* image */
-				    cos(AL_PI*i/16)*64, /* x */
-				    sin(AL_PI*i/16)*64, /* y */
-				    128+sin(AL_PI*i/32)*127));	/* opacity */
+	/* cel properties */
+	cel = cel_new(i, image_index);
+	cel_set_position(cel,
+			 cos(AL_PI*i/16)*64,
+			 sin(AL_PI*i/16)*64);
+	cel_set_opacity(cel, 128+sin(AL_PI*i/32)*127);
+
+	layer_add_cel(layer, cel);
       }
     }
   }
 
   do {
-    image_copy (image_screen, image_bg, 0, 0);
-    sprite_render (sprite, image_screen,
-		   mouse_x-sprite->w/2, mouse_y-sprite->h/2);
-    image_to_allegro (image_screen, bmp, 0, 0);
+    image_copy(image_screen, image_bg, 0, 0);
+    sprite_render(sprite, image_screen,
+		  mouse_x-sprite->w/2, mouse_y-sprite->h/2);
+    image_to_allegro(image_screen, bmp, 0, 0);
 
-    if (key[KEY_LEFT]) sprite->frpos--;
-    if (key[KEY_RIGHT]) sprite->frpos++;
+    if (key[KEY_LEFT]) sprite->frame--;
+    if (key[KEY_RIGHT]) sprite->frame++;
 
     text_mode(makecol (0, 0, 0));
-    textprintf(bmp, font, 0, 0, makecol (255, 255, 255), "%d", sprite->frpos);
+    textprintf(bmp, font, 0, 0, makecol(255, 255, 255), "%d", sprite->frame);
     blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
   } while (!key[KEY_ESC]);
 
@@ -114,16 +116,16 @@ void test ()
 
 int main(int argc, char *argv[])
 {
-  allegro_init ();
-  set_color_depth (16);
-  set_gfx_mode (GFX_AUTODETECT, 320, 200, 0, 0);
-  install_timer ();
-  install_keyboard ();
-  install_mouse ();
+  allegro_init();
+  set_color_depth(16);
+  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0);
+  install_timer();
+  install_keyboard();
+  install_mouse();
 
-  set_palette (default_palette);
+  set_palette(default_palette);
 
-  test ();
+  test();
   return 0;
 }
 

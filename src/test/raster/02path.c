@@ -19,7 +19,7 @@
 #include <allegro.h>
 #include <math.h>
 
-#include "jinete/jbase.h"
+#include "jinete/jinete.h"
 
 #include "raster/algo.h"
 #include "raster/image.h"
@@ -131,18 +131,19 @@ void draw_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int flags, int color)
 
 typedef struct Point { int x, y; } Point;
 
-static void add_shape_seg(int x1, int y1, int x2, int y2, JList *shape)
+static void add_shape_seg(int x1, int y1, int x2, int y2, JList shape)
 {
-  Point *point = jnew (Point, 1);
+  Point *point = jnew(Point, 1);
   point->x = x2;
   point->y = y2;
-  *shape = jlist_append (*shape, point);
+  jlist_append(shape, point);
 }
 
 void draw_filled_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int color)
 {
   BEZIER_NODE *node;
-  JList it, shape = NULL;
+  JList shape = jlist_new();
+  JLink link;
   int c, vertices;
   int *points;
 
@@ -157,7 +158,7 @@ void draw_filled_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int color)
 		  node->next->prev_y,
 		  node->next->x,
 		  node->next->y,
-		  (void *)&shape, (AlgoLine)add_shape_seg);
+		  (void *)shape, (AlgoLine)add_shape_seg);
     }
 
     if (node == path->last)
@@ -166,20 +167,24 @@ void draw_filled_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int color)
 
   vertices = jlist_length(shape);
   if (vertices > 0) {
-    points = jmalloc(sizeof (int) * vertices * 2);
-    for (c=0, it=shape; it; it=it->next) {
-      points[c++] = ((Point *)it->data)->x;
-      points[c++] = ((Point *)it->data)->y;
+    points = jmalloc(sizeof(int) * vertices * 2);
+
+    c = 0;
+    JI_LIST_FOR_EACH(shape, link) {
+      points[c++] = ((Point *)link->data)->x;
+      points[c++] = ((Point *)link->data)->y;
     }
     polygon(bmp, vertices, points, color);
-    ji_free(points);
+    jfree(points);
   }
 
-  for (it=shape; it; it=it->next)
-    jfree(it->data);
+  JI_LIST_FOR_EACH(shape, link);
+    jfree(link->data);
+
+  jlist_free(shape);
 }
 
-void draw_art_filled_bezier_path (BITMAP *bmp, BEZIER_PATH *path)
+void draw_art_filled_bezier_path(BITMAP *bmp, BEZIER_PATH *path)
 {
   Image *image = image_new (IMAGE_RGB, SCREEN_W, SCREEN_H);
   Path *art_path = path_new (NULL);

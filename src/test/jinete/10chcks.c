@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <stdio.h>
 
-#include "jinete/jinete/jinete.h"
+#include "jinete/jinete.h"
 
 static JWidget check, radio[12];
 

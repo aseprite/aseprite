@@ -133,7 +133,7 @@ void draw_gui()
 {
   jwidget_dirty(manager);
   jwidget_flush_redraw(manager);
-  jmanager_dispatch_draw_messages();
+  //jmanager_dispatch_draw_messages();
 }
 
 float get_speed(void)

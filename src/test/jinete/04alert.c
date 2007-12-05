@@ -55,7 +55,7 @@ int main (int argc, char *argv[])
   ji_set_standard_theme();
 
   jmanager_refresh_screen();
-  ji_mouse_set_cursor(JI_CURSOR_NORMAL);
+  jmouse_set_cursor(JI_CURSOR_NORMAL);
 
   jalert("Normal==First Alert||&Ok");
   jalert ("Error"
