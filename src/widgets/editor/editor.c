@@ -400,8 +400,17 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
       image_free(rendered);
       destroy_bitmap(bmp);
 #else
+
       use_current_sprite_rgb_map();
-      image_to_allegro(rendered, ji_screen, dest_x, dest_y);
+      if (bitmap_color_depth(screen) == 8) {
+	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
+      }
+      else {
+	select_palette(sprite_get_palette(editor->sprite,
+					  editor->sprite->frame));
+	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
+	unselect_palette();
+      }
       restore_rgb_map();
 
       image_free(rendered);

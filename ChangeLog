@@ -1,5 +1,9 @@
 2007-12-06  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/widgets/editor/editor.c (editor_draw_sprite): Fixed to allow
+	differents indexed images in multiple editors in a screen
+	color-depth > 8bpp.
+
 	* src/util/misc.c (interactive_move_layer): Fixed problem with
 	scroll in windowed moded and mouse-paint problem in
 	double-buffering mode.
