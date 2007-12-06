@@ -297,7 +297,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     else if (mouse_widget)
       jmessage_broadcast_to_parents(msg, mouse_widget);
 
-    jmanager_send_message(msg);
+    jmanager_enqueue_message(msg);
     jmessage_free(msg);
   }
 
@@ -312,7 +312,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     else if (mouse_widget)
       jmessage_broadcast_to_parents(msg, mouse_widget);
 
-    jmanager_send_message(msg);
+    jmanager_enqueue_message(msg);
     jmessage_free(msg);
   }
 
@@ -379,7 +379,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
       }
     }
 
-    jmanager_send_message(msg);
+    jmanager_enqueue_message(msg);
     jmessage_free(msg);
   }
 
@@ -396,7 +396,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     if (mouse_widget)
       jmessage_broadcast_to_parents(msg, mouse_widget);
 
-    jmanager_send_message(msg);
+    jmanager_enqueue_message(msg);
     jmessage_free(msg);
   }
 
@@ -422,8 +422,8 @@ bool jmanager_poll(JWidget manager, bool all_windows)
       jmessage_free(sub_msg);
     }
 
-    jmanager_send_message (msg);
-    jmessage_free (msg);
+    jmanager_enqueue_message(msg);
+    jmessage_free(msg);
   }
 
   /* generate JM_KEYRELEASED messages */
@@ -433,8 +433,8 @@ bool jmanager_poll(JWidget manager, bool all_windows)
       msg = new_key_msg (JM_KEYRELEASED, (c << 8) | scancode_to_ascii (c));
       old_readed_key[c] = key[c];
       broadcast_key_msg (manager, msg);
-      jmanager_send_message (msg);
-      jmessage_free (msg);
+      jmanager_enqueue_message(msg);
+      jmessage_free(msg);
     }
   }
 
@@ -445,7 +445,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     jmessage_broadcast_to_children (msg, window);
   }
   jmessage_add_dest(msg, manager);
-  jmanager_send_message(msg);
+  jmanager_enqueue_message(msg);
   jmessage_free(msg);
 
   /* process messages queue */
@@ -489,7 +489,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   return ret;
 }
 
-void jmanager_send_message(const JMessage msg)
+void jmanager_enqueue_message(const JMessage msg)
 {
   jlist_append(msg_queue, jmessage_new_copy(msg));
 }
@@ -556,7 +556,7 @@ void jmanager_set_focus(JWidget widget)
 	}
       }
 
-      jmanager_send_message(msg);
+      jmanager_enqueue_message(msg);
       jmessage_free(msg);
       jlist_free(focus_parents);
     }
@@ -583,8 +583,8 @@ void jmanager_set_focus(JWidget widget)
 	}
       }
 
-      jmanager_send_message (msg);
-      jmessage_free (msg);
+      jmanager_enqueue_message(msg);
+      jmessage_free(msg);
     }
 
     jlist_free(widget_parents);
@@ -629,7 +629,7 @@ void jmanager_set_mouse(JWidget widget)
 	}
       }
 
-      jmanager_send_message(msg);
+      jmanager_enqueue_message(msg);
       jmessage_free(msg);
       jlist_free(mouse_parents);
     }
@@ -651,7 +651,7 @@ void jmanager_set_mouse(JWidget widget)
 	jmessage_add_dest(msg, link->data);
       }
 
-      jmanager_send_message(msg);
+      jmanager_enqueue_message(msg);
       jmessage_free(msg);
     }
 
@@ -757,7 +757,7 @@ void _jmanager_open_window(JWidget manager, JWidget window)
   /* broadcast the open message */
   msg = jmessage_new(JM_OPEN);
   jmessage_broadcast_to_children(msg, window);
-  jmanager_send_message(msg);
+  jmanager_enqueue_message(msg);
   jmessage_free(msg);
 
   /* update the new windows list to show */
@@ -814,7 +814,7 @@ void _jmanager_close_window(JWidget manager, JWidget window,
   /* close message */
   msg = jmessage_new(JM_CLOSE);
   jmessage_broadcast_to_children(msg, window);
-  jmanager_send_message(msg);
+  jmanager_enqueue_message(msg);
   jmessage_free(msg);
 
   jmanager_dispatch_messages(); /* TODO WARNING!!! */

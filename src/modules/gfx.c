@@ -402,25 +402,25 @@ static void do_rect (BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
   }
 }
 
-static void count_rect (BITMAP *bmp, int x, int y, int c)
+static void count_rect(BITMAP *bmp, int x, int y, int c)
 {
   RECT_DATA *data = (RECT_DATA *)c;
   data->npixel++;
 }
 
-static void save_rect (BITMAP *bmp, int x, int y, int c)
+static void save_rect(BITMAP *bmp, int x, int y, int c)
 {
   RECT_DATA *data = (RECT_DATA *)c;
-  data->pixel[data->npixel++] = getpixel (bmp, x, y);
+  data->pixel[data->npixel++] = getpixel(bmp, x, y);
 }
 
-static void restore_rect (BITMAP *bmp, int x, int y, int c)
+static void restore_rect(BITMAP *bmp, int x, int y, int c)
 {
   RECT_DATA *data = (RECT_DATA *)c;
-  putpixel (bmp, x, y, data->pixel[data->npixel++]);
+  putpixel(bmp, x, y, data->pixel[data->npixel++]);
 }
 
-void *rectsave (BITMAP *bmp, int x1, int y1, int x2, int y2)
+void *rectsave(BITMAP *bmp, int x1, int y1, int x2, int y2)
 {
   RECT_DATA *data;
   int x, y;
@@ -428,7 +428,7 @@ void *rectsave (BITMAP *bmp, int x1, int y1, int x2, int y2)
   if (x1 > x2) { x = x1; x1 = x2; x2 = x; }
   if (y1 > y2) { y = y1; y1 = y2; y2 = y; }
 
-  data = jnew (RECT_DATA, 1);
+  data = jnew(RECT_DATA, 1);
 
   data->bmp = bmp;
   data->x1 = x1;
@@ -437,23 +437,23 @@ void *rectsave (BITMAP *bmp, int x1, int y1, int x2, int y2)
   data->y2 = y2;
 
   data->npixel = 0;
-  do_rect (bmp, x1, y1, x2, y2, (int)data, count_rect);
+  do_rect(bmp, x1, y1, x2, y2, (int)data, count_rect);
 
-  data->pixel = jmalloc (sizeof (int) * data->npixel);
+  data->pixel = jmalloc(sizeof(int) * data->npixel);
 
   data->npixel = 0;
-  do_rect (bmp, x1, y1, x2, y2, (int)data, save_rect);
+  do_rect(bmp, x1, y1, x2, y2, (int)data, save_rect);
 
   return data;
 }
 
-void rectrestore (void *_data)
+void rectrestore(void *_data)
 {
   RECT_DATA *data = _data;
 
   data->npixel = 0;
-  do_rect (data->bmp, data->x1, data->y1, data->x2, data->y2,
-	   (int)data, restore_rect);
+  do_rect(data->bmp, data->x1, data->y1, data->x2, data->y2,
+	  (int)data, restore_rect);
 }
 
 void rectdiscard (void *_data)
@@ -461,8 +461,8 @@ void rectdiscard (void *_data)
   RECT_DATA *data = _data;
 
   if (data->pixel)
-    jfree (data->pixel);
-  jfree (data);
+    jfree(data->pixel);
+  jfree(data);
 }
 
 

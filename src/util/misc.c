@@ -263,8 +263,7 @@ Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
 
 /* Gives to the user the possibility to move the sprite's layer in the
    current editor, returns TRUE if the position was changed.  */
-
-int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
+int interactive_move_layer(int mode, int use_undo, int (*callback)(void))
 {
   JWidget editor = current_editor;
   Sprite *sprite = editor_get_sprite (editor);
@@ -279,17 +278,12 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
   int first_time = TRUE;
   int begin_x;
   int begin_y;
-  int delay;
 
   if (!cel)
     return FALSE;
 
   begin_x = cel->x;
   begin_y = cel->y;
-
-  delay = get_config_int ("Options", "MoveDelay", 250);
-  delay = MID (0, delay, 1000);
-  delay = JI_TICKS_PER_SEC * delay / 1000;
 
   hide_drawing_cursor(editor);
   jmouse_set_cursor(JI_CURSOR_MOVE);
@@ -302,10 +296,7 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
       cel->y = begin_y - start_y + new_y;
 
       /* update layer-bounds */
-      jmouse_hide();
-      editor_update_layer_boundary(editor);
-      editor_draw_layer_boundary_safe(editor);
-      jmouse_show();
+      jwidget_dirty(editor);
 
       /* update status bar */
       status_bar_set_text
@@ -315,8 +306,6 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
 	 (int)cel->y,
 	 (int)(cel->x - begin_x),
 	 (int)(cel->y - begin_y));
-      jwidget_flush_redraw(app_get_status_bar());
-      jmanager_dispatch_messages();
 
       /* update clock */
       quiet_clock = ji_clock;
@@ -324,19 +313,12 @@ int interactive_move_layer (int mode, int use_undo, int (*callback) (void))
     }
 
     /* call the user's routine */
-    if (callback) {
-      if ((*callback)())
-	quiet_clock = delay;
-    }
+    if (callback)
+      (*callback)();
 
-    /* this control the redraw of the sprite when the cursor is quiet
-       for some time */
-    if ((quiet_clock >= 0) && (ji_clock-quiet_clock >= delay)) {
-      quiet_clock = -1;
-      jwidget_dirty(editor);
-      jwidget_flush_redraw(editor);
-      jmanager_dispatch_messages();
-    }
+    /* redraw dirty widgets */
+    jwidget_flush_redraw(ji_get_default_manager());
+    jmanager_dispatch_messages();
 
     gui_feedback();
   } while (editor_click(editor, &new_x, &new_y, &update, NULL));

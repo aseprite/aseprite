@@ -32,6 +32,7 @@
 /* #define REPORT_SIGNALS */
 
 #include <ctype.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <string.h>
 #ifdef REPORT_SIGNALS
@@ -70,8 +71,10 @@ JWidget jwidget_new(int type)
   widget->child_spacing = 0;
   widget->flags = 0;
   widget->emit_signals = 0;
-  widget->static_w = 0;
-  widget->static_h = 0;
+  widget->min_w = 0;
+  widget->min_h = 0;
+  widget->max_w = INT_MAX;
+  widget->max_h = INT_MAX;
   widget->children = jlist_new();
   widget->parent = NULL;
   widget->theme = ji_get_theme();
@@ -679,8 +682,8 @@ void jwidget_request_size(JWidget widget, int *w, int *h)
 {
   JMessage msg = jmessage_new(JM_REQSIZE);
   jwidget_send_message(widget, msg);
-  *w = MAX(msg->reqsize.w, widget->static_w);
-  *h = MAX(msg->reqsize.h, widget->static_h);
+  *w = MID(widget->min_w, msg->reqsize.w, widget->max_w);
+  *h = MID(widget->min_h, msg->reqsize.h, widget->max_h);
   jmessage_free(msg);
 }
 
@@ -982,10 +985,16 @@ void jwidget_set_rect(JWidget widget, JRect rect)
   jmessage_free (msg);
 }
 
-void jwidget_set_static_size(JWidget widget, int w, int h)
+void jwidget_set_min_size(JWidget widget, int w, int h)
 {
-  widget->static_w = w;
-  widget->static_h = h;
+  widget->min_w = w;
+  widget->min_h = h;
+}
+
+void jwidget_set_max_size(JWidget widget, int w, int h)
+{
+  widget->max_w = w;
+  widget->max_h = h;
 }
 
 void jwidget_set_bg_color(JWidget widget, int color)
@@ -1032,7 +1041,7 @@ void jwidget_flush_redraw(JWidget widget)
       /* send the draw message */
       msg->draw.count--;
       msg->draw.rect = *rc;
-      jmanager_send_message(msg);
+      jmanager_enqueue_message(msg);
     }
 
     jmessage_free(msg);
@@ -1332,8 +1341,8 @@ static bool widget_msg_proc (JWidget widget, JMessage msg)
       break;
 
     case JM_REQSIZE:
-      msg->reqsize.w = widget->static_w;
-      msg->reqsize.h = widget->static_h;
+      msg->reqsize.w = widget->min_w;
+      msg->reqsize.h = widget->min_h;
       return TRUE;
 
     case JM_SETPOS: {
@@ -1384,8 +1393,8 @@ static bool widget_msg_proc (JWidget widget, JMessage msg)
 	  /* draw the widget */
 	  for (it=region2->rects; it; it=it->next) {
 	    msg2->draw.count--;
-	    jrect_copy (&msg2->draw.rect, (JRect)it->data);
-	    jmanager_send_message (msg2);
+	    jrect_copy(&msg2->draw.rect, (JRect)it->data);
+	    jmanager_enqueue_message(msg2);
 	  }
 
 	  jmessage_free (msg2);

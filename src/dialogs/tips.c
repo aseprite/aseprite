@@ -97,9 +97,9 @@ void dialogs_tips(bool forced)
   tips = tips_new();
   check = jcheck_new(_("Show me it in the start up"));
 
-  jwidget_set_static_size(button_close, 50, 0);
-  jwidget_set_static_size(button_prev, 50, 0);
-  jwidget_set_static_size(button_next, 50, 0);
+  jwidget_set_min_size(button_close, 50, 0);
+  jwidget_set_min_size(button_prev, 50, 0);
+  jwidget_set_min_size(button_next, 50, 0);
 
   jbutton_add_command_data(button_prev, prev_command, tips);
   jbutton_add_command_data(button_next, next_command, tips);
@@ -124,15 +124,15 @@ void dialogs_tips(bool forced)
   jwidget_add_child(window, vbox);
 
 /*   if (JI_SCREEN_W > 320) */
-    jwidget_set_static_size(window,
-			    MIN(400, JI_SCREEN_W-32),
-			    MIN(300, JI_SCREEN_H-16));
+    jwidget_set_min_size(window,
+			 MIN(400, JI_SCREEN_W-32),
+			 MIN(300, JI_SCREEN_H-16));
 /*   else */
 /*     jwidget_set_static_size(window, 282, 200); */
 
   /* open the window */
   jwindow_open(window);
-  jwidget_set_static_size(window, 0, 0);
+  jwidget_set_min_size(window, 0, 0);
 
   /* load first page */
   memcpy(old_pal, current_palette, sizeof (PALETTE));
@@ -365,9 +365,9 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
       /* add a box with an static size to separate paragraphs */
       JWidget box = jbox_new (0);
 
-      jwidget_set_static_size (box, 0, text_height (box->text_font));
+      jwidget_set_min_size(box, 0, text_height(box->text_font));
 
-      jwidget_add_child (vbox, box);
+      jwidget_add_child(vbox, box);
     }
     /************************************************************/
     /* special object (line start with \) */

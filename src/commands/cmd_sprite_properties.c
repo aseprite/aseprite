@@ -87,7 +87,6 @@ static void cmd_sprite_properties_execute(const char *argument)
 
   /* filename */
   jwidget_set_text(name, sprite->filename);
-  jwidget_set_static_size(name, 256, 0);
 
   /* color mode */
   jwidget_set_text(type, imgtype_text);

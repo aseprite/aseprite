@@ -5,47 +5,36 @@
 
 <window text="Options" name="options">
   <box vertical>
-    <box horizontal>
-      <box vertical>
+    <box vertical>
 
-	<label text="Mouse Speed:" />
-	<box horizontal>
-	  <box vertical homogeneous>
-            <label text="X:" />
-            <label text="Y:" />
-	  </box>
-	  <box vertical homogeneous expansive>
-            <slider min="-8" max="8" name="mouse_x" />
-            <slider min="-8" max="8" name="mouse_y" />
-	  </box>
+      <label text="Mouse Speed:" />
+      <box horizontal>
+	<box vertical homogeneous>
+          <label text="X:" />
+          <label text="Y:" />
 	</box>
-	<check text="Lock X/Y" name="lock_axis" />
-
-	<separator horizontal />
-
-	<label text="Movement Delay (milliseconds):" />
-	<slider min="0" max="1000" name="move_delay" />
-	<check text="Smooth auto-scroll" name="smooth" />
-	<check text="Real-time ordered dithering" name="dither" />
-
+	<box vertical homogeneous expansive>
+          <slider min="-8" max="8" name="mouse_x" />
+          <slider min="-8" max="8" name="mouse_y" />
+	</box>
       </box>
-      <separator vertical />
-      <box vertical>
+      <check text="Lock X/Y" name="lock_axis" />
 
-	<label text="" name="label_font" />
-	<button text="Change GUI Font" name="button_font" />
-	<button text="Change Language" name="button_lang" />
-	<separator horizontal />
-	<check text="2 Click Movement" name="move_click2" />
-	<check text="2 Click Drawing" name="draw_click2" />
+      <separator horizontal />
 
-      </box>
+      <check text="Smooth auto-scroll" name="smooth" />
+      <check text="Real-time ordered dithering" name="dither" />
+      <check text="2 Click Movement" name="move_click2" />
+      <check text="2 Click Drawing" name="draw_click2" />
+
     </box>
 
-    <box horizontal homogeneous>
-      <button text="&OK" name="button_ok" magnetic />
-      <button text="&Save" name="button_save" />
-      <button text="&Cancel" />
+    <box horizontal>
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="button_ok" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
     </box>
   </box>
 </window>

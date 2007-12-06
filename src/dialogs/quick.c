@@ -199,27 +199,27 @@ static void do_quick (int action)
   update_screen_for_sprite(sprite);
 }
 
-static int my_callback (void)
+static int my_callback(void)
 {
   int ret = FALSE;
 
-  if (keypressed ()) {
-    int scancode = (readkey ()>>8);
+  if (keypressed()) {
+    int scancode = (readkey()>>8);
 
     if (scancode == KEY_M) {
       ret = TRUE;
 
       /* switch mask status */
-      if (get_config_bool ("QuickMovement", "UseMask", TRUE))
-	set_config_bool ("QuickMovement", "UseMask", FALSE);
+      if (get_config_bool("QuickMovement", "UseMask", TRUE))
+	set_config_bool("QuickMovement", "UseMask", FALSE);
       else
-	set_config_bool ("QuickMovement", "UseMask", TRUE);
+	set_config_bool("QuickMovement", "UseMask", TRUE);
 
       /* set layer blend mode */
-      if (get_config_bool ("QuickMovement", "UseMask", TRUE))
-	layer_set_blend_mode (handle_layer, BLEND_MODE_NORMAL);
+      if (get_config_bool("QuickMovement", "UseMask", TRUE))
+	layer_set_blend_mode(handle_layer, BLEND_MODE_NORMAL);
       else
-	layer_set_blend_mode (handle_layer, BLEND_MODE_COPY);
+	layer_set_blend_mode(handle_layer, BLEND_MODE_COPY);
     }
   }
 

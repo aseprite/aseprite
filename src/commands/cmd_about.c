@@ -73,7 +73,7 @@ static void cmd_about_execute(const char *argument)
   if (textbox) {
     jview_attach(view, textbox);
     jwidget_expansive(view, TRUE);
-    jwidget_set_static_size(view, JI_SCREEN_W/3, JI_SCREEN_H/4);
+    jwidget_set_min_size(view, JI_SCREEN_W/3, JI_SCREEN_H/4);
     jwidget_add_childs(box1, view, separator2, NULL);
   }
   jwidget_expansive(box3, TRUE);

@@ -110,21 +110,21 @@ void jview_attach(JWidget widget, JWidget viewable_widget)
   /* jwidget_emit_signal(widget, JI_SIGNAL_VIEW_ATTACH); */
 }
 
-void jview_maxsize (JWidget widget)
+void jview_maxsize(JWidget widget)
 {
   View *view = jwidget_get_data(widget, JI_VIEW);
   int req_w, req_h;
 
   viewport_needed_size(view->viewport, &req_w, &req_h);
 
-  widget->static_w =
+  widget->min_w =
     + widget->border_width.l
     + view->viewport->border_width.l
     + req_w
     + view->viewport->border_width.r
     + widget->border_width.r;
 
-  widget->static_h =
+  widget->min_h =
     + widget->border_width.t
     + view->viewport->border_width.t
     + req_h

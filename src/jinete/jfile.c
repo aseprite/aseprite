@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "jinete/jinete.h"
 
@@ -171,9 +172,14 @@ static JWidget convert_tag_to_widget(Tag *tag)
     Attr *text = tag_get_attr(tag, "text");
 
     if (maxsize && maxsize->value) {
+      Attr *readonly = tag_get_attr(tag, "readonly");
+
       widget = jentry_new(strtol(maxsize->value, NULL, 10),
-			    text && text->value ?
-			    TRANSLATE_ATTR(text): "");
+			  text && text->value ?
+			  TRANSLATE_ATTR(text): "");
+
+      if (readonly)
+	jentry_readonly(widget, TRUE);
     }
   }
   /* label */
@@ -297,6 +303,10 @@ static JWidget convert_tag_to_widget(Tag *tag)
     Attr *noborders = tag_get_attr(tag, "noborders");
     Attr *width = tag_get_attr(tag, "width");
     Attr *height = tag_get_attr(tag, "height");
+    Attr *minwidth = tag_get_attr(tag, "minwidth");
+    Attr *minheight = tag_get_attr(tag, "minheight");
+    Attr *maxwidth = tag_get_attr(tag, "maxwidth");
+    Attr *maxheight = tag_get_attr(tag, "maxheight");
     JLink link;
 
     if (name)
@@ -311,10 +321,15 @@ static JWidget convert_tag_to_widget(Tag *tag)
     if (noborders)
       jwidget_noborders(widget);
 
-    if (width || height) {
-      int w = (width) ? strtol(width->value, NULL, 10): 0;
-      int h = (height) ? strtol(height->value, NULL, 10): 0;
-      jwidget_set_static_size(widget, w, h);
+    if (width || minwidth || maxwidth ||
+	height || minheight || maxheight) {
+      int w = (width || minwidth) ? strtol(width ? width->value: minwidth->value, NULL, 10): 0;
+      int h = (height || minheight) ? strtol(height ? height->value: minheight->value, NULL, 10): 0;
+      jwidget_set_min_size(widget, w, h);
+
+      w = (width || maxwidth) ? strtol(width ? width->value: maxwidth->value, NULL, 10): INT_MAX;
+      h = (height || maxheight) ? strtol(height ? height->value: maxheight->value, NULL, 10): INT_MAX;
+      jwidget_set_max_size(widget, w, h);
     }
 
     /* children */

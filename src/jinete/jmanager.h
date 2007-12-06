@@ -46,7 +46,7 @@ bool jmanager_poll(JWidget manager, bool all_windows);
 
 /* routines that uses the ji_get_default_manager() */
 
-void jmanager_send_message(const JMessage msg);
+void jmanager_enqueue_message(const JMessage msg);
 void jmanager_dispatch_messages(void);
 
 JWidget jmanager_get_focus(void);

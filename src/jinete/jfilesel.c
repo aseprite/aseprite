@@ -214,7 +214,7 @@ char *ji_file_select_ex(const char *message,
   jwidget_magnetic(button_select, TRUE);
 
   /* setup window size */
-  jwidget_set_static_size(panel, JI_SCREEN_W*9/10, JI_SCREEN_H*3/5);
+  jwidget_set_min_size(panel, JI_SCREEN_W*9/10, JI_SCREEN_H*3/5);
   jwindow_remap(window);
   jwindow_center(window);
 /*   jwidget_set_static_size(panel, JI_SCREEN_W*9/10, JI_SCREEN_H*3/5); */

@@ -1,3 +1,9 @@
+2007-12-06  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/util/misc.c (interactive_move_layer): Fixed problem with
+	scroll in windowed moded and mouse-paint problem in
+	double-buffering mode.
+
 2007-12-05  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/widgets/statebar.c (status_bar_set_text): Uses dirty

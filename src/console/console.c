@@ -128,7 +128,7 @@ void console_printf(const char *format, ...)
     if (!console_locked) {
       console_locked = TRUE;
 
-      jwidget_set_static_size(wid_view, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
+      jwidget_set_min_size(wid_view, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
       jwidget_show(wid_view);
 
       jwindow_remap(wid_console);

@@ -622,7 +622,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 
   msg = jmessage_new(JM_WINMOVE);
   jmessage_broadcast_to_children(msg, widget);
-  jmanager_send_message(msg);
+  jmanager_enqueue_message(msg);
   jmessage_free(msg);
 
   old_reg = jwidget_get_region (widget);

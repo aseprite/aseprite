@@ -363,7 +363,7 @@ static void mkdir_command(JWidget widget)
   button_create = jbutton_new(_("&OK"));
   button_cancel = jbutton_new(_("&Cancel"));
 
-  jwidget_set_static_size(entry_name, JI_SCREEN_W*75/100, 0);
+  jwidget_set_min_size(entry_name, JI_SCREEN_W*75/100, 0);
 
   jwidget_add_child(box2, button_create);
   jwidget_add_child(box2, button_cancel);

@@ -126,7 +126,7 @@ static void cmd_convolution_matrix_execute(const char *argument)
     jwidget_select(check_tiled);
 
   jview_attach(view_convmatr, list_convmatr);
-  jwidget_set_static_size(view_convmatr, 128, 64);
+  jwidget_set_min_size(view_convmatr, 128, 64);
 
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
@@ -239,7 +239,7 @@ static int reload_select_hook(JWidget widget, int user_data)
   return TRUE;			/* do not close */
 }
 
-static int generate_select_hook (JWidget widget, int user_data)
+static int generate_select_hook(JWidget widget, int user_data)
 {
   JWidget window;
   JWidget view_x;
@@ -251,61 +251,61 @@ static int generate_select_hook (JWidget widget, int user_data)
   JWidget div, div_auto;
   JWidget bias, bias_auto;
 
-  window = load_widget ("convmatr.jid", "generate_convolution_matrix");
+  window = load_widget("convmatr.jid", "generate_convolution_matrix");
   if (!window)
     return TRUE;		/* don't close */
 
-  if (!get_widgets (window,
-		    "view_x", &view_x,
-		    "view_y", &view_y,
-		    "div", &div,
-		    "bias", &bias,
-		    "div_auto", &div_auto,
-		    "bias_auto", &bias_auto, NULL)) {
-    jwidget_free (window);
+  if (!get_widgets(window,
+		   "view_x", &view_x,
+		   "view_y", &view_y,
+		   "div", &div,
+		   "bias", &bias,
+		   "div_auto", &div_auto,
+		   "bias_auto", &bias_auto, NULL)) {
+    jwidget_free(window);
     return TRUE;		/* don't close */
   }
 
-  /* curve_x = curve_new (CURVE_SPLINE); */
-  /* curve_y = curve_new (CURVE_SPLINE); */
-  curve_x = curve_new (CURVE_LINEAR);
-  curve_y = curve_new (CURVE_LINEAR);
-  curve_add_point (curve_x, curve_point_new (-100, 0));
-  curve_add_point (curve_x, curve_point_new (0, +100));
-  curve_add_point (curve_x, curve_point_new (+100, 0));
-  curve_add_point (curve_y, curve_point_new (-100, 0));
-  curve_add_point (curve_y, curve_point_new (0, +100));
-  curve_add_point (curve_y, curve_point_new (+100, 0));
+  /* curve_x = curve_new(CURVE_SPLINE); */
+  /* curve_y = curve_new(CURVE_SPLINE); */
+  curve_x = curve_new(CURVE_LINEAR);
+  curve_y = curve_new(CURVE_LINEAR);
+  curve_add_point(curve_x, curve_point_new (-100, 0));
+  curve_add_point(curve_x, curve_point_new (0, +100));
+  curve_add_point(curve_x, curve_point_new (+100, 0));
+  curve_add_point(curve_y, curve_point_new (-100, 0));
+  curve_add_point(curve_y, curve_point_new (0, +100));
+  curve_add_point(curve_y, curve_point_new (+100, 0));
 
-  curvedit_x = curve_editor_new (curve_x, -200, -200, 200, 200);
-  curvedit_y = curve_editor_new (curve_y, -200, -200, 200, 200);
+  curvedit_x = curve_editor_new(curve_x, -200, -200, 200, 200);
+  curvedit_y = curve_editor_new(curve_y, -200, -200, 200, 200);
 
-  jview_attach (view_x, curvedit_x);
-  jview_attach (view_y, curvedit_y);
+  jview_attach(view_x, curvedit_x);
+  jview_attach(view_y, curvedit_y);
 
-  jwidget_set_static_size (view_x, 64, 64);
-  jwidget_set_static_size (view_y, 64, 64);
+  jwidget_set_min_size(view_x, 64, 64);
+  jwidget_set_min_size(view_y, 64, 64);
 
   /* TODO fix this */
   /* jwidget_get_vtable (div)->request_size = NULL; */
   /* jwidget_get_vtable (bias)->request_size = NULL; */
 
-  jwidget_set_static_size (div, 1, 1);
-  jwidget_set_static_size (bias, 1, 1);
+  jwidget_set_min_size(div, 1, 1);
+  jwidget_set_min_size(bias, 1, 1);
 
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
   /* TODO do something */
 
-  jwidget_free (window);
+  jwidget_free(window);
 
-  curve_free (curve_x);
-  curve_free (curve_y);
+  curve_free(curve_x);
+  curve_free(curve_y);
 
   return TRUE;			/* do not close */
 }
 
-static int list_change_hook (JWidget widget, int user_data)
+static int list_change_hook(JWidget widget, int user_data)
 {
   JWidget selected = jlistbox_get_selected_child (widget);
   ConvMatr *convmatr = selected->user_data[0];
@@ -317,25 +317,25 @@ static int list_change_hook (JWidget widget, int user_data)
   return FALSE;
 }
 
-static int target_change_hook (JWidget widget, int user_data)
+static int target_change_hook(JWidget widget, int user_data)
 {
   effect_load_target (preview_get_effect (preview));
   make_preview ();
   return FALSE;
 }
 
-static int preview_change_hook (JWidget widget, int user_data)
+static int preview_change_hook(JWidget widget, int user_data)
 {
-  set_config_bool ("ConvolutionMatrix", "Preview",
-		   jwidget_is_selected (widget));
-  make_preview ();
+  set_config_bool("ConvolutionMatrix", "Preview",
+		  jwidget_is_selected (widget));
+  make_preview();
   return FALSE;
 }
 
-static int tiled_change_hook (JWidget widget, int user_data)
+static int tiled_change_hook(JWidget widget, int user_data)
 {
-  set_tiled_mode (jwidget_is_selected (widget));
-  make_preview ();
+  set_tiled_mode(jwidget_is_selected(widget));
+  make_preview();
   return FALSE;
 }
 

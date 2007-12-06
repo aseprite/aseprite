@@ -27,6 +27,7 @@
 #include "jinete/jmanager.h"
 #include "jinete/jsystem.h"
 #include "jinete/jview.h"
+#include "jinete/jwidget.h"
 
 #include "core/cfg.h"
 #include "modules/gui.h"
@@ -64,10 +65,13 @@ void editor_click_start(JWidget widget, int mode, int *x, int *y, int *b)
 
   screen_to_editor(widget, click_start_x, click_start_y, x, y);
   *b = click_start_b;
+
+  jwidget_capture_mouse(widget);
 }
 
 void editor_click_done(JWidget widget)
 {
+  jwidget_release_mouse(widget);
   clear_keybuf();
 }
 
@@ -137,8 +141,6 @@ int editor_click(JWidget widget, int *x, int *y, int *update,
       editor_set_scroll(widget,
 			scroll_x+click_last_x-jmouse_x(0),
 			scroll_y+click_last_y-jmouse_y(0), TRUE);
-
-/*       editor_refresh_region(widget); */
 
       click_last_x = jmouse_x(0);
       click_last_y = jmouse_y(0);

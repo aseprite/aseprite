@@ -40,9 +40,13 @@
         <listitem text="Custom" />
       </listbox>
     </view>
-    <box horizontal homogeneous>
-      <button text="&OK" name="ok_button" magnetic />
-      <button text="&Cancel" />
+
+    <box horizontal>
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="ok_button" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
     </box>
   </box>
 </window>

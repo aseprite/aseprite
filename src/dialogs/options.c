@@ -31,159 +31,101 @@
 #include "intl/intl.h"
 
 #endif
-
-/* show the language selection dialog */
+
 void dialogs_select_language(bool force)
 {
-#if 0 /* No more languages by now */
-  bool select_language = get_config_bool("Options", "SelectLanguage", TRUE);
-
-  if (force || select_language) {
-    JWidget window = jwindow_new("Select Language");
-    JWidget box = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
-    JWidget button_en = jbutton_new("English");
-    JWidget button_es = jbutton_new("Español");
-    JWidget killer;
-
-    jwidget_add_child(window, box);
-    jwidget_add_child(box, button_en);
-    jwidget_add_child(box, button_es);
-
-    jwindow_open_fg(window);
-    killer = jwindow_get_killer(window);
-
-    /* en */
-    if (killer == button_en) {
-      intl_set_lang("en");
-      set_config_bool("Options", "SelectLanguage", FALSE);
-    }
-    /* es */
-    else if (killer == button_es) {
-      intl_set_lang("es");
-      set_config_bool("Options", "SelectLanguage", FALSE);
-    }
-
-    jwidget_free(window);
-  }
-#else  /* Just english */
+  /* only english */
   intl_set_lang("en");
   set_config_bool("Options", "SelectLanguage", FALSE);
-#endif
 }
-
+
 /**********************************************************************/
 /* Options */
 
-static JWidget label_font, slider_x, slider_y, check_lockmouse;
+static JWidget slider_x, slider_y, check_lockmouse;
 
 static int slider_mouse_hook(JWidget widget, int user_data);
-static void button_font_command(JWidget widget);
-static void button_lang_command(JWidget widget);
-static void set_label_font_text(void);
 
 /* shows option dialog */
 void dialogs_options(void)
 {
-  JWidget window, move_delay, check_smooth, check_dither;
-  JWidget button_font, button_lang, button_ok, button_save;
+  JWidget window, check_smooth, check_dither;
+  JWidget button_ok;
   JWidget move_click2, draw_click2, killer;
   int x, y, old_x, old_y;
-  char *default_font;
 
-  x = get_config_int ("Options", "MouseX", 6);
-  y = get_config_int ("Options", "MouseY", 6);
-  x = MID (-8, x, 8);
-  y = MID (-8, y, 8);
+  x = get_config_int("Options", "MouseX", 6);
+  y = get_config_int("Options", "MouseY", 6);
+  x = MID(-8, x, 8);
+  y = MID(-8, y, 8);
   old_x = x;
   old_y = y;
 
   /* load the window widget */
-  window = load_widget ("options.jid", "options");
+  window = load_widget("options.jid", "options");
   if (!window)
     return;
 
-  if (!get_widgets (window,
-		    "mouse_x", &slider_x,
-		    "mouse_y", &slider_y,
-		    "lock_axis", &check_lockmouse,
-		    "move_delay", &move_delay,
-		    "smooth", &check_smooth,
-		    "dither", &check_dither,
-		    "label_font", &label_font,
-		    "move_click2", &move_click2,
-		    "draw_click2", &draw_click2,
-		    "button_font", &button_font,
-		    "button_lang", &button_lang,
-		    "button_ok", &button_ok,
-		    "button_save", &button_save, NULL)) {
+  if (!get_widgets(window,
+		   "mouse_x", &slider_x,
+		   "mouse_y", &slider_y,
+		   "lock_axis", &check_lockmouse,
+		   "smooth", &check_smooth,
+		   "dither", &check_dither,
+		   "move_click2", &move_click2,
+		   "draw_click2", &draw_click2,
+		   "button_ok", &button_ok, NULL)) {
     jwidget_free (window);
     return;
   }
 
-  jslider_set_value (slider_x, x);
-  jslider_set_value (slider_y, y);
-  if (get_config_bool ("Options", "LockMouse", TRUE))
-    jwidget_select (check_lockmouse);
-  if (get_config_bool ("Options", "MoveClick2", FALSE))
-    jwidget_select (move_click2);
-  if (get_config_bool ("Options", "DrawClick2", FALSE))
-    jwidget_select (draw_click2);
+  jslider_set_value(slider_x, x);
+  jslider_set_value(slider_y, y);
+  if (get_config_bool("Options", "LockMouse", TRUE))
+    jwidget_select(check_lockmouse);
+  if (get_config_bool("Options", "MoveClick2", FALSE))
+    jwidget_select(move_click2);
+  if (get_config_bool("Options", "DrawClick2", FALSE))
+    jwidget_select(draw_click2);
 
-  jslider_set_value (move_delay,
-		       get_config_int ("Options", "MoveDelay", 250));
+  if (get_config_bool("Options", "MoveSmooth", TRUE))
+    jwidget_select(check_smooth);
 
-  if (get_config_bool ("Options", "MoveSmooth", TRUE))
-    jwidget_select (check_smooth);
+  if (get_config_bool("Options", "Dither", FALSE))
+    jwidget_select(check_dither);
 
-  if (get_config_bool ("Options", "Dither", FALSE))
-    jwidget_select (check_dither);
+  HOOK(slider_x, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
+  HOOK(slider_y, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
 
-  default_font = jstrdup (get_config_string ("Options", "DefaultFont", ""));
-  set_label_font_text ();
+  jwindow_open_fg(window);
+  killer = jwindow_get_killer(window);
 
-  HOOK (slider_x, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
-  HOOK (slider_y, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
+  if (killer == button_ok) {
+    set_config_bool("Options", "LockMouse", jwidget_is_selected(check_lockmouse));
+    set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
+    set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
+    set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
 
-  jbutton_add_command (button_font, button_font_command);
-  jbutton_add_command (button_lang, button_lang_command);
-
-  jwindow_open_fg (window);
-  killer = jwindow_get_killer (window);
-
-  if (killer == button_ok || killer == button_save) {
-    set_config_bool ("Options", "LockMouse", jwidget_is_selected (check_lockmouse));
-    set_config_int ("Options", "MoveDelay", jslider_get_value (move_delay));
-    set_config_bool ("Options", "MoveSmooth", jwidget_is_selected (check_smooth));
-    set_config_bool ("Options", "MoveClick2", jwidget_is_selected (move_click2));
-    set_config_bool ("Options", "DrawClick2", jwidget_is_selected (draw_click2));
-
-    if (get_config_bool ("Options", "Dither", FALSE)
-	!= jwidget_is_selected (check_dither)) {
-      set_config_bool ("Options", "Dither", jwidget_is_selected (check_dither));
-      refresh_all_editors ();
+    if (get_config_bool("Options", "Dither", FALSE) != jwidget_is_selected(check_dither)) {
+      set_config_bool("Options", "Dither", jwidget_is_selected(check_dither));
+      refresh_all_editors();
     }
 
     /* save configuration */
-    if (killer == button_save)
-      flush_config_file ();
+    flush_config_file();
   }
   else {
     /* restore mouse speed */
-    set_config_int ("Options", "MouseX", old_x);
-    set_config_int ("Options", "MouseY", old_y);
+    set_config_int("Options", "MouseX", old_x);
+    set_config_int("Options", "MouseY", old_y);
 
-    set_mouse_speed (8-old_x, 8-old_y);
-
-    /* restore default font */
-    set_config_string ("Options", "DefaultFont", default_font);
-    reload_default_font ();
+    set_mouse_speed(8-old_x, 8-old_y);
   }
 
-  jwidget_free (window);
-  jfree (default_font);
+  jwidget_free(window);
 }
 
-static int slider_mouse_hook (JWidget widget, int user_data)
+static int slider_mouse_hook(JWidget widget, int user_data)
 {
   int x, y;
 
@@ -206,39 +148,6 @@ static int slider_mouse_hook (JWidget widget, int user_data)
   return FALSE;
 }
 
-static void button_font_command (JWidget widget)
-{
-  char *filename;
-
-  filename = GUI_FileSelect(_("Open Font (TTF or Allegro bitmap format)"),
-			    get_config_string("Options", "DefaultFont", ""),
-			    "pcx,bmp,tga,lbm,ttf");
-  if (filename) {
-    set_config_string ("Options", "DefaultFont", filename);
-    set_label_font_text ();
-
-    reload_default_font ();
-
-    jfree (filename);
-  }
-}
-
-static void button_lang_command(JWidget widget)
-{
-  dialogs_select_language(TRUE);
-}
-
-static void set_label_font_text(void)
-{
-  const char *default_font = get_config_string ("Options", "DefaultFont", "");
-  char buf[1024];
-
-  usprintf(buf, _("GUI Font: %s"), 
-	   *default_font ? get_filename (default_font): _("*Default*"));
-
-  jwidget_set_text(label_font, buf);
-}
-
 /**********************************************************************/
 /* setup the mouse speed reading the configuration file */
 

@@ -14,17 +14,22 @@
         <label text="Background:" />
       </box>
       <box vertical homogeneous expansive>
-        <label text="" name="name" />
+        <entry text="" name="name" maxsize="256" readonly maxwidth="100" />
         <label text="" name="type" />
         <label text="" name="size" />
         <label text="" name="frames" />
-        <box vertical name="bgcolor_box" />
+        <box horizontal>
+          <box vertical name="bgcolor_box" />
+        </box>
       </box>
     </box>
-    <button text="Constant Frame-Rate Speed" name="speed" />
-    <box horizontal homogeneous>
-      <button text="&OK" name="ok" magnetic />
-      <button text="&Cancel" />
+    <box horizontal>
+      <button text="Constant Frame-Rate Speed" name="speed" />
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="ok" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
     </box>
   </box>
 </window>

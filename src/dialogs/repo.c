@@ -62,11 +62,11 @@ void ji_show_repo_dlg (RepoDlg *repo_dlg)
   jbutton_add_command_data (repo_dlg->button_add, add_command, repo_dlg);
   jbutton_add_command_data (repo_dlg->button_delete, delete_command, repo_dlg);
 
-  jwidget_magnetic (repo_dlg->button_use, TRUE);
+  jwidget_magnetic(repo_dlg->button_use, TRUE);
 
-  jwidget_expansive (view, TRUE);
-  jview_attach (view, repo_dlg->listbox);
-  jwidget_set_static_size (view, JI_SCREEN_W*25/100, JI_SCREEN_H*25/100);
+  jwidget_expansive(view, TRUE);
+  jview_attach(view, repo_dlg->listbox);
+  jwidget_set_min_size(view, JI_SCREEN_W*25/100, JI_SCREEN_H*25/100);
 
   /* fill the list */
   fill_listbox (repo_dlg);

@@ -72,7 +72,7 @@ struct Image
   unsigned char *dat;		/* pixmap data */
   unsigned char **line;		/* start of each scanline */
   struct ImageMethods *method;
-  /* struct BITMAP *bmp; */
+//   struct BITMAP *bmp;
 };
 
 typedef struct ImageMethods

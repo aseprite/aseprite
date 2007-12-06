@@ -55,8 +55,9 @@ struct jwidget
   int flags;
   int emit_signals;		/* emit signal counter */
 
-  /* default widget size */
-  int static_w, static_h;	/* static widget size */
+  /* widget size limits */
+  int min_w, min_h;
+  int max_w, max_h;
 
   /* structures */
   JList children;		 /* sub-objects */
@@ -189,7 +190,8 @@ void jwidget_get_texticon_info(JWidget widget,
 void jwidget_noborders(JWidget widget);
 void jwidget_set_border(JWidget widget, int l, int t, int r, int b);
 void jwidget_set_rect(JWidget widget, JRect rect);
-void jwidget_set_static_size(JWidget widget, int w, int h);
+void jwidget_set_min_size(JWidget widget, int w, int h);
+void jwidget_set_max_size(JWidget widget, int w, int h);
 void jwidget_set_bg_color(JWidget widget, int color);
 void jwidget_set_theme(JWidget widget, JTheme theme);
 

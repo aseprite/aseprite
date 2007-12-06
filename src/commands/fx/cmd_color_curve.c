@@ -105,7 +105,7 @@ static void cmd_color_curve_execute(const char *argument)
     jwidget_select(check_preview);
 
   jview_attach(view_curve, curve_editor);
-  jwidget_set_static_size(view_curve, 128, 64);
+  jwidget_set_min_size(view_curve, 128, 64);
 
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);

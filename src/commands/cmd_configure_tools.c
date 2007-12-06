@@ -111,10 +111,10 @@ static void cmd_configure_tools_execute(const char *argument)
   cursor_color = color_button_new (get_cursor_color (), IMAGE_INDEXED);
   /* brush-preview */
   brush_preview = jwidget_new (JI_WIDGET);
-  brush_preview->static_w = 32 + 4;
-  brush_preview->static_h = 32 + 4;
-  jwidget_add_hook (brush_preview, JI_WIDGET,
-		      brush_preview_msg_proc, NULL);
+  brush_preview->min_w = 32 + 4;
+  brush_preview->min_h = 32 + 4;
+  jwidget_add_hook(brush_preview, JI_WIDGET,
+		   brush_preview_msg_proc, NULL);
   /* brush-type */
   brush_type = group_button_new (3, 1, get_brush_type (),
 				 GFX_BRUSH_CIRCLE,

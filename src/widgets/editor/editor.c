@@ -93,25 +93,25 @@ JWidget editor_view_new (void)
   return widget;
 }
 
-JWidget editor_new (void)
+JWidget editor_new(void)
 {
-  JWidget widget = jwidget_new (editor_type ());
-  Editor *editor = jnew0 (Editor, 1);
+  JWidget widget = jwidget_new(editor_type());
+  Editor *editor = jnew0(Editor, 1);
 
   editor->widget = widget;
   editor->state = EDIT_STANDBY;
 
-  jwidget_add_hook (widget, editor_type (), editor_msg_proc, editor);
-  jwidget_focusrest (widget, TRUE);
+  jwidget_add_hook(widget, editor_type(), editor_msg_proc, editor);
+  jwidget_focusrest(widget, TRUE);
 
   return widget;
 }
 
-int editor_type (void)
+int editor_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
@@ -127,7 +127,7 @@ Sprite *editor_get_sprite(JWidget widget)
 
 void editor_set_sprite(JWidget widget, Sprite *sprite)
 {
-  Editor *editor = editor_data (widget);
+  Editor *editor = editor_data(widget);
 
   if (jwidget_has_mouse(widget))
     jmanager_free_mouse();
@@ -366,14 +366,14 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
   /* draw the sprite */
 
   if ((width > 0) && (height > 0)) {
-    Image *rendered;
+    /* generate the rendered image */
+    Image *rendered = render_sprite(editor->sprite,
+				    source_x, source_y,
+				    width, height,
+				    editor->sprite->frame,
+				    editor->zoom);
 
-    rendered = render_sprite(editor->sprite,
-			     source_x, source_y,
-			     width, height,
-			     editor->sprite->frame,
-			     editor->zoom);
-
+    /* dithering */
     if (use_dither &&
 	rendered &&
 	rendered->imgtype == IMAGE_RGB &&
@@ -646,63 +646,63 @@ void editor_draw_layer_boundary_safe(JWidget widget)
        c<nrects;
        c++, rc++) {
     set_clip(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
-    editor_draw_layer_boundary (widget);
+    editor_draw_layer_boundary(widget);
   }
-  set_clip (ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
 
-  jregion_free (region);
+  jregion_free(region);
 }
 
 void editor_update_layer_boundary(JWidget widget)
 {
   int x, y, x1, y1, x2, y2;
-  Sprite *sprite = editor_get_sprite (widget);
-  Image *image = GetImage2 (sprite, &x, &y, NULL);
-  Editor *editor = editor_data (widget);
+  Sprite *sprite = editor_get_sprite(widget);
+  Image *image = GetImage2(sprite, &x, &y, NULL);
+  Editor *editor = editor_data(widget);
 
   if (editor->rect_data) {
-    rectrestore (editor->rect_data);
-    rectdiscard (editor->rect_data);
+    rectrestore(editor->rect_data);
+    rectdiscard(editor->rect_data);
     editor->rect_data = NULL;
   }
 
   if (image) {
-    editor_to_screen (widget, x, y, &x1, &y1);
-    editor_to_screen (widget, x+image->w, y+image->h, &x2, &y2);
+    editor_to_screen(widget, x, y, &x1, &y1);
+    editor_to_screen(widget, x+image->w, y+image->h, &x2, &y2);
 
-    editor->rect_data = rectsave (ji_screen, x1-1, y1-1, x2, y2);
+    editor->rect_data = rectsave(ji_screen, x1-1, y1-1, x2, y2);
   }
 }
 
 void editor_draw_path(JWidget widget, int draw_extras)
 {
 #if 0
-  Sprite *sprite = editor_get_sprite (widget);
+  Sprite *sprite = editor_get_sprite(widget);
 
   if (sprite->path) {
     GList *it;
     PathNode *node;
     int points[8], x1, y1, x2, y2;
-    JWidget color_bar = app_get_color_bar ();
-    int splines_color = get_color_for_allegro (bitmap_color_depth (ji_screen),
-					       color_bar_get_color (color_bar, 0));
-    int extras_color = get_color_for_allegro (bitmap_color_depth (ji_screen),
-					      color_bar_get_color (color_bar, 1));
+    JWidget color_bar = app_get_color_bar();
+    int splines_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
+					      color_bar_get_color(color_bar, 0));
+    int extras_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
+					     color_bar_get_color(color_bar, 1));
 
-    splines_color = makecol (255, 0, 0);
-    extras_color = makecol (0, 0, 255);
+    splines_color = makecol(255, 0, 0);
+    extras_color = makecol(0, 0, 255);
 
     /* draw splines */
     for (it=sprite->path->nodes; it; it=it->next) {
       node = it->data;
 
       if (node->n) {
-	editor_to_screen (widget, node->x, node->y, points+0, points+1);
-	editor_to_screen (widget, node->nx, node->ny, points+2, points+3);
-	editor_to_screen (widget, node->n->px, node->n->py, points+4, points+5);
-	editor_to_screen (widget, node->n->x, node->n->y, points+6, points+7);
+	editor_to_screen(widget, node->x, node->y, points+0, points+1);
+	editor_to_screen(widget, node->nx, node->ny, points+2, points+3);
+	editor_to_screen(widget, node->n->px, node->n->py, points+4, points+5);
+	editor_to_screen(widget, node->n->x, node->n->y, points+6, points+7);
 
-	spline (ji_screen, points, splines_color);
+	spline(ji_screen, points, splines_color);
       }
     }
 

@@ -403,7 +403,7 @@ static void combobox_open_window(JWidget widget)
     jwidget_noborders(combobox->window);
 
     size = jlist_length(combobox->items);
-    jwidget_set_static_size
+    jwidget_set_min_size
       (view,
        jrect_w(combobox->entry->rc),
        2+(2+jwidget_get_text_height(listbox))*MID(1, size, 10)+2);

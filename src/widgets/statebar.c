@@ -99,7 +99,7 @@ JWidget status_bar_new(void)
     ICON_NEW(status_bar->b_last, GFX_ANI_LAST, ACTION_LAST);
 
     HOOK(status_bar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_signal, 0);
-    jwidget_set_static_size(status_bar->slider, JI_SCREEN_W/5, 0);
+    jwidget_set_min_size(status_bar->slider, JI_SCREEN_W/5, 0);
 
     jwidget_noborders(box1);
     jwidget_noborders(box2);
