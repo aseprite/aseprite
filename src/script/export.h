@@ -225,7 +225,7 @@ Image *GetImage2(Sprite *sprite, int *x, int *y, int *opacity); /* CODE */
 void LoadPalette(const char *filename);
 
 void ClearMask(void);
-Layer *NewLayerFromMask(void);
+Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite);
 
 /* util/msk_file.c */
 

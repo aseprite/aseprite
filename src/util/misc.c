@@ -184,20 +184,21 @@ void ClearMask(void)
 
 /* returns a new layer created from the current mask in the current
    sprite, the layer isn't added to the sprite */
-Layer *NewLayerFromMask(void)
+Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
 {
-  Sprite *sprite = current_sprite;
   unsigned char *address;
   int x, y, u, v, getx, gety;
-  Image *dst, *src = GetImage2 (sprite, &x, &y, NULL);
+  Image *dst, *src = GetImage2(src_sprite, &x, &y, NULL);
   Layer *layer;
   Cel *cel;
   div_t d;
 
-  if (!sprite || !sprite->mask || !sprite->mask->bitmap || !src)
+  if (!src_sprite || !src_sprite->mask || !src_sprite->mask->bitmap || !src)
     return NULL;
 
-  dst = image_new(sprite->imgtype, sprite->mask->w, sprite->mask->h);
+  dst = image_new(dst_sprite->imgtype,
+		  src_sprite->mask->w,
+		  src_sprite->mask->h);
   if (!dst)
     return NULL;
 
@@ -205,35 +206,35 @@ Layer *NewLayerFromMask(void)
   image_clear(dst, 0);
 
   /* copy the masked zones */
-  for (v=0; v<sprite->mask->h; v++) {
-    d = div (0, 8);
-    address = ((unsigned char **)sprite->mask->bitmap->line)[v]+d.quot;
+  for (v=0; v<src_sprite->mask->h; v++) {
+    d = div(0, 8);
+    address = ((unsigned char **)src_sprite->mask->bitmap->line)[v]+d.quot;
 
-    for (u=0; u<sprite->mask->w; u++) {
+    for (u=0; u<src_sprite->mask->w; u++) {
       if ((*address & (1<<d.rem))) {
-	getx = u+sprite->mask->x-x;
-	gety = v+sprite->mask->y-y;
+	getx = u+src_sprite->mask->x-x;
+	gety = v+src_sprite->mask->y-y;
 
 	if ((getx >= 0) && (getx < src->w) &&
 	    (gety >= 0) && (gety < src->h))
-	  dst->method->putpixel (dst, u, v,
-				 src->method->getpixel (src, getx, gety));
+	  dst->method->putpixel(dst, u, v,
+				src->method->getpixel(src, getx, gety));
       }
 
-      _image_bitmap_next_bit (d, address);
+      _image_bitmap_next_bit(d, address);
     }
   }
 
-  layer = layer_new(sprite);
+  layer = layer_new(dst_sprite);
   if (!layer) {
-    image_free (dst);
+    image_free(dst);
     return NULL;
   }
 
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
-  cel = cel_new(sprite->frame, stock_add_image(sprite->stock, dst));
-  cel_set_position(cel, sprite->mask->x, sprite->mask->y);
+  cel = cel_new(dst_sprite->frame, stock_add_image(dst_sprite->stock, dst));
+  cel_set_position(cel, dst_sprite->mask->x, dst_sprite->mask->y);
 
   layer_add_cel(layer, cel);
 

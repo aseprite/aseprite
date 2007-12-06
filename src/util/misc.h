@@ -33,7 +33,7 @@ struct Image *GetImage2(struct Sprite *sprite, int *x, int *y, int *opacity);
 void LoadPalette(const char *filename);
 
 void ClearMask(void);
-struct Layer *NewLayerFromMask(void);
+struct Layer *NewLayerFromMask(struct Sprite *src, struct Sprite *dst);
 
 struct Image *GetLayerImage(struct Layer *layer, int *x, int *y, int frame);
 

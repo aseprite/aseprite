@@ -1055,14 +1055,6 @@ static int bind_ClearMask(lua_State *L)
   return 0;
 }
 
-static int bind_NewLayerFromMask(lua_State *L)
-{
-  Layer *return_value;
-  return_value = NewLayerFromMask();
-  push_userdata(L, Type_Layer, return_value);
-  return 1;
-}
-
 static int bind_load_msk_file(lua_State *L)
 {
   Mask *return_value;
@@ -3256,7 +3248,6 @@ const luaL_reg bindings_routines[] = {
   { "GetImage2", bind_GetImage2 },
   { "LoadPalette", bind_LoadPalette },
   { "ClearMask", bind_ClearMask },
-  { "NewLayerFromMask", bind_NewLayerFromMask },
   { "load_msk_file", bind_load_msk_file },
   { "save_msk_file", bind_save_msk_file },
   { "sprite_quantize", bind_sprite_quantize },

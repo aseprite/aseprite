@@ -126,28 +126,28 @@ Sprite *sprite_new_copy(const Sprite *sprite)
 
   /* copy layers */
   if (sprite_copy->set) {
-    layer_free (sprite_copy->set);
+    layer_free(sprite_copy->set);
     sprite_copy->set = NULL;
   }
 
   if (sprite->set) {
-    sprite_copy->set = layer_new_copy (sprite->set);
+    sprite_copy->set = layer_new_copy(sprite->set);
     if (!sprite_copy->set) {
-      sprite_free (sprite_copy);
+      sprite_free(sprite_copy);
       return NULL;
     }
 
     /* setup the layer set */
-    layer_set_parent (sprite_copy->set, (GfxObj *)sprite_copy);
+    layer_set_parent(sprite_copy->set, (GfxObj *)sprite_copy);
   }
 
   /* selected layer */
   if (sprite->layer) { 
-    selected_layer = sprite_layer2index (sprite, sprite->layer);
-    sprite_copy->layer = sprite_index2layer (sprite_copy, selected_layer);
+    selected_layer = sprite_layer2index(sprite, sprite->layer);
+    sprite_copy->layer = sprite_index2layer(sprite_copy, selected_layer);
   }
 
-  sprite_generate_mask_boundaries (sprite_copy);
+  sprite_generate_mask_boundaries(sprite_copy);
 
   return sprite_copy;
 }

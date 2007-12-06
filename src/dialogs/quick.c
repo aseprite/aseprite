@@ -59,10 +59,10 @@ static void do_quick (int action)
   Image *dst;
   Mask *mask_backup;
 
-  if (!is_interactive () || !sprite)
+  if (!is_interactive() || !sprite)
     return;
 
-  dst = GetImage2 (sprite, &x, &y, NULL);
+  dst = GetImage2(sprite, &x, &y, NULL);
   if (!dst)
     return;
 
@@ -70,7 +70,7 @@ static void do_quick (int action)
   dst_layer = sprite->layer;
 
   /* create a new layer from the mask */
-  handle_layer = NewLayerFromMask ();
+  handle_layer = NewLayerFromMask(sprite, sprite);
   if (!handle_layer)
     return;
 
@@ -84,36 +84,36 @@ static void do_quick (int action)
 
   /* save the current mask region */
   if (action != ACTION_COPY) {
-    dirty_rectfill (dirty,
-		    sprite->mask->x-x,
-		    sprite->mask->y-y,
-		    sprite->mask->x-x + sprite->mask->w-1,
-		    sprite->mask->y-y + sprite->mask->h-1);
+    dirty_rectfill(dirty,
+		   sprite->mask->x-x,
+		   sprite->mask->y-y,
+		   sprite->mask->x-x + sprite->mask->w-1,
+		   sprite->mask->y-y + sprite->mask->h-1);
 
-    dirty_get (dirty);
+    dirty_get(dirty);
   }
 
   /* clear the mask region */
   if (action == ACTION_MOVE) {
-    int enabled = undo_is_enabled (sprite->undo);
-    undo_disable (sprite->undo);
-    ClearMask ();
+    int enabled = undo_is_enabled(sprite->undo);
+    undo_disable(sprite->undo);
+    ClearMask();
     if (enabled)
-      undo_enable (sprite->undo);
+      undo_enable(sprite->undo);
   }
 
   /* copy the mask */
-  mask_backup = mask_new_copy (sprite->mask);
+  mask_backup = mask_new_copy(sprite->mask);
 
   /* deselect the mask */
-  mask_none (sprite->mask);
+  mask_none(sprite->mask);
 
   /* insert the new layer in the top of the current one */
-  layer_add_layer (sprite->set, handle_layer);
-  layer_move_layer (sprite->set, handle_layer, dst_layer);
+  layer_add_layer(sprite->set, handle_layer);
+  layer_move_layer(sprite->set, handle_layer, dst_layer);
 
   /* select the layer */
-  sprite_set_layer (sprite, handle_layer);
+  sprite_set_layer(sprite, handle_layer);
 
   /* regenerate the boundaries (the mask was deselected) and redraw
      the sprite */
@@ -121,79 +121,79 @@ static void do_quick (int action)
   update_screen_for_sprite(sprite);
 
   /* move the new layer to a new position */
-  ret = interactive_move_layer (MODE_CLICKANDCLICK, FALSE, my_callback);
+  ret = interactive_move_layer(MODE_CLICKANDCLICK, FALSE, my_callback);
 
   /* all ok, merge the layer down */
   if (ret) {
     int u, v;
-    Image *src = GetImage2 (sprite, &u, &v, NULL);
-    Dirty *dirty_copy = dirty_new_copy (dirty);
+    Image *src = GetImage2(sprite, &u, &v, NULL);
+    Dirty *dirty_copy = dirty_new_copy(dirty);
 
     /* restore the "dst" image */
-    dirty_swap (dirty_copy);
+    dirty_swap(dirty_copy);
 
     /* save the mask area in the new position too */
-    dirty_rectfill (dirty, u-x, v-y,
-		    u-x + src->w-1,
-		    v-y + src->h-1);
-    dirty_get (dirty);
+    dirty_rectfill(dirty, u-x, v-y,
+		   u-x + src->w-1,
+		   v-y + src->h-1);
+    dirty_get(dirty);
 
     /* put the first cleared part */
-    dirty_put (dirty_copy);
-    dirty_free (dirty_copy);
+    dirty_put(dirty_copy);
+    dirty_free(dirty_copy);
 
     switch (action) {
 
       case ACTION_MOVE:
       case ACTION_COPY:
 	/* merge the source image in the destination */
-	image_merge (dst, src, u-x, v-y, 255, handle_layer->blend_mode);
+	image_merge(dst, src, u-x, v-y, 255, handle_layer->blend_mode);
 	break;
 
       case ACTION_SWAP:
 	/* swap areas */
-	/* sprite_set_mask (sprite, mask_backup); */
-	/* image_swap (dst, src, u-x, v-y); */
+	/* sprite_set_mask(sprite, mask_backup); */
+	/* image_swap(dst, src, u-x, v-y); */
 	break;
     }
 
     /* restore the mask */
-    sprite_set_mask (sprite, mask_backup);
+    sprite_set_mask(sprite, mask_backup);
 
     /* insert the undo operation */
     if (undo_is_enabled (sprite->undo)) {
-      undo_open (sprite->undo);
-      undo_dirty (sprite->undo, dirty);
-      undo_int (sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->x);
-      undo_int (sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->y);
-      undo_close (sprite->undo);
+      undo_open(sprite->undo);
+      undo_dirty(sprite->undo, dirty);
+      undo_int(sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->x);
+      undo_int(sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->y);
+      undo_close(sprite->undo);
     }
 
     /* move the mask to the new position */
-    mask_move (sprite->mask, u-(sprite->mask->x-x), v-(sprite->mask->y-y));
-    sprite_generate_mask_boundaries (sprite);
+    mask_move(sprite->mask, u-(sprite->mask->x-x), v-(sprite->mask->y-y));
+    sprite_generate_mask_boundaries(sprite);
   }
   /* user cancels the operation */
   else {
     /* restore the "dst" image */
-    dirty_put (dirty);
+    dirty_put(dirty);
 
     /* restore the mask */
-    sprite_set_mask (sprite, mask_backup);
-    sprite_generate_mask_boundaries (sprite);
+    sprite_set_mask(sprite, mask_backup);
+    sprite_generate_mask_boundaries(sprite);
   }
 
   /* free the mask copy */
-  mask_free (mask_backup);
+  mask_free(mask_backup);
 
   /* free the dirty */
-  dirty_free (dirty);
+  dirty_free(dirty);
 
   /* select the destination layer */
-  sprite_set_layer (sprite, dst_layer);
+  sprite_set_layer(sprite, dst_layer);
 
   /* remove the temporary created layer */
-  layer_remove_layer ((Layer *)handle_layer->parent, handle_layer);
+  layer_remove_layer((Layer *)handle_layer->parent, handle_layer);
 
   /* refresh the sprite */
   update_screen_for_sprite(sprite);

@@ -117,7 +117,7 @@ bool has_clipboard_image(int *w, int *h)
   }
 }
 
-void copy_image_to_clipboard(struct Image *image)
+void copy_image_to_clipboard(Image *image)
 {
   Sprite *sprite;
   Image *dest;
@@ -138,7 +138,7 @@ void cut_to_clipboard(void)
   if (!current_sprite)
     return;
 
-  if (!low_copy ())
+  if (!low_copy())
     console_printf ("Can't copying an image portion from the current layer\n");
   else {
     ClearMask ();
@@ -164,7 +164,9 @@ void paste_from_clipboard(void)
   int xout[4], yout[4];
   bool paste;
 
-  if (!current_sprite || current_sprite == clipboard || !clipboard->layer ||
+  if (!current_sprite ||
+      current_sprite == clipboard ||
+      !clipboard->layer ||
       !is_interactive())
     return;
 
@@ -636,13 +638,18 @@ static int low_copy(void)
   Sprite *sprite;
   Layer *layer;
 
-  layer = NewLayerFromMask();
-  if (!layer)
-    return FALSE;
-
   sprite = sprite_new(current_sprite->imgtype,
 		      current_sprite->w,
 		      current_sprite->h);
+  if (!sprite)
+    return FALSE;
+
+  layer = NewLayerFromMask(current_sprite, sprite);
+  if (!layer) {
+    sprite_free(sprite);
+    return FALSE;
+  }
+
   layer_add_layer(sprite->set, layer);
   sprite_set_layer(sprite, layer);
   sprite_set_frame(sprite, current_sprite->frame);
