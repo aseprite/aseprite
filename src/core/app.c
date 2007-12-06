@@ -240,9 +240,6 @@ void app_loop(void)
     jmanager_refresh_screen();
   }
 
-  /* load all startup scripts */
-  load_all_scripts();
-
   /* set background mode for non-GUI modes */
 /*   if (!(ase_mode & MODE_GUI)) */
 /*     set_display_switch_mode(SWITCH_BACKAMNESIA); */

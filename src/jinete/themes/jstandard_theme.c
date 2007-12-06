@@ -36,7 +36,7 @@
 #include "jinete/jintern.h"
 
 /* data related */
-#include "stdicons.c"
+#include "jstandard_theme_icons.h"
 #include "pcx2data.c"
 
 #define CHARACTER_LENGTH(f, c)	((f)->vtable->char_length ((f), (c)))

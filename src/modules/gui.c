@@ -368,19 +368,21 @@ void gui_feedback(void)
 
   /* double buffering? */
   if (double_buffering) {
-/*     jmanager_dispatch_draw_messages(); */
     jmouse_draw_cursor();
 
-    if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
-      blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    if (ji_dirty_region) {
+      ji_flip_dirty_region();
     }
     else {
-      stretch_blit(ji_screen, screen,
-		   0, 0, ji_screen->w, ji_screen->h,
-		   0, 0, SCREEN_W, SCREEN_H);
+      if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
+	blit(ji_screen, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+      }
+      else {
+	stretch_blit(ji_screen, screen,
+		     0, 0, ji_screen->w, ji_screen->h,
+		     0, 0, SCREEN_W, SCREEN_H);
+      }
     }
-
-/*     jmanager_dispatch_draw_messages(); */
   }
 }
 

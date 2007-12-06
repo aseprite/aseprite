@@ -336,7 +336,7 @@ bool jmanager_poll(JWidget manager, bool all_windows)
 	 that aren't the desktop) */
       if (msg->type == JM_BUTTONPRESSED) {
 	JWidget window = jwidget_get_window(mouse_widget);
-	JWidget win_manager = window ? jwindow_get_manager(window): NULL;
+	JWidget win_manager = window ? jwidget_get_manager(window): NULL;
 
 	if ((window) &&
 	    (!jwindow_is_desktop (window)) &&
@@ -1080,6 +1080,10 @@ static void dispatch_msgs(void)
 	/* restore clip */
 	if (msg->type == JM_DRAW) {
 	  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+
+	  /* dirty rectangles */
+	  if (ji_dirty_region)
+	    ji_add_dirty_rect(&msg->draw.rect);
 
 	  release_bitmap(ji_screen);
 	  jmouse_show();

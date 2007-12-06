@@ -31,8 +31,8 @@
 
 #endif
 
-static Sprite *load_PCX (const char *filename);
-static int save_PCX (Sprite *sprite);
+static Sprite *load_PCX(const char *filename);
+static int save_PCX(Sprite *sprite);
 
 FileFormat format_pcx =
 {
@@ -46,7 +46,7 @@ FileFormat format_pcx =
   FILE_SUPPORT_SEQUENCES
 };
 
-static Sprite *load_PCX (const char *filename)
+static Sprite *load_PCX(const char *filename)
 {
   Image *image;
   PACKFILE *f;
@@ -178,7 +178,7 @@ static Sprite *load_PCX (const char *filename)
   return file_sequence_sprite ();
 }
 
-static int save_PCX (Sprite *sprite)
+static int save_PCX(Sprite *sprite)
 {
   PACKFILE *f;
   Image *image;

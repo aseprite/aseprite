@@ -118,7 +118,7 @@ COMMON_SOURCES =					\
 	src/jinete/jalert.c				\
 	src/jinete/jbox.c				\
 	src/jinete/jbutton.c				\
-	src/jinete/jclipbrd.c				\
+	src/jinete/jclipboard.c				\
 	src/jinete/jcombox.c				\
 	src/jinete/jdraw.c				\
 	src/jinete/jentry.c				\
@@ -137,7 +137,7 @@ COMMON_SOURCES =					\
 	src/jinete/jmenu.c				\
 	src/jinete/jmessage.c				\
 	src/jinete/jpanel.c				\
-	src/jinete/jqckmenu.c				\
+	src/jinete/jquickmenu.c				\
 	src/jinete/jrect.c				\
 	src/jinete/jregion.c				\
 	src/jinete/jsep.c				\
@@ -150,8 +150,7 @@ COMMON_SOURCES =					\
 	src/jinete/jwidget.c				\
 	src/jinete/jwindow.c				\
 	src/jinete/jxml.c				\
-	src/jinete/themes/jsimple.c			\
-	src/jinete/themes/jstand.c			\
+	src/jinete/themes/jstandard_theme.c		\
 	src/modules/color.c				\
 	src/modules/editors.c				\
 	src/modules/gfx.c				\
@@ -214,14 +213,14 @@ COMMON_SOURCES =					\
 	src/widgets/target.c				\
 	src/widgets/toolbar.c
 
-COMMON_OBJS = $(addprefix $(OBJ_DIR)/,			\
-	     $(addsuffix $(OBJ),			\
-	       $(notdir $(basename $(COMMON_SOURCES)))))
+COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
+	        $(addsuffix $(OBJ),				\
+	          $(notdir $(basename $(COMMON_SOURCES)))))
 
 ASE_SOURCES = src/main.c $(COMMON_SOURCES)
 
-ASE_OBJS = $(addprefix $(OBJ_DIR)/,			\
-	     $(addsuffix $(OBJ),			\
+ASE_OBJS = $(addprefix $(OBJ_DIR)/,				\
+	     $(addsuffix $(OBJ),				\
 	       $(notdir $(basename $(ASE_SOURCES)))))
 
 ######################################################################

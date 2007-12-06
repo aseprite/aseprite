@@ -30,12 +30,14 @@
 #include "file/file.h"
 #include "raster/raster.h"
 #include "script/script.h"
+
+#define PNG_NO_TYPECAST_NULL
 #include "png.h"
 
 #endif
 
-static Sprite *load_png(const char *filename);
-static int save_png(Sprite *sprite);
+static Sprite *load_PNG(const char *filename);
+static int save_PNG(Sprite *sprite);
 
 /* static int configure_png(void); */
 
@@ -43,8 +45,8 @@ FileFormat format_png =
 {
   "png",
   "png",
-  load_png,
-  save_png,
+  load_PNG,
+  save_PNG,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_RGBA |
   FILE_SUPPORT_GRAY |
@@ -53,56 +55,18 @@ FileFormat format_png =
   FILE_SUPPORT_SEQUENCES
 };
 
-/* static void progress_monitor(j_common_ptr cinfo) */
-/* { */
-/*   if (cinfo->progress->pass_limit > 1) */
-/*     do_progress(100 * */
-/* 		(cinfo->progress->pass_counter) / */
-/* 		(cinfo->progress->pass_limit-1)); */
-/* } */
-
-/* struct error_mgr { */
-/*   struct jpeg_error_mgr pub; */
-/*   jmp_buf setjmp_buffer; */
-/* }; */
-
-/* static void error_exit(j_common_ptr cinfo) */
-/* { */
-/*   /\* Display the message.  *\/ */
-/*   (*cinfo->err->output_message)(cinfo); */
-
-/*   /\* Return control to the setjmp point.  *\/ */
-/*   longjmp(((struct error_mgr *)cinfo->err)->setjmp_buffer, 1); */
-/* } */
-
-/* static void output_message(j_common_ptr cinfo) */
-/* { */
-/*   char buffer[JMSG_LENGTH_MAX]; */
-
-/*   /\* Format the message.  *\/ */
-/*   (*cinfo->err->format_message)(cinfo, buffer); */
-
-/*   /\* Put in the log file if.  *\/ */
-/*   PRINTF("JPEG library: \"%s\"\n", buffer); */
-
-/*   /\* Leave the message for the application.  *\/ */
-/*   console_printf("%s\n", buffer); */
-/* } */
-
 static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
   console_printf("libpng: %s\n", error);
 }
 
-static Sprite *load_png(const char *filename)
+static Sprite *load_PNG(const char *filename)
 {
   png_uint_32 width, height, y;
   unsigned int sig_read = 0;
   png_structp png_ptr;
   png_infop info_ptr;
   int bit_depth, color_type, interlace_type;
-  int intent, screen_gamma;
-  int max_screen_colors = 256;
   int pass, number_passes;
   int num_palette;
   png_colorp palette;
@@ -186,10 +150,6 @@ static Sprite *load_png(const char *filename)
   if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
     png_set_gray_1_2_4_to_8(png_ptr);
 
-  /* Note that screen gamma is the display_exponent, which includes
-   * the CRT_exponent and any correction for viewing conditions */
-  screen_gamma = 2.2;
-
   /* Turn on interlace handling.  REQUIRED if you are not using
    * png_read_image().  To see how to handle interlacing passes,
    * see the png_read_row() method below:
@@ -203,16 +163,16 @@ static Sprite *load_png(const char *filename)
 
   /* create the output image */
   switch (info_ptr->color_type) {
+    case PNG_COLOR_TYPE_RGB: 
+    case PNG_COLOR_TYPE_RGB_ALPHA:
+      imgtype = IMAGE_RGB;
+      break;
     case PNG_COLOR_TYPE_GRAY:
     case PNG_COLOR_TYPE_GRAY_ALPHA:
       imgtype = IMAGE_GRAYSCALE;
       break;
     case PNG_COLOR_TYPE_PALETTE:
       imgtype = IMAGE_INDEXED;
-      break;
-    case PNG_COLOR_TYPE_RGB: 
-    case PNG_COLOR_TYPE_RGB_ALPHA:
-      imgtype = IMAGE_RGB;
       break;
     default:
       console_printf("Color type not supported\n)");
@@ -252,13 +212,14 @@ static Sprite *load_png(const char *filename)
   row_pointer = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
   for (pass = 0; pass < number_passes; pass++) {
     for (y = 0; y < height; y++) {
+      /* read the line */
       png_read_row(png_ptr, row_pointer, png_bytepp_NULL);
 
       /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-	unsigned char *src_address = row_pointer;
-	unsigned long *dst_address = ((unsigned long **)image->line)[y];
-	int x, r, g, b, a;
+	register unsigned char *src_address = row_pointer;
+	register unsigned long *dst_address = ((unsigned long **)image->line)[y];
+	register int x, r, g, b, a;
 
 	for (x=0; x<width; x++) {
 	  r = *(src_address++);
@@ -270,9 +231,9 @@ static Sprite *load_png(const char *filename)
       }
       /* RGB */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
-	unsigned char *src_address = row_pointer;
-	unsigned long *dst_address = ((unsigned long **)image->line)[y];
-	int x, r, g, b;
+	register unsigned char *src_address = row_pointer;
+	register unsigned long *dst_address = ((unsigned long **)image->line)[y];
+	register int x, r, g, b;
 
 	for (x=0; x<width; x++) {
 	  r = *(src_address++);
@@ -283,9 +244,9 @@ static Sprite *load_png(const char *filename)
       }
       /* GRAY_ALPHA */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-	unsigned char *src_address = row_pointer;
-	unsigned short *dst_address = ((unsigned short **)image->line)[y];
-	int x, k, a;
+	register unsigned char *src_address = row_pointer;
+	register unsigned short *dst_address = ((unsigned short **)image->line)[y];
+	register int x, k, a;
 
 	for (x=0; x<width; x++) {
 	  k = *(src_address++);
@@ -295,8 +256,8 @@ static Sprite *load_png(const char *filename)
       }
       /* GRAY */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
-	unsigned char *src_address = row_pointer;
-	unsigned short *dst_address = ((unsigned short **)image->line)[y];
+	register unsigned char *src_address = row_pointer;
+	register unsigned short *dst_address = ((unsigned short **)image->line)[y];
 	int x, k;
 
 	for (x=0; x<width; x++) {
@@ -306,9 +267,9 @@ static Sprite *load_png(const char *filename)
       }
       /* PALETTE */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
-	unsigned char *src_address = row_pointer;
-	unsigned char *dst_address = ((unsigned char **)image->line)[y];
-	int x, c;
+	register unsigned char *src_address = row_pointer;
+	register unsigned char *dst_address = ((unsigned char **)image->line)[y];
+	register int x, c;
 
 	for (x=0; x<width; x++) {
 	  c = *(src_address++);
@@ -331,150 +292,216 @@ static Sprite *load_png(const char *filename)
   return file_sequence_sprite();
 }
 
-static int save_png(Sprite *sprite)
+static int save_PNG(Sprite *sprite)
 {
-#if 0
-  struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
-  struct jpeg_progress_mgr progress;
-  FILE *file;
-  JSAMPARRAY buffer;
-  JDIMENSION buffer_height;
+  png_uint_32 width, height, y;
+  png_structp png_ptr;
+  png_infop info_ptr;
+  png_colorp palette;
+  png_bytep row_pointer;
+  int color_type;
   Image *image;
-  int c;
-  int smooth;
-  int quality;
-  J_DCT_METHOD method;
+  int pass, number_passes;
+  FILE *fp;
 
-  /* Configure JPEG compression only in the first frame.  */
-  if (sprite->frpos == 0 && configure_jpeg() < 0)
-    return 0;
+  /* open the file */
+  fp = fopen(sprite->filename, "wb");
+  if (fp == NULL)
+    return -1;
 
-  /* Options.  */
-  smooth = get_config_int("JPEG", "Smooth", 0);
-  quality = get_config_int("JPEG", "Quality", 100);
-  method = get_config_int("JPEG", "Method", JDCT_DEFAULT);
-
-  /* Open the file for write in it.  */
-  file = fopen(sprite->filename, "wb");
-  if (!file) {
-    console_printf(_("Error creating file.\n"));
+  /* Create and initialize the png_struct with the desired error handler
+   * functions.  If you want to use the default stderr and longjump method,
+   * you can supply NULL for the last three parameters.  We also check that
+   * the library version is compatible with the one used at compile time,
+   * in case we are using dynamically linked libraries.  REQUIRED.
+   */
+  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
+				    report_png_error, report_png_error);
+  if (png_ptr == NULL) {
+    fclose(fp);
     return -1;
   }
 
+  /* Allocate/initialize the image information data.  REQUIRED */
+  info_ptr = png_create_info_struct(png_ptr);
+  if (info_ptr == NULL) {
+    fclose(fp);
+    png_destroy_write_struct(&png_ptr, png_infopp_NULL);
+    return -1;
+  }
+
+  /* Set error handling.  REQUIRED if you aren't supplying your own
+   * error handling functions in the png_create_write_struct() call.
+   */
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    /* If we get here, we had a problem reading the file */
+    fclose(fp);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    return -1;
+  }
+
+  /* set up the output control if you are using standard C streams */
+  png_init_io(png_ptr, fp);
+
+  /* Set the image information here.  Width and height are up to 2^31,
+   * bit_depth is one of 1, 2, 4, 8, or 16, but valid values also depend on
+   * the color_type selected. color_type is one of PNG_COLOR_TYPE_GRAY,
+   * PNG_COLOR_TYPE_GRAY_ALPHA, PNG_COLOR_TYPE_PALETTE, PNG_COLOR_TYPE_RGB,
+   * or PNG_COLOR_TYPE_RGB_ALPHA.  interlace is either PNG_INTERLACE_NONE or
+   * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
+   * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
+   */
   image = file_sequence_image_to_save();
+  width = image->w;
+  height = image->h;
 
-  /* Allocate and initialize JPEG compression object.  */
-  cinfo.err = jpeg_std_error(&jerr);
-  jpeg_create_compress(&cinfo);
-
-  /* Specify data destination file.  */
-  jpeg_stdio_dest(&cinfo, file);
-
-  /* Set parameters for compression.  */
-  cinfo.image_width = image->w;
-  cinfo.image_height = image->h;
-
-  if (image->imgtype == IMAGE_GRAYSCALE) {
-    cinfo.input_components = 1;
-    cinfo.in_color_space = JCS_GRAYSCALE;
-  }
-  else {
-    cinfo.input_components = 3;
-    cinfo.in_color_space = JCS_RGB;
+  switch (image->imgtype) {
+    case IMAGE_RGB:
+      color_type = _rgba_geta(sprite->bgcolor) < 255 ?
+	PNG_COLOR_TYPE_RGB_ALPHA:
+	PNG_COLOR_TYPE_RGB;
+      break;
+    case IMAGE_GRAYSCALE:
+      color_type = _graya_geta(sprite->bgcolor) < 255 ?
+	PNG_COLOR_TYPE_GRAY_ALPHA:
+	PNG_COLOR_TYPE_GRAY;
+      break;
+    case IMAGE_INDEXED:
+      color_type = PNG_COLOR_TYPE_PALETTE;
+      break;
   }
 
-  jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, quality, TRUE);
-  cinfo.dct_method = method;
-  cinfo.smoothing_factor = smooth;
+  png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
+	       PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-  /* Start compressor.  */
-  jpeg_start_compress(&cinfo, TRUE);
+  if (image->imgtype == IMAGE_INDEXED) {
+    int c, r, g, b;
 
-  /* Create the buffer.  */
-  buffer_height = 1;
-  buffer = jmalloc(sizeof(JSAMPROW) * buffer_height);
-  if (!buffer) {
-    console_printf(_("Not enough memory for the buffer.\n"));
-    jpeg_destroy_compress(&cinfo);
-    fclose(file);
-    return -1;
-  }
-
-  for (c=0; c<(int)buffer_height; c++) {
-    buffer[c] = jmalloc(sizeof(JSAMPLE) *
-			cinfo.image_width * cinfo.num_components);
-    if (!buffer[c]) {
-      console_printf(_("Not enough memory for buffer scanlines.\n"));
-      for (c--; c>=0; c--)
-        jfree(buffer[c]);
-      jfree(buffer);
-      jpeg_destroy_compress(&cinfo);
-      fclose(file);
-      return -1;
-    }
-  }
-
-  /* For progress bar.  */
-  progress.progress_monitor = progress_monitor;
-  cinfo.progress = &progress;
-
-  /* Write each scan line.  */
-  while (cinfo.next_scanline < cinfo.image_height) {
-    /* RGB */
-    if (image->imgtype == IMAGE_RGB) {
-      unsigned long *src_address;
-      unsigned char *dst_address;
-      int x, y;
-      for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((unsigned long **)image->line)[cinfo.next_scanline+y];
-        dst_address = ((unsigned char **)buffer)[y];
-        for (x=0; x<image->w; x++) {
-          c = *(src_address++);
-          *(dst_address++) = _rgba_getr(c);
-          *(dst_address++) = _rgba_getg(c);
-          *(dst_address++) = _rgba_getb(c);
-        }
-      }
-    }
-    /* Grayscale */
-    else {
-      unsigned short *src_address;
-      unsigned char *dst_address;
-      int x, y;
-      for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((unsigned short **)image->line)[cinfo.next_scanline+y];
-        dst_address = ((unsigned char **)buffer)[y];
-        for (x=0; x<image->w; x++)
-          *(dst_address++) = _graya_getk(*(src_address++));
-      }
-    }
-    jpeg_write_scanlines(&cinfo, buffer, buffer_height);
-  }
-
-  /* Destroy all data.  */
-  for (c=0; c<(int)buffer_height; c++)
-    jfree(buffer[c]);
-  jfree(buffer);
-
-  /* Finish compression.  */
-  jpeg_finish_compress(&cinfo);
-
-  /* Release JPEG compression object.  */
-  jpeg_destroy_compress(&cinfo);
-
-  /* We can close the output file.  */
-  fclose(file);
-
-  /* All fine.  */
-  return 0;
-#else
-  return -1;
+#if PNG_MAX_PALETTE_LENGTH != 256
+#error PNG_MAX_PALETTE_LENGTH should be 256
 #endif
+
+    /* set the palette if there is one.  REQUIRED for indexed-color images */
+    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH
+					      * png_sizeof(png_color));
+    /* ... set palette colors ... */
+    for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
+      file_sequence_get_color(c, &r, &g, &b);
+      palette[c].red   = _rgb_scale_6[r];
+      palette[c].green = _rgb_scale_6[g];
+      palette[c].blue  = _rgb_scale_6[b];
+    }
+
+    png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
+  }
+
+  /* Write the file header information. */
+  png_write_info(png_ptr, info_ptr);
+
+  /* pack pixels into bytes */
+  png_set_packing(png_ptr);
+
+  /* non-interlaced */
+  number_passes = 1;
+
+  row_pointer = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
+
+  /* The number of passes is either 1 for non-interlaced images,
+   * or 7 for interlaced images.
+   */
+  for (pass = 0; pass < number_passes; pass++) {
+    /* If you are only writing one row at a time, this works */
+    for (y = 0; y < height; y++) {
+      /* RGB_ALPHA */
+      if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
+	register unsigned long *src_address = ((unsigned long **)image->line)[y];
+	register unsigned char *dst_address = row_pointer;
+	register int x, c;
+
+	for (x=0; x<width; x++) {
+	  c = *(src_address++);
+	  *(dst_address++) = _rgba_getr(c);
+	  *(dst_address++) = _rgba_getg(c);
+	  *(dst_address++) = _rgba_getb(c);
+	  *(dst_address++) = _rgba_geta(c);
+	}
+      }
+      /* RGB */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
+	register unsigned long *src_address = ((unsigned long **)image->line)[y];
+	register unsigned char *dst_address = row_pointer;
+	register int x, c;
+
+	for (x=0; x<width; x++) {
+	  c = *(src_address++);
+	  *(dst_address++) = _rgba_getr(c);
+	  *(dst_address++) = _rgba_getg(c);
+	  *(dst_address++) = _rgba_getb(c);
+	}
+      }
+      /* GRAY_ALPHA */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+	register unsigned short *src_address = ((unsigned short **)image->line)[y];
+	register unsigned char *dst_address = row_pointer;
+	register int x, c;
+
+	for (x=0; x<width; x++) {
+	  c = *(src_address++);
+	  *(dst_address++) = _graya_getk(c);
+	  *(dst_address++) = _graya_geta(c);
+	}
+      }
+      /* GRAY */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
+	register unsigned short *src_address = ((unsigned short **)image->line)[y];
+	register unsigned char *dst_address = row_pointer;
+	register int x, c;
+
+	for (x=0; x<width; x++) {
+	  c = *(src_address++);
+	  *(dst_address++) = _graya_getk(c);
+	}
+      }
+      /* PALETTE */
+      else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
+	register unsigned char *src_address = ((unsigned char **)image->line)[y];
+	register unsigned char *dst_address = row_pointer;
+	register int x;
+
+	for (x=0; x<width; x++)
+	  *(dst_address++) = *(src_address++);
+      }
+
+      /* write the line */
+      png_write_rows(png_ptr, &row_pointer, 1);
+      do_progress(100 * y / height);
+    }
+  }
+
+  png_free(png_ptr, row_pointer);
+
+  /* It is REQUIRED to call this to finish writing the rest of the file */
+  png_write_end(png_ptr, info_ptr);
+
+  /* If you png_malloced a palette, free it here (don't free info_ptr->palette,
+     as recommended in versions 1.0.5m and earlier of this example; if
+     libpng mallocs info_ptr->palette, libpng will free it).  If you
+     allocated it with malloc() instead of png_malloc(), use free() instead
+     of png_free(). */
+  png_free(png_ptr, palette);
+  palette = NULL;
+
+  /* clean up after the write, and free any memory allocated */
+  png_destroy_write_struct(&png_ptr, &info_ptr);
+
+  /* close the file */
+  fclose(fp);
+
+  /* all right */
+  return 0;
 }
 
-/* static int configure_jpeg(void) */
+/* static int configure_png(void) */
 /* { */
 /*   /\* interactive mode *\/ */
 /*   if (is_interactive()) { */

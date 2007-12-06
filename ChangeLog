@@ -1,3 +1,12 @@
+2007-12-05  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/statebar.c (status_bar_set_text): Uses dirty
+	region. This optimized the speed of the loading bar.
+
+	* src/jinete/jsystem.c (ji_flip_dirty_region): Added dirty region.
+
+	* src/file/png_format.c (save_png): Added.
+
 2007-12-03  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/raster/sprite.h (struct Sprite): Added "stock" (now the

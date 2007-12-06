@@ -45,8 +45,14 @@ JI_BEGIN_DECLS
 #define JI_SCREEN_H ((ji_screen == screen) ? SCREEN_H: ji_screen->h)
 
 extern struct BITMAP *ji_screen;
+extern JRegion ji_dirty_region;
 
 void ji_set_screen(struct BITMAP *bmp);
+
+void ji_add_dirty_rect(JRect rect);
+void ji_add_dirty_region(JRegion region);
+void ji_flip_dirty_region(void);
+void ji_flip_rect(JRect rect);
 
 /***********************************************************************/
 /* strings related */

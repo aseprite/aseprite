@@ -609,6 +609,18 @@ JWidget jwidget_get_window(JWidget widget)
   return NULL;
 }
 
+JWidget jwidget_get_manager(JWidget widget)
+{
+  while (widget) {
+    if (widget->type == JI_MANAGER)
+      return widget;
+
+    widget = widget->parent;
+  }
+
+  return ji_get_default_manager();
+}
+
 /* returns a list of parents (you must free the list), if "ascendant"
    is TRUE the list is build from child to parents, else the list is
    from parent to children */
@@ -711,8 +723,8 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 
   /* cut the top windows areas */
   if (flags & JI_GDR_CUTTOPWINDOWS) {
-    window = jwidget_get_window (widget);
-    manager = window ? jwindow_get_manager (window): NULL;
+    window = jwidget_get_window(widget);
+    manager = window ? jwidget_get_manager(window): NULL;
 
     while (manager) {
       windows_list = manager->children;
@@ -730,7 +742,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
       }
 
       window = jwidget_get_window(manager);
-      manager = window ? jwindow_get_manager(window): NULL;
+      manager = window ? jwidget_get_manager(window): NULL;
     }
   }
 
@@ -787,7 +799,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 
   /* limit to the manager area */
   window = jwidget_get_window(widget);
-  manager = window ? jwindow_get_manager(window): NULL;
+  manager = window ? jwidget_get_manager(window): NULL;
 
   while (manager) {
     view = jwidget_get_view(manager);
@@ -805,8 +817,8 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     jregion_free (reg1);
     jrect_free (cpos);
 
-    window = jwidget_get_window (manager);
-    manager = window ? jwindow_get_manager (window): NULL;
+    window = jwidget_get_window(manager);
+    manager = window ? jwidget_get_manager(window): NULL;
   }
 
   /* return the region */
@@ -1074,7 +1086,7 @@ void jwidget_invalidate_region(JWidget widget, const JRegion region)
       jregion_rect_in(region, widget->rc) != JI_RGNOUT) {
     JRegion reg1 = jregion_new(NULL, 0);
     JRegion reg2 = jwidget_get_drawable_region(widget,
-						 JI_GDR_CUTTOPWINDOWS);
+					       JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
     jregion_union(reg1, widget->update_region, region);

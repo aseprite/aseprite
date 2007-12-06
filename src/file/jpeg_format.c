@@ -38,8 +38,8 @@
 
 #include "jpeglib.h"
 
-static Sprite *load_jpeg(const char *filename);
-static int save_jpeg(Sprite *sprite);
+static Sprite *load_JPEG(const char *filename);
+static int save_JPEG(Sprite *sprite);
 
 static int configure_jpeg(void);
 
@@ -47,8 +47,8 @@ FileFormat format_jpeg =
 {
   "jpeg",
   "jpeg,jpg",
-  load_jpeg,
-  save_jpeg,
+  load_JPEG,
+  save_JPEG,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_GRAY |
   FILE_SUPPORT_SEQUENCES
@@ -90,7 +90,7 @@ static void output_message(j_common_ptr cinfo)
   console_printf("%s\n", buffer);
 }
 
-static Sprite *load_jpeg(const char *filename)
+static Sprite *load_JPEG(const char *filename)
 {
   struct jpeg_decompress_struct cinfo;
   struct error_mgr jerr;
@@ -233,7 +233,7 @@ static Sprite *load_jpeg(const char *filename)
   return file_sequence_sprite();
 }
 
-static int save_jpeg(Sprite *sprite)
+static int save_JPEG(Sprite *sprite)
 {
   struct jpeg_compress_struct cinfo;
   struct jpeg_error_mgr jerr;

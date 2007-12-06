@@ -31,8 +31,8 @@
 
 #endif
 
-static Sprite *load_BMP (const char *filename);
-static int save_BMP (Sprite *sprite);
+static Sprite *load_BMP(const char *filename);
+static int save_BMP(Sprite *sprite);
 
 FileFormat format_bmp =
 {
@@ -500,7 +500,7 @@ static void read_bitfields_image (PACKFILE *f, Image *image, int bpp, BITMAPINFO
   }
 }
 
-static Sprite *load_BMP (const char *filename)
+static Sprite *load_BMP(const char *filename)
 {
   BITMAPFILEHEADER fileheader;
   BITMAPINFOHEADER infoheader;
@@ -618,7 +618,7 @@ static Sprite *load_BMP (const char *filename)
   return sprite;
 }
 
-static int save_BMP (Sprite *sprite)
+static int save_BMP(Sprite *sprite)
 {
   Image *image;
   PACKFILE *f;

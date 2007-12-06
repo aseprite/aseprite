@@ -34,7 +34,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "jinete/jclipbrd.h"
+#include "jinete/jclipboard.h"
 #include "jinete/jfont.h"
 #include "jinete/jmanager.h"
 #include "jinete/jmessage.h"

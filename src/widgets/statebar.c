@@ -150,7 +150,7 @@ void status_bar_set_text(JWidget widget, int msecs, const char *format, ...)
 
     widget->text = buf ? jstrdup (buf) : NULL;
     status_bar->timeout = ji_clock + JI_TICKS_PER_SEC*msecs/1000;
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
   }
 }
 
@@ -177,6 +177,8 @@ void status_bar_add_progress(JWidget widget, int max)
   status_bar->progress[n].max = max;
   status_bar->progress[n].pos = 0;
 
+  ji_dirty_region = jregion_new(NULL, 0);
+  
   jwidget_dirty(widget);
 }
 
@@ -193,6 +195,9 @@ void status_bar_del_progress(JWidget widget)
     jmanager_dispatch_messages();
     rest(5);
     jwidget_dirty(widget);
+
+    jregion_free(ji_dirty_region);
+    ji_dirty_region = NULL;
   }
 
   status_bar->nprogress--;

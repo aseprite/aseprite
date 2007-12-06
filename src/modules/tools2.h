@@ -19,12 +19,12 @@
 #ifndef MODULES_TOOLS2_H
 #define MODULES_TOOLS2_H
 
-void SetBrush (const char *string);
-void SetDrawMode (const char *string);
-void ToolTrace (const char *string);
+void SetBrush(const char *string);
+void SetDrawMode(const char *string);
+void ToolTrace(const char *string);
 
-void ResetConfig (void);
-void RestoreConfig (void);
+void ResetConfig(void);
+void RestoreConfig(void);
 
 #endif /* MODULES_TOOLS2_H */
 

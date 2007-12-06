@@ -40,7 +40,6 @@ JWidget jwindow_new(const char *text);
 JWidget jwindow_new_desktop(void);
 
 JWidget jwindow_get_killer(JWidget window);
-JWidget jwindow_get_manager(JWidget window);
 
 void jwindow_moveable(JWidget window, bool state);
 void jwindow_sizeable(JWidget window, bool state);

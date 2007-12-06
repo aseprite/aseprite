@@ -1,31 +1,20 @@
 #! /bin/sh
 
-# Jinete dependencies
-
 GCC="gcc -MM"
-CFLAGS="-Iinclude -Ifreetype/include"
-
-cd jinete
-$GCC $CFLAGS src/*.c						     \
-    | sed -e 's/^\([a-z_\-]*\.o\)/obj\/mingw32\/\1/' > makefile.dep
-cd ..
-
-# ASE dependencies
-
 CFLAGS="-I.					\
-	-Isrc -Ijinete/include -Ilibase		\
+	-Isrc					\
 	-Ithird_party/lua/include		\
 	-Ithird_party/gfli			\
 	-Ithird_party/intl			\
 	-Ithird_party/libpng			\
 	-Ithird_party/zlib			\
 	-Ithird_party/jpeg			\
-	-Ijinete/freetype/include		\
+	-Ithird_party/freetype/include		\
 	-Ithird_party"
 
 rm -f makefile.dep
 
-$GCC $CFLAGS jinete/src/*.c					     \
+$GCC $CFLAGS							     \
     src/*.c							     \
     src/commands/*.c						     \
     src/commands/fx/*.c						     \
@@ -35,6 +24,7 @@ $GCC $CFLAGS jinete/src/*.c					     \
     src/effect/*.c						     \
     src/file/*.c						     \
     src/intl/*.c						     \
+    src/jinete/*.c						     \
     src/modules/*.c						     \
     src/raster/*.c						     \
     src/script/bindings.c src/script/script.c			     \

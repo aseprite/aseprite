@@ -93,18 +93,6 @@ JWidget jwindow_get_killer(JWidget widget)
   return window->killer;
 }
 
-JWidget jwindow_get_manager(JWidget widget)
-{
-  while (widget) {
-    if (widget->type == JI_MANAGER)
-      return widget;
-
-    widget = widget->parent;
-  }
-
-  return ji_get_default_manager();
-}
-
 void jwindow_moveable(JWidget widget, bool state)
 {
   Window *window = jwidget_get_data(widget, JI_WINDOW); 
@@ -151,8 +139,8 @@ void jwindow_remap(JWidget widget)
 
 void jwindow_center(JWidget widget)
 {
-  Window *window = jwidget_get_data (widget, JI_WINDOW); 
-  JWidget manager = jwindow_get_manager (widget);
+  Window *window = jwidget_get_data(widget, JI_WINDOW); 
+  JWidget manager = jwidget_get_manager(widget);
 
   if (window->is_autoremap)
     jwindow_remap(widget);
@@ -205,7 +193,7 @@ void jwindow_open_fg(JWidget widget)
   JWidget manager;
 
   jwindow_open(widget);
-  manager = jwindow_get_manager(widget);
+  manager = jwidget_get_manager(widget);
 
   window->is_foreground = TRUE;
 
@@ -227,12 +215,12 @@ void jwindow_close(JWidget widget, JWidget killer)
 
   window->killer = killer;
 
-  _jmanager_close_window(jwindow_get_manager(widget), widget, TRUE, TRUE);
+  _jmanager_close_window(jwidget_get_manager(widget), widget, TRUE, TRUE);
 }
 
 bool jwindow_is_toplevel(JWidget widget)
 {
-  JWidget manager = jwindow_get_manager(widget);
+  JWidget manager = jwidget_get_manager(widget);
 
   if (!jlist_empty(manager->children))
     return (widget == jlist_first(manager->children)->data);
@@ -291,7 +279,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      _jmanager_close_window(jwindow_get_manager(widget), widget,
+      _jmanager_close_window(jwidget_get_manager(widget), widget,
 			     FALSE, FALSE);
       jfree(window);
       break;
@@ -434,7 +422,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 static void window_request_size(JWidget widget, int *w, int *h)
 {
   Window *window = jwidget_get_data(widget, JI_WINDOW);
-  JWidget manager = jwindow_get_manager(widget);
+  JWidget manager = jwidget_get_manager(widget);
 
   if (window->is_desktop) {
     JRect cpos = jwidget_get_child_rect(manager);
@@ -629,7 +617,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   JRegion manager_refresh_region;
   JRegion window_refresh_region;
   JRect old_pos = jrect_new_copy(widget->rc);
-  JRect man_pos = jwidget_get_rect(jwindow_get_manager (widget));
+  JRect man_pos = jwidget_get_rect(jwidget_get_manager(widget));
   JMessage msg;
 
   msg = jmessage_new(JM_WINMOVE);
@@ -673,17 +661,10 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 		       new_drawable_region);
 
     /* add a region to draw areas that were outside the screen */
-/*     jregion_reset(reg2, man_pos); */
-/*     jregion_subtract(reg1, old_reg, reg2); */
-/*     jregion_translate(reg1, */
-/* 			widget->rc->x1 - old_pos->x1, */
-/* 			widget->rc->y1 - old_pos->y1); */
-/*     jregion_union(window_refresh_region, window_refresh_region, reg1); */
-
     jregion_copy(reg1, new_drawable_region);
     jregion_translate(reg1,
-			old_pos->x1 - widget->rc->x1,
-			old_pos->y1 - widget->rc->y1);
+		      old_pos->x1 - widget->rc->x1,
+		      old_pos->y1 - widget->rc->y1);
     jregion_intersect(moveable_region, old_drawable_region, reg1);
 
     jregion_subtract(reg1, reg1, moveable_region);
@@ -692,21 +673,10 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 			widget->rc->y1 - old_pos->y1);
     jregion_union(window_refresh_region, window_refresh_region, reg1);
 
-    /* add a region to draw background areas that will be moved with blit() */
-/*     jregion_reset(reg2, widget->rc); */
-/*     jregion_subtract(reg1, reg2, new_drawable_region); */
-/*     jregion_union(manager_refresh_region, manager_refresh_region, reg1); */
-  
     /* move the window's graphics */
     jmouse_hide();
     set_clip(ji_screen,
 	     man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
-/*     blit (ji_screen, ji_screen, */
-/* 	  old_pos->x1, old_pos->y1, */
-/* 	  widget->rc->x1, widget->rc->y1, */
-/* 	  jrect_w(widget->rc), jrect_h(widget->rc)); */
-
-/*     ji_blit_region(old_drawable_region, */
 
     ji_blit_region(moveable_region,
 		   widget->rc->x1 - old_pos->x1,
@@ -719,11 +689,8 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
     jregion_free(moveable_region);
   }
 
-/*   jwidget_invalidate_region(jwindow_get_manager (widget), */
-/* 			       manager_refresh_region); */
-/*   jwidget_invalidate_region(widget, window_refresh_region); */
-  jwidget_redraw_region(jwindow_get_manager(widget),
-			  manager_refresh_region);
+  jwidget_redraw_region(jwidget_get_manager(widget),
+			manager_refresh_region);
   jwidget_redraw_region(widget, window_refresh_region);
 
   jregion_free(old_reg);

@@ -24,18 +24,16 @@
 #include "lua.h"
 #include "lualib.h"
 
-int init_module_script (void);
-void exit_module_script (void);
+int init_module_script(void);
+void exit_module_script(void);
 
-lua_State *get_lua_state (void);
+lua_State *get_lua_state(void);
 
-int script_is_running (void);
-void script_show_err (lua_State *L, int err);
+int script_is_running(void);
+void script_show_err(lua_State *L, int err);
 
-int do_script_raw (lua_State *L, int nargs, int nresults);
-int do_script_expr (const char *expr);
-int do_script_file (const char *filename);
-
-void load_all_scripts (void);
+int do_script_raw(lua_State *L, int nargs, int nresults);
+int do_script_expr(const char *expr);
+int do_script_file(const char *filename);
 
 #endif /* SCRIPT_H */

@@ -33,7 +33,7 @@
 #include "jinete/jlist.h"
 #include "jinete/jmenu.h"
 #include "jinete/jmessage.h"
-#include "jinete/jqckmenu.h"
+#include "jinete/jquickmenu.h"
 #include "jinete/jsep.h"
 #include "jinete/jwidget.h"
 

@@ -27,6 +27,7 @@
 #include "core/dirs.h"
 #include "modules/editors.h"
 #include "modules/sprites.h"
+#include "modules/tools2.h"
 #include "script/bindings.h"
 #include "script/script.h"
 #include "widgets/editor.h"
@@ -42,202 +43,191 @@ static lua_State *L;
 
 static int running = 0;
 
-static void prepare (void);
-static void release (void);
+static void prepare(void);
+static void release(void);
 
 /* Installs all the scripting capability.  */
 
-int init_module_script (void)
+int init_module_script(void)
 {
   /* create the main lua state */
-  L = lua_open ();
+  L = lua_open();
   if (!L)
     return -1;
 
   /* setup the garbage collector */
-  lua_setgcthreshold (L, 0);
+  lua_setgcthreshold(L, 0);
 
   /* install the base library */
-  lua_baselibopen (L);
-/*   lua_tablibopen (L); */
-/*   lua_iolibopen (L); */
-/*   lua_strlibopen (L); */
-/*   lua_mathlibopen (L); */
-/*   lua_dblibopen (L); */
+  lua_baselibopen(L);
+/*   lua_tablibopen(L); */
+/*   lua_iolibopen(L); */
+/*   lua_strlibopen(L); */
+/*   lua_mathlibopen(L); */
+/*   lua_dblibopen(L); */
 
   /* export C routines to use in Lua scripts */
-  register_bindings (L);
+  register_bindings(L);
 
   /* object metatable */
-  register_lua_object_metatable ();
+  register_lua_object_metatable();
 
   return 0;
 }
 
 /* Removes the scripting feature.  */
 
-void exit_module_script (void)
+void exit_module_script(void)
 {
   /* remove object metatable */
-  unregister_lua_object_metatable ();
+  unregister_lua_object_metatable();
 
   /* delete Lua state */
-  lua_close (L);
+  lua_close(L);
   L = NULL;
 }
 
-lua_State *get_lua_state (void)
+lua_State *get_lua_state(void)
 {
   return L;
 }
 
-int script_is_running (void)
+int script_is_running(void)
 {
   return (running > 0) ? TRUE: FALSE;
 }
 
-void script_show_err (lua_State *L, int err)
+void script_show_err(lua_State *L, int err)
 {
   switch (err) {
     case 0:
       /* nothing */
       break;
     case LUA_ERRRUN:
-      console_printf ("** lua error (run): %s\n", lua_tostring (L, -1));
+      console_printf("** lua error (run): %s\n", lua_tostring(L, -1));
       break;
     case LUA_ERRFILE:
-      console_printf ("** lua error (file): %s\n", lua_tostring (L, -1));
+      console_printf("** lua error (file): %s\n", lua_tostring(L, -1));
       break;
     case LUA_ERRSYNTAX:
-      console_printf ("** lua error (syntax): %s\n", lua_tostring (L, -1));
+      console_printf("** lua error (syntax): %s\n", lua_tostring(L, -1));
       break;
     case LUA_ERRMEM:
-      console_printf ("** lua error (mem): %s\n", lua_tostring (L, -1));
+      console_printf("** lua error (mem): %s\n", lua_tostring(L, -1));
       break;
     case LUA_ERRERR:
-      console_printf ("** lua error (err): %s\n", lua_tostring (L, -1));
+      console_printf("** lua error (err): %s\n", lua_tostring(L, -1));
       break;
     default:
-      console_printf ("** lua error (unknown): %s\n", lua_tostring (L, -1));
+      console_printf("** lua error (unknown): %s\n", lua_tostring(L, -1));
       break;
   }
 }
 
-int do_script_raw (lua_State *L, int nargs, int nresults)
+int do_script_raw(lua_State *L, int nargs, int nresults)
 {
   int err;
 
-  prepare ();
+  prepare();
 
-  err = lua_pcall (L, nargs, nresults, 0);
+  err = lua_pcall(L, nargs, nresults, 0);
   if (err != 0)
-    script_show_err (L, err);
+    script_show_err(L, err);
 
-  release ();
+  release();
 
   return err;
 }
 
-int do_script_expr (const char *exp)
+int do_script_expr(const char *exp)
 {
-  int err = luaL_loadbuffer (L, exp, ustrlen (exp), exp);
+  int err = luaL_loadbuffer(L, exp, ustrlen(exp), exp);
 
   prepare ();
 
   if (err == 0)
-    err = lua_pcall (L, 0, LUA_MULTRET, 0);
+    err = lua_pcall(L, 0, LUA_MULTRET, 0);
 
   if (err != 0)
-    script_show_err (L, err);
+    script_show_err(L, err);
 
-  release ();
+  release();
 
   return err;
 }
 
-int do_script_file (const char *filename)
+int do_script_file(const char *filename)
 {
   int found = FALSE;
   char buf[512];
   int err;
 
-  PRINTF ("Calling script file \"%s\"\n", filename);
+  PRINTF("Calling script file \"%s\"\n", filename);
 
-  if (exists (filename)) {
-    ustrcpy (buf, filename);
+  if (exists(filename)) {
+    ustrcpy(buf, filename);
     found = TRUE;
   }
   else {
     DIRS *it, *dirs;
 
-    usprintf (buf, "scripts/%s", filename);
-    dirs = filename_in_datadir (buf);
+    usprintf(buf, "scripts/%s", filename);
+    dirs = filename_in_datadir(buf);
     for (it=dirs; it; it=it->next) {
-      if (exists (it->path)) {
-	ustrcpy (buf, it->path);
+      if (exists(it->path)) {
+	ustrcpy(buf, it->path);
 	found = TRUE;
 	break;
       }
     }
 
-    dirs_free (dirs);
+    dirs_free(dirs);
   }
 
   if (!found) {
-    console_printf (_("File not found: \"%s\"\n"), filename);
+    console_printf(_("File not found: \"%s\"\n"), filename);
     return -1;
   }
 
-  prepare ();
+  prepare();
 
-  err = luaL_loadfile (L, buf);
+  err = luaL_loadfile(L, buf);
 
   if (err == 0)
-    err = lua_pcall (L, 0, LUA_MULTRET, 0);
+    err = lua_pcall(L, 0, LUA_MULTRET, 0);
 
   if (err != 0)
-    script_show_err (L, err);
+    script_show_err(L, err);
 
-  release ();
+  release();
 
   return err;
 }
 
-void load_all_scripts (void)
-{
-  struct al_ffblk fi;
-  DIRS *it, *dirs;
-  char buf[512];
-  int done;
-
-  dirs = filename_in_datadir ("scripts/*.lua");
-  for (it=dirs; it; it=it->next) {
-    done = al_findfirst (it->path, &fi, FA_RDONLY | FA_SYSTEM | FA_ARCH);
-    while (!done) {
-      replace_filename (buf, it->path, fi.name, sizeof (buf));
-      do_script_file (buf);
-      done = al_findnext (&fi);
-    }
-    al_findclose (&fi);
-  }
-  dirs_free (dirs);
-}
-
-static void prepare (void)
+/**
+ * Prepare the application to run a script.
+ */
+static void prepare(void)
 {
   if (running == 0) {
-    console_open ();
-    update_global_script_variables ();
+    ResetConfig();
+    console_open();
+    update_global_script_variables();
   }
   running++;
 }
 
-static void release (void)
+/**
+ * Restore the configuration of the application after running a
+ * script.
+ */
+static void release(void)
 {
   running--;
   if (running == 0) {
-    console_close ();
+    RestoreConfig();
+    console_close();
     if (current_editor)
-      set_current_sprite (editor_get_sprite (current_editor));
+      set_current_sprite(editor_get_sprite(current_editor));
   }
 }

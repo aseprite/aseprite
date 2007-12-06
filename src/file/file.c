@@ -442,7 +442,8 @@ int sprite_save(Sprite *sprite)
 	usprintf(buf+ustrlen(buf), "<<- %s", _("RGB format"));
 	fatal = TRUE;
       }
-      if (!(file->flags & FILE_SUPPORT_RGBA)) {
+      if (!(file->flags & FILE_SUPPORT_RGBA) &&
+	  _rgba_geta(sprite->bgcolor) < 255) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
       }
       break;
@@ -452,7 +453,8 @@ int sprite_save(Sprite *sprite)
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Grayscale format"));
 	fatal = TRUE;
       }
-      if (!(file->flags & FILE_SUPPORT_GRAYA)) {
+      if (!(file->flags & FILE_SUPPORT_GRAYA) &&
+	  _graya_geta(sprite->bgcolor) < 255) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
       }
       break;

@@ -18,7 +18,7 @@ NEWS
 + GUI enhanced:
   + more borders for windows and more spacing between widgets.
   + better mouse behavior (in Windows).
-+ Added support for PNG files (through libpng).
++ Added support to load and save PNG files (through libpng).
 + Finished the support for ICO files.
 + Finally screen scaling supported (with double-buffering). This means
   that you can use a screen of 320x240 between a window of 640x480

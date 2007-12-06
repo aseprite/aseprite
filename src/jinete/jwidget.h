@@ -165,6 +165,7 @@ void jwidget_replace_child(JWidget widget, JWidget old_child,
 
 JWidget jwidget_get_parent(JWidget widget);
 JWidget jwidget_get_window(JWidget widget);
+JWidget jwidget_get_manager(JWidget window);
 JList jwidget_get_parents(JWidget widget, bool ascendant);
 JList jwidget_get_children(JWidget widget);
 JWidget jwidget_pick(JWidget widget, int x, int y);

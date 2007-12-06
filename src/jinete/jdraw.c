@@ -29,9 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
+#include "jinete/jdraw.h"
 #include "jinete/jfont.h"
 #include "jinete/jintern.h"
 #include "jinete/jlist.h"
@@ -187,6 +189,12 @@ void ji_blit_region(JRegion region, int dx, int dy)
 {
   int c, nrects = JI_REGION_NUM_RECTS(region);
   JRect rc;
+
+  if (ji_dirty_region) {
+    jregion_translate(region, dx, dy);
+    ji_add_dirty_region(region);
+    jregion_translate(region, -dx, -dy);
+  }
 
   /* blit directly screen to screen *************************************/
   if (is_linear_bitmap(ji_screen) && nrects == 1) {

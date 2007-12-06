@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <allegro.h>
 #ifdef ALLEGRO_WINDOWS
 #include <winalleg.h>
@@ -37,6 +38,7 @@
 #include "jinete/jintern.h"
 #include "jinete/jmanager.h"
 #include "jinete/jrect.h"
+#include "jinete/jregion.h"
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
@@ -44,6 +46,7 @@
 /* Global output bitmap.  */
 
 BITMAP *ji_screen = NULL;
+JRegion ji_dirty_region = NULL;
 
 /* Global timer.  */
 
@@ -199,9 +202,77 @@ void ji_set_screen(BITMAP *bmp)
       JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
       jwidget_set_rect(manager, rect);
       jrect_free(rect);
+
+      if (ji_dirty_region)
+	jregion_reset(ji_dirty_region, manager->rc);
     }
 
     jmouse_set_cursor(cursor);	/* restore mouse cursor */
+  }
+}
+
+void ji_add_dirty_rect(JRect rect)
+{
+  JRegion reg1;
+
+  assert(ji_dirty_region != NULL);
+
+  reg1 = jregion_new(rect, 1);
+  jregion_union(ji_dirty_region, ji_dirty_region, reg1);
+  jregion_free(reg1);
+}
+
+void ji_add_dirty_region(JRegion region)
+{
+  assert(ji_dirty_region != NULL);
+
+  jregion_union(ji_dirty_region, ji_dirty_region, region);
+}
+
+void ji_flip_dirty_region(void)
+{
+  int c, nrects;
+  JRect rc;
+
+  assert(ji_dirty_region != NULL);
+
+  nrects = JI_REGION_NUM_RECTS(ji_dirty_region);
+
+  if (nrects == 1) {
+    rc = JI_REGION_RECTS(ji_dirty_region);
+    ji_flip_rect(rc);
+  }
+  else if (nrects > 1) {
+    for (c=0, rc=JI_REGION_RECTS(ji_dirty_region);
+	 c<nrects;
+	 c++, rc++)
+      ji_flip_rect(rc);
+  }
+
+  jregion_empty(ji_dirty_region);
+}
+
+void ji_flip_rect(JRect rect)
+{
+  assert(ji_screen != screen);
+
+  if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
+    blit(ji_screen, screen,
+	 rect->x1, rect->y1,
+	 rect->x1, rect->y1,
+	 jrect_w(rect),
+	 jrect_h(rect));
+  }
+  else {
+    stretch_blit(ji_screen, screen,
+		 rect->x1,
+		 rect->y1,
+		 jrect_w(rect),
+		 jrect_h(rect),
+		 rect->x1 * SCREEN_W / JI_SCREEN_W,
+		 rect->y1 * SCREEN_H / JI_SCREEN_H,
+		 jrect_w(rect) * SCREEN_W / JI_SCREEN_W,
+		 jrect_h(rect) * SCREEN_H / JI_SCREEN_H);
   }
 }
 
@@ -268,6 +339,9 @@ void jmouse_draw_cursor()
     jwidget_invalidate_rect(ji_get_default_manager(), rect);
     /* rectfill(ji_screen, rect->x1, rect->y1, rect->x2-1, rect->y2-1, makecol(0, 0, 255)); */
     draw_sprite(ji_screen, sprite_cursor, x, y);
+
+    if (ji_dirty_region)
+      ji_add_dirty_rect(rect);
 
     jrect_free(rect);
   }
