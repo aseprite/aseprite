@@ -1,3 +1,8 @@
+2007-12-08  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/file/png_format.c (save_PNG): Fixed a problem when saving
+	non-indexed images (reported by Trent Gamblin).
+
 2007-12-06  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/widgets/editor/editor.c (editor_draw_sprite): Fixed to allow

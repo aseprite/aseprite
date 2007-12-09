@@ -488,8 +488,10 @@ static int save_PNG(Sprite *sprite)
      libpng mallocs info_ptr->palette, libpng will free it).  If you
      allocated it with malloc() instead of png_malloc(), use free() instead
      of png_free(). */
-  png_free(png_ptr, palette);
-  palette = NULL;
+  if (image->imgtype == IMAGE_INDEXED) {
+    png_free(png_ptr, palette);
+    palette = NULL;
+  }
 
   /* clean up after the write, and free any memory allocated */
   png_destroy_write_struct(&png_ptr, &info_ptr);
