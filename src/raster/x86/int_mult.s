@@ -20,9 +20,8 @@
 	.align 4
 
 /* Function: int _int_mult (int a, int b) */
-.globl _int_mult
-/*	.type	 _int_mult,@function */
-_int_mult:
+.globl __int_mult
+__int_mult:
 	pushl %ebp
 	movl %esp,%ebp
 	

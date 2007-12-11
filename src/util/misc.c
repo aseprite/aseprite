@@ -132,7 +132,7 @@ void ClearMask(void)
 {
   Sprite *sprite = current_sprite;
   int x, y, u, v, putx, puty;
-  unsigned char *address;
+  ase_uint8 *address;
   Image *image;
   div_t d;
   int color;
@@ -165,7 +165,7 @@ void ClearMask(void)
 	/* clear the masked zones */
 	for (v=0; v<sprite->mask->h; v++) {
 	  d = div (0, 8);
-	  address = ((unsigned char **)sprite->mask->bitmap->line)[v]+d.quot;
+	  address = ((ase_uint8 **)sprite->mask->bitmap->line)[v]+d.quot;
 
 	  for (u=0; u<sprite->mask->w; u++) {
 	    if ((*address & (1<<d.rem))) {
@@ -186,7 +186,7 @@ void ClearMask(void)
    sprite, the layer isn't added to the sprite */
 Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
 {
-  unsigned char *address;
+  ase_uint8 *address;
   int x, y, u, v, getx, gety;
   Image *dst, *src = GetImage2(src_sprite, &x, &y, NULL);
   Layer *layer;
@@ -208,7 +208,7 @@ Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
   /* copy the masked zones */
   for (v=0; v<src_sprite->mask->h; v++) {
     d = div(0, 8);
-    address = ((unsigned char **)src_sprite->mask->bitmap->line)[v]+d.quot;
+    address = ((ase_uint8 **)src_sprite->mask->bitmap->line)[v]+d.quot;
 
     for (u=0; u<src_sprite->mask->w; u++) {
       if ((*address & (1<<d.rem))) {

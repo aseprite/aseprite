@@ -1,3 +1,11 @@
+2007-12-11  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/sprite.c (sprite_set_imgtype): Added convertion of
+	the background color.
+
+	* config.h: Added ase_uint8, ase_uint16, ase_uint32 to support 64
+	bits CPU (problems with amd64 reported by Jon Rafkind).
+
 2007-12-08  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/file/png_format.c (save_PNG): Fixed a problem when saving

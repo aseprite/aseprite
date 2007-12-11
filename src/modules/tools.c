@@ -1309,7 +1309,7 @@ static void fourchain_line(int x1, int y1, int x2, int y2, void *data)
 
 static void my_image_hline4_opaque(int x1, int y, int x2, void *data)
 {
-  register unsigned long *address = ((unsigned long **)tool_image->line)[y]+x1;
+  register ase_uint32 *address = ((ase_uint32 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
   int c = tool_color;
 
@@ -1319,7 +1319,7 @@ static void my_image_hline4_opaque(int x1, int y, int x2, void *data)
 
 static void my_image_hline2_opaque(int x1, int y, int x2, void *data)
 {
-  register unsigned short *address = ((unsigned short **)tool_image->line)[y]+x1;
+  register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
   int c = tool_color;
 
@@ -1329,7 +1329,7 @@ static void my_image_hline2_opaque(int x1, int y, int x2, void *data)
 
 static void my_image_hline1_opaque(int x1, int y, int x2, void *data)
 {
-  memset (((unsigned char **)tool_image->line)[y]+x1, tool_color, x2-x1+1);
+  memset(((ase_uint8 **)tool_image->line)[y]+x1, tool_color, x2-x1+1);
 }
 
 /**********************************************************************/
@@ -1338,7 +1338,7 @@ static void my_image_hline1_opaque(int x1, int y, int x2, void *data)
 
 static void my_image_hline4_glass(int x1, int y, int x2, void *data)
 {
-  register unsigned long *address = ((unsigned long **)tool_image->line)[y]+x1;
+  register ase_uint32 *address = ((ase_uint32 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
   int c = _rgba (_rgba_getr (tool_color),
 		 _rgba_getg (tool_color),
@@ -1353,7 +1353,7 @@ static void my_image_hline4_glass(int x1, int y, int x2, void *data)
 
 static void my_image_hline2_glass(int x1, int y, int x2, void *data)
 {
-  register unsigned short *address = ((unsigned short **)tool_image->line)[y]+x1;
+  register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
   int c = _graya (_graya_getk (tool_color), glass_dirty);
   int o = _graya_geta (tool_color);
@@ -1366,17 +1366,17 @@ static void my_image_hline2_glass(int x1, int y, int x2, void *data)
 
 static void my_image_hline1_glass(int x1, int y, int x2, void *data)
 {
-  register unsigned char *address = ((unsigned char **)tool_image->line)[y]+x1;
+  register ase_uint8 *address = ((ase_uint8 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
-  int c, tc = _rgba (_rgb_scale_6[_current_palette[_index_cmap[tool_color]].r],
-		     _rgb_scale_6[_current_palette[_index_cmap[tool_color]].g],
-		     _rgb_scale_6[_current_palette[_index_cmap[tool_color]].b], 255);
+  int c, tc = _rgba(_rgb_scale_6[_current_palette[_index_cmap[tool_color]].r],
+		    _rgb_scale_6[_current_palette[_index_cmap[tool_color]].g],
+		    _rgb_scale_6[_current_palette[_index_cmap[tool_color]].b], 255);
 
   while (x--) {
-    c = _rgba_blend_normal (_rgba (_rgb_scale_6[_current_palette[*address].r],
-				   _rgb_scale_6[_current_palette[*address].g],
-				   _rgb_scale_6[_current_palette[*address].b], 255),
-			    tc, glass_dirty);
+    c = _rgba_blend_normal(_rgba(_rgb_scale_6[_current_palette[*address].r],
+				 _rgb_scale_6[_current_palette[*address].g],
+				 _rgb_scale_6[_current_palette[*address].b], 255),
+			   tc, glass_dirty);
 
 /*     *(address++) = rgb_map->data[_rgba_getr (c)>>3] */
 /* 				[_rgba_getg (c)>>3] */
@@ -1393,9 +1393,9 @@ static void my_image_hline1_glass(int x1, int y, int x2, void *data)
 /* Semi draw mode						      */
 /**********************************************************************/
 
-static void my_image_hline4_semi (int x1, int y, int x2, void *data)
+static void my_image_hline4_semi(int x1, int y, int x2, void *data)
 {
-  register unsigned long *address = ((unsigned long **)tool_image->line)[y]+x1;
+  register ase_uint32 *address = ((ase_uint32 **)tool_image->line)[y]+x1;
   register int x;
 
   for (x=x1; x<=x2; x++) {
@@ -1405,9 +1405,9 @@ static void my_image_hline4_semi (int x1, int y, int x2, void *data)
   }
 }
 
-static void my_image_hline2_semi (int x1, int y, int x2, void *data)
+static void my_image_hline2_semi(int x1, int y, int x2, void *data)
 {
-  register unsigned short *address = ((unsigned short **)tool_image->line)[y]+x1;
+  register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
   register int x;
 
   for (x=x1; x<=x2; x++) {
@@ -1417,9 +1417,9 @@ static void my_image_hline2_semi (int x1, int y, int x2, void *data)
   }
 }
 
-static void my_image_hline1_semi (int x1, int y, int x2, void *data)
+static void my_image_hline1_semi(int x1, int y, int x2, void *data)
 {
-  register unsigned char *address = ((unsigned char **)tool_image->line)[y]+x1;
+  register ase_uint8 *address = ((ase_uint8 **)tool_image->line)[y]+x1;
   register int x;
 
   for (x=x1; x<=x2; x++) {

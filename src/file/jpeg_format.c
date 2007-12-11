@@ -189,13 +189,13 @@ static Sprite *load_JPEG(const char *filename)
 
     /* RGB */
     if (image->imgtype == IMAGE_RGB) {
-      unsigned char *src_address;
-      unsigned long *dst_address;
+      ase_uint8 *src_address;
+      ase_uint32 *dst_address;
       int x, y, r, g, b;
 
       for (y=0; y<(int)num_scanlines; y++) {
-        src_address = ((unsigned char **)buffer)[y];
-        dst_address = ((unsigned long **)image->line)[cinfo.output_scanline-1+y];
+        src_address = ((ase_uint8 **)buffer)[y];
+        dst_address = ((ase_uint32 **)image->line)[cinfo.output_scanline-1+y];
 
         for (x=0; x<image->w; x++) {
           r = *(src_address++);
@@ -207,13 +207,13 @@ static Sprite *load_JPEG(const char *filename)
     }
     /* Grayscale */
     else {
-      unsigned char *src_address;
-      unsigned short *dst_address;
+      ase_uint8 *src_address;
+      ase_uint16 *dst_address;
       int x, y;
 
       for (y=0; y<(int)num_scanlines; y++) {
-        src_address = ((unsigned char **)buffer)[y];
-        dst_address = ((unsigned short **)image->line)[cinfo.output_scanline-1+y];
+        src_address = ((ase_uint8 **)buffer)[y];
+        dst_address = ((ase_uint16 **)image->line)[cinfo.output_scanline-1+y];
 
         for (x=0; x<image->w; x++)
           *(dst_address++) = _graya(*(src_address++), 255);
@@ -325,12 +325,12 @@ static int save_JPEG(Sprite *sprite)
   while (cinfo.next_scanline < cinfo.image_height) {
     /* RGB */
     if (image->imgtype == IMAGE_RGB) {
-      unsigned long *src_address;
-      unsigned char *dst_address;
+      ase_uint32 *src_address;
+      ase_uint8 *dst_address;
       int x, y;
       for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((unsigned long **)image->line)[cinfo.next_scanline+y];
-        dst_address = ((unsigned char **)buffer)[y];
+        src_address = ((ase_uint32 **)image->line)[cinfo.next_scanline+y];
+        dst_address = ((ase_uint8 **)buffer)[y];
         for (x=0; x<image->w; x++) {
           c = *(src_address++);
           *(dst_address++) = _rgba_getr(c);
@@ -341,12 +341,12 @@ static int save_JPEG(Sprite *sprite)
     }
     /* Grayscale */
     else {
-      unsigned short *src_address;
-      unsigned char *dst_address;
+      ase_uint16 *src_address;
+      ase_uint8 *dst_address;
       int x, y;
       for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((unsigned short **)image->line)[cinfo.next_scanline+y];
-        dst_address = ((unsigned char **)buffer)[y];
+        src_address = ((ase_uint16 **)image->line)[cinfo.next_scanline+y];
+        dst_address = ((ase_uint8 **)buffer)[y];
         for (x=0; x<image->w; x++)
           *(dst_address++) = _graya_getk(*(src_address++));
       }

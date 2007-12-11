@@ -25,8 +25,8 @@ ifdef PROFILE
   LFLAGS += -pg
 else
 ifdef DEBUGMODE
-  CFLAGS += -g
-  LFLAGS += -g
+  CFLAGS += -g3
+  LFLAGS += -g3
 else
   CFLAGS += -s -O3
   LFLAGS += -s -O3
@@ -39,6 +39,10 @@ endif
 
 ifdef USE_PRECOMPILED_HEADER
   CFLAGS += -DUSE_PRECOMPILED_HEADER
+endif
+
+ifdef USE_X86_INT_MULT
+  CFLAGS += -DUSE_X86_INT_MULT
 endif
 
 ######################################################################
@@ -93,6 +97,7 @@ VPATH = src					\
 	src/jinete/themes			\
 	src/modules				\
 	src/raster				\
+	src/raster/x86				\
 	src/script				\
 	src/util				\
 	src/widgets				\
@@ -138,6 +143,9 @@ endif
 
 $(OBJ_DIR)/%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/%$(OBJ): %.s
+	$(CC) $(CFLAGS) -x assembler-with-cpp -o $@ -c $<
 
 $(OBJ_DIR)/art.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<

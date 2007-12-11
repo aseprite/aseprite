@@ -134,6 +134,7 @@ THANKFULNESS
     Elio Cuevas Gómez
     Emmanuel Rousseau (God_Cells)
     Hernán Echegoyemberry
+    Jon Rafkind (kazzmir)
     Jonathan Taylor
     Jorge Ramírez Flores
     Juraj Michalek
@@ -144,3 +145,4 @@ THANKFULNESS
     Nora Amendez
     Peter Wang (tjaden)
     Robert J Ohannessian (Bob)
+    Trent Gamblin (trentg)

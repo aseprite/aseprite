@@ -36,7 +36,7 @@ static struct {
   unsigned char *channel[4];
 } data = { FALSE, 0, 0, 0, { NULL, NULL, NULL, NULL } };
 
-void set_median_size (int w, int h)
+void set_median_size(int w, int h)
 {
   int c;
 
@@ -49,7 +49,7 @@ void set_median_size (int w, int h)
     if (data.channel[c])
       jfree (data.channel[c]);
 
-    data.channel[c] = jmalloc (sizeof (unsigned char) * data.ncolors);
+    data.channel[c] = jmalloc(sizeof(unsigned char) * data.ncolors);
   }
 }
 
@@ -58,19 +58,19 @@ static int cmp_channel (const void *p1, const void *p2)
   return (*(unsigned char *)p2) - (*(unsigned char *)p1);
 }
 
-void apply_median4 (Effect *effect)
+void apply_median4(Effect *effect)
 {
   Image *src = effect->src;
   Image *dst = effect->dst;
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int x, y, dx, dy, color;
   int c, w, r, g, b, a;
   int getx, gety, addx, addy;
 
   w = effect->x+effect->w;
   y = effect->y+effect->row;
-  dst_address = ((unsigned long **)dst->line)[y]+effect->x;
+  dst_address = ((ase_uint32 **)dst->line)[y]+effect->x;
 
   for (x=effect->x; x<w; x++) {
     /* avoid the unmask region */
@@ -86,14 +86,15 @@ void apply_median4 (Effect *effect)
 
     c = 0;
 
-    GET_MATRIX_DATA (unsigned long, data.w, data.h, data.w/2, data.h/2,
-		     color = *src_address;
-		     data.channel[0][c] = _rgba_getr (color);
-		     data.channel[1][c] = _rgba_getg (color);
-		     data.channel[2][c] = _rgba_getb (color);
-		     data.channel[3][c] = _rgba_geta (color);
-		     c++;
-		     );
+    GET_MATRIX_DATA
+      (ase_uint32, data.w, data.h, data.w/2, data.h/2,
+       color = *src_address;
+       data.channel[0][c] = _rgba_getr (color);
+       data.channel[1][c] = _rgba_getg (color);
+       data.channel[2][c] = _rgba_getb (color);
+       data.channel[3][c] = _rgba_geta (color);
+       c++;
+       );
 
     for (c=0; c<4; c++)
       qsort (data.channel[c], data.ncolors, sizeof (unsigned char), cmp_channel);
@@ -124,19 +125,19 @@ void apply_median4 (Effect *effect)
   }
 }
 
-void apply_median2 (Effect *effect)
+void apply_median2(Effect *effect)
 {
   Image *src = effect->src;
   Image *dst = effect->dst;
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int x, y, dx, dy, color;
   int c, w, k, a;
   int getx, gety, addx, addy;
 
   w = effect->x+effect->w;
   y = effect->y+effect->row;
-  dst_address = ((unsigned short **)dst->line)[y]+effect->x;
+  dst_address = ((ase_uint16 **)dst->line)[y]+effect->x;
 
   for (x=effect->x; x<w; x++) {
     /* avoid the unmask region */
@@ -152,12 +153,13 @@ void apply_median2 (Effect *effect)
 
     c = 0;
 
-    GET_MATRIX_DATA (unsigned short, data.w, data.h, data.w/2, data.h/2,
-		     color = *src_address;
-		     data.channel[0][c] = _graya_getk (color);
-		     data.channel[1][c] = _graya_geta (color);
-		     c++;
-		     );
+    GET_MATRIX_DATA
+      (ase_uint16, data.w, data.h, data.w/2, data.h/2,
+       color = *src_address;
+       data.channel[0][c] = _graya_getk(color);
+       data.channel[1][c] = _graya_geta(color);
+       c++;
+       );
 
     for (c=0; c<2; c++)
       qsort (data.channel[c], data.ncolors, sizeof (unsigned char), cmp_channel);
@@ -178,19 +180,19 @@ void apply_median2 (Effect *effect)
   }
 }
 
-void apply_median1 (Effect *effect)
+void apply_median1(Effect *effect)
 {
   Image *src = effect->src;
   Image *dst = effect->dst;
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int x, y, dx, dy, color;
   int c, w, r, g, b;
   int getx, gety, addx, addy;
 
   w = effect->x+effect->w;
   y = effect->y+effect->row;
-  dst_address = ((unsigned char **)dst->line)[y]+effect->x;
+  dst_address = ((ase_uint8 **)dst->line)[y]+effect->x;
 
   for (x=effect->x; x<w; x++) {
     /* avoid the unmask region */
@@ -206,24 +208,25 @@ void apply_median1 (Effect *effect)
 
     c = 0;
 
-    GET_MATRIX_DATA (unsigned char, data.w, data.h, data.w/2, data.h/2,
-		     color = *src_address;
-		     if (effect->target.index) {
-		       data.channel[0][c] = color;
-		     }
-		     else {
-		       data.channel[0][c] = _rgb_scale_6[current_palette[color].r];
-		       data.channel[1][c] = _rgb_scale_6[current_palette[color].g];
-		       data.channel[2][c] = _rgb_scale_6[current_palette[color].b];
-		     }
-		     c++;
-		     );
+    GET_MATRIX_DATA
+      (ase_uint8, data.w, data.h, data.w/2, data.h/2,
+       color = *src_address;
+       if (effect->target.index) {
+	 data.channel[0][c] = color;
+       }
+       else {
+	 data.channel[0][c] = _rgb_scale_6[current_palette[color].r];
+	 data.channel[1][c] = _rgb_scale_6[current_palette[color].g];
+	 data.channel[2][c] = _rgb_scale_6[current_palette[color].b];
+       }
+       c++;
+       );
 
     if (effect->target.index)
-      qsort (data.channel[0], data.ncolors, sizeof (unsigned char), cmp_channel);
+      qsort(data.channel[0], data.ncolors, sizeof(unsigned char), cmp_channel);
     else {
       for (c=0; c<3; c++)
-	qsort (data.channel[c], data.ncolors, sizeof (unsigned char), cmp_channel);
+	qsort (data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
     }
 
     if (effect->target.index) {

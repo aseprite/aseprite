@@ -26,14 +26,14 @@
 
 #endif
 
-Image *image_set_imgtype (Image *image, int imgtype,
-			  int dithering_method,
-			  RGB_MAP *rgb_map,
-			  RGB *palette)
+Image *image_set_imgtype(Image *image, int imgtype,
+			 int dithering_method,
+			 RGB_MAP *rgb_map,
+			 RGB *palette)
 {
-  unsigned long *rgb_address;
-  unsigned short *gray_address;
-  unsigned char *idx_address;
+  ase_uint32 *rgb_address;
+  ase_uint16 *gray_address;
+  ase_uint8 *idx_address;
   int i, c, r, g, b, size;
   Image *new_image;
 
@@ -46,7 +46,7 @@ Image *image_set_imgtype (Image *image, int imgtype,
 	   dithering_method == DITHERING_ORDERED)
     return image_rgb_to_indexed (image, 0, 0, rgb_map, palette);
 
-  new_image = image_new (imgtype, image->w, image->h);
+  new_image = image_new(imgtype, image->w, image->h);
   if (!new_image)
     return NULL;
 
@@ -55,12 +55,12 @@ Image *image_set_imgtype (Image *image, int imgtype,
   switch (image->imgtype) {
 
     case IMAGE_RGB:
-      rgb_address = image->dat;
+      rgb_address = (ase_uint32 *)image->dat;
 
       switch (new_image->imgtype) {
 	/* RGB -> Grayscale */
 	case IMAGE_GRAYSCALE:
-	  gray_address = new_image->dat;
+	  gray_address = (ase_uint16 *)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *rgb_address;
 	    r = _rgba_getr (c);
@@ -77,10 +77,10 @@ Image *image_set_imgtype (Image *image, int imgtype,
 	  idx_address = new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *rgb_address;
-	    r = _rgba_getr (c);
-	    g = _rgba_getg (c);
-	    b = _rgba_getb (c);
-	    if (_rgba_geta (c) == 0)
+	    r = _rgba_getr(c);
+	    g = _rgba_getg(c);
+	    b = _rgba_getb(c);
+	    if (_rgba_geta(c) == 0)
 	      *idx_address = 0;
 	    else
 	      *idx_address = rgb_map->data[r>>3][g>>3][b>>3];
@@ -92,12 +92,12 @@ Image *image_set_imgtype (Image *image, int imgtype,
       break;
 
     case IMAGE_GRAYSCALE:
-      gray_address = image->dat;
+      gray_address = (ase_uint16 *)image->dat;
 
       switch (new_image->imgtype) {
 	/* Grayscale -> RGB */
 	case IMAGE_RGB:
-	  rgb_address = new_image->dat;
+	  rgb_address = (ase_uint32 *)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *gray_address;
 	    g = _graya_getk (c);
@@ -128,7 +128,7 @@ Image *image_set_imgtype (Image *image, int imgtype,
       switch (new_image->imgtype) {
 	/* Indexed -> RGB */
 	case IMAGE_RGB:
-	  rgb_address = new_image->dat;
+	  rgb_address = (ase_uint32 *)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
 	    if (c == 0)
@@ -143,7 +143,7 @@ Image *image_set_imgtype (Image *image, int imgtype,
 	  break;
 	/* Indexed -> Grayscale */
 	case IMAGE_GRAYSCALE:
-	  gray_address = new_image->dat;
+	  gray_address = (ase_uint16 *)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
 	    if (c == 0)
@@ -197,10 +197,10 @@ static int pattern[8][8] = {
 				 4 * ((g1)-(g2)) * ((g1)-(g2)) +	\
 				 2 * ((b1)-(b2)) * ((b1)-(b2)))
 
-Image *image_rgb_to_indexed (Image *src_image,
-			     int offsetx, int offsety,
-			     RGB_MAP *rgb_map,
-			     RGB *palette)
+Image *image_rgb_to_indexed(Image *src_image,
+			    int offsetx, int offsety,
+			    RGB_MAP *rgb_map,
+			    RGB *palette)
 {
   int oppr, oppg, oppb, oppnrcm;
   Image *dst_image;

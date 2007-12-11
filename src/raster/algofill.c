@@ -70,7 +70,7 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_RGB:
       {
-        unsigned long *address = ((unsigned long **)image->line)[y];
+        ase_uint32 *address = ((ase_uint32 **)image->line)[y];
 
         /* check start pixel */
         if ((int)*(address+x) != src_color)
@@ -92,7 +92,7 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_GRAYSCALE:
       {
-        unsigned short *address = ((unsigned short **)image->line)[y];
+        ase_uint16 *address = ((ase_uint16 **)image->line)[y];
 
         /* check start pixel */
         if ((int)*(address+x) != src_color)
@@ -114,7 +114,7 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_INDEXED:
       {
-        unsigned char *address = ((unsigned char **)image->line)[y];
+        ase_uint8 *address = ((ase_uint8 **)image->line)[y];
 
         /* check start pixel */
         if ((int)*(address+x) != src_color)
@@ -139,7 +139,7 @@ static int flooder (Image *image, int x, int y,
   right--;
 
   /* draw the line */
-  (*proc) (left, y, right, data);
+  (*proc)(left, y, right, data);
 
   /* store it in the list of flooded segments */
   c = y;
@@ -178,8 +178,8 @@ static int flooder (Image *image, int x, int y,
  *  segments which have already been drawn in order to minimise the required
  *  number of tests.
  */
-static int check_flood_line (Image *image, int y, int left, int right,
-			     int src_color, void *data, AlgoHLine proc)
+static int check_flood_line(Image *image, int y, int left, int right,
+			    int src_color, void *data, AlgoHLine proc)
 {
   int c;
   FLOODED_LINE *p;
@@ -214,7 +214,7 @@ static int check_flood_line (Image *image, int y, int left, int right,
 /* floodfill:
  *  Fills an enclosed area (starting at point x, y) with the specified color.
  */
-void algo_floodfill (Image *image, int x, int y, void *data, AlgoHLine proc)
+void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
 {
   int src_color;
   int c, done;
@@ -241,7 +241,7 @@ void algo_floodfill (Image *image, int x, int y, void *data, AlgoHLine proc)
   }
 
   /* start up the flood algorithm */
-  flooder (image, x, y, src_color, data, proc);
+  flooder(image, x, y, src_color, data, proc);
 
   /* continue as long as there are some segments still to test */
   do {
@@ -255,8 +255,8 @@ void algo_floodfill (Image *image, int x, int y, void *data, AlgoHLine proc)
       /* check below the segment? */
       if (p->flags & FLOOD_TODO_BELOW) {
         p->flags &= ~FLOOD_TODO_BELOW;
-        if (check_flood_line (image, p->y+1, p->lpos, p->rpos,
-			      src_color, data, proc)) {
+        if (check_flood_line(image, p->y+1, p->lpos, p->rpos,
+			     src_color, data, proc)) {
           done = FALSE;
           p = FLOOD_LINE(c);
         }
@@ -265,8 +265,8 @@ void algo_floodfill (Image *image, int x, int y, void *data, AlgoHLine proc)
       /* check above the segment? */
       if (p->flags & FLOOD_TODO_ABOVE) {
         p->flags &= ~FLOOD_TODO_ABOVE;
-        if (check_flood_line (image, p->y-1, p->lpos, p->rpos,
-			      src_color, data, proc)) {
+        if (check_flood_line(image, p->y-1, p->lpos, p->rpos,
+			     src_color, data, proc)) {
           done = FALSE;
           /* special case shortcut for going backwards */
           if ((c < image->h) && (c > 0))

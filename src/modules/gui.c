@@ -109,7 +109,7 @@ END_OF_STATIC_FUNCTION(display_switch_in_callback);
  */
 int init_module_gui(void)
 {
-  int min_possible_dsk_res;
+  int min_possible_dsk_res = 0;
   int c, w, h, bpp, autodetect;
   bool fullscreen;
 

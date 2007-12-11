@@ -19,18 +19,18 @@
 #undef BYTES
 #undef LINES
 
-#define BYTES(image)   ((unsigned short *)image->dat)
-#define LINES(image)   ((unsigned short **)image->line)
+#define BYTES(image)   ((ase_uint16 *)image->dat)
+#define LINES(image)   ((ase_uint16 **)image->line)
 
 static int grayscale_regenerate_lines (Image *image)
 {
-  unsigned short *address = BYTES (image);
+  ase_uint16 *address = BYTES (image);
   int y;
 
   if (LINES (image))
     jfree (LINES (image));
 
-  image->line = jmalloc (sizeof (unsigned short *) * image->h);
+  image->line = jmalloc (sizeof (ase_uint16 *) * image->h);
   if (!LINES (image))
     return -1;
 
@@ -44,7 +44,7 @@ static int grayscale_regenerate_lines (Image *image)
 
 static int grayscale_init (Image *image)
 {
-  image->dat = jmalloc (sizeof (unsigned short) * image->w * image->h);
+  image->dat = jmalloc (sizeof (ase_uint16) * image->w * image->h);
   if (!BYTES (image))
     return -1;
 
@@ -68,7 +68,7 @@ static void grayscale_putpixel (Image *image, int x, int y, int color)
 
 static void grayscale_clear (Image *image, int color)
 {
-  unsigned short *address = BYTES (image);
+  ase_uint16 *address = BYTES (image);
   int c, size = image->w * image->h;
 
   for (c=0; c<size; c++)
@@ -77,8 +77,8 @@ static void grayscale_clear (Image *image, int color)
 
 static void grayscale_copy (Image *dst, const Image *src, int x, int y)
 {
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int xbeg, xend, xsrc;
   int ybeg, yend, ysrc, ydst;
   int bytes;
@@ -129,8 +129,8 @@ static void grayscale_merge (Image *dst, const Image *src,
 			     int x, int y, int opacity, int blend_mode)
 {
   BLEND_COLOR blender = _graya_blenders[blend_mode];
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int xbeg, xend, xsrc, xdst;
   int ybeg, yend, ysrc, ydst;
 
@@ -185,7 +185,7 @@ static void grayscale_merge (Image *dst, const Image *src,
 
 static void grayscale_hline (Image *image, int x1, int y, int x2, int color)
 {
-  unsigned short *address = LINES (image)[y]+x1;
+  ase_uint16 *address = LINES (image)[y]+x1;
   int x;
 
   for (x=x1; x<=x2; x++)
@@ -194,7 +194,7 @@ static void grayscale_hline (Image *image, int x1, int y, int x2, int color)
 
 static void grayscale_rectfill (Image *image, int x1, int y1, int x2, int y2, int color)
 {
-  unsigned short *address;
+  ase_uint16 *address;
   int x, y;
 
   for (y=y1; y<=y2; y++) {
@@ -204,11 +204,11 @@ static void grayscale_rectfill (Image *image, int x1, int y1, int x2, int y2, in
   }
 }
 
-static void grayscale_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
+static void grayscale_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
 {
-  unsigned short *address = BYTES (image);
+  ase_uint16 *address = BYTES(image);
   unsigned long bmp_address;
-  int depth = bitmap_color_depth (bmp);
+  int depth = bitmap_color_depth(bmp);
   int x, y;
 
   bmp_select (bmp);
@@ -217,14 +217,14 @@ static void grayscale_to_allegro (const Image *image, BITMAP *bmp, int _x, int _
 
     case 8:
 #ifdef GFX_MODEX
-      if (is_planar_bitmap (bmp)) {
+      if (is_planar_bitmap(bmp)) {
         for (y=0; y<image->h; y++) {
           bmp_address = (unsigned long)bmp->line[_y];
 
           for (x=0; x<image->w; x++) {
-            outportw (0x3C4, (0x100<<((_x+x)&3))|2);
-            bmp_write8 (bmp_address+((_x+x)>>2),
-			_index_cmap[(*address) & 0xff]);
+            outportw(0x3C4, (0x100<<((_x+x)&3))|2);
+            bmp_write8(bmp_address+((_x+x)>>2),
+		       _index_cmap[(*address) & 0xff]);
             address++;
           }
 

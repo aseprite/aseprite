@@ -19,8 +19,8 @@
 #undef BYTES
 #undef LINES
 
-#define BYTES(image)   ((unsigned char *)image->dat)
-#define LINES(image)   ((unsigned char **)image->line)
+#define BYTES(image)   ((ase_uint8 *)image->dat)
+#define LINES(image)   ((ase_uint8 **)image->line)
 
 #define BITMAP_HLINE(op)			\
   for (x=x1; x<=x2; x++) {			\
@@ -28,48 +28,47 @@
     _image_bitmap_next_bit(d, address);		\
   }
 
-static int bitmap_regenerate_lines (Image *image)
+static int bitmap_regenerate_lines(Image *image)
 {
-  unsigned char *address = BYTES (image);
+  ase_uint8 *address = BYTES(image);
   int y;
 
-  if (LINES (image))
-    jfree (LINES (image));
+  if (LINES(image))
+    jfree(LINES(image));
 
-  image->line = jmalloc (sizeof (unsigned char *) * image->h);
-  if (!LINES (image))
+  image->line = jmalloc(sizeof(ase_uint8 *) * image->h);
+  if (!LINES(image))
     return -1;
 
   for (y=0; y<image->h; y++) {
-    LINES (image)[y] = address;
+    LINES(image)[y] = address;
     address += (image->w+7)/8;
   }
 
   return 0;
 }
 
-static int bitmap_init (Image *image)
+static int bitmap_init(Image *image)
 {
-  image->dat = jmalloc (sizeof (unsigned char) *
-			((image->w+7)/8) * image->h);
-  if (!BYTES (image))
+  image->dat = jmalloc(sizeof(ase_uint8) * ((image->w+7)/8) * image->h);
+  if (!BYTES(image))
     return -1;
 
-  if (bitmap_regenerate_lines (image) < 0) {
-    jfree (BYTES (image));
+  if (bitmap_regenerate_lines(image) < 0) {
+    jfree(BYTES(image));
     return -1;
   }
 
   return 0;
 }
 
-static int bitmap_getpixel (const Image *image, int x, int y)
+static int bitmap_getpixel(const Image *image, int x, int y)
 {
   div_t d = div (x, 8);
   return ((*(LINES (image)[y]+d.quot)) & (1<<d.rem)) ? 1: 0;
 }
 
-static void bitmap_putpixel (Image *image, int x, int y, int color)
+static void bitmap_putpixel(Image *image, int x, int y, int color)
 {
   div_t d = div (x, 8);
 
@@ -79,15 +78,15 @@ static void bitmap_putpixel (Image *image, int x, int y, int color)
     *(LINES (image)[y]+d.quot) &= ~(1<<d.rem);
 }
 
-static void bitmap_clear (Image *image, int color)
+static void bitmap_clear(Image *image, int color)
 {
-  memset (BYTES (image), color ? 0xff: 0x00, ((image->w+7)/8) * image->h);
+  memset(BYTES(image), color ? 0xff: 0x00, ((image->w+7)/8) * image->h);
 }
 
-static void bitmap_copy (Image *dst, const Image *src, int x, int y)
+static void bitmap_copy(Image *dst, const Image *src, int x, int y)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int xbeg, xend, xsrc, xdst;
   int ybeg, yend, ysrc, ydst;
   div_t src_d, src_beg_d;
@@ -147,11 +146,11 @@ static void bitmap_copy (Image *dst, const Image *src, int x, int y)
   }
 }
 
-static void bitmap_merge (Image *dst, const Image *src,
-			  int x, int y, int opacity, int blend_mode)
+static void bitmap_merge(Image *dst, const Image *src,
+			 int x, int y, int opacity, int blend_mode)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int xbeg, xend, xsrc, xdst;
   int ybeg, yend, ysrc, ydst;
   div_t src_d, src_beg_d;
@@ -209,9 +208,9 @@ static void bitmap_merge (Image *dst, const Image *src,
   }
 }
 
-static void bitmap_hline (Image *image, int x1, int y, int x2, int color)
+static void bitmap_hline(Image *image, int x1, int y, int x2, int color)
 {
-  unsigned char *address;
+  ase_uint8 *address;
   div_t d = div (x1, 8);
   int x;
 
@@ -225,9 +224,9 @@ static void bitmap_hline (Image *image, int x1, int y, int x2, int color)
   }
 }
 
-static void bitmap_rectfill (Image *image, int x1, int y1, int x2, int y2, int color)
+static void bitmap_rectfill(Image *image, int x1, int y1, int x2, int y2, int color)
 {
-  unsigned char *address;
+  ase_uint8 *address;
   div_t d, beg_d = div (x1, 8);
   int x, y;
 
@@ -247,9 +246,9 @@ static void bitmap_rectfill (Image *image, int x1, int y1, int x2, int y2, int c
   }
 }
 
-static void bitmap_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
+static void bitmap_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
 {
-  unsigned char *address;
+  ase_uint8 *address;
   unsigned long bmp_address;
   int depth = bitmap_color_depth (bmp);
   div_t d, beg_d = div (0, 8);
@@ -267,15 +266,15 @@ static void bitmap_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 #ifdef GFX_MODEX
       if (is_planar_bitmap (bmp)) {
         for (y=0; y<image->h; y++) {
-	  address = LINES (image)[y];
+	  address = LINES(image)[y];
           bmp_address = (unsigned long)bmp->line[_y];
 
 	  d = beg_d;
           for (x=0; x<image->w; x++) {
             outportw (0x3C4, (0x100<<((_x+x)&3))|2);
-            bmp_write8 (bmp_address+((_x+x)>>2),
-			color[((*address) & (1<<d.rem))? 1: 0]);
-	    _image_bitmap_next_bit (d, address);
+            bmp_write8(bmp_address+((_x+x)>>2),
+		       color[((*address) & (1<<d.rem))? 1: 0]);
+	    _image_bitmap_next_bit(d, address);
           }
 
           _y++;
@@ -285,12 +284,12 @@ static void bitmap_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 #endif
         for (y=0; y<image->h; y++) {
 	  address = LINES (image)[y];
-          bmp_address = bmp_write_line (bmp, _y)+_x;
+          bmp_address = bmp_write_line(bmp, _y)+_x;
 
 	  d = beg_d;
           for (x=0; x<image->w; x++) {
             bmp_write8 (bmp_address++, color[((*address) & (1<<d.rem))? 1: 0]);
-	    _image_bitmap_next_bit (d, address);
+	    _image_bitmap_next_bit(d, address);
           }
 
           _y++;
@@ -301,20 +300,20 @@ static void bitmap_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
       break;
 
     case 15:
-      color[0] = makecol15 (0, 0, 0);
-      color[1] = makecol15 (255, 255, 255);
+      color[0] = makecol15(0, 0, 0);
+      color[1] = makecol15(255, 255, 255);
 
       _x <<= 1;
 
       for (y=0; y<image->h; y++) {
 	address = LINES (image)[y];
-        bmp_address = bmp_write_line (bmp, _y)+_x;
+        bmp_address = bmp_write_line(bmp, _y)+_x;
 
 	d = beg_d;
         for (x=0; x<image->w; x++) {
-          bmp_write15 (bmp_address, color[((*address) & (1<<d.rem))? 1: 0]);
+          bmp_write15(bmp_address, color[((*address) & (1<<d.rem))? 1: 0]);
           bmp_address += 2;
-	  _image_bitmap_next_bit (d, address);
+	  _image_bitmap_next_bit(d, address);
         }
 
         _y++;
@@ -322,20 +321,20 @@ static void bitmap_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
       break;
 
     case 16:
-      color[0] = makecol16 (0, 0, 0);
-      color[1] = makecol16 (255, 255, 255);
+      color[0] = makecol16(0, 0, 0);
+      color[1] = makecol16(255, 255, 255);
 
       _x <<= 1;
 
       for (y=0; y<image->h; y++) {
 	address = LINES (image)[y];
-        bmp_address = bmp_write_line (bmp, _y)+_x;
+        bmp_address = bmp_write_line(bmp, _y)+_x;
 
 	d = beg_d;
         for (x=0; x<image->w; x++) {
           bmp_write16(bmp_address, color[((*address) & (1<<d.rem))? 1: 0]);
           bmp_address += 2;
-	  _image_bitmap_next_bit (d, address);
+	  _image_bitmap_next_bit(d, address);
         }
 
         _y++;

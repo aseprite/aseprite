@@ -117,16 +117,16 @@ void mask_none (Mask *mask)
   }
 }
 
-void mask_invert (Mask *mask)
+void mask_invert(Mask *mask)
 {
   if (mask->bitmap) {
-    unsigned char *address;
+    ase_uint8 *address;
     int u, v;
     div_t d;
 
     for (v=0; v<mask->h; v++) {
       d.quot = d.rem = 0;
-      address = ((unsigned char **)mask->bitmap->line)[v];
+      address = ((ase_uint8 **)mask->bitmap->line)[v];
       for (u=0; u<mask->w; u++) {
 	*address ^= (1<<d.rem);
 	_image_bitmap_next_bit (d, address);
@@ -219,42 +219,42 @@ void mask_merge (Mask *mask, const Mask *src)
   /* TODO!!! */
 }
 
-void mask_by_color (Mask *mask, const Image *src, int color, int fuzziness)
+void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
 {
   Image *dst;
 
-  mask_replace (mask, 0, 0, src->w, src->h);
+  mask_replace(mask, 0, 0, src->w, src->h);
 
   dst = mask->bitmap;
 
   switch (src->imgtype) {
 
     case IMAGE_RGB: {
-      unsigned long *src_address;
-      unsigned char *dst_address;
+      ase_uint32 *src_address;
+      ase_uint8 *dst_address;
       int src_r, src_g, src_b, src_a;
       int dst_r, dst_g, dst_b, dst_a;
       int u, v, c;
       div_t d;
 
-      dst_r = _rgba_getr (color);
-      dst_g = _rgba_getg (color);
-      dst_b = _rgba_getb (color);
-      dst_a = _rgba_geta (color);
+      dst_r = _rgba_getr(color);
+      dst_g = _rgba_getg(color);
+      dst_b = _rgba_getb(color);
+      dst_a = _rgba_geta(color);
 
       for (v=0; v<src->h; v++) {
-	src_address = ((unsigned long **)src->line)[v];
-	dst_address = ((unsigned char **)dst->line)[v];
+	src_address = ((ase_uint32 **)src->line)[v];
+	dst_address = ((ase_uint8 **)dst->line)[v];
 
 	d = div (0, 8);
 
 	for (u=0; u<src->w; u++) {
 	  c = *(src_address++);
 
-	  src_r = _rgba_getr (c);
-	  src_g = _rgba_getg (c);
-	  src_b = _rgba_getb (c);
-	  src_a = _rgba_geta (c);
+	  src_r = _rgba_getr(c);
+	  src_g = _rgba_getg(c);
+	  src_b = _rgba_getb(c);
+	  src_a = _rgba_geta(c);
 
 	  if (!((src_r >= dst_r-fuzziness) && (src_r <= dst_r+fuzziness) &&
 		(src_g >= dst_g-fuzziness) && (src_g <= dst_g+fuzziness) &&
@@ -262,25 +262,25 @@ void mask_by_color (Mask *mask, const Image *src, int color, int fuzziness)
 		(src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
 	    (*dst_address) ^= (1 << d.rem);
 
-	  _image_bitmap_next_bit (d, dst_address);
+	  _image_bitmap_next_bit(d, dst_address);
 	}
       }
     } break;
 
     case IMAGE_GRAYSCALE: {
-      unsigned short *src_address;
-      unsigned char *dst_address;
+      ase_uint16 *src_address;
+      ase_uint8 *dst_address;
       int src_k, src_a;
       int dst_k, dst_a;
       int u, v, c;
       div_t d;
 
-      dst_k = _graya_getk (color);
-      dst_a = _graya_geta (color);
+      dst_k = _graya_getk(color);
+      dst_a = _graya_geta(color);
 
       for (v=0; v<src->h; v++) {
-	src_address = ((unsigned short **)src->line)[v];
-	dst_address = ((unsigned char **)dst->line)[v];
+	src_address = ((ase_uint16 **)src->line)[v];
+	dst_address = ((ase_uint8 **)dst->line)[v];
 
 	d = div (0, 8);
 
@@ -294,20 +294,20 @@ void mask_by_color (Mask *mask, const Image *src, int color, int fuzziness)
 		(src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
 	    (*dst_address) ^= (1 << d.rem);
 
-	  _image_bitmap_next_bit (d, dst_address);
+	  _image_bitmap_next_bit(d, dst_address);
 	}
       }
     } break;
 
     case IMAGE_INDEXED: {
-      unsigned char *src_address;
-      unsigned char *dst_address;
+      ase_uint8 *src_address;
+      ase_uint8 *dst_address;
       int u, v, c;
       div_t d;
 
       for (v=0; v<src->h; v++) {
-	src_address = ((unsigned char **)src->line)[v];
-	dst_address = ((unsigned char **)dst->line)[v];
+	src_address = ((ase_uint8 **)src->line)[v];
+	dst_address = ((ase_uint8 **)dst->line)[v];
 
 	d = div (0, 8);
 
@@ -317,25 +317,25 @@ void mask_by_color (Mask *mask, const Image *src, int color, int fuzziness)
 	  if (!((c >= color-fuzziness) && (c <= color+fuzziness)))
 	    (*dst_address) ^= (1 << d.rem);
 
-	  _image_bitmap_next_bit (d, dst_address);
+	  _image_bitmap_next_bit(d, dst_address);
 	}
       }
     } break;
   }
 
-  shrink_mask (mask);
+  shrink_mask(mask);
 }
 
 /* void mask_fill (Mask *mask, Image *image, int color) */
 /* { */
 /*   if (mask) { */
-/*     unsigned char *address; */
+/*     ase_uint8 *address; */
 /*     int u, v; */
 /*     div_t d; */
 
 /*     for (v=0; v<h; v++) { */
 /*       d = div (0, 8); */
-/*       address = ((unsigned char **)drawable->lines)[v]+d.quot; */
+/*       address = ((ase_uint8 **)drawable->lines)[v]+d.quot; */
 
 /*       for (u=0; u<w; u++) { */
 /* 	if ((*address) & (1<<d.rem)) */

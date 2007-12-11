@@ -119,7 +119,7 @@ find_empty_segs (PixelRegion  *maskPR,
 		 gint          x2,
 		 gint          y2)
 {
-  unsigned char *data;
+  ase_uint8 *data;
   int x;
   int start, end;
   int val, last;
@@ -171,7 +171,7 @@ find_empty_segs (PixelRegion  *maskPR,
   l_num_empty = *num_empty;
 
   d = div (start, 8);
-  data = ((unsigned char *)maskPR->line[scanline])+d.quot;
+  data = ((ase_uint8 *)maskPR->line[scanline])+d.quot;
 
   for (x = start; x < end;)
     {

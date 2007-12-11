@@ -450,9 +450,10 @@ void sprite_set_frame(Sprite *sprite, int frame)
  */
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 {
+  RGB *palette = sprite_get_palette(sprite, 0);
   Image *old_image;
   Image *new_image;
-  int c;
+  int c, r, g, b;
 
   /* nothing to do */
   if (sprite->imgtype == imgtype)
@@ -462,6 +463,83 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
   if (undo_is_enabled(sprite->undo))
     undo_open(sprite->undo);
 
+  /* change the background color */
+  if (undo_is_enabled(sprite->undo))
+    undo_int(sprite->undo, (GfxObj *)sprite, &sprite->bgcolor);
+
+  c = sprite->bgcolor;
+
+  switch (sprite->imgtype) {
+
+    case IMAGE_RGB:
+      switch (imgtype) {
+	/* RGB -> Grayscale */
+	case IMAGE_GRAYSCALE:
+	  r = _rgba_getr(c);
+	  g = _rgba_getg(c);
+	  b = _rgba_getb(c);
+	  rgb_to_hsv_int(&r, &g, &b);
+	  c = _graya(b, _rgba_geta(c));
+	  break;
+	/* RGB -> Indexed */
+	case IMAGE_INDEXED:
+	  r = _rgba_getr(c);
+	  g = _rgba_getg(c);
+	  b = _rgba_getb(c);
+	  if (_rgba_geta(c) == 0)
+	    c = 0;
+	  else
+	    c = rgb_map->data[r>>3][g>>3][b>>3];
+	  break;
+      }
+      break;
+
+    case IMAGE_GRAYSCALE:
+      switch (imgtype) {
+	/* Grayscale -> RGB */
+	case IMAGE_RGB:
+	  g = _graya_getk(c);
+	  c = _rgba(g, g, g, _graya_geta(c));
+	  break;
+	/* Grayscale -> Indexed */
+	case IMAGE_INDEXED:
+	  if (_graya_geta(c) == 0)
+	    c = 0;
+	  else
+	    c = _graya_getk(c);
+	  break;
+      }
+      break;
+
+    case IMAGE_INDEXED:
+      switch (imgtype) {
+	/* Indexed -> RGB */
+	case IMAGE_RGB:
+	  if (c == 0)
+	    c = 0;
+	  else
+	    c = _rgba(_rgb_scale_6[palette[c].r],
+		      _rgb_scale_6[palette[c].g],
+		      _rgb_scale_6[palette[c].b], 255);
+	  break;
+	/* Indexed -> Grayscale */
+	case IMAGE_GRAYSCALE:
+	  if (c == 0)
+	    c = 0;
+	  else {
+	    r = _rgb_scale_6[palette[c].r];
+	    g = _rgb_scale_6[palette[c].g];
+	    b = _rgb_scale_6[palette[c].b];
+	    rgb_to_hsv_int(&r, &g, &b);
+	    c = _graya(b, 255);
+	  }
+	  break;
+      }
+      break;
+  }
+
+  sprite_set_bgcolor(sprite, c);
+  
   /* change imgtype of the stock of images */
   if (undo_is_enabled(sprite->undo)) {
     undo_int(sprite->undo, (GfxObj *)sprite, &imgtype);
@@ -489,10 +567,10 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
     image_free(old_image);
     stock_replace_image(sprite->stock, c, new_image);
   }
-  
+
   /* change "sprite.imgtype" field */
   if (undo_is_enabled(sprite->undo))
-    undo_int (sprite->undo, (GfxObj *)sprite, &sprite->imgtype);
+    undo_int(sprite->undo, (GfxObj *)sprite, &sprite->imgtype);
 
   sprite->imgtype = imgtype;
 
@@ -509,6 +587,7 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
     }
   }
 #endif
+
   if (undo_is_enabled(sprite->undo))
     undo_close(sprite->undo);
 }

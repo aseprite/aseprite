@@ -19,18 +19,18 @@
 #undef BYTES
 #undef LINES
 
-#define BYTES(image)   ((unsigned char *)image->dat)
-#define LINES(image)   ((unsigned char **)image->line)
+#define BYTES(image)   ((ase_uint8 *)image->dat)
+#define LINES(image)   ((ase_uint8 **)image->line)
 
 static int indexed_regenerate_lines(Image *image)
 {
-  unsigned char *address = BYTES(image);
+  ase_uint8 *address = BYTES(image);
   int y;
 
   if (LINES(image))
     jfree(LINES(image));
 
-  image->line = jmalloc(sizeof(unsigned char *) * image->h);
+  image->line = jmalloc(sizeof(ase_uint8 *) * image->h);
   if (!LINES(image))
     return -1;
 
@@ -44,7 +44,7 @@ static int indexed_regenerate_lines(Image *image)
 
 static int indexed_init(Image *image)
 {
-  image->dat = jmalloc(sizeof(unsigned char) * image->w * image->h);
+  image->dat = jmalloc(sizeof(ase_uint8) * image->w * image->h);
   if (!BYTES(image))
     return -1;
 
@@ -73,8 +73,8 @@ static void indexed_clear(Image *image, int color)
 
 static void indexed_copy(Image *dst, const Image *src, int x, int y)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int xbeg, xend, xsrc;
   int ybeg, yend, ysrc, ydst;
   int bytes;
@@ -117,7 +117,7 @@ static void indexed_copy(Image *dst, const Image *src, int x, int y)
     src_address = LINES (src)[ysrc]+xsrc;
     dst_address = LINES (dst)[ydst]+xbeg;
 
-    memcpy (dst_address, src_address, bytes);
+    memcpy(dst_address, src_address, bytes);
   }
 }
 
@@ -126,8 +126,8 @@ static void indexed_copy(Image *dst, const Image *src, int x, int y)
 static void indexed_merge(Image *dst, const Image *src,
 			  int x, int y, int opacity, int blend_mode)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int xbeg, xend, xsrc, xdst;
   int ybeg, yend, ysrc, ydst;
 
@@ -200,7 +200,7 @@ static void indexed_merge(Image *dst, const Image *src,
 
 static void indexed_hline(Image *image, int x1, int y, int x2, int color)
 {
-  memset (LINES (image)[y]+x1, color, x2-x1+1);
+  memset(LINES(image)[y]+x1, color, x2-x1+1);
 }
 
 static void indexed_rectfill(Image *image, int x1, int y1, int x2, int y2, int color)
@@ -208,7 +208,7 @@ static void indexed_rectfill(Image *image, int x1, int y1, int x2, int y2, int c
   int y, bytes = x2-x1+1;
 
   for (y=y1; y<=y2; y++)
-    memset (LINES (image)[y]+x1, color, bytes);
+    memset(LINES(image)[y]+x1, color, bytes);
 }
 
 static void indexed_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
@@ -218,12 +218,12 @@ static void indexed_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
   _rgb_scale_6[_current_palette[_index_cmap[(*address)]].g],	\
   _rgb_scale_6[_current_palette[_index_cmap[(*address)]].b]
 
-  unsigned char *address = BYTES (image);
+  ase_uint8 *address = BYTES(image);
   unsigned long bmp_address;
-  int depth = bitmap_color_depth (bmp);
+  int depth = bitmap_color_depth(bmp);
   int x, y;
 
-  bmp_select (bmp);
+  bmp_select(bmp);
 
   switch (depth) {
 
@@ -267,7 +267,7 @@ static void indexed_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<image->w; x++) {
-          bmp_write15(bmp_address, makecol15 (RGB_TRIPLET));
+          bmp_write15(bmp_address, makecol15(RGB_TRIPLET));
           address++;
           bmp_address += 2;
         }
@@ -283,7 +283,7 @@ static void indexed_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<image->w; x++) {
-          bmp_write16(bmp_address, makecol16 (RGB_TRIPLET));
+          bmp_write16(bmp_address, makecol16(RGB_TRIPLET));
           address++;
           bmp_address += 2;
         }
@@ -299,7 +299,7 @@ static void indexed_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<image->w; x++) {
-          bmp_write24(bmp_address, makecol24 (RGB_TRIPLET));
+          bmp_write24(bmp_address, makecol24(RGB_TRIPLET));
           address++;
           bmp_address += 3;
         }
@@ -312,10 +312,10 @@ static void indexed_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
       _x <<= 2;
 
       for (y=0; y<image->h; y++) {
-        bmp_address = bmp_write_line (bmp, _y)+_x;
+        bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<image->w; x++) {
-          bmp_write32(bmp_address, makeacol32 (RGB_TRIPLET, 255));
+          bmp_write32(bmp_address, makeacol32(RGB_TRIPLET, 255));
           address++;
           bmp_address += 4;
         }

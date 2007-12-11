@@ -68,7 +68,7 @@ ConvMatr *convmatr_new(int w, int h)
   ConvMatr *convmatr;
   int c, size;
 
-  convmatr = (ConvMatr *)jnew (ConvMatr, 1);
+  convmatr = (ConvMatr *)jnew(ConvMatr, 1);
   if (!convmatr)
     return NULL;
 
@@ -318,13 +318,13 @@ JList get_convmatr_stock(void)
     continue;					\
   }
 
-void apply_convolution_matrix4 (Effect *effect)
+void apply_convolution_matrix4(Effect *effect)
 {
   ConvMatr *matrix = data.convmatr;
   Image *src = effect->src;
   Image *dst = effect->dst;
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int x, y, dx, dy, color;
   int getx, gety, addx, addy;
   int r, g, b, a;
@@ -334,7 +334,7 @@ void apply_convolution_matrix4 (Effect *effect)
   if (matrix) {
     w = effect->x+effect->w;
     y = effect->y+effect->row;
-    dst_address = ((unsigned long **)dst->line)[y]+effect->x;
+    dst_address = ((ase_uint32 **)dst->line)[y]+effect->x;
 
     for (x=effect->x; x<w; x++) {
       /* avoid the unmask region */
@@ -350,16 +350,17 @@ void apply_convolution_matrix4 (Effect *effect)
 
       r = g = b = a = 0;
 
-      GET_CONVMATR_DATA (unsigned long,
-			 if (_rgba_geta (color) == 0)
-			   div -= *mdata;
-			 else {
-			   r += _rgba_getr (color) * (*mdata);
-			   g += _rgba_getg (color) * (*mdata);
-			   b += _rgba_getb (color) * (*mdata);
-			   a += _rgba_geta (color) * (*mdata);
-			 }
-			 );
+      GET_CONVMATR_DATA
+	(ase_uint32,
+	 if (_rgba_geta(color) == 0)
+	   div -= *mdata;
+	 else {
+	   r += _rgba_getr(color) * (*mdata);
+	   g += _rgba_getg(color) * (*mdata);
+	   b += _rgba_getb(color) * (*mdata);
+	   a += _rgba_geta(color) * (*mdata);
+	 }
+	 );
 
       if (effect->target.r) {
 	r = r / div + matrix->bias;
@@ -399,8 +400,8 @@ void apply_convolution_matrix2 (Effect *effect)
   ConvMatr *matrix = data.convmatr;
   Image *src = effect->src;
   Image *dst = effect->dst;
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int x, y, dx, dy, color;
   int getx, gety, addx, addy;
   int k, a;
@@ -410,7 +411,7 @@ void apply_convolution_matrix2 (Effect *effect)
   if (matrix) {
     w = effect->x+effect->w;
     y = effect->y+effect->row;
-    dst_address = ((unsigned short **)dst->line)[y]+effect->x;
+    dst_address = ((ase_uint16 **)dst->line)[y]+effect->x;
 
     for (x=effect->x; x<w; x++) {
       /* avoid the unmask region */
@@ -426,14 +427,15 @@ void apply_convolution_matrix2 (Effect *effect)
 
       k = a = 0;
 
-      GET_CONVMATR_DATA (unsigned short,
-			 if (_graya_geta (color) == 0)
-			   div -= *mdata;
-			 else {
-			   k += _graya_getk (color) * (*mdata);
-			   a += _graya_geta (color) * (*mdata);
-			 }
-			 );
+      GET_CONVMATR_DATA
+	(ase_uint16,
+	 if (_graya_geta(color) == 0)
+	   div -= *mdata;
+	 else {
+	   k += _graya_getk(color) * (*mdata);
+	   a += _graya_geta(color) * (*mdata);
+	 }
+	 );
 
       if (effect->target.k) {
 	k = k / div + matrix->bias;
@@ -454,13 +456,13 @@ void apply_convolution_matrix2 (Effect *effect)
   }
 }
 
-void apply_convolution_matrix1 (Effect *effect)
+void apply_convolution_matrix1(Effect *effect)
 {
   ConvMatr *matrix = data.convmatr;
   Image *src = effect->src;
   Image *dst = effect->dst;
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int x, y, dx, dy, color;
   int getx, gety, addx, addy;
   int r, g, b, index;
@@ -470,7 +472,7 @@ void apply_convolution_matrix1 (Effect *effect)
   if (matrix) {
     w = effect->x+effect->w;
     y = effect->y+effect->row;
-    dst_address = ((unsigned char **)dst->line)[y]+effect->x;
+    dst_address = ((ase_uint8 **)dst->line)[y]+effect->x;
 
     for (x=effect->x; x<w; x++) {
       /* avoid the unmask region */
@@ -487,7 +489,7 @@ void apply_convolution_matrix1 (Effect *effect)
       r = g = b = index = 0;
 
       GET_CONVMATR_DATA
-	(unsigned char,
+	(ase_uint8,
 	 r += _rgb_scale_6[current_palette[color].r] * (*mdata);
 	 g += _rgb_scale_6[current_palette[color].g] * (*mdata);
 	 b += _rgb_scale_6[current_palette[color].b] * (*mdata);
@@ -496,7 +498,7 @@ void apply_convolution_matrix1 (Effect *effect)
 
       if (effect->target.index) {
 	index = index / matrix->div + matrix->bias;
-	index = MID (0, index, 255);
+	index = MID(0, index, 255);
 
 	*(dst_address++) = index;
       }
@@ -510,14 +512,14 @@ void apply_convolution_matrix1 (Effect *effect)
 
 	if (effect->target.g) {
 	  g = g / div + matrix->bias;
-	  g = MID (0, g, 255);
+	  g = MID(0, g, 255);
 	}
 	else
 	  g = _rgb_scale_6[current_palette[color].g];
 
 	if (effect->target.b) {
 	  b = b / div + matrix->bias;
-	  b = MID (0, b, 255);
+	  b = MID(0, b, 255);
 	}
 	else
 	  b = _rgb_scale_6[current_palette[color].b];

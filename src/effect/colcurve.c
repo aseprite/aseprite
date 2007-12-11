@@ -261,84 +261,84 @@ void set_color_curve(Curve *curve)
     data.cmap[c] = MID(0, data.cmap[c], 255);
 }
 
-void apply_color_curve4 (Effect *effect)
+void apply_color_curve4(Effect *effect)
 {
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int x, c, r, g, b, a;
 
-  src_address = ((unsigned long **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned long **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint32 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint32 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
 
-    r = _rgba_getr (c);
-    g = _rgba_getg (c);
-    b = _rgba_getb (c);
-    a = _rgba_geta (c);
+    r = _rgba_getr(c);
+    g = _rgba_getg(c);
+    b = _rgba_getb(c);
+    a = _rgba_geta(c);
 
     if (effect->target.r) r = data.cmap[r];
     if (effect->target.g) g = data.cmap[g];
     if (effect->target.b) b = data.cmap[b];
     if (effect->target.a) a = data.cmap[a];
 
-    *(dst_address++) = _rgba (r, g, b, a);
+    *(dst_address++) = _rgba(r, g, b, a);
   }
 }
 
 void apply_color_curve2 (Effect *effect)
 {
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int x, c, k, a;
 
-  src_address = ((unsigned short **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned short **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint16 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint16 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
 
-    k = _graya_getk (c);
-    a = _graya_geta (c);
+    k = _graya_getk(c);
+    a = _graya_geta(c);
 
     if (effect->target.k) k = data.cmap[k];
     if (effect->target.a) a = data.cmap[a];
 
-    *(dst_address++) = _graya (k, a);
+    *(dst_address++) = _graya(k, a);
   }
 }
 
-void apply_color_curve1 (Effect *effect)
+void apply_color_curve1(Effect *effect)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int x, c, r, g, b;
 
-  src_address = ((unsigned char **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned char **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint8 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint8 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
@@ -368,6 +368,6 @@ void apply_color_curve1 (Effect *effect)
       c = orig_rgb_map->data[r>>3][g>>3][b>>3];
     }
 
-    *(dst_address++) = MID (0, c, 255);
+    *(dst_address++) = MID(0, c, 255);
   }
 }

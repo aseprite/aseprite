@@ -48,25 +48,25 @@ typedef struct ASE_Header
 {
   long pos;
 
-  unsigned long size;
-  unsigned short magic;
-  unsigned short frames;
-  unsigned short width;
-  unsigned short height;
-  unsigned short depth;
-  unsigned long flags;
-  unsigned short speed;	/* deprecated, use "duration" of FrameHeader */
-  unsigned long next;
-  unsigned long frit;
-  unsigned char bgcolor[4];
+  ase_uint32 size;
+  ase_uint16 magic;
+  ase_uint16 frames;
+  ase_uint16 width;
+  ase_uint16 height;
+  ase_uint16 depth;
+  ase_uint32 flags;
+  ase_uint16 speed;	/* deprecated, use "duration" of FrameHeader */
+  ase_uint32 next;
+  ase_uint32 frit;
+  ase_uint8 bgcolor[4];
 } ASE_Header;
 
 typedef struct ASE_FrameHeader
 {
-  unsigned long size;
-  unsigned short magic;
-  unsigned short chunks;
-  unsigned short duration;
+  ase_uint32 size;
+  ase_uint16 magic;
+  ase_uint16 chunks;
+  ase_uint16 duration;
 } ASE_FrameHeader;
 
 static Sprite *load_ASE(const char *filename);

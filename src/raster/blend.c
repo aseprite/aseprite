@@ -32,11 +32,11 @@
 #endif
 
 #ifdef USE_X86_INT_MULT
-#  undef INT_MULT(a, b, t)
+#  undef INT_MULT
 #  define INT_MULT(a, b, t) (_int_mult (a, b))
 #  define T_VAR
 #  define NT_VAR register int t;
-  extern int _int_mult (int a, int b);
+   extern int _int_mult(int a, int b);
 #else
 #  define T_VAR register int t;
 #  define NT_VAR

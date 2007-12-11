@@ -245,13 +245,13 @@ void effect_begin_for_preview (Effect *effect)
   }
 }
 
-bool effect_apply_step (Effect *effect)
+bool effect_apply_step(Effect *effect)
 {
   if ((effect->row >= 0) && (effect->row < effect->h)) {
     if ((effect->mask) && (effect->mask->bitmap)) {
       effect->d = div (effect->x-effect->mask->x+effect->offset_x, 8);
       effect->mask_address =
-	((unsigned char **)effect->mask->bitmap->line)
+	((ase_uint8 **)effect->mask->bitmap->line)
 	[effect->row+effect->y-effect->mask->y+effect->offset_y]+effect->d.quot;
     }
     else

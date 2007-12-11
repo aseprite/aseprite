@@ -19,26 +19,28 @@
 #ifndef RASTER_IMAGE_H
 #define RASTER_IMAGE_H
 
+/* #define USE_ALLEGRO_IMAGE */
+
 #include "raster/gfxobj.h"
 
-#define _rgba_r_shift 0
-#define _rgba_g_shift 8
-#define _rgba_b_shift 16
-#define _rgba_a_shift 24
-#define _rgba_getr(c) (((c) >> _rgba_r_shift) & 0xff)
-#define _rgba_getg(c) (((c) >> _rgba_g_shift) & 0xff)
-#define _rgba_getb(c) (((c) >> _rgba_b_shift) & 0xff)
-#define _rgba_geta(c) (((c) >> _rgba_a_shift) & 0xff)
+#define _rgba_r_shift	0
+#define _rgba_g_shift	8
+#define _rgba_b_shift	16
+#define _rgba_a_shift	24
+#define _rgba_getr(c)	(((c) >> _rgba_r_shift) & 0xff)
+#define _rgba_getg(c)	(((c) >> _rgba_g_shift) & 0xff)
+#define _rgba_getb(c)	(((c) >> _rgba_b_shift) & 0xff)
+#define _rgba_geta(c)	(((c) >> _rgba_a_shift) & 0xff)
 #define _rgba(r,g,b,a)				\
   (((r) << _rgba_r_shift) |			\
    ((g) << _rgba_g_shift) |			\
    ((b) << _rgba_b_shift) |			\
    ((a) << _rgba_a_shift))
 
-#define _graya_k_shift 0
-#define _graya_a_shift 8
-#define _graya_getk(c) (((c) >> _graya_k_shift) & 0xff)
-#define _graya_geta(c) (((c) >> _graya_a_shift) & 0xff)
+#define _graya_k_shift	0
+#define _graya_a_shift	8
+#define _graya_getk(c)	(((c) >> _graya_k_shift) & 0xff)
+#define _graya_geta(c)	(((c) >> _graya_a_shift) & 0xff)
 #define _graya(k,a)				\
   (((k) << _graya_k_shift) |			\
    ((a) << _graya_a_shift))
@@ -69,10 +71,12 @@ struct Image
   GfxObj gfxobj;
   int imgtype;
   int w, h;
-  unsigned char *dat;		/* pixmap data */
-  unsigned char **line;		/* start of each scanline */
+  ase_uint8 *dat;		/* pixmap data */
+  ase_uint8 **line;		/* start of each scanline */
   struct ImageMethods *method;
-//   struct BITMAP *bmp;
+#ifdef USE_ALLEGRO_IMAGE
+  struct BITMAP *bmp;
+#endif
 };
 
 typedef struct ImageMethods
@@ -112,8 +116,7 @@ void image_rect(Image *image, int x1, int y1, int x2, int y2, int color);
 void image_rectfill(Image *image, int x1, int y1, int x2, int y2, int color);
 void image_line(Image *image, int x1, int y1, int x2, int y2, int color);
 void image_ellipse(Image *image, int x1, int y1, int x2, int y2, int color);
-void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2,
-		       int color);
+void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2, int color);
 
 void image_to_allegro(Image *image, struct BITMAP *bmp, int x, int y);
 

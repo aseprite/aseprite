@@ -101,7 +101,7 @@ static int save_ICO(Sprite *sprite)
     image_clear(bmp, 0);
     layer_render(sprite->set, bmp, 0, 0, n);
 
-    depth = 8;//bitmap_color_depth(bmp);
+    depth = 8; /* bitmap_color_depth(bmp); */
     bpp = (depth == 8) ? 8 : 24;
     bw = (((bmp->w * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((bmp->w + 7) / 8) + 3) / 4) * 4;

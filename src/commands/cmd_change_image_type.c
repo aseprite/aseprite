@@ -86,12 +86,12 @@ static void cmd_change_image_type_execute(const char *argument)
       destimgtype = IMAGE_RGB;
     else if (jwidget_is_selected(radio2))
       destimgtype = IMAGE_GRAYSCALE;
-    else if (jwidget_is_selected(radio3))
+    else
       destimgtype = IMAGE_INDEXED;
 
     if (jwidget_is_selected(dither1))
       dithermethod = DITHERING_NONE;
-    else if (jwidget_is_selected(dither2))
+    else
       dithermethod = DITHERING_ORDERED;
 
     use_current_sprite_rgb_map();

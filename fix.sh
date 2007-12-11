@@ -120,4 +120,3 @@ gen_makefile()
 }
 
 gen_makefile makefile conf
-gen_makefile jinete/makefile

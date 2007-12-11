@@ -256,9 +256,9 @@ static void merge_zoomed_image1(Image *dst, Image *src,
 				int x, int y, int opacity,
 				int blend_mode, int zoom)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
-  unsigned char *scanline, *scanline_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
+  ase_uint8 *scanline, *scanline_address;
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
@@ -311,18 +311,18 @@ static void merge_zoomed_image1(Image *dst, Image *src,
   if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
     return;
 
-  sizeof_box = sizeof(unsigned char) * box_w;
+  sizeof_box = sizeof(ase_uint8) * box_w;
   right = dst_x+dst_w-1;
   bottom = dst_y+dst_h-1;
 
-  scanline = jmalloc (sizeof(unsigned char) * src_w);
+  scanline = jmalloc(sizeof(ase_uint8) * src_w);
 
   /* merge process */
 
   for (y=0; y<src_h; y++) {
     /* process a new line */
-    src_address = ((unsigned char **)src->line)[src_y] + src_x;
-    dst_address = ((unsigned char **)dst->line)[dst_y] + dst_x;
+    src_address = ((ase_uint8 **)src->line)[src_y] + src_x;
+    dst_address = ((ase_uint8 **)dst->line)[dst_y] + dst_x;
     scanline_address = scanline;
 
     /* read `src' and `dst' and blend them, put the result in `scanline' */
@@ -354,7 +354,7 @@ static void merge_zoomed_image1(Image *dst, Image *src,
 
     /* put the line in `dst' */
     for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((unsigned char **)dst->line)[dst_y] + dst_x;
+      dst_address = ((ase_uint8 **)dst->line)[dst_y] + dst_x;
       scanline_address = scanline;
 
       line_x = dst_x;
@@ -399,7 +399,7 @@ done_with_line:;
   }
 
 done_with_blit:;
-  jfree (scanline);
+  jfree(scanline);
 }
 
 static void merge_zoomed_image2(Image *dst, Image *src,
@@ -407,9 +407,9 @@ static void merge_zoomed_image2(Image *dst, Image *src,
 				int blend_mode, int zoom)
 {
   BLEND_COLOR blender = _graya_blenders[blend_mode];
-  unsigned short *src_address;
-  unsigned short *dst_address;
-  unsigned short *scanline, *scanline_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
+  ase_uint16 *scanline, *scanline_address;
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
@@ -462,25 +462,25 @@ static void merge_zoomed_image2(Image *dst, Image *src,
   if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
     return;
 
-  sizeof_box = sizeof(unsigned short) * box_w;
+  sizeof_box = sizeof(ase_uint16) * box_w;
   right = dst_x+dst_w-1;
   bottom = dst_y+dst_h-1;
 
-  scanline = jmalloc(sizeof(unsigned short) * src_w);
+  scanline = jmalloc(sizeof(ase_uint16) * src_w);
 
   /* merge process */
 
-  //  opacity = (opacity)? opacity+1: 0;
+  /* opacity = (opacity)? opacity+1: 0; */
 
   for (y=0; y<src_h; y++) {
     /* process a new line */
-    src_address = ((unsigned short **)src->line)[src_y] + src_x;
-    dst_address = ((unsigned short **)dst->line)[dst_y] + dst_x;
+    src_address = ((ase_uint16 **)src->line)[src_y] + src_x;
+    dst_address = ((ase_uint16 **)dst->line)[dst_y] + dst_x;
     scanline_address = scanline;
 
     /* read `src' and `dst' and blend them, put the result in `scanline' */
     for (x=0; x<src_w; x++) {
-      *scanline_address = (*blender) (*dst_address, *src_address, opacity);
+      *scanline_address = (*blender)(*dst_address, *src_address, opacity);
 
       src_address++;
       dst_address += box_w;
@@ -495,7 +495,7 @@ static void merge_zoomed_image2(Image *dst, Image *src,
 
     /* put the line in `dst' */
     for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((unsigned short **)dst->line)[dst_y] + dst_x;
+      dst_address = ((ase_uint16 **)dst->line)[dst_y] + dst_x;
       scanline_address = scanline;
 
       line_x = dst_x;
@@ -540,7 +540,7 @@ done_with_line:;
   }
 
 done_with_blit:;
-  jfree (scanline);
+  jfree(scanline);
 }
 
 static void merge_zoomed_image4(Image *dst, Image *src,
@@ -548,9 +548,9 @@ static void merge_zoomed_image4(Image *dst, Image *src,
 				int blend_mode, int zoom)
 {
   BLEND_COLOR blender = _rgba_blenders[blend_mode];
-  unsigned long *src_address;
-  unsigned long *dst_address;
-  unsigned long *scanline, *scanline_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
+  ase_uint32 *scanline, *scanline_address;
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
@@ -603,25 +603,25 @@ static void merge_zoomed_image4(Image *dst, Image *src,
   if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
     return;
 
-  sizeof_box = sizeof(unsigned long) * box_w;
+  sizeof_box = sizeof(ase_uint32) * box_w;
   right = dst_x+dst_w-1;
   bottom = dst_y+dst_h-1;
 
-  scanline = jmalloc(sizeof(unsigned long) * src_w);
+  scanline = jmalloc(sizeof(ase_uint32) * src_w);
 
   /* merge process */
 
-  //  opacity = (opacity)? opacity+1: 0;
+  /* opacity = (opacity)? opacity+1: 0; */
 
   for (y=0; y<src_h; y++) {
     /* process a new line */
-    src_address = ((unsigned long **)src->line)[src_y] + src_x;
-    dst_address = ((unsigned long **)dst->line)[dst_y] + dst_x;
+    src_address = ((ase_uint32 **)src->line)[src_y] + src_x;
+    dst_address = ((ase_uint32 **)dst->line)[dst_y] + dst_x;
     scanline_address = scanline;
 
     /* read `src' and `dst' and blend them, put the result in `scanline' */
     for (x=0; x<src_w; x++) {
-      *scanline_address = (*blender) (*dst_address, *src_address, opacity);
+      *scanline_address = (*blender)(*dst_address, *src_address, opacity);
 
       src_address++;
       dst_address += box_w;
@@ -636,7 +636,7 @@ static void merge_zoomed_image4(Image *dst, Image *src,
 
     /* put the line in `dst' */
     for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((unsigned long **)dst->line)[dst_y] + dst_x;
+      dst_address = ((ase_uint32 **)dst->line)[dst_y] + dst_x;
       scanline_address = scanline;
 
       line_x = dst_x;
@@ -681,5 +681,5 @@ done_with_line:;
   }
 
 done_with_blit:;
-  jfree (scanline);
+  jfree(scanline);
 }

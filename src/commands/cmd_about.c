@@ -56,7 +56,7 @@ static void cmd_about_execute(const char *argument)
     jfree(authors_txt);
   }
   else {
-    view = textbox = NULL;
+    view = textbox = separator2 = NULL;
   }
 
   label3 = jlabel_new(COPYRIGHT);

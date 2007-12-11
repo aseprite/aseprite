@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* #define USE_ALLEGRO_IMAGE */
-
 #include "config.h"
 
 #ifndef USE_PRECOMPILED_HEADER
@@ -47,205 +45,7 @@ static ImageMethods *image_methods[] =
   &bitmap_methods,		/* IMAGE_BITMAP */
 };
 #else
-/**********************************************************************/
-/**********************************************************************/
-/**********************************************************************/
-
-#undef BYTES
-#undef LINES
-
-#define BYTES(image)   ((unsigned char *)image->dat)
-#define LINES(image)   ((unsigned char **)image->line)
-
-static int alleg_init (Image *image)
-{
-  static int _image_depth[] = { 32, 16, 8, 8 };
-  image->bmp = create_bitmap_ex (_image_depth[image->imgtype],
-				 image->w, image->h);
-  image->dat = image->bmp->dat;
-  image->line = image->bmp->line;
-  return 0;
-}
-
-static int alleg_getpixel (const Image *image, int x, int y)
-{
-  return getpixel (image->bmp, x, y);
-}
-
-static void alleg_putpixel (Image *image, int x, int y, int color)
-{
-  putpixel (image->bmp, x, y, color);
-}
-
-static void alleg_clear (Image *image, int color)
-{
-  clear_to_color (image->bmp, color);
-}
-
-static void alleg_copy (Image *dst, const Image *src, int x, int y)
-{
-  blit (src->bmp, dst->bmp, 0, 0, x, y, src->w, src->h);
-#if 0
-  unsigned char *src_address;
-  unsigned char *dst_address;
-  int xbeg, xend, xsrc;
-  int ybeg, yend, ysrc, ydst;
-  int bytes;
-
-  /* clipping */
-
-  xsrc = 0;
-  ysrc = 0;
-
-  xbeg = x;
-  ybeg = y;
-  xend = x+src->w-1;
-  yend = y+src->h-1;
-
-  if ((xend < 0) || (xbeg >= dst->w) ||
-      (yend < 0) || (ybeg >= dst->h))
-    return;
-
-  if (xbeg < 0) {
-    xsrc -= xbeg;
-    xbeg = 0;
-  }
-
-  if (ybeg < 0) {
-    ysrc -= ybeg;
-    ybeg = 0;
-  }
-
-  if (xend >= dst->w)
-    xend = dst->w-1;
-
-  if (yend >= dst->h)
-    yend = dst->h-1;
-
-  /* copy process */
-
-  bytes = (xend - xbeg + 1);
-
-  for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-    src_address = LINES (src)[ysrc]+xsrc;
-    dst_address = LINES (dst)[ydst]+xbeg;
-
-    memcpy (dst_address, src_address, bytes);
-  }
-#endif
-}
-
-/* if "color_map" is not NULL, it's used by the routine to merge the
-   source and the destionation pixels */
-static void alleg_merge (Image *dst, const Image *src,
-			 int x, int y, int opacity, int blend_mode)
-{
-  masked_blit (src->bmp, dst->bmp, 0, 0, x, y, src->w, src->h);
-#if 0
-  unsigned char *src_address;
-  unsigned char *dst_address;
-  int xbeg, xend, xsrc, xdst;
-  int ybeg, yend, ysrc, ydst;
-
-  /* clipping */
-
-  xsrc = 0;
-  ysrc = 0;
-
-  xbeg = x;
-  ybeg = y;
-  xend = x+src->w-1;
-  yend = y+src->h-1;
-
-  if ((xend < 0) || (xbeg >= dst->w) ||
-      (yend < 0) || (ybeg >= dst->h))
-    return;
-
-  if (xbeg < 0) {
-    xsrc -= xbeg;
-    xbeg = 0;
-  }
-
-  if (ybeg < 0) {
-    ysrc -= ybeg;
-    ybeg = 0;
-  }
-
-  if (xend >= dst->w)
-    xend = dst->w-1;
-
-  if (yend >= dst->h)
-    yend = dst->h-1;
-
-  /* merge process */
-
-  /* direct copy */
-  if (blend_mode == BLEND_MODE_COPY) {
-    for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-      src_address = LINES (src)[ysrc]+xsrc;
-      dst_address = LINES (dst)[ydst]+xbeg;
-
-      for (xdst=xbeg; xdst<=xend; xdst++) {
-	*dst_address = (*src_address);
-
-	dst_address++;
-	src_address++;
-      }
-    }
-  }
-  /* with mask */
-  else {
-    for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
-      src_address = LINES (src)[ysrc]+xsrc;
-      dst_address = LINES (dst)[ydst]+xbeg;
-
-      for (xdst=xbeg; xdst<=xend; xdst++) {
-	if (*src_address) {
-	  if (color_map)
-	    *dst_address = color_map->data[*src_address][*dst_address];
-	  else
-	    *dst_address = (*src_address);
-	}
-
-	dst_address++;
-	src_address++;
-      }
-    }
-  }
-#endif
-}
-
-static void alleg_hline (Image *image, int x1, int y, int x2, int color)
-{
-  hline (image->bmp, x1, y, x2, color);
-}
-
-static void alleg_rectfill (Image *image, int x1, int y1, int x2, int y2, int color)
-{
-  rectfill (image->bmp, x1, y1, x2, y2, color);
-}
-
-static void alleg_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
-{
-  blit (image->bmp, bmp, 0, 0, _x, _y, image->w, image->h);
-}
-
-static ImageMethods alleg_methods =
-{
-  alleg_init,
-  alleg_getpixel,
-  alleg_putpixel,
-  alleg_clear,
-  alleg_copy,
-  alleg_merge,
-  alleg_hline,
-  alleg_rectfill,
-  alleg_to_allegro,
-};
-
-/**********************************************************************/
-/**********************************************************************/
-/**********************************************************************/
+#include "imgalleg.c"
 #endif
 
 Image *image_new(int imgtype, int w, int h)
@@ -341,12 +141,12 @@ Image *image_crop(const Image *image, int x, int y, int w, int h)
   if ((w < 1) || (h < 1))
     return NULL;
 
-  trim = image_new (image->imgtype, w, h);
+  trim = image_new(image->imgtype, w, h);
   if (!trim)
     return NULL;
 
-  image_clear (trim, 0);
-  image_copy (trim, image, -x, -y);
+  image_clear(trim, 0);
+  image_copy(trim, image, -x, -y);
 
   return trim;
 }
@@ -367,7 +167,7 @@ void image_hline(Image *image, int x1, int y, int x2, int color)
   if (x1 < 0) x1 = 0;
   if (x2 >= image->w) x2 = image->w-1;
 
-  image->method->hline (image, x1, y, x2, color);
+  image->method->hline(image, x1, y, x2, color);
 }
 
 void image_vline(Image *image, int x, int y1, int y2, int color)
@@ -387,7 +187,7 @@ void image_vline(Image *image, int x, int y1, int y2, int color)
   if (y2 >= image->h) y2 = image->h-1;
 
   for (t=y1; t<=y2; t++)
-    image->method->putpixel (image, x, t, color);
+    image->method->putpixel(image, x, t, color);
 }
 
 void image_rect(Image *image, int x1, int y1, int x2, int y2, int color)
@@ -463,24 +263,24 @@ static void hline_for_image(int x1, int y, int x2, Data *data)
 void image_line(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   Data data = { image, color };
-  algo_line (x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
+  algo_line(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
 void image_ellipse(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   Data data = { image, color };
-  algo_ellipse (x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
+  algo_ellipse(x1, y1, x2, y2, &data, (AlgoPixel)pixel_for_image);
 }
 
 void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2, int color)
 {
   Data data = { image, color };
-  algo_ellipsefill (x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
+  algo_ellipsefill(x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
 }
 
 void image_to_allegro(Image *image, struct BITMAP *bmp, int x, int y)
 {
-  image->method->to_allegro (image, bmp, x, y);
+  image->method->to_allegro(image, bmp, x, y);
 }
 
 void image_convert(Image *dst, const Image *src)
@@ -491,7 +291,7 @@ void image_convert(Image *dst, const Image *src)
   if ((src->w != dst->w) || (src->h != dst->h))
     return;
   else if (src->imgtype == dst->imgtype) {
-    image_copy (dst, src, 0, 0);
+    image_copy(dst, src, 0, 0);
     return;
   }
 
@@ -507,14 +307,14 @@ void image_convert(Image *dst, const Image *src)
 	case IMAGE_GRAYSCALE:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel (src, x, y);
-	      rgb_to_hsv (_rgba_getr (c),
-			  _rgba_getg (c),
-			  _rgba_getb (c), &hue, &s, &v);
+	      c = src->method->getpixel(src, x, y);
+	      rgb_to_hsv(_rgba_getr(c),
+			 _rgba_getg(c),
+			 _rgba_getb(c), &hue, &s, &v);
 	      v = v * 255.0f;
-	      dst->method->putpixel (dst, x, y,
-				     _graya((int)MID (0, v, 255),
-					    _rgba_geta (c)));
+	      dst->method->putpixel(dst, x, y,
+				    _graya((int)MID(0, v, 255),
+					   _rgba_geta(c)));
 	    }
 	  }
 	  break;
@@ -523,14 +323,14 @@ void image_convert(Image *dst, const Image *src)
 	case IMAGE_INDEXED:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel (src, x, y);
+	      c = src->method->getpixel(src, x, y);
 	      if  (!_rgba_geta (c))
-		dst->method->putpixel (dst, x, y, 0);
+		dst->method->putpixel(dst, x, y, 0);
 	      else
-		dst->method->putpixel (dst, x, y,
-				       makecol8 (_rgba_getr (c),
-						 _rgba_getg (c),
-						 _rgba_getb (c)));
+		dst->method->putpixel(dst, x, y,
+				      makecol8(_rgba_getr(c),
+					       _rgba_getg(c),
+					       _rgba_getb(c)));
 	    }
 	  }
 	  break;
@@ -544,12 +344,12 @@ void image_convert(Image *dst, const Image *src)
 	case IMAGE_RGB:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel (src, x, y);
-	      dst->method->putpixel (dst, x, y,
-				     _rgba (_graya_getk (c),
-					    _graya_getk (c),
-					    _graya_getk (c),
-					    _graya_geta (c)));
+	      c = src->method->getpixel(src, x, y);
+	      dst->method->putpixel(dst, x, y,
+				    _rgba(_graya_getk(c),
+					  _graya_getk(c),
+					  _graya_getk(c),
+					  _graya_geta(c)));
 	    }
 	  }
 	  break;
@@ -558,14 +358,14 @@ void image_convert(Image *dst, const Image *src)
 	case IMAGE_INDEXED:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel (src, x, y);
+	      c = src->method->getpixel(src, x, y);
 	      if  (!_graya_geta (c))
-		dst->method->putpixel (dst, x, y, 0);
+		dst->method->putpixel(dst, x, y, 0);
 	      else
-		dst->method->putpixel (dst, x, y,
-				       makecol8 (_graya_getk (c),
-						 _graya_getk (c),
-						 _graya_getk (c)));
+		dst->method->putpixel(dst, x, y,
+				      makecol8(_graya_getk(c),
+					       _graya_getk(c),
+					       _graya_getk(c)));
 	    }
 	  }
 	  break;
@@ -579,14 +379,14 @@ void image_convert(Image *dst, const Image *src)
 	case IMAGE_RGB:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel (src, x, y);
+	      c = src->method->getpixel(src, x, y);
 	      if (!c)
-		dst->method->putpixel (dst, x, y, 0);
+		dst->method->putpixel(dst, x, y, 0);
 	      else
-		dst->method->putpixel (dst, x, y,
-				       _rgba (getr8 (c),
-					      getg8 (c),
-					      getb8 (c), 255));
+		dst->method->putpixel(dst, x, y,
+				      _rgba(getr8(c),
+					    getg8(c),
+					    getb8(c), 255));
 	    }
 	  }
 	  break;
@@ -595,14 +395,14 @@ void image_convert(Image *dst, const Image *src)
 	case IMAGE_GRAYSCALE:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel (src, x, y);
+	      c = src->method->getpixel(src, x, y);
 	      if (!c)
-		dst->method->putpixel (dst, x, y, 0);
+		dst->method->putpixel(dst, x, y, 0);
 	      else {
-		rgb_to_hsv (getr8 (c), getg8 (c), getb8 (c), &hue, &s, &v);
+		rgb_to_hsv(getr8(c), getg8(c), getb8(c), &hue, &s, &v);
 		v = v * 255.0f;
-		dst->method->putpixel (dst, x, y,
-				       _graya ((int)MID (0, v, 255), 255));
+		dst->method->putpixel(dst, x, y,
+				      _graya((int)MID(0, v, 255), 255));
 	      }
 	    }
 	  }
@@ -625,8 +425,8 @@ int image_count_diff(const Image *i1, const Image *i2)
 
     case IMAGE_RGB:
       {
-	unsigned long *address1 = (unsigned long *)i1->dat;
-	unsigned long *address2 = (unsigned long *)i2->dat;
+	ase_uint32 *address1 = (ase_uint32 *)i1->dat;
+	ase_uint32 *address2 = (ase_uint32 *)i2->dat;
 	for (c=0; c<size; c++)
 	  if (*(address1++) != *(address2++))
 	    diff++;
@@ -635,8 +435,8 @@ int image_count_diff(const Image *i1, const Image *i2)
 
     case IMAGE_GRAYSCALE:
       {
-	unsigned short *address1 = (unsigned short *)i1->dat;
-	unsigned short *address2 = (unsigned short *)i2->dat;
+	ase_uint16 *address1 = (ase_uint16 *)i1->dat;
+	ase_uint16 *address2 = (ase_uint16 *)i2->dat;
 	for (c=0; c<size; c++)
 	  if (*(address1++) != *(address2++))
 	    diff++;
@@ -645,8 +445,8 @@ int image_count_diff(const Image *i1, const Image *i2)
 
     case IMAGE_INDEXED:
       {
-	unsigned char *address1 = (unsigned char *)i1->dat;
-	unsigned char *address2 = (unsigned char *)i2->dat;
+	ase_uint8 *address1 = (ase_uint8 *)i1->dat;
+	ase_uint8 *address2 = (ase_uint8 *)i2->dat;
 	for (c=0; c<size; c++)
 	  if (*(address1++) != *(address2++))
 	    diff++;
@@ -656,8 +456,8 @@ int image_count_diff(const Image *i1, const Image *i2)
     case IMAGE_BITMAP:
       /* TODO test it */
       {
-	unsigned char *address1 = (unsigned char *)i1->dat;
-	unsigned char *address2 = (unsigned char *)i2->dat;
+	ase_uint8 *address1 = (ase_uint8 *)i1->dat;
+	ase_uint8 *address2 = (ase_uint8 *)i2->dat;
 	div_t d1 = div (0, 8);
 	div_t d2 = div (0, 8);
 	for (c=0; c<size; c++) {

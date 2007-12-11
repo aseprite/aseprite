@@ -178,7 +178,7 @@ static Image *render_text (FONT *f, const char *text, int color)
 #define DO(type, colfunc)				\
   {							\
     register int c;					\
-    unsigned long *src = (unsigned long *)bmp->dat;	\
+    ase_uint32 *src = (ase_uint32 *)bmp->dat;		\
     type *dst = (type *)image->dat;			\
     for (i=0; i<pixels; i++) {				\
       c = *src;						\
@@ -192,13 +192,13 @@ static Image *render_text (FONT *f, const char *text, int color)
   Image *image;
   BITMAP *bmp;
 
-  w = text_length (f, text);
-  h = text_height (f);
+  w = text_length(f, text);
+  h = text_height(f);
   pixels = w*h;
   if (!pixels)
     return NULL;
 
-  bmp = create_bitmap_ex (32, w, h);
+  bmp = create_bitmap_ex(32, w, h);
   if (!bmp)
     return NULL;
 
@@ -208,36 +208,36 @@ static Image *render_text (FONT *f, const char *text, int color)
   clear_to_color(bmp, makecol32 (255, 0, 255));
   textout(bmp, f, text, 0, 0, makecol32 (255, 255, 255));
 
-  image = image_new (current_sprite->imgtype, w, h);
+  image = image_new(current_sprite->imgtype, w, h);
   if (!image) {
-    destroy_bitmap (bmp);
+    destroy_bitmap(bmp);
     return NULL;
   }
 
-  image_clear (image, 0);
-  acquire_bitmap (bmp);
+  image_clear(image, 0);
+  acquire_bitmap(bmp);
 
   switch (image->imgtype) {
 
     case IMAGE_RGB:
-      DO(unsigned long, _rgba(_rgba_getr(color),
-			      _rgba_getg(color),
-			      _rgba_getb(color), getg32(c)));
+      DO(ase_uint32, _rgba(_rgba_getr(color),
+			   _rgba_getg(color),
+			   _rgba_getb(color), getg32(c)));
       break;
 
     case IMAGE_GRAYSCALE:
-      DO(unsigned short, _graya(_graya_getk(color), getg32(c)));
+      DO(ase_uint16, _graya(_graya_getk(color), getg32(c)));
       break;
 
     case IMAGE_INDEXED:
       use_current_sprite_rgb_map();
-      DO(unsigned char, c == makecol32(255, 0, 255) ? 0: color);
+      DO(ase_uint8, c == makecol32(255, 0, 255) ? 0: color);
       restore_rgb_map();
       break;
   }
 
-  release_bitmap (bmp);
-  destroy_bitmap (bmp);
+  release_bitmap(bmp);
+  destroy_bitmap(bmp);
   return image;
 }
 
@@ -248,38 +248,38 @@ static FONT *my_load_font (const char *filename)
   char buf[256];
 
   /* directories to search */
-  dirs = dirs_new ();
+  dirs = dirs_new();
 
-  dirs_add_path (dirs, filename);
+  dirs_add_path(dirs, filename);
 
-  usprintf (buf, "fonts/%s", filename);
-  dirs_cat_dirs (dirs, filename_in_datadir (buf));
+  usprintf(buf, "fonts/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
-  usprintf (buf, "fonts/%s", get_filename (filename));
-  dirs_cat_dirs (dirs, filename_in_datadir (buf));
+  usprintf(buf, "fonts/%s", get_filename (filename));
+  dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
   /* search the font */
   for (dir=dirs; dir; dir=dir->next) {
     /* load the font */
-    f = ji_font_load (dir->path);
+    f = ji_font_load(dir->path);
     if (f)
       break;
     else {
-      if (exists (dir->path))
-	PRINTF ("Unknown font format \"%s\"\n", dir->path);
+      if (exists(dir->path))
+	PRINTF("Unknown font format \"%s\"\n", dir->path);
     }
   }
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 
   /* error loading font */
   if (!f)
-    console_printf (_("Error loading font.\n"));
+    console_printf(_("Error loading font.\n"));
 
   return f;
 }
 
-static void button_font_command (JWidget widget)
+static void button_font_command(JWidget widget)
 {
   char *filename;
 
@@ -287,15 +287,15 @@ static void button_font_command (JWidget widget)
 			    get_config_string ("DrawText", "Font", ""),
 			    "pcx,bmp,tga,lbm,ttf");
   if (filename) {
-    set_config_string ("DrawText", "Font", filename);
-    update_button_text ();
-    jfree (filename);
+    set_config_string("DrawText", "Font", filename);
+    update_button_text();
+    jfree(filename);
   }
 }
 
-static void update_button_text (void)
+static void update_button_text(void)
 {
-  const char *font_str = get_config_string ("DrawText", "Font", "allegro.pcx");
+  const char *font_str = get_config_string("DrawText", "Font", "allegro.pcx");
 
-  jwidget_set_text (font_button, get_filename (font_str));
+  jwidget_set_text(font_button, get_filename(font_str));
 }

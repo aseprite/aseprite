@@ -28,21 +28,21 @@ struct Mask;
 
 #define IMAGE_ADDRESS(d,x,y)						\
   ((void *)((d)->imgtype == IMAGE_RGB)?					\
-             (void *)(((unsigned long **)(d)->line)[(y)]+(x)):		\
+             (void *)(((ase_uint32 **)(d)->line)[(y)]+(x)):		\
            ((d)->imgtype == IMAGE_GRAYSCALE)?				\
-             (void *)(((unsigned short **)(d)->line)[(y)]+(x)):		\
+             (void *)(((ase_uint16 **)(d)->line)[(y)]+(x)):		\
            ((d)->imgtype == IMAGE_INDEXED)?				\
-             (void *)(((unsigned char **)(d)->line)[(y)]+(x)): 0)
+             (void *)(((ase_uint8 **)(d)->line)[(y)]+(x)): 0)
 
 #define IMAGE_SHIFT(d)				\
   (((d)->imgtype == IMAGE_RGB)?       2:	\
    ((d)->imgtype == IMAGE_GRAYSCALE)? 1: 0)
 
 #define IMAGE_LINE_SIZE(image, width)		\
-  ((width) << IMAGE_SHIFT (image))
+  ((width) << IMAGE_SHIFT(image))
 
 #define DIRTY_LINE_SIZE(width)			\
-  (IMAGE_LINE_SIZE (dirty->image, width))
+  (IMAGE_LINE_SIZE(dirty->image, width))
 
 typedef struct Dirty Dirty;
 
@@ -84,7 +84,7 @@ void dirty_putpixel_brush(Dirty *dirty, struct Brush *brush, int x, int y);
 void dirty_hline_brush(Dirty *dirty, struct Brush *brush, int x1, int y, int x2);
 void dirty_line_brush(Dirty *dirty, struct Brush *brush, int x1, int y1, int x2, int y2);
 
-/* void dirty_optimize (Dirty *dirty); */
+/* void dirty_optimize(Dirty *dirty); */
 
 void dirty_get(Dirty *dirty);
 void dirty_put(Dirty *dirty);

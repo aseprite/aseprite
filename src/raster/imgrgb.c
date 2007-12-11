@@ -19,18 +19,18 @@
 #undef BYTES
 #undef LINES
 
-#define BYTES(image)   ((unsigned long *)image->dat)
-#define LINES(image)   ((unsigned long **)image->line)
+#define BYTES(image)   ((ase_uint32 *)image->dat)
+#define LINES(image)   ((ase_uint32 **)image->line)
 
 static int rgb_regenerate_lines (Image *image)
 {
-  unsigned long *address = BYTES (image);
+  ase_uint32 *address = BYTES (image);
   int y;
 
   if (LINES (image))
     jfree (LINES (image));
 
-  image->line = jmalloc (sizeof (unsigned long *) * image->h);
+  image->line = jmalloc(sizeof(ase_uint32 *) * image->h);
   if (!LINES (image))
     return -1;
 
@@ -44,7 +44,7 @@ static int rgb_regenerate_lines (Image *image)
 
 static int rgb_init (Image *image)
 {
-  image->dat = jmalloc (sizeof (unsigned long) * image->w * image->h);
+  image->dat = jmalloc(sizeof(ase_uint32) * image->w * image->h);
   if (!BYTES (image))
     return -1;
 
@@ -68,17 +68,17 @@ static void rgb_putpixel (Image *image, int x, int y, int color)
 
 static void rgb_clear (Image *image, int color)
 {
-  unsigned long *address = BYTES (image);
+  ase_uint32 *address = BYTES (image);
   unsigned int c, size = image->w * image->h;
 
   for (c=0; c<size; c++)
     *(address++) = color;
 }
 
-static void rgb_copy (Image *dst, const Image *src, int x, int y)
+static void rgb_copy(Image *dst, const Image *src, int x, int y)
 {
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int xbeg, xend, xsrc;
   int ybeg, yend, ysrc, ydst;
   int bytes;
@@ -129,8 +129,8 @@ static void rgb_merge (Image *dst, const Image *src,
 		       int x, int y, int opacity, int blend_mode)
 {
   BLEND_COLOR blender = _rgba_blenders[blend_mode];
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int xbeg, xend, xsrc, xdst;
   int ybeg, yend, ysrc, ydst;
 
@@ -185,7 +185,7 @@ static void rgb_merge (Image *dst, const Image *src,
 
 static void rgb_hline (Image *image, int x1, int y, int x2, int color)
 {
-  unsigned long *address = LINES (image)[y]+x1;
+  ase_uint32 *address = LINES (image)[y]+x1;
   int x;
 
   for (x=x1; x<=x2; x++)
@@ -194,7 +194,7 @@ static void rgb_hline (Image *image, int x1, int y, int x2, int color)
 
 static void rgb_rectfill (Image *image, int x1, int y1, int x2, int y2, int color)
 {
-  unsigned long *address;
+  ase_uint32 *address;
   int x, y;
 
   for (y=y1; y<=y2; y++) {
@@ -206,9 +206,9 @@ static void rgb_rectfill (Image *image, int x1, int y1, int x2, int y2, int colo
 
 static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 {
-  unsigned long *address = BYTES (image);
+  ase_uint32 *address = BYTES(image);
   unsigned long bmp_address;
-  int depth = bitmap_color_depth (bmp);
+  int depth = bitmap_color_depth(bmp);
   int x, y;
 
   bmp_select (bmp);
@@ -222,11 +222,11 @@ static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 	  bmp_address = (unsigned long)bmp->line[_y];
 
 	  for (x=0; x<image->w; x++) {
-	    outportw (0x3C4, (0x100<<((_x+x)&3))|2);
-	    bmp_write8 (bmp_address+((_x+x)>>2),
-			makecol8 ((*address) & 0xff,
-				  ((*address)>>8) & 0xff,
-				  ((*address)>>16) & 0xff));
+	    outportw(0x3C4, (0x100<<((_x+x)&3))|2);
+	    bmp_write8(bmp_address+((_x+x)>>2),
+		       makecol8((*address) & 0xff,
+				((*address)>>8) & 0xff,
+				((*address)>>16) & 0xff));
 	    address++;
 	  }
   
@@ -236,13 +236,13 @@ static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
       else {
 #endif
 	for (y=0; y<image->h; y++) {
-	  bmp_address = bmp_write_line (bmp, _y)+_x;
+	  bmp_address = bmp_write_line(bmp, _y)+_x;
   
 	  for (x=0; x<image->w; x++) {
-	    bmp_write8 (bmp_address,
-			makecol8 ((*address) & 0xff,
-				  ((*address)>>8) & 0xff,
-				  ((*address)>>16) & 0xff));
+	    bmp_write8(bmp_address,
+		       makecol8((*address) & 0xff,
+				((*address)>>8) & 0xff,
+				((*address)>>16) & 0xff));
 	    address++;
 	    bmp_address++;
 	  }
@@ -258,13 +258,13 @@ static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
       _x <<= 1;
 
       for (y=0; y<image->h; y++) {
-	bmp_address = bmp_write_line (bmp, _y)+_x;
+	bmp_address = bmp_write_line(bmp, _y)+_x;
 
 	for (x=0; x<image->w; x++) {
-	  bmp_write15 (bmp_address,
-		       makecol15 ((*address) & 0xff,
-				  ((*address)>>8) & 0xff,
-				  ((*address)>>16) & 0xff));
+	  bmp_write15(bmp_address,
+		      makecol15((*address) & 0xff,
+				((*address)>>8) & 0xff,
+				((*address)>>16) & 0xff));
 	  address++;
 	  bmp_address += 2;
 	}
@@ -280,10 +280,10 @@ static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 	bmp_address = bmp_write_line (bmp, _y)+_x;
 
 	for (x=0; x<image->w; x++) {
-	  bmp_write16 (bmp_address,
-		       makecol16 ((*address) & 0xff,
-				  ((*address)>>8) & 0xff,
-				  ((*address)>>16) & 0xff));
+	  bmp_write16(bmp_address,
+		      makecol16((*address) & 0xff,
+				((*address)>>8) & 0xff,
+				((*address)>>16) & 0xff));
 	  address++;
 	  bmp_address += 2;
 	}
@@ -299,10 +299,10 @@ static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 	bmp_address = bmp_write_line (bmp, _y)+_x;
 
 	for (x=0; x<image->w; x++) {
-	  bmp_write24 (bmp_address,
-		       makecol24 ((*address) & 0xff,
-				  ((*address)>>8) & 0xff,
-				  ((*address)>>16) & 0xff));
+	  bmp_write24(bmp_address,
+		      makecol24((*address) & 0xff,
+				((*address)>>8) & 0xff,
+				((*address)>>16) & 0xff));
 	  address++;
 	  bmp_address += 3;
 	}
@@ -318,11 +318,11 @@ static void rgb_to_allegro (const Image *image, BITMAP *bmp, int _x, int _y)
 	bmp_address = bmp_write_line (bmp, _y)+_x;
 
 	for (x=0; x<image->w; x++) {
-	  bmp_write32 (bmp_address,
-		       makeacol32 ((*address) & 0xff,
-				   ((*address)>>8) & 0xff,
-				   ((*address)>>16) & 0xff,
-				   ((*address)>>24) & 0xff));
+	  bmp_write32(bmp_address,
+		      makeacol32((*address) & 0xff,
+				 ((*address)>>8) & 0xff,
+				 ((*address)>>16) & 0xff,
+				 ((*address)>>24) & 0xff));
 	  address++;
 	  bmp_address += 4;
 	}

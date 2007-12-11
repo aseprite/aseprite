@@ -83,7 +83,7 @@ typedef struct UndoChunk
   int max_size;
   int size;
   int pos;
-  unsigned char *data;
+  ase_uint8 *data;
 } UndoChunk;
 
 typedef struct UndoStream
@@ -192,8 +192,8 @@ static void undo_chunk_put32(UndoChunk *chunk, long c);
 /* static double undo_chunk_get64(UndoChunk *chunk); */
 /* static void undo_chunk_put64(UndoChunk *chunk, double c); */
 
-static int undo_chunk_read(UndoChunk *chunk, unsigned char *buf, int size);
-static void undo_chunk_write(UndoChunk *chunk, const unsigned char *buf, int size);
+static int undo_chunk_read(UndoChunk *chunk, ase_uint8 *buf, int size);
+static void undo_chunk_write(UndoChunk *chunk, const ase_uint8 *buf, int size);
 
 static char *undo_chunk_read_string(UndoChunk *chunk);
 static void undo_chunk_write_string(UndoChunk *chunk, const char *string);
@@ -221,8 +221,8 @@ static void undo_stream_push_chunk(UndoStream *stream, UndoChunk *chunk);
 /* static long undo_stream_raw_read_dword(UndoStream *stream); */
 /* static void undo_stream_raw_write_dword(UndoStream *stream, long dword); */
 
-/* static int undo_stream_raw_read(UndoStream *stream, unsigned char *buf, int size); */
-/* static void undo_stream_raw_write(UndoStream *stream, unsigned char *buf, int size); */
+/* static int undo_stream_raw_read(UndoStream *stream, ase_uint8 *buf, int size); */
+/* static void undo_stream_raw_write(UndoStream *stream, ase_uint8 *buf, int size); */
 
 /* General undo routines */
 
@@ -466,15 +466,15 @@ void undo_data(Undo *undo, GfxObj *gfxobj, void *data, int size)
 static void chunk_data(UndoStream *stream, GfxObj *gfxobj, void *data, int size)
 {
   UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_DATA);
-  unsigned int offset = (unsigned int)(((unsigned char *)data) -
-				       ((unsigned char *)gfxobj));
+  unsigned int offset = (unsigned int)(((ase_uint8 *)data) -
+				       ((ase_uint8 *)gfxobj));
   unsigned int c;
 
   undo_chunk_put32(chunk, gfxobj->id);
   undo_chunk_put32(chunk, offset);
   undo_chunk_put32(chunk, size);
   for (c=0; c<size; c++)
-    undo_chunk_put8(chunk, ((unsigned char *)data)[c]);
+    undo_chunk_put8(chunk, ((ase_uint8 *)data)[c]);
 
   undo_stream_push_chunk(stream, chunk);
 }
@@ -487,13 +487,13 @@ static void chunk_data_invert(UndoStream *stream, UndoChunk *chunk, int state)
   GfxObj *gfxobj = gfxobj_find(id);
 
   if (gfxobj) {
-    void *data = (void *)(((unsigned char *)gfxobj) + offset);
+    void *data = (void *)(((ase_uint8 *)gfxobj) + offset);
 
     chunk_data(stream, gfxobj, data, size);
 
     /* get the string from the chunk */
     for (c=0; c<size; c++)
-      ((unsigned char *)data)[c] = undo_chunk_get8(chunk);
+      ((ase_uint8 *)data)[c] = undo_chunk_get8(chunk);
   }
 }
 
@@ -697,9 +697,9 @@ static void chunk_dirty(UndoStream *stream, Dirty *dirty)
 
 static void chunk_dirty_invert(UndoStream *stream, UndoChunk *chunk, int state)
 {
-  unsigned long id = undo_chunk_get32 (chunk);
+  unsigned long id = undo_chunk_get32(chunk);
   int imgtype = undo_chunk_get8 (chunk);
-  Image *image = (Image *)gfxobj_find (id);
+  Image *image = (Image *)gfxobj_find(id);
 
   if ((image) && (image->gfxobj.type == GFXOBJ_IMAGE) &&
       (image->imgtype == imgtype)) {
@@ -1334,7 +1334,7 @@ static void undo_chunk_put32(UndoChunk *chunk, long c)
 /*   undo_chunk_put32(chunk, longs[1]); */
 /* } */
 
-static int undo_chunk_read(UndoChunk *chunk, unsigned char *buf, int size)
+static int undo_chunk_read(UndoChunk *chunk, ase_uint8 *buf, int size)
 {
   if (chunk->pos+size > chunk->size)
     return 0;
@@ -1345,7 +1345,7 @@ static int undo_chunk_read(UndoChunk *chunk, unsigned char *buf, int size)
   return size;
 }
 
-static void undo_chunk_write(UndoChunk *chunk, const unsigned char *buf, int size)
+static void undo_chunk_write(UndoChunk *chunk, const ase_uint8 *buf, int size)
 {
   if (chunk->size+size > chunk->max_size) {
     chunk->max_size = chunk->size+size;

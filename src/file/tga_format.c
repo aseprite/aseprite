@@ -69,8 +69,8 @@ static void rle_tga_read(unsigned char *address, int w, int type, PACKFILE *f)
 	if (type == 1)
 	  *(address++) = value;
 	else {
-	  *((unsigned short *)address) = value;
-	  address += sizeof(unsigned short);
+	  *((ase_uint16 *)address) = value;
+	  address += sizeof(ase_uint16);
 	}
       }
     }
@@ -83,8 +83,8 @@ static void rle_tga_read(unsigned char *address, int w, int type, PACKFILE *f)
       }
       else {
 	for (g=0; g<count; g++) {
-	  *((unsigned short *)address) = pack_getc(f);
-	  address += sizeof(unsigned short);
+	  *((ase_uint16 *)address) = pack_getc(f);
+	  address += sizeof(ase_uint16);
 	}
       }
     }
@@ -94,7 +94,7 @@ static void rle_tga_read(unsigned char *address, int w, int type, PACKFILE *f)
 /* rle_tga_read32:
  *  Helper for reading 32 bit RLE data from TGA files.
  */
-static void rle_tga_read32 (unsigned long *address, int w, PACKFILE *f)
+static void rle_tga_read32 (ase_uint32 *address, int w, PACKFILE *f)
 {
   unsigned char value[4];
   int count;
@@ -123,7 +123,7 @@ static void rle_tga_read32 (unsigned long *address, int w, PACKFILE *f)
 /* rle_tga_read24:
  *  Helper for reading 24 bit RLE data from TGA files.
  */
-static void rle_tga_read24 (unsigned long *address, int w, PACKFILE *f)
+static void rle_tga_read24(ase_uint32 *address, int w, PACKFILE *f)
 {
   unsigned char value[4];
   int count;
@@ -152,10 +152,10 @@ static void rle_tga_read24 (unsigned long *address, int w, PACKFILE *f)
 /* rle_tga_read16:
  *  Helper for reading 16 bit RLE data from TGA files.
  */
-static void rle_tga_read16 (unsigned long *address, int w, PACKFILE *f)
+static void rle_tga_read16(ase_uint32 *address, int w, PACKFILE *f)
 {
   unsigned int value;
-  unsigned short color;
+  ase_uint32 color;
   int count;
   int c = 0;
 
@@ -165,21 +165,21 @@ static void rle_tga_read16 (unsigned long *address, int w, PACKFILE *f)
       count = (count & 0x7F) + 1;
       c += count;
       value = pack_igetw(f);
-      color = _rgba (_rgb_scale_5[((value >> 10) & 0x1F)],
-		     _rgb_scale_5[((value >> 5) & 0x1F)],
-		     _rgb_scale_5[(value & 0x1F)], 255);
+      color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
+		    _rgb_scale_5[((value >> 5) & 0x1F)],
+		    _rgb_scale_5[(value & 0x1F)], 255);
 
       while (count--)
-       *(address++) = color;
+	*(address++) = color;
     }
     else {
       count++;
       c += count;
       while (count--) {
         value = pack_igetw(f);
-        color = _rgba (_rgb_scale_5[((value >> 10) & 0x1F)],
-		       _rgb_scale_5[((value >> 5) & 0x1F)],
-		       _rgb_scale_5[(value & 0x1F)], 255);
+        color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
+		      _rgb_scale_5[((value >> 5) & 0x1F)],
+		      _rgb_scale_5[(value & 0x1F)], 255);
         *(address++) = color;
       }
     }
@@ -191,7 +191,7 @@ static void rle_tga_read16 (unsigned long *address, int w, PACKFILE *f)
  *  structure and storing the palette data in the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-static Sprite *load_TGA (const char *filename)
+static Sprite *load_TGA(const char *filename)
 {
   unsigned char image_id[256], image_palette[256][3], rgb[4];
   unsigned char id_length, palette_type, image_type, palette_entry_size;
@@ -337,7 +337,7 @@ static Sprite *load_TGA (const char *filename)
           pack_fread (image->line[yc], image_width, f);
 	else {
 	  for (x=0; x<image_width; x++)
-	    *(((unsigned short **)image->line)[yc]+x) =
+	    *(((ase_uint16 **)image->line)[yc]+x) =
 	      _graya (pack_getc(f), 255);
 	}
 	break;
@@ -345,36 +345,36 @@ static Sprite *load_TGA (const char *filename)
       case 2:
         if (bpp == 32) {
           if (compressed) {
-            rle_tga_read32(image->line[yc], image_width, f);
+            rle_tga_read32((ase_uint32 *)image->line[yc], image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               pack_fread(rgb, 4, f);
-              *(((unsigned long **)image->line)[yc]+x) =
+              *(((ase_uint32 **)image->line)[yc]+x) =
                 _rgba(rgb[2], rgb[1], rgb[0], rgb[3]);
             }
           }
         }
         else if (bpp == 24) {
           if (compressed) {
-            rle_tga_read24(image->line[yc], image_width, f);
+            rle_tga_read24((ase_uint32 *)image->line[yc], image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               pack_fread(rgb, 3, f);
-              *(((unsigned long **)image->line)[yc]+x) =
+              *(((ase_uint32 **)image->line)[yc]+x) =
                 _rgba (rgb[2], rgb[1], rgb[0], 255);
             }
           }
         }
         else {
           if (compressed) {
-            rle_tga_read16(image->line[yc], image_width, f);
+            rle_tga_read16((ase_uint32 *)image->line[yc], image_width, f);
           }
           else {
             for (x=0; x<image_width; x++) {
               c = pack_igetw(f);
-              *(((unsigned long **)image->line)[yc]+x) =
+              *(((ase_uint32 **)image->line)[yc]+x) =
                 _rgba (((c >> 10) & 0x1F),
 		       ((c >> 5) & 0x1F),
 		       (c & 0x1F), 255);

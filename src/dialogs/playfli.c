@@ -100,10 +100,10 @@ static void speed_timer_callback (void)
   speed_timer++;
 }
 
-END_OF_STATIC_FUNCTION (speed_timer_callback);
+END_OF_STATIC_FUNCTION(speed_timer_callback);
 
-static void my_play_fli (const char *filename, bool loop, bool fullscreen,
-			 bool (*callback) ())
+static void my_play_fli(const char *filename, bool loop, bool fullscreen,
+			bool (*callback)())
 {
   unsigned char cmap[768];
   unsigned char omap[768];
@@ -117,16 +117,16 @@ static void my_play_fli (const char *filename, bool loop, bool fullscreen,
   FILE *f;
 
   /* open the file to read in binary mode */
-  f = fopen (filename, "rb");
+  f = fopen(filename, "rb");
   if (!f)
     return;
 
   /* read the header */
-  fli_read_header (f, &fli_header);
-  fseek (f, 128, SEEK_SET);
+  fli_read_header(f, &fli_header);
+  fseek(f, 128, SEEK_SET);
 
-  bmp = create_bitmap_ex (8, fli_header.width, fli_header.height);
-  old = create_bitmap_ex (8, fli_header.width, fli_header.height);
+  bmp = create_bitmap_ex(8, fli_header.width, fli_header.height);
+  old = create_bitmap_ex(8, fli_header.width, fli_header.height);
 
   /* stretch routine doesn't support bitmaps of different color depths */
   if (bitmap_color_depth(ji_screen) != 8)
@@ -161,9 +161,9 @@ static void my_play_fli (const char *filename, bool loop, bool fullscreen,
 
   while (!done) {
     /* read the frame */
-    fli_read_frame (f, &fli_header,
-		    (unsigned char *)old->dat, omap,
-		    (unsigned char *)bmp->dat, cmap);
+    fli_read_frame(f, &fli_header,
+		   (unsigned char *)old->dat, omap,
+		   (unsigned char *)bmp->dat, cmap);
 
     if ((!frpos) || (memcmp (omap, cmap, 768) != 0)) {
       for (c=i=0; c<256; c++) {

@@ -38,40 +38,40 @@ void set_replace_colors (int from, int to, int fuzziness)
   data.fuzziness = MID (0, fuzziness, 255);
 }
 
-void apply_replace_color4 (Effect *effect)
+void apply_replace_color4(Effect *effect)
 {
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int src_r, src_g, src_b, src_a;
   int dst_r, dst_g, dst_b, dst_a;
   int x, c;
 
-  src_address = ((unsigned long **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned long **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint32 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint32 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
-  dst_r = _rgba_getr (data.from);
-  dst_g = _rgba_getg (data.from);
-  dst_b = _rgba_getb (data.from);
-  dst_a = _rgba_geta (data.from);
+  dst_r = _rgba_getr(data.from);
+  dst_g = _rgba_getg(data.from);
+  dst_b = _rgba_getb(data.from);
+  dst_a = _rgba_geta(data.from);
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
 
-    src_r = _rgba_getr (c);
-    src_g = _rgba_getg (c);
-    src_b = _rgba_getb (c);
-    src_a = _rgba_geta (c);
+    src_r = _rgba_getr(c);
+    src_g = _rgba_getg(c);
+    src_b = _rgba_getb(c);
+    src_a = _rgba_geta(c);
 
     if ((src_r >= dst_r-data.fuzziness) && (src_r <= dst_r+data.fuzziness) &&
         (src_g >= dst_g-data.fuzziness) && (src_g <= dst_g+data.fuzziness) &&
@@ -83,36 +83,36 @@ void apply_replace_color4 (Effect *effect)
   }
 }
 
-void apply_replace_color2 (Effect *effect)
+void apply_replace_color2(Effect *effect)
 {
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int src_k, src_a;
   int dst_k, dst_a;
   int x, c;
 
-  src_address = ((unsigned short **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned short **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint16 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint16 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
-  dst_k = _graya_getk (data.from);
-  dst_a = _graya_geta (data.from);
+  dst_k = _graya_getk(data.from);
+  dst_a = _graya_geta(data.from);
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
 
-    src_k = _graya_getk (c);
-    src_a = _graya_geta (c);
+    src_k = _graya_getk(c);
+    src_a = _graya_geta(c);
 
     if ((src_k >= dst_k-data.fuzziness) && (src_k <= dst_k+data.fuzziness) &&
         (src_a >= dst_a-data.fuzziness) && (src_a <= dst_a+data.fuzziness))
@@ -122,25 +122,25 @@ void apply_replace_color2 (Effect *effect)
   }
 }
 
-void apply_replace_color1 (Effect *effect)
+void apply_replace_color1(Effect *effect)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int x, c;
 
-  src_address = ((unsigned char **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned char **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint8 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint8 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);

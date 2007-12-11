@@ -51,10 +51,10 @@ void sprite_quantize_ex(Sprite *sprite, RGB *palette)
   stock = sprite_get_images(sprite, TARGET_ALL, FALSE, NULL, NULL);
   if (stock) {
     /* add a flat image with the current sprite's frame rendered */
-    flat_image = image_new (sprite->imgtype, sprite->w, sprite->h);
-    image_clear (flat_image, 0);
-    sprite_render (sprite, flat_image, 0, 0);
-    stock_add_image (stock, flat_image);
+    flat_image = image_new(sprite->imgtype, sprite->w, sprite->h);
+    image_clear(flat_image, 0);
+    sprite_render(sprite, flat_image, 0, 0);
+    stock_add_image(stock, flat_image);
 
     /* generate the optimized palette */
     {

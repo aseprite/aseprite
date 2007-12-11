@@ -217,8 +217,8 @@ static Sprite *load_PNG(const char *filename)
 
       /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-	register unsigned char *src_address = row_pointer;
-	register unsigned long *dst_address = ((unsigned long **)image->line)[y];
+	register ase_uint8 *src_address = row_pointer;
+	register ase_uint32 *dst_address = ((ase_uint32 **)image->line)[y];
 	register int x, r, g, b, a;
 
 	for (x=0; x<width; x++) {
@@ -231,8 +231,8 @@ static Sprite *load_PNG(const char *filename)
       }
       /* RGB */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
-	register unsigned char *src_address = row_pointer;
-	register unsigned long *dst_address = ((unsigned long **)image->line)[y];
+	register ase_uint8 *src_address = row_pointer;
+	register ase_uint32 *dst_address = ((ase_uint32 **)image->line)[y];
 	register int x, r, g, b;
 
 	for (x=0; x<width; x++) {
@@ -244,8 +244,8 @@ static Sprite *load_PNG(const char *filename)
       }
       /* GRAY_ALPHA */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-	register unsigned char *src_address = row_pointer;
-	register unsigned short *dst_address = ((unsigned short **)image->line)[y];
+	register ase_uint8 *src_address = row_pointer;
+	register ase_uint16 *dst_address = ((ase_uint16 **)image->line)[y];
 	register int x, k, a;
 
 	for (x=0; x<width; x++) {
@@ -256,8 +256,8 @@ static Sprite *load_PNG(const char *filename)
       }
       /* GRAY */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
-	register unsigned char *src_address = row_pointer;
-	register unsigned short *dst_address = ((unsigned short **)image->line)[y];
+	register ase_uint8 *src_address = row_pointer;
+	register ase_uint16 *dst_address = ((ase_uint16 **)image->line)[y];
 	int x, k;
 
 	for (x=0; x<width; x++) {
@@ -267,8 +267,8 @@ static Sprite *load_PNG(const char *filename)
       }
       /* PALETTE */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
-	register unsigned char *src_address = row_pointer;
-	register unsigned char *dst_address = ((unsigned char **)image->line)[y];
+	register ase_uint8 *src_address = row_pointer;
+	register ase_uint8 *dst_address = ((ase_uint8 **)image->line)[y];
 	register int x, c;
 
 	for (x=0; x<width; x++) {
@@ -414,8 +414,8 @@ static int save_PNG(Sprite *sprite)
     for (y = 0; y < height; y++) {
       /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-	register unsigned long *src_address = ((unsigned long **)image->line)[y];
-	register unsigned char *dst_address = row_pointer;
+	register ase_uint32 *src_address = ((ase_uint32 **)image->line)[y];
+	register ase_uint8 *dst_address = row_pointer;
 	register int x, c;
 
 	for (x=0; x<width; x++) {
@@ -428,8 +428,8 @@ static int save_PNG(Sprite *sprite)
       }
       /* RGB */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_RGB) {
-	register unsigned long *src_address = ((unsigned long **)image->line)[y];
-	register unsigned char *dst_address = row_pointer;
+	register ase_uint32 *src_address = ((ase_uint32 **)image->line)[y];
+	register ase_uint8 *dst_address = row_pointer;
 	register int x, c;
 
 	for (x=0; x<width; x++) {
@@ -441,8 +441,8 @@ static int save_PNG(Sprite *sprite)
       }
       /* GRAY_ALPHA */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-	register unsigned short *src_address = ((unsigned short **)image->line)[y];
-	register unsigned char *dst_address = row_pointer;
+	register ase_uint16 *src_address = ((ase_uint16 **)image->line)[y];
+	register ase_uint8 *dst_address = row_pointer;
 	register int x, c;
 
 	for (x=0; x<width; x++) {
@@ -453,8 +453,8 @@ static int save_PNG(Sprite *sprite)
       }
       /* GRAY */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_GRAY) {
-	register unsigned short *src_address = ((unsigned short **)image->line)[y];
-	register unsigned char *dst_address = row_pointer;
+	register ase_uint16 *src_address = ((ase_uint16 **)image->line)[y];
+	register ase_uint8 *dst_address = row_pointer;
 	register int x, c;
 
 	for (x=0; x<width; x++) {
@@ -464,8 +464,8 @@ static int save_PNG(Sprite *sprite)
       }
       /* PALETTE */
       else if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {
-	register unsigned char *src_address = ((unsigned char **)image->line)[y];
-	register unsigned char *dst_address = row_pointer;
+	register ase_uint8 *src_address = ((ase_uint8 **)image->line)[y];
+	register ase_uint8 *dst_address = row_pointer;
 	register int x;
 
 	for (x=0; x<width; x++)

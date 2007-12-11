@@ -56,11 +56,11 @@ FileFormat format_bmp =
 
 typedef struct BITMAPFILEHEADER
 {
-   unsigned long  bfType;
-   unsigned long  bfSize;
-   unsigned short bfReserved1;
-   unsigned short bfReserved2;
-   unsigned long  bfOffBits;
+   ase_uint32 bfType;
+   ase_uint32 bfSize;
+   ase_uint16 bfReserved1;
+   ase_uint16 bfReserved2;
+   ase_uint32 bfOffBits;
 } BITMAPFILEHEADER;
 
 /* Used for both OS/2 and Windows BMP. 
@@ -68,38 +68,38 @@ typedef struct BITMAPFILEHEADER
  */
 typedef struct BITMAPINFOHEADER
 {
-   unsigned long  biWidth;
-   unsigned long  biHeight;
-   unsigned short biBitCount;
-   unsigned long  biCompression;
+   ase_uint32 biWidth;
+   ase_uint32 biHeight;
+   ase_uint16 biBitCount;
+   ase_uint32 biCompression;
 } BITMAPINFOHEADER;
 
 typedef struct WINBMPINFOHEADER  /* size: 40 */
 {
-   unsigned long  biWidth;
-   unsigned long  biHeight;
-   unsigned short biPlanes;
-   unsigned short biBitCount;
-   unsigned long  biCompression;
-   unsigned long  biSizeImage;
-   unsigned long  biXPelsPerMeter;
-   unsigned long  biYPelsPerMeter;
-   unsigned long  biClrUsed;
-   unsigned long  biClrImportant;
+   ase_uint32 biWidth;
+   ase_uint32 biHeight;
+   ase_uint16 biPlanes;
+   ase_uint16 biBitCount;
+   ase_uint32 biCompression;
+   ase_uint32 biSizeImage;
+   ase_uint32 biXPelsPerMeter;
+   ase_uint32 biYPelsPerMeter;
+   ase_uint32 biClrUsed;
+   ase_uint32 biClrImportant;
 } WINBMPINFOHEADER;
 
 typedef struct OS2BMPINFOHEADER  /* size: 12 */
 {
-   unsigned short biWidth;
-   unsigned short biHeight;
-   unsigned short biPlanes;
-   unsigned short biBitCount;
+   ase_uint16 biWidth;
+   ase_uint16 biHeight;
+   ase_uint16 biPlanes;
+   ase_uint16 biBitCount;
 } OS2BMPINFOHEADER;
 
 /* read_bmfileheader:
  *  Reads a BMP file header and check that it has the BMP magic number.
  */
-static int read_bmfileheader (PACKFILE *f, BITMAPFILEHEADER *fileheader)
+static int read_bmfileheader(PACKFILE *f, BITMAPFILEHEADER *fileheader)
 {
    fileheader->bfType = pack_igetw(f);
    fileheader->bfSize= pack_igetl(f);
@@ -116,7 +116,7 @@ static int read_bmfileheader (PACKFILE *f, BITMAPFILEHEADER *fileheader)
 /* read_win_bminfoheader:
  *  Reads information from a BMP file header.
  */
-static int read_win_bminfoheader (PACKFILE *f, BITMAPINFOHEADER *infoheader)
+static int read_win_bminfoheader(PACKFILE *f, BITMAPINFOHEADER *infoheader)
 {
    WINBMPINFOHEADER win_infoheader;
 
@@ -142,7 +142,7 @@ static int read_win_bminfoheader (PACKFILE *f, BITMAPINFOHEADER *infoheader)
 /* read_os2_bminfoheader:
  *  Reads information from an OS/2 format BMP file header.
  */
-static int read_os2_bminfoheader (PACKFILE *f, BITMAPINFOHEADER *infoheader)
+static int read_os2_bminfoheader(PACKFILE *f, BITMAPINFOHEADER *infoheader)
 {
    OS2BMPINFOHEADER os2_infoheader;
 
@@ -162,7 +162,7 @@ static int read_os2_bminfoheader (PACKFILE *f, BITMAPINFOHEADER *infoheader)
 /* read_bmicolors:
  *  Loads the color palette for 1,4,8 bit formats.
  */
-static void read_bmicolors (int ncols, PACKFILE *f,int win_flag)
+static void read_bmicolors(int ncols, PACKFILE *f,int win_flag)
 {
    int i, r, g, b;
 
@@ -179,7 +179,7 @@ static void read_bmicolors (int ncols, PACKFILE *f,int win_flag)
 /* read_1bit_line:
  *  Support function for reading the 1 bit bitmap file format.
  */
-static void read_1bit_line (int length, PACKFILE *f, Image *image, int line)
+static void read_1bit_line(int length, PACKFILE *f, Image *image, int line)
 {
    unsigned char b[32];
    unsigned long n;
@@ -203,7 +203,7 @@ static void read_1bit_line (int length, PACKFILE *f, Image *image, int line)
 /* read_4bit_line:
  *  Support function for reading the 4 bit bitmap file format.
  */
-static void read_4bit_line (int length, PACKFILE *f, Image *image, int line)
+static void read_4bit_line(int length, PACKFILE *f, Image *image, int line)
 {
    unsigned char b[8];
    unsigned long n;
@@ -231,7 +231,7 @@ static void read_4bit_line (int length, PACKFILE *f, Image *image, int line)
 /* read_8bit_line:
  *  Support function for reading the 8 bit bitmap file format.
  */
-static void read_8bit_line (int length, PACKFILE *f, Image *image, int line)
+static void read_8bit_line(int length, PACKFILE *f, Image *image, int line)
 {
    unsigned char b[4];
    unsigned long n;
@@ -256,7 +256,7 @@ static void read_8bit_line (int length, PACKFILE *f, Image *image, int line)
  *  Support function for reading the 24 bit bitmap file format, doing
  *  our best to convert it down to a 256 color palette.
  */
-static void read_24bit_line (int length, PACKFILE *f, Image *image, int line)
+static void read_24bit_line(int length, PACKFILE *f, Image *image, int line)
 {
    int i, nbytes;
    RGB c;
@@ -280,7 +280,7 @@ static void read_24bit_line (int length, PACKFILE *f, Image *image, int line)
 /* read_image:
  *  For reading the noncompressed BMP image format.
  */
-static void read_image (PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
+static void read_image(PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
 {
    int i, line;
 
@@ -314,7 +314,7 @@ static void read_image (PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *in
 /* read_RLE8_compressed_image:
  *  For reading the 8 bit RLE compressed BMP image format.
  */
-static void read_RLE8_compressed_image (PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
+static void read_RLE8_compressed_image(PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
 {
    unsigned char count, val, val0;
    int j, pos, line;
@@ -382,7 +382,7 @@ static void read_RLE8_compressed_image (PACKFILE *f, Image *image, AL_CONST BITM
 /* read_RLE4_compressed_image:
  *  For reading the 4 bit RLE compressed BMP image format.
  */
-static void read_RLE4_compressed_image (PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
+static void read_RLE4_compressed_image(PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
 {
    unsigned char b[8];
    unsigned char count;
@@ -455,7 +455,7 @@ static void read_RLE4_compressed_image (PACKFILE *f, Image *image, AL_CONST BITM
    }
 }
 
-static void read_bitfields_image (PACKFILE *f, Image *image, int bpp, BITMAPINFOHEADER *infoheader)
+static void read_bitfields_image(PACKFILE *f, Image *image, int bpp, BITMAPINFOHEADER *infoheader)
 {
   int k, i;
   int bytesPerPixel;
@@ -694,15 +694,15 @@ static int save_BMP(Sprite *sprite)
     for (j=0; j<image->w; j++) {
       if (bpp == 8) {
 	if (image->imgtype == IMAGE_INDEXED)
-	  pack_putc (image->method->getpixel (image, j, i), f);
+	  pack_putc(image->method->getpixel(image, j, i), f);
 	else if (image->imgtype == IMAGE_GRAYSCALE)
-	  pack_putc (_graya_getk (image->method->getpixel (image, j, i)), f);
+	  pack_putc(_graya_getk(image->method->getpixel(image, j, i)), f);
       }
       else {
-        c = image->method->getpixel (image, j, i);
-        pack_putc (_rgba_getb (c), f);
-        pack_putc (_rgba_getg (c), f);
-        pack_putc (_rgba_getr (c), f);
+        c = image->method->getpixel(image, j, i);
+        pack_putc(_rgba_getb(c), f);
+        pack_putc(_rgba_getg(c), f);
+        pack_putc(_rgba_getr(c), f);
       }
     }
 

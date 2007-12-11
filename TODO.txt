@@ -2,6 +2,10 @@ High priority work
 ------------------
 
 - search for TODO;
+- Problems:
+  - 100% CPU
+  - test UNDO in 64bits plataforms (reported by Jon Rafkind);
+  - Add menus for play animation, a menu for all animation stuff
 - add support for PNG files.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider

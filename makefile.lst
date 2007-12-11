@@ -213,6 +213,10 @@ COMMON_SOURCES =					\
 	src/widgets/target.c				\
 	src/widgets/toolbar.c
 
+ifdef USE_X86_INT_MULT
+  COMMON_SOURCES += src/raster/x86/int_mult.s
+endif
+
 COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
 	        $(addsuffix $(OBJ),				\
 	          $(notdir $(basename $(COMMON_SOURCES)))))

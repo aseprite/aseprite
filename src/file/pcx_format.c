@@ -127,14 +127,14 @@ static Sprite *load_PCX(const char *filename)
       if (bpp == 8) {
         while (c--) {
           if (x < image->w)
-            *(((unsigned char **)image->line)[y]+x) = ch;
+            *(((ase_uint8 **)image->line)[y]+x) = ch;
           x++;
         }
       }
       else {
         while (c--) {
           if (xx < image->w)
-            *(((unsigned long **)image->line)[y]+xx) |= (ch & 0xff) << po;
+            *(((ase_uint32 **)image->line)[y]+xx) |= (ch & 0xff) << po;
           x++;
           if (x == bytes_per_line) {
             xx = 0;
@@ -169,13 +169,13 @@ static Sprite *load_PCX(const char *filename)
   }
 
   if (*allegro_errno) {
-    console_printf (_("Error reading bytes.\n"));
-    pack_fclose (f);
+    console_printf(_("Error reading bytes.\n"));
+    pack_fclose(f);
     return NULL;
   }
 
-  pack_fclose (f);
-  return file_sequence_sprite ();
+  pack_fclose(f);
+  return file_sequence_sprite();
 }
 
 static int save_PCX(Sprite *sprite)
@@ -189,13 +189,13 @@ static int save_PCX(Sprite *sprite)
   char runchar;
   char ch = 0;
 
-  f = pack_fopen (sprite->filename, F_WRITE);
+  f = pack_fopen(sprite->filename, F_WRITE);
   if (!f) {
-    console_printf (_("Error creating file.\n"));
+    console_printf(_("Error creating file.\n"));
     return -1;
   }
 
-  image = file_sequence_image_to_save ();
+  image = file_sequence_image_to_save();
 
   if (sprite->imgtype == IMAGE_RGB) {
     depth = 24;
@@ -249,16 +249,16 @@ static int save_PCX(Sprite *sprite)
       }
       else {
         if (x < image->w) {
-          c = image->method->getpixel (image, x, y);
-          ch = _rgba_getr (c);
+          c = image->method->getpixel(image, x, y);
+          ch = _rgba_getr(c);
         }
         else if (x<image->w*2) {
-          c = image->method->getpixel (image, x-image->w, y);
-          ch = _rgba_getg (c);
+          c = image->method->getpixel(image, x-image->w, y);
+          ch = _rgba_getg(c);
         }
         else {
-          c = image->method->getpixel (image, x-image->w*2, y);
-          ch = _rgba_getb (c);
+          c = image->method->getpixel(image, x-image->w*2, y);
+          ch = _rgba_getb(c);
         }
       }
       if (runcount == 0) {
@@ -284,7 +284,7 @@ static int save_PCX(Sprite *sprite)
     pack_putc(runchar, f);
 
     if (image->h > 1)
-      do_progress (100 * y / (image->h-1));
+      do_progress(100 * y / (image->h-1));
   }
 
   if (depth == 8) {                      /* 256 color palette */
@@ -298,10 +298,10 @@ static int save_PCX(Sprite *sprite)
     }
   }
 
-  pack_fclose (f);
+  pack_fclose(f);
 
   if (*allegro_errno) {
-    console_printf (_("Error writing bytes.\n"));
+    console_printf(_("Error writing bytes.\n"));
     return -1;
   }
   else

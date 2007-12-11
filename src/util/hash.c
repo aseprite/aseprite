@@ -49,13 +49,13 @@
 static void (*function)(void *) = NULL;
 static HashTable *the_table = NULL;
 
-static unsigned long hash (const unsigned char *str);
-static void free_node (const char *key, void *data);
+static unsigned long hash(const unsigned char *str);
+static void free_node(const char *key, void *data);
 
 /* hash_new:
  *  Creates a new hash table to the size asked for.
  */
-HashTable *hash_new (int size)
+HashTable *hash_new(int size)
 {
   HashTable *table;
   int i;
@@ -84,20 +84,20 @@ HashTable *hash_new (int size)
  *  responsible for freeing the data, or doing whatever is needed with
  *  it.
  */
-void hash_free (HashTable *table, void (*func) (void *))
+void hash_free(HashTable *table, void (*func)(void *))
 {
   function = func;
   the_table = table;
 
-  hash_enumerate (table, free_node);
-  jfree (table->table);
+  hash_enumerate(table, free_node);
+  jfree(table->table);
   table->table = NULL;
   table->size = 0;
 
   the_table = NULL;
   function = NULL;
 
-  jfree (table);
+  jfree(table);
 }
 
 /* hash_insert:
@@ -105,9 +105,9 @@ void hash_free (HashTable *table, void (*func) (void *))
  *  Returns pointer to old data associated with the key, if any, or
  *  NULL if the key wasn't in the table previously.
  */
-void *hash_insert (HashTable *table, const char *key, void *data)
+void *hash_insert(HashTable *table, const char *key, void *data)
 {
-  unsigned int val = hash (key) % table->size;
+  unsigned int val = hash(key) % table->size;
   HashBucket *ptr;
     
   /* See if the current string has already been inserted, and if so,
@@ -141,9 +141,9 @@ void *hash_insert (HashTable *table, const char *key, void *data)
  *  Look up a key and return the associated data.  
  *  Returns NULL if the key is not in the table.
  */
-void *hash_lookup (HashTable *table, const char *key)
+void *hash_lookup(HashTable *table, const char *key)
 {
-  unsigned int val = hash (key) % table->size;
+  unsigned int val = hash(key) % table->size;
   HashBucket *ptr;
     
   for (ptr = table->table[val]; NULL != ptr; ptr = ptr->next) 
@@ -157,9 +157,9 @@ void *hash_lookup (HashTable *table, const char *key)
  *  Delete a key from the hash table and return associated
  *  data, or NULL if not present.
  */
-void *hash_remove (HashTable *table, const char *key)
+void *hash_remove(HashTable *table, const char *key)
 {
-  unsigned int val = hash (key) % table->size;
+  unsigned int val = hash(key) % table->size;
   void *data;
   HashBucket *ptr, *last = NULL;
     
@@ -170,8 +170,8 @@ void *hash_remove (HashTable *table, const char *key)
       else
 	table->table[val] = ptr->next;
       data = ptr->data;
-      jfree (ptr->key);
-      jfree (ptr);
+      jfree(ptr->key);
+      jfree(ptr);
       return data;
     }
     last = ptr;
@@ -184,7 +184,7 @@ void *hash_remove (HashTable *table, const char *key)
  *  Simply invokes the callback given as the second parameter for each
  *  node in the table, passing it the key and the associated data.
  */
-void hash_enumerate (HashTable *table, void (*callback) (const char *, void *))
+void hash_enumerate(HashTable *table, void (*callback)(const char *, void *))
 {
   int i;
   HashBucket *bucket, *next;
@@ -199,7 +199,7 @@ void hash_enumerate (HashTable *table, void (*callback) (const char *, void *))
 /* hash: 
  *  Hashes a string.
  */
-static unsigned long hash (const unsigned char *str)
+static unsigned long hash(const unsigned char *str)
 {
   unsigned long hash = 0, c;
   while ((c = *str++)) 
@@ -213,10 +213,10 @@ static unsigned long hash (const unsigned char *str)
  * passes a pointer to the data back to a function defined by the user,
  * process the data as needed.
  */
-static void free_node (const char *key, void *data)
+static void free_node(const char *key, void *data)
 {
   if (function)
-    function (hash_remove (the_table, key));
+    function(hash_remove(the_table, key));
   else
-    hash_remove (the_table, key);
+    hash_remove(the_table, key);
 }

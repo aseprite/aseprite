@@ -47,3 +47,9 @@ const char *msgids_get(const char *id); /* src/intl/msgids.[ch] */
 #include <math.h>
 #undef PI
 #define PI 3.14159265358979323846
+
+#include <allegro/base.h>
+
+typedef uint8_t		ase_uint8;
+typedef uint16_t	ase_uint16;
+typedef uint32_t	ase_uint32;

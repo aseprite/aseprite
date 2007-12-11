@@ -26,14 +26,14 @@
 
 #endif
 
-void apply_invert_color4 (Effect *effect)
+void apply_invert_color4(Effect *effect)
 {
-  unsigned long *src_address;
-  unsigned long *dst_address;
+  ase_uint32 *src_address;
+  ase_uint32 *dst_address;
   int x, c, r, g, b, a;
 
-  src_address = ((unsigned long **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned long **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint32 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint32 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
@@ -63,14 +63,14 @@ void apply_invert_color4 (Effect *effect)
   }
 }
 
-void apply_invert_color2 (Effect *effect)
+void apply_invert_color2(Effect *effect)
 {
-  unsigned short *src_address;
-  unsigned short *dst_address;
+  ase_uint16 *src_address;
+  ase_uint16 *dst_address;
   int x, c, k, a;
 
-  src_address = ((unsigned short **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned short **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint16 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint16 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
@@ -96,25 +96,25 @@ void apply_invert_color2 (Effect *effect)
   }
 }
 
-void apply_invert_color1 (Effect *effect)
+void apply_invert_color1(Effect *effect)
 {
-  unsigned char *src_address;
-  unsigned char *dst_address;
+  ase_uint8 *src_address;
+  ase_uint8 *dst_address;
   int x, c, r, g, b;
 
-  src_address = ((unsigned char **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((unsigned char **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint8 **)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint8 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
