@@ -46,6 +46,7 @@
 #include "modules/tools2.h"
 #include "raster/raster.h"
 #include "script/bindings.h"
+#include "script/functions.h"
 
 #endif
 
@@ -90,13 +91,13 @@ typedef struct UserData
 } UserData;
 
 static int metatable;
-static int metatable_index (lua_State *L);
-static int metatable_newindex (lua_State *L);
-static int metatable_gc (lua_State *L);
-static int metatable_eq (lua_State *L);
+static int metatable_index(lua_State *L);
+static int metatable_newindex(lua_State *L);
+static int metatable_gc(lua_State *L);
+static int metatable_eq(lua_State *L);
 
-static void push_userdata (lua_State *L, int type, void *ptr);
-static void *to_userdata (lua_State *L, int type, int idx);
+static void push_userdata(lua_State *L, int type, void *ptr);
+static void *to_userdata(lua_State *L, int type, int idx);
 
 
 /********************************************************************/
@@ -113,9 +114,9 @@ void register_lua_object_metatable(void)
 
   /* class metatable */
   lua_newtable(L);
-  metatable = lua_ref (L, 1);
+  metatable = lua_ref(L, 1);
 
-  lua_getref (L, metatable);
+  lua_getref(L, metatable);
 
   lua_pushliteral(L, "__index");
   lua_pushcfunction(L, metatable_index);
@@ -151,7 +152,7 @@ void unregister_lua_object_metatable(void)
 /*   for (c=0; c<Types; c++) */
 /*     r_hash_free (hash_index_tables[c], NULL); */
 
-  lua_unref (get_lua_state (), metatable);
+  lua_unref(get_lua_state(), metatable);
 }
 
 /**
@@ -159,22 +160,22 @@ void unregister_lua_object_metatable(void)
  */
 void update_global_script_variables(void)
 {
-  lua_State *L = get_lua_state ();
+  lua_State *L = get_lua_state();
 
-  lua_pushstring (L, VERSION);
-  lua_setglobal (L, "VERSION");
+  lua_pushstring(L, VERSION);
+  lua_setglobal(L, "VERSION");
 
-  push_userdata (L, Type_Sprite, current_sprite);
-  lua_setglobal (L, "current_sprite");
+  push_userdata(L, Type_Sprite, current_sprite);
+  lua_setglobal(L, "current_sprite");
 
-  push_userdata (L, Type_JWidget, current_editor);
-  lua_setglobal (L, "current_editor");
+  push_userdata(L, Type_JWidget, current_editor);
+  lua_setglobal(L, "current_editor");
 
-  lua_pushnumber (L, ji_screen ? JI_SCREEN_W: 0);
-  lua_setglobal (L, "SCREEN_W");
+  lua_pushnumber(L, ji_screen ? JI_SCREEN_W: 0);
+  lua_setglobal(L, "SCREEN_W");
 
-  lua_pushnumber (L, ji_screen ? JI_SCREEN_H: 0);
-  lua_setglobal (L, "SCREEN_H");
+  lua_pushnumber(L, ji_screen ? JI_SCREEN_H: 0);
+  lua_setglobal(L, "SCREEN_H");
 }
 
 static void push_userdata(lua_State *L, int type, void *ptr)
@@ -530,49 +531,22 @@ static int bind_rand(lua_State *L)
   return 1;
 }
 
-static int bind_GetImage2(lua_State *L)
-{
-  Sprite *sprite;
-  Image *image;
-  int x, y, opacity;
-  sprite = to_userdata(L, Type_Sprite, 1);
-  image = GetImage2(sprite, &x, &y, &opacity);
-  push_userdata(L, Type_Image, image);
-  lua_pushnumber(L, x);
-  lua_pushnumber(L, y);
-  lua_pushnumber(L, opacity);
-  return 4;
-}
+/* static int bind_GetImage2(lua_State *L) */
+/* { */
+/*   Sprite *sprite; */
+/*   Image *image; */
+/*   int x, y, opacity; */
+/*   sprite = to_userdata(L, Type_Sprite, 1); */
+/*   image = GetImage2(sprite, &x, &y, &opacity); */
+/*   push_userdata(L, Type_Image, image); */
+/*   lua_pushnumber(L, x); */
+/*   lua_pushnumber(L, y); */
+/*   lua_pushnumber(L, opacity); */
+/*   return 4; */
+/* } */
 
 /********************************************************************/
 /* Include generated bindings file */
-
-#ifndef USE_PRECOMPILED_HEADER
-
-#include "dialogs/canvasze.h"
-#include "dialogs/dmapgen.h"
-#include "dialogs/drawtext.h"
-#include "dialogs/filmedit.h"
-#include "dialogs/maskcol.h"
-#include "dialogs/options.h"
-#include "dialogs/playfli.h"
-#include "dialogs/quick.h"
-#include "dialogs/scrsaver.h"
-#include "dialogs/tips.h"
-#include "dialogs/vectmap.h"
-#include "file/file.h"
-#include "intl/intl.h"
-#include "modules/rootmenu.h"
-#include "util/autocrop.h"
-#include "util/celmove.h"
-#include "util/clipbrd.h"
-#include "util/crop.h"
-#include "util/mapgen.h"
-#include "util/msk_file.h"
-#include "util/quantize.h"
-#include "util/recscr.h"
-
-#endif
 
 #define file_exists exists
 

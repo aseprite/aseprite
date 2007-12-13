@@ -20,9 +20,11 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include "jinete/jinete.h"
 
 #include "console/console.h"
+#include "file/file.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/blend.h"
@@ -35,127 +37,197 @@
 
 #endif
 
-/* ======================================= */
-/* Sprite                                  */
-/* ======================================= */
+/*===================================================================*/
+/* Sprite                                                            */
+/*===================================================================*/
 
-/* ======================================= */
-/* Layer                                   */
-/* ======================================= */
-
-/* internal routine */
-static int count_layers(Layer *layer)
+/**
+ * Creates a new sprite with the given dimension.
+ *
+ * @param imgtype Color mode, one of the following values: IMAGE_RGB, IMAGE_GRAYSCALE, IMAGE_INDEXED
+ * @param w Width of the sprite
+ * @param h Height of the sprite
+ */
+Sprite *NewSprite(int imgtype, int w, int h)
 {
-  int count;
+  Sprite *sprite;
 
-  if (layer->parent->type == GFXOBJ_SPRITE)
-    count = 0;
-  else
-    count = 1;
-
-  if (layer_is_set(layer)) {
-    JLink link;
-    JI_LIST_FOR_EACH(layer->layers, link) {
-      count += count_layers(link->data);
-    }
-  }
-
-  return count;
-}
-
-/* internal routine */
-static void undo_remove_stock_images(Layer *layer)
-{
-  JLink link;
-  if (layer_is_set(layer)) {
-    JI_LIST_FOR_EACH(layer->layers, link)
-      undo_remove_stock_images(link->data);
-  }
-  else if (layer_is_image(layer)) {
-    JI_LIST_FOR_EACH(layer->cels, link) {
-      Cel *cel = link->data;
-
-      if (!cel_is_link(cel, layer))
-	undo_remove_image(layer->sprite->undo,
-			  layer->sprite->stock,
-			  stock_get_image(layer->sprite->stock,
-					  cel->image));
-    }
-  }
-}
-
-char *GetUniqueLayerName(void)
-{
-  Sprite *sprite = current_sprite;
-  if (sprite) {
-    char buf[1024];
-    sprintf(buf, "%s %d", _("Layer"), count_layers(sprite->set));
-    return jstrdup(buf);
-  }
-  else
+  if (imgtype != IMAGE_RGB &&
+      imgtype != IMAGE_GRAYSCALE &&
+      imgtype != IMAGE_INDEXED) {
+    console_printf("NewSprite: argument 'imgtype' should be IMAGE_RGB, IMAGE_GRAYSCALE or IMAGE_INDEXED\n");
     return NULL;
+  }
+
+  if (w < 1 || w > 9999) {
+    console_printf("NewSprite: argument 'w' should be between 1 and 9999\n");
+    return NULL;
+  }
+
+  if (h < 1 || h > 9999) {
+    console_printf("NewSprite: argument 'h' should be between 1 and 9999\n");
+    return NULL;
+  }
+
+  sprite = sprite_new_with_layer(imgtype, w, h);
+  if (!sprite)
+    return NULL;
+
+  undo_disable(sprite->undo);
+  sprite_mount(sprite);
+  set_current_sprite(sprite);
+
+  assert(undo_is_disabled(sprite->undo));
+  return sprite;
 }
 
 /**
- * Creates a new layer with the "name" in the current sprite(in the
- * current frame) with the specified position and size(if w=h=0 the
+ * Loads a sprite from the specified file.
+ *
+ * If the sprite is succefully loaded it'll be selected as the current
+ * sprite (@ref SetSprite) automatically.
+ *
+ * @param filename The name of the file. Can be absolute or relative
+ *                 to the location which ASE was executed.
+ *
+ * @return The loaded sprite or nil if it couldn't be read.
+ */
+Sprite *LoadSprite(const char *filename)
+{
+  Sprite *sprite;
+
+  if (filename == NULL) {
+    console_printf("LoadSprite: filename can't be NULL\n");
+    return NULL;
+  }
+
+  sprite = sprite_load(filename);
+  if (sprite) {
+    undo_disable(sprite->undo);
+    sprite_mount(sprite);
+    set_current_sprite(sprite);
+  }
+
+  assert(undo_is_disabled(sprite->undo));
+  return sprite;
+}
+
+/**
+ * Saves the current sprite.
+ */
+void SaveSprite(const char *filename)
+{
+  if (current_sprite == NULL) {
+    console_printf("SaveSprite: No current sprite\n");
+    return;
+  }
+
+  if (filename == NULL) {
+    console_printf("SaveSprite: filename can't be NULL\n");
+    return;
+  }
+
+  sprite_set_filename(current_sprite, filename);
+  rebuild_sprite_list();
+
+  if (sprite_save(current_sprite) == 0)
+    sprite_mark_as_saved(current_sprite);
+  else
+    console_printf("SaveSprite: Error saving sprite file %s\n", filename);
+}
+
+/**
+ * Sets the specified sprite as the current sprite to apply all next
+ * operations.
+ */
+void SetSprite(Sprite *sprite)
+{
+  set_current_sprite(sprite);
+}
+
+/*===================================================================*/
+/* Layer                                                             */
+/*===================================================================*/
+
+static int count_layers(Layer *layer);
+static void undo_remove_stock_images(Layer *layer);
+
+/**
+ * Creates a new layer with one cel in the current frame of the
+ * sprite.
+ *
+ * @param name Name of the layer (could be NULL)
+ * @param x Horizontal position of the first cel
+ * @param y Vertical position of the first cel
+ * @param w
+ * @param h
+ *
+ * with the specified position and size (if w=h=0 the
  * routine will use the sprite dimension)
  */
-Layer *NewLayer(const char *name, int x, int y, int w, int h)
+Layer *NewLayer(void)
 {
   Sprite *sprite = current_sprite;
-  Layer *layer = NULL;
+  Layer *layer;
   Image *image;
   Cel *cel;
   int index;
 
-  if (sprite && name) {
-    if (w == 0) w = sprite->w;
-    if (h == 0) h = sprite->h;
- 
-    /* new image */
-    image = image_new(sprite->imgtype, w, h);
-    if (!image)
-      return NULL;
-
-    /* new layer */
-    layer = layer_new(sprite);
-    if (!layer) {
-      image_free(image);
-      return NULL;
-    }
-
-    /* clear with mask color */
-    image_clear(image, 0);
-
-    /* configure layer name and blend mode */
-    layer_set_name(layer, name);
-    layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
-
-    /* add image in the layer stock */
-    index = stock_add_image(sprite->stock, image);
-
-    /* create a new cel in the current frame */
-    cel = cel_new(sprite->frame, index);
-    cel_set_position(cel, x, y);
-
-    /* add cel */
-    layer_add_cel(layer, cel);
-
-    /* undo stuff */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_open(sprite->undo);
-      undo_add_layer(sprite->undo, sprite->set, layer);
-      undo_set_layer(sprite->undo, sprite);
-      undo_close(sprite->undo);
-    }
-
-    /* add the layer in the sprite set */
-    layer_add_layer(sprite->set, layer);
-
-    /* select the new layer */
-    sprite_set_layer(sprite, layer);
+  if (sprite == NULL) {
+    console_printf("NewLayer: No current sprite\n");
+    return NULL;
   }
+
+  /* new image */
+  image = image_new(sprite->imgtype, sprite->w, sprite->h);
+  if (!image) {
+    console_printf("NewLayer: Not enough memory\n");
+    return NULL;
+  }
+
+  /* new layer */
+  layer = layer_new(sprite);
+  if (!layer) {
+    image_free(image);
+    console_printf("NewLayer: Not enough memory\n");
+    return NULL;
+  }
+
+  /* clear with mask color */
+  image_clear(image, 0);
+
+  /* configure layer name and blend mode */
+    /* TODO */
+/*     { */
+/*       char *name; */
+/*       name = GetUniqueLayerName(); */
+/*       layer_set_name(layer, name); */
+/*       jfree(name); */
+/*     } */
+  layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
+
+  /* add image in the layer stock */
+  index = stock_add_image(sprite->stock, image);
+
+  /* create a new cel in the current frame */
+  cel = cel_new(sprite->frame, index);
+
+  /* add cel */
+  layer_add_cel(layer, cel);
+
+  /* undo stuff */
+  if (undo_is_enabled(sprite->undo)) {
+    undo_open(sprite->undo);
+    undo_add_layer(sprite->undo, sprite->set, layer);
+    undo_set_layer(sprite->undo, sprite);
+    undo_close(sprite->undo);
+  }
+
+  /* add the layer in the sprite set */
+  layer_add_layer(sprite->set, layer);
+
+  /* select the new layer */
+  sprite_set_layer(sprite, layer);
 
   return layer;
 }
@@ -163,26 +235,35 @@ Layer *NewLayer(const char *name, int x, int y, int w, int h)
 /**
  * Creates a new layer set with the "name" in the current sprite
  */
-Layer *NewLayerSet(const char *name)
+Layer *NewLayerSet(void)
 {
   Sprite *sprite = current_sprite;
   Layer *layer = NULL;
 
-  if (sprite && name) {
-    /* new layer */
-    layer = layer_set_new(sprite);
-    if (!layer)
-      return NULL;
-
-    /* configure layer name and blend mode */
-    layer_set_name(layer, name);
-
-    /* add the layer in the sprite set */
-    layer_add_layer(sprite->set, layer);
-
-    /* select the new layer */
-    sprite_set_layer(sprite, layer);
+  if (sprite == NULL) {
+    console_printf("NewLayer: No current sprite\n");
+    return NULL;
   }
+
+  /* new layer */
+  layer = layer_set_new(sprite);
+  if (!layer)
+    return NULL;
+
+  /* configure layer name and blend mode */
+  /* TODO */
+  /*     { */
+  /*       char *name; */
+  /*       name = GetUniqueLayerName(); */
+  /*       layer_set_name(layer, name); */
+  /*       jfree(name); */
+  /*     } */
+
+  /* add the layer in the sprite set */
+  layer_add_layer(sprite->set, layer);
+
+  /* select the new layer */
+  sprite_set_layer(sprite, layer);
 
   return layer;
 }
@@ -234,6 +315,18 @@ void RemoveLayer(void)
     if (undo_is_enabled(sprite->undo))
       undo_close(sprite->undo);
   }
+}
+
+char *GetUniqueLayerName(void)
+{
+  Sprite *sprite = current_sprite;
+  if (sprite) {
+    char buf[1024];
+    sprintf(buf, "%s %d", _("Layer"), count_layers(sprite->set));
+    return jstrdup(buf);
+  }
+  else
+    return NULL;
 }
 
 Layer *FlattenLayers(void)
@@ -291,6 +384,47 @@ Layer *FlattenLayers(void)
   update_screen_for_sprite(sprite);
 
   return flat_layer;
+}
+
+/* internal routine */
+static int count_layers(Layer *layer)
+{
+  int count;
+
+  if (layer->parent->type == GFXOBJ_SPRITE)
+    count = 0;
+  else
+    count = 1;
+
+  if (layer_is_set(layer)) {
+    JLink link;
+    JI_LIST_FOR_EACH(layer->layers, link) {
+      count += count_layers(link->data);
+    }
+  }
+
+  return count;
+}
+
+/* internal routine */
+static void undo_remove_stock_images(Layer *layer)
+{
+  JLink link;
+  if (layer_is_set(layer)) {
+    JI_LIST_FOR_EACH(layer->layers, link)
+      undo_remove_stock_images(link->data);
+  }
+  else if (layer_is_image(layer)) {
+    JI_LIST_FOR_EACH(layer->cels, link) {
+      Cel *cel = link->data;
+
+      if (!cel_is_link(cel, layer))
+	undo_remove_image(layer->sprite->undo,
+			  layer->sprite->stock,
+			  stock_get_image(layer->sprite->stock,
+					  cel->image));
+    }
+  }
 }
 
 /* ======================================= */

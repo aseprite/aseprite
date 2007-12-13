@@ -29,9 +29,9 @@ function MakeASELogo(color_bg, color_a, color_s, color_e)
   undo_disable(sprite.undo)
 
   image_bg = GetImage()
-  layer_a = NewLayer("A", 0, 0, 0, 0) image_a = GetImage()
-  layer_s = NewLayer("S", 0, 0, 0, 0) image_s = GetImage()
-  layer_e = NewLayer("E", 0, 0, 0, 0) image_e = GetImage()
+  layer_a = NewLayer() image_a = GetImage()
+  layer_s = NewLayer() image_s = GetImage()
+  layer_e = NewLayer() image_e = GetImage()
 
   -- clear the images
   image_clear(image_bg, get_color_for_image(sprite.imgtype, color_bg))

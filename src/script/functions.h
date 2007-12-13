@@ -23,19 +23,25 @@ struct Sprite;
 struct Layer;
 struct Cel;
 
-/* ======================================= */
-/* Sprite                                  */
-/* ======================================= */
+/*===================================================================*/
+/* Sprite                                                            */
+/*===================================================================*/
 
-/* ======================================= */
-/* Layer                                   */
-/* ======================================= */
+struct Sprite *NewSprite(int imgtype, int w, int h);
+struct Sprite *LoadSprite(const char *filename);
+void SaveSprite(const char *filename);
+
+void SetSprite(struct Sprite *sprite); 
+
+/*===================================================================*/
+/* Layer                                                             */
+/*===================================================================*/
+
+struct Layer *NewLayer(void);
+struct Layer *NewLayerSet(void);
+void RemoveLayer(void);
 
 char *GetUniqueLayerName(void);
-
-struct Layer *NewLayer(const char *name, int x, int y, int w, int h);
-struct Layer *NewLayerSet(const char *name);
-void RemoveLayer(void);
 
 struct Layer *FlattenLayers(void);
 

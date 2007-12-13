@@ -28,6 +28,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/functions.h"
 
 #endif
@@ -41,7 +42,6 @@ static void cmd_new_layer_execute(const char *argument)
 {
   JWidget window, name_widget;
   Sprite *sprite = current_sprite; /* get current sprite */
-  char buf[512];
 
   /* load the window widget */
   window = load_widget("newlay.jid", "new_layer");
@@ -52,28 +52,18 @@ static void cmd_new_layer_execute(const char *argument)
   jwidget_set_text(name_widget, GetUniqueLayerName());
   jwidget_set_min_size(name_widget, 128, 0);
 
-  sprintf(buf, "%d", sprite->w);
-  jwidget_set_text(jwidget_find_name(window, "width"), buf);
-
-  sprintf(buf, "%d", sprite->h);
-  jwidget_set_text(jwidget_find_name(window, "height"), buf);
-
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
     const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
-    Layer *layer;
-    int w, h;
-
-    w = strtol(jwidget_get_text(jwidget_find_name(window, "width")), NULL, 10);
-    h = strtol(jwidget_get_text(jwidget_find_name(window, "height")), NULL, 10);
-    w = MID(1, w, 9999);
-    h = MID(1, h, 9999);
-    layer = NewLayer(name, 0, 0, w, h);
+    Layer *layer = NewLayer();
     if (!layer) {
       jalert(_("Error<<Not enough memory||&Close"));
+      if (undo_is_enabled(sprite->undo))
+	undo_close(sprite->undo);
       return;
     }
+    layer_set_name(layer, name);
     update_screen_for_sprite(sprite);
   }
 

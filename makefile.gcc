@@ -28,8 +28,8 @@ ifdef DEBUGMODE
   CFLAGS += -g3
   LFLAGS += -g3
 else
-  CFLAGS += -s -O3
-  LFLAGS += -s -O3
+  CFLAGS += -s -O3 -DNDEBUG
+  LFLAGS += -s -O3 -DNDEBUG
 endif
 endif
 

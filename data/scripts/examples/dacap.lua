@@ -5,14 +5,7 @@ local function MakeDacap()
   local x, y, sprite, image, render
   local w, h = 256, 128
 
-  sprite = sprite_new_with_layer(IMAGE_RGB, w, h)
-  sprite_mount(sprite)
-  set_current_sprite(sprite)
-
-  -- disable undo
-  undo_disable(sprite.undo)
-
-  sprite_set_filename(sprite, "dacap")
+  sprite = NewSprite(IMAGE_RGB, w, h)
 
   -- Background layer
   image = GetImage()
@@ -28,7 +21,7 @@ local function MakeDacap()
   end
 
   -- Foreground layer
-  NewLayer("Foreground", 0, 0, 0, 0)
+  NewLayer()
 
   image = GetImage()
   image_clear(image, _rgba(0,0,0,0))
@@ -44,8 +37,6 @@ local function MakeDacap()
   -- flatten both layers
   FlattenLayers()
 
-  -- enable undo
-  undo_enable(sprite.undo)
   return sprite
 end
 

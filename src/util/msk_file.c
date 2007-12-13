@@ -42,28 +42,28 @@ Mask *load_msk_file(const char *filename)
   Mask *mask = NULL;
   PACKFILE *f;
 
-  f = pack_fopen (filename, F_READ);
+  f = pack_fopen(filename, F_READ);
   if (!f)
     return NULL;
 
-  size = pack_igetl (f);
-  magic = pack_igetw (f);
+  size = pack_igetl(f);
+  magic = pack_igetw(f);
 
   /* Animator Pro MSK format */
   if ((size == orig_size) && (magic == 0x9500)) {
     Image *image;
     int x, y;
 
-    pack_fclose (f);
+    pack_fclose(f);
 
     /* just load an Animator Pro PIC file */
-    image = load_pic_file (filename, &x, &y, NULL);
+    image = load_pic_file(filename, &x, &y, NULL);
     if ((!image) || (image->imgtype != IMAGE_BITMAP)) {
       if (image)
-	image_free (image);
+	image_free(image);
     }
     else {
-      mask = mask_new ();
+      mask = mask_new();
       mask->x = x;
       mask->y = y;
       mask->w = image->w;
@@ -73,14 +73,14 @@ Mask *load_msk_file(const char *filename)
   }
   /* Animator MSK format */
   else if (orig_size == 8000) {
-    mask = mask_new ();
-    mask_replace (mask, 0, 0, 320, 200);
+    mask = mask_new();
+    mask_replace(mask, 0, 0, 320, 200);
 
     u = v = 0;
     for (i=0; i<8000; i++) {
       byte = pack_getc (f);
       for (c=0; c<8; c++) {
-	mask->bitmap->method->putpixel (mask->bitmap, u, v, byte & (1<<(7-c)));
+	mask->bitmap->method->putpixel(mask->bitmap, u, v, byte & (1<<(7-c)));
 	u++;
 	if (u == 320) {
 	  u = 0;
@@ -88,10 +88,10 @@ Mask *load_msk_file(const char *filename)
 	}
       }
     }
-    pack_fclose (f);
+    pack_fclose(f);
   }
   else {
-    pack_fclose (f);
+    pack_fclose(f);
   }
 
   return mask;

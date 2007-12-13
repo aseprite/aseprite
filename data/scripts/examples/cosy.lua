@@ -1,12 +1,9 @@
 -- ASE - Allegro Sprite Editor
 -- Copyright (C) 2001-2005, 2007 by David A. Capello
 
-local x, y, points, sprite
+local x, y, points
 
-ResetConfig()
-
-sprite = NewSprite(IMAGE_RGB, 128, 128)
-undo_disable(sprite.undo)
+NewSprite(IMAGE_RGB, 128, 128)
 ClearMask()
 
 points = ""
@@ -19,8 +16,3 @@ ToolTrace("floodfill 127,127")
 
 ConvolutionMatrixRGBA("smooth-5x5")
 ColorCurveRGBA({ 0,0, 128-32,16, 128+32,256-16, 255,255 })
-
-undo_enable(sprite.undo)
-sprite_show(sprite)
-
-RestoreConfig()

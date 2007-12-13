@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro/config.h>
 #include <allegro/unicode.h>
 
@@ -34,6 +35,8 @@
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
+#include "script/functions.h"
 #include "util/misc.h"
 
 #endif
@@ -46,8 +49,6 @@ static const char *bg_table[] = {
 };
 
 static int _sprite_counter = 0;
-
-static Sprite *new_sprite(int imgtype, int w, int h);
 
 /**
  * Shows the "New Sprite" dialog.
@@ -134,7 +135,7 @@ static void cmd_new_file_execute(const char *argument)
       set_config_int("NewSprite", "Background", bg);
 
       /* create the new sprite */
-      sprite = new_sprite(imgtype, w, h);
+      sprite = NewSprite(imgtype, w, h);
       if (!sprite) {
 	console_printf("Not enough memory to allocate the sprite\n");
       }
@@ -145,6 +146,14 @@ static void cmd_new_file_execute(const char *argument)
 	/* image_clear(GetImage(), get_color_for_image(imgtype, color)); */
 	sprite->bgcolor = get_color_for_image(imgtype, color);
 
+	/* the undo should be disabled because we use NewSprite to
+	   create it (a function for scripts) */
+	assert(undo_is_disabled(sprite->undo));
+
+	/* enable undo */
+	undo_enable(sprite->undo);
+
+	/* show the sprite to the user */
 	sprite_show(sprite);
       }
 
@@ -153,18 +162,6 @@ static void cmd_new_file_execute(const char *argument)
   }
 
   jwidget_free(window);
-}
-
-static Sprite *new_sprite(int imgtype, int w, int h)
-{
-  /* new sprite */
-  Sprite *sprite = sprite_new_with_layer(imgtype, w, h);
-  if (!sprite)
-    return NULL;
-
-  sprite_mount(sprite);
-  set_current_sprite(sprite);
-  return sprite;
 }
 
 Command cmd_new_file = {

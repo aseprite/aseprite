@@ -2,10 +2,10 @@
 COMPILATION
 ===================================
 
-  Before compile, you must configure what ASE should use, what
-  libraries are available, etc.  You can run the "fix.sh" script,
-  answer some questions and done: the main makefile is created,
-  just do
+  Before compile, you have to configure how to compile ASE, what
+  libraries are available, release-debug-profile mode, etc.  You can
+  run the "fix.sh" script, answer some questions and done: the main
+  makefile is created, just do
 
     make
 

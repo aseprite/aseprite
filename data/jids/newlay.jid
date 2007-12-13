@@ -8,13 +8,9 @@
     <box horizontal>
       <box vertical homogeneous>
         <label text="Name:" />
-        <label text="Width:" />
-        <label text="Height:" />
       </box>
       <box vertical homogeneous>
         <entry maxsize=256 text="New Layer" name="name" />
-        <entry maxsize=4 name="width" />
-        <entry maxsize=4 name="height" />
       </box>
     </box>
     <box horizontal homogeneous>

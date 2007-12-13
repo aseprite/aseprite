@@ -20,7 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro.h>
+
+#include "jinete/jlist.h"
 
 #include "console/console.h"
 #include "core/core.h"
@@ -28,6 +31,8 @@
 #include "modules/editors.h"
 #include "modules/sprites.h"
 #include "modules/tools2.h"
+#include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/bindings.h"
 #include "script/script.h"
 #include "widgets/editor.h"
@@ -42,6 +47,8 @@ static lua_State *L;
    processing scripts).  */
 
 static int running = 0;
+
+static JList sprites_of_users = NULL;
 
 static void prepare(void);
 static void release(void);
@@ -143,7 +150,7 @@ int do_script_expr(const char *exp)
 {
   int err = luaL_loadbuffer(L, exp, ustrlen(exp), exp);
 
-  prepare ();
+  prepare();
 
   if (err == 0)
     err = lua_pcall(L, 0, LUA_MULTRET, 0);
@@ -210,9 +217,20 @@ int do_script_file(const char *filename)
 static void prepare(void)
 {
   if (running == 0) {
+    JList all_sprites = get_sprite_list();
+
+    /* reset configuration of tools for the script */
     ResetConfig();
+
+    /* open console */
     console_open();
+
+    /* update variables */
     update_global_script_variables();
+
+    /* make a copy of the list of sprites to known which sprites where
+       created with the script */
+    sprites_of_users = jlist_copy(all_sprites);
   }
   running++;
 }
@@ -225,9 +243,36 @@ static void release(void)
 {
   running--;
   if (running == 0) {
+    JList all_sprites = get_sprite_list();
+    JLink link;
+
+    /* restore tools configuration for the user */
     RestoreConfig();
+
+    /* close the console */
     console_close();
+
+    /* set current sprite */
     if (current_editor)
       set_current_sprite(editor_get_sprite(current_editor));
+
+    /* check what sprites are new (to enable Undo support), to do this
+       we must to  */
+    JI_LIST_FOR_EACH(all_sprites, link) {
+      Sprite *sprite = link->data;
+
+      /* if the sprite isn't in the old list of sprites ... */
+      if (!jlist_find(sprites_of_users, sprite)) {
+	/* ...the sprite was created by the script, so the undo is
+	   disabled */
+	assert(undo_is_disabled(sprite->undo));
+
+	/* this is a sprite created in the script... see the functions
+	   NewSprite or LoadSprite to known where the undo is
+	   disabled */
+	undo_enable(sprite->undo);
+      }
+    }
+    jlist_free(sprites_of_users);
   }
 }
