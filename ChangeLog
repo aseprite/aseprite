@@ -1,3 +1,8 @@
+2007-12-16  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_screen_shot.c (cmd_screen_shot_execute): Now
+	saves screen shots in PNG format.
+
 2007-12-13  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/dialogs/scrsaver.c: Removed.
