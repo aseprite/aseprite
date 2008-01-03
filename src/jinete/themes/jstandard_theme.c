@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -753,7 +753,7 @@ static void theme_draw_listitem(JWidget widget)
     bg = COLOR_FACE;
     fg = COLOR_DISABLED;
   }
-  else if (jwidget_is_selected (widget)) {
+  else if (jwidget_is_selected(widget)) {
     bg = COLOR_SELECTED;
     fg = COLOR_BACKGROUND;
   }
@@ -786,7 +786,7 @@ static void theme_draw_listitem(JWidget widget)
 
 static void theme_draw_menu(JWidget widget)
 {
-  jdraw_rectfill (widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
 static void theme_draw_menuitem(JWidget widget)
@@ -828,7 +828,7 @@ static void theme_draw_menuitem(JWidget widget)
   y2 = widget->rc->y2-1;
 
   /* background */
-  rectfill (ji_screen, x1, y1, x2, y2, bg);
+  rectfill(ji_screen, x1, y1, x2, y2, bg);
 
   /* draw an indicator for selected items */
   if (jwidget_is_selected (widget)) {
@@ -850,53 +850,53 @@ static void theme_draw_menuitem(JWidget widget)
   else
     widget->align = JI_LEFT | JI_MIDDLE;
 
-  pos = jwidget_get_rect (widget);
+  pos = jwidget_get_rect(widget);
   if (!bar)
-    jrect_displace (pos, widget->child_spacing/2, 0);
-  draw_textstring (NULL, fg, bg, FALSE, widget, pos, 0);
-  jrect_free (pos);
+    jrect_displace(pos, widget->child_spacing/2, 0);
+  draw_textstring(NULL, fg, bg, FALSE, widget, pos, 0);
+  jrect_free(pos);
 
   /* for menu-box */
   if (!bar) {
     /* draw the arrown (to indicate which this menu has a sub-menu) */
-    if (jmenuitem_get_submenu (widget)) {
+    if (jmenuitem_get_submenu(widget)) {
       /* enabled */
-      if (jwidget_is_enabled (widget)) {
+      if (jwidget_is_enabled(widget)) {
 	for (c=0; c<3; c++)
-	  vline (ji_screen,
-		 widget->rc->x2-3-c,
-		 (widget->rc->y1+widget->rc->y2)/2-c,
-		 (widget->rc->y1+widget->rc->y2)/2+c, fg);
+	  vline(ji_screen,
+		widget->rc->x2-3-c,
+		(widget->rc->y1+widget->rc->y2)/2-c,
+		(widget->rc->y1+widget->rc->y2)/2+c, fg);
       }
       /* disabled */
       else {
 	for (c=0; c<3; c++)
-	  vline (ji_screen,
-		 widget->rc->x2-3-c+1,
-		 (widget->rc->y1+widget->rc->y2)/2-c+1,
-		 (widget->rc->y1+widget->rc->y2)/2+c+1, COLOR_BACKGROUND);
+	  vline(ji_screen,
+		widget->rc->x2-3-c+1,
+		(widget->rc->y1+widget->rc->y2)/2-c+1,
+		(widget->rc->y1+widget->rc->y2)/2+c+1, COLOR_BACKGROUND);
 	for (c=0; c<3; c++)
-	  vline (ji_screen,
-		 widget->rc->x2-3-c,
-		 (widget->rc->y1+widget->rc->y2)/2-c,
-		 (widget->rc->y1+widget->rc->y2)/2+c, COLOR_DISABLED);
+	  vline(ji_screen,
+		widget->rc->x2-3-c,
+		(widget->rc->y1+widget->rc->y2)/2-c,
+		(widget->rc->y1+widget->rc->y2)/2+c, COLOR_DISABLED);
       }
     }
     /* draw the keyboard shortcut */
-    else if (jmenuitem_get_accel (widget)) {
+    else if (jmenuitem_get_accel(widget)) {
       int old_align = widget->align;
       char buf[256];
 
-      pos = jwidget_get_rect (widget);
+      pos = jwidget_get_rect(widget);
       pos->x2 -= widget->child_spacing/4;
 
       jaccel_to_string (jmenuitem_get_accel (widget), buf);
 
       widget->align = JI_RIGHT | JI_MIDDLE;
-      draw_textstring (buf, fg, bg, FALSE, widget, pos, 0);
+      draw_textstring(buf, fg, bg, FALSE, widget, pos, 0);
       widget->align = old_align;
 
-      jrect_free (pos);
+      jrect_free(pos);
     }
   }
 }

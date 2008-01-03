@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +96,7 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
 
 int editor_keys_toset_frame(JWidget widget, int scancode)
 {
-  Editor *editor = editor_data (widget);
+  Editor *editor = editor_data(widget);
 
   if ((editor->sprite) &&
 /*       (jwidget_has_mouse (widget)) && */

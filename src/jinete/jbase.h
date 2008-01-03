@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -156,13 +156,15 @@ enum {
   JM_CLOSE,			/* windows is closed */
   JM_DESTROY,			/* widget is destroyed */
   JM_DRAW,			/* widget needs be repainted */
-  JM_IDLE,			/* is sent when the manager does nothing */
   JM_SIGNAL,			/* signal from some widget */
+  JM_TIMER,			/* a timer timeout */
   JM_REQSIZE,			/* request size */
   JM_SETPOS,			/* set position */
   JM_WINMOVE,			/* window movement */
   JM_DRAWRGN,			/* redraw region */
   JM_DIRTYCHILDREN,		/* dirty children */
+  JM_QUEUEPROCESSING,		/* only sent to manager which indicate
+				   the last message in the queue */
 
   /* keyboard related messages */
   JM_CHAR,			/* a new character in the buffer */
@@ -182,6 +184,9 @@ enum {
 
   /* XXX drag'n'drop operation? */
   /* JM_DND_, */
+
+  /* other messages */
+  JM_REGISTERED_MESSAGES
 };
 
 /* signals */

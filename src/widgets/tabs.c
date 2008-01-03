@@ -51,6 +51,7 @@ typedef struct Tabs
   Tab *hot;
   Tab *selected;
   void (*select_callback)(void *data);
+  int timer_id;
   int scroll_x;
 /*   int hot_arrow; */
   JWidget button_left;
@@ -84,6 +85,7 @@ JWidget tabs_new(void (*select_callback)(void *data))
   tabs->hot = NULL;
   tabs->selected = NULL;
   tabs->select_callback = select_callback;
+  tabs->timer_id = jmanager_add_timer(widget, 1000/60);
   tabs->scroll_x = 0;
 /*   tabs->hot_arrow = 0; */
 
@@ -194,6 +196,8 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       jwidget_free(tabs->button_right);
       
       jlist_free(tabs->list_of_tabs);
+
+      jmanager_remove_timer(tabs->timer_id);
       jfree(tabs);
       break;
     }
@@ -291,7 +295,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_BUTTONPRESSED:
-      if (tabs->selected != tabs->hot) {
+      if (tabs->selected != tabs->hot && tabs->hot != NULL) {
 	tabs->selected = tabs->hot;
 	jwidget_dirty(widget);
 
@@ -306,6 +310,15 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
     }
 
+    case JM_TIMER: {
+/*       JWidget parent = jwidget_get_parent(widget); */
+/*       Tabs *tabs = jwidget_get_data(parent, tabs_type()); */
+/*       int dir = (int)jwidget_get_data(widget, tabs_type()); */
+      int dir = jmanager_get_capture() == tabs->button_left ? -1: 1;
+      set_scroll_x(widget, tabs->scroll_x + dir*8);
+      break;
+    }
+
   }
 
   return FALSE;
@@ -313,25 +326,34 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 {
+  JWidget parent;
+  Tabs *tabs;
+
+  parent = jwidget_get_parent(widget);
+  if (parent)
+    tabs = jwidget_get_data(parent, tabs_type());
+
   switch (msg->type) {
 
     case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT)
+      if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
 	return TRUE;
+      }
       else if (msg->signal.num == JI_SIGNAL_DISABLE) {
-	if (jwidget_is_selected(widget))
+	if (jwidget_is_selected(widget)) {
+	  jmanager_stop_timer(tabs->timer_id);
 	  jwidget_deselect(widget);
+	}
 	return TRUE;
       }
       break;
 
-    case JM_IDLE:
-      if (jwidget_has_capture(widget)) {
-	JWidget parent = jwidget_get_parent(widget);
-	Tabs *tabs = jwidget_get_data(parent, tabs_type());
-	int dir = (int) jwidget_get_data(widget, tabs_type());
-	set_scroll_x(parent, tabs->scroll_x + dir*8);
-      }
+    case JM_BUTTONPRESSED:
+      jmanager_start_timer(tabs->timer_id);
+      break;
+
+    case JM_BUTTONRELEASED:
+      jmanager_stop_timer(tabs->timer_id);
       break;
 
   }

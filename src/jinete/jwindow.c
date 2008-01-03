@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -181,9 +181,9 @@ void jwindow_open(JWidget widget)
     Window *window = jwidget_get_data (widget, JI_WINDOW); 
 
     if (window->is_autoremap)
-      jwindow_center (widget);
+      jwindow_center(widget);
 
-    _jmanager_open_window (ji_get_default_manager (), widget);
+    _jmanager_open_window(ji_get_default_manager(), widget);
   }
 }
 
@@ -623,7 +623,6 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   msg = jmessage_new(JM_WINMOVE);
   jmessage_broadcast_to_children(msg, widget);
   jmanager_enqueue_message(msg);
-  jmessage_free(msg);
 
   old_reg = jwidget_get_region (widget);
   old_drawable_region = jwidget_get_drawable_region (widget, FLAGS);

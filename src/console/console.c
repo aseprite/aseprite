@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,37 +49,37 @@ void console_open(void)
   /* TODO verify if the ji_screen works */
 /*   if (!screen || */
   if (!ji_screen ||
-      !is_interactive () ||
+      !is_interactive() ||
       wid_console ||
       console_counter > 1)
     return;
   else {
     JWidget window, box1, view, textbox, button;
 
-    window = jwindow_new (_("Processing..."));
+    window = jwindow_new(_("Processing..."));
     if (!window)
       return;
 
-    box1 = jbox_new (JI_VERTICAL);
-    view = jview_new ();
-    textbox = jtextbox_new (NULL, JI_WORDWRAP);
-    button = jbutton_new (_("&Cancel"));
+    box1 = jbox_new(JI_VERTICAL);
+    view = jview_new();
+    textbox = jtextbox_new(NULL, JI_WORDWRAP);
+    button = jbutton_new(_("&Cancel"));
 
     if (!box1 || !textbox || !button)
       return;
 
-    jview_attach (view, textbox);
+    jview_attach(view, textbox);
 
-    jwidget_add_child (box1, view);
-    jwidget_add_child (box1, button);
-    jwidget_add_child (window, box1);
+    jwidget_add_child(box1, view);
+    jwidget_add_child(box1, button);
+    jwidget_add_child(window, box1);
 
-    jwidget_hide (view);
-    jwidget_magnetic (button, TRUE);
-    jwidget_expansive (view, TRUE);
+    jwidget_hide(view);
+    jwidget_magnetic(button, TRUE);
+    jwidget_expansive(view, TRUE);
 
     /* force foreground mode */
-/*     ji_find_widget (window)->in_foreground = TRUE; */
+/*     ji_find_widget(window)->in_foreground = TRUE; */
 
     wid_console = window;
     wid_view = view;
@@ -89,17 +90,19 @@ void console_open(void)
   }
 }
 
-void console_close (void)
+void console_close(void)
 {
   console_counter--;
 
   if ((wid_console) && (console_counter == 0)) {
-    if (console_locked &&
-	!want_close_flag &&
-	jwidget_is_visible (wid_console))
-      jwindow_open_fg (wid_console);
+    if (console_locked
+	&& !want_close_flag
+	&& jwidget_is_visible(wid_console)) {
+      /* open in foreground */
+      jwindow_open_fg(wid_console);
+    }
 
-    jwidget_free (wid_console);
+    jwidget_free(wid_console);
     wid_console = NULL;
     want_close_flag = FALSE;
   }
@@ -110,18 +113,18 @@ void console_printf(const char *format, ...)
   char buf[1024];
   va_list ap;
 
-  va_start (ap, format);
-  uvsprintf (buf, format, ap);
-  va_end (ap);
+  va_start(ap, format);
+  uvsprintf(buf, format, ap);
+  va_end(ap);
 
   if (wid_console) {
     const char *text;
     char *final;
 
     /* open the window */
-    if (jwidget_is_hidden (wid_console)) {
-      jwindow_open (wid_console);
-      jmanager_refresh_screen ();
+    if (jwidget_is_hidden(wid_console)) {
+      jwindow_open(wid_console);
+      jmanager_refresh_screen();
     }
 
     /* update the textbox */
@@ -136,37 +139,37 @@ void console_printf(const char *format, ...)
       jwidget_dirty(wid_console);
     }
 
-    text = jwidget_get_text (wid_textbox);
+    text = jwidget_get_text(wid_textbox);
     if (!text)
-      final = jstrdup (buf);
+      final = jstrdup(buf);
     else {
-      final = jmalloc (ustrlen (text) + ustrlen (buf) + 1);
+      final = jmalloc(ustrlen(text) + ustrlen(buf) + 1);
 
-      ustrcpy (final, empty_string);
-      ustrcat (final, text);
-      ustrcat (final, buf);
+      ustrcpy(final, empty_string);
+      ustrcat(final, text);
+      ustrcat(final, buf);
     }
 
-    jwidget_set_text (wid_textbox, final);
-    jfree (final);
+    jwidget_set_text(wid_textbox, final);
+    jfree(final);
   }
   else
-    printf (buf);
+    printf(buf);
 }
 
-void user_printf (const char *format, ...)
+void user_printf(const char *format, ...)
 {
   char buf[1024];
   va_list ap;
 
-  va_start (ap, format);
-  uvsprintf (buf, format, ap);
-  va_end (ap);
+  va_start(ap, format);
+  uvsprintf(buf, format, ap);
+  va_end(ap);
 
-/*   if (script_is_running ()) */
-/*     plugin_printf (buf); */
+/*   if (script_is_running()) */
+/*     plugin_printf(buf); */
 /*   else */
-  allegro_message (buf);
+  allegro_message(buf);
 }
 
 void do_progress(int progress)

@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro.h>
 #include <stdio.h>
 #include <string.h>
@@ -59,7 +61,7 @@ void rec_screen_on(void)
 /*       || (rec_file)) */
 /*     return; */
 
-  ASSERT(rec_file == NULL);
+  assert(rec_file == NULL);
 
   /* get a file name for the record */
   for (c=0; c<10000; c++) {
@@ -129,7 +131,7 @@ void rec_screen_poll(void)
 {
   if (!is_interactive() || !rec_file)
     return;
-  else if (ji_clock-rec_clock > JI_TICKS_PER_SEC/FRAMES_PER_SECOND) {
+  else if (ji_clock-rec_clock > 1000/FRAMES_PER_SECOND) {
     BITMAP *t;
     int old_flag;
     int c, i;

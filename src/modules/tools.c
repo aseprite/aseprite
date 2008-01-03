@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro.h>
 #include <limits.h>
 #include <math.h>
@@ -173,7 +175,7 @@ void refresh_tools_names(void)
 
 void select_tool(Tool *tool)
 {
-  ASSERT(tool != NULL);
+  assert(tool != NULL);
   
   current_tool = tool;
 
@@ -1089,7 +1091,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 
     /* spray updating process */
     if (current_tool == &ase_tool_spray) {
-      if (ji_clock-spray_time > (JI_TICKS_PER_SEC/20)*(100-air_speed)/100) {
+      if (ji_clock-spray_time > (1000/20)*(100-air_speed)/100) {
 	spray_time = ji_clock;
 	forced_update = TRUE;
       }

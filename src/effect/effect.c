@@ -266,26 +266,26 @@ bool effect_apply_step(Effect *effect)
   }
 }
 
-void effect_apply (Effect *effect)
+void effect_apply(Effect *effect)
 {
-  add_progress (effect->h);
+  add_progress(effect->h);
 
-  effect_begin (effect);
-  while (effect_apply_step (effect))
-    do_progress (effect->row);
+  effect_begin(effect);
+  while (effect_apply_step(effect))
+    do_progress(effect->row);
 
   /* undo stuff */
-  if (undo_is_enabled (effect->sprite->undo))
-    undo_image (effect->sprite->undo, effect->src,
-		effect->x, effect->y, effect->w, effect->h);
+  if (undo_is_enabled(effect->sprite->undo))
+    undo_image(effect->sprite->undo, effect->src,
+	       effect->x, effect->y, effect->w, effect->h);
 
   /* copy "dst" to "src" */
-  image_copy (effect->src, effect->dst, 0, 0);
+  image_copy(effect->src, effect->dst, 0, 0);
 
-  del_progress ();
+  del_progress();
 }
 
-void effect_flush (Effect *effect)
+void effect_flush(Effect *effect)
 {
   if (effect->row >= 0) {
     JRegion reg1, reg2;
@@ -299,8 +299,8 @@ void effect_flush (Effect *effect)
 		     effect->x+effect->offset_x,
 		     effect->y+effect->offset_y+effect->row-1,
 		     &rect.x1, &rect.y1);
-    rect.x2 = rect.x1 + (effect->w << editor_data (editor)->zoom);
-    rect.y2 = rect.y1 + (1 << editor_data (editor)->zoom);
+    rect.x2 = rect.x1 + (effect->w << editor_data(editor)->zoom);
+    rect.y2 = rect.y1 + (1 << editor_data(editor)->zoom);
 
     reg2 = jregion_new(&rect, 1);
     jregion_union(reg1, reg1, reg2);
@@ -315,20 +315,20 @@ void effect_flush (Effect *effect)
   }
 }
 
-void effect_apply_to_image (Effect *effect, Image *image, int x, int y)
+void effect_apply_to_image(Effect *effect, Image *image, int x, int y)
 {
-  if (effect_init (effect, image, x, y))
-    effect_apply (effect);
+  if (effect_init(effect, image, x, y))
+    effect_apply(effect);
 }
 
-void effect_apply_to_target (Effect *effect)
+void effect_apply_to_target(Effect *effect)
 {
-  int target = get_config_int ("Target", "Images", 0);
+  int target = get_config_int("Target", "Images", 0);
   int n, n2, images = 0;
   Stock *stock;
   int *x, *y;
 
-  stock = sprite_get_images (effect->sprite, target, TRUE, &x, &y);
+  stock = sprite_get_images(effect->sprite, target, TRUE, &x, &y);
   if (!stock)
     return;
 

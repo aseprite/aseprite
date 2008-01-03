@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,14 @@
 #define JINETE_WIDGET_H
 
 #include "jinete/jbase.h"
+
+#ifndef NDEBUG
+#include "jinete/jintern.h"
+#define assert_valid_widget(widget) assert((widget) != NULL &&		\
+					   _ji_is_valid_widget((widget)))
+#else
+#define assert_valid_widget(widget) ((void)0)
+#endif
 
 JI_BEGIN_DECLS
 

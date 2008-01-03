@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro/debug.h>
 #include <allegro/unicode.h>
 
@@ -63,7 +65,7 @@ static void cmd_select_file_execute(const char *argument)
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj *gfxobj = gfxobj_find(sprite_id);
-    ASSERT(gfxobj != NULL);
+    assert(gfxobj != NULL);
 
     sprite_show((Sprite *)gfxobj);
   }

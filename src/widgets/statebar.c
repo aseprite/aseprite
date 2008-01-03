@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +85,6 @@ JWidget status_bar_new(void)
 
     status_bar->widget = widget;
     status_bar->timeout = 0;
-    status_bar->restore = FALSE;
     status_bar->nprogress = 0;
 
     /* construct the commands box */
@@ -149,7 +149,7 @@ void status_bar_set_text(JWidget widget, int msecs, const char *format, ...)
       jfree (widget->text);
 
     widget->text = buf ? jstrdup (buf) : NULL;
-    status_bar->timeout = ji_clock + JI_TICKS_PER_SEC*msecs/1000;
+    status_bar->timeout = ji_clock + msecs;
     jwidget_dirty(widget);
   }
 }
@@ -325,24 +325,18 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (jwidget_has_child(widget, status_bar->commands_box))
-	status_bar->restore = TRUE;
-      break;
+      if (jwidget_has_child(widget, status_bar->commands_box)) {
+	/* if we want restore the state-bar and the slider doesn't have
+	   the capture... */
+	if (jmanager_get_capture() != status_bar->slider) {
+	  /* exit from command mode */
+	  jmanager_free_focus();
 
-    case JM_IDLE: {
-      /* if we want restore the state-bar and the slider doesn't have
-	 the capture... */
-      if (status_bar->restore &&
-	  jmanager_get_capture() != status_bar->slider) {
-	/* exit from command mode */
-	status_bar->restore = FALSE;
-	jmanager_free_focus();
-
-	jwidget_remove_child(widget, status_bar->commands_box);
-	jwidget_dirty(widget);
+	  jwidget_remove_child(widget, status_bar->commands_box);
+	  jwidget_dirty(widget);
+	}
       }
       break;
-    }
   }
 
   return FALSE;
@@ -442,7 +436,7 @@ static void update_from_layer(StatusBar *status_bar)
     jwidget_disable(status_bar->slider);
   }
 }
-
+
 /***********************************************************************
 		       Animation Playing stuff
  ***********************************************************************/

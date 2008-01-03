@@ -1,3 +1,41 @@
+2008-01-03  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jmenu.c (menubox_msg_proc): Finally works (with keys
+	and without JM_IDLE message).
+
+2008-01-02  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jmenu.c: In all these day I was working to make it
+	working without JM_IDLE. The keyboard is the only thing that
+	doesn't work right now.
+
+	* src/widgets/preview.c: Doesn't use JM_IDLE message anymore.
+
+	* src/widgets/statebar.c: Doesn't use JM_IDLE message anymore.
+
+2007-12-26  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jmanager.c: Added 'enqueue_messages_before_this'.
+
+	* src/widgets/tabs.c (tabs_msg_proc): Fixed a problem that allow
+	to the user select to no-tabs at all.
+
+	* src/jinete/jmanager.c (jmanager_poll): Double-click now is
+	controlled through the 'ji_clock'.
+	(jmanager_add_msg_filter): Added routines to control filters for
+	the messages.
+
+	* src/jinete/jsystem.c: Removed all the stuff about double-click
+	in this file.
+
+2007-12-19  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jentry.c, src/widgets/tabs.c: Modified to use timers.
+
+	* src/jinete/jmanager.c (jmanager_add_timer): Added timers and
+	JM_TIMER (needed to finally remove the JM_IDLE message in the
+	future).
+
 2007-12-16  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/commands/cmd_screen_shot.c (cmd_screen_shot_execute): Now

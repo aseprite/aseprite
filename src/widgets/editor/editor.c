@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -517,7 +518,7 @@ void editor_draw_mask_safe(JWidget widget)
   if ((editor->sprite) && (editor->sprite->bound.seg)) {
     int thick = editor->cursor_thick;
 
-    if (ji_clock-editor->last_clock > JI_TICKS_PER_SEC/16) {
+    if (ji_clock-editor->last_clock > 1000/16) {
       JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
       int c, nrects = JI_REGION_NUM_RECTS(region);
       JRect rc;
@@ -1033,6 +1034,7 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
       }
       return TRUE;
 
+#if 0
     case JM_IDLE:
       if (editor->sprite)
 	editor_draw_mask_safe(widget);
@@ -1062,6 +1064,7 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
 /*       if (editor->refresh_region) */
 /* 	editor_refresh_region (widget); */
       break;
+#endif
 
     case JM_MOUSEENTER:
       if (jmanager_get_capture() &&

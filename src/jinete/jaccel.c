@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,11 @@
 
 #include "jinete/jaccel.h"
 #include "jinete/jlist.h"
+
+/* #define REPORT_KEYS */
+#define PREPROCESS_KEYS
+
+
 
 struct jaccel
 {
@@ -168,46 +173,46 @@ static void proc_one_word(JAccel accel, char *word)
     /* other ones */
     else {
       /* F1, F2, ..., F11, F12 */
-      if ((toupper (*tok) == 'F') && (ustrlen (tok) <= 3)) {
-	int num = ustrtol (tok+1, NULL, 10);
+      if ((toupper (*tok) == 'F') && (ustrlen(tok) <= 3)) {
+	int num = ustrtol(tok+1, NULL, 10);
 	if ((num >= 1) && (num <= 12))
 	  scancode = KEY_F1 + num - 1;
       }
-      else if (ustricmp (tok, "Esc") == 0)
+      else if (ustricmp(tok, "Esc") == 0)
 	scancode = KEY_ESC;
-      else if (ustricmp (tok, "Backspace") == 0)
+      else if (ustricmp(tok, "Backspace") == 0)
 	scancode = KEY_BACKSPACE;
-      else if (ustricmp (tok, "Tab") == 0)
+      else if (ustricmp(tok, "Tab") == 0)
 	scancode = KEY_TAB;
-      else if (ustricmp (tok, "Enter") == 0)
+      else if (ustricmp(tok, "Enter") == 0)
 	scancode = KEY_ENTER;
-      else if (ustricmp (tok, "Space") == 0)
+      else if (ustricmp(tok, "Space") == 0)
 	scancode = KEY_SPACE;
-      else if ((ustricmp (tok, "Insert") == 0) ||
-	       (ustricmp (tok, "Ins") == 0))
+      else if ((ustricmp(tok, "Insert") == 0) ||
+	       (ustricmp(tok, "Ins") == 0))
 	scancode = KEY_INSERT;
-      else if ((ustricmp (tok, "Delete") == 0) ||
-	       (ustricmp (tok, "Del") == 0))
+      else if ((ustricmp(tok, "Delete") == 0) ||
+	       (ustricmp(tok, "Del") == 0))
 	scancode = KEY_DEL;
-      else if (ustricmp (tok, "Home") == 0)
+      else if (ustricmp(tok, "Home") == 0)
 	scancode = KEY_HOME;
-      else if (ustricmp (tok, "End") == 0)
+      else if (ustricmp(tok, "End") == 0)
 	scancode = KEY_END;
-      else if (ustricmp (tok, "PgUp") == 0)
+      else if (ustricmp(tok, "PgUp") == 0)
 	scancode = KEY_PGUP;
-      else if (ustricmp (tok, "PgDn") == 0)
+      else if (ustricmp(tok, "PgDn") == 0)
 	scancode = KEY_PGDN;
-      else if (ustricmp (tok, "Left") == 0)
+      else if (ustricmp(tok, "Left") == 0)
 	scancode = KEY_LEFT;
-      else if (ustricmp (tok, "Right") == 0)
+      else if (ustricmp(tok, "Right") == 0)
 	scancode = KEY_RIGHT;
-      else if (ustricmp (tok, "Up") == 0)
+      else if (ustricmp(tok, "Up") == 0)
 	scancode = KEY_UP;
-      else if (ustricmp (tok, "Down") == 0)
+      else if (ustricmp(tok, "Down") == 0)
 	scancode = KEY_DOWN;
 
       /* TODO all "Pad" stuff and "PrtScr" and "Pause" */
-      else if (ustricmp (tok, "Enter Pad") == 0)
+      else if (ustricmp(tok, "Enter Pad") == 0)
 	scancode = KEY_ENTER_PAD;
     }
   }
@@ -385,9 +390,6 @@ void jaccel_to_string(JAccel accel, char *buf)
 
 bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
 {
-/* #define REPORT_KEYS */
-#define PREPROCESS_KEYS
-
   KeyCombo *key;
   JLink link;
 #ifdef REPORT_KEYS

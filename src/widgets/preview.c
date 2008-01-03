@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,9 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
+
+#include "jinete/jmanager.h"
 #include "jinete/jmessage.h"
 #include "jinete/jwidget.h"
 
@@ -33,6 +37,7 @@
 typedef struct Preview
 {
   Effect *effect;
+  int timer_id;
 } Preview;
 
 static bool preview_msg_proc(JWidget widget, JMessage msg);
@@ -43,6 +48,7 @@ JWidget preview_new(Effect *effect)
   Preview *preview = jnew(Preview, 1);
 
   preview->effect = effect;
+  preview->timer_id = -1;
 
   jwidget_add_hook(widget, preview_type(), preview_msg_proc, preview);
   jwidget_hide(widget);
@@ -60,24 +66,41 @@ int preview_type(void)
 
 void preview_restart(JWidget widget)
 {
-  effect_begin_for_preview(preview_get_effect(widget));
+  Preview *preview;
+
+  assert_valid_widget(widget);
+
+  preview = jwidget_get_data(widget, preview_type());
+
+  effect_begin_for_preview(preview->effect);
+
+  if (preview->timer_id < 0)
+    preview->timer_id = jmanager_add_timer(widget, 1);
+  jmanager_start_timer(preview->timer_id);
 }
 
 Effect *preview_get_effect(JWidget widget)
 {
-  return ((Preview *)jwidget_get_data(widget, preview_type()))->effect;
+  Preview *preview;
+
+  assert_valid_widget(widget);
+
+  preview = jwidget_get_data(widget, preview_type());
+  return preview->effect;
 }
 
 static bool preview_msg_proc(JWidget widget, JMessage msg)
 {
+  Preview *preview = jwidget_get_data(widget, preview_type());
   Effect *effect = preview_get_effect(widget);
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree(jwidget_get_data(widget, preview_type()));
+      jmanager_remove_timer(preview->timer_id);
+      jfree(preview);
       break;
-
+      
     case JM_OPEN:
       set_preview_image(effect->sprite->layer, effect->dst);
       break;
@@ -86,10 +109,12 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
       set_preview_image(NULL, NULL);
       break;
 
-    case JM_IDLE:
+    case JM_TIMER:
       if (effect) {
 	if (effect_apply_step(effect))
 	  effect_flush(effect);
+	else
+	  jmanager_stop_timer(preview->timer_id);
       }
       break;
   }

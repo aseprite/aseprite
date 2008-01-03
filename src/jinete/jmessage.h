@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,16 @@
 #include "jinete/jrect.h"
 
 JI_BEGIN_DECLS
+
+/* TODO add mutexes */
+#define JM_MESSAGE(name)				\
+  static int _jm_##name = 0;				\
+  static int jm_##name()				\
+  {							\
+    if (!_jm_##name)					\
+      _jm_##name = ji_register_message_type();		\
+    return _jm_##name;					\
+  }							\
 
 struct jmessage_any
 {
@@ -77,6 +87,12 @@ struct jmessage_signal
   JWidget from;			/* signal generator */
 };
 
+struct jmessage_timer
+{
+  struct jmessage_any any;
+  int timer_id;			/* number of timer */
+};
+
 struct jmessage_setpos
 {
   struct jmessage_any any;
@@ -95,6 +111,13 @@ struct jmessage_drawrgn
   JRegion region;		/* region to redraw */
 };
 
+struct jmessage_user
+{
+  struct jmessage_any any;
+  int a, b, c;
+  void *dp;
+};
+
 union jmessage
 {
   int type;
@@ -103,16 +126,21 @@ union jmessage
   struct jmessage_draw draw;
   struct jmessage_mouse mouse;
   struct jmessage_signal signal;
+  struct jmessage_timer timer;
   struct jmessage_setpos setpos;
   struct jmessage_reqsize reqsize;
   struct jmessage_drawrgn drawrgn;
+  struct jmessage_user user;
 };
+
+int ji_register_message_type(void);
 
 JMessage jmessage_new(int type);
 JMessage jmessage_new_copy(const JMessage msg);
 void jmessage_free(JMessage msg);
 
 void jmessage_add_dest(JMessage msg, JWidget widget);
+void jmessage_add_pre_dest(JMessage msg, JWidget widget);
 
 void jmessage_broadcast_to_children(JMessage msg, JWidget widget);
 void jmessage_broadcast_to_parents(JMessage msg, JWidget widget);

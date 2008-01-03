@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +26,6 @@ typedef struct StatusBar
 {
   JWidget widget;
   int timeout;
-  unsigned restore : 1;		/* return from commands mode */
 
   /* progress bar */
   int nprogress;
@@ -45,17 +45,17 @@ typedef struct StatusBar
   JWidget b_last;			/* go to last frame */
 } StatusBar;
 
-JWidget status_bar_new (void);
-int status_bar_type (void);
+JWidget status_bar_new(void);
+int status_bar_type(void);
 
-StatusBar *status_bar_data (JWidget status_bar);
+StatusBar *status_bar_data(JWidget status_bar);
 
-void status_bar_set_text (JWidget status_bar, int msecs, const char *format, ...);
+void status_bar_set_text(JWidget status_bar, int msecs, const char *format, ...);
 
-void status_bar_do_progress (JWidget status_bar, int progress);
-void status_bar_add_progress (JWidget status_bar, int max);
-void status_bar_del_progress (JWidget status_bar);
+void status_bar_do_progress(JWidget status_bar, int progress);
+void status_bar_add_progress(JWidget status_bar, int max);
+void status_bar_del_progress(JWidget status_bar);
 
-void status_bar_update (JWidget status_bar);
+void status_bar_update(JWidget status_bar);
 
 #endif /* WIDGETS_STATEBAR_H */

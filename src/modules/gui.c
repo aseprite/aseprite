@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -773,10 +774,8 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_IDLE:
+    case JM_QUEUEPROCESSING:
       gui_feedback();
-      /* don't eat CPU... rest some time */
-      rest(0); rest(1);
       break;
 
     case JM_CHAR: {
@@ -817,35 +816,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       }
       break;
     }
-      /* TODO remove this */
-/*       if (check_for_accel(ACCEL_FOR_SCREENSHOT, msg)) { */
-/* 	screen_shot(); */
-/* 	return TRUE; */
-/*       } */
-/*       else if (check_for_accel(ACCEL_FOR_FILMEDITOR, msg)) { */
-/* 	if (current_sprite) { */
-/* 	  JWidget child; */
-/* 	  JLink link; */
-/* 	  bool dofilm = FALSE; */
 
-/* 	  JI_LIST_FOR_EACH(widget->children, link) { */
-/* 	    child = link->data; */
-
-/* 	    if (jwindow_is_foreground(child)) { */
-/*  	      break; */
-/* 	    } */
-/* 	    else if (jwindow_is_desktop(child) && child == app_get_top_window()) { */
-/* 	      dofilm = TRUE; */
-/* 	      break; */
-/* 	    } */
-/* 	  } */
-
-/* 	  if (dofilm) { */
-/* 	    switch_between_film_and_sprite_editor(); */
-/* 	    return TRUE; */
-/* 	  } */
-/* 	} */
-/*       } */
   }
 
   return FALSE;

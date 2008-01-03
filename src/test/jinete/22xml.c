@@ -1,5 +1,5 @@
 /* jinete - a GUI library
- * Copyright (C) 2003-2005, 2007 by David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 by David A. Capello
  *
  * Jinete is gift-ware.
  */
@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
   jwidget_expansive(hbox, TRUE);
   jwidget_expansive(textsrc, TRUE);
   jwidget_expansive(textdst, TRUE);
-  jwidget_set_static_size(textsrc, 600, 200);
-  jwidget_set_static_size(textdst, 600, 200);
+  jwidget_set_min_size(textsrc, 600, 200);
+  jwidget_set_min_size(textdst, 600, 200);
 
   jwidget_add_child(hbox, textsrc);
   jwidget_add_child(hbox, textdst);

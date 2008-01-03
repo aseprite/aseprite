@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,11 +63,11 @@ int main(int argc, char *argv[])
   slider5 = jslider_new(0, 255, 1);
   button1 = jbutton_new("&Close");
 
-  jwidget_set_static_size(slider1, 128, 0);
-  jwidget_set_static_size(slider2, 128, 0);
-  jwidget_set_static_size(slider3, 128, 0);
-  jwidget_set_static_size(slider4, 128, 0);
-  jwidget_set_static_size(slider5, 128, 0);
+  jwidget_set_min_size(slider1, 128, 0);
+  jwidget_set_min_size(slider2, 128, 0);
+  jwidget_set_min_size(slider3, 128, 0);
+  jwidget_set_min_size(slider4, 128, 0);
+  jwidget_set_min_size(slider5, 128, 0);
 
   jwidget_expansive(slider1, TRUE);
   jwidget_expansive(slider2, TRUE);

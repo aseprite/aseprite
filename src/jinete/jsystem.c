@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,10 @@ static BITMAP *sprite_cursor = NULL;
 static int focus_x;
 static int focus_y;
 
+static BITMAP *covered_area = NULL;
+static int covered_area_x;
+static int covered_area_y;
+
 /* Mouse information (button and position).  */
 
 static volatile int m_b[2];
@@ -73,18 +77,14 @@ static int m_z[2];
 static bool moved;
 static int mouse_scares = 0;
 
-/* For double click management.  */
-
-static volatile int click_clock = 0;
-static volatile int click_level = JI_CLICK_NOT;
-static volatile int click_mouse_b = 0;
-
 /* Local routines.  */
 
 static void set_cursor(BITMAP *bmp, int x, int y);
 static void clock_inc(void);
-static void check_click(void);
 static void update_mouse_position(void);
+
+static void capture_covered_area(void);
+static void restore_covered_area(void);
 
 static void clock_inc(void)
 {
@@ -92,55 +92,6 @@ static void clock_inc(void)
 }
 
 END_OF_STATIC_FUNCTION(clock_inc);
-
-/* Based on "dclick_check" from allegro/src/gui.c.  */
-
-static void check_click(void)
-{
-  /* Waiting mouse released...  */
-  if (click_level == JI_CLICK_START) {
-    /* The button was released.  */
-    if (!m_b[0]) {
-      click_clock = 0;
-      click_level = JI_CLICK_RELEASE;
-    }
-    /* The button continue pressed.  */
-    else {
-      /* Does mouse button change?  */
-      if (click_mouse_b != m_b[0]) {
-	/* Start again with this new button.  */
-	click_clock = 0;
-	click_level = JI_CLICK_START;
-	click_mouse_b = m_b[0];
-      }
-      else
-	click_clock++;
-    }
-  }
-  /* Waiting second mouse click...  */
-  else if (click_level == JI_CLICK_RELEASE) {
-    /* The button is pressed again.  */
-    if (m_b[0]) {
-      /* Is the same button?  */
-      if (m_b[0] == click_mouse_b) {
-	click_level = JI_CLICK_AGAIN;
-      }
-      /* If it's other button, start again with this one.  */
-      else {
-	click_clock = 0;
-	click_level = JI_CLICK_START;
-	click_mouse_b = m_b[0];
-      }
-    }
-    else
-      click_clock++;
-  }
-
-  if (click_clock > 10)
-    click_level = JI_CLICK_NOT;
-}
-
-END_OF_STATIC_FUNCTION(check_click);
 
 static void set_cursor(BITMAP *bmp, int x, int y)
 {
@@ -160,14 +111,9 @@ int _ji_system_init(void)
   /* Install timer related stuff.  */
   LOCK_VARIABLE(ji_clock);
   LOCK_VARIABLE(m_b);
-  LOCK_VARIABLE(click_clock);
-  LOCK_VARIABLE(click_level);
-  LOCK_VARIABLE(click_mouse_b);
   LOCK_FUNCTION(clock_inc);
-  LOCK_FUNCTION(check_click);
 
-  if ((install_int_ex(clock_inc, BPS_TO_TIMER(JI_TICKS_PER_SEC)) < 0) ||
-      (install_int(check_click, 20) < 0))
+  if (install_int_ex(clock_inc, BPS_TO_TIMER(1000)) < 0)
     return -1;
 
   jmouse_poll();
@@ -182,7 +128,6 @@ void _ji_system_exit(void)
 {
   ji_set_screen(NULL);
 
-  remove_int(check_click);
   remove_int(clock_inc);
 }
 
@@ -276,7 +221,7 @@ void ji_flip_rect(JRect rect)
   }
 }
 
-void ji_set_translation_hook(const char *(*gettext) (const char *msgid))
+void ji_set_translation_hook(const char *(*gettext)(const char *msgid))
 {
   strings_hook = gettext;
 }
@@ -284,7 +229,7 @@ void ji_set_translation_hook(const char *(*gettext) (const char *msgid))
 const char *ji_translate_string(const char *msgid)
 {
   if (strings_hook)
-    return (*strings_hook) (msgid);
+    return (*strings_hook)(msgid);
   else
     return msgid;
 }
@@ -329,6 +274,7 @@ int jmouse_set_cursor(int type)
  */
 void jmouse_draw_cursor()
 {
+#if 0
   if (sprite_cursor != NULL && mouse_scares == 0) {
     int x = m_x[0]-focus_x;
     int y = m_y[0]-focus_y;
@@ -345,33 +291,57 @@ void jmouse_draw_cursor()
 
     jrect_free(rect);
   }
+#endif
+
+  if (sprite_cursor != NULL && mouse_scares == 0) {
+    int x = m_x[0]-focus_x;
+    int y = m_y[0]-focus_y;
+
+    restore_covered_area();
+    capture_covered_area();
+
+    draw_sprite(ji_screen, sprite_cursor, x, y);
+
+    if (ji_dirty_region) {
+      JRect rect = jrect_new(x, y,
+			     x+sprite_cursor->w,
+			     y+sprite_cursor->h);
+      ji_add_dirty_rect(rect);
+      jrect_free(rect);
+    }
+  }
 }
 
 void jmouse_hide()
 {
-  ASSERT(mouse_scares >= 0);
+  assert(mouse_scares >= 0);
+
   if (ji_screen == screen)
     scare_mouse();
+  else if (mouse_scares == 0)
+    restore_covered_area();
+
   mouse_scares++;
 }
 
 void jmouse_show()
 {
-  ASSERT(mouse_scares > 0);
+  assert(mouse_scares > 0);
   mouse_scares--;
+
   if (ji_screen == screen)
     unscare_mouse();
 }
 
 bool jmouse_is_hidden()
 {
-  ASSERT(mouse_scares >= 0);
+  assert(mouse_scares >= 0);
   return mouse_scares > 0;
 }
 
 bool jmouse_is_shown()
 {
-  ASSERT(mouse_scares >= 0);
+  assert(mouse_scares >= 0);
   return mouse_scares == 0;
 }
 
@@ -458,25 +428,6 @@ bool jmouse_control_infinite_scroll(JRect rect)
     return FALSE;
 }
 
-int jmouse_get_click_button(void)
-{
-  return click_mouse_b;
-}
-
-int jmouse_get_click_level(void)
-{
-  return click_level;
-}
-
-void jmouse_set_click_level(int level)
-{
-  click_level = level;
-  if (level == JI_CLICK_START) {
-    click_clock = 0;
-    click_mouse_b = m_b[0];
-  }
-}
-
 static void update_mouse_position(void)
 {
   if (ji_screen == screen) {
@@ -528,3 +479,29 @@ static void update_mouse_position(void)
 #endif
 }
 
+static void capture_covered_area(void)
+{
+  if (sprite_cursor != NULL && mouse_scares == 0) {
+    assert(covered_area == NULL);
+
+    covered_area = create_bitmap(sprite_cursor->w, sprite_cursor->h);
+    covered_area_x = m_x[0]-focus_x;
+    covered_area_y = m_y[0]-focus_y;
+
+    blit(ji_screen, covered_area,
+	 covered_area_x, covered_area_y, 0, 0,
+	 covered_area->w, covered_area->h);
+  }
+}
+
+static void restore_covered_area(void)
+{
+  if (covered_area != NULL) {
+    blit(covered_area, ji_screen,
+	 0, 0, covered_area_x, covered_area_y,
+	 covered_area->w, covered_area->h);
+
+    destroy_bitmap(covered_area);
+    covered_area = NULL;
+  }
+}

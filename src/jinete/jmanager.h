@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,9 +44,16 @@ void jmanager_free(JWidget manager);
 void jmanager_run(JWidget manager);
 bool jmanager_poll(JWidget manager, bool all_windows);
 
+/* timers */
+
+int jmanager_add_timer(JWidget widget, int interval);
+void jmanager_remove_timer(int timer_id);
+void jmanager_start_timer(int timer_id);
+void jmanager_stop_timer(int timer_id);
+
 /* routines that uses the ji_get_default_manager() */
 
-void jmanager_enqueue_message(const JMessage msg);
+void jmanager_enqueue_message(JMessage msg);
 void jmanager_dispatch_messages(void);
 
 JWidget jmanager_get_focus(void);
@@ -65,6 +72,9 @@ void jmanager_free_widget(JWidget widget);
 void jmanager_remove_message(JMessage msg);
 void jmanager_remove_messages_for(JWidget widget);
 void jmanager_refresh_screen(void);
+
+void jmanager_add_msg_filter(int message, JWidget widget);
+void jmanager_remove_msg_filter(int message, JWidget widget);
 
 JI_END_DECLS
 

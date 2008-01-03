@@ -34,7 +34,7 @@
 
 static void cmd_screen_shot_execute(const char *argument)
 {
-  int old_flag;
+  int c, old_flag;
   char buf[512];
   PALETTE pal;
   BITMAP *bmp;

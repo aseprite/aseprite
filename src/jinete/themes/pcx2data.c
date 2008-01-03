@@ -1,5 +1,6 @@
-/* ji - a GUI library
- * Copyright (C) 2003 by David A. Capello
+/* Jinete - a GUI library
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * All rights reserved.
  *
  * Read "LICENSE.txt" for more information.
  */

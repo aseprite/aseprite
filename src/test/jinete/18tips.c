@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,8 +61,8 @@ int main (int argc, char *argv[])
   button1 = jbutton_new("&OK");
   button2 = jbutton_new("&Cancel");
 
-  jwidget_add_tip(button1, "This is a tip for \"OK\" button");
-  jwidget_add_tip(button2, "This is a tip for the \"Cancel\" button");
+  jwidget_add_tip(button1, "This is the \"OK\" button");
+  jwidget_add_tip(button2, "This is the \"Cancel\" button");
 
   jwidget_add_child(window, box);
   jwidget_add_child(box, check1);
@@ -78,7 +78,7 @@ int main (int argc, char *argv[])
 }
 
 END_OF_MAIN();
-
+
 /**********************************************************************/
 /* tip */
 
@@ -91,48 +91,56 @@ static bool tip_window_hook(JWidget widget, JMessage msg);
 typedef struct TipData {
   int time;
   char *text;
+  int timer_id;
 } TipData;
 
 void jwidget_add_tip(JWidget widget, const char *text)
 {
-  TipData *tip = jnew (TipData, 1);
+  TipData *tip = jnew(TipData, 1);
 
   tip->time = -1;
-  tip->text = jstrdup (text);
+  tip->text = jstrdup(text);
+  tip->timer_id = -1;
 
-  jwidget_add_hook (widget, tip_type (), tip_hook, tip);
+  jwidget_add_hook(widget, tip_type(), tip_hook, tip);
 }
 
 static int tip_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
 static bool tip_hook(JWidget widget, JMessage msg)
 {
-  TipData *tip = jwidget_get_data (widget, tip_type ());
+  TipData *tip = jwidget_get_data(widget, tip_type());
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (tip->text);
-      jfree (tip);
+      if (tip->timer_id >= 0)
+	jmanager_remove_timer(tip->timer_id);
+
+      jfree(tip->text);
+      jfree(tip);
       break;
 
     case JM_MOUSEENTER:
-      tip->time = ji_clock;
+      if (tip->timer_id < 0)
+	tip->timer_id = jmanager_add_timer(widget, 1000);
+
+      jmanager_start_timer(tip->timer_id);
       break;
 
     case JM_MOUSELEAVE:
-      tip->time = -1;
+      jmanager_stop_timer(tip->timer_id);
       break;
 
-    case JM_IDLE:
-      if (tip->time >= 0 && ji_clock-tip->time > JI_TICKS_PER_SEC) {
-	JWidget window = tip_window_new (tip->text);
+    case JM_TIMER:
+      if (msg->timer.timer_id == tip->timer_id) {
+	JWidget window = tip_window_new(tip->text);
 	int w = jrect_w(window->rc);
 	int h = jrect_h(window->rc);
 	jwindow_remap(window);
@@ -141,9 +149,10 @@ static bool tip_hook(JWidget widget, JMessage msg)
 			 MID(0, jmouse_y(0)-h/2, JI_SCREEN_H-h));
 	jwindow_open(window);
 
-	tip->time = -1;
+	jmanager_stop_timer(tip->timer_id);
       }
       break;
+
   }
   return FALSE;
 }
@@ -176,7 +185,7 @@ static bool tip_window_hook(JWidget widget, JMessage msg)
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
 	widget->border_width.l = 3;
-	widget->border_width.t = 3+jwidget_get_text_height (widget);
+	widget->border_width.t = 3+jwidget_get_text_height(widget);
 	widget->border_width.r = 3;
 	widget->border_width.b = 3;
 	return TRUE;
@@ -189,15 +198,15 @@ static bool tip_window_hook(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW: {
-      JRect pos = jwidget_get_rect (widget);
+      JRect pos = jwidget_get_rect(widget);
 
-      jdraw_rect(pos, makecol (0, 0, 0));
+      jdraw_rect(pos, makecol(0, 0, 0));
 
-      jrect_shrink (pos, 1);
-      jdraw_rectfill (pos, makecol (255, 255, 140));
+      jrect_shrink(pos, 1);
+      jdraw_rectfill(pos, makecol(255, 255, 140));
 
-      jdraw_widget_text (widget, makecol (0, 0, 0),
-			   makecol (255, 255, 140), FALSE);
+      jdraw_widget_text(widget, makecol(0, 0, 0),
+			makecol(255, 255, 140), FALSE);
       return TRUE;
     }
   }

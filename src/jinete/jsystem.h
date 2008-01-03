@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,19 +63,10 @@ const char *ji_translate_string(const char *msgid);
 /***********************************************************************/
 /* timer related */
 
-#define JI_TICKS_PER_SEC	1024
-
-extern int volatile ji_clock;
+extern int volatile ji_clock;	/* in milliseconds */
 
 /***********************************************************************/
 /* mouse related */
-
-enum {
-  JI_CLICK_NOT,
-  JI_CLICK_START,
-  JI_CLICK_RELEASE,
-  JI_CLICK_AGAIN,
-};
 
 enum {
   JI_CURSOR_NULL,
@@ -113,10 +104,6 @@ int jmouse_y(int antique);
 int jmouse_z(int antique);
 
 bool jmouse_control_infinite_scroll(JRect rect);
-
-int jmouse_get_click_button(void);
-int jmouse_get_click_level(void);
-void jmouse_set_click_level(int level);
 
 JI_END_DECLS
 

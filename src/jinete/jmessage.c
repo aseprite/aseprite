@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,12 +31,20 @@
 
 #include <allegro/keyboard.h>
 #include <string.h>
+#include <assert.h>
 
 #include "jinete/jlist.h"
 #include "jinete/jmanager.h"
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
+
+static int registered_messages = JM_REGISTERED_MESSAGES;
+
+int ji_register_message_type(void)
+{
+  return registered_messages++;
+}
 
 JMessage jmessage_new(int type)
 {
@@ -66,6 +74,8 @@ JMessage jmessage_new_copy(const JMessage msg)
 {
   JMessage copy;
 
+  assert(msg != NULL);
+
   copy = jnew(union jmessage, 1);
   if (!copy)
     return NULL;
@@ -82,6 +92,8 @@ JMessage jmessage_new_copy(const JMessage msg)
 
 void jmessage_free(JMessage msg)
 {
+  assert(msg != NULL);
+
   if (msg->any.sub_msg)
     jmessage_free(msg->any.sub_msg);
 
@@ -91,12 +103,26 @@ void jmessage_free(JMessage msg)
 
 void jmessage_add_dest(JMessage msg, JWidget widget)
 {
+  assert(msg != NULL);
+  assert_valid_widget(widget);
+
   jlist_append(msg->any.widgets, widget);
+}
+
+void jmessage_add_pre_dest(JMessage msg, JWidget widget)
+{
+  assert(msg != NULL);
+  assert_valid_widget(widget);
+
+  jlist_prepend(msg->any.widgets, widget);
 }
 
 void jmessage_broadcast_to_children(JMessage msg, JWidget widget)
 {
   JLink link;
+
+  assert(msg != NULL);
+  assert_valid_widget(widget);
 
   JI_LIST_FOR_EACH(widget->children, link)
     jmessage_broadcast_to_children(msg, link->data);
@@ -106,6 +132,9 @@ void jmessage_broadcast_to_children(JMessage msg, JWidget widget)
 
 void jmessage_broadcast_to_parents(JMessage msg, JWidget widget)
 {
+  assert(msg != NULL);
+  assert_valid_widget(widget);
+
   if (widget && widget->type != JI_MANAGER) {
     jmessage_add_dest(msg, widget);
     jmessage_broadcast_to_parents(msg, jwidget_get_parent(widget));
@@ -114,6 +143,8 @@ void jmessage_broadcast_to_parents(JMessage msg, JWidget widget)
 
 void jmessage_set_sub_msg(JMessage msg, JMessage sub_msg)
 {
+  assert(msg != NULL);
+
   if (msg->any.sub_msg)
     jmessage_free(msg->any.sub_msg);
 

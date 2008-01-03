@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,20 +37,20 @@
 static JID nwidgets = 0;
 static JWidget *widgets = NULL;
 
-JWidget _ji_get_widget_by_id (JID widget_id)
+JWidget _ji_get_widget_by_id(JID widget_id)
 {
   /* ji_assert ((widget_id >= 0) && (widget_id < nwidgets)); */
 
   return widgets[widget_id];
 }
 
-JWidget *_ji_get_widget_array (int *n)
+JWidget *_ji_get_widget_array(int *n)
 {
   *n = nwidgets;
   return widgets;
 }
 
-JWidget _ji_get_new_widget (void)
+JWidget _ji_get_new_widget(void)
 {
   JID widget_id;
 
@@ -90,12 +90,12 @@ JWidget _ji_get_new_widget (void)
   return widgets[widget_id];
 }
 
-void _ji_free_widget (JWidget widget)
+void _ji_free_widget(JWidget widget)
 {
   widgets[widget->id]->id = 0;
 }
 
-void _ji_free_all_widgets (void)
+void _ji_free_all_widgets(void)
 {
   int c;
 
@@ -109,7 +109,7 @@ void _ji_free_all_widgets (void)
   }
 }
 
-bool _ji_is_valid_widget (JWidget widget)
+bool _ji_is_valid_widget(JWidget widget)
 {
   return (widget &&
 	  widget->id >= 0 &&
