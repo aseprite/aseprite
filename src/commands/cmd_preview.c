@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -207,10 +207,23 @@ static void preview_sprite(int flags)
 	gui_feedback();
 
 	if (keypressed()) {
-	  int c = readkey()>>8;
+	  int readkey_value = readkey();
+	  Command *command;
+	  JMessage msg;
+
+	  msg = jmessage_new_key_related(JM_CHAR, readkey_value);
+	  command = command_get_by_key(msg);
+	  jmessage_free(msg);
 
 	  /* change frame */
-	  if (editor_keys_toset_frame(widget, c)) {
+	  if (command &&
+	      (strcmp(command->name, CMD_GOTO_FIRST_FRAME) == 0 ||
+	       strcmp(command->name, CMD_GOTO_PREVIOUS_FRAME) == 0 ||
+	       strcmp(command->name, CMD_GOTO_NEXT_FRAME) == 0 ||
+	       strcmp(command->name, CMD_GOTO_LAST_FRAME) == 0)) {
+	    /* execute the command */
+	    command_execute(command, NULL);
+
 	    /* redraw */
 	    redraw = TRUE;
 
@@ -222,14 +235,19 @@ static void preview_sprite(int flags)
 	      image_free(image);
 	    }
 	  }
+	  /* play the animation */
+	  else if (command &&
+		   strcmp(command->name, CMD_PLAY_ANIMATION) == 0) {
+	    /* TODO */
+	  }
 	  /* change background color */
-	  else if (c == KEY_PLUS_PAD) {
+	  else if ((readkey_value>>8) == KEY_PLUS_PAD) {
 	    if (index_bg_color < 255) {
 	      bg_color = palette_color[++index_bg_color];
 	      redraw = TRUE;
 	    }
 	  }
-	  else if (c == KEY_MINUS_PAD) {
+	  else if ((readkey_value>>8) == KEY_MINUS_PAD) {
 	    if (index_bg_color > 0) {
 	      bg_color = palette_color[--index_bg_color];
 	      redraw = TRUE;

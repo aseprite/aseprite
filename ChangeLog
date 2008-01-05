@@ -1,5 +1,9 @@
 2008-01-05  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/commands/cmd_play_animation.c: Added.
+
+	* src/commands/cmd_goto_frame.c: Added goto_*_frame commands.
+
 	* src/jinete/jmenu.c (Base): Added 'is_processing' to avoid
 	sending menu-messages when there're menu-messages in the queue.
 

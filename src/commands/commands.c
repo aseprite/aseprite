@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,6 +83,11 @@ extern Command cmd_crop_layer;
 extern Command cmd_frame_properties;
 extern Command cmd_remove_frame;
 extern Command cmd_new_frame;
+extern Command cmd_goto_first_frame;
+extern Command cmd_goto_previous_frame;
+extern Command cmd_goto_next_frame;
+extern Command cmd_goto_last_frame;
+extern Command cmd_play_animation;
 /* cel */
 extern Command cmd_cel_properties;
 extern Command cmd_remove_cel;
@@ -174,6 +179,11 @@ static Command *commands[] = {
   &cmd_frame_properties,
   &cmd_remove_frame,
   &cmd_new_frame,
+  &cmd_goto_first_frame,
+  &cmd_goto_previous_frame,
+  &cmd_goto_next_frame,
+  &cmd_goto_last_frame,
+  &cmd_play_animation,
   /* cel */
   &cmd_cel_properties,
   &cmd_remove_cel,

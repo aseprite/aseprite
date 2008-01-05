@@ -430,9 +430,9 @@ void reload_default_font(void)
   /* directories */
   dirs = dirs_new ();
 
-  default_font = get_config_string ("Options", "DefaultFont", "");
+  default_font = get_config_string("Options", "DefaultFont", "");
   if ((default_font) && (*default_font))
-    dirs_add_path (dirs, default_font);
+    dirs_add_path(dirs, default_font);
 
   /* big font */
 /*   if (JI_SCREEN_W > 320) */
@@ -446,8 +446,8 @@ void reload_default_font(void)
     theme->default_font = ji_font_load (dir->path);
     if (theme->default_font) {
       if (ji_font_is_scalable (theme->default_font)) {
-	ji_font_set_size (theme->default_font,
-			  (JI_SCREEN_W > 320) ? 14: 8);
+	ji_font_set_size(theme->default_font,
+			 (JI_SCREEN_W > 320) ? 14: 8);
       }
       break;
     }
@@ -461,7 +461,7 @@ void reload_default_font(void)
     theme->default_font = font;
 
   /* set all widgets fonts */
-  _ji_set_font_of_all_widgets (theme->default_font);
+  _ji_set_font_of_all_widgets(theme->default_font);
 }
 
 void load_window_pos(JWidget window, const char *section)
@@ -469,28 +469,28 @@ void load_window_pos(JWidget window, const char *section)
   JRect pos, orig_pos;
 
   /* default position */
-  orig_pos = jwidget_get_rect (window);
-  pos = jrect_new_copy (orig_pos);
+  orig_pos = jwidget_get_rect(window);
+  pos = jrect_new_copy(orig_pos);
 
   /* load configurated position */
-  get_config_rect (section, "WindowPos", pos);
+  get_config_rect(section, "WindowPos", pos);
 
   pos->x2 = pos->x1 + MID(jrect_w(orig_pos), jrect_w(pos), JI_SCREEN_W);
   pos->y2 = pos->y1 + MID(jrect_h(orig_pos), jrect_h(pos), JI_SCREEN_H);
 
-  jrect_moveto (pos,
-		MID(0, pos->x1, JI_SCREEN_W-jrect_w(pos)),
-		MID(0, pos->y1, JI_SCREEN_H-jrect_h(pos)));
+  jrect_moveto(pos,
+	       MID(0, pos->x1, JI_SCREEN_W-jrect_w(pos)),
+	       MID(0, pos->y1, JI_SCREEN_H-jrect_h(pos)));
 
-  jwidget_set_rect (window, pos);
+  jwidget_set_rect(window, pos);
 
-  jrect_free (pos);
-  jrect_free (orig_pos);
+  jrect_free(pos);
+  jrect_free(orig_pos);
 }
 
 void save_window_pos(JWidget window, const char *section)
 {
-  set_config_rect (section, "WindowPos", window->rc);
+  set_config_rect(section, "WindowPos", window->rc);
 }
 
 JWidget load_widget(const char *filename, const char *name)

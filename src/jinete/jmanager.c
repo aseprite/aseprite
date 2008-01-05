@@ -125,7 +125,6 @@ static void generate_proc_windows_list2(JWidget manager);
 static int some_parent_is_focusrest(JWidget widget);
 static JWidget find_magnetic_widget(JWidget widget);
 static JMessage new_mouse_msg(int type);
-static JMessage new_key_msg(int type, int readkey_value);
 static void broadcast_key_msg(JWidget manager, JMessage msg);
 static Filter *filter_new(int message, JWidget widget);
 static void filter_free(Filter *filter);
@@ -489,14 +488,15 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     int readkey_value = readkey();
 
     /* char message first */
-    msg = new_key_msg(JM_CHAR, readkey_value);
+    msg = jmessage_new_key_related(JM_CHAR, readkey_value);
     broadcast_key_msg(manager, msg);
 
     /* key-pressed message is dependent from char message (if char
        message isn't used, we send the key-pressed message) */
     c = readkey_value >> 8;
     if (old_readed_key[c] != key[c] && !old_readed_key[c]) {
-      JMessage sub_msg = new_key_msg(JM_KEYPRESSED, readkey_value);
+      JMessage sub_msg = jmessage_new_key_related(JM_KEYPRESSED,
+						  readkey_value);
       old_readed_key[c] = key[c];
 
       /* same addressee */
@@ -513,7 +513,8 @@ bool jmanager_poll(JWidget manager, bool all_windows)
   for (c=0; c<KEY_MAX; c++) {
     if (old_readed_key[c] != key[c] && old_readed_key[c]) {
       /* press/release key interface */
-      msg = new_key_msg (JM_KEYRELEASED, (c << 8) | scancode_to_ascii(c));
+      msg = jmessage_new_key_related(JM_KEYRELEASED,
+				     (c << 8) | scancode_to_ascii(c));
       old_readed_key[c] = key[c];
       broadcast_key_msg(manager, msg);
       jmanager_enqueue_message(msg);
@@ -1416,19 +1417,6 @@ static JMessage new_mouse_msg(int type)
   msg->mouse.right = msg->mouse.flags & 2 ? TRUE: FALSE;
   msg->mouse.middle = msg->mouse.flags & 4 ? TRUE: FALSE;
 
-  return msg;
-}
-
-static JMessage new_key_msg(int type, int readkey_value)
-{
-  JMessage msg = jmessage_new(type);
-
-  msg->key.scancode = (readkey_value >> 8) & 0xff;
-  msg->key.ascii = readkey_value & 0xff;
-#if 0
-  printf("%i: %i %i [%c]\n", type, msg->key.scancode,
-	 msg->key.ascii, msg->key.ascii);
-#endif
   return msg;
 }
 

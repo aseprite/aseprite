@@ -136,6 +136,7 @@ union jmessage
 int ji_register_message_type(void);
 
 JMessage jmessage_new(int type);
+JMessage jmessage_new_key_related(int type, int readkey_value);
 JMessage jmessage_new_copy(const JMessage msg);
 void jmessage_free(JMessage msg);
 

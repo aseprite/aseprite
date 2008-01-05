@@ -6,7 +6,6 @@ High priority work
   - 100% CPU
   - test UNDO in 64bits plataforms (reported by Jon Rafkind);
   - Add menus for play animation, a menu for all animation stuff
-- add support for PNG files.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);
@@ -56,7 +55,6 @@ Wish-list
     + "middle mouse button" for the film editor.
   + don't use LINKs when load a sequence of bitmaps.
 - manuq wish-list:
-  + sprite/layer/frame/cel (distintion between "frame" and "cel")
   + layer-with-constant-cel
   + onion skin for all layers in a frame
 - add menu customization through UI (Tools/Customize).

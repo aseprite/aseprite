@@ -838,9 +838,9 @@ void editor_update_status_bar_for_standby(JWidget widget)
   Editor *editor = editor_data(widget);
   int x, y;
 
-  screen_to_editor (widget, jmouse_x(0), jmouse_y(0), &x, &y);
+  screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
-  status_bar_set_text(app_get_status_bar (), 0,
+  status_bar_set_text(app_get_status_bar(), 0,
 		      "%s %3d %3d (%s %3d %3d) [%s %d]",
 		      _("Pos"), x, y,
 		      _("Size"),
@@ -1234,7 +1234,6 @@ static bool editor_msg_proc (JWidget widget, JMessage msg)
 
     case JM_CHAR:
       if (!editor_keys_toset_zoom(widget, msg->key.scancode) &&
-	  !editor_keys_toset_frame(widget, msg->key.scancode) &&
 	  !editor_keys_toset_brushsize(widget, msg->key.scancode) &&
 	  !editor_keys_toget_pixels(widget, msg->key.scancode))
 	return FALSE;

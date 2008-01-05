@@ -70,6 +70,19 @@ JMessage jmessage_new(int type)
   return msg;
 }
 
+JMessage jmessage_new_key_related(int type, int readkey_value)
+{
+  JMessage msg = jmessage_new(type);
+
+  msg->key.scancode = (readkey_value >> 8) & 0xff;
+  msg->key.ascii = readkey_value & 0xff;
+#if 0
+  printf("%i: %i %i [%c]\n", type, msg->key.scancode,
+	 msg->key.ascii, msg->key.ascii);
+#endif
+  return msg;
+}
+
 JMessage jmessage_new_copy(const JMessage msg)
 {
   JMessage copy;
