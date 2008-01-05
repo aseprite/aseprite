@@ -1,3 +1,8 @@
+2008-01-05  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jmenu.c (Base): Added 'is_processing' to avoid
+	sending menu-messages when there're menu-messages in the queue.
+
 2008-01-03  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/jinete/jmenu.c (menubox_msg_proc): Finally works (with keys

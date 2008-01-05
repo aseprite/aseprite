@@ -37,16 +37,28 @@
 
 #include "jinete/jinete.h"
 
-/* internal messages: to move between menus */
+/**********************************************************************/
+/* Internal messages: to move between menus */
+
 JM_MESSAGE(open_menuitem);
 JM_MESSAGE(close_menuitem);
 JM_MESSAGE(exe_menuitem);
 
-#define JM_OPEN_MENUITEM jm_open_menuitem()
-#define JM_CLOSE_MENUITEM jm_close_menuitem()
-#define JM_EXE_MENUITEM jm_exe_menuitem()
+/**
+ * bool select_first = msg->user.a;
+ */
+#define JM_OPEN_MENUITEM  jm_open_menuitem()
 
-/* some auxiliar matros */
+/**
+ * bool final_close = msg->user.a;
+ */
+#define JM_CLOSE_MENUITEM jm_close_menuitem()
+
+#define JM_EXE_MENUITEM   jm_exe_menuitem()
+
+/**********************************************************************/
+/* Some auxiliar matros */
+
 #define MOUSE_IN(pos)						\
   ((jmouse_x(0) >= pos->x1) && (jmouse_x(0) < pos->x2) &&	\
    (jmouse_y(0) >= pos->y1) && (jmouse_y(0) < pos->y2))
@@ -67,9 +79,19 @@ JM_MESSAGE(exe_menuitem);
 /* data for the main jmenubar or the first popuped-jmenubox */
 typedef struct Base
 {
+  /* true when the menu-items must be opened with the cursor
+     movement */
   bool was_clicked : 1;
+
+  /* true when there's JM_OPEN/CLOSE_MENUITEM messages in queue, to
+     avoid start processing another menuitem-request when we're
+     already working in one */
+  bool is_processing : 1;
+
+  /* true when the JM_BUTTONPRESSED is being filtered */
   bool is_filtering : 1;
-  int current_level;
+
+  bool close_all : 1;
 } Base;
 
 /* data for a jmenu */
@@ -113,7 +135,7 @@ static void set_highlight(JWidget menu, JWidget menuitem, bool click, bool open_
 static void unhighlight(JWidget menu);
 
 static void open_menuitem(JWidget menuitem, bool select_first);
-static void close_menuitem(JWidget menuitem);
+static void close_menuitem(JWidget menuitem, bool final_close);
 static void close_all(JWidget menu);
 static void exe_menuitem(JWidget menuitem);
 
@@ -299,7 +321,6 @@ void jmenu_popup(JWidget menu, int x, int y)
 
   base = create_base(menubox);
   base->was_clicked = TRUE;
-  base->current_level = 1;
 
   jwindow_moveable(window, FALSE);	 /* can't move the window */
 
@@ -468,6 +489,9 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
       if (menu) {
 	JWidget picked;
 
+	if (get_base(widget)->is_processing)
+	  break;
+	
 	/* here we catch the filtered messages (menu-bar or the popuped
 	   menu-box) to detect if the user press outside of the widget */
 	if (msg->type == JM_BUTTONPRESSED
@@ -511,8 +535,12 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSELEAVE:
       if (menu) {
-	JWidget highlight = get_highlight(menu);
+	JWidget highlight;
 
+	if (get_base(widget)->is_processing)
+	  break;
+	
+	highlight = get_highlight(menu);
 	if ((highlight) && (!MITEM(highlight)->submenu_menubox))
 	  unhighlight(menu);
       }
@@ -521,6 +549,9 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
     case JM_BUTTONRELEASED:
       if (menu) {
 	JWidget highlight = get_highlight(menu);
+
+	if (get_base(widget)->is_processing)
+	  break;
 
 	/* the item is highlighted and not opened */
 	if ((highlight) && (!MITEM(highlight)->submenu_menubox)) {
@@ -531,10 +562,13 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_CHAR:
-      get_base(widget)->was_clicked = FALSE;
-
       if (menu) {
 	JWidget selected;
+
+	if (get_base(widget)->is_processing)
+	  break;
+
+	get_base(widget)->was_clicked = FALSE;
 
 	/* check for ALT+some letter in menubar and some letter in menuboxes */
 	if (((widget->type == JI_MENUBOX) && (!msg->any.shifts)) ||
@@ -597,13 +631,13 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	      /* in menu-boxes */
 	      else {
 		if (child_with_submenu_opened) {
-		  close_menuitem(child_with_submenu_opened);
+		  close_menuitem(child_with_submenu_opened, TRUE);
 		  used = TRUE;
 		}
 		/* go to parent */
 		else if (MENU(menu)->menuitem) {
 		  /* just retrogress one parent-level */
-		  close_menuitem(MENU(menu)->menuitem);
+		  close_menuitem(MENU(menu)->menuitem, TRUE);
 		  used = TRUE;
 		}
 	      }
@@ -613,7 +647,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
               /* in menu-bar */
 	      if (widget->type == JI_MENUBAR) {
 		if (child_with_submenu_opened)
-		  close_menuitem(child_with_submenu_opened);
+		  close_menuitem(child_with_submenu_opened, TRUE);
               }
               /* in menu-boxes */
               else {
@@ -666,7 +700,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
                   /* if the parent isn't the menu-bar */
                   else {
                     /* just retrogress one parent-level */
-		    close_menuitem(MENU(menu)->menuitem);
+		    close_menuitem(MENU(menu)->menuitem, TRUE);
 		  }
                 }
 	      }
@@ -778,115 +812,123 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     default:
       if (msg->type == JM_OPEN_MENUITEM) {
-	/* has submenu */
-	if (HAS_SUBMENU(widget)) {
-	  JWidget window, menubox;
-	  JRect pos, old_pos;
-	  bool select_first = msg->user.a;
+	Base *base = get_base(widget);
+	JWidget window, menubox;
+	JRect pos, old_pos;
+	bool select_first = msg->user.a;
 
-	  old_pos = jwidget_get_rect(widget->parent->parent);
+	assert(base != NULL);
+	assert(base->is_processing);
+	assert(HAS_SUBMENU(widget));
 
-	  /* new window and new menu-box */
-	  window = jwindow_new(NULL);
-	  menubox = jmenubox_new();
+	old_pos = jwidget_get_rect(widget->parent->parent);
 
-	  menuitem->submenu_menubox = menubox;
+	/* new window and new menu-box */
+	window = jwindow_new(NULL);
+	menubox = jmenubox_new();
 
-	  jwindow_moveable(window, FALSE); /* can't move the window */
+	menuitem->submenu_menubox = menubox;
 
-	  /* set children */
-	  jmenubox_set_menu(menubox, menuitem->submenu);
-	  jwidget_add_child(window, menubox);
+	jwindow_moveable(window, FALSE); /* can't move the window */
 
-	  jwindow_remap(window);
+	/* set children */
+	jmenubox_set_menu(menubox, menuitem->submenu);
+	jwidget_add_child(window, menubox);
 
-	  /* menubox position */
-	  pos = jwidget_get_rect(window);
+	jwindow_remap(window);
 
-	  if (widget->parent->parent->type == JI_MENUBAR) {
-	    jrect_moveto(pos,
-			 MID(0, widget->rc->x1, JI_SCREEN_W-jrect_w(pos)),
-			 MID(0, widget->rc->y2, JI_SCREEN_H-jrect_h(pos)));
-	  }
-	  else {
-	    int x_left = widget->rc->x1-jrect_w(pos);
-	    int x_right = widget->rc->x2;
-	    int x, y = widget->rc->y1;
-	    struct jrect r1, r2;
-	    int s1, s2;
+	/* menubox position */
+	pos = jwidget_get_rect(window);
 
-	    r1.x1 = x_left = MID(0, x_left, JI_SCREEN_W-jrect_w(pos));
-	    r2.x1 = x_right = MID(0, x_right, JI_SCREEN_W-jrect_w(pos));
+	if (widget->parent->parent->type == JI_MENUBAR) {
+	  jrect_moveto(pos,
+		       MID(0, widget->rc->x1, JI_SCREEN_W-jrect_w(pos)),
+		       MID(0, widget->rc->y2, JI_SCREEN_H-jrect_h(pos)));
+	}
+	else {
+	  int x_left = widget->rc->x1-jrect_w(pos);
+	  int x_right = widget->rc->x2;
+	  int x, y = widget->rc->y1;
+	  struct jrect r1, r2;
+	  int s1, s2;
 
-	    r1.y1 = r2.y1 = y = MID(0, y, JI_SCREEN_H-jrect_h(pos));
+	  r1.x1 = x_left = MID(0, x_left, JI_SCREEN_W-jrect_w(pos));
+	  r2.x1 = x_right = MID(0, x_right, JI_SCREEN_W-jrect_w(pos));
 
-	    r1.x2 = r1.x1+jrect_w(pos);
-	    r1.y2 = r1.y1+jrect_h(pos);
-	    r2.x2 = r2.x1+jrect_w(pos);
-	    r2.y2 = r2.y1+jrect_h(pos);
+	  r1.y1 = r2.y1 = y = MID(0, y, JI_SCREEN_H-jrect_h(pos));
 
-	    /* calculate both intersections */
-	    s1 = jrect_intersect(&r1, old_pos);
-	    s2 = jrect_intersect(&r2, old_pos);
+	  r1.x2 = r1.x1+jrect_w(pos);
+	  r1.y2 = r1.y1+jrect_h(pos);
+	  r2.x2 = r2.x1+jrect_w(pos);
+	  r2.y2 = r2.y1+jrect_h(pos);
 
-	    if (!s2)
-	      x = x_right;		/* use the right because there aren't
+	  /* calculate both intersections */
+	  s1 = jrect_intersect(&r1, old_pos);
+	  s2 = jrect_intersect(&r2, old_pos);
+
+	  if (!s2)
+	    x = x_right;		/* use the right because there aren't
 					   intersection with it */
-	    else if (!s1)
-	      x = x_left;		/* use the left because there are not
-					   intersection */
-	    else if (jrect_w(&r2)*jrect_h(&r2) <= jrect_w(&r1)*jrect_h(&r1))
-	      x = x_right;	        /* use the right because there are less
+	  else if (!s1)
+	    x = x_left;		/* use the left because there are not
+				   intersection */
+	  else if (jrect_w(&r2)*jrect_h(&r2) <= jrect_w(&r1)*jrect_h(&r1))
+	    x = x_right;	        /* use the right because there are less
 					   intersection area */
-	    else
-	      x = x_left;		/* use the left because there are less
-					   intersection area */
-
-	    jrect_moveto(pos, x, y);
-	  }
-
-	  jwindow_position(window, pos->x1, pos->y1);
-	  jrect_free(pos);
-
-	  /* set the focus to the new menubox */
-	  jwidget_magnetic(menubox, TRUE);
-
-	  /* setup the highlight of the new menubox */
-	  if (select_first) {
-	    /* select the first child */
-	    JWidget child, first_child = NULL;
-	    JLink link;
-
-	    JI_LIST_FOR_EACH(menuitem->submenu->children, link) {
-	      child = (JWidget)link->data;
-
-	      if (child->type != JI_MENUITEM)
-		continue;
-
-	      if (jwidget_is_enabled(child)) {
-		first_child = child;
-		break;
-	      }
-	    }
-
-	    if (first_child)
-	      set_highlight(menuitem->submenu, first_child, FALSE, FALSE, FALSE);
-	    else
-	      unhighlight(menuitem->submenu);
-	  }
 	  else
-	    unhighlight(menuitem->submenu);
- 
-	  /* run in background */
-	  jwindow_open_bg(window);
+	    x = x_left;		/* use the left because there are less
+				   intersection area */
 
-	  jrect_free(old_pos);
+	  jrect_moveto(pos, x, y);
 	}
 
+	jwindow_position(window, pos->x1, pos->y1);
+	jrect_free(pos);
+
+	/* set the focus to the new menubox */
+	jwidget_magnetic(menubox, TRUE);
+
+	/* setup the highlight of the new menubox */
+	if (select_first) {
+	  /* select the first child */
+	  JWidget child, first_child = NULL;
+	  JLink link;
+
+	  JI_LIST_FOR_EACH(menuitem->submenu->children, link) {
+	    child = (JWidget)link->data;
+
+	    if (child->type != JI_MENUITEM)
+	      continue;
+
+	    if (jwidget_is_enabled(child)) {
+	      first_child = child;
+	      break;
+	    }
+	  }
+
+	  if (first_child)
+	    set_highlight(menuitem->submenu, first_child, FALSE, FALSE, FALSE);
+	  else
+	    unhighlight(menuitem->submenu);
+	}
+	else
+	  unhighlight(menuitem->submenu);
+
+	/* run in background */
+	jwindow_open_bg(window);
+
+	base->is_processing = FALSE;
+
+	jrect_free(old_pos);
 	return TRUE;
       }
       else if (msg->type == JM_CLOSE_MENUITEM) {
+	Base *base = get_base(widget);
 	JWidget menubox, window;
+	bool final_close = msg->user.a;
+
+	assert(base != NULL);
+	assert(base->is_processing);
 
 	menubox = menuitem->submenu_menubox;
 	menuitem->submenu_menubox = NULL;
@@ -897,7 +939,10 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	assert(window && window->type == JI_WINDOW);
 
 	/* set the focus to this menu-item */
-	jmanager_set_focus(widget->parent->parent);
+	if (base->close_all)
+	  jmanager_free_focus();
+	else
+	  jmanager_set_focus(widget->parent->parent);
 
 	/* fetch the "menu" to avoid free it with 'jwidget_free()' */
 	jmenubox_set_menu(menubox, NULL);
@@ -909,6 +954,11 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	   automatically destroyed by the manager
 	   ... jwidget_free(window);
 	*/
+
+	if (final_close) {
+	  base->close_all = FALSE;
+	  base->is_processing = FALSE;
+	}
 
 	return TRUE;
       }
@@ -1000,7 +1050,7 @@ static Base *create_base(JWidget widget)
 
   base->was_clicked = FALSE;
   base->is_filtering = FALSE;
-  base->current_level = 0;
+  base->close_all = FALSE;
 
   MBOX(widget)->base = base;
 
@@ -1109,7 +1159,7 @@ static void open_menuitem(JWidget menuitem, bool select_first)
 	continue;
 
       if (child != menuitem && MITEM(child)->submenu_menubox) {
-	close_menuitem(child);
+	close_menuitem(child, FALSE);
       }
     }
   }
@@ -1119,23 +1169,30 @@ static void open_menuitem(JWidget menuitem, bool select_first)
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
 
+  /* get the 'base' */
+  base = get_base(menuitem);
+  assert(base != NULL);
+
+  /* reset flags */
+  base->close_all = FALSE;
+  base->is_processing = TRUE;  
+
   /* we need to add a filter of the JM_BUTTONPRESSED to intercept
      clicks outside the menu (and close all the hierarchy in that
      case); the widget to intercept messages is the base menu-bar or
      popuped menu-box  */
-  base = get_base(menuitem);
   if (!base->is_filtering) {
     base->is_filtering = TRUE;
-    jmanager_add_msg_filter(JM_BUTTONPRESSED,
-			    get_base_menubox(menuitem));
+    jmanager_add_msg_filter(JM_BUTTONPRESSED, get_base_menubox(menuitem));
   }
 }
 
-static void close_menuitem(JWidget menuitem)
+static void close_menuitem(JWidget menuitem, bool final_close)
 {
   JWidget menu, child;
   JMessage msg;
   JLink link;
+  Base *base;
 
   assert_valid_widget(menuitem);
   assert(MITEM(menuitem)->submenu_menubox != NULL);
@@ -1151,14 +1208,22 @@ static void close_menuitem(JWidget menuitem)
       continue;
     
     if (MITEM(child)->submenu_menubox) {
-      close_menuitem(link->data);
+      close_menuitem(link->data, FALSE);
     }
   }
 
   /* second: now we can close the 'menuitem' */
   msg = jmessage_new(JM_CLOSE_MENUITEM);
+  msg->user.a = final_close;
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
+
+  /* get the 'base' */
+  base = get_base(menuitem);
+  assert(base != NULL);
+
+  /* start processing */
+  base->is_processing = TRUE;
 }
 
 static void close_all(JWidget menu)
@@ -1175,6 +1240,7 @@ static void close_all(JWidget menu)
   }
   
   base = get_base(menu->parent);
+  base->close_all = TRUE;
   base->was_clicked = FALSE;
   if (base->is_filtering) {
     base->is_filtering = FALSE;
@@ -1186,7 +1252,7 @@ static void close_all(JWidget menu)
 
   if (menuitem != NULL) {
     if (MITEM(menuitem)->submenu_menubox != NULL)
-      close_menuitem(menuitem);
+      close_menuitem(menuitem, TRUE);
   }
   else {
     JI_LIST_FOR_EACH(menu->children, link) {
@@ -1196,13 +1262,14 @@ static void close_all(JWidget menu)
 	continue;
 
       if (MITEM(menuitem)->submenu_menubox != NULL)
-	close_menuitem(menuitem);
+	close_menuitem(menuitem, TRUE);
     }
   }
 }
 
 static void exe_menuitem(JWidget menuitem)
 {
+  /* send the message */
   JMessage msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
