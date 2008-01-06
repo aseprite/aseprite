@@ -852,7 +852,7 @@ void editor_update_status_bar_for_standby(JWidget widget)
 		       editor->sprite->h),
 		      _("Frame"), editor->sprite->frame+1);
 
-  status_bar_update(app_get_status_bar());
+/*   status_bar_update(app_get_status_bar()); */
 }
 
 void editor_refresh_region(JWidget widget)

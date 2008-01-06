@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +38,10 @@ int load_root_menu(void);
 JWidget get_root_menu(void);
 
 JWidget get_recent_list_menuitem(void);
-JWidget get_layer_popup_menuitem(void);
-JWidget get_frame_popup_menuitem(void);
-JWidget get_cel_popup_menuitem(void);
+JWidget get_layer_popup_menu(void);
+JWidget get_frame_popup_menu(void);
+JWidget get_cel_popup_menu(void);
 
-/* int check_for_accel(int accel_type, JMessage msg); */
-void show_fx_popup_menu(void);
+/* void show_fx_popup_menu(void); */
 
 #endif /* MODULES_ROOTMENU_H */

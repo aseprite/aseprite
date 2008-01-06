@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -427,11 +427,10 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 	if (state == STATE_MOVING) {
 	  /* layer popup menu */
 	  if (msg->mouse.right) {
-	    JWidget popup_menuitem = get_layer_popup_menuitem();
+	    JWidget popup_menu = get_layer_popup_menu();
 
-	    if (popup_menuitem && jmenuitem_get_submenu(popup_menuitem)) {
-	      jmenu_popup(jmenuitem_get_submenu (popup_menuitem),
-			  msg->mouse.x, msg->mouse.y);
+	    if (popup_menu) {
+	      jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 	      jview_update(jwidget_get_view(layer_box->widget));
 	      jview_update(jwidget_get_view(layer_box->cel_box->widget));
@@ -704,12 +703,11 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	/* show the dialog to change the frlen (frame duration time)? */
 	else if (msg->mouse.right) {
 	  jwidget_release_mouse(widget);
-	  JWidget popup_menuitem = get_frame_popup_menuitem();
+	  JWidget popup_menu = get_frame_popup_menu();
 
-	  if (popup_menuitem && jmenuitem_get_submenu(popup_menuitem)) {
+	  if (popup_menu) {
 	    /* show the frame pop-up menu */
-	    jmenu_popup(jmenuitem_get_submenu(popup_menuitem),
-			msg->mouse.x, msg->mouse.y);
+	    jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 	    jview_update(jwidget_get_view(cel_box->widget));
 	    jview_update(jwidget_get_view(cel_box->layer_box->widget));
@@ -776,12 +774,11 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	  set_cel_to_handle(cel_box->layer, cel_box->cel);
 
 	  if (msg->mouse.right) {
-	    JWidget popup_menuitem = get_cel_popup_menuitem();
+	    JWidget popup_menu = get_cel_popup_menu();
 
-	    if (popup_menuitem && jmenuitem_get_submenu(popup_menuitem)) {
+	    if (popup_menu) {
 	      /* show the cel pop-up menu */
-	      jmenu_popup(jmenuitem_get_submenu(popup_menuitem),
-			  msg->mouse.x, msg->mouse.y);
+	      jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
 	      destroy_thumbnails();
 

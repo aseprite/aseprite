@@ -328,7 +328,7 @@ void update_screen_for_sprite(Sprite *sprite)
     }
   }
 
-  status_bar_set_text(app_get_status_bar(), 0, "");
+  status_bar_set_text(app_get_status_bar(), -1, "");
 }
 
 void gui_run(void)

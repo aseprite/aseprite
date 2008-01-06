@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,11 +41,12 @@
 static JWidget root_menu;
 
 static JWidget recent_list_menuitem;
-static JWidget layer_popup_menuitem;
-static JWidget frame_popup_menuitem;
-static JWidget cel_popup_menuitem;
-static JWidget filters_popup_menuitem;
+static JWidget layer_popup_menu;
+static JWidget frame_popup_menu;
+static JWidget cel_popup_menu;
+static JWidget filters_popup_menu;
 
+static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename);
 static JWidget convert_xmlelem_to_menu(JXmlElem elem);
 static JWidget convert_xmlelem_to_menuitem(JXmlElem elem);
 static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command);
@@ -59,20 +61,24 @@ int init_module_rootmenu(void)
 void exit_module_rootmenu(void)
 {
   recent_list_menuitem = NULL;
-  layer_popup_menuitem = NULL;
-  frame_popup_menuitem = NULL;
-  cel_popup_menuitem = NULL;
-  filters_popup_menuitem = NULL;
+  layer_popup_menu = NULL;
+  frame_popup_menu = NULL;
+  cel_popup_menu = NULL;
+  filters_popup_menu = NULL;
 
   command_reset_keys();
   jwidget_free(root_menu);
+
+  if (layer_popup_menu) jwidget_free(layer_popup_menu);
+  if (frame_popup_menu) jwidget_free(frame_popup_menu);
+  if (cel_popup_menu) jwidget_free(cel_popup_menu);
+  if (filters_popup_menu) jwidget_free(filters_popup_menu);
 }
 
 int load_root_menu(void)
 {
   JLink link, link2;
   DIRS *dirs, *dir;
-  JXmlElem elem;
   JXml xml;
 
   if (app_get_menu_bar())
@@ -87,10 +93,10 @@ int load_root_menu(void)
   /* create a new empty-menu */
   root_menu = NULL;
   recent_list_menuitem = NULL;
-  layer_popup_menuitem = NULL;
-  frame_popup_menuitem = NULL;
-  cel_popup_menuitem = NULL;
-  filters_popup_menuitem = NULL;
+  layer_popup_menu = NULL;
+  frame_popup_menu = NULL;
+  cel_popup_menu = NULL;
+  filters_popup_menu = NULL;
 
   dirs = filename_in_datadir("usergui.xml");
   {
@@ -110,26 +116,16 @@ int load_root_menu(void)
       /* load menus */
       PRINTF("Trying to menus from \"%s\"...\n", dir->path);
 
-      /* get the <menu> element with id="main_menu" */
-      elem = jxml_get_elem_by_id(xml, "main_menu");
-      if (elem) {
-	/* is it a <menu> element? */
-	if (strcmp(jxmlelem_get_name(elem), "menu") == 0) {
-	  /* ok, convert it to a menu JWidget */
-	  root_menu = convert_xmlelem_to_menu(elem);
-	  if (!root_menu) {
-	    PRINTF("Error loading main menu from \"%s\" file.\n", dir->path);
-	    return -1;
-	  }
-	}
-	else {
-	  PRINTF("Invalid element with id=\"main_menu\" in \"%s\"\n", dir->path);
-	  return -1;
-	}
+      root_menu = load_menu_by_id(xml, "main_menu", dir->path);
+      if (!root_menu) {
+	PRINTF("Error loading \"main_menu\" from \"%s\" file.\n", dir->path);
+	return -1;
       }
-      else {
-	PRINTF("main_menu element couldn't be found...\n");
-      }
+
+      layer_popup_menu = load_menu_by_id(xml, "layer_popup", dir->path);
+      frame_popup_menu = load_menu_by_id(xml, "frame_popup", dir->path);
+      cel_popup_menu = load_menu_by_id(xml, "cel_popup", dir->path);
+      filters_popup_menu = load_menu_by_id(xml, "filters_popup", dir->path);
 
       /**************************************************/
       /* load keyboard shortcuts */
@@ -206,18 +202,40 @@ int load_root_menu(void)
 JWidget get_root_menu(void) { return root_menu; }
 
 JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
-JWidget get_layer_popup_menuitem(void) { return layer_popup_menuitem; }
-JWidget get_frame_popup_menuitem(void) { return frame_popup_menuitem; }
-JWidget get_cel_popup_menuitem(void) { return cel_popup_menuitem; }
+JWidget get_layer_popup_menu(void) { return layer_popup_menu; }
+JWidget get_frame_popup_menu(void) { return frame_popup_menu; }
+JWidget get_cel_popup_menu(void) { return cel_popup_menu; }
 
-void show_fx_popup_menu(void)
+/* void show_fx_popup_menu(void) */
+/* { */
+/*   if (is_interactive() && */
+/*       filters_popup_menuitem && */
+/*       jmenuitem_get_submenu(filters_popup_menuitem)) { */
+/*     jmenu_popup(jmenuitem_get_submenu(filters_popup_menuitem), */
+/* 		jmouse_x(0), jmouse_y(0)); */
+/*   } */
+/* } */
+
+static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename)
 {
-  if (is_interactive() &&
-      filters_popup_menuitem &&
-      jmenuitem_get_submenu(filters_popup_menuitem)) {
-    jmenu_popup(jmenuitem_get_submenu(filters_popup_menuitem),
-		jmouse_x(0), jmouse_y(0));
+  JWidget menu = NULL;
+  JXmlElem elem;
+
+  /* get the <menu> element with the specified id */
+  elem = jxml_get_elem_by_id(xml, id);
+  if (elem) {
+    /* is it a <menu> element? */
+    if (strcmp(jxmlelem_get_name(elem), "menu") == 0) {
+      /* ok, convert it to a menu JWidget */
+      menu = convert_xmlelem_to_menu(elem);
+    }
+    else
+      PRINTF("Invalid element with id=\"main_menu\" in \"%s\"\n", filename);
   }
+  else
+    PRINTF("\"main_menu\" element couldn't be found...\n");
+
+  return menu;
 }
 
 static JWidget convert_xmlelem_to_menu(JXmlElem elem)
@@ -271,6 +289,7 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
     if (strcmp(id, "recent_list") == 0) {
       recent_list_menuitem = menuitem;
     }
+#if 0
     /* layer popup menu */
     else if (strcmp(id, "layer_popup") == 0) {
       layer_popup_menuitem = menuitem;
@@ -287,6 +306,7 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
     else if (strcmp(id, "fx_popup") == 0) {
       filters_popup_menuitem = menuitem;
     }
+#endif
   }
 
   /* has it a sub-menu? */

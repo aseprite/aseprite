@@ -42,6 +42,7 @@
 
 JM_MESSAGE(open_menuitem);
 JM_MESSAGE(close_menuitem);
+JM_MESSAGE(close_popup);
 JM_MESSAGE(exe_menuitem);
 
 /**
@@ -53,6 +54,8 @@ JM_MESSAGE(exe_menuitem);
  * bool final_close = msg->user.a;
  */
 #define JM_CLOSE_MENUITEM jm_close_menuitem()
+
+#define JM_CLOSE_POPUP    jm_close_popup()
 
 #define JM_EXE_MENUITEM   jm_exe_menuitem()
 
@@ -136,6 +139,7 @@ static void unhighlight(JWidget menu);
 
 static void open_menuitem(JWidget menuitem, bool select_first);
 static void close_menuitem(JWidget menuitem, bool final_close);
+static void close_popup(JWidget menubox);
 static void close_all(JWidget menu);
 static void exe_menuitem(JWidget menuitem);
 
@@ -308,7 +312,7 @@ int jmenuitem_is_highlight(JWidget widget)
 /* TODO complete this routine */
 void jmenu_popup(JWidget menu, int x, int y)
 {
-  JWidget window, menubox/* , selected */;
+  JWidget window, menubox;
   Base *base;
 
   do {
@@ -320,7 +324,11 @@ void jmenu_popup(JWidget menu, int x, int y)
   menubox = jmenubox_new();
 
   base = create_base(menubox);
+
   base->was_clicked = TRUE;
+  base->is_filtering = TRUE;
+
+  jmanager_add_msg_filter(JM_BUTTONPRESSED, menubox);
 
   jwindow_moveable(window, FALSE);	 /* can't move the window */
 
@@ -342,9 +350,6 @@ void jmenu_popup(JWidget menu, int x, int y)
   /* open the window */
   jwindow_open_fg(window);
 
-  /* selected menu item */
-/*   selected = base->selected_menuitem; */
-
   /* free focus */
   jmanager_free_focus();
 
@@ -353,10 +358,6 @@ void jmenu_popup(JWidget menu, int x, int y)
 
   /* destroy the window */
   jwidget_free(window);
-
-  /* emit signal */
-/*   if (selected) */
-/*     exe_menuitem(selected); */
 }
 
 static bool menu_msg_proc(JWidget widget, JMessage msg)
@@ -385,6 +386,7 @@ static bool menu_msg_proc(JWidget widget, JMessage msg)
     case JM_SETPOS:
       menu_set_position(widget, &msg->setpos.rect);
       return TRUE;
+
   }
 
   return FALSE;
@@ -751,6 +753,12 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
+    default:
+      if (msg->type == JM_CLOSE_POPUP) {
+	jwindow_close(jwidget_get_window(widget), NULL);
+      }
+      break;
+
   }
 
   return FALSE;
@@ -1050,6 +1058,7 @@ static Base *create_base(JWidget widget)
 
   base->was_clicked = FALSE;
   base->is_filtering = FALSE;
+  base->is_processing = FALSE;
   base->close_all = FALSE;
 
   MBOX(widget)->base = base;
@@ -1226,8 +1235,16 @@ static void close_menuitem(JWidget menuitem, bool final_close)
   base->is_processing = TRUE;
 }
 
+static void close_popup(JWidget menubox)
+{
+  JMessage msg = jmessage_new(JM_CLOSE_POPUP);
+  jmessage_add_dest(msg, menubox);
+  jmanager_enqueue_message(msg);
+}
+
 static void close_all(JWidget menu)
 {
+  JWidget base_menubox = NULL;
   JWidget menuitem = NULL;
   JLink link;
   Base *base;
@@ -1238,14 +1255,14 @@ static void close_all(JWidget menu)
     menuitem = MENU(menu)->menuitem;
     menu = menuitem->parent;
   }
-  
-  base = get_base(menu->parent);
+
+  base_menubox = get_base_menubox(menu->parent);
+  base = MBOX(base_menubox)->base;
   base->close_all = TRUE;
   base->was_clicked = FALSE;
   if (base->is_filtering) {
     base->is_filtering = FALSE;
-    jmanager_remove_msg_filter(JM_BUTTONPRESSED,
-			       get_base_menubox(menu->parent));
+    jmanager_remove_msg_filter(JM_BUTTONPRESSED, base_menubox);
   }
 
   unhighlight(menu);
@@ -1264,6 +1281,11 @@ static void close_all(JWidget menu)
       if (MITEM(menuitem)->submenu_menubox != NULL)
 	close_menuitem(menuitem, TRUE);
     }
+  }
+
+  /* for popuped menus */
+  if (base_menubox->type == JI_MENUBOX) {
+    close_popup(base_menubox);
   }
 }
 

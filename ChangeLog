@@ -1,3 +1,8 @@
+2008-01-06  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/rootmenu.c (load_menu_by_id): Added to fix a problem
+	with popup-menus of the new jmenu.c implementation.
+
 2008-01-05  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/commands/cmd_play_animation.c: Added.
