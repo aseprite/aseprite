@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@
 #endif
 
 #define FIXUP_TOP_WINDOW()			\
-  jwindow_remap (app_get_top_window ());	\
-  jwidget_dirty (app_get_top_window ());
+  jwindow_remap(app_get_top_window());		\
+  jwidget_dirty(app_get_top_window());
 
 JWidget current_editor = NULL;
 JWidget box_editors = NULL;
@@ -95,7 +95,7 @@ void update_editors_with_sprite(Sprite *sprite)
   }
 }
 
-/* void dirty_editors_with_sprite (Sprite *sprite) */
+/* void dirty_editors_with_sprite(Sprite *sprite) */
 /* { */
 /*   JWidget widget; */
 /*   JLink link; */
@@ -127,10 +127,10 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
 {
   int lx1, ly1, lx2, ly2;
 
-  lx1 = MAX (x1, 0);
-  ly1 = MAX (y1, 0);
-  lx2 = MIN (x2, sprite->w-1);
-  ly2 = MIN (y2, sprite->h-1);
+  lx1 = MAX(x1, 0);
+  ly1 = MAX(y1, 0);
+  lx2 = MIN(x2, sprite->w-1);
+  ly2 = MIN(y2, sprite->h-1);
 
   /* draw the rectangles inside the editor */
   editors_draw_sprite(sprite, lx1, ly1, lx2, ly2);
@@ -138,14 +138,14 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
   /* left */
   if (x1 < 0 && lx2 < sprite->w-1) {
     editors_draw_sprite_tiled(sprite,
-			      MAX (lx2, sprite->w+x1), y1,
+			      MAX(lx2, sprite->w+x1), y1,
 			      sprite->w-1, y2);
   }
 
   /* top */
   if (y1 < 0 && ly2 < sprite->h-1) {
     editors_draw_sprite_tiled(sprite,
-			      x1, MAX (ly2, sprite->h+y1),
+			      x1, MAX(ly2, sprite->h+y1),
 			      x2, sprite->h-1);
   }
 
@@ -153,14 +153,14 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
   if (x2 >= sprite->w && lx1 > 0) {
     editors_draw_sprite_tiled(sprite,
 			      0, y1,
-			      MIN (lx1, x2-sprite->w), y2);
+			      MIN(lx1, x2-sprite->w), y2);
   }
 
   /* bottom */
   if (y2 >= sprite->h && ly1 > 0) {
     editors_draw_sprite_tiled(sprite,
 			      x1, 0,
-			      x2, MIN (ly1, y2-sprite->h));
+			      x2, MIN(ly1, y2-sprite->h));
   }
 }
 
@@ -176,7 +176,7 @@ void editors_hide_sprite(Sprite *sprite)
     widget = link->data;
 
     if (sprite == editor_get_sprite(widget))
-      editor_set_sprite(widget, get_more_reliable_sprite ());
+      editor_set_sprite(widget, get_more_reliable_sprite());
   }
 
   if (refresh) {
@@ -299,8 +299,8 @@ void split_editor(JWidget editor, int align)
     jview_set_scroll(new_view, scroll_x, scroll_y);
 
     jrect_copy(new_view->rc, view->rc);
-    jrect_copy(jview_get_viewport (new_view)->rc,
-		 jview_get_viewport (view)->rc);
+    jrect_copy(jview_get_viewport(new_view)->rc,
+	       jview_get_viewport(view)->rc);
     jrect_copy(new_editor->rc, editor->rc);
 
     editor_data(new_editor)->offset_x = editor_data(editor)->offset_x;
@@ -374,12 +374,12 @@ void make_unique_editor(JWidget editor)
   JI_LIST_FOR_EACH_SAFE(box_editors->children, link, next) {
     child = (JWidget)link->data;
 
-    jwidget_remove_child (box_editors, child);
-    jwidget_free (child);
+    jwidget_remove_child(box_editors, child);
+    jwidget_free(child);
   }
 
   /* append the editor to main box */
-  jwidget_add_child (box_editors, view);
+  jwidget_add_child(box_editors, view);
 
   /* new current editor */
   set_current_editor(editor);

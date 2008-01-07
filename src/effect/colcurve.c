@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,11 +34,11 @@ static struct {
   int cmap[256];
 } data;
 
-CurvePoint *curve_point_new (int x, int y)
+CurvePoint *curve_point_new(int x, int y)
 {
   CurvePoint *point;
 
-  point = jnew (CurvePoint, 1);
+  point = jnew(CurvePoint, 1);
   if (!point)
     return NULL;
 
@@ -48,16 +48,16 @@ CurvePoint *curve_point_new (int x, int y)
   return point;
 }
 
-void curve_point_free (CurvePoint *point)
+void curve_point_free(CurvePoint *point)
 {
-  jfree (point);
+  jfree(point);
 }
 
-Curve *curve_new (int type)
+Curve *curve_new(int type)
 {
   Curve *curve;
 
-  curve = jnew (Curve, 1);
+  curve = jnew(Curve, 1);
   if (!curve)
     return NULL;
 
@@ -67,7 +67,7 @@ Curve *curve_new (int type)
   return curve;
 }
 
-void curve_free (Curve *curve)
+void curve_free(Curve *curve)
 {
   JLink link;
 
@@ -78,7 +78,7 @@ void curve_free (Curve *curve)
   jfree(curve);
 }
 
-void curve_add_point (Curve *curve, CurvePoint *point)
+void curve_add_point(Curve *curve, CurvePoint *point)
 {
   JLink link;
 
@@ -89,7 +89,7 @@ void curve_add_point (Curve *curve, CurvePoint *point)
   jlist_insert_before(curve->points, link, point);
 }
 
-void curve_remove_point (Curve *curve, CurvePoint *point)
+void curve_remove_point(Curve *curve, CurvePoint *point)
 {
   jlist_remove(curve->points, point);
 }
@@ -102,12 +102,12 @@ void curve_remove_point (Curve *curve, CurvePoint *point)
    derivatives for the interpolation points.  (Based on Numerical
    Recipies 2nd Edition.) */
 static void
-spline_solve (int n, float x[], float y[], float y2[])
+spline_solve(int n, float x[], float y[], float y2[])
 {
   float p, sig, *u;
   int i, k;
 
-  u = jmalloc ((n - 1) * sizeof (u[0]));
+  u = jmalloc((n - 1) * sizeof(u[0]));
 
   y2[0] = u[0] = 0.0;   /* set lower boundary condition to "natural" */
 
@@ -125,11 +125,11 @@ spline_solve (int n, float x[], float y[], float y2[])
   for (k = n - 2; k >= 0; --k)
     y2[k] = y2[k] * y2[k + 1] + u[k];
 
-  jfree (u);
+  jfree(u);
 }
 
 static float
-spline_eval (int n, float x[], float y[], float y2[], float val)
+spline_eval(int n, float x[], float y[], float y2[], float val)
 {
   int k_lo, k_hi, k;
   float h, b, a;
@@ -147,7 +147,7 @@ spline_eval (int n, float x[], float y[], float y2[], float val)
 
   h = x[k_hi] - x[k_lo];
   /* TODO */
-  /* assert (h > 0.0); */
+  /* assert(h > 0.0); */
 
   a = (x[k_hi] - val) / h;
   b = (val - x[k_lo]) / h;
@@ -155,7 +155,7 @@ spline_eval (int n, float x[], float y[], float y2[], float val)
     ((a*a*a - a)*y2[k_lo] + (b*b*b - b)*y2[k_hi]) * (h*h)/6.0;
 }
 
-void curve_get_values (Curve *curve, int x1, int x2, int *values)
+void curve_get_values(Curve *curve, int x1, int x2, int *values)
 {
   int x, num_points = jlist_length(curve->points);
 
@@ -209,7 +209,7 @@ void curve_get_values (Curve *curve, int x1, int x2, int *values)
 
 	min_x = 0;
 
-	mem = jmalloc (3 * num_points * sizeof (float));
+	mem = jmalloc(3 * num_points * sizeof(float));
 	xv  = mem;
 	yv  = mem + num_points;
 	y2v = mem + 2*num_points;
@@ -225,12 +225,12 @@ void curve_get_values (Curve *curve, int x1, int x2, int *values)
 	  }
 	}
 
-	spline_solve (dst, xv, yv, y2v);
+	spline_solve(dst, xv, yv, y2v);
 
 	rx = min_x;
 	dx = (x2 - x1) / (veclen-1);
 	for (x=0; x<veclen; ++x, rx+=dx) {
-	  ry = spline_eval (dst, xv, yv, y2v, rx);
+	  ry = spline_eval(dst, xv, yv, y2v, rx);
 #if 0
 /* 	  if (ry < curve->min_y) ry = curve->min_y; */
 /* 	  if (ry > curve->max_y) ry = curve->max_y; */
@@ -345,11 +345,11 @@ void apply_color_curve1(Effect *effect)
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);

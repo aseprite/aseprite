@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,21 +86,21 @@ typedef struct CurveEditor
   int *edit_y;
 } CurveEditor;
 
-static CurveEditor *curve_editor_data (JWidget widget);
-static bool curve_editor_msg_proc (JWidget widget, JMessage msg);
+static CurveEditor *curve_editor_data(JWidget widget);
+static bool curve_editor_msg_proc(JWidget widget, JMessage msg);
 
-static CurvePoint *curve_editor_get_more_close_point (JWidget widget, int x, int y, int **edit_x, int **edit_y);
+static CurvePoint *curve_editor_get_more_close_point(JWidget widget, int x, int y, int **edit_x, int **edit_y);
 
-static int edit_node_manual (CurvePoint *point);
+static int edit_node_manual(CurvePoint *point);
 
-JWidget curve_editor_new (Curve *curve, int x1, int y1, int x2, int y2)
+JWidget curve_editor_new(Curve *curve, int x1, int y1, int x2, int y2)
 {
-  JWidget widget = jwidget_new (curve_editor_type ());
-  CurveEditor *curve_editor = jnew (CurveEditor, 1);
+  JWidget widget = jwidget_new(curve_editor_type());
+  CurveEditor *curve_editor = jnew(CurveEditor, 1);
 
-  jwidget_add_hook (widget, curve_editor_type (),
-		      curve_editor_msg_proc, curve_editor);
-  jwidget_focusrest (widget, TRUE);
+  jwidget_add_hook(widget, curve_editor_type(),
+		   curve_editor_msg_proc, curve_editor);
+  jwidget_focusrest(widget, TRUE);
 
   widget->border_width.l = widget->border_width.r = 1;
   widget->border_width.t = widget->border_width.b = 1;
@@ -120,34 +120,34 @@ JWidget curve_editor_new (Curve *curve, int x1, int y1, int x2, int y2)
   return widget;
 }
 
-int curve_editor_type (void)
+int curve_editor_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-Curve *curve_editor_get_curve (JWidget widget)
+Curve *curve_editor_get_curve(JWidget widget)
 {
-  CurveEditor *curve_editor = curve_editor_data (widget);
+  CurveEditor *curve_editor = curve_editor_data(widget);
 
   return curve_editor->curve;
 }
 
-static CurveEditor *curve_editor_data (JWidget widget)
+static CurveEditor *curve_editor_data(JWidget widget)
 {
-  return jwidget_get_data (widget, curve_editor_type ());
+  return jwidget_get_data(widget, curve_editor_type());
 }
 
-static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
+static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 {
-  CurveEditor *curve_editor = curve_editor_data (widget);
+  CurveEditor *curve_editor = curve_editor_data(widget);
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (curve_editor);
+      jfree(curve_editor);
       break;
 
     case JM_REQSIZE: {
@@ -172,15 +172,15 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
       switch (msg->key.scancode) {
 
 	case KEY_INSERT: {
-	  int x = SCR2EDIT_X (jmouse_x(0));
-	  int y = SCR2EDIT_Y (jmouse_y(0));
-	  CurvePoint *point = curve_point_new (x, y); 
+	  int x = SCR2EDIT_X(jmouse_x(0));
+	  int y = SCR2EDIT_Y(jmouse_y(0));
+	  CurvePoint *point = curve_point_new(x, y); 
 
 	  /* TODO undo? */
-	  curve_add_point (curve_editor->curve, point);
+	  curve_add_point(curve_editor->curve, point);
 
-	  jwidget_dirty (widget);
-	  jwidget_emit_signal (widget, SIGNAL_CURVE_EDITOR_CHANGE);
+	  jwidget_dirty(widget);
+	  jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 	  break;
 	}
 
@@ -194,8 +194,8 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	  /* TODO undo? */
 	  curve_remove_point(curve_editor->curve, point);
 
-	  jwidget_dirty (widget);
-	  jwidget_emit_signal (widget, SIGNAL_CURVE_EDITOR_CHANGE);
+	  jwidget_dirty(widget);
+	  jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 	  break;
 	}
 
@@ -212,11 +212,11 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
       int *values;
       int x, y, u;
 
-      bmp = create_bitmap (jrect_w(widget->rc), jrect_h(widget->rc));
-      clear_to_color (bmp, makecol (0, 0, 0));
+      bmp = create_bitmap(jrect_w(widget->rc), jrect_h(widget->rc));
+      clear_to_color(bmp, makecol (0, 0, 0));
 
       /* draw border */
-      rect (bmp, 0, 0, bmp->w-1, bmp->h-1, makecol (255, 255, 0));
+      rect(bmp, 0, 0, bmp->w-1, bmp->h-1, makecol (255, 255, 0));
 
       /* draw guides */
       for (x=1; x<=3; x++)
@@ -241,7 +241,7 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	y = MID(curve_editor->y1, y, curve_editor->y2);
 
 	putpixel(bmp, x, EDIT2SCR_Y(y)-widget->rc->y1,
-		 makecol (255, 255, 255));
+		 makecol(255, 255, 255));
       }
 
       jfree(values);
@@ -279,10 +279,10 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
       /* show manual-entry dialog */
       else if (msg->mouse.right) {
 	curve_editor->edit_point =
-	  curve_editor_get_more_close_point (widget,
-					     SCR2EDIT_X(msg->mouse.x),
-					     SCR2EDIT_Y(msg->mouse.y),
-					     NULL, NULL);
+	  curve_editor_get_more_close_point(widget,
+					    SCR2EDIT_X(msg->mouse.x),
+					    SCR2EDIT_Y(msg->mouse.y),
+					    NULL, NULL);
 	if (curve_editor->edit_point) {
 	  jwidget_dirty(widget);
 	  jwidget_flush_redraw(widget);
@@ -317,8 +317,8 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 	switch (curve_editor->status) {
 
 	  case STATUS_SCROLLING: {
-	    JWidget view = jwidget_get_view (widget);
-	    JRect vp = jview_get_viewport_position (view);
+	    JWidget view = jwidget_get_view(widget);
+	    JRect vp = jview_get_viewport_position(view);
 	    int scroll_x, scroll_y;
 
 	    jview_get_scroll(view, &scroll_x, &scroll_y);
@@ -327,18 +327,18 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 			     scroll_y+jmouse_y(1)-jmouse_y(0));
 
 	    jmouse_control_infinite_scroll(vp);
-	    jrect_free (vp);
+	    jrect_free(vp);
 	    break;
 	  }
 
 /* 	  case STATUS_SCALING: { */
-/* 	    JID view_id = jwidget_get_view (widget); */
-/* 	    JRect vp = jview_get_viewport_pos (view_id); */
+/* 	    JID view_id = jwidget_get_view(widget); */
+/* 	    JRect vp = jview_get_viewport_pos(view_id); */
 /* 	    int scroll_x, scroll_y; */
 
-/* 	    jview_get_scroll (view_id, &scroll_x, &scroll_y); */
-/* 	    jview_update (view_id); */
-/* 	    jview_set_scroll (view_id, */
+/* 	    jview_get_scroll(view_id, &scroll_x, &scroll_y); */
+/* 	    jview_update(view_id); */
+/* 	    jview_set_scroll(view_id, */
 /* 				scroll_x-(vp.x+vp.w/2), */
 /* 				scroll_y-(vp.y+vp.h/2)); */
 
@@ -352,16 +352,16 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 /* 	      int old_y = *curve_editor->edit_y; */
 /* 	      int offset_x, offset_y; */
 
-	      *curve_editor->edit_x = SCR2EDIT_X (msg->mouse.x);
-	      *curve_editor->edit_y = SCR2EDIT_Y (msg->mouse.y);
+	      *curve_editor->edit_x = SCR2EDIT_X(msg->mouse.x);
+	      *curve_editor->edit_y = SCR2EDIT_Y(msg->mouse.y);
 
-	      *curve_editor->edit_x = MID (curve_editor->x1,
-					   *curve_editor->edit_x,
-					   curve_editor->x2);
+	      *curve_editor->edit_x = MID(curve_editor->x1,
+					  *curve_editor->edit_x,
+					  curve_editor->x2);
 
-	      *curve_editor->edit_y = MID (curve_editor->y1,
-					   *curve_editor->edit_y,
-					   curve_editor->y2);
+	      *curve_editor->edit_y = MID(curve_editor->y1,
+					  *curve_editor->edit_y,
+					  curve_editor->y2);
 
 /* 	      if (curve_editor->edit_x == &curve_editor->edit_key->x && */
 /* 		  curve_editor->edit_y == &curve_editor->edit_key->y) { */
@@ -375,9 +375,9 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 /* 	      } */
 
 	      /* TODO this should be optional */
-	      jwidget_emit_signal (widget, SIGNAL_CURVE_EDITOR_CHANGE);
+	      jwidget_emit_signal(widget, SIGNAL_CURVE_EDITOR_CHANGE);
 
-	      jwidget_dirty (widget);
+	      jwidget_dirty(widget);
 	    }
 	    break;
 	}
@@ -387,15 +387,15 @@ static bool curve_editor_msg_proc (JWidget widget, JMessage msg)
 #if 0				/* TODO */
       /* if the mouse move above a curve_editor, the focus change to
 	 this widget immediately */
-      else if (!jwidget_has_focus (widget)) {
-	jmanager_set_focus (widget);
+      else if (!jwidget_has_focus(widget)) {
+	jmanager_set_focus(widget);
       }
 #endif
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture (widget)) {
-	jwidget_release_mouse (widget);
+      if (jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
 
 	switch (curve_editor->status) {
 
@@ -460,11 +460,11 @@ static CurvePoint *curve_editor_get_more_close_point(JWidget widget,
 /*       key = it->data; */
 
 /*       if (it->prev) { */
-/* 	CALCDIST (px, py); */
+/* 	CALCDIST(px, py); */
 /*       } */
 
 /*       if (it->next) { */
-/* 	CALCDIST (nx, ny); */
+/* 	CALCDIST(nx, ny); */
 /*       } */
 /*     } */
 /*   } */
@@ -479,27 +479,27 @@ static int edit_node_manual(CurvePoint *point)
   char buf[512];
   int res;
 
-  window = load_widget ("pntprop.jid", "point_properties");
+  window = load_widget("pntprop.jid", "point_properties");
   if (!window) {
-    jalert (_("Error<<Loading %s file||&OK"), "pntprop.jid");
+    jalert(_("Error<<Loading %s file||&OK"), "pntprop.jid");
     return FALSE;
   }
 
-  entry_x = jwidget_find_name (window, "x");
-  entry_y = jwidget_find_name (window, "y");
-  button_ok = jwidget_find_name (window, "button_ok");
+  entry_x = jwidget_find_name(window, "x");
+  entry_y = jwidget_find_name(window, "y");
+  button_ok = jwidget_find_name(window, "button_ok");
 
-  sprintf (buf, "%d", point->x);
-  jwidget_set_text (entry_x, buf);
+  sprintf(buf, "%d", point->x);
+  jwidget_set_text(entry_x, buf);
 
-  sprintf (buf, "%d", point->y);
-  jwidget_set_text (entry_y, buf);
+  sprintf(buf, "%d", point->y);
+  jwidget_set_text(entry_y, buf);
 
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
-  if (jwindow_get_killer (window) == button_ok) {
-    point->x = strtod (jwidget_get_text (entry_x), NULL);
-    point->y = strtod (jwidget_get_text (entry_y), NULL);
+  if (jwindow_get_killer(window) == button_ok) {
+    point->x = strtod(jwidget_get_text(entry_x), NULL);
+    point->y = strtod(jwidget_get_text(entry_y), NULL);
     res = TRUE;
   }
   else {
@@ -508,6 +508,6 @@ static int edit_node_manual(CurvePoint *point)
     res = FALSE;
   }
 
-  jwidget_free (window);
+  jwidget_free(window);
   return res;
 }

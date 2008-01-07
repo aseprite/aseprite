@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -214,8 +214,8 @@ static void add_bookmark_command(JWidget widget, void *data)
   char buf[64], path[1024];
   int count;
 
-  count = get_config_int ("Bookmarks", "Count", 0);
-  count = MID (0, count, 256);
+  count = get_config_int("Bookmarks", "Count", 0);
+  count = MID(0, count, 256);
 
   if (count < 256) {
     replace_filename(path, ji_file_select_get_current_path(), "", 1024);
@@ -307,8 +307,8 @@ static void home_command(JWidget widget)
   else {
     char path[1024];
 
-    get_executable_name (path, sizeof (path));
-    *get_filename (path) = 0;
+    get_executable_name(path, sizeof(path));
+    *get_filename(path) = 0;
 
     ji_file_select_enter_to_path(path);
   }
@@ -319,16 +319,16 @@ static void home_command(JWidget widget)
  */
 static void fonts_command(JWidget widget)
 {
-  DIRS *dir, *dirs = filename_in_datadir ("fonts/");
+  DIRS *dir, *dirs = filename_in_datadir("fonts/");
 
   for (dir=dirs; dir; dir=dir->next) {
     if (ji_dir_exists (dir->path)) {
-      ji_file_select_enter_to_path (dir->path);
+      ji_file_select_enter_to_path(dir->path);
       break;
     }
   }
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 }
 
 /**
@@ -336,16 +336,16 @@ static void fonts_command(JWidget widget)
  */
 static void palettes_command(JWidget widget)
 {
-  DIRS *dir, *dirs = filename_in_datadir ("palettes/");
+  DIRS *dir, *dirs = filename_in_datadir("palettes/");
 
   for (dir=dirs; dir; dir=dir->next) {
     if (ji_dir_exists (dir->path)) {
-      ji_file_select_enter_to_path (dir->path);
+      ji_file_select_enter_to_path(dir->path);
       break;
     }
   }
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 }
 
 /**

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,23 +28,23 @@ extern PALETTE current_palette;
 extern RGB_MAP *orig_rgb_map;
 extern COLOR_MAP *orig_trans_map;
 
-int init_module_palette (void);
-void exit_module_palette (void);
+int init_module_palette(void);
+void exit_module_palette(void);
 
-void set_default_palette (struct RGB *palette);
-bool set_current_palette (struct RGB *palette, int forced);
-void set_current_color (int index, int r, int g, int b);
+void set_default_palette(struct RGB *palette);
+bool set_current_palette(struct RGB *palette, int forced);
+void set_current_color(int index, int r, int g, int b);
 
-void hook_palette_changes (void (*proc)(void));
-void unhook_palette_changes (void (*proc)(void));
-void call_palette_hooks (void);
+void hook_palette_changes(void(*proc)(void));
+void unhook_palette_changes(void(*proc)(void));
+void call_palette_hooks(void);
 
-void use_current_sprite_rgb_map (void);
-void use_sprite_rgb_map (struct Sprite *sprite);
-void restore_rgb_map (void);
+void use_current_sprite_rgb_map(void);
+void use_sprite_rgb_map(struct Sprite *sprite);
+void restore_rgb_map(void);
 
-void make_palette_ramp (RGB *palette, int from, int to);
-void make_palette_rect_ramp (RGB *palette, int from, int to, int width);
+void make_palette_ramp(RGB *palette, int from, int to);
+void make_palette_rect_ramp(RGB *palette, int from, int to, int width);
 
 int palette_diff(RGB *p1, RGB *p2, int *from, int *to);
 void palette_copy(RGB *dst, RGB *src);

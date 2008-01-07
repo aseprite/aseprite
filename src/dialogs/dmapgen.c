@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,14 +50,14 @@
 static JWidget entry_width, entry_height, entry_seed, entry_factor;
 static JWidget preview_map, check_preview;
 
-static void regen_map (int forced);
-static void random_seed_command (JWidget widget);
-static void sqrt2_factor_command (JWidget widget);
-static int change_hook (JWidget widget, int user_data);
+static void regen_map(int forced);
+static void random_seed_command(JWidget widget);
+static void sqrt2_factor_command(JWidget widget);
+static int change_hook(JWidget widget, int user_data);
 
-static JWidget image_viewer_new (Image *image);
-static bool image_viewer_msg_proc (JWidget widget, JMessage msg);
-
+static JWidget image_viewer_new(Image *image);
+static bool image_viewer_msg_proc(JWidget widget, JMessage msg);
+
 void dialogs_mapgen(void)
 {
   JWidget window, view_map, check_tiled, button_ok;
@@ -68,7 +68,7 @@ void dialogs_mapgen(void)
   char buf[256];
   int w, h, seed;
 
-  window = load_widget ("mapgen.jid", "mapgen");
+  window = load_widget("mapgen.jid", "mapgen");
   if (!window)
     return;
 
@@ -81,12 +81,12 @@ void dialogs_mapgen(void)
 		    "preview", &check_preview,
 		    "tiled", &check_tiled,
 		    "button_ok", &button_ok, NULL)) {
-    jwidget_free (window);
+    jwidget_free(window);
     return;
   }
 
   /* get current palette */
-  palette_copy (old_palette, current_palette);
+  palette_copy(old_palette, current_palette);
 
   /* load terrain palette */
   {
@@ -110,129 +110,129 @@ void dialogs_mapgen(void)
   set_current_palette(sprite_get_palette(sprite, 0), FALSE);
   jmanager_refresh_screen();
 
-  w = get_config_int ("MapGen", "Width", 256);
-  sprintf (buf, "%d", MID (1, w, 9999));
-  jwidget_set_text (entry_width, buf);
+  w = get_config_int("MapGen", "Width", 256);
+  sprintf(buf, "%d", MID(1, w, 9999));
+  jwidget_set_text(entry_width, buf);
 
-  h = get_config_int ("MapGen", "Height", 256);
-  sprintf (buf, "%d", MID (1, h, 9999));
-  jwidget_set_text (entry_height, buf);
+  h = get_config_int("MapGen", "Height", 256);
+  sprintf(buf, "%d", MID(1, h, 9999));
+  jwidget_set_text(entry_height, buf);
 
-  seed = get_config_int ("MapGen", "Seed", 662355502);
-  sprintf (buf, "%d", seed);
-  jwidget_set_text (entry_seed, buf);
+  seed = get_config_int("MapGen", "Seed", 662355502);
+  sprintf(buf, "%d", seed);
+  jwidget_set_text(entry_seed, buf);
 
-  factor = get_config_float ("MapGen", "FractalFactor", M_SQRT2);
-  sprintf (buf, "%.16g", factor);
-  jwidget_set_text (entry_factor, buf);
+  factor = get_config_float("MapGen", "FractalFactor", M_SQRT2);
+  sprintf(buf, "%.16g", factor);
+  jwidget_set_text(entry_factor, buf);
 
-  if (get_config_bool ("MapGen", "Preview", TRUE))
-    jwidget_select (check_preview);
+  if (get_config_bool("MapGen", "Preview", TRUE))
+    jwidget_select(check_preview);
 
-  jwidget_select (check_tiled);
-  jwidget_disable (check_tiled);
+  jwidget_select(check_tiled);
+  jwidget_disable(check_tiled);
 
-  HOOK (check_preview, JI_SIGNAL_CHECK_CHANGE, change_hook, 0);
-  HOOK (entry_seed, JI_SIGNAL_ENTRY_CHANGE, change_hook, 0);
-  HOOK (entry_factor, JI_SIGNAL_ENTRY_CHANGE, change_hook, 0);
+  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, change_hook, 0);
+  HOOK(entry_seed, JI_SIGNAL_ENTRY_CHANGE, change_hook, 0);
+  HOOK(entry_factor, JI_SIGNAL_ENTRY_CHANGE, change_hook, 0);
 
-  jbutton_add_command (jwidget_find_name (window, "random_seed"),
-			 random_seed_command);
-  jbutton_add_command (jwidget_find_name (window, "sqrt2_factor"),
-			 sqrt2_factor_command);
+  jbutton_add_command(jwidget_find_name(window, "random_seed"),
+		      random_seed_command);
+  jbutton_add_command(jwidget_find_name(window, "sqrt2_factor"),
+		      sqrt2_factor_command);
 
-  jview_attach (view_map, preview_map);
+  jview_attach(view_map, preview_map);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* load window configuration */
-  load_window_pos (window, "MapGen");
+  load_window_pos(window, "MapGen");
 
   /* open the window */
-  regen_map (FALSE);
-  jwindow_open_fg (window);
+  regen_map(FALSE);
+  jwindow_open_fg(window);
 
-  if (jwindow_get_killer (window) == button_ok) {
+  if (jwindow_get_killer(window) == button_ok) {
     /* generate the map */
-    regen_map (TRUE);
+    regen_map(TRUE);
 
     /* show the sprite */
-    sprite_show (sprite);
+    sprite_show(sprite);
   }
   else {
-    set_current_sprite (old_sprite);
-    set_current_palette (old_palette, FALSE);
-    jmanager_refresh_screen ();
+    set_current_sprite(old_sprite);
+    set_current_palette(old_palette, FALSE);
+    jmanager_refresh_screen();
 
-    sprite_free (sprite);
+    sprite_free(sprite);
   }
 
   /* save window configuration */
-  save_window_pos (window, "MapGen");
+  save_window_pos(window, "MapGen");
 
-  jwidget_free (window);
+  jwidget_free(window);
 }
-
-static void regen_map (int forced)
+
+static void regen_map(int forced)
 {
   int w, h, seed;
   double factor;
 
-  if (forced || jwidget_is_selected (check_preview)) {
-    w = strtol (jwidget_get_text (entry_width), NULL, 10);
-    h = strtol (jwidget_get_text (entry_height), NULL, 10);
-    seed = strtol (jwidget_get_text (entry_seed), NULL, 10);
-    factor = strtod (jwidget_get_text (entry_factor), NULL);
+  if (forced || jwidget_is_selected(check_preview)) {
+    w = strtol(jwidget_get_text(entry_width), NULL, 10);
+    h = strtol(jwidget_get_text(entry_height), NULL, 10);
+    seed = strtol(jwidget_get_text(entry_seed), NULL, 10);
+    factor = strtod(jwidget_get_text(entry_factor), NULL);
 
     if (forced) {
-      set_config_int ("MapGen", "Width", w);
-      set_config_int ("MapGen", "Height", h);
-      set_config_int ("MapGen", "Seed", seed);
-      set_config_float ("MapGen", "FractalFactor", factor);
+      set_config_int("MapGen", "Width", w);
+      set_config_int("MapGen", "Height", h);
+      set_config_int("MapGen", "Seed", seed);
+      set_config_float("MapGen", "FractalFactor", factor);
     }
 
     /* generate the map */
-    mapgen (GetImage (), seed, factor);
-    jwidget_dirty (preview_map);
+    mapgen(GetImage(), seed, factor);
+    jwidget_dirty(preview_map);
   }
 }
 
-static void random_seed_command (JWidget widget)
+static void random_seed_command(JWidget widget)
 {
   char buf[256];
-  sprintf (buf, "%d", rand ());
-  jwidget_set_text (entry_seed, buf);
-  regen_map (FALSE);
+  sprintf(buf, "%d", rand());
+  jwidget_set_text(entry_seed, buf);
+  regen_map(FALSE);
 }
 
-static void sqrt2_factor_command (JWidget widget)
+static void sqrt2_factor_command(JWidget widget)
 {
   char buf[256];
-  sprintf (buf, "%.16g", M_SQRT2);
-  jwidget_set_text (entry_factor, buf);
-  regen_map (FALSE);
+  sprintf(buf, "%.16g", M_SQRT2);
+  jwidget_set_text(entry_factor, buf);
+  regen_map(FALSE);
 }
 
-static int change_hook (JWidget widget, int user_data)
+static int change_hook(JWidget widget, int user_data)
 {
-  regen_map (FALSE);
+  regen_map(FALSE);
   return FALSE;
 }
-
+
 /**********************************************************************/
 /* image viewer (simple preview) */
 
-static JWidget image_viewer_new (Image *image)
+static JWidget image_viewer_new(Image *image)
 {
-  JWidget widget = jwidget_new (JI_WIDGET);
-  jwidget_add_hook (widget, JI_WIDGET, image_viewer_msg_proc, NULL);
+  JWidget widget = jwidget_new(JI_WIDGET);
+  jwidget_add_hook(widget, JI_WIDGET, image_viewer_msg_proc, NULL);
   widget->user_data[0] = image;
   return widget;
 }
 
-static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
+static bool image_viewer_msg_proc(JWidget widget, JMessage msg)
 {
   Image *image = widget->user_data[0];
 
@@ -244,8 +244,8 @@ static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_DRAW: {
-      BITMAP *bmp = create_bitmap (image->w, image->h);
-      image_to_allegro (image, bmp, 0, 0);
+      BITMAP *bmp = create_bitmap(image->w, image->h);
+      image_to_allegro(image, bmp, 0, 0);
 
       _ji_theme_rectfill_exclude
 	(ji_screen,
@@ -253,16 +253,16 @@ static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
 	 widget->rc->x2-1, widget->rc->y2-1,
 	 widget->rc->x1, widget->rc->y1,
 	 widget->rc->x1+bmp->w-1,
-	 widget->rc->y1+bmp->h-1, jwidget_get_bg_color (widget));
+	 widget->rc->y1+bmp->h-1, jwidget_get_bg_color(widget));
 
-      blit (bmp, ji_screen,
-	    0, 0, widget->rc->x1, widget->rc->y1, bmp->w, bmp->h);
-      destroy_bitmap (bmp);
+      blit(bmp, ji_screen,
+	   0, 0, widget->rc->x1, widget->rc->y1, bmp->w, bmp->h);
+      destroy_bitmap(bmp);
       return TRUE;
     }
 
     case JM_BUTTONPRESSED: {
-      JWidget view = jwidget_get_view (widget);
+      JWidget view = jwidget_get_view(widget);
       if (view) {
 	jwidget_hard_capture_mouse(widget);
 	jmouse_set_cursor(JI_CURSOR_MOVE);
@@ -274,7 +274,7 @@ static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
     case JM_MOTION: {
       JWidget view = jwidget_get_view(widget);
       if (view && jwidget_has_capture(widget)) {
-	JRect vp = jview_get_viewport_position (view);
+	JRect vp = jview_get_viewport_position(view);
 	int scroll_x, scroll_y;
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
@@ -289,9 +289,9 @@ static bool image_viewer_msg_proc (JWidget widget, JMessage msg)
     }
 
     case JM_BUTTONRELEASED: {
-      JWidget view = jwidget_get_view (widget);
-      if (view && jwidget_has_capture (widget)) {
-	jwidget_release_mouse (widget);
+      JWidget view = jwidget_get_view(widget);
+      if (view && jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
 	return TRUE;
       }

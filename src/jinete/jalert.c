@@ -68,9 +68,9 @@ JWidget jalert_new(const char *format, ...)
   va_list ap;
 
   /* process arguments */
-  va_start (ap, format);
-  vsprintf (buf, format, ap);
-  va_end (ap);
+  va_start(ap, format);
+  vsprintf(buf, format, ap);
+  va_end(ap);
 
   /* create the alert window */
   labels = jlist_new();
@@ -162,7 +162,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 	buf[c] = 0;
 
 	if (title) {
-	  window = jwindow_new (beg);
+	  window = jwindow_new(beg);
 	}
 	else if (label) {
 	  JWidget label = jlabel_new(beg);
@@ -235,7 +235,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 
     /* default button is the last one */
     if (jlist_last (*buttons))
-      jwidget_magnetic ((JWidget)jlist_last (*buttons)->data, TRUE);
+      jwidget_magnetic((JWidget)jlist_last(*buttons)->data, TRUE);
   }
 
   return window;

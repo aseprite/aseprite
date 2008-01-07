@@ -407,12 +407,12 @@ static bool enter_to_path_in_entry(void)
   ustrcpy(path, buf);
 
 #ifdef HAVE_DRIVES
-  if (ugetat (buf, -1) == DEVICE_SEPARATOR) {
-    uinsert(path, ustrlen (path), OTHER_PATH_SEPARATOR);
+  if (ugetat(buf, -1) == DEVICE_SEPARATOR) {
+    uinsert(path, ustrlen(path), OTHER_PATH_SEPARATOR);
     ustrcat(buf, "./");
   }
-  else if ((ugetat (buf, -1) == OTHER_PATH_SEPARATOR) &&
-	   (ugetat (buf, -2) == DEVICE_SEPARATOR)) {
+  else if ((ugetat(buf, -1) == OTHER_PATH_SEPARATOR) &&
+	   (ugetat(buf, -2) == DEVICE_SEPARATOR)) {
     uremove(buf, -1);
     ustrcat(buf, "./");
   }
@@ -516,7 +516,7 @@ static void fill_listbox_with_files(char *path, int size)
 #else
     int drive = 0;
 #endif
-    _al_getdcwd(drive, path, size - ucwidth (OTHER_PATH_SEPARATOR));
+    _al_getdcwd(drive, path, size - ucwidth(OTHER_PATH_SEPARATOR));
   }
 
   ch = ugetat(path, -1);
@@ -527,11 +527,11 @@ static void fill_listbox_with_files(char *path, int size)
     }
   }
 
-  replace_filename(buf, path, uconvert_ascii ("*.*", tmp), sizeof (buf));
+  replace_filename(buf, path, uconvert_ascii("*.*", tmp), sizeof(buf));
 
   /* clean the list boxes */
 
-  list = jwidget_get_children (listbox1);
+  list = jwidget_get_children(listbox1);
   JI_LIST_FOR_EACH(list, link) {
     jmanager_free_widget(link->data);
     jwidget_remove_child(listbox1, link->data);
@@ -542,8 +542,8 @@ static void fill_listbox_with_files(char *path, int size)
   list = jwidget_get_children(listbox2);
   JI_LIST_FOR_EACH(list, link) {
     jmanager_free_widget(link->data);
-    jwidget_remove_child (listbox2, link->data);
-    jwidget_free (link->data);
+    jwidget_remove_child(listbox2, link->data);
+    jwidget_free(link->data);
   }
   jlist_free(list);
 
@@ -578,7 +578,7 @@ static void generate_extensions(const char *exts)
 
   extensions = jlist_new();
 
-  ustrzcpy(buf, sizeof (buf), exts);
+  ustrzcpy(buf, sizeof(buf), exts);
 
   for (tok = ustrtok(buf, ",;"); tok;
        tok = ustrtok(NULL, ",;")) {
@@ -687,12 +687,12 @@ static void fixup_filename(char *buf, char *from, const char *filename)
 
   /* remove all double-slashes "//" */
   for (c=0, ch=-1; ch; ) {
-    ch = ugetat (buf, c);
+    ch = ugetat(buf, c);
     if ((ch == '/') || (ch == OTHER_PATH_SEPARATOR)) {
-      ch = ugetat (buf, ++c);
+      ch = ugetat(buf, ++c);
       while ((ch == '/') || (ch == OTHER_PATH_SEPARATOR)) {
-        uremove (buf, c);
-        ch = ugetat (buf, c);
+        uremove(buf, c);
+        ch = ugetat(buf, c);
       }
     }
     else
@@ -701,14 +701,14 @@ static void fixup_filename(char *buf, char *from, const char *filename)
 
   /* remove all "/." */
   for (c=0, ch=-1; ; ) {
-    ch = ugetat (buf, c);
+    ch = ugetat(buf, c);
 
     if ((ch == '/') || (ch == OTHER_PATH_SEPARATOR)) {
-      ch = ugetat (buf, c+2);
-      if ((ugetat (buf, c+1) == '.') &&
+      ch = ugetat(buf, c+2);
+      if ((ugetat(buf, c+1) == '.') &&
           ((ch == 0) || (ch == '/') || (ch == OTHER_PATH_SEPARATOR))) {
-        uremove (buf, c); /* `/' */
-        uremove (buf, c); /* `.' */
+        uremove(buf, c); /* `/' */
+        uremove(buf, c); /* `.' */
         c--;
       }
     }
@@ -721,39 +721,39 @@ static void fixup_filename(char *buf, char *from, const char *filename)
 
   /* fixup all "dir/.." */
   for (c=0, ch=-1; ; ) {
-    ch = ugetat (buf, c);
+    ch = ugetat(buf, c);
 
     if ((ch == '/') || (ch == OTHER_PATH_SEPARATOR)) {
-      ch = ugetat (buf, c+3);
-      if ((ugetat (buf, c+1) == '.') &&
-          (ugetat (buf, c+2) == '.') &&
+      ch = ugetat(buf, c+3);
+      if ((ugetat(buf, c+1) == '.') &&
+	  (ugetat(buf, c+2) == '.') &&
           ((ch == 0) || (ch == '/') || (ch == OTHER_PATH_SEPARATOR))) {
-        uremove (buf, c); /* `/' */
-        uremove (buf, c); /* `.' */
-        uremove (buf, c); /* `.' */
+        uremove(buf, c); /* `/' */
+        uremove(buf, c); /* `.' */
+        uremove(buf, c); /* `.' */
 
         /* remove the parent directory */
 
         for (ch=-1; ((c >= 0) && (ch != '/') && (ch != OTHER_PATH_SEPARATOR)); )
-          ch = ugetat (buf, --c);
+          ch = ugetat(buf, --c);
 
         c++;
 
-        ustrcpy (from, empty_string);
+        ustrcpy(from, empty_string);
 
-        ch = ugetat (buf, c);
+        ch = ugetat(buf, c);
         for (; ((ch) && (ch != '/') && (ch != OTHER_PATH_SEPARATOR)); ) {
-          uinsert (from, ustrlen (from), ch);
+          uinsert(from, ustrlen(from), ch);
 
-          uremove (buf, c);
-          ch = ugetat (buf, c);
+          uremove(buf, c);
+          ch = ugetat(buf, c);
         }
 
         c--;
 
         if (c >= 0) {
-          uremove (buf, c);
-          ch = ugetat (buf, c--);
+          uremove(buf, c);
+          ch = ugetat(buf, c--);
         }
       }
     }
@@ -769,7 +769,7 @@ static void fixup_filename(char *buf, char *from, const char *filename)
  *  ustricmp for filenames: makes sure that eg "foo.bar" comes before
  *  "foo-1.bar", and also that "foo9.bar" comes before "foo10.bar".
  */
-static int my_ustrfilecmp (const char *s1, const char *s2)
+static int my_ustrfilecmp(const char *s1, const char *s2)
 {
    int c1, c2;
    int x1, x2;

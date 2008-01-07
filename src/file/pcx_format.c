@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,7 @@ static Sprite *load_PCX(const char *filename)
   int x, y;
   char ch = 0;
 
-  f = pack_fopen (filename, F_READ);
+  f = pack_fopen(filename, F_READ);
   if (!f)
     return NULL;
 
@@ -66,8 +66,8 @@ static Sprite *load_PCX(const char *filename)
   pack_getc(f);                    /* skip encoding flag */
 
   if (pack_getc(f) != 8) {         /* we like 8 bit color planes */
-    console_printf (_("This PCX doesn't have 8 bit color planes.\n"));
-    pack_fclose (f);
+    console_printf(_("This PCX doesn't have 8 bit color planes.\n"));
+    pack_fclose(f);
     return NULL;
   }
 
@@ -98,16 +98,16 @@ static Sprite *load_PCX(const char *filename)
   for (c=0; c<60; c++)             /* skip some more junk */
     pack_getc(f);
 
-  image = file_sequence_image (bpp == 8 ?
-			       IMAGE_INDEXED:
-			       IMAGE_RGB, width, height);
+  image = file_sequence_image(bpp == 8 ?
+			      IMAGE_INDEXED:
+			      IMAGE_RGB, width, height);
   if (!image) {
     pack_fclose(f);
     return NULL;
   }
 
   if (bpp == 24)
-    image_clear (image, _rgba (0, 0, 0, 255));
+    image_clear(image, _rgba(0, 0, 0, 255));
 
   *allegro_errno = 0;
 
@@ -151,7 +151,7 @@ static Sprite *load_PCX(const char *filename)
     }
 
     if (height > 1)
-      do_progress (100 * y / (height-1));
+      do_progress(100 * y / (height-1));
   }
 
   if (bpp == 8) {                  /* look for a 256 color palette */
@@ -241,10 +241,10 @@ static int save_PCX(Sprite *sprite)
     for (x=0; x<image->w*planes; x++) {  /* for each pixel... */
       if (depth == 8) {
 	if (image->imgtype == IMAGE_INDEXED)
-	  ch = image->method->getpixel (image, x, y);
+	  ch = image->method->getpixel(image, x, y);
 	else if (image->imgtype == IMAGE_GRAYSCALE) {
-	  c = image->method->getpixel (image, x, y);
-	  ch = _graya_getk (c);
+	  c = image->method->getpixel(image, x, y);
+	  ch = _graya_getk(c);
 	}
       }
       else {

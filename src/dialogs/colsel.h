@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DIALOGS_COLSEL_H
 #define DIALOGS_COLSEL_H
 
-char *ji_color_select (int imgtype, const char *color);
+char *ji_color_select(int imgtype, const char *color);
 
 #endif /* DIALOGS_COLSEL_H */
 

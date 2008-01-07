@@ -130,7 +130,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
   *h += widget->border_width.t + widget->border_width.b;
 }
 
-static void box_set_position (JWidget widget, JRect rect)
+static void box_set_position(JWidget widget, JRect rect)
 {
 #define FIXUP(x, y, w, h, l, t, r, b)					\
   {									\
@@ -153,9 +153,9 @@ static void box_set_position (JWidget widget, JRect rect)
 									\
       x = widget->rc->x##1 + widget->border_width.l;			\
       y = widget->rc->y##1 + widget->border_width.t;			\
-      h = MAX (1, jrect_##h(widget->rc)				\
-		  - widget->border_width.t				\
-		  - widget->border_width.b);				\
+      h = MAX(1, jrect_##h(widget->rc)					\
+		 - widget->border_width.t				\
+		 - widget->border_width.b);				\
 									\
       JI_LIST_FOR_EACH(widget->children, link) {			\
 	child = (JWidget)link->data;					\
@@ -186,7 +186,7 @@ static void box_set_position (JWidget widget, JRect rect)
 	    }								\
 	  }								\
 									\
-	  w = MAX (1, child_width/*  - child->padding * 2 */);		\
+	  w = MAX(1, child_width/*  - child->padding * 2 */);		\
 									\
 	  if (widget->align & JI_HORIZONTAL)				\
 	    jrect_replace(&cpos, x, y, x+w, y+h);			\
@@ -197,7 +197,7 @@ static void box_set_position (JWidget widget, JRect rect)
 	  /* 	    x = x + child->padding; */				\
 	  /* 	  child->w = w; */					\
 	  /* child->h = h; */						\
-	  /* jwidget_size (child, w, h); */				\
+	  /* jwidget_size(child, w, h); */				\
 									\
 	  x += child_width + widget->child_spacing;			\
 	}								\

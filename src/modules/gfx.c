@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -264,29 +264,29 @@ void dotted_mode(int offset)
 
   if (offset < 0) {
     if (pattern) {
-      destroy_bitmap (pattern);
+      destroy_bitmap(pattern);
       pattern = NULL;
     }
-    drawing_mode (DRAW_MODE_SOLID, NULL, 0, 0);
+    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
     return;
   }
 
   if (!pattern)
-    pattern = create_bitmap (8, 8);
+    pattern = create_bitmap(8, 8);
 
   offset = 7 - (offset & 7);
 
-  bg = makecol (0, 0, 0);
-  fg = makecol (255, 255, 255);
+  bg = makecol(0, 0, 0);
+  fg = makecol(255, 255, 255);
 
-  clear_bitmap (pattern);
+  clear_bitmap(pattern);
 
   for (y=0; y<8; y++)
     for (x=0; x<8; x++)
-      putpixel (pattern, x, y,
-		(pattern_data[offset][y] & (1<<(7-x)))? fg: bg);
+      putpixel(pattern, x, y,
+	       (pattern_data[offset][y] & (1<<(7-x)))? fg: bg);
 
-  drawing_mode (DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
+  drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
 }
 
 void simple_dotted_mode(BITMAP *bmp, int fg, int bg)
@@ -296,7 +296,7 @@ void simple_dotted_mode(BITMAP *bmp, int fg, int bg)
   if (pattern && bitmap_color_depth(pattern) != bitmap_color_depth(bmp))
     destroy_bitmap(pattern);
 
-  pattern = create_bitmap_ex(bitmap_color_depth (bmp), 2, 2);
+  pattern = create_bitmap_ex(bitmap_color_depth(bmp), 2, 2);
   clear_bitmap(pattern);
 
   putpixel(pattern, 0, 0, fg);
@@ -337,7 +337,7 @@ void *subclip(BITMAP *bmp, int x1, int y1, int x2, int y2)
 
   set_clip(bmp, x1, y1, x2, y2);
 
-  data = jnew (CLIP_DATA, 1);
+  data = jnew(CLIP_DATA, 1);
   data->bmp = bmp;
   data->cl = cl;
   data->ct = ct;
@@ -366,8 +366,8 @@ typedef struct RECT_DATA
   int *pixel;
 } RECT_DATA;
 
-static void do_rect (BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
-		     void (*proc)(BITMAP *bmp, int x, int y, int c))
+static void do_rect(BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
+		    void (*proc)(BITMAP *bmp, int x, int y, int c))
 {
   int x, y, u1, u2, v1, v2;
 
@@ -375,8 +375,8 @@ static void do_rect (BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
       (y2 < bmp->ct) || (y1 >= bmp->cb))
     return;
 
-  u1 = MID (bmp->cl, x1, bmp->cr-1);
-  u2 = MID (x1, x2, bmp->cr-1);
+  u1 = MID(bmp->cl, x1, bmp->cr-1);
+  u2 = MID(x1, x2, bmp->cr-1);
 
   if ((y1 >= bmp->ct) && (y1 < bmp->cb)) {
     for (x=u1; x<=u2; x++)
@@ -388,17 +388,17 @@ static void do_rect (BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
       (*proc) (bmp, x, y2, c);
   }
 
-  v1 = MID (bmp->ct, y1+1, bmp->cb-1);
-  v2 = MID (v1, y2-1, bmp->cb-1);
+  v1 = MID(bmp->ct, y1+1, bmp->cb-1);
+  v2 = MID(v1, y2-1, bmp->cb-1);
 
   if ((x1 >= bmp->cl) && (x1 < bmp->cr)) {
     for (y=v1; y<=v2; y++)
-      (*proc) (bmp, x1, y, c);
+      (*proc)(bmp, x1, y, c);
   }
 
   if ((x2 >= bmp->cl) && (x2 < bmp->cr)) {
     for (y=v1; y<=v2; y++)
-      (*proc) (bmp, x2, y, c);
+      (*proc)(bmp, x2, y, c);
   }
 }
 
@@ -456,7 +456,7 @@ void rectrestore(void *_data)
 	  (int)data, restore_rect);
 }
 
-void rectdiscard (void *_data)
+void rectdiscard(void *_data)
 {
   RECT_DATA *data = _data;
 
@@ -470,29 +470,29 @@ void rectdiscard (void *_data)
 /**********************************************************************/
 /* Rectangles */
 
-void bevel_box (BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
+void bevel_box(BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
 {
-  hline (bmp, x1+bevel, y1, x2-bevel, c1); /* top */
-  hline (bmp, x1+bevel, y2, x2-bevel, c2); /* bottom */
+  hline(bmp, x1+bevel, y1, x2-bevel, c1); /* top */
+  hline(bmp, x1+bevel, y2, x2-bevel, c2); /* bottom */
 
-  vline (bmp, x1, y1+bevel, y2-bevel, c1); /* left */
-  vline (bmp, x2, y1+bevel, y2-bevel, c2); /* right */
+  vline(bmp, x1, y1+bevel, y2-bevel, c1); /* left */
+  vline(bmp, x2, y1+bevel, y2-bevel, c2); /* right */
 
-  line (bmp, x1, y1+bevel, x1+bevel, y1, c1); /* top-left */
-  line (bmp, x1, y2-bevel, x1+bevel, y2, c2); /* bottom-left */
+  line(bmp, x1, y1+bevel, x1+bevel, y1, c1); /* top-left */
+  line(bmp, x1, y2-bevel, x1+bevel, y2, c2); /* bottom-left */
 
-  line (bmp, x2-bevel, y1, x2, y1+bevel, c2); /* top-right */
-  line (bmp, x2-bevel, y2, x2, y2-bevel, c2); /* bottom-right */
+  line(bmp, x2-bevel, y1, x2, y1+bevel, c2); /* top-right */
+  line(bmp, x2-bevel, y2, x2, y2-bevel, c2); /* bottom-right */
 }
 
-void rectdotted (BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int bg)
+void rectdotted(BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int bg)
 {
-  simple_dotted_mode (bmp, fg, bg);
-  rect (bmp, x1, y1, x2, y2, 0);
-  solid_mode ();
+  simple_dotted_mode(bmp, fg, bg);
+  rect(bmp, x1, y1, x2, y2, 0);
+  solid_mode();
 }
 
-void rectgrid (BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h)
+void rectgrid(BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h)
 {
   int x, y, u, v, c1, c2;
 
@@ -520,13 +520,13 @@ void rectgrid (BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h)
   }
 }
 
-void rectfill_exclude (BITMAP *bmp, int x1, int y1, int x2, int y2, int ex1, int ey1, int ex2, int ey2, int color)
+void rectfill_exclude(BITMAP *bmp, int x1, int y1, int x2, int y2, int ex1, int ey1, int ex2, int ey2, int color)
 {
-  _ji_theme_rectfill_exclude (bmp, x1, y1, x2, y2,
-			      ex1, ey1, ex2, ey2, color);
+  _ji_theme_rectfill_exclude(bmp, x1, y1, x2, y2,
+			     ex1, ey1, ex2, ey2, color);
 }
 
-void rectshade (BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom)
+void rectshade(BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom)
 {
   int x, y, r[3], g[3], b[3];
 
@@ -563,7 +563,7 @@ void rectshade (BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom
 /************************************************************************/
 /* Font related */
 
-int character_length (FONT *font, int chr)
+int character_length(FONT *font, int chr)
 {
   return font->vtable->char_length(font, chr);
 }

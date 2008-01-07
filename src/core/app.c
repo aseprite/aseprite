@@ -131,7 +131,7 @@ int app_init(int argc, char *argv[])
 					  REQUIRE_SCRIPTING) < 0)
     return -1;
 
-  _ji_font_init ();
+  _ji_font_init();
 
   /* custom default palette? */
   if (palette_filename) {
@@ -148,13 +148,13 @@ int app_init(int argc, char *argv[])
       return -1;
     }
 
-    destroy_bitmap (bmp);
+    destroy_bitmap(bmp);
 
-    set_default_palette (pal);
+    set_default_palette(pal);
   }
 
   /* set system palette to the default one */
-  set_current_palette (NULL, TRUE);
+  set_current_palette(NULL, TRUE);
 
   /* ok */
   return 0;
@@ -366,7 +366,7 @@ void app_refresh_screen(void)
 
 /* updates the sprites list menu. WARNING!: This routine can't be used
    when a menu callback was called, because, it destroy some menus,
-   you should use rebuild_sprite_list () instead (src/gui/gui.c) */
+   you should use rebuild_sprite_list() instead (src/gui/gui.c) */
 void app_realloc_sprite_list(void)
 {
   Sprite *sprite;
@@ -395,10 +395,10 @@ void app_realloc_sprite_list(void)
     char buf[256];
     int c, count = 0;
 
-    submenu = jmenuitem_get_submenu (list_menuitem);
+    submenu = jmenuitem_get_submenu(list_menuitem);
     if (submenu) {
-      jmenuitem_set_submenu (list_menuitem, NULL);
-      jwidget_free (submenu);
+      jmenuitem_set_submenu(list_menuitem, NULL);
+      jwidget_free(submenu);
     }
 
     submenu = jmenu_new();
@@ -454,7 +454,7 @@ void app_realloc_sprite_list(void)
 	  menuitem = menuitem_new(_("More"), NULL, NULL);
 	  jwidget_add_child(submenu, menuitem);
 
-	  submenu = jmenu_new ();
+	  submenu = jmenu_new();
 	  jmenuitem_set_submenu(menuitem, submenu);
 	  count = 0;
 	}
@@ -477,7 +477,7 @@ void app_realloc_sprite_list(void)
 
 /* updates the recent list menu. WARNING!: This routine can't be used
    when a menu callback was called, because, it destroy the menus,
-   you should use rebuild_recent_list () instead (src/gui/gui.c). */
+   you should use rebuild_recent_list() instead (src/gui/gui.c). */
 void app_realloc_recent_list(void)
 {
   JWidget list_menuitem = get_recent_list_menuitem();
@@ -490,7 +490,7 @@ void app_realloc_recent_list(void)
     Command *cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
     JWidget submenu;
 
-    submenu = jmenuitem_get_submenu (list_menuitem);
+    submenu = jmenuitem_get_submenu(list_menuitem);
     if (submenu) {
       jmenuitem_set_submenu(list_menuitem, NULL);
       jwidget_free(submenu);
@@ -566,7 +566,7 @@ static int check_args(int argc, char *argv[])
         if (++i < argc)
           jlist_append(options, option_new(DO_SCRIPT_EXPR, argv[i]));
         else
-          usage (1);
+          usage(1);
       }
       /* open script file */
       else if (strncmp(arg+n, "file", len) == 0) {

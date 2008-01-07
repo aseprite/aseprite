@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,39 +52,39 @@
 typedef struct EffectData
 {
   const char *name;
-  void (*apply_4) (Effect *effect);
-  void (*apply_2) (Effect *effect);
-  void (*apply_1) (Effect *effect);
+  void (*apply_4)(Effect *effect);
+  void (*apply_2)(Effect *effect);
+  void (*apply_1)(Effect *effect);
 } EffectData;
 
 #define FXDATA(name) \
   { #name, apply_##name##4, apply_##name##2, apply_##name##1 }
 
 static EffectData effects_data[] = {
-  FXDATA (color_curve),
-  FXDATA (convolution_matrix),
-  FXDATA (invert_color),
-  FXDATA (median),
-  FXDATA (replace_color),
+  FXDATA(color_curve),
+  FXDATA(convolution_matrix),
+  FXDATA(invert_color),
+  FXDATA(median),
+  FXDATA(replace_color),
   { NULL, NULL, NULL, NULL }
 };
 
-static EffectData *get_effect_data (const char *name);
-static int effect_init (Effect *effect, Image *image, int offset_x, int offset_y);
-static int effect_update_mask (Effect *effect, Mask *mask, Image *image);
+static EffectData *get_effect_data(const char *name);
+static int effect_init(Effect *effect, Image *image, int offset_x, int offset_y);
+static int effect_update_mask(Effect *effect, Mask *mask, Image *image);
 
-int init_module_effect (void)
+int init_module_effect(void)
 {
-  init_convolution_matrix ();
+  init_convolution_matrix();
   return 0;
 }
 
-void exit_module_effect (void)
+void exit_module_effect(void)
 {
-  exit_convolution_matrix ();
+  exit_convolution_matrix();
 }
 
-Effect *effect_new (Sprite *sprite, const char *name)
+Effect *effect_new(Sprite *sprite, const char *name)
 {
   int offset_x, offset_y;
   EffectData *effect_data;
@@ -92,7 +92,7 @@ Effect *effect_new (Sprite *sprite, const char *name)
   Image *image;
   void *apply;
 
-  effect_data = get_effect_data (name);
+  effect_data = get_effect_data(name);
   if (!effect_data)
     return NULL;
 
@@ -105,7 +105,7 @@ Effect *effect_new (Sprite *sprite, const char *name)
   if (!apply)
     return NULL;
 
-  effect = jnew (Effect, 1);
+  effect = jnew(Effect, 1);
   if (!effect)
     return NULL;
 
@@ -120,12 +120,12 @@ Effect *effect_new (Sprite *sprite, const char *name)
   effect->mask_address = NULL;
   effect->apply = apply;
 
-  effect_load_target (effect);
+  effect_load_target(effect);
 
-  image = GetImage2 (sprite, &offset_x, &offset_y, NULL);
+  image = GetImage2(sprite, &offset_x, &offset_y, NULL);
   if (image) {
-    if (!effect_init (effect, image, offset_x, offset_y)) {
-      effect_free (effect);
+    if (!effect_init(effect, image, offset_x, offset_y)) {
+      effect_free(effect);
       return NULL;
     }
   }
@@ -133,28 +133,28 @@ Effect *effect_new (Sprite *sprite, const char *name)
   return effect;
 }
 
-void effect_free (Effect *effect)
+void effect_free(Effect *effect)
 {
   if (effect->preview_mask)
-    mask_free (effect->preview_mask);
+    mask_free(effect->preview_mask);
 
   if (effect->dst)
-    image_free (effect->dst);
+    image_free(effect->dst);
 
-  jfree (effect);
+  jfree(effect);
 }
 
-void effect_load_target (Effect *effect)
+void effect_load_target(Effect *effect)
 {
-  effect->target.r = get_config_bool ("Target", "Red", TRUE);
-  effect->target.g = get_config_bool ("Target", "Green", TRUE);
-  effect->target.b = get_config_bool ("Target", "Blue", TRUE);
-  effect->target.k = get_config_bool ("Target", "Gray", TRUE);
-  effect->target.a = get_config_bool ("Target", "Alpha", FALSE);
-  effect->target.index = get_config_bool ("Target", "Index", FALSE);
+  effect->target.r = get_config_bool("Target", "Red", TRUE);
+  effect->target.g = get_config_bool("Target", "Green", TRUE);
+  effect->target.b = get_config_bool("Target", "Blue", TRUE);
+  effect->target.k = get_config_bool("Target", "Gray", TRUE);
+  effect->target.a = get_config_bool("Target", "Alpha", FALSE);
+  effect->target.index = get_config_bool("Target", "Index", FALSE);
 }
 
-void effect_set_target (Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index)
+void effect_set_target(Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index)
 {
   effect->target.r = r;
   effect->target.g = g;
@@ -164,43 +164,43 @@ void effect_set_target (Effect *effect, bool r, bool g, bool b, bool k, bool a, 
   effect->target.index = index;
 }
 
-void effect_set_target_rgb (Effect *effect, bool r, bool g, bool b, bool a)
+void effect_set_target_rgb(Effect *effect, bool r, bool g, bool b, bool a)
 {
-  effect_set_target (effect, r, g, b, FALSE, a, FALSE);
+  effect_set_target(effect, r, g, b, FALSE, a, FALSE);
 }
 
-void effect_set_target_grayscale (Effect *effect, bool k, bool a)
+void effect_set_target_grayscale(Effect *effect, bool k, bool a)
 {
-  effect_set_target (effect, FALSE, FALSE, FALSE, k, a, FALSE);
+  effect_set_target(effect, FALSE, FALSE, FALSE, k, a, FALSE);
 }
 
-void effect_set_target_indexed (Effect *effect, bool r, bool g, bool b, bool index)
+void effect_set_target_indexed(Effect *effect, bool r, bool g, bool b, bool index)
 {
-  effect_set_target (effect, r, g, b, FALSE, FALSE, index);
+  effect_set_target(effect, r, g, b, FALSE, FALSE, index);
 }
 
-void effect_begin (Effect *effect)
+void effect_begin(Effect *effect)
 {
   effect->row = 0;
   effect->mask = effect->sprite->mask;
 
-  effect_update_mask (effect, effect->mask, effect->src);
+  effect_update_mask(effect, effect->mask, effect->src);
 }
 
-void effect_begin_for_preview (Effect *effect)
+void effect_begin_for_preview(Effect *effect)
 {
   if (effect->preview_mask) {
-    mask_free (effect->preview_mask);
+    mask_free(effect->preview_mask);
     effect->preview_mask = NULL;
   }
 
   if ((effect->sprite->mask) && (effect->sprite->mask->bitmap))
-    effect->preview_mask = mask_new_copy (effect->sprite->mask);
+    effect->preview_mask = mask_new_copy(effect->sprite->mask);
   else {
-    effect->preview_mask = mask_new ();
-    mask_replace (effect->preview_mask,
-		  effect->offset_x, effect->offset_y,
-		  effect->src->w, effect->src->h);
+    effect->preview_mask = mask_new();
+    mask_replace(effect->preview_mask,
+		 effect->offset_x, effect->offset_y,
+		 effect->src->w, effect->src->h);
   }
 
   effect->row = 0;
@@ -208,14 +208,14 @@ void effect_begin_for_preview (Effect *effect)
 
   {
     JWidget editor = current_editor;
-    JRect vp = jview_get_viewport_position (jwidget_get_view (editor));
+    JRect vp = jview_get_viewport_position(jwidget_get_view(editor));
     int x1, y1, x2, y2;
     int x, y, w, h;
 
-    screen_to_editor (editor, vp->x1, vp->y1, &x1, &y1);
-    screen_to_editor (editor, vp->x2-1, vp->y2-1, &x2, &y2);
+    screen_to_editor(editor, vp->x1, vp->y1, &x1, &y1);
+    screen_to_editor(editor, vp->x2-1, vp->y2-1, &x2, &y2);
 
-    jrect_free (vp);
+    jrect_free(vp);
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;
@@ -228,17 +228,17 @@ void effect_begin_for_preview (Effect *effect)
     h = y2 - y1 + 1;
 
     if ((w < 1) || (h < 1)) {
-      mask_free (effect->preview_mask);
+      mask_free(effect->preview_mask);
       effect->preview_mask = NULL;
       effect->row = -1;
       return;
     }
 
-    mask_intersect (effect->preview_mask, x, y, w, h);
+    mask_intersect(effect->preview_mask, x, y, w, h);
   }
 
-  if (!effect_update_mask (effect, effect->mask, effect->src)) {
-    mask_free (effect->preview_mask);
+  if (!effect_update_mask(effect, effect->mask, effect->src)) {
+    mask_free(effect->preview_mask);
     effect->preview_mask = NULL;
     effect->row = -1;
     return;
@@ -249,7 +249,7 @@ bool effect_apply_step(Effect *effect)
 {
   if ((effect->row >= 0) && (effect->row < effect->h)) {
     if ((effect->mask) && (effect->mask->bitmap)) {
-      effect->d = div (effect->x-effect->mask->x+effect->offset_x, 8);
+      effect->d = div(effect->x-effect->mask->x+effect->offset_x, 8);
       effect->mask_address =
 	((ase_uint8 **)effect->mask->bitmap->line)
 	[effect->row+effect->y-effect->mask->y+effect->offset_y]+effect->d.quot;
@@ -257,7 +257,7 @@ bool effect_apply_step(Effect *effect)
     else
       effect->mask_address = NULL;
 
-    (*effect->apply) (effect);
+    (*effect->apply)(effect);
     effect->row++;
     return TRUE;
   }
@@ -340,33 +340,33 @@ void effect_apply_to_target(Effect *effect)
     if (images > 1) {
       /* open undo */
       if (undo_is_enabled (effect->sprite->undo))
-	undo_open (effect->sprite->undo);
+	undo_open(effect->sprite->undo);
     }
 
-    add_progress (images);
+    add_progress(images);
     for (n=n2=0; n<stock->nimage; n++) {
       if (!stock->image[n])
 	continue;
 
-      do_progress (n2++);
-      effect_apply_to_image (effect, stock->image[n], x[n], y[n]);
+      do_progress(n2++);
+      effect_apply_to_image(effect, stock->image[n], x[n], y[n]);
     }
-    del_progress ();
+    del_progress();
 
     if (images > 1) {
       /* close  */
       if (undo_is_enabled (effect->sprite->undo))
-	undo_close (effect->sprite->undo);
+	undo_close(effect->sprite->undo);
     }
 
-    jfree (x);
-    jfree (y);
+    jfree(x);
+    jfree(y);
   }
 
-  stock_free (stock);
+  stock_free(stock);
 }
 
-static EffectData *get_effect_data (const char *name)
+static EffectData *get_effect_data(const char *name)
 {
   int c;
 
@@ -378,7 +378,7 @@ static EffectData *get_effect_data (const char *name)
   return NULL;
 }
 
-static int effect_init (Effect *effect, Image *image, int offset_x, int offset_y)
+static int effect_init(Effect *effect, Image *image, int offset_x, int offset_y)
 {
   effect->offset_x = offset_x;
   effect->offset_y = offset_y;
@@ -387,17 +387,17 @@ static int effect_init (Effect *effect, Image *image, int offset_x, int offset_y
     return FALSE;
 
   if (effect->preview_mask) {
-    mask_free (effect->preview_mask);
+    mask_free(effect->preview_mask);
     effect->preview_mask = NULL;
   }
 
   if (effect->dst) {
-    image_free (effect->dst);
+    image_free(effect->dst);
     effect->dst = NULL;
   }
 
   effect->src = image;
-  effect->dst = image_crop (image, 0, 0, image->w, image->h);
+  effect->dst = image_crop(image, 0, 0, image->w, image->h);
   effect->row = -1;
   effect->mask = NULL;
   effect->preview_mask = NULL;
@@ -406,7 +406,7 @@ static int effect_init (Effect *effect, Image *image, int offset_x, int offset_y
   return TRUE;
 }
 
-static int effect_update_mask (Effect *effect, Mask *mask, Image *image)
+static int effect_update_mask(Effect *effect, Mask *mask, Image *image)
 {
   int x, y, w, h;
 

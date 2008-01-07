@@ -84,9 +84,9 @@ static void preview_sprite(int flags)
   JWidget widget = current_editor;
 
   if (widget && editor_get_sprite(widget)) {
-    Editor *editor = editor_data (widget);
-    Sprite *sprite = editor_get_sprite (widget);
-    JWidget view = jwidget_get_view (widget);
+    Editor *editor = editor_data(widget);
+    Sprite *sprite = editor_get_sprite(widget);
+    JWidget view = jwidget_get_view(widget);
     int old_mouse_x, old_mouse_y;
     int scroll_x, scroll_y;
     int u, v, x, y, w, h;
@@ -105,7 +105,7 @@ static void preview_sprite(int flags)
     old_mouse_x = jmouse_x(0);
     old_mouse_y = jmouse_y(0);
 
-    bmp = create_bitmap (sprite->w, sprite->h);
+    bmp = create_bitmap(sprite->w, sprite->h);
     if (bmp) {
       /* print a informative text */
       status_bar_set_text(app_get_status_bar(), 1, _("Rendering..."));
@@ -155,7 +155,7 @@ static void preview_sprite(int flags)
 
 	    sx = (double)JI_SCREEN_W / (double)bmp->w;
 	    sy = (double)JI_SCREEN_H / (double)bmp->h;
-	    scale = MIN (sx, sy);
+	    scale = MIN(sx, sy);
 
 	    outw = (double)bmp->w * (double)scale;
 	    outh = (double)bmp->h * (double)scale;

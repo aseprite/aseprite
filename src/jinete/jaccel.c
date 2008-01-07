@@ -134,9 +134,9 @@ static void proc_one_word(JAccel accel, char *word)
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z'))) {
 /* 	if (shifts & KB_CTRL_FLAG) */
-/* 	  ascii = tolower (*tok) - 'a' + 1; */
+/* 	  ascii = tolower(*tok) - 'a' + 1; */
 /* 	else */
-	ascii = tolower (*tok);
+	ascii = tolower(*tok);
       }
 /*       else if ((*tok >= '0') && (*tok <= '9')) { */
 /* 	if (shifts & KB_CTRL_FLAG) */
@@ -150,7 +150,7 @@ static void proc_one_word(JAccel accel, char *word)
 #else
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z')))
-        scancode = KEY_A + tolower (*tok) - 'a';
+        scancode = KEY_A + tolower(*tok) - 'a';
       else if ((*tok >= '0') && (*tok <= '9'))
         scancode = KEY_0 + *tok - '0';
       else {
@@ -376,7 +376,7 @@ static void keycombo_get_string(KeyCombo *key, char *buf)
 
   /* key */
   if (key->ascii)
-    usprintf(buf+ustrlen (buf), "%c", toupper(key->ascii));
+    usprintf(buf+ustrlen(buf), "%c", toupper(key->ascii));
   else if (key->scancode)
     ustrcat(buf, table[key->scancode]);
   else

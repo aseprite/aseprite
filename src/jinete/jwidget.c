@@ -301,9 +301,9 @@ void jwidget_set_name(JWidget widget, const char *name)
   assert_valid_widget(widget);
 
   if (widget->name)
-    jfree (widget->name);
+    jfree(widget->name);
 
-  widget->name = name ? jstrdup (name) : NULL;
+  widget->name = name ? jstrdup(name) : NULL;
 }
 
 void jwidget_set_text(JWidget widget, const char *text)
@@ -313,24 +313,24 @@ void jwidget_set_text(JWidget widget, const char *text)
   if (text) {
     /* more space needed */
     if (!widget->text || widget->text_size < strlen (text)+1) {
-      widget->text_size = strlen (text)+1;
-      widget->text = jrealloc (widget->text, widget->text_size);
+      widget->text_size = strlen(text)+1;
+      widget->text = jrealloc(widget->text, widget->text_size);
     }
 
     /* copy the text string */
-    strcpy (widget->text, text);
+    strcpy(widget->text, text);
 
     if (widget->text_font)
-      widget->text_size_pix = ji_font_text_len (widget->text_font,
-						widget->text);
+      widget->text_size_pix = ji_font_text_len(widget->text_font,
+					       widget->text);
 
-    jwidget_emit_signal (widget, JI_SIGNAL_SET_TEXT);
-    jwidget_dirty (widget);
+    jwidget_emit_signal(widget, JI_SIGNAL_SET_TEXT);
+    jwidget_dirty(widget);
   }
   /* NULL text */
   else if (widget->text) {
     widget->text_size = 0;
-    jfree (widget->text);
+    jfree(widget->text);
     widget->text = NULL;
   }
 }
@@ -341,7 +341,7 @@ void jwidget_set_align(JWidget widget, int align)
 
   widget->align = align;
 
-  jwidget_dirty (widget);
+  jwidget_dirty(widget);
 }
 
 void jwidget_set_font(JWidget widget, FONT *font)
@@ -351,12 +351,12 @@ void jwidget_set_font(JWidget widget, FONT *font)
   widget->text_font = font;
 
   if (widget->text && widget->text_font)
-    widget->text_size_pix = ji_font_text_len (widget->text_font,
-					      widget->text);
+    widget->text_size_pix = ji_font_text_len(widget->text_font,
+					     widget->text);
   else
     widget->text_size_pix = 0;
 
-  jwidget_dirty (widget);
+  jwidget_dirty(widget);
 }
 
 /**********************************************************************/
@@ -446,11 +446,11 @@ void jwidget_dirty(JWidget widget)
     widget->flags |= JI_DIRTY;
 
     /* dirty children */
-    msg = jmessage_new (JM_DIRTYCHILDREN);
-    jwidget_send_message (widget, msg);
-    jmessage_free (msg);
+    msg = jmessage_new(JM_DIRTYCHILDREN);
+    jwidget_send_message(widget, msg);
+    jmessage_free(msg);
 
-    jwidget_emit_signal (widget, JI_SIGNAL_DIRTY);
+    jwidget_emit_signal(widget, JI_SIGNAL_DIRTY);
   }
 #else
   jwidget_invalidate(widget);
@@ -464,8 +464,8 @@ void jwidget_show(JWidget widget)
   if (widget->flags & JI_HIDDEN) {
     widget->flags &= ~JI_HIDDEN;
 
-    jwidget_dirty (widget);
-    jwidget_emit_signal (widget, JI_SIGNAL_SHOW);
+    jwidget_dirty(widget);
+    jwidget_emit_signal(widget, JI_SIGNAL_SHOW);
   }
 }
 
@@ -474,10 +474,10 @@ void jwidget_hide(JWidget widget)
   assert_valid_widget(widget);
 
   if (!(widget->flags & JI_HIDDEN)) {
-    jmanager_free_widget (widget); /* free from mananger */
+    jmanager_free_widget(widget); /* free from mananger */
 
     widget->flags |= JI_HIDDEN;
-    jwidget_emit_signal (widget, JI_SIGNAL_HIDE);
+    jwidget_emit_signal(widget, JI_SIGNAL_HIDE);
   }
 }
 
@@ -487,9 +487,9 @@ void jwidget_enable(JWidget widget)
 
   if (widget->flags & JI_DISABLED) {
     widget->flags &= ~JI_DISABLED;
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
 
-    jwidget_emit_signal (widget, JI_SIGNAL_ENABLE);
+    jwidget_emit_signal(widget, JI_SIGNAL_ENABLE);
   }
 }
 
@@ -498,12 +498,12 @@ void jwidget_disable(JWidget widget)
   assert_valid_widget(widget);
 
   if (!(widget->flags & JI_DISABLED)) {
-    jmanager_free_widget (widget); /* free from the manager */
+    jmanager_free_widget(widget); /* free from the manager */
 
     widget->flags |= JI_DISABLED;
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
 
-    jwidget_emit_signal (widget, JI_SIGNAL_DISABLE);
+    jwidget_emit_signal(widget, JI_SIGNAL_DISABLE);
   }
 }
 
@@ -513,9 +513,9 @@ void jwidget_select(JWidget widget)
 
   if (!(widget->flags & JI_SELECTED)) {
     widget->flags |= JI_SELECTED;
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
 
-    jwidget_emit_signal (widget, JI_SIGNAL_SELECT);
+    jwidget_emit_signal(widget, JI_SIGNAL_SELECT);
   }
 }
 
@@ -525,9 +525,9 @@ void jwidget_deselect(JWidget widget)
 
   if (widget->flags & JI_SELECTED) {
     widget->flags &= ~JI_SELECTED;
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
 
-    jwidget_emit_signal (widget, JI_SIGNAL_DESELECT);
+    jwidget_emit_signal(widget, JI_SIGNAL_DESELECT);
   }
 }
 
@@ -666,7 +666,7 @@ void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
     return;
   before = before->next;
 
-  jwidget_remove_child (widget, old_child);
+  jwidget_remove_child(widget, old_child);
 
   jlist_insert_before(widget->children, before, new_child);
   new_child->parent = widget;
@@ -880,8 +880,8 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
       jregion_free(reg3);
     }
     jregion_free(reg1);
-    jregion_free (reg2);
-    jrect_free (cpos);
+    jregion_free(reg2);
+    jrect_free(cpos);
   }
 
   /* cut the parent area */
@@ -924,14 +924,14 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     else
       cpos = jwidget_get_child_rect(manager);
 /*     if (!manager->parent) */
-/*       cpos = jwidget_get_rect (manager); */
+/*       cpos = jwidget_get_rect(manager); */
 /*     else */
-/*       cpos = jwidget_get_child_rect (manager->parent); */
+/*       cpos = jwidget_get_child_rect(manager->parent); */
 
-    reg1 = jregion_new (cpos, 1);
-    jregion_intersect (region, region, reg1);
-    jregion_free (reg1);
-    jrect_free (cpos);
+    reg1 = jregion_new(cpos, 1);
+    jregion_intersect(region, region, reg1);
+    jregion_free(reg1);
+    jrect_free(cpos);
 
     window = jwidget_get_window(manager);
     manager = window ? jwidget_get_manager(window): NULL;
@@ -946,7 +946,7 @@ int jwidget_get_bg_color(JWidget widget)
   assert_valid_widget(widget);
 
   if (widget->bg_color < 0 && widget->parent)
-    return jwidget_get_bg_color (widget->parent);
+    return jwidget_get_bg_color(widget->parent);
   else
     return widget->bg_color;
 }
@@ -961,7 +961,7 @@ JTheme jwidget_get_theme(JWidget widget)
 int jwidget_get_text_length(JWidget widget)
 {
 #if 1
-  return ji_font_text_len (widget->text_font, widget->text);
+  return ji_font_text_len(widget->text_font, widget->text);
 #else  /* use cached text size */
   return widget->text_size_pix;
 #endif
@@ -995,8 +995,8 @@ void jwidget_get_texticon_info(JWidget widget,
 
   /* size of the text */
   if (widget->text) {
-    text_w = jwidget_get_text_length (widget);
-    text_h = jwidget_get_text_height (widget);
+    text_w = jwidget_get_text_length(widget);
+    text_h = jwidget_get_text_height(widget);
   }
   else {
     text_w = text_h = 0;
@@ -1005,19 +1005,19 @@ void jwidget_get_texticon_info(JWidget widget,
   /* box size */
   if (icon_align & JI_CENTER) {	  /* with the icon in the center */
     if (icon_align & JI_MIDDLE) { /* with the icon inside the text */
-      box_w = MAX (icon_w, text_w);
-      box_h = MAX (icon_h, text_h);
+      box_w = MAX(icon_w, text_w);
+      box_h = MAX(icon_h, text_h);
     }
     /* with the icon in the top or bottom */
     else {
-      box_w = MAX (icon_w, text_w);
+      box_w = MAX(icon_w, text_w);
       box_h = icon_h + ((widget->text)? widget->child_spacing: 0) + text_h;
     }
   }
   /* with the icon in left or right that doesn't care by now */
   else {
     box_w = icon_w + ((widget->text)? widget->child_spacing: 0) + text_w;
-    box_h = MAX (icon_h, text_h);
+    box_h = MAX(icon_h, text_h);
   }
 
   /* box position */
@@ -1557,7 +1557,7 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
 
 	if (redraw) {
 	  /* get areas to draw */
-	  region2 = jwidget_get_drawable_region (widget, 0);
+	  region2 = jwidget_get_drawable_region(widget, 0);
 	  jregion_intersect2 (region2, msg->drawrgn.region);
 
 	  /* draw the widget */

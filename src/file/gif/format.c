@@ -7,7 +7,7 @@
 #include <string.h>
 
 GIF_ANIMATION *
-gif_create_animation (int frames_count)
+gif_create_animation(int frames_count)
 {
     GIF_ANIMATION *gif = calloc (1, sizeof *gif);
     /* Create frames. */

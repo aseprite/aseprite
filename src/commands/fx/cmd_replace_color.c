@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,7 +116,7 @@ static void cmd_replace_color_execute(const char *argument)
   target_button = target_button_new(current_sprite->imgtype, FALSE);
 
   jslider_set_value(slider_fuzziness,
-		    get_config_int ("ReplaceColor", "Fuzziness", 0));
+		    get_config_int("ReplaceColor", "Fuzziness", 0));
   if (get_config_bool("ReplaceColor", "Preview", TRUE))
     jwidget_select(check_preview);
 
@@ -163,7 +163,7 @@ static void cmd_replace_color_execute(const char *argument)
   jwidget_free(window);
 }
 
-static int button_1_select_hook (JWidget widget, int user_data)
+static int button_1_select_hook(JWidget widget, int user_data)
 {
   JWidget w = user_data == 1 ? button_color1: button_color2;
 
@@ -173,7 +173,7 @@ static int button_1_select_hook (JWidget widget, int user_data)
   return TRUE;
 }
 
-static int button_2_select_hook (JWidget widget, int user_data)
+static int button_2_select_hook(JWidget widget, int user_data)
 {
   JWidget w = user_data == 1 ? button_color1: button_color2;
 
@@ -203,14 +203,14 @@ static int target_change_hook(JWidget widget, int user_data)
 
 static int slider_change_hook(JWidget widget, int user_data)
 {
-  set_config_int("ReplaceColor", "Fuzziness", jslider_get_value (widget));
+  set_config_int("ReplaceColor", "Fuzziness", jslider_get_value(widget));
   make_preview();
   return FALSE;
 }
 
 static int preview_change_hook(JWidget widget, int user_data)
 {
-  set_config_bool("ReplaceColor", "Preview", jwidget_is_selected (widget));
+  set_config_bool("ReplaceColor", "Preview", jwidget_is_selected(widget));
   make_preview();
   return FALSE;
 }

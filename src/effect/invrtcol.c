@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,26 +40,26 @@ void apply_invert_color4(Effect *effect)
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
 
-    r = _rgba_getr (c);
-    g = _rgba_getg (c);
-    b = _rgba_getb (c);
-    a = _rgba_geta (c);
+    r = _rgba_getr(c);
+    g = _rgba_getg(c);
+    b = _rgba_getb(c);
+    a = _rgba_geta(c);
 
     if (effect->target.r) r ^= 0xff;
     if (effect->target.g) g ^= 0xff;
     if (effect->target.b) b ^= 0xff;
     if (effect->target.a) a ^= 0xff;
 
-    *(dst_address++) = _rgba (r, g, b, a);
+    *(dst_address++) = _rgba(r, g, b, a);
   }
 }
 
@@ -77,22 +77,22 @@ void apply_invert_color2(Effect *effect)
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	src_address++;
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = *(src_address++);
 
-    k = _graya_getk (c);
-    a = _graya_geta (c);
+    k = _graya_getk(c);
+    a = _graya_geta(c);
 
     if (effect->target.k) k ^= 0xff;
     if (effect->target.a) a ^= 0xff;
 
-    *(dst_address++) = _graya (k, a);
+    *(dst_address++) = _graya(k, a);
   }
 }
 

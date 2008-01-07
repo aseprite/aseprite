@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ struct Tool
   const char *name;
   const char *translated_name;
   int flags;
-  void (*put) (struct Dirty *dirty, int x1, int y1, int x2, int y2);
+  void (*put)(struct Dirty *dirty, int x1, int y1, int x2, int y2);
 };
 
 extern Tool *current_tool;

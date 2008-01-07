@@ -72,7 +72,7 @@ struct jmessage_key
 struct jmessage_draw
 {
   struct jmessage_any any;
-  int count;			/* cound=0 if it's last msg of draw-chains */
+  int count;			/* cound=0 if it's last msg of draw-chain */
   struct jrect rect;		/* area to draw */
 };
 
@@ -96,6 +96,7 @@ struct jmessage_signal
 struct jmessage_timer
 {
   struct jmessage_any any;
+  int count;			/* cound=0 if it's first msg of timer-chain */
   int timer_id;			/* number of timer */
 };
 

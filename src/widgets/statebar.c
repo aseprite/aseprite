@@ -88,10 +88,10 @@ JWidget status_bar_new(void)
     status_bar->nprogress = 0;
 
     /* construct the commands box */
-    box1 = jbox_new (JI_HORIZONTAL);
-    box2 = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
-    BUTTON_NEW (status_bar->b_layer, "*Current Layer*", ACTION_LAYER);
-    status_bar->slider = jslider_new (0, 255, 255);
+    box1 = jbox_new(JI_HORIZONTAL);
+    box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+    BUTTON_NEW(status_bar->b_layer, "*Current Layer*", ACTION_LAYER);
+    status_bar->slider = jslider_new(0, 255, 255);
     ICON_NEW(status_bar->b_first, GFX_ANI_FIRST, ACTION_FIRST);
     ICON_NEW(status_bar->b_prev, GFX_ANI_PREV, ACTION_PREV);
     ICON_NEW(status_bar->b_play, GFX_ANI_PLAY, ACTION_PLAY);
@@ -135,20 +135,20 @@ StatusBar *status_bar_data(JWidget widget)
 
 void status_bar_set_text(JWidget widget, int msecs, const char *format, ...)
 {
-  StatusBar *status_bar = status_bar_data (widget);
+  StatusBar *status_bar = status_bar_data(widget);
 
   if ((ji_clock > status_bar->timeout) || (msecs > 0)) {
     char buf[256];
     va_list ap;
 
-    va_start (ap, format);
-    vsprintf (buf, format, ap);
-    va_end (ap);
+    va_start(ap, format);
+    vsprintf(buf, format, ap);
+    va_end(ap);
 
     if (widget->text)
-      jfree (widget->text);
+      jfree(widget->text);
 
-    widget->text = buf ? jstrdup (buf) : NULL;
+    widget->text = buf ? jstrdup(buf) : NULL;
     status_bar->timeout = ji_clock + msecs;
     jwidget_dirty(widget);
   }
@@ -184,7 +184,7 @@ void status_bar_add_progress(JWidget widget, int max)
 
 void status_bar_del_progress(JWidget widget)
 {
-  StatusBar *status_bar = status_bar_data (widget);
+  StatusBar *status_bar = status_bar_data(widget);
 
   jwidget_dirty(widget);
 
@@ -205,9 +205,9 @@ void status_bar_del_progress(JWidget widget)
 
 void status_bar_update(JWidget widget)
 {
-  StatusBar *status_bar = status_bar_data (widget);
+  StatusBar *status_bar = status_bar_data(widget);
 
-  update_from_layer (status_bar);
+  update_from_layer(status_bar);
 }
 
 static bool status_bar_msg_proc(JWidget widget, JMessage msg)
@@ -290,7 +290,7 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
 	text_mode(-1);
 	textout(ji_screen, widget->text_font, widget->text,
 		rect->x1+2,
-		(widget->rc->y1+widget->rc->y2)/2-text_height (widget->text_font)/2,
+		(widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
 		ji_color_foreground());
       }
 

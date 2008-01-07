@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@
 #endif
 
 /* Current selected sprite to operate, it could be not the same of
-   editor_get_sprite (current_editor).  */
+   editor_get_sprite(current_editor).  */
 
 Sprite *current_sprite = NULL;
 
@@ -104,12 +104,12 @@ void set_clipboard_sprite(Sprite *sprite)
 {
   if (clipboard_sprite) {
     if (current_sprite == clipboard_sprite)
-      set_current_sprite (sprite);
+      set_current_sprite(sprite);
 
-    if (is_interactive ())
-      replace_sprite_in_editors (clipboard_sprite, sprite);
+    if (is_interactive())
+      replace_sprite_in_editors(clipboard_sprite, sprite);
 
-    sprite_free (clipboard_sprite);
+    sprite_free(clipboard_sprite);
   }
 
   clipboard_sprite = sprite;
@@ -259,9 +259,9 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
 	if (sub_stock) {
 	  for (c=0; c<sub_stock->nimage; c++) {
 	    if (sub_stock->image[c])
-	      stock_add_image (stock, sub_stock->image[c]);
+	      stock_add_image(stock, sub_stock->image[c]);
 	  }
-	  stock_free (sub_stock);
+	  stock_free(sub_stock);
 	}
       }
       break;
@@ -290,7 +290,7 @@ static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, i
 
       if (target & TARGET_FRAMES) {
 	for (frame=0; frame<sprite->frames; frame++) {
-	  image = GetLayerImage (layer, &u, &v, frame);
+	  image = GetLayerImage(layer, &u, &v, frame);
 	  if (image) {
 	    (*x)[*count] = u;
 	    (*y)[*count] = v;
@@ -299,7 +299,7 @@ static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, i
 	}
       }
       else {
-	image = GetLayerImage (layer, &u, &v, frame);
+	image = GetLayerImage(layer, &u, &v, frame);
 	if (image) {
 	  (*x)[*count] = u;
 	  (*y)[*count] = v;

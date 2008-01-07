@@ -33,15 +33,15 @@
 
 static char *clipboard_text = NULL;
 
-const char *jclipboard_get_text (void)
+const char *jclipboard_get_text(void)
 {
   return clipboard_text;
 }
 
-void jclipboard_set_text (const char *text)
+void jclipboard_set_text(const char *text)
 {
   if (clipboard_text)
-    jfree (clipboard_text);
+    jfree(clipboard_text);
 
-  clipboard_text = text ? jstrdup (text) : NULL;
+  clipboard_text = text ? jstrdup(text) : NULL;
 }

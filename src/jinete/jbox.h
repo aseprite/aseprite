@@ -36,7 +36,7 @@
 
 JI_BEGIN_DECLS
 
-JWidget jbox_new (int align);
+JWidget jbox_new(int align);
 
 JI_END_DECLS
 

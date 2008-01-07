@@ -44,7 +44,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
-#define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length ((f), (c)))
+#define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 
 typedef struct Entry
 {
@@ -240,7 +240,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_REQSIZE:
-      entry_request_size (widget, &msg->reqsize.w, &msg->reqsize.h);
+      entry_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_TIMER:
@@ -271,13 +271,13 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_CHAR:
-      if (jwidget_has_focus (widget) && !jentry_is_readonly (widget)) {
-	char *text = jmalloc (widget->text_size);
+      if (jwidget_has_focus(widget) && !jentry_is_readonly(widget)) {
+	char *text = jmalloc(widget->text_size);
 	int c, selbeg, selend;
 
-	jtheme_entry_info (widget, NULL, NULL, NULL, &selbeg, &selend);
+	jtheme_entry_info(widget, NULL, NULL, NULL, &selbeg, &selend);
 
-	ustrcpy (text, widget->text);
+	ustrcpy(text, widget->text);
 
 	switch (msg->key.scancode) {
 
@@ -292,7 +292,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
 	    /* backward word */
 	    if (msg->any.shifts & KB_CTRL_FLAG)
-	      entry_backward_word (widget);
+	      entry_backward_word(widget);
 	    /* backward char */
 	    else if (entry->cursor > 0)
 	      entry->cursor--;
@@ -309,7 +309,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
 	    /* forward word */
 	    if (msg->any.shifts & KB_CTRL_FLAG)
-	      entry_forward_word (widget);
+	      entry_forward_word(widget);
 	    /* forward char */
 	    else if (entry->cursor < ustrlen (text))
 	      entry->cursor++;
@@ -336,7 +336,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    else
 	      entry->select = -1;
 
-	    entry->cursor = ustrlen (text);
+	    entry->cursor = ustrlen(text);
 	    break;
 
 	  case KEY_DEL:
@@ -345,22 +345,22 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	      /* *cut* text! */
 	      if (msg->any.shifts & KB_SHIFT_FLAG) {
 		char buf[1024];
-		ustrcpy (buf, empty_string);
+		ustrcpy(buf, empty_string);
 		for (c=selbeg; c<=selend; c++)
-		  uinsert (buf, ustrlen (buf), ugetat (text, c));
-		jclipboard_set_text (buf);
+		  uinsert(buf, ustrlen(buf), ugetat(text, c));
+		jclipboard_set_text(buf);
 	      }
 
 	      /* remove text */
 	      for (c=0; c<selend-selbeg+1; c++)
-		uremove (text, selbeg);
+		uremove(text, selbeg);
 
 	      entry->cursor = selbeg;
 	    }
 	    /* delete the next character */
 	    else {
 	      if (entry->cursor < ustrlen (text))
-		uremove (text, entry->cursor);
+		uremove(text, entry->cursor);
 	    }
 
 	    entry->select = -1;
@@ -375,7 +375,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 		/* delete the entire selection */
 		if (selbeg >= 0) {
 		  for (c=0; c<selend-selbeg+1; c++)
-		    uremove (text, selbeg);
+		    uremove(text, selbeg);
 
 		  entry->cursor = selbeg;
 		  entry->select = -1;
@@ -394,9 +394,9 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    /* *copy* text */
 	    else if ((selbeg >= 0) && (msg->any.shifts & KB_CTRL_FLAG)) {
 	      char buf[1024];
-	      ustrcpy (buf, empty_string);
+	      ustrcpy(buf, empty_string);
 	      for (c=selbeg; c<=selend; c++)
-		uinsert(buf, ustrlen(buf), ugetat (text, c));
+		uinsert(buf, ustrlen(buf), ugetat(text, c));
 	      jclipboard_set_text(buf);
 	    }
 	    break;
@@ -482,7 +482,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    x = widget->rc->x1 + widget->border_width.l;
 	    for (c=entry->scroll; ; c++) {
 	      x += CHARACTER_LENGTH(widget->text_font,
-				    (c < ustrlen (text))? ugetat (text, c): ' ');
+				   (c < ustrlen(text))? ugetat(text, c): ' ');
 	      if (x > widget->rc->x2-widget->border_width.r) {
 		c--;
 		break;
@@ -493,18 +493,18 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    entry->cursor = c;
 	    move = FALSE;
 	    dirty = TRUE;
-	    jwidget_dirty (widget);
+	    jwidget_dirty(widget);
 	  }
 	}
 
 	/* move cursor */
 	if (move) {
-	  c = entry_get_cursor_from_mouse (widget, msg);
+	  c = entry_get_cursor_from_mouse(widget, msg);
 
 	  if (entry->cursor != c) {
 	    entry->cursor = c;
 	    dirty = TRUE;
-	    jwidget_dirty (widget);
+	    jwidget_dirty(widget);
 	  }
 	}
 
@@ -576,7 +576,7 @@ static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
 
   x = widget->rc->x1 + widget->border_width.l;
   for (c=entry->scroll; ugetat (widget->text, c); c++) {
-    w = CHARACTER_LENGTH(widget->text_font, ugetat (widget->text, c));
+    w = CHARACTER_LENGTH(widget->text_font, ugetat(widget->text, c));
     if (x+w >= widget->rc->x2-widget->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {

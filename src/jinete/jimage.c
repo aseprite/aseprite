@@ -39,7 +39,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
-static bool image_msg_proc (JWidget widget, JMessage msg);
+static bool image_msg_proc(JWidget widget, JMessage msg);
 
 JWidget jimage_new(BITMAP *bmp, int align)
 {
@@ -60,7 +60,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(widget, &box, &text, &icon,
-				jwidget_get_align (widget),
+				jwidget_get_align(widget),
 				bmp->w, bmp->h);
 
       msg->reqsize.w = widget->border_width.l + jrect_w(&box) + widget->border_width.r;
@@ -73,7 +73,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(widget, &box, &text, &icon,
-				jwidget_get_align (widget),
+				jwidget_get_align(widget),
 				bmp->w, bmp->h);
 
       jdraw_rectexclude(widget->rc, &icon,

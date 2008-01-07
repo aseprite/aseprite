@@ -35,21 +35,21 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
-static bool separator_msg_proc (JWidget widget, JMessage msg);
+static bool separator_msg_proc(JWidget widget, JMessage msg);
 
-JWidget ji_separator_new (const char *text, int align)
+JWidget ji_separator_new(const char *text, int align)
 {
-  JWidget widget = jwidget_new (JI_SEPARATOR);
+  JWidget widget = jwidget_new(JI_SEPARATOR);
 
-  jwidget_add_hook (widget, JI_SEPARATOR, separator_msg_proc, NULL);
-  jwidget_set_align (widget, align);
-  jwidget_set_text (widget, text);
-  jwidget_init_theme (widget);
+  jwidget_add_hook(widget, JI_SEPARATOR, separator_msg_proc, NULL);
+  jwidget_set_align(widget, align);
+  jwidget_set_text(widget, text);
+  jwidget_init_theme(widget);
 
   return widget;
 }
 
-static bool separator_msg_proc (JWidget widget, JMessage msg)
+static bool separator_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -63,13 +63,13 @@ static bool separator_msg_proc (JWidget widget, JMessage msg)
       JI_LIST_FOR_EACH(widget->children, link) {
 	child = (JWidget)link->data;
 
-	jwidget_request_size (child, &req_w, &req_h);
-	max_w = MAX (max_w, req_w);
-	max_h = MAX (max_h, req_h);
+	jwidget_request_size(child, &req_w, &req_h);
+	max_w = MAX(max_w, req_w);
+	max_h = MAX(max_h, req_h);
       }
 
       if (widget->text)
-	max_w = MAX (max_w, jwidget_get_text_length (widget));
+	max_w = MAX(max_w, jwidget_get_text_length(widget));
 
       msg->reqsize.w = widget->border_width.l + max_w + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + max_h + widget->border_width.b;

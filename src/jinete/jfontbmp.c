@@ -191,7 +191,7 @@ static int bitmap_font_count(BITMAP* bmp)
     return num;
 }
 
-FONT *_ji_bitmap2font (BITMAP *bmp)
+FONT *_ji_bitmap2font(BITMAP *bmp)
 {
     FONT *f;
     int begin = ' ';

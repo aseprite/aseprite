@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,20 +33,20 @@ typedef struct RepoDlg {	/* a window to shows repositories
   const char *use_text;
 
   /* fill the list box (you should add items to "repo_dlg->listbox") */
-  void (*load_listbox) (struct RepoDlg *repo_dlg);
+  void (*load_listbox)(struct RepoDlg *repo_dlg);
 
   /* when the dialog is closed (you should save the modified entries) */
-  void (*save_listbox) (struct RepoDlg *repo_dlg);
+  void (*save_listbox)(struct RepoDlg *repo_dlg);
 
   /* free the "user_data" of "repo_dlg->listitem", don't call
      jwidget_free(), it's called automatically */
-  void (*free_listitem) (struct RepoDlg *repo_dlg);
+  void (*free_listitem)(struct RepoDlg *repo_dlg);
 
   /* return FALSE if to close the window, TRUE to continue (use the
      "repo_dlg->listitem") */
-  bool (*use_listitem) (struct RepoDlg *repo_dlg);
-  bool (*add_listitem) (struct RepoDlg *repo_dlg, int *added);
-  bool (*delete_listitem) (struct RepoDlg *repo_dlg, int *kill);
+  bool (*use_listitem)(struct RepoDlg *repo_dlg);
+  bool (*add_listitem)(struct RepoDlg *repo_dlg, int *added);
+  bool (*delete_listitem)(struct RepoDlg *repo_dlg, int *kill);
 
   void *user_data[4];
 
@@ -60,7 +60,7 @@ typedef struct RepoDlg {	/* a window to shows repositories
   JWidget button_delete;	/* "Delete" button */
 } RepoDlg;
 
-void ji_show_repo_dlg (RepoDlg *repo_dlg);
+void ji_show_repo_dlg(RepoDlg *repo_dlg);
 
 #endif /* DIALOGS_REPO_H */
 

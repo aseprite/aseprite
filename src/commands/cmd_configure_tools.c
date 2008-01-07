@@ -103,71 +103,71 @@ static void cmd_configure_tools_execute(const char *argument)
 		    "brush_type_box", &brush_type_box,
 		    "brush_mode_box", &brush_mode_box,
 		    "onionskin", &check_onionskin, NULL)) {
-    jwidget_free (window);
+    jwidget_free(window);
     return;
   }
 
   /* cursor-color */
-  cursor_color = color_button_new (get_cursor_color (), IMAGE_INDEXED);
+  cursor_color = color_button_new(get_cursor_color(), IMAGE_INDEXED);
   /* brush-preview */
-  brush_preview = jwidget_new (JI_WIDGET);
+  brush_preview = jwidget_new(JI_WIDGET);
   brush_preview->min_w = 32 + 4;
   brush_preview->min_h = 32 + 4;
   jwidget_add_hook(brush_preview, JI_WIDGET,
 		   brush_preview_msg_proc, NULL);
   /* brush-type */
-  brush_type = group_button_new (3, 1, get_brush_type (),
-				 GFX_BRUSH_CIRCLE,
-				 GFX_BRUSH_SQUARE,
-				 GFX_BRUSH_LINE);
+  brush_type = group_button_new(3, 1, get_brush_type(),
+				GFX_BRUSH_CIRCLE,
+				GFX_BRUSH_SQUARE,
+				GFX_BRUSH_LINE);
   /* brush-type */
-  brush_mode = group_button_new (3, 1, get_brush_mode (),
-				 GFX_DRAWMODE_OPAQUE,
-				 GFX_DRAWMODE_GLASS,
-				 GFX_DRAWMODE_SEMI);
+  brush_mode = group_button_new(3, 1, get_brush_mode(),
+				GFX_DRAWMODE_OPAQUE,
+				GFX_DRAWMODE_GLASS,
+				GFX_DRAWMODE_SEMI);
 
   /* append children */
-  jwidget_add_child (cursor_color_box, cursor_color);
-  jwidget_add_child (brush_preview_box, brush_preview);
-  jwidget_add_child (brush_type_box, brush_type);
-  jwidget_add_child (brush_mode_box, brush_mode);
+  jwidget_add_child(cursor_color_box, cursor_color);
+  jwidget_add_child(brush_preview_box, brush_preview);
+  jwidget_add_child(brush_type_box, brush_type);
+  jwidget_add_child(brush_mode_box, brush_mode);
 
-  if (get_filled_mode ()) jwidget_select (filled);
-  if (get_tiled_mode ()) jwidget_select (tiled);
-  if (get_use_grid ()) jwidget_select (use_grid);
-  if (get_view_grid ()) jwidget_select (view_grid);
-  jslider_set_value (brush_size, get_brush_size ());
-  jslider_set_value (brush_angle, get_brush_angle ());
-  jslider_set_value (glass_dirty, get_glass_dirty ());
-  jslider_set_value (spray_width, get_spray_width ());
-  jslider_set_value (air_speed, get_air_speed ());
-  if (get_onionskin ()) jwidget_select (check_onionskin);
+  if (get_filled_mode()) jwidget_select(filled);
+  if (get_tiled_mode()) jwidget_select(tiled);
+  if (get_use_grid()) jwidget_select(use_grid);
+  if (get_view_grid()) jwidget_select(view_grid);
+  jslider_set_value(brush_size, get_brush_size());
+  jslider_set_value(brush_angle, get_brush_angle());
+  jslider_set_value(glass_dirty, get_glass_dirty());
+  jslider_set_value(spray_width, get_spray_width());
+  jslider_set_value(air_speed, get_air_speed());
+  if (get_onionskin()) jwidget_select(check_onionskin);
 
-  HOOK (window, JI_SIGNAL_WINDOW_CLOSE, window_close_hook, 0);
-  HOOK (filled, JI_SIGNAL_CHECK_CHANGE, filled_check_change_hook, 0);
-  HOOK (tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
-  HOOK (use_grid, JI_SIGNAL_CHECK_CHANGE, use_grid_check_change_hook, 0);
-  HOOK (view_grid, JI_SIGNAL_CHECK_CHANGE, view_grid_check_change_hook, 0);
-  HOOK (set_grid, JI_SIGNAL_BUTTON_SELECT, set_grid_button_select_hook, 0);
-  HOOK (brush_size, JI_SIGNAL_SLIDER_CHANGE, brush_size_slider_change_hook, brush_preview);
-  HOOK (brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
-  HOOK (brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
-  HOOK (brush_mode, SIGNAL_GROUP_BUTTON_CHANGE, brush_mode_change_hook, 0);
-  HOOK (glass_dirty, JI_SIGNAL_SLIDER_CHANGE, glass_dirty_slider_change_hook, 0);
-  HOOK (air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
-  HOOK (spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
-  HOOK (cursor_color, SIGNAL_COLOR_BUTTON_CHANGE, cursor_button_change_hook, 0);
-  HOOK (check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
+  HOOK(window, JI_SIGNAL_WINDOW_CLOSE, window_close_hook, 0);
+  HOOK(filled, JI_SIGNAL_CHECK_CHANGE, filled_check_change_hook, 0);
+  HOOK(tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
+  HOOK(use_grid, JI_SIGNAL_CHECK_CHANGE, use_grid_check_change_hook, 0);
+  HOOK(view_grid, JI_SIGNAL_CHECK_CHANGE, view_grid_check_change_hook, 0);
+  HOOK(set_grid, JI_SIGNAL_BUTTON_SELECT, set_grid_button_select_hook, 0);
+  HOOK(brush_size, JI_SIGNAL_SLIDER_CHANGE, brush_size_slider_change_hook, brush_preview);
+  HOOK(brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
+  HOOK(brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
+  HOOK(brush_mode, SIGNAL_GROUP_BUTTON_CHANGE, brush_mode_change_hook, 0);
+  HOOK(glass_dirty, JI_SIGNAL_SLIDER_CHANGE, glass_dirty_slider_change_hook, 0);
+  HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
+  HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
+  HOOK(cursor_color, SIGNAL_COLOR_BUTTON_CHANGE, cursor_button_change_hook, 0);
+  HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* load window configuration */
-  load_window_pos (window, "ConfigureTool");
+  load_window_pos(window, "ConfigureTool");
 
   /* open the window */
-  jwindow_open_bg (window);
+  jwindow_open_bg(window);
 }
 
 static bool brush_preview_msg_proc(JWidget widget, JMessage msg)

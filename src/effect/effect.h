@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,8 @@ struct Image;
 struct Mask;
 struct Sprite;
 
-int init_module_effect (void);
-void exit_module_effect (void);
+int init_module_effect(void);
+void exit_module_effect(void);
 
 typedef struct Effect
 {
@@ -40,7 +40,7 @@ typedef struct Effect
   struct Mask *preview_mask;
   unsigned char *mask_address;
   div_t d;
-  void (*apply) (struct Effect *effect);
+  void (*apply)(struct Effect *effect);
   struct {
     int r:1, g:1, b:1;
     int k:1;
@@ -49,24 +49,24 @@ typedef struct Effect
   } target;
 } Effect;
 
-Effect *effect_new (struct Sprite *sprite, const char *name);
-void effect_free (Effect *effect);
+Effect *effect_new(struct Sprite *sprite, const char *name);
+void effect_free(Effect *effect);
 
-void effect_load_target (Effect *effect);
-void effect_set_target (Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index);
-void effect_set_target_rgb (Effect *effect, bool r, bool g, bool b, bool a);
-void effect_set_target_grayscale (Effect *effect, bool k, bool a);
-void effect_set_target_indexed (Effect *effect, bool r, bool g, bool b, bool index);
+void effect_load_target(Effect *effect);
+void effect_set_target(Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index);
+void effect_set_target_rgb(Effect *effect, bool r, bool g, bool b, bool a);
+void effect_set_target_grayscale(Effect *effect, bool k, bool a);
+void effect_set_target_indexed(Effect *effect, bool r, bool g, bool b, bool index);
 
-void effect_begin (Effect *effect);
-void effect_begin_for_preview (Effect *effect);
-bool effect_apply_step (Effect *effect);
+void effect_begin(Effect *effect);
+void effect_begin_for_preview(Effect *effect);
+bool effect_apply_step(Effect *effect);
 
-void effect_apply (Effect *effect);
-void effect_flush (Effect *effect);
+void effect_apply(Effect *effect);
+void effect_flush(Effect *effect);
 
-void effect_apply_to_image (Effect *effect, struct Image *image, int x, int y);
-void effect_apply_to_target (Effect *effect);
+void effect_apply_to_image(Effect *effect, struct Image *image, int x, int y);
+void effect_apply_to_target(Effect *effect);
 
 /* macro to get contiguos pixels from an image */
 #define GET_MATRIX_DATA(ptr_type, width, height, cx, cy, do_job)	\

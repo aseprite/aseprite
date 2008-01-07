@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,10 +93,10 @@ void dialogs_draw_text(void)
   jwidget_add_child(color_box, color_but);
 
   /* entries */
-  usprintf(buf, "%d", get_config_int ("DrawText", "Size", 8));
+  usprintf(buf, "%d", get_config_int("DrawText", "Size", 8));
   jwidget_set_text(entry_size, buf);
   jwidget_set_text(entry_text,
-		   get_config_string ("DrawText", "Text", "ABCabc"));
+		   get_config_string("DrawText", "Text", "ABCabc"));
 
   /* window */
   jwindow_remap(window);
@@ -152,28 +152,28 @@ void dialogs_draw_text(void)
     }
   }
 
-  jwidget_free (window);
+  jwidget_free(window);
 }
 
-Image *RenderText (const char *fontname, int size, int color, const char *text)
+Image *RenderText(const char *fontname, int size, int color, const char *text)
 {
   Image *render;
   FONT *f;
 
-  f = my_load_font (fontname);
+  f = my_load_font(fontname);
   if (!f)
     return NULL;
 
-  ji_font_set_size (f, size);
+  ji_font_set_size(f, size);
 
-  render = render_text (f, text, color);
+  render = render_text(f, text, color);
 
-  destroy_font (f);
+  destroy_font(f);
 
   return render;
 }
 
-static Image *render_text (FONT *f, const char *text, int color)
+static Image *render_text(FONT *f, const char *text, int color)
 {
 #define DO(type, colfunc)				\
   {							\
@@ -241,7 +241,7 @@ static Image *render_text (FONT *f, const char *text, int color)
   return image;
 }
 
-static FONT *my_load_font (const char *filename)
+static FONT *my_load_font(const char *filename)
 {
   DIRS *dirs, *dir;
   FONT *f = NULL;
@@ -255,7 +255,7 @@ static FONT *my_load_font (const char *filename)
   usprintf(buf, "fonts/%s", filename);
   dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
-  usprintf(buf, "fonts/%s", get_filename (filename));
+  usprintf(buf, "fonts/%s", get_filename(filename));
   dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
   /* search the font */

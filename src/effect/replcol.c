@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,11 +31,11 @@ static struct {
   int fuzziness;
 } data;
 
-void set_replace_colors (int from, int to, int fuzziness)
+void set_replace_colors(int from, int to, int fuzziness)
 {
   data.from = from;
   data.to = to;
-  data.fuzziness = MID (0, fuzziness, 255);
+  data.fuzziness = MID(0, fuzziness, 255);
 }
 
 void apply_replace_color4(Effect *effect)

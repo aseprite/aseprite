@@ -44,8 +44,8 @@
 
 /* TODO optional anti-aliased textout */
 #define SETUP_ANTIALISING(f, bg, fill_bg)				\
-  ji_font_set_aa_mode (f, fill_bg ||					\
-			  bitmap_color_depth (ji_screen) == 8 ? bg: -1)
+  ji_font_set_aa_mode(f, fill_bg ||					\
+			 bitmap_color_depth(ji_screen) == 8 ? bg: -1)
 
 void jdraw_rect(const JRect r, int color)
 {
@@ -75,28 +75,28 @@ void jdraw_rectshade(const JRect rect, int c1, int c2, int align)
   x2 = rect->x2-1;
   y2 = rect->y2-1;
 
-  r[0] = getr (c1);
-  g[0] = getg (c1);
-  b[0] = getb (c1);
+  r[0] = getr(c1);
+  g[0] = getg(c1);
+  b[0] = getb(c1);
 
-  r[1] = getr (c2);
-  g[1] = getg (c2);
-  b[1] = getb (c2);
+  r[1] = getr(c2);
+  g[1] = getg(c2);
+  b[1] = getb(c2);
 
   if (align & JI_VERTICAL) {
     if (y1 == y2)
-      hline (ji_screen, x1, y1, x2, c1);
+      hline(ji_screen, x1, y1, x2, c1);
     else
       for (c=y1; c<=y2; c++)
-	hline (ji_screen,
-	       x1, c, x2,
-	       makecol ((r[0] + (r[1] - r[0]) * (c - y1) / (y2 - y1)),
-			(g[0] + (g[1] - g[0]) * (c - y1) / (y2 - y1)),
-			(b[0] + (b[1] - b[0]) * (c - y1) / (y2 - y1))));
+	hline(ji_screen,
+	      x1, c, x2,
+	      makecol((r[0] + (r[1] - r[0]) * (c - y1) / (y2 - y1)),
+		      (g[0] + (g[1] - g[0]) * (c - y1) / (y2 - y1)),
+		      (b[0] + (b[1] - b[0]) * (c - y1) / (y2 - y1))));
   }
   else if (align & JI_HORIZONTAL) {
     if (x1 == x2)
-      vline (ji_screen, x1, y1, y2, c1);
+      vline(ji_screen, x1, y1, y2, c1);
     else
       for (c=x1; c<=x2; c++)
 	vline(ji_screen,
@@ -137,41 +137,41 @@ void jdraw_text(FONT *font, const char *s, int x, int y,
 
   while (((c = ugetc(s+in_pos)) != 0) && (out_pos<(int)(sizeof(tmp)-ucwidth(0)))) {
     if (c == '&') {
-      in_pos += uwidth (s+in_pos);
-      c = ugetc (s+in_pos);
+      in_pos += uwidth(s+in_pos);
+      c = ugetc(s+in_pos);
       if (c == '&') {
-	out_pos += usetc (tmp+out_pos, '&');
-	in_pos += uwidth (s+in_pos);
+	out_pos += usetc(tmp+out_pos, '&');
+	in_pos += uwidth(s+in_pos);
 	len++;
       }
       else
 	hline_pos = len;
     }
     else {
-      out_pos += usetc (tmp+out_pos, c);
-      in_pos += uwidth (s+in_pos);
+      out_pos += usetc(tmp+out_pos, c);
+      in_pos += uwidth(s+in_pos);
       len++;
     }
   }
 
-  usetc (tmp+out_pos, 0);
+  usetc(tmp+out_pos, 0);
 
-  SETUP_ANTIALISING (font, bg_color, fill_bg);
+  SETUP_ANTIALISING(font, bg_color, fill_bg);
 
-  text_mode (fill_bg ? bg_color: -1);
-  textout (ji_screen, font, tmp, x, y, fg_color);
+  text_mode(fill_bg ? bg_color: -1);
+  textout(ji_screen, font, tmp, x, y, fg_color);
 
   if (hline_pos >= 0) {
-    c = ugetat (tmp, hline_pos);
-    usetat (tmp, hline_pos, 0);
-    hline_pos = text_length (font, tmp);
-    c = usetc (tmp, c);
-    usetc (tmp+c, 0);
-    c = text_length (font, tmp);
-    hline (ji_screen, x+hline_pos,
-	   /* y+text_height (font)-1, */
-	   y+text_height (font),
-	   x+hline_pos+c-1, fg_color);
+    c = ugetat(tmp, hline_pos);
+    usetat(tmp, hline_pos, 0);
+    hline_pos = text_length(font, tmp);
+    c = usetc(tmp, c);
+    usetc(tmp+c, 0);
+    c = text_length(font, tmp);
+    hline(ji_screen, x+hline_pos,
+	  /* y+text_height(font)-1, */
+	  y+text_height(font),
+	  x+hline_pos+c-1, fg_color);
   }
 }
 
@@ -236,7 +236,7 @@ typedef struct XPM_COLOR {
   int color;
 } XPM_COLOR;
 
-BITMAP *ji_xpm_to_bitmap (const char *xpm_image, int depth)
+BITMAP *ji_xpm_to_bitmap(const char *xpm_image, int depth)
 {
   int w, h, colors, charsbycolor;
   int *colormap;
@@ -245,19 +245,19 @@ BITMAP *ji_xpm_to_bitmap (const char *xpm_image, int depth)
 
   /* read header */
   p = xpm_image[0];
-  w = ustrtol (p, (char *)&p, 10);
-  h = ustrtol (p, (char *)&p, 10);
-  colors = ustrtol (p, (char *)&p, 10);
-  charsbycolor = ustrtol (p, (char *)&p, 10);
+  w = ustrtol(p,(char *)&p, 10);
+  h = ustrtol(p,(char *)&p, 10);
+  colors = ustrtol(p,(char *)&p, 10);
+  charsbycolor = ustrtol(p,(char *)&p, 10);
 
   /* error? */
   if (w < 1 || h < 1 || colors < 1 || charsbycolor < 1)
     return NULL;
 
   /* read color map */
-  colormap = jmalloc (sizeof (XPM_COLOR) * colors);
+  colormap = jmalloc(sizeof(XPM_COLOR) * colors);
   for (c=0; c<colors; c++) {
-    colormap[c].chars = jmalloc (charsbycolor);
+    colormap[c].chars = jmalloc(charsbycolor);
     colormap[c].color = makecol
   }
 

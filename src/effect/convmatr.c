@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,60 +163,60 @@ void reload_matrices_stock(void)
   clean_matrices_stock();
 
   for (i=0; names[i]; i++) {
-    dirs = filename_in_datadir (names[i]);
+    dirs = filename_in_datadir(names[i]);
 
     for (dir=dirs; dir; dir=dir->next) {
       /* open matrices stock file */
-      f = fopen (dir->path, "r");
+      f = fopen(dir->path, "r");
       if (!f)
 	continue;
 
-      tok_reset_line_num ();
+      tok_reset_line_num();
 
       name = NULL;
       convmatr = NULL;
-      strcpy (leavings, "");
+      strcpy(leavings, "");
 
       /* read the matrix name */
       while (tok_read (f, buf, leavings, sizeof (leavings))) {
 	/* name of the matrix */
-	name = jstrdup (buf);
+	name = jstrdup(buf);
 
 	/* width and height */
-	READ_INT (w);
-	READ_INT (h);
+	READ_INT(w);
+	READ_INT(h);
 
 	if ((w <= 0) || (w > 32) ||
 	    (h <= 0) || (h > 32))
 	  break;
 
 	/* create the matrix data */
-	convmatr = convmatr_new (w, h);
+	convmatr = convmatr_new(w, h);
 	if (!convmatr)
 	  break;
 
 	/* centre */
-	READ_INT (convmatr->cx);
-	READ_INT (convmatr->cy);
+	READ_INT(convmatr->cx);
+	READ_INT(convmatr->cy);
 
 	if ((convmatr->cx < 0) || (convmatr->cx >= w) ||
 	    (convmatr->cy < 0) || (convmatr->cy >= h))
 	  break;
 
 	/* data */
-	READ_TOK ();                    /* jump the `{' char */
+	READ_TOK();                    /* jump the `{' char */
 	if (*buf != '{')
 	  break;
 
 	c = 0;
 	div = 0;
 	for (c=0; c<w*h; c++) {
-	  READ_TOK ();
-	  convmatr->data[c] = ustrtod (buf, NULL) * PRECISION;
+	  READ_TOK();
+	  convmatr->data[c] = ustrtod(buf, NULL) * PRECISION;
 	  div += convmatr->data[c];
 	}
 
-	READ_TOK ();                    /* jump the `}' char */
+	READ_TOK();                    /* jump the `}' char */
 	if (*buf != '}')
 	  break;
 
@@ -227,26 +227,26 @@ void reload_matrices_stock(void)
 	  bias = 128;
 	}
 	else {
-	  div = ABS (div);
+	  div = ABS(div);
 	  bias = 255;
 	}
 
 	/* div */
-	READ_TOK ();
+	READ_TOK();
 	if (ustricmp (buf, "auto") != 0)
-	  div = ustrtod (buf, NULL) * PRECISION;
+	  div = ustrtod(buf, NULL) * PRECISION;
 
 	convmatr->div = div;
 
 	/* bias */
-	READ_TOK ();
+	READ_TOK();
 	if (ustricmp (buf, "auto") != 0)
-	  bias = ustrtod (buf, NULL);
+	  bias = ustrtod(buf, NULL);
 
 	convmatr->bias = bias;
 
 	/* target */
-	READ_TOK ();
+	READ_TOK();
 
 	for (s=buf; *s; s++) {
 	  switch (*s) {
@@ -269,16 +269,16 @@ void reload_matrices_stock(void)
 
       /* destroy the last invalid matrix in case of error */
       if (name)
-	jfree (name);
+	jfree(name);
 
       if (convmatr)
-	convmatr_free (convmatr);
+	convmatr_free(convmatr);
 
       /* close the file */
-      fclose (f);
+      fclose(f);
     }
 
-    dirs_free (dirs);
+    dirs_free(dirs);
   }
 }
 
@@ -312,7 +312,7 @@ JList get_convmatr_stock(void)
    mdata++;					\
    );						\
 						\
-  color = src->method->getpixel (src, x, y);	\
+  color = src->method->getpixel(src, x, y);	\
   if (div == 0) {				\
     *(dst_address++) = color;			\
     continue;					\
@@ -341,11 +341,11 @@ void apply_convolution_matrix4(Effect *effect)
       if (effect->mask_address) {
 	if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	  dst_address++;
-	  _image_bitmap_next_bit (effect->d, effect->mask_address);
+	  _image_bitmap_next_bit(effect->d, effect->mask_address);
 	  continue;
 	}
 	else
-	  _image_bitmap_next_bit (effect->d, effect->mask_address);
+	  _image_bitmap_next_bit(effect->d, effect->mask_address);
       }
 
       r = g = b = a = 0;
@@ -364,38 +364,38 @@ void apply_convolution_matrix4(Effect *effect)
 
       if (effect->target.r) {
 	r = r / div + matrix->bias;
-	r = MID (0, r, 255);
+	r = MID(0, r, 255);
       }
       else
-	r = _rgba_getr (color);
+	r = _rgba_getr(color);
 
       if (effect->target.g) {
 	g = g / div + matrix->bias;
-	g = MID (0, g, 255);
+	g = MID(0, g, 255);
       }
       else
-	g = _rgba_getg (color);
+	g = _rgba_getg(color);
 
       if (effect->target.b) {
 	b = b / div + matrix->bias;
-	b = MID (0, b, 255);
+	b = MID(0, b, 255);
       }
       else
-	b = _rgba_getb (color);
+	b = _rgba_getb(color);
 
       if (effect->target.a) {
 	a = a / matrix->div + matrix->bias;
-	a = MID (0, a, 255);
+	a = MID(0, a, 255);
       }
       else
-	a = _rgba_geta (color);
+	a = _rgba_geta(color);
 
-      *(dst_address++) = _rgba (r, g, b, a);
+      *(dst_address++) = _rgba(r, g, b, a);
     }
   }
 }
 
-void apply_convolution_matrix2 (Effect *effect)
+void apply_convolution_matrix2(Effect *effect)
 {
   ConvMatr *matrix = data.convmatr;
   Image *src = effect->src;
@@ -418,11 +418,11 @@ void apply_convolution_matrix2 (Effect *effect)
       if (effect->mask_address) {
 	if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	  dst_address++;
-	  _image_bitmap_next_bit (effect->d, effect->mask_address);
+	  _image_bitmap_next_bit(effect->d, effect->mask_address);
 	  continue;
 	}
 	else
-	  _image_bitmap_next_bit (effect->d, effect->mask_address);
+	  _image_bitmap_next_bit(effect->d, effect->mask_address);
       }
 
       k = a = 0;
@@ -439,19 +439,19 @@ void apply_convolution_matrix2 (Effect *effect)
 
       if (effect->target.k) {
 	k = k / div + matrix->bias;
-	k = MID (0, k, 255);
+	k = MID(0, k, 255);
       }
       else
-	k = _graya_getk (color);
+	k = _graya_getk(color);
 
       if (effect->target.a) {
 	a = a / matrix->div + matrix->bias;
-	a = MID (0, a, 255);
+	a = MID(0, a, 255);
       }
       else
-	a = _graya_geta (color);
+	a = _graya_geta(color);
 
-      *(dst_address++) = _graya (k, a);
+      *(dst_address++) = _graya(k, a);
     }
   }
 }
@@ -479,11 +479,11 @@ void apply_convolution_matrix1(Effect *effect)
       if (effect->mask_address) {
 	if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	  dst_address++;
-	  _image_bitmap_next_bit (effect->d, effect->mask_address);
+	  _image_bitmap_next_bit(effect->d, effect->mask_address);
 	  continue;
 	}
 	else
-	  _image_bitmap_next_bit (effect->d, effect->mask_address);
+	  _image_bitmap_next_bit(effect->d, effect->mask_address);
       }
 
       r = g = b = index = 0;
@@ -505,7 +505,7 @@ void apply_convolution_matrix1(Effect *effect)
       else {
 	if (effect->target.r) {
 	  r = r / div + matrix->bias;
-	  r = MID (0, r, 255);
+	  r = MID(0, r, 255);
 	}
 	else
 	  r = _rgb_scale_6[current_palette[color].r];

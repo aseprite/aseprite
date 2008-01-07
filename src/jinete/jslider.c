@@ -46,59 +46,59 @@ typedef struct Slider
   int value;
 } Slider;
 
-static bool slider_msg_proc (JWidget widget, JMessage msg);
-static void slider_request_size (JWidget widget, int *w, int *h);
+static bool slider_msg_proc(JWidget widget, JMessage msg);
+static void slider_request_size(JWidget widget, int *w, int *h);
 
-JWidget jslider_new (int min, int max, int value)
+JWidget jslider_new(int min, int max, int value)
 {
-  JWidget widget = jwidget_new (JI_SLIDER);
-  Slider *slider = jnew (Slider, 1);
+  JWidget widget = jwidget_new(JI_SLIDER);
+  Slider *slider = jnew(Slider, 1);
 
   slider->min = min;
   slider->max = max;
-  slider->value = MID (min, value, max);
+  slider->value = MID(min, value, max);
 
-  jwidget_add_hook (widget, JI_SLIDER, slider_msg_proc, slider);
-  jwidget_focusrest (widget, TRUE);
-  jwidget_init_theme (widget);
+  jwidget_add_hook(widget, JI_SLIDER, slider_msg_proc, slider);
+  jwidget_focusrest(widget, TRUE);
+  jwidget_init_theme(widget);
 
   return widget;
 }
 
-void jslider_set_range (JWidget widget, int min, int max)
+void jslider_set_range(JWidget widget, int min, int max)
 {
-  Slider *slider = jwidget_get_data (widget, JI_SLIDER);
+  Slider *slider = jwidget_get_data(widget, JI_SLIDER);
 
   slider->min = min;
   slider->max = max;
-  slider->value = MID (min, slider->value, max);
+  slider->value = MID(min, slider->value, max);
 
-  jwidget_dirty (widget);
+  jwidget_dirty(widget);
 }
 
-void jslider_set_value (JWidget widget, int value)
+void jslider_set_value(JWidget widget, int value)
 {
-  Slider *slider = jwidget_get_data (widget, JI_SLIDER);
+  Slider *slider = jwidget_get_data(widget, JI_SLIDER);
   int old_value = slider->value;
 
-  slider->value = MID (slider->min, value, slider->max);
+  slider->value = MID(slider->min, value, slider->max);
 
   if (slider->value != old_value)
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
 
   /* it DOES NOT emit CHANGE signal! to avoid recursive calls */
 }
 
-int jslider_get_value (JWidget widget)
+int jslider_get_value(JWidget widget)
 {
-  Slider *slider = jwidget_get_data (widget, JI_SLIDER);
+  Slider *slider = jwidget_get_data(widget, JI_SLIDER);
 
   return slider->value;
 }
 
-void jtheme_slider_info (JWidget widget, int *min, int *max, int *value)
+void jtheme_slider_info(JWidget widget, int *min, int *max, int *value)
 {
-  Slider *slider = jwidget_get_data (widget, JI_SLIDER);
+  Slider *slider = jwidget_get_data(widget, JI_SLIDER);
 
   if (min) *min = slider->min;
   if (max) *max = slider->max;

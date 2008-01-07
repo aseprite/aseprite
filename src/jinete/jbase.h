@@ -263,11 +263,11 @@ void  jfree   (void *mem);
 char *jstrdup (const char *string);
 
 #define jnew(struct_type, n_structs)					\
-    ((struct_type *)jmalloc(sizeof (struct_type) * (n_structs)))
+    ((struct_type *)jmalloc(sizeof(struct_type) * (n_structs)))
 #define jnew0(struct_type, n_structs)					\
-    ((struct_type *)jmalloc0(sizeof (struct_type) * (n_structs)))
+    ((struct_type *)jmalloc0(sizeof(struct_type) * (n_structs)))
 #define jrenew(struct_type, mem, n_structs)				\
-    ((struct_type *)jrealloc((mem), (sizeof (struct_type) * (n_structs))))
+    ((struct_type *)jrealloc((mem), (sizeof(struct_type) * (n_structs))))
 
 JI_END_DECLS
 

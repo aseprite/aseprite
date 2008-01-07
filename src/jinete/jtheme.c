@@ -63,7 +63,7 @@ JTheme jtheme_new(void)
 {
   JTheme theme;
 
-  theme = jmalloc(sizeof (struct jtheme));
+  theme = jmalloc(sizeof(struct jtheme));
   if (!theme)
     return NULL;
 
@@ -108,7 +108,7 @@ void jtheme_set_method(JTheme theme, int widget_type, JDrawFunc draw_widget)
 
     theme->nmethods = widget_type+1;
     theme->methods = jrealloc(theme->methods,
-			      sizeof (JDrawFunc) * theme->nmethods);
+			      sizeof(JDrawFunc) * theme->nmethods);
 
     for (c=old_nmethods; c<theme->nmethods; c++)
       theme->methods[c] = NULL;
@@ -312,7 +312,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
   int width;
 
   if (view) {
-    JRect vp = jview_get_viewport_position (view);
+    JRect vp = jview_get_viewport_position(view);
     x1 = vp->x1;
     y1 = vp->y1;
     viewport_w = jrect_w(vp);
@@ -368,7 +368,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
 
     /* without word-wrap */
     if (!(widget->align & JI_WORDWRAP)) {
-      end = ustrchr (beg, '\n');
+      end = ustrchr(beg, '\n');
       if (end) {
 	chr = *end;
 	*end = 0;
@@ -434,7 +434,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
 
     /* width */
     if (w)
-      *w = MAX (*w, len);
+      *w = MAX(*w, len);
 
     y += textheight;
 

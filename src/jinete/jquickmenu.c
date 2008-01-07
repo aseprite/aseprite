@@ -39,39 +39,39 @@
 
 typedef struct QuickData
 {
-  void (*quick_handler) (JWidget widget, int user_data);
+  void (*quick_handler)(JWidget widget, int user_data);
   int user_data;
 } QuickData;
 
-static void process_quickmenu (JWidget menu, JQuickMenu quick_menu);
-static bool quickmenu_msg_proc (JWidget widget, JMessage msg);
+static void process_quickmenu(JWidget menu, JQuickMenu quick_menu);
+static bool quickmenu_msg_proc(JWidget widget, JMessage msg);
 
-static int quickmenu_type (void)
+static int quickmenu_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-JWidget jmenubar_new_quickmenu (JQuickMenu quick_menu)
+JWidget jmenubar_new_quickmenu(JQuickMenu quick_menu)
 {
-  JWidget menubar = jmenubar_new ();
-  JWidget menu = jmenu_new ();
+  JWidget menubar = jmenubar_new();
+  JWidget menu = jmenu_new();
 
-  jmenubar_set_menu (menubar, menu);
-  process_quickmenu (menu, quick_menu);
+  jmenubar_set_menu(menubar, menu);
+  process_quickmenu(menu, quick_menu);
 
   return menubar;
 }
 
-JWidget jmenubox_new_quickmenu (JQuickMenu quick_menu)
+JWidget jmenubox_new_quickmenu(JQuickMenu quick_menu)
 {
-  JWidget menubox = jmenubox_new ();
-  JWidget menu = jmenu_new ();
+  JWidget menubox = jmenubox_new();
+  JWidget menu = jmenu_new();
 
-  jmenubox_set_menu (menubox, menu);
-  process_quickmenu (menu, quick_menu);
+  jmenubox_set_menu(menubox, menu);
+  process_quickmenu(menu, quick_menu);
 
   return menubox;
 }
@@ -87,21 +87,21 @@ static void process_quickmenu(JWidget menu, JQuickMenu quick_menu)
   for (c=0; quick_menu[c].level >= 0; c++) {
     if (old_level < quick_menu[c].level) {
       if (menuitem) {
-        menu = jmenu_new ();
-        jmenuitem_set_submenu (menuitem, menu);
+        menu = jmenu_new();
+        jmenuitem_set_submenu(menuitem, menu);
         jlist_append(parent, menu);
       }
     }
     else {
       while (old_level > quick_menu[c].level) {
         old_level--;
-        jlist_remove (parent, jlist_last (parent)->data);
+        jlist_remove(parent, jlist_last(parent)->data);
       }
     }
 
     /* normal menu item */
     if (quick_menu[c].text) {
-      menuitem = jmenuitem_new (quick_menu[c].text);
+      menuitem = jmenuitem_new(quick_menu[c].text);
 
       if (quick_menu[c].accel) {
         JAccel accel = jaccel_new();
@@ -110,18 +110,18 @@ static void process_quickmenu(JWidget menu, JQuickMenu quick_menu)
       }
 
       if (quick_menu[c].quick_handler) {
-	QuickData *quick_data = jnew (QuickData, 1);
+	QuickData *quick_data = jnew(QuickData, 1);
 
 	quick_data->quick_handler = quick_menu[c].quick_handler;
 	quick_data->user_data = quick_menu[c].user_data;
 
-	jwidget_add_hook (menuitem, quickmenu_type (),
-			    quickmenu_msg_proc, quick_data);
+	jwidget_add_hook(menuitem, quickmenu_type(),
+			 quickmenu_msg_proc, quick_data);
       }
     }
     /* separator */
     else {
-      menuitem = ji_separator_new (NULL, JI_HORIZONTAL);
+      menuitem = ji_separator_new(NULL, JI_HORIZONTAL);
     }
 
     jwidget_add_child((JWidget)jlist_last(parent)->data, menuitem);
@@ -132,18 +132,18 @@ static void process_quickmenu(JWidget menu, JQuickMenu quick_menu)
   jlist_free(parent);
 }
 
-static bool quickmenu_msg_proc (JWidget widget, JMessage msg)
+static bool quickmenu_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (jwidget_get_data (widget, quickmenu_type ()));
+      jfree(jwidget_get_data(widget, quickmenu_type()));
       break;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_MENUITEM_SELECT) {
-	QuickData *quick_data = jwidget_get_data (widget, quickmenu_type ());
-	(*quick_data->quick_handler) (widget, quick_data->user_data);
+	QuickData *quick_data = jwidget_get_data(widget, quickmenu_type());
+	(*quick_data->quick_handler)(widget, quick_data->user_data);
 	return TRUE;
       }
       break;

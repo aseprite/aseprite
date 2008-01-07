@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,24 +36,24 @@
 
 #endif
 
-static JWidget tips_new (void);
-static int tips_type (void);
-static bool tips_msg_proc (JWidget widget, JMessage msg);
-static void tips_request_size (JWidget widget, int *w, int *h);
+static JWidget tips_new(void);
+static int tips_type(void);
+static bool tips_msg_proc(JWidget widget, JMessage msg);
+static void tips_request_size(JWidget widget, int *w, int *h);
 
-static JWidget tips_image_new (BITMAP *bmp);
-static int tips_image_type (void);
-static bool tips_image_msg_proc (JWidget widget, JMessage msg);
+static JWidget tips_image_new(BITMAP *bmp);
+static int tips_image_type(void);
+static bool tips_image_msg_proc(JWidget widget, JMessage msg);
 
-static FILE *tips_open_file (void);
-static int tips_count_pages (void);
-static void tips_load_page (JWidget widget);
-static JWidget tips_load_box (FILE *f, char *buf, int sizeof_buf, int *take);
-static BITMAP *tips_load_image (const char *filename, PALETTE pal);
+static FILE *tips_open_file(void);
+static int tips_count_pages(void);
+static void tips_load_page(JWidget widget);
+static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take);
+static BITMAP *tips_load_image(const char *filename, PALETTE pal);
 
-static void prev_command (JWidget widget, void *data);
-static void next_command (JWidget widget, void *data);
-static int check_signal (JWidget widget, int user_data);
+static void prev_command(JWidget widget, void *data);
+static void next_command(JWidget widget, void *data);
+static int check_signal(JWidget widget, int user_data);
 
 void dialogs_tips(bool forced)
 {
@@ -69,8 +69,8 @@ void dialogs_tips(bool forced)
 
   /* next page */
   {
-    int pages = tips_count_pages ();
-    int page = get_config_int ("Tips", "Page", -1);
+    int pages = tips_count_pages();
+    int page = get_config_int("Tips", "Page", -1);
 
     /* error? */
     if (!pages)
@@ -78,11 +78,11 @@ void dialogs_tips(bool forced)
 
     /* first time */
     if (page == -1)
-      set_config_int ("Tips", "Page", 0);
+      set_config_int("Tips", "Page", 0);
     /* other times (go to next tip) */
     else {
-      page = MID (0, page, pages-1);
-      set_config_int ("Tips", "Page", (page+1) % pages);
+      page = MID(0, page, pages-1);
+      set_config_int("Tips", "Page", (page+1) % pages);
     }
   }
 
@@ -135,7 +135,7 @@ void dialogs_tips(bool forced)
   jwidget_set_min_size(window, 0, 0);
 
   /* load first page */
-  memcpy(old_pal, current_palette, sizeof (PALETTE));
+  memcpy(old_pal, current_palette, sizeof(PALETTE));
   tips_load_page(tips);
 
   /* run the window */
@@ -166,7 +166,7 @@ static int tips_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
@@ -175,7 +175,7 @@ static bool tips_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_REQSIZE:
-      tips_request_size (widget, &msg->reqsize.w, &msg->reqsize.h);
+      tips_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_WHEEL:
@@ -247,33 +247,33 @@ static FILE *tips_open_file(void)
   char filename[1024];
   DIRS *dirs, *dir;
 
-  sprintf (filename, "tips/tips.%s", intl_get_lang ());
-  dirs = filename_in_datadir (filename);
+  sprintf(filename, "tips/tips.%s", intl_get_lang());
+  dirs = filename_in_datadir(filename);
 
   for (dir=dirs; dir; dir=dir->next) {
     if ((dir->path) && exists (dir->path)) {
-      strcpy (filename, dir->path);
+      strcpy(filename, dir->path);
       break;
     }
   }
 
   if (!dir)
-    strcpy (filename, dirs->path);
+    strcpy(filename, dirs->path);
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 
-  return fopen (filename, "rt");
+  return fopen(filename, "rt");
 }
 
-static int tips_count_pages (void)
+static int tips_count_pages(void)
 {
   char buf[1024];
   int page = 0;
   FILE *f;
 
-  f = tips_open_file ();
+  f = tips_open_file();
   if (!f) {
-    console_printf ("Error loading tips files\n");
+    console_printf("Error loading tips files\n");
     return 0;
   }
 
@@ -282,10 +282,10 @@ static int tips_count_pages (void)
       page++;
   }
 
-  fclose (f);
+  fclose(f);
 
   if (!page)
-    console_printf ("No pages tips file\n");
+    console_printf("No pages tips file\n");
 
   return page;
 }
@@ -318,7 +318,7 @@ static void tips_load_page(JWidget widget)
     if (*buf == 12) {
       /* read this page */
       if (use_page == page) {
-	JWidget vbox = tips_load_box(f, buf, sizeof (buf), &take);
+	JWidget vbox = tips_load_box(f, buf, sizeof(buf), &take);
 	if (vbox)
 	  jwidget_add_child(widget, vbox);
 	break;
@@ -337,9 +337,9 @@ static void tips_load_page(JWidget widget)
 
 static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 {
-  JWidget vbox = jbox_new (JI_VERTICAL);
+  JWidget vbox = jbox_new(JI_VERTICAL);
 
-  jwidget_set_border (vbox, 2, 2, 2, 2);
+  jwidget_set_border(vbox, 2, 2, 2, 2);
 
   for (;;) {
     if (*take) {
@@ -357,13 +357,13 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 
     /* remove trailing space chars */
     while (*buf && isspace (ugetat (buf, -1)))
-      usetat (buf, -1, 0);
+      usetat(buf, -1, 0);
 
     /************************************************************/
     /* empty? */
     if (!*buf) {
       /* add a box with an static size to separate paragraphs */
-      JWidget box = jbox_new (0);
+      JWidget box = jbox_new(0);
 
       jwidget_set_min_size(box, 0, text_height(box->text_font));
 
@@ -373,38 +373,38 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
     /* special object (line start with \) */
     else if (*buf == '\\') {
       /* \split */
-      if (ustrncmp (buf+1, "split", 5) == 0) {
-	JWidget box, hbox = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
+      if (ustrncmp(buf+1, "split", 5) == 0) {
+	JWidget box, hbox = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
 	do {
-	  box = tips_load_box (f, buf, sizeof_buf, take);
+	  box = tips_load_box(f, buf, sizeof_buf, take);
 	  if (box)
-	    jwidget_add_child (hbox, box);
-	} while (ustrncmp (buf, "\\next", 5) == 0);
+	    jwidget_add_child(hbox, box);
+	} while (ustrncmp(buf, "\\next", 5) == 0);
 
-	jwidget_add_child (vbox, hbox);
+	jwidget_add_child(vbox, hbox);
 	*take = TRUE;
       }
       /* \next and \done */
-      else if ((ustrncmp (buf+1, "next", 4) == 0) ||
-	       (ustrncmp (buf+1, "done", 4) == 0)) {
+      else if ((ustrncmp(buf+1, "next", 4) == 0) ||
+	       (ustrncmp(buf+1, "done", 4) == 0)) {
 	break;
       }
       /* \image filename */
-      else if (ustrncmp (buf+1, "image", 5) == 0) {
+      else if (ustrncmp(buf+1, "image", 5) == 0) {
 	char filename[1024];
 	PALETTE pal;
 	BITMAP *bmp;
 
-	sprintf (filename, "tips/%s", strchr (buf, ' ')+1);
-	bmp = tips_load_image (filename, pal);
+	sprintf(filename, "tips/%s", strchr(buf, ' ')+1);
+	bmp = tips_load_image(filename, pal);
 	if (bmp) {
-	  JWidget image = tips_image_new (bmp);
-	  jwidget_add_child (vbox, image);
+	  JWidget image = tips_image_new(bmp);
+	  jwidget_add_child(vbox, image);
 	}
 	else {
-	  sprintf (buf, _("Error loading image %s"), filename);
-	  jwidget_add_child (vbox, jlabel_new (buf));
+	  sprintf(buf, _("Error loading image %s"), filename);
+	  jwidget_add_child(vbox, jlabel_new(buf));
 	}
       }
       /* \palette filename */
@@ -413,22 +413,22 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 	PALETTE pal;
 	BITMAP *bmp;
 
-	sprintf (filename, "tips/%s", strchr (buf, ' ')+1);
-	bmp = tips_load_image (filename, pal);
+	sprintf(filename, "tips/%s", strchr(buf, ' ')+1);
+	bmp = tips_load_image(filename, pal);
 	if (bmp) {
-	  set_current_palette (pal, FALSE);
-	  destroy_bitmap (bmp);
+	  set_current_palette(pal, FALSE);
+	  destroy_bitmap(bmp);
 	}
 	else {
-	  sprintf (buf, _("Error loading palette %s"), filename);
-	  jwidget_add_child (vbox, jlabel_new (buf));
+	  sprintf(buf, _("Error loading palette %s"), filename);
+	  jwidget_add_child(vbox, jlabel_new(buf));
 	}
       }
     }
     /************************************************************/
     /* add text */
     else {
-      char *text = jstrdup (buf);
+      char *text = jstrdup(buf);
 
       /* read more text (to generate a paragraph) */
       if (*text != '*') {
@@ -452,9 +452,9 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 	  }
 
 	  /* add chars */
-	  text = jrealloc(text, strlen (text) + 1 + strlen (buf) + 1);
+	  text = jrealloc(text, strlen(text) + 1 + strlen(buf) + 1);
 	  strcat(text, " ");
-	  strcpy(text+strlen (text), buf);
+	  strcpy(text+strlen(text), buf);
 	}
 
 	/* add the textbox */
@@ -470,7 +470,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
   }
 
   /* white background */
-  jwidget_set_bg_color (vbox, makecol (255, 255, 255));
+  jwidget_set_bg_color(vbox, makecol(255, 255, 255));
 
   return vbox;
 }
@@ -493,26 +493,26 @@ static BITMAP *tips_load_image(const char *filename, PALETTE pal)
   return bmp;
 }
 
-static void prev_command (JWidget widget, void *data)
+static void prev_command(JWidget widget, void *data)
 {
-  int pages = tips_count_pages ();
-  int page = get_config_int ("Tips", "Page", 0);
+  int pages = tips_count_pages();
+  int page = get_config_int("Tips", "Page", 0);
 
-  set_config_int ("Tips", "Page", page > 0 ? page-1: pages-1);
-  tips_load_page ((JWidget)data);
+  set_config_int("Tips", "Page", page > 0 ? page-1: pages-1);
+  tips_load_page((JWidget)data);
 }
 
-static void next_command (JWidget widget, void *data)
+static void next_command(JWidget widget, void *data)
 {
-  int pages = tips_count_pages ();
-  int page = get_config_int ("Tips", "Page", 0);
+  int pages = tips_count_pages();
+  int page = get_config_int("Tips", "Page", 0);
 
-  set_config_int ("Tips", "Page", page < pages-1 ? page+1: 0);
-  tips_load_page ((JWidget)data);
+  set_config_int("Tips", "Page", page < pages-1 ? page+1: 0);
+  tips_load_page((JWidget)data);
 }
 
-static int check_signal (JWidget widget, int user_data)
+static int check_signal(JWidget widget, int user_data)
 {
-  set_config_bool ("Tips", "Show", jwidget_is_selected (widget));
+  set_config_bool("Tips", "Show", jwidget_is_selected(widget));
   return TRUE;
 }

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@
 
 #endif
 
-void canvas_resize (void)
+void canvas_resize(void)
 {
   JWidget window, box1, box2, box3, box4, box5, box6;
   JWidget label_w, label_h;
@@ -56,64 +56,64 @@ void canvas_resize (void)
   if (!is_interactive () || !sprite)
     return;
 
-  window = jwindow_new (_("Canvas Size"));
-  box1 = jbox_new (JI_VERTICAL);
-  box2 = jbox_new (JI_HORIZONTAL);
-  box3 = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
-  box4 = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
-  box5 = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
-  box6 = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
-  label_w = jlabel_new (_("Width:"));
-  label_h = jlabel_new (_("Height:"));
-  entry_w = jentry_new (8, "%d", sprite->w);
-  entry_h = jentry_new (8, "%d", sprite->h);
-  check_w = jcheck_new ("%");
-  check_h = jcheck_new ("%");
-  button_offset = group_button_new (3, 3, 4,
-				    -1, -1, -1,
-				    -1, -1, -1,
-				    -1, -1, -1);
-  button_ok = jbutton_new (_("&OK"));
-  button_cancel = jbutton_new (_("&Cancel"));
+  window = jwindow_new(_("Canvas Size"));
+  box1 = jbox_new(JI_VERTICAL);
+  box2 = jbox_new(JI_HORIZONTAL);
+  box3 = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
+  box4 = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
+  box5 = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
+  box6 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  label_w = jlabel_new(_("Width:"));
+  label_h = jlabel_new(_("Height:"));
+  entry_w = jentry_new(8, "%d", sprite->w);
+  entry_h = jentry_new(8, "%d", sprite->h);
+  check_w = jcheck_new("%");
+  check_h = jcheck_new("%");
+  button_offset = group_button_new(3, 3, 4,
+				   -1, -1, -1,
+				   -1, -1, -1,
+				   -1, -1, -1);
+  button_ok = jbutton_new(_("&OK"));
+  button_cancel = jbutton_new(_("&Cancel"));
 
-  jwidget_magnetic (button_ok, TRUE);
+  jwidget_magnetic(button_ok, TRUE);
 
-  jwidget_expansive (box2, TRUE);
-  jwidget_expansive (button_offset, TRUE);
+  jwidget_expansive(box2, TRUE);
+  jwidget_expansive(button_offset, TRUE);
 
-  jwidget_add_child (box3, label_w);
-  jwidget_add_child (box3, label_h);
-  jwidget_add_child (box4, entry_w);
-  jwidget_add_child (box4, entry_h);
-  jwidget_add_child (box5, check_w);
-  jwidget_add_child (box5, check_h);
-  jwidget_add_child (box2, box3);
-  jwidget_add_child (box2, box4);
-  jwidget_add_child (box2, box5);
-  jwidget_add_child (box2, button_offset);
-  jwidget_add_child (box1, box2);
-  jwidget_add_child (box6, button_ok);
-  jwidget_add_child (box6, button_cancel);
-  jwidget_add_child (box1, box6);
-  jwidget_add_child (window, box1);
+  jwidget_add_child(box3, label_w);
+  jwidget_add_child(box3, label_h);
+  jwidget_add_child(box4, entry_w);
+  jwidget_add_child(box4, entry_h);
+  jwidget_add_child(box5, check_w);
+  jwidget_add_child(box5, check_h);
+  jwidget_add_child(box2, box3);
+  jwidget_add_child(box2, box4);
+  jwidget_add_child(box2, box5);
+  jwidget_add_child(box2, button_offset);
+  jwidget_add_child(box1, box2);
+  jwidget_add_child(box6, button_ok);
+  jwidget_add_child(box6, button_cancel);
+  jwidget_add_child(box1, box6);
+  jwidget_add_child(window, box1);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* load window configuration */
-  load_window_pos (window, "CanvasSize");
+  load_window_pos(window, "CanvasSize");
 
   /* open the window */
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
-  if (jwindow_get_killer (window) == button_ok) {
+  if (jwindow_get_killer(window) == button_ok) {
     /* update editors */
     update_screen_for_sprite(sprite);
   }
 
   /* save window configuration */
-  save_window_pos (window, "CanvasSize");
+  save_window_pos(window, "CanvasSize");
 
-  jwidget_free (window);
+  jwidget_free(window);
 }

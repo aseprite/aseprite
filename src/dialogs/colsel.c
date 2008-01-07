@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,7 +161,7 @@ char *ji_color_select(int imgtype, const char *color)
   /* check the killer widget */
   if (jwindow_get_killer(window) == button_ok) {
     /* selected color */
-    selected_color = jstrdup(color_viewer_get_color (color_viewer));
+    selected_color = jstrdup(color_viewer_get_color(color_viewer));
   }
   /* cancel or ESC */
   else {

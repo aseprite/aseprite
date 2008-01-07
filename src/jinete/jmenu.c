@@ -983,19 +983,19 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 static void menuitem_request_size(JWidget widget, int *w, int *h)
 {
-  MenuItem *menuitem = MITEM (widget);
+  MenuItem *menuitem = MITEM(widget);
   int bar = widget->parent->parent->type == JI_MENUBAR;
 
   if (widget->text) {
     *w =
       + widget->border_width.l
-      + jwidget_get_text_length (widget)
+      + jwidget_get_text_length(widget)
       + ((bar) ? widget->child_spacing/4: widget->child_spacing)
       + widget->border_width.r;
 
     *h =
       + widget->border_width.t
-      + jwidget_get_text_height (widget)
+      + jwidget_get_text_height(widget)
       + widget->border_width.b;
 
     if (menuitem->accel) {

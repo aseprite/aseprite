@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,14 +43,14 @@ enum { ACTION_MOVE, ACTION_COPY, ACTION_SWAP };
 
 static Layer *handle_layer;
 
-static void do_quick (int action);
-static int my_callback (void);
+static void do_quick(int action);
+static int my_callback(void);
 
-void quick_move (void) { do_quick (ACTION_MOVE); }
-void quick_copy (void) { do_quick (ACTION_COPY); }
-void quick_swap (void) { do_quick (ACTION_SWAP); }
+void quick_move(void) { do_quick(ACTION_MOVE); }
+void quick_copy(void) { do_quick(ACTION_COPY); }
+void quick_swap(void) { do_quick(ACTION_SWAP); }
 
-static void do_quick (int action)
+static void do_quick(int action)
 {
   Sprite *sprite = current_sprite;
   Layer *dst_layer;
@@ -75,12 +75,12 @@ static void do_quick (int action)
     return;
 
   if (get_config_bool ("QuickMovement", "UseMask", TRUE))
-    layer_set_blend_mode (handle_layer, BLEND_MODE_NORMAL);
+    layer_set_blend_mode(handle_layer, BLEND_MODE_NORMAL);
   else
-    layer_set_blend_mode (handle_layer, BLEND_MODE_COPY);
+    layer_set_blend_mode(handle_layer, BLEND_MODE_COPY);
 
   /* create a new dirty */
-  dirty = dirty_new (dst, 0, 0, dst->w-1, dst->h-1, FALSE);
+  dirty = dirty_new(dst, 0, 0, dst->w-1, dst->h-1, FALSE);
 
   /* save the current mask region */
   if (action != ACTION_COPY) {
@@ -115,7 +115,7 @@ static void do_quick (int action)
   /* select the layer */
   sprite_set_layer(sprite, handle_layer);
 
-  /* regenerate the boundaries (the mask was deselected) and redraw
+  /* regenerate the boundaries(the mask was deselected) and redraw
      the sprite */
   sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);

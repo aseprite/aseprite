@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -434,7 +434,7 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
 
 static void ase_file_write_header(FILE *f, ASE_Header *header)
 {
-  header->size = ftell (f)-header->pos;
+  header->size = ftell(f)-header->pos;
 
   fseek(f, header->pos, SEEK_SET);
 
@@ -706,8 +706,8 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   fputw((layer->readable & 1) | ((layer->writable & 1) << 1), f);
 
   /* layer type */
-  fputw(layer_is_image (layer) ? 0:
-	layer_is_set (layer) ? 1: -1, f);
+  fputw(layer_is_image(layer) ? 0:
+	layer_is_set(layer) ? 1: -1, f);
 
   /* layer child level */
   child_level = -1;
@@ -721,7 +721,7 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   /* width, height and blend mode */
   fputw(0, f);
   fputw(0, f);
-  fputw(layer_is_image (layer) ? layer->blend_mode: 0, f);
+  fputw(layer_is_image(layer) ? layer->blend_mode: 0, f);
 
   /* padding */
   ase_file_write_padding(f, 4);
@@ -731,7 +731,7 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
 
   ase_file_write_close_chunk(f);
 
-  /* console_printf ("Layer name \"%s\" child level: %d\n", layer->name, child_level); */
+  /* console_printf("Layer name \"%s\" child level: %d\n", layer->name, child_level); */
 }
 
 static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frpos, int imgtype)
@@ -753,7 +753,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frpos, int imgt
 		   frpos, layer_index);
     return NULL;
   }
-  /* console_printf ("Layer found: %d -> %s\n", layer_index, layer->name); */
+  /* console_printf("Layer found: %d -> %s\n", layer_index, layer->name); */
 
   /* create the new frame */
   cel = cel_new(frpos, 0);

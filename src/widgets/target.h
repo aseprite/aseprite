@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,6 @@
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_TARGET_BUTTON_CHANGE   0x10003
 
-JWidget target_button_new (int imgtype, bool with_channels);
+JWidget target_button_new(int imgtype, bool with_channels);
 
 #endif /* WIDGETS_TARGET_H */

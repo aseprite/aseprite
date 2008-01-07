@@ -238,8 +238,8 @@ static void panel_request_size(JWidget widget, int *w, int *h)
 {
 #define GET_CHILD_SIZE(w, h)			\
   do {						\
-    *w = MAX (*w, req_##w);			\
-    *h = MAX (*h, req_##h);			\
+    *w = MAX(*w, req_##w);			\
+    *h = MAX(*h, req_##h);			\
   } while(0)
 
 #define FINAL_SIZE(w)					\
@@ -297,10 +297,10 @@ static void panel_set_position(JWidget widget, JRect rect)
     pos->y##1 = widget->rc->y##1;					\
     pos->x##2 = pos->x##1 + avail*panel->pos/100;			\
     /* TODO uncomment this to make a restricted panel */		\
-    /* pos->w = MID (req1_##w, pos->w, avail-req2_##w); */		\
+    /* pos->w = MID(req1_##w, pos->w, avail-req2_##w); */		\
     pos->y##2 = pos->y##1 + jrect_##h(widget->rc);			\
 									\
-    jwidget_set_rect (child1, pos);					\
+    jwidget_set_rect(child1, pos);					\
 									\
     pos->x##1 = child1->rc->x##1 + jrect_##w(child1->rc)		\
       + widget->child_spacing;						\
@@ -308,14 +308,14 @@ static void panel_set_position(JWidget widget, JRect rect)
     pos->x##2 = pos->x##1 + avail - jrect_##w(child1->rc);		\
     pos->y##2 = pos->y##1 + jrect_##h(widget->rc);			\
 									\
-    jwidget_set_rect (child2, pos);					\
+    jwidget_set_rect(child2, pos);					\
   } while(0)
 
   JRect pos = jrect_new(0, 0, 0, 0);
   Panel *panel = jwidget_get_data(widget, JI_PANEL);
   int avail;
 
-  jrect_copy (widget->rc, rect);
+  jrect_copy(widget->rc, rect);
 
   if (jlist_length(widget->children) == 2) {
     JWidget child1 = jlist_first(widget->children)->data;

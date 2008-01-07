@@ -159,7 +159,7 @@ void jwindow_position(JWidget widget, int x, int y)
   window_action = WINDOW_MOVE;
 
   if (window->is_autoremap)
-    jwindow_remap (widget);
+    jwindow_remap(widget);
 
   rect = jrect_new(x, y, x+jrect_w(widget->rc), y+jrect_h(widget->rc));
   jwidget_set_rect(widget, rect);
@@ -172,13 +172,13 @@ void jwindow_position(JWidget widget, int x, int y)
 
 void jwindow_move(JWidget widget, JRect rect)
 {
-  move_window (widget, rect, TRUE);
+  move_window(widget, rect, TRUE);
 }
 
 void jwindow_open(JWidget widget)
 {
   if (!widget->parent) {
-    Window *window = jwidget_get_data (widget, JI_WINDOW); 
+    Window *window = jwidget_get_data(widget, JI_WINDOW); 
 
     if (window->is_autoremap)
       jwindow_center(widget);
@@ -231,7 +231,7 @@ bool jwindow_is_toplevel(JWidget widget)
 
 bool jwindow_is_foreground(JWidget widget)
 {
-  Window *window = jwidget_get_data (widget, JI_WINDOW); 
+  Window *window = jwidget_get_data(widget, JI_WINDOW); 
 
   return window->is_foreground;
 }
@@ -379,7 +379,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	  else if (window_action & WINDOW_RESIZE_BOTTOM)
 	    h += (msg->mouse.y - press_y);
 
-	  limit_size (widget, &w, &h);
+	  limit_size(widget, &w, &h);
 
 	  if ((jrect_w(widget->rc) != w) ||
 	      (jrect_h(widget->rc) != h)) {
@@ -624,8 +624,8 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   jmessage_broadcast_to_children(msg, widget);
   jmanager_enqueue_message(msg);
 
-  old_reg = jwidget_get_region (widget);
-  old_drawable_region = jwidget_get_drawable_region (widget, FLAGS);
+  old_reg = jwidget_get_region(widget);
+  old_drawable_region = jwidget_get_drawable_region(widget, FLAGS);
 
   if (jrect_w(old_pos) != jrect_w(rect) ||
       jrect_h(old_pos) != jrect_h(rect)) {

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,14 +47,14 @@
 
 static JWidget button_color, slider_fuzziness, check_preview;
 
-static void button_1_command (JWidget widget);
-static void button_2_command (JWidget widget);
-static int color_change_hook (JWidget widget, int user_data);
-static int slider_change_hook (JWidget widget, int user_data);
-static int preview_change_hook (JWidget widget, int user_data);
+static void button_1_command(JWidget widget);
+static void button_2_command(JWidget widget);
+static int color_change_hook(JWidget widget, int user_data);
+static int slider_change_hook(JWidget widget, int user_data);
+static int preview_change_hook(JWidget widget, int user_data);
 
-static Mask *gen_mask (void);
-static void mask_preview (void);
+static Mask *gen_mask(void);
+static void mask_preview(void);
 
 void dialogs_mask_color(void)
 {
@@ -68,83 +68,83 @@ void dialogs_mask_color(void)
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage ();
+  image = GetImage();
   if (!image)
     return;
 
-  window = jwindow_new (_("Mask by Color"));
-  box1 = jbox_new (JI_VERTICAL);
-  box2 = jbox_new (JI_HORIZONTAL);
-  box3 = jbox_new (JI_HORIZONTAL);
-  box4 = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
-  label_color = jlabel_new (_("Color:"));
+  window = jwindow_new(_("Mask by Color"));
+  box1 = jbox_new(JI_VERTICAL);
+  box2 = jbox_new(JI_HORIZONTAL);
+  box3 = jbox_new(JI_HORIZONTAL);
+  box4 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  label_color = jlabel_new(_("Color:"));
   button_color = color_button_new
-    (get_config_string ("MaskColor", "Color",
-			color_bar_get_color (app_get_color_bar (), 0)),
-     sprite->imgtype);
-  button_1 = jbutton_new ("1");
-  button_2 = jbutton_new ("2");
-  label_fuzziness = jlabel_new (_("Fuzziness:"));
+   (get_config_string("MaskColor", "Color",
+		      color_bar_get_color(app_get_color_bar(), 0)),
+    sprite->imgtype);
+  button_1 = jbutton_new("1");
+  button_2 = jbutton_new("2");
+  label_fuzziness = jlabel_new(_("Fuzziness:"));
   slider_fuzziness =
-    jslider_new (0, 255, get_config_int ("MaskColor", "Fuzziness", 0));
-  check_preview = jcheck_new (_("&Preview"));
-  button_ok = jbutton_new (_("&OK"));
-  button_cancel = jbutton_new (_("&Cancel"));
+    jslider_new(0, 255, get_config_int("MaskColor", "Fuzziness", 0));
+  check_preview = jcheck_new(_("&Preview"));
+  button_ok = jbutton_new(_("&OK"));
+  button_cancel = jbutton_new(_("&Cancel"));
 
-  if (get_config_bool ("MaskColor", "Preview", TRUE))
-    jwidget_select (check_preview);
+  if (get_config_bool("MaskColor", "Preview", TRUE))
+    jwidget_select(check_preview);
 
-  jbutton_add_command (button_1, button_1_command);
-  jbutton_add_command (button_2, button_2_command);
+  jbutton_add_command(button_1, button_1_command);
+  jbutton_add_command(button_2, button_2_command);
 
-  HOOK (button_color, SIGNAL_COLOR_BUTTON_CHANGE, color_change_hook, 0);
-  HOOK (slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK (check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
+  HOOK(button_color, SIGNAL_COLOR_BUTTON_CHANGE, color_change_hook, 0);
+  HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
 
-  jwidget_magnetic (button_ok, TRUE);
-  jwidget_expansive (button_color, TRUE);
-  jwidget_expansive (slider_fuzziness, TRUE);
-  jwidget_expansive (box2, TRUE);
+  jwidget_magnetic(button_ok, TRUE);
+  jwidget_expansive(button_color, TRUE);
+  jwidget_expansive(slider_fuzziness, TRUE);
+  jwidget_expansive(box2, TRUE);
 
-  jwidget_add_child (window, box1);
-  jwidget_add_childs (box1, box2, box3, check_preview, box4, NULL);
-  jwidget_add_childs (box2, label_color, button_color, button_1, button_2, NULL);
-  jwidget_add_childs (box3, label_fuzziness, slider_fuzziness, NULL);
-  jwidget_add_childs (box4, button_ok, button_cancel, NULL);
+  jwidget_add_child(window, box1);
+  jwidget_add_childs(box1, box2, box3, check_preview, box4, NULL);
+  jwidget_add_childs(box2, label_color, button_color, button_1, button_2, NULL);
+  jwidget_add_childs(box3, label_fuzziness, slider_fuzziness, NULL);
+  jwidget_add_childs(box4, button_ok, button_cancel, NULL);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* mask first preview */
-  mask_preview ();
+  mask_preview();
 
   /* load window configuration */
-  load_window_pos (window, "MaskColor");
+  load_window_pos(window, "MaskColor");
 
   /* open the window */
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
   if (jwindow_get_killer (window) == button_ok) {
     Mask *mask;
 
     /* undo */
     if (undo_is_enabled (sprite->undo))
-      undo_set_mask (sprite->undo, sprite);
+      undo_set_mask(sprite->undo, sprite);
 
     /* change the mask */
-    mask = gen_mask ();
-    sprite_set_mask (sprite, mask);
-    mask_free (mask);
+    mask = gen_mask();
+    sprite_set_mask(sprite, mask);
+    mask_free(mask);
 
-    set_config_string ("MaskColor", "Color",
-		       color_button_get_color (button_color));
+    set_config_string("MaskColor", "Color",
+		      color_button_get_color(button_color));
 
-    set_config_int ("MaskColor", "Fuzziness",
-		    jslider_get_value (slider_fuzziness));
+    set_config_int("MaskColor", "Fuzziness",
+		   jslider_get_value(slider_fuzziness));
 
-    set_config_bool ("MaskColor", "Preview",
-		     jwidget_is_selected (check_preview));
+    set_config_bool("MaskColor", "Preview",
+		    jwidget_is_selected(check_preview));
   }
 
   /* update boundaries and editors */
@@ -157,39 +157,39 @@ void dialogs_mask_color(void)
   jwidget_free(window);
 }
 
-static void button_1_command (JWidget widget)
+static void button_1_command(JWidget widget)
 {
-  color_button_set_color (button_color,
-			  color_bar_get_color (app_get_color_bar (), 0));
-  mask_preview ();
+  color_button_set_color(button_color,
+			 color_bar_get_color(app_get_color_bar(), 0));
+  mask_preview();
 }
 
-static void button_2_command (JWidget widget)
+static void button_2_command(JWidget widget)
 {
-  color_button_set_color (button_color,
-			  color_bar_get_color (app_get_color_bar (), 1));
-  mask_preview ();
+  color_button_set_color(button_color,
+			 color_bar_get_color(app_get_color_bar(), 1));
+  mask_preview();
 }
 
-static int color_change_hook (JWidget widget, int user_data)
+static int color_change_hook(JWidget widget, int user_data)
 {
-  mask_preview ();
+  mask_preview();
   return FALSE;
 }
 
-static int slider_change_hook (JWidget widget, int user_data)
+static int slider_change_hook(JWidget widget, int user_data)
 {
-  mask_preview ();
+  mask_preview();
   return FALSE;
 }
 
-static int preview_change_hook (JWidget widget, int user_data)
+static int preview_change_hook(JWidget widget, int user_data)
 {
-  mask_preview ();
+  mask_preview();
   return FALSE;
 }
 
-static Mask *gen_mask (void)
+static Mask *gen_mask(void)
 {
   int xpos, ypos, color, fuzziness;
   const char *color_text;
@@ -200,18 +200,18 @@ static Mask *gen_mask (void)
   sprite = current_sprite;
   image = GetImage2 (sprite, &xpos, &ypos, NULL);
 
-  color_text = color_button_get_color (button_color);
-  color = get_color_for_image (sprite->imgtype, color_text);
-  fuzziness = jslider_get_value (slider_fuzziness);
+  color_text = color_button_get_color(button_color);
+  color = get_color_for_image(sprite->imgtype, color_text);
+  fuzziness = jslider_get_value(slider_fuzziness);
 
-  mask = mask_new ();
-  mask_by_color (mask, image, color, fuzziness);
-  mask_move (mask, xpos, ypos);
+  mask = mask_new();
+  mask_by_color(mask, image, color, fuzziness);
+  mask_move(mask, xpos, ypos);
 
   return mask;
 }
 
-static void mask_preview (void)
+static void mask_preview(void)
 {
   if (jwidget_is_selected (check_preview)) {
     Sprite *sprite = current_sprite;

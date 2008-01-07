@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@
 
 #endif
 
-static int save_TGA (Sprite *sprite);
-static Sprite *load_TGA (const char *filename);
+static int save_TGA(Sprite *sprite);
+static Sprite *load_TGA(const char *filename);
 
 FileFormat format_tga =
 {
@@ -107,14 +107,14 @@ static void rle_tga_read32 (ase_uint32 *address, int w, PACKFILE *f)
       c += count;
       pack_fread(value, 4, f);
       while (count--)
-        *(address++) = _rgba (value[2], value[1], value[0], value[3]);
+        *(address++) = _rgba(value[2], value[1], value[0], value[3]);
     }
     else {
       count++;
       c += count;
       while (count--) {
         pack_fread(value, 4, f);
-        *(address++) = _rgba (value[2], value[1], value[0], value[3]);
+        *(address++) = _rgba(value[2], value[1], value[0], value[3]);
       }
     }
   } while (c < w);
@@ -136,14 +136,14 @@ static void rle_tga_read24(ase_uint32 *address, int w, PACKFILE *f)
       c += count;
       pack_fread(value, 3, f);
       while (count--)
-        *(address++) = _rgba (value[2], value[1], value[0], 255);
+        *(address++) = _rgba(value[2], value[1], value[0], 255);
     }
     else {
       count++;
       c += count;
       while (count--) {
         pack_fread(value, 3, f);
-        *(address++) = _rgba (value[2], value[1], value[0], 255);
+        *(address++) = _rgba(value[2], value[1], value[0], 255);
       }
     }
   } while (c < w);
@@ -204,10 +204,10 @@ static Sprite *load_TGA(const char *filename)
   PACKFILE *f;
   int type;
 
-  f = pack_fopen (filename, F_READ);
+  f = pack_fopen(filename, F_READ);
   if (!f) {
-    if (!file_sequence_sprite ())
-      console_printf (_("Error opening file.\n"));
+    if (!file_sequence_sprite())
+      console_printf(_("Error opening file.\n"));
     return NULL;
   }
 
@@ -226,7 +226,7 @@ static Sprite *load_TGA(const char *filename)
   bpp = pack_getc(f);
   descriptor_bits = pack_getc(f);
 
-  pack_fread (image_id, id_length, f);
+  pack_fread(image_id, id_length, f);
 
   if (palette_type == 1) {
     for (i=0; i<palette_colors; i++) {
@@ -318,7 +318,7 @@ static Sprite *load_TGA(const char *filename)
       return NULL;
   }
 
-  image = file_sequence_image (type, image_width, image_height);
+  image = file_sequence_image(type, image_width, image_height);
   if (!image) {
     pack_fclose(f);
     return NULL;
@@ -332,13 +332,13 @@ static Sprite *load_TGA(const char *filename)
       case 1:
       case 3:
         if (compressed)
-          rle_tga_read (image->line[yc], image_width, image_type, f);
+          rle_tga_read(image->line[yc], image_width, image_type, f);
         else if (image_type == 1)
-          pack_fread (image->line[yc], image_width, f);
+          pack_fread(image->line[yc], image_width, f);
 	else {
 	  for (x=0; x<image_width; x++)
 	    *(((ase_uint16 **)image->line)[yc]+x) =
-	      _graya (pack_getc(f), 255);
+	      _graya(pack_getc(f), 255);
 	}
 	break;
 
@@ -363,7 +363,7 @@ static Sprite *load_TGA(const char *filename)
             for (x=0; x<image_width; x++) {
               pack_fread(rgb, 3, f);
               *(((ase_uint32 **)image->line)[yc]+x) =
-                _rgba (rgb[2], rgb[1], rgb[0], 255);
+                _rgba(rgb[2], rgb[1], rgb[0], 255);
             }
           }
         }
@@ -375,9 +375,9 @@ static Sprite *load_TGA(const char *filename)
             for (x=0; x<image_width; x++) {
               c = pack_igetw(f);
               *(((ase_uint32 **)image->line)[yc]+x) =
-                _rgba (((c >> 10) & 0x1F),
-		       ((c >> 5) & 0x1F),
-		       (c & 0x1F), 255);
+                _rgba(((c >> 10) & 0x1F),
+		      ((c >> 5) & 0x1F),
+		      (c & 0x1F), 255);
             }
           }
         }
@@ -385,24 +385,24 @@ static Sprite *load_TGA(const char *filename)
     }
 
     if (image_height > 1)
-      do_progress (100 * (image_height-y) / image_height);
+      do_progress(100 * (image_height-y) / image_height);
   }
 
   if (*allegro_errno) {
-    console_printf (_("Error reading bytes.\n"));
+    console_printf(_("Error reading bytes.\n"));
     pack_fclose(f);
     return NULL;
   }
 
   pack_fclose(f);
-  return file_sequence_sprite ();
+  return file_sequence_sprite();
 }
 
 /* save_tga:
  *  Writes a bitmap into a TGA file, using the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-static int save_TGA (Sprite *sprite)
+static int save_TGA(Sprite *sprite)
 {
   unsigned char image_palette[256][3];
   int x, y, c, r, g, b;
@@ -411,7 +411,7 @@ static int save_TGA (Sprite *sprite)
   PACKFILE *f;
   Image *image;
 
-  f = pack_fopen (sprite->filename, F_WRITE);
+  f = pack_fopen(sprite->filename, F_WRITE);
   if (!f) {
     console_printf(_("Error creating file.\n"));
     return -1;
@@ -454,35 +454,35 @@ static int save_TGA (Sprite *sprite)
     case IMAGE_RGB:
       for (y=image->h; y; y--) {
         for (x=0; x<image->w; x++) {
-          c = image_getpixel (image, x, y-1);
-          pack_putc(_rgba_getb (c), f);
-          pack_putc(_rgba_getg (c), f);
-          pack_putc(_rgba_getr (c), f);
-          pack_putc(_rgba_geta (c), f);
+          c = image_getpixel(image, x, y-1);
+          pack_putc(_rgba_getb(c), f);
+          pack_putc(_rgba_getg(c), f);
+          pack_putc(_rgba_getr(c), f);
+          pack_putc(_rgba_geta(c), f);
         }
 
 	if (image->h > 1)
-	  do_progress (100 * (image->h-y) / (image->h-1));
+	  do_progress(100 * (image->h-y) / (image->h-1));
       }
       break;
 
     case IMAGE_GRAYSCALE:
       for (y=image->h; y; y--) {
         for (x=0; x<image->w; x++)
-          pack_putc (_graya_getk (image_getpixel (image, x, y-1)), f);
+          pack_putc(_graya_getk(image_getpixel(image, x, y-1)), f);
 
 	if (image->h > 1)
-	  do_progress (100 * (image->h-y) / (image->h-1));
+	  do_progress(100 * (image->h-y) / (image->h-1));
       }
       break;
 
     case IMAGE_INDEXED:
       for (y=image->h; y; y--) {
         for (x=0; x<image->w; x++)
-          pack_putc (image_getpixel(image, x, y-1), f);
+          pack_putc(image_getpixel(image, x, y-1), f);
 
 	if (image->h > 1)
-	  do_progress (100 * (image->h-y) / (image->h-1));
+	  do_progress(100 * (image->h-y) / (image->h-1));
       }
       break;
   }
@@ -490,7 +490,7 @@ static int save_TGA (Sprite *sprite)
   pack_fclose(f);
 
   if (*allegro_errno) {
-    console_printf (_("Error writing bytes.\n"));
+    console_printf(_("Error writing bytes.\n"));
     return -1;
   }
   else

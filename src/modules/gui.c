@@ -416,19 +416,19 @@ void gui_setup_screen(void)
 
 void reload_default_font(void)
 {
-  JTheme theme = ji_get_theme ();
+  JTheme theme = ji_get_theme();
   const char *default_font;
   DIRS *dirs, *dir;
 
   /* no font for now */
 
   if (theme->default_font && theme->default_font != font)
-    destroy_font (theme->default_font);
+    destroy_font(theme->default_font);
 
   theme->default_font = NULL;
 
   /* directories */
-  dirs = dirs_new ();
+  dirs = dirs_new();
 
   default_font = get_config_string("Options", "DefaultFont", "");
   if ((default_font) && (*default_font))
@@ -443,7 +443,7 @@ void reload_default_font(void)
 
   /* try to load the font */
   for (dir=dirs; dir; dir=dir->next) {
-    theme->default_font = ji_font_load (dir->path);
+    theme->default_font = ji_font_load(dir->path);
     if (theme->default_font) {
       if (ji_font_is_scalable (theme->default_font)) {
 	ji_font_set_size(theme->default_font,
@@ -453,7 +453,7 @@ void reload_default_font(void)
     }
   }
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 
   /* default font: the Allegro one */
 
@@ -667,7 +667,7 @@ void add_gfxicon_to_button(JWidget button, int gfx_id, int icon_align)
   jlist_append(icon_buttons, button);
 }
 
-void set_gfxicon_in_button (JWidget button, int gfx_id)
+void set_gfxicon_in_button(JWidget button, int gfx_id)
 {
   button->user_data[3] = (void *)gfx_id;
 
@@ -676,7 +676,7 @@ void set_gfxicon_in_button (JWidget button, int gfx_id)
   jwidget_dirty(button);
 }
 
-static bool button_with_icon_msg_proc (JWidget widget, JMessage msg)
+static bool button_with_icon_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_DESTROY)
     jlist_remove(icon_buttons, widget);
@@ -751,17 +751,17 @@ void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4)
 
   /* put a cusomized hook to filter only some messages to the real
      JI_BUTTON hook msg_proc */
-  jwidget_add_hook (widget, button_style_type (), button_style_msg_proc, hook);
+  jwidget_add_hook(widget, button_style_type(), button_style_msg_proc, hook);
 
   /* setup widget geometry */
   widget->align = button->align;
   widget->border_width = button->border_width;
   widget->draw_method = button->draw_method;
 
-  /* jwidget_set_border (widget, 2, 2, 2, 2); */
+  /* jwidget_set_border(widget, 2, 2, 2, 2); */
 
   /* the data will be free after */
-  jwidget_free (button);
+  jwidget_free(button);
 }
 #endif
 

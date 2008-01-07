@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ void dialogs_options(void)
 		   "move_click2", &move_click2,
 		   "draw_click2", &draw_click2,
 		   "button_ok", &button_ok, NULL)) {
-    jwidget_free (window);
+    jwidget_free(window);
     return;
   }
 

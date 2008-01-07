@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,11 +35,11 @@
 
 #endif
 
-static bool my_callback (void);
-static void my_play_fli (const char *filename, bool loop, bool fullscreen,
-			 bool (*callback) ());
+static bool my_callback(void);
+static void my_play_fli(const char *filename, bool loop, bool fullscreen,
+			bool (*callback)());
 
-void play_fli_animation (const char *filename, bool loop, bool fullscreen)
+void play_fli_animation(const char *filename, bool loop, bool fullscreen)
 {
   if (is_interactive()) {
     PALETTE backup;
@@ -60,7 +60,7 @@ void play_fli_animation (const char *filename, bool loop, bool fullscreen)
 
     /* play the fli */
     my_play_fli(filename, loop, fullscreen, my_callback);
-    /* play_fli (filename, ji_screen, loop, my_callback); */
+    /* play_fli(filename, ji_screen, loop, my_callback); */
 
     /* clear the screen */
     clear(ji_screen);
@@ -83,11 +83,11 @@ void play_fli_animation (const char *filename, bool loop, bool fullscreen)
   }
 }
 
-static bool my_callback (void)
+static bool my_callback(void)
 {
   jmouse_poll();
 
-  return (keypressed () || jmouse_b(0));
+  return (keypressed() || jmouse_b(0));
 }
 
 /**********************************************************************/
@@ -95,7 +95,7 @@ static bool my_callback (void)
 
 static int speed_timer;
 
-static void speed_timer_callback (void)
+static void speed_timer_callback(void)
 {
   speed_timer++;
 }
@@ -150,11 +150,11 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
   x = JI_SCREEN_W/2 - w/2;
   y = JI_SCREEN_H/2 - h/2;
 
-  LOCK_VARIABLE (speed_timer);
-  LOCK_FUNCTION (speed_timer_callback);
+  LOCK_VARIABLE(speed_timer);
+  LOCK_FUNCTION(speed_timer_callback);
 
   speed_timer = 0;
-  install_int_ex (speed_timer_callback, MSEC_TO_TIMER (fli_header.speed));
+  install_int_ex(speed_timer_callback, MSEC_TO_TIMER(fli_header.speed));
 
   frpos = 0;
   done = FALSE;
@@ -171,8 +171,8 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 	pal[c].g = cmap[i++]>>2;
 	pal[c].b = cmap[i++]>>2;
       }
-      set_palette (pal);
-      memcpy (omap, cmap, 768);
+      set_palette(pal);
+      memcpy(omap, cmap, 768);
     }
 
     if (fullscreen)
@@ -195,18 +195,18 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
       if (!loop)
 	break;
       else {
-	fseek (f, 128, SEEK_SET);
+	fseek(f, 128, SEEK_SET);
 	frpos = 0;
       }
     }
 
-    blit (bmp, old, 0, 0, 0, 0, fli_header.width, fli_header.height);
+    blit(bmp, old, 0, 0, 0, 0, fli_header.width, fli_header.height);
     speed_timer--;
   }
 
-  destroy_bitmap (bmp);
-  destroy_bitmap (old);
+  destroy_bitmap(bmp);
+  destroy_bitmap(old);
 
-  fclose (f);
+  fclose(f);
 }
 

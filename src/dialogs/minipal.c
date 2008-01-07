@@ -57,11 +57,11 @@ void ji_minipal_new(JWidget color_bar, int x, int y)
 static int paledit_change_signal(JWidget widget, int user_data)
 {
   if (jmouse_b(0)) {
-    PaletteEditor *paledit = palette_editor_data (widget);
+    PaletteEditor *paledit = palette_editor_data(widget);
     JWidget color_bar = (JWidget)user_data;
 
     if (paledit->color[0] == paledit->color[1]) {
-      char *color = color_index (paledit->color[1]);
+      char *color = color_index(paledit->color[1]);
 
       color_bar_set_color(color_bar,
 			  jmouse_b(0) == 1 ? 0: 1,

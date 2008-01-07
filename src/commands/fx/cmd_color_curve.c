@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,8 +66,8 @@ static void cmd_color_curve_execute(const char *argument)
   if (!the_curve) {
     /* default curve */
     the_curve = curve_new(CURVE_LINEAR);
-    curve_add_point(the_curve, curve_point_new (0, 0));
-    curve_add_point(the_curve, curve_point_new (255, 255));
+    curve_add_point(the_curve, curve_point_new(0, 0));
+    curve_add_point(the_curve, curve_point_new(255, 255));
   }
 
   image = GetImage();
@@ -140,7 +140,7 @@ static void cmd_color_curve_execute(const char *argument)
   jwidget_free(window);
 }
 
-static bool hooked_msg_proc (JWidget widget, JMessage msg)
+static bool hooked_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {

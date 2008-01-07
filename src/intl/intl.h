@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 #ifndef INTL_H
 #define INTL_H
 
-int intl_init (void);
-void intl_exit (void);
+int intl_init(void);
+void intl_exit(void);
 
-void intl_load_lang (void);
-const char *intl_get_lang (void);
-void intl_set_lang (const char *lang);
+void intl_load_lang(void);
+const char *intl_get_lang(void);
+void intl_set_lang(const char *lang);
 
 #endif /* !INTL_H */

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,19 +49,19 @@ static JWidget color_viewer;
 static JWidget palette_editor;
 static JWidget slider_frame;
 
-static void select_all_command (JWidget widget);
-static void load_command (JWidget widget);
-static void save_command (JWidget widget);
-static void ramp_command (JWidget widget);
-static void quantize_command (JWidget widget);
+static void select_all_command(JWidget widget);
+static void load_command(JWidget widget);
+static void save_command(JWidget widget);
+static void ramp_command(JWidget widget);
+static void quantize_command(JWidget widget);
 
-static int sliderRGB_change_signal (JWidget widget, int user_data);
-static int sliderHSV_change_signal (JWidget widget, int user_data);
-static int slider_columns_change_signal (JWidget widget, int user_data);
-static int slider_frame_change_signal (JWidget widget, int user_data);
-static int palette_editor_change_signal (JWidget widget, int user_data);
+static int sliderRGB_change_signal(JWidget widget, int user_data);
+static int sliderHSV_change_signal(JWidget widget, int user_data);
+static int slider_columns_change_signal(JWidget widget, int user_data);
+static int slider_frame_change_signal(JWidget widget, int user_data);
+static int palette_editor_change_signal(JWidget widget, int user_data);
 
-static void set_new_palette (RGB *palette);
+static void set_new_palette(RGB *palette);
 
 void dialogs_palette_editor(void)
 {
@@ -77,12 +77,12 @@ void dialogs_palette_editor(void)
   int frame_bak = current_sprite ? current_sprite->frame : 0;
 
   if (imgtype == IMAGE_GRAYSCALE) {
-    jalert (_("Error<<You can't edit grayscale palette||&OK"));
+    jalert(_("Error<<You can't edit grayscale palette||&OK"));
     return;
   }
 
   /* load widgets */
-  window = load_widget ("paledit.jid", "palette_editor");
+  window = load_widget("paledit.jid", "palette_editor");
   if (!window)
     return;
 
@@ -105,15 +105,15 @@ void dialogs_palette_editor(void)
 		    "button_ok", &button_ok,
 		    "color_viewer", &color_viewer_box,
 		    "palette_editor", &palette_editor_view, NULL)) {
-    jwidget_free (window);
+    jwidget_free(window);
     return;
   }
 
   /* create current_sprite->frames palettes */
   if (current_sprite) {
-    palettes = jmalloc (sizeof(PALETTE) * current_sprite->frames);
+    palettes = jmalloc(sizeof(PALETTE) * current_sprite->frames);
     if (!palettes) {
-      jalert (_("Error<<Not enough memory||&OK"));
+      jalert(_("Error<<Not enough memory||&OK"));
       return;
     }
     for (frame=0; frame<current_sprite->frames; frame++)
@@ -124,28 +124,28 @@ void dialogs_palette_editor(void)
     palettes = NULL;
 
   /* get current palette */
-  palette_copy (palette, current_palette);
+  palette_copy(palette, current_palette);
 
   /* get configuration */
-  columns = get_config_int ("PaletteEditor", "Columns", 16);
-  columns = MID (1, columns, 256);
+  columns = get_config_int("PaletteEditor", "Columns", 16);
+  columns = MID(1, columns, 256);
 
   /* custom widgets */
-  color_viewer = color_viewer_new ("index{0}", IMAGE_INDEXED);
-  palette_editor = palette_editor_new (palette, TRUE, 6);
+  color_viewer = color_viewer_new("index{0}", IMAGE_INDEXED);
+  palette_editor = palette_editor_new(palette, TRUE, 6);
 
-  jwidget_expansive (color_viewer, TRUE);
-  jwidget_add_child (color_viewer_box, color_viewer);
+  jwidget_expansive(color_viewer, TRUE);
+  jwidget_add_child(color_viewer_box, color_viewer);
 
-  jwidget_disable (button_undo);
-  jwidget_disable (button_redo);
+  jwidget_disable(button_undo);
+  jwidget_disable(button_redo);
 
-  jview_attach (palette_editor_view, palette_editor);
-  jview_maxsize (palette_editor_view);
+  jview_attach(palette_editor_view, palette_editor);
+  jview_maxsize(palette_editor_view);
 
   /* set columns */
-  jslider_set_value (slider_columns, columns);
-  palette_editor_set_columns (palette_editor, columns);
+  jslider_set_value(slider_columns, columns);
+  palette_editor_set_columns(palette_editor, columns);
 
   /* frame */
   if (current_sprite) {
@@ -173,22 +173,22 @@ void dialogs_palette_editor(void)
   jbutton_add_command(button_quantize, quantize_command);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* load window configuration */
-  load_window_pos (window, "PaletteEditor");
+  load_window_pos(window, "PaletteEditor");
 
   /* open and run the window */
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
   /* check the killer widget */
   if (jwindow_get_killer (window) == button_ok) {
     if (current_sprite) {
-      palette_copy (palettes[jslider_get_value(slider_frame)],
-		    current_palette);
+      palette_copy(palettes[jslider_get_value(slider_frame)],
+		   current_palette);
 
-      sprite_reset_palettes (current_sprite);
+      sprite_reset_palettes(current_sprite);
       for (frame=0; frame<current_sprite->frames; frame++) {
 	if (frame == 0 ||
 	    palette_diff(palettes[frame], palettes[frame-1], NULL, NULL))
@@ -218,7 +218,7 @@ void dialogs_palette_editor(void)
 
   /* save columns configuration */
   columns = jslider_get_value(slider_columns);
-  set_config_int("PaletteEditors", "Columns", MID (1, columns, 256));
+  set_config_int("PaletteEditors", "Columns", MID(1, columns, 256));
 
   /* save window configuration */
   save_window_pos(window, "PaletteEditor");

@@ -43,7 +43,7 @@
                        ((chr) == '\r'))
 
 #define TRANSLATE_ATTR(attr)						    \
-  ((attr->translatable) ? ji_translate_string (attr->value): (attr->value))
+  ((attr->translatable) ? ji_translate_string(attr->value): (attr->value))
 
 typedef struct Attr
 {
@@ -127,7 +127,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
     Attr *text = tag_get_attr(tag, "text");
 
     if (text) {
-      widget = jbutton_new (TRANSLATE_ATTR (text));
+      widget = jbutton_new(TRANSLATE_ATTR(text));
       if (widget) {
 	Attr *left = tag_get_attr(tag, "left");
 	Attr *right = tag_get_attr(tag, "right");
@@ -187,7 +187,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
     Attr *text = tag_get_attr(tag, "text");
 
     if (text) {
-      widget = jlabel_new(TRANSLATE_ATTR (text));
+      widget = jlabel_new(TRANSLATE_ATTR(text));
       if (widget) {
 	Attr *center = tag_get_attr(tag, "center");
 	Attr *right = tag_get_attr(tag, "right");
@@ -228,7 +228,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
 
     if (text && group && group->value) {
       widget = jradio_new(TRANSLATE_ATTR(text),
-			    strtol (group->value, NULL, 10));
+			  strtol(group->value, NULL, 10));
       if (widget) {
 	Attr *center = tag_get_attr(tag, "center");
 	Attr *right = tag_get_attr(tag, "right");
@@ -253,7 +253,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
     Attr *horizontal = tag_get_attr(tag, "horizontal");
     Attr *vertical = tag_get_attr(tag, "vertical");
 
-    widget = ji_separator_new(text ? TRANSLATE_ATTR (text): NULL,
+    widget = ji_separator_new(text ? TRANSLATE_ATTR(text): NULL,
 			      (horizontal ? JI_HORIZONTAL: 0) |
 			      (vertical ? JI_VERTICAL: 0) |
 			      (center ? JI_CENTER:
@@ -291,7 +291,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
       if (desktop)
 	widget = jwindow_new_desktop();
       else
-	widget = jwindow_new(TRANSLATE_ATTR (text));
+	widget = jwindow_new(TRANSLATE_ATTR(text));
     }
   }
 
@@ -424,10 +424,10 @@ static JList read_tags(FILE *f)
 	*s = 0;
 
 	/* create the new tag */
-	tag = tag_new_from_string (open ? tag_start: tag_start+1);
+	tag = tag_new_from_string(open ? tag_start: tag_start+1);
 
 	if (tag) {
-/* 	  fprintf (stderr, "%s tag: %s (parent %s)\n", */
+/* 	  fprintf(stderr, "%s tag: %s(parent %s)\n", */
 /* 		   open ? "open": "close", */
 /* 		   tag->name, */
 /* 		   !jlist_empty(parent_stack) ? ((Tag *)parent_stack->data)->name: "ROOT"); */
@@ -454,7 +454,7 @@ static JList read_tags(FILE *f)
 	    }
 	    else {
 	      /* TODO error msg */
-	      /* printf ("you must open the tag before close it\n"); */
+	      /* printf("you must open the tag before close it\n"); */
 	    }
 
 	    tag_free(tag);
@@ -467,8 +467,8 @@ static JList read_tags(FILE *f)
 	  Tag *tag = jlist_first(parent_stack)->data;
 
 	  if (tag->text || IS_BLANK(*s)) {
-	    int len = tag->text ? strlen (tag->text): 0;
-	    tag->text = jrealloc (tag->text, len+2);
+	    int len = tag->text ? strlen(tag->text): 0;
+	    tag->text = jrealloc(tag->text, len+2);
 	    tag->text[len] = *s;
 	    tag->text[len+1] = 0;
 	  }
@@ -558,7 +558,7 @@ static Tag *tag_new_from_string(char *tag_string)
 
       c = *s;
       *s = 0;
-      name = jstrdup (name_beg);
+      name = jstrdup(name_beg);
       *s = c;
 
       if (*s == '=') {
@@ -578,7 +578,7 @@ static Tag *tag_new_from_string(char *tag_string)
 	  /* read the attribute-value */
 	  while (*s) {
 	    if (*s == '\\') {
-	      memmove (s, s+1, strlen (s)-1);
+	      memmove(s, s+1, strlen(s)-1);
 	    }
 	    else if (*s == '\"') {
 	      go_next = TRUE;
@@ -595,7 +595,7 @@ static Tag *tag_new_from_string(char *tag_string)
 
 	c = *s;
 	*s = 0;
-	value = jstrdup (value_beg);
+	value = jstrdup(value_beg);
 	*s = c;
 
 	if (go_next)
@@ -603,11 +603,11 @@ static Tag *tag_new_from_string(char *tag_string)
       }
 
       /* create the attribute */
-      attr = attr_new (name, value, translatable);
+      attr = attr_new(name, value, translatable);
 
       /* add the attribute to the tag */
       if (attr)
-	tag_add_attr (tag, attr);
+	tag_add_attr(tag, attr);
     }
   }
 

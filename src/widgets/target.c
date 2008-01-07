@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,21 +46,21 @@ JWidget target_button_new(int imgtype, bool with_channels)
 {
 #define ADD(box, widget, hook)						\
   if (widget) {								\
-    jwidget_set_border (widget, 2, 2, 2, 2);				\
-    jwidget_add_child (box, widget);					\
-    HOOK (widget,							\
-	  widget->type == JI_BUTTON ?					\
-	  JI_SIGNAL_BUTTON_SELECT: JI_SIGNAL_CHECK_CHANGE, hook, vbox);	\
+    jwidget_set_border(widget, 2, 2, 2, 2);				\
+    jwidget_add_child(box, widget);					\
+    HOOK(widget,							\
+	 widget->type == JI_BUTTON ?					\
+	 JI_SIGNAL_BUTTON_SELECT: JI_SIGNAL_CHECK_CHANGE, hook, vbox);	\
   }
 
   JWidget vbox, hbox;
   JWidget r=NULL, g=NULL, b=NULL, k=NULL, a=NULL, index=NULL, images=NULL;
 
-  vbox = jbox_new (JI_VERTICAL);
-  hbox = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
+  vbox = jbox_new(JI_VERTICAL);
+  hbox = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
-  jwidget_noborders (vbox);
-  jwidget_noborders (hbox);
+  jwidget_noborders(vbox);
+  jwidget_noborders(hbox);
 
   if (with_channels) {
     switch (imgtype) {
@@ -102,8 +102,8 @@ JWidget target_button_new(int imgtype, bool with_channels)
   jbutton_set_bevel(images,
 		      with_channels ? 0: 2,
 		      with_channels ? 0: 2, 2, 2);
-  add_gfxicon_to_button (images, get_target_image_gfx (),
-			 JI_CENTER | JI_MIDDLE);
+  add_gfxicon_to_button(images, get_target_image_gfx(),
+			JI_CENTER | JI_MIDDLE);
 
   /* make hierarchy */
   ADD(hbox, r, channel_change);
@@ -113,7 +113,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
   ADD(hbox, a, channel_change);
 
   if (with_channels)
-    jwidget_add_child (vbox, hbox);
+    jwidget_add_child(vbox, hbox);
   else
     jwidget_free(hbox);
 
@@ -138,7 +138,7 @@ static int channel_change(JWidget widget, int user_data)
       return TRUE;
   }
 
-  set_config_bool("Target", name, jwidget_is_selected (widget));
+  set_config_bool("Target", name, jwidget_is_selected(widget));
 
   jwidget_emit_signal((JWidget)user_data, SIGNAL_TARGET_BUTTON_CHANGE);
   return TRUE;
@@ -148,7 +148,7 @@ static int images_change(JWidget widget, int user_data)
 {
   int images = get_config_int("Target", "Images", 0);
   set_config_int("Target", "Images", (images+1)%4);
-  set_gfxicon_in_button(widget, get_target_image_gfx ());
+  set_gfxicon_in_button(widget, get_target_image_gfx());
 
   jwidget_emit_signal((JWidget)user_data, SIGNAL_TARGET_BUTTON_CHANGE);
   return TRUE;

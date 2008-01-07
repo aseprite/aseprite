@@ -64,7 +64,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_REQSIZE:
-      textbox_request_size (widget, &msg->reqsize.w, &msg->reqsize.h);
+      textbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_SIGNAL:
@@ -123,7 +123,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 	      break;
 
 	    default:
-	      jrect_free (vp);
+	      jrect_free(vp);
 	      return FALSE;
 	  }
 	  jrect_free(vp);

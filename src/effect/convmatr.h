@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,20 +40,20 @@ typedef struct ConvMatr      /* a convolution matrix */
   int default_target;        /* targets by default */
 } ConvMatr;
 
-ConvMatr *convmatr_new (int w, int h);
-ConvMatr *convmatr_new_string (const char *format);
-void convmatr_free (ConvMatr *convmatr);
+ConvMatr *convmatr_new(int w, int h);
+ConvMatr *convmatr_new_string(const char *format);
+void convmatr_free(ConvMatr *convmatr);
 
-void set_convmatr (ConvMatr *convmatr);
-ConvMatr *get_convmatr (void);
-ConvMatr *get_convmatr_by_name (const char *name);
+void set_convmatr(ConvMatr *convmatr);
+ConvMatr *get_convmatr(void);
+ConvMatr *get_convmatr_by_name(const char *name);
 
-void reload_matrices_stock (void);
-void clean_matrices_stock (void);
-JList get_convmatr_stock (void);
+void reload_matrices_stock(void);
+void clean_matrices_stock(void);
+JList get_convmatr_stock(void);
 
-void init_convolution_matrix (void);
-void exit_convolution_matrix (void);
+void init_convolution_matrix(void);
+void exit_convolution_matrix(void);
 
 void apply_convolution_matrix4 (struct Effect *effect);
 void apply_convolution_matrix2 (struct Effect *effect);

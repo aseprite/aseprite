@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,12 +77,12 @@ static Sprite *load_FLI(const char *filename)
   FILE *f;
 
   /* open the file to read in binary mode */
-  f = fopen (filename, "rb");
+  f = fopen(filename, "rb");
   if (!f)
     return NULL;
 
-  fli_read_header (f, &fli_header);
-  fseek (f, 128, SEEK_SET);
+  fli_read_header(f, &fli_header);
+  fseek(f, 128, SEEK_SET);
 
   /* size by frame */
   w = fli_header.width;
@@ -106,8 +106,8 @@ static Sprite *load_FLI(const char *filename)
   layer_add_layer(sprite->set, layer);
 
   /* set frames and speed */
-  sprite_set_frames (sprite, fli_header.frames);
-  sprite_set_speed (sprite, fli_header.speed);
+  sprite_set_frames(sprite, fli_header.frames);
+  sprite_set_speed(sprite, fli_header.speed);
 
   /* write frame by frame */
   add_progress(100);
@@ -207,20 +207,20 @@ static int save_FLI(Sprite *sprite)
   fli_header.oframe1 = fli_header.oframe2 = 0;
 
   /* open the file to write in binary mode */
-  f = fopen (sprite->filename, "wb");
+  f = fopen(sprite->filename, "wb");
   if (!f)
     return -1;
 
-  fseek (f, 128, SEEK_SET);
+  fseek(f, 128, SEEK_SET);
 
   /* create the bitmaps */
-  bmp = image_new (IMAGE_INDEXED, sprite->w, sprite->h);
-  old = image_new (IMAGE_INDEXED, sprite->w, sprite->h);
+  bmp = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
+  old = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
   if ((!bmp) || (!old)) {
-    console_printf (_("Not enough memory for temporary bitmaps.\n"));
-    if (bmp) image_free (bmp);
-    if (old) image_free (old);
-    fclose (f);
+    console_printf(_("Not enough memory for temporary bitmaps.\n"));
+    if (bmp) image_free(bmp);
+    if (old) image_free(old);
+    fclose(f);
     return -1;
   }
 

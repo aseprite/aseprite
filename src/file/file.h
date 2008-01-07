@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@
 #define FILE_SUPPORT_MASKS_REPOSITORY	(1<<9)
 #define FILE_SUPPORT_PATHS_REPOSITORY	(1<<10)
 
-typedef struct Sprite *(*FileLoad) (const char *filename);
-typedef int (*FileSave) (struct Sprite *sprite);
+typedef struct Sprite *(*FileLoad)(const char *filename);
+typedef int (*FileSave)(struct Sprite *sprite);
 
 /* load or/and save a file format */
 typedef struct FileFormat

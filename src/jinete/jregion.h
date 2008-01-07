@@ -81,7 +81,7 @@ bool jregion_union(JRegion new, JRegion reg1, JRegion reg2);
 bool jregion_append(JRegion dstrgn, JRegion rgn);
 bool jregion_validate(JRegion badreg, bool *overlap);
 
-/* JRegion jrects_to_region (int nrects, JRect *prect, int ctype); */
+/* JRegion jrects_to_region(int nrects, JRect *prect, int ctype); */
 
 bool jregion_subtract(JRegion regD, JRegion regM, JRegion regS);
 bool jregion_inverse(JRegion newReg, JRegion reg1, JRect invRect);

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,65 +32,65 @@
 
 static HashTable *msgids = NULL;
 
-int msgids_load (const char *filename)
+int msgids_load(const char *filename)
 {
   char buf[4096], leavings[4096];
   char id[4096], trans[4096];
   int donotread = FALSE;
   FILE *f;
 
-  f = fopen (filename, "r");
+  f = fopen(filename, "r");
   if (!f)
     return -1;
 
   if (!msgids)
-    msgids = hash_new (64);
+    msgids = hash_new(64);
 
-  tok_reset_line_num ();
-  strcpy (leavings, "");
+  tok_reset_line_num();
+  strcpy(leavings, "");
 
   while (donotread || tok_read (f, buf, leavings, sizeof (leavings))) {
     donotread = FALSE;
 
     /* new msgid */
     if (strncmp ("msgid", buf, 5) == 0) {
-      strcpy (id, "");
-      strcpy (trans, "");
+      strcpy(id, "");
+      strcpy(trans, "");
 
-      while (tok_read (f, buf, leavings, sizeof (leavings)) &&
-	     strncmp ("msgstr", buf, 6) != 0)
-	strcat (id, buf);
+      while (tok_read(f, buf, leavings, sizeof(leavings)) &&
+	     strncmp("msgstr", buf, 6) != 0)
+	strcat(id, buf);
 
-      if (strncmp ("msgstr", buf, 6) == 0) {
-	while (tok_read (f, buf, leavings, sizeof (leavings)) &&
-	       strncmp ("msgid", buf, 5) != 0)
-	  strcat (trans, buf);
+      if (strncmp("msgstr", buf, 6) == 0) {
+	while (tok_read(f, buf, leavings, sizeof(leavings)) &&
+	       strncmp("msgid", buf, 5) != 0)
+	  strcat(trans, buf);
 
-	if (strncmp ("msgid", buf, 5) == 0)
+	if (strncmp("msgid", buf, 5) == 0)
 	  donotread = TRUE;
 
-	if (strlen (id) > 0 && strlen (trans) > 0)
-	  hash_insert (msgids, id, jstrdup (trans));
+	if (strlen(id) > 0 && strlen(trans) > 0)
+	  hash_insert(msgids, id, jstrdup(trans));
       }
     }
   }
 
-  fclose (f);
+  fclose(f);
   return 0;
 }
 
-void msgids_clear (void)
+void msgids_clear(void)
 {
   if (msgids) {
-    hash_free (msgids, jfree);
+    hash_free(msgids, jfree);
     msgids = NULL;
   }
 }
 
-const char *msgids_get (const char *id)
+const char *msgids_get(const char *id)
 {
   if (msgids) {
-    const char *trans = hash_lookup (msgids, id);
+    const char *trans = hash_lookup(msgids, id);
     if (trans)
       return trans;
   }

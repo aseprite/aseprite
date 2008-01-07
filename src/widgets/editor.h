@@ -50,7 +50,7 @@ typedef struct Editor
   int offset_y;
 
   /* marching ants stuff */
-  int last_clock;
+  int mask_timer_id;
   int offset_count;
 
   /* to save the area that overlap the layer-bound */

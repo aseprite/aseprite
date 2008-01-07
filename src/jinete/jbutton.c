@@ -330,7 +330,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	    if ((msg->key.scancode == KEY_ENTER) ||
 		(msg->key.scancode == KEY_ENTER_PAD) ||
 		(msg->key.scancode == KEY_SPACE)) {
-	      jwidget_select (widget);
+	      jwidget_select(widget);
 	      return TRUE;
 	    }
 	  }

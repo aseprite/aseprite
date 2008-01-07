@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,24 +33,24 @@
 
 #endif
 
-int intl_init (void)
+int intl_init(void)
 {
   return 0;
 }
 
-void intl_exit (void)
+void intl_exit(void)
 {
-  msgids_clear ();
+  msgids_clear();
 }
 
-void intl_load_lang (void)
+void intl_load_lang(void)
 {
-  const char *lang = intl_get_lang ();
+  const char *lang = intl_get_lang();
   DIRS *dirs, *dir;
   char buf[512];
 
-  sprintf (buf, "po/%s.po", lang);
-  dirs = filename_in_datadir (buf);
+  sprintf(buf, "po/%s.po", lang);
+  dirs = filename_in_datadir(buf);
 
   for (dir=dirs; dir; dir=dir->next) {
     if ((dir->path) && exists (dir->path)) {
@@ -61,58 +61,58 @@ void intl_load_lang (void)
     }
   }
 
-  dirs_free (dirs);
+  dirs_free(dirs);
 }
 
-const char *intl_get_lang (void)
+const char *intl_get_lang(void)
 {
-  return get_config_string ("Options", "Language", "en");
+  return get_config_string("Options", "Language", "en");
 }
 
-void intl_set_lang (const char *lang)
+void intl_set_lang(const char *lang)
 {
-  set_config_string ("Options", "Language", lang);
+  set_config_string("Options", "Language", lang);
 
   /* clear msgids and load them again */
-  msgids_clear ();
-  intl_load_lang ();
+  msgids_clear();
+  intl_load_lang();
 
   /* reload the main menu */
-  rebuild_root_menu ();
+  rebuild_root_menu();
 }
 
-/* int init_intl (void) */
+/* int init_intl(void) */
 /* { */
 /* #ifdef ENABLE_NLS */
 /*   char buf[512], locale_path[512]; */
 /*   DIRS *dirs, *dir; */
 
-/*   strcpy (buf, "locale"); */
-/*   dirs = filename_in_datadir (buf); */
+/*   strcpy(buf, "locale"); */
+/*   dirs = filename_in_datadir(buf); */
 
 /*   /\* search the configuration file from first to last path *\/ */
 /*   for (dir=dirs; dir; dir=dir->next) { */
 /*     if ((dir->path) && file_exists (dir->path, FA_DIREC, NULL)) { */
-/*       strcpy (buf, dir->path); */
+/*       strcpy(buf, dir->path); */
 /*       break; */
 /*     } */
 /*   } */
 
-/*   dirs_free (dirs); */
+/*   dirs_free(dirs); */
 
-/*   fix_filename_path (locale_path, buf, sizeof (locale_path)); */
+/*   fix_filename_path(locale_path, buf, sizeof(locale_path)); */
 
 /* #ifndef __MINGW32__ */
-/*   setlocale (LC_MESSAGES, ""); */
-/*   bindtextdomain (PACKAGE, locale_path); */
-/*   textdomain (PACKAGE); */
-/*   setenv ("OUTPUT_CHARSET", "ISO-8859-1", TRUE); */
+/*   setlocale(LC_MESSAGES, ""); */
+/*   bindtextdomain(PACKAGE, locale_path); */
+/*   textdomain(PACKAGE); */
+/*   setenv("OUTPUT_CHARSET", "ISO-8859-1", TRUE); */
 /* #endif */
 
 /*   /\* Set current language.  *\/ */
-/* /\*   const char *langname = get_config_string ("Options", "Language", ""); *\/ */
+/* /\*   const char *langname = get_config_string("Options", "Language", ""); *\/ */
 
-/* /\*   setenv ("LANGUAGE", "en", 1); *\/ */
+/* /\*   setenv("LANGUAGE", "en", 1); *\/ */
 /* /\*   { *\/ */
 /* /\*     extern int _nl_msg_cat_cntr; *\/ */
 /* /\*     ++_nl_msg_cat_cntr; *\/ */
@@ -121,32 +121,32 @@ void intl_set_lang (const char *lang)
 /*   return 0; */
 /* } */
 
-/* const char *get_language_code (void) */
+/* const char *get_language_code(void) */
 /* { */
 /* #ifdef ENABLE_NLS */
 /*   static char buf[8]; */
 /*   const char *language; */
 
-/*   language = getenv ("LANGUAGE"); */
+/*   language = getenv("LANGUAGE"); */
 /*   if (language != NULL && language[0] == '\0') */
 /*     language = NULL; */
 
 /*   if (!language) { */
-/*     language = getenv ("LC_ALL"); */
+/*     language = getenv("LC_ALL"); */
 /*     if (language != NULL && language[0] == '\0') */
 /*       language = NULL; */
 /*   } */
 
 /*   if (!language) { */
-/*     language = getenv ("LANG"); */
+/*     language = getenv("LANG"); */
 /*     if (language != NULL && language[0] == '\0') */
 /*       language = NULL; */
 /*   } */
 
 /*   if (language && language[0] && language[1]) */
-/*     sprintf (buf, "%c%c", language[0], language[1]); */
+/*     sprintf(buf, "%c%c", language[0], language[1]); */
 /*   else */
-/*     strcpy (buf, "en"); */
+/*     strcpy(buf, "en"); */
 
 /*   return buf; */
 /* #else */
@@ -156,7 +156,7 @@ void intl_set_lang (const char *lang)
 
 /* #ifdef ENABLE_NLS */
 /* #ifdef __MINGW32__ */
-/* char *gettext (const char *__msgid) */
+/* char *gettext(const char *__msgid) */
 /* { */
 /*   return gettext__ (__msgid); */
 /* } */

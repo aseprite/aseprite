@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,9 +63,9 @@ static RGB system_color[] =
 
 int init_module_palette(void)
 {
-  orig_rgb_map = jnew (RGB_MAP, 1);
-  orig_trans_map = jnew (COLOR_MAP, 1);
-  my_rgb_map = jnew (RGB_MAP, 1);
+  orig_rgb_map = jnew(RGB_MAP, 1);
+  orig_trans_map = jnew(COLOR_MAP, 1);
+  my_rgb_map = jnew(RGB_MAP, 1);
 
   hooks = jlist_new();
   rgb_map = my_rgb_map;
@@ -179,7 +179,7 @@ bool set_current_palette(RGB *_palette, int forced)
 }
 
 /* changes a color of the current system palette */
-void set_current_color (int index, int r, int g, int b)
+void set_current_color(int index, int r, int g, int b)
 {
   if (index >= 0 && index <= 255 &&
       (current_palette[index].r != r ||
@@ -193,24 +193,24 @@ void set_current_color (int index, int r, int g, int b)
 	(_index_cmap[index] != index))
       _index_cmap[index] = index;
 
-    set_color (index, &rgb);
+    set_color(index, &rgb);
   }
 }
 
 /* inserts a new palette-hook in the end of the list */
-void hook_palette_changes (void (*proc)(void))
+void hook_palette_changes(void (*proc)(void))
 {
   jlist_append(hooks, proc);
 }
 
 /* removes a palette-hook */
-void unhook_palette_changes (void (*proc)(void))
+void unhook_palette_changes(void (*proc)(void))
 {
   jlist_remove(hooks, proc);
 }
 
 /* calls all hooks */
-void call_palette_hooks (void)
+void call_palette_hooks(void)
 {
   JLink link;
 
@@ -223,7 +223,7 @@ void call_palette_hooks (void)
 
 static int regen_rgb_map = FALSE;
 
-void use_current_sprite_rgb_map (void)
+void use_current_sprite_rgb_map(void)
 {
   rgb_map = orig_rgb_map;
 }
@@ -237,20 +237,20 @@ void use_sprite_rgb_map(Sprite *sprite)
 		   sprite_get_palette(sprite, sprite->frame), NULL);
 }
 
-void restore_rgb_map (void)
+void restore_rgb_map(void)
 {
   rgb_map = my_rgb_map;
 
   if (regen_rgb_map) {
     regen_rgb_map = FALSE;
-    create_rgb_table (my_rgb_map, _current_palette, NULL);
+    create_rgb_table(my_rgb_map, _current_palette, NULL);
   }
 }
 
 /**********************************************************************/
 
 /* creates a linear ramp in the palette */
-void make_palette_ramp (RGB *p, int from, int to)
+void make_palette_ramp(RGB *p, int from, int to)
 {
   float rv, gv, bv;
   float rd, gd, bd;
@@ -287,20 +287,20 @@ void make_palette_ramp (RGB *p, int from, int to)
 }
 
 /* creates a rectangular ramp in the palette */
-void make_palette_rect_ramp (RGB *p, int from, int to, int cols)
+void make_palette_rect_ramp(RGB *p, int from, int to, int cols)
 {
   float rv1, gv1, bv1, rv2, gv2, bv2;
   float rd1, gd1, bd1, rd2, gd2, bd2;
-  int imin = MIN (from, to);
-  int imax = MAX (from, to);
+  int imin = MIN(from, to);
+  int imax = MAX(from, to);
   int xmin = imin % cols;
   int ymin = imin / cols;
   int xmax = imax % cols;
   int ymax = imax / cols;
-  int x1 = MIN (xmin, xmax);
-  int y1 = MIN (ymin, ymax);
-  int x2 = MAX (xmin, xmax);
-  int y2 = MAX (ymin, ymax);
+  int x1 = MIN(xmin, xmax);
+  int y1 = MIN(ymin, ymax);
+  int x2 = MAX(xmin, xmax);
+  int y2 = MAX(ymin, ymax);
   int i, rows;
 
   rows = y2 - y1;
@@ -345,7 +345,7 @@ void make_palette_rect_ramp (RGB *p, int from, int to, int cols)
     p[i*cols+x2].b = bv2;
 
     /* ramp from left to right side */
-    make_palette_ramp (p, i*cols+x1, i*cols+x2);
+    make_palette_ramp(p, i*cols+x1, i*cols+x2);
 
     rv1 += rd1;
     gv1 += gd1;
@@ -381,61 +381,61 @@ int palette_diff(RGB *p1, RGB *p2, int *from, int *to)
 
 void palette_copy(RGB *dst, RGB *src)
 {
-  memcpy(dst, src, sizeof (PALETTE));
+  memcpy(dst, src, sizeof(PALETTE));
 }
 
-RGB *palette_load (const char *filename)
+RGB *palette_load(const char *filename)
 {
   RGB *palette = NULL;
   char ext[64];
 
-  ustrcpy (ext, get_extension (filename));
+  ustrcpy(ext, get_extension(filename));
 
-  if ((ustricmp (ext, "pcx") == 0) ||
-      (ustricmp (ext, "bmp") == 0) ||
-      (ustricmp (ext, "tga") == 0) ||
-      (ustricmp (ext, "lbm") == 0)) {
+  if ((ustricmp(ext, "pcx") == 0) ||
+      (ustricmp(ext, "bmp") == 0) ||
+      (ustricmp(ext, "tga") == 0) ||
+      (ustricmp(ext, "lbm") == 0)) {
     BITMAP *bmp;
 
-    palette = jmalloc (sizeof (PALETTE));
-    bmp = load_bitmap (filename, palette);
+    palette = jmalloc(sizeof(PALETTE));
+    bmp = load_bitmap(filename, palette);
     if (bmp)
-      destroy_bitmap (bmp);
+      destroy_bitmap(bmp);
     else {
-      jfree (palette);
+      jfree(palette);
       palette = NULL;
     }
   }
-  else if (ustricmp (ext, "col") == 0) {
-    palette = load_col_file (filename);
+  else if (ustricmp(ext, "col") == 0) {
+    palette = load_col_file(filename);
   }
 
   return palette;
 }
 
-int palette_save (RGB *palette, const char *filename)
+int palette_save(RGB *palette, const char *filename)
 {
   int ret = -1;
   char ext[64];
 
-  ustrcpy (ext, get_extension (filename));
+  ustrcpy(ext, get_extension(filename));
 
-  if ((ustricmp (ext, "pcx") == 0) ||
-      (ustricmp (ext, "bmp") == 0) ||
-      (ustricmp (ext, "tga") == 0)) {
+  if ((ustricmp(ext, "pcx") == 0) ||
+      (ustricmp(ext, "bmp") == 0) ||
+      (ustricmp(ext, "tga") == 0)) {
     int c, x, y;
     BITMAP *bmp;
 
-    bmp = create_bitmap_ex (8, 16, 16);
+    bmp = create_bitmap_ex(8, 16, 16);
     for (y=c=0; y<16; y++)
       for (x=0; x<16; x++)
-	putpixel (bmp, x, y, c++);
+	putpixel(bmp, x, y, c++);
 
-    ret = save_bitmap (filename, bmp, palette);
-    destroy_bitmap (bmp);
+    ret = save_bitmap(filename, bmp, palette);
+    destroy_bitmap(bmp);
   }
-  else if (ustricmp (ext, "col") == 0) {
-    ret = save_col_file (palette, filename);
+  else if (ustricmp(ext, "col") == 0) {
+    ret = save_col_file(palette, filename);
   }
 
   return ret;

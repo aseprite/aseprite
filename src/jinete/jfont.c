@@ -80,7 +80,7 @@ extern FONT_VTABLE *ji_font_vtable_aa;
 
 /* helpers */
 
-static void _font_reget_fixed_sizes (FONT *f)
+static void _font_reget_fixed_sizes(FONT *f)
 {
   FONT_AA_DATA *af = f->data;
 
@@ -100,7 +100,7 @@ static void _font_reget_fixed_sizes (FONT *f)
   }
 }
 
-static void _font_uncache_glyphs (FONT *f)
+static void _font_uncache_glyphs(FONT *f)
 {
   FONT_AA_DATA *af = f->data;
 
@@ -111,11 +111,11 @@ static void _font_uncache_glyphs (FONT *f)
       if (af->cached_glyphs[i].is_cached) {
         af->cached_glyphs[i].is_cached = FALSE;
         if (af->cached_glyphs[i].bmp) {
-          jfree (af->cached_glyphs[i].bmp);
+          jfree(af->cached_glyphs[i].bmp);
           af->cached_glyphs[i].bmp = NULL;
         }
         if (af->cached_glyphs[i].aabmp) {
-          jfree (af->cached_glyphs[i].aabmp);
+          jfree(af->cached_glyphs[i].aabmp);
           af->cached_glyphs[i].aabmp = NULL;
         }
       }
@@ -123,19 +123,19 @@ static void _font_uncache_glyphs (FONT *f)
   }
 }
 
-static void _font_delete_glyphs (FONT *f)
+static void _font_delete_glyphs(FONT *f)
 {
   FONT_AA_DATA *af = f->data;
 
-  _font_uncache_glyphs (f);
+  _font_uncache_glyphs(f);
 
   if (af->cached_glyphs) {
-    jfree (af->cached_glyphs);
+    jfree(af->cached_glyphs);
     af->cached_glyphs = NULL;
   }
 }
 
-static void _font_cache_glyph (AL_CONST FONT *f, int glyph_number)
+static void _font_cache_glyph(AL_CONST FONT *f, int glyph_number)
 {
   FONT_AA_DATA *af = f->data;
 
@@ -143,8 +143,8 @@ static void _font_cache_glyph (AL_CONST FONT *f, int glyph_number)
   if (!af->cached_glyphs[glyph_number].is_cached) {
     FT_Glyph new_glyph;
     /* load the font glyph */
-    FT_Load_Glyph (af->face, glyph_number, FT_LOAD_DEFAULT);
-    FT_Get_Glyph (af->face->glyph, &new_glyph);
+    FT_Load_Glyph(af->face, glyph_number, FT_LOAD_DEFAULT);
+    FT_Get_Glyph(af->face->glyph, &new_glyph);
 
     /* ok, this glyph is now cached */
     af->cached_glyphs[glyph_number].is_cached = TRUE;
@@ -180,7 +180,7 @@ static void _font_cache_glyph (AL_CONST FONT *f, int glyph_number)
 
         /* allocate bitmap */
         af->cached_glyphs[glyph_number].bmp =
-	  jnew (unsigned char, ft_bmp->width * ft_bmp->rows);
+	  jnew(unsigned char, ft_bmp->width * ft_bmp->rows);
 
         /* monochrome drawing */
         {
@@ -243,7 +243,7 @@ static void _font_cache_glyph (AL_CONST FONT *f, int glyph_number)
 
         /* allocate bitmap */
         af->cached_glyphs[glyph_number].aabmp =
-	  jnew (unsigned char, ft_bmp->width * ft_bmp->rows);
+	  jnew(unsigned char, ft_bmp->width * ft_bmp->rows);
 
         /* aa drawing */
         {
@@ -283,17 +283,17 @@ static void _font_cache_glyph (AL_CONST FONT *f, int glyph_number)
     af->cached_glyphs[glyph_number].advancey = af->face->glyph->advance.y >> 6;
 
     /* delete the glyph */
-    FT_Done_Glyph (new_glyph);
+    FT_Done_Glyph(new_glyph);
   }
 }
 
-static void _font_new_cache_glyph (FONT *f)
+static void _font_new_cache_glyph(FONT *f)
 {
   FONT_AA_DATA *af = f->data;
   int i;
 
   if (!af->cached_glyphs)
-    af->cached_glyphs = jnew (struct CACHED_GLYPH, af->face->num_glyphs);
+    af->cached_glyphs = jnew(struct CACHED_GLYPH, af->face->num_glyphs);
 
   for (i=0; i<af->face->num_glyphs; i++) {
     af->cached_glyphs[i].is_cached = FALSE;
@@ -304,7 +304,7 @@ static void _font_new_cache_glyph (FONT *f)
 
 /* API */
 
-int _ji_font_init (void)
+int _ji_font_init(void)
 {
   if (!ji_font_inited) {
     if (FT_Init_FreeType (&ft_library))
@@ -315,56 +315,56 @@ int _ji_font_init (void)
   return 0;
 }
 
-void _ji_font_exit (void)
+void _ji_font_exit(void)
 {
   if (ji_font_inited) {
-    FT_Done_FreeType (ft_library);
+    FT_Done_FreeType(ft_library);
 
     ji_font_inited = FALSE;
   }
 }
 
-FONT *ji_font_load (const char *filepathname)
+FONT *ji_font_load(const char *filepathname)
 {
-  FONT *f = ji_font_load_bmp (filepathname);
+  FONT *f = ji_font_load_bmp(filepathname);
   if (!f)
-    f = ji_font_load_ttf (filepathname);
+    f = ji_font_load_ttf(filepathname);
   return f;
 }
 
-FONT *ji_font_load_bmp (const char *filepathname)
+FONT *ji_font_load_bmp(const char *filepathname)
 {
   int old_color_conv = _color_conv;
   FONT *f = NULL;
   PALETTE junk;
   BITMAP *bmp;
 
-  set_color_conversion (COLORCONV_NONE);
-  bmp = load_bitmap (filepathname, junk);
-  set_color_conversion (old_color_conv);
+  set_color_conversion(COLORCONV_NONE);
+  bmp = load_bitmap(filepathname, junk);
+  set_color_conversion(old_color_conv);
 
   if (bmp) {
-    f = _ji_bitmap2font (bmp);
-    destroy_bitmap (bmp);
+    f = _ji_bitmap2font(bmp);
+    destroy_bitmap(bmp);
   }
 
   return f;
 }
 
-FONT *ji_font_load_ttf (const char *filepathname)
+FONT *ji_font_load_ttf(const char *filepathname)
 {
   FONT_AA_DATA *af;
   int error;
   FONT *f;
 
   /* try to allocate the memory */
-  f = jmalloc (sizeof (FONT));
+  f = jmalloc(sizeof(FONT));
   if (!f)
     return NULL;
 
-  f->data = af = jmalloc0 (sizeof (FONT_AA_DATA));
+  f->data = af = jmalloc0(sizeof(FONT_AA_DATA));
   if (!f->data) {
-    jfree (f);
+    jfree(f);
     return NULL;
   }
 
@@ -379,10 +379,10 @@ FONT *ji_font_load_ttf (const char *filepathname)
   af->data_size = 0; 
 
   /* load the font */
-  error = FT_New_Face (ft_library, filepathname, 0, &af->face);
+  error = FT_New_Face(ft_library, filepathname, 0, &af->face);
   if (error) {
-    jfree (af);
-    jfree (f);
+    jfree(af);
+    jfree(f);
     return NULL;
   }
 
@@ -392,37 +392,37 @@ FONT *ji_font_load_ttf (const char *filepathname)
   else
     af->num_fixed_sizes = -1;
 
-  _font_new_cache_glyph (f);
+  _font_new_cache_glyph(f);
 
   if (af->num_fixed_sizes < 0) {
-    af->fixed_sizes = jmalloc (sizeof (int));
-    _font_reget_fixed_sizes (f);
+    af->fixed_sizes = jmalloc(sizeof(int));
+    _font_reget_fixed_sizes(f);
 
-    ji_font_set_size (f, 8);
+    ji_font_set_size(f, 8);
   }
   else {
-    af->fixed_sizes = jnew (int, af->num_fixed_sizes + 1);
-    _font_reget_fixed_sizes (f);
+    af->fixed_sizes = jnew(int, af->num_fixed_sizes + 1);
+    _font_reget_fixed_sizes(f);
 
     /* set as current size the first found fixed size */
-    ji_font_set_size (f, af->fixed_sizes[0]);
+    ji_font_set_size(f, af->fixed_sizes[0]);
   }
 
-  ji_font_set_char_extra_spacing (f, 0);
+  ji_font_set_char_extra_spacing(f, 0);
   return f;
 }
 
-int ji_font_get_size (FONT *f)
+int ji_font_get_size(FONT *f)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
     return af->face_h;
   }
   else
-    return text_height (f);
+    return text_height(f);
 }
 
-int ji_font_set_size (FONT *f, int h)
+int ji_font_set_size(FONT *f, int h)
 {
   int error, test_h, direction;
   FONT_AA_DATA *af = f->data;
@@ -442,13 +442,13 @@ int ji_font_set_size (FONT *f, int h)
   direction = 0;
   while (1) {
     int real_height;
-    error = FT_Set_Pixel_Sizes (af->face, 0, test_h);
+    error = FT_Set_Pixel_Sizes(af->face, 0, test_h);
     if (error)
       break;
 
     /* compare real height with asked height */
-    real_height = abs (af->face->size->metrics.ascender >> 6)
-                + abs (af->face->size->metrics.descender >> 6);
+    real_height = abs(af->face->size->metrics.ascender >> 6)
+                + abs(af->face->size->metrics.descender >> 6);
     if (real_height == h) {
       /* we found the wanted height */
       break;
@@ -467,7 +467,7 @@ int ji_font_set_size (FONT *f, int h)
     else if ((direction > 0) && (real_height > h)) {
       /* decrease one and found */
       test_h--;
-      FT_Set_Pixel_Sizes (af->face, 0, test_h);
+      FT_Set_Pixel_Sizes(af->face, 0, test_h);
       break;
     }
 
@@ -487,19 +487,19 @@ int ji_font_set_size (FONT *f, int h)
   }
 
   if (!error) {
-    _font_uncache_glyphs (f);
+    _font_uncache_glyphs(f);
     af->face_h = h;
     af->real_face_h = test_h;
     af->face_ascender = af->face->size->metrics.ascender >> 6;
     return 0;
   }
   else {
-    FT_Set_Pixel_Sizes (af->face, 0, af->real_face_h);
+    FT_Set_Pixel_Sizes(af->face, 0, af->real_face_h);
     return -1;
   }
 }
 
-int ji_font_get_aa_mode (struct FONT *f)
+int ji_font_get_aa_mode(struct FONT *f)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
@@ -509,7 +509,7 @@ int ji_font_get_aa_mode (struct FONT *f)
     return -1;
 }
 
-int ji_font_set_aa_mode (struct FONT *f, int mode)
+int ji_font_set_aa_mode(struct FONT *f, int mode)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
@@ -521,7 +521,7 @@ int ji_font_set_aa_mode (struct FONT *f, int mode)
     return -1;
 }
 
-bool ji_font_is_fixed (FONT *f)
+bool ji_font_is_fixed(FONT *f)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
@@ -535,7 +535,7 @@ bool ji_font_is_fixed (FONT *f)
     return TRUE;
 }
 
-bool ji_font_is_scalable (FONT *f)
+bool ji_font_is_scalable(FONT *f)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
@@ -549,13 +549,13 @@ bool ji_font_is_scalable (FONT *f)
     return FALSE;
 }
 
-const int *ji_font_get_available_fixed_sizes (FONT *f, int *n)
+const int *ji_font_get_available_fixed_sizes(FONT *f, int *n)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
 
     /* we reget them just to make sure the contents where not changed */
-    _font_reget_fixed_sizes (f);
+    _font_reget_fixed_sizes(f);
 
     if (n)
       *n = af->num_fixed_sizes;
@@ -563,10 +563,10 @@ const int *ji_font_get_available_fixed_sizes (FONT *f, int *n)
     return af->fixed_sizes;
   }
   else
-    return NULL;		/* TODO return text_height (...) size */
+    return NULL;		/* TODO return text_height(...) size */
 }
 
-int ji_font_get_char_extra_spacing (FONT *f)
+int ji_font_get_char_extra_spacing(FONT *f)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
@@ -577,22 +577,22 @@ int ji_font_get_char_extra_spacing (FONT *f)
     return 0;
 }
 
-void ji_font_set_char_extra_spacing (FONT *f, int spacing)
+void ji_font_set_char_extra_spacing(FONT *f, int spacing)
 {
   if (f->vtable == ji_font_vtable_aa) {
     FONT_AA_DATA *af = f->data;
 
-    af->ch_spacing = MID (0, spacing, 4096);
+    af->ch_spacing = MID(0, spacing, 4096);
   }
 }
 
-int ji_font_char_len (FONT *f, int chr)
+int ji_font_char_len(FONT *f, int chr)
 {
-  return f->vtable->char_length (f, chr);
+  return f->vtable->char_length(f, chr);
 }
 
 /* see jdraw_text */
-int ji_font_text_len (struct FONT *f, const char *s)
+int ji_font_text_len(struct FONT *f, const char *s)
 {
   int in_pos = 0;
   int pix_len = 0;
@@ -600,16 +600,16 @@ int ji_font_text_len (struct FONT *f, const char *s)
 
   while ((c = ugetc(s+in_pos)) != 0) {
     if (c == '&') {
-      in_pos += uwidth (s+in_pos);
-      c = ugetc (s+in_pos);
+      in_pos += uwidth(s+in_pos);
+      c = ugetc(s+in_pos);
       if (c == '&') {
-	pix_len += f->vtable->char_length (f, '&');
-	in_pos += uwidth (s+in_pos);
+	pix_len += f->vtable->char_length(f, '&');
+	in_pos += uwidth(s+in_pos);
       }
     }
     else {
-      pix_len += f->vtable->char_length (f, c);
-      in_pos += uwidth (s+in_pos);
+      pix_len += f->vtable->char_length(f, c);
+      in_pos += uwidth(s+in_pos);
     }
   }
 
@@ -619,14 +619,14 @@ int ji_font_text_len (struct FONT *f, const char *s)
 /* _aa_find_glyph:
  *  Helper for aa vtable entries, below.
  */
-static CACHED_GLYPH *_aa_find_glyph (AL_CONST FONT *f, int ch)
+static CACHED_GLYPH *_aa_find_glyph(AL_CONST FONT *f, int ch)
 {
   FONT_AA_DATA *af = f->data;
   int glyph_index;
 
   /* get the character out of the font */
   if (af->face->charmap)
-    glyph_index = FT_Get_Char_Index (af->face, ch);
+    glyph_index = FT_Get_Char_Index(af->face, ch);
   else
     glyph_index = ch;
     
@@ -638,7 +638,7 @@ static CACHED_GLYPH *_aa_find_glyph (AL_CONST FONT *f, int ch)
     }*/
 
   /* cache */
-  _font_cache_glyph (f, glyph_index);
+  _font_cache_glyph(f, glyph_index);
 
   return af->cached_glyphs + glyph_index;
 }
@@ -646,7 +646,7 @@ static CACHED_GLYPH *_aa_find_glyph (AL_CONST FONT *f, int ch)
 /* font_height:
  *  Returns the height, in pixels of the font.
  */
-static int aa_font_height (AL_CONST FONT *f)
+static int aa_font_height(AL_CONST FONT *f)
 {
   /* TODO */
 /*   return f->height; */
@@ -659,9 +659,9 @@ static int aa_font_height (AL_CONST FONT *f)
  *  Returns the length of a character, in pixels, as it would be rendered
  *  in this font.
  */
-static int aa_char_length (AL_CONST FONT *f, int ch)
+static int aa_char_length(AL_CONST FONT *f, int ch)
 {
-  CACHED_GLYPH *g = _aa_find_glyph (f, ch);
+  CACHED_GLYPH *g = _aa_find_glyph(f, ch);
 
 /*   return g->advancex ? g->advancex + af->ch_spacing: 0; */
   return g->advancex;
@@ -670,22 +670,22 @@ static int aa_char_length (AL_CONST FONT *f, int ch)
 /* aa_length:
  *  Returns the length, in pixels, of a string as rendered in a font.
  */
-static int aa_length (AL_CONST FONT *f, AL_CONST char *text)
+static int aa_length(AL_CONST FONT *f, AL_CONST char *text)
 {
   FONT_AA_DATA *af = f->data;
   AL_CONST char *p = text;
   int ch = 0, w = 0;
 
   while ((ch = ugetxc (&p))) {
-    w += f->vtable->char_length (f, ch)
+    w += f->vtable->char_length(f, ch)
       + af->ch_spacing;
   }
 
   return w;
 }
 
-static void _aa_prepare_alpha_table (AL_CONST FONT *f, int color,
-				     int *alpha_table, int depth)
+static void _aa_prepare_alpha_table(AL_CONST FONT *f, int color,
+				    int *alpha_table, int depth)
 {
   AL_CONST FONT_AA_DATA *af = f->data;
   int i, r, g, b, br, bg, bb, ir, ig, ib;
@@ -693,18 +693,18 @@ static void _aa_prepare_alpha_table (AL_CONST FONT *f, int color,
 
   /* if we are gonna use transparent mode, set blender */
   if (af->aa_mode < 0)
-    drawing_mode (DRAW_MODE_TRANS, NULL, 0, 0);
+    drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
   /* else if we are doing opaque mode, draw a rect and init our table*/
   else {
     /* get the color rgb */
-    r = getr_depth (depth, color);
-    g = getg_depth (depth, color);
-    b = getb_depth (depth, color);
+    r = getr_depth(depth, color);
+    g = getg_depth(depth, color);
+    b = getb_depth(depth, color);
 
     /* get the background rgb */   
-    br = getr_depth (depth, af->aa_mode);
-    bg = getg_depth (depth, af->aa_mode);
-    bb = getb_depth (depth, af->aa_mode);
+    br = getr_depth(depth, af->aa_mode);
+    bg = getg_depth(depth, af->aa_mode);
+    bb = getb_depth(depth, af->aa_mode);
 
     /* get increments */
     if (r == br)
@@ -731,8 +731,8 @@ static void _aa_prepare_alpha_table (AL_CONST FONT *f, int color,
       if (i == 0)
 	alpha_table[i] = -1;
       else
-	alpha_table[i] = makecol_depth (depth,
-					blendr >> 8, blendg >> 8, blendb >> 8);
+	alpha_table[i] = makecol_depth(depth,
+				       blendr >> 8, blendg >> 8, blendb >> 8);
 
       blendr += ir;
       blendg += ig;
@@ -741,8 +741,8 @@ static void _aa_prepare_alpha_table (AL_CONST FONT *f, int color,
   }
 }
 
-static void _aa_render_glyph (BITMAP *bmp, FONT_AA_DATA *af, CACHED_GLYPH *g,
-			      int u, int v, int color, int *alpha_table)
+static void _aa_render_glyph(BITMAP *bmp, FONT_AA_DATA *af, CACHED_GLYPH *g,
+			     int u, int v, int color, int *alpha_table)
 {
   int max_bmp_x, max_bmp_y;
   unsigned char *bmp_p;
@@ -766,7 +766,7 @@ static void _aa_render_glyph (BITMAP *bmp, FONT_AA_DATA *af, CACHED_GLYPH *g,
 	for (bmp_x=u; bmp_x<max_bmp_x; bmp_x++) {
 	  c = alpha_table[*bmp_p];
 	  if (c >= 0)
-	    putpixel (bmp, bmp_x, bmp_y, c);
+	    putpixel(bmp, bmp_x, bmp_y, c);
 	  bmp_p++;
 	}
       }
@@ -776,8 +776,8 @@ static void _aa_render_glyph (BITMAP *bmp, FONT_AA_DATA *af, CACHED_GLYPH *g,
       /* copy the FT character bitmap to our dest one */
       for (bmp_y=v; bmp_y<max_bmp_y; bmp_y++) {
 	for (bmp_x=u; bmp_x<max_bmp_x; bmp_x++) {
-	  set_trans_blender (0, 0, 0, *bmp_p);
-	  putpixel (bmp, bmp_x, bmp_y, color);
+	  set_trans_blender(0, 0, 0, *bmp_p);
+	  putpixel(bmp, bmp_x, bmp_y, color);
 	  bmp_p++;
 	}
       }
@@ -797,9 +797,9 @@ static void _aa_render_glyph (BITMAP *bmp, FONT_AA_DATA *af, CACHED_GLYPH *g,
     for (bmp_y=u; bmp_y<max_bmp_y; bmp_y++) {
       for (bmp_x=v; bmp_x<max_bmp_x; bmp_x++) {
 	if (*bmp_p)
-	  putpixel (bmp, bmp_x, bmp_y, color);
+	  putpixel(bmp, bmp_x, bmp_y, color);
 	/*             else if (af->aa_mode >= 0) */
-	/*               putpixel (bmp, bmp_x, bmp_y, af->aa_mode); */
+	/*               putpixel(bmp, bmp_x, bmp_y, af->aa_mode); */
 	bmp_p++;
       }
     }
@@ -812,35 +812,35 @@ static void _aa_render_glyph (BITMAP *bmp, FONT_AA_DATA *af, CACHED_GLYPH *g,
  *  mono; if bg == -1, render as transparent, else render as opaque.
  *  Returns the character width, in pixels.
  */
-static int aa_render_char (AL_CONST FONT *f, int ch, int fg, int bg, BITMAP *bmp, int x, int y)
+static int aa_render_char(AL_CONST FONT *f, int ch, int fg, int bg, BITMAP *bmp, int x, int y)
 {
   FONT_AA_DATA *af = f->data;
   CACHED_GLYPH *g = NULL;
   int w = 0;
 
-  acquire_bitmap (bmp);
+  acquire_bitmap(bmp);
 
   if (bg >= 0) {
-    rectfill (bmp, x, y,
-	      x + f->vtable->char_length (f, ch) - 1,
-	      y + f->vtable->font_height (f) - 1, bg);
+    rectfill(bmp, x, y,
+	     x + f->vtable->char_length(f, ch) - 1,
+	     y + f->vtable->font_height(f) - 1, bg);
   }
 
-  g = _aa_find_glyph (f, ch);
+  g = _aa_find_glyph(f, ch);
   if (g) {
     int alpha_table[256];
 
-    _aa_prepare_alpha_table (f, fg, alpha_table, bitmap_color_depth (bmp));
-    _aa_render_glyph (bmp, af, g, x, y, fg, alpha_table);
+    _aa_prepare_alpha_table(f, fg, alpha_table, bitmap_color_depth(bmp));
+    _aa_render_glyph(bmp, af, g, x, y, fg, alpha_table);
 
     w += g->advancex;
 
     /* reset blender */
     if (af->aa_mode < 0)
-      solid_mode ();
+      solid_mode();
   }
 
-  release_bitmap (bmp);
+  release_bitmap(bmp);
 
   return w;
 }
@@ -850,7 +850,7 @@ static int aa_render_char (AL_CONST FONT *f, int ch, int fg, int bg, BITMAP *bmp
  *  the specified colors. If fg == -1, render as color, else render as
  *  mono; if bg == -1, render as transparent, else render as opaque.
  */
-static void aa_render (AL_CONST FONT *f, AL_CONST char *text, int fg, int bg, BITMAP *bmp, int x, int y)
+static void aa_render(AL_CONST FONT *f, AL_CONST char *text, int fg, int bg, BITMAP *bmp, int x, int y)
 {
   AL_CONST char *p = text;
   FONT_AA_DATA *af = f->data;
@@ -858,21 +858,21 @@ static void aa_render (AL_CONST FONT *f, AL_CONST char *text, int fg, int bg, BI
   int alpha_table[256];
   int ch = 0;
 
-  acquire_bitmap (bmp);
+  acquire_bitmap(bmp);
 
   if (bg >= 0) {
-    rectfill (bmp, x, y,
-	      x + text_length (f, text) - 1,
-	      y + text_height (f) - 1, bg);
+    rectfill(bmp, x, y,
+	     x + text_length(f, text) - 1,
+	     y + text_height(f) - 1, bg);
     bg = -1; /* to avoid filling rectangles for each character */
   }
 
-  _aa_prepare_alpha_table (f, fg, alpha_table, bitmap_color_depth (bmp));
+  _aa_prepare_alpha_table(f, fg, alpha_table, bitmap_color_depth(bmp));
 
   while ((ch = ugetxc (&p))) {
-    g = _aa_find_glyph (f, ch);
+    g = _aa_find_glyph(f, ch);
     if (g) {
-      _aa_render_glyph (bmp, af, g, x, y, fg, alpha_table);
+      _aa_render_glyph(bmp, af, g, x, y, fg, alpha_table);
 
       if (g->advancex) x += g->advancex + af->ch_spacing;
       if (g->advancey) y += g->advancey + af->ch_spacing;
@@ -881,12 +881,12 @@ static void aa_render (AL_CONST FONT *f, AL_CONST char *text, int fg, int bg, BI
 
   /* reset blender */
   if (af->aa_mode < 0)
-    solid_mode ();
+    solid_mode();
 
-  release_bitmap (bmp);
+  release_bitmap(bmp);
 }
 
-static void aa_destroy (FONT *f)
+static void aa_destroy(FONT *f)
 {
   FONT_AA_DATA *af;
 
@@ -894,20 +894,20 @@ static void aa_destroy (FONT *f)
   af = f->data;
 
   /* delete old glyphs */
-  _font_delete_glyphs (f);
+  _font_delete_glyphs(f);
 
   /* delete the face */
-  FT_Done_Face (af->face);
+  FT_Done_Face(af->face);
 
   if (af->fixed_sizes)
-    jfree (af->fixed_sizes);
+    jfree(af->fixed_sizes);
 
   /* deallocate the data */
   if (af->data)
-    jfree (af->data);
+    jfree(af->data);
 
-  jfree (af);
-  jfree (f);
+  jfree(af);
+  jfree(f);
 }
 
 /********
@@ -930,100 +930,100 @@ FONT_VTABLE *ji_font_vtable_aa = &_ji_font_vtable_aa;
 #else /* without FreeType */
 /**********************************************************************/
 
-int _ji_font_init (void)
+int _ji_font_init(void)
 {
   return 0;
 }
 
-void _ji_font_exit (void)
+void _ji_font_exit(void)
 {
 }
 
-FONT *ji_font_load (const char *filepathname)
+FONT *ji_font_load(const char *filepathname)
 {
-  FONT *f = ji_font_load_bmp (filepathname);
+  FONT *f = ji_font_load_bmp(filepathname);
   if (!f)
-    f = ji_font_load_ttf (filepathname);
+    f = ji_font_load_ttf(filepathname);
   return f;
 }
 
-FONT *ji_font_load_bmp (const char *filepathname)
+FONT *ji_font_load_bmp(const char *filepathname)
 {
   int old_color_conv = _color_conv;
   FONT *f = NULL;
   PALETTE junk;
   BITMAP *bmp;
 
-  set_color_conversion (COLORCONV_NONE);
-  bmp = load_bitmap (filepathname, junk);
-  set_color_conversion (old_color_conv);
+  set_color_conversion(COLORCONV_NONE);
+  bmp = load_bitmap(filepathname, junk);
+  set_color_conversion(old_color_conv);
 
   if (bmp) {
-    f = _ji_bitmap2font (bmp);
-    destroy_bitmap (bmp);
+    f = _ji_bitmap2font(bmp);
+    destroy_bitmap(bmp);
   }
 
   return f;
 }
 
-FONT *ji_font_load_ttf (const char *filepathname)
+FONT *ji_font_load_ttf(const char *filepathname)
 {
   return NULL;
 }
 
-int ji_font_get_size (FONT *f)
+int ji_font_get_size(FONT *f)
 {
-  return text_height (f);
+  return text_height(f);
 }
 
-int ji_font_set_size (FONT *f, int h)
+int ji_font_set_size(FONT *f, int h)
 {
   /* do nothing */
   return -1;
 }
 
-int ji_font_get_aa_mode (struct FONT *f)
+int ji_font_get_aa_mode(struct FONT *f)
 {
   return -1;
 }
 
-int ji_font_set_aa_mode (struct FONT *f, int mode)
+int ji_font_set_aa_mode(struct FONT *f, int mode)
 {
   return -1;
 }
 
-bool ji_font_is_fixed (FONT *f)
+bool ji_font_is_fixed(FONT *f)
 {
   return TRUE;
 }
 
-bool ji_font_is_scalable (FONT *f)
+bool ji_font_is_scalable(FONT *f)
 {
   return FALSE;
 }
 
-const int *ji_font_get_available_fixed_sizes (FONT *f, int *n)
+const int *ji_font_get_available_fixed_sizes(FONT *f, int *n)
 {
-  return NULL; /* TODO return text_height (...) size */
+  return NULL; /* TODO return text_height(...) size */
 }
 
-int ji_font_get_char_extra_spacing (FONT *f)
+int ji_font_get_char_extra_spacing(FONT *f)
 {
   return 0;
 }
 
-void ji_font_set_char_extra_spacing (FONT *f, int spacing)
+void ji_font_set_char_extra_spacing(FONT *f, int spacing)
 {
   /* do nothing */
 }
 
-int ji_font_char_len (FONT *f, int chr)
+int ji_font_char_len(FONT *f, int chr)
 {
-  return f->vtable->char_length (f, chr);
+  return f->vtable->char_length(f, chr);
 }
 
 /* see jdraw_text */
-int ji_font_text_len (struct FONT *f, const char *s)
+int ji_font_text_len(struct FONT *f, const char *s)
 {
   int in_pos = 0;
   int pix_len = 0;
@@ -1031,16 +1031,16 @@ int ji_font_text_len (struct FONT *f, const char *s)
 
   while ((c = ugetc(s+in_pos)) != 0) {
     if (c == '&') {
-      in_pos += uwidth (s+in_pos);
-      c = ugetc (s+in_pos);
+      in_pos += uwidth(s+in_pos);
+      c = ugetc(s+in_pos);
       if (c == '&') {
-	pix_len += f->vtable->char_length (f, '&');
-	in_pos += uwidth (s+in_pos);
+	pix_len += f->vtable->char_length(f, '&');
+	in_pos += uwidth(s+in_pos);
       }
     }
     else {
-      pix_len += f->vtable->char_length (f, c);
-      in_pos += uwidth (s+in_pos);
+      pix_len += f->vtable->char_length(f, c);
+      in_pos += uwidth(s+in_pos);
     }
   }
 

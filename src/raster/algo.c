@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,16 +28,16 @@
 
 #endif
 
-void algo_dirty (Dirty *dirty, void *data, AlgoHLine proc)
+void algo_dirty(Dirty *dirty, void *data, AlgoHLine proc)
 {
   int u, v;
 
   for (v=0; v<dirty->rows; v++)
     for (u=0; u<dirty->row[v].cols; u++)
       if (dirty->row[v].col[u].flags & DIRTY_MUSTBE_UPDATED) {
-	(*proc) (dirty->row[v].col[u].x,
-		 dirty->row[v].y,
-		 dirty->row[v].col[u].x+dirty->row[v].col[u].w-1, data);
+	(*proc)(dirty->row[v].col[u].x,
+		dirty->row[v].y,
+		dirty->row[v].col[u].x+dirty->row[v].col[u].w-1, data);
 
 	dirty->row[v].col[u].flags ^= DIRTY_MUSTBE_UPDATED;
       }
@@ -45,7 +45,7 @@ void algo_dirty (Dirty *dirty, void *data, AlgoHLine proc)
 
 /* Algorightm from Allegro (allegro/src/gfx.c)
    Adapted for ASE by David A. Capello. */
-void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
+void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 {
   int dx = x2-x1;
   int dy = y2-y1;
@@ -57,7 +57,7 @@ void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 #define DO_LINE(pri_sign, pri_c, pri_cond, sec_sign, sec_c, sec_cond)	\
   {									\
     if (d##pri_c == 0) {						\
-      proc (x1, y1, data);						\
+      proc(x1, y1, data);						\
       return;								\
     }									\
 									\
@@ -69,7 +69,7 @@ void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
     y = y1;								\
 									\
     while (pri_c pri_cond pri_c##2) {					\
-      proc (x, y, data);						\
+      proc(x, y, data);							\
 									\
       if (dd sec_cond 0) {						\
 	sec_c sec_sign##= 1;						\
@@ -86,21 +86,21 @@ void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
     if (dy >= 0) {
       if (dx >= dy) {
 	/* (x1 <= x2) && (y1 <= y2) && (dx >= dy) */
-	DO_LINE (+, x, <=, +, y, >=);
+	DO_LINE(+, x, <=, +, y, >=);
       }
       else {
 	/* (x1 <= x2) && (y1 <= y2) && (dx < dy) */
-	DO_LINE (+, y, <=, +, x, >=);
+	DO_LINE(+, y, <=, +, x, >=);
       }
     }
     else {
       if (dx >= -dy) {
 	/* (x1 <= x2) && (y1 > y2) && (dx >= dy) */
-	DO_LINE (+, x, <=, -, y, <=);
+	DO_LINE(+, x, <=, -, y, <=);
       }
       else {
 	/* (x1 <= x2) && (y1 > y2) && (dx < dy) */
-	DO_LINE (-, y, >=, +, x, >=);
+	DO_LINE(-, y, >=, +, x, >=);
       }
     }
   }
@@ -108,21 +108,21 @@ void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
     if (dy >= 0) {
       if (-dx >= dy) {
 	/* (x1 > x2) && (y1 <= y2) && (dx >= dy) */
-	DO_LINE (-, x, >=, +, y, >=);
+	DO_LINE(-, x, >=, +, y, >=);
       }
       else {
 	/* (x1 > x2) && (y1 <= y2) && (dx < dy) */
-	DO_LINE (+, y, <=, -, x, <=);
+	DO_LINE(+, y, <=, -, x, <=);
       }
     }
     else {
       if (-dx >= -dy) {
 	/* (x1 > x2) && (y1 > y2) && (dx >= dy) */
-	DO_LINE (-, x, >=, -, y, <=);
+	DO_LINE(-, x, >=, -, y, <=);
       }
       else {
 	/* (x1 > x2) && (y1 > y2) && (dx < dy) */
-	DO_LINE (-, y, >=, -, x, <=);
+	DO_LINE(-, y, >=, -, x, <=);
       }
     }
   }
@@ -139,7 +139,7 @@ void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
    for Allegro 4.x.
 
    Adapted for ASE by David A. Capello. */
-void algo_ellipse (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
+void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
 {
   int mx, my, rx, ry;
 
@@ -156,33 +156,33 @@ void algo_ellipse (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
   mx2 = (x1 + x2 + 1) / 2;
   my = (y1 + y2) / 2;
   my2 = (y1 + y2 + 1) / 2;
-  rx = ABS (x1 - x2);
-  ry = ABS (y1 - y2);
+  rx = ABS(x1 - x2);
+  ry = ABS(y1 - y2);
 
-  if (rx == 1) { algo_line (x2, y1, x2, y2, data, proc); rx--; }
-  if (rx == 0) { algo_line (x1, y1, x1, y2, data, proc); return; }
+  if (rx == 1) { algo_line(x2, y1, x2, y2, data, proc); rx--; }
+  if (rx == 0) { algo_line(x1, y1, x1, y2, data, proc); return; }
    
-  if (ry == 1) { algo_line (x1, y2, x2, y2, data, proc); ry--; }
-  if (ry == 0) { algo_line (x1, y1, x2, y1, data, proc); return; }
+  if (ry == 1) { algo_line(x1, y2, x2, y2, data, proc); ry--; }
+  if (ry == 0) { algo_line(x1, y1, x2, y1, data, proc); return; }
 
   rx /= 2;
   ry /= 2;
 
   /* Draw the 4 poles. */
-  proc (mx, my2 + ry, data);
-  proc (mx, my - ry, data);
-  proc (mx2 + rx, my, data);
-  proc (mx - rx, my, data);
+  proc(mx, my2 + ry, data);
+  proc(mx, my - ry, data);
+  proc(mx2 + rx, my, data);
+  proc(mx - rx, my, data);
 
   /* For even diameter axis, double the poles. */
   if (mx != mx2) {
-    proc (mx2, my2 + ry, data);
-    proc (mx2, my - ry, data);
+    proc(mx2, my2 + ry, data);
+    proc(mx2, my - ry, data);
   }
 
   if (my != my2) {
-    proc (mx2 + rx, my2, data);
-    proc (mx - rx, my2, data);
+    proc(mx2 + rx, my2, data);
+    proc(mx - rx, my2, data);
   }
 
   xx = rx * rx;
@@ -208,10 +208,10 @@ void algo_ellipse (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
     if (xa >= ya)
       break;
 
-    proc (mx2 + x, my - y, data);
-    proc (mx - x, my - y, data);
-    proc (mx2 + x, my2 + y, data);
-    proc (mx - x, my2 + y, data);
+    proc(mx2 + x, my - y, data);
+    proc(mx - x, my - y, data);
+    proc(mx2 + x, my2 + y, data);
+    proc(mx - x, my2 + y, data);
   }
 
   /* Fill in missing pixels for very thin ellipses. (This is caused because
@@ -220,10 +220,10 @@ void algo_ellipse (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
    */
   if (y == 0)
     while (x < rx) {
-      proc (mx2 + x, my - 1, data);
-      proc (mx2 + x, my2 + 1, data);
-      proc (mx - x, my - 1, data);
-      proc (mx - x, my2 + 1, data);
+      proc(mx2 + x, my - 1, data);
+      proc(mx2 + x, my2 + 1, data);
+      proc(mx - x, my - 1, data);
+      proc(mx - x, my2 + 1, data);
       x++;
     }
 
@@ -246,24 +246,24 @@ void algo_ellipse (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
     y++;
     if (ya > xa)
       break;
-    proc (mx2 + x, my - y, data);
-    proc (mx - x, my - y, data);
-    proc (mx2 + x, my2 + y, data);
-    proc (mx - x, my2 + y, data);
+    proc(mx2 + x, my - y, data);
+    proc(mx - x, my - y, data);
+    proc(mx2 + x, my2 + y, data);
+    proc(mx - x, my2 + y, data);
   }
 
   /* See comment above. */
   if (x == 0)
     while (y < ry) {
-      proc (mx - 1, my - y, data);
-      proc (mx2 + 1, my - y, data);
-      proc (mx - 1, my2 + y, data);
-      proc (mx2 + 1, my2 + y, data);
+      proc(mx - 1, my - y, data);
+      proc(mx2 + 1, my - y, data);
+      proc(mx - 1, my2 + y, data);
+      proc(mx2 + 1, my2 + y, data);
       y++;
     }
 }
 
-void algo_ellipsefill (int x1, int y1, int x2, int y2, void *data, AlgoHLine proc)
+void algo_ellipsefill(int x1, int y1, int x2, int y2, void *data, AlgoHLine proc)
 {
   int mx, my, rx, ry;
 
@@ -283,32 +283,32 @@ void algo_ellipsefill (int x1, int y1, int x2, int y2, void *data, AlgoHLine pro
   rx = ABS (x1 - x2);
   ry = ABS (y1 - y2);
 
-  if (rx == 1) { int c; for (c=y1; c<=y2; c++) proc (x2, c, x2, data); rx--; }
-  if (rx == 0) { int c; for (c=y1; c<=y2; c++) proc (x1, c, x1, data); return; }
+  if (rx == 1) { int c; for (c=y1; c<=y2; c++) proc(x2, c, x2, data); rx--; }
+  if (rx == 0) { int c; for (c=y1; c<=y2; c++) proc(x1, c, x1, data); return; }
    
-  if (ry == 1) { proc (x1, y2, x2, data); ry--; }
-  if (ry == 0) { proc (x1, y1, x2, data); return; }
+  if (ry == 1) { proc(x1, y2, x2, data); ry--; }
+  if (ry == 0) { proc(x1, y1, x2, data); return; }
    
   rx /= 2;
   ry /= 2;
 
   /* Draw the 4 poles. */
-  proc (mx, my2 + ry, mx, data);
-  proc (mx, my - ry, mx, data);
-/*   proc (mx2 + rx, my, mx2 + rx, data); */
-/*   proc (mx - rx, my, mx - rx, data); */
-  proc (mx - rx, my, mx2 + rx, data);
+  proc(mx, my2 + ry, mx, data);
+  proc(mx, my - ry, mx, data);
+/*   proc(mx2 + rx, my, mx2 + rx, data); */
+/*   proc(mx - rx, my, mx - rx, data); */
+  proc(mx - rx, my, mx2 + rx, data);
 
   /* For even diameter axis, double the poles. */
   if (mx != mx2) {
-    proc (mx2, my2 + ry, mx2, data);
-    proc (mx2, my - ry, mx2, data);
+    proc(mx2, my2 + ry, mx2, data);
+    proc(mx2, my - ry, mx2, data);
   }
 
   if (my != my2) {
-/*     proc (mx2 + rx, my2, data); */
-/*     proc (mx - rx, my2, data); */
-    proc (mx - rx, my2, mx2 + rx, data);
+/*     proc(mx2 + rx, my2, data); */
+/*     proc(mx - rx, my2, data); */
+    proc(mx - rx, my2, mx2 + rx, data);
   }
 
   xx = rx * rx;
@@ -334,12 +334,12 @@ void algo_ellipsefill (int x1, int y1, int x2, int y2, void *data, AlgoHLine pro
     if (xa >= ya)
       break;
 
-/*     proc (mx2 + x, my - y, data); */
-/*     proc (mx - x, my - y, data); */
-/*     proc (mx2 + x, my2 + y, data); */
-/*     proc (mx - x, my2 + y, data); */
-    proc (mx - x, my - y, mx2 + x, data);
-    proc (mx - x, my2 + y, mx2 + x, data);
+/*     proc(mx2 + x, my - y, data); */
+/*     proc(mx - x, my - y, data); */
+/*     proc(mx2 + x, my2 + y, data); */
+/*     proc(mx - x, my2 + y, data); */
+    proc(mx - x, my - y, mx2 + x, data);
+    proc(mx - x, my2 + y, mx2 + x, data);
   }
 
   /* Fill in missing pixels for very thin ellipses. (This is caused because
@@ -348,10 +348,10 @@ void algo_ellipsefill (int x1, int y1, int x2, int y2, void *data, AlgoHLine pro
    */
   if (y == 0)
     while (x < rx) {
-/*       proc (mx2 + x, my - 1, data); */
-/*       proc (mx2 + x, my2 + 1, data); */
-/*       proc (mx - x, my - 1, data); */
-/*       proc (mx - x, my2 + 1, data); */
+/*       proc(mx2 + x, my - 1, data); */
+/*       proc(mx2 + x, my2 + 1, data); */
+/*       proc(mx - x, my - 1, data); */
+/*       proc(mx - x, my2 + 1, data); */
       x++;
     }
 
@@ -374,30 +374,30 @@ void algo_ellipsefill (int x1, int y1, int x2, int y2, void *data, AlgoHLine pro
     y++;
     if (ya > xa)
       break;
-/*     proc (mx2 + x, my - y, data); */
-/*     proc (mx - x, my - y, data); */
-/*     proc (mx2 + x, my2 + y, data); */
-/*     proc (mx - x, my2 + y, data); */
-    proc (mx - x, my - y, mx2 + x, data);
-    proc (mx - x, my2 + y, mx2 + x, data);
+/*     proc(mx2 + x, my - y, data); */
+/*     proc(mx - x, my - y, data); */
+/*     proc(mx2 + x, my2 + y, data); */
+/*     proc(mx - x, my2 + y, data); */
+    proc(mx - x, my - y, mx2 + x, data);
+    proc(mx - x, my2 + y, mx2 + x, data);
   }
 
   /* See comment above. */
   if (x == 0)
     while (y < ry) {
-/*       proc (mx - 1, my - y, data); */
-/*       proc (mx2 + 1, my - y, data); */
-/*       proc (mx - 1, my2 + y, data); */
-/*       proc (mx2 + 1, my2 + y, data); */
+/*       proc(mx - 1, my - y, data); */
+/*       proc(mx2 + 1, my - y, data); */
+/*       proc(mx - 1, my2 + y, data); */
+/*       proc(mx2 + 1, my2 + y, data); */
       y++;
     }
 }
 
 /* Algorightm from Allegro (allegro/src/spline.c)
    Adapted for ASE by David A. Capello. */
-void algo_spline (double x0, double y0, double x1, double y1,
-		  double x2, double y2, double x3, double y3,
-		  void *data, AlgoLine proc)
+void algo_spline(double x0, double y0, double x1, double y1,
+		 double x2, double y2, double x3, double y3,
+		 void *data, AlgoLine proc)
 {
   int npts;
   int out_x1, out_x2;
@@ -415,10 +415,10 @@ void algo_spline (double x0, double y0, double x1, double y1,
 
 #define MAX_POINTS   64
 #undef DIST
-#define DIST(x, y) (sqrt ((x) * (x) + (y) * (y)))
-  npts = (int) (sqrt (DIST(x1-x0, y1-y0) +
-		      DIST(x2-x1, y2-y1) +
-		      DIST(x3-x2, y3-y2)) * 1.2);
+#define DIST(x, y) (sqrt((x) * (x) + (y) * (y)))
+  npts = (int)(sqrt(DIST(x1-x0, y1-y0) +
+		    DIST(x2-x1, y2-y1) +
+		    DIST(x3-x2, y3-y2)) * 1.2);
   if (npts > MAX_POINTS)
     npts = MAX_POINTS;
   else if (npts < 4)
@@ -463,16 +463,16 @@ void algo_spline (double x0, double y0, double x1, double y1,
     out_x2 = x;
     out_y2 = y;
 
-    proc (out_x1, out_y1, out_x2, out_y2, data);
+    proc(out_x1, out_y1, out_x2, out_y2, data);
 
     out_x1 = out_x2;
     out_y1 = out_y2;
   }
 }
 
-double algo_spline_get_y (double x0, double y0, double x1, double y1,
-			  double x2, double y2, double x3, double y3,
-			  double in_x)
+double algo_spline_get_y(double x0, double y0, double x1, double y1,
+			 double x2, double y2, double x3, double y3,
+			 double in_x)
 {
   int npts;
   double out_x, old_x;
@@ -548,9 +548,9 @@ double algo_spline_get_y (double x0, double y0, double x1, double y1,
   return out_y;
 }
 
-double algo_spline_get_tan (double x0, double y0, double x1, double y1,
-			    double x2, double y2, double x3, double y3,
-			    double in_x)
+double algo_spline_get_tan(double x0, double y0, double x1, double y1,
+			   double x2, double y2, double x3, double y3,
+			   double in_x)
 {
   int npts;
   double out_x, old_dx, old_x;

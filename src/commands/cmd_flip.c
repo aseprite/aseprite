@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -107,7 +107,7 @@ static void do_flip(int horz)
       image_putpixel(image,
 		     horz ? x2-x: x1+x,
 		     !horz? y2-y: y1+y,
-		     image_getpixel (area, x, y));
+		     image_getpixel(area, x, y));
   image_free(area);
   update_screen_for_sprite(current_sprite);
 }

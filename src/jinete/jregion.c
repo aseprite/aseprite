@@ -77,7 +77,7 @@ struct ji_point { int x, y; };
 #define miRegionAppend		jregion_append
 #define miRegionValidate	jregion_validate
 
-/* JRegion jrects_to_region (int nrects, JRect *prect, int ctype); */
+/* JRegion jrects_to_region(int nrects, JRect *prect, int ctype); */
 
 #define miSubtract		jregion_subtract
 #define miInverse		jregion_inverse

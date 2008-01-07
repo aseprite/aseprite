@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,12 +35,12 @@
 
 #endif
 
-static JWidget find_selected (JWidget widget);
-static int select_button (JWidget widget, int index);
+static JWidget find_selected(JWidget widget);
+static int select_button(JWidget widget, int index);
 
-static int radio_change_signal (JWidget widget, int user_data);
+static int radio_change_signal(JWidget widget, int user_data);
 
-JWidget group_button_new (int w, int h, int first_selected, ...)
+JWidget group_button_new(int w, int h, int first_selected, ...)
 {
   JWidget vbox = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
   JWidget hbox = NULL;
@@ -49,18 +49,18 @@ JWidget group_button_new (int w, int h, int first_selected, ...)
   va_list ap;
   int c = 0;
 
-  va_start (ap, first_selected);
+  va_start(ap, first_selected);
 
-  jwidget_noborders (vbox);
+  jwidget_noborders(vbox);
 
   for (y=0; y<h; y++) {
     if (w > 1) {
-      hbox = jbox_new (JI_HORIZONTAL | JI_HOMOGENEOUS);
-      jwidget_noborders (hbox);
+      hbox = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+      jwidget_noborders(hbox);
     }
 
     for (x=0; x<w; x++) {
-      icon = va_arg (ap, int);
+      icon = va_arg(ap, int);
 
       radio = radio_button_new(vbox->id+0x1000,
 			       x ==   0 && y ==   0 ? 2: 0,
@@ -79,25 +79,25 @@ JWidget group_button_new (int w, int h, int first_selected, ...)
 	jwidget_select(radio);
 
       if (hbox)
-	jwidget_add_child (hbox, radio);
+	jwidget_add_child(hbox, radio);
       else
-	jwidget_add_child (vbox, radio);
+	jwidget_add_child(vbox, radio);
 
       c++;
     }
 
     if (hbox)
-      jwidget_add_child (vbox, hbox);
+      jwidget_add_child(vbox, hbox);
   }
 
-  va_end (ap);
+  va_end(ap);
 
   return vbox;
 }
 
-int group_button_get_selected (JWidget group)
+int group_button_get_selected(JWidget group)
 {
-  JWidget sel = find_selected (group);
+  JWidget sel = find_selected(group);
 
   if (sel)
     return (int)sel->user_data[1];
@@ -105,22 +105,22 @@ int group_button_get_selected (JWidget group)
     return -1;
 }
 
-void group_button_select (JWidget group, int index)
+void group_button_select(JWidget group, int index)
 {
-  JWidget sel = find_selected (group);
+  JWidget sel = find_selected(group);
 
   if (!sel || (int)sel->user_data[1] != index) {
-    jwidget_deselect (sel);
-    select_button (group, index);
+    jwidget_deselect(sel);
+    select_button(group, index);
   }
 }
 
-static JWidget find_selected (JWidget widget)
+static JWidget find_selected(JWidget widget)
 {
   JWidget sel;
   JLink link;
 
-  if (jwidget_is_selected (widget))
+  if (jwidget_is_selected(widget))
     return widget;
   else {
     JI_LIST_FOR_EACH(widget->children, link)
@@ -131,13 +131,13 @@ static JWidget find_selected (JWidget widget)
   }
 }
 
-static int select_button (JWidget widget, int index)
+static int select_button(JWidget widget, int index)
 {
   JLink link;
 
   if (widget->type == JI_RADIO) {
     if ((int)widget->user_data[1] == index) {
-      jwidget_select (widget);
+      jwidget_select(widget);
       return TRUE;
     }
   }
@@ -150,8 +150,8 @@ static int select_button (JWidget widget, int index)
   return FALSE;
 }
 
-static int radio_change_signal (JWidget widget, int user_data)
+static int radio_change_signal(JWidget widget, int user_data)
 {
-  jwidget_emit_signal ((JWidget)user_data, SIGNAL_GROUP_BUTTON_CHANGE);
+  jwidget_emit_signal((JWidget)user_data, SIGNAL_GROUP_BUTTON_CHANGE);
   return TRUE;
 }

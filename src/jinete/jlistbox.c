@@ -50,23 +50,23 @@ static void listitem_request_size(JWidget widget, int *w, int *h);
 
 JWidget jlistbox_new(void)
 {
-  JWidget widget = jwidget_new (JI_LISTBOX);
+  JWidget widget = jwidget_new(JI_LISTBOX);
 
-  jwidget_add_hook (widget, JI_LISTBOX, listbox_msg_proc, NULL);
-  jwidget_focusrest (widget, TRUE);
-  jwidget_init_theme (widget);
+  jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
+  jwidget_focusrest(widget, TRUE);
+  jwidget_init_theme(widget);
 
   return widget;
 }
 
 JWidget jlistitem_new(const char *text)
 {
-  JWidget widget = jwidget_new (JI_LISTITEM);
+  JWidget widget = jwidget_new(JI_LISTITEM);
 
-  jwidget_add_hook (widget, JI_LISTITEM, listitem_msg_proc, NULL);
-  jwidget_set_align (widget, JI_LEFT | JI_MIDDLE);
-  jwidget_set_text (widget, text);
-  jwidget_init_theme (widget);
+  jwidget_add_hook(widget, JI_LISTITEM, listitem_msg_proc, NULL);
+  jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
+  jwidget_set_text(widget, text);
+  jwidget_init_theme(widget);
 
   return widget;
 }
@@ -123,11 +123,11 @@ void jlistbox_select_child(JWidget widget, JWidget listitem)
       jview_get_scroll(view, &scroll_x, &scroll_y);
 
       if (listitem->rc->y1 < vp->y1)
-	jview_set_scroll (view, scroll_x, listitem->rc->y1 - widget->rc->y1);
+	jview_set_scroll(view, scroll_x, listitem->rc->y1 - widget->rc->y1);
       else if (listitem->rc->y1 > vp->y2 - jrect_h(listitem->rc))
-	jview_set_scroll (view, scroll_x,
-			    listitem->rc->y1 - widget->rc->y1
-			    - jrect_h(vp) + jrect_h(listitem->rc));
+	jview_set_scroll(view, scroll_x,
+			 listitem->rc->y1 - widget->rc->y1
+			 - jrect_h(vp) + jrect_h(listitem->rc));
 
       jrect_free(vp);
     }
@@ -153,12 +153,12 @@ void jlistbox_center_scroll(JWidget widget)
     JRect vp = jview_get_viewport_position(view);
     int scroll_x, scroll_y;
 
-    jview_get_scroll (view, &scroll_x, &scroll_y);
-    jview_set_scroll (view,
-			scroll_x,
-			(listitem->rc->y1 - widget->rc->y1)
-			- jrect_h(vp)/2 + jrect_h(listitem->rc)/2);
-    jrect_free (vp);
+    jview_get_scroll(view, &scroll_x, &scroll_y);
+    jview_set_scroll(view,
+		     scroll_x,
+		     (listitem->rc->y1 - widget->rc->y1)
+		     - jrect_h(vp)/2 + jrect_h(listitem->rc)/2);
+    jrect_free(vp);
   }
 }
 
@@ -167,61 +167,61 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_REQSIZE:
-      listbox_request_size (widget, &msg->reqsize.w, &msg->reqsize.h);
+      listbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_SETPOS:
-      listbox_set_position (widget, &msg->setpos.rect);
+      listbox_set_position(widget, &msg->setpos.rect);
       return TRUE;
 
     case JM_DIRTYCHILDREN:
-      listbox_dirty_children (widget);
+      listbox_dirty_children(widget);
       return TRUE;
 
     case JM_OPEN:
-      jlistbox_center_scroll (widget);
+      jlistbox_center_scroll(widget);
       break;
 
     case JM_BUTTONPRESSED:
-      jwidget_capture_mouse (widget);
+      jwidget_capture_mouse(widget);
 
     case JM_MOTION:
-      if (jwidget_has_capture (widget)) {
-	int select = jlistbox_get_selected_index (widget);
-	JWidget view = jwidget_get_view (widget);
+      if (jwidget_has_capture(widget)) {
+	int select = jlistbox_get_selected_index(widget);
+	JWidget view = jwidget_get_view(widget);
 	bool pick_item = TRUE;
 
 	if (view) {
-	  JRect vp = jview_get_viewport_position (view);
+	  JRect vp = jview_get_viewport_position(view);
 
 	  if (msg->mouse.y < vp->y1) {
-	    int num = MAX (1, (vp->y1 - msg->mouse.y) / 8);
-	    jlistbox_select_index (widget, select-num);
+	    int num = MAX(1, (vp->y1 - msg->mouse.y) / 8);
+	    jlistbox_select_index(widget, select-num);
 	    pick_item = FALSE;
 	  }
 	  else if (msg->mouse.y >= vp->y2) {
-	    int num = MAX (1, (msg->mouse.y - (vp->y2-1)) / 8);
-	    jlistbox_select_index (widget, select+num);
+	    int num = MAX(1, (msg->mouse.y - (vp->y2-1)) / 8);
+	    jlistbox_select_index(widget, select+num);
 	    pick_item = FALSE;
 	  }
 
-	  jrect_free (vp);
+	  jrect_free(vp);
 	}
 
 	if (pick_item) {
 	  JWidget picked;
 
 	  if (view) {
-	    picked = jwidget_pick (jview_get_viewport (view),
-				     msg->mouse.x, msg->mouse.y);
+	    picked = jwidget_pick(jview_get_viewport(view),
+				  msg->mouse.x, msg->mouse.y);
 	  }
 	  else {
-	    picked = jwidget_pick (widget, msg->mouse.x, msg->mouse.y);
+	    picked = jwidget_pick(widget, msg->mouse.x, msg->mouse.y);
 	  }
 
 	  /* if the picked widget is a child of the list, select it */
-	  if (picked && jwidget_has_child (widget, picked))
-	    jlistbox_select_child (widget, picked);
+	  if (picked && jwidget_has_child(widget, picked))
+	    jlistbox_select_child(widget, picked);
 	}
 
 	return TRUE;
@@ -229,11 +229,11 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      jwidget_release_mouse (widget);
+      jwidget_release_mouse(widget);
       break;
 
     case JM_WHEEL: {
-      JWidget view = jwidget_get_view (widget);
+      JWidget view = jwidget_get_view(widget);
       if (view) {
 	int scroll_x, scroll_y;
 
@@ -270,7 +270,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	    if (view) {
 	      JRect vp = jview_get_viewport_position(view);
 	      select -= jrect_h(vp) / jwidget_get_text_height(widget);
-	      jrect_free (vp);
+	      jrect_free(vp);
 	    }
 	    else
 	      select = 0;
@@ -426,8 +426,8 @@ static void listitem_request_size(JWidget widget, int *w, int *h)
   JI_LIST_FOR_EACH(widget->children, link) {
     jwidget_request_size(link->data, &req_w, &req_h);
 
-    max_w = MAX (max_w, req_w);
-    max_h = MAX (max_h, req_h);
+    max_w = MAX(max_w, req_w);
+    max_h = MAX(max_h, req_h);
   }
 
   *w = widget->border_width.l + max_w + widget->border_width.r;

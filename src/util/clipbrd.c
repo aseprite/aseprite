@@ -234,12 +234,12 @@ static bool interactive_transform(JWidget widget,
 				  int xout[4], int yout[4])
 {
 /* #define UPDATE2()							\ */
-/*   jmanager_dispatch_messages ();					\ */
+/*   jmanager_dispatch_messages();					\ */
 /*   jmouse_hide();							\ */
-/*   blit (ji_screen, bmp1, vp->x, vp->y, 0, 0, vp->w, vp->h);		\ */
-/*   draw_box (ji_screen, vp->x, vp->y, vp->x+vp->w-1, vp->y+vp->h-1,		\ */
+/*   blit(ji_screen, bmp1, vp->x, vp->y, 0, 0, vp->w, vp->h);		\ */
+/*   draw_box(ji_screen, vp->x, vp->y, vp->x+vp->w-1, vp->y+vp->h-1,		\ */
 /* 	    x1, y1, x2, y2, preview, mode, angle, cx-vp->x, cy-vp->y);	\ */
-/*   update_status_bar (widget, image, x1, y1, x2, y2, angle);		\ */
+/*   update_status_bar(widget, image, x1, y1, x2, y2, angle);		\ */
 /*   jmouse_show(); */
 
 #define UPDATE()							\

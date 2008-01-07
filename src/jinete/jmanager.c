@@ -71,7 +71,7 @@ typedef struct Timer {
   int last_time;
 } Timer;
 
-#define NFILTERS (JM_REGISTERED_MESSAGES+1)
+#define NFILTERS	(JM_REGISTERED_MESSAGES+1)
 
 typedef struct Filter {
   int message;
@@ -324,7 +324,7 @@ bool jmanager_generate_messages(JWidget manager)
     generate_proc_windows_list();
   }
 
-/*   generate_proc_windows_list (manager); */
+/*   generate_proc_windows_list(manager); */
   if (jlist_empty(proc_windows_list))
     generate_proc_windows_list();
 
@@ -449,12 +449,12 @@ bool jmanager_generate_messages(JWidget manager)
 	JWidget win_manager = window ? jwidget_get_manager(window): NULL;
 
 	if ((window) &&
-	    (!jwindow_is_desktop (window)) &&
+	    (!jwindow_is_desktop(window)) &&
 	    (window != TOPWND(win_manager))) {
 	  /* put it in the top of the list */
 	  jlist_remove(win_manager->children, window);
 
-	  if (jwindow_is_ontop (window))
+	  if (jwindow_is_ontop(window))
 	    jlist_prepend(win_manager->children, window);
 	  else {
 	    int pos = jlist_length(win_manager->children);
@@ -521,13 +521,16 @@ bool jmanager_generate_messages(JWidget manager)
   /* timers */
   if (n_timers > 0) {
     int t = ji_clock;
+    int count;
 
     for (c=0; c<n_timers; ++c) {
       if (timers[c] && timers[c]->last_time >= 0) {
+	count = 0;
 	while (t - timers[c]->last_time > timers[c]->interval) {
 	  timers[c]->last_time += timers[c]->interval;
 
 	  msg = jmessage_new(JM_TIMER);
+	  msg->timer.count = count;
 	  msg->timer.timer_id = c;
 	  jmessage_add_dest(msg, timers[c]->widget);
 	  jmanager_enqueue_message(msg);
@@ -721,7 +724,7 @@ void jmanager_set_focus(JWidget widget)
       else
 	link = jlist_first(widget_parents);
 
-      msg = jmessage_new (JM_FOCUSENTER);
+      msg = jmessage_new(JM_FOCUSENTER);
 
       for (; link != widget_parents->end; link=link->next) {
 	JWidget w = (JWidget)link->data;
@@ -1250,7 +1253,7 @@ static void manager_redraw_region(JWidget widget, JRegion region)
   JRegion reg3;
   JLink link;
 
-  /* TODO intersect with jwidget_get_drawable_region ()??? */
+  /* TODO intersect with jwidget_get_drawable_region()??? */
   jregion_intersect(reg1, region, reg2);
 
   /* redraw windows from top to background */
@@ -1447,7 +1450,7 @@ static bool move_focus(JWidget manager, JMessage msg)
   /* one at least */
   if (count > 0) {
     /* list of widgets */
-    list = jmalloc (sizeof (JWidget) * count);
+    list = jmalloc(sizeof(JWidget) * count);
     if (!list)
       return ret;
 
@@ -1524,10 +1527,10 @@ static bool move_focus(JWidget manager, JMessage msg)
         break;
     }
 
-    jfree (list);
+    jfree(list);
 
     if ((focus) && (focus != focus_widget))
-      jmanager_set_focus (focus);
+      jmanager_set_focus(focus);
   }
 
   return ret;

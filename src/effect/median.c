@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,22 +40,22 @@ void set_median_size(int w, int h)
 {
   int c;
 
-  data.tiled = get_tiled_mode ();
+  data.tiled = get_tiled_mode();
   data.w = w;
   data.h = h;
   data.ncolors = w*h;
 
   for (c=0; c<4; c++) {
     if (data.channel[c])
-      jfree (data.channel[c]);
+      jfree(data.channel[c]);
 
     data.channel[c] = jmalloc(sizeof(unsigned char) * data.ncolors);
   }
 }
 
-static int cmp_channel (const void *p1, const void *p2)
+static int cmp_channel(const void *p1, const void *p2)
 {
-  return (*(unsigned char *)p2) - (*(unsigned char *)p1);
+  return (*(unsigned char *)p2) -(*(unsigned char *)p1);
 }
 
 void apply_median4(Effect *effect)
@@ -77,11 +77,11 @@ void apply_median4(Effect *effect)
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = 0;
@@ -89,39 +89,39 @@ void apply_median4(Effect *effect)
     GET_MATRIX_DATA
       (ase_uint32, data.w, data.h, data.w/2, data.h/2,
        color = *src_address;
-       data.channel[0][c] = _rgba_getr (color);
-       data.channel[1][c] = _rgba_getg (color);
-       data.channel[2][c] = _rgba_getb (color);
-       data.channel[3][c] = _rgba_geta (color);
+       data.channel[0][c] = _rgba_getr(color);
+       data.channel[1][c] = _rgba_getg(color);
+       data.channel[2][c] = _rgba_getb(color);
+       data.channel[3][c] = _rgba_geta(color);
        c++;
        );
 
     for (c=0; c<4; c++)
-      qsort (data.channel[c], data.ncolors, sizeof (unsigned char), cmp_channel);
+      qsort(data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
 
-    color = src->method->getpixel (src, x, y);
+    color = src->method->getpixel(src, x, y);
 
     if (effect->target.r)
       r = data.channel[0][data.ncolors/2];
     else
-      r = _rgba_getr (color);
+      r = _rgba_getr(color);
 
     if (effect->target.g)
       g = data.channel[1][data.ncolors/2];
     else
-      g = _rgba_getg (color);
+      g = _rgba_getg(color);
 
     if (effect->target.b)
       b = data.channel[2][data.ncolors/2];
     else
-      b = _rgba_getb (color);
+      b = _rgba_getb(color);
 
     if (effect->target.a)
       a = data.channel[3][data.ncolors/2];
     else
-      a = _rgba_geta (color);
+      a = _rgba_geta(color);
 
-    *(dst_address++) = _rgba (r, g, b, a);
+    *(dst_address++) = _rgba(r, g, b, a);
   }
 }
 
@@ -144,11 +144,11 @@ void apply_median2(Effect *effect)
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = 0;
@@ -162,21 +162,21 @@ void apply_median2(Effect *effect)
        );
 
     for (c=0; c<2; c++)
-      qsort (data.channel[c], data.ncolors, sizeof (unsigned char), cmp_channel);
+      qsort(data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
 
-    color = src->method->getpixel (src, x, y);
+    color = src->method->getpixel(src, x, y);
 
     if (effect->target.k)
       k = data.channel[0][data.ncolors/2];
     else
-      k = _graya_getk (color);
+      k = _graya_getk(color);
 
     if (effect->target.a)
       a = data.channel[1][data.ncolors/2];
     else
-      a = _graya_geta (color);
+      a = _graya_geta(color);
 
-    *(dst_address++) = _graya (k, a);
+    *(dst_address++) = _graya(k, a);
   }
 }
 
@@ -199,11 +199,11 @@ void apply_median1(Effect *effect)
     if (effect->mask_address) {
       if (!((*effect->mask_address) & (1<<effect->d.rem))) {
 	dst_address++;
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
 	continue;
       }
       else
-	_image_bitmap_next_bit (effect->d, effect->mask_address);
+	_image_bitmap_next_bit(effect->d, effect->mask_address);
     }
 
     c = 0;
@@ -226,14 +226,14 @@ void apply_median1(Effect *effect)
       qsort(data.channel[0], data.ncolors, sizeof(unsigned char), cmp_channel);
     else {
       for (c=0; c<3; c++)
-	qsort (data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
+	qsort(data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
     }
 
     if (effect->target.index) {
       *(dst_address++) = data.channel[0][data.ncolors/2];
     }
     else {
-      color = src->method->getpixel (src, x, y);
+      color = src->method->getpixel(src, x, y);
 
       if (effect->target.r)
 	r = data.channel[0][data.ncolors/2];

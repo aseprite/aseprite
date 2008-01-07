@@ -58,13 +58,13 @@ static void combobox_close_window(JWidget widget);
 static void combobox_switch_window(JWidget widget);
 static JRect combobox_get_windowpos(ComboBox *combobox);
 
-JWidget jcombobox_new (void)
+JWidget jcombobox_new(void)
 {
   JWidget widget = jbox_new(JI_HORIZONTAL);
   ComboBox *combobox = jnew(ComboBox, 1);
 
-  combobox->entry = jentry_new (256, "");
-  combobox->button = jbutton_new ("^");
+  combobox->entry = jentry_new(256, "");
+  combobox->button = jbutton_new("^");
   combobox->window = NULL;
   combobox->items = jlist_new();
   combobox->selected = 0;
@@ -94,53 +94,53 @@ JWidget jcombobox_new (void)
   return widget;
 }
 
-void jcombobox_editable (JWidget widget, bool state)
+void jcombobox_editable(JWidget widget, bool state)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
   combobox->editable = state;
 
   if (state) {
-    jentry_readonly (combobox->entry, FALSE);
-    jentry_show_cursor (combobox->entry);
+    jentry_readonly(combobox->entry, FALSE);
+    jentry_show_cursor(combobox->entry);
   }
   else {
-    jentry_readonly (combobox->entry, TRUE);
-    jentry_hide_cursor (combobox->entry);
+    jentry_readonly(combobox->entry, TRUE);
+    jentry_hide_cursor(combobox->entry);
   }
 }
 
-void jcombobox_clickopen (JWidget widget, bool state)
+void jcombobox_clickopen(JWidget widget, bool state)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
   combobox->clickopen = state;
 }
 
-void jcombobox_casesensitive (JWidget widget, bool state)
+void jcombobox_casesensitive(JWidget widget, bool state)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
   combobox->casesensitive = state;
 }
 
-bool jcombobox_is_editable (JWidget widget)
+bool jcombobox_is_editable(JWidget widget)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
   return combobox->editable;
 }
 
-bool jcombobox_is_clickopen (JWidget widget)
+bool jcombobox_is_clickopen(JWidget widget)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
   return combobox->clickopen;
 }
 
-bool jcombobox_is_casesensitive (JWidget widget)
+bool jcombobox_is_casesensitive(JWidget widget)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
   return combobox->casesensitive;
 }
@@ -158,23 +158,23 @@ void jcombobox_add_string(JWidget widget, const char *string)
 
 void jcombobox_del_string(JWidget widget, const char *string)
 {
-  jcombobox_del_index (widget, jcombobox_get_index (widget, string));
+  jcombobox_del_index(widget, jcombobox_get_index(widget, string));
 }
 
 void jcombobox_del_index(JWidget widget, int index)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
-  jlist_remove(combobox->items, jlist_nth_data (combobox->items, index));
+  jlist_remove(combobox->items, jlist_nth_data(combobox->items, index));
 }
 
 void jcombobox_select_index(JWidget widget, int index)
 {
-  ComboBox *combobox = jwidget_get_data (widget, JI_COMBOBOX);
-  JLink link = jlist_nth_link (combobox->items, index);
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
+  JLink link = jlist_nth_link(combobox->items, index);
   if (link != combobox->items->end) {
     combobox->selected = index;
-    jwidget_set_text (combobox->entry, link->data);
+    jwidget_set_text(combobox->entry, link->data);
   }
 }
 

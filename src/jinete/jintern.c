@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
+
 #include "jinete/jmanager.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
@@ -39,7 +41,7 @@ static JWidget *widgets = NULL;
 
 JWidget _ji_get_widget_by_id(JID widget_id)
 {
-  /* ji_assert ((widget_id >= 0) && (widget_id < nwidgets)); */
+  assert((widget_id >= 0) && (widget_id < nwidgets));
 
   return widgets[widget_id];
 }
@@ -57,13 +59,13 @@ JWidget _ji_get_new_widget(void)
   /* first widget */
   if (!widgets) {
     nwidgets = 2;
-    widgets = (JWidget *)jmalloc (sizeof (JWidget) * nwidgets);
+    widgets = (JWidget *)jmalloc(sizeof(JWidget) * nwidgets);
 
     /* id=0 no widget */
     widgets[0] = NULL;
 
     /* id>0 all widgets */
-    widgets[1] = (JWidget)jnew (struct jwidget, 1);
+    widgets[1] = (JWidget)jnew(struct jwidget, 1);
     widgets[1]->id = widget_id = 1;
   }
   else {
@@ -78,9 +80,9 @@ JWidget _ji_get_new_widget(void)
     /* we need make other widget? */
     if (widget_id == nwidgets) {
       nwidgets++;
-      widgets = (JWidget *)jrealloc (widgets,
-				     sizeof (JWidget) * nwidgets);
-      widgets[widget_id] = (JWidget)jnew (struct jwidget, 1);
+      widgets = (JWidget *)jrealloc(widgets,
+				    sizeof(JWidget) * nwidgets);
+      widgets[widget_id] = (JWidget)jnew(struct jwidget, 1);
     }
 
     /* using this */
@@ -101,9 +103,9 @@ void _ji_free_all_widgets(void)
 
   if (nwidgets) {
     for (c=0; c<nwidgets; c++)
-      jfree (widgets[c]);
+      jfree(widgets[c]);
 
-    jfree (widgets);
+    jfree(widgets);
     widgets = NULL;
     nwidgets = 0;
   }
@@ -118,7 +120,7 @@ bool _ji_is_valid_widget(JWidget widget)
 	  widgets[widget->id]->id == widget->id);
 }
 
-void _ji_set_font_of_all_widgets (struct FONT *f)
+void _ji_set_font_of_all_widgets(struct FONT *f)
 {
   int c, l, t, r, b;
 
@@ -129,8 +131,8 @@ void _ji_set_font_of_all_widgets (struct FONT *f)
       r = widgets[c]->border_width.r;
       b = widgets[c]->border_width.b;
 
-      jwidget_set_font (widgets[c], f);
-      jwidget_init_theme (widgets[c]);
+      jwidget_set_font(widgets[c], f);
+      jwidget_init_theme(widgets[c]);
 
       widgets[c]->border_width.l = l;
       widgets[c]->border_width.t = t;
@@ -141,10 +143,10 @@ void _ji_set_font_of_all_widgets (struct FONT *f)
   for (c=0; c<nwidgets; c++)
     if (_ji_is_valid_widget (widgets[c])) {
       if (widgets[c]->type == JI_WINDOW)
-	jwindow_remap (widgets[c]);
+	jwindow_remap(widgets[c]);
     }
 
-  jmanager_refresh_screen ();
+  jmanager_refresh_screen();
 }
 
 

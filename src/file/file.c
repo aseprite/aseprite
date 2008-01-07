@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,11 +130,11 @@ Image *file_sequence_image(int imgtype, int w, int h)
   /* create a bitmap */
 
   if (file_sequence.last_cel) {
-    console_printf(_("Error: called two times \"file_sequence_image ()\".\n"));
+    console_printf(_("Error: called two times \"file_sequence_image()\".\n"));
     return NULL;
   }
 
-  image = image_new (imgtype, w, h);
+  image = image_new(imgtype, w, h);
   if (!image) {
     console_printf(_("Not enough memory to allocate a bitmap.\n"));
     return NULL;
@@ -161,7 +161,7 @@ const char *get_readable_extensions(void)
   int c;
 
   /* clear the string */
-  ustrcpy (file_extensions, empty_string);
+  ustrcpy(file_extensions, empty_string);
 
   /* insert file format */
   for (c=0; formats[c]; c++) {
@@ -245,7 +245,7 @@ Sprite *sprite_load(const char *filename)
        sequence... */
 
     /* per now, we want load just one file */
-    jlist_append (file_names, jstrdup (filename));
+    jlist_append(file_names, jstrdup(filename));
 
     /* check is this could be a sequence */
     start_from = split_filename(filename, left, right, &width);
@@ -260,7 +260,7 @@ Sprite *sprite_load(const char *filename)
 	  break;
 
 	/* add this file name to the list */
-	jlist_append (file_names, jstrdup (buf));
+	jlist_append(file_names, jstrdup(buf));
       }
     }
 
@@ -422,11 +422,11 @@ int sprite_save(Sprite *sprite)
   ustrcpy(extension, get_extension(sprite->filename));
   ustrlwr(extension);
 
-  PRINTF ("Saving sprite \"%s\" (%s)\n", sprite->filename, extension);
+  PRINTF("Saving sprite \"%s\" (%s)\n", sprite->filename, extension);
 
   file = get_fileformat(extension);
   if ((!file) || (!file->save)) {
-    console_printf (_("Format \"%s\" isn't supported to save\n"), extension);
+    console_printf(_("Format \"%s\" isn't supported to save\n"), extension);
     return -1;
   }
 
@@ -535,7 +535,7 @@ int sprite_save(Sprite *sprite)
   }
 
   /* palette */
-/*   memcpy(file_palette, sprite->palette, sizeof (PALETTE)); */
+/*   memcpy(file_palette, sprite->palette, sizeof(PALETTE)); */
 
   /* use the "sequence" interface */
   if (file->flags & FILE_SUPPORT_SEQUENCES) {
@@ -551,8 +551,8 @@ int sprite_save(Sprite *sprite)
       if (sprite->frames == 1) {
 	/* draw all the sprite in the image */
 	sprite->frame = 0;
-	image_clear (image, 0);
-	sprite_render (sprite, image, 0, 0);
+	image_clear(image, 0);
+	sprite_render(sprite, image, 0, 0);
 
 	/* save the temporary image */
 	file_sequence.image = image;
@@ -568,7 +568,7 @@ int sprite_save(Sprite *sprite)
 	char buf[256], left[256], right[256];
 	int width, start_from;
 
-	start_from = split_filename (sprite->filename, left, right, &width);
+	start_from = split_filename(sprite->filename, left, right, &width);
 	if (start_from < 0) {
 	  start_from = 0;
 	  width = (sprite->frames < 10)? 1:
@@ -607,7 +607,7 @@ int sprite_save(Sprite *sprite)
       }
 
       /* destroy the image */
-      image_free (image);
+      image_free(image);
     }
     else {
       console_printf(_("Not enough memory for the temporary bitmap.\n"));
@@ -660,23 +660,23 @@ static int split_filename(const char *filename, char *left, char *right, int *wi
   int chr, ret;
 
   /* get the extension */
-  ext = get_extension (filename);
+  ext = get_extension(filename);
 
   /* with extension */
   if ((ext) && (*ext)) {
     /* left side (the filename without the extension and without the '.') */
     ext--;
     *ext = 0;
-    ustrcpy (left, filename);
+    ustrcpy(left, filename);
     *ext = '.';
 
     /* right side (the extension with the '.') */
-    ustrcpy (right, ext);
+    ustrcpy(right, ext);
   }
   /* without extension (without right side) */
   else {
-    ustrcpy (left, filename);
-    ustrcpy (right, empty_string);
+    ustrcpy(left, filename);
+    ustrcpy(right, empty_string);
   }
 
   /* remove all trailing numbers in the "left" side, and pass they to "buf" */
@@ -689,7 +689,7 @@ static int split_filename(const char *filename, char *left, char *right, int *wi
     *width = 0;
 
   for (;;) {
-    chr = ugetat (left, -1);
+    chr = ugetat(left, -1);
     if ((chr >= '0') && (chr <= '9')) {
       ret = 0;
 

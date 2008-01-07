@@ -69,7 +69,7 @@ static void scrollbar_info(JWidget widget, int *_pos, int *_len,
 
 static void displace_widgets(JWidget widget, int x, int y);
 
-JWidget jview_new (void)
+JWidget jview_new(void)
 {
   JWidget widget = jwidget_new(JI_VIEW);
   View *view = jnew(View, 1);
@@ -149,7 +149,7 @@ void jview_set_size(JWidget widget, int w, int h)
 		    - view->viewport->border_width.r) &&		\
    (BAR_SIZE < jrect_##w(pos)) && (BAR_SIZE < jrect_##h(pos)))
 
-  View *view = jwidget_get_data (widget, JI_VIEW);
+  View *view = jwidget_get_data(widget, JI_VIEW);
   JRect pos, rect;
 
   view->max_w = w;
@@ -164,31 +164,31 @@ void jview_set_size(JWidget widget, int w, int h)
   if (view->hasbars) {
     if (CHECK (w, h, l, t, r, b)) {
       pos->y2 -= BAR_SIZE;
-      jwidget_add_child (widget, view->scrollbar_h);
+      jwidget_add_child(widget, view->scrollbar_h);
 
       if (CHECK (h, w, t, l, b, r)) {
 	pos->x2 -= BAR_SIZE;
 	if (CHECK (w, h, l, t, r, b))
-	  jwidget_add_child (widget, view->scrollbar_v);
+	  jwidget_add_child(widget, view->scrollbar_v);
 	else {
 	  pos->x2 += BAR_SIZE;
 	  pos->y2 += BAR_SIZE;
-	  jwidget_remove_child (widget, view->scrollbar_h);
+	  jwidget_remove_child(widget, view->scrollbar_h);
 	}
       }
     }
     else if (CHECK (h, w, t, l, b, r)) {
       pos->x2 -= BAR_SIZE;
-      jwidget_add_child (widget, view->scrollbar_v);
+      jwidget_add_child(widget, view->scrollbar_v);
 
       if (CHECK (w, h, l, t, r, b)) {
         pos->y2 -= BAR_SIZE;
 	if (CHECK (h, w, t, l, b, r))
-	  jwidget_add_child (widget, view->scrollbar_h);
+	  jwidget_add_child(widget, view->scrollbar_h);
 	else {
 	  pos->x2 += BAR_SIZE;
 	  pos->y2 += BAR_SIZE;
-	  jwidget_remove_child (widget, view->scrollbar_v);
+	  jwidget_remove_child(widget, view->scrollbar_v);
 	}
       }
     }
@@ -236,8 +236,8 @@ void jview_set_scroll(JWidget widget, int x, int y)
     - view->viewport->border_width.t
     - view->viewport->border_width.b;
 
-  view->scroll_x = MID(0, x, MAX (0, view->max_w - avail_w));
-  view->scroll_y = MID(0, y, MAX (0, view->max_h - avail_h));
+  view->scroll_x = MID(0, x, MAX(0, view->max_w - avail_w));
+  view->scroll_y = MID(0, y, MAX(0, view->max_h - avail_h));
 
   if ((view->scroll_x == old_x) && (view->scroll_y == old_y))
     return;
@@ -254,7 +254,7 @@ void jview_get_scroll(JWidget widget, int *x, int *y)
   *y = view->scroll_y;
 }
 
-void jview_get_max_size (JWidget widget, int *w, int *h)
+void jview_get_max_size(JWidget widget, int *w, int *h)
 {
   View *view = jwidget_get_data(widget, JI_VIEW);
 
@@ -349,7 +349,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_REQSIZE: {
-      View *view = jwidget_get_data (widget, JI_VIEW);
+      View *view = jwidget_get_data(widget, JI_VIEW);
 
       jwidget_request_size(view->viewport,
 			   &msg->reqsize.w,
@@ -424,8 +424,8 @@ static void viewport_needed_size(JWidget widget, int *w, int *h)
   JI_LIST_FOR_EACH(widget->children, link) {
     jwidget_request_size((JWidget)link->data, &req_w, &req_h);
 
-    *w = MAX (*w, req_w);
-    *h = MAX (*h, req_h);
+    *w = MAX(*w, req_w);
+    *h = MAX(*h, req_h);
   }
 }
 
@@ -484,13 +484,13 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_BUTTONPRESSED: {
-      View *view = jwidget_get_data (widget->parent, JI_VIEW);
+      View *view = jwidget_get_data(widget->parent, JI_VIEW);
       int x1, y1, x2, y2;
       int u1, v1, u2, v2;
       int ret = FALSE;
       int pos, len;
 
-      jtheme_scrollbar_info (widget, &pos, &len);
+      jtheme_scrollbar_info(widget, &pos, &len);
 
       view->wherepos = pos;
       view->whereclick = widget->align & JI_HORIZONTAL ? msg->mouse.x:
@@ -508,41 +508,41 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 
       if (widget->align & JI_HORIZONTAL) {
 	/* in the bar */
-	if (MOUSE_IN (u1+pos, v1, u1+pos+len-1, v2)) {
+	if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
 	  /* capture mouse */
 	}
 	/* left */
-	else if (MOUSE_IN (x1, y1, u1+pos-1, y2)) {
-	  jview_set_scroll (widget->parent,
-			      view->scroll_x - jrect_w(view->viewport->rc)/2,
-			      view->scroll_y);
+	else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
+	  jview_set_scroll(widget->parent,
+			   view->scroll_x - jrect_w(view->viewport->rc)/2,
+			   view->scroll_y);
 	  ret = TRUE;
 	}
 	/* right */
-	else if (MOUSE_IN (u1+pos+len, y1, x2, y2)) {
-	  jview_set_scroll (widget->parent,
-			      view->scroll_x + jrect_w(view->viewport->rc)/2,
-			      view->scroll_y);
+	else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
+	  jview_set_scroll(widget->parent,
+			   view->scroll_x + jrect_w(view->viewport->rc)/2,
+			   view->scroll_y);
 	  ret = TRUE;
 	}
       }
       else {
 	/* in the bar */
-	if (MOUSE_IN (u1, v1+pos, u2, v1+pos+len-1)) {
+	if (MOUSE_IN(u1, v1+pos, u2, v1+pos+len-1)) {
 	  /* capture mouse */
 	}
 	/* left */
-	else if (MOUSE_IN (x1, y1, x2, v1+pos-1)) {
-	  jview_set_scroll (widget->parent,
-			      view->scroll_x,
-			      view->scroll_y - jrect_h(view->viewport->rc)/2);
+	else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
+	  jview_set_scroll(widget->parent,
+			   view->scroll_x,
+			   view->scroll_y - jrect_h(view->viewport->rc)/2);
 	  ret = TRUE;
 	}
 	/* right */
-	else if (MOUSE_IN (x1, v1+pos+len, x2, y2)) {
-	  jview_set_scroll (widget->parent,
-			      view->scroll_x,
-			      view->scroll_y + jrect_h(view->viewport->rc)/2);
+	else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
+	  jview_set_scroll(widget->parent,
+			   view->scroll_x,
+			   view->scroll_y + jrect_h(view->viewport->rc)/2);
 	  ret = TRUE;
 	}
       }
@@ -550,24 +550,24 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       if (ret)
 	return ret;
 
-      jwidget_select (widget);
-      jwidget_capture_mouse (widget);
+      jwidget_select(widget);
+      jwidget_capture_mouse(widget);
     }
 
     case JM_MOTION:
       if (jwidget_has_capture (widget)) {
-	View *view = jwidget_get_data (widget->parent, JI_VIEW);
+	View *view = jwidget_get_data(widget->parent, JI_VIEW);
 	int pos, len, bar_size, viewport_size;
 	int old_pos;
 
-	scrollbar_info (widget, &pos, &len,
-			&bar_size, &viewport_size);
+	scrollbar_info(widget, &pos, &len,
+		       &bar_size, &viewport_size);
 	old_pos = pos;
 
 	if (bar_size > len) {
 	  if (widget->align & JI_HORIZONTAL) {
 	    pos = (view->wherepos + msg->mouse.x - view->whereclick);
-	    pos = MID (0, pos, bar_size - len);
+	    pos = MID(0, pos, bar_size - len);
 
 	    jview_set_scroll
 	      (widget->parent,
@@ -576,7 +576,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 	  }
 	  else {
 	    pos = (view->wherepos + msg->mouse.y - view->whereclick);
-	    pos = MID (0, pos, bar_size - len);
+	    pos = MID(0, pos, bar_size - len);
 
 	    jview_set_scroll
 	      (widget->parent,
@@ -588,14 +588,14 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      jwidget_deselect (widget);
-      jwidget_release_mouse (widget);
+      jwidget_deselect(widget);
+      jwidget_release_mouse(widget);
       break;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       /* TODO add something to avoid this (theme specific stuff) */
-      jwidget_invalidate (widget);
+      jwidget_invalidate(widget);
       break;
   }
 
@@ -605,7 +605,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 static void scrollbar_info(JWidget widget, int *_pos, int *_len,
 			   int *_bar_size, int *_viewport_size)
 {
-  View *view = jwidget_get_data (widget->parent, JI_VIEW);
+  View *view = jwidget_get_data(widget->parent, JI_VIEW);
   int bar_size, viewport_size;
   int pos, len, max, scroll;
   int border_width;
@@ -639,9 +639,9 @@ static void scrollbar_info(JWidget widget, int *_pos, int *_len,
   }
   else {
     len = bar_size - (max-viewport_size);
-    len = MID (BAR_SIZE-border_width, len, bar_size);
+    len = MID(BAR_SIZE-border_width, len, bar_size);
     pos = (bar_size-len) * scroll / (max-viewport_size);
-    pos = MID (0, pos, bar_size-len);
+    pos = MID(0, pos, bar_size-len);
   }
 
   if (_pos) *_pos = pos;

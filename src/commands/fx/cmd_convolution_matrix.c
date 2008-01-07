@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,18 +59,18 @@
 static JWidget check_preview, preview;
 static JWidget check_tiled;
 
-static JWidget listbox_generate_convmatg (void);
-static void listbox_fill_convmatg (JWidget listbox);
-static void listbox_select_current_convmatr (JWidget listbox);
+static JWidget listbox_generate_convmatg(void);
+static void listbox_fill_convmatg(JWidget listbox);
+static void listbox_select_current_convmatr(JWidget listbox);
 
-static int reload_select_hook (JWidget widget, int user_data);
-static int generate_select_hook (JWidget widget, int user_data);
+static int reload_select_hook(JWidget widget, int user_data);
+static int generate_select_hook(JWidget widget, int user_data);
 
-static int list_change_hook (JWidget widget, int user_data);
-static int target_change_hook (JWidget widget, int user_data);
-static int preview_change_hook (JWidget widget, int user_data);
-static int tiled_change_hook (JWidget widget, int user_data);
-static void make_preview (void);
+static int list_change_hook(JWidget widget, int user_data);
+static int target_change_hook(JWidget widget, int user_data);
+static int preview_change_hook(JWidget widget, int user_data);
+static int tiled_change_hook(JWidget widget, int user_data);
+static void make_preview(void);
 
 static bool cmd_convolution_matrix_enabled(const char *argument)
 {
@@ -87,11 +87,11 @@ static void cmd_convolution_matrix_execute(const char *argument)
   Image *image;
   Effect *effect;
 
-  image = GetImage ();
+  image = GetImage();
   if (!image)
     return;
 
-  window = load_widget ("convmatr.jid", "convolution_matrix");
+  window = load_widget("convmatr.jid", "convolution_matrix");
   if (!window)
     return;
 
@@ -131,52 +131,52 @@ static void cmd_convolution_matrix_execute(const char *argument)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
-  HOOK (target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  HOOK (check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
-  HOOK (check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
-  HOOK (reload, JI_SIGNAL_BUTTON_SELECT, reload_select_hook, list_convmatr);
-  HOOK (generate, JI_SIGNAL_BUTTON_SELECT, generate_select_hook, 0);
+  HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
+  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
+  HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
+  HOOK(reload, JI_SIGNAL_BUTTON_SELECT, reload_select_hook, list_convmatr);
+  HOOK(generate, JI_SIGNAL_BUTTON_SELECT, generate_select_hook, 0);
 
   /* TODO enable this someday */
-  jwidget_disable (generate);
+  jwidget_disable(generate);
 
   /* default position */
-  jwindow_remap (window);
-  jwindow_center (window);
+  jwindow_remap(window);
+  jwindow_center(window);
 
   /* load window configuration */
-  load_window_pos (window, "ConvolutionMatrix");
+  load_window_pos(window, "ConvolutionMatrix");
 
   /* select default convmatr */
-  listbox_select_current_convmatr (list_convmatr);
+  listbox_select_current_convmatr(list_convmatr);
 
   /* open the window */
-  jwindow_open_fg (window);
+  jwindow_open_fg(window);
 
-  if (jwindow_get_killer (window) == button_ok) {
-    effect_apply_to_target (effect);
+  if (jwindow_get_killer(window) == button_ok) {
+    effect_apply_to_target(effect);
   }
 
-  effect_free (effect);
+  effect_free(effect);
 
   /* update editors */
-  update_screen_for_sprite (sprite);
+  update_screen_for_sprite(sprite);
 
   /* save window configuration */
-  save_window_pos (window, "ConvolutionMatrix");
+  save_window_pos(window, "ConvolutionMatrix");
 
-  jwidget_free (window);
+  jwidget_free(window);
 }
 
-static JWidget listbox_generate_convmatg (void)
+static JWidget listbox_generate_convmatg(void)
 {
-  JWidget listbox = jlistbox_new ();
-  listbox_fill_convmatg (listbox);
-  HOOK (listbox, JI_SIGNAL_LISTBOX_CHANGE, list_change_hook, 0);
+  JWidget listbox = jlistbox_new();
+  listbox_fill_convmatg(listbox);
+  HOOK(listbox, JI_SIGNAL_LISTBOX_CHANGE, list_change_hook, 0);
   return listbox;
 }
 
-static void listbox_fill_convmatg (JWidget listbox)
+static void listbox_fill_convmatg(JWidget listbox)
 {
   ConvMatr *convmatr;
   JWidget listitem;
@@ -190,10 +190,10 @@ static void listbox_fill_convmatg (JWidget listbox)
   }
 }
 
-static void listbox_select_current_convmatr (JWidget listbox)
+static void listbox_select_current_convmatr(JWidget listbox)
 {
-  const char *selected = get_config_string ("ConvolutionMatrix",
-					    "Selected", "");
+  const char *selected = get_config_string("ConvolutionMatrix",
+					   "Selected", "");
   JWidget select_this = jlist_first_data(listbox->children);
   JWidget child = NULL;
   JLink link;
@@ -210,8 +210,8 @@ static void listbox_select_current_convmatr (JWidget listbox)
   }
 
   if (select_this) {
-    jwidget_select (select_this);
-    list_change_hook (listbox, 0);
+    jwidget_select(select_this);
+    list_change_hook(listbox, 0);
   }
 }
 
@@ -224,17 +224,17 @@ static int reload_select_hook(JWidget widget, int user_data)
   /* clean the list */
   JI_LIST_FOR_EACH_SAFE(listbox->children, link, next) {
     listitem = link->data;
-    jwidget_remove_child (listbox, listitem);
-    jwidget_free (listitem);
+    jwidget_remove_child(listbox, listitem);
+    jwidget_free(listitem);
   }
 
   /* re-load the convolution matrix stock */
-  reload_matrices_stock ();
+  reload_matrices_stock();
 
   /* re-fill the list */
-  listbox_fill_convmatg (listbox);
-  listbox_select_current_convmatr (listbox);
-  jview_update (jwidget_get_view (listbox));
+  listbox_fill_convmatg(listbox);
+  listbox_select_current_convmatr(listbox);
+  jview_update(jwidget_get_view(listbox));
 
   return TRUE;			/* do not close */
 }
@@ -270,12 +270,12 @@ static int generate_select_hook(JWidget widget, int user_data)
   /* curve_y = curve_new(CURVE_SPLINE); */
   curve_x = curve_new(CURVE_LINEAR);
   curve_y = curve_new(CURVE_LINEAR);
-  curve_add_point(curve_x, curve_point_new (-100, 0));
-  curve_add_point(curve_x, curve_point_new (0, +100));
-  curve_add_point(curve_x, curve_point_new (+100, 0));
-  curve_add_point(curve_y, curve_point_new (-100, 0));
-  curve_add_point(curve_y, curve_point_new (0, +100));
-  curve_add_point(curve_y, curve_point_new (+100, 0));
+  curve_add_point(curve_x, curve_point_new(-100, 0));
+  curve_add_point(curve_x, curve_point_new(0, +100));
+  curve_add_point(curve_x, curve_point_new(+100, 0));
+  curve_add_point(curve_y, curve_point_new(-100, 0));
+  curve_add_point(curve_y, curve_point_new(0, +100));
+  curve_add_point(curve_y, curve_point_new(+100, 0));
 
   curvedit_x = curve_editor_new(curve_x, -200, -200, 200, 200);
   curvedit_y = curve_editor_new(curve_y, -200, -200, 200, 200);
@@ -287,8 +287,8 @@ static int generate_select_hook(JWidget widget, int user_data)
   jwidget_set_min_size(view_y, 64, 64);
 
   /* TODO fix this */
-  /* jwidget_get_vtable (div)->request_size = NULL; */
-  /* jwidget_get_vtable (bias)->request_size = NULL; */
+  /* jwidget_get_vtable(div)->request_size = NULL; */
+  /* jwidget_get_vtable(bias)->request_size = NULL; */
 
   jwidget_set_min_size(div, 1, 1);
   jwidget_set_min_size(bias, 1, 1);
@@ -307,27 +307,27 @@ static int generate_select_hook(JWidget widget, int user_data)
 
 static int list_change_hook(JWidget widget, int user_data)
 {
-  JWidget selected = jlistbox_get_selected_child (widget);
+  JWidget selected = jlistbox_get_selected_child(widget);
   ConvMatr *convmatr = selected->user_data[0];
 
-  set_config_string ("ConvolutionMatrix", "Selected", convmatr->name);
+  set_config_string("ConvolutionMatrix", "Selected", convmatr->name);
 
-  set_convmatr (convmatr);
-  make_preview ();
+  set_convmatr(convmatr);
+  make_preview();
   return FALSE;
 }
 
 static int target_change_hook(JWidget widget, int user_data)
 {
-  effect_load_target (preview_get_effect (preview));
-  make_preview ();
+  effect_load_target(preview_get_effect(preview));
+  make_preview();
   return FALSE;
 }
 
 static int preview_change_hook(JWidget widget, int user_data)
 {
   set_config_bool("ConvolutionMatrix", "Preview",
-		  jwidget_is_selected (widget));
+		  jwidget_is_selected(widget));
   make_preview();
   return FALSE;
 }
@@ -339,10 +339,10 @@ static int tiled_change_hook(JWidget widget, int user_data)
   return FALSE;
 }
 
-static void make_preview (void)
+static void make_preview(void)
 {
   if (jwidget_is_selected (check_preview))
-    preview_restart (preview);
+    preview_restart(preview);
 }
 
 Command cmd_convolution_matrix = {

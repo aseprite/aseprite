@@ -33,7 +33,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
-static bool label_msg_proc (JWidget widget, JMessage msg);
+static bool label_msg_proc(JWidget widget, JMessage msg);
 
 JWidget jlabel_new(const char *text)
 {
@@ -53,8 +53,8 @@ static bool label_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       if (widget->text) {
-	msg->reqsize.w = jwidget_get_text_length (widget);
-	msg->reqsize.h = jwidget_get_text_height (widget);
+	msg->reqsize.w = jwidget_get_text_length(widget);
+	msg->reqsize.h = jwidget_get_text_height(widget);
       }
       else
 	msg->reqsize.w = msg->reqsize.h = 0;

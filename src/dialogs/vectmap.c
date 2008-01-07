@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,20 +33,20 @@
 
 #endif
 
-static void project (Image *image, int x, int y, double dmax, double *out_x, double *out_y)
+static void project(Image *image, int x, int y, double dmax, double *out_x, double *out_y)
 {
   int center_x = image->w/2;	/* center point */
   int center_y = image->h/2;
   int u = (x - center_x);	/* vector from center to current point */
   int v = (y - center_y);
-  int r = MIN (image->w, image->h)/2; /* radius */
-  double d = sqrt (u*u + v*v);	      /* distance from center */
-  double a = atan2 (-v, u);	      /* angle with center */
+  int r = MIN(image->w, image->h)/2;  /* radius */
+  double d = sqrt(u*u + v*v);	      /* distance from center */
+  double a = atan2(-v, u);	      /* angle with center */
 
 #if 1
   /* sphere */
-  double s = sin (PI*MIN(d, r)/r); /* scale factor for effect */
-/*   double s = cos (PI/2*MIN(d, r)/r); /\* scale factor for effect *\/ */
+  double s = sin(PI*MIN(d, r)/r); /* scale factor for effect */
+/*   double s = cos(PI/2*MIN(d, r)/r); /\* scale factor for effect *\/ */
   double howmuch = 32;
 /*   *out_x = s * (cos(a)*howmuch*(dmax-d)/dmax); */
 /*   *out_y = s * (sin(a)*howmuch*(dmax-d)/dmax); */
@@ -62,7 +62,7 @@ static void project (Image *image, int x, int y, double dmax, double *out_x, dou
 #elif 1
 
   /* twist */
-/*   double s = sin (PI*4*MIN(d, r)/r); /\* scale factor for effect *\/ */
+/*   double s = sin(PI*4*MIN(d, r)/r); /\* scale factor for effect *\/ */
 /*   *out_x = s * (cos(a)*8); */
 /*   *out_y = s * (sin(a)*8); */
   /* double twist_angle = 2*PI; */
@@ -97,39 +97,39 @@ static unsigned long bilinear4 (unsigned long A, unsigned long B,
   areaD = xy;
 
 #define CHANNEL(channel)					\
-  res_##channel = ((areaA * _rgba_get##channel (A)) +		\
-		   (areaB * _rgba_get##channel (B)) +		\
-		   (areaC * _rgba_get##channel (C)) +		\
-		   (areaD * _rgba_get##channel (D))) >> 5
+  res_##channel = ((areaA * _rgba_get##channel(A)) +		\
+		   (areaB * _rgba_get##channel(B)) +		\
+		   (areaC * _rgba_get##channel(C)) +		\
+		   (areaD * _rgba_get##channel(D))) >> 5
 
-  CHANNEL (r);
-  CHANNEL (g);
-  CHANNEL (b);
-  CHANNEL (a);
+  CHANNEL(r);
+  CHANNEL(g);
+  CHANNEL(b);
+  CHANNEL(a);
 
-  return _rgba (res_r, res_g, res_b, res_a);
+  return _rgba(res_r, res_g, res_b, res_a);
 }
 
 static int image_getpixel4 (Image *image, double x, double y)
 {
   int x1, y1, x2, y2, a, b, c, d;
 
-  x1 = floor (x);
-  y1 = floor (y);
-  x2 = ceil (x);
-  y2 = ceil (y);
+  x1 = floor(x);
+  y1 = floor(y);
+  x2 = ceil(x);
+  y2 = ceil(y);
 
-  a = image_getpixel (image, MID (0, x1, image->w-1), MID (0, y1, image->h-1));
-  b = image_getpixel (image, MID (0, x2, image->w-1), MID (0, y1, image->h-1));
-  c = image_getpixel (image, MID (0, x1, image->w-1), MID (0, y2, image->h-1));
-  d = image_getpixel (image, MID (0, x2, image->w-1), MID (0, y2, image->h-1));
+  a = image_getpixel(image, MID(0, x1, image->w-1), MID(0, y1, image->h-1));
+  b = image_getpixel(image, MID(0, x2, image->w-1), MID(0, y1, image->h-1));
+  c = image_getpixel(image, MID(0, x1, image->w-1), MID(0, y2, image->h-1));
+  d = image_getpixel(image, MID(0, x2, image->w-1), MID(0, y2, image->h-1));
 
-  return bilinear4 (a, b, c, d, ftofix (x), ftofix (y));
+  return bilinear4(a, b, c, d, ftofix(x), ftofix(y));
 }
 
 void dialogs_vector_map(void)
 {
-#define PROJECT()	project (image, x, y, dmax, &u, &v)
+#define PROJECT()	project(image, x, y, dmax, &u, &v)
 
   Sprite *sprite = current_sprite;
   Image *image, *image_copy;
@@ -139,24 +139,24 @@ void dialogs_vector_map(void)
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage ();
+  image = GetImage();
   if (!image)
     return;
 
-  image_copy = image_new_copy (image);
+  image_copy = image_new_copy(image);
   if (!image_copy)
     return;
 
   /* undo stuff */
-  if (undo_is_enabled (sprite->undo))
-    undo_image (sprite->undo, image, 0, 0, image->w, image->h);
+  if (undo_is_enabled(sprite->undo))
+    undo_image(sprite->undo, image, 0, 0, image->w, image->h);
 
-  dmax = sqrt (image->w/2*image->w/2 + image->h/2*image->h/2);
+  dmax = sqrt(image->w/2*image->w/2 + image->h/2*image->h/2);
   for (y=0; y<image->h; y++) {
     for (x=0; x<image->w; x++) {
-      PROJECT ();
+      PROJECT();
       c = image_getpixel4 (image_copy, x-u, y+v);
-      image_putpixel (image, x, y, c);
+      image_putpixel(image, x, y, c);
     }
   }
 

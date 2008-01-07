@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,80 +38,80 @@
      brush_size: 1-32 (default=1)
      brush_angle: 0-180 (default=0)
  */
-void SetBrush (const char *string)
+void SetBrush(const char *string)
 {
   int type = BRUSH_CIRCLE;
   int size = 1;
   int angle = 0;
-  char *copy = jstrdup (string);
+  char *copy = jstrdup(string);
   char *tok;
   int count;
 
-  for (tok=strtok (copy, " "), count=0; tok;
-       tok=strtok (NULL, " "), count++) {
+  for (tok=strtok(copy, " "), count=0; tok;
+       tok=strtok(NULL, " "), count++) {
     switch (count) {
 
       case 0:
-	if (strcmp (tok, "circle") == 0)
+	if (strcmp(tok, "circle") == 0)
 	  type = BRUSH_CIRCLE;
-	else if (strcmp (tok, "square") == 0)
+	else if (strcmp(tok, "square") == 0)
 	  type = BRUSH_SQUARE;
-	else if (strcmp (tok, "line") == 0)
+	else if (strcmp(tok, "line") == 0)
 	  type = BRUSH_LINE;
 	break;
 
       case 1:
-	size = strtol (tok, NULL, 0);
+	size = strtol(tok, NULL, 0);
 	break;
 
       case 2:
-	angle = strtol (tok, NULL, 0);
+	angle = strtol(tok, NULL, 0);
 	break;
     }
   }
 
-  set_brush_type (type);
-  set_brush_size (MID (1, size, 32));
-  set_brush_angle (MID (0, angle, 180));
+  set_brush_type(type);
+  set_brush_size(MID(1, size, 32));
+  set_brush_angle(MID(0, angle, 180));
 
-  jfree (copy);
+  jfree(copy);
 }
 
 /* string = "draw_mode glass_dirty" 
      draw_mode: opaque, glass, semi (default=opaque)
      glass_dirty: 0-255 (default=128)
  */
-void SetDrawMode (const char *string)
+void SetDrawMode(const char *string)
 {
-  char *copy = jstrdup (string);
+  char *copy = jstrdup(string);
   char *tok;
   int count;
   int draw_mode = DRAWMODE_OPAQUE;
   int glass_dirty = 128;
 
-  for (tok=strtok (copy, " "), count=0; tok;
-       tok=strtok (NULL, " "), count++) {
+  for (tok=strtok(copy, " "), count=0; tok;
+       tok=strtok(NULL, " "), count++) {
     switch (count) {
 
       case 0:
-	if (strcmp (tok, "opaque") == 0)
+	if (strcmp(tok, "opaque") == 0)
 	  draw_mode = DRAWMODE_OPAQUE;
-	else if (strcmp (tok, "glass") == 0)
+	else if (strcmp(tok, "glass") == 0)
 	  draw_mode = DRAWMODE_GLASS;
-	else if (strcmp (tok, "semi") == 0)
+	else if (strcmp(tok, "semi") == 0)
 	  draw_mode = DRAWMODE_SEMI;
 	break;
 
       case 1:
-	glass_dirty = strtol (tok, NULL, 0);
+	glass_dirty = strtol(tok, NULL, 0);
 	break;
     }
   }
 
-  set_brush_mode (draw_mode);
-  set_glass_dirty (MID (0, glass_dirty, 255));
+  set_brush_mode(draw_mode);
+  set_glass_dirty(MID(0, glass_dirty, 255));
 
-  jfree (copy);
+  jfree(copy);
 }
 
 /* string = "tool_name x,y x,y x,y ..." 
@@ -132,8 +132,8 @@ void ToolTrace(const char *string)
     int *x = NULL;
     int *y = NULL;
 
-    for (tok=strtok (copy, " "), count=0; tok;
-	 tok=strtok (NULL, " "), count++) {
+    for (tok=strtok(copy, " "), count=0; tok;
+	 tok=strtok(NULL, " "), count++) {
       switch (count) {
 	case 0:
 	  select_tool(tok);
@@ -147,8 +147,8 @@ void ToolTrace(const char *string)
 	    v = (int)strtod(s+1, &s);
 
 	    npoints++;
-	    x = jrealloc(x, sizeof (int)*npoints);
-	    y = jrealloc(y, sizeof (int)*npoints);
+	    x = jrealloc(x, sizeof(int)*npoints);
+	    y = jrealloc(y, sizeof(int)*npoints);
 	    x[npoints-1] = u;
 	    y[npoints-1] = v;
 	  }

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ static void read_1bit_line(int length, PACKFILE *f, Image *image, int line)
 	 }
       }
       pix = b[j];
-      image_putpixel (image, i, line, pix);
+      image_putpixel(image, i, line, pix);
    }
 }
 
@@ -224,7 +224,7 @@ static void read_4bit_line(int length, PACKFILE *f, Image *image, int line)
 	 }
       }
       pix = b[j];
-      image_putpixel (image, i, line, pix);
+      image_putpixel(image, i, line, pix);
    }
 }
 
@@ -248,7 +248,7 @@ static void read_8bit_line(int length, PACKFILE *f, Image *image, int line)
 	 }
       }
       pix = b[j];
-      image_putpixel (image, i, line, pix);
+      image_putpixel(image, i, line, pix);
    }
 }
 
@@ -267,7 +267,7 @@ static void read_24bit_line(int length, PACKFILE *f, Image *image, int line)
       c.b = pack_getc(f);
       c.g = pack_getc(f);
       c.r = pack_getc(f);
-      image_putpixel (image, i, line, _rgba (c.r, c.g, c.b, 255));
+      image_putpixel(image, i, line, _rgba(c.r, c.g, c.b, 255));
       nbytes += 3;
    }
 
@@ -333,7 +333,7 @@ static void read_RLE8_compressed_image(PACKFILE *f, Image *image, AL_CONST BITMA
 
 	 if (count > 0) {                    /* repeat pixel count times */
 	    for (j=0;j<count;j++) {
-               image_putpixel (image, pos, line, val);
+               image_putpixel(image, pos, line, val);
 	       pos++;
 	    }
 	 }
@@ -358,7 +358,7 @@ static void read_RLE8_compressed_image(PACKFILE *f, Image *image, AL_CONST BITMA
 	       default:                      /* read in absolute mode */
 		  for (j=0; j<val; j++) {
 		     val0 = pack_getc(f);
-                     image_putpixel (image, pos, line, val0);
+                     image_putpixel(image, pos, line, val0);
 		     pos++;
 		  }
 
@@ -405,7 +405,7 @@ static void read_RLE4_compressed_image(PACKFILE *f, Image *image, AL_CONST BITMA
 	    b[1] = val & 15;
 	    b[0] = (val >> 4) & 15;
 	    for (j=0; j<count; j++) {
-	       image_putpixel (image, pos, line, b[j%2]);
+	       image_putpixel(image, pos, line, b[j%2]);
 	       pos++;
 	    }
 	 }
@@ -438,7 +438,7 @@ static void read_RLE4_compressed_image(PACKFILE *f, Image *image, AL_CONST BITMA
 			   val0 = val0 >> 4;
 			}
 		     }
-		     image_putpixel (image, pos, line, b[j%4]);
+		     image_putpixel(image, pos, line, b[j%4]);
 		     pos++;
 		  }
 		  break;
@@ -469,33 +469,33 @@ static void read_bitfields_image(PACKFILE *f, Image *image, int bpp, BITMAPINFOH
 
   for (i=0; i<(int)infoheader->biHeight; i++) {
     for (k=0; k<(int)infoheader->biWidth; k++) {
-      pack_fread (&buffer, bytesPerPixel, f);
+      pack_fread(&buffer, bytesPerPixel, f);
 
       if (bpp == 15) {
 	red = (buffer >> 10) & 0x1f;
 	grn = (buffer >> 5) & 0x1f;
 	blu = (buffer) & 0x1f;
-	buffer = _rgba (_rgb_scale_5[red],
-			_rgb_scale_5[grn],
-			_rgb_scale_5[blu], 255);
+	buffer = _rgba(_rgb_scale_5[red],
+		       _rgb_scale_5[grn],
+		       _rgb_scale_5[blu], 255);
       }
       else if (bpp == 16) {
 	red = (buffer >> 11) & 0x1f;
 	grn = (buffer >> 5) & 0x3f;
 	blu = (buffer) & 0x1f;
-	buffer = _rgba (_rgb_scale_5[red],
-			_rgb_scale_6[grn],
-			_rgb_scale_5[blu], 255);
+	buffer = _rgba(_rgb_scale_5[red],
+		       _rgb_scale_6[grn],
+		       _rgb_scale_5[blu], 255);
       }
       else {
 	red = (buffer >> 16) & 0xff;
 	grn = (buffer >> 8) & 0xff;
 	blu = (buffer) & 0xff;
-	buffer = _rgba (red, grn, blu, 255);
+	buffer = _rgba(red, grn, blu, 255);
       }
 
-      image->method->putpixel (image,
-			       k, (infoheader->biHeight - i) - 1, buffer);
+      image->method->putpixel(image,
+			      k, (infoheader->biHeight - i) - 1, buffer);
     }
   }
 }
@@ -560,9 +560,9 @@ static Sprite *load_BMP(const char *filename)
   if (infoheader.biCompression == BI_BITFIELDS) {
     unsigned long redMask, bluMask;
 
-    redMask = pack_igetl (f);
-    pack_igetl (f);
-    bluMask = pack_igetl (f);
+    redMask = pack_igetl(f);
+    pack_igetl(f);
+    bluMask = pack_igetl(f);
 
     if ((bluMask == 0x001f) && (redMask == 0x7C00))
       bpp = 15;
@@ -572,42 +572,42 @@ static Sprite *load_BMP(const char *filename)
       bpp = 32;
     else {
       /* Unrecognised bit masks/depth */
-      pack_fclose (f);
+      pack_fclose(f);
       return NULL;
     }
   }
 
-  image = file_sequence_image (type,
-			       infoheader.biWidth,
-			       infoheader.biHeight);
+  image = file_sequence_image(type,
+			      infoheader.biWidth,
+			      infoheader.biHeight);
   if (!image) {
     pack_fclose(f);
     return NULL;
   }
 
   if (type == IMAGE_RGB)
-    image_clear (image, _rgba (0, 0, 0, 255));
+    image_clear(image, _rgba(0, 0, 0, 255));
   else
-    image_clear (image, 0);
+    image_clear(image, 0);
 
-  sprite = file_sequence_sprite ();
+  sprite = file_sequence_sprite();
 
   switch (infoheader.biCompression) {
  
     case BI_RGB:
-      read_image (f, image, &infoheader);
+      read_image(f, image, &infoheader);
       break;
  
     case BI_RLE8:
-      read_RLE8_compressed_image (f, image, &infoheader);
+      read_RLE8_compressed_image(f, image, &infoheader);
       break;
  
     case BI_RLE4:
-      read_RLE4_compressed_image (f, image, &infoheader);
+      read_RLE4_compressed_image(f, image, &infoheader);
       break;
 
     case BI_BITFIELDS:
-      read_bitfields_image (f, image, bpp, &infoheader);
+      read_bitfields_image(f, image, bpp, &infoheader);
       break;
 
     default:
@@ -639,13 +639,13 @@ static int save_BMP(Sprite *sprite)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  f = pack_fopen (sprite->filename, F_WRITE);
+  f = pack_fopen(sprite->filename, F_WRITE);
   if (!f) {
-    console_printf (_("Error creating file.\n"));
+    console_printf(_("Error creating file.\n"));
     return -1;
   }
 
-  image = file_sequence_image_to_save ();
+  image = file_sequence_image_to_save();
 
   *allegro_errno = 0;
 
@@ -685,8 +685,8 @@ static int save_BMP(Sprite *sprite)
     }
   }
   else {
-    pack_iputl (0, f);                /* biClrUsed */
-    pack_iputl (0, f);                /* biClrImportant */
+    pack_iputl(0, f);                /* biClrUsed */
+    pack_iputl(0, f);                /* biClrImportant */
   }
 
   /* image data */
@@ -707,16 +707,16 @@ static int save_BMP(Sprite *sprite)
     }
 
     for (j=0; j<filler; j++)
-      pack_putc (0, f);
+      pack_putc(0, f);
 
     if (image->h > 1)
-      do_progress (100 * (image->h-1-i) / (image->h-1));
+      do_progress(100 * (image->h-1-i) / (image->h-1));
   }
 
-  pack_fclose (f);
+  pack_fclose(f);
 
   if (*allegro_errno) {
-    console_printf (_("Error writing bytes.\n"));
+    console_printf(_("Error writing bytes.\n"));
     return -1;
   }
   else

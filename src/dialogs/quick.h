@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #ifndef DIALOGS_QUICK_H
 #define DIALOGS_QUICK_H
 
-void quick_move (void);
-void quick_copy (void);
-void quick_swap (void);
+void quick_move(void);
+void quick_copy(void);
+void quick_swap(void);
 
 #endif /* DIALOGS_QUICK_H */
 

@@ -45,9 +45,9 @@
 
 #endif
 
-#define THUMBSIZE    (32)
-#define FRMSIZE      (3 + THUMBSIZE + 2)
-#define LAYSIZE      (3 + MAX (text_height (widget->text_font), THUMBSIZE) + 2)
+#define THUMBSIZE	(32)
+#define FRMSIZE		(3 + THUMBSIZE + 2)
+#define LAYSIZE		(3 + MAX(text_height(widget->text_font), THUMBSIZE) + 2)
 
 enum {
   STATE_NONE,
@@ -142,7 +142,7 @@ void switch_between_film_and_sprite_editor(void)
   jwidget_add_child(window, box1);
 
   /* load window configuration */
-  jpanel_set_pos(panel1, get_config_float ("LayerWindow", "PanelPos", 50));
+  jpanel_set_pos(panel1, get_config_float("LayerWindow", "PanelPos", 50));
   jwindow_remap(window);
 
   /* center scrolls in selected layer/frpos */
@@ -182,31 +182,31 @@ void switch_between_film_and_sprite_editor(void)
 			       LayerBox
  ***********************************************************************/
 
-static JWidget layer_box_new (void)
+static JWidget layer_box_new(void)
 {
-  JWidget widget = jwidget_new (layer_box_type ());
-  LayerBox *layer_box = jnew (LayerBox, 1);
+  JWidget widget = jwidget_new(layer_box_type());
+  LayerBox *layer_box = jnew(LayerBox, 1);
 
   layer_box->widget = widget;
 
-  jwidget_add_hook (widget, layer_box_type (),
-		    layer_box_msg_proc, layer_box);
-  jwidget_focusrest (widget, TRUE);
+  jwidget_add_hook(widget, layer_box_type(),
+		   layer_box_msg_proc, layer_box);
+  jwidget_focusrest(widget, TRUE);
 
   return widget;
 }
 
-static int layer_box_type (void)
+static int layer_box_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-static LayerBox *layer_box_data (JWidget widget)
+static LayerBox *layer_box_data(JWidget widget)
 {
-  return jwidget_get_data (widget, layer_box_type ());
+  return jwidget_get_data(widget, layer_box_type());
 }
 
 static void layer_box_request_size(JWidget widget, int *w, int *h)
@@ -228,7 +228,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (layer_box);
+      jfree(layer_box);
       break;
 
     case JM_REQSIZE:
@@ -250,9 +250,9 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_DRAW: {
-      JWidget view = jwidget_get_view (widget);
-      JRect vp = jview_get_viewport_position (view);
-      BITMAP *bmp = create_bitmap (jrect_w(vp), jrect_h(vp));
+      JWidget view = jwidget_get_view(widget);
+      JRect vp = jview_get_viewport_position(view);
+      BITMAP *bmp = create_bitmap(jrect_w(vp), jrect_h(vp));
       int scroll_x, scroll_y;
       bool selected_layer;
       int pos, layers;
@@ -261,50 +261,50 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 
       jview_get_scroll(view, &scroll_x, &scroll_y);
 
-      text_mode (-1);
-      clear_to_color (bmp, makecol (255, 255, 255));
+      text_mode(-1);
+      clear_to_color(bmp, makecol(255, 255, 255));
 
       h = LAYSIZE;
       y = h-scroll_y;
 
-      hline (bmp, 0, h, bmp->w-1, makecol (0, 0, 0));
-      set_clip (bmp, 0, h+1, bmp->w-1, bmp->h-1);
+      hline(bmp, 0, h, bmp->w-1, makecol(0, 0, 0));
+      set_clip(bmp, 0, h+1, bmp->w-1, bmp->h-1);
 
-      layers = count_layers (sprite->set);
+      layers = count_layers(sprite->set);
       for (pos=0; pos<layers; pos++) {
-	layer = get_layer_in_pos (sprite->set, pos);
+	layer = get_layer_in_pos(sprite->set, pos);
 	
 	selected_layer = 
 	  (state != STATE_MOVING) ? (sprite->layer == layer):
 				    (layer == layer_box->layer);
 
 	if (selected_layer)
-	  rectfill (bmp, 0, y, bmp->w-1, y+h-1, makecol (44, 76, 145));
+	  rectfill(bmp, 0, y, bmp->w-1, y+h-1, makecol(44, 76, 145));
 
 	if (state == STATE_MOVING && sprite->layer == layer) {
-	  rectdotted (bmp, 0, y+1, bmp->w-1, y+2,
-		      makecol (0, 0, 0), makecol (255, 255, 255));
+	  rectdotted(bmp, 0, y+1, bmp->w-1, y+2,
+		     makecol(0, 0, 0), makecol(255, 255, 255));
 	}
 
-	hline (bmp, 0, y, bmp->w-1, makecol (0, 0, 0));
-	hline (bmp, 0, y+h, bmp->w-1, makecol (0, 0, 0));
+	hline(bmp, 0, y, bmp->w-1, makecol(0, 0, 0));
+	hline(bmp, 0, y+h, bmp->w-1, makecol(0, 0, 0));
 
 #if 0
 	{
 	  int count, pos;
-	  count = count_layers (sprite->set);
-	  get_layer_pos (sprite->set, layer, &pos);
-	  textprintf (bmp, widget->text_font,
-		      2, y+h/2-text_height (widget->text_font)/2,
-		      selected_layer ?
-		      makecol (255, 255, 255): makecol (0, 0, 0),
-		      "%d/%d", pos, count);
+	  count = count_layers(sprite->set);
+	  get_layer_pos(sprite->set, layer, &pos);
+	  textprintf(bmp, widget->text_font,
+		     2, y+h/2-text_height(widget->text_font)/2,
+		     selected_layer ?
+		     makecol(255, 255, 255): makecol(0, 0, 0),
+		     "%d/%d", pos, count);
 	}
 #elif 0
-	textout (bmp, widget->text_font, layer->name,
-		 2, y+h/2-text_height (widget->text_font)/2,
-		 selected_layer ?
-		 makecol (255, 255, 255): makecol (0, 0, 0));
+	textout(bmp, widget->text_font, layer->name,
+		2, y+h/2-text_height(widget->text_font)/2,
+		selected_layer ?
+		makecol(255, 255, 255): makecol(0, 0, 0));
 #else
 	{
 	  int tabs = -2;
@@ -312,18 +312,18 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 	  Layer *l = layer;
 	  while (l->gfxobj.type != GFXOBJ_SPRITE) {
 	    if (++tabs > 0) {
-/* 	      JList item = jlist_find (((Layer *)l->parent)->layers, l); */
+/* 	      JList item = jlist_find(((Layer *)l->parent)->layers, l); */
 	      int y1 = final_y-LAYSIZE/2;
 	      int y2 = final_y+LAYSIZE/2;
 /* 	      int y2 = item->prev ? final_y+LAYSIZE/2 : final_y; */
-	      vline (bmp, tabs*16-1, y1, y2, makecol (0, 0, 0));
+	      vline(bmp, tabs*16-1, y1, y2, makecol(0, 0, 0));
 	    }
 	    l = (Layer *)l->parent;
 	  }
 	  textout(bmp, widget->text_font, layer->name,
-		  2+tabs*16, final_y-text_height (widget->text_font)/2,
+		  2+tabs*16, final_y-text_height(widget->text_font)/2,
 		  selected_layer ?
-		  makecol(255, 255, 255): makecol (0, 0, 0));
+		  makecol(255, 255, 255): makecol(0, 0, 0));
 	}
 #endif
 	y += h;
@@ -388,7 +388,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_BUTTONPRESSED:
-      jwidget_hard_capture_mouse (widget);
+      jwidget_hard_capture_mouse(widget);
 
       if (msg->any.shifts & KB_SHIFT_FLAG) {
 	state = STATE_SCROLLING;
@@ -418,8 +418,8 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture (widget)) {
-	jwidget_release_mouse (widget);
+      if (jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
 
 	if ((state == STATE_SCROLLING) || (state == STATE_MOVING))
 	  jmouse_set_cursor(JI_CURSOR_NORMAL);
@@ -447,7 +447,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 	    jview_update(jwidget_get_view(layer_box->cel_box->widget));
 	  }
 	  else
-	    jwidget_dirty (widget);
+	    jwidget_dirty(widget);
 	}
 
 	state = STATE_NONE;
@@ -501,17 +501,17 @@ static void cel_box_request_size(JWidget widget, int *w, int *h)
 
 static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 {
-  CelBox *cel_box = cel_box_data (widget);
+  CelBox *cel_box = cel_box_data(widget);
   Sprite *sprite = current_sprite;
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (cel_box);
+      jfree(cel_box);
       break;
 
     case JM_REQSIZE:
-      cel_box_request_size (widget, &msg->reqsize.w, &msg->reqsize.h);
+      cel_box_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_SETPOS: {
@@ -561,7 +561,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
       offset_x = scroll_x % FRMSIZE;
 
       for (x=0; x<bmp->w+FRMSIZE; x += FRMSIZE) {
-	vline(bmp, x-offset_x-1, 0, bmp->h, makecol (0, 0, 0));
+	vline(bmp, x-offset_x-1, 0, bmp->h, makecol(0, 0, 0));
 
 	c = (x+scroll_x)/FRMSIZE;
 
@@ -573,7 +573,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	/* frame */
 	textprintf_centre
 	  (bmp, widget->text_font,
-	   x-offset_x+FRMSIZE/2, y+h/2-text_height (widget->text_font)/2,
+	   x-offset_x+FRMSIZE/2, y+h/2-text_height(widget->text_font)/2,
 	   c == sprite->frame ? makecol(255, 255, 255): makecol(0, 0, 0),
 	   "%d", c+1);
 
@@ -603,8 +603,8 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	else if (layer->gfxobj.type == GFXOBJ_LAYER_SET)
 	  rectfill(bmp, 0, y, bmp->w-1, y+h-1, makecol(128, 128, 128));
 
-	hline(bmp, 0, y, bmp->w-1, makecol (0, 0, 0));
-	hline(bmp, 0, y+h, bmp->w-1, makecol (0, 0, 0));
+	hline(bmp, 0, y, bmp->w-1, makecol(0, 0, 0));
+	hline(bmp, 0, y+h, bmp->w-1, makecol(0, 0, 0));
 
 	/* draw thumbnail of cels */
 
@@ -696,7 +696,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	    rectdotted(ji_screen,
 		       cel_box->rect.x1, cel_box->rect.y1,
 		       cel_box->rect.x2-1, cel_box->rect.y2-1,
-		       makecol (0, 0, 0), makecol (255, 255, 255));
+		       makecol(0, 0, 0), makecol(255, 255, 255));
 	    jmouse_show();
 	  }
 	}
@@ -1054,5 +1054,5 @@ static void get_cel_rect(JWidget widget, JRect rect)
   rect->x2 = rect->x1 + THUMBSIZE + 2;
   rect->y2 = rect->y1 + THUMBSIZE + 2;
 
-  jrect_free (vp);
+  jrect_free(vp);
 }

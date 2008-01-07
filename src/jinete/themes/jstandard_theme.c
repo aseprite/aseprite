@@ -39,7 +39,7 @@
 #include "jstandard_theme_icons.h"
 #include "pcx2data.c"
 
-#define CHARACTER_LENGTH(f, c)	((f)->vtable->char_length ((f), (c)))
+#define CHARACTER_LENGTH(f, c)	((f)->vtable->char_length((f), (c)))
 
 #define BGCOLOR			(get_bg_color(widget))
 
@@ -132,13 +132,13 @@ static void draw_icons(int x, int y, JWidget widget, int edge_icon);
 static void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
 static void less_bevel(int *bevel);
 
-static bool theme_button_msg_proc (JWidget widget, JMessage msg);
+static bool theme_button_msg_proc(JWidget widget, JMessage msg);
 
-JTheme jtheme_new_standard (void)
+JTheme jtheme_new_standard(void)
 {
   JTheme theme;
 
-  theme = jtheme_new ();
+  theme = jtheme_new();
   if (!theme)
     return NULL;
 
@@ -182,21 +182,21 @@ JTheme jtheme_new_standard (void)
   return theme;
 }
 
-static void theme_destroy (void)
+static void theme_destroy(void)
 {
   int c;
 
   for (c=0; c<ICONS; c++) {
     if (icons_bitmap[c]) {
-      destroy_bitmap (icons_bitmap[c]);
+      destroy_bitmap(icons_bitmap[c]);
       icons_bitmap[c] = NULL;
     }
   }
 }
 
-static void theme_regen (void)
+static void theme_regen(void)
 {
-  JTheme theme = ji_get_theme ();
+  JTheme theme = ji_get_theme();
   int c, cmap[8], mask_cmap[2];
 
   theme->desktop_color = COLOR_DISABLED;
@@ -217,12 +217,12 @@ static void theme_regen (void)
 
   for (c=0; c<ICONS; c++) {
     if (icons_bitmap[c])
-      destroy_bitmap (icons_bitmap[c]);
+      destroy_bitmap(icons_bitmap[c]);
 
     if (icons_data[c].mask)
       icons_bitmap[c] = data2bmp(8, icons_data[c].data, mask_cmap);
     else
-      icons_bitmap[c] = data2bmp(bitmap_color_depth (ji_screen),
+      icons_bitmap[c] = data2bmp(bitmap_color_depth(ji_screen),
 				 icons_data[c].data, cmap);
   }
 }
@@ -352,28 +352,28 @@ static void theme_init_widget(JWidget widget)
       /* frame */
       if ((widget->align & JI_HORIZONTAL) &&
 	  (widget->align & JI_VERTICAL)) {
-	BORDER (4);
+	BORDER(4);
       }
       /* horizontal bar */
       else if (widget->align & JI_HORIZONTAL) {
-	BORDER4 (2, 4, 2, 0);
+	BORDER4(2, 4, 2, 0);
       }
       /* vertical bar */
       else {
-	BORDER4 (4, 2, 0, 2);
+	BORDER4(4, 2, 0, 2);
       }
 
       if (widget->text) {
 	if (widget->align & JI_TOP)
-	  widget->border_width.t = jwidget_get_text_height (widget);
+	  widget->border_width.t = jwidget_get_text_height(widget);
 	else if (widget->align & JI_BOTTOM)
-	  widget->border_width.b = jwidget_get_text_height (widget);
+	  widget->border_width.b = jwidget_get_text_height(widget);
       }
       break;
 
     case JI_SLIDER:
       BORDER(4);
-      widget->child_spacing = jwidget_get_text_height (widget);
+      widget->child_spacing = jwidget_get_text_height(widget);
       break;
 
     case JI_TEXTBOX:
@@ -417,7 +417,7 @@ static void theme_init_widget(JWidget widget)
 	}
       }
       else {
-	BORDER (0);
+	BORDER(0);
       }
       widget->child_spacing = 4;
       break;
@@ -427,12 +427,12 @@ static void theme_init_widget(JWidget widget)
   }
 }
 
-static JRegion theme_get_window_mask (JWidget widget)
+static JRegion theme_get_window_mask(JWidget widget)
 {
-  return jregion_new (widget->rc, 1);
+  return jregion_new(widget->rc, 1);
 }
 
-static void theme_map_decorative_widget (JWidget widget)
+static void theme_map_decorative_widget(JWidget widget)
 {
   if (ustrcmp(widget->name, "theme_close_button") == 0) {
     JWidget window = widget->parent;
@@ -482,7 +482,7 @@ static int theme_color_background(void)
 
 static void theme_draw_box(JWidget widget)
 {
-  jdraw_rectfill (widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
 static void theme_draw_button(JWidget widget)
@@ -541,7 +541,7 @@ static void theme_draw_button(JWidget widget)
 		   COLOR_FOREGROUND, COLOR_FOREGROUND, bevel);
   else {
     less_bevel(bevel);
-    draw_bevel_box (x1, y1, x2, y2, c1, c2, bevel);
+    draw_bevel_box(x1, y1, x2, y2, c1, c2, bevel);
   }
 
   less_bevel(bevel);
@@ -621,11 +621,11 @@ static void theme_draw_check(JWidget widget)
 			      widget->theme->check_icon_size);
 
   /* background */
-  jdraw_rectfill (widget->rc, bg = BGCOLOR);
+  jdraw_rectfill(widget->rc, bg = BGCOLOR);
 
   /* mouse */
   if (jwidget_is_enabled(widget) && jwidget_has_mouse(widget))
-    jdraw_rectfill (&box, bg = COLOR_HOTFACE);
+    jdraw_rectfill(&box, bg = COLOR_HOTFACE);
 
   /* focus */
   if (jwidget_has_focus(widget)) {
@@ -634,22 +634,22 @@ static void theme_draw_check(JWidget widget)
   }
 
   /* text */
-  draw_textstring (NULL, -1, bg, FALSE, widget, &text, 0);
+  draw_textstring(NULL, -1, bg, FALSE, widget, &text, 0);
 
   /* icon */
-  draw_icons (icon.x1, icon.y1, widget, ICON_CHECK_EDGE);
+  draw_icons(icon.x1, icon.y1, widget, ICON_CHECK_EDGE);
 }
 
 static void theme_draw_entry(JWidget widget)
 {
-  bool password = jentry_is_password (widget);
+  bool password = jentry_is_password(widget);
   int scroll, cursor, state, selbeg, selend;
   const char *text = widget->text;
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
   int cursor_x;
 
-  jtheme_entry_info (widget, &scroll, &cursor, &state, &selbeg, &selend);
+  jtheme_entry_info(widget, &scroll, &cursor, &state, &selbeg, &selend);
 
   /* main pos */
   x1 = widget->rc->x1;
@@ -666,20 +666,20 @@ static void theme_draw_entry(JWidget widget)
   /* 2nd border */
   x1++, y1++, x2--, y2--;
   if (jwidget_has_focus (widget))
-    rect (ji_screen, x1, y1, x2, y2, COLOR_FOREGROUND);
+    rect(ji_screen, x1, y1, x2, y2, COLOR_FOREGROUND);
   else
-    rect (ji_screen, x1, y1, x2, y2, BGCOLOR);
+    rect(ji_screen, x1, y1, x2, y2, BGCOLOR);
 
   /* background border */
   x1++, y1++, x2--, y2--;
-  rectfill (ji_screen, x1, y1, x2, y2, bg);
+  rectfill(ji_screen, x1, y1, x2, y2, bg);
 
   /* draw the text */
   x = widget->rc->x1 + widget->border_width.l;
-  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height (widget)/2;
+  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
 
   for (c=scroll; ugetat (text, c); c++) {
-    ch = password ? '*': ugetat (text, c);
+    ch = password ? '*': ugetat(text, c);
 
     /* normal text */
     bg = -1;
@@ -700,36 +700,36 @@ static void theme_draw_entry(JWidget widget)
       fg = COLOR_DISABLED;
     }
 
-    w = CHARACTER_LENGTH (widget->text_font, ch);
+    w = CHARACTER_LENGTH(widget->text_font, ch);
     if (x+w > widget->rc->x2-3)
       return;
 
     cursor_x = x;
-    ji_font_set_aa_mode (widget->text_font,
-			 bg >= 0 ? bg: COLOR_BACKGROUND);
-    widget->text_font->vtable->render_char (widget->text_font,
-					    ch, fg, bg, ji_screen, x, y);
+    ji_font_set_aa_mode(widget->text_font,
+			bg >= 0 ? bg: COLOR_BACKGROUND);
+    widget->text_font->vtable->render_char(widget->text_font,
+					   ch, fg, bg, ji_screen, x, y);
     x += w;
 
     /* cursor */
     if ((c == cursor) && (state) && (jwidget_has_focus (widget)))
-      draw_entry_cursor (widget, cursor_x, y);
+      draw_entry_cursor(widget, cursor_x, y);
   }
 
   /* draw the cursor if it is next of the last character */
   if ((c == cursor) && (state) &&
-      (jwidget_has_focus (widget)) &&
-      (jwidget_is_enabled (widget)))
-    draw_entry_cursor (widget, x, y);
+      (jwidget_has_focus(widget)) &&
+      (jwidget_is_enabled(widget)))
+    draw_entry_cursor(widget, x, y);
 }
 
 static void theme_draw_label(JWidget widget)
 {
   int bg = BGCOLOR;
 
-  jdraw_rectfill (widget->rc, bg);
+  jdraw_rectfill(widget->rc, bg);
 
-  draw_textstring (NULL, -1, bg, FALSE, widget, widget->rc, 0);
+  draw_textstring(NULL, -1, bg, FALSE, widget, widget->rc, 0);
 }
 
 static void theme_draw_listbox(JWidget widget)
@@ -890,7 +890,7 @@ static void theme_draw_menuitem(JWidget widget)
       pos = jwidget_get_rect(widget);
       pos->x2 -= widget->child_spacing/4;
 
-      jaccel_to_string (jmenuitem_get_accel (widget), buf);
+      jaccel_to_string(jmenuitem_get_accel(widget), buf);
 
       widget->align = JI_RIGHT | JI_MIDDLE;
       draw_textstring(buf, fg, bg, FALSE, widget, pos, 0);
@@ -901,7 +901,7 @@ static void theme_draw_menuitem(JWidget widget)
   }
 }
 
-static void theme_draw_panel (JWidget widget)
+static void theme_draw_panel(JWidget widget)
 {
   JWidget c1, c2;
   JLink link;
@@ -920,12 +920,12 @@ static void theme_draw_panel (JWidget widget)
       c2 = (JWidget)link->next->data;
 
       if (widget->align & JI_HORIZONTAL) {
-/* 	vline (ji_screen, */
+/* 	vline(ji_screen, */
 /* 	       (c1->pos->x+c1->pos->w+c2->pos->x-1)/2, */
 /* 	       widget->rect->y, */
 /* 	       widget->rect->y+widget->rect->h/2-4, COLOR_FOREGROUND); */
 
-/* 	vline (ji_screen, */
+/* 	vline(ji_screen, */
 /* 	       (c1->pos->x+c1->pos->w+c2->pos->x-1)/2, */
 /* 	       widget->rect->y+widget->rect->h/2+4, */
 /* 	       widget->rect->y+widget->rect->h-1, COLOR_FOREGROUND); */
@@ -937,12 +937,12 @@ static void theme_draw_panel (JWidget widget)
 		c2->rc->x1-3, COLOR_FOREGROUND);
       }
       else {
-/* 	hline (ji_screen, */
+/* 	hline(ji_screen, */
 /* 	       widget->rect->x, */
 /* 	       (c1->pos->y+c1->pos->h+c2->pos->y-1)/2, */
 /* 	       widget->rect->x+widget->rect->w/2-4, COLOR_FOREGROUND); */
 
-/* 	hline (ji_screen, */
+/* 	hline(ji_screen, */
 /* 	       widget->rect->x+widget->rect->w/2+4, */
 /* 	       (c1->pos->y+c1->pos->h+c2->pos->y-1)/2, */
 /* 	       widget->rect->x+widget->rect->w-1, COLOR_FOREGROUND); */
@@ -957,18 +957,18 @@ static void theme_draw_panel (JWidget widget)
   }
 }
 
-static void theme_draw_radio (JWidget widget)
+static void theme_draw_radio(JWidget widget)
 {
   struct jrect box, text, icon;
   int bg = BGCOLOR;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			      ji_generic_button_get_icon_align(widget),
-			      widget->theme->radio_icon_size,
-			      widget->theme->radio_icon_size);
+			    ji_generic_button_get_icon_align(widget),
+			    widget->theme->radio_icon_size,
+			    widget->theme->radio_icon_size);
 
   /* background */
-  jdraw_rectfill (widget->rc, bg);
+  jdraw_rectfill(widget->rc, bg);
 
   /* mouse */
   if (jwidget_is_enabled(widget) && jwidget_has_mouse(widget))
@@ -997,55 +997,55 @@ static void theme_draw_separator(JWidget widget)
   y2 = widget->rc->y2 - 1 - widget->border_width.b/2;
 
   /* background */
-  jdraw_rectfill (widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->rc, BGCOLOR);
 
   /* TOP line */
   if (widget->align & JI_HORIZONTAL) {
-    hline (ji_screen, x1, y1-1, x2, COLOR_DISABLED);
-    hline (ji_screen, x1, y1, x2, COLOR_BACKGROUND);
+    hline(ji_screen, x1, y1-1, x2, COLOR_DISABLED);
+    hline(ji_screen, x1, y1, x2, COLOR_BACKGROUND);
   }
 
   /* LEFT line */
   if (widget->align & JI_VERTICAL) {
-    vline (ji_screen, x1-1, y1, y2, COLOR_DISABLED);
-    vline (ji_screen, x1, y1, y2, COLOR_BACKGROUND);
+    vline(ji_screen, x1-1, y1, y2, COLOR_DISABLED);
+    vline(ji_screen, x1, y1, y2, COLOR_BACKGROUND);
   }
 
   /* frame */
   if ((widget->align & JI_HORIZONTAL) &&
       (widget->align & JI_VERTICAL)) {
     /* union between the LEFT and TOP lines */
-    putpixel (ji_screen, x1-1, y1-1, COLOR_DISABLED);
+    putpixel(ji_screen, x1-1, y1-1, COLOR_DISABLED);
 
     /* BOTTOM line */
-    hline (ji_screen, x1, y2, x2, COLOR_DISABLED);
-    hline (ji_screen, x1-1, y2+1, x2, COLOR_BACKGROUND);
+    hline(ji_screen, x1, y2, x2, COLOR_DISABLED);
+    hline(ji_screen, x1-1, y2+1, x2, COLOR_BACKGROUND);
 
     /* RIGHT line */
-    vline (ji_screen, x2, y1, y2, COLOR_DISABLED);
-    vline (ji_screen, x2+1, y1-1, y2, COLOR_BACKGROUND);
+    vline(ji_screen, x2, y1, y2, COLOR_DISABLED);
+    vline(ji_screen, x2+1, y1-1, y2, COLOR_BACKGROUND);
 
     /* union between the RIGHT and BOTTOM lines */
-    putpixel (ji_screen, x2+1, y2+1, COLOR_BACKGROUND);
+    putpixel(ji_screen, x2+1, y2+1, COLOR_BACKGROUND);
   }
 
   /* text */
   if (widget->text) {
-    int h = jwidget_get_text_height (widget);
+    int h = jwidget_get_text_height(widget);
     struct jrect r = { x1+h/2, y1-h/2, x2+1-h, y2+1+h };
-    draw_textstring (NULL, -1, BGCOLOR, FALSE, widget, &r, 0);
+    draw_textstring(NULL, -1, BGCOLOR, FALSE, widget, &r, 0);
   }
 }
 
 #if 1
 /* TODO when Allegro 4.1 will be officially released, replace this
    with the get_clip_rect, add_clip_rect, set_clip_rect functions */
-static int my_add_clip_rect (BITMAP *bitmap, int x1, int y1, int x2, int y2)
+static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 {
-  int u1 = MAX (x1, bitmap->cl);
-  int v1 = MAX (y1, bitmap->ct);
-  int u2 = MIN (x2, bitmap->cr-1);
-  int v2 = MIN (y2, bitmap->cb-1);
+  int u1 = MAX(x1, bitmap->cl);
+  int v1 = MAX(y1, bitmap->ct);
+  int u2 = MIN(x2, bitmap->cr-1);
+  int v2 = MIN(y2, bitmap->cb-1);
 
   if (u1 > u2 || v1 > v2)
     return FALSE;
@@ -1062,7 +1062,7 @@ static void theme_draw_slider(JWidget widget)
   int min, max, value;
   char buf[256];
 
-  jtheme_slider_info (widget, &min, &max, &value);
+  jtheme_slider_info(widget, &min, &max, &value);
 
   /* main pos */
   x1 = widget->rc->x1;
@@ -1084,9 +1084,9 @@ static void theme_draw_slider(JWidget widget)
   /* 2nd border */
   x1++, y1++, x2--, y2--;
   if (jwidget_has_focus (widget))
-    rect (ji_screen, x1, y1, x2, y2, COLOR_FOREGROUND);
+    rect(ji_screen, x1, y1, x2, y2, COLOR_FOREGROUND);
   else
-    rect (ji_screen, x1, y1, x2, y2, bg);
+    rect(ji_screen, x1, y1, x2, y2, bg);
 
   /* 3rd border */
   if (!jwidget_is_selected (widget)) {
@@ -1099,7 +1099,7 @@ static void theme_draw_slider(JWidget widget)
   }
 
   x1++, y1++, x2--, y2--;
-  _ji_theme_rectedge (ji_screen, x1, y1, x2, y2, c1, c2);
+  _ji_theme_rectedge(ji_screen, x1, y1, x2, y2, c1, c2);
 
   /* progress bar */
   x1++, y1++, x2--, y2--;
@@ -1110,15 +1110,15 @@ static void theme_draw_slider(JWidget widget)
     x = x1;
 
   if (value == min) {
-    rectfill (ji_screen, x1, y1, x2, y2, bg);
+    rectfill(ji_screen, x1, y1, x2, y2, bg);
   }
   else {
-    rectfill (ji_screen, x1, y1, x, y2,
-	      (jwidget_is_disabled (widget)) ?
-	      bg: COLOR_SELECTED);
+    rectfill(ji_screen, x1, y1, x, y2,
+	     (jwidget_is_disabled(widget)) ?
+	     bg: COLOR_SELECTED);
 
     if (x < x2)
-      rectfill (ji_screen, x+1, y1, x2, y2, bg);
+      rectfill(ji_screen, x+1, y1, x2, y2, bg);
   }
 
   /* text */
@@ -1167,7 +1167,7 @@ static void theme_draw_textbox(JWidget widget)
 
 static void theme_draw_view(JWidget widget)
 {
-  JRect pos = jwidget_get_rect (widget);
+  JRect pos = jwidget_get_rect(widget);
 
   if (jwidget_has_focus(widget)) {
     /* 1st border */
@@ -1190,7 +1190,7 @@ static void theme_draw_view(JWidget widget)
   jrect_shrink(pos, 1);
   jdraw_rectfill(pos, BGCOLOR);
 
-  jrect_free (pos);
+  jrect_free(pos);
 }
 
 static void theme_draw_view_scrollbar(JWidget widget)
@@ -1199,7 +1199,7 @@ static void theme_draw_view_scrollbar(JWidget widget)
   int u1, v1, u2, v2;
   int pos, len;
 
-  jtheme_scrollbar_info (widget, &pos, &len);
+  jtheme_scrollbar_info(widget, &pos, &len);
 
   x1 = widget->rc->x1;
   y1 = widget->rc->y1;
@@ -1207,7 +1207,7 @@ static void theme_draw_view_scrollbar(JWidget widget)
   y2 = widget->rc->y2-1;
 
   /* border */
-  rect (ji_screen, x1, y1, x2, y2, BGCOLOR);
+  rect(ji_screen, x1, y1, x2, y2, BGCOLOR);
 
   /* draw the content */
   x1++, y1++, x2--, y2--;
@@ -1228,17 +1228,17 @@ static void theme_draw_view_scrollbar(JWidget widget)
   }
 
   /* background */
-  _ji_theme_rectfill_exclude (ji_screen,
-			      x1, y1, x2, y2,
-			      u1, v1, u2, v2, BGCOLOR);
+  _ji_theme_rectfill_exclude(ji_screen,
+			     x1, y1, x2, y2,
+			     u1, v1, u2, v2, BGCOLOR);
 
   /* 1st border */
-  if (jwidget_is_selected (widget))
-    _ji_theme_rectedge (ji_screen, u1, v1, u2, v2,
-			COLOR_DISABLED, COLOR_BACKGROUND);
+  if (jwidget_is_selected(widget))
+    _ji_theme_rectedge(ji_screen, u1, v1, u2, v2,
+		       COLOR_DISABLED, COLOR_BACKGROUND);
   else
-    _ji_theme_rectedge (ji_screen, u1, v1, u2, v2,
-			COLOR_BACKGROUND, COLOR_DISABLED);
+    _ji_theme_rectedge(ji_screen, u1, v1, u2, v2,
+		       COLOR_BACKGROUND, COLOR_DISABLED);
 
   /* bar-block background */
   u1++, v1++, u2--, v2--;
@@ -1248,7 +1248,7 @@ static void theme_draw_view_scrollbar(JWidget widget)
     rectfill(ji_screen, u1, v1, u2, v2, BGCOLOR);
 }
 
-static void theme_draw_view_viewport (JWidget widget)
+static void theme_draw_view_viewport(JWidget widget)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
@@ -1293,30 +1293,30 @@ static void theme_draw_window(JWidget widget)
   jrect_free(cpos);
 }
 
-static int get_bg_color (JWidget widget)
+static int get_bg_color(JWidget widget)
 {
-  int c = jwidget_get_bg_color (widget);
-  int decorative = jwidget_is_decorative (widget);
+  int c = jwidget_get_bg_color(widget);
+  int decorative = jwidget_is_decorative(widget);
 
   return c >= 0 ? c: (decorative ? COLOR_SELECTED:
 				   COLOR_FACE);
 }
 
-static void draw_textstring (const char *t, int fg_color, int bg_color,
-			     bool fill_bg, JWidget widget, const JRect rect,
-			     int selected_offset)
+static void draw_textstring(const char *t, int fg_color, int bg_color,
+			    bool fill_bg, JWidget widget, const JRect rect,
+			    int selected_offset)
 {
   if (t || widget->text) {
     int x, y, w, h;
 
     if (!t) {
       t = widget->text;
-      w = jwidget_get_text_length (widget);
-      h = jwidget_get_text_height (widget);
+      w = jwidget_get_text_length(widget);
+      h = jwidget_get_text_height(widget);
     }
     else {
-      w = ji_font_text_len (widget->text_font, t);
-      h = text_height (widget->text_font);
+      w = ji_font_text_len(widget->text_font, t);
+      h = text_height(widget->text_font);
     }
 
     /* horizontally text alignment */
@@ -1345,9 +1345,9 @@ static void draw_textstring (const char *t, int fg_color, int bg_color,
     /* background */
     if (bg_color >= 0) {
       if (jwidget_is_disabled (widget))
-	rectfill (ji_screen, x, y, x+w, y+h, bg_color);
+	rectfill(ji_screen, x, y, x+w, y+h, bg_color);
       else
-	rectfill (ji_screen, x, y, x+w-1, y+h-1, bg_color);
+	rectfill(ji_screen, x, y, x+w-1, y+h-1, bg_color);
     }
 
     /* text */

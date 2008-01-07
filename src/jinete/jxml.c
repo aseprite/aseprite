@@ -470,10 +470,10 @@ static JList read_nodes(JStream stream)
 	/* create the new tag */
 	tag = read_elem(open ? tag_start: tag_start+1);
 	if (tag) {
-/* 	  fprintf (stderr, "%s tag: %s (parent %s)\n", */
-/* 		   open ? "open": "close", */
-/* 		   jxmlelem_get_name(tag), */
-/* 		   !jlist_empty(parent_stack) ? ((JXmlNode)jlist_first_data(parent_stack))->value: "ROOT"); */
+/* 	  fprintf(stderr, "%s tag: %s (parent %s)\n", */
+/* 		  open ? "open": "close", */
+/* 		  jxmlelem_get_name(tag), */
+/* 		  !jlist_empty(parent_stack) ? ((JXmlNode)jlist_first_data(parent_stack))->value: "ROOT"); */
 
 	  /* open a level */
 	  if (open) {
@@ -497,7 +497,7 @@ static JList read_nodes(JStream stream)
 	    }
 	    else {
 	      /* TODO error msg */
-	      /* printf ("you must open the tag before close it\n"); */
+	      /* printf("you must open the tag before close it\n"); */
 	    }
 
 	    jxmlelem_free(tag);
