@@ -128,11 +128,8 @@ void jwidget_free(JWidget widget)
     jwidget_remove_child(widget->parent, widget);
 
   /* remove children */
-  JI_LIST_FOR_EACH_SAFE(widget->children, link, next) {
-    /* TODO the autodestroy flag is only useful for windows */
-/*     if (jwidget_is_autodestroy (link->data)) */
-      jwidget_free(link->data);
-  }
+  JI_LIST_FOR_EACH_SAFE(widget->children, link, next)
+    jwidget_free(link->data);
   jlist_free(widget->children);
 
   /* destroy the update region */
@@ -157,7 +154,20 @@ void jwidget_free(JWidget widget)
   jlist_free(widget->hooks);
 
   /* low level free */
-  _ji_free_widget (widget);
+  _ji_free_widget(widget);
+}
+
+void jwidget_free_deferred(JWidget widget)
+{
+  JMessage msg;
+
+  assert_valid_widget(widget);
+
+  msg = jmessage_new(JM_DEFERREDFREE);
+  msg->deffree.widget_to_free = widget;
+  /* TODO use the manager of 'widget' */
+  jmessage_add_dest(msg, ji_get_default_manager());
+  jmanager_enqueue_message(msg);
 }
 
 void jwidget_init_theme(JWidget widget)
@@ -382,21 +392,6 @@ void jwidget_decorative(JWidget widget, bool state)
     widget->flags &= ~JI_DECORATIVE;
 }
 
-void jwidget_autodestroy(JWidget widget, bool state)
-{
-  JLink link;
-
-  assert_valid_widget(widget);
-
-  if (state)
-    widget->flags |= JI_AUTODESTROY;
-  else
-    widget->flags &= ~JI_AUTODESTROY;
-
-  JI_LIST_FOR_EACH(widget->children, link)
-    jwidget_autodestroy(link->data, state);
-}
-
 void jwidget_focusrest(JWidget widget, bool state)
 {
   assert_valid_widget(widget);
@@ -426,13 +421,6 @@ bool jwidget_is_decorative(JWidget widget)
   assert_valid_widget(widget);
 
   return (widget->flags & JI_DECORATIVE) ? TRUE: FALSE;
-}
-
-bool jwidget_is_autodestroy(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return (widget->flags & JI_AUTODESTROY) ? TRUE: FALSE;
 }
 
 bool jwidget_is_focusrest(JWidget widget)

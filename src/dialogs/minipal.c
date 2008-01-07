@@ -1,5 +1,6 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +21,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <stdio.h>
 
-#include "jinete/jbox.h"
-#include "jinete/jbutton.h"
-#include "jinete/jhook.h"
-#include "jinete/jlist.h"
-#include "jinete/jrect.h"
-#include "jinete/jsystem.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
+#include "jinete/jinete.h"
 
 #include "modules/color.h"
 #include "modules/gui.h"
@@ -39,28 +34,27 @@
 
 #endif
 
-static int paledit_change_signal (JWidget widget, int user_data);
-static int window_resize_signal (JWidget widget, int user_data);
+static int paledit_change_signal(JWidget widget, int user_data);
+static bool window_hook(JWidget widget, JMessage msg);
 
-void ji_minipal_new (JWidget color_bar, int x, int y)
+void ji_minipal_new(JWidget color_bar, int x, int y)
 {
   JWidget window, paledit;
 
-  window = jwindow_new ("MiniPal");
-  paledit = palette_editor_new (current_palette, FALSE, 3);
+  window = jwindow_new("MiniPal");
+  paledit = palette_editor_new(current_palette, FALSE, 3);
 
-  HOOK (paledit, SIGNAL_PALETTE_EDITOR_CHANGE, paledit_change_signal, color_bar);
-  HOOK (window, JI_SIGNAL_WINDOW_RESIZE, window_resize_signal, paledit);
+  HOOK(paledit, SIGNAL_PALETTE_EDITOR_CHANGE, paledit_change_signal, color_bar);
+  jwidget_add_hook(window, JI_USER_WIDGET, window_hook, paledit);
 
-  jwidget_expansive (paledit, TRUE);
+  jwidget_expansive(paledit, TRUE);
+  jwidget_add_child(window, paledit);
 
-  jwidget_add_child (window, paledit);
-
-  jwindow_position (window, x, y);
-  jwindow_open_bg (window);
+  jwindow_position(window, x, y);
+  jwindow_open_bg(window);
 }
 
-static int paledit_change_signal (JWidget widget, int user_data)
+static int paledit_change_signal(JWidget widget, int user_data)
 {
   if (jmouse_b(0)) {
     PaletteEditor *paledit = palette_editor_data (widget);
@@ -98,23 +92,36 @@ static int paledit_change_signal (JWidget widget, int user_data)
   return FALSE;
 }
 
-static int window_resize_signal (JWidget widget, int user_data)
+static bool window_hook(JWidget widget, JMessage msg)
 {
-  JWidget paledit = (JWidget)user_data;
-  int cols, box = 3;
+  switch (msg->type) {
 
-  do {
-    box++;
-    palette_editor_data(paledit)->boxsize = box;
-    cols = (jrect_w(paledit->rc)-1) / (box+1);
-    palette_editor_set_columns(paledit, cols);
-  } while (((jrect_h(paledit->rc)-1) / (box+1))*cols > 256);
+    case JM_SIGNAL: {
+      if (msg->signal.num == JI_SIGNAL_WINDOW_RESIZE) {
+	JWidget paledit = jwidget_get_data(widget, JI_USER_WIDGET);
+	int cols, box = 3;
 
-  box--;
-  palette_editor_data(paledit)->boxsize = box;
-  cols = (jrect_w(paledit->rc)-1) / (box+1);
-  palette_editor_set_columns(paledit, cols);
+	do {
+	  box++;
+	  palette_editor_data(paledit)->boxsize = box;
+	  cols = (jrect_w(paledit->rc)-1) / (box+1);
+	  palette_editor_set_columns(paledit, cols);
+	} while (((jrect_h(paledit->rc)-1) / (box+1))*cols > 256);
 
-  jwidget_dirty(paledit);
+	box--;
+	palette_editor_data(paledit)->boxsize = box;
+	cols = (jrect_w(paledit->rc)-1) / (box+1);
+	palette_editor_set_columns(paledit, cols);
+
+	jwidget_dirty(paledit);
+      }
+      else if (msg->signal.num == JI_SIGNAL_WINDOW_CLOSE) {
+	jwidget_free_deferred(widget);
+      }
+      break;
+    }
+
+  }
+
   return FALSE;
 }

@@ -110,9 +110,8 @@ struct jwidget;
 #define JI_MAGNETIC	0x000100 /* attract the focus */
 #define JI_EXPANSIVE	0x000200 /* is expansive (want more space) */
 #define JI_DECORATIVE	0x000400 /* to decorate windows */
-#define JI_AUTODESTROY	0x000800 /* destroyed by the manager */
-#define JI_HARDCAPTURE	0x001000 /* only windows use hard capture */
-#define JI_INITIALIZED	0x002000 /* the widget was already initialized by a theme */
+#define JI_HARDCAPTURE	0x000800 /* only windows use hard capture */
+#define JI_INITIALIZED	0x001000 /* the widget was already initialized by a theme */
 
 /* widget types */
 enum {
@@ -162,6 +161,7 @@ enum {
   JM_SETPOS,			/* set position */
   JM_WINMOVE,			/* window movement */
   JM_DRAWRGN,			/* redraw region */
+  JM_DEFERREDFREE,		/* deferred jwidget_free call */
   JM_DIRTYCHILDREN,		/* dirty children */
   JM_QUEUEPROCESSING,		/* only sent to manager which indicate
 				   the last message in the queue */

@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include <errno.h>
@@ -87,7 +88,7 @@ static int filesel_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
@@ -593,6 +594,7 @@ static void generate_extensions(const char *exts)
       if (ext->size == 1) {
 	jfree(ext);
 	free_extensions();	/* all extensions */
+	extensions = jlist_new(); /* empty */
 	break;
       }
       else {
@@ -617,6 +619,8 @@ static bool check_extension(const char *filename_ext)
   Extension *ext;
   JLink link;
   int len;
+
+  assert(extensions != NULL);
 
   if (jlist_empty(extensions))
     return TRUE;		/* all extensions */
@@ -664,6 +668,7 @@ static void free_extensions(void)
   }
 
   jlist_free(extensions);
+  extensions = NULL;
 }
 
 static void fixup_filename(char *buf, char *from, const char *filename)
@@ -804,7 +809,7 @@ static int my_ustrfilecmp (const char *s1, const char *s2)
 /* ustrnicmp:
  *  Unicode-aware version of the DJGPP strnicmp() function.
  */
-static int my_ustrnicmp (AL_CONST char *s1, AL_CONST char *s2, int n)
+static int my_ustrnicmp(AL_CONST char *s1, AL_CONST char *s2, int n)
 {
    int c1, c2;
 /*    ASSERT(s1); */

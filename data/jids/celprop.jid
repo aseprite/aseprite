@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2005, 2007 by David A. Capello -->
+<!-- Copyright (C) 2001-2005, 2007, 2008 by David A. Capello -->
 
 <!-- Read "LEGAL.txt" for more information. -->
 
@@ -16,12 +16,16 @@
 	<entry maxsize=32 name="frame" />
         <entry maxsize=32 name="xpos" />
         <entry maxsize=32 name="ypos" />
-        <slider min=0 max=255 name="opacity" />
+        <slider min=0 max=255 name="opacity" minwidth="180" />
       </box>
     </box>
-    <box horizontal homogeneous>
-      <button text="&OK" name="ok" magnetic />
-      <button text="&Cancel" />
+
+    <box horizontal>
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="ok" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
     </box>
   </box>
 </window>

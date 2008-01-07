@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,13 +77,13 @@ static void cmd_configure_tools_execute(const char *argument)
 
   /* if the window is opened, close it */
   if (window) {
-    jwindow_close (window, NULL);
+    jwindow_close(window, NULL);
     return;
   }
 
   /* if the window is closed, open it */
 
-  window = load_widget ("toolconf.jid", "configure_tool");
+  window = load_widget("toolconf.jid", "configure_tool");
   if (!window)
     return;
 

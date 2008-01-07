@@ -180,7 +180,7 @@ void do_progress(int progress)
     status_bar_do_progress(status_bar, progress);
 
     jwidget_flush_redraw(status_bar);
-    jmanager_dispatch_messages();
+    jmanager_dispatch_messages(ji_get_default_manager());
     gui_feedback();
   }
 }

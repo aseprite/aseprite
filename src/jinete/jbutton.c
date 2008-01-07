@@ -349,7 +349,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
 	      /* dispatch focus movement messages (because the buttons
 		 process them) */
-	      jmanager_dispatch_messages();
+	      jmanager_dispatch_messages(ji_get_default_manager());
 
 	      jwidget_select(widget);
 	      return TRUE;

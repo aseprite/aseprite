@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -246,7 +246,7 @@ static bool interactive_transform(JWidget widget,
   jmouse_hide();							\
   old_screen = ji_screen;						\
   ji_screen = bmp1;							\
-  jmanager_dispatch_messages();						\
+  jmanager_dispatch_messages(ji_get_default_manager());			\
   ji_screen = old_screen;						\
   REDRAW();								\
   jmouse_show();
@@ -822,5 +822,5 @@ static void update_status_bar(JWidget editor, Image *image,
      iangle);
 
   jwidget_flush_redraw(app_get_status_bar());
-  jmanager_dispatch_messages();
+  jmanager_dispatch_messages(ji_get_default_manager());
 }

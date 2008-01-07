@@ -1073,7 +1073,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 	}
 
 	jwidget_flush_redraw(status_bar);
-	jmanager_dispatch_messages();
+	jmanager_dispatch_messages(ji_get_default_manager());
       }
 
       release_bitmap(ji_screen);

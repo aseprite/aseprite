@@ -42,7 +42,8 @@ JWidget jmanager_new(void);
 void jmanager_free(JWidget manager);
 
 void jmanager_run(JWidget manager);
-bool jmanager_poll(JWidget manager, bool all_windows);
+bool jmanager_generate_messages(JWidget manager);
+void jmanager_dispatch_messages(JWidget manager);
 
 /* timers */
 
@@ -54,7 +55,6 @@ void jmanager_stop_timer(int timer_id);
 /* routines that uses the ji_get_default_manager() */
 
 void jmanager_enqueue_message(JMessage msg);
-void jmanager_dispatch_messages(void);
 
 JWidget jmanager_get_focus(void);
 JWidget jmanager_get_mouse(void);

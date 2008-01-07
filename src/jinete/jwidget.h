@@ -102,6 +102,7 @@ int ji_register_widget_type(void);
 
 JWidget jwidget_new(int type);
 void jwidget_free(JWidget widget);
+void jwidget_free_deferred(JWidget widget);
 
 void jwidget_init_theme(JWidget widget);
 
@@ -130,13 +131,11 @@ void jwidget_set_font(JWidget widget, struct FONT *font);
 void jwidget_magnetic(JWidget widget, bool state);
 void jwidget_expansive(JWidget widget, bool state);
 void jwidget_decorative(JWidget widget, bool state);
-void jwidget_autodestroy(JWidget widget, bool state);
 void jwidget_focusrest(JWidget widget, bool state);
 
 bool jwidget_is_magnetic(JWidget widget);
 bool jwidget_is_expansive(JWidget widget);
 bool jwidget_is_decorative(JWidget widget);
-bool jwidget_is_autodestroy(JWidget widget);
 bool jwidget_is_focusrest(JWidget widget);
 
 /* status properties */

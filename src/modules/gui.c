@@ -517,19 +517,15 @@ JWidget load_widget(const char *filename, const char *name)
 
   dirs_free(dirs);
 
-  if (found)
-    widget = ji_load_widget(buf, name);
-  else
-    widget = NULL;
-
   if (!found) {
     console_printf(_("File not found: \"%s\"\n"), filename);
     return NULL;
   }
 
-  widget = ji_load_widget (buf, name);
+  widget = ji_load_widget(buf, name);
   if (!widget)
     console_printf(_("Error loading widget: \"%s\"\n"), name);
+
   return widget;
 }
 
@@ -565,30 +561,30 @@ void rebuild_recent_list(void)
 
 typedef struct HookData {
   int signal_num;
-  int (*signal_handler) (JWidget widget, int user_data);
+  int (*signal_handler)(JWidget widget, int user_data);
   int user_data;
 } HookData;
 
-static int hook_type (void)
+static int hook_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-static bool hook_handler (JWidget widget, JMessage msg)
+static bool hook_handler(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (jwidget_get_data (widget, hook_type ()));
+      jfree(jwidget_get_data(widget, hook_type()));
       break;
 
     case JM_SIGNAL: {
-      HookData *hook_data = jwidget_get_data (widget, hook_type ());
+      HookData *hook_data = jwidget_get_data(widget, hook_type());
       if (hook_data->signal_num == msg->signal.num)
-	return (*hook_data->signal_handler) (widget, hook_data->user_data);
+	return (*hook_data->signal_handler)(widget, hook_data->user_data);
       break;
     }
   }
@@ -596,18 +592,21 @@ static bool hook_handler (JWidget widget, JMessage msg)
   return FALSE;
 }
 
+/**
+ * @warning You can't use this function for the same widget two times.
+ */
 void hook_signal(JWidget widget,
 		 int signal_num,
-		 int (*signal_handler) (JWidget widget, int user_data),
+		 int (*signal_handler)(JWidget widget, int user_data),
 		 int user_data)
 {
-  HookData *hook_data = jnew (HookData, 1);
+  HookData *hook_data = jnew(HookData, 1);
 
   hook_data->signal_num = signal_num;
   hook_data->signal_handler = signal_handler;
   hook_data->user_data = user_data;
 
-  jwidget_add_hook (widget, hook_type (), hook_handler, hook_data);
+  jwidget_add_hook(widget, hook_type(), hook_handler, hook_data);
 }
 
 /**

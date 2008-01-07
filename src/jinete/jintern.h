@@ -80,8 +80,7 @@ bool _jwindow_is_moving(void);
 /* jmanager.c */
 
 void _jmanager_open_window(JWidget manager, JWidget window);
-void _jmanager_close_window(JWidget manager, JWidget window,
-			    bool sendtokill, bool redraw_background);
+void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_background);
 
 /**********************************************************************/
 /* jtheme.c */

@@ -309,7 +309,6 @@ int jmenuitem_is_highlight(JWidget widget)
   return MITEM(widget)->highlight;
 }
 
-/* TODO complete this routine */
 void jmenu_popup(JWidget menu, int x, int y)
 {
   JWidget window, menubox;
@@ -755,7 +754,8 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 
     default:
       if (msg->type == JM_CLOSE_POPUP) {
-	jwindow_close(jwidget_get_window(widget), NULL);
+	_jmanager_close_window(jwidget_get_manager(widget),
+			       jwidget_get_window(widget), TRUE);
       }
       break;
 

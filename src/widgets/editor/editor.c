@@ -247,7 +247,7 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
 
       /* refresh the update_region */
       jwidget_flush_redraw(widget);
-      jmanager_dispatch_messages();
+      jmanager_dispatch_messages(ji_get_default_manager());
 
       jregion_free(reg2);
     }
@@ -873,7 +873,7 @@ void editor_refresh_region(JWidget widget)
 /*        editor->refresh_region); */
 /*     jwidget_redraw_region (widget, editor->refresh_region); */
     jwidget_flush_redraw(widget);
-    jmanager_dispatch_messages();
+    jmanager_dispatch_messages(ji_get_default_manager());
 
 /*     if (editor->refresh_region) { */
 /*       jregion_free (editor->refresh_region); */

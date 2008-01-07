@@ -56,6 +56,12 @@ struct jmessage_any
   int shifts;		/* key shifts pressed when message was created */
 };
 
+struct jmessage_deffree		/* deferred jwidget_free call */
+{
+  struct jmessage_any any;
+  JWidget widget_to_free;
+};
+
 struct jmessage_key
 {
   struct jmessage_any any;
@@ -122,6 +128,7 @@ union jmessage
 {
   int type;
   struct jmessage_any any;
+  struct jmessage_deffree deffree;
   struct jmessage_key key;
   struct jmessage_draw draw;
   struct jmessage_mouse mouse;

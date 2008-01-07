@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (c) 2003, 2004, 2005, 2007, 2008, David A. Capello
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -126,7 +126,10 @@ void shutdown_gui(void)
 
 bool update_gui(void)
 {
-  return !jmanager_poll(manager, TRUE);
+  if (jmanager_generate_messages(manager))
+    jmanager_dispatch_messages(manager);
+
+  return jwidget_is_visible(window);
 }
 
 void draw_gui()

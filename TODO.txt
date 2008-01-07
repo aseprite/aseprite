@@ -1,6 +1,7 @@
 High priority work
 ------------------
 
+- the user_data of hook_signal should be void*.
 - search for TODO;
 - Problems:
   - 100% CPU

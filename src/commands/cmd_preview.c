@@ -110,7 +110,7 @@ static void preview_sprite(int flags)
       /* print a informative text */
       status_bar_set_text(app_get_status_bar(), 1, _("Rendering..."));
       jwidget_flush_redraw(app_get_status_bar());
-      jmanager_dispatch_messages();
+      jmanager_dispatch_messages(ji_get_default_manager());
 
       jmouse_set_cursor(JI_CURSOR_NULL);
       jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);

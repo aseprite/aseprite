@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (c) 2003, 2004, 2005, 2007, 2008, David A. Capello
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,25 +51,25 @@ int main (int argc, char *argv[])
   install_keyboard ();
   install_mouse ();
 
-  manager = jmanager_new ();
-  ji_set_standard_theme ();
+  manager = jmanager_new();
+  ji_set_standard_theme();
 
-  show_file_select ("Select 'bmp,pcx'", "bmp,pcx");
-  show_file_select ("Select '*t'", "*t");
-  show_file_select ("Select 't*'", "t*");
-  show_file_select ("Select '*'", "*");
+  show_file_select("Select 'bmp,pcx'", "bmp,pcx");
+  show_file_select("Select '*t'", "*t");
+  show_file_select("Select 't*'", "t*");
+  show_file_select("Select '*'", "*");
 
-  jmanager_free (manager);
+  jmanager_free(manager);
   return 0;
 }
 
 END_OF_MAIN();
 
-static void show_file_select (const char *title, const char *exts)
+static void show_file_select(const char *title, const char *exts)
 {
-  char *filename = ji_file_select (title, "", exts);
+  char *filename = ji_file_select(title, "", exts);
   if (filename) {
-    jalert ("Test<<You select the file:<<\"%s\"||&OK", filename);
-    jfree (filename);
+    jalert("Test<<You select the file:<<\"%s\"||&OK", filename);
+    jfree(filename);
   }
 }

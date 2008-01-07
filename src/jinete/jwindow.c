@@ -197,15 +197,16 @@ void jwindow_open_fg(JWidget widget)
 
   window->is_foreground = TRUE;
 
-  do {
-  } while (jmanager_poll(manager, FALSE));
+  while (!(widget->flags & JI_HIDDEN)) {
+    if (jmanager_generate_messages(manager))
+      jmanager_dispatch_messages(manager);
+  }
 
   window->is_foreground = FALSE;
 }
 
 void jwindow_open_bg(JWidget widget)
 {
-  widget->flags |= JI_AUTODESTROY;	/* TODO */
   jwindow_open(widget);
 }
 
@@ -215,7 +216,7 @@ void jwindow_close(JWidget widget, JWidget killer)
 
   window->killer = killer;
 
-  _jmanager_close_window(jwidget_get_manager(widget), widget, TRUE, TRUE);
+  _jmanager_close_window(jwidget_get_manager(widget), widget, TRUE);
 }
 
 bool jwindow_is_toplevel(JWidget widget)
@@ -279,8 +280,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      _jmanager_close_window(jwidget_get_manager(widget), widget,
-			     FALSE, FALSE);
+      _jmanager_close_window(jwidget_get_manager(widget), widget, FALSE);
       jfree(window);
       break;
 

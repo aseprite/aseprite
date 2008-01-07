@@ -192,7 +192,7 @@ void status_bar_del_progress(JWidget widget)
   if (status_bar->nprogress == 1) {
     status_bar->progress[0].pos = status_bar->progress[0].max;
     jwidget_flush_redraw(widget);
-    jmanager_dispatch_messages();
+    jmanager_dispatch_messages(ji_get_default_manager());
     rest(5);
     jwidget_dirty(widget);
 

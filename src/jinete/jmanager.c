@@ -92,7 +92,6 @@ static Timer **timers;		/* registered timers */
 static int n_timers;		/* number of timers */
 
 static JList new_windows;	/* windows that we should show */
-static JList old_windows;	/* windows that we should destroy */
 static JList proc_windows_list; /* current window's list in process */
 static JList msg_queue;		/* messages queue */
 static JList msg_filters[NFILTERS]; /* filters for every enqueued message */
@@ -107,18 +106,14 @@ static bool first_time_poll;    /* TRUE when we don't enter in poll yet */
 static char old_readed_key[KEY_MAX]; /* keyboard status of previous
 					poll */
 
-/* all messages are enqueue before this 'link' (or in the end of the
-   queue if it's NULL) */
-static JLink enqueue_messages_before_this = NULL;
-
 /* manager widget */
 static bool manager_msg_proc(JWidget widget, JMessage msg);
 static void manager_request_size(JWidget widget, int *w, int *h);
 static void manager_set_position(JWidget widget, JRect rect);
+static void dispatch_messages(JWidget widget);
 static void manager_redraw_region(JWidget widget, JRegion region);
 
 /* auxiliary */
-static void destroy_window(JWidget window);
 static void remove_msgs_for(JWidget widget, JMessage msg);
 static void generate_proc_windows_list(void);
 static void generate_proc_windows_list2(JWidget manager);
@@ -169,7 +164,6 @@ JWidget jmanager_new(void)
     /* empty lists */
     msg_queue = jlist_new();
     new_windows = jlist_new();
-    old_windows = jlist_new();
     proc_windows_list = jlist_new();
 
     for (c=0; c<NFILTERS; ++c)
@@ -215,7 +209,7 @@ void jmanager_free(JWidget widget)
   assert_valid_widget(widget);
 
   /* there are some messages in queue? */
-  jmanager_dispatch_messages();
+  jmanager_dispatch_messages(widget);
 
   /* finish with main manager */
   if (default_manager == widget) {
@@ -224,7 +218,6 @@ void jmanager_free(JWidget widget)
 
     /* TODO destroy the AUTODESTROY windows in these lists */
     jlist_free(new_windows);
-    jlist_free(old_windows);
 
     /* destroy filters */
     for (c=0; c<NFILTERS; ++c) {
@@ -268,20 +261,28 @@ void jmanager_free(JWidget widget)
 
 void jmanager_run(JWidget widget)
 {
-  do {
-  } while (jmanager_poll(widget, TRUE));
+  while (!jlist_empty(widget->children)) {
+    if (jmanager_generate_messages(widget))
+      jmanager_dispatch_messages(widget);
+  }
 }
 
-bool jmanager_poll(JWidget manager, bool all_windows)
+/**
+ * @return TRUE if there are messages in the queue to be distpatched
+ *         through jmanager_dispatch_messages().
+ */
+bool jmanager_generate_messages(JWidget manager)
 {
-  /* JList old_proc_windows_list; */
   JWidget widget;
   JWidget window;
-  bool ret = TRUE;
   int mousemove;
   JMessage msg;
   JLink link;
   int c;
+
+  /* make some OSes happy */
+  yield_timeslice();
+  rest(1);
 
   /* poll keyboard */
   poll_keyboard();
@@ -322,10 +323,6 @@ bool jmanager_poll(JWidget manager, bool all_windows)
 
     generate_proc_windows_list();
   }
-
-  /* create the window's list in process */
-/*   old_proc_windows_list = proc_windows_list; */
-/*   proc_windows_list = NULL; */
 
 /*   generate_proc_windows_list (manager); */
   if (jlist_empty(proc_windows_list))
@@ -545,56 +542,22 @@ bool jmanager_poll(JWidget manager, bool all_windows)
     }
   }
 
-  /* process messages queue */
-  if (!jlist_empty(msg_queue)) {
-    /* clean the queue of messages */
-    jmanager_dispatch_messages();
+  return !jlist_empty(msg_queue);
+}
 
-    /* redraw dirty widgets */
-    jwidget_flush_redraw(manager);
-    jmanager_dispatch_messages();
+void jmanager_dispatch_messages(JWidget manager)
+{
+  JMessage msg;
 
-    /* add the "Queue Processing" message for the manager */
-    msg = new_mouse_msg(JM_QUEUEPROCESSING);
-    jmessage_add_dest(msg, manager);
-    jmanager_enqueue_message(msg);
+  /* redraw dirty widgets */
+  jwidget_flush_redraw(manager);
+  
+  /* add the "Queue Processing" message for the manager */
+  msg = new_mouse_msg(JM_QUEUEPROCESSING);
+  jmessage_add_dest(msg, manager);
+  jmanager_enqueue_message(msg);
 
-    jmanager_dispatch_messages();
-  }
-
-  /* make some OSes happy */
-  yield_timeslice();
-  rest(1);
-
-  /* old windows to close? */
-  if (!jlist_empty(old_windows)) {
-    bool final_close = FALSE;
-    bool break_loop = FALSE;
-
-    JI_LIST_FOR_EACH(old_windows, link) {
-      window = link->data;
-
-      if (jwindow_is_desktop(window))
-	final_close = TRUE;
-
-      if (jwindow_is_foreground(window))
-	break_loop = TRUE;
-
-      destroy_window(window);
-    }
-
-    jlist_clear(old_windows);
-
-    if ((!all_windows) && (break_loop))
-      ret = FALSE;
-  }
-
-  /* destroy the window's list in process */
-/*   jlist_free (proc_windows_list); */
-/*   proc_windows_list = old_proc_windows_list; */
-
-  /* return */
-  return ret;
+  dispatch_messages(manager);
 }
 
 /**
@@ -684,151 +647,7 @@ void jmanager_enqueue_message(JMessage msg)
     }
   }
   
-/*   jlist_insert_before(msg_queue, */
-/* 		      enqueue_messages_before_this, msg); */
   jlist_append(msg_queue, msg);
-}
-
-void jmanager_dispatch_messages(void)
-{
-  JMessage msg, first_msg;
-  JLink link, link2, next;
-  JWidget widget;
-  bool done;
-#ifdef LIMIT_DISPATCH_TIME
-  int t = ji_clock;
-#endif
-
-  assert(msg_queue != NULL);
-
-  link = jlist_first(msg_queue);
-  while (link != msg_queue->end) {
-    msg = link->data;
-
-#ifdef LIMIT_DISPATCH_TIME
-    if (ji_clock-t > 250)
-      break;
-#endif
-
-    /* go to next message */
-    if (msg->any.used) {
-      link = link->next;
-      continue;
-    }
-
-    enqueue_messages_before_this = link->next;
-
-    /* this message is in use */
-    msg->any.used = TRUE;
-    first_msg = msg;
-
-    done = FALSE;
-    do {
-      JI_LIST_FOR_EACH(msg->any.widgets, link2) {
-	widget = link2->data;
-
-#ifdef REPORT_EVENTS
-	{
-	  static char *msg_name[] = {
-	    "Open",
-	    "Close",
-	    "Destroy",
-	    "Draw",
-	    "Idle",
-	    "Signal",
-	    "Timer",
-	    "ReqSize",
-	    "SetPos",
-	    "WinMove",
-	    "DrawRgn",
-	    "DirtyChildren",
-	    "QueueProcessing",
-	    "Char",
-	    "KeyPressed",
-	    "KeyReleased",
-	    "FocusEnter",
-	    "FocusLeave",
-	    "ButtonPressed",
-	    "ButtonReleased",
-	    "DoubleClick",
-	    "LostClick",
-	    "MouseEnter",
-	    "MouseLeave",
-	    "Motion",
-	    "Wheel",
-	  };
-	  const char *string =
-	    (msg->type >= JM_OPEN &&
-	     msg->type <= JM_WHEEL) ? msg_name[msg->type]:
-				      "Unknown";
-
-	  printf("Event: %s (%d)\n", string, widget->id);
-	  fflush(stdout);
-	}
-#endif
-
-	/* draw message? */
-	if (msg->type == JM_DRAW) {
-	  /* hidden? */
-	  if (widget->flags & JI_HIDDEN)
-	    continue;
-
-	  jmouse_hide();
-	  acquire_bitmap(ji_screen);
-
-	  /* set clip */
-	  set_clip(ji_screen,
-		   msg->draw.rect.x1, msg->draw.rect.y1,
-		   msg->draw.rect.x2-1, msg->draw.rect.y2-1);
-#ifdef REPORT_EVENTS
-	  printf("set_clip(%d, %d, %d, %d)\n",
-		 msg->draw.rect.x1, msg->draw.rect.y1,
-		 msg->draw.rect.x2-1, msg->draw.rect.y2-1);
-	  fflush(stdout);
-#endif
-/* 	  	rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
-/* 	  	vsync(); vsync(); vsync(); vsync(); */
-	}
-
-	/* call message handler */
-	done = jwidget_send_message(widget, msg);
-
-	/* restore clip */
-	if (msg->type == JM_DRAW) {
-	  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-
-	  /* dirty rectangles */
-	  if (ji_dirty_region)
-	    ji_add_dirty_rect(&msg->draw.rect);
-
-	  release_bitmap(ji_screen);
-	  jmouse_show();
-	}
-
-	if (done)
-	  break;
-      }
-
-      /* done? */
-      if (done)
-	/* don't go to sub-msg */
-	msg = NULL;
-      else
-	/* use sub-msg */
-	msg = msg->any.sub_msg;
-
-    } while (msg);
-
-    /* remove the message from the msg_queue */
-    next = link->next;
-    jlist_delete_link(msg_queue, link);
-    link = next;
-
-    /* destroy the message */
-    jmessage_free(first_msg);
-  }
-
-  enqueue_messages_before_this = NULL;
 }
 
 JWidget jmanager_get_focus(void)
@@ -1114,8 +933,7 @@ void _jmanager_open_window(JWidget manager, JWidget window)
   jlist_append(new_windows, window);
 }
 
-void _jmanager_close_window(JWidget manager, JWidget window,
-			    bool sendtokill, bool redraw_background)
+void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_background)
 {
   JMessage msg;
   JRegion reg1;
@@ -1127,10 +945,6 @@ void _jmanager_close_window(JWidget manager, JWidget window,
     reg1 = jwidget_get_region(window);
   else
     reg1 = NULL;
-
-/*   jmanager_dispatch_messages (); /\* TODO WARNING!!! *\/ */
-
-  /* printf ("			%d CLOSED BY MANAGER\n", window_id); */
 
   /* close all windows to this desktop */
   if (jwindow_is_desktop(window)) {
@@ -1144,30 +958,30 @@ void _jmanager_close_window(JWidget manager, JWidget window,
 	jregion_union(reg1, reg1, reg2);
 	jregion_free(reg2);
 
-	_jmanager_close_window(manager, link->data, sendtokill, FALSE);
+	_jmanager_close_window(manager, link->data, FALSE);
       }
     }
   }
 
   /* free all widgets of special states */
+#if 0
   jmanager_free_capture();
   jmanager_free_mouse();
 
   jmanager_set_focus(manager);
-  /* jmanager_free_focus(); */
+#else
+  jmanager_free_capture();
+  jmanager_free_mouse();
+  jmanager_free_focus();
+#endif
 
   /* hide window */
   jwidget_hide(window);
-
-/*   jmanager_dispatch_messages(); /\* TODO WARNING!!! *\/ */
 
   /* close message */
   msg = jmessage_new(JM_CLOSE);
   jmessage_broadcast_to_children(msg, window);
   jmanager_enqueue_message(msg);
-
-  /* TODO this was uncommented */
-/*   jmanager_dispatch_messages(); /\* TODO WARNING!!! *\/ */
 
   /* update manager list stuff */
   jlist_remove(manager->children, window);
@@ -1183,11 +997,8 @@ void _jmanager_close_window(JWidget manager, JWidget window,
     jregion_free(reg1);
   }
 
-  /* update the list of windows to close */
-  if (sendtokill) {
-    jlist_remove(new_windows, window); /* maybe the window is in the "new_windows" list */
-    jlist_append(old_windows, window);
-  }
+  /* maybe the window is in the "new_windows" list */
+  jlist_remove(new_windows, window);
 }
 
 /**********************************************************************
@@ -1197,6 +1008,13 @@ void _jmanager_close_window(JWidget manager, JWidget window,
 static bool manager_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
+
+    case JM_DEFERREDFREE:
+      assert_valid_widget(msg->deffree.widget_to_free);
+      assert(msg->deffree.widget_to_free != widget);
+
+      jwidget_free(msg->deffree.widget_to_free);
+      return TRUE;
 
     case JM_REQSIZE:
       manager_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
@@ -1285,6 +1103,145 @@ static void manager_set_position(JWidget widget, JRect rect)
   jrect_free(old_pos);
 }
 
+static void dispatch_messages(JWidget widget_manager)
+{
+  JMessage msg, first_msg;
+  JLink link, link2, next;
+  JWidget widget;
+  bool done;
+#ifdef LIMIT_DISPATCH_TIME
+  int t = ji_clock;
+#endif
+
+  /* TODO get the msg_queue from 'widget_manager' */
+
+  assert(msg_queue != NULL);
+
+  link = jlist_first(msg_queue);
+  while (link != msg_queue->end) {
+    msg = link->data;
+
+#ifdef LIMIT_DISPATCH_TIME
+    if (ji_clock-t > 250)
+      break;
+#endif
+
+    /* go to next message */
+    if (msg->any.used) {
+      link = link->next;
+      continue;
+    }
+
+    /* this message is in use */
+    msg->any.used = TRUE;
+    first_msg = msg;
+
+    done = FALSE;
+    do {
+      JI_LIST_FOR_EACH(msg->any.widgets, link2) {
+	widget = link2->data;
+
+#ifdef REPORT_EVENTS
+	{
+	  static char *msg_name[] = {
+	    "Open",
+	    "Close",
+	    "Destroy",
+	    "Draw",
+	    "Signal",
+	    "Timer",
+	    "ReqSize",
+	    "SetPos",
+	    "WinMove",
+	    "DrawRgn",
+	    "DeferredFree",
+	    "DirtyChildren",
+	    "QueueProcessing",
+	    "Char",
+	    "KeyPressed",
+	    "KeyReleased",
+	    "FocusEnter",
+	    "FocusLeave",
+	    "ButtonPressed",
+	    "ButtonReleased",
+	    "DoubleClick",
+	    "MouseEnter",
+	    "MouseLeave",
+	    "Motion",
+	    "Wheel",
+	  };
+	  const char *string =
+	    (msg->type >= JM_OPEN &&
+	     msg->type <= JM_WHEEL) ? msg_name[msg->type]:
+				      "Unknown";
+
+	  printf("Event: %s (%d)\n", string, widget->id);
+	  fflush(stdout);
+	}
+#endif
+
+	/* draw message? */
+	if (msg->type == JM_DRAW) {
+	  /* hidden? */
+	  if (widget->flags & JI_HIDDEN)
+	    continue;
+
+	  jmouse_hide();
+	  acquire_bitmap(ji_screen);
+
+	  /* set clip */
+	  set_clip(ji_screen,
+		   msg->draw.rect.x1, msg->draw.rect.y1,
+		   msg->draw.rect.x2-1, msg->draw.rect.y2-1);
+#ifdef REPORT_EVENTS
+	  printf("set_clip(%d, %d, %d, %d)\n",
+		 msg->draw.rect.x1, msg->draw.rect.y1,
+		 msg->draw.rect.x2-1, msg->draw.rect.y2-1);
+	  fflush(stdout);
+#endif
+/* 	  	rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
+/* 	  	vsync(); vsync(); vsync(); vsync(); */
+	}
+
+	/* call message handler */
+	done = jwidget_send_message(widget, msg);
+
+	/* restore clip */
+	if (msg->type == JM_DRAW) {
+	  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+
+	  /* dirty rectangles */
+	  if (ji_dirty_region)
+	    ji_add_dirty_rect(&msg->draw.rect);
+
+	  release_bitmap(ji_screen);
+	  jmouse_show();
+	}
+
+	if (done)
+	  break;
+      }
+
+      /* done? */
+      if (done)
+	/* don't go to sub-msg */
+	msg = NULL;
+      else
+	/* use sub-msg */
+	msg = msg->any.sub_msg;
+
+    } while (msg);
+
+    /* remove the message from the msg_queue */
+    next = link->next;
+    jlist_delete_link(msg_queue, link);
+    link = next;
+
+    /* destroy the message */
+    jmessage_free(first_msg);
+  }
+}
+
 static void manager_redraw_region(JWidget widget, JRegion region)
 {
   JWidget window;
@@ -1329,15 +1286,6 @@ static void manager_redraw_region(JWidget widget, JRegion region)
 /**********************************************************************
 			Internal routines
  **********************************************************************/
-
-static void destroy_window(JWidget window)
-{
-  /* printf ("			%d DESTROYED BY MANAGER\n", window->id); */
-
-  /* delete the window */
-  if (jwidget_is_autodestroy(window))
-    jwidget_free(window);
-}
 
 static void remove_msgs_for(JWidget widget, JMessage msg)
 {

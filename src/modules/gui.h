@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "jinete/jbase.h"
 
 #define HOOK(widget, signal, signal_handler, user_data)			\
-  hook_signal ((widget), (signal), (signal_handler), (int)(user_data))
+  hook_signal((widget), (signal), (signal_handler), (int)(user_data))
 
 struct Sprite;
 
@@ -53,7 +53,7 @@ void rebuild_recent_list(void);
 
 void hook_signal(JWidget widget,
 		 int signal_num,
-		 int(*signal_handler) (JWidget widget, int user_data),
+		 int (*signal_handler)(JWidget widget, int user_data),
 		 int user_data);
 
 bool get_widgets(JWidget window, ...);
