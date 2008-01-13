@@ -616,10 +616,15 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   JRegion new_drawable_region;
   JRegion manager_refresh_region;
   JRegion window_refresh_region;
-  JRect old_pos = jrect_new_copy(widget->rc);
-  JRect man_pos = jwidget_get_rect(jwidget_get_manager(widget));
+  JRect old_pos;
+  JRect man_pos;
   JMessage msg;
 
+  jmanager_dispatch_messages(ji_get_default_manager());
+
+  old_pos = jrect_new_copy(widget->rc);
+  man_pos = jwidget_get_rect(jwidget_get_manager(widget));
+  
   msg = jmessage_new(JM_WINMOVE);
   jmessage_broadcast_to_children(msg, widget);
   jmanager_enqueue_message(msg);

@@ -1409,6 +1409,10 @@ void jwidget_close_window(JWidget widget)
     jwindow_close(window, widget);
 }
 
+/**
+ * Captures the mouse to send the future JM_BUTTONRELEASED messsage to
+ * the specified widget.
+ */
 void jwidget_capture_mouse(JWidget widget)
 {
   assert_valid_widget(widget);
@@ -1421,6 +1425,10 @@ void jwidget_capture_mouse(JWidget widget)
   }
 }
 
+/**
+ * Captures the mouse to send all the future mouse messsages to the
+ * specified widget.
+ */
 void jwidget_hard_capture_mouse(JWidget widget)
 {
   assert_valid_widget(widget);
@@ -1436,6 +1444,9 @@ void jwidget_hard_capture_mouse(JWidget widget)
   }
 }
 
+/**
+ * Releases the capture of the mouse events.
+ */
 void jwidget_release_mouse(JWidget widget)
 {
   assert_valid_widget(widget);

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jbase.h"
@@ -68,19 +69,20 @@ static int cursor_negative;
 
 static int saved_pixel[MAX_SAVED];
 static int saved_pixel_n;
-static JRegion limit_region;
+static JRegion clipping_region;
+static JRegion old_clipping_region;
 
 static void generate_cursor_boundaries(void);
-static void for_each_pixel_of_brush(Editor *editor, int x, int y, int color, void (*pixel) (BITMAP *bmp, int x, int y, int color));
+static void for_each_pixel_of_brush(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
-static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thickness, void (*pixel) (BITMAP *bmp, int x, int y, int color));
-static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*pixel) (BITMAP *bmp, int x, int y, int color));
+static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thickness, void (*pixel)(BITMAP *bmp, int x, int y, int color));
+static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
 static void savepixel(BITMAP *bmp, int x, int y, int color);
 static void drawpixel(BITMAP *bmp, int x, int y, int color);
 static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
-static int point_inside_region(int x, int y);
+static int point_inside_region(int x, int y, JRegion region);
 
 /**
  * Draws the brush cursor inside the specified editor.
@@ -99,8 +101,10 @@ void editor_draw_cursor(JWidget widget, int x, int y)
   Editor *editor = editor_data(widget);
   int color;
 
+  assert(editor->cursor_thick == 0);
+
   /* get drawable region */
-  limit_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+  clipping_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
 
   /* get cursor color */
   cursor_negative = is_cursor_mask();
@@ -136,8 +140,10 @@ void editor_draw_cursor(JWidget widget, int x, int y)
 
   /* save area and draw the cursor */
   acquire_bitmap(ji_screen);
+  ji_screen->clip = FALSE;
   for_each_pixel_of_brush(editor, x, y, color, savepixel);
   for_each_pixel_of_brush(editor, x, y, color, drawpixel);
+  ji_screen->clip = TRUE;
   release_bitmap(ji_screen);
 
   /* cursor thickness */
@@ -147,8 +153,8 @@ void editor_draw_cursor(JWidget widget, int x, int y)
   editor->cursor_editor_x = x;
   editor->cursor_editor_y = y;
 
-  jregion_free(limit_region);
-  limit_region = NULL;
+  /* save the clipping-region to know where to clean the pixels */
+  old_clipping_region = clipping_region;
 }
 
 /**
@@ -169,20 +175,26 @@ void editor_clean_cursor(JWidget widget)
   Editor *editor = editor_data(widget);
   int x, y;
 
-  limit_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+  assert(editor->cursor_thick != 0);
+
+  clipping_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
 
   x = editor->cursor_editor_x;
   y = editor->cursor_editor_y;
 
   /* restore points */
   acquire_bitmap(ji_screen);
+  ji_screen->clip = FALSE;
   for_each_pixel_of_brush(editor, x, y, 0, cleanpixel);
+  ji_screen->clip = TRUE;
   release_bitmap(ji_screen);
 
   editor->cursor_thick = 0;
 
-  jregion_free(limit_region);
-  limit_region = NULL;
+  jregion_free(clipping_region);
+  jregion_free(old_clipping_region);
+  clipping_region = NULL;
+  old_clipping_region = NULL;
 }
 
 /**
@@ -231,9 +243,9 @@ static void for_each_pixel_of_brush(Editor *editor, int x, int y, int color,
   }
 
   if (IS_SUBPIXEL(editor)) {
-    (*pixel) (ji_screen,
-	      editor->cursor_screen_x,
-	      editor->cursor_screen_y, color);
+    (*pixel)(ji_screen,
+	     editor->cursor_screen_x,
+	     editor->cursor_screen_y, color);
   }
 }
 
@@ -265,7 +277,7 @@ static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thi
 		 v-((thickness>>1)<<editor->zoom)-3:
 		 v-((thickness>>1)<<editor->zoom)-3+(thickness<<editor->zoom));
 
-	(*pixel) (ji_screen, xout, yout, color);
+	(*pixel)(ji_screen, xout, yout, color);
       }
     }
   }
@@ -320,13 +332,13 @@ static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*
 
 static void savepixel(BITMAP *bmp, int x, int y, int color)
 {
-  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y))
+  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y, clipping_region))
     saved_pixel[saved_pixel_n++] = getpixel(bmp, x, y);
 }
 
 static void drawpixel(BITMAP *bmp, int x, int y, int color)
 {
-  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y)) {
+  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y, clipping_region)) {
     if (cursor_negative) {
       int r, g, b, c = saved_pixel[saved_pixel_n++];
 
@@ -344,12 +356,16 @@ static void drawpixel(BITMAP *bmp, int x, int y, int color)
 
 static void cleanpixel(BITMAP *bmp, int x, int y, int color)
 {
-  if (saved_pixel_n < MAX_SAVED && point_inside_region(x, y))
-    putpixel(bmp, x, y, saved_pixel[saved_pixel_n++]);
+  if (saved_pixel_n < MAX_SAVED) {
+    if (point_inside_region(x, y, clipping_region))
+      putpixel(bmp, x, y, saved_pixel[saved_pixel_n++]);
+    else if (point_inside_region(x, y, old_clipping_region))
+      saved_pixel[saved_pixel_n++];
+  }
 }
 
-static int point_inside_region(int x, int y)
+static int point_inside_region(int x, int y, JRegion region)
 {
   struct jrect box;
-  return jregion_point_in(limit_region, x, y, &box);
+  return jregion_point_in(region, x, y, &box);
 }

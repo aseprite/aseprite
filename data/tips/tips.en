@@ -1,5 +1,5 @@
 # Allegro Sprite Editor tips
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007  David A. Capello
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008  David A. Capello
 
  **********************************************************************
 \palette ase.pcx
@@ -47,6 +47,8 @@ Right = go to next frame
 
 Up = go to last frame
 \done
+
+Enter = play animation
  **********************************************************************
 You can add new animation frames pressing <Ctrl+Shift+N> or using
 "Frame/New" menu.

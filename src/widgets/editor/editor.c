@@ -23,6 +23,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <stdio.h>
 #include <allegro.h>
 
 #include "jinete/jdraw.h"
@@ -84,7 +85,7 @@ static bool editor_view_msg_proc (JWidget widget, JMessage msg);
 static bool editor_msg_proc (JWidget widget, JMessage msg);
 static void editor_request_size (JWidget widget, int *w, int *h);
 
-JWidget editor_view_new (void)
+JWidget editor_view_new(void)
 {
   JWidget widget = jview_new();
 
@@ -102,6 +103,9 @@ JWidget editor_new(void)
   editor->widget = widget;
   editor->state = EDIT_STANDBY;
   editor->mask_timer_id = jmanager_add_timer(widget, 100);
+
+  editor->cursor_thick = 0;
+  editor->old_cursor_thick = 0;
 
   jwidget_add_hook(widget, editor_type(), editor_msg_proc, editor);
   jwidget_focusrest(widget, TRUE);
@@ -923,6 +927,7 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 	jrect_free(pos);
       }
       return TRUE;
+
   }
   return FALSE;
 }
@@ -951,7 +956,16 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	jregion_free(editor->refresh_region);
       break;
 
-    case JM_DRAW:
+    case JM_DRAW: {
+      if (editor->old_cursor_thick == 0) {
+	editor->old_cursor_thick = editor->cursor_thick;
+	editor->old_cursor_screen_x = editor->cursor_screen_x;
+	editor->old_cursor_screen_y = editor->cursor_screen_y;
+      }
+
+      if (editor->cursor_thick != 0)
+	editor_clean_cursor(widget);
+
       /* without sprite */
       if (!editor->sprite) {
 	JWidget view = jwidget_get_view(widget);
@@ -979,7 +993,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	int x1, y1, x2, y2;
 
 	use_dither = get_config_bool("Options", "Dither", use_dither);
-
+	
 	/* draw the background outside of image */
 	x1 = widget->rc->x1 + editor->offset_x;
 	y1 = widget->rc->y1 + editor->offset_y;
@@ -1022,12 +1036,19 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	  jmanager_stop_timer(editor->mask_timer_id);
 	}
 
-	if (editor->cursor_thick && !msg->draw.count) {
-	  editor_draw_cursor(widget, editor->cursor_screen_x, editor->cursor_screen_y);
+	if (msg->draw.count == 0
+	    && editor->old_cursor_thick != 0) {
+	  editor_draw_cursor(widget,
+			     editor->old_cursor_screen_x,
+			     editor->old_cursor_screen_y);
 	}
       }
-      return TRUE;
 
+      if (msg->draw.count == 0)
+	editor->old_cursor_thick = 0;
+
+      return TRUE;
+    }
 
     case JM_TIMER:
       if (msg->timer.timer_id == editor->mask_timer_id &&
@@ -1043,50 +1064,14 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       break;
-#if 0
-    case JM_IDLE:
-      if (editor->sprite)
-	editor_draw_mask_safe(widget);
-
-/*       if (editor->sprite) { */
-/* 	if (current_tool == &ase_tool_path) { */
-/* 	  if (editor->cursor_thick) { */
-/* 	    hide_drawing_cursor (widget); */
-/* 	    jmouse_set_cursor(JI_CURSOR_NORMAL); */
-/* 	  } */
-/* 	} */
-/* 	else { */
-/* 	  if (!editor->cursor_thick) { */
-/* 	    jmouse_set_cursor(JI_CURSOR_NULL); */
-/* 	    show_drawing_cursor (widget); */
-/* 	  } */
-/* 	} */
-/*       } */
-
-      /* Redraw cursor when the user changes the brush size. */
-      if ((editor->cursor_thick) &&
-	  (editor->cursor_thick != get_thickness_for_cursor())) {
-	editor_clean_cursor(widget);
-	editor_draw_cursor(widget, editor->cursor_screen_x, editor->cursor_screen_y);
-      }
-
-/*       if (editor->refresh_region) */
-/* 	editor_refresh_region (widget); */
-      break;
-#endif
 
     case JM_MOUSEENTER:
-      if (jmanager_get_capture() &&
-	  jmanager_get_capture() != widget) {
-	editor->lagged_mouseenter = TRUE;
-	break;
-      }
-
       if (editor->state == EDIT_MOVING_SCROLL)
 	break;
 
-      if (editor->sprite)
+      if (editor->sprite) {
 	show_drawing_cursor(widget);
+      }
       else {
 	hide_drawing_cursor(widget);
 	app_default_status_bar_message();
@@ -1094,15 +1079,6 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOUSELEAVE:
-      editor->lagged_mouseenter = FALSE;
-
-      if (jmanager_get_capture() &&
-	  jmanager_get_capture() != widget)
-	break;
-
-/*       if (!editor->sprite) */
-/* 	break; */
-
       if (editor->state == EDIT_MOVING_SCROLL)
 	break;
 
@@ -1115,12 +1091,6 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 
       if (!editor->sprite)
 	break;
-
-      /* lagged MOUSEENTER event */
-      if (editor->lagged_mouseenter) {
-	editor->lagged_mouseenter = FALSE;
-	show_drawing_cursor(widget);
-      }
 
       /* move the scroll */
       if ((msg->mouse.left && has_only_shifts(msg, KB_SHIFT_FLAG)) ||
@@ -1156,12 +1126,6 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       if (!editor->sprite)
 	break;
 
-      /* lagged MOUSEENTER event */
-      if (editor->lagged_mouseenter) {
-	editor->lagged_mouseenter = FALSE;
-	show_drawing_cursor(widget);
-      }
-
       /* move the scroll */
       if (editor->state == EDIT_MOVING_SCROLL) {
 	JWidget view = jwidget_get_view(widget);
@@ -1194,19 +1158,15 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       if (editor->cursor_thick) {
 	int x, y;
 
-	/* Get the pixel position corresponding to the mouse
-	   position.  */
-/* 	screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y); */
-	x = jmouse_x(0);
-	y = jmouse_y(0);
+	x = msg->mouse.x;
+	y = msg->mouse.y;
 
 	/* Redraw it only when the mouse change to other pixel (not
 	   when the mouse moves only).  */
-/* 	if ((editor->cursor_x != x) || (editor->cursor_y != y)) { */
 	if ((editor->cursor_screen_x != x) || (editor->cursor_screen_y != y)) {
 	  jmouse_hide();
 	  editor_clean_cursor(widget);
-	  editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
+	  editor_draw_cursor(widget, x, y);
 	  jmouse_show();
 	}
       }
@@ -1225,7 +1185,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
     }
 
-    case JM_BUTTONRELEASED: {
+    case JM_BUTTONRELEASED:
       if (!editor->sprite)
 	break;
 
@@ -1235,11 +1195,12 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	/* change mouse cursor */
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
       }
-      
+
       editor->state = EDIT_STANDBY;
       jwidget_release_mouse(widget);
+
+      show_drawing_cursor(widget);
       return TRUE;
-    }
 
     case JM_CHAR:
       if (!editor_keys_toset_zoom(widget, msg->key.scancode) &&
@@ -1326,6 +1287,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       break;
+      
   }
 
   return FALSE;

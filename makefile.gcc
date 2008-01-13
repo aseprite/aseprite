@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005, 2007 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2005, 2007, 2008 by David A. Capello		-*-Makefile-*-
 
 .PHONY = _default
 _default: default
@@ -190,8 +190,12 @@ endif
 
 TESTS = $(addsuffix $(EXE),						\
 		$(basename						\
+			$(wildcard src/test/convmatr/*.c)		\
 			$(wildcard src/test/raster/*.c)			\
 			$(wildcard src/test/jinete/*.c)))
+
+src/test/convmatr/%$(EXE): src/test/convmatr/%.c $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
 src/test/raster/%$(EXE): src/test/raster/%.c $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)

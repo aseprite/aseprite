@@ -291,7 +291,7 @@ int get_thickness_for_cursor(void)
   else
     return brush->size;
 }
-
+
 /***********************************************************/
 /* MARKER                                                  */
 /***********************************************************/
@@ -307,7 +307,7 @@ Tool ase_tool_marker =
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX,
   NULL
 };
-
+
 /***********************************************************/
 /* DOTS                                                    */
 /***********************************************************/
@@ -328,7 +328,7 @@ Tool ase_tool_dots =
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_POINT,
   tool_dots_put
 };
-
+
 /***********************************************************/
 /* PENCIL                                                  */
 /***********************************************************/
@@ -349,7 +349,7 @@ Tool ase_tool_pencil =
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   tool_pencil_put
 };
-
+
 /***********************************************************/
 /* BRUSH                                                   */
 /***********************************************************/
@@ -365,7 +365,7 @@ Tool ase_tool_brush =
   TOOL_ACCUMULATE_DIRTY | TOOL_FOURCHAIN | TOOL_UPDATE_LAST4,
   NULL
 };
-
+
 /***********************************************************/
 /* FLOODFILL                                               */
 /***********************************************************/
@@ -399,7 +399,7 @@ Tool ase_tool_floodfill =
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_ALL,
   tool_floodfill_put
 };
-
+
 /***********************************************************/
 /* SPRAY                                                   */
 /***********************************************************/
@@ -463,7 +463,7 @@ Tool ase_tool_line =
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_EIGHT_ANGLES,
   tool_line_put
 };
-
+
 /***********************************************************/
 /* RECTANGLE                                               */
 /***********************************************************/
@@ -542,7 +542,7 @@ Tool ase_tool_rectangle =
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   tool_rectangle_put
 };
-
+
 /***********************************************************/
 /* ELLIPSE                                                 */
 /***********************************************************/
@@ -587,7 +587,7 @@ Tool ase_tool_ellipse =
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   tool_ellipse_put
 };
-
+
 /***********************************************************/
 /* TOOL'S LIST                                             */
 /***********************************************************/
@@ -605,7 +605,7 @@ Tool *ase_tools_list[] =
   &ase_tool_ellipse,
   NULL
 };
-
+
 /***********************************************************/
 /* TOOL CONTROL                                            */
 /***********************************************************/
@@ -642,7 +642,7 @@ static void marker_scroll_callback(int before_change)
     rect_data = NULL;
   }
 }
-
+
 /* controls any tool to draw in the current sprite */
 void control_tool(JWidget widget, Tool *tool, const char *_color)
 {
@@ -1304,7 +1304,7 @@ static void fourchain_line(int x1, int y1, int x2, int y2, void *data)
   else
     dirty_line_brush(data, brush, x1, y1, x2, y2);
 }
-
+
 /**********************************************************************/
 /* Opaque draw mode						      */
 /**********************************************************************/
@@ -1333,7 +1333,7 @@ static void my_image_hline1_opaque(int x1, int y, int x2, void *data)
 {
   memset(((ase_uint8 **)tool_image->line)[y]+x1, tool_color, x2-x1+1);
 }
-
+
 /**********************************************************************/
 /* Glass draw mode						      */
 /**********************************************************************/
@@ -1390,7 +1390,7 @@ static void my_image_hline1_glass(int x1, int y, int x2, void *data)
     address++;
   }
 }
-
+
 /**********************************************************************/
 /* Semi draw mode						      */
 /**********************************************************************/

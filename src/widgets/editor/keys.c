@@ -67,6 +67,7 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
 
     /* zoom */
     if (zoom >= 0) {
+      hide_drawing_cursor(widget);
       screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
       x = editor->offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
@@ -84,7 +85,9 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
 
 	jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
 	jrect_free(vp);
-    	return TRUE;
+
+	show_drawing_cursor(widget);
+	return TRUE;
       }
     }
 

@@ -545,15 +545,15 @@ bool jmanager_generate_messages(JWidget manager)
     }
   }
 
+  /* generate redraw events */
+  jwidget_flush_redraw(manager);
+
   return !jlist_empty(msg_queue);
 }
 
 void jmanager_dispatch_messages(JWidget manager)
 {
   JMessage msg;
-
-  /* redraw dirty widgets */
-  jwidget_flush_redraw(manager);
   
   /* add the "Queue Processing" message for the manager */
   msg = new_mouse_msg(JM_QUEUEPROCESSING);
@@ -1122,12 +1122,13 @@ static void dispatch_messages(JWidget widget_manager)
 
   link = jlist_first(msg_queue);
   while (link != msg_queue->end) {
-    msg = link->data;
-
 #ifdef LIMIT_DISPATCH_TIME
     if (ji_clock-t > 250)
       break;
 #endif
+
+    /* the message to process */
+    msg = link->data;
 
     /* go to next message */
     if (msg->any.used) {

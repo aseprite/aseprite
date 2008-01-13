@@ -56,7 +56,6 @@
 
 #define REBUILD_LOCK		1
 #define REBUILD_ROOT_MENU	2
-#define REBUILD_SPRITE_LIST	4
 #define REBUILD_RECENT_LIST	8
 #define REBUILD_FULLREFRESH	16
 
@@ -78,6 +77,7 @@ static int try_depths[] = { 32, 24, 16, 15, 8 };
 /**************************************************************/
 
 static JWidget manager = NULL;
+static bool ji_screen_created = FALSE;
 
 static volatile int next_idle_flags = 0;
 static JList icon_buttons;
@@ -258,8 +258,10 @@ void exit_module_gui(void)
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
     ji_set_screen(screen);
-    if (old_bmp && old_bmp != screen)
+
+    if (ji_screen_created)
       destroy_bitmap(old_bmp);
+    ji_screen_created = FALSE;
   }
 
   jlist_free(icon_buttons);
@@ -344,13 +346,7 @@ void gui_feedback(void)
       next_idle_flags ^= REBUILD_ROOT_MENU;
       load_root_menu();
 
-      next_idle_flags |= REBUILD_SPRITE_LIST;
       next_idle_flags |= REBUILD_RECENT_LIST;
-    }
-
-    if (next_idle_flags & REBUILD_SPRITE_LIST) {
-      next_idle_flags ^= REBUILD_SPRITE_LIST;
-      app_realloc_sprite_list();
     }
 
     if (next_idle_flags & REBUILD_RECENT_LIST) {
@@ -403,11 +399,14 @@ void gui_setup_screen(void)
     BITMAP *old_bmp = ji_screen;
     ji_set_screen(create_bitmap(SCREEN_W / screen_scaling,
 				SCREEN_H / screen_scaling));
-    if (old_bmp && old_bmp != screen)
+    if (ji_screen_created)
       destroy_bitmap(old_bmp);
+
+    ji_screen_created = TRUE;
   }
   else {
     ji_set_screen(screen);
+    ji_screen_created = FALSE;
   }
 
   /* set the configuration */
@@ -435,7 +434,7 @@ void reload_default_font(void)
     dirs_add_path(dirs, default_font);
 
   /* big font */
-/*   if (JI_SCREEN_W > 320) */
+/*   if (JI_SCREEN_W > 400) */
 /*     dirs_cat_dirs(dirs, filename_in_datadir("fonts/default2.pcx")); */
 /*   /\* tiny font *\/ */
 /*   else */
@@ -546,15 +545,13 @@ void rebuild_root_menu(void)
 
 void rebuild_sprite_list(void)
 {
-  next_idle_flags |= REBUILD_SPRITE_LIST;
+  app_realloc_sprite_list();      
 }
 
 void rebuild_recent_list(void)
 {
   next_idle_flags |= REBUILD_RECENT_LIST;
 }
-
-
 
 /**********************************************************************/
 /* hook signals */
@@ -645,7 +642,6 @@ bool get_widgets(JWidget window, ...)
   return TRUE;
 }
 
-
 /**********************************************************************/
 /* Icon in buttons */
 
@@ -683,7 +679,6 @@ static bool button_with_icon_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-
 /**********************************************************************/
 /* Button style (convert radio or check buttons and draw it like
    normal buttons) */
@@ -707,65 +702,6 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
   return widget;
 }
 
-#if 0
-static int button_style_type(void)
-{
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
-}
-
-static bool button_style_msg_proc(JWidget widget, JMessage msg)
-{
-  JHook hook = (JHook)jwidget_get_data(widget, button_style_type());
-
-  switch (msg->type) {
-
-    case JM_DESTROY:
-      (*hook->msg_proc)(widget, msg);
-      jfree(hook);
-      break;
-
-    case JM_REQSIZE:
-      return (*hook->msg_proc)(widget, msg);
-  }
-
-  return FALSE;
-}
-
-void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4)
-{
-  JWidget button = jbutton_new(NULL);
-  JHook hook = jwidget_get_hook(button, JI_BUTTON);
-
-  /* setup button bevel */
-  jbutton_set_bevel(button, b1, b2, b3, b4);
-
-  /* steal JI_BUTTON hook */
-  _jwidget_remove_hook(button, hook);
-
-  /* put the JI_BUTTON hook data in the widget (to get it with
-     jwidget_get_data) */
-  jwidget_add_hook(widget, JI_BUTTON, NULL, hook->data);
-
-  /* put a cusomized hook to filter only some messages to the real
-     JI_BUTTON hook msg_proc */
-  jwidget_add_hook(widget, button_style_type(), button_style_msg_proc, hook);
-
-  /* setup widget geometry */
-  widget->align = button->align;
-  widget->border_width = button->border_width;
-  widget->draw_method = button->draw_method;
-
-  /* jwidget_set_border(widget, 2, 2, 2, 2); */
-
-  /* the data will be free after */
-  jwidget_free(button);
-}
-#endif
-
-
 /**********************************************************************/
 /* manager event handler */
 
@@ -820,7 +756,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
   return FALSE;
 }
-
+
 /**********************************************************************/
 /* graphics */
 
