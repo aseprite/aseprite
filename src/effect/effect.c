@@ -150,7 +150,7 @@ void effect_load_target(Effect *effect)
   effect->target.g = get_config_bool("Target", "Green", TRUE);
   effect->target.b = get_config_bool("Target", "Blue", TRUE);
   effect->target.k = get_config_bool("Target", "Gray", TRUE);
-  effect->target.a = get_config_bool("Target", "Alpha", FALSE);
+  effect->target.a = get_config_bool("Target", "Alpha", TRUE);
   effect->target.index = get_config_bool("Target", "Index", FALSE);
 }
 
