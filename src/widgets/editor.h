@@ -41,10 +41,7 @@ typedef struct Editor
   int cursor_screen_y;
   int cursor_editor_x; /* position in the editor (model) */
   int cursor_editor_y;
-
   int old_cursor_thick;
-  int old_cursor_screen_x;
-  int old_cursor_screen_y;
 
   /* for the mouse */
   unsigned lagged_mouseenter : 1;

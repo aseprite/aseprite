@@ -360,7 +360,7 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color)
     if (point_inside_region(x, y, clipping_region))
       putpixel(bmp, x, y, saved_pixel[saved_pixel_n++]);
     else if (point_inside_region(x, y, old_clipping_region))
-      saved_pixel[saved_pixel_n++];
+      saved_pixel_n++;
   }
 }
 

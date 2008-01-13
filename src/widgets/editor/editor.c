@@ -959,8 +959,6 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       if (editor->old_cursor_thick == 0) {
 	editor->old_cursor_thick = editor->cursor_thick;
-	editor->old_cursor_screen_x = editor->cursor_screen_x;
-	editor->old_cursor_screen_y = editor->cursor_screen_y;
       }
 
       if (editor->cursor_thick != 0)
@@ -1038,9 +1036,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 
 	if (msg->draw.count == 0
 	    && editor->old_cursor_thick != 0) {
-	  editor_draw_cursor(widget,
-			     editor->old_cursor_screen_x,
-			     editor->old_cursor_screen_y);
+	  editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
 	}
       }
 

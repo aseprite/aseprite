@@ -31,7 +31,6 @@
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#include <winalleg.h>
 #include <stdarg.h>
 #include <stdio.h>
 
