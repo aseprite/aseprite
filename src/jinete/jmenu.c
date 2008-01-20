@@ -51,7 +51,7 @@ JM_MESSAGE(exe_menuitem);
 #define JM_OPEN_MENUITEM  jm_open_menuitem()
 
 /**
- * bool final_close = msg->user.a;
+ * bool last_of_close_chain = msg->user.a;
  */
 #define JM_CLOSE_MENUITEM jm_close_menuitem()
 
@@ -138,7 +138,7 @@ static void set_highlight(JWidget menu, JWidget menuitem, bool click, bool open_
 static void unhighlight(JWidget menu);
 
 static void open_menuitem(JWidget menuitem, bool select_first);
-static void close_menuitem(JWidget menuitem, bool final_close);
+static void close_menuitem(JWidget menuitem, bool last_of_close_chain);
 static void close_popup(JWidget menubox);
 static void close_all(JWidget menu);
 static void exe_menuitem(JWidget menuitem);
@@ -933,7 +933,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
       else if (msg->type == JM_CLOSE_MENUITEM) {
 	Base *base = get_base(widget);
 	JWidget menubox, window;
-	bool final_close = msg->user.a;
+	bool last_of_close_chain = msg->user.a;
 
 	assert(base != NULL);
 	assert(base->is_processing);
@@ -946,24 +946,24 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	window = menubox->parent;
 	assert(window && window->type == JI_WINDOW);
 
-	/* set the focus to this menu-item */
-	if (base->close_all)
-	  jmanager_free_focus();
-	else
-	  jmanager_set_focus(widget->parent->parent);
-
 	/* fetch the "menu" to avoid free it with 'jwidget_free()' */
 	jmenubox_set_menu(menubox, NULL);
 
 	/* destroy the window */
 	jwindow_close(window, NULL);
 
+	/* set the focus to this menu-box of this menu-item */
+	if (base->close_all)
+	  jmanager_free_focus();
+	else
+	  jmanager_set_focus(widget->parent->parent);
+
 	/* isn't necessary to free this window because it's
 	   automatically destroyed by the manager
 	   ... jwidget_free(window);
 	*/
 
-	if (final_close) {
+	if (last_of_close_chain) {
 	  base->close_all = FALSE;
 	  base->is_processing = FALSE;
 	}
@@ -1196,7 +1196,7 @@ static void open_menuitem(JWidget menuitem, bool select_first)
   }
 }
 
-static void close_menuitem(JWidget menuitem, bool final_close)
+static void close_menuitem(JWidget menuitem, bool last_of_close_chain)
 {
   JWidget menu, child;
   JMessage msg;
@@ -1223,7 +1223,7 @@ static void close_menuitem(JWidget menuitem, bool final_close)
 
   /* second: now we can close the 'menuitem' */
   msg = jmessage_new(JM_CLOSE_MENUITEM);
-  msg->user.a = final_close;
+  msg->user.a = last_of_close_chain;
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
 

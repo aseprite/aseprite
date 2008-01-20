@@ -967,16 +967,14 @@ void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_backgro
   }
 
   /* free all widgets of special states */
-#if 0
-  jmanager_free_capture();
-  jmanager_free_mouse();
+  if (capture_widget != NULL && jwidget_get_window(capture_widget) == window)
+    jmanager_free_capture();
 
-  jmanager_set_focus(manager);
-#else
-  jmanager_free_capture();
-  jmanager_free_mouse();
-  jmanager_free_focus();
-#endif
+  if (mouse_widget != NULL && jwidget_get_window(mouse_widget) == window)
+    jmanager_free_mouse();
+
+  if (focus_widget != NULL && jwidget_get_window(focus_widget) == window)
+    jmanager_free_focus();
 
   /* hide window */
   jwidget_hide(window);

@@ -75,35 +75,35 @@ static void cmd_configure_tools_execute(const char *argument)
   JWidget check_onionskin;
   JWidget brush_preview;
 
+  if (!window) {
+    window = load_widget("toolconf.jid", "configure_tool");
+    if (!window)
+      return;
+  }
   /* if the window is opened, close it */
-  if (window) {
+  else if (jwidget_is_visible(window)) {
     jwindow_close(window, NULL);
     return;
   }
 
-  /* if the window is closed, open it */
-
-  window = load_widget("toolconf.jid", "configure_tool");
-  if (!window)
-    return;
-
-  if (!get_widgets (window,
-		    "filled", &filled,
-		    "tiled", &tiled,
-		    "use_grid", &use_grid,
-		    "view_grid", &view_grid,
-		    "set_grid", &set_grid,
-		    "brush_size", &brush_size,
-		    "brush_angle", &brush_angle,
-		    "glass_dirty", &glass_dirty,
-		    "spray_width", &spray_width,
-		    "air_speed", &air_speed,
-		    "cursor_color_box", &cursor_color_box,
-		    "brush_preview_box", &brush_preview_box,
-		    "brush_type_box", &brush_type_box,
-		    "brush_mode_box", &brush_mode_box,
-		    "onionskin", &check_onionskin, NULL)) {
+  if (!get_widgets(window,
+		   "filled", &filled,
+		   "tiled", &tiled,
+		   "use_grid", &use_grid,
+		   "view_grid", &view_grid,
+		   "set_grid", &set_grid,
+		   "brush_size", &brush_size,
+		   "brush_angle", &brush_angle,
+		   "glass_dirty", &glass_dirty,
+		   "spray_width", &spray_width,
+		   "air_speed", &air_speed,
+		   "cursor_color_box", &cursor_color_box,
+		   "brush_preview_box", &brush_preview_box,
+		   "brush_type_box", &brush_type_box,
+		   "brush_mode_box", &brush_mode_box,
+		   "onionskin", &check_onionskin, NULL)) {
     jwidget_free(window);
+    window = NULL;
     return;
   }
 
@@ -166,7 +166,6 @@ static void cmd_configure_tools_execute(const char *argument)
   /* load window configuration */
   load_window_pos(window, "ConfigureTool");
 
-  /* open the window */
   jwindow_open_bg(window);
 }
 
@@ -196,7 +195,7 @@ static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
 static int window_close_hook(JWidget widget, int user_data)
 {
   /* isn't running anymore */
-  window = NULL;
+/*   window = NULL; */
 
   /* save window configuration */
   save_window_pos(widget, "ConfigureTool");

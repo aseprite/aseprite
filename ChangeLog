@@ -1,3 +1,12 @@
+2008-01-20  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_configure_tools.c (cmd_configure_tools_execute):
+	Now the window is loaded one time and reused in all the program
+	execution.
+
+	* src/jinete/jmanager.c (_jmanager_close_window): Now the mouse
+	and focus aren't freed if it's not necessary.
+
 2008-01-13  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/widgets/editor/cursor.c, src/widgets/editor/editor.c: Fixed
