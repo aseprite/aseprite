@@ -173,7 +173,9 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 	  jlist_append(*labels, ji_separator_new(NULL, JI_HORIZONTAL));
 	}
 	else if (button) {
-	  jlist_append(*buttons, jbutton_new(beg));
+	  JWidget button_widget = jbutton_new(beg);
+	  jwidget_set_min_size(button_widget, 60, 0);
+	  jlist_append(*buttons, button_widget);
 	}
 
 	buf[c] = chr;
@@ -234,7 +236,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
       jwidget_add_child(box3, (JWidget)link->data);
 
     /* default button is the last one */
-    if (jlist_last (*buttons))
+    if (jlist_last(*buttons))
       jwidget_magnetic((JWidget)jlist_last(*buttons)->data, TRUE);
   }
 
