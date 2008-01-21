@@ -304,6 +304,8 @@ bool jmanager_generate_messages(JWidget manager)
 
   /* new windows to show? */
   if (!jlist_empty(new_windows)) {
+    JWidget magnet;
+
     JI_LIST_FOR_EACH(new_windows, link) {
       window = link->data;
 
@@ -311,12 +313,15 @@ bool jmanager_generate_messages(JWidget manager)
       jwidget_dirty(window);
       jwidget_show(window);
 
-      /* attract the focus to the magnetic widget */
-      /* jmanager_attract_focus(window); */
-      jmanager_focus_first_child(window);
-
-      /* redraw all */
-      /* jwidget_flush_redraw(window); */
+      /* attract the focus to the magnetic widget... */
+      /* 1) get the magnetic widget */
+      magnet = find_magnetic_widget(jwidget_get_window(window));
+      /* 2) if magnetic widget exists and it doesn't have the focus */
+      if (magnet && !jwidget_has_focus(magnet))
+	jmanager_set_focus(magnet);
+      /* 3) if not, put the focus in the first child */
+      else
+	jmanager_focus_first_child(window);
     }
 
     jlist_clear(new_windows);

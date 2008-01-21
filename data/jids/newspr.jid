@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2005, 2007 by David A. Capello -->
+<!-- Copyright (C) 2001-2005, 2007, 2008 by David A. Capello -->
 
 <!-- Read "LEGAL.txt" for more information. -->
 
@@ -15,7 +15,7 @@
               <label text="Height:" />
             </box>
             <box vertical homogeneous expansive>
-              <entry expansive name="width" maxsize=8 />
+              <entry expansive name="width" maxsize=8 magnetic />
               <entry expansive name="height" maxsize=8 />
             </box>
           </box>

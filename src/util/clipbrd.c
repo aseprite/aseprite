@@ -139,10 +139,10 @@ void cut_to_clipboard(void)
     return;
 
   if (!low_copy())
-    console_printf ("Can't copying an image portion from the current layer\n");
+    console_printf("Can't copying an image portion from the current layer\n");
   else {
-    ClearMask ();
-    update_screen_for_sprite (current_sprite);
+    ClearMask();
+    update_screen_for_sprite(current_sprite);
   }
 }
 
@@ -151,8 +151,8 @@ void copy_to_clipboard(void)
   if (!current_sprite)
     return;
 
-  if (!low_copy ())
-    console_printf (_("Can't copying an image portion from the current layer\n"));
+  if (!low_copy())
+    console_printf(_("Can't copying an image portion from the current layer\n"));
 }
 
 void paste_from_clipboard(void)
@@ -162,6 +162,7 @@ void paste_from_clipboard(void)
   Image *image;
   Image *dest_image;
   int xout[4], yout[4];
+  int dest_x, dest_y;
   bool paste;
 
   if (!current_sprite ||
@@ -171,21 +172,28 @@ void paste_from_clipboard(void)
     return;
 
   if (clipboard->imgtype != current_sprite->imgtype) {
+    /* TODO now the user can't select the clipboard sprite */
     console_printf(_("You can't copy sprites of different image types.\nYou should select the clipboard sprite, and change the image type of it.\n"));
     return;
   }
 
   cel = layer_get_cel(clipboard->layer, clipboard->frame);
-  if (!cel)
+  if (!cel) {
+    console_printf(_("Error: No cel in the clipboard\n"));
     return;
+  }
 
   image = stock_get_image(clipboard->stock, cel->image);
-  if (!image)
+  if (!image) {
+    console_printf(_("Error: No image in the clipboard\n"));
     return;
+  }
 
-  dest_image = GetImage();
-  if (!dest_image)
+  dest_image = GetImage2(current_sprite, &dest_x, &dest_y, NULL);
+  if (!dest_image) {
+    console_printf(_("Error: no destination image\n"));
     return;
+  }
 
   {
     JWidget view = jwidget_get_view(current_editor);
@@ -204,8 +212,15 @@ void paste_from_clipboard(void)
   }
 
   if (paste) {
-    int u1, v1, u2, v2;
+    int c, u1, v1, u2, v2;
 
+    /* align to the destination cel-position */
+    for (c=0; c<4; ++c) {
+      xout[c] -= dest_x;
+      yout[c] -= dest_y;
+    }
+
+    /* clip the box for the undo */
     u1 = MAX(0, MIN(xout[0], MIN(xout[1], MIN(xout[2], xout[3]))));
     v1 = MAX(0, MIN(yout[0], MIN(yout[1], MIN(yout[2], yout[3]))));
     u2 = MIN(dest_image->w-1, MAX(xout[0], MAX(xout[1], MAX(xout[2], xout[3]))));
@@ -214,7 +229,7 @@ void paste_from_clipboard(void)
     /* undo region */
     undo_image(current_sprite->undo, dest_image, u1, v1, u2-u1+1, v2-v1+1);
 
-    /* draw the image */
+    /* draw the transformed image */
     image_parallelogram(dest_image, image,
 			xout[0], yout[0], xout[1], yout[1],
 			xout[2], yout[2], xout[3], yout[3]);
@@ -222,7 +237,7 @@ void paste_from_clipboard(void)
 
   update_screen_for_sprite(current_sprite);
 }
-
+
 /**********************************************************************/
 /* interactive transform */
 
@@ -233,15 +248,6 @@ static bool interactive_transform(JWidget widget,
 				  int x, int y,
 				  int xout[4], int yout[4])
 {
-/* #define UPDATE2()							\ */
-/*   jmanager_dispatch_messages();					\ */
-/*   jmouse_hide();							\ */
-/*   blit(ji_screen, bmp1, vp->x, vp->y, 0, 0, vp->w, vp->h);		\ */
-/*   draw_box(ji_screen, vp->x, vp->y, vp->x+vp->w-1, vp->y+vp->h-1,		\ */
-/* 	    x1, y1, x2, y2, preview, mode, angle, cx-vp->x, cy-vp->y);	\ */
-/*   update_status_bar(widget, image, x1, y1, x2, y2, angle);		\ */
-/*   jmouse_show(); */
-
 #define UPDATE()							\
   jmouse_hide();							\
   old_screen = ji_screen;						\
@@ -644,6 +650,11 @@ static int low_copy(void)
   if (!sprite)
     return FALSE;
 
+  /* set the current frame */
+  sprite_set_frame(sprite, current_sprite->frame);
+
+  /* create a new layer from the current mask (in the current
+     frame) */
   layer = NewLayerFromMask(current_sprite, sprite);
   if (!layer) {
     sprite_free(sprite);
@@ -652,7 +663,6 @@ static int low_copy(void)
 
   layer_add_layer(sprite->set, layer);
   sprite_set_layer(sprite, layer);
-  sprite_set_frame(sprite, current_sprite->frame);
 
   sprite_set_palette(sprite,
 		     sprite_get_palette(current_sprite,
