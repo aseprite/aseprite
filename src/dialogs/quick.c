@@ -22,6 +22,7 @@
 
 #include <allegro/keyboard.h>
 
+#include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
 #include "modules/gui.h"
@@ -36,6 +37,7 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/misc.h"
+#include "widgets/colbar.h"
 
 #endif
 
@@ -97,7 +99,7 @@ static void do_quick(int action)
   if (action == ACTION_MOVE) {
     int enabled = undo_is_enabled(sprite->undo);
     undo_disable(sprite->undo);
-    ClearMask();
+    ClearMask(color_bar_get_color(app_get_color_bar(), 1));
     if (enabled)
       undo_enable(sprite->undo);
   }

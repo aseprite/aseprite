@@ -185,6 +185,23 @@ void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg)
   }
 }
 
+void jdraw_inverted_sprite(BITMAP *bmp, BITMAP *sprite, int x, int y)
+{
+  register int c, mask = bitmap_mask_color(sprite);
+  int u, v;
+
+  for (v=0; v<sprite->h; ++v) {
+    for (u=0; u<sprite->w; ++u) {
+      c = getpixel(sprite, u, v);
+      if (c != mask)
+	putpixel(bmp, x+u, y+v,
+		 makecol(255-getr(c),
+			 255-getg(c),
+			 255-getb(c)));
+    }
+  }
+}
+
 void ji_blit_region(JRegion region, int dx, int dy)
 {
   int c, nrects = JI_REGION_NUM_RECTS(region);

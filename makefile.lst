@@ -137,6 +137,7 @@ COMMON_SOURCES =					\
 	src/jinete/jmem.c				\
 	src/jinete/jmenu.c				\
 	src/jinete/jmessage.c				\
+	src/jinete/jmutex.c				\
 	src/jinete/jpanel.c				\
 	src/jinete/jquickmenu.c				\
 	src/jinete/jrect.c				\

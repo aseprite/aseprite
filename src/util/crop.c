@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,7 +163,7 @@ void crop_layer(void)
 void crop_cel(void)
 {
   Sprite *sprite = current_sprite;
-  Image *image = GetImage();
+  Image *image = GetImage(current_sprite);
 
   if ((sprite) && (!mask_is_empty (sprite->mask)) && (image)) {
     Cel *cel = layer_get_cel(sprite->layer, sprite->frame);

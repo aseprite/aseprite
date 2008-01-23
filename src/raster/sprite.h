@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,6 @@ struct Sprite
   int frames;			/* how many frames has this sprite */
   int *frlens;			/* duration per frame */
   int frame;			/* current frame, range [0,frames) */
-/*   RGB *palette;			/\* sprite palette *\/ */
   JList palettes;		/* list of palettes */
   struct Stock *stock;		/* stock to get images */
   struct Layer *set;		/* layer list */
@@ -65,6 +64,9 @@ struct Sprite
     int scroll_y;
     int zoom;
   } preferred;
+  JMutex mutex;			/* mutex to modify the 'locked' flag */
+  bool locked;			/* true when a thread is
+				   reading/writing the sprite */
 };
 
 Sprite *sprite_new(int imgtype, int w, int h);
@@ -75,7 +77,11 @@ void sprite_free(Sprite *sprite);
 
 bool sprite_is_modified(Sprite *sprite);
 bool sprite_is_associated_to_file(Sprite *sprite);
+bool sprite_is_locked(Sprite *sprite);
 void sprite_mark_as_saved(Sprite *sprite);
+
+bool sprite_lock(Sprite *sprite);
+void sprite_unlock(Sprite *sprite);
 
 RGB *sprite_get_palette(Sprite *sprite, int frame);
 void sprite_set_palette(Sprite *sprite, RGB *rgb, int frame);

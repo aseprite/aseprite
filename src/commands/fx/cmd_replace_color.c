@@ -59,26 +59,32 @@ static void make_preview(void);
 
 static bool cmd_replace_color_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  return is_current_sprite_not_locked();
 }
 
 static void cmd_replace_color_execute(const char *argument)
 {
-  JWidget window, color_buttons_box;
+  JWidget window = NULL;
+  JWidget color_buttons_box;
   JWidget button1_1, button1_2;
   JWidget button2_1, button2_2;
   JWidget box_target, target_button;
   JWidget button_ok;
   Image *image;
   Effect *effect;
+  Sprite *sprite;
 
-  image = GetImage();
-  if (!image)
+  sprite = lock_current_sprite();
+  if (!sprite)
     return;
+
+  image = GetImage(current_sprite);
+  if (!image)
+    goto done;
 
   window = load_widget("replcol.jid", "replace_color");
   if (!window)
-    return;
+    goto done;
 
   if (!get_widgets(window,
 		   "color_buttons_box", &color_buttons_box,
@@ -90,15 +96,13 @@ static void cmd_replace_color_execute(const char *argument)
 		   "fuzziness", &slider_fuzziness,
 		   "target", &box_target,
 		   "button_ok", &button_ok, NULL)) {
-    jwidget_free(window);
-    return;
+    goto done;
   }
 
-  effect = effect_new(current_sprite, "replace_color");
+  effect = effect_new(sprite, "replace_color");
   if (!effect) {
     console_printf(_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free(window);
-    return;
+    goto done;
   }
 
   preview = preview_new(effect);
@@ -160,7 +164,11 @@ static void cmd_replace_color_execute(const char *argument)
   /* save window configuration */
   save_window_pos(window, "ReplaceColor");
 
-  jwidget_free(window);
+done:;
+  if (window)
+    jwidget_free(window);
+
+  sprite_unlock(sprite);
 }
 
 static int button_1_select_hook(JWidget widget, int user_data)

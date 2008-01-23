@@ -160,13 +160,6 @@ void sprite_unmount(Sprite *sprite)
   }
 }
 
-/* closes the specified sprite */
-void sprite_close(Sprite *sprite)
-{
-  sprite_unmount(sprite);
-  sprite_free(sprite);
-}
-
 /* sets current sprite (doesn't show it, only sets the
    "current_sprite" pointer).  */
 void set_current_sprite(Sprite *sprite)
@@ -191,6 +184,35 @@ void sprite_show(Sprite *sprite)
 {
   if (is_interactive())
     set_sprite_in_more_reliable_editor(sprite);
+}
+
+bool is_current_sprite_not_locked(void)
+{
+  return
+    current_sprite != NULL &&
+    !sprite_is_locked(current_sprite);
+}
+
+bool is_current_sprite_writable(void)
+{
+  return
+    current_sprite != NULL
+    && !sprite_is_locked(current_sprite)
+    && current_sprite->layer != NULL
+    && layer_is_readable(current_sprite->layer)
+    && layer_is_writable(current_sprite->layer)
+    && layer_is_image(current_sprite->layer)
+    && layer_get_cel(current_sprite->layer,
+		     current_sprite->frame) != NULL;
+}
+
+Sprite *lock_current_sprite(void)
+{
+  if (current_sprite != NULL &&
+      sprite_lock(current_sprite))
+    return current_sprite;
+  else
+    return NULL;
 }
 
 Stock *sprite_get_images(Sprite *sprite, int target, int write, int **x, int **y)

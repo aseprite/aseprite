@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,11 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <string.h>
 
 #include "jinete/jlist.h"
+#include "jinete/jmutex.h"
 
 #include "modules/palette.h"
 #include "raster/raster.h"
@@ -112,6 +114,10 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite_set_palette(sprite, pal, sprite->frame);
   sprite_set_speed(sprite, 42);
 
+  /* multiple access */
+  sprite->locked = FALSE;
+  sprite->mutex = jmutex_new();
+  
   return sprite;
 }
 
@@ -239,6 +245,8 @@ void sprite_free(Sprite *sprite)
 {
   JLink link;
 
+  assert(!sprite->locked);
+
   /* destroy images' stock */
   if (sprite->stock)
     stock_free(sprite->stock);
@@ -274,6 +282,9 @@ void sprite_free(Sprite *sprite)
   if (sprite->set) layer_free(sprite->set);
   if (sprite->bound.seg) jfree(sprite->bound.seg);
 
+  /* destroy mutex */
+  jmutex_free(sprite->mutex);
+
   gfxobj_free((GfxObj *)sprite);
 }
 
@@ -288,10 +299,43 @@ bool sprite_is_associated_to_file(Sprite *sprite)
   return sprite->associated_to_file;
 }
 
+bool sprite_is_locked(Sprite *sprite)
+{
+  bool locked;
+
+  jmutex_lock(sprite->mutex);
+  locked = sprite->locked;
+  jmutex_unlock(sprite->mutex);
+    
+  return locked;
+}
+
 void sprite_mark_as_saved(Sprite *sprite)
 {
   sprite->undo->diff_saved = sprite->undo->diff_count;
   sprite->associated_to_file = TRUE;
+}
+
+bool sprite_lock(Sprite *sprite)
+{
+  bool res = FALSE;
+
+  jmutex_lock(sprite->mutex);
+  if (!sprite->locked) {
+    sprite->locked = TRUE;
+    res = TRUE;
+  }
+  jmutex_unlock(sprite->mutex);
+
+  return res;
+}
+
+void sprite_unlock(Sprite *sprite)
+{
+  jmutex_lock(sprite->mutex);
+  assert(sprite->locked);
+  sprite->locked = FALSE;
+  jmutex_unlock(sprite->mutex);
 }
 
 RGB *sprite_get_palette(Sprite *sprite, int frame)

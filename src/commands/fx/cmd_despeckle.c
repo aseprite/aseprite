@@ -70,7 +70,7 @@ static void cmd_despeckle_execute(const char *argument)
   Effect *effect;
   char buf[32];
 
-  image = GetImage();
+  image = GetImage(current_sprite);
   if (!image)
     return;
 

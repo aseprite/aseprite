@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ struct Layer;
 struct Sprite;
 struct Undo;
 
-struct Image *GetImage(void);
+struct Image *GetImage(struct Sprite *sprite);
 struct Image *GetImage2(struct Sprite *sprite, int *x, int *y, int *opacity);
 
 void LoadPalette(const char *filename);
 
-void ClearMask(void);
+void ClearMask(const char *color);
 struct Layer *NewLayerFromMask(struct Sprite *src, struct Sprite *dst);
 
 struct Image *GetLayerImage(struct Layer *layer, int *x, int *y, int frame);

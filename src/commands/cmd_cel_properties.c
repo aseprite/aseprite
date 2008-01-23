@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,41 +35,52 @@
 
 static bool cmd_cel_properties_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  return
+    is_current_sprite_not_locked()
+    && current_sprite->layer
+    && layer_get_cel(current_sprite->layer,
+		     current_sprite->frame) != NULL;
 }
 
 static void cmd_cel_properties_execute(const char *argument)
 {
-  JWidget window, entry_frame, entry_xpos, entry_ypos, slider_opacity, button_ok;
+  JWidget window = NULL;
+  JWidget entry_frame, entry_xpos, entry_ypos, slider_opacity, button_ok;
   Sprite *sprite;
   Layer *layer;
   Cel *cel;
   char buf[1024];
 
   /* get current sprite */
-  sprite = current_sprite;
+  sprite = lock_current_sprite();
   if (!sprite)
     return;
 
   /* get selected layer */
   layer = sprite->layer;
   if (!layer)
-    return;
+    goto done;
 
   /* get current cel */
   cel = layer_get_cel(layer, sprite->frame);
   if (!cel)
-    return;
+    goto done;
 
   window = load_widget("celprop.jid", "cel_properties");
   if (!window)
-    return;
+    goto done;
 
   entry_frame = jwidget_find_name(window, "frame");
   entry_xpos = jwidget_find_name(window, "xpos");
   entry_ypos = jwidget_find_name(window, "ypos");
   slider_opacity = jwidget_find_name(window, "opacity");
   button_ok = jwidget_find_name(window, "ok");
+
+  /* if the layer isn't writable */
+  if (!layer_is_writable(layer)) {
+    jwidget_set_text(button_ok, _("Locked"));
+    jwidget_disable(button_ok);
+  }
 
   sprintf(buf, "%d", cel->frame+1);
   jwidget_set_text(entry_frame, buf);
@@ -136,7 +147,11 @@ static void cmd_cel_properties_execute(const char *argument)
       break;
   }
 
-  jwidget_free(window);
+done:;
+  if (window)
+    jwidget_free(window);
+
+  sprite_unlock(sprite);
 }
 
 Command cmd_cel_properties = {

@@ -27,7 +27,9 @@
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/sprites.h"
+#include "raster/image.h"
 #include "raster/sprite.h"
+#include "util/misc.h"
 #include "widgets/editor.h"
 
 #endif
@@ -95,19 +97,6 @@ void update_editors_with_sprite(Sprite *sprite)
   }
 }
 
-/* void dirty_editors_with_sprite(Sprite *sprite) */
-/* { */
-/*   JWidget widget; */
-/*   JLink link; */
-
-/*   JI_LIST_FOR_EACH(editors, link) { */
-/*     widget = link->data; */
-
-/*     if (sprite == editor_get_sprite(widget)) */
-/*       jwidget_dirty(widget); */
-/*   } */
-/* } */
-
 void editors_draw_sprite(Sprite *sprite, int x1, int y1, int x2, int y2)
 {
   JWidget widget;
@@ -125,42 +114,47 @@ void editors_draw_sprite(Sprite *sprite, int x1, int y1, int x2, int y2)
    recursivity) */
 void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
 {
-  int lx1, ly1, lx2, ly2;
+  int cx1, cy1, cx2, cy2;	/* cel rectangle */
+  int lx1, ly1, lx2, ly2;	/* limited rectangle to the cel rectangle */
+  Image *image = GetImage2(sprite, &cx1, &cy1, NULL);
 
-  lx1 = MAX(x1, 0);
-  ly1 = MAX(y1, 0);
-  lx2 = MIN(x2, sprite->w-1);
-  ly2 = MIN(y2, sprite->h-1);
+  cx2 = cx1+image->w-1;
+  cy2 = cy1+image->h-1;
+
+  lx1 = MAX(x1, cx1);
+  ly1 = MAX(y1, cy1);
+  lx2 = MIN(x2, cx2);
+  ly2 = MIN(y2, cy2);
 
   /* draw the rectangles inside the editor */
   editors_draw_sprite(sprite, lx1, ly1, lx2, ly2);
 
   /* left */
-  if (x1 < 0 && lx2 < sprite->w-1) {
+  if (x1 < cx1 && lx2 < cx2) {
     editors_draw_sprite_tiled(sprite,
-			      MAX(lx2, sprite->w+x1), y1,
-			      sprite->w-1, y2);
+			      MAX(lx2+1, cx2+1+(x1-cx1)), y1,
+			      cx2, y2);
   }
 
   /* top */
-  if (y1 < 0 && ly2 < sprite->h-1) {
+  if (y1 < cy1 && ly2 < cy2) {
     editors_draw_sprite_tiled(sprite,
-			      x1, MAX(ly2, sprite->h+y1),
-			      x2, sprite->h-1);
+			      x1, MAX(ly2+1, cy2+1+(y1-cx1)),
+			      x2, cy2);
   }
 
   /* right */
-  if (x2 >= sprite->w && lx1 > 0) {
+  if (x2 >= cx2+1 && lx1 > cx1) {
     editors_draw_sprite_tiled(sprite,
-			      0, y1,
-			      MIN(lx1, x2-sprite->w), y2);
+			      cx1, y1,
+			      MIN(lx1-1, x2-image->w), y2);
   }
 
   /* bottom */
-  if (y2 >= sprite->h && ly1 > 0) {
+  if (y2 >= cy2+1 && ly1 > cy1) {
     editors_draw_sprite_tiled(sprite,
-			      x1, 0,
-			      x2, MIN(ly1, y2-sprite->h));
+			      x1, cy1,
+			      x2, MIN(ly1-1, y2-image->h));
   }
 }
 

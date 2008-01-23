@@ -87,7 +87,7 @@ static void cmd_convolution_matrix_execute(const char *argument)
   Image *image;
   Effect *effect;
 
-  image = GetImage();
+  image = GetImage(current_sprite);
   if (!image)
     return;
 

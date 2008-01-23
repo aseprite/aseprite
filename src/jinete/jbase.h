@@ -231,6 +231,7 @@ enum {
 
 typedef unsigned int		JID;
 
+typedef void			*JMutex;
 typedef struct jaccel		*JAccel;
 typedef struct jhook		*JHook;
 typedef struct jquickmenu	*JQuickMenu;

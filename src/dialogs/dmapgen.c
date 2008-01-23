@@ -102,7 +102,7 @@ void dialogs_mapgen(void)
   sprite = sprite_new_with_layer(IMAGE_INDEXED, 256, 256);
   set_current_sprite(sprite);
 
-  preview_map = image_viewer_new(GetImage());
+  preview_map = image_viewer_new(GetImage(current_sprite));
 
   /* set palette */
   if (new_palette)
@@ -194,7 +194,7 @@ static void regen_map(int forced)
     }
 
     /* generate the map */
-    mapgen(GetImage(), seed, factor);
+    mapgen(GetImage(current_sprite), seed, factor);
     jwidget_dirty(preview_map);
   }
 }

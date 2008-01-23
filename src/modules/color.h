@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,6 @@
 #ifndef MODULES_COLOR_H
 #define MODULES_COLOR_H
 
-#define DEFAULT_FG   "rgb{0,0,0,255}"
-#define DEFAULT_BG   "rgb{255,255,255,255}"
-
 struct BITMAP;
 struct Image;
 
@@ -34,11 +31,6 @@ enum {
 
 int init_module_color(void);
 void exit_module_color(void);
-
-const char *get_fg_color(void);
-const char *get_bg_color(void);
-void set_fg_color(const char *string);
-void set_bg_color(const char *string);
 
 int color_type(const char *color);
 char *color_mask(void);

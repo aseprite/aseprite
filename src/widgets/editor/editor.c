@@ -23,19 +23,11 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <stdio.h>
 #include <allegro.h>
 
-#include "jinete/jdraw.h"
-#include "jinete/jlist.h"
-#include "jinete/jmanager.h"
-#include "jinete/jmessage.h"
-#include "jinete/jrect.h"
-#include "jinete/jregion.h"
-#include "jinete/jsystem.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
+#include "jinete/jinete.h"
 
 #include "core/app.h"
 #include "core/cfg.h"
@@ -89,6 +81,7 @@ JWidget editor_view_new(void)
 {
   JWidget widget = jview_new();
 
+  jwidget_set_border(widget, 3, 3, 3, 3);
   jview_without_bars(widget);
   jwidget_add_hook(widget, JI_WIDGET, editor_view_msg_proc, NULL);
 
@@ -808,18 +801,34 @@ void editor_to_screen(JWidget widget, int xin, int yin, int *xout, int *yout)
 
 void show_drawing_cursor(JWidget widget)
 {
-  jmouse_set_cursor(JI_CURSOR_NULL);
+  Editor *editor = editor_data(widget);
 
-  if (!editor_data(widget)->cursor_thick) {
-    jmouse_hide();
-    editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
-    jmouse_show();
+  assert(editor->sprite != NULL);
+
+  if (!sprite_is_locked(editor->sprite) &&
+      editor->sprite->layer != NULL &&
+      layer_is_image(editor->sprite->layer) &&
+      layer_is_readable(editor->sprite->layer) &&
+      layer_is_writable(editor->sprite->layer) &&
+      layer_get_cel(editor->sprite->layer, editor->sprite->frame) != NULL) {
+    jmouse_set_cursor(JI_CURSOR_NULL);
+
+    if (!editor->cursor_thick) {
+      jmouse_hide();
+      editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
+      jmouse_show();
+    }
+  }
+  else {
+    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
   }
 }
 
 void hide_drawing_cursor(JWidget widget)
 {
-  if (editor_data(widget)->cursor_thick) {
+  Editor *editor = editor_data(widget);
+
+  if (editor->cursor_thick) {
     jmouse_hide();
     editor_clean_cursor(widget);
     jmouse_show();
@@ -909,19 +918,27 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 
 	if (has_focus) {
 	  /* 1st border */
-	  jdraw_rectedge(pos, makecol (128, 128, 128), makecol (255, 255, 255));
+	  jdraw_rect(pos, ji_color_selected());
 
 	  /* 2nd border */
 	  jrect_shrink(pos, 1);
-	  jdraw_rect(pos, makecol (0, 0, 0));
+	  jdraw_rect(pos, ji_color_selected());
+
+	  /* 3rd border */
+	  jrect_shrink(pos, 1);
+	  jdraw_rectedge(pos, makecol(128, 128, 128), makecol(255, 255, 255));
 	}
 	else {
 	  /* 1st border */
-	  jdraw_rectedge(pos, makecol (128, 128, 128), makecol (255, 255, 255));
+	  jdraw_rect(pos, makecol(192, 192, 192));
 
 	  /* 2nd border */
 	  jrect_shrink(pos, 1);
-	  jdraw_rect(pos, makecol (192, 192, 192));
+	  jdraw_rect(pos, makecol(192, 192, 192));
+
+	  /* 3rd border */
+	  jrect_shrink(pos, 1);
+	  jdraw_rectedge(pos, makecol(128, 128, 128), makecol(255, 255, 255));
 	}
 
 	jrect_free(pos);

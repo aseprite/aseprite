@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,11 +42,15 @@ void set_clipboard_sprite(struct Sprite *sprite);
 
 void sprite_mount(struct Sprite *sprite);
 void sprite_unmount(struct Sprite *sprite);
-void sprite_close(struct Sprite *sprite);
 
 void set_current_sprite(struct Sprite *sprite);
 void send_sprite_to_top(struct Sprite *sprite);
 void sprite_show(struct Sprite *sprite);
+
+bool is_current_sprite_not_locked(void);
+bool is_current_sprite_writable(void);
+
+struct Sprite *lock_current_sprite(void);
 
 struct Stock *sprite_get_images(struct Sprite *sprite, int target, int write, int **x, int **y);
 

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ static bool cmd_cut_enabled(const char *argument)
       (!current_sprite->mask->bitmap))
     return FALSE;
   else
-    return GetImage() ? TRUE: FALSE;
+    return GetImage(current_sprite) ? TRUE: FALSE;
 }
 
 static void cmd_cut_execute(const char *argument)

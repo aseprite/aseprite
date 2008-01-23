@@ -4,9 +4,7 @@ High priority work
 - the user_data of hook_signal should be void*.
 - search for TODO;
 - Problems:
-  - 100% CPU
   - test UNDO in 64bits plataforms (reported by Jon Rafkind);
-  - Add menus for play animation, a menu for all animation stuff
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);
@@ -20,17 +18,17 @@ High priority work
   + 09lists
   + 20combo
   + 21manage
-- fix "tiled mode" when it's used in frames that doesn't have the same
-  size of the sprite;
++ finished the support for ICO files.
 - add "size" to GUI font (for TTF fonts);
-- layer movement (between sets) in filmeditor;
+- layer movement between sets in filmeditor;
+  + add all the "set" stuff again;
 - quick swap;
   + the regions mustn't be overlapped;
 - options to change the curve type (in curedit.c);
-- sprite resize;
-- canvas size;
-  + with the current crop this isn't necessary anymore;
-  + anyway, it's a good way to expand the graphics
+- More Commands:
+  + resize sprite;
+  + rotate sprite;
+  + canvas size;
 - gauss blur;
 - pal-operations (sort, quantize, gamma by color-curves, etc.);
 - RGB and HSV effects;
@@ -54,11 +52,8 @@ Wish-list
   + better dialogs: widder buttons, more borders.
   + better film editor
     + "middle mouse button" for the film editor.
-  + don't use LINKs when load a sequence of bitmaps.
 - manuq wish-list:
   + layer-with-constant-cel
-  + onion skin for all layers in a frame
-- add menu customization through UI (Tools/Customize).
 - Mateusz Czaplinski ideas:
   + when move selections, will be good the possibility to see relative
     position from the starting point of movement;

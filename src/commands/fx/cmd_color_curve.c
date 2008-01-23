@@ -70,7 +70,7 @@ static void cmd_color_curve_execute(const char *argument)
     curve_add_point(the_curve, curve_point_new(255, 255));
   }
 
-  image = GetImage();
+  image = GetImage(current_sprite);
   if (!image)
     return;
 

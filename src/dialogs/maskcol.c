@@ -68,7 +68,7 @@ void dialogs_mask_color(void)
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage();
+  image = GetImage(current_sprite);
   if (!image)
     return;
 

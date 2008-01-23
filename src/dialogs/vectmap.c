@@ -139,7 +139,7 @@ void dialogs_vector_map(void)
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage();
+  image = GetImage(current_sprite);
   if (!image)
     return;
 

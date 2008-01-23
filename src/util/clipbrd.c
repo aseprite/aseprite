@@ -44,6 +44,7 @@
 #include "raster/undo.h"
 #include "util/clipbrd.h"
 #include "util/misc.h"
+#include "widgets/colbar.h"
 #include "widgets/statebar.h"
 
 #endif
@@ -141,7 +142,7 @@ void cut_to_clipboard(void)
   if (!low_copy())
     console_printf("Can't copying an image portion from the current layer\n");
   else {
-    ClearMask();
+    ClearMask(color_bar_get_color(app_get_color_bar(), 1));
     update_screen_for_sprite(current_sprite);
   }
 }

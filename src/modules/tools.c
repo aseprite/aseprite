@@ -1028,9 +1028,10 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 	      int x1, y1, x2, y2;
 	      editor_to_screen(widget, 0, 0, &x1, &y1);
 	      editor_to_screen(widget,
-			       editor->sprite->w-1,
-			       editor->sprite->h-1, &x2, &y2);
-	      rectfill(ji_screen, x1, y1, x2, y2, 0);
+			       editor->sprite->w,
+			       editor->sprite->h, &x2, &y2);
+	      rectfill(ji_screen, x1, y1, x2-1, y2-1, makecol(255, 0, 0));
+	      vsync();
 	    }
 #endif
 

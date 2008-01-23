@@ -53,8 +53,8 @@
 /* "icons_data" indexes */
 enum {
   FIRST_CURSOR = 0,
-  LAST_CURSOR = 11,
-  ICON_CHECK_EDGE = 12,
+  LAST_CURSOR = 12,
+  ICON_CHECK_EDGE = 13,
   ICON_CHECK_MARK,
   ICON_CLOSE,
   ICON_MENU_MARK,
@@ -69,6 +69,7 @@ static struct {
 } icons_data[ICONS] = {
   { FALSE, default_theme_cnormal },
   { FALSE, default_theme_cnoradd },
+  { FALSE, default_theme_cforbidden },
   { FALSE, default_theme_chand },
   { FALSE, default_theme_cmove },
   { FALSE, default_theme_csizetl },
@@ -243,6 +244,7 @@ static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
       case JI_CURSOR_NULL:
       case JI_CURSOR_NORMAL:
       case JI_CURSOR_NORMAL_ADD:
+      case JI_CURSOR_FORBIDDEN:
 	*focus_x = 0;
 	*focus_y = 0;
 	break;
@@ -581,19 +583,7 @@ static void theme_draw_button(JWidget widget)
     if (jwidget_is_enabled(widget)) {
       /* selected */
       if (jwidget_is_selected(widget)) {
-	register int c, mask = bitmap_mask_color(icon_bmp);
-	int x, y;
-
-	for (y=0; y<icon_bmp->h; ++y) {
-	  for (x=0; x<icon_bmp->w; ++x) {
-	    c = getpixel(icon_bmp, x, y);
-	    if (c != mask)
-	      putpixel(ji_screen, icon.x1+x, icon.y1+y,
-		       makecol(255-getr(c),
-			       255-getg(c),
-			       255-getb(c)));
-	  }
-	}
+	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
       }
       /* non-selected */
       else {

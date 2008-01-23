@@ -47,6 +47,7 @@ JI_BEGIN_DECLS
 	  getb(c1)+(getb(c2)-getb(c1)) * step / max)
 
 struct FONT;
+struct BITMAP;
 
 void jdraw_rect(const JRect rect, int color);
 void jdraw_rectfill(const JRect rect, int color);
@@ -57,6 +58,8 @@ void jdraw_rectexclude(const JRect rc, const JRect exclude, int color);
 void jdraw_char(struct FONT *f, int chr, int x, int y, int fg, int bg, bool fill_bg);
 void jdraw_text(struct FONT *f, const char *text, int x, int y, int fg, int bg, bool fill_bg);
 void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg);
+
+void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
 
 void ji_blit_region(JRegion region, int dx, int dy);
 

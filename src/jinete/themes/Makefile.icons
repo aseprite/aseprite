@@ -4,4 +4,4 @@ pcx2data.exe: pcx2data.c
 all: pcx2data.exe
 
 gen: all
-	pcx2data.exe stand/*.pcx > stdicons.c
+	./pcx2data.exe stand/*.pcx > jstandard_theme_icons.h

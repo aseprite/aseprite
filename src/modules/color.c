@@ -40,9 +40,6 @@ static struct {
   int data;
 } color_struct;
 
-static char *fg_color = NULL;
-static char *bg_color = NULL;
-
 static void fill_color_struct(const char *color);
 static int get_mask_for_bitmap(int depth);
 
@@ -53,50 +50,6 @@ int init_module_color(void)
 
 void exit_module_color(void)
 {
-  set_bg_color(NULL);
-  set_bg_color(NULL);
-}
-
-const char *get_fg_color(void)
-{
-  JWidget color_bar = app_get_color_bar();
-
-  if (color_bar && !fg_color)
-    return color_bar_get_color(color_bar, 0);
-  else
-    return fg_color ? fg_color: DEFAULT_FG;
-}
-
-const char *get_bg_color(void)
-{
-  JWidget color_bar = app_get_color_bar();
-
-  if (color_bar && !bg_color)
-    return color_bar_get_color(color_bar, 1);
-  else
-    return bg_color ? bg_color: DEFAULT_BG;
-}
-
-void set_fg_color(const char *string)
-{
-  if (fg_color) {
-    jfree(fg_color);
-    fg_color = NULL;
-  }
-
-  if (string)
-    fg_color = jstrdup(string);
-}
-
-void set_bg_color(const char *string)
-{
-  if (bg_color) {
-    jfree(bg_color);
-    bg_color = NULL;
-  }
-
-  if (string)
-    bg_color = jstrdup(string);
 }
 
 int color_type(const char *color)

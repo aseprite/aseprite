@@ -52,6 +52,7 @@
 #include "jinete/jmanager.h"
 #include "jinete/jmenu.h"
 #include "jinete/jmessage.h"
+#include "jinete/jmutex.h"
 #include "jinete/jpanel.h"
 #include "jinete/jquickmenu.h"
 #include "jinete/jrect.h"

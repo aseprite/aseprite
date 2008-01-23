@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,6 +52,9 @@ void layer_free(Layer *layer);
 
 int layer_is_image(const Layer *layer);
 int layer_is_set(const Layer *layer);
+
+bool layer_is_readable(const Layer *layer);
+bool layer_is_writable(const Layer *layer);
 
 Layer *layer_get_prev(Layer *layer);
 Layer *layer_get_next(Layer *layer);

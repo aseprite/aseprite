@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,12 @@
 #ifndef USE_PRECOMPILED_HEADER
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
+#include "widgets/colbar.h"
 
 #endif
 
@@ -39,7 +41,7 @@ static void cmd_clear_execute(const char *argument)
   Sprite *sprite = current_sprite;
 
   /* clear the mask */
-  ClearMask();
+  ClearMask(color_bar_get_color(app_get_color_bar(), 1));
 
   /* refresh the sprite */
   update_screen_for_sprite(sprite);

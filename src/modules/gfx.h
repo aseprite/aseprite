@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +81,11 @@ enum {
 
   GFX_ARROW_LEFT,
   GFX_ARROW_RIGHT,
+
+  GFX_BOX_SHOW,
+  GFX_BOX_HIDE,
+  GFX_BOX_LOCK,
+  GFX_BOX_UNLOCK,
 
   GFX_BITMAP_COUNT,
 };

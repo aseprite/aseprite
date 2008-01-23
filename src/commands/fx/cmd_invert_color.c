@@ -64,7 +64,7 @@ static void cmd_invert_color_execute(const char *argument)
   Image *image;
   Effect *effect;
 
-  image = GetImage();
+  image = GetImage(current_sprite);
   if (!image)
     return;
 

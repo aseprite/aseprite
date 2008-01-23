@@ -253,11 +253,12 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
       JWidget view = jwidget_get_view(widget);
       JRect vp = jview_get_viewport_position(view);
       BITMAP *bmp = create_bitmap(jrect_w(vp), jrect_h(vp));
+      BITMAP *icon;
       int scroll_x, scroll_y;
       bool selected_layer;
       int pos, layers;
       Layer *layer; 
-      int y, h;
+      int y, h, y_mid;
 
       jview_get_scroll(view, &scroll_x, &scroll_y);
 
@@ -273,7 +274,8 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
       layers = count_layers(sprite->set);
       for (pos=0; pos<layers; pos++) {
 	layer = get_layer_in_pos(sprite->set, pos);
-	
+	y_mid = y+h/2;
+
 	selected_layer = 
 	  (state != STATE_MOVING) ? (sprite->layer == layer):
 				    (layer == layer_box->layer);
@@ -288,6 +290,22 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 
 	hline(bmp, 0, y, bmp->w-1, makecol(0, 0, 0));
 	hline(bmp, 0, y+h, bmp->w-1, makecol(0, 0, 0));
+
+	/* draw the eye (readable flag) */
+	icon = get_gfx(layer_is_readable(layer) ? GFX_BOX_SHOW:
+						  GFX_BOX_HIDE);
+	if (selected_layer)
+	  jdraw_inverted_sprite(bmp, icon, 2, y_mid-4);
+	else
+	  draw_sprite(bmp, icon, 2, y_mid-4);
+
+	/* draw the padlock (writable flag) */
+	icon = get_gfx(layer_is_writable(layer) ? GFX_BOX_UNLOCK:
+						  GFX_BOX_LOCK);
+	if (selected_layer)
+	  jdraw_inverted_sprite(bmp, icon, 2+8+2, y_mid-4);
+	else
+	  draw_sprite(bmp, icon, 2+8+2, y_mid-4);
 
 #if 0
 	{
@@ -308,20 +326,23 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 #else
 	{
 	  int tabs = -2;
-	  int final_y = y+h/2;
 	  Layer *l = layer;
+
 	  while (l->gfxobj.type != GFXOBJ_SPRITE) {
 	    if (++tabs > 0) {
 /* 	      JList item = jlist_find(((Layer *)l->parent)->layers, l); */
-	      int y1 = final_y-LAYSIZE/2;
-	      int y2 = final_y+LAYSIZE/2;
-/* 	      int y2 = item->prev ? final_y+LAYSIZE/2 : final_y; */
+	      int y1 = y_mid-LAYSIZE/2;
+	      int y2 = y_mid+LAYSIZE/2;
+/* 	      int y2 = item->prev ? y_mid+LAYSIZE/2 : y_mid; */
 	      vline(bmp, tabs*16-1, y1, y2, makecol(0, 0, 0));
 	    }
 	    l = (Layer *)l->parent;
 	  }
+
+	  /* draw the layer name */
 	  textout(bmp, widget->text_font, layer->name,
-		  2+tabs*16, final_y-text_height(widget->text_font)/2,
+		  2+8+2+8+2+8+tabs*16,
+		  y_mid-text_height(widget->text_font)/2,
 		  selected_layer ?
 		  makecol(255, 255, 255): makecol(0, 0, 0));
 	}
@@ -390,22 +411,37 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
     case JM_BUTTONPRESSED:
       jwidget_hard_capture_mouse(widget);
 
-      if (msg->any.shifts & KB_SHIFT_FLAG) {
+      /* scroll */
+      if (msg->any.shifts & KB_SHIFT_FLAG ||
+	  msg->mouse.middle) {
 	state = STATE_SCROLLING;
 	jmouse_set_cursor(JI_CURSOR_MOVE);
       }
       else {
-	state = STATE_MOVING;
-	jmouse_set_cursor(JI_CURSOR_MOVE);
-
 	select_layer_motion(widget, layer_box, layer_box->cel_box);
 	layer_box->layer = current_sprite->layer;
 /* 	layer_box->rect = rect; */
 /* 	layer_box->rect_data = NULL; */
+
+	/* toggle icon status (eye or the padlock) */
+	if (msg->mouse.x < 2+8+2+8+2) {
+	  if (msg->mouse.x <= 2+8+1) {
+	    layer_box->layer->readable = !layer_box->layer->readable;
+	  }
+	  else {
+	    layer_box->layer->writable = !layer_box->layer->writable;
+	  }
+	  jwidget_dirty(widget);
+	}
+	/* move */
+	else {
+	  state = STATE_MOVING;
+	  jmouse_set_cursor(JI_CURSOR_MOVE);
+	}
       }
 
     case JM_MOTION:
-      if (jwidget_has_capture (widget)) {
+      if (jwidget_has_capture(widget)) {
 	/* scroll */
 	if (state == STATE_SCROLLING)
 	  control_scroll_motion(widget, layer_box, layer_box->cel_box);

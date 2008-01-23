@@ -62,7 +62,7 @@ void dialogs_draw_text(void)
   if (!is_interactive() || !current_sprite)
     return;
 
-  dest_image = GetImage();
+  dest_image = GetImage(current_sprite);
   if (!dest_image)
     return;
 

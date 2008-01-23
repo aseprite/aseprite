@@ -5,25 +5,25 @@ NEWS
 0.6
 ---
 
-+ Added support to load and save PNG files (through libpng).
++ Added support to load and save PNG files (through 'libpng').
 + Replaced the "List" menu with the tabs selector.
 + Better file selector.
 + Restructured all the menus (more user friendly options).
   - Temporaly removed a lot of complex functionality: 
     Mask-Repository (but you can use .msk files yet), Draw-Text,
-    Layer-Sets and Link-Cels.
+    Layer-Sets and Linked-Cels.
 + New XML format for the menus.
 - Removed menu scripting customization.
 - Removed screen saver.
 - Removed sessions.
-+ GUI enhanced:
++ Enhanced GUI:
   + more borders for windows and more spacing between widgets.
-  + better mouse behavior (in Windows).
-+ Finished the support for ICO files.
+  + better mouse behavior (now in Windows the mouse is captured).
 + Finally screen scaling supported (with double-buffering). This means
   that you can use a screen of 320x240 between a window of 640x480
   (screen-scaling x2). This is the new default video mode for ASE.
-+ Fixed compilations errors for Allegro 4.2
++ Fixed other minor problems when you drawn in 'tiled mode' or 'paste'
+  the clipboard.
 
 0.5
 ---

@@ -51,9 +51,8 @@
 
 #endif
 
-Image *GetImage(void)
+Image *GetImage(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
   Image *image = NULL;
 
   if (sprite && sprite->layer && layer_is_image(sprite->layer)) {
@@ -128,7 +127,7 @@ void LoadPalette(const char *filename)
 }
 
 /* clears the mask region in the current sprite with the BG color */
-void ClearMask(void)
+void ClearMask(const char *str_color)
 {
   Sprite *sprite = current_sprite;
   int x, y, u, v, putx, puty;
@@ -138,43 +137,43 @@ void ClearMask(void)
   int color;
 
   if (sprite) {
-    image = GetImage2 (sprite, &x, &y, NULL);
+    image = GetImage2(sprite, &x, &y, NULL);
     if (image) {
-      color = get_color_for_image (sprite->imgtype, get_bg_color ());
+      color = get_color_for_image(sprite->imgtype, str_color);
 
-      if (mask_is_empty (sprite->mask)) {
-	if (undo_is_enabled (sprite->undo))
-	  undo_image (sprite->undo, image, 0, 0, image->w, image->h);
+      if (mask_is_empty(sprite->mask)) {
+	if (undo_is_enabled(sprite->undo))
+	  undo_image(sprite->undo, image, 0, 0, image->w, image->h);
 
 	/* clear all */
-	image_clear (image, color);
+	image_clear(image, color);
       }
       else {
-	int x1 = MAX (0, sprite->mask->x);
-	int y1 = MAX (0, sprite->mask->y);
-	int x2 = MIN (image->w-1, sprite->mask->x+sprite->mask->w-1);
-	int y2 = MIN (image->h-1, sprite->mask->y+sprite->mask->h-1);
+	int x1 = MAX(0, sprite->mask->x);
+	int y1 = MAX(0, sprite->mask->y);
+	int x2 = MIN(image->w-1, sprite->mask->x+sprite->mask->w-1);
+	int y2 = MIN(image->h-1, sprite->mask->y+sprite->mask->h-1);
 
 	/* do nothing */
 	if (x1 > x2 || y1 > y2)
 	  return;
 
-	if (undo_is_enabled (sprite->undo))
-	  undo_image (sprite->undo, image, x1, y1, x2-x1+1, y2-y1+1);
+	if (undo_is_enabled(sprite->undo))
+	  undo_image(sprite->undo, image, x1, y1, x2-x1+1, y2-y1+1);
 
 	/* clear the masked zones */
 	for (v=0; v<sprite->mask->h; v++) {
-	  d = div (0, 8);
+	  d = div(0, 8);
 	  address = ((ase_uint8 **)sprite->mask->bitmap->line)[v]+d.quot;
 
 	  for (u=0; u<sprite->mask->w; u++) {
 	    if ((*address & (1<<d.rem))) {
 	      putx = u+sprite->mask->x-x;
 	      puty = v+sprite->mask->y-y;
-	      image_putpixel (image, putx, puty, color);
+	      image_putpixel(image, putx, puty, color);
 	    }
 
-	    _image_bitmap_next_bit (d, address);
+	    _image_bitmap_next_bit(d, address);
 	  }
 	}
       }

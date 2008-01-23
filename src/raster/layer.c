@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,9 @@ static bool has_cels(Layer *layer, int frame);
     layer->layers = NULL;			\
   } while (0);
 
-/* creates a new empty (without frames) normal (image) layer */
+/**
+ * Creates a new empty (without frames) normal (image) layer.
+ */
 Layer *layer_new(Sprite *sprite)
 {
   Layer *layer = (Layer *)gfxobj_new(GFXOBJ_LAYER_IMAGE, sizeof(Layer));
@@ -167,19 +169,41 @@ void layer_free(Layer *layer)
   gfxobj_free((GfxObj *)layer);
 }
 
-/* returns TRUE if "layer" is a normal layer type (an image layer)  */
+/**
+ * Returns TRUE if "layer" is a normal layer type (an image layer)
+ */
 int layer_is_image(const Layer *layer)
 {
   return (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) ? TRUE: FALSE;
 }
 
-/* returns TRUE if "layer" is a set of layers */
+/**
+ * Returns TRUE if "layer" is a set of layers
+ */
 int layer_is_set(const Layer *layer)
 {
   return (layer->gfxobj.type == GFXOBJ_LAYER_SET) ? TRUE: FALSE;
 }
 
-/* gets the previous layer of "layer" that are in the parent set */
+/**
+ * Returns TRUE if the layer is readable/viewable.
+ */
+bool layer_is_readable(const Layer *layer)
+{
+  return layer->readable;
+}
+
+/**
+ * Returns TRUE if the layer is writable/editable.
+ */
+bool layer_is_writable(const Layer *layer)
+{
+  return layer->writable;
+}
+
+/**
+ * Gets the previous layer of "layer" that are in the parent set.
+ */
 Layer *layer_get_prev(Layer *layer)
 {
   if (layer->parent && layer->parent->type == GFXOBJ_LAYER_SET) {
@@ -371,7 +395,10 @@ Layer *layer_flatten(Layer *layer, int x, int y, int w, int h, int frmin, int fr
   return flat_layer;
 }
 
-/* returns TRUE if the "layer" (or him childs) has cels to render in frame */
+/**
+ * Returns TRUE if the "layer" (or him childs) has cels to render in
+ * frame.
+ */
 static bool has_cels(Layer *layer, int frame)
 {
   if (!layer->readable)

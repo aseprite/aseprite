@@ -1,3 +1,17 @@
+2008-01-23  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/editor/editor.c (show_drawing_cursor): Added the
+	'forbidden' cursor.
+
+	* src/modules/editors.c (editors_draw_sprite_tiled): Fixed for
+	cels with differents position.
+
+	* src/dialogs/filmedit.c (layer_box_msg_proc): Added buttons to
+	toggle readable/writable flags to layers.
+
+	* src/raster/sprite.h (struct Sprite): Added 'locked' and 'mutex'
+	fields.
+
 2008-01-21  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/jinete/jmanager.c (jmanager_generate_messages): Focus magnet

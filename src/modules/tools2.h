@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 void SetBrush(const char *string);
 void SetDrawMode(const char *string);
-void ToolTrace(const char *string);
+void ToolTrace(const char *string, const char *color);
 
 void ResetConfig(void);
 void RestoreConfig(void);

@@ -119,7 +119,7 @@ void SetDrawMode(const char *string)
                 rectangle, ellipse
      uses the current FG color
  */
-void ToolTrace(const char *string)
+void ToolTrace(const char *string, const char *color)
 {
   Sprite *sprite = current_sprite;
 
@@ -158,7 +158,7 @@ void ToolTrace(const char *string)
     }
 
     if (npoints > 0) {
-      do_tool_points(sprite, current_tool, get_fg_color(), npoints, x, y);
+      do_tool_points(sprite, current_tool, color, npoints, x, y);
       jfree(x);
       jfree(y);
     }
@@ -200,10 +200,6 @@ static int cfg_jpeg_method;
 void ResetConfig(void)
 {
   JRect rect;
-
-  /* colors */
-  set_fg_color(DEFAULT_FG);
-  set_bg_color(DEFAULT_BG);
 
   /* movement */
   cfg_options_move_mask = get_config_bool("QuickMovement", "UseMask", TRUE);
@@ -275,10 +271,6 @@ void ResetConfig(void)
 
 void RestoreConfig(void)
 {
-  /* colors */
-  set_fg_color(NULL);
-  set_bg_color(NULL);
-
   /* movement */
   set_config_bool("QuickMovement", "UseMask", cfg_options_move_mask);
 
