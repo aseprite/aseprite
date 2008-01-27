@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,6 @@
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
-/* #include "core/cfg.h" */
-/* #include "core/core.h" */
-/* #include "dialogs/options.h" */
 #include "modules/gui.h"
 #include "modules/palette.h"
 
@@ -52,8 +49,12 @@
 static int new_card, new_w, new_h, new_depth, new_scaling;
 static int old_card, old_w, old_h, old_depth, old_scaling;
 
+static int timer_to_accept;
+static int seconds_to_accept;
+
 static void show_dialog(void);
-static void try_new_gfx_mode(void);
+static bool try_new_gfx_mode(void);
+static bool alert_msg_proc(JWidget widget, JMessage msg);
 
 static void cmd_configure_screen_execute(const char *argument)
 {
@@ -69,6 +70,7 @@ static void cmd_configure_screen_execute(const char *argument)
   new_w = old_w;
   new_h = old_h;
   new_depth = old_depth;
+  new_scaling = old_scaling;
 
   show_dialog();
 }
@@ -113,7 +115,7 @@ static void show_dialog(void)
   jcombobox_select_string(resolution, buf);
 
   jcombobox_select_index(color_depth, DEPTH_TO_INDEX(old_depth));
-  jcombobox_select_index(pixel_scale, get_screen_scaling()-1);
+  jcombobox_select_index(pixel_scale, old_scaling-1);
 
   if (is_windowed_mode())
     jwidget_deselect(fullscreen);
@@ -138,13 +140,43 @@ static void show_dialog(void)
 
     new_scaling = jcombobox_get_selected_index(pixel_scale)+1;
 
-    try_new_gfx_mode();
+    /* setup graphics mode */
+    if (try_new_gfx_mode()) {
+      JWidget alert_window = jalert_new("Confirm Screen"
+					"<<Do you want to keep this screen resolution?"
+					"<<In 10 seconds the screen will be restored."
+					"||&Yes||&No");
+      jwidget_add_hook(alert_window, -1, alert_msg_proc, NULL);
+
+      seconds_to_accept = 10;
+      timer_to_accept = jmanager_add_timer(alert_window, 1000);
+      jmanager_start_timer(timer_to_accept);
+
+      jwindow_open_fg(alert_window);
+      jmanager_remove_timer(timer_to_accept);
+
+      if (jwindow_get_killer(alert_window) != NULL &&
+	  ustrcmp(jwidget_get_text(jwindow_get_killer(alert_window)), "&OK") == 0) {
+	/* do nothing */
+      }
+      else {
+	new_card = old_card;
+	new_w = old_w;
+	new_h = old_h;
+	new_depth = old_depth;
+	new_scaling = old_scaling;
+
+	try_new_gfx_mode();
+      }
+
+      jwidget_free(alert_window);
+    }
   }
 
   jwidget_free(window);
 }
 
-static void try_new_gfx_mode(void)
+static bool try_new_gfx_mode(void)
 {
   /* try change the new graphics mode */
   set_color_depth(new_depth);
@@ -172,6 +204,8 @@ static void try_new_gfx_mode(void)
 
       console_printf(_("Error setting graphics mode: %dx%d %d bpp\n"),
 		     new_w, new_h, new_depth);
+
+      return FALSE;
     }
   }
   /* the new graphics mode is working */
@@ -193,6 +227,31 @@ static void try_new_gfx_mode(void)
     jwindow_remap(app_get_top_window());
     jmanager_refresh_screen();
   }
+
+  return TRUE;
+}
+
+static bool alert_msg_proc(JWidget widget, JMessage msg)
+{
+  if (msg->type == JM_TIMER) {
+    if (msg->timer.timer_id == timer_to_accept) {
+      JList labels = jwidget_get_children(jwidget_find_name(widget, "labels"));
+      char buf[512];
+
+      seconds_to_accept -= msg->timer.count;
+      seconds_to_accept = MAX(0, seconds_to_accept);
+
+      usprintf(buf, "In %d seconds the screen will be restored.", seconds_to_accept);
+      jwidget_set_text(labels->end->next->next->data, buf);
+
+      if (seconds_to_accept == 0) {
+	jmanager_stop_timer(timer_to_accept);
+	jwindow_close(widget, NULL);
+	return TRUE;
+      }
+    }
+  }
+  return FALSE;
 }
 
 Command cmd_configure_screen = {
