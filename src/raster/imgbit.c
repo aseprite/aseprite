@@ -263,7 +263,7 @@ static void bitmap_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
       color[0] = makecol8 (0, 0, 0);
       color[1] = makecol8 (255, 255, 255);
 
-#ifdef GFX_MODEX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX
       if (is_planar_bitmap (bmp)) {
         for (y=0; y<image->h; y++) {
 	  address = LINES(image)[y];
@@ -294,7 +294,7 @@ static void bitmap_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y)
 
           _y++;
         }
-#ifdef GFX_MODEX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX
       }
 #endif
       break;

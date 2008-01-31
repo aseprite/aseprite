@@ -456,9 +456,9 @@ static void load_config_file(CONFIG **config, AL_CONST char *filename, AL_CONST 
       return;
    }
 
-#if (MAKE_VERSION(4, 2, 1) < MAKE_VERSION(ALLEGRO_VERSION,		\
-					  ALLEGRO_SUB_VERSION,		\
-					  ALLEGRO_WIP_VERSION))
+#if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,		\
+					   ALLEGRO_SUB_VERSION,		\
+					   ALLEGRO_WIP_VERSION))
    length = file_size(filename);
 #else
    length = file_size_ex(filename);

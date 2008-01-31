@@ -12,7 +12,7 @@
       </box>
       <box vertical homogeneous expansive>
         <label text="" name="frame" />
-        <entry maxsize=32 name="frlen" />
+        <entry maxsize=32 name="frlen" magnetic />
       </box>
     </box>
     <box horizontal homogeneous>

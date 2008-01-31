@@ -61,13 +61,19 @@
 
 /**************************************************************/
 
+#ifdef ALLEGRO_WINDOWS
+#  define DEF_SCALE 2
+#else
+#  define DEF_SCALE 1
+#endif
+
 static struct {
   int width;
   int height;
   int scale;
-} try_resolutions[] = { { 1024, 768, 2 },
-			{  800, 600, 2 },
-			{  640, 480, 2 },
+} try_resolutions[] = { { 1024, 768, DEF_SCALE },
+			{  800, 600, DEF_SCALE },
+			{  640, 480, DEF_SCALE },
 			{  320, 240, 1 },
 			{  320, 200, 1 },
 			{    0,   0, 0 } };

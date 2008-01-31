@@ -216,7 +216,7 @@ static void grayscale_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y
   switch (depth) {
 
     case 8:
-#ifdef GFX_MODEX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX
       if (is_planar_bitmap(bmp)) {
         for (y=0; y<image->h; y++) {
           bmp_address = (unsigned long)bmp->line[_y];
@@ -244,7 +244,7 @@ static void grayscale_to_allegro(const Image *image, BITMAP *bmp, int _x, int _y
 
           _y++;
         }
-#ifdef GFX_MODEX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX
       }
 #endif
       break;

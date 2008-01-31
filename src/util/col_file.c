@@ -29,9 +29,9 @@
 /* loads a COL file (Animator and Animator Pro format) */
 RGB *load_col_file(const char *filename)
 {
-#if (MAKE_VERSION(4, 2, 1) < MAKE_VERSION(ALLEGRO_VERSION,		\
-					  ALLEGRO_SUB_VERSION,		\
-					  ALLEGRO_WIP_VERSION))
+#if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,		\
+					   ALLEGRO_SUB_VERSION,		\
+					   ALLEGRO_WIP_VERSION))
   int size = file_size(filename);
 #else
   int size = file_size_ex(filename);
