@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "jinete/jinete.h"
 
 #include "console/console.h"
+#include "core/app.h"
 #include "file/file.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -128,7 +129,7 @@ void SaveSprite(const char *filename)
   }
 
   sprite_set_filename(current_sprite, filename);
-  rebuild_sprite_list();
+  app_realloc_sprite_list();
 
   if (sprite_save(current_sprite) == 0)
     sprite_mark_as_saved(current_sprite);

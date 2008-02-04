@@ -232,7 +232,7 @@ JHook jwidget_get_hook(JWidget widget, int type)
  */
 void *jwidget_get_data(JWidget widget, int type)
 {
-  JLink link;
+  register JLink link;
   assert_valid_widget(widget);
 
   JI_LIST_FOR_EACH(widget->hooks, link) {

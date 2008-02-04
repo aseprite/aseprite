@@ -1,10 +1,11 @@
 High priority work
 ------------------
 
-- the user_data of hook_signal should be void*.
 - search for TODO;
-- Problems:
-  - test UNDO in 64bits plataforms (reported by Jon Rafkind);
+- rename jcombox.c to jcombobox.c
+- fix a bug in the film editor when move the separator (panel) outside
+  the screen (to left or right)
+- the user_data of hook_signal should be void*.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);

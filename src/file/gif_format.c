@@ -31,7 +31,6 @@
 
 #include "jinete/jbase.h"
 
-#include "console/console.h"
 #include "file/file.h"
 #include "modules/palette.h"
 #include "raster/raster.h"
@@ -43,8 +42,8 @@
 
 #endif
 
-static Sprite *load_GIF(const char *filename);
-static int save_GIF(Sprite *sprite);
+static bool load_GIF(FileOp *fop);
+static bool save_GIF(FileOp *fop);
 
 FileFormat format_gif =
 {
@@ -78,7 +77,7 @@ static void render_gif_frame(GIF_FRAME *frame, Image *image,
 /* load_GIF:
  * Loads a GIF into a sprite.
  */
-static Sprite *load_GIF(const char *filename)
+static bool load_GIF(FileOp *fop)
 {
   GIF_ANIMATION *gif = NULL;
   Sprite *sprite = NULL;
@@ -90,13 +89,10 @@ static Sprite *load_GIF(const char *filename)
   PALETTE opal, npal;
   int i, c;
 
-  add_progress(100);
-  gif = gif_load_animation(filename, do_progress);
-  del_progress();
-
+  gif = gif_load_animation(fop->filename, fop_progress, fop);
   if (!gif) {
-    console_printf(_("Error loading GIF file.\n"));
-    return NULL;
+    fop_error(fop, _("Error loading GIF file.\n"));
+    return FALSE;
   }
 
   current_image = image_new(IMAGE_INDEXED, gif->width, gif->height);
@@ -106,16 +102,16 @@ static Sprite *load_GIF(const char *filename)
     if (current_image_old) image_free(current_image_old);
 
     gif_destroy_animation(gif);
-    console_printf(_("Error creating temporary image.\n"));
-    return NULL;
+    fop_error(fop, _("Error creating temporary image.\n"));
+    return FALSE;
   }
 
   sprite = sprite_new(IMAGE_INDEXED, gif->width, gif->height);
   if (!sprite) {
     gif_destroy_animation(gif);
     image_free(current_image);
-    console_printf(_("Error creating sprite.\n"));
-    return NULL;
+    fop_error(fop, _("Error creating sprite.\n"));
+    return FALSE;
   }
 
   sprite_set_frames(sprite, gif->frames_count);
@@ -125,8 +121,8 @@ static Sprite *load_GIF(const char *filename)
     gif_destroy_animation(gif);
     image_free(current_image);
     sprite_free(sprite);
-    console_printf(_("Error creating main layer.\n"));
-    return NULL;
+    fop_error(fop, _("Error creating main layer.\n"));
+    return FALSE;
   }
 
   layer_add_layer(sprite->set, layer);
@@ -180,7 +176,7 @@ static Sprite *load_GIF(const char *filename)
     if (!cel || !image) {
       if (cel) cel_free(cel);
       if (image) image_free(image);
-      console_printf(_("Error creating cel %d.\n"), i);
+      fop_error(fop, _("Error creating cel %d.\n"), i);
       break;
     }
 
@@ -260,7 +256,8 @@ static Sprite *load_GIF(const char *filename)
   image_free(current_image);
   image_free(current_image_old);
 
-  return sprite;
+  fop->sprite = sprite;
+  return TRUE;
 }
 
 /* TODO: find the colors that are used and resort the palette */
@@ -283,8 +280,9 @@ static int max_used_index(Image *image)
  *  TODO: transparent index is not stored. And reserve a single color
  *  as transparent.
  */
-static int save_GIF(Sprite *sprite)
+static bool save_GIF(FileOp *fop)
 {
+  Sprite *sprite = fop->sprite;
   GIF_ANIMATION *gif;
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
@@ -300,16 +298,16 @@ static int save_GIF(Sprite *sprite)
   if (!bmp || !old) {
     if (bmp) image_free(bmp);
     if (old) image_free(old);
-    console_printf(_("Not enough memory for temporary bitmaps.\n"));
-    return -1;
+    fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
+    return FALSE;
   }
 
   gif = gif_create_animation(sprite->frames);
   if (!gif) {
     image_free(bmp);
     image_free(old);
-    console_printf(_("Error creating GIF structure.\n"));
-    return -1;
+    fop_error(fop, _("Error creating GIF structure.\n"));
+    return FALSE;
   }
 
   gif->width = sprite->w;
@@ -327,8 +325,6 @@ static int save_GIF(Sprite *sprite)
   /* avoid compilation warnings */
   x1 = y1 = x2 = y2 = 0;
 
-  add_progress(2);
-  add_progress(sprite->frames);
   for (i = 0; i < sprite->frames; i++) {
     /* frame palette */
     palette_copy(npal, sprite_get_palette(sprite, i));
@@ -442,19 +438,9 @@ static int save_GIF(Sprite *sprite)
     /* update the old image and color-map to the new ones to compare later */
     image_copy(old, bmp, 0, 0);
     palette_copy(opal, npal);
-
-    do_progress(i);
   }
-  del_progress();
-  do_progress(1);
 
-  add_progress(100);
-  ret = gif_save_animation(sprite->filename, gif, do_progress);
-  del_progress();
-
-  do_progress(2);
-  del_progress();
-
+  ret = gif_save_animation(fop->filename, gif, fop_progress, fop);
   gif_destroy_animation(gif);
-  return ret;
+  return ret == 0 ? TRUE: FALSE;
 }

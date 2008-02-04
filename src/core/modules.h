@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,12 @@
 #ifndef CORE_MODULES_H
 #define CORE_MODULES_H
 
+#include "jinete/jbase.h"
+
 #define REQUIRE_INTERFACE    1
 #define REQUIRE_SCRIPTING    2
 
-int modules_init(int requirements);
+bool modules_init(int requirements);
 void modules_exit(void);
 
 #endif /* CORE_MODULES_H */

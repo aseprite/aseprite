@@ -31,6 +31,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <allegro/unicode.h>
 
 void *jmalloc(unsigned long n_bytes)
 {
@@ -80,6 +81,6 @@ void jfree(void *mem)
 
 char *jstrdup(const char *string)
 {
-  return strdup(string);
+  return ustrdup(string);
 }
 

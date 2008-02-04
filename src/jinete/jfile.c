@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
 
@@ -133,12 +134,27 @@ static JWidget convert_tag_to_widget(Tag *tag)
 	Attr *right = tag_get_attr(tag, "right");
 	Attr *top = tag_get_attr(tag, "top");
 	Attr *bottom = tag_get_attr(tag, "bottom");
+	Attr *bevel = tag_get_attr(tag, "bevel");
 
 	jwidget_set_align(widget,
-			    (left ? JI_LEFT:
-			     right ? JI_RIGHT: JI_CENTER) |
-			    (top ? JI_TOP:
-			     bottom ? JI_BOTTOM: JI_MIDDLE));
+			  (left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
+			  (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+
+	if (bevel) {
+	  int c, b[4];
+	  char *tok;
+
+	  for (c=0; c<4; ++c)
+	    b[c] = 0;
+
+	  for (tok=ustrtok(bevel->value, " "), c=0;
+	       tok;
+	       tok=ustrtok(NULL, " "), ++c) {
+	    if (c < 4)
+	      b[c] = ustrtol(tok, NULL, 10);
+	  }
+	  jbutton_set_bevel(widget, b[0], b[1], b[2], b[3]);
+	}
       }
     }
   }
@@ -155,10 +171,8 @@ static JWidget convert_tag_to_widget(Tag *tag)
 	Attr *bottom = tag_get_attr(tag, "bottom");
 
 	jwidget_set_align(widget,
-			    (center ? JI_CENTER:
-			     right ? JI_RIGHT: JI_LEFT) |
-			    (top ? JI_TOP:
-			     bottom ? JI_BOTTOM: JI_MIDDLE));
+			  (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
+			  (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
       }
     }
   }

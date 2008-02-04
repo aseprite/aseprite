@@ -64,6 +64,7 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtextbox.h"
 #include "jinete/jtheme.h"
+#include "jinete/jthread.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"

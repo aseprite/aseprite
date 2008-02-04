@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -315,7 +315,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 /*       Tabs *tabs = jwidget_get_data(parent, tabs_type()); */
 /*       int dir = (int)jwidget_get_data(widget, tabs_type()); */
       int dir = jmanager_get_capture() == tabs->button_left ? -1: 1;
-      set_scroll_x(widget, tabs->scroll_x + dir*8);
+      set_scroll_x(widget, tabs->scroll_x + dir*8*msg->timer.count);
       break;
     }
 

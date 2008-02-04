@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include "jinete/jbase.h"
 #include "jinete/jlist.h"
+#include "jinete/jmutex.h"
 
 #include "raster/gfxobj.h"
 
@@ -35,46 +36,79 @@
 /*   void *data; */
 /* } Property; */
 
+static JMutex objects_mutex;
 static unsigned int object_id = 0;	/* last object ID created */
 static JList objects;			/* graphics objects list */
 
-GfxObj *gfxobj_new (int type, int size)
+bool gfxobj_init(void)
+{
+  objects_mutex = jmutex_new();
+  if (!objects_mutex)
+    return FALSE;
+
+  objects = jlist_new();
+  if (!objects)
+    return FALSE;
+
+  return TRUE;
+}
+
+void gfxobj_exit(void)
+{
+  jlist_free(objects);
+  jmutex_free(objects_mutex);
+}
+
+GfxObj *gfxobj_new(int type, int size)
 {
   GfxObj *gfxobj;
 
-  gfxobj = jmalloc (size);
+  gfxobj = jmalloc(size);
   if (!gfxobj)
     return NULL;
 
-  gfxobj->type = type;
-  gfxobj->id = ++object_id;
-/*   gfxobj->properties = NULL; */
-
-  if (!objects)
-    objects = jlist_new();
-  jlist_append(objects, gfxobj);
+  jmutex_lock(objects_mutex);
+  {
+    gfxobj->type = type;
+    gfxobj->id = ++object_id;
+    /* gfxobj->properties = NULL; */
+    jlist_append(objects, gfxobj);
+  }
+  jmutex_unlock(objects_mutex);
 
   return gfxobj;
 }
 
-void gfxobj_free (GfxObj *gfxobj)
+void gfxobj_free(GfxObj *gfxobj)
 {
-  jlist_remove (objects, gfxobj);
-  jfree (gfxobj);
+  jmutex_lock(objects_mutex);
+  {
+    jlist_remove(objects, gfxobj);
+  }
+  jmutex_unlock(objects_mutex);
+
+  jfree(gfxobj);
 }
 
-GfxObj *gfxobj_find (unsigned int id)
+GfxObj *gfxobj_find(unsigned int id)
 {
+  GfxObj *ret = NULL;
   JLink link;
 
+  jmutex_lock(objects_mutex);
+  {
   JI_LIST_FOR_EACH(objects, link)
-    if (((GfxObj *)link->data)->id == id)
-      return (GfxObj *)link->data;
+    if (((GfxObj *)link->data)->id == id) {
+      ret = (GfxObj *)link->data;
+      break;
+    }
+  }
+  jmutex_unlock(objects_mutex);
 
-  return NULL;
+  return ret;
 }
 
-void _gfxobj_set_id (GfxObj *gfxobj, int id)
+void _gfxobj_set_id(GfxObj *gfxobj, int id)
 {
   /* TODO */
   /* ji_assert (!gfxobj_find (id)); */
@@ -83,7 +117,7 @@ void _gfxobj_set_id (GfxObj *gfxobj, int id)
 }
 
 #if 0
-void gfxobj_set_data (GfxObj *gfxobj, const char *key, void *data)
+void gfxobj_set_data(GfxObj *gfxobj, const char *key, void *data)
 {
   Property *property;
 

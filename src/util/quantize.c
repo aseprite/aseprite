@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -304,10 +304,10 @@ int quantize_bitmaps1 (Stock *stock, RGB *pal, int *bmp_i, int fill_other)
 /*Create the tree structure*/
  tree=create_node(0,0,0,64,64,64,0);
 /*Scan the bitmaps*/
- add_progress(stock->nimage+1);
+/*  add_progress(stock->nimage+1); */
  for (c_bmp=0;c_bmp<stock->nimage;c_bmp++) {
   if (stock->image[c_bmp]) {
-   add_progress(stock->image[c_bmp]->h);
+/*    add_progress(stock->image[c_bmp]->h); */
    for (y=0;y<stock->image[c_bmp]->h;y++) {
     for (x=0;x<stock->image[c_bmp]->w;x++) {
      c=stock->image[c_bmp]->method->getpixel(stock->image[c_bmp],x,y);
@@ -327,11 +327,11 @@ int quantize_bitmaps1 (Stock *stock, RGB *pal, int *bmp_i, int fill_other)
       node=node->parent;
      } while (node);
     }
-    do_progress(y);
+/*     do_progress(y); */
    }
-   del_progress();
+/*    del_progress(); */
   }
-  do_progress(c_bmp);
+/*   do_progress(c_bmp); */
  }
 /*Collapse empty nodes in the tree, and count leaves*/
  tree=collapse_empty(tree,&n_colours);
@@ -341,19 +341,19 @@ int quantize_bitmaps1 (Stock *stock, RGB *pal, int *bmp_i, int fill_other)
  }
 /*Collapse nodes until there are few enough to fit in the palette*/
  if (n_colours > n_entries) {
-  int n_colours1 = n_colours;
-  add_progress(n_colours1 - n_entries);
+/*   int n_colours1 = n_colours; */
+/*   add_progress(n_colours1 - n_entries); */
   while (n_colours>n_entries) {
    Ep=0xFFFFFFFFul;
    minimum_Ep(tree,&Ep);
    tree=collapse_nodes(tree,&n_colours,n_entries,Ep);
 
-   if (n_colours > n_entries)
-    do_progress(n_colours1 - n_colours);
+/*    if (n_colours > n_entries) */
+/*     do_progress(n_colours1 - n_colours); */
   }
-  del_progress();
+/*   del_progress(); */
  }
- del_progress();
+/*  del_progress(); */
 /*Fill palette*/
  c=0;
  fill_palette(tree,&c,pal,1);

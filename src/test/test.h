@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-extern FileType filetype_ase;
-extern FileType filetype_bmp;
-extern FileType filetype_fli;
-extern FileType filetype_jpeg;
-extern FileType filetype_pcx;
-extern FileType filetype_tga;
-extern FileType filetype_gif;
-extern FileType filetype_ico;
-extern FileType filetype_png;
+#ifndef TEST_TEST_H
+#define TEST_TEST_H
 
-static FileType *filetypes[] =
+#include <assert.h>
+#include <stdio.h>
+#include <allegro.h>
+
+void trace(const char *format, ...)
 {
-  &filetype_ase,
-  &filetype_bmp,
-  &filetype_fli,
-  &filetype_jpeg,
-  &filetype_pcx,
-  &filetype_tga,
-  &filetype_gif,
-  &filetype_ico,
-  &filetype_png,
-  NULL
-};
+  char buf[4096];
+  va_list ap;
+
+  va_start(ap, format);
+  uvszprintf(buf, sizeof(buf), format, ap);
+  va_end(ap);
+
+  fputs(buf, stdout);
+  fflush(stdout);
+}
+
+#endif	/* TEST_TEST_H */

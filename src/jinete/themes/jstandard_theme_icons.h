@@ -296,6 +296,18 @@ static unsigned char default_theme_iclose[66] = {
   0, 0, 0, 0, 0, 0, 0, 0
 };
 
+static unsigned char default_theme_icombobox[66] = {
+  8, 8,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0,
+  1, 1, 1, 1, 1, 1, 1, 0,
+  0, 1, 1, 1, 1, 1, 0, 0,
+  0, 0, 1, 1, 1, 0, 0, 0,
+  0, 0, 0, 1, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0
+};
+
 static unsigned char default_theme_imenum[66] = {
   8, 8,
   0, 0, 0, 0, 0, 0, 0, 0,

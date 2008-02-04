@@ -1,0 +1,30 @@
+<!-- ASE - Allegro Sprite Editor -->
+<!-- Copyright (C) 2001-2005, 2007, 2008 by David A. Capello -->
+
+<!-- Read "LEGAL.txt" for more information. -->
+
+<window text="" name="file_selector">
+  <box vertical>
+    <box horizontal>
+      <box horizontal noborders>
+	<button text="" name="goback" bevel="2 0 2 0" />
+	<button text="" name="goforward" bevel="0 2 0 2" />
+      </box>
+      <button text="" name="goup" />
+      <combobox name="location" expansive />
+    </box>
+    <box vertical expansive name="box" />
+    <box horizontal>
+      <label text="Name:" />
+      <entry text="" maxsize=256 name="filename" expansive />
+      <combobox name="filetype" minwidth=70 />
+    </box>
+    <box horizontal>
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="ok" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
+    </box>
+  </box>
+</window>

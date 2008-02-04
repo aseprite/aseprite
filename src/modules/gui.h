@@ -45,10 +45,6 @@ void save_window_pos(JWidget window, const char *section);
 
 JWidget load_widget(const char *filename, const char *name);
 
-void rebuild_lock(void);
-void rebuild_unlock(void);
-void rebuild_root_menu(void);
-void rebuild_sprite_list(void);
 void rebuild_recent_list(void);
 
 void hook_signal(JWidget widget,
@@ -64,5 +60,7 @@ void set_gfxicon_in_button(JWidget button, int gfx_id);
 JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4);
 /* void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4); */
+
+void add_gui_monitor(bool (*proc)(void *data), void *data);
 
 #endif /* MODULES_GUI_H */

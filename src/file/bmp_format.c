@@ -25,14 +25,13 @@
 #include <allegro/color.h>
 #include <allegro/file.h>
 
-#include "console/console.h"
 #include "file/file.h"
 #include "raster/raster.h"
 
 #endif
 
-static Sprite *load_BMP(const char *filename);
-static int save_BMP(Sprite *sprite);
+static bool load_BMP(FileOp *fop);
+static bool save_BMP(FileOp *fop);
 
 FileFormat format_bmp =
 {
@@ -162,7 +161,7 @@ static int read_os2_bminfoheader(PACKFILE *f, BITMAPINFOHEADER *infoheader)
 /* read_bmicolors:
  *  Loads the color palette for 1,4,8 bit formats.
  */
-static void read_bmicolors(int ncols, PACKFILE *f,int win_flag)
+static void read_bmicolors(FileOp *fop, int ncols, PACKFILE *f,int win_flag)
 {
    int i, r, g, b;
 
@@ -170,7 +169,7 @@ static void read_bmicolors(int ncols, PACKFILE *f,int win_flag)
       b = pack_getc(f) / 4;
       g = pack_getc(f) / 4;
       r = pack_getc(f) / 4;
-      file_sequence_set_color(i, r, g, b);
+      fop_sequence_set_color(fop, i, r, g, b);
       if (win_flag)
 	 pack_getc(f);
    }
@@ -280,7 +279,7 @@ static void read_24bit_line(int length, PACKFILE *f, Image *image, int line)
 /* read_image:
  *  For reading the noncompressed BMP image format.
  */
-static void read_image(PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
+static void read_image(PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader, FileOp *fop)
 {
    int i, line;
 
@@ -306,8 +305,7 @@ static void read_image(PACKFILE *f, Image *image, AL_CONST BITMAPINFOHEADER *inf
 	    break;
       }
 
-      if (infoheader->biHeight > 1)
-	do_progress(100 * i / (infoheader->biHeight-1));
+      fop_progress(fop, (float)(i+1) / (float)(infoheader->biHeight));
    }
 }
 
@@ -500,27 +498,23 @@ static void read_bitfields_image(PACKFILE *f, Image *image, int bpp, BITMAPINFOH
   }
 }
 
-static Sprite *load_BMP(const char *filename)
+static bool load_BMP(FileOp *fop)
 {
   BITMAPFILEHEADER fileheader;
   BITMAPINFOHEADER infoheader;
   Image *image;
-  Sprite *sprite;
   PACKFILE *f;
   int ncol;
   unsigned long biSize;
   int type, bpp = 0;
 
-  f = pack_fopen(filename, F_READ);
-  if (!f) {
-    if (!file_sequence_sprite())
-      console_printf(_("Error opening file.\n"));
-    return NULL;
-  }
+  f = pack_fopen(fop->filename, F_READ);
+  if (!f)
+    return FALSE;
 
   if (read_bmfileheader(f, &fileheader) != 0) {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
  
   biSize = pack_igetl(f);
@@ -528,28 +522,28 @@ static Sprite *load_BMP(const char *filename)
   if (biSize == WININFOHEADERSIZE) {
     if (read_win_bminfoheader(f, &infoheader) != 0) {
       pack_fclose(f);
-      return NULL;
+      return FALSE;
     }
     /* compute number of colors recorded */
     ncol = (fileheader.bfOffBits - 54) / 4;
 
     if (infoheader.biCompression != BI_BITFIELDS)
-      read_bmicolors(ncol, f, 1);
+      read_bmicolors(fop, ncol, f, 1);
   }
   else if (biSize == OS2INFOHEADERSIZE) {
     if (read_os2_bminfoheader(f, &infoheader) != 0) {
       pack_fclose(f);
-      return NULL;
+      return FALSE;
     }
     /* compute number of colors recorded */
     ncol = (fileheader.bfOffBits - 26) / 3;
 
     if (infoheader.biCompression != BI_BITFIELDS)
-      read_bmicolors(ncol, f, 0);
+      read_bmicolors(fop, ncol, f, 0);
   }
   else {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   if ((infoheader.biBitCount == 24) || (infoheader.biBitCount == 16))
@@ -573,16 +567,16 @@ static Sprite *load_BMP(const char *filename)
     else {
       /* Unrecognised bit masks/depth */
       pack_fclose(f);
-      return NULL;
+      return FALSE;
     }
   }
 
-  image = file_sequence_image(type,
-			      infoheader.biWidth,
-			      infoheader.biHeight);
+  image = fop_sequence_image(fop, type,
+			     infoheader.biWidth,
+			     infoheader.biHeight);
   if (!image) {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   if (type == IMAGE_RGB)
@@ -590,12 +584,10 @@ static Sprite *load_BMP(const char *filename)
   else
     image_clear(image, 0);
 
-  sprite = file_sequence_sprite();
-
   switch (infoheader.biCompression) {
  
     case BI_RGB:
-      read_image(f, image, &infoheader);
+      read_image(f, image, &infoheader, fop);
       break;
  
     case BI_RLE8:
@@ -611,41 +603,40 @@ static Sprite *load_BMP(const char *filename)
       break;
 
     default:
-      sprite = NULL;
+      pack_fclose(f);
+      return FALSE;
   }
 
   pack_fclose(f);
-  return sprite;
+  return TRUE;
 }
 
-static int save_BMP(Sprite *sprite)
+static bool save_BMP(FileOp *fop)
 {
-  Image *image;
+  Image *image = fop->seq.image;
   PACKFILE *f;
   int bfSize;
   int biSizeImage;
-  int bpp = (sprite->imgtype == IMAGE_RGB) ? 24 : 8;
-  int filler = 3 - ((sprite->w*(bpp/8)-1) & 3);
+  int bpp = (image->imgtype == IMAGE_RGB) ? 24 : 8;
+  int filler = 3 - ((image->w*(bpp/8)-1) & 3);
   int c, i, j, r, g, b;
 
   if (bpp == 8) {
-    biSizeImage = (sprite->w + filler) * sprite->h;
+    biSizeImage = (image->w + filler) * image->h;
     bfSize = (54                      /* header */
 	      + 256*4                 /* palette */
 	      + biSizeImage);         /* image data */
   }
   else {
-    biSizeImage = (sprite->w*3 + filler) * sprite->h;
+    biSizeImage = (image->w*3 + filler) * image->h;
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  f = pack_fopen(sprite->filename, F_WRITE);
+  f = pack_fopen(fop->filename, F_WRITE);
   if (!f) {
-    console_printf(_("Error creating file.\n"));
-    return -1;
+    fop_error(fop, _("Error creating file.\n"));
+    return FALSE;
   }
-
-  image = file_sequence_image_to_save();
 
   *allegro_errno = 0;
 
@@ -677,7 +668,7 @@ static int save_BMP(Sprite *sprite)
 
     /* palette */
     for (i=0; i<256; i++) {
-      file_sequence_get_color(i, &r, &g, &b);
+      fop_sequence_get_color(fop, i, &r, &g, &b);
       pack_putc(_rgb_scale_6[b], f);
       pack_putc(_rgb_scale_6[g], f);
       pack_putc(_rgb_scale_6[r], f);
@@ -709,16 +700,15 @@ static int save_BMP(Sprite *sprite)
     for (j=0; j<filler; j++)
       pack_putc(0, f);
 
-    if (image->h > 1)
-      do_progress(100 * (image->h-1-i) / (image->h-1));
+    fop_progress(fop, (float)(image->h-i) / (float)image->h);
   }
 
   pack_fclose(f);
 
   if (*allegro_errno) {
-    console_printf(_("Error writing bytes.\n"));
-    return -1;
+    fop_error(fop, _("Error writing bytes.\n"));
+    return FALSE;
   }
   else
-    return 0;
+    return TRUE;
 }

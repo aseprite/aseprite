@@ -28,14 +28,13 @@
 
 #include "jinete/jbase.h"
 
-#include "console/console.h"
 #include "file/file.h"
 #include "raster/raster.h"
 
 #endif
 
-static int save_TGA(Sprite *sprite);
-static Sprite *load_TGA(const char *filename);
+static bool load_TGA(FileOp *fop);
+static bool save_TGA(FileOp *fop);
 
 FileFormat format_tga =
 {
@@ -191,7 +190,7 @@ static void rle_tga_read16(ase_uint32 *address, int w, PACKFILE *f)
  *  structure and storing the palette data in the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-static Sprite *load_TGA(const char *filename)
+static bool load_TGA(FileOp *fop)
 {
   unsigned char image_id[256], image_palette[256][3], rgb[4];
   unsigned char id_length, palette_type, image_type, palette_entry_size;
@@ -204,12 +203,9 @@ static Sprite *load_TGA(const char *filename)
   PACKFILE *f;
   int type;
 
-  f = pack_fopen(filename, F_READ);
-  if (!f) {
-    if (!file_sequence_sprite())
-      console_printf(_("Error opening file.\n"));
-    return NULL;
-  }
+  f = pack_fopen(fop->filename, F_READ);
+  if (!f)
+    return FALSE;
 
   *allegro_errno = 0;
 
@@ -252,7 +248,7 @@ static Sprite *load_TGA(const char *filename)
   }
   else if (palette_type != 0) {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   /* Image type:
@@ -273,14 +269,14 @@ static Sprite *load_TGA(const char *filename)
     case 1:
       if ((palette_type != 1) || (bpp != 8)) {
         pack_fclose(f);
-        return NULL;
+        return FALSE;
       }
 
       for (i=0; i<palette_colors; i++) {
-        file_sequence_set_color(i,
-				image_palette[i][2] >> 2,
-				image_palette[i][1] >> 2,
-				image_palette[i][0] >> 2);
+        fop_sequence_set_color(fop, i,
+			       image_palette[i][2] >> 2,
+			       image_palette[i][1] >> 2,
+			       image_palette[i][0] >> 2);
       }
 
       type = IMAGE_INDEXED;
@@ -292,7 +288,7 @@ static Sprite *load_TGA(const char *filename)
           ((bpp != 15) && (bpp != 16) &&
            (bpp != 24) && (bpp != 32))) {
         pack_fclose(f);
-        return NULL;
+        return FALSE;
       }
 
       type = IMAGE_RGB;
@@ -302,11 +298,11 @@ static Sprite *load_TGA(const char *filename)
     case 3:
       if ((palette_type != 0) || (bpp != 8)) {
         pack_fclose(f);
-        return NULL;
+        return FALSE;
       }
 
       for (i=0; i<256; i++)
-        file_sequence_set_color(i, i>>2, i>>2, i>>2);
+        fop_sequence_set_color(fop, i, i>>2, i>>2, i>>2);
 
       type = IMAGE_GRAYSCALE;
       break;
@@ -315,13 +311,13 @@ static Sprite *load_TGA(const char *filename)
       /* TODO add support for more TGA types? */
 
       pack_fclose(f);
-      return NULL;
+      return FALSE;
   }
 
-  image = file_sequence_image(type, image_width, image_height);
+  image = fop_sequence_image(fop, type, image_width, image_height);
   if (!image) {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   for (y=image_height; y; y--) {
@@ -385,48 +381,46 @@ static Sprite *load_TGA(const char *filename)
     }
 
     if (image_height > 1)
-      do_progress(100 * (image_height-y) / image_height);
+      fop_progress(fop, (float)(image_height-y) / (float)(image_height));
   }
 
   if (*allegro_errno) {
-    console_printf(_("Error reading bytes.\n"));
+    fop_error(fop, _("Error reading bytes.\n"));
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   pack_fclose(f);
-  return file_sequence_sprite();
+  return TRUE;
 }
 
 /* save_tga:
  *  Writes a bitmap into a TGA file, using the specified palette (this
  *  should be an array of at least 256 RGB structures).
  */
-static int save_TGA(Sprite *sprite)
+static bool save_TGA(FileOp *fop)
 {
+  Image *image = fop->seq.image;
   unsigned char image_palette[256][3];
   int x, y, c, r, g, b;
-  int depth = (sprite->imgtype == IMAGE_RGB) ? 32 : 8;
-  bool need_pal = (sprite->imgtype == IMAGE_INDEXED)? TRUE: FALSE;
+  int depth = (image->imgtype == IMAGE_RGB) ? 32 : 8;
+  bool need_pal = (image->imgtype == IMAGE_INDEXED)? TRUE: FALSE;
   PACKFILE *f;
-  Image *image;
 
-  f = pack_fopen(sprite->filename, F_WRITE);
+  f = pack_fopen(fop->filename, F_WRITE);
   if (!f) {
-    console_printf(_("Error creating file.\n"));
-    return -1;
+    fop_error(fop, _("Error creating file.\n"));
+    return FALSE;
   }
-
-  image = file_sequence_image_to_save();
 
   *allegro_errno = 0;
 
   pack_putc(0, f);                          /* id length (no id saved) */
   pack_putc((need_pal) ? 1 : 0, f);         /* palette type */
   /* image type */
-  pack_putc((sprite->imgtype == IMAGE_RGB      ) ? 2 :
-            (sprite->imgtype == IMAGE_GRAYSCALE) ? 3 :
-            (sprite->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
+  pack_putc((image->imgtype == IMAGE_RGB      ) ? 2 :
+            (image->imgtype == IMAGE_GRAYSCALE) ? 3 :
+            (image->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
   pack_iputw(0, f);                         /* first colour */
   pack_iputw((need_pal) ? 256 : 0, f);      /* number of colours */
   pack_putc((need_pal) ? 24 : 0, f);        /* palette entry size */
@@ -437,11 +431,11 @@ static int save_TGA(Sprite *sprite)
   pack_putc(depth, f);			    /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
-  pack_putc(sprite->imgtype == IMAGE_RGB ? 8: 0, f);
+  pack_putc(image->imgtype == IMAGE_RGB ? 8: 0, f);
 
   if (need_pal) {
     for (y=0; y<256; y++) {
-      file_sequence_get_color(y, &r, &g, &b);
+      fop_sequence_get_color(fop, y, &r, &g, &b);
       image_palette[y][2] = _rgb_scale_6[r];
       image_palette[y][1] = _rgb_scale_6[g];
       image_palette[y][0] = _rgb_scale_6[b];
@@ -449,40 +443,37 @@ static int save_TGA(Sprite *sprite)
     pack_fwrite(image_palette, 768, f);
   }
 
-  switch (sprite->imgtype) {
+  switch (image->imgtype) {
 
     case IMAGE_RGB:
-      for (y=image->h; y; y--) {
+      for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++) {
-          c = image_getpixel(image, x, y-1);
+          c = image_getpixel(image, x, y);
           pack_putc(_rgba_getb(c), f);
           pack_putc(_rgba_getg(c), f);
           pack_putc(_rgba_getr(c), f);
           pack_putc(_rgba_geta(c), f);
         }
 
-	if (image->h > 1)
-	  do_progress(100 * (image->h-y) / (image->h-1));
+	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
 
     case IMAGE_GRAYSCALE:
-      for (y=image->h; y; y--) {
+      for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++)
-          pack_putc(_graya_getk(image_getpixel(image, x, y-1)), f);
+          pack_putc(_graya_getk(image_getpixel(image, x, y)), f);
 
-	if (image->h > 1)
-	  do_progress(100 * (image->h-y) / (image->h-1));
+	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
 
     case IMAGE_INDEXED:
-      for (y=image->h; y; y--) {
+      for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++)
-          pack_putc(image_getpixel(image, x, y-1), f);
+          pack_putc(image_getpixel(image, x, y), f);
 
-	if (image->h > 1)
-	  do_progress(100 * (image->h-y) / (image->h-1));
+	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
   }
@@ -490,9 +481,9 @@ static int save_TGA(Sprite *sprite)
   pack_fclose(f);
 
   if (*allegro_errno) {
-    console_printf(_("Error writing bytes.\n"));
-    return -1;
+    fop_error(fop, _("Error writing bytes.\n"));
+    return FALSE;
   }
   else
-    return 0;
+    return TRUE;
 }

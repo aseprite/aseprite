@@ -25,14 +25,13 @@
 #include <allegro/color.h>
 #include <allegro/file.h>
 
-#include "console/console.h"
 #include "file/file.h"
 #include "raster/raster.h"
 
 #endif
 
-static Sprite *load_PCX(const char *filename);
-static int save_PCX(Sprite *sprite);
+static bool load_PCX(FileOp *fop);
+static bool save_PCX(FileOp *fop);
 
 FileFormat format_pcx =
 {
@@ -46,7 +45,7 @@ FileFormat format_pcx =
   FILE_SUPPORT_SEQUENCES
 };
 
-static Sprite *load_PCX(const char *filename)
+static bool load_PCX(FileOp *fop)
 {
   Image *image;
   PACKFILE *f;
@@ -57,18 +56,18 @@ static Sprite *load_PCX(const char *filename)
   int x, y;
   char ch = 0;
 
-  f = pack_fopen(filename, F_READ);
+  f = pack_fopen(fop->filename, F_READ);
   if (!f)
-    return NULL;
+    return FALSE;
 
   pack_getc(f);                    /* skip manufacturer ID */
   pack_getc(f);                    /* skip version flag */
   pack_getc(f);                    /* skip encoding flag */
 
   if (pack_getc(f) != 8) {         /* we like 8 bit color planes */
-    console_printf(_("This PCX doesn't have 8 bit color planes.\n"));
+    fop_error(fop, _("This PCX doesn't have 8 bit color planes.\n"));
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   width = -(pack_igetw(f));        /* xmin */
@@ -82,7 +81,7 @@ static Sprite *load_PCX(const char *filename)
     r = pack_getc(f) / 4;
     g = pack_getc(f) / 4;
     b = pack_getc(f) / 4;
-    file_sequence_set_color(c, r, g, b);
+    fop_sequence_set_color(fop, c, r, g, b);
   }
 
   pack_getc(f);
@@ -90,7 +89,7 @@ static Sprite *load_PCX(const char *filename)
   bpp = pack_getc(f) * 8;          /* how many color planes? */
   if ((bpp != 8) && (bpp != 24)) {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   bytes_per_line = pack_igetw(f);
@@ -98,12 +97,13 @@ static Sprite *load_PCX(const char *filename)
   for (c=0; c<60; c++)             /* skip some more junk */
     pack_getc(f);
 
-  image = file_sequence_image(bpp == 8 ?
-			      IMAGE_INDEXED:
-			      IMAGE_RGB, width, height);
+  image = fop_sequence_image(fop, bpp == 8 ?
+				  IMAGE_INDEXED:
+				  IMAGE_RGB,
+			     width, height);
   if (!image) {
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   if (bpp == 24)
@@ -150,8 +150,7 @@ static Sprite *load_PCX(const char *filename)
       }
     }
 
-    if (height > 1)
-      do_progress(100 * y / (height-1));
+    fop_progress(fop, (float)(y+1) / (float)(height));
   }
 
   if (bpp == 8) {                  /* look for a 256 color palette */
@@ -161,7 +160,7 @@ static Sprite *load_PCX(const char *filename)
           r = pack_getc(f) / 4;
           g = pack_getc(f) / 4;
           b = pack_getc(f) / 4;
-          file_sequence_set_color(c, r, g, b);
+          fop_sequence_set_color(fop, c, r, g, b);
         }
         break;
       }
@@ -169,19 +168,19 @@ static Sprite *load_PCX(const char *filename)
   }
 
   if (*allegro_errno) {
-    console_printf(_("Error reading bytes.\n"));
+    fop_error(fop, _("Error reading bytes.\n"));
     pack_fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   pack_fclose(f);
-  return file_sequence_sprite();
+  return TRUE;
 }
 
-static int save_PCX(Sprite *sprite)
+static bool save_PCX(FileOp *fop)
 {
+  Image *image = fop->seq.image;
   PACKFILE *f;
-  Image *image;
   int c, r, g, b;
   int x, y;
   int runcount;
@@ -189,15 +188,13 @@ static int save_PCX(Sprite *sprite)
   char runchar;
   char ch = 0;
 
-  f = pack_fopen(sprite->filename, F_WRITE);
+  f = pack_fopen(fop->filename, F_WRITE);
   if (!f) {
-    console_printf(_("Error creating file.\n"));
-    return -1;
+    fop_error(fop, _("Error creating file.\n"));
+    return FALSE;
   }
 
-  image = file_sequence_image_to_save();
-
-  if (sprite->imgtype == IMAGE_RGB) {
+  if (image->imgtype == IMAGE_RGB) {
     depth = 24;
     planes = 3;
   }
@@ -220,7 +217,7 @@ static int save_PCX(Sprite *sprite)
   pack_iputw(200, f);                    /* VDpi */
 
   for (c=0; c<16; c++) {
-    file_sequence_get_color(c, &r, &g, &b);
+    fop_sequence_get_color(fop, c, &r, &g, &b);
     pack_putc(_rgb_scale_6[r], f);
     pack_putc(_rgb_scale_6[g], f);
     pack_putc(_rgb_scale_6[b], f);
@@ -283,15 +280,14 @@ static int save_PCX(Sprite *sprite)
 
     pack_putc(runchar, f);
 
-    if (image->h > 1)
-      do_progress(100 * y / (image->h-1));
+    fop_progress(fop, (float)(y+1) / (float)(image->h));
   }
 
   if (depth == 8) {                      /* 256 color palette */
     pack_putc(12, f);
 
     for (c=0; c<256; c++) {
-      file_sequence_get_color(c, &r, &g, &b);
+      fop_sequence_get_color(fop, c, &r, &g, &b);
       pack_putc(_rgb_scale_6[r], f);
       pack_putc(_rgb_scale_6[g], f);
       pack_putc(_rgb_scale_6[b], f);
@@ -301,9 +297,9 @@ static int save_PCX(Sprite *sprite)
   pack_fclose(f);
 
   if (*allegro_errno) {
-    console_printf(_("Error writing bytes.\n"));
-    return -1;
+    fop_error(fop, _("Error writing bytes.\n"));
+    return FALSE;
   }
   else
-    return 0;
+    return TRUE;
 }

@@ -206,7 +206,7 @@ void set_current_editor(JWidget editor)
 
     set_current_sprite(editor_get_sprite(current_editor));
     app_refresh_screen();
-    rebuild_sprite_list();
+    app_realloc_sprite_list();
   }
 }
 
@@ -221,7 +221,7 @@ void set_sprite_in_current_editor(Sprite *sprite)
     jwidget_dirty(jwidget_get_view(current_editor));
 
     app_refresh_screen();
-    rebuild_sprite_list();
+    app_realloc_sprite_list();
   }
 }
 

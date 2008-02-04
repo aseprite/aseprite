@@ -33,8 +33,6 @@ enum {
 int init_module_rootmenu(void);
 void exit_module_rootmenu(void);
 
-int load_root_menu(void);
-
 JWidget get_root_menu(void);
 
 JWidget get_recent_list_menuitem(void);

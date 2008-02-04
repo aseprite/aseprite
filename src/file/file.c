@@ -20,11 +20,13 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
-#include <allegro.h>
+#include <assert.h>
 #include <string.h>
+#include <allegro.h>
 
 #include "jinete/jalert.h"
 #include "jinete/jlist.h"
+#include "jinete/jmutex.h"
 
 #include "console/console.h"
 #include "core/app.h"
@@ -61,46 +63,618 @@ static FileFormat *formats[] =
   NULL
 };
 
-/* structure used for the sequence of bitmaps */
-static struct file_sequence_t {
-  /* to load */
-  Sprite *sprite;
-  Layer *layer;
-  int frpos;
-  Image *last_image;
-  Cel *last_cel;
-  /* to save */
-  Image *image;
-} file_sequence;
-
-static PALETTE file_palette;
-static char file_extensions[512];
+static FileOp *fop_new(FileOpType type);
+static void fop_prepare_for_sequence(FileOp *fop);
 
 static FileFormat *get_fileformat(const char *extension);
 static int split_filename(const char *filename, char *left, char *right, int *width);
 
-void file_sequence_set_color(int index, int r, int g, int b)
+void get_readable_extensions(char *buf, int size)
 {
-  file_palette[index].r = r;
-  file_palette[index].g = g;
-  file_palette[index].b = b;
+  int c;
+
+  /* clear the string */
+  ustrncpy(buf, empty_string, size);
+
+  /* insert file format */
+  for (c=0; formats[c]; c++) {
+    if (formats[c]->load)
+      ustrncat(buf, formats[c]->exts, size);
+
+    if (formats[c+1] && formats[c]->load)
+      ustrncat(buf, ",", size);
+  }
 }
 
-void file_sequence_get_color(int index, int *r, int *g, int *b)
+void get_writable_extensions(char *buf, int size)
 {
-  *r = file_palette[index].r;
-  *g = file_palette[index].g;
-  *b = file_palette[index].b;
+  int c;
+
+  /* clear the string */
+  ustrncpy(buf, empty_string, size);
+
+  /* insert file format */
+  for (c=0; formats[c]; c++) {
+    if (formats[c]->save)
+      ustrncat(buf, formats[c]->exts, size);
+
+    if (formats[c+1] && formats[c]->save)
+      ustrncat(buf, ",", size);
+  }
 }
 
-Image *file_sequence_image(int imgtype, int w, int h)
+Sprite *sprite_load(const char *filename)
+{
+  Sprite *sprite;
+  FileOp *fop = fop_to_load_sprite(filename);
+  if (!fop)
+    return NULL;
+
+  /* operate in this same thread */
+  fop_operate(fop);
+
+  if (fop->error)
+    console_printf(fop->error);
+
+  sprite = fop->sprite;
+  fop_free(fop);
+
+  return sprite;
+}
+
+int sprite_save(Sprite *sprite)
+{
+  int ret;
+  FileOp *fop = fop_to_save_sprite(sprite);
+  if (!fop)
+    return -1;
+
+  /* operate in this same thread */
+  fop_operate(fop);
+
+  if (fop->error)
+    console_printf(fop->error);
+
+  ret = (fop->error == NULL) ? 0: -1;
+  fop_free(fop);
+
+  return ret;
+}
+
+FileOp *fop_to_load_sprite(const char *filename)
+{
+  char *extension;
+  FileOp *fop;
+
+  fop = fop_new(FileOpLoad);
+  if (!fop)
+    return NULL;
+
+  /* get the extension of the filename (in lower case) */
+  extension = jstrdup(get_extension(filename));
+  ustrlwr(extension);
+
+  PRINTF("Loading file \"%s\" (%s)\n", filename, extension);
+
+  /* does file exist? */
+  if (!file_exists(filename, FA_ALL, NULL)) {
+    fop_error(fop, _("File not found: \"%s\"\n"), filename);
+    goto done;
+  }
+
+  /* get the format through the extension of the filename */
+  fop->format = get_fileformat(extension);
+  if (!fop->format ||
+      !fop->format->load) {
+    fop_error(fop, _("ASE can't load \"%s\" files\n"), extension);
+    goto done;
+  }
+
+  /* use the "sequence" interface */
+  if (fop->format->flags & FILE_SUPPORT_SEQUENCES) {
+    char buf[512], left[512], right[512];
+    int c, width, start_from;
+
+    fop_prepare_for_sequence(fop);
+
+    /* first of all, we must generate the list of files to load in the
+       sequence... */
+
+    /* per now, we want load just one file */
+    jlist_append(fop->seq.filename_list, jstrdup(filename));
+
+    /* check is this could be a sequence */
+    start_from = split_filename(filename, left, right, &width);
+    if (start_from >= 0) {
+      /* try to get more file names */
+      for (c=start_from+1; ; c++) {
+	/* get the next file name */
+	usprintf(buf, "%s%0*d%s", left, width, c, right);
+
+	/* if the file doesn't exist, we doesn't need more files to load */
+	if (!exists(buf))
+	  break;
+
+	/* add this file name to the list */
+	jlist_append(fop->seq.filename_list,
+		     jstrdup(buf));
+      }
+    }
+
+    /* TODO add a better dialog to edit file-names */
+    if (is_interactive()) {
+      /* really want load all files? */
+      if ((jlist_length(fop->seq.filename_list) > 1) &&
+	  (jalert(_("Notice"
+		    "<<Possible animation with:"
+		    "<<%s"
+		    "<<Load the sequence of bitmaps?"
+		    "||&Agree||&Skip"),
+		  get_filename(filename)) != 1)) {
+	/* if the user replies "Skip", we need just one file name (the
+	   first one) */
+	while (jlist_length(fop->seq.filename_list) > 1) {
+	  JLink link = jlist_last(fop->seq.filename_list);
+	  jfree(link->data);
+	  jlist_delete_link(fop->seq.filename_list, link);
+	}
+      }
+    }
+  }
+  else
+    fop->filename = jstrdup(filename);
+
+done:;
+  jfree(extension);
+  return fop;
+}
+
+FileOp *fop_to_save_sprite(Sprite *sprite)
+{
+  char extension[32], buf[2048];
+  FileOp *fop;
+  bool fatal;
+
+  fop = fop_new(FileOpSave);
+  if (!fop)
+    return NULL;
+
+  /* sprite to save */
+  fop->sprite = sprite;
+
+  /* get the extension of the filename (in lower case) */
+  ustrcpy(extension, get_extension(fop->sprite->filename));
+  ustrlwr(extension);
+
+  PRINTF("Saving sprite \"%s\" (%s)\n", fop->sprite->filename, extension);
+
+  /* get the format through the extension of the filename */
+  fop->format = get_fileformat(extension);
+  if (!fop->format ||
+      !fop->format->save) {
+    fop_error(fop, _("ASE can't save \"%s\" files\n"), extension);
+    return fop;
+  }
+
+  /* warnings */
+  ustrcpy(buf, empty_string);
+  fatal = FALSE;
+
+  /* check image type support */
+  switch (fop->sprite->imgtype) {
+
+    case IMAGE_RGB:
+      if (!(fop->format->flags & FILE_SUPPORT_RGB)) {
+	usprintf(buf+ustrlen(buf), "<<- %s", _("RGB format"));
+	fatal = TRUE;
+      }
+      if (!(fop->format->flags & FILE_SUPPORT_RGBA) &&
+	  sprite_need_alpha(fop->sprite)) {
+	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
+      }
+      break;
+
+    case IMAGE_GRAYSCALE:
+      if (!(fop->format->flags & FILE_SUPPORT_GRAY)) {
+	usprintf(buf+ustrlen(buf), "<<- %s", _("Grayscale format"));
+	fatal = TRUE;
+      }
+      if (!(fop->format->flags & FILE_SUPPORT_GRAYA) &&
+	  sprite_need_alpha(fop->sprite)) {
+	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
+      }
+      break;
+
+    case IMAGE_INDEXED:
+      if (!(fop->format->flags & FILE_SUPPORT_INDEXED)) {
+	usprintf(buf+ustrlen(buf), "<<- %s", _("Indexed format"));
+	fatal = TRUE;
+      }
+      break;
+  }
+
+  /* check frames support */
+  if (!(fop->format->flags & (FILE_SUPPORT_FRAMES |
+			      FILE_SUPPORT_SEQUENCES))) {
+    if (fop->sprite->frames > 1)
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Frames"));
+  }
+
+  /* layers support */
+  if (jlist_length(fop->sprite->set->layers) > 1) {
+    if (!(fop->format->flags & FILE_SUPPORT_LAYERS)) {
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Layers"));
+    }
+  }
+
+  /* palettes support */
+  if (jlist_length(fop->sprite->palettes) > 1) {
+    if (!(fop->format->flags & (FILE_SUPPORT_PALETTES |
+				FILE_SUPPORT_SEQUENCES))) {
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes"));
+    }
+  }
+
+  /* repositories */
+  if (!jlist_empty(fop->sprite->repository.masks)) {
+    Mask *mask;
+    JLink link;
+    int count = 0;
+
+    JI_LIST_FOR_EACH(fop->sprite->repository.masks, link) {
+      mask = link->data;
+
+      /* names starting with '*' are ignored */
+      if (mask->name && *mask->name == '*')
+	continue;
+
+      count++;
+    }
+
+    if ((count > 0) && !(fop->format->flags & FILE_SUPPORT_MASKS_REPOSITORY)) {
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Mask Repository"));
+    }
+  }
+
+  if (!jlist_empty(fop->sprite->repository.paths)) {
+    if (!(fop->format->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Path Repository"));
+    }
+  }
+
+  /* show the confirmation alert */
+  if (ugetc(buf)) {
+    /* interative */
+    if (is_interactive()) {
+      int ret;
+
+      if (fatal)
+	ret = jalert(_("Error<<File format \"%s\" doesn't support:%s"
+		       "||&Close"),
+		     fop->format->name, buf);
+      else
+	ret = jalert(_("Warning<<File format \"%s\" doesn't support:%s"
+		       "<<Do you want continue?"
+		       "||&Yes||&No"),
+		     fop->format->name, buf);
+
+      /* operation can't be done (by fatal error) or the user cancel
+	 the operation */
+      if ((fatal) || (ret != 1)) {
+	fop_free(fop);
+	return NULL;
+      }
+    }
+    /* no interactive & fatal error? */
+    else if (fatal) {
+      fop_error(fop, buf);
+      return fop;
+    }
+  }
+
+  /* use the "sequence" interface */
+  if (fop->format->flags & FILE_SUPPORT_SEQUENCES) {
+    fop_prepare_for_sequence(fop);
+
+    /* to save one frame */
+    if (fop->sprite->frames == 1) {
+      jlist_append(fop->seq.filename_list,
+		   jstrdup(fop->sprite->filename));
+    }
+    /* to save more frames */
+    else {
+      char buf[256], left[256], right[256];
+      int frame, width, start_from;
+
+      start_from = split_filename(fop->sprite->filename, left, right, &width);
+      if (start_from < 0) {
+	start_from = 0;
+	width =
+	  (fop->sprite->frames < 10)? 1:
+	  (fop->sprite->frames < 100)? 2:
+	  (fop->sprite->frames < 1000)? 3: 4;
+      }
+
+      for (frame=0; frame<fop->sprite->frames; frame++) {
+	/* get the name for this frame */
+	usprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
+	jlist_append(fop->seq.filename_list, jstrdup(buf));
+      }
+    }
+  }
+  else
+    fop->filename = jstrdup(fop->sprite->filename);
+
+  return fop;
+}
+
+/**
+ * Finally does the file operation: loading or saving the sprite.
+ *
+ * It can be called from a different thread of the one used
+ * by @ref fop_to_load_sprite or @ref fop_to_save_sprite.
+ *
+ * After operate you must to free the 'fop' calling @ref fop_free.
+ */
+void fop_operate(FileOp *fop)
+{
+  assert(fop != NULL);
+  assert(!fop_is_done(fop));
+
+  /* load ***********************************************************/
+  if (fop->type == FileOpLoad &&
+      fop->format != NULL &&
+      fop->format->load != NULL) {
+    /* load a sequence */
+    if (fop->seq.filename_list != NULL) {
+      int frame, frames, image_index = 0;
+      Image *old_image;
+      JLink link;
+      bool loadres;
+
+      /* default palette */
+      memcpy(fop->seq.palette, default_palette, sizeof(PALETTE));
+
+       /* TODO set_palette for each frame??? */
+#define SEQUENCE_IMAGE()						\
+      do {								\
+	image_index = stock_add_image(fop->sprite->stock,		\
+				      fop->seq.image);			\
+									\
+	fop->seq.last_cel->image = image_index;				\
+									\
+	layer_add_cel(fop->seq.layer, fop->seq.last_cel);		\
+									\
+	sprite_set_palette(fop->sprite, fop->seq.palette, frame);	\
+									\
+	old_image = fop->seq.image;					\
+	fop->seq.image = NULL;						\
+	fop->seq.last_cel = NULL;					\
+      } while (0)
+
+      /* load the sequence */
+      frames = jlist_length(fop->seq.filename_list);
+      frame = 0;
+      old_image = NULL;
+      
+      fop->seq.progress_offset = 0.0f;
+      fop->seq.progress_fraction = 1.0f / (float)frames;
+
+      JI_LIST_FOR_EACH(fop->seq.filename_list, link) {
+	fop->filename = link->data;
+
+	/* call the "load" procedure to read the first bitmap */
+	loadres = (*fop->format->load)(fop);
+	if (!loadres) {
+	  fop_error(fop, _("Error loading frame %d from file \"%s\"\n"),
+		    frame+1, fop->filename);
+	}
+
+	/* for the first frame... */
+	if (!old_image) {
+	  /* error reading the first frame */
+	  if (!loadres || !fop->sprite || !fop->seq.last_cel) {
+	    if (fop->seq.image) image_free(fop->seq.image);
+	    if (fop->seq.last_cel) cel_free(fop->seq.last_cel);
+	    if (fop->sprite) {
+	      sprite_free(fop->sprite);
+	      fop->sprite = NULL;
+	    }
+	    break;
+	  }
+	  /* read ok */
+	  else {
+	    /* add the keyframe */
+	    SEQUENCE_IMAGE();
+	  }
+	}
+	/* for other frames */
+	else {
+	  /* all done (or maybe not enough memory) */
+	  if (!loadres || !fop->seq.last_cel) {
+	    if (fop->seq.image) image_free(fop->seq.image);
+	    if (fop->seq.last_cel) cel_free(fop->seq.last_cel);
+
+	    break;
+	  }
+
+	  /* compare the old frame with the new one */
+#if USE_LINK /* TODO this should be configurable through a check-box */
+	  if (image_count_diff(old_image, fop->seq.image)) {
+	    SEQUENCE_IMAGE();
+	  }
+	  /* we don't need this image */
+	  else {
+	    image_free(fop->seq.image);
+
+	    /* but add a link frame */
+	    fop->seq.last_cel->image = image_index;
+	    layer_add_frame(fop->seq.layer, fop->seq.last_cel);
+
+	    fop->seq.last_image = NULL;
+	    fop->seq.last_cel = NULL;
+	  }
+#else
+	  SEQUENCE_IMAGE();
+#endif
+	}
+
+	frame++;
+	fop->seq.progress_offset += fop->seq.progress_fraction;
+      }
+      fop->filename = jstrdup(jlist_first_data(fop->seq.filename_list));
+
+      /* set the frames range */
+      if (fop->sprite)
+	sprite_set_frames(fop->sprite, frame);
+    }
+    /* direct load from a file */
+    else {
+      /* call the "load" procedure */
+      if (!(*fop->format->load)(fop))
+	fop_error(fop, _("Error loading sprite from file \"%s\"\n"),
+		  fop->filename);
+    }
+
+    if (fop->sprite != NULL) {
+      /* select the last layer */
+      Layer *last_layer = jlist_last_data(fop->sprite->set->layers);
+      sprite_set_layer(fop->sprite, last_layer);
+
+      /* set the filename */
+      if (fop->seq.filename_list)
+	sprite_set_filename(fop->sprite,
+			    jlist_first_data(fop->seq.filename_list));
+      else
+	sprite_set_filename(fop->sprite, fop->filename);
+
+      sprite_mark_as_saved(fop->sprite);
+    }
+  }
+  /* save ***********************************************************/
+  else if (fop->type == FileOpSave &&
+	   fop->format != NULL &&
+	   fop->format->save != NULL) {
+    /* save a sequence */
+    if (fop->seq.filename_list != NULL) {
+      assert(fop->format->flags & FILE_SUPPORT_SEQUENCES);
+
+      /* create a temporary bitmap */
+      fop->seq.image = image_new(fop->sprite->imgtype,
+				 fop->sprite->w,
+				 fop->sprite->h);
+      if (fop->seq.image != NULL) {
+	int old_frame = fop->sprite->frame;
+
+	fop->seq.progress_offset = 0.0f;
+	fop->seq.progress_fraction = 1.0f / (float)fop->sprite->frames;
+
+	/* for each frame in the sprite */
+	for (fop->sprite->frame=0;
+	     fop->sprite->frame<fop->sprite->frames;
+	     fop->sprite->frame++) {
+	  /* draw all the sprite in this frame in the image */
+	  image_clear(fop->seq.image, 0);
+	  sprite_render(fop->sprite, fop->seq.image, 0, 0);
+
+
+	  /* setup the palette */
+	  palette_copy(fop->seq.palette,
+		       sprite_get_palette(fop->sprite,
+					  fop->sprite->frame));
+
+	  /* setup the filename to be used */
+	  fop->filename = jlist_nth_data(fop->seq.filename_list,
+					 fop->sprite->frame);
+
+	  /* call the "save" procedure... did it fail? */
+	  if (!(*fop->format->save)(fop)) {
+	    fop_error(fop, _("Error saving frame %d in the file \"%s\"\n"),
+		      fop->sprite->frame+1, fop->filename);
+	    break;
+	  }
+
+	  fop->seq.progress_offset += fop->seq.progress_fraction;
+	}
+	fop->filename = jstrdup(jlist_first_data(fop->seq.filename_list));
+
+	/* destroy the image */
+	image_free(fop->seq.image);
+
+	/* restore frame */
+	fop->sprite->frame = old_frame;
+      }
+      else {
+	fop_error(fop, _("Not enough memory for the temporary bitmap.\n"));
+      }
+    }
+    /* direct save to a file */
+    else {
+      /* call the "save" procedure */
+      if (!(*fop->format->save)(fop))
+	fop_error(fop, _("Error saving the sprite in the file \"%s\"\n"),
+		  fop->filename);
+    }
+  }
+
+  /* finally done */
+  jmutex_lock(fop->mutex);
+  {
+    fop->done = TRUE;
+  }
+  jmutex_unlock(fop->mutex);
+}
+
+void fop_free(FileOp *fop)
+{
+  if (fop->filename)
+    jfree(fop->filename);
+
+  if (fop->error)
+    jfree(fop->error);
+
+  if (fop->seq.filename_list) {
+    JLink link;
+
+    /* free old filenames strings */
+    JI_LIST_FOR_EACH(fop->seq.filename_list, link)
+      jfree(link->data);
+
+    jlist_free(fop->seq.filename_list);
+  }
+
+  if (fop->seq.palette)
+    jfree(fop->seq.palette);
+
+  jfree(fop);
+}
+
+void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
+{
+  assert(fop->seq.palette != NULL);
+
+  fop->seq.palette[index].r = r;
+  fop->seq.palette[index].g = g;
+  fop->seq.palette[index].b = b;
+}
+
+void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
+{
+  assert(fop->seq.palette != NULL);
+
+  *r = fop->seq.palette[index].r;
+  *g = fop->seq.palette[index].g;
+  *b = fop->seq.palette[index].b;
+}
+
+Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
 {
   Sprite *sprite;
   Image *image;
   Layer *layer;
 
   /* create the image */
-  if (!file_sequence.sprite) {
+  if (!fop->sprite) {
     sprite = sprite_new(imgtype, w, h);
     if (!sprite)
       return NULL;
@@ -117,11 +691,11 @@ Image *file_sequence_image(int imgtype, int w, int h)
     layer_add_layer(sprite->set, layer);
 
     /* done */
-    file_sequence.sprite = sprite;
-    file_sequence.layer = layer;
+    fop->sprite = sprite;
+    fop->seq.layer = layer;
   }
   else {
-    sprite = file_sequence.sprite;
+    sprite = fop->sprite;
 
     if (sprite->imgtype != imgtype)
       return NULL;
@@ -129,507 +703,142 @@ Image *file_sequence_image(int imgtype, int w, int h)
 
   /* create a bitmap */
 
-  if (file_sequence.last_cel) {
-    console_printf(_("Error: called two times \"file_sequence_image()\".\n"));
+  if (fop->seq.last_cel) {
+    fop_error(fop, _("Error: called two times \"fop_sequence_image()\".\n"));
     return NULL;
   }
 
   image = image_new(imgtype, w, h);
   if (!image) {
-    console_printf(_("Not enough memory to allocate a bitmap.\n"));
+    fop_error(fop, _("Not enough memory to allocate a bitmap.\n"));
     return NULL;
   }
 
-  file_sequence.last_image = image;
-  file_sequence.last_cel = cel_new(file_sequence.frpos++, 0);
+  fop->seq.image = image;
+  fop->seq.last_cel = cel_new(fop->seq.frame++, 0);
 
   return image;
 }
 
-Sprite *file_sequence_sprite(void)
+void fop_error(FileOp *fop, const char *format, ...)
 {
-  return file_sequence.sprite;
+  char buf_error[4096];
+  va_list ap;
+
+  va_start(ap, format);
+  uvszprintf(buf_error, sizeof(buf_error), format, ap);
+  va_end(ap);
+
+  jmutex_lock(fop->mutex);
+  {
+    /* concatenate old errors with the new one */
+    if (fop->error) {
+      char *old_error = fop->error;
+      fop->error = jmalloc(ustrsizez(old_error) + ustrsizez(buf_error) + 1);
+      ustrcpy(fop->error, old_error);
+      ustrcat(fop->error, buf_error);
+      jfree(old_error);
+    }
+    /* first error */
+    else
+      fop->error = jstrdup(buf_error);
+  }
+  jmutex_unlock(fop->mutex);
 }
 
-Image *file_sequence_image_to_save(void)
+void fop_progress(FileOp *fop, float progress)
 {
-  return file_sequence.image;
-}
-
-const char *get_readable_extensions(void)
-{
-  int c;
-
-  /* clear the string */
-  ustrcpy(file_extensions, empty_string);
-
-  /* insert file format */
-  for (c=0; formats[c]; c++) {
-    if (formats[c]->load)
-      ustrcat(file_extensions, formats[c]->exts);
-
-    if (formats[c+1] && formats[c]->load)
-      ustrcat(file_extensions, ",");
-  }
-
-  return file_extensions;
-}
-
-const char *get_writable_extensions(void)
-{
-  int c;
-
-  /* clear the string */
-  ustrcpy(file_extensions, empty_string);
-
-  /* insert file format */
-  for (c=0; formats[c]; c++) {
-    if (formats[c]->save)
-      ustrcat(file_extensions, formats[c]->exts);
-
-    if (formats[c+1] && formats[c]->save)
-      ustrcat(file_extensions, ",");
-  }
-
-  return file_extensions;
-}
-
-Sprite *sprite_load(const char *filename)
-{
-  char extension[32];
-  FileFormat *file;
-  Sprite *sprite;
-
-  ustrcpy(extension, get_extension(filename));
-  ustrlwr(extension);
-
-  PRINTF("Loading file \"%s\" (%s)\n", filename, extension);
-
-  file = get_fileformat(extension);
-  if ((!file) || (!file->load)) {
-    console_printf(_("Format \"%s\" isn't supported to open\n"), extension);
-    return NULL;
-  }
-
-  /* default values */
-  memcpy(file_palette, default_palette, sizeof(PALETTE));
-
-  /* use the "sequence" interface */
-  if (file->flags & FILE_SUPPORT_SEQUENCES) {
-#define SEQUENCE_IMAGE()						\
-    do {								\
-      index = stock_add_image(file_sequence.sprite->stock,		\
-			      file_sequence.last_image);		\
-									\
-      file_sequence.last_cel->image = index;				\
-									\
-      layer_add_cel(file_sequence.layer,				\
-		    file_sequence.last_cel);				\
-									\
-      sprite_set_palette(file_sequence.sprite, file_palette, c);	\
-									\
-      old_image = file_sequence.last_image;				\
-									\
-      file_sequence.last_image = NULL;					\
-      file_sequence.last_cel = NULL;					\
-    } while (0)
-
-    char buf[512], left[512], right[512];
-    int c, index = 0, width, start_from, frames;
-    Image *old_image;
-/*     PALETTE first_palette; */
-    JList file_names = jlist_new();
-    JLink link;
-
-    /* first of all, we must generate the list of files to load in the
-       sequence... */
-
-    /* per now, we want load just one file */
-    jlist_append(file_names, jstrdup(filename));
-
-    /* check is this could be a sequence */
-    start_from = split_filename(filename, left, right, &width);
-    if (start_from >= 0) {
-      /* try to get more file names */
-      for (c=start_from+1; ; c++) {
-	/* get the next file name */
-	usprintf(buf, "%s%0*d%s", left, width, c, right);
-
-	/* if the file doesn't exist, we doesn't need more files to load */
-	if (!exists(buf))
-	  break;
-
-	/* add this file name to the list */
-	jlist_append(file_names, jstrdup(buf));
-      }
-    }
-
-    if (is_interactive()) {
-      /* really want load all files? */
-      if ((jlist_length(file_names) > 1) &&
-	  (jalert(_("Notice"
-		    "<<Possible animation with:"
-		    "<<%s"
-		    "<<Load the sequence of bitmaps?"
-		    "||&Agree||&Skip"),
-		  get_filename(filename)) != 1)) {
-	/* if the user replies "Skip", we need just one file name */
-	while (jlist_length(file_names) > 1)
-	  jlist_delete_link(file_names, jlist_last(file_names));
-      }
-    }
-
-    /* count how many frames to load */
-    frames = jlist_length(file_names);
-
-    /* prepare the sequence */
-    file_sequence.sprite = NULL;
-    file_sequence.layer = NULL;
-    file_sequence.frpos = 0;
-    file_sequence.last_image = NULL;
-    file_sequence.last_cel = NULL;
-
-    /* load the sequence */
-    c = 0;
-    old_image = NULL;
-    if (frames > 1)
-      add_progress(frames);
-
-    JI_LIST_FOR_EACH(file_names, link) {
-      /* call the "load" procedure to read the first bitmap */
-      add_progress(100);
-      sprite = (*file->load)(link->data);
-      del_progress();
-
-      /* for the first frame */
-      if (!old_image) {
-	/* error reading the first frame */
-	if ((!sprite) || (!file_sequence.last_cel)) {
-	  if (file_sequence.last_image)
-	    image_free(file_sequence.last_image);
-
-	  if (file_sequence.last_cel)
-	    cel_free(file_sequence.last_cel);
-
-	  if (file_sequence.sprite) {
-	    sprite_free(file_sequence.sprite);
-	    file_sequence.sprite = NULL;
-	  }
-
-	  break;
-	}
-	/* read ok */
-	else {
-	  /* add the keyframe */
-	  SEQUENCE_IMAGE();
-
-	  /* the first palette will be the palette to use */
-/* 	  memcpy(first_palette, file_palette, sizeof(PALETTE)); */
-	}
-      }
-      /* for other frames */
-      else {
-	/* all done (or maybe not enough memory) */
-	if ((!sprite) || (!file_sequence.last_cel)) {
-	  if (file_sequence.last_image)
-	    image_free(file_sequence.last_image);
-
-	  if (file_sequence.last_cel)
-	    cel_free(file_sequence.last_cel);
-
-	  break;
-	}
-
-	/* compare the old frame with the new one */
-#if USE_LINK /* TODO this should be configurable through a check-box */
-	if (image_count_diff(old_image, file_sequence.last_image)) {
-	  SEQUENCE_IMAGE();
-	}
-	/* we don't need this image */
-	else {
-	  image_free(file_sequence.last_image);
-
-	  /* but add a link frame */
-	  file_sequence.last_cel->image = index;
-	  layer_add_frame(file_sequence.layer,
-			  file_sequence.last_cel);
-
-	  file_sequence.last_image = NULL;
-	  file_sequence.last_cel = NULL;
-	}
-#else
-	SEQUENCE_IMAGE();
-#endif
-      }
-
-      c++;
-
-      if (frames > 1)
-	do_progress(c);
-    }
-
-    if (frames > 1)
-      del_progress();
-
-    /* the sprite */
-    sprite = file_sequence.sprite;
-    if (sprite) {
-      /* set the frames range */
-      sprite_set_frames(sprite, c);
-
-      /* restore by the first palette */
-      /* TODO remove this */
-/*       memcpy(sprite->palette, first_palette, sizeof(PALETTE)); */
-    }
-
-    /* delete the entire file names list */
-    JI_LIST_FOR_EACH(file_names, link)
-      jfree(link->data);
-    jlist_free(file_names);
-  }
-  /* direct load */
-  else {
-    /* call the "load" procedure */
-    sprite = (*file->load)(filename);
-  }
-
-  /* error */
-  if (!sprite)
-    console_printf(_("Error loading \"%s\"\n"), filename);
-  else {
-    Layer *last_layer = jlist_last_data(sprite->set->layers);
-
-    /* select the last layer */
-    sprite_set_layer(sprite, last_layer);
-
-    /* set the filename */
-    sprite_set_filename(sprite, filename);
-    sprite_mark_as_saved(sprite);
-
-    rebuild_sprite_list();
-  }
-
-  return sprite;
-}
-
-int sprite_save(Sprite *sprite)
-{
-  char extension[32], buf[2048];
-  FileFormat *file;
-  int ret = -1;
-  bool fatal;
-
-  ustrcpy(extension, get_extension(sprite->filename));
-  ustrlwr(extension);
-
-  PRINTF("Saving sprite \"%s\" (%s)\n", sprite->filename, extension);
-
-  file = get_fileformat(extension);
-  if ((!file) || (!file->save)) {
-    console_printf(_("Format \"%s\" isn't supported to save\n"), extension);
-    return -1;
-  }
-
-  /* warnings */
-  ustrcpy(buf, empty_string);
-  fatal = FALSE;
-
-  /* check image type support */
-  switch (sprite->imgtype) {
-
-    case IMAGE_RGB:
-      if (!(file->flags & FILE_SUPPORT_RGB)) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("RGB format"));
-	fatal = TRUE;
-      }
-      if (!(file->flags & FILE_SUPPORT_RGBA) &&
-	  _rgba_geta(sprite->bgcolor) < 255) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
-      }
-      break;
-
-    case IMAGE_GRAYSCALE:
-      if (!(file->flags & FILE_SUPPORT_GRAY)) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Grayscale format"));
-	fatal = TRUE;
-      }
-      if (!(file->flags & FILE_SUPPORT_GRAYA) &&
-	  _graya_geta(sprite->bgcolor) < 255) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
-      }
-      break;
-
-    case IMAGE_INDEXED:
-      if (!(file->flags & FILE_SUPPORT_INDEXED)) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Indexed format"));
-	fatal = TRUE;
-      }
-      break;
-  }
-
-  /* check frames support */
-  if (!(file->flags & (FILE_SUPPORT_FRAMES |
-		       FILE_SUPPORT_SEQUENCES))) {
-    if (sprite->frames > 1)
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Frames"));
-  }
-
-  /* layers support */
-  if (jlist_length(sprite->set->layers) > 1) {
-    if (!(file->flags & FILE_SUPPORT_LAYERS)) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Layers"));
-    }
-  }
-
-  /* palettes support */
-  if (jlist_length(sprite->palettes) > 1) {
-    if (!(file->flags & (FILE_SUPPORT_PALETTES |
-			 FILE_SUPPORT_SEQUENCES))) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes"));
-    }
-  }
-
-  /* repositories */
-  if (!jlist_empty(sprite->repository.masks)) {
-    Mask *mask;
-    JLink link;
-    int count = 0;
-
-    JI_LIST_FOR_EACH(sprite->repository.masks, link) {
-      mask = link->data;
-
-      /* names starting with '*' are ignored */
-      if (mask->name && *mask->name == '*')
-	continue;
-
-      count++;
-    }
-
-    if ((count > 0) && !(file->flags & FILE_SUPPORT_MASKS_REPOSITORY)) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Mask Repository"));
-    }
-  }
-
-  if (!jlist_empty(sprite->repository.paths)) {
-    if (!(file->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Path Repository"));
-    }
-  }
-
-  /* show the confirmation alert */
-  if (ugetc(buf)) {
-    if (is_interactive()) {
-      if (fatal)
-	ret = jalert(_("Error<<File format \"%s\" doesn't support:%s"
-		       "||&Close"),
-		     file->name, buf);
-      else
-	ret = jalert(_("Warning<<File format \"%s\" doesn't support:%s"
-		       "<<Do you want continue?"
-		       "||&Yes||&No"),
-		     file->name, buf);
-
-      if ((fatal) || (ret != 1))
-	return 0;
-    }
-  }
-
-  /* palette */
-/*   memcpy(file_palette, sprite->palette, sizeof(PALETTE)); */
-
-  /* use the "sequence" interface */
-  if (file->flags & FILE_SUPPORT_SEQUENCES) {
-    Image *image;
-    int old_frame = sprite->frame;
-    char *old_filename = jstrdup(sprite->filename);
-
-    /* create a temporary bitmap */
-    image = image_new(sprite->imgtype, sprite->w, sprite->h);
-
-    if (image) {
-      /* save one frame */
-      if (sprite->frames == 1) {
-	/* draw all the sprite in the image */
-	sprite->frame = 0;
-	image_clear(image, 0);
-	sprite_render(sprite, image, 0, 0);
-
-	/* save the temporary image */
-	file_sequence.image = image;
-
-	palette_copy(file_palette, sprite_get_palette(sprite, sprite->frame));
-
-	add_progress(100);
-	ret = (*file->save)(sprite);
-	del_progress();
-      }
-      /* save more frames */
-      else {
-	char buf[256], left[256], right[256];
-	int width, start_from;
-
-	start_from = split_filename(sprite->filename, left, right, &width);
-	if (start_from < 0) {
-	  start_from = 0;
-	  width = (sprite->frames < 10)? 1:
-		  (sprite->frames < 100)? 2:
-		  (sprite->frames < 1000)? 3: 4;
-	}
-
-	add_progress(sprite->frames);
-
-	for (sprite->frame=0; sprite->frame<sprite->frames; sprite->frame++) {
-	  /* draw all the sprite in this frame in the image */
-	  image_clear(image, 0);
-	  sprite_render(sprite, image, 0, 0);
-
-	  /* get the name for this image */
-	  usprintf(buf, "%s%0*d%s", left, width, start_from+sprite->frame, right);
-
-	  /* save the image */
-	  file_sequence.image = image;
-	  ustrcpy(sprite->filename, buf);
-
-	  palette_copy(file_palette, sprite_get_palette(sprite, sprite->frame));
-
-	  add_progress(100);
-	  ret = (*file->save)(sprite);
-	  del_progress();
-
-	  /* error? */
-	  if (ret != 0)
-	    break;
-
-	  do_progress(sprite->frame);
-	}
-
-	del_progress();
-      }
-
-      /* destroy the image */
-      image_free(image);
+  /* rest(8); */
+
+  jmutex_lock(fop->mutex);
+  {
+    if (fop->seq.filename_list != NULL) {
+      fop->progress =
+	fop->seq.progress_offset +
+	fop->seq.progress_fraction*progress;
     }
     else {
-      console_printf(_("Not enough memory for the temporary bitmap.\n"));
+      fop->progress = progress;
     }
-
-    sprite->frame = old_frame;
-    ustrcpy(sprite->filename, old_filename);
-    jfree(old_filename);
   }
-  /* direct save */
-  else {
-    /* call the "save" procedure */
-    ret = (*file->save)(sprite);
+  jmutex_unlock(fop->mutex);
+}
+
+float fop_get_progress(FileOp *fop)
+{
+  float progress;
+
+  jmutex_lock(fop->mutex);
+  {
+    progress = fop->progress;
   }
+  jmutex_unlock(fop->mutex);
 
-  if (ret != 0)
-    console_printf(_("Error saving \"%s\"\n"), sprite->filename);
-  else
-    status_bar_set_text(app_get_status_bar(), 1000,
-			"File saved: %s", get_filename(sprite->filename));
+  return progress;
+}
 
-  return ret;
+/**
+ * Returns true when the file operation finished, this means, when the
+ * 'fop_operate()' routine ends.
+ */
+bool fop_is_done(FileOp *fop)
+{
+  bool done;
+
+  jmutex_lock(fop->mutex);
+  {
+    done = fop->done;
+  }
+  jmutex_unlock(fop->mutex);
+
+  return done;
+}
+
+bool fop_is_stop(FileOp *fop)
+{
+  bool stop;
+
+  jmutex_lock(fop->mutex);
+  {
+    stop = fop->stop;
+  }
+  jmutex_unlock(fop->mutex);
+
+  return stop;
+}
+
+static FileOp *fop_new(FileOpType type)
+{
+  FileOp *fop = jnew(FileOp, 1);
+  if (!fop)
+    return NULL;
+
+  fop->type = type;
+  fop->sprite = NULL;
+  fop->error = NULL;
+  fop->filename = NULL;
+
+  fop->mutex = jmutex_new();
+  fop->progress = 0.0f;
+  fop->done = FALSE;
+  fop->stop = FALSE;
+
+  fop->seq.filename_list = NULL;
+  fop->seq.palette = NULL;
+  fop->seq.image = NULL;
+  fop->seq.progress_offset = 0.0f;
+  fop->seq.progress_fraction = 0.0f;
+  fop->seq.frame = 0;
+  fop->seq.layer = NULL;
+  fop->seq.last_cel = NULL;
+  
+  return fop;
+}
+
+static void fop_prepare_for_sequence(FileOp *fop)
+{
+  fop->seq.filename_list = jlist_new();
+  fop->seq.palette = jmalloc(sizeof(RGB) * 256);
 }
 
 static FileFormat *get_fileformat(const char *extension)

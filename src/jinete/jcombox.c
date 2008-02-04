@@ -38,12 +38,19 @@ typedef struct ComboBox
   JWidget entry;
   JWidget button;
   JWidget window;
+  JWidget listbox;
   JList items;
   int selected;
   bool editable : 1;
   bool clickopen : 1;
   bool casesensitive : 1;
 } ComboBox;
+
+typedef struct ComboItem
+{
+  char *text;
+  void *data;
+} ComboItem;
 
 #define COMBOBOX(widget) ((ComboBox *)jwidget_get_data(widget, JI_COMBOBOX))
 #define IS_VALID_ITEM(widget, index)					\
@@ -58,13 +65,16 @@ static void combobox_close_window(JWidget widget);
 static void combobox_switch_window(JWidget widget);
 static JRect combobox_get_windowpos(ComboBox *combobox);
 
+static ComboItem *comboitem_new(const char *text, void *data);
+static void comboitem_free(ComboItem *item);
+
 JWidget jcombobox_new(void)
 {
-  JWidget widget = jbox_new(JI_HORIZONTAL);
+  JWidget widget = jwidget_new(JI_COMBOBOX);
   ComboBox *combobox = jnew(ComboBox, 1);
 
   combobox->entry = jentry_new(256, "");
-  combobox->button = jbutton_new("^");
+  combobox->button = jbutton_new("");
   combobox->window = NULL;
   combobox->items = jlist_new();
   combobox->selected = 0;
@@ -90,6 +100,8 @@ JWidget jcombobox_new(void)
   jwidget_add_child(widget, combobox->button);
 
   jcombobox_editable(widget, combobox->editable);
+
+  jwidget_init_theme(widget);
 
   return widget;
 }
@@ -145,12 +157,13 @@ bool jcombobox_is_casesensitive(JWidget widget)
   return combobox->casesensitive;
 }
 
-void jcombobox_add_string(JWidget widget, const char *string)
+void jcombobox_add_string(JWidget widget, const char *string, void *data)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
   bool sel_first = jlist_empty(combobox->items);
+  ComboItem *item = comboitem_new(string, data);
 
-  jlist_append(combobox->items, jstrdup(string));
+  jlist_append(combobox->items, item);
 
   if (sel_first)
     jcombobox_select_index(widget, 0);
@@ -164,17 +177,34 @@ void jcombobox_del_string(JWidget widget, const char *string)
 void jcombobox_del_index(JWidget widget, int index)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
+  ComboItem *item = jlist_nth_data(combobox->items, index);
 
-  jlist_remove(combobox->items, jlist_nth_data(combobox->items, index));
+  jlist_remove(combobox->items, item);
+  comboitem_free(item);
+}
+
+void jcombobox_clear(JWidget widget)
+{
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
+  JLink link;
+
+  JI_LIST_FOR_EACH(combobox->items, link)
+    comboitem_free(link->data);
+
+  jlist_clear(combobox->items);
 }
 
 void jcombobox_select_index(JWidget widget, int index)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
   JLink link = jlist_nth_link(combobox->items, index);
+  ComboItem *item;
+
   if (link != combobox->items->end) {
     combobox->selected = index;
-    jwidget_set_text(combobox->entry, link->data);
+
+    item = link->data;
+    jwidget_set_text(combobox->entry, item->text);
   }
 }
 
@@ -194,15 +224,29 @@ const char *jcombobox_get_selected_string(JWidget widget)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
-  return jlist_nth_data(combobox->items, combobox->selected);
+  return jcombobox_get_string(widget, combobox->selected);
 }
 
 const char *jcombobox_get_string(JWidget widget, int index)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
 
-  if (index >= 0 && index < jlist_length(combobox->items))
-    return jlist_nth_link(combobox->items, index)->data;
+  if (index >= 0 && index < jlist_length(combobox->items)) {
+    ComboItem *item = jlist_nth_link(combobox->items, index)->data;
+    return item->text;
+  }
+  else
+    return NULL;
+}
+
+void *jcombobox_get_data(JWidget widget, int index)
+{
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
+
+  if (index >= 0 && index < jlist_length(combobox->items)) {
+    ComboItem *item = jlist_nth_link(combobox->items, index)->data;
+    return item->data;
+  }
   else
     return NULL;
 }
@@ -214,8 +258,10 @@ int jcombobox_get_index(JWidget widget, const char *string)
   JLink link;
 
   JI_LIST_FOR_EACH(combobox->items, link) {
-    if ((combobox->casesensitive && ustrcmp(link->data, string) == 0) ||
-	(!combobox->casesensitive && ustricmp(link->data, string) == 0))
+    ComboItem *item = link->data;
+
+    if ((combobox->casesensitive && ustrcmp(item->text, string) == 0) ||
+	(!combobox->casesensitive && ustricmp(item->text, string) == 0))
       return index;
     index++;
   }
@@ -237,8 +283,17 @@ JWidget jcombobox_get_entry_widget(JWidget widget)
   return combobox->entry;
 }
 
+JWidget jcombobox_get_button_widget(JWidget widget)
+{
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
+
+  return combobox->button;
+}
+
 static bool combobox_msg_proc(JWidget widget, JMessage msg)
 {
+  ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
+
   switch (msg->type) {
 
     case JM_CLOSE:
@@ -246,28 +301,65 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DESTROY:
-      {
-	ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
-	JLink link;
+      jcombobox_clear(widget);
+      jlist_free(combobox->items);
+      jfree(combobox);
+      break;
 
-	JI_LIST_FOR_EACH(combobox->items, link)
-	  jfree(link->data);
+    case JM_REQSIZE: {
+      int w, h;
 
-	jlist_free(combobox->items);
-	jfree(combobox);
+      msg->reqsize.w = 0;
+      msg->reqsize.h = 0;
+
+      jwidget_request_size(combobox->entry, &w, &h);
+      msg->reqsize.w += w;
+      msg->reqsize.h += h;
+
+      jwidget_request_size(combobox->button, &w, &h);
+      msg->reqsize.w += w;
+      msg->reqsize.h = MAX(msg->reqsize.h, h);
+
+      return TRUE;
+    }
+
+    case JM_SETPOS: {
+      JRect cbox = jrect_new_copy(&msg->setpos.rect);
+      int w, h;
+
+      jrect_copy(widget->rc, cbox);
+
+      /* button */
+      jwidget_request_size(combobox->button, &w, &h);
+      cbox->x1 = msg->setpos.rect.x2 - w;
+      jwidget_set_rect(combobox->button, cbox);
+
+      /* entry */
+      cbox->x2 = cbox->x1;
+      cbox->x1 = msg->setpos.rect.x1;
+      jwidget_set_rect(combobox->entry, cbox);
+
+      jrect_free(cbox);
+      return TRUE;
+    }
+      
+    case JM_WINMOVE:
+      if (combobox->window) {
+	JRect rc = combobox_get_windowpos(combobox);
+	jwindow_move(combobox->window, rc);
+	jrect_free(rc);
       }
       break;
 
-    case JM_WINMOVE:
-      {
-	ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
-	if (combobox->window) {
-	  JRect rc = combobox_get_windowpos(combobox);
-	  jwindow_move(combobox->window, rc);
-	  jrect_free(rc);
+    case JM_BUTTONPRESSED:
+      if (combobox->window != NULL) {
+	if (!jwidget_has_mouse(jwidget_get_view(combobox->listbox))) {
+	  combobox_close_window(widget);
+	  return TRUE;
 	}
       }
       break;
+
   }
 
   return FALSE;
@@ -384,20 +476,24 @@ static void combobox_open_window(JWidget widget)
 {
   ComboBox *combobox = jwidget_get_data(widget, JI_COMBOBOX);
   if (!combobox->window) {
-    JWidget view, listbox;
+    JWidget view;
     JLink link;
     int size;
     JRect rc;
 
     combobox->window = jwindow_new(NULL);
     view = jview_new();
-    listbox = jlistbox_new();
+    combobox->listbox = jlistbox_new();
 
-    listbox->user_data[0] = widget;
-    jwidget_add_hook(listbox, JI_WIDGET, combobox_listbox_msg_proc, NULL);
+    combobox->listbox->user_data[0] = widget;
+    jwidget_add_hook(combobox->listbox, JI_WIDGET,
+		     combobox_listbox_msg_proc, NULL);
 
-    JI_LIST_FOR_EACH(combobox->items, link)
-      jwidget_add_child(listbox, jlistitem_new(link->data));
+    JI_LIST_FOR_EACH(combobox->items, link) {
+      ComboItem *item = link->data;
+      jwidget_add_child(combobox->listbox,
+			jlistitem_new(item->text));
+    }
 
     jwindow_ontop(combobox->window, TRUE);
     jwidget_noborders(combobox->window);
@@ -406,14 +502,14 @@ static void combobox_open_window(JWidget widget)
     jwidget_set_min_size
       (view,
        jrect_w(combobox->entry->rc),
-       2+(2+jwidget_get_text_height(listbox))*MID(1, size, 10)+2);
+       2+(2+jwidget_get_text_height(combobox->listbox))*MID(1, size, 10)+2);
 
     jwidget_add_child(combobox->window, view);
-    jview_attach(view, listbox);
+    jview_attach(view, combobox->listbox);
 
-    jwidget_signal_off(listbox);
-    jlistbox_select_index(listbox, combobox->selected);
-    jwidget_signal_on(listbox);
+    jwidget_signal_off(combobox->listbox);
+    jlistbox_select_index(combobox->listbox, combobox->selected);
+    jwidget_signal_on(combobox->listbox);
 
     jwindow_remap(combobox->window);
 
@@ -421,8 +517,10 @@ static void combobox_open_window(JWidget widget)
     jwindow_position(combobox->window, rc->x1, rc->y1);
     jrect_free(rc);
 
+    jmanager_add_msg_filter(JM_BUTTONPRESSED, widget);
+
     jwindow_open_bg(combobox->window);
-    jmanager_set_focus(listbox);
+    jmanager_set_focus(combobox->listbox);
   }
 }
 
@@ -433,6 +531,7 @@ static void combobox_close_window(JWidget widget)
     jwindow_close(combobox->window, widget);
     combobox->window = NULL;
 
+    jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);
     jmanager_set_focus(combobox->entry);
   }
 }
@@ -456,4 +555,24 @@ static JRect combobox_get_windowpos(ComboBox *combobox)
   if (rc->y2 > JI_SCREEN_H)
     jrect_displace(rc, 0, -(jrect_h(rc)+jrect_h(combobox->entry->rc)));
   return rc;
+}
+
+static ComboItem *comboitem_new(const char *text, void *data)
+{
+  ComboItem *comboitem = jnew(ComboItem, 1);
+  if (!comboitem)
+    return NULL;
+
+  comboitem->text = jstrdup(text);
+  comboitem->data = data;
+
+  return comboitem;
+}
+
+static void comboitem_free(ComboItem *comboitem)
+{
+  if (comboitem->text)
+    jfree(comboitem->text);
+
+  jfree(comboitem);
 }

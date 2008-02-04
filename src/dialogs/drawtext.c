@@ -283,9 +283,9 @@ static void button_font_command(JWidget widget)
 {
   char *filename;
 
-  filename = GUI_FileSelect(_("Open Font (TTF or Allegro bitmap format)"),
-			    get_config_string ("DrawText", "Font", ""),
-			    "pcx,bmp,tga,lbm,ttf");
+  filename = ase_file_selector(_("Open Font (TTF or Allegro bitmap format)"),
+			       get_config_string ("DrawText", "Font", ""),
+			       "pcx,bmp,tga,lbm,ttf");
   if (filename) {
     set_config_string("DrawText", "Font", filename);
     update_button_text();

@@ -79,6 +79,7 @@ COMMON_SOURCES =					\
 	src/core/config.c				\
 	src/core/core.c					\
 	src/core/dirs.c					\
+	src/core/file_system.c				\
 	src/core/modules.c				\
 	src/dialogs/canvasze.c				\
 	src/dialogs/colsel.c				\
@@ -148,6 +149,7 @@ COMMON_SOURCES =					\
 	src/jinete/jsystem.c				\
 	src/jinete/jtextbox.c				\
 	src/jinete/jtheme.c				\
+	src/jinete/jthread.c				\
 	src/jinete/jview.c				\
 	src/jinete/jwidget.c				\
 	src/jinete/jwindow.c				\
@@ -206,6 +208,7 @@ COMMON_SOURCES =					\
 	src/widgets/editor/cursor.c			\
 	src/widgets/editor/editor.c			\
 	src/widgets/editor/keys.c			\
+	src/widgets/fileview.c				\
 	src/widgets/groupbut.c				\
 	src/widgets/menuitem.c				\
 	src/widgets/paledit.c				\
@@ -214,6 +217,11 @@ COMMON_SOURCES =					\
 	src/widgets/tabs.c				\
 	src/widgets/target.c				\
 	src/widgets/toolbar.c
+
+ifdef WIN32
+  COMMON_SOURCES += src/core/file_system_win32.c
+else
+endif
 
 ifdef USE_X86_INT_MULT
   COMMON_SOURCES += src/raster/x86/int_mult.s

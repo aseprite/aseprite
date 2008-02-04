@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef FILE_ASE_H
-#define FILE_ASE_H
+#ifndef WIDGETS_FILEVIEW_H
+#define WIDGETS_FILEVIEW_H
 
-#include <stdio.h>
+#include "jinete/jbase.h"
 
-struct Sprite;
+#include "core/file_system.h"
 
-struct Sprite *ase_file_read_f(FILE *f);
-int ase_file_write_f(FILE *f, struct Sprite *sprite);
+/* TODO use some JI_SIGNAL_USER */
+#define SIGNAL_FILEVIEW_FILE_SELECTED		0x10006
+#define SIGNAL_FILEVIEW_FILE_ACCEPT		0x10007
+#define SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED	0x10008
 
-int fgetw(FILE *file);
-long fgetl(FILE *file);
-int fputw(int w, FILE *file);
-int fputl(long l, FILE *file);
+JWidget fileview_new(FileItem *start_folder, const char *exts);
+int fileview_type(void);
 
-#endif /* FILE_ASE_H */
+FileItem *fileview_get_current_folder(JWidget fileview);
+FileItem *fileview_get_selected(JWidget fileview);
+void fileview_set_current_folder(JWidget widget, FileItem *folder);
+
+void fileview_goup(JWidget fileview);
+
+#endif /* WIDGETS_FILEVIEW_H */

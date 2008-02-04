@@ -1,5 +1,5 @@
 ASE Files (.ASE) Format description
-Copyright (C) 2004-2005, 2007 by David A. Capello
+Copyright (C) 2004-2005, 2007, 2008 by David A. Capello
 ----------------------------------------------------------------------
 
 1. References
@@ -19,7 +19,6 @@ BYTE		An 8-bit unsigned integer value
 WORD		A 16-bit unsigned integer value
 DWORD		A 32-bit unsigned integer value
 LONG		A 32-bit signed integer value
-DOUBLE		A 64-bit floating point value
 BYTE[n]		"n" bytes.
 RECT		Four LONGs (in the order: x-pos, y-pos, width, heigth)
 STRING		length=WORD (how many characters to read next)
@@ -211,6 +210,7 @@ NOTE.1: The child level is used to show the relationship of this
     |  `- Layer2		2
     `- Layer3			1
 
+
 NOTE.2: The layer index is a number to identify any layer in the
         sprite, for example:
 
@@ -222,6 +222,7 @@ NOTE.2: The layer index is a number to identify any layer in the
     |- My set1			3
     |  `- Layer2		4
     `- Layer3			5
+
 
 NOTE.3: The raw pixel data is saved row by row from top to bottom, and
         each scanline is from pixel by pixel from left to right.

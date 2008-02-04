@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,14 @@
 
 #include "jinete/jbase.h"
 
-int app_init(int argc, char *argv[]);
+bool app_init(int argc, char *argv[]);
 void app_loop(void);
 void app_exit(void);
 
 void app_refresh_screen(void);
 
 void app_realloc_sprite_list(void);
-void app_realloc_recent_list(void);
+bool app_realloc_recent_list(void);
 
 int app_get_current_image_type(void);
 

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 
 #include "commands/commands.h"
 #include "console/console.h"
-/* #include "core/app.h" */
+#include "core/app.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
 #include "modules/recent.h"
@@ -44,14 +44,15 @@ static bool cmd_save_file_as_enabled(const char *argument)
 static void cmd_save_file_as_execute(const char *argument)
 {
   char filename[4096];
+  char exts[4096];
   char *newfilename;
   int ret;
 
   ustrcpy(filename, current_sprite->filename);
+  get_writable_extensions(exts, sizeof(exts));
 
   for (;;) {
-    newfilename = GUI_FileSelect(_("Save Sprite"), filename,
-				 get_writable_extensions());
+    newfilename = ase_file_selector(_("Save Sprite"), filename, exts);
     if (!newfilename)
       return;
     ustrcpy(filename, newfilename);
@@ -80,17 +81,15 @@ static void cmd_save_file_as_execute(const char *argument)
   }
 
   sprite_set_filename(current_sprite, filename);
-  rebuild_sprite_list();
+  app_realloc_sprite_list();
 
   if (sprite_save(current_sprite) == 0) {
     recent_file(filename);
     sprite_mark_as_saved(current_sprite);
   }
   else {
+    /* TODO if the user cancel we shouldn't unrecent the file */
     unrecent_file(filename);
-    console_printf("%s: %s",
-		   _("Error saving sprite file"),
-		   filename);
   }
 }
 

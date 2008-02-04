@@ -268,11 +268,12 @@ bool effect_apply_step(Effect *effect)
 
 void effect_apply(Effect *effect)
 {
-  add_progress(effect->h);
+/*   add_progress(effect->h); */
 
   effect_begin(effect);
   while (effect_apply_step(effect))
-    do_progress(effect->row);
+    ;
+/*     do_progress(effect->row); */
 
   /* undo stuff */
   if (undo_is_enabled(effect->sprite->undo))
@@ -282,7 +283,7 @@ void effect_apply(Effect *effect)
   /* copy "dst" to "src" */
   image_copy(effect->src, effect->dst, 0, 0);
 
-  del_progress();
+/*   del_progress(); */
 }
 
 void effect_flush(Effect *effect)
@@ -343,15 +344,15 @@ void effect_apply_to_target(Effect *effect)
 	undo_open(effect->sprite->undo);
     }
 
-    add_progress(images);
+/*     add_progress(images); */
     for (n=n2=0; n<stock->nimage; n++) {
       if (!stock->image[n])
 	continue;
 
-      do_progress(n2++);
+/*       do_progress(n2++); */
       effect_apply_to_image(effect, stock->image[n], x[n], y[n]);
     }
-    del_progress();
+/*     del_progress(); */
 
     if (images > 1) {
       /* close  */

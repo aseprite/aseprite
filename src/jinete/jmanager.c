@@ -533,18 +533,21 @@ bool jmanager_generate_messages(JWidget manager)
 	count = 0;
 	while (t - timers[c]->last_time > timers[c]->interval) {
 	  timers[c]->last_time += timers[c]->interval;
-
-	  msg = jmessage_new(JM_TIMER);
-	  msg->timer.count = count;
-	  msg->timer.timer_id = c;
-	  jmessage_add_dest(msg, timers[c]->widget);
-	  jmanager_enqueue_message(msg);
+	  ++count;
 
 	  /* we spend too much time here */
 	  if (ji_clock - t > timers[c]->interval) {
 	    timers[c]->last_time = ji_clock;
 	    break;
 	  }
+	}
+
+	if (count > 0) {
+	  msg = jmessage_new(JM_TIMER);
+	  msg->timer.count = count;
+	  msg->timer.timer_id = c;
+	  jmessage_add_dest(msg, timers[c]->widget);
+	  jmanager_enqueue_message(msg);
 	}
       }
     }
@@ -604,11 +607,26 @@ int jmanager_add_timer(JWidget widget, int interval)
 
 void jmanager_remove_timer(int timer_id)
 {
+  JMessage message;
+  JLink link, next;
+
   assert(timer_id >= 0 && timer_id < n_timers);
   assert(timers[timer_id] != NULL);
 
   jfree(timers[timer_id]);
   timers[timer_id] = NULL;
+
+  /* remove messages of this timer in the queue */
+  JI_LIST_FOR_EACH_SAFE(msg_queue, link, next) {
+    message = link->data;
+    if (!message->any.used &&
+	message->any.type == JM_TIMER &&
+	message->timer.timer_id == timer_id) {
+      printf("REMOVING A TIMER MESSAGE FROM THE QUEUE!!\n"); fflush(stdout);
+      jmessage_free(link->data);
+      jlist_delete_link(msg_queue, link);
+    }
+  }
 }
 
 void jmanager_start_timer(int timer_id)

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,9 @@ struct GfxObj
   unsigned int id;
 /*   struct GfxObjProperty *properties; */
 };
+
+bool gfxobj_init(void);
+void gfxobj_exit(void);
 
 GfxObj *gfxobj_new(int type, int size);
 void gfxobj_free(GfxObj *gfxobj);

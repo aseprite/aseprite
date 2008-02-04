@@ -38,10 +38,8 @@ typedef struct PAL
   PALETTE pal;
 } PAL;
 
-static int index_count;
-
-static Layer *index2layer(Layer *layer, int index);
-static int layer2index(const Layer *layer, const Layer *find_layer);
+static Layer *index2layer(Layer *layer, int index, int *index_count);
+static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count);
 
 static Sprite *general_copy(const Sprite *sprite);
 
@@ -314,6 +312,20 @@ void sprite_mark_as_saved(Sprite *sprite)
 {
   sprite->undo->diff_saved = sprite->undo->diff_count;
   sprite->associated_to_file = TRUE;
+}
+
+bool sprite_need_alpha(Sprite *sprite)
+{
+  switch (sprite->imgtype) {
+
+    case IMAGE_RGB:
+      return _rgba_geta(sprite->bgcolor) < 255;
+
+    case IMAGE_GRAYSCALE:
+      return _graya_geta(sprite->bgcolor) < 255;
+
+  }
+  return FALSE;
 }
 
 bool sprite_lock(Sprite *sprite)
@@ -734,31 +746,31 @@ void sprite_generate_mask_boundaries(Sprite *sprite)
 
 Layer *sprite_index2layer(Sprite *sprite, int index)
 {
-  index_count = -1;
+  int index_count = -1;
 
-  return index2layer(sprite->set, index);
+  return index2layer(sprite->set, index, &index_count);
 }
 
 int sprite_layer2index(const Sprite *sprite, const Layer *layer)
 {
-  index_count = -1;
+  int index_count = -1;
 
-  return layer2index(sprite->set, layer);
+  return layer2index(sprite->set, layer, &index_count);
 }
 
-static Layer *index2layer(Layer *layer, int index)
+static Layer *index2layer(Layer *layer, int index, int *index_count)
 {
-  if (index == index_count)
+  if (index == *index_count)
     return layer;
   else {
-    index_count++;
+    (*index_count)++;
 
     if (layer_is_set (layer)) {
       Layer *found;
       JLink link;
 
       JI_LIST_FOR_EACH(layer->layers, link) {
-	if ((found = index2layer(link->data, index)))
+	if ((found = index2layer(link->data, index, index_count)))
 	  return found;
       }
     }
@@ -767,19 +779,19 @@ static Layer *index2layer(Layer *layer, int index)
   }
 }
 
-static int layer2index(const Layer *layer, const Layer *find_layer)
+static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count)
 {
   if (layer == find_layer)
-    return index_count;
+    return *index_count;
   else {
-    index_count++;
+    (*index_count)++;
 
-    if (layer_is_set (layer)) {
+    if (layer_is_set(layer)) {
       JLink link;
       int found;
 
       JI_LIST_FOR_EACH(layer->layers, link) {
-	if ((found = layer2index(link->data, find_layer)) >= 0)
+	if ((found = layer2index(link->data, find_layer, index_count)) >= 0)
 	  return found;
       }
     }

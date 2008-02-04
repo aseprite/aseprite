@@ -20,20 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include <errno.h>
-#if defined ALLEGRO_UNIX || defined ALLEGRO_DJGPP || defined ALLEGRO_MINGW32
-#  include <sys/stat.h>
-#endif
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MINGW32
-#  include <sys/unistd.h>
-#endif
-
-#ifdef ALLEGRO_WINDOWS
-#include <winalleg.h>
-#include <shlobj.h>
-#endif
 
 #include "jinete/jinete.h"
 
@@ -41,6 +31,7 @@
 #include "core/dirs.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
+#include "widgets/fileview.h"
 
 #endif
 
@@ -48,38 +39,50 @@
 #  define HAVE_DRIVES
 #endif
 
-#define FA_ALL       FA_RDONLY | FA_DIREC | FA_ARCH | FA_HIDDEN | FA_SYSTEM
+/* Variables used only to maintain the history of navigation. */
+static JLink navigation_position = NULL; /* current position in the navigation history */
+static JList navigation_history = NULL;	/* set of FileItems navigated */
+static bool navigation_locked = FALSE;	/* if TRUE the navigation_history isn't
+					   modified if the current folder
+					   changes (used when the back/forward
+					   buttons are pushed) */
 
-static bool combobox_msg_proc(JWidget widget, JMessage message);
-static void add_bookmark_command(JWidget widget, void *data);
-static void del_bookmark_command(JWidget widget, void *data);
-static void fill_bookmarks_combobox(JWidget combobox);
-static void home_command(JWidget widget);
-static void fonts_command(JWidget widget);
-static void palettes_command(JWidget widget);
-static void mkdir_command(JWidget widget);
+static void update_location(JWidget window);
+static void update_navigation_buttons(JWidget window);
+static void add_in_navigation_history(FileItem *folder);
+static void select_filetype_from_filename(JWidget window);
+
+static void goback_command(JWidget widget);
+static void goforward_command(JWidget widget);
+static void goup_command(JWidget widget);
+
+static bool fileview_msg_proc(JWidget widget, JMessage msg);
+static bool location_msg_proc(JWidget widget, JMessage msg);
+static bool filetype_msg_proc(JWidget widget, JMessage msg);
 
 /**
- * The routine to select file in ASE.
- *
- * It add some extra functionalities to the default Jinete
- * file-selection dialog.
- * 
- * @see ji_file_select_ex.
+ * The routine that shows the dialog to select a file in ASE.
  */
-char *GUI_FileSelect(const char *message,
-		     const char *init_path,
-		     const char *exts)
+char *ase_file_selector(const char *message,
+			const char *init_path,
+			const char *exts)
 {
-  JWidget box_left, button_home;
-  JWidget button_fonts, button_palettes, button_mkdir;
-  JWidget box_top, box_top2, combobox, add_bookmark, del_bookmark, entry_path;
-  JWidget widget_extension;
-  char buf[512], *selected_filename;
+  static JWidget window = NULL;
+  JWidget fileview, box, ok;
+  JWidget goback, goforward, goup;
+  JWidget filename_entry;
+  JWidget filetype;
+  char buf[512];
+  char *result = NULL;
+  char *tok;
 
+  if (!navigation_history)
+    navigation_history = jlist_new();
+
+  /* 'buf' will contain the start folder path */
   ustrcpy(buf, init_path);
 
-  /* insert the path */
+  /* use the current path */
   if (get_filename(buf) == buf) {
     char path[512];
 
@@ -105,297 +108,410 @@ char *GUI_FileSelect(const char *message,
     ustrcat(path, buf);
     ustrcpy(buf, path);
   }
+  else {
+    /* remove the filename */
+    *get_filename(buf) = 0;
+  }
+  
+  if (!window) {
+    JWidget view, location;
 
-  /**********************************************************************/
-  /* prepare left side */
+    /* load the window widget */
+    window = load_widget("filesel.jid", "file_selector");
+    if (!window)
+      return NULL;
 
-  box_left = jbox_new(JI_VERTICAL);
-  button_home = jbutton_new(NULL);
-  button_fonts = jbutton_new(NULL);
-  button_palettes = jbutton_new(NULL);
-  button_mkdir = jbutton_new(NULL);
+    box = jwidget_find_name(window, "box");
+    goback = jwidget_find_name(window, "goback");
+    goforward = jwidget_find_name(window, "goforward");
+    goup = jwidget_find_name(window, "goup");
+    location = jwidget_find_name(window, "location");
+    filetype = jwidget_find_name(window, "filetype");
 
-  add_gfxicon_to_button(button_home, GFX_FILE_HOME, JI_CENTER | JI_MIDDLE);
-  add_gfxicon_to_button(button_fonts, GFX_FILE_FONTS, JI_CENTER | JI_MIDDLE);
-  add_gfxicon_to_button(button_palettes, GFX_FILE_PALETTES, JI_CENTER | JI_MIDDLE);
-  add_gfxicon_to_button(button_mkdir, GFX_FILE_MKDIR, JI_CENTER | JI_MIDDLE);
+    jwidget_focusrest(goback, FALSE);
+    jwidget_focusrest(goforward, FALSE);
+    jwidget_focusrest(goup, FALSE);
 
-  /* hook signals */
-  jbutton_add_command(button_home, home_command);
-  jbutton_add_command(button_fonts, fonts_command);
-  jbutton_add_command(button_palettes, palettes_command);
-  jbutton_add_command(button_mkdir, mkdir_command);
+    add_gfxicon_to_button(goback, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
+    add_gfxicon_to_button(goforward, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
+    add_gfxicon_to_button(goup, GFX_ARROW_UP, JI_CENTER | JI_MIDDLE);
 
-  jwidget_add_childs(box_left,
-		     button_home, button_fonts,
-		     button_palettes, button_mkdir, NULL);
+    jbutton_add_command(goback, goback_command);
+    jbutton_add_command(goforward, goforward_command);
+    jbutton_add_command(goup, goup_command);
 
-  /**********************************************************************/
-  /* prepare top side */
+    view = jview_new();
+    fileview = fileview_new(get_fileitem_from_path(buf), exts);
 
-  box_top = jbox_new(JI_HORIZONTAL);
-  box_top2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-  combobox = jcombobox_new();
-  entry_path = jcombobox_get_entry_widget(combobox);
-  add_bookmark = jbutton_new("+");
-  del_bookmark = jbutton_new("-");
+    jwidget_add_hook(fileview, -1, fileview_msg_proc, NULL);
+    jwidget_add_hook(location, -1, location_msg_proc, NULL);
+    jwidget_add_hook(filetype, -1, filetype_msg_proc, NULL);
 
-#ifdef HAVE_DRIVES
-  jcombobox_casesensitive(combobox, FALSE);
-#else
-  jcombobox_casesensitive(combobox, TRUE);
-#endif
+    jwidget_set_name(fileview, "fileview");
+    jwidget_magnetic(fileview, TRUE);
 
-  jwidget_noborders(box_top2);
-  jbutton_set_bevel(add_bookmark, 2, 0, 2, 0);
-  jbutton_set_bevel(del_bookmark, 0, 2, 0, 2);
-  jcombobox_editable(combobox, TRUE);
-  jcombobox_clickopen(combobox, FALSE);
+    jview_attach(view, fileview);
+    jwidget_expansive(view, TRUE);
 
-  jwidget_add_hook(combobox, JI_WIDGET, combobox_msg_proc, NULL);
-  jbutton_add_command_data(add_bookmark, add_bookmark_command, combobox);
-  jbutton_add_command_data(del_bookmark, del_bookmark_command, combobox);
+    jwidget_add_child(box, view);
 
-  fill_bookmarks_combobox(combobox);
+    jwidget_set_min_size(window, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
+    jwindow_remap(window);
+    jwindow_center(window);
+  }
+  else {
+    fileview = jwidget_find_name(window, "fileview");
+    filetype = jwidget_find_name(window, "filetype");
 
-  jwidget_expansive(combobox, TRUE);
-  jwidget_add_childs(box_top, combobox, box_top2, NULL);
-  jwidget_add_childs(box_top2, add_bookmark, del_bookmark, NULL);
+    jwidget_signal_off(fileview);
+    fileview_set_current_folder(fileview, get_fileitem_from_path(buf));
+    jwidget_signal_on(fileview);
+  }
 
-  /**********************************************************************/
-  /* prepare widget_extension */
+  /* current location */
+  navigation_position = NULL;
+  add_in_navigation_history(fileview_get_current_folder(fileview));
+  
+  /* fill the location combo-box */
+  update_location(window);
+  update_navigation_buttons(window);
 
-  widget_extension = jwidget_new(JI_WIDGET);
-  jwidget_set_name(box_left, "left");
-  jwidget_set_name(box_top, "top");
-  jwidget_set_name(entry_path, "path");
-  jwidget_add_childs(widget_extension, box_left, box_top, NULL);
+  /* fill file-type combo-box */
+  jcombobox_clear(filetype);
+  ustrcpy(buf, exts);
+  for (tok = ustrtok(buf, ",");
+       tok != NULL;
+       tok = ustrtok(NULL, ",")) {
+    jcombobox_add_string(filetype, tok, NULL);
+  }
 
-  /* call the jinete file selector */
-  selected_filename = ji_file_select_ex(message, buf, exts, widget_extension);
-  if (selected_filename) {
-    char *s, *name_dup = jstrdup(selected_filename);
+  /* file name entry field */
+  filename_entry = jwidget_find_name(window, "filename");
+  jwidget_set_text(filename_entry, get_filename(init_path));
+  select_filetype_from_filename(window);
+
+  /* setup the title of the window */
+  jwidget_set_text(window, message);
+
+  /* get the ok-button */
+  ok = jwidget_find_name(window, "ok");
+
+  /* update the view */
+  jview_update(jwidget_get_view(fileview));
+
+  /* open the window and run... the user press ok? */
+  jwindow_open_fg(window);
+  if (jwindow_get_killer(window) == ok ||
+      jwindow_get_killer(window) == fileview) {
+    char *p;
+
+    /* open the selected file */
+    FileItem *folder = fileview_get_current_folder(fileview);
+    assert(folder != NULL);
+
+    ustrcpy(buf, fileitem_get_filename(folder));
+    put_backslash(buf);
+    ustrcat(buf, jwidget_get_text(filename_entry));
+
+    /* does it not have extension? ...we should add the extension
+       selected in the filetype combo-box */
+    p = get_extension(buf);
+    if (!p || *p == 0) {
+      ustrcat(buf, ".");
+      ustrcat(buf, jcombobox_get_selected_string(filetype));
+    }
+
+    /* duplicate the buffer to return a new string */
+    result = jstrdup(buf);
 
     /* save the path in the configuration file */
-    s = get_filename(name_dup);
-    if (s)
-      *s = 0;
-
-    set_config_string("FileSelect", "CurrentDirectory", name_dup);
-    jfree(name_dup);
+    {
+      char *name_dup = jstrdup(result);
+      char *s = get_filename(name_dup);
+      if (s)
+	*s = 0;
+      set_config_string("FileSelect", "CurrentDirectory", name_dup);
+      jfree(name_dup);
+    }
   }
 
-  jwidget_free(widget_extension);
+  /* TODO why this doesn't work if I remove this? */
+  jwidget_free(window);
+  window = NULL;
 
-  return selected_filename;
+  return result;
 }
 
-static bool combobox_msg_proc(JWidget widget, JMessage msg)
+/**
+ * Updates the content of the combo-box that shows the current
+ * location in the file-system.
+ */
+static void update_location(JWidget window)
 {
-  switch (msg->type) {
+  char buf[MAX_PATH*2];
+  JWidget fileview = jwidget_find_name(window, "fileview");
+  JWidget location = jwidget_find_name(window, "location");
+  FileItem *current_folder = fileview_get_current_folder(fileview);
+  FileItem *fileitem = current_folder;
+  JList locations = jlist_new();
+  int c, level = 0;
+  JLink link;
+  int selected_index = -1;
 
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_COMBOBOX_SELECT) {
-	ji_file_select_enter_to_path(jcombobox_get_selected_string(widget));
-	return TRUE;
-      }
-      break;
+  while (fileitem != NULL) {
+    jlist_prepend(locations, fileitem);
+    fileitem = fileitem_get_parent(fileitem);
   }
 
+  /* clear all the items from the combo-box */
+  jcombobox_clear(location);
+
+  /* add item by item (from root to the specific current folder) */
+  level = 0;
+  JI_LIST_FOR_EACH(locations, link) {
+    fileitem = link->data;
+
+    /* indentation */
+    ustrcpy(buf, empty_string);
+    for (c=0; c<level; ++c)
+      ustrcat(buf, "  ");
+
+    /* location name */
+    ustrcat(buf, fileitem_get_displayname(fileitem));
+
+    /* add the new location to the combo-box */
+    jcombobox_add_string(location, buf, fileitem);
+
+    if (fileitem == current_folder)
+      selected_index = level;
+    
+    level++;
+  }
+
+  jwidget_signal_off(location);
+  jcombobox_select_index(location, selected_index);
+  jwidget_set_text(jcombobox_get_entry_widget(location),
+		   fileitem_get_displayname(current_folder));
+  jentry_deselect_text(jcombobox_get_entry_widget(location));
+  jwidget_signal_on(location);
+
+  jlist_free(locations);
+}
+
+static void update_navigation_buttons(JWidget window)
+{
+  JWidget fileview = jwidget_find_name(window, "fileview");
+  JWidget goback = jwidget_find_name(window, "goback");
+  JWidget goforward = jwidget_find_name(window, "goforward");
+  JWidget goup = jwidget_find_name(window, "goup");
+  FileItem *current_folder = fileview_get_current_folder(fileview);
+
+  /* update the state of the go back button: if the navigation-history
+     has two elements and the navigation-position isn't the first
+     one */
+  if (jlist_length(navigation_history) > 1 &&
+      (!navigation_position ||
+       navigation_position != jlist_first(navigation_history))) {
+    jwidget_enable(goback);
+  }
+  else {
+    jwidget_disable(goback);
+  }
+
+  /* update the state of the go forward button: if the
+     navigation-history has two elements and the navigation-position
+     isn't the last one */
+  if (jlist_length(navigation_history) > 1 &&
+      (!navigation_position ||
+       navigation_position != jlist_last(navigation_history))) {
+    jwidget_enable(goforward);
+  }
+  else {
+    jwidget_disable(goforward);
+  }
+
+  /* update the state of the go up button: if the current-folder isn't
+     the root-item */
+  if (current_folder != get_root_fileitem())
+    jwidget_enable(goup);
+  else
+    jwidget_disable(goup);
+}
+
+static void add_in_navigation_history(FileItem *folder)
+{
+  assert(fileitem_is_folder(folder));
+
+  /* remove the history from the current position */
+  if (navigation_position) {
+    JLink next;
+    for (navigation_position = navigation_position->next;
+	 navigation_position != navigation_history->end;
+	 navigation_position = next) {
+      next = navigation_position->next;
+      jlist_delete_link(navigation_history,
+			navigation_position);
+    }
+    navigation_position = NULL;
+  }
+
+  /* if the history is empty or if the last item isn't the folder that
+     we are visiting... */
+  if (jlist_empty(navigation_history) ||
+      jlist_last_data(navigation_history) != folder) {
+    /* ...we can add the location in the history */
+    jlist_append(navigation_history, folder);
+    navigation_position = jlist_last(navigation_history);
+  }
+}
+
+static void select_filetype_from_filename(JWidget window)
+{
+  JWidget entry = jwidget_find_name(window, "filename");
+  JWidget filetype = jwidget_find_name(window, "filetype");
+  const char *filename = jwidget_get_text(entry);
+  char *p = get_extension(filename);
+  char buf[MAX_PATH];
+
+  if (p && *p != 0) {
+    ustrcpy(buf, get_extension(filename));
+    ustrlwr(buf);
+    jcombobox_select_string(filetype, buf);
+  }
+}
+
+static void goback_command(JWidget widget)
+{
+  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
+				       "fileview");
+
+  if (jlist_length(navigation_history) > 1) {
+    if (!navigation_position)
+      navigation_position = jlist_last(navigation_history);
+
+    if (navigation_position->prev != navigation_history->end) {
+      navigation_position = navigation_position->prev;
+
+      navigation_locked = TRUE;
+      fileview_set_current_folder(fileview,
+				  navigation_position->data);
+      navigation_locked = FALSE;
+    }
+  }
+}
+
+static void goforward_command(JWidget widget)
+{
+  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
+				       "fileview");
+
+  if (jlist_length(navigation_history) > 1) {
+    if (!navigation_position)
+      navigation_position = jlist_first(navigation_history);
+
+    if (navigation_position->next != navigation_history->end) {
+      navigation_position = navigation_position->next;
+
+      navigation_locked = TRUE;
+      fileview_set_current_folder(fileview,
+				  navigation_position->data);
+      navigation_locked = FALSE;
+    }
+  }
+}
+
+static void goup_command(JWidget widget)
+{
+  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
+				       "fileview");
+  fileview_goup(fileview);
+}
+
+static bool fileview_msg_proc(JWidget widget, JMessage msg)
+{
+  if (msg->type == JM_SIGNAL) {
+    switch (msg->signal.num) {
+    
+      case SIGNAL_FILEVIEW_FILE_SELECTED: {
+	FileItem *fileitem = fileview_get_selected(widget);
+
+	if (!fileitem_is_folder(fileitem)) {
+	  JWidget window = jwidget_get_window(widget);
+	  JWidget entry = jwidget_find_name(window, "filename");
+	  const char *filename = fileitem_get_filename(fileitem);
+
+	  jwidget_set_text(entry, get_filename(filename));
+	  select_filetype_from_filename(window);
+	}
+	break;
+      }
+
+      case SIGNAL_FILEVIEW_FILE_ACCEPT:
+	jwidget_close_window(widget);
+	break;
+
+      case SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED: {
+	JWidget window = jwidget_get_window(widget);
+
+	if (!navigation_locked)
+	  add_in_navigation_history(fileview_get_current_folder(widget));
+
+	update_location(window);
+	update_navigation_buttons(window);
+	break;
+      }
+
+    }
+  }
   return FALSE;
 }
 
-/**
- * Adds a new bookmark.
- */
-static void add_bookmark_command(JWidget widget, void *data)
+static bool location_msg_proc(JWidget widget, JMessage msg)
 {
-  JWidget combobox = data;
-  char buf[64], path[1024];
-  int count;
+  if (msg->type == JM_SIGNAL) {
+    switch (msg->signal.num) {
+    
+      case JI_SIGNAL_COMBOBOX_SELECT: {
+	FileItem *fileitem =
+	  jcombobox_get_data(widget,
+			     jcombobox_get_selected_index(widget));
 
-  count = get_config_int("Bookmarks", "Count", 0);
-  count = MID(0, count, 256);
+	if (fileitem) {
+	  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
+					       "fileview");
 
-  if (count < 256) {
-    replace_filename(path, ji_file_select_get_current_path(), "", 1024);
-
-    jcombobox_add_string(combobox, path);
-
-    usprintf(buf, "Mark%02d", count);
-
-    set_config_string("Bookmarks", buf, path);
-    set_config_int("Bookmarks", "Count", count+1);
-  }
-}
-
-/**
- * Deletes a bookmark.
- */
-static void del_bookmark_command(JWidget widget, void *data)
-{
-  JWidget combobox = data;
-  char buf[64], path[1024];
-  int index, count;
-
-  count = jcombobox_get_count(combobox);
-  if (count > 0) {
-    replace_filename(path, ji_file_select_get_current_path(), "", 1024);
-
-    index = jcombobox_get_index(combobox, path);
-    if (index >= 0 && index < count) {
-      jcombobox_del_index(combobox, index);
-
-      for (; index<count; index++) {
-	usprintf(buf, "Mark%02d", index);
-	set_config_string("Bookmarks", buf,
-			  jcombobox_get_string(combobox, index));
+	  fileview_set_current_folder(fileview, fileitem);
+	}
+	break;
       }
-      usprintf(buf, "Mark%02d", index);
-      set_config_string("Bookmarks", buf, "");
-
-      set_config_int("Bookmarks", "Count", count-1);
     }
   }
+  return FALSE;
 }
 
-/**
- * Fills the combo-box with the existent bookmarks.
- */
-static void fill_bookmarks_combobox(JWidget combobox)
+static bool filetype_msg_proc(JWidget widget, JMessage msg)
 {
-  const char *path;
-  char buf[256];
-  int c, count;
+  if (msg->type == JM_SIGNAL) {
+    switch (msg->signal.num) {
 
-  count = get_config_int("Bookmarks", "Count", 0);
-  count = MID(0, count, 256);
+      case JI_SIGNAL_COMBOBOX_SELECT: {
+	const char *ext = jcombobox_get_selected_string(widget);
+	JWidget window = jwidget_get_window(widget);
+	JWidget entry = jwidget_find_name(window, "filename");
+	char buf[MAX_PATH];
+	char *p;
 
-  for (c=0; c<count; c++) {
-    usprintf(buf, "Mark%02d", c);
-    path = get_config_string("Bookmarks", buf, "");
-    if (path && *path)
-      jcombobox_add_string(combobox, path);
-  }
-}
+	ustrcpy(buf, jwidget_get_text(entry));
+	p = get_extension(buf);
+	if (p && *p != 0) {
+	  ustrcpy(p, ext);
+	  jwidget_set_text(entry, buf);
+	}
+	break;
+      }
 
-/**
- * Goes to the "Home" folder.
- */
-static void home_command(JWidget widget)
-{
-  char *env;
-
-  /* in Windows we can use the "My Documents" folder */
-#ifdef ALLEGRO_WINDOWS
-  TCHAR szPath[MAX_PATH];
-  if (SHGetFolderPath(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, 
-		      NULL, 0, szPath) == S_OK) {
-    ji_file_select_enter_to_path(szPath);
-    return;
-  }
-#endif
-
-  /* in Unix we can use the HOME enviroment variable */
-  env = getenv("HOME");
-
-  /* home directory? */
-  if ((env) && (*env)) {
-    ji_file_select_enter_to_path(env);
-  }
-  /* ok, maybe we are in DOS, so we can use the ASE directory */
-  else {
-    char path[1024];
-
-    get_executable_name(path, sizeof(path));
-    *get_filename(path) = 0;
-
-    ji_file_select_enter_to_path(path);
-  }
-}
-
-/**
- * Goes to the "Fonts" directory.
- */
-static void fonts_command(JWidget widget)
-{
-  DIRS *dir, *dirs = filename_in_datadir("fonts/");
-
-  for (dir=dirs; dir; dir=dir->next) {
-    if (ji_dir_exists (dir->path)) {
-      ji_file_select_enter_to_path(dir->path);
-      break;
     }
   }
-
-  dirs_free(dirs);
+  return FALSE;
 }
 
-/**
- * Goes to the "Palettes" directory.
- */
-static void palettes_command(JWidget widget)
-{
-  DIRS *dir, *dirs = filename_in_datadir("palettes/");
-
-  for (dir=dirs; dir; dir=dir->next) {
-    if (ji_dir_exists (dir->path)) {
-      ji_file_select_enter_to_path(dir->path);
-      break;
-    }
-  }
-
-  dirs_free(dirs);
-}
-
-/**
- * Shows the dialog to makes a new folder/directory.
- */
-static void mkdir_command(JWidget widget)
-{
-  JWidget window, box1, box2, label_name, entry_name, button_create, button_cancel;
-
-  window = jwindow_new(_("Make Directory"));
-  box1 = jbox_new(JI_VERTICAL);
-  box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-  label_name = jlabel_new(_("Name:"));
-  entry_name = jentry_new(256, _("New Directory"));
-  button_create = jbutton_new(_("&OK"));
-  button_cancel = jbutton_new(_("&Cancel"));
-
-  jwidget_set_min_size(entry_name, JI_SCREEN_W*75/100, 0);
-
-  jwidget_add_child(box2, button_create);
-  jwidget_add_child(box2, button_cancel);
-  jwidget_add_child(box1, label_name);
-  jwidget_add_child(box1, entry_name);
-  jwidget_add_child(box1, box2);
-  jwidget_add_child(window, box1);
-
-  jwidget_magnetic(button_create, TRUE);
-
-  jwindow_open_fg(window);
-
-  if (jwindow_get_killer(window) == button_create) {
-    char buf[1024];
-    int res;
-
-    ustrcpy(buf, ji_file_select_get_current_path());
-    put_backslash(buf);
-    ustrcat(buf, jwidget_get_text(entry_name));
-
-#if defined ALLEGRO_UNIX || defined ALLEGRO_DJGPP
-    res = mkdir(buf, 0777);
-#else
-    res = mkdir(buf);
-#endif
-
-    if (res != 0)
-      jalert(_("Error<<Error making the directory||&Close"));
-    /* fill again the file-list */
-    else
-      ji_file_select_refresh_listbox();
-  }
-
-  jwidget_free(window);
-}

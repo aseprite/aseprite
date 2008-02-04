@@ -19,6 +19,9 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include "jinete/jbase.h"
+#include <allegro/color.h>
+
 #define FILE_SUPPORT_RGB		(1<<0)
 #define FILE_SUPPORT_RGBA		(1<<1)
 #define FILE_SUPPORT_GRAY		(1<<2)
@@ -31,8 +34,18 @@
 #define FILE_SUPPORT_MASKS_REPOSITORY	(1<<9)
 #define FILE_SUPPORT_PATHS_REPOSITORY	(1<<10)
 
-typedef struct Sprite *(*FileLoad)(const char *filename);
-typedef int (*FileSave)(struct Sprite *sprite);
+struct Image;
+struct Cel;
+struct Layer;
+struct Sprite;
+
+struct FileFormat;
+struct FileOp;
+
+/* file operations */
+typedef enum { FileOpLoad, FileOpSave } FileOpType;
+typedef bool (*FileLoad)(struct FileOp *fop);
+typedef bool (*FileSave)(struct FileOp *fop);
 
 /* load or/and save a file format */
 typedef struct FileFormat
@@ -44,22 +57,62 @@ typedef struct FileFormat
   int flags;
 } FileFormat;
 
-/* routines to handle sequences */
+/* structure to load & save files */
+typedef struct FileOp
+{
+  FileOpType type;		/* operation type: 0=load, 1=save */
+  FileFormat *format;
+  struct Sprite *sprite;	/* loaded sprite/sprite to be saved */
+  char *filename;		/* file-name to load/save */
 
-void file_sequence_set_color(int index, int r, int g, int b);
-void file_sequence_get_color(int index, int *r, int *g, int *b);
-struct Image *file_sequence_image(int imgtype, int w, int h);
-struct Sprite *file_sequence_sprite(void);
-struct Image *file_sequence_image_to_save(void);
+  /* shared fields between threads */
+  JMutex mutex;			/* mutex to access to the next two fields */
+  float progress;		/* progress (1.0 is ready) */
+  char *error;			/* error string */
+  bool done : 1;		/* true if the operation finished */
+  bool stop : 1;		/* force the break of the operation */
+
+  /* data for sequences */
+  struct {
+    JList filename_list;	/* all file names to load/save */
+    RGB *palette;		/* palette of the sequence */
+    struct Image *image;	/* image to be saved/loaded */
+    /* for the progress bar */
+    float progress_offset;	/* progress offset from the current frame */
+    float progress_fraction;	/* progress fraction for one frame */
+    /* to load sequences */
+    int frame;
+    struct Layer *layer;
+    struct Cel *last_cel;
+  } seq;
+} FileOp;
 
 /* available extensions for each load/save operation */
 
-const char *get_readable_extensions(void);
-const char *get_writable_extensions(void);
+void get_readable_extensions(char *buf, int size);
+void get_writable_extensions(char *buf, int size);
 
-/* mainly routines to load/save images */
+/* high-level routines to load/save sprites */
 
 struct Sprite *sprite_load(const char *filename);
 int sprite_save(struct Sprite *sprite);
+
+/* low-level routines to load/save sprites */
+
+FileOp *fop_to_load_sprite(const char *filename);
+FileOp *fop_to_save_sprite(struct Sprite *sprite);
+void fop_operate(FileOp *fop);
+void fop_free(FileOp *fop);
+
+void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
+void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);
+struct Image *fop_sequence_image(FileOp *fi, int imgtype, int w, int h);
+
+void fop_error(FileOp *fop, const char *error, ...);
+void fop_progress(FileOp *fop, float progress);
+
+float fop_get_progress(FileOp *fop);
+bool fop_is_done(FileOp *fop);
+bool fop_is_stop(FileOp *fop);
 
 #endif /* FILE_H */

@@ -76,9 +76,6 @@ void intl_set_lang(const char *lang)
   /* clear msgids and load them again */
   msgids_clear();
   intl_load_lang();
-
-  /* reload the main menu */
-  rebuild_root_menu();
 }
 
 /* int init_intl(void) */

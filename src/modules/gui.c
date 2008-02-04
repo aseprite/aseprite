@@ -54,10 +54,8 @@
 
 #endif
 
-#define REBUILD_LOCK		1
-#define REBUILD_ROOT_MENU	2
-#define REBUILD_RECENT_LIST	8
-#define REBUILD_FULLREFRESH	16
+#define REBUILD_RECENT_LIST	2
+#define REFRESH_FULL_SCREEN	4
 
 /**************************************************************/
 
@@ -82,7 +80,20 @@ static int try_depths[] = { 32, 24, 16, 15, 8 };
 
 /**************************************************************/
 
+typedef struct Monitor {
+  /**
+   * Returns true when the job is done and the monitor can be removed.
+   */
+  bool (*proc)(void *);
+  void *data;
+  bool lock;
+} Monitor;
+
 static JWidget manager = NULL;
+
+static int monitor_timer = -1;
+static JList monitors;
+
 static bool ji_screen_created = FALSE;
 
 static volatile int next_idle_flags = 0;
@@ -91,6 +102,9 @@ static JList icon_buttons;
 /* default GUI screen configuration */
 static bool double_buffering;
 static int screen_scaling;
+
+static Monitor *monitor_new(bool (*proc)(void *), void *data);
+static void monitor_free(Monitor *monitor);
 
 /* load & save graphics configuration */
 static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen);
@@ -106,7 +120,7 @@ static void regen_theme_and_fixup_icons(void);
  */
 static void display_switch_in_callback()
 {
-  next_idle_flags |= REBUILD_FULLREFRESH;
+  next_idle_flags |= REFRESH_FULL_SCREEN;
 }
 
 END_OF_STATIC_FUNCTION(display_switch_in_callback);
@@ -222,6 +236,8 @@ int init_module_gui(void)
   }
  gfx_done:;
 
+  monitors = jlist_new();
+
   /* create the default-manager */
   manager = jmanager_new();
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
@@ -261,6 +277,14 @@ int init_module_gui(void)
 
 void exit_module_gui(void)
 {
+  JLink link;
+
+  JI_LIST_FOR_EACH(monitors, link) {
+    monitor_free(link->data);
+  }
+  jlist_free(monitors);
+  monitors = NULL;
+
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
     ji_set_screen(screen);
@@ -279,6 +303,24 @@ void exit_module_gui(void)
   remove_keyboard();
   remove_mouse();
   remove_timer();
+}
+
+static Monitor *monitor_new(bool (*proc)(void *), void *data)
+{
+  Monitor *monitor = jnew(Monitor, 1);
+  if (!monitor)
+    return NULL;
+
+  monitor->proc = proc;
+  monitor->data = data;
+  monitor->lock = FALSE;
+
+  return monitor;
+}
+
+static void monitor_free(Monitor *monitor)
+{
+  jfree(monitor);
 }
 
 static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
@@ -347,23 +389,14 @@ void gui_run(void)
 void gui_feedback(void)
 {
   /* menu stuff */
-  if (!(next_idle_flags & REBUILD_LOCK)) {
-    if (next_idle_flags & REBUILD_ROOT_MENU) {
-      next_idle_flags ^= REBUILD_ROOT_MENU;
-      load_root_menu();
-
-      next_idle_flags |= REBUILD_RECENT_LIST;
-    }
-
-    if (next_idle_flags & REBUILD_RECENT_LIST) {
+  if (next_idle_flags & REBUILD_RECENT_LIST) {
+    if (app_realloc_recent_list())
       next_idle_flags ^= REBUILD_RECENT_LIST;
-      app_realloc_recent_list();
-    }
+  }
 
-    if (next_idle_flags & REBUILD_FULLREFRESH) {
-      next_idle_flags ^= REBUILD_FULLREFRESH;
-      update_screen_for_sprite(current_sprite);
-    }
+  if (next_idle_flags & REFRESH_FULL_SCREEN) {
+    next_idle_flags ^= REFRESH_FULL_SCREEN;
+    update_screen_for_sprite(current_sprite);
   }
 
   /* record file if is necessary */
@@ -534,26 +567,6 @@ JWidget load_widget(const char *filename, const char *name)
   return widget;
 }
 
-void rebuild_lock(void)
-{
-  next_idle_flags |= REBUILD_LOCK;
-}
-
-void rebuild_unlock(void)
-{
-  next_idle_flags &= ~REBUILD_LOCK;
-}
-
-void rebuild_root_menu(void)
-{
-  next_idle_flags |= REBUILD_ROOT_MENU;
-}
-
-void rebuild_sprite_list(void)
-{
-  app_realloc_sprite_list();      
-}
-
 void rebuild_recent_list(void)
 {
   next_idle_flags |= REBUILD_RECENT_LIST;
@@ -708,6 +721,16 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
   return widget;
 }
 
+void add_gui_monitor(bool (*proc)(void *data), void *data)
+{
+  jlist_append(monitors, monitor_new(proc, data));
+
+  if (monitor_timer < 0)
+    monitor_timer = jmanager_add_timer(manager, 100);
+
+  jmanager_start_timer(monitor_timer);
+}
+
 /**********************************************************************/
 /* manager event handler */
 
@@ -717,6 +740,32 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_QUEUEPROCESSING:
       gui_feedback();
+      break;
+
+    case JM_TIMER:
+      if (msg->timer.timer_id == monitor_timer) {
+	JLink link, next;
+	JI_LIST_FOR_EACH_SAFE(monitors, link, next) {
+	  Monitor *monitor = link->data;
+
+	  /* is the monitor not lock? */
+	  if (!monitor->lock) {
+	    /* call the monitor procedure */
+	    monitor->lock = TRUE;
+	    if ((*monitor->proc)(monitor->data)) {
+	      /* the function returns true, the job is done... remove the monitor */
+	      monitor_free(link->data);
+	      jlist_delete_link(monitors, link);
+	    }
+	    else
+	      monitor->lock = FALSE;
+	  }
+	}
+
+	/* is monitors empty? we can stop the timer so */
+	if (jlist_empty(monitors))
+	  jmanager_stop_timer(monitor_timer);
+      }
       break;
 
     case JM_CHAR: {

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #ifndef DIALOGS_FILESEL_H
 #define DIALOGS_FILESEL_H
 
-char *GUI_FileSelect(const char *message,
-		     const char *init_path,
-		     const char *exts);
+char *ase_file_selector(const char *message,
+			const char *init_path,
+			const char *exts);
 
 #endif /* DIALOGS_FILESEL_H */
 

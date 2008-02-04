@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   set_uformat(U_ASCII);
 
   /* initialises the application */
-  if (app_init(argc, argv) < 0)
+  if (!app_init(argc, argv))
     return 1;
 
   app_loop();

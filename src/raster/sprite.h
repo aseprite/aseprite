@@ -80,6 +80,8 @@ bool sprite_is_associated_to_file(Sprite *sprite);
 bool sprite_is_locked(Sprite *sprite);
 void sprite_mark_as_saved(Sprite *sprite);
 
+bool sprite_need_alpha(Sprite *sprite);
+
 bool sprite_lock(Sprite *sprite);
 void sprite_unlock(Sprite *sprite);
 

@@ -23,7 +23,6 @@
 #include <allegro/color.h>
 #include <stdio.h>
 
-#include "console/console.h"
 #include "file/file.h"
 #include "modules/palette.h"
 #include "raster/raster.h"
@@ -33,8 +32,8 @@
 
 #endif
 
-static Sprite *load_FLI(const char *filename);
-static int save_FLI(Sprite *sprite);
+static bool load_FLI(FileOp *fop);
+static bool save_FLI(FileOp *fop);
 
 static int get_time_precision(Sprite *sprite);
 
@@ -50,7 +49,7 @@ FileFormat format_fli =
 };
 
 /* loads a FLI/FLC file */
-static Sprite *load_FLI(const char *filename)
+static bool load_FLI(FileOp *fop)
 {
 #define SETPAL()					\
     do {						\
@@ -77,9 +76,9 @@ static Sprite *load_FLI(const char *filename)
   FILE *f;
 
   /* open the file to read in binary mode */
-  f = fopen(filename, "rb");
+  f = fopen(fop->filename, "rb");
   if (!f)
-    return NULL;
+    return FALSE;
 
   fli_read_header(f, &fli_header);
   fseek(f, 128, SEEK_SET);
@@ -92,11 +91,11 @@ static Sprite *load_FLI(const char *filename)
   bmp = image_new(IMAGE_INDEXED, w, h);
   old = image_new(IMAGE_INDEXED, w, h);
   if ((!bmp) || (!old)) {
-    console_printf(_("Not enough memory for temporary bitmaps.\n"));
+    fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     fclose(f);
-    return NULL;
+    return FALSE;
   }
 
   /* create the image */
@@ -110,8 +109,6 @@ static Sprite *load_FLI(const char *filename)
   sprite_set_speed(sprite, fli_header.speed);
 
   /* write frame by frame */
-  add_progress(100);
-
   inc_frpos_out = FALSE;
 
   for (frpos_in=frpos_out=0;
@@ -156,14 +153,11 @@ static Sprite *load_FLI(const char *filename)
     memcpy(omap, cmap, 768);
 
     /* update progress */
-    if (sprite->frames > 1)
-      do_progress(100 * (frpos_in) / (sprite->frames-1));
+    fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->frames));
   }
 
   /* update sprites frames */
   sprite_set_frames(sprite, frpos_out+1);
-
-  del_progress();
 
   /* close the file */
   fclose(f);
@@ -172,12 +166,14 @@ static Sprite *load_FLI(const char *filename)
   image_free(bmp);
   image_free(old);
 
-  return sprite;
+  fop->sprite = sprite;
+  return TRUE;
 }
 
 /* saves a FLC file */
-static int save_FLI(Sprite *sprite)
+static bool save_FLI(FileOp *fop)
 {
+  Sprite *sprite = fop->sprite;
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;
@@ -207,9 +203,9 @@ static int save_FLI(Sprite *sprite)
   fli_header.oframe1 = fli_header.oframe2 = 0;
 
   /* open the file to write in binary mode */
-  f = fopen(sprite->filename, "wb");
+  f = fopen(fop->filename, "wb");
   if (!f)
-    return -1;
+    return FALSE;
 
   fseek(f, 128, SEEK_SET);
 
@@ -217,16 +213,14 @@ static int save_FLI(Sprite *sprite)
   bmp = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
   old = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
   if ((!bmp) || (!old)) {
-    console_printf(_("Not enough memory for temporary bitmaps.\n"));
+    fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     fclose(f);
-    return -1;
+    return FALSE;
   }
 
   /* write frame by frame */
-  add_progress(100);
-
   for (frpos=0;
        frpos<sprite->frames;
        frpos++) {
@@ -262,11 +256,8 @@ static int save_FLI(Sprite *sprite)
     }
 
     /* update progress */
-    if (sprite->frames > 1)
-      do_progress(100 * (frpos) / (sprite->frames-1));
+    fop_progress(fop, (float)(frpos+1) / (float)(sprite->frames));
   }
-
-  del_progress();
 
   /* write the header and close the file */
   fli_write_header(f, &fli_header);
@@ -276,7 +267,7 @@ static int save_FLI(Sprite *sprite)
   image_free(bmp);
   image_free(old);
 
-  return 0;
+  return TRUE;
 }
 
 static int get_time_precision(Sprite *sprite)

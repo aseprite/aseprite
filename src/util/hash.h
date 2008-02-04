@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,23 +19,25 @@
 #ifndef UTIL_HASH_H
 #define UTIL_HASH_H
 
-typedef struct HashBucket {
+typedef struct HashBucket
+{
   char *key;
   void *data;
   struct HashBucket *next;
 } HashBucket;
 
-typedef struct HashTable {
+typedef struct HashTable
+{
   int size;
   HashBucket **table;
 } HashTable;
 
-HashTable *hash_new (int size);
-void hash_free (HashTable *table, void (*func) (void *));
+HashTable *hash_new(int size);
+void hash_free(HashTable *table, void (*func)(void *));
 
-void *hash_insert (HashTable *table, const char *key, void *data);
-void *hash_lookup (HashTable *table, const char *key);
-void *hash_remove (HashTable *table, const char *key);
-void hash_enumerate (HashTable *table, void (*callback) (const char *, void *));
+void *hash_insert(HashTable *table, const char *key, void *data);
+void *hash_lookup(HashTable *table, const char *key);
+void *hash_remove(HashTable *table, const char *key);
+void hash_enumerate(HashTable *table, void (*callback)(const char *, void *));
 
 #endif /* UTIL_HASH_H */

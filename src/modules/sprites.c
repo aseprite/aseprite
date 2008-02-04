@@ -115,7 +115,7 @@ void set_clipboard_sprite(Sprite *sprite)
   clipboard_sprite = sprite;
 
   if (is_interactive())
-    rebuild_sprite_list();
+    app_realloc_sprite_list();
 }
 
 /* adds the "sprite" in the list of sprites */
@@ -130,7 +130,7 @@ void sprite_mount(Sprite *sprite)
 		    get_filename(sprite->filename), sprite);
 
     /* rebuild the menu list of sprites */
-    rebuild_sprite_list();
+    app_realloc_sprite_list();
   }
 }
 
@@ -149,7 +149,7 @@ void sprite_unmount(Sprite *sprite)
     tabs_remove_tab(app_get_tabs_bar(), sprite);
 
     /* rebuild the menu list of sprites */
-    rebuild_sprite_list();
+    app_realloc_sprite_list();
 
     /* select other sprites in the editors where are this sprite */
     editors_hide_sprite(sprite);

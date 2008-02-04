@@ -86,7 +86,8 @@ static void lzw_write_pixel (int pos, int c, unsigned char *data)
  */
 int
 gif_save_animation (const char *filename, GIF_ANIMATION *gif,
-		    void (*progress) (int))
+		    void (*progress) (void *, float),
+		    void *dp)
 {
     int frame;
     int i, j;
@@ -125,7 +126,7 @@ gif_save_animation (const char *filename, GIF_ANIMATION *gif,
         pack_putc (0, file);
     }
 
-    progress(0);
+    progress(dp, 0.0f);
     for (frame = 0; frame < gif->frames_count; frame++)
     {
         int w = gif->frames[frame].w;
@@ -169,9 +170,9 @@ gif_save_animation (const char *filename, GIF_ANIMATION *gif,
 
         pack_putc (0x00, file); /* Terminator. */
 
-	progress(100 * frame / gif->frames_count);
+	progress(dp, (float)frame / (float)gif->frames_count);
     }
-    progress(100);
+    progress(dp, 1.0f);
 
     pack_putc (0x3b, file);     /* Trailer. */
 
@@ -205,7 +206,7 @@ deinterlace (unsigned char *bmp, int w, int h)
 }
 
 static GIF_ANIMATION *
-load_object (PACKFILE * file, long size, void (*progress) (int))
+load_object (PACKFILE * file, long size, void (*progress) (void *, float), void *dp)
 {
     int version;
     unsigned char *bmp = NULL;
@@ -252,11 +253,11 @@ load_object (PACKFILE * file, long size, void (*progress) (int))
         have_global_palette = 1;
     }
 
-    progress(0);
+    progress(dp, 0.0f);
     do
     {
         i = pack_getc (file);
-	progress(100 * i / size);
+	progress(dp, (float)i / (float)size);
 
         switch (i)
         {
@@ -361,7 +362,7 @@ load_object (PACKFILE * file, long size, void (*progress) (int))
             case 0x3b:
                 /* GIF Trailer. */
                 pack_fclose (file);
-		progress(100);
+		progress(dp, 1.0f);
                 return gif;
         }
     }
@@ -388,7 +389,7 @@ load_object (PACKFILE * file, long size, void (*progress) (int))
  * All bitmaps will have a color depth of 8.
  */
 GIF_ANIMATION *
-gif_load_animation (const char *filename, void (*progress) (int))
+gif_load_animation (const char *filename, void (*progress) (void *, float), void *dp)
 {
     PACKFILE *file;
     GIF_ANIMATION *gif = NULL;
@@ -402,7 +403,7 @@ gif_load_animation (const char *filename, void (*progress) (int))
 
     file = pack_fopen (filename, "r");
     if (file)
-	gif = load_object (file, size, progress);
+      gif = load_object (file, size, progress, dp);
     return gif;
 }
 

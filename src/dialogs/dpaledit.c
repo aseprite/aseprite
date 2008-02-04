@@ -240,7 +240,7 @@ static void load_command(JWidget widget)
   RGB *palette;
   char *filename;
 
-  filename = GUI_FileSelect(_("Load Palette"), "", "pcx,bmp,tga,lbm,col");
+  filename = ase_file_selector(_("Load Palette"), "", "pcx,bmp,tga,lbm,col");
   if (filename) {
     palette = palette_load(filename);
     if (!palette) {
@@ -260,7 +260,7 @@ static void save_command(JWidget widget)
   int ret;
 
  again:
-  filename = GUI_FileSelect(_("Save Palette"), "", "pcx,bmp,tga,col");
+  filename = ase_file_selector(_("Save Palette"), "", "pcx,bmp,tga,col");
   if (filename) {
     if (exists(filename)) {
       ret = jalert("%s<<%s<<%s||%s",

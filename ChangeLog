@@ -1,3 +1,36 @@
+2008-02-04  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/dialogs/filesel.c: Done (navigation history added, and
+	file-type combo-box).
+
+	* src/core/file_system.c: Done the Allegro interface with
+	for_each_file.
+
+2008-02-03  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jcombox.c (jcombobox_del_index): Fixed a memory leak.
+	(jcombobox_add_string): Added 'data' field for each item.
+	(jcombobox_get_data): Added.
+
+	* src/test/test_file_system.c: Added.
+
+	* src/core/file_system.c: All these days I was working in
+	this. The PIDL interface for Win32 is done.
+
+2008-01-27  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_configure_screen.c (show_dialog): Added a
+	confirmation dialog after changing the gfx-mode.
+
+2008-01-24  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/gui.c (rebuild_sprite_list): Removed.
+
+	* src/file/*.c: A lot of work to make it thread safe through the
+	new FileOp structure.
+
+	* src/raster/gfxobj.c: Added a mutex to be thread safe.
+
 2008-01-23  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/widgets/editor/editor.c (show_drawing_cursor): Added the

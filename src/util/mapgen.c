@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,9 @@
 
 #include <stdlib.h>
 
-#include "console/console.h"
+#include "core/app.h"
 #include "raster/image.h"
+#include "widgets/statebar.h"
 
 #endif
 
@@ -40,6 +41,7 @@ static float FRandom (float amount);
 
 void mapgen (Image *image, int seed, float fractal_factor)
 {
+  Progress *progress = NULL;
   float **map;
   float amount = 128;
   float min, max;
@@ -51,9 +53,9 @@ void mapgen (Image *image, int seed, float fractal_factor)
   /**********************************************************************/
   /* create the map */
 
-  map = malloc (sizeof (float *) * size);
+  map = malloc (sizeof(float *) * size);
   for (i = 0; i < size; i++)
-    map[i] = malloc (sizeof (float) * size);
+    map[i] = malloc(sizeof(float) * size);
 
   /* Do the corners */
   map[0][0] = 0;		/* map[0][0] = FRandom(amount); */
@@ -62,7 +64,9 @@ void mapgen (Image *image, int seed, float fractal_factor)
   map[0][size-1] = map[0][0];
   amount /= fractal_factor;
 
-  add_progress (128);
+  if (app_get_status_bar())
+    progress = progress_new(app_get_status_bar());
+
   for (i=128; i>0; i/=2) {
     /* This is the square phase */
     for (j=i; j<size; j+=2*i)
@@ -92,9 +96,12 @@ void mapgen (Image *image, int seed, float fractal_factor)
 
     amount /= fractal_factor;
 
-    do_progress (100 * (128-i) / 128);
+    if (progress)
+      progress_update(progress, (128.0f-i) / 128.0f);
   }
-  del_progress ();
+
+  if (progress)
+    progress_free(progress);
 
   /**********************************************************************/
   /* Copy the map to the image */
@@ -112,12 +119,12 @@ void mapgen (Image *image, int seed, float fractal_factor)
       k = (int)((map[i][j] - min)/(max - min) * 256);
       if (k > 255)
 	k = 255;
-      image_putpixel (image, i, j, k);
+      image_putpixel(image, i, j, k);
     }
 
   for (i=0; i<size; i++)
-    jfree (map[i]);
-  jfree (map);
+    jfree(map[i]);
+  jfree(map);
 }
 
 /* Handles wrapping when seeking neighbours */

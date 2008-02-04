@@ -231,7 +231,9 @@ enum {
 
 typedef unsigned int		JID;
 
+typedef void			*JThread;
 typedef void			*JMutex;
+
 typedef struct jaccel		*JAccel;
 typedef struct jhook		*JHook;
 typedef struct jquickmenu	*JQuickMenu;
@@ -249,9 +251,6 @@ typedef struct jxmlnode		*JXmlNode;
 typedef struct jxmlelem		*JXmlElem;
 typedef struct jxmltext		*JXmlText;
 
-typedef void (*JFunc)            (void *data, void *user_data);
-typedef int  (*JCompareFunc)     (const void *a, const void *b);
-typedef int  (*JCompareDataFunc) (const void *a, const void *b, void *user_data);
 typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
 typedef void (*JDrawFunc)	 (JWidget widget);
 

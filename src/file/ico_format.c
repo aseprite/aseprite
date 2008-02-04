@@ -25,45 +25,42 @@
 #include <allegro/color.h>
 #include <allegro/file.h>
 
-#include "console/console.h"
 #include "file/file.h"
 #include "raster/raster.h"
 
 #endif
 
-static Sprite *load_ICO(const char *filename);
-static int save_ICO(Sprite *sprite);
+/* static bool load_ICO(FileOp *fop); */
+static bool save_ICO(FileOp *fop);
 
 FileFormat format_ico =
 {
   "ico",
   "ico",
-  load_ICO,
+  NULL, /* load_ICO, */
   save_ICO,
 /*   FILE_SUPPORT_RGB | */
 /*   FILE_SUPPORT_GRAY | */
   FILE_SUPPORT_INDEXED
 };
 
-static Sprite *load_ICO(const char *filename)
-{
-  return NULL;			/* TODO */
-}
+/* static bool load_ICO(FileOp *fop) */
+/* { */
+/*   return NULL;			/\* TODO *\/ */
+/* } */
 
-static int save_ICO(Sprite *sprite)
+static bool save_ICO(FileOp *fop)
 {
   PACKFILE *f;
   int depth, bpp, bw, bitsw;
   int size, offset, n, i;
   int c, x, y, b, m, v;
-  int num = sprite->frames;
+  int num = fop->sprite->frames;
   Image *bmp;
 
-  errno = 0;
-
-  f = pack_fopen(sprite->filename, F_WRITE);
+  f = pack_fopen(fop->filename, F_WRITE);
   if (!f)
-    return errno;
+    return FALSE;
 
   offset = 6 + num * 16;  /* ICONDIR + ICONDIRENTRYs */
    
@@ -75,16 +72,16 @@ static int save_ICO(Sprite *sprite)
   for(n = 0; n < num; n++) {
     depth = 8;/* bitmap_color_depth(bmp[n]); */
     bpp = (depth == 8) ? 8 : 24;
-    bw = (((sprite->w * bpp / 8) + 3) / 4) * 4;
-    bitsw = ((((sprite->w + 7) / 8) + 3) / 4) * 4;
-    size = sprite->h * (bw + bitsw) + 40;
+    bw = (((fop->sprite->w * bpp / 8) + 3) / 4) * 4;
+    bitsw = ((((fop->sprite->w + 7) / 8) + 3) / 4) * 4;
+    size = fop->sprite->h * (bw + bitsw) + 40;
 
     if (bpp == 8)
       size += 256 * 4;
 
     /* ICONDIRENTRY */
-    pack_putc(sprite->w, f);  /* width                       */
-    pack_putc(sprite->h, f);  /* height                      */
+    pack_putc(fop->sprite->w, f);  /* width                       */
+    pack_putc(fop->sprite->h, f);  /* height                      */
     pack_putc(0, f);          /* color count                 */
     pack_putc(0, f);          /* reserved                    */
     pack_iputw(1, f);         /* color planes                */
@@ -95,11 +92,13 @@ static int save_ICO(Sprite *sprite)
     offset += size;
   }
 
-  bmp = image_new(sprite->imgtype, sprite->w, sprite->h);
+  bmp = image_new(fop->sprite->imgtype,
+		  fop->sprite->w,
+		  fop->sprite->h);
 
-  for(n = 0; n < num; n++) {
+  for (n = 0; n < num; n++) {
     image_clear(bmp, 0);
-    layer_render(sprite->set, bmp, 0, 0, n);
+    layer_render(fop->sprite->set, bmp, 0, 0, n);
 
     depth = 8; /* bitmap_color_depth(bmp); */
     bpp = (depth == 8) ? 8 : 24;
@@ -125,7 +124,7 @@ static int save_ICO(Sprite *sprite)
 
     /* PALETTE */
     if (bpp == 8) {
-      RGB *pal = sprite_get_palette(sprite, n);
+      RGB *pal = sprite_get_palette(fop->sprite, n);
 
       pack_iputl(0, f);  /* color 0 is black, so the XOR mask works */
 
@@ -185,5 +184,5 @@ static int save_ICO(Sprite *sprite)
   image_free(bmp);
   pack_fclose(f);
 
-  return errno;
+  return TRUE;
 }

@@ -68,7 +68,7 @@ static Module module[] =
 
 static int modules = sizeof(module) / sizeof(Module);
 
-int modules_init(int requirements)
+bool modules_init(int requirements)
 {
   int c;
 
@@ -76,11 +76,12 @@ int modules_init(int requirements)
     if (module[c].reqs & requirements) {
       PRINTF("Installing module: %s\n", module[c].name);
       if ((*module[c].init)() < 0)
-	return -1;
+	return FALSE;
+
       module[c].installed = TRUE;
     }
 
-  return 0;
+  return TRUE;
 }
 
 void modules_exit(void)

@@ -51,7 +51,7 @@ static char *log_filename = NULL;
 static FILE *log_fileptr = NULL;
 #endif
 
-int core_init(void)
+bool core_init(void)
 {
 #ifdef NEED_LOG
   char buf[512];
@@ -71,7 +71,7 @@ int core_init(void)
   dirs_free(dirs);
 #endif
 
-  return 0;
+  return TRUE;
 }
 
 void core_exit(void)
@@ -121,5 +121,5 @@ void verbose_printf(const char *format, ...)
 
 bool is_interactive(void)
 {
-  return ase_mode & MODE_GUI;
+  return ase_mode & MODE_GUI ? TRUE: FALSE;
 }

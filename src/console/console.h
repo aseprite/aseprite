@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,5 @@ void console_close(void);
 
 void console_printf(const char *format, ...);
 void user_printf(const char *format, ...);
-
-void do_progress(int progress);
-void add_progress(int max);
-void del_progress(void);
 
 #endif /* CONSOLE_H */

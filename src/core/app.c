@@ -37,6 +37,7 @@
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
+#include "core/file_system.h"
 #include "core/modules.h"
 #include "dialogs/options.h"
 #include "dialogs/tips.h"
@@ -99,7 +100,7 @@ static Option *option_new(int type, const char *data);
 static void option_free(Option *option);
 
 /* install and load all initial stuff */
-int app_init(int argc, char *argv[])
+bool app_init(int argc, char *argv[])
 {
   exe_name = argv[0];
 
@@ -107,10 +108,14 @@ int app_init(int argc, char *argv[])
   intl_init();
 
   /* install the `core' of ASE application */
-  if (core_init() < 0) {
+  if (!core_init()) {
     user_printf(_("ASE core initialization error.\n"));
-    return -1;
+    return FALSE;
   }
+
+  /* install the file-system access module */
+  if (!file_system_init())
+    return FALSE;
 
   /* init configuration */
   ase_config_init();
@@ -120,16 +125,21 @@ int app_init(int argc, char *argv[])
 
   /* search options in the arguments */
   if (check_args(argc, argv) < 0)
-    return -1;
+    return FALSE;
 
   /* GUI is the default mode */
   if (!(ase_mode & MODE_BATCH))
     ase_mode |= MODE_GUI;
 
+  /* install 'raster' stuff */
+  if (!gfxobj_init()) {
+    return FALSE;
+  }
+
   /* install the modules */
-  if (modules_init (ase_mode & MODE_GUI ? REQUIRE_INTERFACE:
-					  REQUIRE_SCRIPTING) < 0)
-    return -1;
+  if (!modules_init(ase_mode & MODE_GUI ? REQUIRE_INTERFACE:
+					  REQUIRE_SCRIPTING))
+    return FALSE;
 
   _ji_font_init();
 
@@ -145,7 +155,7 @@ int app_init(int argc, char *argv[])
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
       console_printf(_("Error loading default palette from `%s'\n"),
 		     palette_filename);
-      return -1;
+      return FALSE;
     }
 
     destroy_bitmap(bmp);
@@ -157,7 +167,7 @@ int app_init(int argc, char *argv[])
   set_current_palette(NULL, TRUE);
 
   /* ok */
-  return 0;
+  return TRUE;
 }
 
 /* runs ASE main dialog */
@@ -335,7 +345,9 @@ void app_exit(void)
 
   /* finalize modules, configuration and core */
   modules_exit();
+  gfxobj_exit();
   ase_config_exit();
+  file_system_exit();
   core_exit();
   _ji_font_exit();
 
@@ -364,15 +376,10 @@ void app_refresh_screen(void)
   }
 }
 
-/* updates the sprites list menu. WARNING!: This routine can't be used
-   when a menu callback was called, because, it destroy some menus,
-   you should use rebuild_sprite_list() instead (src/gui/gui.c) */
 void app_realloc_sprite_list(void)
 {
   Sprite *sprite;
   JLink link;
-#if 1
-  PRINTF("Reallocating sprite list...\n");
 
   /* insert all other sprites */
   JI_LIST_FOR_EACH(get_sprite_list(), link) {
@@ -381,114 +388,25 @@ void app_realloc_sprite_list(void)
 			  get_filename(sprite->filename),
 			  sprite);
   }
-#else  
-  JWidget list_menuitem = get_sprite_list_menuitem();
-  JWidget menuitem;
-
-  PRINTF("Reallocating sprite list...\n");
-
-  /* update the sprite-list menu */
-  if (list_menuitem) {
-    Command *cmd_select_file = command_get_by_name(CMD_SELECT_FILE);
-    Sprite *clipboard = get_clipboard_sprite();
-    JWidget submenu;
-    char buf[256];
-    int c, count = 0;
-
-    submenu = jmenuitem_get_submenu(list_menuitem);
-    if (submenu) {
-      jmenuitem_set_submenu(list_menuitem, NULL);
-      jwidget_free(submenu);
-    }
-
-    submenu = jmenu_new();
-    jmenuitem_set_submenu(list_menuitem, submenu);
-
-    /* for `null' */
-    menuitem = menuitem_new(_("Nothing"), cmd_select_file, NULL);
-
-/*     if (!current_sprite) */
-/*       jwidget_select(menuitem); */
-
-    jwidget_add_child(submenu, menuitem);
-    count++;
-
-    /* for `clipboard' */
-    if (clipboard)
-      usprintf(buf, "%d", clipboard->gfxobj.id);
-
-    menuitem = menuitem_new(_("Clipboard"), cmd_select_file,
-			    clipboard ? buf: "0");
-
-/*     if (!clipboard) */
-/*       jwidget_disable(menuitem); */
-/*     else if (current_sprite == clipboard) */
-/*       jwidget_select(menuitem); */
-
-    jwidget_add_child(submenu, menuitem);
-    count++;
-
-    /* insert a separator */
-
-    c = 0;
-    JI_LIST_FOR_EACH(get_sprite_list(), link) {
-      if (link->data == clipboard)
-	continue;
-      c++;
-    }
-
-    if (c > 0) {
-      jwidget_add_child(submenu, ji_separator_new(NULL, JI_HORIZONTAL));
-      count++;
-
-      /* insert all other sprites */
-      JI_LIST_FOR_EACH(get_sprite_list(), link) {
-	sprite = link->data;
-
-	if (sprite == clipboard)
-	  continue;
-
-	/* `count' limit -- TODO how I know the height of menu-items? */
-/* 	if (count >= SCREEN_H/(text_height (font)+4)-2) { */
-	if (count >= 14) {
-	  menuitem = menuitem_new(_("More"), NULL, NULL);
-	  jwidget_add_child(submenu, menuitem);
-
-	  submenu = jmenu_new();
-	  jmenuitem_set_submenu(menuitem, submenu);
-	  count = 0;
-	}
-
-	usprintf(buf, "%d", sprite->gfxobj.id);
-
-	menuitem = menuitem_new(get_filename(sprite->filename),
-				cmd_select_file, buf);
-
-	if (current_sprite == sprite)
-	  jwidget_select(menuitem);
-
-	jwidget_add_child(submenu, menuitem);
-	count++;
-      }
-    }
-  }
-#endif
 }
 
 /* updates the recent list menu. WARNING!: This routine can't be used
    when a menu callback was called, because, it destroy the menus,
    you should use rebuild_recent_list() instead (src/gui/gui.c). */
-void app_realloc_recent_list(void)
+bool app_realloc_recent_list(void)
 {
   JWidget list_menuitem = get_recent_list_menuitem();
   JWidget menuitem;
 
-  PRINTF("Reallocating recent list...\n");
-
   /* update the recent file list menu item */
   if (list_menuitem) {
-    Command *cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
+    Command *cmd_open_file;
     JWidget submenu;
+
+    if (jmenuitem_has_submenu_opened(list_menuitem))
+      return FALSE;
+
+    cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
 
     submenu = jmenuitem_get_submenu(list_menuitem);
     if (submenu) {
@@ -518,6 +436,8 @@ void app_realloc_recent_list(void)
       jwidget_add_child(submenu, menuitem);
     }
   }
+
+  return TRUE;
 }
 
 int app_get_current_image_type(void)

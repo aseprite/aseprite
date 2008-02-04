@@ -240,6 +240,13 @@ JAccel jmenuitem_get_accel(JWidget widget)
   return MITEM(widget)->accel;
 }
 
+bool jmenuitem_has_submenu_opened(JWidget widget)
+{
+  assert_valid_widget(widget);
+
+  return MITEM(widget)->submenu_menubox != NULL;
+}
+
 void jmenubox_set_menu(JWidget widget, JWidget widget_menu)
 {
   JWidget old_menu;

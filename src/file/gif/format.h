@@ -37,9 +37,11 @@ struct GIF_FRAME
 GIF_ANIMATION *gif_create_animation(int frames_count);
 void gif_destroy_animation(GIF_ANIMATION *gif);
 int gif_save_animation(const char *filename, GIF_ANIMATION *gif,
-		       void (*progress) (int));
+		       void (*progress) (void *, float),
+		       void *dp);
 GIF_ANIMATION *gif_load_animation(const char *filename,
-				  void (*progress) (int));
+				  void (*progress) (void *, float),
+				  void *dp);
 
 #endif
 

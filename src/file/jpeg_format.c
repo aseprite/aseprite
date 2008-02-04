@@ -26,7 +26,6 @@
 
 #include "jinete/jinete.h"
 
-#include "console/console.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -38,10 +37,10 @@
 
 #include "jpeglib.h"
 
-static Sprite *load_JPEG(const char *filename);
-static int save_JPEG(Sprite *sprite);
+static bool load_JPEG(FileOp *fop);
+static bool save_JPEG(FileOp *fop);
 
-static int configure_jpeg(void);
+static bool configure_jpeg(void); /* TODO warning: not thread safe */
 
 FileFormat format_jpeg =
 {
@@ -54,17 +53,10 @@ FileFormat format_jpeg =
   FILE_SUPPORT_SEQUENCES
 };
 
-static void progress_monitor(j_common_ptr cinfo)
-{
-  if (cinfo->progress->pass_limit > 1)
-    do_progress(100 *
-		(cinfo->progress->pass_counter) /
-		(cinfo->progress->pass_limit-1));
-}
-
 struct error_mgr {
-  struct jpeg_error_mgr pub;
+  struct jpeg_error_mgr head;
   jmp_buf setjmp_buffer;
+  FileOp *fop;
 };
 
 static void error_exit(j_common_ptr cinfo)
@@ -87,14 +79,13 @@ static void output_message(j_common_ptr cinfo)
   PRINTF("JPEG library: \"%s\"\n", buffer);
 
   /* Leave the message for the application.  */
-  console_printf("%s\n", buffer);
+  fop_error(((struct error_mgr *)cinfo->err)->fop, "%s\n", buffer);
 }
 
-static Sprite *load_JPEG(const char *filename)
+static bool load_JPEG(FileOp *fop)
 {
   struct jpeg_decompress_struct cinfo;
   struct error_mgr jerr;
-  struct jpeg_progress_mgr progress;
   Image *image;
   FILE *file;
   JDIMENSION num_scanlines;
@@ -102,24 +93,22 @@ static Sprite *load_JPEG(const char *filename)
   JDIMENSION buffer_height;
   int c;
 
-  file = fopen(filename, "rb");
-  if (!file) {
-    if (!file_sequence_sprite())
-      console_printf(_("Error opening file.\n"));
-    return NULL;
-  }
+  file = fopen(fop->filename, "rb");
+  if (!file)
+    return FALSE;
 
   /* initialize the JPEG decompression object with error handling */
-  cinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.fop = fop;
+  cinfo.err = jpeg_std_error(&jerr.head);
 
-  jerr.pub.error_exit = error_exit;
-  jerr.pub.output_message = output_message;
+  jerr.head.error_exit = error_exit;
+  jerr.head.output_message = output_message;
 
   /* establish the setjmp return context for error_exit to use */
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
-    return NULL;
+    return FALSE;
   }
 
   jpeg_create_decompress(&cinfo);
@@ -139,14 +128,15 @@ static Sprite *load_JPEG(const char *filename)
   jpeg_start_decompress(&cinfo);
 
   /* create the image */
-  image = file_sequence_image((cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
-								  IMAGE_GRAYSCALE),
-			      cinfo.output_width,
-			      cinfo.output_height);
+  image = fop_sequence_image(fop,
+			     (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
+								 IMAGE_GRAYSCALE),
+			     cinfo.output_width,
+			     cinfo.output_height);
   if (!image) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
-    return NULL;
+    return FALSE;
   }
 
   /* create the buffer */
@@ -155,7 +145,7 @@ static Sprite *load_JPEG(const char *filename)
   if (!buffer) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
-    return NULL;
+    return FALSE;
   }
 
   for (c=0; c<(int)buffer_height; c++) {
@@ -167,21 +157,18 @@ static Sprite *load_JPEG(const char *filename)
       jfree(buffer);
       jpeg_destroy_decompress(&cinfo);
       fclose(file);
-      return NULL;
+      return FALSE;
     }
   }
 
   /* generate a grayscale palette if is necessary */
   if (image->imgtype == IMAGE_GRAYSCALE)
     for (c=0; c<256; c++)
-      file_sequence_set_color(c, c >> 2, c >> 2, c >> 2);
-
-  /* for progress bar */
-  progress.progress_monitor = progress_monitor;
-  cinfo.progress = &progress;
+      fop_sequence_set_color(fop, c, c >> 2, c >> 2, c >> 2);
 
   /* read each scan line */
   while (cinfo.output_scanline < cinfo.output_height) {
+    /* TODO */
 /*     if (plugin_want_close())  */
 /*       break; */
 
@@ -219,6 +206,8 @@ static Sprite *load_JPEG(const char *filename)
           *(dst_address++) = _graya(*(src_address++), 255);
       }
     }
+
+    fop_progress(fop, (float)(cinfo.output_scanline+1) / (float)(cinfo.output_height));
   }
 
   /* destroy all data */
@@ -230,26 +219,25 @@ static Sprite *load_JPEG(const char *filename)
   jpeg_destroy_decompress(&cinfo);
 
   fclose(file);
-  return file_sequence_sprite();
+  return TRUE;
 }
 
-static int save_JPEG(Sprite *sprite)
+static bool save_JPEG(FileOp *fop)
 {
   struct jpeg_compress_struct cinfo;
-  struct jpeg_error_mgr jerr;
-  struct jpeg_progress_mgr progress;
+  struct error_mgr jerr;
+  Image *image = fop->seq.image;
   FILE *file;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  Image *image;
   int c;
   int smooth;
   int quality;
   J_DCT_METHOD method;
 
   /* Configure JPEG compression only in the first frame.  */
-  if (sprite->frame == 0 && configure_jpeg() < 0)
-    return 0;
+  if (fop->sprite->frame == 0 && !configure_jpeg())
+    return FALSE;
 
   /* Options.  */
   smooth = get_config_int("JPEG", "Smooth", 0);
@@ -257,16 +245,15 @@ static int save_JPEG(Sprite *sprite)
   method = get_config_int("JPEG", "Method", JDCT_DEFAULT);
 
   /* Open the file for write in it.  */
-  file = fopen(sprite->filename, "wb");
+  file = fopen(fop->filename, "wb");
   if (!file) {
-    console_printf(_("Error creating file.\n"));
-    return -1;
+    fop_error(fop, _("Error creating file.\n"));
+    return FALSE;
   }
 
-  image = file_sequence_image_to_save();
-
   /* Allocate and initialize JPEG compression object.  */
-  cinfo.err = jpeg_std_error(&jerr);
+  jerr.fop = fop;
+  cinfo.err = jpeg_std_error(&jerr.head);
   jpeg_create_compress(&cinfo);
 
   /* Specify data destination file.  */
@@ -297,29 +284,25 @@ static int save_JPEG(Sprite *sprite)
   buffer_height = 1;
   buffer = jmalloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
-    console_printf(_("Not enough memory for the buffer.\n"));
+    fop_error(fop, _("Not enough memory for the buffer.\n"));
     jpeg_destroy_compress(&cinfo);
     fclose(file);
-    return -1;
+    return FALSE;
   }
 
   for (c=0; c<(int)buffer_height; c++) {
     buffer[c] = jmalloc(sizeof(JSAMPLE) *
 			cinfo.image_width * cinfo.num_components);
     if (!buffer[c]) {
-      console_printf(_("Not enough memory for buffer scanlines.\n"));
+      fop_error(fop, _("Not enough memory for buffer scanlines.\n"));
       for (c--; c>=0; c--)
         jfree(buffer[c]);
       jfree(buffer);
       jpeg_destroy_compress(&cinfo);
       fclose(file);
-      return -1;
+      return FALSE;
     }
   }
-
-  /* For progress bar.  */
-  progress.progress_monitor = progress_monitor;
-  cinfo.progress = &progress;
 
   /* Write each scan line.  */
   while (cinfo.next_scanline < cinfo.image_height) {
@@ -352,6 +335,8 @@ static int save_JPEG(Sprite *sprite)
       }
     }
     jpeg_write_scanlines(&cinfo, buffer, buffer_height);
+    
+    fop_progress(fop, (float)(cinfo.next_scanline+1) / (float)(cinfo.image_height));
   }
 
   /* Destroy all data.  */
@@ -369,23 +354,24 @@ static int save_JPEG(Sprite *sprite)
   fclose(file);
 
   /* All fine.  */
-  return 0;
+  return TRUE;
 }
 
 /**
  * Shows the JPEG configuration dialog.
  */
-static int configure_jpeg(void)
+static bool configure_jpeg(void)
 {
   JWidget window, box1, box2, box3, box4, box5;
   JWidget label_quality, label_smooth, label_method;
   JWidget slider_quality, slider_smooth, view_method;
   JWidget list_method, button_ok, button_cancel;
-  int ret, quality, smooth, method;
+  int quality, smooth, method;
+  bool ret;
 
   /* interactive mode */
   if (!is_interactive())
-    return 0;
+    return TRUE;
 
   /* configuration parameters */
   quality = get_config_int("JPEG", "Quality", 100);

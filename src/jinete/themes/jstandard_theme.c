@@ -60,6 +60,7 @@ enum {
   ICON_MENU_MARK,
   ICON_RADIO_EDGE,
   ICON_RADIO_MARK,
+  ICON_COMBOBOX,
   ICONS,
 };
 
@@ -86,12 +87,10 @@ static struct {
   {  TRUE, default_theme_imenum },
   { FALSE, default_theme_iradioe },
   { FALSE, default_theme_iradiom },
+  { FALSE, default_theme_icombobox },
 };
 
-static BITMAP *icons_bitmap[ICONS] = {
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-};
+static BITMAP *icons_bitmap[ICONS];
 
 static void theme_destroy(void);
 static void theme_regen(void);
@@ -138,10 +137,14 @@ static bool theme_button_msg_proc(JWidget widget, JMessage msg);
 JTheme jtheme_new_standard(void)
 {
   JTheme theme;
+  int c;
 
   theme = jtheme_new();
   if (!theme)
     return NULL;
+
+  for (c=0; c<ICONS; c++)
+    icons_bitmap[c] = NULL;
 
   theme->name = "Standard Theme";
   theme->check_icon_size = 8;
@@ -326,6 +329,12 @@ static void theme_init_widget(JWidget widget)
     case JI_LISTITEM:
       BORDER(1);
       break;
+
+    case JI_COMBOBOX: {
+      JWidget button = jcombobox_get_button_widget(widget);
+      ji_generic_button_set_icon(button, icons_bitmap[ICON_COMBOBOX]);
+      break;
+    }
 
     case JI_MENU:
     case JI_MENUBAR:

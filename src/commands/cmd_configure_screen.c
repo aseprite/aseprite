@@ -93,23 +93,23 @@ static void show_dialog(void)
     return;
   }
 
-  jcombobox_add_string(resolution, "320x200");
-  jcombobox_add_string(resolution, "320x240");
-  jcombobox_add_string(resolution, "640x400");
-  jcombobox_add_string(resolution, "640x480");
-  jcombobox_add_string(resolution, "800x600");
-  jcombobox_add_string(resolution, "1024x768");
+  jcombobox_add_string(resolution, "320x200", NULL);
+  jcombobox_add_string(resolution, "320x240", NULL);
+  jcombobox_add_string(resolution, "640x400", NULL);
+  jcombobox_add_string(resolution, "640x480", NULL);
+  jcombobox_add_string(resolution, "800x600", NULL);
+  jcombobox_add_string(resolution, "1024x768", NULL);
 
-  jcombobox_add_string(color_depth, _("8 bpp (256 colors)"));
-  jcombobox_add_string(color_depth, _("15 bpp (32K colors)"));
-  jcombobox_add_string(color_depth, _("16 bpp (64K colors)"));
-  jcombobox_add_string(color_depth, _("24 bpp (16M colors)"));
-  jcombobox_add_string(color_depth, _("32 bpp (16M colors)"));
+  jcombobox_add_string(color_depth, _("8 bpp (256 colors)"), NULL);
+  jcombobox_add_string(color_depth, _("15 bpp (32K colors)"), NULL);
+  jcombobox_add_string(color_depth, _("16 bpp (64K colors)"), NULL);
+  jcombobox_add_string(color_depth, _("24 bpp (16M colors)"), NULL);
+  jcombobox_add_string(color_depth, _("32 bpp (16M colors)"), NULL);
 
-  jcombobox_add_string(pixel_scale, "x1 (normal)");
-  jcombobox_add_string(pixel_scale, "x2 (double)");
-  jcombobox_add_string(pixel_scale, "x3 (big)");
-  jcombobox_add_string(pixel_scale, "x4 (huge)");
+  jcombobox_add_string(pixel_scale, _("x1 (normal)"), NULL);
+  jcombobox_add_string(pixel_scale, _("x2 (double)"), NULL);
+  jcombobox_add_string(pixel_scale, _("x3 (big)"), NULL);
+  jcombobox_add_string(pixel_scale, _("x4 (huge)"), NULL);
 
   usprintf(buf, "%dx%d", old_w, old_h);
   jcombobox_select_string(resolution, buf);

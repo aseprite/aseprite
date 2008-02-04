@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ static void cmd_save_mask_execute(const char *argument)
   int ret;
 
   for (;;) {
-    char *filename = GUI_FileSelect(_("Save .msk File"), filename, "msk");
+    char *filename = ase_file_selector(_("Save .msk File"), filename, "msk");
     if (!filename)
       return;
 

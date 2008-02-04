@@ -1068,8 +1068,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_TIMER:
-      if (msg->timer.timer_id == editor->mask_timer_id &&
-	  msg->timer.count == 0) {
+      if (msg->timer.timer_id == editor->mask_timer_id) {
 	if (editor->sprite) {
 	  editor_draw_mask_safe(widget);
 

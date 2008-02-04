@@ -60,8 +60,6 @@ static void button_command(JWidget widget, void *data);
 
 static void update_from_layer(StatusBar *status_bar);
 
-static void play_animation(void);
-
 JWidget status_bar_new(void)
 {
 #define BUTTON_NEW(name, text, data)					\
@@ -85,7 +83,7 @@ JWidget status_bar_new(void)
 
     status_bar->widget = widget;
     status_bar->timeout = 0;
-    status_bar->nprogress = 0;
+    status_bar->progress = jlist_new();
 
     /* construct the commands box */
     box1 = jbox_new(JI_HORIZONTAL);
@@ -154,60 +152,44 @@ void status_bar_set_text(JWidget widget, int msecs, const char *format, ...)
   }
 }
 
-void status_bar_do_progress(JWidget widget, int progress)
-{
-  StatusBar *status_bar = status_bar_data(widget);
-  int n = status_bar->nprogress-1;
-
-  if (n >= 0) {
-    progress = MID(0, progress, status_bar->progress[n].max);
-
-    if (status_bar->progress[n].pos != progress) {
-      status_bar->progress[n].pos = progress;
-      jwidget_dirty(widget);
-    }
-  }
-}
-
-void status_bar_add_progress(JWidget widget, int max)
-{
-  StatusBar *status_bar = status_bar_data(widget);
-  int n = status_bar->nprogress++;
-
-  status_bar->progress[n].max = max;
-  status_bar->progress[n].pos = 0;
-
-  ji_dirty_region = jregion_new(NULL, 0);
-  
-  jwidget_dirty(widget);
-}
-
-void status_bar_del_progress(JWidget widget)
-{
-  StatusBar *status_bar = status_bar_data(widget);
-
-  jwidget_dirty(widget);
-
-  /* to show 100% progress-bar */
-  if (status_bar->nprogress == 1) {
-    status_bar->progress[0].pos = status_bar->progress[0].max;
-    jwidget_flush_redraw(widget);
-    jmanager_dispatch_messages(ji_get_default_manager());
-    rest(5);
-    jwidget_dirty(widget);
-
-    jregion_free(ji_dirty_region);
-    ji_dirty_region = NULL;
-  }
-
-  status_bar->nprogress--;
-}
-
 void status_bar_update(JWidget widget)
 {
   StatusBar *status_bar = status_bar_data(widget);
 
   update_from_layer(status_bar);
+}
+
+Progress *progress_new(JWidget status_bar)
+{
+  Progress *progress = jnew(Progress, 1);
+  if (!progress)
+    return NULL;
+
+  progress->status_bar = status_bar;
+  progress->pos = 0.0f;
+
+  jlist_append(status_bar_data(status_bar)->progress,
+	       progress);
+  jwidget_dirty(status_bar);
+
+  return progress;
+}
+
+void progress_free(Progress *progress)
+{
+  jlist_remove(status_bar_data(progress->status_bar)->progress,
+	       progress);
+  jwidget_dirty(progress->status_bar);
+
+  jfree(progress);
+}
+
+void progress_update(Progress *progress, float progress_pos)
+{
+  if (progress->pos != progress_pos) {
+    progress->pos = progress_pos;
+    jwidget_dirty(progress->status_bar);
+  }
 }
 
 static bool status_bar_msg_proc(JWidget widget, JMessage msg)
@@ -216,9 +198,17 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
 
   switch (msg->type) {
 
-    case JM_DESTROY:
+    case JM_DESTROY: {
+      JLink link;
+
+      JI_LIST_FOR_EACH(status_bar->progress, link) {
+	jfree(link->data);
+      }
+      jlist_free(status_bar->progress);
+
       jfree(status_bar);
       break;
+    }
 
     case JM_REQSIZE:
       msg->reqsize.w = msg->reqsize.h =
@@ -238,63 +228,53 @@ static bool status_bar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW: {
-      JRect rect = jwidget_get_rect(widget);
+      JRect rc = jwidget_get_rect(widget);
 
-      jdraw_rectedge(rect, ji_color_facelight(), ji_color_faceshadow());
-      jrect_shrink(rect, 1);
+      jdraw_rectedge(rc, ji_color_facelight(), ji_color_faceshadow());
+      jrect_shrink(rc, 1);
 
-      jdraw_rect(rect, ji_color_face());
-      jrect_shrink(rect, 1);
+      jdraw_rect(rc, ji_color_face());
+      jrect_shrink(rc, 1);
 
-      /* progress bar */
-      if (status_bar->nprogress > 0) {
-	int i, pos, x1, y1, x2, y2;
-	double x, width;
-
-	jdraw_rectedge(rect,
-		       ji_color_faceshadow(),
-		       ji_color_facelight());
-	jrect_shrink(rect, 1);
-
-	x1 = rect->x1;
-	y1 = rect->y1;
-	x2 = rect->x2-1;
-	y2 = rect->y2-1;
-
-	x = x1;
-	width = x2-x1+1;
-
-	for (i=0; i<status_bar->nprogress; i++) {
-	  if (status_bar->progress[i].max > 0) {
-	    pos = status_bar->progress[i].pos;
-
-	    if (status_bar->nprogress == 1)
-	      pos = MID(0, pos, status_bar->progress[i].max);
-	    else
-	      pos = MID(0, pos, status_bar->progress[i].max-1);
-
-	    width /= (double)status_bar->progress[i].max;
-	    x += width * (double)pos;
-	  }
-	}
-
-	x = MID(x1, x, x2);
-	rectfill(ji_screen, x1, y1, x, y2, ji_color_selected());
-	if (x < x2)
-	  rectfill(ji_screen, x+1, y1, x2, y2, ji_color_background());
-      }
       /* status bar text */
-      else if (widget->text) {
-	jdraw_rectfill(rect, ji_color_face());
+      if (widget->text) {
+	jdraw_rectfill(rc, ji_color_face());
 
 	text_mode(-1);
 	textout(ji_screen, widget->text_font, widget->text,
-		rect->x1+2,
+		rc->x1+2,
 		(widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
 		ji_color_foreground());
       }
 
-      jrect_free(rect);
+      /* draw progress bar */
+      if (!jlist_empty(status_bar->progress)) {
+	int width = 64;
+	int y1, y2;
+	int x = rc->x2 - (width+4);
+	JLink link;
+
+	y1 = rc->y1;
+	y2 = rc->y2-1;
+
+	JI_LIST_FOR_EACH(status_bar->progress, link) {
+	  Progress *progress = link->data;
+	  int u = (int)((float)(width-2)*progress->pos);
+	  u = MID(0, u, width-2);
+
+	  rect(ji_screen, x, y1, x+width-1, y2, ji_color_foreground());
+
+	  if (u > 0)
+	    rectfill(ji_screen, x+1, y1+1, x+u, y2-1, ji_color_selected());
+
+	  if (1+u < width-2)
+	    rectfill(ji_screen, x+1+u, y1+1, x+width-2, y2-1, ji_color_background());
+
+	  x -= width+4;
+	}
+      }
+
+      jrect_free(rc);
       return TRUE;
     }
 
@@ -369,41 +349,37 @@ static void button_command(JWidget widget, void *data)
   Sprite *sprite = current_sprite;
 
   if (sprite) {
-    int old_frame = sprite->frame;
+    const char *cmd = NULL;
 
     switch ((int)data) {
 
       case ACTION_LAYER:
-	command_execute(command_get_by_name(CMD_LAYER_PROPERTIES), NULL);
+	cmd = CMD_LAYER_PROPERTIES;
 	break;
 
       case ACTION_FIRST:
-	sprite->frame = 0;
+	cmd = CMD_GOTO_FIRST_FRAME;
 	break;
 
       case ACTION_PREV:
-	if ((--sprite->frame) < 0)
-	  sprite->frame = sprite->frames-1;
+	cmd = CMD_GOTO_PREVIOUS_FRAME;
 	break;
 
       case ACTION_PLAY:
-	play_animation();
+	cmd = CMD_PLAY_ANIMATION;
 	break;
 
       case ACTION_NEXT:
-	if ((++sprite->frame) >= sprite->frames)
-	  sprite->frame = 0;
+	cmd = CMD_GOTO_NEXT_FRAME;
 	break;
 
       case ACTION_LAST:
-	sprite->frame = sprite->frames-1;
+	cmd = CMD_GOTO_LAST_FRAME;
 	break;
     }
 
-    if (sprite->frame != old_frame) {
-      update_from_layer(widget->user_data[0]);
-      update_screen_for_sprite(sprite);
-    }
+    if (cmd)
+      command_execute(command_get_by_name(cmd), NULL);
   }
 }
 
@@ -435,84 +411,4 @@ static void update_from_layer(StatusBar *status_bar)
     jslider_set_value(status_bar->slider, 0);
     jwidget_disable(status_bar->slider);
   }
-}
-
-/***********************************************************************
-		       Animation Playing stuff
- ***********************************************************************/
-
-static int speed_timer;
-
-static void speed_timer_callback(void)
-{
-  speed_timer++;
-}
-
-END_OF_STATIC_FUNCTION(speed_timer_callback);
-
-static void play_animation(void)
-{
-  Sprite *sprite = current_sprite;
-  int old_frame, msecs;
-  bool done = FALSE;
-
-  if (sprite->frames < 2)
-    return;
-
-  jmouse_hide();
-
-  old_frame = sprite->frame;
-
-  LOCK_VARIABLE(speed_timer);
-  LOCK_FUNCTION(speed_timer_callback);
-
-  clear_keybuf();
-
-  /* clear all the screen */
-  clear_bitmap(ji_screen);
-
-  /* do animation */
-  speed_timer = 0;
-  while (!done) {
-    msecs = sprite_get_frlen(sprite, sprite->frame);
-    install_int_ex(speed_timer_callback, MSEC_TO_TIMER(msecs));
-
-    set_palette(sprite_get_palette(sprite, sprite->frame));
-    editor_draw_sprite_safe(current_editor, 0, 0, sprite->w, sprite->h);
-
-    do {
-      poll_mouse();
-      poll_keyboard();
-      if (keypressed() || mouse_b)
-	done = TRUE;
-      gui_feedback();
-    } while (!done && (speed_timer <= 0));
-
-    if (!done) {
-      sprite->frame++;
-      if (sprite->frame >= sprite->frames)
-	sprite->frame = 0;
-
-      speed_timer--;
-    }
-    gui_feedback();
-  }
-
-  /* if right-click or ESC */
-  if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC))
-    /* return to the old frame position */
-    sprite->frame = old_frame;
-
-  /* refresh all */
-  set_current_palette(sprite_get_palette(sprite, sprite->frame), TRUE);
-  jmanager_refresh_screen();
-  gui_feedback();
-
-  while (mouse_b)
-    poll_mouse();
-
-  clear_keybuf();
-  remove_int(speed_timer_callback);
-
-  jmouse_show();
 }

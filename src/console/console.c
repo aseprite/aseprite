@@ -171,36 +171,3 @@ void user_printf(const char *format, ...)
 /*   else */
   allegro_message(buf);
 }
-
-void do_progress(int progress)
-{
-  JWidget status_bar = app_get_status_bar();
-
-  if (status_bar) {
-    status_bar_do_progress(status_bar, progress);
-
-    jwidget_flush_redraw(status_bar);
-    jmanager_dispatch_messages(ji_get_default_manager());
-    gui_feedback();
-  }
-}
-
-void add_progress(int max)
-{
-  JWidget status_bar = app_get_status_bar();
-
-  if (status_bar)
-    status_bar_add_progress(status_bar, max);
-
-  jmouse_hide();
-}
-
-void del_progress(void)
-{
-  JWidget status_bar = app_get_status_bar();
-
-  if (status_bar)
-    status_bar_del_progress(status_bar);
-
-  jmouse_show();
-}

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "console/console.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
@@ -36,8 +35,8 @@
 
 #endif
 
-static Sprite *load_PNG(const char *filename);
-static int save_PNG(Sprite *sprite);
+static bool load_PNG(FileOp *fop);
+static bool save_PNG(FileOp *fop);
 
 /* static int configure_png(void); */
 
@@ -57,10 +56,10 @@ FileFormat format_png =
 
 static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
-  console_printf("libpng: %s\n", error);
+  fop_error((FileOp *)png_ptr->error_ptr, "libpng: %s\n", error);
 }
 
-static Sprite *load_PNG(const char *filename)
+static bool load_PNG(FileOp *fop)
 {
   png_uint_32 width, height, y;
   unsigned int sig_read = 0;
@@ -75,12 +74,9 @@ static Sprite *load_PNG(const char *filename)
   int imgtype;
   FILE *fp;
 
-  fp = fopen(filename, "rb");
-  if (!fp) {
-    if (!file_sequence_sprite())
-      console_printf(_("Error opening file.\n"));
-    return NULL;
-  }
+  fp = fopen(fop->filename, "rb");
+  if (!fp)
+    return FALSE;
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -88,33 +84,33 @@ static Sprite *load_PNG(const char *filename)
    * the compiler header file version, so that we know if the application
    * was compiled with a compatible version of the library
    */
-  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
  				   report_png_error, report_png_error);
   if (png_ptr == NULL) {
-    console_printf("png_create_read_struct\n");
+    fop_error(fop, "png_create_read_struct\n");
     fclose(fp);
-    return NULL;
+    return FALSE;
   }
 
   /* Allocate/initialize the memory for image information. */
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
-    console_printf("png_create_info_struct\n");
+    fop_error(fop, "png_create_info_struct\n");
     fclose(fp);
     png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
-    return NULL;
+    return FALSE;
   }
 
   /* Set error handling if you are using the setjmp/longjmp method (this is
    * the normal method of doing things with libpng).
    */
   if (setjmp(png_jmpbuf(png_ptr))) {
-    console_printf("Error reading PNG file\n");
+    fop_error(fop, "Error reading PNG file\n");
     /* Free all of the memory associated with the png_ptr and info_ptr */
     png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
     fclose(fp);
     /* If we get here, we had a problem reading the file */
-    return NULL;
+    return FALSE;
   }
 
   /* Set up the input control if you are using standard C streams */
@@ -175,18 +171,18 @@ static Sprite *load_PNG(const char *filename)
       imgtype = IMAGE_INDEXED;
       break;
     default:
-      console_printf("Color type not supported\n)");
+      fop_error(fop, "Color type not supported\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
       fclose(fp);
-      return NULL;
+      return FALSE;
   }
   
-  image = file_sequence_image(imgtype, info_ptr->width, info_ptr->height);
+  image = fop_sequence_image(fop, imgtype, info_ptr->width, info_ptr->height);
   if (!image) {
-    console_printf("file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
+    fop_error(fop, "file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
     png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
     fclose(fp);
-    return NULL;
+    return FALSE;
   }
 
   /* read palette */
@@ -196,13 +192,13 @@ static Sprite *load_PNG(const char *filename)
     int c;
 
     for (c = 0; c < num_palette; c++) {
-      file_sequence_set_color(c,
-			      palette[c].red / 4,
-			      palette[c].green / 4,
-			      palette[c].blue / 4);
+      fop_sequence_set_color(fop, c,
+			     palette[c].red / 4,
+			     palette[c].green / 4,
+			     palette[c].blue / 4);
     }
     for (; c < 256; c++) {
-      file_sequence_set_color(c, 0, 0, 0);
+      fop_sequence_set_color(fop, c, 0, 0, 0);
     }
   }
 
@@ -277,7 +273,9 @@ static Sprite *load_PNG(const char *filename)
 	}
       }
 
-      do_progress(100 * y / height);
+      fop_progress(fop,
+		   (float)((float)pass + (float)(y+1) / (float)(height))
+		   / (float)number_passes);
     }
   }
   png_free(png_ptr, row_pointer);
@@ -287,27 +285,25 @@ static Sprite *load_PNG(const char *filename)
 
   /* close the file */
   fclose(fp);
-
-  /* return the sprite */
-  return file_sequence_sprite();
+  return TRUE;
 }
 
-static int save_PNG(Sprite *sprite)
+static bool save_PNG(FileOp *fop)
 {
+  Image *image = fop->seq.image;
   png_uint_32 width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
   png_colorp palette;
   png_bytep row_pointer;
   int color_type;
-  Image *image;
   int pass, number_passes;
   FILE *fp;
 
   /* open the file */
-  fp = fopen(sprite->filename, "wb");
+  fp = fopen(fop->filename, "wb");
   if (fp == NULL)
-    return -1;
+    return FALSE;
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -315,11 +311,11 @@ static int save_PNG(Sprite *sprite)
    * the library version is compatible with the one used at compile time,
    * in case we are using dynamically linked libraries.  REQUIRED.
    */
-  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
+  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
 				    report_png_error, report_png_error);
   if (png_ptr == NULL) {
     fclose(fp);
-    return -1;
+    return FALSE;
   }
 
   /* Allocate/initialize the image information data.  REQUIRED */
@@ -327,7 +323,7 @@ static int save_PNG(Sprite *sprite)
   if (info_ptr == NULL) {
     fclose(fp);
     png_destroy_write_struct(&png_ptr, png_infopp_NULL);
-    return -1;
+    return FALSE;
   }
 
   /* Set error handling.  REQUIRED if you aren't supplying your own
@@ -337,7 +333,7 @@ static int save_PNG(Sprite *sprite)
     /* If we get here, we had a problem reading the file */
     fclose(fp);
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    return -1;
+    return FALSE;
   }
 
   /* set up the output control if you are using standard C streams */
@@ -351,18 +347,17 @@ static int save_PNG(Sprite *sprite)
    * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
    * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
    */
-  image = file_sequence_image_to_save();
   width = image->w;
   height = image->h;
 
   switch (image->imgtype) {
     case IMAGE_RGB:
-      color_type = _rgba_geta(sprite->bgcolor) < 255 ?
+      color_type = sprite_need_alpha(fop->sprite) ?
 	PNG_COLOR_TYPE_RGB_ALPHA:
 	PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
-      color_type = _graya_geta(sprite->bgcolor) < 255 ?
+      color_type = sprite_need_alpha(fop->sprite) ?
 	PNG_COLOR_TYPE_GRAY_ALPHA:
 	PNG_COLOR_TYPE_GRAY;
       break;
@@ -386,7 +381,7 @@ static int save_PNG(Sprite *sprite)
 					      * png_sizeof(png_color));
     /* ... set palette colors ... */
     for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
-      file_sequence_get_color(c, &r, &g, &b);
+      fop_sequence_get_color(fop, c, &r, &g, &b);
       palette[c].red   = _rgb_scale_6[r];
       palette[c].green = _rgb_scale_6[g];
       palette[c].blue  = _rgb_scale_6[b];
@@ -474,7 +469,10 @@ static int save_PNG(Sprite *sprite)
 
       /* write the line */
       png_write_rows(png_ptr, &row_pointer, 1);
-      do_progress(100 * y / height);
+
+      fop_progress(fop,
+		   (float)((float)pass + (float)(y+1) / (float)(height))
+		   / (float)number_passes);
     }
   }
 
@@ -500,7 +498,7 @@ static int save_PNG(Sprite *sprite)
   fclose(fp);
 
   /* all right */
-  return 0;
+  return TRUE;
 }
 
 /* static int configure_png(void) */

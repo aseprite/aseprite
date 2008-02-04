@@ -33,7 +33,7 @@
 
 #include "jinete/jlist.h"
 
-#ifdef USE_JUNKLIST
+#ifdef USE_JUNKLIST		/* TODO warning not thread safe */
 static JList junklist = NULL;
 #endif
 

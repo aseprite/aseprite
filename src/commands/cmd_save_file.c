@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2007, 2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,18 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <allegro.h>
+
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "console/console.h"
 #include "file/file.h"
 #include "modules/recent.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
+#include "widgets/statebar.h"
 
 #endif
 
@@ -44,12 +48,15 @@ static void cmd_save_file_execute(const char *argument)
     if (sprite_save(current_sprite) == 0) {
       recent_file(current_sprite->filename);
       sprite_mark_as_saved(current_sprite);
+
+      if (app_get_status_bar())
+	status_bar_set_text(app_get_status_bar(),
+			    1000, "File %s, saved.",
+			    get_filename(current_sprite->filename));
     }
     else {
+      /* TODO if the user cancel we shouldn't unrecent the file */
       unrecent_file(current_sprite->filename);
-      console_printf("%s: %s",
-		     _("Error saving sprite file"),
-		     current_sprite->filename);
     }
   }
   /* if the sprite isn't associated to a file, we must to show the

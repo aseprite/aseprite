@@ -29,33 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_MENU_H
-#define JINETE_MENU_H
+#ifndef JINETE_THREAD_H
+#define JINETE_THREAD_H
 
 #include "jinete/jbase.h"
 
 JI_BEGIN_DECLS
 
-JWidget jmenu_new(void);
-JWidget jmenubar_new(void);
-JWidget jmenubox_new(void);
-JWidget jmenuitem_new(const char *text);
-
-JWidget jmenubox_get_menu(JWidget menubox);
-JWidget jmenubar_get_menu(JWidget menubar);
-JWidget jmenuitem_get_submenu(JWidget menuitem);
-JAccel jmenuitem_get_accel(JWidget menuitem);
-bool jmenuitem_has_submenu_opened(JWidget menuitem);
-
-void jmenubox_set_menu(JWidget menubox, JWidget menu);
-void jmenubar_set_menu(JWidget menubar, JWidget menu);
-void jmenuitem_set_submenu(JWidget menuitem, JWidget menu);
-void jmenuitem_set_accel(JWidget menuitem, JAccel accel);
-
-int jmenuitem_is_highlight(JWidget menuitem);
-
-void jmenu_popup(JWidget menu, int x, int y);
+JThread jthread_new(void (*proc)(void *data), void *data);
+void jthread_join(JThread thread);
 
 JI_END_DECLS
 
-#endif /* JINETE_MENU_H */
+#endif /* JINETE_THREAD_H */

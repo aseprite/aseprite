@@ -46,9 +46,10 @@ bool jcombobox_is_editable(JWidget combobox);
 bool jcombobox_is_clickopen(JWidget combobox);
 bool jcombobox_is_casesensitive(JWidget combobox);
 
-void jcombobox_add_string(JWidget combobox, const char *string);
+void jcombobox_add_string(JWidget combobox, const char *string, void *data);
 void jcombobox_del_string(JWidget combobox, const char *string);
 void jcombobox_del_index(JWidget combobox, int index);
+void jcombobox_clear(JWidget combobox);
 
 void jcombobox_select_index(JWidget combobox, int index);
 void jcombobox_select_string(JWidget combobox, const char *string);
@@ -56,10 +57,12 @@ int jcombobox_get_selected_index(JWidget combobox);
 const char *jcombobox_get_selected_string(JWidget combobox);
 
 const char *jcombobox_get_string(JWidget combobox, int index);
+void *jcombobox_get_data(JWidget combobox, int index);
 int jcombobox_get_index(JWidget combobox, const char *string);
 int jcombobox_get_count(JWidget combobox);
 
 JWidget jcombobox_get_entry_widget(JWidget combobox);
+JWidget jcombobox_get_button_widget(JWidget combobox);
 
 JI_END_DECLS
 

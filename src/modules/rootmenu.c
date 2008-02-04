@@ -46,6 +46,7 @@ static JWidget frame_popup_menu;
 static JWidget cel_popup_menu;
 static JWidget filters_popup_menu;
 
+static int load_root_menu(void);
 static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename);
 static JWidget convert_xmlelem_to_menu(JXmlElem elem);
 static JWidget convert_xmlelem_to_menuitem(JXmlElem elem);
@@ -75,7 +76,24 @@ void exit_module_rootmenu(void)
   if (filters_popup_menu) jwidget_free(filters_popup_menu);
 }
 
-int load_root_menu(void)
+JWidget get_root_menu(void) { return root_menu; }
+
+JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
+JWidget get_layer_popup_menu(void) { return layer_popup_menu; }
+JWidget get_frame_popup_menu(void) { return frame_popup_menu; }
+JWidget get_cel_popup_menu(void) { return cel_popup_menu; }
+
+/* void show_fx_popup_menu(void) */
+/* { */
+/*   if (is_interactive() && */
+/*       filters_popup_menuitem && */
+/*       jmenuitem_get_submenu(filters_popup_menuitem)) { */
+/*     jmenu_popup(jmenuitem_get_submenu(filters_popup_menuitem), */
+/* 		jmouse_x(0), jmouse_y(0)); */
+/*   } */
+/* } */
+
+static int load_root_menu(void)
 {
   JLink link, link2;
   DIRS *dirs, *dir;
@@ -198,23 +216,6 @@ int load_root_menu(void)
 
   return 0;
 }
-
-JWidget get_root_menu(void) { return root_menu; }
-
-JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
-JWidget get_layer_popup_menu(void) { return layer_popup_menu; }
-JWidget get_frame_popup_menu(void) { return frame_popup_menu; }
-JWidget get_cel_popup_menu(void) { return cel_popup_menu; }
-
-/* void show_fx_popup_menu(void) */
-/* { */
-/*   if (is_interactive() && */
-/*       filters_popup_menuitem && */
-/*       jmenuitem_get_submenu(filters_popup_menuitem)) { */
-/*     jmenu_popup(jmenuitem_get_submenu(filters_popup_menuitem), */
-/* 		jmouse_x(0), jmouse_y(0)); */
-/*   } */
-/* } */
 
 static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename)
 {

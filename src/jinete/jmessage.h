@@ -96,7 +96,7 @@ struct jmessage_signal
 struct jmessage_timer
 {
   struct jmessage_any any;
-  int count;			/* cound=0 if it's first msg of timer-chain */
+  int count;			/* accumulated calls */
   int timer_id;			/* number of timer */
 };
 

@@ -22,17 +22,19 @@
 
 #include "jinete/jbase.h"
 
+typedef struct Progress
+{
+  JWidget status_bar;
+  float pos;
+} Progress;
+
 typedef struct StatusBar
 {
   JWidget widget;
   int timeout;
 
   /* progress bar */
-  int nprogress;
-  struct {
-    int max;
-    int pos;
-  } progress[2];
+  JList progress;
 
   /* box of main commands */
   JWidget commands_box;
@@ -45,17 +47,20 @@ typedef struct StatusBar
   JWidget b_last;			/* go to last frame */
 } StatusBar;
 
+/* status_bar */
+
 JWidget status_bar_new(void);
 int status_bar_type(void);
 
 StatusBar *status_bar_data(JWidget status_bar);
 
 void status_bar_set_text(JWidget status_bar, int msecs, const char *format, ...);
-
-void status_bar_do_progress(JWidget status_bar, int progress);
-void status_bar_add_progress(JWidget status_bar, int max);
-void status_bar_del_progress(JWidget status_bar);
-
 void status_bar_update(JWidget status_bar);
+
+/* progress */
+
+Progress *progress_new(JWidget status_bar);
+void progress_free(Progress *progress);
+void progress_update(Progress *progress, float progress_pos);
 
 #endif /* WIDGETS_STATEBAR_H */

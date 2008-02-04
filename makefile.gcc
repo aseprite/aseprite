@@ -190,11 +190,15 @@ endif
 
 TESTS = $(addsuffix $(EXE),						\
 		$(basename						\
-			$(wildcard src/test/convmatr/*.c)		\
+			$(wildcard src/test/*.c)			\
 			$(wildcard src/test/raster/*.c)			\
 			$(wildcard src/test/jinete/*.c)))
 
-src/test/convmatr/%$(EXE): src/test/convmatr/%.c $(COMMON_OBJS)
+AUTOTESTS = $(addsuffix $(EXE),						\
+		$(basename						\
+			$(wildcard src/test/*.c)))
+
+src/test/%$(EXE): src/test/%.c $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
 src/test/raster/%$(EXE): src/test/raster/%.c $(COMMON_OBJS)
@@ -204,3 +208,6 @@ src/test/jinete/%$(EXE): src/test/jinete/%.c $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
 test: $(TESTS)
+
+runtest:
+	@-$(foreach TEST, $(AUTOTESTS), ./$(TEST))
