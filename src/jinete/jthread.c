@@ -40,26 +40,26 @@
     defined ALLEGRO_MACOSX || \
     defined ALLEGRO_BEOS || \
     defined ALLEGRO_QNX
-#define UNIX_LIKE
+#  define UNIX_LIKE
 #endif
 
 #if defined ALLEGRO_WINDOWS
-#include <winalleg.h>
-#include <process.h>
+#  include <winalleg.h>
+#  include <process.h>
 #elif defined UNIX_LIKE
-#include <pthread.h>
+#  include <pthread.h>
 #endif
 
 #if defined UNIX_LIKE
 struct pthread_proxy_data {
-  void (*proc)(JThread thread, void *data);
+  void (*proc)(void *data);
   void *data;
 };
 
 static void *pthread_proxy(void *arg)
 {
-  pthread_proxy_data *ptr = arg;
-  void (*proc)(JThread thread, void *data) = ptr->proc;
+  struct pthread_proxy_data *ptr = arg;
+  void (*proc)(void *data) = ptr->proc;
   void *data = ptr->data;
   jfree(ptr);
 

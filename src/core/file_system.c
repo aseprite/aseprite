@@ -73,6 +73,10 @@
 #define FA_TO_SHOW   FA_RDONLY | FA_DIREC | FA_ARCH | FA_SYSTEM
 #endif
 
+#ifndef MAX_PATH
+#  define MAX_PATH 4096
+#endif
+
 /* a position in the file-system */
 struct FileItem
 {
@@ -911,6 +915,10 @@ static char *remove_backslash(char *filename)
     /* if the name is C:\ or something like that, the backslash isn't
        removed */
     if (len == 3 && filename[1] == DEVICE_SEPARATOR)
+      return filename;
+#else
+    /* this is just the root '/' slash */
+    if (len == 1)
       return filename;
 #endif
     filename[len-1] = 0;

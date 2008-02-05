@@ -39,6 +39,10 @@
 #  define HAVE_DRIVES
 #endif
 
+#ifndef MAX_PATH
+#  define MAX_PATH 4096
+#endif
+
 /* Variables used only to maintain the history of navigation. */
 static JLink navigation_position = NULL; /* current position in the navigation history */
 static JList navigation_history = NULL;	/* set of FileItems navigated */
