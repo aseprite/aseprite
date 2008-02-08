@@ -55,11 +55,16 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
 
 static JWidget create_alert(char *buf, JList *labels, JList *buttons);
 
+/* creates a new alert-box
+
+   the buttons will have names like: button-1, button-2, etc.
+ */
 JWidget jalert_new(const char *format, ...)
 {
   JList labels, buttons;
@@ -173,9 +178,13 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 	  jlist_append(*labels, ji_separator_new(NULL, JI_HORIZONTAL));
 	}
 	else if (button) {
+	  char button_name[256];
 	  JWidget button_widget = jbutton_new(beg);
 	  jwidget_set_min_size(button_widget, 60, 0);
 	  jlist_append(*buttons, button_widget);
+
+	  usprintf(button_name, "button-%d", jlist_length(*buttons));
+	  jwidget_set_name(button_widget, button_name);
 	}
 
 	buf[c] = chr;
