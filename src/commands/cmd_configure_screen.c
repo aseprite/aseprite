@@ -156,7 +156,7 @@ static void show_dialog(void)
       jmanager_remove_timer(timer_to_accept);
 
       if (jwindow_get_killer(alert_window) != NULL &&
-	  ustrcmp(jwidget_get_text(jwindow_get_killer(alert_window)), "&OK") == 0) {
+	  ustrcmp(jwidget_get_name(jwindow_get_killer(alert_window)), "button-1") == 0) {
 	/* do nothing */
       }
       else {
