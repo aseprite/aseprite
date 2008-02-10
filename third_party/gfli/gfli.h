@@ -50,6 +50,7 @@ typedef struct _fli_chunk {
 } s_fli_chunk;
 
 /** chunk magics */
+#define NO_HEADER	0
 #define HEADER_FLI	0xAF11
 #define HEADER_FLC	0xAF12
 #define FRAME		0xF1FA

@@ -99,6 +99,7 @@ void fli_read_header(FILE *f, s_fli_header *fli_header)
 			fli_header->speed=fli_read_long(f);	/* 16 */
 		} else {
 			fprintf(stderr, "error: magic number is wrong !\n");
+			fli_header->magic = NO_HEADER;
 		}
 	}
 
