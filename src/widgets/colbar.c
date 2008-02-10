@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -155,20 +155,12 @@ static bool color_bar_msg_proc (JWidget widget, JMessage msg)
 
   switch (msg->type) {
 
-    case JM_DESTROY:
-      jfree (color_bar);
-      break;
-
-    case JM_REQSIZE:
-      msg->reqsize.w = msg->reqsize.h = 16;
-      return TRUE;
-
     case JM_OPEN: {
       int ncolor = get_config_int ("ColorBar", "NColors", color_bar->ncolor);
       char buf[256], def[256];
       int c, beg, end;
 
-      color_bar->ncolor = MID (1, ncolor, COLOR_BAR_COLORS);
+      color_bar->ncolor = MID(1, ncolor, COLOR_BAR_COLORS);
 
       get_info (widget, &beg, &end);
 
@@ -188,7 +180,7 @@ static bool color_bar_msg_proc (JWidget widget, JMessage msg)
       break;
     }
 
-    case JM_CLOSE: {
+    case JM_DESTROY: {
       char buf[256];
       int c;
 
@@ -201,8 +193,16 @@ static bool color_bar_msg_proc (JWidget widget, JMessage msg)
 	set_config_string("ColorBar", buf, color_bar->color[c]);
 	jfree(color_bar->color[c]);
       }
+      for (; c<COLOR_BAR_COLORS; c++)
+	jfree(color_bar->color[c]);
+
+      jfree(color_bar);
       break;
     }
+
+    case JM_REQSIZE:
+      msg->reqsize.w = msg->reqsize.h = 16;
+      return TRUE;
 
     case JM_DRAW: {
       int imgtype = app_get_current_image_type();
