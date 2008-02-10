@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ static void cmd_about_execute(const char *argument)
 
   box1 = jbox_new(JI_VERTICAL);
   label1 = jlabel_new("Allegro Sprite Editor - " VERSION);
-  label2 = jlabel_new(_("The Ultimate Sprites Factory"));
+  label2 = jlabel_new(_("Just Another Tool to Create Sprites"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
 
   if (authors_txt) {
