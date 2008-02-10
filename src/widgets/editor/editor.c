@@ -1,6 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
- *               2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -989,22 +988,25 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       if (!editor->sprite) {
 	JWidget view = jwidget_get_view(widget);
 	JRect vp = jview_get_viewport_position(view);
-	int size, x1, y1, x2, y2;
+	int size, x1, y1, x2, y2, cx, cy;
+	int bg = makecol(128, 128, 128);
+	int fg = makecol(64, 64, 64);
 
-	jdraw_rectfill(vp, makecol(128, 128, 128));
+	jdraw_rectfill(vp, bg);
 
 	size = MIN(jrect_w(vp), jrect_h(vp)) - 8;
-	size = MAX(1, size);
+	size = MID(4, size, 64);
 
+	cx = (vp->x1+vp->x2)/2;
+	cy = (vp->y1+vp->y2)/2;
 	x1 = (vp->x1+vp->x2)/2-size/2;
 	y1 = (vp->y1+vp->y2)/2-size/2;
 	x2 = x1+size-1;
 	y2 = y1+size-1;
 
-	rect(ji_screen, x1, y1, x2, y2, makecol(0, 0, 0));
-	line(ji_screen, x1, y1, x2, y2, makecol(0, 0, 0));
-	line(ji_screen, x1, y2, x2, y1, makecol(0, 0, 0));
-
+	circle(ji_screen, cx, cy, size/2, fg);
+	line(ji_screen, x1, y2, x2, y1, fg);
+	
 	jrect_free(vp);
       }
       /* draw the sprite */
