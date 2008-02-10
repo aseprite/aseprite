@@ -17,7 +17,8 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- * Adapted to ASE by David A. Capello (2003)
+ * Adapted to ASE by David A. Capello (2003-2008)
+ * See "LICENSE.txt" for more information.
  */
 
 #include "config.h"
@@ -123,9 +124,7 @@ find_empty_segs (PixelRegion  *maskPR,
   int x;
   int start, end;
   int val, last;
-/*   int tilex; */
-/*   Tile *tile = NULL; */
-  int endx, l_num_empty;/*, dstep = 0; */
+  int endx, l_num_empty;
   div_t d;
 
   data  = NULL;
@@ -134,7 +133,6 @@ find_empty_segs (PixelRegion  *maskPR,
 
   *num_empty = 0;
 
-/*   if (scanline < maskPR->y || scanline >= (maskPR->y + maskPR->h)) */
   if (scanline < 0 || scanline >= maskPR->h)
     {
       empty_segs[(*num_empty)++] = 0;
@@ -156,8 +154,6 @@ find_empty_segs (PixelRegion  *maskPR,
     }
   else if (type == IgnoreBounds)
     {
-/*       start = maskPR->x; */
-/*       end = maskPR->x + maskPR->w; */
       start = 0;
       end = maskPR->w;
       if (scanline < y1 || scanline >= y2)
@@ -175,27 +171,11 @@ find_empty_segs (PixelRegion  *maskPR,
 
   for (x = start; x < end;)
     {
-      /*  Check to see if we must advance to next tile  */
-/*       if ((x / TILE_WIDTH) != tilex) */
-/* 	{ */
-/* 	  if (tile) */
-/* 	    tile_release (tile, FALSE); */
-/* 	  tile = tile_manager_get_tile (maskPR->tiles, x, scanline, TRUE, FALSE); */
-/* 	  data = (guchar *) tile_data_pointer (tile,  */
-/* 					       x % TILE_WIDTH,  */
-/* 					       scanline % TILE_HEIGHT) + (tile_bpp(tile) - 1); */
-
-/* 	  tilex = x / TILE_WIDTH; */
-/* 	  dstep = tile_bpp (tile); */
-/* 	} */
-/*       endx = x + (TILE_WIDTH - (x%TILE_WIDTH)); */
-/*       endx = MIN (end, endx); */
       endx = end;
       if (type == IgnoreBounds && (endx > x1 || x < x2))
 	{
 	  for (; x < endx; x++)
 	    {
-/* 	      if (*data > HALF_WAY) */
 	      if (*data & (1<<d.rem))
 		if (x >= x1 && x < x2)
 		  val = -1;
@@ -204,8 +184,7 @@ find_empty_segs (PixelRegion  *maskPR,
 	      else
 		val = -1;
 	      
-/* 	      data += dstep; */
-	      _image_bitmap_next_bit (d, data);
+	      _image_bitmap_next_bit(d, data);
 
 	      if (last != val)
 		empty_segs[l_num_empty++] = x;
@@ -217,14 +196,12 @@ find_empty_segs (PixelRegion  *maskPR,
 	{
 	  for (; x < endx; x++)
 	    {
-/* 	      if (*data > HALF_WAY) */
 	      if (*data & (1<<d.rem))
 		val = 1;
 	      else
 		val = -1;
 	      
-/* 	      data += dstep; */
-	      _image_bitmap_next_bit (d, data);
+	      _image_bitmap_next_bit(d, data);
 
 	      if (last != val)
 		empty_segs[l_num_empty++] = x;
@@ -239,9 +216,6 @@ find_empty_segs (PixelRegion  *maskPR,
     empty_segs[(*num_empty)++] = x;
 
   empty_segs[(*num_empty)++] = G_MAXINT;
-
-/*   if (tile) */
-/*     tile_release (tile, FALSE); */
 }
 
 
@@ -274,10 +248,8 @@ allocate_vert_segs (PixelRegion *PR)
   gint i;
 
   /*  allocate and initialize the vert_segs array  */
-/*   vert_segs = g_renew (gint, vert_segs, PR->w + PR->x + 1); */
   vert_segs = g_renew (gint, vert_segs, PR->w + 1);
 
-/*   for (i = 0; i <= (PR->w + PR->x); i++) */
   for (i = 0; i <= PR->w; i++)
     vert_segs[i] = -1;
 }
@@ -392,8 +364,6 @@ generate_boundary (PixelRegion  *PR,
     }
   else if (type == IgnoreBounds)
     {
-/*       start = PR->y; */
-/*       end   = PR->y + PR->h; */
       start = 0;
       end   = PR->h;
     }
