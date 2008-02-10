@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ void dirs_free(DIRS *dirs)
 {
   DIRS *iter, *next;
 
-  for (iter = dirs; iter; iter = next) {
+  for (iter=dirs; iter; iter=next) {
     next = iter->next;
     if (iter->path)
       jfree(iter->path);
@@ -75,36 +75,40 @@ void dirs_add_path(DIRS *dirs, const char *path)
     dirs->path = jstrdup(path);
   }
   else {
-    DIRS *new_one, *last_one;
+    DIRS *newone, *lastone;
 
-    for (last_one = dirs; last_one->next; last_one = last_one->next) ;
+    for (lastone=dirs; lastone->next; lastone=lastone->next)
+      ;
 
-    new_one = dirs_new();
-    if (!new_one)
+    newone = dirs_new();
+    if (!newone)
       return;
 
-    new_one->path = jstrdup(path);
-    if (!new_one->path) {
-      free(new_one);
+    newone->path = jstrdup(path);
+    if (!newone->path) {
+      jfree(newone);
       return;
     }
 
-    last_one->next = new_one;
+    lastone->next = newone;
   }
 }
 
 void dirs_cat_dirs(DIRS *dirs, DIRS *more)
 {
-  DIRS *last_one;
+  DIRS *lastone, *origmore = more;
 
   if (!dirs->path) {
     dirs->path = more->path;
     more = more->next;
+
+    jfree(origmore);
   }
 
-  for (last_one = dirs; last_one->next; last_one = last_one->next) ;
+  for (lastone=dirs; lastone->next; lastone=lastone->next)
+    ;
 
-  last_one->next = more;
+  lastone->next = more;
 }
 
 DIRS *filename_in_bindir(const char *filename)
