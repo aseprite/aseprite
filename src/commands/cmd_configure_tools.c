@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,6 +193,8 @@ static void cmd_configure_tools_execute(const char *argument)
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
     HOOK(cursor_color, SIGNAL_COLOR_BUTTON_CHANGE, cursor_button_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
+
+    add_gui_exit_hook(jwidget_free, window);
   }
 
   /* default position */
