@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -505,6 +505,9 @@ static void calculate_hot(JWidget widget)
     tabs->hot = hot;
     jwidget_dirty(widget);
   }
+
+  jrect_free(rect);
+  jrect_free(box);
 }
 
 static void draw_bevel_box(JRect box, int c1, int c2, int bottom)
