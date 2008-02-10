@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -430,10 +430,10 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
       {
 	int index = jcombobox_get_selected_index(combo_widget);
 
+	combobox_close_window(combo_widget);
+
 	if (IS_VALID_ITEM(combo_widget, index))
 	  jwidget_emit_signal(combo_widget, JI_SIGNAL_COMBOBOX_SELECT);
-
-	combobox_close_window(combo_widget);
       }
       return TRUE;
 

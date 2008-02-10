@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -216,9 +216,6 @@ void jmanager_free(JWidget widget)
     /* no more cursor */
     jmouse_set_cursor(JI_CURSOR_NULL);
 
-    /* TODO destroy the AUTODESTROY windows in these lists */
-    jlist_free(new_windows);
-
     /* destroy filters */
     for (c=0; c<NFILTERS; ++c) {
       JI_LIST_FOR_EACH(msg_filters[c], link) {
@@ -252,6 +249,10 @@ void jmanager_free(JWidget widget)
     _ji_font_exit();
     _ji_system_exit();
     _ji_free_all_widgets();
+
+    jlist_free(msg_queue);
+    jlist_free(new_windows);
+    jlist_free(proc_windows_list);
   }
   else {
     /* destroy this widget */
@@ -501,7 +502,8 @@ bool jmanager_generate_messages(JWidget manager)
 						  readkey_value);
       old_readed_key[c] = key[c];
 
-      /* same addressee */
+      /* same address */
+      jlist_free(sub_msg->any.widgets);
       sub_msg->any.widgets = jlist_copy(msg->any.widgets);
 
       jmessage_set_sub_msg(msg, sub_msg);
@@ -928,8 +930,10 @@ void jmanager_remove_msg_filter(int message, JWidget widget)
 
   JI_LIST_FOR_EACH_SAFE(msg_filters[c], link, next) {
     Filter *filter = link->data;
-    if (filter->widget == widget)
+    if (filter->widget == widget) {
+      filter_free(filter);
       jlist_delete_link(msg_filters[c], link);
+    }
   }
 }
 
@@ -938,10 +942,13 @@ void _jmanager_open_window(JWidget manager, JWidget window)
 {
   JMessage msg;
 
+  /* TODO check if this is necessary... */
   /* free all widgets of special states */
-  jmanager_free_capture();
-  jmanager_free_mouse();
-  jmanager_free_focus();
+  if (jwindow_is_wantfocus(window)) {
+    jmanager_free_capture();
+    jmanager_free_mouse();
+    jmanager_free_focus();
+  }
 
   /* add the window to manager */
   jlist_prepend(manager->children, window);

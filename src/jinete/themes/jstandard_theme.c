@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -388,7 +388,7 @@ static void theme_init_widget(JWidget widget)
       break;
 
     case JI_TEXTBOX:
-      BORDER(2);
+      BORDER(0);
       widget->child_spacing = 0;
       break;
 
@@ -1161,7 +1161,9 @@ static void theme_draw_slider(JWidget widget)
 
 static void theme_draw_textbox(JWidget widget)
 {
-  _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL);
+  _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
+			 widget->theme->textbox_bg_color,
+			 widget->theme->textbox_fg_color);
 }
 
 static void theme_draw_view(JWidget widget)

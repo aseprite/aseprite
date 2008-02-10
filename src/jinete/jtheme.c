@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -295,15 +295,14 @@ void _ji_theme_rectfill_exclude(BITMAP *bmp,
   }
 }
 
-void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
+void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
+			    int *w, int *h, int bg, int fg)
 {
   JWidget view = jwidget_get_view(widget);
   char *text = widget->text;
   int x1, y1, x2, y2;
   int x, y, chr, len;
   char *beg, *end;
-  int bg = widget->theme->textbox_bg_color;
-  int fg = widget->theme->textbox_fg_color;
   int scroll_x, scroll_y;
   int viewport_w, viewport_h;
   int textheight = jwidget_get_text_height(widget);
@@ -321,10 +320,10 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
     jrect_free(vp);
   }
   else {
-    x1 = widget->rc->x1;
-    y1 = widget->rc->y1;
-    viewport_w = jrect_w(widget->rc);
-    viewport_h = jrect_h(widget->rc);
+    x1 = widget->rc->x1 + widget->border_width.l;
+    y1 = widget->rc->y1 + widget->border_width.t;
+    viewport_w = jrect_w(widget->rc) - widget->border_width.l - widget->border_width.r;
+    viewport_h = jrect_h(widget->rc) - widget->border_width.t - widget->border_width.b;
     scroll_x = scroll_y = 0;
   }
   x2 = x1+viewport_w-1;
@@ -448,8 +447,11 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget, int *w, int *h)
   if (h)
     *h = (y-y1+scroll_y);
 
+  if (w) *w += widget->border_width.l + widget->border_width.r;
+  if (h) *h += widget->border_width.t + widget->border_width.b;
+
+  /* fill bottom area */
   if (bmp) {
-    /* fill bottom area */
     if (y <= y2)
       rectfill(bmp, x1, y, x2, y2, bg);
   }

@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -98,7 +98,8 @@ void _ji_theme_rectfill_exclude(struct BITMAP *bmp,
 				int x1, int y1, int x2, int y2,
 				int ex1, int ey1, int ex2, int ey2, int color);
 
-void _ji_theme_textbox_draw(struct BITMAP *bmp, JWidget textbox, int *w, int *h);
+void _ji_theme_textbox_draw(struct BITMAP *bmp, JWidget textbox,
+			    int *w, int *h, int bg, int fg);
 
 /**********************************************************************/
 /* jfontbmp.c */

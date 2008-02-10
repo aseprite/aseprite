@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,6 +85,7 @@ void jlist_free(JList list)
   JI_LIST_FOR_EACH_SAFE(list, link, next) {
     jlink_free(link);
   }
+  jlink_free(list->end);
   jfree(list);
 }
 
@@ -166,7 +167,7 @@ void jlist_insert_before(JList list, JLink sibling, void *data)
 
 void jlist_remove(JList list, const void *data)
 {
-  JLink link, prev = list->end;
+  JLink link;
   JI_LIST_FOR_EACH(list, link) {
     if (link->data == data) {
       link->prev->next = link->next;
@@ -175,13 +176,12 @@ void jlist_remove(JList list, const void *data)
       list->length--;
       return;
     }
-    prev = link;
   }
 }
 
 void jlist_remove_all(JList list, const void *data)
 {
-  JLink link, next, prev = list->end;
+  JLink link, next;
   JI_LIST_FOR_EACH_SAFE(list, link, next) {
     if (link->data == data) {
       link->prev->next = link->next;
@@ -189,8 +189,6 @@ void jlist_remove_all(JList list, const void *data)
       jlink_free(link);
       list->length--;
     }
-    else
-      prev = link;
   }
 }
 

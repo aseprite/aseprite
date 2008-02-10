@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -254,12 +254,11 @@ typedef struct jxmltext		*JXmlText;
 typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
 typedef void (*JDrawFunc)	 (JWidget widget);
 
-/* memory routines */
+/* without leak detection */
 void *jmalloc (unsigned long n_bytes);
 void *jmalloc0(unsigned long n_bytes);
 void *jrealloc(void *mem, unsigned long n_bytes);
 void  jfree   (void *mem);
-
 char *jstrdup (const char *string);
 
 #define jnew(struct_type, n_structs)					\

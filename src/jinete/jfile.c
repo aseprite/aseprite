@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -312,6 +312,7 @@ static JWidget convert_tag_to_widget(Tag *tag)
   /* the widget was created? */
   if (widget) {
     Attr *name = tag_get_attr(tag, "name");
+    Attr *tooltip = tag_get_attr(tag, "tooltip");
     Attr *expansive = tag_get_attr(tag, "expansive");
     Attr *magnetic = tag_get_attr(tag, "magnetic");
     Attr *noborders = tag_get_attr(tag, "noborders");
@@ -325,6 +326,9 @@ static JWidget convert_tag_to_widget(Tag *tag)
 
     if (name)
       jwidget_set_name(widget, name->value);
+
+    if (tooltip)
+      jwidget_add_tooltip_text(widget, tooltip->value);
 
     if (expansive)
       jwidget_expansive(widget, TRUE);
@@ -580,7 +584,7 @@ static Tag *tag_new_from_string(char *tag_string)
 	bool go_next = FALSE;
 
 	/* see for the translation prefix _() */
-	if (strncmp (s, "_(\"", 3) == 0) {
+	if (strncmp(s, "_(\"", 3) == 0) {
 	  translatable = TRUE;
 	  s += 2;
 	}
@@ -593,6 +597,11 @@ static Tag *tag_new_from_string(char *tag_string)
 	  while (*s) {
 	    if (*s == '\\') {
 	      memmove(s, s+1, strlen(s)-1);
+	      switch (*s) {
+		case 'n': *s = '\n'; break;
+		case 'r': *s = '\r'; break;
+		case 't': *s = '\t'; break;
+	      }
 	    }
 	    else if (*s == '\"') {
 	      go_next = TRUE;

@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <allegro/gfx.h>
-#include <allegro/keyboard.h>
+#include <allegro.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -370,20 +369,22 @@ static bool menu_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_DESTROY:
-      assert(MENU(widget) != NULL);
+    case JM_DESTROY: {
+      Menu *menu = MENU(widget);
+      assert(menu != NULL);
 
-      if (MENU(widget)->menuitem) {
-	if (MITEM(MENU(widget)->menuitem)->submenu == widget) {
-	  MITEM(MENU(widget)->menuitem)->submenu = NULL;
+      if (menu->menuitem) {
+	if (MITEM(menu->menuitem)->submenu == widget) {
+	  MITEM(menu->menuitem)->submenu = NULL;
 	}
 	else {
-	  assert(MITEM(MENU(widget)->menuitem)->submenu == NULL);
+	  assert(MITEM(menu->menuitem)->submenu == NULL);
 	}
       }
 
-      jfree(MENU(widget));
+      jfree(menu);
       break;
+    }
 
     case JM_REQSIZE:
       menu_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);

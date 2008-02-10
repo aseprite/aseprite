@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -196,7 +196,7 @@ static void textbox_request_size(JWidget widget, int *w, int *h)
   *w = 0;
   *h = 0;
 
-  _ji_theme_textbox_draw(NULL, widget, w, h);
+  _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
 
   if (widget->align & JI_WORDWRAP) {
     JWidget view = jwidget_get_view(widget);
@@ -212,7 +212,7 @@ static void textbox_request_size(JWidget widget, int *w, int *h)
     }
 
     *w = MAX(min, width);
-    _ji_theme_textbox_draw(NULL, widget, w, h);
+    _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
 
     *w = min;
   }
