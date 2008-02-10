@@ -35,3 +35,20 @@ UNINSTALLATION
 ===================================
 
   Run "make uninstall".
+
+
+===================================
+SUBVERSION
+===================================
+
+  If you're download ASE from the Subversion repository, after
+  updating I recommend you to do:
+
+    ~/ase-trunk/$ make clean
+    ~/ase-trunk/$ ./fix.sh
+    ~/ase-trunk/$ make
+
+  Also, you can make dependencies of the files (if you are trying to
+  hack the ASE source code):
+
+    ~/ase-trunk/$ sh misc/deps.sh

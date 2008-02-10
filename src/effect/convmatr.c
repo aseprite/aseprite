@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,6 +72,7 @@ ConvMatr *convmatr_new(int w, int h)
   if (!convmatr)
     return NULL;
 
+  convmatr->name = NULL;
   convmatr->w = w;
   convmatr->h = h;
   convmatr->cx = convmatr->w/2;
@@ -102,6 +103,9 @@ ConvMatr *convmatr_new_string(const char *format)
 
 void convmatr_free(ConvMatr *convmatr)
 {
+  if (convmatr->name)
+    jfree(convmatr->name);
+    
   if (convmatr->data)
     jfree(convmatr->data);
 

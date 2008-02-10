@@ -15,8 +15,8 @@
               <label text="Height:" />
             </box>
             <box vertical homogeneous expansive>
-              <entry expansive name="width" maxsize=8 magnetic />
-              <entry expansive name="height" maxsize=8 />
+              <entry expansive name="width" maxsize=8 magnetic tooltip="Width of the new sprite (in pixels)" />
+              <entry expansive name="height" maxsize=8 tooltip="Height of the new sprite (in pixels)" />
             </box>
           </box>
         </box>
@@ -24,9 +24,9 @@
       <box vertical>
         <separator text="Color Mode:" left horizontal />
         <box vertical homogeneous>
-          <radio name="radio1" text="&RGB Color" group=1 />
-	  <radio name="radio2" text="&Grayscale" group=1 />
-	  <radio name="radio3" text="&Indexed" group=1 />
+          <radio name="radio1" text="&RGB Color" group=1 tooltip="RGBA color mode\n(32 bits per pixel)" />
+	  <radio name="radio2" text="&Grayscale" group=1 tooltip="Value and Alpha\n(16 bits per pixel)" />
+	  <radio name="radio3" text="&Indexed" group=1 tooltip="Using a palette of 256 colors\n(8 bits per pixel)" />
 	</box>
       </box>
     </box>

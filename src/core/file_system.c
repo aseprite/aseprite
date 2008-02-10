@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,6 +95,7 @@ struct FileItem
   char *keyname;
   int attrib;
 #endif
+  BITMAP *thumbnail;
 };
 
 /* the root of the file-system */
@@ -275,11 +276,11 @@ bool fileitem_is_browsable(FileItem *fileitem)
   assert(fileitem->filename != NULL);
 
 #ifdef USE_PIDLS
-  return
-    IS_FOLDER(fileitem) &&
-    (fileitem->filename[0] != ':' ||
-     /* My Computer = {20D04FE0-3AEA-1069-A2D8-08002B30309D} */
-     ustrcmp(fileitem->filename, "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") == 0);
+  return IS_FOLDER(fileitem)
+    && (ustrcmp(get_extension(fileitem->filename), "zip") != 0)
+    && (fileitem->filename[0] != ':' ||
+	/* My Computer = {20D04FE0-3AEA-1069-A2D8-08002B30309D} */
+	ustrcmp(fileitem->filename, "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") == 0);
 #else
   return IS_FOLDER(fileitem);
 #endif
@@ -439,6 +440,23 @@ bool fileitem_has_extension(FileItem *fileitem, const char *list_of_extensions)
 				list_of_extensions);
 }
 
+BITMAP *fileitem_get_thumbnail(FileItem *fileitem)
+{
+  assert(fileitem != NULL);
+
+  return fileitem->thumbnail;
+}
+
+void fileitem_set_thumbnail(FileItem *fileitem, BITMAP *thumbnail)
+{
+  assert(fileitem != NULL);
+
+  if (fileitem->thumbnail)
+    destroy_bitmap(fileitem->thumbnail);
+
+  fileitem->thumbnail = thumbnail;
+}
+
 static FileItem *fileitem_new(FileItem *parent)
 {
   FileItem *fileitem = jnew(FileItem, 1);
@@ -458,6 +476,7 @@ static FileItem *fileitem_new(FileItem *parent)
   fileitem->keyname = NULL;
   fileitem->attrib = 0;
 #endif
+  fileitem->thumbnail = NULL;
   
   return fileitem;
 }
@@ -494,6 +513,9 @@ static void fileitem_free(FileItem *fileitem)
 
   if (fileitem->displayname)
     jfree(fileitem->displayname);
+
+  if (fileitem->thumbnail)
+    destroy_bitmap(fileitem->thumbnail);
 
   if (fileitem->children) {
     JLink link, next;

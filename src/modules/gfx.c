@@ -558,6 +558,24 @@ void rectshade(BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom)
   }
 }
 
+void draw_emptyset_symbol(JRect rc, int color)
+{
+  int cx, cy, x1, y1, x2, y2, size;
+
+  size = MIN(jrect_w(rc), jrect_h(rc)) - 8;
+  size = MID(4, size, 64);
+
+  cx = (rc->x1+rc->x2)/2;
+  cy = (rc->y1+rc->y2)/2;
+  x1 = cx-size/2;
+  y1 = cy-size/2;
+  x2 = x1+size-1;
+  y2 = y1+size-1;
+
+  circle(ji_screen, cx, cy, size/2, color);
+  line(ji_screen, x1, y2, x2, y1, color);
+}
+
 
 
 /************************************************************************/

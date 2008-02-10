@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 
 #include "core/cfg.h"
 #include "core/dirs.h"
+#include "file/file.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "widgets/fileview.h"
@@ -40,7 +41,7 @@
 #endif
 
 #ifndef MAX_PATH
-#  define MAX_PATH 4096
+#  define MAX_PATH 4096		/* TODO this is needed for Linux, is it correct? */
 #endif
 
 /* Variables used only to maintain the history of navigation. */
@@ -64,8 +65,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg);
 static bool location_msg_proc(JWidget widget, JMessage msg);
 static bool filetype_msg_proc(JWidget widget, JMessage msg);
 
-/**
- * The routine that shows the dialog to select a file in ASE.
+/* Shows the dialog to select a file in ASE.
+
+   Mainly it uses:
+   * the 'core/file_system' routines.
+   * the 'widgets/fileview' widget.
  */
 char *ase_file_selector(const char *message,
 			const char *init_path,
@@ -162,6 +166,8 @@ char *ase_file_selector(const char *message,
     jwidget_set_min_size(window, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
     jwindow_remap(window);
     jwindow_center(window);
+
+    jwidget_add_tooltip_text(filetype, "hola\nchau");
   }
   else {
     fileview = jwidget_find_name(window, "fileview");
@@ -240,6 +246,7 @@ char *ase_file_selector(const char *message,
   }
 
   /* TODO why this doesn't work if I remove this? */
+  fileview_stop_threads(fileview);
   jwidget_free(window);
   window = NULL;
 
@@ -431,6 +438,7 @@ static void goup_command(JWidget widget)
   fileview_goup(fileview);
 }
 
+/* hook for the 'fileview' widget in the dialog */
 static bool fileview_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
@@ -450,10 +458,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	break;
       }
 
+	/* when a file is accepted */
       case SIGNAL_FILEVIEW_FILE_ACCEPT:
 	jwidget_close_window(widget);
 	break;
 
+	/* when the current folder change */
       case SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED: {
 	JWidget window = jwidget_get_window(widget);
 
@@ -470,11 +480,14 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
+/* hook for the 'location' combo-box */
 static bool location_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {
-    
+
+      /* when the user change the location we have to set the
+	 current-folder in the 'fileview' widget */
       case JI_SIGNAL_COMBOBOX_SELECT: {
 	FileItem *fileitem =
 	  jcombobox_get_data(widget,
@@ -485,6 +498,10 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
 					       "fileview");
 
 	  fileview_set_current_folder(fileview, fileitem);
+
+	  /* refocus the 'fileview' (the focus in that widget is more
+	     useful for the user) */
+	  jmanager_set_focus(fileview);
 	}
 	break;
       }
@@ -493,11 +510,14 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
+/* hook for the 'filetype' combo-box */
 static bool filetype_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {
 
+      /* when the user select a new file-type (extension), we have to
+	 change the file-extension in the 'filename' entry widget */
       case JI_SIGNAL_COMBOBOX_SELECT: {
 	const char *ext = jcombobox_get_selected_string(widget);
 	JWidget window = jwidget_get_window(widget);

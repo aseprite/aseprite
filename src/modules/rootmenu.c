@@ -1,6 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
- *               2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,19 +53,18 @@ static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *comm
 
 int init_module_rootmenu(void)
 {
-  root_menu = 0;
+  root_menu = NULL;
+  layer_popup_menu = NULL;
+  frame_popup_menu = NULL;
+  cel_popup_menu = NULL;
+  filters_popup_menu = NULL;
+  recent_list_menuitem = NULL;
 
   return load_root_menu();
 }
 
 void exit_module_rootmenu(void)
 {
-  recent_list_menuitem = NULL;
-  layer_popup_menu = NULL;
-  frame_popup_menu = NULL;
-  cel_popup_menu = NULL;
-  filters_popup_menu = NULL;
-
   command_reset_keys();
   jwidget_free(root_menu);
 
@@ -231,10 +229,10 @@ static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename)
       menu = convert_xmlelem_to_menu(elem);
     }
     else
-      PRINTF("Invalid element with id=\"main_menu\" in \"%s\"\n", filename);
+      PRINTF("Invalid element with id=\"%s\" in \"%s\"\n", id, filename);
   }
   else
-    PRINTF("\"main_menu\" element couldn't be found...\n");
+    PRINTF("\"%s\" element couldn't be found...\n", id);
 
   return menu;
 }

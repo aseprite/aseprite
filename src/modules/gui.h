@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,9 @@
   hook_signal((widget), (signal), (signal_handler), (int)(user_data))
 
 struct Sprite;
+struct Monitor;
+
+typedef struct Monitor Monitor;
 
 int init_module_gui(void);
 void exit_module_gui(void);
@@ -61,6 +64,16 @@ JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4);
 /* void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4); */
 
-void add_gui_monitor(bool (*proc)(void *data), void *data);
+/********************************************************************/
+/* exit-hooks */
+
+void add_gui_exit_hook(void (*proc)(void *data), void *data);
+
+/********************************************************************/
+/* monitors */
+
+Monitor *add_gui_monitor(void (*proc)(void *),
+			 void (*free)(void *), void *data);
+void remove_gui_monitor(Monitor *monitor);
 
 #endif /* MODULES_GUI_H */

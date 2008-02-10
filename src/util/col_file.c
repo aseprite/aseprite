@@ -20,8 +20,10 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <stdio.h>
 #include <allegro.h>
 
+#include "file/file.h"
 #include "raster/image.h"
 
 #endif
@@ -40,12 +42,12 @@ RGB *load_col_file(const char *filename)
   div_t d = div(size-8, 3);
   RGB *palette = NULL;
   int c, r, g, b;
-  PACKFILE *f;
+  FILE *f;
 
   if (!(size) || (pro && d.rem)) /* invalid format */
     return NULL;
 
-  f = pack_fopen(filename, F_READ);
+  f = fopen(filename, "rb");
   if (!f)
     return NULL;
 
@@ -54,9 +56,9 @@ RGB *load_col_file(const char *filename)
     palette = jmalloc(sizeof (PALETTE));
 
     for (c=0; c<256; c++) {
-      r = pack_getc(f);
-      g = pack_getc(f);
-      b = pack_getc(f);
+      r = fgetc(f);
+      g = fgetc(f);
+      b = fgetc(f);
       palette[c].r = MID(0, r, 63);
       palette[c].g = MID(0, g, 63);
       palette[c].b = MID(0, b, 63);
@@ -66,22 +68,22 @@ RGB *load_col_file(const char *filename)
   else {
     int magic, version;
 
-    pack_igetl(f);		/* skip file size */
-    magic = pack_igetw(f);	/* file format identifier */
-    version = pack_igetw(f);	/* version file */
+    fgetl(f);			/* skip file size */
+    magic = fgetw(f);		/* file format identifier */
+    version = fgetw(f);		/* version file */
 
     /* unknown format */
     if (magic != 0xB123 || version != 0) {
-      pack_fclose (f);
+      fclose (f);
       return NULL;
     }
 
     palette = jmalloc(sizeof (PALETTE));
 
     for (c=0; c<d.quot && c<256; c++) {
-      r = pack_getc(f);
-      g = pack_getc(f);
-      b = pack_getc(f);
+      r = fgetc(f);
+      g = fgetc(f);
+      b = fgetc(f);
       palette[c].r = MID(0, r, 255)>>2;
       palette[c].g = MID(0, g, 255)>>2;
       palette[c].b = MID(0, b, 255)>>2;
@@ -91,30 +93,30 @@ RGB *load_col_file(const char *filename)
       palette[c].r = palette[c].g = palette[c].b = 0;
   }
 
-  pack_fclose(f);
+  fclose(f);
   return palette;
 }
 
 /* saves an Animator Pro COL file */
 int save_col_file(RGB *palette, const char *filename)
 {
-  PACKFILE *f;
+  FILE *f;
   int c;
 
-  f = pack_fopen(filename, F_WRITE);
+  f = fopen(filename, "wb");
   if (!f)
     return -1;
 
-  pack_iputl(8+768, f);		/* file size */
-  pack_iputw(0xB123, f);	/* file format identifier */
-  pack_iputw(0, f);		/* version file */
+  fputl(8+768, f);		/* file size */
+  fputw(0xB123, f);		/* file format identifier */
+  fputw(0, f);			/* version file */
 
   for (c=0; c<256; c++) {
-    pack_putc(_rgb_scale_6[palette[c].r], f);
-    pack_putc(_rgb_scale_6[palette[c].g], f);
-    pack_putc(_rgb_scale_6[palette[c].b], f);
+    fputc(_rgb_scale_6[palette[c].r], f);
+    fputc(_rgb_scale_6[palette[c].g], f);
+    fputc(_rgb_scale_6[palette[c].b], f);
   }
 
-  pack_fclose(f);
+  fclose(f);
   return 0;
 }

@@ -103,11 +103,6 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, Sprite *sp
 static Mask *ase_file_read_mask_chunk(FILE *f);
 static void ase_file_write_mask_chunk(FILE *f, Mask *mask);
 
-static int fgetw(FILE *file);
-static long fgetl(FILE *file);
-static int fputw(int w, FILE *file);
-static int fputl(long l, FILE *file);
-
 FileFormat format_ase =
 {
   "ase,aseprite",
@@ -275,9 +270,16 @@ static bool load_ASE(FileOp *fop)
   }
 
   fop->sprite = sprite;
-  fclose(f);
 
-  return TRUE;
+  if (ferror(f)) {
+    fop_error(fop, _("Error reading file.\n"));
+    fclose(f);
+    return FALSE;
+  }
+  else {
+    fclose(f);
+    return TRUE;
+  }
 }
 
 static bool save_ASE(FileOp *fop)
@@ -333,8 +335,16 @@ static bool save_ASE(FileOp *fop)
 
   /* write the header */
   ase_file_write_header(f, &header);
-  fclose(f);
-  return TRUE;
+
+  if (ferror(f)) {
+    fop_error(fop, _("Error writing file.\n"));
+    fclose(f);
+    return FALSE;
+  }
+  else {
+    fclose(f);
+    return TRUE;
+  }
 }
 
 static bool ase_file_read_header(FILE *f, ASE_Header *header)
@@ -953,139 +963,3 @@ static void ase_file_write_mask_chunk(FILE *f, Mask *mask)
 
   ase_file_write_close_chunk(f);
 }
-
-/* returns a word (16 bits) */
-static int fgetw(FILE *file)
-{
-  int b1, b2;
-
-  b1 = fgetc(file);
-  if (b1 == EOF)
-    return EOF;
-
-  b2 = fgetc(file);
-  if (b2 == EOF)
-    return EOF;
-
-  /* little endian */
-  return ((b2 << 8) | b1);
-}
-
-/* returns a dword (32 bits) */
-static long fgetl(FILE *file)
-{
-  int b1, b2, b3, b4;
-
-  b1 = fgetc(file);
-  if (b1 == EOF)
-    return EOF;
-
-  b2 = fgetc(file);
-  if (b2 == EOF)
-    return EOF;
-
-  b3 = fgetc(file);
-  if (b3 == EOF)
-    return EOF;
-
-  b4 = fgetc(file);
-  if (b4 == EOF)
-    return EOF;
-
-  /* little endian */
-  return ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
-}
-
-/* returns 0 in success or -1 in error */
-static int fputw(int w, FILE *file)
-{
-  int b1, b2;
-
-  /* little endian */
-  b2 = (w & 0xFF00) >> 8;
-  b1 = w & 0x00FF;
-
-  if (fputc(b1, file) == b1)
-    if (fputc(b2, file) == b2)
-      return 0;
-
-  return -1;
-}
-
-/* returns 0 in success or -1 in error */
-static int fputl(long l, FILE *file)
-{
-  int b1, b2, b3, b4;
-
-  /* little endian */
-  b4 = (int)((l & 0xFF000000L) >> 24);
-  b3 = (int)((l & 0x00FF0000L) >> 16);
-  b2 = (int)((l & 0x0000FF00L) >> 8);
-  b1 = (int)l & 0x00FF;
-
-  if (fputc(b1, file) == b1)
-    if (fputc(b2, file) == b2)
-      if (fputc(b3, file) == b3)
-	if (fputc(b4, file) == b4)
-	  return 0;
-
-  return -1;
-}
-
-#if 0
-/* returns a floating point (32 bits) */
-static float fgetf(FILE *file)
-{
-  union {
-    float f;
-    long l;
-  } packet;
-
-  packet.l = fgetl(file);
-
-  return packet.f;
-}
-
-/* returns a floating point with double precision (64 bits) */
-static double fgetd(FILE *file)
-{
-  union {
-    double d;
-    long l[2];
-  } packet;
-
-  packet.l[0] = fgetl(file);
-  packet.l[1] = fgetl(file);
-
-  return packet.d;
-}
-
-/* returns 0 in success or -1 in error */
-static int fputf(float c, FILE *file)
-{
-  union {
-    float f;
-    long l;
-  } packet;
-
-  packet.f = c;
-  return fputl(packet.l, file);
-}
-
-/* returns 0 in success or -1 in error */
-static int fputd(double c, FILE *file)
-{
-  union {
-    double d;
-    long l[2];
-  } packet;
-
-  packet.d = c;
-
-  if (fputl(packet.l[0], file) == 0)
-    if (fputl(packet.l[1], file) == 0)
-      return 0;
-
-  return -1;
-}
-#endif

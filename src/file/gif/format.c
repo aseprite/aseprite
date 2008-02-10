@@ -1,10 +1,12 @@
-#include <allegro.h>
-
-#include "format.h"
-#include "lzw.h"
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <allegro.h>
+
+#include "file/gif/format.h"
+#include "file/gif/lzw.h"
+#include "file/file.h"
 
 GIF_ANIMATION *
 gif_create_animation(int frames_count)
@@ -24,37 +26,37 @@ gif_destroy_animation (GIF_ANIMATION *gif)
 
     for (i = 0; i < gif->frames_count; i++)
     {
-        GIF_FRAME *frame = gif->frames + i;
+	GIF_FRAME *frame = gif->frames + i;
 
-        if (frame->bitmap_8_bit)
-            free (frame->bitmap_8_bit);
+	if (frame->bitmap_8_bit)
+	    free (frame->bitmap_8_bit);
     }
     free (gif->frames);
     free (gif);
 }
 
 static void
-write_palette (PACKFILE *file, GIF_PALETTE *palette, int bits)
+write_palette (FILE *file, GIF_PALETTE *palette, int bits)
 {
     int i;
     for (i = 0; i < (1 << bits); i++)
     {
-        pack_putc (palette->colors[i].r, file);
-        pack_putc (palette->colors[i].g, file);
-        pack_putc (palette->colors[i].b, file);
+	fputc (palette->colors[i].r, file);
+	fputc (palette->colors[i].g, file);
+	fputc (palette->colors[i].b, file);
     }
 }
 
 static void
-read_palette (PACKFILE * file, GIF_PALETTE *palette)
+read_palette (FILE * file, GIF_PALETTE *palette)
 {
     int i;
 
     for (i = 0; i < palette->colors_count; i++)
     {
-        palette->colors[i].r = pack_getc (file);
-        palette->colors[i].g = pack_getc (file);
-        palette->colors[i].b = pack_getc (file);
+	palette->colors[i].r = fgetc (file);
+	palette->colors[i].g = fgetc (file);
+	palette->colors[i].b = fgetc (file);
     }
 }
 
@@ -91,92 +93,92 @@ gif_save_animation (const char *filename, GIF_ANIMATION *gif,
 {
     int frame;
     int i, j;
-    PACKFILE *file;
+    FILE *file;
 
-    file = pack_fopen (filename, "w");
+    file = fopen (filename, "wb");
     if (!file)
-        return -1;
+	return -1;
 
-    pack_fwrite ("GIF89a", 6, file);
-    pack_iputw (gif->width, file);
-    pack_iputw (gif->height, file);
+    fwrite ("GIF89a", 1, 6, file);
+    fputw (gif->width, file);
+    fputw (gif->height, file);
     /* 7 global palette
      * 456 color richness
      * 3 sorted
      * 012 palette bits
      */
     for (i = 1, j = 0; i < gif->palette.colors_count; i *= 2, j++);
-    pack_putc ((j ? 128 : 0) + 64 + 32 + 16 + (j ? j - 1 : 0), file);
-    pack_putc (gif->background_index, file);
-    pack_putc (0, file);        /* No aspect ratio. */
+    fputc ((j ? 128 : 0) + 64 + 32 + 16 + (j ? j - 1 : 0), file);
+    fputc (gif->background_index, file);
+    fputc (0, file);        /* No aspect ratio. */
 
     if (j)
-        write_palette (file, &gif->palette, j);
+	write_palette (file, &gif->palette, j);
 
     if (gif->loop != -1)
     /* Loop count extension. */
     {
-        pack_putc (0x21, file); /* Extension Introducer. */
-        pack_putc (0xff, file); /* Application Extension. */
-        pack_putc (11, file);    /* Size. */
-        pack_fwrite ("NETSCAPE2.0", 11, file);
-        pack_putc (3, file); /* Size. */
-        pack_putc (1, file);
-        pack_iputw (gif->loop, file);
-        pack_putc (0, file);
+	fputc (0x21, file); /* Extension Introducer. */
+	fputc (0xff, file); /* Application Extension. */
+	fputc (11, file);    /* Size. */
+	fwrite ("NETSCAPE2.0", 1, 11, file);
+	fputc (3, file); /* Size. */
+	fputc (1, file);
+	fputw (gif->loop, file);
+	fputc (0, file);
     }
 
     progress(dp, 0.0f);
     for (frame = 0; frame < gif->frames_count; frame++)
     {
-        int w = gif->frames[frame].w;
-        int h = gif->frames[frame].h;
+	int w = gif->frames[frame].w;
+	int h = gif->frames[frame].h;
 
-        pack_putc (0x21, file); /* Extension Introducer. */
-        pack_putc (0xf9, file); /* Graphic Control Extension. */
-        pack_putc (4, file);    /* Size. */
-        /* Disposal method, and enable transparency. */
-        i = gif->frames[frame].disposal_method << 2;
-        if (gif->frames[frame].transparent_index != -1)
-            i |= 1;
-        pack_putc (i, file);
-        pack_iputw (gif->frames[frame].duration, file); /* In 1/100th seconds. */
-        if (gif->frames[frame].transparent_index != -1)
-            pack_putc (gif->frames[frame].transparent_index, file);       /* Transparent color index. */
-        else
-             pack_putc (0, file);
-        pack_putc (0x00, file); /* Terminator. */
+	fputc (0x21, file); /* Extension Introducer. */
+	fputc (0xf9, file); /* Graphic Control Extension. */
+	fputc (4, file);    /* Size. */
+	/* Disposal method, and enable transparency. */
+	i = gif->frames[frame].disposal_method << 2;
+	if (gif->frames[frame].transparent_index != -1)
+	    i |= 1;
+	fputc (i, file);
+	fputw (gif->frames[frame].duration, file); /* In 1/100th seconds. */
+	if (gif->frames[frame].transparent_index != -1)
+	    fputc (gif->frames[frame].transparent_index, file);       /* Transparent color index. */
+	else
+	     fputc (0, file);
+	fputc (0x00, file); /* Terminator. */
 
-        pack_putc (0x2c, file); /* Image Descriptor. */
-        pack_iputw (gif->frames[frame].xoff, file);
-        pack_iputw (gif->frames[frame].yoff, file);
-        pack_iputw (w, file);
-        pack_iputw (h, file);
+	fputc (0x2c, file); /* Image Descriptor. */
+	fputw (gif->frames[frame].xoff, file);
+	fputw (gif->frames[frame].yoff, file);
+	fputw (w, file);
+	fputw (h, file);
 
-         /* 7: local palette
-         * 6: interlaced
-         * 5: sorted
-         * 012: palette bits
-         */
+	 /* 7: local palette
+	 * 6: interlaced
+	 * 5: sorted
+	 * 012: palette bits
+	 */
 
-        for (i = 1, j = 0; i < gif->frames[frame].palette.colors_count; i *= 2, j++);
-        pack_putc ((j ? 128 : 0) + (j ? j - 1 : 0), file);
+	for (i = 1, j = 0; i < gif->frames[frame].palette.colors_count; i *= 2, j++);
+	fputc ((j ? 128 : 0) + (j ? j - 1 : 0), file);
 
-        if (j)
-            write_palette (file, &gif->frames[frame].palette, j);
+	if (j)
+	    write_palette (file, &gif->frames[frame].palette, j);
 
-        LZW_encode (file, lzw_read_pixel, w * h,
-            gif->frames[frame].bitmap_8_bit);
+	LZW_encode (file, lzw_read_pixel, w * h,
+	    gif->frames[frame].bitmap_8_bit);
 
-        pack_putc (0x00, file); /* Terminator. */
+	fputc (0x00, file); /* Terminator. */
 
 	progress(dp, (float)frame / (float)gif->frames_count);
     }
     progress(dp, 1.0f);
 
-    pack_putc (0x3b, file);     /* Trailer. */
+    fputc (0x3b, file);     /* Trailer. */
 
-    pack_fclose (file);
+    fclose (file);
     return 0;
 }
 
@@ -187,26 +189,26 @@ deinterlace (unsigned char *bmp, int w, int h)
     int y, i = 0;
     for (y = 0; y < h; y += 8)
     {
-        memcpy (temp, bmp + i++ * w, w);
+	memcpy (temp, bmp + i++ * w, w);
     }
     for (y = 4; y < h; y += 8)
     {
-        memcpy (temp, bmp + i++ * w, w);
+	memcpy (temp, bmp + i++ * w, w);
     }
     for (y = 2; y < h; y += 4)
     {
-        memcpy (temp, bmp + i++ * w, w);
+	memcpy (temp, bmp + i++ * w, w);
     }
     for (y = 1; y < h; y += 2)
     {
-        memcpy (temp, bmp + i++ * w, w); 
+	memcpy (temp, bmp + i++ * w, w);
     }
     memcpy (bmp, temp, w * h);
     free(temp);
 }
 
 static GIF_ANIMATION *
-load_object (PACKFILE * file, long size, void (*progress) (void *, float), void *dp)
+load_object (FILE * file, long size, void (*progress) (void *, float), void *dp)
 {
     int version;
     unsigned char *bmp = NULL;
@@ -218,162 +220,162 @@ load_object (PACKFILE * file, long size, void (*progress) (void *, float), void 
     gif->frames_count = 0;
 
     /* is it really a GIF? */
-    if (pack_getc (file) != 'G')
-        goto error;
-    if (pack_getc (file) != 'I')
-        goto error;
-    if (pack_getc (file) != 'F')
-        goto error;
-    if (pack_getc (file) != '8')
-        goto error;
+    if (fgetc (file) != 'G')
+	goto error;
+    if (fgetc (file) != 'I')
+	goto error;
+    if (fgetc (file) != 'F')
+	goto error;
+    if (fgetc (file) != '8')
+	goto error;
     /* '7' or '9', for 87a or 89a. */
-    version = pack_getc (file);
+    version = fgetc (file);
     if (version != '7' && version != '9')
-        goto error;
-    if (pack_getc (file) != 'a')
-        goto error;
+	goto error;
+    if (fgetc (file) != 'a')
+	goto error;
 
-    gif->width = pack_igetw (file);
-    gif->height = pack_igetw (file);
-    i = pack_getc (file);
+    gif->width = fgetw (file);
+    gif->height = fgetw (file);
+    i = fgetc (file);
     /* Global color table? */
     if (i & 128)
-        gif->palette.colors_count = 1 << ((i & 7) + 1);
+	gif->palette.colors_count = 1 << ((i & 7) + 1);
     else
-        gif->palette.colors_count = 0;
+	gif->palette.colors_count = 0;
     /* Background color is only valid with a global palette. */
-    gif->background_index = pack_getc (file);
+    gif->background_index = fgetc (file);
 
     /* Skip aspect ratio. */
-    pack_fseek (file, 1);
+    fseek (file, 1, SEEK_CUR);
 
     if (gif->palette.colors_count)
     {
-        read_palette (file, &gif->palette);
-        have_global_palette = 1;
+	read_palette (file, &gif->palette);
+	have_global_palette = 1;
     }
 
     progress(dp, 0.0f);
     do
     {
-        i = pack_getc (file);
+	i = fgetc (file);
 	progress(dp, (float)i / (float)size);
 
-        switch (i)
-        {
-            case 0x2c:         /* Image Descriptor */
-            {
-                int w, h;
-                int interlaced = 0;
+	switch (i)
+	{
+	    case 0x2c:         /* Image Descriptor */
+	    {
+		int w, h;
+		int interlaced = 0;
 
-                frame.xoff = pack_igetw (file);
-                frame.yoff = pack_igetw (file);
-                w = pack_igetw (file);
-                h = pack_igetw (file);
-                bmp = calloc (w, h);
-                if (!bmp)
-                    goto error;
-                frame.w = w;
-                frame.h = h;
-                i = pack_getc (file);
+		frame.xoff = fgetw (file);
+		frame.yoff = fgetw (file);
+		w = fgetw (file);
+		h = fgetw (file);
+		bmp = calloc (w, h);
+		if (!bmp)
+		    goto error;
+		frame.w = w;
+		frame.h = h;
+		i = fgetc (file);
 
-                /* Local palette. */
-                if (i & 128)
-                {
-                    frame.palette.colors_count = 1 << ((i & 7) + 1);
-                    read_palette (file, &frame.palette);
-                }
-                else
-                {
-                    frame.palette.colors_count = 0;
-                }
+		/* Local palette. */
+		if (i & 128)
+		{
+		    frame.palette.colors_count = 1 << ((i & 7) + 1);
+		    read_palette (file, &frame.palette);
+		}
+		else
+		{
+		    frame.palette.colors_count = 0;
+		}
 
-                if (i & 64)
-                    interlaced = 1;
+		if (i & 64)
+		    interlaced = 1;
 
-                if (LZW_decode (file, lzw_write_pixel, bmp))
-                    goto error;
+		if (LZW_decode (file, lzw_write_pixel, bmp))
+		    goto error;
 
-                if (interlaced)
-                    deinterlace (bmp, w, h);
+		if (interlaced)
+		    deinterlace (bmp, w, h);
 
-                frame.bitmap_8_bit = bmp;
-                bmp = NULL;
+		frame.bitmap_8_bit = bmp;
+		bmp = NULL;
 
-                gif->frames_count++;
-                gif->frames =
-                    realloc (gif->frames,
-                             gif->frames_count * sizeof *gif->frames);
-                gif->frames[gif->frames_count - 1] = frame;
-                break;
-            }
-            case 0x21: /* Extension Introducer. */
-                j = pack_getc (file); /* Extension Type. */
-                i = pack_getc (file); /* Size. */
-                if (j == 0xf9) /* Graphic Control Extension. */
-                {
-                    /* size must be 4 */
-                    if (i != 4)
-                        goto error;
-                    i = pack_getc (file);
-                    frame.disposal_method = (i >> 2) & 7;
-                    frame.duration = pack_igetw (file);
-                    if (i & 1)  /* Transparency? */
-                    {
-                        frame.transparent_index = pack_getc (file);
-                    }
-                    else
-                    {
-                        pack_fseek (file, 1); 
-                        frame.transparent_index = -1;
-                    }
-                    i = pack_getc (file); /* Size. */
-                }
-                /* Application Extension. */
-                else if (j == 0xff)
-                {
-                    if (i == 11)
-                    {
-                        char name[12];
-                        pack_fread (name, 11, file);
-                        i = pack_getc (file); /* Size. */
-                        name[11] = '\0';
-                        if (!strcmp (name, "NETSCAPE2.0"))
-                        {
-                            if (i == 3)
-                            {
-                                j = pack_getc (file);
-                                gif->loop = pack_igetw (file);
-                                if (j != 1)
-                                    gif->loop = 0;
-                                i = pack_getc (file); /* Size. */
-                            }
-                        }
-                    }
-                }
+		gif->frames_count++;
+		gif->frames =
+		    realloc (gif->frames,
+			     gif->frames_count * sizeof *gif->frames);
+		gif->frames[gif->frames_count - 1] = frame;
+		break;
+	    }
+	    case 0x21: /* Extension Introducer. */
+		j = fgetc (file); /* Extension Type. */
+		i = fgetc (file); /* Size. */
+		if (j == 0xf9) /* Graphic Control Extension. */
+		{
+		    /* size must be 4 */
+		    if (i != 4)
+			goto error;
+		    i = fgetc (file);
+		    frame.disposal_method = (i >> 2) & 7;
+		    frame.duration = fgetw (file);
+		    if (i & 1)  /* Transparency? */
+		    {
+			frame.transparent_index = fgetc (file);
+		    }
+		    else
+		    {
+			fseek (file, 1, SEEK_CUR);
+			frame.transparent_index = -1;
+		    }
+		    i = fgetc (file); /* Size. */
+		}
+		/* Application Extension. */
+		else if (j == 0xff)
+		{
+		    if (i == 11)
+		    {
+			char name[12];
+			fread (name, 1, 11, file);
+			i = fgetc (file); /* Size. */
+			name[11] = '\0';
+			if (!strcmp (name, "NETSCAPE2.0"))
+			{
+			    if (i == 3)
+			    {
+				j = fgetc (file);
+				gif->loop = fgetw (file);
+				if (j != 1)
+				    gif->loop = 0;
+				i = fgetc (file); /* Size. */
+			    }
+			}
+		    }
+		}
 
-                /* Possibly more blocks until terminator block (0). */
-                while (i)
-                {
-                    pack_fseek (file, i);
-                    i = pack_getc (file);
-                }
-                break;
-            case 0x3b:
-                /* GIF Trailer. */
-                pack_fclose (file);
+		/* Possibly more blocks until terminator block (0). */
+		while (i)
+		{
+		    fseek (file, i, SEEK_CUR);
+		    i = fgetc (file);
+		}
+		break;
+	    case 0x3b:
+		/* GIF Trailer. */
+		fclose (file);
 		progress(dp, 1.0f);
-                return gif;
-        }
+		return gif;
+	}
     }
     while (TRUE);
   error:
     if (file)
-        pack_fclose (file);
+	fclose (file);
     if (gif)
-        gif_destroy_animation (gif);
+	gif_destroy_animation (gif);
     if (bmp)
-        free (bmp);
+	free (bmp);
     return NULL;
 }
 
@@ -391,7 +393,7 @@ load_object (PACKFILE * file, long size, void (*progress) (void *, float), void 
 GIF_ANIMATION *
 gif_load_animation (const char *filename, void (*progress) (void *, float), void *dp)
 {
-    PACKFILE *file;
+    FILE *file;
     GIF_ANIMATION *gif = NULL;
 #if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,		\
 					   ALLEGRO_SUB_VERSION,		\
@@ -401,7 +403,7 @@ gif_load_animation (const char *filename, void (*progress) (void *, float), void
     int size = file_size_ex(filename);
 #endif
 
-    file = pack_fopen (filename, "r");
+    file = fopen (filename, "rb");
     if (file)
       gif = load_object (file, size, progress, dp);
     return gif;
@@ -412,4 +414,3 @@ gif_load_animation (const char *filename, void (*progress) (void *, float), void
 /* { */
 /*     return makecol (rgb->r, rgb->g, rgb->b); */
 /* } */
-

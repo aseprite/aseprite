@@ -1,3 +1,45 @@
+2008-02-10  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/fileview.c: Finished with thumbnails generation.
+
+	* src/commands/cmd_open_file.c (monitor_free): Added to join the
+	thread. This fix bugs when you close the program and there're
+	files loading: all threads are joined.
+
+	* src/modules/gui.c (remove_gui_monitor): Added.
+	(add_gui_monitor): Now it receives a 'free' routine too (to
+	destroy the 'data' of the monitor).
+
+	* src/test/test_errno.c: Added a test to check errno
+	thread-safety.
+
+2008-02-09  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jmanager.c (jmanager_remove_msg_filter): 
+	* src/raster/undo.c (chunk_set_mask_invert): Fixed more memory leaks.
+
+2008-02-08  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/sprites.c (exit_module_sprites):
+	* src/core/core.c (core_exit): 
+	* src/widgets/colbar.c (color_bar_msg_proc):
+	* src/raster/layer.c (layer_free): 
+	* src/jinete/jaccel.c (jaccel_free):
+	* src/widgets/tabs.c (calculate_hot):
+	* src/core/dirs.c (dirs_cat_dirs): Fixed more memory leaks
+	  (the leaks in exit routines aren't too critical, but the
+	   other yes).
+
+	* src/jinete/jmanager.c (jmanager_generate_messages): Fixed a
+	memory leak when replacing the value of 'widgets' field of a
+	JMessage.
+
+	* src/jinete/jlist.c (jlist_free): Fixed a big memory leak (for
+	every linked list JList in the program, the 'list->end' field was
+	never freed).
+
+	* src/core/file_system.c (struct FileItem): Added thumbnail field.
+
 2008-02-04  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/dialogs/filesel.c: Done (navigation history added, and

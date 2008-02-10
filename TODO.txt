@@ -3,8 +3,13 @@ High priority work
 
 - search for TODO;
 - rename jcombox.c to jcombobox.c
+- remove the jfilesel.c
+- remove USE_PRECOMPILED_HEADER
+- fix copyright years (2001-2008)
 - fix a bug in the film editor when move the separator (panel) outside
   the screen (to left or right)
+- 'jfile.c' should use 'jxml.c', because there are duplicate code:
+  two (precarious) XML parsers.
 - the user_data of hook_signal should be void*.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider
@@ -60,14 +65,11 @@ Wish-list
     position from the starting point of movement;
   + make drawing the 'marching-ants-rectangle' a prioritaire thing to
     draw (when move it).
-- for Jinete:
-  + add columns handle to list-boxes;
-  + add icons handle to all widgets (mainly button, list-items, and labels);
-  + add tree widget;
 
 Low priority stuff
 ------------------
 
+- add more unit-tests.
 - test routines: load/save_pic_file, load/save_msk_file,
   load/save_col_file.
 - fix the fli reader (both Allegro and Gfli): when a frame hasn't

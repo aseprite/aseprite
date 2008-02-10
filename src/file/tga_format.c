@@ -24,7 +24,6 @@
 #ifndef USE_PRECOMPILED_HEADER
 
 #include <allegro/color.h>
-#include <allegro/file.h>
 
 #include "jinete/jbase.h"
 
@@ -52,18 +51,18 @@ FileFormat format_tga =
 /* rle_tga_read:
  *  Helper for reading 256 color RLE data from TGA files.
  */
-static void rle_tga_read(unsigned char *address, int w, int type, PACKFILE *f)
+static void rle_tga_read(unsigned char *address, int w, int type, FILE *f)
 {
   unsigned char value;
   int count, g;
   int c = 0;
 
   do {
-    count = pack_getc(f);
+    count = fgetc(f);
     if (count & 0x80) {
       count = (count & 0x7F) + 1;
       c += count;
-      value = pack_getc(f);
+      value = fgetc(f);
       while (count--) {
 	if (type == 1)
 	  *(address++) = value;
@@ -77,12 +76,12 @@ static void rle_tga_read(unsigned char *address, int w, int type, PACKFILE *f)
       count++;
       c += count;
       if (type == 1) {
-	pack_fread(address, count, f);
+	fread(address, 1, count, f);
 	address += count;
       }
       else {
 	for (g=0; g<count; g++) {
-	  *((ase_uint16 *)address) = pack_getc(f);
+	  *((ase_uint16 *)address) = fgetc(f);
 	  address += sizeof(ase_uint16);
 	}
       }
@@ -93,18 +92,18 @@ static void rle_tga_read(unsigned char *address, int w, int type, PACKFILE *f)
 /* rle_tga_read32:
  *  Helper for reading 32 bit RLE data from TGA files.
  */
-static void rle_tga_read32 (ase_uint32 *address, int w, PACKFILE *f)
+static void rle_tga_read32 (ase_uint32 *address, int w, FILE *f)
 {
   unsigned char value[4];
   int count;
   int c = 0;
 
   do {
-    count = pack_getc(f);
+    count = fgetc(f);
     if (count & 0x80) {
       count = (count & 0x7F) + 1;
       c += count;
-      pack_fread(value, 4, f);
+      fread(value, 1, 4, f);
       while (count--)
         *(address++) = _rgba(value[2], value[1], value[0], value[3]);
     }
@@ -112,7 +111,7 @@ static void rle_tga_read32 (ase_uint32 *address, int w, PACKFILE *f)
       count++;
       c += count;
       while (count--) {
-        pack_fread(value, 4, f);
+        fread(value, 1, 4, f);
         *(address++) = _rgba(value[2], value[1], value[0], value[3]);
       }
     }
@@ -122,18 +121,18 @@ static void rle_tga_read32 (ase_uint32 *address, int w, PACKFILE *f)
 /* rle_tga_read24:
  *  Helper for reading 24 bit RLE data from TGA files.
  */
-static void rle_tga_read24(ase_uint32 *address, int w, PACKFILE *f)
+static void rle_tga_read24(ase_uint32 *address, int w, FILE *f)
 {
   unsigned char value[4];
   int count;
   int c = 0;
 
   do {
-    count = pack_getc(f);
+    count = fgetc(f);
     if (count & 0x80) {
       count = (count & 0x7F) + 1;
       c += count;
-      pack_fread(value, 3, f);
+      fread(value, 1, 3, f);
       while (count--)
         *(address++) = _rgba(value[2], value[1], value[0], 255);
     }
@@ -141,7 +140,7 @@ static void rle_tga_read24(ase_uint32 *address, int w, PACKFILE *f)
       count++;
       c += count;
       while (count--) {
-        pack_fread(value, 3, f);
+        fread(value, 1, 3, f);
         *(address++) = _rgba(value[2], value[1], value[0], 255);
       }
     }
@@ -151,7 +150,7 @@ static void rle_tga_read24(ase_uint32 *address, int w, PACKFILE *f)
 /* rle_tga_read16:
  *  Helper for reading 16 bit RLE data from TGA files.
  */
-static void rle_tga_read16(ase_uint32 *address, int w, PACKFILE *f)
+static void rle_tga_read16(ase_uint32 *address, int w, FILE *f)
 {
   unsigned int value;
   ase_uint32 color;
@@ -159,11 +158,11 @@ static void rle_tga_read16(ase_uint32 *address, int w, PACKFILE *f)
   int c = 0;
 
   do {
-    count = pack_getc(f);
+    count = fgetc(f);
     if (count & 0x80) {
       count = (count & 0x7F) + 1;
       c += count;
-      value = pack_igetw(f);
+      value = fgetw(f);
       color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
 		    _rgb_scale_5[((value >> 5) & 0x1F)],
 		    _rgb_scale_5[(value & 0x1F)], 255);
@@ -175,7 +174,7 @@ static void rle_tga_read16(ase_uint32 *address, int w, PACKFILE *f)
       count++;
       c += count;
       while (count--) {
-        value = pack_igetw(f);
+        value = fgetw(f);
         color = _rgba(_rgb_scale_5[((value >> 10) & 0x1F)],
 		      _rgb_scale_5[((value >> 5) & 0x1F)],
 		      _rgb_scale_5[(value & 0x1F)], 255);
@@ -200,36 +199,34 @@ static bool load_TGA(FileOp *fop)
   unsigned int c, i, x, y, yc;
   Image *image;
   int compressed;
-  PACKFILE *f;
+  FILE *f;
   int type;
 
-  f = pack_fopen(fop->filename, F_READ);
+  f = fopen(fop->filename, "rb");
   if (!f)
     return FALSE;
 
-  *allegro_errno = 0;
+  id_length = fgetc(f);
+  palette_type = fgetc(f);
+  image_type = fgetc(f);
+  first_color = fgetw(f);
+  palette_colors  = fgetw(f);
+  palette_entry_size = fgetc(f);
+  left = fgetw(f);
+  top = fgetw(f);
+  image_width = fgetw(f);
+  image_height = fgetw(f);
+  bpp = fgetc(f);
+  descriptor_bits = fgetc(f);
 
-  id_length = pack_getc(f);
-  palette_type = pack_getc(f);
-  image_type = pack_getc(f);
-  first_color = pack_igetw(f);
-  palette_colors  = pack_igetw(f);
-  palette_entry_size = pack_getc(f);
-  left = pack_igetw(f);
-  top = pack_igetw(f);
-  image_width = pack_igetw(f);
-  image_height = pack_igetw(f);
-  bpp = pack_getc(f);
-  descriptor_bits = pack_getc(f);
-
-  pack_fread(image_id, id_length, f);
+  fread(image_id, 1, id_length, f);
 
   if (palette_type == 1) {
     for (i=0; i<palette_colors; i++) {
       switch (palette_entry_size) {
 
 	case 16:
-	  c = pack_igetw(f);
+	  c = fgetw(f);
 	  image_palette[i][0] = (c & 0x1F) << 3;
 	  image_palette[i][1] = ((c >> 5) & 0x1F) << 3;
 	  image_palette[i][2] = ((c >> 10) & 0x1F) << 3;
@@ -237,17 +234,17 @@ static bool load_TGA(FileOp *fop)
 
 	case 24:
 	case 32:
-	  image_palette[i][0] = pack_getc(f);
-	  image_palette[i][1] = pack_getc(f);
-	  image_palette[i][2] = pack_getc(f);
+	  image_palette[i][0] = fgetc(f);
+	  image_palette[i][1] = fgetc(f);
+	  image_palette[i][2] = fgetc(f);
 	  if (palette_entry_size == 32)
-	    pack_getc(f);
+	    fgetc(f);
 	  break;
       }
     }
   }
   else if (palette_type != 0) {
-    pack_fclose(f);
+    fclose(f);
     return FALSE;
   }
 
@@ -268,7 +265,7 @@ static bool load_TGA(FileOp *fop)
     /* paletted image */
     case 1:
       if ((palette_type != 1) || (bpp != 8)) {
-        pack_fclose(f);
+        fclose(f);
         return FALSE;
       }
 
@@ -287,7 +284,7 @@ static bool load_TGA(FileOp *fop)
       if ((palette_type != 0) ||
           ((bpp != 15) && (bpp != 16) &&
            (bpp != 24) && (bpp != 32))) {
-        pack_fclose(f);
+        fclose(f);
         return FALSE;
       }
 
@@ -297,7 +294,7 @@ static bool load_TGA(FileOp *fop)
     /* grayscale image */
     case 3:
       if ((palette_type != 0) || (bpp != 8)) {
-        pack_fclose(f);
+        fclose(f);
         return FALSE;
       }
 
@@ -310,13 +307,13 @@ static bool load_TGA(FileOp *fop)
     default:
       /* TODO add support for more TGA types? */
 
-      pack_fclose(f);
+      fclose(f);
       return FALSE;
   }
 
   image = fop_sequence_image(fop, type, image_width, image_height);
   if (!image) {
-    pack_fclose(f);
+    fclose(f);
     return FALSE;
   }
 
@@ -330,11 +327,11 @@ static bool load_TGA(FileOp *fop)
         if (compressed)
           rle_tga_read(image->line[yc], image_width, image_type, f);
         else if (image_type == 1)
-          pack_fread(image->line[yc], image_width, f);
+          fread(image->line[yc], 1, image_width, f);
 	else {
 	  for (x=0; x<image_width; x++)
 	    *(((ase_uint16 **)image->line)[yc]+x) =
-	      _graya(pack_getc(f), 255);
+	      _graya(fgetc(f), 255);
 	}
 	break;
 
@@ -345,7 +342,7 @@ static bool load_TGA(FileOp *fop)
           }
           else {
             for (x=0; x<image_width; x++) {
-              pack_fread(rgb, 4, f);
+              fread(rgb, 1, 4, f);
               *(((ase_uint32 **)image->line)[yc]+x) =
                 _rgba(rgb[2], rgb[1], rgb[0], rgb[3]);
             }
@@ -357,7 +354,7 @@ static bool load_TGA(FileOp *fop)
           }
           else {
             for (x=0; x<image_width; x++) {
-              pack_fread(rgb, 3, f);
+              fread(rgb, 1, 3, f);
               *(((ase_uint32 **)image->line)[yc]+x) =
                 _rgba(rgb[2], rgb[1], rgb[0], 255);
             }
@@ -369,7 +366,7 @@ static bool load_TGA(FileOp *fop)
           }
           else {
             for (x=0; x<image_width; x++) {
-              c = pack_igetw(f);
+              c = fgetw(f);
               *(((ase_uint32 **)image->line)[yc]+x) =
                 _rgba(((c >> 10) & 0x1F),
 		      ((c >> 5) & 0x1F),
@@ -380,18 +377,22 @@ static bool load_TGA(FileOp *fop)
         break;
     }
 
-    if (image_height > 1)
+    if (image_height > 1) {
       fop_progress(fop, (float)(image_height-y) / (float)(image_height));
+      if (fop_is_stop(fop))
+	break;
+    }
   }
 
-  if (*allegro_errno) {
-    fop_error(fop, _("Error reading bytes.\n"));
-    pack_fclose(f);
+  if (ferror(f)) {
+    fop_error(fop, _("Error reading file.\n"));
+    fclose(f);
     return FALSE;
   }
-
-  pack_fclose(f);
-  return TRUE;
+  else {
+    fclose(f);
+    return TRUE;
+  }
 }
 
 /* save_tga:
@@ -405,33 +406,31 @@ static bool save_TGA(FileOp *fop)
   int x, y, c, r, g, b;
   int depth = (image->imgtype == IMAGE_RGB) ? 32 : 8;
   bool need_pal = (image->imgtype == IMAGE_INDEXED)? TRUE: FALSE;
-  PACKFILE *f;
+  FILE *f;
 
-  f = pack_fopen(fop->filename, F_WRITE);
+  f = fopen(fop->filename, "wb");
   if (!f) {
     fop_error(fop, _("Error creating file.\n"));
     return FALSE;
   }
 
-  *allegro_errno = 0;
-
-  pack_putc(0, f);                          /* id length (no id saved) */
-  pack_putc((need_pal) ? 1 : 0, f);         /* palette type */
+  fputc(0, f);                          /* id length (no id saved) */
+  fputc((need_pal) ? 1 : 0, f);         /* palette type */
   /* image type */
-  pack_putc((image->imgtype == IMAGE_RGB      ) ? 2 :
-            (image->imgtype == IMAGE_GRAYSCALE) ? 3 :
-            (image->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
-  pack_iputw(0, f);                         /* first colour */
-  pack_iputw((need_pal) ? 256 : 0, f);      /* number of colours */
-  pack_putc((need_pal) ? 24 : 0, f);        /* palette entry size */
-  pack_iputw(0, f);			    /* left */
-  pack_iputw(0, f);			    /* top */
-  pack_iputw(image->w, f);		    /* width */
-  pack_iputw(image->h, f);		    /* height */
-  pack_putc(depth, f);			    /* bits per pixel */
+  fputc((image->imgtype == IMAGE_RGB      ) ? 2 :
+	(image->imgtype == IMAGE_GRAYSCALE) ? 3 :
+	(image->imgtype == IMAGE_INDEXED  ) ? 1 : 0, f);
+  fputw(0, f);                         /* first colour */
+  fputw((need_pal) ? 256 : 0, f);      /* number of colours */
+  fputc((need_pal) ? 24 : 0, f);       /* palette entry size */
+  fputw(0, f);			       /* left */
+  fputw(0, f);			       /* top */
+  fputw(image->w, f);		       /* width */
+  fputw(image->h, f);		       /* height */
+  fputc(depth, f);		       /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
-  pack_putc(image->imgtype == IMAGE_RGB ? 8: 0, f);
+  fputc(image->imgtype == IMAGE_RGB ? 8: 0, f);
 
   if (need_pal) {
     for (y=0; y<256; y++) {
@@ -440,7 +439,7 @@ static bool save_TGA(FileOp *fop)
       image_palette[y][1] = _rgb_scale_6[g];
       image_palette[y][0] = _rgb_scale_6[b];
     }
-    pack_fwrite(image_palette, 768, f);
+    fwrite(image_palette, 1, 768, f);
   }
 
   switch (image->imgtype) {
@@ -449,10 +448,10 @@ static bool save_TGA(FileOp *fop)
       for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++) {
           c = image_getpixel(image, x, y);
-          pack_putc(_rgba_getb(c), f);
-          pack_putc(_rgba_getg(c), f);
-          pack_putc(_rgba_getr(c), f);
-          pack_putc(_rgba_geta(c), f);
+          fputc(_rgba_getb(c), f);
+          fputc(_rgba_getg(c), f);
+          fputc(_rgba_getr(c), f);
+          fputc(_rgba_geta(c), f);
         }
 
 	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
@@ -462,7 +461,7 @@ static bool save_TGA(FileOp *fop)
     case IMAGE_GRAYSCALE:
       for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++)
-          pack_putc(_graya_getk(image_getpixel(image, x, y)), f);
+          fputc(_graya_getk(image_getpixel(image, x, y)), f);
 
 	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
@@ -471,19 +470,20 @@ static bool save_TGA(FileOp *fop)
     case IMAGE_INDEXED:
       for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++)
-          pack_putc(image_getpixel(image, x, y), f);
+          fputc(image_getpixel(image, x, y), f);
 
 	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }
       break;
   }
 
-  pack_fclose(f);
-
-  if (*allegro_errno) {
-    fop_error(fop, _("Error writing bytes.\n"));
+  if (ferror(f)) {
+    fop_error(fop, _("Error writing file.\n"));
+    fclose(f);
     return FALSE;
   }
-  else
+  else {
+    fclose(f);
     return TRUE;
+  }
 }

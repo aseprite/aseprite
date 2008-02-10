@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "jinete/jbase.h"
 #include <allegro/color.h>
+#include <stdio.h>
 
 #define FILE_SUPPORT_RGB		(1<<0)
 #define FILE_SUPPORT_RGBA		(1<<1)
@@ -33,6 +34,11 @@
 #define FILE_SUPPORT_SEQUENCES		(1<<8)
 #define FILE_SUPPORT_MASKS_REPOSITORY	(1<<9)
 #define FILE_SUPPORT_PATHS_REPOSITORY	(1<<10)
+
+#define FILE_LOAD_SEQUENCE_NONE		(1<<0)
+#define FILE_LOAD_SEQUENCE_ASK		(1<<1)
+#define FILE_LOAD_SEQUENCE_YES		(1<<2)
+#define FILE_LOAD_ONE_FRAME		(1<<3)
 
 struct Image;
 struct Cel;
@@ -71,6 +77,9 @@ typedef struct FileOp
   char *error;			/* error string */
   bool done : 1;		/* true if the operation finished */
   bool stop : 1;		/* force the break of the operation */
+  bool oneframe : 1;		/* load just one frame (in formats
+				   that support animation like
+				   GIF/FLI/ASE) */
 
   /* data for sequences */
   struct {
@@ -99,9 +108,11 @@ int sprite_save(struct Sprite *sprite);
 
 /* low-level routines to load/save sprites */
 
-FileOp *fop_to_load_sprite(const char *filename);
+FileOp *fop_to_load_sprite(const char *filename, int flags);
 FileOp *fop_to_save_sprite(struct Sprite *sprite);
 void fop_operate(FileOp *fop);
+void fop_done(FileOp *fop);
+void fop_stop(FileOp *fop);
 void fop_free(FileOp *fop);
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
@@ -114,5 +125,10 @@ void fop_progress(FileOp *fop, float progress);
 float fop_get_progress(FileOp *fop);
 bool fop_is_done(FileOp *fop);
 bool fop_is_stop(FileOp *fop);
+
+int fgetw(FILE *file);
+long fgetl(FILE *file);
+int fputw(int w, FILE *file);
+int fputl(long l, FILE *file);
 
 #endif /* FILE_H */

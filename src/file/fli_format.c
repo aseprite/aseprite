@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,8 +64,7 @@ static bool load_FLI(FileOp *fop)
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;
-  bool inc_frpos_out;
-  Image *bmp, *old;
+  Image *bmp, *old, *image;
   Sprite *sprite;
   Layer *layer;
   PALETTE pal;
@@ -73,6 +72,7 @@ static bool load_FLI(FileOp *fop)
   int frpos_in;
   int frpos_out;
   int index = 0;
+  Cel *cel;
   FILE *f;
 
   /* open the file to read in binary mode */
@@ -83,6 +83,12 @@ static bool load_FLI(FileOp *fop)
   fli_read_header(f, &fli_header);
   fseek(f, 128, SEEK_SET);
 
+  if (fli_header.magic == NO_HEADER) {
+    fop_error(fop, _("The file doesn't have a FLIC header\n"));
+    fclose(f);
+    return FALSE;
+  }
+
   /* size by frame */
   w = fli_header.width;
   h = fli_header.height;
@@ -91,7 +97,7 @@ static bool load_FLI(FileOp *fop)
   bmp = image_new(IMAGE_INDEXED, w, h);
   old = image_new(IMAGE_INDEXED, w, h);
   if ((!bmp) || (!old)) {
-    fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
+    fop_error(fop, _("Not enough memory.\n"));
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     fclose(f);
@@ -109,8 +115,6 @@ static bool load_FLI(FileOp *fop)
   sprite_set_speed(sprite, fli_header.speed);
 
   /* write frame by frame */
-  inc_frpos_out = FALSE;
-
   for (frpos_in=frpos_out=0;
        frpos_in<sprite->frames;
        frpos_in++) {
@@ -119,28 +123,58 @@ static bool load_FLI(FileOp *fop)
 		   (unsigned char *)old->dat, omap,
 		   (unsigned char *)bmp->dat, cmap);
 
-    /* first frame or the frames changes */
-    if ((frpos_in == 0) || (image_count_diff(old, bmp))) {
+    /* first frame, or the frames changes, or the palette changes */
+    if ((frpos_in == 0) ||
+	(image_count_diff(old, bmp))
+#ifndef USE_LINK /* TODO this should be configurable through a check-box */
+	|| (memcmp(omap, cmap, 768) != 0)
+#endif
+	) {
       /* the image changes? */
       if (frpos_in != 0)
 	frpos_out++;
 
       /* add the new frame */
-      index = stock_add_image(sprite->stock, image_new_copy(bmp));
-      layer_add_cel(layer, cel_new(frpos_out, index));
+      image = image_new_copy(bmp);
+      if (!image) {
+	fop_error(fop, _("Not enough memory\n"));
+	break;
+      }
+
+      index = stock_add_image(sprite->stock, image);
+      if (index < 0) {
+	image_free(image);
+	fop_error(fop, _("Not enough memory\n"));
+	break;
+      }
+
+      cel = cel_new(frpos_out, index);
+      if (!cel) {
+	fop_error(fop, _("Not enough memory\n"));
+	break;
+      }
+      layer_add_cel(layer, cel);
 
       /* first frame or the palette changes */
       if ((frpos_in == 0) || (memcmp(omap, cmap, 768) != 0))
 	SETPAL();
     }
+#ifdef USE_LINK
     /* the palette changes */
     else if (memcmp(omap, cmap, 768) != 0) {
       frpos_out++;
       SETPAL();
 
       /* add link */
-      layer_add_cel(layer, cel_new(frpos_out, index));
+      cel = cel_new(frpos_out, index);
+      if (!cel) {
+	fop_error(fop, _("Not enough memory\n"));
+	break;
+      }
+
+      layer_add_cel(layer, cel);
     }
+#endif
     /* the palette and the image don't change: add duration to the last added frame */
     else {
       sprite_set_frlen(sprite,
@@ -154,6 +188,12 @@ static bool load_FLI(FileOp *fop)
 
     /* update progress */
     fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->frames));
+    if (fop_is_stop(fop))
+      break;
+
+    /* just one frame? */
+    if (fop->oneframe)
+      break;
   }
 
   /* update sprites frames */

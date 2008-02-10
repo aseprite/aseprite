@@ -25,12 +25,16 @@ ifdef PROFILE
   LFLAGS += -pg
 else
 ifdef DEBUGMODE
-  CFLAGS += -g3
+  CFLAGS += -g3 -DDEBUGMODE
   LFLAGS += -g3
 else
   CFLAGS += -s -O3 -DNDEBUG
   LFLAGS += -s -O3 -DNDEBUG
 endif
+endif
+
+ifdef MEMLEAK
+  CFLAGS += -DMEMLEAK
 endif
 
 ifdef DEFAULT_PREFIX

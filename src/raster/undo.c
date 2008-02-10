@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1163,14 +1163,10 @@ static void chunk_set_mask_invert(UndoStream *stream, UndoChunk *chunk, int stat
   if (sprite) {
     Mask *mask = undo_chunk_read_mask(chunk);
 
-    /* ji_assert(mask); */
-
     chunk_set_mask(stream, sprite);
     mask_copy(sprite->mask, mask);
 
-    /* change the sprite mask directly */
-/*     mask_free(sprite->mask); */
-/*     sprite->mask = mask; */
+    mask_free(mask);
   }
 }
 

@@ -19,6 +19,8 @@
 #ifndef MODULES_GFX_H
 #define MODULES_GFX_H
 
+#include "jinete/jbase.h"
+
 struct FONT;
 struct BITMAP;
 
@@ -112,6 +114,8 @@ void rectdotted(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int 
 void rectgrid(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h);
 void rectfill_exclude(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int ex1, int ey1, int ex2, int ey2, int color);
 void rectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom);
+
+void draw_emptyset_symbol(JRect rc, int color);
 
 int character_length(struct FONT *font, int chr);
 void render_character(struct BITMAP *bmp, struct FONT *font, int chr, int x, int y, int fg, int bg);

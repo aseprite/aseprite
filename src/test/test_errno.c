@@ -16,47 +16,37 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#include "test/test.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
+#include <errno.h>
 #include <allegro.h>
 
-#include "core/app.h"
+#include "jinete/jthread.h"
 
-#endif
+static JThread thread;
 
-/* Information for "ident".  */
-
-const char ase_ident[] =
-    "$ASE: " VERSION " " COPYRIGHT " $\n"
-    "$Date: 2007/09/09 03:37:55 $\n"
-    "$Website: " WEBSITE " $\n";
-
-/***********************************************************************
-			     Main Routine
- ***********************************************************************/
+static void run_thread(void *data)
+{
+  errno = 0;
+  trace("[second thread] errno: %d\n", errno);
+  assert(errno == 0);
+}
 
 int main(int argc, char *argv[])
 {
   allegro_init();
-  /* set_uformat(U_UTF8); */
-  set_uformat(U_ASCII);
 
-#if defined  MEMLEAK
-  jmemleak_init();
-#endif
-  
-  /* initialises the application */
-  if (!app_init(argc, argv))
-    return 1;
+  errno = 1;
+  trace("[main thread] errno: %d\n", errno);
+  assert(errno == 1);
 
-  app_loop();
-  app_exit();
+  thread = jthread_new(run_thread, NULL);
+  jthread_join(thread);
 
-#if defined  MEMLEAK
-  jmemleak_exit();
-#endif
+  trace("[main thread] errno: %d\n", errno);
+  assert(errno == 1);
+
+  trace("OK: errno is thread safe\n");
 
   allegro_exit();
   return 0;

@@ -7,21 +7,16 @@
 
 Welcome to ASE 0.6
 
-You can find help in ASE Wiki:
-http://www.aseprite.org/wiki/
+READ THIS!
 
-Report bugs to:
-ase-help@lists.sourceforge.net
- **********************************************************************
-\split
-\image nodither.pcx
-This is the old drawing method for RGB images.  Without dithering.
-\next
-\image dither.pcx
-Now, you can configure to use this new ordered dithering method.
-\done
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-See "Tool/Options" menu or press <Ctrl+Shift+O>.
+Website: http://www.aseprite.org/
+
+Report bugs to: aseprite@googlegroups.com
  **********************************************************************
 Use the <1>, <2>, <3>, <4>, <5> and <6> keys to set the zoom in the
 current editor's viewport.
@@ -116,6 +111,16 @@ change the coordinates manually) will be appears.
 Select a color in the color-bar using the <Ctrl> key will show you
 this mini-palette.
  **********************************************************************
+\split
+\image nodither.pcx
+A RGB image without dithering.
+\next
+\image dither.pcx
+Ordered dithering method.
+\done
+
+See "Tool/Options" menu or press <Ctrl+Shift+O>.
+ **********************************************************************
 \image lua.pcx
 
 Do you want to write Lua scripts to generate images or create
@@ -129,4 +134,4 @@ And remember look for updates in:
 
 http://www.aseprite.org/
 
-Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 by David A. Capello
+Copyright (C) 2001-2008 by David A. Capello

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,12 +106,14 @@ void get_writable_extensions(char *buf, int size)
 Sprite *sprite_load(const char *filename)
 {
   Sprite *sprite;
-  FileOp *fop = fop_to_load_sprite(filename);
+  /* TODO add a option to configure what to do with the sequence */
+  FileOp *fop = fop_to_load_sprite(filename, FILE_LOAD_SEQUENCE_NONE);
   if (!fop)
     return NULL;
 
   /* operate in this same thread */
   fop_operate(fop);
+  fop_done(fop);
 
   if (fop->error)
     console_printf(fop->error);
@@ -131,6 +133,7 @@ int sprite_save(Sprite *sprite)
 
   /* operate in this same thread */
   fop_operate(fop);
+  fop_done(fop);
 
   if (fop->error)
     console_printf(fop->error);
@@ -141,7 +144,7 @@ int sprite_save(Sprite *sprite)
   return ret;
 }
 
-FileOp *fop_to_load_sprite(const char *filename)
+FileOp *fop_to_load_sprite(const char *filename, int flags)
 {
   char *extension;
   FileOp *fop;
@@ -172,57 +175,66 @@ FileOp *fop_to_load_sprite(const char *filename)
 
   /* use the "sequence" interface */
   if (fop->format->flags & FILE_SUPPORT_SEQUENCES) {
-    char buf[512], left[512], right[512];
-    int c, width, start_from;
-
+    /* prepare to load a sequence */
     fop_prepare_for_sequence(fop);
-
-    /* first of all, we must generate the list of files to load in the
-       sequence... */
 
     /* per now, we want load just one file */
     jlist_append(fop->seq.filename_list, jstrdup(filename));
 
-    /* check is this could be a sequence */
-    start_from = split_filename(filename, left, right, &width);
-    if (start_from >= 0) {
-      /* try to get more file names */
-      for (c=start_from+1; ; c++) {
-	/* get the next file name */
-	usprintf(buf, "%s%0*d%s", left, width, c, right);
+    /* don't load the sequence (just the one file/one frame) */
+    if (!(flags & FILE_LOAD_SEQUENCE_NONE)) {
+      char buf[512], left[512], right[512];
+      int c, width, start_from;
 
-	/* if the file doesn't exist, we doesn't need more files to load */
-	if (!exists(buf))
-	  break;
+      /* first of all, we must generate the list of files to load in the
+	 sequence... */
 
-	/* add this file name to the list */
-	jlist_append(fop->seq.filename_list,
-		     jstrdup(buf));
+      /* check is this could be a sequence */
+      start_from = split_filename(filename, left, right, &width);
+      if (start_from >= 0) {
+	/* try to get more file names */
+	for (c=start_from+1; ; c++) {
+	  /* get the next file name */
+	  usprintf(buf, "%s%0*d%s", left, width, c, right);
+
+	  /* if the file doesn't exist, we doesn't need more files to load */
+	  if (!exists(buf))
+	    break;
+
+	  /* add this file name to the list */
+	  jlist_append(fop->seq.filename_list,
+		       jstrdup(buf));
+	}
       }
-    }
 
-    /* TODO add a better dialog to edit file-names */
-    if (is_interactive()) {
-      /* really want load all files? */
-      if ((jlist_length(fop->seq.filename_list) > 1) &&
-	  (jalert(_("Notice"
-		    "<<Possible animation with:"
-		    "<<%s"
-		    "<<Load the sequence of bitmaps?"
-		    "||&Agree||&Skip"),
-		  get_filename(filename)) != 1)) {
-	/* if the user replies "Skip", we need just one file name (the
-	   first one) */
-	while (jlist_length(fop->seq.filename_list) > 1) {
-	  JLink link = jlist_last(fop->seq.filename_list);
-	  jfree(link->data);
-	  jlist_delete_link(fop->seq.filename_list, link);
+      /* TODO add a better dialog to edit file-names */
+      if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
+	  is_interactive()) {
+	/* really want load all files? */
+	if ((jlist_length(fop->seq.filename_list) > 1) &&
+	    (jalert(_("Notice"
+		      "<<Possible animation with:"
+		      "<<%s"
+		      "<<Load the sequence of bitmaps?"
+		      "||&Agree||&Skip"),
+		    get_filename(filename)) != 1)) {
+	  /* if the user replies "Skip", we need just one file name (the
+	     first one) */
+	  while (jlist_length(fop->seq.filename_list) > 1) {
+	    JLink link = jlist_last(fop->seq.filename_list);
+	    jfree(link->data);
+	    jlist_delete_link(fop->seq.filename_list, link);
+	  }
 	}
       }
     }
   }
   else
     fop->filename = jstrdup(filename);
+
+  /* load just one frame */
+  if (flags & FILE_LOAD_ONE_FRAME)
+    fop->oneframe = TRUE;
 
 done:;
   jfree(extension);
@@ -414,7 +426,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
  * It can be called from a different thread of the one used
  * by @ref fop_to_load_sprite or @ref fop_to_save_sprite.
  *
- * After operate you must to free the 'fop' calling @ref fop_free.
+ * After operate you must to mark the 'fop' as 'done' using @ref fop_done.
  */
 void fop_operate(FileOp *fop)
 {
@@ -617,10 +629,29 @@ void fop_operate(FileOp *fop)
     }
   }
 
+  /* progress = 100% */
+  fop_progress(fop, 1.0f);
+}
+
+/**
+ * After mark the 'fop' as 'done' you must to free it calling @ref fop_free.
+ */
+void fop_done(FileOp *fop)
+{
   /* finally done */
   jmutex_lock(fop->mutex);
   {
     fop->done = TRUE;
+  }
+  jmutex_unlock(fop->mutex);
+}
+
+void fop_stop(FileOp *fop)
+{
+  jmutex_lock(fop->mutex);
+  {
+    if (!fop->done)
+      fop->stop = TRUE;
   }
   jmutex_unlock(fop->mutex);
 }
@@ -814,14 +845,16 @@ static FileOp *fop_new(FileOpType type)
     return NULL;
 
   fop->type = type;
+  fop->format = NULL;
   fop->sprite = NULL;
-  fop->error = NULL;
   fop->filename = NULL;
 
   fop->mutex = jmutex_new();
   fop->progress = 0.0f;
+  fop->error = NULL;
   fop->done = FALSE;
   fop->stop = FALSE;
+  fop->oneframe = FALSE;
 
   fop->seq.filename_list = NULL;
   fop->seq.palette = NULL;
@@ -924,4 +957,95 @@ static int split_filename(const char *filename, char *left, char *right, int *wi
   }
 
   return ret;
+}
+
+
+/**
+ * Reads a WORD (16 bits) using in little-endian byte ordering.
+ */
+int fgetw(FILE *file)
+{
+  int b1, b2;
+
+  b1 = fgetc(file);
+  if (b1 == EOF)
+    return EOF;
+
+  b2 = fgetc(file);
+  if (b2 == EOF)
+    return EOF;
+
+  /* little endian */
+  return ((b2 << 8) | b1);
+}
+
+/**
+ * Reads a DWORD (32 bits) using in little-endian byte ordering.
+ */
+long fgetl(FILE *file)
+{
+  int b1, b2, b3, b4;
+
+  b1 = fgetc(file);
+  if (b1 == EOF)
+    return EOF;
+
+  b2 = fgetc(file);
+  if (b2 == EOF)
+    return EOF;
+
+  b3 = fgetc(file);
+  if (b3 == EOF)
+    return EOF;
+
+  b4 = fgetc(file);
+  if (b4 == EOF)
+    return EOF;
+
+  /* little endian */
+  return ((b4 << 24) | (b3 << 16) | (b2 << 8) | b1);
+}
+
+/**
+ * Writes a word using in little-endian byte ordering.
+ * 
+ * @return 0 in success or -1 in error
+ */
+int fputw(int w, FILE *file)
+{
+  int b1, b2;
+
+  /* little endian */
+  b2 = (w & 0xFF00) >> 8;
+  b1 = w & 0x00FF;
+
+  if (fputc(b1, file) == b1)
+    if (fputc(b2, file) == b2)
+      return 0;
+
+  return -1;
+}
+
+/**
+ * Writes DWORD a using in little-endian byte ordering.
+ *
+ * @return 0 in success or -1 in error
+ */
+int fputl(long l, FILE *file)
+{
+  int b1, b2, b3, b4;
+
+  /* little endian */
+  b4 = (int)((l & 0xFF000000L) >> 24);
+  b3 = (int)((l & 0x00FF0000L) >> 16);
+  b2 = (int)((l & 0x0000FF00L) >> 8);
+  b1 = (int)l & 0x00FF;
+
+  if (fputc(b1, file) == b1)
+    if (fputc(b2, file) == b2)
+      if (fputc(b3, file) == b3)
+	if (fputc(b4, file) == b4)
+	  return 0;
+
+  return -1;
 }

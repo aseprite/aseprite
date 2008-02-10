@@ -150,6 +150,7 @@ COMMON_SOURCES =					\
 	src/jinete/jtextbox.c				\
 	src/jinete/jtheme.c				\
 	src/jinete/jthread.c				\
+	src/jinete/jtooltips.c				\
 	src/jinete/jview.c				\
 	src/jinete/jwidget.c				\
 	src/jinete/jwindow.c				\
@@ -217,11 +218,6 @@ COMMON_SOURCES =					\
 	src/widgets/tabs.c				\
 	src/widgets/target.c				\
 	src/widgets/toolbar.c
-
-ifdef WIN32
-  COMMON_SOURCES += src/core/file_system_win32.c
-else
-endif
 
 ifdef USE_X86_INT_MULT
   COMMON_SOURCES += src/raster/x86/int_mult.s

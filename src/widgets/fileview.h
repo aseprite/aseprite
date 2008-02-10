@@ -36,5 +36,6 @@ FileItem *fileview_get_selected(JWidget fileview);
 void fileview_set_current_folder(JWidget widget, FileItem *folder);
 
 void fileview_goup(JWidget fileview);
+void fileview_stop_threads(JWidget fileview);
 
 #endif /* WIDGETS_FILEVIEW_H */

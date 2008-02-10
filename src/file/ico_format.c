@@ -23,7 +23,6 @@
 #ifndef USE_PRECOMPILED_HEADER
 
 #include <allegro/color.h>
-#include <allegro/file.h>
 
 #include "file/file.h"
 #include "raster/raster.h"
@@ -51,23 +50,23 @@ FileFormat format_ico =
 
 static bool save_ICO(FileOp *fop)
 {
-  PACKFILE *f;
+  FILE *f;
   int depth, bpp, bw, bitsw;
   int size, offset, n, i;
   int c, x, y, b, m, v;
   int num = fop->sprite->frames;
   Image *bmp;
 
-  f = pack_fopen(fop->filename, F_WRITE);
+  f = fopen(fop->filename, "wb");
   if (!f)
     return FALSE;
 
   offset = 6 + num * 16;  /* ICONDIR + ICONDIRENTRYs */
    
   /* ICONDIR */
-  pack_iputw(0, f);    /* reserved            */
-  pack_iputw(1, f);    /* resource type: ICON */
-  pack_iputw(num, f);  /* number of icons     */
+  fputw(0, f);			/* reserved            */
+  fputw(1, f);			/* resource type: ICON */
+  fputw(num, f);		/* number of icons     */
 
   for(n = 0; n < num; n++) {
     depth = 8;/* bitmap_color_depth(bmp[n]); */
@@ -80,14 +79,14 @@ static bool save_ICO(FileOp *fop)
       size += 256 * 4;
 
     /* ICONDIRENTRY */
-    pack_putc(fop->sprite->w, f);  /* width                       */
-    pack_putc(fop->sprite->h, f);  /* height                      */
-    pack_putc(0, f);          /* color count                 */
-    pack_putc(0, f);          /* reserved                    */
-    pack_iputw(1, f);         /* color planes                */
-    pack_iputw(bpp, f);       /* bits per pixel              */
-    pack_iputl(size, f);      /* size in bytes of image data */
-    pack_iputl(offset, f);    /* file offset to image data   */
+    fputc(fop->sprite->w, f);	/* width                       */
+    fputc(fop->sprite->h, f);	/* height                      */
+    fputc(0, f);		/* color count                 */
+    fputc(0, f);		/* reserved                    */
+    fputw(1, f);		/* color planes                */
+    fputw(bpp, f);		/* bits per pixel              */
+    fputl(size, f);		/* size in bytes of image data */
+    fputl(offset, f);		/* file offset to image data   */
 
     offset += size;
   }
@@ -110,29 +109,29 @@ static bool save_ICO(FileOp *fop)
       size += 256 * 4;
 
     /* BITMAPINFOHEADER */
-    pack_iputl(40, f);             /* size           */
-    pack_iputl(bmp->w, f);	   /* width          */
-    pack_iputl(bmp->h * 2, f);	   /* height x 2     */
-    pack_iputw(1, f);              /* planes         */
-    pack_iputw(bpp, f);            /* bitcount       */
-    pack_iputl(0, f);              /* unused for ico */
-    pack_iputl(size, f);           /* size           */
-    pack_iputl(0, f);              /* unused for ico */
-    pack_iputl(0, f);              /* unused for ico */
-    pack_iputl(0, f);              /* unused for ico */
-    pack_iputl(0, f);              /* unused for ico */
+    fputl(40, f);		   /* size           */
+    fputl(bmp->w, f);		   /* width          */
+    fputl(bmp->h * 2, f);	   /* height x 2     */
+    fputw(1, f);		   /* planes         */
+    fputw(bpp, f);		   /* bitcount       */
+    fputl(0, f);		   /* unused for ico */
+    fputl(size, f);		   /* size           */
+    fputl(0, f);		   /* unused for ico */
+    fputl(0, f);		   /* unused for ico */
+    fputl(0, f);		   /* unused for ico */
+    fputl(0, f);		   /* unused for ico */
 
     /* PALETTE */
     if (bpp == 8) {
       RGB *pal = sprite_get_palette(fop->sprite, n);
 
-      pack_iputl(0, f);  /* color 0 is black, so the XOR mask works */
+      fputl(0, f);  /* color 0 is black, so the XOR mask works */
 
       for (i = 1; i<256; i++) {
-	pack_putc(_rgb_scale_6[pal[i].b], f);
-	pack_putc(_rgb_scale_6[pal[i].g], f);
-	pack_putc(_rgb_scale_6[pal[i].r], f);
-	pack_putc(0, f);
+	fputc(_rgb_scale_6[pal[i].b], f);
+	fputc(_rgb_scale_6[pal[i].g], f);
+	fputc(_rgb_scale_6[pal[i].r], f);
+	fputc(0, f);
       }
     }
 
@@ -140,19 +139,19 @@ static bool save_ICO(FileOp *fop)
     for (y = bmp->h - 1; y >= 0; y--) {
       for (x = 0; x < bmp->w; x++) {
 	if (bpp == 8) {
-	  pack_putc(image_getpixel(bmp, x, y), f);
+	  fputc(image_getpixel(bmp, x, y), f);
 	}
 	else {
 	  c = image_getpixel(bmp, x, y);
-	  pack_putc(getb_depth(depth, c), f);
-	  pack_putc(getg_depth(depth, c), f);
-	  pack_putc(getr_depth(depth, c), f);
+	  fputc(getb_depth(depth, c), f);
+	  fputc(getg_depth(depth, c), f);
+	  fputc(getr_depth(depth, c), f);
 	}
       }
 
       /* every scanline must be 32-bit aligned */
       while (x&3) {
-	pack_putc(0, f);
+	fputc(0, f);
 	x++;
       } 
     }
@@ -170,19 +169,19 @@ static bool save_ICO(FileOp *fop)
 	  v /= 2;
 	}
 
-	pack_putc(m, f);  
+	fputc(m, f);  
       }
 
       /* every scanline must be 32-bit aligned */
       while (x&3) {
-	pack_putc(0, f);
+	fputc(0, f);
 	x++;
       }
     }
   }
 
   image_free(bmp);
-  pack_fclose(f);
+  fclose(f);
 
   return TRUE;
 }

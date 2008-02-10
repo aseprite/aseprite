@@ -7,9 +7,12 @@ NEWS
 
 + Added support to load and save PNG files (through 'libpng').
 + Replaced the "List" menu with the tabs selector.
-+ Better file selector.
++ Better file selector with thumbnails.
+  + In Windows: now you can navigate through Desktop, My Documents,
+    My Computer, etc.
++ Optimized the loading/saving operations (using threads).
 + Restructured all the menus (more user friendly options).
-  - Temporaly removed a lot of complex functionality: 
+  - Temporaly removed a lot of complex functionality:
     Mask-Repository (but you can use .msk files yet), Draw-Text,
     Layer-Sets and Linked-Cels.
 + New XML format for the menus.

@@ -18,17 +18,30 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jinete.h"
 
+#include "commands/commands.h"
+#include "console/console.h"
+#include "core/app.h"
+#include "dialogs/filesel.h"
+#include "file/file.h"
+#include "modules/editors.h"
 #include "modules/gfx.h"
+#include "modules/gui.h"
+#include "modules/palette.h"
+#include "modules/recent.h"
+#include "modules/sprites.h"
+#include "raster/image.h"
+#include "raster/rotate.h"
+#include "raster/sprite.h"
 #include "widgets/fileview.h"
+#include "widgets/statebar.h"
 
-#endif
+#define MAX_THUMBNAIL_SIZE		128
+#define MAX_THREADS_TO_GEN_THUMBNAILS	1
 
 typedef struct FileView
 {
@@ -38,7 +51,23 @@ typedef struct FileView
   int req_w, req_h;
   FileItem *selected;
   const char *exts;
+
+  /* round-robin thumbnail generation process */
+  JLink item_to_generate_thumbnail; /* current item in the round-robin */
+  int round_timer_id;
+  JList monitors;	   /* list of monitors watching threads */
 } FileView;
+
+typedef struct ThumbnailData
+{
+  Monitor *monitor;
+  FileOp *fop;
+  FileItem *fileitem;
+  JWidget fileview;
+  Image *thumbnail;
+  JThread thread;
+  PALETTE pal;
+} ThumbnailData;
 
 static FileView *fileview_data(JWidget widget);
 static bool fileview_msg_proc(JWidget widget, JMessage msg);
@@ -47,6 +76,13 @@ static void fileview_make_selected_fileitem_visible(JWidget widget);
 static void fileview_regenerate_list(JWidget widget);
 static int fileview_get_selected_index(JWidget widget);
 static void fileview_select_index(JWidget widget, int index);
+static void fileview_selected_item_to_generate_thumbnail(JWidget widget);
+static void fileview_generate_all_thumbnails(JWidget widget);
+static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem);
+
+static void openfile_bg(void *data);
+static void monitor_thumbnail_generation(void *data);
+static void monitor_free_thumbnail_generation(void *data);
 
 JWidget fileview_new(FileItem *start_folder, const char *exts)
 {
@@ -71,6 +107,10 @@ JWidget fileview_new(FileItem *start_folder, const char *exts)
   fileview->req_valid = FALSE;
   fileview->selected = NULL;
   fileview->exts = exts;
+
+  fileview->item_to_generate_thumbnail = NULL;
+  fileview->round_timer_id = jmanager_add_timer(widget, 200);
+  fileview->monitors = jlist_new();
 
   fileview_regenerate_list(widget);
 
@@ -131,6 +171,23 @@ void fileview_goup(JWidget widget)
   }
 }
 
+void fileview_stop_threads(JWidget widget)
+{
+  FileView *fileview = fileview_data(widget);
+  JLink link, next;
+
+  /* stop the generation of threads */
+  jmanager_stop_timer(fileview->round_timer_id);
+
+  /* join all threads (removing all monitors) */
+  JI_LIST_FOR_EACH_SAFE(fileview->monitors, link, next) {
+    remove_gui_monitor(link->data);
+  }
+
+  /* clear the list of monitors */
+  jlist_clear(fileview->monitors);
+}
+
 static FileView *fileview_data(JWidget widget)
 {
   return jwidget_get_data(widget, fileview_type());
@@ -143,6 +200,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
+      /* at this point, can't be threads running in background */
+      assert(jlist_empty(fileview->monitors));
+
+      jlist_free(fileview->monitors);
+      jmanager_remove_timer(fileview->round_timer_id);
       jfree(fileview);
       break;
 
@@ -173,6 +235,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_DRAW: {
+      JWidget view = jwidget_get_view(widget);
+      JRect vp = jview_get_viewport_position(view);
       FileItem *fi;
       JLink link;
       int iw, ih;
@@ -181,6 +245,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       int row = 0;
       int bgcolor;
       int fgcolor;
+      BITMAP *thumbnail = NULL;
+      int thumbnail_y;
 
       jdraw_rectfill(widget->rc, makecol(255, 255, 255));
 
@@ -217,14 +283,40 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	  x += ji_font_text_len(widget->text_font, "[+]")+2;
 	}
-	
+
+	/* item name */
 	jdraw_text(widget->text_font,
 		   fileitem_get_displayname(fi), x, y+2,
 		   fgcolor, 0, FALSE);
 
+	/* thumbnail position */
+	if (fi == fileview->selected) {
+	  thumbnail = fileitem_get_thumbnail(fi);
+	  if (thumbnail)
+	    thumbnail_y = y + ih/2;
+	}
+
 	y += ih;
 	row ^= 1;
       }
+
+      /* draw the thumbnail */
+      if (thumbnail) {
+	x = vp->x2-2-thumbnail->w;
+	y = thumbnail_y-thumbnail->h/2;
+	y = MID(vp->y1+2, y, vp->y2-3-thumbnail->h);
+
+	draw_sprite(ji_screen, thumbnail, x, y);
+	rect(ji_screen,
+	     x-1, y-1, x+thumbnail->w, y+thumbnail->h,
+	     makecol(0, 0, 0));
+      }
+
+      /* is the current folder empty? */
+      if (jlist_empty(fileview->list))
+	draw_emptyset_symbol(vp, makecol(194, 194, 194));
+
+      jrect_free(vp);
       break;
     }
 
@@ -258,6 +350,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	if (old_selected != fileview->selected) {
+	  fileview_selected_item_to_generate_thumbnail(widget);
+
 	  jwidget_dirty(widget);
 	  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
 	}
@@ -370,6 +464,33 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
+    case JM_TIMER:
+      /* is time to generate the next thumbnail in the round-robin? */
+      if (msg->timer.timer_id == fileview->round_timer_id &&
+	  jlist_length(fileview->monitors) < MAX_THREADS_TO_GEN_THUMBNAILS) {
+	JLink link = fileview->item_to_generate_thumbnail;
+	JLink start = link;
+
+	while (link != fileview->list->end) {
+	  FileItem *fileitem = link->data;
+	  link = link->next != fileview->list->end ? link->next:
+						     link->next->next;
+
+	  if (fileview_generate_thumbnail(widget, fileitem))
+	    break;
+
+	  if (link == start)
+	    break;
+	}
+
+	/* did we do all the round? */
+	if (link == start)
+	  jmanager_stop_timer(fileview->round_timer_id);
+
+	fileview->item_to_generate_thumbnail = link;
+      }
+      break;
+
   }
 
   return FALSE;
@@ -457,6 +578,9 @@ static void fileview_regenerate_list(JWidget widget)
   }
   else
     fileview->list = jlist_new();
+
+  /* generate all thumbnails */
+  fileview_generate_all_thumbnails(widget);
 }
 
 static int fileview_get_selected_index(JWidget widget)
@@ -482,8 +606,183 @@ static void fileview_select_index(JWidget widget, int index)
   fileview->selected = jlist_nth_data(fileview->list, index);
   if (old_selected != fileview->selected) {
     fileview_make_selected_fileitem_visible(widget);
-
+    
     jwidget_dirty(widget);
     jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
   }
+
+  fileview_selected_item_to_generate_thumbnail(widget);
+}
+
+/* puts the selected file-item as the next item to be processed by the
+   round-robin that generate thumbnails */
+static void fileview_selected_item_to_generate_thumbnail(JWidget widget)
+{
+  FileView *fileview = fileview_data(widget);
+
+  if (fileview->selected &&
+      !fileitem_is_folder(fileview->selected) &&
+      !fileitem_get_thumbnail(fileview->selected)) {
+    fileview->item_to_generate_thumbnail =
+      jlist_find(fileview->list, fileview->selected);
+  }
+}
+
+static void fileview_generate_all_thumbnails(JWidget widget)
+{
+  FileView *fileview = fileview_data(widget);
+
+  fileview->item_to_generate_thumbnail = jlist_first(fileview->list);
+
+  jmanager_start_timer(fileview->round_timer_id);
+}
+
+/* returns true if it does some hard work like access to the disk */
+static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
+{
+  FileOp *fop;
+
+  if (fileitem_is_browsable(fileitem) ||
+      fileitem_get_thumbnail(fileitem) != NULL)
+    return FALSE;
+
+  fop = fop_to_load_sprite(fileitem_get_filename(fileitem),
+			   FILE_LOAD_SEQUENCE_NONE |
+			   FILE_LOAD_ONE_FRAME);
+  if (!fop)
+    return TRUE;
+
+  if (fop->error) {
+    fop_free(fop);
+  }
+  else {
+    ThumbnailData *data = jnew(ThumbnailData, 1);
+
+    data->fop = fop;
+    data->fileitem = fileitem;
+    data->fileview = widget;
+    data->thumbnail = NULL;
+
+    data->thread = jthread_new(openfile_bg, data);
+    if (data->thread) {
+      /* add a monitor to check the loading (FileOp) progress */
+      data->monitor = add_gui_monitor(monitor_thumbnail_generation,
+				      monitor_free_thumbnail_generation, data);
+
+      jlist_append(fileview_data(widget)->monitors, data->monitor);
+    }
+    else {
+      fop_free(fop);
+      jfree(data);
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Thread to do the hard work: load the file from the disk (in
+ * background).
+ *
+ * [loading thread]
+ */
+static void openfile_bg(void *_data)
+{
+  ThumbnailData *data = (ThumbnailData *)_data;
+  FileOp *fop = (FileOp *)data->fop;
+  Sprite *sprite;
+  int thumb_w, thumb_h;
+  Image *image;
+
+  /* load the file */
+  fop_operate(fop);
+
+  sprite = fop->sprite;
+  if (sprite) {
+    if (fop_is_stop(fop))
+      sprite_free(fop->sprite);
+    else {
+      /* the palette to convert the Image to a BITMAP */
+      palette_copy(data->pal, sprite_get_palette(sprite, 0));
+
+      /* render the 'sprite' in one plain 'image' */
+      image = image_new(sprite->imgtype, sprite->w, sprite->h);
+      image_clear(image, 0);
+      sprite_render(sprite, image, 0, 0);
+      sprite_free(sprite);
+
+      /* calculate the thumbnail size */
+      thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
+      thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
+      if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
+	thumb_w = image->w;
+	thumb_h = image->h;
+      }
+      thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
+      thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
+
+      /* stretch the 'image' */
+      data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
+      image_clear(data->thumbnail, 0);
+      image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
+      image_free(image);
+    }
+  }
+
+  fop_done(fop);
+}
+
+/**
+ * Called by the gui-monitor (a timer in the gui module that is called
+ * every 100 milliseconds).
+ * 
+ * [main thread]
+ */
+static void monitor_thumbnail_generation(void *_data)
+{
+  ThumbnailData *data = (ThumbnailData *)_data;
+  FileOp *fop = (FileOp *)data->fop;
+
+  /* is done? ...ok, now the thumbnail is in the main thread only... */
+  if (fop_is_done(fop)) {
+    /* set the thumbnail of the file-item */
+    if (data->thumbnail) {
+      BITMAP *bmp = create_bitmap(data->thumbnail->w,
+				  data->thumbnail->h);
+
+      select_palette(data->pal);
+      image_to_allegro(data->thumbnail, bmp, 0, 0);
+      unselect_palette();
+
+      image_free(data->thumbnail);
+
+      fileitem_set_thumbnail(data->fileitem, bmp);
+
+      /* is the selected file-item the one that now has a thumbnail? */
+      if (fileview_get_selected(data->fileview) == data->fileitem) {
+	/* we have to dirty the file-view to show the thumbnail */
+	jwidget_dirty(data->fileview);
+      }
+    }
+
+    remove_gui_monitor(data->monitor);
+  }
+}
+
+/**
+ * [main thread]
+ */
+static void monitor_free_thumbnail_generation(void *_data)
+{
+  ThumbnailData *data = (ThumbnailData *)_data;
+  FileOp *fop = (FileOp *)data->fop;
+
+  fop_stop(fop);
+  jthread_join(data->thread);
+
+  jlist_remove(fileview_data(data->fileview)->monitors,
+	       data->monitor);
+
+  fop_free(fop);
+  jfree(data);
 }

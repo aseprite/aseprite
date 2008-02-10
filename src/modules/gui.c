@@ -1,6 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
- *               2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +20,7 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -65,7 +65,8 @@
 #  define DEF_SCALE 1
 #endif
 
-static struct {
+static struct
+{
   int width;
   int height;
   int scale;
@@ -80,16 +81,25 @@ static int try_depths[] = { 32, 24, 16, 15, 8 };
 
 /**************************************************************/
 
-typedef struct Monitor {
-  /**
-   * Returns true when the job is done and the monitor can be removed.
-   */
-  bool (*proc)(void *);
+typedef struct ExitHook
+{
+  void (*proc)(void *);
   void *data;
-  bool lock;
-} Monitor;
+} ExitHook;
+
+struct Monitor
+{
+  /* returns true when the job is done and the monitor can be removed */
+  void (*proc)(void *);
+  void (*free)(void *);
+  void *data;
+  bool lock : 1;
+  bool deleted : 1;
+};
 
 static JWidget manager = NULL;
+
+static JList exit_hooks;
 
 static int monitor_timer = -1;
 static JList monitors;
@@ -103,7 +113,11 @@ static JList icon_buttons;
 static bool double_buffering;
 static int screen_scaling;
 
-static Monitor *monitor_new(bool (*proc)(void *), void *data);
+static ExitHook *exithook_new(void (*proc)(void *), void *data);
+static void exithook_free(ExitHook *exithook);
+
+static Monitor *monitor_new(void (*proc)(void *),
+			    void (*free)(void *), void *data);
 static void monitor_free(Monitor *monitor);
 
 /* load & save graphics configuration */
@@ -236,6 +250,7 @@ int init_module_gui(void)
   }
  gfx_done:;
 
+  exit_hooks = jlist_new();
   monitors = jlist_new();
 
   /* create the default-manager */
@@ -279,6 +294,16 @@ void exit_module_gui(void)
 {
   JLink link;
 
+  /* call the ExitHooks */
+  JI_LIST_FOR_EACH(exit_hooks, link) {
+    ExitHook *exithook = link->data;
+    (*exithook->proc)(exithook->data);
+    exithook_free(link->data);
+  }
+  jlist_free(exit_hooks);
+  exit_hooks = NULL;
+
+  /* destroy monitors */
   JI_LIST_FOR_EACH(monitors, link) {
     monitor_free(link->data);
   }
@@ -305,21 +330,44 @@ void exit_module_gui(void)
   remove_timer();
 }
 
-static Monitor *monitor_new(bool (*proc)(void *), void *data)
+static ExitHook *exithook_new(void (*proc)(void *), void *data)
+{
+  ExitHook *exithook = jnew(ExitHook, 1);
+  if (!exithook)
+    return NULL;
+
+  exithook->proc = proc;
+  exithook->data = data;
+
+  return exithook;
+}
+
+static void exithook_free(ExitHook *exithook)
+{
+  jfree(exithook);
+}
+
+static Monitor *monitor_new(void (*proc)(void *),
+			    void (*free)(void *), void *data)
 {
   Monitor *monitor = jnew(Monitor, 1);
   if (!monitor)
     return NULL;
 
   monitor->proc = proc;
+  monitor->free = free;
   monitor->data = data;
   monitor->lock = FALSE;
+  monitor->deleted = FALSE;
 
   return monitor;
 }
 
 static void monitor_free(Monitor *monitor)
 {
+  if (monitor->free)
+    (*monitor->free)(monitor->data);
+
   jfree(monitor);
 }
 
@@ -721,14 +769,53 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
   return widget;
 }
 
-void add_gui_monitor(bool (*proc)(void *data), void *data)
+/**
+ * Adds a routine to be called when the @ref exit_module_gui is called.
+ */
+void add_gui_exit_hook(void (*proc)(void *data), void *data)
 {
-  jlist_append(monitors, monitor_new(proc, data));
+  assert(proc != NULL);
+  assert(exit_hooks != NULL);
+
+  jlist_append(exit_hooks, exithook_new(proc, data));
+}
+
+/**
+ * Adds a routine to be called each 100 milliseconds to monitor
+ * whatever you want. It's mainly used to monitor the progress of a
+ * file-operation (see @ref fop_operate)
+ */
+Monitor *add_gui_monitor(void (*proc)(void *),
+			 void (*free)(void *), void *data)
+{
+  Monitor *monitor = monitor_new(proc, free, data);
+
+  jlist_append(monitors, monitor);
 
   if (monitor_timer < 0)
     monitor_timer = jmanager_add_timer(manager, 100);
 
   jmanager_start_timer(monitor_timer);
+
+  return monitor;
+}
+
+/**
+ * Removes a previously added monitor.
+ */
+void remove_gui_monitor(Monitor *monitor)
+{
+  JLink link = jlist_find(monitors, monitor);
+  assert(link != NULL);
+
+  if (!monitor->lock)
+    monitor_free(monitor);
+  else
+    monitor->deleted = TRUE;
+
+  jlist_delete_link(monitors, link);
+  if (jlist_empty(monitors))
+    jmanager_stop_timer(monitor_timer);
 }
 
 /**********************************************************************/
@@ -752,13 +839,11 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	  if (!monitor->lock) {
 	    /* call the monitor procedure */
 	    monitor->lock = TRUE;
-	    if ((*monitor->proc)(monitor->data)) {
-	      /* the function returns true, the job is done... remove the monitor */
-	      monitor_free(link->data);
-	      jlist_delete_link(monitors, link);
-	    }
-	    else
-	      monitor->lock = FALSE;
+	    (*monitor->proc)(monitor->data);
+	    monitor->lock = FALSE;
+
+	    if (monitor->deleted)
+	      monitor_free(monitor);
 	  }
 	}
 

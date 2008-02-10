@@ -208,6 +208,8 @@ static bool load_JPEG(FileOp *fop)
     }
 
     fop_progress(fop, (float)(cinfo.output_scanline+1) / (float)(cinfo.output_height));
+    if (fop_is_stop(fop))
+      break;
   }
 
   /* destroy all data */

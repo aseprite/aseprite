@@ -23,7 +23,6 @@
 #ifndef USE_PRECOMPILED_HEADER
 
 #include <allegro/color.h>
-#include <allegro/file.h>
 
 #include "file/file.h"
 #include "raster/raster.h"
@@ -48,7 +47,7 @@ FileFormat format_pcx =
 static bool load_PCX(FileOp *fop)
 {
   Image *image;
-  PACKFILE *f;
+  FILE *f;
   int c, r, g, b;
   int width, height;
   int bpp, bytes_per_line;
@@ -56,70 +55,68 @@ static bool load_PCX(FileOp *fop)
   int x, y;
   char ch = 0;
 
-  f = pack_fopen(fop->filename, F_READ);
+  f = fopen(fop->filename, "rb");
   if (!f)
     return FALSE;
 
-  pack_getc(f);                    /* skip manufacturer ID */
-  pack_getc(f);                    /* skip version flag */
-  pack_getc(f);                    /* skip encoding flag */
+  fgetc(f);                    /* skip manufacturer ID */
+  fgetc(f);                    /* skip version flag */
+  fgetc(f);                    /* skip encoding flag */
 
-  if (pack_getc(f) != 8) {         /* we like 8 bit color planes */
+  if (fgetc(f) != 8) {         /* we like 8 bit color planes */
     fop_error(fop, _("This PCX doesn't have 8 bit color planes.\n"));
-    pack_fclose(f);
+    fclose(f);
     return FALSE;
   }
 
-  width = -(pack_igetw(f));        /* xmin */
-  height = -(pack_igetw(f));       /* ymin */
-  width += pack_igetw(f) + 1;      /* xmax */
-  height += pack_igetw(f) + 1;     /* ymax */
+  width = -(fgetw(f));		/* xmin */
+  height = -(fgetw(f));		/* ymin */
+  width += fgetw(f) + 1;	/* xmax */
+  height += fgetw(f) + 1;	/* ymax */
 
-  pack_igetl(f);                   /* skip DPI values */
+  fgetl(f);			/* skip DPI values */
 
-  for (c=0; c<16; c++) {           /* read the 16 color palette */
-    r = pack_getc(f) / 4;
-    g = pack_getc(f) / 4;
-    b = pack_getc(f) / 4;
+  for (c=0; c<16; c++) {	/* read the 16 color palette */
+    r = fgetc(f) / 4;
+    g = fgetc(f) / 4;
+    b = fgetc(f) / 4;
     fop_sequence_set_color(fop, c, r, g, b);
   }
 
-  pack_getc(f);
+  fgetc(f);
 
-  bpp = pack_getc(f) * 8;          /* how many color planes? */
+  bpp = fgetc(f) * 8;          /* how many color planes? */
   if ((bpp != 8) && (bpp != 24)) {
-    pack_fclose(f);
+    fclose(f);
     return FALSE;
   }
 
-  bytes_per_line = pack_igetw(f);
+  bytes_per_line = fgetw(f);
 
   for (c=0; c<60; c++)             /* skip some more junk */
-    pack_getc(f);
+    fgetc(f);
 
   image = fop_sequence_image(fop, bpp == 8 ?
 				  IMAGE_INDEXED:
 				  IMAGE_RGB,
 			     width, height);
   if (!image) {
-    pack_fclose(f);
+    fclose(f);
     return FALSE;
   }
 
   if (bpp == 24)
     image_clear(image, _rgba(0, 0, 0, 255));
 
-  *allegro_errno = 0;
-
   for (y=0; y<height; y++) {       /* read RLE encoded PCX data */
     x = xx = 0;
     po = _rgba_r_shift;
 
     while (x < bytes_per_line*bpp/8) {
-      ch = pack_getc(f);
+      ch = fgetc(f);
       if ((ch & 0xC0) == 0xC0) {
         c = (ch & 0x3F);
-        ch = pack_getc(f);
+        ch = fgetc(f);
       }
       else
         c = 1;
@@ -151,36 +148,41 @@ static bool load_PCX(FileOp *fop)
     }
 
     fop_progress(fop, (float)(y+1) / (float)(height));
+    if (fop_is_stop(fop))
+      break;
   }
 
-  if (bpp == 8) {                  /* look for a 256 color palette */
-    while ((c = pack_getc(f)) != EOF) {
-      if (c == 12) {
-        for (c=0; c<256; c++) {
-          r = pack_getc(f) / 4;
-          g = pack_getc(f) / 4;
-          b = pack_getc(f) / 4;
-          fop_sequence_set_color(fop, c, r, g, b);
-        }
-        break;
+  if (!fop_is_stop(fop)) {
+    if (bpp == 8) {                  /* look for a 256 color palette */
+      while ((c = fgetc(f)) != EOF) {
+	if (c == 12) {
+	  for (c=0; c<256; c++) {
+	    r = fgetc(f) / 4;
+	    g = fgetc(f) / 4;
+	    b = fgetc(f) / 4;
+	    fop_sequence_set_color(fop, c, r, g, b);
+	  }
+	  break;
+	}
       }
     }
   }
 
-  if (*allegro_errno) {
-    fop_error(fop, _("Error reading bytes.\n"));
-    pack_fclose(f);
+  if (ferror(f)) {
+    fop_error(fop, _("Error reading file.\n"));
+    fclose(f);
     return FALSE;
   }
-
-  pack_fclose(f);
-  return TRUE;
+  else {
+    fclose(f);
+    return TRUE;
+  }
 }
 
 static bool save_PCX(FileOp *fop)
 {
   Image *image = fop->seq.image;
-  PACKFILE *f;
+  FILE *f;
   int c, r, g, b;
   int x, y;
   int runcount;
@@ -188,7 +190,7 @@ static bool save_PCX(FileOp *fop)
   char runchar;
   char ch = 0;
 
-  f = pack_fopen(fop->filename, F_WRITE);
+  f = fopen(fop->filename, "wb");
   if (!f) {
     fop_error(fop, _("Error creating file.\n"));
     return FALSE;
@@ -203,34 +205,32 @@ static bool save_PCX(FileOp *fop)
     planes = 1;
   }
 
-  *allegro_errno = 0;
-
-  pack_putc(10, f);                      /* manufacturer */
-  pack_putc(5, f);                       /* version */
-  pack_putc(1, f);                       /* run length encoding  */
-  pack_putc(8, f);                       /* 8 bits per pixel */
-  pack_iputw(0, f);                      /* xmin */
-  pack_iputw(0, f);                      /* ymin */
-  pack_iputw(image->w-1, f);             /* xmax */
-  pack_iputw(image->h-1, f);             /* ymax */
-  pack_iputw(320, f);                    /* HDpi */
-  pack_iputw(200, f);                    /* VDpi */
+  fputc(10, f);                      /* manufacturer */
+  fputc(5, f);                       /* version */
+  fputc(1, f);                       /* run length encoding  */
+  fputc(8, f);                       /* 8 bits per pixel */
+  fputw(0, f);			     /* xmin */
+  fputw(0, f);			     /* ymin */
+  fputw(image->w-1, f);		     /* xmax */
+  fputw(image->h-1, f);		     /* ymax */
+  fputw(320, f);		     /* HDpi */
+  fputw(200, f);		     /* VDpi */
 
   for (c=0; c<16; c++) {
     fop_sequence_get_color(fop, c, &r, &g, &b);
-    pack_putc(_rgb_scale_6[r], f);
-    pack_putc(_rgb_scale_6[g], f);
-    pack_putc(_rgb_scale_6[b], f);
+    fputc(_rgb_scale_6[r], f);
+    fputc(_rgb_scale_6[g], f);
+    fputc(_rgb_scale_6[b], f);
   }
 
-  pack_putc(0, f);                       /* reserved */
-  pack_putc(planes, f);                  /* one or three color planes */
-  pack_iputw(image->w, f);               /* number of bytes per scanline */
-  pack_iputw(1, f);                      /* color palette */
-  pack_iputw(image->w, f);               /* hscreen size */
-  pack_iputw(image->h, f);               /* vscreen size */
-  for (c=0; c<54; c++)                   /* filler */
-    pack_putc(0, f);
+  fputc(0, f);                      /* reserved */
+  fputc(planes, f);                 /* one or three color planes */
+  fputw(image->w, f);               /* number of bytes per scanline */
+  fputw(1, f);                      /* color palette */
+  fputw(image->w, f);               /* hscreen size */
+  fputw(image->h, f);               /* vscreen size */
+  for (c=0; c<54; c++)		    /* filler */
+    fputc(0, f);
 
   for (y=0; y<image->h; y++) {           /* for each scanline... */
     runcount = 0;
@@ -265,8 +265,8 @@ static bool save_PCX(FileOp *fop)
       else {
         if ((ch != runchar) || (runcount >= 0x3f)) {
           if ((runcount > 1) || ((runchar & 0xC0) == 0xC0))
-            pack_putc(0xC0 | runcount, f);
-          pack_putc(runchar, f);
+            fputc(0xC0 | runcount, f);
+          fputc(runchar, f);
           runcount = 1;
           runchar = ch;
         }
@@ -276,30 +276,31 @@ static bool save_PCX(FileOp *fop)
     }
 
     if ((runcount > 1) || ((runchar & 0xC0) == 0xC0))
-      pack_putc(0xC0 | runcount, f);
+      fputc(0xC0 | runcount, f);
 
-    pack_putc(runchar, f);
+    fputc(runchar, f);
 
     fop_progress(fop, (float)(y+1) / (float)(image->h));
   }
 
   if (depth == 8) {                      /* 256 color palette */
-    pack_putc(12, f);
+    fputc(12, f);
 
     for (c=0; c<256; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
-      pack_putc(_rgb_scale_6[r], f);
-      pack_putc(_rgb_scale_6[g], f);
-      pack_putc(_rgb_scale_6[b], f);
+      fputc(_rgb_scale_6[r], f);
+      fputc(_rgb_scale_6[g], f);
+      fputc(_rgb_scale_6[b], f);
     }
   }
 
-  pack_fclose(f);
-
-  if (*allegro_errno) {
-    fop_error(fop, _("Error writing bytes.\n"));
+  if (ferror(f)) {
+    fop_error(fop, _("Error writing file.\n"));
+    fclose(f);
     return FALSE;
   }
-  else
+  else {
+    fclose(f);
     return TRUE;
+  }
 }

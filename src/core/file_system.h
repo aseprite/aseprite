@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "jinete/jbase.h"
 
+struct BITMAP;
 struct FileItem;
 typedef struct FileItem FileItem;
 
@@ -41,6 +42,9 @@ JList fileitem_get_children(FileItem *fileitem);
 
 bool filename_has_extension(const char *filename, const char *list_of_extensions);
 bool fileitem_has_extension(FileItem *fileitem, const char *list_of_extensions);
+
+struct BITMAP *fileitem_get_thumbnail(FileItem *fileitem);
+void fileitem_set_thumbnail(FileItem *fileitem, struct BITMAP *thumbnail);
 
 #endif /* CORE_FILE_SYSTEM_H */
 

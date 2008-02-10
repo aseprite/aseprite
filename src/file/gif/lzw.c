@@ -1,7 +1,7 @@
-#include "lzw.h"
+#include "file/gif/lzw.h"
 
 static int
-read_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size)
+read_code (FILE * file, unsigned char *buf, int *bit_pos, int bit_size)
 {
     int i;
     int code = 0;
@@ -13,7 +13,7 @@ read_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size)
 
         if (byte_pos == 0)
         {
-            int data_len = pack_getc (file);
+            int data_len = fgetc (file);
 
             if (data_len == 0)
             {
@@ -21,7 +21,7 @@ read_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size)
                 //abort ();
                 return -1;
             }
-            pack_fread (buf + 256 - data_len, data_len, file);
+            fread (buf + 256 - data_len, 1, data_len, file);
             byte_pos = 256 - data_len;
             *bit_pos = byte_pos << 3;
         }
@@ -34,7 +34,7 @@ read_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size)
 }
 
 static void
-write_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size, int code)
+write_code (FILE * file, unsigned char *buf, int *bit_pos, int bit_size, int code)
 {
     int i;
     int pos = 1;
@@ -50,8 +50,8 @@ write_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size, int
         (*bit_pos)++;
         if (*bit_pos == 2040)
         {
-            pack_putc (byte_pos + 1, file);
-            pack_fwrite (buf, byte_pos + 1, file);
+            fputc (byte_pos + 1, file);
+            fwrite (buf, 1, byte_pos + 1, file);
             *bit_pos = 0;
         }
         pos += pos;
@@ -59,7 +59,7 @@ write_code (PACKFILE * file, unsigned char *buf, int *bit_pos, int bit_size, int
 }
 
 int
-LZW_decode (PACKFILE * file,
+LZW_decode (FILE * file,
 	    void (*write_pixel)(int pos, int code, unsigned char *data),
 	    unsigned char *data)
 {
@@ -80,7 +80,7 @@ LZW_decode (PACKFILE * file,
     int i, prev, code, c;
     int out_pos = 0;
 
-    orig_bit_size = pack_getc (file);
+    orig_bit_size = fgetc (file);
     n = 2 + (1 << orig_bit_size);
 
     for (i = 0; i < n; i++)
@@ -188,7 +188,7 @@ get_minimum_bitsize (int (*read_pixel)(int pos, unsigned char *data),
 }
 
 void
-LZW_encode (PACKFILE * file, int (*read_pixel)(int pos, unsigned char *data),
+LZW_encode (FILE * file, int (*read_pixel)(int pos, unsigned char *data),
 	    int size, unsigned char *data)
 {
     unsigned char buf[256];
@@ -221,7 +221,7 @@ LZW_encode (PACKFILE * file, int (*read_pixel)(int pos, unsigned char *data),
     clear_marker = n - 2;
     end_marker = n - 1;
 
-    pack_putc (orig_bit_size, file);
+    fputc (orig_bit_size, file);
 
     bit_size = orig_bit_size + 1;
 
@@ -283,7 +283,7 @@ LZW_encode (PACKFILE * file, int (*read_pixel)(int pos, unsigned char *data),
     {
         int byte_pos = (bit_pos + 7) / 8;
 
-        pack_putc (byte_pos, file);
-        pack_fwrite (buf, byte_pos, file);
+        fputc (byte_pos, file);
+        fwrite (buf, 1, byte_pos, file);
     }
 }

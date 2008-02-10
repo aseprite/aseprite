@@ -276,6 +276,9 @@ static bool load_PNG(FileOp *fop)
       fop_progress(fop,
 		   (float)((float)pass + (float)(y+1) / (float)(height))
 		   / (float)number_passes);
+
+      if (fop_is_stop(fop))
+	break;
     }
   }
   png_free(png_ptr, row_pointer);
