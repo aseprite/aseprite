@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@
 #endif
 
 static HashTable *msgids = NULL;
+
+static void free_msgid(void *msgid);
 
 int msgids_load(const char *filename)
 {
@@ -82,7 +84,7 @@ int msgids_load(const char *filename)
 void msgids_clear(void)
 {
   if (msgids) {
-    hash_free(msgids, jfree);
+    hash_free(msgids, free_msgid);
     msgids = NULL;
   }
 }
@@ -95,4 +97,9 @@ const char *msgids_get(const char *id)
       return trans;
   }
   return id;
+}
+
+static void free_msgid(void *msgid)
+{
+  jfree(msgid);
 }
