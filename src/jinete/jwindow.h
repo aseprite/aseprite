@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ JWidget jwindow_get_killer(JWidget window);
 void jwindow_moveable(JWidget window, bool state);
 void jwindow_sizeable(JWidget window, bool state);
 void jwindow_ontop(JWidget window, bool state);
+void jwindow_wantfocus(JWidget window, bool state);
 
 void jwindow_remap(JWidget window);
 void jwindow_center(JWidget window);
@@ -59,6 +60,7 @@ bool jwindow_is_toplevel(JWidget window);
 bool jwindow_is_foreground(JWidget window);
 bool jwindow_is_desktop(JWidget window);
 bool jwindow_is_ontop(JWidget window);
+bool jwindow_is_wantfocus(JWidget window);
 
 JI_END_DECLS
 

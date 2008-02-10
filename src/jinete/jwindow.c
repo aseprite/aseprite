@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003, 2004, 2005, 2007, 2008 David A. Capello.
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ typedef struct Window
   bool is_moveable : 1;
   bool is_sizeable : 1;
   bool is_ontop : 1;
+  bool is_wantfocus : 1;
   bool is_foreground : 1;
   bool is_autoremap : 1;
 } Window;
@@ -112,6 +113,13 @@ void jwindow_ontop(JWidget widget, bool state)
   Window *window = jwidget_get_data(widget, JI_WINDOW); 
 
   window->is_ontop = state;
+}
+
+void jwindow_wantfocus(JWidget widget, bool state)
+{
+  Window *window = jwidget_get_data(widget, JI_WINDOW); 
+
+  window->is_wantfocus = state;
 }
 
 void jwindow_remap(JWidget widget)
@@ -250,6 +258,13 @@ bool jwindow_is_ontop(JWidget widget)
   return window->is_ontop;
 }
 
+bool jwindow_is_wantfocus(JWidget widget)
+{
+  Window *window = jwidget_get_data(widget, JI_WINDOW); 
+
+  return window->is_wantfocus;
+}
+
 static JWidget window_new(int desktop, const char *text)
 {
   JWidget widget = jwidget_new(JI_WINDOW);
@@ -260,6 +275,7 @@ static JWidget window_new(int desktop, const char *text)
   window->is_moveable = !desktop;
   window->is_sizeable = !desktop;
   window->is_ontop = FALSE;
+  window->is_wantfocus = TRUE;
   window->is_foreground = FALSE;
   window->is_autoremap = TRUE;
 
@@ -330,6 +346,11 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget)) {
 	jwidget_release_mouse(widget);
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
+
+	if (click_pos) {
+	  jrect_free(click_pos);
+	  click_pos = NULL;
+	}
 
 	window_action = WINDOW_NONE;
 	return TRUE;
