@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,12 @@
 
 #ifndef USE_PRECOMPILED_HEADER
 
+#include <stdio.h>
 #include <allegro.h>
+#if defined ALLEGRO_WINDOWS && defined MEMLEAK
+#include <winalleg.h>
+#include <psapi.h>
+#endif
 
 #include "jinete/jsystem.h"
 
@@ -36,6 +41,19 @@ static void cmd_refresh_execute(const char *argument)
   jmouse_show();
 
   app_refresh_screen();
+
+  /* print memory information */
+#if defined ALLEGRO_WINDOWS && defined MEMLEAK
+  {
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+      printf("----\n");
+      printf("current memory: %.16g KB (%lu)\n", pmc.WorkingSetSize / 1024.0, pmc.WorkingSetSize);
+      printf("peak of memory: %.16g KB (%lu)\n", pmc.PeakWorkingSetSize / 1024.0, pmc.PeakWorkingSetSize);
+      fflush(stdout);
+    }
+  }
+#endif
 }
 
 Command cmd_refresh = {
