@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,10 @@
 
 typedef struct OpenFileData
 {
+  Monitor *monitor;
   FileOp *fop;
   Progress *progress;
+  JThread thread;
 } OpenFileData;
 
 /**
@@ -49,10 +51,18 @@ typedef struct OpenFileData
  *
  * [loading thread]
  */
-static void bg_open_file(void *fop_data)
+static void openfile_bg(void *fop_data)
 {
   FileOp *fop = (FileOp *)fop_data;
+
   fop_operate(fop);
+
+  if (fop_is_stop(fop) && fop->sprite) {
+    sprite_free(fop->sprite);
+    fop->sprite = NULL;
+  }
+
+  fop_done(fop);
 }
 
 /**
@@ -61,7 +71,7 @@ static void bg_open_file(void *fop_data)
  * 
  * [main thread]
  */
-static bool bg_monitor_fop(void *_data)
+static void monitor_openfile_bg(void *_data)
 {
   OpenFileData *data = (OpenFileData *)_data;
   FileOp *fop = (FileOp *)data->fop;
@@ -77,7 +87,11 @@ static bool bg_monitor_fop(void *_data)
       sprite_mount(sprite);
       sprite_show(sprite);
     }
-    else {
+    /* if the sprite isn't NULL and the file-operation wasn't
+       stopped by the user...  */
+    else if (!fop_is_stop(fop)) {
+      /* ...the file can't be loaded by errors, so we can remove it
+	 from the recent-file list */
       unrecent_file(fop->filename);
     }
 
@@ -90,12 +104,26 @@ static bool bg_monitor_fop(void *_data)
       console_close();
     }
 
-    fop_free(fop);
-    jfree(data);
-    return TRUE;		/* done */
+    remove_gui_monitor(data->monitor);
   }
-  else
-    return FALSE;		/* work isn't yet */
+}
+
+/**
+ * Called to destroy the data of the monitor.
+ * 
+ * [main thread]
+ */
+static void monitor_free(void *_data)
+{
+  OpenFileData *data = (OpenFileData *)_data;
+  FileOp *fop = (FileOp *)data->fop;
+
+  /* stop the file-operation and wait the thread to exit */
+  fop_stop(fop);
+  jthread_join(data->thread);
+
+  fop_free(fop);
+  jfree(data);
 }
 
 /**
@@ -119,7 +147,7 @@ static void cmd_open_file_execute(const char *argument)
   }
 
   if (filename) {
-    FileOp *fop = fop_to_load_sprite(filename);
+    FileOp *fop = fop_to_load_sprite(filename, FILE_LOAD_SEQUENCE_ASK);
 
     if (filename != argument)
       jfree(filename);
@@ -130,10 +158,11 @@ static void cmd_open_file_execute(const char *argument)
 	fop_free(fop);
       }
       else {
-	JThread thread = jthread_new(bg_open_file, fop);
+	JThread thread = jthread_new(openfile_bg, fop);
 	if (thread) {
 	  OpenFileData *data = jnew(OpenFileData, 1);
 
+	  data->thread = thread;
 	  data->fop = fop;
 
 	  /* add the progress bar */
@@ -143,10 +172,12 @@ static void cmd_open_file_execute(const char *argument)
 	    data->progress = NULL;
 
 	  /* add a monitor to check the loading (FileOp) progress */
-	  add_gui_monitor(bg_monitor_fop, data);
+	  data->monitor = add_gui_monitor(monitor_openfile_bg,
+					  monitor_free, data);
 	}
 	else {
 	  console_printf(_("Error creating thread to load the sprite"));
+	  fop_free(fop);
 	}
       }
     }
