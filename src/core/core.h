@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2005, 2007, 2008  David A. Capello
+ * Copyright (C) 2001-2008  David A. Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,5 +35,7 @@ void core_exit(void);
 
 void verbose_printf(const char *format, ...);
 bool is_interactive(void);
+
+char *get_errno_string(int errnum, char *buf, int size);
 
 #endif /* CORE_H */
