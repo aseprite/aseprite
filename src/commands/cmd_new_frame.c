@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -33,8 +31,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-
-#endif
 
 static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame);
 static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame);

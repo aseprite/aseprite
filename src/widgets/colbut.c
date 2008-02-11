@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jbutton.h"
@@ -35,8 +33,6 @@
 #include "modules/color.h"
 #include "modules/gfx.h"
 #include "widgets/colbut.h"
-
-#endif
 
 typedef struct ColorButton
 {

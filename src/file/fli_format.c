@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 #include <stdio.h>
 
@@ -29,8 +27,6 @@
 
 /* GFLI header file */
 #include "gfli.h"
-
-#endif
 
 static bool load_FLI(FileOp *fop);
 static bool save_FLI(FileOp *fop);

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jalert.h"
 
 #include "commands/commands.h"
@@ -30,8 +28,6 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/msk_file.h"
-
-#endif
 
 static bool cmd_load_mask_enabled(const char *argument)
 {

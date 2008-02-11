@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro/config.h>
 #include <allegro/unicode.h>
@@ -38,8 +36,6 @@
 #include "raster/undo.h"
 #include "script/functions.h"
 #include "util/misc.h"
-
-#endif
 
 static const char *bg_table[] = {
   "mask",

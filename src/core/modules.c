@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "core/core.h"
 #include "core/modules.h"
 #include "effect/effect.h"
@@ -33,8 +31,6 @@
 #include "modules/sprites.h"
 #include "modules/tools.h"
 #include "script/script.h"
-
-#endif
 
 #define DEF_MODULE(name, reqs) \
   { #name, init_module_##name, exit_module_##name, (reqs), FALSE }

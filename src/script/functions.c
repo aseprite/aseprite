@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include "jinete/jinete.h"
 
@@ -35,8 +33,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-
-#endif
 
 /*===================================================================*/
 /* Sprite                                                            */

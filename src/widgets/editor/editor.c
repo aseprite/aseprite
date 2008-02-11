@@ -20,8 +20,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <stdio.h>
 #include <allegro.h>
@@ -52,8 +50,6 @@
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-#endif
 
 #define has_shifts(msg,shift)			\
   (((msg)->any.shifts & (shift)) == (shift))

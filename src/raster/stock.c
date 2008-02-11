@@ -18,14 +18,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 
 #include "raster/image.h"
 #include "raster/stock.h"
-
-#endif
 
 /**
  * Creates a new stock, the "imgtype" argument indicates that this

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jbase.h"
@@ -32,8 +30,6 @@
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "widgets/statebar.h"
-
-#endif
 
 static bool cmd_save_file_enabled(const char *argument)
 {

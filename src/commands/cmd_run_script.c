@@ -18,14 +18,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "script/script.h"
-
-#endif
 
 static void cmd_run_script_execute(const char *argument)
 {

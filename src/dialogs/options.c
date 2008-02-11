@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -29,8 +27,6 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "intl/intl.h"
-
-#endif
 
 void dialogs_select_language(bool force)
 {

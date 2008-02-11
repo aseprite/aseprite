@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/base.h>
 #include <math.h>
 
@@ -27,8 +25,6 @@
 
 #include "raster/brush.h"
 #include "raster/image.h"
-
-#endif
 
 static void clean_brush (Brush *brush);
 static void regenerate_brush (Brush *brush);

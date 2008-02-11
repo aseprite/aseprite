@@ -25,17 +25,12 @@
 
 /* general information */
 #define PACKAGE			"ase"
-#define VERSION			"0.6"
+#define VERSION			"0.6 BETA 2"
 #define WEBSITE			"http://www.aseprite.org/"
 #define BUGREPORT		"aseprite@googlegroups.com"
 #define COPYRIGHT		"Copyright (C) 2001-2008 David A. Capello"
 
 #define PRINTF			verbose_printf
-
-/* include everything headers files to precompile */
-#ifdef USE_PRECOMPILED_HEADER
-#include "all.h"
-#endif
 
 /* defined in src/core/core.c */
 void verbose_printf(const char *format, ...);

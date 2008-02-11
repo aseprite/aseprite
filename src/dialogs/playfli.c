@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,8 +30,6 @@
 
 /* GFLI header file */
 #include "gfli.h"
-
-#endif
 
 static bool my_callback(void);
 static void my_play_fli(const char *filename, bool loop, bool fullscreen,

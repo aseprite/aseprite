@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -27,8 +25,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-
-#endif
 
 static bool cmd_invert_mask_enabled(const char *argument)
 {

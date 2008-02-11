@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 #include <string.h>
 
@@ -34,8 +32,6 @@
 #include "modules/rootmenu.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
-
-#endif
 
 static JWidget root_menu;
 

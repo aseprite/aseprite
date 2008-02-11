@@ -32,16 +32,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 #include <stdlib.h>
 
 #include "jinete/jbase.h"
 
 #include "util/hash.h"
-
-#endif
 
 /* These are used in freeing a table.  Perhaps I should code up
  * something a little less grungy, but it works, so what the heck.

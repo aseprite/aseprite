@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -27,8 +25,6 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "script/functions.h"
-
-#endif
 
 static bool cmd_remove_cel_enabled(const char *argument)
 {

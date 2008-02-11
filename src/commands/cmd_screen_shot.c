@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jsystem.h"
@@ -29,8 +27,6 @@
 #include "file/file.h"
 #include "raster/raster.h"
 #include "util/misc.h"
-
-#endif
 
 static void cmd_screen_shot_execute(const char *argument)
 {

@@ -18,16 +18,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "effect/effect.h"
 #include "modules/palette.h"
 #include "modules/tools.h"
 #include "raster/image.h"
-
-#endif
 
 static struct {
   int tiled;

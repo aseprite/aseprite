@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -29,8 +27,6 @@
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
-
-#endif
 
 #define DEPTH_TO_INDEX(bpp)			\
   ((bpp == 8)? 0:				\

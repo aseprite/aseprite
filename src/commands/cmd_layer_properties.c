@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -28,8 +26,6 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-
-#endif
 
 static bool cmd_layer_properties_enabled(const char *argument)
 {

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 
 #include "raster/blend.h"
@@ -27,8 +25,6 @@
 #include "raster/path.h"
 
 #include "libart_lgpl/libart.h"
-
-#endif
 
 static int path_get_element (Path *path, double x, double y);
 static void draw_path (Path *path, Image *image, int color, double brush_size, int fill);

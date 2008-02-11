@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -40,8 +38,6 @@
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
-
-#endif
 
 static JWidget window = NULL;
 

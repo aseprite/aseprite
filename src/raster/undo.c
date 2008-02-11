@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -34,8 +32,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-
-#endif
 
 /* undo state */
 enum {

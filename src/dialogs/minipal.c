@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <stdio.h>
 
@@ -30,8 +28,6 @@
 #include "modules/palette.h"
 #include "widgets/colbar.h"
 #include "widgets/paledit.h"
-
-#endif
 
 static int paledit_change_signal(JWidget widget, int user_data);
 static bool window_hook(JWidget widget, JMessage msg);

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jbox.h"
@@ -40,8 +38,6 @@
 #include "raster/sprite.h"
 #include "widgets/colbut.h"
 #include "widgets/groupbut.h"
-
-#endif
 
 void canvas_resize(void)
 {

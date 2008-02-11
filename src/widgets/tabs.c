@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -28,8 +26,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "widgets/tabs.h"
-
-#endif
 
 #define CALC_TAB_WIDTH(widget, tab)			\
   (4 + text_length(widget->text_font, tab->text) + 4)

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -42,8 +40,6 @@
 #include "raster/undo.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"
-
-#endif
 
 #define THUMBSIZE	(32)
 #define FRMSIZE		(3 + THUMBSIZE + 2)

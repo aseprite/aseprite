@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "util/pic_file.h"
-
-#endif
 
 /* loads a MSK file (Animator and Animator Pro format) */
 Mask *load_msk_file(const char *filename)

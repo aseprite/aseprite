@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,8 +28,6 @@
 #include "modules/tools.h"
 #include "raster/brush.h"
 #include "raster/sprite.h"
-
-#endif
 
 /* string = "brush_type brush_size brush_angle"
      brush_type: circle, square, line (default=circle)

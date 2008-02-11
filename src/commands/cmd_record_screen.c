@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/gfx.h>
 
 #include "jinete/jbase.h"
@@ -27,8 +25,6 @@
 
 #include "commands/commands.h"
 #include "util/recscr.h"
-
-#endif
 
 static bool cmd_record_screen_checked(const char *argument)
 {

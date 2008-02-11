@@ -18,12 +18,8 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/editors.h"
-
-#endif
 
 static void cmd_close_editor_execute(const char *argument)
 {

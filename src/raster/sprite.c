@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <string.h>
 
@@ -29,8 +27,6 @@
 #include "modules/palette.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
-
-#endif
 
 typedef struct PAL
 {

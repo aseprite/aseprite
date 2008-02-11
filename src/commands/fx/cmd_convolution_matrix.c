@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 
 #include "jinete/jbox.h"
@@ -53,8 +51,6 @@
 #include "widgets/curvedit.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
-
-#endif
 
 static JWidget check_preview, preview;
 static JWidget check_tiled;

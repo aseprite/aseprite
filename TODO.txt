@@ -4,7 +4,6 @@ High priority work
 - search for TODO;
 - rename jcombox.c to jcombobox.c
 - remove the jfilesel.c
-- remove USE_PRECOMPILED_HEADER
 - fix copyright years (2001-2008)
 - fix a bug in the film editor when move the separator (panel) outside
   the screen (to left or right)

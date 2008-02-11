@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -33,8 +31,6 @@
 #include "intl/intl.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
-
-#endif
 
 static JWidget tips_new(void);
 static int tips_type(void);

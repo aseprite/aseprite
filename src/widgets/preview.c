@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 
 #include "jinete/jmanager.h"
@@ -30,8 +28,6 @@
 #include "raster/sprite.h"
 #include "util/render.h"
 #include "widgets/preview.h"
-
-#endif
 
 typedef struct Preview
 {

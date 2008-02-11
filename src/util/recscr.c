@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 #include <stdio.h>
@@ -30,8 +28,6 @@
 #include "core/core.h"
 
 #include "gfli.h"
-
-#endif
 
 /* change this number if you want more fluid recorded animations */
 #define FRAMES_PER_SECOND   24

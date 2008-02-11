@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 
 #include "console/console.h"
@@ -28,8 +26,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/quantize.h"
-
-#endif
 
 void sprite_quantize(struct Sprite *sprite)
 {

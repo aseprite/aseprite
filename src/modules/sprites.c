@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/file.h>
 
 #include "jinete/jlist.h"
@@ -39,8 +37,6 @@
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/tabs.h"
-
-#endif
 
 /* Current selected sprite to operate, it could be not the same of
    editor_get_sprite(current_editor).  */

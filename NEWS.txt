@@ -12,13 +12,7 @@ NEWS
     My Computer, etc.
 + Optimized the loading/saving operations (using threads).
 + Restructured all the menus (more user friendly options).
-  - Temporaly removed a lot of complex functionality:
-    Mask-Repository (but you can use .msk files yet), Draw-Text,
-    Layer-Sets and Linked-Cels.
 + New XML format for the menus.
-- Removed menu scripting customization.
-- Removed screen saver.
-- Removed sessions.
 + Enhanced GUI:
   + more borders for windows and more spacing between widgets.
   + better mouse behavior (now in Windows the mouse is captured).
@@ -27,6 +21,17 @@ NEWS
   (screen-scaling x2). This is the new default video mode for ASE.
 + Fixed other minor problems when you drawn in 'tiled mode' or 'paste'
   the clipboard.
+- Removed a lot of complex functionality:
+  - Removed mask-repositories (you can use .msk files instead).
+  - Removed menu scripting customization.
+  - Removed screen saver.
+  - Removed sessions.
+  - Removed draw-text (it'll return in next versions).
+  - Removed layer-sets (the Film-Editor can't handle them right at the
+    moment)
+  - Removed linked-cels (were complex for the end-user).
+  - Also the scripting support is broken, next versions of ASE will
+    contain a better set of routines to create scripts.
 
 0.5
 ---

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -31,8 +29,6 @@
 #include "raster/image.h"
 #include "raster/quant.h"
 #include "raster/sprite.h"
-
-#endif
 
 static bool cmd_change_image_type_enabled(const char *argument)
 {

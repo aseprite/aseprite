@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <string.h>
 
@@ -32,8 +30,6 @@
 
 #include "modules/color.h"
 #include "widgets/colview.h"
-
-#endif
 
 typedef struct ColorViewer
 {

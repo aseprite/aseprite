@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -40,8 +38,6 @@
 #include "widgets/curvedit.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
-
-#endif
 
 static Curve *the_curve = NULL;
 static JWidget check_preview, preview;

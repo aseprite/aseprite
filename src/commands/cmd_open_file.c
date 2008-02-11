@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 
 #include "jinete/jinete.h"
@@ -35,8 +33,6 @@
 #include "modules/recent.h"
 #include "modules/sprites.h"
 #include "widgets/statebar.h"
-
-#endif
 
 typedef struct OpenFileData
 {

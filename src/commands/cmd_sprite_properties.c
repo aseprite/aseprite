@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
@@ -32,8 +30,6 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "widgets/colbut.h"
-
-#endif
 
 /* TODO remove this */
 void dialogs_frame_length(int sprite_frpos);

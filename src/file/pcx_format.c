@@ -20,14 +20,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 
 #include "file/file.h"
 #include "raster/raster.h"
-
-#endif
 
 static bool load_PCX(FileOp *fop);
 static bool save_PCX(FileOp *fop);

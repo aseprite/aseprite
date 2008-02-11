@@ -18,13 +18,9 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "effect/effect.h"
 #include "modules/color.h"
 #include "raster/image.h"
-
-#endif
 
 static struct {
   int from, to;

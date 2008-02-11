@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 /* #include <allegro/color.h> */
 /* #include <allegro/gfx.h> */
@@ -28,8 +26,6 @@
 #include "raster/algo.h"
 #include "raster/blend.h"
 #include "raster/image.h"
-
-#endif
 
 #ifndef USE_ALLEGRO_IMAGE
 #include "imgbit.c"

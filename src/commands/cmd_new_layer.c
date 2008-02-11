@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -30,8 +28,6 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "script/functions.h"
-
-#endif
 
 static bool cmd_new_layer_enabled(const char *argument)
 {

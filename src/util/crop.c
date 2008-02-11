@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jlist.h"
 
 #include "console/console.h"
@@ -33,8 +31,6 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 #include "util/misc.h"
-
-#endif
 
 static void displace_layers(Undo *undo, Layer *layer, int x, int y);
 

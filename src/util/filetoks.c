@@ -18,12 +18,8 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 #include <stdio.h>
-
-#endif
 
 static int line_num;
 

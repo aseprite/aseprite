@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/file.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,8 +28,6 @@
 #include "intl/intl.h"
 #include "intl/msgids.h"
 #include "modules/gui.h"
-
-#endif
 
 int intl_init(void)
 {

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -31,8 +29,6 @@
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
-
-#endif
 
 static int speed_timer;
 

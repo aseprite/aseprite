@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <string.h>
 #include <allegro.h>
@@ -36,8 +34,6 @@
 #include "modules/palette.h"
 #include "raster/raster.h"
 #include "widgets/statebar.h"
-
-#endif
 
 extern FileFormat format_ase;
 extern FileFormat format_bmp;

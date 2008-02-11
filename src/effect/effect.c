@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -46,8 +44,6 @@
 #include "raster/undo.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
-
-#endif
 
 typedef struct EffectData
 {

@@ -41,10 +41,6 @@ ifdef DEFAULT_PREFIX
   CFLAGS += -DDEFAULT_PREFIX="\"$(DEFAULT_PREFIX)\""
 endif
 
-ifdef USE_PRECOMPILED_HEADER
-  CFLAGS += -DUSE_PRECOMPILED_HEADER
-endif
-
 ifdef USE_X86_INT_MULT
   CFLAGS += -DUSE_X86_INT_MULT
 endif
@@ -130,17 +126,7 @@ VPATH = src					\
 	$(LIBPNG_DIR)				\
 	$(ZLIB_DIR)
 
-ifdef USE_PRECOMPILED_HEADER
-ASE_DEPS = config.h.gch
-else
-ASE_DEPS = 
-endif
-ASE_DEPS += $(ASE_OBJS) $(THIRD_PARTY_LIBS)
-
-ifdef USE_PRECOMPILED_HEADER
-config.h.gch: config.h
-	$(CC) $(CFLAGS) -o $@ -c $<
-endif
+ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 
 ######################################################################
 # Rules to build the object files

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <math.h>
 #include <stdio.h>
@@ -39,8 +37,6 @@
 #include "effect/colcurve.h"
 #include "modules/gui.h"
 #include "widgets/curvedit.h"
-
-#endif
 
 #define SCR2EDIT_X(xpos)						\
   (curve_editor->x1 +							\

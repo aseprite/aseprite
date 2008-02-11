@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/file.h>
 
 #include "jinete/jalert.h"
@@ -30,8 +28,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/msk_file.h"
-
-#endif
 
 static bool cmd_save_mask_enabled(const char *argument)
 {

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/keyboard.h>
 
 #include "jinete/jsystem.h"
@@ -35,8 +33,6 @@
 #include "raster/sprite.h"
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
-
-#endif
 
 static int getpixel_sprite(Sprite *sprite, int x, int y);
 

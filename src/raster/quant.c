@@ -18,13 +18,9 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/quant.h"
-
-#endif
 
 Image *image_set_imgtype(Image *image, int imgtype,
 			 int dithering_method,

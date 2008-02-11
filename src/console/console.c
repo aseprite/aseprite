@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -30,8 +28,6 @@
 #include "core/core.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
-
-#endif
 
 static JWidget wid_console = NULL;
 static JWidget wid_view = NULL;

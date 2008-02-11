@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro/debug.h>
 #include <allegro/unicode.h>
@@ -30,8 +28,6 @@
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
-
-#endif
 
 static bool cmd_select_file_enabled(const char *argument)
 {

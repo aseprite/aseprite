@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,8 +30,6 @@
 
 #define PNG_NO_TYPECAST_NULL
 #include "png.h"
-
-#endif
 
 static bool load_PNG(FileOp *fop);
 static bool save_PNG(FileOp *fop);

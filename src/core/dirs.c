@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/file.h>
 #include <allegro/system.h>
 #include <stdio.h>
@@ -30,8 +28,6 @@
 
 #include "core/core.h"
 #include "core/dirs.h"
-
-#endif
 
 #undef UNIX_LIKE
 #if defined ALLEGRO_UNIX || \

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <string.h>
 
@@ -33,8 +31,6 @@
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "widgets/target.h"
-
-#endif
 
 static int channel_change(JWidget widget, int user_data);
 static int images_change(JWidget widget, int user_data);

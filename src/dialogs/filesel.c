@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -33,8 +31,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "widgets/fileview.h"
-
-#endif
 
 #if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
 #  define HAVE_DRIVES

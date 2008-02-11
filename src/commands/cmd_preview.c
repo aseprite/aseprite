@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "modules/sprites.h"
 
 #include <allegro.h>
@@ -36,8 +34,6 @@
 #include "util/render.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-#endif
 
 #define PREVIEW_TILED		1
 #define PREVIEW_FIT_ON_SCREEN	2

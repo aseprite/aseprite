@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 #include <allegro/file.h>
 
@@ -39,8 +37,6 @@
 #include "gif/format.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-#endif
 
 static bool load_GIF(FileOp *fop);
 static bool save_GIF(FileOp *fop);

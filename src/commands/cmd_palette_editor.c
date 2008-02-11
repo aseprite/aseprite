@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
 #include "dialogs/dpaledit.h"
 #include "modules/sprites.h"
-
-#endif
 
 static void cmd_palette_editor_execute(const char *argument)
 {

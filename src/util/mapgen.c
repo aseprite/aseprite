@@ -25,15 +25,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdlib.h>
 
 #include "core/app.h"
 #include "raster/image.h"
 #include "widgets/statebar.h"
-
-#endif
 
 static int Minus (int j, int i, int size);
 static int Plus (int j, int i, int size);

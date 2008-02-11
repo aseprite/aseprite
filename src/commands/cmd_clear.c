@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
@@ -27,8 +25,6 @@
 #include "raster/sprite.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
-
-#endif
 
 static bool cmd_clear_enabled(const char *argument)
 {

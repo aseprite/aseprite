@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdlib.h>
 #include <string.h>
 
 #include "raster/image.h"
 #include "raster/mask.h"
-
-#endif
 
 static void shrink_mask (Mask *mask);
 

@@ -19,8 +19,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include <limits.h>
@@ -28,8 +26,6 @@
 
 #include "raster/algo.h"
 #include "raster/image.h"
-
-#endif
 
 
 

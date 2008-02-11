@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <string.h>
 
@@ -48,8 +46,6 @@
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-#endif
 
 Image *GetImage(Sprite *sprite)
 {

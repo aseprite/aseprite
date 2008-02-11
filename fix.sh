@@ -36,12 +36,6 @@ else
 fi
 
 ######################################################################
-# precompiled header
-
-readln "Do you want use precompiled header (needs GCC >= 3.4) (y/n)?" "n"
-precompiled_header=$ans
-
-######################################################################
 # show information
 
 case "$platform" in
@@ -64,9 +58,6 @@ if [ "$profile" == "y" ] ; then echo "yes" ; else echo "no" ; fi
 if [ "$prefix" != "" ] ; then
   echo "  Prefix:		$prefix"
 fi
-
-echo -n "  Precompiled header:	"
-if [ "$precompiled_header" == "y" ] ; then echo "yes" ; else echo "no" ; fi
 
 echo ""
 readln "Is it right (y/n)?" "y"
@@ -110,9 +101,6 @@ gen_makefile()
 
   if [ "$prefix" == "" ] ; then echo -n "#" >> $makefile ; fi
   echo "DEFAULT_PREFIX = \"$prefix\"" >> $makefile
-
-  if [ "$precompiled_header" != "y" ] ; then echo -n "#" >> $makefile ; fi
-  echo "USE_PRECOMPILED_HEADER = 1" >> $makefile
 
   echo "#USE_X86_INT_MULT = 1" >> $makefile
   echo "" >> $makefile

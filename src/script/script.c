@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 
@@ -36,8 +34,6 @@
 #include "script/bindings.h"
 #include "script/script.h"
 #include "widgets/editor.h"
-
-#endif
 
 /* Global Lua state.  */
 

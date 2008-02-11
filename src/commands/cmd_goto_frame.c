@@ -18,16 +18,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/editors.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
-
-#endif
 
 /* ======================== */
 /* goto_first_frame         */

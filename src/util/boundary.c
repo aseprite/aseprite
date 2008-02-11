@@ -23,8 +23,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,8 +32,6 @@
 #include "jinete/jbase.h"
 #include "raster/image.h"
 #include "util/boundary.h"
-
-#endif
 
 #define g_renew		jrenew
 #define g_new		jnew

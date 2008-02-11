@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
@@ -29,8 +27,6 @@
 #include "util/autocrop.h"
 #include "util/crop.h"
 #include "util/misc.h"
-
-#endif
 
 static bool cmd_crop_enabled(const char *argument);
 

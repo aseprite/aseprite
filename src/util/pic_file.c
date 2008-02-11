@@ -18,14 +18,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 #include <allegro/file.h>
 
 #include "raster/image.h"
-
-#endif
 
 /* loads a PIC file (Animator and Animator Pro format) */
 Image *load_pic_file (const char *filename, int *x, int *y, RGB *palette)

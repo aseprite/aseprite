@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,8 +34,6 @@
 #include "modules/palette.h"
 #include "raster/blend.h"
 #include "widgets/paledit.h"
-
-#endif
 
 /* #define COLOR_SIZE	6 */
 #define COLOR_SIZE	(palette_editor->boxsize)

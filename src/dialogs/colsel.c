@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,8 +36,6 @@
 #include "util/quantize.h"
 #include "widgets/colview.h"
 #include "widgets/paledit.h"
-
-#endif
 
 static JWidget slider_R, slider_G, slider_B, slider_A;
 static JWidget slider_H, slider_S, slider_V;

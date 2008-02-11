@@ -18,13 +18,9 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
-
-#endif
 
 typedef struct TipData
 {

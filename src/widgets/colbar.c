@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <string.h>
 
@@ -41,8 +39,6 @@
 #include "raster/sprite.h"
 #include "widgets/colbar.h"
 #include "widgets/statebar.h"
-
-#endif
 
 static bool color_bar_msg_proc(JWidget widget, JMessage msg);
 

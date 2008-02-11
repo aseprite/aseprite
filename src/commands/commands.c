@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 /* #include <stdio.h> */
 #include <string.h>
 #include <allegro/unicode.h>
@@ -28,8 +26,6 @@
 
 #include "console/console.h"
 #include "commands/commands.h"
-
-#endif
 
 /* file */
 extern Command cmd_new_file;

@@ -18,12 +18,8 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "raster/cel.h"
 #include "raster/layer.h"
-
-#endif
 
 Cel *cel_new(int frame, int image)
 {

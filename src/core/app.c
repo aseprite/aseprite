@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 /* #include <allegro/internal/aintern.h> */
 #include <stdarg.h>
@@ -59,8 +57,6 @@
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
-
-#endif
 
 /* options */
 enum {

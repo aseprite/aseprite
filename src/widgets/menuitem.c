@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,8 +31,6 @@
 #include "core/core.h"
 #include "modules/gui.h"
 #include "script/script.h"
-
-#endif
 
 typedef struct MenuItem
 {

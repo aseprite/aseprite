@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jlist.h"
 
 #include "modules/palette.h"
 #include "modules/tools.h"
 #include "raster/raster.h"
-
-#endif
 
 /************************************************************************/
 /* Render engine */

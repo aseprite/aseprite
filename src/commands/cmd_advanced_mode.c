@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
-
-#endif
 
 static bool advanced_mode = FALSE;
 

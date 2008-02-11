@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -46,8 +44,6 @@
 #include "util/misc.h"
 #include "widgets/colbar.h"
 #include "widgets/statebar.h"
-
-#endif
 
 #define SCALE_MODE	0
 #define ROTATE_MODE	1

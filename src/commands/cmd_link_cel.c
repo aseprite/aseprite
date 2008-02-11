@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
 #include "dialogs/filmedit.h"
 #include "util/celmove.h"
-
-#endif
 
 static bool cmd_link_cel_enabled(const char *argument)
 {

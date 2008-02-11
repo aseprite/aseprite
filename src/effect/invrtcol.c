@@ -18,13 +18,9 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "effect/effect.h"
 #include "modules/palette.h"
 #include "raster/image.h"
-
-#endif
 
 void apply_invert_color4(Effect *effect)
 {

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -51,8 +49,6 @@
 #include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-#endif
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
@@ -252,6 +248,9 @@ int init_module_gui(void)
 
   exit_hooks = jlist_new();
   monitors = jlist_new();
+
+  /* window title */
+  set_window_title("Allegro Sprite Editor v" VERSION);
 
   /* create the default-manager */
   manager = jmanager_new();

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 #include <limits.h>
@@ -56,8 +54,6 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
-
-#endif
 
 Tool *current_tool = NULL;
 

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/gfx.h>
 #include <allegro/unicode.h>
 
@@ -28,8 +26,6 @@
 #include "core/cfg.h"
 #include "dialogs/repo.h"
 #include "modules/gui.h"
-
-#endif
 
 static void fill_listbox(RepoDlg *repo_dlg);
 static void kill_listbox(RepoDlg *repo_dlg);

@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 #include <allegro.h>
 
 #include "file/file.h"
 #include "raster/image.h"
-
-#endif
 
 /* loads a COL file (Animator and Animator Pro format) */
 RGB *load_col_file(const char *filename)

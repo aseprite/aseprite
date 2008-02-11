@@ -18,16 +18,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/autocrop.h"
 #include "util/crop.h"
-
-#endif
 
 void autocrop_sprite(void)
 {

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -40,8 +38,6 @@
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-#endif
 
 enum {
   ACTION_LAYER,

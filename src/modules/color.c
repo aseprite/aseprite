@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jbase.h"
@@ -32,8 +30,6 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "widgets/colbar.h"
-
-#endif
 
 static struct {
   int type;

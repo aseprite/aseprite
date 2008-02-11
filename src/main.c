@@ -18,13 +18,9 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "core/app.h"
-
-#endif
 
 /* Information for "ident".  */
 

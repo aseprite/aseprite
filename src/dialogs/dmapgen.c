@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <math.h>
 #include <stdio.h>
@@ -40,8 +38,6 @@
 #include "script/import.h"
 #include "util/mapgen.h"
 #include "util/misc.h"
-
-#endif
 
 #ifndef M_SQRT2
 #define M_SQRT2        1.41421356237309504880

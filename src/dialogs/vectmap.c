@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <math.h>
 
@@ -30,8 +28,6 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/misc.h"
-
-#endif
 
 static void project(Image *image, int x, int y, double dmax, double *out_x, double *out_y)
 {

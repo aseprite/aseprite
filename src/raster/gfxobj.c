@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 
 #include "jinete/jbase.h"
@@ -27,8 +25,6 @@
 #include "jinete/jmutex.h"
 
 #include "raster/gfxobj.h"
-
-#endif
 
 /* typedef struct GfxObjProperty */
 /* { */

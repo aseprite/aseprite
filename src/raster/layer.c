@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 
 #include "jinete/jlist.h"
@@ -30,8 +28,6 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-
-#endif
 
 static bool has_cels(Layer *layer, int frame);
 

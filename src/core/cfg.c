@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/config.h>
 #include <allegro/file.h>
 #include <allegro/unicode.h>
@@ -29,8 +27,6 @@
 #include "core/cfg.h"
 #include "core/core.h"
 #include "core/dirs.h"
-
-#endif
 
 static char config_filename[512];
 

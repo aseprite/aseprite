@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <string.h>
 
@@ -29,8 +27,6 @@
 #include "raster/blend.h"
 #include "raster/sprite.h"
 #include "util/col_file.h"
-
-#endif
 
 PALETTE current_palette;	/* current original palette (you can
 				   use _current_palette from Allegro

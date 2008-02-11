@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -43,8 +41,6 @@
 #include "widgets/colbut.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
-
-#endif
 
 static JWidget check_preview, preview;
 

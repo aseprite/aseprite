@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -32,8 +30,6 @@
 #include "script/script.h"
 #include "widgets/groupbut.h"
 #include "widgets/toolbar.h"
-
-#endif
 
 static int group_change_signal(JWidget widget, int user_data);
 static void conf_command(JWidget widget);

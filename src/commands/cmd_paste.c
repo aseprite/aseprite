@@ -18,14 +18,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "util/clipbrd.h"
-
-#endif
 
 static bool cmd_paste_enabled(const char *argument)
 {

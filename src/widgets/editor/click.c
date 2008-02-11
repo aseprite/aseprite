@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/keyboard.h>
 
 #include "jinete/jrect.h"
@@ -32,8 +30,6 @@
 #include "core/cfg.h"
 #include "modules/gui.h"
 #include "widgets/editor.h"
-
-#endif
 
 /**********************************************************************/
 /* editor-click interface */

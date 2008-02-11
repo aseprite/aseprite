@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "core/app.h"
@@ -31,8 +29,6 @@
 #include "raster/sprite.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
-
-#endif
 
 #define FIXUP_TOP_WINDOW()			\
   jwindow_remap(app_get_top_window());		\

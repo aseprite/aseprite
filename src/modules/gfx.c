@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -33,8 +31,6 @@
 #include "modules/palette.h"
 #include "modules/tools.h"
 #include "widgets/editor.h"
-
-#endif
 
 /* static BITMAP *icons_pcx; */
 static BITMAP *gfx_bmps[GFX_BITMAP_COUNT];

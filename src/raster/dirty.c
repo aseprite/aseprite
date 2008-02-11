@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <string.h>
 
 #include "raster/algo.h"
@@ -27,8 +25,6 @@
 #include "raster/dirty.h"
 #include "raster/image.h"
 #include "raster/mask.h"
-
-#endif
 
 #define ADD_COLUMN()							\
   row->cols++;								\

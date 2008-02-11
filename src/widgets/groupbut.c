@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdarg.h>
 
 #include "jinete/jbox.h"
@@ -32,8 +30,6 @@
 
 #include "modules/gui.h"
 #include "widgets/groupbut.h"
-
-#endif
 
 static JWidget find_selected(JWidget widget);
 static int select_button(JWidget widget, int index);

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <assert.h>
 #include <allegro.h>
 
@@ -35,8 +33,6 @@
 #include "raster/brush.h"
 #include "util/boundary.h"
 #include "widgets/editor.h"
-
-#endif
 
 /**********************************************************************/
 /* drawing-cursor routines */

@@ -24,12 +24,8 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "raster/blend.h"
 #include "raster/image.h"
-
-#endif
 
 #ifdef USE_X86_INT_MULT
 #  undef INT_MULT

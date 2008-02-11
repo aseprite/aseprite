@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -32,8 +30,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-
-#endif
 
 static bool cmd_merge_down_layer_enabled(const char *argument)
 {

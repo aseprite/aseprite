@@ -18,16 +18,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
-
-#endif
 
 static void cmd_exit_execute(const char *argument)
 {

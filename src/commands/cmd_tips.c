@@ -18,14 +18,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
 #include "dialogs/tips.h"
-
-#endif
 
 static void cmd_tips_execute(const char *argument)
 {

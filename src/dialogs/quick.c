@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/keyboard.h>
 
 #include "core/app.h"
@@ -38,8 +36,6 @@
 #include "raster/undo.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
-
-#endif
 
 enum { ACTION_MOVE, ACTION_COPY, ACTION_SWAP };
 

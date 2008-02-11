@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
@@ -29,8 +27,6 @@
 #include "raster/sprite.h"
 #include "util/clipbrd.h"
 #include "util/misc.h"
-
-#endif
 
 static bool cmd_cut_enabled(const char *argument)
 {

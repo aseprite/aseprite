@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +30,6 @@
 #include "file/file.h"
 #include "raster/raster.h"
 #include "script/script.h"
-
-#endif
 
 #include "jpeglib.h"
 

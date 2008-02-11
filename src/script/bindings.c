@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/gfx.h>
 
 #include "jinete/jinete.h"
@@ -47,8 +45,6 @@
 #include "raster/raster.h"
 #include "script/bindings.h"
 #include "script/functions.h"
-
-#endif
 
 /* script objects types */
 enum {

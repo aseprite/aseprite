@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 #include <string.h>
 
@@ -29,8 +27,6 @@
 #include "core/cfg.h"
 #include "modules/gui.h"
 #include "modules/recent.h"
-
-#endif
 
 static int installed = FALSE;
 

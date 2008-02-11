@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -42,8 +40,6 @@
 #include "util/misc.h"
 #include "widgets/colbar.h"
 #include "widgets/colbut.h"
-
-#endif
 
 static JWidget button_color, slider_fuzziness, check_preview;
 

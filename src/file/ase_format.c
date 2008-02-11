@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 
 #include "jinete/jlist.h"
@@ -27,8 +25,6 @@
 /* #include "file/ase_format.h" */
 #include "file/file.h"
 #include "raster/raster.h"
-
-#endif
 
 #define ASE_FILE_MAGIC			0xA5E0
 #define ASE_FILE_FRAME_MAGIC		0xF1FA

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <stdio.h>
 #include <allegro.h>
 #if defined ALLEGRO_WINDOWS && defined MEMLEAK
@@ -31,8 +29,6 @@
 
 #include "commands/commands.h"
 #include "core/app.h"
-
-#endif
 
 static void cmd_refresh_execute(const char *argument)
 {

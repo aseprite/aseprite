@@ -18,16 +18,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jlist.h"
 
 #include "effect/colcurve.h"
 #include "effect/effect.h"
 #include "modules/palette.h"
 #include "raster/image.h"
-
-#endif
 
 static struct {
   Curve *curve;

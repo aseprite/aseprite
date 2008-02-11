@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -27,8 +25,6 @@
 #include "modules/sprites.h"
 /* #include "raster/sprite.h" */
 #include "dialogs/filmedit.h"
-
-#endif
 
 static bool cmd_film_editor_enabled(const char *argument)
 {

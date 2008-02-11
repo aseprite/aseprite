@@ -18,13 +18,9 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/sprites.h"
 #include "script/functions.h"
-
-#endif
 
 static bool cmd_flatten_layers_enabled(const char *argument)
 {

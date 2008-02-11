@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include <stdio.h>
 #include <string.h>
@@ -34,8 +32,6 @@
 #include "modules/tools.h"
 #include "raster/image.h"
 #include "util/filetoks.h"
-
-#endif
 
 /* TODO warning: this number could be dangerous for big filters */
 #define PRECISION          (256)

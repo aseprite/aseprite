@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "commands/commands.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -29,8 +27,6 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/misc.h"
-
-#endif
 
 static void do_flip(int horz);
 

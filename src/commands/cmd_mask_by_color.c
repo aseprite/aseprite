@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
 #include "dialogs/maskcol.h"
 #include "modules/sprites.h"
-
-#endif
 
 static bool cmd_mask_by_color_enabled(const char *argument)
 {

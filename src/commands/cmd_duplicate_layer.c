@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -30,8 +28,6 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-
-#endif
 
 static Layer *duplicate_layer(void);
 

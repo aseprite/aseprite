@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
@@ -32,8 +30,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/thmbnail.h"
-
-#endif
 
 #define THUMBNAIL_W	32
 #define THUMBNAIL_H	32

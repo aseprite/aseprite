@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/file.h>
 #include <allegro/unicode.h>
 #include <stdarg.h>
@@ -30,8 +28,6 @@
 
 #include "core/core.h"
 #include "core/dirs.h"
-
-#endif
 
 /* DOS and Windows needs "log" files (because their poor stderr support) */
 #if defined ALLEGRO_DOS || defined ALLEGRO_WINDOWS

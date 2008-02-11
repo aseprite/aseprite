@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include "console/console.h"
 #include "core/app.h"
 #include "core/core.h"
@@ -34,8 +32,6 @@
 #include "raster/undo.h"
 #include "script/functions.h"
 #include "util/celmove.h"
-
-#endif
 
 /* these variables indicate what cel to move (and the current_sprite
    frame indicates to where move it) */

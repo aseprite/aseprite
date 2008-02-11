@@ -18,16 +18,12 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/unicode.h>
 
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
 #include "modules/tools.h"
-
-#endif
 
 /* ======================== */
 /* brush_tool               */

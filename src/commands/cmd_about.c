@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -27,8 +25,6 @@
 #include "commands/commands.h"
 #include "core/core.h"
 #include "core/dirs.h"
-
-#endif
 
 static char *read_authors_txt(const char *filename);
 

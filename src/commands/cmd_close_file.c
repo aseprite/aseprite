@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 #include "jinete/jinete.h"
 
@@ -27,8 +25,6 @@
 #include "core/app.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
-
-#endif
 
 static bool close_current_sprite(void);
 

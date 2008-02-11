@@ -20,14 +20,10 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/color.h>
 
 #include "file/file.h"
 #include "raster/raster.h"
-
-#endif
 
 static bool load_BMP(FileOp *fop);
 static bool save_BMP(FileOp *fop);

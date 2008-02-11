@@ -18,15 +18,11 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro/gfx.h>
 #include <math.h>
 
 #include "raster/algo.h"
 #include "raster/dirty.h"
-
-#endif
 
 void algo_dirty(Dirty *dirty, void *data, AlgoHLine proc)
 {

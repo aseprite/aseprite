@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#ifndef USE_PRECOMPILED_HEADER
-
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -41,8 +39,6 @@
 #include "util/misc.h"
 #include "widgets/colbar.h"
 #include "widgets/colbut.h"
-
-#endif
 
 static JWidget font_button;
 
