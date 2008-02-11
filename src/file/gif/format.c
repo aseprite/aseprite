@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,6 +66,7 @@ read_palette (FILE * file, GIF_PALETTE *palette)
 static int lzw_read_pixel (int pos, unsigned char *data)
 {
     unsigned char *bitmap = data;
+    assert(pos >= 0);
     return bitmap[pos];
 }
 
@@ -73,6 +75,8 @@ static int lzw_read_pixel (int pos, unsigned char *data)
 static void lzw_write_pixel (int pos, int c, unsigned char *data)
 {
     unsigned char *bitmap = data;
+    assert(pos >= 0);
+    assert(c >= 0 && c <= 255);
     bitmap[pos] = c;
 }
 
@@ -272,6 +276,8 @@ load_object (FILE * file, long size, void (*progress) (void *, float), void *dp)
 		frame.yoff = fgetw (file);
 		w = fgetw (file);
 		h = fgetw (file);
+		if (w < 1 || h < 1)
+		    goto error;
 		bmp = calloc (w, h);
 		if (!bmp)
 		    goto error;
@@ -293,7 +299,8 @@ load_object (FILE * file, long size, void (*progress) (void *, float), void *dp)
 		if (i & 64)
 		    interlaced = 1;
 
-		if (LZW_decode (file, lzw_write_pixel, bmp))
+		if (ferror (file) ||
+		    LZW_decode (file, lzw_write_pixel, bmp))
 		    goto error;
 
 		if (interlaced)

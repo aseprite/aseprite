@@ -60,8 +60,8 @@ write_code (FILE * file, unsigned char *buf, int *bit_pos, int bit_size, int cod
 
 int
 LZW_decode (FILE * file,
-	    void (*write_pixel)(int pos, int code, unsigned char *data),
-	    unsigned char *data)
+            void (*write_pixel)(int pos, int code, unsigned char *data),
+            unsigned char *data)
 {
     unsigned char buf[256];
     int orig_bit_size;
@@ -98,12 +98,12 @@ LZW_decode (FILE * file,
 
     /* Expect to read clear code as first code here. */
     prev = read_code (file, buf, &bit_pos, bit_size);
-    if (prev == -1)
+    if (prev == -1 || ferror (file))
         return -1;
     do
     {
         code = read_code (file, buf, &bit_pos, bit_size);
-        if (code == -1)
+        if (code == -1 || ferror (file))
             return -1;
         if (code == clear_marker)
         {
@@ -126,9 +126,13 @@ LZW_decode (FILE * file,
 
         /* Output the code. */
         out_pos += codes[c].len;
+
         i = 0;
         do
         {
+            if (out_pos - i < 0)
+               return -1;
+
             write_pixel (out_pos - i, codes[c].c, data);
             if (codes[c].len)
                 c = codes[c].prefix;
@@ -171,7 +175,7 @@ LZW_decode (FILE * file,
 
 static int
 get_minimum_bitsize (int (*read_pixel)(int pos, unsigned char *data),
-		     int size, unsigned char *data)
+                     int size, unsigned char *data)
 {
     int i, max = 0, b = 2;
     for (i = 0; i < size; i++)
@@ -189,7 +193,7 @@ get_minimum_bitsize (int (*read_pixel)(int pos, unsigned char *data),
 
 void
 LZW_encode (FILE * file, int (*read_pixel)(int pos, unsigned char *data),
-	    int size, unsigned char *data)
+            int size, unsigned char *data)
 {
     unsigned char buf[256];
     int orig_bit_size;
