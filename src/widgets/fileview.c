@@ -76,7 +76,7 @@ static void fileview_make_selected_fileitem_visible(JWidget widget);
 static void fileview_regenerate_list(JWidget widget);
 static int fileview_get_selected_index(JWidget widget);
 static void fileview_select_index(JWidget widget, int index);
-static void fileview_selected_item_to_generate_thumbnail(JWidget widget);
+static void fileview_generate_preview_of_selected_item(JWidget widget);
 static void fileview_generate_all_thumbnails(JWidget widget);
 static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem);
 
@@ -168,6 +168,9 @@ void fileview_goup(JWidget widget)
   if (parent) {
     fileview_set_current_folder(widget, parent);
     fileview->selected = folder;
+
+    /* make the selected item visible */
+    fileview_make_selected_fileitem_visible(widget);
   }
 }
 
@@ -248,8 +251,6 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       BITMAP *thumbnail = NULL;
       int thumbnail_y;
 
-      jdraw_rectfill(widget->rc, makecol(255, 255, 255));
-
       /* rows */
       JI_LIST_FOR_EACH(fileview->list, link) {
 	fi = link->data;
@@ -261,7 +262,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	}
 	else {
 	  bgcolor = row ? makecol(240, 240, 240):
-			  makecol(255, 255, 255);
+			  ji_color_background();
 
 	  fgcolor =
 	    fileitem_is_folder(fi) &&
@@ -269,25 +270,55 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 					 ji_color_foreground();
 	}
 
-	rectfill(ji_screen,
-		 widget->rc->x1, y,
-		 widget->rc->x2-1, y+2+th+2-1,
-		 bgcolor);
-
 	x = widget->rc->x1+2;
 
 	if (fileitem_is_folder(fi)) {
+	  int icon_w = ji_font_text_len(widget->text_font, "[+]");
+	  int icon_h = ji_font_get_size(widget->text_font);
+
 	  jdraw_text(widget->text_font,
 		     "[+]", x, y+2,
-		     fgcolor, 0, FALSE);
+		     fgcolor, bgcolor, TRUE);
 
-	  x += ji_font_text_len(widget->text_font, "[+]")+2;
+	  /* background for the icon */
+	  rectfill_exclude(ji_screen,
+			   /* rectangle to fill */
+			   widget->rc->x1, y,
+			   x+icon_w+2-1, y+2+th+2-1,
+			   /* exclude where is the icon located */
+			   x, y+2,
+			   x+icon_w-1,
+			   y+2+icon_h-1,
+			   /* fill with the background color */
+			   bgcolor);
+
+	  x += icon_w+2;
+	}
+	else {
+	  /* background for the left side of the item */
+	  rectfill(ji_screen,
+		   widget->rc->x1, y,
+		   x-1, y+2+th+2-1,
+		   bgcolor);
 	}
 
 	/* item name */
 	jdraw_text(widget->text_font,
 		   fileitem_get_displayname(fi), x, y+2,
-		   fgcolor, 0, FALSE);
+		   fgcolor, bgcolor, TRUE);
+
+	/* background for the item name */
+	rectfill_exclude(ji_screen,
+			 /* rectangle to fill */
+			 x, y,
+			 widget->rc->x2-1, y+2+th+2-1,
+			 /* exclude where is the text located */
+			 x, y+2,
+			 x+ji_font_text_len(widget->text_font,
+					    fileitem_get_displayname(fi))-1,
+			 y+2+ji_font_get_size(widget->text_font)-1,
+			 /* fill with the background color */
+			 bgcolor);
 
 	/* thumbnail position */
 	if (fi == fileview->selected) {
@@ -299,6 +330,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	y += ih;
 	row ^= 1;
       }
+
+      if (y < widget->rc->y2-1)
+	rectfill(ji_screen,
+		 widget->rc->x1, y,
+		 widget->rc->x2-1, widget->rc->y2-1,
+		 ji_color_background());
 
       /* draw the thumbnail */
       if (thumbnail) {
@@ -350,7 +387,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	if (old_selected != fileview->selected) {
-	  fileview_selected_item_to_generate_thumbnail(widget);
+	  fileview_generate_preview_of_selected_item(widget);
 
 	  jwidget_dirty(widget);
 	  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
@@ -611,12 +648,12 @@ static void fileview_select_index(JWidget widget, int index)
     jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_SELECTED);
   }
 
-  fileview_selected_item_to_generate_thumbnail(widget);
+  fileview_generate_preview_of_selected_item(widget);
 }
 
 /* puts the selected file-item as the next item to be processed by the
    round-robin that generate thumbnails */
-static void fileview_selected_item_to_generate_thumbnail(JWidget widget)
+static void fileview_generate_preview_of_selected_item(JWidget widget)
 {
   FileView *fileview = fileview_data(widget);
 
