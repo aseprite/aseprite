@@ -17,14 +17,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
- 
-/*
- * This code can be used to read and write FLI movies. It is currently
- * only used for the GIMP fli plug-in, but it can be used for other
- * programs, too.
- */
 
-/* Modified by David A. Capello to use with ASE.
+/* Modified by David A. Capello to use with ASE (2001-2008).
    See ../README.txt for more information
  */
  
@@ -32,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gfli.h"
+#include "fli.h"
 
 /*
  * To avoid endian-problems I wrote these functions:

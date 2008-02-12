@@ -10,7 +10,6 @@ CFLAGS += -Wall -I. -Isrc -Ithird_party \
 	  -I$(LIBFREETYPE_DIR)/include \
           -I$(LIBLUA_DIR)/include \
 	  -I$(LIBJPEG_DIR) \
-	  -I$(LIBGFLI_DIR) \
 	  -I$(LIBPNG_DIR) \
 	  -I$(ZLIB_DIR) \
 	  -Wno-deprecated-declarations \
@@ -60,10 +59,6 @@ $(LIBGD_LIB): $(LIBGD_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
-$(LIBGFLI_LIB): $(LIBGFLI_OBJS)
-	-rm -f $@
-	ar rs $@ $^
-
 $(LIBJPEG_LIB): $(LIBJPEG_OBJS)
 	-rm -f $@
 	ar rs $@ $^
@@ -91,6 +86,7 @@ VPATH = src					\
 	src/dialogs				\
 	src/effect				\
 	src/file				\
+	src/file/fli				\
 	src/file/gif				\
 	src/intl				\
 	src/jinete				\
@@ -119,7 +115,6 @@ VPATH = src					\
 	$(LIBFREETYPE_DIR)/src/type1		\
 	$(LIBFREETYPE_DIR)/src/winfonts		\
 	$(LIBGD_DIR)				\
-	$(LIBGFLI_DIR)				\
 	$(LIBJPEG_DIR)				\
 	$(LIBLUA_DIR)/src			\
 	$(LIBLUA_DIR)/src/lib			\
@@ -145,9 +140,6 @@ $(OBJ_DIR)/freetype.%$(OBJ): %.c
 
 $(OBJ_DIR)/gd.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -DNONDLL -DHAVE_CONFIG_H -o $@ -c $<
-
-$(OBJ_DIR)/gfli.%$(OBJ): %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/jpeg.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<

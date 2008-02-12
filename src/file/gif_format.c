@@ -30,11 +30,11 @@
 #include "jinete/jbase.h"
 
 #include "file/file.h"
+#include "file/gif/format.h"
 #include "modules/palette.h"
 #include "raster/raster.h"
 #include "util/autocrop.h"
 
-#include "gif/format.h"
 #include <stdio.h>
 #include <stdlib.h>
 

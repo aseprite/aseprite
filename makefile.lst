@@ -105,6 +105,7 @@ COMMON_SOURCES =					\
 	src/file/ase_format.c				\
 	src/file/bmp_format.c				\
 	src/file/file.c					\
+	src/file/fli/fli.c				\
 	src/file/fli_format.c				\
 	src/file/gif/format.c				\
 	src/file/gif/lzw.c				\
@@ -353,18 +354,6 @@ LIBGD_OBJS = $(addprefix $(OBJ_DIR)/gd.,			\
 		 $(notdir $(basename $(LIBGD_SOURCES)))))
 
 ######################################################################
-# GFli
-
-LIBGFLI_LIB = $(OBJ_DIR)/libgfli$(LIB)
-LIBGFLI_DIR = third_party/gfli
-LIBGFLI_SOURCES =				\
-	$(LIBGFLI_DIR)/gfli.c
-
-LIBGFLI_OBJS = $(addprefix $(OBJ_DIR)/gfli.,						\
-			   $(addsuffix $(OBJ),						\
-				       $(notdir $(basename $(LIBGFLI_SOURCES)))))
-
-######################################################################
 # Lua
 
 LIBLUA_LIB = $(OBJ_DIR)/liblua$(LIB)
@@ -510,7 +499,6 @@ ALL_OBJS =					\
 	$(ASE_OBJS)				\
 	$(LIBLUA_OBJS)				\
 	$(LIBFREETYPE_OBJS)			\
-	$(LIBGFLI_OBJS)				\
 	$(LIBART_OBJS)				\
 	$(LIBPNG_OBJS)				\
 	$(ZLIB_OBJS)
@@ -518,7 +506,6 @@ ALL_OBJS =					\
 THIRD_PARTY_LIBS =				\
 	$(LIBART_LIB)				\
 	$(LIBFREETYPE_LIB)			\
-	$(LIBGFLI_LIB)				\
 	$(LIBJPEG_LIB)				\
 	$(LIBLUA_LIB)				\
 	$(LIBPNG_LIB)				\

@@ -22,11 +22,9 @@
 #include <stdio.h>
 
 #include "file/file.h"
+#include "file/fli/fli.h"
 #include "modules/palette.h"
 #include "raster/raster.h"
-
-/* GFLI header file */
-#include "gfli.h"
 
 static bool load_FLI(FileOp *fop);
 static bool save_FLI(FileOp *fop);
