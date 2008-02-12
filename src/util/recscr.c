@@ -26,8 +26,7 @@
 #include "jinete/jsystem.h"
 
 #include "core/core.h"
-
-#include "gfli.h"
+#include "file/fli/fli.h"
 
 /* change this number if you want more fluid recorded animations */
 #define FRAMES_PER_SECOND   24

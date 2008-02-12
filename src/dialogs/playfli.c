@@ -26,10 +26,8 @@
 #include "jinete/jsystem.h"
 
 #include "core/core.h"
+#include "file/fli/fli.h"
 #include "modules/gui.h"
-
-/* GFLI header file */
-#include "gfli.h"
 
 static bool my_callback(void);
 static void my_play_fli(const char *filename, bool loop, bool fullscreen,
