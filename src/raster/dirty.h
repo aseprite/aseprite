@@ -77,14 +77,9 @@ void dirty_line(Dirty *dirty, int x1, int y1, int x2, int y2);
 void dirty_rect(Dirty *dirty, int x1, int y1, int x2, int y2);
 void dirty_rectfill(Dirty *dirty, int x1, int y1, int x2, int y2);
 
-/* void dirty_putpixel_thick(Dirty *dirty, int x, int y, int thickness); */
-/* void dirty_line_thick(Dirty *dirty, int x1, int y1, int x2, int y2, int thickness); */
-
 void dirty_putpixel_brush(Dirty *dirty, struct Brush *brush, int x, int y);
 void dirty_hline_brush(Dirty *dirty, struct Brush *brush, int x1, int y, int x2);
 void dirty_line_brush(Dirty *dirty, struct Brush *brush, int x1, int y1, int x2, int y2);
-
-/* void dirty_optimize(Dirty *dirty); */
 
 void dirty_get(Dirty *dirty);
 void dirty_put(Dirty *dirty);

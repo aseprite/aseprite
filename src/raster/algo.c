@@ -26,17 +26,26 @@
 
 void algo_dirty(Dirty *dirty, void *data, AlgoHLine proc)
 {
-  int u, v;
+  register struct DirtyRow *row;
+  register struct DirtyCol *col;
+  struct DirtyRow *rowend;
+  struct DirtyCol *colend;
 
-  for (v=0; v<dirty->rows; v++)
-    for (u=0; u<dirty->row[v].cols; u++)
-      if (dirty->row[v].col[u].flags & DIRTY_MUSTBE_UPDATED) {
-	(*proc)(dirty->row[v].col[u].x,
-		dirty->row[v].y,
-		dirty->row[v].col[u].x+dirty->row[v].col[u].w-1, data);
+  row = dirty->row;
+  rowend = row+dirty->rows;
+  for (; row<rowend; ++row) {
+    col = row->col;
+    colend = col+row->cols;
+    for (; col<colend; ++col) {
+      if (col->flags & DIRTY_MUSTBE_UPDATED) {
+	(*proc)(col->x,
+		row->y,
+		col->x+col->w-1, data);
 
-	dirty->row[v].col[u].flags ^= DIRTY_MUSTBE_UPDATED;
+	col->flags ^= DIRTY_MUSTBE_UPDATED;
       }
+    }
+  }
 }
 
 /* Algorightm from Allegro (allegro/src/gfx.c)

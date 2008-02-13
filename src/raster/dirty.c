@@ -69,7 +69,7 @@
 	      sizeof(struct DirtyCol) * (row->cols-2-u));		\
 									\
     row->cols--;							\
-    row->col = jrealloc(row->col, sizeof(struct DirtyCol) * row->cols); \
+    row->col = jrealloc(row->col, sizeof(struct DirtyCol) * row->cols);	\
     col = row->col+u;							\
   }
 
@@ -527,8 +527,7 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
 
 	/* inside the column */
 	if (x2 <= col->x+col->w-1) {
-	  col->data = jrealloc(col->data,
-				      DIRTY_LINE_SIZE(col->w));
+	  col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
 	  return;
 	}
 	/* extend this column to "x2" */
@@ -580,21 +579,6 @@ void dirty_rectfill(Dirty *dirty, int x1, int y1, int x2, int y2)
     dirty_hline(dirty, x1, y, x2);
 }
 
-/* void dirty_putpixel_thick (Dirty *dirty, int x, int y, int thickness) */
-/* { */
-/*   AlgoData data = { dirty, NULL, thickness }; */
-/*   algo_putthick (x, y, &data); */
-/* } */
-
-/* void dirty_line_thick (Dirty *dirty, int x1, int y1, int x2, int y2, int thickness) */
-/* { */
-/*   AlgoData data = { dirty, NULL, thickness }; */
-/*   algo_line (x1, y1, x2, y2, &data, */
-/* 	     (thickness == 1)? */
-/* 	     (AlgoPixel)algo_putpixel: */
-/* 	     (AlgoPixel)algo_putthick); */
-/* } */
-
 void dirty_putpixel_brush(Dirty *dirty, Brush *brush, int x, int y)
 {
   AlgoData data = { dirty, brush, 0 };
@@ -625,56 +609,6 @@ void dirty_line_brush(Dirty *dirty, Brush *brush, int x1, int y1, int x2, int y2
 	    (AlgoPixel)algo_putpixel:
 	    (AlgoPixel)algo_putbrush);
 }
-
-#if 0
-static void remove_column(Dirty *dirty, int u, int v)
-{
-  jfree(dirty->row[v].col[u].data);
-
-  memmove(dirty->row[v].col+u, dirty->row[v].col+u+1,
-	  sizeof(struct DirtyCol) * ((dirty->row[v].cols - u) - 1));
-
-  dirty->row[v].cols--;
-  dirty->row[v].col =
-    jrealloc(dirty->row[v].col,
-	     sizeof(struct DirtyCol) * dirty->row[v].cols);
-}
-
-/* joins all consecutive columns */
-void dirty_optimize(Dirty *dirty)
-{
-  int u, v, w;
-
-  for (v=0; v<dirty->rows; ++v) {
-    for (u=0; u<dirty->row[v].cols; ++u) {
-      for (w=0; w<dirty->row[v].cols; ++w) {
-        if (u == w)
-          continue;
-
-        if ((dirty->row[v].col[u].x+dirty->row[v].col[u].w == dirty->row[v].col[w].x)) {
-	  int oldw = dirty->row[v].col[u].w;
-
-          dirty->row[v].col[u].w += dirty->row[v].col[w].w;
-	  dirty->row[v].col[u].data =
-	    jrealloc(dirty->row[v].col[u].data,
-		     DIRTY_LINE_SIZE(dirty->row[v].col[u].w));
-
-	  memcpy(dirty->row[v].col[u].data + DIRTY_LINE_SIZE (oldw),
-		 dirty->row[v].col[w].data,
-		 DIRTY_LINE_SIZE(dirty->row[v].col[w].w));
-
-	  dirty->row[v].col[u].flags |= DIRTY_VALID_COLUMN;
-	  dirty->row[v].col[u].flags |= DIRTY_MUSTBE_UPDATED;
-
-          remove_column(dirty, w, v);
-          u = -1;
-          break;
-        }
-      }
-    }
-  }
-}
-#endif
 
 void dirty_get(Dirty *dirty)
 {
@@ -747,14 +681,6 @@ static void algo_putpixel(int x, int y, AlgoData *data)
 {
   dirty_putpixel(data->dirty, x, y);
 }
-
-/* static void algo_putthick (int x, int y, AlgoData *data) */
-/* { */
-/*   register int t1 = -data->thickness/2; */
-/*   register int t2 = t1+data->thickness-1; */
-
-/*   dirty_rectfill (data->dirty, x+t1, y+t1, x+t2, y+t2); */
-/* } */
 
 static void algo_putbrush(int x, int y, AlgoData *data)
 {
