@@ -1,5 +1,7 @@
 2008-02-12  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/raster/dirty.c: Optimized.
+
 	* src/widgets/fileview.c (fileview_msg_proc): Fixed flickering.
 
 2008-02-11  David A. Capello  <dacap@users.sourceforge.net>

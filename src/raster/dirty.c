@@ -26,54 +26,58 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 
-#define ADD_COLUMN()							\
-  row->cols++;								\
+#define ADD_COLUMN(row, col, u)						\
+  ++row->cols;								\
   row->col = jrealloc(row->col, sizeof(struct DirtyCol) * row->cols);	\
-									\
+  col = row->col+u;							\
   if (u < row->cols-1)							\
-    memmove(row->col+u+1, row->col+u,					\
+    memmove(col+1,							\
+	    col,							\
 	    sizeof(struct DirtyCol) * (row->cols-1-u));
 
-#define ADD_ROW()							\
-  dirty->rows++;							\
+#define ADD_ROW(dirty, row, v)						\
+  ++dirty->rows;							\
   dirty->row = jrealloc(dirty->row,					\
 			sizeof(struct DirtyRow) * dirty->rows);		\
-									\
+  row = dirty->row+v;							\
   if (v < dirty->rows-1)						\
-    memmove(dirty->row+v+1, dirty->row+v,				\
+    memmove(row+1,							\
+	    row,							\
 	    sizeof(struct DirtyRow) * (dirty->rows-1-v));
 
-#define RESTORE_IMAGE(u)			\
-  if (row->col[u].flags & DIRTY_VALID_COLUMN) {	\
-    row->col[u].flags ^= DIRTY_VALID_COLUMN;	\
+#define RESTORE_IMAGE(col)			\
+  if ((col)->flags & DIRTY_VALID_COLUMN) {	\
+    (col)->flags ^= DIRTY_VALID_COLUMN;		\
 						\
-    memcpy(row->col[u].ptr,			\
-	   row->col[u].data,			\
-	   DIRTY_LINE_SIZE(row->col[u].w));	\
+    memcpy((col)->ptr,				\
+	   (col)->data,				\
+	   DIRTY_LINE_SIZE((col)->w));		\
   }
 
-#define JOIN_WITH_NEXT()						\
+#define JOIN_WITH_NEXT(row, col, u)					\
   {									\
-    RESTORE_IMAGE(u+1);							\
+    RESTORE_IMAGE(col+1);						\
 									\
-    row->col[u].w += row->col[u+1].w;					\
+    col->w += (col+1)->w;						\
 									\
-    if (row->col[u+1].data)						\
-      jfree(row->col[u+1].data);					\
+    if ((col+1)->data)							\
+      jfree((col+1)->data);						\
 									\
     if (u+1 < row->cols-1)						\
-      memmove(row->col+u+1, row->col+u+2,				\
+      memmove(row->col+u+1,						\
+	      row->col+u+2,						\
 	      sizeof(struct DirtyCol) * (row->cols-2-u));		\
 									\
     row->cols--;							\
     row->col = jrealloc(row->col, sizeof(struct DirtyCol) * row->cols); \
+    col = row->col+u;							\
   }
 
 #define EAT_COLUMNS()							\
   to_x2 = x2;								\
 									\
   /* "eat" columns in range */						\
-  for (u2=u+1; u2<row->cols; u2++) {					\
+  for (u2=u+1; u2<row->cols; ++u2) {					\
     /* done (next column too far) */					\
     if (x2 < row->col[u2].x-1)						\
       break;								\
@@ -83,8 +87,8 @@
 									\
   /* "eat" columns */							\
   if (u2 > u) {								\
-    for (u3=u+1; u3<=u2; u3++) {					\
-      RESTORE_IMAGE(u3);						\
+    for (u3=u+1; u3<=u2; ++u3) {					\
+      RESTORE_IMAGE(row->col+u3);					\
       if (row->col[u3].data)						\
 	jfree(row->col[u3].data);					\
     }									\
@@ -92,12 +96,14 @@
     to_x2 = MAX(to_x2, row->col[u2].x+row->col[u2].w-1);		\
 									\
     if (u2 < row->cols-1)						\
-      memmove(row->col+u+1, row->col+u2+1,				\
+      memmove(row->col+u+1,						\
+	      row->col+u2+1,						\
 	      sizeof(struct DirtyCol) * (row->cols-u2-1));		\
 									\
     row->cols -= u2 - u;						\
     row->col = jrealloc(row->col,					\
 			sizeof(struct DirtyCol) * row->cols);		\
+    col = row->col+u;							\
   }									\
 									\
   row->col[u].w = to_x2 - row->col[u].x + 1;				\
@@ -116,9 +122,9 @@ static void algo_putpixel(int x, int y, AlgoData *data);
 static void algo_putbrush(int x, int y, AlgoData *data);
 
 static void *swap_hline(Image *image);
-static void swap_hline1(void *image, void *data, int x1, int x2);
-static void swap_hline2(void *image, void *data, int x1, int x2);
-static void swap_hline4(void *image, void *data, int x1, int x2);
+static void swap_hline32(void *image, void *data, int x1, int x2);
+static void swap_hline16(void *image, void *data, int x1, int x2);
+static void swap_hline8(void *image, void *data, int x1, int x2);
 
 Dirty *dirty_new(Image *image, int x1, int y1, int x2, int y2, int tiled)
 {
@@ -153,12 +159,12 @@ Dirty *dirty_new_copy(Dirty *src)
   dst->rows = src->rows;
   dst->row = jmalloc(sizeof (struct DirtyRow) * src->rows);
 
-  for (v=0; v<dst->rows; v++) {
+  for (v=0; v<dst->rows; ++v) {
     dst->row[v].y = src->row[v].y;
     dst->row[v].cols = src->row[v].cols;
     dst->row[v].col = jmalloc(sizeof(struct DirtyCol) * dst->row[v].cols);
 
-    for (u=0; u<dst->row[v].cols; u++) {
+    for (u=0; u<dst->row[v].cols; ++u) {
       dst->row[v].col[u].x = src->row[v].col[u].x;
       dst->row[v].col[u].w = src->row[v].col[u].w;
       dst->row[v].col[u].flags = src->row[v].col[u].flags;
@@ -166,7 +172,7 @@ Dirty *dirty_new_copy(Dirty *src)
 
       size = dst->row[v].col[u].w << IMAGE_SHIFT(dst->image);
 
-      dst->row[v].col[u].data = jmalloc (size);
+      dst->row[v].col[u].data = jmalloc(size);
 
       memcpy(dst->row[v].col[u].data, src->row[v].col[u].data, size);
     }
@@ -177,25 +183,32 @@ Dirty *dirty_new_copy(Dirty *src)
 
 void dirty_free(Dirty *dirty)
 {
-  int u, v;
+  register struct DirtyRow *row;
+  register struct DirtyCol *col;
+  struct DirtyRow *rowend;
+  struct DirtyCol *colend;
 
   if (dirty->row) {
-    for (v=0; v<dirty->rows; v++) {
-      for (u=0; u<dirty->row[v].cols; u++)
-	jfree(dirty->row[v].col[u].data);
+    row = dirty->row;
+    rowend = row+dirty->rows;
+    for (; row<rowend; ++row) {
+      col = row->col;
+      colend = col+row->cols;
+      for (; col<colend; ++col)
+	jfree(col->data);
 
-      jfree(dirty->row[v].col);
+      jfree(row->col);
     }
 
     jfree(dirty->row);
   }
-
   jfree(dirty);
 }
 
 void dirty_putpixel(Dirty *dirty, int x, int y)
 {
-  struct DirtyRow *row;
+  struct DirtyRow *row;		/* row=dirty->row+v */
+  struct DirtyCol *col;		/* col=row->col+u */
   int u, v;
 
   /* clip */
@@ -231,7 +244,7 @@ void dirty_putpixel(Dirty *dirty, int x, int y)
   /* check if the row exists */
   row = NULL;
 
-  for (v=0; v<dirty->rows; v++)
+  for (v=0; v<dirty->rows; ++v)
     if (dirty->row[v].y == y) {
       row = dirty->row+v;
       break;
@@ -241,64 +254,62 @@ void dirty_putpixel(Dirty *dirty, int x, int y)
 
   /* we must add a new row? */
   if (!row) {
-    ADD_ROW();
+    ADD_ROW(dirty, row, v);
 
-    dirty->row[v].y = y;
-    dirty->row[v].cols = 0;
-    dirty->row[v].col = NULL;
-
-    row = dirty->row+v;
+    row->y = y;
+    row->cols = 0;
+    row->col = NULL;
   }
 
   /* go column by column */
-  for (u=0; u<row->cols; u++) {
+  col = row->col;
+  for (u=0; u<row->cols; ++u, ++col) {
     /* inside a existent column */
-    if ((x >= row->col[u].x) && (x <= row->col[u].x+row->col[u].w-1))
+    if ((x >= col->x) && (x <= col->x+col->w-1))
       return;
     /* the pixel is to right of the column */
-    else if (x == row->col[u].x+row->col[u].w) {
-      RESTORE_IMAGE(u);
+    else if (x == col->x+col->w) {
+      RESTORE_IMAGE(col);
 
-      row->col[u].w++;
+      ++col->w;
 
       /* there is a left column? */
-      if (u < row->cols-1 && x+1 == row->col[u+1].x)
-	JOIN_WITH_NEXT();
+      if (u < row->cols-1 && x+1 == (col+1)->x)
+	JOIN_WITH_NEXT(row, col, u);
 
-      row->col[u].data = jrealloc(row->col[u].data,
-				  DIRTY_LINE_SIZE(row->col[u].w));
+      col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
       return;
     }
     /* the pixel is to left of the column */
-    else if (x+1 == row->col[u].x) {
-      RESTORE_IMAGE (u);
+    else if (x+1 == col->x) {
+      RESTORE_IMAGE(col);
 
-      row->col[u].x--;
-      row->col[u].w++;
-      row->col[u].data = jrealloc (row->col[u].data,
-				   DIRTY_LINE_SIZE (row->col[u].w));
+      --col->x;
+      ++col->w;
+      col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
 
-      row->col[u].ptr = IMAGE_ADDRESS (dirty->image, x, y);
+      col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
       return;
     }
     /* the next column is more too far */
-    else if (x < row->col[u].x)
+    else if (x < col->x)
       break;
   }
 
   /* add a new column */
-  ADD_COLUMN ();
+  ADD_COLUMN(row, col, u);
 
-  row->col[u].x = x;
-  row->col[u].w = 1;
-  row->col[u].flags = 0;
-  row->col[u].data = jmalloc (DIRTY_LINE_SIZE (1));
-  row->col[u].ptr = IMAGE_ADDRESS (dirty->image, x, y);
+  col->x = x;
+  col->w = 1;
+  col->flags = 0;
+  col->data = jmalloc(DIRTY_LINE_SIZE(1));
+  col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
 }
 
 void dirty_hline(Dirty *dirty, int x1, int y, int x2)
 {
-  struct DirtyRow *row;
+  struct DirtyRow *row;		/* row=dirty->row+v */
+  struct DirtyCol *col;		/* col=row->col+u */
   int x, u, v, w;
   int u2, u3, to_x2;
 
@@ -360,7 +371,7 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
       x2 = dirty->mask->x+dirty->mask->w-1;
 
     if (dirty->mask->bitmap) {
-      for (; x1<=x2; x1++)
+      for (; x1<=x2; ++x1)
 	if (dirty->mask->bitmap->method->getpixel(dirty->mask->bitmap,
 						  x1-dirty->mask->x,
 						  y-dirty->mask->y))
@@ -380,7 +391,7 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
   /* check if the row exists */
   row = NULL;
 
-  for (v=0; v<dirty->rows; v++)
+  for (v=0; v<dirty->rows; ++v)
     if (dirty->row[v].y == y) {
       row = dirty->row+v;
       break;
@@ -390,20 +401,18 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
 
   /* we must add a new row? */
   if (!row) {
-    ADD_ROW();
+    ADD_ROW(dirty, row, v);
 
-    dirty->row[v].y = y;
-    dirty->row[v].cols = 0;
-    dirty->row[v].col = NULL;
-
-    row = dirty->row+v;
+    row->y = y;
+    row->cols = 0;
+    row->col = NULL;
   }
 
   /**********************************************************************/
   /* HLINE for Dirty with mask */
   
   if (dirty->mask && dirty->mask->bitmap) {
-    for (x=x1; x<=x2; x++) {
+    for (x=x1; x<=x2; ++x) {
       if (!dirty->mask->bitmap->method->getpixel(dirty->mask->bitmap,
 						 x-dirty->mask->x,
 						 y-dirty->mask->y)) {
@@ -411,79 +420,78 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
       }
 
       /* check if the pixel is inside some column */
-      for (u=0; u<row->cols; u++) {
+      col = row->col;
+      for (u=0; u<row->cols; ++u, ++col) {
 	/* inside a existent column */
-	if ((x >= row->col[u].x) && (x <= row->col[u].x+row->col[u].w-1))
+	if ((x >= col->x) && (x <= col->x+col->w-1))
 	  goto done;
 	/* the pixel is in the right of the column */
-	else if (x == row->col[u].x+row->col[u].w) {
-	  RESTORE_IMAGE(u);
+	else if (x == col->x+col->w) {
+	  RESTORE_IMAGE(col);
 
-	  row->col[u].w++;
+	  ++col->w;
 
 	  /* there is a left column? */
-	  if (u < row->cols-1 && x == row->col[u+1].x-1) {
-	    if (row->col[u+1].flags & DIRTY_VALID_COLUMN) {
-	      row->col[u+1].flags ^= DIRTY_VALID_COLUMN;
+	  if (u < row->cols-1 && x == (col+1)->x-1) {
+	    if ((col+1)->flags & DIRTY_VALID_COLUMN) {
+	      (col+1)->flags ^= DIRTY_VALID_COLUMN;
 
-	      memcpy(row->col[u+1].ptr,
-		     row->col[u+1].data,
-		     DIRTY_LINE_SIZE(row->col[u+1].w));
+	      memcpy((col+1)->ptr,
+		     (col+1)->data,
+		     DIRTY_LINE_SIZE((col+1)->w));
 	    }
 
-	    row->col[u].w += row->col[u+1].w;
+	    col->w += (col+1)->w;
 
 	    /* remove the col[u+1] */
-	    if (row->col[u+1].data)
-	      jfree(row->col[u+1].data);
+	    if ((col+1)->data)
+	      jfree((col+1)->data);
 
 	    if (u+1 < row->cols-1)
-	      memmove(row->col+u+1, row->col+u+2,
+	      memmove(col+1, col+2,
 		      sizeof(struct DirtyCol) * (row->cols-2-u));
 
 	    row->cols--;
 	    row->col = jrealloc(row->col, sizeof(struct DirtyCol) * row->cols);
+	    col = row->col+u;
 	  }
 
-	  row->col[u].data = jrealloc(row->col[u].data,
-				      DIRTY_LINE_SIZE(row->col[u].w));
+	  col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
 	  goto done;
 	}
 	/* the pixel is in the left of the column */
-	else if (x == row->col[u].x-1) {
-	  if (row->col[u].flags & DIRTY_VALID_COLUMN) {
-	    row->col[u].flags ^= DIRTY_VALID_COLUMN;
+	else if (x == col->x-1) {
+	  if (col->flags & DIRTY_VALID_COLUMN) {
+	    col->flags ^= DIRTY_VALID_COLUMN;
 
-	    memcpy(row->col[u].ptr,
-		   row->col[u].data,
-		   DIRTY_LINE_SIZE(row->col[u].w));
+	    memcpy(col->ptr,
+		   col->data,
+		   DIRTY_LINE_SIZE(col->w));
 	  }
 
-	  row->col[u].x--;
-	  row->col[u].w++;
-	  row->col[u].data = jrealloc(row->col[u].data,
-				      DIRTY_LINE_SIZE(row->col[u].w));
-
-	  row->col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
+	  --col->x;
+	  ++col->w;
+	  col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
+	  col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
 	  goto done;
 	}
-	else if (x < row->col[u].x)
+	else if (x < col->x)
 	  break;
       }
 
       /* add a new column */
-      row->cols++;
+      ++row->cols;
       row->col = jrealloc(row->col, sizeof(struct DirtyCol) * row->cols);
+      col = row->col+u;
 
       if (u < row->cols-1)
-	memmove(row->col+u+1, row->col+u,
-		sizeof (struct DirtyCol) * (row->cols-1-u));
+	memmove(col+1, col, sizeof(struct DirtyCol) * (row->cols-1-u));
 
-      row->col[u].x = x;
-      row->col[u].w = 1;
-      row->col[u].flags = 0;
-      row->col[u].data = jmalloc(DIRTY_LINE_SIZE(1));
-      row->col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
+      col->x = x;
+      col->w = 1;
+      col->flags = 0;
+      col->data = jmalloc(DIRTY_LINE_SIZE(1));
+      col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
 
     done:;
     }
@@ -494,32 +502,33 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
 
   else {
     /* go column by column */
-    for (u=0; u<row->cols; u++) {
+    col = row->col;
+    for (u=0; u<row->cols; ++u, ++col) {
       /* the hline is to right of the column */
-      if ((x1 >= row->col[u].x) && (x1 <= row->col[u].x+row->col[u].w)) {
+      if ((x1 >= col->x) && (x1 <= col->x+col->w)) {
 	/* inside the column */
-	if (x2 <= row->col[u].x+row->col[u].w-1)
+	if (x2 <= col->x+col->w-1)
 	  return;
 	/* extend this column to "x2" */
 	else {
-	  RESTORE_IMAGE(u);
+	  RESTORE_IMAGE(col);
 	  EAT_COLUMNS();
 	  return;
 	}
       }
       /* the hline is to left of the column */
-      else if ((x1 < row->col[u].x) && (x2 >= row->col[u].x-1)) {
-	RESTORE_IMAGE(u);
+      else if ((x1 < col->x) && (x2 >= col->x-1)) {
+	RESTORE_IMAGE(col);
 
 	/* extend to left */
-	row->col[u].w += row->col[u].x - x1;
-	row->col[u].x = x1;
-	row->col[u].ptr = IMAGE_ADDRESS (dirty->image, x1, y);
+	col->w += col->x - x1;
+	col->x = x1;
+	col->ptr = IMAGE_ADDRESS(dirty->image, x1, y);
 
 	/* inside the column */
-	if (x2 <= row->col[u].x+row->col[u].w-1) {
-	  row->col[u].data = jrealloc(row->col[u].data,
-				      DIRTY_LINE_SIZE(row->col[u].w));
+	if (x2 <= col->x+col->w-1) {
+	  col->data = jrealloc(col->data,
+				      DIRTY_LINE_SIZE(col->w));
 	  return;
 	}
 	/* extend this column to "x2" */
@@ -529,18 +538,18 @@ void dirty_hline(Dirty *dirty, int x1, int y, int x2)
 	}
       }
       /* the next column is more too far */
-      else if (x2 < row->col[u].x-1)
+      else if (x2 < col->x-1)
 	break;
     }
 
     /* add a new column */
-    ADD_COLUMN();
+    ADD_COLUMN(row, col, u);
 
-    row->col[u].x = x1;
-    row->col[u].w = x2-x1+1;
-    row->col[u].flags = 0;
-    row->col[u].data = jmalloc(DIRTY_LINE_SIZE(row->col[u].w));
-    row->col[u].ptr = IMAGE_ADDRESS(dirty->image, x1, y);
+    col->x = x1;
+    col->w = x2-x1+1;
+    col->flags = 0;
+    col->data = jmalloc(DIRTY_LINE_SIZE(col->w));
+    col->ptr = IMAGE_ADDRESS(dirty->image, x1, y);
   }
 }
 
@@ -567,7 +576,7 @@ void dirty_rectfill(Dirty *dirty, int x1, int y1, int x2, int y2)
 {
   int y;
 
-  for (y=y1; y<=y2; y++)
+  for (y=y1; y<=y2; ++y)
     dirty_hline(dirty, x1, y, x2);
 }
 
@@ -601,10 +610,10 @@ void dirty_hline_brush(Dirty *dirty, struct Brush *brush, int x1, int y, int x2)
   int x;
 
   if (brush->size == 1)
-    for (x=x1; x<=x2; x++)
+    for (x=x1; x<=x2; ++x)
       algo_putpixel(x, y, &data);
   else
-    for (x=x1; x<=x2; x++)
+    for (x=x1; x<=x2; ++x)
       algo_putbrush(x, y, &data);
 }
 
@@ -617,62 +626,62 @@ void dirty_line_brush(Dirty *dirty, Brush *brush, int x1, int y1, int x2, int y2
 	    (AlgoPixel)algo_putbrush);
 }
 
-/* static void remove_column (Dirty *dirty, int u, int v) */
-/* { */
-/*   jfree (dirty->row[v].col[u].data); */
+#if 0
+static void remove_column(Dirty *dirty, int u, int v)
+{
+  jfree(dirty->row[v].col[u].data);
 
-/*   memmove (dirty->row[v].col+u, dirty->row[v].col+u+1, */
-/* 	   sizeof (struct DirtyCol) * ((dirty->row[v].cols - u) - 1)); */
+  memmove(dirty->row[v].col+u, dirty->row[v].col+u+1,
+	  sizeof(struct DirtyCol) * ((dirty->row[v].cols - u) - 1));
 
-/*   dirty->row[v].cols--; */
-/*   dirty->row[v].col = */
-/*     jrealloc (dirty->row[v].col, */
-/* 	       sizeof (struct DirtyCol) * dirty->row[v].cols); */
-/* } */
+  dirty->row[v].cols--;
+  dirty->row[v].col =
+    jrealloc(dirty->row[v].col,
+	     sizeof(struct DirtyCol) * dirty->row[v].cols);
+}
 
 /* joins all consecutive columns */
-/* void dirty_optimize (Dirty *dirty) */
-/* { */
-/*   int u, v, w; */
+void dirty_optimize(Dirty *dirty)
+{
+  int u, v, w;
 
-/*   for (v=0; v<dirty->rows; v++) { */
-/*     for (u=0; u<dirty->row[v].cols; u++) { */
-/*       for (w=0; w<dirty->row[v].cols; w++) { */
-/*         if (u == w) */
-/*           continue; */
+  for (v=0; v<dirty->rows; ++v) {
+    for (u=0; u<dirty->row[v].cols; ++u) {
+      for (w=0; w<dirty->row[v].cols; ++w) {
+        if (u == w)
+          continue;
 
-/*         if ((dirty->row[v].col[u].x+dirty->row[v].col[u].w == dirty->row[v].col[w].x)) { */
-/* 	  int oldw = dirty->row[v].col[u].w; */
+        if ((dirty->row[v].col[u].x+dirty->row[v].col[u].w == dirty->row[v].col[w].x)) {
+	  int oldw = dirty->row[v].col[u].w;
 
-/*           dirty->row[v].col[u].w += dirty->row[v].col[w].w; */
-/* 	  dirty->row[v].col[u].data = */
-/* 	    jrealloc (dirty->row[v].col[u].data, */
-/* 		       DIRTY_LINE_SIZE (dirty->row[v].col[u].w)); */
+          dirty->row[v].col[u].w += dirty->row[v].col[w].w;
+	  dirty->row[v].col[u].data =
+	    jrealloc(dirty->row[v].col[u].data,
+		     DIRTY_LINE_SIZE(dirty->row[v].col[u].w));
 
-/* 	  memcpy (dirty->row[v].col[u].data + DIRTY_LINE_SIZE (oldw), */
-/* 		  dirty->row[v].col[w].data, */
-/* 		  DIRTY_LINE_SIZE (dirty->row[v].col[w].w)); */
+	  memcpy(dirty->row[v].col[u].data + DIRTY_LINE_SIZE (oldw),
+		 dirty->row[v].col[w].data,
+		 DIRTY_LINE_SIZE(dirty->row[v].col[w].w));
 
-/* 	  dirty->row[v].col[u].flags |= DIRTY_VALID_COLUMN; */
-/* 	  dirty->row[v].col[u].flags |= DIRTY_MUSTBE_UPDATED; */
+	  dirty->row[v].col[u].flags |= DIRTY_VALID_COLUMN;
+	  dirty->row[v].col[u].flags |= DIRTY_MUSTBE_UPDATED;
 
-/*           remove_column (dirty, w, v); */
-/*           u = -1; */
-/*           break; */
-/*         } */
-/*       } */
-/*     } */
-/*   } */
-/* } */
+          remove_column(dirty, w, v);
+          u = -1;
+          break;
+        }
+      }
+    }
+  }
+}
+#endif
 
 void dirty_get(Dirty *dirty)
 {
-  int u, v, shift;
+  register int v, u, shift = IMAGE_SHIFT(dirty->image);
 
-  shift = IMAGE_SHIFT(dirty->image);
-
-  for (v=0; v<dirty->rows; v++)
-    for (u=0; u<dirty->row[v].cols; u++) {
+  for (v=0; v<dirty->rows; ++v)
+    for (u=0; u<dirty->row[v].cols; ++u) {
       if (!(dirty->row[v].col[u].flags & DIRTY_VALID_COLUMN)) {
 	memcpy(dirty->row[v].col[u].data,
 	       dirty->row[v].col[u].ptr,
@@ -686,39 +695,55 @@ void dirty_get(Dirty *dirty)
 
 void dirty_put(Dirty *dirty)
 {
-  int u, v, shift;
+  register struct DirtyRow *row;
+  register struct DirtyCol *col;
+  struct DirtyRow *rowend;
+  struct DirtyCol *colend;
+  int shift = IMAGE_SHIFT(dirty->image);
 
-  shift = IMAGE_SHIFT(dirty->image);
-
-  for (v=0; v<dirty->rows; v++)
-    for (u=0; u<dirty->row[v].cols; u++) {
-      if (dirty->row[v].col[u].flags & DIRTY_VALID_COLUMN) {
-	memcpy(dirty->row[v].col[u].ptr,
-	       dirty->row[v].col[u].data,
-	       dirty->row[v].col[u].w<<shift);
+  row = dirty->row;
+  rowend = row+dirty->rows;
+  for (; row<rowend; ++row) {
+    col = row->col;
+    colend = col+row->cols;
+    for (; col<colend; ++col) {
+      if (col->flags & DIRTY_VALID_COLUMN) {
+	memcpy(col->ptr,
+	       col->data,
+	       col->w<<shift);
       }
     }
+  }
 }
 
 void dirty_swap(Dirty *dirty)
 {
+  register struct DirtyRow *row;
+  register struct DirtyCol *col;
+  struct DirtyRow *rowend;
+  struct DirtyCol *colend;
   void (*proc)(void *image, void *data, int x1, int x2);
-  int u, v;
 
   proc = swap_hline(dirty->image);
 
-  for (v=0; v<dirty->rows; v++)
-    for (u=0; u<dirty->row[v].cols; u++) {
-      if (dirty->row[v].col[u].flags & DIRTY_VALID_COLUMN) {
-	(*proc)(dirty->row[v].col[u].ptr,
-		dirty->row[v].col[u].data,
-		dirty->row[v].col[u].x,
-		dirty->row[v].col[u].x+dirty->row[v].col[u].w-1);
+  row = dirty->row;
+  rowend = row+dirty->rows;
+  for (; row<rowend; ++row) {
+    col = row->col;
+    colend = col+row->cols;
+    for (; col<colend; ++col) {
+      if (col->flags & DIRTY_VALID_COLUMN) {
+	(*proc)(col->ptr,
+		col->data,
+		col->x,
+		col->x+col->w-1);
       }
     }
+  }
 }
 
-static void algo_putpixel (int x, int y, AlgoData *data)
+
+static void algo_putpixel(int x, int y, AlgoData *data)
 {
   dirty_putpixel(data->dirty, x, y);
 }
@@ -731,7 +756,7 @@ static void algo_putpixel (int x, int y, AlgoData *data)
 /*   dirty_rectfill (data->dirty, x+t1, y+t1, x+t2, y+t2); */
 /* } */
 
-static void algo_putbrush (int x, int y, AlgoData *data)
+static void algo_putbrush(int x, int y, AlgoData *data)
 {
   register struct BrushScanline *scanline = data->brush->scanline;
   register int c = data->brush->size/2;
@@ -739,70 +764,51 @@ static void algo_putbrush (int x, int y, AlgoData *data)
   x -= c;
   y -= c;
 
-  for (c=0; c<data->brush->size; c++) {
+  for (c=0; c<data->brush->size; ++c) {
     if (scanline->state)
       dirty_hline(data->dirty, x+scanline->x1, y+c, x+scanline->x2);
-    scanline++;
+    ++scanline;
   }
 }
 
-static void *swap_hline (Image *image)
+static void *swap_hline(Image *image)
 {
-  void *proc;
+  register void *proc;
   switch (image->imgtype) {
-    case IMAGE_RGB:       proc = swap_hline4; break;
-    case IMAGE_GRAYSCALE: proc = swap_hline2; break;
-    case IMAGE_INDEXED:   proc = swap_hline1; break;
+    case IMAGE_RGB:       proc = swap_hline32; break;
+    case IMAGE_GRAYSCALE: proc = swap_hline16; break;
+    case IMAGE_INDEXED:   proc = swap_hline8; break;
     default:
       proc = NULL;
   }
   return proc;
 }
 
-static void swap_hline1(void *image, void *data, int x1, int x2)
-{
-  ase_uint8 *address1 = image;
-  ase_uint8 *address2 = data;
-  register int c;
-  int x;
-
-  for (x=x1; x<=x2; x++) {
-    c = *address1;
-    *address1 = *address2;
-    *address2 = c;
-    address1++;
-    address2++;
+#define SWAP_HLINE(type)			\
+  register type *address1 = image;		\
+  register type *address2 = data;		\
+  register int c;				\
+  int x;					\
+						\
+  for (x=x1; x<=x2; ++x) {			\
+    c = *address1;				\
+    *address1 = *address2;			\
+    *address2 = c;				\
+    ++address1;					\
+    ++address2;					\
   }
+
+static void swap_hline32(void *image, void *data, int x1, int x2)
+{
+  SWAP_HLINE(ase_uint32);
 }
 
-static void swap_hline2(void *image, void *data, int x1, int x2)
+static void swap_hline16(void *image, void *data, int x1, int x2)
 {
-  ase_uint16 *address1 = image;
-  ase_uint16 *address2 = data;
-  register int c;
-  int x;
-
-  for (x=x1; x<=x2; x++) {
-    c = *address1;
-    *address1 = *address2;
-    *address2 = c;
-    address1++;
-    address2++;
-  }
+  SWAP_HLINE(ase_uint16);
 }
 
-static void swap_hline4(void *image, void *data, int x1, int x2)
+static void swap_hline8(void *image, void *data, int x1, int x2)
 {
-  ase_uint32 *address1 = image;
-  ase_uint32 *address2 = data;
-  register int c;
-  int x;
-
-  for (x=x1; x<=x2; x++) {
-    c = *address1;
-    *address1 = *address2;
-    *address2 = c;
-    address1++;
-    address2++;
-  }
+  SWAP_HLINE(ase_uint8);
 }
