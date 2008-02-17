@@ -162,8 +162,6 @@ char *ase_file_selector(const char *message,
     jwidget_set_min_size(window, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
     jwindow_remap(window);
     jwindow_center(window);
-
-    jwidget_add_tooltip_text(filetype, "hola\nchau");
   }
   else {
     fileview = jwidget_find_name(window, "fileview");
