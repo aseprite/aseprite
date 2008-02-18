@@ -56,6 +56,7 @@ static int tip_type(void)
   return type;
 }
 
+/* hook for the widget in which we added a tooltip */
 static bool tip_hook(JWidget widget, JMessage msg)
 {
   TipData *tip = jwidget_get_data(widget, tip_type());
@@ -77,29 +78,37 @@ static bool tip_hook(JWidget widget, JMessage msg)
       jmanager_start_timer(tip->timer_id);
       break;
 
+    case JM_CHAR:
+    case JM_KEYPRESSED:
+    case JM_BUTTONPRESSED:
     case JM_MOUSELEAVE:
-      if (tip->window)
+      if (tip->window) {
 	jwindow_close(tip->window, NULL);
+	jwidget_free(tip->window);
+	tip->window = NULL;
+      }
 
-      jmanager_stop_timer(tip->timer_id);
+      if (tip->timer_id >= 0)
+	jmanager_stop_timer(tip->timer_id);
       break;
 
     case JM_TIMER:
       if (msg->timer.timer_id == tip->timer_id) {
-	JWidget window = tip_window_new(tip->text);
-	int x = tip->widget->rc->x1;
-	int y = tip->widget->rc->y2;
-	int w = jrect_w(window->rc);
-	int h = jrect_h(window->rc);
+	if (!tip->window) {
+	  JWidget window = tip_window_new(tip->text);
+	  int x = tip->widget->rc->x1;
+	  int y = tip->widget->rc->y2;
+	  int w = jrect_w(window->rc);
+	  int h = jrect_h(window->rc);
 
-	tip->window = window;
+	  tip->window = window;
 
-	jwindow_remap(window);
-	jwindow_position(window,
-			 MID(0, x, JI_SCREEN_W-w),
-			 MID(0, y, JI_SCREEN_H-h));
-	jwindow_open(window);
-
+	  jwindow_remap(window);
+	  jwindow_position(window,
+			   MID(0, x, JI_SCREEN_W-w),
+			   MID(0, y, JI_SCREEN_H-h));
+	  jwindow_open(window);
+	}
 	jmanager_stop_timer(tip->timer_id);
       }
       break;
