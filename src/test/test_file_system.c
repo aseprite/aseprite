@@ -66,12 +66,16 @@ int main(int argc, char *argv[])
 #ifdef ALLEGRO_WINDOWS
   trace("*** Testing specific directories retrieval...\n");
   {
-    FileItem *c_drive;
+    FileItem *c_drive, *c_drive2;
     FileItem *my_pc;
 
     trace("*** Getting 'C:\\' using 'get_fileitem_from_path'...\n");
     c_drive = get_fileitem_from_path("C:\\");
     assert(c_drive != NULL);
+
+    trace("*** Getting 'C:\\' again\n");
+    c_drive2 = get_fileitem_from_path("C:\\");
+    assert(c_drive == c_drive2);
 
     trace("*** Displaying 'C:\\'...\n");
     display_fileitem(c_drive, 0, 0);
