@@ -72,6 +72,7 @@ char *ase_file_selector(const char *message,
 			const char *exts)
 {
   static JWidget window = NULL;
+  FileItem *start_folder = NULL;
   JWidget fileview, box, ok;
   JWidget goback, goforward, goup;
   JWidget filename_entry;
@@ -92,30 +93,35 @@ char *ase_file_selector(const char *message,
 
     /* get saved `path' */
     ustrcpy(path, get_config_string("FileSelect", "CurrentDirectory", ""));
-
-    /* if the `path' doesn't exist */
-    if ((!ugetat(path, 0)) || (!ji_dir_exists(path))) {
-      /* try to get current `path' */
+    start_folder = get_fileitem_from_path(path);
+    if (!start_folder) {
+      /* if the `path' doesn't exist */
+      if ((!ugetat(path, 0)) || (!ji_dir_exists(path))) {
+	/* try to get current `path' */
 #ifdef HAVE_DRIVES
-      int drive = _al_getdrive();
+	int drive = _al_getdrive();
 #else
-      int drive = 0;
+	int drive = 0;
 #endif
 
-      _al_getdcwd(drive, path, sizeof(path) - ucwidth(OTHER_PATH_SEPARATOR));
+	_al_getdcwd(drive, path, sizeof(path) - ucwidth(OTHER_PATH_SEPARATOR));
+      }
+
+      fix_filename_case(path);
+      fix_filename_slashes(path);
+      put_backslash(path);
+
+      ustrcat(path, buf);
+      ustrcpy(buf, path);
     }
-
-    fix_filename_case(path);
-    fix_filename_slashes(path);
-    put_backslash(path);
-
-    ustrcat(path, buf);
-    ustrcpy(buf, path);
   }
   else {
     /* remove the filename */
     *get_filename(buf) = 0;
   }
+
+  if (!start_folder)
+    start_folder = get_fileitem_from_path(buf);
   
   if (!window) {
     JWidget view, location;
@@ -145,7 +151,7 @@ char *ase_file_selector(const char *message,
     jbutton_add_command(goup, goup_command);
 
     view = jview_new();
-    fileview = fileview_new(get_fileitem_from_path(buf), exts);
+    fileview = fileview_new(start_folder, exts);
 
     jwidget_add_hook(fileview, -1, fileview_msg_proc, NULL);
     jwidget_add_hook(location, -1, location_msg_proc, NULL);
@@ -168,7 +174,7 @@ char *ase_file_selector(const char *message,
     filetype = jwidget_find_name(window, "filetype");
 
     jwidget_signal_off(fileview);
-    fileview_set_current_folder(fileview, get_fileitem_from_path(buf));
+    fileview_set_current_folder(fileview, start_folder);
     jwidget_signal_on(fileview);
   }
 
@@ -229,14 +235,8 @@ char *ase_file_selector(const char *message,
     result = jstrdup(buf);
 
     /* save the path in the configuration file */
-    {
-      char *name_dup = jstrdup(result);
-      char *s = get_filename(name_dup);
-      if (s)
-	*s = 0;
-      set_config_string("FileSelect", "CurrentDirectory", name_dup);
-      jfree(name_dup);
-    }
+    set_config_string("FileSelect", "CurrentDirectory",
+		      fileitem_get_keyname(folder));
   }
 
   /* TODO why this doesn't work if I remove this? */
