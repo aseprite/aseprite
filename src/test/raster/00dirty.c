@@ -22,9 +22,9 @@
 
 #include "raster/raster.h"
 
-static void draw_dirty (int x1, int y, int y2, void *data)
+static void draw_dirty(int x1, int y, int y2, void *data)
 {
-  image_hline (data, x1, y, y2, rand () % 256);
+  image_hline(data, x1, y, y2, rand() % 256);
 }
 
 int main (int argc, char *argv[])
@@ -39,15 +39,17 @@ int main (int argc, char *argv[])
 
   allegro_init();
   set_color_depth(8);
-  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 200, 0, 0);
+  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0);
   install_timer();
   install_keyboard();
   install_mouse();
 
-  bmp = create_bitmap(SCREEN_W, SCREEN_H);
+  gfxobj_init();
+
+  bmp = create_bitmap(320, 240);
   redraw = TRUE;
 
-  image = image_new(IMAGE_INDEXED, SCREEN_W, SCREEN_H);
+  image = image_new(IMAGE_INDEXED, bmp->w, bmp->h);
   dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
   brush1 = brush_new();
   brush2 = brush_new();
@@ -55,26 +57,26 @@ int main (int argc, char *argv[])
   brush_set_size(brush1, 1);
   brush_set_size(brush2, 8);
 
-  image_clear (image, 0);
+  image_clear(image, 0);
   for (c=128; c>0; c-=8)
     image_ellipse(image,
 		  image->w/2-c, image->h/2-c/2,
 		  image->w/2+c, image->h/2+c/2, c);
 
-  ox = mouse_x;
-  oy = mouse_y;
+  ox = mouse_x/2;
+  oy = mouse_y/2;
 
   show_mouse(screen);
 
   do {
     poll_mouse();
-    mx = mouse_x;
-    my = mouse_y;
+    mx = mouse_x/2;
+    my = mouse_y/2;
     mb = mouse_b;
     if (mx != ox || my != oy || mb != ob) {
       poll_mouse();
-      mx = mouse_x;
-      my = mouse_y;
+      mx = mouse_x/2;
+      my = mouse_y/2;
       mb = mouse_b;
 
       if (mb) {
@@ -96,7 +98,14 @@ int main (int argc, char *argv[])
       dirty_put(dirty);
       dirty_free(dirty);
       dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
-      while (key[KEY_P]);
+      while (key[KEY_R]);
+      redraw = TRUE;
+    }
+
+    /* with S swap */
+    if (key[KEY_S]) {
+      dirty_swap(dirty);
+      while (key[KEY_S]);
       redraw = TRUE;
     }
 
@@ -108,10 +117,12 @@ int main (int argc, char *argv[])
       image_to_allegro(image, bmp, 0, 0);
       text_mode(0);
       textout(bmp, font, "R:restore image", 0, 0, 15);
-      blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+      stretch_blit(bmp, screen, 0, 0, bmp->w, bmp->h, 0, 0, SCREEN_W, SCREEN_H);
       jmouse_show();
     }
   } while (!key[KEY_ESC]);
+
+  gfxobj_exit();
   return 0;
 }
 
