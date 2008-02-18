@@ -27,22 +27,24 @@
 #include <assert.h>
 #include <allegro.h>
 
+/* in Windows we can use PIDLS */
 #if defined ALLEGRO_WINDOWS
-#  define USE_PIDLS
+  /* uncomment this if you don't want to use PIDLs in windows */
+  #define USE_PIDLS
 #endif
 
 #if defined ALLEGRO_UNIX || defined ALLEGRO_DJGPP || defined ALLEGRO_MINGW32
-#  include <sys/stat.h>
+  #include <sys/stat.h>
 #endif
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MINGW32
-#  include <sys/unistd.h>
+  #include <sys/unistd.h>
 #endif
 
 #if defined USE_PIDLS
-#  define COBJMACROS
-#  include <winalleg.h>
-#  include <shlobj.h>
-#  include <shlwapi.h>
+  #define COBJMACROS
+  #include <winalleg.h>
+  #include <shlobj.h>
+  #include <shlwapi.h>
 #endif
 
 #include "jinete/jlist.h"
@@ -51,27 +53,36 @@
 #include "core/file_system.h"
 #include "util/hash.h"
 
-#ifdef USE_PIDLS		/* using Win32 Shell (PIDLs) */
+/********************************************************************/
 
-#define IS_FOLDER(fi)					\
-  (((fi)->attrib & SFGAO_FOLDER) == SFGAO_FOLDER)
+#ifdef USE_PIDLS
+  /* ..using Win32 Shell (PIDLs) */
 
-#else  /* using Allegro (for_each_file) */
+  #define IS_FOLDER(fi)					\
+    (((fi)->attrib & SFGAO_FOLDER) == SFGAO_FOLDER)
 
-#define IS_FOLDER(fi)				\
-  (((fi)->attrib & FA_DIREC) == FA_DIREC)
+  #define MYPC_CSLID  "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
 
-#if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
-#  define HAVE_DRIVES
 #else
-#  define CASE_SENSITIVE
+  /* ..using Allegro (for_each_file) */
+
+  #define IS_FOLDER(fi)					\
+    (((fi)->attrib & FA_DIREC) == FA_DIREC)
+
+  #if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
+    #define HAVE_DRIVES
+  #else
+    #define CASE_SENSITIVE
+  #endif
+
+  #ifndef FA_ALL
+    #define FA_ALL     FA_RDONLY | FA_DIREC | FA_ARCH | FA_HIDDEN | FA_SYSTEM
+  #endif
+  #define FA_TO_SHOW   FA_RDONLY | FA_DIREC | FA_ARCH | FA_SYSTEM
+
 #endif
 
-#ifndef FA_ALL
-#define FA_ALL       FA_RDONLY | FA_DIREC | FA_ARCH | FA_HIDDEN | FA_SYSTEM
-#endif
-#define FA_TO_SHOW   FA_RDONLY | FA_DIREC | FA_ARCH | FA_SYSTEM
-#endif
+/********************************************************************/
 
 #ifndef MAX_PATH
 #  define MAX_PATH 4096
@@ -80,6 +91,7 @@
 /* a position in the file-system */
 struct FileItem
 {
+  char *keyname;
   char *filename;
   char *displayname;
   FileItem *parent;
@@ -92,15 +104,16 @@ struct FileItem
 				   desktop is the root on Windows) */
   SFGAOF attrib;
 #else
-  char *keyname;
   int attrib;
 #endif
-  BITMAP *thumbnail;
 };
 
 /* the root of the file-system */
 static FileItem *rootitem = NULL;
 static HashTable *hash_fileitems = NULL;
+
+/* hash-table for thumbnails */
+static HashTable *hash_thumbnail = NULL;
 
 #ifdef USE_PIDLS
   static LPMALLOC shl_imalloc = NULL;
@@ -149,11 +162,12 @@ bool file_system_init(void)
 #endif
 
   hash_fileitems = hash_new(512);
+  hash_thumbnail = hash_new(512);
   get_root_fileitem();
 
   return TRUE;
 }
-
+ 
 /**
  * Shutdowns the file-system module.
  */
@@ -164,6 +178,9 @@ void file_system_exit(void)
 
   if (hash_fileitems)
     hash_free(hash_fileitems, NULL);
+
+  if (hash_thumbnail)
+    hash_free(hash_thumbnail, (void *)destroy_bitmap);
 
 #ifdef USE_PIDLS
   /* relase desktop IShellFolder interface */
@@ -239,6 +256,9 @@ FileItem *get_fileitem_from_path(const char *path)
     LPITEMIDLIST fullpidl = NULL;
     SFGAOF attrib = SFGAO_FOLDER;
 
+    if (*path == 0)
+      return get_root_fileitem();
+
     MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, path, ustrlen(path)+1, wStr, MAX_PATH);
     if (IShellFolder_ParseDisplayName(shl_idesktop,
 				      NULL, NULL,
@@ -254,6 +274,9 @@ FileItem *get_fileitem_from_path(const char *path)
 #else
   {
     char buf[MAX_PATH];
+
+    /* return HOME location */
+    
     ustrcpy(buf, path);
     remove_backslash(buf);
     fileitem = get_fileitem_by_path(buf, TRUE);
@@ -279,11 +302,18 @@ bool fileitem_is_browsable(FileItem *fileitem)
   return IS_FOLDER(fileitem)
     && (ustrcmp(get_extension(fileitem->filename), "zip") != 0)
     && (fileitem->filename[0] != ':' ||
-	/* My Computer = {20D04FE0-3AEA-1069-A2D8-08002B30309D} */
-	ustrcmp(fileitem->filename, "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") == 0);
+	ustrcmp(fileitem->filename, MYPC_CSLID) == 0);
 #else
   return IS_FOLDER(fileitem);
 #endif
+}
+
+const char *fileitem_get_keyname(FileItem *fileitem)
+{
+  assert(fileitem != NULL);
+  assert(fileitem->keyname != NULL);
+
+  return fileitem->keyname;
 }
 
 const char *fileitem_get_filename(FileItem *fileitem)
@@ -321,6 +351,7 @@ JList fileitem_get_children(FileItem *fileitem)
   if (!fileitem->children && IS_FOLDER(fileitem)) {
     fileitem->children = jlist_new();
 
+/*     printf("Loading files for %p (%s)\n", fileitem, fileitem->displayname); fflush(stdout); */
 #ifdef USE_PIDLS
     {
       IShellFolder *pFolder = NULL;
@@ -444,17 +475,22 @@ BITMAP *fileitem_get_thumbnail(FileItem *fileitem)
 {
   assert(fileitem != NULL);
 
-  return fileitem->thumbnail;
+  return hash_lookup(hash_thumbnail, fileitem->filename);
 }
 
 void fileitem_set_thumbnail(FileItem *fileitem, BITMAP *thumbnail)
 {
+  BITMAP *current_thumbnail;
+
   assert(fileitem != NULL);
 
-  if (fileitem->thumbnail)
-    destroy_bitmap(fileitem->thumbnail);
+  current_thumbnail = hash_lookup(hash_thumbnail, fileitem->filename);
+  if (current_thumbnail) {
+    destroy_bitmap(current_thumbnail);
+    hash_remove(hash_thumbnail, fileitem->filename);
+  }
 
-  fileitem->thumbnail = thumbnail;
+  hash_insert(hash_thumbnail, fileitem->filename, thumbnail);
 }
 
 static FileItem *fileitem_new(FileItem *parent)
@@ -463,6 +499,7 @@ static FileItem *fileitem_new(FileItem *parent)
   if (!fileitem)
     return NULL;
 
+  fileitem->keyname = NULL;
   fileitem->filename = NULL;
   fileitem->displayname = NULL;
   fileitem->parent = parent;
@@ -473,11 +510,9 @@ static FileItem *fileitem_new(FileItem *parent)
   fileitem->fullpidl = NULL;
   fileitem->attrib = 0;
 #else
-  fileitem->keyname = NULL;
   fileitem->attrib = 0;
 #endif
-  fileitem->thumbnail = NULL;
-  
+
   return fileitem;
 }
 
@@ -496,9 +531,6 @@ static void fileitem_free(FileItem *fileitem)
     free_pidl(fileitem->pidl);
     fileitem->pidl = NULL;
   }
-#else
-  if (fileitem->keyname)
-    jfree(fileitem->keyname);
 #endif
 
   /* this isn't neccessary (if fileitem_free is called with the
@@ -508,14 +540,14 @@ static void fileitem_free(FileItem *fileitem)
        jlist_remove(fileitem->parent->children, fileitem);
   */
 
+  if (fileitem->keyname)
+    jfree(fileitem->keyname);
+
   if (fileitem->filename)
     jfree(fileitem->filename);
 
   if (fileitem->displayname)
     jfree(fileitem->displayname);
-
-  if (fileitem->thumbnail)
-    destroy_bitmap(fileitem->thumbnail);
 
   if (fileitem->children) {
     JLink link, next;
@@ -556,7 +588,7 @@ static int fileitem_cmp(FileItem *fi1, FileItem *fi2)
   else if (IS_FOLDER(fi2))
     return 1;
 
-#ifdef USE_PIDLS
+#ifndef USE_PIDLS
   {
     int c1, c2;
     int x1, x2;
@@ -780,7 +812,8 @@ static void free_pidl(LPITEMIDLIST pidl)
 
 static char *get_key_for_pidl(LPITEMIDLIST pidl)
 {
-  char *key = jmalloc(sizeof(char) * (get_pidl_size(pidl)+1));
+#if 0
+  char *key = jmalloc(get_pidl_size(pidl)+1);
   UINT c, i = 0;
 
   while (pidl) {
@@ -795,6 +828,49 @@ static char *get_key_for_pidl(LPITEMIDLIST pidl)
   key[i] = 0;
 
   return key;
+#else
+  STRRET strret;
+  TCHAR pszName[MAX_PATH];
+  char key[4096];
+  int len;
+
+  ustrcpy(key, empty_string);
+
+  /* go pidl by pidl from the fullpidl to the root (desktop) */
+/*   printf("***\n"); fflush(stdout); */
+  pidl = clone_pidl(pidl);
+  while (pidl->mkid.cb > 0) {
+    if (IShellFolder_GetDisplayNameOf(shl_idesktop,
+				      pidl,
+				      SHGDN_INFOLDER | SHGDN_FORPARSING,
+				      &strret) == S_OK) {
+      StrRetToBuf(&strret, pidl, pszName, MAX_PATH);
+
+/*       printf("+ %s\n", pszName); fflush(stdout); */
+
+      len = ustrlen(pszName);
+      if (len > 0 && ustrncmp(key, pszName, len) != 0) {
+	if (*key) {
+	  if (pszName[len-1] != '\\') {
+	    memmove(key+len+1, key, ustrlen(key)+1);
+	    key[len] = '\\';
+	  }
+	  else
+	    memmove(key+len, key, ustrlen(key)+1);
+	}
+	else
+	  key[len] = 0;
+
+	memcpy(key, pszName, len);
+      }
+    }
+    remove_last_pidl(pidl);
+  }
+  free_pidl(pidl);
+
+/*   printf("=%s\n***\n", key); fflush(stdout); */
+  return jstrdup(key);
+#endif
 }
 
 static FileItem *get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_not)
@@ -839,13 +915,13 @@ static FileItem *get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
 
 static void put_fileitem(FileItem *fileitem)
 {
-  char *key;
-
   assert(fileitem->filename != NULL);
+  assert(fileitem->keyname == NULL);
 
-  key = get_key_for_pidl(fileitem->fullpidl);
-  hash_insert(hash_fileitems, key, fileitem);
-  jfree(key);
+  fileitem->keyname = get_key_for_pidl(fileitem->fullpidl);
+
+  /* insert this file-item in the hash-table */
+  hash_insert(hash_fileitems, fileitem->keyname, fileitem);
 }
 
 #else
