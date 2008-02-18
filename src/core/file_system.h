@@ -34,6 +34,7 @@ FileItem *get_fileitem_from_path(const char *path);
 bool fileitem_is_folder(FileItem *fileitem);
 bool fileitem_is_browsable(FileItem *fileitem);
 
+const char *fileitem_get_keyname(FileItem *fileitem);
 const char *fileitem_get_filename(FileItem *fileitem);
 const char *fileitem_get_displayname(FileItem *fileitem);
 
