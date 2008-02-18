@@ -366,7 +366,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	break;
 
       /* without capture */
-      if (!jwidget_has_capture (widget)) {
+      if (!jwidget_has_capture(widget)) {
 	if (!jmanager_get_capture())
 	  return setup_cursor(widget, msg->mouse.x, msg->mouse.y) != WINDOW_NONE;
 	else
