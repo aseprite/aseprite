@@ -41,7 +41,6 @@
 #include "widgets/statebar.h"
 
 #define MAX_THUMBNAIL_SIZE		128
-#define MAX_THREADS_TO_GEN_THUMBNAILS	1
 
 typedef struct FileView
 {
@@ -52,9 +51,9 @@ typedef struct FileView
   FileItem *selected;
   const char *exts;
 
-  /* round-robin thumbnail generation process */
-  JLink item_to_generate_thumbnail; /* current item in the round-robin */
-  int round_timer_id;
+  /* thumbnail generation process */
+  FileItem *item_to_generate_thumbnail;
+  int timer_id;
   JList monitors;	   /* list of monitors watching threads */
 } FileView;
 
@@ -77,7 +76,6 @@ static void fileview_regenerate_list(JWidget widget);
 static int fileview_get_selected_index(JWidget widget);
 static void fileview_select_index(JWidget widget, int index);
 static void fileview_generate_preview_of_selected_item(JWidget widget);
-static void fileview_generate_all_thumbnails(JWidget widget);
 static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem);
 
 static void openfile_bg(void *data);
@@ -109,7 +107,7 @@ JWidget fileview_new(FileItem *start_folder, const char *exts)
   fileview->exts = exts;
 
   fileview->item_to_generate_thumbnail = NULL;
-  fileview->round_timer_id = jmanager_add_timer(widget, 200);
+  fileview->timer_id = jmanager_add_timer(widget, 200);
   fileview->monitors = jlist_new();
 
   fileview_regenerate_list(widget);
@@ -180,7 +178,7 @@ void fileview_stop_threads(JWidget widget)
   JLink link, next;
 
   /* stop the generation of threads */
-  jmanager_stop_timer(fileview->round_timer_id);
+  jmanager_stop_timer(fileview->timer_id);
 
   /* join all threads (removing all monitors) */
   JI_LIST_FOR_EACH_SAFE(fileview->monitors, link, next) {
@@ -207,7 +205,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       assert(jlist_empty(fileview->monitors));
 
       jlist_free(fileview->monitors);
-      jmanager_remove_timer(fileview->round_timer_id);
+      jmanager_remove_timer(fileview->timer_id);
       jfree(fileview);
       break;
 
@@ -343,7 +341,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	y = thumbnail_y-thumbnail->h/2;
 	y = MID(vp->y1+2, y, vp->y2-3-thumbnail->h);
 
-	draw_sprite(ji_screen, thumbnail, x, y);
+	blit(thumbnail, ji_screen, 0, 0, x, y, thumbnail->w, thumbnail->h);
 	rect(ji_screen,
 	     x-1, y-1, x+thumbnail->w, y+thumbnail->h,
 	     makecol(0, 0, 0));
@@ -502,29 +500,14 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_TIMER:
-      /* is time to generate the next thumbnail in the round-robin? */
-      if (msg->timer.timer_id == fileview->round_timer_id &&
-	  jlist_length(fileview->monitors) < MAX_THREADS_TO_GEN_THUMBNAILS) {
-	JLink link = fileview->item_to_generate_thumbnail;
-	JLink start = link;
+      /* is time to generate the thumbnail? */
+      if (msg->timer.timer_id == fileview->timer_id) {
+	FileItem *fileitem;
 
-	while (link != fileview->list->end) {
-	  FileItem *fileitem = link->data;
-	  link = link->next != fileview->list->end ? link->next:
-						     link->next->next;
+	jmanager_stop_timer(fileview->timer_id);
 
-	  if (fileview_generate_thumbnail(widget, fileitem))
-	    break;
-
-	  if (link == start)
-	    break;
-	}
-
-	/* did we do all the round? */
-	if (link == start)
-	  jmanager_stop_timer(fileview->round_timer_id);
-
-	fileview->item_to_generate_thumbnail = link;
+	fileitem = fileview->item_to_generate_thumbnail;
+	fileview_generate_thumbnail(widget, fileitem);
       }
       break;
 
@@ -615,9 +598,6 @@ static void fileview_regenerate_list(JWidget widget)
   }
   else
     fileview->list = jlist_new();
-
-  /* generate all thumbnails */
-  fileview_generate_all_thumbnails(widget);
 }
 
 static int fileview_get_selected_index(JWidget widget)
@@ -659,19 +639,11 @@ static void fileview_generate_preview_of_selected_item(JWidget widget)
 
   if (fileview->selected &&
       !fileitem_is_folder(fileview->selected) &&
-      !fileitem_get_thumbnail(fileview->selected)) {
-    fileview->item_to_generate_thumbnail =
-      jlist_find(fileview->list, fileview->selected);
-  }
-}
-
-static void fileview_generate_all_thumbnails(JWidget widget)
-{
-  FileView *fileview = fileview_data(widget);
-
-  fileview->item_to_generate_thumbnail = jlist_first(fileview->list);
-
-  jmanager_start_timer(fileview->round_timer_id);
+      !fileitem_get_thumbnail(fileview->selected))
+    {
+      fileview->item_to_generate_thumbnail = fileview->selected;
+      jmanager_start_timer(fileview->timer_id);
+    }
 }
 
 /* returns true if it does some hard work like access to the disk */
@@ -707,6 +679,7 @@ static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
 				      monitor_free_thumbnail_generation, data);
 
       jlist_append(fileview_data(widget)->monitors, data->monitor);
+      jwidget_dirty(widget);
     }
     else {
       fop_free(fop);
