@@ -1413,21 +1413,15 @@ static void broadcast_key_msg(JWidget manager, JMessage msg)
     if (focus_widget)
       jmessage_broadcast_to_parents(msg, focus_widget);
 
-    /* send to top window */
-    if (!jlist_empty(manager->children))
-      jmessage_broadcast_to_children(msg, TOPWND(manager));
-
     /* send to more closest desktop (if the window didn't in foreground) */
     JI_LIST_FOR_EACH(manager->children, link) {
       window = (JWidget)link->data;
 
-      if (jwindow_is_foreground(window))
-	break;
+      jmessage_broadcast_to_children(msg, window);
 
-      if (jwindow_is_desktop(window)) {
-	jmessage_broadcast_to_children(msg, window);
+      if (jwindow_is_foreground(window) ||
+	  jwindow_is_desktop(window))
 	break;
-      }
     }
 
     /* finally, send the message to the manager, it'll know what to do */
