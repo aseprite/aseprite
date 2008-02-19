@@ -122,7 +122,7 @@ COMMON_SOURCES =					\
 	src/jinete/jbox.c				\
 	src/jinete/jbutton.c				\
 	src/jinete/jclipboard.c				\
-	src/jinete/jcombox.c				\
+	src/jinete/jcombobox.c				\
 	src/jinete/jdraw.c				\
 	src/jinete/jentry.c				\
 	src/jinete/jfile.c				\
