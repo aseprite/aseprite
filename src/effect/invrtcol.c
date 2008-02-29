@@ -82,7 +82,7 @@ void apply_invert_color2(Effect *effect)
 
     c = *(src_address++);
 
-    k = _graya_getk(c);
+    k = _graya_getv(c);
     a = _graya_geta(c);
 
     if (effect->target.k) k ^= 0xff;

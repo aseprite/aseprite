@@ -221,9 +221,6 @@ static void prepare(void)
     /* open console */
     console_open();
 
-    /* update variables */
-    update_global_script_variables();
-
     /* make a copy of the list of sprites to known which sprites where
        created with the script */
     sprites_of_users = jlist_copy(all_sprites);

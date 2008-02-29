@@ -5,11 +5,8 @@
 	<!-- file -->
 	<key command="new_file" shortcut="Ctrl+N" />
 	<key command="open_file" shortcut="Ctrl+O" />
-	<key command="open_file" shortcut="F3" />
 	<key command="save_file" shortcut="Ctrl+S" />
-	<key command="save_file" shortcut="F2" />
 	<key command="save_file_as" shortcut="Shift+Ctrl+S" />
-	<key command="save_file_as" shortcut="Shift+F2" />
 	<key command="close_file" shortcut="Ctrl+W" />
 	<key command="close_all_files" shortcut="Shift+Ctrl+W" />
 	<key command="screen_shot" shortcut="F12" />
@@ -26,16 +23,6 @@
 	<key command="flip_vertical" shortcut="Shift+V" />
 	<key command="replace_color" shortcut="Shift+R" />
 	<key command="invert_color" shortcut="Ctrl+I" />
-	<!-- view -->
-	<key command="refresh" shortcut="F5" />
-	<key command="advanced_mode" shortcut="A" />
-	<key command="make_unique_editor" shortcut="Ctrl+1" />
-	<key command="split_editor_vertically" shortcut="Ctrl+2" />
-	<key command="split_editor_horizontally" shortcut="Ctrl+3" />
-	<key command="close_editor" shortcut="Ctrl+4" />
-	<key command="preview_fit_to_screen" shortcut="F6" />
-	<key command="preview_normal" shortcut="F7" />
-	<key command="preview_tiled" shortcut="F8" />
 	<!-- sprite -->
 	<key command="sprite_properties" shortcut="Ctrl+P" />
 	<!-- layer -->
@@ -56,6 +43,18 @@
 	<key command="deselect_mask" shortcut="Ctrl+D" />
 	<key command="reselect_mask" shortcut="Shift+Ctrl+D" />
 	<key command="invert_mask" shortcut="Shift+Ctrl+I" />
+	<!-- view -->
+	<key command="refresh" shortcut="F5" />
+	<key command="advanced_mode" shortcut="A" />
+	<key command="make_unique_editor" shortcut="Ctrl+1" />
+	<key command="split_editor_vertically" shortcut="Ctrl+2" />
+	<key command="split_editor_horizontally" shortcut="Ctrl+3" />
+	<key command="close_editor" shortcut="Ctrl+4" />
+	<key command="preview_fit_to_screen" shortcut="F6" />
+	<key command="preview_normal" shortcut="F7" />
+	<key command="preview_tiled" shortcut="F8" />
+	<key command="show_grid" shortcut="G" />
+	<key command="snap_to_grid" shortcut="H" />
 	<!-- tools -->
 	<key command="configure_tools" shortcut="C" />
 	<key command="marker_tool" shortcut="M" />
@@ -63,13 +62,14 @@
 	<key command="pencil_tool" shortcut="P" />
 	<key command="brush_tool" shortcut="B" />
 	<key command="spray_tool" shortcut="S" />
-	<key command="floodfill_tool" shortcut="F" />
+ 	<key command="floodfill_tool" shortcut="F" />
 	<key command="line_tool" shortcut="L" />
-	<key command="bezier_tool" shortcut="V" />
+<!-- 	<key command="bezier_tool" shortcut="V" /> -->
 	<key command="rectangle_tool" shortcut="R" />
 	<key command="ellipse_tool" shortcut="E" />
+	<key command="eyedropper_tool" shortcut="I" />
+	<key command="exchange_colors" shortcut="X" />
 	<key command="film_editor" shortcut="Tab" />
-	<key command="palette_editor" shortcut="F4" />
 	<key command="convolution_matrix" shortcut="F9" />
 	<key command="color_curve" shortcut="Ctrl+M" />
 	<key command="color_curve" shortcut="F10" />
@@ -95,7 +95,6 @@
 		<item command="record_screen" name="Record Screen" />
 	    </menu>
 	    <separator />
-	    <item command="about" name="About" />
 	    <item command="exit" name="E&xit" />
 	</menu>
 	<menu name="&Edit">
@@ -112,25 +111,6 @@
 	    <separator />
 	    <item command="replace_color" name="R&eplace Color" />
 	    <item command="invert_color" name="&Invert" />
-	</menu>
-	<menu name="&View">
-	    <item command="refresh" name="&Refresh" />
-	    <item command="configure_screen" name="Configure &Screen" />
-	    <item command="advanced_mode" name="&Advanced Mode" />
-	    <menu name="&Editor">
-		<item command="make_unique_editor" name="Make &Unique" />
-		<separator />
-		<item command="split_editor_vertically" name="Split &Vertically" />
-		<item command="split_editor_horizontally" name="Split &Horizontally" />
-		<separator />
-		<item command="close_editor" name="&Close" />
-	    </menu>
-	    <separator />
-	    <menu name="&Preview">
-		<item command="preview_fit_to_screen" name="&Fit to screen" />
-		<item command="preview_normal" name="&Normal" />
-		<item command="preview_tiled" name="&Tiled" />
-	    </menu>
 	</menu>
 	<menu name="&Sprite">
 	    <item command="sprite_properties" name="&Properties" />
@@ -189,6 +169,30 @@
 	    <item command="load_mask" name="&Load from MSK file" />
 	    <item command="save_mask" name="&Save to MSK file" />
 	</menu>
+	<menu name="&View">
+	    <item command="advanced_mode" name="&Advanced Mode" />
+	    <menu name="&Editor">
+		<item command="make_unique_editor" name="Make &Unique" />
+		<separator />
+		<item command="split_editor_vertically" name="Split &Vertically" />
+		<item command="split_editor_horizontally" name="Split &Horizontally" />
+		<separator />
+		<item command="close_editor" name="&Close" />
+	    </menu>
+	    <separator />
+	    <menu name="&Grid">
+		<item command="show_grid" name="Show &Grid" />
+		<item command="snap_to_grid" name="&Snap to Grid" />
+	    </menu>
+	    <menu name="&Preview">
+		<item command="preview_fit_to_screen" name="&Fit to screen" />
+		<item command="preview_normal" name="&Normal" />
+		<item command="preview_tiled" name="&Tiled" />
+	    </menu>
+	    <separator />
+	    <item command="refresh" name="&Refresh" />
+	    <item command="configure_screen" name="Configure &Screen" />
+	</menu>
 	<menu name="&Tools">
 	    <menu name="&Drawing Tool">
 		<item command="configure_tools" name="&Configure" />
@@ -216,7 +220,6 @@
 		<item command="despeckle" name="&Despeckle (median filter)" />
 	    </menu>
 <!-- 	    <item command="draw_text" name="Draw &Text" /> -->
-<!-- 	    <item command="mapgen" name="&MapGen" /> -->
 <!-- 	    <menu name="Scripting"> -->
 <!-- 		<item command="run_script" name="Run &Script" /> -->
 <!-- 	    </menu> -->
@@ -224,8 +227,12 @@
 <!-- 		<item command="play_flic" name="Pla&y FLI/FLC File" /> -->
 <!-- 	    </menu> -->
 	    <separator />
-	    <item command="tips" name="T&ips" />
 	    <item command="options" name="&Options" />
+	</menu>
+	<menu name="&Help">
+	    <item command="tips" name="&Tips" />
+	    <separator />
+	    <item command="about" name="&About" />
 	</menu>
     </menu>
 

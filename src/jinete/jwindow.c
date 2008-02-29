@@ -67,7 +67,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg);
 static void window_request_size(JWidget widget, int *w, int *h);
 static void window_set_position(JWidget widget, JRect rect);
 
-static int setup_cursor(JWidget widget, int x, int y);
+static int get_action(JWidget widget, int x, int y);
 static void limit_size(JWidget widget, int *w, int *h);
 static void move_window(JWidget widget, JRect rect, bool use_blit);
 static void displace_widgets(JWidget widget, int x, int y);
@@ -332,8 +332,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 
       press_x = msg->mouse.x;
       press_y = msg->mouse.y;
-      window_action = setup_cursor(widget, press_x, press_y);
-
+      window_action = get_action(widget, press_x, press_y);
       if (window_action != WINDOW_NONE) {
 	jwidget_hard_capture_mouse(widget);
 	return TRUE;
@@ -357,23 +356,12 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_MOUSELEAVE:
-      setup_cursor(widget, msg->mouse.x, msg->mouse.y);
-      break;
-
     case JM_MOTION:
       if (!window->is_moveable)
 	break;
 
-      /* without capture */
-      if (!jwidget_has_capture(widget)) {
-	if (!jmanager_get_capture())
-	  return setup_cursor(widget, msg->mouse.x, msg->mouse.y) != WINDOW_NONE;
-	else
-	  break;
-      }
-      /* with capture */
-      else {
+      /* does it have the mouse captured? */
+      if (jwidget_has_capture(widget)) {
 	/* reposition/resize */
 	if (window_action == WINDOW_MOVE) {
 	  int x = click_pos->x1 + (msg->mouse.x - press_x);
@@ -435,6 +423,42 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 /* 	} */
 /*       } */
       break;
+
+    case JM_SETCURSOR:
+      if (window->is_moveable) {
+	int action = get_action(widget,
+				msg->mouse.x,
+				msg->mouse.y);
+	int cursor = JI_CURSOR_NORMAL;
+
+	if (action == WINDOW_MOVE)
+	  cursor = MOTION_CURSOR;
+	else if (action & WINDOW_RESIZE_LEFT) {
+	  if (action & WINDOW_RESIZE_TOP)
+	    cursor = JI_CURSOR_SIZE_TL;
+	  else if (action & WINDOW_RESIZE_BOTTOM)
+	    cursor = JI_CURSOR_SIZE_BL;
+	  else
+	    cursor = JI_CURSOR_SIZE_L;
+	}
+	else if (action & WINDOW_RESIZE_RIGHT) {
+	  if (action & WINDOW_RESIZE_TOP)
+	    cursor = JI_CURSOR_SIZE_TR;
+	  else if (action & WINDOW_RESIZE_BOTTOM)
+	    cursor = JI_CURSOR_SIZE_BR;
+	  else
+	    cursor = JI_CURSOR_SIZE_R;
+	}
+	else if (action & WINDOW_RESIZE_TOP)
+	  cursor = JI_CURSOR_SIZE_T;
+	else if (action & WINDOW_RESIZE_BOTTOM)
+	  cursor = JI_CURSOR_SIZE_B;
+
+	jmouse_set_cursor(cursor);
+	return TRUE;
+      }
+      break;
+
   }
 
   return FALSE;
@@ -500,18 +524,16 @@ static void window_set_position(JWidget widget, JRect rect)
   jrect_free(cpos);
 }
 
-static int setup_cursor(JWidget widget, int x, int y)
+static int get_action(JWidget widget, int x, int y)
 {
   Window *window = jwidget_get_data(widget, JI_WINDOW);
   int action = WINDOW_NONE;
-  int cursor;
   JRect pos;
   JRect cpos;
 
   if (!window->is_moveable)
     return action;
 
-  cursor = JI_CURSOR_NORMAL;
   pos = jwidget_get_rect(widget);
   cpos = jwidget_get_child_rect(widget);
 
@@ -523,7 +545,6 @@ static int setup_cursor(JWidget widget, int x, int y)
 	   (y < cpos->y1))
 	  || (key_shifts & KB_ALT_FLAG))) {
     action = WINDOW_MOVE;
-    cursor = MOTION_CURSOR;
   }
   /* resize */
   else if (window->is_sizeable) {
@@ -532,12 +553,7 @@ static int setup_cursor(JWidget widget, int x, int y)
       action |= WINDOW_RESIZE_LEFT;
       /* top */
       if ((y >= pos->y1) && (y < cpos->y1)) {
-#if 1
 	action |= WINDOW_RESIZE_TOP;
-#else
-	action = WINDOW_MOVE;
-	cursor = MOTION_CURSOR;
-#endif
       }
       /* bottom */
       else if ((y > cpos->y2-1) && (y <= pos->y2-1))
@@ -545,7 +561,6 @@ static int setup_cursor(JWidget widget, int x, int y)
     }
     /* top *****************************************/
     else if ((y >= pos->y1) && (y < cpos->y1)) {
-#if 1
       action |= WINDOW_RESIZE_TOP;
       /* left */
       if ((x >= pos->x1) && (x < cpos->x1))
@@ -553,22 +568,13 @@ static int setup_cursor(JWidget widget, int x, int y)
       /* right */
       else if ((x > cpos->x2-1) && (x <= pos->x2-1))
 	action |= WINDOW_RESIZE_RIGHT;
-#else
-      action = WINDOW_MOVE;
-      cursor = MOTION_CURSOR;
-#endif
     }
     /* right *****************************************/
     else if ((x > cpos->x2-1) && (x <= pos->x2-1)) {
       action |= WINDOW_RESIZE_RIGHT;
       /* top */
       if ((y >= pos->y1) && (y < cpos->y1)) {
-#if 1
 	action |= WINDOW_RESIZE_TOP;
-#else
-	action = WINDOW_MOVE;
-	cursor = MOTION_CURSOR;
-#endif
       }
       /* bottom */
       else if ((y > cpos->y2-1) && (y <= pos->y2-1))
@@ -584,32 +590,7 @@ static int setup_cursor(JWidget widget, int x, int y)
       else if ((x > cpos->x2-1) && (x <= pos->x2-1))
 	action |= WINDOW_RESIZE_RIGHT;
     }
-
-    /* cursor */
-    if (action & WINDOW_RESIZE_LEFT) {
-      if (action & WINDOW_RESIZE_TOP)
-	cursor = JI_CURSOR_SIZE_TL;
-      else if (action & WINDOW_RESIZE_BOTTOM)
-	cursor = JI_CURSOR_SIZE_BL;
-      else
-	cursor = JI_CURSOR_SIZE_L;
-    }
-    else if (action & WINDOW_RESIZE_RIGHT) {
-      if (action & WINDOW_RESIZE_TOP)
-	cursor = JI_CURSOR_SIZE_TR;
-      else if (action & WINDOW_RESIZE_BOTTOM)
-	cursor = JI_CURSOR_SIZE_BR;
-      else
-	cursor = JI_CURSOR_SIZE_R;
-    }
-    else if (action & WINDOW_RESIZE_TOP)
-      cursor = JI_CURSOR_SIZE_T;
-    else if (action & WINDOW_RESIZE_BOTTOM)
-      cursor = JI_CURSOR_SIZE_B;
   }
-
-  if (jmouse_get_cursor() != cursor)
-    jmouse_set_cursor(cursor);
 
   jrect_free(pos);
   jrect_free(cpos);
@@ -632,7 +613,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 {
 #define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
 
-  JRegion old_reg;
+  JWidget manager = jwidget_get_manager(widget);
   JRegion old_drawable_region;
   JRegion new_drawable_region;
   JRegion manager_refresh_region;
@@ -641,51 +622,70 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   JRect man_pos;
   JMessage msg;
 
-  jmanager_dispatch_messages(ji_get_default_manager());
+  jmanager_dispatch_messages(manager);
 
+  /* get the window's current position */
   old_pos = jrect_new_copy(widget->rc);
-  man_pos = jwidget_get_rect(jwidget_get_manager(widget));
-  
+
+  /* get the manager's current position */
+  man_pos = jwidget_get_rect(manager);
+
+  /* sent a JM_WINMOVE message to the window */
   msg = jmessage_new(JM_WINMOVE);
-  jmessage_broadcast_to_children(msg, widget);
+  jmessage_add_dest(msg, widget);
   jmanager_enqueue_message(msg);
 
-  old_reg = jwidget_get_region(widget);
+  /* get the region & the drawable region of the window */
   old_drawable_region = jwidget_get_drawable_region(widget, FLAGS);
 
+  /* if the size of the window changes... */
   if (jrect_w(old_pos) != jrect_w(rect) ||
       jrect_h(old_pos) != jrect_h(rect)) {
+    /* we have to change the whole positions sending JM_SETPOS
+       messages... */
     window_set_position(widget, rect);
   }
   else {
+    /* we can just displace all the widgets
+       by a delta (new_position - old_position)... */
     displace_widgets(widget,
 		     rect->x1 - old_pos->x1,
 		     rect->y1 - old_pos->y1);
   }
 
+  /* get the new drawable region of the window (it's new because we
+     moved the window to "rect") */
   new_drawable_region = jwidget_get_drawable_region(widget, FLAGS);
 
+  /* create a new region to refresh the manager later */
   manager_refresh_region = jregion_new(NULL, 0);
+
+  /* create a new region to refresh the window later */
   window_refresh_region = jregion_new(NULL, 0);
+
+  /* first of all, we have to refresh the manager in the old window's
+     drawable region... */
   jregion_copy(manager_refresh_region, old_drawable_region);
 
-  /* redraw new position */
-/*   if (!use_blit || !jwindow_is_toplevel (widget)) */
+  /* ...but we have to substract the new window's drawable region (and
+     that is all for the manager's refresh region) */
+  jregion_subtract(manager_refresh_region, manager_refresh_region,
+		   new_drawable_region);
+
+  /* now we have to setup the window's refresh region... */
+
+  /* if "use_blit" isn't activated, we have to redraw the whole window
+     (sending JM_DRAW messages) in the new drawable region */
   if (!use_blit) {
     jregion_copy(window_refresh_region, new_drawable_region);
   }
-  /* try to blit new position from old position (to redraw the less
-     possible) */
+  /* if "use_blit" is activated, we can move the old drawable to the
+     new position (to redraw as little as possible) */
   else {
     JRegion reg1 = jregion_new(NULL, 0);
-    JRegion reg2 = jregion_new(widget->rc, 1);
     JRegion moveable_region = jregion_new(NULL, 0);
 
-    /* substract new window region */
-    jregion_subtract(manager_refresh_region, manager_refresh_region,
-		       new_drawable_region);
-
-    /* add a region to draw areas that were outside the screen */
+    /* add a region to draw areas which were outside of the screen */
     jregion_copy(reg1, new_drawable_region);
     jregion_translate(reg1,
 		      old_pos->x1 - widget->rc->x1,
@@ -694,8 +694,8 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 
     jregion_subtract(reg1, reg1, moveable_region);
     jregion_translate(reg1,
-			widget->rc->x1 - old_pos->x1,
-			widget->rc->y1 - old_pos->y1);
+		      widget->rc->x1 - old_pos->x1,
+		      widget->rc->y1 - old_pos->y1);
     jregion_union(window_refresh_region, window_refresh_region, reg1);
 
     /* move the window's graphics */
@@ -710,15 +710,12 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
     jmouse_show();
 
     jregion_free(reg1);
-    jregion_free(reg2);
     jregion_free(moveable_region);
   }
 
-  jwidget_redraw_region(jwidget_get_manager(widget),
-			manager_refresh_region);
+  jwidget_redraw_region(manager, manager_refresh_region);
   jwidget_redraw_region(widget, window_refresh_region);
 
-  jregion_free(old_reg);
   jregion_free(old_drawable_region);
   jregion_free(new_drawable_region);
   jregion_free(manager_refresh_region);

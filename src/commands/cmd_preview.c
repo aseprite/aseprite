@@ -104,8 +104,8 @@ static void preview_sprite(int flags)
     bmp = create_bitmap(sprite->w, sprite->h);
     if (bmp) {
       /* print a informative text */
-      status_bar_set_text(app_get_status_bar(), 1, _("Rendering..."));
-      jwidget_flush_redraw(app_get_status_bar());
+      statusbar_set_text(app_get_statusbar(), 1, _("Rendering..."));
+      jwidget_flush_redraw(app_get_statusbar());
       jmanager_dispatch_messages(ji_get_default_manager());
 
       jmouse_set_cursor(JI_CURSOR_NULL);
@@ -157,8 +157,8 @@ static void preview_sprite(int flags)
 	    outh = (double)bmp->h * (double)scale;
 
 	    stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, 0, 0, outw, outh);
-	    rectfill_exclude(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1,
-			     0, 0, outw-1, outh-1, bg_color);
+	    jrectexclude(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1,
+			 0, 0, outw-1, outh-1, bg_color);
 	  }
 	  /* draw in normal size */
 	  else {
@@ -207,7 +207,7 @@ static void preview_sprite(int flags)
 	  Command *command;
 	  JMessage msg;
 
-	  msg = jmessage_new_key_related(JM_CHAR, readkey_value);
+	  msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
 	  command = command_get_by_key(msg);
 	  jmessage_free(msg);
 

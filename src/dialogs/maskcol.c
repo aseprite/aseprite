@@ -75,8 +75,8 @@ void dialogs_mask_color(void)
   box4 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
   label_color = jlabel_new(_("Color:"));
   button_color = color_button_new
-   (get_config_string("MaskColor", "Color",
-		      color_bar_get_color(app_get_color_bar(), 0)),
+   (get_config_color("MaskColor", "Color",
+		     colorbar_get_fg_color(app_get_colorbar())),
     sprite->imgtype);
   button_1 = jbutton_new("1");
   button_2 = jbutton_new("2");
@@ -103,10 +103,10 @@ void dialogs_mask_color(void)
   jwidget_expansive(box2, TRUE);
 
   jwidget_add_child(window, box1);
-  jwidget_add_childs(box1, box2, box3, check_preview, box4, NULL);
-  jwidget_add_childs(box2, label_color, button_color, button_1, button_2, NULL);
-  jwidget_add_childs(box3, label_fuzziness, slider_fuzziness, NULL);
-  jwidget_add_childs(box4, button_ok, button_cancel, NULL);
+  jwidget_add_children(box1, box2, box3, check_preview, box4, NULL);
+  jwidget_add_children(box2, label_color, button_color, button_1, button_2, NULL);
+  jwidget_add_children(box3, label_fuzziness, slider_fuzziness, NULL);
+  jwidget_add_children(box4, button_ok, button_cancel, NULL);
 
   /* default position */
   jwindow_remap(window);
@@ -133,8 +133,8 @@ void dialogs_mask_color(void)
     sprite_set_mask(sprite, mask);
     mask_free(mask);
 
-    set_config_string("MaskColor", "Color",
-		      color_button_get_color(button_color));
+    set_config_color("MaskColor", "Color",
+		     color_button_get_color(button_color));
 
     set_config_int("MaskColor", "Fuzziness",
 		   jslider_get_value(slider_fuzziness));
@@ -156,14 +156,14 @@ void dialogs_mask_color(void)
 static void button_1_command(JWidget widget)
 {
   color_button_set_color(button_color,
-			 color_bar_get_color(app_get_color_bar(), 0));
+			 colorbar_get_fg_color(app_get_colorbar()));
   mask_preview();
 }
 
 static void button_2_command(JWidget widget)
 {
   color_button_set_color(button_color,
-			 color_bar_get_color(app_get_color_bar(), 1));
+			 colorbar_get_bg_color(app_get_colorbar()));
   mask_preview();
 }
 
@@ -188,16 +188,15 @@ static int preview_change_hook(JWidget widget, int user_data)
 static Mask *gen_mask(void)
 {
   int xpos, ypos, color, fuzziness;
-  const char *color_text;
   Sprite *sprite;
   Image *image;
   Mask *mask;
 
   sprite = current_sprite;
-  image = GetImage2 (sprite, &xpos, &ypos, NULL);
+  image = GetImage2(sprite, &xpos, &ypos, NULL);
 
-  color_text = color_button_get_color(button_color);
-  color = get_color_for_image(sprite->imgtype, color_text);
+  color = get_color_for_image(sprite->imgtype,
+			      color_button_get_color(button_color));
   fuzziness = jslider_get_value(slider_fuzziness);
 
   mask = mask_new();

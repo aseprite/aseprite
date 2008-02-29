@@ -91,6 +91,21 @@ void get_config_rect(const char *section, const char *name, JRect rect)
 void set_config_rect(const char *section, const char *name, JRect rect)
 {
   char buf[128];
-  usprintf(buf, "%d %d %d %d", rect->x1, rect->y1, rect->x2, rect->y2);
+  uszprintf(buf, sizeof(buf), "%d %d %d %d",
+	    rect->x1, rect->y1, rect->x2, rect->y2);
+  set_config_string(section, name, buf);
+}
+
+color_t get_config_color(const char *section, const char *name, color_t value)
+{
+  char buf[128];
+  color_to_string(value, buf, sizeof(buf));
+  return string_to_color(get_config_string(section, name, buf));
+}
+
+void set_config_color(const char *section, const char *name, color_t value)
+{
+  char buf[128];
+  color_to_string(value, buf, sizeof(buf));
   set_config_string(section, name, buf);
 }

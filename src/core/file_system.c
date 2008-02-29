@@ -96,7 +96,8 @@ struct FileItem
   char *displayname;
   FileItem *parent;
   JList children;
-  int last_update;
+  unsigned int version;
+  bool removed;
 #ifdef USE_PIDLS
   LPITEMIDLIST pidl;		/* relative to parent */
   LPITEMIDLIST fullpidl;	/* relative to the Desktop folder
@@ -111,6 +112,7 @@ struct FileItem
 /* the root of the file-system */
 static FileItem *rootitem = NULL;
 static HashTable *hash_fileitems = NULL;
+static unsigned int current_file_system_version = 0;
 
 /* hash-table for thumbnails */
 static HashTable *hash_thumbnail = NULL;
@@ -161,6 +163,8 @@ bool file_system_init(void)
   SHGetDesktopFolder(&shl_idesktop);
 #endif
 
+  ++current_file_system_version;
+
   hash_fileitems = hash_new(512);
   hash_thumbnail = hash_new(512);
   get_root_fileitem();
@@ -190,6 +194,17 @@ void file_system_exit(void)
   IMalloc_Release(shl_imalloc);
   shl_imalloc = NULL;
 #endif
+}
+
+/**
+ * Marks all FileItems as deprecated to be refresh the next time they
+ * are queried through @ref fileitem_get_children.
+ *
+ * @see fileitem_get_children
+ */
+void file_system_refresh(void)
+{
+  ++current_file_system_version;
 }
 
 FileItem *get_root_fileitem(void)
@@ -348,10 +363,26 @@ JList fileitem_get_children(FileItem *fileitem)
 {
   assert(fileitem != NULL);
 
-  if (!fileitem->children && IS_FOLDER(fileitem)) {
-    fileitem->children = jlist_new();
+  /* is the file-item a folder? */
+  if (IS_FOLDER(fileitem) &&
+      /* if the children list is empty, or the file-system version
+	 change (it's like to say: the current fileitem->children list
+	 is outdated)...  */
+      (!fileitem->children || current_file_system_version > fileitem->version)) {
+    JLink link, next;
+    FileItem *child;
 
-/*     printf("Loading files for %p (%s)\n", fileitem, fileitem->displayname); fflush(stdout); */
+    /* we have to rebuild the childre list */
+    if (!fileitem->children)
+      fileitem->children = jlist_new();
+    else {
+      JI_LIST_FOR_EACH_SAFE(fileitem->children, link, next) {
+	child = (FileItem *)link->data;
+	child->removed = TRUE;
+      }
+    }
+
+    /* printf("Loading files for %p (%s)\n", fileitem, fileitem->displayname); fflush(stdout); */
 #ifdef USE_PIDLS
     {
       IShellFolder *pFolder = NULL;
@@ -393,7 +424,6 @@ JList fileitem_get_children(FileItem *fileitem)
 
 	    /* generate the FileItems */
 	    for (c=0; c<fetched; ++c) {
-	      FileItem *child;
 	      LPITEMIDLIST fullpidl = concat_pidl(fileitem->fullpidl,
 						  itempidl[c]);
 
@@ -442,6 +472,18 @@ JList fileitem_get_children(FileItem *fileitem)
 		    (int)fileitem);	/* TODO warning with 64bits */
     }
 #endif
+
+    /* check old file-items (maybe removed directories or file-items) */
+    JI_LIST_FOR_EACH_SAFE(fileitem->children, link, next) {
+      child = (FileItem *)link->data;
+      if (child->removed) {
+	jlist_delete_link(fileitem->children, link);
+	fileitem_free(child);
+      }
+    }
+
+    /* now this file-item is updated */
+    fileitem->version = current_file_system_version;
   }
 
   return fileitem->children;
@@ -504,7 +546,7 @@ static FileItem *fileitem_new(FileItem *parent)
   fileitem->displayname = NULL;
   fileitem->parent = parent;
   fileitem->children = NULL;
-  fileitem->last_update = -1;
+  fileitem->version = current_file_system_version;
 #ifdef USE_PIDLS
   fileitem->pidl = NULL;
   fileitem->fullpidl = NULL;
@@ -533,12 +575,8 @@ static void fileitem_free(FileItem *fileitem)
   }
 #endif
 
-  /* this isn't neccessary (if fileitem_free is called with the
-                            root-item at the first time)...
-
-     if (fileitem->parent)
-       jlist_remove(fileitem->parent->children, fileitem);
-  */
+  if (fileitem->parent)
+    jlist_remove(fileitem->parent->children, fileitem);
 
   if (fileitem->keyname)
     jfree(fileitem->keyname);
@@ -564,6 +602,14 @@ static void fileitem_insert_child_sorted(FileItem *fileitem, FileItem *child)
 {
   JLink link;
   bool inserted = FALSE;
+
+  /* this file-item wasn't removed from the last lookup */
+  child->removed = FALSE;
+
+  /* if the fileitem is already in the list we can go back */
+  if (jlist_find(fileitem->children, child) != fileitem->children->end)
+    return;
+
   JI_LIST_FOR_EACH(fileitem->children, link) {
     if (fileitem_cmp((FileItem *)link->data, child) > 0) {
       jlist_insert_before(fileitem->children, link, child);

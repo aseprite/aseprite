@@ -34,7 +34,7 @@
 static int group_change_signal(JWidget widget, int user_data);
 static void conf_command(JWidget widget);
 
-JWidget tool_bar_new(int align)
+JWidget toolbar_new(int align)
 {
 #define ICONS_LIST				\
   GFX_TOOL_MARKER,				\
@@ -87,7 +87,7 @@ JWidget tool_bar_new(int align)
   return box;
 }
 
-void tool_bar_update(JWidget widget)
+void toolbar_update(JWidget widget)
 {
   JWidget group = widget->user_data[0];
   int c;

@@ -82,8 +82,8 @@ void dialogs_draw_text(void)
 
   /* color button */
   color_but = color_button_new
-    (get_config_string("DrawText", "Color",
-		       color_bar_get_color(app_get_color_bar(), 0)),
+    (get_config_color("DrawText", "Color",
+		      colorbar_get_fg_color(app_get_colorbar())),
      current_sprite->imgtype);
 
   jwidget_add_child(color_box, color_but);
@@ -100,12 +100,12 @@ void dialogs_draw_text(void)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == button_ok) {
+    color_t color_with_type = color_button_get_color(color_but);
     const char *text = jwidget_get_text(entry_text);
-    const char *color_str = color_button_get_color(color_but);
     const char *size_str = jwidget_get_text(entry_size);
     const char *font_str = get_config_string("DrawText", "Font",
 					     "allegro.pcx");
-    int color, rgb_color;
+    int color;
     int size;
     FONT *f;
 
@@ -126,11 +126,11 @@ void dialogs_draw_text(void)
       ji_font_set_size(f, size);
 
       /* setup color */
-      color = get_color_for_image(current_sprite->imgtype, color_str);
-      rgb_color = get_color_for_image(IMAGE_RGB, color_str);
+      color = get_color_for_image(current_sprite->imgtype,
+				  color_with_type);
 
       /* update configuration */
-      set_config_string("DrawText", "Color", color_str);
+      set_config_color("DrawText", "Color", color_with_type);
       set_config_string("DrawText", "Text", text);
       set_config_int("DrawText", "Size", size);
 
@@ -222,7 +222,7 @@ static Image *render_text(FONT *f, const char *text, int color)
       break;
 
     case IMAGE_GRAYSCALE:
-      DO(ase_uint16, _graya(_graya_getk(color), getg32(c)));
+      DO(ase_uint16, _graya(_graya_getv(color), getg32(c)));
       break;
 
     case IMAGE_INDEXED:

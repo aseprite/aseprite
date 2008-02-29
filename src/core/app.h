@@ -33,13 +33,13 @@ bool app_realloc_recent_list(void);
 int app_get_current_image_type(void);
 
 JWidget app_get_top_window(void);
-JWidget app_get_menu_bar(void);
-JWidget app_get_status_bar(void);
-JWidget app_get_color_bar(void);
-JWidget app_get_tool_bar(void);
-JWidget app_get_tabs_bar(void);
+JWidget app_get_menubar(void);
+JWidget app_get_statusbar(void);
+JWidget app_get_colorbar(void);
+JWidget app_get_toolbar(void);
+JWidget app_get_tabsbar(void);
 
-void app_default_status_bar_message(void);
+void app_default_statusbar_message(void);
 
 #endif /* CORE_APP_H */
 

@@ -241,31 +241,35 @@ int jmouse_get_cursor(void)
 
 int jmouse_set_cursor(int type)
 {
-  JTheme theme = ji_get_theme();
-  int old = m_cursor;
-  m_cursor = type;
-
-  if (m_cursor == JI_CURSOR_NULL) {
-    show_mouse(NULL);
-    set_cursor(NULL, 0, 0);
-  }
+  if (m_cursor == type)
+    return type;
   else {
-    show_mouse(NULL);
+    JTheme theme = ji_get_theme();
+    int old = m_cursor;
+    m_cursor = type;
 
-    if (theme->set_cursor) {
-      BITMAP *sprite;
-      int x = 0;
-      int y = 0;
+    if (m_cursor == JI_CURSOR_NULL) {
+      show_mouse(NULL);
+      set_cursor(NULL, 0, 0);
+    }
+    else {
+      show_mouse(NULL);
 
-      sprite = (*theme->set_cursor)(type, &x, &y);
-      set_cursor(sprite, x, y);
+      if (theme->set_cursor) {
+	BITMAP *sprite;
+	int x = 0;
+	int y = 0;
+
+	sprite = (*theme->set_cursor)(type, &x, &y);
+	set_cursor(sprite, x, y);
+      }
+
+      if (ji_screen == screen)
+	show_mouse(ji_screen);
     }
 
-    if (ji_screen == screen)
-      show_mouse(ji_screen);
+    return old;
   }
-
-  return old;
 }
 
 /**

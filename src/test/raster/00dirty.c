@@ -112,13 +112,13 @@ int main (int argc, char *argv[])
     if (redraw) {
       redraw = FALSE;
 
-      jmouse_hide();
+      scare_mouse();
       clear(bmp);
       image_to_allegro(image, bmp, 0, 0);
       text_mode(0);
       textout(bmp, font, "R:restore image", 0, 0, 15);
       stretch_blit(bmp, screen, 0, 0, bmp->w, bmp->h, 0, 0, SCREEN_W, SCREEN_H);
-      jmouse_show();
+      unscare_mouse();
     }
   } while (!key[KEY_ESC]);
 

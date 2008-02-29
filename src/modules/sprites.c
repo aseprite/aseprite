@@ -127,7 +127,7 @@ void sprite_mount(Sprite *sprite)
 
   if (is_interactive()) {
     /* add the tab for this sprite */
-    tabs_append_tab(app_get_tabs_bar(),
+    tabs_append_tab(app_get_tabsbar(),
 		    get_filename(sprite->filename), sprite);
 
     /* rebuild the menu list of sprites */
@@ -147,7 +147,7 @@ void sprite_unmount(Sprite *sprite)
 
   if (is_interactive()) {
     /* remove this sprite from tabs */
-    tabs_remove_tab(app_get_tabs_bar(), sprite);
+    tabs_remove_tab(app_get_tabsbar(), sprite);
 
     /* rebuild the menu list of sprites */
     app_realloc_sprite_list();
@@ -166,10 +166,9 @@ void sprite_unmount(Sprite *sprite)
 void set_current_sprite(Sprite *sprite)
 {
   current_sprite = sprite;
-  update_global_script_variables();
 
   /* select the sprite in the tabs */
-  tabs_select_tab(app_get_tabs_bar(), sprite);
+  tabs_select_tab(app_get_tabsbar(), sprite);
 }
 
 void send_sprite_to_top(Sprite *sprite)

@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include "jinete/jlist.h"
@@ -28,6 +29,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "raster/undo.h"
 
 static bool has_cels(Layer *layer, int frame);
 
@@ -83,7 +85,8 @@ Layer *layer_new_copy(const Layer *layer)
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel_copy;
+      Cel *cel_copy, *cel;
+      Image *image_copy, *image;
       JLink link;
 
       layer_copy = layer_new(layer->sprite);
@@ -94,11 +97,31 @@ Layer *layer_new_copy(const Layer *layer)
 
       /* copy cels */
       JI_LIST_FOR_EACH(layer->cels, link) {
-	cel_copy = cel_new_copy(link->data);
+	cel = (Cel *)link->data;
+	cel_copy = cel_new_copy(cel);
 	if (!cel_copy) {
 	  layer_free(layer_copy);
 	  return NULL;
 	}
+
+	assert((cel->image >= 0) &&
+	       (cel->image < layer->sprite->stock->nimage));
+
+	image = layer->sprite->stock->image[cel->image];
+	assert(image != NULL);
+
+	image_copy = image_new_copy(image);
+
+	if (layer->sprite != NULL &&
+	    undo_is_enabled(layer->sprite->undo)) {
+	  undo_add_image(layer->sprite->undo,
+			 layer->sprite->stock,
+			 image_copy);
+	}
+
+	cel_copy->image = stock_add_image(layer->sprite->stock,
+					  image_copy);
+
 	layer_add_cel(layer_copy, cel_copy);
       }
       break;
@@ -316,19 +339,17 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frame)
       Image *src_image;
 
       if (cel) {
-	if ((cel->image >= 0) &&
-	    (cel->image < layer->sprite->stock->nimage))
-	  src_image = layer->sprite->stock->image[cel->image];
-	else
-	  src_image = NULL;
+	assert((cel->image >= 0) &&
+	       (cel->image < layer->sprite->stock->nimage));
 
-	if (src_image) {
-	  image_merge(image, src_image,
-		      cel->x + x,
-		      cel->y + y,
-		      MID (0, cel->opacity, 255),
-		      layer->blend_mode);
-	}
+	src_image = layer->sprite->stock->image[cel->image];
+	assert(src_image != NULL);
+
+	image_merge(image, src_image,
+		    cel->x + x,
+		    cel->y + y,
+		    MID (0, cel->opacity, 255),
+		    layer->blend_mode);
       }
       break;
     }

@@ -21,25 +21,19 @@
 
 #include "jinete/jbase.h"
 
-#define COLOR_BAR_COLORS   256
+#include "modules/color.h"
 
-typedef struct ColorBar
-{
-  JWidget widget;
-  int ncolor;
-  char *color[COLOR_BAR_COLORS];
-  int select[2];
-} ColorBar;
+JWidget colorbar_new(int align);
+int colorbar_type(void);
 
-JWidget color_bar_new (int align);
-int color_bar_type (void);
+void colorbar_set_size(JWidget colorbar, int size);
 
-ColorBar *color_bar_data (JWidget color_bar);
+color_t colorbar_get_fg_color(JWidget colorbar);
+color_t colorbar_get_bg_color(JWidget colorbar);
 
-void color_bar_set_size (JWidget color_bar, int size);
+void colorbar_set_fg_color(JWidget colorbar, color_t color);
+void colorbar_set_bg_color(JWidget colorbar, color_t color);
 
-const char *color_bar_get_color (JWidget color_bar, int num);
-void color_bar_set_color (JWidget color_bar, int num, const char *color, bool find);
-void color_bar_set_color_directly (JWidget color_bar, int index, const char *color);
+void colorbar_set_color(JWidget colorbar, int index, color_t color);
 
 #endif /* WIDGETS_COLBAR_H */

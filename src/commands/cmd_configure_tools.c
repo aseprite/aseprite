@@ -258,7 +258,7 @@ static int brush_type_change_hook(JWidget widget, int user_data)
   set_brush_type(type);
   jwidget_dirty((JWidget)user_data);
 
-  status_bar_set_text(app_get_status_bar(), 250,
+  statusbar_set_text(app_get_statusbar(), 250,
 		      "Brush type: %s",
 		      type == BRUSH_CIRCLE ? "Circle":
 		      type == BRUSH_SQUARE ? "Square":
@@ -273,7 +273,7 @@ static int brush_mode_change_hook(JWidget widget, int user_data)
 
   set_brush_mode(mode);
 
-  status_bar_set_text(app_get_status_bar(), 250,
+  statusbar_set_text(app_get_statusbar(), 250,
 		      "Brush mode: %s",
 		      mode == DRAWMODE_OPAQUE ? "Opaque":
 		      mode == DRAWMODE_GLASS ? "Glass":

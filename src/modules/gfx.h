@@ -112,8 +112,6 @@ void rectdiscard(void *data);
 void bevel_box(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel);
 void rectdotted(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int bg);
 void rectgrid(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h);
-void rectfill_exclude(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int ex1, int ey1, int ex2, int ey2, int color);
-void rectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom);
 
 void draw_emptyset_symbol(JRect rc, int color);
 

@@ -103,7 +103,8 @@ void _ji_free_all_widgets(void)
 
   if (nwidgets) {
     for (c=0; c<nwidgets; c++)
-      jfree(widgets[c]);
+      if (widgets[c] != NULL)
+	jfree(widgets[c]);
 
     jfree(widgets);
     widgets = NULL;
@@ -122,32 +123,19 @@ bool _ji_is_valid_widget(JWidget widget)
 
 void _ji_set_font_of_all_widgets(struct FONT *f)
 {
-  int c, l, t, r, b;
+  int c;
 
   for (c=0; c<nwidgets; c++)
-    if (_ji_is_valid_widget (widgets[c])) {
-      l = widgets[c]->border_width.l;
-      t = widgets[c]->border_width.t;
-      r = widgets[c]->border_width.r;
-      b = widgets[c]->border_width.b;
-
+    if (_ji_is_valid_widget(widgets[c])) {
       jwidget_set_font(widgets[c], f);
       jwidget_init_theme(widgets[c]);
-
-      widgets[c]->border_width.l = l;
-      widgets[c]->border_width.t = t;
-      widgets[c]->border_width.r = r;
-      widgets[c]->border_width.b = b;
     }
 
   for (c=0; c<nwidgets; c++)
-    if (_ji_is_valid_widget (widgets[c])) {
+    if (_ji_is_valid_widget(widgets[c])) {
       if (widgets[c]->type == JI_WINDOW)
 	jwindow_remap(widgets[c]);
     }
 
   jmanager_refresh_screen();
 }
-
-
-

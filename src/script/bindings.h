@@ -24,6 +24,4 @@
 void register_lua_object_metatable(void);
 void unregister_lua_object_metatable(void);
 
-void update_global_script_variables(void);
-
 #endif /* SCRIPT_BINDINGS_H */

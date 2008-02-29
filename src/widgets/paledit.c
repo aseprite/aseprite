@@ -348,7 +348,7 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
 				   &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus (widget)) {
 	/* other keys */
 	if ((palette_editor->color[1] >= 0) &&

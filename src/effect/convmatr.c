@@ -432,7 +432,7 @@ void apply_convolution_matrix2(Effect *effect)
 	 if (_graya_geta(color) == 0)
 	   div -= *mdata;
 	 else {
-	   k += _graya_getk(color) * (*mdata);
+	   k += _graya_getv(color) * (*mdata);
 	   a += _graya_geta(color) * (*mdata);
 	 }
 	 );
@@ -442,7 +442,7 @@ void apply_convolution_matrix2(Effect *effect)
 	k = MID(0, k, 255);
       }
       else
-	k = _graya_getk(color);
+	k = _graya_getv(color);
 
       if (effect->target.a) {
 	a = a / matrix->div + matrix->bias;

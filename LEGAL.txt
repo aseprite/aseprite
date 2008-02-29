@@ -3,8 +3,8 @@ LEGAL ISSUES
 ===================================
 
 - ASE is distributed under GPL license.
-- Allegro is giftware license (similar to MIT license).
 - Jinete is under BSD license.
+- Allegro is giftware license (similar to MIT license).
 - ALFONT is under LGPL terms.
 - quantize.c is copyright by Ben Davis (you need his authorization to
   use his code in your own program).

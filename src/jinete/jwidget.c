@@ -310,6 +310,16 @@ void jwidget_set_text(JWidget widget, const char *text)
 {
   assert_valid_widget(widget);
 
+  jwidget_set_text_soft(widget, text);
+
+  jwidget_emit_signal(widget, JI_SIGNAL_SET_TEXT);
+  jwidget_dirty(widget);
+}
+
+void jwidget_set_text_soft(JWidget widget, const char *text)
+{
+  assert_valid_widget(widget);
+
   if (text) {
     /* more space needed */
     if (!widget->text || widget->text_size < strlen (text)+1) {
@@ -323,9 +333,6 @@ void jwidget_set_text(JWidget widget, const char *text)
     if (widget->text_font)
       widget->text_size_pix = ji_font_text_len(widget->text_font,
 					       widget->text);
-
-    jwidget_emit_signal(widget, JI_SIGNAL_SET_TEXT);
-    jwidget_dirty(widget);
   }
   /* NULL text */
   else if (widget->text) {
@@ -356,6 +363,7 @@ void jwidget_set_font(JWidget widget, FONT *font)
   else
     widget->text_size_pix = 0;
 
+  jwidget_emit_signal(widget, JI_SIGNAL_SET_FONT);
   jwidget_dirty(widget);
 }
 
@@ -436,25 +444,7 @@ bool jwidget_is_focusrest(JWidget widget)
 void jwidget_dirty(JWidget widget)
 {
   assert_valid_widget(widget);
-
-#if 0
-  /* is visible? */
-  if (jwidget_is_visible (widget)) {
-    JMessage msg;
-
-    /* dirty it */
-    widget->flags |= JI_DIRTY;
-
-    /* dirty children */
-    msg = jmessage_new(JM_DIRTYCHILDREN);
-    jwidget_send_message(widget, msg);
-    jmessage_free(msg);
-
-    jwidget_emit_signal(widget, JI_SIGNAL_DIRTY);
-  }
-#else
   jwidget_invalidate(widget);
-#endif
 }
 
 void jwidget_show(JWidget widget)
@@ -626,7 +616,7 @@ void jwidget_add_child(JWidget widget, JWidget child)
   jwidget_emit_signal(widget, JI_SIGNAL_ADD_CHILD);
 }
 
-void jwidget_add_childs(JWidget widget, ...)
+void jwidget_add_children(JWidget widget, ...)
 {
   JWidget child;
   va_list ap;
@@ -635,7 +625,7 @@ void jwidget_add_childs(JWidget widget, ...)
 
   va_start(ap, widget);
 
-  while ((child = va_arg(ap, JWidget)))
+  while ((child=va_arg(ap, JWidget)) != NULL)
     jwidget_add_child(widget, child);
 
   va_end(ap);
@@ -791,6 +781,12 @@ void jwidget_request_size(JWidget widget, int *w, int *h)
   jmessage_free(msg);
 }
 
+void jwidget_relayout(JWidget widget)
+{
+  jwidget_set_rect(widget, widget->rc);
+  jwidget_dirty(widget);
+}
+
 /* gets the position of the widget */
 JRect jwidget_get_rect(JWidget widget)
 {
@@ -827,8 +823,8 @@ JRegion jwidget_get_region(JWidget widget)
 /* gets the region to be able to draw in */
 JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 {
+  JWidget window, manager, view, child;
   JRegion region, reg1, reg2, reg3;
-  JWidget window, manager, view;
   JList windows_list;
   JLink link;
   JRect cpos;
@@ -862,29 +858,32 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     }
   }
 
-  /* cut the areas where are children */
+  /* clip the areas where are children */
   if (!(flags & JI_GDR_USECHILDAREA) && !jlist_empty(widget->children)) {
     cpos = jwidget_get_child_rect(widget);
     reg1 = jregion_new(NULL, 0);
     reg2 = jregion_new(cpos, 1);
     JI_LIST_FOR_EACH(widget->children, link) {
-      reg3 = jwidget_get_region(link->data);
-      if (((JWidget)link->data)->flags & JI_DECORATIVE) {
-	jregion_reset(reg1, widget->rc);
-	jregion_intersect(reg1, reg1, reg3);
+      child = link->data;
+      if (jwidget_is_visible(child)) {
+	reg3 = jwidget_get_region(child);
+	if (child->flags & JI_DECORATIVE) {
+	  jregion_reset(reg1, widget->rc);
+	  jregion_intersect(reg1, reg1, reg3);
+	}
+	else {
+	  jregion_intersect(reg1, reg2, reg3);
+	}
+	jregion_subtract(region, region, reg1);
+	jregion_free(reg3);
       }
-      else {
-	jregion_intersect(reg1, reg2, reg3);
-      }
-      jregion_subtract(region, region, reg1);
-      jregion_free(reg3);
     }
     jregion_free(reg1);
     jregion_free(reg2);
     jrect_free(cpos);
   }
 
-  /* cut the parent area */
+  /* intersect with the parent area */
   if (!(widget->flags & JI_DECORATIVE)) {
     JWidget parent = widget->parent;
 
@@ -1411,7 +1410,11 @@ void jwidget_close_window(JWidget widget)
 
 /**
  * Captures the mouse to send the future JM_BUTTONRELEASED messsage to
- * the specified widget.
+ * the specified widget. There are messages like JM_MOTION and
+ * JM_SETCURSOR that are sent normally to the widget with the mouse
+ * (and not with the "soft" capture).
+ *
+ * @see jwidget_hard_capture_mouse
  */
 void jwidget_capture_mouse(JWidget widget)
 {
@@ -1427,7 +1430,9 @@ void jwidget_capture_mouse(JWidget widget)
 
 /**
  * Captures the mouse to send all the future mouse messsages to the
- * specified widget.
+ * specified widget (included the JM_MOTION and JM_SETCURSOR).
+ * 
+ * @see jwidget_capture_mouse
  */
 void jwidget_hard_capture_mouse(JWidget widget)
 {
@@ -1514,13 +1519,25 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 
 static bool widget_msg_proc(JWidget widget, JMessage msg)
 {
+  assert(msg != NULL);
   assert_valid_widget(widget);
 
   switch (msg->type) {
 
+    case JM_OPEN:
+    case JM_CLOSE:
+    case JM_WINMOVE: {
+      JLink link;
+
+      /* broadcast the message to the children */
+      JI_LIST_FOR_EACH(widget->children, link)
+	jwidget_send_message(link->data, msg);
+      break;
+    }
+
     case JM_DRAW:
       if (widget->draw_method) {
-	(*widget->draw_method) (widget);
+	(*widget->draw_method)(widget, &msg->draw.rect);
 	return TRUE;
       }
       break;
@@ -1605,6 +1622,43 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
 
       return TRUE;
     }
+
+    case JM_KEYPRESSED:
+    case JM_KEYRELEASED:
+      if (msg->key.propagate_to_children) {
+	JLink link;
+
+	/* broadcast the message to the children */
+	JI_LIST_FOR_EACH(widget->children, link)
+	  jwidget_send_message(link->data, msg);
+      }
+
+      /* propagate the message to the parent */
+      if (msg->key.propagate_to_parent && widget->parent != NULL)
+	return jwidget_send_message(widget->parent, msg);
+      else
+	break;
+
+    case JM_BUTTONPRESSED:
+    case JM_BUTTONRELEASED:
+    case JM_DOUBLECLICK:
+    case JM_MOTION:
+    case JM_WHEEL:
+      /* propagate the message to the parent */
+      if (widget->parent != NULL)
+	return jwidget_send_message(widget->parent, msg);
+      else
+	break;
+
+    case JM_SETCURSOR:
+      /* propagate the message to the parent */
+      if (widget->parent != NULL)
+	return jwidget_send_message(widget->parent, msg);
+      else {
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
+	return TRUE;
+      }
+
   }
 
   return FALSE;

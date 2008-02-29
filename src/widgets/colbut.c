@@ -36,63 +36,78 @@
 
 typedef struct ColorButton
 {
+  color_t color;
   int imgtype;
 } ColorButton;
 
-static bool color_button_msg_proc (JWidget widget, JMessage msg);
-static void color_button_draw (JWidget widget);
+static ColorButton *color_button_data(JWidget widget);
+static bool color_button_msg_proc(JWidget widget, JMessage msg);
+static void color_button_draw(JWidget widget);
 
-JWidget color_button_new (const char *color, int imgtype)
+JWidget color_button_new(color_t color, int imgtype)
 {
-  JWidget widget = jbutton_new (color);
-  ColorButton *color_button = jnew (ColorButton, 1);
+  JWidget widget = jbutton_new("");
+  ColorButton *color_button = jnew(ColorButton, 1);
 
-  /* widget->type = color_button_type (); */
+  color_button->color = color;
   color_button->imgtype = imgtype;
 
-  jwidget_add_hook (widget, color_button_type (),
-		      color_button_msg_proc, color_button);
-  jwidget_focusrest (widget, TRUE);
+  jwidget_add_hook(widget, color_button_type(),
+		   color_button_msg_proc, color_button);
+  jwidget_focusrest(widget, TRUE);
 
   return widget;
 }
 
-int color_button_type (void)
+int color_button_type(void)
 {
   static int type = 0;
   if (!type)
-    type = ji_register_widget_type ();
+    type = ji_register_widget_type();
   return type;
 }
 
-int color_button_get_imgtype (JWidget widget)
+int color_button_get_imgtype(JWidget widget)
 {
-  return ((ColorButton *)jwidget_get_data (widget,
-					     color_button_type ()))->imgtype;
+  ColorButton *color_button = color_button_data(widget);
+
+  return color_button->imgtype;
 }
 
-const char *color_button_get_color (JWidget widget)
+color_t color_button_get_color(JWidget widget)
 {
-  return jwidget_get_text (widget);
+  ColorButton *color_button = color_button_data(widget);
+
+  return color_button->color;
 }
 
-void color_button_set_color (JWidget widget, const char *color)
+void color_button_set_color(JWidget widget, color_t color)
 {
-  jwidget_set_text (widget, color);
+  ColorButton *color_button = color_button_data(widget);
+
+  color_button->color = color;
+  jwidget_dirty(widget);
 }
 
-static bool color_button_msg_proc (JWidget widget, JMessage msg)
+static ColorButton *color_button_data(JWidget widget)
 {
+  return jwidget_get_data(widget, color_button_type());
+}
+
+static bool color_button_msg_proc(JWidget widget, JMessage msg)
+{
+  ColorButton *color_button = color_button_data(widget);
+
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (jwidget_get_data (widget, color_button_type ()));
+      jfree(color_button);
       break;
 
     case JM_REQSIZE: {
       struct jrect box;
 
-      jwidget_get_texticon_info (widget, &box, NULL, NULL, 0, 0, 0);
+      jwidget_get_texticon_info(widget, &box, NULL, NULL, 0, 0, 0);
 
       box.x2 = box.x1+64;
 
@@ -102,18 +117,16 @@ static bool color_button_msg_proc (JWidget widget, JMessage msg)
     } 
 
     case JM_DRAW:
-      color_button_draw (widget);
+      color_button_draw(widget);
       return TRUE;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-	char *new_color = ji_color_select (color_button_get_imgtype (widget),
-					   color_button_get_color (widget));
-	if (new_color) {
-	  color_button_set_color (widget, new_color);
-	  jfree (new_color);
+	color_t color = color_button->color;
 
-	  jwidget_emit_signal (widget, SIGNAL_COLOR_BUTTON_CHANGE);
+	if (ji_color_select(color_button->imgtype, &color)) {
+	  color_button_set_color(widget, color);
+	  jwidget_emit_signal(widget, SIGNAL_COLOR_BUTTON_CHANGE);
 	}
 	return TRUE;
       }
@@ -123,13 +136,12 @@ static bool color_button_msg_proc (JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static void color_button_draw (JWidget widget)
+static void color_button_draw(JWidget widget)
 {
-  int imgtype = color_button_get_imgtype(widget);
+  ColorButton *color_button = color_button_data(widget);
   struct jrect box, text, icon;
   int x1, y1, x2, y2;
   int bg, c1, c2;
-  char *old_text;
   char buf[256];
 
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
@@ -177,18 +189,19 @@ static void color_button_draw (JWidget widget)
 
   /* background */
   x1++, y1++, x2--, y2--;
-  draw_color(ji_screen, x1, y1, x2, y2, imgtype, widget->text);
+  draw_color(ji_screen, x1, y1, x2, y2,
+	     color_button->imgtype,
+	     color_button->color);
 
   /* draw text */
-  color_to_formalstring(imgtype, widget->text, buf, sizeof(buf), FALSE);
+  color_to_formalstring(color_button->imgtype,
+			color_button->color, buf, sizeof(buf), FALSE);
 
-  old_text = widget->text;
-  widget->text = buf;
-
+  jwidget_set_text_soft(widget, buf);
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
   rectfill(ji_screen, text.x1, text.y1, text.x2-1, text.y2-1, makecol(0, 0, 0));
   jdraw_text(widget->text_font, widget->text, text.x1, text.y1,
-	       makecol(255, 255, 255), makecol(0, 0, 0), FALSE);
-  widget->text = old_text;
+	     makecol(255, 255, 255),
+	     makecol(0, 0, 0), FALSE);
 }

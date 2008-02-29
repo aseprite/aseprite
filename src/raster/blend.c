@@ -358,10 +358,10 @@ int _graya_blend_##mode (int back, int front, int opacity)		\
     int F_g, F_a;							\
     int D_g, D_a;							\
 									\
-    B_g = _graya_getk(back);						\
+    B_g = _graya_getv(back);						\
     B_a = _graya_geta(back);						\
 									\
-    F_g = _graya_getk(front);						\
+    F_g = _graya_getv(front);						\
     F_a = _graya_geta(front);						\
     F_a = INT_MULT(F_a, opacity, t);
 
@@ -392,7 +392,7 @@ int _graya_blend_FORPATH(int back, int front, int opacity)
   int F_k, F_a;
   T_VAR
 
-  F_k = _graya_getk(front);
+  F_k = _graya_getv(front);
   F_a = _graya_geta(front);
   F_a = INT_MULT(F_a, opacity, t);
 

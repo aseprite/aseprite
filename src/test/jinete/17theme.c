@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -171,11 +171,11 @@ static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y);
 static void theme_init_widget(JWidget widget);
 static JRegion theme_get_window_mask(JWidget widget);
 
-static void theme_draw_box(JWidget widget);
-static void theme_draw_button(JWidget widget);
-static void theme_draw_entry(JWidget widget);
-static void theme_draw_label(JWidget widget);
-static void theme_draw_window(JWidget widget);
+static void theme_draw_box(JWidget widget, JRect clip);
+static void theme_draw_button(JWidget widget, JRect clip);
+static void theme_draw_entry(JWidget widget, JRect clip);
+static void theme_draw_label(JWidget widget, JRect clip);
+static void theme_draw_window(JWidget widget, JRect clip);
 
 static void draw_rect(JRect rect, int color, bool invert);
 static void draw_edge(JRect rect, int color, bool invert);
@@ -291,7 +291,7 @@ static JRegion theme_get_window_mask(JWidget widget)
   return reg1;
 }
 
-static void theme_draw_box(JWidget widget)
+static void theme_draw_box(JWidget widget, JRect clip)
 {
   JWidget window = jwidget_get_window(widget);
   if (window) {
@@ -303,7 +303,7 @@ static void theme_draw_box(JWidget widget)
   }
 }
 
-static void theme_draw_button(JWidget widget)
+static void theme_draw_button(JWidget widget, JRect clip)
 {
   JRect pos = jwidget_get_rect(widget);
   int fg, bg;
@@ -351,7 +351,7 @@ static void theme_draw_button(JWidget widget)
   jrect_free(pos);
 }
 
-static void theme_draw_entry(JWidget widget)
+static void theme_draw_entry(JWidget widget, JRect clip)
 {
   int scroll, cursor, state, selbeg, selend;
   bool password = jentry_is_password(widget);
@@ -429,10 +429,10 @@ static void theme_draw_entry(JWidget widget)
   jrect_free(pos);
 }
 
-static void theme_draw_label(JWidget widget)
+static void theme_draw_label(JWidget widget, JRect clip)
 {
   /* draw background as Box */
-  theme_draw_box(widget);
+  theme_draw_box(widget, clip);
 
   if (widget->text) {
     struct jrect text;
@@ -446,7 +446,7 @@ static void theme_draw_label(JWidget widget)
   }
 }
 
-static void theme_draw_window(JWidget widget)
+static void theme_draw_window(JWidget widget, JRect clip)
 {
   JRect pos;
   int c;

@@ -51,7 +51,6 @@ struct jmessage_any
 {
   int type;		/* type of message */
   JList widgets;	/* destination widgets */
-  JMessage sub_msg;	/* sub-message if this msg isn't used */
   bool used : 1;	/* was used */
   int shifts;		/* key shifts pressed when message was created */
 };
@@ -67,6 +66,9 @@ struct jmessage_key
   struct jmessage_any any;
   unsigned scancode : 8;	/* Allegro scancode */
   unsigned ascii : 8;		/* ASCII code */
+  unsigned repeat;		/* repeat=0 means the first time the key is pressed */
+  bool propagate_to_children : 1;
+  bool propagate_to_parent : 1;
 };
 
 struct jmessage_draw
@@ -153,11 +155,6 @@ void jmessage_add_pre_dest(JMessage msg, JWidget widget);
 
 void jmessage_broadcast_to_children(JMessage msg, JWidget widget);
 void jmessage_broadcast_to_parents(JMessage msg, JWidget widget);
-
-void jmessage_set_sub_msg(JMessage msg, JMessage sub_msg);
-
-/* TODO */
-/* void jmessage_set_marshal(JMessage msg, JMarshal marshal); */
 
 JI_END_DECLS
 

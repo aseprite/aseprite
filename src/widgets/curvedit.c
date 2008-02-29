@@ -164,7 +164,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
     }
 
-    case JM_CHAR: {
+    case JM_KEYPRESSED: {
       switch (msg->key.scancode) {
 
 	case KEY_INSERT: {

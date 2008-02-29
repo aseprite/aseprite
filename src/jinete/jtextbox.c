@@ -75,7 +75,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus(widget)) {
 	JWidget view = jwidget_get_view(widget);
 	if (view) {

@@ -21,15 +21,17 @@
 
 #include "jinete/jbase.h"
 
+#include "modules/color.h"
+
 /* TODO use some JI_SIGNAL_USER */
-#define SIGNAL_COLOR_VIEWER_SELECT   0x10002
+#define SIGNAL_COLORVIEWER_SELECT   0x10002
 
-JWidget color_viewer_new (const char *color, int imgtype);
-int color_viewer_type (void);
+JWidget colorviewer_new(color_t color, int imgtype);
+int colorviewer_type(void);
 
-int color_viewer_get_imgtype (JWidget color_viewer_id);
+int colorviewer_get_imgtype(JWidget colorviewer);
 
-const char *color_viewer_get_color (JWidget color_viewer);
-void color_viewer_set_color (JWidget color_viewer, const char *color);
+color_t colorviewer_get_color(JWidget colorviewer);
+void colorviewer_set_color(JWidget colorviewer, color_t color);
 
 #endif /* WIDGETS_COLVIEW_H */

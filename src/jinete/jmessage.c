@@ -76,6 +76,10 @@ JMessage jmessage_new_key_related(int type, int readkey_value)
 
   msg->key.scancode = (readkey_value >> 8) & 0xff;
   msg->key.ascii = readkey_value & 0xff;
+  msg->key.repeat = 0;
+  msg->key.propagate_to_children = FALSE;
+  msg->key.propagate_to_parent = TRUE;
+
 #if 0
   printf("%i: %i %i [%c]\n", type, msg->key.scancode,
 	 msg->key.ascii, msg->key.ascii);
@@ -96,8 +100,6 @@ JMessage jmessage_new_copy(const JMessage msg)
   memcpy(copy, msg, sizeof(union jmessage));
 
   copy->any.widgets = jlist_copy(msg->any.widgets);
-  copy->any.sub_msg = msg->any.sub_msg ?
-    jmessage_new_copy(msg->any.sub_msg): NULL;
   copy->any.used = FALSE;
 
   return copy;
@@ -106,9 +108,6 @@ JMessage jmessage_new_copy(const JMessage msg)
 void jmessage_free(JMessage msg)
 {
   assert(msg != NULL);
-
-  if (msg->any.sub_msg)
-    jmessage_free(msg->any.sub_msg);
 
   jlist_free(msg->any.widgets);
   jfree(msg);
@@ -152,14 +151,4 @@ void jmessage_broadcast_to_parents(JMessage msg, JWidget widget)
     jmessage_add_dest(msg, widget);
     jmessage_broadcast_to_parents(msg, jwidget_get_parent(widget));
   }
-}
-
-void jmessage_set_sub_msg(JMessage msg, JMessage sub_msg)
-{
-  assert(msg != NULL);
-
-  if (msg->any.sub_msg)
-    jmessage_free(msg->any.sub_msg);
-
-  msg->any.sub_msg = sub_msg ? jmessage_new_copy(sub_msg): NULL;
 }

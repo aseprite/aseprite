@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2005, 2007 by David A. Capello -->
+<!-- Copyright (C) 2001-2008 by David A. Capello -->
 
 <!-- Read "LEGAL.txt" for more information. -->
 
@@ -33,7 +33,7 @@
 	<slider min="0" max="255" expansive name="alpha" />
       </box>
       <view name="palette_editor" expansive /> <!-- custom-widget -->
-      <box name="color_viewer" expansive /> <!-- custom-widget -->
+      <box name="colorviewer" expansive /> <!-- custom-widget -->
       <box horizontal homogeneous>
 	<button text="&OK" name="button_ok" magnetic />
 	<button text="&Cancel" />

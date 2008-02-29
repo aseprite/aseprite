@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+/* TODO modificable option: scalable-tiles */
+/* #define SCALABLE_TILES */
+
 #include "config.h"
 
 #include "jinete/jlist.h"
@@ -120,9 +123,7 @@ Image *render_sprite(Sprite *sprite,
 	break;
     }
 
-/* TODO modificable option: scalable-tiles */
-#define ASE_SCALABLE_TILES
-#ifdef ASE_SCALABLE_TILES
+#ifdef SCALABLE_TILES
     u = (-source_x / (16<<zoom)) * (16<<zoom);
     v = (-source_y / (16<<zoom)) * (16<<zoom);
     for (y=-source_y; y<height+(16<<zoom); y+=(16<<zoom)) {
@@ -136,8 +137,8 @@ Image *render_sprite(Sprite *sprite,
       u = (++v);
     }
 #else
-    u = (-source_x / 16) * 16;
-    v = (-source_y / 16) * 16;
+    u = (-source_x / (16<<zoom)) * 16;
+    v = (-source_y / (16<<zoom)) * 16;
     for (y=-source_y; y<height+16; y+=16) {
       for (x=-source_x; x<width+16; x+=16)
         image_rectfill(image,

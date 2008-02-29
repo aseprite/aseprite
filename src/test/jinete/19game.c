@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, 2008, David A. Capello
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,8 +111,8 @@ void init_gui(void)
   jwidget_expansive(entry, TRUE);
 
   jwidget_add_child(window, box1);
-  jwidget_add_childs(box1, box2, check, button, NULL);
-  jwidget_add_childs(box2, label, entry, NULL);
+  jwidget_add_children(box1, box2, check, button, NULL);
+  jwidget_add_children(box2, label, entry, NULL);
 
   jwindow_open(window);
 }
@@ -159,7 +159,6 @@ static bool my_manager_hook(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_CHAR:
     case JM_KEYPRESSED:
       /* don't use UP & DOWN keys for focus movement */
       if (msg->key.scancode == KEY_UP || msg->key.scancode == KEY_DOWN) {

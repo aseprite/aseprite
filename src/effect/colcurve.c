@@ -317,7 +317,7 @@ void apply_color_curve2 (Effect *effect)
 
     c = *(src_address++);
 
-    k = _graya_getk(c);
+    k = _graya_getv(c);
     a = _graya_geta(c);
 
     if (effect->target.k) k = data.cmap[k];

@@ -36,7 +36,6 @@ extern Command cmd_close_file;
 extern Command cmd_close_all_files;
 extern Command cmd_screen_shot;
 extern Command cmd_record_screen;
-extern Command cmd_about;
 extern Command cmd_exit;
 /* edit */
 extern Command cmd_undo;
@@ -49,17 +48,6 @@ extern Command cmd_flip_horizontal;
 extern Command cmd_flip_vertical;
 extern Command cmd_replace_color;
 extern Command cmd_invert_color;
-/* view */
-extern Command cmd_refresh;
-extern Command cmd_configure_screen;
-extern Command cmd_advanced_mode;
-extern Command cmd_make_unique_editor;
-extern Command cmd_split_editor_vertically;
-extern Command cmd_split_editor_horizontally;
-extern Command cmd_close_editor;
-extern Command cmd_preview_tiled, preview;
-extern Command cmd_preview_normal, preview;
-extern Command cmd_preview_fit_to_screen, preview;
 /* sprite */
 extern Command cmd_sprite_properties;
 extern Command cmd_duplicate_sprite;
@@ -100,6 +88,19 @@ extern Command cmd_invert_mask;
 extern Command cmd_mask_by_color;
 extern Command cmd_load_mask;
 extern Command cmd_save_mask;
+/* view */
+extern Command cmd_refresh;
+extern Command cmd_configure_screen;
+extern Command cmd_advanced_mode;
+extern Command cmd_make_unique_editor;
+extern Command cmd_split_editor_vertically;
+extern Command cmd_split_editor_horizontally;
+extern Command cmd_close_editor;
+extern Command cmd_show_grid;
+extern Command cmd_snap_to_grid;
+extern Command cmd_preview_tiled;
+extern Command cmd_preview_normal;
+extern Command cmd_preview_fit_to_screen;
 /* tools */
 extern Command cmd_configure_tools;
 extern Command cmd_marker_tool;
@@ -111,14 +112,18 @@ extern Command cmd_floodfill_tool;
 extern Command cmd_line_tool;
 extern Command cmd_rectangle_tool;
 extern Command cmd_ellipse_tool;
+extern Command cmd_eyedropper_tool;
+extern Command cmd_exchange_colors;
 extern Command cmd_film_editor;
 extern Command cmd_palette_editor;
 extern Command cmd_convolution_matrix;
 extern Command cmd_color_curve;
 extern Command cmd_despeckle;
 extern Command cmd_run_script;
-extern Command cmd_tips;
 extern Command cmd_options;
+/* help */
+extern Command cmd_tips;
+extern Command cmd_about;
 /* internal */
 extern Command cmd_select_file;
 
@@ -132,7 +137,6 @@ static Command *commands[] = {
   &cmd_close_all_files,
   &cmd_screen_shot,
   &cmd_record_screen,
-  &cmd_about,
   &cmd_exit,
   /* edit */
   &cmd_undo,
@@ -145,17 +149,6 @@ static Command *commands[] = {
   &cmd_flip_vertical,
   &cmd_replace_color,
   &cmd_invert_color,
-  /* view */
-  &cmd_refresh,
-  &cmd_configure_screen,
-  &cmd_advanced_mode,
-  &cmd_make_unique_editor,
-  &cmd_split_editor_vertically,
-  &cmd_split_editor_horizontally,
-  &cmd_close_editor,
-  &cmd_preview_tiled,
-  &cmd_preview_normal,
-  &cmd_preview_fit_to_screen,
   /* sprite */
   &cmd_sprite_properties,
   &cmd_duplicate_sprite,
@@ -196,6 +189,19 @@ static Command *commands[] = {
   &cmd_mask_by_color,
   &cmd_load_mask,
   &cmd_save_mask,
+  /* view */
+  &cmd_refresh,
+  &cmd_configure_screen,
+  &cmd_advanced_mode,
+  &cmd_make_unique_editor,
+  &cmd_split_editor_vertically,
+  &cmd_split_editor_horizontally,
+  &cmd_close_editor,
+  &cmd_show_grid,
+  &cmd_snap_to_grid,
+  &cmd_preview_tiled,
+  &cmd_preview_normal,
+  &cmd_preview_fit_to_screen,
   /* tools */
   &cmd_configure_tools,
   &cmd_marker_tool,
@@ -207,6 +213,8 @@ static Command *commands[] = {
   &cmd_line_tool,
   &cmd_rectangle_tool,
   &cmd_ellipse_tool,
+  &cmd_eyedropper_tool,
+  &cmd_exchange_colors,
   &cmd_film_editor,
   &cmd_palette_editor,
   &cmd_convolution_matrix,
@@ -214,10 +222,11 @@ static Command *commands[] = {
   &cmd_despeckle,
   /*   { CMD_DRAW_TEXT, NULL, NULL, NULL, NULL }, */
   /*   { CMD_PLAY_FLIC, NULL, NULL, NULL, NULL }, */
-  /*   { CMD_MAPGEN, NULL, NULL, NULL, NULL }, */
   &cmd_run_script,
-  &cmd_tips,
   &cmd_options,
+  /* help */
+  &cmd_tips,
+  &cmd_about,
   /* internal */
   &cmd_select_file,
   NULL

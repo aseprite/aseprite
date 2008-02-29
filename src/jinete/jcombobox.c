@@ -371,7 +371,7 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
 
   switch (msg->type) {
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus(widget)) {
 	if (!jcombobox_is_editable(combo_widget)) {
 	  if (msg->key.scancode == KEY_SPACE ||
@@ -452,7 +452,7 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 /*       break; */
 /*     } */
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus(widget)) {
 	if (msg->key.scancode == KEY_SPACE ||
 	    msg->key.scancode == KEY_ENTER ||

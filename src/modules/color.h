@@ -25,37 +25,52 @@ struct Image;
 enum {
   COLOR_TYPE_MASK,
   COLOR_TYPE_RGB,
+  COLOR_TYPE_HSV,
   COLOR_TYPE_GRAY,
   COLOR_TYPE_INDEX,
 };
 
+typedef struct color_t
+{
+  ase_uint32 coltype;
+  ase_uint32 imgcolor;
+} color_t;
+
+/* typedef uint64_t color_t; */
+
 int init_module_color(void);
 void exit_module_color(void);
 
-int color_type(const char *color);
-char *color_mask(void);
-char *color_rgb(int r, int g, int b, int a);
-char *color_gray(int g, int a);
-char *color_index(int index);
-int color_get_black(int imgtype, const char *color);
-int color_get_red(int imgtype, const char *color);
-int color_get_green(int imgtype, const char *color);
-int color_get_blue(int imgtype, const char *color);
-int color_get_index(int imgtype, const char *color);
-int color_get_alpha(int imgtype, const char *color);
-void color_set_alpha(char **color, int alpha);
-char *color_from_image(int imgtype, int c);
+char *color_to_string(color_t color, char *buf, int size);
+color_t string_to_color(const char *str);
+
+int color_type(color_t color);
+color_t color_mask(void);
+color_t color_rgb(int r, int g, int b, int a);
+color_t color_hsv(int h, int s, int v, int a);
+color_t color_gray(int g, int a);
+color_t color_index(int index);
+int color_get_red(int imgtype, color_t color);
+int color_get_green(int imgtype, color_t color);
+int color_get_blue(int imgtype, color_t color);
+int color_get_hue(int imgtype, color_t color);
+int color_get_saturation(int imgtype, color_t color);
+int color_get_value(int imgtype, color_t color);
+int color_get_index(int imgtype, color_t color);
+int color_get_alpha(int imgtype, color_t color);
+void color_set_alpha(color_t *color, int alpha);
+color_t color_from_image(int imgtype, int c);
 
 int blackandwhite(int r, int g, int b);
 int blackandwhite_neg(int r, int g, int b);
 
-int get_color_for_allegro(int depth, const char *color);
-int get_color_for_image(int imgtype, const char *color);
-char *image_getpixel_color(struct Image *image, int x, int y);
-void color_to_formalstring(int imgtype, const char *color, char *buf,
-			   int size, int long_format);
+int get_color_for_allegro(int depth, color_t color);
+int get_color_for_image(int imgtype, color_t color);
+color_t image_getpixel_color(struct Image *image, int x, int y);
+void color_to_formalstring(int imgtype, color_t color, char *buf,
+			   int size, bool long_format);
 void draw_color(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
-		int imgtype, const char *color);
+		int imgtype, color_t color);
 
 #endif /* MODULES_COLOR_H */
 

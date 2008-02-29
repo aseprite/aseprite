@@ -90,7 +90,7 @@ void apply_replace_color2(Effect *effect)
   src_address = ((ase_uint16 **)effect->src->line)[effect->row+effect->y]+effect->x;
   dst_address = ((ase_uint16 **)effect->dst->line)[effect->row+effect->y]+effect->x;
 
-  dst_k = _graya_getk(data.from);
+  dst_k = _graya_getv(data.from);
   dst_a = _graya_geta(data.from);
 
   for (x=0; x<effect->w; x++) {
@@ -107,7 +107,7 @@ void apply_replace_color2(Effect *effect)
 
     c = *(src_address++);
 
-    src_k = _graya_getk(c);
+    src_k = _graya_getv(c);
     src_a = _graya_geta(c);
 
     if ((src_k >= dst_k-data.fuzziness) && (src_k <= dst_k+data.fuzziness) &&

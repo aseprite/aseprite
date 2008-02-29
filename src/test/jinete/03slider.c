@@ -76,9 +76,9 @@ int main(int argc, char *argv[])
   jwidget_expansive(slider5, TRUE);
 
   jwidget_add_child(window, box);
-  jwidget_add_childs(box,
-		     slider1, slider2, slider3,
-		     slider4, slider5, button1, NULL);
+  jwidget_add_children(box,
+		       slider1, slider2, slider3,
+		       slider4, slider5, button1, NULL);
 
   jwindow_open_bg(window);
 

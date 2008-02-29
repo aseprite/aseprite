@@ -329,7 +329,7 @@ static bool save_JPEG(FileOp *fop)
         src_address = ((ase_uint16 **)image->line)[cinfo.next_scanline+y];
         dst_address = ((ase_uint8 **)buffer)[y];
         for (x=0; x<image->w; x++)
-          *(dst_address++) = _graya_getk(*(src_address++));
+          *(dst_address++) = _graya_getv(*(src_address++));
       }
     }
     jpeg_write_scanlines(&cinfo, buffer, buffer_height);

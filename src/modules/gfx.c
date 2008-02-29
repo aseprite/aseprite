@@ -28,6 +28,7 @@
 #include "core/cfg.h"
 #include "core/dirs.h"
 #include "modules/gfx.h"
+#include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/tools.h"
 #include "widgets/editor.h"
@@ -39,6 +40,7 @@ static BITMAP *gfx_bmps[GFX_BITMAP_COUNT];
 
 static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
 {
+  int guiscale = GUISCALE;
   const char *p;
   int x, y;
   int black = makecol(0, 0, 0);
@@ -46,18 +48,20 @@ static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
   int white = makecol(255, 255, 255);
   int mask;
 
-  *bmp = create_bitmap(data->w, data->h);
+  *bmp = create_bitmap(data->w * guiscale,
+		       data->h * guiscale);
   mask = bitmap_mask_color(*bmp);
 
   p = data->line;
-  for (y=0; y<data->h; y++)
-    for (x=0; x<data->w; x++) {
-      putpixel(*bmp, x, y,
+  for (y=0; y<(*bmp)->h; y+=guiscale) {
+    for (x=0; x<(*bmp)->w; x+=guiscale) {
+      rectfill(*bmp, x, y, x+guiscale-1, y+guiscale-1,
 	       (*p == '#') ? black:
 	       (*p == '%') ? gray:
 	       (*p == '.') ? white: mask);
       p++;
     }
+  }
 }
 
 static void gen_gfx(void)
@@ -516,44 +520,6 @@ void rectgrid(BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h)
   }
 }
 
-void rectfill_exclude(BITMAP *bmp, int x1, int y1, int x2, int y2, int ex1, int ey1, int ex2, int ey2, int color)
-{
-  _ji_theme_rectfill_exclude(bmp, x1, y1, x2, y2,
-			     ex1, ey1, ex2, ey2, color);
-}
-
-void rectshade(BITMAP *bmp, int x1, int y1, int x2, int y2, int top, int bottom)
-{
-  int x, y, r[3], g[3], b[3];
-
-  r[0] = getr(top);
-  g[0] = getg(top);
-  b[0] = getb(top);
-
-  r[2] = getr(bottom);
-  g[2] = getg(bottom);
-  b[2] = getb(bottom);
-
-  if ((x2-x1+1) > (y2-y1+1)/2) {
-    for (y=y1; y<=y2; y++) {
-      r[1] = r[0] + (r[2] - r[0]) * (y - y1) / (y2 - y1);
-      g[1] = g[0] + (g[2] - g[0]) * (y - y1) / (y2 - y1);
-      b[1] = b[0] + (b[2] - b[0]) * (y - y1) / (y2 - y1);
-
-      hline(bmp, x1, y, x2, makecol(r[1], g[1], b[1]));
-    }
-  }
-  else {
-    for (x=x1; x<=x2; x++) {
-      r[1] = r[0] + (r[2] - r[0]) * (x - x1) / (x2 - x1);
-      g[1] = g[0] + (g[2] - g[0]) * (x - x1) / (x2 - x1);
-      b[1] = b[0] + (b[2] - b[0]) * (x - x1) / (x2 - x1);
-
-      vline(bmp, x, y1, y2, makecol(r[1], g[1], b[1]));
-    }
-  }
-}
-
 void draw_emptyset_symbol(JRect rc, int color)
 {
   int cx, cy, x1, y1, x2, y2, size;
@@ -568,7 +534,7 @@ void draw_emptyset_symbol(JRect rc, int color)
   x2 = x1+size-1;
   y2 = y1+size-1;
 
-  circle(ji_screen, cx, cy, size/2, color);
+  circle(ji_screen, cx, cy, size*4/10, color);
   line(ji_screen, x1, y2, x2, y1, color);
 }
 

@@ -6,21 +6,25 @@ NEWS
 ---
 
 + Added support to load and save PNG files (through 'libpng').
++ Rewritten the color-selector dialog.
 + Replaced the "List" menu with the tabs selector.
-+ Better file selector with thumbnails.
-  + In Windows: now you can navigate through Desktop, My Documents,
-    My Computer, etc.
++ Rewritten the File Selector:
+  + Preview support.
+  + Incremental search.
+  + History of navigation (Back/Forward).
+  + In Windows: you can visit Desktop, My Documents and My Computer
+    locations.
 + Optimized the loading/saving operations (using threads).
 + Restructured all the menus (more user friendly options).
-+ New XML format for the menus.
 + Enhanced GUI:
   + more borders for windows and more spacing between widgets.
   + better mouse behavior (now in Windows the mouse is captured).
 + Finally screen scaling supported (with double-buffering). This means
   that you can use a screen of 320x240 between a window of 640x480
-  (screen-scaling x2). This is the new default video mode for ASE.
+  (screen-scaling x2).
 + Fixed other minor problems when you drawn in 'tiled mode' or 'paste'
   the clipboard.
++ New XML format for the menus and keyboard shortcuts.
 - Removed a lot of complex functionality:
   - Removed mask-repositories (you can use .msk files instead).
   - Removed menu scripting customization.
@@ -29,6 +33,7 @@ NEWS
   - Removed draw-text (it'll return in next versions).
   - Removed layer-sets (the Film-Editor can't handle them right at the
     moment)
+  - Removed mapgen.
   - Removed linked-cels (were complex for the end-user).
   - Also the scripting support is broken, next versions of ASE will
     contain a better set of routines to create scripts.

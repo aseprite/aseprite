@@ -39,7 +39,7 @@ static void cmd_goto_first_frame_execute(const char *argument)
   current_sprite->frame = 0;
 
   update_screen_for_sprite(current_sprite);
-  editor_update_status_bar_for_standby(current_editor);
+  editor_update_statusbar_for_standby(current_editor);
 }
 
 /* ======================== */
@@ -59,7 +59,7 @@ static void cmd_goto_previous_frame_execute(const char *argument)
     current_sprite->frame = current_sprite->frames-1;
 
   update_screen_for_sprite(current_sprite);
-  editor_update_status_bar_for_standby(current_editor);
+  editor_update_statusbar_for_standby(current_editor);
 }
 
 /* ======================== */
@@ -79,7 +79,7 @@ static void cmd_goto_next_frame_execute(const char *argument)
     current_sprite->frame = 0;
 
   update_screen_for_sprite(current_sprite);
-  editor_update_status_bar_for_standby(current_editor);
+  editor_update_statusbar_for_standby(current_editor);
 }
 
 /* ======================== */
@@ -96,7 +96,7 @@ static void cmd_goto_last_frame_execute(const char *argument)
   current_sprite->frame = current_sprite->frames-1;
 
   update_screen_for_sprite(current_sprite);
-  editor_update_status_bar_for_standby(current_editor);
+  editor_update_statusbar_for_standby(current_editor);
 }
 
 Command cmd_goto_first_frame = {

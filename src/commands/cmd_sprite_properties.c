@@ -46,7 +46,6 @@ static void cmd_sprite_properties_execute(const char *argument)
   Sprite *sprite = current_sprite;
   char *imgtype_text;
   char buf[256];
-  char *tmp;
 
   /* load the window widget */
   window = load_widget("sprprop.jid", "sprite_properties");
@@ -96,9 +95,9 @@ static void cmd_sprite_properties_execute(const char *argument)
   jwidget_set_text(frames, buf);
 
   /* background color */
-  tmp = color_from_image(sprite->imgtype, sprite->bgcolor);
-  bgcolor_button = color_button_new(tmp, current_sprite->imgtype);
-  jfree(tmp);
+  bgcolor_button = color_button_new(color_from_image(sprite->imgtype,
+						     sprite->bgcolor),
+				    current_sprite->imgtype);
 
   jwidget_add_child(bgcolor_box, bgcolor_button);
 
@@ -107,6 +106,7 @@ static void cmd_sprite_properties_execute(const char *argument)
 
   for (;;) {
     load_window_pos(window, "SpriteProperties");
+    jwidget_show(window);
     jwindow_open_fg(window);
     save_window_pos(window, "SpriteProperties");
 

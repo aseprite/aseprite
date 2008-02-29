@@ -1,3 +1,62 @@
+2008-02-29  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/fileview.c: Added incremental search.
+
+	* src/core/file_system.c (fileitem_insert_child_sorted):
+	Fixed. Now the file-system has a readed-version, so we can updated
+	outdated file-items with the new children list.
+
+2008-02-28  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jbox.c, src/jinete/jpanel.c: Fixed some bugs when
+	access to widget-visibility properties (when layout widgets, we
+	have to check the JI_HIDDEN flag directly instead of calling
+	jwidget_is_visible/hidden routines).
+
+2008-02-27  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_duplicate_layer.c (duplicate_layer): Fixed a
+	problem where the images weren't duplicated (this bug was
+	introduced when the stock changed from the Layers to the Sprite).
+
+2008-02-22  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jwidget.c (jwidget_get_drawable_region): Fixed a bug:
+	when clipping the drawable-region with the children regions, it
+	was considering hidden children too.
+
+2008-02-21  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/*: Refactoring color_bar->colorbar, status_bar->statusbar,
+	tool_bar->toolbar, menu_bar->menubar, tabs_bar->tabsbar.
+
+	* src/modules/tools.c (apply_grid): Added 'flexible' parameter.
+
+	* src/commands/cmd_grid.c: Added show_grid and snap_to_grid
+	commands.
+
+	* src/jinete/jwidget.c (jwidget_set_text_soft): Added.
+
+2008-02-20  David A. Capello  <dacap@users.sourceforge.net>
+
+	* data/jids/mapgen.jid, src/commands/cmd_mapgen.c,
+	src/util/mapgen.c, src/dialogs/dmapgen.c: Removed.
+
+	* src/jinete/jwidget.c (widget_msg_proc): Do more work to handle
+	redirection of each message.
+
+	* src/jinete/jmanager.c: Simplified the destination list for every
+	message.
+
+	* src/jinete/jmessage.h (struct jmessage_key): Added fields:
+	repeat, propagate_to_children, propagate_to_parent.
+
+	* src/jinete/jbase.h: Added JM_SETCURSOR. Removed JM_CHAR.
+
+2008-02-18  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/core/file_system.c (get_key_for_pidl): Fixed.
+
 2008-02-12  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/raster/dirty.c: Optimized.

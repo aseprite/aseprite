@@ -237,7 +237,7 @@ static bool save_PCX(FileOp *fop)
 	  ch = image->method->getpixel(image, x, y);
 	else if (image->imgtype == IMAGE_GRAYSCALE) {
 	  c = image->method->getpixel(image, x, y);
-	  ch = _graya_getk(c);
+	  ch = _graya_getv(c);
 	}
       }
       else {

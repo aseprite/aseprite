@@ -37,12 +37,12 @@
    ((b) << _rgba_b_shift) |			\
    ((a) << _rgba_a_shift))
 
-#define _graya_k_shift	0
+#define _graya_v_shift	0
 #define _graya_a_shift	8
-#define _graya_getk(c)	(((c) >> _graya_k_shift) & 0xff)
+#define _graya_getv(c)	(((c) >> _graya_v_shift) & 0xff)
 #define _graya_geta(c)	(((c) >> _graya_a_shift) & 0xff)
-#define _graya(k,a)				\
-  (((k) << _graya_k_shift) |			\
+#define _graya(v,a)				\
+  (((v) << _graya_v_shift) |			\
    ((a) << _graya_a_shift))
 
 #define _image_bitmap_next_bit(d, a)		\

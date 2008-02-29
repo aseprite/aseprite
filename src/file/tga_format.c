@@ -457,7 +457,7 @@ static bool save_TGA(FileOp *fop)
     case IMAGE_GRAYSCALE:
       for (y=image->h-1; y>=0; y--) {
         for (x=0; x<image->w; x++)
-          fputc(_graya_getk(image_getpixel(image, x, y)), f);
+          fputc(_graya_getv(image_getpixel(image, x, y)), f);
 
 	fop_progress(fop, (float)(image->h-y) / (float)(image->h));
       }

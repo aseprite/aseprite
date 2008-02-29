@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2005, 2007 by David A. Capello -->
+<!-- Copyright (C) 2001-2008 by David A. Capello -->
 
 <!-- Read "LEGAL.txt" for more information. -->
 
@@ -33,7 +33,7 @@
 	    <slider min="0" max="255" name="value" />
           </box>
 	</box>
-	<box name="color_viewer" expansive /> <!-- custom-widget -->
+	<box name="colorviewer" expansive /> <!-- custom-widget -->
 	<button text="Select &All" name="select_all" />
 	<box vertical>
 	  <box horizontal homogeneous>

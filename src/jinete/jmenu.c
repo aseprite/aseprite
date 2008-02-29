@@ -570,7 +570,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (menu) {
 	JWidget selected;
 

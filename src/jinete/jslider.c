@@ -46,8 +46,13 @@ typedef struct Slider
   int value;
 } Slider;
 
+static int slider_press_x;
+static int slider_press_value;
+static int slider_press_left;
+
 static bool slider_msg_proc(JWidget widget, JMessage msg);
 static void slider_request_size(JWidget widget, int *w, int *h);
+static void slider_setcursor(JWidget widget);
 
 JWidget jslider_new(int min, int max, int value)
 {
@@ -107,9 +112,6 @@ void jtheme_slider_info(JWidget widget, int *min, int *max, int *value)
 
 static bool slider_msg_proc(JWidget widget, JMessage msg)
 {
-  static int slider_press_x;
-  static int slider_press_value;
-  static int slider_press_left;
   Slider *slider = jwidget_get_data(widget, JI_SLIDER);
 
   switch (msg->type) {
@@ -133,16 +135,13 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	return TRUE;
 
       jwidget_select(widget);
-      jwidget_capture_mouse(widget);
+      jwidget_hard_capture_mouse(widget);
 
       slider_press_x = msg->mouse.x;
       slider_press_value = slider->value;
       slider_press_left = msg->mouse.left;
-      
-      if (slider_press_left)
-	jmouse_set_cursor(JI_CURSOR_HAND);
-      else
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+
+      slider_setcursor(widget);
 
       /* continue to JM_MOTION */
 
@@ -175,9 +174,20 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	  jwidget_emit_signal(widget, JI_SIGNAL_SLIDER_CHANGE);
 	}
 
+	/* for left click */
+	if (slider_press_left) {
+	  int x = jmouse_x(0);
+
+	  if (x < widget->rc->x1)
+	    x = widget->rc->x1;
+	  else if (x > widget->rc->x2)
+	    x = widget->rc->x2;
+
+	  if (x != jmouse_x(0))
+	    jmouse_set_position(x, jmouse_y(0));
+	}
 	/* for right click */
-	if ((!slider_press_left) &&
-	    (jmouse_control_infinite_scroll(rect))) {
+	else if (jmouse_control_infinite_scroll(rect)) {
 	  slider_press_x = jmouse_x(0);
 	  slider_press_value = slider->value;
 	}
@@ -191,8 +201,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget)) {
 	jwidget_deselect(widget);
 	jwidget_release_mouse(widget);
-
-	jmouse_set_cursor(JI_CURSOR_NORMAL);
+	slider_setcursor(widget);
       }
       break;
 
@@ -214,7 +223,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	jwidget_dirty(widget);
       break;
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus (widget)) {
 	int min = slider->min;
 	int max = slider->max;
@@ -253,6 +262,10 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	return TRUE;
       }
       break;
+
+    case JM_SETCURSOR:
+      slider_setcursor(widget);
+      return TRUE;
   }
 
   return FALSE;
@@ -275,4 +288,16 @@ static void slider_request_size(JWidget widget, int *w, int *h)
 
   *w += widget->border_width.l + widget->border_width.r;
   *h += widget->border_width.t + widget->border_width.b;
+}
+
+static void slider_setcursor(JWidget widget)
+{
+  if (jwidget_has_capture(widget)) {
+    if (slider_press_left)
+      jmouse_set_cursor(JI_CURSOR_NORMAL);
+    else
+      jmouse_set_cursor(JI_CURSOR_SIZE_L);
+  }
+  else
+    jmouse_set_cursor(JI_CURSOR_NORMAL);
 }

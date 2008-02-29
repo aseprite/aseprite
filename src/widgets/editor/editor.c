@@ -26,6 +26,7 @@
 
 #include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "modules/color.h"
@@ -68,9 +69,10 @@ enum {
 
 static int use_dither = FALSE;
 
-static bool editor_view_msg_proc (JWidget widget, JMessage msg);
-static bool editor_msg_proc (JWidget widget, JMessage msg);
-static void editor_request_size (JWidget widget, int *w, int *h);
+static bool editor_view_msg_proc(JWidget widget, JMessage msg);
+static bool editor_msg_proc(JWidget widget, JMessage msg);
+static void editor_request_size(JWidget widget, int *w, int *h);
+static void editor_setcursor(JWidget widget, int x, int y);
 
 JWidget editor_view_new(void)
 {
@@ -94,6 +96,8 @@ JWidget editor_new(void)
 
   editor->cursor_thick = 0;
   editor->old_cursor_thick = 0;
+  editor->cursor_candraw = FALSE;
+  editor->cursor_eyedropper = FALSE;
 
   jwidget_add_hook(widget, editor_type(), editor_msg_proc, editor);
   jwidget_focusrest(widget, TRUE);
@@ -276,15 +280,15 @@ void editor_update(JWidget widget)
  */
 void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
 {
-  Editor *editor = editor_data (widget);
-  JWidget view = jwidget_get_view (widget);
-  JRect vp = jview_get_viewport_position (view);
+  Editor *editor = editor_data(widget);
+  JWidget view = jwidget_get_view(widget);
+  JRect vp = jview_get_viewport_position(view);
   int source_x, source_y, dest_x, dest_y, width, height;
   int scroll_x, scroll_y;
 
   /* get scroll */
 
-  jview_get_scroll (view, &scroll_x, &scroll_y);
+  jview_get_scroll(view, &scroll_x, &scroll_y);
 
   /* output information */
 
@@ -804,22 +808,10 @@ void show_drawing_cursor(JWidget widget)
 
   assert(editor->sprite != NULL);
 
-  if (!sprite_is_locked(editor->sprite) &&
-      editor->sprite->layer != NULL &&
-      layer_is_image(editor->sprite->layer) &&
-      layer_is_readable(editor->sprite->layer) &&
-      layer_is_writable(editor->sprite->layer) &&
-      layer_get_cel(editor->sprite->layer, editor->sprite->frame) != NULL) {
-    jmouse_set_cursor(JI_CURSOR_NULL);
-
-    if (!editor->cursor_thick) {
-      jmouse_hide();
-      editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
-      jmouse_show();
-    }
-  }
-  else {
-    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+  if (!editor->cursor_thick && editor->cursor_candraw) {
+    jmouse_hide();
+    editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
+    jmouse_show();
   }
 }
 
@@ -832,28 +824,43 @@ void hide_drawing_cursor(JWidget widget)
     editor_clean_cursor(widget);
     jmouse_show();
   }
-
-  jmouse_set_cursor(JI_CURSOR_NORMAL);
 }
 
-void editor_update_status_bar_for_standby(JWidget widget)
+void editor_update_statusbar_for_standby(JWidget widget)
 {
   Editor *editor = editor_data(widget);
+  char buf[256];
   int x, y;
 
   screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
-  status_bar_set_text(app_get_status_bar(), 0,
-		      "%s %3d %3d (%s %3d %3d) [%s %d]",
-		      _("Pos"), x, y,
-		      _("Size"),
-		      ((editor->sprite->mask->bitmap)?
-		       editor->sprite->mask->w:
-		       editor->sprite->w),
-		      ((editor->sprite->mask->bitmap)?
-		       editor->sprite->mask->h:
-		       editor->sprite->h),
-		      _("Frame"), editor->sprite->frame+1);
+  if (editor->cursor_eyedropper) {
+    color_t color = color_from_image(editor->sprite->imgtype,
+				     sprite_getpixel(editor->sprite, x, y));
+
+    usprintf(buf, "%s ", _("Color"));
+    color_to_formalstring(editor->sprite->imgtype,
+			  color,
+			  buf+ustrlen(buf),
+			  sizeof(buf)-ustrlen(buf), TRUE);
+  }
+  else {
+    ustrcpy(buf, empty_string);
+  }
+
+  statusbar_set_text
+    (app_get_statusbar(), 0,
+     "%s %3d %3d (%s %3d %3d) [%s %d] %s",
+     _("Pos"), x, y,
+     _("Size"),
+     ((editor->sprite->mask->bitmap)?
+      editor->sprite->mask->w:
+      editor->sprite->w),
+     ((editor->sprite->mask->bitmap)?
+      editor->sprite->mask->h:
+      editor->sprite->h),
+     _("Frame"), editor->sprite->frame+1,
+     buf);
 }
 
 void editor_refresh_region(JWidget widget)
@@ -1002,10 +1009,10 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	x2 = x1 + (editor->sprite->w << editor->zoom) - 1;
 	y2 = y1 + (editor->sprite->h << editor->zoom) - 1;
 
-	rectfill_exclude(ji_screen,
-			 widget->rc->x1, widget->rc->y1,
-			 widget->rc->x2-1, widget->rc->y2-1,
-			 x1, y1, x2, y2, makecol(128, 128, 128));
+	jrectexclude(ji_screen,
+		     widget->rc->x1, widget->rc->y1,
+		     widget->rc->x2-1, widget->rc->y2-1,
+		     x1, y1, x2, y2, makecol(128, 128, 128));
 
 	/* draw the sprite in the editor */
 	editor_draw_sprite(widget, 0, 0,
@@ -1065,23 +1072,27 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOUSEENTER:
-      if (editor->state == EDIT_MOVING_SCROLL)
-	break;
+      /* when the mouse enter to the editor, we can calculate the
+	 'cursor_candraw' field to avoid a heavy if-condition in the
+	 'editor_setcursor' routine */
+      editor->cursor_candraw =
+	(editor->sprite != NULL &&
+	 !sprite_is_locked(editor->sprite) &&
+	 editor->sprite->layer != NULL &&
+	 layer_is_image(editor->sprite->layer) &&
+	 layer_is_readable(editor->sprite->layer) &&
+	 layer_is_writable(editor->sprite->layer) &&
+	 layer_get_cel(editor->sprite->layer,
+		       editor->sprite->frame) != NULL);
 
-      if (editor->sprite) {
-	show_drawing_cursor(widget);
-      }
-      else {
-	hide_drawing_cursor(widget);
-	app_default_status_bar_message();
-      }
+      if (msg->any.shifts & KB_ALT_FLAG)
+	editor->cursor_eyedropper = TRUE;
       break;
 
     case JM_MOUSELEAVE:
-      if (editor->state == EDIT_MOVING_SCROLL)
-	break;
-
       hide_drawing_cursor(widget);
+      if (editor->cursor_eyedropper)
+	editor->cursor_eyedropper = FALSE;
       break;
 
     case JM_BUTTONPRESSED: {
@@ -1096,8 +1107,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	  (msg->mouse.middle && has_only_shifts(msg, 0))) {
 	editor->state = EDIT_MOVING_SCROLL;
 
-	hide_drawing_cursor(widget);
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+	editor_setcursor(widget, msg->mouse.x, msg->mouse.y);
       }
       /* move frames position */
       else if (msg->mouse.left && has_only_shifts(msg, KB_CTRL_FLAG)) {
@@ -1112,13 +1122,20 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	  return TRUE;
 	}
       }
+      /* call the eyedropper command */
+      else if (editor->cursor_eyedropper) {
+	Command *command = command_get_by_name(CMD_EYEDROPPER_TOOL);
+	if (command_is_enabled(command, NULL))
+	  command_execute(command, NULL);
+	return TRUE;
+      }
       /* draw */
       else if (current_tool) {
 	editor->state = EDIT_DRAWING;
       }
 
       /* set capture */
-      jwidget_capture_mouse(widget);
+      jwidget_hard_capture_mouse(widget);
     }
 
     case JM_MOTION: {
@@ -1141,10 +1158,12 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       }
       /* draw */
       else if (editor->state == EDIT_DRAWING) {
-	JWidget color_bar = app_get_color_bar();
-	const char *color;
-
-	color = color_bar_get_color(color_bar, msg->mouse.left ? 0: 1);
+	JWidget colorbar = app_get_colorbar();
+	color_t color = msg->mouse.left ?
+	  /* color with left button */
+	  colorbar_get_fg_color(colorbar):
+	  /* color with right button */
+	  color_mask();
 
 	/* call the tool-control routine */
 	control_tool(widget, current_tool, color);
@@ -1156,6 +1175,8 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       /* Draw cursor */
       if (editor->cursor_thick) {
 	int x, y;
+
+	/* jmouse_set_cursor(JI_CURSOR_NULL); */
 
 	x = msg->mouse.x;
 	y = msg->mouse.y;
@@ -1172,14 +1193,15 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 
       /* status bar text */
       if (editor->state == EDIT_STANDBY) {
-	editor_update_status_bar_for_standby(widget);
+	editor_update_statusbar_for_standby(widget);
       }
       else if (editor->state == EDIT_MOVING_SCROLL) {
 	int x, y;
 	screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
-	status_bar_set_text(app_get_status_bar(), 0,
-			    "Pos %3d %3d (Size %3d %3d)", x, y,
-			    editor->sprite->w, editor->sprite->h);
+	statusbar_set_text
+	  (app_get_statusbar(), 0,
+	   "Pos %3d %3d (Size %3d %3d)", x, y,
+	   editor->sprite->w, editor->sprite->h);
       }
       return TRUE;
     }
@@ -1188,26 +1210,36 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       if (!editor->sprite)
 	break;
 
-      if (editor->state == EDIT_MOVING_SCROLL) {
-	jmanager_free_mouse();
-
-	/* change mouse cursor */
-	jmouse_set_cursor(JI_CURSOR_NORMAL);
-      }
-
       editor->state = EDIT_STANDBY;
-      jwidget_release_mouse(widget);
+      editor_setcursor(widget, msg->mouse.x, msg->mouse.y);
 
-      show_drawing_cursor(widget);
+      jwidget_release_mouse(widget);
       return TRUE;
 
-    case JM_CHAR:
-      if (!editor_keys_toset_zoom(widget, msg->key.scancode) &&
-	  !editor_keys_toset_brushsize(widget, msg->key.scancode) &&
-	  !editor_keys_toget_pixels(widget, msg->key.scancode))
-	return FALSE;
-      else
+    case JM_KEYPRESSED:
+      if (editor_keys_toset_zoom(widget, msg->key.scancode) ||
+	  editor_keys_toset_brushsize(widget, msg->key.scancode))
 	return TRUE;
+
+      /* eye-dropper is activated with ALT key */
+      if (msg->key.scancode == KEY_ALT &&
+	  jwidget_has_mouse(widget)) {
+	editor->cursor_eyedropper = TRUE;
+	editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	return TRUE;
+      }
+      break;
+
+    case JM_KEYRELEASED:
+      if (editor->cursor_eyedropper) {
+	/* eye-dropper is deactivated with ALT key */
+	if (msg->key.scancode == KEY_ALT) {
+	  editor->cursor_eyedropper = FALSE;
+	  editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	  return TRUE;
+	}
+      }
+      break;
 
     case JM_WHEEL:
       if (editor->state == EDIT_STANDBY) {
@@ -1286,16 +1318,19 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       break;
-      
+
+    case JM_SETCURSOR:
+      editor_setcursor(widget, msg->mouse.x, msg->mouse.y);
+      return TRUE;
+
   }
 
   return FALSE;
 }
 
-/**********************************************************************/
-/* request size for the editor viewport */
-/**********************************************************************/
-
+/**
+ * Returns size for the editor viewport
+ */
 static void editor_request_size(JWidget widget, int *w, int *h)
 {
   Editor *editor = editor_data(widget);
@@ -1315,5 +1350,47 @@ static void editor_request_size(JWidget widget, int *w, int *h)
   else {
     *w = 4;
     *h = 4;
+  }
+}
+
+static void editor_setcursor(JWidget widget, int x, int y)
+{
+  Editor *editor = editor_data(widget);
+
+  switch (editor->state) {
+
+    case EDIT_MOVING_SCROLL:
+      hide_drawing_cursor(widget);
+      jmouse_set_cursor(JI_CURSOR_MOVE);
+      break;
+
+    case EDIT_DRAWING:
+      jmouse_set_cursor(JI_CURSOR_NULL);
+      show_drawing_cursor(widget);
+      break;
+
+    case EDIT_STANDBY:
+      if (editor->sprite) {
+	if (editor->cursor_candraw) {
+	  if (editor->cursor_eyedropper) {
+	    hide_drawing_cursor(widget);
+	    jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
+	  }
+	  else {
+	    jmouse_set_cursor(JI_CURSOR_NULL);
+	    show_drawing_cursor(widget);
+	  }
+	}
+	else {
+	  hide_drawing_cursor(widget);
+	  jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+	}
+      }
+      else {
+	hide_drawing_cursor(widget);
+	jmouse_set_cursor(JI_CURSOR_NORMAL);
+      }
+      break;
+
   }
 }

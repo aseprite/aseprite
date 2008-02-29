@@ -247,7 +247,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       break;
     }
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus(widget) && !jlist_empty(widget->children)) {
 	int select = jlistbox_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);

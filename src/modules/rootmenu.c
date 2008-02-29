@@ -93,8 +93,8 @@ static int load_root_menu(void)
   DIRS *dirs, *dir;
   JXml xml;
 
-  if (app_get_menu_bar())
-    jmenubar_set_menu(app_get_menu_bar(), NULL);
+  if (app_get_menubar())
+    jmenubar_set_menu(app_get_menubar(), NULL);
 
   /* destroy `root-menu' if it exists */
   if (root_menu) {
@@ -202,8 +202,8 @@ static int load_root_menu(void)
   }
 
   /* sets the "menu" of the "menu-bar" to the new "root-menu" */
-  if (app_get_menu_bar()) {
-    jmenubar_set_menu(app_get_menu_bar(), root_menu);
+  if (app_get_menubar()) {
+    jmenubar_set_menu(app_get_menubar(), root_menu);
     jwindow_remap(app_get_top_window());
     jwidget_dirty(app_get_top_window());
   }

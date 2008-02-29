@@ -31,18 +31,18 @@ static void cmd_advanced_mode_execute(const char *argument)
   advanced_mode = !advanced_mode;
 
   if (advanced_mode) {
-    jwidget_hide(app_get_tool_bar());
-    jwidget_hide(app_get_menu_bar());
-    jwidget_hide(app_get_status_bar());
-    jwidget_hide(app_get_color_bar());
-    jwidget_hide(app_get_tabs_bar());
+    jwidget_hide(app_get_toolbar());
+    jwidget_hide(app_get_menubar());
+    jwidget_hide(app_get_statusbar());
+    jwidget_hide(app_get_colorbar());
+    jwidget_hide(app_get_tabsbar());
   }
   else {
-    jwidget_show(app_get_tool_bar());
-    jwidget_show(app_get_menu_bar());
-    jwidget_show(app_get_status_bar());
-    jwidget_show(app_get_color_bar());
-    jwidget_show(app_get_tabs_bar());
+    jwidget_show(app_get_toolbar());
+    jwidget_show(app_get_menubar());
+    jwidget_show(app_get_statusbar());
+    jwidget_show(app_get_colorbar());
+    jwidget_show(app_get_tabsbar());
   }
 
   jwindow_remap(app_get_top_window());

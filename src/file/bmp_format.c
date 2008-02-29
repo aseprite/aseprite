@@ -694,7 +694,7 @@ static bool save_BMP(FileOp *fop)
 	if (image->imgtype == IMAGE_INDEXED)
 	  fputc(image->method->getpixel(image, j, i), f);
 	else if (image->imgtype == IMAGE_GRAYSCALE)
-	  fputc(_graya_getk(image->method->getpixel(image, j, i)), f);
+	  fputc(_graya_getv(image->method->getpixel(image, j, i)), f);
       }
       else {
         c = image->method->getpixel(image, j, i);

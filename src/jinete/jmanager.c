@@ -106,20 +106,23 @@ static bool first_time_poll;    /* TRUE when we don't enter in poll yet */
 static char old_readed_key[KEY_MAX]; /* keyboard status of previous
 					poll */
 
+static unsigned key_repeated[KEY_MAX];
+
 /* manager widget */
 static bool manager_msg_proc(JWidget widget, JMessage msg);
 static void manager_request_size(JWidget widget, int *w, int *h);
 static void manager_set_position(JWidget widget, JRect rect);
-static void dispatch_messages(JWidget widget);
+static void manager_pump_queue(JWidget widget);
 static void manager_redraw_region(JWidget widget, JRegion region);
 
 /* auxiliary */
+static void generate_setcursor_message(void);
 static void remove_msgs_for(JWidget widget, JMessage msg);
 static void generate_proc_windows_list(void);
 static void generate_proc_windows_list2(JWidget manager);
 static int some_parent_is_focusrest(JWidget widget);
 static JWidget find_magnetic_widget(JWidget widget);
-static JMessage new_mouse_msg(int type);
+static JMessage new_mouse_msg(int type, JWidget destination);
 static void broadcast_key_msg(JWidget manager, JMessage msg);
 static Filter *filter_new(int message, JWidget widget);
 static void filter_free(Filter *filter);
@@ -179,8 +182,10 @@ JWidget jmanager_new(void)
     double_click_ticks = 0;
 
     /* reset keyboard */
-    for (c=0; c<KEY_MAX; c++)
+    for (c=0; c<KEY_MAX; c++) {
       old_readed_key[c] = 0;
+      key_repeated[c] = 0;
+    }
 
     /* timers */
     timers = NULL;
@@ -226,11 +231,13 @@ void jmanager_free(JWidget widget)
     }
 
     /* destroy timers */
-    for (c=0; c<n_timers; ++c)
-      if (timers[c])
-	jfree(timers[c]);
-    jfree(timers);
-    n_timers = 0;
+    if (timers != NULL) {
+      for (c=0; c<n_timers; ++c)
+	if (timers[c] != NULL)
+	  jfree(timers[c]);
+      jfree(timers);
+      n_timers = 0;
+    }
 
     /* finish theme */
     ji_set_theme(NULL);
@@ -357,100 +364,97 @@ bool jmanager_generate_messages(JWidget manager)
 
     /* mouse movement */
     if (mousemove) {
-      msg = new_mouse_msg(JM_MOTION);
-
       /* reset double click status */
       double_click_level = DOUBLE_CLICK_NONE;
+      JWidget destination;
+
+      if (capture_widget && capture_widget->flags & JI_HARDCAPTURE)
+	destination = capture_widget;
+      else
+	destination = mouse_widget;
 
       /* send the mouse movement message */
-      if (capture_widget)
-	jmessage_broadcast_to_parents(msg, capture_widget);
-      else if (mouse_widget)
-	jmessage_broadcast_to_parents(msg, mouse_widget);
-
-      jmanager_enqueue_message(msg);
+      if (destination) {
+	msg = new_mouse_msg(JM_MOTION, destination);
+	jmanager_enqueue_message(msg);
+      }
+      generate_setcursor_message();
     }
   }
 
   /* mouse wheel */
   if (jmouse_z(0) != jmouse_z(1)) {
-    msg = new_mouse_msg(JM_WHEEL);
-
-    /* send the mouse wheel message */
-    if (capture_widget)
-      jmessage_broadcast_to_parents(msg, capture_widget);
-    else if (mouse_widget)
-      jmessage_broadcast_to_parents(msg, mouse_widget);
-
-    jmanager_enqueue_message(msg);
+    if (capture_widget || mouse_widget) {
+      msg = new_mouse_msg(JM_WHEEL,
+			  capture_widget ? capture_widget:
+					   mouse_widget);
+      jmanager_enqueue_message(msg);
+    }
   }
 
   /* mouse clicks */
   if ((jmouse_b(0) != jmouse_b(1)) &&
       ((!jmouse_b(0)) || (!jmouse_b(1)))) {
-    int current_ticks = ji_clock;
+    if (capture_widget || mouse_widget) {
+      int current_ticks = ji_clock;
 
-    /* press and release button messages */
-    msg = new_mouse_msg((!jmouse_b(1))? JM_BUTTONPRESSED:
-					JM_BUTTONRELEASED);
+      msg = new_mouse_msg(!jmouse_b(1) ? JM_BUTTONPRESSED:
+					 JM_BUTTONRELEASED,
+			  capture_widget ? capture_widget:
+					   mouse_widget);
 
-    /**********************************************************************/
-    /* Double Click */
-    if (msg->type == JM_BUTTONPRESSED) {
-      if (double_click_level != DOUBLE_CLICK_NONE) {
-	/* time out, back to NONE */
-	if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
-	  double_click_level = DOUBLE_CLICK_NONE;
-	}
-	else if (double_click_buttons == msg->mouse.flags) {
-	  if (double_click_level == DOUBLE_CLICK_UP) {
-	    msg->type = JM_DOUBLECLICK;
+      /**********************************************************************/
+      /* Double Click */
+      if (msg->type == JM_BUTTONPRESSED) {
+	if (double_click_level != DOUBLE_CLICK_NONE) {
+	  /* time out, back to NONE */
+	  if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
+	    double_click_level = DOUBLE_CLICK_NONE;
 	  }
+	  else if (double_click_buttons == msg->mouse.flags) {
+	    if (double_click_level == DOUBLE_CLICK_UP) {
+	      msg->type = JM_DOUBLECLICK;
+	    }
+	    else {
+	      double_click_level = DOUBLE_CLICK_NONE;
+	    }
+	  }
+	  /* press other button, back to NONE */
 	  else {
 	    double_click_level = DOUBLE_CLICK_NONE;
 	  }
 	}
-	/* press other button, back to NONE */
-	else {
-	  double_click_level = DOUBLE_CLICK_NONE;
-	}
-      }
 
-      /* this could be the beginning of the state */
-      if (double_click_level == DOUBLE_CLICK_NONE) {
-	double_click_level = DOUBLE_CLICK_DOWN;
-	double_click_buttons = msg->mouse.flags;
-	double_click_ticks = current_ticks;
-      }
-    }
-    else if (msg->type == JM_BUTTONRELEASED) {
-      if (double_click_level != DOUBLE_CLICK_NONE) {
-	/* time out, back to NONE */
-	if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
-	  double_click_level = DOUBLE_CLICK_NONE;
+	/* this could be the beginning of the state */
+	if (double_click_level == DOUBLE_CLICK_NONE) {
+	  double_click_level = DOUBLE_CLICK_DOWN;
+	  double_click_buttons = msg->mouse.flags;
+	  double_click_ticks = current_ticks;
 	}
-	else if (double_click_buttons == msg->mouse.flags) {
-	  if (double_click_level == DOUBLE_CLICK_DOWN) {
-	    double_click_level = DOUBLE_CLICK_UP;
-	    double_click_ticks = current_ticks;
+      }
+      else if (msg->type == JM_BUTTONRELEASED) {
+	if (double_click_level != DOUBLE_CLICK_NONE) {
+	  /* time out, back to NONE */
+	  if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
+	    double_click_level = DOUBLE_CLICK_NONE;
+	  }
+	  else if (double_click_buttons == msg->mouse.flags) {
+	    if (double_click_level == DOUBLE_CLICK_DOWN) {
+	      double_click_level = DOUBLE_CLICK_UP;
+	      double_click_ticks = current_ticks;
+	    }
+	  }
+	  /* press other button, back to NONE */
+	  else {
+	    double_click_level = DOUBLE_CLICK_NONE;
 	  }
 	}
-	/* press other button, back to NONE */
-	else {
-	  double_click_level = DOUBLE_CLICK_NONE;
-	}
       }
-    }
 
-    /* add receivers of the message */
-    
-    if (capture_widget)
-      jmessage_broadcast_to_parents(msg, capture_widget);
-    else if (mouse_widget) {
       /* Z-Order:
 	 Send the window to top (only when you click in a window
 	 that aren't the desktop) */
-      if (msg->type == JM_BUTTONPRESSED) {
+      if (!capture_widget && msg->type == JM_BUTTONPRESSED) {
 	JWidget window = jwidget_get_window(mouse_widget);
 	JWidget win_manager = window ? jwidget_get_manager(window): NULL;
 
@@ -480,10 +484,8 @@ bool jmanager_generate_messages(JWidget manager)
 	jmanager_set_focus(mouse_widget);
       }
 
-      jmessage_broadcast_to_parents(msg, mouse_widget);
+      jmanager_enqueue_message(msg);
     }
-
-    jmanager_enqueue_message(msg);
   }
 
   /* generate JM_CHAR/JM_KEYPRESSED messages */
@@ -491,37 +493,41 @@ bool jmanager_generate_messages(JWidget manager)
     int readkey_value = readkey();
 
     /* char message first */
-    msg = jmessage_new_key_related(JM_CHAR, readkey_value);
-    broadcast_key_msg(manager, msg);
+    msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
 
-    /* key-pressed message is dependent from char message (if char
-       message isn't used, we send the key-pressed message) */
     c = readkey_value >> 8;
-    if (old_readed_key[c] != key[c] && !old_readed_key[c]) {
-      JMessage sub_msg = jmessage_new_key_related(JM_KEYPRESSED,
-						  readkey_value);
-      old_readed_key[c] = key[c];
+    old_readed_key[c] = key[c];
+    msg->key.repeat = key_repeated[c]++;
 
-      /* same address */
-      jlist_free(sub_msg->any.widgets);
-      sub_msg->any.widgets = jlist_copy(msg->any.widgets);
-
-      jmessage_set_sub_msg(msg, sub_msg);
-      jmessage_free(sub_msg);
-    }
-
+    broadcast_key_msg(manager, msg);
     jmanager_enqueue_message(msg);
   }
 
-  /* generate JM_KEYRELEASED messages */
   for (c=0; c<KEY_MAX; c++) {
-    if (old_readed_key[c] != key[c] && old_readed_key[c]) {
-      /* press/release key interface */
-      msg = jmessage_new_key_related(JM_KEYRELEASED,
-				     (c << 8) | scancode_to_ascii(c));
-      old_readed_key[c] = key[c];
-      broadcast_key_msg(manager, msg);
-      jmanager_enqueue_message(msg);
+    if (old_readed_key[c] != key[c]) {
+      /* generate JM_KEYRELEASED messages (old key state is activated,
+	 the new one is deactivated) */
+      if (old_readed_key[c]) {
+	/* press/release key interface */
+	msg = jmessage_new_key_related(JM_KEYRELEASED,
+				       (c << 8) | scancode_to_ascii(c));
+	old_readed_key[c] = key[c];
+	key_repeated[c] = 0;
+
+	broadcast_key_msg(manager, msg);
+	jmanager_enqueue_message(msg);
+      }
+      /* generate JM_KEYPRESSED messages for modifiers */
+      else if (c >= KEY_MODIFIERS) {
+	/* press/release key interface */
+	msg = jmessage_new_key_related(JM_KEYPRESSED,
+				       (c << 8) | scancode_to_ascii(c));
+	old_readed_key[c] = key[c];
+	msg->key.repeat = key_repeated[c]++;
+
+	broadcast_key_msg(manager, msg);
+	jmanager_enqueue_message(msg);
+      }
     }
   }
 
@@ -564,13 +570,14 @@ bool jmanager_generate_messages(JWidget manager)
 void jmanager_dispatch_messages(JWidget manager)
 {
   JMessage msg;
+
+  assert(manager != NULL);
   
   /* add the "Queue Processing" message for the manager */
-  msg = new_mouse_msg(JM_QUEUEPROCESSING);
-  jmessage_add_dest(msg, manager);
+  msg = new_mouse_msg(JM_QUEUEPROCESSING, manager);
   jmanager_enqueue_message(msg);
 
-  dispatch_messages(manager);
+  manager_pump_queue(manager);
 }
 
 /**
@@ -828,6 +835,7 @@ void jmanager_set_mouse(JWidget widget)
       }
 
       jmanager_enqueue_message(msg);
+      generate_setcursor_message();
     }
 
     jlist_free(widget_parents);
@@ -959,7 +967,7 @@ void _jmanager_open_window(JWidget manager, JWidget window)
 
   /* broadcast the open message */
   msg = jmessage_new(JM_OPEN);
-  jmessage_broadcast_to_children(msg, window);
+  jmessage_add_dest(msg, window);
   jmanager_enqueue_message(msg);
 
   /* update the new windows list to show */
@@ -1011,7 +1019,7 @@ void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_backgro
 
   /* close message */
   msg = jmessage_new(JM_CLOSE);
-  jmessage_broadcast_to_children(msg, window);
+  jmessage_add_dest(msg, window);
   jmanager_enqueue_message(msg);
 
   /* update manager list stuff */
@@ -1063,24 +1071,35 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       jdraw_rectfill(&msg->draw.rect, widget->theme->desktop_color);
       return TRUE;
 
-    case JM_CHAR:
-#if 0				/* TODO do this */
-      /* close desktop? */
-      if (msg->key.scancode == KEY_ESC) {
-	JWidget window;
-	JLink link;
+    case JM_KEYPRESSED:
+    case JM_KEYRELEASED: {
+      JLink link, link2;
 
-	JI_LIST_FOR_EACH(widget->children, link) {
-	  window = link->data;
-	  if (jwindow_is_desktop(window)) {
-	    jwindow_close(window, widget);
+      msg->key.propagate_to_children = TRUE;
+      msg->key.propagate_to_parent = FALSE;
+
+      /* continue sending the message to the children of all windows
+	 (until a desktop or foreground window) */
+      JI_LIST_FOR_EACH(widget->children, link) {
+	JWidget w = (JWidget)link->data;
+
+	/* send to the window */
+	JI_LIST_FOR_EACH(w->children, link2)
+	  if (jwidget_send_message(link2->data, msg))
 	    return TRUE;
-	  }
-	}
+
+	if (jwindow_is_foreground(w) ||
+	    jwindow_is_desktop(w))
+	  break;
       }
-#endif
+
       /* check the focus movement */
-      return move_focus(widget, msg);
+      if (msg->type == JM_KEYPRESSED)
+	move_focus(widget, msg);
+
+      return TRUE;
+    }
+      
   }
 
   return FALSE;
@@ -1134,7 +1153,7 @@ static void manager_set_position(JWidget widget, JRect rect)
   jrect_free(old_pos);
 }
 
-static void dispatch_messages(JWidget widget_manager)
+static void manager_pump_queue(JWidget widget_manager)
 {
   JMessage msg, first_msg;
   JLink link, link2, next;
@@ -1169,100 +1188,89 @@ static void dispatch_messages(JWidget widget_manager)
     first_msg = msg;
 
     done = FALSE;
-    do {
-      JI_LIST_FOR_EACH(msg->any.widgets, link2) {
-	widget = link2->data;
+    JI_LIST_FOR_EACH(msg->any.widgets, link2) {
+      widget = link2->data;
 
 #ifdef REPORT_EVENTS
-	{
-	  static char *msg_name[] = {
-	    "Open",
-	    "Close",
-	    "Destroy",
-	    "Draw",
-	    "Signal",
-	    "Timer",
-	    "ReqSize",
-	    "SetPos",
-	    "WinMove",
-	    "DrawRgn",
-	    "DeferredFree",
-	    "DirtyChildren",
-	    "QueueProcessing",
-	    "Char",
-	    "KeyPressed",
-	    "KeyReleased",
-	    "FocusEnter",
-	    "FocusLeave",
-	    "ButtonPressed",
-	    "ButtonReleased",
-	    "DoubleClick",
-	    "MouseEnter",
-	    "MouseLeave",
-	    "Motion",
-	    "Wheel",
-	  };
-	  const char *string =
-	    (msg->type >= JM_OPEN &&
-	     msg->type <= JM_WHEEL) ? msg_name[msg->type]:
-				      "Unknown";
+      {
+	static char *msg_name[] = {
+	  "Open",
+	  "Close",
+	  "Destroy",
+	  "Draw",
+	  "Signal",
+	  "Timer",
+	  "ReqSize",
+	  "SetPos",
+	  "WinMove",
+	  "DrawRgn",
+	  "DeferredFree",
+	  "DirtyChildren",
+	  "QueueProcessing",
+	  "KeyPressed",
+	  "KeyReleased",
+	  "FocusEnter",
+	  "FocusLeave",
+	  "ButtonPressed",
+	  "ButtonReleased",
+	  "DoubleClick",
+	  "MouseEnter",
+	  "MouseLeave",
+	  "Motion",
+	  "SetCursor",
+	  "Wheel",
+	};
+	const char *string =
+	  (msg->type >= JM_OPEN &&
+	   msg->type <= JM_WHEEL) ? msg_name[msg->type]:
+				    "Unknown";
 
-	  printf("Event: %s (%d)\n", string, widget->id);
-	  fflush(stdout);
-	}
+	printf("Event: %s (%d)\n", string, widget->id);
+	fflush(stdout);
+      }
 #endif
 
-	/* draw message? */
-	if (msg->type == JM_DRAW) {
-	  /* hidden? */
-	  if (widget->flags & JI_HIDDEN)
-	    continue;
+      /* draw message? */
+      if (msg->type == JM_DRAW) {
+	/* hidden? */
+	if (widget->flags & JI_HIDDEN)
+	  continue;
 
-	  jmouse_hide();
-	  acquire_bitmap(ji_screen);
+	jmouse_hide();
+	acquire_bitmap(ji_screen);
 
-	  /* set clip */
-	  set_clip(ji_screen,
-		   msg->draw.rect.x1, msg->draw.rect.y1,
-		   msg->draw.rect.x2-1, msg->draw.rect.y2-1);
-#ifdef REPORT_EVENTS
-	  printf("set_clip(%d, %d, %d, %d)\n",
+	/* set clip */
+	set_clip(ji_screen,
 		 msg->draw.rect.x1, msg->draw.rect.y1,
 		 msg->draw.rect.x2-1, msg->draw.rect.y2-1);
-	  fflush(stdout);
+#ifdef REPORT_EVENTS
+	printf("set_clip(%d, %d, %d, %d)\n",
+	       msg->draw.rect.x1, msg->draw.rect.y1,
+	       msg->draw.rect.x2-1, msg->draw.rect.y2-1);
+	fflush(stdout);
 #endif
-/* 	  	rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
-/* 	  	vsync(); vsync(); vsync(); vsync(); */
-	}
-
-	/* call message handler */
-	done = jwidget_send_message(widget, msg);
-
-	/* restore clip */
-	if (msg->type == JM_DRAW) {
-	  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-
-	  /* dirty rectangles */
-	  if (ji_dirty_region)
-	    ji_add_dirty_rect(&msg->draw.rect);
-
-	  release_bitmap(ji_screen);
-	  jmouse_show();
-	}
-
-	if (done)
-	  break;
+	/* rectfill(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, makecol(255, 0, 0)); */
+	/* vsync(); vsync(); vsync(); vsync(); */
       }
 
-      /* done? */
-      if (done)
-	/* don't go to sub-msg */
-	msg = NULL;
-      else
-	/* use sub-msg */
-	msg = msg->any.sub_msg;
+      /* call message handler */
+      done = jwidget_send_message(widget, msg);
 
-    } while (msg);
+      /* restore clip */
+      if (msg->type == JM_DRAW) {
+	set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+
+	/* dirty rectangles */
+	if (ji_dirty_region)
+	  ji_add_dirty_rect(&msg->draw.rect);
+
+	release_bitmap(ji_screen);
+	jmouse_show();
+      }
+
+      if (done)
+	break;
+    }
 
     /* remove the message from the msg_queue */
     next = link->next;
@@ -1319,6 +1327,25 @@ static void manager_redraw_region(JWidget widget, JRegion region)
 			Internal routines
  **********************************************************************/
 
+static void generate_setcursor_message(void)
+{
+  JWidget destination;
+  JMessage msg;
+  
+  if (capture_widget &&
+      capture_widget->flags & JI_HARDCAPTURE)
+    destination = capture_widget;
+  else
+    destination = mouse_widget;
+
+  if (destination) {
+    msg = new_mouse_msg(JM_SETCURSOR, destination);
+    jmanager_enqueue_message(msg);
+  }
+  else
+    jmouse_set_cursor(JI_CURSOR_NORMAL);
+}
+
 static void remove_msgs_for(JWidget widget, JMessage msg)
 {
   JLink link, next;
@@ -1327,9 +1354,6 @@ static void remove_msgs_for(JWidget widget, JMessage msg)
     if (link->data == widget) 
       jlist_delete_link(msg->any.widgets, link);
   }
-
-  if (msg->any.sub_msg)
-    remove_msgs_for(widget, msg->any.sub_msg);
 }
 
 static void generate_proc_windows_list(void)
@@ -1384,9 +1408,11 @@ static JWidget find_magnetic_widget(JWidget widget)
     return NULL;
 }
 
-static JMessage new_mouse_msg(int type)
+static JMessage new_mouse_msg(int type, JWidget widget)
 {
   JMessage msg = jmessage_new(type);
+  if (!msg)
+    return NULL;
 
   msg->mouse.x = jmouse_x(0);
   msg->mouse.y = jmouse_y(0);
@@ -1397,34 +1423,24 @@ static JMessage new_mouse_msg(int type)
   msg->mouse.right = msg->mouse.flags & 2 ? TRUE: FALSE;
   msg->mouse.middle = msg->mouse.flags & 4 ? TRUE: FALSE;
 
+  assert(widget != NULL);
+  jmessage_add_dest(msg, widget);
+
   return msg;
 }
 
 static void broadcast_key_msg(JWidget manager, JMessage msg)
 {
-  JWidget window;
-  JLink link;
-
   /* send the message to the widget with capture */
-  if (capture_widget)
-    jmessage_broadcast_to_parents(msg, capture_widget);
+  if (capture_widget) {
+    jmessage_add_dest(msg, capture_widget);
+  }
+  /* send the msg to the focused widget */
+  else if (focus_widget) {
+    jmessage_add_dest(msg, focus_widget);
+  }
+  /* finally, send the message to the manager, it'll know what to do */
   else {
-    /* send the msg to the focused widget */
-    if (focus_widget)
-      jmessage_broadcast_to_parents(msg, focus_widget);
-
-    /* send to more closest desktop (if the window didn't in foreground) */
-    JI_LIST_FOR_EACH(manager->children, link) {
-      window = (JWidget)link->data;
-
-      jmessage_broadcast_to_children(msg, window);
-
-      if (jwindow_is_foreground(window) ||
-	  jwindow_is_desktop(window))
-	break;
-    }
-
-    /* finally, send the message to the manager, it'll know what to do */
     jmessage_add_dest(msg, manager);
   }
 }

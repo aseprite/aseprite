@@ -95,7 +95,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
   nvis_children = 0;
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
-    if (jwidget_is_visible(child))
+    if (!(child->flags & JI_HIDDEN))
       nvis_children++;
   }
 
@@ -104,7 +104,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
 
-    if (jwidget_is_hidden(child))
+    if (child->flags & JI_HIDDEN)
       continue;
 
     jwidget_request_size(child, &req_w, &req_h);
@@ -160,33 +160,33 @@ static void box_set_position(JWidget widget, JRect rect)
       JI_LIST_FOR_EACH(widget->children, link) {			\
 	child = (JWidget)link->data;					\
 									\
-	if (jwidget_is_visible(child)) {				\
+	if (!(child->flags & JI_HIDDEN)) {				\
 	  if (widget->align & JI_HOMOGENEOUS) {				\
 	    if (nvis_children == 1)					\
 	      child_width = width;					\
 	    else							\
 	      child_width = extra;					\
 									\
-	    nvis_children -= 1;						\
+	    --nvis_children;						\
 	    width -= extra;						\
 	  }								\
 	  else {							\
 	    jwidget_request_size(child, &req_w, &req_h);		\
 									\
-	    child_width = req_##w;/* + child->padding * 2; */		\
+	    child_width = req_##w;					\
 									\
-	    if (jwidget_is_expansive(child)) {			\
+	    if (jwidget_is_expansive(child)) {				\
 	      if (nexpand_children == 1)				\
 		child_width += width;					\
 	      else							\
 		child_width += extra;					\
 									\
-	      nexpand_children -= 1;					\
+	      --nexpand_children;					\
 	      width -= extra;						\
 	    }								\
 	  }								\
 									\
-	  w = MAX(1, child_width/*  - child->padding * 2 */);		\
+	  w = MAX(1, child_width);					\
 									\
 	  if (widget->align & JI_HORIZONTAL)				\
 	    jrect_replace(&cpos, x, y, x+w, y+h);			\
@@ -194,10 +194,6 @@ static void box_set_position(JWidget widget, JRect rect)
 	    jrect_replace(&cpos, y, x, y+h, x+w);			\
 									\
 	  jwidget_set_rect(child, &cpos);				\
-	  /* 	    x = x + child->padding; */				\
-	  /* 	  child->w = w; */					\
-	  /* child->h = h; */						\
-	  /* jwidget_size(child, w, h); */				\
 									\
 	  x += child_width + widget->child_spacing;			\
 	}								\
@@ -221,7 +217,7 @@ static void box_set_position(JWidget widget, JRect rect)
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
 
-    if (jwidget_is_visible(child)) {
+    if (!(child->flags & JI_HIDDEN)) {
       nvis_children++;
       if (jwidget_is_expansive(child))
 	nexpand_children++;

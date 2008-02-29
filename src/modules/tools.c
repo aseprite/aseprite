@@ -69,7 +69,7 @@ static bool view_grid;
 static JRect grid;
 static bool onionskin;
 
-static char *cursor_color = NULL;
+static color_t cursor_color;
 static int _cursor_color;
 static int _cursor_mask;
 
@@ -78,15 +78,13 @@ static int tool_color;
 
 static void update_cursor_color(void)
 {
-  if (cursor_color) {
-    if (ji_screen)
-      _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
-					    cursor_color);
-    else
-      _cursor_color = 0;
+  if (ji_screen)
+    _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
+					  cursor_color);
+  else
+    _cursor_color = 0;
 
-    _cursor_mask = (ustrcmp(cursor_color, "mask") == 0);
-  }
+  _cursor_mask = (color_type(cursor_color) == COLOR_TYPE_MASK);
 }
 
 int init_module_tools(void)
@@ -109,7 +107,7 @@ int init_module_tools(void)
   brush_set_angle(brush, MID(0, angle, 360));
 
   /* cursor color */
-  set_cursor_color(get_config_string("Tools", "CursorColor", "mask"));
+  set_cursor_color(get_config_color("Tools", "CursorColor", color_mask()));
 
   /* tools configuration */
   glass_dirty = get_config_int("Tools", "GlassDirty", 128);
@@ -137,7 +135,7 @@ int init_module_tools(void)
 
 void exit_module_tools(void)
 {
-  set_config_string("Tools", "CursorColor", cursor_color);
+  set_config_color("Tools", "CursorColor", cursor_color);
   set_config_int("Tools", "GlassDirty", glass_dirty);
   set_config_int("Tools", "SprayWidth", spray_width);
   set_config_int("Tools", "AirSpeed", air_speed);
@@ -155,7 +153,6 @@ void exit_module_tools(void)
 
   jrect_free(grid);
   brush_free(brush);
-  jfree(cursor_color);
 
   unhook_palette_changes(update_cursor_color);
 }
@@ -175,14 +172,14 @@ void select_tool(Tool *tool)
   current_tool = tool;
 
   /* update status-bar */
-  if (app_get_status_bar() &&
-      jwidget_is_visible(app_get_status_bar()))
-    status_bar_set_text(app_get_status_bar(), 500, "%s: %s",
+  if (app_get_statusbar() &&
+      jwidget_is_visible(app_get_statusbar()))
+    statusbar_set_text(app_get_statusbar(), 500, "%s: %s",
 			_("Tool"), current_tool->translated_name);
 
   /* update tool-bar */
-  if (app_get_tool_bar())
-    tool_bar_update(app_get_tool_bar());
+  if (app_get_toolbar())
+    toolbar_update(app_get_toolbar());
 }
 
 void select_tool_by_name(const char *tool_name)
@@ -257,18 +254,14 @@ bool is_cursor_mask(void)
   return _cursor_mask;
 }
 
-const char *get_cursor_color(void)
+color_t get_cursor_color(void)
 {
   return cursor_color;
 }
 
-void set_cursor_color(const char *color)
+void set_cursor_color(color_t color)
 {
-  if (cursor_color)
-    jfree(cursor_color);
-
-  cursor_color = jstrdup(color);
-
+  cursor_color = color;
   update_cursor_color();
 }
 
@@ -605,7 +598,6 @@ Tool *ase_tools_list[] =
 /* TOOL CONTROL                                            */
 /***********************************************************/
 
-/* static void apply_grid(int *x, int *y); */
 static void fourchain_line(int x1, int y1, int x2, int y2, void *data);
 
 static void my_image_hline4_opaque(int x1, int y, int x2, void *data);
@@ -639,10 +631,10 @@ static void marker_scroll_callback(int before_change)
 }
 
 /* controls any tool to draw in the current sprite */
-void control_tool(JWidget widget, Tool *tool, const char *_color)
+void control_tool(JWidget widget, Tool *tool, color_t _color)
 {
   Editor *editor = editor_data(widget);
-  JWidget status_bar = app_get_status_bar();
+  JWidget statusbar = app_get_statusbar();
   Dirty *dirty = NULL;
   int x1, y1, x2, y2;
   int old_x1, old_y1, old_x2, old_y2;
@@ -749,8 +741,8 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 
 	/* grid */
         if (use_grid) {
-	  apply_grid(&x1, &y1);
-	  apply_grid(&x2, &y2);
+	  apply_grid(&x1, &y1, TRUE);
+	  apply_grid(&x2, &y2, TRUE);
         }
 
 	/* square aspect */
@@ -801,8 +793,8 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 
 	/* grid */
         if (use_grid && (tool != &ase_tool_floodfill)) {
-	  apply_grid(&x1, &y1);
-	  apply_grid(&x2, &y2);
+	  apply_grid(&x1, &y1, TRUE);
+	  apply_grid(&x2, &y2, TRUE);
         }
 
 	x1 += offset_x;
@@ -818,7 +810,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 
 	  /* grid */
 	  if (use_grid)
-	    apply_grid(&pts[c*2], &pts[c*2+1]);
+	    apply_grid(&pts[c*2], &pts[c*2+1], TRUE);
 
 	  pts[c*2  ] += offset_x;
 	  pts[c*2+1] += offset_y;
@@ -1039,7 +1031,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
       editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
 
       /* update the state-bar */
-      if (jwidget_is_visible(status_bar)) {
+      if (jwidget_is_visible(statusbar)) {
 	if (tool->flags & TOOL_UPDATE_BOX) {
 	  char mode[256] = "";
 
@@ -1058,17 +1050,17 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 	    }
 	  }
 
-	  status_bar_set_text(status_bar, 0,
+	  statusbar_set_text(statusbar, 0,
 			      "%s %3d %3d %s %3d %3d (%s %3d %3d) %s",
 			      _start, x1, y1,
 			      _end, x2, y2,
 			      _size, ABS(x2-x1)+1, ABS(y2-y1)+1, mode);
 	}
 	else {
-	  status_bar_set_text(status_bar, 0, "%s %3d %3d", _pos, x1, y1);
+	  statusbar_set_text(statusbar, 0, "%s %3d %3d", _pos, x1, y1);
 	}
 
-	jwidget_flush_redraw(status_bar);
+	jwidget_flush_redraw(statusbar);
 	jmanager_dispatch_messages(ji_get_default_manager());
       }
 
@@ -1172,7 +1164,7 @@ void control_tool(JWidget widget, Tool *tool, const char *_color)
 }
 
 /* draws the "tool" traces with the given points */
-void do_tool_points(Sprite *sprite, Tool *tool, const char *_color,
+void do_tool_points(Sprite *sprite, Tool *tool, color_t _color,
 		    int npoints, int *x, int *y)
 {
   int x1=0, y1=0, x2=0, y2=0;
@@ -1280,17 +1272,22 @@ void do_tool_points(Sprite *sprite, Tool *tool, const char *_color,
   dirty_free(dirty);
 }
 
-void apply_grid(int *x, int *y)
+void apply_grid(int *x, int *y, bool flexible)
 {
   div_t d, dx, dy;
   int w = jrect_w(grid);
   int h = jrect_h(grid);
 
+  flexible = flexible ? 1: 0;
+
   dx = div(grid->x1, w);
   dy = div(grid->y1, h);
 
-  d = div((*x)-dx.rem, w); *x = dx.rem + d.quot*w + ((d.rem > w/2)? w-1: 0);
-  d = div((*y)-dy.rem, h); *y = dy.rem + d.quot*h + ((d.rem > h/2)? h-1: 0);
+  d = div((*x)-dx.rem, w);
+  *x = dx.rem + d.quot*w + ((d.rem > w/2)? w-flexible: 0);
+
+  d = div((*y)-dy.rem, h);
+  *y = dy.rem + d.quot*h + ((d.rem > h/2)? h-flexible: 0);
 }
 
 static void fourchain_line(int x1, int y1, int x2, int y2, void *data)
@@ -1353,7 +1350,7 @@ static void my_image_hline2_glass(int x1, int y, int x2, void *data)
 {
   register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
-  int c = _graya(_graya_getk(tool_color), glass_dirty);
+  int c = _graya(_graya_getv(tool_color), glass_dirty);
   int o = _graya_geta(tool_color);
 
   while (x--) {

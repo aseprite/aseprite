@@ -34,8 +34,6 @@
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 
-static int getpixel_sprite(Sprite *sprite, int x, int y);
-
 int editor_keys_toset_zoom(JWidget widget, int scancode)
 {
   Editor *editor = editor_data (widget);
@@ -114,61 +112,4 @@ int editor_keys_toset_brushsize(JWidget widget, int scancode)
   }
 
   return FALSE;
-}
-
-int editor_keys_toget_pixels(JWidget widget, int scancode)
-{
-  Editor *editor = editor_data (widget);
-
-  if ((editor->sprite) &&
-      (jwidget_has_mouse (widget)) &&
-      !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    /* TODO make these keys configurable */
-    /* get a color from the sprite */
-    if ((scancode == KEY_9) || (scancode == KEY_0)) {
-      char *color = NULL;
-      int x, y;
-
-      /* pixel position to get */
-      screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
-
-      /* get the color from the image */
-      color = color_from_image(editor->sprite->imgtype,
-			       getpixel_sprite(editor->sprite, x, y));
-
-      /* set the color of the color-bar */
-      color_bar_set_color(app_get_color_bar(),
-			  scancode == KEY_9 ? 0: 1, color, TRUE);
-
-      return TRUE;
-    }
-  }
-
-  return FALSE;
-}
-
-/**
- * Gets a pixel from the sprite in the specified position. If in the
- * specified coordinates there're background this routine will return
- * the 0 color (the mask-color).
- */
-static int getpixel_sprite(Sprite *sprite, int x, int y)
-{
-  Image *image;
-  int color = 0;
-
-  if ((x >= 0) && (y >= 0) && (x < sprite->w) && (y < sprite->h)) {
-    int old_bgcolor = sprite->bgcolor;
-    sprite->bgcolor = 0;
-    
-    image = image_new(sprite->imgtype, 1, 1);
-    image_clear(image, 0);
-    sprite_render(sprite, image, -x, -y);
-    color = image_getpixel(image, 0, 0);
-    image_free(image);
-
-    sprite->bgcolor = old_bgcolor;
-  }
-
-  return color;
 }

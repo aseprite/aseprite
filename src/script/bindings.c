@@ -151,29 +151,6 @@ void unregister_lua_object_metatable(void)
   lua_unref(get_lua_state(), metatable);
 }
 
-/**
- * Update global variables in the Lua state.
- */
-void update_global_script_variables(void)
-{
-  lua_State *L = get_lua_state();
-
-  lua_pushstring(L, VERSION);
-  lua_setglobal(L, "VERSION");
-
-  push_userdata(L, Type_Sprite, current_sprite);
-  lua_setglobal(L, "current_sprite");
-
-  push_userdata(L, Type_JWidget, current_editor);
-  lua_setglobal(L, "current_editor");
-
-  lua_pushnumber(L, ji_screen ? JI_SCREEN_W: 0);
-  lua_setglobal(L, "SCREEN_W");
-
-  lua_pushnumber(L, ji_screen ? JI_SCREEN_H: 0);
-  lua_setglobal(L, "SCREEN_H");
-}
-
 static void push_userdata(lua_State *L, int type, void *ptr)
 {
   if (!ptr)

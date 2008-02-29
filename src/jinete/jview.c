@@ -555,7 +555,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_MOTION:
-      if (jwidget_has_capture (widget)) {
+      if (jwidget_has_capture(widget)) {
 	View *view = jwidget_get_data(widget->parent, JI_VIEW);
 	int pos, len, bar_size, viewport_size;
 	int old_pos;

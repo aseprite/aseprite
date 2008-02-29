@@ -27,6 +27,7 @@
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
+#include "core/cfg.h"
 #include "dialogs/colsel.h"
 #include "modules/color.h"
 #include "modules/gui.h"
@@ -36,13 +37,6 @@
 #include "raster/undo.h"
 #include "script/functions.h"
 #include "util/misc.h"
-
-static const char *bg_table[] = {
-  "mask",
-  "rgb{0,0,0}",
-  "rgb{255,255,255}",
-  "rgb{255,0,255}"
-};
 
 static int _sprite_counter = 0;
 
@@ -55,7 +49,13 @@ static void cmd_new_file_execute(const char *argument)
   int imgtype, w, h, bg;
   char buf[1024];
   Sprite *sprite;
-  char *color;
+  color_t color;
+  color_t bg_table[] = {
+    color_mask(),
+    color_rgb(0, 0, 0, 255),
+    color_rgb(255, 255, 255, 255),
+    color_rgb(255, 0, 255, 255)
+  };
 
   /* load the window widget */
   window = load_widget("newspr.jid", "new_sprite");
@@ -94,6 +94,8 @@ static void cmd_new_file_execute(const char *argument)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == ok) {
+    bool ok = FALSE;
+
     /* get the options */
     if (jwidget_is_selected(radio1))      imgtype = IMAGE_RGB;
     else if (jwidget_is_selected(radio2)) imgtype = IMAGE_GRAYSCALE;
@@ -107,23 +109,24 @@ static void cmd_new_file_execute(const char *argument)
     h = MID(1, h, 9999);
 
     /* select the color */
-    color = NULL;
+    color = color_mask();
 
     if (bg >= 0 && bg <= 3) {
-      color = jstrdup(bg_table[bg]);
+      color = bg_table[bg];
+      ok = TRUE;
     }
     else {
-      const char *default_color =
-	get_config_string("NewSprite",
-			  "BackgroundCustom",
-			  "rgb{0,0,0}");
+      color = get_config_color("NewSprite",
+			       "BackgroundCustom",
+			       color_rgb(0, 0, 0, 255));
 
-      color = ji_color_select(imgtype, default_color);
-      if (color)
-	set_config_string("NewSprite", "BackgroundCustom", color);
+      if (ji_color_select(imgtype, &color)) {
+	set_config_color("NewSprite", "BackgroundCustom", color);
+	ok = TRUE;
+      }
     }
 
-    if (color) {
+    if (ok) {
       /* save the configuration */
       set_config_int("NewSprite", "Type", imgtype);
       set_config_int("NewSprite", "Width", w);
@@ -152,8 +155,6 @@ static void cmd_new_file_execute(const char *argument)
 	/* show the sprite to the user */
 	sprite_show(sprite);
       }
-
-      jfree(color);
     }
   }
 

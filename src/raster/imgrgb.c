@@ -28,7 +28,7 @@ static int rgb_regenerate_lines(Image *image)
   int y;
 
   if (LINES(image))
-    jfree (LINES(image));
+    jfree(LINES(image));
 
   image->line = jmalloc(sizeof(ase_uint32 *) * image->h);
   if (!LINES(image))

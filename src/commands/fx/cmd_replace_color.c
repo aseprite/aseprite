@@ -104,13 +104,13 @@ static void cmd_replace_color_execute(const char *argument)
   preview = preview_new(effect);
 
   button_color1 = color_button_new
-    (get_config_string("ReplaceColor", "Color1",
-		       color_bar_get_color(app_get_color_bar(), 0)),
+    (get_config_color("ReplaceColor", "Color1",
+		      colorbar_get_fg_color(app_get_colorbar())),
      current_sprite->imgtype);
 
   button_color2 = color_button_new
-    (get_config_string("ReplaceColor", "Color2",
-		       color_bar_get_color(app_get_color_bar(), 1)),
+    (get_config_color("ReplaceColor", "Color2",
+		      colorbar_get_bg_color(app_get_colorbar())),
      current_sprite->imgtype);
 
   target_button = target_button_new(current_sprite->imgtype, FALSE);
@@ -171,7 +171,7 @@ static int button_1_select_hook(JWidget widget, int user_data)
 {
   JWidget w = user_data == 1 ? button_color1: button_color2;
 
-  color_button_set_color(w, color_bar_get_color(app_get_color_bar(), 0));
+  color_button_set_color(w, colorbar_get_fg_color(app_get_colorbar()));
   color_change_hook(w, user_data);
 
   return TRUE;
@@ -181,7 +181,7 @@ static int button_2_select_hook(JWidget widget, int user_data)
 {
   JWidget w = user_data == 1 ? button_color1: button_color2;
 
-  color_button_set_color(w, color_bar_get_color(app_get_color_bar(), 1));
+  color_button_set_color(w, colorbar_get_bg_color(app_get_colorbar()));
   color_change_hook(w, user_data);
 
   return TRUE;
@@ -192,7 +192,7 @@ static int color_change_hook(JWidget widget, int user_data)
   char buf[64];
 
   sprintf(buf, "Color%d", user_data);
-  set_config_string("ReplaceColor", buf, color_button_get_color(widget));
+  set_config_color("ReplaceColor", buf, color_button_get_color(widget));
 
   make_preview();
   return FALSE;
@@ -222,16 +222,16 @@ static int preview_change_hook(JWidget widget, int user_data)
 static void make_preview(void)
 {
   Effect *effect = preview_get_effect(preview);
-  const char *from, *to;
+  color_t from, to;
   int fuzziness;
 
-  from = get_config_string("ReplaceColor", "Color1", "mask");
-  to = get_config_string("ReplaceColor", "Color2", "mask");
+  from = get_config_color("ReplaceColor", "Color1", color_mask());
+  to = get_config_color("ReplaceColor", "Color2", color_mask());
   fuzziness = get_config_int("ReplaceColor", "Fuzziness", 0);
 
   set_replace_colors(get_color_for_image(effect->dst->imgtype, from),
-		      get_color_for_image(effect->dst->imgtype, to),
-		      MID(0, fuzziness, 255));
+		     get_color_for_image(effect->dst->imgtype, to),
+		     MID(0, fuzziness, 255));
 
   if (jwidget_is_selected(check_preview))
     preview_restart(preview);

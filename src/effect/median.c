@@ -152,7 +152,7 @@ void apply_median2(Effect *effect)
     GET_MATRIX_DATA
       (ase_uint16, data.w, data.h, data.w/2, data.h/2,
        color = *src_address;
-       data.channel[0][c] = _graya_getk(color);
+       data.channel[0][c] = _graya_getv(color);
        data.channel[1][c] = _graya_geta(color);
        c++;
        );
@@ -165,7 +165,7 @@ void apply_median2(Effect *effect)
     if (effect->target.k)
       k = data.channel[0][data.ncolors/2];
     else
-      k = _graya_getk(color);
+      k = _graya_getv(color);
 
     if (effect->target.a)
       a = data.channel[1][data.ncolors/2];

@@ -32,6 +32,7 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
+#include "jinete/jdraw.h"
 #include "jinete/jfont.h"
 #include "jinete/jmanager.h"
 #include "jinete/jrect.h"
@@ -252,49 +253,6 @@ void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
 	putpixel(bmp, x+u, y+v, color);
 }
 
-void _ji_theme_rectedge(BITMAP *bmp,
-			int x1, int y1, int x2, int y2, int c1, int c2)
-{
-  vline(bmp, x1, y1, y2, c1);
-  vline(bmp, x2, y1, y2, c2);
-
-  hline(bmp, x1+1, y1, x2-1, c1);
-  hline(bmp, x1+1, y2, x2-1, c2);
-}
-
-void _ji_theme_rectfill_exclude(BITMAP *bmp,
-				int x1, int y1, int x2, int y2,
-				int ex1, int ey1, int ex2, int ey2, int color)
-{
-  if ((ex1 > x2) || (ex2 < x1) ||
-      (ey1 > y2) || (ey2 < y1))
-    rectfill(bmp, x1, y1, x2, y2, color);
-  else {
-    int y, my1, my2;
-
-    my1 = MAX(y1, ey1);
-    my2 = MIN(y2, ey2);
-
-    /* top */
-    for (y=y1; y<ey1; y++)
-      hline(bmp, x1, y, x2, color);
-
-    /* left */
-    if (x1 < ex1)
-      for (y=my1; y<=my2; y++)
-        hline(bmp, x1, y, ex1-1, color);
-
-    /* right */
-    if (x2 > ex2)
-      for (y=my1; y<=my2; y++)
-        hline(bmp, ex2+1, y, x2, color);
-
-    /* bottom */
-    for (y=ey2+1; y<=y2; y++)
-      hline(bmp, x1, y, x2, color);
-  }
-}
-
 void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 			    int *w, int *h, int bg, int fg)
 {
@@ -425,10 +383,9 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 
       draw_text(bmp, font, beg, xout, y, fg, bg, TRUE);
 
-      _ji_theme_rectfill_exclude
-	(bmp,
-	 x1, y, x2, y+textheight-1,
-	 xout, y, xout+len-1, y+textheight-1, bg);
+      jrectexclude(bmp,
+		   x1, y, x2, y+textheight-1,
+		   xout, y, xout+len-1, y+textheight-1, bg);
     }
 
     /* width */

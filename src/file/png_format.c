@@ -441,7 +441,7 @@ static bool save_PNG(FileOp *fop)
 
 	for (x=0; x<width; x++) {
 	  c = *(src_address++);
-	  *(dst_address++) = _graya_getk(c);
+	  *(dst_address++) = _graya_getv(c);
 	  *(dst_address++) = _graya_geta(c);
 	}
       }
@@ -453,7 +453,7 @@ static bool save_PNG(FileOp *fop)
 
 	for (x=0; x<width; x++) {
 	  c = *(src_address++);
-	  *(dst_address++) = _graya_getk(c);
+	  *(dst_address++) = _graya_getv(c);
 	}
       }
       /* PALETTE */

@@ -30,7 +30,6 @@
 #define CMD_CLOSE_ALL_FILES		"close_all_files"
 #define CMD_SCREEN_SHOT			"screen_shot"
 #define CMD_RECORD_SCREEN		"record_screen"
-#define CMD_ABOUT			"about"
 #define CMD_EXIT			"exit"
 /* edit */
 #define CMD_UNDO			"undo"
@@ -43,17 +42,6 @@
 #define CMD_FLIP_VERTICAL		"flip_vertical"
 #define CMD_REPLACE_COLOR		"replace_color"
 #define CMD_INVERT_COLOR		"invert_color"
-/* view */
-#define CMD_REFRESH			"refresh"
-#define CMD_CONFIGURE_SCREEN		"configure_screen"
-#define CMD_ADVANCED_MODE		"advanced_mode"
-#define CMD_MAKE_UNIQUE_EDITOR		"make_unique_editor"
-#define CMD_SPLIT_EDITOR_VERTICALLY	"split_editor_vertically"
-#define CMD_SPLIT_EDITOR_HORIZONTALLY	"split_editor_horizontally"
-#define CMD_CLOSE_EDITOR		"close_editor"
-#define CMD_PREVIEW_TILED		"preview_tiled"
-#define CMD_PREVIEW_NORMAL		"preview_normal"
-#define CMD_PREVIEW_FIT_TO_SCREEN	"preview_fit_to_screen"
 /* sprite */
 #define CMD_SPRITE_PROPERTIES		"sprite_properties"
 #define CMD_DUPLICATE_SPRITE		"duplicate_sprite"
@@ -94,6 +82,19 @@
 #define CMD_MASK_BY_COLOR		"mask_by_color"
 #define CMD_LOAD_MASK			"load_mask"
 #define CMD_SAVE_MASK			"save_mask"
+/* view */
+#define CMD_REFRESH			"refresh"
+#define CMD_CONFIGURE_SCREEN		"configure_screen"
+#define CMD_ADVANCED_MODE		"advanced_mode"
+#define CMD_MAKE_UNIQUE_EDITOR		"make_unique_editor"
+#define CMD_SPLIT_EDITOR_VERTICALLY	"split_editor_vertically"
+#define CMD_SPLIT_EDITOR_HORIZONTALLY	"split_editor_horizontally"
+#define CMD_CLOSE_EDITOR		"close_editor"
+#define CMD_SHOW_GRID			"show_grid"
+#define CMD_SNAP_TO_GRID		"snap_to_grid"
+#define CMD_PREVIEW_TILED		"preview_tiled"
+#define CMD_PREVIEW_NORMAL		"preview_normal"
+#define CMD_PREVIEW_FIT_TO_SCREEN	"preview_fit_to_screen"
 /* tools */
 #define CMD_CONFIGURE_TOOLS		"configure_tools"
 #define CMD_MARKER_TOOL			"marker_tool"
@@ -105,6 +106,8 @@
 #define CMD_LINE_TOOL			"line_tool"
 #define CMD_RECTANGLE_TOOL		"rectangle_tool"
 #define CMD_ELLIPSE_TOOL		"ellipse_tool"
+#define CMD_EYEDROPPER_TOOL		"eyedropper_tool"
+#define CMD_EXCHANGE_COLORS		"exchange_colors"
 #define CMD_FILM_EDITOR			"film_editor"
 #define CMD_PALETTE_EDITOR		"palette_editor"
 #define CMD_CONVOLUTION_MATRIX		"convolution_matrix"
@@ -112,10 +115,11 @@
 #define CMD_DESPECKLE			"despeckle"
 /* #define CMD_DRAW_TEXT			"draw_text" */
 /* #define CMD_PLAY_FLIC			"play_flic" */
-/* #define CMD_MAPGEN			"mapgen" */
 #define CMD_RUN_SCRIPT			"run_script"
-#define CMD_TIPS			"tips"
 #define CMD_OPTIONS			"options"
+/* help */
+#define CMD_TIPS			"tips"
+#define CMD_ABOUT			"about"
 /* internal commands */
 #define CMD_SELECT_FILE			"select_file"
 

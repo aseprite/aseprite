@@ -138,7 +138,7 @@ void cut_to_clipboard(void)
   if (!low_copy())
     console_printf("Can't copying an image portion from the current layer\n");
   else {
-    ClearMask(color_bar_get_color(app_get_color_bar(), 1));
+    ClearMask(color_mask());
     update_screen_for_sprite(current_sprite);
   }
 }
@@ -572,7 +572,7 @@ static bool interactive_transform(JWidget widget,
 	    if (get_use_grid() && angle == 0) {
 	      int ox = x1;
 	      int oy = y1;
-	      apply_grid(&x1, &y1);
+	      apply_grid(&x1, &y1, FALSE);
 	      x2 += x1 - ox;
 	      y2 += y1 - oy;
 	    }
@@ -819,8 +819,8 @@ static void update_status_bar(JWidget editor, Image *image,
   screen_to_editor(editor, x1, y1, &u1, &v1);
   screen_to_editor(editor, x2, y2, &u2, &v2);
 
-  status_bar_set_text
-    (app_get_status_bar(), 0,
+  statusbar_set_text
+    (app_get_statusbar(), 0,
      "Pos: %3d %3d Size: %3d %3d Orig: %3d %3d (%.02f%% %.02f%%) Angle: %3d",
      u1, v1, u2-u1, v2-v1,
      image->w, image->h,
@@ -828,6 +828,6 @@ static void update_status_bar(JWidget editor, Image *image,
      (double)(v2-v1)*100/image->h,
      iangle);
 
-  jwidget_flush_redraw(app_get_status_bar());
+  jwidget_flush_redraw(app_get_statusbar());
   jmanager_dispatch_messages(ji_get_default_manager());
 }

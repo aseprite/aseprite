@@ -21,9 +21,11 @@
 
 #include "jinete/jbase.h"
 
+#include "modules/color.h"
+
 typedef struct Progress
 {
-  JWidget status_bar;
+  JWidget statusbar;
   float pos;
 } Progress;
 
@@ -46,19 +48,20 @@ typedef struct StatusBar
   JWidget b_last;			/* go to last frame */
 } StatusBar;
 
-/* status_bar */
+/* statusbar */
 
-JWidget status_bar_new(void);
-int status_bar_type(void);
+JWidget statusbar_new(void);
+int statusbar_type(void);
 
-StatusBar *status_bar_data(JWidget status_bar);
+StatusBar *statusbar_data(JWidget statusbar);
 
-void status_bar_set_text(JWidget status_bar, int msecs, const char *format, ...);
-void status_bar_update(JWidget status_bar);
+void statusbar_set_text(JWidget statusbar, int msecs, const char *format, ...);
+void statusbar_show_color(JWidget statusbar, int msecs, int imgtype, color_t color);
+void statusbar_update(JWidget statusbar);
 
 /* progress */
 
-Progress *progress_new(JWidget status_bar);
+Progress *progress_new(JWidget statusbar);
 void progress_free(Progress *progress);
 void progress_update(Progress *progress, float progress_pos);
 

@@ -91,13 +91,6 @@ void _ji_theme_exit(void);
 void _ji_theme_draw_sprite_color(struct BITMAP *bmp, struct BITMAP *sprite,
 				 int x, int y, int color);
 
-void _ji_theme_rectedge(struct BITMAP *bmp,
-			int x1, int y1, int x2, int y2, int c1, int c2);
-
-void _ji_theme_rectfill_exclude(struct BITMAP *bmp,
-				int x1, int y1, int x2, int y2,
-				int ex1, int ey1, int ex2, int ey2, int color);
-
 void _ji_theme_textbox_draw(struct BITMAP *bmp, JWidget textbox,
 			    int *w, int *h, int bg, int fg);
 

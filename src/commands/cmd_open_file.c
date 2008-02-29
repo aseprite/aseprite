@@ -162,8 +162,8 @@ static void cmd_open_file_execute(const char *argument)
 	  data->fop = fop;
 
 	  /* add the progress bar */
-	  if (app_get_status_bar())
-	    data->progress = progress_new(app_get_status_bar());
+	  if (app_get_statusbar())
+	    data->progress = progress_new(app_get_statusbar());
 	  else
 	    data->progress = NULL;
 

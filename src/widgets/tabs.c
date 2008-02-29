@@ -46,7 +46,7 @@ typedef struct Tabs
   JList list_of_tabs;
   Tab *hot;
   Tab *selected;
-  void (*select_callback)(void *data);
+  void (*select_callback)(JWidget tabs, void *data);
   int timer_id;
   int scroll_x;
 /*   int hot_arrow; */
@@ -72,7 +72,7 @@ static void tab_free(Tab *tab);
 /* Tabs                                                       */
 /**************************************************************/
 
-JWidget tabs_new(void (*select_callback)(void *data))
+JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data))
 {
   JWidget widget = jwidget_new(tabs_type());
   Tabs *tabs = jnew0(Tabs, 1);
@@ -100,6 +100,8 @@ JWidget tabs_new(void (*select_callback)(void *data))
   jwidget_add_hook(widget, tabs_type(), tabs_msg_proc, tabs);
   jwidget_add_hook(tabs->button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
   jwidget_add_hook(tabs->button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
+
+  jwidget_set_bg_color(widget, ji_color_face());
 
   return widget;
 }
@@ -161,11 +163,21 @@ void tabs_select_tab(JWidget widget, void *data)
   Tabs *tabs = jwidget_get_data(widget, tabs_type());
   Tab *tab = get_tab_by_data(widget, data);
 
-  if (tab) {
+  if (tab != NULL) {
     tabs->selected = tab;
     make_tab_visible(widget, tab);
     jwidget_dirty(widget);
   }
+}
+
+void *tabs_get_selected_tab(JWidget widget)
+{
+  Tabs *tabs = jwidget_get_data(widget, tabs_type());
+
+  if (tabs->selected != NULL)
+    return tabs->selected->data;
+  else
+    return NULL;
 }
 
 static int tabs_type(void)
@@ -241,7 +253,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	    bottom = ji_color_facelight();
 	  }
 
-	  hline(ji_screen, box->x1, box->y1, box->x2-1, ji_color_face());
+	  hline(ji_screen, box->x1, box->y1, box->x2-1, widget->bg_color);
 	  rectfill(ji_screen, box->x1+1, box->y1+1, box->x2-2, box->y2-1, face);
 	  hline(ji_screen, box->x1, rect->y2-1, box->x2-1, ji_color_selected());
 
@@ -262,7 +274,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       /* fill the gap to the right-side */
       if (box->x1 < rect->x2) {
 	rectfill(ji_screen, box->x1, rect->y1, rect->x2-1, rect->y2-3,
-		 ji_color_face());
+		 widget->bg_color);
 	hline(ji_screen, box->x1, rect->y2-2, rect->x2-1, ji_color_facelight());
 	hline(ji_screen, box->x1, rect->y2-1, rect->x2-1, ji_color_selected());
       }
@@ -296,7 +308,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	jwidget_dirty(widget);
 
 	if (tabs->selected && tabs->select_callback)
-	  (*tabs->select_callback)(tabs->selected->data);
+	  (*tabs->select_callback)(widget, tabs->selected->data);
       }
       return TRUE;
 
@@ -314,6 +326,17 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       set_scroll_x(widget, tabs->scroll_x + dir*8*msg->timer.count);
       break;
     }
+
+    case JM_SIGNAL:
+      if (msg->signal.num == JI_SIGNAL_SET_FONT) {
+	JLink link;
+
+	JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
+	  Tab *tab = link->data;
+	  tab->width = CALC_TAB_WIDTH(widget, tab);
+	}
+      }
+      break;
 
   }
 
@@ -426,14 +449,7 @@ static void set_scroll_x(JWidget widget, int scroll_x)
     jwidget_dirty(widget);
   }
 
-  PRINTF("max_x = %d\n", max_x);
-  PRINTF("widget->rc->x1 = %d\n", widget->rc->x1);
-  PRINTF("widget->rc->y1 = %d\n", widget->rc->y1);
-  PRINTF("widget->rc->x2 = %d\n", widget->rc->x2);
-  PRINTF("widget->rc->y2 = %d\n", widget->rc->y2);
-
   /* we need scroll buttons? */
-/*   if (max_x > 0 && widget->rc->x2 > 0) { */
   if (max_x > 0) {
     /* add childs */
     if (!HAS_ARROWS) {

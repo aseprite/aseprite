@@ -123,6 +123,7 @@ struct FONT *jwidget_get_font(JWidget widget);
 
 void jwidget_set_name(JWidget widget, const char *name);
 void jwidget_set_text(JWidget widget, const char *text);
+void jwidget_set_text_soft(JWidget widget, const char *text);
 void jwidget_set_align(JWidget widget, int align);
 void jwidget_set_font(JWidget widget, struct FONT *font);
  
@@ -164,7 +165,7 @@ bool jwidget_has_capture(JWidget widget);
 /* children handle */
 
 void jwidget_add_child(JWidget widget, JWidget child);
-void jwidget_add_childs(JWidget widget, ...);
+void jwidget_add_children(JWidget widget, ...);
 void jwidget_remove_child(JWidget widget, JWidget child);
 void jwidget_replace_child(JWidget widget, JWidget old_child,
 			   JWidget new_child);
@@ -182,6 +183,7 @@ bool jwidget_has_child(JWidget widget, JWidget child);
 /* position and geometry */
 
 void jwidget_request_size(JWidget widget, int *w, int *h);
+void jwidget_relayout(JWidget widget);
 JRect jwidget_get_rect(JWidget widget);
 JRect jwidget_get_child_rect(JWidget widget);
 JRegion jwidget_get_region(JWidget widget);

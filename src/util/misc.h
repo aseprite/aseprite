@@ -19,6 +19,7 @@
 #ifndef UTIL_MISC_H
 #define UTIL_MISC_H
 
+#include "modules/color.h"
 #include "widgets/editor.h"	/* for movement modes */
 
 struct Frame;
@@ -32,7 +33,7 @@ struct Image *GetImage2(struct Sprite *sprite, int *x, int *y, int *opacity);
 
 void LoadPalette(const char *filename);
 
-void ClearMask(const char *color);
+void ClearMask(color_t color);
 struct Layer *NewLayerFromMask(struct Sprite *src, struct Sprite *dst);
 
 struct Image *GetLayerImage(struct Layer *layer, int *x, int *y, int frame);

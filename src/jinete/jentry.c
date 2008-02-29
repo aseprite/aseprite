@@ -269,7 +269,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       entry->recent_focused = FALSE;
       break;
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus(widget) && !jentry_is_readonly(widget)) {
 	char *text = jmalloc(widget->text_size);
 	int c, selbeg, selend;
@@ -555,7 +555,7 @@ static void entry_request_size(JWidget widget, int *w, int *h)
     + ji_font_char_len(widget->text_font, 'w') * MIN(widget->text_size, 6)
     + 2 + widget->border_width.r;
 
-  *w = MIN(*w, 128);
+  *w = MIN(*w, JI_SCREEN_W/2);
 
   *h = 
     + widget->border_width.t

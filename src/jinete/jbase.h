@@ -87,31 +87,30 @@ struct jtheme;
 struct jwidget;
 
 /* alignment */
-#define JI_HORIZONTAL	1
-#define JI_VERTICAL	2
-#define JI_LEFT		4
-#define JI_CENTER	8
-#define JI_RIGHT	16
-#define JI_TOP		32
-#define JI_MIDDLE	64
-#define JI_BOTTOM	128
-#define JI_HOMOGENEOUS	256
-#define JI_WORDWRAP	512
+#define JI_HORIZONTAL	0x0001
+#define JI_VERTICAL	0x0002
+#define JI_LEFT		0x0004
+#define JI_CENTER	0x0008
+#define JI_RIGHT	0x0010
+#define JI_TOP		0x0020
+#define JI_MIDDLE	0x0040
+#define JI_BOTTOM	0x0080
+#define JI_HOMOGENEOUS	0x0100
+#define JI_WORDWRAP	0x0200
 
 /* widget flags */
-/* #define JI_DIRTY	0x000001 /\* need be redraw *\/ */
-#define JI_HIDDEN	0x000002 /* is hidden (not visible, not clickeable) */
-#define JI_SELECTED	0x000004 /* is selected */
-#define JI_DISABLED	0x000008 /* is disabled (not usable) */
-#define JI_HASFOCUS	0x000010 /* has the input focus */
-#define JI_HASMOUSE	0x000020 /* has the mouse */
-#define JI_HASCAPTURE	0x000040 /* captured the mouse  */
-#define JI_FOCUSREST	0x000080 /* want the focus (is a rest for focus) */
-#define JI_MAGNETIC	0x000100 /* attract the focus */
-#define JI_EXPANSIVE	0x000200 /* is expansive (want more space) */
-#define JI_DECORATIVE	0x000400 /* to decorate windows */
-#define JI_HARDCAPTURE	0x000800 /* only windows use hard capture */
-#define JI_INITIALIZED	0x001000 /* the widget was already initialized by a theme */
+#define JI_HIDDEN	0x0001 /* is hidden (not visible, not clickeable) */
+#define JI_SELECTED	0x0002 /* is selected */
+#define JI_DISABLED	0x0004 /* is disabled (not usable) */
+#define JI_HASFOCUS	0x0008 /* has the input focus */
+#define JI_HASMOUSE	0x0010 /* has the mouse */
+#define JI_HASCAPTURE	0x0020 /* captured the mouse  */
+#define JI_FOCUSREST	0x0040 /* want the focus (is a rest for focus) */
+#define JI_MAGNETIC	0x0080 /* attract the focus */
+#define JI_EXPANSIVE	0x0100 /* is expansive (want more space) */
+#define JI_DECORATIVE	0x0200 /* to decorate windows */
+#define JI_HARDCAPTURE	0x0400 /* only windows use hard capture */
+#define JI_INITIALIZED	0x0800 /* the widget was already initialized by a theme */
 
 /* widget types */
 enum {
@@ -124,6 +123,7 @@ enum {
   JI_CHECK,
   JI_COMBOBOX,
   JI_ENTRY,
+  JI_GRID,
   JI_IMAGE,
   JI_LABEL,
   JI_LISTBOX,
@@ -167,7 +167,6 @@ enum {
 				   the last message in the queue */
 
   /* keyboard related messages */
-  JM_CHAR,			/* a new character in the buffer */
   JM_KEYPRESSED,		/* when a any key is pressed */
   JM_KEYRELEASED,		/* when a any key is released */
   JM_FOCUSENTER,		/* widget gets the focus */
@@ -180,6 +179,7 @@ enum {
   JM_MOUSEENTER,		/* a widget gets mouse pointer */
   JM_MOUSELEAVE,		/* a widget losts mouse pointer */
   JM_MOTION,			/* user moves the mouse on some widget */
+  JM_SETCURSOR,			/* a widget needs to setup the mouse cursor */
   JM_WHEEL,			/* user moves the wheel */
 
   /* XXX drag'n'drop operation? */
@@ -192,7 +192,6 @@ enum {
 /* signals */
 enum {
   /* generic signals */
-  JI_SIGNAL_DIRTY,
   JI_SIGNAL_ENABLE,
   JI_SIGNAL_DISABLE,
   JI_SIGNAL_SELECT,
@@ -204,6 +203,7 @@ enum {
   JI_SIGNAL_NEW_PARENT,
   JI_SIGNAL_GET_TEXT,
   JI_SIGNAL_SET_TEXT,
+  JI_SIGNAL_SET_FONT,
   JI_SIGNAL_INIT_THEME,
 
   /* special widget signals */
@@ -252,7 +252,7 @@ typedef struct jxmlelem		*JXmlElem;
 typedef struct jxmltext		*JXmlText;
 
 typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
-typedef void (*JDrawFunc)	 (JWidget widget);
+typedef void (*JDrawFunc)	 (JWidget widget, JRect clip);
 
 /* without leak detection */
 void *jmalloc (unsigned long n_bytes);

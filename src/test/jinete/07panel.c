@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -58,13 +58,13 @@ int main (int argc, char *argv[])
   view2 = jview_new();
   button = jbutton_new("&Close");
 
-  jwidget_expansive (view1, TRUE);
-  jwidget_expansive (view2, TRUE);
-  jwidget_expansive (box2, TRUE);
+  jwidget_expansive(view1, TRUE);
+  jwidget_expansive(view2, TRUE);
+  jwidget_expansive(box2, TRUE);
 
-  jwidget_add_child (window, box1);
-  jwidget_add_childs (box1, box2, button, 0);
-  jwidget_add_childs (box2, view1, view2, 0);
+  jwidget_add_child(window, box1);
+  jwidget_add_children(box1, box2, button, NULL);
+  jwidget_add_children(box2, view1, view2, NULL);
 
   jwindow_open_bg (window);
 

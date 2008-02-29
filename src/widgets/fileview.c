@@ -41,6 +41,7 @@
 #include "widgets/statebar.h"
 
 #define MAX_THUMBNAIL_SIZE		128
+#define ISEARCH_KEYPRESS_INTERVAL_MSECS	500
 
 typedef struct FileView
 {
@@ -50,6 +51,10 @@ typedef struct FileView
   int req_w, req_h;
   FileItem *selected;
   const char *exts;
+
+  /* incremental-search */
+  char isearch[256];
+  int isearch_clock;
 
   /* thumbnail generation process */
   FileItem *item_to_generate_thumbnail;
@@ -105,6 +110,9 @@ JWidget fileview_new(FileItem *start_folder, const char *exts)
   fileview->req_valid = FALSE;
   fileview->selected = NULL;
   fileview->exts = exts;
+
+  ustrcpy(fileview->isearch, empty_string);
+  fileview->isearch_clock = 0;
 
   fileview->item_to_generate_thumbnail = NULL;
   fileview->timer_id = jmanager_add_timer(widget, 200);
@@ -279,16 +287,16 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		     fgcolor, bgcolor, TRUE);
 
 	  /* background for the icon */
-	  rectfill_exclude(ji_screen,
-			   /* rectangle to fill */
-			   widget->rc->x1, y,
-			   x+icon_w+2-1, y+2+th+2-1,
-			   /* exclude where is the icon located */
-			   x, y+2,
-			   x+icon_w-1,
-			   y+2+icon_h-1,
-			   /* fill with the background color */
-			   bgcolor);
+	  jrectexclude(ji_screen,
+		       /* rectangle to fill */
+		       widget->rc->x1, y,
+		       x+icon_w+2-1, y+2+th+2-1,
+		       /* exclude where is the icon located */
+		       x, y+2,
+		       x+icon_w-1,
+		       y+2+icon_h-1,
+		       /* fill with the background color */
+		       bgcolor);
 
 	  x += icon_w+2;
 	}
@@ -306,17 +314,17 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		   fgcolor, bgcolor, TRUE);
 
 	/* background for the item name */
-	rectfill_exclude(ji_screen,
-			 /* rectangle to fill */
-			 x, y,
-			 widget->rc->x2-1, y+2+th+2-1,
-			 /* exclude where is the text located */
-			 x, y+2,
-			 x+ji_font_text_len(widget->text_font,
-					    fileitem_get_displayname(fi))-1,
-			 y+2+ji_font_get_size(widget->text_font)-1,
-			 /* fill with the background color */
-			 bgcolor);
+	jrectexclude(ji_screen,
+		     /* rectangle to fill */
+		     x, y,
+		     widget->rc->x2-1, y+2+th+2-1,
+		     /* exclude where is the text located */
+		     x, y+2,
+		     x+ji_font_text_len(widget->text_font,
+					fileitem_get_displayname(fi))-1,
+		     y+2+ji_font_get_size(widget->text_font)-1,
+		     /* fill with the background color */
+		     bgcolor);
 
 	/* thumbnail position */
 	if (fi == fileview->selected) {
@@ -356,7 +364,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_BUTTONPRESSED:
-      jwidget_capture_mouse(widget);
+      jwidget_hard_capture_mouse(widget);
 
     case JM_MOTION:
       if (jwidget_has_capture(widget)) {
@@ -399,7 +407,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_CHAR:
+    case JM_KEYPRESSED:
       if (jwidget_has_focus(widget)) {
 	int select = fileview_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);
@@ -463,7 +471,37 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	    fileview_goup(widget);
 	    return TRUE;
 	  default:
-	    return FALSE;
+	    if (msg->key.ascii == ' ' ||
+		(utolower(msg->key.ascii) >= 'a' &&
+		 utolower(msg->key.ascii) <= 'z') ||
+		(utolower(msg->key.ascii) >= '0' &&
+		 utolower(msg->key.ascii) <= '9')) {
+	      if (ji_clock - fileview->isearch_clock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
+		ustrcpy(fileview->isearch, empty_string);
+
+	      usprintf(fileview->isearch+ustrsize(fileview->isearch),
+		       "%c", msg->key.ascii);
+
+	      {
+		int i, chrs = ustrlen(fileview->isearch);
+		JLink link = jlist_nth_link(fileview->list,
+					    (select >= 0) ? select: 0);
+
+		for (i=select; i<=bottom; ++i, link=link->next) {
+		  FileItem *fi = link->data;
+		  if (ustrnicmp(fileitem_get_displayname(fi),
+				fileview->isearch,
+				chrs) == 0) {
+		    select = i;
+		    break;
+		  }
+		}
+	      }
+	      fileview->isearch_clock = ji_clock;
+	      /* go to fileview_select_index... */
+	    }
+	    else
+	      return FALSE;
 	}
 
 	fileview_select_index(widget, MID(0, select, bottom));

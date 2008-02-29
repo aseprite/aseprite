@@ -16,10 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_DMAPGEN_H
-#define DIALOGS_DMAPGEN_H
+#ifndef WIDGETS_COLSEL2_H
+#define WIDGETS_COLSEL2_H
 
-void dialogs_mapgen(void);
+#include "jinete/jbase.h"
 
-#endif /* DIALOGS_DMAPGEN_H */
+#include "modules/color.h"
 
+/* TODO use some JI_SIGNAL_USER */
+#define SIGNAL_COLORSELECTOR_COLOR_CHANGED	0x10009
+
+JWidget colorselector_new(void);
+
+void colorselector_set_color(JWidget colsel, color_t color);
+color_t colorselector_get_color(JWidget colsel);
+
+#endif /* WIDGETS_COLSEL2_H */

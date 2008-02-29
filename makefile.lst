@@ -3,7 +3,7 @@
 ######################################################################
 # ASE
 
-ASE = ase$(EXE)
+ASE = aseprite$(EXE)
 
 COMMON_SOURCES =					\
 	src/commands/cmd_about.c			\
@@ -23,17 +23,19 @@ COMMON_SOURCES =					\
 	src/commands/cmd_drawing_tools.c		\
 	src/commands/cmd_duplicate_layer.c		\
 	src/commands/cmd_duplicate_sprite.c		\
+	src/commands/cmd_exchange_colors.c		\
 	src/commands/cmd_exit.c				\
+	src/commands/cmd_eyedropper_tool.c		\
 	src/commands/cmd_film_editor.c			\
 	src/commands/cmd_flatten_layers.c		\
 	src/commands/cmd_flip.c				\
 	src/commands/cmd_frame_properties.c		\
 	src/commands/cmd_goto_frame.c			\
+	src/commands/cmd_grid.c				\
 	src/commands/cmd_invert_mask.c			\
 	src/commands/cmd_layer_properties.c		\
 	src/commands/cmd_link_cel.c			\
 	src/commands/cmd_load_mask.c			\
-	src/commands/cmd_mapgen.c			\
 	src/commands/cmd_mask_all.c			\
 	src/commands/cmd_mask_by_color.c		\
 	src/commands/cmd_merge_down_layer.c		\
@@ -83,7 +85,6 @@ COMMON_SOURCES =					\
 	src/core/modules.c				\
 	src/dialogs/canvasze.c				\
 	src/dialogs/colsel.c				\
-	src/dialogs/dmapgen.c				\
 	src/dialogs/dpaledit.c				\
 	src/dialogs/drawtext.c				\
 	src/dialogs/filesel.c				\
@@ -125,6 +126,7 @@ COMMON_SOURCES =					\
 	src/jinete/jcombobox.c				\
 	src/jinete/jdraw.c				\
 	src/jinete/jentry.c				\
+	src/jinete/jgrid.c				\
 	src/jinete/jfile.c				\
 	src/jinete/jfilesel.c				\
 	src/jinete/jfont.c				\
@@ -194,7 +196,6 @@ COMMON_SOURCES =					\
 	src/util/crop.c					\
 	src/util/filetoks.c				\
 	src/util/hash.c					\
-	src/util/mapgen.c				\
 	src/util/misc.c					\
 	src/util/msk_file.c				\
 	src/util/pic_file.c				\
@@ -204,6 +205,7 @@ COMMON_SOURCES =					\
 	src/util/thmbnail.c				\
 	src/widgets/colbar.c				\
 	src/widgets/colbut.c				\
+	src/widgets/colsel2.c				\
 	src/widgets/colview.c				\
 	src/widgets/curvedit.c				\
 	src/widgets/editor/click.c			\

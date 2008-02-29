@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 
-JWidget tabs_new(void (*select_callback)(void *data));
+JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data));
 
 void tabs_append_tab(JWidget widget, const char *text, void *data);
 void tabs_remove_tab(JWidget widget, void *data);
@@ -29,5 +29,6 @@ void tabs_remove_tab(JWidget widget, void *data);
 void tabs_set_text_for_tab(JWidget widget, const char *text, void *data);
 
 void tabs_select_tab(JWidget widget, void *data);
+void *tabs_get_selected_tab(JWidget widget);
 
 #endif /* WIDGETS_TABS_H */

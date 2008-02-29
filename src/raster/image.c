@@ -342,9 +342,9 @@ void image_convert(Image *dst, const Image *src)
 	    for (x=0; x<w; x++) {
 	      c = src->method->getpixel(src, x, y);
 	      dst->method->putpixel(dst, x, y,
-				    _rgba(_graya_getk(c),
-					  _graya_getk(c),
-					  _graya_getk(c),
+				    _rgba(_graya_getv(c),
+					  _graya_getv(c),
+					  _graya_getv(c),
 					  _graya_geta(c)));
 	    }
 	  }
@@ -355,13 +355,13 @@ void image_convert(Image *dst, const Image *src)
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
 	      c = src->method->getpixel(src, x, y);
-	      if  (!_graya_geta (c))
+	      if  (!_graya_geta(c))
 		dst->method->putpixel(dst, x, y, 0);
 	      else
 		dst->method->putpixel(dst, x, y,
-				      makecol8(_graya_getk(c),
-					       _graya_getk(c),
-					       _graya_getk(c)));
+				      makecol8(_graya_getv(c),
+					       _graya_getv(c),
+					       _graya_getv(c)));
 	    }
 	  }
 	  break;

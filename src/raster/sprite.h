@@ -115,4 +115,6 @@ void sprite_generate_mask_boundaries(Sprite *sprite);
 struct Layer *sprite_index2layer(Sprite *sprite, int index);
 int sprite_layer2index(const Sprite *sprite, const struct Layer *layer);
 
+int sprite_getpixel(Sprite *sprite, int x, int y);
+
 #endif				/* RASTER_SPRITE_H */

@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,52 +46,31 @@
 
 void *jmalloc(unsigned long n_bytes)
 {
-  if (n_bytes) {
-    void *mem;
-
-    mem = malloc(n_bytes);
-    if (mem)
-      return mem;
-  }
-
-  return NULL;
+  assert(n_bytes != 0);
+  return malloc(n_bytes);
 }
 
 void *jmalloc0(unsigned long n_bytes)
 {
-  if (n_bytes) {
-    void *mem;
-
-    mem = calloc(1, n_bytes);
-    if (mem)
-      return mem;
-  }
-
-  return NULL;
+  assert(n_bytes != 0);
+  return calloc(1, n_bytes);
 }
 
 void *jrealloc(void *mem, unsigned long n_bytes)
 {
-  if (n_bytes) {
-    void *newmem = realloc(mem, n_bytes);
-    if (newmem)
-      return newmem;
-  }
-
-  if (mem)
-    jfree(mem);
-
-  return NULL;
+  assert(n_bytes != 0);
+  return realloc(mem, n_bytes);
 }
 
 void jfree(void *mem)
 {
-  if (mem)
-    free(mem);
+  assert(mem != NULL);
+  free(mem);
 }
 
 char *jstrdup(const char *string)
 {
+  assert(string != NULL);
   return ustrdup(string);
 }
 
@@ -122,7 +102,7 @@ void jmemleak_exit()
   FILE *f = fopen("_ase_memlog.txt", "wt");
   slot_t *it;
 
-  if (f) {
+  if (f != NULL) {
     /* memory leaks */
     for (it=headslot; it!=NULL; it=it->next) {
       fprintf(f,
@@ -143,6 +123,9 @@ static void addslot(void *ptr, unsigned long size)
 {
   slot_t *p = malloc(sizeof(slot_t));
 
+  assert(ptr != NULL);
+  assert(size != 0);
+
   p->backtrace[0] = __builtin_return_address(4); /* a GCC extension */
   p->backtrace[1] = __builtin_return_address(3);
   p->backtrace[2] = __builtin_return_address(2);
@@ -159,6 +142,8 @@ static void addslot(void *ptr, unsigned long size)
 static void delslot(void *ptr)
 {
   slot_t *it, *prev = NULL;
+
+  assert(ptr != NULL);
 
   jmutex_lock(mutex);
 
@@ -179,63 +164,69 @@ static void delslot(void *ptr)
 
 void *jmalloc(unsigned long n_bytes)
 {
-  if (n_bytes) {
-    void *mem;
+  void *mem;
 
-    mem = malloc(n_bytes);
-    if (mem) {
-      addslot(mem, n_bytes);
-      return mem;
-    }
+  assert(n_bytes != 0);
+
+  mem = malloc(n_bytes);
+  if (mem != NULL) {
+    addslot(mem, n_bytes);
+    return mem;
   }
-
-  return NULL;
+  else
+    return NULL;
 }
 
 void *jmalloc0(unsigned long n_bytes)
 {
-  if (n_bytes) {
-    void *mem;
+  void *mem;
 
-    mem = calloc(1, n_bytes);
-    if (mem) {
-      addslot(mem, n_bytes);
-      return mem;
-    }
+  assert(n_bytes != 0);
+
+  mem = calloc(1, n_bytes);
+  if (mem != NULL) {
+    addslot(mem, n_bytes);
+    return mem;
   }
-
-  return NULL;
+  else
+    return NULL;
 }
 
 void *jrealloc(void *mem, unsigned long n_bytes)
 {
-  if (n_bytes) {
-    void *newmem = realloc(mem, n_bytes);
-    if (newmem) {
-      if (mem) delslot(mem);
-      addslot(newmem, n_bytes);
-      return newmem;
-    }
+  void *newmem;
+
+  assert(n_bytes != 0);
+
+  newmem = realloc(mem, n_bytes);
+  if (newmem != NULL) {
+    if (mem != NULL)
+      delslot(mem);
+
+    addslot(newmem, n_bytes);
+    return newmem;
   }
-
-  if (mem)
-    jfree(mem);
-
-  return NULL;
+  else
+    return NULL;
 }
 
 void jfree(void *mem)
 {
+  assert(mem != NULL);
   delslot(mem);
-  if (mem)
-    free(mem);
+  free(mem);
 }
 
 char *jstrdup(const char *string)
 {
-  void *mem = ustrdup(string);
-  if (mem)
+  void *mem;
+
+  assert(string != NULL);
+
+  mem = ustrdup(string);
+  if (mem != NULL)
     addslot(mem, strlen(mem));
+
   return mem;
 }
 

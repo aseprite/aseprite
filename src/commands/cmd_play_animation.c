@@ -27,6 +27,7 @@
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/sprites.h"
+#include "modules/tools.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
 
@@ -49,9 +50,13 @@ static void cmd_play_animation_execute(const char *argument)
   Sprite *sprite = current_sprite;
   int old_frame, msecs;
   bool done = FALSE;
+  bool onionskin = get_onionskin();
 
   if (sprite->frames < 2)
     return;
+
+  /* desactivate the onion-skin */
+  set_onionskin(FALSE);
 
   jmouse_hide();
 
@@ -91,6 +96,8 @@ static void cmd_play_animation_execute(const char *argument)
     }
     gui_feedback();
   }
+
+  set_onionskin(onionskin);
 
   /* if right-click or ESC */
   if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC))

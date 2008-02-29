@@ -106,7 +106,7 @@ Sprite *sprite_new(int imgtype, int w, int h)
   }
 
   sprite_set_palette(sprite, pal, sprite->frame);
-  sprite_set_speed(sprite, 42);
+  sprite_set_speed(sprite, 100);
 
   /* multiple access */
   sprite->locked = FALSE;
@@ -550,7 +550,7 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
       switch (imgtype) {
 	/* Grayscale -> RGB */
 	case IMAGE_RGB:
-	  g = _graya_getk(c);
+	  g = _graya_getv(c);
 	  c = _rgba(g, g, g, _graya_geta(c));
 	  break;
 	/* Grayscale -> Indexed */
@@ -558,7 +558,7 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 	  if (_graya_geta(c) == 0)
 	    c = 0;
 	  else
-	    c = _graya_getk(c);
+	    c = _graya_getv(c);
 	  break;
       }
       break;
@@ -752,6 +752,32 @@ int sprite_layer2index(const Sprite *sprite, const Layer *layer)
   int index_count = -1;
 
   return layer2index(sprite->set, layer, &index_count);
+}
+
+/**
+ * Gets a pixel from the sprite in the specified position. If in the
+ * specified coordinates there're background this routine will return
+ * the 0 color (the mask-color).
+ */
+int sprite_getpixel(Sprite *sprite, int x, int y)
+{
+  Image *image;
+  int color = 0;
+
+  if ((x >= 0) && (y >= 0) && (x < sprite->w) && (y < sprite->h)) {
+    int old_bgcolor = sprite->bgcolor;
+    sprite->bgcolor = 0;
+    
+    image = image_new(sprite->imgtype, 1, 1);
+    image_clear(image, 0);
+    sprite_render(sprite, image, -x, -y);
+    color = image_getpixel(image, 0, 0);
+    image_free(image);
+
+    sprite->bgcolor = old_bgcolor;
+  }
+
+  return color;
 }
 
 static Layer *index2layer(Layer *layer, int index, int *index_count)

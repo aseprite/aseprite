@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
-
+#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -30,11 +29,20 @@ typedef struct TipData
   int timer_id;
 } TipData;
 
+typedef struct TipWindow
+{
+  bool close_on_buttonpressed;
+  JRegion hot_region;
+  bool filtering;
+} TipWindow;
+
 static int tip_type(void);
 static bool tip_hook(JWidget widget, JMessage msg);
 
-static JWidget tip_window_new(const char *text);
-static bool tip_window_hook(JWidget widget, JMessage msg);
+static JWidget tipwindow_new(const char *text, bool close_on_buttonpressed);
+static int tipwindow_type(void);
+static TipWindow *tipwindow_data(JWidget widget);
+static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
 void jwidget_add_tooltip_text(JWidget widget, const char *text)
 {
@@ -47,6 +55,35 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text)
 
   jwidget_add_hook(widget, tip_type(), tip_hook, tip);
 }
+
+/**
+ * Creates a window to show a tool-tip.
+ */
+JWidget jtooltip_window_new(const char *text)
+{
+  JWidget window = tipwindow_new(text, FALSE);
+
+  return window;
+}
+
+void jtooltip_window_set_hotregion(JWidget widget, JRegion region)
+{
+  TipWindow *tipwindow = tipwindow_data(widget);
+
+  assert(region != NULL);
+
+  if (tipwindow->hot_region != NULL)
+    jfree(tipwindow->hot_region);
+
+  if (!tipwindow->filtering) {
+    tipwindow->filtering = TRUE;
+    jmanager_add_msg_filter(JM_MOTION, widget);
+  }
+  tipwindow->hot_region = region;
+}
+
+/********************************************************************/
+/* hook for widgets that want a tool-tip */
 
 static int tip_type(void)
 {
@@ -78,7 +115,6 @@ static bool tip_hook(JWidget widget, JMessage msg)
       jmanager_start_timer(tip->timer_id);
       break;
 
-    case JM_CHAR:
     case JM_KEYPRESSED:
     case JM_BUTTONPRESSED:
     case JM_MOUSELEAVE:
@@ -95,7 +131,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
     case JM_TIMER:
       if (msg->timer.timer_id == tip->timer_id) {
 	if (!tip->window) {
-	  JWidget window = tip_window_new(tip->text);
+	  JWidget window = tipwindow_new(tip->text, TRUE);
 	  int x = tip->widget->rc->x1;
 	  int y = tip->widget->rc->y2;
 	  int w = jrect_w(window->rc);
@@ -117,68 +153,156 @@ static bool tip_hook(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static JWidget tip_window_new(const char *text)
+/********************************************************************/
+/* TipWindow */
+
+static JWidget tipwindow_new(const char *text, bool close_on_buttonpressed)
 {
   JWidget window = jwindow_new(text);
   JLink link, next;
+  TipWindow *tipwindow = jnew(TipWindow, 1);
+
+  tipwindow->close_on_buttonpressed = close_on_buttonpressed;
+  tipwindow->hot_region = NULL;
+  tipwindow->filtering = FALSE;
 
   jwindow_sizeable(window, FALSE);
   jwindow_moveable(window, FALSE);
   jwindow_wantfocus(window, FALSE);
 
-/*   jwidget_set_align(window, JI_CENTER | JI_MIDDLE); */
   jwidget_set_align(window, JI_LEFT | JI_TOP);
 
   /* remove decorative widgets */
-  JI_LIST_FOR_EACH_SAFE(window->children, link, next) {
+  JI_LIST_FOR_EACH_SAFE(window->children, link, next)
     jwidget_free(link->data);
-  }
 
-  jwidget_add_hook(window, JI_WIDGET, tip_window_hook, NULL);
+  jwidget_add_hook(window, tipwindow_type(),
+		   tipwindow_msg_proc, tipwindow);
   jwidget_init_theme(window);
+  jwidget_set_bg_color(window, makecol(255, 255, 200));
 
   return window;
 }
 
-static bool tip_window_hook(JWidget widget, JMessage msg)
+static int tipwindow_type(void)
 {
+  static int type = 0;
+  if (!type)
+    type = ji_register_widget_type();
+  return type;
+}
+
+static TipWindow *tipwindow_data(JWidget widget)
+{
+  return (TipWindow *)jwidget_get_data(widget,
+				       tipwindow_type());
+}
+
+static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
+{
+  TipWindow *tipwindow = tipwindow_data(widget);
+
   switch (msg->type) {
 
-    case JM_REQSIZE:
-      _ji_theme_textbox_draw(NULL, widget,
-			     &msg->reqsize.w,
-			     &msg->reqsize.h, 0, 0);
+    case JM_CLOSE:
+      if (tipwindow->filtering) {
+	tipwindow->filtering = FALSE;
+	jmanager_remove_msg_filter(JM_MOTION, widget);
+      }
+      break;
 
-/*       msg->reqsize.w += widget->border_width.l + widget->border_width.r; */
-/*       msg->reqsize.h += widget->border_width.t + widget->border_width.b; */
+    case JM_DESTROY:
+      if (tipwindow->hot_region != NULL) {
+	jregion_free(tipwindow->hot_region);
+      }
+      jfree(tipwindow);
+      break;
+
+    case JM_REQSIZE: {
+      int w = 0, h = 0;
+
+      _ji_theme_textbox_draw(NULL, widget, &w, &h, 0, 0);
+
+      msg->reqsize.w = w;
+      msg->reqsize.h = widget->border_width.t + widget->border_width.b;
+
+      if (!jlist_empty(widget->children)) {
+	int max_w, max_h;
+	int req_w, req_h;
+	JWidget child;
+	JLink link;
+
+	max_w = max_h = 0;
+	JI_LIST_FOR_EACH(widget->children, link) {
+	  child = (JWidget)link->data;
+
+	  jwidget_request_size(child, &req_w, &req_h);
+
+	  max_w = MAX(max_w, req_w);
+	  max_h = MAX(max_h, req_h);
+	}
+
+	msg->reqsize.w = MAX(msg->reqsize.w,
+			     widget->border_width.l + max_w + widget->border_width.r);
+	msg->reqsize.h += max_h;
+      }
       return TRUE;
+    }
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
+	int w = 0, h = 0;
+
 	widget->border_width.l = 3;
 	widget->border_width.t = 3;
 	widget->border_width.r = 3;
 	widget->border_width.b = 3;
+
+	_ji_theme_textbox_draw(NULL, widget, &w, &h, 0, 0);
+
+	widget->border_width.t = h-3;
 	return TRUE;
       }
       break;
 
     case JM_MOUSELEAVE:
+      if (tipwindow->hot_region == NULL)
+	jwindow_close(widget, NULL);
+      break;
+
     case JM_BUTTONPRESSED:
-      jwindow_close(widget, NULL);
+      if (tipwindow->close_on_buttonpressed)
+	jwindow_close(widget, NULL);
+      break;
+
+    case JM_MOTION:
+      if (tipwindow->hot_region != NULL &&
+	  jmanager_get_capture() == NULL) {
+	struct jrect box;
+
+	/* if the mouse is outside the hot-region we have to close the window */
+	if (!jregion_point_in(tipwindow->hot_region,
+			      msg->mouse.x, msg->mouse.y, &box)) {
+	  jwindow_close(widget, NULL);
+	}
+      }
       break;
 
     case JM_DRAW: {
       JRect pos = jwidget_get_rect(widget);
+      int oldt;
 
       jdraw_rect(pos, makecol(0, 0, 0));
 
       jrect_shrink(pos, 1);
-      jdraw_rectfill(pos, makecol(255, 255, 140));
+      jdraw_rectfill(pos, widget->bg_color);
 
+      oldt = widget->border_width.t;
+      widget->border_width.t = 3;
       _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
-			     makecol(255, 255, 140),
-			     makecol(0, 0, 0));
+			     widget->bg_color,
+			     ji_color_foreground());
+      widget->border_width.t = oldt;
       return TRUE;
     }
 

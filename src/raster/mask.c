@@ -271,7 +271,7 @@ void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
       int u, v, c;
       div_t d;
 
-      dst_k = _graya_getk(color);
+      dst_k = _graya_getv(color);
       dst_a = _graya_geta(color);
 
       for (v=0; v<src->h; v++) {
@@ -283,8 +283,8 @@ void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
 	for (u=0; u<src->w; u++) {
 	  c = *(src_address++);
 
-	  src_k = _graya_getk (c);
-	  src_a = _graya_geta (c);
+	  src_k = _graya_getv(c);
+	  src_a = _graya_geta(c);
 
 	  if (!((src_k >= dst_k-fuzziness) && (src_k <= dst_k+fuzziness) &&
 		(src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))

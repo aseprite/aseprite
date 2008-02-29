@@ -53,8 +53,8 @@
 /* "icons_data" indexes */
 enum {
   FIRST_CURSOR = 0,
-  LAST_CURSOR = 12,
-  ICON_CHECK_EDGE = 13,
+  LAST_CURSOR = 13,
+  ICON_CHECK_EDGE = 14,
   ICON_CHECK_MARK,
   ICON_CLOSE,
   ICON_MENU_MARK,
@@ -81,6 +81,7 @@ static struct {
   { FALSE, default_theme_csizebl },
   { FALSE, default_theme_csizeb },
   { FALSE, default_theme_csizebr },
+  { FALSE, default_theme_ceyedropper },
   { FALSE, default_theme_ichecke },
   { FALSE, default_theme_icheckm },
   { FALSE, default_theme_iclose },
@@ -104,24 +105,25 @@ static int theme_color_face(void);
 static int theme_color_hotface(void);
 static int theme_color_selected(void);
 static int theme_color_background(void);
-static void theme_draw_box(JWidget widget);
-static void theme_draw_button(JWidget widget);
-static void theme_draw_check(JWidget widget);
-static void theme_draw_entry(JWidget widget);
-static void theme_draw_label(JWidget widget);
-static void theme_draw_listbox(JWidget widget);
-static void theme_draw_listitem(JWidget widget);
-static void theme_draw_menu(JWidget widget);
-static void theme_draw_menuitem(JWidget widget);
-static void theme_draw_panel(JWidget widget);
-static void theme_draw_radio(JWidget widget);
-static void theme_draw_separator(JWidget widget);
-static void theme_draw_slider(JWidget widget);
-static void theme_draw_textbox(JWidget widget);
-static void theme_draw_view(JWidget widget);
-static void theme_draw_view_scrollbar(JWidget widget);
-static void theme_draw_view_viewport(JWidget widget);
-static void theme_draw_window(JWidget widget);
+static void theme_draw_box(JWidget widget, JRect clip);
+static void theme_draw_button(JWidget widget, JRect clip);
+static void theme_draw_check(JWidget widget, JRect clip);
+static void theme_draw_entry(JWidget widget, JRect clip);
+static void theme_draw_grid(JWidget widget, JRect clip);
+static void theme_draw_label(JWidget widget, JRect clip);
+static void theme_draw_listbox(JWidget widget, JRect clip);
+static void theme_draw_listitem(JWidget widget, JRect clip);
+static void theme_draw_menu(JWidget widget, JRect clip);
+static void theme_draw_menuitem(JWidget widget, JRect clip);
+static void theme_draw_panel(JWidget widget, JRect clip);
+static void theme_draw_radio(JWidget widget, JRect clip);
+static void theme_draw_separator(JWidget widget, JRect clip);
+static void theme_draw_slider(JWidget widget, JRect clip);
+static void theme_draw_textbox(JWidget widget, JRect clip);
+static void theme_draw_view(JWidget widget, JRect clip);
+static void theme_draw_view_scrollbar(JWidget widget, JRect clip);
+static void theme_draw_view_viewport(JWidget widget, JRect clip);
+static void theme_draw_window(JWidget widget, JRect clip);
 
 static int get_bg_color(JWidget widget);
 static void draw_textstring(const char *t, int fg_color, int bg_color,
@@ -168,6 +170,7 @@ JTheme jtheme_new_standard(void)
   jtheme_set_method(theme, JI_BUTTON, theme_draw_button);
   jtheme_set_method(theme, JI_CHECK, theme_draw_check);
   jtheme_set_method(theme, JI_ENTRY, theme_draw_entry);
+  jtheme_set_method(theme, JI_GRID, theme_draw_grid);
   jtheme_set_method(theme, JI_LABEL, theme_draw_label);
   jtheme_set_method(theme, JI_LISTBOX, theme_draw_listbox);
   jtheme_set_method(theme, JI_LISTITEM, theme_draw_listitem);
@@ -270,6 +273,10 @@ static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
 	*focus_x = 8;
 	*focus_y = 8;
 	break;
+      case JI_CURSOR_EYEDROPPER:
+	*focus_x = 0;
+	*focus_y = 15;
+	break;
     }
   }
 
@@ -291,14 +298,14 @@ static void theme_init_widget(JWidget widget)
   widget->border_width.b = B;
 
   if ((widget->flags & JI_INITIALIZED) &&
-      (widget->type != JI_WINDOW))
+      (widget->type != JI_WINDOW) &&
+      (widget->type != JI_SEPARATOR))
     return;
 
   switch (widget->draw_type) {
 
     case JI_BOX:
       BORDER(0);
-/*       widget->child_spacing = 2; */
       widget->child_spacing = 4;
       break;
 
@@ -309,12 +316,16 @@ static void theme_init_widget(JWidget widget)
 
     case JI_CHECK:
       BORDER(2);
-/*       widget->child_spacing = 2; */
       widget->child_spacing = 4;
       break;
 
     case JI_ENTRY:
       BORDER(3);
+      break;
+
+    case JI_GRID:
+      BORDER(0);
+      widget->child_spacing = 4;
       break;
 
     case JI_LABEL:
@@ -408,7 +419,7 @@ static void theme_init_widget(JWidget widget)
       break;
 
     case JI_WINDOW:
-      if (!jwindow_is_desktop (widget)) {
+      if (!jwindow_is_desktop(widget)) {
 	if (widget->text) {
 	  BORDER4(6, 4+jwidget_get_text_height(widget)+6, 6, 6);
 #if 1				/* add close button */
@@ -491,12 +502,12 @@ static int theme_color_background(void)
   return COLOR_BACKGROUND;
 }
 
-static void theme_draw_box(JWidget widget)
+static void theme_draw_box(JWidget widget, JRect clip)
 {
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(clip, BGCOLOR);
 }
 
-static void theme_draw_button(JWidget widget)
+static void theme_draw_button(JWidget widget, JRect clip)
 {
   BITMAP *icon_bmp = ji_generic_button_get_icon(widget);
   int icon_align = ji_generic_button_get_icon_align(widget);
@@ -609,7 +620,7 @@ static void theme_draw_button(JWidget widget)
   }
 }
 
-static void theme_draw_check(JWidget widget)
+static void theme_draw_check(JWidget widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg;
@@ -639,7 +650,12 @@ static void theme_draw_check(JWidget widget)
   draw_icons(icon.x1, icon.y1, widget, ICON_CHECK_EDGE);
 }
 
-static void theme_draw_entry(JWidget widget)
+static void theme_draw_grid(JWidget widget, JRect clip)
+{
+  jdraw_rectfill(clip, BGCOLOR);
+}
+
+static void theme_draw_entry(JWidget widget, JRect clip)
 {
   bool password = jentry_is_password(widget);
   int scroll, cursor, state, selbeg, selend;
@@ -659,8 +675,8 @@ static void theme_draw_entry(JWidget widget)
   bg = COLOR_BACKGROUND;
 
   /* 1st border */
-  _ji_theme_rectedge(ji_screen, x1, y1, x2, y2,
-		     COLOR_DISABLED, COLOR_BACKGROUND);
+  jrectedge(ji_screen, x1, y1, x2, y2,
+	    COLOR_DISABLED, COLOR_BACKGROUND);
 
   /* 2nd border */
   x1++, y1++, x2--, y2--;
@@ -722,7 +738,7 @@ static void theme_draw_entry(JWidget widget)
     draw_entry_cursor(widget, x, y);
 }
 
-static void theme_draw_label(JWidget widget)
+static void theme_draw_label(JWidget widget, JRect clip)
 {
   int bg = BGCOLOR;
 
@@ -731,7 +747,7 @@ static void theme_draw_label(JWidget widget)
   draw_textstring(NULL, -1, bg, FALSE, widget, widget->rc, 0);
 }
 
-static void theme_draw_listbox(JWidget widget)
+static void theme_draw_listbox(JWidget widget, JRect clip)
 {
   int bg;
 
@@ -743,7 +759,7 @@ static void theme_draw_listbox(JWidget widget)
   jdraw_rectfill(widget->rc, COLOR_BACKGROUND);
 }
 
-static void theme_draw_listitem(JWidget widget)
+static void theme_draw_listitem(JWidget widget, JRect clip)
 {
   int fg, bg;
   int x, y;
@@ -769,7 +785,7 @@ static void theme_draw_listitem(JWidget widget)
     jdraw_text(widget->text_font, widget->text, x, y, fg, bg, TRUE);
 
     /* background */
-    _ji_theme_rectfill_exclude
+    jrectexclude
       (ji_screen,
        widget->rc->x1, widget->rc->y1,
        widget->rc->x2-1, widget->rc->y2-1,
@@ -783,12 +799,12 @@ static void theme_draw_listitem(JWidget widget)
   }
 }
 
-static void theme_draw_menu(JWidget widget)
+static void theme_draw_menu(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-static void theme_draw_menuitem(JWidget widget)
+static void theme_draw_menuitem(JWidget widget, JRect clip)
 {
   int c, bg, fg, bar;
   int x1, y1, x2, y2;
@@ -900,7 +916,7 @@ static void theme_draw_menuitem(JWidget widget)
   }
 }
 
-static void theme_draw_panel(JWidget widget)
+static void theme_draw_panel(JWidget widget, JRect clip)
 {
   JWidget c1, c2;
   JLink link;
@@ -956,7 +972,7 @@ static void theme_draw_panel(JWidget widget)
   }
 }
 
-static void theme_draw_radio(JWidget widget)
+static void theme_draw_radio(JWidget widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg = BGCOLOR;
@@ -985,7 +1001,7 @@ static void theme_draw_radio(JWidget widget)
   draw_icons(icon.x1, icon.y1, widget, ICON_RADIO_EDGE);
 }
 
-static void theme_draw_separator(JWidget widget)
+static void theme_draw_separator(JWidget widget, JRect clip)
 {
   int x1, y1, x2, y2;
 
@@ -1055,7 +1071,7 @@ static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 }
 #endif
 
-static void theme_draw_slider(JWidget widget)
+static void theme_draw_slider(JWidget widget, JRect clip)
 {
   int x, x1, y1, x2, y2, bg, c1, c2;
   int min, max, value;
@@ -1077,8 +1093,8 @@ static void theme_draw_slider(JWidget widget)
     bg = COLOR_FACE;
 
   /* 1st border */
-  _ji_theme_rectedge(ji_screen, x1, y1, x2, y2,
-		     COLOR_DISABLED, COLOR_BACKGROUND);
+  jrectedge(ji_screen, x1, y1, x2, y2,
+	    COLOR_DISABLED, COLOR_BACKGROUND);
 
   /* 2nd border */
   x1++, y1++, x2--, y2--;
@@ -1098,7 +1114,7 @@ static void theme_draw_slider(JWidget widget)
   }
 
   x1++, y1++, x2--, y2--;
-  _ji_theme_rectedge(ji_screen, x1, y1, x2, y2, c1, c2);
+  jrectedge(ji_screen, x1, y1, x2, y2, c1, c2);
 
   /* progress bar */
   x1++, y1++, x2--, y2--;
@@ -1159,14 +1175,14 @@ static void theme_draw_slider(JWidget widget)
   }
 }
 
-static void theme_draw_textbox(JWidget widget)
+static void theme_draw_textbox(JWidget widget, JRect clip)
 {
   _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
 			 widget->theme->textbox_bg_color,
 			 widget->theme->textbox_fg_color);
 }
 
-static void theme_draw_view(JWidget widget)
+static void theme_draw_view(JWidget widget, JRect clip)
 {
   JRect pos = jwidget_get_rect(widget);
 
@@ -1194,7 +1210,7 @@ static void theme_draw_view(JWidget widget)
   jrect_free(pos);
 }
 
-static void theme_draw_view_scrollbar(JWidget widget)
+static void theme_draw_view_scrollbar(JWidget widget, JRect clip)
 {
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
@@ -1229,17 +1245,17 @@ static void theme_draw_view_scrollbar(JWidget widget)
   }
 
   /* background */
-  _ji_theme_rectfill_exclude(ji_screen,
-			     x1, y1, x2, y2,
-			     u1, v1, u2, v2, BGCOLOR);
+  jrectexclude(ji_screen,
+	       x1, y1, x2, y2,
+	       u1, v1, u2, v2, BGCOLOR);
 
   /* 1st border */
   if (jwidget_is_selected(widget))
-    _ji_theme_rectedge(ji_screen, u1, v1, u2, v2,
-		       COLOR_DISABLED, COLOR_BACKGROUND);
+    jrectedge(ji_screen, u1, v1, u2, v2,
+	      COLOR_DISABLED, COLOR_BACKGROUND);
   else
-    _ji_theme_rectedge(ji_screen, u1, v1, u2, v2,
-		       COLOR_BACKGROUND, COLOR_DISABLED);
+    jrectedge(ji_screen, u1, v1, u2, v2,
+	      COLOR_BACKGROUND, COLOR_DISABLED);
 
   /* bar-block background */
   u1++, v1++, u2--, v2--;
@@ -1249,12 +1265,12 @@ static void theme_draw_view_scrollbar(JWidget widget)
     rectfill(ji_screen, u1, v1, u2, v2, BGCOLOR);
 }
 
-static void theme_draw_view_viewport(JWidget widget)
+static void theme_draw_view_viewport(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-static void theme_draw_window(JWidget widget)
+static void theme_draw_window(JWidget widget, JRect clip)
 {
   JRect pos = jwidget_get_rect(widget);
   JRect cpos = jwidget_get_child_rect(widget);

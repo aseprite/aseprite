@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (c) 2003, 2004, 2005, 2007, David A. Capello
+ * Copyright (C) 2003-2008 David A. Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 int main (int argc, char *argv[])
 {
   JWidget manager, desktop, box, view, sub_manager, button, window;
+  JWidget subwindows[256];
   char buf[256];
   int c;
 
@@ -64,9 +65,9 @@ int main (int argc, char *argv[])
   jview_attach(view, sub_manager);
   jwidget_expansive(view, TRUE);
 
-  jwidget_add_child (desktop, box);
-  jwidget_add_child (box, view);
-  jwidget_add_child (box, button);
+  jwidget_add_child(desktop, box);
+  jwidget_add_child(box, view);
+  jwidget_add_child(box, button);
 
   jwindow_open_bg(desktop);
 
@@ -77,8 +78,7 @@ int main (int argc, char *argv[])
     window = jwindow_new(buf);
     button = jbutton_new("&Close");
 
-    jwidget_add_child (window, button);
-    jwidget_autodestroy(window, TRUE);
+    jwidget_add_child(window, button);
 
     jwindow_remap(window);
     jwindow_position
@@ -87,10 +87,16 @@ int main (int argc, char *argv[])
        sub_manager->rc->y1 + (rand () % (jrect_h(sub_manager->rc) - jrect_h(window->rc))));
 
     _jmanager_open_window(sub_manager, window);
+    subwindows[c] = window;
   }
 
-  jmanager_run (manager);
-  jmanager_free (manager);
+  jmanager_run(manager);
+
+  for (c=0; c<128; c++)
+    jwidget_free(subwindows[c]);
+  jwidget_free(desktop);
+  
+  jmanager_free(manager);
   return 0;
 }
 

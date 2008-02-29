@@ -22,6 +22,8 @@
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
 
+#include "modules/color.h"
+
 struct _GList;
 struct Brush;
 struct Dirty;
@@ -108,17 +110,17 @@ void set_onionskin(bool status);
 
 int get_raw_cursor_color(void);
 bool is_cursor_mask(void);
-const char *get_cursor_color(void);
-void set_cursor_color(const char *color);
+color_t get_cursor_color(void);
+void set_cursor_color(color_t color);
 
 int get_thickness_for_cursor(void);
 
-void control_tool(JWidget editor, Tool *tool, const char *color);
+void control_tool(JWidget editor, Tool *tool, color_t color);
 
-void do_tool_points(struct Sprite *sprite, Tool *tool, const char *color,
+void do_tool_points(struct Sprite *sprite, Tool *tool, color_t color,
 		    int npoints, int *x, int *y);
 
-void apply_grid(int *x, int *y);
+void apply_grid(int *x, int *y, bool flexible);
 
 #endif /* MODULES_TOOLS_H */
 

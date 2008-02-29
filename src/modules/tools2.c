@@ -115,7 +115,7 @@ void SetDrawMode(const char *string)
                 rectangle, ellipse
      uses the current FG color
  */
-void ToolTrace(const char *string, const char *color)
+void ToolTrace(const char *string, const char *_color)
 {
   Sprite *sprite = current_sprite;
 
@@ -127,6 +127,7 @@ void ToolTrace(const char *string, const char *color)
     int npoints = 0;
     int *x = NULL;
     int *y = NULL;
+    color_t color = string_to_color(_color);
 
     for (tok=strtok(copy, " "), count=0; tok;
 	 tok=strtok(NULL, " "), count++) {
@@ -242,7 +243,7 @@ void ResetConfig(void)
   set_brush_size(1);
   set_brush_angle(0);
   set_brush_mode(DRAWMODE_OPAQUE);
-  set_cursor_color("mask");
+  set_cursor_color(color_mask());
   set_glass_dirty(128);
   set_spray_width(16);
   set_air_speed(75);

@@ -24,6 +24,8 @@
 #define HOOK(widget, signal, signal_handler, user_data)			\
   hook_signal((widget), (signal), (signal_handler), (int)(user_data))
 
+#define GUISCALE   (JI_SCREEN_W > 512 ? 2: 1)
+
 struct Sprite;
 struct Monitor;
 

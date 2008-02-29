@@ -47,33 +47,52 @@
   ji_font_set_aa_mode(f, fill_bg ||					\
 			 bitmap_color_depth(ji_screen) == 8 ? bg: -1)
 
-void jdraw_rect(const JRect r, int color)
+void jrectedge(BITMAP *bmp, int x1, int y1, int x2, int y2,
+	       int c1, int c2)
 {
-  rect(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, color);
+  hline(bmp, x1,   y1,   x2-1, c1);
+  hline(bmp, x1+1, y2,   x2,   c2);
+  vline(bmp, x1,   y1+1, y2,   c1);
+  vline(bmp, x2,   y1,   y2-1, c2);
 }
 
-void jdraw_rectfill(const JRect r, int color)
+void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
+		  int ex1, int ey1, int ex2, int ey2, int color)
 {
-  rectfill(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, color);
+  if ((ex1 > x2) || (ex2 < x1) ||
+      (ey1 > y2) || (ey2 < y1))
+    rectfill(bmp, x1, y1, x2, y2, color);
+  else {
+    int y, my1, my2;
+
+    my1 = MAX(y1, ey1);
+    my2 = MIN(y2, ey2);
+
+    /* top */
+    for (y=y1; y<ey1; y++)
+      hline(bmp, x1, y, x2, color);
+
+    /* left */
+    if (x1 < ex1)
+      for (y=my1; y<=my2; y++)
+        hline(bmp, x1, y, ex1-1, color);
+
+    /* right */
+    if (x2 > ex2)
+      for (y=my1; y<=my2; y++)
+        hline(bmp, ex2+1, y, x2, color);
+
+    /* bottom */
+    for (y=ey2+1; y<=y2; y++)
+      hline(bmp, x1, y, x2, color);
+  }
 }
 
-void jdraw_rectedge(const JRect r, int c1, int c2)
+void jrectshade(BITMAP *bmp, int x1, int y1, int x2, int y2,
+		int c1, int c2, int align)
 {
-  vline(ji_screen, r->x1,   r->y1,   r->y2-1, c1);
-  vline(ji_screen, r->x2-1, r->y1,   r->y2-1, c2);
-
-  hline(ji_screen, r->x1+1, r->y1,   r->x2-2, c1);
-  hline(ji_screen, r->x1+1, r->y2-1, r->x2-2, c2);
-}
-
-void jdraw_rectshade(const JRect rect, int c1, int c2, int align)
-{
-  int c, x1, y1, x2, y2, r[2], g[2], b[2];
-
-  x1 = rect->x1;
-  y1 = rect->y1;
-  x2 = rect->x2-1;
-  y2 = rect->y2-1;
+  register int c;
+  int r[2], g[2], b[2];
 
   r[0] = getr(c1);
   g[0] = getg(c1);
@@ -85,10 +104,10 @@ void jdraw_rectshade(const JRect rect, int c1, int c2, int align)
 
   if (align & JI_VERTICAL) {
     if (y1 == y2)
-      hline(ji_screen, x1, y1, x2, c1);
+      hline(bmp, x1, y1, x2, c1);
     else
       for (c=y1; c<=y2; c++)
-	hline(ji_screen,
+	hline(bmp,
 	      x1, c, x2,
 	      makecol((r[0] + (r[1] - r[0]) * (c - y1) / (y2 - y1)),
 		      (g[0] + (g[1] - g[0]) * (c - y1) / (y2 - y1)),
@@ -107,13 +126,35 @@ void jdraw_rectshade(const JRect rect, int c1, int c2, int align)
   }
 }
 
+void jdraw_rect(const JRect r, int color)
+{
+  rect(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, color);
+}
+
+void jdraw_rectfill(const JRect r, int color)
+{
+  rectfill(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, color);
+}
+
+void jdraw_rectedge(const JRect r, int c1, int c2)
+{
+  jrectedge(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, c1, c2);
+}
+
+void jdraw_rectshade(const JRect rect, int c1, int c2, int align)
+{
+  jrectshade(ji_screen,
+	     rect->x1, rect->y1,
+	     rect->x2-1, rect->y2-1, c1, c2, align);
+}
+
 void jdraw_rectexclude(const JRect rc, const JRect exclude, int color)
 {
-  _ji_theme_rectfill_exclude(ji_screen,
-			     rc->x1, rc->y1,
-			     rc->x2-1, rc->y2-1,
-			     exclude->x1, exclude->y1,
-			     exclude->x2-1, exclude->y2-1, color);
+  jrectexclude(ji_screen,
+	       rc->x1, rc->y1,
+	       rc->x2-1, rc->y2-1,
+	       exclude->x1, exclude->y1,
+	       exclude->x2-1, exclude->y2-1, color);
 }
 
 void jdraw_char(FONT *f, int chr, int x, int y, int fg, int bg, bool fill_bg)

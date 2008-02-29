@@ -45,10 +45,10 @@ static void cmd_save_file_execute(const char *argument)
       recent_file(current_sprite->filename);
       sprite_mark_as_saved(current_sprite);
 
-      if (app_get_status_bar())
-	status_bar_set_text(app_get_status_bar(),
-			    1000, "File %s, saved.",
-			    get_filename(current_sprite->filename));
+      if (app_get_statusbar())
+	statusbar_set_text(app_get_statusbar(),
+			   1000, "File %s, saved.",
+			   get_filename(current_sprite->filename));
     }
     else {
       /* TODO if the user cancel we shouldn't unrecent the file */

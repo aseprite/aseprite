@@ -289,12 +289,45 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_CHAR:
-      if (widget->type != JI_BUTTON) {
-	if (jwidget_is_enabled (widget)) {
+    case JM_KEYPRESSED:
+      /* if the button is enabled */
+      if (jwidget_is_enabled(widget)) {
+	/* for JI_BUTTON */
+	if (widget->type == JI_BUTTON) {
+	  /* has focus and press enter/space */
+	  if (jwidget_has_focus(widget)) {
+	    if ((msg->key.scancode == KEY_ENTER) ||
+		(msg->key.scancode == KEY_ENTER_PAD) ||
+		(msg->key.scancode == KEY_SPACE)) {
+	      jwidget_select(widget);
+	      return TRUE;
+	    }
+	  }
+	  /* the underscored letter with Alt */
+	  if ((msg->any.shifts & KB_ALT_FLAG) &&
+	      (jwidget_check_underscored(widget, msg->key.scancode))) {
+	    jwidget_select(widget);
+	    return TRUE;
+	  }
+	  /* magnetic */
+	  else if (jwidget_is_magnetic(widget) &&
+		   ((msg->key.scancode == KEY_ENTER) ||
+		    (msg->key.scancode == KEY_ENTER_PAD))) {
+	    jmanager_set_focus(widget);
+
+	    /* dispatch focus movement messages (because the buttons
+	       process them) */
+	    jmanager_dispatch_messages(ji_get_default_manager());
+
+	    jwidget_select(widget);
+	    return TRUE;
+	  }
+	}
+	/* for JI_CHECK or JI_RADIO */
+	else {
 	  /* if the widget has the focus and the user press space or
 	     if the user press Alt+the underscored letter of the button */
-	  if ((jwidget_has_focus (widget) &&
+	  if ((jwidget_has_focus(widget) &&
 	       (msg->key.scancode == KEY_SPACE)) ||
 	      ((msg->any.shifts & KB_ALT_FLAG) &&
 	       (jwidget_check_underscored(widget, msg->key.scancode)))) {
@@ -321,60 +354,12 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_KEYPRESSED:
-      if (widget->type == JI_BUTTON) {
-	/* if the button is enabled */
-	if (jwidget_is_enabled (widget)) {
-	  /* has focus and press enter/space */
-	  if (jwidget_has_focus (widget)) {
-	    if ((msg->key.scancode == KEY_ENTER) ||
-		(msg->key.scancode == KEY_ENTER_PAD) ||
-		(msg->key.scancode == KEY_SPACE)) {
-	      jwidget_select(widget);
-	      return TRUE;
-	    }
-	  }
-/* 	  else { */
-	    /* the underscored letter with Alt */
-	    if ((msg->any.shifts & KB_ALT_FLAG) &&
-		(jwidget_check_underscored(widget, msg->key.scancode))) {
-	      jwidget_select(widget);
-	      return TRUE;
-	    }
-	    /* magnetic */
-	    else if (jwidget_is_magnetic(widget) &&
-		     ((msg->key.scancode == KEY_ENTER) ||
-		      (msg->key.scancode == KEY_ENTER_PAD))) {
-	      jmanager_set_focus(widget);
-
-	      /* dispatch focus movement messages (because the buttons
-		 process them) */
-	      jmanager_dispatch_messages(ji_get_default_manager());
-
-	      jwidget_select(widget);
-	      return TRUE;
-	    }
-/* 	  } */
-	}
-      }
-      break;
-
     case JM_KEYRELEASED:
-      if (widget->type == JI_BUTTON) {
-	/* if the button is enabled */
-	if (jwidget_is_enabled(widget)) {
-	  /* has focus and press enter/space, or if the user just
-	     pressed the underscored letter */
-	  if ((jwidget_has_focus(widget) &&
-	       ((msg->key.scancode == KEY_ENTER) ||
-		(msg->key.scancode == KEY_ENTER_PAD) ||
-		(msg->key.scancode == KEY_SPACE))) ||
-	      (jwidget_check_underscored(widget, msg->key.scancode))) {
-	    /* if it's selected we must emit the signal */
-	    if (jwidget_is_selected(widget)) {
-	      button_selected_signal(widget);
-	      return TRUE;
-	    }
+      if (jwidget_is_enabled(widget)) {
+	if (widget->type == JI_BUTTON) {
+	  if (jwidget_is_selected(widget)) {
+	    button_selected_signal(widget);
+	    return TRUE;
 	  }
 	}
       }

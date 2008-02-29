@@ -398,7 +398,7 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
       header->bgcolor[3] = _rgba_geta(sprite->bgcolor);
       break;
     case IMAGE_GRAYSCALE:
-      header->bgcolor[0] = _graya_getk(sprite->bgcolor);
+      header->bgcolor[0] = _graya_getv(sprite->bgcolor);
       header->bgcolor[1] = _graya_geta(sprite->bgcolor);
       break;
     case IMAGE_INDEXED:
@@ -864,7 +864,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, Sprite *sp
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++) {
 		c = image->method->getpixel(image, x, y);
-		fputc(_graya_getk(c), f);
+		fputc(_graya_getv(c), f);
 		fputc(_graya_geta(c), f);
 	      }
 	    }

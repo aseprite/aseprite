@@ -53,8 +53,15 @@ static Layer *duplicate_layer(void)
   if (!sprite || !sprite->layer)
     return NULL;
 
+  /* open undo */
+  if (undo_is_enabled(sprite->undo))
+    undo_open(sprite->undo);
+
   layer_copy = layer_new_copy(sprite->layer);
   if (!layer_copy) {
+    if (undo_is_enabled(sprite->undo))
+      undo_close(sprite->undo);
+
     console_printf("Not enough memory");
     return NULL;
   }
@@ -62,10 +69,9 @@ static Layer *duplicate_layer(void)
   sprintf(buf, "%s %s", layer_copy->name, _("Copy"));
   layer_set_name(layer_copy, buf);
 
-  if (undo_is_enabled(sprite->undo)) {
-    undo_open(sprite->undo);
+  /* add the new layer in the sprite */
+  if (undo_is_enabled(sprite->undo))
     undo_add_layer(sprite->undo, (Layer *)sprite->layer->parent, layer_copy);
-  }
 
   layer_add_layer((Layer *)sprite->layer->parent, layer_copy);
 

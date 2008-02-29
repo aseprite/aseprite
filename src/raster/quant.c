@@ -96,8 +96,8 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	  rgb_address = (ase_uint32 *)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *gray_address;
-	    g = _graya_getk (c);
-	    *rgb_address = _rgba (g, g, g, _graya_geta (c));
+	    g = _graya_getv(c);
+	    *rgb_address = _rgba(g, g, g, _graya_geta(c));
 	    gray_address++;
 	    rgb_address++;
 	  }
@@ -107,10 +107,10 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	  idx_address = new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *gray_address;
-	    if (_graya_geta (c) == 0)
+	    if (_graya_geta(c) == 0)
 	      *idx_address = 0;
 	    else
-	      *idx_address = _graya_getk (c);
+	      *idx_address = _graya_getv(c);
 	    gray_address++;
 	    idx_address++;
 	  }

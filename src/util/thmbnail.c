@@ -152,9 +152,9 @@ static void thumbnail_create_bitmap(BITMAP *bmp, Image *image)
 	for (y=0; y<h; y++)
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
-	    putpixel(bmp, x1+x, y1+y, makecol(_graya_getk(c),
-					      _graya_getk(c),
-					      _graya_getk(c)));
+	    putpixel(bmp, x1+x, y1+y, makecol(_graya_getv(c),
+					      _graya_getv(c),
+					      _graya_getv(c)));
 	  }
 	break;
       case IMAGE_INDEXED: {

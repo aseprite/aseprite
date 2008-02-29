@@ -53,20 +53,14 @@ static int paledit_change_signal(JWidget widget, int user_data)
 {
   if (jmouse_b(0)) {
     PaletteEditor *paledit = palette_editor_data(widget);
-    JWidget color_bar = (JWidget)user_data;
+    JWidget colorbar = (JWidget)user_data;
 
     if (paledit->color[0] == paledit->color[1]) {
-      char *color = color_index(paledit->color[1]);
-
-      color_bar_set_color(color_bar,
-			  jmouse_b(0) == 1 ? 0: 1,
-			  color, FALSE);
-
-      jfree(color);
+      color_t color = color_index(paledit->color[1]);
+      colorbar_set_fg_color(colorbar, color);
     }
     else {
       bool array[256];
-      char buf[256];
       int c, sel;
 
       palette_editor_get_selected_entries(widget, array);
@@ -74,12 +68,12 @@ static int paledit_change_signal(JWidget widget, int user_data)
 	if (array[c])
 	  sel++;
 
-      color_bar_set_size(color_bar, sel);
+      colorbar_set_size(colorbar, sel);
 
       for (c=sel=0; c<256; c++) {
 	if (array[c]) {
-	  sprintf(buf, "index{%d}", c);
-	  color_bar_set_color_directly(color_bar, sel++, buf);
+	  colorbar_set_color(colorbar, sel++,
+			     color_index(c));
 	}
       }
     }

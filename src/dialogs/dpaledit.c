@@ -41,7 +41,7 @@ static PALETTE *palettes;
 
 static JWidget slider_R, slider_G, slider_B;
 static JWidget slider_H, slider_S, slider_V;
-static JWidget color_viewer;
+static JWidget colorviewer;
 static JWidget palette_editor;
 static JWidget slider_frame;
 
@@ -61,7 +61,7 @@ static void set_new_palette(RGB *palette);
 
 void dialogs_palette_editor(void)
 {
-  JWidget window, color_viewer_box, palette_editor_view;
+  JWidget window, colorviewer_box, palette_editor_view;
   JWidget slider_columns, button_ok;
   JWidget button_select_all;
   JWidget button_undo, button_redo;
@@ -99,7 +99,7 @@ void dialogs_palette_editor(void)
 		    "ramp", &button_ramp,
 		    "quantize", &button_quantize,
 		    "button_ok", &button_ok,
-		    "color_viewer", &color_viewer_box,
+		    "colorviewer", &colorviewer_box,
 		    "palette_editor", &palette_editor_view, NULL)) {
     jwidget_free(window);
     return;
@@ -127,11 +127,11 @@ void dialogs_palette_editor(void)
   columns = MID(1, columns, 256);
 
   /* custom widgets */
-  color_viewer = color_viewer_new("index{0}", IMAGE_INDEXED);
+  colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
   palette_editor = palette_editor_new(palette, TRUE, 6);
 
-  jwidget_expansive(color_viewer, TRUE);
-  jwidget_add_child(color_viewer_box, color_viewer);
+  jwidget_expansive(colorviewer, TRUE);
+  jwidget_add_child(colorviewer_box, colorviewer);
 
   jwidget_disable(button_undo);
   jwidget_disable(button_redo);
@@ -416,8 +416,8 @@ static int slider_frame_change_signal(JWidget widget, int user_data)
 static int palette_editor_change_signal(JWidget widget, int user_data)
 {
   PaletteEditor *paledit = palette_editor_data(palette_editor);
-  int imgtype = color_viewer_get_imgtype(color_viewer);
-  char *color = color_index(paledit->color[1]);
+  int imgtype = colorviewer_get_imgtype(colorviewer);
+  color_t color = color_index(paledit->color[1]);
   int r = color_get_red(imgtype, color);
   int g = color_get_green(imgtype, color);
   int b = color_get_blue(imgtype, color);
@@ -425,7 +425,7 @@ static int palette_editor_change_signal(JWidget widget, int user_data)
 
   rgb_to_hsv(r, g, b, &h, &s, &v);
 
-  color_viewer_set_color(color_viewer, color);
+  colorviewer_set_color(colorviewer, color);
 
   jslider_set_value(slider_R, r);
   jslider_set_value(slider_G, g);
@@ -433,8 +433,6 @@ static int palette_editor_change_signal(JWidget widget, int user_data)
   jslider_set_value(slider_H, 255.0 * h / 360.0);
   jslider_set_value(slider_V, 255.0 * v);
   jslider_set_value(slider_S, 255.0 * s);
-
-  jfree(color);
   return FALSE;
 }
 

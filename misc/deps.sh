@@ -4,7 +4,6 @@ GCC="gcc -MM"
 CFLAGS="-I.					\
 	-Isrc					\
 	-Ithird_party/lua/include		\
-	-Ithird_party/gfli			\
 	-Ithird_party/intl			\
 	-Ithird_party/libpng			\
 	-Ithird_party/zlib			\
@@ -23,6 +22,7 @@ $GCC $CFLAGS							     \
     src/dialogs/*.c						     \
     src/effect/*.c						     \
     src/file/*.c						     \
+    src/file/*/*.c						     \
     src/intl/*.c						     \
     src/jinete/*.c						     \
     src/modules/*.c						     \

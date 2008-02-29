@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.6beta
+version=0.6-beta2
 distdir=ase-$version
 
 freetype_files="third_party/freetype/ChangeLog				\
@@ -32,10 +32,6 @@ freetype_files="third_party/freetype/ChangeLog				\
 		third_party/freetype/src/truetype/*.[ch]		\
 		third_party/freetype/src/type1/*.[ch]			\
 		third_party/freetype/src/winfonts/*.[ch]"
-
-gfli_files="third_party/gfli/*.[ch]		\
-	    third_party/gfli/README		\
-	    third_party/gfli/TODO"
 
 jpeg_files="third_party/jpeg/*.[ch]		\
 	    third_party/jpeg/*.log		\
@@ -73,8 +69,7 @@ zlib_files="third_party/zlib/*.[ch]		\
 	    third_party/zlib/*.txt		\
 	    third_party/zlib/README"
 
-ase_files="all.h				\
-	   config.h				\
+ase_files="config.h				\
 	   ChangeLog				\
 	   COPYING				\
 	   fix.bat				\
@@ -115,6 +110,8 @@ ase_files="all.h				\
 	   src/dialogs/*.[ch]			\
 	   src/effect/*.[ch]			\
 	   src/file/*.[ch]			\
+	   src/file/fli/*.[ch]			\
+	   src/file/fli/README			\
 	   src/file/gif/*.[ch]			\
 	   src/intl/*.[ch]			\
 	   src/jinete/*.[ch]			\
@@ -126,6 +123,7 @@ ase_files="all.h				\
 	   src/raster/x86/*.s			\
 	   src/script/*.[ch]			\
 	   src/script/*.py			\
+	   src/test/*.[ch]			\
 	   src/test/jinete/*.[ch]		\
 	   src/test/jinete/*.jid		\
 	   src/test/jinete/*.pcx		\
@@ -148,7 +146,6 @@ mkdir "$dir/$distdir"
 
 cp --parents					\
     $freetype_files				\
-    $gfli_files					\
     $jpeg_files					\
     $libart_files				\
     $libpng_files				\
@@ -172,7 +169,11 @@ fi
 function def_common_files()
 {
   txt_files="							     \
-$1/*.txt							     \
+$1/AUTHORS.txt							     \
+$1/LEGAL.txt							     \
+$1/NEWS.txt							     \
+$1/README.txt							     \
+$1/WARNING.txt							     \
 $1/COPYING							     \
 $1/data/convmatr.def						     \
 $1/data/jids/*.jid						     \
@@ -202,17 +203,17 @@ if [ ! -f $distdir-win32.zip ] ; then
 cd "$dir/.."
 make -f makefile.mgw CONFIGURED=1 clean
 make -f makefile.mgw CONFIGURED=1
-strip -s ase.exe
+strip -s aseprite.exe
 def_common_files .
 mkdir "$dir/$distdir-win32"
-cp -r --parents $txt_files $bin_files ase.exe "$dir/$distdir-win32"
+cp -r --parents $txt_files $bin_files aseprite.exe "$dir/$distdir-win32"
 
 cd "$dir"
 cp alleg42.dll "$dir/$distdir-win32"
 def_common_files $distdir-win32
 zip -9 $distdir-win32.zip $txt_files
 zip -9 $distdir-win32.zip $bin_files		\
-    $distdir-win32/ase.exe			\
+    $distdir-win32/aseprite.exe			\
     $distdir-win32/alleg42.dll
 rm -fr $distdir-win32
 

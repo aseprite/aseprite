@@ -425,7 +425,7 @@ void update_screen_for_sprite(Sprite *sprite)
     }
   }
 
-  status_bar_set_text(app_get_status_bar(), -1, "");
+  statusbar_set_text(app_get_statusbar(), -1, "");
 }
 
 void gui_run(void)
@@ -495,6 +495,8 @@ void gui_setup_screen(void)
     ji_screen_created = FALSE;
   }
 
+  reload_default_font();
+
   /* set the configuration */
   save_gui_config();
 }
@@ -502,8 +504,9 @@ void gui_setup_screen(void)
 void reload_default_font(void)
 {
   JTheme theme = ji_get_theme();
-  const char *default_font;
+  const char *user_font;
   DIRS *dirs, *dir;
+  char buf[512];
 
   /* no font for now */
 
@@ -515,25 +518,19 @@ void reload_default_font(void)
   /* directories */
   dirs = dirs_new();
 
-  default_font = get_config_string("Options", "DefaultFont", "");
-  if ((default_font) && (*default_font))
-    dirs_add_path(dirs, default_font);
+  user_font = get_config_string("Options", "UserFont", "");
+  if ((user_font) && (*user_font))
+    dirs_add_path(dirs, user_font);
 
-  /* big font */
-/*   if (JI_SCREEN_W > 400) */
-/*     dirs_cat_dirs(dirs, filename_in_datadir("fonts/default2.pcx")); */
-/*   /\* tiny font *\/ */
-/*   else */
-    dirs_cat_dirs(dirs, filename_in_datadir("fonts/default.pcx"));
+  usprintf(buf, "fonts/ase%d.pcx", GUISCALE);
+  dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
   /* try to load the font */
   for (dir=dirs; dir; dir=dir->next) {
     theme->default_font = ji_font_load(dir->path);
     if (theme->default_font) {
-      if (ji_font_is_scalable (theme->default_font)) {
-	ji_font_set_size(theme->default_font,
-			 (JI_SCREEN_W > 320) ? 14: 8);
-      }
+      if (ji_font_is_scalable(theme->default_font))
+	ji_font_set_size(theme->default_font, 8*GUISCALE);
       break;
     }
   }
@@ -852,7 +849,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_CHAR: {
+    case JM_KEYPRESSED: {
       Command *command = command_get_by_key(msg);
       if (!command)
 	break;

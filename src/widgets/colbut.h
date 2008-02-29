@@ -19,15 +19,17 @@
 #ifndef WIDGETS_COLBUT_H
 #define WIDGETS_COLBUT_H
 
+#include "modules/color.h"
+
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLOR_BUTTON_CHANGE   0x10001
 
-JWidget color_button_new (const char *color, int imgtype);
-int color_button_type (void);
+JWidget color_button_new(color_t color, int imgtype);
+int color_button_type(void);
 
-int color_button_get_imgtype (JWidget color_button);
+int color_button_get_imgtype(JWidget color_button);
 
-const char *color_button_get_color (JWidget color_button);
-void color_button_set_color (JWidget color_button, const char *color);
+color_t color_button_get_color(JWidget color_button);
+void color_button_set_color(JWidget color_button, color_t color);
 
 #endif /* WIDGETS_COLBUT_H */

@@ -123,7 +123,7 @@ void LoadPalette(const char *filename)
 }
 
 /* clears the mask region in the current sprite with the BG color */
-void ClearMask(const char *str_color)
+void ClearMask(color_t _color)
 {
   Sprite *sprite = current_sprite;
   int x, y, u, v, putx, puty;
@@ -135,7 +135,7 @@ void ClearMask(const char *str_color)
   if (sprite) {
     image = GetImage2(sprite, &x, &y, NULL);
     if (image) {
-      color = get_color_for_image(sprite->imgtype, str_color);
+      color = get_color_for_image(sprite->imgtype, _color);
 
       if (mask_is_empty(sprite->mask)) {
 	if (undo_is_enabled(sprite->undo))
@@ -294,8 +294,8 @@ int interactive_move_layer(int mode, int use_undo, int (*callback)(void))
       jwidget_dirty(editor);
 
       /* update status bar */
-      status_bar_set_text
-	(app_get_status_bar(), 0,
+      statusbar_set_text
+	(app_get_statusbar(), 0,
 	 "Pos %3d %3d Offset %3d %3d",
 	 (int)cel->x,
 	 (int)cel->y,

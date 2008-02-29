@@ -133,7 +133,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	if (!click_bar)
 	  break;
 
-	jwidget_capture_mouse(widget);
+	jwidget_hard_capture_mouse(widget);
 	/* Continue with motion message...  */
       }
       else
@@ -144,16 +144,10 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	Panel *panel = jwidget_get_data(widget, JI_PANEL);
 
 	if (widget->align & JI_HORIZONTAL) {
-	  if (jmouse_get_cursor() != JI_CURSOR_SIZE_L)
-	    jmouse_set_cursor(JI_CURSOR_SIZE_L);
-
 	  panel->pos =
 	    100.0 * (msg->mouse.x-widget->rc->x1) / jrect_w(widget->rc);
 	}
 	else {
-	  if (jmouse_get_cursor() != JI_CURSOR_SIZE_T)
-	    jmouse_set_cursor(JI_CURSOR_SIZE_T);
-
 	  panel->pos =
 	    100.0 * (msg->mouse.y-widget->rc->y1) / jrect_h(widget->rc);
 	}
@@ -164,8 +158,17 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	jwidget_dirty(widget);
 	return TRUE;
       }
-      /* handle mouse cursor */
-      else if (jwidget_is_enabled(widget)) {
+      break;
+
+    case JM_BUTTONRELEASED:
+      if (jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
+	return TRUE;
+      }
+      break;
+
+    case JM_SETCURSOR:
+      if (jwidget_is_enabled(widget)) {
 	JWidget c1, c2;
 	JLink link;
 	int x1, y1, x2, y2;
@@ -198,37 +201,17 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	if (change_cursor) {
-	  if (widget->align & JI_HORIZONTAL) {
-	    if (jmouse_get_cursor() != JI_CURSOR_SIZE_L)
-	      jmouse_set_cursor(JI_CURSOR_SIZE_L);
-	  }
-	  else {
-	    if (jmouse_get_cursor() != JI_CURSOR_SIZE_T)
-	      jmouse_set_cursor(JI_CURSOR_SIZE_T);
-	  }
+	  if (widget->align & JI_HORIZONTAL)
+	    jmouse_set_cursor(JI_CURSOR_SIZE_L);
+	  else
+	    jmouse_set_cursor(JI_CURSOR_SIZE_T);
 	  return TRUE;
 	}
-	else {
-	  if (jmouse_get_cursor() != JI_CURSOR_NORMAL)
-	    jmouse_set_cursor(JI_CURSOR_NORMAL);
-	}
+	else
+	  return FALSE;
       }
       break;
 
-    case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
-	jmouse_set_cursor(JI_CURSOR_NORMAL);
-	return TRUE;
-      }
-      break;
-
-/*     case JM_MOUSEENTER: */
-/*     case JM_MOUSELEAVE: */
-      /* TODO theme stuff */
-/*       if (jwidget_is_enabled(widget)) */
-/* 	jwidget_dirty(widget); */
-/*       break; */
   }
 
   return FALSE;
@@ -256,7 +239,7 @@ static void panel_request_size(JWidget widget, int *w, int *h)
   nvis_children = 0;
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
-    if (jwidget_is_visible(child))
+    if (!(child->flags & JI_HIDDEN))
       nvis_children++;
   }
 
@@ -265,7 +248,7 @@ static void panel_request_size(JWidget widget, int *w, int *h)
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
 
-    if (jwidget_is_hidden(child))
+    if (child->flags & JI_HIDDEN)
       continue;
 
     jwidget_request_size(child, &req_w, &req_h);

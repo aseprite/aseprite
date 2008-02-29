@@ -1,12 +1,25 @@
 
  ASE - Allegro Sprite Editor
- Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 by David A. Capello
+ Copyright (C) 2001-2008 by David A. Capello
  --------------------------------------------------------------------
  See the "AUTHORS.txt" file for a complete list of contributors
 
+===================================
+INTRODUCTION
+===================================
+
+  ASE is a program specially designed with facilities to create
+  animated sprites that can be used in computer games. You can
+  create static images, characters with movement, textures,
+  patterns, backgrounds, logos, color palettes, tiles, etc.
+
+  What makes ASE different? It focuses on pixel editing, to do
+  pixel-art. Indeed, it isn't a photo retouching tool or a vector
+  graphics editor. Mainly it is a tool to create tiny animations
+  pixel-by-pixel.
 
 ===================================
-COPYRIGHT
+LICENSE
 ===================================
 
   This program is free software; you can redistribute it and/or modify it
@@ -23,138 +36,63 @@ COPYRIGHT
   with this program; if not, write to the Free Software Foundation, Inc., 59
   Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-
-===================================
-INTRODUCTION
-===================================
-
-  ASE is a program specially designed with facilities to create
-  animated sprites that can be used in some video game.  This program
-  let you create from static images, to characters with movement,
-  textures, patterns, backgrounds, logos, color palettes, and any
-  other thing that you think.
-
-
 ===================================
 FEATURES
 ===================================
 
-  ASE gives to you the possibility to:
-
-  - Edit sprites with layers and animation frames.
-
-  - Edit RGB (with Alpha), Grayscale (with Alpha also) and Indexed
-    images.
-
-  - Control 256 color palettes completely.
-
-  - Apply filters for different color effects (convolution matrix,
-    color curve, etc.).
-
-  - Load and save sprites in these formats: .BMP, .PCX, .TGA, .JPG,
-    .GIF, .FLC, .FLI, and .ASE (ASE's special format).
-
-  - Use bitmap's sequences (ani00.pcx, ani01.pcx, etc.) to save
-    animations.
-
-  - Drawing tools (dots, pencil, real-brush, floodfill, line, rectangle,
-    ellipse), drawing modes (opaque, glass), and brushes types (circle,
-    square, line).
-
-  - Mask (selections) support.
-
-  - Undo/Redo support for every operation.
-
-  - Multiple editor support.
-
-  - Draw with a customizable grid.
-
-  - Unique tiled drawing mode to draw patterns and textures in seconds.
-
-  - Scripting capabilities with Lua language (http://www.lua.org).
-
+  With ASE you'll be able to:
+  * Edit sprites with layers and frames.
+  * Edit RGB (with Alpha), Grayscale and Indexed images (256 color palettes).
+  * Load/save sprites in these formats: .GIF, .FLC, .FLI, .PNG,
+    .BMP, .PCX, .TGA, .JPG, and .ASE (ASE's special format).
+  * Load/save animations in sequence of bitmaps (frm00.pcx, frm01.pcx, ...).
+  * Tiled drawing mode to draw patterns and textures.
+  * Undo/Redo support for every operation.
+  * Multiple editor support.
+  * Show-grid/Snap-to-Grid
 
 ===================================
 CONFIGURATION FILES
 ===================================
 
-  In Windows and DOS platforms:
+  In Windows 98/2K/XP/Vista:
 
-    ase.cfg			- Configuration
-    data/matrices		- Convolutions matrices
-    data/menus			- Menus
-    data/scripts/*		- Scripts
+    ase-VERSION.cfg	- Program configuration
+    data/convmatr.def	- Convolutions matrices
+    data/gui-en.xml	- Menu definition and keyboard shortcuts
+    examples/*		- Examples of some sprites made with ASE
 
-  In Unix platforms, the configuration file is ~/.aserc, and the data/
-  files are searched in these locations (in order of preference):
+  In GNU/Linux, the configuration file is ~/.aserc-VERSION, and
+  the data/ files are searched in these locations (in priority
+  order):
 
     $HOME/.ase/
     /usr/local/share/ase/
     data/
 
-  See "src/core/dirs.c" for more information.
-
-
-===================================
-VERBOSE MODE
-===================================
-
-  When run "ase" with "-v" parameter, in Windows and DOS platforms the
-  errors will be written in STDERR and a "logXXXX.txt" file in "ase/"
-  directory is created with the same content.
-
-  In others platforms (like Unix), that log file isn't created,
-  because the use of STDERR is more common.
-
-  See "src/core/core.c" for more information.
-
-
-===================================
-UPDATES
-===================================
-
-  The last packages of binaries and source code, you can found them
-  from:
-
-    http://sourceforge.net/project/showfiles.php?group_id=20848
-
-  Also, if you want to get the last development version of ASE from
-  the SVN repository, which is the version more prone to have errors,
-  but is the more updated in the tools area, you can browse it file by
-  file in this address:
-
-    http://ase.svn.sourceforge.net/viewvc/ase/
-
-  Or you can download it completelly to your disk with a program which
-  control SVN, as follow-up:
-
-    svn checkout svn co https://ase.svn.sourceforge.net/svnroot/ase/trunk ase
-
-  WARNING: When you obtain the SVN version, don't remove the .svn
-  directories, they are for exclusive use of the svn program.
-
-
-===================================
-CREDITS
-===================================
-
-  See the "AUTHORS.txt" file.
-
-
 ===================================
 CONTACT INFO
 ===================================
 
-  To request help, report bugs, send patches, etc., you can use the
-  ase-help mailing list:
+  To request help you can use the Allegro Sprite Editor group or
+  the SourceForge forums:
+    http://groups.google.com/group/aseprite
+    http://sourceforge.net/forum/?group_id=20848
 
-    ase-help@lists.sourceforge.net
-    http://lists.sourceforge.net/lists/listinfo/ase-help/
+  We recommend you to use the SourceForge tracker to do specific
+  reporting of some issues like:
+  * Bugs:
+    http://sourceforge.net/tracker/?group_id=20848&atid=120848&func=add
+  * Request features:
+    http://sourceforge.net/tracker/?group_id=20848&atid=370848&func=add
+  * Patches:
+    http://sourceforge.net/tracker/?group_id=20848&atid=320848&func=add
+  * Support request:
+    http://sourceforge.net/tracker/?group_id=20848&atid=220848&func=add
 
   For more information, visit the official page of the project:
-
-    http://ase.sourceforge.net
-
+    http://www.aseprite.org/
+    http://www.aseprite.org/wiki/
 
  ----------------------------------------------------------------------------
- Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 by David A. Capello
+ Copyright (C) 2001-2008 by David A. Capello

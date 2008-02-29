@@ -19,12 +19,10 @@
 #include "config.h"
 
 #include "commands/commands.h"
-#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
-#include "widgets/colbar.h"
 
 static bool cmd_clear_enabled(const char *argument)
 {
@@ -37,7 +35,7 @@ static void cmd_clear_execute(const char *argument)
   Sprite *sprite = current_sprite;
 
   /* clear the mask */
-  ClearMask(color_bar_get_color(app_get_color_bar(), 1));
+  ClearMask(color_mask());
 
   /* refresh the sprite */
   update_screen_for_sprite(sprite);

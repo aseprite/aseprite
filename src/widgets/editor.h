@@ -42,9 +42,8 @@ typedef struct Editor
   int cursor_editor_x; /* position in the editor (model) */
   int cursor_editor_y;
   int old_cursor_thick;
-
-  /* for the mouse */
-  unsigned lagged_mouseenter : 1;
+  bool cursor_candraw : 1;
+  bool cursor_eyedropper : 1;
 
   /* offset for the sprite */
   int offset_x;
@@ -98,7 +97,7 @@ void editor_to_screen(JWidget editor, int xin, int yin, int *xout, int *yout);
 void show_drawing_cursor(JWidget editor);
 void hide_drawing_cursor(JWidget editor);
 
-void editor_update_status_bar_for_standby(JWidget editor);
+void editor_update_statusbar_for_standby(JWidget editor);
 
 void editor_refresh_region(JWidget editor);
 
@@ -114,7 +113,6 @@ bool editor_cursor_is_subpixel(JWidget editor);
 
 int editor_keys_toset_zoom(JWidget editor, int scancode);
 int editor_keys_toset_brushsize(JWidget editor, int scancode);
-int editor_keys_toget_pixels(JWidget editor, int scancode);
 
 /**********************************************************************/
 /* src/gui/editor/click.c */

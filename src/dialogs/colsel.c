@@ -39,29 +39,29 @@
 
 static JWidget slider_R, slider_G, slider_B, slider_A;
 static JWidget slider_H, slider_S, slider_V;
-static JWidget color_viewer;
+static JWidget colorviewer;
 static JWidget palette_editor;
 
 static int sliderRGB_change_signal(JWidget widget, int user_data);
 static int sliderHSV_change_signal(JWidget widget, int user_data);
 static int sliderA_change_signal(JWidget widget, int user_data);
-static int color_viewer_select_signal(JWidget widget, int user_data);
+static int colorviewer_select_signal(JWidget widget, int user_data);
 static int palette_editor_change_signal(JWidget widget, int user_data);
 static int window_resize_signal(JWidget widget, int user_data);
 
-char *ji_color_select(int imgtype, const char *color)
+bool ji_color_select(int imgtype, color_t *color)
 {
-  JWidget window, color_viewer_box, palette_editor_view, button_ok;
-  char *selected_color;
+  JWidget window, colorviewer_box, palette_editor_view, button_ok;
   char buf[256];
   PALETTE palette;
+  bool ret = FALSE;
 
   get_palette(palette);
 
   /* get current palette */
   window = load_widget("colsel.jid", "color_selection");
   if (!window)
-    return NULL;
+    return ret;
 
   /* window title */
   sprintf(buf, "%s (%s)", window->text,
@@ -80,18 +80,18 @@ char *ji_color_select(int imgtype, const char *color)
 		   "saturation", &slider_S,
 		   "value", &slider_V,
 		   "button_ok", &button_ok,
-		   "color_viewer", &color_viewer_box,
+		   "colorviewer", &colorviewer_box,
 		   "palette_editor", &palette_editor_view, NULL)) {
     jwidget_free(window);
-    return NULL;
+    return ret;
   }
 
-  color_viewer = color_viewer_new(color, imgtype);
+  colorviewer = colorviewer_new(*color, imgtype);
   palette_editor = palette_editor_new(palette, FALSE, 3);
   palette_editor_set_columns(palette_editor, 32);
 
-  jwidget_expansive(color_viewer, TRUE);
-  jwidget_add_child(color_viewer_box, color_viewer);
+  jwidget_expansive(colorviewer, TRUE);
+  jwidget_add_child(colorviewer_box, colorviewer);
 
   jview_attach(palette_editor_view, palette_editor);
   jview_maxsize(palette_editor_view);
@@ -105,26 +105,26 @@ char *ji_color_select(int imgtype, const char *color)
   HOOK(slider_H, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
   HOOK(slider_S, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
   HOOK(slider_V, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
-  HOOK(color_viewer, SIGNAL_COLOR_VIEWER_SELECT, color_viewer_select_signal, 0);
+  HOOK(colorviewer, SIGNAL_COLORVIEWER_SELECT, colorviewer_select_signal, 0);
   HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_signal, 0);
   HOOK(window, JI_SIGNAL_WINDOW_RESIZE, window_resize_signal, palette_editor);
 
   /* initial values */
-  switch (color_type(color)) {
+  switch (color_type(*color)) {
     case COLOR_TYPE_MASK:
-      color_viewer_select_signal(NULL, 0);
+      colorviewer_select_signal(NULL, 0);
       break;
     case COLOR_TYPE_RGB:
     case COLOR_TYPE_GRAY:
-      jslider_set_value(slider_R, color_get_red(imgtype, color));
-      jslider_set_value(slider_G, color_get_green(imgtype, color));
-      jslider_set_value(slider_B, color_get_blue(imgtype, color));
-      jslider_set_value(slider_A, color_get_alpha(imgtype, color));
+      jslider_set_value(slider_R, color_get_red(imgtype, *color));
+      jslider_set_value(slider_G, color_get_green(imgtype, *color));
+      jslider_set_value(slider_B, color_get_blue(imgtype, *color));
+      jslider_set_value(slider_A, color_get_alpha(imgtype, *color));
       sliderRGB_change_signal(NULL, 0);
       break;
     case COLOR_TYPE_INDEX:
-      palette_editor_select_color(palette_editor, color_get_index(imgtype, color));
-      palette_editor_change_signal(NULL, color_get_index(imgtype, color));
+      palette_editor_select_color(palette_editor, color_get_index(imgtype, *color));
+      palette_editor_change_signal(NULL, color_get_index(imgtype, *color));
       break;
   }
 
@@ -157,12 +157,8 @@ char *ji_color_select(int imgtype, const char *color)
   /* check the killer widget */
   if (jwindow_get_killer(window) == button_ok) {
     /* selected color */
-    selected_color = jstrdup(color_viewer_get_color(color_viewer));
-  }
-  /* cancel or ESC */
-  else {
-    /* selected color */
-    selected_color = NULL;
+    *color = colorviewer_get_color(colorviewer);
+    ret = TRUE;
   }
 
   /* save window configuration */
@@ -170,18 +166,18 @@ char *ji_color_select(int imgtype, const char *color)
 
   jwidget_free(window);
 
-  return selected_color;
+  return ret;
 }
 
 static int sliderRGB_change_signal(JWidget widget, int user_data)
 {
-  int imgtype = color_viewer_get_imgtype(color_viewer);
+  int imgtype = colorviewer_get_imgtype(colorviewer);
   int r = jslider_get_value(slider_R);
   int g = jslider_get_value(slider_G);
   int b = jslider_get_value(slider_B);
   int a = jslider_get_value(slider_A);
   float h, s, v;
-  char *color;
+  color_t color;
 
   rgb_to_hsv(r, g, b, &h, &s, &v);
 
@@ -199,21 +195,19 @@ static int sliderRGB_change_signal(JWidget widget, int user_data)
     palette_editor_select_color(palette_editor, -1);
   }
 
-  color_viewer_set_color(color_viewer, color);
-  jfree(color);
-
+  colorviewer_set_color(colorviewer, color);
   return FALSE;
 }
 
 static int sliderHSV_change_signal(JWidget widget, int user_data)
 {
-  int imgtype = color_viewer_get_imgtype(color_viewer);
+  int imgtype = colorviewer_get_imgtype(colorviewer);
   int h = jslider_get_value(slider_H);
   int s = jslider_get_value(slider_S);
   int v = jslider_get_value(slider_V);
   int a = jslider_get_value(slider_A);
   int r, g, b;
-  char *color;
+  color_t color;
 
   hsv_to_rgb(360.0 * h / 255.0, s / 255.0, v / 255.0, &r, &g, &b);
 
@@ -231,22 +225,20 @@ static int sliderHSV_change_signal(JWidget widget, int user_data)
     palette_editor_select_color(palette_editor, -1);
   }
 
-  color_viewer_set_color(color_viewer, color);
-  jfree(color);
-
+  colorviewer_set_color(colorviewer, color);
   return FALSE;
 }
 
 static int sliderA_change_signal(JWidget widget, int user_data)
 {
-  const char *input_color = color_viewer_get_color(color_viewer);
-  int imgtype = color_viewer_get_imgtype(color_viewer);
+  color_t input_color = colorviewer_get_color(colorviewer);
+  int imgtype = colorviewer_get_imgtype(colorviewer);
   int r = color_get_red(imgtype, input_color);
   int g = color_get_green(imgtype, input_color);
   int b = color_get_blue(imgtype, input_color);
   int a = jslider_get_value(slider_A);
   int type = color_type(input_color);
-  char *color = NULL;
+  color_t color;
 
   switch (type) {
     case COLOR_TYPE_MASK:
@@ -267,18 +259,14 @@ static int sliderA_change_signal(JWidget widget, int user_data)
       break;
   }
 
-  if (color) {
-    color_viewer_set_color(color_viewer, color);
-    jfree(color);
-  }
-
+  colorviewer_set_color(colorviewer, color);
   return FALSE;
 }
 
-static int color_viewer_select_signal(JWidget widget, int user_data)
+static int colorviewer_select_signal(JWidget widget, int user_data)
 {
-  int imgtype = color_viewer_get_imgtype(color_viewer);
-  char *color = color_mask();
+  int imgtype = colorviewer_get_imgtype(colorviewer);
+  color_t color = color_mask();
   int r = color_get_red(imgtype, color);
   int g = color_get_green(imgtype, color);
   int b = color_get_blue(imgtype, color);
@@ -286,7 +274,7 @@ static int color_viewer_select_signal(JWidget widget, int user_data)
 
   rgb_to_hsv(r, g, b, &h, &s, &v);
 
-  color_viewer_set_color(color_viewer, color);
+  colorviewer_set_color(colorviewer, color);
 
   jslider_set_value(slider_R, r);
   jslider_set_value(slider_G, g);
@@ -304,15 +292,14 @@ static int color_viewer_select_signal(JWidget widget, int user_data)
     palette_editor_select_color(palette_editor, -1);
   }
 
-  jfree(color);
   return FALSE;
 }
 
 static int palette_editor_change_signal(JWidget widget, int user_data)
 {
   PaletteEditor *paledit = palette_editor_data(palette_editor);
-  int imgtype = color_viewer_get_imgtype(color_viewer);
-  char *color = color_index(paledit->color[1]);
+  int imgtype = colorviewer_get_imgtype(colorviewer);
+  color_t color = color_index(paledit->color[1]);
   int r = color_get_red(imgtype, color);
   int g = color_get_green(imgtype, color);
   int b = color_get_blue(imgtype, color);
@@ -320,7 +307,7 @@ static int palette_editor_change_signal(JWidget widget, int user_data)
 
   rgb_to_hsv(r, g, b, &h, &s, &v);
 
-  color_viewer_set_color(color_viewer, color);
+  colorviewer_set_color(colorviewer, color);
 
   jslider_set_value(slider_R, r);
   jslider_set_value(slider_G, g);
@@ -329,8 +316,6 @@ static int palette_editor_change_signal(JWidget widget, int user_data)
   jslider_set_value(slider_H, 255.0 * h / 360.0);
   jslider_set_value(slider_V, 255.0 * v);
   jslider_set_value(slider_S, 255.0 * s);
-
-  jfree(color);
   return FALSE;
 }
 

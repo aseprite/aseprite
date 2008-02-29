@@ -81,6 +81,8 @@ char *ase_file_selector(const char *message,
   char *result = NULL;
   char *tok;
 
+  file_system_refresh();
+
   if (!navigation_history)
     navigation_history = jlist_new();
 

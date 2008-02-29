@@ -9,8 +9,8 @@ AUTHOR
 THANKFULNESS
 ===================================
 
-  Some people don't contribute to this project in a directly way but
-  their work are indispensable:
+  Some people didn't contribute to the project in a direct way,
+  but their work was indispensable to make it real:
   ------------------------------------------------------------------
 
   Álvaro González: For the other routine to generate optimised
@@ -56,7 +56,8 @@ THANKFULNESS
 
   Jerry Coffin and HenkJan Wolthuis: For the hash table routines.
 
-  Johan Halmén and Anders "Trezker" Andersson for mapgen.
+  Johan Halmén and Anders "Trezker" Andersson for mapgen (included in
+  old ASE versions).
   <http://edu.loviisa.fi/~lg/jh/mapgen/>
   <http://www.angelfire.com/art/dumlesoft/Projects.html>
 
@@ -98,8 +99,8 @@ THANKFULNESS
   <http://www.lanet.lv/~pavenis/rhide.html>
 
   Salvador Eduardo Tropea: For the SETEdit editor (although I don't
-  use it anymore, but the first months in Linux without it would be
-  impossible :-)
+  use it anymore, the first months in Linux without it would have been
+  impossibles)
   <http://setedit.sourceforge.net/>
 
   Shawn Hargreaves: And hundreds of people who helped in the Allegro

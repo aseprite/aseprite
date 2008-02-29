@@ -49,6 +49,13 @@ JI_BEGIN_DECLS
 struct FONT;
 struct BITMAP;
 
+void jrectedge(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+	       int c1, int c2);
+void jrectexclude(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+		  int ex1, int ey1, int ex2, int ey2, int color);
+void jrectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+		int c1, int c2, int align);
+
 void jdraw_rect(const JRect rect, int color);
 void jdraw_rectfill(const JRect rect, int color);
 void jdraw_rectedge(const JRect rect, int c1, int c2);

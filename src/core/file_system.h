@@ -28,6 +28,8 @@ typedef struct FileItem FileItem;
 bool file_system_init(void);
 void file_system_exit(void);
 
+void file_system_refresh(void);
+
 FileItem *get_root_fileitem(void);
 FileItem *get_fileitem_from_path(const char *path);
 

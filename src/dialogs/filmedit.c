@@ -352,7 +352,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
     }
 
-    case JM_CHAR: {
+    case JM_KEYPRESSED: {
       Command *command = command_get_by_key(msg);
 
       /* close film editor */
@@ -666,9 +666,9 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	      x2 = x1+THUMBSIZE-1;
 	      y2 = y1+THUMBSIZE-1;
 
-	      _ji_theme_rectedge(bmp, x1-1, y1-1, x2+1, y2+1,
-				 makecol(128, 128, 128),
-				 makecol(196, 196, 196));
+	      jrectedge(bmp, x1-1, y1-1, x2+1, y2+1,
+			makecol(128, 128, 128),
+			makecol(196, 196, 196));
 
 	      if (thumbnail)
 		draw_sprite(bmp, thumbnail, x1, y1);
