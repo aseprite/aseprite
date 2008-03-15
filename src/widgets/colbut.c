@@ -29,8 +29,8 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
+#include "core/color.h"
 #include "dialogs/colsel.h"
-#include "modules/color.h"
 #include "modules/gfx.h"
 #include "widgets/colbut.h"
 

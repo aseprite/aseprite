@@ -18,8 +18,8 @@
 
 #include "config.h"
 
+#include "core/color.h"
 #include "effect/effect.h"
-#include "modules/color.h"
 #include "raster/image.h"
 
 static struct {

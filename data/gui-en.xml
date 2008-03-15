@@ -68,7 +68,7 @@
 	<key command="rectangle_tool" shortcut="R" />
 	<key command="ellipse_tool" shortcut="E" />
 	<key command="eyedropper_tool" shortcut="I" />
-	<key command="exchange_colors" shortcut="X" />
+	<key command="switch_colors" shortcut="X" />
 	<key command="film_editor" shortcut="Tab" />
 	<key command="convolution_matrix" shortcut="F9" />
 	<key command="color_curve" shortcut="Ctrl+M" />

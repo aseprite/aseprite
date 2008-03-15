@@ -46,14 +46,26 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
 void jwidget_add_tooltip_text(JWidget widget, const char *text)
 {
-  TipData *tip = jnew(TipData, 1);
+  TipData *tip = jwidget_get_data(widget, tip_type());
 
-  tip->widget = widget;
-  tip->window = NULL;
-  tip->text = jstrdup(text);
-  tip->timer_id = -1;
+  assert(text != NULL);
 
-  jwidget_add_hook(widget, tip_type(), tip_hook, tip);
+  if (tip == NULL) {
+    tip = jnew(TipData, 1);
+
+    tip->widget = widget;
+    tip->window = NULL;
+    tip->text = jstrdup(text);
+    tip->timer_id = -1;
+
+    jwidget_add_hook(widget, tip_type(), tip_hook, tip);
+  }
+  else {
+    if (tip->text != NULL)
+      jfree(tip->text);
+
+    tip->text = jstrdup(text);
+  }
 }
 
 /**

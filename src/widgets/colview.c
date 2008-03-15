@@ -29,7 +29,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 #include "widgets/colview.h"
 
 typedef struct ColorViewer

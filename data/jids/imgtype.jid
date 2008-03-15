@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-
 <!-- Read "LEGAL.txt" for more information. -->
-
+<jinete>
 <window text="Convert Color" name="image_type">
   <box vertical>
     <box vertical expansive>
@@ -24,3 +23,4 @@
     </box>
   </box>
 </window>
+</jinete>

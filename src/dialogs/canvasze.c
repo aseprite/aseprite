@@ -29,8 +29,8 @@
 #include "jinete/jwindow.h"
 
 #include "core/cfg.h"
+#include "core/color.h"
 #include "core/core.h"
-#include "modules/color.h"
 /* #include "modules/editors.h" */
 #include "modules/gfx.h"
 #include "modules/gui.h"

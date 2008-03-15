@@ -22,7 +22,7 @@
 #include <allegro/config.h>
 #include "jinete/jbase.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 
 void ase_config_init(void);
 void ase_config_exit(void);

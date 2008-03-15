@@ -456,7 +456,8 @@ static JRegion theme_get_window_mask(JWidget widget)
 
 static void theme_map_decorative_widget(JWidget widget)
 {
-  if (ustrcmp(widget->name, "theme_close_button") == 0) {
+  if (widget->name != NULL &&
+      strcmp(widget->name, "theme_close_button") == 0) {
     JWidget window = widget->parent;
     JRect rect = jrect_new(0, 0, 0, 0);
 

@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLORVIEWER_SELECT   0x10002

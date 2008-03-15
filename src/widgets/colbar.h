@@ -21,19 +21,19 @@
 
 #include "jinete/jbase.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 
 JWidget colorbar_new(int align);
 int colorbar_type(void);
 
-void colorbar_set_size(JWidget colorbar, int size);
+void colorbar_set_size(JWidget widget, int size);
 
-color_t colorbar_get_fg_color(JWidget colorbar);
-color_t colorbar_get_bg_color(JWidget colorbar);
+color_t colorbar_get_fg_color(JWidget widget);
+color_t colorbar_get_bg_color(JWidget widget);
 
-void colorbar_set_fg_color(JWidget colorbar, color_t color);
-void colorbar_set_bg_color(JWidget colorbar, color_t color);
+void colorbar_set_fg_color(JWidget widget, color_t color);
+void colorbar_set_bg_color(JWidget widget, color_t color);
 
-void colorbar_set_color(JWidget colorbar, int index, color_t color);
+void colorbar_set_color(JWidget widget, int index, color_t color);
 
 #endif /* WIDGETS_COLBAR_H */

@@ -22,7 +22,7 @@
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 
 struct _GList;
 struct Brush;

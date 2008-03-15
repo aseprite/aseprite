@@ -25,8 +25,8 @@
 #include "jinete/jinete.h"
 
 #include "core/cfg.h"
+#include "core/color.h"
 #include "dialogs/filesel.h"
-#include "modules/color.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/sprites.h"
@@ -46,7 +46,7 @@ static int sliderRGB_change_signal(JWidget widget, int user_data);
 static int sliderHSV_change_signal(JWidget widget, int user_data);
 static int sliderA_change_signal(JWidget widget, int user_data);
 static int colorviewer_select_signal(JWidget widget, int user_data);
-static int palette_editor_change_signal(JWidget widget, int user_data);
+static int paledit_change_signal(JWidget widget, int user_data);
 static int window_resize_signal(JWidget widget, int user_data);
 
 bool ji_color_select(int imgtype, color_t *color)
@@ -56,12 +56,13 @@ bool ji_color_select(int imgtype, color_t *color)
   PALETTE palette;
   bool ret = FALSE;
 
-  get_palette(palette);
-
-  /* get current palette */
+  /* load the window */
   window = load_widget("colsel.jid", "color_selection");
   if (!window)
     return ret;
+
+  /* get current palette */
+  get_palette(palette);
 
   /* window title */
   sprintf(buf, "%s (%s)", window->text,
@@ -87,8 +88,8 @@ bool ji_color_select(int imgtype, color_t *color)
   }
 
   colorviewer = colorviewer_new(*color, imgtype);
-  palette_editor = palette_editor_new(palette, FALSE, 3);
-  palette_editor_set_columns(palette_editor, 32);
+  palette_editor = paledit_new(palette, FALSE, 3);
+  paledit_set_columns(palette_editor, 32);
 
   jwidget_expansive(colorviewer, TRUE);
   jwidget_add_child(colorviewer_box, colorviewer);
@@ -106,7 +107,7 @@ bool ji_color_select(int imgtype, color_t *color)
   HOOK(slider_S, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
   HOOK(slider_V, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_signal, 0);
   HOOK(colorviewer, SIGNAL_COLORVIEWER_SELECT, colorviewer_select_signal, 0);
-  HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_signal, 0);
+  HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, paledit_change_signal, 0);
   HOOK(window, JI_SIGNAL_WINDOW_RESIZE, window_resize_signal, palette_editor);
 
   /* initial values */
@@ -123,8 +124,8 @@ bool ji_color_select(int imgtype, color_t *color)
       sliderRGB_change_signal(NULL, 0);
       break;
     case COLOR_TYPE_INDEX:
-      palette_editor_select_color(palette_editor, color_get_index(imgtype, *color));
-      palette_editor_change_signal(NULL, color_get_index(imgtype, *color));
+      paledit_select_color(palette_editor, color_get_index(imgtype, *color));
+      paledit_change_signal(NULL, color_get_index(imgtype, *color));
       break;
   }
 
@@ -189,10 +190,10 @@ static int sliderRGB_change_signal(JWidget widget, int user_data)
 
   if (imgtype == IMAGE_INDEXED) {
     int i = get_color_for_image(imgtype, color);
-    palette_editor_select_color(palette_editor, i);
+    paledit_select_color(palette_editor, i);
   }
   else if (imgtype == IMAGE_RGB) {
-    palette_editor_select_color(palette_editor, -1);
+    paledit_select_color(palette_editor, -1);
   }
 
   colorviewer_set_color(colorviewer, color);
@@ -219,10 +220,10 @@ static int sliderHSV_change_signal(JWidget widget, int user_data)
 
   if (imgtype == IMAGE_INDEXED) {
     int i = get_color_for_image(imgtype, color);
-    palette_editor_select_color(palette_editor, i);
+    paledit_select_color(palette_editor, i);
   }
   else if (imgtype == IMAGE_RGB) {
-    palette_editor_select_color(palette_editor, -1);
+    paledit_select_color(palette_editor, -1);
   }
 
   colorviewer_set_color(colorviewer, color);
@@ -286,20 +287,19 @@ static int colorviewer_select_signal(JWidget widget, int user_data)
 
   if (imgtype == IMAGE_INDEXED) {
     int i = get_color_for_image(imgtype, color);
-    palette_editor_select_color(palette_editor, i);
+    paledit_select_color(palette_editor, i);
   }
   else if (imgtype == IMAGE_RGB) {
-    palette_editor_select_color(palette_editor, -1);
+    paledit_select_color(palette_editor, -1);
   }
 
   return FALSE;
 }
 
-static int palette_editor_change_signal(JWidget widget, int user_data)
+static int paledit_change_signal(JWidget widget, int user_data)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
   int imgtype = colorviewer_get_imgtype(colorviewer);
-  color_t color = color_index(paledit->color[1]);
+  color_t color = color_index(paledit_get_2nd_color(palette_editor));
   int r = color_get_red(imgtype, color);
   int g = color_get_green(imgtype, color);
   int b = color_get_blue(imgtype, color);
@@ -328,15 +328,15 @@ static int window_resize_signal(JWidget widget, int user_data)
 
   do {
     box++;
-    palette_editor_data(paledit)->boxsize = box;
+    paledit_set_boxsize(paledit, box);
     cols = (jrect_w(vp)-1) / (box+1);
-    palette_editor_set_columns(paledit, cols);
+    paledit_set_columns(paledit, cols);
   } while (((jrect_h(vp)-1) / (box+1))*cols > 256);
 
   box--;
-  palette_editor_data(paledit)->boxsize = box;
+  paledit_set_boxsize(paledit, box);
   cols = (jrect_w(vp)-1) / (box+1);
-  palette_editor_set_columns(paledit, cols);
+  paledit_set_columns(paledit, cols);
 
   jwidget_dirty(paledit);
   jrect_free(vp);

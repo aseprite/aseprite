@@ -21,7 +21,6 @@
 #include "core/core.h"
 #include "core/modules.h"
 #include "effect/effect.h"
-#include "modules/color.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -50,7 +49,6 @@ static Module module[] =
      first ones.  */
 
   DEF_MODULE(palette,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
-  DEF_MODULE(color,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
   DEF_MODULE(sprites,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
   DEF_MODULE(script,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
   DEF_MODULE(effect,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),

@@ -27,7 +27,6 @@
 #define PACKAGE			"ase"
 #define VERSION			"0.6-beta2"
 #define WEBSITE			"http://www.aseprite.org/"
-#define BUGREPORT		"aseprite@googlegroups.com"
 #define COPYRIGHT		"Copyright (C) 2001-2008 David A. Capello"
 
 #define PRINTF			verbose_printf

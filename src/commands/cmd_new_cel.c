@@ -22,8 +22,8 @@
 
 #include "commands/commands.h"
 #include "console/console.h"
+#include "core/color.h"
 #include "modules/gui.h"
-#include "modules/color.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/image.h"

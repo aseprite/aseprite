@@ -28,8 +28,8 @@
 
 #include "core/app.h"
 #include "core/cfg.h"
+#include "core/color.h"
 #include "core/dirs.h"
-#include "modules/color.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palette.h"

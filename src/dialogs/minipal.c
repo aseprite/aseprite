@@ -23,7 +23,7 @@
 
 #include "jinete/jinete.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "widgets/colbar.h"

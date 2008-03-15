@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-
 <!-- Read "LEGAL.txt" for more information. -->
-
+<jinete>
 <window text="Palette Editor" name="palette_editor">
   <box vertical>
     <box horizontal expansive>
@@ -65,3 +64,4 @@
     </box>
   </box>
 </window>
+</jinete>

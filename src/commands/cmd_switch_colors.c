@@ -16,37 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "test/test.h"
+#include "config.h"
 
-#include <errno.h>
-#include "jinete/jthread.h"
+#include <allegro/unicode.h>
 
-static JThread thread;
+#include "jinete/jbase.h"
 
-static void run_thread(void *data)
+#include "commands/commands.h"
+#include "core/app.h"
+#include "widgets/colbar.h"
+
+static void cmd_switch_colors_execute(const char *argument)
 {
-  errno = 0;
-  trace("[second thread] errno: %d\n", errno);
-  assert(errno == 0);
+  JWidget colorbar = app_get_colorbar();
+  color_t fg = colorbar_get_fg_color(colorbar);
+  color_t bg = colorbar_get_bg_color(colorbar);
+
+  colorbar_set_fg_color(colorbar, bg);
+  colorbar_set_bg_color(colorbar, fg);
 }
 
-int main(int argc, char *argv[])
-{
-  test_init();
-
-  errno = 33;
-  trace("[main thread] errno: %d\n", errno);
-  assert(errno == 33);
-
-  thread = jthread_new(run_thread, NULL);
-  jthread_join(thread);
-
-  trace("[main thread] errno: %d\n", errno);
-  assert(errno == 33);
-
-  trace("errno is thread safe\n");
-
-  return test_exit();
-}
-
-END_OF_MAIN();
+Command cmd_switch_colors = {
+  CMD_SWITCH_COLORS,
+  NULL,
+  NULL,
+  cmd_switch_colors_execute,
+  NULL
+};

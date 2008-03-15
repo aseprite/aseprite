@@ -1,11 +1,21 @@
-High priority work
-------------------
+Next beta
+---------
 
+- slider limits
+- Palette gfxobj
+- color module a "jcolor"?
 - tooltips for color-bar.
 - add two DrawClick2:
   - DrawClick2FreeHand
   - DrawClick2Shape
 - the user_data of hook_signal should be void*.
+- remove src/dialogs/colsel.[ch]
+- remove src/dialogs/minipal.[ch]
+- si está activado el cuatro para configurar herramientas las teclas G
+  y H deben actualizarlo
+
+High priority work
+------------------
 
 - search for TODO;
 - remove the jfilesel.c

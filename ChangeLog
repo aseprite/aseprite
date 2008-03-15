@@ -1,3 +1,18 @@
+2008-03-09  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/colbar.c: A lot of work was done for the lock/idx
+	widgets (to edit the selected palette entry).
+
+2008-03-07  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jgrid.c: Added. A better layout manager to handle
+	grids like HTML tables.
+
+2008-03-02  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/widgets/editor/editor.c (editor_msg_proc): Fixed a big error
+	cleaning the cursor with thick == 0.
+
 2008-02-29  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/widgets/fileview.c: Added incremental search.

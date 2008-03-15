@@ -34,12 +34,11 @@
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/cfg.h"
+#include "core/color.h"
 #include "core/core.h"
 #include "effect/colcurve.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"
-#include "modules/color.h"
-/* #include "modules/editors.h" */
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"

@@ -19,7 +19,7 @@
 #ifndef UTIL_MISC_H
 #define UTIL_MISC_H
 
-#include "modules/color.h"
+#include "core/color.h"
 #include "widgets/editor.h"	/* for movement modes */
 
 struct Frame;

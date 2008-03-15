@@ -38,116 +38,95 @@
 #include "jinete/jinete.h"
 
 /* determine is the characer is a blank space */
-#define IS_BLANK(chr) (((chr) ==  ' ') ||  \
-                       ((chr) == '\t') || \
-                       ((chr) == '\n') || \
-                       ((chr) == '\r'))
+#define IS_BLANK(c) (((c) ==  ' ') ||  \
+		     ((c) == '\t') ||	\
+		     ((c) == '\n') ||	\
+		     ((c) == '\r'))
 
-#define TRANSLATE_ATTR(attr)						    \
-  ((attr->translatable) ? ji_translate_string(attr->value): (attr->value))
+/* TODO */
+/* #define TRANSLATE_ATTR(a)				\ */
+/*   (((a) != NULL && (a)[0] == '_') ?			\ */
+/*    ji_translate_string((a)+1): (a)+1) */
 
-typedef struct Attr
-{
-  char *name;
-  char *value;
-  bool translatable : 1;
-} Attr;
+#define TRANSLATE_ATTR(a) a
 
-typedef struct Tag
-{
-  char *name;
-  char *text;
-  JList attr;
-  JList sub_tags;
-} Tag;
-
-static JWidget convert_tag_to_widget(Tag *tag);
-static JList read_tags(FILE *f);
-
-static Attr *attr_new(char *name, char *value, bool translatable);
-static void attr_free(Attr *attr);
-
-static Tag *tag_new(const char *name);
-static Tag *tag_new_from_string(char *tag_string);
-static void tag_free(Tag *tag);
-static void tag_add_attr(Tag *tag, Attr *attr);
-static void tag_add_tag(Tag *tag, Tag *child);
-static Attr *tag_get_attr(Tag *tag, const char *name);
+static JWidget convert_tag_to_widget(JXmlElem elem);
 
 JWidget ji_load_widget(const char *filename, const char *name)
 {
   JWidget widget = NULL;
-  Attr *attr;
-  FILE *f;
-  Tag *tag;
-  JList tags;
+  JXml xml;
+  JList children;
   JLink link;
 
-  f = fopen(filename, "rt");	/* open the file */
-  if (!f)
-    return 0;
-  tags = read_tags(f);		/* read the tags */
-  fclose(f);			/* and close it */
+  xml = jxml_new_from_file(filename);
+  if (!xml)
+    return NULL;
 
   /* search the requested widget */
-  JI_LIST_FOR_EACH(tags, link) {
-    tag = link->data;
-    attr = tag_get_attr(tag, "name");
+  children = jxml_get_root(xml)->head.children;
+  JI_LIST_FOR_EACH(children, link) {
+    JXmlNode node = link->data;
 
-    if (attr && strcmp(attr->value, name) == 0) {
-      /* convert tags to Jinete widgets */
-      widget = convert_tag_to_widget(tag);
-      break;
+    /* if this node is an XML Element and has a "name" property... */
+    if (node->type == JI_XML_ELEM &&
+	jxmlelem_has_attr((JXmlElem)node, "name")) {
+      /* ...then we can compare both names (the requested one with the
+	 element's name) */
+      const char *nodename = jxmlelem_get_attr((JXmlElem)node, "name");
+      if (nodename != NULL && ustrcmp(nodename, name) == 0) {
+	/* convert tags to Jinete widgets */
+	widget = convert_tag_to_widget((JXmlElem)node);
+	break;
+      }
     }
   }
 
-  JI_LIST_FOR_EACH(tags, link)
-    tag_free(link->data);
-  jlist_free(tags);
-
+  jxml_free(xml);
   return widget;
 }
 
-static JWidget convert_tag_to_widget(Tag *tag)
+static JWidget convert_tag_to_widget(JXmlElem elem)
 {
+  const char *elem_name = jxmlelem_get_name(elem);
   JWidget widget = NULL;
   JWidget child;
 
   /* box */
-  if (strcmp(tag->name, "box") == 0) {
-    Attr *horizontal = tag_get_attr(tag, "horizontal");
-    Attr *vertical = tag_get_attr(tag, "vertical");
-    Attr *homogeneous = tag_get_attr(tag, "homogeneous");
+  if (ustrcmp(elem_name, "box") == 0) {
+    bool horizontal  = jxmlelem_has_attr(elem, "horizontal");
+    bool vertical    = jxmlelem_has_attr(elem, "vertical");
+    bool homogeneous = jxmlelem_has_attr(elem, "homogeneous");
 
     widget = jbox_new((horizontal ? JI_HORIZONTAL:
-			 vertical ? JI_VERTICAL: 0) |
-			(homogeneous ? JI_HOMOGENEOUS: 0));
+		       vertical ? JI_VERTICAL: 0) |
+		      (homogeneous ? JI_HOMOGENEOUS: 0));
   }
   /* button */
-  else if (strcmp(tag->name, "button") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
+  else if (ustrcmp(elem_name, "button") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
 
     if (text) {
       widget = jbutton_new(TRANSLATE_ATTR(text));
       if (widget) {
-	Attr *left = tag_get_attr(tag, "left");
-	Attr *right = tag_get_attr(tag, "right");
-	Attr *top = tag_get_attr(tag, "top");
-	Attr *bottom = tag_get_attr(tag, "bottom");
-	Attr *bevel = tag_get_attr(tag, "bevel");
+	bool left   = jxmlelem_has_attr(elem, "left");
+	bool right  = jxmlelem_has_attr(elem, "right");
+	bool top    = jxmlelem_has_attr(elem, "top");
+	bool bottom = jxmlelem_has_attr(elem, "bottom");
+	char *bevel = jxmlelem_get_attr(elem, "bevel");
 
 	jwidget_set_align(widget,
 			  (left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
 			  (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
-	if (bevel) {
+	if (bevel != NULL) {
 	  int c, b[4];
 	  char *tok;
 
 	  for (c=0; c<4; ++c)
 	    b[c] = 0;
 
-	  for (tok=ustrtok(bevel->value, " "), c=0;
+	  for (tok=ustrtok(bevel, " "), c=0;
 	       tok;
 	       tok=ustrtok(NULL, " "), ++c) {
 	    if (c < 4)
@@ -159,148 +138,150 @@ static JWidget convert_tag_to_widget(Tag *tag)
     }
   }
   /* check */
-  else if (strcmp(tag->name, "check") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
+  else if (ustrcmp(elem_name, "check") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
 
     if (text) {
       widget = jcheck_new(TRANSLATE_ATTR(text));
       if (widget) {
-	Attr *center = tag_get_attr(tag, "center");
-	Attr *right = tag_get_attr(tag, "right");
-	Attr *top = tag_get_attr(tag, "top");
-	Attr *bottom = tag_get_attr(tag, "bottom");
+	bool center = jxmlelem_has_attr(elem, "center");
+	bool right  = jxmlelem_has_attr(elem, "right");
+	bool top    = jxmlelem_has_attr(elem, "top");
+	bool bottom = jxmlelem_has_attr(elem, "bottom");
 
 	jwidget_set_align(widget,
-			  (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
-			  (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+			  (center ? JI_CENTER:
+			   (right ? JI_RIGHT: JI_LEFT)) |
+			  (top    ? JI_TOP:
+			   (bottom ? JI_BOTTOM: JI_MIDDLE)));
       }
     }
   }
   /* combobox */
-  else if (strcmp(tag->name, "combobox") == 0) {
+  else if (ustrcmp(elem_name, "combobox") == 0) {
     widget = jcombobox_new();
   }
   /* entry */
-  else if (strcmp(tag->name, "entry") == 0) {
-    Attr *maxsize = tag_get_attr(tag, "maxsize");
-    Attr *text = tag_get_attr(tag, "text");
+  else if (ustrcmp(elem_name, "entry") == 0) {
+    const char *maxsize = jxmlelem_get_attr(elem, "maxsize");
+    const char *text = jxmlelem_get_attr(elem, "text");
 
-    if (maxsize && maxsize->value) {
-      Attr *readonly = tag_get_attr(tag, "readonly");
+    if (maxsize != NULL) {
+      bool readonly = jxmlelem_has_attr(elem, "readonly");
 
-      widget = jentry_new(strtol(maxsize->value, NULL, 10),
-			  text && text->value ?
-			  TRANSLATE_ATTR(text): "");
+      widget = jentry_new(ustrtol(maxsize, NULL, 10),
+			  text != NULL ? TRANSLATE_ATTR(text): "");
 
       if (readonly)
 	jentry_readonly(widget, TRUE);
     }
   }
   /* label */
-  else if (strcmp (tag->name, "label") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
+  else if (ustrcmp(elem_name, "label") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
 
     if (text) {
       widget = jlabel_new(TRANSLATE_ATTR(text));
       if (widget) {
-	Attr *center = tag_get_attr(tag, "center");
-	Attr *right = tag_get_attr(tag, "right");
-	Attr *top = tag_get_attr(tag, "top");
-	Attr *bottom = tag_get_attr(tag, "bottom");
+	bool center = jxmlelem_has_attr(elem, "center");
+	bool right  = jxmlelem_has_attr(elem, "right");
+	bool top    = jxmlelem_has_attr(elem, "top");
+	bool bottom = jxmlelem_has_attr(elem, "bottom");
 
 	jwidget_set_align(widget,
-			    (center ? JI_CENTER:
-			     right ? JI_RIGHT: JI_LEFT) |
-			    (top ? JI_TOP:
-			     bottom ? JI_BOTTOM: JI_MIDDLE));
+			  (center ? JI_CENTER:
+			   (right ? JI_RIGHT: JI_LEFT)) |
+			  (top    ? JI_TOP:
+			   (bottom ? JI_BOTTOM: JI_MIDDLE)));
       }
     }
   }
   /* listbox */
-  else if (strcmp(tag->name, "listbox") == 0) {
+  else if (ustrcmp(elem_name, "listbox") == 0) {
     widget = jlistbox_new();
   }
   /* listitem */
-  else if (strcmp(tag->name, "listitem") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
+  else if (ustrcmp(elem_name, "listitem") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
 
-    if (text)
+    if (text != NULL)
       widget = jlistitem_new(TRANSLATE_ATTR(text));
   }
   /* panel */
-  else if (strcmp(tag->name, "panel") == 0) {
-    Attr *horizontal = tag_get_attr(tag, "horizontal");
-    Attr *vertical = tag_get_attr(tag, "vertical");
+  else if (ustrcmp(elem_name, "panel") == 0) {
+    bool horizontal = jxmlelem_has_attr(elem, "horizontal");
+    bool vertical = jxmlelem_has_attr(elem, "vertical");
 
     widget = jpanel_new(horizontal ? JI_HORIZONTAL:
 			vertical ? JI_VERTICAL: 0);
   }
   /* radio */
-  else if (strcmp(tag->name, "radio") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
-    Attr *group = tag_get_attr(tag, "group");
+  else if (ustrcmp(elem_name, "radio") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *group = jxmlelem_get_attr(elem, "group");
 
-    if (text && group && group->value) {
+    if (text != NULL && group != NULL) {
       widget = jradio_new(TRANSLATE_ATTR(text),
-			  strtol(group->value, NULL, 10));
+			  ustrtol(group, NULL, 10));
       if (widget) {
-	Attr *center = tag_get_attr(tag, "center");
-	Attr *right = tag_get_attr(tag, "right");
-	Attr *top = tag_get_attr(tag, "top");
-	Attr *bottom = tag_get_attr(tag, "bottom");
+	bool center = jxmlelem_has_attr(elem, "center");
+	bool right  = jxmlelem_has_attr(elem, "right");
+	bool top    = jxmlelem_has_attr(elem, "top");
+	bool bottom = jxmlelem_has_attr(elem, "bottom");
 
 	jwidget_set_align(widget,
-			    (center ? JI_CENTER:
-			     right ? JI_RIGHT: JI_LEFT) |
-			    (top ? JI_TOP:
-			     bottom ? JI_BOTTOM: JI_MIDDLE));
+			  (center ? JI_CENTER:
+			   (right ? JI_RIGHT: JI_LEFT)) |
+			  (top    ? JI_TOP:
+			   (bottom ? JI_BOTTOM: JI_MIDDLE)));
       }
     }
   }
   /* separator */
-  else if (strcmp(tag->name, "separator") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
-    Attr *center = tag_get_attr(tag, "center");
-    Attr *right = tag_get_attr(tag, "right");
-    Attr *middle = tag_get_attr(tag, "middle");
-    Attr *bottom = tag_get_attr(tag, "bottom");
-    Attr *horizontal = tag_get_attr(tag, "horizontal");
-    Attr *vertical = tag_get_attr(tag, "vertical");
+  else if (ustrcmp(elem_name, "separator") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
+    bool center      = jxmlelem_has_attr(elem, "center");
+    bool right       = jxmlelem_has_attr(elem, "right");
+    bool middle      = jxmlelem_has_attr(elem, "middle");
+    bool bottom      = jxmlelem_has_attr(elem, "bottom");
+    bool horizontal  = jxmlelem_has_attr(elem, "horizontal");
+    bool vertical    = jxmlelem_has_attr(elem, "vertical");
 
     widget = ji_separator_new(text ? TRANSLATE_ATTR(text): NULL,
 			      (horizontal ? JI_HORIZONTAL: 0) |
 			      (vertical ? JI_VERTICAL: 0) |
 			      (center ? JI_CENTER:
-			       right ? JI_RIGHT: JI_LEFT) |
+			       (right ? JI_RIGHT: JI_LEFT)) |
 			      (middle ? JI_MIDDLE:
-			       bottom ? JI_BOTTOM: JI_TOP));
+			       (bottom ? JI_BOTTOM: JI_TOP)));
   }
   /* slider */
-  else if (strcmp(tag->name, "slider") == 0) {
-    Attr *min = tag_get_attr(tag, "min");
-    Attr *max = tag_get_attr(tag, "max");
-    int min_value = min && min->value? strtol(min->value, NULL, 10): 0;
-    int max_value = max && max->value? strtol(max->value, NULL, 10): 0;
+  else if (ustrcmp(elem_name, "slider") == 0) {
+    const char *min = jxmlelem_get_attr(elem, "min");
+    const char *max = jxmlelem_get_attr(elem, "max");
+    int min_value = min != NULL ? ustrtol(min, NULL, 10): 0;
+    int max_value = max != NULL ? ustrtol(max, NULL, 10): 0;
 
     widget = jslider_new(min_value, max_value, min_value);
   }
   /* textbox */
-  else if (strcmp(tag->name, "textbox") == 0) {
-    Attr *wordwrap = tag_get_attr(tag, "wordwrap");
+  else if (ustrcmp(elem_name, "textbox") == 0) {
+    bool wordwrap = jxmlelem_has_attr(elem, "wordwrap");
 
     /* TODO add translatable support */
-    widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0);
+    /* TODO here we need jxmlelem_get_text(elem) */
+/* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
   }
   /* view */
-  else if (strcmp(tag->name, "view") == 0) {
+  else if (ustrcmp(elem_name, "view") == 0) {
     widget = jview_new();
   }
   /* window */
-  else if (strcmp(tag->name, "window") == 0) {
-    Attr *text = tag_get_attr(tag, "text");
+  else if (ustrcmp(elem_name, "window") == 0) {
+    const char *text = jxmlelem_get_attr(elem, "text");
 
     if (text) {
-      Attr *desktop = tag_get_attr(tag, "desktop");
+      bool desktop = jxmlelem_has_attr(elem, "desktop");
 
       if (desktop)
 	widget = jwindow_new_desktop();
@@ -311,24 +292,24 @@ static JWidget convert_tag_to_widget(Tag *tag)
 
   /* the widget was created? */
   if (widget) {
-    Attr *name = tag_get_attr(tag, "name");
-    Attr *tooltip = tag_get_attr(tag, "tooltip");
-    Attr *expansive = tag_get_attr(tag, "expansive");
-    Attr *magnetic = tag_get_attr(tag, "magnetic");
-    Attr *noborders = tag_get_attr(tag, "noborders");
-    Attr *width = tag_get_attr(tag, "width");
-    Attr *height = tag_get_attr(tag, "height");
-    Attr *minwidth = tag_get_attr(tag, "minwidth");
-    Attr *minheight = tag_get_attr(tag, "minheight");
-    Attr *maxwidth = tag_get_attr(tag, "maxwidth");
-    Attr *maxheight = tag_get_attr(tag, "maxheight");
+    const char *name      = jxmlelem_get_attr(elem, "name");
+    const char *tooltip   = jxmlelem_get_attr(elem, "tooltip");
+    bool expansive        = jxmlelem_has_attr(elem, "expansive");
+    bool magnetic         = jxmlelem_has_attr(elem, "magnetic");
+    bool noborders        = jxmlelem_has_attr(elem, "noborders");
+    const char *width     = jxmlelem_get_attr(elem, "width");
+    const char *height    = jxmlelem_get_attr(elem, "height");
+    const char *minwidth  = jxmlelem_get_attr(elem, "minwidth");
+    const char *minheight = jxmlelem_get_attr(elem, "minheight");
+    const char *maxwidth  = jxmlelem_get_attr(elem, "maxwidth");
+    const char *maxheight = jxmlelem_get_attr(elem, "maxheight");
     JLink link;
 
-    if (name)
-      jwidget_set_name(widget, name->value);
+    if (name != NULL)
+      jwidget_set_name(widget, name);
 
-    if (tooltip)
-      jwidget_add_tooltip_text(widget, tooltip->value);
+    if (tooltip != NULL)
+      jwidget_add_tooltip_text(widget, tooltip);
 
     if (expansive)
       jwidget_expansive(widget, TRUE);
@@ -341,344 +322,36 @@ static JWidget convert_tag_to_widget(Tag *tag)
 
     if (width || minwidth || maxwidth ||
 	height || minheight || maxheight) {
-      int w = (width || minwidth) ? strtol(width ? width->value: minwidth->value, NULL, 10): 0;
-      int h = (height || minheight) ? strtol(height ? height->value: minheight->value, NULL, 10): 0;
+      int w = (width || minwidth) ? ustrtol(width ? width: minwidth, NULL, 10): 0;
+      int h = (height || minheight) ? ustrtol(height ? height: minheight, NULL, 10): 0;
       jwidget_set_min_size(widget, w, h);
 
-      w = (width || maxwidth) ? strtol(width ? width->value: maxwidth->value, NULL, 10): INT_MAX;
-      h = (height || maxheight) ? strtol(height ? height->value: maxheight->value, NULL, 10): INT_MAX;
+      w = (width || maxwidth) ? strtol(width ? width: maxwidth, NULL, 10): INT_MAX;
+      h = (height || maxheight) ? strtol(height ? height: maxheight, NULL, 10): INT_MAX;
       jwidget_set_max_size(widget, w, h);
     }
 
     /* children */
-    JI_LIST_FOR_EACH(tag->sub_tags, link) {
-      child = convert_tag_to_widget(link->data);
-      if (child) {
-	if (widget->type == JI_VIEW) {
-	  jview_attach(widget, child);
-	  break;
+    JI_LIST_FOR_EACH(elem->head.children, link) {
+      if (((JXmlNode)link->data)->type == JI_XML_ELEM) {
+	child = convert_tag_to_widget(link->data);
+	if (child != NULL) {
+	  if (widget->type == JI_VIEW) {
+	    jview_attach(widget, child);
+	    break;
+	  }
+	  else
+	    jwidget_add_child(widget, child);
 	}
-	else
-	  jwidget_add_child(widget, child);
       }
     }
 
     if (widget->type == JI_VIEW) {
-      Attr *maxsize = tag_get_attr(tag, "maxsize");
+      bool maxsize = jxmlelem_has_attr(elem, "maxsize");
       if (maxsize)
 	jview_maxsize(widget);
     }
   }
 
   return widget;
-}
-
-static JList read_tags(FILE *f)
-{
-  JList root_tags = jlist_new();
-  JList parent_stack = jlist_new();
-  char *s, buf[1024];
-
-  while (fgets (buf, sizeof (buf), f)) {
-    for (s=buf; *s; s++) {
-      /* tag beginning */
-      if (*s == '<') {
-	char *tag_start = s + 1;
-	int open = (s[1] != '/');
-	bool auto_closed = FALSE;
-	Tag *tag;
-
-	/* comment? */
-	if (s[1] == '!' && s[2] == '-' && s[3] == '-') {
-	  s += 2;
-	  for (;;) {
-	    if (strncmp (s, "-->", 3) == 0) {
-	      s += 2;
-	      break;
-	    }
-	    else if (*s == 0) {
-	      if (!fgets (buf+strlen (buf), sizeof (buf)-strlen (buf), f))
-		break;
-	      s = buf;
-	    }
-	    else {
-	      s++;
-	    }
-	  }
-	  continue;
-	}
-
-	/* go to end of the tag */
-	for (; ; s++) {
-	  if (*s == '>') {
-	    if (*(s-1) == '/') {
-	      *(s-1) = 0;
-	      auto_closed = TRUE;
-	    }
-	    break;
-	  }
-	  else if (*s == '\"') {
-	    for (s++; ; s++) {
-	      if (*s == 0) {
-		if (!fgets (buf+strlen (buf), sizeof (buf)-strlen (buf), f))
-		  break;
-		s--;
-	      }
-	      else if ((*s == '\"') && (*(s-1) != '\\')) {
-		break;
-	      }
-	    }
-
-	    if (feof (f))
-	      break;
-	  }
-	  else if (*s == 0) {
-	    if (!fgets (buf+strlen (buf), sizeof (buf)-strlen (buf), f))
-	      break;
-	    s--;
-	  }
-	}
-
-	*s = 0;
-
-	/* create the new tag */
-	tag = tag_new_from_string(open ? tag_start: tag_start+1);
-
-	if (tag) {
-/* 	  fprintf(stderr, "%s tag: %s(parent %s)\n", */
-/* 		   open ? "open": "close", */
-/* 		   tag->name, */
-/* 		   !jlist_empty(parent_stack) ? ((Tag *)parent_stack->data)->name: "ROOT"); */
-
-	  /* open a level */
-	  if (open) {
-	    /* add this tag in parent list */
-	    if (jlist_empty(parent_stack))
-	      jlist_append(root_tags, tag);
-	    else
-	      tag_add_tag(jlist_first(parent_stack)->data, tag);
-
-	    /* if it isn't closed in the same open tag */
-	    if (!auto_closed)
-	      /* add to the parent stack */
-	      jlist_prepend(parent_stack, tag);
-	  }
-	  /* close a level */
-	  else {
-	    if ((!jlist_empty(parent_stack)) &&
-		(strcmp(tag->name, ((Tag *)jlist_first(parent_stack)->data)->name) == 0)) {
-	      /* remove the first tag from stack */
-	      jlist_remove(parent_stack, jlist_first(parent_stack)->data);
-	    }
-	    else {
-	      /* TODO error msg */
-	      /* printf("you must open the tag before close it\n"); */
-	    }
-
-	    tag_free(tag);
-	  }
-	}
-      }
-      /* put characters in the last tag-text */
-      else {
-	if (!jlist_empty(parent_stack)) {
-	  Tag *tag = jlist_first(parent_stack)->data;
-
-	  if (tag->text || IS_BLANK(*s)) {
-	    int len = tag->text ? strlen(tag->text): 0;
-	    tag->text = jrealloc(tag->text, len+2);
-	    tag->text[len] = *s;
-	    tag->text[len+1] = 0;
-	  }
-	}
-      }
-    }
-  }
-
-  jlist_free(parent_stack);
-  return root_tags;
-}
-
-static Attr *attr_new(char *name, char *value, bool translatable)
-{
-  Attr *attr;
-
-  attr = jnew(Attr, 1);
-  if (!attr)
-    return NULL;
-
-  attr->name = name;
-  attr->value = value;
-  attr->translatable = translatable;
-
-  return attr;
-}
-
-static void attr_free(Attr *attr)
-{
-  if (attr->name)
-    jfree(attr->name);
-
-  if (attr->value)
-    jfree(attr->value);
-
-  jfree(attr);
-}
-
-static Tag *tag_new(const char *name)
-{
-  Tag *tag;
-
-  tag = jnew(Tag, 1);
-  if (!tag)
-    return NULL;
-
-  tag->name = jstrdup(name);
-  tag->text = NULL;
-  tag->attr = jlist_new();
-  tag->sub_tags = jlist_new();
-
-  return tag;
-}
-
-static Tag *tag_new_from_string(char *tag_string)
-{
-  char c, *s;
-  Tag *tag;
-
-  /* find the end of the tag-name */
-  for (s=tag_string; *s && !IS_BLANK (*s); s++)
-    ;
-
-  /* create the new tag with the found name */
-  c = *s;
-  *s = 0;
-  tag = tag_new(tag_string);
-  *s = c;
-
-  /* continue reading attributes */
-  while (*s) {
-    /* jump white spaces */
-    while (*s && IS_BLANK(*s))
-      s++;
-
-    /* isn't end of string? */
-    if (*s) {
-      char *name_beg = s;
-      char *name;
-      char *value = NULL;
-      bool translatable = FALSE;
-      Attr *attr;
-
-      /* read the attribute-name */
-      while (*s && !IS_BLANK(*s) && *s != '=')
-	s++;
-
-      c = *s;
-      *s = 0;
-      name = jstrdup(name_beg);
-      *s = c;
-
-      if (*s == '=') {
-	char *value_beg = ++s;
-	bool go_next = FALSE;
-
-	/* see for the translation prefix _() */
-	if (strncmp(s, "_(\"", 3) == 0) {
-	  translatable = TRUE;
-	  s += 2;
-	}
-
-	if (*s == '\"') {
-	  /* jump the double-quote */
-	  value_beg = ++s;
-
-	  /* read the attribute-value */
-	  while (*s) {
-	    if (*s == '\\') {
-	      memmove(s, s+1, strlen(s)-1);
-	      switch (*s) {
-		case 'n': *s = '\n'; break;
-		case 'r': *s = '\r'; break;
-		case 't': *s = '\t'; break;
-	      }
-	    }
-	    else if (*s == '\"') {
-	      go_next = TRUE;
-	      break;
-	    }
-	    s++;
-	  }
-	}
-	else {
-	  /* read the attribute-value */
-	  while (*s && !IS_BLANK(*s))
-	    s++;
-	}
-
-	c = *s;
-	*s = 0;
-	value = jstrdup(value_beg);
-	*s = c;
-
-	if (go_next)
-	  s++;
-      }
-
-      /* create the attribute */
-      attr = attr_new(name, value, translatable);
-
-      /* add the attribute to the tag */
-      if (attr)
-	tag_add_attr(tag, attr);
-    }
-  }
-
-  return tag;
-}
-
-static void tag_free(Tag *tag)
-{
-  JLink link;
-
-  if (tag->name)
-    jfree(tag->name);
-
-  if (tag->text)
-    jfree(tag->text);
-
-  JI_LIST_FOR_EACH(tag->attr, link)
-    attr_free(link->data);
-
-  JI_LIST_FOR_EACH(tag->sub_tags, link)
-    tag_free(link->data);
-
-  jlist_free(tag->attr);
-  jlist_free(tag->sub_tags);
-
-  jfree(tag);
-}
-
-static void tag_add_attr(Tag *tag, Attr *attr)
-{
-  jlist_append(tag->attr, attr);
-}
-
-static void tag_add_tag(Tag *tag, Tag *child)
-{
-  jlist_append(tag->sub_tags, child);
-}
-
-static Attr *tag_get_attr(Tag *tag, const char *name)
-{
-  JLink link;
-  Attr *attr;
-
-  JI_LIST_FOR_EACH(tag->attr, link) {
-    attr = link->data;
-    if (strcmp(attr->name, name) == 0)
-      return attr;
-  }
-
-  return NULL;
 }

@@ -149,19 +149,21 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget)) {
 	JRect rect = jrect_new(0, 0, JI_SCREEN_W, JI_SCREEN_H);
 	int value, accuracy, range;
+	int xbeg = widget->rc->x1
+	  + widget->border_width.l;
+	int width = jrect_w(widget->rc)
+	  - widget->border_width.l
+	  - widget->border_width.r;
 
 	range = slider->max - slider->min + 1;
 
 	/* with left click */
 	if (slider_press_left) {
-	  value = slider->min +
-	    range * (msg->mouse.x - widget->rc->x1) / jrect_w(widget->rc);
+	  value = slider->min + range * (msg->mouse.x - xbeg) / width;
 	}
 	/* with right click */
 	else {
-	  accuracy = MID(1,
-			 jrect_w(widget->rc) / range,
-			 jrect_w(widget->rc));
+	  accuracy = MID(1, width / range, width);
 
 	  value = slider_press_value +
 	    (msg->mouse.x - slider_press_x) / accuracy;
@@ -178,10 +180,10 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	if (slider_press_left) {
 	  int x = jmouse_x(0);
 
-	  if (x < widget->rc->x1)
-	    x = widget->rc->x1;
-	  else if (x > widget->rc->x2)
-	    x = widget->rc->x2;
+	  if (x < widget->rc->x1 + widget->border_width.l)
+	    x = widget->rc->x1 + widget->border_width.l;
+	  else if (x > widget->rc->x2 - widget->border_width.r)
+	    x = widget->rc->x2 - widget->border_width.r;
 
 	  if (x != jmouse_x(0))
 	    jmouse_set_position(x, jmouse_y(0));

@@ -57,7 +57,7 @@ include makefile.gcc
 
 default: all
 
-all: $(ASE) test
+all: $(ASE)
 
 clean:
 	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS)

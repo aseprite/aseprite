@@ -53,7 +53,7 @@ static void display_fileitem(FileItem *fi, int level, int deep)
 
 int main(int argc, char *argv[])
 {
-  allegro_init();
+  test_init();
   assert(file_system_init());
 
   trace("*** Listing root of the file-system (deep = 2)...\n");
@@ -99,12 +99,10 @@ int main(int argc, char *argv[])
     assert(!filename_has_extension("hi.ase", "jpg,jpeg"));
     assert(filename_has_extension("hi.ase", "jpg,jpeg,ase"));
     assert(filename_has_extension("hi.ase", "ase,jpg,jpeg"));
-    trace("+ All OK.\n");
   }
 
   file_system_exit();
-  allegro_exit();
-  return 0;
+  return test_exit();
 }
 
 END_OF_MAIN();

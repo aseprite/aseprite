@@ -20,8 +20,8 @@
 
 #include "console/console.h"
 #include "core/app.h"
+#include "core/color.h"
 #include "core/core.h"
-#include "modules/color.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"

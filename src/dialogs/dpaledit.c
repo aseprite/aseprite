@@ -25,8 +25,8 @@
 #include "jinete/jinete.h"
 
 #include "core/cfg.h"
+#include "core/color.h"
 #include "dialogs/filesel.h"
-#include "modules/color.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "modules/sprites.h"
@@ -128,7 +128,7 @@ void dialogs_palette_editor(void)
 
   /* custom widgets */
   colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
-  palette_editor = palette_editor_new(palette, TRUE, 6);
+  palette_editor = paledit_new(palette, TRUE, 6);
 
   jwidget_expansive(colorviewer, TRUE);
   jwidget_add_child(colorviewer_box, colorviewer);
@@ -141,7 +141,7 @@ void dialogs_palette_editor(void)
 
   /* set columns */
   jslider_set_value(slider_columns, columns);
-  palette_editor_set_columns(palette_editor, columns);
+  paledit_set_columns(palette_editor, columns);
 
   /* frame */
   if (current_sprite) {
@@ -227,8 +227,8 @@ void dialogs_palette_editor(void)
 
 static void select_all_command(JWidget widget)
 {
-  palette_editor_select_range(palette_editor, 0, 255,
-			      PALETTE_EDITOR_RANGE_LINEAL);
+  paledit_select_range(palette_editor, 0, 255,
+		       PALETTE_EDITOR_RANGE_LINEAL);
 }
 
 static void load_command(JWidget widget)
@@ -275,7 +275,7 @@ static void save_command(JWidget widget)
       }
     }
 
-    if (palette_save(palette_editor_data(palette_editor)->palette, filename))
+    if (palette_save(paledit_get_palette(palette_editor), filename))
       jalert(_("Error<<Saving palette file||&Close"));
 
     jfree(filename);
@@ -284,24 +284,24 @@ static void save_command(JWidget widget)
 
 static void ramp_command(JWidget widget)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
-  int i1 = paledit->color[0];
-  int i2 = paledit->color[1];
+  int range_type = paledit_get_range_type(palette_editor);
+  int i1 = paledit_get_1st_color(palette_editor);
+  int i2 = paledit_get_2nd_color(palette_editor);
   PALETTE palette;
   bool array[256];
 
-  palette_editor_get_selected_entries(palette_editor, array);
-  palette_copy(palette, paledit->palette);
+  paledit_get_selected_entries(palette_editor, array);
+  palette_copy(palette, paledit_get_palette(palette_editor));
 
   if ((i1 >= 0) && (i2 >= 0)) {
     /* make the ramp */
-    if (paledit->range_type == PALETTE_EDITOR_RANGE_LINEAL) {
+    if (range_type == PALETTE_EDITOR_RANGE_LINEAL) {
       /* lineal ramp */
       make_palette_ramp(palette, i1, i2);
     }
-    else if (paledit->range_type == PALETTE_EDITOR_RANGE_RECTANGULAR) {
+    else if (range_type == PALETTE_EDITOR_RANGE_RECTANGULAR) {
       /* rectangular ramp */
-      make_palette_rect_ramp(palette, i1, i2, paledit->columns);
+      make_palette_rect_ramp(palette, i1, i2, paledit_get_columns(palette_editor));
     }
   }
 
@@ -310,12 +310,11 @@ static void ramp_command(JWidget widget)
 
 static void quantize_command(JWidget widget)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
   PALETTE palette;
   bool array[256];
 
-  palette_editor_get_selected_entries(palette_editor, array);
-  palette_copy(palette, paledit->palette);
+  paledit_get_selected_entries(palette_editor, array);
+  palette_copy(palette, paledit_get_palette(palette_editor));
 
   if (current_sprite && current_sprite->imgtype == IMAGE_RGB) {
     sprite_quantize_ex(current_sprite, palette);
@@ -329,7 +328,7 @@ static void quantize_command(JWidget widget)
 
 static int sliderRGB_change_signal(JWidget widget, int user_data)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
+  RGB *palette = paledit_get_palette(palette_editor);
   int r = jslider_get_value(slider_R)>>2;
   int g = jslider_get_value(slider_G)>>2;
   int b = jslider_get_value(slider_B)>>2;
@@ -341,12 +340,12 @@ static int sliderRGB_change_signal(JWidget widget, int user_data)
 	     _rgb_scale_6[g],
 	     _rgb_scale_6[b], &h, &s, &v);
 
-  palette_editor_get_selected_entries(palette_editor, array);
+  paledit_get_selected_entries(palette_editor, array);
   for (c=0; c<256; c++) {
     if (array[c]) {
-      paledit->palette[c].r = r;
-      paledit->palette[c].g = g;
-      paledit->palette[c].b = b;
+      palette[c].r = r;
+      palette[c].g = g;
+      palette[c].b = b;
 
       set_current_color(c, r, g, b);
     }
@@ -362,7 +361,7 @@ static int sliderRGB_change_signal(JWidget widget, int user_data)
 
 static int sliderHSV_change_signal(JWidget widget, int user_data)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
+  RGB *palette = paledit_get_palette(palette_editor);
   int h = jslider_get_value(slider_H);
   int s = jslider_get_value(slider_S);
   int v = jslider_get_value(slider_V);
@@ -375,12 +374,12 @@ static int sliderHSV_change_signal(JWidget widget, int user_data)
   g >>= 2;
   b >>= 2;
 
-  palette_editor_get_selected_entries(palette_editor, array);
+  paledit_get_selected_entries(palette_editor, array);
   for (c=0; c<256; c++) {
     if (array[c]) {
-      paledit->palette[c].r = r;
-      paledit->palette[c].g = g;
-      paledit->palette[c].b = b;
+      palette[c].r = r;
+      palette[c].g = g;
+      palette[c].b = b;
 
       set_current_color(c, r, g, b);
     }
@@ -396,8 +395,8 @@ static int sliderHSV_change_signal(JWidget widget, int user_data)
 
 static int slider_columns_change_signal(JWidget widget, int user_data)
 {
-  palette_editor_set_columns(palette_editor,
-			     (int)jslider_get_value(widget));
+  paledit_set_columns(palette_editor,
+		      (int)jslider_get_value(widget));
   return FALSE;
 }
 
@@ -415,9 +414,8 @@ static int slider_frame_change_signal(JWidget widget, int user_data)
 
 static int palette_editor_change_signal(JWidget widget, int user_data)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
   int imgtype = colorviewer_get_imgtype(colorviewer);
-  color_t color = color_index(paledit->color[1]);
+  color_t color = color_index(paledit_get_2nd_color(palette_editor));
   int r = color_get_red(imgtype, color);
   int g = color_get_green(imgtype, color);
   int b = color_get_blue(imgtype, color);
@@ -438,10 +436,8 @@ static int palette_editor_change_signal(JWidget widget, int user_data)
 
 static void set_new_palette(RGB *palette)
 {
-  PaletteEditor *paledit = palette_editor_data(palette_editor);
-
   /* copy the palette */
-  palette_copy(paledit->palette, palette);
+  palette_copy(paledit_get_palette(palette_editor), palette);
 
   /* set the palette calling the hooks */
   set_current_palette(palette, FALSE);

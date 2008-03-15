@@ -23,7 +23,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_drawing_tools.c		\
 	src/commands/cmd_duplicate_layer.c		\
 	src/commands/cmd_duplicate_sprite.c		\
-	src/commands/cmd_exchange_colors.c		\
 	src/commands/cmd_exit.c				\
 	src/commands/cmd_eyedropper_tool.c		\
 	src/commands/cmd_film_editor.c			\
@@ -67,6 +66,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_select_file.c			\
 	src/commands/cmd_sprite_editor.c		\
 	src/commands/cmd_sprite_properties.c		\
+	src/commands/cmd_switch_colors.c		\
 	src/commands/cmd_tips.c				\
 	src/commands/cmd_undo.c				\
 	src/commands/commands.c				\
@@ -78,6 +78,7 @@ COMMON_SOURCES =					\
 	src/console/console.c				\
 	src/core/app.c					\
 	src/core/cfg.c					\
+	src/core/color.c				\
 	src/core/config.c				\
 	src/core/core.c					\
 	src/core/dirs.c					\
@@ -90,7 +91,6 @@ COMMON_SOURCES =					\
 	src/dialogs/filesel.c				\
 	src/dialogs/filmedit.c				\
 	src/dialogs/maskcol.c				\
-	src/dialogs/minipal.c				\
 	src/dialogs/options.c				\
 	src/dialogs/playfli.c				\
 	src/dialogs/quick.c				\
@@ -159,7 +159,6 @@ COMMON_SOURCES =					\
 	src/jinete/jwindow.c				\
 	src/jinete/jxml.c				\
 	src/jinete/themes/jstandard_theme.c		\
-	src/modules/color.c				\
 	src/modules/editors.c				\
 	src/modules/gfx.c				\
 	src/modules/gui.c				\
@@ -222,8 +221,10 @@ COMMON_SOURCES =					\
 	src/widgets/target.c				\
 	src/widgets/toolbar.c
 
-ifdef USE_X86_INT_MULT
-  COMMON_SOURCES += src/raster/x86/int_mult.s
+ifdef USE_386_ASM
+  COMMON_SOURCES += \
+	src/raster/x86/blenders.s			\
+	src/raster/x86/int_mult.s
 endif
 
 COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
@@ -512,3 +513,16 @@ THIRD_PARTY_LIBS =				\
 	$(LIBLUA_LIB)				\
 	$(LIBPNG_LIB)				\
 	$(ZLIB_LIB)
+
+######################################################################
+# Tests
+
+TESTS = $(addsuffix $(EXE),						\
+		$(basename						\
+			$(wildcard src/test/*.c)			\
+			$(wildcard src/test/raster/*.c)			\
+			$(wildcard src/test/jinete/*.c)))
+
+AUTOTESTS = $(addsuffix $(EXE),						\
+		$(basename						\
+			$(wildcard src/test/*.c)))

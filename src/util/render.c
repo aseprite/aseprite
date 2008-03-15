@@ -215,7 +215,7 @@ static void render_layer(Layer *layer, Image *image,
 	  int output_opacity;
 	  register int t;
 
-	  if ((selected_layer == layer) && (rastering_image))
+	  if ((selected_layer == layer) && (rastering_image != NULL))
 	    src_image = rastering_image;
 
 	  output_opacity = MID(0, cel->opacity, 255);

@@ -54,7 +54,10 @@ static void cmd_eyedropper_tool_execute(const char *argument)
 			   sprite_getpixel(editor->sprite, x, y));
 
   /* set the color of the color-bar */
-  colorbar_set_fg_color(app_get_colorbar(), color);
+  if (argument != NULL && ustrcmp(argument, "background") == 0)
+    colorbar_set_bg_color(app_get_colorbar(), color);
+  else
+    colorbar_set_fg_color(app_get_colorbar(), color);
 }
 
 Command cmd_eyedropper_tool = {

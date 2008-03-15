@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-
 <!-- Read "LEGAL.txt" for more information. -->
-
+<jinete>
 <window text="Cel Properties" name="cel_properties">
   <box vertical>
     <box horizontal expansive>
@@ -13,7 +12,7 @@
         <label text="Opacity:" />
       </box>
       <box vertical homogeneous expansive>
-	<entry maxsize=32 name="frame" />
+	<entry maxsize=32 name="frame" magnetic />
         <entry maxsize=32 name="xpos" />
         <entry maxsize=32 name="ypos" />
         <slider min=0 max=255 name="opacity" minwidth="180" />
@@ -29,3 +28,4 @@
     </box>
   </box>
 </window>
+</jinete>

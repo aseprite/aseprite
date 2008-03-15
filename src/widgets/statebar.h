@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 
 typedef struct Progress
 {

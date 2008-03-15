@@ -19,7 +19,7 @@
 #ifndef DIALOGS_COLSEL_H
 #define DIALOGS_COLSEL_H
 
-#include "modules/color.h"
+#include "core/color.h"
 
 bool ji_color_select(int imgtype, color_t *color);
 

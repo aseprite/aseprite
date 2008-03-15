@@ -46,12 +46,13 @@ typedef struct Cell
   int hspan;
   int vspan;
   int align;
+  int w, h;
 } Cell;
 
 typedef struct Strip
 {
   int size;
-  int align;
+  int expand_count;
 } Strip;
 
 typedef struct Grid
@@ -69,8 +70,10 @@ static void grid_request_size(JWidget widget, int *w, int *h);
 static void grid_set_position(JWidget widget, JRect rect);
 static void grid_calculate_size(JWidget widget);
 static void grid_distribute_size(JWidget widget, JRect rect);
-static bool grid_put_in_a_cell(JWidget widget, JWidget child, int hspan, int vspan, int align);
+static bool grid_put_widget_in_cell(JWidget widget, JWidget child, int hspan, int vspan, int align);
 static void grid_expand_rows(JWidget widget, int rows);
+static void grid_inc_col_size(Grid *grid, int col, int size);
+static void grid_inc_row_size(Grid *grid, int row, int size);
 
 JWidget jgrid_new(int columns, bool same_width_columns)
 {
@@ -89,7 +92,7 @@ JWidget jgrid_new(int columns, bool same_width_columns)
 
   for (col=0; col<grid->cols; ++col) {
     grid->colstrip[col].size = 0;
-    grid->colstrip[col].align = 0;
+    grid->colstrip[col].expand_count = 0;
   }
 
   jwidget_add_hook(widget, JI_GRID, grid_msg_proc, grid);
@@ -126,11 +129,14 @@ void jgrid_add_child(JWidget widget, JWidget child,
 {
   Grid *grid = jwidget_get_data(widget, JI_GRID);
 
+  assert(hspan > 0);
+  assert(vspan > 0);
+
   jwidget_add_child(widget, child);
 
-  if (!grid_put_in_a_cell(widget, child, hspan, vspan, align)) {
+  if (!grid_put_widget_in_cell(widget, child, hspan, vspan, align)) {
     grid_expand_rows(widget, grid->rows+1);
-    grid_put_in_a_cell(widget, child, hspan, vspan, align);
+    grid_put_widget_in_cell(widget, child, hspan, vspan, align);
   }
 }
 
@@ -158,13 +164,6 @@ static bool grid_msg_proc(JWidget widget, JMessage msg)
       grid_set_position(widget, &msg->setpos.rect);
       return TRUE;
 
-#if 0				/* TODO */
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_REMOVE_CHILD) {
-      }
-      break;
-#endif
-
   }
 
   return FALSE;
@@ -179,24 +178,18 @@ static void grid_request_size(JWidget widget, int *w, int *h)
 
   /* calculate the total */
 
-  *w = 0;
-  *h = 0;
-
-  for (i=j=0; i<grid->cols; ++i) {
-    if (grid->colstrip[i].size > 0) {
-      *w += grid->colstrip[i].size;
-      if (++j > 1)
-	*w += widget->child_spacing;
-    }
+#define SUMSTRIPS(p_cols, p_colstrip, p_w)	\
+  *p_w = 0;					\
+  for (i=j=0; i<grid->p_cols; ++i) {		\
+    if (grid->p_colstrip[i].size > 0) {		\
+      *p_w += grid->p_colstrip[i].size;		\
+      if (++j > 1)				\
+	*p_w += widget->child_spacing;		\
+    }						\
   }
 
-  for (i=j=0; i<grid->rows; ++i) {
-    if (grid->rowstrip[i].size > 0) {
-      *h += grid->rowstrip[i].size;
-      if (++j > 1)
-	*h += widget->child_spacing;
-    }
-  }
+  SUMSTRIPS(cols, colstrip, w);
+  SUMSTRIPS(rows, rowstrip, h);
 
   *w += widget->border_width.l + widget->border_width.r;
   *h += widget->border_width.t + widget->border_width.b;
@@ -232,17 +225,17 @@ static void grid_set_position(JWidget widget, JRect rect)
 	w = 0;
 	h = 0;
 
-#define CALCULATE_W(col, hspan, colstrip, w)		\
-	for (i=col,j=0; i<col+cell->hspan; ++i) {	\
-	  if (grid->colstrip[i].size > 0) {		\
-	    w += grid->colstrip[i].size;		\
-	    if (++j > 1)				\
-	      w += widget->child_spacing;		\
-	  }						\
+#define CALCULATE_CELL_SIZE(p_col, p_span, p_colstrip, p_w)	\
+	for (i=p_col,j=0; i<p_col+cell->p_span; ++i) {		\
+	  if (grid->p_colstrip[i].size > 0) {			\
+	    p_w += grid->p_colstrip[i].size;			\
+	    if (++j > 1)					\
+	      p_w += widget->child_spacing;			\
+	  }							\
 	}
 
-	CALCULATE_W(col, hspan, colstrip, w);
-	CALCULATE_W(row, vspan, rowstrip, h);
+	CALCULATE_CELL_SIZE(col, hspan, colstrip, w);
+	CALCULATE_CELL_SIZE(row, vspan, rowstrip, h);
 
 	jwidget_request_size(cell->child, &req_w, &req_h);
 
@@ -286,67 +279,118 @@ static void grid_set_position(JWidget widget, JRect rect)
 }
 
 /**
- * Calculates the size of each row and each column in the grid.
+ * Calculates the size of each strip (rows and columns) in the grid.
  */
 static void grid_calculate_size(JWidget widget)
 {
   Grid *grid = jwidget_get_data(widget, JI_GRID);
-  int row, col, size, align;
+  int row, col, size;
   int req_w, req_h;
-  int max_w;
+  int i, expand;
+  int expand_count;
+  int last_expand;
+  int current_span;
+  bool more_span;
   Cell *cell;
 
   if (grid->rows == 0)
     return;
+
+#define CALCULATE_STRIPS(p_col, p_cols, p_row, p_rows, p_span,		\
+			 p_req, p_colstrip, p_align)			\
+  /* for each column */							\
+  for (p_col=0; p_col<grid->p_cols; ++p_col) {				\
+    /* a counter of widgets that want more space in this column */	\
+    expand_count = 0;							\
+    /* for each row */							\
+    for (p_row=0; p_row<grid->p_rows; ++p_row) {			\
+      /* for each cell */						\
+      cell = grid->cells[row]+col;					\
+      req_w = req_h = 0;						\
+									\
+      if (cell->child != NULL) {					\
+	if (cell->parent == NULL) {					\
+	  /* if the widget isn't hidden then we can request its size */ \
+	  if (!(cell->child->flags & JI_HIDDEN)) {			\
+	    jwidget_request_size(cell->child, &req_w, &req_h);		\
+	    cell->w = req_w - (cell->hspan-1) * widget->child_spacing;	\
+	    cell->h = req_h - (cell->vspan-1) * widget->child_spacing;	\
+	    if ((cell->align & p_align) == p_align)			\
+	      ++expand_count;						\
+	  }								\
+	  else								\
+	    cell->w = cell->h = 0;					\
+	}								\
+	else {								\
+	  if (!(cell->child->flags & JI_HIDDEN)) {			\
+	    if ((cell->parent->align & p_align) == p_align)		\
+	      ++expand_count;						\
+	  }								\
+	}								\
+	p_row += cell->p_span-1;					\
+      }									\
+    }									\
+    grid->p_colstrip[p_col].size = 0;					\
+    grid->p_colstrip[p_col].expand_count = expand_count;		\
+  }
+
+#define EXPAND_STRIPS(p_col, p_cols, p_row, p_rows, p_span,		\
+		      p_size, p_colstrip, p_inc_col)			\
+  current_span = 1;							\
+  do {									\
+    more_span = FALSE;							\
+    for (p_col=0; p_col<grid->p_cols; ++p_col) {			\
+      for (p_row=0; p_row<grid->p_rows; ++p_row) {			\
+	cell = grid->cells[row]+col;					\
+									\
+	if (cell->child != NULL && cell->parent == NULL &&		\
+	    cell->p_size > 0) {						\
+	  assert(cell->p_span > 0);					\
+									\
+	  if (cell->p_span == current_span) {				\
+	    expand = 0;							\
+	    expand_count = 0;						\
+	    last_expand = 0;						\
+									\
+	    for (i=p_col; i<p_col+cell->p_span; ++i)			\
+	      expand_count = MAX(expand_count,				\
+				 grid->p_colstrip[i].expand_count);	\
+									\
+	    for (i=p_col; i<p_col+cell->p_span; ++i) {			\
+	      if (grid->p_colstrip[i].expand_count == expand_count) {	\
+		++expand;						\
+		last_expand = i;					\
+	      }								\
+	    }								\
+									\
+	    size = cell->p_size / expand;				\
+									\
+	    for (i=p_col; i<p_col+cell->p_span; ++i) {			\
+	      if (grid->p_colstrip[i].expand_count == expand_count) {	\
+		if (last_expand == i)					\
+		  size = cell->p_size;					\
+									\
+		p_inc_col(grid, i, size);				\
+	      }								\
+	    }								\
+	  }								\
+	  else if (cell->p_span > current_span) {			\
+	    more_span = TRUE;						\
+	  }								\
+	}								\
+      }									\
+    }									\
+    ++current_span;							\
+  } while (more_span);
   
-  for (row=0; row<grid->rows; ++row) {
-    size = 0;
-    align = 0;
-    for (col=0; col<grid->cols; ++col) {
-      cell = grid->cells[row]+col;
-      req_w = req_h = 0;
-
-      if (cell->child != NULL && cell->vspan == 1) {
-	if (!(cell->child->flags & JI_HIDDEN)) {
-	  jwidget_request_size(cell->child, &req_w, &req_h);
-	  align |= cell->align;
-	}
-
-	col += cell->vspan-1;
-      }
-
-      size = MAX(size, req_h);
-    }
-    grid->rowstrip[row].size = size;
-    grid->rowstrip[row].align = align;
-  }
-
-  for (col=0; col<grid->cols; ++col) {
-    size = 0;
-    align = 0;
-    for (row=0; row<grid->rows; ++row) {
-      cell = grid->cells[row]+col;
-      req_w = req_h = 0;
-
-      if (cell->child != NULL && cell->hspan == 1) {
-	if (!(cell->child->flags & JI_HIDDEN)) {
-	  jwidget_request_size(cell->child, &req_w, &req_h);
-	  align |= cell->align;
-	}
-
-	row += cell->hspan-1;
-      }
-
-      size = MAX(size, req_w);
-    }
-    grid->colstrip[col].size = size;
-    grid->colstrip[col].align = align;
-  }
+  CALCULATE_STRIPS(col, cols, row, rows, vspan, req_w, colstrip, JI_HORIZONTAL);
+  CALCULATE_STRIPS(row, rows, col, cols, hspan, req_h, rowstrip, JI_VERTICAL);
+  EXPAND_STRIPS(col, cols, row, rows, hspan, w, colstrip, grid_inc_col_size);
+  EXPAND_STRIPS(row, rows, col, cols, vspan, h, rowstrip, grid_inc_row_size);
 
   /* same width in all columns */
   if (grid->same_width_columns) {
-    max_w = 0;
-
+    int max_w = 0;
     for (col=0; col<grid->cols; ++col)
       max_w = MAX(max_w, grid->colstrip[col].size);
 
@@ -358,45 +402,63 @@ static void grid_calculate_size(JWidget widget)
 static void grid_distribute_size(JWidget widget, JRect rect)
 {
   Grid *grid = jwidget_get_data(widget, JI_GRID);
-  int total_req, wantmore_count;
+  int total_req, expand_count, wantmore_count;
   int i, j;
+  int extra_total;
+  int extra_foreach;
 
   if (grid->rows == 0)
     return;
 
-#define DISTRIBUTE_SIZE(cols, colstrip, JI_HORIZONTAL, l, r, jrect_w)	\
+#define DISTRIBUTE_SIZE(p_cols, p_colstrip, p_l, p_r,			\
+			p_jrect_w, p_same_width)			\
+  expand_count = 0;							\
+  for (i=0; i<grid->p_cols; ++i)					\
+    expand_count = MAX(expand_count,					\
+		       grid->p_colstrip[i].expand_count);		\
+									\
   total_req = 0;							\
   wantmore_count = 0;							\
-  for (i=j=0; i<grid->cols; ++i) {					\
-    if (grid->colstrip[i].size > 0) {					\
-      total_req += grid->colstrip[i].size;				\
+  for (i=j=0; i<grid->p_cols; ++i) {					\
+    if (grid->p_colstrip[i].size > 0) {					\
+      total_req += grid->p_colstrip[i].size;				\
       if (++j > 1)							\
 	total_req += widget->child_spacing;				\
     }									\
-									\
-    if (grid->colstrip[i].align & JI_HORIZONTAL ||			\
-	grid->same_width_columns) {					\
+    									\
+    if (grid->p_colstrip[i].expand_count == expand_count ||		\
+	p_same_width) {							\
       ++wantmore_count;							\
     }									\
   }									\
-  total_req += widget->border_width.l + widget->border_width.r;		\
+  total_req += widget->border_width.p_l + widget->border_width.p_r;	\
 									\
   if (wantmore_count > 0) {						\
-    int extra_total = jrect_w(rect) - total_req;			\
+    extra_total = p_jrect_w(rect) - total_req;				\
     if (extra_total > 0) {						\
-      int extra_foreach = extra_total / wantmore_count;			\
+      /* if a expandable column-strip was empty (size=0) then */	\
+      /* we have to reduce the extra_total size because a new */	\
+      /* child-spacing is added by this column */			\
+      for (i=0; i<grid->p_cols; ++i) {					\
+	if ((grid->p_colstrip[i].size == 0) &&				\
+	    (grid->p_colstrip[i].expand_count == expand_count ||	\
+	     p_same_width)) {						\
+	  extra_total -= widget->child_spacing;				\
+	}								\
+      }									\
 									\
-      for (i=0; i<grid->cols; ++i) {					\
-	if (grid->colstrip[i].align & JI_HORIZONTAL ||			\
-	    grid->same_width_columns) {					\
+      extra_foreach = extra_total / wantmore_count;			\
+									\
+      for (i=0; i<grid->p_cols; ++i) {					\
+	if (grid->p_colstrip[i].expand_count == expand_count ||		\
+	    p_same_width) {						\
 	  assert(wantmore_count > 0);					\
-	  assert(extra_total > 0);					\
 									\
-	  grid->colstrip[i].size += extra_foreach;			\
+	  grid->p_colstrip[i].size += extra_foreach;			\
 	  extra_total -= extra_foreach;					\
 									\
 	  if (--wantmore_count == 0) {					\
-	    grid->colstrip[i].size += extra_total;			\
+	    grid->p_colstrip[i].size += extra_total;			\
 	    extra_total = 0;						\
 	  }								\
 	}								\
@@ -406,11 +468,11 @@ static void grid_distribute_size(JWidget widget, JRect rect)
     }									\
   }
 
-  DISTRIBUTE_SIZE(cols, colstrip, JI_HORIZONTAL, l, r, jrect_w);
-  DISTRIBUTE_SIZE(rows, rowstrip, JI_VERTICAL,   t, b, jrect_h);
+  DISTRIBUTE_SIZE(cols, colstrip, l, r, jrect_w, grid->same_width_columns);
+  DISTRIBUTE_SIZE(rows, rowstrip, t, b, jrect_h, FALSE);
 }
 
-static bool grid_put_in_a_cell(JWidget widget, JWidget child, int hspan, int vspan, int align)
+static bool grid_put_widget_in_cell(JWidget widget, JWidget child, int hspan, int vspan, int align)
 {
   Grid *grid = jwidget_get_data(widget, JI_GRID);
   int col, row, colbeg, colend, rowend;
@@ -433,22 +495,29 @@ static bool grid_put_in_a_cell(JWidget widget, JWidget child, int hspan, int vsp
 	grid_expand_rows(widget, row+vspan);
 
 	for (++col, ++cell; col<colend; ++col, ++cell) {
-	  /* hspan or vspan are bad specified (overlapping with other cells) */
+	  /* if these asserts fails, it's really possible that you
+	     specified bad values for hspan or vspan (they are
+	     overlapping with other cells) */
 	  assert(cell->parent == NULL);
 	  assert(cell->child == NULL);
 
 	  cell->parent = parentcell;
 	  cell->child = child;
+	  cell->hspan = colend - col;
+	  cell->vspan = rowend - row;
 	}
 
 	for (++row; row<rowend; ++row) {
-	  cell = grid->cells[grid->cols*row + col];
 	  for (col=colbeg; col<colend; ++col) {
+	    cell = grid->cells[row]+col;
+
 	    assert(cell->parent == NULL);
 	    assert(cell->child == NULL);
 
 	    cell->parent = parentcell;
 	    cell->child = child;
+	    cell->hspan = colend - col;
+	    cell->vspan = rowend - row;
 	  }
 	}
 	return TRUE;
@@ -476,7 +545,7 @@ static void grid_expand_rows(JWidget widget, int rows)
     for (row=grid->rows; row<rows; ++row) {
       grid->cells[row] = jmalloc(sizeof(Cell) * grid->cols);
       grid->rowstrip[row].size = 0;
-      grid->rowstrip[row].align = 0;
+      grid->rowstrip[row].expand_count = 0;
 
       for (cell=grid->cells[row];
 	   cell<grid->cells[row]+grid->cols; ++cell) {
@@ -484,9 +553,58 @@ static void grid_expand_rows(JWidget widget, int rows)
 	cell->child = NULL;
 	cell->hspan = 0;
 	cell->vspan = 0;
+	cell->align = 0;
+	cell->w = 0;
+	cell->h = 0;
       }
     }
 
     grid->rows = rows;
+  }
+}
+
+static void grid_inc_col_size(Grid *grid, int col, int size)
+{
+  Cell *cell;
+  int row;
+
+  grid->colstrip[col].size += size;
+
+  for (row=0; row<grid->rows; ) {
+    cell = grid->cells[row]+col;
+
+    if (cell->child != NULL) {
+      if (cell->parent != NULL)
+	cell->parent->w -= size;
+      else
+	cell->w -= size;
+
+      row += cell->vspan;
+    }
+    else
+      ++row;
+  }
+}
+
+static void grid_inc_row_size(Grid *grid, int row, int size)
+{
+  Cell *cell;
+  int col;
+
+  grid->rowstrip[row].size += size;
+
+  for (col=0; col<grid->cols; ) {
+    cell = grid->cells[row]+col;
+
+    if (cell->child != NULL) {
+      if (cell->parent != NULL)
+	cell->parent->h -= size;
+      else
+	cell->h -= size;
+
+      col += cell->hspan;
+    }
+    else
+      ++col;
   }
 }

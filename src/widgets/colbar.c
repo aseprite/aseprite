@@ -24,11 +24,13 @@
 
 #include "jinete/jinete.h"
 
+#include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
+#include "core/color.h"
 #include "dialogs/colsel.h"
 #include "dialogs/minipal.h"
-#include "modules/color.h"
+#include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
@@ -53,6 +55,7 @@ typedef struct ColorBar
 {
   JWidget widget;
   int ncolor;
+  int refresh_timer_id;
   color_t color[COLORBAR_MAX_COLORS];
   color_t fgcolor;
   color_t bgcolor;
@@ -69,7 +72,7 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
 				  JRect bounds, color_t color, hotcolor_t hot);
 static void colorbar_close_tooltip(JWidget widget);
 
-static int tooltip_window_color_changed(JWidget widget, int user_data);
+static bool tooltip_window_msg_proc(JWidget widget, JMessage msg);
 
 static void update_status_bar(color_t color, int msecs);
 static void get_info(JWidget widget, int *beg, int *end);
@@ -86,6 +89,7 @@ JWidget colorbar_new(int align)
 
   colorbar->widget = widget;
   colorbar->ncolor = 16;
+  colorbar->refresh_timer_id = jmanager_add_timer(widget, 250);
   colorbar->fgcolor = color_mask();
   colorbar->bgcolor = color_mask();
   colorbar->hot = HOTCOLOR_NONE;
@@ -203,6 +207,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
     case JM_DESTROY: {
       char buf[256];
       int c;
+
+      jmanager_remove_timer(colorbar->refresh_timer_id);
 
       if (colorbar->tooltip_window != NULL)
 	jwidget_free(colorbar->tooltip_window);
@@ -385,9 +391,6 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       if (colorbar->hot != old_hot) {
 	jwidget_dirty(widget);
 
-	/* close the old tooltip window to edit the 'old_hot' color slot */
-	colorbar_close_tooltip(widget);
-
 	if (colorbar->hot != HOTCOLOR_NONE) {
 	  color_t color = colorbar_get_hot_color(widget);
 	  JRect bounds = jwidget_get_rect(widget);
@@ -403,6 +406,10 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 
 	  jrect_free(bounds);
 	}
+	else {
+	  /* close the old tooltip window to edit the 'old_hot' color slot */
+	  colorbar_close_tooltip(widget);
+	}
       }
 
       /* if the widget has the capture, we should replace the
@@ -417,17 +424,6 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	if (msg->mouse.right) {
 	  colorbar_set_bg_color(widget, color);
 	}
-/* 	else if (msg->mouse.right) { */
-/* 	  /\* TODO *\/ */
-/* 	  /\* colorbar->select[num = 1] = c; *\/ */
-/* 	  /\* jwidget_dirty(widget); *\/ */
-/* 	} */
-
-/* 	/\* show a minipal? *\/ */
-/* 	if (msg->type == JM_BUTTONPRESSED && */
-/* 	    msg->any.shifts & KB_CTRL_FLAG && num >= 0) { */
-/* 	  ji_minipal_new(widget, x2, v1); */
-/* 	} */
 
 	return TRUE;
       }
@@ -485,6 +481,21 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	return TRUE;
       }
       break;
+
+    case JM_TIMER:
+      /* time to refresh all the editors which have the current
+	 sprite selected? */
+      if (msg->timer.timer_id == colorbar->refresh_timer_id) {
+	Sprite *sprite = current_sprite;
+
+	if (sprite != NULL) {
+	  update_editors_with_sprite(sprite);
+	}
+
+	jmanager_stop_timer(colorbar->refresh_timer_id);
+      }
+      break;
+
   }
 
   return FALSE;
@@ -518,12 +529,13 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
 {
   ColorBar *colorbar = colorbar_data(widget);
   JWidget window;
-  char buf[256];
+  char buf[1024];		/* TODO warning buffer overflow */
+  int y;
 
   if (colorbar->tooltip_window == NULL) {
     window = colorselector_new();
-    HOOK(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED,
-	 tooltip_window_color_changed, widget);
+    window->user_data[0] = widget;
+    jwidget_add_hook(window, -1, tooltip_window_msg_proc, NULL);
 
     colorbar->tooltip_window = window;
   }
@@ -534,11 +546,23 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
     case HOTCOLOR_NONE:
       assert(FALSE);
       break;
-    case HOTCOLOR_FGCOLOR:
-      ustrcpy(buf, _("Primary Tool Color"));
+    case HOTCOLOR_FGCOLOR: {
+      Command *cmd;
+
+      ustrcpy(buf, _("Foreground Tool Color"));
+
+      cmd = command_get_by_name(CMD_SWITCH_COLORS);
+      assert(cmd != NULL);
+
+      if (cmd->accel != NULL) {
+	ustrcat(buf, _(" - "));
+	jaccel_to_string(cmd->accel, buf+ustrsize(buf));
+	ustrcat(buf, _(" key switchs colors"));
+      }
       break;
+    }
     case HOTCOLOR_BGCOLOR:
-      ustrcpy(buf, _("Secondary Tool Color (to fill shapes)"));
+      ustrcpy(buf, _("Background Tool Color"));
       break;
     case HOTCOLOR_BGSPRITE:
       ustrcpy(buf, _("Sprite Background Color"));
@@ -555,8 +579,9 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
   jwindow_open(window);
 
   x = MID(0, x, JI_SCREEN_W-jrect_w(window->rc));
-  jwindow_position(window,
-		   x, MID(0, y1, JI_SCREEN_H-jrect_h(window->rc)));
+  y = (y1+y2)/2-jrect_h(window->rc)/2;
+  y = MID(0, y, JI_SCREEN_H-jrect_h(window->rc));
+  jwindow_position(window, x, y);
 
   jmanager_dispatch_messages(jwidget_get_manager(window));
   jwidget_relayout(window);
@@ -564,7 +589,7 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
   {
     JRect rc = jrect_new(window->rc->x1,
 			 window->rc->y1-8,
-			 window->rc->x2+16,
+			 window->rc->x2+8,
 			 window->rc->y2+8);
     JRect rc2 = jrect_new(widget->rc->x1, y1, x, y2+1);
     JRegion rgn = jregion_new(rc, 1);
@@ -588,63 +613,110 @@ static void colorbar_close_tooltip(JWidget widget)
     jwindow_close(colorbar->tooltip_window, NULL);
 }
 
-static int tooltip_window_color_changed(JWidget widget, int user_data)
+static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 {
-  JWidget colorbar_widget = (JWidget)user_data;
-  ColorBar *colorbar = colorbar_data(colorbar_widget);
-  color_t color = colorselector_get_color(widget);
+  switch (msg->type) {
 
-  switch (colorbar->hot_editing) {
-    case HOTCOLOR_NONE:
-      assert(FALSE);
-      break;
-    case HOTCOLOR_FGCOLOR:
-      colorbar->fgcolor = color;
-      break;
-    case HOTCOLOR_BGCOLOR:
-      colorbar->bgcolor = color;
-      break;
-    case HOTCOLOR_BGSPRITE: {
-/*       int imgtype = app_get_current_image_type(); */
-/*       return */
-/* 	current_sprite != NULL ? color_from_image(imgtype, */
-/* 						  current_sprite->bgcolor): */
-/* 				 color_mask(); */
-      /* TODO */
+    case JM_CLOSE: {
+      /* change the sprite palette */
+      Sprite *sprite = current_sprite;
+      if (sprite != NULL) {
+	RGB *rgb = sprite_get_palette(sprite, sprite->frame);
+	int from, to;
+
+	if (palette_diff(rgb, current_palette, &from, &to) > 0) {
+	  /* TODO add undo support */
+/* 	  if (undo_is_enabled(sprite->undo)) */
+/* 	    undo_data(sprite->undo, (GfxObj *)sprite, rgb, ); */
+	  
+	  sprite_set_palette(sprite, current_palette, sprite->frame);
+	}
+
+	update_editors_with_sprite(sprite);
+      }
+      /* change the system palette */
+      else
+	set_default_palette(current_palette);
       break;
     }
-    default:
-      assert(colorbar->hot_editing >= 0 &&
-	     colorbar->hot_editing < colorbar->ncolor);
-      colorbar->color[colorbar->hot_editing] = color;
 
-      if (colorbar->hot_editing == 0 ||
-	  colorbar->hot_editing == colorbar->ncolor-1) {
-	int imgtype = app_get_current_image_type();
-	color_t c1 = colorbar->color[0];
-	color_t c2 = colorbar->color[colorbar->ncolor-1];
-	int r1 = color_get_red(imgtype, c1);
-	int g1 = color_get_green(imgtype, c1);
-	int b1 = color_get_blue(imgtype, c1);
-	int a1 = color_get_alpha(imgtype, c1);
-	int r2 = color_get_red(imgtype, c2);
-	int g2 = color_get_green(imgtype, c2);
-	int b2 = color_get_blue(imgtype, c2);
-	int a2 = color_get_alpha(imgtype, c2);
-	int c, r, g, b, a;
+    case JM_SIGNAL:
+      if (msg->signal.num == SIGNAL_COLORSELECTOR_COLOR_CHANGED) {
+	JWidget colorbar_widget = (JWidget)widget->user_data[0];
+	ColorBar *colorbar = colorbar_data(colorbar_widget);
+	color_t color = colorselector_get_color(widget);
 
-	for (c=1; c<colorbar->ncolor-1; ++c) {
-	  r = r1 + (r2-r1) * c / colorbar->ncolor;
-	  g = g1 + (g2-g1) * c / colorbar->ncolor;
-	  b = b1 + (b2-b1) * c / colorbar->ncolor;
-	  a = a1 + (a2-a1) * c / colorbar->ncolor;
-	  colorbar->color[c] = color_rgb(r, g, b, a);
+	switch (colorbar->hot_editing) {
+	  case HOTCOLOR_NONE:
+	    assert(FALSE);
+	    break;
+	  case HOTCOLOR_FGCOLOR:
+	    colorbar->fgcolor = color;
+	    break;
+	  case HOTCOLOR_BGCOLOR:
+	    colorbar->bgcolor = color;
+	    break;
+	  case HOTCOLOR_BGSPRITE: {
+	    /*       int imgtype = app_get_current_image_type(); */
+	    /*       return */
+	    /* 	current_sprite != NULL ? color_from_image(imgtype, */
+	    /* 						  current_sprite->bgcolor): */
+	    /* 				 color_mask(); */
+	    /* TODO */
+	    break;
+	  }
+	  default:
+	    assert(colorbar->hot_editing >= 0 &&
+		   colorbar->hot_editing < colorbar->ncolor);
+	    colorbar->color[colorbar->hot_editing] = color;
+
+	    if (colorbar->hot_editing == 0 ||
+		colorbar->hot_editing == colorbar->ncolor-1) {
+	      int imgtype = app_get_current_image_type();
+	      color_t c1 = colorbar->color[0];
+	      color_t c2 = colorbar->color[colorbar->ncolor-1];
+	      int r1 = color_get_red(imgtype, c1);
+	      int g1 = color_get_green(imgtype, c1);
+	      int b1 = color_get_blue(imgtype, c1);
+	      int a1 = color_get_alpha(imgtype, c1);
+	      int r2 = color_get_red(imgtype, c2);
+	      int g2 = color_get_green(imgtype, c2);
+	      int b2 = color_get_blue(imgtype, c2);
+	      int a2 = color_get_alpha(imgtype, c2);
+	      int c, r, g, b, a;
+
+	      for (c=1; c<colorbar->ncolor-1; ++c) {
+		r = r1 + (r2-r1) * c / colorbar->ncolor;
+		g = g1 + (g2-g1) * c / colorbar->ncolor;
+		b = b1 + (b2-b1) * c / colorbar->ncolor;
+		a = a1 + (a2-a1) * c / colorbar->ncolor;
+		colorbar->color[c] = color_rgb(r, g, b, a);
+	      }
+	    }
 	}
-      }
-  }
 
-  jwidget_dirty(colorbar_widget);
-  return 0;
+	/* ONLY FOR TRUE-COLOR GRAPHICS MODE: if the palette is
+	   different from the current sprite's palette, then we have
+	   to start the "refresh_timer" to refresh all the editors
+	   with that sprite */
+	if (current_sprite != NULL && bitmap_color_depth(screen) != 8) {
+	  Sprite *sprite = current_sprite;
+	  RGB *rgb = sprite_get_palette(sprite, sprite->frame);
+	  
+	  if (palette_diff(rgb, current_palette, NULL, NULL) > 0) {
+	    sprite_set_palette(sprite, current_palette, sprite->frame);
+
+	    jmanager_start_timer(colorbar->refresh_timer_id);
+	  }
+	}
+
+	jwidget_dirty(colorbar_widget);
+      }
+      break;
+
+  }
+  
+  return FALSE;
 }
 
 static void update_status_bar(color_t color, int msecs)

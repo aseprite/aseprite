@@ -19,7 +19,7 @@
 #ifndef WIDGETS_COLBUT_H
 #define WIDGETS_COLBUT_H
 
-#include "modules/color.h"
+#include "core/color.h"
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLOR_BUTTON_CHANGE   0x10001

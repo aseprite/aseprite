@@ -28,7 +28,7 @@
 #include "jinete/jsystem.h"
 #include "jinete/jwidget.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 #include "modules/tools.h"
 #include "raster/brush.h"
 #include "util/boundary.h"

@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-
 <!-- Read "LEGAL.txt" for more information. -->
-
+<jinete>
 <window text="Invert Color" name="invert_color">
   <box vertical>
     <box vertical expansive name="target" />
@@ -13,3 +12,4 @@
     </box>
   </box>
 </window>
+</jinete>

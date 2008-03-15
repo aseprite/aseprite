@@ -75,17 +75,17 @@ static void cmd_layer_properties_execute(const char *argument)
     jwidget_add_child(list_bm, jlistitem_new(_("Lighten")));
     jwidget_add_child(list_bm, jlistitem_new(_("Addition")));
     jwidget_add_child(list_bm, jlistitem_new(_("Subtract")));
-      jwidget_add_child(list_bm, jlistitem_new(_("Difference")));
-      jwidget_add_child(list_bm, jlistitem_new(_("Hue")));
-      jwidget_add_child(list_bm, jlistitem_new(_("Saturation")));
-      jwidget_add_child(list_bm, jlistitem_new(_("Color")));
-      jwidget_add_child(list_bm, jlistitem_new(_("Luminosity")));
+    jwidget_add_child(list_bm, jlistitem_new(_("Difference")));
+    jwidget_add_child(list_bm, jlistitem_new(_("Hue")));
+    jwidget_add_child(list_bm, jlistitem_new(_("Saturation")));
+    jwidget_add_child(list_bm, jlistitem_new(_("Color")));
+    jwidget_add_child(list_bm, jlistitem_new(_("Luminosity")));
 
-      jlistbox_select_index(list_bm, layer->blend_mode);
+    jlistbox_select_index(list_bm, layer->blend_mode);
 
-      jview_attach(view_bm, list_bm);
-      jwidget_set_min_size(view_bm, 128, 64);
-      jwidget_expansive(view_bm, TRUE);
+    jview_attach(view_bm, list_bm);
+    jwidget_set_min_size(view_bm, 128, 64);
+    jwidget_expansive(view_bm, TRUE);
   }
 
   jwidget_expansive(entry_name, TRUE);

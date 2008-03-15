@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <allegro.h>
 #include <string.h>
 
@@ -177,10 +178,14 @@ bool set_current_palette(RGB *_palette, int forced)
 /* changes a color of the current system palette */
 void set_current_color(int index, int r, int g, int b)
 {
-  if (index >= 0 && index <= 255 &&
-      (current_palette[index].r != r ||
-       current_palette[index].g != g ||
-       current_palette[index].b != b)) {
+  assert(index >= 0 && index <= 255);
+  assert(r >= 0 && r < 64);
+  assert(g >= 0 && g < 64);
+  assert(b >= 0 && b < 64);
+
+  if (current_palette[index].r != r ||
+      current_palette[index].g != g ||
+      current_palette[index].b != b) {
     RGB rgb = { r, g, b, 0 };
 
     current_palette[index] = rgb;

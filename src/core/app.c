@@ -97,7 +97,10 @@ static void usage(int status);
 static Option *option_new(int type, const char *data);
 static void option_free(Option *option);
 
-/* install and load all initial stuff */
+/**
+ * Initializes the application loading the modules, setting the
+ * graphics mode, loading the configuration and resources, etc.
+ */
 bool app_init(int argc, char *argv[])
 {
   exe_name = argv[0];
@@ -168,7 +171,10 @@ bool app_init(int argc, char *argv[])
   return TRUE;
 }
 
-/* runs ASE main dialog */
+/**
+ * Runs the ASE application. In GUI mode it's the top-level window, in
+ * console/scripting it just runs the specified scripts.
+ */
 void app_loop(void)
 {
   Option *option;
@@ -186,8 +192,11 @@ void app_loop(void)
 
     /* load main window */
     top_window = load_widget("main.jid", "main_window");
-    if (!top_window)
-      return;
+    if (!top_window) {
+      allegro_message("Error loading data data/jids/main.jid file.\n"
+		      "You have to reinstall the program.\n");
+      exit(1);
+    }
 
     box_menubar = jwidget_find_name(top_window, "menubar");
     box_editors = jwidget_find_name(top_window, "editor");
@@ -335,7 +344,9 @@ void app_loop(void)
   }
 }
 
-/* uninstall ASE */
+/**
+ * Finishes the ASE application.
+ */
 void app_exit(void)
 {
   /* remove ase handlers */
@@ -349,17 +360,12 @@ void app_exit(void)
   core_exit();
   _ji_font_exit();
 
-  /* final copyright message */
-  if (ase_mode & MODE_GUI) {
-    set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-    printf("ASE - " COPYRIGHT "\n%s <%s>.\n",
-	   _("Report bugs to"), BUGREPORT);
-  }
-
   intl_exit();
 }
 
-/* updates palette and redraw the screen */
+/**
+ * Updates palette and redraw the screen.
+ */
 void app_refresh_screen(void)
 {
   if (ase_mode & MODE_GUI) {
@@ -374,6 +380,9 @@ void app_refresh_screen(void)
   }
 }
 
+/**
+ * Regenerates the label for each tab in the @em tabsbar.
+ */
 void app_realloc_sprite_list(void)
 {
   Sprite *sprite;
@@ -388,9 +397,13 @@ void app_realloc_sprite_list(void)
   }
 }
 
-/* updates the recent list menu. WARNING!: This routine can't be used
-   when a menu callback was called, because, it destroy the menus,
-   you should use rebuild_recent_list() instead (src/gui/gui.c). */
+/**
+ * Updates the recent list menu.
+ *
+ * @warning This routine can't be used when a menu callback was
+ * called, because, it destroy the menus, you should use
+ * rebuild_recent_list() instead (src/gui/gui.c).
+ */
 bool app_realloc_recent_list(void)
 {
   JWidget list_menuitem = get_recent_list_menuitem();
@@ -465,7 +478,9 @@ static void tabsbar_select_callback(JWidget tabs, void *data)
   sprite_show((Sprite *)data);
 }
 
-/* looks the inpunt arguments in the command line */
+/**
+ * Looks the inpunt arguments in the command line.
+ */
 static int check_args(int argc, char *argv[])
 {
   int i, n, len;
@@ -571,7 +586,9 @@ static int check_args(int argc, char *argv[])
   return 0;
 }
 
-/* shows the available options for the program */
+/**
+ * Shows the available options for the program
+ */
 static void usage(int status)
 {
   /* show options */
@@ -609,10 +626,9 @@ static void usage(int status)
        _("Display this help and exits"),
        _("Output version information and exit"));
 
-    /* bugs and web-site */
+    /* web-site */
     console_printf
       ("%s: %s\n%s\n\n  %s\n\n",
-       _("Report bugs to"), BUGREPORT,
        _("Find more information in the ASE's official web site at:"), WEBSITE);
   }
   /* how to show options */

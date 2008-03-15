@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-
 <!-- Read "LEGAL.txt" for more information. -->
-
+<jinete>
 <window text="New Image Layer" name="new_layer">
   <box vertical>
     <box horizontal>
@@ -10,7 +9,7 @@
         <label text="Name:" />
       </box>
       <box vertical homogeneous>
-        <entry maxsize=256 text="New Layer" name="name" />
+        <entry maxsize=256 text="New Layer" name="name" magnetic />
       </box>
     </box>
     <box horizontal homogeneous>
@@ -19,7 +18,6 @@
     </box>
   </box>
 </window>
-
 <window text="New Layer Set" name="new_layer_set">
   <box vertical>
     <box horizontal>
@@ -32,3 +30,5 @@
     </box>
   </box>
 </window>
+</jinete>
+

@@ -29,7 +29,7 @@
 #include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
-#include "modules/color.h"
+#include "core/color.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -1126,7 +1126,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       else if (editor->cursor_eyedropper) {
 	Command *command = command_get_by_name(CMD_EYEDROPPER_TOOL);
 	if (command_is_enabled(command, NULL))
-	  command_execute(command, NULL);
+	  command_execute(command, msg->mouse.right ? "background": NULL);
 	return TRUE;
       }
       /* draw */
@@ -1290,6 +1290,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	    int scroll_x, scroll_y;
 	    int dx = 0;
 	    int dy = 0;
+	    int thick = editor->cursor_thick;
 
 	    if (has_shifts(msg, KB_CTRL_FLAG))
 	      dx = dz * jrect_w(vp);
@@ -1308,9 +1309,11 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	    jview_get_scroll(view, &scroll_x, &scroll_y);
 
 	    jmouse_hide();
-	    editor_clean_cursor(widget);
+	    if (thick)
+	      editor_clean_cursor(widget);
 	    editor_set_scroll(widget, scroll_x+dx, scroll_y+dy, TRUE);
-	    editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
+	    if (thick)
+	      editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
 	    jmouse_show();
 
 	    jrect_free(vp);

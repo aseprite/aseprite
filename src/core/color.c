@@ -24,30 +24,19 @@
 #include "jinete/jbase.h"
 
 #include "core/app.h"
+#include "core/color.h"
 #include "core/core.h"
-#include "modules/color.h"
 #include "modules/gfx.h"
 #include "modules/palette.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "widgets/colbar.h"
 
-/* #define GET_COLOR_TYPE(color)	(((color) >> 32) & 0xff) */
-/* #define GET_COLOR_DATA(color)	((color) & 0xffffffff) */
-
-/* #define GET_COLOR_RGB(color)	((color) & 0xffffffff)	/\* RGBA *\/ */
-/* #define GET_COLOR_GRAY(color)	((color) & 0xffff)	/\* KA *\/ */
-/* #define GET_COLOR_INDEX(color)	((color) & 0xff)	/\* I *\/ */
-
-/* #define MAKE_COLOR(type,data)	((color_t)((((color_t)(type)&0xff) << 32) | \ */
-/* 					   (((data)&0xffffffff)))) */
-
-#define _hsva_geth	_rgba_getr
-#define _hsva_gets	_rgba_getg
-#define _hsva_getv	_rgba_getb
-#define _hsva_geta	_rgba_geta
-#define _hsva		_rgba
-
+#define _hsva_geth		_rgba_getr
+#define _hsva_gets		_rgba_getg
+#define _hsva_getv		_rgba_getb
+#define _hsva_geta		_rgba_geta
+#define _hsva			_rgba
 
 #define GET_COLOR_TYPE(color)	((ase_uint32)((color).coltype))
 #define GET_COLOR_DATA(color)	((ase_uint32)((color).imgcolor))
@@ -58,15 +47,6 @@
 #define GET_COLOR_INDEX(color)	(GET_COLOR_DATA(color) & 0xff)
 
 static int get_mask_for_bitmap(int depth);
-
-int init_module_color(void)
-{
-  return 0;
-}
-
-void exit_module_color(void)
-{
-}
 
 char *color_to_string(color_t color, char *buf, int size)
 {
@@ -306,8 +286,7 @@ int color_get_hue(int imgtype, color_t color)
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      PRINTF("Getting 'hue' from MASK color\n");
-      break;
+      return 0;
 
     case COLOR_TYPE_RGB: {
       int c = GET_COLOR_RGB(color);
@@ -421,12 +400,12 @@ int color_get_index(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_RGB:
-      PRINTF("Getting `index' from a RGB color\n");
+      PRINTF("Getting `index' from a RGB color\n"); /* TODO */
       assert(FALSE);
       break;
 
     case COLOR_TYPE_HSV:
-      PRINTF("Getting `index' from a HSV color\n");
+      PRINTF("Getting `index' from a HSV color\n"); /* TODO */
       assert(FALSE);
       break;
 
@@ -838,6 +817,25 @@ void color_to_formalstring(int imgtype, color_t color,
 		    _rgba_getr(data),
 		    _rgba_getg(data),
 		    _rgba_getb(data));
+
+	  if (imgtype == IMAGE_INDEXED)
+	    uszprintf(buf+ustrlen(buf), size, "(%d)",
+		      get_color_for_image(imgtype, color));
+	}
+	break;
+
+      case COLOR_TYPE_HSV:
+	data = GET_COLOR_HSV(color);
+	if (imgtype == IMAGE_GRAYSCALE) {
+	  uszprintf(buf, size, "KA %02x(%d)",
+		    _hsva_getv(data),
+		    _hsva_getv(data));
+	}
+	else {
+	  uszprintf(buf, size, "HSV %02x%02x%02x",
+		    _hsva_geth(data),
+		    _hsva_gets(data),
+		    _hsva_getv(data));
 
 	  if (imgtype == IMAGE_INDEXED)
 	    uszprintf(buf+ustrlen(buf), size, "(%d)",

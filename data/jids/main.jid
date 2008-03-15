@@ -1,8 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-
 <!-- Read "LEGAL.txt" for more information. -->
-
+<jinete>
 <window noborders desktop text="Main Window" name="main_window">
   <box noborders vertical>
     <box noborders horizontal name="menubar" />
@@ -15,3 +14,4 @@
     <box noborders horizontal name="statusbar" />
   </box>
 </window>
+</jinete>

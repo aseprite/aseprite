@@ -102,7 +102,7 @@ gen_makefile()
   if [ "$prefix" == "" ] ; then echo -n "#" >> $makefile ; fi
   echo "DEFAULT_PREFIX = \"$prefix\"" >> $makefile
 
-  echo "#USE_X86_INT_MULT = 1" >> $makefile
+  echo "#USE_386_ASM = 1" >> $makefile
   echo "" >> $makefile
   echo "include $makefile_name" >> $makefile
 }

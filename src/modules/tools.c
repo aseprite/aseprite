@@ -33,7 +33,7 @@
 
 #include "core/app.h"
 #include "core/cfg.h"
-#include "modules/color.h"
+#include "core/color.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -287,11 +287,7 @@ int get_thickness_for_cursor(void)
 Tool ase_tool_marker =
 {
   "Marker",
-#if 0
-  _("Marker"),
-#else
   NULL,
-#endif
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX,
   NULL
 };
@@ -308,11 +304,7 @@ static void tool_dots_put(Dirty *dirty, int x1, int y1, int x2, int y2)
 Tool ase_tool_dots =
 {
   "Dots",
-#if 0
-  _("Dots"),
-#else
   NULL,
-#endif
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_POINT,
   tool_dots_put
 };
@@ -329,11 +321,7 @@ static void tool_pencil_put(Dirty *dirty, int x1, int y1, int x2, int y2)
 Tool ase_tool_pencil =
 {
   "Pencil",
-#if 0
-  _("Pencil"),
-#else
   NULL,
-#endif
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   tool_pencil_put
 };
@@ -345,11 +333,7 @@ Tool ase_tool_pencil =
 Tool ase_tool_brush =
 {
   "Brush",
-#if 0
-  _("Brush"),
-#else
   NULL,
-#endif
   TOOL_ACCUMULATE_DIRTY | TOOL_FOURCHAIN | TOOL_UPDATE_LAST4,
   NULL
 };
@@ -379,11 +363,7 @@ static void tool_floodfill_put(Dirty *dirty, int x1, int y1, int x2, int y2)
 Tool ase_tool_floodfill =
 {
   "Floodfill",
-#if 0
-  _("Floodfill"),
-#else
   NULL,
-#endif
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_ALL,
   tool_floodfill_put
 };
@@ -422,11 +402,7 @@ static void tool_spray_put(Dirty *dirty, int x1, int y1, int x2, int y2)
 Tool ase_tool_spray =
 {
   "Spray",
-#if 0
-  _("Spray"),
-#else
   NULL,
-#endif
   TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_SPRAY,
   tool_spray_put
 };
@@ -443,11 +419,7 @@ static void tool_line_put(Dirty *dirty, int x1, int y1, int x2, int y2)
 Tool ase_tool_line =
 {
   "Line",
-#if 0
-  _("Line"),
-#else
   NULL,
-#endif
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_EIGHT_ANGLES,
   tool_line_put
 };
@@ -522,11 +494,7 @@ static void tool_rectangle_put (Dirty *dirty, int x1, int y1, int x2, int y2)
 Tool ase_tool_rectangle =
 {
   "Rectangle",
-#if 0
-  _("Rectangle"),
-#else
   NULL,
-#endif
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   tool_rectangle_put
 };
@@ -542,36 +510,21 @@ static void tool_ellipse_pixel(int x, int y, Dirty *dirty)
 
 static void tool_ellipse_hline(int x1, int y, int x2, Dirty *dirty)
 {
-#if 0
-  dirty_hline_brush(dirty, brush, x1, y, x2);
-#else
   dirty_hline(dirty, x1, y, x2);
-#endif
 }
 
 static void tool_ellipse_put(Dirty *dirty, int x1, int y1, int x2, int y2)
 {
-#if 0
-  if (!filled_mode)
-    algo_ellipse(x1, y1, x2, y2, dirty, (AlgoPixel)tool_ellipse_pixel);
-  else
-    algo_ellipsefill(x1, y1, x2, y2, dirty, (AlgoHLine)tool_ellipse_hline);
-#else
   algo_ellipse(x1, y1, x2, y2, dirty, (AlgoPixel)tool_ellipse_pixel);
 
   if (filled_mode)
     algo_ellipsefill(x1, y1, x2, y2, dirty, (AlgoHLine)tool_ellipse_hline);
-#endif
 }
 
 Tool ase_tool_ellipse =
 {
   "Ellipse",
-#if 0
-  _("Ellipse"),
-#else
   NULL,
-#endif
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   tool_ellipse_put
 };

@@ -16,30 +16,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#include "test/test.h"
 
-#include <allegro/unicode.h>
+#include <errno.h>
 
-#include "jinete/jbase.h"
+#include "raster/blend.h"
+#include "raster/image.h"
 
-#include "commands/commands.h"
-#include "core/app.h"
-#include "widgets/colbar.h"
-
-static void cmd_exchange_colors_execute(const char *argument)
+#ifdef USE_386_ASM
+static void test(void)
 {
-  JWidget colorbar = app_get_colorbar();
-  color_t fg = colorbar_get_fg_color(colorbar);
-  color_t bg = colorbar_get_bg_color(colorbar);
+  register int t;
+  int x, y;
 
-  colorbar_set_fg_color(colorbar, bg);
-  colorbar_set_bg_color(colorbar, fg);
+  for (x=0; x<256; ++x)
+    for (y=0; y<256; ++y)
+      if (_int_mult(x, y) != INT_MULT(x, y, t)) {
+	assert(FALSE);
+      }
+}
+#endif
+
+int main(int argc, char *argv[])
+{
+  test_init();
+
+#ifdef USE_386_ASM
+  test();
+#else
+  trace("WARNING: you have to compile with USE_386_ASM\n");
+#endif
+
+  return test_exit();
 }
 
-Command cmd_exchange_colors = {
-  CMD_EXCHANGE_COLORS,
-  NULL,
-  NULL,
-  cmd_exchange_colors_execute,
-  NULL
-};
+END_OF_MAIN();

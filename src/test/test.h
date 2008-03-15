@@ -19,9 +19,17 @@
 #ifndef TEST_TEST_H
 #define TEST_TEST_H
 
+#ifdef NDEBUG
+#error You should compile the tests with the NDEBUG flag activated
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <allegro.h>
+
+#ifdef TEST_GUI
+  #include "jinete/jinete.h"
+#endif
 
 void trace(const char *format, ...)
 {
@@ -35,5 +43,42 @@ void trace(const char *format, ...)
   fputs(buf, stdout);
   fflush(stdout);
 }
+
+#ifndef TEST_GUI
+
+void test_init(void)
+{
+  allegro_init();
+}
+
+int test_exit(void)
+{
+  trace("OK\n");
+  return 0;
+}
+
+#else
+
+JWidget test_init_gui(void)
+{
+  allegro_init();
+  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
+  install_timer();
+  install_keyboard();
+  install_mouse();
+
+  return jmanager_new();
+}
+
+int test_exit_gui(JWidget manager)
+{
+  trace("OK\n");
+
+  jmanager_free(manager);
+  allegro_exit();
+  return 0;
+}
+
+#endif
 
 #endif	/* TEST_TEST_H */

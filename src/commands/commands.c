@@ -27,208 +27,186 @@
 #include "console/console.h"
 #include "commands/commands.h"
 
-/* file */
-extern Command cmd_new_file;
-extern Command cmd_open_file;
-extern Command cmd_save_file;
-extern Command cmd_save_file_as;
-extern Command cmd_close_file;
-extern Command cmd_close_all_files;
-extern Command cmd_screen_shot;
-extern Command cmd_record_screen;
-extern Command cmd_exit;
-/* edit */
-extern Command cmd_undo;
-extern Command cmd_redo;
-extern Command cmd_cut;
-extern Command cmd_copy;
-extern Command cmd_paste;
+extern Command cmd_about;
+extern Command cmd_advanced_mode;
+extern Command cmd_autocrop_sprite;
+extern Command cmd_brush_tool;
+extern Command cmd_cel_properties;
+extern Command cmd_change_image_type;
 extern Command cmd_clear;
+extern Command cmd_close_all_files;
+extern Command cmd_close_editor;
+extern Command cmd_close_file;
+extern Command cmd_color_curve;
+extern Command cmd_configure_screen;
+extern Command cmd_configure_tools;
+extern Command cmd_convolution_matrix;
+extern Command cmd_copy;
+extern Command cmd_copy_cel;
+extern Command cmd_crop_cel;
+extern Command cmd_crop_layer;
+extern Command cmd_crop_sprite;
+extern Command cmd_cut;
+extern Command cmd_deselect_mask;
+extern Command cmd_despeckle;
+extern Command cmd_dots_tool;
+extern Command cmd_duplicate_layer;
+extern Command cmd_duplicate_sprite;
+extern Command cmd_ellipse_tool;
+extern Command cmd_exit;
+extern Command cmd_eyedropper_tool;
+extern Command cmd_film_editor;
+extern Command cmd_flatten_layers;
 extern Command cmd_flip_horizontal;
 extern Command cmd_flip_vertical;
-extern Command cmd_replace_color;
+extern Command cmd_floodfill_tool;
+extern Command cmd_frame_properties;
+extern Command cmd_goto_first_frame;
+extern Command cmd_goto_last_frame;
+extern Command cmd_goto_next_frame;
+extern Command cmd_goto_previous_frame;
 extern Command cmd_invert_color;
-/* sprite */
-extern Command cmd_sprite_properties;
-extern Command cmd_duplicate_sprite;
-extern Command cmd_change_image_type;
-extern Command cmd_crop_sprite;
-extern Command cmd_autocrop_sprite;
-/* layer */
+extern Command cmd_invert_mask;
 extern Command cmd_layer_properties;
+extern Command cmd_line_tool;
+extern Command cmd_link_cel;
+extern Command cmd_load_mask;
+extern Command cmd_make_unique_editor;
+extern Command cmd_marker_tool;
+extern Command cmd_mask_all;
+extern Command cmd_mask_by_color;
+extern Command cmd_merge_down_layer;
+extern Command cmd_move_cel;
+extern Command cmd_new_cel;
+extern Command cmd_new_file;
+extern Command cmd_new_frame;
 extern Command cmd_new_layer;
 extern Command cmd_new_layer_set;
-extern Command cmd_remove_layer;
-extern Command cmd_duplicate_layer;
-extern Command cmd_merge_down_layer;
-extern Command cmd_flatten_layers;
-extern Command cmd_crop_layer;
-/* frame */
-extern Command cmd_frame_properties;
-extern Command cmd_remove_frame;
-extern Command cmd_new_frame;
-extern Command cmd_goto_first_frame;
-extern Command cmd_goto_previous_frame;
-extern Command cmd_goto_next_frame;
-extern Command cmd_goto_last_frame;
+extern Command cmd_open_file;
+extern Command cmd_options;
+extern Command cmd_palette_editor;
+extern Command cmd_paste;
+extern Command cmd_pencil_tool;
 extern Command cmd_play_animation;
-/* cel */
-extern Command cmd_cel_properties;
-extern Command cmd_remove_cel;
-extern Command cmd_new_cel;
-extern Command cmd_move_cel;
-extern Command cmd_copy_cel;
-extern Command cmd_link_cel;
-extern Command cmd_crop_cel;
-/* mask */
-extern Command cmd_mask_all;
-extern Command cmd_deselect_mask;
-extern Command cmd_reselect_mask;
-extern Command cmd_invert_mask;
-extern Command cmd_mask_by_color;
-extern Command cmd_load_mask;
-extern Command cmd_save_mask;
-/* view */
+extern Command cmd_preview_fit_to_screen;
+extern Command cmd_preview_normal;
+extern Command cmd_preview_tiled;
+extern Command cmd_record_screen;
+extern Command cmd_rectangle_tool;
+extern Command cmd_redo;
 extern Command cmd_refresh;
-extern Command cmd_configure_screen;
-extern Command cmd_advanced_mode;
-extern Command cmd_make_unique_editor;
-extern Command cmd_split_editor_vertically;
-extern Command cmd_split_editor_horizontally;
-extern Command cmd_close_editor;
+extern Command cmd_remove_cel;
+extern Command cmd_remove_frame;
+extern Command cmd_remove_layer;
+extern Command cmd_replace_color;
+extern Command cmd_reselect_mask;
+extern Command cmd_run_script;
+extern Command cmd_save_file;
+extern Command cmd_save_file_as;
+extern Command cmd_save_mask;
+extern Command cmd_screen_shot;
+extern Command cmd_select_file;
 extern Command cmd_show_grid;
 extern Command cmd_snap_to_grid;
-extern Command cmd_preview_tiled;
-extern Command cmd_preview_normal;
-extern Command cmd_preview_fit_to_screen;
-/* tools */
-extern Command cmd_configure_tools;
-extern Command cmd_marker_tool;
-extern Command cmd_dots_tool;
-extern Command cmd_pencil_tool;
-extern Command cmd_brush_tool;
+extern Command cmd_split_editor_horizontally;
+extern Command cmd_split_editor_vertically;
 extern Command cmd_spray_tool;
-extern Command cmd_floodfill_tool;
-extern Command cmd_line_tool;
-extern Command cmd_rectangle_tool;
-extern Command cmd_ellipse_tool;
-extern Command cmd_eyedropper_tool;
-extern Command cmd_exchange_colors;
-extern Command cmd_film_editor;
-extern Command cmd_palette_editor;
-extern Command cmd_convolution_matrix;
-extern Command cmd_color_curve;
-extern Command cmd_despeckle;
-extern Command cmd_run_script;
-extern Command cmd_options;
-/* help */
+extern Command cmd_sprite_properties;
+extern Command cmd_switch_colors;
 extern Command cmd_tips;
-extern Command cmd_about;
-/* internal */
-extern Command cmd_select_file;
+extern Command cmd_undo;
 
 static Command *commands[] = {
-  /* file */
-  &cmd_new_file,
-  &cmd_open_file,
-  &cmd_save_file,
-  &cmd_save_file_as,
-  &cmd_close_file,
-  &cmd_close_all_files,
-  &cmd_screen_shot,
-  &cmd_record_screen,
-  &cmd_exit,
-  /* edit */
-  &cmd_undo,
-  &cmd_redo,
-  &cmd_cut,
-  &cmd_copy,
-  &cmd_paste,
+  &cmd_about,
+  &cmd_advanced_mode,
+  &cmd_autocrop_sprite,
+  &cmd_brush_tool,
+  &cmd_cel_properties,
+  &cmd_change_image_type,
   &cmd_clear,
+  &cmd_close_all_files,
+  &cmd_close_editor,
+  &cmd_close_file,
+  &cmd_color_curve,
+  &cmd_configure_screen,
+  &cmd_configure_tools,
+  &cmd_convolution_matrix,
+  &cmd_copy,
+  &cmd_copy_cel,
+  &cmd_crop_cel,
+  &cmd_crop_layer,
+  &cmd_crop_sprite,
+  &cmd_cut,
+  &cmd_deselect_mask,
+  &cmd_despeckle,
+  &cmd_dots_tool,
+  &cmd_duplicate_layer,
+  &cmd_duplicate_sprite,
+  &cmd_ellipse_tool,
+  &cmd_exit,
+  &cmd_eyedropper_tool,
+  &cmd_film_editor,
+  &cmd_flatten_layers,
   &cmd_flip_horizontal,
   &cmd_flip_vertical,
-  &cmd_replace_color,
+  &cmd_floodfill_tool,
+  &cmd_frame_properties,
+  &cmd_goto_first_frame,
+  &cmd_goto_last_frame,
+  &cmd_goto_next_frame,
+  &cmd_goto_previous_frame,
   &cmd_invert_color,
-  /* sprite */
-  &cmd_sprite_properties,
-  &cmd_duplicate_sprite,
-  &cmd_change_image_type,
-  &cmd_crop_sprite,
-  &cmd_autocrop_sprite,
-  /* layer */
+  &cmd_invert_mask,
   &cmd_layer_properties,
+  &cmd_line_tool,
+  &cmd_link_cel,
+  &cmd_load_mask,
+  &cmd_make_unique_editor,
+  &cmd_marker_tool,
+  &cmd_mask_all,
+  &cmd_mask_by_color,
+  &cmd_merge_down_layer,
+  &cmd_move_cel,
+  &cmd_new_cel,
+  &cmd_new_file,
+  &cmd_new_frame,
   &cmd_new_layer,
   &cmd_new_layer_set,
-  &cmd_remove_layer,
-  &cmd_duplicate_layer,
-  &cmd_merge_down_layer,
-  &cmd_flatten_layers,
-  &cmd_crop_layer,
-  /* frame */
-  &cmd_frame_properties,
-  &cmd_remove_frame,
-  &cmd_new_frame,
-  &cmd_goto_first_frame,
-  &cmd_goto_previous_frame,
-  &cmd_goto_next_frame,
-  &cmd_goto_last_frame,
+  &cmd_open_file,
+  &cmd_options,
+  &cmd_palette_editor,
+  &cmd_paste,
+  &cmd_pencil_tool,
   &cmd_play_animation,
-  /* cel */
-  &cmd_cel_properties,
-  &cmd_remove_cel,
-  &cmd_new_cel,
-  &cmd_move_cel,
-  &cmd_copy_cel,
-  &cmd_link_cel,
-  &cmd_crop_cel,
-  /* mask */
-  &cmd_mask_all,
-  &cmd_deselect_mask,
-  &cmd_reselect_mask,
-  &cmd_invert_mask,
-  &cmd_mask_by_color,
-  &cmd_load_mask,
-  &cmd_save_mask,
-  /* view */
+  &cmd_preview_fit_to_screen,
+  &cmd_preview_normal,
+  &cmd_preview_tiled,
+  &cmd_record_screen,
+  &cmd_rectangle_tool,
+  &cmd_redo,
   &cmd_refresh,
-  &cmd_configure_screen,
-  &cmd_advanced_mode,
-  &cmd_make_unique_editor,
-  &cmd_split_editor_vertically,
-  &cmd_split_editor_horizontally,
-  &cmd_close_editor,
+  &cmd_remove_cel,
+  &cmd_remove_frame,
+  &cmd_remove_layer,
+  &cmd_replace_color,
+  &cmd_reselect_mask,
+  &cmd_run_script,
+  &cmd_save_file,
+  &cmd_save_file_as,
+  &cmd_save_mask,
+  &cmd_screen_shot,
+  &cmd_select_file,
   &cmd_show_grid,
   &cmd_snap_to_grid,
-  &cmd_preview_tiled,
-  &cmd_preview_normal,
-  &cmd_preview_fit_to_screen,
-  /* tools */
-  &cmd_configure_tools,
-  &cmd_marker_tool,
-  &cmd_dots_tool,
-  &cmd_pencil_tool,
-  &cmd_brush_tool,
+  &cmd_split_editor_horizontally,
+  &cmd_split_editor_vertically,
   &cmd_spray_tool,
-  &cmd_floodfill_tool,
-  &cmd_line_tool,
-  &cmd_rectangle_tool,
-  &cmd_ellipse_tool,
-  &cmd_eyedropper_tool,
-  &cmd_exchange_colors,
-  &cmd_film_editor,
-  &cmd_palette_editor,
-  &cmd_convolution_matrix,
-  &cmd_color_curve,
-  &cmd_despeckle,
+  &cmd_sprite_properties,
+  &cmd_switch_colors,
+  &cmd_tips,
+  &cmd_undo,
   /*   { CMD_DRAW_TEXT, NULL, NULL, NULL, NULL }, */
   /*   { CMD_PLAY_FLIC, NULL, NULL, NULL, NULL }, */
-  &cmd_run_script,
-  &cmd_options,
-  /* help */
-  &cmd_tips,
-  &cmd_about,
-  /* internal */
-  &cmd_select_file,
   NULL
 };
 

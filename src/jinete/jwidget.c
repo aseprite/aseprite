@@ -1478,7 +1478,7 @@ JWidget jwidget_find_name(JWidget widget, const char *name)
 
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
-    if (child->name && strcmp(child->name, name) == 0)
+    if (child->name != NULL && strcmp(child->name, name) == 0)
       return child;
   }
 

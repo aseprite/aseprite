@@ -138,7 +138,7 @@ void ji_set_screen(BITMAP *bmp)
   jmouse_set_cursor(JI_CURSOR_NULL);
   ji_screen = bmp;
 
-  if (ji_screen) {
+  if (ji_screen != NULL) {
     JWidget manager = ji_get_default_manager();
 
     /* update default-manager size */

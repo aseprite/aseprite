@@ -24,8 +24,8 @@ ifdef PROFILE
   LFLAGS += -pg
 else
 ifdef DEBUGMODE
-  CFLAGS += -g3 -DDEBUGMODE
-  LFLAGS += -g3
+  CFLAGS += -g3 -O3 -DDEBUGMODE
+  LFLAGS += -g3 -O3
 else
   CFLAGS += -s -O3 -DNDEBUG
   LFLAGS += -s -O3 -DNDEBUG
@@ -40,8 +40,16 @@ ifdef DEFAULT_PREFIX
   CFLAGS += -DDEFAULT_PREFIX="\"$(DEFAULT_PREFIX)\""
 endif
 
-ifdef USE_X86_INT_MULT
-  CFLAGS += -DUSE_X86_INT_MULT
+ifdef USE_386_ASM
+  CFLAGS += -DUSE_386_ASM
+endif
+
+ifdef USE_MMX_ASM
+  CFLAGS += -DUSE_MMX_ASM -mmmx
+endif
+
+ifdef USE_SSE_ASM
+  CFLAGS += -DUSE_SSE_ASM -msse
 endif
 
 ######################################################################
@@ -170,16 +178,6 @@ endif
 ######################################################################
 # Rules to make tests
 
-TESTS = $(addsuffix $(EXE),						\
-		$(basename						\
-			$(wildcard src/test/*.c)			\
-			$(wildcard src/test/raster/*.c)			\
-			$(wildcard src/test/jinete/*.c)))
-
-AUTOTESTS = $(addsuffix $(EXE),						\
-		$(basename						\
-			$(wildcard src/test/*.c)))
-
 src/test/%$(EXE): src/test/%.c $(COMMON_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
@@ -191,5 +189,8 @@ src/test/jinete/%$(EXE): src/test/jinete/%.c $(COMMON_OBJS)
 
 test: $(TESTS)
 
-runtest:
-	@-$(foreach TEST, $(AUTOTESTS), ./$(TEST))
+runtest: $(AUTOTESTS)
+	@-$(foreach TEST, $(AUTOTESTS), \
+		echo ./$(TEST) "=====================" ; \
+		./$(TEST) ; \
+	   )

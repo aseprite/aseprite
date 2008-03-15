@@ -540,15 +540,15 @@ static JXmlElem read_elem(char *elem_string)
   elem = jxmlelem_new(elem_string);
   *s = c;
 
-  /* continue reading attributes */
+  /* continue reading attributes until string's end */
   while (*s) {
     /* jump white spaces */
     while (*s && IS_BLANK(*s))
       s++;
 
-    /* isn't end of string? */
+    /* is it not the string's end? */
     if (*s) {
-      char *name_beg = s;
+      char *name_beg = s;	/* here the name begins */
       char *name;
       char *value = NULL;
       bool translatable = FALSE;
@@ -562,9 +562,10 @@ static JXmlElem read_elem(char *elem_string)
       name = jstrdup(name_beg);
       *s = c;
 
+      /* does the attribute have a value?  */
       if (*s == '=') {
 	char *value_beg = ++s;
-	bool go_next = FALSE;
+	bool jumpnext = FALSE;
 
 	/* see for the translation prefix _() */
 	if (strncmp(s, "_(\"", 3) == 0) {
@@ -572,6 +573,7 @@ static JXmlElem read_elem(char *elem_string)
 	  s += 2;
 	}
 
+	/* attribute with quotes */
 	if (*s == '\"') {
 	  /* jump the double-quote */
 	  value_beg = ++s;
@@ -580,14 +582,20 @@ static JXmlElem read_elem(char *elem_string)
 	  while (*s) {
 	    if (*s == '\\') {
 	      memmove(s, s+1, strlen(s)-1);
+	      switch (*s) {
+		case 'n': *s = '\n'; break;
+		case 'r': *s = '\r'; break;
+		case 't': *s = '\t'; break;
+	      }
 	    }
 	    else if (*s == '\"') {
-	      go_next = TRUE;
+	      jumpnext = TRUE;
 	      break;
 	    }
 	    s++;
 	  }
 	}
+	/* attribute without quotes */
 	else {
 	  /* read the attribute-value */
 	  while (*s && !IS_BLANK(*s))
@@ -599,7 +607,7 @@ static JXmlElem read_elem(char *elem_string)
 	value = jstrdup(value_beg);
 	*s = c;
 
-	if (go_next)
+	if (jumpnext)
 	  s++;
       }
 

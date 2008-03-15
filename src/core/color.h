@@ -16,8 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_COLOR_H
-#define MODULES_COLOR_H
+#ifndef CORE_COLOR_H
+#define CORE_COLOR_H
+
+#include "jinete/jbase.h"
 
 struct BITMAP;
 struct Image;
@@ -37,9 +39,6 @@ typedef struct color_t
 } color_t;
 
 /* typedef uint64_t color_t; */
-
-int init_module_color(void);
-void exit_module_color(void);
 
 char *color_to_string(color_t color, char *buf, int size);
 color_t string_to_color(const char *str);

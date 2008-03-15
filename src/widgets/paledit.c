@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,37 +30,47 @@
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 
-#include "modules/color.h"
+#include "core/color.h"
 #include "modules/gui.h"
 #include "modules/palette.h"
 #include "raster/blend.h"
 #include "widgets/paledit.h"
 
 /* #define COLOR_SIZE	6 */
-#define COLOR_SIZE	(palette_editor->boxsize)
+#define COLOR_SIZE	(paledit->boxsize)
 
-static bool palette_editor_msg_proc(JWidget widget, JMessage msg);
-static void palette_editor_request_size(JWidget widget, int *w, int *h);
-
-static void palette_editor_update_scroll(JWidget palette_editor, int color);
-
-JWidget palette_editor_new(RGB *palette, int editable, int boxsize)
+typedef struct PalEdit
 {
-  JWidget widget = jwidget_new (palette_editor_type ());
-  PaletteEditor *palette_editor = jnew (PaletteEditor, 1);
+  JWidget widget;
+  RGB *palette;
+  bool editable;
+  unsigned range_type;
+  unsigned columns;
+  int boxsize;
+  int color[2];
+} PalEdit;
 
-  palette_editor->widget = widget;
-  palette_editor->palette = palette;
-  palette_editor->editable = editable;
-  palette_editor->range_type = PALETTE_EDITOR_RANGE_NONE;
-  palette_editor->columns = 16;
-  palette_editor->boxsize = boxsize;
-  palette_editor->color[0] = -1;
-  palette_editor->color[1] = -1;
+static PalEdit *paledit_data(JWidget widget);
+static bool paledit_msg_proc(JWidget widget, JMessage msg);
+static void paledit_request_size(JWidget widget, int *w, int *h);
+static void paledit_update_scroll(JWidget widget, int color);
 
-  jwidget_add_hook (widget, palette_editor_type (),
-		      palette_editor_msg_proc, palette_editor);
-  jwidget_focusrest (widget, TRUE);
+JWidget paledit_new(RGB *palette, bool editable, int boxsize)
+{
+  JWidget widget = jwidget_new(paledit_type());
+  PalEdit *paledit = jnew(PalEdit, 1);
+
+  paledit->widget = widget;
+  paledit->palette = palette;
+  paledit->editable = editable;
+  paledit->range_type = PALETTE_EDITOR_RANGE_NONE;
+  paledit->columns = 16;
+  paledit->boxsize = boxsize;
+  paledit->color[0] = -1;
+  paledit->color[1] = -1;
+
+  jwidget_add_hook(widget, paledit_type(), paledit_msg_proc, paledit);
+  jwidget_focusrest(widget, TRUE);
 
   widget->border_width.l = widget->border_width.r = 1;
   widget->border_width.t = widget->border_width.b = 1;
@@ -68,7 +79,7 @@ JWidget palette_editor_new(RGB *palette, int editable, int boxsize)
   return widget;
 }
 
-int palette_editor_type(void)
+int paledit_type(void)
 {
   static int type = 0;
   if (!type)
@@ -76,58 +87,84 @@ int palette_editor_type(void)
   return type;
 }
 
-PaletteEditor *palette_editor_data(JWidget widget)
+RGB *paledit_get_palette(JWidget widget)
 {
-  return jwidget_get_data(widget, palette_editor_type());
+  PalEdit *paledit = paledit_data(widget);
+
+  return paledit->palette;
 }
 
-void palette_editor_set_columns(JWidget widget, int columns)
+int paledit_get_range_type(JWidget widget)
 {
-  PaletteEditor *palette_editor = palette_editor_data (widget);
-  int old_columns = palette_editor->columns;
+  PalEdit *paledit = paledit_data(widget);
 
-  palette_editor->columns = MID (1, columns, 256);
+  return paledit->range_type;
+}
 
-  if (palette_editor->columns != old_columns) {
-    JWidget view = jwidget_get_view (widget);
+int paledit_get_columns(JWidget widget)
+{
+  PalEdit *paledit = paledit_data(widget);
+
+  return paledit->columns;
+}
+
+void paledit_set_columns(JWidget widget, int columns)
+{
+  PalEdit *paledit = paledit_data(widget);
+  int old_columns = paledit->columns;
+
+  assert(columns >= 1 && columns <= 256);
+  paledit->columns = columns;
+
+  if (paledit->columns != old_columns) {
+    JWidget view = jwidget_get_view(widget);
     if (view)
-      jview_update (view);
+      jview_update(view);
 
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
   }
 }
 
-void palette_editor_select_color(JWidget widget, int index)
+void paledit_set_boxsize(JWidget widget, int boxsize)
 {
-  PaletteEditor *palette_editor = palette_editor_data (widget);
+  PalEdit *paledit = paledit_data(widget);
 
-  if ((palette_editor->color[0] != index) ||
-      (palette_editor->color[1] != index) ||
-      (palette_editor->range_type != PALETTE_EDITOR_RANGE_NONE)) {
-    palette_editor->color[0] = index;
-    palette_editor->color[1] = index;
-    palette_editor->range_type = PALETTE_EDITOR_RANGE_NONE;
+  paledit->boxsize = boxsize;
+}
+
+void paledit_select_color(JWidget widget, int index)
+{
+  PalEdit *paledit = paledit_data(widget);
+
+  assert(index >= 0 && index <= 255);
+
+  if ((paledit->color[0] != index) ||
+      (paledit->color[1] != index) ||
+      (paledit->range_type != PALETTE_EDITOR_RANGE_NONE)) {
+    paledit->color[0] = index;
+    paledit->color[1] = index;
+    paledit->range_type = PALETTE_EDITOR_RANGE_NONE;
 
     if ((index >= 0) && (index <= 255))
-      palette_editor_update_scroll (widget, index);
+      paledit_update_scroll(widget, index);
 
-    jwidget_dirty (widget);
+    jwidget_dirty(widget);
   }
 }
 
-void palette_editor_select_range(JWidget widget, int begin, int end, int range_type)
+void paledit_select_range(JWidget widget, int begin, int end, int range_type)
 {
-  PaletteEditor *palette_editor = palette_editor_data (widget);
+  PalEdit *paledit = paledit_data(widget);
 
-  begin = MID (0, begin, 255);
-  end = MID (0, end, 255);
+/*   assert(begin >= 0 && begin <= 255); */
+/*   assert(end >= 0 && end <= 255); */
 
-  palette_editor->color[0] = begin;
-  palette_editor->color[1] = end;
-  palette_editor->range_type = range_type;
+  paledit->color[0] = begin;
+  paledit->color[1] = end;
+  paledit->range_type = range_type;
 
-  palette_editor_update_scroll (widget, end);
-  jwidget_dirty (widget);
+  paledit_update_scroll(widget, end);
+  jwidget_dirty(widget);
 }
 
 static void swap_color(RGB *palette, int c1, int c2)
@@ -147,38 +184,38 @@ static void swap_color(RGB *palette, int c1, int c2)
   palette[c2].b = b;
 }
 
-void palette_editor_move_selection(JWidget widget, int x, int y)
+void paledit_move_selection(JWidget widget, int x, int y)
 {
-  PaletteEditor *palette_editor = palette_editor_data (widget);
+  PalEdit *paledit = paledit_data(widget);
 
-  if (!palette_editor->editable)
+  if (!paledit->editable)
     return;
 
-  switch (palette_editor->range_type) {
+  switch (paledit->range_type) {
 
     case PALETTE_EDITOR_RANGE_LINEAL: {
-      int c1 = MIN (palette_editor->color[0], palette_editor->color[1]);
-      int c2 = MAX (palette_editor->color[0], palette_editor->color[1]);
+      int c1 = MIN(paledit->color[0], paledit->color[1]);
+      int c2 = MAX(paledit->color[0], paledit->color[1]);
       int c;
 
       /* left */
       if (x < 0) {
 	if (c1 > 0) {
 	  for (c=c1; c<=c2; c++)
-	    swap_color (palette_editor->palette, c, c-1);
+	    swap_color(paledit->palette, c, c-1);
 
-	  palette_editor->color[0]--;
-	  palette_editor->color[1]--;
+	  paledit->color[0]--;
+	  paledit->color[1]--;
 	}
       }
       /* right */
       else if (x > 0) {
 	if (c2 < 255) {
 	  for (c=c2; c>=c1; c--)
-	    swap_color (palette_editor->palette, c, c+1);
+	    swap_color(paledit->palette, c, c+1);
 
-	  palette_editor->color[0]++;
-	  palette_editor->color[1]++;
+	  paledit->color[0]++;
+	  paledit->color[1]++;
 	}
       }
       /* up */
@@ -194,9 +231,9 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
 
     case PALETTE_EDITOR_RANGE_NONE:
     case PALETTE_EDITOR_RANGE_RECTANGULAR: {
-      int cols = palette_editor->columns;
-      int index1 = palette_editor->color[0];
-      int index2 = palette_editor->color[1];
+      int cols = paledit->columns;
+      int index1 = paledit->color[0];
+      int index2 = paledit->color[1];
       int c, u, v, x1, y1, x2, y2;
 
       /* swap */
@@ -219,12 +256,12 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
 	if ((x1 > 0) && ((y1*cols+x1-1) >= 0)) {
 	  for (v=y1; v<=y2; v++)
 	    for (u=x1; u<=x2; u++)
-	      swap_color (palette_editor->palette,
-			  (v*cols + u),
-			  (v*cols + (u-1)));
+	      swap_color(paledit->palette,
+			 (v*cols + u),
+			 (v*cols + (u-1)));
 
-	  palette_editor->color[0]--;
-	  palette_editor->color[1]--;
+	  paledit->color[0]--;
+	  paledit->color[1]--;
 	}
       }
       /* right */
@@ -232,12 +269,12 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
 	if ((x2 < cols-1) && ((y2*cols+x2+1) <= 255)) {
 	  for (v=y1; v<=y2; v++)
 	    for (u=x2; u>=x1; u--)
-	      swap_color (palette_editor->palette,
-			  (v*cols + u),
-			  (v*cols + (u+1)));
+	      swap_color(paledit->palette,
+			 (v*cols + u),
+			 (v*cols + (u+1)));
 
-	  palette_editor->color[0]++;
-	  palette_editor->color[1]++;
+	  paledit->color[0]++;
+	  paledit->color[1]++;
 	}
       }
       /* up */
@@ -245,12 +282,12 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
 	if (((y1-1)*cols+x1) >= 0) {
 	  for (v=y1; v<=y2; v++)
 	    for (u=x1; u<=x2; u++)
-	      swap_color (palette_editor->palette,
-			  (v*cols + u),
-			  ((v-1)*cols + u));
+	      swap_color(paledit->palette,
+			 (v*cols + u),
+			 ((v-1)*cols + u));
 
-	  palette_editor->color[0] -= cols;
-	  palette_editor->color[1] -= cols;
+	  paledit->color[0] -= cols;
+	  paledit->color[1] -= cols;
 	}
       }
       /* down */
@@ -258,12 +295,12 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
 	if (((y2+1)*cols+x2) <= 255) {
 	  for (v=y2; v>=y1; v--)
 	    for (u=x1; u<=x2; u++)
-	      swap_color (palette_editor->palette,
-			  (v*cols + u),
-			  ((v+1)*cols + u));
+	      swap_color(paledit->palette,
+			 (v*cols + u),
+			 ((v+1)*cols + u));
 
-	  palette_editor->color[0] += cols;
-	  palette_editor->color[1] += cols;
+	  paledit->color[0] += cols;
+	  paledit->color[1] += cols;
 	}
       }
       break;
@@ -271,32 +308,43 @@ void palette_editor_move_selection(JWidget widget, int x, int y)
   }
 
   /* fixup the scroll */
-  palette_editor_update_scroll (widget,
-				palette_editor->color[1]);
+  paledit_update_scroll(widget, paledit->color[1]);
 
   /* set the palette */
-  set_current_palette (palette_editor->palette, FALSE);
+  set_current_palette(paledit->palette, FALSE);
 
   /* refresh the screen */
-  jmanager_refresh_screen ();
+  jmanager_refresh_screen();
 }
 
-void palette_editor_get_selected_entries(JWidget widget, bool array[256])
+int paledit_get_1st_color(JWidget widget)
 {
-  PaletteEditor *palette_editor = palette_editor_data(widget);
+  PalEdit *paledit = paledit_data(widget);
+  return paledit->color[0];
+}
+
+int paledit_get_2nd_color(JWidget widget)
+{
+  PalEdit *paledit = paledit_data(widget);
+  return paledit->color[1];
+}
+
+void paledit_get_selected_entries(JWidget widget, bool array[256])
+{
+  PalEdit *paledit = paledit_data(widget);
 
   memset(array, FALSE, sizeof(bool)*256);
 
-  switch (palette_editor->range_type) {
+  switch (paledit->range_type) {
 
     case PALETTE_EDITOR_RANGE_NONE:
-      if (palette_editor->color[1] >= 0)
-	array[palette_editor->color[1]] = TRUE;
+      if (paledit->color[1] >= 0)
+	array[paledit->color[1]] = TRUE;
       break;
 
     case PALETTE_EDITOR_RANGE_LINEAL: {
-      int c1 = MIN(palette_editor->color[0], palette_editor->color[1]);
-      int c2 = MAX(palette_editor->color[0], palette_editor->color[1]);
+      int c1 = MIN(paledit->color[0], paledit->color[1]);
+      int c2 = MAX(paledit->color[0], paledit->color[1]);
       int c;
 
       for (c=c1; c<=c2; c++)
@@ -305,9 +353,9 @@ void palette_editor_get_selected_entries(JWidget widget, bool array[256])
     }
 
     case PALETTE_EDITOR_RANGE_RECTANGULAR: {
-      int cols = palette_editor->columns;
-      int index1 = palette_editor->color[0];
-      int index2 = palette_editor->color[1];
+      int cols = paledit->columns;
+      int index1 = paledit->color[0];
+      int index2 = paledit->color[1];
       int c, x, y, x1, y1, x2, y2;
 
       /* swap */
@@ -333,31 +381,36 @@ void palette_editor_get_selected_entries(JWidget widget, bool array[256])
   }
 }
 
-static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
+static PalEdit *paledit_data(JWidget widget)
 {
-  PaletteEditor *palette_editor = palette_editor_data (widget);
+  return jwidget_get_data(widget, paledit_type());
+}
+
+static bool paledit_msg_proc(JWidget widget, JMessage msg)
+{
+  PalEdit *paledit = paledit_data(widget);
 
   switch (msg->type) {
 
     case JM_DESTROY:
-      jfree (palette_editor);
+      jfree (paledit);
       break;
 
     case JM_REQSIZE:
-      palette_editor_request_size (widget,
-				   &msg->reqsize.w, &msg->reqsize.h);
+      paledit_request_size(widget,
+				  &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus (widget)) {
+      if (jwidget_has_focus(widget)) {
 	/* other keys */
-	if ((palette_editor->color[1] >= 0) &&
-	    (palette_editor->color[1] <= 255)) {
+	if ((paledit->color[1] >= 0) &&
+	    (paledit->color[1] <= 255)) {
 	  switch (msg->key.scancode) {
-	    case KEY_LEFT: palette_editor_move_selection (widget, -1, 0); break;
-	    case KEY_RIGHT: palette_editor_move_selection (widget, +1, 0); break;
-	    case KEY_UP: palette_editor_move_selection (widget, 0, -1); break;
-	    case KEY_DOWN: palette_editor_move_selection (widget, 0, +1); break;
+	    case KEY_LEFT:  paledit_move_selection(widget, -1, 0); break;
+	    case KEY_RIGHT: paledit_move_selection(widget, +1, 0); break;
+	    case KEY_UP:    paledit_move_selection(widget, 0, -1); break;
+	    case KEY_DOWN:  paledit_move_selection(widget, 0, +1); break;
 
 	    default:
 	      return FALSE;
@@ -368,8 +421,8 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW: {
-      div_t d = div (256, palette_editor->columns);
-      int cols = palette_editor->columns;
+      div_t d = div(256, paledit->columns);
+      int cols = paledit->columns;
       int rows = d.quot + ((d.rem)? 1: 0);
       int x1, y1, x2, y2;
       int x, y, u, v;
@@ -394,9 +447,9 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
 	  else
 	    color = makecol_depth
 	      (bitmap_color_depth(ji_screen),
-	       _rgb_scale_6[palette_editor->palette[c].r],
-	       _rgb_scale_6[palette_editor->palette[c].g],
-	       _rgb_scale_6[palette_editor->palette[c].b]);
+	       _rgb_scale_6[paledit->palette[c].r],
+	       _rgb_scale_6[paledit->palette[c].g],
+	       _rgb_scale_6[paledit->palette[c].b]);
 
 	  rectfill(bmp, x, y, x+COLOR_SIZE-1, y+COLOR_SIZE-1, color);
 
@@ -408,9 +461,9 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* draw the edges in the selected color */
-      if (palette_editor->color[0] >= 0) {
-	int index1 = palette_editor->color[0];
-	int index2 = palette_editor->color[1];
+      if (paledit->color[0] >= 0) {
+	int index1 = paledit->color[0];
+	int index2 = paledit->color[1];
 	int bl = widget->border_width.l;
 	int bt = widget->border_width.t;
 	int cs = widget->child_spacing;
@@ -432,7 +485,7 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
 	if (y2 < y1) { c = y2; y2 = y1; y1 = c; }
 
 	/* draw the rectangular gamma or just the cursor */
-	if (palette_editor->range_type != PALETTE_EDITOR_RANGE_LINEAL) {
+	if (paledit->range_type != PALETTE_EDITOR_RANGE_LINEAL) {
 	  if (x2 < x1) { c = x2; x2 = x1; x1 = c; }
 
 	  rect(bmp,
@@ -513,15 +566,15 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
     case JM_MOTION:
       if (jwidget_has_capture(widget)) {
 	JRect cpos = jwidget_get_child_rect(widget);
-	div_t d = div (256, palette_editor->columns);
-	int cols = palette_editor->columns;
+	div_t d = div (256, paledit->columns);
+	int cols = paledit->columns;
 	int rows = d.quot + ((d.rem)? 1: 0);
 	int mouse_x, mouse_y;
 	int req_w, req_h;
 	int x, y, u, v;
 	int c;
 
-	palette_editor_request_size(widget, &req_w, &req_h);
+	paledit_request_size(widget, &req_w, &req_h);
 
 	mouse_x = MID(cpos->x1, msg->mouse.x,
 		      cpos->x1+req_w-widget->border_width.r-1);
@@ -540,19 +593,19 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
 
 	    if ((mouse_x >= x) && (mouse_x <= x+COLOR_SIZE) &&
 		(mouse_y >= y) && (mouse_y <= y+COLOR_SIZE) &&
-		(c != palette_editor->color[1])) {
+		(c != paledit->color[1])) {
 	      if (msg->any.shifts & KB_SHIFT_FLAG)
-		palette_editor_select_range(widget,
-					    palette_editor->color[0], c,
-					    PALETTE_EDITOR_RANGE_LINEAL);
+		paledit_select_range(widget,
+				     paledit->color[0], c,
+				     PALETTE_EDITOR_RANGE_LINEAL);
 	      else if (msg->any.shifts & KB_CTRL_FLAG)
-		palette_editor_select_range(widget,
-					    palette_editor->color[0], c,
-					    PALETTE_EDITOR_RANGE_RECTANGULAR);
+		paledit_select_range(widget,
+				     paledit->color[0], c,
+				     PALETTE_EDITOR_RANGE_RECTANGULAR);
 	      else
-		palette_editor_select_color(widget, c);
+		paledit_select_color(widget, c);
 
-	      palette_editor_update_scroll(widget, c);
+	      paledit_update_scroll(widget, c);
 
 	      jwidget_emit_signal(widget, SIGNAL_PALETTE_EDITOR_CHANGE);
 	      c = 256;
@@ -579,11 +632,11 @@ static bool palette_editor_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static void palette_editor_request_size(JWidget widget, int *w, int *h)
+static void paledit_request_size(JWidget widget, int *w, int *h)
 {
-  PaletteEditor *palette_editor = palette_editor_data(widget);
-  div_t d = div(256, palette_editor->columns);
-  int cols = palette_editor->columns;
+  PalEdit *paledit = paledit_data(widget);
+  div_t d = div(256, paledit->columns);
+  int cols = paledit->columns;
   int rows = d.quot + ((d.rem)? 1: 0);
 
   *w = widget->border_width.l + widget->border_width.r +
@@ -593,21 +646,20 @@ static void palette_editor_request_size(JWidget widget, int *w, int *h)
     + rows*COLOR_SIZE + (rows-1)*widget->child_spacing;
 }
 
-static void palette_editor_update_scroll(JWidget widget, int color)
+static void paledit_update_scroll(JWidget widget, int color)
 {
-  JWidget view = jwidget_get_view (widget);
-
-  if (view) {
-    PaletteEditor *palette_editor = palette_editor_data (widget);
-    JRect vp = jview_get_viewport_position (view);
+  JWidget view = jwidget_get_view(widget);
+  if (view != NULL) {
+    PalEdit *paledit = paledit_data(widget);
+    JRect vp = jview_get_viewport_position(view);
     int scroll_x, scroll_y;
     int x, y, cols;
     div_t d;
 
-    jview_get_scroll (view, &scroll_x, &scroll_y);
+    jview_get_scroll(view, &scroll_x, &scroll_y);
 
-    d = div (256, palette_editor->columns);
-    cols = palette_editor->columns;
+    d = div(256, paledit->columns);
+    cols = paledit->columns;
 
     y = (COLOR_SIZE+widget->child_spacing) * (color / cols);
     x = (COLOR_SIZE+widget->child_spacing) * (color % cols);
@@ -622,8 +674,8 @@ static void palette_editor_update_scroll(JWidget widget, int color)
     else if (scroll_y+jrect_h(vp)-COLOR_SIZE-2 < y)
       scroll_y = y-jrect_h(vp)+COLOR_SIZE+2;
 
-    jview_set_scroll (view, scroll_x, scroll_y);
+    jview_set_scroll(view, scroll_x, scroll_y);
 
-    jrect_free (vp);
+    jrect_free(vp);
   }
 }

@@ -17,23 +17,46 @@
  */
 
 .text
-	.align 4
 
-/* Function: int _int_mult (int a, int b) */
+/*
+ * Implementations of:
+ *   #define INT_MULT(a, b, t) \
+ *     ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))
+ */
+
+/* Function: int _int_mult(int a, int b) */
 .globl __int_mult
+	.def	__int_mult;	.scl	2;	.type	32;	.endef
+	.align 4
 __int_mult:
-	pushl %ebp
-	movl %esp,%ebp
-	
- 	movl $0, %eax
- 	movb 8(%ebp), %al	/* mov al, a */
-	imul 12(%ebp), %ax	/* mul b */
-	addw $0x80, %ax		/* add ax, 0x80 */
-	addb %ah, %al           /* add al, ah */
-	adcb $0, %ah		/* adc ah, 0 */
-/* 	movb %ah, c.5 		/\* mov c, ah *\/ */
-	shrl $8, %eax
-	
-	movl %ebp,%esp
-	popl %ebp
+	/*
+	 * b = a*b + 128;
+	 * return ((b>>8) + b) >> 8;
+	 */
+
+	pushl	%ebp
+	movl	%esp, %ebp
+	movl	8(%ebp), %eax	/* eax = a */
+	movl	12(%ebp), %edx	/* edx = b */
+	popl	%ebp
+
+	imull	%eax, %edx	/* b *= a */
+	subl	$-128, %edx	/* b -= 128 */
+	movl	%edx, %eax	/* a = b */
+	sarl	$8, %eax	/* a >>= 8 */
+	addl	%edx, %eax	/* a += b */
+	sarl	$8, %eax	/* a >>= 8 */
+	ret
+
+/* Function: int _int_mult_fast(int %ecx, int %edx) */
+.globl @_int_mult_fast@8
+	.def	@_int_mult_fast@8;	.scl	2;	.type	32;	.endef
+	.align 4
+@_int_mult_fast@8:
+	imull	%ecx, %edx	/* edx *= ecx */
+	subl	$-128, %edx	/* edx -= 128 */
+	movl	%edx, %eax	/* eax = edx */
+	sarl	$8, %eax	/* eax >>= 8 */
+	addl	%edx, %eax	/* eax += edx */
+	sarl	$8, %eax	/* eax >>= 8 */
 	ret

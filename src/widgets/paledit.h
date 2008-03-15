@@ -23,6 +23,8 @@
 
 #include "jinete/jbase.h"
 
+struct RGB;
+
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
 
@@ -32,29 +34,23 @@ enum {
   PALETTE_EDITOR_RANGE_RECTANGULAR,
 };
 
-typedef struct PaletteEditor
-{
-  JWidget widget;
-  RGB *palette;
-  unsigned editable : 8;
-  unsigned range_type : 8;
-  unsigned columns : 16;
-  int boxsize;
-  int color[2];
-} PaletteEditor;
+JWidget paledit_new(RGB *palette, bool editable, int boxsize);
+int paledit_type(void);
 
-JWidget palette_editor_new (RGB *palette, int editable, int boxsize);
-int palette_editor_type (void);
+struct RGB *paledit_get_palette(JWidget widget);
+int paledit_get_range_type(JWidget widget);
 
-PaletteEditor *palette_editor_data (JWidget palette_editor);
+int paledit_get_columns(JWidget widget);
+void paledit_set_columns(JWidget widget, int columns);
+void paledit_set_boxsize(JWidget widget, int boxsize);
 
-void palette_editor_set_columns (JWidget palette_editor, int columns);
+void paledit_select_color(JWidget widget, int index);
+void paledit_select_range(JWidget widget, int begin, int end, int range_type);
 
-void palette_editor_select_color (JWidget palette_editor, int index);
-void palette_editor_select_range (JWidget palette_editor, int begin, int end, int range_type);
+void paledit_move_selection(JWidget widget, int x, int y);
 
-void palette_editor_move_selection (JWidget palette_editor, int x, int y);
-
-void palette_editor_get_selected_entries(JWidget widget, bool array[256]);
+int paledit_get_1st_color(JWidget widget);
+int paledit_get_2nd_color(JWidget widget);
+void paledit_get_selected_entries(JWidget widget, bool array[256]);
 
 #endif /* WIDGETS_PALEDIT_H */
