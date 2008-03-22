@@ -43,21 +43,21 @@ static JWidget window = NULL;
 
 static bool brush_preview_msg_proc(JWidget widget, JMessage msg);
 
-static int window_close_hook(JWidget widget, int user_data);
-static int brush_size_slider_change_hook(JWidget widget, int user_data);
-static int brush_angle_slider_change_hook(JWidget widget, int user_data);
-static int brush_type_change_hook(JWidget widget, int user_data);
-static int brush_mode_change_hook(JWidget widget, int user_data);
-static int glass_dirty_slider_change_hook(JWidget widget, int user_data);
-static int spray_width_slider_change_hook(JWidget widget, int user_data);
-static int air_speed_slider_change_hook(JWidget widget, int user_data);
-static int filled_check_change_hook(JWidget widget, int user_data);
-static int tiled_check_change_hook(JWidget widget, int user_data);
-static int use_grid_check_change_hook(JWidget widget, int user_data);
-static int view_grid_check_change_hook(JWidget widget, int user_data);
-static int set_grid_button_select_hook(JWidget widget, int user_data);
-static int cursor_button_change_hook(JWidget widget, int user_data);
-static int onionskin_check_change_hook(JWidget widget, int user_data);
+static bool window_close_hook(JWidget widget, void *data);
+static bool brush_size_slider_change_hook(JWidget widget, void *data);
+static bool brush_angle_slider_change_hook(JWidget widget, void *data);
+static bool brush_type_change_hook(JWidget widget, void *data);
+static bool brush_mode_change_hook(JWidget widget, void *data);
+static bool glass_dirty_slider_change_hook(JWidget widget, void *data);
+static bool spray_width_slider_change_hook(JWidget widget, void *data);
+static bool air_speed_slider_change_hook(JWidget widget, void *data);
+static bool filled_check_change_hook(JWidget widget, void *data);
+static bool tiled_check_change_hook(JWidget widget, void *data);
+static bool use_grid_check_change_hook(JWidget widget, void *data);
+static bool view_grid_check_change_hook(JWidget widget, void *data);
+static bool set_grid_button_select_hook(JWidget widget, void *data);
+static bool cursor_button_change_hook(JWidget widget, void *data);
+static bool onionskin_check_change_hook(JWidget widget, void *data);
 
 static void cmd_configure_tools_execute(const char *argument)
 {
@@ -108,7 +108,7 @@ static void cmd_configure_tools_execute(const char *argument)
 
   /* cursor-color */
   if (first_time) {
-    cursor_color = color_button_new(get_cursor_color(), IMAGE_INDEXED);
+    cursor_color = colorbutton_new(get_cursor_color(), IMAGE_INDEXED);
     jwidget_set_name(cursor_color, "cursor_color");
   }
   else {
@@ -187,10 +187,10 @@ static void cmd_configure_tools_execute(const char *argument)
     HOOK(glass_dirty, JI_SIGNAL_SLIDER_CHANGE, glass_dirty_slider_change_hook, 0);
     HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
-    HOOK(cursor_color, SIGNAL_COLOR_BUTTON_CHANGE, cursor_button_change_hook, 0);
+    HOOK(cursor_color, SIGNAL_COLORBUTTON_CHANGE, cursor_button_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
 
-    add_gui_exit_hook(jwidget_free, window);
+    app_add_hook(APP_EXIT, jwidget_free, window);
   }
 
   /* default position */
@@ -226,7 +226,7 @@ static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static int window_close_hook(JWidget widget, int user_data)
+static bool window_close_hook(JWidget widget, void *data)
 {
   /* isn't running anymore */
 /*   window = NULL; */
@@ -237,26 +237,26 @@ static int window_close_hook(JWidget widget, int user_data)
   return FALSE;
 }
 
-static int brush_size_slider_change_hook(JWidget widget, int user_data)
+static bool brush_size_slider_change_hook(JWidget widget, void *data)
 {
   set_brush_size(jslider_get_value(widget));
-  jwidget_dirty((JWidget)user_data);
+  jwidget_dirty((JWidget)data);
   return FALSE;
 }
 
-static int brush_angle_slider_change_hook(JWidget widget, int user_data)
+static bool brush_angle_slider_change_hook(JWidget widget, void *data)
 {
   set_brush_angle(jslider_get_value(widget));
-  jwidget_dirty((JWidget)user_data);
+  jwidget_dirty((JWidget)data);
   return FALSE;
 }
 
-static int brush_type_change_hook(JWidget widget, int user_data)
+static bool brush_type_change_hook(JWidget widget, void *data)
 {
   int type = group_button_get_selected(widget);
 
   set_brush_type(type);
-  jwidget_dirty((JWidget)user_data);
+  jwidget_dirty((JWidget)data);
 
   statusbar_set_text(app_get_statusbar(), 250,
 		      "Brush type: %s",
@@ -267,7 +267,7 @@ static int brush_type_change_hook(JWidget widget, int user_data)
   return TRUE;
 }
 
-static int brush_mode_change_hook(JWidget widget, int user_data)
+static bool brush_mode_change_hook(JWidget widget, void *data)
 {
   int mode = group_button_get_selected(widget);
 
@@ -281,50 +281,50 @@ static int brush_mode_change_hook(JWidget widget, int user_data)
   return TRUE;
 }
 
-static int glass_dirty_slider_change_hook(JWidget widget, int user_data)
+static bool glass_dirty_slider_change_hook(JWidget widget, void *data)
 {
   set_glass_dirty(jslider_get_value(widget));
   return FALSE;
 }
 
-static int spray_width_slider_change_hook(JWidget widget, int user_data)
+static bool spray_width_slider_change_hook(JWidget widget, void *data)
 {
   set_spray_width(jslider_get_value(widget));
   return FALSE;
 }
 
-static int air_speed_slider_change_hook(JWidget widget, int user_data)
+static bool air_speed_slider_change_hook(JWidget widget, void *data)
 {
   set_air_speed(jslider_get_value(widget));
   return FALSE;
 }
 
-static int filled_check_change_hook(JWidget widget, int user_data)
+static bool filled_check_change_hook(JWidget widget, void *data)
 {
   set_filled_mode(jwidget_is_selected(widget));
   return FALSE;
 }
 
-static int tiled_check_change_hook(JWidget widget, int user_data)
+static bool tiled_check_change_hook(JWidget widget, void *data)
 {
   set_tiled_mode(jwidget_is_selected(widget));
   return FALSE;
 }
 
-static int use_grid_check_change_hook(JWidget widget, int user_data)
+static bool use_grid_check_change_hook(JWidget widget, void *data)
 {
   set_use_grid(jwidget_is_selected(widget));
   return FALSE;
 }
 
-static int view_grid_check_change_hook(JWidget widget, int user_data)
+static bool view_grid_check_change_hook(JWidget widget, void *data)
 {
   set_view_grid(jwidget_is_selected(widget));
   refresh_all_editors();
   return FALSE;
 }
 
-static int set_grid_button_select_hook(JWidget widget, int user_data)
+static bool set_grid_button_select_hook(JWidget widget, void *data)
 {
   Sprite *sprite = current_sprite;
 
@@ -349,19 +349,18 @@ static int set_grid_button_select_hook(JWidget widget, int user_data)
   return TRUE;
 }
 
-static int cursor_button_change_hook(JWidget widget, int user_data)
+static bool cursor_button_change_hook(JWidget widget, void *data)
 {
-  set_cursor_color(color_button_get_color(widget));
+  set_cursor_color(colorbutton_get_color(widget));
   return TRUE;
 }
 
-static int onionskin_check_change_hook(JWidget widget, int user_data)
+static bool onionskin_check_change_hook(JWidget widget, void *data)
 {
   set_onionskin(jwidget_is_selected(widget));
   refresh_all_editors();
   return FALSE;
 }
-
 
 Command cmd_configure_tools = {
   CMD_CONFIGURE_TOOLS,

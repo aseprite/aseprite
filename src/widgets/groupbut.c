@@ -34,7 +34,7 @@
 static JWidget find_selected(JWidget widget);
 static int select_button(JWidget widget, int index);
 
-static int radio_change_signal(JWidget widget, int user_data);
+static bool radio_change_hook(JWidget widget, void *data);
 
 JWidget group_button_new(int w, int h, int first_selected, ...)
 {
@@ -69,7 +69,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       if (icon >= 0)
 	add_gfxicon_to_button(radio, icon, JI_CENTER | JI_MIDDLE);
 
-      HOOK(radio, JI_SIGNAL_RADIO_CHANGE, radio_change_signal, vbox);
+      HOOK(radio, JI_SIGNAL_RADIO_CHANGE, radio_change_hook, vbox);
 
       if (c == first_selected)
 	jwidget_select(radio);
@@ -146,8 +146,8 @@ static int select_button(JWidget widget, int index)
   return FALSE;
 }
 
-static int radio_change_signal(JWidget widget, int user_data)
+static bool radio_change_hook(JWidget widget, void *data)
 {
-  jwidget_emit_signal((JWidget)user_data, SIGNAL_GROUP_BUTTON_CHANGE);
+  jwidget_emit_signal((JWidget)data, SIGNAL_GROUP_BUTTON_CHANGE);
   return TRUE;
 }

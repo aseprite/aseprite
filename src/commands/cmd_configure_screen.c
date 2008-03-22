@@ -26,7 +26,7 @@
 #include "console/console.h"
 #include "core/app.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 
 #define DEPTH_TO_INDEX(bpp)			\
   ((bpp == 8)? 0:				\
@@ -193,7 +193,7 @@ static bool try_new_gfx_mode(void)
       gui_setup_screen();
 
       /* set to a black palette */
-      set_current_palette(black_palette, TRUE);
+      set_black_palette();
 
       /* restore palette all screen stuff */
       app_refresh_screen();
@@ -209,7 +209,7 @@ static bool try_new_gfx_mode(void)
     gui_setup_screen();
 
     /* set to a black palette */
-    set_current_palette(black_palette, TRUE);
+    set_black_palette();
 
     /* restore palette all screen stuff */
     app_refresh_screen();

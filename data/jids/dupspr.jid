@@ -11,7 +11,7 @@
       </box>
       <box vertical homogeneous expansive>
         <label text="" name="src_name" />
-        <entry maxsize="256" name="dst_name" />
+        <entry maxsize="256" name="dst_name" magnetic />
       </box>
     </box>
     <check text="Duplicate merged layers only" name="flatten" />

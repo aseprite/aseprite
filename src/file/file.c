@@ -31,7 +31,7 @@
 #include "core/core.h"
 #include "file/file.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/raster.h"
 #include "widgets/statebar.h"
 
@@ -441,7 +441,7 @@ void fop_operate(FileOp *fop)
       bool loadres;
 
       /* default palette */
-      memcpy(fop->seq.palette, default_palette, sizeof(PALETTE));
+      palette_black(fop->seq.palette);
 
        /* TODO set_palette for each frame??? */
 #define SEQUENCE_IMAGE()						\
@@ -453,7 +453,11 @@ void fop_operate(FileOp *fop)
 									\
 	layer_add_cel(fop->seq.layer, fop->seq.last_cel);		\
 									\
-	sprite_set_palette(fop->sprite, fop->seq.palette, frame);	\
+	if (palette_count_diff(sprite_get_palette(fop->sprite, frame),	\
+			       fop->seq.palette, NULL, NULL) > 0) {	\
+	  fop->seq.palette->frame = frame;				\
+	  sprite_set_palette(fop->sprite, fop->seq.palette, TRUE);	\
+	}								\
 									\
 	old_image = fop->seq.image;					\
 	fop->seq.image = NULL;						\
@@ -585,11 +589,10 @@ void fop_operate(FileOp *fop)
 	  image_clear(fop->seq.image, 0);
 	  sprite_render(fop->sprite, fop->seq.image, 0, 0);
 
-
 	  /* setup the palette */
-	  palette_copy(fop->seq.palette,
-		       sprite_get_palette(fop->sprite,
-					  fop->sprite->frame));
+	  palette_copy_colors(fop->seq.palette,
+			      sprite_get_palette(fop->sprite,
+						 fop->sprite->frame));
 
 	  /* setup the filename to be used */
 	  fop->filename = jlist_nth_data(fop->seq.filename_list,
@@ -670,28 +673,24 @@ void fop_free(FileOp *fop)
     jlist_free(fop->seq.filename_list);
   }
 
-  if (fop->seq.palette)
-    jfree(fop->seq.palette);
+  if (fop->seq.palette != NULL)
+    palette_free(fop->seq.palette);
 
   jfree(fop);
 }
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 {
-  assert(fop->seq.palette != NULL);
-
-  fop->seq.palette[index].r = r;
-  fop->seq.palette[index].g = g;
-  fop->seq.palette[index].b = b;
+  palette_set_entry(fop->seq.palette, index, _rgba(r, g, b, 255));
 }
 
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
 {
-  assert(fop->seq.palette != NULL);
+  ase_uint32 c = palette_get_entry(fop->seq.palette, index);
 
-  *r = fop->seq.palette[index].r;
-  *g = fop->seq.palette[index].g;
-  *b = fop->seq.palette[index].b;
+  *r = _rgba_getr(c);
+  *g = _rgba_getg(c);
+  *b = _rgba_getb(c);
 }
 
 Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
@@ -867,7 +866,7 @@ static FileOp *fop_new(FileOpType type)
 static void fop_prepare_for_sequence(FileOp *fop)
 {
   fop->seq.filename_list = jlist_new();
-  fop->seq.palette = jmalloc(sizeof(RGB) * 256);
+  fop->seq.palette = palette_new(0, MAX_PALETTE_COLORS);
 }
 
 static FileFormat *get_fileformat(const char *extension)

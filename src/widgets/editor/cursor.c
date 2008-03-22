@@ -80,6 +80,12 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
 static int point_inside_region(int x, int y, JRegion region);
 
+void editor_cursor_exit(void)
+{
+  if (cursor_bound.seg != NULL)
+    jfree(cursor_bound.seg);
+}
+
 /**
  * Draws the brush cursor inside the specified editor.
  *
@@ -208,7 +214,7 @@ bool editor_cursor_is_subpixel(JWidget widget)
 
 static void generate_cursor_boundaries(void)
 {
-  if (!cursor_bound.seg || 
+  if (cursor_bound.seg == NULL || 
       cursor_bound.brush_type != get_brush_type() ||
       cursor_bound.brush_size != get_brush_size() ||
       cursor_bound.brush_angle != get_brush_angle()) {
@@ -216,7 +222,7 @@ static void generate_cursor_boundaries(void)
     cursor_bound.brush_size = get_brush_size();
     cursor_bound.brush_angle = get_brush_angle();
 
-    if (cursor_bound.seg)
+    if (cursor_bound.seg != NULL)
       jfree(cursor_bound.seg);
 
     cursor_bound.seg = find_mask_boundary(get_brush()->image,

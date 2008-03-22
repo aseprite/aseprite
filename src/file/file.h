@@ -20,7 +20,6 @@
 #define FILE_H
 
 #include "jinete/jbase.h"
-#include <allegro/color.h>
 #include <stdio.h>
 
 #define FILE_SUPPORT_RGB		(1<<0)
@@ -40,9 +39,10 @@
 #define FILE_LOAD_SEQUENCE_YES		(1<<2)
 #define FILE_LOAD_ONE_FRAME		(1<<3)
 
-struct Image;
 struct Cel;
+struct Image;
 struct Layer;
+struct Palette;
 struct Sprite;
 
 struct FileFormat;
@@ -84,7 +84,7 @@ typedef struct FileOp
   /* data for sequences */
   struct {
     JList filename_list;	/* all file names to load/save */
-    RGB *palette;		/* palette of the sequence */
+    struct Palette *palette;	/* palette of the sequence */
     struct Image *image;	/* image to be saved/loaded */
     /* for the progress bar */
     float progress_offset;	/* progress offset from the current frame */

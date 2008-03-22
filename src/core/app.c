@@ -44,13 +44,15 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "script/script.h"
+#include "util/boundary.h"
 #include "util/recscr.h"
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
@@ -72,16 +74,24 @@ typedef struct Option
   char *data;
 } Option;
 
+typedef struct AppHook
+{
+  void (*proc)(void *);
+  void *data;
+} AppHook;
+
 static char *exe_name;		      /* name of the program */
 
+static JList apphooks[APP_EVENTS];
+
 static JWidget top_window = NULL;     /* top level window (the desktop) */
-static JWidget box_menubar = NULL;   /* box where the menu bar is */
+static JWidget box_menubar = NULL;    /* box where the menu bar is */
 static JWidget box_colorbar = NULL;   /* box where the color bar is */
-static JWidget box_toolbar = NULL;   /* box where the tools bar is */
-static JWidget box_statusbar = NULL; /* box where the status bar is */
-static JWidget box_tabsbar = NULL;   /* box where the tabs bar is */
+static JWidget box_toolbar = NULL;    /* box where the tools bar is */
+static JWidget box_statusbar = NULL;  /* box where the status bar is */
+static JWidget box_tabsbar = NULL;    /* box where the tabs bar is */
 static JWidget menubar = NULL;	      /* the menu bar widget */
-static JWidget statusbar = NULL;     /* the status bar widget */
+static JWidget statusbar = NULL;      /* the status bar widget */
 static JWidget colorbar = NULL;	      /* the color bar widget */
 static JWidget toolbar = NULL;	      /* the tool bar widget */
 static JWidget tabsbar = NULL;	      /* the tabs bar widget */
@@ -97,6 +107,9 @@ static void usage(int status);
 static Option *option_new(int type, const char *data);
 static void option_free(Option *option);
 
+static AppHook *apphook_new(void (*proc)(void *), void *data);
+static void apphook_free(AppHook *apphook);
+
 /**
  * Initializes the application loading the modules, setting the
  * graphics mode, loading the configuration and resources, etc.
@@ -105,7 +118,14 @@ bool app_init(int argc, char *argv[])
 {
   exe_name = argv[0];
 
-  /* Initialize language suppport.  */
+  /* initialize application hooks */
+  {
+    int c;
+    for (c=0; c<APP_EVENTS; ++c)
+      apphooks[c] = NULL;
+  }
+
+  /* initialize language suppport */
   intl_init();
 
   /* install the `core' of ASE application */
@@ -146,22 +166,20 @@ bool app_init(int argc, char *argv[])
 
   /* custom default palette? */
   if (palette_filename) {
-    PALETTE pal;
-    BITMAP *bmp;
+    Palette *pal;
 
     PRINTF("Loading custom palette file: %s\n", palette_filename);
 
-    bmp = load_bitmap(palette_filename, pal);
-    if (!bmp) {
+    pal = palette_load(palette_filename);
+    if (pal == NULL) {
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
       console_printf(_("Error loading default palette from `%s'\n"),
 		     palette_filename);
       return FALSE;
     }
 
-    destroy_bitmap(bmp);
-
     set_default_palette(pal);
+    palette_free(pal);
   }
 
   /* set system palette to the default one */
@@ -349,11 +367,30 @@ void app_loop(void)
  */
 void app_exit(void)
 {
+  JLink link;
+  int c;
+
   /* remove ase handlers */
   PRINTF("Uninstalling ASE\n");
 
+  app_trigger_event(APP_EXIT);
+
+  /* destroy application hooks */
+  for (c=0; c<APP_EVENTS; ++c) {
+    if (apphooks[c] != NULL) {
+      JI_LIST_FOR_EACH(apphooks[c], link) {
+	apphook_free(link->data);
+      }
+      jlist_free(apphooks[c]);
+      apphooks[c] = NULL;
+    }
+  }
+
   /* finalize modules, configuration and core */
   modules_exit();
+  editor_cursor_exit();
+  boundary_exit();
+
   gfxobj_exit();
   ase_config_exit();
   file_system_exit();
@@ -363,6 +400,31 @@ void app_exit(void)
   intl_exit();
 }
 
+void app_add_hook(int app_event, void (*proc)(void *data), void *data)
+{
+  assert(app_event >= 0 && app_event < APP_EVENTS);
+
+  if (apphooks[app_event] == NULL)
+    apphooks[app_event] = jlist_new();
+
+  jlist_append(apphooks[app_event], apphook_new(proc, data));
+}
+
+void app_trigger_event(int app_event)
+{
+  assert(app_event >= 0 && app_event < APP_EVENTS);
+
+  if (apphooks[app_event] != NULL) {
+    JList list = apphooks[app_event];
+    JLink link;
+
+    JI_LIST_FOR_EACH(list, link) {
+      AppHook *h = (AppHook *)link->data;
+      (h->proc)(h->data);
+    }
+  }
+}
+
 /**
  * Updates palette and redraw the screen.
  */
@@ -370,7 +432,7 @@ void app_refresh_screen(void)
 {
   if (ase_mode & MODE_GUI) {
     /* update the color palette */
-    set_current_palette(current_sprite ?
+    set_current_palette(current_sprite != NULL ?
 			sprite_get_palette(current_sprite,
 					   current_sprite->frame): NULL,
 			FALSE);
@@ -455,8 +517,10 @@ int app_get_current_image_type(void)
 {
   if (current_sprite)
     return current_sprite->imgtype;
-  else
+  else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
+  else
+    return IMAGE_RGB;
 }
 
 JWidget app_get_top_window(void) { return top_window; }
@@ -656,4 +720,21 @@ static void option_free(Option *option)
 {
   jfree(option->data);
   jfree(option);
+}
+
+static AppHook *apphook_new(void (*proc)(void *), void *data)
+{
+  AppHook *apphook = jnew(AppHook, 1);
+  if (!apphook)
+    return NULL;
+
+  apphook->proc = proc;
+  apphook->data = data;
+
+  return apphook;
+}
+
+static void apphook_free(AppHook *apphook)
+{
+  jfree(apphook);
 }

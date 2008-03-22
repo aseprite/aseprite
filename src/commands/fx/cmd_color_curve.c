@@ -22,6 +22,7 @@
 
 #include "commands/commands.h"
 #include "console/console.h"
+#include "core/app.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"
@@ -63,6 +64,8 @@ static void cmd_color_curve_execute(const char *argument)
     the_curve = curve_new(CURVE_LINEAR);
     curve_add_point(the_curve, curve_point_new(0, 0));
     curve_add_point(the_curve, curve_point_new(255, 255));
+
+    app_add_hook(APP_EXIT, curve_free, the_curve);
   }
 
   image = GetImage(current_sprite);

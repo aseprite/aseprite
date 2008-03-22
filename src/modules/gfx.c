@@ -23,14 +23,18 @@
 
 #include "jinete/jintern.h"
 #include "jinete/jsystem.h"
+#include "jinete/jtheme.h"
 
 #include "console/console.h"
+#include "core/app.h"
 #include "core/cfg.h"
 #include "core/dirs.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/tools.h"
+#include "raster/blend.h"
+#include "raster/image.h"
 #include "widgets/editor.h"
 
 /* static BITMAP *icons_pcx; */
@@ -64,12 +68,12 @@ static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
   }
 }
 
-static void gen_gfx(void)
+static void gen_gfx(void *data)
 {
   int c;
 
-  for(c=0; c<GFX_BITMAP_COUNT; c++) {
-    if(gfx_bmps[c])
+  for (c=0; c<GFX_BITMAP_COUNT; c++) {
+    if (gfx_bmps[c])
       destroy_bitmap(gfx_bmps[c]);
 
     gfx_bmps[c] = NULL;
@@ -101,15 +105,13 @@ int init_module_graphics(void)
   for(c=0; c<GFX_BITMAP_COUNT; c++)
     gfx_bmps[c] = NULL;
 
-  hook_palette_changes(gen_gfx);
+  app_add_hook(APP_PALETTE_CHANGE, gen_gfx, NULL);
   return 0;
 }
 
 void exit_module_graphics(void)
 {
   int c;
-
-  unhook_palette_changes(gen_gfx);
 
   for(c=0; c<GFX_BITMAP_COUNT; c++)
     if(gfx_bmps[c]) {
@@ -465,8 +467,6 @@ void rectdiscard(void *_data)
   jfree(data);
 }
 
-
-
 /**********************************************************************/
 /* Rectangles */
 
@@ -520,6 +520,9 @@ void rectgrid(BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h)
   }
 }
 
+/**********************************************************************/
+/* Specials */
+
 void draw_emptyset_symbol(JRect rc, int color)
 {
   int cx, cy, x1, y1, x2, y2, size;
@@ -538,8 +541,144 @@ void draw_emptyset_symbol(JRect rc, int color)
   line(ji_screen, x1, y2, x2, y1, color);
 }
 
+void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
+		int imgtype, color_t color)
+{
+  int type = color_type(color);
+  int data;
+  int w = x2 - x1 + 1;
+  int h = y2 - y1 + 1;
+  BITMAP *graph;
+  int grid;
 
-
+  grid = MIN(w, h) / 2;
+  grid += MIN(w, h) - grid*2;
+
+  if (type == COLOR_TYPE_INDEX) {
+    data = color_get_index(imgtype, color);
+    rectfill(bmp, x1, y1, x2, y2,
+	     /* get_color_for_allegro(bitmap_color_depth(bmp), color)); */
+	     palette_color[_index_cmap[data]]);
+    return;
+  }
+
+  switch (imgtype) {
+
+    case IMAGE_INDEXED:
+      rectfill(bmp, x1, y1, x2, y2,
+	       palette_color[_index_cmap[get_color_for_image(imgtype, color)]]);
+      break;
+
+    case IMAGE_RGB:
+      graph = create_bitmap_ex(32, w, h);
+      if (!graph)
+        return;
+
+      rectgrid(graph, 0, 0, w-1, h-1, grid, grid);
+
+      drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      set_trans_blender(0, 0, 0, color_get_alpha(imgtype, color));
+      {
+        int rgb_bitmap_color = get_color_for_image(imgtype, color);
+        color_t color2 = color_rgb(_rgba_getr(rgb_bitmap_color),
+				   _rgba_getg(rgb_bitmap_color),
+				   _rgba_getb(rgb_bitmap_color),
+				   _rgba_geta(rgb_bitmap_color));
+        rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
+      }
+      drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
+
+      use_current_sprite_rgb_map();
+      blit(graph, bmp, 0, 0, x1, y1, w, h);
+      restore_rgb_map();
+
+      destroy_bitmap(graph);
+      break;
+
+    case IMAGE_GRAYSCALE:
+      graph = create_bitmap_ex(32, w, h);
+      if (!graph)
+        return;
+
+      rectgrid(graph, 0, 0, w-1, h-1, grid, grid);
+
+      drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      set_trans_blender(0, 0, 0, color_get_alpha(imgtype, color));
+      {
+        int gray_bitmap_color = get_color_for_image(imgtype, color);
+        color_t color2 = color_gray(_graya_getv(gray_bitmap_color),
+				    _graya_geta(gray_bitmap_color));
+        rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
+      }
+      drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
+
+      use_current_sprite_rgb_map();
+      blit(graph, bmp, 0, 0, x1, y1, w, h);
+      restore_rgb_map();
+
+      destroy_bitmap(graph);
+      break;
+  }
+}
+
+void draw_color_button(BITMAP *bmp,
+		       int x1, int y1, int x2, int y2,
+		       int b0, int b1, int b2, int b3,
+		       int imgtype, color_t color,
+		       bool hot)
+{
+  int face = ji_color_face();
+  int fore = ji_color_foreground();
+
+  draw_color(bmp, x1, y1, x2, y2, imgtype, color);
+
+  hline(bmp, x1, y1, x2, fore);
+  if (b2 && b3)
+    hline(bmp, x1, y2, x2, fore);
+  vline(bmp, x1, y1, y2, fore);
+  vline(bmp, x2, y1, y2, fore);
+
+  if (!hot) {
+    int r = color_get_red(imgtype, color);
+    int g = color_get_green(imgtype, color);
+    int b = color_get_blue(imgtype, color);
+    int c = makecol(MIN(255, r+64),
+		    MIN(255, g+64),
+		    MIN(255, b+64));
+    rect(bmp, x1+1, y1+1, x2-1, y2-((b2 && b3)?1:0), c);
+  }
+  else {
+    rect(bmp, x1+1, y1+1, x2-1, y2-((b2 && b3)?1:0), fore);
+    bevel_box(bmp,
+	      x1+1, y1+1, x2-1, y2-((b2 && b3)?1:0),
+	      ji_color_facelight(), ji_color_faceshadow(), 1);
+  }
+
+  if (b0) {
+    hline(bmp, x1, y1, x1+1, face);
+    putpixel(bmp, x1, y1+1, face);
+    putpixel(bmp, x1+1, y1+1, fore);
+  }
+
+  if (b1) {
+    hline(bmp, x2-1, y1, x2, face);
+    putpixel(bmp, x2, y1+1, face);
+    putpixel(bmp, x2-1, y1+1, fore);
+  }
+
+  if (b2) {
+    putpixel(bmp, x1, y2-1, face);
+    hline(bmp, x1, y2, x1+1, face);
+    putpixel(bmp, x1+1, y2-1, fore);
+  }
+
+  if (b3) {
+    putpixel(bmp, x2, y2-1, face);
+    hline(bmp, x2-1, y2, x2, face);
+    putpixel(bmp, x2-1, y2-1, fore);
+  }
+}
+
 /************************************************************************/
 /* Font related */
 

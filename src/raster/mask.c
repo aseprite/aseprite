@@ -65,46 +65,46 @@ void mask_free (Mask *mask)
   gfxobj_free((GfxObj *)mask);
 }
 
-int mask_is_empty (Mask *mask)
+int mask_is_empty(Mask *mask)
 {
   return (!mask->bitmap)? TRUE: FALSE;
 }
 
-void mask_set_name (Mask *mask, const char *name)
+void mask_set_name(Mask *mask, const char *name)
 {
   if (mask->name)
-    jfree (mask->name);
+    jfree(mask->name);
 
-  mask->name = name ? jstrdup (name): NULL;
+  mask->name = name ? jstrdup(name): NULL;
 }
 
-void mask_copy (Mask *mask_dst, const Mask *mask_src)
+void mask_copy(Mask *mask_dst, const Mask *mask_src)
 {
-  mask_none (mask_dst);
+  mask_none(mask_dst);
 
   if (mask_src->name)
-    mask_set_name (mask_dst, mask_src->name);
+    mask_set_name(mask_dst, mask_src->name);
 
   if (mask_src->bitmap) {
     /* add all the area of "mask" */
-    mask_union (mask_dst, mask_src->x, mask_src->y,
-		mask_src->w, mask_src->h);
+    mask_union(mask_dst, mask_src->x, mask_src->y,
+	       mask_src->w, mask_src->h);
 
     /* and copy the "mask" bitmap */
-    image_copy (mask_dst->bitmap, mask_src->bitmap, 0, 0);
+    image_copy(mask_dst->bitmap, mask_src->bitmap, 0, 0);
   }
 }
 
-void mask_move (Mask *mask, int x, int y)
+void mask_move(Mask *mask, int x, int y)
 {
   mask->x += x;
   mask->y += y;
 }
 
-void mask_none (Mask *mask)
+void mask_none(Mask *mask)
 {
   if (mask->bitmap) {
-    image_free (mask->bitmap);
+    image_free(mask->bitmap);
     mask->bitmap = NULL;
     mask->x = 0;
     mask->y = 0;
@@ -133,7 +133,7 @@ void mask_invert(Mask *mask)
   }
 }
 
-void mask_replace (Mask *mask, int x, int y, int w, int h)
+void mask_replace(Mask *mask, int x, int y, int w, int h)
 {
   mask->x = x;
   mask->y = y;
@@ -141,76 +141,76 @@ void mask_replace (Mask *mask, int x, int y, int w, int h)
   mask->h = h;
 
   if (mask->bitmap)
-    image_free (mask->bitmap);
+    image_free(mask->bitmap);
 
-  mask->bitmap = image_new (IMAGE_BITMAP, w, h);
-  image_clear (mask->bitmap, 1);
+  mask->bitmap = image_new(IMAGE_BITMAP, w, h);
+  image_clear(mask->bitmap, 1);
 }
 
-void mask_union (Mask *mask, int x, int y, int w, int h)
+void mask_union(Mask *mask, int x, int y, int w, int h)
 {
   if (!mask->bitmap) {
     mask->x = x;
     mask->y = y;
     mask->w = w;
     mask->h = h;
-    mask->bitmap = image_new (IMAGE_BITMAP, w, h);
+    mask->bitmap = image_new(IMAGE_BITMAP, w, h);
   }
   else {
     Image *image;
     int x1 = mask->x;
     int y1 = mask->y;
-    int x2 = MAX (mask->x+mask->w-1, x+w-1);
-    int y2 = MAX (mask->y+mask->h-1, y+h-1);
+    int x2 = MAX(mask->x+mask->w-1, x+w-1);
+    int y2 = MAX(mask->y+mask->h-1, y+h-1);
 
-    mask->x = MIN (x, x1);
-    mask->y = MIN (y, y1);
+    mask->x = MIN(x, x1);
+    mask->y = MIN(y, y1);
     mask->w = x2 - mask->x + 1;
     mask->h = y2 - mask->y + 1;
 
-    image = image_crop (mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h);
-    image_free (mask->bitmap);
+    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h);
+    image_free(mask->bitmap);
     mask->bitmap = image;
   }
 
-  image_rectfill (mask->bitmap,
-		  x-mask->x, y-mask->y,
-		  x-mask->x+w-1, y-mask->y+h-1, 1);
+  image_rectfill(mask->bitmap,
+		 x-mask->x, y-mask->y,
+		 x-mask->x+w-1, y-mask->y+h-1, 1);
 }
 
 void mask_subtract (Mask *mask, int x, int y, int w, int h)
 {
   if (mask->bitmap) {
-    image_rectfill (mask->bitmap,
-		    x-mask->x, y-mask->y,
-		    x-mask->x+w-1, y-mask->y+h-1, 0);
-    shrink_mask (mask);
+    image_rectfill(mask->bitmap,
+		   x-mask->x, y-mask->y,
+		   x-mask->x+w-1, y-mask->y+h-1, 0);
+    shrink_mask(mask);
   }
 }
 
-void mask_intersect (Mask *mask, int x, int y, int w, int h)
+void mask_intersect(Mask *mask, int x, int y, int w, int h)
 {
   if (mask->bitmap) {
     Image *image;
     int x1 = mask->x;
     int y1 = mask->y;
-    int x2 = MIN (mask->x+mask->w-1, x+w-1);
-    int y2 = MIN (mask->y+mask->h-1, y+h-1);
+    int x2 = MIN(mask->x+mask->w-1, x+w-1);
+    int y2 = MIN(mask->y+mask->h-1, y+h-1);
 
-    mask->x = MAX (x, x1);
-    mask->y = MAX (y, y1);
+    mask->x = MAX(x, x1);
+    mask->y = MAX(y, y1);
     mask->w = x2 - mask->x + 1;
     mask->h = y2 - mask->y + 1;
 
-    image = image_crop (mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h);
-    image_free (mask->bitmap);
+    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h);
+    image_free(mask->bitmap);
     mask->bitmap = image;
 
-    shrink_mask (mask);
+    shrink_mask(mask);
   }
 }
 
-void mask_merge (Mask *mask, const Mask *src)
+void mask_merge(Mask *mask, const Mask *src)
 {
   /* TODO!!! */
 }
@@ -343,7 +343,7 @@ void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
 /*   } */
 /* } */
 
-void mask_crop (Mask *mask, const Image *image)
+void mask_crop(Mask *mask, const Image *image)
 {
 #define ADVANCE(beg, end, o_end, cmp, op, getpixel1, getpixel)	\
   {								\

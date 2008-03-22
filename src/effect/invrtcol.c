@@ -19,8 +19,9 @@
 #include "config.h"
 
 #include "effect/effect.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 
 void apply_invert_color4(Effect *effect)
 {
@@ -94,6 +95,7 @@ void apply_invert_color2(Effect *effect)
 
 void apply_invert_color1(Effect *effect)
 {
+  Palette *pal = get_current_palette();
   ase_uint8 *src_address;
   ase_uint8 *dst_address;
   int x, c, r, g, b;
@@ -118,9 +120,9 @@ void apply_invert_color1(Effect *effect)
     if (effect->target.index)
       c ^= 0xff;
     else {
-      r = (current_palette[c].r>>1);
-      g = (current_palette[c].g>>1);
-      b = (current_palette[c].b>>1);
+      r = _rgba_getr(pal->color[c])>>3;
+      g = _rgba_getg(pal->color[c])>>3;
+      b = _rgba_getb(pal->color[c])>>3;
 
       if (effect->target.r) r ^= 0x1f;
       if (effect->target.g) g ^= 0x1f;

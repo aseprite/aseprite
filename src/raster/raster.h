@@ -28,6 +28,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
+#include "raster/palette.h"
 #include "raster/path.h"
 #include "raster/quant.h"
 #include "raster/rotate.h"

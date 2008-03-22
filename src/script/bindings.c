@@ -27,8 +27,6 @@
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"
-#include "dialogs/colsel.h"
-#include "dialogs/dpaledit.h"
 #include "dialogs/filesel.h"
 #include "effect/colcurve.h"
 #include "effect/convmatr.h"
@@ -37,7 +35,7 @@
 #include "effect/replcol.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
@@ -253,9 +251,7 @@ static int metatable_index(lua_State *L)
 	if (strcmp(index, "name") == 0)
 	  lua_pushstring(L, layer->name);
 	else if (strcmp(index, "parent") == 0)
-	  push_userdata(L,
-			layer->parent->type == GFXOBJ_LAYER_SET ?
-			Type_Layer: Type_Sprite, layer->parent);
+	  push_userdata(L, Type_Layer, layer->parent_layer);
 	else if (strcmp(index, "readable") == 0)
 	  lua_pushboolean(L, layer->readable);
 	else if (strcmp(index, "writable") == 0)

@@ -31,7 +31,7 @@
 
 #include "file/file.h"
 #include "file/gif/format.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/raster.h"
 #include "util/autocrop.h"
 
@@ -82,43 +82,38 @@ static bool load_GIF(FileOp *fop)
   Image *image = NULL;
   Image *current_image_old = NULL;
   Image *current_image = NULL;
-  PALETTE opal, npal;
+  Palette *opal = NULL;
+  Palette *npal = NULL;
+  bool ret = FALSE;
   int i, c;
 
   gif = gif_load_animation(fop->filename, fop_progress, fop);
   if (!gif) {
     fop_error(fop, _("Error loading GIF file.\n"));
-    return FALSE;
+    goto error;
   }
 
   current_image = image_new(IMAGE_INDEXED, gif->width, gif->height);
   current_image_old = image_new(IMAGE_INDEXED, gif->width, gif->height);
-  if (!current_image || !current_image_old) {
-    if (current_image) image_free(current_image);
-    if (current_image_old) image_free(current_image_old);
-
-    gif_destroy_animation(gif);
+  opal = palette_new(0, MAX_PALETTE_COLORS);
+  npal = palette_new(0, MAX_PALETTE_COLORS);
+  if (!current_image || !current_image_old || !opal || !npal) {
     fop_error(fop, _("Error creating temporary image.\n"));
-    return FALSE;
+    goto error;
   }
 
   sprite = sprite_new(IMAGE_INDEXED, gif->width, gif->height);
   if (!sprite) {
-    gif_destroy_animation(gif);
-    image_free(current_image);
     fop_error(fop, _("Error creating sprite.\n"));
-    return FALSE;
+    goto error;
   }
 
   sprite_set_frames(sprite, gif->frames_count);
 
   layer = layer_new(sprite);
   if (!layer) {
-    gif_destroy_animation(gif);
-    image_free(current_image);
-    sprite_free(sprite);
     fop_error(fop, _("Error creating main layer.\n"));
-    return FALSE;
+    goto error;
   }
 
   layer_add_layer(sprite->set, layer);
@@ -139,26 +134,26 @@ static bool load_GIF(FileOp *fop)
 
     /* make the palette */
     for (c=0; c<pal->colors_count; c++) {
-      npal[c].r = pal->colors[c].r>>2;
-      npal[c].g = pal->colors[c].g>>2;
-      npal[c].b = pal->colors[c].b>>2;
+      palette_set_entry(npal, c, _rgba(pal->colors[c].r,
+				       pal->colors[c].g,
+				       pal->colors[c].b, 255));
     }
     if (i == 0)
       for (; c<256; c++)
-	npal[c].r = npal[c].g = npal[c].b = 0;
+	palette_set_entry(npal, c, _rgba(0, 0, 0, 255));
     else
       for (; c<256; c++) {
-	npal[c].r = opal[c].r;
-	npal[c].g = opal[c].g;
-	npal[c].b = opal[c].b;
+	palette_set_entry(npal, c, palette_get_entry(opal, c));
       }
 
     /* first frame or palette changes */
-    if (i == 0 || palette_diff(opal, npal, NULL, NULL))
-      sprite_set_palette(sprite, npal, i);
+    if (i == 0 || palette_count_diff(opal, npal, NULL, NULL)) {
+      npal->frame = i;
+      sprite_set_palette(sprite, npal, TRUE);
+    }
 
     /* copy new palette to old palette */
-    palette_copy(opal, npal);
+    palette_copy_colors(opal, npal);
 
     cel = cel_new(i, 0);
     image = image_new(IMAGE_INDEXED,
@@ -248,12 +243,18 @@ static bool load_GIF(FileOp *fop)
 #endif
   }
 
-  gif_destroy_animation(gif);
-  image_free(current_image);
-  image_free(current_image_old);
-
   fop->sprite = sprite;
-  return TRUE;
+  sprite = NULL;
+  ret = TRUE;
+
+error:;
+  if (gif) gif_destroy_animation(gif);
+  if (current_image) image_free(current_image);
+  if (current_image_old) image_free(current_image_old);
+  if (npal) palette_free(npal);
+  if (opal) palette_free(opal);
+  if (sprite) sprite_free(sprite);
+  return ret;
 }
 
 /* TODO: find the colors that are used and resort the palette */
@@ -284,7 +285,7 @@ static bool save_GIF(FileOp *fop)
   int u1, v1, u2, v2;
   int i1, j1, i2, j2;
   Image *bmp, *old;
-  PALETTE opal, npal;
+  Palette *opal, *npal;
   int c, i, x, y;
   int w, h;
   int ret;
@@ -321,9 +322,10 @@ static bool save_GIF(FileOp *fop)
   /* avoid compilation warnings */
   x1 = y1 = x2 = y2 = 0;
 
-  for (i = 0; i < sprite->frames; i++) {
+  opal = NULL;
+  for (i=0; i<sprite->frames; ++i) {
     /* frame palette */
-    palette_copy(npal, sprite_get_palette(sprite, i));
+    npal = sprite_get_palette(sprite, i);
 
     /* render the frame in the bitmap */
     image_clear(bmp, 0);
@@ -333,10 +335,10 @@ static bool save_GIF(FileOp *fop)
     if (i == 0) {
       /* TODO: don't use 256 colors, but only as much as needed. */
       gif->palette.colors_count = max_used_index(bmp)+1;
-      for (c = 0; c < gif->palette.colors_count; c++) {
-	gif->palette.colors[c].r = _rgb_scale_6[npal[c].r];
-	gif->palette.colors[c].g = _rgb_scale_6[npal[c].g];
-	gif->palette.colors[c].b = _rgb_scale_6[npal[c].b];
+      for (c=0; c<gif->palette.colors_count; ++c) {
+	gif->palette.colors[c].r = _rgba_getr(npal->color[c]);
+	gif->palette.colors[c].g = _rgba_getg(npal->color[c]);
+	gif->palette.colors[c].b = _rgba_getb(npal->color[c]);
       }
 
       /* render all */
@@ -401,12 +403,12 @@ static bool save_GIF(FileOp *fop)
 #endif
 
       /* palette changes */
-      if (palette_diff(opal, npal, NULL, NULL) > 0) {
+      if (opal != npal) {
 	gif->frames[i].palette.colors_count = max_used_index(bmp)+1;
-	for (c = 0; c < gif->frames[i].palette.colors_count; c++) {
-	  gif->frames[i].palette.colors[c].r = _rgb_scale_6[npal[c].r];
-	  gif->frames[i].palette.colors[c].g = _rgb_scale_6[npal[c].g];
-	  gif->frames[i].palette.colors[c].b = _rgb_scale_6[npal[c].b];
+	for (c=0; c<gif->frames[i].palette.colors_count; ++c) {
+	  gif->frames[i].palette.colors[c].r = _rgba_getr(npal->color[c]);
+	  gif->frames[i].palette.colors[c].g = _rgba_getg(npal->color[c]);
+	  gif->frames[i].palette.colors[c].b = _rgba_getb(npal->color[c]);
 	}
       }
     }
@@ -433,7 +435,7 @@ static bool save_GIF(FileOp *fop)
 
     /* update the old image and color-map to the new ones to compare later */
     image_copy(old, bmp, 0, 0);
-    palette_copy(opal, npal);
+    opal = npal;
   }
 
   ret = gif_save_animation(fop->filename, gif, fop_progress, fop);

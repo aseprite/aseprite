@@ -21,11 +21,12 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/quant.h"
+#include "raster/palette.h"
 
 Image *image_set_imgtype(Image *image, int imgtype,
 			 int dithering_method,
 			 RGB_MAP *rgb_map,
-			 RGB *palette)
+			 Palette *palette)
 {
   ase_uint32 *rgb_address;
   ase_uint16 *gray_address;
@@ -40,7 +41,7 @@ Image *image_set_imgtype(Image *image, int imgtype,
   else if (image->imgtype == IMAGE_RGB &&
 	   imgtype == IMAGE_INDEXED &&
 	   dithering_method == DITHERING_ORDERED)
-    return image_rgb_to_indexed (image, 0, 0, rgb_map, palette);
+    return image_rgb_to_indexed(image, 0, 0, rgb_map, palette);
 
   new_image = image_new(imgtype, image->w, image->h);
   if (!new_image)
@@ -130,9 +131,9 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    if (c == 0)
 	      *rgb_address = 0;
 	    else
-	      *rgb_address = _rgba (_rgb_scale_6[palette[c].r],
-				    _rgb_scale_6[palette[c].g],
-				    _rgb_scale_6[palette[c].b], 255);
+	      *rgb_address = _rgba(_rgba_getr(palette->color[c]),
+				   _rgba_getg(palette->color[c]),
+				   _rgba_getb(palette->color[c]), 255);
 	    idx_address++;
 	    rgb_address++;
 	  }
@@ -145,11 +146,11 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    if (c == 0)
 	      *gray_address = 0;
 	    else {
-	      r = _rgb_scale_6[palette[c].r];
-	      g = _rgb_scale_6[palette[c].g];
-	      b = _rgb_scale_6[palette[c].b];
-	      rgb_to_hsv_int (&r, &g, &b);
-	      *gray_address = _graya (b, 255);
+	      r = _rgba_getr(palette->color[c]);
+	      g = _rgba_getg(palette->color[c]);
+	      b = _rgba_getb(palette->color[c]);
+	      rgb_to_hsv_int(&r, &g, &b);
+	      *gray_address = _graya(b, 255);
 	    }
 	    idx_address++;
 	    gray_address++;
@@ -196,7 +197,7 @@ static int pattern[8][8] = {
 Image *image_rgb_to_indexed(Image *src_image,
 			    int offsetx, int offsety,
 			    RGB_MAP *rgb_map,
-			    RGB *palette)
+			    Palette *palette)
 {
   int oppr, oppg, oppb, oppnrcm;
   Image *dst_image;
@@ -206,29 +207,29 @@ Image *image_rgb_to_indexed(Image *src_image,
   int nearestcm;
   int c, x, y;
 
-  dst_image = image_new (IMAGE_INDEXED, src_image->w, src_image->h);
+  dst_image = image_new(IMAGE_INDEXED, src_image->w, src_image->h);
   if (!dst_image)
     return NULL;
 
   for (y=0; y<src_image->h; y++) {
     for (x=0; x<src_image->w; x++) {
-      c = src_image->method->getpixel (src_image, x, y);
+      c = src_image->method->getpixel(src_image, x, y);
 
-      r = _rgba_getr (c);
-      g = _rgba_getg (c);
-      b = _rgba_getb (c);
-      a = _rgba_geta (c);
+      r = _rgba_getr(c);
+      g = _rgba_getg(c);
+      b = _rgba_getb(c);
+      a = _rgba_geta(c);
 
       if (a != 0) {
 	nearestcm = rgb_map->data[r>>3][g>>3][b>>3];
 	/* rgb values for nearest color */
-	nr = _rgb_scale_6[palette[nearestcm].r];
-	ng = _rgb_scale_6[palette[nearestcm].g];
-	nb = _rgb_scale_6[palette[nearestcm].b];
+	nr = _rgba_getr(palette->color[nearestcm]);
+	ng = _rgba_getg(palette->color[nearestcm]);
+	nb = _rgba_getb(palette->color[nearestcm]);
 	/* Color as far from rgb as nrngnb but in the other direction */
-	oppr = MID (0, 2*r - nr, 255);
-	oppg = MID (0, 2*g - ng, 255);
-	oppb = MID (0, 2*b - nb, 255);
+	oppr = MID(0, 2*r - nr, 255);
+	oppg = MID(0, 2*g - ng, 255);
+	oppb = MID(0, 2*b - nb, 255);
 	/* Nearest match for opposite color: */
 	oppnrcm = rgb_map->data[oppr>>3][oppg>>3][oppb>>3];
 	/* If they're not the same, dither between them. */
@@ -240,14 +241,14 @@ Image *image_rgb_to_indexed(Image *src_image,
 	   case the r-nr distance can actually be less than the nr-oppr
 	   distance. */
 	if (oppnrcm != nearestcm) {
-	  oppr = _rgb_scale_6[palette[oppnrcm].r];
-	  oppg = _rgb_scale_6[palette[oppnrcm].g];
-	  oppb = _rgb_scale_6[palette[oppnrcm].b];
+	  oppr = _rgba_getr(palette->color[oppnrcm]);
+	  oppg = _rgba_getg(palette->color[oppnrcm]);
+	  oppb = _rgba_getb(palette->color[oppnrcm]);
 
 	  dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
 	  if (dither_const != 0) {
-	    dither_const = MIN (63, (64 * DIST(r, g, b, nr, ng, nb))
-				    / dither_const);
+	    dither_const = 64 * DIST(r, g, b, nr, ng, nb) / dither_const;
+	    dither_const = MIN(63, dither_const);
 
 	    if (pattern[(x+offsetx) & 7][(y+offsety) & 7] < dither_const)
 	      nearestcm = oppnrcm;
@@ -257,7 +258,7 @@ Image *image_rgb_to_indexed(Image *src_image,
       else
 	nearestcm = 0;
 
-      dst_image->method->putpixel (dst_image, x, y, nearestcm);
+      dst_image->method->putpixel(dst_image, x, y, nearestcm);
     }
   }
 

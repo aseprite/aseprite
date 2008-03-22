@@ -141,6 +141,7 @@ static void close_menuitem(JWidget menuitem, bool last_of_close_chain);
 static void close_popup(JWidget menubox);
 static void close_all(JWidget menu);
 static void exe_menuitem(JWidget menuitem);
+static bool window_msg_proc(JWidget widget, JMessage msg);
 
 static JWidget check_for_letter(JWidget menu, int ascii);
 static JWidget check_for_accel(JWidget menu, JMessage msg);
@@ -329,10 +330,8 @@ void jmenu_popup(JWidget menu, int x, int y)
   menubox = jmenubox_new();
 
   base = create_base(menubox);
-
   base->was_clicked = TRUE;
   base->is_filtering = TRUE;
-
   jmanager_add_msg_filter(JM_BUTTONPRESSED, menubox);
 
   jwindow_moveable(window, FALSE);	 /* can't move the window */
@@ -355,10 +354,10 @@ void jmenu_popup(JWidget menu, int x, int y)
   /* open the window */
   jwindow_open_fg(window);
 
-  /* free focus */
+  /* free the keyboard focus */
   jmanager_free_focus();
 
-  /* fetch the "menu" */
+  /* fetch the "menu" so it isn't destroyed */
   jmenubox_set_menu(menubox, NULL);
 
   /* destroy the window */
@@ -492,7 +491,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
       if (!msg->mouse.flags && !get_base(widget)->was_clicked)
 	break;
 
-      /* fall through */
+      /* fall though */
 
     case JM_BUTTONPRESSED:
       if (menu) {
@@ -841,6 +840,8 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 	/* new window and new menu-box */
 	window = jwindow_new(NULL);
+	jwidget_add_hook(window, -1, window_msg_proc, NULL);
+
 	menubox = jmenubox_new();
 
 	menuitem->submenu_menubox = menubox;
@@ -966,7 +967,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	else
 	  jmanager_set_focus(widget->parent->parent);
 
-	/* isn't necessary to free this window because it's
+	/* is not necessary to free this window because it's
 	   automatically destroyed by the manager
 	   ... jwidget_free(window);
 	*/
@@ -1018,8 +1019,7 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
 }
 
 /**
- * Clims the hierarchy of menus to get the 'base' of the most-top
- * menubox.
+ * Clims the hierarchy of menus to get the most-top menubox.
  */
 static JWidget get_base_menubox(JWidget widget)
 {
@@ -1303,6 +1303,19 @@ static void exe_menuitem(JWidget menuitem)
   JMessage msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
+}
+
+static bool window_msg_proc(JWidget widget, JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_CLOSE:
+      jwidget_free_deferred(widget);
+      break;
+
+  }
+
+  return FALSE;
 }
 
 static JWidget check_for_letter(JWidget menu, int ascii)

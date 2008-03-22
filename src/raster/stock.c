@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include "raster/image.h"
 #include "raster/stock.h"
@@ -81,6 +82,8 @@ Stock *stock_new_copy(const Stock *stock)
     }
   }
 
+  assert(stock_copy->nimage == stock->nimage);
+
   return stock_copy;
 }
 
@@ -109,7 +112,7 @@ int stock_add_image(Stock *stock, Image *image)
 {
   int i = stock->nimage++;
 
-  stock->image = jrealloc (stock->image, sizeof (Image *) * stock->nimage);
+  stock->image = jrealloc(stock->image, sizeof(Image *) * stock->nimage);
   if (!stock->image)
     return -1;
 

@@ -46,6 +46,9 @@ typedef struct StatusBar
   JWidget b_play;			/* play animation */
   JWidget b_next;			/* go to next frame */
   JWidget b_last;			/* go to last frame */
+
+  /* tip window */
+  JWidget tipwindow;
 } StatusBar;
 
 /* statusbar */
@@ -53,15 +56,16 @@ typedef struct StatusBar
 JWidget statusbar_new(void);
 int statusbar_type(void);
 
-StatusBar *statusbar_data(JWidget statusbar);
+StatusBar *statusbar_data(JWidget widget);
 
-void statusbar_set_text(JWidget statusbar, int msecs, const char *format, ...);
-void statusbar_show_color(JWidget statusbar, int msecs, int imgtype, color_t color);
-void statusbar_update(JWidget statusbar);
+void statusbar_set_text(JWidget widget, int msecs, const char *format, ...);
+void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...);
+void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color);
+void statusbar_update(JWidget widget);
 
 /* progress */
 
-Progress *progress_new(JWidget statusbar);
+Progress *progress_new(JWidget widget);
 void progress_free(Progress *progress);
 void progress_update(Progress *progress, float progress_pos);
 

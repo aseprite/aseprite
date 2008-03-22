@@ -29,7 +29,6 @@
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/color.h"
-#include "dialogs/colsel.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
@@ -114,16 +113,6 @@ static void cmd_new_file_execute(const char *argument)
     if (bg >= 0 && bg <= 3) {
       color = bg_table[bg];
       ok = TRUE;
-    }
-    else {
-      color = get_config_color("NewSprite",
-			       "BackgroundCustom",
-			       color_rgb(0, 0, 0, 255));
-
-      if (ji_color_select(imgtype, &color)) {
-	set_config_color("NewSprite", "BackgroundCustom", color);
-	ok = TRUE;
-      }
     }
 
     if (ok) {

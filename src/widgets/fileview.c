@@ -31,10 +31,11 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "widgets/fileview.h"
@@ -70,7 +71,7 @@ typedef struct ThumbnailData
   JWidget fileview;
   Image *thumbnail;
   JThread thread;
-  PALETTE pal;
+  PALETTE rgbpal;
 } ThumbnailData;
 
 static FileView *fileview_data(JWidget widget);
@@ -255,7 +256,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       int bgcolor;
       int fgcolor;
       BITMAP *thumbnail = NULL;
-      int thumbnail_y;
+      int thumbnail_y = 0;
 
       /* rows */
       JI_LIST_FOR_EACH(fileview->list, link) {
@@ -751,7 +752,7 @@ static void openfile_bg(void *_data)
       sprite_free(fop->sprite);
     else {
       /* the palette to convert the Image to a BITMAP */
-      palette_copy(data->pal, sprite_get_palette(sprite, 0));
+      palette_to_allegro(sprite_get_palette(sprite, 0), data->rgbpal);
 
       /* render the 'sprite' in one plain 'image' */
       image = image_new(sprite->imgtype, sprite->w, sprite->h);
@@ -795,10 +796,11 @@ static void monitor_thumbnail_generation(void *_data)
   if (fop_is_done(fop)) {
     /* set the thumbnail of the file-item */
     if (data->thumbnail) {
-      BITMAP *bmp = create_bitmap(data->thumbnail->w,
-				  data->thumbnail->h);
+      BITMAP *bmp = create_bitmap_ex(16,
+				     data->thumbnail->w,
+				     data->thumbnail->h);
 
-      select_palette(data->pal);
+      select_palette(data->rgbpal);
       image_to_allegro(data->thumbnail, bmp, 0, 0);
       unselect_palette();
 

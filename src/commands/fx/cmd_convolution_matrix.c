@@ -58,13 +58,13 @@ static JWidget listbox_generate_convmatg(void);
 static void listbox_fill_convmatg(JWidget listbox);
 static void listbox_select_current_convmatr(JWidget listbox);
 
-static int reload_select_hook(JWidget widget, int user_data);
-static int generate_select_hook(JWidget widget, int user_data);
+static bool reload_select_hook(JWidget widget, void *data);
+static bool generate_select_hook(JWidget widget, void *data);
 
-static int list_change_hook(JWidget widget, int user_data);
-static int target_change_hook(JWidget widget, int user_data);
-static int preview_change_hook(JWidget widget, int user_data);
-static int tiled_change_hook(JWidget widget, int user_data);
+static bool list_change_hook(JWidget widget, void *data);
+static bool target_change_hook(JWidget widget, void *data);
+static bool preview_change_hook(JWidget widget, void *data);
+static bool tiled_change_hook(JWidget widget, void *data);
 static void make_preview(void);
 
 static bool cmd_convolution_matrix_enabled(const char *argument)
@@ -210,9 +210,9 @@ static void listbox_select_current_convmatr(JWidget listbox)
   }
 }
 
-static int reload_select_hook(JWidget widget, int user_data)
+static bool reload_select_hook(JWidget widget, void *data)
 {
-  JWidget listbox = (JWidget)user_data;
+  JWidget listbox = (JWidget)data;
   JWidget listitem;
   JLink link, next;
 
@@ -234,7 +234,7 @@ static int reload_select_hook(JWidget widget, int user_data)
   return TRUE;			/* do not close */
 }
 
-static int generate_select_hook(JWidget widget, int user_data)
+static bool generate_select_hook(JWidget widget, void *data)
 {
   JWidget window;
   JWidget view_x;
@@ -300,7 +300,7 @@ static int generate_select_hook(JWidget widget, int user_data)
   return TRUE;			/* do not close */
 }
 
-static int list_change_hook(JWidget widget, int user_data)
+static bool list_change_hook(JWidget widget, void *data)
 {
   JWidget selected = jlistbox_get_selected_child(widget);
   ConvMatr *convmatr = selected->user_data[0];
@@ -312,14 +312,14 @@ static int list_change_hook(JWidget widget, int user_data)
   return FALSE;
 }
 
-static int target_change_hook(JWidget widget, int user_data)
+static bool target_change_hook(JWidget widget, void *data)
 {
   effect_load_target(preview_get_effect(preview));
   make_preview();
   return FALSE;
 }
 
-static int preview_change_hook(JWidget widget, int user_data)
+static bool preview_change_hook(JWidget widget, void *data)
 {
   set_config_bool("ConvolutionMatrix", "Preview",
 		  jwidget_is_selected(widget));
@@ -327,7 +327,7 @@ static int preview_change_hook(JWidget widget, int user_data)
   return FALSE;
 }
 
-static int tiled_change_hook(JWidget widget, int user_data)
+static bool tiled_change_hook(JWidget widget, void *data)
 {
   set_tiled_mode(jwidget_is_selected(widget));
   make_preview();

@@ -95,9 +95,9 @@ static void cmd_sprite_properties_execute(const char *argument)
   jwidget_set_text(frames, buf);
 
   /* background color */
-  bgcolor_button = color_button_new(color_from_image(sprite->imgtype,
-						     sprite->bgcolor),
-				    current_sprite->imgtype);
+  bgcolor_button = colorbutton_new(color_from_image(sprite->imgtype,
+						    sprite->bgcolor),
+				   current_sprite->imgtype);
 
   jwidget_add_child(bgcolor_box, bgcolor_button);
 
@@ -116,7 +116,7 @@ static void cmd_sprite_properties_execute(const char *argument)
 
       /* the background color changes */
       new_bgcolor = get_color_for_image(sprite->imgtype,
-					color_button_get_color(bgcolor_button));
+					colorbutton_get_color(bgcolor_button));
 
       /* set frames */
       if (sprite->bgcolor != new_bgcolor) {

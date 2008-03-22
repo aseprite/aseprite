@@ -32,11 +32,10 @@
     <separator text="Background:" left horizontal />
     <view maxsize expansive>
       <listbox name="bg_box">
-        <listitem text="Transparent (mask color)" />
+        <listitem text="Transparent" />
         <listitem text="Black" />
         <listitem text="White" />
         <listitem text="Magenta" />
-        <listitem text="Custom" />
       </listbox>
     </view>
 

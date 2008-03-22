@@ -122,6 +122,7 @@ void jwidget_free(JWidget widget)
   /* break relationship with the manager */
   jmanager_free_widget(widget);
   jmanager_remove_messages_for(widget);
+  jmanager_remove_msg_filter_for(widget);
 
   /* remove from parent */
   if (widget->parent)

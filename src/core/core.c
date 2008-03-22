@@ -39,7 +39,9 @@
 #  define NO_STDERR
 #endif
 
-/* ASE mode */
+/**
+ * Current running mode of ASE.
+ */
 int ase_mode = 0;
 
 #ifdef NEED_LOG

@@ -1,3 +1,72 @@
+2008-03-22  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_new_file.c (cmd_new_file_execute): Removed the
+	'Custom' background-color option.
+
+	* src/widgets/colbut.c (ColorButton): Rewritten to use the new
+	colorselector tooltip window, and added a new eyedropper feature
+	pressing the button.
+
+	* src/jinete/jmanager.c (jmanager_remove_msg_filter_for): Added.
+
+	* src/widgets/statebar.c (statusbar_show_tip): Added.
+
+	* src/jinete/jmanager.c (jmanager_set_timer_interval): Added.
+
+2008-03-21  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/sprite.c (general_copy): Fixed a problem calling with
+	sprite_set_frames(..., src_sprite->frame) instead of src_sprite->frames.
+
+	* src/raster/layer.c (layer_new_copy): Added dst_sprite.
+
+2008-03-20  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/layer.c (layer_flatten): Fixed a problem where the
+	flatten layer was added in other sprite. For this the new "sprite"
+	parameter was added. Renamed to layer_new_flatten_copy.
+
+	* src/widgets/editor/editor.c (editor_msg_proc): Fixed an annoying
+	flickering effect when the mouse button was released in
+	editor->state == EDIT_DRAWING.
+
+2008-03-19  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jmanager.c (jmanager_generate_messages): Now the
+	mouse events are enqueue even if mouse_widget = NULL, because
+	maybe a msg_filter is added in "jmanager_enqueue_message".
+
+2008-03-16  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/undo.c (chunk_dirty_invert): Fixed a bug with
+	dirty->rows == 0 (for example, when you use floodfill and it
+	doesn't fill nothing).
+
+	* src/raster/palette.h (struct Palette): Added. A lot of code was
+	passed from Allegro's RGB and PALETTE to this new Palette
+	structure.
+
+2008-03-15  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/core/app.c (app_add_hook): Added.
+	(app_trigger_event): Added.
+
+	* src/jinete/jtooltips.c (tipwindow_msg_proc): Fixed a memory leak
+	of a JRect in JM_DRAW.
+
+	* src/jinete/jmenu.c (window_msg_proc): Added to call
+	jwidget_free_deferred in JM_CLOSE of a menubox-window. This fix a
+	memory leak (the menuboxes' windows were not freed).
+
+	* src/jinete/jtooltips.c (jtooltip_window_set_hotregion): Fixed a
+	memory leak (was called jfree instead of jregion_free).
+
+	* src/commands/cmd_grid.c (cmd_snap_to_grid_checked)
+	(cmd_show_grid_checked): Added.
+
+	* src/jinete/jslider.c (slider_msg_proc): Fixed the mouse limits
+	in the slider widget.
+
 2008-03-09  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/widgets/colbar.c: A lot of work was done for the lock/idx

@@ -23,6 +23,7 @@
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/color.h"
+#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
@@ -31,6 +32,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "widgets/statebar.h"
 
 static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame);
 static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame);
@@ -67,6 +69,10 @@ static void cmd_new_frame_execute(const char *argument)
   /* close undo & refresh the screen */
   undo_close(sprite->undo);
   update_screen_for_sprite(sprite);
+
+  statusbar_show_tip(app_get_statusbar(), 1000,
+		     _("New frame %d/%d"),
+		     sprite->frame+1, sprite->frames);
 }
 
 static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame)

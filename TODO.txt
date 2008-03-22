@@ -1,32 +1,34 @@
 Next beta
 ---------
 
-- slider limits
-- Palette gfxobj
-- color module a "jcolor"?
 - tooltips for color-bar.
-- add two DrawClick2:
-  - DrawClick2FreeHand
-  - DrawClick2Shape
-- the user_data of hook_signal should be void*.
-- remove src/dialogs/colsel.[ch]
-- remove src/dialogs/minipal.[ch]
+  + faltan opciones para los rangos de paleta
+  + agregar soporte para UNDO al cambiar los colores de la paleta.
 - si está activado el cuatro para configurar herramientas las teclas G
   y H deben actualizarlo
+  + Solución: con hooks y Options (agregar core/options.[ch])
+- fix this bug:
+  + Create a RGB image,
+  + change color mode to Indexed,
+  + Undo (with the mouse).
 
 High priority work
 ------------------
 
 - search for TODO;
+- rewrite tools-inks-drawingmode stuff;
+- new animation editor (remove the film editor)
+- drag & drop files in Windows.
+- add core/options & the Options structure.
+- add two DrawClick2:
+  - DrawClick2FreeHand
+  - DrawClick2Shape
 - remove the jfilesel.c
 - fix the sprite-properties dialog when select the constant
   frame length.
-- fix copyright years (2001-2008)
 - fix a bug in the film editor when move the separator (panel) outside
   the screen (to left or right)
   + rewrite the film editor.
-- 'jfile.c' should use 'jxml.c', because there are duplicate code:
-  two (precarious) XML parsers.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);

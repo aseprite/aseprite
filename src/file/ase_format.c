@@ -29,6 +29,7 @@
 #define ASE_FILE_MAGIC			0xA5E0
 #define ASE_FILE_FRAME_MAGIC		0xF1FA
 
+#define ASE_FILE_CHUNK_FLI_COLOR2	4
 #define ASE_FILE_CHUNK_FLI_COLOR	11
 #define ASE_FILE_CHUNK_LAYER		0x2004
 #define ASE_FILE_CHUNK_CEL		0x2005
@@ -90,8 +91,9 @@ static void ase_file_write_string(FILE *f, const char *string);
 static void ase_file_write_start_chunk(FILE *f, int type);
 static void ase_file_write_close_chunk(FILE *f);
 
-static void ase_file_read_color_chunk(FILE *f, RGB *pal);
-static void ase_file_write_color_chunk(FILE *f, RGB *pal);
+static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame);
+static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame);
+static void ase_file_write_color2_chunk(FILE *f, Palette *pal);
 static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previous_layer, int *current_level);
 static void ase_file_write_layer_chunk(FILE *f, Layer *layer);
 static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header);
@@ -208,10 +210,22 @@ static bool load_ASE(FileOp *fop)
 	    /* fop_error(fop, "Color chunk\n"); */
 
 	    if (sprite->imgtype == IMAGE_INDEXED) {
-	      /* TODO fix to read palette-per-frame */
-	      PALETTE palette;
-	      ase_file_read_color_chunk(f, palette);
-	      sprite_set_palette(sprite, palette, 0);
+	      Palette *pal = ase_file_read_color_chunk(f, sprite, frame);
+	      sprite_set_palette(sprite, pal, TRUE);
+	      palette_free(pal);
+	    }
+	    else
+	      fop_error(fop, _("Warning: was found a color chunk in non-8bpp file\n"));
+	    break;
+
+	  /* only for 8 bpp images */
+	  case ASE_FILE_CHUNK_FLI_COLOR2:
+	    /* fop_error(fop, "Color2 chunk\n"); */
+
+	    if (sprite->imgtype == IMAGE_INDEXED) {
+	      Palette *pal = ase_file_read_color2_chunk(f, sprite, frame);
+	      sprite_set_palette(sprite, pal, TRUE);
+	      palette_free(pal);
 	    }
 	    else
 	      fop_error(fop, _("Warning: was found a color chunk in non-8bpp file\n"));
@@ -302,13 +316,17 @@ static bool save_ASE(FileOp *fop)
     /* frame duration */
     frame_header.duration = sprite_get_frlen(sprite, frame);
 
+    /* the sprite is indexed and the palette changes? (or is the first frame) */
+    if (sprite->imgtype == IMAGE_INDEXED &&
+	(frame == 0 ||
+	 palette_count_diff(sprite_get_palette(sprite, frame-1),
+			    sprite_get_palette(sprite, frame), NULL, NULL) > 0)) {
+      /* write the color chunk */
+      ase_file_write_color2_chunk(f, sprite_get_palette(sprite, frame));
+    }
+
     /* write extra chunks in the first frame */
     if (frame == 0) {
-      /* color chunk */
-      if (sprite->imgtype == IMAGE_INDEXED)
-	/* TODO fix this to write palette per-frame */
-	ase_file_write_color_chunk(f, sprite_get_palette(sprite, 0));
-
       /* write layer chunks */
       JI_LIST_FOR_EACH(sprite->set->layers, link)
 	ase_file_write_layers(f, link->data);
@@ -576,9 +594,11 @@ static void ase_file_write_close_chunk(FILE *f)
   fseek(f, chunk_end, SEEK_SET);
 }
 
-static void ase_file_read_color_chunk(FILE *f, RGB *pal)
+static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
 {
-  int i, c, packets, skip, size;
+  int i, c, r, g, b, packets, skip, size;
+  Palette *pal = palette_new(frame, MAX_PALETTE_COLORS);
+  palette_copy_colors(pal, sprite_get_palette(sprite, frame));
 
   packets = fgetw(f);	/* number of packets */
   skip = 0;
@@ -590,27 +610,61 @@ static void ase_file_read_color_chunk(FILE *f, RGB *pal)
     if (!size) size = 256;
 
     for (c=skip; c<skip+size; c++) {
-      pal[c].r = fgetc(f);
-      pal[c].g = fgetc(f);
-      pal[c].b = fgetc(f);
+      r = fgetc(f);
+      g = fgetc(f);
+      b = fgetc(f);
+      palette_set_entry(pal, c,
+			_rgba(_rgb_scale_6[r],
+			      _rgb_scale_6[g],
+			      _rgb_scale_6[b], 255));
     }
   }
+
+  return pal;
+}
+
+static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame)
+{
+  int i, c, r, g, b, packets, skip, size;
+  Palette *pal = palette_new(frame, MAX_PALETTE_COLORS);
+  palette_copy_colors(pal, sprite_get_palette(sprite, frame));
+
+  packets = fgetw(f);	/* number of packets */
+  skip = 0;
+
+  /* read all packets */
+  for (i=0; i<packets; i++) {
+    skip += fgetc(f);
+    size = fgetc(f);
+    if (!size) size = 256;
+
+    for (c=skip; c<skip+size; c++) {
+      r = fgetc(f);
+      g = fgetc(f);
+      b = fgetc(f);
+      palette_set_entry(pal, c, _rgba(r, g, b, 255));
+    }
+  }
+
+  return pal;
 }
 
 /* writes the original color chunk in FLI files for the entire palette "pal" */
-static void ase_file_write_color_chunk(FILE *f, RGB *pal)
+static void ase_file_write_color2_chunk(FILE *f, Palette *pal)
 {
-  int c;
+  int c, color;
 
-  ase_file_write_start_chunk(f, ASE_FILE_CHUNK_FLI_COLOR);
+  ase_file_write_start_chunk(f, ASE_FILE_CHUNK_FLI_COLOR2);
 
   fputw(1, f);
   fputc(0, f);
   fputc(0, f);
-  for (c=0; c<256; c++) {
-    fputc(pal[c].r, f);
-    fputc(pal[c].g, f);
-    fputc(pal[c].b, f);
+  for (c=0; c<MAX_PALETTE_COLORS; c++) {
+    color = palette_get_entry(pal, c);
+
+    fputc(_rgba_getr(color), f);
+    fputc(_rgba_getg(color), f);
+    fputc(_rgba_getb(color), f);
   }
 
   ase_file_write_close_chunk(f);
@@ -653,17 +707,19 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
     layer->writable = (flags & 2) ? TRUE: FALSE;
 
     /* name */
-    if (name)
+    if (name) {
       layer_set_name(layer, name);
+      jfree(name);
+    }
 
     /* child level... */
 
     if (child_level == *current_level)
-      layer_add_layer((Layer *)(*previous_layer)->parent, layer);
+      layer_add_layer((*previous_layer)->parent_layer, layer);
     else if (child_level > *current_level)
       layer_add_layer((*previous_layer), layer);
     else if (child_level < *current_level)
-      layer_add_layer((Layer *)((Layer *)(*previous_layer)->parent)->parent, layer);
+      layer_add_layer((*previous_layer)->parent_layer->parent_layer, layer);
 
     *previous_layer = layer;
     *current_level = child_level;
@@ -674,7 +730,7 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
 
 static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
 {
-  GfxObj *parent;
+  Layer *parent;
   int child_level;
 
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_LAYER);
@@ -688,10 +744,10 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
 
   /* layer child level */
   child_level = -1;
-  parent = layer->parent;
-  while (parent && parent->type != GFXOBJ_SPRITE) {
+  parent = layer->parent_layer;
+  while (parent != NULL) {
     child_level++;
-    parent = ((Layer *)parent)->parent;
+    parent = parent->parent_layer;
   }
   fputw(child_level, f);
 
@@ -916,8 +972,10 @@ static Mask *ase_file_read_mask_chunk(FILE *f)
   if (!mask)
     return NULL;
 
-  if (name)
+  if (name) {
     mask_set_name(mask, name);
+    jfree(name);
+  }
 
   mask_replace(mask, x, y, w, h);
 

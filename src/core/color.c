@@ -27,9 +27,10 @@
 #include "core/color.h"
 #include "core/core.h"
 #include "modules/gfx.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/blend.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "widgets/colbar.h"
 
 #define _hsva_geth		_rgba_getr
@@ -147,6 +148,13 @@ int color_type(color_t color)
   return GET_COLOR_TYPE(color);
 }
 
+bool color_equals(color_t c1, color_t c2)
+{
+  return
+    GET_COLOR_TYPE(c1) == GET_COLOR_TYPE(c2) &&
+    GET_COLOR_DATA(c1) == GET_COLOR_DATA(c2);
+}
+
 color_t color_mask(void)
 {
   color_t c = { COLOR_TYPE_MASK, 0 };
@@ -193,7 +201,10 @@ int color_get_red(int imgtype, color_t color)
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      return imgtype == IMAGE_INDEXED ? _rgb_scale_6[current_palette[0].r]: 0;
+      if (imgtype == IMAGE_INDEXED)
+	return _rgba_getr(palette_get_entry(get_current_palette(), 0));
+      else
+	return 0;
 
     case COLOR_TYPE_RGB:
       return _rgba_getr(GET_COLOR_RGB(color));
@@ -211,7 +222,8 @@ int color_get_red(int imgtype, color_t color)
       return _graya_getv(GET_COLOR_GRAY(color));
 
     case COLOR_TYPE_INDEX:
-      return _rgb_scale_6[current_palette[GET_COLOR_INDEX(color)].r];
+      return _rgba_getr(palette_get_entry(get_current_palette(),
+					  GET_COLOR_INDEX(color)));
 
   }
 
@@ -224,7 +236,10 @@ int color_get_green(int imgtype, color_t color)
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      return imgtype == IMAGE_INDEXED ? _rgb_scale_6[current_palette[0].g]: 0;
+      if (imgtype == IMAGE_INDEXED)
+	return _rgba_getg(palette_get_entry(get_current_palette(), 0));
+      else
+	return 0;
 
     case COLOR_TYPE_RGB:
       return _rgba_getg(GET_COLOR_RGB(color));
@@ -242,7 +257,8 @@ int color_get_green(int imgtype, color_t color)
       return _graya_getv(GET_COLOR_GRAY(color));
 
     case COLOR_TYPE_INDEX:
-      return _rgb_scale_6[current_palette[GET_COLOR_INDEX(color)].g];
+      return _rgba_getg(palette_get_entry(get_current_palette(),
+					  GET_COLOR_INDEX(color)));
 
   }
 
@@ -255,7 +271,10 @@ int color_get_blue(int imgtype, color_t color)
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      return imgtype == IMAGE_INDEXED ? _rgb_scale_6[current_palette[0].b]: 0;
+      if (imgtype == IMAGE_INDEXED)
+	return _rgba_getb(palette_get_entry(get_current_palette(), 0));
+      else
+	return 0;
 
     case COLOR_TYPE_RGB:
       return _rgba_getb(GET_COLOR_RGB(color));
@@ -273,7 +292,8 @@ int color_get_blue(int imgtype, color_t color)
       return _graya_getv(GET_COLOR_GRAY(color));
 
     case COLOR_TYPE_INDEX:
-      return _rgb_scale_6[current_palette[GET_COLOR_INDEX(color)].b];
+      return _rgba_getb(palette_get_entry(get_current_palette(),
+					  GET_COLOR_INDEX(color)));
 
   }
 
@@ -304,10 +324,11 @@ int color_get_hue(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      int c = GET_COLOR_INDEX(color);
-      int r = _rgb_scale_6[current_palette[c].r];
-      int g = _rgb_scale_6[current_palette[c].g];
-      int b = _rgb_scale_6[current_palette[c].b];
+      ase_uint32 c = palette_get_entry(get_current_palette(),
+				       GET_COLOR_INDEX(color));
+      int r = _rgba_getr(c);
+      int g = _rgba_getg(c);
+      int b = _rgba_getb(c);
       rgb_to_hsv_int(&r, &g, &b);
       return r;
     }
@@ -341,10 +362,11 @@ int color_get_saturation(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      int c = GET_COLOR_INDEX(color);
-      int r = _rgb_scale_6[current_palette[c].r];
-      int g = _rgb_scale_6[current_palette[c].g];
-      int b = _rgb_scale_6[current_palette[c].b];
+      ase_uint32 c = palette_get_entry(get_current_palette(),
+				       GET_COLOR_INDEX(color));
+      int r = _rgba_getr(c);
+      int g = _rgba_getg(c);
+      int b = _rgba_getb(c);
       rgb_to_hsv_int(&r, &g, &b);
       return g;
     }
@@ -378,10 +400,11 @@ int color_get_value(int imgtype, color_t color)
       return _graya_getv(GET_COLOR_GRAY(color));
 
     case COLOR_TYPE_INDEX: {
-      int c = GET_COLOR_INDEX(color);
-      int r = _rgb_scale_6[current_palette[c].r];
-      int g = _rgb_scale_6[current_palette[c].g];
-      int b = _rgb_scale_6[current_palette[c].b];
+      ase_uint32 c = palette_get_entry(get_current_palette(),
+				       GET_COLOR_INDEX(color));
+      int r = _rgba_getr(c);
+      int g = _rgba_getg(c);
+      int b = _rgba_getb(c);
       rgb_to_hsv_int(&r, &g, &b);
       return b;
     }
@@ -568,11 +591,13 @@ int get_color_for_allegro(int depth, color_t color)
 
     case COLOR_TYPE_INDEX:
       c = GET_COLOR_INDEX(color);
-      if (depth != 8)
+      if (depth != 8) {
+	ase_uint32 _c = palette_get_entry(get_current_palette(), c);
 	c = makeacol_depth(depth,
-			   _rgb_scale_6[current_palette[c].r],
-			   _rgb_scale_6[current_palette[c].g],
-			   _rgb_scale_6[current_palette[c].b], 255);
+			   _rgba_getr(_c),
+			   _rgba_getg(_c),
+			   _rgba_getb(_c), 255);
+      }
       break;
 
   }
@@ -681,12 +706,13 @@ int get_color_for_image(int imgtype, color_t color)
     case COLOR_TYPE_INDEX:
       data = GET_COLOR_INDEX(color);
       switch (imgtype) {
-	case IMAGE_RGB:
-	  c = data;
-	  c = _rgba(_rgb_scale_6[current_palette[c].r],
-		    _rgb_scale_6[current_palette[c].g],
-		    _rgb_scale_6[current_palette[c].b], 255);
+	case IMAGE_RGB: {
+	  ase_uint32 _c = palette_get_entry(get_current_palette(), data);
+	  c = _rgba(_rgba_getr(_c),
+		    _rgba_getg(_c),
+		    _rgba_getb(_c), 255);
 	  break;
+	}
 	case IMAGE_GRAYSCALE:
 	  c = _graya(data & 0xff, 255);
 	  break;
@@ -782,15 +808,17 @@ void color_to_formalstring(int imgtype, color_t color,
 	}
 	break;
 
-      case COLOR_TYPE_INDEX:
+      case COLOR_TYPE_INDEX: {
+	ase_uint32 _c = palette_get_entry(get_current_palette(), data & 0xff);
 	data = GET_COLOR_INDEX(color);
 	uszprintf(buf, size, "%s %d(RGB %d %d %d)",
 		  _("Index"),
 		  data & 0xff,
-		  _rgb_scale_6[current_palette[data & 0xff].r],
-		  _rgb_scale_6[current_palette[data & 0xff].g],
-		  _rgb_scale_6[current_palette[data & 0xff].b]);
+		  _rgba_getr(_c),
+		  _rgba_getg(_c),
+		  _rgba_getb(_c));
 	break;
+      }
 
       default:
 	assert(FALSE);
@@ -859,86 +887,6 @@ void color_to_formalstring(int imgtype, color_t color,
 	assert(FALSE);
 	break;
     }
-  }
-}
-
-void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
-		int imgtype, color_t color)
-{
-  int type = GET_COLOR_TYPE(color);
-  int data;
-  int w = x2 - x1 + 1;
-  int h = y2 - y1 + 1;
-  BITMAP *graph;
-  int grid;
-
-  grid = MIN(w, h) / 2;
-  grid += MIN(w, h) - grid*2;
-
-  if (type == COLOR_TYPE_INDEX) {
-    data = GET_COLOR_INDEX(color);
-    rectfill(bmp, x1, y1, x2, y2,
-	     /* get_color_for_allegro(bitmap_color_depth(bmp), color)); */
-	     palette_color[_index_cmap[data]]);
-    return;
-  }
-
-  switch (imgtype) {
-
-    case IMAGE_INDEXED:
-      rectfill(bmp, x1, y1, x2, y2,
-	       palette_color[_index_cmap[get_color_for_image(imgtype, color)]]);
-      break;
-
-    case IMAGE_RGB:
-      graph = create_bitmap_ex(32, w, h);
-      if (!graph)
-        return;
-
-      rectgrid(graph, 0, 0, w-1, h-1, grid, grid);
-
-      drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
-      set_trans_blender(0, 0, 0, color_get_alpha(imgtype, color));
-      {
-        int rgb_bitmap_color = get_color_for_image(imgtype, color);
-        color_t color2 = color_rgb(_rgba_getr(rgb_bitmap_color),
-				   _rgba_getg(rgb_bitmap_color),
-				   _rgba_getb(rgb_bitmap_color),
-				   _rgba_geta(rgb_bitmap_color));
-        rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
-      }
-      drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
-
-      use_current_sprite_rgb_map();
-      blit(graph, bmp, 0, 0, x1, y1, w, h);
-      restore_rgb_map();
-
-      destroy_bitmap(graph);
-      break;
-
-    case IMAGE_GRAYSCALE:
-      graph = create_bitmap_ex(32, w, h);
-      if (!graph)
-        return;
-
-      rectgrid(graph, 0, 0, w-1, h-1, grid, grid);
-
-      drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
-      set_trans_blender(0, 0, 0, color_get_alpha(imgtype, color));
-      {
-        int gray_bitmap_color = get_color_for_image(imgtype, color);
-        color_t color2 = color_gray(_graya_getv(gray_bitmap_color),
-				    _graya_geta(gray_bitmap_color));
-        rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
-      }
-      drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
-
-      use_current_sprite_rgb_map();
-      blit(graph, bmp, 0, 0, x1, y1, w, h);
-      restore_rgb_map();
-
-      destroy_bitmap(graph);
-      break;
   }
 }
 

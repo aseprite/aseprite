@@ -78,7 +78,7 @@ void crop_layer(void)
     Layer *new_layer;
     Cel *new_cel;
     Image *new_image;
-    Layer *set = (Layer *)layer->parent;
+    Layer *set = layer->parent_layer;
     JLink link;
 
     new_layer = layer_new(sprite);

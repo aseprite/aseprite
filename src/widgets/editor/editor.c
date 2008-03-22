@@ -33,13 +33,14 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
 #include "raster/brush.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
+#include "raster/palette.h"
 #include "raster/path.h"
 #include "raster/quant.h"
 #include "raster/sprite.h"
@@ -97,7 +98,8 @@ JWidget editor_new(void)
   editor->cursor_thick = 0;
   editor->old_cursor_thick = 0;
   editor->cursor_candraw = FALSE;
-  editor->cursor_eyedropper = FALSE;
+  editor->alt_pressed = FALSE;
+  editor->space_pressed = FALSE;
 
   jwidget_add_hook(widget, editor_type(), editor_msg_proc, editor);
   jwidget_focusrest(widget, TRUE);
@@ -379,10 +381,7 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
       Image *rgb_rendered = rendered;
       rendered = image_rgb_to_indexed(rgb_rendered, source_x, source_y,
 				      orig_rgb_map,
-				      /* TODO */
-/* 				      sprite_get_palette(editor->sprite, */
-/* 							 editor->sprite->frpos)); */
-				      current_palette);
+				      get_current_palette());
       image_free(rgb_rendered);
     }
 
@@ -406,8 +405,12 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
 	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
       }
       else {
-	select_palette(sprite_get_palette(editor->sprite,
-					  editor->sprite->frame));
+	PALETTE rgbpal;
+	Palette *pal = sprite_get_palette(editor->sprite,
+					  editor->sprite->frame);
+	palette_to_allegro(pal, rgbpal);
+
+	select_palette(rgbpal);
 	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
 	unselect_palette();
       }
@@ -834,7 +837,8 @@ void editor_update_statusbar_for_standby(JWidget widget)
 
   screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
 
-  if (editor->cursor_eyedropper) {
+  /* for eye-dropper */
+  if (editor->alt_pressed) {
     color_t color = color_from_image(editor->sprite->imgtype,
 				     sprite_getpixel(editor->sprite, x, y));
 
@@ -1086,13 +1090,20 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 		       editor->sprite->frame) != NULL);
 
       if (msg->any.shifts & KB_ALT_FLAG)
-	editor->cursor_eyedropper = TRUE;
+	editor->alt_pressed = TRUE;
+
+      if (key[KEY_SPACE])	/* TODO another way to get the KEY_SPACE state? */
+	editor->space_pressed = TRUE;
       break;
 
     case JM_MOUSELEAVE:
       hide_drawing_cursor(widget);
-      if (editor->cursor_eyedropper)
-	editor->cursor_eyedropper = FALSE;
+
+      if (editor->alt_pressed)
+	editor->alt_pressed = FALSE;
+
+      if (editor->space_pressed)
+	editor->space_pressed = FALSE;
       break;
 
     case JM_BUTTONPRESSED: {
@@ -1104,7 +1115,8 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 
       /* move the scroll */
       if ((msg->mouse.left && has_only_shifts(msg, KB_SHIFT_FLAG)) ||
-	  (msg->mouse.middle && has_only_shifts(msg, 0))) {
+	  (msg->mouse.middle && has_only_shifts(msg, 0)) ||
+	  (msg->mouse.left && editor->space_pressed)) {
 	editor->state = EDIT_MOVING_SCROLL;
 
 	editor_setcursor(widget, msg->mouse.x, msg->mouse.y);
@@ -1123,7 +1135,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       /* call the eyedropper command */
-      else if (editor->cursor_eyedropper) {
+      else if (editor->alt_pressed) {
 	Command *command = command_get_by_name(CMD_EYEDROPPER_TOOL);
 	if (command_is_enabled(command, NULL))
 	  command_execute(command, msg->mouse.right ? "background": NULL);
@@ -1171,37 +1183,38 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	editor->state = EDIT_STANDBY;
 	jwidget_release_mouse(widget);
       }
+      else {
+	/* Draw cursor */
+	if (editor->cursor_thick) {
+	  int x, y;
 
-      /* Draw cursor */
-      if (editor->cursor_thick) {
-	int x, y;
+	  /* jmouse_set_cursor(JI_CURSOR_NULL); */
 
-	/* jmouse_set_cursor(JI_CURSOR_NULL); */
+	  x = msg->mouse.x;
+	  y = msg->mouse.y;
 
-	x = msg->mouse.x;
-	y = msg->mouse.y;
-
-	/* Redraw it only when the mouse change to other pixel (not
-	   when the mouse moves only).  */
-	if ((editor->cursor_screen_x != x) || (editor->cursor_screen_y != y)) {
-	  jmouse_hide();
-	  editor_clean_cursor(widget);
-	  editor_draw_cursor(widget, x, y);
-	  jmouse_show();
+	  /* Redraw it only when the mouse change to other pixel (not
+	     when the mouse moves only).  */
+	  if ((editor->cursor_screen_x != x) || (editor->cursor_screen_y != y)) {
+	    jmouse_hide();
+	    editor_clean_cursor(widget);
+	    editor_draw_cursor(widget, x, y);
+	    jmouse_show();
+	  }
 	}
-      }
 
-      /* status bar text */
-      if (editor->state == EDIT_STANDBY) {
-	editor_update_statusbar_for_standby(widget);
-      }
-      else if (editor->state == EDIT_MOVING_SCROLL) {
-	int x, y;
-	screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
-	statusbar_set_text
-	  (app_get_statusbar(), 0,
-	   "Pos %3d %3d (Size %3d %3d)", x, y,
-	   editor->sprite->w, editor->sprite->h);
+	/* status bar text */
+	if (editor->state == EDIT_STANDBY) {
+	  editor_update_statusbar_for_standby(widget);
+	}
+	else if (editor->state == EDIT_MOVING_SCROLL) {
+	  int x, y;
+	  screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
+	  statusbar_set_text
+	    (app_get_statusbar(), 0,
+	     "Pos %3d %3d (Size %3d %3d)", x, y,
+	     editor->sprite->w, editor->sprite->h);
+	}
       }
       return TRUE;
     }
@@ -1221,23 +1234,45 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	  editor_keys_toset_brushsize(widget, msg->key.scancode))
 	return TRUE;
 
-      /* eye-dropper is activated with ALT key */
-      if (msg->key.scancode == KEY_ALT &&
-	  jwidget_has_mouse(widget)) {
-	editor->cursor_eyedropper = TRUE;
-	editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
-	return TRUE;
+      if (jwidget_has_mouse(widget)) {
+	switch (msg->key.scancode) {
+	  
+	  /* eye-dropper is activated with ALT key */
+	  case KEY_ALT:
+	    editor->alt_pressed = TRUE;
+	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	    return TRUE;
+
+	  case KEY_SPACE:
+	    editor->space_pressed = TRUE;
+	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	    return TRUE;
+	}
       }
       break;
 
     case JM_KEYRELEASED:
-      if (editor->cursor_eyedropper) {
+      switch (msg->key.scancode) {
+
 	/* eye-dropper is deactivated with ALT key */
-	if (msg->key.scancode == KEY_ALT) {
-	  editor->cursor_eyedropper = FALSE;
-	  editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
-	  return TRUE;
-	}
+	case KEY_ALT:
+	  if (editor->alt_pressed) {
+	    editor->alt_pressed = FALSE;
+	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	    return TRUE;
+	  }
+	  break;
+
+	case KEY_SPACE:
+	  if (editor->space_pressed) {
+	    /* we have to clear all the KEY_SPACE in buffer */
+	    clear_keybuf();
+
+	    editor->space_pressed = FALSE;
+	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	    return TRUE;
+	  }
+	  break;
       }
       break;
 
@@ -1375,9 +1410,13 @@ static void editor_setcursor(JWidget widget, int x, int y)
     case EDIT_STANDBY:
       if (editor->sprite) {
 	if (editor->cursor_candraw) {
-	  if (editor->cursor_eyedropper) {
+	  if (editor->alt_pressed) {
 	    hide_drawing_cursor(widget);
 	    jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
+	  }
+	  else if (editor->space_pressed) {
+	    hide_drawing_cursor(widget);
+	    jmouse_set_cursor(JI_CURSOR_MOVE);
 	  }
 	  else {
 	    jmouse_set_cursor(JI_CURSOR_NULL);

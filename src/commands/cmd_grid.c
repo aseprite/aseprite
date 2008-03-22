@@ -26,10 +26,28 @@
 #include "modules/tools.h"
 #include "widgets/statebar.h"
 
+/* ======================== */
+/* show_grid                */
+/* ======================== */
+
+static bool cmd_show_grid_checked(const char *argument)
+{
+  return get_view_grid();
+}
+
 static void cmd_show_grid_execute(const char *argument)
 {
   set_view_grid(get_view_grid() ? FALSE: TRUE);
   refresh_all_editors();
+}
+
+/* ======================== */
+/* snap_to_grid             */
+/* ======================== */
+
+static bool cmd_snap_to_grid_checked(const char *argument)
+{
+  return get_use_grid();
 }
 
 static void cmd_snap_to_grid_execute(const char *argument)
@@ -49,7 +67,7 @@ static void cmd_snap_to_grid_execute(const char *argument)
 Command cmd_show_grid = {
   CMD_SHOW_GRID,
   NULL,
-  NULL,
+  cmd_show_grid_checked,
   cmd_show_grid_execute,
   NULL
 };
@@ -57,7 +75,7 @@ Command cmd_show_grid = {
 Command cmd_snap_to_grid = {
   CMD_SNAP_TO_GRID,
   NULL,
-  NULL,
+  cmd_snap_to_grid_checked,
   cmd_snap_to_grid_execute,
   NULL
 };

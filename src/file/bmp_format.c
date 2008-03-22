@@ -161,9 +161,9 @@ static void read_bmicolors(FileOp *fop, int ncols, FILE *f,int win_flag)
    int i, r, g, b;
 
    for (i=0; i<ncols; i++) {
-      b = fgetc(f) / 4;
-      g = fgetc(f) / 4;
-      r = fgetc(f) / 4;
+      b = fgetc(f);
+      g = fgetc(f);
+      r = fgetc(f);
       fop_sequence_set_color(fop, i, r, g, b);
       if (win_flag)
 	 fgetc(f);
@@ -676,9 +676,9 @@ static bool save_BMP(FileOp *fop)
     /* palette */
     for (i=0; i<256; i++) {
       fop_sequence_get_color(fop, i, &r, &g, &b);
-      fputc(_rgb_scale_6[b], f);
-      fputc(_rgb_scale_6[g], f);
-      fputc(_rgb_scale_6[r], f);
+      fputc(b, f);
+      fputc(g, f);
+      fputc(r, f);
       fputc(0, f);
     }
   }

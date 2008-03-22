@@ -31,7 +31,7 @@
 #include "widgets/groupbut.h"
 #include "widgets/toolbar.h"
 
-static int group_change_signal(JWidget widget, int user_data);
+static bool group_change_hook(JWidget widget, void *data);
 static void conf_command(JWidget widget);
 
 JWidget toolbar_new(int align)
@@ -79,7 +79,7 @@ JWidget toolbar_new(int align)
   jwidget_add_child(box, fillbox);
   jwidget_add_child(box, confbutton);
 
-  HOOK(group, SIGNAL_GROUP_BUTTON_CHANGE, group_change_signal, 0);
+  HOOK(group, SIGNAL_GROUP_BUTTON_CHANGE, group_change_hook, 0);
   jbutton_add_command(confbutton, conf_command);
 
   box->user_data[0] = group;
@@ -99,7 +99,7 @@ void toolbar_update(JWidget widget)
   group_button_select(group, c);
 }
 
-static int group_change_signal(JWidget widget, int user_data)
+static bool group_change_hook(JWidget widget, void *data)
 {
   int c = group_button_get_selected(widget);
 

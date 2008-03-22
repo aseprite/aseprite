@@ -125,17 +125,23 @@ void _ji_set_font_of_all_widgets(struct FONT *f)
 {
   int c;
 
+  /* first of all, we have to set the font to all the widgets */
   for (c=0; c<nwidgets; c++)
-    if (_ji_is_valid_widget(widgets[c])) {
+    if (_ji_is_valid_widget(widgets[c]))
       jwidget_set_font(widgets[c], f);
-      jwidget_init_theme(widgets[c]);
-    }
 
+  /* then we can reinitialize the theme of each widget */
+  for (c=0; c<nwidgets; c++)
+    if (_ji_is_valid_widget(widgets[c]))
+      jwidget_init_theme(widgets[c]);
+
+  /* remap the windows */
   for (c=0; c<nwidgets; c++)
     if (_ji_is_valid_widget(widgets[c])) {
       if (widgets[c]->type == JI_WINDOW)
 	jwindow_remap(widgets[c]);
     }
 
+  /* refresh the screen */
   jmanager_refresh_screen();
 }

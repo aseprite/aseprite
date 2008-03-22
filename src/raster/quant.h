@@ -28,15 +28,16 @@ enum {
 };
 
 struct Image;
+struct Palette;
 
 struct Image *image_set_imgtype(struct Image *image, int imgtype,
 				int dithering_method,
 				RGB_MAP *rgb_map,
-				RGB *palette);
+				struct Palette *palette);
 
 struct Image *image_rgb_to_indexed(struct Image *src_image,
 				   int offsetx, int offsety,
 				   RGB_MAP *rgb_map,
-				   RGB *palette);
+				   struct Palette *palette);
 
 #endif /* RASTER_QUANT_H */

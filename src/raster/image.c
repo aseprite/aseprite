@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <allegro.h>
 /* #include <allegro/color.h> */
 /* #include <allegro/gfx.h> */
@@ -75,6 +76,7 @@ Image *image_new(int imgtype, int w, int h)
 
 Image *image_new_copy(const Image *image)
 {
+  assert(image != NULL);
   return image_crop(image, 0, 0, image->w, image->h);
 }
 

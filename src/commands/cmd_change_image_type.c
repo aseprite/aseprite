@@ -24,7 +24,7 @@
 #include "core/app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/quant.h"

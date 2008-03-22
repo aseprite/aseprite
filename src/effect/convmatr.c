@@ -28,9 +28,10 @@
 #include "core/dirs.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/tools.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "util/filetoks.h"
 
 /* TODO warning: this number could be dangerous for big filters */
@@ -57,6 +58,9 @@ void exit_convolution_matrix(void)
 {
   clean_matrices_stock();
   jlist_free(data.matrices);
+
+  if (data.lines != NULL)
+    jfree(data.lines);
 }
 
 ConvMatr *convmatr_new(int w, int h)
@@ -113,7 +117,7 @@ void set_convmatr(ConvMatr *convmatr)
   data.convmatr = convmatr;
   data.tiled = get_tiled_mode();
 
-  if (data.lines)
+  if (data.lines != NULL)
     jfree(data.lines);
 
   data.lines = jmalloc(sizeof(unsigned char *) * convmatr->h);
@@ -458,6 +462,7 @@ void apply_convolution_matrix2(Effect *effect)
 
 void apply_convolution_matrix1(Effect *effect)
 {
+  Palette *pal = get_current_palette();
   ConvMatr *matrix = data.convmatr;
   Image *src = effect->src;
   Image *dst = effect->dst;
@@ -490,9 +495,9 @@ void apply_convolution_matrix1(Effect *effect)
 
       GET_CONVMATR_DATA
 	(ase_uint8,
-	 r += _rgb_scale_6[current_palette[color].r] * (*mdata);
-	 g += _rgb_scale_6[current_palette[color].g] * (*mdata);
-	 b += _rgb_scale_6[current_palette[color].b] * (*mdata);
+	 r += _rgba_getr(pal->color[color]) * (*mdata);
+	 g += _rgba_getg(pal->color[color]) * (*mdata);
+	 b += _rgba_getb(pal->color[color]) * (*mdata);
 	 index += color * (*mdata);
 	 );
 
@@ -508,21 +513,21 @@ void apply_convolution_matrix1(Effect *effect)
 	  r = MID(0, r, 255);
 	}
 	else
-	  r = _rgb_scale_6[current_palette[color].r];
+	  r = _rgba_getr(pal->color[color]);
 
 	if (effect->target.g) {
 	  g = g / div + matrix->bias;
 	  g = MID(0, g, 255);
 	}
 	else
-	  g = _rgb_scale_6[current_palette[color].g];
+	  g = _rgba_getg(pal->color[color]);
 
 	if (effect->target.b) {
 	  b = b / div + matrix->bias;
 	  b = MID(0, b, 255);
 	}
 	else
-	  b = _rgb_scale_6[current_palette[color].b];
+	  b = _rgba_getb(pal->color[color]);
 
 	*(dst_address++) = orig_rgb_map->data[r>>3][g>>3][b>>3];
       }

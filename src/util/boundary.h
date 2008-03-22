@@ -43,16 +43,11 @@ typedef struct _BoundSeg
   unsigned visited : 1;
 } BoundSeg;
 
-BoundSeg * find_mask_boundary (const struct Image *maskPR,
-                               int             *num_elems,
-                               BoundaryType     type,
-                               int              x1,
-                               int              y1,
-                               int              x2,
-                               int              y2);
-BoundSeg * sort_boundary      (BoundSeg        *segs,
-                               int              num_segs,
-                               int             *num_groups);
+BoundSeg *find_mask_boundary(const struct Image *maskPR, int *num_elems,
+			     BoundaryType type, int x1, int y1, int x2, int y2);
+BoundSeg *sort_boundary(BoundSeg *segs, int num_segs, int *num_groups);
+
+void boundary_exit(void);
 
 #ifdef __cplusplus
   }

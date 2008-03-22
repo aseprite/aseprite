@@ -29,7 +29,7 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
 #include "modules/tools2.h"
@@ -124,7 +124,7 @@ void copy_image_to_clipboard(Image *image)
     dest = GetImage2(sprite, NULL, NULL, NULL);
     image_copy(dest, image, 0, 0);
 
-    sprite_set_palette(sprite, current_palette, 0);
+    sprite_set_palette(sprite, get_current_palette(), FALSE);
 
     set_clipboard_sprite(sprite);
   }

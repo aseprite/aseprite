@@ -30,7 +30,8 @@
 #include "core/dirs.h"
 #include "intl/intl.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
+#include "raster/palette.h"
 
 static JWidget tips_new(void);
 static int tips_type(void);
@@ -49,7 +50,7 @@ static BITMAP *tips_load_image(const char *filename, PALETTE pal);
 
 static void prev_command(JWidget widget, void *data);
 static void next_command(JWidget widget, void *data);
-static int check_signal(JWidget widget, int user_data);
+static bool check_change_hook(JWidget widget, void *data);
 
 void dialogs_tips(bool forced)
 {
@@ -57,7 +58,7 @@ void dialogs_tips(bool forced)
   JWidget button_close, button_prev, button_next;
   JWidget view, tips;
   JWidget check;
-  PALETTE old_pal;
+  Palette *old_pal;
 
   /* don't show it? */
   if (!forced && !get_config_bool("Tips", "Show", TRUE))
@@ -100,7 +101,7 @@ void dialogs_tips(bool forced)
   jbutton_add_command_data(button_prev, prev_command, tips);
   jbutton_add_command_data(button_next, next_command, tips);
 
-  HOOK(check, JI_SIGNAL_CHECK_CHANGE, check_signal, 0);
+  HOOK(check, JI_SIGNAL_CHECK_CHANGE, check_change_hook, 0);
 
   if (get_config_bool("Tips", "Show", TRUE))
     jwidget_select(check);
@@ -131,7 +132,7 @@ void dialogs_tips(bool forced)
   jwidget_set_min_size(window, 0, 0);
 
   /* load first page */
-  memcpy(old_pal, current_palette, sizeof(PALETTE));
+  old_pal = palette_new_copy(get_current_palette());
   tips_load_page(tips);
 
   /* run the window */
@@ -140,6 +141,8 @@ void dialogs_tips(bool forced)
 
   /* restore the palette */
   set_current_palette(old_pal, TRUE);
+  palette_free(old_pal);
+
   jmanager_refresh_screen();
 }
 
@@ -406,13 +409,16 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
       /* \palette filename */
       else if (ustrncmp (buf+1, "palette", 7) == 0) {
 	char filename[1024];
-	PALETTE pal;
+	PALETTE rgbpal;
 	BITMAP *bmp;
 
 	sprintf(filename, "tips/%s", strchr(buf, ' ')+1);
-	bmp = tips_load_image(filename, pal);
+	bmp = tips_load_image(filename, rgbpal);
 	if (bmp) {
-	  set_current_palette(pal, FALSE);
+	  Palette *pal = palette_new(0, MAX_PALETTE_COLORS);
+	  set_current_palette(palette_from_allegro(pal, rgbpal), FALSE);
+	  palette_free(pal);
+	  
 	  destroy_bitmap(bmp);
 	}
 	else {
@@ -507,7 +513,7 @@ static void next_command(JWidget widget, void *data)
   tips_load_page((JWidget)data);
 }
 
-static int check_signal(JWidget widget, int user_data)
+static bool check_change_hook(JWidget widget, void *data)
 {
   set_config_bool("Tips", "Show", jwidget_is_selected(widget));
   return TRUE;

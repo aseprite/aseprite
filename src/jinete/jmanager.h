@@ -51,6 +51,7 @@ int jmanager_add_timer(JWidget widget, int interval);
 void jmanager_remove_timer(int timer_id);
 void jmanager_start_timer(int timer_id);
 void jmanager_stop_timer(int timer_id);
+void jmanager_set_timer_interval(int timer_id, int interval);
 
 /* routines that uses the ji_get_default_manager() */
 
@@ -75,6 +76,7 @@ void jmanager_refresh_screen(void);
 
 void jmanager_add_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter(int message, JWidget widget);
+void jmanager_remove_msg_filter_for(JWidget widget);
 
 JI_END_DECLS
 

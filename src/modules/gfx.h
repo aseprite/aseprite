@@ -19,6 +19,7 @@
 #ifndef MODULES_GFX_H
 #define MODULES_GFX_H
 
+#include "core/color.h"
 #include "jinete/jbase.h"
 
 struct FONT;
@@ -114,6 +115,13 @@ void rectdotted(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int 
 void rectgrid(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h);
 
 void draw_emptyset_symbol(JRect rc, int color);
+void draw_color(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+		int imgtype, color_t color);
+void draw_color_button(struct BITMAP *bmp,
+		       int x1, int y1, int x2, int y2,
+		       int b0, int b1, int b2, int b3,
+		       int imgtype, color_t color,
+		       bool hot);
 
 int character_length(struct FONT *font, int chr);
 void render_character(struct BITMAP *bmp, struct FONT *font, int chr, int x, int y, int fg, int bg);

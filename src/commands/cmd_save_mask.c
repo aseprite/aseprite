@@ -46,7 +46,7 @@ static void cmd_save_mask_execute(const char *argument)
   int ret;
 
   for (;;) {
-    char *filename = ase_file_selector(_("Save .msk File"), filename, "msk");
+    filename = ase_file_selector(_("Save .msk File"), filename, "msk");
     if (!filename)
       return;
 
@@ -74,7 +74,7 @@ static void cmd_save_mask_execute(const char *argument)
   if (save_msk_file(sprite->mask, filename) != 0)
     jalert("%s<<%s<<%s||%s",
 	   _("Error"), _("Error saving .msk file"),
-	   _(filename), _("&Close"));
+	   filename, _("&Close"));
 }
 
 Command cmd_save_mask = {

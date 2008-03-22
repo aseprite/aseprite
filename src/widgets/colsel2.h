@@ -26,9 +26,9 @@
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLORSELECTOR_COLOR_CHANGED	0x10009
 
-JWidget colorselector_new(void);
+JWidget colorselector_new(bool editable_palette);
 
-void colorselector_set_color(JWidget colsel, color_t color);
-color_t colorselector_get_color(JWidget colsel);
+void colorselector_set_color(JWidget widget, color_t color);
+color_t colorselector_get_color(JWidget widget);
 
 #endif /* WIDGETS_COLSEL2_H */

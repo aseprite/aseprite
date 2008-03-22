@@ -32,8 +32,8 @@
 #include "raster/image.h"
 #include "widgets/target.h"
 
-static int channel_change(JWidget widget, int user_data);
-static int images_change(JWidget widget, int user_data);
+static bool channel_change_hook(JWidget widget, void *data);
+static bool images_change_hook(JWidget widget, void *data);
 static int get_target_image_gfx(void);
 
 /* creates a new button to handle "targets" to apply some effect in
@@ -102,24 +102,24 @@ JWidget target_button_new(int imgtype, bool with_channels)
 			JI_CENTER | JI_MIDDLE);
 
   /* make hierarchy */
-  ADD(hbox, r, channel_change);
-  ADD(hbox, g, channel_change);
-  ADD(hbox, b, channel_change);
-  ADD(hbox, k, channel_change);
-  ADD(hbox, a, channel_change);
+  ADD(hbox, r, channel_change_hook);
+  ADD(hbox, g, channel_change_hook);
+  ADD(hbox, b, channel_change_hook);
+  ADD(hbox, k, channel_change_hook);
+  ADD(hbox, a, channel_change_hook);
 
   if (with_channels)
     jwidget_add_child(vbox, hbox);
   else
     jwidget_free(hbox);
 
-  ADD(vbox, index, channel_change);
-  ADD(vbox, images, images_change);
+  ADD(vbox, index, channel_change_hook);
+  ADD(vbox, images, images_change_hook);
 
   return vbox;
 }
 
-static int channel_change(JWidget widget, int user_data)
+static bool channel_change_hook(JWidget widget, void *data)
 {
   const char *name;
 
@@ -136,17 +136,17 @@ static int channel_change(JWidget widget, int user_data)
 
   set_config_bool("Target", name, jwidget_is_selected(widget));
 
-  jwidget_emit_signal((JWidget)user_data, SIGNAL_TARGET_BUTTON_CHANGE);
+  jwidget_emit_signal((JWidget)data, SIGNAL_TARGET_BUTTON_CHANGE);
   return TRUE;
 }
 
-static int images_change(JWidget widget, int user_data)
+static bool images_change_hook(JWidget widget, void *data)
 {
   int images = get_config_int("Target", "Images", 0);
   set_config_int("Target", "Images", (images+1)%4);
   set_gfxicon_in_button(widget, get_target_image_gfx());
 
-  jwidget_emit_signal((JWidget)user_data, SIGNAL_TARGET_BUTTON_CHANGE);
+  jwidget_emit_signal((JWidget)data, SIGNAL_TARGET_BUTTON_CHANGE);
   return TRUE;
 }
 

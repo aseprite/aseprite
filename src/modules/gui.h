@@ -21,8 +21,8 @@
 
 #include "jinete/jbase.h"
 
-#define HOOK(widget, signal, signal_handler, user_data)			\
-  hook_signal((widget), (signal), (signal_handler), (int)(user_data))
+#define HOOK(widget, signal, signal_handler, data)			\
+  hook_signal((widget), (signal), (signal_handler), (void *)(data))
 
 #define GUISCALE   (JI_SCREEN_W > 512 ? 2: 1)
 
@@ -54,8 +54,8 @@ void rebuild_recent_list(void);
 
 void hook_signal(JWidget widget,
 		 int signal_num,
-		 int (*signal_handler)(JWidget widget, int user_data),
-		 int user_data);
+		 bool (*signal_handler)(JWidget widget, void *data),
+		 void *data);
 
 bool get_widgets(JWidget window, ...);
 
@@ -65,11 +65,6 @@ void set_gfxicon_in_button(JWidget button, int gfx_id);
 JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4);
 /* void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4); */
-
-/********************************************************************/
-/* exit-hooks */
-
-void add_gui_exit_hook(void (*proc)(void *data), void *data);
 
 /********************************************************************/
 /* monitors */

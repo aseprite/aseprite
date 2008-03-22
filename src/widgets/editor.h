@@ -43,7 +43,9 @@ typedef struct Editor
   int cursor_editor_y;
   int old_cursor_thick;
   bool cursor_candraw : 1;
-  bool cursor_eyedropper : 1;
+
+  bool alt_pressed : 1;
+  bool space_pressed : 1;
 
   /* offset for the sprite */
   int offset_x;
@@ -103,6 +105,8 @@ void editor_refresh_region(JWidget editor);
 
 /**********************************************************************/
 /* src/gui/editor/cursor.c */
+
+void editor_cursor_exit(void);
 
 void editor_draw_cursor(JWidget editor, int x, int y);
 void editor_clean_cursor(JWidget editor);

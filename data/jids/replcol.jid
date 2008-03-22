@@ -7,22 +7,10 @@
     <box vertical expansive>
       <box horizontal expansive>
         <box vertical homogeneous>
-          <label text="Get:" />
-          <label text="Put:" />
+          <label text="From:" />
+          <label text="To:" />
         </box>
-        <box vertical homogeneous expansive>
-          <box horizontal expansive>
-            <box vertical homogeneous expansive name="color_buttons_box" />
-            <box vertical homogeneous>
-              <button text="1" name="button1_1" />
-              <button text="1" name="button2_1" />
-            </box>
-            <box vertical homogeneous>
-              <button text="2" name="button1_2" />
-              <button text="2" name="button2_2" />
-            </box>
-          </box>
-        </box>
+        <box vertical homogeneous expansive name="color_buttons_box" />
       </box>
       <label text="Fuzziness:" />
       <slider min=0 max=255 name="fuzziness" />

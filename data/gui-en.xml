@@ -30,10 +30,10 @@
 	<key command="new_layer" shortcut="Shift+N" />
 	<!-- frame -->
 	<key command="new_frame" shortcut="N" />
-	<key command="goto_first_frame" shortcut="Down" />
+	<key command="goto_first_frame" shortcut="Home" />
 	<key command="goto_previous_frame" shortcut="Left" />
 	<key command="goto_next_frame" shortcut="Right" />
-	<key command="goto_last_frame" shortcut="Up" />
+	<key command="goto_last_frame" shortcut="End" />
 	<key command="play_animation" shortcut="Enter" />
 	<!-- cel -->
 	<key command="cel_properties" shortcut="Shift+Ctrl+P" />

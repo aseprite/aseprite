@@ -21,9 +21,10 @@
 #include <allegro.h>
 
 #include "effect/effect.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/tools.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 
 static struct {
   int tiled;
@@ -178,6 +179,7 @@ void apply_median2(Effect *effect)
 
 void apply_median1(Effect *effect)
 {
+  Palette *pal = get_current_palette();
   Image *src = effect->src;
   Image *dst = effect->dst;
   ase_uint8 *src_address;
@@ -211,9 +213,9 @@ void apply_median1(Effect *effect)
 	 data.channel[0][c] = color;
        }
        else {
-	 data.channel[0][c] = _rgb_scale_6[current_palette[color].r];
-	 data.channel[1][c] = _rgb_scale_6[current_palette[color].g];
-	 data.channel[2][c] = _rgb_scale_6[current_palette[color].b];
+	 data.channel[0][c] = _rgba_getr(pal->color[color]);
+	 data.channel[1][c] = _rgba_getg(pal->color[color]);
+	 data.channel[2][c] = _rgba_getb(pal->color[color]);
        }
        c++;
        );
@@ -234,17 +236,17 @@ void apply_median1(Effect *effect)
       if (effect->target.r)
 	r = data.channel[0][data.ncolors/2];
       else
-	r = _rgb_scale_6[current_palette[color].r];
+	r = _rgba_getr(pal->color[color]);
 
       if (effect->target.g)
 	g = data.channel[1][data.ncolors/2];
       else
-	g = _rgb_scale_6[current_palette[color].g];
+	g = _rgba_getg(pal->color[color]);
 
       if (effect->target.b)
 	b = data.channel[2][data.ncolors/2];
       else
-	b = _rgb_scale_6[current_palette[color].b];
+	b = _rgba_getb(pal->color[color]);
 
       *(dst_address++) = orig_rgb_map->data[r>>3][g>>3][b>>3];
     }

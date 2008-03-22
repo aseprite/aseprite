@@ -32,17 +32,10 @@
 #include "core/dirs.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "modules/tools2.h"
-#include "raster/blend.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/raster.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
@@ -91,28 +84,25 @@ void LoadPalette(const char *filename)
     DIRS *dir, *dirs;
     char buf[512];
 
-    dirs = dirs_new ();
-    dirs_add_path (dirs, filename);
+    dirs = dirs_new();
+    dirs_add_path(dirs, filename);
 
-    usprintf (buf, "palettes/%s", filename);
-    dirs_cat_dirs (dirs, filename_in_datadir (buf));
+    usprintf(buf, "palettes/%s", filename);
+    dirs_cat_dirs(dirs, filename_in_datadir (buf));
 
     for (dir=dirs; dir; dir=dir->next) {
-      if (exists (dir->path)) {
-	RGB *pal = palette_load (dir->path);
-	if (pal) {
+      if (exists(dir->path)) {
+	Palette *pal = palette_load(dir->path);
+	if (pal != NULL) {
+	  /* set the palette calling the hooks */
+	  set_current_palette(pal, FALSE);
+
 	  /* just one palette */
 	  sprite_reset_palettes(current_sprite);
 	  sprite_set_palette(current_sprite, pal, 0);
 
-	  /* set the palette calling the hooks */
-	  set_current_palette(pal, FALSE);
-
 	  /* redraw the entire screen */
 	  jmanager_refresh_screen();
-
-	  /* free the memory */
-	  jfree(pal);
 	}
 	break;
       }

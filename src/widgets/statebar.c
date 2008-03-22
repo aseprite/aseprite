@@ -29,7 +29,7 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
@@ -49,8 +49,9 @@ enum {
 };
 
 static bool statusbar_msg_proc(JWidget widget, JMessage msg);
+static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
-static int slider_change_signal(JWidget widget, int user_data);
+static bool slider_change_hook(JWidget widget, void *data);
 static void button_command(JWidget widget, void *data);
 
 static void update_from_layer(StatusBar *statusbar);
@@ -79,6 +80,7 @@ JWidget statusbar_new(void)
     statusbar->widget = widget;
     statusbar->timeout = 0;
     statusbar->progress = jlist_new();
+    statusbar->tipwindow = NULL;
 
     /* construct the commands box */
     box1 = jbox_new(JI_HORIZONTAL);
@@ -91,7 +93,7 @@ JWidget statusbar_new(void)
     ICON_NEW(statusbar->b_next, GFX_ANI_NEXT, ACTION_NEXT);
     ICON_NEW(statusbar->b_last, GFX_ANI_LAST, ACTION_LAST);
 
-    HOOK(statusbar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_signal, 0);
+    HOOK(statusbar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
     jwidget_set_min_size(statusbar->slider, JI_SCREEN_W/5, 0);
 
     jwidget_noborders(box1);
@@ -131,7 +133,7 @@ void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
   StatusBar *statusbar = statusbar_data(widget);
 
   if ((ji_clock > statusbar->timeout) || (msecs > 0)) {
-    char buf[256];
+    char buf[256];		/* TODO warning buffer overflow */
     va_list ap;
 
     va_start(ap, format);
@@ -147,11 +149,50 @@ void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
   }
 }
 
-void statusbar_show_color(JWidget statusbar, int msecs, int imgtype, color_t color)
+void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
 {
-  char buf[128];
+  StatusBar *statusbar = statusbar_data(widget);
+  JWidget tipwindow = statusbar->tipwindow;
+  char buf[256];		/* TODO warning buffer overflow */
+  va_list ap;
+  int x, y;
+
+  va_start(ap, format);
+  vsprintf(buf, format, ap);
+  va_end(ap);
+
+  if (tipwindow == NULL) {
+    tipwindow = jtooltip_window_new(buf);
+    tipwindow->user_data[0] = (void *)jmanager_add_timer(tipwindow, msecs);
+    tipwindow->user_data[1] = statusbar;
+    jwidget_add_hook(tipwindow, -1, tipwindow_msg_proc, NULL);
+
+    statusbar->tipwindow = tipwindow;
+  }
+  else {
+    jwidget_set_text(tipwindow, buf);
+
+    jmanager_set_timer_interval((int)tipwindow->user_data[0], msecs);
+  }
+
+  if (jwidget_is_visible(tipwindow))
+    jwindow_close(tipwindow, NULL);
+
+  jwindow_open(tipwindow);
+  jwindow_remap(tipwindow);
+
+  x = widget->rc->x2 - jrect_w(tipwindow->rc);
+  y = widget->rc->y1 - jrect_h(tipwindow->rc);
+  jwindow_position(tipwindow, x, y);
+
+  jmanager_start_timer((int)tipwindow->user_data[0]);
+}
+
+void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color)
+{
+  char buf[128];		/* TODO warning buffer overflow */
   color_to_formalstring(imgtype, color, buf, sizeof(buf), TRUE);
-  statusbar_set_text(statusbar, msecs, "%s %s", _("Color"), buf);
+  statusbar_set_text(widget, msecs, "%s %s", _("Color"), buf);
 }
 
 void statusbar_update(JWidget widget)
@@ -161,18 +202,17 @@ void statusbar_update(JWidget widget)
   update_from_layer(statusbar);
 }
 
-Progress *progress_new(JWidget statusbar)
+Progress *progress_new(JWidget widget)
 {
   Progress *progress = jnew(Progress, 1);
   if (!progress)
     return NULL;
 
-  progress->statusbar = statusbar;
+  progress->statusbar = widget;
   progress->pos = 0.0f;
 
-  jlist_append(statusbar_data(statusbar)->progress,
-	       progress);
-  jwidget_dirty(statusbar);
+  jlist_append(statusbar_data(widget)->progress, progress);
+  jwidget_dirty(widget);
 
   return progress;
 }
@@ -324,7 +364,23 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static int slider_change_signal(JWidget widget, int user_data)
+static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_DESTROY:
+      jmanager_remove_timer((int)widget->user_data[0]);
+      break;
+
+    case JM_TIMER:
+      jwindow_close(widget, NULL);
+      break;
+  }
+
+  return FALSE;
+}
+
+static bool slider_change_hook(JWidget widget, void *data)
 {
   Sprite *sprite = current_sprite;
 

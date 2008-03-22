@@ -85,8 +85,6 @@ COMMON_SOURCES =					\
 	src/core/file_system.c				\
 	src/core/modules.c				\
 	src/dialogs/canvasze.c				\
-	src/dialogs/colsel.c				\
-	src/dialogs/dpaledit.c				\
 	src/dialogs/drawtext.c				\
 	src/dialogs/filesel.c				\
 	src/dialogs/filmedit.c				\
@@ -162,7 +160,7 @@ COMMON_SOURCES =					\
 	src/modules/editors.c				\
 	src/modules/gfx.c				\
 	src/modules/gui.c				\
-	src/modules/palette.c				\
+	src/modules/palettes.c				\
 	src/modules/recent.c				\
 	src/modules/rootmenu.c				\
 	src/modules/sprites.c				\
@@ -178,6 +176,7 @@ COMMON_SOURCES =					\
 	src/raster/image.c				\
 	src/raster/layer.c				\
 	src/raster/mask.c				\
+	src/raster/palette.c				\
 	src/raster/path.c				\
 	src/raster/quant.c				\
 	src/raster/rotate.c				\

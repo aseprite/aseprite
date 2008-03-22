@@ -14,52 +14,56 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-Website: http://www.aseprite.org/
+http://www.aseprite.org/
  **********************************************************************
+\image zoom.pcx
+
 Use the <1>, <2>, <3>, <4>, <5> and <6> keys to set the zoom in the
 current editor's viewport.
-
-\image zoom.pcx
  **********************************************************************
-You can get a color from the sprite using the <9> or <0> keys to
-set the left or right color respectively.
+\image eyedropper.pcx
+
+You can pick a color from the sprite using the <I> key or <Alt+Left
+click>. This replaces the ``Tool Foreground Color''.
+
+<Alt+Right click> replaces the ``Tool Background Color'' and the <X>
+switches the Foreground and Background colors.
  **********************************************************************
 \image sprprop.pcx
 
 You can modify the quantity of sprite's animation frames using the
-"Sprite/Properties" menu or pressing <Ctrl+P>.
+``Sprite/Properties'' menu or pressing <Ctrl+P>.
  **********************************************************************
+\image anicontrols.pcx
+
 Move through the frames with the arrows keys
 
 \split
-Left = go to previous frame
+<Left> = go to previous frame
 
-Down = go to first frame
+<Home> = go to first frame
 \next
-Right = go to next frame
+<Right> = go to next frame
 
-Up = go to last frame
+<End> = go to last frame
 \done
 
-Enter = play animation
+<Enter> = play animation
  **********************************************************************
-You can add new animation frames pressing <Ctrl+Shift+N> or using
-"Frame/New" menu.
+You can add new animation frames pressing N-key or using
+``Frame/New'' menu.
  **********************************************************************
-Do you want edit layers, frames and cels?  Use the film editor:
-
 \image filmedit.pcx
 
-Go to "Tools/Film Editor" menu or press TAB when you are
-editing a sprite.
- **********************************************************************
-You can use the onionskin feature to edit animations (press <C> key to
-see the "Tools Setup" window):
+Do you want edit layers, frames and cels?  Use the film editor:
 
+Go to ``Tools/Film Editor'' menu or press <Tab> key when you are editing
+a sprite.
+ **********************************************************************
 \image onion.pcx
 
-Remember that only the current layer is used as onionskin, also, it's
-useful only when this layer has the mask color as background.
+You can use the onion-skinning feature to edit animations (press <C> key to
+see the ``Tools Setup'' window):
  **********************************************************************
 When you apply some effect (like Convolution Matrix, or Color Curves),
 you can choose the target channels:
@@ -99,9 +103,9 @@ All frames in all layers
  **********************************************************************
 \image colcurv.pcx
 
-In the "Color Curve" window, you can use the <Ins> and <Del> keys to
+In the ``Color Curve'' window, you can use the <Ins> and <Del> keys to
 insert or remove vertices respectively.  Also, if you press in a
-vertex with the right mouse button, the "Point Properties" window (to
+vertex with the right mouse button, the ``Point Properties'' window (to
 change the coordinates manually) will be appears.
  **********************************************************************
 \image minipal.pcx
@@ -117,13 +121,13 @@ A RGB image without dithering.
 Ordered dithering method.
 \done
 
-See "Tool/Options" menu or press <Ctrl+Shift+O>.
+See ``Tool/Options'' menu or press <Ctrl+Shift+O>.
  **********************************************************************
 \image lua.pcx
 
 Do you want to write Lua scripts to generate images or create
 repetitive tasks?  You can find the documentation in
-"docs/scripts/README.txt".  Also you can look for "data/scripts/gens/"
+``docs/scripts/README.txt''.  Also you can look for ``data/scripts/gens/''
 directory for some examples.
  **********************************************************************
 \palette sprite.pcx

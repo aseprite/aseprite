@@ -148,8 +148,10 @@ void console_printf(const char *format, ...)
     jwidget_set_text(wid_textbox, final);
     jfree(final);
   }
-  else
+  else {
     printf(buf);
+    fflush(stdout);
+  }
 }
 
 void user_printf(const char *format, ...)

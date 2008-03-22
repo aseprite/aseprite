@@ -267,9 +267,9 @@ static bool load_TGA(FileOp *fop)
 
       for (i=0; i<palette_colors; i++) {
         fop_sequence_set_color(fop, i,
-			       image_palette[i][2] >> 2,
-			       image_palette[i][1] >> 2,
-			       image_palette[i][0] >> 2);
+			       image_palette[i][2],
+			       image_palette[i][1],
+			       image_palette[i][0]);
       }
 
       type = IMAGE_INDEXED;
@@ -295,7 +295,7 @@ static bool load_TGA(FileOp *fop)
       }
 
       for (i=0; i<256; i++)
-        fop_sequence_set_color(fop, i, i>>2, i>>2, i>>2);
+        fop_sequence_set_color(fop, i, i, i, i);
 
       type = IMAGE_GRAYSCALE;
       break;
@@ -431,9 +431,9 @@ static bool save_TGA(FileOp *fop)
   if (need_pal) {
     for (y=0; y<256; y++) {
       fop_sequence_get_color(fop, y, &r, &g, &b);
-      image_palette[y][2] = _rgb_scale_6[r];
-      image_palette[y][1] = _rgb_scale_6[g];
-      image_palette[y][0] = _rgb_scale_6[b];
+      image_palette[y][2] = r;
+      image_palette[y][1] = g;
+      image_palette[y][0] = b;
     }
     fwrite(image_palette, 1, 768, f);
   }

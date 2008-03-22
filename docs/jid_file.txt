@@ -4,6 +4,7 @@ Format for .jid files
 
   General format:
 
+  <jinete>
     <widget_type [id="..."]
 		 [expansive]
 		 [width="percentage of screen width"]
@@ -13,6 +14,7 @@ Format for .jid files
        ...>
       widgets children...
     </widget_type>
+  </jinete>
 
 ======================================================================
 Supported widget types

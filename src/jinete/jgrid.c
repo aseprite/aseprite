@@ -153,6 +153,13 @@ static bool grid_msg_proc(JWidget widget, JMessage msg)
 	  jfree(grid->cells[row]);
 	jfree(grid->cells);
       }
+
+      if (grid->colstrip != NULL)
+	jfree(grid->colstrip);
+
+      if (grid->rowstrip != NULL)
+	jfree(grid->rowstrip);
+
       jfree(grid);
       break;
 

@@ -30,7 +30,7 @@
 #include "core/dirs.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "raster/blend.h"
 #include "raster/image.h"
@@ -81,7 +81,7 @@ void dialogs_draw_text(void)
   update_button_text();
 
   /* color button */
-  color_but = color_button_new
+  color_but = colorbutton_new
     (get_config_color("DrawText", "Color",
 		      colorbar_get_fg_color(app_get_colorbar())),
      current_sprite->imgtype);
@@ -100,7 +100,7 @@ void dialogs_draw_text(void)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == button_ok) {
-    color_t color_with_type = color_button_get_color(color_but);
+    color_t color_with_type = colorbutton_get_color(color_but);
     const char *text = jwidget_get_text(entry_text);
     const char *size_str = jwidget_get_text(entry_size);
     const char *font_str = get_config_string("DrawText", "Font",

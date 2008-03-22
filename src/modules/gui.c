@@ -41,7 +41,7 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
@@ -77,12 +77,6 @@ static int try_depths[] = { 32, 24, 16, 15, 8 };
 
 /**************************************************************/
 
-typedef struct ExitHook
-{
-  void (*proc)(void *);
-  void *data;
-} ExitHook;
-
 struct Monitor
 {
   /* returns true when the job is done and the monitor can be removed */
@@ -94,8 +88,6 @@ struct Monitor
 };
 
 static JWidget manager = NULL;
-
-static JList exit_hooks;
 
 static int monitor_timer = -1;
 static JList monitors;
@@ -109,9 +101,6 @@ static JList icon_buttons;
 static bool double_buffering;
 static int screen_scaling;
 
-static ExitHook *exithook_new(void (*proc)(void *), void *data);
-static void exithook_free(ExitHook *exithook);
-
 static Monitor *monitor_new(void (*proc)(void *),
 			    void (*free)(void *), void *data);
 static void monitor_free(Monitor *monitor);
@@ -123,7 +112,7 @@ static void save_gui_config(void);
 static bool button_with_icon_msg_proc(JWidget widget, JMessage msg);
 static bool manager_msg_proc(JWidget widget, JMessage msg);
 
-static void regen_theme_and_fixup_icons(void);
+static void regen_theme_and_fixup_icons(void *data);
 
 /**
  * Used by set_display_switch_callback(SWITCH_IN, ...).
@@ -246,7 +235,6 @@ int init_module_gui(void)
   }
  gfx_done:;
 
-  exit_hooks = jlist_new();
   monitors = jlist_new();
 
   /* window title */
@@ -278,7 +266,7 @@ int init_module_gui(void)
   reload_default_font();
 
   /* hook for palette change to regenerate the theme */
-  hook_palette_changes(regen_theme_and_fixup_icons);
+  app_add_hook(APP_PALETTE_CHANGE, regen_theme_and_fixup_icons, NULL);
 
   /* icon buttons */
   icon_buttons = jlist_new();
@@ -292,15 +280,6 @@ int init_module_gui(void)
 void exit_module_gui(void)
 {
   JLink link;
-
-  /* call the ExitHooks */
-  JI_LIST_FOR_EACH(exit_hooks, link) {
-    ExitHook *exithook = link->data;
-    (*exithook->proc)(exithook->data);
-    exithook_free(link->data);
-  }
-  jlist_free(exit_hooks);
-  exit_hooks = NULL;
 
   /* destroy monitors */
   JI_LIST_FOR_EACH(monitors, link) {
@@ -319,31 +298,13 @@ void exit_module_gui(void)
   }
 
   jlist_free(icon_buttons);
-
-  unhook_palette_changes(regen_theme_and_fixup_icons);
+  icon_buttons = NULL;
 
   jmanager_free(manager);
 
   remove_keyboard();
   remove_mouse();
   remove_timer();
-}
-
-static ExitHook *exithook_new(void (*proc)(void *), void *data)
-{
-  ExitHook *exithook = jnew(ExitHook, 1);
-  if (!exithook)
-    return NULL;
-
-  exithook->proc = proc;
-  exithook->data = data;
-
-  return exithook;
-}
-
-static void exithook_free(ExitHook *exithook)
-{
-  jfree(exithook);
 }
 
 static Monitor *monitor_new(void (*proc)(void *),
@@ -621,8 +582,8 @@ void rebuild_recent_list(void)
 
 typedef struct HookData {
   int signal_num;
-  int (*signal_handler)(JWidget widget, int user_data);
-  int user_data;
+  bool (*signal_handler)(JWidget widget, void *data);
+  void *data;
 } HookData;
 
 static int hook_type(void)
@@ -644,7 +605,7 @@ static bool hook_handler(JWidget widget, JMessage msg)
     case JM_SIGNAL: {
       HookData *hook_data = jwidget_get_data(widget, hook_type());
       if (hook_data->signal_num == msg->signal.num)
-	return (*hook_data->signal_handler)(widget, hook_data->user_data);
+	return (*hook_data->signal_handler)(widget, hook_data->data);
       break;
     }
   }
@@ -657,14 +618,14 @@ static bool hook_handler(JWidget widget, JMessage msg)
  */
 void hook_signal(JWidget widget,
 		 int signal_num,
-		 int (*signal_handler)(JWidget widget, int user_data),
-		 int user_data)
+		 bool (*signal_handler)(JWidget widget, void *data),
+		 void *data)
 {
   HookData *hook_data = jnew(HookData, 1);
 
   hook_data->signal_num = signal_num;
   hook_data->signal_handler = signal_handler;
-  hook_data->user_data = user_data;
+  hook_data->data = data;
 
   jwidget_add_hook(widget, hook_type(), hook_handler, hook_data);
 }
@@ -763,17 +724,6 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
     jbutton_set_bevel(widget, b1, b2, b3, b4);
   }
   return widget;
-}
-
-/**
- * Adds a routine to be called when the @ref exit_module_gui is called.
- */
-void add_gui_exit_hook(void (*proc)(void *data), void *data)
-{
-  assert(proc != NULL);
-  assert(exit_hooks != NULL);
-
-  jlist_append(exit_hooks, exithook_new(proc, data));
 }
 
 /**
@@ -896,7 +846,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 /**********************************************************************/
 /* graphics */
 
-static void regen_theme_and_fixup_icons(void)
+static void regen_theme_and_fixup_icons(void *data)
 {
   JWidget button;
   JLink link;

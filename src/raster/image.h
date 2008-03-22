@@ -32,18 +32,18 @@
 #define _rgba_getb(c)	(((c) >> _rgba_b_shift) & 0xff)
 #define _rgba_geta(c)	(((c) >> _rgba_a_shift) & 0xff)
 #define _rgba(r,g,b,a)				\
-  (((r) << _rgba_r_shift) |			\
-   ((g) << _rgba_g_shift) |			\
-   ((b) << _rgba_b_shift) |			\
-   ((a) << _rgba_a_shift))
+  ((ase_uint32)(((r) << _rgba_r_shift) |	\
+		((g) << _rgba_g_shift) |	\
+		((b) << _rgba_b_shift) |	\
+		((a) << _rgba_a_shift)))
 
 #define _graya_v_shift	0
 #define _graya_a_shift	8
 #define _graya_getv(c)	(((c) >> _graya_v_shift) & 0xff)
 #define _graya_geta(c)	(((c) >> _graya_a_shift) & 0xff)
 #define _graya(v,a)				\
-  (((v) << _graya_v_shift) |			\
-   ((a) << _graya_a_shift))
+  ((ase_uint16)(((v) << _graya_v_shift) |	\
+		((a) << _graya_a_shift)))
 
 #define _image_bitmap_next_bit(d, a)		\
   if (d.rem < 7)				\

@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <assert.h>
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
@@ -101,7 +102,7 @@ JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data))
   jwidget_add_hook(tabs->button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
   jwidget_add_hook(tabs->button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
 
-  jwidget_set_bg_color(widget, ji_color_face());
+  jwidget_init_theme(widget);
 
   return widget;
 }
@@ -215,11 +216,6 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	msg->reqsize.h = 4 + jwidget_get_text_height(widget) + 5;
       return TRUE;
 
-/*     case JM_SIGNAL: */
-/*       if (msg->signal.num == JI_SIGNAL_SHOW) */
-/* 	set_scroll_x(widget, tabs->scroll_x); */
-/*       break; */
-
     case JM_SETPOS:
       jrect_copy(widget->rc, &msg->setpos.rect);
       set_scroll_x(widget, tabs->scroll_x);
@@ -319,9 +315,6 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_TIMER: {
-/*       JWidget parent = jwidget_get_parent(widget); */
-/*       Tabs *tabs = jwidget_get_data(parent, tabs_type()); */
-/*       int dir = (int)jwidget_get_data(widget, tabs_type()); */
       int dir = jmanager_get_capture() == tabs->button_left ? -1: 1;
       set_scroll_x(widget, tabs->scroll_x + dir*8*msg->timer.count);
       break;
@@ -336,6 +329,10 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	  tab->width = CALC_TAB_WIDTH(widget, tab);
 	}
       }
+      else if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
+	/* setup the background color */
+	jwidget_set_bg_color(widget, ji_color_face());
+      }
       break;
 
   }
@@ -346,7 +343,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 {
   JWidget parent;
-  Tabs *tabs;
+  Tabs *tabs = NULL;
 
   parent = jwidget_get_parent(widget);
   if (parent)
@@ -359,6 +356,8 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 	return TRUE;
       }
       else if (msg->signal.num == JI_SIGNAL_DISABLE) {
+	assert(tabs != NULL);
+
 	if (jwidget_is_selected(widget)) {
 	  jmanager_stop_timer(tabs->timer_id);
 	  jwidget_deselect(widget);
@@ -368,10 +367,12 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED:
+      assert(tabs != NULL);
       jmanager_start_timer(tabs->timer_id);
       break;
 
     case JM_BUTTONRELEASED:
+      assert(tabs != NULL);
       jmanager_stop_timer(tabs->timer_id);
       break;
 

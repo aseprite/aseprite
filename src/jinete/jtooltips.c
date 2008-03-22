@@ -78,6 +78,11 @@ JWidget jtooltip_window_new(const char *text)
   return window;
 }
 
+/**
+ * @param widget The tooltip window.
+ * @param region The new hot-region. This pointer is holded by the @a widget.
+ * So you can't destroy it after calling this routine.
+ */
 void jtooltip_window_set_hotregion(JWidget widget, JRegion region)
 {
   TipWindow *tipwindow = tipwindow_data(widget);
@@ -85,11 +90,13 @@ void jtooltip_window_set_hotregion(JWidget widget, JRegion region)
   assert(region != NULL);
 
   if (tipwindow->hot_region != NULL)
-    jfree(tipwindow->hot_region);
+    jregion_free(tipwindow->hot_region);
 
   if (!tipwindow->filtering) {
     tipwindow->filtering = TRUE;
     jmanager_add_msg_filter(JM_MOTION, widget);
+    jmanager_add_msg_filter(JM_BUTTONPRESSED, widget);
+    jmanager_add_msg_filter(JM_KEYPRESSED, widget);
   }
   tipwindow->hot_region = region;
 }
@@ -191,7 +198,6 @@ static JWidget tipwindow_new(const char *text, bool close_on_buttonpressed)
   jwidget_add_hook(window, tipwindow_type(),
 		   tipwindow_msg_proc, tipwindow);
   jwidget_init_theme(window);
-  jwidget_set_bg_color(window, makecol(255, 255, 200));
 
   return window;
 }
@@ -220,10 +226,18 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
       if (tipwindow->filtering) {
 	tipwindow->filtering = FALSE;
 	jmanager_remove_msg_filter(JM_MOTION, widget);
+	jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);
+	jmanager_remove_msg_filter(JM_KEYPRESSED, widget);
       }
       break;
 
     case JM_DESTROY:
+      if (tipwindow->filtering) {
+	tipwindow->filtering = FALSE;
+	jmanager_remove_msg_filter(JM_MOTION, widget);
+	jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);
+	jmanager_remove_msg_filter(JM_KEYPRESSED, widget);
+      }
       if (tipwindow->hot_region != NULL) {
 	jregion_free(tipwindow->hot_region);
       }
@@ -273,6 +287,9 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 	_ji_theme_textbox_draw(NULL, widget, &w, &h, 0, 0);
 
 	widget->border_width.t = h-3;
+
+	/* setup the background color */
+	jwidget_set_bg_color(widget, makecol(255, 255, 200));
 	return TRUE;
       }
       break;
@@ -282,7 +299,23 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 	jwindow_close(widget, NULL);
       break;
 
+    case JM_KEYPRESSED:
+      if (tipwindow->filtering && msg->key.scancode < KEY_MODIFIERS)
+	jwindow_close(widget, NULL);
+      break;
+
     case JM_BUTTONPRESSED:
+      /* if the user click outside the window, we have to close the
+	 tooltip window */
+      if (tipwindow->filtering) {
+	JWidget picked = jwidget_pick(widget, msg->mouse.x, msg->mouse.y);
+	if (!picked || jwidget_get_window(picked) != widget) {
+	  jwindow_close(widget, NULL);
+	}
+      }
+
+      /* this is used when the user click inside a small text
+	 tooltip */
       if (tipwindow->close_on_buttonpressed)
 	jwindow_close(widget, NULL);
       break;
@@ -315,6 +348,8 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 			     widget->bg_color,
 			     ji_color_foreground());
       widget->border_width.t = oldt;
+
+      jrect_free(pos);
       return TRUE;
     }
 

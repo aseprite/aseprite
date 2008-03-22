@@ -191,7 +191,7 @@ static void do_quick(int action)
   sprite_set_layer(sprite, dst_layer);
 
   /* remove the temporary created layer */
-  layer_remove_layer((Layer *)handle_layer->parent, handle_layer);
+  layer_remove_layer(handle_layer->parent_layer, handle_layer);
 
   /* refresh the sprite */
   update_screen_for_sprite(sprite);

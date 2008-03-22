@@ -325,7 +325,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       if (!window->is_moveable)
 	break;
 
-      if (!click_pos)
+      if (click_pos == NULL)
 	click_pos = jrect_new_copy(widget->rc);
       else
 	jrect_copy(click_pos, widget->rc);
@@ -346,7 +346,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	jwidget_release_mouse(widget);
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
 
-	if (click_pos) {
+	if (click_pos != NULL) {
 	  jrect_free(click_pos);
 	  click_pos = NULL;
 	}

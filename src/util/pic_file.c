@@ -24,7 +24,7 @@
 #include "raster/image.h"
 
 /* loads a PIC file (Animator and Animator Pro format) */
-Image *load_pic_file (const char *filename, int *x, int *y, RGB *palette)
+Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 {
   int size, compression;
   int image_size;
@@ -173,7 +173,7 @@ Image *load_pic_file (const char *filename, int *x, int *y, RGB *palette)
 }
 
 /* saves an Animator Pro PIC file */
-int save_pic_file (const char *filename, int x, int y, RGB *palette, Image *image)
+int save_pic_file(const char *filename, int x, int y, RGB *palette, Image *image)
 {
   int c, u, v, bpp, size, byte;
   PACKFILE *f;
@@ -200,18 +200,18 @@ int save_pic_file (const char *filename, int x, int y, RGB *palette, Image *imag
   else
     size += (4+2+2+256*3) + (4+2+image->w*image->h);
 
-  pack_iputl (size, f);		/* file size */
-  pack_iputw (0x9500, f);	/* magic number 9500h */
-  pack_iputw (image->w, f);	/* width */
-  pack_iputw (image->h, f);	/* height */
-  pack_iputw (x, f);		/* X offset */
-  pack_iputw (y, f);		/* Y offset */
-  pack_iputl (0, f);		/* user ID, is 0 */
-  pack_putc (bpp, f);		/* bits per pixel */
+  pack_iputl(size, f);		/* file size */
+  pack_iputw(0x9500, f);	/* magic number 9500h */
+  pack_iputw(image->w, f);	/* width */
+  pack_iputw(image->h, f);	/* height */
+  pack_iputw(x, f);		/* X offset */
+  pack_iputw(y, f);		/* Y offset */
+  pack_iputl(0, f);		/* user ID, is 0 */
+  pack_putc(bpp, f);		/* bits per pixel */
 
   /* reserved data */
   for (c=0; c<45; c++)
-    pack_putc (0, f);
+    pack_putc(0, f);
 
   /* 1 bpp */
   if (bpp == 1) {
@@ -230,13 +230,13 @@ int save_pic_file (const char *filename, int x, int y, RGB *palette, Image *imag
   /* 8 bpp */
   else {
     /* color palette info */
-    pack_iputl ((4+2+2+256*3), f);	/* block size */
-    pack_iputw (0, f);			/* block type */
-    pack_iputw (0, f);			/* version */
+    pack_iputl((4+2+2+256*3), f);	/* block size */
+    pack_iputw(0, f);			/* block type */
+    pack_iputw(0, f);			/* version */
     for (c=0; c<256; c++) {		/* 256 palette entries */
-      pack_putc (_rgb_scale_6[palette[c].r], f);
-      pack_putc (_rgb_scale_6[palette[c].g], f);
-      pack_putc (_rgb_scale_6[palette[c].b], f);
+      pack_putc(_rgb_scale_6[palette[c].r], f);
+      pack_putc(_rgb_scale_6[palette[c].g], f);
+      pack_putc(_rgb_scale_6[palette[c].b], f);
     }
 
     /* pixel-per-data image data block */

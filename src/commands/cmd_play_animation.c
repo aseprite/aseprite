@@ -25,9 +25,10 @@
 #include "commands/commands.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
 
@@ -51,6 +52,8 @@ static void cmd_play_animation_execute(const char *argument)
   int old_frame, msecs;
   bool done = FALSE;
   bool onionskin = get_onionskin();
+  Palette *oldpal, *newpal;
+  PALETTE rgbpal;
 
   if (sprite->frames < 2)
     return;
@@ -71,12 +74,18 @@ static void cmd_play_animation_execute(const char *argument)
   clear_bitmap(ji_screen);
 
   /* do animation */
+  oldpal = NULL;
   speed_timer = 0;
   while (!done) {
     msecs = sprite_get_frlen(sprite, sprite->frame);
     install_int_ex(speed_timer_callback, MSEC_TO_TIMER(msecs));
 
-    set_palette(sprite_get_palette(sprite, sprite->frame));
+    newpal = sprite_get_palette(sprite, sprite->frame);
+    if (oldpal != newpal) {
+      set_palette(palette_to_allegro(newpal, rgbpal));
+      oldpal = newpal;
+    }
+
     editor_draw_sprite_safe(current_editor, 0, 0, sprite->w, sprite->h);
 
     do {
@@ -105,7 +114,8 @@ static void cmd_play_animation_execute(const char *argument)
     sprite->frame = old_frame;
 
   /* refresh all */
-  set_current_palette(sprite_get_palette(sprite, sprite->frame), TRUE);
+  newpal = sprite_get_palette(sprite, sprite->frame);
+  set_current_palette(newpal, TRUE);
   jmanager_refresh_screen();
   gui_feedback();
 

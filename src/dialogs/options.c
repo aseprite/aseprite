@@ -40,7 +40,7 @@ void dialogs_select_language(bool force)
 
 static JWidget slider_x, slider_y, check_lockmouse;
 
-static int slider_mouse_hook(JWidget widget, int user_data);
+static bool slider_mouse_hook(JWidget widget, void *data);
 
 /* shows option dialog */
 void dialogs_options(void)
@@ -121,7 +121,7 @@ void dialogs_options(void)
   jwidget_free(window);
 }
 
-static int slider_mouse_hook(JWidget widget, int user_data)
+static bool slider_mouse_hook(JWidget widget, void *data)
 {
   int x, y;
 

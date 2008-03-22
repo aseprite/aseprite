@@ -33,7 +33,8 @@ struct Layer
   GfxObj gfxobj;
   char name[256];		/* layer name */
   struct Sprite *sprite;	/* owner of the layer */
-  GfxObj *parent;		/* parent object */
+/*   GfxObj *parent;		/\* parent object *\/ */
+  Layer *parent_layer;		/* parent layer */
   unsigned readable : 1;
   unsigned writable : 1;
 
@@ -47,11 +48,13 @@ struct Layer
 
 Layer *layer_new(struct Sprite *sprite);
 Layer *layer_set_new(struct Sprite *sprite);
-Layer *layer_new_copy(const Layer *layer);
+Layer *layer_new_copy(struct Sprite *dst_sprite, const Layer *src_layer);
+Layer *layer_new_flatten_copy(struct Sprite *dst_sprite, const Layer *src_layer,
+			      int x, int y, int w, int h, int frmin, int frmax);
 void layer_free(Layer *layer);
 
-int layer_is_image(const Layer *layer);
-int layer_is_set(const Layer *layer);
+bool layer_is_image(const Layer *layer);
+bool layer_is_set(const Layer *layer);
 
 bool layer_is_readable(const Layer *layer);
 bool layer_is_writable(const Layer *layer);
@@ -61,7 +64,6 @@ Layer *layer_get_next(Layer *layer);
 
 void layer_set_name(Layer *layer, const char *name);
 void layer_set_blend_mode(Layer *layer, int blend_mode);
-void layer_set_parent(Layer *layer, GfxObj *gfxobj);
 
 /* for LAYER_IMAGE */
 void layer_add_cel(Layer *layer, struct Cel *cel);
@@ -74,6 +76,5 @@ void layer_remove_layer(Layer *set, Layer *layer);
 void layer_move_layer(Layer *set, Layer *layer, Layer *after);
 
 void layer_render(Layer *layer, struct Image *image, int x, int y, int frame);
-Layer *layer_flatten(Layer *layer, int x, int y, int w, int h, int frmin, int frmax);
 
 #endif /* RASTER_LAYER_H */

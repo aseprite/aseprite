@@ -173,7 +173,8 @@ L3:
 
 #endif
 
-#if 1 /* TODO add SSE support */
+#if 1 /* TODO add SSE support (the routine is called "_sse" but
+	doesn't use any SSE at the moment :) */
 
 #define LOCAL_OLD_EBX	-12(%ebp)
 #define LOCAL_OLD_ESI	-8(%ebp)

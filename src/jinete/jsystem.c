@@ -451,7 +451,7 @@ static void update_mouse_position(void)
     RECT rc;
 
     if (GetCursorPos(&pt) && GetClientRect(win_get_window(), &rc)) {
-      MapWindowPoints(win_get_window(), NULL, (POINT *)&rc, 2);
+      MapWindowPoints(win_get_window(), NULL, (LPPOINT)&rc, 2);
 
       if (!PtInRect(&rc, pt)) {
 	/* if the mouse is free we can hide the cursor putting the

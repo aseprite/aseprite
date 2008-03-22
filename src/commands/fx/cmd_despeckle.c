@@ -47,11 +47,11 @@ static JWidget entry_width, entry_height;
 static JWidget check_preview, preview;
 static JWidget check_tiled;
 
-static int width_change_hook(JWidget widget, int user_data);
-static int height_change_hook(JWidget widget, int user_data);
-static int target_change_hook(JWidget widget, int user_data);
-static int preview_change_hook(JWidget widget, int user_data);
-static int tiled_change_hook(JWidget widget, int user_data);
+static bool width_change_hook(JWidget widget, void *data);
+static bool height_change_hook(JWidget widget, void *data);
+static bool target_change_hook(JWidget widget, void *data);
+static bool preview_change_hook(JWidget widget, void *data);
+static bool tiled_change_hook(JWidget widget, void *data);
 static void make_preview(void);
 
 static bool cmd_despeckle_enabled(const char *argument)
@@ -144,7 +144,7 @@ static void cmd_despeckle_execute(const char *argument)
   jwidget_free(window);
 }
 
-static int width_change_hook(JWidget widget, int user_data)
+static bool width_change_hook(JWidget widget, void *data)
 {
   set_config_int("Median", "Width",
 		 strtol(jwidget_get_text(widget), NULL, 10));
@@ -152,7 +152,7 @@ static int width_change_hook(JWidget widget, int user_data)
   return TRUE;
 }
 
-static int height_change_hook(JWidget widget, int user_data)
+static bool height_change_hook(JWidget widget, void *data)
 {
   set_config_int("Median", "Height",
 		 strtol(jwidget_get_text(widget), NULL, 10));
@@ -160,21 +160,21 @@ static int height_change_hook(JWidget widget, int user_data)
   return TRUE;
 }
 
-static int target_change_hook(JWidget widget, int user_data)
+static bool target_change_hook(JWidget widget, void *data)
 {
   effect_load_target(preview_get_effect(preview));
   make_preview();
   return FALSE;
 }
 
-static int preview_change_hook(JWidget widget, int user_data)
+static bool preview_change_hook(JWidget widget, void *data)
 {
   set_config_bool("Median", "Preview", jwidget_is_selected(widget));
   make_preview();
   return FALSE;
 }
 
-static int tiled_change_hook(JWidget widget, int user_data)
+static bool tiled_change_hook(JWidget widget, void *data)
 {
   set_tiled_mode(jwidget_is_selected(widget));
   make_preview();

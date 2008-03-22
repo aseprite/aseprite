@@ -21,14 +21,14 @@
 
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
-#include <allegro/color.h>
 
-struct Layer;
-struct Path;
-struct Mask;
-struct Undo;
 struct Image;
+struct Layer;
+struct Mask;
+struct Palette;
+struct Path;
 struct Stock;
+struct Undo;
 
 typedef struct Sprite Sprite;
 
@@ -70,8 +70,8 @@ struct Sprite
 };
 
 Sprite *sprite_new(int imgtype, int w, int h);
-Sprite *sprite_new_copy(const Sprite *sprite);
-Sprite *sprite_new_flatten_copy(const Sprite *sprite);
+Sprite *sprite_new_copy(const Sprite *src_sprite);
+Sprite *sprite_new_flatten_copy(const Sprite *src_sprite);
 Sprite *sprite_new_with_layer(int imgtype, int w, int h);
 void sprite_free(Sprite *sprite);
 
@@ -85,8 +85,8 @@ bool sprite_need_alpha(Sprite *sprite);
 bool sprite_lock(Sprite *sprite);
 void sprite_unlock(Sprite *sprite);
 
-RGB *sprite_get_palette(Sprite *sprite, int frame);
-void sprite_set_palette(Sprite *sprite, RGB *rgb, int frame);
+struct Palette *sprite_get_palette(Sprite *sprite, int frame);
+void sprite_set_palette(Sprite *sprite, struct Palette *pal, bool truncate);
 void sprite_reset_palettes(Sprite *sprite);
 
 void sprite_set_filename(Sprite *sprite, const char *filename);

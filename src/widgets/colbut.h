@@ -22,14 +22,14 @@
 #include "core/color.h"
 
 /* TODO use some JI_SIGNAL_USER */
-#define SIGNAL_COLOR_BUTTON_CHANGE   0x10001
+#define SIGNAL_COLORBUTTON_CHANGE   0x10001
 
-JWidget color_button_new(color_t color, int imgtype);
-int color_button_type(void);
+JWidget colorbutton_new(color_t color, int imgtype);
+int colorbutton_type(void);
 
-int color_button_get_imgtype(JWidget color_button);
+int colorbutton_get_imgtype(JWidget widget);
 
-color_t color_button_get_color(JWidget color_button);
-void color_button_set_color(JWidget color_button, color_t color);
+color_t colorbutton_get_color(JWidget widget);
+void colorbutton_set_color(JWidget widget, color_t color);
 
 #endif /* WIDGETS_COLBUT_H */

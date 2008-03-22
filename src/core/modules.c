@@ -24,7 +24,7 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"

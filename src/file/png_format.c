@@ -189,9 +189,9 @@ static bool load_PNG(FileOp *fop)
 
     for (c = 0; c < num_palette; c++) {
       fop_sequence_set_color(fop, c,
-			     palette[c].red / 4,
-			     palette[c].green / 4,
-			     palette[c].blue / 4);
+			     palette[c].red,
+			     palette[c].green,
+			     palette[c].blue);
     }
     for (; c < 256; c++) {
       fop_sequence_set_color(fop, c, 0, 0, 0);
@@ -381,9 +381,9 @@ static bool save_PNG(FileOp *fop)
     /* ... set palette colors ... */
     for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
-      palette[c].red   = _rgb_scale_6[r];
-      palette[c].green = _rgb_scale_6[g];
-      palette[c].blue  = _rgb_scale_6[b];
+      palette[c].red   = r;
+      palette[c].green = g;
+      palette[c].blue  = b;
     }
 
     png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);

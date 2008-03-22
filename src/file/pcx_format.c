@@ -73,9 +73,9 @@ static bool load_PCX(FileOp *fop)
   fgetl(f);			/* skip DPI values */
 
   for (c=0; c<16; c++) {	/* read the 16 color palette */
-    r = fgetc(f) / 4;
-    g = fgetc(f) / 4;
-    b = fgetc(f) / 4;
+    r = fgetc(f);
+    g = fgetc(f);
+    b = fgetc(f);
     fop_sequence_set_color(fop, c, r, g, b);
   }
 
@@ -153,9 +153,9 @@ static bool load_PCX(FileOp *fop)
       while ((c = fgetc(f)) != EOF) {
 	if (c == 12) {
 	  for (c=0; c<256; c++) {
-	    r = fgetc(f) / 4;
-	    g = fgetc(f) / 4;
-	    b = fgetc(f) / 4;
+	    r = fgetc(f);
+	    g = fgetc(f);
+	    b = fgetc(f);
 	    fop_sequence_set_color(fop, c, r, g, b);
 	  }
 	  break;
@@ -214,9 +214,9 @@ static bool save_PCX(FileOp *fop)
 
   for (c=0; c<16; c++) {
     fop_sequence_get_color(fop, c, &r, &g, &b);
-    fputc(_rgb_scale_6[r], f);
-    fputc(_rgb_scale_6[g], f);
-    fputc(_rgb_scale_6[b], f);
+    fputc(r, f);
+    fputc(g, f);
+    fputc(b, f);
   }
 
   fputc(0, f);                      /* reserved */
@@ -284,9 +284,9 @@ static bool save_PCX(FileOp *fop)
 
     for (c=0; c<256; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
-      fputc(_rgb_scale_6[r], f);
-      fputc(_rgb_scale_6[g], f);
-      fputc(_rgb_scale_6[b], f);
+      fputc(r, f);
+      fputc(g, f);
+      fputc(b, f);
     }
   }
 

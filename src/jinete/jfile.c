@@ -113,13 +113,14 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
 	bool right  = jxmlelem_has_attr(elem, "right");
 	bool top    = jxmlelem_has_attr(elem, "top");
 	bool bottom = jxmlelem_has_attr(elem, "bottom");
-	char *bevel = jxmlelem_get_attr(elem, "bevel");
+	const char *_bevel = jxmlelem_get_attr(elem, "bevel");
 
 	jwidget_set_align(widget,
 			  (left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
 			  (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
-	if (bevel != NULL) {
+	if (_bevel != NULL) {
+	  char *bevel = jstrdup(_bevel);
 	  int c, b[4];
 	  char *tok;
 
@@ -132,6 +133,8 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
 	    if (c < 4)
 	      b[c] = ustrtol(tok, NULL, 10);
 	  }
+	  jfree(bevel);
+
 	  jbutton_set_bevel(widget, b[0], b[1], b[2], b[3]);
 	}
       }

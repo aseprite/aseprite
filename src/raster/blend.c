@@ -41,7 +41,7 @@
 BLEND_COLOR _rgba_blenders[] =
 {
 #ifdef USE_SSE_ASM
-  _rgba_blend_normal_sse
+  _rgba_blend_normal_sse,
 #else
   _rgba_blend_normal,
 #endif
@@ -86,6 +86,12 @@ BLEND_COLOR _graya_blenders[] =
   _graya_blend_copy,
 };
 
+/**
+ * Mapped indexed colors. If you want to draw a color in the screen
+ * for the current sprite, you should pass through this map before:
+ * 
+ * final_index = _index_cmap[sprite_getpixel(...)].
+ */
 unsigned char _index_cmap[256] =
 {
    0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,

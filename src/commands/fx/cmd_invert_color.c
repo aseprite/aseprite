@@ -44,8 +44,8 @@
 
 static JWidget check_preview, preview;
 
-static int target_change_hook(JWidget widget, int user_data);
-static int preview_change_hook(JWidget widget, int user_data);
+static bool target_change_hook(JWidget widget, void *data);
+static bool preview_change_hook(JWidget widget, void *data);
 static void make_preview(void);
 
 static bool cmd_invert_color_enabled(const char *argument)
@@ -123,14 +123,14 @@ static void cmd_invert_color_execute(const char *argument)
   jwidget_free(window);
 }
 
-static int target_change_hook(JWidget widget, int user_data)
+static bool target_change_hook(JWidget widget, void *data)
 {
   effect_load_target(preview_get_effect(preview));
   make_preview();
   return FALSE;
 }
 
-static int preview_change_hook(JWidget widget, int user_data)
+static bool preview_change_hook(JWidget widget, void *data)
 {
   set_config_bool("InvertColor", "Preview", jwidget_is_selected(widget));
   make_preview();

@@ -24,27 +24,24 @@
 #include "jinete/jlist.h"
 #include "jinete/jmutex.h"
 
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
-
-typedef struct PAL
-{
-  int frame;
-  PALETTE pal;
-} PAL;
 
 static Layer *index2layer(Layer *layer, int index, int *index_count);
 static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count);
 
-static Sprite *general_copy(const Sprite *sprite);
+static Sprite *general_copy(const Sprite *src_sprite);
 
 Sprite *sprite_new(int imgtype, int w, int h)
 {
-  Sprite *sprite = (Sprite *)gfxobj_new(GFXOBJ_SPRITE, sizeof(Sprite));
-  PALETTE pal;
+  Sprite *sprite;
+  Palette *pal;
   int c;
 
+  assert(w > 0 && h > 0);
+
+  sprite = (Sprite *)gfxobj_new(GFXOBJ_SPRITE, sizeof(Sprite));
   if (!sprite)
     return NULL;
 
@@ -58,7 +55,6 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite->frames = 1;
   sprite->frlens = jmalloc(sizeof(int)*sprite->frames);
   sprite->frame = 0;
-/*   sprite->palette = jmalloc(sizeof(PALETTE)); */
   sprite->palettes = jlist_new();
   sprite->stock = stock_new(imgtype);
   sprite->set = layer_set_new(sprite);
@@ -78,104 +74,103 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite->preferred.scroll_y = 0;
   sprite->preferred.zoom = 0;
 
-  /* setup the layer set */
-  layer_set_parent (sprite->set, (GfxObj *)sprite);
-
   /* generate palette */
+  pal = palette_new(0, MAX_PALETTE_COLORS);
   switch (imgtype) {
 
     /* for colored images */
     case IMAGE_RGB:
     case IMAGE_INDEXED:
-      for (c=0; c<256; c++) {
-	pal[c].r = default_palette[c].r;
-	pal[c].g = default_palette[c].g;
-	pal[c].b = default_palette[c].b;
-      }
+      palette_copy_colors(pal, get_default_palette());
       break;
 
     /* for black and white images */
     case IMAGE_GRAYSCALE:
     case IMAGE_BITMAP:
-      for (c=0; c<256; c++) {
-	pal[c].r = c >> 2;
-	pal[c].g = c >> 2;
-	pal[c].b = c >> 2;
-      }
+      for (c=0; c<256; c++)
+	palette_set_entry(pal, c, _rgba(c, c, c, 255));
       break;
   }
-
-  sprite_set_palette(sprite, pal, sprite->frame);
+  sprite_set_palette(sprite, pal, TRUE);
   sprite_set_speed(sprite, 100);
 
   /* multiple access */
   sprite->locked = FALSE;
   sprite->mutex = jmutex_new();
+
+  /* free the temporary palette */
+  palette_free(pal);
   
   return sprite;
 }
 
-Sprite *sprite_new_copy(const Sprite *sprite)
+Sprite *sprite_new_copy(const Sprite *src_sprite)
 {
-  Sprite *sprite_copy;
+  Sprite *dst_sprite;
   int selected_layer;
 
-  sprite_copy = general_copy(sprite);
-  if (!sprite_copy)
+  assert(src_sprite != NULL);
+
+  dst_sprite = general_copy(src_sprite);
+  if (!dst_sprite)
     return NULL;
 
   /* copy layers */
-  if (sprite_copy->set) {
-    layer_free(sprite_copy->set);
-    sprite_copy->set = NULL;
+  if (dst_sprite->set) {
+    layer_free(dst_sprite->set);
+    dst_sprite->set = NULL;
   }
 
-  if (sprite->set) {
-    sprite_copy->set = layer_new_copy(sprite->set);
-    if (!sprite_copy->set) {
-      sprite_free(sprite_copy);
-      return NULL;
-    }
+  assert(src_sprite->set != NULL);
 
-    /* setup the layer set */
-    layer_set_parent(sprite_copy->set, (GfxObj *)sprite_copy);
+  undo_disable(dst_sprite->undo);
+  dst_sprite->set = layer_new_copy(dst_sprite, src_sprite->set);
+  undo_enable(dst_sprite->undo);
+
+  if (dst_sprite->set == NULL) {
+    sprite_free(dst_sprite);
+    return NULL;
   }
 
   /* selected layer */
-  if (sprite->layer) { 
-    selected_layer = sprite_layer2index(sprite, sprite->layer);
-    sprite_copy->layer = sprite_index2layer(sprite_copy, selected_layer);
+  if (src_sprite->layer != NULL) { 
+    selected_layer = sprite_layer2index(src_sprite, src_sprite->layer);
+    dst_sprite->layer = sprite_index2layer(dst_sprite, selected_layer);
   }
 
-  sprite_generate_mask_boundaries(sprite_copy);
+  sprite_generate_mask_boundaries(dst_sprite);
 
-  return sprite_copy;
+  return dst_sprite;
 }
 
-Sprite *sprite_new_flatten_copy(const Sprite *sprite)
+Sprite *sprite_new_flatten_copy(const Sprite *src_sprite)
 {
-  Sprite *sprite_copy;
+  Sprite *dst_sprite;
+  Layer *flat_layer;
 
-  sprite_copy = general_copy(sprite);
-  if (!sprite_copy)
+  assert(src_sprite != NULL);
+
+  dst_sprite = general_copy(src_sprite);
+  if (dst_sprite == NULL)
     return NULL;
 
   /* flatten layers */
-  if (sprite->set) {
-    Layer *flat_layer = layer_flatten(sprite->set,
-				      0, 0, sprite->w, sprite->h,
-				      0, sprite->frames-1);
-    if (!flat_layer) {
-      sprite_free(sprite_copy);
-      return NULL;
-    }
+  assert(src_sprite->set != NULL);
 
-    /* add and select the new flat layer */
-    layer_add_layer(sprite_copy->set, flat_layer);
-    sprite_copy->layer = flat_layer;
+  flat_layer = layer_new_flatten_copy(dst_sprite,
+				      src_sprite->set,
+				      0, 0, src_sprite->w, src_sprite->h,
+				      0, src_sprite->frames-1);
+  if (flat_layer == NULL) {
+    sprite_free(dst_sprite);
+    return NULL;
   }
 
-  return sprite_copy;
+  /* add and select the new flat layer */
+  layer_add_layer(dst_sprite->set, flat_layer);
+  dst_sprite->layer = flat_layer;
+
+  return dst_sprite;
 }
 
 Sprite *sprite_new_with_layer(int imgtype, int w, int h)
@@ -239,6 +234,7 @@ void sprite_free(Sprite *sprite)
 {
   JLink link;
 
+  assert(sprite != NULL);
   assert(!sprite->locked);
 
   /* destroy images' stock */
@@ -284,18 +280,24 @@ void sprite_free(Sprite *sprite)
 
 bool sprite_is_modified(Sprite *sprite)
 {
+  assert(sprite != NULL);
+
   return (sprite->undo->diff_count ==
 	  sprite->undo->diff_saved) ? FALSE: TRUE;
 }
 
 bool sprite_is_associated_to_file(Sprite *sprite)
 {
+  assert(sprite != NULL);
+
   return sprite->associated_to_file;
 }
 
 bool sprite_is_locked(Sprite *sprite)
 {
   bool locked;
+
+  assert(sprite != NULL);
 
   jmutex_lock(sprite->mutex);
   locked = sprite->locked;
@@ -306,12 +308,16 @@ bool sprite_is_locked(Sprite *sprite)
 
 void sprite_mark_as_saved(Sprite *sprite)
 {
+  assert(sprite != NULL);
+
   sprite->undo->diff_saved = sprite->undo->diff_count;
   sprite->associated_to_file = TRUE;
 }
 
 bool sprite_need_alpha(Sprite *sprite)
 {
+  assert(sprite != NULL);
+
   switch (sprite->imgtype) {
 
     case IMAGE_RGB:
@@ -328,6 +334,8 @@ bool sprite_lock(Sprite *sprite)
 {
   bool res = FALSE;
 
+  assert(sprite != NULL);
+
   jmutex_lock(sprite->mutex);
   if (!sprite->locked) {
     sprite->locked = TRUE;
@@ -340,55 +348,63 @@ bool sprite_lock(Sprite *sprite)
 
 void sprite_unlock(Sprite *sprite)
 {
+  assert(sprite != NULL);
+
   jmutex_lock(sprite->mutex);
   assert(sprite->locked);
   sprite->locked = FALSE;
   jmutex_unlock(sprite->mutex);
 }
 
-RGB *sprite_get_palette(Sprite *sprite, int frame)
+Palette *sprite_get_palette(Sprite *sprite, int frame)
 {
-  RGB *rgb = NULL;
+  Palette *found = NULL;
+  Palette *pal;
   JLink link;
-  PAL *pal;
 
-  frame = MAX(0, frame);
+  assert(sprite != NULL);
+  assert(frame >= 0);
 
   JI_LIST_FOR_EACH(sprite->palettes, link) {
     pal = link->data;
     if (frame < pal->frame)
       break;
-    rgb = pal->pal;
+
+    found = pal;
     if (frame == pal->frame)
       break;
   }
 
-  return rgb;
+  assert(found != NULL);
+  return found;
 }
 
-void sprite_set_palette(Sprite *sprite, RGB *rgb, int frame)
+void sprite_set_palette(Sprite *sprite, Palette *pal, bool truncate)
 {
-  JLink link;
-  PAL *pal;
+  assert(sprite != NULL);
 
-  frame = MAX(0, frame);
-
-  JI_LIST_FOR_EACH(sprite->palettes, link) {
-    pal = link->data;
-
-    if (frame == pal->frame) {
-      palette_copy(pal->pal, rgb);
-      return;
-    }
-    else if (frame < pal->frame)
-      break;
+  if (!truncate) {
+    Palette *sprite_pal = sprite_get_palette(sprite, sprite->frame);
+    palette_copy_colors(sprite_pal, pal);
   }
+  else {
+    JLink link;
+    Palette *other;
 
-  pal = jmalloc(sizeof(PAL));
-  pal->frame = frame;
-  palette_copy(pal->pal, rgb);
+    JI_LIST_FOR_EACH(sprite->palettes, link) {
+      other = link->data;
 
-  jlist_insert_before(sprite->palettes, link, pal);
+      if (pal->frame == other->frame) {
+	palette_copy_colors(other, pal);
+	return;
+      }
+      else if (pal->frame < other->frame)
+	break;
+    }
+
+    jlist_insert_before(sprite->palettes, link,
+			palette_new_copy(pal));
+  }
 }
 
 /**
@@ -400,7 +416,7 @@ void sprite_reset_palettes(Sprite *sprite)
 
   JI_LIST_FOR_EACH_SAFE(sprite->palettes, link, next) {
     if (jlist_first(sprite->palettes) != link) {
-      jfree(link->data);
+      palette_free(link->data);
       jlist_delete_link(sprite->palettes, link);
     }
   }
@@ -502,7 +518,7 @@ void sprite_set_frame(Sprite *sprite, int frame)
  */
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 {
-  RGB *palette = sprite_get_palette(sprite, 0);
+  Palette *palette = sprite_get_palette(sprite, 0);
   Image *old_image;
   Image *new_image;
   int c, r, g, b;
@@ -570,18 +586,16 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 	  if (c == 0)
 	    c = 0;
 	  else
-	    c = _rgba(_rgb_scale_6[palette[c].r],
-		      _rgb_scale_6[palette[c].g],
-		      _rgb_scale_6[palette[c].b], 255);
+	    c = palette->color[c];
 	  break;
 	/* Indexed -> Grayscale */
 	case IMAGE_GRAYSCALE:
 	  if (c == 0)
 	    c = 0;
 	  else {
-	    r = _rgb_scale_6[palette[c].r];
-	    g = _rgb_scale_6[palette[c].g];
-	    b = _rgb_scale_6[palette[c].b];
+	    r = _rgba_getr(palette->color[c]);
+	    g = _rgba_getg(palette->color[c]);
+	    b = _rgba_getb(palette->color[c]);
 	    rgb_to_hsv_int(&r, &g, &b);
 	    c = _graya(b, 255);
 	  }
@@ -825,80 +839,80 @@ static int layer2index(const Layer *layer, const Layer *find_layer, int *index_c
 /**
  * Makes a copy "sprite" without the layers (only with the empty layer set)
  */
-static Sprite *general_copy(const Sprite *sprite)
+static Sprite *general_copy(const Sprite *src_sprite)
 {
-  Sprite *sprite_copy;
+  Sprite *dst_sprite;
   JLink link;
 
-  sprite_copy = sprite_new(sprite->imgtype, sprite->w, sprite->h);
-  if (!sprite_copy)
+  dst_sprite = sprite_new(src_sprite->imgtype, src_sprite->w, src_sprite->h);
+  if (!dst_sprite)
     return NULL;
 
   /* copy stock */
-  stock_free(sprite_copy->stock);
-  sprite_copy->stock = stock_new_copy(sprite->stock);
-  if (!sprite_copy->stock) {
-    sprite_free(sprite_copy);
+  stock_free(dst_sprite->stock);
+  dst_sprite->stock = stock_new_copy(src_sprite->stock);
+  if (!dst_sprite->stock) {
+    sprite_free(dst_sprite);
     return NULL;
   }
 
   /* copy general properties */
-  strcpy(sprite_copy->filename, sprite->filename);
-  sprite_set_bgcolor(sprite_copy, sprite->bgcolor);
-  sprite_set_frames(sprite_copy, sprite->frame);
-  memcpy(sprite_copy->frlens, sprite->frlens, sizeof(int)*sprite->frames);
+  strcpy(dst_sprite->filename, src_sprite->filename);
+  sprite_set_bgcolor(dst_sprite, src_sprite->bgcolor);
+  sprite_set_frames(dst_sprite, src_sprite->frames);
+  memcpy(dst_sprite->frlens, src_sprite->frlens, sizeof(int)*src_sprite->frames);
 
   /* copy color palettes */
-  JI_LIST_FOR_EACH(sprite->palettes, link) {
-    PAL *pal = link->data;
-    sprite_set_palette(sprite_copy, pal->pal, pal->frame);
+  JI_LIST_FOR_EACH(src_sprite->palettes, link) {
+    Palette *pal = link->data;
+    sprite_set_palette(dst_sprite, pal, TRUE);
   }
 
   /* copy path */
-  if (sprite_copy->path) {
-    path_free(sprite_copy->path);
-    sprite_copy->path = NULL;
+  if (dst_sprite->path) {
+    path_free(dst_sprite->path);
+    dst_sprite->path = NULL;
   }
 
-  if (sprite->path) {
-    sprite_copy->path = path_new_copy(sprite->path);
-    if (!sprite_copy->path) {
-      sprite_free(sprite_copy);
+  if (src_sprite->path) {
+    dst_sprite->path = path_new_copy(src_sprite->path);
+    if (!dst_sprite->path) {
+      sprite_free(dst_sprite);
       return NULL;
     }
   }
 
   /* copy mask */
-  if (sprite_copy->mask) {
-    mask_free(sprite_copy->mask);
-    sprite_copy->mask = NULL;
+  if (dst_sprite->mask) {
+    mask_free(dst_sprite->mask);
+    dst_sprite->mask = NULL;
   }
 
-  if (sprite->mask) {
-    sprite_copy->mask = mask_new_copy(sprite->mask);
-    if (!sprite_copy->mask) {
-      sprite_free(sprite_copy);
+  if (src_sprite->mask) {
+    dst_sprite->mask = mask_new_copy(src_sprite->mask);
+    if (!dst_sprite->mask) {
+      sprite_free(dst_sprite);
       return NULL;
     }
   }
 
   /* copy repositories */
-  JI_LIST_FOR_EACH(sprite->repository.paths, link) {
+  JI_LIST_FOR_EACH(src_sprite->repository.paths, link) {
     Path *path_copy = path_new_copy(link->data);
     if (path_copy)
-      sprite_add_path(sprite_copy, path_copy);
+      sprite_add_path(dst_sprite, path_copy);
   }
 
-  JI_LIST_FOR_EACH(sprite->repository.masks, link) {
+  JI_LIST_FOR_EACH(src_sprite->repository.masks, link) {
     Mask *mask_copy = mask_new_copy(link->data);
     if (mask_copy)
-      sprite_add_mask(sprite_copy, mask_copy);
+      sprite_add_mask(dst_sprite, mask_copy);
   }
 
   /* copy preferred edition options */
-  sprite_copy->preferred.scroll_x = sprite->preferred.scroll_x;
-  sprite_copy->preferred.scroll_y = sprite->preferred.scroll_y;
-  sprite_copy->preferred.zoom = sprite->preferred.zoom;
+  dst_sprite->preferred.scroll_x = src_sprite->preferred.scroll_x;
+  dst_sprite->preferred.scroll_y = src_sprite->preferred.scroll_y;
+  dst_sprite->preferred.zoom = src_sprite->preferred.zoom;
 
-  return sprite_copy;
+  return dst_sprite;
 }

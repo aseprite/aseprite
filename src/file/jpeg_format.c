@@ -160,7 +160,7 @@ static bool load_JPEG(FileOp *fop)
   /* generate a grayscale palette if is necessary */
   if (image->imgtype == IMAGE_GRAYSCALE)
     for (c=0; c<256; c++)
-      fop_sequence_set_color(fop, c, c >> 2, c >> 2, c >> 2);
+      fop_sequence_set_color(fop, c, c, c, c);
 
   /* read each scan line */
   while (cinfo.output_scanline < cinfo.output_height) {

@@ -19,16 +19,12 @@
 #ifndef UTIL_QUANTIZE_H
 #define UTIL_QUANTIZE_H
 
-#include <allegro/color.h>
-
+struct Palette;
 struct Sprite;
 struct Stock;
 
-void sprite_quantize (struct Sprite *sprite);
-void sprite_quantize_ex (struct Sprite *sprite, struct RGB *palette);
-
-int quantize_bitmaps1 (struct Stock *stock, struct RGB *pal, int *bmp_i, int fill_other);
-/* int quantize_bitmaps2 (struct Stock *stock, struct RGB *pal); */
+void sprite_quantize(struct Sprite *sprite);
+void sprite_quantize_ex(struct Sprite *sprite, struct Palette *palette);
 
 #endif /* UTIL_QUANTIZE_H */
 

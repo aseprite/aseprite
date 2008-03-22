@@ -64,7 +64,7 @@ static bool save_ICO(FileOp *fop)
   fputw(1, f);			/* resource type: ICON */
   fputw(num, f);		/* number of icons     */
 
-  for(n = 0; n < num; n++) {
+  for (n=0; n<num; ++n) {
     depth = 8;/* bitmap_color_depth(bmp[n]); */
     bpp = (depth == 8) ? 8 : 24;
     bw = (((fop->sprite->w * bpp / 8) + 3) / 4) * 4;
@@ -91,7 +91,7 @@ static bool save_ICO(FileOp *fop)
 		  fop->sprite->w,
 		  fop->sprite->h);
 
-  for (n = 0; n < num; n++) {
+  for (n=0; n<num; ++n) {
     image_clear(bmp, 0);
     layer_render(fop->sprite->set, bmp, 0, 0, n);
 
@@ -119,21 +119,21 @@ static bool save_ICO(FileOp *fop)
 
     /* PALETTE */
     if (bpp == 8) {
-      RGB *pal = sprite_get_palette(fop->sprite, n);
+      Palette *pal = sprite_get_palette(fop->sprite, n);
 
       fputl(0, f);  /* color 0 is black, so the XOR mask works */
 
-      for (i = 1; i<256; i++) {
-	fputc(_rgb_scale_6[pal[i].b], f);
-	fputc(_rgb_scale_6[pal[i].g], f);
-	fputc(_rgb_scale_6[pal[i].r], f);
+      for (i=1; i<256; i++) {
+	fputc(_rgba_getb(pal->color[i]), f);
+	fputc(_rgba_getg(pal->color[i]), f);
+	fputc(_rgba_getr(pal->color[i]), f);
 	fputc(0, f);
       }
     }
 
     /* XOR MASK */
-    for (y = bmp->h - 1; y >= 0; y--) {
-      for (x = 0; x < bmp->w; x++) {
+    for (y=bmp->h-1; y>=0; --y) {
+      for (x=0; x<bmp->w; ++x) {
 	if (bpp == 8) {
 	  fputc(image_getpixel(bmp, x, y), f);
 	}
@@ -146,20 +146,20 @@ static bool save_ICO(FileOp *fop)
       }
 
       /* every scanline must be 32-bit aligned */
-      while (x&3) {
+      while (x & 3) {
 	fputc(0, f);
 	x++;
       } 
     }
 
     /* AND MASK */
-    for (y = bmp->h - 1; y >= 0; y--) {
-      for (x = 0; x < (bmp->w + 7)/8; x++) {
+    for (y=bmp->h-1; y>=0; --y) {
+      for (x=0; x<(bmp->w+7)/8; ++x) {
 	m = 0;
 	v = 128;
 
-	for (b = 0; b < 8; b++) {
-	  c = image_getpixel(bmp, x * 8 + b, y);
+	for (b=0; b<8; b++) {
+	  c = image_getpixel(bmp, x*8+b, y);
 	  if (c == 0/* bitmap_mask_color(bmp) */)
 	    m += v;
 	  v /= 2;
@@ -169,7 +169,7 @@ static bool save_ICO(FileOp *fop)
       }
 
       /* every scanline must be 32-bit aligned */
-      while (x&3) {
+      while (x & 3) {
 	fputc(0, f);
 	x++;
       }

@@ -542,3 +542,28 @@ sort_boundary (BoundSeg *segs,
   /*  Return the new boundary  */
   return new_segs;
 }
+
+/* dacap: for ASE to avoid informed memory leaks */
+void boundary_exit(void)
+{
+  if (vert_segs != NULL) {
+    jfree(vert_segs);
+    vert_segs = NULL;
+  }
+  if (tmp_segs != NULL) {
+    jfree(tmp_segs);
+    tmp_segs = NULL;
+  }
+  if (empty_segs_n != NULL) {
+    jfree(empty_segs_n);
+    empty_segs_n = NULL;
+  }
+  if (empty_segs_c != NULL) {
+    jfree(empty_segs_c);
+    empty_segs_c = NULL;
+  }
+  if (empty_segs_l != NULL) {
+    jfree(empty_segs_l);
+    empty_segs_l = NULL;
+  }
+}

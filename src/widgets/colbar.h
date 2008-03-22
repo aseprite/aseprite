@@ -36,4 +36,6 @@ void colorbar_set_bg_color(JWidget widget, color_t color);
 
 void colorbar_set_color(JWidget widget, int index, color_t color);
 
+color_t colorbar_get_color_by_position(JWidget widget, int x, int y);
+
 #endif /* WIDGETS_COLBAR_H */

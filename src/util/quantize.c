@@ -23,22 +23,26 @@
 #include "console/console.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/quantize.h"
 
+static int quantize_bitmaps1(struct Stock *stock, struct RGB *pal, int *bmp_i, int fill_other);
+/* static int quantize_bitmaps2(struct Stock *stock, struct Palette *pal); */
+
 void sprite_quantize(struct Sprite *sprite)
 {
-  PALETTE palette;
+  Palette *palette = palette_new(0, MAX_PALETTE_COLORS);
 
   sprite_quantize_ex(sprite, palette);
 
   /* just one palette */
   sprite_reset_palettes(sprite);
-  sprite_set_palette(sprite, palette, 0);
+  sprite_set_palette(sprite, palette, FALSE);
 }
 
-void sprite_quantize_ex(Sprite *sprite, RGB *palette)
+void sprite_quantize_ex(Sprite *sprite, Palette *palette)
 {
   Stock *stock;
   Image *flat_image;
@@ -54,22 +58,25 @@ void sprite_quantize_ex(Sprite *sprite, RGB *palette)
 
     /* generate the optimized palette */
     {
+      PALETTE rgbpal;
       int *ibmp;
 
       for (c=0; c<256; c++)
-	palette[c].r = palette[c].g = palette[c].b = 255;
+	rgbpal[c].r = rgbpal[c].g = rgbpal[c].b = 255;
 
-      ibmp = jmalloc (sizeof (int) * stock->nimage);
+      ibmp = jmalloc(sizeof (int) * stock->nimage);
       for (c=0; c<stock->nimage; c++)
 	ibmp[c] = 128;
 
-      quantize_bitmaps1 (stock, palette, ibmp, TRUE);
+      quantize_bitmaps1(stock, rgbpal, ibmp, TRUE);
 
-      jfree (ibmp);
+      palette_from_allegro(palette, rgbpal);
+
+      jfree(ibmp);
     }
 
-    stock_free (stock);
-    image_free (flat_image);
+    stock_free(stock);
+    image_free(flat_image);
   }
 }
 
@@ -288,7 +295,7 @@ static void destroy_tree(PALETTE_NODE *tree) {
  jfree(tree);
 }
 
-int quantize_bitmaps1 (Stock *stock, RGB *pal, int *bmp_i, int fill_other)
+static int quantize_bitmaps1(Stock *stock, RGB *pal, int *bmp_i, int fill_other)
 {
  int c_bmp,x,y,c,r,g,b,n_colours=0,n_entries=0,Ep;
  PALETTE_NODE *tree,*node;

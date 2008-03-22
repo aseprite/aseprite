@@ -45,12 +45,10 @@ static JWidget button_color1, button_color2;
 static JWidget slider_fuzziness, check_preview;
 static JWidget preview;
 
-static int button_1_select_hook(JWidget widget, int user_data);
-static int button_2_select_hook(JWidget widget, int user_data);
-static int color_change_hook(JWidget widget, int user_data);
-static int target_change_hook(JWidget widget, int user_data);
-static int slider_change_hook(JWidget widget, int user_data);
-static int preview_change_hook(JWidget widget, int user_data);
+static bool color_change_hook(JWidget widget, void *data);
+static bool target_change_hook(JWidget widget, void *data);
+static bool slider_change_hook(JWidget widget, void *data);
+static bool preview_change_hook(JWidget widget, void *data);
 static void make_preview(void);
 
 static bool cmd_replace_color_enabled(const char *argument)
@@ -62,8 +60,6 @@ static void cmd_replace_color_execute(const char *argument)
 {
   JWidget window = NULL;
   JWidget color_buttons_box;
-  JWidget button1_1, button1_2;
-  JWidget button2_1, button2_2;
   JWidget box_target, target_button;
   JWidget button_ok;
   Image *image;
@@ -84,10 +80,6 @@ static void cmd_replace_color_execute(const char *argument)
 
   if (!get_widgets(window,
 		   "color_buttons_box", &color_buttons_box,
-		   "button1_1", &button1_1,
-		   "button1_2", &button1_2,
-		   "button2_1", &button2_1,
-		   "button2_2", &button2_2,
 		   "preview", &check_preview,
 		   "fuzziness", &slider_fuzziness,
 		   "target", &box_target,
@@ -103,12 +95,12 @@ static void cmd_replace_color_execute(const char *argument)
 
   preview = preview_new(effect);
 
-  button_color1 = color_button_new
+  button_color1 = colorbutton_new
     (get_config_color("ReplaceColor", "Color1",
 		      colorbar_get_fg_color(app_get_colorbar())),
      current_sprite->imgtype);
 
-  button_color2 = color_button_new
+  button_color2 = colorbutton_new
     (get_config_color("ReplaceColor", "Color2",
 		      colorbar_get_bg_color(app_get_colorbar())),
      current_sprite->imgtype);
@@ -125,12 +117,8 @@ static void cmd_replace_color_execute(const char *argument)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
-  HOOK(button1_1, JI_SIGNAL_BUTTON_SELECT, button_1_select_hook, 1);
-  HOOK(button1_2, JI_SIGNAL_BUTTON_SELECT, button_2_select_hook, 1);
-  HOOK(button2_1, JI_SIGNAL_BUTTON_SELECT, button_1_select_hook, 2);
-  HOOK(button2_2, JI_SIGNAL_BUTTON_SELECT, button_2_select_hook, 2);
-  HOOK(button_color1, SIGNAL_COLOR_BUTTON_CHANGE, color_change_hook, 1);
-  HOOK(button_color2, SIGNAL_COLOR_BUTTON_CHANGE, color_change_hook, 2);
+  HOOK(button_color1, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 1);
+  HOOK(button_color2, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 2);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
@@ -167,52 +155,32 @@ done:;
   sprite_unlock(sprite);
 }
 
-static int button_1_select_hook(JWidget widget, int user_data)
-{
-  JWidget w = user_data == 1 ? button_color1: button_color2;
-
-  color_button_set_color(w, colorbar_get_fg_color(app_get_colorbar()));
-  color_change_hook(w, user_data);
-
-  return TRUE;
-}
-
-static int button_2_select_hook(JWidget widget, int user_data)
-{
-  JWidget w = user_data == 1 ? button_color1: button_color2;
-
-  color_button_set_color(w, colorbar_get_bg_color(app_get_colorbar()));
-  color_change_hook(w, user_data);
-
-  return TRUE;
-}
-
-static int color_change_hook(JWidget widget, int user_data)
+static bool color_change_hook(JWidget widget, void *data)
 {
   char buf[64];
 
-  sprintf(buf, "Color%d", user_data);
-  set_config_color("ReplaceColor", buf, color_button_get_color(widget));
+  sprintf(buf, "Color%d", (int)data);
+  set_config_color("ReplaceColor", buf, colorbutton_get_color(widget));
 
   make_preview();
   return FALSE;
 }
 
-static int target_change_hook(JWidget widget, int user_data)
+static bool target_change_hook(JWidget widget, void *data)
 {
   effect_load_target(preview_get_effect(preview));
   make_preview();
   return FALSE;
 }
 
-static int slider_change_hook(JWidget widget, int user_data)
+static bool slider_change_hook(JWidget widget, void *data)
 {
   set_config_int("ReplaceColor", "Fuzziness", jslider_get_value(widget));
   make_preview();
   return FALSE;
 }
 
-static int preview_change_hook(JWidget widget, int user_data)
+static bool preview_change_hook(JWidget widget, void *data)
 {
   set_config_bool("ReplaceColor", "Preview", jwidget_is_selected(widget));
   make_preview();

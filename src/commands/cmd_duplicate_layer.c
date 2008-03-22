@@ -57,7 +57,7 @@ static Layer *duplicate_layer(void)
   if (undo_is_enabled(sprite->undo))
     undo_open(sprite->undo);
 
-  layer_copy = layer_new_copy(sprite->layer);
+  layer_copy = layer_new_copy(sprite, sprite->layer);
   if (!layer_copy) {
     if (undo_is_enabled(sprite->undo))
       undo_close(sprite->undo);
@@ -71,9 +71,9 @@ static Layer *duplicate_layer(void)
 
   /* add the new layer in the sprite */
   if (undo_is_enabled(sprite->undo))
-    undo_add_layer(sprite->undo, (Layer *)sprite->layer->parent, layer_copy);
+    undo_add_layer(sprite->undo, sprite->layer->parent_layer, layer_copy);
 
-  layer_add_layer((Layer *)sprite->layer->parent, layer_copy);
+  layer_add_layer(sprite->layer->parent_layer, layer_copy);
 
   if (undo_is_enabled(sprite->undo)) {
     undo_move_layer(sprite->undo, layer_copy);
@@ -81,7 +81,7 @@ static Layer *duplicate_layer(void)
     undo_close(sprite->undo);
   }
 
-  layer_move_layer((Layer *)sprite->layer->parent, layer_copy, sprite->layer);
+  layer_move_layer(sprite->layer->parent_layer, layer_copy, sprite->layer);
   sprite_set_layer(sprite, layer_copy);
 
   return layer_copy;

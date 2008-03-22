@@ -8,7 +8,7 @@
       <box vertical homogeneous>
         <label text="Resolution:" />
         <label text="Color depth:" />
-        <label text="Pixel scale:" />
+        <label text="Pixel scaling:" />
         <check text="Fullscreen" name="fullscreen" />
       </box>
       <box vertical homogeneous expansive>

@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -287,6 +288,26 @@ void undo_redo(Undo *undo)
   run_undo(undo, DO_REDO, FALSE);
 }
 
+const char *undo_get_next_undo_label(Undo *undo)
+{
+  UndoChunk *chunk;
+
+  assert(undo_can_undo(undo));
+
+  chunk = jlist_first_data(undo->undo_stream->chunks);
+  return undo_actions[chunk->type].name;
+}
+
+const char *undo_get_next_redo_label(Undo *undo)
+{
+  UndoChunk *chunk;
+
+  assert(undo_can_redo(undo));
+
+  chunk = jlist_first_data(undo->redo_stream->chunks);
+  return undo_actions[chunk->type].name;
+}
+
 static void run_undo(Undo *undo, int state, int discard_tail)
 {
   UndoStream *undo_stream = ((state == DO_UNDO)? undo->undo_stream:
@@ -302,12 +323,12 @@ static void run_undo(Undo *undo, int state, int discard_tail)
       if (!chunk)
 	break;
 
-      /*     { int c; */
-      /*       for (c=0; c<ABS (level); c++) */
-      /* 	fprintf (stderr, "  "); */
-      /*       fprintf (stderr, "%s: %s\n", */
-      /* 	       (state == DO_UNDO) ? "Undo": "Redo", */
-      /* 	       undo_actions[chunk->type].name); } */
+/*       { int c; */
+/* 	for (c=0; c<ABS(level); c++) */
+/* 	  PRINTF("  "); */
+/* 	PRINTF("%s: %s\n", */
+/* 	       (state == DO_UNDO) ? "Undo": "Redo", */
+/* 	       undo_actions[chunk->type].name); } */
 
       (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
 
@@ -694,7 +715,7 @@ static void chunk_dirty(UndoStream *stream, Dirty *dirty)
 static void chunk_dirty_invert(UndoStream *stream, UndoChunk *chunk, int state)
 {
   unsigned long id = undo_chunk_get32(chunk);
-  int imgtype = undo_chunk_get8 (chunk);
+  int imgtype = undo_chunk_get8(chunk);
   Image *image = (Image *)gfxobj_find(id);
 
   if ((image) && (image->gfxobj.type == GFXOBJ_IMAGE) &&
@@ -710,24 +731,25 @@ static void chunk_dirty_invert(UndoStream *stream, UndoChunk *chunk, int state)
 
     dirty = dirty_new(image, x1, y1, x2, y2, FALSE);
     dirty->rows = undo_chunk_get16(chunk);
-    dirty->row = jmalloc(sizeof(struct DirtyRow) * dirty->rows);
+    if (dirty->rows > 0) {
+      dirty->row = jmalloc(sizeof(struct DirtyRow) * dirty->rows);
+      for (v=0; v<dirty->rows; v++) {
+	dirty->row[v].y = y = undo_chunk_get16(chunk);
+	dirty->row[v].cols = undo_chunk_get16(chunk);
+	dirty->row[v].col = jmalloc(sizeof(struct DirtyCol) * dirty->row[v].cols);
 
-    for (v=0; v<dirty->rows; v++) {
-      dirty->row[v].y = y = undo_chunk_get16(chunk);
-      dirty->row[v].cols = undo_chunk_get16(chunk);
-      dirty->row[v].col = jmalloc(sizeof(struct DirtyCol) * dirty->row[v].cols);
+	for (u=0; u<dirty->row[v].cols; u++) {
+	  dirty->row[v].col[u].x = x = undo_chunk_get16(chunk);
+	  dirty->row[v].col[u].w = undo_chunk_get16(chunk);
 
-      for (u=0; u<dirty->row[v].cols; u++) {
- 	dirty->row[v].col[u].x = x = undo_chunk_get16(chunk);
-	dirty->row[v].col[u].w = undo_chunk_get16(chunk);
+	  size = dirty->row[v].col[u].w << IMAGE_SHIFT(dirty->image);
 
-	size = dirty->row[v].col[u].w << IMAGE_SHIFT(dirty->image);
+	  dirty->row[v].col[u].flags = DIRTY_VALID_COLUMN;
+	  dirty->row[v].col[u].data = jmalloc (size);
+	  dirty->row[v].col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
 
-	dirty->row[v].col[u].flags = DIRTY_VALID_COLUMN;
-	dirty->row[v].col[u].data = jmalloc (size);
-	dirty->row[v].col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
-
-	undo_chunk_read(chunk, dirty->row[v].col[u].data, size);
+	  undo_chunk_read(chunk, dirty->row[v].col[u].data, size);
+	}
       }
     }
 
@@ -824,7 +846,7 @@ static void chunk_remove_image_invert(UndoStream *stream, UndoChunk *chunk, int 
   if (stock) {
     Image *image = undo_chunk_read_image(chunk);
 
-    /* ji_assert(image); */
+    /* assert(image != NULL); */
 
     stock_replace_image(stock, index, image);
     chunk_add_image(stream, stock, image);
@@ -866,8 +888,6 @@ static void chunk_replace_image_invert(UndoStream *stream, UndoChunk *chunk, int
 
   if (stock) {
     Image *image = undo_chunk_read_image(chunk);
-
-    /* ji_assert(image); */
 
     chunk_replace_image(stream, stock, index);
 
@@ -950,7 +970,7 @@ static void chunk_remove_cel_invert(UndoStream *stream, UndoChunk *chunk, int st
   if (layer) {
     Cel *cel = undo_chunk_read_cel(chunk);
 
-    /* ji_assert (cel); */
+    /* assert(cel != NULL); */
 
     chunk_add_cel(stream, layer, cel);
     layer_add_cel(layer, cel);
@@ -1015,7 +1035,7 @@ void undo_remove_layer(Undo *undo, Layer *layer)
 static void chunk_remove_layer(UndoStream *stream, Layer *layer)
 {
   UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_REMOVE_LAYER);
-  Layer *set = (Layer *)layer->parent;
+  Layer *set = layer->parent_layer;
   Layer *after = layer_get_prev(layer);
 
   undo_chunk_put32(chunk, set->gfxobj.id);
@@ -1035,7 +1055,7 @@ static void chunk_remove_layer_invert(UndoStream *stream, UndoChunk *chunk, int 
   if (set) {
     Layer *layer = undo_chunk_read_layer(chunk);
 
-    /* ji_assert(layer); */
+    /* assert(layer != NULL); */
 
     chunk_add_layer(stream, set, layer);
     layer_add_layer(set, layer);
@@ -1062,7 +1082,7 @@ void undo_move_layer(Undo *undo, Layer *layer)
 static void chunk_move_layer(UndoStream *stream, Layer *layer)
 {
   UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_MOVE_LAYER);
-  Layer *set = (Layer *)layer->parent;
+  Layer *set = layer->parent_layer;
   Layer *after = layer_get_prev(layer);
 
   undo_chunk_put32(chunk, set->gfxobj.id);

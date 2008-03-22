@@ -29,7 +29,7 @@
 #include "core/core.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
@@ -324,7 +324,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 	  int tabs = -2;
 	  Layer *l = layer;
 
-	  while (l->gfxobj.type != GFXOBJ_SPRITE) {
+	  while (l != NULL) {
 	    if (++tabs > 0) {
 /* 	      JList item = jlist_find(((Layer *)l->parent)->layers, l); */
 	      int y1 = y_mid-LAYSIZE/2;
@@ -332,7 +332,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 /* 	      int y2 = item->prev ? y_mid+LAYSIZE/2 : y_mid; */
 	      vline(bmp, tabs*16-1, y1, y2, makecol(0, 0, 0));
 	    }
-	    l = (Layer *)l->parent;
+	    l = l->parent_layer;
 	  }
 
 	  /* draw the layer name */
@@ -470,7 +470,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 	  }
 	  /* move */
 	  else if (layer_box->layer != current_sprite->layer) {
-	    layer_move_layer((Layer *)layer_box->layer->parent,
+	    layer_move_layer(layer_box->layer->parent_layer,
 			     layer_box->layer, current_sprite->layer);
 
 	    current_sprite->layer = layer_box->layer;
@@ -632,7 +632,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 
 	if (sprite->layer == layer)
 	  rectfill(bmp, 0, y, bmp->w-1, y+h-1, makecol(44, 76, 145));
-	else if (layer->gfxobj.type == GFXOBJ_LAYER_SET)
+	else if (layer_is_set(layer))
 	  rectfill(bmp, 0, y, bmp->w-1, y+h-1, makecol(128, 128, 128));
 
 	hline(bmp, 0, y, bmp->w-1, makecol(0, 0, 0));
@@ -839,21 +839,21 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 
 static Layer *select_prev_layer(Layer *layer, int enter_in_sets)
 {
-  GfxObj *parent = layer->parent;
+  Layer *parent = layer->parent_layer;
 
-  if (enter_in_sets && layer->gfxobj.type == GFXOBJ_LAYER_SET) {
+  if (enter_in_sets && layer_is_set(layer)) {
     if (!jlist_empty(layer->layers))
       layer = jlist_last_data(layer->layers);
   }
-  else if (parent->type == GFXOBJ_LAYER_SET) {
-    JList list = ((Layer *)parent)->layers;
+  else if (parent != NULL) {
+    JList list = parent->layers;
     JLink link = jlist_find(list, layer);
 
     if (link != list->end) {
       if (link->prev != list->end)
 	layer = link->prev->data;
       else
-	layer = select_prev_layer((Layer *)parent, FALSE);
+	layer = select_prev_layer(parent, FALSE);
     }
   }
 
@@ -862,21 +862,21 @@ static Layer *select_prev_layer(Layer *layer, int enter_in_sets)
 
 static Layer *select_next_layer(Layer *layer, int enter_in_sets)
 {
-  GfxObj *parent = layer->parent;
+  Layer *parent = layer->parent_layer;
 
-  if (enter_in_sets && layer->gfxobj.type == GFXOBJ_LAYER_SET) {
+  if (enter_in_sets && layer_is_set(layer)) {
     if (!jlist_empty(layer->layers))
       layer = jlist_first_data(layer->layers);
   }
-  else if (parent->type == GFXOBJ_LAYER_SET) {
-    JList list = ((Layer *)parent)->layers;
+  else if (parent != NULL) {
+    JList list = parent->layers;
     JLink link = jlist_find(list, layer);
 
     if (link != list->end) {
       if (link->next != list->end)
 	layer = link->next->data;
       else
-	layer = select_next_layer((Layer *)parent, FALSE);
+	layer = select_next_layer(parent, FALSE);
     }
   }
 
@@ -887,7 +887,7 @@ static int count_layers(Layer *layer)
 {
   int count;
 
-  if (layer->parent->type == GFXOBJ_SPRITE)
+  if (layer->parent_layer == NULL)
     count = 0;
   else
     count = 1;
@@ -903,13 +903,13 @@ static int count_layers(Layer *layer)
 
 static int get_layer_pos(Layer *layer, Layer *current, int *pos)
 {
-  if (layer->parent->type == GFXOBJ_SPRITE)
+  if (layer->parent_layer == NULL)
     *pos = 0;
 
   if (layer == current)
     return TRUE;
 
-  if (layer->parent->type != GFXOBJ_SPRITE)
+  if (layer->parent_layer != NULL)
     (*pos)++;
 
   if (layer->gfxobj.type == GFXOBJ_LAYER_SET) {
@@ -926,7 +926,7 @@ static Layer *get_layer_in_pos(Layer *layer, int pos)
 {
   static int internal_pos;
 
-  if (layer->parent->type == GFXOBJ_SPRITE)
+  if (layer->parent_layer == NULL)
     internal_pos = 0;
   else {
     if (internal_pos == pos)

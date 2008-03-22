@@ -402,6 +402,8 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONRELEASED:
       if (jwidget_has_capture(widget)) {
+	jwidget_release_mouse(widget);
+
 	if (jwidget_has_mouse(widget)) {
 	  switch (widget->type) {
 
@@ -421,7 +423,6 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	      break;
 	  }
 	}
-	jwidget_release_mouse(widget);
 	return TRUE;
       }
       break;

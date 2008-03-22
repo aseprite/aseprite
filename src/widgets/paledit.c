@@ -32,8 +32,10 @@
 
 #include "core/color.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/blend.h"
+#include "raster/image.h"
+#include "raster/palette.h"
 #include "widgets/paledit.h"
 
 /* #define COLOR_SIZE	6 */
@@ -42,7 +44,7 @@
 typedef struct PalEdit
 {
   JWidget widget;
-  RGB *palette;
+  Palette *palette;
   bool editable;
   unsigned range_type;
   unsigned columns;
@@ -55,7 +57,7 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg);
 static void paledit_request_size(JWidget widget, int *w, int *h);
 static void paledit_update_scroll(JWidget widget, int color);
 
-JWidget paledit_new(RGB *palette, bool editable, int boxsize)
+JWidget paledit_new(Palette *palette, bool editable, int boxsize)
 {
   JWidget widget = jwidget_new(paledit_type());
   PalEdit *paledit = jnew(PalEdit, 1);
@@ -87,7 +89,7 @@ int paledit_type(void)
   return type;
 }
 
-RGB *paledit_get_palette(JWidget widget)
+Palette *paledit_get_palette(JWidget widget)
 {
   PalEdit *paledit = paledit_data(widget);
 
@@ -167,21 +169,13 @@ void paledit_select_range(JWidget widget, int begin, int end, int range_type)
   jwidget_dirty(widget);
 }
 
-static void swap_color(RGB *palette, int c1, int c2)
+static void swap_color(Palette *palette, int i1, int i2)
 {
-  int r, g, b;
+  ase_uint32 c1 = palette_get_entry(palette, i1);
+  ase_uint32 c2 = palette_get_entry(palette, i2);
 
-  r = palette[c1].r;
-  g = palette[c1].g;
-  b = palette[c1].b;
-
-  palette[c1].r = palette[c2].r;
-  palette[c1].g = palette[c2].g;
-  palette[c1].b = palette[c2].b;
-
-  palette[c2].r = r;
-  palette[c2].g = g;
-  palette[c2].b = b;
+  palette_set_entry(palette, i2, c1);
+  palette_set_entry(palette, i1, c2);
 }
 
 void paledit_move_selection(JWidget widget, int x, int y)
@@ -397,8 +391,7 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_REQSIZE:
-      paledit_request_size(widget,
-				  &msg->reqsize.w, &msg->reqsize.h);
+      paledit_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return TRUE;
 
     case JM_KEYPRESSED:
@@ -447,9 +440,9 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
 	  else
 	    color = makecol_depth
 	      (bitmap_color_depth(ji_screen),
-	       _rgb_scale_6[paledit->palette[c].r],
-	       _rgb_scale_6[paledit->palette[c].g],
-	       _rgb_scale_6[paledit->palette[c].b]);
+	       _rgba_getr(paledit->palette->color[c]),
+	       _rgba_getg(paledit->palette->color[c]),
+	       _rgba_getb(paledit->palette->color[c]));
 
 	  rectfill(bmp, x, y, x+COLOR_SIZE-1, y+COLOR_SIZE-1, color);
 

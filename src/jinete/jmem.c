@@ -225,7 +225,7 @@ char *jstrdup(const char *string)
 
   mem = ustrdup(string);
   if (mem != NULL)
-    addslot(mem, strlen(mem));
+    addslot(mem, ustrsizez(mem));
 
   return mem;
 }

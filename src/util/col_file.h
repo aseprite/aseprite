@@ -19,10 +19,10 @@
 #ifndef UTIL_COL_FILE_H
 #define UTIL_COL_FILE_H
 
-#include <allegro/color.h>
+struct Palette;
 
-struct RGB *load_col_file (const char *filename);
-int save_col_file (struct RGB *palette, const char *filename);
+struct Palette *load_col_file(const char *filename);
+bool save_col_file(struct Palette *pal, const char *filename);
 
 #endif /* UTIL_COL_FILE_H */
 

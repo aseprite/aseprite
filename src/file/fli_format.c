@@ -23,7 +23,7 @@
 
 #include "file/file.h"
 #include "file/fli/fli.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/raster.h"
 
 static bool load_FLI(FileOp *fop);
@@ -45,14 +45,15 @@ FileFormat format_fli =
 /* loads a FLI/FLC file */
 static bool load_FLI(FileOp *fop)
 {
-#define SETPAL()					\
-    do {						\
-      for (c=0; c<256; c++) {				\
-	pal[c].r = cmap[c*3]>>2;			\
-	pal[c].g = cmap[c*3+1]>>2;			\
-	pal[c].b = cmap[c*3+2]>>2;			\
-      }							\
-      sprite_set_palette(sprite, pal, frpos_out);	\
+#define SETPAL()						\
+  do {								\
+      for (c=0; c<256; c++) {					\
+	palette_set_entry(pal, c, _rgba(cmap[c*3],		\
+					cmap[c*3+1],		\
+					cmap[c*3+2], 255));	\
+      }								\
+      pal->frame = frpos_out;					\
+      sprite_set_palette(sprite, pal, TRUE);			\
     } while (0)
 
   unsigned char cmap[768];
@@ -61,7 +62,7 @@ static bool load_FLI(FileOp *fop)
   Image *bmp, *old, *image;
   Sprite *sprite;
   Layer *layer;
-  PALETTE pal;
+  Palette *pal;
   int c, w, h;
   int frpos_in;
   int frpos_out;
@@ -90,10 +91,12 @@ static bool load_FLI(FileOp *fop)
   /* create the bitmaps */
   bmp = image_new(IMAGE_INDEXED, w, h);
   old = image_new(IMAGE_INDEXED, w, h);
-  if ((!bmp) || (!old)) {
+  pal = palette_new(0, MAX_PALETTE_COLORS);
+  if (!bmp || !old || !pal) {
     fop_error(fop, _("Not enough memory.\n"));
     if (bmp) image_free(bmp);
     if (old) image_free(old);
+    if (pal) palette_free(pal);
     fclose(f);
     return FALSE;
   }
@@ -199,6 +202,7 @@ static bool load_FLI(FileOp *fop)
   /* destroy the bitmaps */
   image_free(bmp);
   image_free(old);
+  palette_free(pal);
 
   fop->sprite = sprite;
   return TRUE;
@@ -213,7 +217,7 @@ static bool save_FLI(FileOp *fop)
   s_fli_header fli_header;
   int c, frpos, times;
   Image *bmp, *old;
-  PALETTE pal;
+  Palette *pal;
   FILE *f;
 
   /* prepare fli header */
@@ -259,11 +263,11 @@ static bool save_FLI(FileOp *fop)
        frpos<sprite->frames;
        frpos++) {
     /* get color map */
-    palette_copy(pal, sprite_get_palette(sprite, frpos));
+    pal = sprite_get_palette(sprite, frpos);
     for (c=0; c<256; c++) {
-      cmap[3*c] = _rgb_scale_6[pal[c].r];
-      cmap[3*c+1] = _rgb_scale_6[pal[c].g];
-      cmap[3*c+2] = _rgb_scale_6[pal[c].b];
+      cmap[3*c  ] = _rgba_getr(pal->color[c]);
+      cmap[3*c+1] = _rgba_getg(pal->color[c]);
+      cmap[3*c+2] = _rgba_getb(pal->color[c]);
     }
 
     /* render the frame in the bitmap */

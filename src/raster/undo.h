@@ -61,6 +61,9 @@ bool undo_can_redo(Undo *undo);
 void undo_undo(Undo *undo);
 void undo_redo(Undo *undo);
 
+const char *undo_get_next_undo_label(Undo *undo);
+const char *undo_get_next_redo_label(Undo *undo);
+
 void undo_open(Undo *undo);
 void undo_close(Undo *undo);
 void undo_data(Undo *undo, GfxObj *gfxobj, void *data, int size);

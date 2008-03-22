@@ -22,8 +22,9 @@
 
 #include "effect/colcurve.h"
 #include "effect/effect.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 
 static struct {
   Curve *curve;
@@ -68,7 +69,7 @@ void curve_free(Curve *curve)
   JLink link;
 
   JI_LIST_FOR_EACH(curve->points, link)
-    jfree(link->data);
+    curve_point_free(link->data);
 
   jlist_free(curve->points);
   jfree(curve);
@@ -329,6 +330,7 @@ void apply_color_curve2 (Effect *effect)
 
 void apply_color_curve1(Effect *effect)
 {
+  Palette *pal = get_current_palette();
   ase_uint8 *src_address;
   ase_uint8 *dst_address;
   int x, c, r, g, b;
@@ -353,9 +355,9 @@ void apply_color_curve1(Effect *effect)
     if (effect->target.index)
       c = data.cmap[c];
     else {
-      r = _rgb_scale_6[current_palette[c].r];
-      g = _rgb_scale_6[current_palette[c].g];
-      b = _rgb_scale_6[current_palette[c].b];
+      r = _rgba_getr(pal->color[c]);
+      g = _rgba_getg(pal->color[c]);
+      b = _rgba_getb(pal->color[c]);
 
       if (effect->target.r) r = data.cmap[r];
       if (effect->target.g) g = data.cmap[g];

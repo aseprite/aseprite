@@ -19,10 +19,12 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "widgets/statebar.h"
 
 static bool cmd_redo_enabled(const char *argument)
 {
@@ -31,6 +33,10 @@ static bool cmd_redo_enabled(const char *argument)
 
 static void cmd_redo_execute(const char *argument)
 {
+  statusbar_show_tip(app_get_statusbar(), 1000,
+		     _("Redid %s"),
+		     undo_get_next_redo_label(current_sprite->undo));
+
   undo_redo(current_sprite->undo);
   sprite_generate_mask_boundaries(current_sprite);
   update_screen_for_sprite(current_sprite);

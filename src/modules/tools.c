@@ -37,19 +37,10 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
-#include "raster/algo.h"
-#include "raster/blend.h"
-#include "raster/brush.h"
-#include "raster/dirty.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
-#include "raster/undo.h"
+#include "raster/raster.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
@@ -76,7 +67,7 @@ static int _cursor_mask;
 static Image *tool_image = NULL;
 static int tool_color;
 
-static void update_cursor_color(void)
+static void update_cursor_color(void *data)
 {
   if (ji_screen)
     _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
@@ -128,7 +119,7 @@ int init_module_tools(void)
   air_speed   = MID(1, air_speed, 100);
 
   refresh_tools_names();
-  hook_palette_changes(update_cursor_color);
+  app_add_hook(APP_PALETTE_CHANGE, update_cursor_color, NULL);
 
   return 0;
 }
@@ -153,8 +144,6 @@ void exit_module_tools(void)
 
   jrect_free(grid);
   brush_free(brush);
-
-  unhook_palette_changes(update_cursor_color);
 }
 
 void refresh_tools_names(void)
@@ -262,7 +251,7 @@ color_t get_cursor_color(void)
 void set_cursor_color(color_t color)
 {
   cursor_color = color;
-  update_cursor_color();
+  update_cursor_color(NULL);
 }
 
 /* returns the size which use the current tool */
@@ -608,6 +597,16 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
   const char *_end = _("End");
   const char *_size = _("Size");
   bool click2 = get_config_bool("Options", "DrawClick2", FALSE);
+
+  /* First of all we have to dispatch the enqueue messages. Why is it
+     needed?  To dispatch the JM_CLOSE and redrawing messages if a
+     color-selector was shown to the user before to click. This is
+     because the tooltips filter the JM_BUTTONPRESSED message, so when
+     the user click outside the window, it is closed, but the filtered
+     JM_BUTTONPRESSED message is not "eaten" so the editor receive it
+     anyway */
+  jmanager_dispatch_messages(jwidget_get_manager(widget));
+  jwidget_flush_redraw(jwidget_get_manager(widget));
 
   /* get image information */
   image = GetImage2(editor->sprite, &offset_x, &offset_y, NULL);
@@ -1316,15 +1315,20 @@ static void my_image_hline1_glass(int x1, int y, int x2, void *data)
 {
   register ase_uint8 *address = ((ase_uint8 **)tool_image->line)[y]+x1;
   register int x = x2 - x1 + 1;
-  int c, tc = _rgba(_rgb_scale_6[_current_palette[_index_cmap[tool_color]].r],
-		    _rgb_scale_6[_current_palette[_index_cmap[tool_color]].g],
-		    _rgb_scale_6[_current_palette[_index_cmap[tool_color]].b], 255);
+  Palette *pal = get_current_palette();
+  ase_uint32 c, tc;
+
+  tc = pal->color[tool_color];
+/*   tc = _rgba(_rgb_scale_6[_current_palette[_index_cmap[tool_color]].r], */
+/* 	     _rgb_scale_6[_current_palette[_index_cmap[tool_color]].g], */
+/* 	     _rgb_scale_6[_current_palette[_index_cmap[tool_color]].b], 255); */
 
   while (x--) {
-    c = _rgba_blend_normal(_rgba(_rgb_scale_6[_current_palette[*address].r],
-				 _rgb_scale_6[_current_palette[*address].g],
-				 _rgb_scale_6[_current_palette[*address].b], 255),
-			   tc, glass_dirty);
+/*     c = _rgba_blend_normal(_rgba(_rgb_scale_6[_current_palette[*address].r], */
+/* 				 _rgb_scale_6[_current_palette[*address].g], */
+/* 				 _rgb_scale_6[_current_palette[*address].b], 255), */
+/* 			   tc, glass_dirty); */
+    c = _rgba_blend_normal(pal->color[*address], tc, glass_dirty);
 
 /*     *(address++) = rgb_map->data[_rgba_getr(c)>>3] */
 /* 				[_rgba_getg(c)>>3] */

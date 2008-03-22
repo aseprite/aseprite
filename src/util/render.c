@@ -23,7 +23,7 @@
 
 #include "jinete/jlist.h"
 
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "modules/tools.h"
 #include "raster/raster.h"
 

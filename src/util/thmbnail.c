@@ -24,9 +24,10 @@
 
 #include "jinete/jlist.h"
 
-#include "modules/palette.h"
+#include "modules/palettes.h"
 #include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/thmbnail.h"
@@ -119,7 +120,8 @@ static void thumbnail_create_bitmap(BITMAP *bmp, Image *image)
     line(bmp, 0, bmp->h-1, bmp->w-1, 0, makecol(0, 0, 0));
   }
   else {
-    int c, x, y, w, h, x1, y1;
+    register int c, x, y;
+    int w, h, x1, y1;
     double sx, sy, scale;
 
     sx = (double)image->w / (double)bmp->w;
@@ -158,13 +160,15 @@ static void thumbnail_create_bitmap(BITMAP *bmp, Image *image)
 	  }
 	break;
       case IMAGE_INDEXED: {
+	Palette *pal = get_current_palette();
+
 	for (y=0; y<h; y++)
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
-	    putpixel(bmp, x1+x, y1+y,
-		     makecol(_rgb_scale_6[current_palette[c].r],
-			     _rgb_scale_6[current_palette[c].g],
-			     _rgb_scale_6[current_palette[c].b]));
+	    c = pal->color[MID(0, c, MAX_PALETTE_COLORS-1)];
+	    putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
+					      _rgba_getg(c),
+					      _rgba_getb(c)));
 	  }
 	break;
       }

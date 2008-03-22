@@ -273,7 +273,7 @@ void RemoveLayer(void)
   Sprite *sprite = current_sprite;
   if (sprite && sprite->layer) {
     Layer *layer = sprite->layer;
-    Layer *parent = (Layer *)layer->parent;
+    Layer *parent = layer->parent_layer;
     Layer *layer_select;
 
     /* select: previous layer, or next layer, or parent(if it is not
@@ -337,8 +337,9 @@ Layer *FlattenLayers(void)
     return NULL;
 
   /* generate the flat_layer */
-  flat_layer = layer_flatten(sprite->set, 0, 0, sprite->w, sprite->h,
-			     0, sprite->frames-1);
+  flat_layer = layer_new_flatten_copy(sprite, sprite->set,
+				      0, 0, sprite->w, sprite->h,
+				      0, sprite->frames-1);
   if (!flat_layer) {
     console_printf("Not enough memory");
     return NULL;
@@ -388,7 +389,7 @@ static int count_layers(Layer *layer)
 {
   int count;
 
-  if (layer->parent->type == GFXOBJ_SPRITE)
+  if (layer->parent_layer == NULL)
     count = 0;
   else
     count = 1;
