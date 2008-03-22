@@ -2,9 +2,8 @@ Next beta
 ---------
 
 - tooltips for color-bar.
-  + faltan opciones para los rangos de paleta
   + agregar soporte para UNDO al cambiar los colores de la paleta.
-- si está activado el cuatro para configurar herramientas las teclas G
+- si está activado el cuadro para configurar herramientas las teclas G
   y H deben actualizarlo
   + Solución: con hooks y Options (agregar core/options.[ch])
 - fix this bug:

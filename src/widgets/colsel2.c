@@ -164,6 +164,11 @@ color_t colorselector_get_color(JWidget widget)
   return colorselector->color;
 }
 
+JWidget colorselector_get_paledit(JWidget widget)
+{
+  return jwidget_find_name(widget, "pal");
+}
+
 static JWidget create_rgb_container(void)
 {
   JWidget grid = jgrid_new(2, FALSE);

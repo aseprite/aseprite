@@ -36,8 +36,10 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "widgets/colbar.h"
 #include "widgets/colsel2.h"
+#include "widgets/paledit.h"
 #include "widgets/statebar.h"
 
 #define COLORBAR_MAX_COLORS   256
@@ -460,8 +462,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_SETCURSOR:
-      if (colorbar->hot != HOTCOLOR_FGCOLOR &&
-	  colorbar->hot != HOTCOLOR_NONE) {
+      if (colorbar->hot != HOTCOLOR_NONE) {
 	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	return TRUE;
       }
@@ -652,54 +653,84 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 	JWidget colorbar_widget = (JWidget)widget->user_data[0];
 	ColorBar *colorbar = colorbar_data(colorbar_widget);
 	color_t color = colorselector_get_color(widget);
+	JWidget pal = colorselector_get_paledit(widget);
 
-	switch (colorbar->hot_editing) {
-	  case HOTCOLOR_NONE:
-	    /* assert(FALSE); */
-	    break;
-	  case HOTCOLOR_FGCOLOR:
-	    colorbar->fgcolor = color;
-	    break;
-	  case HOTCOLOR_BGCOLOR:
-	    colorbar->bgcolor = color;
-	    break;
-	  case HOTCOLOR_BGSPRITE: {
-	    /*       int imgtype = app_get_current_image_type(); */
-	    /*       return */
-	    /* 	current_sprite != NULL ? color_from_image(imgtype, */
-	    /* 						  current_sprite->bgcolor): */
-	    /* 				 color_mask(); */
-	    /* TODO */
-	    break;
-	  }
-	  default:
-	    assert(colorbar->hot_editing >= 0 &&
-		   colorbar->hot_editing < colorbar->ncolor);
-	    colorbar->color[colorbar->hot_editing] = color;
+	if (paledit_get_range_type(pal) != PALETTE_EDITOR_RANGE_NONE) {
+	  bool array[256];
+	  int i, j;
 
-	    if (colorbar->hot_editing == 0 ||
-		colorbar->hot_editing == colorbar->ncolor-1) {
-	      int imgtype = app_get_current_image_type();
-	      color_t c1 = colorbar->color[0];
-	      color_t c2 = colorbar->color[colorbar->ncolor-1];
-	      int r1 = color_get_red(imgtype, c1);
-	      int g1 = color_get_green(imgtype, c1);
-	      int b1 = color_get_blue(imgtype, c1);
-	      int a1 = color_get_alpha(imgtype, c1);
-	      int r2 = color_get_red(imgtype, c2);
-	      int g2 = color_get_green(imgtype, c2);
-	      int b2 = color_get_blue(imgtype, c2);
-	      int a2 = color_get_alpha(imgtype, c2);
-	      int c, r, g, b, a;
+	  paledit_get_selected_entries(pal, array);
 
-	      for (c=1; c<colorbar->ncolor-1; ++c) {
-		r = r1 + (r2-r1) * c / colorbar->ncolor;
-		g = g1 + (g2-g1) * c / colorbar->ncolor;
-		b = b1 + (b2-b1) * c / colorbar->ncolor;
-		a = a1 + (a2-a1) * c / colorbar->ncolor;
-		colorbar->color[c] = color_rgb(r, g, b, a);
+	  for (i=j=0; i<256; ++i)
+	    if (array[i])
+	      ++j;
+
+	  colorbar->ncolor = j;
+	  assert(colorbar->ncolor >= 1);
+
+	  colorbar->hot = MIN(colorbar->hot, colorbar->ncolor-1);
+	  colorbar->hot_editing = MIN(colorbar->hot_editing, colorbar->ncolor-1);
+
+	  for (i=j=0; i<256; ++i)
+	    if (array[i])
+	      colorbar->color[j++] = color_index(i);
+	}
+	else {
+	  switch (colorbar->hot_editing) {
+	    case HOTCOLOR_NONE:
+	      /* assert(FALSE); */
+	      break;
+	    case HOTCOLOR_FGCOLOR:
+	      colorbar->fgcolor = color;
+	      break;
+	    case HOTCOLOR_BGCOLOR:
+	      colorbar->bgcolor = color;
+	      break;
+	    case HOTCOLOR_BGSPRITE: {
+	      if (current_sprite != NULL) {
+		Sprite *sprite = current_sprite;
+		int new_bgcolor = get_color_for_image(sprite->imgtype, color);
+
+		if (sprite->bgcolor != new_bgcolor) {
+		  /* TODO add undo suppport */
+/* 		  if (undo_is_enabled(sprite->undo)) */
+/* 		    undo_int(sprite->undo, (GfxObj *)sprite, &sprite->bgcolor); */
+
+		  sprite_set_bgcolor(sprite, new_bgcolor);
+		}
 	      }
+	      break;
 	    }
+	    default:
+	      assert(colorbar->hot_editing >= 0 &&
+		     colorbar->hot_editing < colorbar->ncolor);
+	      colorbar->color[colorbar->hot_editing] = color;
+
+	      if (colorbar->hot_editing == 0 ||
+		  colorbar->hot_editing == colorbar->ncolor-1) {
+		int imgtype = app_get_current_image_type();
+		color_t c1 = colorbar->color[0];
+		color_t c2 = colorbar->color[colorbar->ncolor-1];
+		int r1 = color_get_red(imgtype, c1);
+		int g1 = color_get_green(imgtype, c1);
+		int b1 = color_get_blue(imgtype, c1);
+		int a1 = color_get_alpha(imgtype, c1);
+		int r2 = color_get_red(imgtype, c2);
+		int g2 = color_get_green(imgtype, c2);
+		int b2 = color_get_blue(imgtype, c2);
+		int a2 = color_get_alpha(imgtype, c2);
+		int c, r, g, b, a;
+
+		for (c=1; c<colorbar->ncolor-1; ++c) {
+		  r = r1 + (r2-r1) * c / colorbar->ncolor;
+		  g = g1 + (g2-g1) * c / colorbar->ncolor;
+		  b = b1 + (b2-b1) * c / colorbar->ncolor;
+		  a = a1 + (a2-a1) * c / colorbar->ncolor;
+		  colorbar->color[c] = color_rgb(r, g, b, a);
+		}
+	      }
+	      break;
+	  }
 	}
 
 	/* ONLY FOR TRUE-COLOR GRAPHICS MODE: if the palette is

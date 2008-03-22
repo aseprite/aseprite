@@ -2,7 +2,7 @@
 AUTHOR
 ===================================
 
-  David A. Capello <dacap@users.sourceforge.net>
+  David A. Capello <davidcapello@gmail.com>
   Programmer, design, graphics, tester and the maintainer.
 
 ===================================
@@ -13,13 +13,13 @@ THANKFULNESS
   but their work was indispensable to make it real:
   ------------------------------------------------------------------
 
-  Álvaro González: For the other routine to generate optimised
+  Álvaro González: For the other routine to generate optimized
   palettes (used in old versions of ASE).
 
   Angelo Mottola: For the routines to load/save JPEG files with
   JPGalleg (alternative use instead of libjpeg).
 
-  Ben Davis: For his optimised palette generation routine.
+  Ben Davis: For his optimized palette generation routine.
 
   Billy Biggs and Lauris Kaplinski: For the help with the alpha
   blending routines.

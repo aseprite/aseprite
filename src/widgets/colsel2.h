@@ -31,4 +31,6 @@ JWidget colorselector_new(bool editable_palette);
 void colorselector_set_color(JWidget widget, color_t color);
 color_t colorselector_get_color(JWidget widget);
 
+JWidget colorselector_get_paledit(JWidget widget);
+
 #endif /* WIDGETS_COLSEL2_H */
