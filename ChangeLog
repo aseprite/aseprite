@@ -1,5 +1,9 @@
 2008-03-22  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/dialogs/filmedit.c (layer_box_msg_proc, cel_box_msg_proc):
+	Fixed a bug when calling create_bitmap with negative values to do
+	double-buffering.
+
 	* src/commands/cmd_new_file.c (cmd_new_file_execute): Removed the
 	'Custom' background-color option.
 

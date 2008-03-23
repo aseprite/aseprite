@@ -15,6 +15,7 @@ High priority work
 ------------------
 
 - search for TODO;
+- rewrite the film editor.
 - rewrite tools-inks-drawingmode stuff;
 - new animation editor (remove the film editor)
 - drag & drop files in Windows.
@@ -25,9 +26,6 @@ High priority work
 - remove the jfilesel.c
 - fix the sprite-properties dialog when select the constant
   frame length.
-- fix a bug in the film editor when move the separator (panel) outside
-  the screen (to left or right)
-  + rewrite the film editor.
 - ver por el nuevo load_font de Allegro.
 - complete palette operations, and palette editor (it needs a slider
   or something to move between palette changes);
@@ -70,9 +68,6 @@ Wish-list
 ---------
 
 - dacap wish-list:
-  + better film editor
-    + rewrite it in one widget.
-    + "middle mouse button" for the film editor.
   + added starred file-items in the file-selector.
 - manuq wish-list:
   + layer-with-constant-cel

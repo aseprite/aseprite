@@ -26,13 +26,8 @@ struct Mask;
 #define DIRTY_VALID_COLUMN	1
 #define DIRTY_MUSTBE_UPDATED	2
 
-#define IMAGE_ADDRESS(d,x,y)						\
-  ((void *)((d)->imgtype == IMAGE_RGB)?					\
-             (void *)(((ase_uint32 **)(d)->line)[(y)]+(x)):		\
-           ((d)->imgtype == IMAGE_GRAYSCALE)?				\
-             (void *)(((ase_uint16 **)(d)->line)[(y)]+(x)):		\
-           ((d)->imgtype == IMAGE_INDEXED)?				\
-             (void *)(((ase_uint8 **)(d)->line)[(y)]+(x)): 0)
+#define IMAGE_ADDRESS(image,x,y)					\
+  ((void *)(image)->line[(y)] + IMAGE_LINE_SIZE((image), (x)))		\
 
 #define IMAGE_SHIFT(d)				\
   (((d)->imgtype == IMAGE_RGB)?       2:	\

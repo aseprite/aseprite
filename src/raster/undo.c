@@ -74,13 +74,27 @@ enum {
   UNDO_TYPE_SET_FRAMES,
 };
 
+typedef struct UndoChunkData UndoChunkData;
+typedef struct UndoChunkImage UndoChunkImage;
+typedef struct UndoChunkFlip UndoChunkFlip;
+typedef struct UndoChunkDirty UndoChunkDirty;
+typedef struct UndoChunkAddImage UndoChunkAddImage;
+typedef struct UndoChunkRemoveImage UndoChunkRemoveImage;
+typedef struct UndoChunkReplaceImage UndoChunkReplaceImage;
+typedef struct UndoChunkAddCel UndoChunkAddCel;
+typedef struct UndoChunkRemoveCel UndoChunkRemoveCel;
+typedef struct UndoChunkAddLayer UndoChunkAddLayer;
+typedef struct UndoChunkRemoveLayer UndoChunkRemoveLayer;
+typedef struct UndoChunkMoveLayer UndoChunkMoveLayer;
+typedef struct UndoChunkSetLayer UndoChunkSetLayer;
+typedef struct UndoChunkSetMask UndoChunkSetMask;
+typedef struct UndoChunkSetFrames UndoChunkSetFrames;
+
 typedef struct UndoChunk
 {
   int type;
-  int max_size;
   int size;
-  int pos;
-  ase_uint8 *data;
+  const char *label;
 } UndoChunk;
 
 typedef struct UndoStream
@@ -101,111 +115,107 @@ static void update_undo(Undo *undo);
 
 /* Undo actions */
 
-static void chunk_open(UndoStream *stream);
+static void chunk_open_new(UndoStream *stream);
 static void chunk_open_invert(UndoStream *stream, UndoChunk *chunk, int state);
 
-static void chunk_close(UndoStream *stream);
+static void chunk_close_new(UndoStream *stream);
 static void chunk_close_invert(UndoStream *stream, UndoChunk *chunk, int state);
 
-static void chunk_data(UndoStream *stream, GfxObj *gfxobj, void *data, int size);
-static void chunk_data_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_data_new(UndoStream *stream, GfxObj *gfxobj, void *data, int size);
+static void chunk_data_invert(UndoStream *stream, UndoChunkData *chunk, int state);
 
-static void chunk_image(UndoStream *stream, Image *image, int x, int y, int w, int h);
-static void chunk_image_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_image_new(UndoStream *stream, Image *image, int x, int y, int w, int h);
+static void chunk_image_invert(UndoStream *stream, UndoChunkImage *chunk, int state);
 
-static void chunk_flip(UndoStream *stream, Image *image, int x1, int y1, int x2, int y2, int horz);
-static void chunk_flip_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_flip_new(UndoStream *stream, Image *image, int x1, int y1, int x2, int y2, int horz);
+static void chunk_flip_invert(UndoStream *stream, UndoChunkFlip *chunk, int state);
 
-static void chunk_dirty(UndoStream *stream, Dirty *dirty);
-static void chunk_dirty_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_dirty_new(UndoStream *stream, Dirty *dirty);
+static void chunk_dirty_invert(UndoStream *stream, UndoChunkDirty *chunk, int state);
 
-static void chunk_add_image(UndoStream *stream, Stock *stock, Image *image);
-static void chunk_add_image_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_add_image_new(UndoStream *stream, Stock *stock, Image *image);
+static void chunk_add_image_invert(UndoStream *stream, UndoChunkAddImage *chunk, int state);
 
-static void chunk_remove_image(UndoStream *stream, Stock *stock, Image *image);
-static void chunk_remove_image_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_remove_image_new(UndoStream *stream, Stock *stock, Image *image);
+static void chunk_remove_image_invert(UndoStream *stream, UndoChunkRemoveImage *chunk, int state);
 
-static void chunk_replace_image(UndoStream *stream, Stock *stock, int index);
-static void chunk_replace_image_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int index);
+static void chunk_replace_image_invert(UndoStream *stream, UndoChunkReplaceImage *chunk, int state);
 
-static void chunk_add_cel(UndoStream *stream, Layer *layer, Cel *cel);
-static void chunk_add_cel_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_add_cel_new(UndoStream *stream, Layer *layer, Cel *cel);
+static void chunk_add_cel_invert(UndoStream *stream, UndoChunkAddCel *chunk, int state);
 
-static void chunk_remove_cel(UndoStream *stream, Layer *layer, Cel *cel);
-static void chunk_remove_cel_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_remove_cel_new(UndoStream *stream, Layer *layer, Cel *cel);
+static void chunk_remove_cel_invert(UndoStream *stream, UndoChunkRemoveCel *chunk, int state);
 
-static void chunk_add_layer(UndoStream *stream, Layer *set, Layer *layer);
-static void chunk_add_layer_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_add_layer_new(UndoStream *stream, Layer *set, Layer *layer);
+static void chunk_add_layer_invert(UndoStream *stream, UndoChunkAddLayer *chunk, int state);
 
-static void chunk_remove_layer(UndoStream *stream, Layer *layer);
-static void chunk_remove_layer_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_remove_layer_new(UndoStream *stream, Layer *layer);
+static void chunk_remove_layer_invert(UndoStream *stream, UndoChunkRemoveLayer *chunk, int state);
 
-static void chunk_move_layer(UndoStream *stream, Layer *layer);
-static void chunk_move_layer_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_move_layer_new(UndoStream *stream, Layer *layer);
+static void chunk_move_layer_invert(UndoStream *stream, UndoChunkMoveLayer *chunk, int state);
 
-static void chunk_set_layer(UndoStream *stream, Sprite *sprite);
-static void chunk_set_layer_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_set_layer_new(UndoStream *stream, Sprite *sprite);
+static void chunk_set_layer_invert(UndoStream *stream, UndoChunkSetLayer *chunk, int state);
 
-static void chunk_set_mask(UndoStream *stream, Sprite *sprite);
-static void chunk_set_mask_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_set_mask_new(UndoStream *stream, Sprite *sprite);
+static void chunk_set_mask_invert(UndoStream *stream, UndoChunkSetMask *chunk, int state);
 
-static void chunk_set_frames(UndoStream *stream, Sprite *sprite);
-static void chunk_set_frames_invert(UndoStream *stream, UndoChunk *chunk, int state);
+static void chunk_set_frames_new(UndoStream *stream, Sprite *sprite);
+static void chunk_set_frames_invert(UndoStream *stream, UndoChunkSetFrames *chunk, int state);
 
-static UndoAction undo_actions[] = { /* in UNDO_TYPEs order */
-  { "Open", chunk_open_invert },
-  { "Close", chunk_close_invert },
-  { "Data", chunk_data_invert },
-  { "Image", chunk_image_invert },
-  { "Flip", chunk_flip_invert },
-  { "Dirty", chunk_dirty_invert },
-  { "Add image", chunk_add_image_invert },
-  { "Remove image", chunk_remove_image_invert },
-  { "Replace image", chunk_replace_image_invert },
-  { "Add cel", chunk_add_cel_invert },
-  { "Remove cel", chunk_remove_cel_invert },
-  { "Add layer", chunk_add_layer_invert },
-  { "Remove layer", chunk_remove_layer_invert },
-  { "Move layer", chunk_move_layer_invert },
-  { "Set layer", chunk_set_layer_invert },
-  { "Set mask", chunk_set_mask_invert },
-  { "Set frames", chunk_set_frames_invert },
+#define DECL_UNDO_ACTION(name) \
+  { #name, (void (*)(UndoStream *, UndoChunk *, int))chunk_##name##_invert }
+
+/* warning: in the same order as in UNDO_TYPEs */
+static UndoAction undo_actions[] = {
+  DECL_UNDO_ACTION(open),
+  DECL_UNDO_ACTION(close),
+  DECL_UNDO_ACTION(data),
+  DECL_UNDO_ACTION(image),
+  DECL_UNDO_ACTION(flip),
+  DECL_UNDO_ACTION(dirty),
+  DECL_UNDO_ACTION(add_image),
+  DECL_UNDO_ACTION(remove_image),
+  DECL_UNDO_ACTION(replace_image),
+  DECL_UNDO_ACTION(add_cel),
+  DECL_UNDO_ACTION(remove_cel),
+  DECL_UNDO_ACTION(add_layer),
+  DECL_UNDO_ACTION(remove_layer),
+  DECL_UNDO_ACTION(move_layer),
+  DECL_UNDO_ACTION(set_layer),
+  DECL_UNDO_ACTION(set_mask),
+  DECL_UNDO_ACTION(set_frames)
 };
 
 /* UndoChunk */
 
-static UndoChunk *undo_chunk_new(int type);
+static UndoChunk *undo_chunk_new(int type, int size);
 static void undo_chunk_free(UndoChunk *chunk);
 
-static int undo_chunk_get8(UndoChunk *chunk);
-static void undo_chunk_put8(UndoChunk *chunk, int c);
+/* Raw data */
 
-static int undo_chunk_get16(UndoChunk *chunk);
-static void undo_chunk_put16(UndoChunk *chunk, int c);
+static Dirty *read_raw_dirty(ase_uint8 *raw_data);
+static ase_uint8 *write_raw_dirty(ase_uint8 *raw_data, Dirty *dirty);
+static int get_raw_dirty_size(Dirty *dirty);
 
-static long undo_chunk_get32(UndoChunk *chunk);
-static void undo_chunk_put32(UndoChunk *chunk, long c);
+static Image *read_raw_image(ase_uint8 *raw_data);
+static ase_uint8 *write_raw_image(ase_uint8 *raw_data, Image *image);
+static int get_raw_image_size(Image *image);
 
-/* static double undo_chunk_get64(UndoChunk *chunk); */
-/* static void undo_chunk_put64(UndoChunk *chunk, double c); */
+static Cel *read_raw_cel(ase_uint8 *raw_data);
+static ase_uint8 *write_raw_cel(ase_uint8 *raw_data, Cel *cel);
+static int get_raw_cel_size(Cel *cel);
 
-static int undo_chunk_read(UndoChunk *chunk, ase_uint8 *buf, int size);
-static void undo_chunk_write(UndoChunk *chunk, const ase_uint8 *buf, int size);
+static Layer *read_raw_layer(ase_uint8 *raw_data);
+static ase_uint8 *write_raw_layer(ase_uint8 *raw_data, Layer *layer);
+static int get_raw_layer_size(Layer *layer);
 
-static char *undo_chunk_read_string(UndoChunk *chunk);
-static void undo_chunk_write_string(UndoChunk *chunk, const char *string);
-
-static Cel *undo_chunk_read_cel(UndoChunk *chunk);
-static void undo_chunk_write_cel(UndoChunk *chunk, Cel *cel);
-
-static Layer *undo_chunk_read_layer(UndoChunk *chunk);
-static void undo_chunk_write_layer(UndoChunk *chunk, Layer *layer);
-
-static Image *undo_chunk_read_image(UndoChunk *chunk);
-static void undo_chunk_write_image(UndoChunk *chunk, Image *image);
-
-static Mask *undo_chunk_read_mask(UndoChunk *chunk);
-static void undo_chunk_write_mask(UndoChunk *chunk, Mask *mask);
+static Mask *read_raw_mask(ase_uint8 *raw_data);
+static ase_uint8 *write_raw_mask(ase_uint8 *raw_data, Mask *mask);
+static int get_raw_mask_size(Mask *mask);
 
 /* UndoStream */
 
@@ -214,12 +224,6 @@ static void undo_stream_free(UndoStream *stream);
 
 static UndoChunk *undo_stream_pop_chunk(UndoStream *stream, int tail);
 static void undo_stream_push_chunk(UndoStream *stream, UndoChunk *chunk);
-
-/* static long undo_stream_raw_read_dword(UndoStream *stream); */
-/* static void undo_stream_raw_write_dword(UndoStream *stream, long dword); */
-
-/* static int undo_stream_raw_read(UndoStream *stream, ase_uint8 *buf, int size); */
-/* static void undo_stream_raw_write(UndoStream *stream, ase_uint8 *buf, int size); */
 
 /* General undo routines */
 
@@ -295,7 +299,7 @@ const char *undo_get_next_undo_label(Undo *undo)
   assert(undo_can_undo(undo));
 
   chunk = jlist_first_data(undo->undo_stream->chunks);
-  return undo_actions[chunk->type].name;
+  return chunk->label;
 }
 
 const char *undo_get_next_redo_label(Undo *undo)
@@ -305,7 +309,7 @@ const char *undo_get_next_redo_label(Undo *undo)
   assert(undo_can_redo(undo));
 
   chunk = jlist_first_data(undo->redo_stream->chunks);
-  return undo_actions[chunk->type].name;
+  return chunk->label;
 }
 
 static void run_undo(Undo *undo, int state, int discard_tail)
@@ -410,7 +414,6 @@ static void update_undo(Undo *undo)
   }
 }
 
-
 /***********************************************************************
 
   "open"
@@ -421,22 +424,23 @@ static void update_undo(Undo *undo)
 
 void undo_open(Undo *undo)
 {
-  chunk_open(undo->undo_stream);
+  chunk_open_new(undo->undo_stream);
   update_undo(undo);
 }
 
-static void chunk_open(UndoStream *stream)
+static void chunk_open_new(UndoStream *stream)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_OPEN);
+  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_OPEN,
+				    sizeof(UndoChunk));
 
   undo_stream_push_chunk(stream, chunk);
 }
 
 static void chunk_open_invert(UndoStream *stream, UndoChunk *chunk, int state)
 {
-  chunk_close(stream);
+  chunk_close_new(stream);
 }
-
+
 /***********************************************************************
 
   "close"
@@ -447,22 +451,23 @@ static void chunk_open_invert(UndoStream *stream, UndoChunk *chunk, int state)
 
 void undo_close(Undo *undo)
 {
-  chunk_close(undo->undo_stream);
+  chunk_close_new(undo->undo_stream);
   update_undo(undo);
 }
 
-static void chunk_close(UndoStream *stream)
+static void chunk_close_new(UndoStream *stream)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_CLOSE);
+  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_CLOSE,
+				    sizeof(UndoChunk));
 
   undo_stream_push_chunk(stream, chunk);
 }
 
 static void chunk_close_invert(UndoStream *stream, UndoChunk *chunk, int state)
 {
-  chunk_open(stream);
+  chunk_open_new(stream);
 }
-
+
 /***********************************************************************
 
   "data"
@@ -474,46 +479,60 @@ static void chunk_close_invert(UndoStream *stream, UndoChunk *chunk, int state)
 
 ***********************************************************************/
 
+struct UndoChunkData
+{
+  UndoChunk head;
+  ase_uint32 gfxobj_id;
+  ase_uint32 offset;
+  ase_uint32 size;
+  ase_uint8 data[0];
+};
+
 void undo_data(Undo *undo, GfxObj *gfxobj, void *data, int size)
 {
-  chunk_data(undo->undo_stream, gfxobj, data, size);
+  chunk_data_new(undo->undo_stream, gfxobj, data, size);
   update_undo(undo);
 }
 
-static void chunk_data(UndoStream *stream, GfxObj *gfxobj, void *data, int size)
+static void chunk_data_new(UndoStream *stream, GfxObj *gfxobj, void *data, int size)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_DATA);
-  unsigned int offset = (unsigned int)(((ase_uint8 *)data) -
-				       ((ase_uint8 *)gfxobj));
-  unsigned int c;
+  UndoChunkData *chunk;
+  ase_uint32 offset = (unsigned int)(((ase_uint8 *)data) -
+				     ((ase_uint8 *)gfxobj));
 
-  undo_chunk_put32(chunk, gfxobj->id);
-  undo_chunk_put32(chunk, offset);
-  undo_chunk_put32(chunk, size);
-  for (c=0; c<size; c++)
-    undo_chunk_put8(chunk, ((ase_uint8 *)data)[c]);
+  assert(size >= 1);
 
-  undo_stream_push_chunk(stream, chunk);
+  chunk = (UndoChunkData *)
+    undo_chunk_new(UNDO_TYPE_DATA,
+		   sizeof(UndoChunkData)+size);
+
+  chunk->gfxobj_id = gfxobj->id;
+  chunk->offset = offset;
+  chunk->size = size;
+
+  memcpy(chunk->data, data, size);
+
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_data_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_data_invert(UndoStream *stream, UndoChunkData *chunk, int state)
 {
-  unsigned int id = undo_chunk_get32(chunk);
-  unsigned int offset = undo_chunk_get32(chunk);
-  unsigned int c, size = undo_chunk_get32(chunk);
+  unsigned int id = chunk->gfxobj_id;
+  unsigned int offset = chunk->offset;
+  unsigned int size = chunk->size;
   GfxObj *gfxobj = gfxobj_find(id);
 
   if (gfxobj) {
     void *data = (void *)(((ase_uint8 *)gfxobj) + offset);
 
-    chunk_data(stream, gfxobj, data, size);
+    /* save the current data */
+    chunk_data_new(stream, gfxobj, data, size);
 
-    /* get the string from the chunk */
-    for (c=0; c<size; c++)
-      ((ase_uint8 *)data)[c] = undo_chunk_get8(chunk);
+    /* copy back the old data */
+    memcpy(data, chunk->data, size);
   }
 }
-
+
 /***********************************************************************
 
   "image"
@@ -529,73 +548,89 @@ static void chunk_data_invert(UndoStream *stream, UndoChunk *chunk, int state)
 
 ***********************************************************************/
 
+struct UndoChunkImage
+{
+  UndoChunk head;
+  ase_uint32 image_id;
+  ase_uint8 imgtype;
+  ase_uint16 x, y, w, h; 
+  ase_uint8 data[0];
+};
+
 void undo_image(Undo *undo, Image *image, int x, int y, int w, int h)
 {
-  chunk_image(undo->undo_stream, image, x, y, w, h);
+  chunk_image_new(undo->undo_stream, image, x, y, w, h);
   update_undo(undo);
 }
 
-static void chunk_image(UndoStream *stream, Image *image, int x, int y, int w, int h)
+static void chunk_image_new(UndoStream *stream, Image *image, int x, int y, int w, int h)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_IMAGE);
+  UndoChunkImage *chunk;
+  ase_uint8 *ptr;
   int v, size;
 
-/*   if (x < 0) { */
-/*     w += x; */
-/*     x = 0; */
-/*   } */
-
-/*   if (y < 0) { */
-/*     h += y; */
-/*     y = 0; */
-/*   } */
-
-/*   if (x+w-1 > image->w-1) */
-/*     w = image->w-x; */
-
-/*   if (y+h-1 > image->h-1) */
-/*     h = image->h-y; */
-
+  assert(w >= 1 && h >= 1);
+  assert(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
+  
   size = IMAGE_LINE_SIZE(image, w);
 
-  undo_chunk_put32(chunk, image->gfxobj.id);
-  undo_chunk_put8(chunk, image->imgtype);
-  undo_chunk_put16(chunk, x);
-  undo_chunk_put16(chunk, y);
-  undo_chunk_put16(chunk, w);
-  undo_chunk_put16(chunk, h);
+  chunk = (UndoChunkImage *)
+    undo_chunk_new(UNDO_TYPE_IMAGE,
+		   sizeof(UndoChunkImage) + size*h);
+  
+  chunk->image_id = image->gfxobj.id;
+  chunk->imgtype = image->imgtype;
+  chunk->x = x;
+  chunk->y = y;
+  chunk->w = w;
+  chunk->h = h;
+/*   chunk->data = jmalloc(size*h); */
 
-  for (v=0; v<h; v++)
-    undo_chunk_write(chunk, IMAGE_ADDRESS(image, x, y+v), size);
+  ptr = chunk->data;
+  for (v=0; v<h; ++v) {
+    memcpy(ptr, IMAGE_ADDRESS(image, x, y+v), size);
+    ptr += size;
+  }
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_image_invert(UndoStream *stream, UndoChunk *chunk, int state)
+/* static void chunk_image_free(UndoChunkImage *chunk) */
+/* { */
+/*   jfree(chunk->data); */
+/* } */
+
+static void chunk_image_invert(UndoStream *stream, UndoChunkImage *chunk, int state)
 {
-  unsigned long id = undo_chunk_get32(chunk);
-  int imgtype = undo_chunk_get8(chunk);
+  unsigned int id = chunk->image_id;
+  int imgtype = chunk->imgtype;
   Image *image = (Image *)gfxobj_find(id);
 
   if ((image) && (image->gfxobj.type == GFXOBJ_IMAGE) &&
       (image->imgtype == imgtype)) {
     int x, y, w, h;
+    ase_uint8 *ptr;
     int v, size;
 
-    x = undo_chunk_get16(chunk);
-    y = undo_chunk_get16(chunk);
-    w = undo_chunk_get16(chunk);
-    h = undo_chunk_get16(chunk);
+    x = chunk->x;
+    y = chunk->y;
+    w = chunk->w;
+    h = chunk->h;
 
-    chunk_image(stream, image, x, y, w, h);
+    /* backup the current image portion */
+    chunk_image_new(stream, image, x, y, w, h);
 
-    size = IMAGE_LINE_SIZE(image, w);
+    /* restore the old image portion */
+    size = IMAGE_LINE_SIZE(image, chunk->w);
+    ptr = chunk->data;
 
-    for (v=0; v<h; v++)
-      undo_chunk_read(chunk, IMAGE_ADDRESS(image, x, y+v), size);
+    for (v=0; v<h; ++v) {
+      memcpy(IMAGE_ADDRESS(image, x, y+v), ptr, size);
+      ptr += size;
+    }
   }
 }
-
+
 /***********************************************************************
 
   "flip"
@@ -607,46 +642,56 @@ static void chunk_image_invert(UndoStream *stream, UndoChunk *chunk, int state)
 
 ***********************************************************************/
 
+struct UndoChunkFlip
+{
+  UndoChunk head;
+  ase_uint32 image_id;
+  ase_uint8 imgtype;
+  ase_uint16 x1, y1, x2, y2; 
+  ase_uint8 horz;
+};
+
 void undo_flip(Undo *undo, Image *image, int x1, int y1, int x2, int y2, int horz)
 {
-  chunk_flip(undo->undo_stream, image, x1, y1, x2, y2, horz);
+  chunk_flip_new(undo->undo_stream, image, x1, y1, x2, y2, horz);
   update_undo(undo);
 }
 
-static void chunk_flip(UndoStream *stream, Image *image, int x1, int y1, int x2, int y2, int horz)
+static void chunk_flip_new(UndoStream *stream, Image *image, int x1, int y1, int x2, int y2, int horz)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_FLIP);
+  UndoChunkFlip *chunk = (UndoChunkFlip *)
+    undo_chunk_new(UNDO_TYPE_FLIP,
+		   sizeof(UndoChunkFlip));
 
-  undo_chunk_put32(chunk, image->gfxobj.id);
-  undo_chunk_put8(chunk, image->imgtype);
-  undo_chunk_put16(chunk, x1);
-  undo_chunk_put16(chunk, y1);
-  undo_chunk_put16(chunk, x2);
-  undo_chunk_put16(chunk, y2);
-  undo_chunk_put8(chunk, horz);
+  chunk->image_id = image->gfxobj.id;
+  chunk->imgtype = image->imgtype;
+  chunk->x1 = x1;
+  chunk->y1 = y1;
+  chunk->x2 = x2;
+  chunk->y2 = y2;
+  chunk->horz = horz;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_flip_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_flip_invert(UndoStream *stream, UndoChunkFlip *chunk, int state)
 {
-  unsigned long id = undo_chunk_get32(chunk);
-  int imgtype = undo_chunk_get8(chunk);
-  Image *image = (Image *)gfxobj_find(id);
+  Image *image = (Image *)gfxobj_find(chunk->image_id);
 
-  if ((image) && (image->gfxobj.type == GFXOBJ_IMAGE) &&
-      (image->imgtype == imgtype)) {
+  if ((image) &&
+      (image->gfxobj.type == GFXOBJ_IMAGE) &&
+      (image->imgtype == chunk->imgtype)) {
     int x1, y1, x2, y2;
     int x, y, horz;
     Image *area;
 
-    x1 = undo_chunk_get16(chunk);
-    y1 = undo_chunk_get16(chunk);
-    x2 = undo_chunk_get16(chunk);
-    y2 = undo_chunk_get16(chunk);
-    horz = undo_chunk_get8(chunk);
+    x1 = chunk->x1;
+    y1 = chunk->y1;
+    x2 = chunk->x2;
+    y2 = chunk->y2;
+    horz = chunk->horz;
 
-    chunk_flip(stream, image, x1, y1, x2, y2, horz);
+    chunk_flip_new(stream, image, x1, y1, x2, y2, horz);
 
     area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1);
     for (y=0; y<(y2-y1+1); y++)
@@ -658,107 +703,49 @@ static void chunk_flip_invert(UndoStream *stream, UndoChunk *chunk, int state)
     image_free(area);
   }
 }
-
+
 /***********************************************************************
 
   "dirty"
 
-     DWORD		image ID
-     BYTE		image type
-     WORD[4]		x1, y1, x2, y2
-     WORD		rows
-     for each row
-       WORD		y
-       WORD		columns
-       for each column
-         WORD[2]	x, w
-	 for each pixel ("w" times)
-	   BYTE[4]	for RGB images, or
-	   BYTE[2]	for Grayscale images, or
-	   BYTE		for Indexed images
+     DIRTY_DATA		see read/write_raw_dirty
 
 ***********************************************************************/
 
+struct UndoChunkDirty
+{
+  UndoChunk head;
+  ase_uint8 data[0];
+};
+
 void undo_dirty(Undo *undo, Dirty *dirty)
 {
-  chunk_dirty(undo->undo_stream, dirty);
+  chunk_dirty_new(undo->undo_stream, dirty);
   update_undo(undo);
 }
 
-static void chunk_dirty(UndoStream *stream, Dirty *dirty)
+static void chunk_dirty_new(UndoStream *stream, Dirty *dirty)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_DIRTY);
-  int u, v;
+  UndoChunkDirty *chunk = (UndoChunkDirty *)
+    undo_chunk_new(UNDO_TYPE_DIRTY,
+		   sizeof(UndoChunkDirty)+get_raw_dirty_size(dirty));
 
-  undo_chunk_put32(chunk, dirty->image->gfxobj.id);
-  undo_chunk_put8(chunk, dirty->image->imgtype);
-  undo_chunk_put16(chunk, dirty->x1);
-  undo_chunk_put16(chunk, dirty->y1);
-  undo_chunk_put16(chunk, dirty->x2);
-  undo_chunk_put16(chunk, dirty->y2);
+  write_raw_dirty(chunk->data, dirty);
 
-  undo_chunk_put16(chunk, dirty->rows);
-  for (v=0; v<dirty->rows; v++) {
-    undo_chunk_put16(chunk, dirty->row[v].y);
-    undo_chunk_put16(chunk, dirty->row[v].cols);
-    for (u=0; u<dirty->row[v].cols; u++) {
-      undo_chunk_put16(chunk, dirty->row[v].col[u].x);
-      undo_chunk_put16(chunk, dirty->row[v].col[u].w);
-      undo_chunk_write(chunk, dirty->row[v].col[u].data,
-		       dirty->row[v].col[u].w << IMAGE_SHIFT(dirty->image));
-    }
-  }
-
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_dirty_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_dirty_invert(UndoStream *stream, UndoChunkDirty *chunk, int state)
 {
-  unsigned long id = undo_chunk_get32(chunk);
-  int imgtype = undo_chunk_get8(chunk);
-  Image *image = (Image *)gfxobj_find(id);
+  Dirty *dirty = read_raw_dirty(chunk->data);
 
-  if ((image) && (image->gfxobj.type == GFXOBJ_IMAGE) &&
-      (image->imgtype == imgtype)) {
-    int x1, y1, x2, y2, size;
-    int u, v, x, y;
-    Dirty *dirty;
-
-    x1 = undo_chunk_get16(chunk);
-    y1 = undo_chunk_get16(chunk);
-    x2 = undo_chunk_get16(chunk);
-    y2 = undo_chunk_get16(chunk);
-
-    dirty = dirty_new(image, x1, y1, x2, y2, FALSE);
-    dirty->rows = undo_chunk_get16(chunk);
-    if (dirty->rows > 0) {
-      dirty->row = jmalloc(sizeof(struct DirtyRow) * dirty->rows);
-      for (v=0; v<dirty->rows; v++) {
-	dirty->row[v].y = y = undo_chunk_get16(chunk);
-	dirty->row[v].cols = undo_chunk_get16(chunk);
-	dirty->row[v].col = jmalloc(sizeof(struct DirtyCol) * dirty->row[v].cols);
-
-	for (u=0; u<dirty->row[v].cols; u++) {
-	  dirty->row[v].col[u].x = x = undo_chunk_get16(chunk);
-	  dirty->row[v].col[u].w = undo_chunk_get16(chunk);
-
-	  size = dirty->row[v].col[u].w << IMAGE_SHIFT(dirty->image);
-
-	  dirty->row[v].col[u].flags = DIRTY_VALID_COLUMN;
-	  dirty->row[v].col[u].data = jmalloc (size);
-	  dirty->row[v].col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
-
-	  undo_chunk_read(chunk, dirty->row[v].col[u].data, size);
-	}
-      }
-    }
-
+  if (dirty != NULL) {
     dirty_swap(dirty);
-    chunk_dirty(stream, dirty);
+    chunk_dirty_new(stream, dirty);
     dirty_free(dirty);
   }
 }
-
+
 /***********************************************************************
 
   "add_image"
@@ -768,128 +755,160 @@ static void chunk_dirty_invert(UndoStream *stream, UndoChunk *chunk, int state)
 
 ***********************************************************************/
 
+struct UndoChunkAddImage
+{
+  UndoChunk head;
+  ase_uint32 stock_id;
+  ase_uint32 index;
+};
+
 void undo_add_image(Undo *undo, Stock *stock, Image *image)
 {
-  chunk_add_image(undo->undo_stream, stock, image);
+  chunk_add_image_new(undo->undo_stream, stock, image);
   update_undo(undo);
 }
 
-static void chunk_add_image(UndoStream *stream, Stock *stock, Image *image)
+static void chunk_add_image_new(UndoStream *stream, Stock *stock, Image *image)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_ADD_IMAGE);
+  UndoChunkAddImage *chunk = (UndoChunkAddImage *)
+    undo_chunk_new(UNDO_TYPE_ADD_IMAGE,
+		   sizeof(UndoChunkAddImage));
   int index;
 
   for (index=0; index<stock->nimage; index++)
     if (stock->image[index] == image)
       break;
 
-  undo_chunk_put32(chunk, stock->gfxobj.id);
-  undo_chunk_put32(chunk, index);
+  chunk->stock_id = stock->gfxobj.id;
+  chunk->index = index;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_add_image_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_add_image_invert(UndoStream *stream, UndoChunkAddImage *chunk, int state)
 {
-  unsigned long stock_id = undo_chunk_get32(chunk);
-  unsigned long index = undo_chunk_get32(chunk);
+  unsigned int stock_id = chunk->stock_id;
+  unsigned int index = chunk->index;
   Stock *stock = (Stock *)gfxobj_find(stock_id);
 
   if (stock) {
     Image *image = stock_get_image(stock, index);
     if (image) {
-      chunk_remove_image(stream, stock, image);
+      chunk_remove_image_new(stream, stock, image);
       stock_remove_image(stock, image);
       image_free(image);
     }
   }
 }
-
+
 /***********************************************************************
 
   "remove_image"
 
      DWORD		stock ID
      DWORD		index
-     IMAGE_DATA		see undo_chunk_read/write_image
+     IMAGE_DATA		see read/write_raw_image
 
 ***********************************************************************/
 
+struct UndoChunkRemoveImage
+{
+  UndoChunk head;
+  ase_uint32 stock_id;
+  ase_uint32 index;
+  ase_uint8 data[0];
+};
+
 void undo_remove_image(Undo *undo, Stock *stock, Image *image)
 {
-  chunk_remove_image(undo->undo_stream, stock, image);
+  chunk_remove_image_new(undo->undo_stream, stock, image);
   update_undo(undo);
 }
 
-static void chunk_remove_image(UndoStream *stream, Stock *stock, Image *image)
+static void chunk_remove_image_new(UndoStream *stream, Stock *stock, Image *image)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_REMOVE_IMAGE);
+  UndoChunkRemoveImage *chunk = (UndoChunkRemoveImage *)
+    undo_chunk_new(UNDO_TYPE_REMOVE_IMAGE,
+		   sizeof(UndoChunkRemoveImage)+get_raw_image_size(image));
   int index;
 
   for (index=0; index<stock->nimage; index++)
     if (stock->image[index] == image)
       break;
 
-  undo_chunk_put32(chunk, stock->gfxobj.id);
-  undo_chunk_put32(chunk, index);
-  undo_chunk_write_image(chunk, image);
+  chunk->stock_id = stock->gfxobj.id;
+  chunk->index = index;
 
-  undo_stream_push_chunk(stream, chunk);
+  write_raw_image(chunk->data, image);
+
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_remove_image_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_remove_image_invert(UndoStream *stream, UndoChunkRemoveImage *chunk, int state)
 {
-  unsigned long stock_id = undo_chunk_get32(chunk);
-  unsigned long index = undo_chunk_get32(chunk);
+  unsigned int stock_id = chunk->stock_id;
+  unsigned int index = chunk->index;
   Stock *stock = (Stock *)gfxobj_find(stock_id);
 
   if (stock) {
-    Image *image = undo_chunk_read_image(chunk);
+    Image *image = read_raw_image(chunk->data);
 
     /* assert(image != NULL); */
 
     stock_replace_image(stock, index, image);
-    chunk_add_image(stream, stock, image);
+    chunk_add_image_new(stream, stock, image);
   }
 }
-
+
 /***********************************************************************
 
   "replace_image"
 
      DWORD		stock ID
      DWORD		index
-     IMAGE_DATA		see undo_chunk_read/write_image
+     IMAGE_DATA		see read/write_raw_image
 
 ***********************************************************************/
 
+struct UndoChunkReplaceImage
+{
+  UndoChunk head;
+  ase_uint32 stock_id;
+  ase_uint32 index;
+  ase_uint8 data[0];
+};
+
 void undo_replace_image(Undo *undo, Stock *stock, int index)
 {
-  chunk_replace_image(undo->undo_stream, stock, index);
+  chunk_replace_image_new(undo->undo_stream, stock, index);
   update_undo(undo);
 }
 
-static void chunk_replace_image(UndoStream *stream, Stock *stock, int index)
+static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int index)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_REPLACE_IMAGE);
+  Image *image = stock->image[index];
+  UndoChunkReplaceImage *chunk = (UndoChunkReplaceImage *)
+    undo_chunk_new(UNDO_TYPE_REPLACE_IMAGE,
+		   sizeof(UndoChunkReplaceImage)+get_raw_image_size(image));
 
-  undo_chunk_put32(chunk, stock->gfxobj.id);
-  undo_chunk_put32(chunk, index);
-  undo_chunk_write_image(chunk, stock->image[index]);
+  chunk->stock_id = stock->gfxobj.id;
+  chunk->index = index;
 
-  undo_stream_push_chunk(stream, chunk);
+  write_raw_image(chunk->data, image);
+
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_replace_image_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_replace_image_invert(UndoStream *stream, UndoChunkReplaceImage *chunk, int state)
 {
-  unsigned long stock_id = undo_chunk_get32(chunk);
-  unsigned long index = undo_chunk_get32(chunk);
+  unsigned long stock_id = chunk->stock_id;
+  unsigned long index = chunk->index;
   Stock *stock = (Stock *)gfxobj_find(stock_id);
 
   if (stock) {
-    Image *image = undo_chunk_read_image(chunk);
+    Image *image = read_raw_image(chunk->data);
 
-    chunk_replace_image(stream, stock, index);
+    chunk_replace_image_new(stream, stock, index);
 
     if (stock->image[index])
       image_free(stock->image[index]);
@@ -897,7 +916,7 @@ static void chunk_replace_image_invert(UndoStream *stream, UndoChunk *chunk, int
     stock_replace_image(stock, index, image);
   }
 }
-
+
 /***********************************************************************
 
   "add_cel"
@@ -907,76 +926,93 @@ static void chunk_replace_image_invert(UndoStream *stream, UndoChunk *chunk, int
 
 ***********************************************************************/
 
+struct UndoChunkAddCel
+{
+  UndoChunk head;
+  ase_uint32 layer_id;
+  ase_uint32 cel_id;
+};
+
 void undo_add_cel(Undo *undo, Layer *layer, Cel *cel)
 {
-  chunk_add_cel(undo->undo_stream, layer, cel);
+  chunk_add_cel_new(undo->undo_stream, layer, cel);
   update_undo(undo);
 }
 
-static void chunk_add_cel(UndoStream *stream, Layer *layer, Cel *cel)
+static void chunk_add_cel_new(UndoStream *stream, Layer *layer, Cel *cel)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_ADD_CEL);
+  UndoChunkAddCel *chunk = (UndoChunkAddCel *)
+    undo_chunk_new(UNDO_TYPE_ADD_CEL,
+		   sizeof(UndoChunkAddCel));
 
-  undo_chunk_put32(chunk, layer->gfxobj.id);
-  undo_chunk_put32(chunk, cel->gfxobj.id);
+  chunk->layer_id = layer->gfxobj.id;
+  chunk->cel_id = cel->gfxobj.id;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_add_cel_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_add_cel_invert(UndoStream *stream, UndoChunkAddCel *chunk, int state)
 {
-  unsigned long layer_id = undo_chunk_get32(chunk);
-  unsigned long cel_id = undo_chunk_get32(chunk);
-  Layer *layer = (Layer *)gfxobj_find(layer_id);
-  Cel *cel = (Cel *)gfxobj_find(cel_id);
+  Layer *layer = (Layer *)gfxobj_find(chunk->layer_id);
+  Cel *cel = (Cel *)gfxobj_find(chunk->cel_id);
 
   if (layer && cel) {
-    chunk_remove_cel(stream, layer, cel);
+    chunk_remove_cel_new(stream, layer, cel);
+
     layer_remove_cel(layer, cel);
     cel_free(cel);
   }
 }
-
+
 /***********************************************************************
 
   "remove_cel"
 
      DWORD		layer ID
-     CEL_DATA		see undo_chunk_read/write_cel
+     CEL_DATA		see read/write_raw_cel
 
 ***********************************************************************/
 
+struct UndoChunkRemoveCel
+{
+  UndoChunk head;
+  ase_uint32 layer_id;
+  ase_uint8 data[0];
+};
+
 void undo_remove_cel(Undo *undo, Layer *layer, Cel *cel)
 {
-  chunk_remove_cel(undo->undo_stream, layer, cel);
+  chunk_remove_cel_new(undo->undo_stream, layer, cel);
   update_undo(undo);
 }
 
-static void chunk_remove_cel(UndoStream *stream, Layer *layer, Cel *cel)
+static void chunk_remove_cel_new(UndoStream *stream, Layer *layer, Cel *cel)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_REMOVE_CEL);
+  UndoChunkRemoveCel *chunk = (UndoChunkRemoveCel *)
+    undo_chunk_new(UNDO_TYPE_REMOVE_CEL,
+		   sizeof(UndoChunkRemoveCel)+get_raw_cel_size(cel));
 
-  undo_chunk_put32(chunk, layer->gfxobj.id);
-  undo_chunk_write_cel(chunk, cel);
+  chunk->layer_id = layer->gfxobj.id;
+  write_raw_cel(chunk->data, cel);
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_remove_cel_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_remove_cel_invert(UndoStream *stream, UndoChunkRemoveCel *chunk, int state)
 {
-  unsigned long layer_id = undo_chunk_get32(chunk);
+  unsigned int layer_id = chunk->layer_id;
   Layer *layer = (Layer *)gfxobj_find(layer_id);
 
   if (layer) {
-    Cel *cel = undo_chunk_read_cel(chunk);
+    Cel *cel = read_raw_cel(chunk->data);
 
     /* assert(cel != NULL); */
 
-    chunk_add_cel(stream, layer, cel);
+    chunk_add_cel_new(stream, layer, cel);
     layer_add_cel(layer, cel);
   }
 }
-
+
 /***********************************************************************
 
   "add_layer"
@@ -986,83 +1022,99 @@ static void chunk_remove_cel_invert(UndoStream *stream, UndoChunk *chunk, int st
 
 ***********************************************************************/
 
+struct UndoChunkAddLayer
+{
+  UndoChunk head;
+  ase_uint32 set_id;
+  ase_uint32 layer_id;
+};
+
 void undo_add_layer(Undo *undo, Layer *set, Layer *layer)
 {
-  chunk_add_layer(undo->undo_stream, set, layer);
+  chunk_add_layer_new(undo->undo_stream, set, layer);
   update_undo(undo);
 }
 
-static void chunk_add_layer(UndoStream *stream, Layer *set, Layer *layer)
+static void chunk_add_layer_new(UndoStream *stream, Layer *set, Layer *layer)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_ADD_LAYER);
+  UndoChunkAddLayer *chunk = (UndoChunkAddLayer *)
+    undo_chunk_new(UNDO_TYPE_ADD_LAYER,
+		   sizeof(UndoChunkAddLayer));
 
-  undo_chunk_put32(chunk, set->gfxobj.id);
-  undo_chunk_put32(chunk, layer->gfxobj.id);
+  chunk->set_id = set->gfxobj.id;
+  chunk->layer_id = layer->gfxobj.id;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_add_layer_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_add_layer_invert(UndoStream *stream, UndoChunkAddLayer *chunk, int state)
 {
-  unsigned long set_id = undo_chunk_get32(chunk);
-  unsigned long layer_id = undo_chunk_get32(chunk);
-  Layer *set = (Layer *)gfxobj_find(set_id);
-  Layer *layer = (Layer *)gfxobj_find(layer_id);
+  Layer *set = (Layer *)gfxobj_find(chunk->set_id);
+  Layer *layer = (Layer *)gfxobj_find(chunk->layer_id);
 
   if (set && layer) {
-    chunk_remove_layer(stream, layer);
+    chunk_remove_layer_new(stream, layer);
+
     layer_remove_layer(set, layer);
     layer_free(layer);
   }
 }
-
+
 /***********************************************************************
 
   "remove_layer"
 
      DWORD		parent layer set ID
      DWORD		after layer ID
-     LAYER_DATA		see undo_chunk_read/write_layer
+     LAYER_DATA		see read/write_raw_layer
 
 ***********************************************************************/
 
+struct UndoChunkRemoveLayer
+{
+  UndoChunk head;
+  ase_uint32 set_id;
+  ase_uint32 after_id;
+  ase_uint8 data[0];
+};
+
 void undo_remove_layer(Undo *undo, Layer *layer)
 {
-  chunk_remove_layer(undo->undo_stream, layer);
+  chunk_remove_layer_new(undo->undo_stream, layer);
   update_undo(undo);
 }
 
-static void chunk_remove_layer(UndoStream *stream, Layer *layer)
+static void chunk_remove_layer_new(UndoStream *stream, Layer *layer)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_REMOVE_LAYER);
+  UndoChunkRemoveLayer *chunk = (UndoChunkRemoveLayer *)
+    undo_chunk_new(UNDO_TYPE_REMOVE_LAYER,
+		   sizeof(UndoChunkRemoveLayer)+get_raw_layer_size(layer));
   Layer *set = layer->parent_layer;
   Layer *after = layer_get_prev(layer);
 
-  undo_chunk_put32(chunk, set->gfxobj.id);
-  undo_chunk_put32(chunk, after ? after->gfxobj.id: 0);
-  undo_chunk_write_layer(chunk, layer);
+  chunk->set_id = set->gfxobj.id;
+  chunk->after_id = after ? after->gfxobj.id: 0;
+  write_raw_layer(chunk->data, layer);
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_remove_layer_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_remove_layer_invert(UndoStream *stream, UndoChunkRemoveLayer *chunk, int state)
 {
-  unsigned long set_id = undo_chunk_get32(chunk);
-  unsigned long after_id = undo_chunk_get32(chunk);
-  Layer *set = (Layer *)gfxobj_find(set_id);
-  Layer *after = (Layer *)gfxobj_find(after_id);
+  Layer *set = (Layer *)gfxobj_find(chunk->set_id);
+  Layer *after = (Layer *)gfxobj_find(chunk->after_id);
 
   if (set) {
-    Layer *layer = undo_chunk_read_layer(chunk);
+    Layer *layer = read_raw_layer(chunk->data);
 
     /* assert(layer != NULL); */
 
-    chunk_add_layer(stream, set, layer);
+    chunk_add_layer_new(stream, set, layer);
     layer_add_layer(set, layer);
     layer_move_layer(set, layer, after);
   }
 }
-
+
 /***********************************************************************
 
   "move_layer"
@@ -1073,40 +1125,47 @@ static void chunk_remove_layer_invert(UndoStream *stream, UndoChunk *chunk, int 
 
 ***********************************************************************/
 
+struct UndoChunkMoveLayer
+{
+  UndoChunk head;
+  ase_uint32 set_id;
+  ase_uint32 layer_id;
+  ase_uint32 after_id;
+};
+
 void undo_move_layer(Undo *undo, Layer *layer)
 {
-  chunk_move_layer(undo->undo_stream, layer);
+  chunk_move_layer_new(undo->undo_stream, layer);
   update_undo(undo);
 }
 
-static void chunk_move_layer(UndoStream *stream, Layer *layer)
+static void chunk_move_layer_new(UndoStream *stream, Layer *layer)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_MOVE_LAYER);
+  UndoChunkMoveLayer *chunk = (UndoChunkMoveLayer *)
+    undo_chunk_new(UNDO_TYPE_MOVE_LAYER,
+		   sizeof(UndoChunkMoveLayer));
   Layer *set = layer->parent_layer;
   Layer *after = layer_get_prev(layer);
 
-  undo_chunk_put32(chunk, set->gfxobj.id);
-  undo_chunk_put32(chunk, layer->gfxobj.id);
-  undo_chunk_put32(chunk, after ? after->gfxobj.id: 0);
+  chunk->set_id = set->gfxobj.id;
+  chunk->layer_id = layer->gfxobj.id;
+  chunk->after_id = after ? after->gfxobj.id: 0;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_move_layer_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_move_layer_invert(UndoStream *stream, UndoChunkMoveLayer *chunk, int state)
 {
-  unsigned long set_id = undo_chunk_get32(chunk);
-  unsigned long layer_id = undo_chunk_get32(chunk);
-  unsigned long after_id = undo_chunk_get32(chunk);
-  Layer *set = (Layer *)gfxobj_find(set_id);
-  Layer *layer = (Layer *)gfxobj_find(layer_id);
-  Layer *after = (Layer *)gfxobj_find(after_id);
+  Layer *set = (Layer *)gfxobj_find(chunk->set_id);
+  Layer *layer = (Layer *)gfxobj_find(chunk->layer_id);
+  Layer *after = (Layer *)gfxobj_find(chunk->after_id);
 
   if (set && layer) {
-    chunk_move_layer(stream, layer);
+    chunk_move_layer_new(stream, layer);
     layer_move_layer(set, layer, after);
   }
 }
-
+
 /***********************************************************************
 
   "set_layer"
@@ -1116,76 +1175,91 @@ static void chunk_move_layer_invert(UndoStream *stream, UndoChunk *chunk, int st
 
 ***********************************************************************/
 
+struct UndoChunkSetLayer
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 layer_id;
+};
+
 void undo_set_layer(Undo *undo, Sprite *sprite)
 {
-  chunk_set_layer(undo->undo_stream, sprite);
+  chunk_set_layer_new(undo->undo_stream, sprite);
   update_undo(undo);
 }
 
-static void chunk_set_layer(UndoStream *stream, Sprite *sprite)
+static void chunk_set_layer_new(UndoStream *stream, Sprite *sprite)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_SET_LAYER);
+  UndoChunkSetLayer *chunk = (UndoChunkSetLayer *)
+    undo_chunk_new(UNDO_TYPE_SET_LAYER,
+		   sizeof(UndoChunkSetLayer));
 
-  undo_chunk_put32(chunk, sprite->gfxobj.id);
-  undo_chunk_put32(chunk, sprite->layer ? sprite->layer->gfxobj.id: 0);
+  chunk->sprite_id = sprite->gfxobj.id;
+  chunk->layer_id = sprite->layer ? sprite->layer->gfxobj.id: 0;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_set_layer_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_set_layer_invert(UndoStream *stream, UndoChunkSetLayer *chunk, int state)
 {
-  unsigned long sprite_id = undo_chunk_get32(chunk);
-  unsigned long layer_id = undo_chunk_get32(chunk);
-  Sprite *sprite = (Sprite *)gfxobj_find(sprite_id);
-  Layer *layer = (Layer *)gfxobj_find(layer_id);
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+  Layer *layer = (Layer *)gfxobj_find(chunk->layer_id);
 
   if (sprite) {
-    chunk_set_layer(stream, sprite);
+    chunk_set_layer_new(stream, sprite);
 
     sprite->layer = layer;
   }
 }
-
+
 /***********************************************************************
 
   "set_mask"
 
      DWORD		sprite ID
-     MASK_DATA		see undo_chunk_read/write_mask
+     MASK_DATA		see read/write_raw_mask
 
 ***********************************************************************/
 
+struct UndoChunkSetMask
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint8 data[0];
+};
+
 void undo_set_mask(Undo *undo, Sprite *sprite)
 {
-  chunk_set_mask(undo->undo_stream, sprite);
+  chunk_set_mask_new(undo->undo_stream, sprite);
   update_undo(undo);
 }
 
-static void chunk_set_mask(UndoStream *stream, Sprite *sprite)
+static void chunk_set_mask_new(UndoStream *stream, Sprite *sprite)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_SET_MASK);
+  UndoChunkSetMask *chunk = (UndoChunkSetMask *)
+    undo_chunk_new(UNDO_TYPE_SET_MASK,
+		   sizeof(UndoChunkSetMask)+get_raw_mask_size(sprite->mask));
 
-  undo_chunk_put32(chunk, sprite->gfxobj.id);
-  undo_chunk_write_mask(chunk, sprite->mask);
+  chunk->sprite_id = sprite->gfxobj.id;
+  write_raw_mask(chunk->data, sprite->mask);
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_set_mask_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_set_mask_invert(UndoStream *stream, UndoChunkSetMask *chunk, int state)
 {
-  unsigned long sprite_id = undo_chunk_get32(chunk);
-  Sprite *sprite = (Sprite *)gfxobj_find(sprite_id);
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
 
   if (sprite) {
-    Mask *mask = undo_chunk_read_mask(chunk);
+    Mask *mask = read_raw_mask(chunk->data);
 
-    chunk_set_mask(stream, sprite);
+    chunk_set_mask_new(stream, sprite);
     mask_copy(sprite->mask, mask);
 
     mask_free(mask);
   }
 }
-
+
 /***********************************************************************
 
   "set_frames"
@@ -1195,244 +1269,403 @@ static void chunk_set_mask_invert(UndoStream *stream, UndoChunk *chunk, int stat
 
 ***********************************************************************/
 
+struct UndoChunkSetFrames
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 frames;
+};
+
 void undo_set_frames(Undo *undo, Sprite *sprite)
 {
-  chunk_set_frames(undo->undo_stream, sprite);
+  chunk_set_frames_new(undo->undo_stream, sprite);
   update_undo(undo);
 }
 
-static void chunk_set_frames(UndoStream *stream, Sprite *sprite)
+static void chunk_set_frames_new(UndoStream *stream, Sprite *sprite)
 {
-  UndoChunk *chunk = undo_chunk_new(UNDO_TYPE_SET_FRAMES);
+  UndoChunkSetFrames *chunk = (UndoChunkSetFrames *)
+    undo_chunk_new(UNDO_TYPE_SET_FRAMES,
+		   sizeof(UndoChunkSetFrames));
 
-  undo_chunk_put32(chunk, sprite->gfxobj.id);
-  undo_chunk_put32(chunk, sprite->frames);
+  chunk->sprite_id = sprite->gfxobj.id;
+  chunk->frames = sprite->frames;
 
-  undo_stream_push_chunk(stream, chunk);
+  undo_stream_push_chunk(stream, (UndoChunk *)chunk);
 }
 
-static void chunk_set_frames_invert(UndoStream *stream, UndoChunk *chunk, int state)
+static void chunk_set_frames_invert(UndoStream *stream, UndoChunkSetFrames *chunk, int state)
 {
-  unsigned long sprite_id = undo_chunk_get32(chunk);
-  Sprite *sprite = (Sprite *)gfxobj_find(sprite_id);
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
 
   if (sprite) {
-    int frames = undo_chunk_get32(chunk);
-
-    chunk_set_frames(stream, sprite);
-    sprite_set_frames(sprite, frames);
+    chunk_set_frames_new(stream, sprite);
+    sprite_set_frames(sprite, chunk->frames);
   }
 }
-
+
 /***********************************************************************
 
   Helper routines for UndoChunk
 
 ***********************************************************************/
 
-static UndoChunk *undo_chunk_new(int type)
+static UndoChunk *undo_chunk_new(int type, int size)
 {
   UndoChunk *chunk;
 
-  chunk = jnew(UndoChunk, 1);
+  assert(size >= sizeof(UndoChunk));
+
+  chunk = (UndoChunk *)jmalloc0(size);
   if (!chunk)
     return NULL;
 
   chunk->type = type;
-  chunk->max_size = 0;
-  chunk->size = 0;
-  chunk->pos = 0;
-  chunk->data = NULL;
+  chunk->size = size;
+  chunk->label = undo_actions[chunk->type].name;
 
   return chunk;
 }
 
 static void undo_chunk_free(UndoChunk *chunk)
 {
-  if (chunk->data)
-    jfree(chunk->data);
-
   jfree(chunk);
 }
 
-static int undo_chunk_get8(UndoChunk *chunk)
-{
-  if (chunk->pos < chunk->size)
-    return chunk->data[chunk->pos++];
-  else
-    return EOF;
-}
+/***********************************************************************
 
-static void undo_chunk_put8(UndoChunk *chunk, int c)
-{
-  if (chunk->size == chunk->max_size) {
-    chunk->max_size += 4096;
-    chunk->data = jrealloc(chunk->data, chunk->max_size);
+  Raw data
+
+***********************************************************************/
+
+#define read_raw_uint32(dst)		\
+  {					\
+    memcpy(&dword, raw_data, 4);	\
+    dst = dword;			\
+    raw_data += 4;			\
   }
-  chunk->data[chunk->size++] = c;
+
+#define read_raw_uint16(dst)		\
+  {					\
+    memcpy(&word, raw_data, 2);		\
+    dst = word;				\
+    raw_data += 2;			\
+  }
+
+#define read_raw_uint8(dst)		\
+  {					\
+    dst = *raw_data;			\
+    ++raw_data;				\
+  }
+
+#define read_raw_data(dst, size)	\
+  {					\
+    memcpy(dst, raw_data, size);	\
+    raw_data += size;			\
+  }
+
+#define write_raw_uint32(src)		\
+  {					\
+    dword = src;			\
+    memcpy(raw_data, &dword, 4);	\
+    raw_data += 4;			\
+  }
+
+#define write_raw_uint16(src)		\
+  {					\
+    word = src;				\
+    memcpy(raw_data, &word, 2);		\
+    raw_data += 2;			\
+  }
+
+#define write_raw_uint8(src)		\
+  {					\
+    *raw_data = src;			\
+    ++raw_data;				\
+  }
+
+#define write_raw_data(src, size)	\
+  {					\
+    memcpy(raw_data, src, size);	\
+    raw_data += size;			\
+  }
+
+/***********************************************************************
+
+  Raw dirty data
+
+     DWORD		image ID
+     BYTE		image type
+     WORD[4]		x1, y1, x2, y2
+     WORD		rows
+     for each row
+       WORD[2]		y, columns
+       for each column
+         WORD[2]	x, w
+	 for each pixel ("w" times)
+	   BYTE[4]	for RGB images, or
+	   BYTE[2]	for Grayscale images, or
+	   BYTE		for Indexed images
+
+***********************************************************************/
+
+static Dirty *read_raw_dirty(ase_uint8 *raw_data)
+{
+  ase_uint32 dword;
+  ase_uint16 word;
+  int x1, y1, x2, y2, size;
+  unsigned int image_id;
+  int u, v, x, y;
+  int imgtype;
+  Image *image;
+  Dirty *dirty = NULL;
+
+  read_raw_uint32(image_id);
+  read_raw_uint8(imgtype);
+
+  image = (Image *)gfxobj_find(image_id);
+
+  if ((image) &&
+      (image->gfxobj.type == GFXOBJ_IMAGE) &&
+      (image->imgtype == imgtype)) {
+
+    read_raw_uint16(x1);
+    read_raw_uint16(y1);
+    read_raw_uint16(x2);
+    read_raw_uint16(y2);
+
+    dirty = dirty_new(image, x1, y1, x2, y2, FALSE);
+    read_raw_uint16(dirty->rows);
+
+    if (dirty->rows > 0) {
+      dirty->row = jmalloc(sizeof(struct DirtyRow) * dirty->rows);
+
+      for (v=0; v<dirty->rows; v++) {
+	read_raw_uint16(dirty->row[v].y);
+	read_raw_uint16(dirty->row[v].cols);
+
+	y = dirty->row[v].y;
+	
+	dirty->row[v].col = jmalloc(sizeof(struct DirtyCol) * dirty->row[v].cols);
+	for (u=0; u<dirty->row[v].cols; u++) {
+	  read_raw_uint16(dirty->row[v].col[u].x);
+	  read_raw_uint16(dirty->row[v].col[u].w);
+
+	  x = dirty->row[v].col[u].x;
+
+	  size = IMAGE_LINE_SIZE(dirty->image, dirty->row[v].col[u].w);
+
+	  dirty->row[v].col[u].flags = DIRTY_VALID_COLUMN;
+	  dirty->row[v].col[u].data = jmalloc(size);
+	  dirty->row[v].col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
+
+	  read_raw_data(dirty->row[v].col[u].data, size);
+	}
+      }
+    }
+  }
+
+  return dirty;
 }
 
-static int undo_chunk_get16(UndoChunk *chunk)
+static ase_uint8 *write_raw_dirty(ase_uint8 *raw_data, Dirty *dirty)
 {
-  int b1, b2;
+  ase_uint32 dword;
+  ase_uint16 word;
+  int u, v, size;
 
-  if ((b1 = undo_chunk_get8(chunk)) != EOF)
-    if ((b2 = undo_chunk_get8(chunk)) != EOF)
-      return ((b2 << 8) | b1);
+  write_raw_uint32(dirty->image->gfxobj.id);
+  write_raw_uint8(dirty->image->imgtype);
+  write_raw_uint16(dirty->x1);
+  write_raw_uint16(dirty->y1);
+  write_raw_uint16(dirty->x2);
+  write_raw_uint16(dirty->y2);
+  write_raw_uint16(dirty->rows);
 
-  return EOF;
+  for (v=0; v<dirty->rows; v++) {
+    write_raw_uint16(dirty->row[v].y);
+    write_raw_uint16(dirty->row[v].cols);
+
+    for (u=0; u<dirty->row[v].cols; u++) {
+      write_raw_uint16(dirty->row[v].col[u].x);
+      write_raw_uint16(dirty->row[v].col[u].w);
+
+      size = IMAGE_LINE_SIZE(dirty->image, dirty->row[v].col[u].w);
+      write_raw_data(dirty->row[v].col[u].data, size);
+    }
+  }
+
+  return raw_data;
 }
 
-static void undo_chunk_put16(UndoChunk *chunk, int c)
+static int get_raw_dirty_size(Dirty *dirty)
 {
-  int b1, b2;
+  int u, v, size = 4+1+2*4+2;	/* DWORD+BYTE+WORD[4]+WORD */
 
-  b1 = (c & 0xFF00) >> 8;
-  b2 = c & 0x00FF;
-
-  undo_chunk_put8(chunk, b2);
-  undo_chunk_put8(chunk, b1);
-}
-
-static long undo_chunk_get32(UndoChunk *chunk)
-{
-  int b1, b2, b3, b4;
-
-  if ((b1 = undo_chunk_get8(chunk)) != EOF)
-    if ((b2 = undo_chunk_get8(chunk)) != EOF)
-      if ((b3 = undo_chunk_get8(chunk)) != EOF)
-	if ((b4 = undo_chunk_get8(chunk)) != EOF)
-	  return (((long)b4 << 24) | ((long)b3 << 16) |
-		  ((long)b2 << 8) | (long)b1);
-
-  return EOF;
-}
-
-static void undo_chunk_put32(UndoChunk *chunk, long c)
-{
-  int b1, b2, b3, b4;
-
-  b1 = (int)((c & 0xFF000000L) >> 24);
-  b2 = (int)((c & 0x00FF0000L) >> 16);
-  b3 = (int)((c & 0x0000FF00L) >> 8);
-  b4 = (int)c & 0x00FF;
-
-  undo_chunk_put8(chunk, b4);
-  undo_chunk_put8(chunk, b3);
-  undo_chunk_put8(chunk, b2);
-  undo_chunk_put8(chunk, b1);
-}
-
-/* static double undo_chunk_get64(UndoChunk *chunk) */
-/* { */
-/*   unsigned long longs[2]; */
-/*   double value; */
-
-/*   longs[0] = undo_chunk_get32(chunk); */
-/*   longs[1] = undo_chunk_get32(chunk); */
-
-/*   memcpy(&value, longs, sizeof (longs)); */
-
-/*   return value; */
-/* } */
-
-/* static void undo_chunk_put64(UndoChunk *chunk, double c) */
-/* { */
-/*   unsigned long longs[2]; */
-
-/*   memcpy(longs, &c, sizeof (longs)); */
-
-/*   undo_chunk_put32(chunk, longs[0]); */
-/*   undo_chunk_put32(chunk, longs[1]); */
-/* } */
-
-static int undo_chunk_read(UndoChunk *chunk, ase_uint8 *buf, int size)
-{
-  if (chunk->pos+size > chunk->size)
-    return 0;
-
-  memcpy(buf, chunk->data+chunk->pos, size);
-  chunk->pos += size;
+  for (v=0; v<dirty->rows; v++) {
+    size += 4;			/* y, cols (WORD[2]) */
+    for (u=0; u<dirty->row[v].cols; u++) {
+      size += 4;		/* x, w (WORD[2]) */
+      size += IMAGE_LINE_SIZE(dirty->image, dirty->row[v].col[u].w);
+    }
+  }
 
   return size;
 }
 
-static void undo_chunk_write(UndoChunk *chunk, const ase_uint8 *buf, int size)
+/***********************************************************************
+
+  Raw image data
+
+     DWORD		image ID
+     BYTE		image type
+     WORD[2]		w, h
+     for each line	("h" times)
+       for each pixel ("w" times)
+	 BYTE[4]	for RGB images, or
+	 BYTE[2]	for Grayscale images, or
+	 BYTE		for Indexed images
+
+***********************************************************************/
+
+static Image *read_raw_image(ase_uint8 *raw_data)
 {
-  if (chunk->size+size > chunk->max_size) {
-    chunk->max_size = chunk->size+size;
-    chunk->data = jrealloc(chunk->data, chunk->max_size);
-  }
-  memcpy(chunk->data+chunk->size, buf, size);
-  chunk->size += size;
+  ase_uint32 dword;
+  ase_uint16 word;
+  unsigned int image_id;
+  int imgtype;
+  int width;
+  int height;
+  Image *image;
+  int c, size;
+
+  read_raw_uint32(image_id);	/* ID */
+  if (!image_id)
+    return NULL;
+
+  read_raw_uint8(imgtype);	   /* imgtype */
+  read_raw_uint16(width);	   /* width */
+  read_raw_uint16(height);	   /* height */
+
+  image = image_new(imgtype, width, height);
+  size = IMAGE_LINE_SIZE(image, image->w);
+
+  for (c=0; c<image->h; c++)
+    read_raw_data(image->line[c], size);
+
+  _gfxobj_set_id((GfxObj *)image, image_id);
+  return image;
 }
 
-static char *undo_chunk_read_string(UndoChunk *chunk)
+static ase_uint8 *write_raw_image(ase_uint8 *raw_data, Image *image)
 {
-  unsigned int count = undo_chunk_get16(chunk);
-  char *string;
+  ase_uint32 dword;
+  ase_uint16 word;
+  int c, size;
 
-  if (count > 0) {
-    string = jmalloc(count+1);
-    undo_chunk_read(chunk, string, count);
-    string[count] = 0;
-  }
-  else
-    string = NULL;
+  write_raw_uint32(image->gfxobj.id);	   /* ID */
+  write_raw_uint8(image->imgtype);	   /* imgtype */
+  write_raw_uint16(image->w);		   /* width */
+  write_raw_uint16(image->h);		   /* height */
 
-  return string;
+  size = IMAGE_LINE_SIZE(image, image->w);
+  for (c=0; c<image->h; c++)
+    write_raw_data(image->line[c], size);
+
+  return raw_data;
 }
 
-static void undo_chunk_write_string(UndoChunk *chunk, const char *string)
+static int get_raw_image_size(Image *image)
 {
-  int count = string ? strlen(string): 0;
-
-  undo_chunk_put16(chunk, count);
-  if (string)
-    undo_chunk_write(chunk, string, count);
+  return 4+1+2+2+IMAGE_LINE_SIZE(image, image->w) * image->h;
 }
 
-static Cel *undo_chunk_read_cel(UndoChunk *chunk)
+/***********************************************************************
+
+  Raw cel data
+
+     DWORD		cel ID
+     WORD		frame
+     WORD		image index
+     WORD[2]		x, y
+     WORD		opacity
+
+***********************************************************************/
+
+static Cel *read_raw_cel(ase_uint8 *raw_data)
 {
-  unsigned long cel_id = undo_chunk_get32(chunk);
-  int frpos = undo_chunk_get16(chunk);
-  int image = undo_chunk_get16(chunk);
-  int x = (short)undo_chunk_get16(chunk);
-  int y = (short)undo_chunk_get16(chunk);
-  int opacity = undo_chunk_get8(chunk);
-  Cel *cel = cel_new(frpos, image);
+  ase_uint32 dword;
+  ase_uint16 word;
+  int frame, image, x, y, opacity;
+  unsigned int cel_id;
+  Cel *cel;
+
+  read_raw_uint32(cel_id);
+  read_raw_uint16(frame);
+  read_raw_uint16(image);
+  read_raw_uint16(x);
+  read_raw_uint16(y);
+  read_raw_uint16(opacity);
+
+  cel = cel_new(frame, image);
   cel_set_position(cel, x, y);
   cel_set_opacity(cel, opacity);
-
+  
   _gfxobj_set_id((GfxObj *)cel, cel_id);
   return cel;
 }
 
-static void undo_chunk_write_cel(UndoChunk *chunk, Cel *cel)
+static ase_uint8 *write_raw_cel(ase_uint8 *raw_data, Cel *cel)
 {
-  undo_chunk_put32(chunk, cel->gfxobj.id);
-  undo_chunk_put16(chunk, cel->frame);
-  undo_chunk_put16(chunk, cel->image);
-  undo_chunk_put16(chunk, cel->x);
-  undo_chunk_put16(chunk, cel->y);
-  undo_chunk_put8(chunk, cel->opacity);
+  ase_uint32 dword;
+  ase_uint16 word;
+
+  write_raw_uint32(cel->gfxobj.id);
+  write_raw_uint16(cel->frame);
+  write_raw_uint16(cel->image);
+  write_raw_uint16(cel->x);
+  write_raw_uint16(cel->y);
+  write_raw_uint16(cel->opacity);
+
+  return raw_data;
 }
 
-static Layer *undo_chunk_read_layer(UndoChunk *chunk)
+static int get_raw_cel_size(Cel *cel)
 {
-  unsigned long layer_id = undo_chunk_get32(chunk);
-  char *name = undo_chunk_read_string(chunk); /* name */
-  int flags = undo_chunk_get8(chunk);	      /* properties */
-  int type = undo_chunk_get32(chunk);	      /* type */
-  int sprite_id = undo_chunk_get32(chunk);    /* sprite */
-  Layer *layer = NULL;
-  Sprite *sprite = (Sprite *)gfxobj_find(sprite_id);
+  return 4+2*5;
+}
 
-  switch (type) {
+/***********************************************************************
+
+  Raw layer data
+
+***********************************************************************/
+
+static Layer *read_raw_layer(ase_uint8 *raw_data)
+{
+  ase_uint32 dword;
+  ase_uint16 word;
+  unsigned int layer_id, sprite_id;
+  char name[LAYER_NAME_SIZE];
+  int flags, layer_type;
+  Layer *layer = NULL;
+  Sprite *sprite;
+
+  read_raw_uint32(layer_id);			    /* ID */
+  read_raw_data(name, LAYER_NAME_SIZE);		    /* name */
+  read_raw_uint8(flags);			    /* properties */
+  read_raw_uint16(layer_type);			    /* type */
+  read_raw_uint32(sprite_id);			    /* sprite */
+
+  sprite = (Sprite *)gfxobj_find(sprite_id);
+
+  switch (layer_type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      int blend_mode = undo_chunk_get8(chunk); /* blend mode */
-      int c, cels = undo_chunk_get16(chunk); /* how many cels */
+      int c, blend_mode, cels;
+
+      read_raw_uint8(blend_mode); /* blend mode */
+      read_raw_uint16(cels);	  /* cels */
 
       /* create layer */
       layer = layer_new(sprite);
@@ -1441,164 +1674,176 @@ static Layer *undo_chunk_read_layer(UndoChunk *chunk)
       layer_set_blend_mode(layer, blend_mode);
 
       /* read cels */
-      for (c=0; c<cels; c++)
-	layer_add_cel(layer, undo_chunk_read_cel(chunk));
-      break;
-    }
+      for (c=0; c<cels; c++) {
+	Cel *cel = read_raw_cel(raw_data);
+	layer_add_cel(layer, cel);
 
-    case GFXOBJ_LAYER_SET: {
-      int c, count = undo_chunk_get16(chunk);
-      Layer *child;
-
-      layer = layer_set_new(sprite);
-
-      for (c=0; c<count; c++) {
-	child = undo_chunk_read_layer(chunk);
-	if (child)
-	  layer_add_layer(layer, child);
+	raw_data += get_raw_cel_size(cel);
       }
       break;
     }
 
+    case GFXOBJ_LAYER_SET: {
+      int c, layers;
+
+      /* create the layer set */
+      layer = layer_set_new(sprite);
+
+      /* read how many sub-layers */
+      read_raw_uint16(layers);
+
+      for (c=0; c<layers; c++) {
+	Layer *child = read_raw_layer(raw_data);
+	if (child) {
+	  layer_add_layer(layer, child);
+	  raw_data += get_raw_layer_size(child);
+	}
+	else
+	  break;
+      }
+      break;
+    }
+      
   }
 
-  if (layer) {
-    if (name)
-      layer_set_name(layer, name);
+  if (layer != NULL) {
+    layer_set_name(layer, name);
 
-    if (flags & 1)
-      layer->readable = TRUE;
-
-    if (flags & 2)
-      layer->writable = TRUE;
+    layer->readable = (flags & 1) ? TRUE: FALSE;
+    layer->writable = (flags & 2) ? TRUE: FALSE;
 
     _gfxobj_set_id((GfxObj *)layer, layer_id);
   }
 
-  if (name)
-    jfree(name);
-
   return layer;
 }
 
-static void undo_chunk_write_layer(UndoChunk *chunk, Layer *layer)
+static ase_uint8 *write_raw_layer(ase_uint8 *raw_data, Layer *layer)
 {
+  ase_uint32 dword;
+  ase_uint16 word;
   JLink link;
 
-  undo_chunk_put32(chunk, layer->gfxobj.id);		  /* ID */
-  undo_chunk_write_string(chunk, layer->name);		  /* name */
-  undo_chunk_put8(chunk, (((layer->readable)?1:0) |
-			  (((layer->writable)?1:0)<<1))); /* properties */
-  undo_chunk_put32(chunk, layer->gfxobj.type);		  /* type */
-  undo_chunk_put32(chunk, layer->sprite->gfxobj.id);	  /* sprite */
+  write_raw_uint32(layer->gfxobj.id);		    /* ID */
+  write_raw_data(layer->name, LAYER_NAME_SIZE);	    /* name */
+  write_raw_uint8(((layer->readable)?1:0) |
+		  (((layer->writable)?1:0)<<1));    /* properties */
+  write_raw_uint16(layer->gfxobj.type);		    /* type */
+  write_raw_uint32(layer->sprite->gfxobj.id);	    /* sprite */
 
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE:
       /* properties */
-      undo_chunk_put8(chunk, layer->blend_mode); /* blend mode */
+      write_raw_uint8(layer->blend_mode); /* blend mode */
       /* cels */
-      undo_chunk_put16(chunk, jlist_length(layer->cels));
-      JI_LIST_FOR_EACH(layer->cels, link)
-	undo_chunk_write_cel(chunk, link->data);
+      write_raw_uint16(jlist_length(layer->cels));
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	raw_data = write_raw_cel(raw_data, link->data);
+      }
       break;
 
     case GFXOBJ_LAYER_SET:
-      /* how many sub-layers */
-      undo_chunk_put16(chunk, jlist_length(layer->layers));
-
-      JI_LIST_FOR_EACH(layer->layers, link)
-	undo_chunk_write_layer(chunk, link->data);
+      write_raw_uint16(jlist_length(layer->layers)); /* how many sub-layers */
+      JI_LIST_FOR_EACH(layer->layers, link) {
+	raw_data = write_raw_layer(raw_data, link->data);
+      }
       break;
 
   }
+
+  return raw_data;
 }
 
-static Image *undo_chunk_read_image(UndoChunk *chunk)
+static int get_raw_layer_size(Layer *layer)
 {
-  unsigned long image_id;
-  int imgtype;
-  int width;
-  int height;
-  Image *image;
+  JLink link;
+  int size = 4+LAYER_NAME_SIZE+1+2+4;
+
+  switch (layer->gfxobj.type) {
+
+    case GFXOBJ_LAYER_IMAGE:
+      size += 1;		/* blend mode */
+      size += 2;		/* num of cels */
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	size += get_raw_cel_size(link->data);
+      }
+      break;
+
+    case GFXOBJ_LAYER_SET:
+      size += 2;		/* how many sub-layers */
+      JI_LIST_FOR_EACH(layer->layers, link) {
+	size += get_raw_layer_size(link->data);
+      }
+      break;
+
+  }
+
+  return size;
+}
+
+/***********************************************************************
+
+  Raw mask data
+
+      WORD[4]		x, y, w, h
+      for each line	("h" times)
+        for each packet	("((w+7)/8)" times)
+          BYTE		8 pixels of the mask
+
+***********************************************************************/
+
+static Mask *read_raw_mask(ase_uint8 *raw_data)
+{
+  ase_uint16 word;
+  int x, y, w, h;
   int c, size;
-
-  image_id = undo_chunk_get32(chunk); /* ID */
-  if (!image_id)
-    return NULL;
-
-  imgtype = undo_chunk_get8(chunk); /* imgtype */
-  width = undo_chunk_get16(chunk); /* width */
-  height = undo_chunk_get16(chunk); /* height */
-
-  image = image_new(imgtype, width, height);
-  size = IMAGE_LINE_SIZE(image, image->w);
-
-  for (c=0; c<image->h; c++)
-    undo_chunk_read(chunk, image->line[c], size);
-
-  _gfxobj_set_id((GfxObj *)image, image_id);
-  return image;
-}
-
-static void undo_chunk_write_image(UndoChunk *chunk, Image *image)
-{
-  int c, size;
-
-  undo_chunk_put32(chunk, image ? image->gfxobj.id: 0); /* ID */
-  if (!image)
-    return;
-
-  size = IMAGE_LINE_SIZE(image, image->w);
-
-  undo_chunk_put8(chunk, image->imgtype); /* imgtype */
-  undo_chunk_put16(chunk, image->w); /* width */
-  undo_chunk_put16(chunk, image->h); /* height */
-
-  for (c=0; c<image->h; c++)
-    undo_chunk_write(chunk, image->line[c], size);
-}
-
-static Mask *undo_chunk_read_mask(UndoChunk *chunk)
-{
-/*   unsigned long mask_id = undo_chunk_get32(chunk); /\* ID *\/ */
-  int x = (short)undo_chunk_get16(chunk); /* xpos */
-  int y = (short)undo_chunk_get16(chunk); /* ypos */
-  int width = undo_chunk_get16(chunk); /* width */
-  int height = undo_chunk_get16(chunk); /* height */
-  int c, size = (width+7)/8;
   Mask *mask;
+
+  read_raw_uint16(x);		/* xpos */
+  read_raw_uint16(y);		/* ypos */
+  read_raw_uint16(w);		/* width */
+  read_raw_uint16(h);		/* height */
 
   mask = mask_new();
   if (!mask)
     return NULL;
 
-  if (width > 0 && height > 0) {
-    mask_union(mask, x, y, width, height);
+  if (w > 0 && h > 0) {
+    size = (w+7)/8;
 
+    mask_union(mask, x, y, w, h);
     for (c=0; c<mask->h; c++)
-      undo_chunk_read(chunk, mask->bitmap->line[c], size);
+      read_raw_data(mask->bitmap->line[c], size);
   }
 
-/*   _gfxobj_set_id((GfxObj *)mask, mask_id); */
   return mask;
 }
 
-static void undo_chunk_write_mask(UndoChunk *chunk, Mask *mask)
+static ase_uint8 *write_raw_mask(ase_uint8 *raw_data, Mask *mask)
 {
+  ase_uint16 word;
   int c, size = (mask->w+7)/8;
 
-/*   undo_chunk_put32 (chunk, mask->gfxobj.id); /\* ID *\/ */
-  undo_chunk_put16(chunk, mask->x); /* xpos */
-  undo_chunk_put16(chunk, mask->y); /* ypos */
-  undo_chunk_put16(chunk, mask->bitmap ? mask->w: 0); /* width */
-  undo_chunk_put16(chunk, mask->bitmap ? mask->h: 0); /* height */
+  write_raw_uint16(mask->x);	/* xpos */
+  write_raw_uint16(mask->y);	/* ypos */
+  write_raw_uint16(mask->bitmap ? mask->w: 0); /* width */
+  write_raw_uint16(mask->bitmap ? mask->h: 0); /* height */
 
   if (mask->bitmap)
     for (c=0; c<mask->h; c++)
-      undo_chunk_write(chunk, mask->bitmap->line[c], size);
+      write_raw_data(mask->bitmap->line[c], size);
+
+  return raw_data;
 }
-
+
+static int get_raw_mask_size(Mask *mask)
+{
+  int size = (mask->w+7)/8;
+
+  return 2*4 + (mask->bitmap ? mask->h*size: 0);
+}
+
 /***********************************************************************
 
   Helper routines for UndoStream (a serie of chunks)

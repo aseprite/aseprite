@@ -248,13 +248,18 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       JWidget view = jwidget_get_view(widget);
       JRect vp = jview_get_viewport_position(view);
-      BITMAP *bmp = create_bitmap(jrect_w(vp), jrect_h(vp));
+      BITMAP *bmp;
       BITMAP *icon;
       int scroll_x, scroll_y;
       bool selected_layer;
       int pos, layers;
       Layer *layer; 
       int y, h, y_mid;
+
+      if (jrect_w(vp) < 1 || jrect_h(vp) < 1)
+	break;
+
+      bmp = create_bitmap(jrect_w(vp), jrect_h(vp));
 
       jview_get_scroll(view, &scroll_x, &scroll_y);
 
@@ -563,7 +568,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       JWidget view = jwidget_get_view(widget);
       JRect vp = jview_get_viewport_position(view);
-      BITMAP *bmp = create_bitmap(jrect_w(vp), jrect_h(vp));
+      BITMAP *bmp;
       BITMAP *thumbnail;
       int scroll_x, scroll_y;
       int c, x, y, h;
@@ -573,6 +578,11 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
       int offset_x;
       int first_viewable_frame;
       int last_viewable_frame;
+
+      if (jrect_w(vp) < 1 || jrect_h(vp) < 1)
+	break;
+
+      bmp = create_bitmap(jrect_w(vp), jrect_h(vp));
 
       jview_get_scroll(view, &scroll_x, &scroll_y);
 

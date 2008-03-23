@@ -26,12 +26,14 @@ struct Cel;
 struct Image;
 struct Sprite;
 
+#define LAYER_NAME_SIZE		256
+
 typedef struct Layer Layer;
 
 struct Layer
 {
   GfxObj gfxobj;
-  char name[256];		/* layer name */
+  char name[LAYER_NAME_SIZE];	/* layer name */
   struct Sprite *sprite;	/* owner of the layer */
 /*   GfxObj *parent;		/\* parent object *\/ */
   Layer *parent_layer;		/* parent layer */

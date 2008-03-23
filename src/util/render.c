@@ -17,7 +17,7 @@
  */
 
 /* TODO modificable option: scalable-tiles */
-/* #define SCALABLE_TILES */
+#define SCALABLE_TILES
 
 #include "config.h"
 
