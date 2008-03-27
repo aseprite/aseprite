@@ -26,16 +26,6 @@ struct Mask;
 #define DIRTY_VALID_COLUMN	1
 #define DIRTY_MUSTBE_UPDATED	2
 
-#define IMAGE_ADDRESS(image,x,y)					\
-  ((void *)(image)->line[(y)] + IMAGE_LINE_SIZE((image), (x)))		\
-
-#define IMAGE_SHIFT(d)				\
-  (((d)->imgtype == IMAGE_RGB)?       2:	\
-   ((d)->imgtype == IMAGE_GRAYSCALE)? 1: 0)
-
-#define IMAGE_LINE_SIZE(image, width)		\
-  ((width) << IMAGE_SHIFT(image))
-
 #define DIRTY_LINE_SIZE(width)			\
   (IMAGE_LINE_SIZE(dirty->image, width))
 
@@ -63,6 +53,7 @@ struct Dirty
 
 Dirty *dirty_new(struct Image *image, int x1, int y1, int x2, int y2, int tiled);
 Dirty *dirty_new_copy(Dirty *src);
+Dirty *dirty_new_from_differences(struct Image *image, struct Image *image_diff);
 void dirty_free(Dirty *dirty);
 
 void dirty_putpixel(Dirty *dirty, int x, int y);
@@ -76,8 +67,8 @@ void dirty_putpixel_brush(Dirty *dirty, struct Brush *brush, int x, int y);
 void dirty_hline_brush(Dirty *dirty, struct Brush *brush, int x1, int y, int x2);
 void dirty_line_brush(Dirty *dirty, struct Brush *brush, int x1, int y1, int x2, int y2);
 
-void dirty_get(Dirty *dirty);
-void dirty_put(Dirty *dirty);
+void dirty_save_image_data(Dirty *dirty);
+void dirty_restore_image_data(Dirty *dirty);
 void dirty_swap(Dirty *dirty);
 
 #endif /* RASTER_DIRTY_H */

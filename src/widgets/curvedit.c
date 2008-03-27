@@ -265,12 +265,12 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
       /* change scroll */
       if (msg->any.shifts & KB_SHIFT_FLAG) {
 	curve_editor->status = STATUS_SCROLLING;
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_SCROLL);
       }
       /* scaling */
 /*       else if (msg->shifts & KB_CTRL_FLAG) { */
 /* 	curve_editor->status = STATUS_SCALING; */
-/* 	jmouse_set_cursor(JI_CURSOR_MOVE); */
+/* 	jmouse_set_cursor(JI_CURSOR_SCROLL); */
 /*       } */
       /* show manual-entry dialog */
       else if (msg->mouse.right) {

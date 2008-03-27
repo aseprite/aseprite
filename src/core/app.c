@@ -49,6 +49,7 @@
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "script/script.h"
@@ -226,7 +227,7 @@ void app_loop(void)
     menubar = jmenubar_new();
     statusbar = statusbar_new();
     colorbar = colorbar_new(box_colorbar->align);
-    toolbar = toolbar_new(box_toolbar->align);
+    toolbar = toolbar_new();
     tabsbar = tabs_new(tabsbar_select_callback);
     view = editor_view_new();
     editor = create_new_editor();
@@ -534,6 +535,34 @@ void app_default_statusbar_message(void)
 {
   statusbar_set_text(app_get_statusbar(), 250,
 		     "ASE " VERSION ", " COPYRIGHT);
+}
+
+int app_get_fg_color(Sprite *sprite)
+{
+  assert(sprite != NULL);
+
+  return get_color_for_image(sprite->imgtype,
+			     colorbar_get_fg_color(colorbar));
+}
+
+int app_get_bg_color(Sprite *sprite)
+{
+  assert(sprite != NULL);
+
+  return get_color_for_image(sprite->imgtype,
+			     colorbar_get_bg_color(colorbar));
+}
+
+int app_get_color_to_clear_layer(Layer *layer)
+{
+  /* all transparent layers are cleared with the mask color */
+  color_t color = color_mask();
+  
+  /* the `Background' is erased with the `Background Color' */
+  if (layer != NULL && layer_is_background(layer))
+    color = colorbar_get_bg_color(colorbar);
+
+  return get_color_for_image(layer->sprite->imgtype, color);
 }
 
 static void tabsbar_select_callback(JWidget tabs, void *data)

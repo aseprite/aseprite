@@ -26,6 +26,12 @@
       <check text="2 Click Movement" name="move_click2" />
       <check text="2 Click Drawing" name="draw_click2" />
 
+      <box horizontal>
+        <label text="Undo size limit:" />
+        <entry name="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used\nfor undo information per sprite.\nSpecified in megabytes." />
+        <label text="M" />
+      </box>
+
     </box>
 
     <box horizontal>

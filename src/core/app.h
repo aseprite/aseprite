@@ -28,6 +28,9 @@ enum {
   APP_EVENTS
 };
 
+struct Layer;
+struct Sprite;
+
 bool app_init(int argc, char *argv[]);
 void app_loop(void);
 void app_exit(void);
@@ -50,6 +53,10 @@ JWidget app_get_toolbar(void);
 JWidget app_get_tabsbar(void);
 
 void app_default_statusbar_message(void);
+
+int app_get_fg_color(struct Sprite *sprite);
+int app_get_bg_color(struct Sprite *sprite);
+int app_get_color_to_clear_layer(struct Layer *layer);
 
 #endif /* CORE_APP_H */
 

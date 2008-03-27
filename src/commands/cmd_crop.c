@@ -24,8 +24,8 @@
 #include "raster/mask.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "script/functions.h"
 #include "util/autocrop.h"
-#include "util/crop.h"
 #include "util/misc.h"
 
 static bool cmd_crop_enabled(const char *argument);
@@ -41,7 +41,7 @@ static bool cmd_crop_sprite_enabled(const char *argument)
 
 static void cmd_crop_sprite_execute(const char *argument)
 {
-  crop_sprite();
+  CropSprite();
 }
 
 /* ======================== */
@@ -69,7 +69,7 @@ static bool cmd_crop_layer_enabled(const char *argument)
 
 static void cmd_crop_layer_execute(const char *argument)
 {
-  crop_layer();
+  CropLayer();
 }
 
 /* ======================== */
@@ -83,7 +83,7 @@ static bool cmd_crop_cel_enabled(const char *argument)
 
 static void cmd_crop_cel_execute(const char *argument)
 {
-  crop_cel();
+  CropCel();
 }
 
 /**********************************************************************/
@@ -93,8 +93,8 @@ static bool cmd_crop_enabled(const char *argument)
 {
   if ((!current_sprite) ||
       (!current_sprite->layer) ||
-      (!current_sprite->layer->readable) ||
-      (!current_sprite->layer->writable) ||
+      (!layer_is_readable(current_sprite->layer)) ||
+      (!layer_is_writable(current_sprite->layer)) ||
       (!current_sprite->mask) ||
       (!current_sprite->mask->bitmap))
     return FALSE;

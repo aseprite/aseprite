@@ -8,6 +8,7 @@ ASE = aseprite$(EXE)
 COMMON_SOURCES =					\
 	src/commands/cmd_about.c			\
 	src/commands/cmd_advanced_mode.c		\
+	src/commands/cmd_background_from_layer.c	\
 	src/commands/cmd_cel_properties.c		\
 	src/commands/cmd_change_image_type.c		\
 	src/commands/cmd_clear.c			\
@@ -32,6 +33,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_goto_frame.c			\
 	src/commands/cmd_grid.c				\
 	src/commands/cmd_invert_mask.c			\
+	src/commands/cmd_layer_from_background.c	\
 	src/commands/cmd_layer_properties.c		\
 	src/commands/cmd_link_cel.c			\
 	src/commands/cmd_load_mask.c			\
@@ -104,6 +106,7 @@ COMMON_SOURCES =					\
 	src/file/ase_format.c				\
 	src/file/bmp_format.c				\
 	src/file/file.c					\
+	src/file/filedata.c				\
 	src/file/fli/fli.c				\
 	src/file/fli_format.c				\
 	src/file/gif/format.c				\
@@ -191,7 +194,6 @@ COMMON_SOURCES =					\
 	src/util/celmove.c				\
 	src/util/clipbrd.c				\
 	src/util/col_file.c				\
-	src/util/crop.c					\
 	src/util/filetoks.c				\
 	src/util/hash.c					\
 	src/util/misc.c					\

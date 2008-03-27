@@ -18,9 +18,13 @@
 
 #include "config.h"
 
+#include <allegro/unicode.h>
+
+#include "jinete/jaccel.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
+#include "jinete/jtooltips.h"
 #include "jinete/jwidget.h"
 
 #include "commands/commands.h"
@@ -31,58 +35,61 @@
 #include "widgets/groupbut.h"
 #include "widgets/toolbar.h"
 
-static bool group_change_hook(JWidget widget, void *data);
+static bool tools_change_hook(JWidget widget, void *data);
 static void conf_command(JWidget widget);
 
-JWidget toolbar_new(int align)
+JWidget toolbar_new(void)
 {
-#define ICONS_LIST				\
-  GFX_TOOL_MARKER,				\
-  GFX_TOOL_DOTS,				\
-  GFX_TOOL_PENCIL,				\
-  GFX_TOOL_BRUSH,				\
-  GFX_TOOL_FLOODFILL,				\
-  GFX_TOOL_SPRAY,				\
-  GFX_TOOL_LINE,				\
-  GFX_TOOL_RECTANGLE,				\
-  GFX_TOOL_ELLIPSE
+  JWidget box, confbutton, tools;
+  char buf[1024];		/* TODO warning buffer overflow */
+  int c;
 
-  JWidget box, fillbox, confbutton, group;
-  int c, len;
-
-  for (c=0; ase_tools_list[c]; c++)
-    ;
-  len = c;
-
-  for (c=0; ase_tools_list[c]; c++)
-    if (current_tool == ase_tools_list[c])
+  for (c=0; c<MAX_TOOLS; c++)
+    if (current_tool == tools_list[c])
       break;
 
-  box = jbox_new(align);
-  fillbox = jbox_new(align);
+  box = jbox_new(JI_VERTICAL);
   confbutton = jbutton_new(NULL);
 
   add_gfxicon_to_button(confbutton, GFX_TOOL_CONFIGURATION,
 			JI_CENTER | JI_MIDDLE);
 
-  if (align == JI_HORIZONTAL)
-    group = group_button_new(len, 1, c, ICONS_LIST);
-  else {
-/*     group = group_button_new(1, len, c, ICONS_LIST); */
-    group = group_button_new(1, len, c, ICONS_LIST);
+  tools = group_button_new(1, MAX_TOOLS, c,
+			   GFX_TOOL_MARKER,
+			   GFX_TOOL_PENCIL,
+			   GFX_TOOL_BRUSH,
+			   GFX_TOOL_ERASER,
+			   GFX_TOOL_FLOODFILL,
+			   GFX_TOOL_SPRAY,
+			   GFX_TOOL_LINE,
+			   GFX_TOOL_RECTANGLE,
+			   GFX_TOOL_ELLIPSE,
+			   GFX_TOOL_BLUR);
+
+  for (c=0; c<MAX_TOOLS; c++) {
+    JWidget child;
+    usprintf(buf, "radio%d", c);
+    child = jwidget_find_name(tools, buf);
+
+    usprintf(buf, "%s", _(tools_list[c]->tips));
+    if (tools_list[c]->accel) {
+      ustrcat(buf, "\n(");
+      jaccel_to_string(tools_list[c]->accel, buf+ustrsize(buf));
+      ustrcat(buf, ")");
+    }
+    
+    jwidget_add_tooltip_text(child, buf);
   }
-
+  
   jwidget_expansive(box, TRUE);
-  jwidget_expansive(fillbox, TRUE);
 
-  jwidget_add_child(box, group);
-  jwidget_add_child(box, fillbox);
+  jwidget_add_child(box, tools);
   jwidget_add_child(box, confbutton);
 
-  HOOK(group, SIGNAL_GROUP_BUTTON_CHANGE, group_change_hook, 0);
+  HOOK(tools, SIGNAL_GROUP_BUTTON_CHANGE, tools_change_hook, 0);
   jbutton_add_command(confbutton, conf_command);
 
-  box->user_data[0] = group;
+  box->user_data[0] = tools;
 
   return box;
 }
@@ -92,19 +99,19 @@ void toolbar_update(JWidget widget)
   JWidget group = widget->user_data[0];
   int c;
 
-  for (c=0; ase_tools_list[c]; c++)
-    if (current_tool == ase_tools_list[c])
+  for (c=0; c<MAX_TOOLS; c++)
+    if (current_tool == tools_list[c])
       break;
 
   group_button_select(group, c);
 }
 
-static bool group_change_hook(JWidget widget, void *data)
+static bool tools_change_hook(JWidget widget, void *data)
 {
   int c = group_button_get_selected(widget);
 
-  if (current_tool != ase_tools_list[c])
-    select_tool(ase_tools_list[c]);
+  if (current_tool != tools_list[c])
+    select_tool(tools_list[c]);
 
   return FALSE;
 }

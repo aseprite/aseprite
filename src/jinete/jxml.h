@@ -113,6 +113,7 @@ const char *jxmlelem_get_attr(JXmlElem elem, const char *name);
 void jxmlelem_set_attr(JXmlElem elem, const char *name, const char *value);
 
 JXmlElem jxmlelem_get_elem_by_id(JXmlElem elem, const char *id);
+JXmlElem jxmlelem_get_elem_by_name(JXmlElem elem, const char *name);
 
 /* JXmlText ******************************************/
 

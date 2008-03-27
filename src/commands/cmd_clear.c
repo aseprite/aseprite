@@ -19,23 +19,30 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
+#include "widgets/colbar.h"
 
 static bool cmd_clear_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  return
+    current_sprite != NULL &&
+    current_sprite->layer != NULL &&
+    layer_is_image(current_sprite->layer) &&
+    layer_is_readable(current_sprite->layer) &&
+    layer_is_writable(current_sprite->layer);
 }
 
 static void cmd_clear_execute(const char *argument)
 {
-  /* get current sprite */
-  Sprite *sprite = current_sprite;
+  Sprite *sprite = current_sprite; /* get current sprite */
 
   /* clear the mask */
-  ClearMask(color_mask());
+  ClearMask();
 
   /* refresh the sprite */
   update_screen_for_sprite(sprite);

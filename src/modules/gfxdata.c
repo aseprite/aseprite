@@ -94,16 +94,6 @@ static DATA gfx_data[GFX_BITMAP_COUNT] =
     "        "
     "#      #"
     "## ## ##" },
-  /* GFX_TOOL_DOTS */
-  { 8, 8,
-    "    #   "
-    "  #   # "
-    "        "
-    " #      "
-    "        "
-    " #      "
-    "        "
-    "  #     " },
   /* GFX_TOOL_PENCIL */
   { 8, 8,
     "        "
@@ -124,6 +114,16 @@ static DATA gfx_data[GFX_BITMAP_COUNT] =
     "       #"
     "     ###"
     "   #### " },
+  /* GFX_TOOL_ERASER */
+  { 8, 8,
+    "        "
+    "   #### "
+    "  #   ##"
+    " #   # #"
+    "#####  #"
+    "#   # # "
+    "#   ##  "
+    " ####   " },
   /* GFX_TOOL_FLOODFILL */
   { 8, 8,
     "        "
@@ -174,6 +174,16 @@ static DATA gfx_data[GFX_BITMAP_COUNT] =
     " #    # "
     "  ####  "
     "        " },
+  /* GFX_TOOL_BLUR */
+  { 8, 8,
+    "   #    "
+    "   #    "
+    "  # #   "
+    " #   #  "
+    "#   # # "
+    "#     # "
+    " #   #  "
+    "  ###   " },
   /* GFX_TOOL_CONFIGURATION */
   { 8, 8,
     "  # #   "
@@ -326,32 +336,6 @@ static DATA gfx_data[GFX_BITMAP_COUNT] =
     "   #  "
     "    # "
     "     #" },
-  /* GFX_DRAWMODE_OPAQUE */
-  { 7, 7,
-    "##     "
-    "###    "
-    " ###   "
-    "  ###  "
-    "   ### "
-    "    ###"
-    "     ##" },
-  /* GFX_DRAWMODE_GLASS */
-  { 7, 7,
-    "##     "
-    "###  .."
-    " ##%..."
-    "  %%%. "
-    " ..%%# "
-    "....###"
-    "..   ##" },
-  /* GFX_DRAWMODE_SEMI */
-  { 8, 6,
-    " # #    "
-    "# # #   "
-    " # # #  "
-    "  # # # "
-    "   # # #"
-    "    # # " },
   /* GFX_SCALE_1 */
   { 11, 11,
     "##         "

@@ -36,6 +36,7 @@
         <listitem text="Black" />
         <listitem text="White" />
         <listitem text="Magenta" />
+        <listitem text="Background Color" />
       </listbox>
     </view>
 

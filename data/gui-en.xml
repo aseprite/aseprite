@@ -2,87 +2,93 @@
 <gui>
     <!-- keyboard shortcuts -->
     <keyboard>
-	<!-- file -->
-	<key command="new_file" shortcut="Ctrl+N" />
-	<key command="open_file" shortcut="Ctrl+O" />
-	<key command="save_file" shortcut="Ctrl+S" />
-	<key command="save_file_as" shortcut="Shift+Ctrl+S" />
-	<key command="close_file" shortcut="Ctrl+W" />
-	<key command="close_all_files" shortcut="Shift+Ctrl+W" />
-	<key command="screen_shot" shortcut="F12" />
-	<key command="exit" shortcut="Ctrl+Q" />
-	<key command="exit" shortcut="Esc" />
-	<!-- edit -->
-	<key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
-	<key command="redo" shortcut="Ctrl+R" />
-	<key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
-	<key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
-	<key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
-	<key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
-	<key command="flip_horizontal" shortcut="Shift+H" />
-	<key command="flip_vertical" shortcut="Shift+V" />
-	<key command="replace_color" shortcut="Shift+R" />
-	<key command="invert_color" shortcut="Ctrl+I" />
-	<!-- sprite -->
-	<key command="sprite_properties" shortcut="Ctrl+P" />
-	<!-- layer -->
-	<key command="layer_properties" shortcut="Shift+P" />
-	<key command="new_layer" shortcut="Shift+N" />
-	<!-- frame -->
-	<key command="new_frame" shortcut="N" />
-	<key command="goto_first_frame" shortcut="Home" />
-	<key command="goto_previous_frame" shortcut="Left" />
-	<key command="goto_next_frame" shortcut="Right" />
-	<key command="goto_last_frame" shortcut="End" />
-	<key command="play_animation" shortcut="Enter" />
-	<!-- cel -->
-	<key command="cel_properties" shortcut="Shift+Ctrl+P" />
-	<key command="new_cel" shortcut="Shift+Ctrl+N" />
-	<!-- mask -->
-	<key command="mask_all" shortcut="Ctrl+A" />
-	<key command="deselect_mask" shortcut="Ctrl+D" />
-	<key command="reselect_mask" shortcut="Shift+Ctrl+D" />
-	<key command="invert_mask" shortcut="Shift+Ctrl+I" />
-	<!-- view -->
-	<key command="refresh" shortcut="F5" />
-	<key command="advanced_mode" shortcut="A" />
-	<key command="make_unique_editor" shortcut="Ctrl+1" />
-	<key command="split_editor_vertically" shortcut="Ctrl+2" />
-	<key command="split_editor_horizontally" shortcut="Ctrl+3" />
-	<key command="close_editor" shortcut="Ctrl+4" />
-	<key command="preview_fit_to_screen" shortcut="F6" />
-	<key command="preview_normal" shortcut="F7" />
-	<key command="preview_tiled" shortcut="F8" />
-	<key command="show_grid" shortcut="G" />
-	<key command="snap_to_grid" shortcut="H" />
-	<!-- tools -->
-	<key command="configure_tools" shortcut="C" />
-	<key command="marker_tool" shortcut="M" />
-	<key command="dots_tool" shortcut="D" />
-	<key command="pencil_tool" shortcut="P" />
-	<key command="brush_tool" shortcut="B" />
-	<key command="spray_tool" shortcut="S" />
- 	<key command="floodfill_tool" shortcut="F" />
-	<key command="line_tool" shortcut="L" />
-<!-- 	<key command="bezier_tool" shortcut="V" /> -->
-	<key command="rectangle_tool" shortcut="R" />
-	<key command="ellipse_tool" shortcut="E" />
-	<key command="eyedropper_tool" shortcut="I" />
-	<key command="switch_colors" shortcut="X" />
-	<key command="film_editor" shortcut="Tab" />
-	<key command="convolution_matrix" shortcut="F9" />
-	<key command="color_curve" shortcut="Ctrl+M" />
-	<key command="color_curve" shortcut="F10" />
-<!-- 	<key command="run_script" shortcut="Ctrl+0" /> -->
-	<key command="tips" shortcut="F1" />
-	<key command="options" shortcut="Shift+Ctrl+O" />
+	<commands>
+	    <!-- file -->
+	    <key command="new_file" shortcut="Ctrl+N" />
+	    <key command="open_file" shortcut="Ctrl+O" />
+	    <key command="save_file" shortcut="Ctrl+S" />
+	    <key command="save_file_as" shortcut="Shift+Ctrl+S" />
+	    <key command="close_file" shortcut="Ctrl+W" />
+	    <key command="close_all_files" shortcut="Shift+Ctrl+W" />
+	    <key command="screen_shot" shortcut="F12" />
+	    <key command="exit" shortcut="Ctrl+Q" />
+	    <key command="exit" shortcut="Esc" />
+	    <!-- edit -->
+	    <key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
+	    <key command="redo" shortcut="Ctrl+R" />
+	    <key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
+	    <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
+	    <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
+	    <key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
+	    <key command="flip_horizontal" shortcut="Shift+H" />
+	    <key command="flip_vertical" shortcut="Shift+V" />
+	    <key command="replace_color" shortcut="Shift+R" />
+	    <key command="invert_color" shortcut="Ctrl+I" />
+	    <!-- sprite -->
+	    <key command="sprite_properties" shortcut="Ctrl+P" />
+	    <!-- layer -->
+	    <key command="layer_properties" shortcut="Shift+P" />
+	    <key command="new_layer" shortcut="Shift+N" />
+	    <!-- frame -->
+	    <key command="new_frame" shortcut="N" />
+	    <key command="goto_first_frame" shortcut="Home" />
+	    <key command="goto_previous_frame" shortcut="Left" />
+	    <key command="goto_next_frame" shortcut="Right" />
+	    <key command="goto_last_frame" shortcut="End" />
+	    <key command="play_animation" shortcut="Enter" />
+	    <!-- cel -->
+	    <key command="cel_properties" shortcut="Shift+Ctrl+P" />
+	    <key command="new_cel" shortcut="Shift+Ctrl+N" />
+	    <!-- mask -->
+	    <key command="mask_all" shortcut="Ctrl+A" />
+	    <key command="deselect_mask" shortcut="Ctrl+D" />
+	    <key command="reselect_mask" shortcut="Shift+Ctrl+D" />
+	    <key command="invert_mask" shortcut="Shift+Ctrl+I" />
+	    <!-- view -->
+	    <key command="refresh" shortcut="F5" />
+	    <key command="advanced_mode" shortcut="A" />
+	    <key command="make_unique_editor" shortcut="Ctrl+1" />
+	    <key command="split_editor_vertically" shortcut="Ctrl+2" />
+	    <key command="split_editor_horizontally" shortcut="Ctrl+3" />
+	    <key command="close_editor" shortcut="Ctrl+4" />
+	    <key command="preview_fit_to_screen" shortcut="F6" />
+	    <key command="preview_normal" shortcut="F7" />
+	    <key command="preview_tiled" shortcut="F8" />
+	    <key command="show_grid" shortcut="Shift+G" />
+	    <key command="snap_to_grid" shortcut="Shift+S" />
+	    <!-- tools -->
+	    <key command="configure_tools" shortcut="C" />
+	    <key command="film_editor" shortcut="Tab" />
+	    <key command="convolution_matrix" shortcut="F9" />
+	    <key command="color_curve" shortcut="Ctrl+M" />
+	    <key command="color_curve" shortcut="F10" />
+	    <!-- 	<key command="run_script" shortcut="Ctrl+0" /> -->
+	    <key command="tips" shortcut="F1" />
+	    <key command="options" shortcut="Shift+Ctrl+O" />
+
+	    <!-- others -->
+	    <key command="eyedropper" shortcut="I" />
+	    <key command="switch_colors" shortcut="X" />
+	</commands>
+	<tools>
+	    <key tool="rectangular_marquee" shortcut="M" />
+	    <key tool="eraser" shortcut="E" />
+	    <key tool="pencil" shortcut="B" />
+	    <key tool="brush" shortcut="B" />
+	    <key tool="spray" shortcut="S" />
+ 	    <key tool="paint_bucket" shortcut="G" />
+	    <key tool="line" shortcut="L" />
+	    <key tool="rectangle" shortcut="U" />
+	    <key tool="ellipse" shortcut="U" />
+	    <key tool="blur" shortcut="R" />
+	</tools>
     </keyboard>
 
     <!-- main bar menu -->
     <menu id="main_menu">
 	<menu name="&File">
-	    <item command="new_file" name="&New" />
-	    <item command="open_file" name="&Open" />
+	    <item command="new_file" name="&New..." />
+	    <item command="open_file" name="&Open..." />
 	    <item id="recent_list" name="Open &Recent" />
 	    <separator />
 	    <item command="save_file" name="&Save" />
@@ -109,32 +115,34 @@
 	    <item command="flip_horizontal" name="Flip &Horizontal" />
 	    <item command="flip_vertical" name="Flip &Vertical" />
 	    <separator />
-	    <item command="replace_color" name="R&eplace Color" />
+	    <item command="replace_color" name="R&eplace Color..." />
 	    <item command="invert_color" name="&Invert" />
 	</menu>
 	<menu name="&Sprite">
-	    <item command="sprite_properties" name="&Properties" />
+	    <item command="sprite_properties" name="&Properties..." />
 	    <separator />
-	    <item command="change_image_type" name="&Color Mode" />
+	    <item command="change_image_type" name="&Color Mode..." />
 	    <separator />
-	    <item command="duplicate_sprite" name="&Duplicate" />
+	    <item command="duplicate_sprite" name="&Duplicate..." />
 	    <item command="crop_sprite" name="Cr&op" />
 	    <item command="autocrop_sprite" name="&Auto Crop" />
 	</menu>
 	<menu name="&Layer" id="layer_popup">
-	    <item command="layer_properties" name="&Properties" />
+	    <item command="layer_properties" name="&Properties..." />
 	    <separator />
-	    <item command="new_layer" name="&New" />
+	    <item command="new_layer" name="&New..." />
 <!-- 	    <item command="new_layer_set" name="New &Set" /> -->
 	    <item command="remove_layer" name="&Remove" />
+	    <item command="background_from_layer" name="&Background from Layer" />
+	    <item command="layer_from_background" name="&Layer from Background..." />
 	    <separator />
-	    <item command="duplicate_layer" name="&Duplicate" />
+	    <item command="duplicate_layer" name="&Duplicate..." />
 	    <item command="merge_down_layer" name="&Merge Down" />
 	    <item command="flatten_layers" name="&Flatten" />
 	    <item command="crop_layer" name="Cr&op" />
 	</menu>
 	<menu name="F&rame" id="frame_popup">
-	    <item command="frame_properties" name="&Properties" />
+	    <item command="frame_properties" name="&Properties..." />
 	    <separator />
 	    <item command="new_frame" name="&New" />
 	    <item command="remove_frame" name="&Remove" />
@@ -148,7 +156,7 @@
 	    <item command="play_animation" name="&Play" />
 	</menu>
 	<menu name="&Cel" id="cel_popup">
-	    <item command="cel_properties" name="&Properties" />
+	    <item command="cel_properties" name="&Properties..." />
 	    <separator />
 	    <item command="new_cel" name="&New" />
 	    <item command="move_cel" name="&Move" />
@@ -194,22 +202,8 @@
 	    <item command="configure_screen" name="Configure &Screen" />
 	</menu>
 	<menu name="&Tools">
-	    <menu name="&Drawing Tool">
-		<item command="configure_tools" name="&Configure" />
-		<separator />
-		<item command="marker_tool" name="&Marker" />
-		<item command="dots_tool" name="&Dots" />
-		<item command="pencil_tool" name="&Pencil" />
-		<item command="brush_tool" name="&Brush" />
-		<item command="spray_tool" name="&Spray" />
-		<item command="floodfill_tool" name="&Floodfill" />
-		<separator />
-		<item command="line_tool" name="&Line" />
-<!-- 		<item command="bezier_tool" name="&Bezier" /> -->
-		<item command="rectangle_tool" name="&Rectangle" />
-		<item command="ellipse_tool" name="&Ellipse" />
-<!-- 		<item command="oval_tool" name="&Oval" /> -->
-	    </menu>
+	    <item command="configure_tools" name="&Configure" />
+	    <separator />
 	    <item command="film_editor" name="&Film Editor" />
 	    <item command="palette_editor" name="&Palette Editor" />
 	    <separator />

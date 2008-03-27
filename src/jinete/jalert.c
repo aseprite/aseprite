@@ -141,7 +141,7 @@ int jalert(const char *format, ...)
 
 static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 {
-  JWidget box1, box2, box3, box4, box5, window = NULL;
+  JWidget box1, box2, grid, box3, box4, box5, window = NULL;
   bool title = TRUE;
   bool label = FALSE;
   bool separator = FALSE;
@@ -214,6 +214,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
   if (window) {
     box1 = jbox_new(JI_VERTICAL);
     box2 = jbox_new(JI_VERTICAL);
+    grid = jgrid_new(1, FALSE);
     box3 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
     /* to identify by the user */
@@ -236,7 +237,9 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
     jwidget_add_child(box1, box4);	/* filler */
     jwidget_add_child(box1, box2);	/* labels */
     jwidget_add_child(box1, box5);	/* filler */
-    jwidget_add_child(box1, box3);	/* buttons */
+    jwidget_add_child(box1, grid);	/* buttons */
+
+    jgrid_add_child(grid, box3, 1, 1, JI_CENTER | JI_BOTTOM);
 
     JI_LIST_FOR_EACH(*labels, link)
       jwidget_add_child(box2, (JWidget)link->data);

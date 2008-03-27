@@ -151,14 +151,24 @@ static bool tip_hook(JWidget widget, JMessage msg)
       if (msg->timer.timer_id == tip->timer_id) {
 	if (!tip->window) {
 	  JWidget window = tipwindow_new(tip->text, TRUE);
-	  int x = tip->widget->rc->x1;
-	  int y = tip->widget->rc->y2;
-	  int w = jrect_w(window->rc);
-	  int h = jrect_h(window->rc);
+/* 	  int x = tip->widget->rc->x1; */
+/* 	  int y = tip->widget->rc->y2; */
+	  int x = jmouse_x(0)+12;
+	  int y = jmouse_y(0)+12;
+	  int w, h;
 
 	  tip->window = window;
 
 	  jwindow_remap(window);
+
+	  w = jrect_w(window->rc);
+	  h = jrect_h(window->rc);
+
+	  if (x+w > JI_SCREEN_W) {
+	    x = jmouse_x(0) - w - 4;
+	    y = jmouse_y(0);
+	  }
+
 	  jwindow_position(window,
 			   MID(0, x, JI_SCREEN_W-w),
 			   MID(0, y, JI_SCREEN_H-h));

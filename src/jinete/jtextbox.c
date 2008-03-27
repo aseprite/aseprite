@@ -136,7 +136,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       JWidget view = jwidget_get_view(widget);
       if (view) {
 	jwidget_hard_capture_mouse(widget);
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_SCROLL);
 	return TRUE;
       }
       break;

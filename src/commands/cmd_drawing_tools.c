@@ -26,31 +26,45 @@
 #include "modules/tools.h"
 
 /* ======================== */
+/* blur_tool               */
+/* ======================== */
+
+static bool cmd_blur_tool_checked(const char *argument)
+{
+  return current_tool == tools_list[TOOL_BLUR];
+}
+
+static void cmd_blur_tool_execute(const char *argument)
+{
+  select_tool(tools_list[TOOL_BLUR]);
+}
+
+/* ======================== */
 /* brush_tool               */
 /* ======================== */
 
 static bool cmd_brush_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_brush;
+  return current_tool == tools_list[TOOL_BRUSH];
 }
 
 static void cmd_brush_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_brush);
+  select_tool(tools_list[TOOL_BRUSH]);
 }
 
 /* ======================== */
-/* dots_tool                */
+/* eraser_tool              */
 /* ======================== */
 
-static bool cmd_dots_tool_checked(const char *argument)
+static bool cmd_eraser_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_dots;
+  return current_tool == tools_list[TOOL_ERASER];
 }
 
-static void cmd_dots_tool_execute(const char *argument)
+static void cmd_eraser_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_dots);
+  select_tool(tools_list[TOOL_ERASER]);
 }
 
 /* ======================== */
@@ -59,12 +73,12 @@ static void cmd_dots_tool_execute(const char *argument)
 
 static bool cmd_ellipse_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_ellipse;
+  return current_tool == tools_list[TOOL_ELLIPSE];
 }
 
 static void cmd_ellipse_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_ellipse);
+  select_tool(tools_list[TOOL_ELLIPSE]);
 }
 
 /* ======================== */
@@ -73,12 +87,12 @@ static void cmd_ellipse_tool_execute(const char *argument)
 
 static bool cmd_floodfill_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_floodfill;
+  return current_tool == tools_list[TOOL_FLOODFILL];
 }
 
 static void cmd_floodfill_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_floodfill);
+  select_tool(tools_list[TOOL_FLOODFILL]);
 }
 
 /* ======================== */
@@ -87,12 +101,12 @@ static void cmd_floodfill_tool_execute(const char *argument)
 
 static bool cmd_line_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_line;
+  return current_tool == tools_list[TOOL_LINE];
 }
 
 static void cmd_line_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_line);
+  select_tool(tools_list[TOOL_LINE]);
 }
 
 /* ======================== */
@@ -101,12 +115,12 @@ static void cmd_line_tool_execute(const char *argument)
 
 static bool cmd_marker_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_marker;
+  return current_tool == tools_list[TOOL_MARKER];
 }
 
 static void cmd_marker_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_marker);
+  select_tool(tools_list[TOOL_MARKER]);
 }
 
 /* ======================== */
@@ -115,12 +129,12 @@ static void cmd_marker_tool_execute(const char *argument)
 
 static bool cmd_pencil_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_pencil;
+  return current_tool == tools_list[TOOL_PENCIL];
 }
 
 static void cmd_pencil_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_pencil);
+  select_tool(tools_list[TOOL_PENCIL]);
 }
 
 /* ======================== */
@@ -129,12 +143,12 @@ static void cmd_pencil_tool_execute(const char *argument)
 
 static bool cmd_rectangle_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_rectangle;
+  return current_tool == tools_list[TOOL_RECTANGLE];
 }
 
 static void cmd_rectangle_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_rectangle);
+  select_tool(tools_list[TOOL_RECTANGLE]);
 }
 
 /* ======================== */
@@ -143,16 +157,24 @@ static void cmd_rectangle_tool_execute(const char *argument)
 
 static bool cmd_spray_tool_checked(const char *argument)
 {
-  return current_tool && current_tool == &ase_tool_spray;
+  return current_tool == tools_list[TOOL_SPRAY];
 }
 
 static void cmd_spray_tool_execute(const char *argument)
 {
-  select_tool(&ase_tool_spray);
+  select_tool(tools_list[TOOL_SPRAY]);
 }
 
 /* ================================================ */
 /* Commands */
+
+Command cmd_blur_tool = {
+  CMD_BLUR_TOOL,
+  NULL,
+  cmd_blur_tool_checked,
+  cmd_blur_tool_execute,
+  NULL
+};
 
 Command cmd_brush_tool = {
   CMD_BRUSH_TOOL,
@@ -162,19 +184,19 @@ Command cmd_brush_tool = {
   NULL
 };
 
-Command cmd_dots_tool = {
-  CMD_DOTS_TOOL,
-  NULL,
-  cmd_dots_tool_checked,
-  cmd_dots_tool_execute,
-  NULL
-};
-
 Command cmd_ellipse_tool = {
   CMD_ELLIPSE_TOOL,
   NULL,
   cmd_ellipse_tool_checked,
   cmd_ellipse_tool_execute,
+  NULL
+};
+
+Command cmd_eraser_tool = {
+  CMD_ERASER_TOOL,
+  NULL,
+  cmd_eraser_tool_checked,
+  cmd_eraser_tool_execute,
   NULL
 };
 

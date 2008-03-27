@@ -68,8 +68,10 @@ static void cmd_screen_shot_execute(const char *argument)
 
     /* convert Allegro "BITMAP" to ASE "Image" */
     if (imgtype == IMAGE_RGB) {
-      ase_uint32 *address = (ase_uint32 *)image->dat;
+      ase_uint32 *address;
+
       for (y=0; y<image->h; ++y) {
+	address = (ase_uint32 *)image->line[y];
 	for (x=0; x<image->w; ++x) {
 	  c = getpixel(bmp, x, y);
 	  r = getr(c);
@@ -80,8 +82,10 @@ static void cmd_screen_shot_execute(const char *argument)
       }
     }
     else if (imgtype == IMAGE_INDEXED) {
-      ase_uint8 *address = (ase_uint8 *)image->dat;
+      ase_uint8 *address;
+
       for (y=0; y<image->h; ++y) {
+	address = (ase_uint8 *)image->line[y];
 	for (x=0; x<image->w; ++x) {
 	  *(address++) = getpixel(bmp, x, y);
 	}

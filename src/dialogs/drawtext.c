@@ -171,6 +171,7 @@ Image *RenderText(const char *fontname, int size, int color, const char *text)
 
 static Image *render_text(FONT *f, const char *text, int color)
 {
+  /* TODO warning this uses Image->dat and not Image->line */
 #define DO(type, colfunc)				\
   {							\
     register int c;					\

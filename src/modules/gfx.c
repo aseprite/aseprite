@@ -574,19 +574,13 @@ void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
       if (!graph)
         return;
 
-      rectgrid(graph, 0, 0, w-1, h-1, grid, grid);
-
-      drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
-      set_trans_blender(0, 0, 0, color_get_alpha(imgtype, color));
       {
         int rgb_bitmap_color = get_color_for_image(imgtype, color);
         color_t color2 = color_rgb(_rgba_getr(rgb_bitmap_color),
 				   _rgba_getg(rgb_bitmap_color),
-				   _rgba_getb(rgb_bitmap_color),
-				   _rgba_geta(rgb_bitmap_color));
+				   _rgba_getb(rgb_bitmap_color));
         rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
       }
-      drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
 
       use_current_sprite_rgb_map();
       blit(graph, bmp, 0, 0, x1, y1, w, h);
@@ -600,17 +594,11 @@ void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
       if (!graph)
         return;
 
-      rectgrid(graph, 0, 0, w-1, h-1, grid, grid);
-
-      drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
-      set_trans_blender(0, 0, 0, color_get_alpha(imgtype, color));
       {
         int gray_bitmap_color = get_color_for_image(imgtype, color);
-        color_t color2 = color_gray(_graya_getv(gray_bitmap_color),
-				    _graya_geta(gray_bitmap_color));
+	color_t color2 = color_gray(_graya_getv(gray_bitmap_color));
         rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
       }
-      drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
 
       use_current_sprite_rgb_map();
       blit(graph, bmp, 0, 0, x1, y1, w, h);

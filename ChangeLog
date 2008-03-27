@@ -1,3 +1,59 @@
+2008-03-27  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_background_from_layer.c: Added.
+
+2008-03-26  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/brush.c (regenerate_brush): Now the line-brush is
+	more thick (this is a "shortcut" to avoid ugly effect when the
+	line-brush was used to draw, for example, a ellipse).
+
+	* src/raster/sprite.c (sprite_set_imgtype): Fixed a bug where an
+	incorrect address was saved in the undo information.
+
+	* src/commands/cmd_cel_properties.c, data/jids/celprop.jid:
+	Modified to display information only (the "opacity" of the Cel is
+	the only field that can be modified).
+
+	* src/jinete/jfile.c (convert_tag_to_widget): Added grid support.
+
+2008-03-25  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/raster/layer.c (layer_free_images): Added to fix a bug which
+	the stock has images of removed layers.
+
+	* src/script/functions.c (FlattenLayers): Rewritten to use the
+	`Background' layer.
+
+	* src/raster/undo.c (update_undo): the undo size is get from the
+	configuration.
+
+	* src/dialogs/options.c (dialogs_options): Added option to change
+	the undo size limit per sprite.
+
+2008-03-24  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/tools.c (ase_tool_eraser): Added.
+
+	* src/modules/tools.c (ase_tool_dots): Removed.
+
+	* src/modules/tools.h (struct ToolData): Added. Restructured all
+	the tools handling. No more real-time dirty. Now a temporary
+	preview image is used and them a `dirty' is created using the
+	differences between the old and new layer pixels.
+
+	* src/core/color.c: Removed alpha value of colors.
+
+	* src/widgets/editor.h (Editor): Added ctrl_pressed to show the
+	move-cursor.
+
+	* src/raster/sprite.h (struct Sprite): Removed the bgcolor
+	property (it's confusing).
+
+2008-03-23  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/file/filedata.[ch]: Added FileData and BmpData.
+
 2008-03-22  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/dialogs/filmedit.c (layer_box_msg_proc, cel_box_msg_proc):

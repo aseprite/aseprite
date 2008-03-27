@@ -40,6 +40,7 @@
 #define FILE_LOAD_ONE_FRAME		(1<<3)
 
 struct Cel;
+struct FileData;
 struct Image;
 struct Layer;
 struct Palette;
@@ -68,7 +69,7 @@ typedef struct FileOp
 {
   FileOpType type;		/* operation type: 0=load, 1=save */
   FileFormat *format;
-  struct Sprite *sprite;	/* loaded sprite/sprite to be saved */
+  struct Sprite *sprite;	/* loaded sprite, or sprite to be saved */
   char *filename;		/* file-name to load/save */
 
   /* shared fields between threads */
@@ -93,6 +94,7 @@ typedef struct FileOp
     int frame;
     struct Layer *layer;
     struct Cel *last_cel;
+    struct FileData *filedata;
   } seq;
 } FileOp;
 
@@ -114,6 +116,9 @@ void fop_operate(FileOp *fop);
 void fop_done(FileOp *fop);
 void fop_stop(FileOp *fop);
 void fop_free(FileOp *fop);
+
+void fop_sequence_set_filedata(FileOp *fop, struct FileData *filedata);
+struct FileData *fop_sequence_get_filedata(FileOp *fop);
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);

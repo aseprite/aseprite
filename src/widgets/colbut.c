@@ -167,13 +167,17 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	  else if (picked->type == editor_type()) {
 	    Sprite *sprite = editor_get_sprite(picked);
 	    int x, y, imgcolor;
+	    color_t tmp;
 
 	    if (sprite) {
 	      x = msg->mouse.x;
 	      y = msg->mouse.y;
 	      screen_to_editor(picked, x, y, &x, &y);
 	      imgcolor = sprite_getpixel(sprite, x, y);
-	      color = color_from_image(sprite->imgtype, imgcolor);
+	      tmp = color_from_image(sprite->imgtype, imgcolor);
+
+	      if (color_type(tmp) != COLOR_TYPE_MASK)
+		color = tmp;
 	    }
 	  }
 	}

@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <allegro/unicode.h>
 
 #include "jinete/jlist.h"
 
@@ -40,8 +41,9 @@ static void layer_set_parent(Layer *layer, Layer *parent_set);
 						\
     layer->sprite = sprite;			\
     layer->parent_layer = NULL;			\
-    layer->readable = TRUE;			\
-    layer->writable = TRUE;			\
+    layer->flags =				\
+      LAYER_IS_READABLE |			\
+      LAYER_IS_WRITABLE;			\
 						\
     layer->blend_mode = 0;			\
     layer->cels = NULL;				\
@@ -153,8 +155,7 @@ Layer *layer_new_copy(Sprite *dst_sprite, const Layer *src_layer)
   /* copy general properties */
   if (layer_copy != NULL) {
     layer_set_name(layer_copy, src_layer->name);
-    layer_copy->readable = src_layer->readable;
-    layer_copy->writable = src_layer->writable;
+    layer_copy->flags = src_layer->flags;
   }
 
   return layer_copy;
@@ -180,8 +181,6 @@ Layer *layer_new_flatten_copy(Sprite *dst_sprite, const Layer *src_layer,
   flat_layer = layer_new(dst_sprite);
   if (!flat_layer)
     return NULL;
-
-  layer_set_name(flat_layer, "Flat Layer");
 
   for (frame=frmin; frame<=frmax; frame++) {
     /* does this frame have cels to render? */
@@ -240,6 +239,54 @@ void layer_free(Layer *layer)
   gfxobj_free((GfxObj *)layer);
 }
 
+void layer_free_images(Layer *layer)
+{
+  JLink link;
+
+  switch (layer->gfxobj.type) {
+
+    case GFXOBJ_LAYER_IMAGE:
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	Cel *cel = link->data;
+
+	if (!cel_is_link(cel, layer)) {
+	  Image *image = layer->sprite->stock->image[cel->image];
+
+	  assert(image != NULL);
+
+	  stock_remove_image(layer->sprite->stock, image);
+	  image_free(image);
+	}
+      }
+      break;
+
+    case GFXOBJ_LAYER_SET: {
+      JI_LIST_FOR_EACH(layer->layers, link)
+	layer_free_images(link->data);
+      break;
+    }
+  }
+}
+
+/**
+ * Configures some properties of the specified layer to make it as the
+ * "Background" of the sprite.
+ *
+ * You can't use this routine if the sprite already has a background
+ * layer.
+ */
+void layer_configure_as_background(Layer *layer)
+{
+  assert(layer != NULL);
+  assert(layer->sprite != NULL);
+  assert(sprite_get_background_layer(layer->sprite) == NULL);
+
+  layer->flags |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
+  layer_set_name(layer, "Background");
+
+  layer_move_layer(layer->sprite->set, layer, NULL);
+}
+
 /**
  * Returns TRUE if "layer" is a normal layer type (an image layer)
  */
@@ -261,7 +308,7 @@ bool layer_is_set(const Layer *layer)
  */
 bool layer_is_readable(const Layer *layer)
 {
-  return layer->readable;
+  return (layer->flags & LAYER_IS_READABLE) == LAYER_IS_READABLE;
 }
 
 /**
@@ -269,7 +316,23 @@ bool layer_is_readable(const Layer *layer)
  */
 bool layer_is_writable(const Layer *layer)
 {
-  return layer->writable;
+  return (layer->flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE;
+}
+
+/**
+ * Returns TRUE if the layer is moveable.
+ */
+bool layer_is_moveable(const Layer *layer)
+{
+  return (layer->flags & LAYER_IS_LOCKMOVE) == 0;
+}
+
+/**
+ * Returns TRUE if the layer is the background.
+ */
+bool layer_is_background(const Layer *layer)
+{
+  return (layer->flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND;
 }
 
 /**
@@ -299,8 +362,7 @@ Layer *layer_get_next(Layer *layer)
 
 void layer_set_name(Layer *layer, const char *name)
 {
-  /* TODO warning overflow */
-  strcpy(layer->name, name);
+  ustrzcpy(layer->name, LAYER_NAME_SIZE, name);
 }
 
 void layer_set_blend_mode(Layer *layer, int blend_mode)
@@ -328,7 +390,7 @@ void layer_remove_cel(Layer *layer, Cel *cel)
     jlist_remove(layer->cels, cel);
 }
 
-Cel *layer_get_cel(Layer *layer, int frame)
+Cel *layer_get_cel(const Layer *layer, int frame)
 {
   if (layer_is_image(layer)) {
     Cel *cel;
@@ -374,9 +436,9 @@ void layer_move_layer(Layer *set, Layer *layer, Layer *after)
     jlist_prepend(set->layers, layer);
 }
 
-void layer_render(Layer *layer, Image *image, int x, int y, int frame)
+void layer_render(const Layer *layer, Image *image, int x, int y, int frame)
 {
-  if (!layer->readable)
+  if (!layer_is_readable(layer))
     return;
 
   switch (layer->gfxobj.type) {
@@ -417,7 +479,7 @@ void layer_render(Layer *layer, Image *image, int x, int y, int frame)
  */
 static bool has_cels(const Layer *layer, int frame)
 {
-  if (!layer->readable)
+  if (!layer_is_readable(layer))
     return FALSE;
 
   switch (layer->gfxobj.type) {

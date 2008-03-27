@@ -23,9 +23,11 @@
 #include <limits.h>
 #include <math.h>
 
+#include "jinete/jaccel.h"
 #include "jinete/jalert.h"
 #include "jinete/jlist.h"
 #include "jinete/jmanager.h"
+#include "jinete/jmessage.h"
 #include "jinete/jregion.h"
 #include "jinete/jsystem.h"
 #include "jinete/jview.h"
@@ -42,14 +44,30 @@
 #include "modules/tools.h"
 #include "raster/raster.h"
 #include "util/misc.h"
+#include "util/render.h"
+#include "widgets/colbar.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
 
+/* tool flags */
+#define TOOL_COPY_SRC2DST       0x00000001
+#define TOOL_COPY_DST2SRC       0x00000002
+#define TOOL_FIRST2LAST		0x00000004
+#define TOOL_OLD2LAST		0x00000008
+#define TOOL_FOURCHAIN		0x00000010
+#define TOOL_ACCEPT_FILL	0x00000020
+#define TOOL_UPDATE_ALL		0x00000040
+#define TOOL_UPDATE_POINT	0x00000080
+#define TOOL_UPDATE_TRACE	0x00000100
+#define TOOL_UPDATE_BOX		0x00000200
+#define TOOL_UPDATE_SPRAY	0x00000400
+#define TOOL_UPDATE_LAST4	0x00000800
+#define TOOL_EIGHT_ANGLES	0x00001000
+
 Tool *current_tool = NULL;
 
 static Brush *brush = NULL;
-static int brush_mode;
 static int glass_dirty;
 static int spray_width;
 static int air_speed;
@@ -64,8 +82,42 @@ static color_t cursor_color;
 static int _cursor_color;
 static int _cursor_mask;
 
-static Image *tool_image = NULL;
-static int tool_color;
+/***********************************************************/
+/* INKS                                                    */
+/***********************************************************/
+
+static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data);
+static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data);
+static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data);
+
+static void ink_hline4_glass(int x1, int y, int x2, ToolData *data);
+static void ink_hline2_glass(int x1, int y, int x2, ToolData *data);
+static void ink_hline1_glass(int x1, int y, int x2, ToolData *data);
+
+static void ink_hline4_soften(int x1, int y, int x2, ToolData *data);
+static void ink_hline2_soften(int x1, int y, int x2, ToolData *data);
+static void ink_hline1_soften(int x1, int y, int x2, ToolData *data);
+
+static void ink_hline4_replace(int x1, int y, int x2, ToolData *data);
+static void ink_hline2_replace(int x1, int y, int x2, ToolData *data);
+static void ink_hline1_replace(int x1, int y, int x2, ToolData *data);
+
+static AlgoHLine inks_hline[][3] =
+{
+#define DEF_INK(name)			\
+  { (AlgoHLine)ink_hline4_##name,	\
+    (AlgoHLine)ink_hline2_##name,	\
+    (AlgoHLine)ink_hline1_##name }
+
+  DEF_INK(opaque),
+  DEF_INK(glass),
+  DEF_INK(soften),
+  DEF_INK(replace)
+};
+
+/***********************************************************/
+/* CURSOR COLOR                                            */
+/***********************************************************/
 
 static void update_cursor_color(void *data)
 {
@@ -78,12 +130,16 @@ static void update_cursor_color(void *data)
   _cursor_mask = (color_type(cursor_color) == COLOR_TYPE_MASK);
 }
 
+/***********************************************************/
+/* TOOLS                                                   */
+/***********************************************************/
+
 int init_module_tools(void)
 {
   int size, type, angle;
 
   /* current tool */
-  current_tool = &ase_tool_brush;
+  current_tool = tools_list[TOOL_PENCIL];
 
   /* brush */
   brush = brush_new();
@@ -91,7 +147,6 @@ int init_module_tools(void)
   type = get_config_int("Tools", "BrushType", BRUSH_CIRCLE);
   size = get_config_int("Tools", "BrushSize", 1);
   angle = get_config_int("Tools", "BrushAngle", 0);
-  brush_mode = get_config_int("Tools", "BrushMode", DRAWMODE_OPAQUE);
 
   brush_set_type(brush, MID(BRUSH_CIRCLE, type, BRUSH_LINE));
   brush_set_size(brush, MID(1, size, 32));
@@ -118,7 +173,6 @@ int init_module_tools(void)
   spray_width = MID(1, spray_width, 320);
   air_speed   = MID(1, air_speed, 100);
 
-  refresh_tools_names();
   app_add_hook(APP_PALETTE_CHANGE, update_cursor_color, NULL);
 
   return 0;
@@ -126,6 +180,8 @@ int init_module_tools(void)
 
 void exit_module_tools(void)
 {
+  int c;
+
   set_config_color("Tools", "CursorColor", cursor_color);
   set_config_int("Tools", "GlassDirty", glass_dirty);
   set_config_int("Tools", "SprayWidth", spray_width);
@@ -140,18 +196,70 @@ void exit_module_tools(void)
   set_config_int("Tools", "BrushType", brush->type);
   set_config_int("Tools", "BrushSize", brush->size);
   set_config_int("Tools", "BrushAngle", brush->angle);
-  set_config_int("Tools", "BrushMode", brush_mode);
 
   jrect_free(grid);
   brush_free(brush);
+
+  for (c=0; c<MAX_TOOLS; c++) {
+    if (tools_list[c]->accel) {
+      jaccel_free(tools_list[c]->accel);
+      tools_list[c]->accel = NULL;
+    }
+  }
 }
 
-void refresh_tools_names(void)
+void tool_add_key(Tool *tool, const char *string)
+{
+  char buf[256];
+
+  if (!tool->accel)
+    tool->accel = jaccel_new();
+
+  usprintf(buf, "<%s>", string);
+  jaccel_add_keys_from_string(tool->accel, buf);
+}
+
+bool tool_is_key_pressed(Tool *tool, JMessage msg)
+{
+  if (tool->accel) {
+    return jaccel_check(tool->accel,
+			msg->any.shifts,
+			msg->key.ascii,
+			msg->key.scancode);
+  }
+  return FALSE;
+}
+
+Tool *get_tool_by_name(const char *name)
 {
   int c;
 
-  for (c=0; ase_tools_list[c]; c++)
-    ase_tools_list[c]->translated_name = _(ase_tools_list[c]->name);
+  for (c=0; c<MAX_TOOLS; c++)
+    if (ustrcmp(tools_list[c]->key, name) == 0)
+      return tools_list[c];
+
+  return NULL;
+}
+
+Tool *get_tool_by_key(JMessage msg)
+{
+  Tool *group[MAX_TOOLS];
+  int i, j;
+
+  for (i=j=0; i<MAX_TOOLS; i++) {
+    if (tool_is_key_pressed(tools_list[i], msg))
+      group[j++] = tools_list[i];
+  }
+
+  if (j == 0)
+    return NULL;
+
+  for (i=0; i<j; i++)
+    if (group[i] == current_tool)
+      if (i+1 < j)
+	return group[i+1];
+
+  return group[0];
 }
 
 void select_tool(Tool *tool)
@@ -164,33 +272,17 @@ void select_tool(Tool *tool)
   if (app_get_statusbar() &&
       jwidget_is_visible(app_get_statusbar()))
     statusbar_set_text(app_get_statusbar(), 500, "%s: %s",
-			_("Tool"), current_tool->translated_name);
+		       _("Tool"), _(current_tool->name));
 
   /* update tool-bar */
   if (app_get_toolbar())
     toolbar_update(app_get_toolbar());
 }
 
-void select_tool_by_name(const char *tool_name)
-{
-  int c;
-
-  for (c=0; ase_tools_list[c]; c++) {
-    if (ustricmp(ase_tools_list[c]->name, tool_name) == 0) {
-      if (current_tool == ase_tools_list[c])
-	return;
-
-      select_tool(ase_tools_list[c]);
-      break;
-    }
-  }
-}
-
 Brush *get_brush(void) { return brush; }
 int get_brush_type(void) { return brush->type; }
 int get_brush_size(void) { return brush->size; }
 int get_brush_angle(void) { return brush->angle; }
-int get_brush_mode(void) { return brush_mode; }
 int get_glass_dirty(void) { return glass_dirty; }
 int get_spray_width(void) { return spray_width; }
 int get_air_speed(void) { return air_speed; }
@@ -212,7 +304,6 @@ bool get_onionskin(void)
 void set_brush_type(int type) { brush_set_type(brush, type); }
 void set_brush_size(int size) { brush_set_size(brush, size); }
 void set_brush_angle(int angle) { brush_set_angle(brush, angle); }
-void set_brush_mode(int mode) { brush_mode = mode; }
 void set_glass_dirty(int new_glass_dirty) { glass_dirty = new_glass_dirty; }
 void set_spray_width(int new_spray_width) { spray_width = new_spray_width; }
 void set_air_speed(int new_air_speed) { air_speed = new_air_speed; }
@@ -258,8 +349,8 @@ void set_cursor_color(color_t color)
 int get_thickness_for_cursor(void)
 {
   /* 1 pixel of thickness */
-  if ((current_tool == &ase_tool_marker) ||
-      (current_tool == &ase_tool_floodfill))
+  if ((current_tool == tools_list[TOOL_MARKER]) ||
+      (current_tool == tools_list[TOOL_FLOODFILL]))
     return 1;
   /* the spray have a special thickness (for the spray-width) */
 /*   else if (current_tool == &ase_tool_spray) */
@@ -270,60 +361,199 @@ int get_thickness_for_cursor(void)
 }
 
 /***********************************************************/
+/* BRIDGE BETWEEN TOOLS -> INKS                            */
+/***********************************************************/
+
+static void do_ink_pixel(int x, int y, ToolData *data)
+{
+  /* tiled mode */
+  if (data->tiled) {
+    register int size;
+
+    size = data->dst_image->w;
+    if (x < 0)
+      x = size - (-(x+1) % size) - 1;
+    else
+      x = x % size;
+
+    size = data->dst_image->h;
+    if (y < 0)
+      y = size - (-(y+1) % size) - 1;
+    else
+      y = y % size;
+  }
+  /* clipped */
+  else {
+    if (y < 0 || y >= data->dst_image->h ||
+	x < 0 || x >= data->dst_image->w)
+      return;
+  }
+
+  data->ink_hline_proc(x, y, x, data);
+}
+
+static void do_ink_hline(int x1, int y, int x2, ToolData *data)
+{
+  /* tiled mode */
+  if (data->tiled) {
+    register int w, size;	/* width or height */
+    register int x;
+
+    if (x1 > x2)
+      return;
+
+    data->tiled = FALSE;
+
+    size = data->dst_image->h;	/* size = image height */
+    if (y < 0)
+      y = size - (-(y+1) % size) - 1;
+    else
+      y = y % size;
+
+    size = data->dst_image->w;	/* size = image width */
+    w = x2-x1+1;
+    if (w >= size)
+      data->ink_hline_proc(0, y, size-1, data);
+    else {
+      x = x1;
+      if (x < 0)
+	x = size - (-(x+1) % size) - 1;
+      else
+	x = x % size;
+
+      if (x+w-1 <= size-1)
+	data->ink_hline_proc(x, y, x+w-1, data);
+      else {
+	data->ink_hline_proc(x, y, size-1, data);
+	data->ink_hline_proc(0, y, w-(size-x)-1, data);
+      }
+    }
+
+    data->tiled = TRUE;
+  }
+  /* clipped */
+  else {
+    if (y < 0 || y >= data->dst_image->h)
+      return;
+
+    if (x1 < 0)
+      x1 = 0;
+
+    if (x2 >= data->dst_image->w)
+      x2 = data->dst_image->w-1;
+
+    if (x2-x1+1 < 1)
+      return;
+
+    data->ink_hline_proc(x1, y, x2, data);
+  }
+}
+
+static void do_ink_brush(int x, int y, ToolData *data)
+{
+  register struct BrushScanline *scanline = data->brush->scanline;
+  register int h = data->brush->size;
+  register int c = h/2;
+
+  x -= c;
+  y -= c;
+
+  for (c=0; c<h; c++) {
+    if (scanline->state)
+      do_ink_hline(x+scanline->x1, y+c, x+scanline->x2, data);
+    ++scanline;
+  }
+}
+
+/***********************************************************/
 /* MARKER                                                  */
 /***********************************************************/
 
-Tool ase_tool_marker =
+static Tool tool_marker =
 {
-  "Marker",
-  NULL,
+  "rectangular_marquee",
+  "Rectangular Marquee Tool",
+  "Rectangular Marquee Tool",
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX,
   NULL
-};
-
-/***********************************************************/
-/* DOTS                                                    */
-/***********************************************************/
-
-static void tool_dots_put(Dirty *dirty, int x1, int y1, int x2, int y2)
-{
-  dirty_putpixel_brush(dirty, brush, x2, y2);
-}
-
-Tool ase_tool_dots =
-{
-  "Dots",
-  NULL,
-  TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_POINT,
-  tool_dots_put
 };
 
 /***********************************************************/
 /* PENCIL                                                  */
 /***********************************************************/
 
-static void tool_pencil_put(Dirty *dirty, int x1, int y1, int x2, int y2)
+static void tool_pencil_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
-  dirty_line_brush(dirty, brush, x1, y1, x2, y2);
+  algo_line(x1, y1, x2, y2, data,
+	    (data->brush->size == 1) ?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
 }
 
-Tool ase_tool_pencil =
+static Tool tool_pencil =
 {
-  "Pencil",
+  "pencil",
+  "Pencil Tool",
+  "Pencil Tool",
+  TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   NULL,
-  TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
-  tool_pencil_put
+  tool_pencil_draw_trace,
+  NULL
 };
 
 /***********************************************************/
 /* BRUSH                                                   */
 /***********************************************************/
 
-Tool ase_tool_brush =
+static Tool tool_brush =
 {
-  "Brush",
+  "brush",
+  "Brush Tool",
+  "Brush Tool",
+  TOOL_FOURCHAIN | TOOL_UPDATE_LAST4,
   NULL,
-  TOOL_ACCUMULATE_DIRTY | TOOL_FOURCHAIN | TOOL_UPDATE_LAST4,
+  NULL
+};
+
+/***********************************************************/
+/* ERASER                                                  */
+/***********************************************************/
+
+static void tool_eraser_preprocess_data(ToolData *data)
+{
+  /* left button: glass ink */
+  if (data->left_button) {
+    data->color = app_get_color_to_clear_layer(data->layer);
+
+    data->ink_hline_proc =
+      inks_hline[INK_OPAQUE][MID(0, data->dst_image->imgtype, 2)];
+  }
+  /* right button: replace ink */
+  else {
+    data->ink_hline_proc =
+      inks_hline[INK_REPLACE][MID(0, data->dst_image->imgtype, 2)];
+  }
+}
+
+static void tool_eraser_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
+{
+  algo_line(x1, y1, x2, y2, data,
+	    (brush->size == 1)?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
+}
+
+static Tool tool_eraser =
+{
+  "eraser",
+  "Eraser Tool",
+  "Eraser Tool:\n"
+  "* Left-button: Erase with the background color in `Background' layer \n"
+  "               or transparent color in any other layer.\n"
+  "* Right-button: Replace foreground with background color.",
+  TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
+  tool_eraser_preprocess_data,
+  tool_eraser_draw_trace,
   NULL
 };
 
@@ -331,37 +561,30 @@ Tool ase_tool_brush =
 /* FLOODFILL                                               */
 /***********************************************************/
 
-static void tool_floodfill_hline(int x1, int y, int x2, Dirty *dirty)
+static void tool_floodfill_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
-  dirty_hline(dirty, x1, y, x2);
-}
-
-static void tool_floodfill_put(Dirty *dirty, int x1, int y1, int x2, int y2)
-{
-  if (image_getpixel(tool_image, x2, y2) != tool_color) {
-    int tiled = dirty->tiled;
-    dirty->tiled = FALSE;
-
-    algo_floodfill(tool_image, x2, y2, dirty,
-		   (AlgoHLine)tool_floodfill_hline);
-
-    dirty->tiled = tiled;
+  if (image_getpixel(data->dst_image, x2, y2) != data->color) {
+    algo_floodfill(data->dst_image, x2, y2, data,
+		   (AlgoHLine)do_ink_hline);
   }
 }
 
-Tool ase_tool_floodfill =
+static Tool tool_floodfill =
 {
-  "Floodfill",
+  "paint_bucket",
+  "Paint Bucket Tool",
+  "Paint Bucket Tool",
+  TOOL_OLD2LAST | TOOL_UPDATE_ALL,
   NULL,
-  TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_ALL,
-  tool_floodfill_put
+  tool_floodfill_draw_trace,
+  NULL
 };
 
 /***********************************************************/
 /* SPRAY                                                   */
 /***********************************************************/
 
-static void tool_spray_put(Dirty *dirty, int x1, int y1, int x2, int y2)
+static void tool_spray_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
   int c, x, y, times = (spray_width*spray_width/4) * air_speed / 100;
 
@@ -373,7 +596,7 @@ static void tool_spray_put(Dirty *dirty, int x1, int y1, int x2, int y2)
     radius = itofix(rand() * (spray_width*10) / RAND_MAX) / 10;
     x = fixtoi(fixmul(radius, fixcos(angle)));
     y = fixtoi(fixmul(radius, fixsin(angle)));
-    dirty_putpixel_brush(dirty, brush, x2+x, y2+y);
+    do_ink_brush(x2+x, y2+y, data);
   }
 #else
   fixed angle, radius;
@@ -383,41 +606,50 @@ static void tool_spray_put(Dirty *dirty, int x1, int y1, int x2, int y2)
     radius = rand() % itofix(spray_width);
     x = fixtoi(fixmul(radius, fixcos(angle)));
     y = fixtoi(fixmul(radius, fixsin(angle)));
-    dirty_putpixel_brush(dirty, brush, x2+x, y2+y);
+    do_ink_brush(x2+x, y2+y, data);
   }
 #endif
 }
 
-Tool ase_tool_spray =
+static Tool tool_spray =
 {
-  "Spray",
+  "spray",
+  "Spray Tool",
+  "Spray Tool",
+  TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_SPRAY,
   NULL,
-  TOOL_ACCUMULATE_DIRTY | TOOL_OLD2LAST | TOOL_UPDATE_SPRAY,
-  tool_spray_put
+  tool_spray_draw_trace,
+  NULL
 };
 
 /***********************************************************/
 /* LINE                                                    */
 /***********************************************************/
 
-static void tool_line_put(Dirty *dirty, int x1, int y1, int x2, int y2)
+static void tool_line_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
-  dirty_line_brush(dirty, brush, x1, y1, x2, y2);
+  algo_line(x1, y1, x2, y2, data,
+	    (brush->size == 1) ?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
 }
 
-Tool ase_tool_line =
+static Tool tool_line =
 {
-  "Line",
+  "line",
+  "Line Tool",
+  "Line Tool",
+  TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_EIGHT_ANGLES,
   NULL,
-  TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_EIGHT_ANGLES,
-  tool_line_put
+  tool_line_draw_trace,
+  NULL
 };
 
 /***********************************************************/
 /* RECTANGLE                                               */
 /***********************************************************/
 
-static void tool_rectangle_put (Dirty *dirty, int x1, int y1, int x2, int y2)
+static void tool_rectangle_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
   int c;
 
@@ -433,106 +665,113 @@ static void tool_rectangle_put (Dirty *dirty, int x1, int y1, int x2, int y2)
     y2 = c;
   }
 
-#if 1
-  dirty_hline_brush(dirty, brush, x1, y1, x2);
-  dirty_hline_brush(dirty, brush, x1, y2, x2);
-  for (c=y1; c<y2; c++) {
-    dirty_putpixel_brush(dirty, brush, x1, c);
-    dirty_putpixel_brush(dirty, brush, x2, c);
+  if (filled_mode) {
+    int bak_color;
+    bak_color = data->color;
+    data->color = data->other_color;
+
+    for (c=y1; c<=y2; c++)
+      do_ink_hline(x1, c, x2, data);
+
+    data->color = bak_color;
   }
 
-  if (filled_mode)
-    dirty_rectfill(dirty, x1, y1, x2, y2);
-#else  /* TODO rpoly */
-  if (x2 != x1 && y2 != y1) {
-    fixed angle, new_x, new_y, old_x, old_y, fst_x, fst_y;
-    fixed start = itofix(-64);
-    fixed step = fixdiv(itofix(256), itofix(5));
-    fixed end = fixadd(itofix(256), start);
-    int fst = TRUE;
-
-    for (angle=start; angle<end; angle=fixadd (angle, step)) {
-      new_x = fixadd(itofix((x1+x2)/2), fixmul(fixcos(angle), itofix((x2-x1-1)/2)));
-      new_y = fixadd(itofix((y1+y2)/2), fixmul(fixsin(angle), itofix((y2-y1-1)/2)));
-
-      if (fst) {
-	fst = FALSE;
-	fst_x = new_x;
-	fst_y = new_y;
-      }
-      else {
-	dirty_line_brush(dirty, brush,
-			 fixtoi(old_x), fixtoi(old_y),
-			 fixtoi(new_x), fixtoi(new_y));
-      }
-
-      old_x = new_x;
-      old_y = new_y;
-    }
-
-    dirty_line_brush(dirty, brush,
-		     fixtoi(old_x), fixtoi(old_y),
-		     fixtoi(fst_x), fixtoi(fst_y));
+  for (c=x1; c<=x2; c++) do_ink_brush(c, y1, data);
+  for (c=x1; c<=x2; c++) do_ink_brush(c, y2, data);
+  for (c=y1; c<=y2; c++) {
+    do_ink_brush(x1, c, data);
+    do_ink_brush(x2, c, data);
   }
-  else {
-    dirty_line_brush(dirty, brush, x1, y1, x2, y2);
-  }
-#endif
 }
 
-Tool ase_tool_rectangle =
+static Tool tool_rectangle =
 {
-  "Rectangle",
+  "rectangle",
+  "Rectangle Tool",
+  "Rectangle Tool",
+  TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   NULL,
-  TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
-  tool_rectangle_put
+  tool_rectangle_draw_trace,
+  NULL
 };
 
 /***********************************************************/
 /* ELLIPSE                                                 */
 /***********************************************************/
 
-static void tool_ellipse_pixel(int x, int y, Dirty *dirty)
+static void tool_ellipse_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
-  dirty_putpixel_brush(dirty, brush, x, y);
+  if (filled_mode) {
+    int bak_color;
+    bak_color = data->color;
+    data->color = data->other_color;
+
+    algo_ellipsefill(x1, y1, x2, y2, data,
+		     (AlgoHLine)do_ink_hline);
+
+    data->color = bak_color;
+  }
+
+  algo_ellipse(x1, y1, x2, y2, data,
+	       (AlgoPixel)do_ink_brush);
 }
 
-static void tool_ellipse_hline(int x1, int y, int x2, Dirty *dirty)
+static Tool tool_ellipse =
 {
-  dirty_hline(dirty, x1, y, x2);
-}
-
-static void tool_ellipse_put(Dirty *dirty, int x1, int y1, int x2, int y2)
-{
-  algo_ellipse(x1, y1, x2, y2, dirty, (AlgoPixel)tool_ellipse_pixel);
-
-  if (filled_mode)
-    algo_ellipsefill(x1, y1, x2, y2, dirty, (AlgoHLine)tool_ellipse_hline);
-}
-
-Tool ase_tool_ellipse =
-{
-  "Ellipse",
+  "ellipse",
+  "Ellipse Tool",
+  "Ellipse Tool",
+  TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   NULL,
-  TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
-  tool_ellipse_put
+  tool_ellipse_draw_trace,
+  NULL
+};
+
+/***********************************************************/
+/* BLUR                                                    */
+/***********************************************************/
+
+static void tool_blur_preprocess_data(ToolData *data)
+{
+  data->ink_hline_proc =
+    inks_hline[INK_SOFTEN][MID(0, data->dst_image->imgtype, 2)];
+}
+
+static void tool_blur_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
+{
+  algo_line(x1, y1, x2, y2, data,
+	    (data->brush->size == 1) ?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
+}
+
+static Tool tool_blur =
+{
+  "blur",
+  "Blur",
+  "Blur",
+  TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
+  tool_blur_preprocess_data,
+  tool_blur_draw_trace,
+  NULL
 };
 
 /***********************************************************/
 /* TOOL'S LIST                                             */
 /***********************************************************/
 
-Tool *ase_tools_list[] =
+Tool *tools_list[] =
 {
-  &ase_tool_marker,
-  &ase_tool_dots,
-  &ase_tool_pencil,
-  &ase_tool_brush,
-  &ase_tool_floodfill,
-  &ase_tool_spray,
-  &ase_tool_line,
-  &ase_tool_rectangle,
-  &ase_tool_ellipse,
+  &tool_marker,
+  &tool_pencil,
+  &tool_brush,
+  &tool_eraser,
+  &tool_floodfill,
+  &tool_spray,
+  &tool_line,
+  &tool_rectangle,
+  &tool_ellipse,
+  &tool_blur,
   NULL
 };
 
@@ -540,28 +779,9 @@ Tool *ase_tools_list[] =
 /* TOOL CONTROL                                            */
 /***********************************************************/
 
-static void fourchain_line(int x1, int y1, int x2, int y2, void *data);
-
-static void my_image_hline4_opaque(int x1, int y, int x2, void *data);
-static void my_image_hline2_opaque(int x1, int y, int x2, void *data);
-static void my_image_hline1_opaque(int x1, int y, int x2, void *data);
-
-static void my_image_hline4_glass(int x1, int y, int x2, void *data);
-static void my_image_hline2_glass(int x1, int y, int x2, void *data);
-static void my_image_hline1_glass(int x1, int y, int x2, void *data);
-
-static void my_image_hline4_semi(int x1, int y, int x2, void *data);
-static void my_image_hline2_semi(int x1, int y, int x2, void *data);
-static void my_image_hline1_semi(int x1, int y, int x2, void *data);
-
-static AlgoHLine drawmode_procs[][3] =
-{
-  { my_image_hline4_opaque, my_image_hline4_glass, my_image_hline4_semi },
-  { my_image_hline2_opaque, my_image_hline2_glass, my_image_hline2_semi },
-  { my_image_hline1_opaque, my_image_hline1_glass, my_image_hline1_semi }
-};
-
 static void *rect_data = NULL;
+
+static void fourchain_line(int x1, int y1, int x2, int y2, ToolData *data);
 
 static void marker_scroll_callback(int before_change)
 {
@@ -573,30 +793,33 @@ static void marker_scroll_callback(int before_change)
 }
 
 /* controls any tool to draw in the current sprite */
-void control_tool(JWidget widget, Tool *tool, color_t _color)
+void control_tool(JWidget widget, Tool *tool,
+		  color_t _color,
+		  color_t _other_color,
+		  bool left_button)
 {
   Editor *editor = editor_data(widget);
+  Sprite *sprite = editor->sprite;
   JWidget statusbar = app_get_statusbar();
-  Dirty *dirty = NULL;
   int x1, y1, x2, y2;
   int old_x1, old_y1, old_x2, old_y2;
   int outx1, outy1, outx2, outy2;
   int mouse_x[4];
   int mouse_y[4];
   int c, pts[8];
-  Image *image;
-  int start_x, new_x, offset_x;
-  int start_y, new_y, offset_y;
+  int start_x, new_x, offset_x, old_cel_x;
+  int start_y, new_y, offset_y, old_cel_y;
   int start_b;
-  int color;
   int old_key_shifts, update, forced_update, first_time;
   int spray_time;
-  AlgoHLine hline_proc;
   const char *_pos = _("Pos");
   const char *_start = _("Start");
   const char *_end = _("End");
   const char *_size = _("Size");
   bool click2 = get_config_bool("Options", "DrawClick2", FALSE);
+  Image *cel_image;
+  Cel *cel;
+  ToolData tool_data;
 
   /* First of all we have to dispatch the enqueue messages. Why is it
      needed?  To dispatch the JM_CLOSE and redrawing messages if a
@@ -608,51 +831,90 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
   jmanager_dispatch_messages(jwidget_get_manager(widget));
   jwidget_flush_redraw(jwidget_get_manager(widget));
 
-  /* get image information */
-  image = GetImage2(editor->sprite, &offset_x, &offset_y, NULL);
+  /* get cel and image where we can draw */
+  cel_image = NULL;
+
+  if (sprite != NULL &&
+      sprite->layer != NULL &&
+      layer_is_image(sprite->layer)) {
+    cel = layer_get_cel(sprite->layer,
+			sprite->frame);
+    if (cel != NULL) {
+      if ((cel->image >= 0) &&
+	  (cel->image < sprite->stock->nimage)) {
+	cel_image = sprite->stock->image[cel->image];
+      }
+
+      old_cel_x = cel->x;
+      old_cel_y = cel->y;
+    }
+  }
 
   /* we have a image layer to paint in? */
-  if (!image)
+  if (!cel_image) {
+    jalert(_(PACKAGE
+	     "<<The current layer doesn't have a surface to draw."
+	     "||&Close"));
     return;
+  }
   /* error, the active layer is not visible */
-  else if (!editor->sprite->layer->readable) {
-    jalert(_("Warning"
-	     "<<The active layer is hidden,"
+  else if (!layer_is_readable(sprite->layer)) {
+    jalert(_(PACKAGE
+	     "<<The current layer is hidden,"
 	     "<<make it visible and try again"
 	     "||&Close"));
     return;
   }
   /* error, the active layer is locked */
-  else if (!editor->sprite->layer->writable) {
-    jalert(_("Warning"
-	     "<<The active layer is locked,"
+  else if (!layer_is_writable(sprite->layer)) {
+    jalert(_(PACKAGE
+	     "<<The current layer is locked,"
 	     "<<unlock it and try again"
 	     "||&Close"));
     return;
   }
 
-  /* select the hline procedure */
-  hline_proc = drawmode_procs[MID(0, image->imgtype, 2)]
-			     [MID(0, brush_mode, 2)];
+  /* prepare the ToolData... */
+  x1 = MIN(cel->x, 0);
+  y1 = MIN(cel->y, 0);
+  x2 = MAX(cel->x+cel_image->w, sprite->w);
+  y2 = MAX(cel->y+cel_image->h, sprite->h);
+  
+  tool_data.layer = sprite->layer;
+  tool_data.src_image = image_crop(cel_image,
+				   x1-cel->x,
+				   y1-cel->y, x2-x1, y2-y1);
+  tool_data.dst_image = image_new_copy(tool_data.src_image);
+  tool_data.mask = (sprite->mask &&
+		    sprite->mask->bitmap)? sprite->mask: NULL;
+  tool_data.mask_x = tool_data.mask ? tool_data.mask->x-x1: 0;
+  tool_data.mask_y = tool_data.mask ? tool_data.mask->y-y1: 0;
 
-  /* alignment offset */
-  offset_x = -offset_x;
-  offset_y = -offset_y;
+  tool_data.brush = brush;
+  tool_data.color = get_color_for_image(cel_image->imgtype, _color);
+  tool_data.other_color = get_color_for_image(cel_image->imgtype, _other_color);
+  tool_data.left_button = left_button;
+  tool_data.opacity = glass_dirty;
+  tool_data.tiled = tiled_mode;
 
-  /* get the color to use for the image */
-  color = get_color_for_image(image->imgtype, _color);
+  tool_data.ink_hline_proc =
+    tool_data.opacity == 255 ? inks_hline[INK_OPAQUE][MID(0, cel_image->imgtype, 2)]:
+			       inks_hline[INK_GLASS][MID(0, cel_image->imgtype, 2)];
 
-  /* global stuff needs */
-  tool_image = image;
-  tool_color = color;
+  if (tool->preprocess_data)
+    tool->preprocess_data(&tool_data);
 
-  /* accumulative dirty */
-  if (tool->flags & TOOL_ACCUMULATE_DIRTY) {
-    dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, tiled_mode);
-    dirty->mask = (editor->sprite->mask &&
-		   editor->sprite->mask->bitmap)? editor->sprite->mask: NULL;
-  }
+  /* the 'tool_image' should be used to draw the `sprite->layer' in
+     the `render_sprite' routine */
+  set_preview_image(sprite->layer, tool_data.dst_image);
 
+  /* we have to modify the cel position because it's used in the
+     `render_sprite' routine to draw the `dst_image' */
+  cel->x = x1;
+  cel->y = y1;
+  offset_x = -x1;
+  offset_y = -y1;
+  
   update = FALSE;
   forced_update = TRUE;
   first_time = TRUE;
@@ -673,7 +935,9 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 
   do {
     if ((update) || (forced_update)) {
-      int real_update = (current_tool != &ase_tool_spray) || (forced_update);
+      int real_update =
+	(current_tool != tools_list[TOOL_SPRAY]) ||
+	(forced_update);
 
       if (!first_time) {
 	for (c=3; c>0; c--) {
@@ -744,7 +1008,7 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 	y2 = mouse_y[0];
 
 	/* grid */
-        if (use_grid && (tool != &ase_tool_floodfill)) {
+        if (use_grid && (tool != tools_list[TOOL_FLOODFILL])) {
 	  apply_grid(&x1, &y1, TRUE);
 	  apply_grid(&x2, &y2, TRUE);
         }
@@ -776,41 +1040,37 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
       }
 
       if (real_update) {
-	/* no accumulative dirty */
-	if (!(tool->flags & TOOL_ACCUMULATE_DIRTY)) {
-	  if (dirty) {
-	    dirty_put(dirty);
-	    dirty_free(dirty);
-	  }
-
-	  dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, tiled_mode);
-	  dirty->mask = (editor->sprite->mask &&
-			 editor->sprite->mask->bitmap)? editor->sprite->mask: NULL;
+	if (tool->flags & TOOL_COPY_SRC2DST) {
+	  image_clear(tool_data.dst_image, 0);
+	  image_copy(tool_data.dst_image, tool_data.src_image, 0, 0);
+	}
+	else if (tool->flags & TOOL_COPY_DST2SRC) {
+	  image_copy(tool_data.src_image, tool_data.dst_image, 0, 0);
 	}
 
 	/* displace region */
-	if (dirty->mask)
-	  mask_move(dirty->mask, offset_x, offset_y);
+/* 	if (dirty->mask) */
+/* 	  mask_move(dirty->mask, offset_x, offset_y); */
 
 	/* create the area which the trace will dirty */
-	if (tool == &ase_tool_brush) {
+	if (tool == tools_list[TOOL_BRUSH]) {
 	  algo_spline(pts[0], pts[1], pts[2], pts[3],
 		      pts[4], pts[5], pts[6], pts[7],
-		      dirty, fourchain_line);
+		      &tool_data, (AlgoLine)fourchain_line);
 	}
-	else if (tool->put) {
-	  tool->put(dirty, x1, y1, x2, y2);
+	else if (tool->draw_trace) {
+	  tool->draw_trace(x1, y1, x2, y2, &tool_data);
 	}
 
 	/* displace region */
-	if (dirty->mask)
-	  mask_move(dirty->mask, -offset_x, -offset_y);
+/* 	if (dirty->mask) */
+/* 	  mask_move(dirty->mask, -offset_x, -offset_y); */
 
 	/* get the background which the trace will overlap */
-	dirty_get(dirty);
+/* 	dirty_save_image_data(dirty); */
 
 	/* draw the trace */
-	algo_dirty(dirty, NULL, hline_proc);
+/* 	algo_dirty(dirty, NULL, hline_proc); */
       }
 
       /* prepare */
@@ -827,17 +1087,17 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 /* 	  node->px = node->x = node->nx = x1; */
 /* 	  node->py = node->y = node->ny = y1; */
 
-/* 	  if (!editor->sprite->path) { */
+/* 	  if (!sprite->path) { */
 /* 	    Path *path = path_new("*working*"); */
-/* 	    sprite_set_path(editor->sprite, path); */
+/* 	    sprite_set_path(sprite, path); */
 /* 	  } */
 /* 	  else { */
-/* 	    PathNode *last = jlist_last(editor->sprite->path->nodes)->data; */
+/* 	    PathNode *last = jlist_last(sprite->path->nodes)->data; */
 /* 	    last->n = node; */
 /* 	    node->p = last; */
 /* 	  } */
 
-/* 	  path_append_node(editor->sprite->path, node); */
+/* 	  path_append_node(sprite->path, node); */
 /* 	} */
 /* 	else { */
 /* 	  node->mode = PATH_NODE_SMOOTH_CURVE; */
@@ -849,7 +1109,7 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 /*       } */
       if (real_update) {
 	/* for Marker */
-	if (tool == &ase_tool_marker) {
+	if (tool == tools_list[TOOL_MARKER]) {
 	  /* draw the rectangle mark */
 	  JRegion region;
 	  int nrects;
@@ -900,8 +1160,8 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 	  if (tool->flags & TOOL_UPDATE_ALL) {
 	    outx1 = offset_x;
 	    outy1 = offset_y;
-	    outx2 = outx1 + editor->sprite->w-1;
-	    outy2 = outy1 + editor->sprite->h-1;
+	    outx2 = outx1 + sprite->w-1;
+	    outy2 = outy1 + sprite->h-1;
 	  }
 	  else if (tool->flags & TOOL_UPDATE_POINT) {
 	    outx1 = outx2 = x2;
@@ -950,10 +1210,10 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 	  if (!tiled_mode) {
 	    outx1 = MAX(outx1-brush->size/2-offset_x, 0);
 	    outy1 = MAX(outy1-brush->size/2-offset_y, 0);
-	    outx2 = MIN(outx2+brush->size/2-offset_x, editor->sprite->w-1);
-	    outy2 = MIN(outy2+brush->size/2-offset_y, editor->sprite->h-1);
+	    outx2 = MIN(outx2+brush->size/2-offset_x, sprite->w-1);
+	    outy2 = MIN(outy2+brush->size/2-offset_y, sprite->h-1);
  
-	    editors_draw_sprite(editor->sprite, outx1, outy1, outx2, outy2);
+	    editors_draw_sprite(sprite, outx1, outy1, outx2, outy2);
 	  }
 	  /* for tiled mode */
 	  else {
@@ -967,14 +1227,14 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 	      int x1, y1, x2, y2;
 	      editor_to_screen(widget, 0, 0, &x1, &y1);
 	      editor_to_screen(widget,
-			       editor->sprite->w,
-			       editor->sprite->h, &x2, &y2);
+			       sprite->w,
+			       sprite->h, &x2, &y2);
 	      rectfill(ji_screen, x1, y1, x2-1, y2-1, makecol(255, 0, 0));
 	      vsync();
 	    }
 #endif
 
-	    editors_draw_sprite_tiled(editor->sprite, outx1, outy1, outx2, outy2);
+	    editors_draw_sprite_tiled(sprite, outx1, outy1, outx2, outy2);
 	  }
 	}
       }
@@ -987,16 +1247,16 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
 	if (tool->flags & TOOL_UPDATE_BOX) {
 	  char mode[256] = "";
 
-	  if (current_tool == &ase_tool_marker) {
-	    if (key_shifts & KB_ALT_FLAG) {
-	      if (start_b & 1)
+	  if (current_tool == tools_list[TOOL_MARKER]) {
+	    if (start_b & 1) {
+	      if (key_shifts & KB_ALT_FLAG)
 		strcat(mode, _("Replace"));
 	      else
-		strcat(mode, _("Intersect"));
+		strcat(mode, _("Union"));
 	    }
 	    else {
-	      if (start_b & 1)
-		strcat(mode, _("Union"));
+	      if (key_shifts & KB_ALT_FLAG)
+		strcat(mode, _("Intersect"));
 	      else
 		strcat(mode, _("Subtract"));
 	    }
@@ -1021,7 +1281,6 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
       first_time = FALSE;
 
       /* draw extra stuff */
-      editor_draw_layer_boundary_safe(widget);
       editor_draw_grid_safe(widget);
       /* editor_draw_path_safe(widget, FALSE); */
     }
@@ -1030,7 +1289,7 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
     editor_draw_mask_safe(widget);
 
     /* spray updating process */
-    if (current_tool == &ase_tool_spray) {
+    if (current_tool == tools_list[TOOL_SPRAY]) {
       if (ji_clock-spray_time > (1000/20)*(100-air_speed)/100) {
 	spray_time = ji_clock;
 	forced_update = TRUE;
@@ -1055,57 +1314,98 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
   if (!editor_click_cancel(widget)) {
 
     /* marker *******************************************************/
-    if (tool == &ase_tool_marker) {
+    if (tool == tools_list[TOOL_MARKER]) {
       void (*func)(Mask *, int, int, int, int);
 
-      if (key_shifts & KB_ALT_FLAG) {
-	if (start_b & 1)
-	  func = mask_replace;
-	else
-	  func = mask_intersect;
-      }
-      else {
-	if (start_b & 1)
-	  func = mask_union;
-	else
-	  func = mask_subtract;
-      }
+      if (start_b & 1)
+	func = (key_shifts & KB_ALT_FLAG) ? mask_replace: mask_union;
+      else
+	func = (key_shifts & KB_ALT_FLAG) ? mask_intersect: mask_subtract;
 
       /* insert the undo operation */
-      if (undo_is_enabled (editor->sprite->undo))
-	undo_set_mask(editor->sprite->undo, editor->sprite);
+      if (undo_is_enabled (sprite->undo))
+	undo_set_mask(sprite->undo, sprite);
 
-      (*func)(editor->sprite->mask,
+      (*func)(sprite->mask,
 	      MIN(x1, x2) - offset_x,
 	      MIN(y1, y2) - offset_y,
 	      MAX(x1, x2) - MIN(x1, x2) + 1,
 	      MAX(y1, y2) - MIN(y1, y2) + 1);
 
-      sprite_generate_mask_boundaries(editor->sprite);
-      update_screen_for_sprite(editor->sprite);
+      sprite_generate_mask_boundaries(sprite);
+      update_screen_for_sprite(sprite);
     }
 
     /* draw trace ***************************************************/
     else {
-      /* insert the undo operation */
-      if (undo_is_enabled(editor->sprite->undo))
-	undo_dirty(editor->sprite->undo, dirty);
+      /* if the size of each image is the same, we can create an undo
+	 with only the differences between both images */
+      if (cel->x == old_cel_x &&
+	  cel->y == old_cel_y &&
+	  cel_image->w == tool_data.dst_image->w &&
+	  cel_image->h == tool_data.dst_image->h) {
+	/* undo the dirty region */
+	if (undo_is_enabled(sprite->undo)) {
+	  Dirty *dirty = dirty_new_from_differences(cel_image,
+						    tool_data.dst_image);
+	  /* TODO error handling: if (dirty == NULL) */
 
-      update_screen_for_sprite(editor->sprite);
+	  dirty_save_image_data(dirty);
+	  if (dirty != NULL)
+	    undo_dirty(sprite->undo, dirty);
+
+	  dirty_free(dirty);
+	}
+
+	/* copy the 'dst_image' to the cel_image */
+	image_copy(cel_image, tool_data.dst_image, 0, 0);
+      }
+      /* if the size of both images are different, we have to replace
+	 the entire image */
+      else {
+	undo_open(sprite->undo);
+	if (cel->x != old_cel_x) {
+	  x1 = cel->x;
+	  cel->x = old_cel_x;
+	  undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
+	  cel->x = x1;
+	}
+	if (cel->y != old_cel_y) {
+	  y1 = cel->y;
+	  cel->y = old_cel_y;
+	  undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
+	  cel->y = y1;
+	}
+	undo_replace_image(sprite->undo, sprite->stock, cel->image);
+	undo_close(sprite->undo);
+
+	/* replace the image in the stock */
+	stock_replace_image(sprite->stock, cel->image, tool_data.dst_image);
+
+	/* destroy the old cel image */
+	image_free(cel_image);
+
+	/* now the `dst_image' is used, so we haven't to destroy it */
+	tool_data.dst_image = NULL;
+      }
     }
   }
   else {
-    /* restore the image's background */
-    dirty_put(dirty);
-
-    /* redraw */
-    update_screen_for_sprite(editor->sprite);
+    cel->x = old_cel_x;
+    cel->y = old_cel_y;
   }
+
+  /* redraw all the sprites */
+  update_screen_for_sprite(sprite);
 
   editor_click_done(widget);
 
-  /* destroy dirty structure */
-  dirty_free(dirty);
+  /* no more preview image */
+  set_preview_image(NULL, NULL);
+
+  /* destroy temporary images */
+  if (tool_data.src_image) image_free(tool_data.src_image);
+  if (tool_data.dst_image) image_free(tool_data.dst_image);
 
   /* destroy rect-data used by the marker tool */
   if (rect_data) {
@@ -1115,6 +1415,7 @@ void control_tool(JWidget widget, Tool *tool, color_t _color)
   }
 }
 
+#if 0
 /* draws the "tool" traces with the given points */
 void do_tool_points(Sprite *sprite, Tool *tool, color_t _color,
 		    int npoints, int *x, int *y)
@@ -1135,7 +1436,9 @@ void do_tool_points(Sprite *sprite, Tool *tool, color_t _color,
   /* we have a image layer to paint in? */
   /* error, the active layer is not visible */
   /* error, the active layer is locked */
-  if (!image || !sprite->layer->readable || !sprite->layer->writable)
+  if (!image ||
+      !layer_is_readable(sprite->layer) ||
+      !layer_is_writable(sprite->layer))
     return;
 
   /* select the hline procedure */
@@ -1203,7 +1506,7 @@ void do_tool_points(Sprite *sprite, Tool *tool, color_t _color,
 /*       mask_move(dirty->mask, -offset_x, -offset_y); */
 
     /* get the background which the trace will overlap */
-    dirty_get(dirty);
+    dirty_save_image_data(dirty);
 
     /* draw the trace */
     algo_dirty(dirty, NULL, hline_proc);
@@ -1223,6 +1526,7 @@ void do_tool_points(Sprite *sprite, Tool *tool, color_t _color,
   /* destroy dirty structure */
   dirty_free(dirty);
 }
+#endif
 
 void apply_grid(int *x, int *y, bool flexible)
 {
@@ -1242,141 +1546,326 @@ void apply_grid(int *x, int *y, bool flexible)
   *y = dy.rem + d.quot*h + ((d.rem > h/2)? h-flexible: 0);
 }
 
-static void fourchain_line(int x1, int y1, int x2, int y2, void *data)
+static void fourchain_line(int x1, int y1, int x2, int y2, ToolData *data)
 {
-  if (brush->size == 1)
-    dirty_line(data, x1, y1, x2, y2);
-  else
-    dirty_line_brush(data, brush, x1, y1, x2, y2);
+  algo_line(x1, y1, x2, y2, data,
+	    (brush->size == 1) ?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
 }
 
 /**********************************************************************/
-/* Opaque draw mode						      */
+/* Ink Processing   						      */
 /**********************************************************************/
 
-static void my_image_hline4_opaque(int x1, int y, int x2, void *data)
-{
-  register ase_uint32 *address = ((ase_uint32 **)tool_image->line)[y]+x1;
-  register int x = x2 - x1 + 1;
-  int c = tool_color;
+#define DEFINE_INK_PROCESSING(addresses_define,				\
+			      addresses_initialize,			\
+			      addresses_increment,			\
+			      more_variables,				\
+			      processing)				\
+  addresses_define;							\
+  register int x;							\
+  more_variables;							\
+									\
+  /* with mask */							\
+  if (data->mask != NULL) {						\
+    int (*getpixel)(const Image *, int, int) =				\
+      data->mask->bitmap->method->getpixel;				\
+									\
+    if ((y < data->mask_y) || (y >= data->mask_y+data->mask->h))	\
+      return;								\
+									\
+    if (x1 < data->mask_x)						\
+      x1 = data->mask_x;						\
+									\
+    if (x2 > data->mask_x+data->mask->w-1)				\
+      x2 = data->mask_x+data->mask->w-1;				\
+									\
+    if (data->mask->bitmap != NULL) {					\
+      addresses_initialize;						\
+      for (x=x1; x<=x2; x++) {						\
+	if (getpixel(data->mask->bitmap,				\
+		     x-data->mask_x,					\
+		     y-data->mask_y))					\
+	  processing;							\
+									\
+	addresses_increment;						\
+      }									\
+      return;								\
+    }									\
+  }									\
+									\
+  addresses_initialize;							\
+  for (x=x1; x<=x2; x++) {						\
+    processing;								\
+    addresses_increment;						\
+  }
 
-  while (x--)
-    *(address++) = c;
+#define DEFINE_INK_PROCESSING_DST(type, more_variables, processing)		  \
+  DEFINE_INK_PROCESSING(register type *dst_address;				, \
+			dst_address = ((type **)data->dst_image->line)[y]+x1;	, \
+			dst_address++						, \
+			more_variables						, \
+			processing)
+
+#define DEFINE_INK_PROCESSING_SRCDST(type, more_variables, processing)		  \
+  DEFINE_INK_PROCESSING(register type *src_address;				  \
+			register type *dst_address;				, \
+			src_address = ((type **)data->src_image->line)[y]+x1;	  \
+			dst_address = ((type **)data->dst_image->line)[y]+x1;	, \
+			src_address++;						  \
+			dst_address++;						, \
+			more_variables						, \
+			processing)
+
+/**********************************************************************/
+/* Opaque Ink   						      */
+/**********************************************************************/
+
+static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data)
+{
+  DEFINE_INK_PROCESSING_DST
+    (ase_uint32
+     ,
+     int c = data->color
+     ,
+     *dst_address = c			);
 }
 
-static void my_image_hline2_opaque(int x1, int y, int x2, void *data)
+static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
-  register int x = x2 - x1 + 1;
-  int c = tool_color;
-
-  while (x--)
-    *(address++) = c;
+  DEFINE_INK_PROCESSING_DST
+    (ase_uint16
+     ,
+     int c = data->color
+     ,
+     *dst_address = c			);
 }
 
-static void my_image_hline1_opaque(int x1, int y, int x2, void *data)
+static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data)
 {
-  memset(((ase_uint8 **)tool_image->line)[y]+x1, tool_color, x2-x1+1);
+  DEFINE_INK_PROCESSING_DST
+    (ase_uint8
+     ,
+     int c = data->color
+     ,
+     *dst_address = c			);
+
+  /* memset(((ase_uint8 **)data->dst_image->line)[y]+x1, data->color, x2-x1+1); */
 }
 
 /**********************************************************************/
-/* Glass draw mode						      */
+/* Glass Ink     						      */
 /**********************************************************************/
 
-static void my_image_hline4_glass(int x1, int y, int x2, void *data)
+static void ink_hline4_glass(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint32 *address = ((ase_uint32 **)tool_image->line)[y]+x1;
-  register int x = x2 - x1 + 1;
-  int c = _rgba(_rgba_getr(tool_color),
-		_rgba_getg(tool_color),
-		_rgba_getb(tool_color), glass_dirty);
-  int o = _rgba_geta(tool_color);
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint32
+     ,
+     int color = data->color;
+     int opacity = data->opacity;
+     ,
+     *dst_address = _rgba_blend_normal(*src_address, color, opacity));
+}  
 
-  while (x--) {
-    *address = _rgba_blend_normal(*address, c, o);
-    address++;
-  }
-}
-
-static void my_image_hline2_glass(int x1, int y, int x2, void *data)
+static void ink_hline2_glass(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
-  register int x = x2 - x1 + 1;
-  int c = _graya(_graya_getv(tool_color), glass_dirty);
-  int o = _graya_geta(tool_color);
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint16
+     ,
+     int color = data->color;
+     int opacity = data->opacity;
+     ,
+     *dst_address = _graya_blend_normal(*src_address, color, opacity));
+}  
 
-  while (x--) {
-    *address = _graya_blend_normal(*address, c, o);
-    address++;
-  }
-}
-
-static void my_image_hline1_glass(int x1, int y, int x2, void *data)
+static void ink_hline1_glass(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint8 *address = ((ase_uint8 **)tool_image->line)[y]+x1;
-  register int x = x2 - x1 + 1;
-  Palette *pal = get_current_palette();
-  ase_uint32 c, tc;
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint8
+     ,
+     Palette *pal = get_current_palette();
+     ase_uint32 c;
+     ase_uint32 tc = pal->color[data->color];
+     int opacity = data->opacity;
+     ,
+     {
+       c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
+       *dst_address = orig_rgb_map->data
+	 [_rgba_getr(c)>>3]
+	 [_rgba_getg(c)>>3]
+	 [_rgba_getb(c)>>3];
+     });
+}  
 
-  tc = pal->color[tool_color];
-/*   tc = _rgba(_rgb_scale_6[_current_palette[_index_cmap[tool_color]].r], */
-/* 	     _rgb_scale_6[_current_palette[_index_cmap[tool_color]].g], */
-/* 	     _rgb_scale_6[_current_palette[_index_cmap[tool_color]].b], 255); */
+/**********************************************************************/
+/* Soften Ink     						      */
+/**********************************************************************/
 
-  while (x--) {
-/*     c = _rgba_blend_normal(_rgba(_rgb_scale_6[_current_palette[*address].r], */
-/* 				 _rgb_scale_6[_current_palette[*address].g], */
-/* 				 _rgb_scale_6[_current_palette[*address].b], 255), */
-/* 			   tc, glass_dirty); */
-    c = _rgba_blend_normal(pal->color[*address], tc, glass_dirty);
+static void ink_hline4_soften(int x1, int y, int x2, ToolData *data)
+{
+  DEFINE_INK_PROCESSING_DST
+    (ase_uint32
+     ,
+     int c[9];
+     int *p;
+     int i;
+     int r;
+     int g;
+     int b;
+     int a;
+     int opacity = data->opacity;
+     ,
+     {
+       c[0] = image_getpixel(data->src_image, x-1, y-1);
+       c[1] = image_getpixel(data->src_image, x,   y-1);
+       c[2] = image_getpixel(data->src_image, x+1, y-1);
+       c[3] = image_getpixel(data->src_image, x-1, y);
+       c[4] = image_getpixel(data->src_image, x,   y);
+       c[5] = image_getpixel(data->src_image, x+1, y);
+       c[6] = image_getpixel(data->src_image, x-1, y+1);
+       c[7] = image_getpixel(data->src_image, x,   y+1);
+       c[8] = image_getpixel(data->src_image, x+1, y+1);
 
-/*     *(address++) = rgb_map->data[_rgba_getr(c)>>3] */
-/* 				[_rgba_getg(c)>>3] */
-/* 				[_rgba_getb(c)>>3]; */
-    *address = orig_rgb_map->data
-      [_rgba_getr(c)>>3]
-      [_rgba_getg(c)>>3]
-      [_rgba_getb(c)>>3];
-    address++;
-  }
+       r = g = b = a = 0;
+       for (i=0, p=c; i<9; i++, p++) {
+	 r += _rgba_getr(*p);
+	 g += _rgba_getg(*p);
+	 b += _rgba_getb(*p);
+	 a += _rgba_geta(*p);
+       }
+
+       i = _rgba(r/9, g/9, b/9, a/9);
+       *dst_address = _rgba_blend_normal(c[4], i, opacity);
+     });
+}  
+
+static void ink_hline2_soften(int x1, int y, int x2, ToolData *data)
+{
+  DEFINE_INK_PROCESSING_DST
+    (ase_uint16
+     ,
+     int c[9];
+     int i;
+     int v;
+     int a;
+     ,
+     {
+       c[0] = image_getpixel(data->src_image, x-1, y-1);
+       c[1] = image_getpixel(data->src_image, x,   y-1);
+       c[2] = image_getpixel(data->src_image, x+1, y-1);
+       c[3] = image_getpixel(data->src_image, x-1, y);
+       c[4] = image_getpixel(data->src_image, x,   y);
+       c[5] = image_getpixel(data->src_image, x+1, y);
+       c[6] = image_getpixel(data->src_image, x-1, y+1);
+       c[7] = image_getpixel(data->src_image, x,   y+1);
+       c[8] = image_getpixel(data->src_image, x+1, y+1);
+
+       v = a = 0;
+       for (i=0; i<9; ++i) {
+	 v += _graya_getv(c[i]);
+	 a += _graya_geta(c[i]);
+       }
+
+       *dst_address = _graya(v/9, a/9);
+     });
+}  
+
+static void ink_hline1_soften(int x1, int y, int x2, ToolData *data)
+{
+  DEFINE_INK_PROCESSING_DST
+    (ase_uint8
+     ,
+     Palette *pal = get_current_palette();
+     int c[9];
+     int i;
+     int r;
+     int g;
+     int b;
+     int elements;
+     ase_uint32 palcol;
+     ,
+     {
+       c[0] = image_getpixel(data->src_image, x-1, y-1);
+       c[1] = image_getpixel(data->src_image, x,   y-1);
+       c[2] = image_getpixel(data->src_image, x+1, y-1);
+       c[3] = image_getpixel(data->src_image, x-1, y);
+       c[4] = image_getpixel(data->src_image, x,   y);
+       c[5] = image_getpixel(data->src_image, x+1, y);
+       c[6] = image_getpixel(data->src_image, x-1, y+1);
+       c[7] = image_getpixel(data->src_image, x,   y+1);
+       c[8] = image_getpixel(data->src_image, x+1, y+1);
+
+       r = g = b = 0;
+       elements = 0;
+       for (i=0; i<9; ++i) {
+	 if (c[i] >= 0) {
+	   palcol = pal->color[c[i]];
+	   r += _rgba_getr(palcol);
+	   g += _rgba_getg(palcol);
+	   b += _rgba_getb(palcol);
+	   elements++;
+	 }
+       }
+
+       if (elements > 0) {
+	 *dst_address = orig_rgb_map->data
+	   [(r/elements)>>3]
+	   [(g/elements)>>3]
+	   [(b/elements)>>3];
+       }
+     });
 }
 
 /**********************************************************************/
-/* Semi draw mode						      */
+/* Replace Ink     						      */
 /**********************************************************************/
 
-static void my_image_hline4_semi(int x1, int y, int x2, void *data)
+static void ink_hline4_replace(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint32 *address = ((ase_uint32 **)tool_image->line)[y]+x1;
-  register int x;
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint32
+     ,
+     int color = data->color;
+     int other_color = data->other_color;
+     int opacity = data->opacity;
+     ,
+     if (*src_address == other_color) {
+       *dst_address = _rgba_blend_normal(*src_address, color, opacity);
+     });
+}  
 
-  for (x=x1; x<=x2; x++) {
-    if ((x+y)&1)
-      *address = tool_color;
-    address++;
-  }
-}
-
-static void my_image_hline2_semi(int x1, int y, int x2, void *data)
+static void ink_hline2_replace(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint16 *address = ((ase_uint16 **)tool_image->line)[y]+x1;
-  register int x;
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint16
+     ,
+     int color = data->color;
+     int other_color = data->other_color;
+     int opacity = data->opacity;
+     ,
+     if (*src_address == other_color) {
+       *dst_address = _graya_blend_normal(*src_address, color, opacity);
+     });
+}  
 
-  for (x=x1; x<=x2; x++) {
-    if ((x+y)&1)
-      *address = tool_color;
-    address++;
-  }
-}
-
-static void my_image_hline1_semi(int x1, int y, int x2, void *data)
+static void ink_hline1_replace(int x1, int y, int x2, ToolData *data)
 {
-  register ase_uint8 *address = ((ase_uint8 **)tool_image->line)[y]+x1;
-  register int x;
-
-  for (x=x1; x<=x2; x++) {
-    if ((x+y)&1)
-      *address = tool_color;
-    address++;
-  }
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint8
+     ,
+     int other_color = data->other_color;
+     Palette *pal = get_current_palette();
+     ase_uint32 c;
+     ase_uint32 tc = pal->color[data->color];
+     int opacity = data->opacity;
+     ,
+     if (*src_address == other_color) {
+       c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
+       *dst_address = orig_rgb_map->data
+	 [_rgba_getr(c)>>3]
+	 [_rgba_getg(c)>>3]
+	 [_rgba_getb(c)>>3];
+     });
 }

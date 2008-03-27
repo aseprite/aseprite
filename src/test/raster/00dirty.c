@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
 	redraw = TRUE;
       }
 
-      dirty_get(dirty);
+      dirty_save_image_data(dirty);
       algo_dirty(dirty, image, (AlgoHLine)draw_dirty);
 
       ox = mx;
@@ -95,7 +95,7 @@ int main (int argc, char *argv[])
 
     /* with R restore the image */
     if (key[KEY_R]) {
-      dirty_put(dirty);
+      dirty_restore_image_data(dirty);
       dirty_free(dirty);
       dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
       while (key[KEY_R]);

@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -26,7 +27,7 @@
 
 static void shrink_mask (Mask *mask);
 
-Mask *mask_new (void)
+Mask *mask_new(void)
 {
   Mask *mask = (Mask *)gfxobj_new(GFXOBJ_MASK, sizeof(Mask));
   if (!mask)
@@ -42,25 +43,25 @@ Mask *mask_new (void)
   return mask;
 }
 
-Mask *mask_new_copy (const Mask *mask)
+Mask *mask_new_copy(const Mask *mask)
 {
   Mask *copy;
 
-  copy = mask_new ();
+  copy = mask_new();
   if (!copy)
     return NULL;
 
-  mask_copy (copy, mask);
+  mask_copy(copy, mask);
   return copy;
 }
 
-void mask_free (Mask *mask)
+void mask_free(Mask *mask)
 {
   if (mask->name)
-    jfree (mask->name);
+    jfree(mask->name);
 
   if (mask->bitmap)
-    image_free (mask->bitmap);
+    image_free(mask->bitmap);
 
   gfxobj_free((GfxObj *)mask);
 }
@@ -178,7 +179,7 @@ void mask_union(Mask *mask, int x, int y, int w, int h)
 		 x-mask->x+w-1, y-mask->y+h-1, 1);
 }
 
-void mask_subtract (Mask *mask, int x, int y, int w, int h)
+void mask_subtract(Mask *mask, int x, int y, int w, int h)
 {
   if (mask->bitmap) {
     image_rectfill(mask->bitmap,
@@ -213,6 +214,7 @@ void mask_intersect(Mask *mask, int x, int y, int w, int h)
 void mask_merge(Mask *mask, const Mask *src)
 {
   /* TODO!!! */
+  assert(FALSE);
 }
 
 void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
@@ -407,7 +409,7 @@ void mask_crop(Mask *mask, const Image *image)
 #undef ADVANCE
 }
 
-static void shrink_mask (Mask *mask)
+static void shrink_mask(Mask *mask)
 {
 #define SHRINK_SIDE(u_begin, u_op, u_final, u_add,			\
 		    v_begin, v_op, v_final, v_add, U, V, var)		\

@@ -33,6 +33,8 @@ void SaveSprite(const char *filename);
 
 void SetSprite(struct Sprite *sprite); 
 
+void CropSprite(void);
+
 /*===================================================================*/
 /* Layer                                                             */
 /*===================================================================*/
@@ -45,10 +47,17 @@ char *GetUniqueLayerName(void);
 
 struct Layer *FlattenLayers(void);
 
+void CropLayer(void);
+
+void BackgroundFromLayer(void);
+void LayerFromBackground(void);
+
 /* ======================================= */
 /* Cel                                     */
 /* ======================================= */
 
 void RemoveCel(struct Layer *layer, struct Cel *cel);
+
+void CropCel(void);
 
 #endif /* SCRIPT_FUNCTIONS_H */

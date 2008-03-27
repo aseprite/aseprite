@@ -18,15 +18,20 @@
 
 #include "config.h"
 
+#include <allegro/unicode.h>
+
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
 #include "core/app.h"
+#include "core/core.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
+#include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/stock.h"
 #include "raster/undo.h"
 
 static bool cmd_cel_properties_enabled(const char *argument)
@@ -41,11 +46,13 @@ static bool cmd_cel_properties_enabled(const char *argument)
 static void cmd_cel_properties_execute(const char *argument)
 {
   JWidget window = NULL;
-  JWidget entry_frame, entry_xpos, entry_ypos, slider_opacity, button_ok;
+  JWidget label_frame, label_pos, label_size;
+  JWidget slider_opacity, button_ok;
   Sprite *sprite;
   Layer *layer;
   Cel *cel;
   char buf[1024];
+  int memsize;
 
   /* get current sprite */
   sprite = lock_current_sprite();
@@ -66,11 +73,15 @@ static void cmd_cel_properties_execute(const char *argument)
   if (!window)
     goto done;
 
-  entry_frame = jwidget_find_name(window, "frame");
-  entry_xpos = jwidget_find_name(window, "xpos");
-  entry_ypos = jwidget_find_name(window, "ypos");
-  slider_opacity = jwidget_find_name(window, "opacity");
-  button_ok = jwidget_find_name(window, "ok");
+  if (!get_widgets(window,
+		   "frame", &label_frame,
+		   "pos", &label_pos,
+		   "size", &label_size,
+		   "opacity", &slider_opacity,
+		   "ok", &button_ok, NULL)) {
+    jwidget_free(window);
+    return;
+  }
 
   /* if the layer isn't writable */
   if (!layer_is_writable(layer)) {
@@ -78,69 +89,52 @@ static void cmd_cel_properties_execute(const char *argument)
     jwidget_disable(button_ok);
   }
 
-  sprintf(buf, "%d", cel->frame+1);
-  jwidget_set_text(entry_frame, buf);
+  usprintf(buf, "%d/%d", cel->frame+1, sprite->frames);
+  jwidget_set_text(label_frame, buf);
 
-  sprintf(buf, "%d", cel->x);
-  jwidget_set_text(entry_xpos, buf);
+  /* position */
+  usprintf(buf, "%d, %d", cel->x, cel->y);
+  jwidget_set_text(label_pos, buf);
 
-  sprintf(buf, "%d", cel->y);
-  jwidget_set_text(entry_ypos, buf);
+  /* dimension (and memory size) */
+  memsize =
+    IMAGE_LINE_SIZE(sprite->stock->image[cel->image],
+		    sprite->stock->image[cel->image]->w)*
+    sprite->stock->image[cel->image]->h;
 
+  usprintf(buf, "%dx%d (",
+	   sprite->stock->image[cel->image]->w,
+	   sprite->stock->image[cel->image]->h);
+  get_pretty_memsize(memsize,
+ 		     buf+ustrsize(buf),
+		     sizeof(buf)-ustrsize(buf));
+  ustrcat(buf, ")");
+
+  jwidget_set_text(label_size, buf);
+
+  /* opacity */
   jslider_set_value(slider_opacity, cel->opacity);
+  if (layer_is_background(layer)) {
+    jwidget_disable(slider_opacity);
+    jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
+					     "you can't change its opacity.");
+  }
 
-  while (TRUE) {
-    jwindow_open_fg(window);
+  jwindow_open_fg(window);
 
-    if (jwindow_get_killer(window) == button_ok) {
-      int new_frame, new_xpos, new_ypos;
-      Cel *existent_cel;
+  if (jwindow_get_killer(window) == button_ok) {
+    int new_opacity = jslider_get_value(slider_opacity);
 
-      new_frame = strtol(jwidget_get_text(entry_frame), NULL, 10);
-      new_frame = MID(0, new_frame-1, sprite->frames-1);
-      existent_cel = layer_get_cel(layer, new_frame);
+    /* the opacity was changed? */
+    if (cel->opacity != new_opacity) {
+      if (undo_is_enabled(sprite->undo))
+	undo_int(sprite->undo, (GfxObj *)cel, &cel->opacity);
 
-      if (new_frame != cel->frame && existent_cel) {
-	jalert(_("Error"
-		 "<<You can't move the cel to frame %d."
-		 "<<There is already a cel in that position."
-		 "||&OK"), new_frame+1);
-      }
-      else {
-	/* WE MUST REMOVE THE FRAME BEFORE CALL cel_set_frame() */
-	if (undo_is_enabled(sprite->undo)) {
-	  undo_open(sprite->undo);
-	  undo_remove_cel(sprite->undo, layer, cel);
-	}
+      /* change cel opacity */
+      cel_set_opacity(cel, new_opacity);
 
-	layer_remove_cel(layer, cel);
-
-	/* change cel properties */
-	new_xpos = strtol(jwidget_get_text(entry_xpos), NULL, 10);
-	new_ypos = strtol(jwidget_get_text(entry_ypos), NULL, 10);
-
-	cel_set_frame(cel, new_frame);
-	cel_set_position(cel,
-			 MID(-9999, new_xpos, 9999),
-			 MID(-9999, new_ypos, 9999));
-	cel_set_opacity(cel, jslider_get_value(slider_opacity));
-
-	/* add again the same cel */
-	if (undo_is_enabled(sprite->undo)) {
-	  undo_add_cel(sprite->undo, layer, cel);
-	  undo_close(sprite->undo);
-	}
-
-	layer_add_cel(layer, cel);
-
-	/* set the sprite position, refresh and break the loop */
-	sprite_set_frame(sprite, new_frame);
-	update_screen_for_sprite(sprite);
-	break;
-      }
+      update_screen_for_sprite(sprite);
     }
-    else
-      break;
   }
 
 done:;

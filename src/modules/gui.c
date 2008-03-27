@@ -44,6 +44,7 @@
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
+#include "modules/tools.h"
 #include "raster/sprite.h"
 #include "script/script.h"
 #include "util/recscr.h"
@@ -800,9 +801,15 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYPRESSED: {
+      /* check for commands */
       Command *command = command_get_by_key(msg);
-      if (!command)
+      if (!command) {
+	/* check for tools */
+	Tool *tool = get_tool_by_key(msg);
+	if (tool != NULL)
+	  select_tool(tool);
 	break;
+      }
 
       /* the screen shot is available in everywhere */
       if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {

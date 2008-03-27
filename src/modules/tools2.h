@@ -20,7 +20,6 @@
 #define MODULES_TOOLS2_H
 
 void SetBrush(const char *string);
-void SetDrawMode(const char *string);
 void ToolTrace(const char *string, const char *color);
 
 void ResetConfig(void);

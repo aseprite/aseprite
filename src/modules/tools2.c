@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -73,43 +74,6 @@ void SetBrush(const char *string)
   jfree(copy);
 }
 
-/* string = "draw_mode glass_dirty" 
-     draw_mode: opaque, glass, semi (default=opaque)
-     glass_dirty: 0-255 (default=128)
- */
-void SetDrawMode(const char *string)
-{
-  char *copy = jstrdup(string);
-  char *tok;
-  int count;
-  int draw_mode = DRAWMODE_OPAQUE;
-  int glass_dirty = 128;
-
-  for (tok=strtok(copy, " "), count=0; tok;
-       tok=strtok(NULL, " "), count++) {
-    switch (count) {
-
-      case 0:
-	if (strcmp(tok, "opaque") == 0)
-	  draw_mode = DRAWMODE_OPAQUE;
-	else if (strcmp(tok, "glass") == 0)
-	  draw_mode = DRAWMODE_GLASS;
-	else if (strcmp(tok, "semi") == 0)
-	  draw_mode = DRAWMODE_SEMI;
-	break;
-
-      case 1:
-	glass_dirty = strtol(tok, NULL, 0);
-	break;
-    }
-  }
-
-  set_brush_mode(draw_mode);
-  set_glass_dirty(MID(0, glass_dirty, 255));
-
-  jfree(copy);
-}
-
 /* string = "tool_name x,y x,y x,y ..." 
      tool_name: marker, dots, pencil, brush, floodfill, spray, line,
                 rectangle, ellipse
@@ -155,7 +119,9 @@ void ToolTrace(const char *string, const char *_color)
     }
 
     if (npoints > 0) {
-      do_tool_points(sprite, current_tool, color, npoints, x, y);
+      /* TODO */
+      assert(FALSE);
+/*       do_tool_points(sprite, current_tool, color, npoints, x, y); */
       jfree(x);
       jfree(y);
     }
@@ -180,7 +146,6 @@ static int cfg_target_images;
 static int cfg_tools_brush_type;
 static int cfg_tools_brush_size;
 static int cfg_tools_brush_angle;
-static int cfg_tools_brush_mode;
 static int cfg_tools_glass_dirty;
 static int cfg_tools_spray_width;
 static int cfg_tools_air_speed;
@@ -224,7 +189,6 @@ void ResetConfig(void)
   cfg_tools_brush_type = get_brush_type();
   cfg_tools_brush_size = get_brush_size();
   cfg_tools_brush_angle = get_brush_angle();
-  cfg_tools_brush_mode = get_brush_mode();
   cfg_tools_glass_dirty = get_glass_dirty();
   cfg_tools_spray_width = get_spray_width();
   cfg_tools_air_speed = get_air_speed();
@@ -242,7 +206,6 @@ void ResetConfig(void)
   set_brush_type(BRUSH_CIRCLE);
   set_brush_size(1);
   set_brush_angle(0);
-  set_brush_mode(DRAWMODE_OPAQUE);
   set_cursor_color(color_mask());
   set_glass_dirty(128);
   set_spray_width(16);
@@ -284,7 +247,6 @@ void RestoreConfig(void)
   set_brush_type(cfg_tools_brush_type);
   set_brush_size(cfg_tools_brush_size);
   set_brush_angle(cfg_tools_brush_angle);
-  set_brush_mode(cfg_tools_brush_mode);
   set_glass_dirty(cfg_tools_glass_dirty);
   set_spray_width(cfg_tools_spray_width);
   set_air_speed(cfg_tools_air_speed);

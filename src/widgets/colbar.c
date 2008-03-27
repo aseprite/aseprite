@@ -45,10 +45,9 @@
 #define COLORBAR_MAX_COLORS   256
 
 typedef enum {
-  HOTCOLOR_NONE = -4,
-  HOTCOLOR_FGCOLOR = -3,
-  HOTCOLOR_BGCOLOR = -2,
-  HOTCOLOR_BGSPRITE = -1,
+  HOTCOLOR_NONE = -3,
+  HOTCOLOR_FGCOLOR = -2,
+  HOTCOLOR_BGCOLOR = -1,
   HOTCOLOR_GRADIENT = 0,
 } hotcolor_t;
 
@@ -69,7 +68,7 @@ static ColorBar *colorbar_data(JWidget colorbar);
 
 static bool colorbar_msg_proc(JWidget widget, JMessage msg);
 static color_t colorbar_get_hot_color(JWidget widget);
-static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
+static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2,
 				  color_t color, hotcolor_t hot);
 static void colorbar_close_tooltip(JWidget widget);
 
@@ -182,7 +181,7 @@ color_t colorbar_get_color_by_position(JWidget widget, int x, int y)
 
   ++x1, ++y1, --x2, --y2;
 
-  h = (y2-y1+1-(4+16+4+16+16+4));
+  h = (y2-y1+1-(4+16+16+4));
 
   for (c=beg; c<=end; c++) {
     v1 = y1 + h*(c-beg  )/(end-beg+1);
@@ -192,29 +191,18 @@ color_t colorbar_get_color_by_position(JWidget widget, int x, int y)
       return colorbar->color[c];
   }
 
-  /* in tool foreground color */
-  v1 = y2-4-16-4-16-16;
-  v2 = y2-4-16-4-16;
+  /* in foreground color */
+  v1 = y2-4-16-16;
+  v2 = y2-4-16;
   if ((y >= v1) && (y <= v2)) {
     return colorbar->fgcolor;
   }
 
-  /* in tool background color */
-  v1 = y2-4-16-4-16+1;
-  v2 = y2-4-16-4;
-  if ((y >= v1) && (y <= v2)) {
-    return colorbar->bgcolor;
-  }
-
-  /* in sprite background color */
-  v1 = y2-4-16;
+  /* in background color */
+  v1 = y2-4-16+1;
   v2 = y2-4;
   if ((y >= v1) && (y <= v2)) {
-    color_t c =
-      current_sprite != NULL ? color_from_image(current_sprite->imgtype,
-						current_sprite->bgcolor):
-			       color_mask();
-    return c;
+    return colorbar->bgcolor;
   }
 
   return color_mask();
@@ -296,7 +284,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       rectfill(doublebuffer, x1, y1, x2, y2, ji_color_face());
       ++x1, ++y1, --x2, --y2;
 
-      h = (y2-y1+1-(4+16+4+16+16+4));
+      h = (y2-y1+1-(4+16+16+4));
 
       /* draw gradient */
       for (c=beg; c<=end; c++) {
@@ -310,35 +298,21 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 			   c == colorbar->hot_editing));
       }
 
-      /* draw tool foreground color */
-      v1 = y2-4-16-4-16-16;
-      v2 = y2-4-16-4-16;
+      /* draw foreground color */
+      v1 = y2-4-16-16;
+      v2 = y2-4-16;
       draw_color_button(doublebuffer, x1, v1, x2, v2, 1, 1, 0, 0,
 			imgtype, colorbar->fgcolor,
 			(colorbar->hot         == HOTCOLOR_FGCOLOR ||
 			 colorbar->hot_editing == HOTCOLOR_FGCOLOR));
 
-      /* draw tool background color */
-      v1 = y2-4-16-4-16+1;
-      v2 = y2-4-16-4;
+      /* draw background color */
+      v1 = y2-4-16+1;
+      v2 = y2-4;
       draw_color_button(doublebuffer, x1, v1, x2, v2, 0, 0, 1, 1,
 			imgtype, colorbar->bgcolor,
 			(colorbar->hot         == HOTCOLOR_BGCOLOR ||
 			 colorbar->hot_editing == HOTCOLOR_BGCOLOR));
-
-      /* draw sprite background color */
-      v1 = y2-4-16;
-      v2 = y2-4;
-      {
-	color_t c =
-	  current_sprite != NULL ? color_from_image(imgtype,
-						    current_sprite->bgcolor):
-				   color_mask();
-	draw_color_button(doublebuffer, x1, v1, x2, v2, 1, 1, 1, 1,
-			  imgtype, c,
-			  (colorbar->hot         == HOTCOLOR_BGSPRITE ||
-			   colorbar->hot_editing == HOTCOLOR_BGSPRITE));
-      }
 
       blit(doublebuffer, ji_screen, 0, 0,
 	   msg->draw.rect.x1,
@@ -371,7 +345,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 
       ++x1, ++y1, --x2, --y2;
 
-      h = (y2-y1+1-(4+16+4+16+16+4));
+      h = (y2-y1+1-(4+16+16+4));
 
       for (c=beg; c<=end; c++) {
 	v1 = y1 + h*(c-beg  )/(end-beg+1);
@@ -387,29 +361,20 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	}
       }
 
-      /* in tool foreground color */
-      v1 = y2-4-16-4-16-16;
-      v2 = y2-4-16-4-16;
+      /* in foreground color */
+      v1 = y2-4-16-16;
+      v2 = y2-4-16;
       if ((msg->mouse.y >= v1) && (msg->mouse.y <= v2)) {
 	colorbar->hot = HOTCOLOR_FGCOLOR;
 	hot_v1 = v1;
 	hot_v2 = v2;
       }
 
-      /* in tool background color */
-      v1 = y2-4-16-4-16+1;
-      v2 = y2-4-16-4;
-      if ((msg->mouse.y >= v1) && (msg->mouse.y <= v2)) {
-	colorbar->hot = HOTCOLOR_BGCOLOR;
-	hot_v1 = v1;
-	hot_v2 = v2;
-      }
-
-      /* in sprite background color */
-      v1 = y2-4-16;
+      /* in background color */
+      v1 = y2-4-16+1;
       v2 = y2-4;
       if ((msg->mouse.y >= v1) && (msg->mouse.y <= v2)) {
-	colorbar->hot = HOTCOLOR_BGSPRITE;
+	colorbar->hot = HOTCOLOR_BGCOLOR;
 	hot_v1 = v1;
 	hot_v2 = v2;
       }
@@ -427,7 +392,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	  update_status_bar(color, 0);
 
 	  /* open the tooltip window to edit the hot color */
-	  colorbar_open_tooltip(widget, widget->rc->x2+1,
+	  colorbar_open_tooltip(widget, widget->rc->x1-1, widget->rc->x2+1,
 				hot_v1, hot_v2, color, colorbar->hot);
 	}
       }
@@ -495,13 +460,6 @@ static color_t colorbar_get_hot_color(JWidget widget)
     case HOTCOLOR_NONE:     return color_mask();
     case HOTCOLOR_FGCOLOR:  return colorbar->fgcolor;
     case HOTCOLOR_BGCOLOR:  return colorbar->bgcolor;
-    case HOTCOLOR_BGSPRITE: {
-      int imgtype = app_get_current_image_type();
-      return
-	current_sprite != NULL ? color_from_image(imgtype,
-						  current_sprite->bgcolor):
-				 color_mask();
-    }
     default:
       assert(colorbar->hot >= 0 &&
 	     colorbar->hot < colorbar->ncolor);
@@ -509,13 +467,13 @@ static color_t colorbar_get_hot_color(JWidget widget)
   }
 }
 
-static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
+static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2,
 				  color_t color, hotcolor_t hot)
 {
   ColorBar *colorbar = colorbar_data(widget);
   JWidget window;
   char buf[1024];		/* TODO warning buffer overflow */
-  int y;
+  int x, y;
 
   if (colorbar->tooltip_window == NULL) {
     window = colorselector_new(TRUE);
@@ -535,7 +493,7 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
     case HOTCOLOR_FGCOLOR: {
       Command *cmd;
 
-      ustrcpy(buf, _("Tool Foreground Color"));
+      ustrcpy(buf, _("Foreground Color"));
 
       cmd = command_get_by_name(CMD_SWITCH_COLORS);
       assert(cmd != NULL);
@@ -548,10 +506,7 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
       break;
     }
     case HOTCOLOR_BGCOLOR:
-      ustrcpy(buf, _("Tool Background Color"));
-      break;
-    case HOTCOLOR_BGSPRITE:
-      ustrcpy(buf, _("Sprite Background Color"));
+      ustrcpy(buf, _("Background Color"));
       break;
     default:
       usprintf(buf, _("Gradient Entry %d"), colorbar->hot);
@@ -564,9 +519,16 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
 
   jwindow_open(window);
 
-  x = MID(0, x, JI_SCREEN_W-jrect_w(window->rc));
+  /* window position */
+  if (x2+jrect_w(window->rc) <= JI_SCREEN_W)
+    x = x2;
+  else
+    x = x1-jrect_w(window->rc);
   y = (y1+y2)/2-jrect_h(window->rc)/2;
+
+  x = MID(0, x, JI_SCREEN_W-jrect_w(window->rc));
   y = MID(widget->rc->y1, y, widget->rc->y2-jrect_h(window->rc));
+  
   jwindow_position(window, x, y);
 
   jmanager_dispatch_messages(jwidget_get_manager(window));
@@ -574,11 +536,12 @@ static void colorbar_open_tooltip(JWidget widget, int x, int y1, int y2,
 
   /* setup the hot-region */
   {
-    JRect rc = jrect_new(window->rc->x1,
+    JRect rc = jrect_new(window->rc->x1-8,
 			 window->rc->y1-8,
 			 window->rc->x2+8,
 			 window->rc->y2+8);
-    JRect rc2 = jrect_new(widget->rc->x1, y1, x, y2+1);
+/*     JRect rc2 = jrect_new(widget->rc->x1, y1, x, y2+1); */
+    JRect rc2 = jrect_new(x1, y1, x2, y2+1);
     JRegion rgn = jregion_new(rc, 1);
     JRegion rgn2 = jregion_new(rc2, 1);
 
@@ -686,21 +649,6 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 	    case HOTCOLOR_BGCOLOR:
 	      colorbar->bgcolor = color;
 	      break;
-	    case HOTCOLOR_BGSPRITE: {
-	      if (current_sprite != NULL) {
-		Sprite *sprite = current_sprite;
-		int new_bgcolor = get_color_for_image(sprite->imgtype, color);
-
-		if (sprite->bgcolor != new_bgcolor) {
-		  /* TODO add undo suppport */
-/* 		  if (undo_is_enabled(sprite->undo)) */
-/* 		    undo_int(sprite->undo, (GfxObj *)sprite, &sprite->bgcolor); */
-
-		  sprite_set_bgcolor(sprite, new_bgcolor);
-		}
-	      }
-	      break;
-	    }
 	    default:
 	      assert(colorbar->hot_editing >= 0 &&
 		     colorbar->hot_editing < colorbar->ncolor);
@@ -714,19 +662,16 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 		int r1 = color_get_red(imgtype, c1);
 		int g1 = color_get_green(imgtype, c1);
 		int b1 = color_get_blue(imgtype, c1);
-		int a1 = color_get_alpha(imgtype, c1);
 		int r2 = color_get_red(imgtype, c2);
 		int g2 = color_get_green(imgtype, c2);
 		int b2 = color_get_blue(imgtype, c2);
-		int a2 = color_get_alpha(imgtype, c2);
-		int c, r, g, b, a;
+		int c, r, g, b;
 
 		for (c=1; c<colorbar->ncolor-1; ++c) {
 		  r = r1 + (r2-r1) * c / colorbar->ncolor;
 		  g = g1 + (g2-g1) * c / colorbar->ncolor;
 		  b = b1 + (b2-b1) * c / colorbar->ncolor;
-		  a = a1 + (a2-a1) * c / colorbar->ncolor;
-		  colorbar->color[c] = color_rgb(r, g, b, a);
+		  colorbar->color[c] = color_rgb(r, g, b);
 		}
 	      }
 	      break;

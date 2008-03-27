@@ -67,24 +67,11 @@ WORD		Color depth (bits per pixel)
 		 8 bpp = Indexed
 DWORD		Flags (must be 0)
 WORD		Speed (milliseconds between frame, like in FLC files)
-		DEPRECATED!!!: you should use the frame duration
-                               field from each frame header
+		DEPRECATED: You should use the frame duration
+                            field from each frame header
 DWORD		Set be 0
 DWORD		Set be 0
-BYTE[4]		Background color:
-		For 32 bpp
-	BYTE		Red
-	BYTE		Green
-	BYTE		Blue
-	BYTE		Alpha
-		For 16 bpp:
-	BYTE		Gray
-	BYTE		Alpha
-	BYTE[2]		Padding
-		For 8 bpp:
-	BYTE		Index
-	BYTE[3]		Padding
-BYTE[96]	For future (set to zero)
+BYTE[100]	For future (set to zero)
 
 
 ========================================
@@ -97,7 +84,7 @@ header of 16 bytes:
   DWORD		Bytes in this frame
   WORD		Magic number (always 0xF1FA)
   WORD		Number of "chunks" in this frame
-  WORD		Frame duration (in milliseconds)	[NEW FIELD!!!]
+  WORD		Frame duration (in milliseconds)
   BYTE[6]	For future (set to zero)
 
 Then each chunk format is:
@@ -117,30 +104,34 @@ Layer Chunk (0x2004)
   In the first frame should be a set of layer chunks to determine the
   entire layers layout:
 
-  WORD		Flags (1=readable, 2=writable)
+  WORD		Flags:
+		  LAYER_IS_READABLE	= 0x0001
+		  LAYER_IS_WRITABLE	= 0x0002
+		  LAYER_IS_LOCKMOVE	= 0x0004
+		  LAYER_IS_BACKGROUND	= 0x0008
   WORD		Layer type (0=normal (image) layer, 1=layer set)
   WORD          Layer child level (see NOTE.1)
   WORD		Default layer width in pixels (ignored)
   WORD		Default layer height in pixels (ignored)
   WORD		Blend mode (always 0 for layer set)
-                  BLEND_MODE_NORMAL = 0
-                  BLEND_MODE_DISSOLVE = 1
-		  BLEND_MODE_MULTIPLY = 2
-		  BLEND_MODE_SCREEN = 3
-		  BLEND_MODE_OVERLAY = 4
+                  BLEND_MODE_NORMAL     = 0
+                  BLEND_MODE_DISSOLVE   = 1
+		  BLEND_MODE_MULTIPLY   = 2
+		  BLEND_MODE_SCREEN     = 3
+		  BLEND_MODE_OVERLAY    = 4
 		  BLEND_MODE_HARD_LIGHT = 5
-		  BLEND_MODE_DODGE = 6
-		  BLEND_MODE_BURN = 7
-		  BLEND_MODE_DARKEN = 8
-		  BLEND_MODE_LIGHTEN = 9
-		  BLEND_MODE_ADDITION = 10
-		  BLEND_MODE_SUBTRACT = 11
+		  BLEND_MODE_DODGE      = 6
+		  BLEND_MODE_BURN       = 7
+		  BLEND_MODE_DARKEN     = 8
+		  BLEND_MODE_LIGHTEN    = 9
+		  BLEND_MODE_ADDITION   = 10
+		  BLEND_MODE_SUBTRACT   = 11
 		  BLEND_MODE_DIFFERENCE = 12
-		  BLEND_MODE_HUE = 13
+		  BLEND_MODE_HUE        = 13
 		  BLEND_MODE_SATURATION = 14
-		  BLEND_MODE_COLOR = 15
+		  BLEND_MODE_COLOR      = 15
 		  BLEND_MODE_LUMINOSITY = 16
-		  BLEND_MODE_COPY = 17
+		  BLEND_MODE_COPY       = 17
   BYTE[4]	For future (set to zero)
   STRING	Layer name
 
@@ -175,7 +166,7 @@ Cel Chunk (0x2005)
     XXXXX	-todo-
 
 
-Mask Chunk (0x2016) DEPRECATED!!!
+Mask Chunk (0x2016) DEPRECATED
 ----------------------------------------
 
   WORD		X position
@@ -244,3 +235,18 @@ File Format Changes
      header.  Then, if you found a frame with the frame-duration
      field > 0, you should update the duration of the frame with
      that value.
+
+  2) The format of ASE 0.6 beta has a header with a background color
+     after the two last reserved DWORD
+
+     ...
+     WORD	Speed (milliseconds between frame, like in FLC files)
+     DWORD	Set be 0
+     DWORD	Set be 0
+     DWORD	Background-color          <------ *
+     BYTE[96]	For future (set to zero)
+
+     * This field is deprecated, and now it should be 0 or his value
+       should be completely ignored. The only drawback is that the
+       sprite will have a transparent background instead of a colored
+       one.

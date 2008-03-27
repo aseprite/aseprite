@@ -141,6 +141,8 @@ static void cmd_merge_down_layer_execute(const char *argument)
 
   sprite_set_layer(sprite, dst_layer);
   layer_remove_layer(src_layer->parent_layer, src_layer);
+
+  layer_free_images(src_layer);
   layer_free(src_layer);
 
   update_screen_for_sprite(sprite);

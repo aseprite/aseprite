@@ -33,19 +33,21 @@
 #include "raster/palette.h"
 #include "widgets/colbar.h"
 
-#define _hsva_geth		_rgba_getr
-#define _hsva_gets		_rgba_getg
-#define _hsva_getv		_rgba_getb
-#define _hsva_geta		_rgba_geta
-#define _hsva			_rgba
+/* #define GET_COLOR_TYPE(color)	((ase_uint32)((color).coltype)) */
+/* #define GET_COLOR_DATA(color)	((ase_uint32)((color).imgcolor)) */
 
-#define GET_COLOR_TYPE(color)	((ase_uint32)((color).coltype))
-#define GET_COLOR_DATA(color)	((ase_uint32)((color).imgcolor))
+#define MAKE_COLOR(type,data)		(((type) << 24) | (data))
+#define GET_COLOR_TYPE(color)		((color) >> 24)
+#define GET_COLOR_DATA(color)		((color) & 0xffffff)
+#define GET_COLOR_DATA_RGB(color)	(GET_COLOR_DATA(color) & 0xffffff)
+#define GET_COLOR_DATA_HSV(color)	(GET_COLOR_DATA(color) & 0xffffff)
+#define GET_COLOR_DATA_GRAY(color)	(GET_COLOR_DATA(color) & 0xff)
+#define GET_COLOR_DATA_INDEX(color)	(GET_COLOR_DATA(color) & 0xff)
 
-#define GET_COLOR_RGB(color)	(GET_COLOR_DATA(color) & 0xffffffff)
-#define GET_COLOR_HSV(color)	(GET_COLOR_DATA(color) & 0xffffffff)
-#define GET_COLOR_GRAY(color)	(GET_COLOR_DATA(color) & 0xffff)
-#define GET_COLOR_INDEX(color)	(GET_COLOR_DATA(color) & 0xff)
+#define MAKE_DATA(c1,c2,c3)	(((c3) << 16) | ((c2) << 8) | (c1))
+#define GET_DATA_C1(c)		(((c) >> 0) & 0xff)
+#define GET_DATA_C2(c)		(((c) >> 8) & 0xff)
+#define GET_DATA_C3(c)		(((c) >> 16) & 0xff)
 
 static int get_mask_for_bitmap(int depth);
 
@@ -60,34 +62,29 @@ char *color_to_string(color_t color, char *buf, int size)
       break;
 
     case COLOR_TYPE_RGB:
-      data = GET_COLOR_RGB(color);
-      uszprintf(buf, size, "rgb{%d,%d,%d,%d}",
-		_rgba_getr(data),
-		_rgba_getg(data),
-		_rgba_getb(data),
-		_rgba_geta(data));
+      data = GET_COLOR_DATA_RGB(color);
+      uszprintf(buf, size, "rgb{%d,%d,%d}",
+		GET_DATA_C1(data),
+		GET_DATA_C2(data),
+		GET_DATA_C3(data));
       break;
 
     case COLOR_TYPE_HSV:
-      data = GET_COLOR_HSV(color);
-      uszprintf(buf, size, "hsv{%d,%d,%d,%d}",
-		_hsva_geth(data),
-		_hsva_gets(data),
-		_hsva_getv(data),
-		_hsva_geta(data));
+      data = GET_COLOR_DATA_HSV(color);
+      uszprintf(buf, size, "hsv{%d,%d,%d}",
+		GET_DATA_C1(data),
+		GET_DATA_C2(data),
+		GET_DATA_C3(data));
       break;
 
     case COLOR_TYPE_GRAY:
-      data = GET_COLOR_GRAY(color);
-      uszprintf(buf, size, "gray{%d,%d}",
-		_graya_getv(data),
-		_graya_geta(data));
+      data = GET_COLOR_DATA_GRAY(color);
+      uszprintf(buf, size, "gray{%d}", data);
       break;
 
     case COLOR_TYPE_INDEX:
-      data = GET_COLOR_INDEX(color);
-      uszprintf(buf, size, "index{%d}",
-		data);
+      data = GET_COLOR_DATA_INDEX(color);
+      uszprintf(buf, size, "index{%d}", data);
       break;
 
   }
@@ -102,37 +99,29 @@ color_t string_to_color(const char *_str)
 
   if (ustrcmp(str, "mask") != 0) {
     if (ustrncmp(str, "rgb{", 4) == 0) {
-      int c=0, table[4] = { 0, 0, 0, 255 };
+      int c=0, table[3] = { 0, 0, 0 };
 
       for (tok=ustrtok(str+4, ","); tok;
 	   tok=ustrtok(NULL, ",")) {
-	if (c < 4)
+	if (c < 3)
 	  table[c++] = ustrtol(tok, NULL, 10);
       }
 
-      color = color_rgb(table[0], table[1], table[2], table[3]);
+      color = color_rgb(table[0], table[1], table[2]);
     } 
     else if (ustrncmp(str, "hsv{", 4) == 0) {
-      int c=0, table[4] = { 0, 0, 0, 255 };
+      int c=0, table[3] = { 0, 0, 0 };
 
       for (tok=ustrtok(str+4, ","); tok;
 	   tok=ustrtok(NULL, ",")) {
-	if (c < 4)
+	if (c < 3)
 	  table[c++] = ustrtol(tok, NULL, 10);
       }
 
-      color = color_hsv(table[0], table[1], table[2], table[3]);
+      color = color_hsv(table[0], table[1], table[2]);
     } 
     else if (ustrncmp(str, "gray{", 5) == 0) {
-      int c=0, table[2] = { 0, 255 };
-
-      for (tok=ustrtok(str+5, ","); tok;
-	   tok=ustrtok(NULL, ",")) {
-	if (c < 2)
-	  table[c++] = ustrtol(tok, NULL, 10);
-      }
-
-      color = color_gray(table[0], table[1]);
+      color = color_gray(ustrtol(str+5, NULL, 10));
     }
     else if (ustrncmp(str, "index{", 6) == 0) {
       color = color_index(ustrtol(str+6, NULL, 10));
@@ -157,43 +146,33 @@ bool color_equals(color_t c1, color_t c2)
 
 color_t color_mask(void)
 {
-  color_t c = { COLOR_TYPE_MASK, 0 };
-  return c;
+  return MAKE_COLOR(COLOR_TYPE_MASK, 0);
 }
 
-color_t color_rgb(int r, int g, int b, int a)
+color_t color_rgb(int r, int g, int b)
 {
-  color_t c = { COLOR_TYPE_RGB,
-		_rgba(r & 0xff,
-		      g & 0xff,
-		      b & 0xff,
-		      a & 0xff) };
-  return c;
+  return MAKE_COLOR(COLOR_TYPE_RGB,
+		    MAKE_DATA(r & 0xff,
+			      g & 0xff,
+			      b & 0xff));
 }
 
-color_t color_hsv(int h, int s, int v, int a)
+color_t color_hsv(int h, int s, int v)
 {
-  color_t c = { COLOR_TYPE_HSV,
-		_hsva(h & 0xff,
-		      s & 0xff,
-		      v & 0xff,
-		      a & 0xff) };
-  return c;
+  return MAKE_COLOR(COLOR_TYPE_HSV,
+		    MAKE_DATA(h & 0xff,
+			      s & 0xff,
+			      v & 0xff));
 }
 
-color_t color_gray(int g, int a)
+color_t color_gray(int g)
 {
-  color_t c = { COLOR_TYPE_GRAY,
-		_graya(g & 0xff,
-		       a & 0xff) };
-  return c;
+  return MAKE_COLOR(COLOR_TYPE_GRAY, g & 0xff);
 }
 
 color_t color_index(int index)
 {
-  color_t c = { COLOR_TYPE_INDEX,
-		index & 0xff };
-  return c;
+  return MAKE_COLOR(COLOR_TYPE_INDEX, index & 0xff);
 }
 
 int color_get_red(int imgtype, color_t color)
@@ -207,23 +186,23 @@ int color_get_red(int imgtype, color_t color)
 	return 0;
 
     case COLOR_TYPE_RGB:
-      return _rgba_getr(GET_COLOR_RGB(color));
+      return GET_DATA_C1(GET_COLOR_DATA_RGB(color));
 
     case COLOR_TYPE_HSV: {
-      int c = GET_COLOR_HSV(color);
-      int h = _hsva_geth(c);
-      int s = _hsva_gets(c);
-      int v = _hsva_getv(c);
+      int c = GET_COLOR_DATA_HSV(color);
+      int h = GET_DATA_C1(c);
+      int s = GET_DATA_C2(c);
+      int v = GET_DATA_C3(c);
       hsv_to_rgb_int(&h, &s, &v);
       return h;
     }
       
     case COLOR_TYPE_GRAY:
-      return _graya_getv(GET_COLOR_GRAY(color));
+      return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
       return _rgba_getr(palette_get_entry(get_current_palette(),
-					  GET_COLOR_INDEX(color)));
+					  GET_COLOR_DATA_INDEX(color)));
 
   }
 
@@ -242,23 +221,23 @@ int color_get_green(int imgtype, color_t color)
 	return 0;
 
     case COLOR_TYPE_RGB:
-      return _rgba_getg(GET_COLOR_RGB(color));
+      return GET_DATA_C2(GET_COLOR_DATA_RGB(color));
 
     case COLOR_TYPE_HSV: {
-      int c = GET_COLOR_HSV(color);
-      int h = _hsva_geth(c);
-      int s = _hsva_gets(c);
-      int v = _hsva_getv(c);
+      int c = GET_COLOR_DATA_HSV(color);
+      int h = GET_DATA_C1(c);
+      int s = GET_DATA_C2(c);
+      int v = GET_DATA_C3(c);
       hsv_to_rgb_int(&h, &s, &v);
       return s;
     }
       
     case COLOR_TYPE_GRAY:
-      return _graya_getv(GET_COLOR_GRAY(color));
+      return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
       return _rgba_getg(palette_get_entry(get_current_palette(),
-					  GET_COLOR_INDEX(color)));
+					  GET_COLOR_DATA_INDEX(color)));
 
   }
 
@@ -277,23 +256,23 @@ int color_get_blue(int imgtype, color_t color)
 	return 0;
 
     case COLOR_TYPE_RGB:
-      return _rgba_getb(GET_COLOR_RGB(color));
+      return GET_DATA_C3(GET_COLOR_DATA_RGB(color));
 
     case COLOR_TYPE_HSV: {
-      int c = GET_COLOR_HSV(color);
-      int h = _hsva_geth(c);
-      int s = _hsva_gets(c);
-      int v = _hsva_getv(c);
+      int c = GET_COLOR_DATA_HSV(color);
+      int h = GET_DATA_C1(c);
+      int s = GET_DATA_C2(c);
+      int v = GET_DATA_C3(c);
       hsv_to_rgb_int(&h, &s, &v);
       return v;
     }
       
     case COLOR_TYPE_GRAY:
-      return _graya_getv(GET_COLOR_GRAY(color));
+      return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
       return _rgba_getb(palette_get_entry(get_current_palette(),
-					  GET_COLOR_INDEX(color)));
+					  GET_COLOR_DATA_INDEX(color)));
 
   }
 
@@ -309,23 +288,23 @@ int color_get_hue(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_RGB: {
-      int c = GET_COLOR_RGB(color);
-      int r = _rgba_getr(c);
-      int g = _rgba_getg(c);
-      int b = _rgba_getb(c);
+      int c = GET_COLOR_DATA_RGB(color);
+      int r = GET_DATA_C1(c);
+      int g = GET_DATA_C2(c);
+      int b = GET_DATA_C3(c);
       rgb_to_hsv_int(&r, &g, &b);
       return r;
     }
 
     case COLOR_TYPE_HSV:
-      return _hsva_geth(GET_COLOR_HSV(color));
+      return GET_DATA_C1(GET_COLOR_DATA_HSV(color));
 
     case COLOR_TYPE_GRAY:
       return 0;
 
     case COLOR_TYPE_INDEX: {
       ase_uint32 c = palette_get_entry(get_current_palette(),
-				       GET_COLOR_INDEX(color));
+				       GET_COLOR_DATA_INDEX(color));
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -347,23 +326,23 @@ int color_get_saturation(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_RGB: {
-      int c = GET_COLOR_RGB(color);
-      int r = _rgba_getr(c);
-      int g = _rgba_getg(c);
-      int b = _rgba_getb(c);
+      int c = GET_COLOR_DATA_RGB(color);
+      int r = GET_DATA_C1(c);
+      int g = GET_DATA_C2(c);
+      int b = GET_DATA_C3(c);
       rgb_to_hsv_int(&r, &g, &b);
       return g;
     }
 
     case COLOR_TYPE_HSV:
-      return _hsva_gets(GET_COLOR_HSV(color));
+      return GET_DATA_C2(GET_COLOR_DATA_HSV(color));
 
     case COLOR_TYPE_GRAY:
       return 0;
 
     case COLOR_TYPE_INDEX: {
       ase_uint32 c = palette_get_entry(get_current_palette(),
-				       GET_COLOR_INDEX(color));
+				       GET_COLOR_DATA_INDEX(color));
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -385,23 +364,23 @@ int color_get_value(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_RGB: {
-      int c = GET_COLOR_RGB(color);
-      int r = _rgba_getr(c);
-      int g = _rgba_getg(c);
-      int b = _rgba_getb(c);
+      int c = GET_COLOR_DATA_RGB(color);
+      int r = GET_DATA_C1(c);
+      int g = GET_DATA_C2(c);
+      int b = GET_DATA_C3(c);
       rgb_to_hsv_int(&r, &g, &b);
       return b;
     }
 
     case COLOR_TYPE_HSV:
-      return _hsva_getv(GET_COLOR_HSV(color));
+      return GET_DATA_C3(GET_COLOR_DATA_HSV(color));
       
     case COLOR_TYPE_GRAY:
-      return _graya_getv(GET_COLOR_GRAY(color));
+      return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
       ase_uint32 c = palette_get_entry(get_current_palette(),
-				       GET_COLOR_INDEX(color));
+				       GET_COLOR_DATA_INDEX(color));
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -433,77 +412,15 @@ int color_get_index(int imgtype, color_t color)
       break;
 
     case COLOR_TYPE_GRAY:
-      return _graya_getv(GET_COLOR_GRAY(color));
+      return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
-      return GET_COLOR_INDEX(color);
+      return GET_COLOR_DATA_INDEX(color);
 
   }
 
   assert(FALSE);
   return -1;
-}
-
-int color_get_alpha(int imgtype, color_t color)
-{
-  switch (GET_COLOR_TYPE(color)) {
-
-    case COLOR_TYPE_MASK:
-      return imgtype == IMAGE_INDEXED ? 255: 0;
-
-    case COLOR_TYPE_RGB:
-      return _rgba_geta(GET_COLOR_RGB(color));
-
-    case COLOR_TYPE_HSV:
-      return _hsva_geta(GET_COLOR_HSV(color));
-      
-    case COLOR_TYPE_GRAY:
-      return _graya_geta(GET_COLOR_RGB(color));
-
-    case COLOR_TYPE_INDEX:
-      return 255;
-
-  }
-
-  assert(FALSE);
-  return -1;
-}
-
-/* set the alpha channel in the color */
-void color_set_alpha(color_t *color, int alpha)
-{
-  int data;
-
-  switch (GET_COLOR_TYPE(*color)) {
-
-    case COLOR_TYPE_MASK:
-      assert(FALSE);
-      break;
-
-    case COLOR_TYPE_RGB:
-      data = GET_COLOR_RGB(*color);
-      *color = color_rgb(_rgba_getr(data),
-			 _rgba_getg(data),
-			 _rgba_getb(data), alpha);
-      break;
-
-    case COLOR_TYPE_HSV:
-      data = GET_COLOR_HSV(*color);
-      *color = color_hsv(_hsva_geth(data),
-			 _hsva_gets(data),
-			 _hsva_getv(data), alpha);
-      break;
-      
-    case COLOR_TYPE_GRAY:
-      data = GET_COLOR_GRAY(*color);
-      *color = color_gray(_rgba_getg(data), alpha);
-      break;
-
-    case COLOR_TYPE_INDEX:
-      assert(FALSE);
-      break;
-
-  }
 }
 
 color_t color_from_image(int imgtype, int c)
@@ -516,21 +433,18 @@ color_t color_from_image(int imgtype, int c)
       if (_rgba_geta(c) > 0) {
 	color = color_rgb(_rgba_getr(c),
 			  _rgba_getg(c),
-			  _rgba_getb(c),
-			  _rgba_geta(c));
+			  _rgba_getb(c));
       }
       break;
 
     case IMAGE_GRAYSCALE:
       if (_graya_geta(c) > 0) {
-	color = color_gray(_graya_getv(c),
-			   _graya_geta(c));
+	color = color_gray(_graya_getv(c));
       }
       break;
 
     case IMAGE_INDEXED:
-      if (c > 0)
-	color = color_index(c);
+      color = color_index(c);
       break;
   }
 
@@ -540,13 +454,15 @@ color_t color_from_image(int imgtype, int c)
 int blackandwhite(int r, int g, int b)
 {
   return (r*30+g*59+b*11)/100 < 128 ?
-    makecol(0, 0, 0): makecol(255, 255, 255);
+    makecol(0, 0, 0):
+    makecol(255, 255, 255);
 }
 
 int blackandwhite_neg(int r, int g, int b)
 {
   return (r*30+g*59+b*11)/100 < 128 ?
-    makecol(255, 255, 255): makecol(0, 0, 0);
+    makecol(255, 255, 255):
+    makecol(0, 0, 0);
 }
 
 int get_color_for_allegro(int depth, color_t color)
@@ -561,36 +477,34 @@ int get_color_for_allegro(int depth, color_t color)
       break;
 
     case COLOR_TYPE_RGB:
-      data = GET_COLOR_RGB(color);
+      data = GET_COLOR_DATA_RGB(color);
       c = makeacol_depth(depth,
 			 _rgba_getr(data),
 			 _rgba_getg(data),
-			 _rgba_getb(data),
-			 _rgba_geta(data));
+			 _rgba_getb(data), 255);
       break;
 
     case COLOR_TYPE_HSV: {
       int h, s, v;
 
-      data = GET_COLOR_HSV(color);
-      h = _hsva_geth(data);
-      s = _hsva_gets(data);
-      v = _hsva_getv(data);
+      data = GET_COLOR_DATA_HSV(color);
+      h = GET_DATA_C1(data);
+      s = GET_DATA_C2(data);
+      v = GET_DATA_C3(data);
       hsv_to_rgb_int(&h, &s, &v);
 
-      c = makeacol_depth(depth, h, s, v, _hsva_geta(data));
+      c = makeacol_depth(depth, h, s, v, 255);
       break;
     }
       
     case COLOR_TYPE_GRAY:
-      data = GET_COLOR_GRAY(color);
-      c = _graya_getv(data);
+      c = GET_COLOR_DATA_GRAY(color);
       if (depth != 8)
-	c = makeacol_depth(depth, c, c, c, _graya_geta(data));
+	c = makeacol_depth(depth, c, c, c, 255);
       break;
 
     case COLOR_TYPE_INDEX:
-      c = GET_COLOR_INDEX(color);
+      c = GET_COLOR_DATA_INDEX(color);
       if (depth != 8) {
 	ase_uint32 _c = palette_get_entry(get_current_palette(), c);
 	c = makeacol_depth(depth,
@@ -629,57 +543,50 @@ int get_color_for_image(int imgtype, color_t color)
       }
       break;
 
-    case COLOR_TYPE_RGB:
-      data = GET_COLOR_RGB(color);
+    case COLOR_TYPE_RGB: {
+      int r, g, b;
+
+      data = GET_COLOR_DATA_RGB(color);
+      r = GET_DATA_C1(data);
+      g = GET_DATA_C2(data);
+      b = GET_DATA_C3(data);
+
       switch (imgtype) {
-	case IMAGE_RGB:
-	  c = data;
+	case IMAGE_RGB: {
+	  c = _rgba(r, g, b, 255);
 	  break;
+	}
 	case IMAGE_GRAYSCALE: {
-	  int r = _rgba_getr(data);
-	  int g = _rgba_getg(data);
-	  int b = _rgba_getb(data);
-
 	  rgb_to_hsv_int(&r, &g, &b);
-
-	  c = _graya(b, _rgba_geta(data));
+	  c = _graya(b, 255);
 	  break;
 	}
 	case IMAGE_INDEXED:
-	  c = orig_rgb_map->data
-	    [_rgba_getr(data) >> 3]
-	    [_rgba_getg(data) >> 3]
-	    [_rgba_getb(data) >> 3];
+	  c = orig_rgb_map->data[r >> 3][g >> 3][b >> 3];
 	  break;
       }
       break;
-
+    }
 
     case COLOR_TYPE_HSV: {
       int h, s, v;
 
-      data = GET_COLOR_HSV(color);
+      data = GET_COLOR_DATA_HSV(color);
+      h = GET_DATA_C1(data);
+      s = GET_DATA_C2(data);
+      v = GET_DATA_C3(data);
       
       switch (imgtype) {
 	case IMAGE_RGB:
-	  h = _hsva_geth(data);
-	  s = _hsva_gets(data);
-	  v = _hsva_getv(data);
 	  hsv_to_rgb_int(&h, &s, &v);
-
-	  c = _rgba(h, s, v, _hsva_geta(data));
+	  c = _rgba(h, s, v, 255);
 	  break;
 	case IMAGE_GRAYSCALE: {
-	  c = _graya(_hsva_getv(data),
-		     _hsva_geta(data));
+	  c = _graya(v, 255);
 	  break;
 	}
 	case IMAGE_INDEXED:
-	  h = _hsva_geth(data);
-	  s = _hsva_gets(data);
-	  v = _hsva_getv(data);
 	  hsv_to_rgb_int(&h, &s, &v);
-
 	  c = orig_rgb_map->data[h >> 3][s >> 3][v >> 3];
 	  break;
       }
@@ -687,24 +594,24 @@ int get_color_for_image(int imgtype, color_t color)
     }
       
     case COLOR_TYPE_GRAY:
-      data = GET_COLOR_GRAY(color);
+      data = GET_COLOR_DATA_GRAY(color);
       switch (imgtype) {
 	case IMAGE_RGB:
-	  c = _graya_getv(data);
-	  c = _rgba(c, c, c, _graya_geta(data));
+	  c = data;
+	  c = _rgba(c, c, c, 255);
 	  break;
 	case IMAGE_GRAYSCALE:
 	  c = data;
 	  break;
 	case IMAGE_INDEXED:
-	  c = _graya_getv(data);
-	  c = orig_rgb_map->data[c>>3][c>>3][c>>3];
+	  c = data;
+	  c = orig_rgb_map->data[c >> 3][c >> 3][c >> 3];
 	  break;
       }
       break;
 
     case COLOR_TYPE_INDEX:
-      data = GET_COLOR_INDEX(color);
+      data = GET_COLOR_DATA_INDEX(color);
       switch (imgtype) {
 	case IMAGE_RGB: {
 	  ase_uint32 _c = palette_get_entry(get_current_palette(), data);
@@ -749,69 +656,54 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
 
       case COLOR_TYPE_RGB:
-	data = GET_COLOR_RGB(color);
+	data = GET_COLOR_DATA_RGB(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "%s %d %s %d",
+	  uszprintf(buf, size, "%s %d",
 		    _("Gray"),
-		    _graya_getv(get_color_for_image(imgtype, color)),
-		    _("Alpha"),
-		    _rgba_geta(data));
+		    _graya_getv(get_color_for_image(imgtype, color)));
 	}
 	else {
 	  uszprintf(buf, size, "%s %d %d %d",
 		    _("RGB"),
-		    _rgba_getr(data),
-		    _rgba_getg(data),
-		    _rgba_getb(data));
+		    GET_DATA_C1(data),
+		    GET_DATA_C2(data),
+		    GET_DATA_C3(data));
   
 	  if (imgtype == IMAGE_INDEXED)
 	    uszprintf(buf+ustrlen(buf), size, " %s %d",
 		      _("Index"), get_color_for_image(imgtype, color));
-	  else if (imgtype == IMAGE_RGB)
-	    uszprintf(buf+ustrlen(buf), size, " %s %d",
-		      _("Alpha"), _rgba_geta(data));
 	}
 	break;
 
       case COLOR_TYPE_HSV:
-	data = GET_COLOR_HSV(color);
+	data = GET_COLOR_DATA_HSV(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "%s %d %s %d",
-		    _("Gray"), _hsva_getv(data),
-		    _("Alpha"), _hsva_geta(data));
+	  uszprintf(buf, size, "%s %d",
+		    _("Gray"), GET_DATA_C3(data));
 	}
 	else {
 	  uszprintf(buf, size, "%s %d %d %d",
 		    _("HSV"),
-		    _hsva_geth(data),
-		    _hsva_gets(data),
-		    _hsva_getv(data));
+		    GET_DATA_C1(data),
+		    GET_DATA_C2(data),
+		    GET_DATA_C3(data));
   
 	  if (imgtype == IMAGE_INDEXED)
 	    uszprintf(buf+ustrlen(buf), size, " %s %d",
 		      _("Index"), get_color_for_image(imgtype, color));
-	  else if (imgtype == IMAGE_RGB)
-	    uszprintf(buf+ustrlen(buf), size, " %s %d",
-		      _("Alpha"), _hsva_geta(data));
 	}
 	break;
 	
       case COLOR_TYPE_GRAY:
-	data = GET_COLOR_GRAY(color);
+	data = GET_COLOR_DATA_GRAY(color);
 	uszprintf(buf, size, "%s %d",
-		  _("Gray"), _graya_getv(data));
-
-	if ((imgtype == IMAGE_RGB) ||
-	    (imgtype == IMAGE_GRAYSCALE)) {
-	  uszprintf(buf+ustrlen(buf), size, " %s %d",
-		    _("Alpha"), _graya_geta(data));
-	}
+		  _("Gray"), data);
 	break;
 
       case COLOR_TYPE_INDEX: {
 	ase_uint32 _c = palette_get_entry(get_current_palette(), data & 0xff);
-	data = GET_COLOR_INDEX(color);
-	uszprintf(buf, size, "%s %d(RGB %d %d %d)",
+	data = GET_COLOR_DATA_INDEX(color);
+	uszprintf(buf, size, "%s %d (RGB %d %d %d)",
 		  _("Index"),
 		  data & 0xff,
 		  _rgba_getr(_c),
@@ -834,17 +726,17 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
 
       case COLOR_TYPE_RGB:
-	data = GET_COLOR_RGB(color);
+	data = GET_COLOR_DATA_RGB(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "KA %02x(%d)",
+	  uszprintf(buf, size, "V %02x(%d)",
 		    _graya_getv(get_color_for_image(imgtype, color)),
 		    _graya_getv(get_color_for_image(imgtype, color)));
 	}
 	else {
 	  uszprintf(buf, size, "RGB %02x%02x%02x",
-		    _rgba_getr(data),
-		    _rgba_getg(data),
-		    _rgba_getb(data));
+		    GET_DATA_C1(data),
+		    GET_DATA_C2(data),
+		    GET_DATA_C3(data));
 
 	  if (imgtype == IMAGE_INDEXED)
 	    uszprintf(buf+ustrlen(buf), size, "(%d)",
@@ -853,17 +745,17 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
 
       case COLOR_TYPE_HSV:
-	data = GET_COLOR_HSV(color);
+	data = GET_COLOR_DATA_HSV(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "KA %02x(%d)",
-		    _hsva_getv(data),
-		    _hsva_getv(data));
+	  uszprintf(buf, size, "V %02x(%d)",
+		    GET_DATA_C3(data),
+		    GET_DATA_C3(data));
 	}
 	else {
 	  uszprintf(buf, size, "HSV %02x%02x%02x",
-		    _hsva_geth(data),
-		    _hsva_gets(data),
-		    _hsva_getv(data));
+		    GET_DATA_C1(data),
+		    GET_DATA_C2(data),
+		    GET_DATA_C3(data));
 
 	  if (imgtype == IMAGE_INDEXED)
 	    uszprintf(buf+ustrlen(buf), size, "(%d)",
@@ -872,14 +764,12 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
 
       case COLOR_TYPE_GRAY:
-	data = GET_COLOR_GRAY(color);
-	uszprintf(buf, size, "I %02x (%d)",
-		  _graya_getv(data),
-		  _graya_getv(data));
+	data = GET_COLOR_DATA_GRAY(color);
+	uszprintf(buf, size, "I %02x (%d)", data, data);
 	break;
 
       case COLOR_TYPE_INDEX:
-	data = GET_COLOR_INDEX(color);
+	data = GET_COLOR_DATA_INDEX(color);
 	uszprintf(buf, size, "I %02x (%d)", data, data);
 	break;
 

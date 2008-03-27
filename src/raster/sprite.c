@@ -24,6 +24,7 @@
 #include "jinete/jlist.h"
 #include "jinete/jmutex.h"
 
+#include "file/filedata.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
@@ -51,7 +52,6 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite->imgtype = imgtype;
   sprite->w = w;
   sprite->h = h;
-  sprite->bgcolor = 0;
   sprite->frames = 1;
   sprite->frlens = jmalloc(sizeof(int)*sprite->frames);
   sprite->frame = 0;
@@ -97,6 +97,9 @@ Sprite *sprite_new(int imgtype, int w, int h)
   /* multiple access */
   sprite->locked = FALSE;
   sprite->mutex = jmutex_new();
+
+  /* file format data */
+  sprite->filedata = NULL;
 
   /* free the temporary palette */
   palette_free(pal);
@@ -203,8 +206,8 @@ Sprite *sprite_new_with_layer(int imgtype, int w, int h)
   /* clear with mask color */
   image_clear(image, 0);
 
-  /* configure layer name and blend mode */
-  layer_set_name(layer, "Background");
+  /* configure the first transparent layer */
+  layer_set_name(layer, "Layer 1");
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
   /* add image in the layer stock */
@@ -275,6 +278,11 @@ void sprite_free(Sprite *sprite)
   /* destroy mutex */
   jmutex_free(sprite->mutex);
 
+  /* destroy file-data */
+  if (sprite->filedata)
+    filedata_free(sprite->filedata);
+
+  /* destroy gfxobj */
   gfxobj_free((GfxObj *)sprite);
 }
 
@@ -321,10 +329,8 @@ bool sprite_need_alpha(Sprite *sprite)
   switch (sprite->imgtype) {
 
     case IMAGE_RGB:
-      return _rgba_geta(sprite->bgcolor) < 255;
-
     case IMAGE_GRAYSCALE:
-      return _graya_geta(sprite->bgcolor) < 255;
+      return sprite_get_background_layer(sprite) == NULL;
 
   }
   return FALSE;
@@ -430,6 +436,14 @@ void sprite_set_filename(Sprite *sprite, const char *filename)
   strcpy(sprite->filename, filename);
 }
 
+void sprite_set_filedata(Sprite *sprite, struct FileData *filedata)
+{
+  if (sprite->filedata)
+    jfree(sprite->filedata);
+
+  sprite->filedata = filedata;
+}
+
 void sprite_set_size(Sprite *sprite, int w, int h)
 {
   sprite->w = w;
@@ -518,10 +532,9 @@ void sprite_set_frame(Sprite *sprite, int frame)
  */
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 {
-  Palette *palette = sprite_get_palette(sprite, 0);
   Image *old_image;
   Image *new_image;
-  int c, r, g, b;
+  int c;
 
   /* nothing to do */
   if (sprite->imgtype == imgtype)
@@ -531,86 +544,10 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
   if (undo_is_enabled(sprite->undo))
     undo_open(sprite->undo);
 
-  /* change the background color */
-  if (undo_is_enabled(sprite->undo))
-    undo_int(sprite->undo, (GfxObj *)sprite, &sprite->bgcolor);
-
-  c = sprite->bgcolor;
-
-  switch (sprite->imgtype) {
-
-    case IMAGE_RGB:
-      switch (imgtype) {
-	/* RGB -> Grayscale */
-	case IMAGE_GRAYSCALE:
-	  r = _rgba_getr(c);
-	  g = _rgba_getg(c);
-	  b = _rgba_getb(c);
-	  rgb_to_hsv_int(&r, &g, &b);
-	  c = _graya(b, _rgba_geta(c));
-	  break;
-	/* RGB -> Indexed */
-	case IMAGE_INDEXED:
-	  r = _rgba_getr(c);
-	  g = _rgba_getg(c);
-	  b = _rgba_getb(c);
-	  if (_rgba_geta(c) == 0)
-	    c = 0;
-	  else
-	    c = rgb_map->data[r>>3][g>>3][b>>3];
-	  break;
-      }
-      break;
-
-    case IMAGE_GRAYSCALE:
-      switch (imgtype) {
-	/* Grayscale -> RGB */
-	case IMAGE_RGB:
-	  g = _graya_getv(c);
-	  c = _rgba(g, g, g, _graya_geta(c));
-	  break;
-	/* Grayscale -> Indexed */
-	case IMAGE_INDEXED:
-	  if (_graya_geta(c) == 0)
-	    c = 0;
-	  else
-	    c = _graya_getv(c);
-	  break;
-      }
-      break;
-
-    case IMAGE_INDEXED:
-      switch (imgtype) {
-	/* Indexed -> RGB */
-	case IMAGE_RGB:
-	  if (c == 0)
-	    c = 0;
-	  else
-	    c = palette->color[c];
-	  break;
-	/* Indexed -> Grayscale */
-	case IMAGE_GRAYSCALE:
-	  if (c == 0)
-	    c = 0;
-	  else {
-	    r = _rgba_getr(palette->color[c]);
-	    g = _rgba_getg(palette->color[c]);
-	    b = _rgba_getb(palette->color[c]);
-	    rgb_to_hsv_int(&r, &g, &b);
-	    c = _graya(b, 255);
-	  }
-	  break;
-      }
-      break;
-  }
-
-  sprite_set_bgcolor(sprite, c);
-  
   /* change imgtype of the stock of images */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_int(sprite->undo, (GfxObj *)sprite, &imgtype);
+  if (undo_is_enabled(sprite->undo))
     undo_int(sprite->undo, (GfxObj *)sprite->stock, &sprite->stock->imgtype);
-  }
+
   sprite->stock->imgtype = imgtype;
 
   for (c=0; c<sprite->stock->nimage; c++) {
@@ -624,7 +561,7 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
 				  sprite_get_palette(sprite,
 						     sprite->frame));
     if (!new_image)
-      return;		/* TODO big error!!!: not enough memory!
+      return;		/* TODO error handling: not enough memory!
 			   we should undo all work done */
 
     if (undo_is_enabled(sprite->undo))
@@ -658,12 +595,18 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
     undo_close(sprite->undo);
 }
 
-/**
- * Sets the background color of the sprite.
- */
-void sprite_set_bgcolor(Sprite *sprite, int color)
+Layer *sprite_get_background_layer(Sprite *sprite)
 {
-  sprite->bgcolor = color;
+  assert(sprite != NULL);
+
+  if (jlist_length(sprite->set->layers) > 0) {
+    Layer *bglayer = jlist_last_data(sprite->set->layers);
+
+    if (layer_is_background(bglayer))
+      return bglayer;
+  }
+
+  return NULL;
 }
 
 /**
@@ -727,7 +670,7 @@ Mask *sprite_request_mask(Sprite *sprite, const char *name)
 
 void sprite_render(Sprite *sprite, Image *image, int x, int y)
 {
-  image_rectfill(image, x, y, x+sprite->w-1, y+sprite->h-1, sprite->bgcolor);
+  image_rectfill(image, x, y, x+sprite->w-1, y+sprite->h-1, 0);
   layer_render(sprite->set, image, x, y, sprite->frame);
 }
 
@@ -779,19 +722,29 @@ int sprite_getpixel(Sprite *sprite, int x, int y)
   int color = 0;
 
   if ((x >= 0) && (y >= 0) && (x < sprite->w) && (y < sprite->h)) {
-    int old_bgcolor = sprite->bgcolor;
-    sprite->bgcolor = 0;
-    
     image = image_new(sprite->imgtype, 1, 1);
     image_clear(image, 0);
     sprite_render(sprite, image, -x, -y);
     color = image_getpixel(image, 0, 0);
     image_free(image);
-
-    sprite->bgcolor = old_bgcolor;
   }
 
   return color;
+}
+
+int sprite_get_memsize(Sprite *sprite)
+{
+  Image *image;
+  int i, size = 0;
+
+  for (i=0; i<sprite->stock->nimage; i++) {
+    image = sprite->stock->image[i];
+
+    if (image != NULL)
+      size += IMAGE_LINE_SIZE(image, image->w) * image->h;
+  }
+
+  return size;
 }
 
 static Layer *index2layer(Layer *layer, int index, int *index_count)
@@ -858,7 +811,6 @@ static Sprite *general_copy(const Sprite *src_sprite)
 
   /* copy general properties */
   strcpy(dst_sprite->filename, src_sprite->filename);
-  sprite_set_bgcolor(dst_sprite, src_sprite->bgcolor);
   sprite_set_frames(dst_sprite, src_sprite->frames);
   memcpy(dst_sprite->frlens, src_sprite->frlens, sizeof(int)*src_sprite->frames);
 

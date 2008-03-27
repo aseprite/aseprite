@@ -30,6 +30,7 @@
 #include "core/app.h"
 #include "core/core.h"
 #include "file/file.h"
+#include "file/filedata.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
@@ -536,11 +537,16 @@ void fop_operate(FileOp *fop)
       }
       fop->filename = jstrdup(jlist_first_data(fop->seq.filename_list));
 
-      /* set the frames range */
-      if (fop->sprite)
+      /* final setup */
+      if (fop->sprite != NULL) {
+	/* set the frames range */
 	sprite_set_frames(fop->sprite, frame);
+
+	/* set the frames range */
+	sprite_set_filedata(fop->sprite, fop->seq.filedata);
+      }
     }
-    /* direct load from a file */
+    /* direct load from one file */
     else {
       /* call the "load" procedure */
       if (!(*fop->format->load)(fop))
@@ -679,6 +685,17 @@ void fop_free(FileOp *fop)
   jfree(fop);
 }
 
+void fop_sequence_set_filedata(FileOp *fop, FileData *filedata)
+{
+  assert(fop->seq.filedata == NULL);
+  fop->seq.filedata = filedata;
+}
+
+FileData *fop_sequence_get_filedata(FileOp *fop)
+{
+  return fop->seq.filedata;
+}
+
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 {
   palette_set_entry(fop->seq.palette, index, _rgba(r, g, b, 255));
@@ -711,10 +728,11 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
       return NULL;
     }
 
-    layer_set_name(layer, _("Background"));
-
     /* add the layer */
     layer_add_layer(sprite->set, layer);
+
+    /* configure the layer as the background */
+    layer_configure_as_background(layer);
 
     /* done */
     fop->sprite = sprite;
@@ -867,6 +885,7 @@ static void fop_prepare_for_sequence(FileOp *fop)
 {
   fop->seq.filename_list = jlist_new();
   fop->seq.palette = palette_new(0, MAX_PALETTE_COLORS);
+  fop->seq.filedata = NULL;
 }
 
 static FileFormat *get_fileformat(const char *extension)

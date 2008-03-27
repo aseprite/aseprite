@@ -61,7 +61,9 @@ Image *GetImage2(Sprite *sprite, int *x, int *y, int *opacity)
 {
   Image *image = NULL;
 
-  if (sprite && sprite->layer && layer_is_image(sprite->layer)) {
+  if (sprite != NULL &&
+      sprite->layer != NULL &&
+      layer_is_image(sprite->layer)) {
     Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
     if (cel) {
@@ -113,26 +115,25 @@ void LoadPalette(const char *filename)
 }
 
 /* clears the mask region in the current sprite with the BG color */
-void ClearMask(color_t _color)
+void ClearMask(void)
 {
   Sprite *sprite = current_sprite;
   int x, y, u, v, putx, puty;
   ase_uint8 *address;
   Image *image;
   div_t d;
-  int color;
 
   if (sprite) {
     image = GetImage2(sprite, &x, &y, NULL);
     if (image) {
-      color = get_color_for_image(sprite->imgtype, _color);
+      int bgcolor = app_get_color_to_clear_layer(sprite->layer);
 
       if (mask_is_empty(sprite->mask)) {
 	if (undo_is_enabled(sprite->undo))
 	  undo_image(sprite->undo, image, 0, 0, image->w, image->h);
 
 	/* clear all */
-	image_clear(image, color);
+	image_clear(image, bgcolor);
       }
       else {
 	int x1 = MAX(0, sprite->mask->x);
@@ -156,7 +157,7 @@ void ClearMask(color_t _color)
 	    if ((*address & (1<<d.rem))) {
 	      putx = u+sprite->mask->x-x;
 	      puty = v+sprite->mask->y-y;
-	      image_putpixel(image, putx, puty, color);
+	      image_putpixel(image, putx, puty, bgcolor);
 	    }
 
 	    _image_bitmap_next_bit(d, address);

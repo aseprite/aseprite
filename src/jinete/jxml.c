@@ -367,6 +367,28 @@ JXmlElem jxmlelem_get_elem_by_id(JXmlElem elem, const char *id)
   return NULL;
 }
 
+JXmlElem jxmlelem_get_elem_by_name(JXmlElem elem, const char *name)
+{
+  const char *elem_name = jxmlelem_get_name(elem);
+  JLink link;
+
+  /* this is the element with the specified ID */
+  if (elem_name && strcmp(elem_name, name) == 0)
+    return elem;
+
+  /* go through the children */
+  JI_LIST_FOR_EACH(((JXmlNode)elem)->children, link) {
+    JXmlNode child = (JXmlNode)link->data;
+    if (child->type == JI_XML_ELEM) {
+      JXmlElem found = jxmlelem_get_elem_by_name((JXmlElem)child, name);
+      if (found)
+	return found;
+    }
+  }
+
+  return NULL;
+}
+
 /**********************************************************************/
 /* JXmlText                                                           */
 /**********************************************************************/

@@ -73,6 +73,7 @@ static int use_dither = FALSE;
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 static bool editor_msg_proc(JWidget widget, JMessage msg);
 static void editor_request_size(JWidget widget, int *w, int *h);
+static void editor_draw_sprite_boundary(JWidget widget);
 static void editor_setcursor(JWidget widget, int x, int y);
 
 JWidget editor_view_new(void)
@@ -99,6 +100,7 @@ JWidget editor_new(void)
   editor->old_cursor_thick = 0;
   editor->cursor_candraw = FALSE;
   editor->alt_pressed = FALSE;
+  editor->ctrl_pressed = FALSE;
   editor->space_pressed = FALSE;
 
   jwidget_add_hook(widget, editor_type(), editor_msg_proc, editor);
@@ -626,57 +628,57 @@ void editor_draw_grid_safe(JWidget widget)
   }
 }
 
-void editor_draw_layer_boundary(JWidget widget)
-{
-  int x, y, x1, y1, x2, y2;
-  Sprite *sprite = editor_get_sprite(widget);
-  Image *image = GetImage2(sprite, &x, &y, NULL);
+/* void editor_draw_layer_boundary(JWidget widget) */
+/* { */
+/*   int x, y, x1, y1, x2, y2; */
+/*   Sprite *sprite = editor_get_sprite(widget); */
+/*   Image *image = GetImage2(sprite, &x, &y, NULL); */
 
-  if (image) {
-    editor_to_screen(widget, x, y, &x1, &y1);
-    editor_to_screen(widget, x+image->w, y+image->h, &x2, &y2);
-    rectdotted(ji_screen, x1-1, y1-1, x2, y2,
-	       makecol(255, 255, 0), makecol(0, 0, 255));
-  }
-}
+/*   if (image) { */
+/*     editor_to_screen(widget, x, y, &x1, &y1); */
+/*     editor_to_screen(widget, x+image->w, y+image->h, &x2, &y2); */
+/*     rectdotted(ji_screen, x1-1, y1-1, x2, y2, */
+/* 	       makecol(255, 255, 0), makecol(0, 0, 255)); */
+/*   } */
+/* } */
 
-void editor_draw_layer_boundary_safe(JWidget widget)
-{
-  JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
-  int c, nrects = JI_REGION_NUM_RECTS(region);
-  JRect rc;
+/* void editor_draw_layer_boundary_safe(JWidget widget) */
+/* { */
+/*   JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS); */
+/*   int c, nrects = JI_REGION_NUM_RECTS(region); */
+/*   JRect rc; */
 
-  for (c=0, rc=JI_REGION_RECTS(region);
-       c<nrects;
-       c++, rc++) {
-    set_clip(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
-    editor_draw_layer_boundary(widget);
-  }
-  set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+/*   for (c=0, rc=JI_REGION_RECTS(region); */
+/*        c<nrects; */
+/*        c++, rc++) { */
+/*     set_clip(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1); */
+/*     editor_draw_layer_boundary(widget); */
+/*   } */
+/*   set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1); */
 
-  jregion_free(region);
-}
+/*   jregion_free(region); */
+/* } */
 
-void editor_update_layer_boundary(JWidget widget)
-{
-  int x, y, x1, y1, x2, y2;
-  Sprite *sprite = editor_get_sprite(widget);
-  Image *image = GetImage2(sprite, &x, &y, NULL);
-  Editor *editor = editor_data(widget);
+/* void editor_update_layer_boundary(JWidget widget) */
+/* { */
+/*   int x, y, x1, y1, x2, y2; */
+/*   Sprite *sprite = editor_get_sprite(widget); */
+/*   Image *image = GetImage2(sprite, &x, &y, NULL); */
+/*   Editor *editor = editor_data(widget); */
 
-  if (editor->rect_data) {
-    rectrestore(editor->rect_data);
-    rectdiscard(editor->rect_data);
-    editor->rect_data = NULL;
-  }
+/*   if (editor->rect_data) { */
+/*     rectrestore(editor->rect_data); */
+/*     rectdiscard(editor->rect_data); */
+/*     editor->rect_data = NULL; */
+/*   } */
 
-  if (image) {
-    editor_to_screen(widget, x, y, &x1, &y1);
-    editor_to_screen(widget, x+image->w, y+image->h, &x2, &y2);
+/*   if (image) { */
+/*     editor_to_screen(widget, x, y, &x1, &y1); */
+/*     editor_to_screen(widget, x+image->w, y+image->h, &x2, &y2); */
 
-    editor->rect_data = rectsave(ji_screen, x1-1, y1-1, x2, y2);
-  }
-}
+/*     editor->rect_data = rectsave(ji_screen, x1-1, y1-1, x2, y2); */
+/*   } */
+/* } */
 
 void editor_draw_path(JWidget widget, int draw_extras)
 {
@@ -841,12 +843,16 @@ void editor_update_statusbar_for_standby(JWidget widget)
   if (editor->alt_pressed) {
     color_t color = color_from_image(editor->sprite->imgtype,
 				     sprite_getpixel(editor->sprite, x, y));
-
-    usprintf(buf, "%s ", _("Color"));
-    color_to_formalstring(editor->sprite->imgtype,
-			  color,
-			  buf+ustrlen(buf),
-			  sizeof(buf)-ustrlen(buf), TRUE);
+    if (color_type(color) != COLOR_TYPE_MASK) {
+      usprintf(buf, "%s ", _("Color"));
+      color_to_formalstring(editor->sprite->imgtype,
+			    color,
+			    buf+ustrlen(buf),
+			    sizeof(buf)-ustrlen(buf), TRUE);
+    }
+    else {
+      usprintf(buf, "%s", _("Transparent"));
+    }
   }
   else {
     ustrcpy(buf, empty_string);
@@ -1022,8 +1028,8 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	editor_draw_sprite(widget, 0, 0,
 			   editor->sprite->w-1, editor->sprite->h-1);
 
-	/* draw the layer boundary */
-	editor_draw_layer_boundary(widget);
+	/* draw the sprite boundary */
+	editor_draw_sprite_boundary(widget);
 
 	if (editor->rect_data) {
 	  /* destroy the layer-bound information */
@@ -1089,21 +1095,18 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	 layer_get_cel(editor->sprite->layer,
 		       editor->sprite->frame) != NULL);
 
-      if (msg->any.shifts & KB_ALT_FLAG)
-	editor->alt_pressed = TRUE;
-
-      if (key[KEY_SPACE])	/* TODO another way to get the KEY_SPACE state? */
-	editor->space_pressed = TRUE;
+      if (msg->any.shifts & KB_ALT_FLAG) editor->alt_pressed = TRUE;
+      if (msg->any.shifts & KB_CTRL_FLAG) editor->ctrl_pressed = TRUE;
+      /* TODO another way to get the KEY_SPACE state? */
+      if (key[KEY_SPACE]) editor->space_pressed = TRUE;
       break;
 
     case JM_MOUSELEAVE:
       hide_drawing_cursor(widget);
 
-      if (editor->alt_pressed)
-	editor->alt_pressed = FALSE;
-
-      if (editor->space_pressed)
-	editor->space_pressed = FALSE;
+      if (editor->alt_pressed) editor->alt_pressed = FALSE;
+      if (editor->ctrl_pressed) editor->ctrl_pressed = FALSE;
+      if (editor->space_pressed) editor->space_pressed = FALSE;
       break;
 
     case JM_BUTTONPRESSED: {
@@ -1114,23 +1117,33 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	break;
 
       /* move the scroll */
-      if ((msg->mouse.left && has_only_shifts(msg, KB_SHIFT_FLAG)) ||
-	  (msg->mouse.middle && has_only_shifts(msg, 0)) ||
+      if ((msg->mouse.middle && has_only_shifts(msg, 0)) ||
 	  (msg->mouse.left && editor->space_pressed)) {
 	editor->state = EDIT_MOVING_SCROLL;
 
 	editor_setcursor(widget, msg->mouse.x, msg->mouse.y);
       }
       /* move frames position */
-      else if (msg->mouse.left && has_only_shifts(msg, KB_CTRL_FLAG)) {
+      else if (editor->ctrl_pressed) {
 	if ((editor->sprite->layer) &&
-	    (editor->sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) &&
-	    (editor->sprite->layer->writable)) {
-	  bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
-
-	  interactive_move_layer(click2 ? MODE_CLICKANDCLICK:
-					  MODE_CLICKANDRELEASE,
-				 TRUE, NULL);
+	    (editor->sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)) {
+	  /* TODO you can move the `Background' with tiled mode */
+	  if (layer_is_background(editor->sprite->layer)) {
+	    jalert(_(PACKAGE
+		     "<<You can't move the `Background' layer."
+		     "||&Close"));
+	  }
+	  else if (!layer_is_moveable(editor->sprite->layer)) {
+	    jalert(_(PACKAGE
+		     "<<The layer movement is locked."
+		     "||&Close"));
+	  }
+	  else {
+	    bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
+	    interactive_move_layer(click2 ? MODE_CLICKANDCLICK:
+					    MODE_CLICKANDRELEASE,
+				   TRUE, NULL);
+	  }
 	  return TRUE;
 	}
       }
@@ -1171,14 +1184,14 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       /* draw */
       else if (editor->state == EDIT_DRAWING) {
 	JWidget colorbar = app_get_colorbar();
-	color_t color = msg->mouse.left ?
-	  /* color with left button */
-	  colorbar_get_fg_color(colorbar):
-	  /* color with right button */
-	  color_mask();
+	color_t fg = colorbar_get_fg_color(colorbar);
+	color_t bg = colorbar_get_bg_color(colorbar);
 
 	/* call the tool-control routine */
-	control_tool(widget, current_tool, color);
+	control_tool(widget, current_tool,
+		     msg->mouse.left ? fg: bg,
+		     msg->mouse.left ? bg: fg,
+		     msg->mouse.left);
 
 	editor->state = EDIT_STANDBY;
 	jwidget_release_mouse(widget);
@@ -1243,6 +1256,12 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
 	    return TRUE;
 
+	  case KEY_LCONTROL:
+	  case KEY_RCONTROL:
+	    editor->ctrl_pressed = TRUE;
+	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	    return TRUE;
+
 	  case KEY_SPACE:
 	    editor->space_pressed = TRUE;
 	    editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
@@ -1262,6 +1281,15 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	    return TRUE;
 	  }
 	  break;
+
+	  case KEY_LCONTROL:
+	  case KEY_RCONTROL:
+	    if (editor->ctrl_pressed) {
+	      editor->ctrl_pressed = FALSE;
+	      editor_setcursor(widget, jmouse_x(0), jmouse_y(0));
+	      return TRUE;
+	    }
+	    break;
 
 	case KEY_SPACE:
 	  if (editor->space_pressed) {
@@ -1391,6 +1419,18 @@ static void editor_request_size(JWidget widget, int *w, int *h)
   }
 }
 
+static void editor_draw_sprite_boundary(JWidget widget)
+{
+  Sprite *sprite = editor_get_sprite(widget);
+  int x1, y1, x2, y2;
+
+  assert(sprite != NULL);
+
+  editor_to_screen(widget, 0, 0, &x1, &y1);
+  editor_to_screen(widget, sprite->w, sprite->h, &x2, &y2);
+  rect(ji_screen, x1-1, y1-1, x2, y2, makecol(0, 0, 0));
+}
+
 static void editor_setcursor(JWidget widget, int x, int y)
 {
   Editor *editor = editor_data(widget);
@@ -1399,7 +1439,7 @@ static void editor_setcursor(JWidget widget, int x, int y)
 
     case EDIT_MOVING_SCROLL:
       hide_drawing_cursor(widget);
-      jmouse_set_cursor(JI_CURSOR_MOVE);
+      jmouse_set_cursor(JI_CURSOR_SCROLL);
       break;
 
     case EDIT_DRAWING:
@@ -1409,20 +1449,27 @@ static void editor_setcursor(JWidget widget, int x, int y)
 
     case EDIT_STANDBY:
       if (editor->sprite) {
-	if (editor->cursor_candraw) {
-	  if (editor->alt_pressed) {
-	    hide_drawing_cursor(widget);
-	    jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	  }
-	  else if (editor->space_pressed) {
-	    hide_drawing_cursor(widget);
-	    jmouse_set_cursor(JI_CURSOR_MOVE);
-	  }
-	  else {
-	    jmouse_set_cursor(JI_CURSOR_NULL);
-	    show_drawing_cursor(widget);
-	  }
+	/* eyedropper */
+	if (editor->alt_pressed) {
+	  hide_drawing_cursor(widget);
+	  jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	}
+	/* move layer */
+	else if (editor->ctrl_pressed) {
+	  hide_drawing_cursor(widget);
+	  jmouse_set_cursor(JI_CURSOR_MOVE);
+	}
+	/* scroll */
+	else if (editor->space_pressed) {
+	  hide_drawing_cursor(widget);
+	  jmouse_set_cursor(JI_CURSOR_SCROLL);
+	}
+	/* draw */
+	else if (editor->cursor_candraw) {
+	  jmouse_set_cursor(JI_CURSOR_NULL);
+	  show_drawing_cursor(widget);
+	}
+	/* forbidden */
 	else {
 	  hide_drawing_cursor(widget);
 	  jmouse_set_cursor(JI_CURSOR_FORBIDDEN);

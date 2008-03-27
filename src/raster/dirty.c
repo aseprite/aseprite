@@ -181,6 +181,35 @@ Dirty *dirty_new_copy(Dirty *src)
   return dst;
 }
 
+Dirty *dirty_new_from_differences(Image *image, Image *image_diff)
+{
+  Dirty *dirty = dirty_new(image, 0, 0, image->w, image->h, FALSE);
+  int x, y, x1, x2;
+
+  for (y=0; y<image->h; y++) {
+    x1 = x2 = -1;
+
+    for (x=0; x<image->w; x++) {
+      if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
+	x1 = x;
+	break;
+      }
+    }
+
+    for (x=image->w-1; x>=0; x--) {
+      if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
+	x2 = x;
+	break;
+      }
+    }
+
+    if (x1 >= 0 && x2 >= 0)
+      dirty_hline(dirty, x1, y, x2);
+  }
+
+  return dirty;
+}
+
 void dirty_free(Dirty *dirty)
 {
   register struct DirtyRow *row;
@@ -610,7 +639,7 @@ void dirty_line_brush(Dirty *dirty, Brush *brush, int x1, int y1, int x2, int y2
 	    (AlgoPixel)algo_putbrush);
 }
 
-void dirty_get(Dirty *dirty)
+void dirty_save_image_data(Dirty *dirty)
 {
   register int v, u, shift = IMAGE_SHIFT(dirty->image);
 
@@ -627,7 +656,7 @@ void dirty_get(Dirty *dirty)
     }
 }
 
-void dirty_put(Dirty *dirty)
+void dirty_restore_image_data(Dirty *dirty)
 {
   register struct DirtyRow *row;
   register struct DirtyCol *col;

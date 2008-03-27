@@ -24,7 +24,7 @@
 #define __ASE_CONFIG_H
 
 /* general information */
-#define PACKAGE			"ase"
+#define PACKAGE			"ASE"
 #define VERSION			"0.6b2"
 #define WEBSITE			"http://www.aseprite.org/"
 #define COPYRIGHT		"Copyright (C) 2001-2008 David A. Capello"

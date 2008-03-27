@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,6 +52,7 @@
 #define TRANSLATE_ATTR(a) a
 
 static JWidget convert_tag_to_widget(JXmlElem elem);
+static int convert_align_value_to_flags(const char *value);
 
 JWidget ji_load_widget(const char *filename, const char *name)
 {
@@ -92,6 +94,8 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   JWidget widget = NULL;
   JWidget child;
 
+  /* TODO error handling: add a message if the widget is bad specified */
+
   /* box */
   if (ustrcmp(elem_name, "box") == 0) {
     bool horizontal  = jxmlelem_has_attr(elem, "horizontal");
@@ -106,37 +110,35 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   else if (ustrcmp(elem_name, "button") == 0) {
     const char *text = jxmlelem_get_attr(elem, "text");
 
-    if (text) {
-      widget = jbutton_new(TRANSLATE_ATTR(text));
-      if (widget) {
-	bool left   = jxmlelem_has_attr(elem, "left");
-	bool right  = jxmlelem_has_attr(elem, "right");
-	bool top    = jxmlelem_has_attr(elem, "top");
-	bool bottom = jxmlelem_has_attr(elem, "bottom");
-	const char *_bevel = jxmlelem_get_attr(elem, "bevel");
+    widget = jbutton_new(text ? TRANSLATE_ATTR(text): NULL);
+    if (widget) {
+      bool left   = jxmlelem_has_attr(elem, "left");
+      bool right  = jxmlelem_has_attr(elem, "right");
+      bool top    = jxmlelem_has_attr(elem, "top");
+      bool bottom = jxmlelem_has_attr(elem, "bottom");
+      const char *_bevel = jxmlelem_get_attr(elem, "bevel");
 
-	jwidget_set_align(widget,
-			  (left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
-			  (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      jwidget_set_align(widget,
+			(left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
+			(top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
-	if (_bevel != NULL) {
-	  char *bevel = jstrdup(_bevel);
-	  int c, b[4];
-	  char *tok;
+      if (_bevel != NULL) {
+	char *bevel = jstrdup(_bevel);
+	int c, b[4];
+	char *tok;
 
-	  for (c=0; c<4; ++c)
-	    b[c] = 0;
+	for (c=0; c<4; ++c)
+	  b[c] = 0;
 
-	  for (tok=ustrtok(bevel, " "), c=0;
-	       tok;
-	       tok=ustrtok(NULL, " "), ++c) {
-	    if (c < 4)
-	      b[c] = ustrtol(tok, NULL, 10);
-	  }
-	  jfree(bevel);
-
-	  jbutton_set_bevel(widget, b[0], b[1], b[2], b[3]);
+	for (tok=ustrtok(bevel, " "), c=0;
+	     tok;
+	     tok=ustrtok(NULL, " "), ++c) {
+	  if (c < 4)
+	    b[c] = ustrtol(tok, NULL, 10);
 	}
+	jfree(bevel);
+
+	jbutton_set_bevel(widget, b[0], b[1], b[2], b[3]);
       }
     }
   }
@@ -144,20 +146,18 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   else if (ustrcmp(elem_name, "check") == 0) {
     const char *text = jxmlelem_get_attr(elem, "text");
 
-    if (text) {
-      widget = jcheck_new(TRANSLATE_ATTR(text));
-      if (widget) {
-	bool center = jxmlelem_has_attr(elem, "center");
-	bool right  = jxmlelem_has_attr(elem, "right");
-	bool top    = jxmlelem_has_attr(elem, "top");
-	bool bottom = jxmlelem_has_attr(elem, "bottom");
+    widget = jcheck_new(text ? TRANSLATE_ATTR(text): NULL);
+    if (widget) {
+      bool center = jxmlelem_has_attr(elem, "center");
+      bool right  = jxmlelem_has_attr(elem, "right");
+      bool top    = jxmlelem_has_attr(elem, "top");
+      bool bottom = jxmlelem_has_attr(elem, "bottom");
 
-	jwidget_set_align(widget,
-			  (center ? JI_CENTER:
-			   (right ? JI_RIGHT: JI_LEFT)) |
-			  (top    ? JI_TOP:
-			   (bottom ? JI_BOTTOM: JI_MIDDLE)));
-      }
+      jwidget_set_align(widget,
+			(center ? JI_CENTER:
+			 (right ? JI_RIGHT: JI_LEFT)) |
+			(top    ? JI_TOP:
+			 (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* combobox */
@@ -173,30 +173,38 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
       bool readonly = jxmlelem_has_attr(elem, "readonly");
 
       widget = jentry_new(ustrtol(maxsize, NULL, 10),
-			  text != NULL ? TRANSLATE_ATTR(text): "");
+			  text ? TRANSLATE_ATTR(text): NULL);
 
       if (readonly)
 	jentry_readonly(widget, TRUE);
+    }
+  }
+  /* grid */
+  else if (ustrcmp(elem_name, "grid") == 0) {
+    const char *columns = jxmlelem_get_attr(elem, "columns");
+    bool same_width_columns = jxmlelem_has_attr(elem, "same_width_columns");
+
+    if (columns != NULL) {
+      widget = jgrid_new(ustrtol(columns, NULL, 10),
+			 same_width_columns);
     }
   }
   /* label */
   else if (ustrcmp(elem_name, "label") == 0) {
     const char *text = jxmlelem_get_attr(elem, "text");
 
-    if (text) {
-      widget = jlabel_new(TRANSLATE_ATTR(text));
-      if (widget) {
-	bool center = jxmlelem_has_attr(elem, "center");
-	bool right  = jxmlelem_has_attr(elem, "right");
-	bool top    = jxmlelem_has_attr(elem, "top");
-	bool bottom = jxmlelem_has_attr(elem, "bottom");
+    widget = jlabel_new(text ? TRANSLATE_ATTR(text): NULL);
+    if (widget) {
+      bool center = jxmlelem_has_attr(elem, "center");
+      bool right  = jxmlelem_has_attr(elem, "right");
+      bool top    = jxmlelem_has_attr(elem, "top");
+      bool bottom = jxmlelem_has_attr(elem, "bottom");
 
-	jwidget_set_align(widget,
-			  (center ? JI_CENTER:
-			   (right ? JI_RIGHT: JI_LEFT)) |
-			  (top    ? JI_TOP:
-			   (bottom ? JI_BOTTOM: JI_MIDDLE)));
-      }
+      jwidget_set_align(widget,
+			(center ? JI_CENTER:
+			 (right ? JI_RIGHT: JI_LEFT)) |
+			(top    ? JI_TOP:
+			 (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* listbox */
@@ -207,8 +215,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   else if (ustrcmp(elem_name, "listitem") == 0) {
     const char *text = jxmlelem_get_attr(elem, "text");
 
-    if (text != NULL)
-      widget = jlistitem_new(TRANSLATE_ATTR(text));
+    widget = jlistitem_new(text ? TRANSLATE_ATTR(text): NULL);
   }
   /* panel */
   else if (ustrcmp(elem_name, "panel") == 0) {
@@ -223,21 +230,19 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     const char *text = jxmlelem_get_attr(elem, "text");
     const char *group = jxmlelem_get_attr(elem, "group");
 
-    if (text != NULL && group != NULL) {
-      widget = jradio_new(TRANSLATE_ATTR(text),
-			  ustrtol(group, NULL, 10));
-      if (widget) {
-	bool center = jxmlelem_has_attr(elem, "center");
-	bool right  = jxmlelem_has_attr(elem, "right");
-	bool top    = jxmlelem_has_attr(elem, "top");
-	bool bottom = jxmlelem_has_attr(elem, "bottom");
+    widget = jradio_new(text ? TRANSLATE_ATTR(text): NULL,
+			group ? ustrtol(group, NULL, 10): 1);
+    if (widget) {
+      bool center = jxmlelem_has_attr(elem, "center");
+      bool right  = jxmlelem_has_attr(elem, "right");
+      bool top    = jxmlelem_has_attr(elem, "top");
+      bool bottom = jxmlelem_has_attr(elem, "bottom");
 
-	jwidget_set_align(widget,
-			  (center ? JI_CENTER:
-			   (right ? JI_RIGHT: JI_LEFT)) |
-			  (top    ? JI_TOP:
-			   (bottom ? JI_BOTTOM: JI_MIDDLE)));
-      }
+      jwidget_set_align(widget,
+			(center ? JI_CENTER:
+			 (right ? JI_RIGHT: JI_LEFT)) |
+			(top    ? JI_TOP:
+			 (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* separator */
@@ -274,6 +279,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     /* TODO add translatable support */
     /* TODO here we need jxmlelem_get_text(elem) */
 /* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
+    assert(FALSE);
   }
   /* view */
   else if (ustrcmp(elem_name, "view") == 0) {
@@ -337,12 +343,27 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     /* children */
     JI_LIST_FOR_EACH(elem->head.children, link) {
       if (((JXmlNode)link->data)->type == JI_XML_ELEM) {
-	child = convert_tag_to_widget(link->data);
+	JXmlElem child_elem = (JXmlElem)link->data;
+	child = convert_tag_to_widget(child_elem);
+
 	if (child != NULL) {
+	  /* attach the child in the view */
 	  if (widget->type == JI_VIEW) {
 	    jview_attach(widget, child);
 	    break;
 	  }
+	  /* add the child in the grid */
+	  else if (widget->type == JI_GRID) {
+	    const char *cell_hspan = jxmlelem_get_attr(child_elem, "cell_hspan");
+	    const char *cell_vspan = jxmlelem_get_attr(child_elem, "cell_vspan");
+	    const char *cell_align = jxmlelem_get_attr(child_elem, "cell_align");
+	    int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
+	    int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
+	    int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
+
+	    jgrid_add_child(widget, child, hspan, vspan, align);
+	  }
+	  /* just add the child in any other kind of widget */
 	  else
 	    jwidget_add_child(widget, child);
 	}
@@ -357,4 +378,45 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
 
   return widget;
+}
+
+static int convert_align_value_to_flags(const char *value)
+{
+  char *tok, *ptr = jstrdup(value);
+  int flags = 0;
+
+  for (tok=ustrtok(ptr, " ");
+       tok != NULL;
+       tok=ustrtok(NULL, " ")) {
+    if (ustrcmp(tok, "horizontal") == 0) {
+      flags |= JI_HORIZONTAL;
+    }
+    else if (ustrcmp(tok, "vertical") == 0) {
+      flags |= JI_VERTICAL;
+    }
+    else if (ustrcmp(tok, "left") == 0) {
+      flags |= JI_LEFT;
+    }
+    else if (ustrcmp(tok, "center") == 0) {
+      flags |= JI_CENTER;
+    }
+    else if (ustrcmp(tok, "right") == 0) {
+      flags |= JI_RIGHT;
+    }
+    else if (ustrcmp(tok, "top") == 0) {
+      flags |= JI_TOP;
+    }
+    else if (ustrcmp(tok, "middle") == 0) {
+      flags |= JI_MIDDLE;
+    }
+    else if (ustrcmp(tok, "bottom") == 0) {
+      flags |= JI_BOTTOM;
+    }
+    else if (ustrcmp(tok, "homogeneous") == 0) {
+      flags |= JI_HOMOGENEOUS;
+    }
+  }
+
+  jfree(ptr);
+  return flags;
 }

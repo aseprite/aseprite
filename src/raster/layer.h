@@ -28,6 +28,11 @@ struct Sprite;
 
 #define LAYER_NAME_SIZE		256
 
+#define LAYER_IS_READABLE	0x0001
+#define LAYER_IS_WRITABLE	0x0002
+#define LAYER_IS_LOCKMOVE	0x0004
+#define LAYER_IS_BACKGROUND	0x0008
+
 typedef struct Layer Layer;
 
 struct Layer
@@ -37,8 +42,7 @@ struct Layer
   struct Sprite *sprite;	/* owner of the layer */
 /*   GfxObj *parent;		/\* parent object *\/ */
   Layer *parent_layer;		/* parent layer */
-  unsigned readable : 1;
-  unsigned writable : 1;
+  unsigned short flags;
 
   /* for GFXOBJ_LAYER_IMAGE */
   int blend_mode;		/* constant blend mode */
@@ -54,10 +58,14 @@ Layer *layer_new_copy(struct Sprite *dst_sprite, const Layer *src_layer);
 Layer *layer_new_flatten_copy(struct Sprite *dst_sprite, const Layer *src_layer,
 			      int x, int y, int w, int h, int frmin, int frmax);
 void layer_free(Layer *layer);
+void layer_free_images(Layer *layer);
+
+void layer_configure_as_background(Layer *layer);
 
 bool layer_is_image(const Layer *layer);
 bool layer_is_set(const Layer *layer);
-
+bool layer_is_background(const Layer *layer);
+bool layer_is_moveable(const Layer *layer);
 bool layer_is_readable(const Layer *layer);
 bool layer_is_writable(const Layer *layer);
 
@@ -70,13 +78,13 @@ void layer_set_blend_mode(Layer *layer, int blend_mode);
 /* for LAYER_IMAGE */
 void layer_add_cel(Layer *layer, struct Cel *cel);
 void layer_remove_cel(Layer *layer, struct Cel *cel);
-struct Cel *layer_get_cel(Layer *layer, int frame);
+struct Cel *layer_get_cel(const Layer *layer, int frame);
 
 /* for LAYER_SET */
 void layer_add_layer(Layer *set, Layer *layer);
 void layer_remove_layer(Layer *set, Layer *layer);
 void layer_move_layer(Layer *set, Layer *layer, Layer *after);
 
-void layer_render(Layer *layer, struct Image *image, int x, int y, int frame);
+void layer_render(const Layer *layer, struct Image *image, int x, int y, int frame);
 
 #endif /* RASTER_LAYER_H */

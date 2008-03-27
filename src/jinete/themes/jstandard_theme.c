@@ -53,8 +53,8 @@
 /* "icons_data" indexes */
 enum {
   FIRST_CURSOR = 0,
-  LAST_CURSOR = 13,
-  ICON_CHECK_EDGE = 14,
+  LAST_CURSOR = 14,
+  ICON_CHECK_EDGE = 15,
   ICON_CHECK_MARK,
   ICON_CLOSE,
   ICON_MENU_MARK,
@@ -72,6 +72,7 @@ static struct {
   { FALSE, default_theme_cnoradd },
   { FALSE, default_theme_cforbidden },
   { FALSE, default_theme_chand },
+  { FALSE, default_theme_cscroll },
   { FALSE, default_theme_cmove },
   { FALSE, default_theme_csizetl },
   { FALSE, default_theme_csizet },
@@ -251,6 +252,7 @@ static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
       case JI_CURSOR_NORMAL:
       case JI_CURSOR_NORMAL_ADD:
       case JI_CURSOR_FORBIDDEN:
+      case JI_CURSOR_MOVE:
 	*focus_x = 0;
 	*focus_y = 0;
 	break;
@@ -258,7 +260,7 @@ static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
 	*focus_x = 5;
 	*focus_y = 3;
 	break;
-      case JI_CURSOR_MOVE:
+      case JI_CURSOR_SCROLL:
 	*focus_x = 8;
 	*focus_y = 8;
 	break;

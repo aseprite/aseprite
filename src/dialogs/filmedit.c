@@ -326,7 +326,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 		makecol(255, 255, 255): makecol(0, 0, 0));
 #else
 	{
-	  int tabs = -2;
+	  int tx, tabs = -2;
 	  Layer *l = layer;
 
 	  while (l != NULL) {
@@ -342,10 +342,20 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 
 	  /* draw the layer name */
 	  textout(bmp, widget->text_font, layer->name,
-		  2+8+2+8+2+8+tabs*16,
+		  tx = 2+8+2+8+2+8+tabs*16,
 		  y_mid-text_height(widget->text_font)/2,
 		  selected_layer ?
 		  makecol(255, 255, 255): makecol(0, 0, 0));
+
+	  /* the background should be underlined */
+	  if (layer_is_background(layer)) {
+	    hline(bmp,
+		  tx,
+		  y_mid-text_height(widget->text_font)/2+text_height(widget->text_font)+1,
+		  tx+text_length(widget->text_font, layer->name),
+		  selected_layer ?
+		  makecol(255, 255, 255): makecol(0, 0, 0));
+	  }
 	}
 #endif
 	y += h;
@@ -416,7 +426,7 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
       if (msg->any.shifts & KB_SHIFT_FLAG ||
 	  msg->mouse.middle) {
 	state = STATE_SCROLLING;
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_SCROLL);
       }
       else {
 	select_layer_motion(widget, layer_box, layer_box->cel_box);
@@ -427,17 +437,17 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
 	/* toggle icon status (eye or the padlock) */
 	if (msg->mouse.x < 2+8+2+8+2) {
 	  if (msg->mouse.x <= 2+8+1) {
-	    layer_box->layer->readable = !layer_box->layer->readable;
+	    layer_box->layer->flags ^= LAYER_IS_READABLE;
 	  }
 	  else {
-	    layer_box->layer->writable = !layer_box->layer->writable;
+	    layer_box->layer->flags ^= LAYER_IS_WRITABLE;
 	  }
 	  jwidget_dirty(widget);
 	}
 	/* move */
 	else {
 	  state = STATE_MOVING;
-	  jmouse_set_cursor(JI_CURSOR_MOVE);
+	  jmouse_set_cursor(JI_CURSOR_SCROLL);
 	}
       }
 
@@ -706,7 +716,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 
       if (msg->any.shifts & KB_SHIFT_FLAG) {
 	state = STATE_SCROLLING;
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_SCROLL);
       }
       else {
 	Cel *cel;
@@ -723,7 +733,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 			      current_sprite->frame);
 	  if (cel) {
 	    state = STATE_MOVING; /* now we will moving a cel */
-	    jmouse_set_cursor(JI_CURSOR_MOVE);
+	    jmouse_set_cursor(JI_CURSOR_SCROLL);
 
 	    cel_box->layer = current_sprite->layer;
 	    cel_box->cel = cel;

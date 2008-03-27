@@ -43,11 +43,14 @@ struct Undo
   int diff_count;
   int diff_saved;
   unsigned enabled : 1;		/* is undo enabled? */
-  int size_limit;		/* limit for undo stream size */
+  const char *label;		/* current label to be applied to all
+				   next undo operations */
 };
 
 Undo *undo_new(struct Sprite *sprite);
 void undo_free(Undo *undo);
+
+int undo_get_memsize(Undo *undo);
 
 void undo_enable(Undo *undo);
 void undo_disable(Undo *undo);
@@ -61,6 +64,7 @@ bool undo_can_redo(Undo *undo);
 void undo_undo(Undo *undo);
 void undo_redo(Undo *undo);
 
+void undo_set_label(Undo *undo, const char *label);
 const char *undo_get_next_undo_label(Undo *undo);
 const char *undo_get_next_redo_label(Undo *undo);
 
@@ -87,8 +91,5 @@ void undo_set_frames(Undo *undo, struct Sprite *sprite);
 
 #define undo_double(undo, gfxobj, value_address) \
   undo_data((undo), (gfxobj), (void *)(value_address), sizeof(double))
-
-#define undo_string(undo, gfxobj, string) \
-  undo_data((undo), (gfxobj), (void *)(string), strlen(string)+1)
 
 #endif /* RASTER_UNDO_H */

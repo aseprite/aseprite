@@ -10,16 +10,12 @@
         <label text="Type:" />
         <label text="Size:" />
         <label text="Frames:" />
-        <label text="Background:" />
       </box>
       <box vertical homogeneous expansive>
         <entry text="" name="name" maxsize="256" readonly maxwidth="100" />
         <label text="" name="type" />
         <label text="" name="size" />
         <label text="" name="frames" />
-        <box horizontal>
-          <box vertical name="bgcolor_box" />
-        </box>
       </box>
     </box>
     <box horizontal>

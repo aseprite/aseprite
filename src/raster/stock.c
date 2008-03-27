@@ -143,7 +143,7 @@ void stock_remove_image(Stock *stock, Image *image)
  */
 void stock_replace_image(Stock *stock, int index, Image *image)
 {
-  /* The zero index can't be changed.  */
+  /* the zero index can't be changed */
   if ((index > 0) && (index < stock->nimage))
     stock->image[index] = image;
 }

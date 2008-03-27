@@ -23,61 +23,79 @@
 #include "jinete/jrect.h"
 
 #include "core/color.h"
+#include "raster/algo.h"
 
-struct _GList;
 struct Brush;
-struct Dirty;
+struct Image;
+struct Layer;
+struct Mask;
 struct Sprite;
 
-#define TOOL_ACCUMULATE_DIRTY   (1<<1)
-#define TOOL_FIRST2LAST         (1<<2)
-#define TOOL_OLD2LAST           (1<<3)
-#define TOOL_FOURCHAIN          (1<<4)
-#define TOOL_ACCEPT_FILL        (1<<5)
-#define TOOL_UPDATE_ALL         (1<<6)
-#define TOOL_UPDATE_POINT       (1<<7)
-#define TOOL_UPDATE_TRACE       (1<<8)
-#define TOOL_UPDATE_BOX         (1<<9)
-#define TOOL_UPDATE_SPRAY       (1<<10)
-#define TOOL_UPDATE_LAST4       (1<<11)
-#define TOOL_EIGHT_ANGLES	(1<<12)
+enum {
+  TOOL_MARKER,
+  TOOL_PENCIL,
+  TOOL_BRUSH,
+  TOOL_ERASER,
+  TOOL_FLOODFILL,
+  TOOL_SPRAY,
+  TOOL_LINE,
+  TOOL_RECTANGLE,
+  TOOL_ELLIPSE,
+  TOOL_BLUR,
+  MAX_TOOLS
+};
 
 enum {
-  DRAWMODE_OPAQUE,
-  DRAWMODE_GLASS,
-  DRAWMODE_SEMI,
+  INK_OPAQUE,
+  INK_GLASS,
+  INK_SOFTEN,
+  INK_REPLACE,
+  MAX_INKS
 };
 
 typedef struct Tool Tool;
+typedef struct ToolData ToolData;
 
 struct Tool
 {
+  const char *key;
   const char *name;
-  const char *translated_name;
+  const char *tips;
   int flags;
-  void (*put)(struct Dirty *dirty, int x1, int y1, int x2, int y2);
+  void (*preprocess_data)(ToolData *data);
+  void (*draw_trace)(int x1, int y1, int x2, int y2, ToolData *data);
+  JAccel accel;
+};
+
+struct ToolData
+{
+  struct Layer *layer;
+  struct Image *src_image;	/* where we can get pixels (readonly image) */
+  struct Image *dst_image;	/* where we should put pixels */
+  struct Brush *brush;		/* brush to be used with the ink */
+  struct Mask *mask;		/* mask to limit the paint */
+  int mask_x, mask_y;		/* mask offset */
+  int color;			/* primary color to draw */
+  int other_color;		/* secondary color to draw */
+  bool left_button;		/* did the user start the trace with the left mouse button? */
+  AlgoHLine ink_hline_proc;
+  int opacity;
+  bool tiled;
 };
 
 extern Tool *current_tool;
-
-extern Tool ase_tool_marker;
-extern Tool ase_tool_dots;
-extern Tool ase_tool_pencil;
-extern Tool ase_tool_brush;
-extern Tool ase_tool_floodfill;
-extern Tool ase_tool_spray;
-extern Tool ase_tool_line;
-extern Tool ase_tool_rectangle;
-extern Tool ase_tool_ellipse;
-
-extern Tool *ase_tools_list[];
+extern Tool *tools_list[];
 
 int init_module_tools(void);
 void exit_module_tools(void);
 
-void refresh_tools_names(void);
+void tool_add_key(Tool *tool, const char *string);
+bool tool_is_key_pressed(Tool *tool, JMessage msg);
+
+Tool *get_tool_by_name(const char *name);
+Tool *get_tool_by_key(JMessage msg);
+
 void select_tool(Tool *tool);
-void select_tool_by_name(const char *tool_name);
 
 struct Brush *get_brush(void);
 int get_brush_type(void);
@@ -115,10 +133,13 @@ void set_cursor_color(color_t color);
 
 int get_thickness_for_cursor(void);
 
-void control_tool(JWidget editor, Tool *tool, color_t color);
+void control_tool(JWidget editor, Tool *tool,
+		  color_t color,
+		  color_t other_color,
+		  bool left_button);
 
-void do_tool_points(struct Sprite *sprite, Tool *tool, color_t color,
-		    int npoints, int *x, int *y);
+/* void do_tool_points(struct Sprite *sprite, Tool *tool, color_t color, */
+/* 		    int npoints, int *x, int *y); */
 
 void apply_grid(int *x, int *y, bool flexible);
 

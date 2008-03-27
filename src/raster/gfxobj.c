@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <string.h>
 
 #include "jinete/jbase.h"
@@ -106,8 +107,7 @@ GfxObj *gfxobj_find(unsigned int id)
 
 void _gfxobj_set_id(GfxObj *gfxobj, int id)
 {
-  /* TODO */
-  /* ji_assert (!gfxobj_find (id)); */
+  assert(gfxobj_find(id) == NULL);
 
   gfxobj->id = id;
 }

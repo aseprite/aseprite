@@ -132,13 +132,14 @@ void copy_image_to_clipboard(Image *image)
 
 void cut_to_clipboard(void)
 {
-  if (!current_sprite)
+  if (current_sprite == NULL ||
+      current_sprite->layer == NULL)
     return;
 
   if (!low_copy())
     console_printf("Can't copying an image portion from the current layer\n");
   else {
-    ClearMask(color_mask());
+    ClearMask();
     update_screen_for_sprite(current_sprite);
   }
 }
@@ -353,7 +354,7 @@ static bool interactive_transform(JWidget widget,
 		   x1, y1, x2, y2, angle, cx, cy);
 
       if (in_box) {
-	jmouse_set_cursor(JI_CURSOR_MOVE);
+	jmouse_set_cursor(JI_CURSOR_SCROLL);
 	action = ACTION_MOVE;
       }
       else {

@@ -42,8 +42,8 @@ static bool cmd_new_frame_enabled(const char *argument)
   return
     current_sprite &&
     current_sprite->layer &&
-    current_sprite->layer->readable &&
-    current_sprite->layer->writable &&
+    layer_is_readable(current_sprite->layer) &&
+    layer_is_writable(current_sprite->layer) &&
     layer_is_image(current_sprite->layer);
 }
 
@@ -126,6 +126,8 @@ static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
 
   /* background color */
   image_clear(image, 0);
+  if (frame > 0)
+    layer_render(layer, image, 0, 0, frame-1);
 
   /* add the image in the stock */
   image_index = stock_add_image(sprite->stock, image);

@@ -18,38 +18,41 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
-#include "modules/sprites.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
-#include "util/clipbrd.h"
-#include "util/misc.h"
+#include "file/filedata.h"
 
-static bool cmd_copy_enabled(const char *argument)
+FileData *filedata_new(int type, int size)
 {
-  if ((!current_sprite) ||
-      (!current_sprite->layer) ||
-      (!layer_is_readable(current_sprite->layer)) ||
-      (!layer_is_writable(current_sprite->layer)) ||
-      (!current_sprite->mask) ||
-      (!current_sprite->mask->bitmap))
-    return FALSE;
-  else
-    return GetImage(current_sprite) ? TRUE: FALSE;
+  FileData *filedata;
+
+  assert(size >= sizeof(FileData));
+
+  filedata = jmalloc0(size);
+  if (filedata == NULL)
+    return NULL;
+
+  filedata->type = type;
+  filedata->size = size;
+
+  return filedata;
 }
 
-static void cmd_copy_execute(const char *argument)
+void filedata_free(FileData *filedata)
 {
-  copy_to_clipboard();
+  assert(filedata != NULL);
+  jfree(filedata);
 }
 
-Command cmd_copy = {
-  CMD_COPY,
-  cmd_copy_enabled,
-  NULL,
-  cmd_copy_execute,
-  NULL
-};
+BmpData *bmpdata_new(void)
+{
+  BmpData *bmpdata = (BmpData *)filedata_new(FILEDATA_BMP,
+					     sizeof(BmpData));
+
+  if (bmpdata == NULL)
+    return NULL;
+
+  return bmpdata;
+}

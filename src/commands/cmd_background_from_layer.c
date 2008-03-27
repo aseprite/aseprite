@@ -21,35 +21,31 @@
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
-#include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "script/functions.h"
 
-static bool cmd_remove_cel_enabled(const char *argument)
+static bool cmd_background_from_layer_enabled(const char *argument)
 {
   return
-    current_sprite &&
-    current_sprite->layer &&
-    layer_is_readable(current_sprite->layer) &&
-    layer_is_writable(current_sprite->layer) &&
+    current_sprite != NULL &&
+    current_sprite->layer != NULL &&
+    sprite_get_background_layer(current_sprite) == NULL &&
     layer_is_image(current_sprite->layer) &&
-    layer_get_cel(current_sprite->layer, current_sprite->frame);
+    layer_is_readable(current_sprite->layer) &&
+    layer_is_writable(current_sprite->layer);
 }
 
-static void cmd_remove_cel_execute(const char *argument)
+static void cmd_background_from_layer_execute(const char *argument)
 {
-  Cel *cel = layer_get_cel(current_sprite->layer,
-			   current_sprite->frame);
-
-  RemoveCel(current_sprite->layer, cel);
+  BackgroundFromLayer();
   update_screen_for_sprite(current_sprite);
 }
 
-Command cmd_remove_cel = {
-  CMD_REMOVE_CEL,
-  cmd_remove_cel_enabled,
+Command cmd_background_from_layer = {
+  CMD_BACKGROUND_FROM_LAYER,
+  cmd_background_from_layer_enabled,
   NULL,
-  cmd_remove_cel_execute,
+  cmd_background_from_layer_execute,
   NULL
 };

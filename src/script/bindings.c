@@ -253,9 +253,11 @@ static int metatable_index(lua_State *L)
 	else if (strcmp(index, "parent") == 0)
 	  push_userdata(L, Type_Layer, layer->parent_layer);
 	else if (strcmp(index, "readable") == 0)
-	  lua_pushboolean(L, layer->readable);
+	  lua_pushboolean(L, layer_is_readable(layer));
 	else if (strcmp(index, "writable") == 0)
-	  lua_pushboolean(L, layer->writable);
+	  lua_pushboolean(L, layer_is_writable(layer));
+	else if (strcmp(index, "moveable") == 0)
+	  lua_pushboolean(L, layer_is_moveable(layer));
 	else if (strcmp(index, "prev") == 0)
  	  push_userdata(L, Type_Layer, layer_get_prev(layer));
 	else if (strcmp(index, "next") == 0)

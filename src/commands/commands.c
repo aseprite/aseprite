@@ -30,6 +30,8 @@
 extern Command cmd_about;
 extern Command cmd_advanced_mode;
 extern Command cmd_autocrop_sprite;
+extern Command cmd_background_from_layer;
+extern Command cmd_blur_tool;
 extern Command cmd_brush_tool;
 extern Command cmd_cel_properties;
 extern Command cmd_change_image_type;
@@ -49,10 +51,10 @@ extern Command cmd_crop_sprite;
 extern Command cmd_cut;
 extern Command cmd_deselect_mask;
 extern Command cmd_despeckle;
-extern Command cmd_dots_tool;
 extern Command cmd_duplicate_layer;
 extern Command cmd_duplicate_sprite;
 extern Command cmd_ellipse_tool;
+extern Command cmd_eraser_tool;
 extern Command cmd_exit;
 extern Command cmd_eyedropper_tool;
 extern Command cmd_film_editor;
@@ -67,6 +69,7 @@ extern Command cmd_goto_next_frame;
 extern Command cmd_goto_previous_frame;
 extern Command cmd_invert_color;
 extern Command cmd_invert_mask;
+extern Command cmd_layer_from_background;
 extern Command cmd_layer_properties;
 extern Command cmd_line_tool;
 extern Command cmd_link_cel;
@@ -117,9 +120,12 @@ extern Command cmd_tips;
 extern Command cmd_undo;
 
 static Command *commands[] = {
+
   &cmd_about,
   &cmd_advanced_mode,
   &cmd_autocrop_sprite,
+  &cmd_background_from_layer,
+  &cmd_blur_tool,
   &cmd_brush_tool,
   &cmd_cel_properties,
   &cmd_change_image_type,
@@ -139,10 +145,10 @@ static Command *commands[] = {
   &cmd_cut,
   &cmd_deselect_mask,
   &cmd_despeckle,
-  &cmd_dots_tool,
   &cmd_duplicate_layer,
   &cmd_duplicate_sprite,
   &cmd_ellipse_tool,
+  &cmd_eraser_tool,
   &cmd_exit,
   &cmd_eyedropper_tool,
   &cmd_film_editor,
@@ -157,6 +163,7 @@ static Command *commands[] = {
   &cmd_goto_previous_frame,
   &cmd_invert_color,
   &cmd_invert_mask,
+  &cmd_layer_from_background,
   &cmd_layer_properties,
   &cmd_line_tool,
   &cmd_link_cel,
@@ -205,8 +212,7 @@ static Command *commands[] = {
   &cmd_switch_colors,
   &cmd_tips,
   &cmd_undo,
-  /*   { CMD_DRAW_TEXT, NULL, NULL, NULL, NULL }, */
-  /*   { CMD_PLAY_FLIC, NULL, NULL, NULL, NULL }, */
+
   NULL
 };
 
@@ -295,7 +301,7 @@ void command_add_key(Command *command, const char *string)
   jaccel_add_keys_from_string(command->accel, buf);
 }
 
-void command_reset_keys()
+void command_reset_keys(void)
 {
   Command **cmd;
 

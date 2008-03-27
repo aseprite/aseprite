@@ -32,13 +32,7 @@ enum {
   COLOR_TYPE_INDEX,
 };
 
-typedef struct color_t
-{
-  ase_uint32 coltype;
-  ase_uint32 imgcolor;
-} color_t;
-
-/* typedef uint64_t color_t; */
+typedef uint32_t color_t;
 
 char *color_to_string(color_t color, char *buf, int size);
 color_t string_to_color(const char *str);
@@ -47,9 +41,9 @@ int color_type(color_t color);
 bool color_equals(color_t c1, color_t c2);
 
 color_t color_mask(void);
-color_t color_rgb(int r, int g, int b, int a);
-color_t color_hsv(int h, int s, int v, int a);
-color_t color_gray(int g, int a);
+color_t color_rgb(int r, int g, int b);
+color_t color_hsv(int h, int s, int v);
+color_t color_gray(int g);
 color_t color_index(int index);
 int color_get_red(int imgtype, color_t color);
 int color_get_green(int imgtype, color_t color);
@@ -58,8 +52,6 @@ int color_get_hue(int imgtype, color_t color);
 int color_get_saturation(int imgtype, color_t color);
 int color_get_value(int imgtype, color_t color);
 int color_get_index(int imgtype, color_t color);
-int color_get_alpha(int imgtype, color_t color);
-void color_set_alpha(color_t *color, int alpha);
 color_t color_from_image(int imgtype, int c);
 
 int blackandwhite(int r, int g, int b);

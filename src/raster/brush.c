@@ -104,48 +104,47 @@ static void clean_brush (Brush *brush)
 }
 
 /* Regenerates the brush bitmap and its rectangle's region. */
-static void regenerate_brush (Brush *brush)
+static void regenerate_brush(Brush *brush)
 {
   int x, y;
 
-  clean_brush (brush);
+  clean_brush(brush);
 
-  brush->image = image_new (IMAGE_BITMAP, brush->size, brush->size);
-  image_clear (brush->image, 0);
+  brush->image = image_new(IMAGE_BITMAP, brush->size, brush->size);
+  image_clear(brush->image, 0);
 
   switch (brush->type) {
 
     case BRUSH_CIRCLE:
-      image_ellipsefill (brush->image, 0, 0, brush->size-1, brush->size-1, 1);
+      image_ellipsefill(brush->image, 0, 0, brush->size-1, brush->size-1, 1);
       break;
 
     case BRUSH_SQUARE:
-      image_rectfill (brush->image, 0, 0, brush->size-1, brush->size-1, 1);
+      image_rectfill(brush->image, 0, 0, brush->size-1, brush->size-1, 1);
       break;
 
     case BRUSH_LINE: {
       double a = PI * brush->angle / 180;
-      x = cos (a) * brush->size/2;
-      y = -sin (a) * brush->size/2;
-      image_line (brush->image, 
-		  brush->size/2-x,
-		  brush->size/2-y,
-		  brush->size/2+x,
-		  brush->size/2+y, 1);
+      int r = brush->size/2;
+
+      x = cos(a) * r;
+      y = -sin(a) * r;
+      image_line(brush->image, r-x, r-y, r+x, r+y, 1);
+      image_line(brush->image, r-x-1, r-y, r+x-1, r+y, 1);
       break;
     }
   }
 
-  brush->scanline = jnew (struct BrushScanline, brush->size);
+  brush->scanline = jnew(struct BrushScanline, brush->size);
   for (y=0; y<brush->size; y++) {
     brush->scanline[y].state = FALSE;
 
     for (x=0; x<brush->size; x++) {
-      if (image_getpixel (brush->image, x, y)) {
+      if (image_getpixel(brush->image, x, y)) {
 	brush->scanline[y].x1 = x;
 
 	for (; x<brush->size; x++)
-	  if (!image_getpixel (brush->image, x, y))
+	  if (!image_getpixel(brush->image, x, y))
 	    break;
 
 	brush->scanline[y].x2 = x-1;

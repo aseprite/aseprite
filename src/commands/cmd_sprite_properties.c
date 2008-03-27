@@ -23,6 +23,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
+#include "core/core.h"
 #include "core/color.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
@@ -42,7 +43,6 @@ static bool cmd_sprite_properties_enabled(const char *argument)
 static void cmd_sprite_properties_execute(const char *argument)
 {
   JWidget window, killer, name, type, size, frames, speed, ok;
-  JWidget bgcolor_box, bgcolor_button;
   Sprite *sprite = current_sprite;
   char *imgtype_text;
   char buf[256];
@@ -57,7 +57,6 @@ static void cmd_sprite_properties_execute(const char *argument)
 		   "type", &type,
 		   "size", &size,
 		   "frames", &frames,
-		   "bgcolor_box", &bgcolor_box,
 		   "speed", &speed,
 		   "ok", &ok, NULL)) {
     jwidget_free(window);
@@ -87,19 +86,16 @@ static void cmd_sprite_properties_execute(const char *argument)
   jwidget_set_text(type, imgtype_text);
 
   /* sprite size (width and height) */
-  usprintf(buf, "%dx%d", sprite->w, sprite->h);
+  usprintf(buf, "%dx%d (", sprite->w, sprite->h);
+  get_pretty_memsize(sprite_get_memsize(sprite),
+ 		     buf+ustrsize(buf),
+		     sizeof(buf)-ustrsize(buf));
+  ustrcat(buf, ")");
   jwidget_set_text(size, buf);
 
   /* how many frames */
   usprintf(buf, "%d", sprite->frames);
   jwidget_set_text(frames, buf);
-
-  /* background color */
-  bgcolor_button = colorbutton_new(color_from_image(sprite->imgtype,
-						    sprite->bgcolor),
-				   current_sprite->imgtype);
-
-  jwidget_add_child(bgcolor_box, bgcolor_button);
 
   jwindow_remap(window);
   jwindow_center(window);
@@ -111,25 +107,8 @@ static void cmd_sprite_properties_execute(const char *argument)
     save_window_pos(window, "SpriteProperties");
 
     killer = jwindow_get_killer(window);
-    if (killer == ok) {
-      int new_bgcolor;
-
-      /* the background color changes */
-      new_bgcolor = get_color_for_image(sprite->imgtype,
-					colorbutton_get_color(bgcolor_button));
-
-      /* set frames */
-      if (sprite->bgcolor != new_bgcolor) {
-	if (undo_is_enabled(sprite->undo))
-	  undo_int(sprite->undo, (GfxObj *)sprite, &sprite->bgcolor);
-
-	sprite_set_bgcolor(sprite, new_bgcolor);
-      }
-
-      /* update sprite in editors */
-      update_screen_for_sprite(sprite);
+    if (killer == ok)
       break;
-    }
     else if (killer == speed) {
       dialogs_frame_length(-1);
     }

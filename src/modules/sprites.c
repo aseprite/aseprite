@@ -46,8 +46,8 @@ Sprite *current_sprite = NULL;
 static JList sprites_list;
 static Sprite *clipboard_sprite;
 
-static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int write);
-static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count);
+static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write);
+static void layer_get_pos(Sprite *sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
 
 int init_module_sprites(void)
 {
@@ -239,15 +239,15 @@ Stock *sprite_get_images(Sprite *sprite, int target, int write, int **x, int **y
   return stock;
 }
 
-static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int write)
+static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write)
 {
   Stock *stock = stock_new_ref(sprite->imgtype);
   int frame = sprite->frame;
 
-  if (!layer->readable)
+  if (!layer_is_readable(layer))
     return stock;
 
-  if (write && !layer->writable)
+  if (write && !layer_is_writable(layer))
     return stock;
 
   switch (layer->gfxobj.type) {
@@ -294,14 +294,14 @@ static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, int wri
   return stock;
 }
 
-static void layer_get_pos(Sprite *sprite, Layer *layer, int target, int write, int **x, int **y, int *count)
+static void layer_get_pos(Sprite *sprite, Layer *layer, int target, bool write, int **x, int **y, int *count)
 {
   int frame = sprite->frame;
 
-  if (!layer->readable)
+  if (!layer_is_readable(layer))
     return;
 
-  if (write && !layer->writable)
+  if (write && !layer_is_writable(layer))
     return;
 
   switch (layer->gfxobj.type) {

@@ -49,25 +49,27 @@ void console_open(void)
       console_counter > 1)
     return;
   else {
-    JWidget window, box1, view, textbox, button;
+    JWidget window, grid, view, textbox, button;
 
     window = jwindow_new(_("Processing..."));
     if (!window)
       return;
 
-    box1 = jbox_new(JI_VERTICAL);
+    grid = jgrid_new(1, FALSE);
     view = jview_new();
     textbox = jtextbox_new(NULL, JI_WORDWRAP);
     button = jbutton_new(_("&Cancel"));
 
-    if (!box1 || !textbox || !button)
+    if (!grid || !textbox || !button)
       return;
 
     jview_attach(view, textbox);
 
-    jwidget_add_child(box1, view);
-    jwidget_add_child(box1, button);
-    jwidget_add_child(window, box1);
+    jwidget_set_min_size(button, 60, 0);
+
+    jgrid_add_child(grid, view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
+    jgrid_add_child(grid, button, 1, 1, JI_CENTER);
+    jwidget_add_child(window, grid);
 
     jwidget_hide(view);
     jwidget_magnetic(button, TRUE);
@@ -124,12 +126,13 @@ void console_printf(const char *format, ...)
 
     /* update the textbox */
     if (!console_locked) {
+      JRect rect = jrect_new(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
       console_locked = TRUE;
-
-      jwidget_set_min_size(wid_view, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
+      
       jwidget_show(wid_view);
 
       jwindow_remap(wid_console);
+      jwidget_set_rect(wid_console, rect);
       jwindow_center(wid_console);
       jwidget_dirty(wid_console);
     }

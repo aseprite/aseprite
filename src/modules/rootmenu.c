@@ -30,6 +30,7 @@
 #include "core/dirs.h"
 #include "intl/intl.h"
 #include "modules/rootmenu.h"
+#include "modules/tools.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
 
@@ -89,9 +90,10 @@ JWidget get_cel_popup_menu(void) { return cel_popup_menu; }
 
 static int load_root_menu(void)
 {
-  JLink link, link2;
   DIRS *dirs, *dir;
+  JLink link;
   JXml xml;
+  JXmlElem child;
 
   if (app_get_menubar())
     jmenubar_set_menu(app_get_menubar(), NULL);
@@ -125,7 +127,9 @@ static int load_root_menu(void)
     xml = jxml_new_from_file(dir->path);
     if (xml && jxml_get_root(xml)) {
       /**************************************************/
-      /* load menus */
+      /* load menus                                     */
+      /**************************************************/
+
       PRINTF("Trying to menus from \"%s\"...\n", dir->path);
 
       root_menu = load_menu_by_id(xml, "main_menu", dir->path);
@@ -140,20 +144,20 @@ static int load_root_menu(void)
       filters_popup_menu = load_menu_by_id(xml, "filters_popup", dir->path);
 
       /**************************************************/
-      /* load keyboard shortcuts */
-      PRINTF("Trying to load keyboard shortcuts from \"%s\"...\n", dir->path);
+      /* load keyboard shortcuts for commands           */
+      /**************************************************/
+
+      PRINTF("Loading commands shortcuts from \"%s\"...\n", dir->path);
 
       /* find the <keyboard> element */
-      JI_LIST_FOR_EACH(((JXmlNode)jxml_get_root(xml))->children, link) {
-	JXmlNode child = (JXmlNode)link->data;
-
-	/* is it <keyboard>? */
-	if (child->type == JI_XML_ELEM &&
-	    strcmp(jxmlelem_get_name((JXmlElem)child), "keyboard") == 0) {
-
-	  /* for each children in <keyboard>...</keyboard> */
-	  JI_LIST_FOR_EACH(child->children, link2) {
-	    JXmlNode child2 = (JXmlNode)link2->data;
+      child = jxmlelem_get_elem_by_name(jxml_get_root(xml), "keyboard");
+      if (child != NULL) {
+	/* find the <menus> element */
+	child = jxmlelem_get_elem_by_name(child, "commands");
+	if (child != NULL) {
+	  /* for each children in <keyboard><commands>...</commands></keyboard> */
+	  JI_LIST_FOR_EACH(child->head.children, link) {
+	    JXmlNode child2 = (JXmlNode)link->data;
 
 	    /* it is a <key> element? */
 	    if (child2->type == JI_XML_ELEM &&
@@ -167,6 +171,7 @@ static int load_root_menu(void)
 		  bool first_shortcut = !command->accel;
 
 		  /* add the keyboard shortcut to the command */
+		  PRINTF("- Shortcut for command `%s': <%s>\n", command_name, command_key);
 		  command_add_key(command, command_key);
 
 		  /* add the shortcut to the menuitems with this
@@ -179,10 +184,44 @@ static int load_root_menu(void)
 	      }
 	    }
 	  }
-	  break;
 	}
       }
 
+      /**************************************************/
+      /* load keyboard shortcuts for tools              */
+      /**************************************************/
+
+      PRINTF("Loading tools shortcuts from \"%s\"...\n", dir->path);
+
+      /* find the <keyboard> element */
+      child = jxmlelem_get_elem_by_name(jxml_get_root(xml), "keyboard");
+      if (child != NULL) {
+	/* find the <tools> element */
+	child = jxmlelem_get_elem_by_name(child, "tools");
+	if (child != NULL) {
+	  /* for each children in <keyboard><tools>...</tools></keyboard> */
+	  JI_LIST_FOR_EACH(child->head.children, link) {
+	    JXmlNode child2 = (JXmlNode)link->data;
+
+	    /* it is a <key> element? */
+	    if (child2->type == JI_XML_ELEM &&
+		strcmp(jxmlelem_get_name((JXmlElem)child2), "key") == 0) {
+	      /* finally, we can read the <key /> */
+	      const char *tool_name = jxmlelem_get_attr((JXmlElem)child2, "tool");
+	      const char *tool_key = jxmlelem_get_attr((JXmlElem)child2, "shortcut");
+	      if (tool_name && tool_key) {
+		Tool *tool = get_tool_by_name(tool_name);
+		if (tool) {
+		  /* add the keyboard shortcut to the tool */
+		  PRINTF("- Shortcut for tool `%s': <%s>\n", tool_name, tool_key);
+		  tool_add_key(tool, tool_key);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      
       /* free the XML file */
       jxml_free(xml);
     }

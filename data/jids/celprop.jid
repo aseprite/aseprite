@@ -3,29 +3,23 @@
 <!-- Read "LEGAL.txt" for more information. -->
 <jinete>
 <window text="Cel Properties" name="cel_properties">
-  <box vertical>
-    <box horizontal expansive>
-      <box vertical homogeneous>
-        <label text="Frame:" />
-        <label text="X position:" />
-        <label text="Y position:" />
-        <label text="Opacity:" />
-      </box>
-      <box vertical homogeneous expansive>
-	<entry maxsize=32 name="frame" magnetic />
-        <entry maxsize=32 name="xpos" />
-        <entry maxsize=32 name="ypos" />
-        <slider min=0 max=255 name="opacity" minwidth="180" />
-      </box>
-    </box>
+  <grid columns="2">
+    <label text="Frame:" />
+    <label name="frame" />
 
-    <box horizontal>
-      <box horizontal expansive />
-      <box horizontal homogeneous>
-	<button text="&OK" name="ok" magnetic width="60" />
-	<button text="&Cancel" />
-      </box>
+    <label text="Position: " />
+    <label name="pos" readonly tooltip="X axis, Y axis" />
+
+    <label text="Dimension:" />
+    <label name="size" readonly tooltip="Width x Height (Memory size)" />
+
+    <label text="Opacity:" />
+    <slider min=0 max=255 name="opacity" cell_align="horizontal" width="128" />
+
+    <box horizontal homogeneous cell_hspan="2" cell_align="right">
+      <button text="&OK" name="ok" magnetic width="60" />
+      <button text="&Cancel" />
     </box>
-  </box>
+  </grid>
 </window>
 </jinete>

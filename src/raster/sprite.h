@@ -22,6 +22,7 @@
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 
+struct FileData;
 struct Image;
 struct Layer;
 struct Mask;
@@ -40,7 +41,6 @@ struct Sprite
 				   to a file in the file-system */
   int imgtype;			/* image type */
   int w, h;			/* image width/height size (in pixels) */
-  int bgcolor;			/* background color */
   int frames;			/* how many frames has this sprite */
   int *frlens;			/* duration per frame */
   int frame;			/* current frame, range [0,frames) */
@@ -67,6 +67,8 @@ struct Sprite
   JMutex mutex;			/* mutex to modify the 'locked' flag */
   bool locked;			/* true when a thread is
 				   reading/writing the sprite */
+  struct FileData *filedata;	/* data to save the file in the same
+				   format that it was loaded */
 };
 
 Sprite *sprite_new(int imgtype, int w, int h);
@@ -90,6 +92,7 @@ void sprite_set_palette(Sprite *sprite, struct Palette *pal, bool truncate);
 void sprite_reset_palettes(Sprite *sprite);
 
 void sprite_set_filename(Sprite *sprite, const char *filename);
+void sprite_set_filedata(Sprite *sprite, struct FileData *filedata);
 void sprite_set_size(Sprite *sprite, int w, int h);
 void sprite_set_frames(Sprite *sprite, int frames);
 void sprite_set_frlen(Sprite *sprite, int msecs, int frame);
@@ -100,7 +103,8 @@ void sprite_set_mask(Sprite *sprite, const struct Mask *mask);
 void sprite_set_layer(Sprite *sprite, struct Layer *layer);
 void sprite_set_frame(Sprite *sprite, int frame);
 void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method);
-void sprite_set_bgcolor(Sprite *sprite, int color);
+
+struct Layer *sprite_get_background_layer(Sprite *sprite);
 
 void sprite_add_path(Sprite *sprite, struct Path *path);
 void sprite_remove_path(Sprite *sprite, struct Path *path);
@@ -116,5 +120,7 @@ struct Layer *sprite_index2layer(Sprite *sprite, int index);
 int sprite_layer2index(const Sprite *sprite, const struct Layer *layer);
 
 int sprite_getpixel(Sprite *sprite, int x, int y);
+
+int sprite_get_memsize(Sprite *sprite);
 
 #endif				/* RASTER_SPRITE_H */

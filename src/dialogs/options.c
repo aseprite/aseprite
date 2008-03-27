@@ -48,7 +48,9 @@ void dialogs_options(void)
   JWidget window, check_smooth, check_dither;
   JWidget button_ok;
   JWidget move_click2, draw_click2, killer;
+  JWidget undo_size_limit;
   int x, y, old_x, old_y;
+  char buf[512];
 
   x = get_config_int("Options", "MouseX", 6);
   y = get_config_int("Options", "MouseY", 6);
@@ -70,6 +72,7 @@ void dialogs_options(void)
 		   "dither", &check_dither,
 		   "move_click2", &move_click2,
 		   "draw_click2", &draw_click2,
+		   "undo_size_limit", &undo_size_limit,
 		   "button_ok", &button_ok, NULL)) {
     jwidget_free(window);
     return;
@@ -90,6 +93,9 @@ void dialogs_options(void)
   if (get_config_bool("Options", "Dither", FALSE))
     jwidget_select(check_dither);
 
+  uszprintf(buf, sizeof(buf), "%d", get_config_int("Options", "UndoSizeLimit", 8));
+  jwidget_set_text(undo_size_limit, buf);
+
   HOOK(slider_x, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
   HOOK(slider_y, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
 
@@ -97,15 +103,21 @@ void dialogs_options(void)
   killer = jwindow_get_killer(window);
 
   if (killer == button_ok) {
+    int undo_size_limit_value;
+    
     set_config_bool("Options", "LockMouse", jwidget_is_selected(check_lockmouse));
     set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
     set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
     set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
-
+    
     if (get_config_bool("Options", "Dither", FALSE) != jwidget_is_selected(check_dither)) {
       set_config_bool("Options", "Dither", jwidget_is_selected(check_dither));
       refresh_all_editors();
     }
+
+    undo_size_limit_value = ustrtol(jwidget_get_text(undo_size_limit), NULL, 10);
+    undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
+    set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
 
     /* save configuration */
     flush_config_file();

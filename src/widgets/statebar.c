@@ -26,6 +26,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
+#include "core/core.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -34,6 +35,7 @@
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/script.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
@@ -282,11 +284,10 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       if (widget->text) {
 	jdraw_rectfill(rc, ji_color_face());
 
-	text_mode(-1);
-	textout(ji_screen, widget->text_font, widget->text,
-		rc->x1+2,
-		(widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
-		ji_color_foreground());
+	textout_ex(ji_screen, widget->text_font, widget->text,
+		   rc->x1+2,
+		   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
+		   ji_color_foreground(), -1);
       }
 
       /* draw progress bar */
@@ -314,6 +315,25 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
 	  x -= width+4;
 	}
+      }
+      /* draw current sprite size in memory */
+      else if (current_sprite != NULL) {
+	char buf[1024];
+
+	ustrcpy(buf, "Sprite:");
+	get_pretty_memsize(sprite_get_memsize(current_sprite),
+			   buf+ustrsize(buf),
+			   sizeof(buf)-ustrsize(buf));
+
+	ustrcat(buf, " Undo:");
+	get_pretty_memsize(undo_get_memsize(current_sprite->undo),
+			   buf+ustrsize(buf),
+			   sizeof(buf)-ustrsize(buf));
+
+	textout_right_ex(ji_screen, widget->text_font, buf,
+			 rc->x2-2,
+			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
+			 ji_color_foreground(), -1);
       }
 
       jrect_free(rc);

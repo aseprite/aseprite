@@ -175,29 +175,23 @@ static JWidget create_rgb_container(void)
   JWidget rlabel = jlabel_new("R");
   JWidget glabel = jlabel_new("G");
   JWidget blabel = jlabel_new("B");
-  JWidget alabel = jlabel_new("A");
   JWidget rslider = jslider_new(0, 255, 0);
   JWidget gslider = jslider_new(0, 255, 0);
   JWidget bslider = jslider_new(0, 255, 0);
-  JWidget aslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, rlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, rslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, glabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, gslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, blabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, bslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, alabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, aslider, 1, 1, JI_HORIZONTAL);
 
   jwidget_set_name(rslider, "rgb_r");
   jwidget_set_name(gslider, "rgb_g");
   jwidget_set_name(bslider, "rgb_b");
-  jwidget_set_name(aslider, "rgb_a");
 
   HOOK(rslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(gslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(bslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(aslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
 
   return grid;
 }
@@ -208,29 +202,23 @@ static JWidget create_hsv_container(void)
   JWidget hlabel = jlabel_new("H");
   JWidget slabel = jlabel_new("S");
   JWidget vlabel = jlabel_new("V");
-  JWidget alabel = jlabel_new("A");
   JWidget hslider = jslider_new(0, 255, 0);
   JWidget sslider = jslider_new(0, 255, 0);
   JWidget vslider = jslider_new(0, 255, 0);
-  JWidget aslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, hlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, hslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, slabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, sslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, vlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, alabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, aslider, 1, 1, JI_HORIZONTAL);
 
   jwidget_set_name(hslider, "hsv_h");
   jwidget_set_name(sslider, "hsv_s");
   jwidget_set_name(vslider, "hsv_v");
-  jwidget_set_name(aslider, "hsv_a");
 
   HOOK(hslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(sslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(vslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(aslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
 
   return grid;
 }
@@ -239,19 +227,13 @@ static JWidget create_gray_container(void)
 {
   JWidget grid = jgrid_new(2, FALSE);
   JWidget klabel = jlabel_new("V");
-  JWidget alabel = jlabel_new("A");
   JWidget vslider = jslider_new(0, 255, 0);
-  JWidget aslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, klabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
-  jgrid_add_child(grid, alabel, 1, 1, JI_RIGHT);
-  jgrid_add_child(grid, aslider, 1, 1, JI_HORIZONTAL);
 
   jwidget_set_name(vslider, "gray_v");
-  jwidget_set_name(aslider, "gray_a");
 
   HOOK(vslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(aslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
 
   return grid;
 }
@@ -330,13 +312,10 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   JWidget rgb_rslider = jwidget_find_name(widget, "rgb_r");
   JWidget rgb_gslider = jwidget_find_name(widget, "rgb_g");
   JWidget rgb_bslider = jwidget_find_name(widget, "rgb_b");
-  JWidget rgb_aslider = jwidget_find_name(widget, "rgb_a");
   JWidget hsv_hslider = jwidget_find_name(widget, "hsv_h");
   JWidget hsv_sslider = jwidget_find_name(widget, "hsv_s");
   JWidget hsv_vslider = jwidget_find_name(widget, "hsv_v");
-  JWidget hsv_aslider = jwidget_find_name(widget, "hsv_a");
   JWidget gray_vslider = jwidget_find_name(widget, "gray_v");
-  JWidget gray_aslider = jwidget_find_name(widget, "gray_a");
 
   colorselector->color = color;
 
@@ -344,17 +323,14 @@ static void colorselector_set_color2(JWidget widget, color_t color,
     jslider_set_value(rgb_rslider, color_get_red(imgtype, color));
     jslider_set_value(rgb_gslider, color_get_green(imgtype, color));
     jslider_set_value(rgb_bslider, color_get_blue(imgtype, color));
-    jslider_set_value(rgb_aslider, color_get_alpha(imgtype, color));
   }
   if (exclude_this_model != models+MODEL_HSV) {
     jslider_set_value(hsv_hslider, color_get_hue(imgtype, color));
     jslider_set_value(hsv_sslider, color_get_saturation(imgtype, color));
     jslider_set_value(hsv_vslider, color_get_value(imgtype, color));
-    jslider_set_value(hsv_aslider, color_get_alpha(imgtype, color));
   }
   if (exclude_this_model != models+MODEL_GRAY) {
     jslider_set_value(gray_vslider, color_get_value(imgtype, color));
-    jslider_set_value(gray_aslider, color_get_alpha(imgtype, color));
   }
   
   switch (color_type(color)) {
@@ -481,32 +457,26 @@ static bool slider_change_hook(JWidget widget, void *data)
       JWidget rslider = jwidget_find_name(window, "rgb_r");
       JWidget gslider = jwidget_find_name(window, "rgb_g");
       JWidget bslider = jwidget_find_name(window, "rgb_b");
-      JWidget aslider = jwidget_find_name(window, "rgb_a");
       int r = jslider_get_value(rslider);
       int g = jslider_get_value(gslider);
       int b = jslider_get_value(bslider);
-      int a = jslider_get_value(aslider);
-      color = color_rgb(r, g, b, a);
+      color = color_rgb(r, g, b);
       break;
     }
     case MODEL_HSV: {
       JWidget hslider = jwidget_find_name(window, "hsv_h");
       JWidget sslider = jwidget_find_name(window, "hsv_s");
       JWidget vslider = jwidget_find_name(window, "hsv_v");
-      JWidget aslider = jwidget_find_name(window, "hsv_a");
       int h = jslider_get_value(hslider);
       int s = jslider_get_value(sslider);
       int v = jslider_get_value(vslider);
-      int a = jslider_get_value(aslider);
-      color = color_hsv(h, s, v, a);
+      color = color_hsv(h, s, v);
       break;
     }
     case MODEL_GRAY: {
       JWidget vslider = jwidget_find_name(window, "gray_v");
-      JWidget aslider = jwidget_find_name(window, "gray_a");
       int v = jslider_get_value(vslider);
-      int a = jslider_get_value(aslider);
-      color = color_gray(v, a);
+      color = color_gray(v);
       break;
     }
   }

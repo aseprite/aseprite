@@ -6,7 +6,10 @@ NEWS
 ---
 
 + Added support to load and save PNG files (through 'libpng').
-+ Rewritten the color-selector dialog.
++ Added the `Background' layer.
++ Transparent cel handling for the end-user (you can move a cel and
+  don't worry about its bounds).
++ Rewritten the color-bar and color-selector dialog.
 + Replaced the "List" menu with the tabs selector.
 + Rewritten the File Selector:
   + Preview support.
@@ -28,7 +31,9 @@ NEWS
 + New XML format for the menus and keyboard shortcuts.
 - Removed a lot of "complex" functionality:
   - Removed mask-repositories (you can use .msk files instead).
-  - Removed menu scripting customization.
+  - Removed menu scripting customization: the scripting support is
+    broken, next versions of ASE will contain a better set of routines
+    to create scripts.
   - Removed screen saver.
   - Removed sessions.
   - Removed draw-text (it'll return in next versions).
@@ -36,9 +41,7 @@ NEWS
     moment).
   - Removed mapgen.
   - Removed linked-cels (were complex for the end-user).
-  - Also the scripting support is broken, next versions of ASE will
-    contain a better set of routines to create scripts.
-
+ 
 0.5
 ---
 

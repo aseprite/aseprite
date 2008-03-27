@@ -45,6 +45,7 @@ typedef struct Editor
   bool cursor_candraw : 1;
 
   bool alt_pressed : 1;
+  bool ctrl_pressed : 1;
   bool space_pressed : 1;
 
   /* offset for the sprite */
@@ -85,10 +86,6 @@ void editor_draw_mask_safe(JWidget editor);
 
 void editor_draw_grid(JWidget editor);
 void editor_draw_grid_safe(JWidget editor);
-
-void editor_draw_layer_boundary(JWidget editor);
-void editor_draw_layer_boundary_safe(JWidget editor);
-void editor_update_layer_boundary(JWidget editor);
 
 void editor_draw_path(JWidget editor, int draw_extras);
 void editor_draw_path_safe(JWidget editor, int draw_extras);

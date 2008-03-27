@@ -36,6 +36,7 @@
 #include "raster/undo.h"
 #include "script/functions.h"
 #include "util/misc.h"
+#include "widgets/colbar.h"
 
 static int _sprite_counter = 0;
 
@@ -51,9 +52,10 @@ static void cmd_new_file_execute(const char *argument)
   color_t color;
   color_t bg_table[] = {
     color_mask(),
-    color_rgb(0, 0, 0, 255),
-    color_rgb(255, 255, 255, 255),
-    color_rgb(255, 0, 255, 255)
+    color_rgb(0, 0, 0),
+    color_rgb(255, 255, 255),
+    color_rgb(255, 0, 255),
+    colorbar_get_bg_color(app_get_colorbar())
   };
 
   /* load the window widget */
@@ -110,7 +112,7 @@ static void cmd_new_file_execute(const char *argument)
     /* select the color */
     color = color_mask();
 
-    if (bg >= 0 && bg <= 3) {
+    if (bg >= 0 && bg <= 4) {
       color = bg_table[bg];
       ok = TRUE;
     }
@@ -131,8 +133,15 @@ static void cmd_new_file_execute(const char *argument)
 	usprintf(buf, "Sprite-%04d", ++_sprite_counter);
 	sprite_set_filename(sprite, buf);
 
-	/* image_clear(GetImage(), get_color_for_image(imgtype, color)); */
-	sprite->bgcolor = get_color_for_image(imgtype, color);
+	/* if the background color isn't transparent, we have to
+	   convert the `Layer 1' in a `Background' */
+	if (color_type(color) != COLOR_TYPE_MASK) {
+	  BackgroundFromLayer();
+
+	  /* clear the image to */
+	  image_clear(GetImage(sprite),
+		      get_color_for_image(imgtype, color));
+	}
 
 	/* the undo should be disabled because we use NewSprite to
 	   create it (a function for scripts) */

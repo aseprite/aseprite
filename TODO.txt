@@ -1,20 +1,20 @@
 Next beta
 ---------
 
+- add the progress bar for effects and save-file.
+- add layer_from_background
+- fix colors
 - tooltips for color-bar.
   + agregar soporte para UNDO al cambiar los colores de la paleta.
-- si está activado el cuadro para configurar herramientas las teclas G
-  y H deben actualizarlo
-  + Solución: con hooks y Options (agregar core/options.[ch])
-- fix this bug:
-  + Create a RGB image,
-  + change color mode to Indexed,
-  + Undo (with the mouse).
 
 High priority work
 ------------------
 
 - search for TODO;
+- if there is activated the Tools Configuration dialog box, the
+  Shift+G and Shift+S should update it
+  + Solution: with hooks and Options (add core/options.[ch])
+- add a consistent error handling.
 - rewrite the film editor.
 - rewrite tools-inks-drawingmode stuff;
 - new animation editor (remove the film editor)

@@ -34,7 +34,7 @@
           </box>
 	  <box name="brush_preview_box" /><!-- custom widget -->
         </box>
-	<separator text="Glass Dirty:" horizontal left />
+	<separator text="Opacity:" horizontal left />
         <slider min=0 max=255 name="glass_dirty" />
         <separator text="Spray:" horizontal left />
 	<box horizontal>

@@ -47,7 +47,6 @@ static bool window_close_hook(JWidget widget, void *data);
 static bool brush_size_slider_change_hook(JWidget widget, void *data);
 static bool brush_angle_slider_change_hook(JWidget widget, void *data);
 static bool brush_type_change_hook(JWidget widget, void *data);
-static bool brush_mode_change_hook(JWidget widget, void *data);
 static bool glass_dirty_slider_change_hook(JWidget widget, void *data);
 static bool spray_width_slider_change_hook(JWidget widget, void *data);
 static bool air_speed_slider_change_hook(JWidget widget, void *data);
@@ -67,7 +66,6 @@ static void cmd_configure_tools_execute(const char *argument)
   JWidget cursor_color, cursor_color_box;
   JWidget brush_preview_box;
   JWidget brush_type_box, brush_type;
-  JWidget brush_mode_box, brush_mode;
   JWidget check_onionskin;
   JWidget brush_preview;
   bool first_time = FALSE;
@@ -99,7 +97,6 @@ static void cmd_configure_tools_execute(const char *argument)
 		   "cursor_color_box", &cursor_color_box,
 		   "brush_preview_box", &brush_preview_box,
 		   "brush_type_box", &brush_type_box,
-		   "brush_mode_box", &brush_mode_box,
 		   "onionskin", &check_onionskin, NULL)) {
     jwidget_free(window);
     window = NULL;
@@ -142,19 +139,6 @@ static void cmd_configure_tools_execute(const char *argument)
     brush_type = jwidget_find_name(window, "brush_type");
   }
 
-  /* brush-mode */
-  if (first_time) {
-    brush_mode = group_button_new(3, 1, get_brush_mode(),
-				  GFX_DRAWMODE_OPAQUE,
-				  GFX_DRAWMODE_GLASS,
-				  GFX_DRAWMODE_SEMI);
-
-    jwidget_set_name(brush_mode, "brush_mode");
-  }
-  else {
-    brush_mode = jwidget_find_name(window, "brush_mode");
-  }
-
   if (get_filled_mode()) jwidget_select(filled);
   if (get_tiled_mode()) jwidget_select(tiled);
   if (get_use_grid()) jwidget_select(use_grid);
@@ -171,7 +155,6 @@ static void cmd_configure_tools_execute(const char *argument)
     jwidget_add_child(cursor_color_box, cursor_color);
     jwidget_add_child(brush_preview_box, brush_preview);
     jwidget_add_child(brush_type_box, brush_type);
-    jwidget_add_child(brush_mode_box, brush_mode);
 
     /* append hooks */
     HOOK(window, JI_SIGNAL_WINDOW_CLOSE, window_close_hook, 0);
@@ -183,7 +166,6 @@ static void cmd_configure_tools_execute(const char *argument)
     HOOK(brush_size, JI_SIGNAL_SLIDER_CHANGE, brush_size_slider_change_hook, brush_preview);
     HOOK(brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
     HOOK(brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
-    HOOK(brush_mode, SIGNAL_GROUP_BUTTON_CHANGE, brush_mode_change_hook, 0);
     HOOK(glass_dirty, JI_SIGNAL_SLIDER_CHANGE, glass_dirty_slider_change_hook, 0);
     HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
@@ -264,20 +246,6 @@ static bool brush_type_change_hook(JWidget widget, void *data)
 		      type == BRUSH_SQUARE ? "Square":
 		      type == BRUSH_LINE ? "Line": "Unknown");
 
-  return TRUE;
-}
-
-static bool brush_mode_change_hook(JWidget widget, void *data)
-{
-  int mode = group_button_get_selected(widget);
-
-  set_brush_mode(mode);
-
-  statusbar_set_text(app_get_statusbar(), 250,
-		      "Brush mode: %s",
-		      mode == DRAWMODE_OPAQUE ? "Opaque":
-		      mode == DRAWMODE_GLASS ? "Glass":
-		      mode == DRAWMODE_SEMI ? "Semi": "Unknown");
   return TRUE;
 }
 

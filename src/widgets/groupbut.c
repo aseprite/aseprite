@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <stdarg.h>
+#include <allegro/unicode.h>
 
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
@@ -44,6 +45,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
   int x, y, icon;
   va_list ap;
   int c = 0;
+  char buf[256];
 
   va_start(ap, first_selected);
 
@@ -65,6 +67,9 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
 			       x == w-1 && y == h-1 ? 2: 0);
 
       radio->user_data[1] = (void *)c;
+
+      usprintf(buf, "radio%d", c);
+      jwidget_set_name(radio, buf);
 
       if (icon >= 0)
 	add_gfxicon_to_button(radio, icon, JI_CENTER | JI_MIDDLE);

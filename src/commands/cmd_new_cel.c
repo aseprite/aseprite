@@ -37,8 +37,8 @@ static bool cmd_new_cel_enabled(const char *argument)
   return
     current_sprite &&
     current_sprite->layer &&
-    current_sprite->layer->readable &&
-    current_sprite->layer->writable &&
+    layer_is_readable(current_sprite->layer) &&
+    layer_is_writable(current_sprite->layer) &&
     layer_is_image(current_sprite->layer) &&
     !layer_get_cel(current_sprite->layer, current_sprite->frame);
 }

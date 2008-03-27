@@ -22,8 +22,8 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "script/functions.h"
 #include "util/autocrop.h"
-#include "util/crop.h"
 
 void autocrop_sprite(void)
 {
@@ -70,7 +70,7 @@ void autocrop_sprite(void)
     mask_replace(mask, x1, y1, x2-x1+1, y2-y1+1);
 
     sprite->mask = mask;
-    crop_sprite();
+    CropSprite();
 
     sprite->mask = old_mask;
     sprite_generate_mask_boundaries(sprite);

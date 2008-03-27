@@ -88,14 +88,14 @@ static void do_quick(int action)
 		   sprite->mask->x-x + sprite->mask->w-1,
 		   sprite->mask->y-y + sprite->mask->h-1);
 
-    dirty_get(dirty);
+    dirty_save_image_data(dirty);
   }
 
   /* clear the mask region */
   if (action == ACTION_MOVE) {
     int enabled = undo_is_enabled(sprite->undo);
     undo_disable(sprite->undo);
-    ClearMask(color_mask());
+    ClearMask();
     if (enabled)
       undo_enable(sprite->undo);
   }
@@ -134,10 +134,10 @@ static void do_quick(int action)
     dirty_rectfill(dirty, u-x, v-y,
 		   u-x + src->w-1,
 		   v-y + src->h-1);
-    dirty_get(dirty);
+    dirty_save_image_data(dirty);
 
     /* put the first cleared part */
-    dirty_put(dirty_copy);
+    dirty_restore_image_data(dirty_copy);
     dirty_free(dirty_copy);
 
     switch (action) {
@@ -174,7 +174,7 @@ static void do_quick(int action)
   /* user cancels the operation */
   else {
     /* restore the "dst" image */
-    dirty_put(dirty);
+    dirty_restore_image_data(dirty);
 
     /* restore the mask */
     sprite_set_mask(sprite, mask_backup);

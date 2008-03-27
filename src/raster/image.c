@@ -26,6 +26,7 @@
 
 #include "raster/algo.h"
 #include "raster/blend.h"
+#include "raster/brush.h"
 #include "raster/image.h"
 
 #ifndef USE_ALLEGRO_IMAGE
@@ -276,7 +277,76 @@ void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2, int color)
   algo_ellipsefill(x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
 }
 
-void image_to_allegro(Image *image, struct BITMAP *bmp, int x, int y)
+/*********************************************************************
+ Brushes
+ *********************************************************************/
+
+/* typedef struct AlgoData */
+/* { */
+/*   Image *image; */
+/*   Brush *brush; */
+/*   int color; */
+/* } AlgoData; */
+
+/* static void algo_putpixel(int x, int y, AlgoData *data); */
+/* static void algo_putbrush(int x, int y, AlgoData *data); */
+
+/* void image_putpixel_brush(Image *image, Brush *brush, int x, int y, int color) */
+/* { */
+/*   AlgoData data = { image, brush, color }; */
+/*   if (brush->size == 1) */
+/*     algo_putpixel(x, y, &data); */
+/*   else */
+/*     algo_putbrush(x, y, &data); */
+/* } */
+
+/* void image_hline_brush(Image *image, Brush *brush, int x1, int y, int x2, int color) */
+/* { */
+/*   AlgoData data = { image, brush, color }; */
+/*   int x; */
+
+/*   if (brush->size == 1) */
+/*     for (x=x1; x<=x2; ++x) */
+/*       algo_putpixel(x, y, &data); */
+/*   else */
+/*     for (x=x1; x<=x2; ++x) */
+/*       algo_putbrush(x, y, &data); */
+/* } */
+
+/* void image_line_brush(Image *image, Brush *brush, int x1, int y1, int x2, int y2, int color) */
+/* { */
+/*   AlgoData data = { image, brush, color }; */
+/*   algo_line(x1, y1, x2, y2, &data, */
+/* 	    (brush->size == 1)? */
+/* 	    (AlgoPixel)algo_putpixel: */
+/* 	    (AlgoPixel)algo_putbrush); */
+/* } */
+
+/* static void algo_putpixel(int x, int y, AlgoData *data) */
+/* { */
+/*   image_putpixel(data->image, x, y, data->color); */
+/* } */
+
+/* static void algo_putbrush(int x, int y, AlgoData *data) */
+/* { */
+/*   register struct BrushScanline *scanline = data->brush->scanline; */
+/*   register int c = data->brush->size/2; */
+
+/*   x -= c; */
+/*   y -= c; */
+
+/*   for (c=0; c<data->brush->size; ++c) { */
+/*     if (scanline->state) */
+/*       image_hline(data->image, x+scanline->x1, y+c, x+scanline->x2, data->color); */
+/*     ++scanline; */
+/*   } */
+/* } */
+
+/*********************************************************************
+ Allegro <-> Image
+ *********************************************************************/
+
+void image_to_allegro(Image *image, BITMAP *bmp, int x, int y)
 {
   image->method->to_allegro(image, bmp, x, y);
 }

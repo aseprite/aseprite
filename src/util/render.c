@@ -45,7 +45,7 @@ static void merge_zoomed_image1(Image *dst, Image *src, int x, int y, int opacit
 static void merge_zoomed_image2(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
 static void merge_zoomed_image4(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
 
-void set_preview_image (Layer *layer, Image *image)
+void set_preview_image(Layer *layer, Image *image)
 {
   selected_layer = layer;
   rastering_image = image;
@@ -64,26 +64,24 @@ Image *render_sprite(Sprite *sprite,
 		     int frame, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
-  int need_grid, depth;
+  bool need_grid = sprite_need_alpha(sprite);
+  int depth;
   Image *image;
 
   switch (sprite->imgtype) {
 
     case IMAGE_RGB:
       depth = 32;
-      need_grid = _rgba_geta(sprite->bgcolor) < 255;
       zoomed_func = merge_zoomed_image4;
       break;
 
     case IMAGE_GRAYSCALE:
       depth = 8;
-      need_grid = _graya_geta(sprite->bgcolor) < 255;
       zoomed_func = merge_zoomed_image2;
       break;
 
     case IMAGE_INDEXED:
       depth = 8;
-      need_grid = FALSE;
       zoomed_func = merge_zoomed_image1;
       break;
 
@@ -107,12 +105,12 @@ Image *render_sprite(Sprite *sprite,
 
     switch (image->imgtype) {
       case IMAGE_RGB:
-	c1 = _rgba_blend_normal(_rgba(128, 128, 128, 255), sprite->bgcolor, 255);
-	c2 = _rgba_blend_normal(_rgba(192, 192, 192, 255), sprite->bgcolor, 255);
+	c1 = _rgba(128, 128, 128, 255); /* TODO configurable grid color */
+	c2 = _rgba(192, 192, 192, 255);
         break;
       case IMAGE_GRAYSCALE:
-	c1 = _graya_blend_normal(_graya(128, 255), sprite->bgcolor, 255);
-	c2 = _graya_blend_normal(_graya(192, 255), sprite->bgcolor, 255);
+	c1 = _graya(128, 255);
+	c2 = _graya(192, 255);
         break;
 /*       case IMAGE_INDEXED: */
 /* 	c1 = rgb_map->data[16][16][16]; */
@@ -152,7 +150,7 @@ Image *render_sprite(Sprite *sprite,
 #endif
   }
   else
-    image_clear(image, sprite->bgcolor);
+    image_clear(image, 0);
 
   color_map = NULL;
 
@@ -181,7 +179,7 @@ static void render_layer(Layer *layer, Image *image,
 			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int))
 {
   /* we can't read from this layer */
-  if (!layer->readable)
+  if (!layer_is_readable(layer))
     return;
 
 /*   /\* onion-skin feature *\/ */

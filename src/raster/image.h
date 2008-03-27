@@ -53,6 +53,16 @@
     d.rem = 0;					\
   }
 
+#define IMAGE_ADDRESS(image,x,y)					\
+  ((void *)(image)->line[(y)] + IMAGE_LINE_SIZE((image), (x)))		\
+
+#define IMAGE_SHIFT(d)				\
+  (((d)->imgtype == IMAGE_RGB)?       2:	\
+   ((d)->imgtype == IMAGE_GRAYSCALE)? 1: 0)
+
+#define IMAGE_LINE_SIZE(image, width)		\
+  ((width) << IMAGE_SHIFT(image))
+
 /* Image Types */
 enum {
   IMAGE_RGB,
@@ -62,6 +72,7 @@ enum {
 };
 
 struct BITMAP;
+/* struct Brush; */
 struct ImageMethods;
 
 typedef struct Image Image;
@@ -117,6 +128,10 @@ void image_rectfill(Image *image, int x1, int y1, int x2, int y2, int color);
 void image_line(Image *image, int x1, int y1, int x2, int y2, int color);
 void image_ellipse(Image *image, int x1, int y1, int x2, int y2, int color);
 void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2, int color);
+
+/* void image_putpixel_brush(Image *image, struct Brush *brush, int x, int y, int color); */
+/* void image_hline_brush(Image *image, struct Brush *brush, int x1, int y, int x2, int color); */
+/* void image_line_brush(Image *image, struct Brush *brush, int x1, int y1, int x2, int y2, int color); */
 
 void image_to_allegro(Image *image, struct BITMAP *bmp, int x, int y);
 

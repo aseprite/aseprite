@@ -54,7 +54,6 @@ typedef struct ASE_Header
   ase_uint16 speed;	/* deprecated, use "duration" of FrameHeader */
   ase_uint32 next;
   ase_uint32 frit;
-  ase_uint8 bgcolor[4];
 } ASE_Header;
 
 typedef struct ASE_FrameHeader
@@ -156,23 +155,6 @@ static bool load_ASE(FileOp *fop)
   /* set frames and speed */
   sprite_set_frames(sprite, header.frames);
   sprite_set_speed(sprite, header.speed);
-
-  /* set background color */
-  switch (sprite->imgtype) {
-    case IMAGE_RGB:
-      sprite_set_bgcolor(sprite, _rgba(header.bgcolor[0],
-				       header.bgcolor[1],
-				       header.bgcolor[2],
-				       header.bgcolor[3]));
-      break;
-    case IMAGE_GRAYSCALE:
-      sprite_set_bgcolor(sprite, _graya(header.bgcolor[0],
-					header.bgcolor[1]));
-      break;
-    case IMAGE_INDEXED:
-      sprite_set_bgcolor(sprite, header.bgcolor[0]);
-      break;
-  }
 
   /* prepare variables for layer chunks */
   last_layer = sprite->set;
@@ -378,10 +360,6 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   header->speed      = fgetw(f);
   header->next       = fgetl(f);
   header->frit       = fgetl(f);
-  header->bgcolor[0] = fgetc(f);
-  header->bgcolor[1] = fgetc(f);
-  header->bgcolor[2] = fgetc(f);
-  header->bgcolor[3] = fgetc(f);
 
   fseek(f, header->pos+128, SEEK_SET);
   return TRUE;
@@ -403,26 +381,6 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
   header->speed = sprite_get_frlen(sprite, 0);
   header->next = 0;
   header->frit = 0;
-  header->bgcolor[0] = 0;
-  header->bgcolor[1] = 0;
-  header->bgcolor[2] = 0;
-  header->bgcolor[3] = 0;
-
-  switch (sprite->imgtype) {
-    case IMAGE_RGB:
-      header->bgcolor[0] = _rgba_getr(sprite->bgcolor);
-      header->bgcolor[1] = _rgba_getg(sprite->bgcolor);
-      header->bgcolor[2] = _rgba_getb(sprite->bgcolor);
-      header->bgcolor[3] = _rgba_geta(sprite->bgcolor);
-      break;
-    case IMAGE_GRAYSCALE:
-      header->bgcolor[0] = _graya_getv(sprite->bgcolor);
-      header->bgcolor[1] = _graya_geta(sprite->bgcolor);
-      break;
-    case IMAGE_INDEXED:
-      header->bgcolor[0] = sprite->bgcolor;
-      break;
-  }
 
   fseek(f, header->pos+128, SEEK_SET);
 }
@@ -443,10 +401,6 @@ static void ase_file_write_header(FILE *f, ASE_Header *header)
   fputw(header->speed, f);
   fputl(header->next, f);
   fputl(header->frit, f);
-  fputc(header->bgcolor[0], f);
-  fputc(header->bgcolor[1], f);
-  fputc(header->bgcolor[2], f);
-  fputc(header->bgcolor[3], f);
 
   ase_file_write_padding(f, 96);
 
@@ -703,8 +657,7 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
 
   if (layer) {
     /* flags */
-    layer->readable = (flags & 1) ? TRUE: FALSE;
-    layer->writable = (flags & 2) ? TRUE: FALSE;
+    layer->flags = flags;
 
     /* name */
     if (name) {
@@ -736,7 +689,7 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_LAYER);
 
   /* flags */
-  fputw((layer->readable & 1) | ((layer->writable & 1) << 1), f);
+  fputw(layer->flags, f);
 
   /* layer type */
   fputw(layer_is_image(layer) ? 0:

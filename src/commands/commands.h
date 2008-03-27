@@ -24,6 +24,8 @@
 #define CMD_ABOUT			"about"
 #define CMD_ADVANCED_MODE		"advanced_mode"
 #define CMD_AUTOCROP_SPRITE		"autocrop_sprite"
+#define CMD_BACKGROUND_FROM_LAYER	"background_from_layer"
+#define CMD_BLUR_TOOL			"blur_tool"
 #define CMD_BRUSH_TOOL			"brush_tool"
 #define CMD_CEL_PROPERTIES		"cel_properties"
 #define CMD_CHANGE_IMAGE_TYPE		"change_image_type"
@@ -43,10 +45,10 @@
 #define CMD_CUT				"cut"
 #define CMD_DESELECT_MASK		"deselect_mask"
 #define CMD_DESPECKLE			"despeckle"
-#define CMD_DOTS_TOOL			"dots_tool"
 #define CMD_DUPLICATE_LAYER		"duplicate_layer"
 #define CMD_DUPLICATE_SPRITE		"duplicate_sprite"
 #define CMD_ELLIPSE_TOOL		"ellipse_tool"
+#define CMD_ERASER_TOOL			"eraser_tool"
 #define CMD_EXIT			"exit"
 #define CMD_EYEDROPPER_TOOL		"eyedropper_tool"
 #define CMD_FILM_EDITOR			"film_editor"
@@ -61,6 +63,7 @@
 #define CMD_GOTO_PREVIOUS_FRAME		"goto_previous_frame"
 #define CMD_INVERT_COLOR		"invert_color"
 #define CMD_INVERT_MASK			"invert_mask"
+#define CMD_LAYER_FROM_BACKGROUND	"layer_from_background"
 #define CMD_LAYER_PROPERTIES		"layer_properties"
 #define CMD_LINE_TOOL			"line_tool"
 #define CMD_LINK_CEL			"link_cel"
@@ -109,8 +112,6 @@
 #define CMD_SWITCH_COLORS		"switch_colors"
 #define CMD_TIPS			"tips"
 #define CMD_UNDO			"undo"
-/* #define CMD_DRAW_TEXT			"draw_text" */
-/* #define CMD_PLAY_FLIC			"play_flic" */
 
 typedef struct Command Command;
 
@@ -132,6 +133,6 @@ void command_execute(Command *command, const char *argument);
 
 bool command_is_key_pressed(Command *command, JMessage msg);
 void command_add_key(Command *command, const char *string);
-void command_reset_keys();
+void command_reset_keys(void);
 
 #endif /* COMMANDS_COMMANDS_H */

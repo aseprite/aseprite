@@ -288,10 +288,6 @@ bool jmanager_generate_messages(JWidget manager)
   JLink link;
   int c;
 
-  /* make some OSes happy */
-  yield_timeslice();
-  rest(1);
-
   /* poll keyboard */
   poll_keyboard();
 
@@ -560,7 +556,14 @@ bool jmanager_generate_messages(JWidget manager)
   /* generate redraw events */
   jwidget_flush_redraw(manager);
 
-  return !jlist_empty(msg_queue);
+  if (!jlist_empty(msg_queue))
+    return TRUE;
+  else {
+    /* make some OSes happy */
+    yield_timeslice();
+    rest(1);
+    return FALSE;
+  }
 }
 
 void jmanager_dispatch_messages(JWidget manager)

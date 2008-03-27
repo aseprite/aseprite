@@ -32,8 +32,8 @@ static bool cmd_cut_enabled(const char *argument)
 {
   if ((!current_sprite) ||
       (!current_sprite->layer) ||
-      (!current_sprite->layer->readable) ||
-      (!current_sprite->layer->writable) ||
+      (!layer_is_readable(current_sprite->layer)) ||
+      (!layer_is_writable(current_sprite->layer)) ||
       (!current_sprite->mask) ||
       (!current_sprite->mask->bitmap))
     return FALSE;

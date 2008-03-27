@@ -26,7 +26,9 @@
 
 static bool cmd_remove_layer_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  return
+    current_sprite != NULL &&
+    current_sprite->layer != NULL;
 }
 
 static void cmd_remove_layer_execute(const char *argument)
