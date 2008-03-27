@@ -16,8 +16,10 @@
     <label text="Opacity:" />
     <slider min=0 max=255 name="opacity" cell_align="horizontal" width="128" />
 
+    <separator horizontal cell_hspan="2" />
+
     <box horizontal homogeneous cell_hspan="2" cell_align="right">
-      <button text="&OK" name="ok" magnetic width="60" />
+      <button text="&OK" name="ok" magnetic minwidth="60" />
       <button text="&Cancel" />
     </box>
   </grid>

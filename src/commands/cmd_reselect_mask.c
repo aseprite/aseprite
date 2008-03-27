@@ -41,8 +41,10 @@ static void cmd_reselect_mask_execute(const char *argument)
   mask = sprite_request_mask(sprite, "*deselected*");
 
   /* undo */
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Mask Reselection");
     undo_set_mask(sprite->undo, sprite);
+  }
 
   /* set the mask */
   sprite_set_mask(sprite, mask);

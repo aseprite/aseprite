@@ -24,6 +24,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
 
@@ -40,6 +41,9 @@ static bool cmd_clear_enabled(const char *argument)
 static void cmd_clear_execute(const char *argument)
 {
   Sprite *sprite = current_sprite; /* get current sprite */
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Clear");
 
   /* clear the mask */
   ClearMask();

@@ -148,6 +148,7 @@ void CropSprite(void)
   if ((sprite) &&
       (!mask_is_empty(sprite->mask))) {
     if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Sprite Crop");
       undo_open(sprite->undo);
       undo_int(sprite->undo, (GfxObj *)sprite, &sprite->w);
       undo_int(sprite->undo, (GfxObj *)sprite, &sprite->h);
@@ -280,6 +281,7 @@ Layer *NewLayer(void)
 
   /* undo stuff */
   if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "New Layer");
     undo_open(sprite->undo);
     undo_add_layer(sprite->undo, sprite->set, layer);
     undo_set_layer(sprite->undo, sprite);
@@ -354,8 +356,10 @@ void RemoveLayer(void)
       layer_select = NULL;
 
     /* undo stuff */
-    if (undo_is_enabled(sprite->undo))
+    if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Remove Layer");
       undo_open(sprite->undo);
+    }
 
     /* select other layer */
     if (undo_is_enabled(sprite->undo))
@@ -435,8 +439,10 @@ Layer *FlattenLayers(void)
     bgcolor = 0;
 
   /* open undo */
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Flatten Layers");
     undo_open(sprite->undo);
+  }
   
   /* add the new layer */
   if (is_new_background) {
@@ -584,6 +590,7 @@ void CropLayer(void)
 
     /* add the new layer */
     if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Layer Crop");
       undo_open(sprite->undo);
       undo_add_layer(sprite->undo, set, new_layer);
     }
@@ -631,32 +638,32 @@ void BackgroundFromLayer(void)
 
   sprite = current_sprite;
   if (sprite == NULL) {
-    console_printf("LayerFromBackground: there are not a current sprite selected\n");
+    console_printf("BackgroundFromLayer: there is not a current sprite selected\n");
     return;
   }
 
   if (sprite_get_background_layer(sprite) != NULL) {
-    console_printf("LayerFromBackground: the current sprite already has a `Background' layer.\n");
+    console_printf("BackgroundFromLayer: the current sprite already has a `Background' layer.\n");
     return;
   }
 
   if (sprite->layer == NULL) {
-    console_printf("LayerFromBackground: there are not a current layer selected.\n");
+    console_printf("BackgroundFromLayer: there are not a current layer selected.\n");
     return;
   }
 
   if (!layer_is_image(sprite->layer)) {
-    console_printf("LayerFromBackground: the current layer must be a `image' layer.\n");
+    console_printf("BackgroundFromLayer: the current layer must be an `image' layer.\n");
     return;
   }
 
   if (!layer_is_readable(sprite->layer)) {
-    console_printf("LayerFromBackground: the current layer is hidden, can't be converted.\n");
+    console_printf("BackgroundFromLayer: the current layer is hidden, can't be converted.\n");
     return;
   }
 
   if (!layer_is_writable(sprite->layer)) {
-    console_printf("LayerFromBackground: the current layer is locked, can't be converted.\n");
+    console_printf("BackgroundFromLayer: the current layer is locked, can't be converted.\n");
     return;
   }
 
@@ -664,8 +671,10 @@ void BackgroundFromLayer(void)
      cleared using the selected background color in the color-bar */
   bgcolor = app_get_bg_color(sprite);
 
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Background from Layer");
     undo_open(sprite->undo);
+  }
 
   /* create a temporary image to draw each frame of the new
      `Background' layer */
@@ -740,7 +749,60 @@ void BackgroundFromLayer(void)
 
 void LayerFromBackground(void)
 {
-  console_printf("LayerFromBackground: not implemented\n");
+  Sprite *sprite;
+
+  sprite = current_sprite;
+  if (sprite == NULL) {
+    console_printf("LayerFromBackground: there is not a current sprite selected\n");
+    return;
+  }
+
+  if (sprite_get_background_layer(sprite) == NULL) {
+    console_printf("LayerFromBackground: the current sprite hasn't a `Background' layer.\n");
+    return;
+  }
+
+  if (sprite->layer == NULL) {
+    console_printf("LayerFromBackground: there is not a current layer selected.\n");
+    return;
+  }
+
+  if (!layer_is_image(sprite->layer)) {
+    console_printf("LayerFromBackground: the current layer must be an `image' layer.\n");
+    return;
+  }
+
+  if (!layer_is_readable(sprite->layer)) {
+    console_printf("LayerFromBackground: the current layer is hidden, can't be converted.\n");
+    return;
+  }
+
+  if (!layer_is_writable(sprite->layer)) {
+    console_printf("LayerFromBackground: the current layer is locked, can't be converted.\n");
+    return;
+  }
+
+  if (!layer_is_background(sprite->layer)) {
+    console_printf("LayerFromBackground: the current layer must be the `Background' layer.\n");
+    return;
+  }
+
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Layer from Background");
+    undo_open(sprite->undo);
+    undo_data(sprite->undo,
+	      (GfxObj *)sprite->layer,
+	      &sprite->layer->flags,
+	      sizeof(sprite->layer->flags));
+    undo_data(sprite->undo,
+	      (GfxObj *)sprite->layer,
+	      &sprite->layer->name,
+	      LAYER_NAME_SIZE);
+    undo_close(sprite->undo);
+  }
+
+  sprite->layer->flags &= ~(LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND);
+  layer_set_name(sprite->layer, "Layer 0");
 }
 
 /* internal routine */
@@ -786,8 +848,10 @@ void RemoveCel(Layer *layer, Cel *cel)
       }
     }
 
-    if (undo_is_enabled(sprite->undo))
+    if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Remove Cel");
       undo_open(sprite->undo);
+    }
 
     if (!used) {
       /* if the image is only used by this cel, we can remove the
@@ -821,11 +885,14 @@ void CropCel(void)
     Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
     /* undo */
-    undo_open(sprite->undo);
-    undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
-    undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-    undo_replace_image(sprite->undo, sprite->stock, cel->image);
-    undo_close(sprite->undo);
+    if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Cel Crop");
+      undo_open(sprite->undo);
+      undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
+      undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
+      undo_replace_image(sprite->undo, sprite->stock, cel->image);
+      undo_close(sprite->undo);
+    }
 
     /* replace the image */
     sprite->stock->image[cel->image] =

@@ -62,8 +62,10 @@ static void cmd_merge_down_layer_execute(const char *argument)
   src_layer = sprite->layer;
   dst_layer = layer_get_prev(sprite->layer);
 
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Merge Down Layer");
     undo_open(sprite->undo);
+  }
 
   for (frpos=0; frpos<sprite->frames; ++frpos) {
     /* get frames */

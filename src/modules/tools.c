@@ -748,8 +748,8 @@ static void tool_blur_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 static Tool tool_blur =
 {
   "blur",
-  "Blur",
-  "Blur",
+  "Blur Tool",
+  "Blur Tool",
   TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   tool_blur_preprocess_data,
   tool_blur_draw_trace,
@@ -1312,6 +1312,8 @@ void control_tool(JWidget widget, Tool *tool,
 
   /* if we finished with the same button that we start began */
   if (!editor_click_cancel(widget)) {
+    if (undo_is_enabled(sprite->undo))
+      undo_set_label(sprite->undo, tool->name);
 
     /* marker *******************************************************/
     if (tool == tools_list[TOOL_MARKER]) {
@@ -1323,8 +1325,9 @@ void control_tool(JWidget widget, Tool *tool,
 	func = (key_shifts & KB_ALT_FLAG) ? mask_intersect: mask_subtract;
 
       /* insert the undo operation */
-      if (undo_is_enabled (sprite->undo))
+      if (undo_is_enabled(sprite->undo)) {
 	undo_set_mask(sprite->undo, sprite);
+      }
 
       (*func)(sprite->mask,
 	      MIN(x1, x2) - offset_x,
@@ -1363,21 +1366,25 @@ void control_tool(JWidget widget, Tool *tool,
       /* if the size of both images are different, we have to replace
 	 the entire image */
       else {
-	undo_open(sprite->undo);
-	if (cel->x != old_cel_x) {
-	  x1 = cel->x;
-	  cel->x = old_cel_x;
-	  undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
-	  cel->x = x1;
+	if (undo_is_enabled(sprite->undo)) {
+	  undo_open(sprite->undo);
+
+	  if (cel->x != old_cel_x) {
+	    x1 = cel->x;
+	    cel->x = old_cel_x;
+	    undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
+	    cel->x = x1;
+	  }
+	  if (cel->y != old_cel_y) {
+	    y1 = cel->y;
+	    cel->y = old_cel_y;
+	    undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
+	    cel->y = y1;
+	  }
+
+	  undo_replace_image(sprite->undo, sprite->stock, cel->image);
+	  undo_close(sprite->undo);
 	}
-	if (cel->y != old_cel_y) {
-	  y1 = cel->y;
-	  cel->y = old_cel_y;
-	  undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-	  cel->y = y1;
-	}
-	undo_replace_image(sprite->undo, sprite->stock, cel->image);
-	undo_close(sprite->undo);
 
 	/* replace the image in the stock */
 	stock_replace_image(sprite->stock, cel->image, tool_data.dst_image);

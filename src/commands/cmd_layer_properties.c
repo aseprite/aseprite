@@ -29,25 +29,17 @@
 
 static bool cmd_layer_properties_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  return
+    current_sprite != NULL &&
+    current_sprite->layer != NULL;
 }
 
 static void cmd_layer_properties_execute(const char *argument)
 {
   JWidget window, box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
-  Sprite *sprite;
-  Layer *layer;
-
-  /* get current sprite */
-  sprite = current_sprite;
-  if (!sprite)
-    return;
-
-  /* get selected layer */
-  layer = sprite->layer;
-  if (!layer)
-    return;
+  Sprite *sprite = current_sprite;
+  Layer *layer = sprite->layer;
 
   window = jwindow_new(_("Layer Properties"));
   box1 = jbox_new(JI_VERTICAL);

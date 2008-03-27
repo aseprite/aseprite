@@ -51,7 +51,10 @@ static void cmd_new_frame_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
-  undo_open(sprite->undo);
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "New Frame");
+    undo_open(sprite->undo);
+  }
 
   /* add a new cel to every layer */
   new_frame_for_layer(sprite,
@@ -59,15 +62,18 @@ static void cmd_new_frame_execute(const char *argument)
 		      sprite->frame+1);
 
   /* increment frames counter in the sprite */
-  undo_set_frames(sprite->undo, sprite);
+  if (undo_is_enabled(sprite->undo))
+    undo_set_frames(sprite->undo, sprite);
   sprite_set_frames(sprite, sprite->frames+1);
 
   /* go to next frame (the new one) */
-  undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
+  if (undo_is_enabled(sprite->undo))
+    undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
   sprite_set_frame(sprite, sprite->frame+1);
 
   /* close undo & refresh the screen */
-  undo_close(sprite->undo);
+  if (undo_is_enabled(sprite->undo))
+    undo_close(sprite->undo);
   update_screen_for_sprite(sprite);
 
   statusbar_show_tip(app_get_statusbar(), 1000,

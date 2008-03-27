@@ -42,8 +42,10 @@ static void cmd_invert_mask_execute(const char *argument)
   }
   else {
     /* undo */
-    if (undo_is_enabled(sprite->undo))
+    if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Mask Invert");
       undo_set_mask(sprite->undo, sprite);
+    }
 
     /* create a new mask */
     mask = mask_new();

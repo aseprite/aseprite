@@ -139,6 +139,9 @@ void cut_to_clipboard(void)
   if (!low_copy())
     console_printf("Can't copying an image portion from the current layer\n");
   else {
+    if (undo_is_enabled(current_sprite->undo))
+      undo_set_label(current_sprite->undo, "Cut");
+
     ClearMask();
     update_screen_for_sprite(current_sprite);
   }
@@ -225,7 +228,8 @@ void paste_from_clipboard(void)
     v2 = MIN(dest_image->h-1, MAX(yout[0], MAX(yout[1], MAX(yout[2], yout[3]))));
 
     /* undo region */
-    undo_image(current_sprite->undo, dest_image, u1, v1, u2-u1+1, v2-v1+1);
+    if (undo_is_enabled(current_sprite->undo))
+      undo_image(current_sprite->undo, dest_image, u1, v1, u2-u1+1, v2-v1+1);
 
     /* draw the transformed image */
     image_parallelogram(dest_image, image,

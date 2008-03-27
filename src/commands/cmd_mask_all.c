@@ -35,8 +35,10 @@ static void cmd_mask_all_execute(const char *argument)
   Sprite *sprite = current_sprite;
 
   /* undo */
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Mask All");
     undo_set_mask(sprite->undo, sprite);
+  }
 
   /* change the selection */
   mask_replace(sprite->mask, 0, 0, sprite->w, sprite->h);

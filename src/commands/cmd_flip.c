@@ -93,8 +93,11 @@ static void do_flip(int horz)
   }
 
   /* insert the undo operation */
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, horz ? "Horizontal Flip":
+					"Vertical Flip");
     undo_flip(sprite->undo, image, x1, y1, x2, y2, horz);
+  }
 
   /* flip the portion of the bitmap */
   area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1);

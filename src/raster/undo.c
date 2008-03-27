@@ -341,13 +341,15 @@ static void run_undo(Undo *undo, int state, int discard_tail)
       if (!chunk)
 	break;
 
-/*       { int c; */
-/* 	for (c=0; c<ABS(level); c++) */
-/* 	  PRINTF("  "); */
-/* 	PRINTF("%s: %s\n", */
-/* 	       (state == DO_UNDO) ? "Undo": "Redo", */
-/* 	       undo_actions[chunk->type].name); } */
+      { int c;
+	for (c=0; c<ABS(level); c++)
+	  PRINTF("  ");
+	PRINTF("%s: %s (Label: %s)\n",
+	       (state == DO_UNDO) ? "Undo": "Redo",
+	       undo_actions[chunk->type].name,
+	       chunk->label); }
 
+      undo_set_label(undo, chunk->label);
       (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
 
       if (chunk->type == UNDO_TYPE_OPEN)

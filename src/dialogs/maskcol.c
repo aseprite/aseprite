@@ -121,12 +121,14 @@ void dialogs_mask_color(void)
   /* open the window */
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer (window) == button_ok) {
+  if (jwindow_get_killer(window) == button_ok) {
     Mask *mask;
 
     /* undo */
-    if (undo_is_enabled (sprite->undo))
+    if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Mask by Color");
       undo_set_mask(sprite->undo, sprite);
+    }
 
     /* change the mask */
     mask = gen_mask();

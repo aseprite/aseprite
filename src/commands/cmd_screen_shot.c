@@ -32,7 +32,7 @@ static void cmd_screen_shot_execute(const char *argument)
 {
   int c, old_flag;
   char buf[512];
-  PALETTE pal;
+  PALETTE rgbpal;
   BITMAP *bmp;
 
   /* save the active flag which indicate if the mouse is freeze or not */
@@ -42,7 +42,7 @@ static void cmd_screen_shot_execute(const char *argument)
   freeze_mouse_flag = TRUE;
 
   /* get the active palette color */
-  get_palette(pal);
+  get_palette(rgbpal);
 
   /* get a file name for the capture */
   for (c=0; c<10000; c++) {
@@ -63,8 +63,10 @@ static void cmd_screen_shot_execute(const char *argument)
     Sprite *sprite = sprite_new_with_layer(imgtype, bmp->w, bmp->h);
     Image *image = GetImage2(sprite, NULL, NULL, NULL);
     int x, y, r, g, b;
+    Palette *pal = palette_new(0, MAX_PALETTE_COLORS);
 
-    memcpy(sprite_get_palette(sprite, 0), pal, sizeof(PALETTE));
+    palette_from_allegro(pal, rgbpal);
+    sprite_set_palette(sprite, pal, TRUE);
 
     /* convert Allegro "BITMAP" to ASE "Image" */
     if (imgtype == IMAGE_RGB) {

@@ -18,6 +18,7 @@
         <label text="" name="frames" />
       </box>
     </box>
+    <separator horizontal />
     <box horizontal>
       <button text="Constant Frame-Rate Speed" name="speed" />
       <box horizontal expansive />

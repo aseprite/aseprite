@@ -127,8 +127,10 @@ static void cmd_cel_properties_execute(const char *argument)
 
     /* the opacity was changed? */
     if (cel->opacity != new_opacity) {
-      if (undo_is_enabled(sprite->undo))
+      if (undo_is_enabled(sprite->undo)) {
+	undo_set_label(sprite->undo, "Cel Opacity Change");
 	undo_int(sprite->undo, (GfxObj *)cel, &cel->opacity);
+      }
 
       /* change cel opacity */
       cel_set_opacity(cel, new_opacity);

@@ -26,7 +26,6 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
 #include "script/functions.h"
 
 static bool cmd_new_layer_enabled(const char *argument)
@@ -55,8 +54,6 @@ static void cmd_new_layer_execute(const char *argument)
     Layer *layer = NewLayer();
     if (!layer) {
       jalert(_("Error<<Not enough memory||&Close"));
-      if (undo_is_enabled(sprite->undo))
-	undo_close(sprite->undo);
       return;
     }
     layer_set_name(layer, name);

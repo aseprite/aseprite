@@ -64,16 +64,24 @@ static void cmd_new_cel_execute(const char *argument)
   /* add the image in the stock */
   image_index = stock_add_image(current_sprite->stock, image);
 
-  undo_open(current_sprite->undo);
-  undo_add_image(current_sprite->undo,
-		 current_sprite->stock, image);
+  if (undo_is_enabled(current_sprite->undo)) {
+    undo_set_label(current_sprite->undo, "New Cel");
+    undo_open(current_sprite->undo);
+    undo_add_image(current_sprite->undo,
+		   current_sprite->stock, image);
+  }
+
+  /* create the new cel */
+  cel = cel_new(current_sprite->frame, image_index);
 
   /* add the cel in the layer */
-  cel = cel_new(current_sprite->frame, image_index);
-  undo_add_cel(current_sprite->undo, current_sprite->layer, cel);
+  if (undo_is_enabled(current_sprite->undo))
+    undo_add_cel(current_sprite->undo, current_sprite->layer, cel);
+
   layer_add_cel(current_sprite->layer, cel);
 
-  undo_close(current_sprite->undo);
+  if (undo_is_enabled(current_sprite->undo))
+    undo_close(current_sprite->undo);
 
   update_screen_for_sprite(current_sprite);
 }

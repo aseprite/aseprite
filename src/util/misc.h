@@ -38,7 +38,7 @@ struct Layer *NewLayerFromMask(struct Sprite *src, struct Sprite *dst);
 
 struct Image *GetLayerImage(struct Layer *layer, int *x, int *y, int frame);
 
-int interactive_move_layer(int mode, int use_undo, int (*callback) (void));
+int interactive_move_layer(int mode, bool use_undo, int (*callback)(void));
 
 #endif /* UTIL_MISC_H */
 

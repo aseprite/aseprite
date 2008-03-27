@@ -51,8 +51,10 @@ static void cmd_load_mask_execute(const char *argument)
     }
 
     /* undo */
-    if (undo_is_enabled(sprite->undo))
+    if (undo_is_enabled(sprite->undo)) {
+      undo_set_label(sprite->undo, "Mask Load");
       undo_set_mask(sprite->undo, sprite);
+    }
 
     sprite_set_mask(sprite, mask);
     mask_free(mask);

@@ -48,20 +48,21 @@
 typedef struct EffectData
 {
   const char *name;
+  const char *label;
   void (*apply_4)(Effect *effect);
   void (*apply_2)(Effect *effect);
   void (*apply_1)(Effect *effect);
 } EffectData;
 
-#define FXDATA(name) \
-  { #name, apply_##name##4, apply_##name##2, apply_##name##1 }
+#define FXDATA(name, label)						\
+  { #name, label, apply_##name##4, apply_##name##2, apply_##name##1 }
 
 static EffectData effects_data[] = {
-  FXDATA(color_curve),
-  FXDATA(convolution_matrix),
-  FXDATA(invert_color),
-  FXDATA(median),
-  FXDATA(replace_color),
+  FXDATA(color_curve, "Color Curve"),
+  FXDATA(convolution_matrix, "Convolution Matrix"),
+  FXDATA(invert_color, "Invert Color"),
+  FXDATA(median, "Median"),
+  FXDATA(replace_color, "Replace Color"),
   { NULL, NULL, NULL, NULL }
 };
 
@@ -114,6 +115,7 @@ Effect *effect_new(Sprite *sprite, const char *name)
   effect->mask = NULL;
   effect->preview_mask = NULL;
   effect->mask_address = NULL;
+  effect->effect_data = effect_data;
   effect->apply = apply;
 
   effect_load_target(effect);
@@ -272,9 +274,12 @@ void effect_apply(Effect *effect)
 /*     do_progress(effect->row); */
 
   /* undo stuff */
-  if (undo_is_enabled(effect->sprite->undo))
+  if (undo_is_enabled(effect->sprite->undo)) {
+    undo_set_label(effect->sprite->undo,
+		   effect->effect_data->label);
     undo_image(effect->sprite->undo, effect->src,
 	       effect->x, effect->y, effect->w, effect->h);
+  }
 
   /* copy "dst" to "src" */
   image_copy(effect->src, effect->dst, 0, 0);
@@ -336,7 +341,7 @@ void effect_apply_to_target(Effect *effect)
   if (images > 0) {
     if (images > 1) {
       /* open undo */
-      if (undo_is_enabled (effect->sprite->undo))
+      if (undo_is_enabled(effect->sprite->undo))
 	undo_open(effect->sprite->undo);
     }
 
@@ -352,7 +357,7 @@ void effect_apply_to_target(Effect *effect)
 
     if (images > 1) {
       /* close  */
-      if (undo_is_enabled (effect->sprite->undo))
+      if (undo_is_enabled(effect->sprite->undo))
 	undo_close(effect->sprite->undo);
     }
 

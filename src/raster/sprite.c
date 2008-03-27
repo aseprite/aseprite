@@ -541,8 +541,10 @@ void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method)
     return;
 
   /* if the undo is enabled, open a "big" group */
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Color Mode Change");
     undo_open(sprite->undo);
+  }
 
   /* change imgtype of the stock of images */
   if (undo_is_enabled(sprite->undo))
@@ -600,7 +602,7 @@ Layer *sprite_get_background_layer(Sprite *sprite)
   assert(sprite != NULL);
 
   if (jlist_length(sprite->set->layers) > 0) {
-    Layer *bglayer = jlist_last_data(sprite->set->layers);
+    Layer *bglayer = jlist_first_data(sprite->set->layers);
 
     if (layer_is_background(bglayer))
       return bglayer;

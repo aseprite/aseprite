@@ -3,19 +3,19 @@
 <!-- Read "LEGAL.txt" for more information. -->
 <jinete>
 <window text="Frame Duration" name="frame_duration">
-  <box vertical>
-    <box horizontal expansive>
-      <box vertical homogeneous>
-        <label text="Frame number:" />
-        <label text="Duration (milliseconds):" />
-      </box>
-      <box vertical homogeneous expansive>
-        <label text="" name="frame" />
-        <entry maxsize=32 name="frlen" magnetic />
-      </box>
-    </box>
-    <box horizontal homogeneous>
-      <button text="&OK" name="ok" magnetic />
+  <grid columns="3">
+    <label text="Frame number:" />
+    <label text="" name="frame" />
+    <box cell_align="horizontal" />
+
+    <label text="Duration (milliseconds):" />
+    <entry maxsize="10" name="frlen" magnetic />
+    <box cell_align="horizontal" />
+
+    <separator horizontal cell_hspan="3" />
+
+    <box horizontal homogeneous cell_hspan="3" cell_align="right">
+      <button text="&OK" name="ok" magnetic minwidth="60" />
       <button text="&Cancel" />
     </box>
   </box>

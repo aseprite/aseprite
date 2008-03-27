@@ -249,7 +249,7 @@ Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
 
 /* Gives to the user the possibility to move the sprite's layer in the
    current editor, returns TRUE if the position was changed.  */
-int interactive_move_layer(int mode, int use_undo, int (*callback)(void))
+int interactive_move_layer(int mode, bool use_undo, int (*callback)(void))
 {
   JWidget editor = current_editor;
   Sprite *sprite = editor_get_sprite (editor);
@@ -315,6 +315,7 @@ int interactive_move_layer(int mode, int use_undo, int (*callback)(void))
       new_x = cel->x;
       new_y = cel->y;
 
+      undo_set_label(sprite->undo, "Cel Movement");
       undo_open(sprite->undo);
       cel->x = begin_x;
       cel->y = begin_y;

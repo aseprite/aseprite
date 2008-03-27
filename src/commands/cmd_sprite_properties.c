@@ -29,7 +29,6 @@
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
 #include "widgets/colbut.h"
 
 /* TODO remove this */

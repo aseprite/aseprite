@@ -29,11 +29,6 @@ click>. This replaces the ``Tool Foreground Color''.
 <Alt+Right click> replaces the ``Tool Background Color'' and the <X>
 switches the Foreground and Background colors.
  **********************************************************************
-\image sprprop.pcx
-
-You can modify the quantity of sprite's animation frames using the
-``Sprite/Properties'' menu or pressing <Ctrl+P>.
- **********************************************************************
 \image anicontrols.pcx
 
 Move through the frames with the arrows keys
@@ -50,7 +45,7 @@ Move through the frames with the arrows keys
 
 <Enter> = play animation
  **********************************************************************
-You can add new animation frames pressing N-key or using
+You can add new animation frames pressing <N> key or using
 ``Frame/New'' menu.
  **********************************************************************
 \image filmedit.pcx
@@ -108,11 +103,6 @@ insert or remove vertices respectively.  Also, if you press in a
 vertex with the right mouse button, the ``Point Properties'' window (to
 change the coordinates manually) will be appears.
  **********************************************************************
-\image minipal.pcx
-
-Select a color in the color-bar using the <Ctrl> key will show you
-this mini-palette.
- **********************************************************************
 \split
 \image nodither.pcx
 A RGB image without dithering.
@@ -122,13 +112,13 @@ Ordered dithering method.
 \done
 
 See ``Tool/Options'' menu or press <Ctrl+Shift+O>.
- **********************************************************************
-\image lua.pcx
+#  **********************************************************************
+# \image lua.pcx
 
-Do you want to write Lua scripts to generate images or create
-repetitive tasks?  You can find the documentation in
-``docs/scripts/README.txt''.  Also you can look for ``data/scripts/gens/''
-directory for some examples.
+# Do you want to write Lua scripts to generate images or create
+# repetitive tasks?  You can find the documentation in
+# ``docs/scripts/README.txt''.  Also you can look for ``data/scripts/gens/''
+# directory for some examples.
  **********************************************************************
 \palette sprite.pcx
 \image sprite.pcx

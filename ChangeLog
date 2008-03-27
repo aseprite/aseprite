@@ -1,5 +1,12 @@
 2008-03-27  David A. Capello  <dacap@users.sourceforge.net>
 
+	* Added a call to undo_set_label(...) for every undo operation in
+	the source code.
+
+	* src/script/functions.c (LayerFromBackground): Done.
+
+	* src/commands/cmd_layer_from_background.c: Added.
+
 	* src/commands/cmd_background_from_layer.c: Added.
 
 2008-03-26  David A. Capello  <dacap@users.sourceforge.net>

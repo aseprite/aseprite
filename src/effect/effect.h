@@ -29,6 +29,8 @@ struct Sprite;
 int init_module_effect(void);
 void exit_module_effect(void);
 
+struct EffectData;
+
 typedef struct Effect
 {
   struct Sprite *sprite;
@@ -40,6 +42,7 @@ typedef struct Effect
   struct Mask *preview_mask;
   unsigned char *mask_address;
   div_t d;
+  struct EffectData *effect_data;
   void (*apply)(struct Effect *effect);
   struct {
     int r:1, g:1, b:1;

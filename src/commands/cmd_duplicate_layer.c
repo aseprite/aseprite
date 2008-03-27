@@ -54,8 +54,10 @@ static Layer *duplicate_layer(void)
     return NULL;
 
   /* open undo */
-  if (undo_is_enabled(sprite->undo))
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Layer Duplication");
     undo_open(sprite->undo);
+  }
 
   layer_copy = layer_new_copy(sprite, sprite->layer);
   if (!layer_copy) {

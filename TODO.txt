@@ -1,8 +1,14 @@
 Next beta
 ---------
 
+- Check these routines:
+  + move_cel
+  + copy_cel
+  + link_cel
+  + quick_move
+  + quick_copy
+  + quick_swap
 - add the progress bar for effects and save-file.
-- add layer_from_background
 - fix colors
 - tooltips for color-bar.
   + agregar soporte para UNDO al cambiar los colores de la paleta.

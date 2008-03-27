@@ -42,23 +42,29 @@ static void cmd_remove_frame_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
-  undo_open(sprite->undo);
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Remove Frame");
+    undo_open(sprite->undo);
+  }
 
   /* remove cels from this frame (and displace one position backward
      all next frames) */
   remove_frame_for_layer(sprite, sprite->set, sprite->frame);
 
   /* decrement frames counter in the sprite */
-  undo_set_frames(sprite->undo, sprite);
+  if (undo_is_enabled(sprite->undo))
+    undo_set_frames(sprite->undo, sprite);
   sprite_set_frames(sprite, sprite->frames-1);
 
   /* move backward if we are outside the range of frames */
   if (sprite->frame >= sprite->frames) {
-    undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
+    if (undo_is_enabled(sprite->undo))
+      undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
     sprite_set_frame(sprite, sprite->frames-1);
   }
 
-  undo_close(sprite->undo);
+  if (undo_is_enabled(sprite->undo))
+    undo_close(sprite->undo);
   update_screen_for_sprite(current_sprite);
 }
 

@@ -134,7 +134,7 @@
 <!-- 	    <item command="new_layer_set" name="New &Set" /> -->
 	    <item command="remove_layer" name="&Remove" />
 	    <item command="background_from_layer" name="&Background from Layer" />
-	    <item command="layer_from_background" name="&Layer from Background..." />
+	    <item command="layer_from_background" name="&Layer from Background" />
 	    <separator />
 	    <item command="duplicate_layer" name="&Duplicate..." />
 	    <item command="merge_down_layer" name="&Merge Down" />
@@ -158,13 +158,13 @@
 	<menu name="&Cel" id="cel_popup">
 	    <item command="cel_properties" name="&Properties..." />
 	    <separator />
-	    <item command="new_cel" name="&New" />
+<!-- 	    <item command="new_cel" name="&New" /> -->
 	    <item command="move_cel" name="&Move" />
 	    <item command="copy_cel" name="&Copy" />
 <!-- 	    <item command="link_cel" name="&Link" /> -->
-	    <item command="remove_cel" name="&Remove" />
-	    <separator />
-	    <item command="crop_cel" name="Cr&op" />
+<!-- 	    <item command="remove_cel" name="&Remove" /> -->
+<!-- 	    <separator /> -->
+<!-- 	    <item command="crop_cel" name="Cr&op" /> -->
 	</menu>
 	<menu name="&Mask">
 	    <item command="mask_all" name="&All" />
