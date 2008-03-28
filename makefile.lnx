@@ -14,8 +14,13 @@ endif
 ######################################################################
 # Flags for GCC in GNU/Linux system
 
-CFLAGS = 
+#ifdef DEBUGMODE
+CFLAGS = `allegro-config --cflags debug`
+LFLAGS = `allegro-config --libs debug`
+#else
+CFLAGS = `allegro-config --cflags`
 LFLAGS = `allegro-config --libs`
+#endif
 
 ######################################################################
 # GCC stuff

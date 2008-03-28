@@ -982,6 +982,11 @@ static FileItem *get_fileitem_by_path(const char *path, bool create_if_not)
   FileItem *fileitem;
   int attrib;
 
+ #ifdef ALLEGRO_UNIX
+  if (*path == 0)
+    return rootitem;
+#endif
+
   key = get_key_for_filename(path);
   fileitem = hash_lookup(hash_fileitems, key);
   jfree(key);
