@@ -27,7 +27,7 @@
 #include "raster/palette.h"
 
 static struct {
-  int tiled;
+  bool tiled;
   int w, h;
   int ncolors;
   unsigned char *channel[4];
@@ -84,7 +84,8 @@ void apply_median4(Effect *effect)
     c = 0;
 
     GET_MATRIX_DATA
-      (ase_uint32, data.w, data.h, data.w/2, data.h/2,
+      (ase_uint32, src, src_address,
+       data.w, data.h, data.w/2, data.h/2, data.tiled,
        color = *src_address;
        data.channel[0][c] = _rgba_getr(color);
        data.channel[1][c] = _rgba_getg(color);
@@ -151,7 +152,8 @@ void apply_median2(Effect *effect)
     c = 0;
 
     GET_MATRIX_DATA
-      (ase_uint16, data.w, data.h, data.w/2, data.h/2,
+      (ase_uint16, src, src_address,
+       data.w, data.h, data.w/2, data.h/2, data.tiled,
        color = *src_address;
        data.channel[0][c] = _graya_getv(color);
        data.channel[1][c] = _graya_geta(color);
@@ -207,7 +209,8 @@ void apply_median1(Effect *effect)
     c = 0;
 
     GET_MATRIX_DATA
-      (ase_uint8, data.w, data.h, data.w/2, data.h/2,
+      (ase_uint8, src, src_address,
+       data.w, data.h, data.w/2, data.h/2, data.tiled,
        color = *src_address;
        if (effect->target.index) {
 	 data.channel[0][c] = color;

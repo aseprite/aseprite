@@ -76,13 +76,21 @@ void effect_flush(Effect *effect);
 void effect_apply_to_image(Effect *effect, struct Image *image, int x, int y);
 void effect_apply_to_target(Effect *effect);
 
-/* macro to get contiguos pixels from an image */
-#define GET_MATRIX_DATA(ptr_type, width, height, cx, cy, do_job)	\
+/**
+ * Macro to get contiguos pixels from an image. It's useful to fill a
+ * matrix of pixels of "width x height" dimension.
+ *
+ * It needs some variables to be defined before to use this routines:
+ * x, y = pixel position
+ * getx, gety, addx, addy, dx, dy = auxiliars
+ */
+#define GET_MATRIX_DATA(ptr_type, src, src_address,			\
+			width, height, cx, cy, tiled, do_job)		\
   /* Y position to get pixel */						\
   gety = y-(cy);							\
   addy = 0;								\
   if (gety < 0) {							\
-    if (data.tiled)							\
+    if (tiled)								\
       gety = src->h - (-(gety+1) % src->h) - 1;				\
     else {								\
       addy = -gety; 							\
@@ -90,7 +98,7 @@ void effect_apply_to_target(Effect *effect);
     }									\
   }									\
   else if (gety >= src->h) {						\
-    if (data.tiled)							\
+    if (tiled)								\
       gety = gety % src->h;						\
     else								\
       gety = src->h-1;							\
@@ -101,7 +109,7 @@ void effect_apply_to_target(Effect *effect);
     getx = x-(cx);							\
     addx = 0;								\
     if (getx < 0) {							\
-      if (data.tiled)							\
+      if (tiled)							\
 	getx = src->w - (-(getx+1) % src->w) - 1;			\
       else {								\
 	addx = -getx; 							\
@@ -109,7 +117,7 @@ void effect_apply_to_target(Effect *effect);
       }									\
     }									\
     else if (getx >= src->w) {						\
-      if (data.tiled)							\
+      if (tiled)							\
 	getx = getx % src->w;						\
       else								\
 	getx = src->w-1;						\
@@ -128,7 +136,7 @@ void effect_apply_to_target(Effect *effect);
 	else								\
 	  addx--;							\
       }									\
-      else if (data.tiled) {						\
+      else if (tiled) {							\
 	getx = 0;							\
 	src_address = ((ptr_type **)src->line)[gety]+getx;		\
       }									\
@@ -141,7 +149,7 @@ void effect_apply_to_target(Effect *effect);
       else								\
 	addy--;								\
     }									\
-    else if (data.tiled)						\
+    else if (tiled)							\
       gety = 0;								\
   }
 

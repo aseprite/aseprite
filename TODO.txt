@@ -1,6 +1,10 @@
 Next beta
 ---------
 
+- fix this bug:
+  + draw in a transparent layer,
+  + move to -25, -25,
+  + draw again and you will see that not all the area is updated.
 - Check these routines:
   + move_cel
   + copy_cel
@@ -8,7 +12,6 @@ Next beta
   + quick_move
   + quick_copy
   + quick_swap
-- search for "TODO remove me"
 - fix colors (Background layer never with alpha < 255)
 - tooltips for color-bar.
   + agregar soporte para UNDO al cambiar los colores de la paleta.

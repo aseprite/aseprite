@@ -40,7 +40,7 @@
 static struct {
   JList matrices;
   ConvMatr *convmatr;
-  int tiled;
+  bool tiled;
   unsigned char **lines;
 } data;
 
@@ -307,8 +307,10 @@ JList get_convmatr_stock(void)
 						\
   GET_MATRIX_DATA				\
   (ptr_type,					\
+   src, src_address,				\
    matrix->w, matrix->h,			\
    matrix->cx, matrix->cy,			\
+   data.tiled,					\
    if (*mdata) {				\
      color = *src_address;			\
      do_job;					\
