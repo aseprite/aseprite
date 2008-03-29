@@ -124,7 +124,7 @@ int _rgba_blend_##mode (int back, int front, int opacity)		\
   if ((back & 0xff000000) == 0) {					\
     return								\
       (front & 0xffffff) |						\
-      (INT_MULT(_rgba_geta (front), opacity, t) << _rgba_a_shift);	\
+      (INT_MULT(_rgba_geta(front), opacity, t) << _rgba_a_shift);	\
   }									\
   else if ((front & 0xff000000) == 0) {					\
     return back;							\

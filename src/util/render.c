@@ -64,7 +64,8 @@ Image *render_sprite(Sprite *sprite,
 		     int frame, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
-  bool need_grid = sprite_need_alpha(sprite);
+  Layer *background = sprite_get_background_layer(sprite);
+  bool need_grid = (background != NULL ? !layer_is_readable(background): TRUE);
   int depth;
   Image *image;
 
@@ -112,10 +113,10 @@ Image *render_sprite(Sprite *sprite,
 	c1 = _graya(128, 255);
 	c2 = _graya(192, 255);
         break;
-/*       case IMAGE_INDEXED: */
-/* 	c1 = rgb_map->data[16][16][16]; */
-/*         c2 = rgb_map->data[24][24][24]; */
-/*         break; */
+      case IMAGE_INDEXED:
+	c1 = rgb_map->data[16][16][16];
+        c2 = rgb_map->data[24][24][24];
+        break;
       default:
 	c1 = c2 = 0;
 	break;

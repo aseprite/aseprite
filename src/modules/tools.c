@@ -1627,8 +1627,7 @@ static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data)
   int c = data->color;
 
   DEFINE_INK_PROCESSING_DST
-    (ase_uint32
-     ,
+    (ase_uint32,
      *dst_address = c			);
 }
 
@@ -1637,8 +1636,7 @@ static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data)
   int c = data->color;
 
   DEFINE_INK_PROCESSING_DST
-    (ase_uint16
-     ,
+    (ase_uint16,
      *dst_address = c			);
 }
 
@@ -1647,8 +1645,7 @@ static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data)
   int c = data->color;
 
   DEFINE_INK_PROCESSING_DST
-    (ase_uint8
-     ,
+    (ase_uint8,
      *dst_address = c			);
 
   /* memset(((ase_uint8 **)data->dst_image->line)[y]+x1, data->color, x2-x1+1); */
@@ -1664,8 +1661,7 @@ static void ink_hline4_glass(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32
-     ,
+    (ase_uint32,
      *dst_address = _rgba_blend_normal(*src_address, color, opacity));
 }  
 
@@ -1675,8 +1671,7 @@ static void ink_hline2_glass(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16
-     ,
+    (ase_uint16,
      *dst_address = _graya_blend_normal(*src_address, color, opacity));
 }  
 
@@ -1688,8 +1683,7 @@ static void ink_hline1_glass(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8
-     ,
+    (ase_uint8,
      {
        c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
        *dst_address = orig_rgb_map->data
@@ -1715,8 +1709,7 @@ static void ink_hline4_soften(int x1, int y, int x2, ToolData *data)
   ase_uint32 *src_address2;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32
-     ,
+    (ase_uint32,
      {
        c = 0;
        r = g = b = a = 0;
@@ -1725,16 +1718,28 @@ static void ink_hline4_soften(int x1, int y, int x2, ToolData *data)
 	 (ase_uint32, src, src_address2,
 	  3, 3, 1, 1, tiled,
 	  color = *src_address2;
-	  r += _rgba_getr(color);
-	  g += _rgba_getg(color);
-	  b += _rgba_getb(color);
-	  a += _rgba_geta(color);
-	  c++;
+	  if (_rgba_geta(color) != 0) {
+	    r += _rgba_getr(color);
+	    g += _rgba_getg(color);
+	    b += _rgba_getb(color);
+	    a += _rgba_geta(color);
+	    ++c;
+	  }
 	  );
 
        if (c > 0) {
-	 c = _rgba(r/c, g/c, b/c, a/c);
-	 *dst_address = _rgba_blend_normal(*src_address, c, opacity);
+	 r /= c;
+	 g /= c;
+	 b /= c;
+	 a /= 9;
+
+	 c = *src_address;
+	 r = _rgba_getr(c) + (r-_rgba_getr(c)) * opacity / 255;
+	 g = _rgba_getg(c) + (g-_rgba_getg(c)) * opacity / 255;
+	 b = _rgba_getb(c) + (b-_rgba_getb(c)) * opacity / 255;
+	 a = _rgba_geta(c) + (a-_rgba_geta(c)) * opacity / 255;
+	 
+	 *dst_address = _rgba(r, g, b, a);
        }
        else {
 	 *dst_address = *src_address;
@@ -1754,8 +1759,7 @@ static void ink_hline2_soften(int x1, int y, int x2, ToolData *data)
   ase_uint16 *src_address2;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16
-     ,
+    (ase_uint16,
      {
        c = 0;
        v = a = 0;
@@ -1764,14 +1768,22 @@ static void ink_hline2_soften(int x1, int y, int x2, ToolData *data)
 	 (ase_uint16, src, src_address2,
 	  3, 3, 1, 1, tiled,
 	  color = *src_address2;
-	  v += _graya_getv(color);
-	  a += _graya_geta(color);
+	  if (_graya_geta(color) > 0) {
+	    v += _graya_getv(color);
+	    a += _graya_geta(color);
+	  }
 	  c++;
 	  );
 
        if (c > 0) {
-	 c = _graya(v/c, a/c);
-	 *dst_address = _graya_blend_normal(*src_address, c, opacity);
+	 v /= c;
+	 a /= 9;
+
+	 c = *src_address;
+	 v = _graya_getv(c) + (v-_graya_getv(c)) * opacity / 255;
+	 a = _graya_geta(c) + (a-_graya_geta(c)) * opacity / 255;
+	 
+	 *dst_address = _graya(v, a);
        }
        else {
 	 *dst_address = *src_address;
@@ -1792,8 +1804,7 @@ static void ink_hline1_soften(int x1, int y, int x2, ToolData *data)
   ase_uint8 *src_address2;
   
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8
-     ,
+    (ase_uint8,
      {
        c = 0;
        r = g = b = a = 0;
@@ -1812,19 +1823,17 @@ static void ink_hline1_soften(int x1, int y, int x2, ToolData *data)
 	  c++;
 	  );
 
-       if (c > 0 && a/c >= 128) {
-	 c = orig_rgb_map->data
-	   [(r/c)>>3]
-	   [(g/c)>>3]
-	   [(b/c)>>3];
-	 
-	 c = _rgba_blend_normal(pal->color[*src_address],
-				pal->color[c], opacity);
+       if (c > 0 && a/9 >= 128) {
+	 r /= c;
+	 g /= c;
+	 b /= c;
 
-	 *dst_address = orig_rgb_map->data
-	   [_rgba_getr(c)>>3]
-	   [_rgba_getg(c)>>3]
-	   [_rgba_getb(c)>>3];
+	 c = pal->color[*src_address];
+	 r = _rgba_getr(c) + (r-_rgba_getr(c)) * opacity / 255;
+	 g = _rgba_getg(c) + (g-_rgba_getg(c)) * opacity / 255;
+	 b = _rgba_getb(c) + (b-_rgba_getb(c)) * opacity / 255;
+
+	 *dst_address = orig_rgb_map->data[r>>3][g>>3][b>>3];
        }
        else {
 	 *dst_address = *src_address;
@@ -1843,8 +1852,7 @@ static void ink_hline4_replace(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32
-     ,
+    (ase_uint32,
      if (*src_address == other_color) {
        *dst_address = _rgba_blend_normal(*src_address, color, opacity);
      });
@@ -1857,8 +1865,7 @@ static void ink_hline2_replace(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16
-     ,
+    (ase_uint16,
      if (*src_address == other_color) {
        *dst_address = _graya_blend_normal(*src_address, color, opacity);
      });
@@ -1873,8 +1880,7 @@ static void ink_hline1_replace(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8
-     ,
+    (ase_uint8,
      if (*src_address == other_color) {
        c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
        *dst_address = orig_rgb_map->data

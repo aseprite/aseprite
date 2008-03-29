@@ -5,8 +5,8 @@ NEWS
 0.6
 ---
 
-+ Added support to load and save PNG files (through 'libpng').
 + Added the `Background' layer.
++ Added support to load and save PNG files (through 'libpng').
 + Transparent cel handling for the end-user (you can move a cel and
   don't worry about its bounds).
 + Rewritten the color-bar and color-selector dialog.
@@ -23,9 +23,9 @@ NEWS
   + more borders for windows and more spacing between widgets.
   + better mouse behavior (now in Windows the mouse is captured).
   + added tooltips.
-+ Added pixel-scaling support (with double-buffering). This means
-  that you can use a screen of 320x240 between a window of 640x480
-  (pixel-scaling x2).
++ Added screen pixel-scaling support (with double-buffering). This
+  means that you can use the program in a 320x240 resolution inside a
+  window of 640x480 (pixel-scaling x2).
 + Fixed other minor problems when you drawn in 'tiled mode' or 'paste'
   the clipboard.
 + New XML format for the menus and keyboard shortcuts.
