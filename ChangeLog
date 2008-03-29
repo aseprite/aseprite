@@ -1,5 +1,7 @@
 2008-03-29  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/file/format_options.c: Renamed filedata to format_options.
+
 	* src/file/jpeg_format.c (getdata_JPEG): Added from configure_jpeg.
 
 	* src/file/filedata.h (JpegData): Added.

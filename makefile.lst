@@ -106,9 +106,9 @@ COMMON_SOURCES =					\
 	src/file/ase_format.c				\
 	src/file/bmp_format.c				\
 	src/file/file.c					\
-	src/file/filedata.c				\
 	src/file/fli/fli.c				\
 	src/file/fli_format.c				\
+	src/file/format_options.c			\
 	src/file/gif/format.c				\
 	src/file/gif/lzw.c				\
 	src/file/gif_format.c				\

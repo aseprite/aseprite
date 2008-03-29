@@ -23,7 +23,7 @@
 #include <allegro/color.h>
 
 #include "file/file.h"
-#include "file/filedata.h"
+#include "file/format_options.h"
 #include "raster/raster.h"
 
 static bool load_BMP(FileOp *fop);

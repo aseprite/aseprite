@@ -24,7 +24,7 @@
 #include "jinete/jlist.h"
 #include "jinete/jmutex.h"
 
-#include "file/filedata.h"
+#include "file/format_options.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
 #include "util/boundary.h"

@@ -30,7 +30,7 @@
 #include "core/app.h"
 #include "core/core.h"
 #include "file/file.h"
-#include "file/filedata.h"
+#include "file/format_options.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"

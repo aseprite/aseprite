@@ -22,7 +22,7 @@
 
 #include "jinete/jbase.h"
 
-#include "file/filedata.h"
+#include "file/format_options.h"
 
 FormatOptions *format_options_new(int type, int size)
 {

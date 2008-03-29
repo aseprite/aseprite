@@ -9,8 +9,7 @@ Next beta
   + quick_copy
   + quick_swap
 - search for "TODO remove me"
-- add the progress bar for effects and save-file.
-- fix colors
+- fix colors (Background layer never with alpha < 255)
 - tooltips for color-bar.
   + agregar soporte para UNDO al cambiar los colores de la paleta.
 
