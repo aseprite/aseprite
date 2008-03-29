@@ -34,6 +34,7 @@ FileFormat format_ico =
   "ico",
   NULL, /* load_ICO, */
   save_ICO,
+  NULL,
 /*   FILE_SUPPORT_RGB | */
 /*   FILE_SUPPORT_GRAY | */
   FILE_SUPPORT_INDEXED

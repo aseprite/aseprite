@@ -28,6 +28,7 @@
 #include "core/cfg.h"
 #include "core/core.h"
 #include "file/file.h"
+#include "file/filedata.h"
 #include "raster/raster.h"
 #include "script/script.h"
 
@@ -35,8 +36,7 @@
 
 static bool load_JPEG(FileOp *fop);
 static bool save_JPEG(FileOp *fop);
-
-static bool configure_jpeg(void); /* TODO warning: not thread safe */
+static JpegData *getdata_JPEG(FileOp *fop);
 
 FileFormat format_jpeg =
 {
@@ -44,6 +44,7 @@ FileFormat format_jpeg =
   "jpeg,jpg",
   load_JPEG,
   save_JPEG,
+  getdata_JPEG,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_GRAY |
   FILE_SUPPORT_SEQUENCES
@@ -228,19 +229,8 @@ static bool save_JPEG(FileOp *fop)
   FILE *file;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
+  JpegData *jpegdata = (JpegData *)fop->seq.filedata;
   int c;
-  int smooth;
-  int quality;
-  J_DCT_METHOD method;
-
-  /* Configure JPEG compression only in the first frame.  */
-  if (fop->sprite->frame == 0 && !configure_jpeg())
-    return FALSE;
-
-  /* Options.  */
-  smooth = get_config_int("JPEG", "Smooth", 0);
-  quality = get_config_int("JPEG", "Quality", 100);
-  method = get_config_int("JPEG", "Method", JDCT_DEFAULT);
 
   /* Open the file for write in it.  */
   file = fopen(fop->filename, "wb");
@@ -271,9 +261,9 @@ static bool save_JPEG(FileOp *fop)
   }
 
   jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, quality, TRUE);
-  cinfo.dct_method = method;
-  cinfo.smoothing_factor = smooth;
+  jpeg_set_quality(&cinfo, (int)MID(0, 100.0f * jpegdata->quality, 100), TRUE);
+  cinfo.dct_method = jpegdata->method;
+  cinfo.smoothing_factor = (int)MID(0, 100.0f * jpegdata->smooth, 100);
 
   /* Start compressor.  */
   jpeg_start_compress(&cinfo, TRUE);
@@ -358,26 +348,25 @@ static bool save_JPEG(FileOp *fop)
 /**
  * Shows the JPEG configuration dialog.
  */
-static bool configure_jpeg(void)
+static JpegData *getdata_JPEG(FileOp *fop)
 {
   JWidget window, box1, box2, box3, box4, box5;
   JWidget label_quality, label_smooth, label_method;
   JWidget slider_quality, slider_smooth, view_method;
   JWidget list_method, button_ok, button_cancel;
-  int quality, smooth, method;
-  bool ret;
+  JpegData *jpegdata = jpegdata_new();
+
+  /* configuration parameters */
+  jpegdata->quality = get_config_float("JPEG", "Quality", 0.6f);
+  jpegdata->smooth = 0.0f;
+  jpegdata->method = JPEGDATA_METHOD_DEFAULT;
 
   /* interactive mode */
   if (!is_interactive())
-    return TRUE;
-
-  /* configuration parameters */
-  quality = get_config_int("JPEG", "Quality", 100);
-  smooth = get_config_int("JPEG", "Smooth", 0);
-  method = get_config_int("JPEG", "Method", 0);
+    return jpegdata;
 
   /* widgets */
-  window = jwindow_new(_("Configure JPEG Compression"));
+  window = jwindow_new(_("JPEG Options"));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_VERTICAL + JI_HOMOGENEOUS);
@@ -386,8 +375,8 @@ static bool configure_jpeg(void)
   label_quality = jlabel_new(_("Quality:"));
   label_smooth = jlabel_new(_("Smooth:"));
   label_method = jlabel_new(_("Method:"));
-  slider_quality = jslider_new(0, 100, quality);
-  slider_smooth = jslider_new(0, 100, smooth);
+  slider_quality = jslider_new(0, 10, jpegdata->quality*10);
+  slider_smooth = jslider_new(0, 10, jpegdata->smooth*10);
   view_method = jview_new();
   list_method = jlistbox_new();
   button_ok = jbutton_new(_("&OK"));
@@ -396,13 +385,14 @@ static bool configure_jpeg(void)
   jwidget_add_child(list_method, jlistitem_new(_("Slow")));
   jwidget_add_child(list_method, jlistitem_new(_("Fast")));
   jwidget_add_child(list_method, jlistitem_new(_("Float")));
-  jlistbox_select_index(list_method, method);
+  jlistbox_select_index(list_method, jpegdata->method);
 
-    jview_attach(view_method, list_method);
+  jview_attach(view_method, list_method);
   jview_maxsize(view_method);
 
   jwidget_expansive(box4, TRUE);
   jwidget_expansive(view_method, TRUE);
+  jwidget_magnetic(button_ok, TRUE);
 
   jwidget_add_child(box3, label_quality);
   jwidget_add_child(box3, label_smooth);
@@ -421,19 +411,17 @@ static bool configure_jpeg(void)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == button_ok) {
-    ret = TRUE;
+    jpegdata->quality = jslider_get_value(slider_quality) / 10.0f;
+    jpegdata->smooth = jslider_get_value(slider_smooth) / 10.0f;
+    jpegdata->method = jlistbox_get_selected_index(list_method);
 
-    quality = jslider_get_value(slider_quality);
-    smooth = jslider_get_value(slider_smooth);
-    method = jlistbox_get_selected_index(list_method);
-
-    set_config_int("JPEG", "Quality", quality);
-    set_config_int("JPEG", "Smooth", smooth);
-    set_config_int("JPEG", "Method", method);
+    set_config_float("JPEG", "Quality", jpegdata->quality);
   }
-  else
-    ret = FALSE;
+  else {
+    filedata_free((FileData *)jpegdata);
+    jpegdata = NULL;
+  }
 
   jwidget_free(window);
-  return ret;
+  return jpegdata;
 }

@@ -102,6 +102,8 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
 
     case JM_CLOSE:
       set_preview_image(NULL, NULL);
+      /* stop the preview timer */
+      jmanager_stop_timer(preview->timer_id);
       break;
 
     case JM_TIMER:

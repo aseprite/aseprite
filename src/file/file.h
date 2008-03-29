@@ -50,9 +50,13 @@ struct FileFormat;
 struct FileOp;
 
 /* file operations */
-typedef enum { FileOpLoad, FileOpSave } FileOpType;
+typedef enum { FileOpLoad,
+	       FileOpSave } FileOpType;
+
 typedef bool (*FileLoad)(struct FileOp *fop);
 typedef bool (*FileSave)(struct FileOp *fop);
+
+typedef struct FileData *(*FileGetData)(struct FileOp *fop);
 
 /* load or/and save a file format */
 typedef struct FileFormat
@@ -61,6 +65,7 @@ typedef struct FileFormat
   const char *exts;	/* extensions (e.g. "jpeg,jpg") */
   FileLoad load;	/* procedure to read a sprite in this format */
   FileSave save;	/* procedure to write a sprite in this format */
+  FileGetData getdata;  /* procedure to configure the format to be saved */
   int flags;
 } FileFormat;
 
@@ -92,6 +97,7 @@ typedef struct FileOp
     float progress_fraction;	/* progress fraction for one frame */
     /* to load sequences */
     int frame;
+    bool has_alpha;
     struct Layer *layer;
     struct Cel *last_cel;
     struct FileData *filedata;
@@ -118,8 +124,6 @@ void fop_stop(FileOp *fop);
 void fop_free(FileOp *fop);
 
 void fop_sequence_set_filedata(FileOp *fop, struct FileData *filedata);
-struct FileData *fop_sequence_get_filedata(FileOp *fop);
-
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);
 struct Image *fop_sequence_image(FileOp *fi, int imgtype, int w, int h);

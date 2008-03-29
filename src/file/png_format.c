@@ -42,6 +42,7 @@ FileFormat format_png =
   "png",
   load_PNG,
   save_PNG,
+  NULL,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_RGBA |
   FILE_SUPPORT_GRAY |
@@ -155,17 +156,23 @@ static bool load_PNG(FileOp *fop)
 
   /* create the output image */
   switch (info_ptr->color_type) {
-    case PNG_COLOR_TYPE_RGB: 
+
     case PNG_COLOR_TYPE_RGB_ALPHA:
+      fop->seq.has_alpha = TRUE;
+    case PNG_COLOR_TYPE_RGB: 
       imgtype = IMAGE_RGB;
       break;
-    case PNG_COLOR_TYPE_GRAY:
+
     case PNG_COLOR_TYPE_GRAY_ALPHA:
+      fop->seq.has_alpha = TRUE;
+    case PNG_COLOR_TYPE_GRAY:
       imgtype = IMAGE_GRAYSCALE;
       break;
+
     case PNG_COLOR_TYPE_PALETTE:
       imgtype = IMAGE_INDEXED;
       break;
+
     default:
       fop_error(fop, "Color type not supported\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);

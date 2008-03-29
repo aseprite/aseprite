@@ -204,7 +204,7 @@
 	<menu name="&Tools">
 	    <item command="configure_tools" name="&Configure" />
 	    <separator />
-	    <item command="film_editor" name="&Film Editor" />
+	    <item command="animation_editor" name="&Animation Editor" />
 	    <item command="palette_editor" name="&Palette Editor" />
 	    <separator />
 	    <menu name="F&X" id="fx_popup">

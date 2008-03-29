@@ -56,3 +56,14 @@ BmpData *bmpdata_new(void)
 
   return bmpdata;
 }
+
+JpegData *jpegdata_new(void)
+{
+  JpegData *jpegdata = (JpegData *)filedata_new(FILEDATA_JPEG,
+						sizeof(JpegData));
+
+  if (jpegdata == NULL)
+    return NULL;
+
+  return jpegdata;
+}

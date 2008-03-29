@@ -35,6 +35,7 @@ FileFormat format_bmp =
   "bmp",
   load_BMP,
   save_BMP,
+  NULL,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_GRAY |
   FILE_SUPPORT_INDEXED |
@@ -678,7 +679,7 @@ static bool load_BMP(FileOp *fop)
   }
 
   /* setup the file-data */
-  if (fop_sequence_get_filedata(fop) == NULL) {
+  if (fop->seq.filedata == NULL) {
     BmpData *bmpdata = bmpdata_new();
 
     bmpdata->format = format;

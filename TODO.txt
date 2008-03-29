@@ -8,6 +8,7 @@ Next beta
   + quick_move
   + quick_copy
   + quick_swap
+- search for "TODO remove me"
 - add the progress bar for effects and save-file.
 - fix colors
 - tooltips for color-bar.

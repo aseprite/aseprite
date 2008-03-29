@@ -50,6 +50,11 @@ typedef struct Effect
     int a:1;
     int index:1;
   } target;
+  /* hooks */
+  float progress_base, progress_width;
+  void *progress_data;
+  void (*progress)(void *data, float progress);
+  bool (*is_cancelled)(void *data);
 } Effect;
 
 Effect *effect_new(struct Sprite *sprite, const char *name);

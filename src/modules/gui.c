@@ -54,6 +54,8 @@
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
 
+#define MONITOR_TIMER_MSECS	100
+
 /**************************************************************/
 
 #ifdef ALLEGRO_WINDOWS
@@ -573,7 +575,7 @@ JWidget load_widget(const char *filename, const char *name)
   return widget;
 }
 
-void rebuild_recent_list(void)
+void schedule_rebuild_recent_list(void)
 {
   next_idle_flags |= REBUILD_RECENT_LIST;
 }
@@ -740,7 +742,7 @@ Monitor *add_gui_monitor(void (*proc)(void *),
   jlist_append(monitors, monitor);
 
   if (monitor_timer < 0)
-    monitor_timer = jmanager_add_timer(manager, 100);
+    monitor_timer = jmanager_add_timer(manager, MONITOR_TIMER_MSECS);
 
   jmanager_start_timer(monitor_timer);
 
@@ -748,7 +750,7 @@ Monitor *add_gui_monitor(void (*proc)(void *),
 }
 
 /**
- * Removes a previously added monitor.
+ * Removes and frees a previously added monitor.
  */
 void remove_gui_monitor(Monitor *monitor)
 {

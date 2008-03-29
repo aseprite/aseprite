@@ -34,6 +34,7 @@ FileFormat format_pcx =
   "pcx",
   load_PCX,
   save_PCX,
+  NULL,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_GRAY |
   FILE_SUPPORT_INDEXED |

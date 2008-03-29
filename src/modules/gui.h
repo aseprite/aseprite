@@ -50,7 +50,7 @@ void save_window_pos(JWidget window, const char *section);
 
 JWidget load_widget(const char *filename, const char *name);
 
-void rebuild_recent_list(void);
+void schedule_rebuild_recent_list(void);
 
 void hook_signal(JWidget widget,
 		 int signal_num,

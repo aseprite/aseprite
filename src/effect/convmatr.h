@@ -55,8 +55,8 @@ JList get_convmatr_stock(void);
 void init_convolution_matrix(void);
 void exit_convolution_matrix(void);
 
-void apply_convolution_matrix4 (struct Effect *effect);
-void apply_convolution_matrix2 (struct Effect *effect);
-void apply_convolution_matrix1 (struct Effect *effect);
+void apply_convolution_matrix4(struct Effect *effect);
+void apply_convolution_matrix2(struct Effect *effect);
+void apply_convolution_matrix1(struct Effect *effect);
 
 #endif /* EFFECT_CONVMATR_H */

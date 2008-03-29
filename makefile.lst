@@ -62,7 +62,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_reselect_mask.c		\
 	src/commands/cmd_run_script.c			\
 	src/commands/cmd_save_file.c			\
-	src/commands/cmd_save_file_as.c			\
 	src/commands/cmd_save_mask.c			\
 	src/commands/cmd_screen_shot.c			\
 	src/commands/cmd_select_file.c			\
@@ -77,6 +76,7 @@ COMMON_SOURCES =					\
 	src/commands/fx/cmd_despeckle.c			\
 	src/commands/fx/cmd_invert_color.c		\
 	src/commands/fx/cmd_replace_color.c		\
+	src/commands/fx/effectbg.c			\
 	src/console/console.c				\
 	src/core/app.c					\
 	src/core/cfg.c					\

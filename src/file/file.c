@@ -320,7 +320,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   if (jlist_length(fop->sprite->palettes) > 1) {
     if (!(fop->format->flags & (FILE_SUPPORT_PALETTES |
 				FILE_SUPPORT_SEQUENCES))) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes"));
+      usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes between frames"));
     }
   }
 
@@ -414,6 +414,20 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   else
     fop->filename = jstrdup(fop->sprite->filename);
 
+  /* configure output format? */
+  if (fop->format->getdata) {
+    FileData *data = (fop->format->getdata)(fop);
+
+    /* does the user cancelled the operation? */
+    if (data == NULL) {
+      fop_free(fop);
+      return NULL;
+    }
+
+    fop->seq.filedata = data;
+    sprite_set_filedata(fop->sprite, data);
+  }
+
   return fop;
 }
 
@@ -470,6 +484,7 @@ void fop_operate(FileOp *fop)
       frame = 0;
       old_image = NULL;
       
+      fop->seq.has_alpha = FALSE;
       fop->seq.progress_offset = 0.0f;
       fop->seq.progress_fraction = 1.0f / (float)frames;
 
@@ -539,6 +554,10 @@ void fop_operate(FileOp *fop)
 
       /* final setup */
       if (fop->sprite != NULL) {
+	/* configure the layer as the `Background' */
+	if (!fop->seq.has_alpha)
+	  layer_configure_as_background(fop->seq.layer);
+
 	/* set the frames range */
 	sprite_set_frames(fop->sprite, frame);
 
@@ -691,11 +710,6 @@ void fop_sequence_set_filedata(FileOp *fop, FileData *filedata)
   fop->seq.filedata = filedata;
 }
 
-FileData *fop_sequence_get_filedata(FileOp *fop)
-{
-  return fop->seq.filedata;
-}
-
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 {
   palette_set_entry(fop->seq.palette, index, _rgba(r, g, b, 255));
@@ -730,9 +744,6 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
 
     /* add the layer */
     layer_add_layer(sprite->set, layer);
-
-    /* configure the layer as the background */
-    layer_configure_as_background(layer);
 
     /* done */
     fop->sprite = sprite;

@@ -27,6 +27,7 @@
 #include "jinete/jwindow.h"
 
 #include "commands/commands.h"
+#include "commands/fx/effectbg.h"
 #include "console/console.h"
 #include "core/cfg.h"
 #include "core/color.h"
@@ -109,7 +110,7 @@ static void cmd_invert_color_execute(const char *argument)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == button_ok) {
-    effect_apply_to_target(effect);
+    effect_apply_to_target_with_progressbar(effect);
   }
 
   effect_free(effect);

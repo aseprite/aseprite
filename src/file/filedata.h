@@ -21,6 +21,7 @@
 
 enum {
   FILEDATA_BMP,
+  FILEDATA_JPEG,
   FILEDATA_MAX
 };
 
@@ -59,5 +60,24 @@ typedef struct BmpData
 } BmpData;
 
 BmpData *bmpdata_new(void);
+
+/*********************************************************************
+ Data for JPEG files
+ *********************************************************************/
+
+#define JPEGDATA_METHOD_SLOW		0 /* slow but accurate integer algorithm */
+#define JPEGDATA_METHOD_FAST		1 /* faster, less accurate integer method */
+#define JPEGDATA_METHOD_FLOAT		2 /* floating-point: accurate, fast on fast HW */
+#define JPEGDATA_METHOD_DEFAULT		JPEGDATA_METHOD_SLOW
+
+typedef struct JpegData
+{
+  FileData head;
+  float quality;		/* 1.0 maximum quality */
+  float smooth;			/* 1.0 maximum smooth */
+  int method;
+} JpegData;
+
+JpegData *jpegdata_new(void);
 
 #endif /* FILEDATA_H */

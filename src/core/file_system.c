@@ -982,7 +982,7 @@ static FileItem *get_fileitem_by_path(const char *path, bool create_if_not)
   FileItem *fileitem;
   int attrib;
 
- #ifdef ALLEGRO_UNIX
+#ifdef ALLEGRO_UNIX
   if (*path == 0)
     return rootitem;
 #endif

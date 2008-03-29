@@ -1,3 +1,31 @@
+2008-03-29  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/file/jpeg_format.c (getdata_JPEG): Added from configure_jpeg.
+
+	* src/file/filedata.h (JpegData): Added.
+
+	* src/file/file.h (FileFormat): Added the `getdata' method to
+	configure the output format.
+
+2008-03-28  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/commands/cmd_save_file.c (save_sprite_in_background): Added
+	to save sprites with progress bar.
+
+	* src/commands/fx/effectbg.c (effect_apply_to_target_with_progressbar):
+	Added to show progress bar and background processing when the user
+	applies an effect.
+
+	* src/effect/effect.h (Effect): Added progress information to
+	customize the progress and cancellation of the effect operations.
+
+	* src/file/fli_format.c (load_FLI),
+	  src/file/gif_format.c (load_GIF): Now these two routines
+	  configure the only layer as `Background'.
+
+	* src/file/file.h (FileOp): Added seq.has_alpha so a PNG file with
+	alpha hasn't a `Background' layer.
+
 2008-03-27  David A. Capello  <dacap@users.sourceforge.net>
 
 	* Added a call to undo_set_label(...) for every undo operation in

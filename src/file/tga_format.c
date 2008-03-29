@@ -37,6 +37,7 @@ FileFormat format_tga =
   "tga",
   load_TGA,
   save_TGA,
+  NULL,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_RGBA |
   FILE_SUPPORT_GRAY |

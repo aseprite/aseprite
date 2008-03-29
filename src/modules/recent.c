@@ -88,7 +88,7 @@ void recent_file(const char *filename)
       if (strcmp(filename, filename_it) == 0) {
 	jlist_remove(recent_files, filename_it);
 	jlist_prepend(recent_files, filename_it);
-	rebuild_recent_list();
+	schedule_rebuild_recent_list();
 	return;
       }
       count++;
@@ -103,7 +103,7 @@ void recent_file(const char *filename)
     }
 
     jlist_prepend(recent_files, jstrdup(filename));
-    rebuild_recent_list();
+    schedule_rebuild_recent_list();
   }
 }
 
@@ -118,7 +118,7 @@ void unrecent_file(const char *filename)
       if (strcmp(filename, filename_it) == 0) {
 	jfree(filename_it);
 	jlist_delete_link(recent_files, link);
-	rebuild_recent_list();
+	schedule_rebuild_recent_list();
 	break;
       }
     }

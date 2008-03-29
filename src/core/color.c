@@ -701,8 +701,9 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
 
       case COLOR_TYPE_INDEX: {
-	ase_uint32 _c = palette_get_entry(get_current_palette(), data & 0xff);
+	ase_uint32 _c;
 	data = GET_COLOR_DATA_INDEX(color);
+	_c = palette_get_entry(get_current_palette(), data & 0xff);
 	uszprintf(buf, size, "%s %d (RGB %d %d %d)",
 		  _("Index"),
 		  data & 0xff,

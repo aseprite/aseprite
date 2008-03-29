@@ -106,6 +106,7 @@ FileFormat format_ase =
   "ase,aseprite",
   load_ASE,
   save_ASE,
+  NULL,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_RGBA |
   FILE_SUPPORT_GRAY |

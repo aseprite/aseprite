@@ -117,6 +117,9 @@ Effect *effect_new(Sprite *sprite, const char *name)
   effect->mask_address = NULL;
   effect->effect_data = effect_data;
   effect->apply = apply;
+  effect->progress_data = NULL;
+  effect->progress = NULL;
+  effect->is_cancelled = NULL;
 
   effect_load_target(effect);
 
@@ -266,27 +269,37 @@ bool effect_apply_step(Effect *effect)
 
 void effect_apply(Effect *effect)
 {
-/*   add_progress(effect->h); */
+  bool cancelled = FALSE;
 
   effect_begin(effect);
-  while (effect_apply_step(effect))
-    ;
-/*     do_progress(effect->row); */
+  while (!cancelled && effect_apply_step(effect)) {
+    if (effect->progress != NULL)
+      (effect->progress)(effect->progress_data,
+			 effect->progress_base
+			 + effect->progress_width * (effect->row+1) / effect->h);
 
-  /* undo stuff */
-  if (undo_is_enabled(effect->sprite->undo)) {
-    undo_set_label(effect->sprite->undo,
-		   effect->effect_data->label);
-    undo_image(effect->sprite->undo, effect->src,
-	       effect->x, effect->y, effect->w, effect->h);
+    if (effect->is_cancelled != NULL)
+      cancelled = (effect->is_cancelled)(effect->progress_data);
   }
 
-  /* copy "dst" to "src" */
-  image_copy(effect->src, effect->dst, 0, 0);
+  if (!cancelled) {
+    /* undo stuff */
+    if (undo_is_enabled(effect->sprite->undo)) {
+      undo_set_label(effect->sprite->undo,
+		     effect->effect_data->label);
+      undo_image(effect->sprite->undo, effect->src,
+		 effect->x, effect->y, effect->w, effect->h);
+    }
 
-/*   del_progress(); */
+    /* copy "dst" to "src" */
+    image_copy(effect->src, effect->dst, 0, 0);
+  }
 }
 
+
+/**
+ * Updates the current editor to show the progress of the preview.
+ */
 void effect_flush(Effect *effect)
 {
   if (effect->row >= 0) {
@@ -329,6 +342,7 @@ void effect_apply_to_target(Effect *effect)
   int n, n2, images = 0;
   Stock *stock;
   int *x, *y;
+  bool cancelled = FALSE;
 
   stock = sprite_get_images(effect->sprite, target, TRUE, &x, &y);
   if (!stock)
@@ -339,24 +353,29 @@ void effect_apply_to_target(Effect *effect)
       images++;
 
   if (images > 0) {
+    /* open undo group of operations */
     if (images > 1) {
-      /* open undo */
       if (undo_is_enabled(effect->sprite->undo))
 	undo_open(effect->sprite->undo);
     }
 
-/*     add_progress(images); */
-    for (n=n2=0; n<stock->nimage; n++) {
+    effect->progress_base = 0.0f;
+    effect->progress_width = 1.0f / images;
+
+    for (n=n2=0; n<stock->nimage && !cancelled; n++) {
       if (!stock->image[n])
 	continue;
 
-/*       do_progress(n2++); */
       effect_apply_to_image(effect, stock->image[n], x[n], y[n]);
-    }
-/*     del_progress(); */
 
+      if (effect->is_cancelled != NULL)
+	cancelled = (effect->is_cancelled)(effect->progress_data);
+
+      effect->progress_base += effect->progress_width;
+    }
+
+    /* close undo group of operations */
     if (images > 1) {
-      /* close  */
       if (undo_is_enabled(effect->sprite->undo))
 	undo_close(effect->sprite->undo);
     }

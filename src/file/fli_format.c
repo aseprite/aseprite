@@ -37,6 +37,7 @@ FileFormat format_fli =
   "flc,fli",
   load_FLI,
   save_FLI,
+  NULL,
   FILE_SUPPORT_INDEXED |
   FILE_SUPPORT_FRAMES |
   FILE_SUPPORT_PALETTES
@@ -104,8 +105,8 @@ static bool load_FLI(FileOp *fop)
   /* create the image */
   sprite = sprite_new(IMAGE_INDEXED, w, h);
   layer = layer_new(sprite);
-  layer_set_name(layer, _("Background"));
   layer_add_layer(sprite->set, layer);
+  layer_configure_as_background(layer);
 
   /* set frames and speed */
   sprite_set_frames(sprite, fli_header.frames);

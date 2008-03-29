@@ -177,7 +177,7 @@ static void cmd_open_file_execute(const char *argument)
 	}
       }
     }
-    /* else do nothing (the user canceled or something like that) */
+    /* else do nothing (the user cancelled or something like that) */
   }
 }
 

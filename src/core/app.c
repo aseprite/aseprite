@@ -465,7 +465,7 @@ void app_realloc_sprite_list(void)
  *
  * @warning This routine can't be used when a menu callback was
  * called, because, it destroy the menus, you should use
- * rebuild_recent_list() instead (src/gui/gui.c).
+ * schedule_rebuild_recent_list() instead (src/modules/gui.c).
  */
 bool app_realloc_recent_list(void)
 {

@@ -47,11 +47,11 @@ FileFormat format_gif =
   "gif",
   load_GIF,
   save_GIF,
+  NULL,
   FILE_SUPPORT_INDEXED |
   FILE_SUPPORT_FRAMES |
   FILE_SUPPORT_PALETTES
 };
-
 
 static void render_gif_frame(GIF_FRAME *frame, Image *image,
 			     int x, int y, int w, int h)
@@ -117,7 +117,7 @@ static bool load_GIF(FileOp *fop)
   }
 
   layer_add_layer(sprite->set, layer);
-  layer_set_name(layer, _("Base"));
+  layer_configure_as_background(layer);
 
   image_clear(current_image, gif->background_index);
   image_clear(current_image_old, gif->background_index);
