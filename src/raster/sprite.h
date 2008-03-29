@@ -22,7 +22,7 @@
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 
-struct FileData;
+struct FormatOptions;
 struct Image;
 struct Layer;
 struct Mask;
@@ -33,6 +33,9 @@ struct Undo;
 
 typedef struct Sprite Sprite;
 
+/**
+ * The main structure used in the whole program to handle a sprite.
+ */
 struct Sprite
 {
   GfxObj gfxobj;
@@ -55,20 +58,34 @@ struct Sprite
     JList paths;		/* paths */
     JList masks;		/* masks */
   } repository;
+
+  /**
+   * Selected mask region boundaries
+   */
   struct {
     int nseg;
     struct _BoundSeg *seg;
-  } bound;			/* selected mask region boundaries */
+  } bound;
   struct {
     int scroll_x;
     int scroll_y;
     int zoom;
   } preferred;
-  JMutex mutex;			/* mutex to modify the 'locked' flag */
-  bool locked;			/* true when a thread is
-				   reading/writing the sprite */
-  struct FileData *filedata;	/* data to save the file in the same
-				   format that it was loaded */
+
+  /**
+   * Mutex to modify the 'locked' flag.
+   */
+  JMutex mutex;
+
+  /**
+   * True when a thread is reading/writing the sprite.
+   */
+  bool locked;
+
+  /**
+   * Data to save the file in the same format that it was loaded
+   */
+  struct FormatOptions *format_options;
 };
 
 Sprite *sprite_new(int imgtype, int w, int h);
@@ -92,7 +109,7 @@ void sprite_set_palette(Sprite *sprite, struct Palette *pal, bool truncate);
 void sprite_reset_palettes(Sprite *sprite);
 
 void sprite_set_filename(Sprite *sprite, const char *filename);
-void sprite_set_filedata(Sprite *sprite, struct FileData *filedata);
+void sprite_set_format_options(Sprite *sprite, struct FormatOptions *format_options);
 void sprite_set_size(Sprite *sprite, int w, int h);
 void sprite_set_frames(Sprite *sprite, int frames);
 void sprite_set_frlen(Sprite *sprite, int msecs, int frame);

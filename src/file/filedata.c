@@ -24,46 +24,48 @@
 
 #include "file/filedata.h"
 
-FileData *filedata_new(int type, int size)
+FormatOptions *format_options_new(int type, int size)
 {
-  FileData *filedata;
+  FormatOptions *format_options;
 
-  assert(size >= sizeof(FileData));
+  assert(size >= sizeof(FormatOptions));
 
-  filedata = jmalloc0(size);
-  if (filedata == NULL)
+  format_options = jmalloc0(size);
+  if (format_options == NULL)
     return NULL;
 
-  filedata->type = type;
-  filedata->size = size;
+  format_options->type = type;
+  format_options->size = size;
 
-  return filedata;
+  return format_options;
 }
 
-void filedata_free(FileData *filedata)
+void format_options_free(FormatOptions *format_options)
 {
-  assert(filedata != NULL);
-  jfree(filedata);
+  assert(format_options != NULL);
+  jfree(format_options);
 }
 
-BmpData *bmpdata_new(void)
+BmpOptions *bmp_options_new(void)
 {
-  BmpData *bmpdata = (BmpData *)filedata_new(FILEDATA_BMP,
-					     sizeof(BmpData));
+  BmpOptions *bmp_options = (BmpOptions *)
+    format_options_new(FORMAT_OPTIONS_BMP,
+		       sizeof(BmpOptions));
 
-  if (bmpdata == NULL)
+  if (bmp_options == NULL)
     return NULL;
 
-  return bmpdata;
+  return bmp_options;
 }
 
-JpegData *jpegdata_new(void)
+JpegOptions *jpeg_options_new(void)
 {
-  JpegData *jpegdata = (JpegData *)filedata_new(FILEDATA_JPEG,
-						sizeof(JpegData));
+  JpegOptions *jpeg_options = (JpegOptions *)
+    format_options_new(FORMAT_OPTIONS_JPEG,
+		       sizeof(JpegOptions));
 
-  if (jpegdata == NULL)
+  if (jpeg_options == NULL)
     return NULL;
 
-  return jpegdata;
+  return jpeg_options;
 }

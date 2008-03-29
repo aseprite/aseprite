@@ -589,7 +589,7 @@ static bool load_BMP(FileOp *fop)
   biSize = fgetl(f);
  
   if (biSize == WININFOHEADERSIZE) {
-    format = BMPDATA_FORMAT_WINDOWS;
+    format = BMP_OPTIONS_FORMAT_WINDOWS;
 
     if (read_win_bminfoheader(f, &infoheader) != 0) {
       fclose(f);
@@ -599,7 +599,7 @@ static bool load_BMP(FileOp *fop)
       read_bmicolors(fop, fileheader.bfOffBits - 54, f, TRUE);
   }
   else if (biSize == OS2INFOHEADERSIZE) {
-    format = BMPDATA_FORMAT_OS2;
+    format = BMP_OPTIONS_FORMAT_OS2;
 
     if (read_os2_bminfoheader(f, &infoheader) != 0) {
       fclose(f);
@@ -679,17 +679,17 @@ static bool load_BMP(FileOp *fop)
   }
 
   /* setup the file-data */
-  if (fop->seq.filedata == NULL) {
-    BmpData *bmpdata = bmpdata_new();
+  if (fop->seq.format_options == NULL) {
+    BmpOptions *bmp_options = bmp_options_new();
 
-    bmpdata->format = format;
-    bmpdata->compression = infoheader.biCompression;
-    bmpdata->bits_per_pixel = infoheader.biBitCount;
-    bmpdata->red_mask = rmask;
-    bmpdata->green_mask = gmask;
-    bmpdata->blue_mask = bmask;
+    bmp_options->format = format;
+    bmp_options->compression = infoheader.biCompression;
+    bmp_options->bits_per_pixel = infoheader.biBitCount;
+    bmp_options->red_mask = rmask;
+    bmp_options->green_mask = gmask;
+    bmp_options->blue_mask = bmask;
 
-    fop_sequence_set_filedata(fop, (FileData *)bmpdata);
+    fop_sequence_set_format_options(fop, (FormatOptions *)bmp_options);
   }
 
   fclose(f);

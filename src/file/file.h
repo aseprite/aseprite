@@ -40,7 +40,7 @@
 #define FILE_LOAD_ONE_FRAME		(1<<3)
 
 struct Cel;
-struct FileData;
+struct FormatOptions;
 struct Image;
 struct Layer;
 struct Palette;
@@ -56,7 +56,7 @@ typedef enum { FileOpLoad,
 typedef bool (*FileLoad)(struct FileOp *fop);
 typedef bool (*FileSave)(struct FileOp *fop);
 
-typedef struct FileData *(*FileGetData)(struct FileOp *fop);
+typedef struct FormatOptions *(*GetFormatOptions)(struct FileOp *fop);
 
 /* load or/and save a file format */
 typedef struct FileFormat
@@ -65,7 +65,7 @@ typedef struct FileFormat
   const char *exts;	/* extensions (e.g. "jpeg,jpg") */
   FileLoad load;	/* procedure to read a sprite in this format */
   FileSave save;	/* procedure to write a sprite in this format */
-  FileGetData getdata;  /* procedure to configure the format to be saved */
+  GetFormatOptions get_options;	/* procedure to configure the output format */
   int flags;
 } FileFormat;
 
@@ -100,7 +100,7 @@ typedef struct FileOp
     bool has_alpha;
     struct Layer *layer;
     struct Cel *last_cel;
-    struct FileData *filedata;
+    struct FormatOptions *format_options;
   } seq;
 } FileOp;
 
@@ -123,7 +123,7 @@ void fop_done(FileOp *fop);
 void fop_stop(FileOp *fop);
 void fop_free(FileOp *fop);
 
-void fop_sequence_set_filedata(FileOp *fop, struct FileData *filedata);
+void fop_sequence_set_format_options(FileOp *fop, struct FormatOptions *format_options);
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);
 struct Image *fop_sequence_image(FileOp *fi, int imgtype, int w, int h);

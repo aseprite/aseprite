@@ -29,6 +29,7 @@
 #include "core/core.h"
 #include "file/file.h"
 #include "file/filedata.h"
+#include "modules/gui.h"
 #include "raster/raster.h"
 #include "script/script.h"
 
@@ -36,7 +37,7 @@
 
 static bool load_JPEG(FileOp *fop);
 static bool save_JPEG(FileOp *fop);
-static JpegData *getdata_JPEG(FileOp *fop);
+static FormatOptions *get_options_JPEG(FileOp *fop);
 
 FileFormat format_jpeg =
 {
@@ -44,7 +45,7 @@ FileFormat format_jpeg =
   "jpeg,jpg",
   load_JPEG,
   save_JPEG,
-  getdata_JPEG,
+  get_options_JPEG,
   FILE_SUPPORT_RGB |
   FILE_SUPPORT_GRAY |
   FILE_SUPPORT_SEQUENCES
@@ -229,7 +230,7 @@ static bool save_JPEG(FileOp *fop)
   FILE *file;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  JpegData *jpegdata = (JpegData *)fop->seq.filedata;
+  JpegOptions *jpeg_options = (JpegOptions *)fop->seq.format_options;
   int c;
 
   /* Open the file for write in it.  */
@@ -261,9 +262,9 @@ static bool save_JPEG(FileOp *fop)
   }
 
   jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, (int)MID(0, 100.0f * jpegdata->quality, 100), TRUE);
-  cinfo.dct_method = jpegdata->method;
-  cinfo.smoothing_factor = (int)MID(0, 100.0f * jpegdata->smooth, 100);
+  jpeg_set_quality(&cinfo, (int)MID(0, 100.0f * jpeg_options->quality, 100), TRUE);
+  cinfo.dct_method = JDCT_ISLOW;
+  cinfo.smoothing_factor = 0;
 
   /* Start compressor.  */
   jpeg_start_compress(&cinfo, TRUE);
@@ -348,80 +349,46 @@ static bool save_JPEG(FileOp *fop)
 /**
  * Shows the JPEG configuration dialog.
  */
-static JpegData *getdata_JPEG(FileOp *fop)
+static FormatOptions *get_options_JPEG(FileOp *fop)
 {
-  JWidget window, box1, box2, box3, box4, box5;
-  JWidget label_quality, label_smooth, label_method;
-  JWidget slider_quality, slider_smooth, view_method;
-  JWidget list_method, button_ok, button_cancel;
-  JpegData *jpegdata = jpegdata_new();
+  JWidget window, slider_quality, ok;
+  JpegOptions *jpeg_options = jpeg_options_new();
 
   /* configuration parameters */
-  jpegdata->quality = get_config_float("JPEG", "Quality", 0.6f);
-  jpegdata->smooth = 0.0f;
-  jpegdata->method = JPEGDATA_METHOD_DEFAULT;
+  jpeg_options->quality = get_config_float("JPEG", "Quality", 0.6f);
 
   /* interactive mode */
   if (!is_interactive())
-    return jpegdata;
+    return (FormatOptions *)jpeg_options;
 
   /* widgets */
-  window = jwindow_new(_("JPEG Options"));
-  box1 = jbox_new(JI_VERTICAL);
-  box2 = jbox_new(JI_HORIZONTAL);
-  box3 = jbox_new(JI_VERTICAL + JI_HOMOGENEOUS);
-  box4 = jbox_new(JI_VERTICAL + JI_HOMOGENEOUS);
-  box5 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
-  label_quality = jlabel_new(_("Quality:"));
-  label_smooth = jlabel_new(_("Smooth:"));
-  label_method = jlabel_new(_("Method:"));
-  slider_quality = jslider_new(0, 10, jpegdata->quality*10);
-  slider_smooth = jslider_new(0, 10, jpegdata->smooth*10);
-  view_method = jview_new();
-  list_method = jlistbox_new();
-  button_ok = jbutton_new(_("&OK"));
-  button_cancel = jbutton_new(_("&Cancel"));
+  window = load_widget("jpeg_options.jid", "jpeg_options");
+  if (!window) {
+    format_options_free((FormatOptions *)jpeg_options);
+    return NULL;
+  }
 
-  jwidget_add_child(list_method, jlistitem_new(_("Slow")));
-  jwidget_add_child(list_method, jlistitem_new(_("Fast")));
-  jwidget_add_child(list_method, jlistitem_new(_("Float")));
-  jlistbox_select_index(list_method, jpegdata->method);
+  if (!get_widgets(window,
+		   "quality", &slider_quality,
+		   "ok", &ok, NULL)) {
+    jwidget_free(window);
+    format_options_free((FormatOptions *)jpeg_options);
+    return NULL;
+  }
 
-  jview_attach(view_method, list_method);
-  jview_maxsize(view_method);
-
-  jwidget_expansive(box4, TRUE);
-  jwidget_expansive(view_method, TRUE);
-  jwidget_magnetic(button_ok, TRUE);
-
-  jwidget_add_child(box3, label_quality);
-  jwidget_add_child(box3, label_smooth);
-  jwidget_add_child(box4, slider_quality);
-  jwidget_add_child(box4, slider_smooth);
-  jwidget_add_child(box2, box3);
-  jwidget_add_child(box2, box4);
-  jwidget_add_child(box1, box2);
-  jwidget_add_child(box1, label_method);
-  jwidget_add_child(box1, view_method);
-  jwidget_add_child(box5, button_ok);
-  jwidget_add_child(box5, button_cancel);
-  jwidget_add_child(box1, box5);
-  jwidget_add_child(window, box1);
+  jslider_set_value(slider_quality, jpeg_options->quality * 10.0f);
 
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer(window) == button_ok) {
-    jpegdata->quality = jslider_get_value(slider_quality) / 10.0f;
-    jpegdata->smooth = jslider_get_value(slider_smooth) / 10.0f;
-    jpegdata->method = jlistbox_get_selected_index(list_method);
-
-    set_config_float("JPEG", "Quality", jpegdata->quality);
+  if (jwindow_get_killer(window) == ok) {
+    jpeg_options->quality = jslider_get_value(slider_quality) / 10.0f;
+    set_config_float("JPEG", "Quality", jpeg_options->quality);
   }
   else {
-    filedata_free((FileData *)jpegdata);
-    jpegdata = NULL;
+    format_options_free((FormatOptions *)jpeg_options);
+    jpeg_options = NULL;
   }
 
   jwidget_free(window);
-  return jpegdata;
+  return (FormatOptions *)jpeg_options;
 }

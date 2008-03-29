@@ -415,17 +415,18 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     fop->filename = jstrdup(fop->sprite->filename);
 
   /* configure output format? */
-  if (fop->format->getdata) {
-    FileData *data = (fop->format->getdata)(fop);
+  if (fop->format->get_options != NULL) {
+    FormatOptions *format_options = (fop->format->get_options)(fop);
 
     /* does the user cancelled the operation? */
-    if (data == NULL) {
+    if (format_options == NULL) {
       fop_free(fop);
       return NULL;
     }
 
-    fop->seq.filedata = data;
-    sprite_set_filedata(fop->sprite, data);
+    fop->seq.format_options = format_options;
+    sprite_set_format_options(fop->sprite,
+			      format_options);
   }
 
   return fop;
@@ -562,7 +563,8 @@ void fop_operate(FileOp *fop)
 	sprite_set_frames(fop->sprite, frame);
 
 	/* set the frames range */
-	sprite_set_filedata(fop->sprite, fop->seq.filedata);
+	sprite_set_format_options(fop->sprite,
+				  fop->seq.format_options);
       }
     }
     /* direct load from one file */
@@ -704,10 +706,10 @@ void fop_free(FileOp *fop)
   jfree(fop);
 }
 
-void fop_sequence_set_filedata(FileOp *fop, FileData *filedata)
+void fop_sequence_set_format_options(FileOp *fop, FormatOptions *format_options)
 {
-  assert(fop->seq.filedata == NULL);
-  fop->seq.filedata = filedata;
+  assert(fop->seq.format_options == NULL);
+  fop->seq.format_options = format_options;
 }
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
@@ -896,7 +898,7 @@ static void fop_prepare_for_sequence(FileOp *fop)
 {
   fop->seq.filename_list = jlist_new();
   fop->seq.palette = palette_new(0, MAX_PALETTE_COLORS);
-  fop->seq.filedata = NULL;
+  fop->seq.format_options = NULL;
 }
 
 static FileFormat *get_fileformat(const char *extension)

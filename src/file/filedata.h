@@ -16,68 +16,61 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef FILEDATA_H
-#define FILEDATA_H
+#ifndef FILE_FORMAT_OPTIONS_H
+#define FILE_FORMAT_OPTIONS_H
 
 enum {
-  FILEDATA_BMP,
-  FILEDATA_JPEG,
-  FILEDATA_MAX
+  FORMAT_OPTIONS_BMP,
+  FORMAT_OPTIONS_JPEG,
+  FORMAT_OPTIONS_MAX
 };
 
 /* data that can be in a file and could be useful to save the file
    later in the same format */
-typedef struct FileData
+typedef struct FormatOptions
 {
   int type;
   int size;
-} FileData;
+} FormatOptions;
 
-FileData *filedata_new(int type, int size);
-void filedata_free(FileData *filedata);
+FormatOptions *format_options_new(int type, int size);
+void format_options_free(FormatOptions *filedata);
 
 /*********************************************************************
  Data for BMP files
  *********************************************************************/
 
-#define BMPDATA_FORMAT_WINDOWS		12
-#define BMPDATA_FORMAT_OS2		40
+#define BMP_OPTIONS_FORMAT_WINDOWS		12
+#define BMP_OPTIONS_FORMAT_OS2			40
 
-#define BMPDATA_COMPRESSION_RGB		0
-#define BMPDATA_COMPRESSION_RLE8	1
-#define BMPDATA_COMPRESSION_RLE4	2
-#define BMPDATA_COMPRESSION_BITFIELDS	3
+#define BMP_OPTIONS_COMPRESSION_RGB		0
+#define BMP_OPTIONS_COMPRESSION_RLE8		1
+#define BMP_OPTIONS_COMPRESSION_RLE4		2
+#define BMP_OPTIONS_COMPRESSION_BITFIELDS	3
 
-typedef struct BmpData
+typedef struct BmpOptions
 {
-  FileData head;
+  FormatOptions head;
   int format;			/* BMP format */
   int compression;		/* BMP compression */
   int bits_per_pixel;		/* bits per pixel */
   ase_uint32 red_mask;		/* mask for red channel */
   ase_uint32 green_mask;	/* mask for green channel */
   ase_uint32 blue_mask;		/* mask for blue channel */
-} BmpData;
+} BmpOptions;
 
-BmpData *bmpdata_new(void);
+BmpOptions *bmp_options_new(void);
 
 /*********************************************************************
  Data for JPEG files
  *********************************************************************/
 
-#define JPEGDATA_METHOD_SLOW		0 /* slow but accurate integer algorithm */
-#define JPEGDATA_METHOD_FAST		1 /* faster, less accurate integer method */
-#define JPEGDATA_METHOD_FLOAT		2 /* floating-point: accurate, fast on fast HW */
-#define JPEGDATA_METHOD_DEFAULT		JPEGDATA_METHOD_SLOW
-
-typedef struct JpegData
+typedef struct JpegOptions
 {
-  FileData head;
+  FormatOptions head;
   float quality;		/* 1.0 maximum quality */
-  float smooth;			/* 1.0 maximum smooth */
-  int method;
-} JpegData;
+} JpegOptions;
 
-JpegData *jpegdata_new(void);
+JpegOptions *jpeg_options_new(void);
 
-#endif /* FILEDATA_H */
+#endif /* FILE_FORMAT_OPTIONS_H */

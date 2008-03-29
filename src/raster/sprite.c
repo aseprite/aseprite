@@ -98,8 +98,8 @@ Sprite *sprite_new(int imgtype, int w, int h)
   sprite->locked = FALSE;
   sprite->mutex = jmutex_new();
 
-  /* file format data */
-  sprite->filedata = NULL;
+  /* file format options */
+  sprite->format_options = NULL;
 
   /* free the temporary palette */
   palette_free(pal);
@@ -278,9 +278,9 @@ void sprite_free(Sprite *sprite)
   /* destroy mutex */
   jmutex_free(sprite->mutex);
 
-  /* destroy file-data */
-  if (sprite->filedata)
-    filedata_free(sprite->filedata);
+  /* destroy file format options */
+  if (sprite->format_options)
+    format_options_free(sprite->format_options);
 
   /* destroy gfxobj */
   gfxobj_free((GfxObj *)sprite);
@@ -436,12 +436,12 @@ void sprite_set_filename(Sprite *sprite, const char *filename)
   strcpy(sprite->filename, filename);
 }
 
-void sprite_set_filedata(Sprite *sprite, struct FileData *filedata)
+void sprite_set_format_options(Sprite *sprite, struct FormatOptions *format_options)
 {
-  if (sprite->filedata)
-    jfree(sprite->filedata);
+  if (sprite->format_options)
+    jfree(sprite->format_options);
 
-  sprite->filedata = filedata;
+  sprite->format_options = format_options;
 }
 
 void sprite_set_size(Sprite *sprite, int w, int h)
