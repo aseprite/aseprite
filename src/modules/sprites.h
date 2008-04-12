@@ -21,12 +21,18 @@
 
 #include "jinete/jbase.h"
 
-#define TARGET_FRAMES	1
-#define TARGET_LAYERS	2
-#define TARGET_ALL	(TARGET_FRAMES | TARGET_LAYERS)
-
+struct Image;
+struct Layer;
+struct Cel;
 struct Sprite;
-struct Stock;
+
+typedef struct ImageRef
+{
+  struct Image *image;
+  struct Layer *layer;
+  struct Cel *cel;
+  struct ImageRef *next;
+} ImageRef;
 
 extern struct Sprite *current_sprite;
 
@@ -52,7 +58,7 @@ bool is_current_sprite_writable(void);
 
 struct Sprite *lock_current_sprite(void);
 
-struct Stock *sprite_get_images(struct Sprite *sprite, int target, int write, int **x, int **y);
+ImageRef *sprite_get_images(struct Sprite *sprite, int target, bool write);
 
 #endif /* MODULES_SPRITES_H */
 

@@ -30,7 +30,9 @@
 #include "modules/palettes.h"
 #include "raster/blend.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/sprite.h"
 #include "widgets/colbar.h"
 
 /* #define GET_COLOR_TYPE(color)	((ase_uint32)((color).coltype)) */
@@ -632,6 +634,35 @@ int get_color_for_image(int imgtype, color_t color)
   }
 
   return c;
+}
+
+int get_color_for_layer(Layer *layer, color_t color)
+{
+  return
+    fixup_color_for_layer(layer,
+			  get_color_for_image(layer->sprite->imgtype,
+					      color));
+}
+
+int fixup_color_for_layer(Layer *layer, int color)
+{
+  if (layer_is_background(layer)) {
+    switch (layer->sprite->imgtype) {
+      case IMAGE_RGB:
+	if (_rgba_geta(color) < 255) {
+	  return _rgba(_rgba_getr(color),
+		       _rgba_getg(color),
+		       _rgba_getb(color), 255);
+	}
+	break;
+      case IMAGE_GRAYSCALE:
+	if (_graya_geta(color) < 255) {
+	  return _graya(_graya_getv(color), 255);
+	}
+	break;
+    }
+  }
+  return color;
 }
 
 color_t image_getpixel_color(Image *image, int x, int y)

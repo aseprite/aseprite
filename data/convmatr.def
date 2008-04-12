@@ -1,7 +1,7 @@
-# allegro-sprite-editor convolution matrices		-*- Shell-script -*-
-# Copyright (C) 2001-2005, 2008 by David A. Capello
+# Allegro Sprite Editor convolution matrices		-*- Shell-script -*-
+# Copyright (C) 2001-2008 by David A. Capello
 #
-# Loader in "plug-ins/action/convmatr.c".
+# Parser in "src/effect/convmatr.c"
 #
 # Format:
 #
@@ -18,10 +18,11 @@
 #            center of the matrix
 #
 #   data   = N0 N1 ... N(w*h)
-#            the multiplicity factors
+#            elements of the matrix
 #
 #   div    = N != 0 | auto
 #            final division factor
+#            auto = sum(data)
 #
 #   bias   = -N ... +N | auto
 #            final shift
@@ -30,27 +31,24 @@
 #            [r]ed, [g]reen, [b]lue, [a]lpha
 #
 
-alpha-maximum 1 1 0 0 { 1 } 1 255 a
-
-rgb-brightness 1 1 0 0 { 1 } 1 +8 rgb
-rgb-contrast 1 1 0 0 { 1 } 1 -8 rgb
-rgb-negative 1 1 0 0 { -1 } auto auto rgb
-rgb-remap-colors 1 1 0 0 { 1 } 1 0 rgb
+brightness 1 1 0 0 { 1 } 1 +8 rgb
+contrast 1 1 0 0 { 1 } 1 -8 rgb
+negative 1 1 0 0 { -1 } auto auto rgb
 
 edges-find 3 3 1 1
   { -1 -1 -1
     -1  8 -1
-    -1 -1 -1 } 1 0 rgb
+    -1 -1 -1 } 1 0 rgba
 
 edges-find-horizontal 3 3 1 1
   { -1 -2 -1
      0  0  0
-     1  2  1 } 1 0 rgb
+     1  2  1 } 1 0 rgba
 
 edges-find-vertical 3 3 1 1
   { -1  0  1
     -2  0  2
-    -1  0  1 } 1 0 rgb
+    -1  0  1 } 1 0 rgba
 
 misc-contour 3 3 1 1
   { 1  1  1
@@ -60,12 +58,12 @@ misc-contour 3 3 1 1
 misc-texturize 3 3 1 1
   { -2 -2  1
     -2  1  2
-    -1  2  2 } 1 0 rgb
+    -1  2  2 } 1 0 rgba
 
 misc-emboss 3 3 1 1
   { -4 -2 -1
     -2  1  2
-     1  2  4 } 1 0 rgb
+     1  2  4 } 1 0 rgba
 
 misc-marmolize 3 3 1 1
   { -1 -1  1
@@ -206,14 +204,14 @@ drunk-17x17_o 17 17 8 8
 sharpen-3x3 3 3 1 1
   { -1 -1 -1
     -1 16 -1
-    -1 -1 -1 } 8 0 rgb
+    -1 -1 -1 } 8 0 rgba
 
 sharpen-5x5 5 5 2 2
   {  0 -1 -2 -1  0
     -1 -2 -4 -2 -1
     -2 -4 48 -4 -2
     -1 -2 -4 -2 -1
-     0 -1 -2 -1  0 } 8 0 rgb
+     0 -1 -2 -1  0 } 8 0 rgba
 
 sharpen-7x7 7 7 3 3
   {  0 -1  -2  -4  -2 -1  0
@@ -222,7 +220,7 @@ sharpen-7x7 7 7 3 3
     -4 -8 -16 224 -16 -8 -4
     -2 -4  -8 -16  -8 -4 -2
     -1 -2  -4  -8  -4 -2 -1
-     0 -1  -2  -4  -2 -1 -0 } 16 0 rgb
+     0 -1  -2  -4  -2 -1 -0 } 16 0 rgba
 
 smooth-3x3 3 3 1 1
   { 1 2 1

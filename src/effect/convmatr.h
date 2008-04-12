@@ -23,12 +23,6 @@
 
 struct Effect;
 
-#define CONVMATR_R	1
-#define CONVMATR_G	2
-#define CONVMATR_B	4
-#define CONVMATR_K	(CONVMATR_R | CONVMATR_G | CONVMATR_B)
-#define CONVMATR_A	8
-
 typedef struct ConvMatr      /* a convolution matrix */
 {
   char *name;                /* name */
@@ -37,7 +31,8 @@ typedef struct ConvMatr      /* a convolution matrix */
   int *data;                 /* the matrix with the multiplication factors */
   int div;                   /* division factor */
   int bias;                  /* addition factor (for offset) */
-  int default_target;        /* targets by default */
+  int default_target;        /* targets by default (look at
+				TARGET_RED_CHANNEL, etc. constants) */
 } ConvMatr;
 
 ConvMatr *convmatr_new(int w, int h);

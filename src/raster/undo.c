@@ -1540,7 +1540,7 @@ static Image *read_raw_image(ase_uint8 *raw_data)
 {
   ase_uint32 dword;
   ase_uint16 word;
-  unsigned int image_id;
+  gfxobj_id image_id;
   int imgtype;
   int width;
   int height;
@@ -1605,7 +1605,7 @@ static Cel *read_raw_cel(ase_uint8 *raw_data)
   ase_uint32 dword;
   ase_uint16 word;
   int frame, image, x, y, opacity;
-  unsigned int cel_id;
+  gfxobj_id cel_id;
   Cel *cel;
 
   read_raw_uint32(cel_id);
@@ -1653,7 +1653,7 @@ static Layer *read_raw_layer(ase_uint8 *raw_data)
 {
   ase_uint32 dword;
   ase_uint16 word;
-  unsigned int layer_id, sprite_id;
+  gfxobj_id layer_id, sprite_id;
   char name[LAYER_NAME_SIZE];
   int flags, layer_type;
   Layer *layer = NULL;

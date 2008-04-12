@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <allegro/file.h>
 
 #include "jinete/jlist.h"
@@ -25,9 +26,11 @@
 #include "core/app.h"
 #include "core/core.h"
 #include "file/file.h"
+#include "effect/effect.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -46,7 +49,7 @@ Sprite *current_sprite = NULL;
 static JList sprites_list;
 static Sprite *clipboard_sprite;
 
-static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write);
+static ImageRef *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write);
 static void layer_get_pos(Sprite *sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
 
 int init_module_sprites(void)
@@ -215,83 +218,87 @@ Sprite *lock_current_sprite(void)
     return NULL;
 }
 
-Stock *sprite_get_images(Sprite *sprite, int target, int write, int **x, int **y)
+ImageRef *sprite_get_images(struct Sprite *sprite, int target, bool write)
 {
-  Layer *layer = (target & TARGET_LAYERS) ? sprite->set: sprite->layer;
-  Stock *stock;
+  Layer *layer = target & TARGET_ALL_LAYERS ? sprite->set:
+					      sprite->layer;
 
-  stock = layer_get_images(sprite, layer, target, write);
-
-  if (x && y && stock->nimage > 0) {
-    int count = 0;
-
-    *x = jmalloc(sizeof(int) * stock->nimage);
-    *y = jmalloc(sizeof(int) * stock->nimage);
-
-    /* first stock image is a NULL image (doesn't have position) */
-    (*x)[count] = 0;
-    (*y)[count] = 0;
-    count++;
-
-    layer_get_pos(sprite, layer, target, write, x, y, &count);
-  }
-
-  return stock;
+  return layer_get_images(sprite, layer, target, write);
 }
 
-static Stock *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write)
+static ImageRef *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write)
 {
-  Stock *stock = stock_new_ref(sprite->imgtype);
+#define ADD_IMAGES(images)			\
+  {						\
+    if (first_image == NULL) {			\
+      first_image = images;			\
+      last_image = images;			\
+    }						\
+    else {					\
+      assert(last_image != NULL);		\
+      last_image->next = images;		\
+    }						\
+						\
+    while (last_image->next != NULL)		\
+      last_image = last_image->next;		\
+  }
+
+#define NEW_IMAGE(layer, cel)					\
+  {								\
+    ImageRef *image_ref = jnew(ImageRef, 1);			\
+								\
+    image_ref->image = layer->sprite->stock->image[cel->image];	\
+    image_ref->layer = layer;					\
+    image_ref->cel = cel;					\
+    image_ref->next = NULL;					\
+								\
+    ADD_IMAGES(image_ref);					\
+  }
+  
+  ImageRef *first_image = NULL;
+  ImageRef *last_image = NULL;
   int frame = sprite->frame;
 
   if (!layer_is_readable(layer))
-    return stock;
+    return NULL;
 
   if (write && !layer_is_writable(layer))
-    return stock;
+    return NULL;
 
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Image *image;
-
-      if (target & TARGET_FRAMES) {
+      if (target & TARGET_ALL_FRAMES) {
 	for (frame=0; frame<sprite->frames; frame++) {
-	  image = GetLayerImage(layer, NULL, NULL, frame);
-	  if (image)
-	    stock_add_image(stock, image);
+	  Cel *cel = layer_get_cel(layer, frame);
+	  if (cel != NULL)
+	    NEW_IMAGE(layer, cel);
 	}
       }
       else {
-	image = GetLayerImage(layer, NULL, NULL, frame);
-	if (image)
-	  stock_add_image(stock, image);
+	Cel *cel = layer_get_cel(layer, frame);
+	if (cel != NULL)
+	  NEW_IMAGE(layer, cel);
       }
       break;
     }
 
     case GFXOBJ_LAYER_SET: {
-      Stock *sub_stock;
+      ImageRef *sub_images;
       JLink link;
-      int c;
 
       JI_LIST_FOR_EACH(layer->layers, link) {
-	sub_stock = layer_get_images(sprite, link->data, target, write);
+	sub_images = layer_get_images(sprite, link->data, target, write);
 
-	if (sub_stock) {
-	  for (c=0; c<sub_stock->nimage; c++) {
-	    if (sub_stock->image[c])
-	      stock_add_image(stock, sub_stock->image[c]);
-	  }
-	  stock_free(sub_stock);
-	}
+	if (sub_images != NULL)
+	  ADD_IMAGES(sub_images);
       }
       break;
     }
 
   }
 
-  return stock;
+  return first_image;
 }
 
 static void layer_get_pos(Sprite *sprite, Layer *layer, int target, bool write, int **x, int **y, int *count)
@@ -310,7 +317,7 @@ static void layer_get_pos(Sprite *sprite, Layer *layer, int target, bool write, 
       Image *image;
       int u, v;
 
-      if (target & TARGET_FRAMES) {
+      if (target & TARGET_ALL_FRAMES) {
 	for (frame=0; frame<sprite->frames; frame++) {
 	  image = GetLayerImage(layer, &u, &v, frame);
 	  if (image) {

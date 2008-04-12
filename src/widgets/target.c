@@ -27,6 +27,7 @@
 #include "jinete/jwidget.h"
 
 #include "core/cfg.h"
+#include "effect/effect.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -34,10 +35,14 @@
 
 static bool channel_change_hook(JWidget widget, void *data);
 static bool images_change_hook(JWidget widget, void *data);
-static int get_target_image_gfx(void);
+static int get_target_image_gfx(int target);
 
-/* creates a new button to handle "targets" to apply some effect in
-   the sprite  */
+/**
+ * Creates a new button to handle "targets" to apply some effect in
+ * the sprite
+ *
+ * user_data[0] = target flags (TARGET_RED_CHANNEL, etc.)
+ */
 JWidget target_button_new(int imgtype, bool with_channels)
 {
 #define ADD(box, widget, hook)						\
@@ -49,6 +54,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
 	 JI_SIGNAL_BUTTON_SELECT: JI_SIGNAL_CHECK_CHANGE, hook, vbox);	\
   }
 
+  int default_targets = 0;
   JWidget vbox, hbox;
   JWidget r=NULL, g=NULL, b=NULL, k=NULL, a=NULL, index=NULL, images=NULL;
 
@@ -66,39 +72,37 @@ JWidget target_button_new(int imgtype, bool with_channels)
 	r = check_button_new("R", 2, 0, 0, 0);
 	g = check_button_new("G", 0, 0, 0, 0);
 	b = check_button_new("B", 0, (imgtype == IMAGE_RGB) ? 0: 2, 0, 0);
-	if (imgtype == IMAGE_RGB)
-	  a = check_button_new("A", 0, 2, 0, 0);
-	else
-	  index = check_button_new("Index", 0, 0, 0, 0);
 
-	if (get_config_bool("Target", "Red", TRUE)) jwidget_select(r);
-	if (get_config_bool("Target", "Green", TRUE)) jwidget_select(g);
-	if (get_config_bool("Target", "Blue", TRUE)) jwidget_select(b);
-	if (a && get_config_bool("Target", "Alpha", TRUE)) jwidget_select(a);
-	if (index && get_config_bool("Target", "Index", TRUE)) jwidget_select(index);
+	jwidget_set_name(r, "r");
+	jwidget_set_name(g, "g");
+	jwidget_set_name(b, "b");
+	
+	if (imgtype == IMAGE_RGB) {
+	  a = check_button_new("A", 0, 2, 0, 0);
+	  jwidget_set_name(a, "a");
+	}
+	else {
+	  index = check_button_new("Index", 0, 0, 0, 0);
+	  jwidget_set_name(index, "i");
+	}
 	break;
 
       case IMAGE_GRAYSCALE:
 	k = check_button_new("K", 2, 0, 0, 0);
 	a = check_button_new("A", 0, 2, 0, 0);
 
-	if (get_config_bool("Target", "Gray", TRUE)) jwidget_select(k);
-	if (get_config_bool("Target", "Alpha", TRUE)) jwidget_select(a);
+	jwidget_set_name(k, "k");
+	jwidget_set_name(a, "a");
 	break;
     }
   }
 
-  /* reset targets.  (It's important to start without image targets,
-     because the most times we just want apply a effect to the current
-     image) */
-  set_config_int("Target", "Images", 0);
-
   /* create the button to select "image" target */
   images = jbutton_new(NULL);
   jbutton_set_bevel(images,
-		      with_channels ? 0: 2,
-		      with_channels ? 0: 2, 2, 2);
-  add_gfxicon_to_button(images, get_target_image_gfx(),
+		    with_channels ? 0: 2,
+		    with_channels ? 0: 2, 2, 2);
+  add_gfxicon_to_button(images, get_target_image_gfx(default_targets),
 			JI_CENTER | JI_MIDDLE);
 
   /* make hierarchy */
@@ -116,52 +120,101 @@ JWidget target_button_new(int imgtype, bool with_channels)
   ADD(vbox, index, channel_change_hook);
   ADD(vbox, images, images_change_hook);
 
+  vbox->user_data[0] = (void *)default_targets;
   return vbox;
+}
+
+int target_button_get_target(JWidget widget)
+{
+  return (int)widget->user_data[0];
+}
+
+void target_button_set_target(JWidget widget, int target)
+{
+  JWidget w;
+
+#define ACTIVATE_TARGET(name, TARGET)					\
+  w = jwidget_find_name(widget, name);					\
+  if (w != NULL) {							\
+    if ((target & TARGET) == TARGET)					\
+      jwidget_select(w);						\
+    else								\
+      jwidget_deselect(w);						\
+  }
+
+  ACTIVATE_TARGET("r", TARGET_RED_CHANNEL);
+  ACTIVATE_TARGET("g", TARGET_GREEN_CHANNEL);
+  ACTIVATE_TARGET("b", TARGET_BLUE_CHANNEL);
+  ACTIVATE_TARGET("a", TARGET_ALPHA_CHANNEL);
+  ACTIVATE_TARGET("k", TARGET_GRAY_CHANNEL);
+  ACTIVATE_TARGET("i", TARGET_INDEX_CHANNEL);
+
+  widget->user_data[0] = (void *)target;
 }
 
 static bool channel_change_hook(JWidget widget, void *data)
 {
-  const char *name;
-
-  switch (*widget->text) {
-    case 'R': name = "Red"; break;
-    case 'G': name = "Green"; break;
-    case 'B': name = "Blue"; break;
-    case 'K': name = "Gray"; break;
-    case 'A': name = "Alpha"; break;
-    case 'I': name = "Index"; break;
+  JWidget target_button = (JWidget)data;
+  int target = (int)target_button->user_data[0];
+  int flag = 0;
+  
+  switch (*widget->name) {
+    case 'r': flag = TARGET_RED_CHANNEL; break;
+    case 'g': flag = TARGET_GREEN_CHANNEL; break;
+    case 'b': flag = TARGET_BLUE_CHANNEL; break;
+    case 'k': flag = TARGET_GRAY_CHANNEL; break;
+    case 'a': flag = TARGET_ALPHA_CHANNEL; break;
+    case 'i': flag = TARGET_INDEX_CHANNEL; break;
     default:
       return TRUE;
   }
 
-  set_config_bool("Target", name, jwidget_is_selected(widget));
+  if (jwidget_is_selected(widget))
+    target |= flag;
+  else
+    target &= ~flag;
 
-  jwidget_emit_signal((JWidget)data, SIGNAL_TARGET_BUTTON_CHANGE);
+  target_button->user_data[0] = (void *)target;
+  
+  jwidget_emit_signal(target_button, SIGNAL_TARGET_BUTTON_CHANGE);
   return TRUE;
 }
 
 static bool images_change_hook(JWidget widget, void *data)
 {
-  int images = get_config_int("Target", "Images", 0);
-  set_config_int("Target", "Images", (images+1)%4);
-  set_gfxicon_in_button(widget, get_target_image_gfx());
+  JWidget target_button = (JWidget)data;
+  int target = (int)target_button->user_data[0];
 
-  jwidget_emit_signal((JWidget)data, SIGNAL_TARGET_BUTTON_CHANGE);
+  /* rotate target */
+  if (target & TARGET_ALL_FRAMES) {
+    target &= ~TARGET_ALL_FRAMES;
+
+    if (target & TARGET_ALL_LAYERS)
+      target &= ~TARGET_ALL_LAYERS;
+    else
+      target |= TARGET_ALL_LAYERS;
+  }
+  else {
+    target |= TARGET_ALL_FRAMES;
+  }
+
+  set_gfxicon_in_button(widget, get_target_image_gfx(target));
+
+  target_button->user_data[0] = (void *)target;
+  jwidget_emit_signal(target_button, SIGNAL_TARGET_BUTTON_CHANGE);
   return TRUE;
 }
 
-static int get_target_image_gfx(void)
+static int get_target_image_gfx(int target)
 {
-  int images = get_config_int("Target", "Images", 0);
-
-  switch (images) {
-    case 1:
-      return GFX_TARGET_FRAMES;
-    case 2:
-      return GFX_TARGET_LAYERS;
-    case 3:
-      return GFX_TARGET_FRAMES_LAYERS;
-    default:
-      return GFX_TARGET_ONE;
+  if (target & TARGET_ALL_FRAMES) {
+    return target & TARGET_ALL_LAYERS ?
+      GFX_TARGET_FRAMES_LAYERS:
+      GFX_TARGET_FRAMES;
+  }
+  else {
+    return target & TARGET_ALL_LAYERS ?
+      GFX_TARGET_LAYERS:
+      GFX_TARGET_ONE;
   }
 }

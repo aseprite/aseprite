@@ -69,6 +69,7 @@ struct Tool
 
 struct ToolData
 {
+  struct Sprite *sprite;
   struct Layer *layer;
   struct Image *src_image;	/* where we can get pixels (readonly image) */
   struct Image *dst_image;	/* where we should put pixels */

@@ -37,7 +37,7 @@
 /* TODO warning: this number could be dangerous for big filters */
 #define PRECISION          (256)
 
-static struct {
+static struct {			/* TODO warning: not thread safe */
   JList matrices;
   ConvMatr *convmatr;
   bool tiled;
@@ -252,13 +252,20 @@ void reload_matrices_stock(void)
 	/* target */
 	READ_TOK();
 
+	convmatr->default_target = 0;
 	for (s=buf; *s; s++) {
 	  switch (*s) {
-	    case 'r': convmatr->default_target |= CONVMATR_R; break;
-	    case 'g': convmatr->default_target |= CONVMATR_G; break;
-	    case 'b': convmatr->default_target |= CONVMATR_B; break;
-	    case 'a': convmatr->default_target |= CONVMATR_A; break;
+	    case 'r': convmatr->default_target |= TARGET_RED_CHANNEL; break;
+	    case 'g': convmatr->default_target |= TARGET_GREEN_CHANNEL; break;
+	    case 'b': convmatr->default_target |= TARGET_BLUE_CHANNEL; break;
+	    case 'a': convmatr->default_target |= TARGET_ALPHA_CHANNEL; break;
 	  }
+	}
+
+	if ((convmatr->default_target & (TARGET_RED_CHANNEL |
+					 TARGET_GREEN_CHANNEL |
+					 TARGET_BLUE_CHANNEL)) != 0) {
+	  convmatr->default_target |= TARGET_GRAY_CHANNEL;
 	}
 
 	/* name */
@@ -368,28 +375,28 @@ void apply_convolution_matrix4(Effect *effect)
 	 }
 	 );
 
-      if (effect->target.r) {
+      if (effect->target & TARGET_RED_CHANNEL) {
 	r = r / div + matrix->bias;
 	r = MID(0, r, 255);
       }
       else
 	r = _rgba_getr(color);
 
-      if (effect->target.g) {
+      if (effect->target & TARGET_GREEN_CHANNEL) {
 	g = g / div + matrix->bias;
 	g = MID(0, g, 255);
       }
       else
 	g = _rgba_getg(color);
 
-      if (effect->target.b) {
+      if (effect->target & TARGET_BLUE_CHANNEL) {
 	b = b / div + matrix->bias;
 	b = MID(0, b, 255);
       }
       else
 	b = _rgba_getb(color);
 
-      if (effect->target.a) {
+      if (effect->target & TARGET_ALPHA_CHANNEL) {
 	a = a / matrix->div + matrix->bias;
 	a = MID(0, a, 255);
       }
@@ -443,14 +450,14 @@ void apply_convolution_matrix2(Effect *effect)
 	 }
 	 );
 
-      if (effect->target.k) {
+      if (effect->target & TARGET_GRAY_CHANNEL) {
 	k = k / div + matrix->bias;
 	k = MID(0, k, 255);
       }
       else
 	k = _graya_getv(color);
 
-      if (effect->target.a) {
+      if (effect->target & TARGET_ALPHA_CHANNEL) {
 	a = a / matrix->div + matrix->bias;
 	a = MID(0, a, 255);
       }
@@ -503,28 +510,28 @@ void apply_convolution_matrix1(Effect *effect)
 	 index += color * (*mdata);
 	 );
 
-      if (effect->target.index) {
+      if (effect->target & TARGET_INDEX_CHANNEL) {
 	index = index / matrix->div + matrix->bias;
 	index = MID(0, index, 255);
 
 	*(dst_address++) = index;
       }
       else {
-	if (effect->target.r) {
+	if (effect->target & TARGET_RED_CHANNEL) {
 	  r = r / div + matrix->bias;
 	  r = MID(0, r, 255);
 	}
 	else
 	  r = _rgba_getr(pal->color[color]);
 
-	if (effect->target.g) {
+	if (effect->target & TARGET_GREEN_CHANNEL) {
 	  g = g / div + matrix->bias;
 	  g = MID(0, g, 255);
 	}
 	else
 	  g = _rgba_getg(pal->color[color]);
 
-	if (effect->target.b) {
+	if (effect->target & TARGET_BLUE_CHANNEL) {
 	  b = b / div + matrix->bias;
 	  b = MID(0, b, 255);
 	}

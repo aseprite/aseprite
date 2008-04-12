@@ -1,4 +1,17 @@
+2008-04-11  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/sprites.h (ImageRef): Added.
+
+	* src/raster/stock.c (stock_new_ref): Removed.
+
+2008-04-10  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/tools.c (control_tool): Fixed tiled drawing mode.
+
 2008-03-29  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/core/color.c (get_color_for_layer): Added to avoid writing
+	colors with Alpha < 255 in the `Background' layer.
 
 	* src/modules/tools.c (ink_hline[124]_soften): Fixed to support
 	tiled mode.

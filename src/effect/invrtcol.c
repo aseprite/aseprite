@@ -51,10 +51,10 @@ void apply_invert_color4(Effect *effect)
     b = _rgba_getb(c);
     a = _rgba_geta(c);
 
-    if (effect->target.r) r ^= 0xff;
-    if (effect->target.g) g ^= 0xff;
-    if (effect->target.b) b ^= 0xff;
-    if (effect->target.a) a ^= 0xff;
+    if (effect->target & TARGET_RED_CHANNEL) r ^= 0xff;
+    if (effect->target & TARGET_GREEN_CHANNEL) g ^= 0xff;
+    if (effect->target & TARGET_BLUE_CHANNEL) b ^= 0xff;
+    if (effect->target & TARGET_ALPHA_CHANNEL) a ^= 0xff;
 
     *(dst_address++) = _rgba(r, g, b, a);
   }
@@ -86,8 +86,8 @@ void apply_invert_color2(Effect *effect)
     k = _graya_getv(c);
     a = _graya_geta(c);
 
-    if (effect->target.k) k ^= 0xff;
-    if (effect->target.a) a ^= 0xff;
+    if (effect->target & TARGET_GRAY_CHANNEL) k ^= 0xff;
+    if (effect->target & TARGET_ALPHA_CHANNEL) a ^= 0xff;
 
     *(dst_address++) = _graya(k, a);
   }
@@ -117,16 +117,16 @@ void apply_invert_color1(Effect *effect)
 
     c = *(src_address++);
 
-    if (effect->target.index)
+    if (effect->target & TARGET_INDEX_CHANNEL)
       c ^= 0xff;
     else {
       r = _rgba_getr(pal->color[c])>>3;
       g = _rgba_getg(pal->color[c])>>3;
       b = _rgba_getb(pal->color[c])>>3;
 
-      if (effect->target.r) r ^= 0x1f;
-      if (effect->target.g) g ^= 0x1f;
-      if (effect->target.b) b ^= 0x1f;
+      if (effect->target & TARGET_RED_CHANNEL) r ^= 0x1f;
+      if (effect->target & TARGET_GREEN_CHANNEL) g ^= 0x1f;
+      if (effect->target & TARGET_BLUE_CHANNEL) b ^= 0x1f;
 
       c = orig_rgb_map->data[r][g][b];
     }

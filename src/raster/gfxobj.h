@@ -34,15 +34,14 @@ enum {
   GFXOBJ_UNDO,
 };
 
-/* struct GfxObjProperty; */
+typedef unsigned int gfxobj_id;
 
 typedef struct GfxObj GfxObj;
 
 struct GfxObj
 {
   int type;
-  unsigned int id;
-/*   struct GfxObjProperty *properties; */
+  gfxobj_id id;
 };
 
 bool gfxobj_init(void);
@@ -51,11 +50,8 @@ void gfxobj_exit(void);
 GfxObj *gfxobj_new(int type, int size);
 void gfxobj_free(GfxObj *gfxobj);
 
-GfxObj *gfxobj_find(unsigned int id);
+GfxObj *gfxobj_find(gfxobj_id id);
 
-void _gfxobj_set_id(GfxObj *gfxobj, int id);
-
-/* void gfxobj_set_data (GfxObj *gfxobj, const char *key, void *data); */
-/* void *gfxobj_get_data (GfxObj *gfxobj, const char *key); */
+void _gfxobj_set_id(GfxObj *gfxobj, gfxobj_id id);
 
 #endif /* RASTER_GFXOBJ_H */

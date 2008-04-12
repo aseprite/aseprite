@@ -34,7 +34,7 @@
 /* } Property; */
 
 static JMutex objects_mutex;
-static unsigned int object_id = 0;	/* last object ID created */
+static gfxobj_id object_id = 0;		/* last object ID created */
 static JList objects;			/* graphics objects list */
 
 bool gfxobj_init(void)
@@ -87,7 +87,7 @@ void gfxobj_free(GfxObj *gfxobj)
   jfree(gfxobj);
 }
 
-GfxObj *gfxobj_find(unsigned int id)
+GfxObj *gfxobj_find(gfxobj_id id)
 {
   GfxObj *ret = NULL;
   JLink link;
@@ -105,54 +105,9 @@ GfxObj *gfxobj_find(unsigned int id)
   return ret;
 }
 
-void _gfxobj_set_id(GfxObj *gfxobj, int id)
+void _gfxobj_set_id(GfxObj *gfxobj, gfxobj_id id)
 {
   assert(gfxobj_find(id) == NULL);
 
   gfxobj->id = id;
 }
-
-#if 0
-void gfxobj_set_data(GfxObj *gfxobj, const char *key, void *data)
-{
-  Property *property;
-
-  for (property=gfxobj->properties; property; property=property->next) {
-    /* existent property? */
-    if (strcmp(property->key, key) == 0) {
-      /* change data */
-      if (data)
-	property->data = data;
-      /* if data == NULL, we can remove this property */
-      else {
-	jfree(property->key);
-	jfree(property);
-	jlist_delete_link(gfxobj->properties, link);
-      }
-      return;
-    }
-  }
-
-  /* new property */
-  property = jnew(Property, 1);
-  property->key = jstrdup(key);
-  property->data = data;
-
-  jlist_append(gfxobj->properties, property);
-}
-
-void *gfxobj_get_data(GfxObj *gfxobj, const char *key)
-{
-  Property *property;
-  JLink link;
-
-  for (it=gfxobj->properties; it; it=it->next) {
-    property = it->data;
-
-    if (strcmp (property->key, key) == 0)
-      return property->data;
-  }
-
-  return NULL;
-}
-#endif

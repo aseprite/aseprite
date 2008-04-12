@@ -286,10 +286,10 @@ void apply_color_curve4(Effect *effect)
     b = _rgba_getb(c);
     a = _rgba_geta(c);
 
-    if (effect->target.r) r = data.cmap[r];
-    if (effect->target.g) g = data.cmap[g];
-    if (effect->target.b) b = data.cmap[b];
-    if (effect->target.a) a = data.cmap[a];
+    if (effect->target & TARGET_RED_CHANNEL) r = data.cmap[r];
+    if (effect->target & TARGET_GREEN_CHANNEL) g = data.cmap[g];
+    if (effect->target & TARGET_BLUE_CHANNEL) b = data.cmap[b];
+    if (effect->target & TARGET_ALPHA_CHANNEL) a = data.cmap[a];
 
     *(dst_address++) = _rgba(r, g, b, a);
   }
@@ -321,8 +321,8 @@ void apply_color_curve2 (Effect *effect)
     k = _graya_getv(c);
     a = _graya_geta(c);
 
-    if (effect->target.k) k = data.cmap[k];
-    if (effect->target.a) a = data.cmap[a];
+    if (effect->target & TARGET_GRAY_CHANNEL) k = data.cmap[k];
+    if (effect->target & TARGET_ALPHA_CHANNEL) a = data.cmap[a];
 
     *(dst_address++) = _graya(k, a);
   }
@@ -352,16 +352,16 @@ void apply_color_curve1(Effect *effect)
 
     c = *(src_address++);
 
-    if (effect->target.index)
+    if (effect->target & TARGET_INDEX_CHANNEL)
       c = data.cmap[c];
     else {
       r = _rgba_getr(pal->color[c]);
       g = _rgba_getg(pal->color[c]);
       b = _rgba_getb(pal->color[c]);
 
-      if (effect->target.r) r = data.cmap[r];
-      if (effect->target.g) g = data.cmap[g];
-      if (effect->target.b) b = data.cmap[b];
+      if (effect->target & TARGET_RED_CHANNEL) r = data.cmap[r];
+      if (effect->target & TARGET_GREEN_CHANNEL) g = data.cmap[g];
+      if (effect->target & TARGET_BLUE_CHANNEL) b = data.cmap[b];
 
       c = orig_rgb_map->data[r>>3][g>>3][b>>3];
     }

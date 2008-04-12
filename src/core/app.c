@@ -539,18 +539,24 @@ void app_default_statusbar_message(void)
 
 int app_get_fg_color(Sprite *sprite)
 {
+  color_t c = colorbar_get_fg_color(colorbar);
   assert(sprite != NULL);
 
-  return get_color_for_image(sprite->imgtype,
-			     colorbar_get_fg_color(colorbar));
+  if (sprite->layer != NULL)
+    return get_color_for_layer(sprite->layer, c);
+  else
+    return get_color_for_image(sprite->imgtype, c);
 }
 
 int app_get_bg_color(Sprite *sprite)
 {
+  color_t c = colorbar_get_bg_color(colorbar);
   assert(sprite != NULL);
 
-  return get_color_for_image(sprite->imgtype,
-			     colorbar_get_bg_color(colorbar));
+  if (sprite->layer != NULL)
+    return get_color_for_layer(sprite->layer, c);
+  else
+    return get_color_for_image(sprite->imgtype, c);
 }
 
 int app_get_color_to_clear_layer(Layer *layer)
@@ -562,7 +568,7 @@ int app_get_color_to_clear_layer(Layer *layer)
   if (layer != NULL && layer_is_background(layer))
     color = colorbar_get_bg_color(colorbar);
 
-  return get_color_for_image(layer->sprite->imgtype, color);
+  return get_color_for_layer(layer, color);
 }
 
 static void tabsbar_select_callback(JWidget tabs, void *data)

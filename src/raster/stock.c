@@ -37,7 +37,6 @@ Stock *stock_new(int imgtype)
   stock->imgtype = imgtype;
   stock->nimage = 0;
   stock->image = NULL;
-  stock->ref = FALSE;
 
   stock_add_image(stock, NULL); /* image 0 is NULL */
 
@@ -45,19 +44,8 @@ Stock *stock_new(int imgtype)
 }
 
 /**
- * Creates a new stock for reference.
- */
-Stock *stock_new_ref(int imgtype)
-{
-  Stock *stock = stock_new(imgtype);
-  stock->ref = TRUE;
-  return stock;
-}
-
-/**
- * Creates a new copy of "stock"; if "stock" is a reference, the
- * copy'll be too, but if "stock" isn't, the new copy will be an
- * original stock (non-referenced) with copies of all images
+ * Creates a new copy of "stock"; the new copy will have copies of all
+ * images.
  */
 Stock *stock_new_copy(const Stock *stock)
 {
@@ -65,13 +53,9 @@ Stock *stock_new_copy(const Stock *stock)
   Image *image_copy;
   int c;
 
-  stock_copy->ref = stock->ref;
-
   for (c=stock_copy->nimage; c<stock->nimage; c++) {
     if (!stock->image[c])
       stock_add_image(stock_copy, NULL);
-    else if (stock_copy->ref)
-      stock_add_image(stock_copy, stock->image[c]);
     else {
       image_copy = image_new_copy(stock->image[c]);
       if (!image_copy) {
@@ -92,12 +76,11 @@ Stock *stock_new_copy(const Stock *stock)
  */
 void stock_free(Stock *stock)
 {
-  if (!stock->ref) {
-    int i;
-    for (i=0; i<stock->nimage; i++) {
-      if (stock->image[i])
-	image_free(stock->image[i]);
-    }
+  int i;
+
+  for (i=0; i<stock->nimage; i++) {
+    if (stock->image[i] != NULL)
+      image_free(stock->image[i]);
   }
 
   jfree(stock->image);

@@ -1,6 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-<!-- Read "LEGAL.txt" for more information. -->
 <jinete>
 <window text="Convolution Matrix" name="convolution_matrix">
   <box vertical>

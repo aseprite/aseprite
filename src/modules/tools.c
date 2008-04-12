@@ -872,27 +872,38 @@ void control_tool(JWidget widget, Tool *tool,
   }
 
   /* prepare the ToolData... */
-  x1 = MIN(cel->x, 0);
-  y1 = MIN(cel->y, 0);
-  x2 = MAX(cel->x+cel_image->w, sprite->w);
-  y2 = MAX(cel->y+cel_image->h, sprite->h);
-  
+  tool_data.sprite = sprite;
   tool_data.layer = sprite->layer;
+  tool_data.tiled = tiled_mode;
+
+  if (!tool_data.tiled) {	/* not tiled mode */
+    x1 = MIN(cel->x, 0);
+    y1 = MIN(cel->y, 0);
+    x2 = MAX(cel->x+cel_image->w, sprite->w);
+    y2 = MAX(cel->y+cel_image->h, sprite->h);
+  }
+  else {			/* tiled mode */
+    x1 = 0;
+    y1 = 0;
+    x2 = sprite->w;
+    y2 = sprite->h;
+  }
+
   tool_data.src_image = image_crop(cel_image,
 				   x1-cel->x,
 				   y1-cel->y, x2-x1, y2-y1);
   tool_data.dst_image = image_new_copy(tool_data.src_image);
+
   tool_data.mask = (sprite->mask &&
 		    sprite->mask->bitmap)? sprite->mask: NULL;
   tool_data.mask_x = tool_data.mask ? tool_data.mask->x-x1: 0;
   tool_data.mask_y = tool_data.mask ? tool_data.mask->y-y1: 0;
 
   tool_data.brush = brush;
-  tool_data.color = get_color_for_image(cel_image->imgtype, _color);
-  tool_data.other_color = get_color_for_image(cel_image->imgtype, _other_color);
+  tool_data.color = get_color_for_layer(sprite->layer, _color);
+  tool_data.other_color = get_color_for_layer(sprite->layer, _other_color);
   tool_data.left_button = left_button;
   tool_data.opacity = glass_dirty;
-  tool_data.tiled = tiled_mode;
 
   tool_data.ink_hline_proc =
     tool_data.opacity == 255 ? inks_hline[INK_OPAQUE][MID(0, cel_image->imgtype, 2)]:
@@ -1394,6 +1405,8 @@ void control_tool(JWidget widget, Tool *tool,
       }
     }
   }
+  /* if the user canceled the operation we have to restore the cel
+     position */
   else {
     cel->x = old_cel_x;
     cel->y = old_cel_y;

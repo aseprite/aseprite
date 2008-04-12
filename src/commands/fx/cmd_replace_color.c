@@ -93,6 +93,10 @@ static void cmd_replace_color_execute(const char *argument)
     console_printf(_("Error creating the effect applicator for this sprite\n"));
     goto done;
   }
+  effect_set_target(effect, TARGET_RED_CHANNEL |
+			    TARGET_GREEN_CHANNEL |
+			    TARGET_BLUE_CHANNEL |
+			    TARGET_ALPHA_CHANNEL);
 
   preview = preview_new(effect);
 
@@ -107,6 +111,7 @@ static void cmd_replace_color_execute(const char *argument)
      current_sprite->imgtype);
 
   target_button = target_button_new(current_sprite->imgtype, FALSE);
+  target_button_set_target(target_button, effect->target);
 
   jslider_set_value(slider_fuzziness,
 		    get_config_int("ReplaceColor", "Fuzziness", 0));
@@ -169,7 +174,8 @@ static bool color_change_hook(JWidget widget, void *data)
 
 static bool target_change_hook(JWidget widget, void *data)
 {
-  effect_load_target(preview_get_effect(preview));
+  effect_set_target(preview_get_effect(preview),
+		    target_button_get_target(widget));
   make_preview();
   return FALSE;
 }
@@ -190,7 +196,6 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static void make_preview(void)
 {
-  Effect *effect = preview_get_effect(preview);
   color_t from, to;
   int fuzziness;
 
@@ -198,8 +203,8 @@ static void make_preview(void)
   to = get_config_color("ReplaceColor", "Color2", color_mask());
   fuzziness = get_config_int("ReplaceColor", "Fuzziness", 0);
 
-  set_replace_colors(get_color_for_image(effect->dst->imgtype, from),
-		     get_color_for_image(effect->dst->imgtype, to),
+  set_replace_colors(get_color_for_layer(current_sprite->layer, from),
+		     get_color_for_layer(current_sprite->layer, to),
 		     MID(0, fuzziness, 255));
 
   if (jwidget_is_selected(check_preview))

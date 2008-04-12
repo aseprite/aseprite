@@ -26,4 +26,7 @@
 
 JWidget target_button_new(int imgtype, bool with_channels);
 
+int target_button_get_target(JWidget widget);
+void target_button_set_target(JWidget widget, int target);
+
 #endif /* WIDGETS_TARGET_H */

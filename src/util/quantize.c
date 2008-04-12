@@ -21,6 +21,7 @@
 #include <allegro/color.h>
 
 #include "console/console.h"
+#include "effect/effect.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -28,11 +29,12 @@
 #include "raster/stock.h"
 #include "util/quantize.h"
 
-static int quantize_bitmaps1(struct Stock *stock, struct RGB *pal, int *bmp_i, int fill_other);
+/* static int quantize_bitmaps1(struct Stock *stock, struct RGB *pal, int *bmp_i, int fill_other); */
 /* static int quantize_bitmaps2(struct Stock *stock, struct Palette *pal); */
 
 void sprite_quantize(struct Sprite *sprite)
 {
+#if 0				/* TODO next release */
   Palette *palette = palette_new(0, MAX_PALETTE_COLORS);
 
   sprite_quantize_ex(sprite, palette);
@@ -40,15 +42,18 @@ void sprite_quantize(struct Sprite *sprite)
   /* just one palette */
   sprite_reset_palettes(sprite);
   sprite_set_palette(sprite, palette, FALSE);
+#endif
 }
 
 void sprite_quantize_ex(Sprite *sprite, Palette *palette)
 {
+#if 0				/* TODO */
   Stock *stock;
   Image *flat_image;
   int c;
 
-  stock = sprite_get_images(sprite, TARGET_ALL, FALSE, NULL, NULL);
+  stock = sprite_get_images(sprite, TARGET_ALL_LAYERS |
+				    TARGET_ALL_FRAMES, FALSE, NULL, NULL);
   if (stock) {
     /* add a flat image with the current sprite's frame rendered */
     flat_image = image_new(sprite->imgtype, sprite->w, sprite->h);
@@ -78,7 +83,10 @@ void sprite_quantize_ex(Sprite *sprite, Palette *palette)
     stock_free(stock);
     image_free(flat_image);
   }
+#endif
 }
+
+#if 0				/* TODO next release */
 
 /* quantize.c
  * Copyright (C) 2000-2002 by Ben "entheh" Davis
@@ -371,3 +379,4 @@ static int quantize_bitmaps1(Stock *stock, RGB *pal, int *bmp_i, int fill_other)
  return n_colours;
 }
 
+#endif

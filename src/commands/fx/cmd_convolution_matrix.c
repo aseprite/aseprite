@@ -54,8 +54,8 @@
 
 static JWidget check_preview, preview;
 static JWidget check_tiled;
+static JWidget target_button;
 
-static JWidget listbox_generate_convmatg(void);
 static void listbox_fill_convmatg(JWidget listbox);
 static void listbox_select_current_convmatr(JWidget listbox);
 
@@ -77,7 +77,7 @@ static void cmd_convolution_matrix_execute(const char *argument)
 {
   JWidget window, button_ok;
   JWidget view_convmatr, list_convmatr;
-  JWidget box_target, target_button;
+  JWidget box_target;
   JWidget reload, generate;
   Sprite *sprite = current_sprite;
   Image *image;
@@ -111,9 +111,12 @@ static void cmd_convolution_matrix_execute(const char *argument)
   }
 
   preview = preview_new(effect);
+  
+  list_convmatr = jlistbox_new();
+  listbox_fill_convmatg(list_convmatr);
 
-  list_convmatr = listbox_generate_convmatg();
   target_button = target_button_new(sprite->imgtype, TRUE);
+  target_button_set_target(target_button, effect->target);
 
   if (get_config_bool("ConvolutionMatrix", "Preview", TRUE))
     jwidget_select(check_preview);
@@ -127,6 +130,7 @@ static void cmd_convolution_matrix_execute(const char *argument)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
+  HOOK(list_convmatr, JI_SIGNAL_LISTBOX_CHANGE, list_change_hook, 0);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
   HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
@@ -162,14 +166,6 @@ static void cmd_convolution_matrix_execute(const char *argument)
   save_window_pos(window, "ConvolutionMatrix");
 
   jwidget_free(window);
-}
-
-static JWidget listbox_generate_convmatg(void)
-{
-  JWidget listbox = jlistbox_new();
-  listbox_fill_convmatg(listbox);
-  HOOK(listbox, JI_SIGNAL_LISTBOX_CHANGE, list_change_hook, 0);
-  return listbox;
 }
 
 static void listbox_fill_convmatg(JWidget listbox)
@@ -237,6 +233,7 @@ static bool reload_select_hook(JWidget widget, void *data)
 
 static bool generate_select_hook(JWidget widget, void *data)
 {
+#if 0
   JWidget window;
   JWidget view_x;
   JWidget view_y;
@@ -297,7 +294,7 @@ static bool generate_select_hook(JWidget widget, void *data)
 
   curve_free(curve_x);
   curve_free(curve_y);
-
+#endif
   return TRUE;			/* do not close */
 }
 
@@ -305,17 +302,23 @@ static bool list_change_hook(JWidget widget, void *data)
 {
   JWidget selected = jlistbox_get_selected_child(widget);
   ConvMatr *convmatr = selected->user_data[0];
+  int new_target = convmatr->default_target;
 
   set_config_string("ConvolutionMatrix", "Selected", convmatr->name);
 
   set_convmatr(convmatr);
+
+  target_button_set_target(target_button, new_target);
+  effect_set_target(preview_get_effect(preview), new_target);
+
   make_preview();
   return FALSE;
 }
 
 static bool target_change_hook(JWidget widget, void *data)
 {
-  effect_load_target(preview_get_effect(preview));
+  effect_set_target(preview_get_effect(preview),
+		    target_button_get_target(widget));
   make_preview();
   return FALSE;
 }
@@ -337,7 +340,7 @@ static bool tiled_change_hook(JWidget widget, void *data)
 
 static void make_preview(void)
 {
-  if (jwidget_is_selected (check_preview))
+  if (jwidget_is_selected(check_preview))
     preview_restart(preview);
 }
 

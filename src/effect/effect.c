@@ -37,7 +37,9 @@
 #include "effect/replcol.h"
 #include "modules/editors.h"
 #include "modules/sprites.h"
+#include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
@@ -67,7 +69,8 @@ static EffectData effects_data[] = {
 };
 
 static EffectData *get_effect_data(const char *name);
-static int effect_init(Effect *effect, Image *image, int offset_x, int offset_y);
+static int effect_init(Effect *effect, Layer *layer, Image *image, int offset_x, int offset_y);
+static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y);
 static int effect_update_mask(Effect *effect, Mask *mask, Image *image);
 
 int init_module_effect(void)
@@ -117,15 +120,15 @@ Effect *effect_new(Sprite *sprite, const char *name)
   effect->mask_address = NULL;
   effect->effect_data = effect_data;
   effect->apply = apply;
+  effect->_target = TARGET_ALL_CHANNELS;
+  effect->target = TARGET_ALL_CHANNELS;
   effect->progress_data = NULL;
   effect->progress = NULL;
   effect->is_cancelled = NULL;
 
-  effect_load_target(effect);
-
   image = GetImage2(sprite, &offset_x, &offset_y, NULL);
   if (image) {
-    if (!effect_init(effect, image, offset_x, offset_y)) {
+    if (!effect_init(effect, sprite->layer, image, offset_x, offset_y)) {
       effect_free(effect);
       return NULL;
     }
@@ -145,39 +148,15 @@ void effect_free(Effect *effect)
   jfree(effect);
 }
 
-void effect_load_target(Effect *effect)
+void effect_set_target(Effect *effect, int target)
 {
-  effect->target.r = get_config_bool("Target", "Red", TRUE);
-  effect->target.g = get_config_bool("Target", "Green", TRUE);
-  effect->target.b = get_config_bool("Target", "Blue", TRUE);
-  effect->target.k = get_config_bool("Target", "Gray", TRUE);
-  effect->target.a = get_config_bool("Target", "Alpha", TRUE);
-  effect->target.index = get_config_bool("Target", "Index", FALSE);
-}
+  effect->_target = target;
+  effect->target = target;
 
-void effect_set_target(Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index)
-{
-  effect->target.r = r;
-  effect->target.g = g;
-  effect->target.b = b;
-  effect->target.k = k;
-  effect->target.a = a;
-  effect->target.index = index;
-}
-
-void effect_set_target_rgb(Effect *effect, bool r, bool g, bool b, bool a)
-{
-  effect_set_target(effect, r, g, b, FALSE, a, FALSE);
-}
-
-void effect_set_target_grayscale(Effect *effect, bool k, bool a)
-{
-  effect_set_target(effect, FALSE, FALSE, FALSE, k, a, FALSE);
-}
-
-void effect_set_target_indexed(Effect *effect, bool r, bool g, bool b, bool index)
-{
-  effect_set_target(effect, r, g, b, FALSE, FALSE, index);
+  /* the alpha channel of the background layer can't be modified */
+  if (effect->sprite->layer &&
+      layer_is_background(effect->sprite->layer))
+    effect->target &= ~TARGET_ALPHA_CHANNEL;
 }
 
 void effect_begin(Effect *effect)
@@ -330,61 +309,52 @@ void effect_flush(Effect *effect)
   }
 }
 
-void effect_apply_to_image(Effect *effect, Image *image, int x, int y)
-{
-  if (effect_init(effect, image, x, y))
-    effect_apply(effect);
-}
-
 void effect_apply_to_target(Effect *effect)
 {
-  int target = get_config_int("Target", "Images", 0);
-  int n, n2, images = 0;
-  Stock *stock;
-  int *x, *y;
+  ImageRef *p, *next, *images;
   bool cancelled = FALSE;
+  int nimages;
 
-  stock = sprite_get_images(effect->sprite, target, TRUE, &x, &y);
-  if (!stock)
+  images = sprite_get_images(effect->sprite, effect->target, TRUE);
+  if (images == NULL)
     return;
 
-  for (n=0; n<stock->nimage; n++)
-    if (stock->image[n])
-      images++;
+  nimages = 0;
+  for (p=images; p; p=p->next)
+    nimages++;
 
-  if (images > 0) {
-    /* open undo group of operations */
-    if (images > 1) {
-      if (undo_is_enabled(effect->sprite->undo))
-	undo_open(effect->sprite->undo);
-    }
+  /* open undo group of operations */
+  if (nimages > 1) {
+    if (undo_is_enabled(effect->sprite->undo))
+      undo_open(effect->sprite->undo);
+  }
+  
+  effect->progress_base = 0.0f;
+  effect->progress_width = 1.0f / nimages;
 
-    effect->progress_base = 0.0f;
-    effect->progress_width = 1.0f / images;
+  /* for each target image */
+  for (p=images; p && !cancelled; p=p->next) {
+    effect_apply_to_image(effect, p, p->cel->x, p->cel->y);
 
-    for (n=n2=0; n<stock->nimage && !cancelled; n++) {
-      if (!stock->image[n])
-	continue;
+    /* there is a 'is_cancelled' hook? */
+    if (effect->is_cancelled != NULL)
+      cancelled = (effect->is_cancelled)(effect->progress_data);
 
-      effect_apply_to_image(effect, stock->image[n], x[n], y[n]);
-
-      if (effect->is_cancelled != NULL)
-	cancelled = (effect->is_cancelled)(effect->progress_data);
-
-      effect->progress_base += effect->progress_width;
-    }
-
-    /* close undo group of operations */
-    if (images > 1) {
-      if (undo_is_enabled(effect->sprite->undo))
-	undo_close(effect->sprite->undo);
-    }
-
-    jfree(x);
-    jfree(y);
+    /* progress */
+    effect->progress_base += effect->progress_width;
   }
 
-  stock_free(stock);
+  /* close undo group of operations */
+  if (nimages > 1) {
+    if (undo_is_enabled(effect->sprite->undo))
+      undo_close(effect->sprite->undo);
+  }
+
+  /* free all ImageRefs */
+  for (p=images; p; p=next) {
+    next = p->next;
+    jfree(p);
+  }
 }
 
 static EffectData *get_effect_data(const char *name)
@@ -392,19 +362,20 @@ static EffectData *get_effect_data(const char *name)
   int c;
 
   for (c=0; effects_data[c].name; c++) {
-    if (strcmp (effects_data[c].name, name) == 0)
+    if (strcmp(effects_data[c].name, name) == 0)
       return effects_data+c;
   }
 
   return NULL;
 }
 
-static int effect_init(Effect *effect, Image *image, int offset_x, int offset_y)
+static int effect_init(Effect *effect, Layer *layer, Image *image,
+		       int offset_x, int offset_y)
 {
   effect->offset_x = offset_x;
   effect->offset_y = offset_y;
 
-  if (!effect_update_mask (effect, effect->sprite->mask, image))
+  if (!effect_update_mask(effect, effect->sprite->mask, image))
     return FALSE;
 
   if (effect->preview_mask) {
@@ -424,7 +395,19 @@ static int effect_init(Effect *effect, Image *image, int offset_x, int offset_y)
   effect->preview_mask = NULL;
   effect->mask_address = NULL;
 
+  effect->target = effect->_target;
+
+  /* the alpha channel of the background layer can't be modified */
+  if (layer_is_background(layer))
+    effect->target &= ~TARGET_ALPHA_CHANNEL;
+  
   return TRUE;
+}
+
+static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y)
+{
+  if (effect_init(effect, p->layer, p->image, x, y))
+    effect_apply(effect);
 }
 
 static int effect_update_mask(Effect *effect, Mask *mask, Image *image)

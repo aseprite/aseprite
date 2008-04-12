@@ -65,7 +65,10 @@ Image *render_sprite(Sprite *sprite,
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   Layer *background = sprite_get_background_layer(sprite);
-  bool need_grid = (background != NULL ? !layer_is_readable(background): TRUE);
+  /* TODO restore this, it's temporary to test that the background
+     layer never has a color with Alpha < 255 */
+/*   bool need_grid = (background != NULL ? !layer_is_readable(background): TRUE); */
+  bool need_grid = TRUE;
   int depth;
   Image *image;
 

@@ -43,7 +43,7 @@
 static Curve *the_curve = NULL;
 static JWidget check_preview, preview;
 
-static bool hooked_msg_proc(JWidget widget, JMessage msg);
+static bool window_msg_proc(JWidget widget, JMessage msg);
 static void make_preview(void);
 
 static bool cmd_color_curve_enabled(const char *argument)
@@ -92,6 +92,8 @@ static void cmd_color_curve_execute(const char *argument)
     jwidget_free(window);
     return;
   }
+  effect_set_target(effect, TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL |
+			    TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
 
   preview = preview_new(effect);
 
@@ -99,6 +101,7 @@ static void cmd_color_curve_execute(const char *argument)
 
   curve_editor = curve_editor_new(the_curve, 0, 0, 255, 255);
   target_button = target_button_new(sprite->imgtype, TRUE);
+  target_button_set_target(target_button, effect->target);
 
   if (get_config_bool("ColorCurve", "Preview", TRUE))
     jwidget_select(check_preview);
@@ -109,8 +112,8 @@ static void cmd_color_curve_execute(const char *argument)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
-  jwidget_add_hook(window, JI_WIDGET, hooked_msg_proc, NULL);
-
+  jwidget_add_hook(window, -1, window_msg_proc, NULL);
+  
   /* default position */
   jwindow_remap(window);
   jwindow_center(window);
@@ -139,7 +142,7 @@ static void cmd_color_curve_execute(const char *argument)
   jwidget_free(window);
 }
 
-static bool hooked_msg_proc(JWidget widget, JMessage msg)
+static bool window_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     switch (msg->signal.num) {
@@ -150,7 +153,8 @@ static bool hooked_msg_proc(JWidget widget, JMessage msg)
 	break;
 
       case SIGNAL_TARGET_BUTTON_CHANGE:
-	effect_load_target(preview_get_effect(preview));
+	effect_set_target(preview_get_effect(preview),
+			  target_button_get_target(msg->signal.from));
 	make_preview();
 	break;
 

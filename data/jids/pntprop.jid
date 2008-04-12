@@ -1,6 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
-<!-- Read "LEGAL.txt" for more information. -->
 <jinete>
 <window text="Point Properties" name="point_properties">
   <box vertical>

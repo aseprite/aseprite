@@ -40,7 +40,6 @@ struct Layer
   GfxObj gfxobj;
   char name[LAYER_NAME_SIZE];	/* layer name */
   struct Sprite *sprite;	/* owner of the layer */
-/*   GfxObj *parent;		/\* parent object *\/ */
   Layer *parent_layer;		/* parent layer */
   unsigned short flags;
 

@@ -37,6 +37,9 @@ typedef struct Preview
 
 static bool preview_msg_proc(JWidget widget, JMessage msg);
 
+/**
+ * Invisible widget to control a effect-preview.
+ */
 JWidget preview_new(Effect *effect)
 {
   JWidget widget = jwidget_new(preview_type());

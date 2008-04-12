@@ -92,10 +92,14 @@ static void cmd_despeckle_execute(const char *argument)
     jwidget_free(window);
     return;
   }
+  effect_set_target(effect, TARGET_RED_CHANNEL |
+			    TARGET_GREEN_CHANNEL |
+			    TARGET_BLUE_CHANNEL);
 
   preview = preview_new(effect);
 
   target_button = target_button_new(current_sprite->imgtype, TRUE);
+  target_button_set_target(target_button, effect->target);
 
   sprintf(buf, "%d", get_config_int("Median", "Width", 3));
   jwidget_set_text(entry_width, buf);
@@ -116,7 +120,7 @@ static void cmd_despeckle_execute(const char *argument)
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
   HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
-
+  
   /* default position */
   jwindow_remap(window);
   jwindow_center(window);
@@ -163,7 +167,8 @@ static bool height_change_hook(JWidget widget, void *data)
 
 static bool target_change_hook(JWidget widget, void *data)
 {
-  effect_load_target(preview_get_effect(preview));
+  effect_set_target(preview_get_effect(preview),
+		    target_button_get_target(widget));
   make_preview();
   return FALSE;
 }

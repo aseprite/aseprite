@@ -99,22 +99,22 @@ void apply_median4(Effect *effect)
 
     color = src->method->getpixel(src, x, y);
 
-    if (effect->target.r)
+    if (effect->target & TARGET_RED_CHANNEL)
       r = data.channel[0][data.ncolors/2];
     else
       r = _rgba_getr(color);
 
-    if (effect->target.g)
+    if (effect->target & TARGET_GREEN_CHANNEL)
       g = data.channel[1][data.ncolors/2];
     else
       g = _rgba_getg(color);
 
-    if (effect->target.b)
+    if (effect->target & TARGET_BLUE_CHANNEL)
       b = data.channel[2][data.ncolors/2];
     else
       b = _rgba_getb(color);
 
-    if (effect->target.a)
+    if (effect->target & TARGET_ALPHA_CHANNEL)
       a = data.channel[3][data.ncolors/2];
     else
       a = _rgba_geta(color);
@@ -165,12 +165,12 @@ void apply_median2(Effect *effect)
 
     color = src->method->getpixel(src, x, y);
 
-    if (effect->target.k)
+    if (effect->target & TARGET_GRAY_CHANNEL)
       k = data.channel[0][data.ncolors/2];
     else
       k = _graya_getv(color);
 
-    if (effect->target.a)
+    if (effect->target & TARGET_ALPHA_CHANNEL)
       a = data.channel[1][data.ncolors/2];
     else
       a = _graya_geta(color);
@@ -212,7 +212,7 @@ void apply_median1(Effect *effect)
       (ase_uint8, src, src_address,
        data.w, data.h, data.w/2, data.h/2, data.tiled,
        color = *src_address;
-       if (effect->target.index) {
+       if (effect->target & TARGET_INDEX_CHANNEL) {
 	 data.channel[0][c] = color;
        }
        else {
@@ -223,30 +223,30 @@ void apply_median1(Effect *effect)
        c++;
        );
 
-    if (effect->target.index)
+    if (effect->target & TARGET_INDEX_CHANNEL)
       qsort(data.channel[0], data.ncolors, sizeof(unsigned char), cmp_channel);
     else {
       for (c=0; c<3; c++)
 	qsort(data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
     }
 
-    if (effect->target.index) {
+    if (effect->target & TARGET_INDEX_CHANNEL) {
       *(dst_address++) = data.channel[0][data.ncolors/2];
     }
     else {
       color = src->method->getpixel(src, x, y);
 
-      if (effect->target.r)
+      if (effect->target & TARGET_RED_CHANNEL)
 	r = data.channel[0][data.ncolors/2];
       else
 	r = _rgba_getr(pal->color[color]);
 
-      if (effect->target.g)
+      if (effect->target & TARGET_GREEN_CHANNEL)
 	g = data.channel[1][data.ncolors/2];
       else
 	g = _rgba_getg(pal->color[color]);
 
-      if (effect->target.b)
+      if (effect->target & TARGET_BLUE_CHANNEL)
 	b = data.channel[2][data.ncolors/2];
       else
 	b = _rgba_getb(pal->color[color]);

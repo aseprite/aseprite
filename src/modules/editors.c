@@ -112,10 +112,16 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
 {
   int cx1, cy1, cx2, cy2;	/* cel rectangle */
   int lx1, ly1, lx2, ly2;	/* limited rectangle to the cel rectangle */
+#ifdef TILED_IN_LAYER
   Image *image = GetImage2(sprite, &cx1, &cy1, NULL);
-
   cx2 = cx1+image->w-1;
   cy2 = cy1+image->h-1;
+#else
+  cx1 = 0;
+  cy1 = 0;
+  cx2 = cx1+sprite->w-1;
+  cy2 = cy1+sprite->h-1;
+#endif
 
   lx1 = MAX(x1, cx1);
   ly1 = MAX(y1, cy1);
@@ -141,16 +147,28 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
 
   /* right */
   if (x2 >= cx2+1 && lx1 > cx1) {
+#ifdef TILED_IN_LAYER
     editors_draw_sprite_tiled(sprite,
 			      cx1, y1,
 			      MIN(lx1-1, x2-image->w), y2);
+#else
+    editors_draw_sprite_tiled(sprite,
+			      cx1, y1,
+			      MIN(lx1-1, x2-sprite->w), y2);
+#endif
   }
 
   /* bottom */
   if (y2 >= cy2+1 && ly1 > cy1) {
+#if TILED_IN_LAYER
     editors_draw_sprite_tiled(sprite,
 			      x1, cy1,
 			      x2, MIN(ly1-1, y2-image->h));
+#else
+    editors_draw_sprite_tiled(sprite,
+			      x1, cy1,
+			      x2, MIN(ly1-1, y2-sprite->h));
+#endif
   }
 }
 

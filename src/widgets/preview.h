@@ -23,10 +23,10 @@
 
 struct Effect;
 
-JWidget preview_new (struct Effect *effect);
-int preview_type (void);
+JWidget preview_new(struct Effect *effect);
+int preview_type(void);
 
-void preview_restart (JWidget preview);
-struct Effect *preview_get_effect (JWidget preview);
+void preview_restart(JWidget preview);
+struct Effect *preview_get_effect(JWidget preview);
 
 #endif /* WIDGETS_PREVIEW_H */

@@ -136,13 +136,6 @@ void ToolTrace(const char *string, const char *_color)
 /* Reset/Restore Configuration */
 
 static bool cfg_options_move_mask;
-static bool cfg_target_red;
-static bool cfg_target_green;
-static bool cfg_target_blue;
-static bool cfg_target_gray;
-static bool cfg_target_alpha;
-static bool cfg_target_index;
-static int cfg_target_images;
 static int cfg_tools_brush_type;
 static int cfg_tools_brush_size;
 static int cfg_tools_brush_angle;
@@ -167,23 +160,6 @@ void ResetConfig(void)
   cfg_options_move_mask = get_config_bool("QuickMovement", "UseMask", TRUE);
 
   set_config_bool("QuickMovement", "UseMask", TRUE);
-
-  /* targets */
-  cfg_target_red = get_config_bool("Target", "Red", TRUE);
-  cfg_target_green = get_config_bool("Target", "Green", TRUE);
-  cfg_target_blue = get_config_bool("Target", "Blue", TRUE);
-  cfg_target_gray = get_config_bool("Target", "Gray", TRUE);
-  cfg_target_alpha = get_config_bool("Target", "Alpha", TRUE);
-  cfg_target_index = get_config_bool("Target", "Index", TRUE);
-  cfg_target_images = get_config_int("Target", "Images", 0);
-
-  set_config_bool("Target", "Red", TRUE);
-  set_config_bool("Target", "Green", TRUE);
-  set_config_bool("Target", "Blue", TRUE);
-  set_config_bool("Target", "Gray", TRUE);
-  set_config_bool("Target", "Alpha", TRUE);
-  set_config_bool("Target", "Index", TRUE);
-  set_config_int("Target", "Images", 0);
 
   /* brush */
   cfg_tools_brush_type = get_brush_type();
@@ -233,15 +209,6 @@ void RestoreConfig(void)
 {
   /* movement */
   set_config_bool("QuickMovement", "UseMask", cfg_options_move_mask);
-
-  /* targets */
-  set_config_bool("Target", "Red", cfg_target_red);
-  set_config_bool("Target", "Green", cfg_target_green);
-  set_config_bool("Target", "Blue", cfg_target_blue);
-  set_config_bool("Target", "Gray", cfg_target_gray);
-  set_config_bool("Target", "Alpha", cfg_target_alpha);
-  set_config_bool("Target", "Index", cfg_target_index);
-  set_config_int("Target", "Images", cfg_target_images);
 
   /* brush */
   set_brush_type(cfg_tools_brush_type);

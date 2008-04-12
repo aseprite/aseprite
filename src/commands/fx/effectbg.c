@@ -45,8 +45,8 @@ typedef struct ThreadData
 				   and 'cancelled' fields in different
 				   threads */
   float pos;			/* current progress position */
-  bool done;			/* was the effect completelly applied? */
-  bool cancelled;		/* was the effect cancelled by the user?  */
+  bool done : 1;		/* was the effect completelly applied? */
+  bool cancelled : 1;		/* was the effect cancelled by the user?  */
   Monitor *monitor;		/* monitor to update the progress-bar */
   Progress *progress;		/* the progress-bar */
   JThread thread;		/* thread to apply the effect in background */
@@ -143,7 +143,8 @@ static void monitor_free(void *_data)
 }
 
 /**
- * Applies the effect to the specified targets in the effect structure.
+ * Applies the effect in a background thread meanwhile the progress
+ * bar is shown to the user.
  * 
  * [main thread]
  */

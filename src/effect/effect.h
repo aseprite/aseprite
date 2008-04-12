@@ -26,6 +26,22 @@ struct Image;
 struct Mask;
 struct Sprite;
 
+#define TARGET_RED_CHANNEL		1
+#define TARGET_GREEN_CHANNEL		2
+#define TARGET_BLUE_CHANNEL		4
+#define TARGET_ALPHA_CHANNEL		8
+#define TARGET_GRAY_CHANNEL		16
+#define TARGET_INDEX_CHANNEL		32
+#define TARGET_ALL_FRAMES		64
+#define TARGET_ALL_LAYERS		128
+
+#define TARGET_ALL_CHANNELS		\
+  (TARGET_RED_CHANNEL		|	\
+   TARGET_GREEN_CHANNEL		|	\
+   TARGET_BLUE_CHANNEL		|	\
+   TARGET_ALPHA_CHANNEL		|	\
+   TARGET_GRAY_CHANNEL		)
+
 int init_module_effect(void);
 void exit_module_effect(void);
 
@@ -44,12 +60,8 @@ typedef struct Effect
   div_t d;
   struct EffectData *effect_data;
   void (*apply)(struct Effect *effect);
-  struct {
-    int r:1, g:1, b:1;
-    int k:1;
-    int a:1;
-    int index:1;
-  } target;
+  int _target;			/* original targets */
+  int target;			/* filtered targets */
   /* hooks */
   float progress_base, progress_width;
   void *progress_data;
@@ -60,11 +72,7 @@ typedef struct Effect
 Effect *effect_new(struct Sprite *sprite, const char *name);
 void effect_free(Effect *effect);
 
-void effect_load_target(Effect *effect);
-void effect_set_target(Effect *effect, bool r, bool g, bool b, bool k, bool a, bool index);
-void effect_set_target_rgb(Effect *effect, bool r, bool g, bool b, bool a);
-void effect_set_target_grayscale(Effect *effect, bool k, bool a);
-void effect_set_target_indexed(Effect *effect, bool r, bool g, bool b, bool index);
+void effect_set_target(Effect *effect, int target);
 
 void effect_begin(Effect *effect);
 void effect_begin_for_preview(Effect *effect);
@@ -73,7 +81,6 @@ bool effect_apply_step(Effect *effect);
 void effect_apply(Effect *effect);
 void effect_flush(Effect *effect);
 
-void effect_apply_to_image(Effect *effect, struct Image *image, int x, int y);
 void effect_apply_to_target(Effect *effect);
 
 /**

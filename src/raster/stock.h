@@ -32,11 +32,9 @@ struct Stock
 			   must be of this type) */
   int nimage;		/* how many images have this stock */
   struct Image **image;	/* the images-array where the images are */
-  bool ref;		/* this is a reference (non-original) stock? */
 };
 
 Stock *stock_new(int imgtype);
-Stock *stock_new_ref(int imgtype);
 Stock *stock_new_copy(const Stock *stock);
 void stock_free(Stock *stock);
 
