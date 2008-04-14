@@ -1,3 +1,7 @@
+2008-04-14  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/modules/tools.c: Added the Jumble tool & ink.
+
 2008-04-13  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/raster/undo.c (read_raw_cel, write_raw_cel): Fixed to

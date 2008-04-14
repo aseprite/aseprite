@@ -42,15 +42,8 @@ enum {
   TOOL_RECTANGLE,
   TOOL_ELLIPSE,
   TOOL_BLUR,
+  TOOL_GUMBLE,
   MAX_TOOLS
-};
-
-enum {
-  INK_OPAQUE,
-  INK_GLASS,
-  INK_SOFTEN,
-  INK_REPLACE,
-  MAX_INKS
 };
 
 typedef struct Tool Tool;
@@ -82,6 +75,10 @@ struct ToolData
   AlgoHLine ink_hline_proc;
   int opacity;
   bool tiled;
+  struct {
+    int x;
+    int y;
+  } vector;			/* vector of direction */
 };
 
 extern Tool *current_tool;

@@ -23,6 +23,7 @@
 #include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
+#include "modules/gui.h"
 
 static bool advanced_mode = FALSE;
 
@@ -51,22 +52,31 @@ static void cmd_advanced_mode_execute(const char *argument)
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", TRUE)) {
     Command *cmd_advanced_mode = command_get_by_name(CMD_ADVANCED_MODE);
+    JWidget window, warning_label, donot_show;
     char warning[1024];
     char key[1024];
     char buf[1024];
 
-    strcpy(warning, _("You are going to enter in \"Advanced Mode\"."
-		      "<<You can back pressing the \"%s\" key."));
-    jaccel_to_string(cmd_advanced_mode->accel, key);
+    /* load the window widget */
+    window = load_widget("advanced.jid", "advanced_mode_warning");
+    if (!window)
+      return;
 
+    warning_label = jwidget_find_name(window, "warning_label");
+    donot_show = jwidget_find_name(window, "donot_show");
+
+    strcpy(warning, _("You can back pressing the \"%s\" key."));
+    jaccel_to_string(cmd_advanced_mode->accel, key);
     sprintf(buf, warning, key);
+
+    jwidget_set_text(warning_label, buf);
+
+    jwindow_open_fg(window);
     
-    if (jalert("%s<<%s||%s||%s",
-	       _("Warning - Important"),
-	       buf,
-	       _("&Don't show this again"), _("&Continue")) == 1) {
-      set_config_bool("AdvancedMode", "Warning", FALSE);
-    }
+    set_config_bool("AdvancedMode", "Warning",
+		    !jwidget_is_selected(donot_show));
+
+    jwidget_free(window);
   }
 }
 

@@ -83,6 +83,7 @@
 	    <key tool="rectangle" shortcut="U" />
 	    <key tool="ellipse" shortcut="U" />
 	    <key tool="blur" shortcut="R" />
+	    <key tool="jumble" shortcut="J" />
 	</tools>
     </keyboard>
 

@@ -342,6 +342,42 @@ int _rgba_blend_FORPATH(int back, int front, int opacity)
   return _rgba(F_r, F_g, F_b, F_a);
 }
 
+int _rgba_blend_MERGE(int back, int front, int opacity)
+{
+  int B_r, B_g, B_b, B_a;
+  int F_r, F_g, F_b, F_a;
+  int D_r, D_g, D_b, D_a;
+    
+  B_r = _rgba_getr(back);
+  B_g = _rgba_getg(back);
+  B_b = _rgba_getb(back);
+  B_a = _rgba_geta(back);
+
+  F_r = _rgba_getr(front);
+  F_g = _rgba_getg(front);
+  F_b = _rgba_getb(front);
+  F_a = _rgba_geta(front);
+
+  if (B_a == 0) {
+    D_r = F_r;
+    D_g = F_g;
+    D_b = F_b;
+  }
+  else if (F_a == 0) {
+    D_r = B_r;
+    D_g = B_g;
+    D_b = B_b;
+  }
+  else {
+    D_r = B_r + (F_r-B_r) * opacity / 255;
+    D_g = B_g + (F_g-B_g) * opacity / 255;
+    D_b = B_b + (F_b-B_b) * opacity / 255;
+  }
+  D_a = B_a + (F_a-B_a) * opacity / 255;
+  
+  return _rgba(D_r, D_g, D_b, D_a);
+}
+
 #undef BLEND_BEGIN
 #undef BLEND_END
 #undef BLEND_OPACITY
@@ -407,6 +443,32 @@ int _graya_blend_FORPATH(int back, int front, int opacity)
   F_a = INT_MULT(F_a, opacity, t);
 
   return _graya(F_k, F_a);
+}
+
+int _graya_blend_MERGE(int back, int front, int opacity)
+{
+  int B_k, B_a;
+  int F_k, F_a;
+  int D_k, D_a;
+    
+  B_k = _graya_getv(back);
+  B_a = _graya_geta(back);
+
+  F_k = _graya_getv(front);
+  F_a = _graya_geta(front);
+
+  if (B_a == 0) {
+    D_k = F_k;
+  }
+  else if (F_a == 0) {
+    D_k = B_k;
+  }
+  else {
+    D_k = B_k + (F_k-B_k) * opacity / 255;
+  }
+  D_a = B_a + (F_a-B_a) * opacity / 255;
+  
+  return _graya(D_k, D_a);
 }
 
 /**********************************************************************/

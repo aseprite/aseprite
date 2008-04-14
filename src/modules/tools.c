@@ -87,6 +87,15 @@ static int _cursor_mask;
 /* INKS                                                    */
 /***********************************************************/
 
+enum {
+  INK_OPAQUE,
+  INK_GLASS,
+  INK_SOFTEN,
+  INK_REPLACE,
+  INK_JUMBLE,
+  MAX_INKS
+};
+
 static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data);
 static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data);
 static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data);
@@ -103,6 +112,10 @@ static void ink_hline4_replace(int x1, int y, int x2, ToolData *data);
 static void ink_hline2_replace(int x1, int y, int x2, ToolData *data);
 static void ink_hline1_replace(int x1, int y, int x2, ToolData *data);
 
+static void ink_hline4_jumble(int x1, int y, int x2, ToolData *data);
+static void ink_hline2_jumble(int x1, int y, int x2, ToolData *data);
+static void ink_hline1_jumble(int x1, int y, int x2, ToolData *data);
+
 static AlgoHLine inks_hline[][3] =
 {
 #define DEF_INK(name)			\
@@ -113,7 +126,8 @@ static AlgoHLine inks_hline[][3] =
   DEF_INK(opaque),
   DEF_INK(glass),
   DEF_INK(soften),
-  DEF_INK(replace)
+  DEF_INK(replace),
+  DEF_INK(jumble)
 };
 
 /***********************************************************/
@@ -754,6 +768,35 @@ static Tool tool_blur =
 };
 
 /***********************************************************/
+/* JUMBLE                                                  */
+/***********************************************************/
+
+static void tool_jumble_preprocess_data(ToolData *data)
+{
+  data->ink_hline_proc =
+    inks_hline[INK_JUMBLE][MID(0, data->dst_image->imgtype, 2)];
+}
+
+static void tool_jumble_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
+{
+  algo_line(x1, y1, x2, y2, data,
+	    (data->brush->size == 1) ?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
+}
+
+static Tool tool_jumble =
+{
+  "jumble",
+  "Jumble Tool",
+  "Jumble Tool",
+  TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
+  tool_jumble_preprocess_data,
+  tool_jumble_draw_trace,
+  NULL
+};
+
+/***********************************************************/
 /* TOOL'S LIST                                             */
 /***********************************************************/
 
@@ -769,6 +812,7 @@ Tool *tools_list[] =
   &tool_rectangle,
   &tool_ellipse,
   &tool_blur,
+  &tool_jumble,
   NULL
 };
 
@@ -904,6 +948,8 @@ void control_tool(JWidget widget, Tool *tool,
   tool_data.other_color = get_color_for_layer(sprite->layer, _other_color);
   tool_data.left_button = left_button;
   tool_data.opacity = glass_dirty;
+  tool_data.vector.x = 0;
+  tool_data.vector.y = 0;
 
   tool_data.ink_hline_proc =
     tool_data.opacity == 255 ? inks_hline[INK_OPAQUE][MID(0, cel_image->imgtype, 2)]:
@@ -1007,6 +1053,9 @@ void control_tool(JWidget widget, Tool *tool,
 	y1 += offset_y;
 	x2 += offset_x;
 	y2 += offset_y;
+
+	tool_data.vector.x = x2 - x1;
+	tool_data.vector.y = y2 - y1;
       }
       /* common behavior for pencil like tools */
       else if (tool->flags & TOOL_OLD2LAST) {
@@ -1025,6 +1074,9 @@ void control_tool(JWidget widget, Tool *tool,
 	y1 += offset_y;
 	x2 += offset_x;
 	y2 += offset_y;
+
+	tool_data.vector.x = x2 - x1;
+	tool_data.vector.y = y2 - y1;
       }
       /* special behavior for brush */
       else if (tool->flags & TOOL_FOURCHAIN) {
@@ -1902,3 +1954,92 @@ static void ink_hline1_replace(int x1, int y, int x2, ToolData *data)
 	 [_rgba_getb(c)>>3];
      });
 }
+
+/**********************************************************************/
+/* Jumble Ink     						      */
+/**********************************************************************/
+
+#define JUMBLE_XY_IN_UV()						\
+  u = x + (rand() % 3)-1 - speed_x;					\
+  v = y + (rand() % 3)-1 - speed_y;					\
+  									\
+  if (tiled) {								\
+    if (u < 0)								\
+      u = data->src_image->w - (-(u+1) % data->src_image->w) - 1;	\
+    else if (u >= data->src_image->w)					\
+      u %= data->src_image->w;						\
+									\
+    if (v < 0)								\
+      v = data->src_image->h - (-(v+1) % data->src_image->h) - 1;	\
+    else if (v >= data->src_image->h)					\
+      v %= data->src_image->h;						\
+  }									\
+  else {								\
+    u = MID(0, u, data->src_image->w-1);				\
+    v = MID(0, v, data->src_image->h-1);				\
+  }									\
+  color = image_getpixel(data->src_image, u, v);
+
+static void ink_hline4_jumble(int x1, int y, int x2, ToolData *data)
+{
+  int opacity = data->opacity;
+  int speed_x = data->vector.x/4;
+  int speed_y = data->vector.y/4;
+  bool tiled = data->tiled;
+  int u, v, color;
+
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint32,
+     {
+       JUMBLE_XY_IN_UV();
+       *dst_address = _rgba_blend_MERGE(*src_address, color, opacity);
+     }
+     );
+}  
+
+static void ink_hline2_jumble(int x1, int y, int x2, ToolData *data)
+{
+  int opacity = data->opacity;
+  int speed_x = data->vector.x/4;
+  int speed_y = data->vector.y/4;
+  bool tiled = data->tiled;
+  int u, v, color;
+
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint16,
+     {
+       JUMBLE_XY_IN_UV();
+       *dst_address = _graya_blend_MERGE(*src_address, color, opacity);
+     }
+     );
+}  
+
+static void ink_hline1_jumble(int x1, int y, int x2, ToolData *data)
+{
+  Palette *pal = get_current_palette();
+  ase_uint32 c, tc;
+  int opacity = data->opacity;
+  int speed_x = data->vector.x/4;
+  int speed_y = data->vector.y/4;
+  bool tiled = data->tiled;
+  int u, v, color;
+
+  DEFINE_INK_PROCESSING_SRCDST
+    (ase_uint8,
+     {
+       JUMBLE_XY_IN_UV();
+
+       tc = color != 0 ? pal->color[color]: 0;
+       c = _rgba_blend_MERGE(*src_address != 0 ? pal->color[*src_address]: 0,
+			     tc, opacity);
+
+       if (_rgba_geta(c) >= 128)
+	 *dst_address = orig_rgb_map->data
+	   [_rgba_getr(c)>>3]
+	   [_rgba_getg(c)>>3]
+	   [_rgba_getb(c)>>3];
+       else
+	 *dst_address = 0;
+     }
+     );
+}  

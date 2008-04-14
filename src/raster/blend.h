@@ -77,10 +77,12 @@ int _rgba_blend_color(int back, int front, int opacity);
 int _rgba_blend_luminosity(int back, int front, int opacity);
 int _rgba_blend_copy(int back, int front, int opacity);
 int _rgba_blend_FORPATH(int back, int front, int opacity);
+int _rgba_blend_MERGE(int back, int front, int opacity);
 
 int _graya_blend_normal(int back, int front, int opacity);
 int _graya_blend_copy(int back, int front, int opacity);
 int _graya_blend_FORPATH(int back, int front, int opacity);
+int _graya_blend_MERGE(int back, int front, int opacity);
 
 void rgb_to_hsv_int(int *red, int *green, int *blue);
 void hsv_to_rgb_int(int *hue, int *saturation, int *value);

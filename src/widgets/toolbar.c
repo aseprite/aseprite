@@ -64,7 +64,8 @@ JWidget toolbar_new(void)
 			   GFX_TOOL_LINE,
 			   GFX_TOOL_RECTANGLE,
 			   GFX_TOOL_ELLIPSE,
-			   GFX_TOOL_BLUR);
+			   GFX_TOOL_BLUR,
+			   GFX_TOOL_JUMBLE);
 
   for (c=0; c<MAX_TOOLS; c++) {
     JWidget child;
