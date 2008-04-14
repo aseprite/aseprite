@@ -117,32 +117,48 @@ static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
   return TRUE;
 }
 
+/* makes a copy of the cel in 'frame-1' to a new cel in 'frame' */
 static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
 {
   int image_index;
-  Image *image;
-  Cel *cel;
+  Image *src_image;
+  Image *dst_image;
+  Cel *src_cel;
+  Cel *dst_cel;
 
-  /* create a new empty cel with a new clean image */
-  image = image_new(sprite->imgtype, sprite->w, sprite->h);
-  if (!image) {
+  /* create a copy of the previous cel */
+  src_cel = layer_get_cel(layer, frame-1);
+  src_image = src_cel ? stock_get_image(sprite->stock,
+					src_cel->image):
+			NULL;
+
+  if (src_image == NULL || frame == 0)
+    dst_image = image_new(sprite->imgtype, sprite->w, sprite->h);
+  else
+    dst_image = image_new_copy(src_image);
+
+  if (!dst_image) {
     console_printf(_("Not enough memory.\n"));
     return FALSE;
   }
 
-  /* background color */
-  image_clear(image, 0);
-  if (frame > 0)
-    layer_render(layer, image, 0, 0, frame-1);
-
   /* add the image in the stock */
-  image_index = stock_add_image(sprite->stock, image);
-  undo_add_image(sprite->undo, sprite->stock, image);
+  image_index = stock_add_image(sprite->stock, dst_image);
+  if (undo_is_enabled(sprite->undo))
+    undo_add_image(sprite->undo, sprite->stock, image_index);
 
+  /* create the new cel */
+  dst_cel = cel_new(frame, image_index);
+
+  if (src_cel != NULL) {
+    cel_set_position(dst_cel, src_cel->x, src_cel->y);
+    cel_set_opacity(dst_cel, src_cel->opacity);
+  }
+  
   /* add the cel in the layer */
-  cel = cel_new(frame, image_index);
-  undo_add_cel(sprite->undo, layer, cel);
-  layer_add_cel(layer, cel);
+  if (undo_is_enabled(sprite->undo))
+    undo_add_cel(sprite->undo, layer, dst_cel);
+  layer_add_cel(layer, dst_cel);
 
   return TRUE;
 }

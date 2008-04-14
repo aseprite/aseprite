@@ -64,7 +64,7 @@ static void cmd_advanced_mode_execute(const char *argument)
     if (jalert("%s<<%s||%s||%s",
 	       _("Warning - Important"),
 	       buf,
-	       _("&Don't show it again"), _("&Continue")) == 1) {
+	       _("&Don't show this again"), _("&Continue")) == 1) {
       set_config_bool("AdvancedMode", "Warning", FALSE);
     }
   }

@@ -311,11 +311,11 @@ void effect_flush(Effect *effect)
 
 void effect_apply_to_target(Effect *effect)
 {
-  ImageRef *p, *next, *images;
+  ImageRef *p, *images;
   bool cancelled = FALSE;
   int nimages;
 
-  images = sprite_get_images(effect->sprite, effect->target, TRUE);
+  images = images_ref_get_from_sprite(effect->sprite, effect->target, TRUE);
   if (images == NULL)
     return;
 
@@ -351,10 +351,7 @@ void effect_apply_to_target(Effect *effect)
   }
 
   /* free all ImageRefs */
-  for (p=images; p; p=next) {
-    next = p->next;
-    jfree(p);
-  }
+  images_ref_free(images);
 }
 
 static EffectData *get_effect_data(const char *name)

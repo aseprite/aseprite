@@ -92,7 +92,7 @@ void dialogs_tips(bool forced)
   button_next = jbutton_new(_("&Next"));
   view = jview_new();
   tips = tips_new();
-  check = jcheck_new(_("Show me it in the start up"));
+  check = jcheck_new(_("Show this at startup"));
 
   jwidget_set_min_size(button_close, 50, 0);
   jwidget_set_min_size(button_prev, 50, 0);

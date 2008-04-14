@@ -135,13 +135,13 @@ static void chunk_flip_invert(UndoStream *stream, UndoChunkFlip *chunk, int stat
 static void chunk_dirty_new(UndoStream *stream, Dirty *dirty);
 static void chunk_dirty_invert(UndoStream *stream, UndoChunkDirty *chunk, int state);
 
-static void chunk_add_image_new(UndoStream *stream, Stock *stock, Image *image);
+static void chunk_add_image_new(UndoStream *stream, Stock *stock, int image_index);
 static void chunk_add_image_invert(UndoStream *stream, UndoChunkAddImage *chunk, int state);
 
-static void chunk_remove_image_new(UndoStream *stream, Stock *stock, Image *image);
+static void chunk_remove_image_new(UndoStream *stream, Stock *stock, int image_index);
 static void chunk_remove_image_invert(UndoStream *stream, UndoChunkRemoveImage *chunk, int state);
 
-static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int index);
+static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int image_index);
 static void chunk_replace_image_invert(UndoStream *stream, UndoChunkReplaceImage *chunk, int state);
 
 static void chunk_add_cel_new(UndoStream *stream, Layer *layer, Cel *cel);
@@ -762,7 +762,7 @@ static void chunk_dirty_invert(UndoStream *stream, UndoChunkDirty *chunk, int st
   "add_image"
 
      DWORD		stock ID
-     DWORD		index
+     DWORD		index of the image in the stock
 
 ***********************************************************************/
 
@@ -770,45 +770,36 @@ struct UndoChunkAddImage
 {
   UndoChunk head;
   ase_uint32 stock_id;
-  ase_uint32 index;
+  ase_uint32 image_index;
 };
 
-/* TODO fix this so it doesn't need to be called as:
-     image_index = stock_add_image(sprite->stock, image);
-     undo_add_image(sprite->undo, sprite->stock, image);
-   */
-void undo_add_image(Undo *undo, Stock *stock, Image *image)
+void undo_add_image(Undo *undo, Stock *stock, int image_index)
 {
-  chunk_add_image_new(undo->undo_stream, stock, image);
+  chunk_add_image_new(undo->undo_stream, stock, image_index);
   update_undo(undo);
 }
 
-static void chunk_add_image_new(UndoStream *stream, Stock *stock, Image *image)
+static void chunk_add_image_new(UndoStream *stream, Stock *stock, int image_index)
 {
   UndoChunkAddImage *chunk = (UndoChunkAddImage *)
     undo_chunk_new(stream,
 		   UNDO_TYPE_ADD_IMAGE,
 		   sizeof(UndoChunkAddImage));
-  int index;
-
-  for (index=0; index<stock->nimage; index++)
-    if (stock->image[index] == image)
-      break;
 
   chunk->stock_id = stock->gfxobj.id;
-  chunk->index = index;
+  chunk->image_index = image_index;
 }
 
 static void chunk_add_image_invert(UndoStream *stream, UndoChunkAddImage *chunk, int state)
 {
   unsigned int stock_id = chunk->stock_id;
-  unsigned int index = chunk->index;
+  unsigned int image_index = chunk->image_index;
   Stock *stock = (Stock *)gfxobj_find(stock_id);
 
   if (stock) {
-    Image *image = stock_get_image(stock, index);
-    if (image) {
-      chunk_remove_image_new(stream, stock, image);
+    Image *image = stock_get_image(stock, image_index);
+    if (image != NULL) {
+      chunk_remove_image_new(stream, stock, image_index);
       stock_remove_image(stock, image);
       image_free(image);
     }
@@ -820,7 +811,7 @@ static void chunk_add_image_invert(UndoStream *stream, UndoChunkAddImage *chunk,
   "remove_image"
 
      DWORD		stock ID
-     DWORD		index
+     DWORD		index of the image in the stock
      IMAGE_DATA		see read/write_raw_image
 
 ***********************************************************************/
@@ -829,30 +820,26 @@ struct UndoChunkRemoveImage
 {
   UndoChunk head;
   ase_uint32 stock_id;
-  ase_uint32 index;
+  ase_uint32 image_index;
   ase_uint8 data[0];
 };
 
-void undo_remove_image(Undo *undo, Stock *stock, Image *image)
+void undo_remove_image(Undo *undo, Stock *stock, int image_index)
 {
-  chunk_remove_image_new(undo->undo_stream, stock, image);
+  chunk_remove_image_new(undo->undo_stream, stock, image_index);
   update_undo(undo);
 }
 
-static void chunk_remove_image_new(UndoStream *stream, Stock *stock, Image *image)
+static void chunk_remove_image_new(UndoStream *stream, Stock *stock, int image_index)
 {
+  Image *image = stock->image[image_index];
   UndoChunkRemoveImage *chunk = (UndoChunkRemoveImage *)
     undo_chunk_new(stream,
 		   UNDO_TYPE_REMOVE_IMAGE,
 		   sizeof(UndoChunkRemoveImage)+get_raw_image_size(image));
-  int index;
-
-  for (index=0; index<stock->nimage; index++)
-    if (stock->image[index] == image)
-      break;
 
   chunk->stock_id = stock->gfxobj.id;
-  chunk->index = index;
+  chunk->image_index = image_index;
 
   write_raw_image(chunk->data, image);
 }
@@ -860,7 +847,7 @@ static void chunk_remove_image_new(UndoStream *stream, Stock *stock, Image *imag
 static void chunk_remove_image_invert(UndoStream *stream, UndoChunkRemoveImage *chunk, int state)
 {
   unsigned int stock_id = chunk->stock_id;
-  unsigned int index = chunk->index;
+  unsigned int image_index = chunk->image_index;
   Stock *stock = (Stock *)gfxobj_find(stock_id);
 
   if (stock) {
@@ -868,8 +855,8 @@ static void chunk_remove_image_invert(UndoStream *stream, UndoChunkRemoveImage *
 
     /* assert(image != NULL); */
 
-    stock_replace_image(stock, index, image);
-    chunk_add_image_new(stream, stock, image);
+    stock_replace_image(stock, image_index, image);
+    chunk_add_image_new(stream, stock, image_index);
   }
 }
 
@@ -878,7 +865,7 @@ static void chunk_remove_image_invert(UndoStream *stream, UndoChunkRemoveImage *
   "replace_image"
 
      DWORD		stock ID
-     DWORD		index
+     DWORD		index of the image in the stock
      IMAGE_DATA		see read/write_raw_image
 
 ***********************************************************************/
@@ -887,26 +874,26 @@ struct UndoChunkReplaceImage
 {
   UndoChunk head;
   ase_uint32 stock_id;
-  ase_uint32 index;
+  ase_uint32 image_index;
   ase_uint8 data[0];
 };
 
-void undo_replace_image(Undo *undo, Stock *stock, int index)
+void undo_replace_image(Undo *undo, Stock *stock, int image_index)
 {
-  chunk_replace_image_new(undo->undo_stream, stock, index);
+  chunk_replace_image_new(undo->undo_stream, stock, image_index);
   update_undo(undo);
 }
 
-static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int index)
+static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int image_index)
 {
-  Image *image = stock->image[index];
+  Image *image = stock->image[image_index];
   UndoChunkReplaceImage *chunk = (UndoChunkReplaceImage *)
     undo_chunk_new(stream,
 		   UNDO_TYPE_REPLACE_IMAGE,
 		   sizeof(UndoChunkReplaceImage)+get_raw_image_size(image));
 
   chunk->stock_id = stock->gfxobj.id;
-  chunk->index = index;
+  chunk->image_index = image_index;
 
   write_raw_image(chunk->data, image);
 }
@@ -914,18 +901,18 @@ static void chunk_replace_image_new(UndoStream *stream, Stock *stock, int index)
 static void chunk_replace_image_invert(UndoStream *stream, UndoChunkReplaceImage *chunk, int state)
 {
   unsigned long stock_id = chunk->stock_id;
-  unsigned long index = chunk->index;
+  unsigned long image_index = chunk->image_index;
   Stock *stock = (Stock *)gfxobj_find(stock_id);
 
   if (stock) {
     Image *image = read_raw_image(chunk->data);
 
-    chunk_replace_image_new(stream, stock, index);
+    chunk_replace_image_new(stream, stock, image_index);
 
-    if (stock->image[index])
-      image_free(stock->image[index]);
+    if (stock->image[image_index])
+      image_free(stock->image[image_index]);
 
-    stock_replace_image(stock, index, image);
+    stock_replace_image(stock, image_index, image);
   }
 }
 
@@ -1104,7 +1091,8 @@ static void chunk_remove_layer_new(UndoStream *stream, Layer *layer)
   Layer *after = layer_get_prev(layer);
 
   chunk->set_id = set->gfxobj.id;
-  chunk->after_id = after ? after->gfxobj.id: 0;
+  chunk->after_id = after != NULL ? after->gfxobj.id: 0;
+
   write_raw_layer(chunk->data, layer);
 }
 
@@ -1113,7 +1101,7 @@ static void chunk_remove_layer_invert(UndoStream *stream, UndoChunkRemoveLayer *
   Layer *set = (Layer *)gfxobj_find(chunk->set_id);
   Layer *after = (Layer *)gfxobj_find(chunk->after_id);
 
-  if (set) {
+  if (set != NULL) {
     Layer *layer = read_raw_layer(chunk->data);
 
     /* assert(layer != NULL); */
@@ -1360,6 +1348,13 @@ static void undo_chunk_free(UndoChunk *chunk)
     raw_data += 2;			\
   }
 
+#define read_raw_int16(dst)		\
+  {					\
+    memcpy(&word, raw_data, 2);		\
+    dst = (int16_t)word;		\
+    raw_data += 2;			\
+  }
+
 #define read_raw_uint8(dst)		\
   {					\
     dst = *raw_data;			\
@@ -1382,6 +1377,13 @@ static void undo_chunk_free(UndoChunk *chunk)
 #define write_raw_uint16(src)		\
   {					\
     word = src;				\
+    memcpy(raw_data, &word, 2);		\
+    raw_data += 2;			\
+  }
+
+#define write_raw_int16(src)		\
+  {					\
+    word = (int16_t)src;		\
     memcpy(raw_data, &word, 2);		\
     raw_data += 2;			\
   }
@@ -1585,6 +1587,7 @@ static ase_uint8 *write_raw_image(ase_uint8 *raw_data, Image *image)
 
 static int get_raw_image_size(Image *image)
 {
+  assert(image != NULL);
   return 4+1+2+2+IMAGE_LINE_SIZE(image, image->w) * image->h;
 }
 
@@ -1611,8 +1614,8 @@ static Cel *read_raw_cel(ase_uint8 *raw_data)
   read_raw_uint32(cel_id);
   read_raw_uint16(frame);
   read_raw_uint16(image);
-  read_raw_uint16(x);
-  read_raw_uint16(y);
+  read_raw_int16(x);
+  read_raw_int16(y);
   read_raw_uint16(opacity);
 
   cel = cel_new(frame, image);
@@ -1631,8 +1634,8 @@ static ase_uint8 *write_raw_cel(ase_uint8 *raw_data, Cel *cel)
   write_raw_uint32(cel->gfxobj.id);
   write_raw_uint16(cel->frame);
   write_raw_uint16(cel->image);
-  write_raw_uint16(cel->x);
-  write_raw_uint16(cel->y);
+  write_raw_int16(cel->x);
+  write_raw_int16(cel->y);
   write_raw_uint16(cel->opacity);
 
   return raw_data;
@@ -1684,7 +1687,7 @@ static Layer *read_raw_layer(ase_uint8 *raw_data)
       /* read cels */
       for (c=0; c<cels; c++) {
 	Cel *cel;
-	bool as_image;
+	bool has_image;
 
 	/* read the cel */
 	cel = read_raw_cel(raw_data);
@@ -1694,8 +1697,8 @@ static Layer *read_raw_layer(ase_uint8 *raw_data)
 	layer_add_cel(layer, cel);
 
 	/* read the image */
-	read_raw_uint8(as_image);
-	if (as_image) {
+	read_raw_uint8(has_image);
+	if (has_image) {
 	  Image *image = read_raw_image(raw_data);
 	  raw_data += get_raw_image_size(image);
 

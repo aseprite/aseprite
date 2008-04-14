@@ -859,7 +859,7 @@ void RemoveCel(Layer *layer, Cel *cel)
       image = stock_get_image(sprite->stock, cel->image);
 
       if (undo_is_enabled(sprite->undo))
-	undo_remove_image(sprite->undo, sprite->stock, image);
+	undo_remove_image(sprite->undo, sprite->stock, cel->image);
 
       stock_remove_image(sprite->stock, image);
       image_free(image);

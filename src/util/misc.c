@@ -309,30 +309,25 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)(void))
     gui_feedback();
   } while (editor_click(editor, &new_x, &new_y, &update, NULL));
 
+  new_x = cel->x;
+  new_y = cel->y;
+  cel_set_position(cel, begin_x, begin_y);
+  
   /* the position was changed */
   if (!editor_click_cancel(editor)) {
     if (use_undo && undo_is_enabled(sprite->undo)) {
-      new_x = cel->x;
-      new_y = cel->y;
-
       undo_set_label(sprite->undo, "Cel Movement");
       undo_open(sprite->undo);
-      cel->x = begin_x;
-      cel->y = begin_y;
       undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
       undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-      cel->x = new_x;
-      cel->y = new_y;
       undo_close(sprite->undo);
     }
 
+    cel_set_position(cel, new_x, new_y);
     ret = TRUE;
   }
   /* the position wasn't changed */
   else {
-    cel->x = begin_x;
-    cel->y = begin_y;
-
     ret = FALSE;
   }
 

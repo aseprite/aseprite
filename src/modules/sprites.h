@@ -58,7 +58,8 @@ bool is_current_sprite_writable(void);
 
 struct Sprite *lock_current_sprite(void);
 
-ImageRef *sprite_get_images(struct Sprite *sprite, int target, bool write);
+ImageRef *images_ref_get_from_sprite(struct Sprite *sprite, int target, bool write);
+void images_ref_free(ImageRef *image_ref);
 
 #endif /* MODULES_SPRITES_H */
 

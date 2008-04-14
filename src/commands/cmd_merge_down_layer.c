@@ -73,20 +73,20 @@ static void cmd_merge_down_layer_execute(const char *argument)
     dst_cel = layer_get_cel(dst_layer, frpos);
 
     /* get images */
-    if (src_cel)
+    if (src_cel != NULL)
       src_image = stock_get_image(sprite->stock, src_cel->image);
     else
       src_image = NULL;
 
-    if (dst_cel)
+    if (dst_cel != NULL)
       dst_image = stock_get_image(sprite->stock, dst_cel->image);
     else
       dst_image = NULL;
 
     /* with source image? */
-    if (src_image) {
+    if (src_image != NULL) {
       /* no destination image */
-      if (!dst_image) {
+      if (dst_image == NULL) {
 	/* copy this cel to the destination layer... */
 
 	/* creating a copy of the image */
@@ -95,7 +95,7 @@ static void cmd_merge_down_layer_execute(const char *argument)
 	/* adding it in the stock of images */
 	index = stock_add_image(sprite->stock, dst_image);
 	if (undo_is_enabled(sprite->undo))
-	  undo_add_image(sprite->undo, sprite->stock, dst_image);
+	  undo_add_image(sprite->undo, sprite->stock, index);
 
 	/* creating a copy of the cell */
 	dst_cel = cel_new(frpos, index);
@@ -123,6 +123,11 @@ static void cmd_merge_down_layer_execute(const char *argument)
 		    src_cel->y-y1,
 		    src_cel->opacity,
 		    src_layer->blend_mode);
+
+	if (undo_is_enabled(sprite->undo)) {
+	  undo_int(sprite->undo, (GfxObj *)dst_cel, &dst_cel->x);
+	  undo_int(sprite->undo, (GfxObj *)dst_cel, &dst_cel->y);
+	}
 
 	cel_set_position(dst_cel, x1, y1);
 

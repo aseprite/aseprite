@@ -68,7 +68,7 @@ static void cmd_new_cel_execute(const char *argument)
     undo_set_label(current_sprite->undo, "New Cel");
     undo_open(current_sprite->undo);
     undo_add_image(current_sprite->undo,
-		   current_sprite->stock, image);
+		   current_sprite->stock, image_index);
   }
 
   /* create the new cel */

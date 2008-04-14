@@ -128,7 +128,7 @@ void copy_cel(void)
       image_index = stock_add_image(sprite->stock, image);
 
       if (undo_is_enabled(sprite->undo))
-	undo_add_image(sprite->undo, sprite->stock, image);
+	undo_add_image(sprite->undo, sprite->stock, image_index);
     }
 
     /* setup the cel */

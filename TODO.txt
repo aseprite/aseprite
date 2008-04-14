@@ -1,7 +1,6 @@
 Next beta
 ---------
 
-- search for "TODO next release"
 - Check these routines:
   + move_cel
   + copy_cel

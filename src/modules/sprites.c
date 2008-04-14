@@ -49,7 +49,7 @@ Sprite *current_sprite = NULL;
 static JList sprites_list;
 static Sprite *clipboard_sprite;
 
-static ImageRef *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write);
+static ImageRef *images_ref_get_from_layer(Sprite *sprite, Layer *layer, int target, bool write);
 static void layer_get_pos(Sprite *sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
 
 int init_module_sprites(void)
@@ -218,15 +218,25 @@ Sprite *lock_current_sprite(void)
     return NULL;
 }
 
-ImageRef *sprite_get_images(struct Sprite *sprite, int target, bool write)
+ImageRef *images_ref_get_from_sprite(Sprite *sprite, int target, bool write)
 {
   Layer *layer = target & TARGET_ALL_LAYERS ? sprite->set:
 					      sprite->layer;
 
-  return layer_get_images(sprite, layer, target, write);
+  return images_ref_get_from_layer(sprite, layer, target, write);
 }
 
-static ImageRef *layer_get_images(Sprite *sprite, Layer *layer, int target, bool write)
+void images_ref_free(ImageRef *image_ref)
+{
+  ImageRef *p, *next;
+
+  for (p=image_ref; p; p=next) {
+    next = p->next;
+    jfree(p);
+  }
+}
+
+static ImageRef *images_ref_get_from_layer(Sprite *sprite, Layer *layer, int target, bool write)
 {
 #define ADD_IMAGES(images)			\
   {						\
@@ -288,7 +298,7 @@ static ImageRef *layer_get_images(Sprite *sprite, Layer *layer, int target, bool
       JLink link;
 
       JI_LIST_FOR_EACH(layer->layers, link) {
-	sub_images = layer_get_images(sprite, link->data, target, write);
+	sub_images = images_ref_get_from_layer(sprite, link->data, target, write);
 
 	if (sub_images != NULL)
 	  ADD_IMAGES(sub_images);

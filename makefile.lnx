@@ -14,13 +14,13 @@ endif
 ######################################################################
 # Flags for GCC in GNU/Linux system
 
-#ifdef DEBUGMODE
+ifdef DEBUGMODE
 CFLAGS = `allegro-config --cflags debug`
 LFLAGS = `allegro-config --libs debug`
-#else
+else
 CFLAGS = `allegro-config --cflags`
 LFLAGS = `allegro-config --libs`
-#endif
+endif
 
 ######################################################################
 # GCC stuff
@@ -51,12 +51,12 @@ distclean: clean
 	-rm -f $(ASE)
 
 install:
-	cp ase $(DEFAULT_PREFIX)/bin
+	cp aseprite $(DEFAULT_PREFIX)/bin
 	cp -r data $(DEFAULT_PREFIX)/share/ase
 	cp AUTHORS.txt $(DEFAULT_PREFIX)/share/ase
 
 uninstall:
-	-rm  -vf $(DEFAULT_PREFIX)/bin/ase
+	-rm  -vf $(DEFAULT_PREFIX)/bin/aseprite
 	-rm -rvf $(DEFAULT_PREFIX)/share/ase
 
 -include makefile.dep

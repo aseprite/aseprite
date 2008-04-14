@@ -117,10 +117,9 @@ Layer *layer_new_copy(Sprite *dst_sprite, const Layer *src_layer)
 
 	image_copy = image_new_copy(image);
 
-	if (undo_is_enabled(dst_sprite->undo))
-	  undo_add_image(dst_sprite->undo, dst_sprite->stock, image_copy);
-
 	cel_copy->image = stock_add_image(dst_sprite->stock, image_copy);
+	if (undo_is_enabled(dst_sprite->undo))
+	  undo_add_image(dst_sprite->undo, dst_sprite->stock, cel_copy->image);
 
 	layer_add_cel(layer_copy, cel_copy);
       }
