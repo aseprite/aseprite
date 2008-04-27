@@ -75,6 +75,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg);
 static void editor_request_size(JWidget widget, int *w, int *h);
 static void editor_draw_sprite_boundary(JWidget widget);
 static void editor_setcursor(JWidget widget, int x, int y);
+static void editor_update_candraw(JWidget widget);
 
 JWidget editor_view_new(void)
 {
@@ -184,75 +185,10 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
     jview_get_scroll(view, &new_scroll_x, &new_scroll_y);
 
     /* move screen with blits */
-    if (old_scroll_x != new_scroll_x || old_scroll_y != new_scroll_y) {
-      int offset_x = old_scroll_x - new_scroll_x;
-      int offset_y = old_scroll_y - new_scroll_y;
-      JRegion reg2 = jregion_new(NULL, 0);
-      int c, nrects;
-      JRect rc;
-
-      jregion_copy(reg2, region);
-      jregion_translate(reg2, offset_x, offset_y);
-      jregion_intersect(reg2, reg2, region);
-
-      nrects = JI_REGION_NUM_RECTS(reg2);
-
-      if (!thick)
-	jmouse_hide();
-
-      /* blit directly screen to screen *************************************/
-      if (is_linear_bitmap(ji_screen) && nrects == 1) {
-	rc = JI_REGION_RECTS(reg2);
-	blit(ji_screen, ji_screen,
-	     rc->x1-offset_x, rc->y1-offset_y,
-	     rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
-      }
-      /* blit saving areas and copy them ************************************/
-      else if (nrects > 1) {
-	JList images = jlist_new();
-	BITMAP *bmp;
-	JLink link;
-
-	for (c=0, rc=JI_REGION_RECTS(reg2);
-	     c<nrects;
-	     c++, rc++) {
-	  bmp = create_bitmap(jrect_w(rc), jrect_h(rc));
-	  blit(ji_screen, bmp,
-	       rc->x1-offset_x, rc->y1-offset_y, 0, 0, bmp->w, bmp->h);
-	  jlist_append(images, bmp);
-	}
-
-	for (c=0, rc=JI_REGION_RECTS(reg2), link=jlist_first(images);
-	     c<nrects;
-	     c++, rc++, link=link->next) {
-	  bmp = link->data;
-	  blit(bmp, ji_screen, 0, 0, rc->x1, rc->y1, bmp->w, bmp->h);
-	  destroy_bitmap(bmp);
-	}
-
-	jlist_free(images);
-      }
-      /**********************************************************************/
-      if (!thick)
-	jmouse_show();
-
-/*       if (editor->refresh_region) */
-/* 	jregion_free(editor->refresh_region); */
-
-/*       editor->refresh_region = jregion_new(NULL, 0); */
-/*       jregion_copy(editor->refresh_region, region); */
-/*       jregion_subtract(editor->refresh_region, editor->refresh_region, reg2); */
-      /* TODO jwidget_validate */
-      jregion_union(widget->update_region, widget->update_region, region);
-      jregion_subtract(widget->update_region, widget->update_region, reg2);
-
-      /* refresh the update_region */
-      jwidget_flush_redraw(widget);
-      jmanager_dispatch_messages(ji_get_default_manager());
-
-      jregion_free(reg2);
-    }
-
+    jwidget_scroll(widget, region,
+		   old_scroll_x - new_scroll_x,
+		   old_scroll_y - new_scroll_y);
+    
     jregion_free(region);
     /* editor->widget->flags &= ~JI_DIRTY; */
   }
@@ -617,8 +553,7 @@ void editor_draw_grid_safe(JWidget widget)
     JRect rc;
 
     for (c=0, rc=JI_REGION_RECTS(region);
-	 c<nrects;
-	 c++, rc++) {
+	 c<nrects;	 c++, rc++) {
       set_clip(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
       editor_draw_grid(widget);
     }
@@ -1085,19 +1020,10 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       /* when the mouse enter to the editor, we can calculate the
 	 'cursor_candraw' field to avoid a heavy if-condition in the
 	 'editor_setcursor' routine */
-      editor->cursor_candraw =
-	(editor->sprite != NULL &&
-	 !sprite_is_locked(editor->sprite) &&
-	 editor->sprite->layer != NULL &&
-	 layer_is_image(editor->sprite->layer) &&
-	 layer_is_readable(editor->sprite->layer) &&
-	 layer_is_writable(editor->sprite->layer) &&
-	 layer_get_cel(editor->sprite->layer,
-		       editor->sprite->frame) != NULL);
+      editor_update_candraw(widget);
 
       if (msg->any.shifts & KB_ALT_FLAG) editor->alt_pressed = TRUE;
       if (msg->any.shifts & KB_CTRL_FLAG) editor->ctrl_pressed = TRUE;
-      /* TODO another way to get the KEY_SPACE state? */
       if (key[KEY_SPACE]) editor->space_pressed = TRUE;
       break;
 
@@ -1117,8 +1043,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	break;
 
       /* move the scroll */
-      if ((msg->mouse.middle && has_only_shifts(msg, 0)) ||
-	  (msg->mouse.left && editor->space_pressed)) {
+      if (msg->mouse.middle || editor->space_pressed) {
 	editor->state = EDIT_MOVING_SCROLL;
 
 	editor_setcursor(widget, msg->mouse.x, msg->mouse.y);
@@ -1449,6 +1374,8 @@ static void editor_setcursor(JWidget widget, int x, int y)
 
     case EDIT_STANDBY:
       if (editor->sprite) {
+	editor_update_candraw(widget); /* TODO remove this */
+
 	/* eyedropper */
 	if (editor->alt_pressed) {
 	  hide_drawing_cursor(widget);
@@ -1482,4 +1409,20 @@ static void editor_setcursor(JWidget widget, int x, int y)
       break;
 
   }
+}
+
+/* TODO this routine should be called in a change of context */
+static void editor_update_candraw(JWidget widget)
+{
+  Editor *editor = editor_data(widget);
+
+  editor->cursor_candraw =
+    (editor->sprite != NULL &&
+     !sprite_is_locked(editor->sprite) &&
+     editor->sprite->layer != NULL &&
+     layer_is_image(editor->sprite->layer) &&
+     layer_is_readable(editor->sprite->layer) &&
+     layer_is_writable(editor->sprite->layer) /* && */
+     /* layer_get_cel(editor->sprite->layer, editor->sprite->frame) != NULL */
+     );
 }

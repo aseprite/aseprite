@@ -73,6 +73,7 @@ enum {
   /* misc */
   UNDO_TYPE_SET_MASK,
   UNDO_TYPE_SET_FRAMES,
+  UNDO_TYPE_SET_FRLEN,
 };
 
 typedef struct UndoChunkData UndoChunkData;
@@ -90,6 +91,7 @@ typedef struct UndoChunkMoveLayer UndoChunkMoveLayer;
 typedef struct UndoChunkSetLayer UndoChunkSetLayer;
 typedef struct UndoChunkSetMask UndoChunkSetMask;
 typedef struct UndoChunkSetFrames UndoChunkSetFrames;
+typedef struct UndoChunkSetFrlen UndoChunkSetFrlen;
 
 typedef struct UndoChunk
 {
@@ -168,6 +170,9 @@ static void chunk_set_mask_invert(UndoStream *stream, UndoChunkSetMask *chunk, i
 static void chunk_set_frames_new(UndoStream *stream, Sprite *sprite);
 static void chunk_set_frames_invert(UndoStream *stream, UndoChunkSetFrames *chunk, int state);
 
+static void chunk_set_frlen_new(UndoStream *stream, Sprite *sprite, int frame);
+static void chunk_set_frlen_invert(UndoStream *stream, UndoChunkSetFrlen *chunk, int state);
+
 #define DECL_UNDO_ACTION(name) \
   { #name, (void (*)(UndoStream *, UndoChunk *, int))chunk_##name##_invert }
 
@@ -189,7 +194,8 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(move_layer),
   DECL_UNDO_ACTION(set_layer),
   DECL_UNDO_ACTION(set_mask),
-  DECL_UNDO_ACTION(set_frames)
+  DECL_UNDO_ACTION(set_frames),
+  DECL_UNDO_ACTION(set_frlen)
 };
 
 /* UndoChunk */
@@ -1294,6 +1300,54 @@ static void chunk_set_frames_invert(UndoStream *stream, UndoChunkSetFrames *chun
   if (sprite) {
     chunk_set_frames_new(stream, sprite);
     sprite_set_frames(sprite, chunk->frames);
+  }
+}
+
+/***********************************************************************
+
+  "set_frlen"
+
+     DWORD		sprite ID
+     DWORD		frame
+     DWORD		frlen
+
+***********************************************************************/
+
+struct UndoChunkSetFrlen
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 frame;
+  ase_uint32 frlen;
+};
+
+void undo_set_frlen(Undo *undo, Sprite *sprite, int frame)
+{
+  chunk_set_frlen_new(undo->undo_stream, sprite, frame);
+  update_undo(undo);
+}
+
+static void chunk_set_frlen_new(UndoStream *stream, Sprite *sprite, int frame)
+{
+  UndoChunkSetFrlen *chunk = (UndoChunkSetFrlen *)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_SET_FRLEN,
+		   sizeof(UndoChunkSetFrlen));
+
+  assert(frame >= 0 && frame < sprite->frames);
+
+  chunk->sprite_id = sprite->gfxobj.id;
+  chunk->frame = frame;
+  chunk->frlen = sprite->frlens[frame];
+}
+
+static void chunk_set_frlen_invert(UndoStream *stream, UndoChunkSetFrlen *chunk, int state)
+{
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+
+  if (sprite != NULL) {
+    chunk_set_frlen_new(stream, sprite, chunk->frame);
+    sprite_set_frlen(sprite, chunk->frame, chunk->frlen);
   }
 }
 

@@ -24,7 +24,7 @@
 /* #include "core/app.h" */
 #include "modules/sprites.h"
 /* #include "raster/sprite.h" */
-#include "dialogs/filmedit.h"
+#include "dialogs/aniedit.h"
 
 static bool cmd_film_editor_enabled(const char *argument)
 {
@@ -33,7 +33,7 @@ static bool cmd_film_editor_enabled(const char *argument)
 
 static void cmd_film_editor_execute(const char *argument)
 {
-  switch_between_film_and_sprite_editor();
+  switch_between_animation_and_sprite_editor();
 }
 
 Command cmd_film_editor = {

@@ -42,7 +42,9 @@
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"
 
-#define COLORBAR_MAX_COLORS   256
+#define COLORBAR_MAX_COLORS	256
+
+#define FGBGSIZE		(16*guiscale())
 
 typedef enum {
   HOTCOLOR_NONE = -3,
@@ -181,7 +183,7 @@ color_t colorbar_get_color_by_position(JWidget widget, int x, int y)
 
   ++x1, ++y1, --x2, --y2;
 
-  h = (y2-y1+1-(4+16+16+4));
+  h = (y2-y1+1-(4+FGBGSIZE*2+4));
 
   for (c=beg; c<=end; c++) {
     v1 = y1 + h*(c-beg  )/(end-beg+1);
@@ -192,14 +194,14 @@ color_t colorbar_get_color_by_position(JWidget widget, int x, int y)
   }
 
   /* in foreground color */
-  v1 = y2-4-16-16;
-  v2 = y2-4-16;
+  v1 = y2-4-FGBGSIZE*2;
+  v2 = y2-4-FGBGSIZE;
   if ((y >= v1) && (y <= v2)) {
     return colorbar->fgcolor;
   }
 
   /* in background color */
-  v1 = y2-4-16+1;
+  v1 = y2-4-FGBGSIZE+1;
   v2 = y2-4;
   if ((y >= v1) && (y <= v2)) {
     return colorbar->bgcolor;
@@ -284,7 +286,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       rectfill(doublebuffer, x1, y1, x2, y2, ji_color_face());
       ++x1, ++y1, --x2, --y2;
 
-      h = (y2-y1+1-(4+16+16+4));
+      h = (y2-y1+1-(4+FGBGSIZE*2+4));
 
       /* draw gradient */
       for (c=beg; c<=end; c++) {
@@ -299,15 +301,15 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* draw foreground color */
-      v1 = y2-4-16-16;
-      v2 = y2-4-16;
+      v1 = y2-4-FGBGSIZE*2;
+      v2 = y2-4-FGBGSIZE;
       draw_color_button(doublebuffer, x1, v1, x2, v2, 1, 1, 0, 0,
 			imgtype, colorbar->fgcolor,
 			(colorbar->hot         == HOTCOLOR_FGCOLOR ||
 			 colorbar->hot_editing == HOTCOLOR_FGCOLOR));
 
       /* draw background color */
-      v1 = y2-4-16+1;
+      v1 = y2-4-FGBGSIZE+1;
       v2 = y2-4;
       draw_color_button(doublebuffer, x1, v1, x2, v2, 0, 0, 1, 1,
 			imgtype, colorbar->bgcolor,
@@ -345,7 +347,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 
       ++x1, ++y1, --x2, --y2;
 
-      h = (y2-y1+1-(4+16+16+4));
+      h = (y2-y1+1-(4+FGBGSIZE*2+4));
 
       for (c=beg; c<=end; c++) {
 	v1 = y1 + h*(c-beg  )/(end-beg+1);
@@ -362,8 +364,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* in foreground color */
-      v1 = y2-4-16-16;
-      v2 = y2-4-16;
+      v1 = y2-4-FGBGSIZE*2;
+      v2 = y2-4-FGBGSIZE;
       if ((msg->mouse.y >= v1) && (msg->mouse.y <= v2)) {
 	colorbar->hot = HOTCOLOR_FGCOLOR;
 	hot_v1 = v1;
@@ -371,7 +373,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* in background color */
-      v1 = y2-4-16+1;
+      v1 = y2-4-FGBGSIZE+1;
       v2 = y2-4;
       if ((msg->mouse.y >= v1) && (msg->mouse.y <= v2)) {
 	colorbar->hot = HOTCOLOR_BGCOLOR;

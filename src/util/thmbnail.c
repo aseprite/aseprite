@@ -18,15 +18,19 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <allegro/color.h>
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
 
 #include "jinete/jlist.h"
 
+#include "modules/gfx.h"
 #include "modules/palettes.h"
+#include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
@@ -45,7 +49,7 @@ static JList thumbnails = NULL;
 
 static Thumbnail *thumbnail_new(Cel *cel, BITMAP *bmp);
 static void thumbnail_free(Thumbnail *thumbnail);
-static void thumbnail_create_bitmap(BITMAP *bmp, Image *image);
+static void thumbnail_render(BITMAP *bmp, Image *image, bool has_alpha);
 
 void destroy_thumbnails(void)
 {
@@ -60,7 +64,7 @@ void destroy_thumbnails(void)
   }
 }
 
-BITMAP *generate_thumbnail(Cel *cel, Sprite *sprite)
+BITMAP *generate_thumbnail(Layer *layer, Cel *cel, Sprite *sprite)
 {
   Thumbnail *thumbnail;
   BITMAP *bmp;
@@ -80,7 +84,9 @@ BITMAP *generate_thumbnail(Cel *cel, Sprite *sprite)
   if (!bmp)
     return NULL;
 
-  thumbnail_create_bitmap(bmp, stock_get_image(sprite->stock, cel->image));
+  thumbnail_render(bmp,
+		   stock_get_image(sprite->stock, cel->image),
+		   !layer_is_background(layer));
 
   thumbnail = thumbnail_new(cel, bmp);
   if (!thumbnail) {
@@ -112,32 +118,79 @@ static void thumbnail_free(Thumbnail *thumbnail)
   jfree(thumbnail);
 }
 
-static void thumbnail_create_bitmap(BITMAP *bmp, Image *image)
+static void thumbnail_render(BITMAP *bmp, Image *image, bool has_alpha)
 {
-  if (!image) {
-    clear_to_color(bmp, makecol(128, 128, 128));
-    line(bmp, 0, 0, bmp->w-1, bmp->h-1, makecol(0, 0, 0));
-    line(bmp, 0, bmp->h-1, bmp->w-1, 0, makecol(0, 0, 0));
+  register int c, x, y;
+  int w, h, x1, y1;
+  double sx, sy, scale;
+
+  assert(image != NULL);
+
+  sx = (double)image->w / (double)bmp->w;
+  sy = (double)image->h / (double)bmp->h;
+  scale = MAX(sx, sy);
+
+  w = image->w / scale;
+  h = image->h / scale;
+  w = MIN(bmp->w, w);
+  h = MIN(bmp->h, h);
+
+  x1 = bmp->w/2 - w/2;
+  y1 = bmp->h/2 - h/2;
+  x1 = MAX(0, x1);
+  y1 = MAX(0, y1);
+
+  /* with alpha blending */
+  if (has_alpha) {
+    register int c2;
+
+    rectgrid(bmp, 0, 0, bmp->w-1, bmp->h-1,
+	     bmp->w/4, bmp->h/4);
+
+    switch (image->imgtype) {
+      case IMAGE_RGB:
+	for (y=0; y<h; y++)
+	  for (x=0; x<w; x++) {
+	    c = image_getpixel(image, x*scale, y*scale);
+	    c2 = getpixel(bmp, x1+x, y1+y);
+	    c = _rgba_blend_normal(_rgba(getr(c2), getg(c2), getb(c2), 255), c, 255);
+
+	    putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
+					      _rgba_getg(c),
+					      _rgba_getb(c)));
+	  }
+	break;
+      case IMAGE_GRAYSCALE:
+	for (y=0; y<h; y++)
+	  for (x=0; x<w; x++) {
+	    c = image_getpixel(image, x*scale, y*scale);
+	    c2 = getpixel(bmp, x1+x, y1+y);
+	    c = _graya_blend_normal(_graya(getr(c2), 255), c, 255);
+
+	    putpixel(bmp, x1+x, y1+y, makecol(_graya_getv(c),
+					      _graya_getv(c),
+					      _graya_getv(c)));
+	  }
+	break;
+      case IMAGE_INDEXED: {
+	Palette *pal = get_current_palette();
+
+	for (y=0; y<h; y++)
+	  for (x=0; x<w; x++) {
+	    c = image_getpixel(image, x*scale, y*scale);
+	    if (c != 0) {
+	      c = pal->color[MID(0, c, MAX_PALETTE_COLORS-1)];
+	      putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
+						_rgba_getg(c),
+						_rgba_getb(c)));
+	    }
+	  }
+	break;
+      }
+    }
   }
+  /* without alpha blending */
   else {
-    register int c, x, y;
-    int w, h, x1, y1;
-    double sx, sy, scale;
-
-    sx = (double)image->w / (double)bmp->w;
-    sy = (double)image->h / (double)bmp->h;
-    scale = MAX(sx, sy);
-
-    w = image->w / scale;
-    h = image->h / scale;
-    w = MIN(bmp->w, w);
-    h = MIN(bmp->h, h);
-
-    x1 = bmp->w/2 - w/2;
-    y1 = bmp->h/2 - h/2;
-    x1 = MAX(0, x1);
-    y1 = MAX(0, y1);
-
     clear_to_color(bmp, makecol(128, 128, 128));
 
     switch (image->imgtype) {

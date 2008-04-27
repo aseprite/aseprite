@@ -228,22 +228,18 @@ void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg)
 
 void jdraw_inverted_sprite(BITMAP *bmp, BITMAP *sprite, int x, int y)
 {
-  register int c, mask = bitmap_mask_color(sprite);
-  int u, v;
-
-  for (v=0; v<sprite->h; ++v) {
-    for (u=0; u<sprite->w; ++u) {
-      c = getpixel(sprite, u, v);
-      if (c != mask)
-	putpixel(bmp, x+u, y+v,
-		 makecol(255-getr(c),
-			 255-getg(c),
-			 255-getb(c)));
-    }
+  if (bitmap_color_depth(bmp) == 8) {
+    draw_character_ex(bmp, sprite, x, y, makecol(255, 255, 255), -1);
+  }
+  else {
+    drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+    set_invert_blender(0, 0, 0, 255);
+    draw_lit_sprite(bmp, sprite, x, y, 255);
+    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
   }
 }
 
-void ji_blit_region(JRegion region, int dx, int dy)
+void ji_move_region(JRegion region, int dx, int dy)
 {
   int c, nrects = JI_REGION_NUM_RECTS(region);
   JRect rc;
@@ -263,6 +259,7 @@ void ji_blit_region(JRegion region, int dx, int dy)
   }
   /* blit saving areas and copy them ************************************/
   else if (nrects > 1) {
+    /* TODO optimize this routine, it's really slow */
     JList images = jlist_new();
     BITMAP *bmp;
     JLink link;

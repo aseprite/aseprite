@@ -211,8 +211,7 @@ void jwidget_redraw_region(JWidget widget, const JRegion region);
 void jwidget_invalidate(JWidget widget);
 void jwidget_invalidate_rect(JWidget widget, const JRect rect);
 void jwidget_invalidate_region(JWidget widget, const JRegion region);
-void jwidget_scroll(JWidget widget, int dx, int dy, const JRect rect,
-		    JRegion update_region);
+void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy);
 
 /* signal handle */
 

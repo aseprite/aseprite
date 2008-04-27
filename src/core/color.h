@@ -62,6 +62,7 @@ int get_color_for_allegro(int depth, color_t color);
 int get_color_for_image(int imgtype, color_t color);
 int get_color_for_layer(struct Layer *layer, color_t color);
 int fixup_color_for_layer(struct Layer *layer, int color);
+int fixup_color_for_background(int imgtype, int color);
 
 color_t image_getpixel_color(struct Image *image, int x, int y);
 void color_to_formalstring(int imgtype, color_t color, char *buf,

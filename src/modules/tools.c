@@ -858,8 +858,9 @@ void control_tool(JWidget widget, Tool *tool,
   const char *_end = _("End");
   const char *_size = _("Size");
   bool click2 = get_config_bool("Options", "DrawClick2", FALSE);
-  Image *cel_image;
-  Cel *cel;
+  Cel *cel = NULL;
+  Image *cel_image = NULL;
+  bool cel_created = FALSE;
   ToolData tool_data;
 
   /* First of all we have to dispatch the enqueue messages. Why is it
@@ -872,34 +873,8 @@ void control_tool(JWidget widget, Tool *tool,
   jmanager_dispatch_messages(jwidget_get_manager(widget));
   jwidget_flush_redraw(jwidget_get_manager(widget));
 
-  /* get cel and image where we can draw */
-  cel_image = NULL;
-
-  if (sprite != NULL &&
-      sprite->layer != NULL &&
-      layer_is_image(sprite->layer)) {
-    cel = layer_get_cel(sprite->layer,
-			sprite->frame);
-    if (cel != NULL) {
-      if ((cel->image >= 0) &&
-	  (cel->image < sprite->stock->nimage)) {
-	cel_image = sprite->stock->image[cel->image];
-      }
-
-      old_cel_x = cel->x;
-      old_cel_y = cel->y;
-    }
-  }
-
-  /* we have a image layer to paint in? */
-  if (!cel_image) {
-    jalert(_(PACKAGE
-	     "<<The current layer doesn't have a surface to draw."
-	     "||&Close"));
-    return;
-  }
   /* error, the active layer is not visible */
-  else if (!layer_is_readable(sprite->layer)) {
+  if (!layer_is_readable(sprite->layer)) {
     jalert(_(PACKAGE
 	     "<<The current layer is hidden,"
 	     "<<make it visible and try again"
@@ -914,6 +889,54 @@ void control_tool(JWidget widget, Tool *tool,
 	     "||&Close"));
     return;
   }
+
+  /* get cel and image where we can draw */
+  cel_image = NULL;
+
+  if (sprite != NULL &&
+      sprite->layer != NULL &&
+      layer_is_image(sprite->layer)) {
+    cel = layer_get_cel(sprite->layer,
+			sprite->frame);
+    if (cel != NULL)
+      cel_image = sprite->stock->image[cel->image];
+  }
+
+  if (cel == NULL) {
+    /* int image_index; */
+
+    /* create the image */
+    cel_image = image_new(sprite->imgtype, sprite->w, sprite->h);
+    image_clear(cel_image, 0);
+
+    /* add it to the stock */
+    /* image_index = stock_add_image(sprite->stock, cel_image); */
+
+    /* create the cel */
+    cel = cel_new(sprite->frame, 0);
+    layer_add_cel(sprite->layer, cel);
+
+    cel_created = TRUE;
+  }
+
+  /* /\* isn't a cel in the current frame/layer, we create a new one *\/ */
+  /* if (cel == NULL) { */
+  /*   cel_created = TRUE; */
+  /*   cel = cel_new(sprite->frame, -1); */
+  /* } */
+
+  /* /\* if we don't have an image to paint in, we create new image to paint in *\/ */
+  /* if (cel_image == NULL) { */
+  /*   cel_image_created = TRUE; */
+  /* } */
+  /* /\* if the cel is linked we make a copy of it (so it can be unlinked) *\/ */
+  /* else if (cel_is_link(cel, sprite->layer)) { */
+  /*   cel_image_created = TRUE; */
+  /*   cel_image = image_new_copy(cel_image); */
+  /* } */
+
+  old_cel_x = cel->x;
+  old_cel_y = cel->y;
 
   /* prepare the ToolData... */
   tool_data.sprite = sprite;
@@ -1407,21 +1430,49 @@ void control_tool(JWidget widget, Tool *tool,
 	  cel->y == old_cel_y &&
 	  cel_image->w == tool_data.dst_image->w &&
 	  cel_image->h == tool_data.dst_image->h) {
-	/* undo the dirty region */
-	if (undo_is_enabled(sprite->undo)) {
-	  Dirty *dirty = dirty_new_from_differences(cel_image,
-						    tool_data.dst_image);
-	  /* TODO error handling: if (dirty == NULL) */
+	/* was the 'cel_image' created in the start of the tool-loop? */
+	if (cel_created) {
+	  /* then we can keep the 'cel_image'... */
+	  
+	  /* we copy the 'destination' image to the 'cel_image' */
+	  image_copy(cel_image, tool_data.dst_image, 0, 0);
 
-	  dirty_save_image_data(dirty);
-	  if (dirty != NULL)
-	    undo_dirty(sprite->undo, dirty);
+	  /* add the 'cel_image' in the images' stock of the sprite */
+	  cel->image = stock_add_image(sprite->stock, cel_image);
 
-	  dirty_free(dirty);
+	  /* is the undo enabled? */
+	  if (undo_is_enabled(sprite->undo)) {
+	    /* we can temporary remove the cel */
+	    layer_remove_cel(sprite->layer, cel);
+
+	    /* we create the undo information (for the new cel_image
+	       in the stock and the new cel in the layer)... */
+	    undo_open(sprite->undo);
+	    undo_add_image(sprite->undo, sprite->stock, cel->image);
+	    undo_add_cel(sprite->undo, sprite->layer, cel);
+	    undo_close(sprite->undo);
+
+	    /* and finally we add the cel again in the layer */
+	    layer_add_cel(sprite->layer, cel);
+	  }
 	}
+	else {
+	  /* undo the dirty region */
+	  if (undo_is_enabled(sprite->undo)) {
+	    Dirty *dirty = dirty_new_from_differences(cel_image,
+						      tool_data.dst_image);
+	    /* TODO error handling: if (dirty == NULL) */
 
-	/* copy the 'dst_image' to the cel_image */
-	image_copy(cel_image, tool_data.dst_image, 0, 0);
+	    dirty_save_image_data(dirty);
+	    if (dirty != NULL)
+	      undo_dirty(sprite->undo, dirty);
+
+	    dirty_free(dirty);
+	  }
+
+	  /* copy the 'dst_image' to the cel_image */
+	  image_copy(cel_image, tool_data.dst_image, 0, 0);
+	}
       }
       /* if the size of both images are different, we have to replace
 	 the entire image */
@@ -1462,6 +1513,12 @@ void control_tool(JWidget widget, Tool *tool,
   else {
     cel->x = old_cel_x;
     cel->y = old_cel_y;
+
+    if (cel_created) {
+      layer_remove_cel(sprite->layer, cel);
+      cel_free(cel);
+      image_free(cel_image);
+    }
   }
 
   /* redraw all the sprites */

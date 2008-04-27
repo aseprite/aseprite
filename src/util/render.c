@@ -30,16 +30,17 @@
 /************************************************************************/
 /* Render engine */
 
-/* static Layer *onionskin_layer = NULL; */
 static int global_opacity = 255;
 
 static Layer *selected_layer = NULL;
 static Image *rastering_image = NULL;
 
-static void render_layer(Layer *layer, Image *image,
+static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 			 int source_x, int source_y,
 			 int frame, int zoom,
-			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int));
+			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int),
+			 bool render_background,
+			 bool render_transparent);
 
 static void merge_zoomed_image1(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
 static void merge_zoomed_image2(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
@@ -65,10 +66,7 @@ Image *render_sprite(Sprite *sprite,
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   Layer *background = sprite_get_background_layer(sprite);
-  /* TODO restore this, it's temporary to test that the background
-     layer never has a color with Alpha < 255 */
-/*   bool need_grid = (background != NULL ? !layer_is_readable(background): TRUE); */
-  bool need_grid = TRUE;
+  bool need_grid = (background != NULL ? !layer_is_readable(background): TRUE);
   int depth;
   Image *image;
 
@@ -93,11 +91,6 @@ Image *render_sprite(Sprite *sprite,
       return NULL;
   }
 
-/*   if ((get_onionskin()) && (sprite->frame > 0)) */
-/*     onionskin_layer = sprite->layer; */
-/*   else */
-/*     onionskin_layer = NULL; */
-
   /* create a temporary bitmap to draw all to it */
   image = image_new(sprite->imgtype, width, height);
   if (!image)
@@ -116,10 +109,11 @@ Image *render_sprite(Sprite *sprite,
 	c1 = _graya(128, 255);
 	c2 = _graya(192, 255);
         break;
-      case IMAGE_INDEXED:
-	c1 = rgb_map->data[16][16][16];
-        c2 = rgb_map->data[24][24][24];
-        break;
+	/* TODO remove this */
+      /* case IMAGE_INDEXED: */
+      /* 	c1 = rgb_map->data[16][16][16]; */
+      /*   c2 = rgb_map->data[24][24][24]; */
+      /*   break; */
       default:
 	c1 = c2 = 0;
 	break;
@@ -160,55 +154,68 @@ Image *render_sprite(Sprite *sprite,
 
   /* onion-skin feature: draw the previous frame */
   if (get_onionskin() && (frame > 0)) {
+    /* draw background layer of the current frame with opacity=255 */
+    color_map = NULL;
+    global_opacity = 255;
+
+    render_layer(sprite, sprite->set, image, source_x, source_y,
+		 frame, zoom, zoomed_func, TRUE, FALSE);
+
+    /* draw transparent layers of the previous frame with opacity=128 */
     color_map = orig_trans_map;
     global_opacity = 128;
 
-    render_layer(sprite->set, image, source_x, source_y,
-		 frame-1, zoom, zoomed_func);
+    render_layer(sprite, sprite->set, image, source_x, source_y,
+		 frame-1, zoom, zoomed_func, FALSE, TRUE);
 
+    /* draw transparent layers of the current frame with opacity=255 */
     color_map = NULL;
     global_opacity = 255;
-  }
 
-  /* draw the frame */
-  render_layer(sprite->set, image, source_x, source_y,
-	       frame, zoom, zoomed_func);
+    render_layer(sprite, sprite->set, image, source_x, source_y,
+		 frame, zoom, zoomed_func, FALSE, TRUE);
+  }
+  /* just draw the current frame */
+  else {
+    render_layer(sprite, sprite->set, image, source_x, source_y,
+		 frame, zoom, zoomed_func, TRUE, TRUE);
+  }
 
   return image;
 }
 
-static void render_layer(Layer *layer, Image *image,
+static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 			 int source_x, int source_y,
 			 int frame, int zoom,
-			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int))
+			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int),
+			 bool render_background,
+			 bool render_transparent)
 {
   /* we can't read from this layer */
   if (!layer_is_readable(layer))
     return;
 
-/*   /\* onion-skin feature *\/ */
-/*   if (onionskin_layer == layer) { */
-/*     onionskin_layer = NULL; */
-
-/*     color_map = orig_trans_map; */
-/*     global_opacity = 128; */
-
-/*     /\* render the previous frame *\/ */
-/*     render_layer(layer, image, source_x, source_y, frame-1, zoom, zoomed_func); */
-
-/*     color_map = NULL; */
-/*     global_opacity = 255; */
-/*   } */
-
   switch (layer->gfxobj.type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel = layer_get_cel(layer, frame);
       Image *src_image;
+      Cel *cel;
 
-      if (cel) {
-	if ((cel->image >= 0) &&
-	    (cel->image < layer->sprite->stock->nimage))
+      if ((!render_background  &&  layer_is_background(layer)) ||
+	  (!render_transparent && !layer_is_background(layer)))
+	break;
+
+      cel = layer_get_cel(layer, frame);      
+      if (cel != NULL) {
+	/* is the 'rastering_image' setted to be used with this layer? */
+	if ((frame == sprite->frame) &&
+	    (selected_layer == layer) &&
+	    (rastering_image != NULL)) {
+	  src_image = rastering_image;
+	}
+	/* if not, we use the original cel-image from the images' stock */
+	else if ((cel->image >= 0) &&
+		 (cel->image < layer->sprite->stock->nimage))
 	  src_image = layer->sprite->stock->image[cel->image];
 	else
 	  src_image = NULL;
@@ -216,9 +223,6 @@ static void render_layer(Layer *layer, Image *image,
 	if (src_image) {
 	  int output_opacity;
 	  register int t;
-
-	  if ((selected_layer == layer) && (rastering_image != NULL))
-	    src_image = rastering_image;
 
 	  output_opacity = MID(0, cel->opacity, 255);
 	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
@@ -243,8 +247,11 @@ static void render_layer(Layer *layer, Image *image,
     case GFXOBJ_LAYER_SET: {
       JLink link;
       JI_LIST_FOR_EACH(layer->layers, link)
-	render_layer(link->data, image, source_x, source_y,
-		     frame, zoom, zoomed_func);
+	render_layer(sprite, link->data, image,
+		     source_x, source_y,
+		     frame, zoom, zoomed_func,
+		     render_background,
+		     render_transparent);
       break;
     }
 

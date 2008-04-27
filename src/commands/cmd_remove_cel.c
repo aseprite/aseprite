@@ -23,6 +23,7 @@
 #include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
+#include "raster/undo.h"
 #include "raster/sprite.h"
 #include "script/functions.h"
 
@@ -39,11 +40,14 @@ static bool cmd_remove_cel_enabled(const char *argument)
 
 static void cmd_remove_cel_execute(const char *argument)
 {
-  Cel *cel = layer_get_cel(current_sprite->layer,
-			   current_sprite->frame);
+  Sprite *sprite = current_sprite;
+  Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
-  RemoveCel(current_sprite->layer, cel);
-  update_screen_for_sprite(current_sprite);
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Remove Cel");
+
+  RemoveCel(sprite->layer, cel);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_remove_cel = {

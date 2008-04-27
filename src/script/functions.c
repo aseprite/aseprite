@@ -217,25 +217,17 @@ static void displace_layers(Undo *undo, Layer *layer, int x, int y)
 static int get_max_layer_num(Layer *layer);
 
 /**
- * Creates a new layer with one cel in the current frame of the
- * sprite.
- *
- * @param name Name of the layer (could be NULL)
- * @param x Horizontal position of the first cel
- * @param y Vertical position of the first cel
- * @param w
- * @param h
- *
- * with the specified position and size (if w=h=0 the
- * routine will use the sprite dimension)
+ * Creates a new transparent layer.
  */
 Layer *NewLayer(void)
 {
   Sprite *sprite = current_sprite;
   Layer *layer;
+#if 0
   Image *image;
   Cel *cel;
   int index;
+#endif
 
   if (sprite == NULL) {
     console_printf("NewLayer: No current sprite\n");
@@ -243,33 +235,33 @@ Layer *NewLayer(void)
   }
 
   /* new image */
+#if 0
   image = image_new(sprite->imgtype, sprite->w, sprite->h);
   if (!image) {
     console_printf("NewLayer: Not enough memory\n");
     return NULL;
   }
+#endif
 
   /* new layer */
   layer = layer_new(sprite);
   if (!layer) {
+#if 0
     image_free(image);
+#endif
     console_printf("NewLayer: Not enough memory\n");
     return NULL;
   }
 
+#if 0
   /* clear with mask color */
   image_clear(image, 0);
+#endif
 
   /* configure layer name and blend mode */
-    /* TODO */
-/*     { */
-/*       char *name; */
-/*       name = GetUniqueLayerName(); */
-/*       layer_set_name(layer, name); */
-/*       jfree(name); */
-/*     } */
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
+#if 0
   /* add image in the layer stock */
   index = stock_add_image(sprite->stock, image);
 
@@ -278,7 +270,8 @@ Layer *NewLayer(void)
 
   /* add cel */
   layer_add_cel(layer, cel);
-
+#endif
+  
   /* undo stuff */
   if (undo_is_enabled(sprite->undo)) {
     undo_set_label(sprite->undo, "New Layer");
@@ -670,6 +663,7 @@ void BackgroundFromLayer(void)
   /* each frame of the layer to be converted as `Background' must be
      cleared using the selected background color in the color-bar */
   bgcolor = app_get_bg_color(sprite);
+  bgcolor = fixup_color_for_background(sprite->imgtype, bgcolor);
 
   if (undo_is_enabled(sprite->undo)) {
     undo_set_label(sprite->undo, "Background from Layer");
@@ -805,6 +799,14 @@ void LayerFromBackground(void)
   layer_set_name(sprite->layer, "Layer 0");
 }
 
+void MoveLayerAfter(Layer *layer, Layer *after_this)
+{
+  if (undo_is_enabled(layer->sprite->undo))
+    undo_move_layer(layer->sprite->undo, layer);
+
+  layer_move_layer(layer->parent_layer, layer, after_this);
+}
+
 /* internal routine */
 static int get_max_layer_num(Layer *layer)
 {
@@ -822,6 +824,119 @@ static int get_max_layer_num(Layer *layer)
   }
   
   return max;
+}
+
+/* ======================================= */
+/* Frame                                   */
+/* ======================================= */
+
+static void MoveFrameBeforeLayer2(Undo *undo, Layer *layer, int frame, int before_frame);
+
+void SetFrameLength(Sprite *sprite, int frame, int msecs)
+{
+  if (undo_is_enabled(sprite->undo))
+    undo_set_frlen(sprite->undo, sprite, frame);
+
+  sprite_set_frlen(sprite, frame, msecs);
+}
+
+void MoveFrameBefore(int frame, int before_frame)
+{
+  Sprite *sprite = current_sprite;
+  int c, frlen_aux;
+
+  if (sprite &&
+      frame != before_frame &&
+      frame >= 0 &&
+      frame < sprite->frames &&
+      before_frame >= 0 &&
+      before_frame < sprite->frames) {
+    if (undo_is_enabled(sprite->undo))
+      undo_open(sprite->undo);
+
+    /* Change the frame-lengths... */
+
+    frlen_aux = sprite->frlens[frame];
+
+    /* moving the frame to the future */
+    if (frame < before_frame) {
+      frlen_aux = sprite->frlens[frame];
+
+      for (c=frame; c<before_frame-1; c++)
+	SetFrameLength(sprite, c, sprite->frlens[c+1]);
+
+      SetFrameLength(sprite, before_frame-1, frlen_aux);
+    }
+    /* moving the frame to the past */
+    else if (before_frame < frame) {
+      frlen_aux = sprite->frlens[frame];
+
+      for (c=frame; c>before_frame; c--)
+	SetFrameLength(sprite, c, sprite->frlens[c-1]);
+
+      SetFrameLength(sprite, before_frame, frlen_aux);
+    }
+    
+    /* Change the cels of position... */
+    MoveFrameBeforeLayer2(sprite->undo, sprite->set, frame, before_frame);
+
+    if (undo_is_enabled(sprite->undo))
+      undo_close(sprite->undo);
+  }
+}
+
+static void MoveFrameBeforeLayer2(Undo *undo, Layer *layer, int frame, int before_frame)
+{
+  switch (layer->gfxobj.type) {
+
+    case GFXOBJ_LAYER_IMAGE: {
+      Cel *cel;
+      JLink link;
+      int new_frame;
+
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	cel = link->data;
+	new_frame = cel->frame;
+
+	/* moving the frame to the future */
+	if (frame < before_frame) {
+	  if (cel->frame == frame) {
+	    new_frame = before_frame-1;
+	  }
+	  else if (cel->frame > frame &&
+		   cel->frame < before_frame) {
+	    new_frame--;
+	  }
+	}
+	/* moving the frame to the past */
+	else if (before_frame < frame) {
+	  if (cel->frame == frame) {
+	    new_frame = before_frame;
+	  }
+	  else if (cel->frame >= before_frame &&
+		   cel->frame < frame) {
+	    new_frame++;
+	  }
+	}
+
+	if (cel->frame != new_frame) {
+	  if (undo_is_enabled(undo))
+	    undo_int(undo, (GfxObj *)cel, &cel->frame);
+
+	  cel->frame = new_frame;
+	}
+      }
+      break;
+    }
+
+    case GFXOBJ_LAYER_SET: {
+      JLink link;
+      JI_LIST_FOR_EACH(layer->layers, link)
+	MoveFrameBeforeLayer2(undo, link->data, frame, before_frame);
+      break;
+    }
+
+  }
 }
 
 /* ======================================= */
@@ -848,10 +963,8 @@ void RemoveCel(Layer *layer, Cel *cel)
       }
     }
 
-    if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Remove Cel");
+    if (undo_is_enabled(sprite->undo))
       undo_open(sprite->undo);
-    }
 
     if (!used) {
       /* if the image is only used by this cel, we can remove the

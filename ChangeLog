@@ -1,3 +1,38 @@
+2008-04-27  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/jinete/jdraw.c (ji_move_region): Renamed ji_blit_region to
+	ji_move_region.
+
+	* src/jinete/jwidget.c (jwidget_scroll): Done.
+
+	* src/jinete/jdraw.c (jdraw_inverted_sprite): Rewritten to use
+	Allegro routines instead of get/putpixel.
+
+2008-04-26  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/dialogs/aniedit.c (anieditor_msg_proc): Now the user can
+	move layers.
+
+	* src/script/functions.c (MoveLayerAfter): Added.
+
+	* src/widgets/colbar.c (FGBGSIZE): Added.
+
+	* src/modules/gui.h: Renamed GUISCALE to guiscale() function.
+
+	* src/script/functions.c (SetFrameLength): Added.
+	(MoveFrameBefore): Fixed to undo frame-lengths.
+
+	* src/raster/undo.c (undo_set_frlen): Added.
+
+2008-04-17  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/dialogs/aniedit.c: In these days I was working in the new
+	Animation Editor. Right now you can create/remove/move
+	frames. Select layers and frame. See thumbnails. Change the
+	separator position. It doesn't support scroll yet.
+
+	* src/script/functions.c (MoveFrameBefore): Added.
+
 2008-04-14  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/modules/tools.c: Added the Jumble tool & ink.

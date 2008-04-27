@@ -1,5 +1,0 @@
-- this should be called by some routine in the program exit (by cursor.c):
-  if (cursor_bound.seg) {
-    r_free (cursor_bound.seg);
-    cursor_bound.seg = NULL;
-  }

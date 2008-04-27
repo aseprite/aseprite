@@ -80,7 +80,7 @@ void dialogs_frame_length(int sprite_frame)
 	sprite_set_speed(current_sprite, num);
     }
     else
-      sprite_set_frlen(current_sprite, num, sprite_frame);
+      sprite_set_frlen(current_sprite, sprite_frame, num);
   }
   jwidget_free(window);
 }

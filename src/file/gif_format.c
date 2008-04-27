@@ -130,7 +130,7 @@ static bool load_GIF(FileOp *fop)
       pal = &gif->palette;
 
     /* 1/100th seconds to milliseconds */
-    sprite_set_frlen(sprite, gif->frames[i].duration*10, i);
+    sprite_set_frlen(sprite, i, gif->frames[i].duration*10);
 
     /* make the palette */
     for (c=0; c<pal->colors_count; c++) {

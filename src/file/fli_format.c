@@ -175,9 +175,8 @@ static bool load_FLI(FileOp *fop)
 #endif
     /* the palette and the image don't change: add duration to the last added frame */
     else {
-      sprite_set_frlen(sprite,
-		       sprite_get_frlen(sprite, frpos_out)+fli_header.speed,
-		       frpos_out);
+      sprite_set_frlen(sprite, frpos_out,
+		       sprite_get_frlen(sprite, frpos_out)+fli_header.speed);
     }
 
     /* update the old image and color-map to the new ones to compare later */

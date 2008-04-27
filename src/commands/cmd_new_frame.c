@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
@@ -126,14 +127,18 @@ static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
   Cel *src_cel;
   Cel *dst_cel;
 
+  assert(frame > 0);
+
   /* create a copy of the previous cel */
   src_cel = layer_get_cel(layer, frame-1);
   src_image = src_cel ? stock_get_image(sprite->stock,
 					src_cel->image):
 			NULL;
 
-  if (src_image == NULL || frame == 0)
-    dst_image = image_new(sprite->imgtype, sprite->w, sprite->h);
+  if (src_image == NULL) {
+    /* do nothing, it will be a transparent cel */
+    return TRUE;
+  }
   else
     dst_image = image_new_copy(src_image);
 

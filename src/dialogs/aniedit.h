@@ -16,14 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_THMBNAIL_H
-#define UTIL_THMBNAIL_H
+#ifndef DIALOGS_ANIEDIT_H
+#define DIALOGS_ANIEDIT_H
 
-struct Cel;
-struct Sprite;
+void switch_between_animation_and_sprite_editor(void);
 
-void destroy_thumbnails(void);
-struct BITMAP *generate_thumbnail(struct Layer *layer, struct Cel *cel, struct Sprite *sprite);
-
-#endif /* UTIL_THMBNAIL_H */
+#endif /* DIALOGS_ANIEDIT_H */
 

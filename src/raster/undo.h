@@ -85,6 +85,7 @@ void undo_move_layer(Undo *undo, struct Layer *layer);
 void undo_set_layer(Undo *undo, struct Sprite *sprite);
 void undo_set_mask(Undo *undo, struct Sprite *sprite);
 void undo_set_frames(Undo *undo, struct Sprite *sprite);
+void undo_set_frlen(Undo *undo, struct Sprite *sprite, int frame);
 
 #define undo_int(undo, gfxobj, value_address) \
   undo_data((undo), (gfxobj), (void *)(value_address), sizeof(int))

@@ -24,8 +24,6 @@
 #define HOOK(widget, signal, signal_handler, data)			\
   hook_signal((widget), (signal), (signal_handler), (void *)(data))
 
-#define GUISCALE   (JI_SCREEN_W > 512 ? 2: 1)
-
 struct Sprite;
 struct Monitor;
 
@@ -33,6 +31,8 @@ typedef struct Monitor Monitor;
 
 int init_module_gui(void);
 void exit_module_gui(void);
+
+int guiscale(void);
 
 int get_screen_scaling(void);
 void set_screen_scaling(int scaling);

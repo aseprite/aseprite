@@ -66,7 +66,9 @@ extern Command cmd_frame_properties;
 extern Command cmd_goto_first_frame;
 extern Command cmd_goto_last_frame;
 extern Command cmd_goto_next_frame;
+extern Command cmd_goto_next_layer;
 extern Command cmd_goto_previous_frame;
+extern Command cmd_goto_previous_layer;
 extern Command cmd_invert_color;
 extern Command cmd_invert_mask;
 extern Command cmd_layer_from_background;
@@ -160,7 +162,9 @@ static Command *commands[] = {
   &cmd_goto_first_frame,
   &cmd_goto_last_frame,
   &cmd_goto_next_frame,
+  &cmd_goto_next_layer,
   &cmd_goto_previous_frame,
+  &cmd_goto_previous_layer,
   &cmd_invert_color,
   &cmd_invert_mask,
   &cmd_layer_from_background,

@@ -703,7 +703,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
     set_clip(ji_screen,
 	     man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
 
-    ji_blit_region(moveable_region,
+    ji_move_region(moveable_region,
 		   widget->rc->x1 - old_pos->x1,
 		   widget->rc->y1 - old_pos->y1);
     set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);

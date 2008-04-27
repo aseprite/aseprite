@@ -31,6 +31,7 @@
 
 static Layer *index2layer(Layer *layer, int index, int *index_count);
 static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count);
+static int layer_count_layers(const Layer *layer);
 
 static Sprite *general_copy(const Sprite *src_sprite);
 
@@ -468,7 +469,7 @@ void sprite_set_frames(Sprite *sprite, int frames)
   sprite->frames = frames;
 }
 
-void sprite_set_frlen(Sprite *sprite, int msecs, int frame)
+void sprite_set_frlen(Sprite *sprite, int frame, int msecs)
 {
   if (frame >= 0 && frame < sprite->frames)
     sprite->frlens[frame] = MID(1, msecs, 65535);
@@ -702,6 +703,7 @@ void sprite_generate_mask_boundaries(Sprite *sprite)
 Layer *sprite_index2layer(Sprite *sprite, int index)
 {
   int index_count = -1;
+  assert(sprite != NULL);
 
   return index2layer(sprite->set, index, &index_count);
 }
@@ -709,8 +711,15 @@ Layer *sprite_index2layer(Sprite *sprite, int index)
 int sprite_layer2index(const Sprite *sprite, const Layer *layer)
 {
   int index_count = -1;
+  assert(sprite != NULL);
 
   return layer2index(sprite->set, layer, &index_count);
+}
+
+int sprite_count_layers(const Sprite *sprite)
+{
+  assert(sprite != NULL);
+  return layer_count_layers(sprite->set)-1;
 }
 
 /**
@@ -789,6 +798,20 @@ static int layer2index(const Layer *layer, const Layer *find_layer, int *index_c
 
     return -1;
   }
+}
+
+static int layer_count_layers(const Layer *layer)
+{
+  int count = 1;
+
+  if (layer_is_set(layer)) {
+    JLink link;
+    JI_LIST_FOR_EACH(layer->layers, link) {
+      count += layer_count_layers(link->data);
+    }
+  }
+
+  return count;
 }
 
 /**

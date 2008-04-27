@@ -30,6 +30,8 @@
 	    <!-- layer -->
 	    <key command="layer_properties" shortcut="Shift+P" />
 	    <key command="new_layer" shortcut="Shift+N" />
+	    <key command="goto_previous_layer" shortcut="Down" />
+	    <key command="goto_next_layer" shortcut="Up" />
 	    <!-- frame -->
 	    <key command="new_frame" shortcut="N" />
 	    <key command="goto_first_frame" shortcut="Home" />

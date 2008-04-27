@@ -1254,46 +1254,28 @@ void jwidget_invalidate_region(JWidget widget, const JRegion region)
   }
 }
 
-void jwidget_scroll(JWidget widget, int dx, int dy, const JRect rect,
-		    JRegion update_region)
+void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
 {
-  JRegion reg1, reg2;
+  if (dx != 0 || dy != 0) {
+    JRegion reg2 = jregion_new(NULL, 0);
 
-  assert_valid_widget(widget);
-  
-  reg1 = jwidget_get_drawable_region(widget,
-				     JI_GDR_CUTTOPWINDOWS |
-				     JI_GDR_USECHILDAREA);
-  reg2 = jregion_new(rect, 0);
-  
-  jregion_intersect(reg1, reg1, reg2);
+    jregion_copy(reg2, region);
+    jregion_translate(reg2, dx, dy);
+    jregion_intersect(reg2, reg2, region);
 
-  jregion_copy(reg2, reg1);
-  jregion_translate(reg1, -dx, -dy);
-  jregion_intersect(reg2, reg2, reg1);
+    jregion_translate(reg2, -dx, -dy);
+    ji_move_region(reg2, dx, dy);
+    jregion_translate(reg2, dx, dy);
 
-  jmouse_hide();
-  ji_blit_region(reg2, dx, dy);
-  jmouse_show();
-
-  if (!update_region) {
-    jregion_union(widget->update_region, widget->update_region, reg1);
+    jregion_union(widget->update_region, widget->update_region, region);
     jregion_subtract(widget->update_region, widget->update_region, reg2);
-  }
-  else {
-    jregion_copy(update_region, reg1);
-    jregion_subtract(update_region, update_region, reg2);
-    jregion_union(widget->update_region,
-		    widget->update_region, update_region);
-  }
 
-  /* TODO */
-  /* refresh the update_region */
-/*   jwidget_flush_redraw(widget); */
-/*   jmanager_dispatch_messages(); */
+    /* refresh the update_region */
+    jwidget_flush_redraw(widget);
+    jmanager_dispatch_messages(ji_get_default_manager());
 
-  jregion_free(reg1);
-  jregion_free(reg2);
+    jregion_free(reg2);
+  }
 }
 
 /**********************************************************************/

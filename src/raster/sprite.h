@@ -112,7 +112,7 @@ void sprite_set_filename(Sprite *sprite, const char *filename);
 void sprite_set_format_options(Sprite *sprite, struct FormatOptions *format_options);
 void sprite_set_size(Sprite *sprite, int w, int h);
 void sprite_set_frames(Sprite *sprite, int frames);
-void sprite_set_frlen(Sprite *sprite, int msecs, int frame);
+void sprite_set_frlen(Sprite *sprite, int frame, int msecs);
 int sprite_get_frlen(Sprite *sprite, int frame);
 void sprite_set_speed(Sprite *sprite, int msecs);
 void sprite_set_path(Sprite *sprite, const struct Path *path);
@@ -135,6 +135,7 @@ void sprite_generate_mask_boundaries(Sprite *sprite);
 
 struct Layer *sprite_index2layer(Sprite *sprite, int index);
 int sprite_layer2index(const Sprite *sprite, const struct Layer *layer);
+int sprite_count_layers(const Sprite *sprite);
 
 int sprite_getpixel(Sprite *sprite, int x, int y);
 

@@ -10,6 +10,7 @@ NEWS
 + Transparent cel handling for the end-user (you can move a cel and
   don't worry about its bounds).
 + Rewritten the color-bar and color-selector dialog.
++ New tools: Eraser, Blur, Jumble.
 + Replaced the "List" menu with the tabs selector.
 + Rewritten the File Selector:
   + Preview support.
@@ -17,10 +18,11 @@ NEWS
   + History of navigation (Back/Forward).
   + In Windows: you can visit Desktop, My Documents and My Computer
     locations.
-+ Optimized the loading/saving operations (using threads).
++ Optimized some operations like load/save files and "apply effect"
+  (convolution matrices, color curves, median, etc.)
 + Restructured all the menus (more user friendly options).
 + Enhanced GUI:
-  + more borders for windows and more spacing between widgets.
+  + more borders for windows and more spacing between controls.
   + better mouse behavior (now in Windows the mouse is captured).
   + added tooltips.
 + Added screen pixel-scaling support (with double-buffering). This
@@ -36,10 +38,10 @@ NEWS
     to create scripts.
   - Removed screen saver.
   - Removed sessions.
-  - Removed draw-text (it'll return in next versions).
-  - Removed layer-sets (the Film-Editor can't handle them right at the
-    moment).
-  - Removed mapgen.
+  - Removed draw-text (it'll return in next versions like text-layers).
+  - Removed layer-sets (the Animation-Editor can't handle them right at
+    the moment).
+  - Removed map-generation utility.
   - Removed linked-cels (were complex for the end-user).
  
 0.5

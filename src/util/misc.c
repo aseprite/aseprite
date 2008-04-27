@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <assert.h>
 #include <string.h>
 
 #include "jinete/jlist.h"
@@ -37,6 +38,7 @@
 #include "modules/tools2.h"
 #include "raster/raster.h"
 #include "util/misc.h"
+#include "script/functions.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
@@ -123,17 +125,30 @@ void ClearMask(void)
   Image *image;
   div_t d;
 
-  if (sprite) {
+  if (sprite != NULL) {
     image = GetImage2(sprite, &x, &y, NULL);
     if (image) {
       int bgcolor = app_get_color_to_clear_layer(sprite->layer);
 
+      /* if the mask is empty then we have to clear the entire image
+	 in the cel */
       if (mask_is_empty(sprite->mask)) {
-	if (undo_is_enabled(sprite->undo))
-	  undo_image(sprite->undo, image, 0, 0, image->w, image->h);
+	/* if the layer is the background then we clear the image */
+	if (layer_is_background(sprite->layer)) {
+	  if (undo_is_enabled(sprite->undo))
+	    undo_image(sprite->undo, image, 0, 0, image->w, image->h);
 
-	/* clear all */
-	image_clear(image, bgcolor);
+	  /* clear all */
+	  image_clear(image, bgcolor);
+	}
+	/* if the layer is transparent we can remove the cel (and it's
+	   associated image) */
+	else {
+	  assert(layer_get_cel(sprite->layer, sprite->frame) != NULL);
+
+	  RemoveCel(sprite->layer, layer_get_cel(sprite->layer,
+						 sprite->frame));
+	}
       }
       else {
 	int x1 = MAX(0, sprite->mask->x);

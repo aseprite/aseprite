@@ -186,13 +186,13 @@ static DATA gfx_data[GFX_BITMAP_COUNT] =
     "  ###   " },
   /* GFX_TOOL_JUMBLE */
   { 8, 8,
-    "        "
-    "   ##   "
-    "  #  #  "
-    "## # ###"
-    "### # ##"
-    "  #  #  "
-    "   ##   "
+    " #    # "
+    "   # #  "
+    "# #     "
+    "      # "
+    "#  #   #"
+    " #   #  "
+    "  #     "
     "        " },
   /* GFX_TOOL_CONFIGURATION */
   { 8, 8,

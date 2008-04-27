@@ -396,13 +396,17 @@ static bool layer_box_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* new_frame, remove_frame, new_cel, remove_cel */
-      if (command &&
+      if ((command != NULL) &&
 	  (strcmp(command->name, CMD_NEW_CEL) == 0 ||
 	   strcmp(command->name, CMD_NEW_FRAME) == 0 ||
 	   strcmp(command->name, CMD_NEW_LAYER) == 0 ||
 	   strcmp(command->name, CMD_REMOVE_CEL) == 0 ||
 	   strcmp(command->name, CMD_REMOVE_FRAME) == 0 ||
-	   strcmp(command->name, CMD_REMOVE_LAYER) == 0)) {
+	   strcmp(command->name, CMD_REMOVE_LAYER) == 0 ||
+	   strcmp(command->name, CMD_GOTO_FIRST_FRAME) == 0 ||
+	   strcmp(command->name, CMD_GOTO_PREVIOUS_FRAME) == 0 ||
+	   strcmp(command->name, CMD_GOTO_NEXT_FRAME) == 0 ||
+	   strcmp(command->name, CMD_GOTO_LAST_FRAME) == 0)) {
 	command_execute(command, NULL);
 	update_after_command(layer_box);
 	return TRUE;
@@ -679,7 +683,7 @@ static bool cel_box_msg_proc(JWidget widget, JMessage msg)
 	      k_image = cel->image;
 
 	      cel_link = cel_is_link(cel, layer);
-	      thumbnail = generate_thumbnail(cel_link ? cel_link: cel, sprite);
+	      thumbnail = generate_thumbnail(layer, cel_link ? cel_link: cel, sprite);
 
 	      x1 = k_frame*FRMSIZE-scroll_x+FRMSIZE/2-THUMBSIZE/2;
 	      y1 = y+3;

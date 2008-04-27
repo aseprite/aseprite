@@ -1,7 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
 <jinete>
-<window text="Configure Screen" name="configure_screen" width="200">
+<window text="Configure Screen" name="configure_screen">
   <box vertical>
     <box horizontal expansive>
       <box vertical homogeneous>

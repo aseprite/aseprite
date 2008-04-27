@@ -10,11 +10,29 @@ Next beta
   + quick_swap
 - tooltips for color-bar.
   + agregar soporte para UNDO al cambiar los colores de la paleta.
+- search "TODO next release"
+- search "TODO remove me"
 
 High priority work
 ------------------
 
 - search for TODO;
+- add AseContext structure to handle the current state of the
+  application (and hook changes in the context/options):
+  + src/ase/ directory
+  + src/ase/context.[ch]
+  + the current sprite should be in the AseContext
+  + the commands should be enabled/disabled/checked by the current
+    context state
+  + the commands should use a new ase/ API and not the raster/ low-level
+  + the dependencies should be:
+    commands/ -> ase/ -> raster/ -> jinete/
+  + the list of 'sprites' should be in the context (maybe a
+    AseSharedContext).
+  + the scripts should start with a new default AseContext (but
+    with the AseSharedContext visible)
+  + 
+- brush options by tool.
 - if there is activated the Tools Configuration dialog box, the
   Shift+G and Shift+S should update it
   + Solution: with hooks and Options (add core/options.[ch])
@@ -64,9 +82,6 @@ High priority work
 - when press Plus/Minus pad in the editor and the configuration tool
   window is active, the slider of the "Brush Size" must be updated.
 - make keys like 9, 0, + Pad, - Pad configurable.
-- drawing tools:
-  + real-spray;
-  + Animator Pro like: oval, petal, rpoly, star, poly, spiral;
 
 Wish-list
 ---------

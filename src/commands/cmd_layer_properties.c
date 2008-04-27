@@ -76,7 +76,7 @@ static void cmd_layer_properties_execute(const char *argument)
     jlistbox_select_index(list_bm, layer->blend_mode);
 
     jview_attach(view_bm, list_bm);
-    jwidget_set_min_size(view_bm, 128, 64);
+    jwidget_set_min_size(view_bm, 128*guiscale(), 64*guiscale());
     jwidget_expansive(view_bm, TRUE);
   }
 

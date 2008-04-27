@@ -31,6 +31,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_flip.c				\
 	src/commands/cmd_frame_properties.c		\
 	src/commands/cmd_goto_frame.c			\
+	src/commands/cmd_goto_layer.c			\
 	src/commands/cmd_grid.c				\
 	src/commands/cmd_invert_mask.c			\
 	src/commands/cmd_layer_from_background.c	\
@@ -86,6 +87,7 @@ COMMON_SOURCES =					\
 	src/core/dirs.c					\
 	src/core/file_system.c				\
 	src/core/modules.c				\
+	src/dialogs/aniedit.c				\
 	src/dialogs/canvasze.c				\
 	src/dialogs/drawtext.c				\
 	src/dialogs/filesel.c				\

@@ -52,6 +52,15 @@ void CropLayer(void);
 void BackgroundFromLayer(void);
 void LayerFromBackground(void);
 
+void MoveLayerAfter(struct Layer *layer, struct Layer *after_this);
+
+/* ======================================= */
+/* Frame                                   */
+/* ======================================= */
+
+void SetFrameLength(struct Sprite *sprite, int frame, int msecs);
+void MoveFrameBefore(int frame, int before_frame);
+
 /* ======================================= */
 /* Cel                                     */
 /* ======================================= */

@@ -44,7 +44,7 @@ static BITMAP *gfx_bmps[GFX_BITMAP_COUNT];
 
 static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
 {
-  int guiscale = GUISCALE;
+  int scale = guiscale();
   const char *p;
   int x, y;
   int black = makecol(0, 0, 0);
@@ -52,14 +52,14 @@ static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
   int white = makecol(255, 255, 255);
   int mask;
 
-  *bmp = create_bitmap(data->w * guiscale,
-		       data->h * guiscale);
+  *bmp = create_bitmap(data->w * scale,
+		       data->h * scale);
   mask = bitmap_mask_color(*bmp);
 
   p = data->line;
-  for (y=0; y<(*bmp)->h; y+=guiscale) {
-    for (x=0; x<(*bmp)->w; x+=guiscale) {
-      rectfill(*bmp, x, y, x+guiscale-1, y+guiscale-1,
+  for (y=0; y<(*bmp)->h; y+=scale) {
+    for (x=0; x<(*bmp)->w; x+=scale) {
+      rectfill(*bmp, x, y, x+scale-1, y+scale-1,
 	       (*p == '#') ? black:
 	       (*p == '%') ? gray:
 	       (*p == '.') ? white: mask);
@@ -549,10 +549,6 @@ void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
   int w = x2 - x1 + 1;
   int h = y2 - y1 + 1;
   BITMAP *graph;
-  int grid;
-
-  grid = MIN(w, h) / 2;
-  grid += MIN(w, h) - grid*2;
 
   if (type == COLOR_TYPE_INDEX) {
     data = color_get_index(imgtype, color);

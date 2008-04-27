@@ -310,6 +310,11 @@ void exit_module_gui(void)
   remove_timer();
 }
 
+int guiscale(void)
+{
+  return (JI_SCREEN_W > 512 ? 2: 1);
+}
+
 static Monitor *monitor_new(void (*proc)(void *),
 			    void (*free)(void *), void *data)
 {
@@ -486,7 +491,7 @@ void reload_default_font(void)
   if ((user_font) && (*user_font))
     dirs_add_path(dirs, user_font);
 
-  usprintf(buf, "fonts/ase%d.pcx", GUISCALE);
+  usprintf(buf, "fonts/ase%d.pcx", guiscale());
   dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
   /* try to load the font */
@@ -494,7 +499,7 @@ void reload_default_font(void)
     theme->default_font = ji_font_load(dir->path);
     if (theme->default_font) {
       if (ji_font_is_scalable(theme->default_font))
-	ji_font_set_size(theme->default_font, 8*GUISCALE);
+	ji_font_set_size(theme->default_font, 8*guiscale());
       break;
     }
   }

@@ -68,7 +68,7 @@ void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg);
 
 void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
 
-void ji_blit_region(JRegion region, int dx, int dy);
+void ji_move_region(JRegion region, int dx, int dy);
 
 JI_END_DECLS
 

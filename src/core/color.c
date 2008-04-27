@@ -646,21 +646,27 @@ int get_color_for_layer(Layer *layer, color_t color)
 
 int fixup_color_for_layer(Layer *layer, int color)
 {
-  if (layer_is_background(layer)) {
-    switch (layer->sprite->imgtype) {
-      case IMAGE_RGB:
-	if (_rgba_geta(color) < 255) {
-	  return _rgba(_rgba_getr(color),
-		       _rgba_getg(color),
-		       _rgba_getb(color), 255);
-	}
-	break;
-      case IMAGE_GRAYSCALE:
-	if (_graya_geta(color) < 255) {
-	  return _graya(_graya_getv(color), 255);
-	}
-	break;
-    }
+  if (layer_is_background(layer))
+    return fixup_color_for_background(layer->sprite->imgtype, color);
+  else
+    return color;
+}
+
+int fixup_color_for_background(int imgtype, int color)
+{
+  switch (imgtype) {
+    case IMAGE_RGB:
+      if (_rgba_geta(color) < 255) {
+	return _rgba(_rgba_getr(color),
+		     _rgba_getg(color),
+		     _rgba_getb(color), 255);
+      }
+      break;
+    case IMAGE_GRAYSCALE:
+      if (_graya_geta(color) < 255) {
+	return _graya(_graya_getv(color), 255);
+      }
+      break;
   }
   return color;
 }

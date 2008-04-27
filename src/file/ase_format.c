@@ -38,7 +38,7 @@
 
 #define ASE_FILE_RAW_CEL		0
 #define ASE_FILE_LINK_CEL		1
-#define ASE_FILE_RLE_COMPRESSED_CEL	2
+#define ASE_FILE_RLE_COMPRESSED_CEL	2 /* TODO change this with zlib */
 
 typedef struct ASE_Header
 {
@@ -174,7 +174,7 @@ static bool load_ASE(FileOp *fop)
     if (frame_header.magic == ASE_FILE_FRAME_MAGIC) {
       /* use frame-duration field? */
       if (frame_header.duration > 0)
-	sprite_set_frlen(sprite, frame_header.duration, frame);
+	sprite_set_frlen(sprite, frame, frame_header.duration);
 
       /* read chunks */
       for (c=0; c<frame_header.chunks; c++) {
