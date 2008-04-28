@@ -73,7 +73,6 @@ static int use_dither = FALSE;
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 static bool editor_msg_proc(JWidget widget, JMessage msg);
 static void editor_request_size(JWidget widget, int *w, int *h);
-static void editor_draw_sprite_boundary(JWidget widget);
 static void editor_setcursor(JWidget widget, int x, int y);
 static void editor_update_candraw(JWidget widget);
 
@@ -553,7 +552,7 @@ void editor_draw_grid_safe(JWidget widget)
     JRect rc;
 
     for (c=0, rc=JI_REGION_RECTS(region);
-	 c<nrects;	 c++, rc++) {
+	 c<nrects;	 c++, rc++) {
       set_clip(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
       editor_draw_grid(widget);
     }
@@ -957,14 +956,14 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	jrectexclude(ji_screen,
 		     widget->rc->x1, widget->rc->y1,
 		     widget->rc->x2-1, widget->rc->y2-1,
-		     x1, y1, x2, y2, makecol(128, 128, 128));
+		     x1-1, y1-1, x2+1, y2+1, makecol(128, 128, 128));
 
 	/* draw the sprite in the editor */
 	editor_draw_sprite(widget, 0, 0,
 			   editor->sprite->w-1, editor->sprite->h-1);
 
 	/* draw the sprite boundary */
-	editor_draw_sprite_boundary(widget);
+	rect(ji_screen, x1-1, y1-1, x2+1, y2+1, makecol(0, 0, 0));
 
 	if (editor->rect_data) {
 	  /* destroy the layer-bound information */
@@ -1342,18 +1341,6 @@ static void editor_request_size(JWidget widget, int *w, int *h)
     *w = 4;
     *h = 4;
   }
-}
-
-static void editor_draw_sprite_boundary(JWidget widget)
-{
-  Sprite *sprite = editor_get_sprite(widget);
-  int x1, y1, x2, y2;
-
-  assert(sprite != NULL);
-
-  editor_to_screen(widget, 0, 0, &x1, &y1);
-  editor_to_screen(widget, sprite->w, sprite->h, &x2, &y2);
-  rect(ji_screen, x1-1, y1-1, x2, y2, makecol(0, 0, 0));
 }
 
 static void editor_setcursor(JWidget widget, int x, int y)
