@@ -68,6 +68,8 @@ static Layer *duplicate_layer(void)
     return NULL;
   }
 
+  layer_copy->flags &= ~(LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND);
+
   sprintf(buf, "%s %s", layer_copy->name, _("Copy"));
   layer_set_name(layer_copy, buf);
 

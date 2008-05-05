@@ -161,9 +161,8 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
   JRegion region = NULL;
   int thick = editor->cursor_thick;
 
-  if (thick) {
+  if (thick)
     editor_clean_cursor(widget);
-  }
 
   if (use_refresh_region) {
     region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
@@ -184,11 +183,9 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
     jview_get_scroll(view, &new_scroll_x, &new_scroll_y);
 
     /* move screen with blits */
-    jmouse_hide();
     jwidget_scroll(widget, region,
 		   old_scroll_x - new_scroll_x,
 		   old_scroll_y - new_scroll_y);
-    jmouse_show();
     
     jregion_free(region);
     /* editor->widget->flags &= ~JI_DIRTY; */
@@ -200,9 +197,8 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
 /*     } */
 /*   } */
 
-  if (thick) {
+  if (thick)
     editor_draw_cursor(widget, editor->cursor_screen_x, editor->cursor_screen_y);
-  }
 }
 
 void editor_update(JWidget widget)

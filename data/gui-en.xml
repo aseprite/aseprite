@@ -34,7 +34,7 @@
 	    <key command="goto_next_layer" shortcut="Up" />
 	    <!-- frame -->
 	    <key command="new_frame" shortcut="N" />
-	    <key command="frame_properties" shortcut="Shift+Ctrl+P" />
+	    <key command="frame_properties" shortcut="P" />
 	    <key command="goto_first_frame" shortcut="Home" />
 	    <key command="goto_previous_frame" shortcut="Left" />
 	    <key command="goto_next_frame" shortcut="Right" />

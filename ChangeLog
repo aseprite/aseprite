@@ -1,5 +1,8 @@
 2008-05-05  David A. Capello  <dacap@users.sourceforge.net>
 
+	* src/commands/cmd_duplicate_layer.c (duplicate_layer): Fixed the
+	duplication of background layer: the flags aren't copied.
+
 	* src/script/functions.c (CropLayer): Rewritten (more simple).
 	(CropSprite): Fixed to crop the background layer right.
 

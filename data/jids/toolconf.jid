@@ -1,7 +1,7 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2008 by David A. Capello -->
 <jinete>
-<window text="Tools Setup" name="configure_tool">
+<window text="Tools Configuration" name="configure_tool">
   <box vertical>
     <box horizontal expansive>
       <box vertical>

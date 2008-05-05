@@ -1258,13 +1258,17 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
 {
   if (dx != 0 || dy != 0) {
     JRegion reg2 = jregion_new(NULL, 0);
-
+    
     jregion_copy(reg2, region);
     jregion_translate(reg2, dx, dy);
     jregion_intersect(reg2, reg2, region);
 
     jregion_translate(reg2, -dx, -dy);
+
+    jmouse_hide();
     ji_move_region(reg2, dx, dy);
+    jmouse_show();
+
     jregion_translate(reg2, dx, dy);
 
     jregion_union(widget->update_region, widget->update_region, region);

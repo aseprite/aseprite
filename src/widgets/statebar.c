@@ -479,14 +479,16 @@ static void update_from_layer(StatusBar *statusbar)
   }
 
   /* opacity layer */
-  if (sprite && sprite->layer &&
-      sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE &&
+  if (sprite &&
+      sprite->layer &&
+      layer_is_image(sprite->layer) &&
+      !layer_is_background(sprite->layer) &&
       (cel = layer_get_cel(sprite->layer, sprite->frame))) {
     jslider_set_value(statusbar->slider, MID(0, cel->opacity, 255));
     jwidget_enable(statusbar->slider);
   }
   else {
-    jslider_set_value(statusbar->slider, 0);
+    jslider_set_value(statusbar->slider, 255);
     jwidget_disable(statusbar->slider);
   }
 }
