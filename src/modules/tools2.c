@@ -135,7 +135,6 @@ void ToolTrace(const char *string, const char *_color)
 /**********************************************************************/
 /* Reset/Restore Configuration */
 
-static bool cfg_options_move_mask;
 static int cfg_tools_brush_type;
 static int cfg_tools_brush_size;
 static int cfg_tools_brush_angle;
@@ -155,11 +154,6 @@ static int cfg_jpeg_method;
 void ResetConfig(void)
 {
   JRect rect;
-
-  /* movement */
-  cfg_options_move_mask = get_config_bool("QuickMovement", "UseMask", TRUE);
-
-  set_config_bool("QuickMovement", "UseMask", TRUE);
 
   /* brush */
   cfg_tools_brush_type = get_brush_type();
@@ -207,9 +201,6 @@ void ResetConfig(void)
 
 void RestoreConfig(void)
 {
-  /* movement */
-  set_config_bool("QuickMovement", "UseMask", cfg_options_move_mask);
-
   /* brush */
   set_brush_type(cfg_tools_brush_type);
   set_brush_size(cfg_tools_brush_size);

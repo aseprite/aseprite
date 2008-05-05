@@ -45,8 +45,6 @@ extern Command cmd_configure_tools;
 extern Command cmd_convolution_matrix;
 extern Command cmd_copy;
 extern Command cmd_copy_cel;
-extern Command cmd_crop_cel;
-extern Command cmd_crop_layer;
 extern Command cmd_crop_sprite;
 extern Command cmd_cut;
 extern Command cmd_deselect_mask;
@@ -74,7 +72,6 @@ extern Command cmd_invert_mask;
 extern Command cmd_layer_from_background;
 extern Command cmd_layer_properties;
 extern Command cmd_line_tool;
-extern Command cmd_link_cel;
 extern Command cmd_load_mask;
 extern Command cmd_make_unique_editor;
 extern Command cmd_marker_tool;
@@ -82,7 +79,6 @@ extern Command cmd_mask_all;
 extern Command cmd_mask_by_color;
 extern Command cmd_merge_down_layer;
 extern Command cmd_move_cel;
-extern Command cmd_new_cel;
 extern Command cmd_new_file;
 extern Command cmd_new_frame;
 extern Command cmd_new_layer;
@@ -141,8 +137,6 @@ static Command *commands[] = {
   &cmd_convolution_matrix,
   &cmd_copy,
   &cmd_copy_cel,
-  &cmd_crop_cel,
-  &cmd_crop_layer,
   &cmd_crop_sprite,
   &cmd_cut,
   &cmd_deselect_mask,
@@ -170,7 +164,6 @@ static Command *commands[] = {
   &cmd_layer_from_background,
   &cmd_layer_properties,
   &cmd_line_tool,
-  &cmd_link_cel,
   &cmd_load_mask,
   &cmd_make_unique_editor,
   &cmd_marker_tool,
@@ -178,7 +171,6 @@ static Command *commands[] = {
   &cmd_mask_by_color,
   &cmd_merge_down_layer,
   &cmd_move_cel,
-  &cmd_new_cel,
   &cmd_new_file,
   &cmd_new_frame,
   &cmd_new_layer,

@@ -21,12 +21,12 @@
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
-#include "dialogs/filmedit.h"
+#include "dialogs/aniedit.h"
 #include "util/celmove.h"
 
 static bool cmd_copy_cel_enabled(const char *argument)
 {
-  return is_movingcel();
+  return animation_editor_is_movingcel();
 }
 
 static void cmd_copy_cel_execute(const char *argument)

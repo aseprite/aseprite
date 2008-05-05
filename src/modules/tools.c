@@ -861,6 +861,7 @@ void control_tool(JWidget widget, Tool *tool,
   Cel *cel = NULL;
   Image *cel_image = NULL;
   bool cel_created = FALSE;
+  bool destroy_cel = FALSE;
   ToolData tool_data;
 
   /* First of all we have to dispatch the enqueue messages. Why is it
@@ -1420,6 +1421,8 @@ void control_tool(JWidget widget, Tool *tool,
 
       sprite_generate_mask_boundaries(sprite);
       update_screen_for_sprite(sprite);
+
+      destroy_cel = TRUE;
     }
 
     /* draw trace ***************************************************/
@@ -1510,7 +1513,10 @@ void control_tool(JWidget widget, Tool *tool,
   }
   /* if the user canceled the operation we have to restore the cel
      position */
-  else {
+  else
+    destroy_cel = TRUE;
+
+  if (destroy_cel) {
     cel->x = old_cel_x;
     cel->y = old_cel_y;
 

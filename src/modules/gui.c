@@ -36,7 +36,6 @@
 #include "core/core.h"
 #include "core/dirs.h"
 #include "dialogs/options.h"
-#include "dialogs/filmedit.h"
 #include "intl/msgids.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"

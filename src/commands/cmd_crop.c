@@ -58,34 +58,6 @@ static void cmd_autocrop_sprite_execute(const char *argument)
   autocrop_sprite();
 }
 
-/* ======================== */
-/* crop_layer               */
-/* ======================== */
-
-static bool cmd_crop_layer_enabled(const char *argument)
-{
-  return cmd_crop_enabled(argument);
-}
-
-static void cmd_crop_layer_execute(const char *argument)
-{
-  CropLayer();
-}
-
-/* ======================== */
-/* crop_cel               */
-/* ======================== */
-
-static bool cmd_crop_cel_enabled(const char *argument)
-{
-  return cmd_crop_enabled(argument);
-}
-
-static void cmd_crop_cel_execute(const char *argument)
-{
-  CropCel();
-}
-
 /**********************************************************************/
 /* local */
 
@@ -115,21 +87,5 @@ Command cmd_autocrop_sprite = {
   cmd_autocrop_sprite_enabled,
   NULL,
   cmd_autocrop_sprite_execute,
-  NULL
-};
-
-Command cmd_crop_layer = {
-  CMD_CROP_LAYER,
-  cmd_crop_layer_enabled,
-  NULL,
-  cmd_crop_layer_execute,
-  NULL
-};
-
-Command cmd_crop_cel = {
-  CMD_CROP_CEL,
-  cmd_crop_cel_enabled,
-  NULL,
-  cmd_crop_cel_execute,
   NULL
 };

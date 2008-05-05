@@ -38,9 +38,7 @@ static bool cmd_cel_properties_enabled(const char *argument)
 {
   return
     is_current_sprite_not_locked()
-    && current_sprite->layer
-    && layer_get_cel(current_sprite->layer,
-		     current_sprite->frame) != NULL;
+    && current_sprite->layer;
 }
 
 static void cmd_cel_properties_execute(const char *argument)
@@ -64,10 +62,8 @@ static void cmd_cel_properties_execute(const char *argument)
   if (!layer)
     goto done;
 
-  /* get current cel */
+  /* get current cel (can be NULL) */
   cel = layer_get_cel(layer, sprite->frame);
-  if (!cel)
-    goto done;
 
   window = load_widget("celprop.jid", "cel_properties");
   if (!window)
@@ -89,35 +85,43 @@ static void cmd_cel_properties_execute(const char *argument)
     jwidget_disable(button_ok);
   }
 
-  usprintf(buf, "%d/%d", cel->frame+1, sprite->frames);
+  usprintf(buf, "%d/%d", sprite->frame+1, sprite->frames);
   jwidget_set_text(label_frame, buf);
 
-  /* position */
-  usprintf(buf, "%d, %d", cel->x, cel->y);
-  jwidget_set_text(label_pos, buf);
+  if (cel != NULL) {
+    /* position */
+    usprintf(buf, "%d, %d", cel->x, cel->y);
+    jwidget_set_text(label_pos, buf);
 
-  /* dimension (and memory size) */
-  memsize =
-    IMAGE_LINE_SIZE(sprite->stock->image[cel->image],
-		    sprite->stock->image[cel->image]->w)*
-    sprite->stock->image[cel->image]->h;
+    /* dimension (and memory size) */
+    memsize =
+      IMAGE_LINE_SIZE(sprite->stock->image[cel->image],
+		      sprite->stock->image[cel->image]->w)*
+      sprite->stock->image[cel->image]->h;
 
-  usprintf(buf, "%dx%d (",
-	   sprite->stock->image[cel->image]->w,
-	   sprite->stock->image[cel->image]->h);
-  get_pretty_memsize(memsize,
- 		     buf+ustrsize(buf),
-		     sizeof(buf)-ustrsize(buf));
-  ustrcat(buf, ")");
+    usprintf(buf, "%dx%d (",
+	     sprite->stock->image[cel->image]->w,
+	     sprite->stock->image[cel->image]->h);
+    get_pretty_memsize(memsize,
+		       buf+ustrsize(buf),
+		       sizeof(buf)-ustrsize(buf));
+    ustrcat(buf, ")");
 
-  jwidget_set_text(label_size, buf);
+    jwidget_set_text(label_size, buf);
 
-  /* opacity */
-  jslider_set_value(slider_opacity, cel->opacity);
-  if (layer_is_background(layer)) {
+    /* opacity */
+    jslider_set_value(slider_opacity, cel->opacity);
+    if (layer_is_background(layer)) {
+      jwidget_disable(slider_opacity);
+      jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
+					       "you can't change its opacity.");
+    }
+  }
+  else {
+    jwidget_set_text(label_pos, "None");
+    jwidget_set_text(label_size, "Empty (0 bytes)");
+    jslider_set_value(slider_opacity, 0);
     jwidget_disable(slider_opacity);
-    jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
-					     "you can't change its opacity.");
   }
 
   jwindow_open_fg(window);
@@ -126,7 +130,8 @@ static void cmd_cel_properties_execute(const char *argument)
     int new_opacity = jslider_get_value(slider_opacity);
 
     /* the opacity was changed? */
-    if (cel->opacity != new_opacity) {
+    if (cel != NULL &&
+	cel->opacity != new_opacity) {
       if (undo_is_enabled(sprite->undo)) {
 	undo_set_label(sprite->undo, "Cel Opacity Change");
 	undo_int(sprite->undo, (GfxObj *)cel, &cel->opacity);

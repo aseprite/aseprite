@@ -29,8 +29,6 @@
 #include "raster/undo.h"
 #include "script/functions.h"
 
-static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame);
-
 static bool cmd_remove_frame_enabled(const char *argument)
 {
   return
@@ -42,59 +40,12 @@ static void cmd_remove_frame_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
-  if (undo_is_enabled(sprite->undo)) {
+  if (undo_is_enabled(sprite->undo))
     undo_set_label(sprite->undo, "Remove Frame");
-    undo_open(sprite->undo);
-  }
 
-  /* remove cels from this frame (and displace one position backward
-     all next frames) */
-  remove_frame_for_layer(sprite, sprite->set, sprite->frame);
+  RemoveFrame(sprite, sprite->frame);
 
-  /* decrement frames counter in the sprite */
-  if (undo_is_enabled(sprite->undo))
-    undo_set_frames(sprite->undo, sprite);
-  sprite_set_frames(sprite, sprite->frames-1);
-
-  /* move backward if we are outside the range of frames */
-  if (sprite->frame >= sprite->frames) {
-    if (undo_is_enabled(sprite->undo))
-      undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
-    sprite_set_frame(sprite, sprite->frames-1);
-  }
-
-  if (undo_is_enabled(sprite->undo))
-    undo_close(sprite->undo);
   update_screen_for_sprite(current_sprite);
-}
-
-static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
-{
-  switch (layer->gfxobj.type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel = layer_get_cel(layer, frame);
-      if (cel)
-	RemoveCel(layer, cel);
-
-      for (++frame; frame<sprite->frames; ++frame) {
-	cel = layer_get_cel(layer, frame);
-	if (cel) {
-	  undo_int(sprite->undo, &cel->gfxobj, &cel->frame);
-	  cel->frame--;
-	}
-      }
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	remove_frame_for_layer(sprite, link->data, frame);
-      break;
-    }
-
-  }
 }
 
 Command cmd_remove_frame = {

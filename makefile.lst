@@ -36,13 +36,11 @@ COMMON_SOURCES =					\
 	src/commands/cmd_invert_mask.c			\
 	src/commands/cmd_layer_from_background.c	\
 	src/commands/cmd_layer_properties.c		\
-	src/commands/cmd_link_cel.c			\
 	src/commands/cmd_load_mask.c			\
 	src/commands/cmd_mask_all.c			\
 	src/commands/cmd_mask_by_color.c		\
 	src/commands/cmd_merge_down_layer.c		\
 	src/commands/cmd_move_cel.c			\
-	src/commands/cmd_new_cel.c			\
 	src/commands/cmd_new_file.c			\
 	src/commands/cmd_new_frame.c			\
 	src/commands/cmd_new_layer.c			\
@@ -91,11 +89,9 @@ COMMON_SOURCES =					\
 	src/dialogs/canvasze.c				\
 	src/dialogs/drawtext.c				\
 	src/dialogs/filesel.c				\
-	src/dialogs/filmedit.c				\
 	src/dialogs/maskcol.c				\
 	src/dialogs/options.c				\
 	src/dialogs/playfli.c				\
-	src/dialogs/quick.c				\
 	src/dialogs/repo.c				\
 	src/dialogs/tips.c				\
 	src/dialogs/vectmap.c				\

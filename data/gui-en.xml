@@ -34,14 +34,12 @@
 	    <key command="goto_next_layer" shortcut="Up" />
 	    <!-- frame -->
 	    <key command="new_frame" shortcut="N" />
+	    <key command="frame_properties" shortcut="Shift+Ctrl+P" />
 	    <key command="goto_first_frame" shortcut="Home" />
 	    <key command="goto_previous_frame" shortcut="Left" />
 	    <key command="goto_next_frame" shortcut="Right" />
 	    <key command="goto_last_frame" shortcut="End" />
 	    <key command="play_animation" shortcut="Enter" />
-	    <!-- cel -->
-	    <key command="cel_properties" shortcut="Shift+Ctrl+P" />
-	    <key command="new_cel" shortcut="Shift+Ctrl+N" />
 	    <!-- mask -->
 	    <key command="mask_all" shortcut="Ctrl+A" />
 	    <key command="deselect_mask" shortcut="Ctrl+D" />
@@ -132,11 +130,10 @@
 	    <item command="crop_sprite" name="Cr&op" />
 	    <item command="autocrop_sprite" name="&Auto Crop" />
 	</menu>
-	<menu name="&Layer" id="layer_popup">
+	<menu name="&Layer">
 	    <item command="layer_properties" name="&Properties..." />
 	    <separator />
 	    <item command="new_layer" name="&New..." />
-<!-- 	    <item command="new_layer_set" name="New &Set" /> -->
 	    <item command="remove_layer" name="&Remove" />
 	    <item command="background_from_layer" name="&Background from Layer" />
 	    <item command="layer_from_background" name="&Layer from Background" />
@@ -144,9 +141,8 @@
 	    <item command="duplicate_layer" name="&Duplicate..." />
 	    <item command="merge_down_layer" name="&Merge Down" />
 	    <item command="flatten_layers" name="&Flatten" />
-	    <item command="crop_layer" name="Cr&op" />
 	</menu>
-	<menu name="F&rame" id="frame_popup">
+	<menu name="F&rame">
 	    <item command="frame_properties" name="&Properties..." />
 	    <separator />
 	    <item command="new_frame" name="&New" />
@@ -160,16 +156,8 @@
 	    </menu>
 	    <item command="play_animation" name="&Play" />
 	</menu>
-	<menu name="&Cel" id="cel_popup">
+	<menu name="&Cel">
 	    <item command="cel_properties" name="&Properties..." />
-	    <separator />
-<!-- 	    <item command="new_cel" name="&New" /> -->
-	    <item command="move_cel" name="&Move" />
-	    <item command="copy_cel" name="&Copy" />
-<!-- 	    <item command="link_cel" name="&Link" /> -->
-<!-- 	    <item command="remove_cel" name="&Remove" /> -->
-<!-- 	    <separator /> -->
-<!-- 	    <item command="crop_cel" name="Cr&op" /> -->
 	</menu>
 	<menu name="&Mask">
 	    <item command="mask_all" name="&All" />
@@ -218,13 +206,6 @@
 		<separator />
 		<item command="despeckle" name="&Despeckle (median filter)" />
 	    </menu>
-<!-- 	    <item command="draw_text" name="Draw &Text" /> -->
-<!-- 	    <menu name="Scripting"> -->
-<!-- 		<item command="run_script" name="Run &Script" /> -->
-<!-- 	    </menu> -->
-<!-- 	    <menu name="Extras"> -->
-<!-- 		<item command="play_flic" name="Pla&y FLI/FLC File" /> -->
-<!-- 	    </menu> -->
 	    <separator />
 	    <item command="options" name="&Options" />
 	</menu>
@@ -233,6 +214,37 @@
 	    <separator />
 	    <item command="about" name="&About" />
 	</menu>
+    </menu>
+
+    <menu id="layer_popup">
+	<item command="layer_properties" name="&Properties..." />
+	<separator />
+	<item command="new_layer" name="&New..." />
+	<item command="remove_layer" name="&Remove" />
+	<item command="background_from_layer" name="&Background from Layer" />
+	<item command="layer_from_background" name="&Layer from Background" />
+	<separator />
+	<item command="duplicate_layer" name="&Duplicate..." />
+	<item command="merge_down_layer" name="&Merge Down" />
+	<item command="flatten_layers" name="&Flatten" />
+    </menu>
+
+    <menu id="frame_popup">
+	<item command="frame_properties" name="&Properties..." />
+	<separator />
+	<item command="new_frame" name="&New" />
+	<item command="remove_frame" name="&Remove" />
+    </menu>
+
+    <menu id="cel_popup">
+	<item command="cel_properties" name="&Properties..." />
+	<separator />
+	<item command="clear" name="&Clear" />
+    </menu>
+
+    <menu id="cel_movement_popup">
+	<item command="move_cel" name="&Move" />
+	<item command="copy_cel" name="&Copy" />
     </menu>
 
 </gui>

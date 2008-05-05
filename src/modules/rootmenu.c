@@ -40,6 +40,7 @@ static JWidget recent_list_menuitem;
 static JWidget layer_popup_menu;
 static JWidget frame_popup_menu;
 static JWidget cel_popup_menu;
+static JWidget cel_movement_popup_menu;
 static JWidget filters_popup_menu;
 
 static int load_root_menu(void);
@@ -54,6 +55,7 @@ int init_module_rootmenu(void)
   layer_popup_menu = NULL;
   frame_popup_menu = NULL;
   cel_popup_menu = NULL;
+  cel_movement_popup_menu = NULL;
   filters_popup_menu = NULL;
   recent_list_menuitem = NULL;
 
@@ -68,6 +70,7 @@ void exit_module_rootmenu(void)
   if (layer_popup_menu) jwidget_free(layer_popup_menu);
   if (frame_popup_menu) jwidget_free(frame_popup_menu);
   if (cel_popup_menu) jwidget_free(cel_popup_menu);
+  if (cel_movement_popup_menu) jwidget_free(cel_movement_popup_menu);
   if (filters_popup_menu) jwidget_free(filters_popup_menu);
 }
 
@@ -77,6 +80,7 @@ JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
 JWidget get_layer_popup_menu(void) { return layer_popup_menu; }
 JWidget get_frame_popup_menu(void) { return frame_popup_menu; }
 JWidget get_cel_popup_menu(void) { return cel_popup_menu; }
+JWidget get_cel_movement_popup_menu(void) { return cel_movement_popup_menu; }
 
 /* void show_fx_popup_menu(void) */
 /* { */
@@ -110,6 +114,7 @@ static int load_root_menu(void)
   layer_popup_menu = NULL;
   frame_popup_menu = NULL;
   cel_popup_menu = NULL;
+  cel_movement_popup_menu = NULL;
   filters_popup_menu = NULL;
 
   dirs = filename_in_datadir("usergui.xml");
@@ -141,6 +146,7 @@ static int load_root_menu(void)
       layer_popup_menu = load_menu_by_id(xml, "layer_popup", dir->path);
       frame_popup_menu = load_menu_by_id(xml, "frame_popup", dir->path);
       cel_popup_menu = load_menu_by_id(xml, "cel_popup", dir->path);
+      cel_movement_popup_menu = load_menu_by_id(xml, "cel_movement_popup", dir->path);
       filters_popup_menu = load_menu_by_id(xml, "filters_popup", dir->path);
 
       /**************************************************/
@@ -318,29 +324,11 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
 
   /* has it a ID? */
   id = jxmlelem_get_attr(elem, "id");
-  if (id) {
+  if (id != NULL) {
     /* recent list menu */
     if (strcmp(id, "recent_list") == 0) {
       recent_list_menuitem = menuitem;
     }
-#if 0
-    /* layer popup menu */
-    else if (strcmp(id, "layer_popup") == 0) {
-      layer_popup_menuitem = menuitem;
-    }
-    /* frame popup menu */
-    else if (strcmp(id, "frame_popup") == 0) {
-      frame_popup_menuitem = menuitem;
-    }
-    /* cel popup menu */
-    else if (strcmp(id, "cel_popup") == 0) {
-      cel_popup_menuitem = menuitem;
-    }
-    /* filters popup menu */
-    else if (strcmp(id, "fx_popup") == 0) {
-      filters_popup_menuitem = menuitem;
-    }
-#endif
   }
 
   /* has it a sub-menu? */

@@ -35,7 +35,7 @@
 #include "modules/sprites.h"
 #include "raster/raster.h"
 #include "script/functions.h"
-/* #include "util/celmove.h" */
+#include "util/celmove.h"
 #include "util/thmbnail.h"
 
 /*
@@ -78,6 +78,7 @@
 enum {
   STATE_STANDBY,
   STATE_SCROLLING,
+  STATE_MOVING_SEPARATOR,
   STATE_MOVING_LAYER,
   STATE_MOVING_CEL,
   STATE_MOVING_FRAME,
@@ -118,6 +119,8 @@ typedef struct AniEditor
   bool space_pressed;
 } AniEditor;
 
+static JWidget current_anieditor = NULL;
+
 static JWidget anieditor_new(Sprite *sprite);
 static int anieditor_type(void);
 static AniEditor *anieditor_data(JWidget widget);
@@ -145,6 +148,13 @@ static int anieditor_get_layer_index(JWidget widget, Layer *layer);
 
 static void icon_rect(BITMAP *icon, int x1, int y1, int x2, int y2, bool is_selected, bool is_hot, bool is_clk);
 
+bool animation_editor_is_movingcel(void)
+{
+  return
+    current_anieditor != NULL &&
+    anieditor_data(current_anieditor)->state == STATE_MOVING_CEL;
+}
+
 /**
  * Shows the animation editor for the current sprite.
  */
@@ -158,9 +168,9 @@ void switch_between_animation_and_sprite_editor(void)
   /* create the window & the animation-editor */
   window = jwindow_new_desktop();
   anieditor = anieditor_new(sprite);
+  current_anieditor = anieditor;
 
   jwidget_add_child(window, anieditor);
-
   jwindow_remap(window);
 
   /* show the current cel */
@@ -173,6 +183,7 @@ void switch_between_animation_and_sprite_editor(void)
 
   /* destroy the window */
   jwidget_free(window);
+  current_anieditor = NULL;
 
   /* destroy thumbnails */
   destroy_thumbnails();
@@ -292,6 +303,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	return TRUE;
       }
 
+      /* clicked-part = hot-part */
       anieditor->clk_part = anieditor->hot_part;
       anieditor->clk_layer = anieditor->hot_layer;
       anieditor->clk_frame = anieditor->hot_frame;
@@ -302,14 +314,16 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  break;
 	case PART_SEPARATOR:
 	  jwidget_hard_capture_mouse(widget);
+	  anieditor->state = STATE_MOVING_SEPARATOR;
 	  break;
 	case PART_HEADER_LAYER:
-	  /* TODO */
+	  /* do nothing */
 	  break;
 	case PART_HEADER_FRAME:
 	  anieditor->sprite->frame = anieditor->clk_frame;
 	  jwidget_dirty(widget); /* TODO replace this by redrawing old current frame and new current frame */
 	  jwidget_hard_capture_mouse(widget);
+	  anieditor->state = STATE_MOVING_FRAME;
 	  break;
 	case PART_LAYER: {
 	  int old_layer = anieditor_get_layer_index(widget, anieditor->sprite->layer);
@@ -333,6 +347,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 			     anieditor->clk_layer,
 			     anieditor->sprite->frame);
 	  jwidget_hard_capture_mouse(widget);
+	  anieditor->state = STATE_MOVING_LAYER;
 	  break;
 	}
 	case PART_LAYER_EYE_ICON:
@@ -345,6 +360,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  int old_layer = anieditor_get_layer_index(widget, anieditor->sprite->layer);
 	  int old_frame = anieditor->sprite->frame;
 
+	  /* select the new clicked-part */
 	  if (old_layer != anieditor->clk_layer ||
 	      old_frame != anieditor->clk_frame) {
 	    anieditor->sprite->layer = anieditor->layers[anieditor->clk_layer];
@@ -367,6 +383,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  anieditor_show_cel(widget,
 			     anieditor->clk_layer,
 			     anieditor->sprite->frame);
+
+	  /* capture the mouse (to move the cel) */
+	  jwidget_hard_capture_mouse(widget);
+	  anieditor->state = STATE_MOVING_CEL;
 	  break;
 	}
       }
@@ -485,10 +505,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    /* do nothing */
 	    break;
 	  case PART_SEPARATOR:
-	    /* TODO */
+	    /* do nothing */
 	    break;
 	  case PART_HEADER_LAYER:
-	    /* TODO */
+	    /* do nothing */
 	    break;
 	  case PART_HEADER_FRAME:
 	    /* show the frame pop-up menu */
@@ -497,6 +517,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		JWidget popup_menu = get_frame_popup_menu();
 		if (popup_menu != NULL) {
 		  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
+
+		  destroy_thumbnails();
 		  jwidget_dirty(widget);
 		}
 	      }
@@ -527,12 +549,13 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      	if (popup_menu != NULL) {
 	      	  jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
 
+		  destroy_thumbnails();
 		  jwidget_dirty(widget);
 		  anieditor_regenerate_layers(widget);
 	      	}
 	      }
 	    }
-	    /* show the layer's properties dialog */
+	    /* move a layer */
 	    else if (msg->mouse.left) {
 	      if (anieditor->hot_layer >= 0 &&
 		  anieditor->hot_layer < anieditor->nlayers &&
@@ -578,10 +601,50 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      layer->flags ^= LAYER_IS_WRITABLE;
 	    }
 	    break;
-	  case PART_CEL:
+	  case PART_CEL: {
+	    bool movement =
+	      anieditor->clk_part == PART_CEL &&
+	      anieditor->hot_part == PART_CEL &&
+	      (anieditor->clk_layer != anieditor->hot_layer ||
+	       anieditor->clk_frame != anieditor->hot_frame);
+
+	    if (movement) {
+	      set_frame_to_handle
+		(/* source cel */
+		 anieditor->layers[anieditor->clk_layer],
+		 anieditor->clk_frame,
+		 /* destination cel */
+		 anieditor->layers[anieditor->hot_layer],
+		 anieditor->hot_frame);
+	    }
+
+	    /* show the cel pop-up menu */
+	    if (msg->mouse.right) {
+	      JWidget popup_menu = movement ? get_cel_movement_popup_menu():
+					      get_cel_popup_menu();
+	      if (popup_menu != NULL) {
+		jmenu_popup(popup_menu, msg->mouse.x, msg->mouse.y);
+
+		destroy_thumbnails();
+		anieditor_regenerate_layers(widget);
+		jwidget_dirty(widget);
+	      }
+	    }
+	    /* move the cel */
+	    else if (msg->mouse.left) {
+	      if (movement) {
+		move_cel();
+
+		destroy_thumbnails();
+		anieditor_regenerate_layers(widget);
+		jwidget_dirty(widget);
+	      }
+	    }
 	    break;
+	  }
 	}
 
+	/* clean the clicked-part & redraw the hot-part */
 	jmouse_hide();
 	anieditor_clean_clk(widget);
 	anieditor_draw_part(widget,
@@ -590,6 +653,9 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 			    anieditor->hot_frame);
 	jmouse_show();
 
+	/* restore the cursor */
+	anieditor->state = STATE_STANDBY;
+	anieditor_setcursor(widget, msg->mouse.x, msg->mouse.y);
 	return TRUE;
       }
       break;
@@ -609,6 +675,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       if (command && strcmp(command->name, CMD_UNDO) == 0) {
 	if (undo_can_undo(sprite->undo)) {
 	  undo_undo(sprite->undo);
+
+	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
 	  jwidget_dirty(widget);
 	}
@@ -619,6 +687,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       if (command && strcmp(command->name, CMD_REDO) == 0) {
 	if (undo_can_redo(sprite->undo)) {
 	  undo_redo(sprite->undo);
+
+	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
 	  jwidget_dirty(widget);
 	}
@@ -627,8 +697,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* new_frame, remove_frame, new_cel, remove_cel */
       if (command != NULL) {
-	if (strcmp(command->name, CMD_NEW_CEL) == 0 ||
-	    strcmp(command->name, CMD_NEW_FRAME) == 0 ||
+	if (strcmp(command->name, CMD_NEW_FRAME) == 0 ||
 	    strcmp(command->name, CMD_REMOVE_CEL) == 0 ||
 	    strcmp(command->name, CMD_REMOVE_FRAME) == 0 ||
 	    strcmp(command->name, CMD_GOTO_FIRST_FRAME) == 0 ||
@@ -645,6 +714,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	if (strcmp(command->name, CMD_NEW_LAYER) == 0 ||
 	    strcmp(command->name, CMD_REMOVE_LAYER) == 0) {
 	  command_execute(command, NULL);
+
 	  anieditor_regenerate_layers(widget);
 	  jwidget_dirty(widget);
 	  return TRUE;
@@ -713,15 +783,44 @@ static void anieditor_setcursor(JWidget widget, int x, int y)
   int mx = x - widget->rc->x1;
   int my = y - widget->rc->y1;
 
-  /* is the mouse in the separator= */
+  /* is the mouse in the separator */
   if (mx > anieditor->separator_x-2 && mx < anieditor->separator_x+2)  {
     jmouse_set_cursor(JI_CURSOR_SIZE_L);
   }
+  /* scrolling */
   else if (anieditor->state == STATE_SCROLLING ||
-	   anieditor->space_pressed)
+	   anieditor->space_pressed) {
     jmouse_set_cursor(JI_CURSOR_SCROLL);
-  else
+  }
+  /* moving a frame */
+  else if (anieditor->state == STATE_MOVING_FRAME &&
+	   anieditor->clk_part == PART_HEADER_FRAME &&
+	   anieditor->hot_part == PART_HEADER_FRAME &&
+	   anieditor->clk_frame != anieditor->hot_frame) {
+    jmouse_set_cursor(JI_CURSOR_MOVE);
+  }
+  /* moving a layer */
+  else if (anieditor->state == STATE_MOVING_LAYER &&
+	   anieditor->clk_part == PART_LAYER &&
+	   anieditor->hot_part == PART_LAYER &&
+	   anieditor->clk_layer != anieditor->hot_layer) {
+    if (layer_is_background(anieditor->layers[anieditor->clk_layer]))
+      jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+    else
+      jmouse_set_cursor(JI_CURSOR_MOVE);
+  }
+  /* moving a cel */
+  else if (anieditor->state == STATE_MOVING_CEL &&
+	   anieditor->clk_part == PART_CEL &&
+	   anieditor->hot_part == PART_CEL &&
+	   (anieditor->clk_frame != anieditor->hot_frame ||
+	    anieditor->clk_layer != anieditor->hot_layer)) {
+    jmouse_set_cursor(JI_CURSOR_MOVE);
+  }
+  /* normal state */
+  else {
     jmouse_set_cursor(JI_CURSOR_NORMAL);
+  }
 }
 
 static void anieditor_get_drawable_layers(JWidget widget, JRect clip, int *first_layer, int *last_layer)
@@ -796,9 +895,7 @@ static void anieditor_draw_header_frame(JWidget widget, JRect clip, int frame)
      header clicked, we have to draw some indicators to show that the
      user can move frames */
   if (is_hot && !is_clk &&
-      anieditor->clk_part == PART_HEADER_FRAME &&
-      jmouse_x(0) >= x1 &&
-      jmouse_x(0) <= x2) {
+      anieditor->clk_part == PART_HEADER_FRAME) {
     rectfill(ji_screen, x1+1, y1+1, x1+4, y2-1, ji_color_selected());
   }
 
@@ -1001,6 +1098,9 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   bool is_hot = (anieditor->hot_part == PART_CEL &&
 		 anieditor->hot_layer == layer_index &&
 		 anieditor->hot_frame == frame);
+  bool is_clk = (anieditor->clk_part == PART_CEL &&
+		 anieditor->clk_layer == layer_index &&
+		 anieditor->clk_frame == frame);
   int bg = is_hot ? ji_color_hotface():
 		    ji_color_face();
   int x1, y1, x2, y2;
@@ -1069,7 +1169,24 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   }
 
   jrect_free(thumbnail_rect);
-  
+
+  /* if this cel is hot and other cel was clicked, we have to draw
+     some indicators to show that the user can move cels */
+  if (is_hot && !is_clk &&
+      anieditor->clk_part == PART_CEL) {
+    rectfill(ji_screen, x1+1, y1+1, x1+FRMSIZE/3, y1+4, ji_color_selected());
+    rectfill(ji_screen, x1+1, y1+5, x1+4, y1+FRMSIZE/3, ji_color_selected());
+
+    rectfill(ji_screen, x2-FRMSIZE/3, y1+1, x2-1, y1+4, ji_color_selected());
+    rectfill(ji_screen, x2-4, y1+5, x2-1, y1+FRMSIZE/3, ji_color_selected());
+
+    rectfill(ji_screen, x1+1, y2-4, x1+FRMSIZE/3, y2-1, ji_color_selected());
+    rectfill(ji_screen, x1+1, y2-FRMSIZE/3, x1+4, y2-5, ji_color_selected());
+
+    rectfill(ji_screen, x2-FRMSIZE/3, y2-4, x2-1, y2-1, ji_color_selected());
+    rectfill(ji_screen, x2-4, y2-FRMSIZE/3, x2-1, y2-5, ji_color_selected());
+  }
+
   /* padding in the right side */
   if (frame == anieditor->sprite->frames-1) {
     if (x2+1 <= widget->rc->x2-1) {
@@ -1150,6 +1267,7 @@ static void anieditor_hot_this(JWidget widget, int hot_part, int hot_layer, int 
   AniEditor *anieditor = anieditor_data(widget);
   int old_hot_part;
 
+  /* if the part, layer or frame change */
   if (hot_part != anieditor->hot_part ||
       hot_layer != anieditor->hot_layer ||
       hot_frame != anieditor->hot_frame) {

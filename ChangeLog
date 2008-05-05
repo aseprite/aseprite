@@ -1,3 +1,10 @@
+2008-05-04  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/util/celmove.c (move_cel, copy_cel): Fixed to handle
+	movements between transparent & background layers.
+
+	* src/commands/cmd_new_cel.c (cmd_new_cel_execute): Removed.
+
 2008-04-27  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/jinete/jdraw.c (ji_move_region): Renamed ji_blit_region to

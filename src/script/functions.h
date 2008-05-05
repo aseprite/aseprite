@@ -58,6 +58,8 @@ void MoveLayerAfter(struct Layer *layer, struct Layer *after_this);
 /* Frame                                   */
 /* ======================================= */
 
+void NewFrame(struct Sprite *sprite);
+void RemoveFrame(struct Sprite *sprite, int frame);
 void SetFrameLength(struct Sprite *sprite, int frame, int msecs);
 void MoveFrameBefore(int frame, int before_frame);
 

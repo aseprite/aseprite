@@ -19,6 +19,8 @@
 #ifndef DIALOGS_ANIEDIT_H
 #define DIALOGS_ANIEDIT_H
 
+bool animation_editor_is_movingcel(void);
+
 void switch_between_animation_and_sprite_editor(void);
 
 #endif /* DIALOGS_ANIEDIT_H */

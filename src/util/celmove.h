@@ -22,12 +22,11 @@
 struct Cel;
 struct Layer;
 
-void set_cel_to_handle(struct Layer *layer, struct Cel *cel);
+void set_frame_to_handle(struct Layer *src_layer, int src_frame,
+			 struct Layer *dst_layer, int dst_frame);
 
-void new_cel(void);
 void move_cel(void);
 void copy_cel(void);
-void link_cel(void);
 
 #endif /* UTIL_CELMOVE_H */
 

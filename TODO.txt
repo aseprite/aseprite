@@ -1,22 +1,9 @@
-Next beta
----------
-
-- Check these routines:
-  + move_cel
-  + copy_cel
-  + link_cel
-  + quick_move
-  + quick_copy
-  + quick_swap
-- tooltips for color-bar.
-  + agregar soporte para UNDO al cambiar los colores de la paleta.
-- search "TODO next release"
-- search "TODO remove me"
-
 High priority work
 ------------------
 
 - search for TODO;
+- tooltips for color-bar.
+  + agregar soporte para UNDO al cambiar los colores de la paleta.
 - add AseContext structure to handle the current state of the
   application (and hook changes in the context/options):
   + src/ase/ directory
