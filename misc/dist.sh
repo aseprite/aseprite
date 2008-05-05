@@ -91,9 +91,6 @@ ase_files="config.h				\
 	   data/tips/tips.en			\
 	   data/tips/tips.es			\
 	   docs/*.html				\
-	   docs/*.info				\
-	   docs/*.pdf				\
-	   docs/*.texi				\
 	   docs/*.txt				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\

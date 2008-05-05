@@ -9,10 +9,11 @@ NEWS
 + Added support to load and save PNG files (through 'libpng').
 + Transparent cel handling for the end-user (you can move a cel and
   don't worry about its bounds).
-+ Rewritten the color-bar and color-selector dialog.
++ Rewritten the "Color Bar" and "Color Selector" dialog.
++ Rewritten the "Animation Editor" (ex-Film Editor).
 + New tools: Eraser, Blur, Jumble.
 + Replaced the "List" menu with the tabs selector.
-+ Rewritten the File Selector:
++ Rewritten the "File Selector":
   + Preview support.
   + Incremental search.
   + History of navigation (Back/Forward).
