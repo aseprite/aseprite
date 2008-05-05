@@ -23,6 +23,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/functions.h"
 
 static bool cmd_background_from_layer_enabled(const char *argument)
@@ -38,8 +39,13 @@ static bool cmd_background_from_layer_enabled(const char *argument)
 
 static void cmd_background_from_layer_execute(const char *argument)
 {
-  BackgroundFromLayer();
-  update_screen_for_sprite(current_sprite);
+  Sprite *sprite = current_sprite;
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Background from Layer");
+
+  BackgroundFromLayer(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_background_from_layer = {

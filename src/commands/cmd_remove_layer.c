@@ -22,6 +22,7 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/functions.h"
 
 static bool cmd_remove_layer_enabled(const char *argument)
@@ -33,8 +34,13 @@ static bool cmd_remove_layer_enabled(const char *argument)
 
 static void cmd_remove_layer_execute(const char *argument)
 {
-  RemoveLayer();
-  update_screen_for_sprite(current_sprite);
+  Sprite *sprite = current_sprite;
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Remove Layer");
+
+  RemoveLayer(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_remove_layer = {

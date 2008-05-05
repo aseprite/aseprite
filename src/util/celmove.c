@@ -115,7 +115,7 @@ void move_cel(void)
 				      -src_cel->x,
 				      -src_cel->y,
 				      sprite->w,
-				      sprite->h);
+				      sprite->h, 0);
 
 	if (undo_is_enabled(sprite->undo)) {
 	  undo_replace_image(sprite->undo, sprite->stock, src_cel->image);
@@ -194,7 +194,7 @@ void copy_cel(void)
 			     -src_cel->x,
 			     -src_cel->y,
 			     sprite->w,
-			     sprite->h);
+			     sprite->h, 0);
 
       image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
       image_merge(dst_image, src_image, src_cel->x, src_cel->y, 255, BLEND_MODE_NORMAL);

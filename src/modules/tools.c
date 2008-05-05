@@ -959,7 +959,7 @@ void control_tool(JWidget widget, Tool *tool,
 
   tool_data.src_image = image_crop(cel_image,
 				   x1-cel->x,
-				   y1-cel->y, x2-x1, y2-y1);
+				   y1-cel->y, x2-x1, y2-y1, 0);
   tool_data.dst_image = image_new_copy(tool_data.src_image);
 
   tool_data.mask = (sprite->mask &&

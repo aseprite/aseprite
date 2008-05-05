@@ -26,6 +26,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/functions.h"
 
 static bool cmd_new_layer_enabled(const char *argument)
@@ -44,14 +45,19 @@ static void cmd_new_layer_execute(const char *argument)
     return;
 
   name_widget = jwidget_find_name(window, "name");
-  jwidget_set_text(name_widget, GetUniqueLayerName());
+  jwidget_set_text(name_widget, GetUniqueLayerName(sprite));
   jwidget_set_min_size(name_widget, 128, 0);
 
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
     const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
-    Layer *layer = NewLayer();
+    Layer *layer;
+
+    if (undo_is_enabled(sprite->undo))
+      undo_set_label(sprite->undo, "New Layer");
+
+    layer = NewLayer(sprite);
     if (!layer) {
       jalert(_("Error<<Not enough memory||&Close"));
       return;

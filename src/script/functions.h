@@ -33,24 +33,24 @@ void SaveSprite(const char *filename);
 
 void SetSprite(struct Sprite *sprite); 
 
-void CropSprite(void);
+void CropSprite(struct Sprite *sprite);
 
 /*===================================================================*/
 /* Layer                                                             */
 /*===================================================================*/
 
-struct Layer *NewLayer(void);
-struct Layer *NewLayerSet(void);
-void RemoveLayer(void);
+struct Layer *NewLayer(struct Sprite *sprite);
+struct Layer *NewLayerSet(struct Sprite *sprite);
+void RemoveLayer(struct Sprite *sprite);
 
-char *GetUniqueLayerName(void);
+char *GetUniqueLayerName(struct Sprite *sprite);
 
-struct Layer *FlattenLayers(void);
+struct Layer *FlattenLayers(struct Sprite *sprite);
 
-void CropLayer(void);
+void CropLayer(struct Layer *layer, int x, int y, int w, int h);
 
-void BackgroundFromLayer(void);
-void LayerFromBackground(void);
+void BackgroundFromLayer(struct Sprite *sprite);
+void LayerFromBackground(struct Sprite *sprite);
 
 void MoveLayerAfter(struct Layer *layer, struct Layer *after_this);
 

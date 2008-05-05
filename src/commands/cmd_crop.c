@@ -19,11 +19,13 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
-#include "raster/mask.h"
 #include "raster/layer.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
+#include "raster/undo.h"
 #include "script/functions.h"
 #include "util/autocrop.h"
 #include "util/misc.h"
@@ -41,7 +43,13 @@ static bool cmd_crop_sprite_enabled(const char *argument)
 
 static void cmd_crop_sprite_execute(const char *argument)
 {
-  CropSprite();
+  Sprite *sprite = current_sprite;
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Sprite Crop");
+
+  CropSprite(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 /* ======================== */
@@ -55,7 +63,13 @@ static bool cmd_autocrop_sprite_enabled(const char *argument)
 
 static void cmd_autocrop_sprite_execute(const char *argument)
 {
-  autocrop_sprite();
+  Sprite *sprite = current_sprite;
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Sprite Autocrop");
+
+  autocrop_sprite(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 /**********************************************************************/

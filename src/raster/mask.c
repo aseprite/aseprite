@@ -169,7 +169,7 @@ void mask_union(Mask *mask, int x, int y, int w, int h)
     mask->w = x2 - mask->x + 1;
     mask->h = y2 - mask->y + 1;
 
-    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h);
+    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h, 0);
     image_free(mask->bitmap);
     mask->bitmap = image;
   }
@@ -203,7 +203,7 @@ void mask_intersect(Mask *mask, int x, int y, int w, int h)
     mask->w = x2 - mask->x + 1;
     mask->h = y2 - mask->y + 1;
 
-    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h);
+    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h, 0);
     image_free(mask->bitmap);
     mask->bitmap = image;
 
@@ -416,7 +416,7 @@ static void shrink_mask(Mask *mask)
   {									\
     for (u = u_begin; u u_op u_final; u u_add) {			\
       for (v = v_begin; v v_op v_final; v v_add) {			\
-	if (mask->bitmap->method->getpixel (mask->bitmap, U, V))	\
+	if (mask->bitmap->method->getpixel(mask->bitmap, U, V))		\
 	  break;							\
       }									\
       if (v == v_final)							\
@@ -433,20 +433,20 @@ static void shrink_mask(Mask *mask)
   x2 = mask->x+mask->w-1;
   y2 = mask->y+mask->h-1;
 
-  SHRINK_SIDE (0, <, mask->w, ++,
-	       0, <, mask->h, ++, u, v, x1++);
+  SHRINK_SIDE(0, <, mask->w, ++,
+	      0, <, mask->h, ++, u, v, x1++);
 
-  SHRINK_SIDE (0, <, mask->h, ++,
-	       0, <, mask->w, ++, v, u, y1++);
+  SHRINK_SIDE(0, <, mask->h, ++,
+	      0, <, mask->w, ++, v, u, y1++);
 
-  SHRINK_SIDE (mask->w-1, >, 0, --,
-	       0, <, mask->h, ++, u, v, x2--);
+  SHRINK_SIDE(mask->w-1, >, 0, --,
+	      0, <, mask->h, ++, u, v, x2--);
 
-  SHRINK_SIDE (mask->h-1, >, 0, --,
-	       0, <, mask->w, ++, v, u, y2--);
+  SHRINK_SIDE(mask->h-1, >, 0, --,
+	      0, <, mask->w, ++, v, u, y2--);
 
   if ((x1 == x2) && (y1 == y2)) {
-    mask_none (mask);
+    mask_none(mask);
   }
   else if ((x1 != mask->x) || (x2 != mask->x+mask->w-1) ||
 	   (y1 != mask->y) || (y2 != mask->y+mask->h-1)) {
@@ -460,8 +460,8 @@ static void shrink_mask(Mask *mask)
     mask->w = x2 - x1 + 1;
     mask->h = y2 - y1 + 1;
 
-    image = image_crop (mask->bitmap, mask->x-u, mask->y-v, mask->w, mask->h);
-    image_free (mask->bitmap);
+    image = image_crop(mask->bitmap, mask->x-u, mask->y-v, mask->w, mask->h, 0);
+    image_free(mask->bitmap);
     mask->bitmap = image;
   }
 

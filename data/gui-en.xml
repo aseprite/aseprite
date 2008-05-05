@@ -133,8 +133,8 @@
 	<menu name="&Layer">
 	    <item command="layer_properties" name="&Properties..." />
 	    <separator />
-	    <item command="new_layer" name="&New..." />
-	    <item command="remove_layer" name="&Remove" />
+	    <item command="new_layer" name="&New Layer..." />
+	    <item command="remove_layer" name="&Remove Layer" />
 	    <item command="background_from_layer" name="&Background from Layer" />
 	    <item command="layer_from_background" name="&Layer from Background" />
 	    <separator />
@@ -145,16 +145,16 @@
 	<menu name="F&rame">
 	    <item command="frame_properties" name="&Properties..." />
 	    <separator />
-	    <item command="new_frame" name="&New" />
-	    <item command="remove_frame" name="&Remove" />
+	    <item command="new_frame" name="&New Frame" />
+	    <item command="remove_frame" name="&Remove Frame" />
 	    <separator />
-	    <menu name="&Go to">
-		<item command="goto_first_frame" name="&First" />
-		<item command="goto_previous_frame" name="&Previous" />
-		<item command="goto_next_frame" name="&Next" />
-		<item command="goto_last_frame" name="&Last" />
+	    <menu name="&Jump to">
+		<item command="goto_first_frame" name="&First Frame" />
+		<item command="goto_previous_frame" name="&Previous Frame" />
+		<item command="goto_next_frame" name="&Next Frame" />
+		<item command="goto_last_frame" name="&Last Frame" />
 	    </menu>
-	    <item command="play_animation" name="&Play" />
+	    <item command="play_animation" name="&Play Animation" />
 	</menu>
 	<menu name="&Cel">
 	    <item command="cel_properties" name="&Properties..." />

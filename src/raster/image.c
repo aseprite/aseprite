@@ -78,7 +78,7 @@ Image *image_new(int imgtype, int w, int h)
 Image *image_new_copy(const Image *image)
 {
   assert(image != NULL);
-  return image_crop(image, 0, 0, image->w, image->h);
+  return image_crop(image, 0, 0, image->w, image->h, 0);
 }
 
 void image_free(Image *image)
@@ -133,7 +133,7 @@ void image_merge(Image *dst, const Image *src, int x, int y, int opacity, int bl
   dst->method->merge(dst, src, x, y, opacity, blend_mode);
 }
 
-Image *image_crop(const Image *image, int x, int y, int w, int h)
+Image *image_crop(const Image *image, int x, int y, int w, int h, int bgcolor)
 {
   Image *trim;
 
@@ -144,7 +144,7 @@ Image *image_crop(const Image *image, int x, int y, int w, int h)
   if (!trim)
     return NULL;
 
-  image_clear(trim, 0);
+  image_clear(trim, bgcolor);
   image_copy(trim, image, -x, -y);
 
   return trim;

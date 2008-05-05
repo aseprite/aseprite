@@ -100,7 +100,7 @@ static void do_flip(int horz)
   }
 
   /* flip the portion of the bitmap */
-  area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1);
+  area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1, 0);
   for (y=0; y<(y2-y1+1); y++)
     for (x=0; x<(x2-x1+1); x++)
       image_putpixel(image,

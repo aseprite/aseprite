@@ -47,7 +47,7 @@ static void cmd_new_layer_set_execute(const char *argument)
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
     const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
-    Layer *layer = NewLayerSet();
+    Layer *layer = NewLayerSet(sprite);
     if (!layer) {
       jalert(_("Error<<Not enough memory||&Close"));
       return;

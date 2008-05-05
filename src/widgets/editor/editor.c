@@ -184,9 +184,11 @@ void editor_set_scroll(JWidget widget, int x, int y, int use_refresh_region)
     jview_get_scroll(view, &new_scroll_x, &new_scroll_y);
 
     /* move screen with blits */
+    jmouse_hide();
     jwidget_scroll(widget, region,
 		   old_scroll_x - new_scroll_x,
 		   old_scroll_y - new_scroll_y);
+    jmouse_show();
     
     jregion_free(region);
     /* editor->widget->flags &= ~JI_DIRTY; */

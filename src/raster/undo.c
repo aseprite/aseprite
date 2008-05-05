@@ -711,7 +711,7 @@ static void chunk_flip_invert(UndoStream *stream, UndoChunkFlip *chunk, int stat
 
     chunk_flip_new(stream, image, x1, y1, x2, y2, horz);
 
-    area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1);
+    area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1, 0);
     for (y=0; y<(y2-y1+1); y++)
       for (x=0; x<(x2-x1+1); x++)
 	image_putpixel(image,

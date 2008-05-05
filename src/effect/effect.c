@@ -386,7 +386,7 @@ static int effect_init(Effect *effect, Layer *layer, Image *image,
   }
 
   effect->src = image;
-  effect->dst = image_crop(image, 0, 0, image->w, image->h);
+  effect->dst = image_crop(image, 0, 0, image->w, image->h, 0);
   effect->row = -1;
   effect->mask = NULL;
   effect->preview_mask = NULL;

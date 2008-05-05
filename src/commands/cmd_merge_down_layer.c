@@ -86,7 +86,7 @@ static void cmd_merge_down_layer_execute(const char *argument)
     /* with source image? */
     if (src_image != NULL) {
       /* no destination image */
-      if (dst_image == NULL) {
+      if (dst_image == NULL) {	/* only a transparent layer can have a null cel */
 	/* copy this cel to the destination layer... */
 
 	/* creating a copy of the image */
@@ -108,14 +108,30 @@ static void cmd_merge_down_layer_execute(const char *argument)
       }
       /* with destination */
       else {
-	int x1 = MIN(src_cel->x, dst_cel->x);
-	int y1 = MIN(src_cel->y, dst_cel->y);
-	int x2 = MAX(src_cel->x+src_image->w-1, dst_cel->x+dst_image->w-1);
-	int y2 = MAX(src_cel->y+src_image->h-1, dst_cel->y+dst_image->h-1);
-	Image *new_image = image_crop(dst_image,
-				      x1-dst_cel->x,
-				      y1-dst_cel->y,
-				      x2-x1+1, y2-y1+1);
+	int x1, y1, x2, y2, bgcolor;
+	Image *new_image;
+
+	/* merge down in the background layer */
+	if (layer_is_background(dst_layer)) {
+	  x1 = 0;
+	  y1 = 0;
+	  x2 = sprite->w;
+	  y2 = sprite->h;
+	  bgcolor = app_get_color_to_clear_layer(dst_layer);
+	}
+	/* merge down in a transparent layer */
+	else {
+	  x1 = MIN(src_cel->x, dst_cel->x);
+	  y1 = MIN(src_cel->y, dst_cel->y);
+	  x2 = MAX(src_cel->x+src_image->w-1, dst_cel->x+dst_image->w-1);
+	  y2 = MAX(src_cel->y+src_image->h-1, dst_cel->y+dst_image->h-1);
+	  bgcolor = 0;
+	}
+
+	new_image = image_crop(dst_image,
+			       x1-dst_cel->x,
+			       y1-dst_cel->y,
+			       x2-x1+1, y2-y1+1, bgcolor);
 
 	/* merge src_image in new_image */
 	image_merge(new_image, src_image,

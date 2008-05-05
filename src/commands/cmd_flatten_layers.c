@@ -19,7 +19,10 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "modules/gui.h"
 #include "modules/sprites.h"
+#include "raster/undo.h"
+#include "raster/sprite.h"
 #include "script/functions.h"
 
 static bool cmd_flatten_layers_enabled(const char *argument)
@@ -29,7 +32,13 @@ static bool cmd_flatten_layers_enabled(const char *argument)
 
 static void cmd_flatten_layers_execute(const char *argument)
 {
-  FlattenLayers();
+  Sprite *sprite = current_sprite;
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Flatten Layers");
+
+  FlattenLayers(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_flatten_layers = {

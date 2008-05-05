@@ -136,7 +136,7 @@ static void cmd_new_file_execute(const char *argument)
 	/* if the background color isn't transparent, we have to
 	   convert the `Layer 1' in a `Background' */
 	if (color_type(color) != COLOR_TYPE_MASK) {
-	  BackgroundFromLayer();
+	  BackgroundFromLayer(sprite);
 
 	  /* clear the image to */
 	  image_clear(GetImage(sprite),

@@ -1,3 +1,15 @@
+2008-05-05  David A. Capello  <dacap@users.sourceforge.net>
+
+	* src/script/functions.c (CropLayer): Rewritten (more simple).
+	(CropSprite): Fixed to crop the background layer right.
+
+	* src/commands/cmd_merge_down_layer.c (cmd_merge_down_layer_execute):
+	Fixed to merge a transparent over the background.
+
+	* src/raster/image.c (image_crop): Added the 'bgcolor' parameter.
+
+	* src/script/functions.c (CropLayer): Fixed.
+
 2008-05-04  David A. Capello  <dacap@users.sourceforge.net>
 
 	* src/util/celmove.c (move_cel, copy_cel): Fixed to handle

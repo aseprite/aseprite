@@ -18,18 +18,15 @@
 
 #include "config.h"
 
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "script/functions.h"
 #include "util/autocrop.h"
 
-void autocrop_sprite(void)
+void autocrop_sprite(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
-
-  if (sprite) {
+  if (sprite != NULL) {
     int old_frame = sprite->frame;
     Mask *old_mask = sprite->mask;
     Mask *mask;
@@ -40,7 +37,7 @@ void autocrop_sprite(void)
     x1 = y1 = INT_MAX;
     x2 = y2 = INT_MIN;
 
-    image = image_new (sprite->imgtype, sprite->w, sprite->h);
+    image = image_new(sprite->imgtype, sprite->w, sprite->h);
     if (!image)
       return;
 
@@ -70,7 +67,7 @@ void autocrop_sprite(void)
     mask_replace(mask, x1, y1, x2-x1+1, y2-y1+1);
 
     sprite->mask = mask;
-    CropSprite();
+    CropSprite(sprite);
 
     sprite->mask = old_mask;
     sprite_generate_mask_boundaries(sprite);

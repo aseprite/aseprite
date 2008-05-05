@@ -142,14 +142,11 @@ void SetSprite(Sprite *sprite)
   set_current_sprite(sprite);
 }
 
-void CropSprite(void)
+void CropSprite(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
-
-  if ((sprite) &&
+  if ((sprite != NULL) &&
       (!mask_is_empty(sprite->mask))) {
     if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Sprite Crop");
       undo_open(sprite->undo);
       undo_int(sprite->undo, (GfxObj *)sprite, &sprite->w);
       undo_int(sprite->undo, (GfxObj *)sprite, &sprite->h);
@@ -159,6 +156,13 @@ void CropSprite(void)
 
     displace_layers(sprite->undo, sprite->set,
 		    -sprite->mask->x, -sprite->mask->y);
+
+    {
+      Layer *background_layer = sprite_get_background_layer(sprite);
+      if (background_layer != NULL) {
+	CropLayer(background_layer, 0, 0, sprite->w, sprite->h);
+      }
+    }
 
     if (undo_is_enabled(sprite->undo)) {
       undo_int(sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->x);
@@ -172,7 +176,6 @@ void CropSprite(void)
       undo_close(sprite->undo);
 
     sprite_generate_mask_boundaries(sprite);
-    update_screen_for_sprite(sprite);
   }
 }
 
@@ -220,9 +223,8 @@ static int get_max_layer_num(Layer *layer);
 /**
  * Creates a new transparent layer.
  */
-Layer *NewLayer(void)
+Layer *NewLayer(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
   Layer *layer;
 #if 0
   Image *image;
@@ -275,7 +277,6 @@ Layer *NewLayer(void)
   
   /* undo stuff */
   if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "New Layer");
     undo_open(sprite->undo);
     undo_add_layer(sprite->undo, sprite->set, layer);
     undo_set_layer(sprite->undo, sprite);
@@ -294,9 +295,8 @@ Layer *NewLayer(void)
 /**
  * Creates a new layer set with the "name" in the current sprite
  */
-Layer *NewLayerSet(void)
+Layer *NewLayerSet(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
   Layer *layer = NULL;
 
   if (sprite == NULL) {
@@ -330,10 +330,10 @@ Layer *NewLayerSet(void)
 /**
  * Removes the current selected layer
  */
-void RemoveLayer(void)
+void RemoveLayer(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
-  if (sprite && sprite->layer) {
+  if (sprite != NULL &&
+      sprite->layer != NULL) {
     Layer *layer = sprite->layer;
     Layer *parent = layer->parent_layer;
     Layer *layer_select;
@@ -350,10 +350,8 @@ void RemoveLayer(void)
       layer_select = NULL;
 
     /* undo stuff */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Remove Layer");
+    if (undo_is_enabled(sprite->undo))
       undo_open(sprite->undo);
-    }
 
     /* select other layer */
     if (undo_is_enabled(sprite->undo))
@@ -375,10 +373,9 @@ void RemoveLayer(void)
   }
 }
 
-char *GetUniqueLayerName(void)
+char *GetUniqueLayerName(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
-  if (sprite) {
+  if (sprite != NULL) {
     char buf[1024];
     sprintf(buf, "Layer %d", get_max_layer_num(sprite->set)+1);
     return jstrdup(buf);
@@ -387,9 +384,8 @@ char *GetUniqueLayerName(void)
     return NULL;
 }
 
-Layer *FlattenLayers(void)
+Layer *FlattenLayers(Sprite *sprite)
 {
-  Sprite *sprite = current_sprite;
   bool is_new_background = FALSE;
   JLink link, next;
   Layer *background;
@@ -433,10 +429,8 @@ Layer *FlattenLayers(void)
     bgcolor = 0;
 
   /* open undo */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Flatten Layers");
+  if (undo_is_enabled(sprite->undo))
     undo_open(sprite->undo);
-  }
   
   /* add the new layer */
   if (is_new_background) {
@@ -515,122 +509,55 @@ Layer *FlattenLayers(void)
   /* close the undo */
   if (undo_is_enabled(sprite->undo))
     undo_close(sprite->undo);
-
-#if 0				/* TODO why? */
-  /* update all editors that has this sprite */
-  update_screen_for_sprite(sprite);
-#endif
  
   return background;
 }
 
-void CropLayer(void)
+void CropLayer(Layer *layer, int x, int y, int w, int h)
 {
-  Sprite *sprite = current_sprite;
+  Sprite *sprite = layer->sprite;
+  Cel *cel;
+  Image *image;
+  Image *new_image;
+  JLink link;
 
-  if ((sprite != NULL) &&
-      (!mask_is_empty(sprite->mask)) &&
-      (sprite->layer != NULL) &&
-      (layer_is_image(sprite->layer))) {
-    Layer *layer = sprite->layer;
-    Cel *cel;
-    Image *image;
-    Layer *new_layer;
-    Cel *new_cel;
-    Image *new_image;
-    Layer *set = layer->parent_layer;
-    JLink link;
+  JI_LIST_FOR_EACH(layer->cels, link) {
+    cel = link->data;
+    image = stock_get_image(sprite->stock, cel->image);
+    if (image == NULL)
+      continue;
 
-    new_layer = layer_new(sprite);
-    if (!new_layer) {
+    new_image = image_crop(image, x-cel->x, y-cel->y, w, h,
+			   app_get_color_to_clear_layer(layer));
+    if (new_image == NULL) {
       console_printf(_("Not enough memory\n"));
       return;
     }
 
-    layer_set_name(new_layer, layer->name);
-    layer_set_blend_mode(new_layer, layer->blend_mode);
-
-    JI_LIST_FOR_EACH(layer->cels, link) {
-      cel = link->data;
-      image = stock_get_image(sprite->stock, cel->image);
-      if (!image)
-	continue;
-
-      new_cel = cel_new_copy(cel);
-      if (!new_cel) {
-	layer_free(new_layer);
-	console_printf(_("Not enough memory\n"));
-	return;
-      }
-
-      new_image = image_crop(image,
-			     sprite->mask->x-cel->x,
-			     sprite->mask->y-cel->y,
-			     sprite->mask->w,
-			     sprite->mask->h);
-      if (!new_image) {
-	layer_free(new_layer);
-	cel_free(new_cel);
-	console_printf(_("Not enough memory\n"));
-	return;
-      }
-
-      new_cel->image = stock_add_image(sprite->stock, new_image);
-      new_cel->x = sprite->mask->x;
-      new_cel->y = sprite->mask->y;
-
-      layer_add_cel(new_layer, new_cel);
-    }
-
-    /* add the new layer */
     if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Layer Crop");
-      undo_open(sprite->undo);
-      undo_add_layer(sprite->undo, set, new_layer);
+      undo_replace_image(sprite->undo, sprite->stock, cel->image);
+      undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
+      undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
     }
 
-    layer_add_layer(set, new_layer);
+    cel->x = x;
+    cel->y = y;
 
-    /* move it after the old one */
-    if (undo_is_enabled(sprite->undo))
-      undo_move_layer(sprite->undo, new_layer);
-
-    layer_move_layer(set, new_layer, layer);
-
-    /* set the new one as the current one */
-    if (undo_is_enabled(sprite->undo))
-      undo_set_layer(sprite->undo, sprite);
-
-    sprite_set_layer(sprite, new_layer);
-
-    /* remove the old layer */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_remove_layer(sprite->undo, layer);
-      undo_close(sprite->undo);
-    }
-
-    layer_remove_layer(set, layer);
-
-    layer_free_images(layer);
-    layer_free(layer);
-
-    /* refresh */
-    update_screen_for_sprite(sprite);
+    stock_replace_image(sprite->stock, cel->image, new_image);
+    image_free(image);
   }
 }
 
 /**
  * Converts the selected layer in a `Background' layer.
  */
-void BackgroundFromLayer(void)
+void BackgroundFromLayer(Sprite *sprite)
 {
-  Sprite *sprite;
   int bgcolor;
   JLink link;
   Image *bg_image;
   Image *cel_image;
 
-  sprite = current_sprite;
   if (sprite == NULL) {
     console_printf("BackgroundFromLayer: there is not a current sprite selected\n");
     return;
@@ -666,10 +593,8 @@ void BackgroundFromLayer(void)
   bgcolor = app_get_bg_color(sprite);
   bgcolor = fixup_color_for_background(sprite->imgtype, bgcolor);
 
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Background from Layer");
+  if (undo_is_enabled(sprite->undo))
     undo_open(sprite->undo);
-  }
 
   /* create a temporary image to draw each frame of the new
      `Background' layer */
@@ -742,11 +667,8 @@ void BackgroundFromLayer(void)
     undo_close(sprite->undo);
 }
 
-void LayerFromBackground(void)
+void LayerFromBackground(Sprite *sprite)
 {
-  Sprite *sprite;
-
-  sprite = current_sprite;
   if (sprite == NULL) {
     console_printf("LayerFromBackground: there is not a current sprite selected\n");
     return;
@@ -783,7 +705,6 @@ void LayerFromBackground(void)
   }
 
   if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Layer from Background");
     undo_open(sprite->undo);
     undo_data(sprite->undo,
 	      (GfxObj *)sprite->layer,
@@ -1170,7 +1091,6 @@ void CropCel(void)
 
     /* undo */
     if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Cel Crop");
       undo_open(sprite->undo);
       undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
       undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
@@ -1184,7 +1104,7 @@ void CropCel(void)
 		 sprite->mask->x-cel->x,
 		 sprite->mask->y-cel->y,
 		 sprite->mask->w,
-		 sprite->mask->h);
+		 sprite->mask->h, 0);
 
     image_free(image);		/* destroy the old image */
 

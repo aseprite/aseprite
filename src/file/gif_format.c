@@ -230,7 +230,7 @@ static bool load_GIF(FileOp *fop)
 				  gif->frames[i].xoff,
 				  gif->frames[i].yoff,
 				  gif->frames[i].w,
-				  gif->frames[i].h);
+				  gif->frames[i].h, 0);
 	  if (tmp) {
 	    image_copy(current_image, tmp,
 		       gif->frames[i].xoff,

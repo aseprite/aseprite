@@ -42,8 +42,13 @@ static bool cmd_layer_from_background_enabled(const char *argument)
 
 static void cmd_layer_from_background_execute(const char *argument)
 {
-  LayerFromBackground();
-  update_screen_for_sprite(current_sprite);
+  Sprite *sprite = current_sprite;
+
+  if (undo_is_enabled(sprite->undo))
+    undo_set_label(sprite->undo, "Layer from Background");
+
+  LayerFromBackground(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_layer_from_background = {

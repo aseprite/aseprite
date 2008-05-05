@@ -521,4 +521,11 @@ static int bind_rand(lua_State *L)
 
 #define file_exists exists
 
-#include "script/genbinds.c"
+#if 0				/* TODO what we will do with this? */
+  #include "script/genbinds.c"
+#else
+  void register_bindings(lua_State *L)
+  {
+    /* do nothing */
+  }
+#endif

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.6-beta2
+version=0.6b2
 distdir=ase-$version
 
 freetype_files="third_party/freetype/ChangeLog				\
@@ -90,7 +90,7 @@ ase_files="config.h				\
 	   data/tips/*.pcx			\
 	   data/tips/tips.en			\
 	   data/tips/tips.es			\
-	   docs/*.html				\
+	   docs/*.pdf				\
 	   docs/*.txt				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\
@@ -177,9 +177,7 @@ $1/data/jids/*.jid						     \
 $1/data/gui-en.xml						     \
 $1/data/tips/*.en						     \
 $1/data/tips/*.es						     \
-$1/docs/*.html							     \
-$1/docs/*.info							     \
-$1/docs/*.texi							     \
+$1/docs/*.pdf							     \
 $1/docs/*.txt							     \
 $1/docs/files/*.txt						     \
 $1/docs/licenses/*.txt"
