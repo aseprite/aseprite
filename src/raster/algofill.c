@@ -129,6 +129,24 @@ static int flooder (Image *image, int x, int y,
         }
       }
       break;
+
+    default:
+      /* check start pixel */
+      if (image_getpixel(image, x, y) != src_color)
+	return x+1;
+
+      /* work left from starting point */
+      for (left=x-1; left>=0; left--) {
+	if (image_getpixel(image, left, y) != src_color)
+	  break;
+      }
+
+      /* work right from starting point */
+      for (right=x+1; right<image->w; right++) {
+	if (image_getpixel(image, right, y) != src_color)
+	  break;
+      }
+      break;
   }
 
   left++;

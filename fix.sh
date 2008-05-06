@@ -26,6 +26,12 @@ readln "Do you want profile ASE (y/n)?" "n"
 profile=$ans
 
 ######################################################################
+# memory leaks
+
+readln "Do you want to check memory leaks (y/n)?" "n"
+memleak=$ans
+
+######################################################################
 # prefix
 
 if [ "$platform" == "unix" ] ; then
@@ -54,6 +60,9 @@ if [ "$debug" == "y" ] ; then echo "yes" ; else echo "no" ; fi
 
 echo -n "  Profile suppport:	"
 if [ "$profile" == "y" ] ; then echo "yes" ; else echo "no" ; fi
+
+echo -n "  Check memory leaks:	"
+if [ "$memleak" == "y" ] ; then echo "yes" ; else echo "no" ; fi
 
 if [ "$prefix" != "" ] ; then
   echo "  Prefix:		$prefix"
@@ -99,10 +108,12 @@ gen_makefile()
   if [ "profile" != "y" ] ; then echo -n "#" >> $makefile ; fi
   echo "PROFILE = 1" >> $makefile
 
+  if [ "memleak" != "y" ] ; then echo -n "#" >> $makefile ; fi
+  echo "MEMLEAK = 1" >> $makefile
+
   if [ "$prefix" == "" ] ; then echo -n "#" >> $makefile ; fi
   echo "DEFAULT_PREFIX = \"$prefix\"" >> $makefile
 
-  echo "#USE_386_ASM = 1" >> $makefile
   echo "" >> $makefile
   echo "include $makefile_name" >> $makefile
 }

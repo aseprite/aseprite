@@ -64,12 +64,13 @@ typedef struct ASE_FrameHeader
   ase_uint16 duration;
 } ASE_FrameHeader;
 
-static bool load_ASE(FileOp *fop);
-static bool save_ASE(FileOp *fop);
-
+/* TODO warning: the writing routines aren't thread-safe */
 static ASE_FrameHeader *current_frame_header = NULL;
 static int chunk_type;
 static int chunk_start;
+
+static bool load_ASE(FileOp *fop);
+static bool save_ASE(FileOp *fop);
 
 static bool ase_file_read_header(FILE *f, ASE_Header *header);
 static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite);
@@ -190,24 +191,20 @@ static bool load_ASE(FileOp *fop)
 
 	  /* only for 8 bpp images */
 	  case ASE_FILE_CHUNK_FLI_COLOR:
+	  case ASE_FILE_CHUNK_FLI_COLOR2:
 	    /* fop_error(fop, "Color chunk\n"); */
 
 	    if (sprite->imgtype == IMAGE_INDEXED) {
-	      Palette *pal = ase_file_read_color_chunk(f, sprite, frame);
-	      sprite_set_palette(sprite, pal, TRUE);
-	      palette_free(pal);
-	    }
-	    else
-	      fop_error(fop, _("Warning: was found a color chunk in non-8bpp file\n"));
-	    break;
+	      Palette *prev_pal = sprite_get_palette(sprite, frame);
+	      Palette *pal =
+		chunk_type == ASE_FILE_CHUNK_FLI_COLOR ? 
+		ase_file_read_color_chunk(f, sprite, frame):
+		ase_file_read_color2_chunk(f, sprite, frame);
 
-	  /* only for 8 bpp images */
-	  case ASE_FILE_CHUNK_FLI_COLOR2:
-	    /* fop_error(fop, "Color2 chunk\n"); */
+	      if (palette_count_diff(prev_pal, pal, NULL, NULL) > 0) {
+		sprite_set_palette(sprite, pal, TRUE);
+	      }
 
-	    if (sprite->imgtype == IMAGE_INDEXED) {
-	      Palette *pal = ase_file_read_color2_chunk(f, sprite, frame);
-	      sprite_set_palette(sprite, pal, TRUE);
 	      palette_free(pal);
 	    }
 	    else
@@ -226,7 +223,8 @@ static bool load_ASE(FileOp *fop)
 	  case ASE_FILE_CHUNK_CEL: {
 	    /* fop_error(fop, "Cel chunk\n"); */
 
-	    ase_file_read_cel_chunk(f, sprite, frame, sprite->imgtype, fop, &header);
+	    ase_file_read_cel_chunk(f, sprite, frame,
+				    sprite->imgtype, fop, &header);
 	    break;
 	  }
 
@@ -260,6 +258,10 @@ static bool load_ASE(FileOp *fop)
 
     /* skip frame size */
     fseek(f, frame_pos+frame_header.size, SEEK_SET);
+
+    /* just one frame? */
+    if (fop->oneframe)
+      break;
   }
 
   fop->sprite = sprite;
@@ -810,8 +812,11 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
       int link_frame = fgetw(f);
       Cel *link = layer_get_cel(layer, link_frame);
 
-      if (link)
-	cel->image = link->image;
+      if (link) {
+	/* create a copy of the linked cel (avoid using links cel) */
+	Image *image = image_new_copy(stock_get_image(sprite->stock, link->image));
+	cel->image = stock_add_image(sprite->stock, image);
+      }
       else {
 	cel_free(cel);
 	/* linked cel doesn't found */

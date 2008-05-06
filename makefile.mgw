@@ -60,7 +60,7 @@ default: all
 all: $(ASE)
 
 clean:
-	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS)
+	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS) $(OBJ_DIR)/icon.res
 
 distclean: clean
 	-rm -f $(ASE)

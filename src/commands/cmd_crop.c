@@ -30,15 +30,16 @@
 #include "util/autocrop.h"
 #include "util/misc.h"
 
-static bool cmd_crop_enabled(const char *argument);
-
 /* ======================== */
 /* crop_sprite              */
 /* ======================== */
 
 static bool cmd_crop_sprite_enabled(const char *argument)
 {
-  return cmd_crop_enabled(argument);
+  return
+    current_sprite != NULL &&
+    current_sprite->mask != NULL &&
+    current_sprite->mask->bitmap != NULL;
 }
 
 static void cmd_crop_sprite_execute(const char *argument)
@@ -74,19 +75,6 @@ static void cmd_autocrop_sprite_execute(const char *argument)
 
 /**********************************************************************/
 /* local */
-
-static bool cmd_crop_enabled(const char *argument)
-{
-  if ((!current_sprite) ||
-      (!current_sprite->layer) ||
-      (!layer_is_readable(current_sprite->layer)) ||
-      (!layer_is_writable(current_sprite->layer)) ||
-      (!current_sprite->mask) ||
-      (!current_sprite->mask->bitmap))
-    return FALSE;
-  else
-    return GetImage(current_sprite) ? TRUE: FALSE;
-}
 
 Command cmd_crop_sprite = {
   CMD_CROP_SPRITE,

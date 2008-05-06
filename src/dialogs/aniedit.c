@@ -142,6 +142,7 @@ static void anieditor_regenerate_layers(JWidget widget);
 static void anieditor_hot_this(JWidget widget, int hot_part, int hot_layer, int hot_frame);
 static void anieditor_center_cel(JWidget widget, int layer, int frame);
 static void anieditor_show_cel(JWidget widget, int layer, int frame);
+static void anieditor_show_current_cel(JWidget widget);
 static void anieditor_clean_clk(JWidget widget);
 static void anieditor_set_scroll(JWidget widget, int x, int y, bool use_refresh_region);
 static int anieditor_get_layer_index(JWidget widget, Layer *layer);
@@ -678,6 +679,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
+	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	}
 	return TRUE;
@@ -690,6 +692,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
+	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	}
 	return TRUE;
@@ -707,6 +710,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    strcmp(command->name, CMD_GOTO_NEXT_LAYER) == 0 ||
 	    strcmp(command->name, CMD_GOTO_LAST_FRAME) == 0) {
 	  command_execute(command, NULL);
+
+	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	  return TRUE;
 	}
@@ -716,6 +721,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  command_execute(command, NULL);
 
 	  anieditor_regenerate_layers(widget);
+	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	  return TRUE;
 	}
@@ -1153,7 +1159,9 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   cel = layer_get_cel(layer, frame);
 
   /* empty cel? */
-  if (cel == NULL) {
+  if (cel == NULL ||
+      stock_get_image(anieditor->sprite->stock,
+		      cel->image) == NULL) { /* TODO why a cel can't have an associated image? */
     jdraw_rectfill(thumbnail_rect, bg);
     draw_emptyset_symbol(thumbnail_rect, ji_color_disabled());
   }
@@ -1337,6 +1345,14 @@ static void anieditor_show_cel(JWidget widget, int layer, int frame)
   if (scroll_x != anieditor->scroll_x ||
       scroll_y != anieditor->scroll_y)
     anieditor_set_scroll(widget, scroll_x, scroll_y, TRUE);
+}
+
+static void anieditor_show_current_cel(JWidget widget)
+{
+  AniEditor *anieditor = anieditor_data(widget);
+  int layer = anieditor_get_layer_index(widget, anieditor->sprite->layer);
+  if (layer >= 0)
+    anieditor_show_cel(widget, layer, anieditor->sprite->frame);
 }
 
 static void anieditor_clean_clk(JWidget widget)

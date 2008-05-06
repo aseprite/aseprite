@@ -238,8 +238,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* get selected colors */
-      colorbar->fgcolor = get_config_color("ColorBar", "FG", color_index(15));
-      colorbar->bgcolor = get_config_color("ColorBar", "BG", color_index(0));
+      colorbar->fgcolor = get_config_color("ColorBar", "FG", color_rgb(0, 0, 0));
+      colorbar->bgcolor = get_config_color("ColorBar", "BG", color_rgb(255, 255, 255));
       break;
     }
 

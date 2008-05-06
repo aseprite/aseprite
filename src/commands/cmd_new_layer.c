@@ -45,7 +45,11 @@ static void cmd_new_layer_execute(const char *argument)
     return;
 
   name_widget = jwidget_find_name(window, "name");
-  jwidget_set_text(name_widget, GetUniqueLayerName(sprite));
+  {
+    char *name = GetUniqueLayerName(sprite);
+    jwidget_set_text(name_widget, name);
+    jfree(name);
+  }
   jwidget_set_min_size(name_widget, 128, 0);
 
   jwindow_open_fg(window);

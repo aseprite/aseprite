@@ -874,19 +874,19 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 
 	  /* 3rd border */
 	  jrect_shrink(pos, 1);
-	  jdraw_rectedge(pos, makecol(128, 128, 128), makecol(255, 255, 255));
+	  jdraw_rectedge(pos, ji_color_faceshadow(), ji_color_facelight());
 	}
 	else {
 	  /* 1st border */
-	  jdraw_rect(pos, makecol(192, 192, 192));
+	  jdraw_rect(pos, ji_color_face());
 
 	  /* 2nd border */
 	  jrect_shrink(pos, 1);
-	  jdraw_rect(pos, makecol(192, 192, 192));
+	  jdraw_rect(pos, ji_color_face());
 
 	  /* 3rd border */
 	  jrect_shrink(pos, 1);
-	  jdraw_rectedge(pos, makecol(128, 128, 128), makecol(255, 255, 255));
+	  jdraw_rectedge(pos, ji_color_faceshadow(), ji_color_facelight());
 	}
 
 	jrect_free(pos);

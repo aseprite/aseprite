@@ -177,14 +177,25 @@ bool file_system_init(void)
  */
 void file_system_exit(void)
 {
-  if (rootitem)
+#if 0
+  /* WARNING: all the 'fileitem_free' are called with the hash_free
+     routine, so we don't need to call 'fileitem_free' for the
+     'rootitem'... */
+  if (rootitem != NULL) {
     fileitem_free(rootitem);
+    rootitem = NULL;
+  }
+#endif
 
-  if (hash_fileitems)
-    hash_free(hash_fileitems, NULL);
+  if (hash_fileitems != NULL) {
+    hash_free(hash_fileitems, fileitem_free);
+    hash_fileitems = NULL;
+  }
 
-  if (hash_thumbnail)
+  if (hash_thumbnail != NULL) {
     hash_free(hash_thumbnail, (void *)destroy_bitmap);
+    hash_thumbnail = NULL;
+  }
 
 #ifdef USE_PIDLS
   /* relase desktop IShellFolder interface */
@@ -575,8 +586,12 @@ static void fileitem_free(FileItem *fileitem)
   }
 #endif
 
+#if 0
+  /* WARNING: all the 'fileitem_free' are called with the hash_free
+     routine in the 'file_system_exit'... */
   if (fileitem->parent)
     jlist_remove(fileitem->parent->children, fileitem);
+#endif
 
   if (fileitem->keyname)
     jfree(fileitem->keyname);
@@ -588,10 +603,14 @@ static void fileitem_free(FileItem *fileitem)
     jfree(fileitem->displayname);
 
   if (fileitem->children) {
+    /* WARNING: all the 'fileitem_free' are called with the hash_free
+       routine in the 'file_system_exit'... */
+#if 0
     JLink link, next;
     JI_LIST_FOR_EACH_SAFE(fileitem->children, link, next) {
       fileitem_free(link->data);
     }
+#endif
     jlist_free(fileitem->children);
   }
 
@@ -690,12 +709,12 @@ static void update_by_pidl(FileItem *fileitem)
   TCHAR pszName[MAX_PATH];
   IShellFolder *pFolder = NULL;
 
-  if (fileitem->filename) {
+  if (fileitem->filename != NULL) {
     jfree(fileitem->filename);
     fileitem->filename = NULL;
   }
 
-  if (fileitem->displayname) {
+  if (fileitem->displayname != NULL) {
     jfree(fileitem->displayname);
     fileitem->displayname = NULL;
   }
@@ -714,7 +733,7 @@ static void update_by_pidl(FileItem *fileitem)
   /****************************************/
   /* get the file name */
 
-  if (pFolder &&
+  if (pFolder != NULL &&
       IShellFolder_GetDisplayNameOf(pFolder,
 				    fileitem->pidl,
 				    SHGDN_NORMAL | SHGDN_FORPARSING,
@@ -736,7 +755,7 @@ static void update_by_pidl(FileItem *fileitem)
   /****************************************/
   /* get the name to display */
 
-  if (pFolder &&
+  if (pFolder != NULL &&
       IShellFolder_GetDisplayNameOf(pFolder,
 				    fileitem->pidl,
 				    SHGDN_INFOLDER,
@@ -751,10 +770,11 @@ static void update_by_pidl(FileItem *fileitem)
     StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
     fileitem->displayname = jstrdup(pszName);
   }
-  else
+  else {
     fileitem->displayname = jstrdup("ERR");
+  }
 
-  if (pFolder && pFolder != shl_idesktop) {
+  if (pFolder != NULL && pFolder != shl_idesktop) {
     IShellFolder_Release(pFolder);
   }
 }

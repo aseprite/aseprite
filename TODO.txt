@@ -2,47 +2,24 @@ High priority work
 ------------------
 
 - search for TODO;
-- tooltips for color-bar.
-  + agregar soporte para UNDO al cambiar los colores de la paleta.
-- add AseContext structure to handle the current state of the
-  application (and hook changes in the context/options):
-  + src/ase/ directory
-  + src/ase/context.[ch]
-  + the current sprite should be in the AseContext
-  + the commands should be enabled/disabled/checked by the current
-    context state
-  + the commands should use a new ase/ API and not the raster/ low-level
-  + the dependencies should be:
-    commands/ -> ase/ -> raster/ -> jinete/
-  + the list of 'sprites' should be in the context (maybe a
-    AseSharedContext).
-  + the scripts should start with a new default AseContext (but
-    with the AseSharedContext visible)
-  + 
+- rewritten palette-editor to edit multiple-palettes.
+  - fix quantize (one palette for all frames, one palette per frame)
+  - pal-operations (sort, quantize, gamma by color-curves, etc.);
+  - complete palette operations, and palette editor (it needs a slider
+    or something to move between palette changes)
+- add undo support for palette changes.
 - brush options by tool.
 - if there is activated the Tools Configuration dialog box, the
   Shift+G and Shift+S should update it
-  + Solution: with hooks and Options (add core/options.[ch])
+- when press Plus/Minus pad in the editor and the configuration tool
+  window is active, the slider of the "Brush Size" must be updated.
 - add a consistent error handling.
-- rewrite the film editor.
-- rewrite tools-inks-drawingmode stuff;
-- new animation editor (remove the film editor)
 - drag & drop files in Windows.
-- add core/options & the Options structure.
 - add two DrawClick2:
   - DrawClick2FreeHand
   - DrawClick2Shape
-- remove the jfilesel.c
-- fix the sprite-properties dialog when select the constant
-  frame length.
-- ver por el nuevo load_font de Allegro.
-- complete palette operations, and palette editor (it needs a slider
-  or something to move between palette changes);
-- fix undo of big chunks (more than limit):
-  + how to reproduce the error? create an RGB image of 800x600, add a
-    layer, add a frame, move the new frame to the other layer, undo,
-    there is the bug.
-- fix quantize (one palette for all frames, one palette per frame)
+- remove the jfilesel.c & jquickmenu.c
+- see the new Allegro's load_font
 - fix Jinete examples:
   + 05fsel
   + 09lists
@@ -50,24 +27,19 @@ High priority work
   + 21manage
 + finished the support for ICO files.
 - add "size" to GUI font (for TTF fonts);
-- layer movement between sets in filmeditor;
+- layer movement between sets in animation-editor;
   + add all the "set" stuff again;
-- quick swap;
-  + the regions mustn't be overlapped;
 - options to change the curve type (in curedit.c);
 - More Commands:
   + resize sprite;
-  + rotate sprite;
+  + rotate sprite (90 CW, CCW, Any Angle);
   + canvas size;
-- gauss blur;
-- pal-operations (sort, quantize, gamma by color-curves, etc.);
+- gaussian blur;
 - RGB and HSV effects;
 - color-curve stock;
 - fix algo_ellipsefill;
 - view_tiled() should support animation playback (partial support:
   with left and right keys).
-- when press Plus/Minus pad in the editor and the configuration tool
-  window is active, the slider of the "Brush Size" must be updated.
 - make keys like 9, 0, + Pad, - Pad configurable.
 
 Wish-list
@@ -75,6 +47,21 @@ Wish-list
 
 - dacap wish-list:
   + added starred file-items in the file-selector.
+  + add AseContext structure to handle the current state of the
+    application (and hook changes in the context/options):
+  + src/ase/ directory
+  + src/ase/context.[ch]
+  + the current sprite should be in the AseContext
+  + the commands should be enabled/disabled/checked by the current
+    context state
+  + the commands should use a new ase/ API and not the raster/ low-level
+  + functions.c is a good example for the new ase/ API.
+  + the dependencies should be:
+    commands/ -> ase/ -> raster/ -> jinete/
+  + the list of 'sprites' should be in the context (maybe a
+    AseSharedContext).
+  + the scripts should start with a new default AseContext (but
+    with the AseSharedContext visible)
 - manuq wish-list:
   + layer-with-constant-cel
 - Mateusz Czaplinski ideas:

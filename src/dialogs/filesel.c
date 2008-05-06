@@ -25,6 +25,7 @@
 
 #include "jinete/jinete.h"
 
+#include "core/app.h"
 #include "core/cfg.h"
 #include "core/dirs.h"
 #include "file/file.h"
@@ -83,8 +84,10 @@ char *ase_file_selector(const char *message,
 
   file_system_refresh();
 
-  if (!navigation_history)
+  if (!navigation_history) {
     navigation_history = jlist_new();
+    app_add_hook(APP_EXIT, jlist_free, navigation_history);
+  }
 
   /* 'buf' will contain the start folder path */
   ustrcpy(buf, init_path);

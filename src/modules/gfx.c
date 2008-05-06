@@ -441,7 +441,10 @@ void *rectsave(BITMAP *bmp, int x1, int y1, int x2, int y2)
   data->npixel = 0;
   do_rect(bmp, x1, y1, x2, y2, (int)data, count_rect);
 
-  data->pixel = jmalloc(sizeof(int) * data->npixel);
+  if (data->npixel > 0)
+    data->pixel = jmalloc(sizeof(int) * data->npixel);
+  else
+    data->pixel = NULL;
 
   data->npixel = 0;
   do_rect(bmp, x1, y1, x2, y2, (int)data, save_rect);
@@ -462,7 +465,7 @@ void rectdiscard(void *_data)
 {
   RECT_DATA *data = _data;
 
-  if (data->pixel)
+  if (data->pixel != NULL)
     jfree(data->pixel);
   jfree(data);
 }

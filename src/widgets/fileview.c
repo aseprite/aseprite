@@ -214,6 +214,10 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       assert(jlist_empty(fileview->monitors));
 
       jlist_free(fileview->monitors);
+
+      if (fileview->list != NULL)
+	jlist_free(fileview->list);
+
       jmanager_remove_timer(fileview->timer_id);
       jfree(fileview);
       break;
@@ -616,12 +620,12 @@ static void fileview_regenerate_list(JWidget widget)
   JLink link, next;
   JList children;
 
-  if (fileview->list)
+  if (fileview->list != NULL)
     jlist_free(fileview->list);
 
   /* get the list of children */
   children = fileitem_get_children(fileview->current_folder);
-  if (children) {
+  if (children != NULL) {
     fileview->list = jlist_copy(children);
 
     /* filter the list */

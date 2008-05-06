@@ -601,7 +601,7 @@ static int hook_type(void)
   return type;
 }
 
-static bool hook_handler(JWidget widget, JMessage msg)
+static bool hook_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -611,8 +611,10 @@ static bool hook_handler(JWidget widget, JMessage msg)
 
     case JM_SIGNAL: {
       HookData *hook_data = jwidget_get_data(widget, hook_type());
-      if (hook_data->signal_num == msg->signal.num)
+      if (hook_data != NULL &&
+	  hook_data->signal_num == msg->signal.num) {
 	return (*hook_data->signal_handler)(widget, hook_data->data);
+      }
       break;
     }
   }
@@ -634,7 +636,7 @@ void hook_signal(JWidget widget,
   hook_data->signal_handler = signal_handler;
   hook_data->data = data;
 
-  jwidget_add_hook(widget, hook_type(), hook_handler, hook_data);
+  jwidget_add_hook(widget, hook_type(), hook_msg_proc, hook_data);
 }
 
 /**

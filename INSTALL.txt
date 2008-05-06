@@ -14,6 +14,10 @@ COMPILATION
 
     makefile -f makefile.lnx
 
+  For MinGW, edit the "makefile.cfg" file, and then
+
+    makefile -f makefile.mgw
+
 
 ===================================
 INSTALLATION
@@ -41,7 +45,7 @@ UNINSTALLATION
 SUBVERSION
 ===================================
 
-  If you're download ASE from the Subversion repository, after
+  If you downloaded ASE from the Subversion repository, after
   updating I recommend you to do:
 
     ~/ase-trunk/$ make clean

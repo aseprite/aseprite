@@ -48,8 +48,9 @@ FEATURES
   * Load/save animations in sequence of bitmaps (frm00.pcx, frm01.pcx, ...).
   * Tiled drawing mode to draw patterns and textures.
   * Undo/Redo support for every operation.
+  * Special tools like Blur, Jumble, Convolution Matrices.
   * Multiple editor support.
-  * Show-grid/Snap-to-Grid
+  * Onion skinning support.
 
 ===================================
 CONFIGURATION FILES

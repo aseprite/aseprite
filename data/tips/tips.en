@@ -5,7 +5,7 @@
 \palette ase.pcx
 \image ase.pcx
 
-Welcome to ASE 0.6
+Welcome to ASE 0.6 BETA 2
 
 READ THIS!
 
@@ -23,10 +23,10 @@ current editor's viewport.
  **********************************************************************
 \image eyedropper.pcx
 
-You can pick a color from the sprite using the <I> key or <Alt+Left
-click>. This replaces the ``Tool Foreground Color''.
+You can pick a color from the sprite using <Alt+Left button>. This
+replaces the ``Tool Foreground Color''.
 
-<Alt+Right click> replaces the ``Tool Background Color'' and the <X>
+<Alt+Right button> replaces the ``Tool Background Color'' and the <X>
 switches the Foreground and Background colors.
  **********************************************************************
 \image anicontrols.pcx
@@ -45,20 +45,23 @@ Move through the frames with the arrows keys
 
 <Enter> = play animation
  **********************************************************************
+\image aniedit.pcx
+
+Do you want edit layers, frames and cels?  Use the ``Animation Editor''.
+
+Go to ``Tools/Animation Editor'' menu or press <Tab> key when you are
+editing a sprite.
+ **********************************************************************
+\image newframe.pcx
+
 You can add new animation frames pressing <N> key or using
 ``Frame/New'' menu.
  **********************************************************************
-\image filmedit.pcx
-
-Do you want edit layers, frames and cels?  Use the film editor:
-
-Go to ``Tools/Film Editor'' menu or press <Tab> key when you are editing
-a sprite.
- **********************************************************************
 \image onion.pcx
 
-You can use the onion-skinning feature to edit animations (press <C> key to
-see the ``Tools Setup'' window):
+You can use the onion-skinning feature to edit animations (press <C>
+key to see the ``Tools Setup'' window). The onion-skinning works only
+for transparent layers, the ``Background'' layer can't be used.
  **********************************************************************
 When you apply some effect (like Convolution Matrix, or Color Curves),
 you can choose the target channels:

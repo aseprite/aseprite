@@ -171,7 +171,7 @@ int init_module_tools(void)
   set_cursor_color(get_config_color("Tools", "CursorColor", color_mask()));
 
   /* tools configuration */
-  glass_dirty = get_config_int("Tools", "GlassDirty", 128);
+  glass_dirty = get_config_int("Tools", "GlassDirty", 255);
   spray_width = get_config_int("Tools", "SprayWidth", 16);
   air_speed   = get_config_int("Tools", "AirSpeed", 75);
   filled_mode = get_config_bool("Tools", "Filled", FALSE);

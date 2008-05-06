@@ -23,6 +23,7 @@
 
 #include "jinete/jbase.h"
 
+#include "raster/algo.h"
 #include "raster/brush.h"
 #include "raster/image.h"
 
@@ -103,6 +104,11 @@ static void clean_brush (Brush *brush)
   }
 }
 
+static void algo_hline(int x1, int y, int x2, void *data)
+{
+  image_hline(data, x1, y, x2, 1);
+}
+
 /* Regenerates the brush bitmap and its rectangle's region. */
 static void regenerate_brush(Brush *brush)
 {
@@ -119,15 +125,34 @@ static void regenerate_brush(Brush *brush)
       image_ellipsefill(brush->image, 0, 0, brush->size-1, brush->size-1, 1);
       break;
 
-    case BRUSH_SQUARE:
-      image_rectfill(brush->image, 0, 0, brush->size-1, brush->size-1, 1);
+    case BRUSH_SQUARE: {
+      double a = PI * brush->angle / 180;
+      int r = brush->size/2;
+      int x1, y1, x2, y2, x3, y3, x4, y4;
+
+      x1 =  cos(a+  PI/4) * r;
+      y1 = -sin(a+  PI/4) * r;
+      x2 =  cos(a+3*PI/4) * r;
+      y2 = -sin(a+3*PI/4) * r;
+      x3 =  cos(a-3*PI/4) * r;
+      y3 = -sin(a-3*PI/4) * r;
+      x4 =  cos(a-  PI/4) * r;
+      y4 = -sin(a-  PI/4) * r;
+
+      image_line(brush->image, r+x1, r+y1, r+x2, r+y2, 1);
+      image_line(brush->image, r+x2, r+y2, r+x3, r+y3, 1);
+      image_line(brush->image, r+x3, r+y3, r+x4, r+y4, 1);
+      image_line(brush->image, r+x4, r+y4, r+x1, r+y1, 1);
+
+      algo_floodfill(brush->image, r, r, brush->image, algo_hline);
       break;
+    }
 
     case BRUSH_LINE: {
       double a = PI * brush->angle / 180;
       int r = brush->size/2;
 
-      x = cos(a) * r;
+      x =  cos(a) * r;
       y = -sin(a) * r;
       image_line(brush->image, r-x, r-y, r+x, r+y, 1);
       image_line(brush->image, r-x-1, r-y, r+x-1, r+y, 1);

@@ -1,4 +1,16 @@
-2008-05-05  David A. Capello  <dacap@users.sourceforge.net>
+2008-05-06  David A. Capello  <davidcapello@gmail.com>
+
+	* Version 0.6b2 released.
+
+	* src/widgets/paledit.c: Added the 'All Frames' check box.
+
+	* src/file/ase_format.c (load_ASE): Added support for preview (to
+	load just the first frame). Removed link-cels support.
+
+	* src/raster/brush.c (regenerate_brush): Now the 'angle' modifies
+	the square brush.
+
+2008-05-05  David A. Capello  <davidcapello@gmail.com>
 
 	* src/commands/cmd_duplicate_layer.c (duplicate_layer): Fixed the
 	duplication of background layer: the flags aren't copied.

@@ -55,6 +55,7 @@
     </box>
 
     <box horizontal>
+      <check name="all_frames" text="All frames the same palette" />
       <box horizontal expansive />
       <box horizontal homogeneous>
 	<button text="&OK" name="button_ok" magnetic width="60" />

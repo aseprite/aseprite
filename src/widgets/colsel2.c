@@ -65,8 +65,12 @@ static int colorselector_type(void);
 static ColorSelector *colorselector_data(JWidget widget);
 static bool colorselector_msg_proc(JWidget widget, JMessage msg);
 static void colorselector_update_lock_button(JWidget widget);
-static void colorselector_set_color2(JWidget widget, color_t color, bool select_index_entry, Model *exclude_this_model);
-static void colorselector_set_paledit_index(JWidget widget, int index, bool select_index_entry);
+static void colorselector_set_color2(JWidget widget, color_t color,
+				     bool update_index_entry,
+				     bool select_index_entry,
+				     Model *exclude_this_model);
+static void colorselector_set_paledit_index(JWidget widget, int index,
+					    bool select_index_entry);
 
 static void select_tab_callback(JWidget tabs, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
@@ -154,7 +158,7 @@ JWidget colorselector_new(bool editable_palette)
 
 void colorselector_set_color(JWidget widget, color_t color)
 {
-  colorselector_set_color2(widget, color, TRUE, NULL);
+  colorselector_set_color2(widget, color, TRUE, TRUE, NULL);
 }
 
 color_t colorselector_get_color(JWidget widget)
@@ -303,7 +307,9 @@ static void colorselector_update_lock_button(JWidget widget)
 }
 
 static void colorselector_set_color2(JWidget widget, color_t color,
-				     bool select_index_entry, Model *exclude_this_model)
+				     bool update_index_entry,
+				     bool select_index_entry,
+				     Model *exclude_this_model)
 {
   ColorSelector *colorselector = colorselector_data(widget);
   JWidget tabs = jwidget_find_name(widget, "tabs");
@@ -359,10 +365,11 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   tabs_select_tab(tabs, m);
   select_tab_callback(tabs, m);
 
-  if (select_index_entry) {
+  if (update_index_entry) {
     switch (color_type(color)) {
       case COLOR_TYPE_INDEX:
-	colorselector_set_paledit_index(widget, color_get_index(IMAGE_INDEXED, color), FALSE);
+	colorselector_set_paledit_index(widget, color_get_index(IMAGE_INDEXED, color),
+					select_index_entry);
 	break;
       case COLOR_TYPE_MASK:
 	colorselector_set_paledit_index(widget, 0, TRUE);
@@ -508,7 +515,7 @@ static bool slider_change_hook(JWidget widget, void *data)
       color = color_index(i);
   }
 
-  colorselector_set_color2(window, color, FALSE, m);
+  colorselector_set_color2(window, color, FALSE, FALSE, m);
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
   return 0;
 }
@@ -535,7 +542,7 @@ static bool paledit_change_hook(JWidget widget, void *data)
       break;
     }
 
-  colorselector_set_color2(window, color, TRUE, NULL);
+  colorselector_set_color2(window, color, TRUE, FALSE, NULL);
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
   return 0;
 }

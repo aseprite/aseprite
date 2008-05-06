@@ -502,6 +502,7 @@ ALL_OBJS =					\
 	$(LIBLUA_OBJS)				\
 	$(LIBFREETYPE_OBJS)			\
 	$(LIBART_OBJS)				\
+	$(LIBJPEG_OBJS)				\
 	$(LIBPNG_OBJS)				\
 	$(ZLIB_OBJS)
 

@@ -250,6 +250,9 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       }
       jlist_free(statusbar->progress);
 
+      if (statusbar->tipwindow != NULL)
+	jwidget_free(statusbar->tipwindow);
+
       jfree(statusbar);
       break;
     }

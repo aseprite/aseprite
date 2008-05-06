@@ -94,11 +94,11 @@ GfxObj *gfxobj_find(gfxobj_id id)
 
   jmutex_lock(objects_mutex);
   {
-  JI_LIST_FOR_EACH(objects, link)
-    if (((GfxObj *)link->data)->id == id) {
-      ret = (GfxObj *)link->data;
-      break;
-    }
+    JI_LIST_FOR_EACH(objects, link)
+      if (((GfxObj *)link->data)->id == id) {
+	ret = (GfxObj *)link->data;
+	break;
+      }
   }
   jmutex_unlock(objects_mutex);
 

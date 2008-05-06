@@ -325,15 +325,15 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       if (!window->is_moveable)
 	break;
 
-      if (click_pos == NULL)
-	click_pos = jrect_new_copy(widget->rc);
-      else
-	jrect_copy(click_pos, widget->rc);
-
       press_x = msg->mouse.x;
       press_y = msg->mouse.y;
       window_action = get_action(widget, press_x, press_y);
       if (window_action != WINDOW_NONE) {
+	if (click_pos == NULL)
+	  click_pos = jrect_new_copy(widget->rc);
+	else
+	  jrect_copy(click_pos, widget->rc);
+
 	jwidget_hard_capture_mouse(widget);
 	return TRUE;
       }
