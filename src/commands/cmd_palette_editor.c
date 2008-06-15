@@ -131,8 +131,10 @@ static void cmd_palette_editor_execute(const char *argument)
       }
     }
   }
-  else 
+  else {
     palettes = NULL;
+    jwidget_disable(check_all_frames);
+  }
 
   /* get current palette */
   palette = palette_new_copy(get_current_palette());
