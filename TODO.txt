@@ -2,6 +2,8 @@ High priority work
 ------------------
 
 - search for TODO;
+- fix this: the sliders in Tools Configuration are too big
+  for small resolutions.
 - rewritten palette-editor to edit multiple-palettes.
   - fix quantize (one palette for all frames, one palette per frame)
   - pal-operations (sort, quantize, gamma by color-curves, etc.);
@@ -45,6 +47,10 @@ High priority work
 Wish-list
 ---------
 
+- ideas from freelunchdesign.com forum:
+  Geti: angle locking, like, so the line tool can be
+        snapped to 90, 45, 30 & 12.5 degree increments.
+        would just be handy for isos.
 - dacap wish-list:
   + added starred file-items in the file-selector.
   + add AseContext structure to handle the current state of the
