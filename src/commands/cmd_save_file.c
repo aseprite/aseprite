@@ -101,7 +101,6 @@ static void save_sprite_in_background(Sprite *sprite)
       data->alert_window = jalert_new(PACKAGE
 				      "<<Saving file:<<%s||&Cancel",
 				      get_filename(sprite->filename));
-      data->monitor = NULL;
 
       /* add a monitor to check the saving (FileOp) progress */
       data->monitor = add_gui_monitor(monitor_savefile_bg,

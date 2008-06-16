@@ -39,7 +39,7 @@
 
 /* these variables indicate what cel to move (and the current_sprite
    frame indicates to where move it) */
-static Layer *src_layer = NULL;
+static Layer *src_layer = NULL;	/* TODO warning not thread safe */
 static Layer *dst_layer = NULL;
 static int src_frame = 0;
 static int dst_frame = 0;

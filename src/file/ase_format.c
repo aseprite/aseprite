@@ -262,6 +262,9 @@ static bool load_ASE(FileOp *fop)
     /* just one frame? */
     if (fop->oneframe)
       break;
+
+    if (fop_is_stop(fop))
+      break;
   }
 
   fop->sprite = sprite;

@@ -40,6 +40,7 @@ typedef struct OpenFileData
   FileOp *fop;
   Progress *progress;
   JThread thread;
+  JWidget alert_window;
 } OpenFileData;
 
 /**
@@ -77,6 +78,7 @@ static void monitor_openfile_bg(void *_data)
 
   /* is done? ...ok, now the sprite is in the main thread only... */
   if (fop_is_done(fop)) {
+#if 0
     Sprite *sprite = fop->sprite;
     if (sprite) {
       recent_file(fop->filename);
@@ -99,6 +101,7 @@ static void monitor_openfile_bg(void *_data)
       console_printf(fop->error);
       console_close();
     }
+#endif
 
     remove_gui_monitor(data->monitor);
   }
@@ -114,12 +117,21 @@ static void monitor_free(void *_data)
   OpenFileData *data = (OpenFileData *)_data;
   FileOp *fop = (FileOp *)data->fop;
 
+#if 0
   /* stop the file-operation and wait the thread to exit */
   fop_stop(fop);
   jthread_join(data->thread);
+#endif
 
+  if (data->alert_window != NULL) {
+    data->monitor = NULL;
+    jwindow_close(data->alert_window, NULL);
+  }
+
+#if 0
   fop_free(fop);
   jfree(data);
+#endif
 }
 
 /**
@@ -145,9 +157,6 @@ static void cmd_open_file_execute(const char *argument)
   if (filename) {
     FileOp *fop = fop_to_load_sprite(filename, FILE_LOAD_SEQUENCE_ASK);
 
-    if (filename != argument)
-      jfree(filename);
-
     if (fop) {
       if (fop->error) {
 	console_printf(fop->error);
@@ -158,18 +167,52 @@ static void cmd_open_file_execute(const char *argument)
 	if (thread) {
 	  OpenFileData *data = jnew(OpenFileData, 1);
 
-	  data->thread = thread;
 	  data->fop = fop;
-
-	  /* add the progress bar */
-	  if (app_get_statusbar())
-	    data->progress = progress_new(app_get_statusbar());
-	  else
-	    data->progress = NULL;
+	  data->progress = progress_new(app_get_statusbar());
+	  data->thread = thread;
+	  data->alert_window = jalert_new(PACKAGE
+					  "<<Loading file:<<%s||&Cancel",
+					  get_filename(filename));
 
 	  /* add a monitor to check the loading (FileOp) progress */
 	  data->monitor = add_gui_monitor(monitor_openfile_bg,
 					  monitor_free, data);
+
+	  jwindow_open_fg(data->alert_window);
+
+	  if (data->monitor != NULL)
+	    remove_gui_monitor(data->monitor);
+
+	  /* stop the file-operation and wait the thread to exit */
+	  fop_stop(data->fop);
+	  jthread_join(data->thread);
+
+	  /* show any error */
+	  if (fop->error) {
+	    console_open();
+	    console_printf(fop->error);
+	    console_close();
+	  }
+	  else {
+	    Sprite *sprite = fop->sprite;
+	    if (sprite) {
+	      recent_file(fop->filename);
+	      sprite_mount(sprite);
+	      sprite_show(sprite);
+	    }
+	    /* if the sprite isn't NULL and the file-operation wasn't
+	       stopped by the user...  */
+	    else if (!fop_is_stop(fop)) {
+	      /* ...the file can't be loaded by errors, so we can remove it
+		 from the recent-file list */
+	      unrecent_file(fop->filename);
+	    }
+	  }
+
+	  progress_free(data->progress);
+	  jwidget_free(data->alert_window);
+	  fop_free(fop);
+	  jfree(data);
 	}
 	else {
 	  console_printf(_("Error creating thread to load the sprite"));
@@ -177,7 +220,12 @@ static void cmd_open_file_execute(const char *argument)
 	}
       }
     }
-    /* else do nothing (the user cancelled or something like that) */
+    else {
+      /* do nothing (the user cancelled or something like that) */
+    }
+
+    if (filename != argument)
+      jfree(filename);
   }
 }
 
