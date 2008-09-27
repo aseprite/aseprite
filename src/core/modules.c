@@ -29,7 +29,6 @@
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
-#include "script/script.h"
 
 #define DEF_MODULE(name, reqs) \
   { #name, init_module_##name, exit_module_##name, (reqs), FALSE }
@@ -48,11 +47,10 @@ static Module module[] =
   /* This sorting is very important because last modules depend of
      first ones.  */
 
-  DEF_MODULE(palette,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
-  DEF_MODULE(sprites,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
-  DEF_MODULE(script,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
-  DEF_MODULE(effect,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
-  DEF_MODULE(tools,		REQUIRE_INTERFACE | REQUIRE_SCRIPTING),
+  DEF_MODULE(palette,		REQUIRE_INTERFACE),
+  DEF_MODULE(sprites,		REQUIRE_INTERFACE),
+  DEF_MODULE(effect,		REQUIRE_INTERFACE),
+  DEF_MODULE(tools,		REQUIRE_INTERFACE),
   DEF_MODULE(graphics,		REQUIRE_INTERFACE),
   DEF_MODULE(gui,		REQUIRE_INTERFACE),
   DEF_MODULE(recent,		REQUIRE_INTERFACE),

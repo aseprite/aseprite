@@ -64,7 +64,7 @@
 #define TOOL_UPDATE_BOX		0x00000200
 #define TOOL_UPDATE_SPRAY	0x00000400
 #define TOOL_UPDATE_LAST4	0x00000800
-#define TOOL_EIGHT_ANGLES	0x00001000
+#define TOOL_SNAP_ANGLES	0x00001000
 
 Tool *current_tool = NULL;
 
@@ -650,7 +650,7 @@ static Tool tool_line =
   "line",
   "Line Tool",
   "Line Tool",
-  TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_EIGHT_ANGLES,
+  TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_SNAP_ANGLES,
   NULL,
   tool_line_draw_trace,
   NULL
@@ -1044,7 +1044,7 @@ void control_tool(JWidget widget, Tool *tool,
 	  int dy = y2 - y1;
 	  int size;
 
-	  if (tool->flags & TOOL_EIGHT_ANGLES)
+	  if (tool->flags & TOOL_SNAP_ANGLES)
 	    size = MAX(ABS(dx), ABS(dy));
 	  else
 	    size = MIN(ABS(dx), ABS(dy));
@@ -1052,7 +1052,7 @@ void control_tool(JWidget widget, Tool *tool,
 	  x2 = x1 + SGN(dx) * size;
 	  y2 = y1 + SGN(dy) * size;
 
-	  if (tool->flags & TOOL_EIGHT_ANGLES) {
+	  if (tool->flags & TOOL_SNAP_ANGLES) {
 	    if (ABS(dx) <= ABS(dy)/2)
 	      x2 = x1;
 	    else if (ABS(dy) <= ABS(dx)/2)

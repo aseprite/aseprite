@@ -75,9 +75,7 @@ CONFIGURATION FILES
 CONTACT INFO
 ===================================
 
-  To request help you can use the Allegro Sprite Editor group or
-  the SourceForge forums:
-    http://groups.google.com/group/aseprite
+  To request help you can use the SourceForge forums:
     http://sourceforge.net/forum/?group_id=20848
 
   We recommend you to use the SourceForge tracker to do specific

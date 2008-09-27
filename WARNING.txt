@@ -7,6 +7,6 @@
 	See README.txt and COPYING files for more information.
 	       Remember to report "bugs" and errors to:
 
-			aseprite@googlegroups.com
+  http://sourceforge.net/tracker/?group_id=20848&atid=120848&func=add
 
 ======================================================================

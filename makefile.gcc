@@ -8,14 +8,11 @@ _default: default
 
 CFLAGS += -Wall -I. -Isrc -Ithird_party \
 	  -I$(LIBFREETYPE_DIR)/include \
-          -I$(LIBLUA_DIR)/include \
 	  -I$(LIBJPEG_DIR) \
 	  -I$(LIBPNG_DIR) \
 	  -I$(ZLIB_DIR) \
 	  -Wno-deprecated-declarations \
 	  -DPNG_NO_MMX_CODE
-
-#	  -I$(LIBGD_DIR) 
 
 LFLAGS += $(THIRD_PARTY_LIBS)
 
@@ -71,10 +68,6 @@ $(LIBJPEG_LIB): $(LIBJPEG_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
-$(LIBLUA_LIB): $(LIBLUA_OBJS)
-	-rm -f $@
-	ar rs $@ $^
-
 $(LIBPNG_LIB): $(LIBPNG_OBJS)
 	-rm -f $@
 	ar rs $@ $^
@@ -124,8 +117,6 @@ VPATH = src					\
 	$(LIBFREETYPE_DIR)/src/winfonts		\
 	$(LIBGD_DIR)				\
 	$(LIBJPEG_DIR)				\
-	$(LIBLUA_DIR)/src			\
-	$(LIBLUA_DIR)/src/lib			\
 	$(LIBPNG_DIR)				\
 	$(ZLIB_DIR)
 
@@ -150,9 +141,6 @@ $(OBJ_DIR)/gd.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -DNONDLL -DHAVE_CONFIG_H -o $@ -c $<
 
 $(OBJ_DIR)/jpeg.%$(OBJ): %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$(OBJ_DIR)/lua.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/png.%$(OBJ): %.c

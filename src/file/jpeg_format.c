@@ -31,7 +31,6 @@
 #include "file/format_options.h"
 #include "modules/gui.h"
 #include "raster/raster.h"
-#include "script/script.h"
 
 #include "jpeglib.h"
 

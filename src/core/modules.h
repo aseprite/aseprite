@@ -22,7 +22,6 @@
 #include "jinete/jbase.h"
 
 #define REQUIRE_INTERFACE    1
-#define REQUIRE_SCRIPTING    2
 
 bool modules_init(int requirements);
 void modules_exit(void);

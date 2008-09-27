@@ -59,7 +59,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_remove_frame.c			\
 	src/commands/cmd_remove_layer.c			\
 	src/commands/cmd_reselect_mask.c		\
-	src/commands/cmd_run_script.c			\
 	src/commands/cmd_save_file.c			\
 	src/commands/cmd_save_mask.c			\
 	src/commands/cmd_screen_shot.c			\
@@ -166,7 +165,6 @@ COMMON_SOURCES =					\
 	src/modules/rootmenu.c				\
 	src/modules/sprites.c				\
 	src/modules/tools.c				\
-	src/modules/tools2.c				\
 	src/raster/algo.c				\
 	src/raster/algofill.c				\
 	src/raster/blend.c				\
@@ -184,9 +182,7 @@ COMMON_SOURCES =					\
 	src/raster/sprite.c				\
 	src/raster/stock.c				\
 	src/raster/undo.c				\
-	src/script/bindings.c				\
 	src/script/functions.c				\
-	src/script/script.c				\
 	src/util/autocrop.c				\
 	src/util/boundary.c				\
 	src/util/celmove.c				\
@@ -356,39 +352,6 @@ LIBGD_OBJS = $(addprefix $(OBJ_DIR)/gd.,			\
 		 $(notdir $(basename $(LIBGD_SOURCES)))))
 
 ######################################################################
-# Lua
-
-LIBLUA_LIB = $(OBJ_DIR)/liblua$(LIB)
-LIBLUA_DIR = third_party/lua
-LIBLUA_SOURCES =				\
-        $(LIBLUA_DIR)/src/lapi.c		\
-        $(LIBLUA_DIR)/src/lcode.c		\
-        $(LIBLUA_DIR)/src/ldebug.c		\
-        $(LIBLUA_DIR)/src/ldo.c			\
-        $(LIBLUA_DIR)/src/ldump.c		\
-        $(LIBLUA_DIR)/src/lfunc.c		\
-        $(LIBLUA_DIR)/src/lgc.c			\
-        $(LIBLUA_DIR)/src/llex.c		\
-        $(LIBLUA_DIR)/src/lmem.c		\
-        $(LIBLUA_DIR)/src/lobject.c		\
-        $(LIBLUA_DIR)/src/lopcodes.c		\
-        $(LIBLUA_DIR)/src/lparser.c		\
-        $(LIBLUA_DIR)/src/lstate.c		\
-        $(LIBLUA_DIR)/src/lstring.c		\
-        $(LIBLUA_DIR)/src/ltable.c		\
-        $(LIBLUA_DIR)/src/ltests.c		\
-        $(LIBLUA_DIR)/src/ltm.c			\
-        $(LIBLUA_DIR)/src/lundump.c		\
-        $(LIBLUA_DIR)/src/lvm.c			\
-        $(LIBLUA_DIR)/src/lzio.c		\
-        $(LIBLUA_DIR)/src/lib/lauxlib.c		\
-        $(LIBLUA_DIR)/src/lib/lbaselib.c
-
-LIBLUA_OBJS = $(addprefix $(OBJ_DIR)/lua.,				     \
-		       $(addsuffix $(OBJ),				     \
-                                   $(notdir $(basename $(LIBLUA_SOURCES)))))
-
-######################################################################
 # JPEG
 
 LIBJPEG_LIB = $(OBJ_DIR)/libjpeg$(LIB)
@@ -499,7 +462,6 @@ ZLIB_OBJS = $(addprefix $(OBJ_DIR)/zlib.,		\
 
 ALL_OBJS =					\
 	$(ASE_OBJS)				\
-	$(LIBLUA_OBJS)				\
 	$(LIBFREETYPE_OBJS)			\
 	$(LIBART_OBJS)				\
 	$(LIBJPEG_OBJS)				\
@@ -510,7 +472,6 @@ THIRD_PARTY_LIBS =				\
 	$(LIBART_LIB)				\
 	$(LIBFREETYPE_LIB)			\
 	$(LIBJPEG_LIB)				\
-	$(LIBLUA_LIB)				\
 	$(LIBPNG_LIB)				\
 	$(ZLIB_LIB)
 

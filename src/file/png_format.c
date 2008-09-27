@@ -26,15 +26,12 @@
 #include "core/core.h"
 #include "file/file.h"
 #include "raster/raster.h"
-#include "script/script.h"
 
 #define PNG_NO_TYPECAST_NULL
 #include "png.h"
 
 static bool load_PNG(FileOp *fop);
 static bool save_PNG(FileOp *fop);
-
-/* static int configure_png(void); */
 
 FileFormat format_png =
 {
@@ -506,25 +503,3 @@ static bool save_PNG(FileOp *fop)
   /* all right */
   return TRUE;
 }
-
-/* static int configure_png(void) */
-/* { */
-/*   /\* interactive mode *\/ */
-/*   if (is_interactive()) { */
-/*     lua_State *L = get_lua_state(); */
-/*     int ret; */
-
-/*     /\* call the ConfigureJPEG() script routine, it must return "true" */
-/*        to save the image *\/ */
-/*     lua_pushstring(L, "ConfigureJPEG"); */
-/*     lua_gettable(L, LUA_GLOBALSINDEX); */
-/*     do_script_raw(L, 0, 1); */
-/*     ret = lua_toboolean(L, -1); */
-/*     lua_pop(L, 1); */
-
-/*     if (!ret) */
-/*       return -1; */
-/*   } */
-
-/*   return 0; */
-/* } */

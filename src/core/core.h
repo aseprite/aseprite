@@ -24,8 +24,7 @@
 enum {
   MODE_VERBOSE		= 1,	/* verbose mode status */
   MODE_BATCH		= 2,	/* batch mode */
-  MODE_CONSOLE		= 4,	/* console mode */
-  MODE_GUI		= 8,	/* default GUI mode */
+  MODE_GUI		= 4,	/* graphics user interface */
 };
 
 extern int ase_mode;

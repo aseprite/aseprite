@@ -115,13 +115,6 @@ Ordered dithering method.
 \done
 
 See ``Tool/Options'' menu or press <Ctrl+Shift+O>.
-#  **********************************************************************
-# \image lua.pcx
-
-# Do you want to write Lua scripts to generate images or create
-# repetitive tasks?  You can find the documentation in
-# ``docs/scripts/README.txt''.  Also you can look for ``data/scripts/gens/''
-# directory for some examples.
  **********************************************************************
 \palette sprite.pcx
 \image sprite.pcx

@@ -45,7 +45,6 @@
 #include "modules/sprites.h"
 #include "modules/tools.h"
 #include "raster/sprite.h"
-#include "script/script.h"
 #include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"

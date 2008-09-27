@@ -64,7 +64,6 @@
 	    <key command="convolution_matrix" shortcut="F9" />
 	    <key command="color_curve" shortcut="Ctrl+M" />
 	    <key command="color_curve" shortcut="F10" />
-	    <!-- 	<key command="run_script" shortcut="Ctrl+0" /> -->
 	    <key command="tips" shortcut="F1" />
 	    <key command="options" shortcut="Shift+Ctrl+O" />
 

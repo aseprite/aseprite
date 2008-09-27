@@ -36,7 +36,6 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "script/script.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"

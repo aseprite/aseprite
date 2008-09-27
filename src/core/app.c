@@ -52,7 +52,6 @@
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
-#include "script/script.h"
 #include "util/boundary.h"
 #include "util/recscr.h"
 #include "widgets/colbar.h"
@@ -65,8 +64,6 @@
 /* options */
 enum {
   OPEN_GFX_FILE,
-  DO_SCRIPT_FILE,
-  DO_SCRIPT_EXPR,
 };
 
 typedef struct Option
@@ -154,13 +151,11 @@ bool app_init(int argc, char *argv[])
     ase_mode |= MODE_GUI;
 
   /* install 'raster' stuff */
-  if (!gfxobj_init()) {
+  if (!gfxobj_init())
     return FALSE;
-  }
 
   /* install the modules */
-  if (!modules_init(ase_mode & MODE_GUI ? REQUIRE_INTERFACE:
-					  REQUIRE_SCRIPTING))
+  if (!modules_init(REQUIRE_INTERFACE))
     return FALSE;
 
   _ji_font_init();
@@ -317,14 +312,6 @@ void app_loop(void)
 	}
 	break;
       }
-
-      case DO_SCRIPT_FILE:
-	do_script_file(option->data);
-	break;
-
-      case DO_SCRIPT_EXPR:
-	do_script_expr(option->data);
-	break;
     }
     option_free(option);
   }
@@ -345,10 +332,7 @@ void app_loop(void)
       dialogs_tips(FALSE);
 
     gui_run();
-  }
 
-  /* destroy GUI widgets */
-  if (ase_mode & MODE_GUI) {
     /* stop recording */
     if (is_rec_screen())
       rec_screen_off();
@@ -595,26 +579,8 @@ static int check_args(int argc, char *argv[])
 
     /* option */
     if ((n > 0) && (len > 0)) {
-      /* use in batch mode only */
-      if (strncmp(arg+n, "batch", len) == 0) {
-        ase_mode |= MODE_BATCH;
-      }
-      /* do script expression */
-      else if (strncmp(arg+n, "exp", len) == 0) {
-        if (++i < argc)
-          jlist_append(options, option_new(DO_SCRIPT_EXPR, argv[i]));
-        else
-          usage(1);
-      }
-      /* open script file */
-      else if (strncmp(arg+n, "file", len) == 0) {
-        if (++i < argc)
-          jlist_append(options, option_new(DO_SCRIPT_FILE, argv[i]));
-        else
-          usage(1);
-      }
       /* use other palette file */
-      else if (strncmp(arg+n, "palette", len) == 0) {
+      if (strncmp(arg+n, "palette", len) == 0) {
         if (++i < argc)
 	  palette_filename = argv[i];
         else
@@ -706,9 +672,6 @@ static void usage(int status)
     /* options */
     console_printf
       ("%s:\n"
-       "  -batch                   %s\n"
-       "  -exp SCRIPT-EXPRESSION   %s\n"
-       "  -file SCRIPT-FILE        %s\n"
        "  -palette GFX-FILE        %s\n"
        "  -resolution WxH[xBPP]    %s\n"
        "  -verbose                 %s\n"
@@ -716,10 +679,7 @@ static void usage(int status)
        "  -version                 %s\n"
        "\n",
        _("Options"),
-       _("Just process commands in the arguments"),
-       _("Process a script expression in the given string"),
-       _("Process a script file"),
-       _("Use a specify palette by default"),
+       _("Use a specific palette by default"),
        _("Change the resolution to use"),
        _("Explain what is being done (in stderr or a log file)"),
        _("Display this help and exits"),

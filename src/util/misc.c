@@ -35,7 +35,6 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/sprites.h"
-#include "modules/tools2.h"
 #include "raster/raster.h"
 #include "util/misc.h"
 #include "script/functions.h"

@@ -31,7 +31,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/tools.h"
-#include "script/script.h"
 #include "widgets/groupbut.h"
 #include "widgets/toolbar.h"
 

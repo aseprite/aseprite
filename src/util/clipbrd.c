@@ -32,7 +32,6 @@
 #include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
-#include "modules/tools2.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"

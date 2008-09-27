@@ -30,7 +30,6 @@
 #include "commands/commands.h"
 #include "core/core.h"
 #include "modules/gui.h"
-#include "script/script.h"
 
 typedef struct MenuItem
 {

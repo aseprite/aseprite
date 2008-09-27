@@ -36,7 +36,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "script/bindings.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/tabs.h"

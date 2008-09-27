@@ -118,6 +118,11 @@ void verbose_printf(const char *format, ...)
     }
 }
 
+/**
+ * Returns true if the application is running in interactive mode (GUI).
+ *
+ * Now that the application doesn't support scripting, this always returns true.
+ */
 bool is_interactive(void)
 {
   return ase_mode & MODE_GUI ? TRUE: FALSE;

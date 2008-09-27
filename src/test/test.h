@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <allegro.h>
 
+#include "config.h"
+
 #ifdef TEST_GUI
   #include "jinete/jinete.h"
 #endif
