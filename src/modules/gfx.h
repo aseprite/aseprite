@@ -93,6 +93,8 @@ enum {
   GFX_BITMAP_COUNT,
 };
 
+typedef struct RectTracker RectTracker;
+
 int init_module_graphics(void);
 void exit_module_graphics(void);
 
@@ -104,9 +106,8 @@ void simple_dotted_mode(struct BITMAP *bmp, int fg, int bg);
 void *subclip(struct BITMAP *bmp, int x1, int y1, int x2, int y2);
 void backclip(void *data);
 
-void *rectsave(struct BITMAP *bmp, int x1, int y1, int x2, int y2);
-void rectrestore(void *data);
-void rectdiscard(void *data);
+RectTracker *rect_tracker_new(struct BITMAP *bmp, int x1, int y1, int x2, int y2);
+void rect_tracker_free(RectTracker *tracker);
 
 void bevel_box(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel);
 void rectdotted(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int bg);
@@ -119,7 +120,7 @@ void draw_color_button(struct BITMAP *bmp,
 		       int x1, int y1, int x2, int y2,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
-		       bool hot);
+		       bool hot, bool drag);
 
 int character_length(struct FONT *font, int chr);
 void render_character(struct BITMAP *bmp, struct FONT *font, int chr, int x, int y, int fg, int bg);

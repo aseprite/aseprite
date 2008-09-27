@@ -963,12 +963,6 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	/* draw the sprite boundary */
 	rect(ji_screen, x1-1, y1-1, x2+1, y2+1, makecol(0, 0, 0));
 
-	if (editor->rect_data) {
-	  /* destroy the layer-bound information */
-	  rectdiscard(editor->rect_data);
-	  editor->rect_data = NULL;
-	}
-
 	/* draw the grid */
 	if (get_view_grid())
 	  editor_draw_grid(widget);

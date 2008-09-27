@@ -56,9 +56,6 @@ typedef struct Editor
   int mask_timer_id;
   int offset_count;
 
-  /* to save the area that overlap the layer-bound */
-  void *rect_data;
-
   /* region that must be updated */
   JRegion refresh_region;
 } Editor;

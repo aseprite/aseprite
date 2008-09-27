@@ -356,17 +356,16 @@ void backclip(void *_data)
   jfree(data);
 }
 
-
 /**********************************************************************/
-/* Save/Restore rectangles */
-
-typedef struct RECT_DATA
+/* Rectangle Tracker (Save/Restore rectangles from/to the screen) */
+
+struct RectTracker
 {
   BITMAP *bmp;
   int x1, y1, x2, y2;
   int npixel;
   int *pixel;
-} RECT_DATA;
+};
 
 static void do_rect(BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
 		    void (*proc)(BITMAP *bmp, int x, int y, int c))
@@ -406,31 +405,33 @@ static void do_rect(BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
 
 static void count_rect(BITMAP *bmp, int x, int y, int c)
 {
-  RECT_DATA *data = (RECT_DATA *)c;
+  RectTracker *data = (RectTracker *)c;
   data->npixel++;
 }
 
 static void save_rect(BITMAP *bmp, int x, int y, int c)
 {
-  RECT_DATA *data = (RECT_DATA *)c;
+  RectTracker *data = (RectTracker *)c;
   data->pixel[data->npixel++] = getpixel(bmp, x, y);
 }
 
 static void restore_rect(BITMAP *bmp, int x, int y, int c)
 {
-  RECT_DATA *data = (RECT_DATA *)c;
+  RectTracker *data = (RectTracker *)c;
   putpixel(bmp, x, y, data->pixel[data->npixel++]);
 }
 
-void *rectsave(BITMAP *bmp, int x1, int y1, int x2, int y2)
+RectTracker *rect_tracker_new(BITMAP *bmp, int x1, int y1, int x2, int y2)
 {
-  RECT_DATA *data;
+  RectTracker *data;
   int x, y;
+
+  jmouse_hide();
 
   if (x1 > x2) { x = x1; x1 = x2; x2 = x; }
   if (y1 > y2) { y = y1; y1 = y2; y2 = y; }
 
-  data = jnew(RECT_DATA, 1);
+  data = jnew(RectTracker, 1);
 
   data->bmp = bmp;
   data->x1 = x1;
@@ -449,30 +450,29 @@ void *rectsave(BITMAP *bmp, int x1, int y1, int x2, int y2)
   data->npixel = 0;
   do_rect(bmp, x1, y1, x2, y2, (int)data, save_rect);
 
+  jmouse_show();
+
   return data;
 }
 
-void rectrestore(void *_data)
+void rect_tracker_free(RectTracker *data)
 {
-  RECT_DATA *data = _data;
+  jmouse_hide();
 
   data->npixel = 0;
   do_rect(data->bmp, data->x1, data->y1, data->x2, data->y2,
 	  (int)data, restore_rect);
-}
-
-void rectdiscard(void *_data)
-{
-  RECT_DATA *data = _data;
 
   if (data->pixel != NULL)
     jfree(data->pixel);
   jfree(data);
+
+  jmouse_show();
 }
 
 /**********************************************************************/
 /* Rectangles */
-
+
 void bevel_box(BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
 {
   hline(bmp, x1+bevel, y1, x2-bevel, c1); /* top */
@@ -612,7 +612,7 @@ void draw_color_button(BITMAP *bmp,
 		       int x1, int y1, int x2, int y2,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
-		       bool hot)
+		       bool hot, bool drag)
 {
   int face = ji_color_face();
   int fore = ji_color_foreground();
@@ -663,6 +663,13 @@ void draw_color_button(BITMAP *bmp,
     putpixel(bmp, x2, y2-1, face);
     hline(bmp, x2-1, y2, x2, face);
     putpixel(bmp, x2-1, y2-1, fore);
+  }
+
+  if (drag) {
+    rect(bmp, x1+2, y1+2, x2-2, y2-2,
+	 blackandwhite_neg(color_get_red(imgtype, color),
+			   color_get_green(imgtype, color),
+			   color_get_blue(imgtype, color)));
   }
 }
 

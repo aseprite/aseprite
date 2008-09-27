@@ -820,16 +820,15 @@ Tool *tools_list[] =
 /* TOOL CONTROL                                            */
 /***********************************************************/
 
-static void *rect_data = NULL;
+static void *rect_tracker = NULL;
 
 static void fourchain_line(int x1, int y1, int x2, int y2, ToolData *data);
 
 static void marker_scroll_callback(int before_change)
 {
-  if (before_change && rect_data) {
-    rectrestore(rect_data);
-    rectdiscard(rect_data);
-    rect_data = NULL;
+  if (before_change && rect_tracker) {
+    rect_tracker_free(rect_tracker);
+    rect_tracker = NULL;
   }
 }
 
@@ -1054,9 +1053,9 @@ void control_tool(JWidget widget, Tool *tool,
 	  y2 = y1 + SGN(dy) * size;
 
 	  if (tool->flags & TOOL_EIGHT_ANGLES) {
-	    if (ABS (dx) <= ABS (dy)/2)
+	    if (ABS(dx) <= ABS(dy)/2)
 	      x2 = x1;
-	    else if (ABS (dy) <= ABS (dx)/2)
+	    else if (ABS(dy) <= ABS(dx)/2)
 	      y2 = y1;
 	  }
 	}
@@ -1210,11 +1209,9 @@ void control_tool(JWidget widget, Tool *tool,
 	  outx2 += (1<<editor->zoom)-1;
 	  outy2 += (1<<editor->zoom)-1;
 
-	  if (rect_data) {
-	    rectrestore(rect_data);
-	    rectdiscard(rect_data);
-	  }
-	  rect_data = rectsave(ji_screen, outx1, outy1, outx2, outy2);
+	  if (rect_tracker)
+	    rect_tracker_free(rect_tracker);
+	  rect_tracker = rect_tracker_new(ji_screen, outx1, outy1, outx2, outy2);
 
 	  dotted_mode(0);
 
@@ -1540,10 +1537,9 @@ void control_tool(JWidget widget, Tool *tool,
   if (tool_data.dst_image) image_free(tool_data.dst_image);
 
   /* destroy rect-data used by the marker tool */
-  if (rect_data) {
-    rectrestore(rect_data);
-    rectdiscard(rect_data);
-    rect_data = NULL;
+  if (rect_tracker) {
+    rect_tracker_free(rect_tracker);
+    rect_tracker = NULL;
   }
 }
 
