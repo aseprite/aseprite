@@ -154,6 +154,16 @@ static DATA gfx_data[GFX_BITMAP_COUNT] =
     "  ##    "
     " ##     "
     "##      " },
+  /* GFX_TOOL_CURVE */
+  { 8, 8,
+    "       #"
+    "       #"
+    "       #"
+    "      ##"
+    "      # "
+    "     ## "
+    "   ###  "
+    "####    " },
   /* GFX_TOOL_RECTANGLE */
   { 8, 8,
     "########"

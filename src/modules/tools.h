@@ -39,6 +39,7 @@ enum {
   TOOL_FLOODFILL,
   TOOL_SPRAY,
   TOOL_LINE,
+  TOOL_CURVE,
   TOOL_RECTANGLE,
   TOOL_ELLIPSE,
   TOOL_BLUR,
@@ -82,7 +83,7 @@ struct ToolData
 };
 
 extern Tool *current_tool;
-extern Tool *tools_list[];
+extern Tool *tools_list[MAX_TOOLS];
 
 int init_module_tools(void);
 void exit_module_tools(void);

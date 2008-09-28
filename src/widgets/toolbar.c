@@ -61,6 +61,7 @@ JWidget toolbar_new(void)
 			   GFX_TOOL_FLOODFILL,
 			   GFX_TOOL_SPRAY,
 			   GFX_TOOL_LINE,
+			   GFX_TOOL_CURVE,
 			   GFX_TOOL_RECTANGLE,
 			   GFX_TOOL_ELLIPSE,
 			   GFX_TOOL_BLUR,

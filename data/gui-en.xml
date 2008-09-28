@@ -79,6 +79,7 @@
 	    <key tool="spray" shortcut="S" />
  	    <key tool="paint_bucket" shortcut="G" />
 	    <key tool="line" shortcut="L" />
+	    <key tool="curve" shortcut="L" />
 	    <key tool="rectangle" shortcut="U" />
 	    <key tool="ellipse" shortcut="U" />
 	    <key tool="blur" shortcut="R" />

@@ -54,17 +54,18 @@
 /* tool flags */
 #define TOOL_COPY_SRC2DST       0x00000001
 #define TOOL_COPY_DST2SRC       0x00000002
-#define TOOL_FIRST2LAST		0x00000004
-#define TOOL_OLD2LAST		0x00000008
-#define TOOL_FOURCHAIN		0x00000010
+#define TOOL_FIRST2LAST		0x00000004 /* for box like tools (line,ellipse,rectangle) */
+#define TOOL_OLD2LAST		0x00000008 /* for free-hand tools (pencil) */
+#define TOOL_4OLD2LAST          0x00000010 /* for free-hand tools (4 points, brush) */
 #define TOOL_ACCEPT_FILL	0x00000020
 #define TOOL_UPDATE_ALL		0x00000040
 #define TOOL_UPDATE_POINT	0x00000080
 #define TOOL_UPDATE_TRACE	0x00000100
 #define TOOL_UPDATE_BOX		0x00000200
 #define TOOL_UPDATE_SPRAY	0x00000400
-#define TOOL_UPDATE_LAST4	0x00000800
+#define TOOL_UPDATE_4PTS	0x00000800
 #define TOOL_SNAP_ANGLES	0x00001000
+#define TOOL_4FIRST2LAST	0x00002000 /* for bezier like tools (4 points, curve) */
 
 Tool *current_tool = NULL;
 
@@ -521,7 +522,7 @@ static Tool tool_brush =
   "brush",
   "Brush Tool",
   "Brush Tool",
-  TOOL_FOURCHAIN | TOOL_UPDATE_LAST4,
+  TOOL_4OLD2LAST | TOOL_UPDATE_4PTS,
   NULL,
   NULL
 };
@@ -653,6 +654,29 @@ static Tool tool_line =
   TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_SNAP_ANGLES,
   NULL,
   tool_line_draw_trace,
+  NULL
+};
+
+/***********************************************************/
+/* CURVE                                                   */
+/***********************************************************/
+
+static void tool_curve_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
+{
+  algo_line(x1, y1, x2, y2, data,
+	    (brush->size == 1) ?
+	    (AlgoPixel)do_ink_pixel:
+	    (AlgoPixel)do_ink_brush);
+}
+
+static Tool tool_curve =
+{
+  "curve",
+  "Curve Tool",
+  "Curve Tool",
+  TOOL_COPY_SRC2DST | TOOL_4FIRST2LAST | TOOL_UPDATE_4PTS | TOOL_SNAP_ANGLES,
+  NULL,
+  tool_curve_draw_trace,
   NULL
 };
 
@@ -800,7 +824,8 @@ static Tool tool_jumble =
 /* TOOL'S LIST                                             */
 /***********************************************************/
 
-Tool *tools_list[] =
+/* at the same order as TOOL_* enumeration */
+Tool *tools_list[MAX_TOOLS] =
 {
   &tool_marker,
   &tool_pencil,
@@ -809,11 +834,11 @@ Tool *tools_list[] =
   &tool_floodfill,
   &tool_spray,
   &tool_line,
+  &tool_curve,
   &tool_rectangle,
   &tool_ellipse,
   &tool_blur,
-  &tool_jumble,
-  NULL
+  &tool_jumble
 };
 
 /***********************************************************/
@@ -822,7 +847,7 @@ Tool *tools_list[] =
 
 static void *rect_tracker = NULL;
 
-static void fourchain_line(int x1, int y1, int x2, int y2, ToolData *data);
+static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data);
 
 static void marker_scroll_callback(int before_change)
 {
@@ -846,7 +871,7 @@ void control_tool(JWidget widget, Tool *tool,
   int outx1, outy1, outx2, outy2;
   int mouse_x[4];
   int mouse_y[4];
-  int c, pts[8];
+  int c, pts[8], old_pts[8];
   int start_x, new_x, offset_x, old_cel_x;
   int start_y, new_y, offset_y, old_cel_y;
   int start_b;
@@ -861,6 +886,7 @@ void control_tool(JWidget widget, Tool *tool,
   Image *cel_image = NULL;
   bool cel_created = FALSE;
   bool destroy_cel = FALSE;
+  int curve_pts = 0;	   /* to iterate points in the 'curve' tool */
   ToolData tool_data;
 
   /* First of all we have to dispatch the enqueue messages. Why is it
@@ -999,6 +1025,8 @@ void control_tool(JWidget widget, Tool *tool,
   spray_time = ji_clock;
   old_x1 = old_y1 = old_x2 = old_y2 = 0;
 
+next_pts:;
+
   /* start click */
   editor_click_start(widget,
 		     click2 ? MODE_CLICKANDCLICK:
@@ -1008,6 +1036,22 @@ void control_tool(JWidget widget, Tool *tool,
   for (c=0; c<4; c++) {
     mouse_x[c] = start_x;
     mouse_y[c] = start_y;
+  }
+
+  if (tool->flags & TOOL_4FIRST2LAST &&
+      curve_pts == 0) {
+    x1 = mouse_x[0];
+    y1 = mouse_y[0];
+
+    if (use_grid)
+      apply_grid(&x1, &y1, TRUE);
+
+    x1 += offset_x;
+    y1 += offset_y;
+
+    pts[0] = pts[2] = pts[4] = pts[6] = x1;
+    pts[1] = pts[3] = pts[5] = pts[7] = y1;
+    ++curve_pts;
   }
 
   do {
@@ -1102,7 +1146,7 @@ void control_tool(JWidget widget, Tool *tool,
 	tool_data.vector.y = y2 - y1;
       }
       /* special behavior for brush */
-      else if (tool->flags & TOOL_FOURCHAIN) {
+      else if (tool->flags & TOOL_4OLD2LAST) {
         for (c=0; c<4; c++) {
 	  pts[c*2  ] = mouse_x[c];
 	  pts[c*2+1] = mouse_y[c];
@@ -1117,6 +1161,35 @@ void control_tool(JWidget widget, Tool *tool,
 
         x1 = pts[0];
         y1 = pts[1];
+      }
+      /* special behavior for curve */
+      else if (tool->flags & TOOL_4FIRST2LAST) {
+	x1 = mouse_x[0];
+	y1 = mouse_y[0];
+
+        if (use_grid)
+	  apply_grid(&x1, &y1, TRUE);
+
+	x1 += offset_x;
+	y1 += offset_y;
+
+	for (c=0; c<8; ++c)
+	  old_pts[c] = pts[c];
+
+	switch (curve_pts) {
+	  case 1:
+	    pts[2] = pts[4] = pts[6] = x1;
+	    pts[3] = pts[5] = pts[7] = y1;
+	    break;
+	  case 2:
+	    pts[2] = x1;
+	    pts[3] = y1;
+	    break;
+	  case 3:
+	    pts[4] = x1;
+	    pts[5] = y1;
+	    break;
+	}
       }
       else {
         x1 = y1 = x2 = y2 = 0;
@@ -1136,10 +1209,11 @@ void control_tool(JWidget widget, Tool *tool,
 /* 	  mask_move(dirty->mask, offset_x, offset_y); */
 
 	/* create the area which the trace will dirty */
-	if (tool == tools_list[TOOL_BRUSH]) {
+	if (tool == tools_list[TOOL_BRUSH] ||
+	    tool == tools_list[TOOL_CURVE]) {
 	  algo_spline(pts[0], pts[1], pts[2], pts[3],
 		      pts[4], pts[5], pts[6], pts[7],
-		      &tool_data, (AlgoLine)fourchain_line);
+		      &tool_data, (AlgoLine)line_for_spline);
 	}
 	else if (tool->draw_trace) {
 	  tool->draw_trace(x1, y1, x2, y2, &tool_data);
@@ -1278,7 +1352,15 @@ void control_tool(JWidget widget, Tool *tool,
 	    outx2 = x2+spray_width;
 	    outy2 = y2+spray_width;
 	  }
-	  else if (tool->flags & TOOL_UPDATE_LAST4) {
+	  else if (tool->flags & TOOL_UPDATE_4PTS) {
+	    if (tool->flags & TOOL_4FIRST2LAST) {
+	      for (c=0; c<4; c++) {
+		if (outx1 > old_pts[c*2  ]) outx1 = old_pts[c*2];
+		if (outx2 < old_pts[c*2  ]) outx2 = old_pts[c*2];
+		if (outy1 > old_pts[c*2+1]) outy1 = old_pts[c*2+1];
+		if (outy2 < old_pts[c*2+1]) outy2 = old_pts[c*2+1];
+	      }
+	    }
 	    for (c=0; c<4; c++) {
 	      if (outx1 > pts[c*2  ]) outx1 = pts[c*2];
 	      if (outx2 < pts[c*2  ]) outx2 = pts[c*2];
@@ -1393,6 +1475,14 @@ void control_tool(JWidget widget, Tool *tool,
 
   /* if we finished with the same button that we start began */
   if (!editor_click_cancel(widget)) {
+    /* in curve we have to input four points */
+    if ((tool->flags & TOOL_4FIRST2LAST) &&
+    	(curve_pts < 3)) {
+      ++curve_pts;
+      click2 = MODE_CLICKANDCLICK;
+      goto next_pts;
+    }
+
     if (undo_is_enabled(sprite->undo))
       undo_set_label(sprite->undo, tool->name);
 
@@ -1543,119 +1633,6 @@ void control_tool(JWidget widget, Tool *tool,
   }
 }
 
-#if 0
-/* draws the "tool" traces with the given points */
-void do_tool_points(Sprite *sprite, Tool *tool, color_t _color,
-		    int npoints, int *x, int *y)
-{
-  int x1=0, y1=0, x2=0, y2=0;
-  Dirty *dirty = NULL;
-  int c, i, pts[8];
-  Image *image;
-  int offset_x;
-  int offset_y;
-  int color;
-  AlgoHLine hline_proc;
-  bool tiled = get_tiled_mode();
-
-  /* get drawable information */
-  image = GetImage2(sprite, &offset_x, &offset_y, NULL);
-
-  /* we have a image layer to paint in? */
-  /* error, the active layer is not visible */
-  /* error, the active layer is locked */
-  if (!image ||
-      !layer_is_readable(sprite->layer) ||
-      !layer_is_writable(sprite->layer))
-    return;
-
-  /* select the hline procedure */
-  hline_proc = drawmode_procs[MID(0, image->imgtype, 2)]
-			     [MID(0, brush_mode, 2)];
-
-  /* alignment offset */
-  offset_x = -offset_x;
-  offset_y = -offset_y;
-
-  /* get the color to use for the image */
-  color = get_color_for_image(image->imgtype, _color);
-
-  /* global stuff needs */
-  tool_image = image;
-  tool_color = color;
-
-  /* accumulative dirty */
-  dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, tiled);
-  dirty->mask = (sprite->mask &&
-		 sprite->mask->bitmap)? sprite->mask: NULL;
-
-  for (c=0; c<npoints; c++) {
-    /* common behavior for boxes likes tools */
-    if (tool->flags & TOOL_FIRST2LAST) {
-      if (c == 0)
-	continue;
-
-      x1 = x[0];
-      y1 = y[0];
-      x2 = x[c];
-      y2 = y[c];
-    }
-    /* common behavior for pencil like tools */
-    else if (tool->flags & TOOL_OLD2LAST) {
-      x1 = (c == 0) ? x[0]: x[c-1];
-      y1 = (c == 0) ? y[0]: y[c-1];
-      x2 = x[c];
-      y2 = y[c];
-    }
-    /* special behavior for brush */
-    else if (tool->flags & TOOL_FOURCHAIN) {
-      for (i=0; i<4; i++) {
-	pts[i*2  ] = (c-3+i >= 0) ? x[c-3+i]: x[0];
-	pts[i*2+1] = (c-3+i >= 0) ? y[c-3+i]: y[0];
-      }
-    }
-
-    /* displace region */
-/*     if (dirty->mask) */
-/*       mask_move(dirty->mask, offset_x, offset_y); */
-
-    /* create the area which the trace will dirty */
-    if (tool == &ase_tool_brush) {
-      algo_spline(pts[0], pts[1], pts[2], pts[3],
-		  pts[4], pts[5], pts[6], pts[7],
-		  dirty, fourchain_line);
-    }
-    else if (tool->put) {
-      tool->put(dirty, x1, y1, x2, y2);
-    }
-
-    /* displace region */
-/*     if (dirty->mask) */
-/*       mask_move(dirty->mask, -offset_x, -offset_y); */
-
-    /* get the background which the trace will overlap */
-    dirty_save_image_data(dirty);
-
-    /* draw the trace */
-    algo_dirty(dirty, NULL, hline_proc);
-  }
-
-  /* marker *******************************************************/
-  if (tool == &ase_tool_marker) {
-  }
-
-  /* draw trace ***************************************************/
-  else {
-    /* insert the undo operation */
-    if (undo_is_enabled(sprite->undo))
-      undo_dirty(sprite->undo, dirty);
-  }
-
-  /* destroy dirty structure */
-  dirty_free(dirty);
-}
-#endif
-
 void apply_grid(int *x, int *y, bool flexible)
 {
   div_t d, dx, dy;
@@ -1674,7 +1651,7 @@ void apply_grid(int *x, int *y, bool flexible)
   *y = dy.rem + d.quot*h + ((d.rem > h/2)? h-flexible: 0);
 }
 
-static void fourchain_line(int x1, int y1, int x2, int y2, ToolData *data)
+static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data)
 {
   algo_line(x1, y1, x2, y2, data,
 	    (brush->size == 1) ?
