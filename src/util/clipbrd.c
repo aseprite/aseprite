@@ -212,7 +212,7 @@ void paste_from_clipboard(void)
   }
 
   if (paste) {
-    int c, u1, v1, u2, v2;
+    int c, w, h, u1, v1, u2, v2;
 
     /* align to the destination cel-position */
     for (c=0; c<4; ++c) {
@@ -226,14 +226,19 @@ void paste_from_clipboard(void)
     u2 = MIN(dest_image->w-1, MAX(xout[0], MAX(xout[1], MAX(xout[2], xout[3]))));
     v2 = MIN(dest_image->h-1, MAX(yout[0], MAX(yout[1], MAX(yout[2], yout[3]))));
 
-    /* undo region */
-    if (undo_is_enabled(current_sprite->undo))
-      undo_image(current_sprite->undo, dest_image, u1, v1, u2-u1+1, v2-v1+1);
+    w = u2-u1+1;
+    h = v2-v1+1;
 
-    /* draw the transformed image */
-    image_parallelogram(dest_image, image,
-			xout[0], yout[0], xout[1], yout[1],
-			xout[2], yout[2], xout[3], yout[3]);
+    if (w >= 1 && h >= 1) {
+      /* undo region */
+      if (undo_is_enabled(current_sprite->undo))
+	undo_image(current_sprite->undo, dest_image, u1, v1, w, h);
+
+      /* draw the transformed image */
+      image_parallelogram(dest_image, image,
+			  xout[0], yout[0], xout[1], yout[1],
+			  xout[2], yout[2], xout[3], yout[3]);
+    }
   }
 
   update_screen_for_sprite(current_sprite);

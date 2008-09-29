@@ -54,7 +54,7 @@
   }
 
 #define IMAGE_ADDRESS(image,x,y)					\
-  ((void *)(image)->line[(y)] + IMAGE_LINE_SIZE((image), (x)))		\
+  ((void *)((image)->line[(y)] + IMAGE_LINE_SIZE((image), (x))))	\
 
 #define IMAGE_SHIFT(d)				\
   (((d)->imgtype == IMAGE_RGB)?       2:	\

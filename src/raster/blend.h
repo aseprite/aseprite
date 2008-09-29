@@ -50,6 +50,7 @@ enum {
   BLEND_MODE_COLOR,
   BLEND_MODE_LUMINOSITY,
   BLEND_MODE_COPY,
+  BLEND_MODE_MAX,
 };
 
 typedef int (*BLEND_COLOR) (int back, int front, int opacity);

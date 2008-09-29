@@ -47,7 +47,7 @@ void jmutex_free(JMutex mutex)
   assert(system_driver != NULL);
   assert(system_driver->destroy_mutex != NULL);
 
-  return system_driver->destroy_mutex(mutex);
+  system_driver->destroy_mutex(mutex);
 }
 
 void jmutex_lock(JMutex mutex)

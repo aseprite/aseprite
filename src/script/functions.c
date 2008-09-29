@@ -226,54 +226,21 @@ static int get_max_layer_num(Layer *layer);
 Layer *NewLayer(Sprite *sprite)
 {
   Layer *layer;
-#if 0
-  Image *image;
-  Cel *cel;
-  int index;
-#endif
 
   if (sprite == NULL) {
     console_printf("NewLayer: No current sprite\n");
     return NULL;
   }
 
-  /* new image */
-#if 0
-  image = image_new(sprite->imgtype, sprite->w, sprite->h);
-  if (!image) {
-    console_printf("NewLayer: Not enough memory\n");
-    return NULL;
-  }
-#endif
-
   /* new layer */
   layer = layer_new(sprite);
   if (!layer) {
-#if 0
-    image_free(image);
-#endif
     console_printf("NewLayer: Not enough memory\n");
     return NULL;
   }
 
-#if 0
-  /* clear with mask color */
-  image_clear(image, 0);
-#endif
-
   /* configure layer name and blend mode */
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
-
-#if 0
-  /* add image in the layer stock */
-  index = stock_add_image(sprite->stock, image);
-
-  /* create a new cel in the current frame */
-  cel = cel_new(sprite->frame, index);
-
-  /* add cel */
-  layer_add_cel(layer, cel);
-#endif
   
   /* undo stuff */
   if (undo_is_enabled(sprite->undo)) {
@@ -386,7 +353,6 @@ char *GetUniqueLayerName(Sprite *sprite)
 
 Layer *FlattenLayers(Sprite *sprite)
 {
-  bool is_new_background = FALSE;
   JLink link, next;
   Layer *background;
   Image *image;
@@ -406,6 +372,10 @@ Layer *FlattenLayers(Sprite *sprite)
     return NULL;
   }
 
+  /* open undo */
+  if (undo_is_enabled(sprite->undo))
+    undo_open(sprite->undo);
+
   /* get the background layer from the sprite */
   background = sprite_get_background_layer(sprite);
   if (!background) {
@@ -417,9 +387,15 @@ Layer *FlattenLayers(Sprite *sprite)
       return NULL;
     }
 
-    layer_configure_as_background(background);
+    if (undo_is_enabled(sprite->undo))
+      undo_add_layer(sprite->undo, sprite->set, background);
 
-    is_new_background = TRUE;
+    layer_add_layer(sprite->set, background);
+
+    if (undo_is_enabled(sprite->undo))
+      undo_move_layer(sprite->undo, background);
+    
+    layer_configure_as_background(background);
 
     /* get the color to clean the temporary image in each frame */
     bgcolor = get_color_for_image(sprite->imgtype,
@@ -427,18 +403,6 @@ Layer *FlattenLayers(Sprite *sprite)
   }
   else
     bgcolor = 0;
-
-  /* open undo */
-  if (undo_is_enabled(sprite->undo))
-    undo_open(sprite->undo);
-  
-  /* add the new layer */
-  if (is_new_background) {
-    if (undo_is_enabled(sprite->undo))
-      undo_add_layer(sprite->undo, sprite->set, background);
-
-    layer_add_layer(sprite->set, background);
-  }
 
   /* copy all frames to the background */
   for (frame=0; frame<sprite->frames; frame++) {
@@ -462,8 +426,7 @@ Layer *FlattenLayers(Sprite *sprite)
     }
     else {
       /* if there aren't a cel in this frame in the background, we
-	 have to create a copy of the image for the new cel which will
-	 be created */
+	 have to create a copy of the image for the new cel */
       cel_image = image_new_copy(image);
       /* TODO error handling: if (!cel_image) { ... } */
 

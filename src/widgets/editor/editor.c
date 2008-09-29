@@ -1071,7 +1071,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	return TRUE;
       }
       /* draw */
-      else if (current_tool) {
+      else if (current_tool && editor->sprite->layer) {
 	editor->state = EDIT_DRAWING;
       }
 

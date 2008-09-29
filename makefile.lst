@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2005, 2007, 2008 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2008 by David A. Capello		-*-Makefile-*-
 
 ######################################################################
 # ASE
@@ -235,7 +235,7 @@ ASE_OBJS = $(addprefix $(OBJ_DIR)/,				\
 ######################################################################
 # Libart
 
-LIBART_LIB = $(OBJ_DIR)/libart$(LIB)
+LIBART_LIB = $(OBJ_DIR)/libart$(LIB_EXT)
 LIBART_DIR = third_party/libart_lgpl
 LIBART_SOURCES =				\
 	$(LIBART_DIR)/art_affine.c		\
@@ -283,7 +283,7 @@ LIBART_OBJS = $(addprefix $(OBJ_DIR)/art.,					\
 ######################################################################
 # Freetype
 
-LIBFREETYPE_LIB = $(OBJ_DIR)/libfreetype$(LIB)
+LIBFREETYPE_LIB = $(OBJ_DIR)/libfreetype$(LIB_EXT)
 LIBFREETYPE_DIR = third_party/freetype
 LIBFREETYPE_SOURCES =					\
 	$(LIBFREETYPE_DIR)/src/base/ftsystem.c		\
@@ -315,7 +315,7 @@ LIBFREETYPE_OBJS = $(addprefix $(OBJ_DIR)/freetype.,					\
 ######################################################################
 # GD Library
 
-LIBGD_LIB = $(OBJ_DIR)/libgd$(LIB)
+LIBGD_LIB = $(OBJ_DIR)/libgd$(LIB_EXT)
 LIBGD_DIR = third_party/gd
 LIBGD_SOURCES =					\
 	$(LIBGD_DIR)/gd				\
@@ -354,7 +354,7 @@ LIBGD_OBJS = $(addprefix $(OBJ_DIR)/gd.,			\
 ######################################################################
 # JPEG
 
-LIBJPEG_LIB = $(OBJ_DIR)/libjpeg$(LIB)
+LIBJPEG_LIB = $(OBJ_DIR)/libjpeg$(LIB_EXT)
 LIBJPEG_DIR = third_party/jpeg
 LIBJPEG_SOURCES =				\
 	$(LIBJPEG_DIR)/jcapimin.c		\
@@ -411,7 +411,7 @@ LIBJPEG_OBJS = $(addprefix $(OBJ_DIR)/jpeg.,			\
 ######################################################################
 # LibPNG
 
-LIBPNG_LIB = $(OBJ_DIR)/libpng$(LIB)
+LIBPNG_LIB = $(OBJ_DIR)/libpng$(LIB_EXT)
 LIBPNG_DIR = third_party/libpng
 LIBPNG_SOURCES =				\
 	$(LIBPNG_DIR)/png.c			\
@@ -437,7 +437,7 @@ LIBPNG_OBJS = $(addprefix $(OBJ_DIR)/png.,			\
 ######################################################################
 # ZLib
 
-ZLIB_LIB = $(OBJ_DIR)/libzlib$(LIB)
+ZLIB_LIB = $(OBJ_DIR)/libzlib$(LIB_EXT)
 ZLIB_DIR = third_party/zlib
 ZLIB_SOURCES =					\
 	$(ZLIB_DIR)/adler32.c			\

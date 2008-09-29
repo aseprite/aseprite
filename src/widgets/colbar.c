@@ -435,8 +435,10 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget)) {
 	/* drag and drop a color */
 	if (colorbar->hot_drag != colorbar->hot_drop) {
-	  color_t color = colorbar_get_hotcolor(widget, colorbar->hot_drag);
-	  colorbar_set_hotcolor(widget, colorbar->hot_drop, color);
+	  if (colorbar->hot_drop != HOTCOLOR_NONE) {
+	    color_t color = colorbar_get_hotcolor(widget, colorbar->hot_drag);
+	    colorbar_set_hotcolor(widget, colorbar->hot_drop, color);
+	  }
 	  jwidget_dirty(widget);
 	}
 	/* pick the color */

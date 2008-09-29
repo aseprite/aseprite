@@ -136,6 +136,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
 				       const char *line2, int align2);
 static void anieditor_draw_separator(JWidget widget, JRect clip);
 static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index);
+static void anieditor_draw_layer_padding(JWidget widget);
 static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int frame);
 static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame);
 static void anieditor_regenerate_layers(JWidget widget);
@@ -282,6 +283,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	for (frame=first_frame; frame<=last_frame; frame++)
 	  anieditor_draw_cel(widget, clip, layer, frame);
       }
+
+      anieditor_draw_layer_padding(widget);
 
       return TRUE;
     }
@@ -1083,16 +1086,26 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   }
 
   set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+}
+
+static void anieditor_draw_layer_padding(JWidget widget)
+{
+  AniEditor *anieditor = anieditor_data(widget);
+  int layer_index = anieditor->nlayers-1;
+  int x1, y1, x2, y2;
+  
+  x1 = widget->rc->x1;
+  y1 = widget->rc->y1 + HDRSIZE + LAYSIZE*layer_index - anieditor->scroll_y;
+  x2 = x1 + anieditor->separator_x - 1;
+  y2 = y1 + LAYSIZE - 1;
 
   /* padding in the bottom side */
-  if (layer_index == anieditor->nlayers-1) {
-    if (y2+1 <= widget->rc->y2-1) {
-      rectfill(ji_screen, x1, y2+1, x2, widget->rc->y2-1, ji_color_disabled());
-      rectfill(ji_screen,
-	       x2+1+anieditor->separator_w, y2+1,
-	       widget->rc->x2-1, widget->rc->y2-1,
-	       ji_color_disabled());
-    }
+  if (y2+1 <= widget->rc->y2-1) {
+    rectfill(ji_screen, x1, y2+1, x2, widget->rc->y2-1, ji_color_disabled());
+    rectfill(ji_screen,
+	     x2+1+anieditor->separator_w, y2+1,
+	     widget->rc->x2-1, widget->rc->y2-1,
+	     ji_color_disabled());
   }
 }
 

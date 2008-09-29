@@ -1,3 +1,19 @@
+2008-09-29  David A. Capello  <davidcapello@gmail.com>
+
+	* src/script/functions.c (FlattenLayers): Fixed a bug calling
+	'layer_configure_as_background' without 'undo_move_layer' before.
+
+	* src/util/clipbrd.c (paste_from_clipboard): Fixed a bug when
+	paste the clipboard outside the sprite.
+
+	* src/modules/tools.c (M_PI): Defined for MSVC8.
+
+	* src/widgets/colbut.c (colorbutton_draw): Fixed compilation error
+	in MSVC8.
+
+	* src/widgets/colbar.c (colorbar_msg_proc): Fixed a bug little bug
+	when drop color in nowhere.
+
 2008-09-28  David A. Capello  <davidcapello@gmail.com>
 
 	* src/modules/tools.c: Added new Curve tool.

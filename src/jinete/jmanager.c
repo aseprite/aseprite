@@ -360,17 +360,18 @@ bool jmanager_generate_messages(JWidget manager)
 
     /* mouse movement */
     if (mousemove) {
+      JWidget dst;
+
       /* reset double click status */
       double_click_level = DOUBLE_CLICK_NONE;
-      JWidget destination;
 
       if (capture_widget && capture_widget->flags & JI_HARDCAPTURE)
-	destination = capture_widget;
+	dst = capture_widget;
       else
-	destination = mouse_widget;
+	dst = mouse_widget;
 
       /* send the mouse movement message */
-      msg = new_mouse_msg(JM_MOTION, destination);
+      msg = new_mouse_msg(JM_MOTION, dst);
       jmanager_enqueue_message(msg);
 
       generate_setcursor_message();
@@ -1356,17 +1357,17 @@ static void manager_redraw_region(JWidget widget, JRegion region)
 
 static void generate_setcursor_message(void)
 {
-  JWidget destination;
+  JWidget dst;
   JMessage msg;
   
   if (capture_widget &&
       capture_widget->flags & JI_HARDCAPTURE)
-    destination = capture_widget;
+    dst = capture_widget;
   else
-    destination = mouse_widget;
+    dst = mouse_widget;
 
-  if (destination) {
-    msg = new_mouse_msg(JM_SETCURSOR, destination);
+  if (dst) {
+    msg = new_mouse_msg(JM_SETCURSOR, dst);
     jmanager_enqueue_message(msg);
   }
   else

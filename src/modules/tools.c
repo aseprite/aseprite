@@ -51,6 +51,10 @@
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
 
+#ifndef M_PI
+#define M_PI		3.14159265358979323846
+#endif
+
 /* tool flags */
 #define TOOL_COPY_SRC2DST       0x00000001
 #define TOOL_COPY_DST2SRC       0x00000002
@@ -97,32 +101,32 @@ enum {
   MAX_INKS
 };
 
-static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data);
-static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data);
-static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data);
+static void ink_hline32_opaque(int x1, int y, int x2, ToolData *data);
+static void ink_hline16_opaque(int x1, int y, int x2, ToolData *data);
+static void ink_hline8_opaque(int x1, int y, int x2, ToolData *data);
 
-static void ink_hline4_glass(int x1, int y, int x2, ToolData *data);
-static void ink_hline2_glass(int x1, int y, int x2, ToolData *data);
-static void ink_hline1_glass(int x1, int y, int x2, ToolData *data);
+static void ink_hline32_glass(int x1, int y, int x2, ToolData *data);
+static void ink_hline16_glass(int x1, int y, int x2, ToolData *data);
+static void ink_hline8_glass(int x1, int y, int x2, ToolData *data);
 
-static void ink_hline4_soften(int x1, int y, int x2, ToolData *data);
-static void ink_hline2_soften(int x1, int y, int x2, ToolData *data);
-static void ink_hline1_soften(int x1, int y, int x2, ToolData *data);
+static void ink_hline32_soften(int x1, int y, int x2, ToolData *data);
+static void ink_hline16_soften(int x1, int y, int x2, ToolData *data);
+static void ink_hline8_soften(int x1, int y, int x2, ToolData *data);
 
-static void ink_hline4_replace(int x1, int y, int x2, ToolData *data);
-static void ink_hline2_replace(int x1, int y, int x2, ToolData *data);
-static void ink_hline1_replace(int x1, int y, int x2, ToolData *data);
+static void ink_hline32_replace(int x1, int y, int x2, ToolData *data);
+static void ink_hline16_replace(int x1, int y, int x2, ToolData *data);
+static void ink_hline8_replace(int x1, int y, int x2, ToolData *data);
 
-static void ink_hline4_jumble(int x1, int y, int x2, ToolData *data);
-static void ink_hline2_jumble(int x1, int y, int x2, ToolData *data);
-static void ink_hline1_jumble(int x1, int y, int x2, ToolData *data);
+static void ink_hline32_jumble(int x1, int y, int x2, ToolData *data);
+static void ink_hline16_jumble(int x1, int y, int x2, ToolData *data);
+static void ink_hline8_jumble(int x1, int y, int x2, ToolData *data);
 
 static AlgoHLine inks_hline[][3] =
 {
 #define DEF_INK(name)			\
-  { (AlgoHLine)ink_hline4_##name,	\
-    (AlgoHLine)ink_hline2_##name,	\
-    (AlgoHLine)ink_hline1_##name }
+  { (AlgoHLine)ink_hline32_##name,	\
+    (AlgoHLine)ink_hline16_##name,	\
+    (AlgoHLine)ink_hline8_##name }
 
   DEF_INK(opaque),
   DEF_INK(glass),
@@ -600,7 +604,8 @@ static void tool_spray_draw_trace(int x1, int y1, int x2, int y2, ToolData *data
 {
   int c, x, y, times = (spray_width*spray_width/4) * air_speed / 100;
 
-#ifdef __MINGW32__             /* MinGW32 has a RAND_MAX too small */
+  /* in Windows, rand() has a RAND_MAX too small */
+#if RAND_MAX <= 0xffff
   fixed angle, radius;
 
   for (c=0; c<times; c++) {
@@ -888,6 +893,8 @@ void control_tool(JWidget widget, Tool *tool,
   bool destroy_cel = FALSE;
   int curve_pts = 0;	   /* to iterate points in the 'curve' tool */
   ToolData tool_data;
+
+  assert(sprite->layer);
 
   /* First of all we have to dispatch the enqueue messages. Why is it
      needed?  To dispatch the JM_CLOSE and redrawing messages if a
@@ -1699,7 +1706,7 @@ static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data)
 			      addresses_initialize,			\
 			      addresses_increment,			\
 			      processing)				\
-  addresses_define;							\
+  addresses_define							\
   register int x;							\
 									\
   /* with mask */							\
@@ -1755,7 +1762,7 @@ static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data)
 /* Opaque Ink   						      */
 /**********************************************************************/
 
-static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data)
+static void ink_hline32_opaque(int x1, int y, int x2, ToolData *data)
 {
   int c = data->color;
 
@@ -1764,7 +1771,7 @@ static void ink_hline4_opaque(int x1, int y, int x2, ToolData *data)
      *dst_address = c			);
 }
 
-static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data)
+static void ink_hline16_opaque(int x1, int y, int x2, ToolData *data)
 {
   int c = data->color;
 
@@ -1773,7 +1780,7 @@ static void ink_hline2_opaque(int x1, int y, int x2, ToolData *data)
      *dst_address = c			);
 }
 
-static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data)
+static void ink_hline8_opaque(int x1, int y, int x2, ToolData *data)
 {
   int c = data->color;
 
@@ -1788,7 +1795,7 @@ static void ink_hline1_opaque(int x1, int y, int x2, ToolData *data)
 /* Glass Ink     						      */
 /**********************************************************************/
 
-static void ink_hline4_glass(int x1, int y, int x2, ToolData *data)
+static void ink_hline32_glass(int x1, int y, int x2, ToolData *data)
 {
   int color = data->color;
   int opacity = data->opacity;
@@ -1798,7 +1805,7 @@ static void ink_hline4_glass(int x1, int y, int x2, ToolData *data)
      *dst_address = _rgba_blend_normal(*src_address, color, opacity));
 }  
 
-static void ink_hline2_glass(int x1, int y, int x2, ToolData *data)
+static void ink_hline16_glass(int x1, int y, int x2, ToolData *data)
 {
   int color = data->color;
   int opacity = data->opacity;
@@ -1808,7 +1815,7 @@ static void ink_hline2_glass(int x1, int y, int x2, ToolData *data)
      *dst_address = _graya_blend_normal(*src_address, color, opacity));
 }  
 
-static void ink_hline1_glass(int x1, int y, int x2, ToolData *data)
+static void ink_hline8_glass(int x1, int y, int x2, ToolData *data)
 {
   Palette *pal = get_current_palette();
   ase_uint32 c;
@@ -1830,7 +1837,7 @@ static void ink_hline1_glass(int x1, int y, int x2, ToolData *data)
 /* Soften Ink     						      */
 /**********************************************************************/
 
-static void ink_hline4_soften(int x1, int y, int x2, ToolData *data)
+static void ink_hline32_soften(int x1, int y, int x2, ToolData *data)
 {
   int c, r, g, b, a;
   int opacity = data->opacity;
@@ -1880,7 +1887,7 @@ static void ink_hline4_soften(int x1, int y, int x2, ToolData *data)
      });
 }  
 
-static void ink_hline2_soften(int x1, int y, int x2, ToolData *data)
+static void ink_hline16_soften(int x1, int y, int x2, ToolData *data)
 {
   int c, v, a;
   int opacity = data->opacity;
@@ -1924,7 +1931,7 @@ static void ink_hline2_soften(int x1, int y, int x2, ToolData *data)
      });
 }  
 
-static void ink_hline1_soften(int x1, int y, int x2, ToolData *data)
+static void ink_hline8_soften(int x1, int y, int x2, ToolData *data)
 {
   Palette *pal = get_current_palette();
   int c, r, g, b, a;
@@ -1978,7 +1985,7 @@ static void ink_hline1_soften(int x1, int y, int x2, ToolData *data)
 /* Replace Ink     						      */
 /**********************************************************************/
 
-static void ink_hline4_replace(int x1, int y, int x2, ToolData *data)
+static void ink_hline32_replace(int x1, int y, int x2, ToolData *data)
 {
   int color = data->color;
   int other_color = data->other_color;
@@ -1991,7 +1998,7 @@ static void ink_hline4_replace(int x1, int y, int x2, ToolData *data)
      });
 }  
 
-static void ink_hline2_replace(int x1, int y, int x2, ToolData *data)
+static void ink_hline16_replace(int x1, int y, int x2, ToolData *data)
 {
   int color = data->color;
   int other_color = data->other_color;
@@ -2004,7 +2011,7 @@ static void ink_hline2_replace(int x1, int y, int x2, ToolData *data)
      });
 }  
 
-static void ink_hline1_replace(int x1, int y, int x2, ToolData *data)
+static void ink_hline8_replace(int x1, int y, int x2, ToolData *data)
 {
   int other_color = data->other_color;
   Palette *pal = get_current_palette();
@@ -2048,7 +2055,7 @@ static void ink_hline1_replace(int x1, int y, int x2, ToolData *data)
   }									\
   color = image_getpixel(data->src_image, u, v);
 
-static void ink_hline4_jumble(int x1, int y, int x2, ToolData *data)
+static void ink_hline32_jumble(int x1, int y, int x2, ToolData *data)
 {
   int opacity = data->opacity;
   int speed_x = data->vector.x/4;
@@ -2065,7 +2072,7 @@ static void ink_hline4_jumble(int x1, int y, int x2, ToolData *data)
      );
 }  
 
-static void ink_hline2_jumble(int x1, int y, int x2, ToolData *data)
+static void ink_hline16_jumble(int x1, int y, int x2, ToolData *data)
 {
   int opacity = data->opacity;
   int speed_x = data->vector.x/4;
@@ -2082,7 +2089,7 @@ static void ink_hline2_jumble(int x1, int y, int x2, ToolData *data)
      );
 }  
 
-static void ink_hline1_jumble(int x1, int y, int x2, ToolData *data)
+static void ink_hline8_jumble(int x1, int y, int x2, ToolData *data)
 {
   Palette *pal = get_current_palette();
   ase_uint32 c, tc;

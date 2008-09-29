@@ -144,7 +144,7 @@ void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
     if (widget->text)
       jfree(widget->text);
 
-    widget->text = buf ? jstrdup(buf) : NULL;
+    widget->text = jstrdup(buf);
     statusbar->timeout = ji_clock + msecs;
     jwidget_dirty(widget);
   }

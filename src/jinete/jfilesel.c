@@ -47,6 +47,7 @@
 #  define HAVE_DRIVES
 #endif
 
+#undef FA_ALL
 #define FA_TO_SHOW   FA_RDONLY | FA_DIREC | FA_ARCH | FA_SYSTEM
 #define FA_ALL       FA_RDONLY | FA_DIREC | FA_ARCH | FA_HIDDEN | FA_SYSTEM
 

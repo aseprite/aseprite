@@ -21,6 +21,8 @@
 
 #include "config.h"
 
+#include <assert.h>
+
 #include "jinete/jlist.h"
 
 #include "modules/palettes.h"
@@ -42,9 +44,9 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 			 bool render_background,
 			 bool render_transparent);
 
-static void merge_zoomed_image1(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-static void merge_zoomed_image2(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-static void merge_zoomed_image4(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
+static void merge_zoomed_image8(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
+static void merge_zoomed_image16(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
+static void merge_zoomed_image32(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
 
 void set_preview_image(Layer *layer, Image *image)
 {
@@ -74,17 +76,17 @@ Image *render_sprite(Sprite *sprite,
 
     case IMAGE_RGB:
       depth = 32;
-      zoomed_func = merge_zoomed_image4;
+      zoomed_func = merge_zoomed_image32;
       break;
 
     case IMAGE_GRAYSCALE:
       depth = 8;
-      zoomed_func = merge_zoomed_image2;
+      zoomed_func = merge_zoomed_image16;
       break;
 
     case IMAGE_INDEXED:
       depth = 8;
-      zoomed_func = merge_zoomed_image1;
+      zoomed_func = merge_zoomed_image8;
       break;
 
     default:
@@ -258,7 +260,7 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
   }
 }
 
-static void merge_zoomed_image1(Image *dst, Image *src,
+static void merge_zoomed_image8(Image *dst, Image *src,
 				int x, int y, int opacity,
 				int blend_mode, int zoom)
 {
@@ -408,11 +410,11 @@ done_with_blit:;
   jfree(scanline);
 }
 
-static void merge_zoomed_image2(Image *dst, Image *src,
-				int x, int y, int opacity,
-				int blend_mode, int zoom)
+static void merge_zoomed_image16(Image *dst, Image *src,
+				 int x, int y, int opacity,
+				 int blend_mode, int zoom)
 {
-  BLEND_COLOR blender = _graya_blenders[blend_mode];
+  BLEND_COLOR blender;
   ase_uint16 *src_address;
   ase_uint16 *dst_address;
   ase_uint16 *scanline, *scanline_address;
@@ -421,6 +423,10 @@ static void merge_zoomed_image2(Image *dst, Image *src,
   int box_x, box_y, box_w, box_h;
   int sizeof_box, offsetx, offsety;
   int line_x, line_h, right, bottom;
+
+  assert(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
+
+  blender = _graya_blenders[blend_mode];
 
   box_w = 1<<zoom;
   box_h = 1<<zoom;
@@ -549,11 +555,11 @@ done_with_blit:;
   jfree(scanline);
 }
 
-static void merge_zoomed_image4(Image *dst, Image *src,
-				int x, int y, int opacity,
-				int blend_mode, int zoom)
+static void merge_zoomed_image32(Image *dst, Image *src,
+				 int x, int y, int opacity,
+				 int blend_mode, int zoom)
 {
-  BLEND_COLOR blender = _rgba_blenders[blend_mode];
+  BLEND_COLOR blender;
   ase_uint32 *src_address;
   ase_uint32 *dst_address;
   ase_uint32 *scanline, *scanline_address;
@@ -562,6 +568,10 @@ static void merge_zoomed_image4(Image *dst, Image *src,
   int box_x, box_y, box_w, box_h;
   int sizeof_box, offsetx, offsety;
   int line_x, line_h, right, bottom;
+
+  assert(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
+
+  blender = _rgba_blenders[blend_mode];
 
   box_w = 1<<zoom;
   box_h = 1<<zoom;

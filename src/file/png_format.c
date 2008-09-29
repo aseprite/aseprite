@@ -299,7 +299,7 @@ static bool save_PNG(FileOp *fop)
   png_infop info_ptr;
   png_colorp palette = NULL;
   png_bytep row_pointer;
-  int color_type;
+  int color_type = 0;
   int pass, number_passes;
   FILE *fp;
 

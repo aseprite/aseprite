@@ -44,8 +44,6 @@ static Layer *dst_layer = NULL;
 static int src_frame = 0;
 static int dst_frame = 0;
 
-static bool frame_is_empty(Sprite *sprite, Layer *layer, int frame);
-
 void set_frame_to_handle(Layer *_src_layer, int _src_frame,
 			 Layer *_dst_layer, int _dst_frame)
 {
@@ -229,28 +227,4 @@ void copy_cel(void)
     undo_close(sprite->undo);
 
   set_frame_to_handle(NULL, 0, NULL, 0);
-}
-  
-static bool frame_is_empty(Sprite *sprite, Layer *layer, int frame)
-{
-  switch (layer->gfxobj.type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel = layer_get_cel(layer, frame);
-      if (cel != NULL)
-	return FALSE;
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	if (!frame_is_empty(sprite, link->data, frame))
-	  return FALSE;
-      break;
-    }
-
-  }
-
-  return TRUE;
 }

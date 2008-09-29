@@ -216,8 +216,9 @@ static void colorbutton_draw(JWidget widget)
 {
   ColorButton *colorbutton = colorbutton_data(widget);
   struct jrect box, text, icon;
-  jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
   char buf[256];
+
+  jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
   draw_color_button
     (ji_screen,
