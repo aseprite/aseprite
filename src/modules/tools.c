@@ -1025,13 +1025,13 @@ void control_tool(JWidget widget, Tool *tool,
   spray_time = ji_clock;
   old_x1 = old_y1 = old_x2 = old_y2 = 0;
 
-next_pts:;
-
   /* start click */
   editor_click_start(widget,
 		     click2 ? MODE_CLICKANDCLICK:
 			      MODE_CLICKANDRELEASE,
 		     &start_x, &start_y, &start_b);
+
+next_pts:;
 
   for (c=0; c<4; c++) {
     mouse_x[c] = start_x;
@@ -1086,21 +1086,40 @@ next_pts:;
 	if (old_key_shifts & KB_SHIFT_FLAG) {
 	  int dx = x2 - x1;
 	  int dy = y2 - y1;
-	  int size;
-
-	  if (tool->flags & TOOL_SNAP_ANGLES)
-	    size = MAX(ABS(dx), ABS(dy));
-	  else
-	    size = MIN(ABS(dx), ABS(dy));
-
-	  x2 = x1 + SGN(dx) * size;
-	  y2 = y1 + SGN(dy) * size;
+	  int minsize = MIN(ABS(dx), ABS(dy));
+	  int maxsize = MAX(ABS(dx), ABS(dy));
 
 	  if (tool->flags & TOOL_SNAP_ANGLES) {
-	    if (ABS(dx) <= ABS(dy)/2)
-	      x2 = x1;
-	    else if (ABS(dy) <= ABS(dx)/2)
+	    double angle = 180.0 * atan((double)-dy / (double)dx) / M_PI;
+	    angle = ABS(angle);
+
+	    /* snap horizontally */
+	    if (angle < 18.0) {
 	      y2 = y1;
+	    }
+	    /* snap at 26.565 */
+	    else if (angle < 36.0) {
+	      x2 = x1 + SGN(dx)*maxsize;
+	      y2 = y1 + SGN(dy)*maxsize/2;
+	    }
+	    /* snap at 45 */
+	    else if (angle < 54.0) {
+	      x2 = x1 + SGN(dx)*minsize;
+	      y2 = y1 + SGN(dy)*minsize;
+	    }
+	    /* snap at 63.435 */
+	    else if (angle < 72.0) {
+	      x2 = x1 + SGN(dx)*maxsize/2;
+	      y2 = y1 + SGN(dy)*maxsize;
+	    }
+	    /* snap vertically */
+	    else {
+	      x2 = x1;
+	    }
+	  }
+	  else {
+	    x2 = x1 + SGN(dx)*minsize;
+	    y2 = y1 + SGN(dy)*minsize;
 	  }
 	}
 
@@ -1182,8 +1201,8 @@ next_pts:;
 	    pts[3] = pts[5] = pts[7] = y1;
 	    break;
 	  case 2:
-	    pts[2] = x1;
-	    pts[3] = y1;
+	    pts[2] = pts[4] = x1;
+	    pts[3] = pts[5] = y1;
 	    break;
 	  case 3:
 	    pts[4] = x1;
@@ -1408,28 +1427,40 @@ next_pts:;
       /* update the state-bar */
       if (jwidget_is_visible(statusbar)) {
 	if (tool->flags & TOOL_UPDATE_BOX) {
-	  char mode[256] = "";
+	  char extra[256] = "";
 
 	  if (current_tool == tools_list[TOOL_MARKER]) {
 	    if (start_b & 1) {
 	      if (key_shifts & KB_ALT_FLAG)
-		strcat(mode, _("Replace"));
+		strcat(extra, _("Replace"));
 	      else
-		strcat(mode, _("Union"));
+		strcat(extra, _("Union"));
 	    }
 	    else {
 	      if (key_shifts & KB_ALT_FLAG)
-		strcat(mode, _("Intersect"));
+		strcat(extra, _("Intersect"));
 	      else
-		strcat(mode, _("Subtract"));
+		strcat(extra, _("Subtract"));
 	    }
+	  }
+	  else if (current_tool == tools_list[TOOL_LINE]) {
+	    usprintf(extra, "%s %.1f",
+		     _("Angle"),
+		     180.0 * atan2(y1-y2, x2-x1) / M_PI);
 	  }
 
 	  statusbar_set_text(statusbar, 0,
 			      "%s %3d %3d %s %3d %3d (%s %3d %3d) %s",
 			      _start, x1, y1,
 			      _end, x2, y2,
-			      _size, ABS(x2-x1)+1, ABS(y2-y1)+1, mode);
+			      _size, ABS(x2-x1)+1, ABS(y2-y1)+1, extra);
+	}
+	else if (tool->flags & TOOL_4FIRST2LAST) {
+	  statusbar_set_text(statusbar, 0, "%s %3d %3d %s %3d %3d (%3d %3d - %3d %3d)",
+			     _start, pts[0], pts[1],
+			     _end, pts[6], pts[7],
+			     pts[2], pts[3],
+			     pts[4], pts[5]);
 	}
 	else {
 	  statusbar_set_text(statusbar, 0, "%s %3d %3d", _pos, x1, y1);
@@ -1479,7 +1510,8 @@ next_pts:;
     if ((tool->flags & TOOL_4FIRST2LAST) &&
     	(curve_pts < 3)) {
       ++curve_pts;
-      click2 = MODE_CLICKANDCLICK;
+      editor_click_continue(widget, MODE_CLICKANDCLICK,
+			    &start_x, &start_y);
       goto next_pts;
     }
 

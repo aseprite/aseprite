@@ -82,27 +82,9 @@ static void gen_gfx(void *data)
 
 int init_module_graphics(void)
 {
-/*   DIRS *dirs, *dir; */
-/*   PALETTE pal; */
   int c;
-
-/*   dirs = filename_in_datadir("icons.pcx"); */
-/*   for (dir=dirs; dir; dir=dir->next) { */
-/*     set_color_conversion(COLORCONV_NONE); */
-/*     icons_pcx = load_bitmap(dir->path, pal); */
-/*     set_color_conversion(COLORCONV_TOTAL); */
-
-/*     if (icons_pcx) */
-/*       break; */
-/*   } */
-/*   dirs_free(dirs); */
-
-/*   if (!icons_pcx) { */
-/*     user_printf("Error loading icons.pcx"); */
-/*     return -1; */
-/*   } */
   
-  for(c=0; c<GFX_BITMAP_COUNT; c++)
+  for (c=0; c<GFX_BITMAP_COUNT; c++)
     gfx_bmps[c] = NULL;
 
   app_add_hook(APP_PALETTE_CHANGE, gen_gfx, NULL);
@@ -113,63 +95,17 @@ void exit_module_graphics(void)
 {
   int c;
 
-  for(c=0; c<GFX_BITMAP_COUNT; c++)
-    if(gfx_bmps[c]) {
+  for (c=0; c<GFX_BITMAP_COUNT; c++)
+    if (gfx_bmps[c]) {
       destroy_bitmap(gfx_bmps[c]);
       gfx_bmps[c] = NULL;
     }
-
-/*   if (icons_pcx) */
-/*     destroy_bitmap(icons_pcx); */
 }
 
 BITMAP *get_gfx(int id)
 {
-  if (!gfx_bmps[id]) {
-/*     if (id == GFX_TOOL_MARKER) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*0, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_DOTS) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*1, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_PENCIL) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*2, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_BRUSH) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*3, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_FLOODFILL) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*4, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_SPRAY) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*5, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_LINE) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*6, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_RECTANGLE) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*7, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_ELLIPSE) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*8, 0, 0, 9, 9); */
-/*     } */
-/*     else if (id == GFX_TOOL_CONFIGURATION) { */
-/*       gfx_bmps[id] = create_bitmap(9, 9); */
-/*       blit(icons_pcx, gfx_bmps[id], 9*1, 9*9, 0, 0, 9, 9); */
-/*     } */
-/*     else { */
-      convert_data_to_bitmap(&gfx_data[id], &gfx_bmps[id]);
-/*     } */
-  }
+  if (!gfx_bmps[id])
+    convert_data_to_bitmap(&gfx_data[id], &gfx_bmps[id]);
 
   return gfx_bmps[id];
 }
@@ -309,10 +245,9 @@ void simple_dotted_mode(BITMAP *bmp, int fg, int bg)
   drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
 }
 
-
 /**********************************************************************/
 /* Set/Restore sub-clip regions */
-
+
 typedef struct CLIP_DATA
 {
   BITMAP *bmp;

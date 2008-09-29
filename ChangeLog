@@ -1,3 +1,14 @@
+2008-09-28  David A. Capello  <davidcapello@gmail.com>
+
+	* src/modules/tools.c: Added new Curve tool.
+	(control_tool): Added support to lock lines in more
+	angles (feature request #1961397).
+
+2008-09-27  David A. Capello  <davidcapello@gmail.com>
+
+	* src/widgets/colbar.c: Added support to drag & drop
+	colors (feature request #2109224).
+
 2008-05-06  David A. Capello  <davidcapello@gmail.com>
 
 	* Version 0.6b2 released.

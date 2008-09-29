@@ -65,6 +65,18 @@ void editor_click_start(JWidget widget, int mode, int *x, int *y, int *b)
   jwidget_capture_mouse(widget);
 }
 
+void editor_click_continue(JWidget widget, int mode, int *x, int *y)
+{
+  click_mode = mode;
+  click_first = TRUE;
+
+  click_start_x = click_last_x = jmouse_x(0);
+  click_start_y = click_last_y = jmouse_y(0);
+  click_start_b = click_last_b = click_prev_last_b;
+
+  screen_to_editor(widget, click_start_x, click_start_y, x, y);
+}
+
 void editor_click_done(JWidget widget)
 {
   jwidget_release_mouse(widget);

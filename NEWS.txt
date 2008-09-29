@@ -5,6 +5,16 @@ NEWS
 0.6
 ---
 
++ Added 'Curve' tool (bezier-spline).
++ Added support to drag and drop colors in color-bar (feature request
+  feature #2109224).
++ Added support to lock lines in special angles with the Shift key,
+  useful to draw in isometric views (feature request #1961397).
++ Fixed bugs #1958760 and #1958932.
+
+0.6b2
+-----
+
 + Added the `Background' layer.
 + Added support to load and save PNG files (through 'libpng').
 + Transparent cel handling for the end-user (you can move a cel and

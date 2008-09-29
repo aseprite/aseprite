@@ -121,6 +121,7 @@ enum {
 };
 
 void editor_click_start(JWidget editor, int mode, int *x, int *y, int *b);
+void editor_click_continue(JWidget editor, int mode, int *x, int *y);
 void editor_click_done(JWidget editor);
 int editor_click(JWidget editor, int *x, int *y, int *update,
 		 void (*scroll_callback) (int before_change));
