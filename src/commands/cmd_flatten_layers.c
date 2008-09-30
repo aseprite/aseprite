@@ -23,7 +23,7 @@
 #include "modules/sprites.h"
 #include "raster/undo.h"
 #include "raster/sprite.h"
-#include "script/functions.h"
+#include "util/functions.h"
 
 static bool cmd_flatten_layers_enabled(const char *argument)
 {

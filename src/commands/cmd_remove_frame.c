@@ -27,7 +27,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "script/functions.h"
+#include "util/functions.h"
 
 static bool cmd_remove_frame_enabled(const char *argument)
 {

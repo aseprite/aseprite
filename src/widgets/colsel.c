@@ -30,7 +30,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "widgets/colsel2.h"
+#include "widgets/colsel.h"
 #include "widgets/paledit.h"
 #include "widgets/tabs.h"
 

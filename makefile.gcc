@@ -95,7 +95,6 @@ VPATH = src					\
 	src/modules				\
 	src/raster				\
 	src/raster/x86				\
-	src/script				\
 	src/util				\
 	src/widgets				\
 	src/widgets/editor			\

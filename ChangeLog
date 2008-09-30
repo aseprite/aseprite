@@ -1,5 +1,17 @@
 2008-09-29  David A. Capello  <davidcapello@gmail.com>
 
+	* src/widgets/fileview.c (fileview_msg_proc): Fixed a bug when the
+	user pressed a key to do an incremental-search but no item where
+	selected.
+
+	* src/widgets/colsel.[ch]: Renamed from src/widgets/colsel2.[ch].
+
+	* data/jids/colsel.jid: Removed.
+
+	* src/script/: Removed.
+
+	* src/util/functions.c: From 'src/script/functions.c'.
+
 	* src/script/functions.c (FlattenLayers): Fixed a bug calling
 	'layer_configure_as_background' without 'undo_move_layer' before.
 

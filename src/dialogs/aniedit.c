@@ -34,8 +34,8 @@
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/raster.h"
-#include "script/functions.h"
 #include "util/celmove.h"
+#include "util/functions.h"
 #include "util/thmbnail.h"
 
 /*

@@ -34,7 +34,7 @@
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "script/functions.h"
+#include "util/functions.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
 

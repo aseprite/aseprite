@@ -27,7 +27,7 @@
 #include "raster/sprite.h"
 #include "widgets/colbar.h"
 #include "widgets/colbut.h"
-#include "widgets/colsel2.h"
+#include "widgets/colsel.h"
 #include "widgets/editor.h"
 
 typedef struct ColorButton

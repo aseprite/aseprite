@@ -25,7 +25,7 @@
 #include "raster/layer.h"
 #include "raster/undo.h"
 #include "raster/sprite.h"
-#include "script/functions.h"
+#include "util/functions.h"
 
 static bool cmd_remove_cel_enabled(const char *argument)
 {

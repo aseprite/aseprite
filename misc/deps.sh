@@ -27,7 +27,6 @@ $GCC $CFLAGS							     \
     src/jinete/*.c						     \
     src/modules/*.c						     \
     src/raster/*.c						     \
-    src/script/*.c						     \
     src/util/*.c						     \
     src/widgets/*.c						     \
     src/widgets/editor/*.c					     \

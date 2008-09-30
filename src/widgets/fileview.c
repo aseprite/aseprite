@@ -492,7 +492,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		JLink link = jlist_nth_link(fileview->list,
 					    (select >= 0) ? select: 0);
 
-		for (i=select; i<=bottom; ++i, link=link->next) {
+		for (i=MAX(select, 0); i<=bottom; ++i, link=link->next) {
 		  FileItem *fi = link->data;
 		  if (ustrnicmp(fileitem_get_displayname(fi),
 				fileview->isearch,

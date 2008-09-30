@@ -26,7 +26,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "script/functions.h"
+#include "util/functions.h"
 
 static bool cmd_new_layer_set_enabled(const char *argument)
 {

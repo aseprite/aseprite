@@ -7,7 +7,7 @@ Sprite's Editor
 
   cursor.c
     Drawing-cursor routines: To control draw/clean the drawing cursor
-    (that cursor that is inside the editor).
+    (the cursor that is inside the editor).
 
   editor.c  
     The sprite's editor widget.

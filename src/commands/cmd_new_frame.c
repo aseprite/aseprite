@@ -33,7 +33,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "script/functions.h"
+#include "util/functions.h"
 #include "widgets/statebar.h"
 
 static bool cmd_new_frame_enabled(const char *argument)

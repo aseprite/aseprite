@@ -36,8 +36,8 @@
 #include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "raster/raster.h"
+#include "util/functions.h"
 #include "util/misc.h"
-#include "script/functions.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 

@@ -34,8 +34,8 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "script/functions.h"
 #include "util/celmove.h"
+#include "util/functions.h"
 
 /* these variables indicate what cel to move (and the current_sprite
    frame indicates to where move it) */

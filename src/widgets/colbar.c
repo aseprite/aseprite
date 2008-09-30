@@ -38,7 +38,7 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "widgets/colbar.h"
-#include "widgets/colsel2.h"
+#include "widgets/colsel.h"
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"
 

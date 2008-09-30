@@ -182,13 +182,13 @@ COMMON_SOURCES =					\
 	src/raster/sprite.c				\
 	src/raster/stock.c				\
 	src/raster/undo.c				\
-	src/script/functions.c				\
 	src/util/autocrop.c				\
 	src/util/boundary.c				\
 	src/util/celmove.c				\
 	src/util/clipbrd.c				\
 	src/util/col_file.c				\
 	src/util/filetoks.c				\
+	src/util/functions.c				\
 	src/util/hash.c					\
 	src/util/misc.c					\
 	src/util/msk_file.c				\
@@ -199,7 +199,7 @@ COMMON_SOURCES =					\
 	src/util/thmbnail.c				\
 	src/widgets/colbar.c				\
 	src/widgets/colbut.c				\
-	src/widgets/colsel2.c				\
+	src/widgets/colsel.c				\
 	src/widgets/colview.c				\
 	src/widgets/curvedit.c				\
 	src/widgets/editor/click.c			\

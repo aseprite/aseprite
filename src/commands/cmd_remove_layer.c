@@ -23,7 +23,7 @@
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "script/functions.h"
+#include "util/functions.h"
 
 static bool cmd_remove_layer_enabled(const char *argument)
 {

@@ -21,8 +21,8 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "script/functions.h"
 #include "util/autocrop.h"
+#include "util/functions.h"
 
 void autocrop_sprite(Sprite *sprite)
 {
