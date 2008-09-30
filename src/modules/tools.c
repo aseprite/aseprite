@@ -936,14 +936,9 @@ void control_tool(JWidget widget, Tool *tool,
   }
 
   if (cel == NULL) {
-    /* int image_index; */
-
     /* create the image */
     cel_image = image_new(sprite->imgtype, sprite->w, sprite->h);
     image_clear(cel_image, 0);
-
-    /* add it to the stock */
-    /* image_index = stock_add_image(sprite->stock, cel_image); */
 
     /* create the cel */
     cel = cel_new(sprite->frame, 0);
@@ -951,22 +946,6 @@ void control_tool(JWidget widget, Tool *tool,
 
     cel_created = TRUE;
   }
-
-  /* /\* isn't a cel in the current frame/layer, we create a new one *\/ */
-  /* if (cel == NULL) { */
-  /*   cel_created = TRUE; */
-  /*   cel = cel_new(sprite->frame, -1); */
-  /* } */
-
-  /* /\* if we don't have an image to paint in, we create new image to paint in *\/ */
-  /* if (cel_image == NULL) { */
-  /*   cel_image_created = TRUE; */
-  /* } */
-  /* /\* if the cel is linked we make a copy of it (so it can be unlinked) *\/ */
-  /* else if (cel_is_link(cel, sprite->layer)) { */
-  /*   cel_image_created = TRUE; */
-  /*   cel_image = image_new_copy(cel_image); */
-  /* } */
 
   old_cel_x = cel->x;
   old_cel_y = cel->y;
@@ -1230,10 +1209,6 @@ next_pts:;
 	  image_copy(tool_data.src_image, tool_data.dst_image, 0, 0);
 	}
 
-	/* displace region */
-/* 	if (dirty->mask) */
-/* 	  mask_move(dirty->mask, offset_x, offset_y); */
-
 	/* create the area which the trace will dirty */
 	if (tool == tools_list[TOOL_BRUSH] ||
 	    tool == tools_list[TOOL_CURVE]) {
@@ -1244,16 +1219,6 @@ next_pts:;
 	else if (tool->draw_trace) {
 	  tool->draw_trace(x1, y1, x2, y2, &tool_data);
 	}
-
-	/* displace region */
-/* 	if (dirty->mask) */
-/* 	  mask_move(dirty->mask, -offset_x, -offset_y); */
-
-	/* get the background which the trace will overlap */
-/* 	dirty_save_image_data(dirty); */
-
-	/* draw the trace */
-/* 	algo_dirty(dirty, NULL, hline_proc); */
       }
 
       /* prepare */

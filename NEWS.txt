@@ -11,6 +11,7 @@ NEWS
 + Added support to lock lines in special angles with the Shift key,
   useful to draw in isometric views (feature request #1961397).
 + Fixed bugs #1958760 and #1958932.
++ Fixed other bugs (Flatten Layers, File Selector, etc.).
 
 0.6b2
 -----
