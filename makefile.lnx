@@ -26,11 +26,12 @@ endif
 # GCC stuff
 
 CC = gcc
+CPP = g++
 OBJ = .o
-LIB = .a
 EXE =
-SUBMAKEFILE = makefile.lnx
+LIB_EXT = .a
 OBJ_DIR = obj/unix
+SUBMAKEFILE = makefile.lnx
 
 include makefile.lst
 include makefile.gcc

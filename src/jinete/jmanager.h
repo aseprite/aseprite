@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget ji_get_default_manager(void);
 
 JWidget jmanager_new(void);
@@ -77,7 +75,5 @@ void jmanager_refresh_screen(void);
 void jmanager_add_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter_for(JWidget widget);
-
-JI_END_DECLS
 
 #endif /* JINETE_MANAGER_H */

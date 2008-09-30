@@ -34,10 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jlabel_new(const char *text);
-
-JI_END_DECLS
 
 #endif /* JINETE_LABEL_H */

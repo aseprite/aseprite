@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget ji_scrollbar_new(int align);
 
 void ji_scrollbar_set_range(JWidget scrollbar, int min, int max);
@@ -47,7 +45,5 @@ void ji_scrollbar_get_range(JWidget scrollbar, int *min, int *max);
 int ji_scrollbar_get_pagesize(JWidget scrollbar);
 int ji_scrollbar_get_itemsize(JWidget scrollbar);
 int ji_scrollbar_get_position(JWidget scrollbar);
-
-JI_END_DECLS
 
 #endif /* JINETE_SCROLL_H */

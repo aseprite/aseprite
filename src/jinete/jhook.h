@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 /**
  * A hook is a way to intercept messages which are sent to a @ref jwidget.
  *
@@ -58,7 +56,5 @@ struct jhook
 
 JHook jhook_new(void);
 void jhook_free(JHook hook);
-
-JI_END_DECLS
 
 #endif /* JINETE_HOOK_H */

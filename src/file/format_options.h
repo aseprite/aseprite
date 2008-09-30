@@ -33,8 +33,8 @@ typedef struct FormatOptions
   int size;
 } FormatOptions;
 
-FormatOptions *format_options_new(int type, int size);
-void format_options_free(FormatOptions *filedata);
+FormatOptions* format_options_new(int type, int size);
+void format_options_free(FormatOptions* filedata);
 
 /*********************************************************************
  Data for BMP files
@@ -71,6 +71,6 @@ typedef struct JpegOptions
   float quality;		/* 1.0 maximum quality */
 } JpegOptions;
 
-JpegOptions *jpeg_options_new(void);
+JpegOptions* jpeg_options_new();
 
 #endif /* FILE_FORMAT_OPTIONS_H */

@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jview_new(void);
 
 bool jview_has_bars(JWidget view);
@@ -59,7 +57,5 @@ void jtheme_scrollbar_info(JWidget scrollbar, int *pos, int *len);
 
 /* for viewable widgets */
 JWidget jwidget_get_view(JWidget viewable_widget);
-
-JI_END_DECLS
 
 #endif /* JINETE_VIEW_H */

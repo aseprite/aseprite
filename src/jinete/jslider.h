@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jslider_new(int min, int max, int value);
 
 void jslider_set_range(JWidget slider, int min, int max);
@@ -45,7 +43,5 @@ int jslider_get_value(JWidget slider);
 
 /* for themes */
 void jtheme_slider_info(JWidget slider, int *min, int *max, int *value);
-
-JI_END_DECLS
 
 #endif /* JINETE_SLIDER_H */

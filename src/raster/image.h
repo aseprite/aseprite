@@ -92,50 +92,50 @@ struct Image
 
 typedef struct ImageMethods
 {
-  int (*init)(Image *image);
-  int (*getpixel)(const Image *image, int x, int y);
-  void (*putpixel)(Image *image, int x, int y, int color);
-  void (*clear)(Image *image, int color);
-  void (*copy)(Image *dst, const Image *src, int x, int y);
-  void (*merge)(Image *dst, const Image *src, int x, int y, int opacity,
+  int (*init)(Image* image);
+  int (*getpixel)(const Image* image, int x, int y);
+  void (*putpixel)(Image* image, int x, int y, int color);
+  void (*clear)(Image* image, int color);
+  void (*copy)(Image* dst, const Image* src, int x, int y);
+  void (*merge)(Image* dst, const Image* src, int x, int y, int opacity,
 		int blend_mode);
-  void (*hline)(Image *image, int x1, int y, int x2, int color);
-  void (*rectfill)(Image *image, int x1, int y1, int x2, int y2, int color);
-  void (*to_allegro)(const Image *image, struct BITMAP *bmp, int x, int y);
+  void (*hline)(Image* image, int x1, int y, int x2, int color);
+  void (*rectfill)(Image* image, int x1, int y1, int x2, int y2, int color);
+  void (*to_allegro)(const Image* image, struct BITMAP *bmp, int x, int y);
 } ImageMethods;
 
-Image *image_new(int imgtype, int w, int h);
-Image *image_new_copy(const Image *image);
-void image_free(Image *image);
+Image* image_new(int imgtype, int w, int h);
+Image* image_new_copy(const Image* image);
+void image_free(Image* image);
 
-int image_depth(Image *image);
+int image_depth(Image* image);
 
-int image_getpixel(const Image *image, int x, int y);
-void image_putpixel(Image *image, int x, int y, int color);
+int image_getpixel(const Image* image, int x, int y);
+void image_putpixel(Image* image, int x, int y, int color);
 
-void image_clear(Image *image, int color);
+void image_clear(Image* image, int color);
 
-void image_copy(Image *dst, const Image *src, int x, int y);
-void image_merge(Image *dst, const Image *src, int x, int y, int opacity,
+void image_copy(Image* dst, const Image* src, int x, int y);
+void image_merge(Image* dst, const Image* src, int x, int y, int opacity,
 		 int blend_mode);
 
-Image *image_crop(const Image *image, int x, int y, int w, int h, int bgcolor);
+Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor);
 
-void image_hline(Image *image, int x1, int y, int x2, int color);
-void image_vline(Image *image, int x, int y1, int y2, int color);
-void image_rect(Image *image, int x1, int y1, int x2, int y2, int color);
-void image_rectfill(Image *image, int x1, int y1, int x2, int y2, int color);
-void image_line(Image *image, int x1, int y1, int x2, int y2, int color);
-void image_ellipse(Image *image, int x1, int y1, int x2, int y2, int color);
-void image_ellipsefill(Image *image, int x1, int y1, int x2, int y2, int color);
+void image_hline(Image* image, int x1, int y, int x2, int color);
+void image_vline(Image* image, int x, int y1, int y2, int color);
+void image_rect(Image* image, int x1, int y1, int x2, int y2, int color);
+void image_rectfill(Image* image, int x1, int y1, int x2, int y2, int color);
+void image_line(Image* image, int x1, int y1, int x2, int y2, int color);
+void image_ellipse(Image* image, int x1, int y1, int x2, int y2, int color);
+void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);
 
-/* void image_putpixel_brush(Image *image, struct Brush *brush, int x, int y, int color); */
-/* void image_hline_brush(Image *image, struct Brush *brush, int x1, int y, int x2, int color); */
-/* void image_line_brush(Image *image, struct Brush *brush, int x1, int y1, int x2, int y2, int color); */
+/* void image_putpixel_brush(Image* image, struct Brush *brush, int x, int y, int color); */
+/* void image_hline_brush(Image* image, struct Brush *brush, int x1, int y, int x2, int color); */
+/* void image_line_brush(Image* image, struct Brush *brush, int x1, int y1, int x2, int y2, int color); */
 
-void image_to_allegro(Image *image, struct BITMAP *bmp, int x, int y);
+void image_to_allegro(Image* image, struct BITMAP *bmp, int x, int y);
 
-void image_convert(Image *dst, const Image *src);
-int image_count_diff(const Image *i1, const Image *i2);
+void image_convert(Image* dst, const Image* src);
+int image_count_diff(const Image* i1, const Image* i2);
 
 #endif				/* RASTER_IMAGE_H */

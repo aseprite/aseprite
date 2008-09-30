@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 struct BITMAP;
 
 /******************/
@@ -77,7 +75,5 @@ JWidget jradio_new(const char *text, int radio_group);
 void jradio_set_group(JWidget radio, int radio_group);
 int jradio_get_group(JWidget radio);
 void jradio_deselect_group(JWidget radio);
-
-JI_END_DECLS
 
 #endif /* JINETE_BUTTON_H */

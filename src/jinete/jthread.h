@@ -34,11 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JThread jthread_new(void (*proc)(void *data), void *data);
 void jthread_join(JThread thread);
-
-JI_END_DECLS
 
 #endif /* JINETE_THREAD_H */

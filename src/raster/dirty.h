@@ -31,45 +31,51 @@ struct Mask;
 
 typedef struct Dirty Dirty;
 
+struct DirtyCol
+{
+  int x, w;
+  char flags;
+  void* data;
+  void* ptr;
+};
+
+struct DirtyRow
+{
+  int y;
+  int cols;
+  DirtyCol* col;
+};
+
 struct Dirty
 {
-  struct Image *image;
+  Image* image;
   int x1, y1;
   int x2, y2;
   int tiled;
   int rows;
-  struct DirtyRow {
-    int y;
-    int cols;
-    struct DirtyCol {
-      int x, w;
-      char flags;
-      void *data;
-      void *ptr;
-    } *col;
-  } *row;
-  struct Mask *mask;
+  DirtyRow* row;
+  Mask* mask;
 };
 
-Dirty *dirty_new(struct Image *image, int x1, int y1, int x2, int y2, int tiled);
-Dirty *dirty_new_copy(Dirty *src);
-Dirty *dirty_new_from_differences(struct Image *image, struct Image *image_diff);
-void dirty_free(Dirty *dirty);
+Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, int tiled);
+Dirty* dirty_new_copy(Dirty* src);
+Dirty* dirty_new_from_differences(Image* image, Image* image_diff);
+void dirty_free(Dirty* dirty);
 
-void dirty_putpixel(Dirty *dirty, int x, int y);
-void dirty_hline(Dirty *dirty, int x1, int y, int x2);
-void dirty_vline(Dirty *dirty, int x, int y1, int y2);
-void dirty_line(Dirty *dirty, int x1, int y1, int x2, int y2);
-void dirty_rect(Dirty *dirty, int x1, int y1, int x2, int y2);
-void dirty_rectfill(Dirty *dirty, int x1, int y1, int x2, int y2);
+void dirty_putpixel(Dirty* dirty, int x, int y);
+void dirty_hline(Dirty* dirty, int x1, int y, int x2);
+void dirty_vline(Dirty* dirty, int x, int y1, int y2);
+void dirty_line(Dirty* dirty, int x1, int y1, int x2, int y2);
+void dirty_rect(Dirty* dirty, int x1, int y1, int x2, int y2);
+void dirty_rectfill(Dirty* dirty, int x1, int y1, int x2, int y2);
 
-void dirty_putpixel_brush(Dirty *dirty, struct Brush *brush, int x, int y);
-void dirty_hline_brush(Dirty *dirty, struct Brush *brush, int x1, int y, int x2);
-void dirty_line_brush(Dirty *dirty, struct Brush *brush, int x1, int y1, int x2, int y2);
+void dirty_putpixel_brush(Dirty* dirty, Brush* brush, int x, int y);
+void dirty_hline_brush(Dirty* dirty, Brush* brush, int x1, int y, int x2);
+void dirty_line_brush(Dirty* dirty, Brush* brush, int x1, int y1, int x2, int y2);
 
-void dirty_save_image_data(Dirty *dirty);
-void dirty_restore_image_data(Dirty *dirty);
-void dirty_swap(Dirty *dirty);
+void dirty_save_image_data(Dirty* dirty);
+void dirty_restore_image_data(Dirty* dirty);
+void dirty_swap(Dirty* dirty);
 
 #endif /* RASTER_DIRTY_H */
 

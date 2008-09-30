@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 struct jquickmenu
 {
   int level;
@@ -47,7 +45,5 @@ struct jquickmenu
 
 JWidget jmenubar_new_quickmenu(JQuickMenu quick_menu);
 JWidget jmenubox_new_quickmenu(JQuickMenu quick_menu);
-
-JI_END_DECLS
 
 #endif /* JINETE_QCKMENU_H */

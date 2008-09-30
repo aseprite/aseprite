@@ -36,8 +36,6 @@
 
 struct BITMAP;
 
-JI_BEGIN_DECLS
-
 /***********************************************************************/
 /* screen related */
 
@@ -107,7 +105,5 @@ int jmouse_y(int antique);
 int jmouse_z(int antique);
 
 bool jmouse_control_infinite_scroll(JRect rect);
-
-JI_END_DECLS
 
 #endif /* JINETE_SYSTEM_H */

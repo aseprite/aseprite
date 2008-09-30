@@ -34,13 +34,9 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jgrid_new(int columns, bool same_width_columns);
 
 void jgrid_add_child(JWidget grid, JWidget child,
 		     int hspan, int vspan, int align);
-
-JI_END_DECLS
 
 #endif /* JINETE_BOX_H */

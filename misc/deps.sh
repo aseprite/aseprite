@@ -14,20 +14,20 @@ CFLAGS="-I.					\
 rm -f makefile.dep
 
 $GCC $CFLAGS							     \
-    src/*.c							     \
-    src/commands/*.c						     \
-    src/commands/fx/*.c						     \
-    src/console/*.c						     \
-    src/core/*.c						     \
-    src/dialogs/*.c						     \
-    src/effect/*.c						     \
-    src/file/*.c						     \
-    src/file/*/*.c						     \
-    src/intl/*.c						     \
-    src/jinete/*.c						     \
-    src/modules/*.c						     \
-    src/raster/*.c						     \
-    src/util/*.c						     \
-    src/widgets/*.c						     \
-    src/widgets/editor/*.c					     \
+    src/*.cpp							     \
+    src/commands/*.cpp						     \
+    src/commands/fx/*.cpp					     \
+    src/console/*.cpp						     \
+    src/core/*.cpp						     \
+    src/dialogs/*.cpp						     \
+    src/effect/*.cpp						     \
+    src/file/*.cpp						     \
+    src/file/*/*.cpp						     \
+    src/intl/*.cpp						     \
+    src/jinete/*.cpp						     \
+    src/modules/*.cpp						     \
+    src/raster/*.cpp						     \
+    src/util/*.cpp						     \
+    src/widgets/*.cpp						     \
+    src/widgets/editor/*.cpp					     \
     | sed -e 's/^\([a-z_\-]*\.o\)/obj\/mingw32\/\1/' >> makefile.dep

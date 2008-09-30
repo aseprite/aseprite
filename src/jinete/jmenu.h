@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jmenu_new(void);
 JWidget jmenubar_new(void);
 JWidget jmenubox_new(void);
@@ -55,7 +53,5 @@ void jmenuitem_set_accel(JWidget menuitem, JAccel accel);
 int jmenuitem_is_highlight(JWidget menuitem);
 
 void jmenu_popup(JWidget menu, int x, int y);
-
-JI_END_DECLS
 
 #endif /* JINETE_MENU_H */

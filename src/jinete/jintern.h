@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 struct FONT;
 struct BITMAP;
 
@@ -98,7 +96,5 @@ void _ji_theme_textbox_draw(struct BITMAP *bmp, JWidget textbox,
 /* jfontbmp.c */
 
 struct FONT *_ji_bitmap2font(struct BITMAP *bmp);
-
-JI_END_DECLS
 
 #endif /* JINETE_LOW_H */

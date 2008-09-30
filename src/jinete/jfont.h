@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 struct BITMAP;
 struct FONT;
 
@@ -59,7 +57,5 @@ void ji_font_set_char_extra_spacing(struct FONT *f, int spacing);
 
 int ji_font_char_len(struct FONT *f, int chr);
 int ji_font_text_len(struct FONT *f, const char *text);
-
-JI_END_DECLS
 
 #endif /* JINETE_FONT_H */

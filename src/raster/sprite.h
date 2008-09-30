@@ -88,57 +88,57 @@ struct Sprite
   struct FormatOptions *format_options;
 };
 
-Sprite *sprite_new(int imgtype, int w, int h);
-Sprite *sprite_new_copy(const Sprite *src_sprite);
-Sprite *sprite_new_flatten_copy(const Sprite *src_sprite);
-Sprite *sprite_new_with_layer(int imgtype, int w, int h);
-void sprite_free(Sprite *sprite);
+Sprite* sprite_new(int imgtype, int w, int h);
+Sprite* sprite_new_copy(const Sprite* src_sprite);
+Sprite* sprite_new_flatten_copy(const Sprite* src_sprite);
+Sprite* sprite_new_with_layer(int imgtype, int w, int h);
+void sprite_free(Sprite* sprite);
 
-bool sprite_is_modified(Sprite *sprite);
-bool sprite_is_associated_to_file(Sprite *sprite);
-bool sprite_is_locked(Sprite *sprite);
-void sprite_mark_as_saved(Sprite *sprite);
+bool sprite_is_modified(Sprite* sprite);
+bool sprite_is_associated_to_file(Sprite* sprite);
+bool sprite_is_locked(Sprite* sprite);
+void sprite_mark_as_saved(Sprite* sprite);
 
-bool sprite_need_alpha(Sprite *sprite);
+bool sprite_need_alpha(Sprite* sprite);
 
-bool sprite_lock(Sprite *sprite);
-void sprite_unlock(Sprite *sprite);
+bool sprite_lock(Sprite* sprite);
+void sprite_unlock(Sprite* sprite);
 
-struct Palette *sprite_get_palette(Sprite *sprite, int frame);
-void sprite_set_palette(Sprite *sprite, struct Palette *pal, bool truncate);
-void sprite_reset_palettes(Sprite *sprite);
+struct Palette* sprite_get_palette(Sprite* sprite, int frame);
+void sprite_set_palette(Sprite* sprite, struct Palette* pal, bool truncate);
+void sprite_reset_palettes(Sprite* sprite);
 
-void sprite_set_filename(Sprite *sprite, const char *filename);
-void sprite_set_format_options(Sprite *sprite, struct FormatOptions *format_options);
-void sprite_set_size(Sprite *sprite, int w, int h);
-void sprite_set_frames(Sprite *sprite, int frames);
-void sprite_set_frlen(Sprite *sprite, int frame, int msecs);
-int sprite_get_frlen(Sprite *sprite, int frame);
-void sprite_set_speed(Sprite *sprite, int msecs);
-void sprite_set_path(Sprite *sprite, const struct Path *path);
-void sprite_set_mask(Sprite *sprite, const struct Mask *mask);
-void sprite_set_layer(Sprite *sprite, struct Layer *layer);
-void sprite_set_frame(Sprite *sprite, int frame);
-void sprite_set_imgtype(Sprite *sprite, int imgtype, int dithering_method);
+void sprite_set_filename(Sprite* sprite, const char *filename);
+void sprite_set_format_options(Sprite* sprite, struct FormatOptions *format_options);
+void sprite_set_size(Sprite* sprite, int w, int h);
+void sprite_set_frames(Sprite* sprite, int frames);
+void sprite_set_frlen(Sprite* sprite, int frame, int msecs);
+int sprite_get_frlen(Sprite* sprite, int frame);
+void sprite_set_speed(Sprite* sprite, int msecs);
+void sprite_set_path(Sprite* sprite, const struct Path *path);
+void sprite_set_mask(Sprite* sprite, const struct Mask *mask);
+void sprite_set_layer(Sprite* sprite, struct Layer *layer);
+void sprite_set_frame(Sprite* sprite, int frame);
+void sprite_set_imgtype(Sprite* sprite, int imgtype, int dithering_method);
 
-struct Layer *sprite_get_background_layer(Sprite *sprite);
+struct Layer *sprite_get_background_layer(Sprite* sprite);
 
-void sprite_add_path(Sprite *sprite, struct Path *path);
-void sprite_remove_path(Sprite *sprite, struct Path *path);
+void sprite_add_path(Sprite* sprite, struct Path *path);
+void sprite_remove_path(Sprite* sprite, struct Path *path);
 
-void sprite_add_mask(Sprite *sprite, struct Mask *mask);
-void sprite_remove_mask(Sprite *sprite, struct Mask *mask);
-struct Mask *sprite_request_mask(Sprite *sprite, const char *name);
+void sprite_add_mask(Sprite* sprite, struct Mask *mask);
+void sprite_remove_mask(Sprite* sprite, struct Mask *mask);
+struct Mask *sprite_request_mask(Sprite* sprite, const char *name);
 
-void sprite_render(Sprite *sprite, struct Image *image, int x, int y);
-void sprite_generate_mask_boundaries(Sprite *sprite);
+void sprite_render(Sprite* sprite, struct Image *image, int x, int y);
+void sprite_generate_mask_boundaries(Sprite* sprite);
 
-struct Layer *sprite_index2layer(Sprite *sprite, int index);
-int sprite_layer2index(const Sprite *sprite, const struct Layer *layer);
-int sprite_count_layers(const Sprite *sprite);
+struct Layer *sprite_index2layer(Sprite* sprite, int index);
+int sprite_layer2index(const Sprite* sprite, const struct Layer *layer);
+int sprite_count_layers(const Sprite* sprite);
 
-int sprite_getpixel(Sprite *sprite, int x, int y);
+int sprite_getpixel(Sprite* sprite, int x, int y);
 
-int sprite_get_memsize(Sprite *sprite);
+int sprite_get_memsize(Sprite* sprite);
 
 #endif				/* RASTER_SPRITE_H */

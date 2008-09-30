@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 struct jlink
 {
   void *data;
@@ -94,7 +92,5 @@ JLink jlist_find(JList list, const void *data);
   for (link=((JList)(list))->end->next, next=link->next;	\
        link!=((JList)(list))->end;				\
        link=next, next=link->next)
-
-JI_END_DECLS
 
 #endif /* JINETE_LIST_H */

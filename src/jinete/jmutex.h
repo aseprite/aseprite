@@ -34,14 +34,10 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JMutex jmutex_new(void);
 void jmutex_free(JMutex mutex);
 
 void jmutex_lock(JMutex mutex);
 void jmutex_unlock(JMutex mutex);
-
-JI_END_DECLS
 
 #endif /* JINETE_MUTEX_H */

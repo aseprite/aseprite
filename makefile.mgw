@@ -33,11 +33,12 @@ WITHICON = 1
 # GCC stuff
 
 CC = gcc
+CPP = g++
 OBJ = .o
-LIB = .a
 EXE = .exe
-SUBMAKEFILE = makefile.mgw
+LIB_EXT = .a
 OBJ_DIR = obj/mingw32
+SUBMAKEFILE = makefile.mgw
 
 ifndef CROSSCOMPILE
   DLLWRAP = dllwrap

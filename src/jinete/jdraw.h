@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 #define JI_COLOR_SHADE(color, r, g, b)		\
   makecol(MID(0, getr(color)+(r), 255),		\
 	  MID(0, getg(color)+(g), 255),		\
@@ -69,7 +67,5 @@ void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg);
 void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
 
 void ji_move_region(JRegion region, int dx, int dy);
-
-JI_END_DECLS
 
 #endif /* JINETE_DRAW_H */

@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jentry_new(int maxsize, const char *format, ...);
 
 void jentry_readonly(JWidget entry, bool state);
@@ -54,7 +52,5 @@ void jentry_deselect_text(JWidget entry);
 void jtheme_entry_info(JWidget entry,
 		       int *scroll, int *cursor, int *state,
 		       int *selbeg, int *selend);
-
-JI_END_DECLS
 
 #endif /* JINETE_ENTRY_H */

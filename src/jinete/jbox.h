@@ -34,10 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jbox_new(int align);
-
-JI_END_DECLS
 
 #endif /* JINETE_BOX_H */

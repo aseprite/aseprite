@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JAccel jaccel_new(void);
 JAccel jaccel_new_copy(JAccel accel);
 void jaccel_free(JAccel accel);
@@ -47,7 +45,5 @@ bool jaccel_is_empty(JAccel accel);
 void jaccel_to_string(JAccel accel, char *buf);
 
 bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode);
-
-JI_END_DECLS
 
 #endif /* JINETE_ACCEL_H */

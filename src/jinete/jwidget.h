@@ -42,8 +42,6 @@
 #define assert_valid_widget(widget) ((void)0)
 #endif
 
-JI_BEGIN_DECLS
-
 struct FONT;
 struct BITMAP;
 
@@ -233,7 +231,5 @@ void jwidget_release_mouse(JWidget widget);
 
 JWidget jwidget_find_name(JWidget widget, const char *name);
 bool jwidget_check_underscored(JWidget widget, int scancode);
-
-JI_END_DECLS
 
 #endif /* JINETE_WIDGET_H */

@@ -36,8 +36,6 @@
 
 #include <stdio.h>
 
-JI_BEGIN_DECLS
-
 struct jstream
 {
   void (*close)(JStream stream);
@@ -64,7 +62,5 @@ int jstream_putc(JStream stream, int ch);
 /* int jstream_puts(JStream stream, const char *s); */
 int jstream_seek(JStream stream, int offset, int whence);
 int jstream_tell(JStream stream);
-
-JI_END_DECLS
 
 #endif /* JINETE_STREAM_H */

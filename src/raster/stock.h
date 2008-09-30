@@ -31,17 +31,17 @@ struct Stock
   int imgtype;		/* type of images (all images in the stock
 			   must be of this type) */
   int nimage;		/* how many images have this stock */
-  struct Image **image;	/* the images-array where the images are */
+  struct Image* *image;	/* the images-array where the images are */
 };
 
-Stock *stock_new(int imgtype);
-Stock *stock_new_copy(const Stock *stock);
-void stock_free(Stock *stock);
+Stock* stock_new(int imgtype);
+Stock* stock_new_copy(const Stock* stock);
+void stock_free(Stock* stock);
 
-int stock_add_image(Stock *stock, struct Image *image);
-void stock_remove_image(Stock *stock, struct Image *image);
-void stock_replace_image(Stock *stock, int index, struct Image *image);
+int stock_add_image(Stock* stock, struct Image* image);
+void stock_remove_image(Stock* stock, struct Image* image);
+void stock_replace_image(Stock* stock, int index, struct Image* image);
 
-struct Image *stock_get_image(Stock *stock, int index);
+struct Image* stock_get_image(Stock* stock, int index);
 
 #endif /* RASTER_STOCK_H */

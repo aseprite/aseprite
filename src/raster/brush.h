@@ -27,24 +27,27 @@ enum {
   BRUSH_LINE,
 };
 
+struct BrushScanline
+{
+  int state, x1, x2;
+};
+
 typedef struct Brush
 {
   int type;			/* type of brush */
   int size;			/* size (diameter) */
   int angle;			/* angle in degrees 0-360 */
-  struct Image *image;		/* image of the brush */
-  struct BrushScanline {
-    int state, x1, x2;
-  } *scanline;
+  Image* image;			/* image of the brush */
+  BrushScanline* scanline;
 } Brush;
 
-Brush *brush_new(void);
-Brush *brush_new_copy(const Brush *brush);
-void brush_free(Brush *brush);
+Brush* brush_new(void);
+Brush* brush_new_copy(const Brush* brush);
+void brush_free(Brush* brush);
 
-void brush_set_type(Brush *brush, int type);
-void brush_set_size(Brush *brush, int size);
-void brush_set_angle(Brush *brush, int angle);
+void brush_set_type(Brush* brush, int type);
+void brush_set_size(Brush* brush, int size);
+void brush_set_angle(Brush* brush, int angle);
 
 #endif /* RASTER_BRUSH_H */
 

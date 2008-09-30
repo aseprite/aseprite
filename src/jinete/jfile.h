@@ -34,10 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget ji_load_widget(const char *filename, const char *name);
-
-JI_END_DECLS
 
 #endif /* JINETE_FILE_H */

@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jwindow_new(const char *text);
 JWidget jwindow_new_desktop(void);
 
@@ -61,7 +59,5 @@ bool jwindow_is_foreground(JWidget window);
 bool jwindow_is_desktop(JWidget window);
 bool jwindow_is_ontop(JWidget window);
 bool jwindow_is_wantfocus(JWidget window);
-
-JI_END_DECLS
 
 #endif /* JINETE_WINDOW_H */

@@ -35,8 +35,6 @@
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
 
-JI_BEGIN_DECLS
-
 /* TODO add mutexes */
 #define JM_MESSAGE(name)				\
   static int _jm_##name = 0;				\
@@ -155,7 +153,5 @@ void jmessage_add_pre_dest(JMessage msg, JWidget widget);
 
 void jmessage_broadcast_to_children(JMessage msg, JWidget widget);
 void jmessage_broadcast_to_parents(JMessage msg, JWidget widget);
-
-JI_END_DECLS
 
 #endif /* JINETE_MSG_H */

@@ -19,13 +19,12 @@ RC = rc
 OBJ = .obj
 EXE = .exe
 LIB_EXT = .lib
-
 OBJ_DIR = obj/msvc
 
 include makefile.lst
 
 CFLAGS = -nologo						\
-         -I. -Isrc -Ithird_party -W1 -Gd -O2			\
+         -I. -Isrc -Ithird_party -W1 -Gd -O2 -EHa		\
 	 -I$(LIBFREETYPE_DIR)/include				\
 	 -I$(LIBJPEG_DIR)					\
 	 -I$(LIBPNG_DIR)					\
@@ -138,7 +137,7 @@ ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 ######################################################################
 # Rules to build the object files
 
-$(OBJ_DIR)/%$(OBJ): %.c
+$(OBJ_DIR)/%$(OBJ): %.cpp
 	$(CC) $(CFLAGS) -Fo$@ -c $<
 
 $(OBJ_DIR)/art.%$(OBJ): %.c

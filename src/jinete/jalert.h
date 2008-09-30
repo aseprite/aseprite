@@ -34,12 +34,8 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jalert_new(const char *format, ...);
 int jalert(const char *format, ...);
-
-JI_END_DECLS
 
 #endif /* JINETE_ALERT_H */
 

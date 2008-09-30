@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jcombobox_new(void);
 
 void jcombobox_editable(JWidget combobox, bool state);
@@ -63,7 +61,5 @@ int jcombobox_get_count(JWidget combobox);
 
 JWidget jcombobox_get_entry_widget(JWidget combobox);
 JWidget jcombobox_get_button_widget(JWidget combobox);
-
-JI_END_DECLS
 
 #endif /* JINETE_COMBOBOX_H */

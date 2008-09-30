@@ -35,15 +35,6 @@
 /* get the system's definition of NULL */
 #include <stddef.h>
 
-/* guard C code in headers, while including them from C++ */
-#ifdef __cplusplus
-  #define JI_BEGIN_DECLS	extern "C" {
-  #define JI_END_DECLS		}
-#else
-  #define JI_BEGIN_DECLS
-  #define JI_END_DECLS
-#endif
-
 /* get bool, false and true definitions for C */
 #ifndef __cplusplus
   #ifdef HAVE_STDBOOL_H
@@ -72,8 +63,6 @@
 
 #undef SGN
 #define SGN(x)       (((x) >= 0) ? 1 : -1)
-
-JI_BEGIN_DECLS
 
 struct jaccel;
 struct jhook;
@@ -231,43 +220,41 @@ enum {
 
 typedef unsigned int		JID;
 
-typedef void			*JThread;
-typedef void			*JMutex;
+typedef void*			JThread;
+typedef void*			JMutex;
 
-typedef struct jaccel		*JAccel;
-typedef struct jhook		*JHook;
-typedef struct jquickmenu	*JQuickMenu;
-typedef struct jlink		*JLink;
-typedef struct jlist		*JList;
-typedef union  jmessage		*JMessage;
-typedef struct jstream		*JStream;
-typedef struct jrect		*JRect;
-typedef struct jregion		*JRegion;
-typedef struct jtheme		*JTheme;
-typedef struct jwidget		*JWidget;
-typedef struct jxml		*JXml;
-typedef struct jxmlattr		*JXmlAttr;
-typedef struct jxmlnode		*JXmlNode;
-typedef struct jxmlelem		*JXmlElem;
-typedef struct jxmltext		*JXmlText;
+typedef struct jaccel*		JAccel;
+typedef struct jhook*		JHook;
+typedef struct jquickmenu*	JQuickMenu;
+typedef struct jlink*		JLink;
+typedef struct jlist*		JList;
+typedef union  jmessage*	JMessage;
+typedef struct jstream*		JStream;
+typedef struct jrect*		JRect;
+typedef struct jregion*		JRegion;
+typedef struct jtheme*		JTheme;
+typedef struct jwidget*		JWidget;
+typedef struct jxml*		JXml;
+typedef struct jxmlattr*	JXmlAttr;
+typedef struct jxmlnode*	JXmlNode;
+typedef struct jxmlelem*	JXmlElem;
+typedef struct jxmltext*	JXmlText;
 
 typedef bool (*JMessageFunc)	 (JWidget widget, JMessage msg);
 typedef void (*JDrawFunc)	 (JWidget widget, JRect clip);
 
 /* without leak detection */
-void *jmalloc (unsigned long n_bytes);
-void *jmalloc0(unsigned long n_bytes);
-void *jrealloc(void *mem, unsigned long n_bytes);
-void  jfree   (void *mem);
-char *jstrdup (const char *string);
+void* jmalloc (unsigned long n_bytes);
+void* jmalloc0(unsigned long n_bytes);
+void* jrealloc(void* mem, unsigned long n_bytes);
+void  jfree   (void* mem);
+char* jstrdup (const char* string);
 
 #define jnew(struct_type, n_structs)					\
-    ((struct_type *)jmalloc(sizeof(struct_type) * (n_structs)))
+    ((struct_type*)jmalloc(sizeof(struct_type) * (n_structs)))
 #define jnew0(struct_type, n_structs)					\
-    ((struct_type *)jmalloc0(sizeof(struct_type) * (n_structs)))
+    ((struct_type*)jmalloc0(sizeof(struct_type) * (n_structs)))
 #define jrenew(struct_type, mem, n_structs)				\
-    ((struct_type *)jrealloc((mem), (sizeof(struct_type) * (n_structs))))
-
-JI_END_DECLS
+    ((struct_type*)jrealloc((mem), (sizeof(struct_type) * (n_structs))))
 
 #endif /* JINETE_BASE_H */

@@ -124,8 +124,8 @@ ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 ######################################################################
 # Rules to build the object files
 
-$(OBJ_DIR)/%$(OBJ): %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+$(OBJ_DIR)/%$(OBJ): %.cpp
+	$(CPP) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/%$(OBJ): %.s
 	$(CC) $(CFLAGS) -x assembler-with-cpp -o $@ -c $<
@@ -153,26 +153,26 @@ $(OBJ_DIR)/zlib.%$(OBJ): %.c
 
 ifndef WITHICON
 $(ASE): $(ASE_DEPS)
-	$(CC) -o $@ $(ASE_OBJS) $(LFLAGS) $(LFLAGS_LAST)
+	$(CPP) -o $@ $(ASE_OBJS) $(LFLAGS) $(LFLAGS_LAST)
 else
 $(OBJ_DIR)/%.res: src/%.rc
 	$(WINDRES) -O coff -o $@ -i $<
 
 $(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
-	$(CC) -o $@ $(ASE_OBJS) $(OBJ_DIR)/icon.res $(LFLAGS) $(LFLAGS_LAST)
+	$(CPP) -o $@ $(ASE_OBJS) $(OBJ_DIR)/icon.res $(LFLAGS) $(LFLAGS_LAST)
 endif
 
 ######################################################################
 # Rules to make tests
 
-src/test/%$(EXE): src/test/%.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
+src/test/%$(EXE): src/test/%.cpp $(COMMON_OBJS)
+	$(CPP) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
-src/test/raster/%$(EXE): src/test/raster/%.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
+src/test/raster/%$(EXE): src/test/raster/%.cpp $(COMMON_OBJS)
+	$(CPP) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
-src/test/jinete/%$(EXE): src/test/jinete/%.c $(COMMON_OBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
+src/test/jinete/%$(EXE): src/test/jinete/%.cpp $(COMMON_OBJS)
+	$(CPP) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
 test: $(TESTS)
 

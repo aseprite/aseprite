@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 struct FONT;
 struct BITMAP;
 
@@ -88,7 +86,5 @@ int ji_color_faceshadow(void);
 int ji_color_hotface(void);
 int ji_color_selected(void);
 int ji_color_background(void);
-
-JI_END_DECLS
 
 #endif /* JINETE_THEME_H */

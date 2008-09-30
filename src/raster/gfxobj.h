@@ -47,11 +47,11 @@ struct GfxObj
 bool gfxobj_init(void);
 void gfxobj_exit(void);
 
-GfxObj *gfxobj_new(int type, int size);
-void gfxobj_free(GfxObj *gfxobj);
+GfxObj* gfxobj_new(int type, int size);
+void gfxobj_free(GfxObj* gfxobj);
 
-GfxObj *gfxobj_find(gfxobj_id id);
+GfxObj* gfxobj_find(gfxobj_id id);
 
-void _gfxobj_set_id(GfxObj *gfxobj, gfxobj_id id);
+void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id);
 
 #endif /* RASTER_GFXOBJ_H */

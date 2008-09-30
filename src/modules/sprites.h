@@ -34,31 +34,31 @@ typedef struct ImageRef
   struct ImageRef *next;
 } ImageRef;
 
-extern struct Sprite *current_sprite;
+extern Sprite* current_sprite;
 
 int init_module_sprites(void);
 void exit_module_sprites(void);
 
 JList get_sprite_list(void);
-struct Sprite *get_first_sprite(void);
-struct Sprite *get_next_sprite(struct Sprite *sprite);
+Sprite* get_first_sprite(void);
+Sprite* get_next_sprite(Sprite* sprite);
 
-struct Sprite *get_clipboard_sprite(void);
-void set_clipboard_sprite(struct Sprite *sprite);
+Sprite* get_clipboard_sprite(void);
+void set_clipboard_sprite(Sprite* sprite);
 
-void sprite_mount(struct Sprite *sprite);
-void sprite_unmount(struct Sprite *sprite);
+void sprite_mount(Sprite* sprite);
+void sprite_unmount(Sprite* sprite);
 
-void set_current_sprite(struct Sprite *sprite);
-void send_sprite_to_top(struct Sprite *sprite);
-void sprite_show(struct Sprite *sprite);
+void set_current_sprite(Sprite* sprite);
+void send_sprite_to_top(Sprite* sprite);
+void sprite_show(Sprite* sprite);
 
 bool is_current_sprite_not_locked(void);
 bool is_current_sprite_writable(void);
 
-struct Sprite *lock_current_sprite(void);
+Sprite* lock_current_sprite(void);
 
-ImageRef *images_ref_get_from_sprite(struct Sprite *sprite, int target, bool write);
+ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write);
 void images_ref_free(ImageRef *image_ref);
 
 #endif /* MODULES_SPRITES_H */

@@ -34,13 +34,9 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 void jwidget_add_tooltip_text(JWidget widget, const char *text);
 
 JWidget jtooltip_window_new(const char *text);
 void jtooltip_window_set_hotregion(JWidget window, JRegion region);
-
-JI_END_DECLS
 
 #endif /* JINETE_VIEW_H */

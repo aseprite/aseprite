@@ -34,13 +34,9 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jpanel_new(int align);
 
 double jpanel_get_pos(JWidget panel);
 void jpanel_set_pos(JWidget panel, double pos);
-
-JI_END_DECLS
 
 #endif /* JINETE_PANEL_H */

@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 enum { JI_XML_ELEM, JI_XML_TEXT };
 
 struct jxml
@@ -122,7 +120,5 @@ void jxmltext_free(JXmlText text);
 
 const char *jxmltext_get_text(JXmlText text);
 void jxmltext_set_text(JXmlText text, const char *value);
-
-JI_END_DECLS
 
 #endif /* JINETE_XML_H */

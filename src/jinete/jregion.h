@@ -34,8 +34,6 @@
 
 #include "jinete/jrect.h"
 
-JI_BEGIN_DECLS
-
 #define JI_REGION_NIL(reg) ((reg)->data && !(reg)->data->numRects)
 /* not a region */
 #define JI_REGION_NAR(reg) ((reg)->data == &ji_broken_data)
@@ -76,8 +74,8 @@ void jregion_free(JRegion reg);
 void jregion_uninit(JRegion reg);
 
 bool jregion_copy(JRegion dst, JRegion src);
-bool jregion_intersect(JRegion new, JRegion reg1, JRegion reg2);
-bool jregion_union(JRegion new, JRegion reg1, JRegion reg2);
+bool jregion_intersect(JRegion newrgn, JRegion reg1, JRegion reg2);
+bool jregion_union(JRegion newrgn, JRegion reg1, JRegion reg2);
 bool jregion_append(JRegion dstrgn, JRegion rgn);
 bool jregion_validate(JRegion badreg, bool *overlap);
 
@@ -97,7 +95,5 @@ bool jregion_equal(JRegion reg1, JRegion reg2);
 bool jregion_notempty(JRegion reg);
 void jregion_empty(JRegion reg);
 JRect jregion_extents(JRegion reg);
-
-JI_END_DECLS
 
 #endif /* JINETE_REGION_H */

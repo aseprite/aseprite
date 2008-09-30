@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 JWidget jlistbox_new(void);
 JWidget jlistitem_new(const char *text);
 
@@ -49,7 +47,5 @@ void jlistbox_select_child(JWidget listbox, JWidget listitem);
 void jlistbox_select_index(JWidget listbox, int index);
 
 void jlistbox_center_scroll(JWidget listbox);
-
-JI_END_DECLS
 
 #endif /* JINETE_LISTBOX_H */

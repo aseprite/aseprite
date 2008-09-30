@@ -34,8 +34,6 @@
 
 #include "jinete/jbase.h"
 
-JI_BEGIN_DECLS
-
 char *ji_file_select(const char *message,
 		     const char *init_path,
 		     const char *exts);
@@ -50,7 +48,5 @@ void ji_file_select_refresh_listbox(void);
 void ji_file_select_enter_to_path(const char *path);
 
 bool ji_dir_exists(const char *filename);
-
-JI_END_DECLS
 
 #endif /* JINETE_FILESEL_H */

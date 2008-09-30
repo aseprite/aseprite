@@ -21,8 +21,8 @@
 
 typedef struct HashBucket
 {
-  char *key;
-  void *data;
+  char* key;
+  void* data;
   struct HashBucket *next;
 } HashBucket;
 
@@ -32,12 +32,12 @@ typedef struct HashTable
   HashBucket **table;
 } HashTable;
 
-HashTable *hash_new(int size);
-void hash_free(HashTable *table, void (*func)(void *));
+HashTable* hash_new(int size);
+void hash_free(HashTable* table, void (*func)(void*));
 
-void *hash_insert(HashTable *table, const char *key, void *data);
-void *hash_lookup(HashTable *table, const char *key);
-void *hash_remove(HashTable *table, const char *key);
-void hash_enumerate(HashTable *table, void (*callback)(const char *, void *));
+void* hash_insert(HashTable* table, const char* key, void* data);
+void* hash_lookup(HashTable* table, const char* key);
+void* hash_remove(HashTable* table, const char* key);
+void hash_enumerate(HashTable* table, void (*callback)(const char*, void*));
 
 #endif /* UTIL_HASH_H */
