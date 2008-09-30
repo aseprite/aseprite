@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "test/test.h"
+#include "tests/test.h"
 #include "jinete/jlist.h"
 
 static void test_append_and_clear(void)

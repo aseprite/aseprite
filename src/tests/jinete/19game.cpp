@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
   install_keyboard();
   install_mouse();
 
-  rgb_map = jmalloc(sizeof(RGB_MAP));
-  color_map = jmalloc(sizeof(COLOR_MAP));
+  rgb_map = (RGB_MAP*)jmalloc(sizeof(RGB_MAP));
+  color_map = (COLOR_MAP*)jmalloc(sizeof(COLOR_MAP));
 
   create_rgb_table(rgb_map, default_palette, NULL);
   create_trans_table(color_map, default_palette, 128, 128, 128, NULL);

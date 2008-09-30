@@ -115,7 +115,7 @@ static int tip_type(void)
 
 static bool tip_hook(JWidget widget, JMessage msg)
 {
-  TipData *tip = jwidget_get_data(widget, tip_type());
+  TipData* tip = reinterpret_cast<TipData*>(jwidget_get_data(widget, tip_type()));
 
   switch (msg->type) {
 
@@ -169,7 +169,7 @@ static JWidget tip_window_new(const char *text)
 
   /* remove decorative widgets */
   JI_LIST_FOR_EACH_SAFE(window->children, link, next) {
-    jwidget_free(link->data);
+    jwidget_free(reinterpret_cast<JWidget>(link->data));
   }
 
   jwidget_add_hook(window, JI_WIDGET, tip_window_hook, NULL);

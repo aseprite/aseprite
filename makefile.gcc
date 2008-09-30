@@ -165,18 +165,18 @@ endif
 ######################################################################
 # Rules to make tests
 
-src/test/%$(EXE): src/test/%.cpp $(COMMON_OBJS)
+src/tests/%$(EXE): src/tests/%.cpp $(COMMON_OBJS)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
-src/test/raster/%$(EXE): src/test/raster/%.cpp $(COMMON_OBJS)
+src/tests/raster/%$(EXE): src/tests/raster/%.cpp $(COMMON_OBJS)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
-src/test/jinete/%$(EXE): src/test/jinete/%.cpp $(COMMON_OBJS)
+src/tests/jinete/%$(EXE): src/tests/jinete/%.cpp $(COMMON_OBJS)
 	$(CPP) $(CFLAGS) -o $@ $^ $(LFLAGS) $(LFLAGS_LAST)
 
-test: $(TESTS)
+tests: $(TESTS)
 
-runtest: $(AUTOTESTS)
+runtests: $(AUTOTESTS)
 	@-$(foreach TEST, $(AUTOTESTS), \
 		echo ./$(TEST) "=====================" ; \
 		./$(TEST) ; \

@@ -17,7 +17,7 @@
  */
 
 #define TEST_GUI
-#include "test/test.h"
+#include "tests/test.h"
 
 /**
  * Tests two widgets in a row, each one of 10x10 pixels.

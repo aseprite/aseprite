@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "test/test.h"
+#include "tests/test.h"
 
 #include "jinete/jinete.h"
 #include "core/file_system.h"
@@ -46,7 +46,7 @@ static void display_fileitem(FileItem *fi, int level, int deep)
   list = fileitem_get_children(fi);
   if (list) {
     JI_LIST_FOR_EACH(list, link) {
-      display_fileitem(link->data, level+1, deep-1);
+      display_fileitem(reinterpret_cast<FileItem*>(link->data), level+1, deep-1);
     }
   }
 }

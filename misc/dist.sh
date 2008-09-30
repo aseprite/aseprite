@@ -54,17 +54,6 @@ libpng_files="third_party/libpng/*.[ch]		\
 	      third_party/libpng/TODO		\
 	      third_party/libpng/Y2KINFO"
 
-lua_files="third_party/lua/COPYRIGHT		\
-	   third_party/lua/HISTORY		\
-	   third_party/lua/README		\
-	   third_party/lua/doc/idx.html		\
-	   third_party/lua/doc/index.html	\
-	   third_party/lua/doc/manual.html	\
-	   third_party/lua/include/*.h		\
-	   third_party/lua/src/*.[ch]		\
-	   third_party/lua/src/lib/*.[ch]	\
-	   third_party/lua/src/lib/README"
-
 zlib_files="third_party/zlib/*.[ch]		\
 	    third_party/zlib/*.txt		\
 	    third_party/zlib/README"
@@ -95,41 +84,59 @@ ase_files="config.h				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\
 	   obj/*.txt				\
-	   obj/djgpp/*.txt			\
 	   obj/mingw32/*.txt			\
+	   obj/msvc/*.txt			\
 	   obj/unix/*.txt			\
-	   src/*.[ch]				\
+	   src/*.cpp				\
 	   src/*.rc				\
-	   src/commands/*.[ch]			\
-	   src/commands/fx/*.[ch]		\
-	   src/console/*.[ch]			\
-	   src/core/*.[ch]			\
-	   src/dialogs/*.[ch]			\
-	   src/effect/*.[ch]			\
-	   src/file/*.[ch]			\
-	   src/file/fli/*.[ch]			\
+	   src/commands/*.cpp			\
+	   src/commands/*.h			\
+	   src/commands/fx/*.cpp		\
+	   src/commands/fx/*.h			\
+	   src/console/*.cpp			\
+	   src/console/*.h			\
+	   src/core/*.cpp			\
+	   src/core/*.h				\
+	   src/dialogs/*.cpp			\
+	   src/dialogs/*.h			\
+	   src/effect/*.cpp			\
+	   src/effect/*.h			\
+	   src/file/*.cpp			\
+	   src/file/*.h				\
+	   src/file/fli/*.cpp			\
+	   src/file/fli/*.h			\
 	   src/file/fli/README			\
-	   src/file/gif/*.[ch]			\
-	   src/intl/*.[ch]			\
-	   src/jinete/*.[ch]			\
-	   src/jinete/themes/*.[ch]		\
+	   src/file/gif/*.cpp			\
+	   src/file/gif/*.h			\
+	   src/intl/*.cpp			\
+	   src/intl/*.h				\
+	   src/jinete/*.cpp			\
+	   src/jinete/*.h			\
+ 	   src/jinete/themes/*.cpp		\
+ 	   src/jinete/themes/*.h		\
 	   src/jinete/themes/Makefile.icons	\
 	   src/jinete/themes/stand/*.pcx	\
-	   src/modules/*.[ch]			\
-	   src/raster/*.[ch]			\
+	   src/modules/*.cpp			\
+	   src/modules/*.h			\
+	   src/raster/*.cpp			\
+	   src/raster/*.h			\
 	   src/raster/x86/*.s			\
-	   src/script/*.[ch]			\
-	   src/script/*.py			\
-	   src/test/*.[ch]			\
-	   src/test/jinete/*.[ch]		\
-	   src/test/jinete/*.jid		\
-	   src/test/jinete/*.pcx		\
-	   src/test/jinete/*.ttf		\
-	   src/test/jinete/*.txt		\
-	   src/test/raster/*.[ch]		\
-	   src/util/*.[ch]			\
-	   src/widgets/*.[ch]			\
-	   src/widgets/editor/*.[ch]		\
+	   src/tests/*.cpp			\
+	   src/tests/*.h			\
+	   src/tests/jinete/*.cpp		\
+	   src/tests/jinete/*.h			\
+	   src/tests/jinete/*.jid		\
+	   src/tests/jinete/*.pcx		\
+	   src/tests/jinete/*.ttf		\
+	   src/tests/jinete/*.txt		\
+	   src/tests/raster/*.cpp		\
+	   src/tests/raster/*.h			\
+	   src/util/*.cpp			\
+	   src/util/*.h				\
+	   src/widgets/*.cpp			\
+	   src/widgets/*.h			\
+	   src/widgets/editor/*.cpp		\
+	   src/widgets/editor/*.h		\
 	   src/widgets/editor/*.txt		\
 	   third_party/*.txt"
 
@@ -146,7 +153,6 @@ cp --parents					\
     $jpeg_files					\
     $libart_files				\
     $libpng_files				\
-    $lua_files					\
     $zlib_files					\
     $ase_files					\
     "$dir/$distdir"

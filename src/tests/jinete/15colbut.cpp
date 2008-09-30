@@ -207,7 +207,7 @@ static bool hooked_window1_msg_proc(JWidget widget, JMessage msg)
   if (msg->type == JM_CLOSE) {
     JLink link, next;
     JI_LIST_FOR_EACH_SAFE(windows, link, next) /* close all windows */
-      jwindow_close(link->data, NULL);
+      jwindow_close(reinterpret_cast<JWidget>(link->data), NULL);
   }
   return FALSE;
 }

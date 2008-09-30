@@ -169,7 +169,7 @@ void draw_filled_bezier_path(BITMAP *bmp, BEZIER_PATH *path, int color)
 
   vertices = jlist_length(shape);
   if (vertices > 0) {
-    points = jmalloc(sizeof(int) * vertices * 2);
+    points = (int*)jmalloc(sizeof(int) * vertices * 2);
 
     c = 0;
     JI_LIST_FOR_EACH(shape, link) {
@@ -263,7 +263,7 @@ int get_bezier_point (BEZIER_PATH *path, float x, float y, BEZIER_NODE **the_nod
 
 int main(void)
 {
-  BITMAP *virtual, *background;
+  BITMAP *virt, *background;
   BEZIER_PATH *path;
   int x[4], y[4];
   int level;
@@ -282,7 +282,7 @@ int main(void)
 
   path = create_bezier_path();
 
-  virtual = create_bitmap(SCREEN_W, SCREEN_H);
+  virt = create_bitmap(SCREEN_W, SCREEN_H);
   background = create_bitmap(SCREEN_W, SCREEN_H);
   clear(background);
 
@@ -401,14 +401,14 @@ int main(void)
                 break;
             }
 
-            blit(background, virtual, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+            blit(background, virt, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
-            draw_bezier_path(virtual, path, DRAW_BEZIER_CONTROL_LINES, makecol(32, 32, 32));
-            draw_bezier_path(virtual, path, DRAW_BEZIER_LINE, makecol(255, 0, 0));
-            draw_bezier_path(virtual, path, DRAW_BEZIER_CONTROL_POINTS, makecol(0, 128, 255));
-            draw_bezier_path(virtual, path, DRAW_BEZIER_NODES, makecol(255, 255, 255));
+            draw_bezier_path(virt, path, DRAW_BEZIER_CONTROL_LINES, makecol(32, 32, 32));
+            draw_bezier_path(virt, path, DRAW_BEZIER_LINE, makecol(255, 0, 0));
+            draw_bezier_path(virt, path, DRAW_BEZIER_CONTROL_POINTS, makecol(0, 128, 255));
+            draw_bezier_path(virt, path, DRAW_BEZIER_NODES, makecol(255, 255, 255));
 
-            blit(virtual, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+            blit(virt, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
           }
           old_x = mouse_x;
           old_y = mouse_y;
@@ -423,16 +423,16 @@ int main(void)
     }
 
     /* draw */
-    blit(background, virtual, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    blit(background, virt, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
     if (!key[KEY_LSHIFT])
-      draw_bezier_path(virtual, path, DRAW_BEZIER_CONTROL_LINES, makecol(32, 32, 32));
+      draw_bezier_path(virt, path, DRAW_BEZIER_CONTROL_LINES, makecol(32, 32, 32));
 
-    draw_bezier_path(virtual, path, DRAW_BEZIER_LINE, makecol(255, 0, 0));
+    draw_bezier_path(virt, path, DRAW_BEZIER_LINE, makecol(255, 0, 0));
 
     if (!key[KEY_LSHIFT]) {
-      draw_bezier_path(virtual, path, DRAW_BEZIER_CONTROL_POINTS, makecol(0, 128, 255));
-      draw_bezier_path(virtual, path, DRAW_BEZIER_NODES, makecol(255, 255, 255));
+      draw_bezier_path(virt, path, DRAW_BEZIER_CONTROL_POINTS, makecol(0, 128, 255));
+      draw_bezier_path(virt, path, DRAW_BEZIER_NODES, makecol(255, 255, 255));
     }
 
     /* filled */
@@ -450,12 +450,12 @@ int main(void)
       while (key[KEY_A]);
     }
 
-    hline(virtual, mouse_x-4, mouse_y, mouse_x+4, makecol(255, 255, 255));
-    vline(virtual, mouse_x, mouse_y-4, mouse_y+4, makecol(255, 255, 255));
-    blit(virtual, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    hline(virt, mouse_x-4, mouse_y, mouse_x+4, makecol(255, 255, 255));
+    vline(virt, mouse_x, mouse_y-4, mouse_y+4, makecol(255, 255, 255));
+    blit(virt, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
   } while (!key[KEY_ESC]);
 
-  destroy_bitmap(virtual);
+  destroy_bitmap(virt);
   destroy_bitmap(background);
 
   allegro_exit();

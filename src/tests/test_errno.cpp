@@ -16,36 +16,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "test/test.h"
+#include "tests/test.h"
 
 #include <errno.h>
+#include "jinete/jthread.h"
 
-#include "raster/blend.h"
-#include "raster/image.h"
+static JThread thread;
 
-#ifdef USE_386_ASM
-static void test(void)
+static void run_thread(void *data)
 {
-  register int t;
-  int x, y;
-
-  for (x=0; x<256; ++x)
-    for (y=0; y<256; ++y)
-      if (_int_mult(x, y) != INT_MULT(x, y, t)) {
-	assert(FALSE);
-      }
+  errno = 0;
+  trace("[second thread] errno: %d\n", errno);
+  assert(errno == 0);
 }
-#endif
 
 int main(int argc, char *argv[])
 {
   test_init();
 
-#ifdef USE_386_ASM
-  test();
-#else
-  trace("WARNING: you have to compile with USE_386_ASM\n");
-#endif
+  errno = 33;
+  trace("[main thread] errno: %d\n", errno);
+  assert(errno == 33);
+
+  thread = jthread_new(run_thread, NULL);
+  jthread_join(thread);
+
+  trace("[main thread] errno: %d\n", errno);
+  assert(errno == 33);
+
+  trace("errno is thread safe\n");
 
   return test_exit();
 }

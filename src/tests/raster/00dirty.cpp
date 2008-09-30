@@ -24,15 +24,16 @@
 
 static void draw_dirty(int x1, int y, int y2, void *data)
 {
-  image_hline(data, x1, y, y2, rand() % 256);
+  image_hline(reinterpret_cast<Image*>(data), x1, y, y2, rand() % 256);
 }
 
 int main (int argc, char *argv[])
 {
-  Brush *brush1, *brush2;
-  Dirty *dirty;
-  Image *image;
-  BITMAP *bmp;
+  Brush* brush1;
+  Brush* brush2;
+  Dirty* dirty;
+  Image* image;
+  BITMAP* bmp;
   int redraw;
   int mx, my, mb, ox, oy, ob;
   int c;

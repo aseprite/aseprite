@@ -1,3 +1,9 @@
+2008-09-30  David A. Capello  <davidcapello@gmail.com>
+
+	* src/tests/: Renamed src/test to src/tests
+
+	* makefile.lst: Project converted to C++
+
 2008-09-29  David A. Capello  <davidcapello@gmail.com>
 
 	* src/widgets/fileview.c (fileview_msg_proc): Fixed a bug when the

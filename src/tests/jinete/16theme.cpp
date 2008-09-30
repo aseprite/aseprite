@@ -129,7 +129,7 @@ void set_my_palette(void)
     pal[c].r = pal[c].b = pal[c].g = 0;
 
   set_palette(pal);
-  rgb_map = malloc(sizeof(RGB_MAP));
+  rgb_map = (RGB_MAP*)malloc(sizeof(RGB_MAP));
   create_rgb_table(rgb_map, pal, NULL);
 }
 

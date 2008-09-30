@@ -158,7 +158,7 @@ void set_my_palette(void)
   bmp = load_bitmap(buf, pal);
   if (bmp) {
     set_palette(pal);
-    rgb_map = malloc(sizeof(RGB_MAP));
+    rgb_map = (RGB_MAP*)malloc(sizeof(RGB_MAP));
     create_rgb_table(rgb_map, pal, NULL);
   }
 }

@@ -33,7 +33,7 @@
 
 #include "jinete/jinete.h"
 
-static char *xml_src =
+static const char *xml_src =
   "<root>"				"\n"
   "  <item>"				"\n"
   "    <value1>text"			"\n"
@@ -123,7 +123,7 @@ static void prt_xmlnode(JXmlNode node, int indent)
   prt("JXmlNode->value = %s\n", node->value);
 
   JI_LIST_FOR_EACH(node->children, link)
-    prt_xmlnode(link->data, indent+1);
+    prt_xmlnode(reinterpret_cast<JXmlNode>(link->data), indent+1);
 }
 
 static void prt(const char *format, ...)
@@ -141,7 +141,7 @@ static void prt(const char *format, ...)
   if (!text)
     final = jstrdup(buf);
   else {
-    final = jmalloc(ustrlen(text) + ustrlen(buf) + 1);
+    final = (char*)jmalloc(ustrlen(text) + ustrlen(buf) + 1);
 
     ustrcpy(final, empty_string);
     ustrcat(final, text);
