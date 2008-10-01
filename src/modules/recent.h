@@ -21,10 +21,10 @@
 
 #include "jinete/jbase.h"
 
-int init_module_recent(void);
-void exit_module_recent(void);
+int init_module_recent();
+void exit_module_recent();
 
-JList get_recent_files_list(void);
+JList get_recent_files_list();
 
 void recent_file(const char *filename);
 void unrecent_file(const char *filename);

@@ -19,15 +19,15 @@
 #ifndef UTIL_RENDER_H
 #define UTIL_RENDER_H
 
-struct Image;
-struct Layer;
-struct Sprite;
+class Image;
+class Layer;
+class Sprite;
 
-void set_preview_image(struct Layer *layer, struct Image *drawable);
+void set_preview_image(Layer* layer, Image* drawable);
 
-struct Image *render_sprite(struct Sprite *sprite,
-			    int source_x, int source_y,
-			    int width, int height,
-			    int frpos, int zoom);
+Image* render_sprite(Sprite* sprite,
+		     int source_x, int source_y,
+		     int width, int height,
+		     int frpos, int zoom);
 
 #endif /* UTIL_RENDER_H */

@@ -33,7 +33,7 @@
 
 #include "jinete/jinete.h"
 
-JRect test1(void);
+JRect test1();
 void test2(JRect pos);
 void test3(JRect pos);
 void test4(JRect pos);
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
 END_OF_MAIN();
 
-JRect test1(void)
+JRect test1()
 {
   JWidget window, box, listbox, button;
   char buf[256];

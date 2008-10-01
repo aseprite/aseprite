@@ -48,7 +48,7 @@ struct jlist
 };
 
 JLink jlink_new(void *data);
-JList jlist_new(void);
+JList jlist_new();
 void jlink_free(JLink link);
 void jlist_free(JList list);
 void jlist_clear(JList list);

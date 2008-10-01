@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JWidget jcombobox_new(void);
+JWidget jcombobox_new();
 
 void jcombobox_editable(JWidget combobox, bool state);
 void jcombobox_clickopen(JWidget combobox, bool state);

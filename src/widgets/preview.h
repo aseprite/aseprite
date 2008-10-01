@@ -24,7 +24,7 @@
 struct Effect;
 
 JWidget preview_new(struct Effect *effect);
-int preview_type(void);
+int preview_type();
 
 void preview_restart(JWidget preview);
 struct Effect *preview_get_effect(JWidget preview);

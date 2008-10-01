@@ -34,7 +34,7 @@
 
 static int speed_timer;
 
-static void speed_timer_callback(void)
+static void speed_timer_callback()
 {
   speed_timer++;
 }

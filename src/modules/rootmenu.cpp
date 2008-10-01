@@ -43,13 +43,13 @@ static JWidget cel_popup_menu;
 static JWidget cel_movement_popup_menu;
 static JWidget filters_popup_menu;
 
-static int load_root_menu(void);
+static int load_root_menu();
 static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename);
 static JWidget convert_xmlelem_to_menu(JXmlElem elem);
 static JWidget convert_xmlelem_to_menuitem(JXmlElem elem);
 static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command);
 
-int init_module_rootmenu(void)
+int init_module_rootmenu()
 {
   root_menu = NULL;
   layer_popup_menu = NULL;
@@ -62,7 +62,7 @@ int init_module_rootmenu(void)
   return load_root_menu();
 }
 
-void exit_module_rootmenu(void)
+void exit_module_rootmenu()
 {
   command_reset_keys();
   jwidget_free(root_menu);
@@ -74,15 +74,15 @@ void exit_module_rootmenu(void)
   if (filters_popup_menu) jwidget_free(filters_popup_menu);
 }
 
-JWidget get_root_menu(void) { return root_menu; }
+JWidget get_root_menu() { return root_menu; }
 
-JWidget get_recent_list_menuitem(void) { return recent_list_menuitem; }
-JWidget get_layer_popup_menu(void) { return layer_popup_menu; }
-JWidget get_frame_popup_menu(void) { return frame_popup_menu; }
-JWidget get_cel_popup_menu(void) { return cel_popup_menu; }
-JWidget get_cel_movement_popup_menu(void) { return cel_movement_popup_menu; }
+JWidget get_recent_list_menuitem() { return recent_list_menuitem; }
+JWidget get_layer_popup_menu() { return layer_popup_menu; }
+JWidget get_frame_popup_menu() { return frame_popup_menu; }
+JWidget get_cel_popup_menu() { return cel_popup_menu; }
+JWidget get_cel_movement_popup_menu() { return cel_movement_popup_menu; }
 
-/* void show_fx_popup_menu(void) */
+/* void show_fx_popup_menu() */
 /* { */
 /*   if (is_interactive() && */
 /*       filters_popup_menuitem && */
@@ -92,7 +92,7 @@ JWidget get_cel_movement_popup_menu(void) { return cel_movement_popup_menu; }
 /*   } */
 /* } */
 
-static int load_root_menu(void)
+static int load_root_menu()
 {
   DIRS *dirs, *dir;
   JLink link;

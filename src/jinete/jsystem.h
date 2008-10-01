@@ -49,7 +49,7 @@ void ji_set_screen(struct BITMAP *bmp);
 
 void ji_add_dirty_rect(JRect rect);
 void ji_add_dirty_region(JRegion region);
-void ji_flip_dirty_region(void);
+void ji_flip_dirty_region();
 void ji_flip_rect(JRect rect);
 
 /***********************************************************************/
@@ -86,7 +86,7 @@ enum {
   JI_CURSORS
 };
 
-int jmouse_get_cursor(void);
+int jmouse_get_cursor();
 int jmouse_set_cursor(int type);
 void jmouse_draw_cursor();
 
@@ -96,7 +96,7 @@ void jmouse_show();
 bool jmouse_is_hidden();
 bool jmouse_is_shown();
 
-bool jmouse_poll(void);
+bool jmouse_poll();
 void jmouse_set_position(int x, int y);
 
 int jmouse_b(int antique);

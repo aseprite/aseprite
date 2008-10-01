@@ -50,7 +50,7 @@ static bool color_change_hook(JWidget widget, void *data);
 static bool target_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
-static void make_preview(void);
+static void make_preview();
 
 static bool cmd_replace_color_enabled(const char *argument)
 {
@@ -194,7 +194,7 @@ static bool preview_change_hook(JWidget widget, void *data)
   return FALSE;
 }
 
-static void make_preview(void)
+static void make_preview()
 {
   color_t from, to;
   int fuzziness;

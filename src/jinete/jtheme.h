@@ -47,25 +47,25 @@ struct jtheme
   int check_icon_size;
   int radio_icon_size;
   int scrollbar_size;
-  void (*destroy)(void);
-  void (*regen)(void);
+  void (*destroy)();
+  void (*regen)();
   struct BITMAP *(*set_cursor)(int type, int *focus_x, int *focus_y);
   void (*init_widget)(JWidget widget);
   JRegion (*get_window_mask)(JWidget widget);
   void (*map_decorative_widget)(JWidget widget);
-  int (*color_foreground)(void);
-  int (*color_disabled)(void);
-  int (*color_face)(void);
-  int (*color_hotface)(void);
-  int (*color_selected)(void);
-  int (*color_background)(void);
+  int (*color_foreground)();
+  int (*color_disabled)();
+  int (*color_face)();
+  int (*color_hotface)();
+  int (*color_selected)();
+  int (*color_background)();
   int nmethods;
   JDrawFunc *methods;
 };
 
-JTheme jtheme_new(void);
-JTheme jtheme_new_standard(void);
-JTheme jtheme_new_simple(void);
+JTheme jtheme_new();
+JTheme jtheme_new_standard();
+JTheme jtheme_new_simple();
 void jtheme_free(JTheme theme);
 
 void jtheme_set_method(JTheme theme, int widget_type, JDrawFunc draw_widget);
@@ -74,17 +74,17 @@ JDrawFunc jtheme_get_method(JTheme theme, int widget_type);
 /* current theme handle */
 
 void ji_set_theme(JTheme theme);
-void ji_set_standard_theme(void);
-JTheme ji_get_theme(void);
-void ji_regen_theme(void);
+void ji_set_standard_theme();
+JTheme ji_get_theme();
+void ji_regen_theme();
 
-int ji_color_foreground(void);
-int ji_color_disabled(void);
-int ji_color_face(void);
-int ji_color_facelight(void);
-int ji_color_faceshadow(void);
-int ji_color_hotface(void);
-int ji_color_selected(void);
-int ji_color_background(void);
+int ji_color_foreground();
+int ji_color_disabled();
+int ji_color_face();
+int ji_color_facelight();
+int ji_color_faceshadow();
+int ji_color_hotface();
+int ji_color_selected();
+int ji_color_background();
 
 #endif /* JINETE_THEME_H */

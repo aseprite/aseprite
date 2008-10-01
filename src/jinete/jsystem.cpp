@@ -80,13 +80,13 @@ static int mouse_scares = 0;
 /* Local routines.  */
 
 static void set_cursor(BITMAP *bmp, int x, int y);
-static void clock_inc(void);
-static void update_mouse_position(void);
+static void clock_inc();
+static void update_mouse_position();
 
-static void capture_covered_area(void);
-static void restore_covered_area(void);
+static void capture_covered_area();
+static void restore_covered_area();
 
-static void clock_inc(void)
+static void clock_inc()
 {
   ji_clock++;
 }
@@ -103,7 +103,7 @@ static void set_cursor(BITMAP *bmp, int x, int y)
   set_mouse_sprite_focus(x, y);
 }
 
-int _ji_system_init(void)
+int _ji_system_init()
 {
   /* Update screen pointer.  */
   ji_set_screen(screen);
@@ -124,7 +124,7 @@ int _ji_system_init(void)
   return 0;
 }
 
-void _ji_system_exit(void)
+void _ji_system_exit()
 {
   ji_set_screen(NULL);
 
@@ -174,7 +174,7 @@ void ji_add_dirty_region(JRegion region)
   jregion_union(ji_dirty_region, ji_dirty_region, region);
 }
 
-void ji_flip_dirty_region(void)
+void ji_flip_dirty_region()
 {
   int c, nrects;
   JRect rc;
@@ -234,7 +234,7 @@ const char *ji_translate_string(const char *msgid)
     return msgid;
 }
 
-int jmouse_get_cursor(void)
+int jmouse_get_cursor()
 {
   return m_cursor;
 }
@@ -354,7 +354,7 @@ bool jmouse_is_shown()
  * 
  * @return Returns TRUE if the mouse moved.
  */
-bool jmouse_poll(void)
+bool jmouse_poll()
 {
   m_b[1] = m_b[0];
   m_x[1] = m_x[0];
@@ -432,7 +432,7 @@ bool jmouse_control_infinite_scroll(JRect rect)
     return FALSE;
 }
 
-static void update_mouse_position(void)
+static void update_mouse_position()
 {
   if (ji_screen == screen) {
     m_x[0] = mouse_x;
@@ -483,7 +483,7 @@ static void update_mouse_position(void)
 #endif
 }
 
-static void capture_covered_area(void)
+static void capture_covered_area()
 {
   if (sprite_cursor != NULL && mouse_scares == 0) {
     assert(covered_area == NULL);
@@ -498,7 +498,7 @@ static void capture_covered_area(void)
   }
 }
 
-static void restore_covered_area(void)
+static void restore_covered_area()
 {
   if (covered_area != NULL) {
     blit(covered_area, ji_screen,

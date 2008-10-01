@@ -146,7 +146,7 @@ bool color_equals(color_t c1, color_t c2)
     GET_COLOR_DATA(c1) == GET_COLOR_DATA(c2);
 }
 
-color_t color_mask(void)
+color_t color_mask()
 {
   return MAKE_COLOR(COLOR_TYPE_MASK, 0);
 }

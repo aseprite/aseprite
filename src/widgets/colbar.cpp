@@ -113,7 +113,7 @@ JWidget colorbar_new(int align)
   return widget;
 }
 
-int colorbar_type(void)
+int colorbar_type()
 {
   static int type = 0;
   if (!type)

@@ -122,7 +122,7 @@ typedef struct AniEditor
 static JWidget current_anieditor = NULL;
 
 static JWidget anieditor_new(Sprite* sprite);
-static int anieditor_type(void);
+static int anieditor_type();
 static AniEditor* anieditor_data(JWidget widget);
 static bool anieditor_msg_proc(JWidget widget, JMessage msg);
 static void anieditor_setcursor(JWidget widget, int x, int y);
@@ -150,7 +150,7 @@ static int anieditor_get_layer_index(JWidget widget, Layer* layer);
 
 static void icon_rect(BITMAP* icon, int x1, int y1, int x2, int y2, bool is_selected, bool is_hot, bool is_clk);
 
-bool animation_editor_is_movingcel(void)
+bool animation_editor_is_movingcel()
 {
   return
     current_anieditor != NULL &&
@@ -160,7 +160,7 @@ bool animation_editor_is_movingcel(void)
 /**
  * Shows the animation editor for the current sprite.
  */
-void switch_between_animation_and_sprite_editor(void)
+void switch_between_animation_and_sprite_editor()
 {
   Sprite* sprite = current_sprite;
   JWidget window;
@@ -222,7 +222,7 @@ static JWidget anieditor_new(Sprite* sprite)
   return widget;
 }
 
-static int anieditor_type(void)
+static int anieditor_type()
 {
   static int type = 0;
   if (!type)
@@ -788,7 +788,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 static void anieditor_setcursor(JWidget widget, int x, int y)
 {
-  AniEditor *anieditor = anieditor_data(widget);
+  AniEditor* anieditor = anieditor_data(widget);
   int mx = x - widget->rc->x1;
   int my = y - widget->rc->y1;
 

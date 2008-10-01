@@ -30,7 +30,7 @@
 static void fill_listbox(RepoDlg *repo_dlg);
 static void kill_listbox(RepoDlg *repo_dlg);
 
-static int repo_listbox_type(void);
+static int repo_listbox_type();
 static bool repo_listbox_msg_proc(JWidget widget, JMessage msg);
 
 static void use_command(JWidget widget, void *data);
@@ -139,7 +139,7 @@ static void kill_listbox(RepoDlg *repo_dlg)
   }
 }
 
-static int repo_listbox_type(void)
+static int repo_listbox_type()
 {
   static int type = 0;
   if (!type)

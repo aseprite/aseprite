@@ -38,7 +38,7 @@
 #define UNIX_LIKE
 #endif
 
-DIRS *dirs_new(void)
+DIRS *dirs_new()
 {
   DIRS* dirs;
 
@@ -192,7 +192,7 @@ DIRS *filename_in_homedir(const char *filename)
   return dirs;
 }
 
-DIRS *cfg_filename_dirs(void)
+DIRS *cfg_filename_dirs()
 {
   DIRS *dirs = dirs_new();
 

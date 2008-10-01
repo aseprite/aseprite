@@ -34,7 +34,7 @@
 
 #include "jinete/jmutex.h"
 
-JMutex jmutex_new(void)
+JMutex jmutex_new()
 {
   assert(system_driver != NULL);
   assert(system_driver->create_mutex != NULL);

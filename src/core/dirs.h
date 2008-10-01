@@ -27,7 +27,7 @@ struct DIRS
   struct DIRS *next;
 };
 
-DIRS *dirs_new(void);
+DIRS *dirs_new();
 void dirs_free(DIRS *dirs);
 void dirs_add_path(DIRS *dirs, const char *path);
 void dirs_cat_dirs(DIRS *dirs, DIRS *more);
@@ -36,7 +36,7 @@ DIRS *filename_in_bindir(const char *filename);
 DIRS *filename_in_datadir(const char *filename);
 DIRS *filename_in_homedir(const char *filename);
 DIRS *filename_in_homedir(const char *filename);
-DIRS *cfg_filename_dirs(void);
+DIRS *cfg_filename_dirs();
 
 #endif /* CORE_DIRS_H */
 

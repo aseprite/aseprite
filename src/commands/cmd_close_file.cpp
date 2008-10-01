@@ -26,7 +26,7 @@
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 
-static bool close_current_sprite(void);
+static bool close_current_sprite();
 
 /* ======================== */
 /* close_file               */
@@ -65,7 +65,7 @@ static void cmd_close_all_files_execute(const char *argument)
  * Closes the current sprite, asking to the user if to save it if it's
  * modified.
  */
-static bool close_current_sprite(void)
+static bool close_current_sprite()
 {
   Sprite *sprite = current_sprite;
 

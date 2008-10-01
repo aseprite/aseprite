@@ -24,8 +24,8 @@
 
 #include "core/color.h"
 
-void ase_config_init(void);
-void ase_config_exit(void);
+void ase_config_init();
+void ase_config_exit();
 
 bool get_config_bool(const char *section, const char *name, bool value);
 void set_config_bool(const char *section, const char *name, bool value);

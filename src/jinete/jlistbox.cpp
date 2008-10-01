@@ -48,7 +48,7 @@ static void listbox_dirty_children(JWidget widget);
 static bool listitem_msg_proc(JWidget widget, JMessage msg);
 static void listitem_request_size(JWidget widget, int *w, int *h);
 
-JWidget jlistbox_new(void)
+JWidget jlistbox_new()
 {
   JWidget widget = jwidget_new(JI_LISTBOX);
 

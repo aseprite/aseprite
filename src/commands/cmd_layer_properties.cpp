@@ -50,7 +50,7 @@ static void cmd_layer_properties_execute(const char *argument)
   button_ok = jbutton_new(_("&OK"));
   button_cancel = jbutton_new(_("&Cancel"));
 
-  if (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) {
+  if (layer->type == GFXOBJ_LAYER_IMAGE) {
     label_bm = jlabel_new(_("Blend mode:"));
     view_bm = jview_new();
     list_bm = jlistbox_new();
@@ -85,7 +85,7 @@ static void cmd_layer_properties_execute(const char *argument)
   jwidget_add_child(box2, label_name);
   jwidget_add_child(box2, entry_name);
   jwidget_add_child(box1, box2);
-  if (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) {
+  if (layer->type == GFXOBJ_LAYER_IMAGE) {
     jwidget_add_child(box1, label_bm);
     jwidget_add_child(box1, view_bm);
   }
@@ -100,7 +100,7 @@ static void cmd_layer_properties_execute(const char *argument)
 
   if (jwindow_get_killer(window) == button_ok) {
     layer_set_name(layer, jwidget_get_text(entry_name));
-    if (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)
+    if (layer->type == GFXOBJ_LAYER_IMAGE)
       layer_set_blend_mode(layer, jlistbox_get_selected_index(list_bm));
 
     update_screen_for_sprite(sprite);

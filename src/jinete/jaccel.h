@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JAccel jaccel_new(void);
+JAccel jaccel_new();
 JAccel jaccel_new_copy(JAccel accel);
 void jaccel_free(JAccel accel);
 

@@ -81,7 +81,7 @@ JWidget paledit_new(Palette *palette, bool editable, int boxsize)
   return widget;
 }
 
-int paledit_type(void)
+int paledit_type()
 {
   static int type = 0;
   if (!type)

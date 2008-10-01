@@ -20,9 +20,9 @@
 #define DIALOGS_OPTIONS_H
 
 void dialogs_select_language(bool force);
-void dialogs_options(void);
+void dialogs_options();
 
-void _setup_mouse_speed(void);
+void _setup_mouse_speed();
 
 #endif /* DIALOGS_OPTIONS_H */
 

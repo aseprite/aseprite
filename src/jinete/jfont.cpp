@@ -304,7 +304,7 @@ static void _font_new_cache_glyph(FONT* f)
 
 /* API */
 
-int _ji_font_init(void)
+int _ji_font_init()
 {
   if (!ji_font_inited) {
     if (FT_Init_FreeType (&ft_library))
@@ -315,7 +315,7 @@ int _ji_font_init(void)
   return 0;
 }
 
-void _ji_font_exit(void)
+void _ji_font_exit()
 {
   if (ji_font_inited) {
     FT_Done_FreeType(ft_library);
@@ -930,12 +930,12 @@ FONT_VTABLE *ji_font_vtable_aa = &_ji_font_vtable_aa;
 #else /* without FreeType */
 /**********************************************************************/
 
-int _ji_font_init(void)
+int _ji_font_init()
 {
   return 0;
 }
 
-void _ji_font_exit(void)
+void _ji_font_exit()
 {
 }
 

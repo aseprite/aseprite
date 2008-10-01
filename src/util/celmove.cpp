@@ -53,7 +53,7 @@ void set_frame_to_handle(Layer *_src_layer, int _src_frame,
   dst_frame = _dst_frame;
 }
 
-void move_cel(void)
+void move_cel()
 {
   Sprite *sprite = current_sprite;
   Cel *src_cel, *dst_cel;
@@ -76,7 +76,7 @@ void move_cel(void)
     undo_open(sprite->undo);
 
     undo_set_layer(sprite->undo, sprite);
-    undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
+    undo_int(sprite->undo, sprite, &sprite->frame);
   }
 
   sprite_set_layer(sprite, dst_layer);
@@ -145,7 +145,7 @@ void move_cel(void)
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
 
-void copy_cel(void)
+void copy_cel()
 {
   Sprite *sprite = current_sprite;
   Cel *src_cel, *dst_cel;
@@ -163,7 +163,7 @@ void copy_cel(void)
     undo_open(sprite->undo);
 
     undo_set_layer(sprite->undo, sprite);
-    undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
+    undo_int(sprite->undo, sprite, &sprite->frame);
   }
 
   sprite_set_layer(sprite, dst_layer);

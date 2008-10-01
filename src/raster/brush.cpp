@@ -30,7 +30,7 @@
 static void clean_brush (Brush *brush);
 static void regenerate_brush (Brush *brush);
 
-Brush *brush_new (void)
+Brush *brush_new ()
 {
   Brush *brush;
 

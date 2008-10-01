@@ -37,7 +37,7 @@ static JMutex objects_mutex;
 static gfxobj_id object_id = 0;		/* last object ID created */
 static JList objects;			/* graphics objects list */
 
-bool gfxobj_init(void)
+bool gfxobj_init()
 {
   objects_mutex = jmutex_new();
   if (!objects_mutex)
@@ -50,40 +50,52 @@ bool gfxobj_init(void)
   return TRUE;
 }
 
-void gfxobj_exit(void)
+void gfxobj_exit()
 {
   jlist_free(objects);
   jmutex_free(objects_mutex);
 }
 
-GfxObj* gfxobj_new(int type, int size)
+//////////////////////////////////////////////////////////////////////
+// GfxObj class
+
+GfxObj::GfxObj(int type)
 {
-  GfxObj* gfxobj = (GfxObj*)jmalloc(size);
-  if (!gfxobj)
-    return NULL;
-
-  jmutex_lock(objects_mutex);
-  {
-    gfxobj->type = type;
-    gfxobj->id = ++object_id;
-    /* gfxobj->properties = NULL; */
-    jlist_append(objects, gfxobj);
-  }
-  jmutex_unlock(objects_mutex);
-
-  return gfxobj;
+  this->type = type;
+  assign_id();
 }
 
-void gfxobj_free(GfxObj* gfxobj)
+GfxObj::GfxObj(const GfxObj& gfxobj)
 {
+  this->type = gfxobj.type;
+  assign_id();
+}
+
+GfxObj::~GfxObj()
+{
+  // we have to remove this object from the list
   jmutex_lock(objects_mutex);
   {
-    jlist_remove(objects, gfxobj);
+    jlist_remove(objects, this);
   }
   jmutex_unlock(objects_mutex);
-
-  jfree(gfxobj);
 }
+
+void GfxObj::assign_id()
+{
+  // we have to assign an ID for this object
+  jmutex_lock(objects_mutex);
+  {
+    this->id = ++object_id;
+
+    // and here we add the object in the list of graphics-objects
+    jlist_append(objects, this);
+  }
+  jmutex_unlock(objects_mutex);
+}
+
+//////////////////////////////////////////////////////////////////////
+
 
 GfxObj* gfxobj_find(gfxobj_id id)
 {

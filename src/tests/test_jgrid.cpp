@@ -22,7 +22,7 @@
 /**
  * Tests two widgets in a row, each one of 10x10 pixels.
  */
-static void test_grid_2x1(void)
+static void test_grid_2x1()
 {
   JWidget grid = jgrid_new(2, FALSE);
   JWidget w1 = jwidget_new(JI_WIDGET);
@@ -58,7 +58,7 @@ static void test_grid_2x1(void)
   jwidget_free(grid);
 }
 
-static void test_grid_2x1_expand2nd(void)
+static void test_grid_2x1_expand2nd()
 {
   JWidget grid = jgrid_new(2, FALSE);
   JWidget w1 = jwidget_new(JI_WIDGET);
@@ -94,7 +94,7 @@ static void test_grid_2x1_expand2nd(void)
   jwidget_free(grid);
 }
 
-static void test_grid_2x1_samewidth(void)
+static void test_grid_2x1_samewidth()
 {
   JWidget grid = jgrid_new(2, TRUE);
   JWidget w1 = jwidget_new(JI_WIDGET);
@@ -163,7 +163,7 @@ static void test_grid_2x1_samewidth(void)
  *  +----------------------------+---+
  * </pre>
  */
-static void test_grid_3x3_intrincate(void)
+static void test_grid_3x3_intrincate()
 {
   JWidget grid = jgrid_new(3, FALSE);
   JWidget w1 = jwidget_new(JI_WIDGET);

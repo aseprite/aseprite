@@ -29,7 +29,7 @@
 #include "file/fli/fli.h"
 #include "modules/gui.h"
 
-static bool my_callback(void);
+static bool my_callback();
 static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 			bool (*callback)());
 
@@ -77,7 +77,7 @@ void play_fli_animation(const char *filename, bool loop, bool fullscreen)
   }
 }
 
-static bool my_callback(void)
+static bool my_callback()
 {
   jmouse_poll();
 
@@ -89,7 +89,7 @@ static bool my_callback(void)
 
 static int speed_timer;
 
-static void speed_timer_callback(void)
+static void speed_timer_callback()
 {
   speed_timer++;
 }

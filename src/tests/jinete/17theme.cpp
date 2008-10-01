@@ -35,9 +35,9 @@
 
 FONT *my_font = NULL;
 
-void set_my_font(void);
-void set_my_palette(void);
-JTheme my_theme_new(void);
+void set_my_font();
+void set_my_palette();
+JTheme my_theme_new();
 
 int main(int argc, char *argv[])
 {
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 
 END_OF_MAIN();
 
-void set_my_font(void)
+void set_my_font()
 {
   char buf[512], argv0[512];
   get_executable_name(argv0, sizeof(argv0));
@@ -148,7 +148,7 @@ void set_my_font(void)
   }
 }
 
-void set_my_palette(void)
+void set_my_palette()
 {
   char buf[512], argv0[512];
   BITMAP *bmp;
@@ -166,7 +166,7 @@ void set_my_palette(void)
 /**********************************************************************/
 /* Theme */
 
-static void theme_regen(void);
+static void theme_regen();
 static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y);
 static void theme_init_widget(JWidget widget);
 static JRegion theme_get_window_mask(JWidget widget);
@@ -181,7 +181,7 @@ static void draw_rect(JRect rect, int color, bool invert);
 static void draw_edge(JRect rect, int color, bool invert);
 static void draw_entry_cursor(JWidget widget, int x, int y);
 
-JTheme my_theme_new(void)
+JTheme my_theme_new()
 {
   JTheme theme;
 
@@ -207,7 +207,7 @@ JTheme my_theme_new(void)
   return theme;
 }
 
-static void theme_regen(void)
+static void theme_regen()
 {
   ji_get_theme()->desktop_color = makecol(0, 128, 196);
 }

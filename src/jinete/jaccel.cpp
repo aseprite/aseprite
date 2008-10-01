@@ -53,7 +53,7 @@ typedef struct KeyCombo
   int scancode;
 } KeyCombo;
 
-JAccel jaccel_new(void)
+JAccel jaccel_new()
 {
   JAccel accel;
 

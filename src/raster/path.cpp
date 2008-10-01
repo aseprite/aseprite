@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <cassert>
 
 #include "raster/blend.h"
 #include "raster/image.h"
@@ -26,77 +27,83 @@
 
 #include "libart_lgpl/libart.h"
 
-static int path_get_element (Path *path, double x, double y);
-static void draw_path (Path *path, Image *image, int color, double brush_size, int fill);
+static int path_get_element(Path* path, double x, double y);
+static void draw_path(Path* path, Image *image, int color, double brush_size, int fill);
 
-Path *path_new (const char *name)
+//////////////////////////////////////////////////////////////////////
+
+Path::Path(const char* name)
+  : GfxObj(GFXOBJ_PATH)
 {
-  Path *path = (Path *)gfxobj_new(GFXOBJ_PATH, sizeof(Path));
-  if (!path)
-    return NULL;
+  this->name = name ? jstrdup(name) : NULL;
+  this->join = PATH_JOIN_ROUND;
+  this->cap = PATH_CAP_ROUND;
+  this->size = 0;
+  this->end = 0;
+  this->bpath = NULL;
 
-  path->name = name ? jstrdup (name) : NULL;
-  path->join = PATH_JOIN_ROUND;
-  path->cap = PATH_CAP_ROUND;
-  path->size = 0;
-  path->end = 0;
-  path->bpath = NULL;
-
-  path_get_element(path, 0, 0);
-  path->bpath[--path->end].code = ART_END;
-
-  return path;
+  path_get_element(this, 0, 0);
+  this->bpath[--this->end].code = ART_END;
 }
 
-Path *path_new_copy(const Path *path)
+Path::Path(const Path& path)
+ : GfxObj(path)
 {
-  Path *path_copy;
-  int c;
+  this->join = path.join;
+  this->cap = path.cap;
+  this->size = path.size;
+  this->end = path.end;
 
-  path_copy = path_new(path->name);
-  if (!path_copy)
-    return NULL;
-
-  path_copy->join = path->join;
-  path_copy->cap = path->cap;
-  path_copy->size = path->size;
-  path_copy->end = path->end;
-
-  path_copy->bpath = art_new (ArtBpath, path_copy->size);
-  for (c=0; c<path_copy->size; c++) {
-    path_copy->bpath[c].code = path->bpath[c].code;
-    path_copy->bpath[c].x1 = path->bpath[c].x1;
-    path_copy->bpath[c].y1 = path->bpath[c].y1;
-    path_copy->bpath[c].x2 = path->bpath[c].x2;
-    path_copy->bpath[c].y2 = path->bpath[c].y2;
-    path_copy->bpath[c].x3 = path->bpath[c].x3;
-    path_copy->bpath[c].y3 = path->bpath[c].y3;
+  this->bpath = art_new(ArtBpath, this->size);
+  for (int c=0; c<this->size; c++) {
+    this->bpath[c].code = path.bpath[c].code;
+    this->bpath[c].x1 = path.bpath[c].x1;
+    this->bpath[c].y1 = path.bpath[c].y1;
+    this->bpath[c].x2 = path.bpath[c].x2;
+    this->bpath[c].y2 = path.bpath[c].y2;
+    this->bpath[c].x3 = path.bpath[c].x3;
+    this->bpath[c].y3 = path.bpath[c].y3;
   }
-
-  return path_copy;
 }
 
-void path_free (Path *path)
+Path::~Path()
 {
-  if (path->bpath)
-    art_free(path->bpath);
-
-  gfxobj_free((GfxObj *)path);
+  if (this->bpath)
+    art_free(this->bpath);
 }
 
-void path_set_join (Path *path, int join)
+//////////////////////////////////////////////////////////////////////
+
+Path* path_new(const char* name)
+{
+  return new Path(name);
+}
+
+Path* path_new_copy(const Path* path)
+{
+  assert(path);
+  return new Path(*path);
+}
+
+void path_free(Path* path)
+{
+  assert(path);
+  delete path;
+}
+
+void path_set_join(Path* path, int join)
 {
   path->join = join;
 }
 
-void path_set_cap (Path *path, int cap)
+void path_set_cap(Path* path, int cap)
 {
   path->cap = cap;
 }
 
-void path_moveto (Path *path, double x, double y)
+void path_moveto(Path* path, double x, double y)
 {
-  int n = path_get_element (path, x, y);
+  int n = path_get_element(path, x, y);
   if (n < 0)
     return;
 
@@ -110,11 +117,11 @@ void path_moveto (Path *path, double x, double y)
   path->bpath[n].y3 = y;
 }
 
-void path_lineto (Path *path, double x, double y)
+void path_lineto(Path* path, double x, double y)
 {
   int n;
 
-  n = path_get_element (path, x, y);
+  n = path_get_element(path, x, y);
   if (n < 0)
     return;
 
@@ -123,10 +130,10 @@ void path_lineto (Path *path, double x, double y)
   path->bpath[n].y3 = y;
 }
 
-void path_curveto (Path *path,
-		   double control_x1, double control_y1,
-		   double control_x2, double control_y2,
-		   double end_x, double end_y)
+void path_curveto(Path* path,
+		  double control_x1, double control_y1,
+		  double control_x2, double control_y2,
+		  double end_x, double end_y)
 {
   int n;
 
@@ -143,7 +150,7 @@ void path_curveto (Path *path,
   path->bpath[n].y3 = end_y;
 }
 
-void path_close (Path *path)
+void path_close(Path* path)
 {
   int n;
 
@@ -160,7 +167,7 @@ void path_close (Path *path)
   }
 }
 
-void path_move (Path *path, double x, double y)
+void path_move(Path* path, double x, double y)
 {
   int n;
 
@@ -174,17 +181,17 @@ void path_move (Path *path, double x, double y)
   }
 }
 
-void path_stroke (Path *path, Image *image, int color, double brush_size)
+void path_stroke(Path* path, Image *image, int color, double brush_size)
 {
   draw_path (path, image, color, brush_size, FALSE);
 }
 
-void path_fill (Path *path, Image *image, int color)
+void path_fill(Path* path, Image *image, int color)
 {
   draw_path (path, image, color, 0, TRUE);
 }
 
-static int path_get_element (Path *path, double x, double y)
+static int path_get_element(Path* path, double x, double y)
 {
   int n = path->end;
 
@@ -371,7 +378,7 @@ static void art_image_svp_aa (const ArtSVP *svp,
   art_svp_render_aa (svp, x0, y0, x1+1, y1+1, art_image_svp_callback, &data);
 }
 
-static void draw_path (Path *path, Image *image, int color, double brush_size, int fill)
+static void draw_path (Path* path, Image *image, int color, double brush_size, int fill)
 {
   int w = image->w;
   int h = image->h;

@@ -41,7 +41,7 @@
 
 static int registered_messages = JM_REGISTERED_MESSAGES;
 
-int ji_register_message_type(void)
+int ji_register_message_type()
 {
   return registered_messages++;
 }

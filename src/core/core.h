@@ -29,11 +29,11 @@ enum {
 
 extern int ase_mode;
 
-bool core_init(void);
-void core_exit(void);
+bool core_init();
+void core_exit();
 
 void verbose_printf(const char *format, ...);
-bool is_interactive(void);
+bool is_interactive();
 
 char *get_pretty_memsize(unsigned int memsize, char *buf, unsigned int bufsize);
 char *get_errno_string(int errnum, char *buf, int size);

@@ -75,24 +75,25 @@ struct BITMAP;
 /* struct Brush; */
 struct ImageMethods;
 
-typedef struct Image Image;
-
-struct Image
+class Image : public GfxObj
 {
-  GfxObj gfxobj;
+public:
   int imgtype;
   int w, h;
-  ase_uint8 *dat;		/* pixmap data */
-  ase_uint8 **line;		/* start of each scanline */
-  struct ImageMethods *method;
+  ase_uint8* dat;		/* pixmap data */
+  ase_uint8** line;		/* start of each scanline */
+  ImageMethods* method;
 #ifdef USE_ALLEGRO_IMAGE
-  struct BITMAP *bmp;
+  BITMAP* bmp;
 #endif
+
+  Image(int imgtype, int w, int h);
+  virtual ~Image();
 };
 
-typedef struct ImageMethods
+struct ImageMethods
 {
-  int (*init)(Image* image);
+  void (*init)(Image* image);
   int (*getpixel)(const Image* image, int x, int y);
   void (*putpixel)(Image* image, int x, int y, int color);
   void (*clear)(Image* image, int color);
@@ -101,8 +102,8 @@ typedef struct ImageMethods
 		int blend_mode);
   void (*hline)(Image* image, int x1, int y, int x2, int color);
   void (*rectfill)(Image* image, int x1, int y1, int x2, int y2, int color);
-  void (*to_allegro)(const Image* image, struct BITMAP *bmp, int x, int y);
-} ImageMethods;
+  void (*to_allegro)(const Image* image, BITMAP* bmp, int x, int y);
+};
 
 Image* image_new(int imgtype, int w, int h);
 Image* image_new_copy(const Image* image);
@@ -133,7 +134,7 @@ void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);
 /* void image_hline_brush(Image* image, struct Brush *brush, int x1, int y, int x2, int color); */
 /* void image_line_brush(Image* image, struct Brush *brush, int x1, int y1, int x2, int y2, int color); */
 
-void image_to_allegro(Image* image, struct BITMAP *bmp, int x, int y);
+void image_to_allegro(Image* image, BITMAP* bmp, int x, int y);
 
 void image_convert(Image* dst, const Image* src);
 int image_count_diff(const Image* i1, const Image* i2);

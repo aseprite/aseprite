@@ -197,7 +197,7 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
   if (!layer_is_readable(layer))
     return;
 
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Image *src_image;

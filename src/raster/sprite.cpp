@@ -35,48 +35,43 @@ static int layer_count_layers(const Layer *layer);
 
 static Sprite* general_copy(const Sprite* src_sprite);
 
-Sprite* sprite_new(int imgtype, int w, int h)
-{
-  Sprite* sprite;
-  Palette* pal;
-  int c;
+//////////////////////////////////////////////////////////////////////
 
+Sprite::Sprite(int imgtype, int w, int h)
+  : GfxObj(GFXOBJ_SPRITE)
+{
   assert(w > 0 && h > 0);
 
-  sprite = (Sprite*)gfxobj_new(GFXOBJ_SPRITE, sizeof(Sprite));
-  if (!sprite)
-    return NULL;
-
   /* main properties */
-  strcpy(sprite->filename, "Sprite");
-  sprite->associated_to_file = FALSE;
-  sprite->imgtype = imgtype;
-  sprite->w = w;
-  sprite->h = h;
-  sprite->frames = 1;
-  sprite->frlens = (int*)jmalloc(sizeof(int)*sprite->frames);
-  sprite->frame = 0;
-  sprite->palettes = jlist_new();
-  sprite->stock = stock_new(imgtype);
-  sprite->set = layer_set_new(sprite);
-  sprite->layer = NULL;
-  sprite->path = NULL;
-  sprite->mask = mask_new();
-  sprite->undo = undo_new(sprite);
-  sprite->repository.paths = jlist_new();
-  sprite->repository.masks = jlist_new();
+  strcpy(this->filename, "Sprite");
+  this->associated_to_file = FALSE;
+  this->imgtype = imgtype;
+  this->w = w;
+  this->h = h;
+  this->frames = 1;
+  this->frlens = (int*)jmalloc(sizeof(int)*this->frames);
+  this->frame = 0;
+  this->palettes = jlist_new();
+  this->stock = stock_new(imgtype);
+  this->set = layer_set_new(this);
+  this->layer = NULL;
+  this->path = NULL;
+  this->mask = mask_new();
+  this->undo = undo_new(this);
+  this->repository.paths = jlist_new();
+  this->repository.masks = jlist_new();
 
   /* boundary stuff */
-  sprite->bound.nseg = 0;
-  sprite->bound.seg = NULL;
+  this->bound.nseg = 0;
+  this->bound.seg = NULL;
 
   /* preferred edition options */
-  sprite->preferred.scroll_x = 0;
-  sprite->preferred.scroll_y = 0;
-  sprite->preferred.zoom = 0;
+  this->preferred.scroll_x = 0;
+  this->preferred.scroll_y = 0;
+  this->preferred.zoom = 0;
 
   /* generate palette */
-  pal = palette_new(0, MAX_PALETTE_COLORS);
+  Palette* pal = palette_new(0, MAX_PALETTE_COLORS);
   switch (imgtype) {
 
     /* for colored images */
@@ -88,34 +83,85 @@ Sprite* sprite_new(int imgtype, int w, int h)
     /* for black and white images */
     case IMAGE_GRAYSCALE:
     case IMAGE_BITMAP:
-      for (c=0; c<256; c++)
+      for (int c=0; c<256; c++)
 	palette_set_entry(pal, c, _rgba(c, c, c, 255));
       break;
   }
-  sprite_set_palette(sprite, pal, TRUE);
-  sprite_set_speed(sprite, 100);
+  sprite_set_palette(this, pal, TRUE);
+  sprite_set_speed(this, 100);
 
   /* multiple access */
-  sprite->locked = FALSE;
-  sprite->mutex = jmutex_new();
+  this->locked = FALSE;
+  this->mutex = jmutex_new();
 
   /* file format options */
-  sprite->format_options = NULL;
+  this->format_options = NULL;
 
   /* free the temporary palette */
   palette_free(pal);
-  
-  return sprite;
+}
+
+Sprite::~Sprite()
+{
+  JLink link;
+
+  assert(!this->locked);
+
+  /* destroy images' stock */
+  if (this->stock)
+    stock_free(this->stock);
+
+  /* destroy paths */
+  if (this->repository.paths) {
+    JI_LIST_FOR_EACH(this->repository.paths, link)
+      path_free(reinterpret_cast<Path*>(link->data));
+
+    jlist_free(this->repository.paths);
+  }
+
+  /* destroy masks */
+  if (this->repository.masks) {
+    JI_LIST_FOR_EACH(this->repository.masks, link)
+      mask_free(reinterpret_cast<Mask*>(link->data));
+
+    jlist_free(this->repository.masks);
+  }
+
+  /* destroy palettes */
+  if (this->palettes) {
+    JI_LIST_FOR_EACH(this->palettes, link)
+      jfree(link->data);
+
+    jlist_free(this->palettes);
+  }
+
+  /* destroy undo, mask, all layers, stock, boundaries */
+  if (this->frlens) jfree(this->frlens);
+  if (this->undo) undo_free(this->undo);
+  if (this->mask) mask_free(this->mask);
+  if (this->set) layer_free(this->set);
+  if (this->bound.seg) jfree(this->bound.seg);
+
+  /* destroy mutex */
+  jmutex_free(this->mutex);
+
+  /* destroy file format options */
+  if (this->format_options)
+    format_options_free(this->format_options);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+Sprite* sprite_new(int imgtype, int w, int h)
+{
+  return new Sprite(imgtype, w, h);
 }
 
 Sprite* sprite_new_copy(const Sprite* src_sprite)
 {
-  Sprite* dst_sprite;
-  int selected_layer;
-
   assert(src_sprite != NULL);
 
-  dst_sprite = general_copy(src_sprite);
+  Sprite* dst_sprite = general_copy(src_sprite);
   if (!dst_sprite)
     return NULL;
 
@@ -138,12 +184,11 @@ Sprite* sprite_new_copy(const Sprite* src_sprite)
 
   /* selected layer */
   if (src_sprite->layer != NULL) { 
-    selected_layer = sprite_layer2index(src_sprite, src_sprite->layer);
+    int selected_layer = sprite_layer2index(src_sprite, src_sprite->layer);
     dst_sprite->layer = sprite_index2layer(dst_sprite, selected_layer);
   }
 
   sprite_generate_mask_boundaries(dst_sprite);
-
   return dst_sprite;
 }
 
@@ -236,56 +281,10 @@ Sprite* sprite_new_with_layer(int imgtype, int w, int h)
  */
 void sprite_free(Sprite* sprite)
 {
-  JLink link;
-
-  assert(sprite != NULL);
-  assert(!sprite->locked);
-
-  /* destroy images' stock */
-  if (sprite->stock)
-    stock_free(sprite->stock);
-
-  /* destroy paths */
-  if (sprite->repository.paths) {
-    JI_LIST_FOR_EACH(sprite->repository.paths, link)
-      path_free(reinterpret_cast<Path*>(link->data));
-
-    jlist_free(sprite->repository.paths);
-  }
-
-  /* destroy masks */
-  if (sprite->repository.masks) {
-    JI_LIST_FOR_EACH(sprite->repository.masks, link)
-      mask_free(reinterpret_cast<Mask*>(link->data));
-
-    jlist_free(sprite->repository.masks);
-  }
-
-  /* destroy palettes */
-  if (sprite->palettes) {
-    JI_LIST_FOR_EACH(sprite->palettes, link)
-      jfree(link->data);
-
-    jlist_free(sprite->palettes);
-  }
-
-  /* destroy undo, mask, all layers, stock, boundaries */
-  if (sprite->frlens) jfree(sprite->frlens);
-  if (sprite->undo) undo_free(sprite->undo);
-  if (sprite->mask) mask_free(sprite->mask);
-  if (sprite->set) layer_free(sprite->set);
-  if (sprite->bound.seg) jfree(sprite->bound.seg);
-
-  /* destroy mutex */
-  jmutex_free(sprite->mutex);
-
-  /* destroy file format options */
-  if (sprite->format_options)
-    format_options_free(sprite->format_options);
-
-  /* destroy gfxobj */
-  gfxobj_free((GfxObj *)sprite);
+  assert(sprite);
+  delete sprite;
 }
+
 
 bool sprite_is_modified(Sprite* sprite)
 {

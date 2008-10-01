@@ -68,7 +68,7 @@ struct jxmltext
 
 /* JXml **********************************************/
 
-JXml jxml_new(void);
+JXml jxml_new();
 JXml jxml_new_from_file(const char *filename);
 JXml jxml_new_from_string(const char *buffer);
 JXml jxml_new_from_stream(JStream stream);

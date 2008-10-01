@@ -27,7 +27,7 @@
 struct Curve;
 
 JWidget curve_editor_new (struct Curve *curve, int x1, int y1, int x2, int y2);
-int curve_editor_type (void);
+int curve_editor_type ();
 
 struct Curve *curve_editor_get_curve (JWidget curve_editor);
 

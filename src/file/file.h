@@ -39,13 +39,13 @@
 #define FILE_LOAD_SEQUENCE_YES		(1<<2)
 #define FILE_LOAD_ONE_FRAME		(1<<3)
 
-struct Cel;
-struct FormatOptions;
-struct Image;
-struct Layer;
-struct Palette;
-struct Sprite;
+class Cel;
+class Image;
+class Layer;
+class Palette;
+class Sprite;
 
+struct FormatOptions;
 struct FileFormat;
 struct FileOp;
 
@@ -53,34 +53,34 @@ struct FileOp;
 typedef enum { FileOpLoad,
 	       FileOpSave } FileOpType;
 
-typedef bool (*FileLoad)(struct FileOp *fop);
-typedef bool (*FileSave)(struct FileOp *fop);
+typedef bool (*FileLoad)(FileOp *fop);
+typedef bool (*FileSave)(FileOp *fop);
 
-typedef struct FormatOptions *(*GetFormatOptions)(struct FileOp *fop);
+typedef FormatOptions*(*GetFormatOptions)(FileOp* fop);
 
 /* load or/and save a file format */
-typedef struct FileFormat
+struct FileFormat
 {
-  const char *name;	/* file format name */
-  const char *exts;	/* extensions (e.g. "jpeg,jpg") */
+  const char* name;	/* file format name */
+  const char* exts;	/* extensions (e.g. "jpeg,jpg") */
   FileLoad load;	/* procedure to read a sprite in this format */
   FileSave save;	/* procedure to write a sprite in this format */
   GetFormatOptions get_options;	/* procedure to configure the output format */
   int flags;
-} FileFormat;
+};
 
 /* structure to load & save files */
-typedef struct FileOp
+struct FileOp
 {
   FileOpType type;		/* operation type: 0=load, 1=save */
-  FileFormat *format;
-  struct Sprite *sprite;	/* loaded sprite, or sprite to be saved */
-  char *filename;		/* file-name to load/save */
+  FileFormat* format;
+  Sprite* sprite;		/* loaded sprite, or sprite to be saved */
+  char* filename;		/* file-name to load/save */
 
   /* shared fields between threads */
   JMutex mutex;			/* mutex to access to the next two fields */
   float progress;		/* progress (1.0 is ready) */
-  char *error;			/* error string */
+  char* error;			/* error string */
   bool done : 1;		/* true if the operation finished */
   bool stop : 1;		/* force the break of the operation */
   bool oneframe : 1;		/* load just one frame (in formats
@@ -90,19 +90,19 @@ typedef struct FileOp
   /* data for sequences */
   struct {
     JList filename_list;	/* all file names to load/save */
-    struct Palette *palette;	/* palette of the sequence */
-    struct Image *image;	/* image to be saved/loaded */
+    Palette* palette;		/* palette of the sequence */
+    Image* image;		/* image to be saved/loaded */
     /* for the progress bar */
     float progress_offset;	/* progress offset from the current frame */
     float progress_fraction;	/* progress fraction for one frame */
     /* to load sequences */
     int frame;
     bool has_alpha;
-    struct Layer *layer;
-    struct Cel *last_cel;
-    struct FormatOptions *format_options;
+    Layer* layer;
+    Cel* last_cel;
+    FormatOptions* format_options;
   } seq;
-} FileOp;
+};
 
 /* available extensions for each load/save operation */
 
@@ -111,13 +111,13 @@ void get_writable_extensions(char *buf, int size);
 
 /* high-level routines to load/save sprites */
 
-struct Sprite *sprite_load(const char *filename);
-int sprite_save(struct Sprite *sprite);
+Sprite* sprite_load(const char *filename);
+int sprite_save(Sprite* sprite);
 
 /* low-level routines to load/save sprites */
 
 FileOp *fop_to_load_sprite(const char *filename, int flags);
-FileOp *fop_to_save_sprite(struct Sprite *sprite);
+FileOp *fop_to_save_sprite(Sprite* sprite);
 void fop_operate(FileOp *fop);
 void fop_done(FileOp *fop);
 void fop_stop(FileOp *fop);
@@ -126,7 +126,7 @@ void fop_free(FileOp *fop);
 void fop_sequence_set_format_options(FileOp *fop, struct FormatOptions *format_options);
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b);
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b);
-struct Image *fop_sequence_image(FileOp *fi, int imgtype, int w, int h);
+Image* fop_sequence_image(FileOp *fi, int imgtype, int w, int h);
 
 void fop_error(FileOp *fop, const char *error, ...);
 void fop_progress(FileOp *fop, float progress);

@@ -68,7 +68,7 @@ static int saved_pixel_n;
 static JRegion clipping_region;
 static JRegion old_clipping_region;
 
-static void generate_cursor_boundaries(void);
+static void generate_cursor_boundaries();
 static void for_each_pixel_of_brush(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
 static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thickness, void (*pixel)(BITMAP *bmp, int x, int y, int color));
@@ -80,7 +80,7 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
 static int point_inside_region(int x, int y, JRegion region);
 
-void editor_cursor_exit(void)
+void editor_cursor_exit()
 {
   if (cursor_bound.seg != NULL)
     jfree(cursor_bound.seg);
@@ -212,7 +212,7 @@ bool editor_cursor_is_subpixel(JWidget widget)
 
 /**********************************************************************/
 
-static void generate_cursor_boundaries(void)
+static void generate_cursor_boundaries()
 {
   if (cursor_bound.seg == NULL || 
       cursor_bound.brush_type != get_brush_type() ||

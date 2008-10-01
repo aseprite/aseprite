@@ -68,7 +68,7 @@ static JRect combobox_get_windowpos(ComboBox *combobox);
 static ComboItem *comboitem_new(const char *text, void *data);
 static void comboitem_free(ComboItem *item);
 
-JWidget jcombobox_new(void)
+JWidget jcombobox_new()
 {
   JWidget widget = jwidget_new(JI_COMBOBOX);
   ComboBox *combobox = jnew(ComboBox, 1);

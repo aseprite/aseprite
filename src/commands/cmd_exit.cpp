@@ -34,7 +34,7 @@ static void cmd_exit_execute(const char *argument)
     /* check if this sprite is modified */
 
     if (sprite_is_modified(sprite) &&
-	(!clipboard || sprite->gfxobj.id != clipboard->gfxobj.id)) {
+	(!clipboard || sprite->id != clipboard->id)) {
       if (jalert(_("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No")) != 1) {
 	return;
       }

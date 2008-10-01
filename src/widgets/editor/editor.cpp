@@ -76,7 +76,7 @@ static void editor_request_size(JWidget widget, int *w, int *h);
 static void editor_setcursor(JWidget widget, int x, int y);
 static void editor_update_candraw(JWidget widget);
 
-JWidget editor_view_new(void)
+JWidget editor_view_new()
 {
   JWidget widget = jview_new();
 
@@ -87,7 +87,7 @@ JWidget editor_view_new(void)
   return widget;
 }
 
-JWidget editor_new(void)
+JWidget editor_new()
 {
   JWidget widget = jwidget_new(editor_type());
   Editor* editor = jnew0(Editor, 1);
@@ -109,7 +109,7 @@ JWidget editor_new(void)
   return widget;
 }
 
-int editor_type(void)
+int editor_type()
 {
   static int type = 0;
   if (!type)
@@ -1042,7 +1042,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       /* move frames position */
       else if (editor->ctrl_pressed) {
 	if ((editor->sprite->layer) &&
-	    (editor->sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)) {
+	    (editor->sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
 	  /* TODO you can move the `Background' with tiled mode */
 	  if (layer_is_background(editor->sprite->layer)) {
 	    jalert(_(PACKAGE

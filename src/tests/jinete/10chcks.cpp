@@ -41,7 +41,7 @@ static int radio_flags[] = {
   JI_TOP, JI_MIDDLE, JI_BOTTOM
 };
 
-static void update_radios (void);
+static void update_radios ();
 static bool hooked_check_msg_proc (JWidget widget, JMessage msg);
 
 int main (int argc, char *argv[])
@@ -116,7 +116,7 @@ int main (int argc, char *argv[])
 
 END_OF_MAIN ();
 
-static void update_radios (void)
+static void update_radios ()
 {
 #define SET_STATUS(index, status)		\
   if (status)					\

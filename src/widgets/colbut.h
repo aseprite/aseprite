@@ -25,7 +25,7 @@
 #define SIGNAL_COLORBUTTON_CHANGE   0x10001
 
 JWidget colorbutton_new(color_t color, int imgtype);
-int colorbutton_type(void);
+int colorbutton_type();
 
 int colorbutton_get_imgtype(JWidget widget);
 

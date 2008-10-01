@@ -41,7 +41,7 @@ typedef struct BEZIER_PATH
   BEZIER_NODE *first, *last;
 } BEZIER_PATH;
 
-BEZIER_PATH *create_bezier_path(void)
+BEZIER_PATH *create_bezier_path()
 {
   BEZIER_PATH *path;
 
@@ -261,7 +261,7 @@ int get_bezier_point (BEZIER_PATH *path, float x, float y, BEZIER_NODE **the_nod
   return GOT_BEZIER_POINT_NULL;
 }
 
-int main(void)
+int main()
 {
   BITMAP *virt, *background;
   BEZIER_PATH *path;

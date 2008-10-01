@@ -295,7 +295,7 @@ void command_add_key(Command *command, const char *string)
   jaccel_add_keys_from_string(command->accel, buf);
 }
 
-void command_reset_keys(void)
+void command_reset_keys()
 {
   Command **cmd;
 

@@ -37,7 +37,7 @@ typedef struct MenuItem
   char *argument;
 } MenuItem;
 
-static int menuitem_type(void);
+static int menuitem_type();
 static bool menuitem_msg_proc(JWidget widget, JMessage msg);
 
 /**
@@ -73,7 +73,7 @@ Command *menuitem_get_command(JWidget widget)
   return menuitem->command;
 }
 
-static int menuitem_type(void)
+static int menuitem_type()
 {
   static int type = 0;
   if (!type)

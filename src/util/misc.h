@@ -22,23 +22,23 @@
 #include "core/color.h"
 #include "widgets/editor.h"	/* for movement modes */
 
-struct Frame;
-struct Image;
-struct Layer;
-struct Sprite;
-struct Undo;
+class Frame;
+class Image;
+class Layer;
+class Sprite;
+class Undo;
 
-struct Image *GetImage(struct Sprite *sprite);
-struct Image *GetImage2(struct Sprite *sprite, int *x, int *y, int *opacity);
+Image* GetImage(Sprite* sprite);
+Image* GetImage2(Sprite* sprite, int *x, int *y, int *opacity);
 
-void LoadPalette(const char *filename);
+void LoadPalette(const char* filename);
 
-void ClearMask(void);
-struct Layer *NewLayerFromMask(struct Sprite *src, struct Sprite *dst);
+void ClearMask();
+Layer* NewLayerFromMask(Sprite* src, Sprite* dst);
 
-struct Image *GetLayerImage(struct Layer *layer, int *x, int *y, int frame);
+Image* GetLayerImage(Layer* layer, int *x, int *y, int frame);
 
-int interactive_move_layer(int mode, bool use_undo, int (*callback)(void));
+int interactive_move_layer(int mode, bool use_undo, int (*callback)());
 
 #endif /* UTIL_MISC_H */
 

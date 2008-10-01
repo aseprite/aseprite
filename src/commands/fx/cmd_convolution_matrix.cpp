@@ -66,7 +66,7 @@ static bool list_change_hook(JWidget widget, void *data);
 static bool target_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
 static bool tiled_change_hook(JWidget widget, void *data);
-static void make_preview(void);
+static void make_preview();
 
 static bool cmd_convolution_matrix_enabled(const char *argument)
 {
@@ -338,7 +338,7 @@ static bool tiled_change_hook(JWidget widget, void *data)
   return FALSE;
 }
 
-static void make_preview(void)
+static void make_preview()
 {
   if (jwidget_is_selected(check_preview))
     preview_restart(preview);

@@ -35,16 +35,16 @@
 #include "jinete/jinete.h"
 
 /* GUI */
-void init_gui(void);
-void shutdown_gui(void);
-bool update_gui(void);
+void init_gui();
+void shutdown_gui();
+bool update_gui();
 void draw_gui();
-float get_speed(void);
-float get_reaction_pos(void);
+float get_speed();
+float get_reaction_pos();
 bool get_back_to_center();
 
 /* Game */
-void play_game(void);
+void play_game();
 
 /**********************************************************************/
 /* Main routine */
@@ -87,7 +87,7 @@ static JWidget window, manager, entry, check;
 
 static bool my_manager_hook(JWidget widget, JMessage msg);
 
-void init_gui(void)
+void init_gui()
 {
   JWidget box1, box2, label, button;
 
@@ -117,14 +117,14 @@ void init_gui(void)
   jwindow_open(window);
 }
 
-void shutdown_gui(void)
+void shutdown_gui()
 {
   jwidget_free(window);
   jmanager_free(manager);
   manager = NULL;
 }
 
-bool update_gui(void)
+bool update_gui()
 {
   if (jmanager_generate_messages(manager))
     jmanager_dispatch_messages(manager);
@@ -139,13 +139,13 @@ void draw_gui()
   //jmanager_dispatch_draw_messages();
 }
 
-float get_speed(void)
+float get_speed()
 {
   float speed = strtod(jwidget_get_text(entry), NULL);
   return speed;
 }
 
-float get_reaction_pos(void)
+float get_reaction_pos()
 {
   return window->rc->x1-2;
 }
@@ -188,19 +188,19 @@ static float ball_dx, ball_dy;
 static int p_y1, p_y2;
 
 static int count = 0;
-static void count_inc(void)
+static void count_inc()
 {
   count++;
 }
 
 END_OF_STATIC_FUNCTION(count_inc);
 
-static void update_game(void);
+static void update_game();
 static void draw_game(BITMAP *bmp);
 static bool move_ball(float *x, float *y, float *dx, float *dy);
 static void calc_ball_dest(float *y);
 
-void play_game(void)
+void play_game()
 {
   bool gameover = FALSE;
   bool trans_mode = FALSE;
@@ -269,7 +269,7 @@ void play_game(void)
   destroy_bitmap(bmp2);
 }
 
-static void update_game(void)
+static void update_game()
 {
   float y, angle;
 

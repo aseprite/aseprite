@@ -108,7 +108,7 @@ static void monitor_free(Monitor *monitor);
 
 /* load & save graphics configuration */
 static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen);
-static void save_gui_config(void);
+static void save_gui_config();
 
 static bool button_with_icon_msg_proc(JWidget widget, JMessage msg);
 static bool manager_msg_proc(JWidget widget, JMessage msg);
@@ -128,7 +128,7 @@ END_OF_STATIC_FUNCTION(display_switch_in_callback);
 /**
  * Initializes GUI.
  */
-int init_module_gui(void)
+int init_module_gui()
 {
   int min_possible_dsk_res = 0;
   int c, w, h, bpp, autodetect;
@@ -278,7 +278,7 @@ int init_module_gui(void)
   return 0;
 }
 
-void exit_module_gui(void)
+void exit_module_gui()
 {
   JLink link;
 
@@ -308,7 +308,7 @@ void exit_module_gui(void)
   remove_timer();
 }
 
-int guiscale(void)
+int guiscale()
 {
   return (JI_SCREEN_W > 512 ? 2: 1);
 }
@@ -347,7 +347,7 @@ static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
   screen_scaling = MID(1, screen_scaling, 4);
 }
 
-static void save_gui_config(void)
+static void save_gui_config()
 {
   set_config_int("GfxMode", "Width", SCREEN_W);
   set_config_int("GfxMode", "Height", SCREEN_H);
@@ -356,7 +356,7 @@ static void save_gui_config(void)
   set_config_int("GfxMode", "Scale", screen_scaling);
 }
 
-int get_screen_scaling(void)
+int get_screen_scaling()
 {
   return screen_scaling;
 }
@@ -395,12 +395,12 @@ void update_screen_for_sprite(Sprite *sprite)
   statusbar_set_text(app_get_statusbar(), -1, "");
 }
 
-void gui_run(void)
+void gui_run()
 {
   jmanager_run(manager);
 }
 
-void gui_feedback(void)
+void gui_feedback()
 {
   /* menu stuff */
   if (next_idle_flags & REBUILD_RECENT_LIST) {
@@ -442,7 +442,7 @@ void gui_feedback(void)
  * This routine should be called everytime you changes the graphics
  * mode.
  */
-void gui_setup_screen(void)
+void gui_setup_screen()
 {
   /* double buffering is required when screen scaling is used */
   double_buffering = (screen_scaling > 1);
@@ -468,7 +468,7 @@ void gui_setup_screen(void)
   save_gui_config();
 }
 
-void reload_default_font(void)
+void reload_default_font()
 {
   JTheme theme = ji_get_theme();
   const char *user_font;
@@ -578,7 +578,7 @@ JWidget load_widget(const char *filename, const char *name)
   return widget;
 }
 
-void schedule_rebuild_recent_list(void)
+void schedule_rebuild_recent_list()
 {
   next_idle_flags |= REBUILD_RECENT_LIST;
 }
@@ -592,7 +592,7 @@ typedef struct HookData {
   void *data;
 } HookData;
 
-static int hook_type(void)
+static int hook_type()
 {
   static int type = 0;
   if (!type)

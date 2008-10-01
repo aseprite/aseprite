@@ -19,11 +19,11 @@
 #ifndef INTL_H
 #define INTL_H
 
-int intl_init(void);
-void intl_exit(void);
+int intl_init();
+void intl_exit();
 
-void intl_load_lang(void);
-const char *intl_get_lang(void);
+void intl_load_lang();
+const char *intl_get_lang();
 void intl_set_lang(const char *lang);
 
 #endif /* !INTL_H */

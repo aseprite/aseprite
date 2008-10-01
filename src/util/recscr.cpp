@@ -40,12 +40,12 @@ static unsigned char *cmap;
 static BITMAP *new_bmp;
 static BITMAP *old_bmp;
 
-bool is_rec_screen(void)
+bool is_rec_screen()
 {
   return rec_file ? TRUE: FALSE;
 }
 
-void rec_screen_on(void)
+void rec_screen_on()
 {
   char buf[512];
   int c;
@@ -103,7 +103,7 @@ void rec_screen_on(void)
   rec_clock = ji_clock;
 }
 
-void rec_screen_off(void)
+void rec_screen_off()
 {
   if (rec_file) {
     /* write the header and close the file */
@@ -121,7 +121,7 @@ void rec_screen_off(void)
   }
 }
 
-void rec_screen_poll(void)
+void rec_screen_poll()
 {
   if (!is_interactive() || !rec_file)
     return;

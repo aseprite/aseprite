@@ -29,17 +29,17 @@ enum {
   ACCEL_MAX
 };
 
-int init_module_rootmenu(void);
-void exit_module_rootmenu(void);
+int init_module_rootmenu();
+void exit_module_rootmenu();
 
-JWidget get_root_menu(void);
+JWidget get_root_menu();
 
-JWidget get_recent_list_menuitem(void);
-JWidget get_layer_popup_menu(void);
-JWidget get_frame_popup_menu(void);
-JWidget get_cel_popup_menu(void);
-JWidget get_cel_movement_popup_menu(void);
+JWidget get_recent_list_menuitem();
+JWidget get_layer_popup_menu();
+JWidget get_frame_popup_menu();
+JWidget get_cel_popup_menu();
+JWidget get_cel_movement_popup_menu();
 
-/* void show_fx_popup_menu(void); */
+/* void show_fx_popup_menu(); */
 
 #endif /* MODULES_ROOTMENU_H */

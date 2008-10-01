@@ -57,7 +57,7 @@ static void button_command(JWidget widget, void *data);
 
 static void update_from_layer(StatusBar *statusbar);
 
-JWidget statusbar_new(void)
+JWidget statusbar_new()
 {
 #define BUTTON_NEW(name, text, data)					\
   (name) = jbutton_new(text);						\
@@ -116,7 +116,7 @@ JWidget statusbar_new(void)
   return widget;
 }
 
-int statusbar_type(void)
+int statusbar_type()
 {
   static int type = 0;
   if (!type)
@@ -408,7 +408,7 @@ static bool slider_change_hook(JWidget widget, void *data)
 
   if (sprite) {
     if ((sprite->layer) &&
-	(sprite->layer->gfxobj.type == GFXOBJ_LAYER_IMAGE)) {
+	(sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
       Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
       if (cel) {

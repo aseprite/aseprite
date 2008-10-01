@@ -46,7 +46,7 @@ typedef struct QuickData
 static void process_quickmenu(JWidget menu, JQuickMenu quick_menu);
 static bool quickmenu_msg_proc(JWidget widget, JMessage msg);
 
-static int quickmenu_type(void)
+static int quickmenu_type()
 {
   static int type = 0;
   if (!type)

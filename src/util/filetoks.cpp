@@ -25,12 +25,12 @@ static int line_num;
 
 static char *tok_fgets (char *buf, int size, FILE *file);
 
-void tok_reset_line_num (void)
+void tok_reset_line_num ()
 {
   line_num = 0;
 }
 
-int tok_line_num (void)
+int tok_line_num ()
 {
   return line_num;
 }

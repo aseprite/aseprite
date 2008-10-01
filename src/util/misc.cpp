@@ -116,7 +116,7 @@ void LoadPalette(const char *filename)
 }
 
 /* clears the mask region in the current sprite with the BG color */
-void ClearMask(void)
+void ClearMask()
 {
   Sprite *sprite = current_sprite;
   int x, y, u, v, putx, puty;
@@ -263,7 +263,7 @@ Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
 
 /* Gives to the user the possibility to move the sprite's layer in the
    current editor, returns TRUE if the position was changed.  */
-int interactive_move_layer(int mode, bool use_undo, int (*callback)(void))
+int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   JWidget editor = current_editor;
   Sprite *sprite = editor_get_sprite (editor);

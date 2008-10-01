@@ -118,7 +118,7 @@ static void flush_config(CONFIG *cfg)
  *  Writes out the config file to disk if the contents
  *  have changed.
  */
-void flush_config_file(void)
+void flush_config_file()
 {
    flush_config(config[0]);
 }
@@ -165,7 +165,7 @@ static void destroy_config(CONFIG *cfg)
  *  Called at shutdown time to free memory being used by the config routines,
  *  and write any changed data out to disk.
  */
-static void config_cleanup(void)
+static void config_cleanup()
 {
    CONFIG_HOOK *hook, *nexthook;
    int i;
@@ -564,7 +564,7 @@ void override_config_data(AL_CONST char *data, int length)
 /* push_config_state:
  *  Pushes the current config state onto the stack.
  */
-void push_config_state(void)
+void push_config_state()
 {
    int i;
 
@@ -582,7 +582,7 @@ void push_config_state(void)
 /* pop_config_state:
  *  Pops the current config state off the stack.
  */
-void pop_config_state(void)
+void pop_config_state()
 {
    int i;
 

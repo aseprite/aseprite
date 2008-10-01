@@ -24,33 +24,31 @@
 #define HOOK(widget, signal, signal_handler, data)			\
   hook_signal((widget), (signal), (signal_handler), (void *)(data))
 
-struct Sprite;
+class Sprite;
 struct Monitor;
 
-typedef struct Monitor Monitor;
+int init_module_gui();
+void exit_module_gui();
 
-int init_module_gui(void);
-void exit_module_gui(void);
+int guiscale();
 
-int guiscale(void);
-
-int get_screen_scaling(void);
+int get_screen_scaling();
 void set_screen_scaling(int scaling);
 
-void update_screen_for_sprite(struct Sprite *sprite);
+void update_screen_for_sprite(Sprite* sprite);
 
-void gui_run(void);
-void gui_feedback(void);
-void gui_setup_screen(void);
+void gui_run();
+void gui_feedback();
+void gui_setup_screen();
 
-void reload_default_font(void);
+void reload_default_font();
 
 void load_window_pos(JWidget window, const char *section);
 void save_window_pos(JWidget window, const char *section);
 
 JWidget load_widget(const char *filename, const char *name);
 
-void schedule_rebuild_recent_list(void);
+void schedule_rebuild_recent_list();
 
 void hook_signal(JWidget widget,
 		 int signal_num,
@@ -69,8 +67,8 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4);
 /********************************************************************/
 /* monitors */
 
-Monitor *add_gui_monitor(void (*proc)(void *),
-			 void (*free)(void *), void *data);
-void remove_gui_monitor(Monitor *monitor);
+Monitor* add_gui_monitor(void (*proc)(void*),
+			 void (*free)(void*), void* data);
+void remove_gui_monitor(Monitor* monitor);
 
 #endif /* MODULES_GUI_H */

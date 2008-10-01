@@ -25,53 +25,67 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 
-static void shrink_mask (Mask *mask);
+static void shrink_mask(Mask* mask);
 
-Mask *mask_new(void)
+//////////////////////////////////////////////////////////////////////
+
+Mask::Mask()
+  : GfxObj(GFXOBJ_MASK)
 {
-  Mask *mask = (Mask *)gfxobj_new(GFXOBJ_MASK, sizeof(Mask));
-  if (!mask)
-    return NULL;
-
-  mask->name = NULL;
-  mask->x = 0;
-  mask->y = 0;
-  mask->w = 0;
-  mask->h = 0;
-  mask->bitmap = NULL;
-
-  return mask;
+  initialize();
 }
 
-Mask *mask_new_copy(const Mask *mask)
+Mask::Mask(const Mask& mask)
+  : GfxObj(mask)
 {
-  Mask *copy;
-
-  copy = mask_new();
-  if (!copy)
-    return NULL;
-
-  mask_copy(copy, mask);
-  return copy;
+  initialize();
+  mask_copy(this, &mask);
 }
 
-void mask_free(Mask *mask)
+Mask::~Mask()
 {
-  if (mask->name)
-    jfree(mask->name);
+  if (this->name)
+    jfree(this->name);
 
-  if (mask->bitmap)
-    image_free(mask->bitmap);
-
-  gfxobj_free((GfxObj *)mask);
+  if (this->bitmap)
+    image_free(this->bitmap);
 }
 
-int mask_is_empty(Mask *mask)
+void Mask::initialize()
+{
+  this->name = NULL;
+  this->x = 0;
+  this->y = 0;
+  this->w = 0;
+  this->h = 0;
+  this->bitmap = NULL;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+Mask* mask_new()
+{
+  return new Mask();
+}
+
+Mask* mask_new_copy(const Mask* mask)
+{
+  assert(mask);
+  return new Mask(*mask);
+}
+
+void mask_free(Mask* mask)
+{
+  assert(mask);
+  delete mask;
+}
+
+int mask_is_empty(Mask* mask)
 {
   return (!mask->bitmap)? TRUE: FALSE;
 }
 
-void mask_set_name(Mask *mask, const char *name)
+void mask_set_name(Mask* mask, const char *name)
 {
   if (mask->name)
     jfree(mask->name);
@@ -79,7 +93,7 @@ void mask_set_name(Mask *mask, const char *name)
   mask->name = name ? jstrdup(name): NULL;
 }
 
-void mask_copy(Mask *mask_dst, const Mask *mask_src)
+void mask_copy(Mask* mask_dst, const Mask* mask_src)
 {
   mask_none(mask_dst);
 
@@ -96,13 +110,13 @@ void mask_copy(Mask *mask_dst, const Mask *mask_src)
   }
 }
 
-void mask_move(Mask *mask, int x, int y)
+void mask_move(Mask* mask, int x, int y)
 {
   mask->x += x;
   mask->y += y;
 }
 
-void mask_none(Mask *mask)
+void mask_none(Mask* mask)
 {
   if (mask->bitmap) {
     image_free(mask->bitmap);
@@ -114,7 +128,7 @@ void mask_none(Mask *mask)
   }
 }
 
-void mask_invert(Mask *mask)
+void mask_invert(Mask* mask)
 {
   if (mask->bitmap) {
     ase_uint8 *address;
@@ -134,7 +148,7 @@ void mask_invert(Mask *mask)
   }
 }
 
-void mask_replace(Mask *mask, int x, int y, int w, int h)
+void mask_replace(Mask* mask, int x, int y, int w, int h)
 {
   mask->x = x;
   mask->y = y;
@@ -148,7 +162,7 @@ void mask_replace(Mask *mask, int x, int y, int w, int h)
   image_clear(mask->bitmap, 1);
 }
 
-void mask_union(Mask *mask, int x, int y, int w, int h)
+void mask_union(Mask* mask, int x, int y, int w, int h)
 {
   if (!mask->bitmap) {
     mask->x = x;
@@ -179,7 +193,7 @@ void mask_union(Mask *mask, int x, int y, int w, int h)
 		 x-mask->x+w-1, y-mask->y+h-1, 1);
 }
 
-void mask_subtract(Mask *mask, int x, int y, int w, int h)
+void mask_subtract(Mask* mask, int x, int y, int w, int h)
 {
   if (mask->bitmap) {
     image_rectfill(mask->bitmap,
@@ -189,7 +203,7 @@ void mask_subtract(Mask *mask, int x, int y, int w, int h)
   }
 }
 
-void mask_intersect(Mask *mask, int x, int y, int w, int h)
+void mask_intersect(Mask* mask, int x, int y, int w, int h)
 {
   if (mask->bitmap) {
     Image *image;
@@ -211,13 +225,13 @@ void mask_intersect(Mask *mask, int x, int y, int w, int h)
   }
 }
 
-void mask_merge(Mask *mask, const Mask *src)
+void mask_merge(Mask* mask, const Mask* src)
 {
   /* TODO!!! */
   assert(FALSE);
 }
 
-void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
+void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
 {
   Image *dst;
 
@@ -324,7 +338,7 @@ void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
   shrink_mask(mask);
 }
 
-/* void mask_fill (Mask *mask, Image *image, int color) */
+/* void mask_fill (Mask* mask, Image *image, int color) */
 /* { */
 /*   if (mask) { */
 /*     ase_uint8 *address; */
@@ -345,7 +359,7 @@ void mask_by_color(Mask *mask, const Image *src, int color, int fuzziness)
 /*   } */
 /* } */
 
-void mask_crop(Mask *mask, const Image *image)
+void mask_crop(Mask* mask, const Image *image)
 {
 #define ADVANCE(beg, end, o_end, cmp, op, getpixel1, getpixel)	\
   {								\
@@ -409,7 +423,7 @@ void mask_crop(Mask *mask, const Image *image)
 #undef ADVANCE
 }
 
-static void shrink_mask(Mask *mask)
+static void shrink_mask(Mask* mask)
 {
 #define SHRINK_SIDE(u_begin, u_op, u_final, u_add,			\
 		    v_begin, v_op, v_final, v_add, U, V, var)		\

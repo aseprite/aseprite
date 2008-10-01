@@ -27,7 +27,7 @@
 #define SIGNAL_COLORVIEWER_SELECT   0x10002
 
 JWidget colorviewer_new(color_t color, int imgtype);
-int colorviewer_type(void);
+int colorviewer_type();
 
 int colorviewer_get_imgtype(JWidget colorviewer);
 

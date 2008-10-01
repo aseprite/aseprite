@@ -52,7 +52,7 @@ JWidget *_ji_get_widget_array(int *n)
   return widgets;
 }
 
-JWidget _ji_get_new_widget(void)
+JWidget _ji_get_new_widget()
 {
   JID widget_id;
 
@@ -97,7 +97,7 @@ void _ji_free_widget(JWidget widget)
   widgets[widget->id]->id = 0;
 }
 
-void _ji_free_all_widgets(void)
+void _ji_free_all_widgets()
 {
   int c;
 

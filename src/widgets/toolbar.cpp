@@ -37,7 +37,7 @@
 static bool tools_change_hook(JWidget widget, void *data);
 static void conf_command(JWidget widget);
 
-JWidget toolbar_new(void)
+JWidget toolbar_new()
 {
   JWidget box, confbutton, tools;
   char buf[1024];		/* TODO warning buffer overflow */

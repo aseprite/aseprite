@@ -29,7 +29,7 @@
 #define SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED	0x10008
 
 JWidget fileview_new(FileItem *start_folder, const char *exts);
-int fileview_type(void);
+int fileview_type();
 
 FileItem *fileview_get_current_folder(JWidget fileview);
 FileItem *fileview_get_selected(JWidget fileview);

@@ -116,7 +116,7 @@ JWidget curve_editor_new(Curve *curve, int x1, int y1, int x2, int y2)
   return widget;
 }
 
-int curve_editor_type(void)
+int curve_editor_type()
 {
   static int type = 0;
   if (!type)

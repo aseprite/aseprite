@@ -28,38 +28,32 @@
     _image_bitmap_next_bit(d, address);		\
   }
 
-static int bitmap_regenerate_lines(Image *image)
+static void bitmap_regenerate_lines(Image *image)
 {
   ase_uint8 *address = BYTES(image);
   int y;
 
   if (LINES(image))
-    jfree(LINES(image));
+    delete LINES(image);
 
-  image->line = (ase_uint8**)jmalloc(sizeof(ase_uint8*) * image->h);
-  if (!LINES(image))
-    return -1;
+  image->line = new ase_uint8*[image->h];
 
   for (y=0; y<image->h; y++) {
     LINES(image)[y] = address;
     address += (image->w+7)/8;
   }
-
-  return 0;
 }
 
-static int bitmap_init(Image *image)
+static void bitmap_init(Image *image)
 {
-  image->dat = (ase_uint8*)jmalloc(sizeof(ase_uint8) * ((image->w+7)/8) * image->h);
-  if (!BYTES(image))
-    return -1;
-
-  if (bitmap_regenerate_lines(image) < 0) {
-    jfree(BYTES(image));
-    return -1;
+  image->dat = new ase_uint8[((image->w+7)/8) * image->h];
+  try {
+    bitmap_regenerate_lines(image);
   }
-
-  return 0;
+  catch (...) {
+    delete BYTES(image);
+    throw;
+  }
 }
 
 static int bitmap_getpixel(const Image *image, int x, int y)

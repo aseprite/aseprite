@@ -19,11 +19,11 @@
 #ifndef UTIL_THMBNAIL_H
 #define UTIL_THMBNAIL_H
 
-struct Cel;
-struct Sprite;
+class Cel;
+class Sprite;
 
-void destroy_thumbnails(void);
-struct BITMAP *generate_thumbnail(struct Layer *layer, struct Cel *cel, struct Sprite *sprite);
+void destroy_thumbnails();
+struct BITMAP *generate_thumbnail(Layer* layer, Cel* cel, Sprite* sprite);
 
 #endif /* UTIL_THMBNAIL_H */
 

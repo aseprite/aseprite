@@ -47,12 +47,12 @@ static JTheme ji_standard_theme = NULL;
 static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
 		      int fg_color, int bg_color, bool fill_bg);
 
-int _ji_theme_init(void)
+int _ji_theme_init()
 {
   return 0;
 }
 
-void _ji_theme_exit(void)
+void _ji_theme_exit()
 {
   if (ji_standard_theme) {
     jtheme_free(ji_standard_theme);
@@ -60,7 +60,7 @@ void _ji_theme_exit(void)
   }
 }
 
-JTheme jtheme_new(void)
+JTheme jtheme_new()
 {
   JTheme theme = (JTheme)jmalloc(sizeof(struct jtheme));
   if (!theme)
@@ -141,7 +141,7 @@ void ji_set_theme(JTheme theme)
   }
 }
 
-void ji_set_standard_theme(void)
+void ji_set_standard_theme()
 {
   if (!ji_standard_theme) {
     ji_standard_theme = jtheme_new_standard();
@@ -152,12 +152,12 @@ void ji_set_standard_theme(void)
   ji_set_theme(ji_standard_theme);
 }
 
-JTheme ji_get_theme(void)
+JTheme ji_get_theme()
 {
   return ji_current_theme;
 }
 
-void ji_regen_theme(void)
+void ji_regen_theme()
 {
   if (ji_current_theme) {
     /* hide the cursor */
@@ -176,7 +176,7 @@ void ji_regen_theme(void)
   }
 }
 
-int ji_color_foreground(void)
+int ji_color_foreground()
 {
   if (ji_current_theme && ji_current_theme->color_foreground)
     return (*ji_current_theme->color_foreground)();
@@ -184,7 +184,7 @@ int ji_color_foreground(void)
     return makecol(0, 0, 0);
 }
 
-int ji_color_disabled(void)
+int ji_color_disabled()
 {
   if (ji_current_theme && ji_current_theme->color_disabled)
     return (*ji_current_theme->color_disabled)();
@@ -192,7 +192,7 @@ int ji_color_disabled(void)
     return makecol(128, 128, 128);
 }
 
-int ji_color_face(void)
+int ji_color_face()
 {
   if (ji_current_theme && ji_current_theme->color_face)
     return (*ji_current_theme->color_face)();
@@ -200,7 +200,7 @@ int ji_color_face(void)
     return makecol(255, 255, 255);
 }
 
-int ji_color_facelight(void)
+int ji_color_facelight()
 {
   register int c = ji_color_face();
   return makecol(MIN(getr(c)+64, 255),
@@ -208,7 +208,7 @@ int ji_color_facelight(void)
 		 MIN(getb(c)+64, 255));
 }
 
-int ji_color_faceshadow(void)
+int ji_color_faceshadow()
 {
   register int c = ji_color_face();
   return makecol(MAX(getr(c)-64, 0),
@@ -216,7 +216,7 @@ int ji_color_faceshadow(void)
 		 MAX(getb(c)-64, 0));
 }
 
-int ji_color_hotface(void)
+int ji_color_hotface()
 {
   if (ji_current_theme && ji_current_theme->color_hotface)
     return (*ji_current_theme->color_hotface)();
@@ -224,7 +224,7 @@ int ji_color_hotface(void)
     return makecol(255, 255, 255);
 }
 
-int ji_color_selected(void)
+int ji_color_selected()
 {
   if (ji_current_theme && ji_current_theme->color_selected)
     return (*ji_current_theme->color_selected)();
@@ -232,7 +232,7 @@ int ji_color_selected(void)
     return makecol(0, 0, 255);
 }
 
-int ji_color_background(void)
+int ji_color_background()
 {
   if (ji_current_theme && ji_current_theme->color_background)
     return (*ji_current_theme->color_background)();

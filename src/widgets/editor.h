@@ -24,15 +24,15 @@
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
 
-struct Sprite;
+class Sprite;
 
-typedef struct Editor
+struct Editor
 {
   JWidget widget;
 
   /* main stuff */
   int state;
-  struct Sprite *sprite;
+  Sprite* sprite;
   int zoom;
 
   /* drawing cursor */
@@ -58,20 +58,20 @@ typedef struct Editor
 
   /* region that must be updated */
   JRegion refresh_region;
-} Editor;
+};
 
 /**********************************************************************/
 /* src/gui/editor/editor.c */
 
-JWidget editor_view_new(void);
+JWidget editor_view_new();
 
-JWidget editor_new(void);
-int editor_type(void);
+JWidget editor_new();
+int editor_type();
 
-Editor *editor_data(JWidget editor);
-struct Sprite *editor_get_sprite(JWidget editor);
+Editor* editor_data(JWidget editor);
+Sprite* editor_get_sprite(JWidget editor);
 
-void editor_set_sprite(JWidget editor, struct Sprite *sprite);
+void editor_set_sprite(JWidget editor, Sprite* sprite);
 void editor_set_scroll(JWidget editor, int x, int y, int use_refresh_region);
 void editor_update(JWidget editor);
 
@@ -100,7 +100,7 @@ void editor_refresh_region(JWidget editor);
 /**********************************************************************/
 /* src/gui/editor/cursor.c */
 
-void editor_cursor_exit(void);
+void editor_cursor_exit();
 
 void editor_draw_cursor(JWidget editor, int x, int y);
 void editor_clean_cursor(JWidget editor);

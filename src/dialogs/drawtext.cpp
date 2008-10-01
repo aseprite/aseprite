@@ -46,9 +46,9 @@ static Image *render_text(FONT *f, const char *text, int color);
 
 static FONT *my_load_font(const char *filename);
 static void button_font_command(JWidget widget);
-static void update_button_text(void);
+static void update_button_text();
 
-void dialogs_draw_text(void)
+void dialogs_draw_text()
 {
   Image *image, *dest_image;
   JWidget window, button_ok, color_box, color_but;
@@ -290,7 +290,7 @@ static void button_font_command(JWidget widget)
   }
 }
 
-static void update_button_text(void)
+static void update_button_text()
 {
   const char *font_str = get_config_string("DrawText", "Font", "allegro.pcx");
 

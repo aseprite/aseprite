@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JMutex jmutex_new(void);
+JMutex jmutex_new();
 void jmutex_free(JMutex mutex);
 
 void jmutex_lock(JMutex mutex);

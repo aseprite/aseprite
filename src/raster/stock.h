@@ -21,27 +21,29 @@
 
 #include "raster/gfxobj.h"
 
-struct Image;
+class Image;
 
-typedef struct Stock Stock;
-
-struct Stock
+class Stock : public GfxObj
 {
-  GfxObj gfxobj;
+public:
   int imgtype;		/* type of images (all images in the stock
 			   must be of this type) */
   int nimage;		/* how many images have this stock */
-  struct Image* *image;	/* the images-array where the images are */
+  Image** image;	/* the images-array where the images are */
+
+  Stock(int imgtype);
+  Stock(const Stock& stock);
+  virtual ~Stock();
 };
 
 Stock* stock_new(int imgtype);
 Stock* stock_new_copy(const Stock* stock);
 void stock_free(Stock* stock);
 
-int stock_add_image(Stock* stock, struct Image* image);
-void stock_remove_image(Stock* stock, struct Image* image);
-void stock_replace_image(Stock* stock, int index, struct Image* image);
+int stock_add_image(Stock* stock, Image* image);
+void stock_remove_image(Stock* stock, Image* image);
+void stock_replace_image(Stock* stock, int index, Image* image);
 
-struct Image* stock_get_image(Stock* stock, int index);
+Image* stock_get_image(Stock* stock, int index);
 
 #endif /* RASTER_STOCK_H */

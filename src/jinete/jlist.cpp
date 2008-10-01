@@ -54,7 +54,7 @@ JLink jlink_new(void *data)
   return link;
 }
 
-JList jlist_new(void)
+JList jlist_new()
 {
   JList list = jnew0(struct jlist, 1);
   list->end = jlink_new(NULL);

@@ -72,7 +72,7 @@ static bool interactive_transform(JWidget widget,
 				  Image *dest_image, Image *image,
 				  int x, int y,
 				  int xout[4], int yout[4]);
-static int low_copy(void);
+static int low_copy();
 static void apply_rotation(int x1, int y1, int x2, int y2,
 			   fixed angle, int cx, int cy,
 			   int xout[4], int yout[4]);
@@ -129,7 +129,7 @@ void copy_image_to_clipboard(Image *image)
   }
 }
 
-void cut_to_clipboard(void)
+void cut_to_clipboard()
 {
   if (current_sprite == NULL ||
       current_sprite->layer == NULL)
@@ -146,7 +146,7 @@ void cut_to_clipboard(void)
   }
 }
 
-void copy_to_clipboard(void)
+void copy_to_clipboard()
 {
   if (!current_sprite)
     return;
@@ -155,7 +155,7 @@ void copy_to_clipboard(void)
     console_printf(_("Can't copying an image portion from the current layer\n"));
 }
 
-void paste_from_clipboard(void)
+void paste_from_clipboard()
 {
   Sprite *clipboard = get_clipboard_sprite();
   Cel *cel;
@@ -645,7 +645,7 @@ static bool interactive_transform(JWidget widget,
   return done == DONE_PASTE;
 }
 
-static int low_copy(void)
+static int low_copy()
 {
   Sprite *sprite;
   Layer *layer;

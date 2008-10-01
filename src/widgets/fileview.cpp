@@ -124,7 +124,7 @@ JWidget fileview_new(FileItem *start_folder, const char *exts)
   return widget;
 }
 
-int fileview_type(void)
+int fileview_type()
 {
   static int type = 0;
   if (!type)

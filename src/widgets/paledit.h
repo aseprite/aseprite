@@ -35,7 +35,7 @@ enum {
 };
 
 JWidget paledit_new(struct Palette *palette, bool editable, int boxsize);
-int paledit_type(void);
+int paledit_type();
 
 struct Palette *paledit_get_palette(JWidget widget);
 int paledit_get_range_type(JWidget widget);

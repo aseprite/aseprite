@@ -21,36 +21,41 @@
 
 #include "raster/gfxobj.h"
 
-struct Image;
+class Image;
 
-typedef struct Mask Mask;
-
-struct Mask
+class Mask : public GfxObj
 {
-  GfxObj gfxobj;
+public:
   char *name;			/* mask name */
   int x, y, w, h;		/* region bounds */
-  struct Image *bitmap;		/* bitmapped image mask */
+  Image* bitmap;		/* bitmapped image mask */
+
+  Mask();
+  Mask(const Mask& mask);
+  virtual ~Mask();
+
+private:
+  void initialize();
 };
 
-Mask *mask_new(void);
-Mask *mask_new_copy(const Mask *mask);
-void mask_free(Mask *mask);
+Mask* mask_new();
+Mask* mask_new_copy(const Mask* mask);
+void mask_free(Mask* mask);
 
-int mask_is_empty(Mask *mask);
-void mask_set_name(Mask *mask, const char *name);
+int mask_is_empty(Mask* mask);
+void mask_set_name(Mask* mask, const char *name);
 
-void mask_copy(Mask *mask_dst, const Mask *mask_src);
-void mask_move(Mask *mask, int x, int y);
-void mask_none(Mask *mask);
-void mask_invert(Mask *mask);
-void mask_replace(Mask *mask, int x, int y, int w, int h);
-void mask_union(Mask *mask, int x, int y, int w, int h);
-void mask_subtract(Mask *mask, int x, int y, int w, int h);
-void mask_intersect(Mask *mask, int x, int y, int w, int h);
+void mask_copy(Mask* mask_dst, const Mask* mask_src);
+void mask_move(Mask* mask, int x, int y);
+void mask_none(Mask* mask);
+void mask_invert(Mask* mask);
+void mask_replace(Mask* mask, int x, int y, int w, int h);
+void mask_union(Mask* mask, int x, int y, int w, int h);
+void mask_subtract(Mask* mask, int x, int y, int w, int h);
+void mask_intersect(Mask* mask, int x, int y, int w, int h);
 
-void mask_merge(Mask *dst, const Mask *src);
-void mask_by_color(Mask *mask, const struct Image *image, int color, int fuzziness);
-void mask_crop(Mask *mask, const struct Image *image);
+void mask_merge(Mask* dst, const Mask* src);
+void mask_by_color(Mask* mask, const Image* image, int color, int fuzziness);
+void mask_crop(Mask* mask, const Image* image);
 
 #endif /* RASTER_MASK_H */

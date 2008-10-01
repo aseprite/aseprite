@@ -27,17 +27,17 @@ enum {
   DITHERING_ORDERED,
 };
 
-struct Image;
-struct Palette;
+class Image;
+class Palette;
 
-struct Image *image_set_imgtype(struct Image *image, int imgtype,
-				int dithering_method,
-				RGB_MAP *rgb_map,
-				struct Palette *palette);
+Image* image_set_imgtype(Image* image, int imgtype,
+			 int dithering_method,
+			 RGB_MAP *rgb_map,
+			 struct Palette *palette);
 
-struct Image *image_rgb_to_indexed(struct Image *src_image,
-				   int offsetx, int offsety,
-				   RGB_MAP *rgb_map,
-				   struct Palette *palette);
+Image* image_rgb_to_indexed(Image* src_image,
+			    int offsetx, int offsety,
+			    RGB_MAP *rgb_map,
+			    struct Palette *palette);
 
 #endif /* RASTER_QUANT_H */

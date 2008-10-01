@@ -22,7 +22,7 @@
 #include "raster/gfxobj.h"
 
 struct _ArtBpath;
-struct Image;
+class Image;
 
 /* path join style */
 enum {
@@ -38,40 +38,42 @@ enum {
   PATH_CAP_SQUARE,
 };
 
-typedef struct Path Path;
-
-struct Path
+class Path : public GfxObj
 {
-  GfxObj gfxobj;
+public:
   char *name;
   int join, cap;
   int size, end;
   struct _ArtBpath *bpath;
+
+  Path(const char* name);
+  Path(const Path& path);
+  virtual ~Path();
 };
 
-Path *path_new (const char *name);
-Path *path_new_copy (const Path *path);
-void path_free (Path *path);
+Path* path_new(const char* name);
+Path* path_new_copy(const Path* path);
+void path_free(Path* path);
 
-/* void path_union (Path *path, Path *op); */
-/* void path_intersect (Path *path, Path *op); */
-/* void path_diff (Path *path, Path *op); */
-/* void path_minus (Path *path, Path *op); */
+/* void path_union(Path* path, Path* op); */
+/* void path_intersect(Path* path, Path* op); */
+/* void path_diff(Path* path, Path* op); */
+/* void path_minus(Path* path, Path* op); */
 
-void path_set_join (Path *path, int join);
-void path_set_cap (Path *path, int cap);
+void path_set_join(Path* path, int join);
+void path_set_cap(Path* path, int cap);
 
-void path_moveto (Path *path, double x, double y);
-void path_lineto (Path *path, double x, double y);
-void path_curveto (Path *path,
-		   double control_x1, double control_y1,
-		   double control_x2, double control_y2,
-		   double end_x, double end_y);
-void path_close (Path *path);
+void path_moveto(Path* path, double x, double y);
+void path_lineto(Path* path, double x, double y);
+void path_curveto(Path* path,
+		  double control_x1, double control_y1,
+		  double control_x2, double control_y2,
+		  double end_x, double end_y);
+void path_close(Path* path);
 
-void path_move (Path *path, double x, double y);
+void path_move(Path* path, double x, double y);
 
-void path_stroke (Path *path, struct Image *image, int color, double brush_size);
-void path_fill (Path *path, struct Image *image, int color);
+void path_stroke(Path* path, Image* image, int color, double brush_size);
+void path_fill(Path* path, Image* image, int color);
 
 #endif /* RASTER_PATH_H */

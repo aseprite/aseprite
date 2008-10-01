@@ -80,7 +80,7 @@ static void gen_gfx(void *data)
   }
 }
 
-int init_module_graphics(void)
+int init_module_graphics()
 {
   int c;
   
@@ -91,7 +91,7 @@ int init_module_graphics(void)
   return 0;
 }
 
-void exit_module_graphics(void)
+void exit_module_graphics()
 {
   int c;
 

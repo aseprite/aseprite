@@ -35,32 +35,62 @@
 static bool has_cels(const Layer* layer, int frame);
 static void layer_set_parent(Layer* layer, Layer* parent_set);
 
-#define LAYER_INIT(name_string)			\
-  do {						\
-    layer_set_name(layer, name_string);		\
-						\
-    layer->sprite = sprite;			\
-    layer->parent_layer = NULL;			\
-    layer->flags =				\
-      LAYER_IS_READABLE |			\
-      LAYER_IS_WRITABLE;			\
-						\
-    layer->blend_mode = 0;			\
-    layer->cels = NULL;				\
-						\
-    layer->layers = NULL;			\
-  } while (0);
+//////////////////////////////////////////////////////////////////////
+
+Layer::Layer(int type, Sprite* sprite)
+  : GfxObj(type)
+{
+  assert(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_SET);
+
+  layer_set_name(this, "");
+
+  this->sprite = sprite;
+  this->parent_layer = NULL;
+  this->flags =
+    LAYER_IS_READABLE |
+    LAYER_IS_WRITABLE;
+  
+  this->blend_mode = 0;
+  this->cels = NULL;
+
+  this->layers = NULL;
+}
+
+Layer::~Layer()
+{
+  switch (this->type) {
+
+    case GFXOBJ_LAYER_IMAGE: {
+      JLink link;
+
+      /* remove cels */
+      JI_LIST_FOR_EACH(this->cels, link)
+	cel_free(reinterpret_cast<Cel*>(link->data));
+
+      jlist_free(this->cels);
+      break;
+    }
+
+    case GFXOBJ_LAYER_SET: {
+      JLink link;
+      JI_LIST_FOR_EACH(this->layers, link)
+	layer_free(reinterpret_cast<Layer*>(link->data));
+      jlist_free(this->layers);
+      break;
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
 
 /**
  * Creates a new empty (without frames) normal (image) layer.
  */
-Layer* layer_new(Sprite *sprite)
+Layer* layer_new(Sprite* sprite)
 {
-  Layer* layer = (Layer* )gfxobj_new(GFXOBJ_LAYER_IMAGE, sizeof(Layer));
-  if (!layer)
-    return NULL;
+  Layer* layer = new Layer(GFXOBJ_LAYER_IMAGE, sprite);
 
-  LAYER_INIT("Layer");
+  layer_set_name(layer, "Layer");
 
   layer->blend_mode = BLEND_MODE_NORMAL;
   layer->cels = jlist_new();
@@ -70,11 +100,9 @@ Layer* layer_new(Sprite *sprite)
 
 Layer* layer_set_new(Sprite *sprite)
 {
-  Layer* layer = (Layer* )gfxobj_new(GFXOBJ_LAYER_SET, sizeof(Layer));
-  if (!layer)
-    return NULL;
+  Layer* layer = new Layer(GFXOBJ_LAYER_SET, sprite);
 
-  LAYER_INIT("Layer Set");
+  layer_set_name(layer, "Layer Set");
 
   layer->layers = jlist_new();
 
@@ -87,7 +115,7 @@ Layer* layer_new_copy(Sprite *dst_sprite, const Layer* src_layer)
 
   assert(dst_sprite != NULL);
   
-  switch (src_layer->gfxobj.type) {
+  switch (src_layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Cel* cel_copy, *cel;
@@ -214,36 +242,16 @@ Layer* layer_new_flatten_copy(Sprite *dst_sprite, const Layer* src_layer,
 
 void layer_free(Layer* layer)
 {
-  switch (layer->gfxobj.type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      JLink link;
-
-      /* remove cels */
-      JI_LIST_FOR_EACH(layer->cels, link)
-	cel_free(reinterpret_cast<Cel*>(link->data));
-
-      jlist_free(layer->cels);
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	layer_free(reinterpret_cast<Layer*>(link->data));
-      jlist_free(layer->layers);
-      break;
-    }
-  }
-
-  gfxobj_free((GfxObj *)layer);
+  assert(layer);
+  delete layer;
 }
+
 
 void layer_free_images(Layer* layer)
 {
   JLink link;
 
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE:
       JI_LIST_FOR_EACH(layer->cels, link) {
@@ -292,7 +300,7 @@ void layer_configure_as_background(Layer* layer)
  */
 bool layer_is_image(const Layer* layer)
 {
-  return (layer->gfxobj.type == GFXOBJ_LAYER_IMAGE) ? TRUE: FALSE;
+  return (layer->type == GFXOBJ_LAYER_IMAGE) ? TRUE: FALSE;
 }
 
 /**
@@ -300,7 +308,7 @@ bool layer_is_image(const Layer* layer)
  */
 bool layer_is_set(const Layer* layer)
 {
-  return (layer->gfxobj.type == GFXOBJ_LAYER_SET) ? TRUE: FALSE;
+  return (layer->type == GFXOBJ_LAYER_SET) ? TRUE: FALSE;
 }
 
 /**
@@ -441,7 +449,7 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
   if (!layer_is_readable(layer))
     return;
 
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Cel* cel = layer_get_cel(layer, frame);
@@ -482,7 +490,7 @@ static bool has_cels(const Layer* layer, int frame)
   if (!layer_is_readable(layer))
     return FALSE;
 
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE:
       return layer_get_cel(layer, frame) ? TRUE: FALSE;

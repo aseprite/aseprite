@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 
-JWidget toolbar_new(void);
+JWidget toolbar_new();
 
 void toolbar_update(JWidget toolbar);
 

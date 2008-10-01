@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JWidget jlistbox_new(void);
+JWidget jlistbox_new();
 JWidget jlistitem_new(const char *text);
 
 void jlistbox_add_string(JWidget listbox, const char *text);

@@ -19,12 +19,12 @@
 #ifndef UTIL_QUANTIZE_H
 #define UTIL_QUANTIZE_H
 
-struct Palette;
-struct Sprite;
-struct Stock;
+class Palette;
+class Sprite;
+class Stock;
 
-void sprite_quantize(struct Sprite *sprite);
-void sprite_quantize_ex(struct Sprite *sprite, struct Palette *palette);
+void sprite_quantize(Sprite* sprite);
+void sprite_quantize_ex(Sprite* sprite, Palette* palette);
 
 #endif /* UTIL_QUANTIZE_H */
 

@@ -43,8 +43,8 @@ char *ji_file_select_ex(const char *message,
 			const char *exts,
 			JWidget widget_extension);
 
-char *ji_file_select_get_current_path(void);
-void ji_file_select_refresh_listbox(void);
+char *ji_file_select_get_current_path();
+void ji_file_select_refresh_listbox();
 void ji_file_select_enter_to_path(const char *path);
 
 bool ji_dir_exists(const char *filename);

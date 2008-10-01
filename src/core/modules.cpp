@@ -36,8 +36,8 @@
 typedef struct Module
 {
   const char *name;
-  int (*init)(void);
-  void (*exit)(void);
+  int (*init)();
+  void (*exit)();
   int reqs;
   int installed;
 } Module;
@@ -76,7 +76,7 @@ bool modules_init(int requirements)
   return TRUE;
 }
 
-void modules_exit(void)
+void modules_exit()
 {
   int c;
 

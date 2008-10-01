@@ -72,20 +72,20 @@ static char current_path[1024];
 static JList extensions;	/* list of supported Extensions */
 
 static bool filesel_msg_proc(JWidget entry, JMessage msg);
-static bool enter_to_path_in_entry(void);
+static bool enter_to_path_in_entry();
 
 static void fill_listbox_callback(const char* filename, int attrib, int param);
 static void fill_listbox_with_files(char* path, int size);
 
 static void generate_extensions(const char *exts);
 static bool check_extension(const char *filename_ext);
-static void free_extensions(void);
+static void free_extensions();
 
 static void fixup_filename(char *buf, char *from, const char *filename);
 static int my_ustrfilecmp(const char *s1, const char *s2);
 static int my_ustrnicmp(AL_CONST char *s1, AL_CONST char *s2, int n);
 
-static int filesel_type(void)
+static int filesel_type()
 {
   static int type = 0;
   if (!type)
@@ -284,12 +284,12 @@ char *ji_file_select_ex(const char *message,
   return selected_filename;
 }
 
-char *ji_file_select_get_current_path(void)
+char *ji_file_select_get_current_path()
 {
   return current_path;
 }
 
-void ji_file_select_refresh_listbox(void)
+void ji_file_select_refresh_listbox()
 {
   fill_listbox_with_files(current_path, sizeof(current_path));
 }
@@ -393,7 +393,7 @@ static bool filesel_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static bool enter_to_path_in_entry(void)
+static bool enter_to_path_in_entry()
 {
   char buf[1024], path[1024], from[1024];
   const char *filename;
@@ -656,7 +656,7 @@ static bool check_extension(const char *filename_ext)
   return FALSE;
 }
 
-static void free_extensions(void)
+static void free_extensions()
 {
   Extension* ext;
   JLink link;

@@ -19,11 +19,11 @@
 #ifndef DIALOGS_DRAWTEXT_H
 #define DIALOGS_DRAWTEXT_H
 
-struct Image;
+class Image;
 
-void dialogs_draw_text(void);
+void dialogs_draw_text();
 
-struct Image *RenderText(const char *fontname, int size, int color, const char *text);
+Image* RenderText(const char* fontname, int size, int color, const char* text);
 
 #endif /* DIALOGS_DRAWTEXT_H */
 

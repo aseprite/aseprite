@@ -141,7 +141,7 @@ union jmessage
   struct jmessage_user user;
 };
 
-int ji_register_message_type(void);
+int ji_register_message_type();
 
 JMessage jmessage_new(int type);
 JMessage jmessage_new_key_related(int type, int readkey_value);

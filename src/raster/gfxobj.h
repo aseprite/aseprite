@@ -36,19 +36,22 @@ enum {
 
 typedef unsigned int gfxobj_id;
 
-typedef struct GfxObj GfxObj;
-
-struct GfxObj
+class GfxObj
 {
+public:
   int type;
   gfxobj_id id;
+
+  GfxObj(int type);
+  GfxObj(const GfxObj& gfxobj);
+  virtual ~GfxObj();
+
+private:
+  void assign_id();
 };
 
-bool gfxobj_init(void);
-void gfxobj_exit(void);
-
-GfxObj* gfxobj_new(int type, int size);
-void gfxobj_free(GfxObj* gfxobj);
+bool gfxobj_init();
+void gfxobj_exit();
 
 GfxObj* gfxobj_find(gfxobj_id id);
 

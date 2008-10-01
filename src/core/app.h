@@ -28,35 +28,35 @@ enum {
   APP_EVENTS
 };
 
-struct Layer;
-struct Sprite;
+class Layer;
+class Sprite;
 
 bool app_init(int argc, char *argv[]);
-void app_loop(void);
-void app_exit(void);
+void app_loop();
+void app_exit();
 
 void app_add_hook(int app_event, void (*proc)(void *data), void *data);
 void app_trigger_event(int app_event);
 
-void app_refresh_screen(void);
+void app_refresh_screen();
 
-void app_realloc_sprite_list(void);
-bool app_realloc_recent_list(void);
+void app_realloc_sprite_list();
+bool app_realloc_recent_list();
 
-int app_get_current_image_type(void);
+int app_get_current_image_type();
 
-JWidget app_get_top_window(void);
-JWidget app_get_menubar(void);
-JWidget app_get_statusbar(void);
-JWidget app_get_colorbar(void);
-JWidget app_get_toolbar(void);
-JWidget app_get_tabsbar(void);
+JWidget app_get_top_window();
+JWidget app_get_menubar();
+JWidget app_get_statusbar();
+JWidget app_get_colorbar();
+JWidget app_get_toolbar();
+JWidget app_get_tabsbar();
 
-void app_default_statusbar_message(void);
+void app_default_statusbar_message();
 
-int app_get_fg_color(struct Sprite *sprite);
-int app_get_bg_color(struct Sprite *sprite);
-int app_get_color_to_clear_layer(struct Layer *layer);
+int app_get_fg_color(Sprite* sprite);
+int app_get_bg_color(Sprite* sprite);
+int app_get_color_to_clear_layer(Layer* layer);
 
 #endif /* CORE_APP_H */
 

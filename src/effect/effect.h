@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include "jinete/jbase.h"
 
-struct Image;
-struct Mask;
-struct Sprite;
+class Image;
+class Mask;
+class Sprite;
 
 #define TARGET_RED_CHANNEL		1
 #define TARGET_GREEN_CHANNEL		2
@@ -42,24 +42,25 @@ struct Sprite;
    TARGET_ALPHA_CHANNEL		|	\
    TARGET_GRAY_CHANNEL		)
 
-int init_module_effect(void);
-void exit_module_effect(void);
+int init_module_effect();
+void exit_module_effect();
 
 struct EffectData;
 
-typedef struct Effect
+struct Effect
 {
-  struct Sprite *sprite;
-  struct Image *src, *dst;
+  Sprite* sprite;
+  Image* src;
+  Image* dst;
   int row;
   int x, y, w, h;
   int offset_x, offset_y;
-  struct Mask *mask;
-  struct Mask *preview_mask;
+  Mask* mask;
+  Mask* preview_mask;
   unsigned char *mask_address;
   div_t d;
   struct EffectData *effect_data;
-  void (*apply)(struct Effect *effect);
+  void (*apply)(struct Effect* effect);
   int _target;			/* original targets */
   int target;			/* filtered targets */
   /* hooks */
@@ -67,21 +68,21 @@ typedef struct Effect
   void *progress_data;
   void (*progress)(void *data, float progress);
   bool (*is_cancelled)(void *data);
-} Effect;
+};
 
-Effect *effect_new(struct Sprite *sprite, const char *name);
-void effect_free(Effect *effect);
+Effect* effect_new(Sprite* sprite, const char* name);
+void effect_free(Effect* effect);
 
-void effect_set_target(Effect *effect, int target);
+void effect_set_target(Effect* effect, int target);
 
-void effect_begin(Effect *effect);
-void effect_begin_for_preview(Effect *effect);
-bool effect_apply_step(Effect *effect);
+void effect_begin(Effect* effect);
+void effect_begin_for_preview(Effect* effect);
+bool effect_apply_step(Effect* effect);
 
-void effect_apply(Effect *effect);
-void effect_flush(Effect *effect);
+void effect_apply(Effect* effect);
+void effect_flush(Effect* effect);
 
-void effect_apply_to_target(Effect *effect);
+void effect_apply_to_target(Effect* effect);
 
 /**
  * Macro to get contiguos pixels from an image. It's useful to fill a

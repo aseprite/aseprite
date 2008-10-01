@@ -19,7 +19,7 @@
 #include "tests/test.h"
 #include "jinete/jlist.h"
 
-static void test_append_and_clear(void)
+static void test_append_and_clear()
 {
   JList q;
 
@@ -43,7 +43,7 @@ static void test_append_and_clear(void)
   jlist_free(q);
 }
 
-static void test_prepend(void)
+static void test_prepend()
 {
   JList q;
 
@@ -59,7 +59,7 @@ static void test_prepend(void)
   jlist_free(q);
 }
 
-static void test_insert(void)
+static void test_insert()
 {
   JList q;
 
@@ -99,7 +99,7 @@ static void test_nth_link()
   jlist_free(q);
 }
 
-static void test_insert_before(void)
+static void test_insert_before()
 {
   JList q;
   JLink a, b, c;
@@ -129,7 +129,7 @@ static void test_insert_before(void)
   jlist_free(q);
 }
 
-static void test_remove_and_remove_all(void)
+static void test_remove_and_remove_all()
 {
   JList q;
 
@@ -151,7 +151,7 @@ static void test_remove_and_remove_all(void)
   jlist_free(q);
 }
 
-static void test_remove_link_and_delete_link(void)
+static void test_remove_link_and_delete_link()
 {
   JList q;
   JLink b;
@@ -173,7 +173,7 @@ static void test_remove_link_and_delete_link(void)
   jlist_free(q);
 }
 
-static void test_copy(void)
+static void test_copy()
 {
   JList q, r;
 
@@ -196,7 +196,7 @@ static void test_copy(void)
   jlist_free(r);
 }
 
-static void test_find(void)
+static void test_find()
 {
   JList q;
 

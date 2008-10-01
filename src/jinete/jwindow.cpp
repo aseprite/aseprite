@@ -72,7 +72,7 @@ static void limit_size(JWidget widget, int *w, int *h);
 static void move_window(JWidget widget, JRect rect, bool use_blit);
 static void displace_widgets(JWidget widget, int x, int y);
 
-bool _jwindow_is_moving(void)
+bool _jwindow_is_moving()
 {
   return (window_action == WINDOW_MOVE) ? TRUE: FALSE;
 }
@@ -82,7 +82,7 @@ JWidget jwindow_new(const char *text)
   return window_new(FALSE, text);
 }
 
-JWidget jwindow_new_desktop(void)
+JWidget jwindow_new_desktop()
 {
   return window_new(TRUE, NULL);
 }

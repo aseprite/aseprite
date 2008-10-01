@@ -30,7 +30,7 @@
 
 static char config_filename[512];
 
-void ase_config_init(void)
+void ase_config_init()
 {
   DIRS *dirs, *dir;
 
@@ -54,7 +54,7 @@ void ase_config_init(void)
   override_config_file(config_filename);
 }
 
-void ase_config_exit(void)
+void ase_config_exit()
 {
   flush_config_file();
 /*   override_config_file(NULL); */

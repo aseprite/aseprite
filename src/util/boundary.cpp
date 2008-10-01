@@ -544,7 +544,7 @@ sort_boundary (BoundSeg *segs,
 }
 
 /* dacap: for ASE to avoid informed memory leaks */
-void boundary_exit(void)
+void boundary_exit()
 {
   if (vert_segs != NULL) {
     jfree(vert_segs);

@@ -53,8 +53,8 @@ typedef struct StatusBar
 
 /* statusbar */
 
-JWidget statusbar_new(void);
-int statusbar_type(void);
+JWidget statusbar_new();
+int statusbar_type();
 
 StatusBar *statusbar_data(JWidget widget);
 

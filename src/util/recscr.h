@@ -21,12 +21,12 @@
 
 #include "jinete/jbase.h"
 
-bool is_rec_screen(void);
+bool is_rec_screen();
 
-void rec_screen_on(void);
-void rec_screen_off(void);
+void rec_screen_on();
+void rec_screen_off();
 
-void rec_screen_poll(void);
+void rec_screen_poll();
 
 #endif /* UTIL_RECSCR_H */
 

@@ -34,9 +34,9 @@
 
 #include "jinete/jbase.h"
 
-JWidget ji_get_default_manager(void);
+JWidget ji_get_default_manager();
 
-JWidget jmanager_new(void);
+JWidget jmanager_new();
 void jmanager_free(JWidget manager);
 
 void jmanager_run(JWidget manager);
@@ -55,22 +55,22 @@ void jmanager_set_timer_interval(int timer_id, int interval);
 
 void jmanager_enqueue_message(JMessage msg);
 
-JWidget jmanager_get_focus(void);
-JWidget jmanager_get_mouse(void);
-JWidget jmanager_get_capture(void);
+JWidget jmanager_get_focus();
+JWidget jmanager_get_mouse();
+JWidget jmanager_get_capture();
 
 void jmanager_set_focus(JWidget widget);
 void jmanager_set_mouse(JWidget widget);
 void jmanager_set_capture(JWidget widget);
 void jmanager_attract_focus(JWidget widget);
 void jmanager_focus_first_child(JWidget widget);
-void jmanager_free_focus(void);
-void jmanager_free_mouse(void);
-void jmanager_free_capture(void);
+void jmanager_free_focus();
+void jmanager_free_mouse();
+void jmanager_free_capture();
 void jmanager_free_widget(JWidget widget);
 void jmanager_remove_message(JMessage msg);
 void jmanager_remove_messages_for(JWidget widget);
-void jmanager_refresh_screen(void);
+void jmanager_refresh_screen();
 
 void jmanager_add_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter(int message, JWidget widget);

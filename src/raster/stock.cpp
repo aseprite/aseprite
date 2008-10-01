@@ -24,23 +24,56 @@
 #include "raster/image.h"
 #include "raster/stock.h"
 
+//////////////////////////////////////////////////////////////////////
+
+
+Stock::Stock(int imgtype)
+  : GfxObj(GFXOBJ_STOCK)
+{
+  this->imgtype = imgtype;
+  this->nimage = 0;
+  this->image = NULL;
+
+  stock_add_image(this, NULL); /* image 0 is NULL */
+}
+
+Stock::Stock(const Stock& stock)
+  : GfxObj(stock)
+{
+  this->imgtype = stock.imgtype;
+
+  for (int c=this->nimage; c<stock.nimage; ++c) {
+    if (!stock.image[c])
+      stock_add_image(this, NULL);
+    else {
+      Image* image_copy = image_new_copy(stock.image[c]);
+      // TODO try/catch remove created images
+      stock_add_image(this, image_copy);
+    }
+  }
+
+  assert(this->nimage == stock.nimage);
+}
+
+Stock::~Stock()
+{
+  for (int i=0; i<this->nimage; i++) {
+    if (this->image[i] != NULL)
+      image_free(this->image[i]);
+  }
+  jfree(this->image);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+
 /**
  * Creates a new stock, the "imgtype" argument indicates that this
  * stock will contain images of that type.
  */
 Stock* stock_new(int imgtype)
 {
-  Stock* stock = (Stock* )gfxobj_new(GFXOBJ_STOCK, sizeof(Stock));
-  if (!stock)
-    return NULL;
-
-  stock->imgtype = imgtype;
-  stock->nimage = 0;
-  stock->image = NULL;
-
-  stock_add_image(stock, NULL); /* image 0 is NULL */
-
-  return stock;
+  return new Stock(imgtype);
 }
 
 /**
@@ -49,26 +82,8 @@ Stock* stock_new(int imgtype)
  */
 Stock* stock_new_copy(const Stock* stock)
 {
-  Stock* stock_copy = stock_new(stock->imgtype);
-  Image* image_copy;
-  int c;
-
-  for (c=stock_copy->nimage; c<stock->nimage; c++) {
-    if (!stock->image[c])
-      stock_add_image(stock_copy, NULL);
-    else {
-      image_copy = image_new_copy(stock->image[c]);
-      if (!image_copy) {
-	stock_free(stock_copy);
-	return NULL;
-      }
-      stock_add_image(stock_copy, image_copy);
-    }
-  }
-
-  assert(stock_copy->nimage == stock->nimage);
-
-  return stock_copy;
+  assert(stock);
+  return new Stock(*stock);
 }
 
 /**
@@ -76,16 +91,8 @@ Stock* stock_new_copy(const Stock* stock)
  */
 void stock_free(Stock* stock)
 {
-  int i;
-
-  for (i=0; i<stock->nimage; i++) {
-    if (stock->image[i] != NULL)
-      image_free(stock->image[i]);
-  }
-
-  jfree(stock->image);
-
-  gfxobj_free((GfxObj *)stock);
+  assert(stock);
+  delete stock;
 }
 
 /**

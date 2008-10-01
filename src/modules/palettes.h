@@ -22,26 +22,26 @@
 #include "jinete/jbase.h"
 #include <allegro/color.h>
 
-struct Palette;
-struct Sprite;
+class Palette;
+class Sprite;
 
-extern RGB_MAP *orig_rgb_map;
-extern COLOR_MAP *orig_trans_map;
+extern RGB_MAP* orig_rgb_map;
+extern COLOR_MAP* orig_trans_map;
 
-int init_module_palette(void);
-void exit_module_palette(void);
+int init_module_palette();
+void exit_module_palette();
 
-struct Palette *get_default_palette(void);
-struct Palette *get_current_palette(void);
+Palette* get_default_palette();
+Palette* get_current_palette();
 
-void set_default_palette(struct Palette *palette);
-bool set_current_palette(struct Palette *palette, int forced);
-void set_black_palette(void);
+void set_default_palette(Palette* palette);
+bool set_current_palette(Palette* palette, int forced);
+void set_black_palette();
 void set_current_color(int index, int r, int g, int b);
 
-void use_current_sprite_rgb_map(void);
-void use_sprite_rgb_map(struct Sprite *sprite);
-void restore_rgb_map(void);
+void use_current_sprite_rgb_map();
+void use_sprite_rgb_map(Sprite* sprite);
+void restore_rgb_map();
 
 #endif /* MODULES_PALETTES_H */
 

@@ -20,7 +20,7 @@
 #define INTL_MSGIDS_H
 
 int msgids_load(const char *filename);
-void msgids_clear(void);
+void msgids_clear();
 const char *msgids_get(const char *id);
 
 #endif /* !INTL_MSGIDS_H */

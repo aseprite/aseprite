@@ -24,7 +24,7 @@
 #include "raster/image.h"
 
 #ifdef USE_386_ASM
-static void test(void)
+static void test()
 {
   register int t;
   int x, y;

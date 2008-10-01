@@ -77,7 +77,7 @@ int msgids_load(const char *filename)
   return 0;
 }
 
-void msgids_clear(void)
+void msgids_clear()
 {
   if (msgids) {
     hash_free(msgids, free_msgid);

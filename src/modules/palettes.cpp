@@ -66,7 +66,7 @@ static ase_uint32 ase_system_color[] =
 
 #define SYSTEM_COLORS   (sizeof(ase_system_color) / sizeof(RGB))
 
-int init_module_palette(void)
+int init_module_palette()
 {
   orig_rgb_map = jnew(RGB_MAP, 1);
   orig_trans_map = jnew(COLOR_MAP, 1);
@@ -84,7 +84,7 @@ int init_module_palette(void)
   return 0;
 }
 
-void exit_module_palette(void)
+void exit_module_palette()
 {
   rgb_map = NULL;
 
@@ -99,12 +99,12 @@ void exit_module_palette(void)
   jfree(orig_rgb_map);
 }
 
-Palette *get_current_palette(void)
+Palette *get_current_palette()
 {
   return ase_current_palette;
 }
 
-Palette *get_default_palette(void)
+Palette *get_default_palette()
 {
   return ase_default_palette;
 }
@@ -204,7 +204,7 @@ bool set_current_palette(Palette *_palette, int forced)
   return ret;
 }
 
-void set_black_palette(void)
+void set_black_palette()
 {
   Palette *p = palette_new(0, MAX_PALETTE_COLORS);
   set_current_palette(p, TRUE);
@@ -247,7 +247,7 @@ void set_current_color(int index, int r, int g, int b)
 
 /**********************************************************************/
 
-void use_current_sprite_rgb_map(void)
+void use_current_sprite_rgb_map()
 {
   rgb_map = orig_rgb_map;
 }
@@ -263,7 +263,7 @@ void use_sprite_rgb_map(Sprite *sprite)
   create_rgb_table(my_rgb_map, palette_to_allegro(pal, rgbpal), NULL);
 }
 
-void restore_rgb_map(void)
+void restore_rgb_map()
 {
   rgb_map = my_rgb_map;
 

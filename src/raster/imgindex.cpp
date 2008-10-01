@@ -22,38 +22,32 @@
 #define BYTES(image)   ((ase_uint8 *)image->dat)
 #define LINES(image)   ((ase_uint8 **)image->line)
 
-static int indexed_regenerate_lines(Image *image)
+static void indexed_regenerate_lines(Image *image)
 {
   ase_uint8 *address = BYTES(image);
   int y;
 
   if (LINES(image))
-    jfree(LINES(image));
+    delete LINES(image);
 
-  image->line = (ase_uint8**)jmalloc(sizeof(ase_uint8*) * image->h);
-  if (!LINES(image))
-    return -1;
+  image->line = new ase_uint8*[image->h];
 
   for (y=0; y<image->h; y++) {
     LINES(image)[y] = address;
     address += image->w;
   }
-
-  return 0;
 }
 
-static int indexed_init(Image *image)
+static void indexed_init(Image *image)
 {
-  image->dat = (ase_uint8*)jmalloc(sizeof(ase_uint8) * image->w * image->h);
-  if (!BYTES(image))
-    return -1;
-
-  if (indexed_regenerate_lines(image) < 0) {
-    jfree(BYTES(image));
-    return -1;
+  image->dat = new ase_uint8[image->w * image->h];
+  try {
+    indexed_regenerate_lines(image);
   }
-
-  return 0;
+  catch (...) {
+    delete BYTES(image);
+    throw;
+  }
 }
 
 static int indexed_getpixel(const Image *image, int x, int y)

@@ -22,8 +22,8 @@
 #include "jinete/jbase.h"
 
 struct BITMAP;
-struct Image;
-struct Layer;
+class Image;
+class Layer;
 
 enum {
   COLOR_TYPE_MASK,
@@ -41,7 +41,7 @@ color_t string_to_color(const char *str);
 int color_type(color_t color);
 bool color_equals(color_t c1, color_t c2);
 
-color_t color_mask(void);
+color_t color_mask();
 color_t color_rgb(int r, int g, int b);
 color_t color_hsv(int h, int s, int v);
 color_t color_gray(int g);
@@ -60,11 +60,11 @@ int blackandwhite_neg(int r, int g, int b);
 
 int get_color_for_allegro(int depth, color_t color);
 int get_color_for_image(int imgtype, color_t color);
-int get_color_for_layer(struct Layer *layer, color_t color);
-int fixup_color_for_layer(struct Layer *layer, int color);
+int get_color_for_layer(Layer* layer, color_t color);
+int fixup_color_for_layer(Layer* layer, int color);
 int fixup_color_for_background(int imgtype, int color);
 
-color_t image_getpixel_color(struct Image *image, int x, int y);
+color_t image_getpixel_color(Image* image, int x, int y);
 void color_to_formalstring(int imgtype, color_t color, char *buf,
 			   int size, bool long_format);
 

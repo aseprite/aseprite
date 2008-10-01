@@ -22,41 +22,35 @@
 #define BYTES(image)   ((ase_uint16 *)image->dat)
 #define LINES(image)   ((ase_uint16 **)image->line)
 
-static int grayscale_regenerate_lines (Image *image)
+static void grayscale_regenerate_lines(Image *image)
 {
-  ase_uint16 *address = BYTES (image);
+  ase_uint16 *address = BYTES(image);
   int y;
 
-  if (LINES (image))
-    jfree (LINES (image));
+  if (LINES(image))
+    delete LINES(image);
 
-  image->line = (ase_uint8**)jmalloc(sizeof(ase_uint16*) * image->h);
-  if (!LINES (image))
-    return -1;
+  image->line = (ase_uint8**)new ase_uint16*[image->h];
 
   for (y=0; y<image->h; y++) {
-    LINES (image)[y] = address;
+    LINES(image)[y] = address;
     address += image->w;
   }
-
-  return 0;
 }
 
-static int grayscale_init (Image *image)
+static void grayscale_init(Image *image)
 {
-  image->dat = (ase_uint8*)jmalloc(sizeof(ase_uint16) * image->w * image->h);
-  if (!BYTES (image))
-    return -1;
-
-  if (grayscale_regenerate_lines (image) < 0) {
-    jfree (BYTES (image));
-    return -1;
+  image->dat = (ase_uint8*)new ase_uint16[image->w * image->h];
+  try {
+    grayscale_regenerate_lines(image);
   }
-
-  return 0;
+  catch (...) {
+    delete BYTES(image);
+    throw;
+  }
 }
 
-static int grayscale_getpixel (const Image *image, int x, int y)
+static int grayscale_getpixel(const Image *image, int x, int y)
 {
   return *(LINES (image)[y]+x);
 }

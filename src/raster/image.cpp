@@ -46,51 +46,57 @@ static ImageMethods *image_methods[] =
 #include "imgalleg.c"
 #endif
 
+//////////////////////////////////////////////////////////////////////
+
+
+Image::Image(int imgtype, int w, int h)
+  : GfxObj(GFXOBJ_IMAGE)
+{
+  this->imgtype = imgtype;
+  this->w = w;
+  this->h = h;
+#ifndef USE_ALLEGRO_IMAGE
+  this->method = image_methods[imgtype];
+#else
+  this->method = &alleg_methods;
+#endif
+  this->dat = NULL;
+  this->line = NULL;
+#ifdef USE_ALLEGRO_IMAGE
+  this->bmp = NULL;
+#endif
+
+  assert(this->method);
+  this->method->init(this);
+}
+
+Image::~Image()
+{
+#ifndef USE_ALLEGRO_IMAGE
+  if (this->dat) delete this->dat;
+  if (this->line) delete this->line;
+#else
+  destroy_bitmap(this->bmp);
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////
+
 Image* image_new(int imgtype, int w, int h)
 {
-  Image* image = (Image* )gfxobj_new(GFXOBJ_IMAGE, sizeof(Image));
-  if (!image)
-    return NULL;
-
-  image->imgtype = imgtype;
-  image->w = w;
-  image->h = h;
-#ifndef USE_ALLEGRO_IMAGE
-  image->method = image_methods[imgtype];
-#else
-  image->method = &alleg_methods;
-#endif
-  image->dat = NULL;
-  image->line = NULL;
-#ifdef USE_ALLEGRO_IMAGE
-  image->bmp = NULL;
-#endif
-
-  if (image->method)
-    if (image->method->init(image) < 0) {
-      jfree(image);
-      return NULL;
-    }
-
-  return image;
+  return new Image(imgtype, w, h);
 }
 
 Image* image_new_copy(const Image* image)
 {
-  assert(image != NULL);
+  assert(image);
   return image_crop(image, 0, 0, image->w, image->h, 0);
 }
 
 void image_free(Image* image)
 {
-#ifndef USE_ALLEGRO_IMAGE
-  if (image->dat) jfree(image->dat);
-  if (image->line) jfree(image->line);
-#else
-  destroy_bitmap(image->bmp);
-#endif
-
-  gfxobj_free((GfxObj *)image);
+  assert(image);
+  delete image;
 }
 
 int image_depth(Image* image)

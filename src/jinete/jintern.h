@@ -42,10 +42,10 @@ struct BITMAP;
 
 JWidget _ji_get_widget_by_id(JID widget_id);
 JWidget *_ji_get_widget_array(int *nwidgets);
-JWidget _ji_get_new_widget(void);
+JWidget _ji_get_new_widget();
 
 void _ji_free_widget(JWidget widget);
-void _ji_free_all_widgets(void);
+void _ji_free_all_widgets();
 
 bool _ji_is_valid_widget(JWidget widget);
 
@@ -54,14 +54,14 @@ void _ji_set_font_of_all_widgets(struct FONT *f);
 /**********************************************************************/
 /* jsystem.c */
 
-int _ji_system_init(void);
-void _ji_system_exit(void);
+int _ji_system_init();
+void _ji_system_exit();
 
 /**********************************************************************/
 /* jfont.c */
 
-int _ji_font_init(void);
-void _ji_font_exit(void);
+int _ji_font_init();
+void _ji_font_exit();
 
 /**********************************************************************/
 /* jwidget.c */
@@ -72,7 +72,7 @@ void _jwidget_remove_hook(JWidget widget, JHook hook);
 /**********************************************************************/
 /* jwindow.c */
 
-bool _jwindow_is_moving(void);
+bool _jwindow_is_moving();
 
 /**********************************************************************/
 /* jmanager.c */
@@ -83,8 +83,8 @@ void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_backgro
 /**********************************************************************/
 /* jtheme.c */
 
-int _ji_theme_init(void);
-void _ji_theme_exit(void);
+int _ji_theme_init();
+void _ji_theme_exit();
 
 void _ji_theme_draw_sprite_color(struct BITMAP *bmp, struct BITMAP *sprite,
 				 int x, int y, int color);

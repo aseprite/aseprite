@@ -49,7 +49,7 @@
 
 static bool widget_msg_proc(JWidget widget, JMessage msg);
 
-int ji_register_widget_type(void)
+int ji_register_widget_type()
 {
   static int type = JI_USER_WIDGET;
   return type++;

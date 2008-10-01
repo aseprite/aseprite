@@ -48,12 +48,12 @@ void trace(const char *format, ...)
 
 #ifndef TEST_GUI
 
-void test_init(void)
+void test_init()
 {
   allegro_init();
 }
 
-int test_exit(void)
+int test_exit()
 {
   trace("OK\n");
   return 0;
@@ -61,7 +61,7 @@ int test_exit(void)
 
 #else
 
-JWidget test_init_gui(void)
+JWidget test_init_gui()
 {
   allegro_init();
   set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);

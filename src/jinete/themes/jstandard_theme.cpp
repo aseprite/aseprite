@@ -94,18 +94,18 @@ static struct {
 
 static BITMAP *icons_bitmap[ICONS];
 
-static void theme_destroy(void);
-static void theme_regen(void);
+static void theme_destroy();
+static void theme_regen();
 static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y);
 static void theme_init_widget(JWidget widget);
 static JRegion theme_get_window_mask(JWidget widget);
 static void theme_map_decorative_widget(JWidget widget);
-static int theme_color_foreground(void);
-static int theme_color_disabled(void);
-static int theme_color_face(void);
-static int theme_color_hotface(void);
-static int theme_color_selected(void);
-static int theme_color_background(void);
+static int theme_color_foreground();
+static int theme_color_disabled();
+static int theme_color_face();
+static int theme_color_hotface();
+static int theme_color_selected();
+static int theme_color_background();
 static void theme_draw_box(JWidget widget, JRect clip);
 static void theme_draw_button(JWidget widget, JRect clip);
 static void theme_draw_check(JWidget widget, JRect clip);
@@ -137,7 +137,7 @@ static void less_bevel(int *bevel);
 
 static bool theme_button_msg_proc(JWidget widget, JMessage msg);
 
-JTheme jtheme_new_standard(void)
+JTheme jtheme_new_standard()
 {
   JTheme theme;
   int c;
@@ -190,7 +190,7 @@ JTheme jtheme_new_standard(void)
   return theme;
 }
 
-static void theme_destroy(void)
+static void theme_destroy()
 {
   int c;
 
@@ -202,7 +202,7 @@ static void theme_destroy(void)
   }
 }
 
-static void theme_regen(void)
+static void theme_regen()
 {
   JTheme theme = ji_get_theme();
   int c, cmap[8], mask_cmap[2];
@@ -475,32 +475,32 @@ static void theme_map_decorative_widget(JWidget widget)
   }
 }
 
-static int theme_color_foreground(void)
+static int theme_color_foreground()
 {
   return COLOR_FOREGROUND;
 }
 
-static int theme_color_disabled(void)
+static int theme_color_disabled()
 {
   return COLOR_DISABLED;
 }
 
-static int theme_color_face(void)
+static int theme_color_face()
 {
   return COLOR_FACE;
 }
 
-static int theme_color_hotface(void)
+static int theme_color_hotface()
 {
   return COLOR_HOTFACE;
 }
 
-static int theme_color_selected(void)
+static int theme_color_selected()
 {
   return COLOR_SELECTED;
 }
 
-static int theme_color_background(void)
+static int theme_color_background()
 {
   return COLOR_BACKGROUND;
 }

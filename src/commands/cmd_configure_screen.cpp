@@ -49,8 +49,8 @@ static int old_card, old_w, old_h, old_depth, old_scaling;
 static int timer_to_accept;
 static int seconds_to_accept;
 
-static void show_dialog(void);
-static bool try_new_gfx_mode(void);
+static void show_dialog();
+static bool try_new_gfx_mode();
 static bool alert_msg_proc(JWidget widget, JMessage msg);
 
 static void cmd_configure_screen_execute(const char *argument)
@@ -72,7 +72,7 @@ static void cmd_configure_screen_execute(const char *argument)
   show_dialog();
 }
 
-static void show_dialog(void)
+static void show_dialog()
 {
   JWidget window, resolution, color_depth, pixel_scale, fullscreen;
   char buf[512];
@@ -173,7 +173,7 @@ static void show_dialog(void)
   jwidget_free(window);
 }
 
-static bool try_new_gfx_mode(void)
+static bool try_new_gfx_mode()
 {
   /* try change the new graphics mode */
   set_color_depth(new_depth);

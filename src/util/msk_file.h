@@ -19,10 +19,10 @@
 #ifndef UTIL_MSK_FILE_H
 #define UTIL_MSK_FILE_H
 
-struct Mask;
+class Mask;
 
-struct Mask *load_msk_file (const char *filename);
-int save_msk_file (struct Mask *mask, const char *filename);
+Mask* load_msk_file(const char* filename);
+int save_msk_file(Mask* mask, const char* filename);
 
 #endif /* UTIL_MSK_FILE_H */
 

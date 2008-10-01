@@ -33,7 +33,7 @@ static int installed = FALSE;
 static JList recent_files;
 static int recent_files_limit = 16;
 
-int init_module_recent(void)
+int init_module_recent()
 {
   const char *filename;
   char buf[512];
@@ -52,7 +52,7 @@ int init_module_recent(void)
   return 0;
 }
 
-void exit_module_recent(void)
+void exit_module_recent()
 {
   char buf[512], *filename;
   JLink link;
@@ -71,7 +71,7 @@ void exit_module_recent(void)
   installed = FALSE;
 }
 
-JList get_recent_files_list(void)
+JList get_recent_files_list()
 {
   return recent_files;
 }

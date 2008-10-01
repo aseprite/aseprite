@@ -43,7 +43,7 @@ static JWidget slider_x, slider_y, check_lockmouse;
 static bool slider_mouse_hook(JWidget widget, void *data);
 
 /* shows option dialog */
-void dialogs_options(void)
+void dialogs_options()
 {
   JWidget window, check_smooth, check_dither;
   JWidget button_ok;
@@ -159,7 +159,7 @@ static bool slider_mouse_hook(JWidget widget, void *data)
 /**********************************************************************/
 /* setup the mouse speed reading the configuration file */
 
-void _setup_mouse_speed(void)
+void _setup_mouse_speed()
 {
   int x, y;
   x = get_config_int("Options", "MouseX", 6);

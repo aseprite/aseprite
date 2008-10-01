@@ -19,7 +19,7 @@
 #ifndef RASTER_BRUSH_H
 #define RASTER_BRUSH_H
 
-struct Image;
+class Image;
 
 enum {
   BRUSH_CIRCLE,
@@ -32,16 +32,16 @@ struct BrushScanline
   int state, x1, x2;
 };
 
-typedef struct Brush
+struct Brush
 {
   int type;			/* type of brush */
   int size;			/* size (diameter) */
   int angle;			/* angle in degrees 0-360 */
   Image* image;			/* image of the brush */
   BrushScanline* scanline;
-} Brush;
+};
 
-Brush* brush_new(void);
+Brush* brush_new();
 Brush* brush_new_copy(const Brush* brush);
 void brush_free(Brush* brush);
 

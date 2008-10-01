@@ -34,9 +34,9 @@
 
 #include "jinete/jbase.h"
 
-JWidget jmenu_new(void);
-JWidget jmenubar_new(void);
-JWidget jmenubox_new(void);
+JWidget jmenu_new();
+JWidget jmenubar_new();
+JWidget jmenubox_new();
 JWidget jmenuitem_new(const char *text);
 
 JWidget jmenubox_get_menu(JWidget menubox);

@@ -149,7 +149,7 @@ static JWidget check_for_accel(JWidget menu, JMessage msg);
 static JWidget find_nextitem(JWidget menu, JWidget menuitem);
 static JWidget find_previtem(JWidget menu, JWidget menuitem);
 
-JWidget jmenu_new(void)
+JWidget jmenu_new()
 {
   JWidget widget = jwidget_new(JI_MENU);
   Menu *menu = jnew(Menu, 1);
@@ -162,7 +162,7 @@ JWidget jmenu_new(void)
   return widget;
 }
 
-JWidget jmenubar_new(void)
+JWidget jmenubar_new()
 {
   JWidget widget = jmenubox_new();
 
@@ -174,7 +174,7 @@ JWidget jmenubar_new(void)
   return widget;
 }
 
-JWidget jmenubox_new(void)
+JWidget jmenubox_new()
 {
   JWidget widget = jwidget_new(JI_MENUBOX);
   MenuBox *menubox = jnew(MenuBox, 1);

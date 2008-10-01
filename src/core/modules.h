@@ -24,7 +24,7 @@
 #define REQUIRE_INTERFACE    1
 
 bool modules_init(int requirements);
-void modules_exit(void);
+void modules_exit();
 
 #endif /* CORE_MODULES_H */
 

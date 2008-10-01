@@ -21,12 +21,12 @@
 
 #include <allegro/color.h>
 
-struct Image;
+class Image;
 
-struct Image *load_pic_file(const char *filename, int *x, int *y,
-			    struct RGB *palette);
+Image* load_pic_file(const char *filename, int *x, int *y,
+		     struct RGB *palette);
 
 int save_pic_file(const char *filename, int x, int y,
-		  struct RGB *palette, struct Image *image);
+		  struct RGB *palette, Image* image);
 
 #endif /* UTIL_PIC_FILE_H */

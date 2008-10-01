@@ -36,11 +36,11 @@ typedef struct TipWindow
   bool filtering;
 } TipWindow;
 
-static int tip_type(void);
+static int tip_type();
 static bool tip_hook(JWidget widget, JMessage msg);
 
 static JWidget tipwindow_new(const char *text, bool close_on_buttonpressed);
-static int tipwindow_type(void);
+static int tipwindow_type();
 static TipWindow *tipwindow_data(JWidget widget);
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
@@ -104,7 +104,7 @@ void jtooltip_window_set_hotregion(JWidget widget, JRegion region)
 /********************************************************************/
 /* hook for widgets that want a tool-tip */
 
-static int tip_type(void)
+static int tip_type()
 {
   static int type = 0;
   if (!type)
@@ -212,7 +212,7 @@ static JWidget tipwindow_new(const char *text, bool close_on_buttonpressed)
   return window;
 }
 
-static int tipwindow_type(void)
+static int tipwindow_type()
 {
   static int type = 0;
   if (!type)

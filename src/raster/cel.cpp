@@ -18,45 +18,60 @@
 
 #include "config.h"
 
+#include <cassert>
+
 #include "raster/cel.h"
 #include "raster/layer.h"
 
-Cel *cel_new(int frame, int image)
+//////////////////////////////////////////////////////////////////////
+
+
+Cel::Cel(int frame, int image)
+  : GfxObj(GFXOBJ_CEL)
 {
-  Cel *cel = (Cel *)gfxobj_new(GFXOBJ_CEL, sizeof(Cel));
-  if (!cel)
-    return NULL;
-
-  cel->frame = frame;
-  cel->image = image;
-  cel->x = 0;
-  cel->y = 0;
-  cel->opacity = 255;
-
-  return cel;
+  this->frame = frame;
+  this->image = image;
+  this->x = 0;
+  this->y = 0;
+  this->opacity = 255;
 }
 
-Cel *cel_new_copy(const Cel *cel)
+Cel::Cel(const Cel& cel)
+  : GfxObj(cel)
 {
-  Cel *cel_copy;
-
-  cel_copy = cel_new(cel->frame, cel->image);
-  if (!cel_copy)
-    return NULL;
-  cel_set_position(cel_copy, cel->x, cel->y);
-  cel_set_opacity(cel_copy, cel->opacity);
-
-  return cel_copy;
+  this->frame = cel.frame;
+  this->image = cel.image;
+  this->x = cel.x;
+  this->y = cel.y;
+  this->opacity = cel.opacity;
 }
 
-void cel_free(Cel *cel)
+Cel::~Cel()
 {
-  gfxobj_free((GfxObj *)cel);
 }
 
-Cel *cel_is_link(Cel *cel, Layer *layer)
+//////////////////////////////////////////////////////////////////////
+
+Cel* cel_new(int frame, int image)
 {
-  Cel *link;
+  return new Cel(frame, image);
+}
+
+Cel* cel_new_copy(const Cel* cel)
+{
+  assert(cel);
+  return new Cel(*cel);
+}
+
+void cel_free(Cel* cel)
+{
+  assert(cel);
+  delete cel;
+}
+
+Cel* cel_is_link(Cel* cel, Layer *layer)
+{
+  Cel* link;
   int frame;
 
   for (frame=0; frame<cel->frame; frame++) {
@@ -72,23 +87,23 @@ Cel *cel_is_link(Cel *cel, Layer *layer)
  * @warning You have to remove the cel from the layer before to change
  *          the frame position.
  */
-void cel_set_frame(Cel *cel, int frame)
+void cel_set_frame(Cel* cel, int frame)
 {
   cel->frame = frame;
 }
 
-void cel_set_image(Cel *cel, int image)
+void cel_set_image(Cel* cel, int image)
 {
   cel->image = image;
 }
 
-void cel_set_position(Cel *cel, int x, int y)
+void cel_set_position(Cel* cel, int x, int y)
 {
   cel->x = x;
   cel->y = y;
 }
 
-void cel_set_opacity(Cel *cel, int opacity)
+void cel_set_opacity(Cel* cel, int opacity)
 {
   cel->opacity = opacity;
 }

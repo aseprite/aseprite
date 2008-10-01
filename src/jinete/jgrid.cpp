@@ -39,7 +39,7 @@
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
 
-typedef struct Cell
+struct Cell
 {
   struct Cell *parent;
   JWidget child;
@@ -47,15 +47,15 @@ typedef struct Cell
   int vspan;
   int align;
   int w, h;
-} Cell;
+};
 
-typedef struct Strip
+struct Strip
 {
   int size;
   int expand_count;
-} Strip;
+};
 
-typedef struct Grid
+struct Grid
 {
   bool same_width_columns;
   int cols;
@@ -63,7 +63,7 @@ typedef struct Grid
   Strip *colstrip;
   Strip *rowstrip;
   Cell **cells;
-} Grid;
+};
 
 static bool grid_msg_proc(JWidget widget, JMessage msg);
 static void grid_request_size(JWidget widget, int *w, int *h);

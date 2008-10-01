@@ -54,7 +54,7 @@ struct jhook
   void *data;
 };
 
-JHook jhook_new(void);
+JHook jhook_new();
 void jhook_free(JHook hook);
 
 #endif /* JINETE_HOOK_H */

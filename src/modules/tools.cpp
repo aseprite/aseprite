@@ -154,7 +154,7 @@ static void update_cursor_color(void *data)
 /* TOOLS                                                   */
 /***********************************************************/
 
-int init_module_tools(void)
+int init_module_tools()
 {
   int size, type, angle;
 
@@ -198,7 +198,7 @@ int init_module_tools(void)
   return 0;
 }
 
-void exit_module_tools(void)
+void exit_module_tools()
 {
   int c;
 
@@ -299,24 +299,24 @@ void select_tool(Tool *tool)
     toolbar_update(app_get_toolbar());
 }
 
-Brush *get_brush(void) { return brush; }
-int get_brush_type(void) { return brush->type; }
-int get_brush_size(void) { return brush->size; }
-int get_brush_angle(void) { return brush->angle; }
-int get_glass_dirty(void) { return glass_dirty; }
-int get_spray_width(void) { return spray_width; }
-int get_air_speed(void) { return air_speed; }
-bool get_filled_mode(void) { return filled_mode; }
-bool get_tiled_mode(void) { return tiled_mode; }
-bool get_use_grid(void) { return use_grid; }
-bool get_view_grid(void) { return view_grid; }
+Brush *get_brush() { return brush; }
+int get_brush_type() { return brush->type; }
+int get_brush_size() { return brush->size; }
+int get_brush_angle() { return brush->angle; }
+int get_glass_dirty() { return glass_dirty; }
+int get_spray_width() { return spray_width; }
+int get_air_speed() { return air_speed; }
+bool get_filled_mode() { return filled_mode; }
+bool get_tiled_mode() { return tiled_mode; }
+bool get_use_grid() { return use_grid; }
+bool get_view_grid() { return view_grid; }
 
-JRect get_grid(void)
+JRect get_grid()
 {
   return jrect_new_copy(grid);
 }
 
-bool get_onionskin(void)
+bool get_onionskin()
 {
   return onionskin;
 }
@@ -344,17 +344,17 @@ void set_onionskin(bool status)
   onionskin = status;
 }
 
-int get_raw_cursor_color(void)
+int get_raw_cursor_color()
 {
   return _cursor_color;
 }
 
-bool is_cursor_mask(void)
+bool is_cursor_mask()
 {
   return _cursor_mask;
 }
 
-color_t get_cursor_color(void)
+color_t get_cursor_color()
 {
   return cursor_color;
 }
@@ -366,7 +366,7 @@ void set_cursor_color(color_t color)
 }
 
 /* returns the size which use the current tool */
-int get_thickness_for_cursor(void)
+int get_thickness_for_cursor()
 {
   /* 1 pixel of thickness */
   if ((current_tool == tools_list[TOOL_MARKER]) ||

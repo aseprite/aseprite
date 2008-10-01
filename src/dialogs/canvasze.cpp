@@ -39,7 +39,7 @@
 #include "widgets/colbut.h"
 #include "widgets/groupbut.h"
 
-void canvas_resize(void)
+void canvas_resize()
 {
   JWidget window, box1, box2, box3, box4, box5, box6;
   JWidget label_w, label_h;

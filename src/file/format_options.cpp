@@ -46,7 +46,7 @@ void format_options_free(FormatOptions* format_options)
   jfree(format_options);
 }
 
-BmpOptions *bmp_options_new(void)
+BmpOptions *bmp_options_new()
 {
   BmpOptions *bmp_options = (BmpOptions *)
     format_options_new(FORMAT_OPTIONS_BMP,

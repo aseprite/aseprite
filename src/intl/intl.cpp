@@ -29,17 +29,17 @@
 #include "intl/msgids.h"
 #include "modules/gui.h"
 
-int intl_init(void)
+int intl_init()
 {
   return 0;
 }
 
-void intl_exit(void)
+void intl_exit()
 {
   msgids_clear();
 }
 
-void intl_load_lang(void)
+void intl_load_lang()
 {
   const char *lang = intl_get_lang();
   DIRS *dirs, *dir;
@@ -60,7 +60,7 @@ void intl_load_lang(void)
   dirs_free(dirs);
 }
 
-const char *intl_get_lang(void)
+const char *intl_get_lang()
 {
   return get_config_string("Options", "Language", "en");
 }
@@ -74,7 +74,7 @@ void intl_set_lang(const char *lang)
   intl_load_lang();
 }
 
-/* int init_intl(void) */
+/* int init_intl() */
 /* { */
 /* #ifdef ENABLE_NLS */
 /*   char buf[512], locale_path[512]; */
@@ -114,7 +114,7 @@ void intl_set_lang(const char *lang)
 /*   return 0; */
 /* } */
 
-/* const char *get_language_code(void) */
+/* const char *get_language_code() */
 /* { */
 /* #ifdef ENABLE_NLS */
 /*   static char buf[8]; */

@@ -184,7 +184,7 @@ void CropSprite(Sprite *sprite)
  */
 static void displace_layers(Undo *undo, Layer *layer, int x, int y)
 {
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Cel *cel;
@@ -737,7 +737,7 @@ void NewFrame(Sprite *sprite)
 
   /* go to next frame (the new one) */
   if (undo_is_enabled(sprite->undo))
-    undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
+    undo_int(sprite->undo, sprite, &sprite->frame);
   sprite_set_frame(sprite, sprite->frame+1);
 
   /* close undo & refresh the screen */
@@ -763,7 +763,7 @@ void RemoveFrame(Sprite *sprite, int frame)
   /* move backward if we are outside the range of frames */
   if (sprite->frame >= sprite->frames) {
     if (undo_is_enabled(sprite->undo))
-      undo_int(sprite->undo, &sprite->gfxobj, &sprite->frame);
+      undo_int(sprite->undo, sprite, &sprite->frame);
 
     sprite_set_frame(sprite, sprite->frames-1);
   }
@@ -827,7 +827,7 @@ void MoveFrameBefore(int frame, int before_frame)
 
 static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
 {
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Cel *cel;
@@ -836,7 +836,7 @@ static bool new_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
       for (c=sprite->frames-1; c>=frame; --c) {
 	cel = layer_get_cel(layer, c);
 	if (cel) {
-	  undo_int(sprite->undo, &cel->gfxobj, &cel->frame);
+	  undo_int(sprite->undo, cel, &cel->frame);
 	  cel->frame++;
 	}
       }
@@ -913,7 +913,7 @@ static bool copy_cel_in_next_frame(Sprite *sprite, Layer *layer, int frame)
 
 static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
 {
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Cel *cel = layer_get_cel(layer, frame);
@@ -923,7 +923,7 @@ static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
       for (++frame; frame<sprite->frames; ++frame) {
 	cel = layer_get_cel(layer, frame);
 	if (cel) {
-	  undo_int(sprite->undo, &cel->gfxobj, &cel->frame);
+	  undo_int(sprite->undo, cel, &cel->frame);
 	  cel->frame--;
 	}
       }
@@ -942,7 +942,7 @@ static void remove_frame_for_layer(Sprite *sprite, Layer *layer, int frame)
 
 static void move_frame_before_layer(Undo *undo, Layer *layer, int frame, int before_frame)
 {
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Cel *cel;
@@ -1044,7 +1044,7 @@ void RemoveCel(Layer *layer, Cel *cel)
   }
 }
 
-void CropCel(void)
+void CropCel()
 {
   Sprite *sprite = current_sprite;
   Image *image = GetImage(current_sprite);

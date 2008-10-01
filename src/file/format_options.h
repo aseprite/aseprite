@@ -59,7 +59,7 @@ typedef struct BmpOptions
   ase_uint32 blue_mask;		/* mask for blue channel */
 } BmpOptions;
 
-BmpOptions *bmp_options_new(void);
+BmpOptions *bmp_options_new();
 
 /*********************************************************************
  Data for JPEG files

@@ -48,7 +48,7 @@ static JXmlElem read_elem(char *elem_string);
 /* JXml                                                               */
 /**********************************************************************/
 
-JXml jxml_new(void)
+JXml jxml_new()
 {
   JXml xml= jnew(struct jxml, 1);
   if (!xml)

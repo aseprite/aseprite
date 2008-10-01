@@ -96,7 +96,7 @@ struct jwidget
   void *user_data[4];
 };
 
-int ji_register_widget_type(void);
+int ji_register_widget_type();
 
 JWidget jwidget_new(int type);
 void jwidget_free(JWidget widget);

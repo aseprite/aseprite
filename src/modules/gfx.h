@@ -96,8 +96,8 @@ enum {
 
 typedef struct RectTracker RectTracker;
 
-int init_module_graphics(void);
-void exit_module_graphics(void);
+int init_module_graphics();
+void exit_module_graphics();
 
 struct BITMAP *get_gfx(int id);
 

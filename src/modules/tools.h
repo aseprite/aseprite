@@ -25,11 +25,12 @@
 #include "core/color.h"
 #include "raster/algo.h"
 
+class Image;
+class Layer;
+class Mask;
+class Sprite;
+
 struct Brush;
-struct Image;
-struct Layer;
-struct Mask;
-struct Sprite;
 
 enum {
   TOOL_MARKER,
@@ -47,14 +48,13 @@ enum {
   MAX_TOOLS
 };
 
-typedef struct Tool Tool;
-typedef struct ToolData ToolData;
+struct ToolData;
 
 struct Tool
 {
-  const char *key;
-  const char *name;
-  const char *tips;
+  const char* key;
+  const char* name;
+  const char* tips;
   int flags;
   void (*preprocess_data)(ToolData *data);
   void (*draw_trace)(int x1, int y1, int x2, int y2, ToolData *data);
@@ -63,12 +63,12 @@ struct Tool
 
 struct ToolData
 {
-  struct Sprite *sprite;
-  struct Layer *layer;
-  struct Image *src_image;	/* where we can get pixels (readonly image) */
-  struct Image *dst_image;	/* where we should put pixels */
-  struct Brush *brush;		/* brush to be used with the ink */
-  struct Mask *mask;		/* mask to limit the paint */
+  Sprite* sprite;
+  Layer* layer;
+  Image* src_image;		/* where we can get pixels (readonly image) */
+  Image* dst_image;		/* where we should put pixels */
+  Brush* brush;			/* brush to be used with the ink */
+  Mask* mask;			/* mask to limit the paint */
   int mask_x, mask_y;		/* mask offset */
   int color;			/* primary color to draw */
   int other_color;		/* secondary color to draw */
@@ -85,8 +85,8 @@ struct ToolData
 extern Tool *current_tool;
 extern Tool *tools_list[MAX_TOOLS];
 
-int init_module_tools(void);
-void exit_module_tools(void);
+int init_module_tools();
+void exit_module_tools();
 
 void tool_add_key(Tool *tool, const char *string);
 bool tool_is_key_pressed(Tool *tool, JMessage msg);
@@ -96,20 +96,20 @@ Tool *get_tool_by_key(JMessage msg);
 
 void select_tool(Tool *tool);
 
-struct Brush *get_brush(void);
-int get_brush_type(void);
-int get_brush_size(void);
-int get_brush_angle(void);
-int get_brush_mode(void);
-int get_glass_dirty(void);
-int get_spray_width(void);
-int get_air_speed(void);
-bool get_filled_mode(void);
-bool get_tiled_mode(void);
-bool get_use_grid(void);
-bool get_view_grid(void);
-JRect get_grid(void);
-bool get_onionskin(void);
+Brush* get_brush();
+int get_brush_type();
+int get_brush_size();
+int get_brush_angle();
+int get_brush_mode();
+int get_glass_dirty();
+int get_spray_width();
+int get_air_speed();
+bool get_filled_mode();
+bool get_tiled_mode();
+bool get_use_grid();
+bool get_view_grid();
+JRect get_grid();
+bool get_onionskin();
 
 void set_brush_type(int type);
 void set_brush_size(int size);
@@ -125,19 +125,19 @@ void set_view_grid(bool status);
 void set_grid(JRect rect);
 void set_onionskin(bool status);
 
-int get_raw_cursor_color(void);
-bool is_cursor_mask(void);
-color_t get_cursor_color(void);
+int get_raw_cursor_color();
+bool is_cursor_mask();
+color_t get_cursor_color();
 void set_cursor_color(color_t color);
 
-int get_thickness_for_cursor(void);
+int get_thickness_for_cursor();
 
 void control_tool(JWidget editor, Tool *tool,
 		  color_t color,
 		  color_t other_color,
 		  bool left_button);
 
-/* void do_tool_points(struct Sprite *sprite, Tool *tool, color_t color, */
+/* void do_tool_points(Sprite* sprite, Tool* tool, color_t color, */
 /* 		    int npoints, int *x, int *y); */
 
 void apply_grid(int *x, int *y, bool flexible);

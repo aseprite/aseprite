@@ -82,7 +82,7 @@ END_OF_MAIN();
 /**********************************************************************/
 /* tip */
 
-static int tip_type(void);
+static int tip_type();
 static bool tip_hook(JWidget widget, JMessage msg);
 
 static JWidget tip_window_new(const char *text);
@@ -105,7 +105,7 @@ void jwidget_add_tip(JWidget widget, const char *text)
   jwidget_add_hook(widget, tip_type(), tip_hook, tip);
 }
 
-static int tip_type(void)
+static int tip_type()
 {
   static int type = 0;
   if (!type)

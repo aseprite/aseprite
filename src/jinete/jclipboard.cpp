@@ -33,7 +33,7 @@
 
 static char *clipboard_text = NULL;
 
-const char *jclipboard_get_text(void)
+const char *jclipboard_get_text()
 {
   return clipboard_text;
 }

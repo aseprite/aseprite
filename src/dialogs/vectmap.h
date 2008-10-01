@@ -19,6 +19,6 @@
 #ifndef DIALOGS_VECTMAP_H
 #define DIALOGS_VECTMAP_H
 
-void dialogs_vector_map(void);
+void dialogs_vector_map();
 
 #endif /* DIALOGS_VECTMAP_H */

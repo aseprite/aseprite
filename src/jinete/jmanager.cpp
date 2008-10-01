@@ -116,9 +116,9 @@ static void manager_pump_queue(JWidget widget);
 static void manager_redraw_region(JWidget widget, JRegion region);
 
 /* auxiliary */
-static void generate_setcursor_message(void);
+static void generate_setcursor_message();
 static void remove_msgs_for(JWidget widget, JMessage msg);
-static void generate_proc_windows_list(void);
+static void generate_proc_windows_list();
 static void generate_proc_windows_list2(JWidget manager);
 static int some_parent_is_focusrest(JWidget widget);
 static JWidget find_magnetic_widget(JWidget widget);
@@ -138,18 +138,18 @@ static int cmp_up(JWidget widget, int x, int y);
 static int cmp_down(JWidget widget, int x, int y);
 
 /* hooks the close-button in some platform with window support */
-static void allegro_window_close_hook(void)
+static void allegro_window_close_hook()
 {
   if (want_close_stage == STAGE_NORMAL)
     want_close_stage = STAGE_WANT_CLOSE;
 }
 
-JWidget ji_get_default_manager(void)
+JWidget ji_get_default_manager()
 {
   return default_manager;
 }
 
-JWidget jmanager_new(void)
+JWidget jmanager_new()
 {
   JWidget widget;
   int c;
@@ -697,17 +697,17 @@ void jmanager_enqueue_message(JMessage msg)
     jmessage_free(msg);
 }
 
-JWidget jmanager_get_focus(void)
+JWidget jmanager_get_focus()
 {
   return focus_widget;
 }
 
-JWidget jmanager_get_mouse(void)
+JWidget jmanager_get_mouse()
 {
   return mouse_widget;
 }
 
-JWidget jmanager_get_capture(void)
+JWidget jmanager_get_capture()
 {
   return capture_widget;
 }
@@ -883,17 +883,17 @@ void jmanager_focus_first_child(JWidget widget)
   }
 }
 
-void jmanager_free_focus(void)
+void jmanager_free_focus()
 {
   jmanager_set_focus(NULL);
 }
 
-void jmanager_free_mouse(void)
+void jmanager_free_mouse()
 {
   jmanager_set_mouse(NULL);
 }
 
-void jmanager_free_capture(void)
+void jmanager_free_capture()
 {
   if (capture_widget) {
     capture_widget->flags &= ~JI_HASCAPTURE;
@@ -926,7 +926,7 @@ void jmanager_remove_messages_for(JWidget widget)
     remove_msgs_for(widget, reinterpret_cast<JMessage>(link->data));
 }
 
-void jmanager_refresh_screen(void)
+void jmanager_refresh_screen()
 {
   if (default_manager)
     jwidget_invalidate(default_manager);
@@ -1355,7 +1355,7 @@ static void manager_redraw_region(JWidget widget, JRegion region)
 			Internal routines
  **********************************************************************/
 
-static void generate_setcursor_message(void)
+static void generate_setcursor_message()
 {
   JWidget dst;
   JMessage msg;
@@ -1384,7 +1384,7 @@ static void remove_msgs_for(JWidget widget, JMessage msg)
   }
 }
 
-static void generate_proc_windows_list(void)
+static void generate_proc_windows_list()
 {
   jlist_clear(proc_windows_list);
   generate_proc_windows_list2(default_manager);

@@ -57,7 +57,7 @@ typedef struct View
 static void view_plain_update(JWidget widget);
 static bool view_msg_proc(JWidget widget, JMessage msg);
 
-static JWidget viewport_new(void);
+static JWidget viewport_new();
 static bool viewport_msg_proc(JWidget widget, JMessage msg);
 static void viewport_needed_size(JWidget widget, int *w, int *h);
 static void viewport_set_position(JWidget widget, JRect rect);
@@ -69,7 +69,7 @@ static void scrollbar_info(JWidget widget, int *_pos, int *_len,
 
 static void displace_widgets(JWidget widget, int x, int y);
 
-JWidget jview_new(void)
+JWidget jview_new()
 {
   JWidget widget = jwidget_new(JI_VIEW);
   View *view = jnew(View, 1);
@@ -387,7 +387,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static JWidget viewport_new(void)
+static JWidget viewport_new()
 {
   JWidget widget = jwidget_new(JI_VIEW_VIEWPORT);
 

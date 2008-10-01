@@ -20,13 +20,13 @@
 #define RASTER_ALGO_H
 
 struct Dirty;
-struct Image;
+class Image;
 
-typedef void (*AlgoPixel) (int x, int y, void *data);
-typedef void (*AlgoHLine) (int x1, int y, int x2, void *data);
-typedef void (*AlgoLine) (int x1, int y1, int x2, int y2, void *data);
+typedef void (*AlgoPixel)(int x, int y, void *data);
+typedef void (*AlgoHLine)(int x1, int y, int x2, void *data);
+typedef void (*AlgoLine)(int x1, int y1, int x2, int y2, void *data);
 
-void algo_dirty (struct Dirty *dirty, void *data, AlgoHLine proc);
+void algo_dirty(Dirty* dirty, void *data, AlgoHLine proc);
 
 void algo_line (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
 void algo_ellipse (int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
@@ -44,6 +44,6 @@ double algo_spline_get_tan (double x0, double y0, double x1, double y1,
 			    double x2, double y2, double x3, double y3,
 			    double in_x);
 
-void algo_floodfill (struct Image *image, int x, int y, void *data, AlgoHLine proc);
+void algo_floodfill(Image* image, int x, int y, void* data, AlgoHLine proc);
 
 #endif /* RASTER_ALGO_H */

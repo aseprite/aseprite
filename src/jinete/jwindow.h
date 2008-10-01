@@ -35,7 +35,7 @@
 #include "jinete/jbase.h"
 
 JWidget jwindow_new(const char *text);
-JWidget jwindow_new_desktop(void);
+JWidget jwindow_new_desktop();
 
 JWidget jwindow_get_killer(JWidget window);
 

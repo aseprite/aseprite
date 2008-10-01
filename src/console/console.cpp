@@ -37,7 +37,7 @@ static int console_counter = 0;
 static bool console_locked;
 static bool want_close_flag = FALSE;
 
-void console_open(void)
+void console_open()
 {
   console_counter++;
 
@@ -87,7 +87,7 @@ void console_open(void)
   }
 }
 
-void console_close(void)
+void console_close()
 {
   console_counter--;
 

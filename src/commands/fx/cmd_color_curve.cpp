@@ -44,7 +44,7 @@ static Curve *the_curve = NULL;
 static JWidget check_preview, preview;
 
 static bool window_msg_proc(JWidget widget, JMessage msg);
-static void make_preview(void);
+static void make_preview();
 
 static bool cmd_color_curve_enabled(const char *argument)
 {
@@ -170,7 +170,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static void make_preview(void)
+static void make_preview()
 {
   if (jwidget_is_selected(check_preview))
     preview_restart(preview);

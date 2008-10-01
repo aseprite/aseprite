@@ -21,28 +21,30 @@
 
 #include "raster/gfxobj.h"
 
-struct Layer;
+class Layer;
 
-typedef struct Cel Cel;
-
-struct Cel
+class Cel : public GfxObj
 {
-  GfxObj gfxobj;
+public:
   int frame;			/* frame position */
   int image;			/* image index of stock */
   int x, y;			/* X/Y screen position */
   int opacity;			/* opacity level */
+
+  Cel(int frame, int image);
+  Cel(const Cel& cel);
+  virtual ~Cel();
 };
 
-Cel *cel_new(int frame, int image);
-Cel *cel_new_copy(const Cel *cel);
-void cel_free(Cel *cel);
+Cel* cel_new(int frame, int image);
+Cel* cel_new_copy(const Cel* cel);
+void cel_free(Cel* cel);
 
-Cel *cel_is_link(Cel *cel, struct Layer *layer);
+Cel* cel_is_link(Cel* cel, Layer* layer);
 
-void cel_set_frame(Cel *cel, int frame);
-void cel_set_image(Cel *cel, int image);
-void cel_set_position(Cel *cel, int x, int y);
-void cel_set_opacity(Cel *cel, int opacity);
+void cel_set_frame(Cel* cel, int frame);
+void cel_set_image(Cel* cel, int image);
+void cel_set_position(Cel* cel, int x, int y);
+void cel_set_opacity(Cel* cel, int opacity);
 
 #endif /* RASTER_FRAME_H */

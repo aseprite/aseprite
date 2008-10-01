@@ -18,50 +18,60 @@
 
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
 #include <allegro.h>
+#include <algorithm>
 
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "util/col_file.h"
 
-Palette* palette_new(int frame, int ncolors)
-{
-  Palette* pal;
-  int c;
+//////////////////////////////////////////////////////////////////////
 
+Palette::Palette(int frame, int ncolors)
+  : GfxObj(GFXOBJ_PALETTE)
+{
   assert(ncolors >= 1 && ncolors <= MAX_PALETTE_COLORS);
 
-  pal = (Palette* )gfxobj_new(GFXOBJ_PALETTE, sizeof(Palette));
-  if (!pal)
-    return NULL;
+  this->frame = frame;
+  this->ncolors = ncolors;
 
-  pal->frame = frame;
-  pal->ncolors = ncolors;
-  for (c=0; c<MAX_PALETTE_COLORS; ++c)
-    pal->color[c] = _rgba(0, 0, 0, 255);
+  std::fill(this->color,
+	    this->color+MAX_PALETTE_COLORS,
+	    _rgba(0, 0, 0, 255));
+}
 
-  return pal;
+Palette::Palette(const Palette& palette)
+  : GfxObj(palette)
+{
+  this->frame = palette.frame;
+  this->ncolors = palette.ncolors;
+
+  std::copy(palette.color,
+	    palette.color+MAX_PALETTE_COLORS,
+	    this->color);
+}
+
+Palette::~Palette()
+{
+}
+
+//////////////////////////////////////////////////////////////////////
+
+Palette* palette_new(int frame, int ncolors)
+{
+  return new Palette(frame, ncolors);
 }
 
 Palette* palette_new_copy(const Palette* pal)
 {
-  Palette* palcopy;
-  int i;
-
-  palcopy = palette_new(pal->frame, pal->ncolors);
-  if (palcopy == NULL)
-    return NULL;
-
-  for (i=0; i<MAX_PALETTE_COLORS; ++i)
-    palcopy->color[i] = pal->color[i];
-
-  return palcopy;
+  assert(pal);
+  return new Palette(*pal);
 }
 
 void palette_free(Palette* palette)
 {
-  gfxobj_free((GfxObj *)palette);
+  delete palette;
 }
 
 void palette_black(Palette* pal)
@@ -359,7 +369,7 @@ bool palette_save(Palette* pal, const char *filename)
 
 static unsigned int col_diff[3*128]; 
 
-static void bestfit_init(void)
+static void bestfit_init()
 {
   register int i, k;
 

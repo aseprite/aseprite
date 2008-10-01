@@ -58,7 +58,7 @@ JWidget colorviewer_new(color_t color, int imgtype)
   return widget;
 }
 
-int colorviewer_type(void)
+int colorviewer_type()
 {
   static int type = 0;
   if (!type)

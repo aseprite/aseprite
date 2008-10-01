@@ -50,7 +50,7 @@ static char *log_filename = NULL;
 static FILE *log_fileptr = NULL;
 #endif
 
-bool core_init(void)
+bool core_init()
 {
 #ifdef NEED_LOG
   char buf[512];
@@ -73,7 +73,7 @@ bool core_init(void)
   return TRUE;
 }
 
-void core_exit(void)
+void core_exit()
 {
 #ifdef NEED_LOG
   if (log_fileptr) {
@@ -123,7 +123,7 @@ void verbose_printf(const char *format, ...)
  *
  * Now that the application doesn't support scripting, this always returns true.
  */
-bool is_interactive(void)
+bool is_interactive()
 {
   return ase_mode & MODE_GUI ? TRUE: FALSE;
 }

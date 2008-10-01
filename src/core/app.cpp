@@ -189,7 +189,7 @@ bool app_init(int argc, char *argv[])
  * Runs the ASE application. In GUI mode it's the top-level window, in
  * console/scripting it just runs the specified scripts.
  */
-void app_loop(void)
+void app_loop()
 {
   Option *option;
   JLink link;
@@ -350,7 +350,7 @@ void app_loop(void)
 /**
  * Finishes the ASE application.
  */
-void app_exit(void)
+void app_exit()
 {
   JLink link;
   int c;
@@ -413,7 +413,7 @@ void app_trigger_event(int app_event)
 /**
  * Updates palette and redraw the screen.
  */
-void app_refresh_screen(void)
+void app_refresh_screen()
 {
   if (ase_mode & MODE_GUI) {
     /* update the color palette */
@@ -430,7 +430,7 @@ void app_refresh_screen(void)
 /**
  * Regenerates the label for each tab in the @em tabsbar.
  */
-void app_realloc_sprite_list(void)
+void app_realloc_sprite_list()
 {
   Sprite* sprite;
   JLink link;
@@ -451,7 +451,7 @@ void app_realloc_sprite_list(void)
  * called, because, it destroy the menus, you should use
  * schedule_rebuild_recent_list() instead (src/modules/gui.c).
  */
-bool app_realloc_recent_list(void)
+bool app_realloc_recent_list()
 {
   JWidget list_menuitem = get_recent_list_menuitem();
   JWidget menuitem;
@@ -498,7 +498,7 @@ bool app_realloc_recent_list(void)
   return TRUE;
 }
 
-int app_get_current_image_type(void)
+int app_get_current_image_type()
 {
   if (current_sprite)
     return current_sprite->imgtype;
@@ -508,14 +508,14 @@ int app_get_current_image_type(void)
     return IMAGE_RGB;
 }
 
-JWidget app_get_top_window(void) { return top_window; }
-JWidget app_get_menubar(void) { return menubar; }
-JWidget app_get_statusbar(void) { return statusbar; }
-JWidget app_get_colorbar(void) { return colorbar; }
-JWidget app_get_toolbar(void) { return toolbar; }
-JWidget app_get_tabsbar(void) { return tabsbar; }
+JWidget app_get_top_window() { return top_window; }
+JWidget app_get_menubar() { return menubar; }
+JWidget app_get_statusbar() { return statusbar; }
+JWidget app_get_colorbar() { return colorbar; }
+JWidget app_get_toolbar() { return toolbar; }
+JWidget app_get_tabsbar() { return tabsbar; }
 
-void app_default_statusbar_message(void)
+void app_default_statusbar_message()
 {
   statusbar_set_text(app_get_statusbar(), 250,
 		     "ASE " VERSION ", " COPYRIGHT);

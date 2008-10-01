@@ -19,6 +19,6 @@
 #ifndef DIALOGS_MASKCOL_H
 #define DIALOGS_MASKCOL_H
 
-void dialogs_mask_color(void);
+void dialogs_mask_color();
 
 #endif /* DIALOGS_MASKCOL_H */

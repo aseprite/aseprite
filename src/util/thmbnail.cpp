@@ -51,7 +51,7 @@ static Thumbnail* thumbnail_new(Cel *cel, BITMAP* bmp);
 static void thumbnail_free(Thumbnail* thumbnail);
 static void thumbnail_render(BITMAP* bmp, Image* image, bool has_alpha);
 
-void destroy_thumbnails(void)
+void destroy_thumbnails()
 {
   if (thumbnails) {
     JLink link;

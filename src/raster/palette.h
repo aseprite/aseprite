@@ -25,14 +25,16 @@
 
 #define MAX_PALETTE_COLORS	256
 
-typedef struct Palette Palette;
-
-struct Palette
+class Palette : public GfxObj
 {
-  GfxObj gfxobj;
+public:
   int frame;
   int ncolors;
   ase_uint32 color[MAX_PALETTE_COLORS];
+
+  Palette(int frame, int ncolors);
+  Palette(const Palette& palette);
+  virtual ~Palette();
 };
 
 Palette* palette_new(int frame, int ncolors);

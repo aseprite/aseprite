@@ -61,7 +61,7 @@ JWidget colorbutton_new(color_t color, int imgtype)
   return widget;
 }
 
-int colorbutton_type(void)
+int colorbutton_type()
 {
   static int type = 0;
   if (!type)

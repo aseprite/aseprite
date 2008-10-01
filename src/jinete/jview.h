@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JWidget jview_new(void);
+JWidget jview_new();
 
 bool jview_has_bars(JWidget view);
 

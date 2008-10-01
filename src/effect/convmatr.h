@@ -40,15 +40,15 @@ ConvMatr *convmatr_new_string(const char *format);
 void convmatr_free(ConvMatr *convmatr);
 
 void set_convmatr(ConvMatr *convmatr);
-ConvMatr *get_convmatr(void);
+ConvMatr *get_convmatr();
 ConvMatr *get_convmatr_by_name(const char *name);
 
-void reload_matrices_stock(void);
-void clean_matrices_stock(void);
-JList get_convmatr_stock(void);
+void reload_matrices_stock();
+void clean_matrices_stock();
+JList get_convmatr_stock();
 
-void init_convolution_matrix(void);
-void exit_convolution_matrix(void);
+void init_convolution_matrix();
+void exit_convolution_matrix();
 
 void apply_convolution_matrix4(struct Effect *effect);
 void apply_convolution_matrix2(struct Effect *effect);

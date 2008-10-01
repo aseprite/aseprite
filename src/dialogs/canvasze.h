@@ -19,7 +19,7 @@
 #ifndef DIALOGS_CANVASZE_H
 #define DIALOGS_CANVASZE_H
 
-void canvas_resize(void);
+void canvas_resize();
 
 #endif /* DIALOGS_CANVASZE_H */
 

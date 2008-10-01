@@ -33,17 +33,17 @@
 #include "modules/palettes.h"
 #include "raster/palette.h"
 
-static JWidget tips_new(void);
-static int tips_type(void);
+static JWidget tips_new();
+static int tips_type();
 static bool tips_msg_proc(JWidget widget, JMessage msg);
 static void tips_request_size(JWidget widget, int *w, int *h);
 
 static JWidget tips_image_new(BITMAP *bmp);
-static int tips_image_type(void);
+static int tips_image_type();
 static bool tips_image_msg_proc(JWidget widget, JMessage msg);
 
-static FILE *tips_open_file(void);
-static int tips_count_pages(void);
+static FILE *tips_open_file();
+static int tips_count_pages();
 static void tips_load_page(JWidget widget);
 static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take);
 static BITMAP *tips_load_image(const char *filename, PALETTE pal);
@@ -150,7 +150,7 @@ void dialogs_tips(bool forced)
 				Tips
  ***********************************************************************/
 
-static JWidget tips_new(void)
+static JWidget tips_new()
 {
   JWidget widget = jwidget_new(tips_type());
 
@@ -161,7 +161,7 @@ static JWidget tips_new(void)
   return widget;
 }
 
-static int tips_type(void)
+static int tips_type()
 {
   static int type = 0;
   if (!type)
@@ -225,7 +225,7 @@ static JWidget tips_image_new(BITMAP *bmp)
   return widget;
 }
 
-static int tips_image_type(void)
+static int tips_image_type()
 {
   static int type = 0;
   if (!type)
@@ -241,7 +241,7 @@ static bool tips_image_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-static FILE *tips_open_file(void)
+static FILE *tips_open_file()
 {
   char filename[1024];
   DIRS *dirs, *dir;
@@ -264,7 +264,7 @@ static FILE *tips_open_file(void)
   return fopen(filename, "rt");
 }
 
-static int tips_count_pages(void)
+static int tips_count_pages()
 {
   char buf[1024];
   int page = 0;

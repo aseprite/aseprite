@@ -24,7 +24,7 @@
 #include "core/color.h"
 
 JWidget colorbar_new(int align);
-int colorbar_type(void);
+int colorbar_type();
 
 void colorbar_set_size(JWidget widget, int size);
 

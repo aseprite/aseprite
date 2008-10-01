@@ -39,7 +39,7 @@
  *
  * @see jhook
  */
-JHook jhook_new(void)
+JHook jhook_new()
 {
   JHook hook;
 

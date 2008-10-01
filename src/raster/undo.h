@@ -23,69 +23,71 @@
 
 #include "raster/gfxobj.h"
 
-struct Cel;
+class Cel;
+class Image;
+class Layer;
+class Mask;
+class Sprite;
+class Stock;
+
 struct Dirty;
-struct Image;
-struct Layer;
-struct Mask;
-struct Sprite;
-struct Stock;
 struct UndoStream;
 
-typedef struct Undo Undo;
-
-struct Undo
+class Undo : public GfxObj
 {
-  GfxObj gfxobj;
-  struct Sprite *sprite;	/* related sprite */
-  struct UndoStream *undo_stream;
-  struct UndoStream *redo_stream;
+public:
+  Sprite* sprite;		/* related sprite */
+  UndoStream *undo_stream;
+  UndoStream *redo_stream;
   int diff_count;
   int diff_saved;
   unsigned enabled : 1;		/* is undo enabled? */
   const char *label;		/* current label to be applied to all
 				   next undo operations */
+
+  Undo(Sprite* sprite);
+  virtual ~Undo();
 };
 
-Undo *undo_new(struct Sprite *sprite);
-void undo_free(Undo *undo);
+Undo* undo_new(Sprite* sprite);
+void undo_free(Undo* undo);
 
-int undo_get_memsize(Undo *undo);
+int undo_get_memsize(Undo* undo);
 
-void undo_enable(Undo *undo);
-void undo_disable(Undo *undo);
+void undo_enable(Undo* undo);
+void undo_disable(Undo* undo);
 
-bool undo_is_enabled(Undo *undo);
-bool undo_is_disabled(Undo *undo);
+bool undo_is_enabled(Undo* undo);
+bool undo_is_disabled(Undo* undo);
 
-bool undo_can_undo(Undo *undo);
-bool undo_can_redo(Undo *undo);
+bool undo_can_undo(Undo* undo);
+bool undo_can_redo(Undo* undo);
 
-void undo_undo(Undo *undo);
-void undo_redo(Undo *undo);
+void undo_undo(Undo* undo);
+void undo_redo(Undo* undo);
 
-void undo_set_label(Undo *undo, const char *label);
-const char *undo_get_next_undo_label(Undo *undo);
-const char *undo_get_next_redo_label(Undo *undo);
+void undo_set_label(Undo* undo, const char *label);
+const char* undo_get_next_undo_label(Undo* undo);
+const char* undo_get_next_redo_label(Undo* undo);
 
-void undo_open(Undo *undo);
-void undo_close(Undo *undo);
-void undo_data(Undo *undo, GfxObj *gfxobj, void *data, int size);
-void undo_image(Undo *undo, struct Image *image, int x, int y, int w, int h);
-void undo_flip(Undo *undo, struct Image *image, int x1, int y1, int x2, int y2, int horz);
-void undo_dirty(Undo *undo, struct Dirty *dirty);
-void undo_add_image(Undo *undo, struct Stock *stock, int image_index);
-void undo_remove_image(Undo *undo, struct Stock *stock, int image_index);
-void undo_replace_image(Undo *undo, struct Stock *stock, int image_index);
-void undo_add_cel(Undo *undo, struct Layer *layer, struct Cel *cel);
-void undo_remove_cel(Undo *undo, struct Layer *layer, struct Cel *cel);
-void undo_add_layer(Undo *undo, struct Layer *set, struct Layer *layer);
-void undo_remove_layer(Undo *undo, struct Layer *layer);
-void undo_move_layer(Undo *undo, struct Layer *layer);
-void undo_set_layer(Undo *undo, struct Sprite *sprite);
-void undo_set_mask(Undo *undo, struct Sprite *sprite);
-void undo_set_frames(Undo *undo, struct Sprite *sprite);
-void undo_set_frlen(Undo *undo, struct Sprite *sprite, int frame);
+void undo_open(Undo* undo);
+void undo_close(Undo* undo);
+void undo_data(Undo* undo, GfxObj *gfxobj, void *data, int size);
+void undo_image(Undo* undo, Image *image, int x, int y, int w, int h);
+void undo_flip(Undo* undo, Image *image, int x1, int y1, int x2, int y2, int horz);
+void undo_dirty(Undo* undo, Dirty *dirty);
+void undo_add_image(Undo* undo, Stock *stock, int image_index);
+void undo_remove_image(Undo* undo, Stock *stock, int image_index);
+void undo_replace_image(Undo* undo, Stock *stock, int image_index);
+void undo_add_cel(Undo* undo, Layer *layer, Cel *cel);
+void undo_remove_cel(Undo* undo, Layer *layer, Cel *cel);
+void undo_add_layer(Undo* undo, Layer *set, Layer *layer);
+void undo_remove_layer(Undo* undo, Layer *layer);
+void undo_move_layer(Undo* undo, Layer *layer);
+void undo_set_layer(Undo* undo, Sprite* sprite);
+void undo_set_mask(Undo* undo, Sprite* sprite);
+void undo_set_frames(Undo* undo, Sprite* sprite);
+void undo_set_frlen(Undo* undo, Sprite* sprite, int frame);
 
 #define undo_int(undo, gfxobj, value_address) \
   undo_data((undo), (gfxobj), (void *)(value_address), sizeof(int))

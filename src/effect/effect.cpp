@@ -73,13 +73,13 @@ static int effect_init(Effect *effect, Layer *layer, Image *image, int offset_x,
 static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y);
 static int effect_update_mask(Effect *effect, Mask *mask, Image *image);
 
-int init_module_effect(void)
+int init_module_effect()
 {
   init_convolution_matrix();
   return 0;
 }
 
-void exit_module_effect(void)
+void exit_module_effect()
 {
   exit_convolution_matrix();
 }

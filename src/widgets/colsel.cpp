@@ -46,7 +46,7 @@ typedef struct Model
   const char *text;
   int model;
   int color_type;
-  JWidget (*create)(void);
+  JWidget (*create)();
 } Model;
 
 typedef struct ColorSelector
@@ -56,12 +56,12 @@ typedef struct ColorSelector
   bool editable_palette;
 } ColorSelector;
 
-static JWidget create_rgb_container(void);
-static JWidget create_hsv_container(void);
-static JWidget create_gray_container(void);
-static JWidget create_mask_container(void);
+static JWidget create_rgb_container();
+static JWidget create_hsv_container();
+static JWidget create_gray_container();
+static JWidget create_mask_container();
 
-static int colorselector_type(void);
+static int colorselector_type();
 static ColorSelector* colorselector_data(JWidget widget);
 static bool colorselector_msg_proc(JWidget widget, JMessage msg);
 static void colorselector_update_lock_button(JWidget widget);
@@ -173,7 +173,7 @@ JWidget colorselector_get_paledit(JWidget widget)
   return jwidget_find_name(widget, "pal");
 }
 
-static JWidget create_rgb_container(void)
+static JWidget create_rgb_container()
 {
   JWidget grid = jgrid_new(2, FALSE);
   JWidget rlabel = jlabel_new("R");
@@ -200,7 +200,7 @@ static JWidget create_rgb_container(void)
   return grid;
 }
 
-static JWidget create_hsv_container(void)
+static JWidget create_hsv_container()
 {
   JWidget grid = jgrid_new(2, FALSE);
   JWidget hlabel = jlabel_new("H");
@@ -227,7 +227,7 @@ static JWidget create_hsv_container(void)
   return grid;
 }
 
-static JWidget create_gray_container(void)
+static JWidget create_gray_container()
 {
   JWidget grid = jgrid_new(2, FALSE);
   JWidget klabel = jlabel_new("V");
@@ -242,14 +242,14 @@ static JWidget create_gray_container(void)
   return grid;
 }
 
-static JWidget create_mask_container(void)
+static JWidget create_mask_container()
 {
   JWidget button = jbutton_new("Mask Color");
   HOOK(button, JI_SIGNAL_BUTTON_SELECT, button_mask_select_hook, 0);
   return button;
 }
 
-static int colorselector_type(void)
+static int colorselector_type()
 {
   static int type = 0;
   if (!type)

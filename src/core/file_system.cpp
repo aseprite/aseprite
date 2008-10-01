@@ -152,7 +152,7 @@ static int fileitem_cmp(FileItem *fi1, FileItem *fi2);
 /**
  * Initializes the file-system module to navigate the file-system.
  */
-bool file_system_init(void)
+bool file_system_init()
 {
 #ifdef USE_PIDLS
   /* get the IMalloc interface */
@@ -174,7 +174,7 @@ bool file_system_init(void)
 /**
  * Shutdowns the file-system module.
  */
-void file_system_exit(void)
+void file_system_exit()
 {
 #if 0
   /* WARNING: all the 'fileitem_free' are called with the hash_free
@@ -214,12 +214,12 @@ void file_system_exit(void)
  *
  * @see fileitem_get_children
  */
-void file_system_refresh(void)
+void file_system_refresh()
 {
   ++current_file_system_version;
 }
 
-FileItem *get_root_fileitem(void)
+FileItem *get_root_fileitem()
 {
   FileItem *fileitem;
 

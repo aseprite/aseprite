@@ -49,10 +49,10 @@ static bool color_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
 
-static Mask *gen_mask(void);
-static void mask_preview(void);
+static Mask *gen_mask();
+static void mask_preview();
 
-void dialogs_mask_color(void)
+void dialogs_mask_color()
 {
   JWidget window, box1, box2, box3, box4;
   JWidget label_color, button_1, button_2;
@@ -187,7 +187,7 @@ static bool preview_change_hook(JWidget widget, void *data)
   return FALSE;
 }
 
-static Mask *gen_mask(void)
+static Mask *gen_mask()
 {
   int xpos, ypos, color, fuzziness;
   Sprite *sprite;
@@ -208,7 +208,7 @@ static Mask *gen_mask(void)
   return mask;
 }
 
-static void mask_preview(void)
+static void mask_preview()
 {
   if (jwidget_is_selected (check_preview)) {
     Sprite *sprite = current_sprite;

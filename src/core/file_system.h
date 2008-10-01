@@ -25,12 +25,12 @@ struct BITMAP;
 struct FileItem;
 typedef struct FileItem FileItem;
 
-bool file_system_init(void);
-void file_system_exit(void);
+bool file_system_init();
+void file_system_exit();
 
-void file_system_refresh(void);
+void file_system_refresh();
 
-FileItem *get_root_fileitem(void);
+FileItem *get_root_fileitem();
 FileItem *get_fileitem_from_path(const char *path);
 
 bool fileitem_is_folder(FileItem *fileitem);

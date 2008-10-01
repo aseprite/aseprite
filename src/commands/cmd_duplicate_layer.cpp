@@ -29,7 +29,7 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 
-static Layer *duplicate_layer(void);
+static Layer *duplicate_layer();
 
 static bool cmd_duplicate_layer_enabled(const char *argument)
 {
@@ -44,7 +44,7 @@ static void cmd_duplicate_layer_execute(const char *argument)
     update_screen_for_sprite(current_sprite);
 }
 
-static Layer *duplicate_layer(void)
+static Layer *duplicate_layer()
 {
   Sprite *sprite = current_sprite;
   Layer *layer_copy;

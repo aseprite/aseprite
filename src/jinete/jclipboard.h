@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-const char *jclipboard_get_text(void);
+const char *jclipboard_get_text();
 void jclipboard_set_text(const char *text);
 
 #endif /* JINETE_CLIPBRD_H */

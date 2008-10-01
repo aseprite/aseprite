@@ -54,7 +54,7 @@ JWidget preview_new(Effect *effect)
   return widget;
 }
 
-int preview_type(void)
+int preview_type()
 {
   static int type = 0;
   if (!type)

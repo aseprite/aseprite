@@ -19,56 +19,56 @@
 #ifndef SCRIPT_FUNCTIONS_H
 #define SCRIPT_FUNCTIONS_H
 
-struct Sprite;
-struct Layer;
-struct Cel;
+class Sprite;
+class Layer;
+class Cel;
 
 /*===================================================================*/
 /* Sprite                                                            */
 /*===================================================================*/
 
-struct Sprite *NewSprite(int imgtype, int w, int h);
-struct Sprite *LoadSprite(const char *filename);
-void SaveSprite(const char *filename);
+Sprite* NewSprite(int imgtype, int w, int h);
+Sprite* LoadSprite(const char* filename);
+void SaveSprite(const char* filename);
 
-void SetSprite(struct Sprite *sprite); 
+void SetSprite(Sprite* sprite); 
 
-void CropSprite(struct Sprite *sprite);
+void CropSprite(Sprite* sprite);
 
 /*===================================================================*/
 /* Layer                                                             */
 /*===================================================================*/
 
-struct Layer *NewLayer(struct Sprite *sprite);
-struct Layer *NewLayerSet(struct Sprite *sprite);
-void RemoveLayer(struct Sprite *sprite);
+Layer* NewLayer(Sprite* sprite);
+Layer* NewLayerSet(Sprite* sprite);
+void RemoveLayer(Sprite* sprite);
 
-char *GetUniqueLayerName(struct Sprite *sprite);
+char *GetUniqueLayerName(Sprite* sprite);
 
-struct Layer *FlattenLayers(struct Sprite *sprite);
+Layer* FlattenLayers(Sprite* sprite);
 
-void CropLayer(struct Layer *layer, int x, int y, int w, int h);
+void CropLayer(Layer* layer, int x, int y, int w, int h);
 
-void BackgroundFromLayer(struct Sprite *sprite);
-void LayerFromBackground(struct Sprite *sprite);
+void BackgroundFromLayer(Sprite* sprite);
+void LayerFromBackground(Sprite* sprite);
 
-void MoveLayerAfter(struct Layer *layer, struct Layer *after_this);
+void MoveLayerAfter(Layer* layer, Layer* after_this);
 
 /* ======================================= */
 /* Frame                                   */
 /* ======================================= */
 
-void NewFrame(struct Sprite *sprite);
-void RemoveFrame(struct Sprite *sprite, int frame);
-void SetFrameLength(struct Sprite *sprite, int frame, int msecs);
+void NewFrame(Sprite* sprite);
+void RemoveFrame(Sprite* sprite, int frame);
+void SetFrameLength(Sprite* sprite, int frame, int msecs);
 void MoveFrameBefore(int frame, int before_frame);
 
 /* ======================================= */
 /* Cel                                     */
 /* ======================================= */
 
-void RemoveCel(struct Layer *layer, struct Cel *cel);
+void RemoveCel(Layer* layer, Cel* cel);
 
-void CropCel(void);
+void CropCel();
 
 #endif /* SCRIPT_FUNCTIONS_H */

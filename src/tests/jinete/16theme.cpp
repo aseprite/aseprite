@@ -33,8 +33,8 @@
 
 #include "jinete/jinete.h"
 
-void set_my_palette(void);
-JTheme my_theme_new(void);
+void set_my_palette();
+JTheme my_theme_new();
 
 int main (int argc, char *argv[])
 {
@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
 
 END_OF_MAIN();
 
-void set_my_palette(void)
+void set_my_palette()
 {
   PALETTE pal;
   int i, c = 0;
@@ -136,7 +136,7 @@ void set_my_palette(void)
 /**********************************************************************/
 /* Theme */
 
-static void theme_regen(void);
+static void theme_regen();
 static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y);
 static void theme_init_widget(JWidget widget);
 static JRegion theme_get_window_mask(JWidget widget);
@@ -146,7 +146,7 @@ static void theme_draw_button(JWidget widget, JRect clip);
 static void theme_draw_label(JWidget widget, JRect clip);
 static void theme_draw_window(JWidget widget, JRect clip);
 
-JTheme my_theme_new(void)
+JTheme my_theme_new()
 {
   JTheme theme;
 
@@ -171,7 +171,7 @@ JTheme my_theme_new(void)
   return theme;
 }
 
-static void theme_regen(void)
+static void theme_regen()
 {
   ji_get_theme()->desktop_color = makecol(64, 100, 128);
 }

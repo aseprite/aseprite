@@ -20,16 +20,14 @@
 #define RASTER_DIRTY_H
 
 struct Brush;
-struct Image;
-struct Mask;
+class Image;
+class Mask;
 
 #define DIRTY_VALID_COLUMN	1
 #define DIRTY_MUSTBE_UPDATED	2
 
 #define DIRTY_LINE_SIZE(width)			\
   (IMAGE_LINE_SIZE(dirty->image, width))
-
-typedef struct Dirty Dirty;
 
 struct DirtyCol
 {

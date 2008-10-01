@@ -55,7 +55,7 @@ typedef struct Tabs
   JWidget button_right;
 } Tabs;
 
-static int tabs_type(void);
+static int tabs_type();
 static bool tabs_msg_proc(JWidget widget, JMessage msg);
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg);
 
@@ -181,7 +181,7 @@ void* tabs_get_selected_tab(JWidget widget)
     return NULL;
 }
 
-static int tabs_type(void)
+static int tabs_type()
 {
   static int type = 0;
   if (!type)

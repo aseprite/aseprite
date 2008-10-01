@@ -51,7 +51,7 @@ static Sprite* clipboard_sprite;
 static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int target, bool write);
 static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
 
-int init_module_sprites(void)
+int init_module_sprites()
 {
   sprites_list = jlist_new();
   clipboard_sprite = NULL;
@@ -59,7 +59,7 @@ int init_module_sprites(void)
   return 0;
 }
 
-void exit_module_sprites(void)
+void exit_module_sprites()
 {
   JLink link;
 
@@ -77,12 +77,12 @@ void exit_module_sprites(void)
   current_sprite = NULL;
 }
 
-JList get_sprite_list(void)
+JList get_sprite_list()
 {
   return sprites_list;
 }
 
-Sprite* get_first_sprite(void)
+Sprite* get_first_sprite()
 {
   return reinterpret_cast<Sprite*>(jlist_first_data(sprites_list));
 }
@@ -98,7 +98,7 @@ Sprite* get_next_sprite(Sprite* sprite)
     return NULL;
 }
 
-Sprite* get_clipboard_sprite(void)
+Sprite* get_clipboard_sprite()
 {
   return clipboard_sprite;
 }
@@ -188,14 +188,14 @@ void sprite_show(Sprite* sprite)
     set_sprite_in_more_reliable_editor(sprite);
 }
 
-bool is_current_sprite_not_locked(void)
+bool is_current_sprite_not_locked()
 {
   return
     current_sprite != NULL &&
     !sprite_is_locked(current_sprite);
 }
 
-bool is_current_sprite_writable(void)
+bool is_current_sprite_writable()
 {
   return
     current_sprite != NULL
@@ -208,7 +208,7 @@ bool is_current_sprite_writable(void)
 		     current_sprite->frame) != NULL;
 }
 
-Sprite* lock_current_sprite(void)
+Sprite* lock_current_sprite()
 {
   if (current_sprite != NULL &&
       sprite_lock(current_sprite))
@@ -274,7 +274,7 @@ static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int tar
   if (write && !layer_is_writable(layer))
     return NULL;
 
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       if (target & TARGET_ALL_FRAMES) {
@@ -321,7 +321,7 @@ static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, 
   if (write && !layer_is_writable(layer))
     return;
 
-  switch (layer->gfxobj.type) {
+  switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
       Image *image;

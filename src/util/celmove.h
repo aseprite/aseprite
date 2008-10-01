@@ -19,14 +19,14 @@
 #ifndef UTIL_CELMOVE_H
 #define UTIL_CELMOVE_H
 
-struct Cel;
-struct Layer;
+class Cel;
+class Layer;
 
-void set_frame_to_handle(struct Layer *src_layer, int src_frame,
-			 struct Layer *dst_layer, int dst_frame);
+void set_frame_to_handle(Layer* src_layer, int src_frame,
+			 Layer* dst_layer, int dst_frame);
 
-void move_cel(void);
-void copy_cel(void);
+void move_cel();
+void copy_cel();
 
 #endif /* UTIL_CELMOVE_H */
 

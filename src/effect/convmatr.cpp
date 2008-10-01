@@ -44,7 +44,7 @@ static struct {			/* TODO warning: not thread safe */
   unsigned char **lines;
 } data;
 
-void init_convolution_matrix(void)
+void init_convolution_matrix()
 {
   data.matrices = jlist_new();
   data.convmatr = NULL;
@@ -54,7 +54,7 @@ void init_convolution_matrix(void)
   reload_matrices_stock();
 }
 
-void exit_convolution_matrix(void)
+void exit_convolution_matrix()
 {
   clean_matrices_stock();
   jlist_free(data.matrices);
@@ -123,7 +123,7 @@ void set_convmatr(ConvMatr *convmatr)
   data.lines = (unsigned char**)jmalloc(sizeof(unsigned char*) * convmatr->h);
 }
 
-ConvMatr* get_convmatr(void)
+ConvMatr* get_convmatr()
 {
   return data.convmatr;
 }
@@ -142,7 +142,7 @@ ConvMatr* get_convmatr_by_name(const char *name)
   return NULL;
 }
 
-void reload_matrices_stock(void)
+void reload_matrices_stock()
 {
 #define READ_TOK() {					\
     if (!tok_read(f, buf, leavings, sizeof (leavings)))	\
@@ -293,7 +293,7 @@ void reload_matrices_stock(void)
   }
 }
 
-void clean_matrices_stock(void)
+void clean_matrices_stock()
 {
   JLink link;
 
@@ -303,7 +303,7 @@ void clean_matrices_stock(void)
   jlist_clear(data.matrices);
 }
 
-JList get_convmatr_stock(void)
+JList get_convmatr_stock()
 {
   return data.matrices;
 }

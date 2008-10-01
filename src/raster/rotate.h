@@ -19,17 +19,17 @@
 #ifndef RASTER_ROTATE_H
 #define RASTER_ROTATE_H
 
-struct Image;
+class Image;
 
-void image_scale (struct Image *dst, struct Image *src,
-		  int x, int y, int w, int h);
+void image_scale(Image* dst, Image* src,
+		 int x, int y, int w, int h);
 
-void image_rotate (struct Image *dst, struct Image *src,
-		   int x, int y, int w, int h,
-		   int cx, int cy, double angle);
+void image_rotate(Image* dst, Image* src,
+		  int x, int y, int w, int h,
+		  int cx, int cy, double angle);
 
-void image_parallelogram (struct Image *bmp, struct Image *sprite,
-			  int x1, int y1, int x2, int y2,
-			  int x3, int y3, int x4, int y4);
+void image_parallelogram(Image* bmp, Image* sprite,
+			 int x1, int y1, int x2, int y2,
+			 int x3, int y3, int x4, int y4);
 
 #endif /* RASTER_ROTATE_H */

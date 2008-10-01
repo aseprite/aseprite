@@ -21,15 +21,15 @@
 
 #include "jinete/jbase.h"
 
-struct Image;
+class Image;
 
 bool has_clipboard_image(int *w, int *h);
 
-void copy_image_to_clipboard(struct Image *image);
+void copy_image_to_clipboard(Image* image);
 
-void cut_to_clipboard(void);
-void copy_to_clipboard(void);
-void paste_from_clipboard(void);
+void cut_to_clipboard();
+void copy_to_clipboard();
+void paste_from_clipboard();
 
 #endif /* UTIL_CLIPBRD_H */
 

@@ -19,8 +19,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-void console_open(void);
-void console_close(void);
+void console_open();
+void console_close();
 
 void console_printf(const char *format, ...);
 void user_printf(const char *format, ...);

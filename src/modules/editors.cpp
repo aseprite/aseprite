@@ -40,22 +40,22 @@ JWidget box_editors = NULL;
 static JList editors;		/* list of "Editor" structures */
 
 static int is_sprite_in_some_editor(Sprite *sprite);
-static Sprite *get_more_reliable_sprite(void);
+static Sprite *get_more_reliable_sprite();
 static JWidget find_next_editor(JWidget widget);
 static int count_parents(JWidget widget);
 
-int init_module_editors(void)
+int init_module_editors()
 {
   editors = jlist_new();
   return 0;
 }
 
-void exit_module_editors(void)
+void exit_module_editors()
 {
   jlist_free(editors);
 }
 
-JWidget create_new_editor(void)
+JWidget create_new_editor()
 {
   JWidget editor = editor_new();
 
@@ -72,7 +72,7 @@ void remove_editor(JWidget editor)
   jlist_remove(editors, editor);
 }
 
-void refresh_all_editors(void)
+void refresh_all_editors()
 {
   JLink link;
 
@@ -418,7 +418,7 @@ static int is_sprite_in_some_editor(Sprite *sprite)
  * Returns the next sprite that should be show if we close the current
  * one.
  */
-static Sprite *get_more_reliable_sprite(void)
+static Sprite *get_more_reliable_sprite()
 {
   Sprite *clipboard = get_clipboard_sprite();
   Sprite *sprite;

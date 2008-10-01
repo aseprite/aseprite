@@ -21,29 +21,29 @@
 
 #include "jinete/jbase.h"
 
-struct Image;
-struct Layer;
-struct Cel;
-struct Sprite;
+class Image;
+class Layer;
+class Cel;
+class Sprite;
 
-typedef struct ImageRef
+struct ImageRef
 {
-  struct Image *image;
-  struct Layer *layer;
-  struct Cel *cel;
-  struct ImageRef *next;
-} ImageRef;
+  Image* image;
+  Layer* layer;
+  Cel* cel;
+  ImageRef* next;
+};
 
 extern Sprite* current_sprite;
 
-int init_module_sprites(void);
-void exit_module_sprites(void);
+int init_module_sprites();
+void exit_module_sprites();
 
-JList get_sprite_list(void);
-Sprite* get_first_sprite(void);
+JList get_sprite_list();
+Sprite* get_first_sprite();
 Sprite* get_next_sprite(Sprite* sprite);
 
-Sprite* get_clipboard_sprite(void);
+Sprite* get_clipboard_sprite();
 void set_clipboard_sprite(Sprite* sprite);
 
 void sprite_mount(Sprite* sprite);
@@ -53,13 +53,13 @@ void set_current_sprite(Sprite* sprite);
 void send_sprite_to_top(Sprite* sprite);
 void sprite_show(Sprite* sprite);
 
-bool is_current_sprite_not_locked(void);
-bool is_current_sprite_writable(void);
+bool is_current_sprite_not_locked();
+bool is_current_sprite_writable();
 
-Sprite* lock_current_sprite(void);
+Sprite* lock_current_sprite();
 
-ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write);
-void images_ref_free(ImageRef *image_ref);
+ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write);
+void images_ref_free(ImageRef* image_ref);
 
 #endif /* MODULES_SPRITES_H */
 
