@@ -1,4 +1,25 @@
+2008-10-01  David A. Capello  <davidcapello@gmail.com>
+
+	* src/raster/undo.cpp: Renamed undo_undo and undo_redo to
+	undo_do_undo and undo_do_redo.
+	(undo_clear_redo): Added (used by Undoable when the final result
+	isn't committed).
+
+	* src/dialogs/aniedit.cpp (anieditor_msg_proc): Uses Undoable to
+	move frames, and move layers.
+
+	* src/commands/cmd_new_layer.cpp (cmd_new_layer_execute):
+	* src/commands/cmd_remove_cel.cpp (cmd_remove_cel_execute):
+	* src/commands/cmd_remove_frame.cpp (cmd_remove_frame_execute):
+	* src/commands/cmd_new_frame.cpp (cmd_new_frame_execute):
+	Changed to use Undoable.
+
+	* src/raster/undoable.h (class Undoable): Added.
+
 2008-09-30  David A. Capello  <davidcapello@gmail.com>
+
+	* src/raster/gfxobj.h (GfxObj): Converted to a class (and all the
+	hierarchy of graphics objects).
 
 	* src/tests/: Renamed src/test to src/tests
 

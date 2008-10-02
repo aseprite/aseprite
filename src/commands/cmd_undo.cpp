@@ -37,7 +37,7 @@ static void cmd_undo_execute(const char *argument)
 		     _("Undid %s"),
 		     undo_get_next_undo_label(current_sprite->undo));
 
-  undo_undo(current_sprite->undo);
+  undo_do_undo(current_sprite->undo);
   sprite_generate_mask_boundaries(current_sprite);
   update_screen_for_sprite(current_sprite);
 }

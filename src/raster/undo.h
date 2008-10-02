@@ -63,8 +63,10 @@ bool undo_is_disabled(Undo* undo);
 bool undo_can_undo(Undo* undo);
 bool undo_can_redo(Undo* undo);
 
-void undo_undo(Undo* undo);
-void undo_redo(Undo* undo);
+void undo_do_undo(Undo* undo);
+void undo_do_redo(Undo* undo);
+
+void undo_clear_redo(Undo* undo);
 
 void undo_set_label(Undo* undo, const char *label);
 const char* undo_get_next_undo_label(Undo* undo);

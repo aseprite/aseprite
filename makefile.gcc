@@ -178,6 +178,10 @@ tests: $(TESTS)
 
 runtests: $(AUTOTESTS)
 	@-$(foreach TEST, $(AUTOTESTS), \
-		echo ./$(TEST) "=====================" ; \
-		./$(TEST) ; \
+		echo Running ./$(TEST) ... ; \
+		if ./$(TEST) ; then \
+			echo " - OK" ; \
+		else \
+			echo " - *FAIL*" ; \
+		fi ; \
 	   )

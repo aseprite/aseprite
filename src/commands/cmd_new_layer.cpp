@@ -26,7 +26,7 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
+#include "raster/undoable.h"
 #include "util/functions.h"
 
 static bool cmd_new_layer_enabled(const char *argument)
@@ -37,7 +37,7 @@ static bool cmd_new_layer_enabled(const char *argument)
 static void cmd_new_layer_execute(const char *argument)
 {
   JWidget window, name_widget;
-  Sprite *sprite = current_sprite; /* get current sprite */
+  Sprite* sprite = current_sprite; /* get current sprite */
 
   /* load the window widget */
   window = load_widget("newlay.jid", "new_layer");
@@ -55,16 +55,12 @@ static void cmd_new_layer_execute(const char *argument)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
-    const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
-    Layer *layer;
-
-    if (undo_is_enabled(sprite->undo))
-      undo_set_label(sprite->undo, "New Layer");
-
-    layer = NewLayer(sprite);
-    if (!layer) {
-      jalert(_("Error<<Not enough memory||&Close"));
-      return;
+    const char* name = jwidget_get_text(jwidget_find_name(window, "name"));
+    Layer* layer;
+    {
+      Undoable undoable(sprite, "New Layer");
+      layer = undoable.new_layer();
+      undoable.commit();
     }
     layer_set_name(layer, name);
     update_screen_for_sprite(sprite);

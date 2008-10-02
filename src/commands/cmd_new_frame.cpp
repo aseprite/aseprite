@@ -31,10 +31,10 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/stock.h"
-#include "raster/undo.h"
-#include "util/functions.h"
+#include "raster/undoable.h"
 #include "widgets/statebar.h"
+
+#include <stdexcept>
 
 static bool cmd_new_frame_enabled(const char *argument)
 {
@@ -48,18 +48,17 @@ static bool cmd_new_frame_enabled(const char *argument)
 
 static void cmd_new_frame_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "New Frame");
-
-  NewFrame(sprite);
-
+  Sprite* sprite = current_sprite;
+  {
+    Undoable undoable(sprite, "New Frame");
+    undoable.new_frame();
+    undoable.commit();
+  }
   update_screen_for_sprite(sprite);
-
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("New frame %d/%d"),
-		     sprite->frame+1, sprite->frames);
+		     sprite->frame+1,
+		     sprite->frames);
 }
 
 Command cmd_new_frame = {

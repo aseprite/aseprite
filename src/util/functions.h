@@ -39,7 +39,6 @@ void CropSprite(Sprite* sprite);
 /* Layer                                                             */
 /*===================================================================*/
 
-Layer* NewLayer(Sprite* sprite);
 Layer* NewLayerSet(Sprite* sprite);
 void RemoveLayer(Sprite* sprite);
 
@@ -51,17 +50,6 @@ void CropLayer(Layer* layer, int x, int y, int w, int h);
 
 void BackgroundFromLayer(Sprite* sprite);
 void LayerFromBackground(Sprite* sprite);
-
-void MoveLayerAfter(Layer* layer, Layer* after_this);
-
-/* ======================================= */
-/* Frame                                   */
-/* ======================================= */
-
-void NewFrame(Sprite* sprite);
-void RemoveFrame(Sprite* sprite, int frame);
-void SetFrameLength(Sprite* sprite, int frame, int msecs);
-void MoveFrameBefore(int frame, int before_frame);
 
 /* ======================================= */
 /* Cel                                     */

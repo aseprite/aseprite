@@ -113,7 +113,7 @@ typedef struct UndoAction
   void (*invert)(UndoStream* stream, UndoChunk* chunk, int state);
 } UndoAction;
 
-static void run_undo(Undo* undo, int state, int discard);
+static void run_undo(Undo* undo, int state, bool discard);
 static int count_undo_groups(UndoStream* undo_stream);
 static void update_undo(Undo* undo);
 
@@ -263,11 +263,13 @@ Undo* undo_new(Sprite *sprite)
 
 void undo_free(Undo* undo)
 {
+  assert(undo);
   delete undo;
 }
 
 int undo_get_memsize(Undo* undo)
 {
+  assert(undo);
   return
     undo->undo_stream->size +
     undo->redo_stream->size;
@@ -275,42 +277,59 @@ int undo_get_memsize(Undo* undo)
 
 void undo_enable(Undo* undo)
 {
+  assert(undo);
   undo->enabled = TRUE;
 }
 
 void undo_disable(Undo* undo)
 {
+  assert(undo);
   undo->enabled = FALSE;
 }
 
 bool undo_is_enabled(Undo* undo)
 {
+  assert(undo);
   return undo->enabled ? TRUE: FALSE;
 }
 
 bool undo_is_disabled(Undo* undo)
 {
+  assert(undo);
   return !undo_is_enabled(undo);
 }
 
 bool undo_can_undo(Undo* undo)
 {
+  assert(undo);
   return !jlist_empty(undo->undo_stream->chunks);
 }
 
 bool undo_can_redo(Undo* undo)
 {
+  assert(undo);
   return !jlist_empty(undo->redo_stream->chunks);
 }
 
-void undo_undo(Undo* undo)
+void undo_do_undo(Undo* undo)
 {
+  assert(undo);
   run_undo(undo, DO_UNDO, FALSE);
 }
 
-void undo_redo(Undo* undo)
+void undo_do_redo(Undo* undo)
 {
+  assert(undo);
   run_undo(undo, DO_REDO, FALSE);
+}
+
+void undo_clear_redo(Undo* undo)
+{
+  assert(undo);
+  if (!jlist_empty(undo->redo_stream->chunks)) {
+    undo_stream_free(undo->redo_stream);
+    undo->redo_stream = undo_stream_new(undo);
+  }
 }
 
 void undo_set_label(Undo* undo, const char *label)
@@ -338,7 +357,7 @@ const char *undo_get_next_redo_label(Undo* undo)
   return chunk->label;
 }
 
-static void run_undo(Undo* undo, int state, int discard_tail)
+static void run_undo(Undo* undo, int state, bool discard_tail)
 {
   UndoStream* undo_stream = ((state == DO_UNDO)? undo->undo_stream:
 						 undo->redo_stream);
@@ -431,10 +450,7 @@ static void update_undo(Undo* undo)
   undo->diff_count++;
 
   /* reset the "redo" stream */
-  if (!jlist_empty(undo->redo_stream->chunks)) {
-    undo_stream_free(undo->redo_stream);
-    undo->redo_stream = undo_stream_new(undo);
-  }
+  undo_clear_redo(undo);
 
   /* "undo" is too big? */
   while (groups > 1 && undo->undo_stream->size > undo_size_limit) {

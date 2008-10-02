@@ -55,7 +55,7 @@ void test_init()
 
 int test_exit()
 {
-  trace("OK\n");
+  allegro_exit();
   return 0;
 }
 
@@ -74,8 +74,6 @@ JWidget test_init_gui()
 
 int test_exit_gui(JWidget manager)
 {
-  trace("OK\n");
-
   jmanager_free(manager);
   allegro_exit();
   return 0;

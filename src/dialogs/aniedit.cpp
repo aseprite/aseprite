@@ -34,6 +34,7 @@
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/raster.h"
+#include "raster/undoable.h"
 #include "util/celmove.h"
 #include "util/functions.h"
 #include "util/thmbnail.h"
@@ -535,11 +536,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		if (anieditor->hot_frame >= 0 &&
 		    anieditor->hot_frame < anieditor->sprite->frames &&
 		    anieditor->hot_frame != anieditor->clk_frame+1) {
-		  if (undo_is_enabled(anieditor->sprite->undo))
-		    undo_set_label(anieditor->sprite->undo, "Move Frame");
-
-		  /* TODO warning MoveFrameBefore uses the current_sprite, not 'anieditor->sprite' */
-		  MoveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
+		  {
+		    Undoable undoable(anieditor->sprite, "Move Frame");
+		    undoable.move_frame_before(anieditor->clk_frame, anieditor->hot_frame);
+		    undoable.commit();
+		  }
 		  jwidget_dirty(widget);
 		}
 	      }
@@ -566,12 +567,13 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		  anieditor->hot_layer != anieditor->clk_layer &&
 		  anieditor->hot_layer != anieditor->clk_layer+1) {
 		if (!layer_is_background(anieditor->layers[anieditor->clk_layer])) {
-		  if (undo_is_enabled(anieditor->sprite->undo))
-		    undo_set_label(anieditor->sprite->undo, "Move Layer");
-
-		  /* move the clicked-layer after the hot-layer */
-		  MoveLayerAfter(anieditor->layers[anieditor->clk_layer],
-				 anieditor->layers[anieditor->hot_layer]);
+		  // move the clicked-layer after the hot-layer
+		  {
+		    Undoable undoable(anieditor->sprite, "Move Layer");
+		    undoable.move_layer_after(anieditor->layers[anieditor->clk_layer],
+					      anieditor->layers[anieditor->hot_layer]);
+		    undoable.commit();
+		  }
 
 		  /* select the new layer */
 		  anieditor->sprite->layer = anieditor->layers[anieditor->clk_layer];
@@ -678,7 +680,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* undo */
       if (command && strcmp(command->name, CMD_UNDO) == 0) {
 	if (undo_can_undo(sprite->undo)) {
-	  undo_undo(sprite->undo);
+	  undo_do_undo(sprite->undo);
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
@@ -691,7 +693,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* redo */
       if (command && strcmp(command->name, CMD_REDO) == 0) {
 	if (undo_can_redo(sprite->undo)) {
-	  undo_redo(sprite->undo);
+	  undo_do_redo(sprite->undo);
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);

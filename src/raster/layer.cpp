@@ -392,10 +392,16 @@ void layer_add_cel(Layer* layer, Cel* cel)
   }
 }
 
+/**
+ * Removes the cel from the layer.
+ *
+ * It doesn't destroy the cel, you have to delete it after calling
+ * this routine.
+ */
 void layer_remove_cel(Layer* layer, Cel* cel)
 {
-  if (layer_is_image(layer))
-    jlist_remove(layer->cels, cel);
+  assert(layer_is_image(layer));
+  jlist_remove(layer->cels, cel);
 }
 
 Cel* layer_get_cel(const Layer* layer, int frame)

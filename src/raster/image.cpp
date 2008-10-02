@@ -23,6 +23,7 @@
 /* #include <allegro/color.h> */
 /* #include <allegro/gfx.h> */
 #include <string.h>
+#include <stdexcept>
 
 #include "raster/algo.h"
 #include "raster/blend.h"
@@ -141,14 +142,10 @@ void image_merge(Image* dst, const Image* src, int x, int y, int opacity, int bl
 
 Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor)
 {
-  Image* trim;
+  if (w < 1) throw std::invalid_argument("image_crop: Width is less than 1");
+  if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
 
-  if ((w < 1) || (h < 1))
-    return NULL;
-
-  trim = image_new(image->imgtype, w, h);
-  if (!trim)
-    return NULL;
+  Image* trim = image_new(image->imgtype, w, h);
 
   image_clear(trim, bgcolor);
   image_copy(trim, image, -x, -y);

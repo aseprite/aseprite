@@ -21,6 +21,7 @@
 /* #include <stdio.h> */
 #include <string.h>
 #include <allegro/unicode.h>
+#include <exception>
 
 #include "jinete/jinete.h"
 
@@ -265,9 +266,17 @@ void command_execute(Command *command, const char *argument)
 {
   console_open();
 
-  if (command && command->execute &&
-      command_is_enabled(command, argument)) {
-    (*command->execute)(argument);
+  try {
+    if (command && command->execute &&
+	command_is_enabled(command, argument)) {
+      (*command->execute)(argument);
+    }
+  }
+  catch (std::exception& e) {
+    jalert("Error"
+	   "<<Uncaught exception:"
+	   "<<%s"
+	   "||&OK", e.what());
   }
 
   console_close();

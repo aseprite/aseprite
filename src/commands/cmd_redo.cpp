@@ -37,7 +37,7 @@ static void cmd_redo_execute(const char *argument)
 		     _("Redid %s"),
 		     undo_get_next_redo_label(current_sprite->undo));
 
-  undo_redo(current_sprite->undo);
+  undo_do_redo(current_sprite->undo);
   sprite_generate_mask_boundaries(current_sprite);
   update_screen_for_sprite(current_sprite);
 }

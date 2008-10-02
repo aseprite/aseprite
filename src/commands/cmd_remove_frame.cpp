@@ -23,11 +23,8 @@
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
-#include "raster/cel.h"
-#include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
-#include "util/functions.h"
+#include "raster/undoable.h"
 
 static bool cmd_remove_frame_enabled(const char *argument)
 {
@@ -39,13 +36,12 @@ static bool cmd_remove_frame_enabled(const char *argument)
 static void cmd_remove_frame_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Remove Frame");
-
-  RemoveFrame(sprite, sprite->frame);
-
-  update_screen_for_sprite(current_sprite);
+  {
+    Undoable undoable(sprite, "Remove Frame");
+    undoable.remove_frame(sprite->frame);
+    undoable.commit();
+  }
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_remove_frame = {
