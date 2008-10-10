@@ -1,3 +1,11 @@
+2008-10-09  David A. Capello  <davidcapello@gmail.com>
+
+	* src/raster/mask.cpp (shrink_mask): Fixed a bug where image_crop
+	where called with w<=0 and h<=0.
+
+	* src/commands/cmd_clear.cpp (cmd_clear_execute): Changed to use
+	Undoable.
+
 2008-10-01  David A. Capello  <davidcapello@gmail.com>
 
 	* src/raster/undo.cpp: Renamed undo_undo and undo_redo to

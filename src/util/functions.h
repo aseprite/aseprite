@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SCRIPT_FUNCTIONS_H
-#define SCRIPT_FUNCTIONS_H
+#ifndef UTIL_FUNCTIONS_H
+#define UTIL_FUNCTIONS_H
 
 class Sprite;
 class Layer;
@@ -40,7 +40,6 @@ void CropSprite(Sprite* sprite);
 /*===================================================================*/
 
 Layer* NewLayerSet(Sprite* sprite);
-void RemoveLayer(Sprite* sprite);
 
 char *GetUniqueLayerName(Sprite* sprite);
 
@@ -59,4 +58,4 @@ void RemoveCel(Layer* layer, Cel* cel);
 
 void CropCel();
 
-#endif /* SCRIPT_FUNCTIONS_H */
+#endif /* UTIL_FUNCTIONS_H */

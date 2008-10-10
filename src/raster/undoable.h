@@ -54,6 +54,7 @@ public:
 
   // for layers
   Layer* new_layer();
+  void remove_layer(Layer* layer);
   void move_layer_after(Layer *layer, Layer *after_this);
 
   // for frames
@@ -70,6 +71,11 @@ public:
   void add_cel(Layer* layer, Cel* cel);
   void remove_cel(Layer* layer, Cel* cel);
   void set_cel_frame_position(Cel* cel, int frame);
+  Cel* get_current_cel();
+
+  // for image
+  Image* get_cel_image(Cel* cel);
+  void clear_mask(int bgcolor);
 
 };
 

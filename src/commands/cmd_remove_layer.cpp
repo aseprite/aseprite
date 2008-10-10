@@ -23,7 +23,7 @@
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "util/functions.h"
+#include "raster/undoable.h"
 
 static bool cmd_remove_layer_enabled(const char *argument)
 {
@@ -34,12 +34,12 @@ static bool cmd_remove_layer_enabled(const char *argument)
 
 static void cmd_remove_layer_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Remove Layer");
-
-  RemoveLayer(sprite);
+  Sprite* sprite = current_sprite;
+  {
+    Undoable undoable(sprite, "Remove Layer");
+    undoable.remove_layer(sprite->layer);
+    undoable.commit();
+  }
   update_screen_for_sprite(sprite);
 }
 

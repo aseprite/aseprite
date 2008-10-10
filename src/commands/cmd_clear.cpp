@@ -25,7 +25,7 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "util/misc.h"
+#include "raster/undoable.h"
 #include "widgets/colbar.h"
 
 static bool cmd_clear_enabled(const char *argument)
@@ -40,15 +40,12 @@ static bool cmd_clear_enabled(const char *argument)
 
 static void cmd_clear_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite; /* get current sprite */
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Clear");
-
-  /* clear the mask */
-  ClearMask();
-
-  /* refresh the sprite */
+  Sprite* sprite = current_sprite;
+  {
+    Undoable undoable(sprite, "Clear");
+    undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
+    undoable.commit();
+  }
   update_screen_for_sprite(sprite);
 }
 

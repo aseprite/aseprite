@@ -255,52 +255,6 @@ Layer *NewLayerSet(Sprite *sprite)
   return layer;
 }
 
-/**
- * Removes the current selected layer
- */
-void RemoveLayer(Sprite *sprite)
-{
-  if (sprite != NULL &&
-      sprite->layer != NULL) {
-    Layer *layer = sprite->layer;
-    Layer *parent = layer->parent_layer;
-    Layer *layer_select;
-
-    /* select: previous layer, or next layer, or parent(if it is not
-       the main layer of sprite set) */
-    if (layer_get_prev(layer))
-      layer_select = layer_get_prev(layer);
-    else if (layer_get_next(layer))
-      layer_select = layer_get_next(layer);
-    else if (parent != sprite->set)
-      layer_select = parent;
-    else
-      layer_select = NULL;
-
-    /* undo stuff */
-    if (undo_is_enabled(sprite->undo))
-      undo_open(sprite->undo);
-
-    /* select other layer */
-    if (undo_is_enabled(sprite->undo))
-      undo_set_layer(sprite->undo, sprite);
-    sprite_set_layer(sprite, layer_select);
-
-    /* remove the layer */
-    if (undo_is_enabled(sprite->undo))
-      undo_remove_layer(sprite->undo, layer);
-    layer_remove_layer(parent, layer);
-
-    /* destroy the layer */
-    layer_free_images(layer);
-    layer_free(layer);
-
-    /* close undo */
-    if (undo_is_enabled(sprite->undo))
-      undo_close(sprite->undo);
-  }
-}
-
 char *GetUniqueLayerName(Sprite *sprite)
 {
   if (sprite != NULL) {

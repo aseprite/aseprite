@@ -26,6 +26,7 @@
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
@@ -103,10 +104,14 @@ void Undoable::set_current_frame(int frame)
   sprite_set_frame(sprite, frame);
 }
 
+/**
+ * Sets the current selected layer in the sprite.
+ *
+ * @param layer
+ *   The layer to select. Can be NULL.
+ */
 void Undoable::set_current_layer(Layer* layer)
 {
-  assert(layer);
-
   if (is_enabled())
     undo_set_layer(sprite->undo, sprite);
 
@@ -169,6 +174,43 @@ Layer* Undoable::new_layer()
   set_current_layer(layer);
 
   return layer;
+}
+
+/**
+ * Removes and destroys the specified layer.
+ */
+void Undoable::remove_layer(Layer* layer)
+{
+  assert(layer);
+
+  Layer* parent = layer->parent_layer;
+
+  // if the layer to be removed is the selected layer
+  if (layer == sprite->layer) {
+    Layer* layer_select = NULL;
+
+    // select: previous layer, or next layer, or parent(if it is not the
+    // main layer of sprite set)
+    if (layer_get_prev(layer))
+      layer_select = layer_get_prev(layer);
+    else if (layer_get_next(layer))
+      layer_select = layer_get_next(layer);
+    else if (parent != sprite->set)
+      layer_select = parent;
+
+    // select other layer
+    set_current_layer(layer_select);
+  }
+
+  // remove the layer
+  if (is_enabled())
+    undo_remove_layer(sprite->undo, layer);
+
+  layer_remove_layer(parent, layer);
+
+  // destroy the layer
+  layer_free_images(layer);
+  layer_free(layer);
 }
 
 void Undoable::move_layer_after(Layer* layer, Layer* after_this)
@@ -448,3 +490,80 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
 
   }
 }
+
+Cel* Undoable::get_current_cel()
+{
+  if (sprite->layer && layer_is_image(sprite->layer))
+    return layer_get_cel(sprite->layer, sprite->frame);
+  else
+    return NULL;
+}
+
+Image* Undoable::get_cel_image(Cel* cel)
+{
+  if (cel && cel->image >= 0 && cel->image < sprite->stock->nimage)
+    return sprite->stock->image[cel->image];
+  else
+    return NULL;
+}
+
+// clears the mask region in the current sprite with the BG color
+void Undoable::clear_mask(int bgcolor)
+{
+  Cel* cel = get_current_cel();
+  if (!cel)
+    return;
+
+  Image* image = get_cel_image(cel);
+  if (!image)
+    return;
+
+  // if the mask is empty then we have to clear the entire image
+  // in the cel
+  if (mask_is_empty(sprite->mask)) {
+    // if the layer is the background then we clear the image
+    if (layer_is_background(sprite->layer)) {
+      if (is_enabled())
+	undo_image(sprite->undo, image, 0, 0, image->w, image->h);
+
+      // clear all
+      image_clear(image, bgcolor);
+    }
+    // if the layer is transparent we can remove the cel (and it's
+    // associated image)
+    else {
+      remove_cel(sprite->layer, cel);
+    }
+  }
+  else {
+    int u, v, putx, puty;
+    int x1 = MAX(0, sprite->mask->x);
+    int y1 = MAX(0, sprite->mask->y);
+    int x2 = MIN(image->w-1, sprite->mask->x+sprite->mask->w-1);
+    int y2 = MIN(image->h-1, sprite->mask->y+sprite->mask->h-1);
+
+    // do nothing
+    if (x1 > x2 || y1 > y2)
+      return;
+
+    if (is_enabled())
+      undo_image(sprite->undo, image, x1, y1, x2-x1+1, y2-y1+1);
+
+    // clear the masked zones
+    for (v=0; v<sprite->mask->h; v++) {
+      div_t d = div(0, 8);
+      ase_uint8* address = ((ase_uint8 **)sprite->mask->bitmap->line)[v]+d.quot;
+
+      for (u=0; u<sprite->mask->w; u++) {
+	if ((*address & (1<<d.rem))) {
+	  putx = u + sprite->mask->x - cel->x;
+	  puty = v + sprite->mask->y - cel->y;
+	  image_putpixel(image, putx, puty, bgcolor);
+	}
+
+	_image_bitmap_next_bit(d, address);
+      }
+    }
+  }
+}
+

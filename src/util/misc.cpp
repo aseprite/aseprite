@@ -58,9 +58,9 @@ Image *GetImage(Sprite *sprite)
   return image;
 }
 
-Image *GetImage2(Sprite *sprite, int *x, int *y, int *opacity)
+Image* GetImage2(Sprite* sprite, int* x, int* y, int* opacity)
 {
-  Image *image = NULL;
+  Image* image = NULL;
 
   if (sprite != NULL &&
       sprite->layer != NULL &&

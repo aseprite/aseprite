@@ -459,7 +459,7 @@ static void shrink_mask(Mask* mask)
   SHRINK_SIDE(mask->h-1, >, 0, --,
 	      0, <, mask->w, ++, v, u, y2--);
 
-  if ((x1 == x2) && (y1 == y2)) {
+  if ((x1 > x2) || (y1 > y2)) {
     mask_none(mask);
   }
   else if ((x1 != mask->x) || (x2 != mask->x+mask->w-1) ||
