@@ -31,7 +31,7 @@ CFLAGS = -nologo						\
 	 -I$(ZLIB_DIR)						\
 	 -DPNG_NO_MMX_CODE
 
-LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86 -RELEASE
+LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86
 
 LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
        Msimg32.lib WinMM.lib AdvAPI32.lib Ole32.lib ShLwApi.lib Vfw32.Lib
@@ -42,6 +42,7 @@ ifdef DEBUGMODE
   LIBS += Alld.lib
 else
   CFLAGS += -MD
+  LFLAGS += -RELEASE
   LIBS += Alleg.lib
 endif
 

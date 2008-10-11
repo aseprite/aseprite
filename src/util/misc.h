@@ -33,7 +33,6 @@ Image* GetImage2(Sprite* sprite, int *x, int *y, int *opacity);
 
 void LoadPalette(const char* filename);
 
-void ClearMask();
 Layer* NewLayerFromMask(Sprite* src, Sprite* dst);
 
 Image* GetLayerImage(Layer* layer, int *x, int *y, int frame);

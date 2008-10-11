@@ -399,12 +399,22 @@ void Undoable::set_cel_frame_position(Cel* cel, int frame)
   cel->frame = frame;
 }
 
-void Undoable::set_frame_length(int frame, int msecs)
+void Undoable::set_frame_duration(int frame, int msecs)
 {
   if (is_enabled())
     undo_set_frlen(sprite->undo, sprite, frame);
 
   sprite_set_frlen(sprite, frame, msecs);
+}
+
+void Undoable::set_constant_frame_rate(int msecs)
+{
+  if (is_enabled()) {
+    for (int fr=0; fr<sprite->frames; ++fr)
+      undo_set_frlen(sprite->undo, sprite, fr);
+  }
+
+  sprite_set_speed(sprite, msecs);
 }
 
 void Undoable::move_frame_before(int frame, int before_frame)
@@ -423,18 +433,18 @@ void Undoable::move_frame_before(int frame, int before_frame)
       frlen_aux = sprite->frlens[frame];
 
       for (int c=frame; c<before_frame-1; c++)
-	set_frame_length(c, sprite->frlens[c+1]);
+	set_frame_duration(c, sprite->frlens[c+1]);
 
-      set_frame_length(before_frame-1, frlen_aux);
+      set_frame_duration(before_frame-1, frlen_aux);
     }
     // moving the frame to the past
     else if (before_frame < frame) {
       frlen_aux = sprite->frlens[frame];
 
       for (int c=frame; c>before_frame; c--)
-	set_frame_length(c, sprite->frlens[c-1]);
+	set_frame_duration(c, sprite->frlens[c-1]);
 
-      set_frame_length(before_frame, frlen_aux);
+      set_frame_duration(before_frame, frlen_aux);
     }
 
     // change the cels of position...
@@ -507,7 +517,7 @@ Image* Undoable::get_cel_image(Cel* cel)
     return NULL;
 }
 
-// clears the mask region in the current sprite with the BG color
+// clears the mask region in the current sprite with the specified background color
 void Undoable::clear_mask(int bgcolor)
 {
   Cel* cel = get_current_cel();
@@ -529,7 +539,7 @@ void Undoable::clear_mask(int bgcolor)
       // clear all
       image_clear(image, bgcolor);
     }
-    // if the layer is transparent we can remove the cel (and it's
+    // if the layer is transparent we can remove the cel (and its
     // associated image)
     else {
       remove_cel(sprite->layer, cel);

@@ -62,11 +62,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg);
 static bool location_msg_proc(JWidget widget, JMessage msg);
 static bool filetype_msg_proc(JWidget widget, JMessage msg);
 
-/* Shows the dialog to select a file in ASE.
-
-   Mainly it uses:
-   * the 'core/file_system' routines.
-   * the 'widgets/fileview' widget.
+/**
+ * Shows the dialog to select a file in ASE.
+ * 
+ * Mainly it uses:
+ * - the 'core/file_system' routines.
+ * - the 'widgets/fileview' widget.
  */
 char *ase_file_selector(const char *message,
 			const char *init_path,

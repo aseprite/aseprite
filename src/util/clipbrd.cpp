@@ -38,6 +38,7 @@
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "raster/undoable.h"
 #include "raster/undo.h"
 #include "util/clipbrd.h"
 #include "util/misc.h"
@@ -138,11 +139,13 @@ void cut_to_clipboard()
   if (!low_copy())
     console_printf("Can't copying an image portion from the current layer\n");
   else {
-    if (undo_is_enabled(current_sprite->undo))
-      undo_set_label(current_sprite->undo, "Cut");
-
-    ClearMask();
-    update_screen_for_sprite(current_sprite);
+    Sprite* sprite = current_sprite;
+    {
+      Undoable undoable(sprite, "Cut");
+      undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
+      undoable.commit();
+    }
+    update_screen_for_sprite(sprite);
   }
 }
 

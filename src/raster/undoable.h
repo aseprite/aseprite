@@ -63,7 +63,8 @@ public:
   void remove_frame(int frame);
   void remove_frame_of_layer(Layer* layer, int frame);
   void copy_previous_frame(Layer* layer, int frame);
-  void set_frame_length(int frame, int msecs);
+  void set_frame_duration(int frame, int msecs);
+  void set_constant_frame_rate(int msecs);
   void move_frame_before(int frame, int before_frame);
   void move_frame_before_layer(Layer* layer, int frame, int before_frame);
 

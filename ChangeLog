@@ -1,3 +1,17 @@
+2008-10-11  David A. Capello  <davidcapello@gmail.com>
+
+	* src/raster/undoable.cpp (Undoable::set_constant_frame_rate): Added.
+	(Undoable::set_frame_length): Renamed to set_frame_duration.
+
+	* src/commands/cmd_frame_properties.cpp (dialogs_frame_length):
+	Added undo.
+
+2008-10-10  David A. Capello  <davidcapello@gmail.com>
+
+	* src/util/misc.cpp (ClearMask): Removed.
+
+	* src/util/clipbrd.cpp (cut_to_clipboard): Use Undoable::clear_mask now.
+
 2008-10-09  David A. Capello  <davidcapello@gmail.com>
 
 	* src/raster/mask.cpp (shrink_mask): Fixed a bug where image_crop

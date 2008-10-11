@@ -483,7 +483,7 @@ int sprite_get_frlen(Sprite* sprite, int frame)
 }
 
 /**
- * Sets a constant frame-rate
+ * Sets a constant frame-rate.
  */
 void sprite_set_speed(Sprite* sprite, int msecs)
 {

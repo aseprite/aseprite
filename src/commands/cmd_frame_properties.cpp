@@ -21,13 +21,10 @@
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
-/* #include "core/app.h" */
 #include "modules/gui.h"
 #include "modules/sprites.h"
-/* #include "raster/cel.h" */
-/* #include "raster/layer.h" */
 #include "raster/sprite.h"
-/* #include "raster/undo.h" */
+#include "raster/undoable.h"
 
 void dialogs_frame_length(int sprite_frame);
 
@@ -45,6 +42,7 @@ static void cmd_frame_properties_execute(const char *argument)
 void dialogs_frame_length(int sprite_frame)
 {
   JWidget window, frame, frlen, ok;
+  Sprite* sprite = current_sprite;
   char buf[64];
 
   window = load_widget("frlen.jid", "frame_duration");
@@ -65,7 +63,7 @@ void dialogs_frame_length(int sprite_frame)
     sprintf(buf, "%d", sprite_frame+1);
   jwidget_set_text(frame, buf);
 
-  sprintf(buf, "%d", sprite_get_frlen(current_sprite, current_sprite->frame));
+  sprintf(buf, "%d", sprite_get_frlen(sprite, sprite->frame));
   jwidget_set_text(frlen, buf);
 
   jwindow_open_fg(window);
@@ -74,13 +72,18 @@ void dialogs_frame_length(int sprite_frame)
 
     if (sprite_frame < 0) {
       if (jalert("Warning"
-		 "<<Do you want change the frame-rate of all frames?"
-		 "<<(this operation can\'t be undoed)"
-		 "||&Yes||&No") == 1)
-	sprite_set_speed(current_sprite, num);
+		 "<<Do you want to change the duration of all frames?"
+		 "||&Yes||&No") == 1) {
+	Undoable undoable(sprite, "Constant Frame-Rate");
+	undoable.set_constant_frame_rate(num);
+	undoable.commit();
+      }
     }
-    else
-      sprite_set_frlen(current_sprite, sprite_frame, num);
+    else {
+      Undoable undoable(sprite, "Frame Duration");
+      undoable.set_frame_duration(sprite_frame, num);
+      undoable.commit();
+    }
   }
   jwidget_free(window);
 }
