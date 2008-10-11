@@ -43,7 +43,7 @@ static void cmd_sprite_properties_execute(const char *argument)
 {
   JWidget window, killer, name, type, size, frames, speed, ok;
   Sprite *sprite = current_sprite;
-  char *imgtype_text;
+  jstring imgtype_text;
   char buf[256];
 
   /* load the window widget */
@@ -82,7 +82,7 @@ static void cmd_sprite_properties_execute(const char *argument)
   jwidget_set_text(name, sprite->filename);
 
   /* color mode */
-  jwidget_set_text(type, imgtype_text);
+  jwidget_set_text(type, imgtype_text.c_str());
 
   /* sprite size (width and height) */
   usprintf(buf, "%dx%d (", sprite->w, sprite->h);

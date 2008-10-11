@@ -147,6 +147,7 @@ COMMON_SOURCES =					\
 	src/jinete/jsep.cpp				\
 	src/jinete/jslider.cpp				\
 	src/jinete/jstream.cpp				\
+	src/jinete/jstring.cpp				\
 	src/jinete/jsystem.cpp				\
 	src/jinete/jtextbox.cpp				\
 	src/jinete/jtheme.cpp				\

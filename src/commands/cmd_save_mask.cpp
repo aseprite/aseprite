@@ -42,20 +42,20 @@ static void cmd_save_mask_execute(const char *argument)
 {
   /* get current sprite */
   Sprite *sprite = current_sprite;
-  char *filename = "default.msk";
+  jstring filename = "default.msk";
   int ret;
 
   for (;;) {
     filename = ase_file_selector(_("Save .msk File"), filename, "msk");
-    if (!filename)
+    if (filename.empty())
       return;
 
     /* does the file exist? */
-    if (exists(filename)) {
+    if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
       ret = jalert("%s<<%s<<%s||%s||%s||%s",
 		   _("Warning"), _("File exists, overwrite it?"),
-		   get_filename(filename),
+		   get_filename(filename.c_str()),
 		   _("&Yes"), _("&No"), _("&Cancel"));
     }
     else
@@ -71,10 +71,10 @@ static void cmd_save_mask_execute(const char *argument)
     /* "no": we must back to select other file-name */
   }
 
-  if (save_msk_file(sprite->mask, filename) != 0)
+  if (save_msk_file(sprite->mask, filename.c_str()) != 0)
     jalert("%s<<%s<<%s||%s",
 	   _("Error"), _("Error saving .msk file"),
-	   filename, _("&Close"));
+	   filename.c_str(), _("&Close"));
 }
 
 Command cmd_save_mask = {

@@ -284,11 +284,9 @@ static void select_all_command(JWidget widget)
 static void load_command(JWidget widget)
 {
   Palette *palette;
-  char *filename;
-
-  filename = ase_file_selector(_("Load Palette"), "", "pcx,bmp,tga,lbm,col");
-  if (filename) {
-    palette = palette_load(filename);
+  jstring filename = ase_file_selector(_("Load Palette"), "", "pcx,bmp,tga,lbm,col");
+  if (!filename.empty()) {
+    palette = palette_load(filename.c_str());
     if (!palette) {
       jalert(_("Error<<Loading palette file||&Close"));
     }
@@ -296,39 +294,33 @@ static void load_command(JWidget widget)
       set_new_palette(palette);
       jfree(palette);
     }
-    jfree(filename);
   }
 }
 
 static void save_command(JWidget widget)
 {
-  char *filename;
+  jstring filename;
   int ret;
 
  again:
   filename = ase_file_selector(_("Save Palette"), "", "pcx,bmp,tga,col");
-  if (filename) {
-    if (exists(filename)) {
+  if (!filename.empty()) {
+    if (exists(filename.c_str())) {
       ret = jalert("%s<<%s<<%s||%s",
 		   _("Warning"),
 		   _("File exists, overwrite it?"),
-		   get_filename(filename),
+		   get_filename(filename.c_str()),
 		   _("&Yes||&No||&Cancel"));
 
-      if (ret == 2) {
-	jfree(filename);
+      if (ret == 2)
 	goto again;
-      }
-      else if (ret != 1) {
-	jfree(filename);
+      else if (ret != 1)
 	return;
-      }
     }
 
-    if (palette_save(paledit_get_palette(palette_editor), filename))
+    if (palette_save(paledit_get_palette(palette_editor),
+		     filename.c_str()))
       jalert(_("Error<<Saving palette file||&Close"));
-
-    jfree(filename);
   }
 }
 

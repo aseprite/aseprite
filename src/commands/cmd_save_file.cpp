@@ -187,28 +187,28 @@ static bool cmd_save_file_as_enabled(const char *argument)
 static void cmd_save_file_as_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
-  char filename[4096];
   char exts[4096];
-  char *newfilename;
+  jstring filename;
+  jstring newfilename;
   int ret;
 
-  ustrcpy(filename, sprite->filename);
+  filename = sprite->filename;
   get_writable_extensions(exts, sizeof(exts));
 
   for (;;) {
     newfilename = ase_file_selector(_("Save Sprite"), filename, exts);
-    if (!newfilename)
+    if (newfilename.empty())
       return;
-    ustrcpy(filename, newfilename);
-    jfree(newfilename);
+
+    filename = newfilename;
 
     /* does the file exist? */
-    if (exists(filename)) {
+    if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
       ret = jalert("%s<<%s<<%s||%s||%s||%s",
 		   _("Warning"),
 		   _("File exists, overwrite it?"),
-		   get_filename(filename),
+		   get_filename(filename.c_str()),
 		   _("&Yes"), _("&No"), _("&Cancel"));
     }
     else
@@ -224,7 +224,7 @@ static void cmd_save_file_as_execute(const char *argument)
     /* "no": we must back to select other file-name */
   }
 
-  sprite_set_filename(sprite, filename);
+  sprite_set_filename(sprite, filename.c_str());
   app_realloc_sprite_list();
 
   save_sprite_in_background(sprite);

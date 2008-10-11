@@ -38,15 +38,13 @@ static void cmd_load_mask_execute(const char *argument)
 {
   /* get current sprite */
   Sprite *sprite = current_sprite;
-  char *filename = ase_file_selector(_("Load .msk File"), "", "msk");
-  if (filename) {
-    Mask *mask = load_msk_file(filename);
+  jstring filename = ase_file_selector(_("Load .msk File"), "", "msk");
+  if (!filename.empty()) {
+    Mask *mask = load_msk_file(filename.c_str());
     if (!mask) {
       jalert("%s<<%s<<%s||%s",
 	     _("Error"), _("Error loading .msk file"),
-	     filename, _("&Close"));
-
-      jfree(filename);
+	     filename.c_str(), _("&Close"));
       return;
     }
 
@@ -61,7 +59,6 @@ static void cmd_load_mask_execute(const char *argument)
 
     sprite_generate_mask_boundaries(sprite);
     update_screen_for_sprite(sprite);
-    jfree(filename);
   }
 }
 

@@ -1,5 +1,10 @@
 2008-10-11  David A. Capello  <davidcapello@gmail.com>
 
+	* src/dialogs/filesel.cpp (ase_file_selector): Now it uses
+	"jstring" instead of "char*".
+
+	* src/jinete/jstring.h (jstring): Added.
+
 	* src/raster/undoable.cpp (Undoable::set_constant_frame_rate): Added.
 	(Undoable::set_frame_length): Renamed to set_frame_duration.
 

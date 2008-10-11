@@ -19,9 +19,11 @@
 #ifndef DIALOGS_FILESEL_H
 #define DIALOGS_FILESEL_H
 
-char *ase_file_selector(const char *message,
-			const char *init_path,
-			const char *exts);
+#include "jinete/jstring.h"
+
+jstring ase_file_selector(const jstring& message,
+			  const jstring& init_path,
+			  const jstring& exts);
 
 #endif /* DIALOGS_FILESEL_H */
 

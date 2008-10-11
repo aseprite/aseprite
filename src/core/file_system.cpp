@@ -108,7 +108,7 @@ struct FileItem
 #endif
 };
 
-/* the root of the file-system */
+// the root of the file-system
 static FileItem *rootitem = NULL;
 static HashTable *hash_fileitems = NULL;
 static unsigned int current_file_system_version = 0;

@@ -278,15 +278,14 @@ static FONT *my_load_font(const char *filename)
 
 static void button_font_command(JWidget widget)
 {
-  char *filename;
+  jstring filename =
+    ase_file_selector(_("Open Font (TTF or Allegro bitmap format)"),
+		      get_config_string ("DrawText", "Font", ""),
+		      "pcx,bmp,tga,lbm,ttf");
 
-  filename = ase_file_selector(_("Open Font (TTF or Allegro bitmap format)"),
-			       get_config_string ("DrawText", "Font", ""),
-			       "pcx,bmp,tga,lbm,ttf");
-  if (filename) {
-    set_config_string("DrawText", "Font", filename);
+  if (!filename.empty()) {
+    set_config_string("DrawText", "Font", filename.c_str());
     update_button_text();
-    jfree(filename);
   }
 }
 

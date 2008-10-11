@@ -18,7 +18,9 @@
 
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
+#include <vector>
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include <errno.h>
@@ -69,9 +71,9 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg);
  * - the 'core/file_system' routines.
  * - the 'widgets/fileview' widget.
  */
-char *ase_file_selector(const char *message,
-			const char *init_path,
-			const char *exts)
+jstring ase_file_selector(const jstring& message,
+			  const jstring& init_path,
+			  const jstring& exts)
 {
   static JWidget window = NULL;
   FileItem *start_folder = NULL;
@@ -79,9 +81,7 @@ char *ase_file_selector(const char *message,
   JWidget goback, goforward, goup;
   JWidget filename_entry;
   JWidget filetype;
-  char buf[512];
-  char *result = NULL;
-  char *tok;
+  jstring result;
 
   file_system_refresh();
 
@@ -92,45 +92,42 @@ char *ase_file_selector(const char *message,
 		 navigation_history);
   }
 
-  /* 'buf' will contain the start folder path */
-  ustrcpy(buf, init_path);
+  // use the current path
+  jstring start_folder_path;
 
-  /* use the current path */
-  if (get_filename(buf) == buf) {
-    char path[512];
+  // if init_path doesn't contain a path...
+  if (init_path.filepath().empty()) {
+    // get the saved `path' in the configuration file
+    jstring path = get_config_string("FileSelect", "CurrentDirectory", "");
+    start_folder = get_fileitem_from_path(path.c_str());
 
-    /* get saved `path' */
-    ustrcpy(path, get_config_string("FileSelect", "CurrentDirectory", ""));
-    start_folder = get_fileitem_from_path(path);
+    // is the folder find?
     if (!start_folder) {
-      /* if the `path' doesn't exist */
-      if ((!ugetat(path, 0)) || (!ji_dir_exists(path))) {
-	/* try to get current `path' */
+      // if the `path' doesn't exist...
+      if (path.empty() || (!ji_dir_exists(path.c_str()))) {
+	// we can get the current `path' from the system
 #ifdef HAVE_DRIVES
 	int drive = _al_getdrive();
 #else
 	int drive = 0;
 #endif
-
-	_al_getdcwd(drive, path, sizeof(path) - ucwidth(OTHER_PATH_SEPARATOR));
+	char tmp[1024];
+	_al_getdcwd(drive, tmp, sizeof(tmp) - ucwidth(OTHER_PATH_SEPARATOR));
+	path = tmp;
       }
 
-      fix_filename_case(path);
-      fix_filename_slashes(path);
-      put_backslash(path);
-
-      ustrcat(path, buf);
-      ustrcpy(buf, path);
+      start_folder_path = path / init_path;
     }
   }
   else {
-    /* remove the filename */
-    *get_filename(buf) = 0;
+    // remove the filename
+    start_folder_path = init_path.filepath() / "";
   }
+  start_folder_path.fix_separators();
 
   if (!start_folder)
-    start_folder = get_fileitem_from_path(buf);
-  
+    start_folder = get_fileitem_from_path(start_folder_path.c_str());
+
   if (!window) {
     JWidget view, location;
 
@@ -159,7 +156,7 @@ char *ase_file_selector(const char *message,
     jbutton_add_command(goup, goup_command);
 
     view = jview_new();
-    fileview = fileview_new(start_folder, exts);
+    fileview = fileview_new(start_folder, exts.c_str());
 
     jwidget_add_hook(fileview, -1, fileview_msg_proc, NULL);
     jwidget_add_hook(location, -1, location_msg_proc, NULL);
@@ -196,20 +193,21 @@ char *ase_file_selector(const char *message,
 
   /* fill file-type combo-box */
   jcombobox_clear(filetype);
-  ustrcpy(buf, exts);
-  for (tok = ustrtok(buf, ",");
-       tok != NULL;
-       tok = ustrtok(NULL, ",")) {
-    jcombobox_add_string(filetype, tok, NULL);
-  }
+
+  std::vector<jstring> tokens;
+  std::vector<jstring>::iterator tok;
+
+  exts.split(',', tokens);
+  for (tok=tokens.begin(); tok!=tokens.end(); ++tok)
+    jcombobox_add_string(filetype, tok->c_str(), NULL);
 
   /* file name entry field */
   filename_entry = jwidget_find_name(window, "filename");
-  jwidget_set_text(filename_entry, get_filename(init_path));
+  jwidget_set_text(filename_entry, init_path.filename().c_str());
   select_filetype_from_filename(window);
 
   /* setup the title of the window */
-  jwidget_set_text(window, message);
+  jwidget_set_text(window, message.c_str());
 
   /* get the ok-button */
   ok = jwidget_find_name(window, "ok");
@@ -221,26 +219,22 @@ char *ase_file_selector(const char *message,
   jwindow_open_fg(window);
   if (jwindow_get_killer(window) == ok ||
       jwindow_get_killer(window) == fileview) {
-    char *p;
-
     /* open the selected file */
     FileItem *folder = fileview_get_current_folder(fileview);
     assert(folder != NULL);
 
-    ustrcpy(buf, fileitem_get_filename(folder));
-    put_backslash(buf);
-    ustrcat(buf, jwidget_get_text(filename_entry));
+    jstring buf = fileitem_get_filename(folder);
+    buf /= jwidget_get_text(filename_entry);
 
     /* does it not have extension? ...we should add the extension
        selected in the filetype combo-box */
-    p = get_extension(buf);
-    if (!p || *p == 0) {
-      ustrcat(buf, ".");
-      ustrcat(buf, jcombobox_get_selected_string(filetype));
+    if (buf.extension().empty()) {
+      buf += '.';
+      buf += jcombobox_get_selected_string(filetype);
     }
 
     /* duplicate the buffer to return a new string */
-    result = jstrdup(buf);
+    result = buf;
 
     /* save the path in the configuration file */
     set_config_string("FileSelect", "CurrentDirectory",

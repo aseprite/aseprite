@@ -142,7 +142,7 @@ static void monitor_free(void *_data)
  */
 static void cmd_open_file_execute(const char *argument)
 {
-  char *filename;
+  jstring filename;
 
   /* interactive */
   if (!argument) {
@@ -152,11 +152,11 @@ static void cmd_open_file_execute(const char *argument)
   }
   /* load the file specified in the argument */
   else {
-    filename = (char *)argument;
+    filename = argument;
   }
 
-  if (filename) {
-    FileOp *fop = fop_to_load_sprite(filename, FILE_LOAD_SEQUENCE_ASK);
+  if (!filename.empty()) {
+    FileOp *fop = fop_to_load_sprite(filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
 
     if (fop) {
       if (fop->error) {
@@ -173,7 +173,7 @@ static void cmd_open_file_execute(const char *argument)
 	  data->thread = thread;
 	  data->alert_window = jalert_new(PACKAGE
 					  "<<Loading file:<<%s||&Cancel",
-					  get_filename(filename));
+					  get_filename(filename.c_str()));
 
 	  /* add a monitor to check the loading (FileOp) progress */
 	  data->monitor = add_gui_monitor(monitor_openfile_bg,
@@ -224,9 +224,6 @@ static void cmd_open_file_execute(const char *argument)
     else {
       /* do nothing (the user cancelled or something like that) */
     }
-
-    if (filename != argument)
-      jfree(filename);
   }
 }
 

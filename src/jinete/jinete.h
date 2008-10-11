@@ -62,6 +62,7 @@
 #include "jinete/jsep.h"
 #include "jinete/jslider.h"
 #include "jinete/jstream.h"
+#include "jinete/jstring.h"
 #include "jinete/jsystem.h"
 #include "jinete/jtextbox.h"
 #include "jinete/jtheme.h"
