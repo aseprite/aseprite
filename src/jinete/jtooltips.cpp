@@ -20,6 +20,7 @@
 #include <allegro.h>
 
 #include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 typedef struct TipData
 {

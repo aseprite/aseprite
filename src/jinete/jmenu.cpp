@@ -35,6 +35,7 @@
 #include <stdio.h>
 
 #include "jinete/jinete.h"
+#include "jinete/jintern.h"
 
 /**********************************************************************/
 /* Internal messages: to move between menus */

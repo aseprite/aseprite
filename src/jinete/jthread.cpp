@@ -40,27 +40,27 @@
     defined ALLEGRO_MACOSX || \
     defined ALLEGRO_BEOS || \
     defined ALLEGRO_QNX
-#  define UNIX_LIKE
+  #define UNIX_LIKE
 #endif
 
 #if defined ALLEGRO_WINDOWS
-#  include <winalleg.h>
-#  include <process.h>
+  #include <winalleg.h>
+  #include <process.h>
 #elif defined UNIX_LIKE
-#  include <pthread.h>
+  #include <pthread.h>
 #endif
 
 #if defined UNIX_LIKE
 struct pthread_proxy_data {
-  void (*proc)(void *data);
-  void *data;
+  void (*proc)(void*);
+  void* data;
 };
 
-static void *pthread_proxy(void *arg)
+static void* pthread_proxy(void* arg)
 {
-  struct pthread_proxy_data *ptr = arg;
-  void (*proc)(void *data) = ptr->proc;
-  void *data = ptr->data;
+  pthread_proxy_data* ptr = reinterpret_cast<pthread_proxy_data*>(arg);
+  void (*proc)(void*) = ptr->proc;
+  void* data = ptr->data;
   jfree(ptr);
 
   (*proc)(data);
@@ -68,7 +68,7 @@ static void *pthread_proxy(void *arg)
 }
 #endif
   
-JThread jthread_new(void (*proc)(void *data), void *data)
+JThread jthread_new(void (*proc)(void*), void* data)
 {
 #if defined ALLEGRO_WINDOWS
   return (JThread)_beginthread(proc, 0, data);
@@ -83,7 +83,7 @@ JThread jthread_new(void (*proc)(void *data), void *data)
   else
     return (JThread)thread;
 #else
-  #error ASE doesn\'t support threads for your platform
+  #error ASE does not support threads for your platform
 #endif
 }
 
@@ -94,6 +94,6 @@ void jthread_join(JThread thread)
 #elif defined UNIX_LIKE
   pthread_join((pthread_t)thread, NULL);
 #else
-  #error ASE doesn\'t support threads for your platform
+  #error ASE does not support threads for your platform
 #endif
 }

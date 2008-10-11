@@ -1000,7 +1000,7 @@ static FileItem *get_fileitem_by_path(const char *path, bool create_if_not)
 #endif
 
   key = get_key_for_filename(path);
-  fileitem = hash_lookup(hash_fileitems, key);
+  fileitem = reinterpret_cast<FileItem*>(hash_lookup(hash_fileitems, key));
   jfree(key);
 
   if (fileitem)

@@ -4,7 +4,7 @@ readln()
 {
   echo -n "$1 [$2] "
   read ans
-  if [ "$ans" == "" ] ; then ans="$2" ; fi
+  if [ X"$ans" = X"" ] ; then ans="$2" ; fi
 }
 
 ######################################################################
@@ -34,7 +34,7 @@ memleak=$ans
 ######################################################################
 # prefix
 
-if [ "$platform" == "unix" ] ; then
+if [ X"$platform" = X"unix" ] ; then
   readln "Where do you want install ASE by default?" "/usr/local"
   prefix=$ans
 else
@@ -56,21 +56,21 @@ echo "ASE configured:"
 echo "  Platform:		$platform_name"
 
 echo -n "  Debug suppport:	"
-if [ "$debug" == "y" ] ; then echo "yes" ; else echo "no" ; fi
+if [ X"$debug" = X"y" ] ; then echo "yes" ; else echo "no" ; fi
 
 echo -n "  Profile suppport:	"
-if [ "$profile" == "y" ] ; then echo "yes" ; else echo "no" ; fi
+if [ X"$profile" = X"y" ] ; then echo "yes" ; else echo "no" ; fi
 
 echo -n "  Check memory leaks:	"
-if [ "$memleak" == "y" ] ; then echo "yes" ; else echo "no" ; fi
+if [ X"$memleak" = X"y" ] ; then echo "yes" ; else echo "no" ; fi
 
-if [ "$prefix" != "" ] ; then
+if [ X"$prefix" != X"" ] ; then
   echo "  Prefix:		$prefix"
 fi
 
 echo ""
 readln "Is it right (y/n)?" "y"
-if [ $ans != "y" ] ; then exit ; fi
+if [ X"$ans" != X"y" ] ; then exit ; fi
 
 ######################################################################
 # generate the makefile
@@ -97,21 +97,21 @@ gen_makefile()
 
   echo "# Makefile for $platform_name generated with fix.sh" > $makefile
   echo "" >> $makefile
-  if [ "$2" == "conf" ] ; then
+  if [ X"$2" = X"conf" ] ; then
       echo "CONFIGURED = 1" >> $makefile
       echo "" >> $makefile
   fi
 
-  if [ "$debug" != "y" ] ; then echo -n "#" >> $makefile ; fi
+  if [ X"$debug" != X"y" ] ; then echo -n "#" >> $makefile ; fi
   echo "DEBUGMODE = 1" >> $makefile
 
-  if [ "profile" != "y" ] ; then echo -n "#" >> $makefile ; fi
+  if [ X"profile" != X"y" ] ; then echo -n "#" >> $makefile ; fi
   echo "PROFILE = 1" >> $makefile
 
-  if [ "memleak" != "y" ] ; then echo -n "#" >> $makefile ; fi
+  if [ X"memleak" != X"y" ] ; then echo -n "#" >> $makefile ; fi
   echo "MEMLEAK = 1" >> $makefile
 
-  if [ "$prefix" == "" ] ; then echo -n "#" >> $makefile ; fi
+  if [ X"$prefix" = X"" ] ; then echo -n "#" >> $makefile ; fi
   echo "DEFAULT_PREFIX = \"$prefix\"" >> $makefile
 
   echo "" >> $makefile
