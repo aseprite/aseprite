@@ -645,7 +645,7 @@ static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk, int st
 {
   unsigned int id = chunk->image_id;
   int imgtype = chunk->imgtype;
-  Image* image = (Image* )gfxobj_find(id);
+  Image* image = (Image*)gfxobj_find(id);
 
   if ((image) && (image->type == GFXOBJ_IMAGE) &&
       (image->imgtype == imgtype)) {

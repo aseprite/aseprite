@@ -130,7 +130,7 @@ Sprite::~Sprite()
   /* destroy palettes */
   if (this->palettes) {
     JI_LIST_FOR_EACH(this->palettes, link)
-      jfree(link->data);
+      palette_free(reinterpret_cast<Palette*>(link->data));
 
     jlist_free(this->palettes);
   }

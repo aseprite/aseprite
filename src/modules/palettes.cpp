@@ -89,10 +89,10 @@ void exit_module_palette()
   rgb_map = NULL;
 
   if (ase_default_palette != NULL)
-    jfree(ase_default_palette);
+    palette_free(ase_default_palette);
 
   if (ase_current_palette != NULL)
-    jfree(ase_current_palette);
+    palette_free(ase_current_palette);
 
   jfree(my_rgb_map);
   jfree(orig_trans_map);

@@ -1,5 +1,14 @@
 2008-10-13  David A. Capello  <davidcapello@gmail.com>
 
+	* src/raster/gfxobj.cpp (objects_map): Replaced JList 'objects'
+	by a 'objects_map' (a std::map).
+
+	* src/raster/sprite.cpp (~Sprite),
+	src/modules/palettes.cpp (exit_module_palette): Fixed a serious
+	bug where palettes were not freed right (jfree instead of
+	palette_free). It leaves dead-pointers in the collection of
+	graphics objects in 'gfxobj.cpp'.
+
 	* config.h: Added new overloaded new/delete operators to use
 	jmalloc/jfree (useful when use MEMLEAK detector).
 

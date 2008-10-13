@@ -128,6 +128,8 @@ jstring ase_file_selector(const jstring& message,
   if (!start_folder)
     start_folder = get_fileitem_from_path(start_folder_path);
 
+  PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
+
   if (!window) {
     JWidget view, location;
 

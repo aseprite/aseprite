@@ -18,41 +18,35 @@
 
 #include "config.h"
 
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
+#include <map>
+#include <utility>
 
 #include "jinete/jbase.h"
-#include "jinete/jlist.h"
 #include "jinete/jmutex.h"
 
 #include "raster/gfxobj.h"
 
-/* typedef struct GfxObjProperty */
-/* { */
-/*   char *key; */
-/*   void *data; */
-/* } Property; */
-
 static JMutex objects_mutex;
-static gfxobj_id object_id = 0;		/* last object ID created */
-static JList objects;			/* graphics objects list */
+static gfxobj_id object_id = 0;		         // last object ID created
+static std::map<gfxobj_id, GfxObj*> objects_map; // graphics objects map
 
+//////////////////////////////////////////////////////////////////////
+
 bool gfxobj_init()
 {
   objects_mutex = jmutex_new();
   if (!objects_mutex)
-    return FALSE;
+    return false;
 
-  objects = jlist_new();
-  if (!objects)
-    return FALSE;
-
-  return TRUE;
+  return true;
 }
 
 void gfxobj_exit()
 {
-  jlist_free(objects);
+  assert(objects_map.empty());
+
   jmutex_free(objects_mutex);
 }
 
@@ -73,10 +67,15 @@ GfxObj::GfxObj(const GfxObj& gfxobj)
 
 GfxObj::~GfxObj()
 {
-  // we have to remove this object from the list
+  // we have to remove this object from the map
   jmutex_lock(objects_mutex);
   {
-    jlist_remove(objects, this);
+    std::map<gfxobj_id, GfxObj*>::iterator
+      it = objects_map.find(this->id);
+
+    assert(it != objects_map.end());
+
+    objects_map.erase(it);
   }
   jmutex_unlock(objects_mutex);
 }
@@ -88,8 +87,8 @@ void GfxObj::assign_id()
   {
     this->id = ++object_id;
 
-    // and here we add the object in the list of graphics-objects
-    jlist_append(objects, this);
+    // and here we add the object in the map of graphics-objects
+    objects_map.insert(std::make_pair(this->id, this));
   }
   jmutex_unlock(objects_mutex);
 }
@@ -100,15 +99,14 @@ void GfxObj::assign_id()
 GfxObj* gfxobj_find(gfxobj_id id)
 {
   GfxObj* ret = NULL;
-  JLink link;
 
   jmutex_lock(objects_mutex);
   {
-    JI_LIST_FOR_EACH(objects, link)
-      if (((GfxObj* )link->data)->id == id) {
-	ret = (GfxObj* )link->data;
-	break;
-      }
+    std::map<gfxobj_id, GfxObj*>::iterator
+      it = objects_map.find(id);
+
+    if (it != objects_map.end())
+      ret = it->second;
   }
   jmutex_unlock(objects_mutex);
 
