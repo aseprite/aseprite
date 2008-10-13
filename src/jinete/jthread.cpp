@@ -34,23 +34,14 @@
 
 #include "jinete/jthread.h"
 
-#undef UNIX_LIKE
-#if defined ALLEGRO_UNIX || \
-    defined ALLEGRO_LINUX || \
-    defined ALLEGRO_MACOSX || \
-    defined ALLEGRO_BEOS || \
-    defined ALLEGRO_QNX
-  #define UNIX_LIKE
-#endif
-
 #if defined ALLEGRO_WINDOWS
   #include <winalleg.h>
   #include <process.h>
-#elif defined UNIX_LIKE
+#elif defined ALLEGRO_UNIX
   #include <pthread.h>
 #endif
 
-#if defined UNIX_LIKE
+#if defined ALLEGRO_UNIX
 struct pthread_proxy_data {
   void (*proc)(void*);
   void* data;
@@ -72,7 +63,7 @@ JThread jthread_new(void (*proc)(void*), void* data)
 {
 #if defined ALLEGRO_WINDOWS
   return (JThread)_beginthread(proc, 0, data);
-#elif defined UNIX_LIKE
+#elif defined ALLEGRO_UNIX
   pthread_t thread = 0;
   struct pthread_proxy_data *ptr = jnew(struct pthread_proxy_data, 1);
   ptr->proc = proc;
@@ -91,7 +82,7 @@ void jthread_join(JThread thread)
 {
 #if defined ALLEGRO_WINDOWS
   WaitForSingleObject(thread, INFINITE);
-#elif defined UNIX_LIKE
+#elif defined ALLEGRO_UNIX
   pthread_join((pthread_t)thread, NULL);
 #else
   #error ASE does not support threads for your platform

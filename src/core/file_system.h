@@ -20,34 +20,37 @@
 #define CORE_FILE_SYSTEM_H
 
 #include "jinete/jbase.h"
+#include "jinete/jstring.h"
+
+#include <vector>
 
 struct BITMAP;
-struct FileItem;
-typedef struct FileItem FileItem;
+class FileItem;
+
+typedef std::vector<FileItem*> FileItemList;
 
 bool file_system_init();
 void file_system_exit();
 
 void file_system_refresh();
 
-FileItem *get_root_fileitem();
-FileItem *get_fileitem_from_path(const char *path);
+FileItem* get_root_fileitem();
+FileItem* get_fileitem_from_path(const jstring& path);
 
-bool fileitem_is_folder(FileItem *fileitem);
-bool fileitem_is_browsable(FileItem *fileitem);
+bool fileitem_is_folder(FileItem* fileitem);
+bool fileitem_is_browsable(FileItem* fileitem);
 
-const char *fileitem_get_keyname(FileItem *fileitem);
-const char *fileitem_get_filename(FileItem *fileitem);
-const char *fileitem_get_displayname(FileItem *fileitem);
+jstring fileitem_get_keyname(FileItem* fileitem);
+jstring fileitem_get_filename(FileItem* fileitem);
+jstring fileitem_get_displayname(FileItem* fileitem);
 
-FileItem *fileitem_get_parent(FileItem *fileitem);
-JList fileitem_get_children(FileItem *fileitem);
+FileItem* fileitem_get_parent(FileItem* fileitem);
+const FileItemList& fileitem_get_children(FileItem* fileitem);
 
-bool filename_has_extension(const char *filename, const char *list_of_extensions);
-bool fileitem_has_extension(FileItem *fileitem, const char *list_of_extensions);
+bool fileitem_has_extension(FileItem* fileitem, const jstring& csv_extensions);
 
-struct BITMAP *fileitem_get_thumbnail(FileItem *fileitem);
-void fileitem_set_thumbnail(FileItem *fileitem, struct BITMAP *thumbnail);
+BITMAP *fileitem_get_thumbnail(FileItem* fileitem);
+void fileitem_set_thumbnail(FileItem* fileitem, BITMAP *thumbnail);
 
 #endif /* CORE_FILE_SYSTEM_H */
 

@@ -99,7 +99,7 @@ jstring ase_file_selector(const jstring& message,
   if (init_path.filepath().empty()) {
     // get the saved `path' in the configuration file
     jstring path = get_config_string("FileSelect", "CurrentDirectory", "");
-    start_folder = get_fileitem_from_path(path.c_str());
+    start_folder = get_fileitem_from_path(path);
 
     // is the folder find?
     if (!start_folder) {
@@ -126,12 +126,12 @@ jstring ase_file_selector(const jstring& message,
   start_folder_path.fix_separators();
 
   if (!start_folder)
-    start_folder = get_fileitem_from_path(start_folder_path.c_str());
+    start_folder = get_fileitem_from_path(start_folder_path);
 
   if (!window) {
     JWidget view, location;
 
-    /* load the window widget */
+    // load the window widget
     window = load_widget("filesel.jid", "file_selector");
     if (!window)
       return NULL;
@@ -156,7 +156,7 @@ jstring ase_file_selector(const jstring& message,
     jbutton_add_command(goup, goup_command);
 
     view = jview_new();
-    fileview = fileview_new(start_folder, exts.c_str());
+    fileview = fileview_new(start_folder, exts);
 
     jwidget_add_hook(fileview, -1, fileview_msg_proc, NULL);
     jwidget_add_hook(location, -1, location_msg_proc, NULL);
@@ -183,15 +183,15 @@ jstring ase_file_selector(const jstring& message,
     jwidget_signal_on(fileview);
   }
 
-  /* current location */
+  // current location
   navigation_position = NULL;
   add_in_navigation_history(fileview_get_current_folder(fileview));
   
-  /* fill the location combo-box */
+  // fill the location combo-box
   update_location(window);
   update_navigation_buttons(window);
 
-  /* fill file-type combo-box */
+  // fill file-type combo-box
   jcombobox_clear(filetype);
 
   std::vector<jstring> tokens;
@@ -201,47 +201,48 @@ jstring ase_file_selector(const jstring& message,
   for (tok=tokens.begin(); tok!=tokens.end(); ++tok)
     jcombobox_add_string(filetype, tok->c_str(), NULL);
 
-  /* file name entry field */
+  // file name entry field
   filename_entry = jwidget_find_name(window, "filename");
   jwidget_set_text(filename_entry, init_path.filename().c_str());
   select_filetype_from_filename(window);
 
-  /* setup the title of the window */
+  // setup the title of the window
   jwidget_set_text(window, message.c_str());
 
-  /* get the ok-button */
+  // get the ok-button
   ok = jwidget_find_name(window, "ok");
 
-  /* update the view */
+  // update the view
   jview_update(jwidget_get_view(fileview));
 
-  /* open the window and run... the user press ok? */
+  // open the window and run... the user press ok?
   jwindow_open_fg(window);
   if (jwindow_get_killer(window) == ok ||
       jwindow_get_killer(window) == fileview) {
-    /* open the selected file */
+    // open the selected file
     FileItem *folder = fileview_get_current_folder(fileview);
     assert(folder != NULL);
 
     jstring buf = fileitem_get_filename(folder);
     buf /= jwidget_get_text(filename_entry);
 
-    /* does it not have extension? ...we should add the extension
-       selected in the filetype combo-box */
+    // does it not have extension? ...we should add the extension
+    // selected in the filetype combo-box
     if (buf.extension().empty()) {
       buf += '.';
       buf += jcombobox_get_selected_string(filetype);
     }
 
-    /* duplicate the buffer to return a new string */
+    // duplicate the buffer to return a new string
     result = buf;
 
-    /* save the path in the configuration file */
+    // save the path in the configuration file
+    jstring lastpath = fileitem_get_keyname(folder);
     set_config_string("FileSelect", "CurrentDirectory",
-		      fileitem_get_keyname(folder));
+		      lastpath.c_str());
   }
 
-  /* TODO why this doesn't work if I remove this? */
+  // TODO why this doesn't work if I remove this?
   fileview_stop_threads(fileview);
   jwidget_free(window);
   window = NULL;
@@ -255,13 +256,11 @@ jstring ase_file_selector(const jstring& message,
  */
 static void update_location(JWidget window)
 {
-  char buf[MAX_PATH*2];
   JWidget fileview = jwidget_find_name(window, "fileview");
   JWidget location = jwidget_find_name(window, "location");
-  FileItem *current_folder = fileview_get_current_folder(fileview);
-  FileItem *fileitem = current_folder;
+  FileItem* current_folder = fileview_get_current_folder(fileview);
+  FileItem* fileitem = current_folder;
   JList locations = jlist_new();
-  int c, level = 0;
   JLink link;
   int selected_index = -1;
 
@@ -274,20 +273,20 @@ static void update_location(JWidget window)
   jcombobox_clear(location);
 
   /* add item by item (from root to the specific current folder) */
-  level = 0;
+  int level = 0;
   JI_LIST_FOR_EACH(locations, link) {
     fileitem = reinterpret_cast<FileItem*>(link->data);
 
-    /* indentation */
-    ustrcpy(buf, empty_string);
-    for (c=0; c<level; ++c)
-      ustrcat(buf, "  ");
+    // indentation
+    jstring buf;
+    for (int c=0; c<level; ++c)
+      buf += "  ";
 
-    /* location name */
-    ustrcat(buf, fileitem_get_displayname(fileitem));
+    // location name
+    buf += fileitem_get_displayname(fileitem);
 
-    /* add the new location to the combo-box */
-    jcombobox_add_string(location, buf, fileitem);
+    // add the new location to the combo-box
+    jcombobox_add_string(location, buf.c_str(), fileitem);
 
     if (fileitem == current_folder)
       selected_index = level;
@@ -298,7 +297,7 @@ static void update_location(JWidget window)
   jwidget_signal_off(location);
   jcombobox_select_index(location, selected_index);
   jwidget_set_text(jcombobox_get_entry_widget(location),
-		   fileitem_get_displayname(current_folder));
+		   fileitem_get_displayname(current_folder).c_str());
   jentry_deselect_text(jcombobox_get_entry_widget(location));
   jwidget_signal_on(location);
 
@@ -441,14 +440,14 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     switch (msg->signal.num) {
     
       case SIGNAL_FILEVIEW_FILE_SELECTED: {
-	FileItem *fileitem = fileview_get_selected(widget);
+	FileItem* fileitem = fileview_get_selected(widget);
 
 	if (!fileitem_is_folder(fileitem)) {
 	  JWidget window = jwidget_get_window(widget);
 	  JWidget entry = jwidget_find_name(window, "filename");
-	  const char *filename = fileitem_get_filename(fileitem);
+	  jstring filename = fileitem_get_filename(fileitem).filename();
 
-	  jwidget_set_text(entry, get_filename(filename));
+	  jwidget_set_text(entry, filename.c_str());
 	  select_filetype_from_filename(window);
 	}
 	break;

@@ -29,15 +29,6 @@
 #include "core/core.h"
 #include "core/dirs.h"
 
-#undef UNIX_LIKE
-#if defined ALLEGRO_UNIX || \
-    defined ALLEGRO_LINUX || \
-    defined ALLEGRO_MACOSX || \
-    defined ALLEGRO_BEOS || \
-    defined ALLEGRO_QNX
-#define UNIX_LIKE
-#endif
-
 DIRS *dirs_new()
 {
   DIRS* dirs;
@@ -126,7 +117,7 @@ DIRS *filename_in_datadir(const char *filename)
   DIRS *dirs = dirs_new();
   char buf[1024];
 
-#if defined UNIX_LIKE
+#if defined ALLEGRO_UNIX
 
   /* $HOME/.ase/filename */
   sprintf(buf, ".ase/%s", filename);
@@ -162,7 +153,7 @@ DIRS *filename_in_homedir(const char *filename)
 {
   DIRS *dirs = dirs_new();
 
-#if defined UNIX_LIKE
+#if defined ALLEGRO_UNIX
 
   char *env = getenv("HOME");
   char buf[1024];
@@ -196,7 +187,7 @@ DIRS *cfg_filename_dirs()
 {
   DIRS *dirs = dirs_new();
 
-#if defined UNIX_LIKE
+#if defined ALLEGRO_UNIX
 
   /* $HOME/.aserc-VERSION */
   dirs_cat_dirs(dirs, filename_in_homedir(".aserc-" VERSION));

@@ -70,10 +70,12 @@ public:
   {
   }
 
-  static bool is_separator(char c) {
-    return (c == '\\' || c == '/');
-  }
+  char front() const { return *begin(); }
+  char back() const { return *(end()-1); }
 
+  void tolower();
+  void toupper();
+  
   jstring filepath() const;
   jstring filename() const;
   jstring extension() const;
@@ -81,7 +83,9 @@ public:
 
   jstring operator/(const jstring& component) const;
   jstring& operator/=(const jstring& component);
+  void remove_separator();
   void fix_separators();
+  bool has_extension(const jstring& csv_extensions) const;
 
   template<typename List>
   void split(value_type separator, List& result) const
@@ -98,6 +102,10 @@ public:
       else
 	tok.push_back(*it);
     }
+  }
+
+  static bool is_separator(char c) {
+    return (c == '\\' || c == '/');
   }
   
 };

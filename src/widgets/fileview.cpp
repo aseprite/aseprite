@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -46,12 +46,12 @@
 
 typedef struct FileView
 {
-  FileItem *current_folder;
-  JList list;
+  FileItem* current_folder;
+  FileItemList list;
   bool req_valid;
   int req_w, req_h;
-  FileItem *selected;
-  const char *exts;
+  FileItem* selected;
+  jstring exts;
 
   /* incremental-search */
   char isearch[256];
@@ -88,10 +88,10 @@ static void openfile_bg(void *data);
 static void monitor_thumbnail_generation(void *data);
 static void monitor_free_thumbnail_generation(void *data);
 
-JWidget fileview_new(FileItem *start_folder, const char *exts)
+JWidget fileview_new(FileItem *start_folder, const jstring& exts)
 {
   JWidget widget = jwidget_new(fileview_type());
-  FileView* fileview = jnew(FileView, 1);
+  FileView* fileview = new FileView;
 
   if (!start_folder)
     start_folder = get_root_fileitem();
@@ -107,7 +107,6 @@ JWidget fileview_new(FileItem *start_folder, const char *exts)
   jwidget_focusrest(widget, TRUE);
 
   fileview->current_folder = start_folder;
-  fileview->list = NULL;
   fileview->req_valid = FALSE;
   fileview->selected = NULL;
   fileview->exts = exts;
@@ -155,11 +154,9 @@ void fileview_set_current_folder(JWidget widget, FileItem *folder)
 
   fileview_regenerate_list(widget);
 
-  /* select first folder */
-  if (!jlist_empty(fileview->list) &&
-      fileitem_is_browsable(reinterpret_cast<FileItem*>(jlist_first_data(fileview->list)))) {
+  // select first folder
+  if (!fileview->list.empty() && fileitem_is_browsable(fileview->list.front()))
     fileview_select_index(widget, 0);
-  }
 
   jwidget_emit_signal(widget, SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED);
 
@@ -186,15 +183,14 @@ void fileview_stop_threads(JWidget widget)
   FileView* fileview = fileview_data(widget);
   JLink link, next;
 
-  /* stop the generation of threads */
+  // stop the generation of threads
   jmanager_stop_timer(fileview->timer_id);
 
-  /* join all threads (removing all monitors) */
-  JI_LIST_FOR_EACH_SAFE(fileview->monitors, link, next) {
+  // join all threads (removing all monitors)
+  JI_LIST_FOR_EACH_SAFE(fileview->monitors, link, next)
     remove_gui_monitor(reinterpret_cast<Monitor*>(link->data));
-  }
 
-  /* clear the list of monitors */
+  // clear the list of monitors
   jlist_clear(fileview->monitors);
 }
 
@@ -215,26 +211,23 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
       jlist_free(fileview->monitors);
 
-      if (fileview->list != NULL)
-	jlist_free(fileview->list);
-
       jmanager_remove_timer(fileview->timer_id);
-      jfree(fileview);
+      delete fileview;
       break;
 
     case JM_REQSIZE:
       if (!fileview->req_valid) {
-	FileItem *fileitem;
 	int w, h, iw, ih;
-	JLink link;
 
 	w = 0;
 	h = 0;
 
-	/* rows */
-	JI_LIST_FOR_EACH(fileview->list, link) {
-	  fileitem = reinterpret_cast<FileItem*>(link->data);
-	  fileview_get_fileitem_size(widget, fileitem, &iw, &ih);
+	// rows
+	for (FileItemList::iterator
+	       it=fileview->list.begin();
+	     it!=fileview->list.end(); ++it) {
+	  FileItem* fi = *it;
+	  fileview_get_fileitem_size(widget, fi, &iw, &ih);
 	  w = MAX(w, iw);
 	  h += ih;
 	}
@@ -251,8 +244,6 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       JWidget view = jwidget_get_view(widget);
       JRect vp = jview_get_viewport_position(view);
-      FileItem *fi;
-      JLink link;
       int iw, ih;
       int th = jwidget_get_text_height(widget);
       int x, y = widget->rc->y1;
@@ -262,9 +253,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       BITMAP *thumbnail = NULL;
       int thumbnail_y = 0;
 
-      /* rows */
-      JI_LIST_FOR_EACH(fileview->list, link) {
-	fi = reinterpret_cast<FileItem*>(link->data);
+      // rows
+      for (FileItemList::iterator
+	     it=fileview->list.begin();
+	   it!=fileview->list.end(); ++it) {
+	FileItem* fi = *it;
 	fileview_get_fileitem_size(widget, fi, &iw, &ih);
 	
 	if (fi == fileview->selected) {
@@ -315,7 +308,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	/* item name */
 	jdraw_text(widget->text_font,
-		   fileitem_get_displayname(fi), x, y+2,
+		   fileitem_get_displayname(fi).c_str(), x, y+2,
 		   fgcolor, bgcolor, TRUE);
 
 	/* background for the item name */
@@ -326,7 +319,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		     /* exclude where is the text located */
 		     x, y+2,
 		     x+ji_font_text_len(widget->text_font,
-					fileitem_get_displayname(fi))-1,
+					fileitem_get_displayname(fi).c_str())-1,
 		     y+2+ji_font_get_size(widget->text_font)-1,
 		     /* fill with the background color */
 		     bgcolor);
@@ -360,8 +353,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	     makecol(0, 0, 0));
       }
 
-      /* is the current folder empty? */
-      if (jlist_empty(fileview->list))
+      // is the current folder empty?
+      if (fileview->list.empty())
 	draw_emptyset_symbol(vp, makecol(194, 194, 194));
 
       jrect_free(vp);
@@ -373,22 +366,22 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOTION:
       if (jwidget_has_capture(widget)) {
-	FileItem *fi;
-	JLink link;
 	int iw, ih;
 	int th = jwidget_get_text_height(widget);
 	int y = widget->rc->y1;
 	FileItem *old_selected = fileview->selected;
 	fileview->selected = NULL;
 
-	/* rows */
-	JI_LIST_FOR_EACH(fileview->list, link) {
-	  fi = reinterpret_cast<FileItem*>(link->data);
+	// rows
+	for (FileItemList::iterator
+	       it=fileview->list.begin();
+	     it!=fileview->list.end(); ++it) {
+	  FileItem* fi = *it;
 	  fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
 	  if (((msg->mouse.y >= y) && (msg->mouse.y < y+2+th+2)) ||
-	      (link == jlist_first(fileview->list) && msg->mouse.y < y) ||
-	      (link == jlist_last(fileview->list) && msg->mouse.y >= y+2+th+2)) {
+	      (it == fileview->list.begin() && msg->mouse.y < y) ||
+	      (it == fileview->list.end()-1 && msg->mouse.y >= y+2+th+2)) {
 	    fileview->selected = fi;
 	    fileview_make_selected_fileitem_visible(widget);
 	    break;
@@ -416,7 +409,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_focus(widget)) {
 	int select = fileview_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);
-	int bottom = MAX(0, jlist_length(fileview->list)-1);
+	int bottom = fileview->list.size();
 
 	switch (msg->key.scancode) {
 	  case KEY_UP:
@@ -435,7 +428,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	    select = 0;
 	    break;
 	  case KEY_END:
-	    select = bottom;
+	    select = bottom-1;
 	    break;
 	  case KEY_PGUP:
 	  case KEY_PGDN: {
@@ -465,7 +458,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		fileview_set_current_folder(widget, fileview->selected);
 		return TRUE;
 	      }
+	      if (fileitem_is_folder(fileview->selected)) {
+		// do nothing (is a folder but not browseable
+		return TRUE;
+	      }
 	      else {
+		// a file was selected
 		jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
 		return TRUE;
 	      }
@@ -489,12 +487,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	      {
 		int i, chrs = ustrlen(fileview->isearch);
-		JLink link = jlist_nth_link(fileview->list,
-					    (select >= 0) ? select: 0);
+		FileItemList::iterator
+		  link = fileview->list.begin() + ((select >= 0) ? select: 0);
 
-		for (i=MAX(select, 0); i<=bottom; ++i, link=link->next) {
-		  FileItem *fi = reinterpret_cast<FileItem*>(link->data);
-		  if (ustrnicmp(fileitem_get_displayname(fi),
+		for (i=MAX(select, 0); i<bottom; ++i, ++link) {
+		  FileItem *fi = *link;
+		  if (ustrnicmp(fileitem_get_displayname(fi).c_str(),
 				fileview->isearch,
 				chrs) == 0) {
 		    select = i;
@@ -509,7 +507,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	      return FALSE;
 	}
 
-	fileview_select_index(widget, MID(0, select, bottom));
+	if (bottom > 0)
+	  fileview_select_index(widget, MID(0, select, bottom-1));
 	return TRUE;
       }
       break;
@@ -569,7 +568,7 @@ static void fileview_get_fileitem_size(JWidget widget, FileItem *fi, int *w, int
   }
 
   len += ji_font_text_len(widget->text_font,
-			  fileitem_get_displayname(fi));
+			  fileitem_get_displayname(fi).c_str());
 
 /*   if (!fileitem_is_folder(fi)) { */
 /*     len += 2+ji_font_text_len(widget->text_font, buf); */
@@ -584,8 +583,6 @@ static void fileview_make_selected_fileitem_visible(JWidget widget)
   FileView* fileview = fileview_data(widget);
   JWidget view = jwidget_get_view(widget);
   JRect vp = jview_get_viewport_position(view);
-  FileItem *fi;
-  JLink link;
   int iw, ih;
   int th = jwidget_get_text_height(widget);
   int y = widget->rc->y1;
@@ -593,9 +590,11 @@ static void fileview_make_selected_fileitem_visible(JWidget widget)
 
   jview_get_scroll(view, &scroll_x, &scroll_y);
 
-  /* rows */
-  JI_LIST_FOR_EACH(fileview->list, link) {
-    fi = reinterpret_cast<FileItem*>(link->data);
+  // rows
+  for (FileItemList::iterator
+	 it=fileview->list.begin();
+       it!=fileview->list.end(); ++it) {
+    FileItem* fi = *it;
     fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
     if (fi == fileview->selected) {
@@ -616,43 +615,35 @@ static void fileview_make_selected_fileitem_visible(JWidget widget)
 static void fileview_regenerate_list(JWidget widget)
 {
   FileView* fileview = fileview_data(widget);
-  FileItem *fileitem;
-  JLink link, next;
-  JList children;
 
-  if (fileview->list != NULL)
-    jlist_free(fileview->list);
+  // get the children of the current folder
+  fileview->list = fileitem_get_children(fileview->current_folder);
 
-  /* get the list of children */
-  children = fileitem_get_children(fileview->current_folder);
-  if (children != NULL) {
-    fileview->list = jlist_copy(children);
-
-    /* filter the list */
-    if (fileview->exts) {
-      JI_LIST_FOR_EACH_SAFE(fileview->list, link, next) {
-	fileitem = reinterpret_cast<FileItem*>(link->data);
-	if (!fileitem_is_folder(fileitem) &&
-	    !fileitem_has_extension(fileitem, fileview->exts)) {
-	  jlist_delete_link(fileview->list, link);
-	}
+  // filter the list by the available extensions
+  if (!fileview->exts.empty()) {
+    for (FileItemList::iterator
+	   it=fileview->list.begin();
+	 it!=fileview->list.end(); ) {
+      FileItem* fileitem = *it;
+      if (!fileitem_is_folder(fileitem) &&
+	  !fileitem_has_extension(fileitem, fileview->exts.c_str())) {
+	it = fileview->list.erase(it);
       }
+      else
+	++it;
     }
   }
-  else
-    fileview->list = jlist_new();
 }
 
 static int fileview_get_selected_index(JWidget widget)
 {
   FileView* fileview = fileview_data(widget);
-  JLink link;
-  int i = 0;
 
-  JI_LIST_FOR_EACH(fileview->list, link) {
-    if (link->data == fileview->selected)
-      return i;
-    i++;
+  for (FileItemList::iterator
+	 it = fileview->list.begin();
+       it != fileview->list.end(); ++it) {
+    if (*it == fileview->selected)
+      return it - fileview->list.begin();
   }
 
   return -1;
@@ -663,7 +654,7 @@ static void fileview_select_index(JWidget widget, int index)
   FileView* fileview = fileview_data(widget);
   FileItem* old_selected = fileview->selected;
 
-  fileview->selected = reinterpret_cast<FileItem*>(jlist_nth_data(fileview->list, index));
+  fileview->selected = fileview->list.at(index);
   if (old_selected != fileview->selected) {
     fileview_make_selected_fileitem_visible(widget);
     
@@ -698,7 +689,7 @@ static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
       fileitem_get_thumbnail(fileitem) != NULL)
     return FALSE;
 
-  fop = fop_to_load_sprite(fileitem_get_filename(fileitem),
+  fop = fop_to_load_sprite(fileitem_get_filename(fileitem).c_str(),
 			   FILE_LOAD_SEQUENCE_NONE |
 			   FILE_LOAD_ONE_FRAME);
   if (!fop)
@@ -809,6 +800,7 @@ static void monitor_thumbnail_generation(void *_data)
       unselect_palette();
 
       image_free(data->thumbnail);
+      data->thumbnail = NULL;
 
       fileitem_set_thumbnail(data->fileitem, bmp);
 
@@ -836,6 +828,11 @@ static void monitor_free_thumbnail_generation(void *_data)
 
   jlist_remove(fileview_data(data->fileview)->monitors,
 	       data->monitor);
+
+  if (data->thumbnail) {
+    image_free(data->thumbnail);
+    data->thumbnail = NULL;
+  }
 
   fop_free(fop);
   jfree(data);

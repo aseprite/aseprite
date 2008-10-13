@@ -20,6 +20,7 @@
 #define WIDGETS_FILEVIEW_H
 
 #include "jinete/jbase.h"
+#include "jinete/jstring.h"
 
 #include "core/file_system.h"
 
@@ -28,7 +29,7 @@
 #define SIGNAL_FILEVIEW_FILE_ACCEPT		0x10007
 #define SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED	0x10008
 
-JWidget fileview_new(FileItem *start_folder, const char *exts);
+JWidget fileview_new(FileItem *start_folder, const jstring& exts);
 int fileview_type();
 
 FileItem *fileview_get_current_folder(JWidget fileview);

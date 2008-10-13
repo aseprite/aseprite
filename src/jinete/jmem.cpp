@@ -82,13 +82,13 @@ char *jstrdup(const char *string)
 
 typedef struct slot_t
 {
-  void *backtrace[4];
-  void *ptr;
+  void* backtrace[4];
+  void* ptr;
   unsigned long size;
-  struct slot_t *next;
+  struct slot_t* next;
 } slot_t;
 
-static slot_t *headslot;
+static slot_t* headslot;
 static JMutex mutex;
 
 void jmemleak_init()
@@ -99,8 +99,8 @@ void jmemleak_init()
 
 void jmemleak_exit()
 {
-  FILE *f = fopen("_ase_memlog.txt", "wt");
-  slot_t *it;
+  FILE* f = fopen("_ase_memlog.txt", "wt");
+  slot_t* it;
 
   if (f != NULL) {
     /* memory leaks */
@@ -121,7 +121,7 @@ void jmemleak_exit()
 
 static void addslot(void *ptr, unsigned long size)
 {
-  slot_t *p = malloc(sizeof(slot_t));
+  slot_t* p = reinterpret_cast<slot_t*>(malloc(sizeof(slot_t)));
 
   assert(ptr != NULL);
   assert(size != 0);
@@ -217,9 +217,9 @@ void jfree(void *mem)
   free(mem);
 }
 
-char *jstrdup(const char *string)
+char* jstrdup(const char *string)
 {
-  void *mem;
+  char* mem;
 
   assert(string != NULL);
 

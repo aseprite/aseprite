@@ -257,4 +257,9 @@ char* jstrdup (const char* string);
 #define jrenew(struct_type, mem, n_structs)				\
     ((struct_type*)jrealloc((mem), (sizeof(struct_type) * (n_structs))))
 
+#if defined MEMLEAK
+void jmemleak_init();
+void jmemleak_exit();
+#endif
+
 #endif /* JINETE_BASE_H */

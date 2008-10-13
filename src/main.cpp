@@ -22,11 +22,10 @@
 
 #include "core/app.h"
 
-/* Information for "ident".  */
+// Information for "ident".
 
 const char ase_ident[] =
     "$ASE: " VERSION " " COPYRIGHT " $\n"
-    "$Date: 2007/09/09 03:37:55 $\n"
     "$Website: " WEBSITE " $\n";
 
 /***********************************************************************
@@ -36,14 +35,13 @@ const char ase_ident[] =
 int main(int argc, char *argv[])
 {
   allegro_init();
-  /* set_uformat(U_UTF8); */
   set_uformat(U_ASCII);
 
-#if defined  MEMLEAK
+#if defined MEMLEAK
   jmemleak_init();
 #endif
-  
-  /* initialises the application */
+
+  // initialises the application
   if (!app_init(argc, argv))
     return 1;
 

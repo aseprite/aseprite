@@ -1,3 +1,11 @@
+2008-10-13  David A. Capello  <davidcapello@gmail.com>
+
+	* config.h: Added new overloaded new/delete operators to use
+	jmalloc/jfree (useful when use MEMLEAK detector).
+
+	* src/core/file_system.cpp: Modified to use "jstring" instead of
+	"char*", and "std::map" instead of "HashTable".
+
 2008-10-11  David A. Capello  <davidcapello@gmail.com>
 
 	* src/dialogs/filesel.cpp (ase_file_selector): Now it uses

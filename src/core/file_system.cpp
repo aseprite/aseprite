@@ -23,13 +23,18 @@
 
 #include "config.h"
 
-#include <stdio.h>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <utility>
+
 #include <allegro.h>
 
-/* in Windows we can use PIDLS */
+// in Windows we can use PIDLS
 #if defined ALLEGRO_WINDOWS
-  /* uncomment this if you don't want to use PIDLs in windows */
+  // uncomment this if you don't want to use PIDLs in windows
   #define USE_PIDLS
 #endif
 
@@ -46,16 +51,15 @@
   #include <shlwapi.h>
 #endif
 
-#include "jinete/jlist.h"
 #include "jinete/jfilesel.h"
+#include "jinete/jstring.h"
 
 #include "core/file_system.h"
-#include "util/hash.h"
 
-/********************************************************************/
+//////////////////////////////////////////////////////////////////////
 
 #ifdef USE_PIDLS
-  /* ..using Win32 Shell (PIDLs) */
+  // ..using Win32 Shell (PIDLs)
 
   #define IS_FOLDER(fi)					\
     (((fi)->attrib & SFGAO_FOLDER) == SFGAO_FOLDER)
@@ -63,7 +67,7 @@
   #define MYPC_CSLID  "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}"
 
 #else
-  /* ..using Allegro (for_each_file) */
+  // ..using Allegro (for_each_file)
 
   #define IS_FOLDER(fi)					\
     (((fi)->attrib & FA_DIREC) == FA_DIREC)
@@ -81,55 +85,64 @@
 
 #endif
 
-/********************************************************************/
+//////////////////////////////////////////////////////////////////////
 
 #ifndef MAX_PATH
 #  define MAX_PATH 4096
 #endif
 
-/* a position in the file-system */
-struct FileItem
+#define NOTINITIALIZED	"{__not_initialized_path__}"
+
+// a position in the file-system
+class FileItem
 {
-  char *keyname;
-  char *filename;
-  char *displayname;
-  FileItem *parent;
-  JList children;
+public:
+  jstring keyname;
+  jstring filename;
+  jstring displayname;
+  FileItem* parent;
+  FileItemList children;
   unsigned int version;
   bool removed;
 #ifdef USE_PIDLS
-  LPITEMIDLIST pidl;		/* relative to parent */
-  LPITEMIDLIST fullpidl;	/* relative to the Desktop folder
-				   (like a full path-name, because the
-				   desktop is the root on Windows) */
+  LPITEMIDLIST pidl;		// relative to parent
+  LPITEMIDLIST fullpidl;	// relative to the Desktop folder
+				// (like a full path-name, because the
+				// desktop is the root on Windows)
   SFGAOF attrib;
 #else
   int attrib;
 #endif
+
+  FileItem(FileItem* parent);
+  ~FileItem();
+
+  void insert_child_sorted(FileItem* child);
+  int compare(const FileItem& that) const;
+
+  bool operator<(const FileItem& that) const { return compare(that) < 0; }
+  bool operator>(const FileItem& that) const { return compare(that) > 0; }
+  bool operator==(const FileItem& that) const { return compare(that) == 0; }
+  bool operator!=(const FileItem& that) const { return compare(that) != 0; }
 };
 
-// the root of the file-system
-static FileItem *rootitem = NULL;
-static HashTable *hash_fileitems = NULL;
-static unsigned int current_file_system_version = 0;
+typedef std::map<jstring, FileItem*> FileItemMap;
+typedef std::map<jstring, BITMAP*> ThumbnailMap;
 
-/* hash-table for thumbnails */
-static HashTable *hash_thumbnail = NULL;
+// the root of the file-system
+static FileItem* rootitem = NULL;
+static FileItemMap fileitems_map;
+static ThumbnailMap thumbnail_map;
+static unsigned int current_file_system_version = 0;
 
 #ifdef USE_PIDLS
   static IMalloc* shl_imalloc = NULL;
   static IShellFolder* shl_idesktop = NULL;
 #endif
 
-/* local auxiliary routines */
-static FileItem *fileitem_new(FileItem *parent);
-static void fileitem_free(FileItem *fileitem);
-static void fileitem_insert_child_sorted(FileItem *fileitem, FileItem *child);
-static int fileitem_cmp(FileItem *fi1, FileItem *fi2);
-
 /* a more easy PIDLs interface (without using the SH* & IL* routines of W2K) */
 #ifdef USE_PIDLS
-  static void update_by_pidl(FileItem *fileitem);
+  static void update_by_pidl(FileItem* fileitem);
   static LPITEMIDLIST concat_pidl(LPITEMIDLIST pidlHead, LPITEMIDLIST pidlTail);
   static UINT get_pidl_size(LPITEMIDLIST pidl);
   static LPITEMIDLIST get_next_pidl(LPITEMIDLIST pidl);
@@ -137,16 +150,16 @@ static int fileitem_cmp(FileItem *fi1, FileItem *fi2);
   static LPITEMIDLIST clone_pidl(LPITEMIDLIST pidl);
   static LPITEMIDLIST remove_last_pidl(LPITEMIDLIST pidl);
   static void free_pidl(LPITEMIDLIST pidl);
-  static char *get_key_for_pidl(LPITEMIDLIST pidl);
+  static jstring get_key_for_pidl(LPITEMIDLIST pidl);
 
-  static FileItem *get_fileitem_by_fullpidl(LPITEMIDLIST pidl, bool create_if_not);
-  static void put_fileitem(FileItem *fileitem);
+  static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST pidl, bool create_if_not);
+  static void put_fileitem(FileItem* fileitem);
 #else
-  static FileItem *get_fileitem_by_path(const char *path, bool create_if_not);
+  static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not);
   static void for_each_child_callback(const char *filename, int attrib, int param);
-  static char *remove_backslash(char *filename);
-  static char *get_key_for_filename(const char *filename);
-  static void put_fileitem(FileItem *fileitem);
+  static jstring remove_backslash_if_needed(const jstring& filename);
+  static jstring get_key_for_filename(const jstring& filename);
+  static void put_fileitem(FileItem* fileitem);
 #endif
 
 /**
@@ -162,10 +175,11 @@ bool file_system_init()
   SHGetDesktopFolder(&shl_idesktop);
 #endif
 
+  // first version of the file system
   ++current_file_system_version;
 
-  hash_fileitems = hash_new(512);
-  hash_thumbnail = hash_new(512);
+  // get the root element of the file system (this will create
+  // the 'rootitem' FileItem)
   get_root_fileitem();
 
   return TRUE;
@@ -176,33 +190,23 @@ bool file_system_init()
  */
 void file_system_exit()
 {
-#if 0
-  /* WARNING: all the 'fileitem_free' are called with the hash_free
-     routine, so we don't need to call 'fileitem_free' for the
-     'rootitem'... */
-  if (rootitem != NULL) {
-    fileitem_free(rootitem);
-    rootitem = NULL;
+  for (FileItemMap::iterator
+	 it=fileitems_map.begin(); it!=fileitems_map.end(); ++it) {
+    delete it->second;
   }
-#endif
+  fileitems_map.clear();
 
-  if (hash_fileitems != NULL) {
-    hash_free(hash_fileitems,
-	      reinterpret_cast<void(*)(void*)>(fileitem_free));
-    hash_fileitems = NULL;
+  for (ThumbnailMap::iterator
+	 it=thumbnail_map.begin(); it!=thumbnail_map.end(); ++it) {
+    destroy_bitmap(it->second);
   }
-
-  if (hash_thumbnail != NULL) {
-    hash_free(hash_thumbnail,
-	      reinterpret_cast<void(*)(void*)>(destroy_bitmap));
-    hash_thumbnail = NULL;
-  }
+  thumbnail_map.clear();
 
 #ifdef USE_PIDLS
-  /* relase desktop IShellFolder interface */
+  // relase desktop IShellFolder interface
   shl_idesktop->Release();
-    
-  /* release IMalloc interface */
+
+  // release IMalloc interface
   shl_imalloc->Release();
   shl_imalloc = NULL;
 #endif
@@ -219,27 +223,24 @@ void file_system_refresh()
   ++current_file_system_version;
 }
 
-FileItem *get_root_fileitem()
+FileItem* get_root_fileitem()
 {
-  FileItem *fileitem;
+  FileItem* fileitem;
 
   if (rootitem)
     return rootitem;
 
-  fileitem = fileitem_new(NULL);
-  if (!fileitem)
-    return NULL;
-
+  fileitem = new FileItem(NULL);
   rootitem = fileitem;
 
 #ifdef USE_PIDLS
   {
-    /* get the desktop PIDL */
+    // get the desktop PIDL
     LPITEMIDLIST pidl = NULL;
 
     if (SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOP, &pidl) != S_OK) {
-      /* TODO do something better */
-      assert(FALSE);
+      // TODO do something better
+      assert(false);
       exit(1);
     }
     fileitem->pidl = pidl;
@@ -251,28 +252,30 @@ FileItem *get_root_fileitem()
   }
 #else
   {
-    char buf[MAX_PATH];
+    const char* root;
 
 #if defined HAVE_DRIVES
-    ustrcpy(buf, "C:\\");
+    root = "C:\\";
 #else
-    ustrcpy(buf, "/");
+    root = "/";
 #endif
 
-    fileitem->filename = jstrdup(buf);
-    fileitem->displayname = jstrdup(buf);
+    fileitem->filename = root;
+    fileitem->displayname = root;
     fileitem->attrib = FA_DIREC;
   }
 #endif
 
-  /* insert the file-item in the hash-table */
+  // insert the file-item in the hash-table
   put_fileitem(fileitem);
   return fileitem;
 }
 
-FileItem *get_fileitem_from_path(const char *path)
+FileItem* get_fileitem_from_path(const jstring& path)
 {
-  FileItem *fileitem = NULL;
+  FileItem* fileitem = NULL;
+
+  PRINTF("get_fileitem_from_path(%s)\n", path.c_str());
 
 #ifdef USE_PIDLS
   {
@@ -281,14 +284,19 @@ FileItem *get_fileitem_from_path(const char *path)
     LPITEMIDLIST fullpidl = NULL;
     SFGAOF attrib = SFGAO_FOLDER;
 
-    if (*path == 0)
-      return get_root_fileitem();
+    if (path.empty()) {
+      fileitem = get_root_fileitem();
+      PRINTF("  > %p (root)\n", fileitem);
+      return fileitem;
+    }
 
-    MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, path, ustrlen(path)+1, wStr, MAX_PATH);
+    MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
+			path.c_str(), path.size()+1, wStr, MAX_PATH);
     if (shl_idesktop->ParseDisplayName(NULL, NULL,
 				       wStr, &cbEaten,
 				       &fullpidl,
 				       &attrib) != S_OK) {
+      PRINTF("  > (null)\n");
       return NULL;
     }
 
@@ -297,98 +305,93 @@ FileItem *get_fileitem_from_path(const char *path)
   }
 #else
   {
-    char buf[MAX_PATH];
-
-    /* return HOME location */
-    
-    ustrcpy(buf, path);
-    remove_backslash(buf);
+    jstring buf = remove_backslash_if_needed(path);
     fileitem = get_fileitem_by_path(buf, TRUE);
   }
 #endif
 
+  PRINTF("  > fileitem = %p\n", fileitem);
+
   return fileitem;
 }
 
-bool fileitem_is_folder(FileItem *fileitem)
+bool fileitem_is_folder(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
+  assert(fileitem);
 
   return IS_FOLDER(fileitem);
 }
 
-bool fileitem_is_browsable(FileItem *fileitem)
+bool fileitem_is_browsable(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
-  assert(fileitem->filename != NULL);
+  assert(fileitem);
+  assert(fileitem->filename != NOTINITIALIZED);
 
 #ifdef USE_PIDLS
   return IS_FOLDER(fileitem)
-    && (ustrcmp(get_extension(fileitem->filename), "zip") != 0)
-    && (fileitem->filename[0] != ':' ||
-	ustrcmp(fileitem->filename, MYPC_CSLID) == 0);
+    && (fileitem->filename.extension() != "zip")
+    && ((!fileitem->filename.empty() && fileitem->filename.front() != ':') ||
+	(fileitem->filename == MYPC_CSLID));
 #else
   return IS_FOLDER(fileitem);
 #endif
 }
 
-const char *fileitem_get_keyname(FileItem *fileitem)
+jstring fileitem_get_keyname(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
-  assert(fileitem->keyname != NULL);
+  assert(fileitem);
+  assert(fileitem->keyname != NOTINITIALIZED);
 
   return fileitem->keyname;
 }
 
-const char *fileitem_get_filename(FileItem *fileitem)
+jstring fileitem_get_filename(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
-  assert(fileitem->filename != NULL);
+  assert(fileitem);
+  assert(fileitem->filename != NOTINITIALIZED);
 
   return fileitem->filename;
 }
 
-const char *fileitem_get_displayname(FileItem *fileitem)
+jstring fileitem_get_displayname(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
-  assert(fileitem->displayname != NULL);
+  assert(fileitem);
+  assert(fileitem->displayname != NOTINITIALIZED);
 
   return fileitem->displayname;
 }
 
-FileItem *fileitem_get_parent(FileItem *fileitem)
+FileItem* fileitem_get_parent(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
+  assert(fileitem);
 
   if (fileitem == rootitem)
     return NULL;
   else {
-    assert(fileitem->parent != NULL);
+    assert(fileitem->parent);
     return fileitem->parent;
   }
 }
 
-JList fileitem_get_children(FileItem *fileitem)
+const FileItemList& fileitem_get_children(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
+  assert(fileitem);
 
   /* is the file-item a folder? */
   if (IS_FOLDER(fileitem) &&
-      /* if the children list is empty, or the file-system version
-	 change (it's like to say: the current fileitem->children list
-	 is outdated)...  */
-      (!fileitem->children || current_file_system_version > fileitem->version)) {
-    JLink link, next;
-    FileItem *child;
+      // if the children list is empty, or the file-system version
+      // change (it's like to say: the current fileitem->children list
+      // is outdated)...
+      (fileitem->children.empty() ||
+       current_file_system_version > fileitem->version)) {
+    FileItemList::iterator it;
+    FileItem* child;
 
-    /* we have to rebuild the childre list */
-    if (!fileitem->children)
-      fileitem->children = jlist_new();
-    else {
-      JI_LIST_FOR_EACH_SAFE(fileitem->children, link, next) {
-	child = (FileItem *)link->data;
-	child->removed = TRUE;
-      }
+    // we have to mark current items as deprecated
+    for (it=fileitem->children.begin();
+	 it!=fileitem->children.end(); ++it) {
+      child = *it;
+      child->removed = true;
     }
 
     /* printf("Loading files for %p (%s)\n", fileitem, fileitem->displayname); fflush(stdout); */
@@ -436,7 +439,7 @@ JList fileitem_get_children(FileItem *fileitem)
 
 	      child = get_fileitem_by_fullpidl(fullpidl, FALSE);
 	      if (!child) {
-		child = fileitem_new(fileitem);
+		child = new FileItem(fileitem);
 
 		child->pidl = itempidl[c];
 		child->fullpidl = fullpidl;
@@ -451,7 +454,7 @@ JList fileitem_get_children(FileItem *fileitem)
 		free_pidl(itempidl[c]);
 	      }
 
-	      fileitem_insert_child_sorted(fileitem, child);
+	      fileitem->insert_child_sorted(child);
 	    }
 	  }
 
@@ -466,7 +469,7 @@ JList fileitem_get_children(FileItem *fileitem)
     {
       char buf[MAX_PATH], path[MAX_PATH], tmp[32];
 
-      ustrcpy(path, fileitem->filename);
+      ustrcpy(path, fileitem->filename.c_str());
       put_backslash(path);
 
       replace_filename(buf,
@@ -480,176 +483,129 @@ JList fileitem_get_children(FileItem *fileitem)
     }
 #endif
 
-    /* check old file-items (maybe removed directories or file-items) */
-    JI_LIST_FOR_EACH_SAFE(fileitem->children, link, next) {
-      child = (FileItem *)link->data;
+    // check old file-items (maybe removed directories or file-items)
+    for (it=fileitem->children.begin();
+	 it!=fileitem->children.end(); ) {
+      child = *it;
       if (child->removed) {
-	jlist_delete_link(fileitem->children, link);
-	fileitem_free(child);
+	it = fileitem->children.erase(it);
+	delete child;
       }
+      else
+	++it;
     }
 
-    /* now this file-item is updated */
+    // now this file-item is updated
     fileitem->version = current_file_system_version;
   }
 
   return fileitem->children;
 }
 
-bool filename_has_extension(const char *filename, const char *list_of_extensions)
+bool fileitem_has_extension(FileItem* fileitem, const jstring& csv_extensions)
 {
-  const char *extension = get_extension(filename);
-  bool ret = FALSE;
-  if (extension) {
-    char *extdup = ustrlwr(jstrdup(extension));
-    int extsz = ustrlen(extdup);
-    char *p = ustrstr(list_of_extensions, extdup);
-    if ((p != NULL) &&
-	(p[extsz] == 0 || p[extsz] == ',') &&
-	(p == list_of_extensions || *(p-1) == ',')) {
-      ret = TRUE;
-    }
-    jfree(extdup);
-  }
-  return ret;
-}
+  assert(fileitem);
+  assert(fileitem->filename != NOTINITIALIZED);
 
-bool fileitem_has_extension(FileItem *fileitem, const char *list_of_extensions)
-{
-  return filename_has_extension(fileitem_get_filename(fileitem),
-				list_of_extensions);
+  return fileitem->filename.has_extension(csv_extensions);
 }
 
 BITMAP* fileitem_get_thumbnail(FileItem* fileitem)
 {
-  assert(fileitem != NULL);
+  assert(fileitem);
 
-  return reinterpret_cast<BITMAP*>(hash_lookup(hash_thumbnail, fileitem->filename));
+  ThumbnailMap::iterator it = thumbnail_map.find(fileitem->filename);
+  if (it != thumbnail_map.end())
+    return it->second;
+  else
+    return NULL;
 }
 
 void fileitem_set_thumbnail(FileItem* fileitem, BITMAP* thumbnail)
 {
-  BITMAP* current_thumbnail;
+  assert(fileitem);
 
-  assert(fileitem != NULL);
-
-  current_thumbnail = reinterpret_cast<BITMAP*>
-    (hash_lookup(hash_thumbnail,
-		 fileitem->filename));
-
-  if (current_thumbnail) {
-    destroy_bitmap(current_thumbnail);
-    hash_remove(hash_thumbnail, fileitem->filename);
+  // destroy the current thumbnail of the file (if exists)
+  ThumbnailMap::iterator it = thumbnail_map.find(fileitem->filename);
+  if (it != thumbnail_map.end()) {
+    destroy_bitmap(it->second);
+    thumbnail_map.erase(it);
   }
 
-  hash_insert(hash_thumbnail, fileitem->filename, thumbnail);
+  // insert the new one in the map
+  thumbnail_map.insert(std::make_pair(fileitem->filename, thumbnail));
 }
 
-static FileItem *fileitem_new(FileItem *parent)
+FileItem::FileItem(FileItem* parent)
 {
-  FileItem *fileitem = jnew(FileItem, 1);
-  if (!fileitem)
-    return NULL;
-
-  fileitem->keyname = NULL;
-  fileitem->filename = NULL;
-  fileitem->displayname = NULL;
-  fileitem->parent = parent;
-  fileitem->children = NULL;
-  fileitem->version = current_file_system_version;
+  this->keyname = NOTINITIALIZED;
+  this->filename = NOTINITIALIZED;
+  this->displayname = NOTINITIALIZED;
+  this->parent = parent;
+  this->version = current_file_system_version;
+  this->removed = false;
 #ifdef USE_PIDLS
-  fileitem->pidl = NULL;
-  fileitem->fullpidl = NULL;
-  fileitem->attrib = 0;
+  this->pidl = NULL;
+  this->fullpidl = NULL;
+  this->attrib = 0;
 #else
-  fileitem->attrib = 0;
+  this->attrib = 0;
 #endif
-
-  return fileitem;
 }
 
-static void fileitem_free(FileItem *fileitem)
+FileItem::~FileItem()
 {
-  assert(fileitem != NULL);
-
 #ifdef USE_PIDLS
-  if (fileitem->fullpidl &&
-      fileitem->fullpidl != fileitem->pidl) {
-    free_pidl(fileitem->fullpidl);
-    fileitem->fullpidl = NULL;
+  if (this->fullpidl && this->fullpidl != this->pidl) {
+    free_pidl(this->fullpidl);
+    this->fullpidl = NULL;
   }
 
-  if (fileitem->pidl) {
-    free_pidl(fileitem->pidl);
-    fileitem->pidl = NULL;
+  if (this->pidl) {
+    free_pidl(this->pidl);
+    this->pidl = NULL;
   }
 #endif
-
-#if 0
-  /* WARNING: all the 'fileitem_free' are called with the hash_free
-     routine in the 'file_system_exit'... */
-  if (fileitem->parent)
-    jlist_remove(fileitem->parent->children, fileitem);
-#endif
-
-  if (fileitem->keyname)
-    jfree(fileitem->keyname);
-
-  if (fileitem->filename)
-    jfree(fileitem->filename);
-
-  if (fileitem->displayname)
-    jfree(fileitem->displayname);
-
-  if (fileitem->children) {
-    /* WARNING: all the 'fileitem_free' are called with the hash_free
-       routine in the 'file_system_exit'... */
-#if 0
-    JLink link, next;
-    JI_LIST_FOR_EACH_SAFE(fileitem->children, link, next) {
-      fileitem_free(link->data);
-    }
-#endif
-    jlist_free(fileitem->children);
-  }
-
-  jfree(fileitem);
 }
 
-static void fileitem_insert_child_sorted(FileItem *fileitem, FileItem *child)
+void FileItem::insert_child_sorted(FileItem* child)
 {
-  JLink link;
-  bool inserted = FALSE;
+  // this file-item wasn't removed from the last lookup
+  child->removed = false;
 
-  /* this file-item wasn't removed from the last lookup */
-  child->removed = FALSE;
-
-  /* if the fileitem is already in the list we can go back */
-  if (jlist_find(fileitem->children, child) != fileitem->children->end)
+  // if the fileitem is already in the list we can go back
+  if (std::find(children.begin(), children.end(), child) != children.end())
     return;
 
-  JI_LIST_FOR_EACH(fileitem->children, link) {
-    if (fileitem_cmp((FileItem *)link->data, child) > 0) {
-      jlist_insert_before(fileitem->children, link, child);
-      inserted = TRUE;
+  bool inserted = false;
+
+  for (FileItemList::iterator
+	 it=children.begin(); it!=children.end(); ++it) {
+    if (*(*it) > *child) {
+      children.insert(it, child);
+      inserted = true;
       break;
     }
   }
+
   if (!inserted)
-    jlist_append(fileitem->children, child);
+    children.push_back(child);
 }
 
-/* fileitem_cmp:
- *  ustricmp for filenames: makes sure that eg "foo.bar" comes before
- *  "foo-1.bar", and also that "foo9.bar" comes before "foo10.bar".
+/**
+ * Compares two FileItems.
+ *
+ * Based on 'ustricmp' of Allegro. It makes sure that eg "foo.bar"
+ * comes before "foo-1.bar", and also that "foo9.bar" comes before
+ * "foo10.bar".
  */
-static int fileitem_cmp(FileItem *fi1, FileItem *fi2)
+int FileItem::compare(const FileItem& that) const
 {
-  if (IS_FOLDER(fi1)) {
-    if (!IS_FOLDER(fi2))
+  if (IS_FOLDER(this)) {
+    if (!IS_FOLDER(&that))
       return -1;
   }
-  else if (IS_FOLDER(fi2))
+  else if (IS_FOLDER(&that))
     return 1;
 
 #ifndef USE_PIDLS
@@ -657,8 +613,8 @@ static int fileitem_cmp(FileItem *fi1, FileItem *fi2)
     int c1, c2;
     int x1, x2;
     char *t1, *t2;
-    const char *s1 = fi1->displayname;
-    const char *s2 = fi2->displayname;
+    const char* s1 = this->displayname.c_str(); // TODO fix this
+    const char* s2 = that.displayname.c_str();
 
     for (;;) {
       c1 = utolower(ugetxc(&s1));
@@ -695,33 +651,23 @@ static int fileitem_cmp(FileItem *fi1, FileItem *fi2)
   return -1;
 }
 
-/********************************************************************/
-/* PIDLS: Only for Win32                                            */
-/********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// PIDLS: Only for Win32
+//////////////////////////////////////////////////////////////////////
 
 #ifdef USE_PIDLS
 
 /* updates the names of the file-item through its PIDL */
-static void update_by_pidl(FileItem *fileitem)
+static void update_by_pidl(FileItem* fileitem)
 {
   STRRET strret;
   TCHAR pszName[MAX_PATH];
   IShellFolder *pFolder = NULL;
 
-  if (fileitem->filename != NULL) {
-    jfree(fileitem->filename);
-    fileitem->filename = NULL;
-  }
-
-  if (fileitem->displayname != NULL) {
-    jfree(fileitem->displayname);
-    fileitem->displayname = NULL;
-  }
-
   if (fileitem == rootitem)
     pFolder = shl_idesktop;
   else {
-    assert(fileitem->parent != NULL);
+    assert(fileitem->parent);
     shl_idesktop->BindToObject(fileitem->parent->fullpidl,
 			       NULL,
 			       IID_IShellFolder,
@@ -736,17 +682,16 @@ static void update_by_pidl(FileItem *fileitem)
 				SHGDN_NORMAL | SHGDN_FORPARSING,
 				&strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
-    fileitem->filename = jstrdup(pszName);
+    fileitem->filename = pszName;
   }
   else if (shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
 					  SHGDN_NORMAL | SHGDN_FORPARSING,
 					  &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
-    fileitem->filename = jstrdup(pszName);
+    fileitem->filename = pszName;
   }
   else
-    fileitem->filename = jstrdup("ERR");
-
+    fileitem->filename = "ERR";
 
   /****************************************/
   /* get the name to display */
@@ -756,16 +701,16 @@ static void update_by_pidl(FileItem *fileitem)
 				SHGDN_INFOLDER,
 				&strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->pidl, pszName, MAX_PATH);
-    fileitem->displayname = jstrdup(pszName);
+    fileitem->displayname = pszName;
   }
   else if (shl_idesktop->GetDisplayNameOf(fileitem->fullpidl,
 					  SHGDN_INFOLDER,
 					  &strret) == S_OK) {
     StrRetToBuf(&strret, fileitem->fullpidl, pszName, MAX_PATH);
-    fileitem->displayname = jstrdup(pszName);
+    fileitem->displayname = pszName;
   }
   else {
-    fileitem->displayname = jstrdup("ERR");
+    fileitem->displayname = "ERR";
   }
 
   if (pFolder != NULL && pFolder != shl_idesktop) {
@@ -778,8 +723,8 @@ static LPITEMIDLIST concat_pidl(LPITEMIDLIST pidlHead, LPITEMIDLIST pidlTail)
   LPITEMIDLIST pidlNew;
   UINT cb1, cb2;
 
-  assert(pidlHead != NULL);
-  assert(pidlTail != NULL);
+  assert(pidlHead);
+  assert(pidlTail);
 
   cb1 = get_pidl_size(pidlHead) - sizeof(pidlHead->mkid.cb);
   cb2 = get_pidl_size(pidlTail);
@@ -870,7 +815,7 @@ static void free_pidl(LPITEMIDLIST pidl)
   shl_imalloc->Free(pidl);
 }
 
-static char *get_key_for_pidl(LPITEMIDLIST pidl)
+static jstring get_key_for_pidl(LPITEMIDLIST pidl)
 {
 #if 0
   char *key = jmalloc(get_pidl_size(pidl)+1);
@@ -927,28 +872,22 @@ static char *get_key_for_pidl(LPITEMIDLIST pidl)
   }
   free_pidl(pidl);
 
-/*   printf("=%s\n***\n", key); fflush(stdout); */
-  return jstrdup(key);
+  // printf("=%s\n***\n", key); fflush(stdout);
+  return key;
 #endif
 }
 
 static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_not)
 {
-  char* key;
-  FileItem* fileitem;
-
-  key = get_key_for_pidl(fullpidl);
-  fileitem = reinterpret_cast<FileItem*>(hash_lookup(hash_fileitems, key));
-  jfree(key);
-
-  if (fileitem)
-    return fileitem;
+  FileItemMap::iterator it = fileitems_map.find(get_key_for_pidl(fullpidl));
+  if (it != fileitems_map.end())
+    return it->second;
 
   if (!create_if_not)
     return NULL;
 
-  /* new file-item */
-  fileitem = fileitem_new(NULL);
+  // new file-item
+  FileItem* fileitem = new FileItem(NULL);
   fileitem->fullpidl = clone_pidl(fullpidl);
 
   fileitem->attrib = SFGAO_FOLDER;
@@ -971,64 +910,60 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
   return fileitem;
 }
 
-static void put_fileitem(FileItem *fileitem)
+/**
+ * Inserts the @a fileitem in the hash map of items.
+ */
+static void put_fileitem(FileItem* fileitem)
 {
-  assert(fileitem->filename != NULL);
-  assert(fileitem->keyname == NULL);
+  assert(fileitem->filename != NOTINITIALIZED);
+  assert(fileitem->keyname == NOTINITIALIZED);
 
   fileitem->keyname = get_key_for_pidl(fileitem->fullpidl);
 
-  /* insert this file-item in the hash-table */
-  hash_insert(hash_fileitems, fileitem->keyname, fileitem);
+  assert(fileitem->keyname != NOTINITIALIZED);
+
+  // insert this file-item in the hash-table
+  fileitems_map.insert(std::make_pair(fileitem->keyname, fileitem));
 }
 
 #else
 
-/********************************************************************/
-/* Allegro for_each_file: Portable                                  */
-/********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// Allegro for_each_file: Portable
+//////////////////////////////////////////////////////////////////////
 
-static FileItem *get_fileitem_by_path(const char *path, bool create_if_not)
+static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
 {
-  char *key;
-  FileItem *fileitem;
-  int attrib;
-
 #ifdef ALLEGRO_UNIX
-  if (*path == 0)
+  if (path.empty())
     return rootitem;
 #endif
 
-  key = get_key_for_filename(path);
-  fileitem = reinterpret_cast<FileItem*>(hash_lookup(hash_fileitems, key));
-  jfree(key);
-
-  if (fileitem)
-    return fileitem;
+  FileItemMap::iterator it = fileitems_map.find(get_key_for_filename(path));
+  if (it != fileitems_map.end())
+    return it->second;
 
   if (!create_if_not)
     return NULL;
 
-  /* get the attributes of the file */
-  attrib = 0;
-  if (!file_exists(path, FA_ALL, &attrib)) {
-    if (!ji_dir_exists(path))
+  // get the attributes of the file
+  int attrib = 0;
+  if (!file_exists(path.c_str(), FA_ALL, &attrib)) {
+    if (!ji_dir_exists(path.c_str()))
       return NULL;
     attrib = FA_DIREC;
   }
 
-  /* new file-item */
-  fileitem = fileitem_new(NULL);
+  // new file-item
+  FileItem* fileitem = new FileItem(NULL);
 
-  fileitem->filename = jstrdup(path);
-  fileitem->displayname = jstrdup(get_filename(path));
+  fileitem->filename = path;
+  fileitem->displayname = path.filename();
   fileitem->attrib = attrib;
 
-  /* get the parent */
+  // get the parent
   {
-    char parent_path[MAX_PATH];
-    replace_filename(parent_path, path, "", sizeof(parent_path));
-    remove_backslash(parent_path);
+    jstring parent_path = remove_backslash_if_needed(path.filepath() / "");
     fileitem->parent = get_fileitem_by_path(parent_path, TRUE);
   }
 
@@ -1039,8 +974,8 @@ static FileItem *get_fileitem_by_path(const char *path, bool create_if_not)
 
 static void for_each_child_callback(const char *filename, int attrib, int param)
 {
-  FileItem *fileitem = (FileItem *)param;
-  FileItem *child;
+  FileItem* fileitem = (FileItem*)param;
+  FileItem* child;
   const char *filename_without_path = get_filename(filename);
 
   if (*filename_without_path == '.' &&
@@ -1050,10 +985,10 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
 
   child = get_fileitem_by_path(filename, FALSE);
   if (!child) {
-    child = fileitem_new(fileitem);
+    child = new FileItem(fileitem);
 
-    child->filename = jstrdup(filename);
-    child->displayname = jstrdup(filename_without_path);
+    child->filename = filename;
+    child->displayname = filename_without_path;
     child->attrib = attrib;
 
     put_fileitem(child);
@@ -1062,54 +997,53 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
     assert(child->parent == fileitem);
   }
 
-  fileitem_insert_child_sorted(fileitem, child);
+  fileitem->insert_child_sorted(child);
 }
 
-static char *remove_backslash(char *filename)
+static jstring remove_backslash_if_needed(const jstring& filename)
 {
-  int len = ustrlen(filename);
-
-  if (len > 0 &&
-      (filename[len-1] == '/' ||
-       filename[len-1] == OTHER_PATH_SEPARATOR)) {
+  if (!filename.empty() && jstring::is_separator(filename.back())) {
+    int len = filename.size();
 #ifdef HAVE_DRIVES
-    /* if the name is C:\ or something like that, the backslash isn't
-       removed */
-    if (len == 3 && filename[1] == DEVICE_SEPARATOR)
+    // if the name is C:\ or something like that, the backslash isn't
+    // removed
+    if (len == 3 && filename[1] == ':')
       return filename;
 #else
-    /* this is just the root '/' slash */
+    // this is just the root '/' slash
     if (len == 1)
       return filename;
 #endif
-    filename[len-1] = 0;
+    jstring tmp(filename);
+    tmp.remove_separator();
+    return tmp;
   }
   return filename;
 }
 
-static char *get_key_for_filename(const char *filename)
+static jstring get_key_for_filename(const jstring& filename)
 {
-  char buf[MAX_PATH];
-
-  ustrcpy(buf, filename);
+  jstring buf(filename);
 
 #if !defined CASE_SENSITIVE
-  ustrlwr(buf);
+  buf = buf.lower();
 #endif
-  fix_filename_slashes(buf);
+  buf.fix_separators();
 
-  return jstrdup(buf);
+  return buf;
 }
 
-static void put_fileitem(FileItem *fileitem)
+static void put_fileitem(FileItem* fileitem)
 {
-  assert(fileitem->filename != NULL);
-  assert(fileitem->keyname == NULL);
+  assert(fileitem->filename != NOTINITIALIZED);
+  assert(fileitem->keyname == NOTINITIALIZED);
 
   fileitem->keyname = get_key_for_filename(fileitem->filename);
 
-  /* insert this file-item in the hash-table */
-  hash_insert(hash_fileitems, fileitem->keyname, fileitem);
+  assert(fileitem->keyname != NOTINITIALIZED);
+
+  // insert this file-item in the hash-table
+  fileitems_map.insert(std::make_pair(fileitem->keyname, fileitem));
 }
 
 #endif

@@ -30,6 +30,8 @@
  */
 
 #include <algorithm>
+#include <iterator>
+#include <cctype>
 
 #include "jinete/jstring.h"
 
@@ -38,6 +40,19 @@
 #else
   const char jstring::separator = '/';
 #endif
+
+void jstring::tolower()
+{
+  // std::transform(begin(), end(), std::back_inserter(res), std::tolower);
+  for (iterator it=begin(); it!=end(); ++it)
+    *it = std::tolower(*it);
+}
+
+void jstring::toupper()
+{
+  for (iterator it=begin(); it!=end(); ++it)
+    *it = std::toupper(*it);
+}
 
 jstring jstring::filepath() const
 {
@@ -129,14 +144,40 @@ jstring jstring::operator/(const jstring& component) const
  */
 jstring& jstring::operator/=(const jstring& component)
 {
-  if (!empty() && !is_separator(*(end()-1)))
+  if (!empty() && !is_separator(back()))
     push_back(jstring::separator);
 
   operator+=(component);
   return *this;
 }
 
+void jstring::remove_separator()
+{
+  while (!empty() && is_separator(back()))
+    erase(end()-1);
+}
+
 void jstring::fix_separators()
 {
   std::replace_if(begin(), end(), jstring::is_separator, jstring::separator);
+}
+
+bool jstring::has_extension(const jstring& csv_extensions) const
+{
+  if (!empty()) {
+    jstring ext = extension();
+    ext.tolower();
+
+    int extsz = ext.size();
+    jstring::const_iterator p =
+      std::search(csv_extensions.begin(),
+		  csv_extensions.end(),
+		  ext.begin(), ext.end());
+
+    if ((p != csv_extensions.end()) &&
+	((p+extsz) == csv_extensions.end() || *(p+extsz) == ',') &&
+	(p == csv_extensions.begin() || *(p-1) == ','))
+      return true;
+  }
+  return false;
 }

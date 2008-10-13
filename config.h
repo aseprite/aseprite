@@ -48,3 +48,40 @@ const char *msgids_get(const char *id); /* src/intl/msgids.[ch] */
 typedef uint8_t		ase_uint8;
 typedef uint16_t	ase_uint16;
 typedef uint32_t	ase_uint32;
+
+#if defined __cplusplus && defined MEMLEAK
+
+#include <new>
+#include "jinete/jbase.h"
+
+inline void* operator new(std::size_t size)
+{
+  void* ptr = jmalloc(size);
+  if (!ptr)
+    throw std::bad_alloc();
+  return ptr;
+}
+
+inline void operator delete(void* ptr)
+{
+  if (!ptr)
+    return;
+  jfree(ptr);
+}
+
+inline void* operator new[](std::size_t size)
+{
+  void* ptr = jmalloc(size);
+  if (!ptr)
+    throw std::bad_alloc();
+  return ptr;
+}
+
+inline void operator delete[](void* ptr)
+{
+  if (!ptr)
+    return;
+  jfree(ptr);
+}
+
+#endif
