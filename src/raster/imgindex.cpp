@@ -28,7 +28,7 @@ static void indexed_regenerate_lines(Image *image)
   int y;
 
   if (LINES(image))
-    delete LINES(image);
+    delete[] LINES(image);
 
   image->line = new ase_uint8*[image->h];
 
@@ -45,7 +45,7 @@ static void indexed_init(Image *image)
     indexed_regenerate_lines(image);
   }
   catch (...) {
-    delete BYTES(image);
+    delete[] BYTES(image);
     throw;
   }
 }

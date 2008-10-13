@@ -28,7 +28,7 @@ static void grayscale_regenerate_lines(Image *image)
   int y;
 
   if (LINES(image))
-    delete LINES(image);
+    delete[] LINES(image);
 
   image->line = (ase_uint8**)new ase_uint16*[image->h];
 
@@ -45,7 +45,7 @@ static void grayscale_init(Image *image)
     grayscale_regenerate_lines(image);
   }
   catch (...) {
-    delete BYTES(image);
+    delete[] BYTES(image);
     throw;
   }
 }

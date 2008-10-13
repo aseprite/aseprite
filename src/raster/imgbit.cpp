@@ -34,7 +34,7 @@ static void bitmap_regenerate_lines(Image *image)
   int y;
 
   if (LINES(image))
-    delete LINES(image);
+    delete[] LINES(image);
 
   image->line = new ase_uint8*[image->h];
 
@@ -51,7 +51,7 @@ static void bitmap_init(Image *image)
     bitmap_regenerate_lines(image);
   }
   catch (...) {
-    delete BYTES(image);
+    delete[] BYTES(image);
     throw;
   }
 }
