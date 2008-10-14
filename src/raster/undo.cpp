@@ -627,7 +627,6 @@ static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int 
   chunk->y = y;
   chunk->w = w;
   chunk->h = h;
-/*   chunk->data = jmalloc(size*h); */
 
   ptr = chunk->data;
   for (v=0; v<h; ++v) {
@@ -635,11 +634,6 @@ static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int 
     ptr += size;
   }
 }
-
-/* static void chunk_image_free(UndoChunkImage* chunk) */
-/* { */
-/*   jfree(chunk->data); */
-/* } */
 
 static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk, int state)
 {
@@ -914,7 +908,7 @@ void undo_replace_image(Undo* undo, Stock *stock, int image_index)
 
 static void chunk_replace_image_new(UndoStream* stream, Stock *stock, int image_index)
 {
-  Image* image = stock->image[image_index];
+  Image* image = stock_get_image(stock, image_index);
   UndoChunkReplaceImage* chunk = (UndoChunkReplaceImage* )
     undo_chunk_new(stream,
 		   UNDO_TYPE_REPLACE_IMAGE,
@@ -930,17 +924,21 @@ static void chunk_replace_image_invert(UndoStream* stream, UndoChunkReplaceImage
 {
   unsigned long stock_id = chunk->stock_id;
   unsigned long image_index = chunk->image_index;
-  Stock *stock = (Stock *)gfxobj_find(stock_id);
+  Stock* stock = (Stock*)gfxobj_find(stock_id);
 
   if (stock) {
+    // read the image to be restored from the chunk
     Image* image = read_raw_image(chunk->data);
 
+    // save the current image in the (redo) stream
     chunk_replace_image_new(stream, stock, image_index);
+    Image* old_image = stock_get_image(stock, image_index);
 
-    if (stock->image[image_index])
-      image_free(stock->image[image_index]);
-
+    // replace the image in the stock
     stock_replace_image(stock, image_index, image);
+
+    // destroy the old image
+    image_free(old_image);
   }
 }
 

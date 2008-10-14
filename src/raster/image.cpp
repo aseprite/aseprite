@@ -545,3 +545,47 @@ int image_count_diff(const Image* i1, const Image* i2)
   return diff;
 }
 
+bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel)
+{
+#define SHRINK_SIDE(u_begin, u_op, u_final, u_add,		\
+		    v_begin, v_op, v_final, v_add, U, V, var)	\
+  do {								\
+    for (u = u_begin; u u_op u_final; u u_add) {		\
+      for (v = v_begin; v v_op v_final; v v_add) {		\
+	if (image->method->getpixel (image, U, V) != refpixel)	\
+	  break;						\
+      }								\
+      if (v == v_final)						\
+	var;							\
+      else							\
+	break;							\
+    }								\
+  } while (0)
+
+  int u, v;
+
+  *x1 = 0;
+  *y1 = 0;
+  *x2 = image->w-1;
+  *y2 = image->h-1;
+
+  SHRINK_SIDE(0, <, image->w, ++,
+	      0, <, image->h, ++, u, v, (*x1)++);
+
+  SHRINK_SIDE(0, <, image->h, ++,
+	      0, <, image->w, ++, v, u, (*y1)++);
+
+  SHRINK_SIDE(image->w-1, >, 0, --,
+	      0, <, image->h, ++, u, v, (*x2)--);
+
+  SHRINK_SIDE(image->h-1, >, 0, --,
+	      0, <, image->w, ++, v, u, (*y2)--);
+
+  if ((*x1 > *x2) || (*y1 > *y2))
+    return false;
+  else
+    return true;
+
+#undef SHRINK_SIDE
+}
+

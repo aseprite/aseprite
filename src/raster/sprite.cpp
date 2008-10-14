@@ -446,6 +446,9 @@ void sprite_set_format_options(Sprite* sprite, struct FormatOptions *format_opti
 
 void sprite_set_size(Sprite* sprite, int w, int h)
 {
+  assert(w > 0);
+  assert(h > 0);
+
   sprite->w = w;
   sprite->h = h;
 }

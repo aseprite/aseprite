@@ -19,13 +19,15 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
+#include "raster/undoable.h"
+#include "widgets/colbar.h"
 #include "util/autocrop.h"
 #include "util/functions.h"
 #include "util/misc.h"
@@ -45,11 +47,16 @@ static bool cmd_crop_sprite_enabled(const char *argument)
 static void cmd_crop_sprite_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Sprite Crop");
-
-  CropSprite(sprite);
+  {
+    Undoable undoable(sprite, "Sprite Crop");
+    undoable.crop_sprite(current_sprite->mask->x,
+			 current_sprite->mask->y,
+			 current_sprite->mask->w,
+			 current_sprite->mask->h,
+			 colorbar_get_bg_color(app_get_colorbar()));
+    undoable.commit();
+  }
+  sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
 
@@ -65,11 +72,12 @@ static bool cmd_autocrop_sprite_enabled(const char *argument)
 static void cmd_autocrop_sprite_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Sprite Autocrop");
-
-  autocrop_sprite(sprite);
+  {
+    Undoable undoable(sprite, "Sprite Autocrop");
+    undoable.autocrop_sprite(colorbar_get_bg_color(app_get_colorbar()));
+    undoable.commit();
+  }
+  sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
 

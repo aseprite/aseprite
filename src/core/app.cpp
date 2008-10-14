@@ -711,15 +711,15 @@ static Option *option_new(int type, const char *data)
   return option;
 }
 
-static void option_free(Option *option)
+static void option_free(Option* option)
 {
   jfree(option->data);
   jfree(option);
 }
 
-static AppHook *apphook_new(void (*proc)(void *), void *data)
+static AppHook *apphook_new(void (*proc)(void*), void* data)
 {
-  AppHook *apphook = jnew(AppHook, 1);
+  AppHook* apphook = jnew(AppHook, 1);
   if (!apphook)
     return NULL;
 

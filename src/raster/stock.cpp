@@ -41,8 +41,10 @@ Stock::Stock(const Stock& stock)
   : GfxObj(stock)
 {
   this->imgtype = stock.imgtype;
+  this->nimage = 0;
+  this->image = NULL;
 
-  for (int c=this->nimage; c<stock.nimage; ++c) {
+  for (int c=0; c<stock.nimage; ++c) {
     if (!stock.image[c])
       stock_add_image(this, NULL);
     else {
@@ -58,7 +60,7 @@ Stock::Stock(const Stock& stock)
 Stock::~Stock()
 {
   for (int i=0; i<this->nimage; i++) {
-    if (this->image[i] != NULL)
+    if (this->image[i])
       image_free(this->image[i]);
   }
   jfree(this->image);

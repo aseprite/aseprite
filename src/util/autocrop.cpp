@@ -24,56 +24,6 @@
 #include "util/autocrop.h"
 #include "util/functions.h"
 
-void autocrop_sprite(Sprite *sprite)
-{
-  if (sprite != NULL) {
-    int old_frame = sprite->frame;
-    Mask *old_mask = sprite->mask;
-    Mask *mask;
-    Image *image;
-    int x1, y1, x2, y2;
-    int u1, v1, u2, v2;
-
-    x1 = y1 = INT_MAX;
-    x2 = y2 = INT_MIN;
-
-    image = image_new(sprite->imgtype, sprite->w, sprite->h);
-    if (!image)
-      return;
-
-    for (sprite->frame=0; sprite->frame<sprite->frames; sprite->frame++) {
-      image_clear(image, 0);
-      sprite_render(sprite, image, 0, 0);
-
-      /* TODO configurable (what color pixel to use as "refpixel",
-	 here we are using the top-left pixel by default) */
-      if (get_shrink_rect(&u1, &v1, &u2, &v2,
-			  image, image_getpixel (image, 0, 0))) {
-	x1 = MIN(x1, u1);
-	y1 = MIN(y1, v1);
-	x2 = MAX(x2, u2);
-	y2 = MAX(y2, v2);
-      }
-    }
-    sprite->frame = old_frame;
-
-    image_free(image);
-
-    /* do nothing */
-    if (x1 > x2 || y1 > y2)
-      return;
-
-    mask = mask_new();
-    mask_replace(mask, x1, y1, x2-x1+1, y2-y1+1);
-
-    sprite->mask = mask;
-    CropSprite(sprite);
-
-    sprite->mask = old_mask;
-    sprite_generate_mask_boundaries(sprite);
-  }
-}
-
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 		     Image *image, int refpixel)
 {

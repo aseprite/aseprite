@@ -1,11 +1,23 @@
 2008-10-13  David A. Capello  <davidcapello@gmail.com>
 
+	* src/raster/gfxobj.cpp (_gfxobj_set_id): Fixed (the object is
+	removed from the map before its ID is changed).
+
+	* src/raster/stock.cpp (Stock::Stock): Fixed.
+
+	* src/raster/undoable.cpp (Undoable::crop_sprite)
+	(Undoable::crop_layer, Undoable::autocrop_sprite)
+	(Undoable::replace_stock_image): Added.
+
+	* src/raster/image.cpp (image_shrink_rect): Added.
+
 	* src/raster/gfxobj.cpp (objects_map): Replaced JList 'objects'
 	by a 'objects_map' (a std::map).
 
 	* src/raster/sprite.cpp (~Sprite),
-	src/modules/palettes.cpp (exit_module_palette): Fixed a serious
-	bug where palettes were not freed right (jfree instead of
+	* src/modules/palettes.cpp (exit_module_palette):
+	* src/commands/cmd_palette_editor.cpp (load_command): Fixed a
+	serious bug where palettes were not freed right (jfree instead of
 	palette_free). It leaves dead-pointers in the collection of
 	graphics objects in 'gfxobj.cpp'.
 

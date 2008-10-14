@@ -225,7 +225,7 @@ ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
   return images_ref_get_from_layer(sprite, layer, target, write);
 }
 
-void images_ref_free(ImageRef *image_ref)
+void images_ref_free(ImageRef* image_ref)
 {
   ImageRef *p, *next;
 

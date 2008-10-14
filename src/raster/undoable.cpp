@@ -118,6 +118,69 @@ void Undoable::set_current_layer(Layer* layer)
   sprite_set_layer(sprite, layer);
 }
 
+void Undoable::set_sprite_size(int w, int h)
+{
+  assert(w > 0);
+  assert(h > 0);
+
+  if (is_enabled()) {
+    undo_int(sprite->undo, sprite, &sprite->w);
+    undo_int(sprite->undo, sprite, &sprite->h);
+  }
+
+  sprite_set_size(sprite, w, h);
+}
+
+void Undoable::crop_sprite(int x, int y, int w, int h, int bgcolor)
+{
+  set_sprite_size(w, h);
+
+  displace_layers(sprite->set, -x, -y);
+
+  Layer *background_layer = sprite_get_background_layer(sprite);
+  if (background_layer)
+    crop_layer(background_layer, 0, 0, sprite->w, sprite->h, bgcolor);
+
+  if (!mask_is_empty(sprite->mask))
+    set_mask_position(sprite->mask->x-x, sprite->mask->y-y);
+}
+
+void Undoable::autocrop_sprite(int bgcolor)
+{
+  int old_frame = sprite->frame;
+  int x1, y1, x2, y2;
+  int u1, v1, u2, v2;
+
+  x1 = y1 = INT_MAX;
+  x2 = y2 = INT_MIN;
+
+  Image* image = image_new(sprite->imgtype, sprite->w, sprite->h);
+
+  for (sprite->frame=0; sprite->frame<sprite->frames; sprite->frame++) {
+    image_clear(image, 0);
+    sprite_render(sprite, image, 0, 0);
+
+    // TODO configurable (what color pixel to use as "refpixel",
+    // here we are using the top-left pixel by default)
+    if (image_shrink_rect(image, &u1, &v1, &u2, &v2,
+			  image_getpixel(image, 0, 0))) {
+      x1 = MIN(x1, u1);
+      y1 = MIN(y1, v1);
+      x2 = MAX(x2, u2);
+      y2 = MAX(y2, v2);
+    }
+  }
+  sprite->frame = old_frame;
+
+  image_free(image);
+
+  // do nothing
+  if (x1 > x2 || y1 > y2)
+    return;
+
+  crop_sprite(x1, y1, x2-x1+1, y2-y1+1, bgcolor);
+}
+
 /**
  * Adds a new image in the stock.
  *
@@ -152,6 +215,22 @@ void Undoable::remove_image_from_stock(int image_index)
 
   stock_remove_image(sprite->stock, image);
   image_free(image);
+}
+
+void Undoable::replace_stock_image(int image_index, Image* new_image)
+{
+  // get the current image in the 'image_index' position
+  Image* old_image = stock_get_image(sprite->stock, image_index);
+  assert(old_image);
+
+  // replace the image in the stock
+  if (is_enabled())
+    undo_replace_image(sprite->undo, sprite->stock, image_index);
+
+  stock_replace_image(sprite->stock, image_index, new_image);
+
+  // destroy the old image
+  image_free(old_image);
 }
 
 /**
@@ -219,6 +298,47 @@ void Undoable::move_layer_after(Layer* layer, Layer* after_this)
     undo_move_layer(sprite->undo, layer);
 
   layer_move_layer(layer->parent_layer, layer, after_this);
+}
+
+void Undoable::crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor)
+{
+  JLink link;
+
+  if (!layer_is_background(layer))
+    bgcolor = 0;
+
+  JI_LIST_FOR_EACH(layer->cels, link) {
+    Cel* cel = reinterpret_cast<Cel*>(link->data);
+    crop_cel(cel, x, y, w, h, bgcolor);
+  }
+}
+
+/**
+ * Moves every frame in @a layer with the offset (@a dx, @a dy).
+ */
+void Undoable::displace_layers(Layer* layer, int dx, int dy)
+{
+  switch (layer->type) {
+
+    case GFXOBJ_LAYER_IMAGE: {
+      Cel* cel;
+      JLink link;
+
+      JI_LIST_FOR_EACH(layer->cels, link) {
+	cel = reinterpret_cast<Cel*>(link->data);
+	set_cel_position(cel, cel->x+dx, cel->y+dy);
+      }
+      break;
+    }
+
+    case GFXOBJ_LAYER_SET: {
+      JLink link;
+      JI_LIST_FOR_EACH(layer->layers, link)
+	displace_layers(reinterpret_cast<Layer*>(link->data), dx, dy);
+      break;
+    }
+
+  }
 }
 
 void Undoable::new_frame()
@@ -399,6 +519,19 @@ void Undoable::set_cel_frame_position(Cel* cel, int frame)
   cel->frame = frame;
 }
 
+void Undoable::set_cel_position(Cel* cel, int x, int y)
+{
+  assert(cel);
+
+  if (is_enabled()) {
+    undo_int(sprite->undo, cel, &cel->x);
+    undo_int(sprite->undo, cel, &cel->y);
+  }
+
+  cel->x = x;
+  cel->y = y;
+}
+
 void Undoable::set_frame_duration(int frame, int msecs)
 {
   if (is_enabled())
@@ -509,6 +642,21 @@ Cel* Undoable::get_current_cel()
     return NULL;
 }
 
+void Undoable::crop_cel(Cel* cel, int x, int y, int w, int h, int bgcolor)
+{
+  Image* cel_image = stock_get_image(sprite->stock, cel->image);
+  assert(cel_image);
+    
+  // create the new image through a crop
+  Image* new_image = image_crop(cel_image, x-cel->x, y-cel->y, w, h, bgcolor);
+
+  // replace the image in the stock that is pointed by the cel
+  replace_stock_image(cel->image, new_image);
+
+  // update the cel's position
+  set_cel_position(cel, x, y);
+}
+
 Image* Undoable::get_cel_image(Cel* cel)
 {
   if (cel && cel->image >= 0 && cel->image < sprite->stock->nimage)
@@ -575,5 +723,29 @@ void Undoable::clear_mask(int bgcolor)
       }
     }
   }
+}
+
+void Undoable::copy_to_current_mask(Mask* mask)
+{
+  assert(sprite->mask);
+  assert(mask);
+
+  if (is_enabled())
+    undo_set_mask(sprite->undo, sprite);
+
+  mask_copy(sprite->mask, mask);
+}
+
+void Undoable::set_mask_position(int x, int y)
+{
+  assert(sprite->mask);
+
+  if (is_enabled()) {
+    undo_int(sprite->undo, sprite->mask, &sprite->mask->x);
+    undo_int(sprite->undo, sprite->mask, &sprite->mask->y);
+  }
+
+  sprite->mask->x = x;
+  sprite->mask->y = y;
 }
 

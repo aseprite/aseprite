@@ -32,6 +32,9 @@ static JMutex objects_mutex;
 static gfxobj_id object_id = 0;		         // last object ID created
 static std::map<gfxobj_id, GfxObj*> objects_map; // graphics objects map
 
+static void insert_gfxobj(GfxObj* gfxobj);
+static void erase_gfxobj(GfxObj* gfxobj);
+
 //////////////////////////////////////////////////////////////////////
 
 bool gfxobj_init()
@@ -46,7 +49,6 @@ bool gfxobj_init()
 void gfxobj_exit()
 {
   assert(objects_map.empty());
-
   jmutex_free(objects_mutex);
 }
 
@@ -69,14 +71,7 @@ GfxObj::~GfxObj()
 {
   // we have to remove this object from the map
   jmutex_lock(objects_mutex);
-  {
-    std::map<gfxobj_id, GfxObj*>::iterator
-      it = objects_map.find(this->id);
-
-    assert(it != objects_map.end());
-
-    objects_map.erase(it);
-  }
+  erase_gfxobj(this);
   jmutex_unlock(objects_mutex);
 }
 
@@ -88,7 +83,7 @@ void GfxObj::assign_id()
     this->id = ++object_id;
 
     // and here we add the object in the map of graphics-objects
-    objects_map.insert(std::make_pair(this->id, this));
+    insert_gfxobj(this);
   }
   jmutex_unlock(objects_mutex);
 }
@@ -115,7 +110,29 @@ GfxObj* gfxobj_find(gfxobj_id id)
 
 void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id)
 {
+  assert(gfxobj_find(gfxobj->id) == gfxobj);
   assert(gfxobj_find(id) == NULL);
 
-  gfxobj->id = id;
+  jmutex_lock(objects_mutex);
+  erase_gfxobj(gfxobj);		// remove the object
+  gfxobj->id = id;		// change the ID
+  insert_gfxobj(gfxobj);	// insert the object again in the map
+  jmutex_unlock(objects_mutex);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+static void insert_gfxobj(GfxObj* gfxobj)
+{
+  objects_map.insert(std::make_pair(gfxobj->id, gfxobj));
+}
+
+static void erase_gfxobj(GfxObj* gfxobj)
+{
+  std::map<gfxobj_id, GfxObj*>::iterator
+    it = objects_map.find(gfxobj->id);
+  
+  assert(it != objects_map.end());
+
+  objects_map.erase(it);
 }

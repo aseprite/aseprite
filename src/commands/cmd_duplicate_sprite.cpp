@@ -38,7 +38,6 @@ static void cmd_duplicate_sprite_execute(const char *argument)
 {
   JWidget window, src_name, dst_name, flatten;
   Sprite *sprite = current_sprite;
-  Sprite *sprite_copy;
   char buf[1024];
 
   /* load the window widget */
@@ -64,7 +63,9 @@ static void cmd_duplicate_sprite_execute(const char *argument)
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
     set_config_bool("DuplicateSprite", "Flatten",
 		    jwidget_is_selected(flatten));
-    
+
+    // make a copy of the current sprite
+    Sprite *sprite_copy;
     if (jwidget_is_selected(flatten))
       sprite_copy = sprite_new_flatten_copy(sprite);
     else

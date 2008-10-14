@@ -243,7 +243,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      if (anieditor->layers != NULL)
+      if (anieditor->layers)
 	jfree(anieditor->layers);
       jfree(anieditor);
       break;

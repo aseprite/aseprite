@@ -47,15 +47,21 @@ public:
   void set_number_of_frames(int frames);
   void set_current_frame(int frame);
   void set_current_layer(Layer* layer);
+  void set_sprite_size(int w, int h);
+  void crop_sprite(int x, int y, int w, int h, int bgcolor);
+  void autocrop_sprite(int bgcolor);
 
   // for images in stock
   int add_image_in_stock(Image* image);
   void remove_image_from_stock(int image_index);
+  void replace_stock_image(int image_index, Image* new_image);
 
   // for layers
   Layer* new_layer();
   void remove_layer(Layer* layer);
   void move_layer_after(Layer *layer, Layer *after_this);
+  void crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor);
+  void displace_layers(Layer* layer, int dx, int dy);
 
   // for frames
   void new_frame();
@@ -72,11 +78,17 @@ public:
   void add_cel(Layer* layer, Cel* cel);
   void remove_cel(Layer* layer, Cel* cel);
   void set_cel_frame_position(Cel* cel, int frame);
+  void set_cel_position(Cel* cel, int x, int y);
   Cel* get_current_cel();
+  void crop_cel(Cel* cel, int x, int y, int w, int h, int bgcolor);
 
   // for image
   Image* get_cel_image(Cel* cel);
   void clear_mask(int bgcolor);
+
+  // for mask
+  void copy_to_current_mask(Mask* mask);
+  void set_mask_position(int x, int y);
 
 };
 

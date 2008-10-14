@@ -19,8 +19,6 @@
 #ifndef UTIL_AUTOCROP_H
 #define UTIL_AUTOCROP_H
 
-void autocrop_sprite(Sprite *sprite);
-
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 		     Image *image, int refpixel);
 bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,

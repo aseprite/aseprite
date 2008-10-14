@@ -33,8 +33,6 @@ void SaveSprite(const char* filename);
 
 void SetSprite(Sprite* sprite); 
 
-void CropSprite(Sprite* sprite);
-
 /*===================================================================*/
 /* Layer                                                             */
 /*===================================================================*/
@@ -45,8 +43,6 @@ char *GetUniqueLayerName(Sprite* sprite);
 
 Layer* FlattenLayers(Sprite* sprite);
 
-void CropLayer(Layer* layer, int x, int y, int w, int h);
-
 void BackgroundFromLayer(Sprite* sprite);
 void LayerFromBackground(Sprite* sprite);
 
@@ -55,7 +51,5 @@ void LayerFromBackground(Sprite* sprite);
 /* ======================================= */
 
 void RemoveCel(Layer* layer, Cel* cel);
-
-void CropCel();
 
 #endif /* UTIL_FUNCTIONS_H */

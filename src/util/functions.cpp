@@ -35,8 +35,6 @@
 /* Sprite                                                            */
 /*===================================================================*/
 
-static void displace_layers(Undo *undo, Layer *layer, int x, int y);
-
 /**
  * Creates a new sprite with the given dimension with one transparent
  * layer called "Layer 1".
@@ -140,78 +138,6 @@ void SaveSprite(const char *filename)
 void SetSprite(Sprite *sprite)
 {
   set_current_sprite(sprite);
-}
-
-void CropSprite(Sprite *sprite)
-{
-  if ((sprite != NULL) &&
-      (!mask_is_empty(sprite->mask))) {
-    if (undo_is_enabled(sprite->undo)) {
-      undo_open(sprite->undo);
-      undo_int(sprite->undo, (GfxObj *)sprite, &sprite->w);
-      undo_int(sprite->undo, (GfxObj *)sprite, &sprite->h);
-    }
-
-    sprite_set_size(sprite, sprite->mask->w, sprite->mask->h);
-
-    displace_layers(sprite->undo, sprite->set,
-		    -sprite->mask->x, -sprite->mask->y);
-
-    {
-      Layer *background_layer = sprite_get_background_layer(sprite);
-      if (background_layer != NULL) {
-	CropLayer(background_layer, 0, 0, sprite->w, sprite->h);
-      }
-    }
-
-    if (undo_is_enabled(sprite->undo)) {
-      undo_int(sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->x);
-      undo_int(sprite->undo, (GfxObj *)sprite->mask, &sprite->mask->y);
-    }
-
-    sprite->mask->x = 0;
-    sprite->mask->y = 0;
-
-    if (undo_is_enabled(sprite->undo))
-      undo_close(sprite->undo);
-
-    sprite_generate_mask_boundaries(sprite);
-  }
-}
-
-/**
- * Moves every frame in "layer" with the offset "x"/"y".
- */
-static void displace_layers(Undo *undo, Layer *layer, int x, int y)
-{
-  switch (layer->type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      Cel *cel;
-      JLink link;
-
-      JI_LIST_FOR_EACH(layer->cels, link) {
-	cel = reinterpret_cast<Cel*>(link->data);
-
-	if (undo_is_enabled(undo)) {
-	  undo_int(undo, (GfxObj *)cel, &cel->x);
-	  undo_int(undo, (GfxObj *)cel, &cel->y);
-	}
-
-	cel->x += x;
-	cel->y += y;
-      }
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	displace_layers(undo, reinterpret_cast<Layer*>(link->data), x, y);
-      break;
-    }
-
-  }
 }
 
 /*===================================================================*/
@@ -389,41 +315,6 @@ Layer *FlattenLayers(Sprite *sprite)
     undo_close(sprite->undo);
  
   return background;
-}
-
-void CropLayer(Layer *layer, int x, int y, int w, int h)
-{
-  Sprite *sprite = layer->sprite;
-  Cel *cel;
-  Image *image;
-  Image *new_image;
-  JLink link;
-
-  JI_LIST_FOR_EACH(layer->cels, link) {
-    cel = reinterpret_cast<Cel*>(link->data);
-    image = stock_get_image(sprite->stock, cel->image);
-    if (image == NULL)
-      continue;
-
-    new_image = image_crop(image, x-cel->x, y-cel->y, w, h,
-			   app_get_color_to_clear_layer(layer));
-    if (new_image == NULL) {
-      console_printf(_("Not enough memory\n"));
-      return;
-    }
-
-    if (undo_is_enabled(sprite->undo)) {
-      undo_replace_image(sprite->undo, sprite->stock, cel->image);
-      undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
-      undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-    }
-
-    cel->x = x;
-    cel->y = y;
-
-    stock_replace_image(sprite->stock, cel->image, new_image);
-    image_free(image);
-  }
 }
 
 /**
@@ -665,40 +556,5 @@ void RemoveCel(Layer *layer, Cel *cel)
     /* remove the cel */
     layer_remove_cel(layer, cel);
     cel_free(cel);
-  }
-}
-
-void CropCel()
-{
-  Sprite *sprite = current_sprite;
-  Image *image = GetImage(current_sprite);
-
-  if ((sprite) && (!mask_is_empty (sprite->mask)) && (image)) {
-    Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
-
-    /* undo */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_open(sprite->undo);
-      undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
-      undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-      undo_replace_image(sprite->undo, sprite->stock, cel->image);
-      undo_close(sprite->undo);
-    }
-
-    /* replace the image */
-    sprite->stock->image[cel->image] =
-      image_crop(image,
-		 sprite->mask->x-cel->x,
-		 sprite->mask->y-cel->y,
-		 sprite->mask->w,
-		 sprite->mask->h, 0);
-
-    image_free(image);		/* destroy the old image */
-
-    /* change the cel position */
-    cel->x = sprite->mask->x;
-    cel->y = sprite->mask->y;
-
-    update_screen_for_sprite(sprite);
   }
 }

@@ -138,5 +138,6 @@ void image_to_allegro(Image* image, BITMAP* bmp, int x, int y);
 
 void image_convert(Image* dst, const Image* src);
 int image_count_diff(const Image* i1, const Image* i2);
+bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
 
 #endif				/* RASTER_IMAGE_H */

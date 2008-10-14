@@ -248,16 +248,16 @@ void simple_dotted_mode(BITMAP *bmp, int fg, int bg)
 /**********************************************************************/
 /* Set/Restore sub-clip regions */
 
-typedef struct CLIP_DATA
+struct CLIP_DATA
 {
-  BITMAP *bmp;
+  BITMAP* bmp;
   int cl, ct, cr, cb;
-} CLIP_DATA;
+};
 
-void *subclip(BITMAP *bmp, int x1, int y1, int x2, int y2)
+void* subclip(BITMAP* bmp, int x1, int y1, int x2, int y2)
 {
   int cl, ct, cr, cb;
-  CLIP_DATA *data;
+  CLIP_DATA* data;
 
   cl = bmp->cl;
   ct = bmp->ct;
@@ -274,7 +274,7 @@ void *subclip(BITMAP *bmp, int x1, int y1, int x2, int y2)
 
   set_clip(bmp, x1, y1, x2, y2);
 
-  data = jnew(CLIP_DATA, 1);
+  data = new CLIP_DATA;
   data->bmp = bmp;
   data->cl = cl;
   data->ct = ct;
@@ -284,11 +284,11 @@ void *subclip(BITMAP *bmp, int x1, int y1, int x2, int y2)
   return data;
 }
 
-void backclip(void *_data)
+void backclip(void* _data)
 {
   CLIP_DATA* data = reinterpret_cast<CLIP_DATA*>(_data);
   set_clip(data->bmp, data->cl, data->ct, data->cr, data->cb);
-  jfree(data);
+  delete data;
 }
 
 /**********************************************************************/
@@ -302,8 +302,8 @@ struct RectTracker
   int *pixel;
 };
 
-static void do_rect(BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
-		    void (*proc)(BITMAP *bmp, int x, int y, int c))
+static void do_rect(BITMAP* bmp, int x1, int y1, int x2, int y2, int c,
+		    void (*proc)(BITMAP* bmp, int x, int y, int c))
 {
   int x, y, u1, u2, v1, v2;
 
@@ -338,25 +338,25 @@ static void do_rect(BITMAP *bmp, int x1, int y1, int x2, int y2, int c,
   }
 }
 
-static void count_rect(BITMAP *bmp, int x, int y, int c)
+static void count_rect(BITMAP* bmp, int x, int y, int c)
 {
-  RectTracker *data = (RectTracker *)c;
+  RectTracker* data = (RectTracker*)c;
   data->npixel++;
 }
 
-static void save_rect(BITMAP *bmp, int x, int y, int c)
+static void save_rect(BITMAP* bmp, int x, int y, int c)
 {
-  RectTracker *data = (RectTracker *)c;
+  RectTracker* data = (RectTracker*)c;
   data->pixel[data->npixel++] = getpixel(bmp, x, y);
 }
 
-static void restore_rect(BITMAP *bmp, int x, int y, int c)
+static void restore_rect(BITMAP* bmp, int x, int y, int c)
 {
-  RectTracker *data = (RectTracker *)c;
+  RectTracker* data = (RectTracker*)c;
   putpixel(bmp, x, y, data->pixel[data->npixel++]);
 }
 
-RectTracker *rect_tracker_new(BITMAP *bmp, int x1, int y1, int x2, int y2)
+RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2)
 {
   RectTracker *data;
   int x, y;
@@ -366,7 +366,7 @@ RectTracker *rect_tracker_new(BITMAP *bmp, int x1, int y1, int x2, int y2)
   if (x1 > x2) { x = x1; x1 = x2; x2 = x; }
   if (y1 > y2) { y = y1; y1 = y2; y2 = y; }
 
-  data = jnew(RectTracker, 1);
+  data = new RectTracker;
 
   data->bmp = bmp;
   data->x1 = x1;
@@ -378,7 +378,7 @@ RectTracker *rect_tracker_new(BITMAP *bmp, int x1, int y1, int x2, int y2)
   do_rect(bmp, x1, y1, x2, y2, (int)data, count_rect);
 
   if (data->npixel > 0)
-    data->pixel = (int*)jmalloc(sizeof(int) * data->npixel);
+    data->pixel = new int[data->npixel];
   else
     data->pixel = NULL;
 
@@ -390,7 +390,7 @@ RectTracker *rect_tracker_new(BITMAP *bmp, int x1, int y1, int x2, int y2)
   return data;
 }
 
-void rect_tracker_free(RectTracker *data)
+void rect_tracker_free(RectTracker* data)
 {
   jmouse_hide();
 
@@ -398,9 +398,8 @@ void rect_tracker_free(RectTracker *data)
   do_rect(data->bmp, data->x1, data->y1, data->x2, data->y2,
 	  (int)data, restore_rect);
 
-  if (data->pixel != NULL)
-    jfree(data->pixel);
-  jfree(data);
+  delete[] data->pixel;
+  delete data;
 
   jmouse_show();
 }

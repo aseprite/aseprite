@@ -292,7 +292,7 @@ static void load_command(JWidget widget)
     }
     else {
       set_new_palette(palette);
-      jfree(palette);
+      palette_free(palette);
     }
   }
 }
