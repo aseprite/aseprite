@@ -33,6 +33,8 @@
 #include <iterator>
 #include <cctype>
 
+#include "allegro/base.h"
+
 #include "jinete/jstring.h"
 
 #if defined ALLEGRO_WINDOWS

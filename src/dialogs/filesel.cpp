@@ -20,6 +20,9 @@
 
 #include <cassert>
 #include <vector>
+#include <algorithm>
+#include <iterator>
+#include <cctype>
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -63,6 +66,7 @@ static void goup_command(JWidget widget);
 static bool fileview_msg_proc(JWidget widget, JMessage msg);
 static bool location_msg_proc(JWidget widget, JMessage msg);
 static bool filetype_msg_proc(JWidget widget, JMessage msg);
+static bool filename_msg_proc(JWidget widget, JMessage msg);
 
 /**
  * Shows the dialog to select a file in ASE.
@@ -76,9 +80,7 @@ jstring ase_file_selector(const jstring& message,
 			  const jstring& exts)
 {
   static JWidget window = NULL;
-  FileItem *start_folder = NULL;
-  JWidget fileview, box, ok;
-  JWidget goback, goforward, goup;
+  JWidget fileview;
   JWidget filename_entry;
   JWidget filetype;
   jstring result;
@@ -92,8 +94,9 @@ jstring ase_file_selector(const jstring& message,
 		 navigation_history);
   }
 
-  // use the current path
+  // we have to find where the user should begin to browse files (start_folder)
   jstring start_folder_path;
+  FileItem *start_folder = NULL;
 
   // if init_path doesn't contain a path...
   if (init_path.filepath().empty()) {
@@ -131,19 +134,18 @@ jstring ase_file_selector(const jstring& message,
   PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
   if (!window) {
-    JWidget view, location;
-
     // load the window widget
     window = load_widget("filesel.jid", "file_selector");
     if (!window)
       return NULL;
 
-    box = jwidget_find_name(window, "box");
-    goback = jwidget_find_name(window, "goback");
-    goforward = jwidget_find_name(window, "goforward");
-    goup = jwidget_find_name(window, "goup");
-    location = jwidget_find_name(window, "location");
+    JWidget box = jwidget_find_name(window, "box");
+    JWidget goback = jwidget_find_name(window, "goback");
+    JWidget goforward = jwidget_find_name(window, "goforward");
+    JWidget goup = jwidget_find_name(window, "goup");
+    JWidget location = jwidget_find_name(window, "location");
     filetype = jwidget_find_name(window, "filetype");
+    filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_focusrest(goback, FALSE);
     jwidget_focusrest(goforward, FALSE);
@@ -157,12 +159,13 @@ jstring ase_file_selector(const jstring& message,
     jbutton_add_command(goforward, goforward_command);
     jbutton_add_command(goup, goup_command);
 
-    view = jview_new();
+    JWidget view = jview_new();
     fileview = fileview_new(start_folder, exts);
 
     jwidget_add_hook(fileview, -1, fileview_msg_proc, NULL);
     jwidget_add_hook(location, -1, location_msg_proc, NULL);
     jwidget_add_hook(filetype, -1, filetype_msg_proc, NULL);
+    jwidget_add_hook(filename_entry, -1, filename_msg_proc, NULL);
 
     jwidget_set_name(fileview, "fileview");
     jwidget_magnetic(fileview, TRUE);
@@ -179,6 +182,7 @@ jstring ase_file_selector(const jstring& message,
   else {
     fileview = jwidget_find_name(window, "fileview");
     filetype = jwidget_find_name(window, "filetype");
+    filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_signal_off(fileview);
     fileview_set_current_folder(fileview, start_folder);
@@ -204,7 +208,6 @@ jstring ase_file_selector(const jstring& message,
     jcombobox_add_string(filetype, tok->c_str(), NULL);
 
   // file name entry field
-  filename_entry = jwidget_find_name(window, "filename");
   jwidget_set_text(filename_entry, init_path.filename().c_str());
   select_filetype_from_filename(window);
 
@@ -212,21 +215,104 @@ jstring ase_file_selector(const jstring& message,
   jwidget_set_text(window, message.c_str());
 
   // get the ok-button
-  ok = jwidget_find_name(window, "ok");
+  JWidget ok = jwidget_find_name(window, "ok");
 
   // update the view
   jview_update(jwidget_get_view(fileview));
 
   // open the window and run... the user press ok?
+again:
   jwindow_open_fg(window);
   if (jwindow_get_killer(window) == ok ||
       jwindow_get_killer(window) == fileview) {
     // open the selected file
     FileItem *folder = fileview_get_current_folder(fileview);
-    assert(folder != NULL);
+    assert(folder);
 
-    jstring buf = fileitem_get_filename(folder);
-    buf /= jwidget_get_text(filename_entry);
+    jstring fn = jwidget_get_text(filename_entry);
+    jstring buf;
+    FileItem* enter_folder = NULL;
+
+    // up a level?
+    if (fn == "..") {
+      enter_folder = fileitem_get_parent(folder);
+      if (!enter_folder)
+	enter_folder = folder;
+    }
+    else {
+      // check if the user specified in "fn" a item of "fileview"
+      const FileItemList& children = fileview_get_filelist(fileview);
+
+      for (FileItemList::const_iterator
+	     it=children.begin(); it!=children.end(); ++it) {
+	FileItem* child = *it;
+	jstring child_name = fileitem_get_displayname(child);
+
+#ifdef ALLEGRO_WINDOWS
+	child_name.tolower();
+	fn.tolower();
+#endif
+	if (child_name == fn) {
+	  enter_folder = *it;
+	  buf = fileitem_get_filename(enter_folder);
+	  break;
+	}
+      }
+
+      if (!enter_folder) {
+	// does the file-name entry have separators?
+	if (jstring::is_separator(fn.front())) { // absolute path (UNIX style)
+#ifdef ALLEGRO_WINDOWS
+	  // get the drive of the current folder
+	  jstring drive = fileitem_get_filename(folder);
+	  if (drive.size() >= 2 && drive[1] == ':') {
+	    buf += drive[0];
+	    buf += ':';
+	    buf += fn;
+	  }
+	  else
+	    buf = jstring("C:") / fn;
+#else
+	  buf = fn;
+#endif
+	}
+#ifdef ALLEGRO_WINDOWS
+	// does the file-name entry have colon?
+	else if (fn.find(':') != jstring::npos) { // absolute path on Windows
+	  if (fn.size() == 2 && fn[1] == ':') {
+	    buf = fn / "";
+	  }
+	  else {
+	    buf = fn;
+	  }
+	}
+#endif
+	else {
+	  buf = fileitem_get_filename(folder);
+	  buf /= fn;
+	}
+	buf.fix_separators();
+
+	// we can check if 'buf' is a folder, so we have to enter in it
+	enter_folder = get_fileitem_from_path(buf);
+      }
+    }
+
+    // did we find a folder to enter?
+    if (enter_folder &&
+	fileitem_is_folder(enter_folder) &&
+	fileitem_is_browsable(enter_folder)) {
+      // enter in the folder that was specified in the 'filename_entry'
+      fileview_set_current_folder(fileview, enter_folder);
+
+      // clear the text of the entry widget
+      jwidget_set_text(filename_entry, "");
+
+      // show the window again
+      jwidget_show(window);
+      goto again;
+    }
+    // else file-name specified in the entry is really a file to open...
 
     // does it not have extension? ...we should add the extension
     // selected in the filetype combo-box
@@ -531,6 +617,54 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 	break;
       }
 
+    }
+  }
+  return FALSE;
+}
+
+static bool filename_msg_proc(JWidget widget, JMessage msg)
+{
+  if (msg->type == JM_KEYRELEASED && msg->key.ascii >= 32) {
+    // check if all keys are released
+    for (int c=0; c<KEY_MAX; ++c) {
+      if (key[c])
+	return FALSE;
+    }
+
+    // string to be autocompleted
+    jstring left_part = jwidget_get_text(widget);
+    if (left_part.empty())
+      return FALSE;
+
+    // first we'll need the fileview widget
+    JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
+					 "fileview");
+
+    const FileItemList& children = fileview_get_filelist(fileview);
+
+    for (FileItemList::const_iterator
+	   it=children.begin(); it!=children.end(); ++it) {
+      FileItem* child = *it;
+      jstring child_name = fileitem_get_displayname(child);
+
+      jstring::iterator it1, it2;
+
+      for (it1 = child_name.begin(), it2 = left_part.begin();
+	   it1!=child_name.end() && it2!=left_part.end();
+	   ++it1, ++it2) {
+	if (std::tolower(*it1) != std::tolower(*it2))
+	  break;
+      }
+
+      // is the pattern (left_part) in the child_name's beginning?
+      if (it2 == left_part.end()) {
+	jwidget_set_text(widget, child_name.c_str());
+	jentry_select_text(widget,
+			   child_name.size(),
+			   left_part.size());
+	clear_keybuf();
+	return TRUE;
+      }
     }
   }
   return FALSE;

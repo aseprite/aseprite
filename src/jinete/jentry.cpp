@@ -191,7 +191,7 @@ void jentry_select_text(JWidget widget, int from, int to)
   int end = ustrlen(widget->text);
 
   entry->select = from;
-  jentry_set_cursor_pos(widget, from);
+  jentry_set_cursor_pos(widget, from); // to move scroll
   jentry_set_cursor_pos(widget, (to >= 0)? to: end+to+1);
 
   jwidget_dirty(widget);

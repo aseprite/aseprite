@@ -1,3 +1,12 @@
+2008-10-15  David A. Capello  <davidcapello@gmail.com>
+
+	* src/dialogs/filesel.cpp (ase_file_selector): Better handling of
+	special file-names in the entry field (filename_entry).
+
+2008-10-14  David A. Capello  <davidcapello@gmail.com>
+
+	* src/jinete/jstring.cpp (jstring::separator): Fixed for Windows (\).
+
 2008-10-13  David A. Capello  <davidcapello@gmail.com>
 
 	* src/raster/gfxobj.cpp (_gfxobj_set_id): Fixed (the object is

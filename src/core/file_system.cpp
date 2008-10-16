@@ -271,6 +271,11 @@ FileItem* get_root_fileitem()
   return fileitem;
 }
 
+/**
+ * Returns the FileItem through the specified @a path.
+ * 
+ * @warning You have to call path.fix_separators() before.
+ */
 FileItem* get_fileitem_from_path(const jstring& path)
 {
   FileItem* fileitem = NULL;

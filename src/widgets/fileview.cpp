@@ -164,6 +164,13 @@ void fileview_set_current_folder(JWidget widget, FileItem *folder)
   jview_update(jwidget_get_view(widget));
 }
 
+const FileItemList& fileview_get_filelist(JWidget widget)
+{
+  FileView* fileview = fileview_data(widget);
+
+  return fileview->list;
+}
+
 void fileview_goup(JWidget widget)
 {
   FileView* fileview = fileview_data(widget);
