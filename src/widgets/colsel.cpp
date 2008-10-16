@@ -72,7 +72,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 static void colorselector_set_paledit_index(JWidget widget, int index,
 					    bool select_index_entry);
 
-static void select_tab_callback(JWidget tabs, void* data);
+static void select_tab_callback(JWidget tabs, void* data, int button);
 static bool slider_change_hook(JWidget widget, void* data);
 static bool button_mask_select_hook(JWidget widget, void* data);
 static bool paledit_change_hook(JWidget widget, void* data);
@@ -363,7 +363,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   }
 
   tabs_select_tab(tabs, m);
-  select_tab_callback(tabs, m);
+  select_tab_callback(tabs, m, 1);
 
   if (update_index_entry) {
     switch (color_type(color)) {
@@ -420,7 +420,7 @@ static void colorselector_set_paledit_index(JWidget widget, int index, bool sele
   jwidget_set_text(idx, buf);
 }
 
-static void select_tab_callback(JWidget tabs, void* data)
+static void select_tab_callback(JWidget tabs, void* data, int button)
 {
   JWidget window = jwidget_get_window(tabs);
   Model* selected_model = (Model*)data;

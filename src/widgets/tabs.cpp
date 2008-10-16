@@ -47,7 +47,7 @@ typedef struct Tabs
   JList list_of_tabs;
   Tab *hot;
   Tab *selected;
-  void (*select_callback)(JWidget tabs, void *data);
+  void (*select_callback)(JWidget tabs, void *data, int button);
   int timer_id;
   int scroll_x;
 /*   int hot_arrow; */
@@ -73,7 +73,7 @@ static void tab_free(Tab *tab);
 /* Tabs                                                       */
 /**************************************************************/
 
-JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data))
+JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
 {
   JWidget widget = jwidget_new(tabs_type());
   Tabs *tabs = jnew0(Tabs, 1);
@@ -302,10 +302,12 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       if (tabs->selected != tabs->hot && tabs->hot != NULL) {
 	tabs->selected = tabs->hot;
 	jwidget_dirty(widget);
-
-	if (tabs->selected && tabs->select_callback)
-	  (*tabs->select_callback)(widget, tabs->selected->data);
       }
+
+      if (tabs->selected && tabs->select_callback)
+	(*tabs->select_callback)(widget,
+				 tabs->selected->data,
+				 msg->mouse.flags);
       return TRUE;
 
     case JM_WHEEL: {

@@ -97,7 +97,7 @@ static JWidget tabsbar = NULL;	      /* the tabs bar widget */
 static JList options; /* list of "Option" structures (options to execute) */
 static char *palette_filename = NULL;
 
-static void tabsbar_select_callback(JWidget tabs, void *data);
+static void tabsbar_select_callback(JWidget tabs, void *data, int button);
 
 static int check_args(int argc, char *argv[]);
 static void usage(int status);
@@ -555,10 +555,16 @@ int app_get_color_to_clear_layer(Layer *layer)
   return get_color_for_layer(layer, color);
 }
 
-static void tabsbar_select_callback(JWidget tabs, void *data)
+static void tabsbar_select_callback(JWidget tabs, void *data, int button)
 {
-  /* data can be NULL (the "Nothing" tab) */
+  // Note: data can be NULL (the "Nothing" tab)
+
+  // put as current sprite
   sprite_show((Sprite *)data);
+
+  // middle button: close the sprite
+  if (data && (button & 4))
+    command_execute(command_get_by_name(CMD_CLOSE_FILE), NULL);
 }
 
 /**

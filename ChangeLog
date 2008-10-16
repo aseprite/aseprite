@@ -1,5 +1,8 @@
 2008-10-15  David A. Capello  <davidcapello@gmail.com>
 
+	* src/core/app.cpp (tabsbar_select_callback): Added support to
+	close files with middle-button.
+
 	* src/dialogs/filesel.cpp (ase_file_selector): Better handling of
 	special file-names in the entry field (filename_entry).
 
