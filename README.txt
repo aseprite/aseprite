@@ -8,10 +8,11 @@
 INTRODUCTION
 ===================================
 
-  ASE is a program specially designed with facilities to create
-  animated sprites that can be used in computer games. You can
-  create static images, characters with movement, textures,
-  patterns, backgrounds, logos, color palettes, tiles, etc.
+  ASE (Allegro Sprite Editor) is an open source program to create
+  animated sprites. Sprites are little images that can be used in your
+  website or in a video game. You can draw characters with movement,
+  intros, textures, patterns, backgrounds, logos, color palettes,
+  isometric levels, etc.
 
   What makes ASE different? It focuses on pixel editing, to do
   pixel-art. Indeed, it isn't a photo retouching tool or a vector
@@ -91,7 +92,6 @@ CONTACT INFO
 
   For more information, visit the official page of the project:
     http://www.aseprite.org/
-    http://www.aseprite.org/wiki/
 
  ----------------------------------------------------------------------------
  Copyright (C) 2001-2008 by David A. Capello

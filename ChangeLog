@@ -1,3 +1,7 @@
+2008-10-18  David A. Capello  <davidcapello@gmail.com>
+
+	* Version 0.6 released.
+
 2008-10-15  David A. Capello  <davidcapello@gmail.com>
 
 	* src/core/app.cpp (tabsbar_select_callback): Added support to

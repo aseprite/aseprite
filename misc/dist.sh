@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.6b2
+version=0.6
 distdir=ase-$version
 
 freetype_files="third_party/freetype/ChangeLog				\
@@ -64,11 +64,11 @@ ase_files="config.h				\
 	   fix.bat				\
 	   fix.sh				\
 	   makefile.cfg				\
-	   makefile.dj				\
 	   makefile.gcc				\
 	   makefile.lnx				\
 	   makefile.lst				\
 	   makefile.mgw				\
+	   makefile.vc				\
 	   *.txt				\
 	   data/aseicon.*			\
 	   data/convmatr.def			\
@@ -78,9 +78,7 @@ ase_files="config.h				\
 	   data/palettes/*.col			\
 	   data/tips/*.pcx			\
 	   data/tips/tips.en			\
-	   data/tips/tips.es			\
 	   docs/*.pdf				\
-	   docs/*.txt				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\
 	   obj/*.txt				\
