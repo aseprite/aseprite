@@ -122,19 +122,16 @@ ase_files="config.h				\
 	   src/tests/*.cpp			\
 	   src/tests/*.h			\
 	   src/tests/jinete/*.cpp		\
-	   src/tests/jinete/*.h			\
 	   src/tests/jinete/*.jid		\
 	   src/tests/jinete/*.pcx		\
 	   src/tests/jinete/*.ttf		\
 	   src/tests/jinete/*.txt		\
 	   src/tests/raster/*.cpp		\
-	   src/tests/raster/*.h			\
 	   src/util/*.cpp			\
 	   src/util/*.h				\
 	   src/widgets/*.cpp			\
 	   src/widgets/*.h			\
 	   src/widgets/editor/*.cpp		\
-	   src/widgets/editor/*.h		\
 	   src/widgets/editor/*.txt		\
 	   third_party/*.txt"
 
@@ -180,9 +177,7 @@ $1/data/convmatr.def						     \
 $1/data/jids/*.jid						     \
 $1/data/gui-en.xml						     \
 $1/data/tips/*.en						     \
-$1/data/tips/*.es						     \
 $1/docs/*.pdf							     \
-$1/docs/*.txt							     \
 $1/docs/files/*.txt						     \
 $1/docs/licenses/*.txt"
 

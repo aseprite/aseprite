@@ -1,3 +1,7 @@
+2009-01-24  David A. Capello  <davidcapello@gmail.com>
+
+	* Version 0.6.1 released.
+
 2009-01-23  David A. Capello  <davidcapello@gmail.com>
 
 	* src/core/drop_files.cpp (subclass_hwnd): Added support to drop

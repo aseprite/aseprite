@@ -2,12 +2,20 @@
 NEWS
 ===================================
 
+0.6.1
+-----
+
++ Added support to drag and drop files from Windows
+  explorer (feature #2419098).
++ Fixed bug #2511762 (.PNG' extension unavailable in
+  Open and Save As dialogs, thanks to Clayton Enga for
+  the patch).
+
 0.6
 ---
 
 + Added 'Curve' tool (bezier-spline).
-+ Added support to drag and drop colors in color-bar (feature request
-  feature #2109224).
++ Added support to drag and drop colors in color-bar (feature #2109224).
 + Added support to lock lines in special angles with the Shift key,
   useful to draw in isometric views (feature request #1961397).
 + Fixed bugs #1958760 and #1958932.
