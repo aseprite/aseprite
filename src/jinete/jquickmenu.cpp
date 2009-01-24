@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -144,11 +144,11 @@ static bool quickmenu_msg_proc(JWidget widget, JMessage msg)
       if (msg->signal.num == JI_SIGNAL_MENUITEM_SELECT) {
 	QuickData* quick_data = reinterpret_cast<QuickData*>(jwidget_get_data(widget, quickmenu_type()));
 	(*quick_data->quick_handler)(widget, quick_data->user_data);
-	return TRUE;
+	return true;
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }
 

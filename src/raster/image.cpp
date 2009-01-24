@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,8 +74,8 @@ Image::Image(int imgtype, int w, int h)
 Image::~Image()
 {
 #ifndef USE_ALLEGRO_IMAGE
-  if (this->dat) delete this->dat;
-  if (this->line) delete this->line;
+  if (this->dat) delete[] this->dat;
+  if (this->line) delete[] this->line;
 #else
   destroy_bitmap(this->bmp);
 #endif

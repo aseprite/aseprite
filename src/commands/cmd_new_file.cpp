@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/functions.h"
@@ -136,9 +137,7 @@ static void cmd_new_file_execute(const char *argument)
 	/* if the background color isn't transparent, we have to
 	   convert the `Layer 1' in a `Background' */
 	if (color_type(color) != COLOR_TYPE_MASK) {
-	  BackgroundFromLayer(sprite);
-
-	  /* clear the image to */
+	  layer_configure_as_background(sprite->layer);
 	  image_clear(GetImage(sprite),
 		      get_color_for_image(imgtype, color));
 	}

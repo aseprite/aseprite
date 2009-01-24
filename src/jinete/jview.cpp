@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -82,7 +82,7 @@ JWidget jview_new()
   view->whereclick = 0;
 
   jwidget_add_hook(widget, JI_VIEW, view_msg_proc, view);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_add_child(widget, view->viewport);
   jview_set_size(widget, 0, 0);
 
@@ -357,7 +357,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
 
       msg->reqsize.w += widget->border_width.l + widget->border_width.r;
       msg->reqsize.h += widget->border_width.t + widget->border_width.b;
-      return TRUE;
+      return true;
     }
 
     case JM_SETPOS:
@@ -370,7 +370,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
 			 msg->setpos.rect.x1 - widget->rc->x1,
 			 msg->setpos.rect.y1 - widget->rc->y1);
       }
-      return TRUE;
+      return true;
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
@@ -404,14 +404,14 @@ static bool viewport_msg_proc(JWidget widget, JMessage msg)
     case JM_REQSIZE:
       msg->reqsize.w = widget->border_width.l + 1 + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + 1 + widget->border_width.b;
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       viewport_set_position(widget, &msg->setpos.rect);
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void viewport_needed_size(JWidget widget, int *w, int *h)
@@ -551,7 +551,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 	return ret;
 
       jwidget_select(widget);
-      jwidget_capture_mouse(widget);
+      jwidget_hard_capture_mouse(widget);
     }
 
     case JM_MOTION:

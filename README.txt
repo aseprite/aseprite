@@ -1,6 +1,6 @@
 
  ASE - Allegro Sprite Editor
- Copyright (C) 2001-2008 by David A. Capello
+ Copyright (C) 2001-2009 by David Capello
  --------------------------------------------------------------------
  See the "AUTHORS.txt" file for a complete list of contributors
 
@@ -94,4 +94,4 @@ CONTACT INFO
     http://www.aseprite.org/
 
  ----------------------------------------------------------------------------
- Copyright (C) 2001-2008 by David A. Capello
+ Copyright (C) 2001-2009 by David Capello

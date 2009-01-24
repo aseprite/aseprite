@@ -16,17 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_TARGET_H
-#define WIDGETS_TARGET_H
+#ifndef CORE_DROP_FILES_H
+#define CORE_DROP_FILES_H
 
-#include "jinete/jbase.h"
+void install_drop_files();
+void uninstall_drop_files();
 
-/* TODO use some JI_SIGNAL_USER */
-#define SIGNAL_TARGET_BUTTON_CHANGE   0x10003
+void check_for_dropped_files();
 
-JWidget target_button_new(int imgtype, bool with_channels);
+#endif /* CORE_DROP_FILES_H */
 
-int target_button_get_target(JWidget widget);
-void target_button_set_target(JWidget widget, int target);
-
-#endif /* WIDGETS_TARGET_H */

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <cassert>
+#include <memory>
 
 #include "jinete/jlist.h"
 
@@ -339,6 +340,66 @@ void Undoable::displace_layers(Layer* layer, int dx, int dy)
     }
 
   }
+}
+
+void Undoable::background_from_layer(Layer* layer, int bgcolor)
+{
+  assert(layer);
+  assert(layer_is_image(layer));
+  assert(layer_is_readable(layer));
+  assert(layer_is_writable(layer));
+  assert(layer->sprite == sprite);
+  assert(sprite_get_background_layer(sprite) == NULL);
+
+  // create a temporary image to draw each frame of the new
+  // `Background' layer
+  std::auto_ptr<Image> bg_image(new Image(sprite->imgtype, sprite->w, sprite->h));
+
+  JLink link;
+  JI_LIST_FOR_EACH(layer->cels, link) {
+    Cel* cel = reinterpret_cast<Cel*>(link->data);
+    assert((cel->image > 0) &&
+	   (cel->image < sprite->stock->nimage));
+
+    // get the image from the sprite's stock of images
+    Image* cel_image = stock_get_image(sprite->stock, cel->image);
+    assert(cel_image);
+
+    image_clear(bg_image.get(), bgcolor);
+    image_merge(bg_image.get(), cel_image,
+		cel->x,
+		cel->y,
+		MID(0, cel->opacity, 255),
+		layer->blend_mode);
+
+    // now we have to copy the new image (bg_image) to the cel...
+    set_cel_position(cel, 0, 0);
+
+    // same size of cel-image and bg-image
+    if (bg_image->w == cel_image->w &&
+	bg_image->h == cel_image->h) {
+      if (is_enabled())
+	undo_image(sprite->undo, cel_image, 0, 0, cel_image->w, cel_image->h);
+
+      image_copy(cel_image, bg_image.get(), 0, 0);
+    }
+    else {
+      replace_stock_image(cel->image, image_new_copy(bg_image.get()));
+    }
+  }
+
+  configure_layer_as_background(layer);
+}
+
+void Undoable::configure_layer_as_background(Layer* layer)
+{
+  if (is_enabled()) {
+    undo_data(sprite->undo, (GfxObj *)layer, &layer->flags, sizeof(layer->flags));
+    undo_data(sprite->undo, (GfxObj *)layer, &layer->name, LAYER_NAME_SIZE);
+    undo_move_layer(sprite->undo, layer);
+  }
+
+  layer_configure_as_background(layer);
 }
 
 void Undoable::new_frame()

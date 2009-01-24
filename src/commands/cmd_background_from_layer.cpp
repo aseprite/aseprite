@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,13 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
-#include "util/functions.h"
+#include "raster/undoable.h"
+#include "widgets/colbar.h"
 
 static bool cmd_background_from_layer_enabled(const char *argument)
 {
@@ -41,10 +42,16 @@ static void cmd_background_from_layer_execute(const char *argument)
 {
   Sprite *sprite = current_sprite;
 
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Background from Layer");
+  // each frame of the layer to be converted as `Background' must be
+  // cleared using the selected background color in the color-bar
+  int bgcolor = app_get_bg_color(sprite);
+  bgcolor = fixup_color_for_background(sprite->imgtype, bgcolor);
 
-  BackgroundFromLayer(sprite);
+  {
+    Undoable undoable(sprite, "Background from Layer");
+    undoable.background_from_layer(sprite->layer, bgcolor);
+    undoable.commit();
+  }
   update_screen_for_sprite(sprite);
 }
 

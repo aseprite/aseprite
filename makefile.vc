@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2008 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2009 by David Capello		-*-Makefile-*-
 
 ifndef CONFIGURED
 include makefile.cfg
@@ -24,7 +24,7 @@ OBJ_DIR = obj/msvc
 include makefile.lst
 
 CFLAGS = -nologo						\
-         -I. -Isrc -Ithird_party -W1 -Gd -O2 -EHa		\
+         -I. -Isrc -Ithird_party -W1 -Gd -EHa			\
 	 -I$(LIBFREETYPE_DIR)/include				\
 	 -I$(LIBJPEG_DIR)					\
 	 -I$(LIBPNG_DIR)					\
@@ -37,11 +37,11 @@ LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
        Msimg32.lib WinMM.lib AdvAPI32.lib Ole32.lib ShLwApi.lib Vfw32.Lib
 
 ifdef DEBUGMODE
-  CFLAGS += -Zi -MDd
+  CFLAGS += -Zi -MDd -DDEBUGMODE
   LFLAGS += -DEBUG
   LIBS += Alld.lib
 else
-  CFLAGS += -MD
+  CFLAGS += -O2 -MD -DNDEBUG
   LFLAGS += -RELEASE
   LIBS += Alleg.lib
 endif

@@ -1,3 +1,20 @@
+2009-01-23  David A. Capello  <davidcapello@gmail.com>
+
+	* src/core/drop_files.cpp (subclass_hwnd): Added support to drop
+	files in Windows (feature #2419098, David Campo idea).
+
+2009-01-18  David A. Capello  <davidcapello@gmail.com>
+
+	* src/jinete/jscroll.h: Removed.
+
+	* Added 2009 year to copyright.
+
+	* src/jinete/*.*: Fixed the BSD license text.
+
+	* src/jinete/jstring.h (jstring::split): Applied the patch
+	of Clayton Enga to add the last token of the split string
+	(bug #2511762).
+
 2008-10-18  David A. Capello  <davidcapello@gmail.com>
 
 	* Version 0.6 released.

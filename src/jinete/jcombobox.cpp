@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -512,7 +512,7 @@ static void combobox_open_window(JWidget widget)
     jwidget_set_min_size
       (view,
        jrect_w(combobox->entry->rc),
-       2+(2+jwidget_get_text_height(combobox->listbox))*MID(1, size, 10)+2);
+       2+(2+jwidget_get_text_height(combobox->listbox))*MID(1, size, 16)+2);
 
     jwidget_add_child(combobox->window, view);
     jview_attach(view, combobox->listbox);

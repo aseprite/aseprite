@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -305,10 +305,10 @@ bool jxmlelem_has_attr(JXmlElem elem, const char *name)
   JI_LIST_FOR_EACH(elem->attributes, link) {
     JXmlAttr attr = (JXmlAttr)link->data;
     if (strcmp(name, jxmlattr_get_name(attr)) == 0)
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 const char *jxmlelem_get_attr(JXmlElem elem, const char *name)
@@ -433,7 +433,7 @@ static JList read_nodes(JStream stream)
       if (*s == '<') {
 	char *tag_start = s + 1;
 	int open = (s[1] != '/');
-	bool auto_closed = FALSE;
+	bool auto_closed = false;
 	JXmlElem tag;
 
 	/* comment? */
@@ -461,7 +461,7 @@ static JList read_nodes(JStream stream)
 	  if (*s == '>') {
 	    if (*(s-1) == '/') {
 	      *(s-1) = 0;
-	      auto_closed = TRUE;
+	      auto_closed = true;
 	    }
 	    break;
 	  }
@@ -588,11 +588,11 @@ static JXmlElem read_elem(char *elem_string)
       /* does the attribute have a value?  */
       if (*s == '=') {
 	char *value_beg = ++s;
-	bool jumpnext = FALSE;
+	bool jumpnext = false;
 
 	/* see for the translation prefix _() */
 	if (strncmp(s, "_(\"", 3) == 0) {
-	  translatable = TRUE;
+	  translatable = true;
 	  s += 2;
 	}
 
@@ -612,7 +612,7 @@ static JXmlElem read_elem(char *elem_string)
 	      }
 	    }
 	    else if (*s == '\"') {
-	      jumpnext = TRUE;
+	      jumpnext = true;
 	      break;
 	    }
 	    s++;

@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2008 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2009 by David Capello		-*-Makefile-*-
 
 ifndef CONFIGURED
 include makefile.cfg

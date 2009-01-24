@@ -1,11 +1,11 @@
 # Allegro Sprite Editor tips
-# Copyright (C) 2001-2008  David A. Capello
+# Copyright (C) 2001-2009 by David Capello
 
  **********************************************************************
 \palette ase.pcx
 \image ase.pcx
 
-Welcome to ASE 0.6
+Welcome to ASE 0.6.1
 
 READ THIS!
 
@@ -122,4 +122,4 @@ And remember look for updates in:
 
 http://www.aseprite.org/
 
-Copyright (C) 2001-2008 by David A. Capello
+Copyright (C) 2001-2009 by David Capello

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/core.h"
+#include "core/drop_files.h"
 #include "core/file_system.h"
 #include "core/modules.h"
 #include "dialogs/options.h"
@@ -60,6 +61,10 @@
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
 #include "widgets/toolbar.h"
+
+#ifdef ALLEGRO_WINDOWS
+#include <winalleg.h>
+#endif
 
 /* options */
 enum {
@@ -331,7 +336,12 @@ void app_loop()
     if (!current_sprite)
       dialogs_tips(FALSE);
 
+    // support to drop files from Windows explorer
+    install_drop_files();
+
     gui_run();
+
+    uninstall_drop_files();
 
     /* stop recording */
     if (is_rec_screen())

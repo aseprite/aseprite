@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@
 #include "core/cfg.h"
 #include "core/core.h"
 #include "core/dirs.h"
+#include "core/drop_files.h"
 #include "dialogs/options.h"
 #include "intl/msgids.h"
 #include "modules/editors.h"
@@ -781,6 +782,9 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_QUEUEPROCESSING:
       gui_feedback();
+
+      /* open dropped files */
+      check_for_dropped_files();
       break;
 
     case JM_TIMER:

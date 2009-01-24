@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -89,11 +89,11 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       panel_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       panel_set_position(widget, &msg->setpos.rect);
-      return TRUE;
+      return true;
 
     case JM_BUTTONPRESSED: 
       if (jwidget_is_enabled(widget)) {
@@ -156,14 +156,14 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
 	jwidget_set_rect(widget, widget->rc);
 	jwidget_dirty(widget);
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (jwidget_has_capture(widget)) {
 	jwidget_release_mouse(widget);
-	return TRUE;
+	return true;
       }
       break;
 
@@ -172,7 +172,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	JWidget c1, c2;
 	JLink link;
 	int x1, y1, x2, y2;
-	bool change_cursor = FALSE;
+	bool change_cursor = false;
 
 	JI_LIST_FOR_EACH(widget->children, link) {
 	  if (link->next != widget->children->end) {
@@ -194,7 +194,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
 	    if ((msg->mouse.x >= x1) && (msg->mouse.x < x2) &&
 		(msg->mouse.y >= y1) && (msg->mouse.y < y2)) {
-	      change_cursor = TRUE;
+	      change_cursor = true;
 	      break;
 	    }
 	  }
@@ -205,16 +205,16 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	    jmouse_set_cursor(JI_CURSOR_SIZE_L);
 	  else
 	    jmouse_set_cursor(JI_CURSOR_SIZE_T);
-	  return TRUE;
+	  return true;
 	}
 	else
-	  return FALSE;
+	  return false;
       }
       break;
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void panel_request_size(JWidget widget, int *w, int *h)

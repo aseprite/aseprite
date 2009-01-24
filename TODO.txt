@@ -61,7 +61,8 @@ Wish-list
   + the commands should be enabled/disabled/checked by the current
     context state
   + the commands should use a new ase/ API and not the raster/ low-level
-  + functions.c is a good example for the new ase/ API.
+    - "raster/Undoable" is the beginning
+    - All "functions.c" should be in Undoable
   + the dependencies should be:
     commands/ -> ase/ -> raster/ -> jinete/
   + the list of 'sprites' should be in the context (maybe a

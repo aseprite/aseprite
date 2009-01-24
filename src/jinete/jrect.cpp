@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -89,10 +89,10 @@ bool jrect_intersect(JRect r1, const JRect r2)
     r1->y1 = MAX(r1->y1, r2->y1);
     r1->x2 = MIN(r1->x2, r2->x2);
     r1->y2 = MIN(r1->y2, r2->y2);
-    return TRUE;
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }
 
 void jrect_shrink(JRect rect, int border)

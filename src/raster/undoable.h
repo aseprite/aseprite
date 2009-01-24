@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,11 @@ public:
   void move_layer_after(Layer *layer, Layer *after_this);
   void crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor);
   void displace_layers(Layer* layer, int dx, int dy);
+  void background_from_layer(Layer* layer, int bgcolor);
+private:
+  void configure_layer_as_background(Layer* layer);
 
+public:
   // for frames
   void new_frame();
   void new_frame_for_layer(Layer* layer, int frame);

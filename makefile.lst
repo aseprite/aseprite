@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2008 by David A. Capello		-*-Makefile-*-
+# Copyright (C) 2001-2009 by David Capello		-*-Makefile-*-
 
 ######################################################################
 # ASE
@@ -82,6 +82,7 @@ COMMON_SOURCES =					\
 	src/core/config.cpp				\
 	src/core/core.cpp				\
 	src/core/dirs.cpp				\
+	src/core/drop_files.cpp				\
 	src/core/file_system.cpp			\
 	src/core/modules.cpp				\
 	src/dialogs/aniedit.cpp				\

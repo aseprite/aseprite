@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2008 David A. Capello.
+ * Copyright (C) 2003-2009 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -12,7 +12,7 @@
  *     notice, this list of conditions and the following disclaimer in
  *     the documentation and/or other materials provided with the
  *     distribution.
- *   * Neither the name of the Jinete nor the names of its contributors may
+ *   * Neither the name of the author nor the names of its contributors may
  *     be used to endorse or promote products derived from this software
  *     without specific prior written permission.
  *
@@ -165,15 +165,15 @@ static bool grid_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       grid_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       grid_set_position(widget, &msg->setpos.rect);
-      return TRUE;
+      return true;
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void grid_request_size(JWidget widget, int *w, int *h)
@@ -345,7 +345,7 @@ static void grid_calculate_size(JWidget widget)
 		      p_size, p_colstrip, p_inc_col)			\
   current_span = 1;							\
   do {									\
-    more_span = FALSE;							\
+    more_span = false;							\
     for (p_col=0; p_col<grid->p_cols; ++p_col) {			\
       for (p_row=0; p_row<grid->p_rows; ++p_row) {			\
 	cell = grid->cells[row]+col;					\
@@ -382,7 +382,7 @@ static void grid_calculate_size(JWidget widget)
 	    }								\
 	  }								\
 	  else if (cell->p_span > current_span) {			\
-	    more_span = TRUE;						\
+	    more_span = true;						\
 	  }								\
 	}								\
       }									\
@@ -527,12 +527,12 @@ static bool grid_put_widget_in_cell(JWidget widget, JWidget child, int hspan, in
 	    cell->vspan = rowend - row;
 	  }
 	}
-	return TRUE;
+	return true;
       }
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 /**

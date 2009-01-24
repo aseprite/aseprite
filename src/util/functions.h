@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2008  David A. Capello
+ * Copyright (C) 2001-2009  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,6 @@ char *GetUniqueLayerName(Sprite* sprite);
 
 Layer* FlattenLayers(Sprite* sprite);
 
-void BackgroundFromLayer(Sprite* sprite);
 void LayerFromBackground(Sprite* sprite);
 
 /* ======================================= */

@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2008 by David A. Capello -->
+<!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="Cel Properties" name="cel_properties">
   <grid columns="2">

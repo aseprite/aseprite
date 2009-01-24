@@ -1,9 +1,36 @@
 ===================================
-AUTHOR
+AUTHORS
 ===================================
 
-  David A. Capello <davidcapello@gmail.com>
-  Programmer, design, graphics, tester and the maintainer.
+  David Capello <davidcapello@gmail.com>
+  Programmer, designer, and maintainer.
+
+  Thanks for ideas, patches, bugs report and contributions to:
+    Alex Winter
+    Álvaro González (Kronoman X)
+    Angelo Mottola
+    Ben Davis (entheh)
+    Carl Olsson
+    Christer Sandberg
+    Clayton Enga
+    David Campo
+    Elias Pschernig (networm)
+    Elio Cuevas Gómez
+    Emmanuel Rousseau (God_Cells)
+    Hernán Echegoyemberry
+    Jon Rafkind (kazzmir)
+    Jonathan Taylor
+    Jorge Ramírez Flores
+    Juraj Michalek
+    Manuel De Miguel Moreno
+    Manuel Quiñones (manuq)
+    Mateusz Czaplinski
+    Nathan Smith (whitedoor)
+    Nora Amendez
+    Peter Wang (tjaden)
+    Robert J Ohannessian (Bob)
+    Trent Gamblin (trentg)
+
 
 ===================================
 THANKFULNESS
@@ -123,27 +150,3 @@ THANKFULNESS
   Waldemar Celes, Roberto Ierusalimschy, and Luiz Henrique de
   Figueiredo: For their excelent work with Lua.
   <http://www.lua.org/>
-
-  And thanks for all the ideas and bugs report of:
-    Alex Winter
-    Álvaro González (Kronoman X)
-    Angelo Mottola
-    Ben Davis (entheh)
-    Carl Olsson
-    Christer Sandberg
-    Elias Pschernig (networm)
-    Elio Cuevas Gómez
-    Emmanuel Rousseau (God_Cells)
-    Hernán Echegoyemberry
-    Jon Rafkind (kazzmir)
-    Jonathan Taylor
-    Jorge Ramírez Flores
-    Juraj Michalek
-    Manuel De Miguel Moreno
-    Manuel Quiñones (manuq)
-    Mateusz Czaplinski
-    Nathan Smith (whitedoor)
-    Nora Amendez
-    Peter Wang (tjaden)
-    Robert J Ohannessian (Bob)
-    Trent Gamblin (trentg)
