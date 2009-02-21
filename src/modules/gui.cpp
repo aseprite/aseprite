@@ -875,6 +875,6 @@ static void regen_theme_and_fixup_icons(void *data)
   /* fixup the icons */
   JI_LIST_FOR_EACH(icon_buttons, link) {
     button = reinterpret_cast<JWidget>(link->data);
-    ji_generic_button_set_icon(button, get_gfx((int)button->user_data[3]));
+    ji_generic_button_set_icon(button, get_gfx((size_t)button->user_data[3]));
   }
 }

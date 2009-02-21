@@ -152,7 +152,7 @@ void console_printf(const char *format, ...)
     jfree(final);
   }
   else {
-    printf(buf);
+    fputs(buf, stdout);
     fflush(stdout);
   }
 }

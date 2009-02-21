@@ -140,13 +140,13 @@ static FileItemMap fileitems_map;
 static ThumbnailMap thumbnail_map;
 static unsigned int current_file_system_version = 0;
 
-#ifdef WORKAROUND_64BITS_SUPPORT
-static FileItem* for_each_child_callback_param;
-#endif
-
 #ifdef USE_PIDLS
   static IMalloc* shl_imalloc = NULL;
   static IShellFolder* shl_idesktop = NULL;
+#else
+  #ifdef WORKAROUND_64BITS_SUPPORT
+  static FileItem* for_each_child_callback_param;
+  #endif
 #endif
 
 /* a more easy PIDLs interface (without using the SH* & IL* routines of W2K) */

@@ -302,8 +302,8 @@ struct RectTracker
   int *pixel;
 };
 
-static void do_rect(BITMAP* bmp, int x1, int y1, int x2, int y2, int c,
-		    void (*proc)(BITMAP* bmp, int x, int y, int c))
+static void do_rect(BITMAP* bmp, int x1, int y1, int x2, int y2, RectTracker* rt,
+		    void (*proc)(BITMAP* bmp, int x, int y, RectTracker* rt))
 {
   int x, y, u1, u2, v1, v2;
 
@@ -316,12 +316,12 @@ static void do_rect(BITMAP* bmp, int x1, int y1, int x2, int y2, int c,
 
   if ((y1 >= bmp->ct) && (y1 < bmp->cb)) {
     for (x=u1; x<=u2; x++)
-      (*proc) (bmp, x, y1, c);
+      (*proc)(bmp, x, y1, rt);
   }
 
   if ((y2 >= bmp->ct) && (y2 < bmp->cb)) {
     for (x=u1; x<=u2; x++)
-      (*proc) (bmp, x, y2, c);
+      (*proc)(bmp, x, y2, rt);
   }
 
   v1 = MID(bmp->ct, y1+1, bmp->cb-1);
@@ -329,36 +329,33 @@ static void do_rect(BITMAP* bmp, int x1, int y1, int x2, int y2, int c,
 
   if ((x1 >= bmp->cl) && (x1 < bmp->cr)) {
     for (y=v1; y<=v2; y++)
-      (*proc)(bmp, x1, y, c);
+      (*proc)(bmp, x1, y, rt);
   }
 
   if ((x2 >= bmp->cl) && (x2 < bmp->cr)) {
     for (y=v1; y<=v2; y++)
-      (*proc)(bmp, x2, y, c);
+      (*proc)(bmp, x2, y, rt);
   }
 }
 
-static void count_rect(BITMAP* bmp, int x, int y, int c)
+static void count_rect(BITMAP* bmp, int x, int y, RectTracker* rt)
 {
-  RectTracker* data = (RectTracker*)c;
-  data->npixel++;
+  rt->npixel++;
 }
 
-static void save_rect(BITMAP* bmp, int x, int y, int c)
+static void save_rect(BITMAP* bmp, int x, int y, RectTracker* rt)
 {
-  RectTracker* data = (RectTracker*)c;
-  data->pixel[data->npixel++] = getpixel(bmp, x, y);
+  rt->pixel[rt->npixel++] = getpixel(bmp, x, y);
 }
 
-static void restore_rect(BITMAP* bmp, int x, int y, int c)
+static void restore_rect(BITMAP* bmp, int x, int y, RectTracker* rt)
 {
-  RectTracker* data = (RectTracker*)c;
-  putpixel(bmp, x, y, data->pixel[data->npixel++]);
+  putpixel(bmp, x, y, rt->pixel[rt->npixel++]);
 }
 
 RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2)
 {
-  RectTracker *data;
+  RectTracker* rt;
   int x, y;
 
   jmouse_hide();
@@ -366,40 +363,39 @@ RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2)
   if (x1 > x2) { x = x1; x1 = x2; x2 = x; }
   if (y1 > y2) { y = y1; y1 = y2; y2 = y; }
 
-  data = new RectTracker;
+  rt = new RectTracker;
 
-  data->bmp = bmp;
-  data->x1 = x1;
-  data->y1 = y1;
-  data->x2 = x2;
-  data->y2 = y2;
+  rt->bmp = bmp;
+  rt->x1 = x1;
+  rt->y1 = y1;
+  rt->x2 = x2;
+  rt->y2 = y2;
 
-  data->npixel = 0;
-  do_rect(bmp, x1, y1, x2, y2, (int)data, count_rect);
+  rt->npixel = 0;
+  do_rect(bmp, x1, y1, x2, y2, rt, count_rect);
 
-  if (data->npixel > 0)
-    data->pixel = new int[data->npixel];
+  if (rt->npixel > 0)
+    rt->pixel = new int[rt->npixel];
   else
-    data->pixel = NULL;
+    rt->pixel = NULL;
 
-  data->npixel = 0;
-  do_rect(bmp, x1, y1, x2, y2, (int)data, save_rect);
+  rt->npixel = 0;
+  do_rect(bmp, x1, y1, x2, y2, rt, save_rect);
 
   jmouse_show();
 
-  return data;
+  return rt;
 }
 
-void rect_tracker_free(RectTracker* data)
+void rect_tracker_free(RectTracker* rt)
 {
   jmouse_hide();
 
-  data->npixel = 0;
-  do_rect(data->bmp, data->x1, data->y1, data->x2, data->y2,
-	  (int)data, restore_rect);
+  rt->npixel = 0;
+  do_rect(rt->bmp, rt->x1, rt->y1, rt->x2, rt->y2, rt, restore_rect);
 
-  delete[] data->pixel;
-  delete data;
+  delete[] rt->pixel;
+  delete rt;
 
   jmouse_show();
 }

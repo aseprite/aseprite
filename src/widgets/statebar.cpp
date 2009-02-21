@@ -173,7 +173,7 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
   else {
     jwidget_set_text(tipwindow, buf);
 
-    jmanager_set_timer_interval((int)tipwindow->user_data[0], msecs);
+    jmanager_set_timer_interval((size_t)tipwindow->user_data[0], msecs);
   }
 
   if (jwidget_is_visible(tipwindow))
@@ -186,7 +186,7 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
   y = widget->rc->y1 - jrect_h(tipwindow->rc);
   jwindow_position(tipwindow, x, y);
 
-  jmanager_start_timer((int)tipwindow->user_data[0]);
+  jmanager_start_timer((size_t)tipwindow->user_data[0]);
 }
 
 void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color)
@@ -391,7 +391,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jmanager_remove_timer((int)widget->user_data[0]);
+      jmanager_remove_timer((size_t)widget->user_data[0]);
       break;
 
     case JM_TIMER:
@@ -431,7 +431,7 @@ static void button_command(JWidget widget, void *data)
   if (sprite) {
     const char *cmd = NULL;
 
-    switch ((int)data) {
+    switch ((size_t)data) {
 
       case ACTION_LAYER:
 	cmd = CMD_LAYER_PROPERTIES;

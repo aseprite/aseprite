@@ -126,7 +126,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
 
 int target_button_get_target(JWidget widget)
 {
-  return (int)widget->user_data[0];
+  return (size_t)widget->user_data[0];
 }
 
 void target_button_set_target(JWidget widget, int target)
@@ -155,7 +155,7 @@ void target_button_set_target(JWidget widget, int target)
 static bool channel_change_hook(JWidget widget, void *data)
 {
   JWidget target_button = (JWidget)data;
-  int target = (int)target_button->user_data[0];
+  int target = (size_t)target_button->user_data[0];
   int flag = 0;
   
   switch (*widget->name) {
@@ -183,7 +183,7 @@ static bool channel_change_hook(JWidget widget, void *data)
 static bool images_change_hook(JWidget widget, void *data)
 {
   JWidget target_button = (JWidget)data;
-  int target = (int)target_button->user_data[0];
+  int target = (size_t)target_button->user_data[0];
 
   /* rotate target */
   if (target & TARGET_ALL_FRAMES) {

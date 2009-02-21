@@ -29,6 +29,7 @@ AUTHORS
     Nora Amendez
     Peter Wang (tjaden)
     Robert J Ohannessian (Bob)
+    Scott Wilson
     Trent Gamblin (trentg)
 
 

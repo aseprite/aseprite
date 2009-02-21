@@ -1,3 +1,7 @@
+2009-02-21  David A. Capello  <davidcapello@gmail.com>
+
+	* Fixed some compilation errors in gcc 64 bits (reported by Scott Wilson).
+
 2009-01-24  David A. Capello  <davidcapello@gmail.com>
 
 	* Version 0.6.1 released.

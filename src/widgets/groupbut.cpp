@@ -101,7 +101,7 @@ int group_button_get_selected(JWidget group)
   JWidget sel = find_selected(group);
 
   if (sel)
-    return (int)sel->user_data[1];
+    return (size_t)sel->user_data[1];
   else
     return -1;
 }
@@ -110,7 +110,7 @@ void group_button_select(JWidget group, int index)
 {
   JWidget sel = find_selected(group);
 
-  if (!sel || (int)sel->user_data[1] != index) {
+  if (!sel || (size_t)sel->user_data[1] != index) {
     jwidget_deselect(sel);
     select_button(group, index);
   }
@@ -137,7 +137,7 @@ static int select_button(JWidget widget, int index)
   JLink link;
 
   if (widget->type == JI_RADIO) {
-    if ((int)widget->user_data[1] == index) {
+    if ((size_t)widget->user_data[1] == index) {
       jwidget_select(widget);
       return TRUE;
     }
