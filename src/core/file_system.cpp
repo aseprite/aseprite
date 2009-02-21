@@ -32,6 +32,11 @@
 
 #include <allegro.h>
 
+// define this macro to solve the problem of for_each_file Allegro
+// routine which does not support to wrap 64-bits pointers in its
+// user-data parameter
+#define WORKAROUND_64BITS_SUPPORT
+
 // in Windows we can use PIDLS
 #if defined ALLEGRO_WINDOWS
   // uncomment this if you don't want to use PIDLs in windows
@@ -134,6 +139,10 @@ static FileItem* rootitem = NULL;
 static FileItemMap fileitems_map;
 static ThumbnailMap thumbnail_map;
 static unsigned int current_file_system_version = 0;
+
+#ifdef WORKAROUND_64BITS_SUPPORT
+static FileItem* for_each_child_callback_param;
+#endif
 
 #ifdef USE_PIDLS
   static IMalloc* shl_imalloc = NULL;
@@ -482,10 +491,16 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 		       uconvert_ascii("*.*", tmp),
 		       sizeof(buf));
 
+#ifdef WORKAROUND_64BITS_SUPPORT
+      // we cannot use the for_each_file's 'param' to wrap a 64-bits pointer
+      for_each_child_callback_param = fileitem;
+      for_each_file(buf, FA_TO_SHOW, for_each_child_callback, 0);
+#else
       for_each_file(buf, FA_TO_SHOW,
 		    for_each_child_callback,
-		    (int)fileitem);	/* TODO warning with 64bits */
-    }
+		    (int)fileitem);
+#endif
+  }
 #endif
 
     // check old file-items (maybe removed directories or file-items)
@@ -939,10 +954,8 @@ static void put_fileitem(FileItem* fileitem)
 
 static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
 {
-#ifdef ALLEGRO_UNIX
   if (path.empty())
     return rootitem;
-#endif
 
   FileItemMap::iterator it = fileitems_map.find(get_key_for_filename(path));
   if (it != fileitems_map.end())
@@ -979,7 +992,11 @@ static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
 
 static void for_each_child_callback(const char *filename, int attrib, int param)
 {
+#ifdef WORKAROUND_64BITS_SUPPORT
+  FileItem* fileitem = for_each_child_callback_param;
+#else
   FileItem* fileitem = (FileItem*)param;
+#endif
   FileItem* child;
   const char *filename_without_path = get_filename(filename);
 
@@ -990,6 +1007,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
 
   child = get_fileitem_by_path(filename, FALSE);
   if (!child) {
+    assert(fileitem != NULL);
     child = new FileItem(fileitem);
 
     child->filename = filename;
@@ -1031,7 +1049,7 @@ static jstring get_key_for_filename(const jstring& filename)
   jstring buf(filename);
 
 #if !defined CASE_SENSITIVE
-  buf = buf.lower();
+  buf.tolower();
 #endif
   buf.fix_separators();
 
