@@ -165,7 +165,7 @@ static bool color_change_hook(JWidget widget, void *data)
 {
   char buf[64];
 
-  sprintf(buf, "Color%d", (int)data);
+  sprintf(buf, "Color%d", (size_t)data);
   set_config_color("ReplaceColor", buf, colorbutton_get_color(widget));
 
   make_preview();
