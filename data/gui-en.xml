@@ -8,9 +8,10 @@
 	    <key command="new_file" shortcut="Ctrl+N" />
 	    <key command="open_file" shortcut="Ctrl+O" />
 	    <key command="save_file" shortcut="Ctrl+S" />
-	    <key command="save_file_as" shortcut="Shift+Ctrl+S" />
+	    <key command="save_file_as" shortcut="Ctrl+Shift+S" />
+	    <key command="save_file_copy_as" shortcut="Ctrl+Shift+C" />
 	    <key command="close_file" shortcut="Ctrl+W" />
-	    <key command="close_all_files" shortcut="Shift+Ctrl+W" />
+	    <key command="close_all_files" shortcut="Ctrl+Shift+W" />
 	    <key command="screen_shot" shortcut="F12" />
 	    <key command="exit" shortcut="Ctrl+Q" />
 	    <key command="exit" shortcut="Esc" />
@@ -43,8 +44,8 @@
 	    <!-- mask -->
 	    <key command="mask_all" shortcut="Ctrl+A" />
 	    <key command="deselect_mask" shortcut="Ctrl+D" />
-	    <key command="reselect_mask" shortcut="Shift+Ctrl+D" />
-	    <key command="invert_mask" shortcut="Shift+Ctrl+I" />
+	    <key command="reselect_mask" shortcut="Ctrl+Shift+D" />
+	    <key command="invert_mask" shortcut="Ctrl+Shift+I" />
 	    <!-- view -->
 	    <key command="refresh" shortcut="F5" />
 	    <key command="advanced_mode" shortcut="A" />
@@ -65,7 +66,7 @@
 	    <key command="color_curve" shortcut="Ctrl+M" />
 	    <key command="color_curve" shortcut="F10" />
 	    <key command="tips" shortcut="F1" />
-	    <key command="options" shortcut="Shift+Ctrl+O" />
+	    <key command="options" shortcut="Ctrl+Shift+O" />
 
 	    <!-- others -->
 	    <key command="eyedropper" shortcut="I" />
@@ -98,6 +99,7 @@
 	    <separator />
 	    <item command="save_file" name="&Save" />
 	    <item command="save_file_as" name="Save &As..." />
+	    <item command="save_file_copy_as" name="Save Cop&y As..." />
 	    <item command="close_file" name="&Close" />
 	    <item command="close_all_files" name="Close All" />
 	    <separator />

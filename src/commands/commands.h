@@ -97,6 +97,7 @@
 #define CMD_RESELECT_MASK		"reselect_mask"
 #define CMD_SAVE_FILE			"save_file"
 #define CMD_SAVE_FILE_AS		"save_file_as"
+#define CMD_SAVE_FILE_COPY_AS		"save_file_copy_as"
 #define CMD_SAVE_MASK			"save_mask"
 #define CMD_SCREEN_SHOT			"screen_shot"
 #define CMD_SELECT_FILE			"select_file"

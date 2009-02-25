@@ -87,7 +87,7 @@ static void monitor_free(void *_data)
   }
 }
 
-static void save_sprite_in_background(Sprite *sprite)
+static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 {
   FileOp *fop = fop_to_save_sprite(sprite);
   if (fop) {
@@ -125,7 +125,9 @@ static void save_sprite_in_background(Sprite *sprite)
       /* no error? */
       else {
 	recent_file(sprite->filename);
-	sprite_mark_as_saved(sprite);
+	if (mark_as_saved)
+	  sprite_mark_as_saved(sprite);
+
 	statusbar_set_text(app_get_statusbar(),
 			   2000, "File %s, saved.",
 			   get_filename(sprite->filename));
@@ -139,52 +141,9 @@ static void save_sprite_in_background(Sprite *sprite)
   }
 }
 
-/*********************************************************************
- Save File
- *********************************************************************/
+/*********************************************************************/
 
-/**
- * Returns true if there is a current sprite to save.
- *
- * [main thread]
- */
-static bool cmd_save_file_enabled(const char *argument)
-{
-  return current_sprite != NULL;
-}
-
-/**
- * Saves the current sprite in a file.
- * 
- * [main thread]
- */
-static void cmd_save_file_execute(const char *argument)
-{
-  Sprite *sprite = current_sprite;
-
-  /* if the sprite is associated to a file in the file-system, we can
-     save it directly without user interaction */
-  if (sprite_is_associated_to_file(sprite)) {
-    save_sprite_in_background(sprite);
-  }
-  /* if the sprite isn't associated to a file, we must to show the
-     save-as dialog to the user to select for first time the file-name
-     for this sprite */
-  else {
-    command_execute(command_get_by_name(CMD_SAVE_FILE_AS), argument);
-  }
-}
-
-/*********************************************************************
- Save File As
- *********************************************************************/
-
-static bool cmd_save_file_as_enabled(const char *argument)
-{
-  return current_sprite != NULL;
-}
-
-static void cmd_save_file_as_execute(const char *argument)
+static void save_as_dialog(const char* dlg_title, bool mark_as_saved)
 {
   Sprite *sprite = current_sprite;
   char exts[4096];
@@ -196,7 +155,7 @@ static void cmd_save_file_as_execute(const char *argument)
   get_writable_extensions(exts, sizeof(exts));
 
   for (;;) {
-    newfilename = ase_file_selector(_("Save Sprite"), filename, exts);
+    newfilename = ase_file_selector(dlg_title, filename, exts);
     if (newfilename.empty())
       return;
 
@@ -227,7 +186,79 @@ static void cmd_save_file_as_execute(const char *argument)
   sprite_set_filename(sprite, filename.c_str());
   app_realloc_sprite_list();
 
-  save_sprite_in_background(sprite);
+  save_sprite_in_background(sprite, mark_as_saved);
+}
+
+/*********************************************************************
+ Save File
+ *********************************************************************/
+
+/**
+ * Returns true if there is a current sprite to save.
+ *
+ * [main thread]
+ */
+static bool cmd_save_file_enabled(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
+/**
+ * Saves the current sprite in a file.
+ * 
+ * [main thread]
+ */
+static void cmd_save_file_execute(const char *argument)
+{
+  Sprite *sprite = current_sprite;
+
+  /* if the sprite is associated to a file in the file-system, we can
+     save it directly without user interaction */
+  if (sprite_is_associated_to_file(sprite)) {
+    save_sprite_in_background(sprite, true);
+  }
+  /* if the sprite isn't associated to a file, we must to show the
+     save-as dialog to the user to select for first time the file-name
+     for this sprite */
+  else {
+    save_as_dialog(_("Save Sprite"), true);
+  }
+}
+
+/*********************************************************************
+ Save File As
+ *********************************************************************/
+
+static bool cmd_save_file_as_enabled(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
+static void cmd_save_file_as_execute(const char *argument)
+{
+  save_as_dialog(_("Save Sprite As"), true);
+}
+
+/*********************************************************************
+ Save File Copy As
+ *********************************************************************/
+
+static bool cmd_save_file_copy_as_enabled(const char *argument)
+{
+  return current_sprite != NULL;
+}
+
+static void cmd_save_file_copy_as_execute(const char *argument)
+{
+  Sprite *sprite = current_sprite;
+  jstring old_filename = sprite->filename;
+
+  // show "Save As" dialog
+  save_as_dialog(_("Save Sprite Copy As"), false);
+
+  // restore the file name
+  sprite_set_filename(sprite, old_filename.c_str());
+  app_realloc_sprite_list();
 }
 
 /**
@@ -249,5 +280,16 @@ Command cmd_save_file_as = {
   cmd_save_file_as_enabled,
   NULL,
   cmd_save_file_as_execute,
+  NULL
+};
+
+/**
+ * Command to save a copy of the current sprite in another file.
+ */
+Command cmd_save_file_copy_as = {
+  CMD_SAVE_FILE_COPY_AS,
+  cmd_save_file_copy_as_enabled,
+  NULL,
+  cmd_save_file_copy_as_execute,
   NULL
 };

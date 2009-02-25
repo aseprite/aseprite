@@ -1,3 +1,8 @@
+2009-02-25  David A. Capello  <davidcapello@gmail.com>
+
+	* src/commands/cmd_save_file.cpp (cmd_save_file_copy_as_execute):
+	Added "Save Copy As" command (Scott Wilson idea, feature #2636076).
+
 2009-02-21  David A. Capello  <davidcapello@gmail.com>
 
 	* Fixed some compilation errors in gcc 64 bits (reported by Scott Wilson).

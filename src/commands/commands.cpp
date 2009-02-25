@@ -104,6 +104,7 @@ extern Command cmd_replace_color;
 extern Command cmd_reselect_mask;
 extern Command cmd_save_file;
 extern Command cmd_save_file_as;
+extern Command cmd_save_file_copy_as;
 extern Command cmd_save_mask;
 extern Command cmd_screen_shot;
 extern Command cmd_select_file;
@@ -195,6 +196,7 @@ static Command *commands[] = {
   &cmd_reselect_mask,
   &cmd_save_file,
   &cmd_save_file_as,
+  &cmd_save_file_copy_as,
   &cmd_save_mask,
   &cmd_screen_shot,
   &cmd_select_file,
