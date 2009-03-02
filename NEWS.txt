@@ -8,6 +8,8 @@ NEWS
 + Added "Save Copy As" command (feature #2636076).
 + Fixed compilation support for gcc 64 bits.
 + Fixed a bug with multiple editors and paste command.
++ Fixed a bug in the File Open dialog when user presses ENTER key
+  with an empty file name.
 
 0.6.1
 -----

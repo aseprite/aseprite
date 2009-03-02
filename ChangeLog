@@ -1,3 +1,8 @@
+2009-03-02  David A. Capello  <davidcapello@gmail.com>
+
+	* src/dialogs/filesel.cpp (ase_file_selector): Fixed a bug
+	when the user presses ENTER with an empty file name.
+
 2009-03-01  David A. Capello  <davidcapello@gmail.com>
 
 	* src/widgets/editor/cursor.cpp (editor_clean_cursor): Fixed a

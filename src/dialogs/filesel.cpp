@@ -239,9 +239,13 @@ again:
       if (!enter_folder)
 	enter_folder = folder;
     }
-    else {
+    else if (!fn.empty()) {
       // check if the user specified in "fn" a item of "fileview"
       const FileItemList& children = fileview_get_filelist(fileview);
+
+#ifdef ALLEGRO_WINDOWS
+      fn.tolower();
+#endif
 
       for (FileItemList::const_iterator
 	     it=children.begin(); it!=children.end(); ++it) {
@@ -250,7 +254,6 @@ again:
 
 #ifdef ALLEGRO_WINDOWS
 	child_name.tolower();
-	fn.tolower();
 #endif
 	if (child_name == fn) {
 	  enter_folder = *it;
@@ -296,6 +299,11 @@ again:
 	// we can check if 'buf' is a folder, so we have to enter in it
 	enter_folder = get_fileitem_from_path(buf);
       }
+    }
+    else {
+      // show the window again
+      jwidget_show(window);
+      goto again;
     }
 
     // did we find a folder to enter?
