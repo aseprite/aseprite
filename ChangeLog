@@ -1,3 +1,9 @@
+2009-03-01  David A. Capello  <davidcapello@gmail.com>
+
+	* src/widgets/editor/cursor.cpp (editor_clean_cursor): Fixed a
+	problem where old_clipping_region can be NULL if multiple editors
+	are in use and PASTE command is executed.
+
 2009-02-25  David A. Capello  <davidcapello@gmail.com>
 
 	* src/commands/cmd_save_file.cpp (cmd_save_file_copy_as_execute):

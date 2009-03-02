@@ -65,6 +65,9 @@ static int cursor_negative;
 
 static int saved_pixel[MAX_SAVED];
 static int saved_pixel_n;
+
+// These clipping regions are shared between all editors, so we cannot
+// make assumptions about their old state
 static JRegion clipping_region;
 static JRegion old_clipping_region;
 
@@ -156,6 +159,8 @@ void editor_draw_cursor(JWidget widget, int x, int y)
   editor->cursor_editor_y = y;
 
   /* save the clipping-region to know where to clean the pixels */
+  if (old_clipping_region)
+    jregion_free(old_clipping_region);
   old_clipping_region = clipping_region;
 }
 
@@ -194,7 +199,9 @@ void editor_clean_cursor(JWidget widget)
   editor->cursor_thick = 0;
 
   jregion_free(clipping_region);
-  jregion_free(old_clipping_region);
+  if (old_clipping_region)
+    jregion_free(old_clipping_region);
+
   clipping_region = NULL;
   old_clipping_region = NULL;
 }
@@ -361,7 +368,8 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color)
   if (saved_pixel_n < MAX_SAVED) {
     if (point_inside_region(x, y, clipping_region))
       putpixel(bmp, x, y, saved_pixel[saved_pixel_n++]);
-    else if (point_inside_region(x, y, old_clipping_region))
+    else if (old_clipping_region &&
+	     point_inside_region(x, y, old_clipping_region))
       saved_pixel_n++;
   }
 }
