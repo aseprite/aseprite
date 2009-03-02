@@ -30,4 +30,4 @@ $GCC $CFLAGS							     \
     src/util/*.cpp						     \
     src/widgets/*.cpp						     \
     src/widgets/editor/*.cpp					     \
-    | sed -e 's/^\([a-z_\-]*\.o\)/obj\/mingw32\/\1/' >> makefile.dep
+    | sed -e 's/^\([a-z_\-]*\)\.o/\$(OBJ_DIR)\/\1\$(OBJ)/' >> makefile.dep
