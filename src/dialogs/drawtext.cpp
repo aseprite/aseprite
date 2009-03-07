@@ -35,7 +35,7 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
-#include "util/clipbrd.h"
+#include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
 #include "widgets/colbut.h"
@@ -137,8 +137,9 @@ void dialogs_draw_text()
       /* render text */
       image = render_text(f, text, color);
       if (image) {
-	copy_image_to_clipboard(image);
-	paste_from_clipboard();
+	clipboard::copy_image(image, sprite_get_palette(current_sprite,
+							current_sprite->frame));
+	clipboard::paste(current_sprite);
       }
       else
 	console_printf(_("Error rendering text.\n"));

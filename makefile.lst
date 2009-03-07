@@ -188,7 +188,7 @@ COMMON_SOURCES =					\
 	src/util/autocrop.cpp				\
 	src/util/boundary.cpp				\
 	src/util/celmove.cpp				\
-	src/util/clipbrd.cpp				\
+	src/util/clipboard.cpp				\
 	src/util/col_file.cpp				\
 	src/util/filetoks.cpp				\
 	src/util/functions.cpp				\

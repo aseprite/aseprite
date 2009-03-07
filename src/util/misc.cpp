@@ -174,6 +174,50 @@ Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
   return layer;
 }
 
+Image* NewImageFromMask(Sprite* src_sprite)
+{
+  ase_uint8 *address;
+  int x, y, u, v, getx, gety;
+  Image *dst, *src = GetImage2(src_sprite, &x, &y, NULL);
+  div_t d;
+
+  assert(src_sprite);
+  assert(src_sprite->mask);
+  assert(src_sprite->mask->bitmap);
+  assert(src);
+
+  dst = image_new(src_sprite->imgtype,
+		  src_sprite->mask->w,
+		  src_sprite->mask->h);
+  if (!dst)
+    return NULL;
+
+  /* clear the new image */
+  image_clear(dst, 0);
+
+  /* copy the masked zones */
+  for (v=0; v<src_sprite->mask->h; v++) {
+    d = div(0, 8);
+    address = ((ase_uint8 **)src_sprite->mask->bitmap->line)[v]+d.quot;
+
+    for (u=0; u<src_sprite->mask->w; u++) {
+      if ((*address & (1<<d.rem))) {
+	getx = u+src_sprite->mask->x-x;
+	gety = v+src_sprite->mask->y-y;
+
+	if ((getx >= 0) && (getx < src->w) &&
+	    (gety >= 0) && (gety < src->h))
+	  dst->method->putpixel(dst, u, v,
+				src->method->getpixel(src, getx, gety));
+      }
+
+      _image_bitmap_next_bit(d, address);
+    }
+  }
+
+  return dst;
+}
+
 Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
 {
   Image *image = NULL;

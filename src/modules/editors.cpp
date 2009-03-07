@@ -420,14 +420,13 @@ static int is_sprite_in_some_editor(Sprite *sprite)
  */
 static Sprite *get_more_reliable_sprite()
 {
-  Sprite *clipboard = get_clipboard_sprite();
   Sprite *sprite;
   JLink link;
 
   JI_LIST_FOR_EACH(get_sprite_list(), link) {
     sprite = reinterpret_cast<Sprite*>(link->data);
 
-    if ((sprite != clipboard) && !(is_sprite_in_some_editor(sprite)))
+    if (!(is_sprite_in_some_editor(sprite)))
       return sprite;
   }
 

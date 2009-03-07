@@ -846,6 +846,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	    /* ok, so we can execute the command represented by the
 	       pressed-key in the message... */
 	    if (command_is_enabled(command, NULL)) {
+	      // if a menu is open, close everything
 	      command_execute(command, NULL);
 	      return TRUE;
 	    }

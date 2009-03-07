@@ -46,7 +46,6 @@
 Sprite* current_sprite = NULL;
 
 static JList sprites_list;
-static Sprite* clipboard_sprite;
 
 static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int target, bool write);
 static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
@@ -54,7 +53,6 @@ static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, 
 int init_module_sprites()
 {
   sprites_list = jlist_new();
-  clipboard_sprite = NULL;
   current_sprite = NULL;
   return 0;
 }
@@ -62,11 +60,6 @@ int init_module_sprites()
 void exit_module_sprites()
 {
   JLink link;
-
-  if (clipboard_sprite) {
-    sprite_free(clipboard_sprite);
-    clipboard_sprite = NULL;
-  }
 
   JI_LIST_FOR_EACH(sprites_list, link) {
     sprite_free(reinterpret_cast<Sprite*>(link->data));
@@ -98,29 +91,6 @@ Sprite* get_next_sprite(Sprite* sprite)
     return NULL;
 }
 
-Sprite* get_clipboard_sprite()
-{
-  return clipboard_sprite;
-}
-
-void set_clipboard_sprite(Sprite* sprite)
-{
-  if (clipboard_sprite) {
-    if (current_sprite == clipboard_sprite)
-      set_current_sprite(sprite);
-
-    if (is_interactive())
-      replace_sprite_in_editors(clipboard_sprite, sprite);
-
-    sprite_free(clipboard_sprite);
-  }
-
-  clipboard_sprite = sprite;
-
-  if (is_interactive())
-    app_realloc_sprite_list();
-}
-
 /* adds the "sprite" in the list of sprites */
 void sprite_mount(Sprite* sprite)
 {
@@ -142,10 +112,6 @@ void sprite_unmount(Sprite* sprite)
 {
   /* remove from the sprite's list */
   jlist_remove(sprites_list, sprite);
-
-  /* remove from the clipboard pointer */
-  if (sprite == get_clipboard_sprite())
-    clipboard_sprite = NULL;
 
   if (is_interactive()) {
     /* remove this sprite from tabs */

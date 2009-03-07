@@ -2,9 +2,10 @@
 NEWS
 ===================================
 
-0.7
----
+0.6.2
+-----
 
++ Copy & Paste use Windows clipboard (feature #2577954).
 + Added "Save Copy As" command (feature #2636076).
 + Fixed compilation support for gcc 64 bits.
 + Fixed a bug with multiple editors and paste command.

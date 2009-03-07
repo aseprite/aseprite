@@ -28,13 +28,10 @@
 static void cmd_exit_execute(const char *argument)
 {
   Sprite *sprite = get_first_sprite();
-  Sprite *clipboard = get_clipboard_sprite();
 
   while (sprite) {
-    /* check if this sprite is modified */
-
-    if (sprite_is_modified(sprite) &&
-	(!clipboard || sprite->id != clipboard->id)) {
+    // check if this sprite is modified
+    if (sprite_is_modified(sprite)) {
       if (jalert(_("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No")) != 1) {
 	return;
       }

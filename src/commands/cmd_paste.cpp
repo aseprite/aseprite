@@ -22,14 +22,13 @@
 #include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "util/clipbrd.h"
+#include "util/clipboard.h"
 
 static bool cmd_paste_enabled(const char *argument)
 {
   Sprite *sprite = current_sprite;
-  Sprite *clipboard = get_clipboard_sprite();
 
-  return (sprite && clipboard && (clipboard != sprite));
+  return (sprite && clipboard::can_paste());
 }
 
 static void cmd_paste_execute(const char *argument)
@@ -37,7 +36,7 @@ static void cmd_paste_execute(const char *argument)
   if (undo_is_enabled(current_sprite->undo))
     undo_set_label(current_sprite->undo, "Paste");
 
-  paste_from_clipboard();
+  clipboard::paste(current_sprite);
 }
 
 Command cmd_paste = {

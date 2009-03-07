@@ -25,7 +25,7 @@
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "util/clipbrd.h"
+#include "util/clipboard.h"
 #include "util/misc.h"
 
 static bool cmd_copy_enabled(const char *argument)
@@ -43,7 +43,7 @@ static bool cmd_copy_enabled(const char *argument)
 
 static void cmd_copy_execute(const char *argument)
 {
-  copy_to_clipboard();
+  clipboard::copy(current_sprite);
 }
 
 Command cmd_copy = {

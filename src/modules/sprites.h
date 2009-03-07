@@ -43,9 +43,6 @@ JList get_sprite_list();
 Sprite* get_first_sprite();
 Sprite* get_next_sprite(Sprite* sprite);
 
-Sprite* get_clipboard_sprite();
-void set_clipboard_sprite(Sprite* sprite);
-
 void sprite_mount(Sprite* sprite);
 void sprite_unmount(Sprite* sprite);
 

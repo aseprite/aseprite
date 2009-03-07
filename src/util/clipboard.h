@@ -23,13 +23,16 @@
 
 class Image;
 
-bool has_clipboard_image(int *w, int *h);
+namespace clipboard {
 
-void copy_image_to_clipboard(Image* image);
+bool can_paste();
 
-void cut_to_clipboard();
-void copy_to_clipboard();
-void paste_from_clipboard();
+void cut(Sprite* sprite);
+void copy(Sprite* sprite);
+void copy_image(Image* image, Palette* palette);
+void paste(Sprite* sprite);
+
+} // namespace clipboard
 
 #endif /* UTIL_CLIPBRD_H */
 

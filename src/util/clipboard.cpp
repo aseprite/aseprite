@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <cassert>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -35,15 +36,21 @@
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
+#include "raster/palette.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undoable.h"
 #include "raster/undo.h"
-#include "util/clipbrd.h"
+#include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
 #include "widgets/statebar.h"
+
+#if defined ALLEGRO_WINDOWS
+#include <winalleg.h>
+#include "util/clipboard_win32.h"
+#endif
 
 #define SCALE_MODE	0
 #define ROTATE_MODE	1
@@ -69,11 +76,13 @@ enum {
   ACTION_ROTATE_BR,
 };
 
-static bool interactive_transform(JWidget widget,
-				  Image *dest_image, Image *image,
-				  int x, int y,
-				  int xout[4], int yout[4]);
-static int low_copy();
+static void destroy_clipboard(void* data);
+static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
+static bool copy_from_sprite(Sprite* sprite);
+static ase_uint32 get_shift_from_mask(ase_uint32 mask);
+
+static bool interactive_transform(JWidget widget, Image *dest_image, Image *image,
+				  int x, int y, int xout[4], int yout[4]);
 static void apply_rotation(int x1, int y1, int x2, int y2,
 			   fixed angle, int cx, int cy,
 			   int xout[4], int yout[4]);
@@ -87,59 +96,78 @@ static void fill_in_vars(int *in_box,
 			 int *in_top, int *in_middle, int *in_bottom,
 			 int x1, int y1, int x2, int y2, fixed angle,
 			 int cx, int cy);
-static void update_status_bar(JWidget editor, Image *image, 
+static void update_status_bar(JWidget editor, Image *image,
 			      int x1, int y1, int x2, int y2, fixed angle);
 
-bool has_clipboard_image(int *w, int *h)
+static bool first_time = true;
+
+static Palette* clipboard_palette = NULL;
+static Image* clipboard_image = NULL;
+
+static void destroy_clipboard(void* data)
 {
-  Sprite *clipboard = get_clipboard_sprite();
-  Image *image = NULL;
-  Cel *cel;
-
-  if (clipboard) {
-    cel = layer_get_cel(clipboard->layer, clipboard->frame);
-    if (cel)
-      image = stock_get_image(clipboard->stock, cel->image);
-  }
-
-  if (image) {
-    if (w) *w = image->w;
-    if (h) *h = image->h;
-    return TRUE;
-  }
-  else {
-    if (w) *w = 0;
-    if (h) *h = 0;
-    return FALSE;
-  }
+  delete clipboard_palette;
+  delete clipboard_image;
 }
 
-void copy_image_to_clipboard(Image *image)
+static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard)
 {
-  Sprite *sprite;
-  Image *dest;
-
-  sprite = sprite_new_with_layer(image->imgtype, image->w, image->h);
-  if (sprite) {
-    dest = GetImage2(sprite, NULL, NULL, NULL);
-    image_copy(dest, image, 0, 0);
-
-    sprite_set_palette(sprite, get_current_palette(), FALSE);
-
-    set_clipboard_sprite(sprite);
+  if (first_time) {
+    first_time = false;
+    app_add_hook(APP_EXIT, destroy_clipboard, NULL);
   }
+
+  delete clipboard_palette;
+  delete clipboard_image;
+
+  clipboard_palette = palette;
+  clipboard_image = image;
+
+  // copy to the Windows clipboard
+#ifdef ALLEGRO_WINDOWS
+  if (set_system_clipboard)
+    set_win32_clipboard_bitmap(image, palette);
+#endif
 }
 
-void cut_to_clipboard()
+static bool copy_from_sprite(Sprite* sprite)
 {
-  if (current_sprite == NULL ||
-      current_sprite->layer == NULL)
-    return;
+  assert(sprite);
+  Image* image = NewImageFromMask(sprite);
+  if (!image)
+    return false;
 
-  if (!low_copy())
+  Palette* pal = sprite_get_palette(sprite, sprite->frame);
+  set_clipboard(image, pal ? palette_new_copy(pal): NULL, true);
+  return true;
+}
+
+static ase_uint32 get_shift_from_mask(ase_uint32 mask)
+{
+  ase_uint32 shift = 0;
+  for (shift=0; shift<32; ++shift)
+    if (mask & (1 << shift))
+      return shift;
+  return shift;
+}
+
+bool clipboard::can_paste()
+{
+#ifdef ALLEGRO_WINDOWS
+  if (win32_clipboard_contains_bitmap())
+    return true;
+#endif
+  return clipboard_image != NULL;
+}
+
+void clipboard::cut(Sprite* sprite)
+{
+  assert(sprite != NULL);
+  assert(sprite->layer != NULL);
+
+  if (!copy_from_sprite(sprite))
     console_printf("Can't copying an image portion from the current layer\n");
   else {
-    Sprite* sprite = current_sprite;
     {
       Undoable undoable(sprite, "Cut");
       undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
@@ -149,55 +177,63 @@ void cut_to_clipboard()
   }
 }
 
-void copy_to_clipboard()
+void clipboard::copy(Sprite* sprite)
 {
-  if (!current_sprite)
-    return;
+  assert(sprite != NULL);
 
-  if (!low_copy())
+  if (!copy_from_sprite(sprite))
     console_printf(_("Can't copying an image portion from the current layer\n"));
 }
 
-void paste_from_clipboard()
+void clipboard::copy_image(Image* image, Palette* pal)
 {
-  Sprite *clipboard = get_clipboard_sprite();
-  Cel *cel;
-  Image *image;
-  Image *dest_image;
+  set_clipboard(image_new_copy(image),
+		pal ? palette_new_copy(pal): NULL, true);
+}
+
+void clipboard::paste(Sprite* sprite)
+{
   int xout[4], yout[4];
-  int dest_x, dest_y;
+  int dst_x, dst_y;
+  Image *src_image;
+  Image* dst_image;
   bool paste;
 
-  if (!current_sprite ||
-      current_sprite == clipboard ||
-      !clipboard->layer ||
-      !is_interactive())
-    return;
-
-  if (clipboard->imgtype != current_sprite->imgtype) {
-    /* TODO now the user can't select the clipboard sprite */
-    console_printf(_("You can't copy sprites of different image types.\nYou should select the clipboard sprite, and change the image type of it.\n"));
-    return;
+#ifdef ALLEGRO_WINDOWS
+  {
+    Image* win32_image = NULL;
+    Palette* win32_palette = NULL;
+    get_win32_clipboard_bitmap(win32_image, win32_palette);
+    if (win32_image != NULL)
+      set_clipboard(win32_image, win32_palette, false);
   }
-
-  cel = layer_get_cel(clipboard->layer, clipboard->frame);
-  if (!cel) {
-    console_printf(_("Error: No cel in the clipboard\n"));
+#endif
+  if (clipboard_image == NULL)
     return;
-  }
 
-  image = stock_get_image(clipboard->stock, cel->image);
-  if (!image) {
-    console_printf(_("Error: No image in the clipboard\n"));
-    return;
-  }
+  assert(sprite != NULL);
 
-  dest_image = GetImage2(current_sprite, &dest_x, &dest_y, NULL);
-  if (!dest_image) {
+  // destination image (where to put this image)
+  dst_image = GetImage2(sprite, &dst_x, &dst_y, NULL);
+  if (!dst_image) {
     console_printf(_("Error: no destination image\n"));
     return;
   }
 
+  // source image (clipboard or a converted copy to the destination 'imgtype')
+  if (clipboard_image->imgtype == sprite->imgtype)
+    src_image = clipboard_image;
+  else {
+    src_image = image_new(sprite->imgtype,
+			  clipboard_image->w,
+			  clipboard_image->h);
+
+    use_current_sprite_rgb_map();
+    image_convert(src_image, clipboard_image);
+    restore_rgb_map();
+  }
+
+  // do the interactive-transform loop (where the user can move the floating image)
   {
     JWidget view = jwidget_get_view(current_editor);
     JRect vp = jview_get_viewport_position(view);
@@ -205,11 +241,11 @@ void paste_from_clipboard()
 
     screen_to_editor(current_editor, vp->x1, vp->y1, &x1, &y1);
     screen_to_editor(current_editor, vp->x2-1, vp->y2-1, &x2, &y2);
-    x = (x1+x2)/2-image->w/2;
-    y = (y1+y2)/2-image->h/2;
+    x = (x1+x2)/2-src_image->w/2;
+    y = (y1+y2)/2-src_image->h/2;
 
     paste = interactive_transform(current_editor,
-				  dest_image, image, x, y, xout, yout);
+				  dst_image, src_image, x, y, xout, yout);
 
     jrect_free(vp);
   }
@@ -219,39 +255,41 @@ void paste_from_clipboard()
 
     /* align to the destination cel-position */
     for (c=0; c<4; ++c) {
-      xout[c] -= dest_x;
-      yout[c] -= dest_y;
+      xout[c] -= dst_x;
+      yout[c] -= dst_y;
     }
 
     /* clip the box for the undo */
     u1 = MAX(0, MIN(xout[0], MIN(xout[1], MIN(xout[2], xout[3]))));
     v1 = MAX(0, MIN(yout[0], MIN(yout[1], MIN(yout[2], yout[3]))));
-    u2 = MIN(dest_image->w-1, MAX(xout[0], MAX(xout[1], MAX(xout[2], xout[3]))));
-    v2 = MIN(dest_image->h-1, MAX(yout[0], MAX(yout[1], MAX(yout[2], yout[3]))));
+    u2 = MIN(dst_image->w-1, MAX(xout[0], MAX(xout[1], MAX(xout[2], xout[3]))));
+    v2 = MIN(dst_image->h-1, MAX(yout[0], MAX(yout[1], MAX(yout[2], yout[3]))));
 
     w = u2-u1+1;
     h = v2-v1+1;
 
     if (w >= 1 && h >= 1) {
       /* undo region */
-      if (undo_is_enabled(current_sprite->undo))
-	undo_image(current_sprite->undo, dest_image, u1, v1, w, h);
+      if (undo_is_enabled(sprite->undo))
+	undo_image(sprite->undo, dst_image, u1, v1, w, h);
 
       /* draw the transformed image */
-      image_parallelogram(dest_image, image,
+      image_parallelogram(dst_image, src_image,
 			  xout[0], yout[0], xout[1], yout[1],
 			  xout[2], yout[2], xout[3], yout[3]);
     }
   }
 
-  update_screen_for_sprite(current_sprite);
+  if (src_image != clipboard_image)
+      image_free(src_image);
+  update_screen_for_sprite(sprite);
 }
 
 /**********************************************************************/
 /* interactive transform */
 
 enum { DONE_NONE, DONE_CANCEL, DONE_PASTE };
-  
+
 static bool interactive_transform(JWidget widget,
 				  Image *dest_image, Image *image,
 				  int x, int y,
@@ -282,10 +320,11 @@ static bool interactive_transform(JWidget widget,
   int action = ACTION_SETMODE;
   int mode = SCALE_MODE;
   BITMAP *bmp1, *bmp2, *preview, *old_screen;
-  JRect vp = jview_get_viewport_position (jwidget_get_view (widget));
+  JRect vp = jview_get_viewport_position(jwidget_get_view(widget));
   int done = DONE_NONE;
   fixed angle = 0;
   int cx, cy;
+  int mask_color;
 
   hide_drawing_cursor(widget);
 
@@ -305,6 +344,7 @@ static bool interactive_transform(JWidget widget,
 
   /* generate the preview bitmap (for fast-blitting) */
   preview = create_bitmap(image->w, image->h);
+  mask_color = bitmap_mask_color(preview);
   image_to_allegro(image, preview, 0, 0);
 
   switch (image->imgtype) {
@@ -313,8 +353,8 @@ static bool interactive_transform(JWidget widget,
       int x, y;
       for (y=0; y<image->h; y++)
 	for (x=0; x<image->w; x++)
-	  if (_rgba_geta(image_getpixel(image, x, y)) < 128)
-	    putpixel(preview, x, y, bitmap_mask_color(preview));
+	  if (_rgba_geta(image->method->getpixel(image, x, y)) < 128)
+	    putpixel(preview, x, y, mask_color);
       break;
     }
 
@@ -322,8 +362,17 @@ static bool interactive_transform(JWidget widget,
       int x, y;
       for (y=0; y<image->h; y++)
 	for (x=0; x<image->w; x++)
-	  if (_graya_geta(image_getpixel(image, x, y)) < 128)
-	    putpixel(preview, x, y, bitmap_mask_color(preview));
+	  if (_graya_geta(image->method->getpixel(image, x, y)) < 128)
+	    putpixel(preview, x, y, mask_color);
+      break;
+    }
+
+    case IMAGE_INDEXED: {
+      int x, y;
+      for (y=0; y<image->h; y++)
+	for (x=0; x<image->w; x++)
+	  if (image->method->getpixel(image, x, y) == 0)
+	    putpixel(preview, x, y, mask_color);
       break;
     }
   }
@@ -588,7 +637,7 @@ static bool interactive_transform(JWidget widget,
 	      x2 += x1 - ox;
 	      y2 += y1 - oy;
 	    }
-	    
+
 	    editor_to_screen(widget, x1, y1, &x1, &y1);
 	    editor_to_screen(widget, x2, y2, &x2, &y2);
 
@@ -646,40 +695,6 @@ static bool interactive_transform(JWidget widget,
 
   jrect_free(vp);
   return done == DONE_PASTE;
-}
-
-static int low_copy()
-{
-  Sprite *sprite;
-  Layer *layer;
-
-  sprite = sprite_new(current_sprite->imgtype,
-		      current_sprite->w,
-		      current_sprite->h);
-  if (!sprite)
-    return FALSE;
-
-  /* set the current frame */
-  sprite_set_frame(sprite, current_sprite->frame);
-
-  /* create a new layer from the current mask (in the current
-     frame) */
-  layer = NewLayerFromMask(current_sprite, sprite);
-  if (!layer) {
-    sprite_free(sprite);
-    return FALSE;
-  }
-
-  layer_add_layer(sprite->set, layer);
-  sprite_set_layer(sprite, layer);
-
-  sprite_set_palette(sprite,
-		     sprite_get_palette(current_sprite,
-					current_sprite->frame), 0);
-
-  set_clipboard_sprite(sprite);
-
-  return TRUE;
 }
 
 static void apply_rotation(int x1, int y1, int x2, int y2,
