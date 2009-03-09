@@ -98,7 +98,7 @@ void effect_apply_to_target(Effect* effect);
   gety = y-(cy);							\
   addy = 0;								\
   if (gety < 0) {							\
-    if (tiled)								\
+    if (tiled & TILED_Y_AXIS)						\
       gety = src->h - (-(gety+1) % src->h) - 1;				\
     else {								\
       addy = -gety; 							\
@@ -106,7 +106,7 @@ void effect_apply_to_target(Effect* effect);
     }									\
   }									\
   else if (gety >= src->h) {						\
-    if (tiled)								\
+    if (tiled & TILED_Y_AXIS)						\
       gety = gety % src->h;						\
     else								\
       gety = src->h-1;							\
@@ -117,7 +117,7 @@ void effect_apply_to_target(Effect* effect);
     getx = x-(cx);							\
     addx = 0;								\
     if (getx < 0) {							\
-      if (tiled)							\
+      if (tiled & TILED_X_AXIS)						\
 	getx = src->w - (-(getx+1) % src->w) - 1;			\
       else {								\
 	addx = -getx; 							\
@@ -125,7 +125,7 @@ void effect_apply_to_target(Effect* effect);
       }									\
     }									\
     else if (getx >= src->w) {						\
-      if (tiled)							\
+      if (tiled & TILED_X_AXIS)						\
 	getx = getx % src->w;						\
       else								\
 	getx = src->w-1;						\
@@ -144,7 +144,7 @@ void effect_apply_to_target(Effect* effect);
 	else								\
 	  addx--;							\
       }									\
-      else if (tiled) {							\
+      else if (tiled & TILED_X_AXIS) {					\
 	getx = 0;							\
 	src_address = ((ptr_type **)src->line)[gety]+getx;		\
       }									\
@@ -157,7 +157,7 @@ void effect_apply_to_target(Effect* effect);
       else								\
 	addy--;								\
     }									\
-    else if (tiled)							\
+    else if (tiled & TILED_Y_AXIS)					\
       gety = 0;								\
   }
 

@@ -121,7 +121,7 @@ static void cmd_convolution_matrix_execute(const char *argument)
   if (get_config_bool("ConvolutionMatrix", "Preview", TRUE))
     jwidget_select(check_preview);
 
-  if (get_tiled_mode())
+  if (get_tiled_mode() != TILED_NONE)
     jwidget_select(check_tiled);
 
   jview_attach(view_convmatr, list_convmatr);
@@ -333,7 +333,7 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
-  set_tiled_mode(jwidget_is_selected(widget));
+  set_tiled_mode(jwidget_is_selected(widget) ? TILED_BOTH: TILED_NONE);
   make_preview();
   return FALSE;
 }

@@ -7,7 +7,11 @@
       <box vertical>
         <separator text="General:" horizontal left />
         <check text="Filled" name="filled" />
-        <check text="Tiled" name="tiled" />
+	<box horizontal childspacing="0">
+            <check text="Tiled" name="tiled" />
+            <check text="x" name="tiled_x" />
+            <check text="y" name="tiled_y" />
+	</box>
 	<check text="Onionskin" name="onionskin" />
         <separator text="Grid:" horizontal left />
         <check text="Snap to Grid" name="use_grid" />

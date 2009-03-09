@@ -78,7 +78,7 @@ static int glass_dirty;
 static int spray_width;
 static int air_speed;
 static bool filled_mode;
-static bool tiled_mode;
+static tiled_t tiled_mode;
 static bool use_grid;
 static bool view_grid;
 static JRect grid;
@@ -176,14 +176,14 @@ int init_module_tools()
   set_cursor_color(get_config_color("Tools", "CursorColor", color_mask()));
 
   /* tools configuration */
-  glass_dirty = get_config_int("Tools", "GlassDirty", 255);
-  spray_width = get_config_int("Tools", "SprayWidth", 16);
-  air_speed   = get_config_int("Tools", "AirSpeed", 75);
-  filled_mode = get_config_bool("Tools", "Filled", FALSE);
-  tiled_mode  = get_config_bool("Tools", "Tiled", FALSE);
-  use_grid    = get_config_bool("Tools", "UseGrid", FALSE);
-  view_grid   = get_config_bool("Tools", "ViewGrid", FALSE);
-  onionskin   = get_config_bool("Tools", "Onionskin", FALSE);
+  glass_dirty  = get_config_int("Tools", "GlassDirty", 255);
+  spray_width  = get_config_int("Tools", "SprayWidth", 16);
+  air_speed    = get_config_int("Tools", "AirSpeed", 75);
+  filled_mode  = get_config_bool("Tools", "Filled", FALSE);
+  tiled_mode   = (tiled_t)get_config_int("Tools", "Tiled", (int)TILED_NONE);
+  use_grid     = get_config_bool("Tools", "UseGrid", FALSE);
+  view_grid    = get_config_bool("Tools", "ViewGrid", FALSE);
+  onionskin    = get_config_bool("Tools", "Onionskin", FALSE);
 
   grid = jrect_new(0, 0, 16, 16);
   get_config_rect("Tools", "GridRect", grid);
@@ -192,6 +192,7 @@ int init_module_tools()
   glass_dirty = MID(0, glass_dirty, 255);
   spray_width = MID(1, spray_width, 320);
   air_speed   = MID(1, air_speed, 100);
+  tiled_mode  = (tiled_t)MID(0, (int)tiled_mode, TILED_BOTH);
 
   app_add_hook(APP_PALETTE_CHANGE, update_cursor_color, NULL);
 
@@ -207,7 +208,7 @@ void exit_module_tools()
   set_config_int("Tools", "SprayWidth", spray_width);
   set_config_int("Tools", "AirSpeed", air_speed);
   set_config_bool("Tools", "Filled", filled_mode);
-  set_config_bool("Tools", "Tiled", tiled_mode);
+  set_config_int("Tools", "Tiled", tiled_mode);
   set_config_bool("Tools", "UseGrid", use_grid);
   set_config_bool("Tools", "ViewGrid", view_grid);
   set_config_rect("Tools", "GridRect", grid);
@@ -307,7 +308,7 @@ int get_glass_dirty() { return glass_dirty; }
 int get_spray_width() { return spray_width; }
 int get_air_speed() { return air_speed; }
 bool get_filled_mode() { return filled_mode; }
-bool get_tiled_mode() { return tiled_mode; }
+tiled_t get_tiled_mode() { return tiled_mode; }
 bool get_use_grid() { return use_grid; }
 bool get_view_grid() { return view_grid; }
 
@@ -328,7 +329,7 @@ void set_glass_dirty(int new_glass_dirty) { glass_dirty = new_glass_dirty; }
 void set_spray_width(int new_spray_width) { spray_width = new_spray_width; }
 void set_air_speed(int new_air_speed) { air_speed = new_air_speed; }
 void set_filled_mode(bool status) { filled_mode = status; }
-void set_tiled_mode(bool status) { tiled_mode = status; }
+void set_tiled_mode(tiled_t mode) { tiled_mode = mode; }
 void set_use_grid(bool status) { use_grid = status; }
 void set_view_grid(bool status) { view_grid = status; }
 
@@ -386,49 +387,55 @@ int get_thickness_for_cursor()
 
 static void do_ink_pixel(int x, int y, ToolData *data)
 {
-  /* tiled mode */
-  if (data->tiled) {
-    register int size;
+  register int size;
 
+  // tiled in X axis
+  if (data->tiled & TILED_X_AXIS) {
     size = data->dst_image->w;
     if (x < 0)
       x = size - (-(x+1) % size) - 1;
     else
       x = x % size;
+  }
+  else if (x < 0 || x >= data->dst_image->w)
+    return;
 
+  // tiled in Y axis
+  if (data->tiled & TILED_Y_AXIS) {
     size = data->dst_image->h;
     if (y < 0)
       y = size - (-(y+1) % size) - 1;
     else
       y = y % size;
   }
-  /* clipped */
-  else {
-    if (y < 0 || y >= data->dst_image->h ||
-	x < 0 || x >= data->dst_image->w)
-      return;
-  }
+  else if (y < 0 || y >= data->dst_image->h)
+    return;
 
   data->ink_hline_proc(x, y, x, data);
 }
 
 static void do_ink_hline(int x1, int y, int x2, ToolData *data)
 {
-  /* tiled mode */
-  if (data->tiled) {
-    register int w, size;	/* width or height */
-    register int x;
+  register int w, size;	// width or height
+  register int x;
 
-    if (x1 > x2)
-      return;
-
-    size = data->dst_image->h;	/* size = image height */
+  // tiled in Y axis
+  if (data->tiled & TILED_Y_AXIS) {
+    size = data->dst_image->h;	// size = image height
     if (y < 0)
       y = size - (-(y+1) % size) - 1;
     else
       y = y % size;
+  }
+  else if (y < 0 || y >= data->dst_image->h)
+      return;
 
-    size = data->dst_image->w;	/* size = image width */
+  // tiled in X axis
+  if (data->tiled & TILED_X_AXIS) {
+    if (x1 > x2)
+      return;
+
+    size = data->dst_image->w;	// size = image width
     w = x2-x1+1;
     if (w >= size)
       data->ink_hline_proc(0, y, size-1, data);
@@ -447,11 +454,8 @@ static void do_ink_hline(int x1, int y, int x2, ToolData *data)
       }
     }
   }
-  /* clipped */
+  // clipped in X axis
   else {
-    if (y < 0 || y >= data->dst_image->h)
-      return;
-
     if (x1 < 0)
       x1 = 0;
 
@@ -955,13 +959,13 @@ void control_tool(JWidget widget, Tool *tool,
   tool_data.layer = sprite->layer;
   tool_data.tiled = tiled_mode;
 
-  if (!tool_data.tiled) {	/* not tiled mode */
+  if (tool_data.tiled == TILED_NONE) {	// not tiled mode
     x1 = MIN(cel->x, 0);
     y1 = MIN(cel->y, 0);
     x2 = MAX(cel->x+cel_image->w, sprite->w);
     y2 = MAX(cel->y+cel_image->h, sprite->h);
   }
-  else {			/* tiled mode */
+  else {			// tiled mode
     x1 = 0;
     y1 = 0;
     x2 = sprite->w;
@@ -1361,8 +1365,8 @@ next_pts:;
 	    }
 	  }
 
-	  /* for non-tiled mode */
-	  if (!tool_data.tiled) {
+	  // for non-tiled mode
+	  if (tool_data.tiled == TILED_NONE) {
 	    outx1 = MAX(outx1-brush->size/2-offset_x, 0);
 	    outy1 = MAX(outy1-brush->size/2-offset_y, 0);
 	    outx2 = MIN(outx2+brush->size/2-offset_x, sprite->w-1);
@@ -1370,7 +1374,7 @@ next_pts:;
  
 	    editors_draw_sprite(sprite, outx1, outy1, outx2, outy2);
 	  }
-	  /* for tiled mode */
+	  // for tiled mode
 	  else {
 	    outx1 = outx1-brush->size/2-offset_x;
 	    outy1 = outy1-brush->size/2-offset_y;
@@ -1808,7 +1812,7 @@ static void ink_hline32_soften(int x1, int y, int x2, ToolData *data)
 {
   int c, r, g, b, a;
   int opacity = data->opacity;
-  bool tiled = data->tiled;
+  tiled_t tiled = data->tiled;
   Image *src = data->src_image;
   int getx, gety;
   int addx, addy;
@@ -1858,7 +1862,7 @@ static void ink_hline16_soften(int x1, int y, int x2, ToolData *data)
 {
   int c, v, a;
   int opacity = data->opacity;
-  bool tiled = data->tiled;
+  tiled_t tiled = data->tiled;
   Image *src = data->src_image;
   int getx, gety;
   int addx, addy;
@@ -1903,7 +1907,7 @@ static void ink_hline8_soften(int x1, int y, int x2, ToolData *data)
   Palette *pal = get_current_palette();
   int c, r, g, b, a;
   int opacity = data->opacity;
-  bool tiled = data->tiled;
+  tiled_t tiled = data->tiled;
   Image *src = data->src_image;
   int getx, gety;
   int addx, addy;
@@ -2005,19 +2009,23 @@ static void ink_hline8_replace(int x1, int y, int x2, ToolData *data)
   u = x + (rand() % 3)-1 - speed_x;					\
   v = y + (rand() % 3)-1 - speed_y;					\
   									\
-  if (tiled) {								\
+  if (tiled & TILED_X_AXIS) {						\
     if (u < 0)								\
       u = data->src_image->w - (-(u+1) % data->src_image->w) - 1;	\
     else if (u >= data->src_image->w)					\
       u %= data->src_image->w;						\
+  }									\
+  else {								\
+    u = MID(0, u, data->src_image->w-1);				\
+  }									\
 									\
+  if (tiled & TILED_Y_AXIS) {						\
     if (v < 0)								\
       v = data->src_image->h - (-(v+1) % data->src_image->h) - 1;	\
     else if (v >= data->src_image->h)					\
       v %= data->src_image->h;						\
   }									\
   else {								\
-    u = MID(0, u, data->src_image->w-1);				\
     v = MID(0, v, data->src_image->h-1);				\
   }									\
   color = image_getpixel(data->src_image, u, v);
@@ -2027,7 +2035,7 @@ static void ink_hline32_jumble(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
   int speed_x = data->vector.x/4;
   int speed_y = data->vector.y/4;
-  bool tiled = data->tiled;
+  tiled_t tiled = data->tiled;
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -2044,7 +2052,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
   int speed_x = data->vector.x/4;
   int speed_y = data->vector.y/4;
-  bool tiled = data->tiled;
+  tiled_t tiled = data->tiled;
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
@@ -2063,7 +2071,7 @@ static void ink_hline8_jumble(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
   int speed_x = data->vector.x/4;
   int speed_y = data->vector.y/4;
-  bool tiled = data->tiled;
+  tiled_t tiled = data->tiled;
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST

@@ -40,7 +40,7 @@
 static struct {			/* TODO warning: not thread safe */
   JList matrices;
   ConvMatr *convmatr;
-  bool tiled;
+  tiled_t tiled;
   unsigned char **lines;
 } data;
 
@@ -48,7 +48,7 @@ void init_convolution_matrix()
 {
   data.matrices = jlist_new();
   data.convmatr = NULL;
-  data.tiled = FALSE;
+  data.tiled = TILED_NONE;
   data.lines = NULL;
 
   reload_matrices_stock();

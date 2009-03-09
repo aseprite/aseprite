@@ -52,6 +52,7 @@ static bool spray_width_slider_change_hook(JWidget widget, void *data);
 static bool air_speed_slider_change_hook(JWidget widget, void *data);
 static bool filled_check_change_hook(JWidget widget, void *data);
 static bool tiled_check_change_hook(JWidget widget, void *data);
+static bool tiled_xy_check_change_hook(JWidget widget, void *data);
 static bool use_grid_check_change_hook(JWidget widget, void *data);
 static bool view_grid_check_change_hook(JWidget widget, void *data);
 static bool set_grid_button_select_hook(JWidget widget, void *data);
@@ -60,7 +61,7 @@ static bool onionskin_check_change_hook(JWidget widget, void *data);
 
 static void cmd_configure_tools_execute(const char *argument)
 {
-  JWidget filled, tiled, use_grid, view_grid, set_grid;
+  JWidget filled, tiled, tiled_x, tiled_y, use_grid, view_grid, set_grid;
   JWidget brush_size, brush_angle, glass_dirty;
   JWidget spray_width, air_speed;
   JWidget cursor_color, cursor_color_box;
@@ -86,6 +87,8 @@ static void cmd_configure_tools_execute(const char *argument)
   if (!get_widgets(window,
 		   "filled", &filled,
 		   "tiled", &tiled,
+		   "tiled_x", &tiled_x,
+		   "tiled_y", &tiled_y,
 		   "use_grid", &use_grid,
 		   "view_grid", &view_grid,
 		   "set_grid", &set_grid,
@@ -140,7 +143,11 @@ static void cmd_configure_tools_execute(const char *argument)
   }
 
   if (get_filled_mode()) jwidget_select(filled);
-  if (get_tiled_mode()) jwidget_select(tiled);
+  if (get_tiled_mode() != TILED_NONE) {
+    jwidget_select(tiled);
+    if (get_tiled_mode() & TILED_X_AXIS) jwidget_select(tiled_x);
+    if (get_tiled_mode() & TILED_Y_AXIS) jwidget_select(tiled_y);
+  }
   if (get_use_grid()) jwidget_select(use_grid);
   if (get_view_grid()) jwidget_select(view_grid);
   jslider_set_value(brush_size, get_brush_size());
@@ -160,6 +167,8 @@ static void cmd_configure_tools_execute(const char *argument)
     HOOK(window, JI_SIGNAL_WINDOW_CLOSE, window_close_hook, 0);
     HOOK(filled, JI_SIGNAL_CHECK_CHANGE, filled_check_change_hook, 0);
     HOOK(tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
+    HOOK(tiled_x, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_X_AXIS);
+    HOOK(tiled_y, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_Y_AXIS);
     HOOK(use_grid, JI_SIGNAL_CHECK_CHANGE, use_grid_check_change_hook, 0);
     HOOK(view_grid, JI_SIGNAL_CHECK_CHANGE, view_grid_check_change_hook, 0);
     HOOK(set_grid, JI_SIGNAL_BUTTON_SELECT, set_grid_button_select_hook, 0);
@@ -277,7 +286,27 @@ static bool filled_check_change_hook(JWidget widget, void *data)
 
 static bool tiled_check_change_hook(JWidget widget, void *data)
 {
-  set_tiled_mode(jwidget_is_selected(widget));
+  bool flag = jwidget_is_selected(widget);
+  set_tiled_mode(flag ? TILED_BOTH: TILED_NONE);
+  jwidget_set_selected(jwidget_find_name(jwidget_get_window(widget), "tiled_x"), flag);
+  jwidget_set_selected(jwidget_find_name(jwidget_get_window(widget), "tiled_y"), flag);
+  return FALSE;
+}
+
+static bool tiled_xy_check_change_hook(JWidget widget, void *data)
+{
+  int tiled_axis = (int)((size_t)data);
+  int tiled_mode = get_tiled_mode();
+
+  if (jwidget_is_selected(widget))
+    tiled_mode |= tiled_axis;
+  else
+    tiled_mode &= ~tiled_axis;
+
+  jwidget_set_selected(jwidget_find_name(jwidget_get_window(widget), "tiled"),
+		       (tiled_mode != TILED_NONE));
+
+  set_tiled_mode((tiled_t)tiled_mode);
   return FALSE;
 }
 

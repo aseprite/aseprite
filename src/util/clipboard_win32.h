@@ -18,6 +18,14 @@
 
 // included by clipboard.cpp
 
+#ifndef LCS_WINDOWS_COLOR_SPACE
+#define LCS_WINDOWS_COLOR_SPACE 'Win '
+#endif
+
+#ifndef CF_DIBV5
+#define CF_DIBV5            17
+#endif
+
 /**
  * Returns true if the Windows clipboard contains a bitmap (CF_DIB
  * format).

@@ -146,6 +146,7 @@ void jwidget_enable(JWidget widget);
 void jwidget_disable(JWidget widget);
 void jwidget_select(JWidget widget);
 void jwidget_deselect(JWidget widget);
+void jwidget_set_selected(JWidget widget, bool state);
 
 bool jwidget_is_visible(JWidget widget);
 bool jwidget_is_hidden(JWidget widget);

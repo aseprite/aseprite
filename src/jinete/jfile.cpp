@@ -312,6 +312,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     const char *minheight = jxmlelem_get_attr(elem, "minheight");
     const char *maxwidth  = jxmlelem_get_attr(elem, "maxwidth");
     const char *maxheight = jxmlelem_get_attr(elem, "maxheight");
+    const char *childspacing = jxmlelem_get_attr(elem, "childspacing");
     JLink link;
 
     if (name != NULL)
@@ -328,6 +329,9 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
 
     if (noborders)
       jwidget_noborders(widget);
+
+    if (childspacing)
+      widget->child_spacing = ustrtol(childspacing, NULL, 10);
 
     if (width || minwidth || maxwidth ||
 	height || minheight || maxheight) {

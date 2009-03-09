@@ -109,7 +109,7 @@ static void cmd_despeckle_execute(const char *argument)
   if (get_config_bool("Median", "Preview", TRUE))
     jwidget_select(check_preview);
 
-  if (get_tiled_mode())
+  if (get_tiled_mode() != TILED_NONE)
     jwidget_select(check_tiled);
 
   jwidget_add_child(box_target, target_button);
@@ -182,7 +182,7 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
-  set_tiled_mode(jwidget_is_selected(widget));
+  set_tiled_mode(jwidget_is_selected(widget) ? TILED_BOTH: TILED_NONE);
   make_preview();
   return FALSE;
 }

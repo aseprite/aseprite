@@ -522,6 +522,14 @@ void jwidget_deselect(JWidget widget)
   }
 }
 
+void jwidget_set_selected(JWidget widget, bool state)
+{
+  if (state)
+    jwidget_select(widget);
+  else
+    jwidget_deselect(widget);
+}
+
 bool jwidget_is_visible(JWidget widget)
 {
   assert_valid_widget(widget);

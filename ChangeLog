@@ -1,3 +1,13 @@
+2009-03-08  David A. Capello  <davidcapello@gmail.com>
+
+	* src/modules/tools.cpp: Now tiled mode can be specified by X
+	and/or Y axis (Scott Wilson idea, feature #2636076).
+
+2009-03-07  David A. Capello  <davidcapello@gmail.com>
+
+	* src/util/clipboard_win32.h: Added support to copy & paste
+	to/from the Windows Clipboard (feature #2577954).
+
 2009-03-02  David A. Capello  <davidcapello@gmail.com>
 
 	* src/dialogs/filesel.cpp (ase_file_selector): Fixed a bug

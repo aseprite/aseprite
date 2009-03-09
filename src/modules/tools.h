@@ -32,6 +32,13 @@ class Sprite;
 
 struct Brush;
 
+enum tiled_t {
+  TILED_NONE    = 0,
+  TILED_X_AXIS  = 1,
+  TILED_Y_AXIS  = 2,
+  TILED_BOTH    = 3,
+};
+
 enum {
   TOOL_MARKER,
   TOOL_PENCIL,
@@ -75,7 +82,7 @@ struct ToolData
   bool left_button;		/* did the user start the trace with the left mouse button? */
   AlgoHLine ink_hline_proc;
   int opacity;
-  bool tiled;
+  tiled_t tiled;
   struct {
     int x;
     int y;
@@ -105,7 +112,7 @@ int get_glass_dirty();
 int get_spray_width();
 int get_air_speed();
 bool get_filled_mode();
-bool get_tiled_mode();
+tiled_t get_tiled_mode();
 bool get_use_grid();
 bool get_view_grid();
 JRect get_grid();
@@ -119,7 +126,7 @@ void set_glass_dirty(int glass_dirty);
 void set_spray_width(int spray_width);
 void set_air_speed(int air_speed);
 void set_filled_mode(bool status);
-void set_tiled_mode(bool status);
+void set_tiled_mode(tiled_t mode);
 void set_use_grid(bool status);
 void set_view_grid(bool status);
 void set_grid(JRect rect);

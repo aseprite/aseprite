@@ -29,6 +29,7 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
+#include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "util/render.h"
@@ -92,6 +93,15 @@ static void preview_sprite(int flags)
     int redraw;
     JRect vp;
     int bg_color, index_bg_color = -1;
+    tiled_t tiled;
+
+    if (flags & PREVIEW_TILED) {
+      tiled = get_tiled_mode();
+      if (tiled == TILED_NONE)
+	tiled = TILED_BOTH;
+    }
+    else
+      tiled = TILED_NONE;
 
     jmanager_free_mouse();
 
@@ -162,16 +172,17 @@ static void preview_sprite(int flags)
 	  }
 	  /* draw in normal size */
 	  else {
-	    if (!(flags & PREVIEW_TILED)) {
-	      x = shiftx;
-	      y = shifty;
-	    }
-	    else {
+	    if (tiled & TILED_X_AXIS)
 	      x = SGN(shiftx) * (ABS(shiftx)%w);
-	      y = SGN(shifty) * (ABS(shifty)%h);
-	    }
+	    else
+	      x = shiftx;
 
-	    if (!(flags & PREVIEW_TILED)) {
+	    if (tiled & TILED_Y_AXIS)
+	      y = SGN(shifty) * (ABS(shifty)%h);
+	    else
+	      y = shifty;
+
+	    if (tiled != TILED_BOTH) {
 /* 	      rectfill_exclude(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, */
 /* 			       x, y, x+w-1, y+h-1, bg_color); */
 	      clear_to_color(ji_screen, bg_color);
@@ -182,20 +193,46 @@ static void preview_sprite(int flags)
 	      if (!(flags & PREVIEW_TILED))
 		draw_sprite(ji_screen, bmp, x, y);
 	      /* tiled */
-	      else
-		for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-		  for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-		    blit(bmp, ji_screen, 0, 0, u, v, w, h);
+	      else {
+		switch (tiled) {
+		  case TILED_X_AXIS:
+		    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+		      blit(bmp, ji_screen, 0, 0, u, y, w, h);
+		    break;
+		  case TILED_Y_AXIS:
+		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+		      blit(bmp, ji_screen, 0, 0, x, v, w, h);
+		    break;
+		  case TILED_BOTH:
+		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+		      for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+			blit(bmp, ji_screen, 0, 0, u, v, w, h);
+		    break;
+		}
+	      }
 	    }
 	    else {
 	      /* in the center */
 	      if (!(flags & PREVIEW_TILED))
 		masked_stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, x, y, w, h);
 	      /* tiled */
-	      else
-		for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-		  for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-		    stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, u, v, w, h);
+	      else {
+		switch (tiled) {
+		  case TILED_X_AXIS:
+		    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+		      stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, u, y, w, h);
+		    break;
+		  case TILED_Y_AXIS:
+		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+		      stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, x, v, w, h);
+		    break;
+		  case TILED_BOTH:
+		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+		      for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+			stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, u, v, w, h);
+		    break;
+		}
+	      }
 	    }
 	  }
 	}
