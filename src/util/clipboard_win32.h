@@ -224,7 +224,23 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	  break;
 	}
 	case 16: {
-	  // TODO
+	  // TODO I am not sure if this really works
+	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
+	  ase_uint8 b1, b2, r, g, b;
+	  int padding = (4-(image->w*2)&3)&3;
+
+	  for (int y=image->h-1; y>=0; --y) {
+	    for (int x=0; x<image->w; ++x) {
+	      b1 = *(src++);
+	      b2 = *(src++);
+	      b = _rgb_scale_5[((b1 & 0xf800) >> 11)];
+	      g = _rgb_scale_6[((b2 & 0x07e0) >> 5)];
+	      r = _rgb_scale_5[(b2 & 0x001f)];
+	      image->method->putpixel(image, x, y, _rgba(r, g, b, 255));
+	    }
+	    src += padding;
+	  }
+	  valid_image = true;
 	  break;
 	}
 	case 8: {
