@@ -141,10 +141,7 @@ void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
     vsprintf(buf, format, ap);
     va_end(ap);
 
-    if (widget->text)
-      jfree(widget->text);
-
-    widget->text = jstrdup(buf);
+    widget->text(buf);
     statusbar->timeout = ji_clock + msecs;
     jwidget_dirty(widget);
   }
@@ -283,12 +280,12 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       jrect_shrink(rc, 1);
 
       /* status bar text */
-      if (widget->text) {
+      if (widget->text()) {
 	jdraw_rectfill(rc, ji_color_face());
 
-	textout_ex(ji_screen, widget->text_font, widget->text,
+	textout_ex(ji_screen, widget->font(), widget->text(),
 		   rc->x1+2,
-		   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
+		   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
 		   ji_color_foreground(), -1);
       }
 
@@ -332,9 +329,9 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 			   buf+ustrsize(buf),
 			   sizeof(buf)-ustrsize(buf));
 
-	textout_right_ex(ji_screen, widget->text_font, buf,
+	textout_right_ex(ji_screen, widget->font(), buf,
 			 rc->x2-2,
-			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->text_font)/2,
+			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
 			 ji_color_foreground(), -1);
       }
 

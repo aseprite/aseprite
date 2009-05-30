@@ -52,7 +52,7 @@ static bool label_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_REQSIZE:
-      if (widget->text) {
+      if (widget->has_text()) {
 	msg->reqsize.w = jwidget_get_text_length(widget);
 	msg->reqsize.h = jwidget_get_text_height(widget);
       }

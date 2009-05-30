@@ -416,7 +416,7 @@ static void listitem_request_size(JWidget widget, int *w, int *h)
   int req_w, req_h;
   JLink link;
 
-  if (widget->text) {
+  if (widget->has_text()) {
     max_w = jwidget_get_text_length(widget);
     max_h = jwidget_get_text_height(widget);
   }

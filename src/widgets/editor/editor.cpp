@@ -332,7 +332,6 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
       image_free(rendered);
       destroy_bitmap(bmp);
 #else
-
       acquire_bitmap(ji_screen);
 
       use_current_sprite_rgb_map();

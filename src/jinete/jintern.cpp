@@ -30,93 +30,72 @@
  */
 
 #include <assert.h>
+#include <vector>
 
 #include "jinete/jmanager.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
 
-static JID nwidgets = 0;
-static JWidget *widgets = NULL;
+static std::vector<JWidget> widgets;
 
 JWidget _ji_get_widget_by_id(JID widget_id)
 {
-  assert((widget_id >= 0) && (widget_id < nwidgets));
+  assert((widget_id >= 0) && (widget_id < widgets.size()));
 
   return widgets[widget_id];
 }
 
-JWidget *_ji_get_widget_array(int *n)
+JWidget* _ji_get_widget_array(int* n)
 {
-  *n = nwidgets;
-  return widgets;
+  *n = widgets.size();
+  return &widgets.front();
 }
 
-JWidget _ji_get_new_widget()
+void _ji_add_widget(JWidget widget)
 {
   JID widget_id;
 
-  /* first widget */
-  if (!widgets) {
-    nwidgets = 2;
-    widgets = (JWidget *)jmalloc(sizeof(JWidget) * nwidgets);
+  // first widget
+  if (widgets.empty()) {
+    widgets.resize(2);
 
-    /* id=0 no widget */
+    // id=0 no widget
     widgets[0] = NULL;
 
-    /* id>0 all widgets */
-    widgets[1] = (JWidget)jnew(struct jwidget, 1);
+    // id>0 all widgets
+    widgets[1] = widget;
     widgets[1]->id = widget_id = 1;
   }
   else {
-    /* find a free slot */
-    for (widget_id=1; widget_id<nwidgets; widget_id++) {
-      /* is it free? */
-      if (widgets[widget_id]->id != widget_id)
-	/* yeah */
+    // find a free slot
+    for (widget_id=1; widget_id<widgets.size(); widget_id++) {
+      // is it free?
+      if (widgets[widget_id] == NULL)
 	break;
     }
 
-    /* we need make other widget? */
-    if (widget_id == nwidgets) {
-      nwidgets++;
-      widgets = (JWidget *)jrealloc(widgets,
-				    sizeof(JWidget) * nwidgets);
-      widgets[widget_id] = (JWidget)jnew(struct jwidget, 1);
-    }
+    // we need space for other widget more?
+    if (widget_id == widgets.size())
+      widgets.resize(widgets.size()+1);
 
-    /* using this */
+    widgets[widget_id] = widget;
     widgets[widget_id]->id = widget_id;
   }
-
-  return widgets[widget_id];
 }
 
-void _ji_free_widget(JWidget widget)
+void _ji_remove_widget(JWidget widget)
 {
-  widgets[widget->id]->id = 0;
-}
+  assert_valid_widget(widget);
 
-void _ji_free_all_widgets()
-{
-  int c;
-
-  if (nwidgets) {
-    for (c=0; c<nwidgets; c++)
-      if (widgets[c] != NULL)
-	jfree(widgets[c]);
-
-    jfree(widgets);
-    widgets = NULL;
-    nwidgets = 0;
-  }
+  widgets[widget->id] = NULL;
 }
 
 bool _ji_is_valid_widget(JWidget widget)
 {
   return (widget &&
 	  widget->id >= 0 &&
-	  widget->id < nwidgets &&
+	  widget->id < widgets.size() &&
 	  widgets[widget->id] &&
 	  widgets[widget->id]->id == widget->id);
 }
@@ -126,17 +105,17 @@ void _ji_set_font_of_all_widgets(struct FONT *f)
   int c;
 
   /* first of all, we have to set the font to all the widgets */
-  for (c=0; c<nwidgets; c++)
+  for (c=0; c<widgets.size(); c++)
     if (_ji_is_valid_widget(widgets[c]))
-      jwidget_set_font(widgets[c], f);
+      widgets[c]->font(f);
 
   /* then we can reinitialize the theme of each widget */
-  for (c=0; c<nwidgets; c++)
+  for (c=0; c<widgets.size(); c++)
     if (_ji_is_valid_widget(widgets[c]))
       jwidget_init_theme(widgets[c]);
 
   /* remap the windows */
-  for (c=0; c<nwidgets; c++)
+  for (c=0; c<widgets.size(); c++)
     if (_ji_is_valid_widget(widgets[c])) {
       if (widgets[c]->type == JI_WINDOW)
 	jwindow_remap(widgets[c]);

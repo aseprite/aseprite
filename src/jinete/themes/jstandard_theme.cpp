@@ -374,12 +374,12 @@ static void theme_init_widget(JWidget widget)
 
     case JI_SEPARATOR:
       /* frame */
-      if ((widget->align & JI_HORIZONTAL) &&
-	  (widget->align & JI_VERTICAL)) {
+      if ((widget->align() & JI_HORIZONTAL) &&
+	  (widget->align() & JI_VERTICAL)) {
 	BORDER(4);
       }
       /* horizontal bar */
-      else if (widget->align & JI_HORIZONTAL) {
+      else if (widget->align() & JI_HORIZONTAL) {
 	BORDER4(2, 4, 2, 0);
       }
       /* vertical bar */
@@ -387,10 +387,10 @@ static void theme_init_widget(JWidget widget)
 	BORDER4(4, 2, 0, 2);
       }
 
-      if (widget->text) {
-	if (widget->align & JI_TOP)
+      if (widget->has_text()) {
+	if (widget->align() & JI_TOP)
 	  widget->border_width.t = jwidget_get_text_height(widget);
-	else if (widget->align & JI_BOTTOM)
+	else if (widget->align() & JI_BOTTOM)
 	  widget->border_width.b = jwidget_get_text_height(widget);
       }
       break;
@@ -422,7 +422,7 @@ static void theme_init_widget(JWidget widget)
 
     case JI_WINDOW:
       if (!jwindow_is_desktop(widget)) {
-	if (widget->text) {
+	if (widget->has_text()) {
 	  BORDER4(6, 4+jwidget_get_text_height(widget)+6, 6, 6);
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
@@ -662,7 +662,7 @@ static void theme_draw_entry(JWidget widget, JRect clip)
 {
   bool password = jentry_is_password(widget);
   int scroll, cursor, state, selbeg, selend;
-  const char *text = widget->text;
+  const char *text = widget->text();
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
   int cursor_x;
@@ -696,7 +696,7 @@ static void theme_draw_entry(JWidget widget, JRect clip)
   x = widget->rc->x1 + widget->border_width.l;
   y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
 
-  for (c=scroll; ugetat (text, c); c++) {
+  for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
 
     /* normal text */
@@ -718,15 +718,14 @@ static void theme_draw_entry(JWidget widget, JRect clip)
       fg = COLOR_DISABLED;
     }
 
-    w = CHARACTER_LENGTH(widget->text_font, ch);
+    w = CHARACTER_LENGTH(widget->font(), ch);
     if (x+w > widget->rc->x2-3)
       return;
 
     cursor_x = x;
-    ji_font_set_aa_mode(widget->text_font,
-			bg >= 0 ? bg: COLOR_BACKGROUND);
-    widget->text_font->vtable->render_char(widget->text_font,
-					   ch, fg, bg, ji_screen, x, y);
+    ji_font_set_aa_mode(widget->font(), bg >= 0 ? bg: COLOR_BACKGROUND);
+    widget->font()->vtable->render_char(widget->font(),
+					ch, fg, bg, ji_screen, x, y);
     x += w;
 
     /* cursor */
@@ -783,9 +782,9 @@ static void theme_draw_listitem(JWidget widget, JRect clip)
   x = widget->rc->x1+widget->border_width.l;
   y = widget->rc->y1+widget->border_width.t;
 
-  if (widget->text) {
+  if (widget->has_text()) {
     /* text */
-    jdraw_text(widget->text_font, widget->text, x, y, fg, bg, TRUE);
+    jdraw_text(widget->font(), widget->text(), x, y, fg, bg, TRUE);
 
     /* background */
     jrectexclude
@@ -864,9 +863,9 @@ static void theme_draw_menuitem(JWidget widget, JRect clip)
 
   /* text */
   if (bar)
-    widget->align = JI_CENTER | JI_MIDDLE;
+    widget->align(JI_CENTER | JI_MIDDLE);
   else
-    widget->align = JI_LEFT | JI_MIDDLE;
+    widget->align(JI_LEFT | JI_MIDDLE);
 
   pos = jwidget_get_rect(widget);
   if (!bar)
@@ -902,7 +901,7 @@ static void theme_draw_menuitem(JWidget widget, JRect clip)
     }
     /* draw the keyboard shortcut */
     else if (jmenuitem_get_accel(widget)) {
-      int old_align = widget->align;
+      int old_align = widget->align();
       char buf[256];
 
       pos = jwidget_get_rect(widget);
@@ -910,9 +909,9 @@ static void theme_draw_menuitem(JWidget widget, JRect clip)
 
       jaccel_to_string(jmenuitem_get_accel(widget), buf);
 
-      widget->align = JI_RIGHT | JI_MIDDLE;
+      widget->align(JI_RIGHT | JI_MIDDLE);
       draw_textstring(buf, fg, bg, FALSE, widget, pos, 0);
-      widget->align = old_align;
+      widget->align(old_align);
 
       jrect_free(pos);
     }
@@ -937,7 +936,7 @@ static void theme_draw_panel(JWidget widget, JRect clip)
       c1 = (JWidget)link->data;
       c2 = (JWidget)link->next->data;
 
-      if (widget->align & JI_HORIZONTAL) {
+      if (widget->align() & JI_HORIZONTAL) {
 /* 	vline(ji_screen, */
 /* 	       (c1->pos->x+c1->pos->w+c2->pos->x-1)/2, */
 /* 	       widget->rect->y, */
@@ -1018,20 +1017,20 @@ static void theme_draw_separator(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, BGCOLOR);
 
   /* TOP line */
-  if (widget->align & JI_HORIZONTAL) {
+  if (widget->align() & JI_HORIZONTAL) {
     hline(ji_screen, x1, y1-1, x2, COLOR_DISABLED);
     hline(ji_screen, x1, y1, x2, COLOR_BACKGROUND);
   }
 
   /* LEFT line */
-  if (widget->align & JI_VERTICAL) {
+  if (widget->align() & JI_VERTICAL) {
     vline(ji_screen, x1-1, y1, y2, COLOR_DISABLED);
     vline(ji_screen, x1, y1, y2, COLOR_BACKGROUND);
   }
 
   /* frame */
-  if ((widget->align & JI_HORIZONTAL) &&
-      (widget->align & JI_VERTICAL)) {
+  if ((widget->align() & JI_HORIZONTAL) &&
+      (widget->align() & JI_VERTICAL)) {
     /* union between the LEFT and TOP lines */
     putpixel(ji_screen, x1-1, y1-1, COLOR_DISABLED);
 
@@ -1048,7 +1047,7 @@ static void theme_draw_separator(JWidget widget, JRect clip)
   }
 
   /* text */
-  if (widget->text) {
+  if (widget->has_text()) {
     int h = jwidget_get_text_height(widget);
     struct jrect r = { x1+h/2, y1-h/2, x2+1-h, y2+1+h };
     draw_textstring(NULL, -1, BGCOLOR, FALSE, widget, &r, 0);
@@ -1141,14 +1140,14 @@ static void theme_draw_slider(JWidget widget, JRect clip)
 
   /* text */
   {
-    char *old_text = widget->text;
+    std::string old_text = widget->text();
     int cx1, cy1, cx2, cy2;
     JRect r;
 
     usprintf(buf, "%d", value);
 
-    widget->align = JI_CENTER | JI_MIDDLE;
-    widget->text = buf;
+    widget->align(JI_CENTER | JI_MIDDLE);
+    widget->text(buf);
 
     r = jrect_new(x1, y1, x2+1, y2+1);
 
@@ -1173,7 +1172,7 @@ static void theme_draw_slider(JWidget widget, JRect clip)
 
     set_clip(ji_screen, cx1, cy1, cx2, cy2);
 
-    widget->text = old_text;
+    widget->text(old_text.c_str());
     jrect_free(r);
   }
 }
@@ -1233,7 +1232,7 @@ static void theme_draw_view_scrollbar(JWidget widget, JRect clip)
   x1++, y1++, x2--, y2--;
 
   /* horizontal bar */
-  if (widget->align & JI_HORIZONTAL) {
+  if (widget->align() & JI_HORIZONTAL) {
     u1 = x1+pos;
     v1 = y1;
     u2 = x1+pos+len-1;
@@ -1287,7 +1286,7 @@ static void theme_draw_window(JWidget widget, JRect clip)
     jdraw_rectfill(pos, BGCOLOR);
 
     /* draw title bar */
-    if (widget->text) {
+    if (widget->has_text()) {
       int bg = COLOR_SELECTED;
 
       jrect_shrink(pos, 1);
@@ -1298,10 +1297,10 @@ static void theme_draw_window(JWidget widget, JRect clip)
       jrect_stretch(pos, 1);
       jdraw_rectedge(cpos, COLOR_DISABLED, COLOR_BACKGROUND);
 
-      jdraw_text(widget->text_font, widget->text,
-		   cpos->x1,
-		   pos->y1+jrect_h(pos)/2-text_height(widget->text_font)/2,
-		   COLOR_BACKGROUND, bg, FALSE);
+      jdraw_text(widget->font(), widget->text(),
+		 cpos->x1,
+		 pos->y1+jrect_h(pos)/2-text_height(widget->font())/2,
+		 COLOR_BACKGROUND, bg, FALSE);
     }
   }
   /* desktop */
@@ -1326,33 +1325,33 @@ static void draw_textstring(const char *t, int fg_color, int bg_color,
 			    bool fill_bg, JWidget widget, const JRect rect,
 			    int selected_offset)
 {
-  if (t || widget->text) {
+  if (t || widget->has_text()) {
     int x, y, w, h;
 
     if (!t) {
-      t = widget->text;
+      t = widget->text();
       w = jwidget_get_text_length(widget);
       h = jwidget_get_text_height(widget);
     }
     else {
-      w = ji_font_text_len(widget->text_font, t);
-      h = text_height(widget->text_font);
+      w = ji_font_text_len(widget->font(), t);
+      h = text_height(widget->font());
     }
 
     /* horizontally text alignment */
 
-    if (widget->align & JI_RIGHT)
+    if (widget->align() & JI_RIGHT)
       x = rect->x2 - w;
-    else if (widget->align & JI_CENTER)
+    else if (widget->align() & JI_CENTER)
       x = (rect->x1+rect->x2)/2 - w/2;
     else
       x = rect->x1;
 
     /* vertically text alignment */
 
-    if (widget->align & JI_BOTTOM)
+    if (widget->align() & JI_BOTTOM)
       y = rect->y2 - h;
-    else if (widget->align & JI_MIDDLE)
+    else if (widget->align() & JI_MIDDLE)
       y = (rect->y1+rect->y2)/2 - h/2;
     else
       y = rect->y1;
@@ -1374,17 +1373,17 @@ static void draw_textstring(const char *t, int fg_color, int bg_color,
     if (jwidget_is_disabled (widget)) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
-	jdraw_text(widget->text_font, t, x, y, 0, bg_color, fill_bg);
+	jdraw_text(widget->font(), t, x, y, 0, bg_color, fill_bg);
 
       /* draw white part */
-      jdraw_text(widget->text_font, t, x+1, y+1,
+      jdraw_text(widget->font(), t, x+1, y+1,
 		 COLOR_BACKGROUND, bg_color, fill_bg);
 
       if (fill_bg)
 	fill_bg = FALSE;
     }
 
-    jdraw_text(widget->text_font, t, x, y,
+    jdraw_text(widget->font(), t, x, y,
 	       jwidget_is_disabled(widget) ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),

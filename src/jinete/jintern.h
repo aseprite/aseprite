@@ -42,11 +42,9 @@ struct BITMAP;
 
 JWidget _ji_get_widget_by_id(JID widget_id);
 JWidget *_ji_get_widget_array(int *nwidgets);
-JWidget _ji_get_new_widget();
 
-void _ji_free_widget(JWidget widget);
-void _ji_free_all_widgets();
-
+void _ji_add_widget(JWidget widget);
+void _ji_remove_widget(JWidget widget);
 bool _ji_is_valid_widget(JWidget widget);
 
 void _ji_set_font_of_all_widgets(struct FONT *f);

@@ -364,7 +364,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
       /* add a box with an static size to separate paragraphs */
       JWidget box = jbox_new(0);
 
-      jwidget_set_min_size(box, 0, text_height(box->text_font));
+      jwidget_set_min_size(box, 0, text_height(box->font()));
 
       jwidget_add_child(vbox, box);
     }

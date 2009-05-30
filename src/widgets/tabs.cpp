@@ -29,7 +29,7 @@
 #include "widgets/tabs.h"
 
 #define CALC_TAB_WIDTH(widget, tab)			\
-  (4 + text_length(widget->text_font, tab->text) + 4)
+  (4 + text_length(widget->font(), tab->text) + 4)
 
 #define ARROW_W		12
 
@@ -249,7 +249,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	    bottom = ji_color_facelight();
 	  }
 
-	  hline(ji_screen, box->x1, box->y1, box->x2-1, widget->bg_color);
+	  hline(ji_screen, box->x1, box->y1, box->x2-1, widget->bg_color());
 	  rectfill(ji_screen, box->x1+1, box->y1+1, box->x2-2, box->y2-1, face);
 	  hline(ji_screen, box->x1, rect->y2-1, box->x2-1, ji_color_selected());
 
@@ -258,9 +258,9 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 			 ji_color_faceshadow(),
 			 bottom);
 
-	  jdraw_text(widget->text_font, tab->text,
+	  jdraw_text(widget->font(), tab->text,
 		     box->x1+4,
-		     (box->y1+box->y2)/2-text_height(widget->text_font)/2,
+		     (box->y1+box->y2)/2-text_height(widget->font())/2,
 		     fg, face, FALSE);
 	}
 
@@ -270,7 +270,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       /* fill the gap to the right-side */
       if (box->x1 < rect->x2) {
 	rectfill(ji_screen, box->x1, rect->y1, rect->x2-1, rect->y2-3,
-		 widget->bg_color);
+		 widget->bg_color());
 	hline(ji_screen, box->x1, rect->y2-2, rect->x2-1, ji_color_facelight());
 	hline(ji_screen, box->x1, rect->y2-1, rect->x2-1, ji_color_selected());
       }

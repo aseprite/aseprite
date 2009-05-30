@@ -493,8 +493,8 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       jtheme_scrollbar_info(widget, &pos, &len);
 
       view->wherepos = pos;
-      view->whereclick = widget->align & JI_HORIZONTAL ? msg->mouse.x:
-							 msg->mouse.y;
+      view->whereclick = widget->align() & JI_HORIZONTAL ? msg->mouse.x:
+							   msg->mouse.y;
 
       x1 = widget->rc->x1;
       y1 = widget->rc->y1;
@@ -506,7 +506,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       u2 = x2 - widget->border_width.r;
       v2 = y2 - widget->border_width.b;
 
-      if (widget->align & JI_HORIZONTAL) {
+      if (widget->align() & JI_HORIZONTAL) {
 	/* in the bar */
 	if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
 	  /* capture mouse */
@@ -565,7 +565,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 	old_pos = pos;
 
 	if (bar_size > len) {
-	  if (widget->align & JI_HORIZONTAL) {
+	  if (widget->align() & JI_HORIZONTAL) {
 	    pos = (view->wherepos + msg->mouse.x - view->whereclick);
 	    pos = MID(0, pos, bar_size - len);
 
@@ -610,7 +610,7 @@ static void scrollbar_info(JWidget widget, int *_pos, int *_len,
   int pos, len, max, scroll;
   int border_width;
 
-  if (widget->align & JI_HORIZONTAL) {
+  if (widget->align() & JI_HORIZONTAL) {
     max = view->max_w;
     scroll = view->scroll_x;
     bar_size = jrect_w(widget->rc)

@@ -198,7 +198,7 @@ static void textbox_request_size(JWidget widget, int *w, int *h)
 
   _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
 
-  if (widget->align & JI_WORDWRAP) {
+  if (widget->align() & JI_WORDWRAP) {
     JWidget view = jwidget_get_view(widget);
     int width, min = *w;
 

@@ -284,10 +284,10 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	x = widget->rc->x1+2;
 
 	if (fileitem_is_folder(fi)) {
-	  int icon_w = ji_font_text_len(widget->text_font, "[+]");
-	  int icon_h = ji_font_get_size(widget->text_font);
+	  int icon_w = ji_font_text_len(widget->font(), "[+]");
+	  int icon_h = ji_font_get_size(widget->font());
 
-	  jdraw_text(widget->text_font,
+	  jdraw_text(widget->font(),
 		     "[+]", x, y+2,
 		     fgcolor, bgcolor, TRUE);
 
@@ -314,7 +314,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	/* item name */
-	jdraw_text(widget->text_font,
+	jdraw_text(widget->font(),
 		   fileitem_get_displayname(fi).c_str(), x, y+2,
 		   fgcolor, bgcolor, TRUE);
 
@@ -325,9 +325,9 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		     widget->rc->x2-1, y+2+th+2-1,
 		     /* exclude where is the text located */
 		     x, y+2,
-		     x+ji_font_text_len(widget->text_font,
+		     x+ji_font_text_len(widget->font(),
 					fileitem_get_displayname(fi).c_str())-1,
-		     y+2+ji_font_get_size(widget->text_font)-1,
+		     y+2+ji_font_get_size(widget->font())-1,
 		     /* fill with the background color */
 		     bgcolor);
 
@@ -571,10 +571,10 @@ static void fileview_get_fileitem_size(JWidget widget, FileItem *fi, int *w, int
   int len = 0;
 
   if (fileitem_is_folder(fi)) {
-    len += ji_font_text_len(widget->text_font, "[+]")+2;
+    len += ji_font_text_len(widget->font(), "[+]")+2;
   }
 
-  len += ji_font_text_len(widget->text_font,
+  len += ji_font_text_len(widget->font(),
 			  fileitem_get_displayname(fi).c_str());
 
 /*   if (!fileitem_is_folder(fi)) { */

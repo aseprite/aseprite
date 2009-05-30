@@ -255,7 +255,6 @@ void jmanager_free(JWidget widget)
     _ji_theme_exit();
     _ji_font_exit();
     _ji_system_exit();
-    _ji_free_all_widgets();
 
     jlist_free(msg_queue);
     jlist_free(new_windows);

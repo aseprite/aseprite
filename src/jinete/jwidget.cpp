@@ -58,104 +58,103 @@ int ji_register_widget_type()
 /* creates a new widget with an unique JID */
 JWidget jwidget_new(int type)
 {
-  JWidget widget = _ji_get_new_widget();
-  if (!widget)
-    return NULL;
+  return new jwidget(type);
+}
 
-  widget->type = type;
-  widget->name = NULL;
-  widget->rc = jrect_new(0, 0, 0, 0);
-  widget->border_width.l = 0;
-  widget->border_width.t = 0;
-  widget->border_width.r = 0;
-  widget->border_width.b = 0;
-  widget->child_spacing = 0;
-  widget->flags = 0;
-  widget->emit_signals = 0;
-  widget->min_w = 0;
-  widget->min_h = 0;
-  widget->max_w = INT_MAX;
-  widget->max_h = INT_MAX;
-  widget->children = jlist_new();
-  widget->parent = NULL;
-  widget->theme = ji_get_theme();
-  widget->hooks = jlist_new();
-  widget->draw_type = type;
-  widget->draw_method = NULL;
+jwidget::jwidget(int type)
+{
+  _ji_add_widget(this);
 
-  widget->align = 0;
-  widget->text_size = 0;
-  widget->text = NULL;
-  widget->text_size_pix = 0;
-  widget->text_font = widget->theme ? widget->theme->default_font: NULL;
-  widget->bg_color = -1;
+  this->type = type;
+  this->name = NULL;
+  this->rc = jrect_new(0, 0, 0, 0);
+  this->border_width.l = 0;
+  this->border_width.t = 0;
+  this->border_width.r = 0;
+  this->border_width.b = 0;
+  this->child_spacing = 0;
+  this->flags = 0;
+  this->emit_signals = 0;
+  this->min_w = 0;
+  this->min_h = 0;
+  this->max_w = INT_MAX;
+  this->max_h = INT_MAX;
+  this->children = jlist_new();
+  this->parent = NULL;
+  this->theme = ji_get_theme();
+  this->hooks = jlist_new();
+  this->draw_type = type;
+  this->draw_method = NULL;
 
-  widget->update_region = jregion_new(NULL, 0);
+  this->m_align = 0;
+  this->m_text = "";
+  this->m_font = this->theme ? this->theme->default_font: NULL;
+  this->m_bg_color = -1;
 
-  widget->theme_data[0] = NULL;
-  widget->theme_data[1] = NULL;
-  widget->theme_data[2] = NULL;
-  widget->theme_data[3] = NULL;
+  this->update_region = jregion_new(NULL, 0);
 
-  widget->user_data[0] = NULL;
-  widget->user_data[1] = NULL;
-  widget->user_data[2] = NULL;
-  widget->user_data[3] = NULL;
+  this->theme_data[0] = NULL;
+  this->theme_data[1] = NULL;
+  this->theme_data[2] = NULL;
+  this->theme_data[3] = NULL;
 
-  jwidget_add_hook(widget, JI_WIDGET, widget_msg_proc, NULL);
+  this->user_data[0] = NULL;
+  this->user_data[1] = NULL;
+  this->user_data[2] = NULL;
+  this->user_data[3] = NULL;
 
-  return widget;
+  jwidget_add_hook(this, JI_WIDGET, widget_msg_proc, NULL);
 }
 
 void jwidget_free(JWidget widget)
 {
+  assert_valid_widget(widget);
+  delete widget;
+}
+
+jwidget::~jwidget()
+{
   JLink link, next;
   JMessage msg;
 
-  assert_valid_widget(widget);
-
   /* send destroy message */
   msg = jmessage_new(JM_DESTROY);
-  jwidget_send_message(widget, msg);
+  jwidget_send_message(this, msg);
   jmessage_free(msg);
 
   /* break relationship with the manager */
-  jmanager_free_widget(widget);
-  jmanager_remove_messages_for(widget);
-  jmanager_remove_msg_filter_for(widget);
+  jmanager_free_widget(this);
+  jmanager_remove_messages_for(this);
+  jmanager_remove_msg_filter_for(this);
 
   /* remove from parent */
-  if (widget->parent)
-    jwidget_remove_child(widget->parent, widget);
+  if (this->parent)
+    jwidget_remove_child(this->parent, this);
 
   /* remove children */
-  JI_LIST_FOR_EACH_SAFE(widget->children, link, next)
+  JI_LIST_FOR_EACH_SAFE(this->children, link, next)
     jwidget_free(reinterpret_cast<JWidget>(link->data));
-  jlist_free(widget->children);
+  jlist_free(this->children);
 
   /* destroy the update region */
-  if (widget->update_region)
-    jregion_free(widget->update_region);
-
-  /* destroy the text */
-  if (widget->text)
-    jfree(widget->text);
+  if (this->update_region)
+    jregion_free(this->update_region);
 
   /* destroy the name */
-  if (widget->name)
-    jfree(widget->name);
+  if (this->name)
+    jfree(this->name);
 
   /* destroy widget position */
-  if (widget->rc)
-    jrect_free(widget->rc);
+  if (this->rc)
+    jrect_free(this->rc);
 
   /* destroy hooks */
-  JI_LIST_FOR_EACH(widget->hooks, link)
+  JI_LIST_FOR_EACH(this->hooks, link)
     jhook_free(reinterpret_cast<JHook>(link->data));
-  jlist_free(widget->hooks);
+  jlist_free(this->hooks);
 
   /* low level free */
-  _ji_free_widget(widget);
+  _ji_remove_widget(this);
 }
 
 void jwidget_free_deferred(JWidget widget)
@@ -278,23 +277,7 @@ const char *jwidget_get_name(JWidget widget)
 const char *jwidget_get_text(JWidget widget)
 {
   assert_valid_widget(widget);
-
-  jwidget_emit_signal(widget, JI_SIGNAL_GET_TEXT);
-  return widget->text;
-}
-
-int jwidget_get_align(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return widget->align;
-}
-
-FONT *jwidget_get_font(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return widget->text_font;
+  return widget->text();
 }
 
 void jwidget_set_name(JWidget widget, const char *name)
@@ -311,61 +294,77 @@ void jwidget_set_text(JWidget widget, const char *text)
 {
   assert_valid_widget(widget);
 
-  jwidget_set_text_soft(widget, text);
+  widget->set_text_quiet(text);
 
   jwidget_emit_signal(widget, JI_SIGNAL_SET_TEXT);
   jwidget_dirty(widget);
-}
-
-void jwidget_set_text_soft(JWidget widget, const char *text)
-{
-  assert_valid_widget(widget);
-
-  if (text) {
-    /* more space needed */
-    if (!widget->text || widget->text_size < strlen(text)+1) {
-      widget->text_size = strlen(text)+1;
-      widget->text = (char*)jrealloc(widget->text, widget->text_size);
-    }
-
-    /* copy the text string */
-    strcpy(widget->text, text);
-
-    if (widget->text_font)
-      widget->text_size_pix = ji_font_text_len(widget->text_font,
-					       widget->text);
-  }
-  /* NULL text */
-  else if (widget->text) {
-    widget->text_size = 0;
-    jfree(widget->text);
-    widget->text = NULL;
-  }
 }
 
 void jwidget_set_align(JWidget widget, int align)
 {
   assert_valid_widget(widget);
 
-  widget->align = align;
-
-  jwidget_dirty(widget);
+  widget->align(align);
 }
 
-void jwidget_set_font(JWidget widget, FONT *font)
+int jwidget::text_int() const
 {
-  assert_valid_widget(widget);
+  return ustrtol(m_text.c_str(), NULL, 10);
+}
 
-  widget->text_font = font;
+double jwidget::text_double() const
+{
+  return ustrtod(m_text.c_str(), NULL);
+}
 
-  if (widget->text && widget->text_font)
-    widget->text_size_pix = ji_font_text_len(widget->text_font,
-					     widget->text);
-  else
-    widget->text_size_pix = 0;
+void jwidget::textf(const char *format, ...)
+{
+  char buf[4096];
 
-  jwidget_emit_signal(widget, JI_SIGNAL_SET_FONT);
-  jwidget_dirty(widget);
+  // formatted string
+  if (format) {
+    va_list ap;
+    va_start(ap, format);
+    vsprintf(buf, format, ap);
+    va_end(ap);
+  }
+  // empty string
+  else {
+    ustrcpy(buf, empty_string);
+  }
+
+  text(buf);
+}
+
+void jwidget::set_text_quiet(const char *text)
+{
+  if (text) {
+    m_text = text;
+    flags &= ~JI_NOTEXT;
+  }
+  else {
+    m_text.clear();
+    flags |= JI_NOTEXT;
+  }
+}
+
+void jwidget::align(int align)
+{
+  m_align = align;
+  dirty();
+}
+
+FONT *jwidget::font()
+{
+  return m_font;
+}
+
+void jwidget::font(FONT* f)
+{
+  m_font = f;
+
+  jwidget_emit_signal(this, JI_SIGNAL_SET_FONT);
+  dirty();
 }
 
 /**********************************************************************/
@@ -953,10 +952,7 @@ int jwidget_get_bg_color(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  if (widget->bg_color < 0 && widget->parent)
-    return jwidget_get_bg_color(widget->parent);
-  else
-    return widget->bg_color;
+  return widget->bg_color();
 }
 
 JTheme jwidget_get_theme(JWidget widget)
@@ -969,7 +965,7 @@ JTheme jwidget_get_theme(JWidget widget)
 int jwidget_get_text_length(JWidget widget)
 {
 #if 1
-  return ji_font_text_len(widget->text_font, widget->text);
+  return ji_font_text_len(widget->font(), widget->text());
 #else  /* use cached text size */
   return widget->text_size_pix;
 #endif
@@ -979,7 +975,7 @@ int jwidget_get_text_height(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return text_height(widget->text_font);
+  return text_height(widget->font());
 }
 
 void jwidget_get_texticon_info(JWidget widget,
@@ -1002,7 +998,7 @@ void jwidget_get_texticon_info(JWidget widget,
   text_x = text_y = 0;
 
   /* size of the text */
-  if (widget->text) {
+  if (widget->has_text()) {
     text_w = jwidget_get_text_length(widget);
     text_h = jwidget_get_text_height(widget);
   }
@@ -1019,32 +1015,32 @@ void jwidget_get_texticon_info(JWidget widget,
     /* with the icon in the top or bottom */
     else {
       box_w = MAX(icon_w, text_w);
-      box_h = icon_h + ((widget->text)? widget->child_spacing: 0) + text_h;
+      box_h = icon_h + (widget->has_text() ? widget->child_spacing: 0) + text_h;
     }
   }
   /* with the icon in left or right that doesn't care by now */
   else {
-    box_w = icon_w + ((widget->text)? widget->child_spacing: 0) + text_w;
+    box_w = icon_w + (widget->has_text() ? widget->child_spacing: 0) + text_w;
     box_h = MAX(icon_h, text_h);
   }
 
   /* box position */
-  if (widget->align & JI_RIGHT)
+  if (widget->align() & JI_RIGHT)
     box_x = widget->rc->x2 - box_w - widget->border_width.r;
-  else if (widget->align & JI_CENTER)
+  else if (widget->align() & JI_CENTER)
     box_x = (widget->rc->x1+widget->rc->x2)/2 - box_w/2;
   else
     box_x = widget->rc->x1 + widget->border_width.l;
 
-  if (widget->align & JI_BOTTOM)
+  if (widget->align() & JI_BOTTOM)
     box_y = widget->rc->y2 - box_h - widget->border_width.b;
-  else if (widget->align & JI_MIDDLE)
+  else if (widget->align() & JI_MIDDLE)
     box_y = (widget->rc->y1+widget->rc->y2)/2 - box_h/2;
   else
     box_y = widget->rc->y1 + widget->border_width.t;
 
   /* with text */
-  if (widget->text) {
+  if (widget->has_text()) {
     /* text/icon X position */
     if (icon_align & JI_RIGHT) {
       text_x = box_x;
@@ -1139,8 +1135,7 @@ void jwidget_set_max_size(JWidget widget, int w, int h)
 void jwidget_set_bg_color(JWidget widget, int color)
 {
   assert_valid_widget(widget);
-
-  widget->bg_color = color;
+  widget->bg_color(color);
 }
 
 void jwidget_set_theme(JWidget widget, JTheme theme)
@@ -1149,7 +1144,7 @@ void jwidget_set_theme(JWidget widget, JTheme theme)
 
   widget->theme = theme;
   /* TODO mmhhh... maybe some JStyle in JWidget should be great */
-  widget->text_font = widget->theme ? widget->theme->default_font: NULL;
+  widget->font(widget->theme ? widget->theme->default_font: NULL);
 }
 
 /**********************************************************************/
@@ -1499,10 +1494,12 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
   else
     return FALSE;
 
-  if (widget->text) {
-    for (c=0; widget->text[c]; c++)
-      if ((widget->text[c] == '&') && (widget->text[c+1] != '&'))
-	if (ascii == tolower(widget->text[c+1]))
+  if (widget->has_text()) {
+    const char* text = widget->text();
+
+    for (c=0; text[c]; c++)
+      if ((text[c] == '&') && (text[c+1] != '&'))
+	if (ascii == tolower(text[c+1]))
 	  return TRUE;
   }
 

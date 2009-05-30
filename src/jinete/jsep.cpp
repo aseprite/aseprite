@@ -68,7 +68,7 @@ static bool separator_msg_proc(JWidget widget, JMessage msg)
 	max_h = MAX(max_h, req_h);
       }
 
-      if (widget->text)
+      if (widget->has_text())
 	max_w = MAX(max_w, jwidget_get_text_length(widget));
 
       msg->reqsize.w = widget->border_width.l + max_w + widget->border_width.r;

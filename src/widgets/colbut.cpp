@@ -235,11 +235,11 @@ static void colorbutton_draw(JWidget widget)
   color_to_formalstring(colorbutton->imgtype,
 			colorbutton->color, buf, sizeof(buf), FALSE);
 
-  jwidget_set_text_soft(widget, buf);
+  widget->set_text_quiet(buf);
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
   rectfill(ji_screen, text.x1, text.y1, text.x2-1, text.y2-1, makecol(0, 0, 0));
-  jdraw_text(widget->text_font, widget->text, text.x1, text.y1,
+  jdraw_text(widget->font(), widget->text(), text.x1, text.y1,
 	     makecol(255, 255, 255),
 	     makecol(0, 0, 0), FALSE);
 }

@@ -73,7 +73,7 @@ union  jmessage;
 struct jrect;
 struct jregion;
 struct jtheme;
-struct jwidget;
+class  jwidget;
 
 /* alignment */
 #define JI_HORIZONTAL	0x0001
@@ -100,6 +100,7 @@ struct jwidget;
 #define JI_DECORATIVE	0x0200 /* to decorate windows */
 #define JI_HARDCAPTURE	0x0400 /* only windows use hard capture */
 #define JI_INITIALIZED	0x0800 /* the widget was already initialized by a theme */
+#define JI_NOTEXT	0x1000 /* the widget does not have text */
 
 /* widget types */
 enum {
@@ -190,7 +191,6 @@ enum {
   JI_SIGNAL_ADD_CHILD,
   JI_SIGNAL_REMOVE_CHILD,
   JI_SIGNAL_NEW_PARENT,
-  JI_SIGNAL_GET_TEXT,
   JI_SIGNAL_SET_TEXT,
   JI_SIGNAL_SET_FONT,
   JI_SIGNAL_INIT_THEME,
@@ -233,7 +233,7 @@ typedef struct jstream*		JStream;
 typedef struct jrect*		JRect;
 typedef struct jregion*		JRegion;
 typedef struct jtheme*		JTheme;
-typedef struct jwidget*		JWidget;
+typedef class  jwidget*		JWidget;
 typedef struct jxml*		JXml;
 typedef struct jxmlattr*	JXmlAttr;
 typedef struct jxmlnode*	JXmlNode;

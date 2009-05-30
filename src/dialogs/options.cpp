@@ -115,7 +115,7 @@ void dialogs_options()
       refresh_all_editors();
     }
 
-    undo_size_limit_value = ustrtol(jwidget_get_text(undo_size_limit), NULL, 10);
+    undo_size_limit_value = undo_size_limit->text_int();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
     set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
 

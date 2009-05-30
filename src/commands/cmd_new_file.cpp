@@ -103,8 +103,8 @@ static void cmd_new_file_execute(const char *argument)
     else if (jwidget_is_selected(radio2)) imgtype = IMAGE_GRAYSCALE;
     else if (jwidget_is_selected(radio3)) imgtype = IMAGE_INDEXED;
 
-    w = ustrtol(jwidget_get_text(width), NULL, 10);
-    h = ustrtol(jwidget_get_text(height), NULL, 10);
+    w = width->text_int();
+    h = height->text_int();
     bg = jlistbox_get_selected_index(bg_box);
 
     w = MID(1, w, 9999);

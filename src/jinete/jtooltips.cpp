@@ -351,12 +351,12 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
       jdraw_rect(pos, makecol(0, 0, 0));
 
       jrect_shrink(pos, 1);
-      jdraw_rectfill(pos, widget->bg_color);
+      jdraw_rectfill(pos, widget->bg_color());
 
       oldt = widget->border_width.t;
       widget->border_width.t = 3;
       _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
-			     widget->bg_color,
+			     widget->bg_color(),
 			     ji_color_foreground());
       widget->border_width.t = oldt;
 

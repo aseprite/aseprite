@@ -218,10 +218,10 @@ void jdraw_text(FONT *font, const char *s, int x, int y,
 
 void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg)
 {
-  if (widget->text) {
+  if (widget->text()) {
     struct jrect box, text, icon;
     jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
-    jdraw_text(widget->text_font, widget->text,
+    jdraw_text(widget->font(), widget->text(),
 	       text.x1, text.y1, fg, bg, fill_bg);
   }
 }

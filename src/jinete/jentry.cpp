@@ -47,6 +47,7 @@
 
 typedef struct Entry
 {
+  int maxsize;
   int cursor;
   int scroll;
   int select;
@@ -72,20 +73,21 @@ JWidget jentry_new(int maxsize, const char *format, ...)
   Entry* entry = (Entry*)jnew(Entry, 1);
   char buf[4096];
 
-  /* formatted string */
+  // formatted string
   if (format) {
     va_list ap;
     va_start(ap, format);
     vsprintf(buf, format, ap);
     va_end(ap);
   }
-  /* empty string */
+  // empty string
   else {
     ustrcpy(buf, empty_string);
   }
 
   jwidget_add_hook(widget, JI_ENTRY, entry_msg_proc, entry);
 
+  entry->maxsize = maxsize;
   entry->cursor = 0;
   entry->scroll = 0;
   entry->select = 0;
@@ -98,9 +100,7 @@ JWidget jentry_new(int maxsize, const char *format, ...)
 
   /* TODO support for text alignment and multi-line */
   /* widget->align = JI_LEFT | JI_MIDDLE; */
-  widget->text_size = maxsize+1;
-  widget->text = (char*)jmalloc(widget->text_size);
-  jwidget_set_text(widget, buf);
+  widget->text(buf);
 
   jwidget_focusrest(widget, TRUE);
   jwidget_init_theme(widget);
@@ -157,7 +157,7 @@ void jentry_hide_cursor(JWidget widget)
 void jentry_set_cursor_pos(JWidget widget, int pos)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  const char *text = widget->text;
+  const char *text = widget->text();
   int x, c;
 
   entry->cursor = pos;
@@ -171,7 +171,7 @@ void jentry_set_cursor_pos(JWidget widget, int pos)
   do {
     x = widget->rc->x1 + widget->border_width.l;
     for (c=++entry->scroll; ; c++) {
-      x += CHARACTER_LENGTH(widget->text_font,
+      x += CHARACTER_LENGTH(widget->font(),
 			    (c < ustrlen(text))? ugetat(text, c): ' ');
 
       if (x >= widget->rc->x2-widget->border_width.r)
@@ -188,7 +188,7 @@ void jentry_set_cursor_pos(JWidget widget, int pos)
 void jentry_select_text(JWidget widget, int from, int to)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  int end = ustrlen(widget->text);
+  int end = ustrlen(widget->text());
 
   entry->select = from;
   jentry_set_cursor_pos(widget, from); // to move scroll
@@ -271,12 +271,10 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
     case JM_KEYPRESSED:
       if (jwidget_has_focus(widget) && !jentry_is_readonly(widget)) {
-	char* text = (char*)jmalloc(widget->text_size);
+	std::string text = widget->text();
 	int c, selbeg, selend;
 
 	jtheme_entry_info(widget, NULL, NULL, NULL, &selbeg, &selend);
-
-	ustrcpy(text, widget->text);
 
 	switch (msg->key.scancode) {
 
@@ -310,7 +308,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    if (msg->any.shifts & KB_CTRL_FLAG)
 	      entry_forward_word(widget);
 	    /* forward char */
-	    else if (entry->cursor < ustrlen (text))
+	    else if (entry->cursor < text.size())
 	      entry->cursor++;
 	    break;
 
@@ -335,31 +333,30 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    else
 	      entry->select = -1;
 
-	    entry->cursor = ustrlen(text);
+	    entry->cursor = text.size();
 	    break;
 
 	  case KEY_DEL:
-	    /* delete the entire selection */
+	    // delete the entire selection
 	    if (selbeg >= 0) {
-	      /* *cut* text! */
+	      // *cut* text!
 	      if (msg->any.shifts & KB_SHIFT_FLAG) {
 		char buf[1024];
 		ustrcpy(buf, empty_string);
 		for (c=selbeg; c<=selend; c++)
-		  uinsert(buf, ustrlen(buf), ugetat(text, c));
+		  uinsert(buf, ustrlen(buf), text[c]);
 		jclipboard_set_text(buf);
 	      }
 
-	      /* remove text */
-	      for (c=0; c<selend-selbeg+1; c++)
-		uremove(text, selbeg);
+	      // remove text
+	      text.erase(selbeg, selend-selbeg+1);
 
 	      entry->cursor = selbeg;
 	    }
 	    /* delete the next character */
 	    else {
-	      if (entry->cursor < ustrlen (text))
-		uremove(text, entry->cursor);
+	      if (entry->cursor < text.size())
+		text.erase(entry->cursor, 1);
 	    }
 
 	    entry->select = -1;
@@ -370,20 +367,19 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    if (msg->any.shifts & KB_SHIFT_FLAG) {
 	      const char *clipboard;
 
-	      if ((clipboard = jclipboard_get_text ())) {
+	      if ((clipboard = jclipboard_get_text())) {
 		/* delete the entire selection */
 		if (selbeg >= 0) {
-		  for (c=0; c<selend-selbeg+1; c++)
-		    uremove(text, selbeg);
+		  text.erase(selbeg, selend-selbeg+1);
 
 		  entry->cursor = selbeg;
 		  entry->select = -1;
 		}
 
 		/* paste text */
-		for (c=0; c<ustrlen (clipboard); c++)
-		  if (ustrsizez(text) < widget->text_size)
-		    uinsert(text, entry->cursor+c, ugetat(clipboard, c));
+		for (c=0; c<ustrlen(clipboard); c++)
+		  if (text.size() < entry->maxsize)
+		    text.insert(entry->cursor+c, 1, ugetat(clipboard, c));
 		  else
 		    break;
 
@@ -395,7 +391,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	      char buf[1024];
 	      ustrcpy(buf, empty_string);
 	      for (c=selbeg; c<=selend; c++)
-		uinsert(buf, ustrlen(buf), ugetat(text, c));
+		uinsert(buf, ustrlen(buf), text[c]);
 	      jclipboard_set_text(buf);
 	    }
 	    break;
@@ -403,15 +399,14 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	  case KEY_BACKSPACE:
 	    /* delete the entire selection */
 	    if (selbeg >= 0) {
-	      for (c=0; c<selend-selbeg+1; c++)
-		uremove(text, selbeg);
+	      text.erase(selbeg, selend-selbeg+1);
 
 	      entry->cursor = selbeg;
 	    }
 	    /* delete the previous character */
 	    else {
 	      if (entry->cursor > 0)
-		uremove(text, --entry->cursor);
+		text.erase(--entry->cursor, 1);
 	    }
 
 	    entry->select = -1;
@@ -421,34 +416,29 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    if (msg->key.ascii >= 32) {
 	      /* delete the entire selection */
 	      if (selbeg >= 0) {
-		for (c=0; c<selend-selbeg+1; c++)
-		  uremove(text, selbeg);
+		text.erase(selbeg, selend-selbeg+1);
 
 		entry->cursor = selbeg;
 	      }
 
 	      /* put the character */
-	      if (ustrsizez(text) < widget->text_size)
-		uinsert(text, entry->cursor++, msg->key.ascii);
+	      if (text.size() < entry->maxsize)
+		text.insert(entry->cursor++, 1, msg->key.ascii);
 
 	      entry->select = -1;
 	      break;
 	    }
-	    else {
-	      jfree(text);
-	      return FALSE;
-	    }
+	    else
+	      return false;
 	}
 
-	if (ustrcmp(widget->text, text) != 0) {
-	  jwidget_set_text(widget, text);
+	if (text != widget->text()) {
+	  widget->text(text.c_str());
 	  jwidget_emit_signal(widget, JI_SIGNAL_ENTRY_CHANGE);
 	}
 
-	jfree(text);
-
 	jentry_set_cursor_pos(widget, entry->cursor);
-	jwidget_dirty(widget);
+	widget->dirty();
 	return TRUE;
       }
       break;
@@ -458,7 +448,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOTION:
       if (jwidget_has_capture(widget)) {
-	const char *text = widget->text;
+	const char *text = widget->text();
 	bool move, dirty;
 	int c, x;
 
@@ -480,7 +470,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    entry->scroll++;
 	    x = widget->rc->x1 + widget->border_width.l;
 	    for (c=entry->scroll; ; c++) {
-	      x += CHARACTER_LENGTH(widget->text_font,
+	      x += CHARACTER_LENGTH(widget->font(),
 				   (c < ustrlen(text))? ugetat(text, c): ' ');
 	      if (x > widget->rc->x2-widget->border_width.r) {
 		c--;
@@ -550,16 +540,18 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
 static void entry_request_size(JWidget widget, int *w, int *h)
 {
+  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
+
   *w =
     + widget->border_width.l
-    + ji_font_char_len(widget->text_font, 'w') * MIN(widget->text_size, 6)
+    + ji_font_char_len(widget->font(), 'w') * MIN(entry->maxsize, 6)
     + 2 + widget->border_width.r;
 
   *w = MIN(*w, JI_SCREEN_W/2);
 
   *h = 
     + widget->border_width.t
-    + text_height(widget->text_font)
+    + text_height(widget->font())
     + widget->border_width.b;
 }
 
@@ -574,8 +566,8 @@ static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
 	   widget->rc->x2-widget->border_width.r-1);
 
   x = widget->rc->x1 + widget->border_width.l;
-  for (c=entry->scroll; ugetat (widget->text, c); c++) {
-    w = CHARACTER_LENGTH(widget->text_font, ugetat(widget->text, c));
+  for (c=entry->scroll; ugetat(widget->text(), c); c++) {
+    w = CHARACTER_LENGTH(widget->font(), ugetat(widget->text(), c));
     if (x+w >= widget->rc->x2-widget->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {
@@ -585,7 +577,7 @@ static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
     x += w;
   }
 
-  if (!ugetat (widget->text, c))
+  if (!ugetat(widget->text(), c))
     if ((mx >= x) &&
 	(mx <= widget->rc->x2-widget->border_width.r-1))
       cursor = c;
@@ -602,14 +594,14 @@ static void entry_forward_word(JWidget widget)
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
   int ch;
 
-  for (; entry->cursor<ustrlen (widget->text); entry->cursor++) {
-    ch = ugetat(widget->text, entry->cursor);
+  for (; entry->cursor<ustrlen(widget->text()); entry->cursor++) {
+    ch = ugetat(widget->text(), entry->cursor);
     if (IS_WORD_CHAR (ch))
       break;
   }
 
-  for (; entry->cursor<ustrlen(widget->text); entry->cursor++) {
-    ch = ugetat(widget->text, entry->cursor);
+  for (; entry->cursor<ustrlen(widget->text()); entry->cursor++) {
+    ch = ugetat(widget->text(), entry->cursor);
     if (!IS_WORD_CHAR(ch)) {
       entry->cursor++;
       break;
@@ -623,13 +615,13 @@ static void entry_backward_word(JWidget widget)
   int ch;
 
   for (entry->cursor--; entry->cursor >= 0; entry->cursor--) {
-    ch = ugetat(widget->text, entry->cursor);
+    ch = ugetat(widget->text(), entry->cursor);
     if (IS_WORD_CHAR(ch))
       break;
   }
 
   for (; entry->cursor >= 0; entry->cursor--) {
-    ch = ugetat(widget->text, entry->cursor);
+    ch = ugetat(widget->text(), entry->cursor);
     if (!IS_WORD_CHAR(ch)) {
       entry->cursor++;
       break;

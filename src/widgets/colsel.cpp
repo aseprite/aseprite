@@ -117,7 +117,7 @@ JWidget colorselector_new(bool editable_palette)
   add_gfxicon_to_button(lock, GFX_BOX_LOCK, JI_CENTER | JI_MIDDLE);
 
   /* tabs */
-  jwidget_set_bg_color(tabs, window->bg_color);
+  jwidget_set_bg_color(tabs, window->bg_color());
 
   /* data for a better layout */
   grid1->child_spacing = 0;
@@ -278,7 +278,7 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
 	JWidget idx = jwidget_find_name(widget, "idx");
 	JWidget pal = jwidget_find_name(widget, "pal");
 	JWidget grid2 = jwidget_find_name(widget, "grid2");
-	int idxlen = ji_font_text_len(jwidget_get_font(idx), "Index=888");
+	int idxlen = ji_font_text_len(idx->font(), "Index=888");
 
 	jwidget_set_min_size(idx, idxlen, 0);
 	paledit_set_boxsize(pal, 4*guiscale());

@@ -226,7 +226,7 @@ void app_loop()
 
     menubar = jmenubar_new();
     statusbar = statusbar_new();
-    colorbar = colorbar_new(box_colorbar->align);
+    colorbar = colorbar_new(box_colorbar->align());
     toolbar = toolbar_new();
     tabsbar = tabs_new(tabsbar_select_callback);
     view = editor_view_new();

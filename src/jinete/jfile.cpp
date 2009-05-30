@@ -176,7 +176,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
 			  text ? TRANSLATE_ATTR(text): NULL);
 
       if (readonly)
-	jentry_readonly(widget, TRUE);
+	jentry_readonly(widget, true);
     }
   }
   /* grid */
@@ -279,7 +279,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     /* TODO add translatable support */
     /* TODO here we need jxmlelem_get_text(elem) */
 /* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
-    assert(FALSE);
+    assert(false);
   }
   /* view */
   else if (ustrcmp(elem_name, "view") == 0) {
@@ -303,6 +303,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   if (widget) {
     const char *name      = jxmlelem_get_attr(elem, "name");
     const char *tooltip   = jxmlelem_get_attr(elem, "tooltip");
+    bool selected         = jxmlelem_has_attr(elem, "selected");
     bool expansive        = jxmlelem_has_attr(elem, "expansive");
     bool magnetic         = jxmlelem_has_attr(elem, "magnetic");
     bool noborders        = jxmlelem_has_attr(elem, "noborders");
@@ -321,11 +322,14 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     if (tooltip != NULL)
       jwidget_add_tooltip_text(widget, tooltip);
 
+    if (selected)
+      jwidget_set_selected(widget, selected);
+
     if (expansive)
-      jwidget_expansive(widget, TRUE);
+      jwidget_expansive(widget, true);
 
     if (magnetic)
-      jwidget_magnetic(widget, TRUE);
+      jwidget_magnetic(widget, true);
 
     if (noborders)
       jwidget_noborders(widget);

@@ -996,7 +996,7 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
   MenuItem *menuitem = MITEM(widget);
   int bar = widget->parent->parent->type == JI_MENUBAR;
 
-  if (widget->text) {
+  if (widget->has_text()) {
     *w =
       + widget->border_width.l
       + jwidget_get_text_length(widget)
@@ -1011,7 +1011,7 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
     if (menuitem->accel) {
       char buf[256];
       jaccel_to_string(menuitem->accel, buf);
-      *w += ji_font_text_len(widget->text_font, buf);
+      *w += ji_font_text_len(widget->font(), buf);
     }
   }
   else {
@@ -1331,10 +1331,10 @@ static JWidget check_for_letter(JWidget menu, int ascii)
     if (menuitem->type != JI_MENUITEM)
       continue;
 
-    if (menuitem->text)
-      for (c=0; menuitem->text[c]; c++)
-        if ((menuitem->text[c] == '&') && (menuitem->text[c+1] != '&'))
-          if (tolower(ascii) == tolower(menuitem->text[c+1]))
+    if (menuitem->has_text())
+      for (c=0; menuitem->text()[c]; c++)
+        if ((menuitem->text()[c] == '&') && (menuitem->text()[c+1] != '&'))
+          if (tolower(ascii) == tolower(menuitem->text()[c+1]))
 	    return menuitem;
   }
 

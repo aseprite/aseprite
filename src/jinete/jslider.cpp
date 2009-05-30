@@ -275,13 +275,13 @@ static void slider_request_size(JWidget widget, int *w, int *h)
   char buf[256];
 
   usprintf(buf, "%d", slider->min);
-  min_w = ji_font_text_len(widget->text_font, buf);
+  min_w = ji_font_text_len(widget->font(), buf);
 
   usprintf(buf, "%d", slider->max);
-  max_w = ji_font_text_len(widget->text_font, buf);
+  max_w = ji_font_text_len(widget->font(), buf);
 
   *w = MAX(min_w, max_w);
-  *h = text_height(widget->text_font);
+  *h = text_height(widget->font());
 
   *w += widget->border_width.l + widget->border_width.r;
   *h += widget->border_width.t + widget->border_width.b;

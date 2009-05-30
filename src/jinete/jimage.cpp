@@ -60,8 +60,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(widget, &box, &text, &icon,
-				jwidget_get_align(widget),
-				bmp->w, bmp->h);
+				widget->align(), bmp->w, bmp->h);
 
       msg->reqsize.w = widget->border_width.l + jrect_w(&box) + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + jrect_h(&box) + widget->border_width.b;
@@ -73,8 +72,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(widget, &box, &text, &icon,
-				jwidget_get_align(widget),
-				bmp->w, bmp->h);
+				widget->align(), bmp->w, bmp->h);
 
       jdraw_rectexclude(widget->rc, &icon,
 			jwidget_get_bg_color(widget));

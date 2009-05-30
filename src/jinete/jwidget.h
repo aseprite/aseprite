@@ -34,6 +34,8 @@
 
 #include "jinete/jbase.h"
 
+#include <string>
+
 #ifndef NDEBUG
 #include "jinete/jintern.h"
 #define assert_valid_widget(widget) assert((widget) != NULL &&		\
@@ -44,57 +46,6 @@
 
 struct FONT;
 struct BITMAP;
-
-struct jwidget
-{
-  JID id;			/* identify code */
-  int type;			/* widget's type */
-
-  char *name;			/* widget's name */
-  JRect rc;			/* position rectangle */
-  struct {
-    int l, t, r, b;
-  } border_width;		/* border separation with the parent */
-  int child_spacing;		/* separation between children */
-
-  /* flags */
-  int flags;
-  int emit_signals;		/* emit signal counter */
-
-  /* widget size limits */
-  int min_w, min_h;
-  int max_w, max_h;
-
-  /* structures */
-  JList children;		 /* sub-objects */
-  JWidget parent;		 /* who is the parent? */
-  JTheme theme;			 /* widget's theme */
-
-  /* virtual properties */
-  JList hooks;			/* hooks with msg_proc and specific data */
-  int draw_type;
-  JDrawFunc draw_method;	/* virtual method to draw the widget
-				   (the default msg_proc uses it) */
-
-  /* common widget properties */
-  int align;			/* widget alignment */
-  int text_size;		/* text size (in characters) */
-  char *text;			/* widget text */
-  int text_size_pix;		/* cached text size in pixels */
-  struct FONT *text_font;	/* text font type */
-  int bg_color;			/* background color */
-
-  /* drawable cycle */
-  JRegion update_region;	/* region to be redrawed */
-
-  /* more properties... */
-
-  /* for JTheme */
-  void *theme_data[4];
-
-  /* for user */
-  void *user_data[4];
-};
 
 int ji_register_widget_type();
 
@@ -116,14 +67,10 @@ void *jwidget_get_data(JWidget widget, int type);
 int jwidget_get_type(JWidget widget);
 const char *jwidget_get_name(JWidget widget);
 const char *jwidget_get_text(JWidget widget);
-int jwidget_get_align(JWidget widget);
-struct FONT *jwidget_get_font(JWidget widget);
 
 void jwidget_set_name(JWidget widget, const char *name);
 void jwidget_set_text(JWidget widget, const char *text);
-void jwidget_set_text_soft(JWidget widget, const char *text);
 void jwidget_set_align(JWidget widget, int align);
-void jwidget_set_font(JWidget widget, struct FONT *font);
  
 /* behavior properties */
 
@@ -232,5 +179,106 @@ void jwidget_release_mouse(JWidget widget);
 
 JWidget jwidget_find_name(JWidget widget, const char *name);
 bool jwidget_check_underscored(JWidget widget, int scancode);
+
+//////////////////////////////////////////////////////////////////////
+
+class jwidget
+{
+public:
+  JID id;			/* identify code */
+  int type;			/* widget's type */
+
+  char *name;			/* widget's name */
+  JRect rc;			/* position rectangle */
+  struct {
+    int l, t, r, b;
+  } border_width;		/* border separation with the parent */
+  int child_spacing;		/* separation between children */
+
+  /* flags */
+  int flags;
+  int emit_signals;		/* emit signal counter */
+
+  /* widget size limits */
+  int min_w, min_h;
+  int max_w, max_h;
+
+  /* structures */
+  JList children;		 /* sub-objects */
+  JWidget parent;		 /* who is the parent? */
+  JTheme theme;			 /* widget's theme */
+
+  /* virtual properties */
+  JList hooks;			/* hooks with msg_proc and specific data */
+  int draw_type;
+  JDrawFunc draw_method;	/* virtual method to draw the widget
+				   (the default msg_proc uses it) */
+
+  /* common widget properties */
+private:
+  int m_align;			// widget alignment
+  std::string m_text;		// widget text
+  struct FONT *m_font;		// text font type
+  int m_bg_color;		// background color
+public:
+
+  /* drawable cycle */
+  JRegion update_region;	/* region to be redrawed */
+
+  /* more properties... */
+
+  /* for JTheme */
+  void *theme_data[4];
+
+  /* for user */
+  void *user_data[4];
+
+  //////////////////////////////////////////////////////////////////////
+  // Methods
+
+  jwidget(int type);
+  ~jwidget();
+
+  bool has_text() { return flags & JI_NOTEXT ? false: true; }
+
+  const char* text() const { return m_text.c_str(); }
+  int text_int() const;
+  double text_double() const;
+  void text(const char* text) { jwidget_set_text(this, text); }
+  size_t text_size() const { return m_text.size(); }
+  void textf(const char* text, ...);
+  void set_text_quiet(const char* text);
+
+  bool selected() { return jwidget_is_selected(this); }
+  void selected(bool state) { jwidget_set_selected(this, state); }
+
+  int align() const { return m_align; }
+  void align(int align);
+
+  struct FONT* font();
+  void font(struct FONT* font);
+
+  int bg_color()
+  {
+    if (m_bg_color < 0 && parent)
+      return parent->bg_color();
+    else
+      return m_bg_color;
+  }
+
+  void bg_color(int bg_color)
+  {
+    m_bg_color = bg_color;
+  }
+
+  // Returns a widget in the same window that is located "sibling".
+  inline JWidget find_sibling(const char* name)
+  {
+    return jwidget_find_name(jwidget_get_window(this), name);
+  }
+
+  void dirty() { jwidget_dirty(this); }
+
+};
 
 #endif /* JINETE_WIDGET_H */

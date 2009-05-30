@@ -62,13 +62,13 @@
 #define THUMBSIZE	(32*guiscale())
 
 /* height of the headers */
-#define HDRSIZE		(3 + text_height(widget->text_font)*2 + 3 + 3)
+#define HDRSIZE		(3 + text_height(widget->font())*2 + 3 + 3)
 
 /* width of the frames */
 #define FRMSIZE		(3 + THUMBSIZE + 3)
 
 /* height of the layers */
-#define LAYSIZE		(3 + MAX(text_height(widget->text_font), THUMBSIZE) + 4)
+#define LAYSIZE		(3 + MAX(text_height(widget->font()), THUMBSIZE) + 4)
 
 /* space between icons and other information in the layer */
 #define ICONSEP		(2*guiscale())
@@ -951,11 +951,11 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     if (align1 < 0)
       x = x1+3;
     else if (align1 == 0)
-      x = (x1+x2)/2 - text_length(widget->text_font, line1)/2;
+      x = (x1+x2)/2 - text_length(widget->font(), line1)/2;
     else
-      x = x2 - 3 - text_length(widget->text_font, line1);
+      x = x2 - 3 - text_length(widget->font(), line1);
       
-    jdraw_text(widget->text_font, line1,
+    jdraw_text(widget->font(), line1,
 	       x, y1+3,
 	       fg, face, TRUE);
   }
@@ -964,12 +964,12 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     if (align2 < 0)
       x = x1+3;
     else if (align2 == 0)
-      x = (x1+x2)/2 - text_length(widget->text_font, line2)/2;
+      x = (x1+x2)/2 - text_length(widget->font(), line2)/2;
     else
-      x = x2 - 3 - text_length(widget->text_font, line2);
+      x = x2 - 3 - text_length(widget->font(), line2);
     
-    jdraw_text(widget->text_font, line2,
-	       x, y1+3+ji_font_get_size(widget->text_font)+3,
+    jdraw_text(widget->font(), line2,
+	       x, y1+3+ji_font_get_size(widget->font())+3,
 	       fg, face, TRUE);
   }
 }
@@ -1074,16 +1074,16 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   /* draw the layer's name */
-  jdraw_text(widget->text_font, layer->name,
-	     u, y_mid - ji_font_get_size(widget->text_font)/2,
+  jdraw_text(widget->font(), layer->name,
+	     u, y_mid - ji_font_get_size(widget->font())/2,
 	     fg, bg, TRUE);
 
   /* the background should be underlined */
   if (layer_is_background(layer)) {
     hline(ji_screen,
 	  u,
-	  y_mid - ji_font_get_size(widget->text_font)/2 + ji_font_get_size(widget->text_font) + 1,
-	  u + text_length(widget->text_font, layer->name),
+	  y_mid - ji_font_get_size(widget->font())/2 + ji_font_get_size(widget->font()) + 1,
+	  u + text_length(widget->font(), layer->name),
 	  fg);
   }
 

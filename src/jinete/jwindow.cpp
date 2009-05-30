@@ -234,7 +234,7 @@ bool jwindow_is_toplevel(JWidget widget)
   if (!jlist_empty(manager->children))
     return (widget == jlist_first(manager->children)->data);
   else
-    return FALSE;
+    return false;
 }
 
 bool jwindow_is_foreground(JWidget widget)
@@ -493,7 +493,7 @@ static void window_request_size(JWidget widget, int *w, int *h)
       }
     }
 
-    if (widget->text)
+    if (widget->has_text())
       max_w = MAX(max_w, jwidget_get_text_length(widget));
 
     *w = widget->border_width.l + max_w + widget->border_width.r;
@@ -538,7 +538,7 @@ static int get_action(JWidget widget, int x, int y)
   cpos = jwidget_get_child_rect(widget);
 
   /* move */
-  if ((widget->text)
+  if ((widget->has_text())
       && (((x >= cpos->x1) &&
 	   (x < cpos->x2) &&
 	   (y >= pos->y1+widget->border_width.b) &&

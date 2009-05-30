@@ -317,7 +317,7 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
 
       /* get the text-length of every item and put in 'w' the maximum value */
       JI_LIST_FOR_EACH(combobox->items, link) {
-	int item_w = 2+text_length(widget->text_font,
+	int item_w = 2+text_length(widget->font(),
 				   ((ComboItem *)link->data)->text)+2;
 
 	w = MAX(w, item_w);
