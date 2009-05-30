@@ -354,7 +354,7 @@ static FormatOptions *get_options_JPEG(FileOp *fop)
   JpegOptions *jpeg_options = jpeg_options_new();
 
   /* configuration parameters */
-  jpeg_options->quality = get_config_float("JPEG", "Quality", 0.6f);
+  jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
 
   /* interactive mode */
   if (!is_interactive())
