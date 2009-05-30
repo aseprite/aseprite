@@ -49,11 +49,13 @@ static void cmd_crop_sprite_execute(const char *argument)
   Sprite *sprite = current_sprite;
   {
     Undoable undoable(sprite, "Sprite Crop");
-    undoable.crop_sprite(current_sprite->mask->x,
-			 current_sprite->mask->y,
-			 current_sprite->mask->w,
-			 current_sprite->mask->h,
-			 colorbar_get_bg_color(app_get_colorbar()));
+    int bgcolor = get_color_for_image(sprite->imgtype,
+				      colorbar_get_bg_color(app_get_colorbar()));
+    undoable.crop_sprite(sprite->mask->x,
+			 sprite->mask->y,
+			 sprite->mask->w,
+			 sprite->mask->h,
+			 bgcolor);
     undoable.commit();
   }
   sprite_generate_mask_boundaries(sprite);
