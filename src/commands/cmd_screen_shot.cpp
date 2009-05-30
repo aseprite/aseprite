@@ -63,10 +63,11 @@ static void cmd_screen_shot_execute(const char *argument)
     Sprite *sprite = sprite_new_with_layer(imgtype, bmp->w, bmp->h);
     Image *image = GetImage2(sprite, NULL, NULL, NULL);
     int x, y, r, g, b;
-    Palette *pal = palette_new(0, MAX_PALETTE_COLORS);
 
+    Palette *pal = palette_new(0, MAX_PALETTE_COLORS);
     palette_from_allegro(pal, rgbpal);
     sprite_set_palette(sprite, pal, TRUE);
+    palette_free(pal);
 
     /* convert Allegro "BITMAP" to ASE "Image" */
     if (imgtype == IMAGE_RGB) {
