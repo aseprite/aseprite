@@ -189,13 +189,13 @@ DIRS *cfg_filename_dirs()
 
 #if defined ALLEGRO_UNIX
 
-  /* $HOME/.aserc-VERSION */
-  dirs_cat_dirs(dirs, filename_in_homedir(".aserc-" VERSION));
+  /* $HOME/.asepriterc-VERSION */
+  dirs_cat_dirs(dirs, filename_in_homedir(".asepriterc-" VERSION));
 
 #endif
 
-  /* $BINDIR/ase-VERSION.cfg */
-  dirs_cat_dirs(dirs, filename_in_bindir("ase-" VERSION ".cfg"));
+  /* $BINDIR/aseprite-VERSION.cfg */
+  dirs_cat_dirs(dirs, filename_in_bindir("aseprite-" VERSION ".cfg"));
 
   return dirs;
 }
