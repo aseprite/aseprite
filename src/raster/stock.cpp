@@ -128,9 +128,10 @@ void stock_remove_image(Stock* stock, Image* image)
  * Replaces the image in the stock in the "index" position with the
  * new "image"; you must free the old image before, e.g:
  * @code
- *   Image* old_image = stock_get_image (stock, index);
- *   if (old_image) image_free (old_image);
- *   stock_replace_image (stock, index, new_image);
+ *   Image* old_image = stock_get_image(stock, index);
+ *   if (old_image)
+ *     image_free(old_image);
+ *   stock_replace_image(stock, index, new_image);
  * @endcode
  */
 void stock_replace_image(Stock* stock, int index, Image* image)

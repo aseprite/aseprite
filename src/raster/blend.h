@@ -53,7 +53,7 @@ enum {
   BLEND_MODE_MAX,
 };
 
-typedef int (*BLEND_COLOR) (int back, int front, int opacity);
+typedef int (*BLEND_COLOR)(int back, int front, int opacity);
 
 extern BLEND_COLOR _rgba_blenders[];
 extern BLEND_COLOR _graya_blenders[];

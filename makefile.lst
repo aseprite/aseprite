@@ -9,6 +9,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_about.cpp			\
 	src/commands/cmd_advanced_mode.cpp		\
 	src/commands/cmd_background_from_layer.cpp	\
+	src/commands/cmd_canvas_size.cpp		\
 	src/commands/cmd_cel_properties.cpp		\
 	src/commands/cmd_change_image_type.cpp		\
 	src/commands/cmd_clear.cpp			\
@@ -65,6 +66,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_select_file.cpp		\
 	src/commands/cmd_sprite_editor.cpp		\
 	src/commands/cmd_sprite_properties.cpp		\
+	src/commands/cmd_sprite_size.cpp		\
 	src/commands/cmd_switch_colors.cpp		\
 	src/commands/cmd_tips.cpp			\
 	src/commands/cmd_undo.cpp			\

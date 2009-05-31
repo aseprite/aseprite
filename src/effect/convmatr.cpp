@@ -308,12 +308,12 @@ JList get_convmatr_stock()
   return data.matrices;
 }
 
-#define GET_CONVMATR_DATA(ptr_type, do_job)	\
+#define GET_CONVMATR_DATA(Traits, do_job)	\
   div = matrix->div;				\
   mdata = matrix->data;				\
 						\
   GET_MATRIX_DATA				\
-  (ptr_type,					\
+  (Traits::pixel_t,				\
    src, src_address,				\
    matrix->w, matrix->h,			\
    matrix->cx, matrix->cy,			\
@@ -325,7 +325,7 @@ JList get_convmatr_stock()
    mdata++;					\
    );						\
 						\
-  color = src->method->getpixel(src, x, y);	\
+  color = image_getpixel_fast<Traits>(src, x, y); \
   if (div == 0) {				\
     *(dst_address++) = color;			\
     continue;					\
@@ -364,7 +364,7 @@ void apply_convolution_matrix4(Effect *effect)
       r = g = b = a = 0;
 
       GET_CONVMATR_DATA
-	(ase_uint32,
+	(RgbTraits,
 	 if (_rgba_geta(color) == 0)
 	   div -= *mdata;
 	 else {
@@ -441,7 +441,7 @@ void apply_convolution_matrix2(Effect *effect)
       k = a = 0;
 
       GET_CONVMATR_DATA
-	(ase_uint16,
+	(GrayscaleTraits,
 	 if (_graya_geta(color) == 0)
 	   div -= *mdata;
 	 else {
@@ -503,7 +503,7 @@ void apply_convolution_matrix1(Effect *effect)
       r = g = b = index = 0;
 
       GET_CONVMATR_DATA
-	(ase_uint8,
+	(IndexedTraits,
 	 r += _rgba_getr(pal->color[color]) * (*mdata);
 	 g += _rgba_getg(pal->color[color]) * (*mdata);
 	 b += _rgba_getb(pal->color[color]) * (*mdata);

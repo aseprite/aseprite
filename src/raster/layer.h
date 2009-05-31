@@ -74,6 +74,7 @@ Layer* layer_get_next(Layer* layer);
 
 void layer_set_name(Layer* layer, const char *name);
 void layer_set_blend_mode(Layer* layer, int blend_mode);
+void layer_get_cels(const Layer* layer, JList cels);
 
 /* for LAYER_IMAGE */
 void layer_add_cel(Layer* layer, Cel *cel);

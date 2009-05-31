@@ -150,8 +150,7 @@ Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
 
 	if ((getx >= 0) && (getx < src->w) &&
 	    (gety >= 0) && (gety < src->h))
-	  dst->method->putpixel(dst, u, v,
-				src->method->getpixel(src, getx, gety));
+	  dst->putpixel(u, v, src->getpixel(getx, gety));
       }
 
       _image_bitmap_next_bit(d, address);
@@ -207,8 +206,7 @@ Image* NewImageFromMask(Sprite* src_sprite)
 
 	if ((getx >= 0) && (getx < src->w) &&
 	    (gety >= 0) && (gety < src->h))
-	  dst->method->putpixel(dst, u, v,
-				src->method->getpixel(src, getx, gety));
+	  dst->putpixel(u, v, src->getpixel(getx, gety));
       }
 
       _image_bitmap_next_bit(d, address);

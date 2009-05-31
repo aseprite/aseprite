@@ -104,7 +104,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       ase_uint32 c;
       for (int y=image->h-1; y>=0; --y)
 	for (int x=0; x<image->w; ++x) {
-	  c = image->method->getpixel(image, x, y);
+	  c = image_getpixel_fast<RgbTraits>(image, x, y);
 	  *(dst++) = ((_rgba_getb(c) <<  0) |
 		      (_rgba_getg(c) <<  8) |
 		      (_rgba_getr(c) << 16) |
@@ -117,7 +117,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       ase_uint16 c;
       for (int y=image->h-1; y>=0; --y)
 	for (int x=0; x<image->w; ++x) {
-	  c = image->method->getpixel(image, x, y);
+	  c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
 	  *(dst++) = ((_graya_getv(c) <<  0) |
 		      (_graya_getv(c) <<  8) |
 		      (_graya_getv(c) << 16) |
@@ -139,7 +139,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
 				    + palette_entries*sizeof(RGBQUAD));
       for (int y=image->h-1; y>=0; --y) {
 	for (int x=0; x<image->w; ++x) {
-	  *(dst++) = image->method->getpixel(image, x, y);
+	  *(dst++) = image_getpixel_fast<IndexedTraits>(image, x, y);
 	}
 	dst += padding;
       }
@@ -169,7 +169,13 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
     return;
 
   BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
-  if (bi && bi->bmiHeader.biCompression == BI_RGB) {
+  if (bi) {
+    if (bi->bmiHeader.biCompression != BI_RGB &&
+	bi->bmiHeader.biCompression != BI_BITFIELDS) {
+      jalert("Error<<The current Windows clipboard format is not a bitmap.||&OK");
+      return;
+    }
+
     try {
       image = image_new(bi->bmiHeader.biBitCount == 8 ? IMAGE_INDEXED:
 							IMAGE_RGB,
@@ -178,51 +184,72 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 
       bool valid_image = false;
       switch (bi->bmiHeader.biBitCount) {
-	case 32: {
-	  // BITMAPV5HEADER* bv5 = (BITMAPV5HEADER*)GetClipboardData(CF_DIBV5);
-	  // ase_uint32* src = (ase_uint32*)(((ase_uint8*)bv5)+bv5->bV5Size);
-	  ase_uint32* src = (ase_uint32*)(((ase_uint8*)bi)+bi->bmiHeader.biSize);
-	  ase_uint32 c;
-	  // int r_shift = get_shift_from_mask(bv5->bV5RedMask);
-	  // int g_shift = get_shift_from_mask(bv5->bV5GreenMask);
-	  // int b_shift = get_shift_from_mask(bv5->bV5BlueMask);
-	  // int a_shift = get_shift_from_mask(bv5->bV5AlphaMask);
 
-	  for (int y=image->h-1; y>=0; --y) {
-	    for (int x=0; x<image->w; ++x) {
-	      c = *(src++);
-	      // image->method->putpixel(image, x, y,
-	      // 			_rgba((c & bv5->bV5RedMask) >> r_shift,
-	      // 			      (c & bv5->bV5GreenMask) >> g_shift,
-	      // 			      (c & bv5->bV5BlueMask) >> b_shift,
-	      // 			      (c & bv5->bV5AlphaMask) >> a_shift));
-	      image->method->putpixel(image, x, y,
-				      _rgba((c & 0x00ff0000) >> 16,
-					    (c & 0x0000ff00) >> 8,
-					    (c & 0x000000ff) >> 0,
-					    (c & 0xff000000) >> 24));
+	// 32 BPP
+	case 32:
+	  if (bi->bmiHeader.biCompression == BI_BITFIELDS) {
+	    ase_uint32* src = (ase_uint32*)(((ase_uint8*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*3);
+	    ase_uint32 c;
+
+	    ase_uint32 r_mask = (ase_uint32)*((ase_uint32*)&bi->bmiColors[0]);
+	    ase_uint32 g_mask = (ase_uint32)*((ase_uint32*)&bi->bmiColors[1]);
+	    ase_uint32 b_mask = (ase_uint32)*((ase_uint32*)&bi->bmiColors[2]);
+	    ase_uint32 r_shift = get_shift_from_mask(r_mask);
+	    ase_uint32 g_shift = get_shift_from_mask(g_mask);
+	    ase_uint32 b_shift = get_shift_from_mask(b_mask);
+
+	    for (int y=image->h-1; y>=0; --y) {
+	      ase_uint32* dst = (ase_uint32*)image->line[y];
+
+	      for (int x=0; x<image->w; ++x) {
+		c = *(src++);
+		*(dst++) = _rgba((c & r_mask) >> r_shift,
+				 (c & g_mask) >> g_shift,
+				 (c & b_mask) >> b_shift, 255);
+	      }
+	    }
+	  }
+	  else if (bi->bmiHeader.biCompression == BI_RGB) {
+	    ase_uint32* src = (ase_uint32*)(((ase_uint8*)bi)+bi->bmiHeader.biSize);
+	    ase_uint32 c;
+
+	    for (int y=image->h-1; y>=0; --y) {
+	      ase_uint32* dst = (ase_uint32*)image->line[y];
+
+	      for (int x=0; x<image->w; ++x) {
+		c = *(src++);
+		*(dst++) = _rgba((c & 0x00ff0000) >> 16,
+				 (c & 0x0000ff00) >> 8,
+				 (c & 0x000000ff) >> 0,
+				 (c & 0xff000000) >> 24);
+	      }
 	    }
 	  }
 	  valid_image = true;
 	  break;
-	}
+
+	// 24 BPP
 	case 24: {
 	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
 	  ase_uint8 r, g, b;
 	  int padding = (4-(image->w*3)&3)&3;
 
 	  for (int y=image->h-1; y>=0; --y) {
+	    ase_uint32* dst = (ase_uint32*)image->line[y];
+
 	    for (int x=0; x<image->w; ++x) {
 	      b = *(src++);
 	      g = *(src++);
 	      r = *(src++);
-	      image->method->putpixel(image, x, y, _rgba(r, g, b, 255));
+	      *(dst++) = _rgba(r, g, b, 255);
 	    }
 	    src += padding;
 	  }
 	  valid_image = true;
 	  break;
 	}
+
+	// 16 BPP
 	case 16: {
 	  // TODO I am not sure if this really works
 	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
@@ -236,13 +263,15 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	      b = _rgb_scale_5[((b1 & 0xf800) >> 11)];
 	      g = _rgb_scale_6[((b2 & 0x07e0) >> 5)];
 	      r = _rgb_scale_5[(b2 & 0x001f)];
-	      image->method->putpixel(image, x, y, _rgba(r, g, b, 255));
+	      image_putpixel_fast<RgbTraits>(image, x, y, _rgba(r, g, b, 255));
 	    }
 	    src += padding;
 	  }
 	  valid_image = true;
 	  break;
 	}
+
+	// 8 BPP
 	case 8: {
 	  int colors = bi->bmiHeader.biClrUsed > 0 ? bi->bmiHeader.biClrUsed: 256;
 	  palette = palette_new(0, 256);
@@ -263,7 +292,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 
 	  for (int y=image->h-1; y>=0; --y) {
 	    for (int x=0; x<image->w; ++x)
-	      image->method->putpixel(image, x, y, *(src++) & 0xff);
+	      image_putpixel_fast<IndexedTraits>(image, x, y, *(src++) & 0xff);
 
 	    src += padding;
 	  }
@@ -271,6 +300,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	  valid_image = true;
 	  break;
 	}
+
       }
 
       if (!valid_image) {

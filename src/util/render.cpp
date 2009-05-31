@@ -424,9 +424,7 @@ static void merge_zoomed_image16(Image *dst, Image *src,
   int sizeof_box, offsetx, offsety;
   int line_x, line_h, right, bottom;
 
-  assert(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
-
-  blender = _graya_blenders[blend_mode];
+  blender = GrayscaleTraits::get_blender(blend_mode);
 
   box_w = 1<<zoom;
   box_h = 1<<zoom;
@@ -569,9 +567,7 @@ static void merge_zoomed_image32(Image *dst, Image *src,
   int sizeof_box, offsetx, offsety;
   int line_x, line_h, right, bottom;
 
-  assert(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
-
-  blender = _rgba_blenders[blend_mode];
+  blender = RgbTraits::get_blender(blend_mode);
 
   box_w = 1<<zoom;
   box_h = 1<<zoom;

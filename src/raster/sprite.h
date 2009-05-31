@@ -137,6 +137,7 @@ void sprite_generate_mask_boundaries(Sprite* sprite);
 Layer* sprite_index2layer(Sprite* sprite, int index);
 int sprite_layer2index(const Sprite* sprite, const Layer* layer);
 int sprite_count_layers(const Sprite* sprite);
+void sprite_get_cels(Sprite* sprite, JList cels);
 
 int sprite_getpixel(Sprite* sprite, int x, int y);
 

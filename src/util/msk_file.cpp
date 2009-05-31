@@ -76,7 +76,7 @@ Mask *load_msk_file(const char *filename)
     for (i=0; i<8000; i++) {
       byte = pack_getc (f);
       for (c=0; c<8; c++) {
-	mask->bitmap->method->putpixel(mask->bitmap, u, v, byte & (1<<(7-c)));
+	mask->bitmap->putpixel(u, v, byte & (1<<(7-c)));
 	u++;
 	if (u == 320) {
 	  u = 0;

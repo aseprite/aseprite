@@ -97,7 +97,7 @@ void apply_median4(Effect *effect)
     for (c=0; c<4; c++)
       qsort(data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
 
-    color = src->method->getpixel(src, x, y);
+    color = image_getpixel_fast<RgbTraits>(src, x, y);
 
     if (effect->target & TARGET_RED_CHANNEL)
       r = data.channel[0][data.ncolors/2];
@@ -163,7 +163,7 @@ void apply_median2(Effect *effect)
     for (c=0; c<2; c++)
       qsort(data.channel[c], data.ncolors, sizeof(unsigned char), cmp_channel);
 
-    color = src->method->getpixel(src, x, y);
+    color = image_getpixel_fast<GrayscaleTraits>(src, x, y);
 
     if (effect->target & TARGET_GRAY_CHANNEL)
       k = data.channel[0][data.ncolors/2];
@@ -234,7 +234,7 @@ void apply_median1(Effect *effect)
       *(dst_address++) = data.channel[0][data.ncolors/2];
     }
     else {
-      color = src->method->getpixel(src, x, y);
+      color = image_getpixel_fast<IndexedTraits>(src, x, y);
 
       if (effect->target & TARGET_RED_CHANNEL)
 	r = data.channel[0][data.ncolors/2];

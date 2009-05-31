@@ -34,6 +34,7 @@ extern Command cmd_autocrop_sprite;
 extern Command cmd_background_from_layer;
 extern Command cmd_blur_tool;
 extern Command cmd_brush_tool;
+extern Command cmd_canvas_size;
 extern Command cmd_cel_properties;
 extern Command cmd_change_image_type;
 extern Command cmd_clear;
@@ -114,6 +115,7 @@ extern Command cmd_split_editor_horizontally;
 extern Command cmd_split_editor_vertically;
 extern Command cmd_spray_tool;
 extern Command cmd_sprite_properties;
+extern Command cmd_sprite_size;
 extern Command cmd_switch_colors;
 extern Command cmd_tips;
 extern Command cmd_undo;
@@ -126,6 +128,7 @@ static Command *commands[] = {
   &cmd_background_from_layer,
   &cmd_blur_tool,
   &cmd_brush_tool,
+  &cmd_canvas_size,
   &cmd_cel_properties,
   &cmd_change_image_type,
   &cmd_clear,
@@ -206,6 +209,7 @@ static Command *commands[] = {
   &cmd_split_editor_vertically,
   &cmd_spray_tool,
   &cmd_sprite_properties,
+  &cmd_sprite_size,
   &cmd_switch_colors,
   &cmd_tips,
   &cmd_undo,

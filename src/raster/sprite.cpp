@@ -724,6 +724,11 @@ int sprite_count_layers(const Sprite* sprite)
   return layer_count_layers(sprite->set)-1;
 }
 
+void sprite_get_cels(Sprite* sprite, JList cels)
+{
+  return layer_get_cels(sprite->set, cels);
+}
+
 /**
  * Gets a pixel from the sprite in the specified position. If in the
  * specified coordinates there're background this routine will return
@@ -754,7 +759,7 @@ int sprite_get_memsize(Sprite* sprite)
     image = sprite->stock->image[i];
 
     if (image != NULL)
-      size += IMAGE_LINE_SIZE(image, image->w) * image->h;
+      size += image_line_size(image, image->w) * image->h;
   }
 
   return size;

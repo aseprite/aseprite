@@ -430,7 +430,7 @@ static void shrink_mask(Mask* mask)
   {									\
     for (u = u_begin; u u_op u_final; u u_add) {			\
       for (v = v_begin; v v_op v_final; v v_add) {			\
-	if (mask->bitmap->method->getpixel(mask->bitmap, U, V))		\
+	if (mask->bitmap->getpixel(U, V))				\
 	  break;							\
       }									\
       if (v == v_final)							\

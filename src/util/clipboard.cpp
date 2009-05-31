@@ -47,6 +47,8 @@
 #include "widgets/colbar.h"
 #include "widgets/statebar.h"
 
+static ase_uint32 get_shift_from_mask(ase_uint32 mask);
+
 #if defined ALLEGRO_WINDOWS
 #include <winalleg.h>
 #include "util/clipboard_win32.h"
@@ -79,7 +81,6 @@ enum {
 static void destroy_clipboard(void* data);
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
 static bool copy_from_sprite(Sprite* sprite);
-static ase_uint32 get_shift_from_mask(ase_uint32 mask);
 
 static bool interactive_transform(JWidget widget, Image *dest_image, Image *image,
 				  int x, int y, int xout[4], int yout[4]);
@@ -229,7 +230,7 @@ void clipboard::paste(Sprite* sprite)
 			  clipboard_image->h);
 
     use_current_sprite_rgb_map();
-    image_convert(src_image, clipboard_image);
+    image_convert(clipboard_image, src_image);
     restore_rgb_map();
   }
 
@@ -353,7 +354,7 @@ static bool interactive_transform(JWidget widget,
       int x, y;
       for (y=0; y<image->h; y++)
 	for (x=0; x<image->w; x++)
-	  if (_rgba_geta(image->method->getpixel(image, x, y)) < 128)
+	  if (_rgba_geta(image_getpixel_fast<RgbTraits>(image, x, y)) < 128)
 	    putpixel(preview, x, y, mask_color);
       break;
     }
@@ -362,7 +363,7 @@ static bool interactive_transform(JWidget widget,
       int x, y;
       for (y=0; y<image->h; y++)
 	for (x=0; x<image->w; x++)
-	  if (_graya_geta(image->method->getpixel(image, x, y)) < 128)
+	  if (_graya_geta(image_getpixel_fast<GrayscaleTraits>(image, x, y)) < 128)
 	    putpixel(preview, x, y, mask_color);
       break;
     }
@@ -371,7 +372,7 @@ static bool interactive_transform(JWidget widget,
       int x, y;
       for (y=0; y<image->h; y++)
 	for (x=0; x<image->w; x++)
-	  if (image->method->getpixel(image, x, y) == 0)
+	  if (image_getpixel_fast<IndexedTraits>(image, x, y) == 0)
 	    putpixel(preview, x, y, mask_color);
       break;
     }

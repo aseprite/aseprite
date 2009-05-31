@@ -52,7 +52,7 @@
 						\
     memcpy((col)->ptr,				\
 	   (col)->data,				\
-	   DIRTY_LINE_SIZE((col)->w));		\
+	   dirty_line_size(dirty, (col)->w));	\
   }
 
 #define JOIN_WITH_NEXT(row, col, u)					\
@@ -110,7 +110,7 @@
 									\
   row->col[u].w = to_x2 - row->col[u].x + 1;				\
   row->col[u].data = jrealloc(row->col[u].data,				\
-			      DIRTY_LINE_SIZE(row->col[u].w));
+			      dirty_line_size(dirty, row->col[u].w));
 
 typedef struct AlgoData
 {
@@ -174,7 +174,7 @@ Dirty* dirty_new_copy(Dirty* src)
       dst->row[v].col[u].flags = src->row[v].col[u].flags;
       dst->row[v].col[u].ptr = src->row[v].col[u].ptr;
 
-      size = dst->row[v].col[u].w << IMAGE_SHIFT(dst->image);
+      size = dst->row[v].col[u].w << image_shift(dst->image);
 
       dst->row[v].col[u].data = jmalloc(size);
 
@@ -268,9 +268,8 @@ void dirty_putpixel(Dirty* dirty, int x, int y)
       return;
 
     if ((dirty->mask->bitmap) &&
-	!(dirty->mask->bitmap->method->getpixel(dirty->mask->bitmap,
-						x-dirty->mask->x,
-						y-dirty->mask->y)))
+	!(dirty->mask->bitmap->getpixel(x-dirty->mask->x,
+					y-dirty->mask->y)))
       return;
   }
 
@@ -310,7 +309,7 @@ void dirty_putpixel(Dirty* dirty, int x, int y)
       if (u < row->cols-1 && x+1 == (col+1)->x)
 	JOIN_WITH_NEXT(row, col, u);
 
-      col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
+      col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
       return;
     }
     /* the pixel is to left of the column */
@@ -319,9 +318,9 @@ void dirty_putpixel(Dirty* dirty, int x, int y)
 
       --col->x;
       ++col->w;
-      col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
+      col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
 
-      col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
+      col->ptr = image_address(dirty->image, x, y);
       return;
     }
     /* the next column is more too far */
@@ -335,8 +334,8 @@ void dirty_putpixel(Dirty* dirty, int x, int y)
   col->x = x;
   col->w = 1;
   col->flags = 0;
-  col->data = jmalloc(DIRTY_LINE_SIZE(1));
-  col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
+  col->data = jmalloc(dirty_line_size(dirty, 1));
+  col->ptr = image_address(dirty->image, x, y);
 }
 
 void dirty_hline(Dirty* dirty, int x1, int y, int x2)
@@ -405,15 +404,13 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
 
     if (dirty->mask->bitmap) {
       for (; x1<=x2; ++x1)
-	if (dirty->mask->bitmap->method->getpixel(dirty->mask->bitmap,
-						  x1-dirty->mask->x,
-						  y-dirty->mask->y))
+	if (dirty->mask->bitmap->getpixel(x1-dirty->mask->x,
+					  y-dirty->mask->y))
 	  break;
 
       for (; x2>=x1; x2--)
-	if (dirty->mask->bitmap->method->getpixel(dirty->mask->bitmap,
-						  x2-dirty->mask->x,
-						  y-dirty->mask->y))
+	if (dirty->mask->bitmap->getpixel(x2-dirty->mask->x,
+					  y-dirty->mask->y))
 	  break;
     }
 
@@ -446,9 +443,8 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
   
   if (dirty->mask && dirty->mask->bitmap) {
     for (x=x1; x<=x2; ++x) {
-      if (!dirty->mask->bitmap->method->getpixel(dirty->mask->bitmap,
-						 x-dirty->mask->x,
-						 y-dirty->mask->y)) {
+      if (!dirty->mask->bitmap->getpixel(x-dirty->mask->x,
+					 y-dirty->mask->y)) {
 	continue;
       }
 
@@ -471,7 +467,7 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
 
 	      memcpy((col+1)->ptr,
 		     (col+1)->data,
-		     DIRTY_LINE_SIZE((col+1)->w));
+		     dirty_line_size(dirty, (col+1)->w));
 	    }
 
 	    col->w += (col+1)->w;
@@ -489,7 +485,7 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
 	    col = row->col+u;
 	  }
 
-	  col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
+	  col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
 	  goto done;
 	}
 	/* the pixel is in the left of the column */
@@ -499,13 +495,13 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
 
 	    memcpy(col->ptr,
 		   col->data,
-		   DIRTY_LINE_SIZE(col->w));
+		   dirty_line_size(dirty, col->w));
 	  }
 
 	  --col->x;
 	  ++col->w;
-	  col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
-	  col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
+	  col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
+	  col->ptr = image_address(dirty->image, x, y);
 	  goto done;
 	}
 	else if (x < col->x)
@@ -523,8 +519,8 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
       col->x = x;
       col->w = 1;
       col->flags = 0;
-      col->data = jmalloc(DIRTY_LINE_SIZE(1));
-      col->ptr = IMAGE_ADDRESS(dirty->image, x, y);
+      col->data = jmalloc(dirty_line_size(dirty, 1));
+      col->ptr = image_address(dirty->image, x, y);
 
     done:;
     }
@@ -556,11 +552,11 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
 	/* extend to left */
 	col->w += col->x - x1;
 	col->x = x1;
-	col->ptr = IMAGE_ADDRESS(dirty->image, x1, y);
+	col->ptr = image_address(dirty->image, x1, y);
 
 	/* inside the column */
 	if (x2 <= col->x+col->w-1) {
-	  col->data = jrealloc(col->data, DIRTY_LINE_SIZE(col->w));
+	  col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
 	  return;
 	}
 	/* extend this column to "x2" */
@@ -580,8 +576,8 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
     col->x = x1;
     col->w = x2-x1+1;
     col->flags = 0;
-    col->data = jmalloc(DIRTY_LINE_SIZE(col->w));
-    col->ptr = IMAGE_ADDRESS(dirty->image, x1, y);
+    col->data = jmalloc(dirty_line_size(dirty, col->w));
+    col->ptr = image_address(dirty->image, x1, y);
   }
 }
 
@@ -645,7 +641,7 @@ void dirty_line_brush(Dirty* dirty, Brush* brush, int x1, int y1, int x2, int y2
 
 void dirty_save_image_data(Dirty* dirty)
 {
-  register int v, u, shift = IMAGE_SHIFT(dirty->image);
+  register int v, u, shift = image_shift(dirty->image);
 
   for (v=0; v<dirty->rows; ++v)
     for (u=0; u<dirty->row[v].cols; ++u) {
@@ -666,7 +662,7 @@ void dirty_restore_image_data(Dirty* dirty)
   register DirtyCol* col;
   DirtyRow* rowend;
   DirtyCol* colend;
-  int shift = IMAGE_SHIFT(dirty->image);
+  int shift = image_shift(dirty->image);
 
   row = dirty->row;
   rowend = row+dirty->rows;

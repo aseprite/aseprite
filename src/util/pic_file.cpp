@@ -75,11 +75,11 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
     }
 
     /* read image */
-    image = image_new (IMAGE_INDEXED, w, h);
+    image = image_new(IMAGE_INDEXED, w, h);
 
     for (v=0; v<h; v++)
       for (u=0; u<w; u++)
-	image->method->putpixel (image, u, v, pack_getc (f));
+	image->putpixel(u, v, pack_getc(f));
 
     pack_fclose (f);
     return image;
@@ -151,7 +151,7 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
       case 1:
 	for (v=0; v<h; v++)
 	  for (u=0; u<w; u++)
-	    image->method->putpixel (image, u, v, pack_getc (f));
+	    image->putpixel(u, v, pack_getc(f));
 	break;
 
       /* bit-per-pixel image data */
@@ -244,7 +244,7 @@ int save_pic_file(const char *filename, int x, int y, RGB *palette, Image *image
     pack_iputw (1, f);				/* block type */
     for (v=0; v<image->h; v++)			/* image data */
       for (u=0; u<image->w; u++)
-	pack_putc (image->method->getpixel (image, u, v), f);
+	pack_putc(image->getpixel(u, v), f);
   }
 
   pack_fclose (f);

@@ -2,7 +2,10 @@ High priority work
 ------------------
 
 - search for TODO;
-- fix this: the sliders in Tools Configuration are too big
+- Ctrl+X / Ctrl+C / Ctrl+V should Cut/Copy/Paste in jentries.
+- fix problems with tiled mode XY in drawing corners (I cannot
+  reproduce the exact scenario).
+- fix sliders in Tools Configuration, they are too big
   for small resolutions.
 - rewritten palette-editor to edit multiple-palettes.
   - fix quantize (one palette for all frames, one palette per frame)
@@ -16,7 +19,6 @@ High priority work
 - when press Plus/Minus pad in the editor and the configuration tool
   window is active, the slider of the "Brush Size" must be updated.
 - add a consistent error handling.
-- drag & drop files in Windows.
 - add two DrawClick2:
   - DrawClick2FreeHand
   - DrawClick2Shape
@@ -32,10 +34,6 @@ High priority work
 - layer movement between sets in animation-editor;
   + add all the "set" stuff again;
 - options to change the curve type (in curedit.c);
-- More Commands:
-  + resize sprite;
-  + rotate sprite (90 CW, CCW, Any Angle);
-  + canvas size;
 - gaussian blur;
 - RGB and HSV effects;
 - color-curve stock;

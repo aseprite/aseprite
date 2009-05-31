@@ -353,7 +353,7 @@ void Undoable::background_from_layer(Layer* layer, int bgcolor)
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
-  std::auto_ptr<Image> bg_image(new Image(sprite->imgtype, sprite->w, sprite->h));
+  std::auto_ptr<Image> bg_image(image_new(sprite->imgtype, sprite->w, sprite->h));
 
   JLink link;
   JI_LIST_FOR_EACH(layer->cels, link) {

@@ -20,8 +20,6 @@
 
 #include <assert.h>
 #include <allegro.h>
-/* #include <allegro/color.h> */
-/* #include <allegro/gfx.h> */
 #include <string.h>
 #include <stdexcept>
 
@@ -29,26 +27,10 @@
 #include "raster/blend.h"
 #include "raster/brush.h"
 #include "raster/image.h"
-
-#ifndef USE_ALLEGRO_IMAGE
-#include "imgbit.cpp"
-#include "imggray.cpp"
-#include "imgindex.cpp"
-#include "imgrgb.cpp"
-
-static ImageMethods *image_methods[] =
-{
-  &rgb_methods,			/* IMAGE_RGB */
-  &grayscale_methods,		/* IMAGE_GRAYSCALE */
-  &indexed_methods,		/* IMAGE_INDEXED */
-  &bitmap_methods,		/* IMAGE_BITMAP */
-};
-#else
-#include "imgalleg.c"
-#endif
+#include "raster/image_impl.h"
+#include "raster/palette.h"
 
 //////////////////////////////////////////////////////////////////////
-
 
 Image::Image(int imgtype, int w, int h)
   : GfxObj(GFXOBJ_IMAGE)
@@ -56,36 +38,27 @@ Image::Image(int imgtype, int w, int h)
   this->imgtype = imgtype;
   this->w = w;
   this->h = h;
-#ifndef USE_ALLEGRO_IMAGE
-  this->method = image_methods[imgtype];
-#else
-  this->method = &alleg_methods;
-#endif
   this->dat = NULL;
   this->line = NULL;
-#ifdef USE_ALLEGRO_IMAGE
-  this->bmp = NULL;
-#endif
-
-  assert(this->method);
-  this->method->init(this);
 }
 
 Image::~Image()
 {
-#ifndef USE_ALLEGRO_IMAGE
   if (this->dat) delete[] this->dat;
   if (this->line) delete[] this->line;
-#else
-  destroy_bitmap(this->bmp);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
-
+
 Image* image_new(int imgtype, int w, int h)
 {
-  return new Image(imgtype, w, h);
+  switch (imgtype) {
+    case IMAGE_RGB: return new ImageImpl<RgbTraits>(w, h);
+    case IMAGE_GRAYSCALE: return new ImageImpl<GrayscaleTraits>(w, h);
+    case IMAGE_INDEXED: return new ImageImpl<IndexedTraits>(w, h);
+    case IMAGE_BITMAP: return new ImageImpl<BitmapTraits>(w, h);
+  }
+  return NULL;
 }
 
 Image* image_new_copy(const Image* image)
@@ -114,7 +87,7 @@ int image_depth(Image* image)
 int image_getpixel(const Image* image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
-    return image->method->getpixel(image, x, y);
+    return image->getpixel(x, y);
   else
     return -1;
 }
@@ -122,22 +95,22 @@ int image_getpixel(const Image* image, int x, int y)
 void image_putpixel(Image* image, int x, int y, int color)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
-    image->method->putpixel (image, x, y, color);
+    image->putpixel(x, y, color);
 }
 
 void image_clear(Image* image, int color)
 {
-  image->method->clear (image, color);
+  image->clear(color);
 }
 
 void image_copy(Image* dst, const Image* src, int x, int y)
 {
-  dst->method->copy (dst, src, x, y);
+  dst->copy(src, x, y);
 }
 
 void image_merge(Image* dst, const Image* src, int x, int y, int opacity, int blend_mode)
 {
-  dst->method->merge(dst, src, x, y, opacity, blend_mode);
+  dst->merge(src, x, y, opacity, blend_mode);
 }
 
 Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor)
@@ -169,7 +142,7 @@ void image_hline(Image* image, int x1, int y, int x2, int color)
   if (x1 < 0) x1 = 0;
   if (x2 >= image->w) x2 = image->w-1;
 
-  image->method->hline(image, x1, y, x2, color);
+  image->hline(x1, y, x2, color);
 }
 
 void image_vline(Image* image, int x, int y1, int y2, int color)
@@ -189,7 +162,7 @@ void image_vline(Image* image, int x, int y1, int y2, int color)
   if (y2 >= image->h) y2 = image->h-1;
 
   for (t=y1; t<=y2; t++)
-    image->method->putpixel(image, x, t, color);
+    image->putpixel(x, t, color);
 }
 
 void image_rect(Image* image, int x1, int y1, int x2, int y2, int color)
@@ -243,7 +216,7 @@ void image_rectfill(Image* image, int x1, int y1, int x2, int y2, int color)
   if (x2 >= image->w) x2 = image->w-1;
   if (y2 >= image->h) y2 = image->h-1;
 
-  image->method->rectfill(image, x1, y1, x2, y2, color);
+  image->rectfill(x1, y1, x2, y2, color);
 }
 
 typedef struct Data
@@ -349,12 +322,12 @@ void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color)
  Allegro <-> Image
  *********************************************************************/
 
-void image_to_allegro(Image* image, BITMAP *bmp, int x, int y)
+void image_to_allegro(const Image* image, BITMAP *bmp, int x, int y)
 {
-  image->method->to_allegro(image, bmp, x, y);
+  image->to_allegro(bmp, x, y);
 }
 
-void image_convert(Image* dst, const Image* src)
+void image_convert(const Image* src, Image* dst)
 {
   int c, x, y, w, h;
   float hue, s, v;
@@ -378,14 +351,14 @@ void image_convert(Image* dst, const Image* src)
 	case IMAGE_GRAYSCALE:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel(src, x, y);
+	      c = image_getpixel_fast<RgbTraits>(src, x, y);
 	      rgb_to_hsv(_rgba_getr(c),
 			 _rgba_getg(c),
 			 _rgba_getb(c), &hue, &s, &v);
 	      v = v * 255.0f;
-	      dst->method->putpixel(dst, x, y,
-				    _graya((int)MID(0, v, 255),
-					   _rgba_geta(c)));
+	      image_putpixel_fast<GrayscaleTraits>(dst, x, y,
+						   _graya((int)MID(0, v, 255),
+							  _rgba_geta(c)));
 	    }
 	  }
 	  break;
@@ -394,14 +367,14 @@ void image_convert(Image* dst, const Image* src)
 	case IMAGE_INDEXED:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel(src, x, y);
+	      c = image_getpixel_fast<RgbTraits>(src, x, y);
 	      if  (!_rgba_geta (c))
-		dst->method->putpixel(dst, x, y, 0);
+		image_putpixel_fast<IndexedTraits>(dst, x, y, 0);
 	      else
-		dst->method->putpixel(dst, x, y,
-				      makecol8(_rgba_getr(c),
-					       _rgba_getg(c),
-					       _rgba_getb(c)));
+		image_putpixel_fast<IndexedTraits>(dst, x, y,
+						   makecol8(_rgba_getr(c),
+							    _rgba_getg(c),
+							    _rgba_getb(c)));
 	    }
 	  }
 	  break;
@@ -415,12 +388,12 @@ void image_convert(Image* dst, const Image* src)
 	case IMAGE_RGB:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel(src, x, y);
-	      dst->method->putpixel(dst, x, y,
-				    _rgba(_graya_getv(c),
-					  _graya_getv(c),
-					  _graya_getv(c),
-					  _graya_geta(c)));
+	      c = image_getpixel_fast<GrayscaleTraits>(src, x, y);
+	      image_putpixel_fast<RgbTraits>(dst, x, y,
+					     _rgba(_graya_getv(c),
+						   _graya_getv(c),
+						   _graya_getv(c),
+						   _graya_geta(c)));
 	    }
 	  }
 	  break;
@@ -429,14 +402,14 @@ void image_convert(Image* dst, const Image* src)
 	case IMAGE_INDEXED:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel(src, x, y);
+	      c = image_getpixel_fast<GrayscaleTraits>(src, x, y);
 	      if  (!_graya_geta(c))
-		dst->method->putpixel(dst, x, y, 0);
+		image_putpixel_fast<IndexedTraits>(dst, x, y, 0);
 	      else
-		dst->method->putpixel(dst, x, y,
-				      makecol8(_graya_getv(c),
-					       _graya_getv(c),
-					       _graya_getv(c)));
+		image_putpixel_fast<IndexedTraits>(dst, x, y,
+						   makecol8(_graya_getv(c),
+							    _graya_getv(c),
+							    _graya_getv(c)));
 	    }
 	  }
 	  break;
@@ -450,14 +423,14 @@ void image_convert(Image* dst, const Image* src)
 	case IMAGE_RGB:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel(src, x, y);
+	      c = image_getpixel_fast<IndexedTraits>(src, x, y);
 	      if (!c)
-		dst->method->putpixel(dst, x, y, 0);
+		image_putpixel_fast<RgbTraits>(dst, x, y, 0);
 	      else
-		dst->method->putpixel(dst, x, y,
-				      _rgba(getr8(c),
-					    getg8(c),
-					    getb8(c), 255));
+		image_putpixel_fast<RgbTraits>(dst, x, y,
+					       _rgba(getr8(c),
+						     getg8(c),
+						     getb8(c), 255));
 	    }
 	  }
 	  break;
@@ -466,20 +439,121 @@ void image_convert(Image* dst, const Image* src)
 	case IMAGE_GRAYSCALE:
 	  for (y=0; y<h; y++) {
 	    for (x=0; x<w; x++) {
-	      c = src->method->getpixel(src, x, y);
+	      c = image_getpixel_fast<GrayscaleTraits>(src, x, y);
 	      if (!c)
-		dst->method->putpixel(dst, x, y, 0);
+		image_putpixel_fast<GrayscaleTraits>(dst, x, y, 0);
 	      else {
 		rgb_to_hsv(getr8(c), getg8(c), getb8(c), &hue, &s, &v);
 		v = v * 255.0f;
-		dst->method->putpixel(dst, x, y,
-				      _graya((int)MID(0, v, 255), 255));
+		image_putpixel_fast<GrayscaleTraits>(dst, x, y,
+						     _graya((int)MID(0, v, 255), 255));
 	      }
 	    }
 	  }
 	  break;
       }
       break;
+  }
+}
+
+void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pal, RGB_MAP* rgb_map)
+{
+  switch (method) {
+
+    // TODO optimize this
+    case RESIZE_METHOD_NEAREST_NEIGHBOR: {
+      ase_uint32 color;
+      double u, v, du, dv;
+      int x, y;
+  
+      u = v = 0.0;
+      du = src->w * 1.0 / dst->w;
+      dv = src->h * 1.0 / dst->h;
+      for (y=0; y<dst->h; ++y) {
+	for (x=0; x<dst->w; ++x) {
+	  color = src->getpixel(MID(0, u, src->w-1),
+				MID(0, v, src->h-1));
+	  dst->putpixel(x, y, color);
+	  u += du;
+	}
+	u = 0.0;
+	v += dv;
+      }
+      break;
+    }
+
+      // TODO optimize this
+    case RESIZE_METHOD_BILINEAR: {
+      ase_uint32 color[4], dst_color;
+      double u, v, du, dv;
+      int x, y;
+  
+      u = v = 0.0;
+      du = src->w * 1.0 / dst->w;
+      dv = src->h * 1.0 / dst->h;
+      for (y=0; y<dst->h; ++y) {
+	for (x=0; x<dst->w; ++x) {
+	  int u_floor = floor(u);
+	  int v_floor = floor(v);
+
+	  color[0] = src->getpixel(MID(0, u_floor, src->w-1),
+				   MID(0, v_floor, src->h-1));
+	  color[1] = src->getpixel(MID(0, u_floor+1, src->w-1),
+				   MID(0, v_floor, src->h-1));
+	  color[2] = src->getpixel(MID(0, u_floor, src->w-1),
+				   MID(0, v_floor+1, src->h-1));
+	  color[3] = src->getpixel(MID(0, u_floor+1, src->w-1),
+				   MID(0, v_floor+1, src->h-1));
+
+	  double u1 = u - u_floor;
+	  double v1 = v - v_floor;
+	  double u2 = 1 - u1;
+	  double v2 = 1 - v1;
+
+	  switch (dst->imgtype) {
+	    case IMAGE_RGB: {
+	      int r = ((_rgba_getr(color[0])*u2 + _rgba_getr(color[1])*u1)*v2 +
+		       (_rgba_getr(color[2])*u2 + _rgba_getr(color[3])*u1)*v1);
+	      int g = ((_rgba_getg(color[0])*u2 + _rgba_getg(color[1])*u1)*v2 +
+		       (_rgba_getg(color[2])*u2 + _rgba_getg(color[3])*u1)*v1);
+	      int b = ((_rgba_getb(color[0])*u2 + _rgba_getb(color[1])*u1)*v2 +
+		       (_rgba_getb(color[2])*u2 + _rgba_getb(color[3])*u1)*v1);
+	      int a = ((_rgba_geta(color[0])*u2 + _rgba_geta(color[1])*u1)*v2 +
+		       (_rgba_geta(color[2])*u2 + _rgba_geta(color[3])*u1)*v1);
+	      dst_color = _rgba(r, g, b, a);
+	      break;
+	    }
+	    case IMAGE_GRAYSCALE: {
+	      int v = ((_graya_getv(color[0])*u2 + _graya_getv(color[1])*u1)*v2 +
+		       (_graya_getv(color[2])*u2 + _graya_getv(color[3])*u1)*v1);
+	      int a = ((_graya_geta(color[0])*u2 + _graya_geta(color[1])*u1)*v2 +
+		       (_graya_geta(color[2])*u2 + _graya_geta(color[3])*u1)*v1);
+	      dst_color = _graya(v, a);
+	      break;
+	    }
+	    case IMAGE_INDEXED: {
+	      int r = ((_rgba_getr(pal->color[color[0]])*u2 + _rgba_getr(pal->color[color[1]])*u1)*v2 +
+		       (_rgba_getr(pal->color[color[2]])*u2 + _rgba_getr(pal->color[color[3]])*u1)*v1);
+	      int g = ((_rgba_getg(pal->color[color[0]])*u2 + _rgba_getg(pal->color[color[1]])*u1)*v2 +
+		       (_rgba_getg(pal->color[color[2]])*u2 + _rgba_getg(pal->color[color[3]])*u1)*v1);
+	      int b = ((_rgba_getb(pal->color[color[0]])*u2 + _rgba_getb(pal->color[color[1]])*u1)*v2 +
+		       (_rgba_getb(pal->color[color[2]])*u2 + _rgba_getb(pal->color[color[3]])*u1)*v1);
+	      int a = ((_rgba_geta(pal->color[color[0]])*u2 + _rgba_geta(pal->color[color[1]])*u1)*v2 +
+		       (_rgba_geta(pal->color[color[2]])*u2 + _rgba_geta(pal->color[color[3]])*u1)*v1);
+	      dst_color = a > 127 ? rgb_map->data[r>>3][g>>3][b>>3]: 0;
+	      break;
+	    }
+	  }
+      
+	  dst->putpixel(x, y, dst_color);
+	  u += du;
+	}
+	u = 0.0;
+	v += dv;
+      }
+      break;
+    }
+
   }
 }
 
@@ -552,7 +626,7 @@ bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int ref
   do {								\
     for (u = u_begin; u u_op u_final; u u_add) {		\
       for (v = v_begin; v v_op v_final; v v_add) {		\
-	if (image->method->getpixel (image, U, V) != refpixel)	\
+	if (image->getpixel(U, V) != refpixel)			\
 	  break;						\
       }								\
       if (v == v_final)						\
@@ -588,4 +662,3 @@ bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int ref
 
 #undef SHRINK_SIDE
 }
-

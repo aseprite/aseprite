@@ -19,51 +19,13 @@
 #ifndef RASTER_IMAGE_H
 #define RASTER_IMAGE_H
 
-/* #define USE_ALLEGRO_IMAGE */
-
+#include <allegro/color.h>
 #include "raster/gfxobj.h"
+#include "raster/blend.h"
 
-#define _rgba_r_shift	0
-#define _rgba_g_shift	8
-#define _rgba_b_shift	16
-#define _rgba_a_shift	24
-#define _rgba_getr(c)	(((c) >> _rgba_r_shift) & 0xff)
-#define _rgba_getg(c)	(((c) >> _rgba_g_shift) & 0xff)
-#define _rgba_getb(c)	(((c) >> _rgba_b_shift) & 0xff)
-#define _rgba_geta(c)	(((c) >> _rgba_a_shift) & 0xff)
-#define _rgba(r,g,b,a)				\
-  ((ase_uint32)(((r) << _rgba_r_shift) |	\
-		((g) << _rgba_g_shift) |	\
-		((b) << _rgba_b_shift) |	\
-		((a) << _rgba_a_shift)))
+class Palette;
 
-#define _graya_v_shift	0
-#define _graya_a_shift	8
-#define _graya_getv(c)	(((c) >> _graya_v_shift) & 0xff)
-#define _graya_geta(c)	(((c) >> _graya_a_shift) & 0xff)
-#define _graya(v,a)				\
-  ((ase_uint16)(((v) << _graya_v_shift) |	\
-		((a) << _graya_a_shift)))
-
-#define _image_bitmap_next_bit(d, a)		\
-  if (d.rem < 7)				\
-    d.rem++;					\
-  else {					\
-    a++;					\
-    d.rem = 0;					\
-  }
-
-#define IMAGE_ADDRESS(image,x,y)					\
-  ((void *)((image)->line[(y)] + IMAGE_LINE_SIZE((image), (x))))	\
-
-#define IMAGE_SHIFT(d)				\
-  (((d)->imgtype == IMAGE_RGB)?       2:	\
-   ((d)->imgtype == IMAGE_GRAYSCALE)? 1: 0)
-
-#define IMAGE_LINE_SIZE(image, width)		\
-  ((width) << IMAGE_SHIFT(image))
-
-/* Image Types */
+// Image Types
 enum {
   IMAGE_RGB,
   IMAGE_GRAYSCALE,
@@ -71,9 +33,12 @@ enum {
   IMAGE_BITMAP
 };
 
+enum ResizeMethod {
+  RESIZE_METHOD_NEAREST_NEIGHBOR,
+  RESIZE_METHOD_BILINEAR,
+};
+
 struct BITMAP;
-/* struct Brush; */
-struct ImageMethods;
 
 class Image : public GfxObj
 {
@@ -82,27 +47,18 @@ public:
   int w, h;
   ase_uint8* dat;		/* pixmap data */
   ase_uint8** line;		/* start of each scanline */
-  ImageMethods* method;
-#ifdef USE_ALLEGRO_IMAGE
-  BITMAP* bmp;
-#endif
 
   Image(int imgtype, int w, int h);
   virtual ~Image();
-};
 
-struct ImageMethods
-{
-  void (*init)(Image* image);
-  int (*getpixel)(const Image* image, int x, int y);
-  void (*putpixel)(Image* image, int x, int y, int color);
-  void (*clear)(Image* image, int color);
-  void (*copy)(Image* dst, const Image* src, int x, int y);
-  void (*merge)(Image* dst, const Image* src, int x, int y, int opacity,
-		int blend_mode);
-  void (*hline)(Image* image, int x1, int y, int x2, int color);
-  void (*rectfill)(Image* image, int x1, int y1, int x2, int y2, int color);
-  void (*to_allegro)(const Image* image, BITMAP* bmp, int x, int y);
+  virtual int getpixel(int x, int y) const = 0;
+  virtual void putpixel(int x, int y, int color) = 0;
+  virtual void clear(int color) = 0;
+  virtual void copy(const Image* src, int x, int y) = 0;
+  virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode) = 0;
+  virtual void hline(int x1, int y, int x2, int color) = 0;
+  virtual void rectfill(int x1, int y1, int x2, int y2, int color) = 0;
+  virtual void to_allegro(BITMAP* bmp, int x, int y) const = 0;
 };
 
 Image* image_new(int imgtype, int w, int h);
@@ -130,14 +86,29 @@ void image_line(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_ellipse(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);
 
-/* void image_putpixel_brush(Image* image, struct Brush *brush, int x, int y, int color); */
-/* void image_hline_brush(Image* image, struct Brush *brush, int x1, int y, int x2, int color); */
-/* void image_line_brush(Image* image, struct Brush *brush, int x1, int y1, int x2, int y2, int color); */
+void image_to_allegro(const Image* image, BITMAP* bmp, int x, int y);
 
-void image_to_allegro(Image* image, BITMAP* bmp, int x, int y);
-
-void image_convert(Image* dst, const Image* src);
+void image_convert(const Image* src, Image* dst);
+void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* palette, RGB_MAP* rgb_map);
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
+
+inline int image_shift(Image* image)
+{
+  return ((image->imgtype == IMAGE_RGB)?       2:
+	  (image->imgtype == IMAGE_GRAYSCALE)? 1: 0);
+}
+
+inline int image_line_size(Image* image, int width)
+{
+  return (width << image_shift(image));
+}
+
+inline void* image_address(Image* image, int x, int y)
+{
+  return ((void *)(image->line[y] + image_line_size(image, x)));
+}
+
+#include "image_traits.h"
 
 #endif				/* RASTER_IMAGE_H */

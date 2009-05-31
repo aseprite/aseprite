@@ -379,6 +379,20 @@ void layer_set_blend_mode(Layer* layer, int blend_mode)
     layer->blend_mode = blend_mode;
 }
 
+void layer_get_cels(const Layer* layer, JList cels)
+{
+  JLink link;
+
+  if (layer_is_image(layer)) {
+    JI_LIST_FOR_EACH(layer->cels, link)
+      jlist_append(cels, link->data);
+  }
+  else if (layer_is_set(layer)) {
+    JI_LIST_FOR_EACH(layer->layers, link)
+      layer_get_cels((const Layer*)link->data, cels);
+  }
+}
+
 void layer_add_cel(Layer* layer, Cel* cel)
 {
   if (layer_is_image(layer)) {

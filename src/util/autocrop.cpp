@@ -32,7 +32,7 @@ bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
   do {								\
     for (u = u_begin; u u_op u_final; u u_add) {		\
       for (v = v_begin; v v_op v_final; v v_add) {		\
-	if (image->method->getpixel (image, U, V) != refpixel)	\
+	if (image->getpixel(U, V) != refpixel)			\
 	  break;						\
       }								\
       if (v == v_final)						\
@@ -77,8 +77,7 @@ bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
   do {								\
     for (u = u_begin; u u_op u_final; u u_add) {		\
       for (v = v_begin; v v_op v_final; v v_add) {		\
-	if (image->method->getpixel (image, U, V) !=		\
-	    refimage->method->getpixel (refimage, U, V))	\
+	if (image->getpixel(U, V) != refimage->getpixel(U, V))	\
 	  break;						\
       }								\
       if (v == v_final)						\

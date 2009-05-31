@@ -95,7 +95,7 @@ static void cmd_cel_properties_execute(const char *argument)
 
     /* dimension (and memory size) */
     memsize =
-      IMAGE_LINE_SIZE(sprite->stock->image[cel->image],
+      image_line_size(sprite->stock->image[cel->image],
 		      sprite->stock->image[cel->image]->w)*
       sprite->stock->image[cel->image]->h;
 

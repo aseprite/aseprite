@@ -213,7 +213,7 @@ Image *image_rgb_to_indexed(Image *src_image,
 
   for (y=0; y<src_image->h; y++) {
     for (x=0; x<src_image->w; x++) {
-      c = src_image->method->getpixel(src_image, x, y);
+      c = image_getpixel_fast<RgbTraits>(src_image, x, y);
 
       r = _rgba_getr(c);
       g = _rgba_getg(c);
@@ -258,7 +258,7 @@ Image *image_rgb_to_indexed(Image *src_image,
       else
 	nearestcm = 0;
 
-      dst_image->method->putpixel(dst_image, x, y, nearestcm);
+      image_putpixel_fast<IndexedTraits>(dst_image, x, y, nearestcm);
     }
   }
 

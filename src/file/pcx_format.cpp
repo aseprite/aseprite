@@ -235,23 +235,23 @@ static bool save_PCX(FileOp *fop)
     for (x=0; x<image->w*planes; x++) {  /* for each pixel... */
       if (depth == 8) {
 	if (image->imgtype == IMAGE_INDEXED)
-	  ch = image->method->getpixel(image, x, y);
+	  ch = image_getpixel_fast<IndexedTraits>(image, x, y);
 	else if (image->imgtype == IMAGE_GRAYSCALE) {
-	  c = image->method->getpixel(image, x, y);
+	  c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
 	  ch = _graya_getv(c);
 	}
       }
       else {
         if (x < image->w) {
-          c = image->method->getpixel(image, x, y);
+          c = image_getpixel_fast<RgbTraits>(image, x, y);
           ch = _rgba_getr(c);
         }
         else if (x<image->w*2) {
-          c = image->method->getpixel(image, x-image->w, y);
+          c = image_getpixel_fast<RgbTraits>(image, x-image->w, y);
           ch = _rgba_getg(c);
         }
         else {
-          c = image->method->getpixel(image, x-image->w*2, y);
+          c = image_getpixel_fast<RgbTraits>(image, x-image->w*2, y);
           ch = _rgba_getb(c);
         }
       }

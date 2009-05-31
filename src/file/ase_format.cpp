@@ -778,7 +778,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 		g = fgetc(f);
 		b = fgetc(f);
 		a = fgetc(f);
-		image->method->putpixel(image, x, y, _rgba(r, g, b, a));
+		image_putpixel_fast<RgbTraits>(image, x, y, _rgba(r, g, b, a));
 	      }
 	      fop_progress(fop, (float)ftell(f) / (float)header->size);
 	    }
@@ -789,7 +789,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	      for (x=0; x<image->w; x++) {
 		k = fgetc(f);
 		a = fgetc(f);
-		image->method->putpixel(image, x, y, _graya(k, a));
+		image_putpixel_fast<GrayscaleTraits>(image, x, y, _graya(k, a));
 	      }
 	      fop_progress(fop, (float)ftell(f) / (float)header->size);
 	    }
@@ -798,7 +798,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	  case IMAGE_INDEXED:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++)
-		image->method->putpixel(image, x, y, fgetc(f));
+		image_putpixel_fast<IndexedTraits>(image, x, y, fgetc(f));
 
 	      fop_progress(fop, (float)ftell(f) / (float)header->size);
 	    }
@@ -869,7 +869,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, Sprite *sp
 	  case IMAGE_RGB:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++) {
-		c = image->method->getpixel(image, x, y);
+		c = image_getpixel_fast<RgbTraits>(image, x, y);
 		fputc(_rgba_getr(c), f);
 		fputc(_rgba_getg(c), f);
 		fputc(_rgba_getb(c), f);
@@ -881,7 +881,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, Sprite *sp
 	  case IMAGE_GRAYSCALE:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++) {
-		c = image->method->getpixel(image, x, y);
+		c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
 		fputc(_graya_getv(c), f);
 		fputc(_graya_geta(c), f);
 	      }
@@ -891,7 +891,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, Layer *layer, Sprite *sp
 	  case IMAGE_INDEXED:
 	    for (y=0; y<image->h; y++) {
 	      for (x=0; x<image->w; x++)
-		fputc(image->method->getpixel(image, x, y), f);
+		fputc(image_getpixel_fast<IndexedTraits>(image, x, y), f);
 	    }
 	    break;
 	}

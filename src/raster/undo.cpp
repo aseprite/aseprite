@@ -614,7 +614,7 @@ static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int 
   assert(w >= 1 && h >= 1);
   assert(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
   
-  size = IMAGE_LINE_SIZE(image, w);
+  size = image_line_size(image, w);
 
   chunk = (UndoChunkImage* )
     undo_chunk_new(stream,
@@ -630,7 +630,7 @@ static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int 
 
   ptr = chunk->data;
   for (v=0; v<h; ++v) {
-    memcpy(ptr, IMAGE_ADDRESS(image, x, y+v), size);
+    memcpy(ptr, image_address(image, x, y+v), size);
     ptr += size;
   }
 }
@@ -656,11 +656,11 @@ static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk, int st
     chunk_image_new(stream, image, x, y, w, h);
 
     /* restore the old image portion */
-    size = IMAGE_LINE_SIZE(image, chunk->w);
+    size = image_line_size(image, chunk->w);
     ptr = chunk->data;
 
     for (v=0; v<h; ++v) {
-      memcpy(IMAGE_ADDRESS(image, x, y+v), ptr, size);
+      memcpy(image_address(image, x, y+v), ptr, size);
       ptr += size;
     }
   }
@@ -1537,11 +1537,11 @@ static Dirty *read_raw_dirty(ase_uint8* raw_data)
 
 	  x = dirty->row[v].col[u].x;
 
-	  size = IMAGE_LINE_SIZE(dirty->image, dirty->row[v].col[u].w);
+	  size = image_line_size(dirty->image, dirty->row[v].col[u].w);
 
 	  dirty->row[v].col[u].flags = DIRTY_VALID_COLUMN;
 	  dirty->row[v].col[u].data = jmalloc(size);
-	  dirty->row[v].col[u].ptr = IMAGE_ADDRESS(dirty->image, x, y);
+	  dirty->row[v].col[u].ptr = image_address(dirty->image, x, y);
 
 	  read_raw_data(dirty->row[v].col[u].data, size);
 	}
@@ -1574,7 +1574,7 @@ static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty *dirty)
       write_raw_uint16(dirty->row[v].col[u].x);
       write_raw_uint16(dirty->row[v].col[u].w);
 
-      size = IMAGE_LINE_SIZE(dirty->image, dirty->row[v].col[u].w);
+      size = image_line_size(dirty->image, dirty->row[v].col[u].w);
       write_raw_data(dirty->row[v].col[u].data, size);
     }
   }
@@ -1590,7 +1590,7 @@ static int get_raw_dirty_size(Dirty *dirty)
     size += 4;			/* y, cols (WORD[2]) */
     for (u=0; u<dirty->row[v].cols; u++) {
       size += 4;		/* x, w (WORD[2]) */
-      size += IMAGE_LINE_SIZE(dirty->image, dirty->row[v].col[u].w);
+      size += image_line_size(dirty->image, dirty->row[v].col[u].w);
     }
   }
 
@@ -1632,7 +1632,7 @@ static Image* read_raw_image(ase_uint8* raw_data)
   read_raw_uint16(height);	   /* height */
 
   image = image_new(imgtype, width, height);
-  size = IMAGE_LINE_SIZE(image, image->w);
+  size = image_line_size(image, image->w);
 
   for (c=0; c<image->h; c++)
     read_raw_data(image->line[c], size);
@@ -1652,7 +1652,7 @@ static ase_uint8* write_raw_image(ase_uint8* raw_data, Image* image)
   write_raw_uint16(image->w);		   /* width */
   write_raw_uint16(image->h);		   /* height */
 
-  size = IMAGE_LINE_SIZE(image, image->w);
+  size = image_line_size(image, image->w);
   for (c=0; c<image->h; c++)
     write_raw_data(image->line[c], size);
 
@@ -1662,7 +1662,7 @@ static ase_uint8* write_raw_image(ase_uint8* raw_data, Image* image)
 static int get_raw_image_size(Image* image)
 {
   assert(image != NULL);
-  return 4+1+2+2+IMAGE_LINE_SIZE(image, image->w) * image->h;
+  return 4+1+2+2+image_line_size(image, image->w) * image->h;
 }
 
 /***********************************************************************

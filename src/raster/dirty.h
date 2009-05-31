@@ -19,15 +19,14 @@
 #ifndef RASTER_DIRTY_H
 #define RASTER_DIRTY_H
 
+#include "raster/image.h"
+
 struct Brush;
 class Image;
 class Mask;
 
 #define DIRTY_VALID_COLUMN	1
 #define DIRTY_MUSTBE_UPDATED	2
-
-#define DIRTY_LINE_SIZE(width)			\
-  (IMAGE_LINE_SIZE(dirty->image, width))
 
 struct DirtyCol
 {
@@ -74,6 +73,11 @@ void dirty_line_brush(Dirty* dirty, Brush* brush, int x1, int y1, int x2, int y2
 void dirty_save_image_data(Dirty* dirty);
 void dirty_restore_image_data(Dirty* dirty);
 void dirty_swap(Dirty* dirty);
+
+inline int dirty_line_size(Dirty* dirty, int width)
+{
+  return image_line_size(dirty->image, width);
+}
 
 #endif /* RASTER_DIRTY_H */
 

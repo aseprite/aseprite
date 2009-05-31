@@ -1,0 +1,34 @@
+<!-- ASE - Allegro Sprite Editor -->
+<!-- Copyright (C) 2001-2009 by David Capello -->
+<jinete>
+<window text="Canvas Size" name="canvas_size">
+  <box vertical>
+    <box horizontal>
+      <box vertical homogeneous>
+	<label text="Left:" />
+	<label text="Right:" />
+      </box>
+      <box vertical homogeneous>
+	<entry text="0" name="left" maxsize="32" maxwidth="64" tooltip="Columns to be added/removed in the left side.\nUse a negative number to remove columns." />
+	<entry text="0" name="right" maxsize="32" maxwidth="64" tooltip="Columns to be added/removed in the right side.\nUse a negative number to remove columns." />
+      </box>
+      <box vertical homogeneous>
+	<label text="Top:" />
+	<label text="Bottom:" />
+      </box>
+      <box vertical homogeneous>
+	<entry text="0" name="top" maxsize="32" maxwidth="64" tooltip="Rows to be added/removed in the top side.\nUse a negative number to remove rows." />
+	<entry text="0" name="bottom" maxsize="32" maxwidth="64" tooltip="Rows to be added/removed in the bottom side.\nUse a negative number to remove rows." />
+      </box>
+    </box>
+    <separator horizontal />
+    <box horizontal>
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="ok" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
+    </box>
+  </box>
+</window>
+</jinete>

@@ -2,11 +2,13 @@
 NEWS
 ===================================
 
-0.6.2
------
+0.7
+---
 
-+ Copy & Paste use Windows clipboard (feature #2577954).
++ Added "Sprite Size" command (feature #2671468).
 + Added "Save Copy As" command (feature #2636076).
++ Copy & Paste use Windows clipboard (feature #2577954).
++ Added "Canvas Size" and "Rotate Canvas" commands.
 + Fixed compilation support for gcc 64 bits.
 + Fixed a bug with multiple editors and paste command.
 + Fixed a bug in the File Open dialog when user presses ENTER key

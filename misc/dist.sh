@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.6.2
+version=0.7
 distdir=ase-$version
 
 freetype_files="third_party/freetype/ChangeLog				\

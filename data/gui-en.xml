@@ -81,7 +81,6 @@
  	    <key tool="paint_bucket" shortcut="G" />
 	    <key tool="line" shortcut="L" />
 	    <key tool="curve" shortcut="V" />
-	    <key tool="curve" shortcut="L" />
 	    <key tool="rectangle" shortcut="U" />
 	    <key tool="ellipse" shortcut="O" />
 	    <key tool="ellipse" shortcut="U" />
@@ -127,12 +126,23 @@
 	</menu>
 	<menu name="&Sprite">
 	    <item command="sprite_properties" name="&Properties..." />
-	    <separator />
-	    <item command="change_image_type" name="&Color Mode..." />
+	    <item command="change_image_type" name="Color &Mode..." />
 	    <separator />
 	    <item command="duplicate_sprite" name="&Duplicate..." />
+	    <separator />
+	    <item command="sprite_size" name="&Sprite Size..." />
+	    <item command="canvas_size" name="&Canvas Size..." />
+	    <menu name name="&Rotate Canvas">
+		<item command="rotate_canvas" name="180" argument="180" />
+		<item command="rotate_canvas" name="90 CW" argument="90" />
+		<item command="rotate_canvas" name="90 CCW" argument="-90" />
+		<separator />
+		<item command="flip_canvas_horizontal" name="Flip Canvas &Horizontal" />
+		<item command="flip_canvas_vertical" name="Flip Canvas &Vertical" />
+	    </menu>
+	    <separator />
 	    <item command="crop_sprite" name="Cr&op" />
-	    <item command="autocrop_sprite" name="&Auto Crop" />
+	    <item command="autocrop_sprite" name="&Trim" />
 	</menu>
 	<menu name="&Layer">
 	    <item command="layer_properties" name="&Properties..." />

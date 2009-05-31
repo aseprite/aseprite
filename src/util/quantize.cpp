@@ -341,7 +341,7 @@ static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int
     /*    add_progress(image[c_bmp]->h); */
     for (y=0;y<image[c_bmp]->h;y++) {
       for (x=0;x<image[c_bmp]->w;x++) {
-	c=image[c_bmp]->method->getpixel(image[c_bmp],x,y);
+	c=image[c_bmp]->getpixel(x,y);
 	r=_rgba_getr(c)>>2;
 	g=_rgba_getg(c)>>2;
 	b=_rgba_getb(c)>>2;

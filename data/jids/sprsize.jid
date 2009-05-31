@@ -1,0 +1,52 @@
+<!-- ASE - Allegro Sprite Editor -->
+<!-- Copyright (C) 2001-2009 by David Capello -->
+<jinete>
+<window text="Sprite Size" name="sprite_size">
+  <box vertical>
+    <box vertical>
+      <separator text="Pixels:" left horizontal />
+      <box vertical expansive>
+        <box horizontal>
+          <box vertical homogeneous>
+            <label text="Width:" />
+            <label text="Height:" />
+          </box>
+          <box vertical homogeneous expansive>
+            <entry expansive name="width_px" maxsize=8 magnetic tooltip="New width for the sprite (in pixels)" />
+            <entry expansive name="height_px" maxsize=8 tooltip="New height for the sprite (in pixels)" />
+          </box>
+          <check text="Lock Ratio" name="lock_ratio" selected />
+        </box>
+      </box>
+      <separator text="Percentage:" left horizontal />
+      <box vertical expansive>
+        <box horizontal>
+          <box vertical homogeneous>
+            <label text="Width:" />
+            <label text="Height:" />
+          </box>
+          <box vertical homogeneous expansive>
+            <entry expansive text="100%%" name="width_perc" maxsize=8 magnetic tooltip="New width for the sprite\nPercentage of current width." />
+            <entry expansive text="100%%" name="height_perc" maxsize=8 tooltip="New height for the sprite\nPercentage of current height." />
+          </box>
+          <box horizontal width="64" />
+        </box>
+      </box>
+    </box>
+    <separator text="Interpolation:" left horizontal />
+    <box vertical expansive>
+      <box horizontal>
+        <label text="Method:" />
+        <combobox name="method" expansive />
+      </box>
+    </box>
+    <box horizontal>
+      <box horizontal expansive />
+      <box horizontal homogeneous>
+	<button text="&OK" name="ok" magnetic width="60" />
+	<button text="&Cancel" />
+      </box>
+    </box>
+  </box>
+</window>
+</jinete>

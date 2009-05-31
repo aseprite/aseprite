@@ -1,3 +1,18 @@
+2009-05-30  David A. Capello  <davidcapello@gmail.com>
+
+	* src/raster/image_impl.h (ImageImpl): Changed the implementation of
+	images with templates.
+
+2009-05-20  David A. Capello  <davidcapello@gmail.com>
+
+	* src/commands/cmd_sprite_size.cpp (cmd_sprite_size_execute): Implemented
+	feature #2671468: Resize a sprite.
+
+2009-05-17  David A. Capello  <davidcapello@gmail.com>
+
+	* src/commands/cmd_canvas_size.cpp (cmd_canvas_size_execute):
+	Added command to change the canvas size.
+
 2009-03-08  David A. Capello  <davidcapello@gmail.com>
 
 	* src/modules/tools.cpp: Now tiled mode can be specified by X

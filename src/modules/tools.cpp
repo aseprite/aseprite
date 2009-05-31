@@ -1682,9 +1682,6 @@ static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data)
 									\
   /* with mask */							\
   if (data->mask != NULL) {						\
-    int (*getpixel)(const Image *, int, int) =				\
-      data->mask->bitmap->method->getpixel;				\
-									\
     if ((y < data->mask_y) || (y >= data->mask_y+data->mask->h))	\
       return;								\
 									\
@@ -1694,12 +1691,10 @@ static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data)
     if (x2 > data->mask_x+data->mask->w-1)				\
       x2 = data->mask_x+data->mask->w-1;				\
 									\
-    if (data->mask->bitmap != NULL) {					\
+    if (Image* bitmap = data->mask->bitmap) {				\
       addresses_initialize;						\
       for (x=x1; x<=x2; ++x) {						\
-	if (getpixel(data->mask->bitmap,				\
-		     x-data->mask_x,					\
-		     y-data->mask_y))					\
+	if (bitmap->getpixel(x-data->mask_x, y-data->mask_y))		\
 	  processing;							\
 									\
 	addresses_increment;						\
@@ -1714,17 +1709,17 @@ static void line_for_spline(int x1, int y1, int x2, int y2, ToolData *data)
     addresses_increment;						\
   }
 
-#define DEFINE_INK_PROCESSING_DST(type, processing)				  \
-  DEFINE_INK_PROCESSING(register type *dst_address;				, \
-			dst_address = ((type **)data->dst_image->line)[y]+x1;	, \
-			++dst_address						, \
+#define DEFINE_INK_PROCESSING_DST(Traits, processing)			\
+  DEFINE_INK_PROCESSING(register Traits::address_t dst_address;				 , \
+			dst_address = ((Traits::address_t*)data->dst_image->line)[y]+x1; , \
+			++dst_address							 , \
 			processing)
 
-#define DEFINE_INK_PROCESSING_SRCDST(type, processing)				  \
-  DEFINE_INK_PROCESSING(register type *src_address;				  \
-			register type *dst_address;				, \
-			src_address = ((type **)data->src_image->line)[y]+x1;	  \
-			dst_address = ((type **)data->dst_image->line)[y]+x1;	, \
+#define DEFINE_INK_PROCESSING_SRCDST(Traits, processing)			  \
+  DEFINE_INK_PROCESSING(register Traits::address_t src_address;			  \
+			register Traits::address_t dst_address;			, \
+			src_address = ((Traits::address_t*)data->src_image->line)[y]+x1;	  \
+			dst_address = ((Traits::address_t*)data->dst_image->line)[y]+x1;	, \
 			++src_address;						  \
 			++dst_address;						, \
 			processing)
@@ -1738,7 +1733,7 @@ static void ink_hline32_opaque(int x1, int y, int x2, ToolData *data)
   int c = data->color;
 
   DEFINE_INK_PROCESSING_DST
-    (ase_uint32,
+    (RgbTraits,
      *dst_address = c			);
 }
 
@@ -1747,7 +1742,7 @@ static void ink_hline16_opaque(int x1, int y, int x2, ToolData *data)
   int c = data->color;
 
   DEFINE_INK_PROCESSING_DST
-    (ase_uint16,
+    (GrayscaleTraits,
      *dst_address = c			);
 }
 
@@ -1756,7 +1751,7 @@ static void ink_hline8_opaque(int x1, int y, int x2, ToolData *data)
   int c = data->color;
 
   DEFINE_INK_PROCESSING_DST
-    (ase_uint8,
+    (IndexedTraits,
      *dst_address = c			);
 
   /* memset(((ase_uint8 **)data->dst_image->line)[y]+x1, data->color, x2-x1+1); */
@@ -1772,7 +1767,7 @@ static void ink_hline32_glass(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32,
+    (RgbTraits,
      *dst_address = _rgba_blend_normal(*src_address, color, opacity));
 }  
 
@@ -1782,7 +1777,7 @@ static void ink_hline16_glass(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16,
+    (GrayscaleTraits,
      *dst_address = _graya_blend_normal(*src_address, color, opacity));
 }  
 
@@ -1794,7 +1789,7 @@ static void ink_hline8_glass(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8,
+    (IndexedTraits,
      {
        c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
        *dst_address = orig_rgb_map->data
@@ -1820,7 +1815,7 @@ static void ink_hline32_soften(int x1, int y, int x2, ToolData *data)
   ase_uint32 *src_address2;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32,
+    (RgbTraits,
      {
        c = 0;
        r = g = b = a = 0;
@@ -1870,7 +1865,7 @@ static void ink_hline16_soften(int x1, int y, int x2, ToolData *data)
   ase_uint16 *src_address2;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16,
+    (GrayscaleTraits,
      {
        c = 0;
        v = a = 0;
@@ -1915,7 +1910,7 @@ static void ink_hline8_soften(int x1, int y, int x2, ToolData *data)
   ase_uint8 *src_address2;
   
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8,
+    (IndexedTraits,
      {
        c = 0;
        r = g = b = a = 0;
@@ -1963,7 +1958,7 @@ static void ink_hline32_replace(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32,
+    (RgbTraits,
      if (*src_address == other_color) {
        *dst_address = _rgba_blend_normal(*src_address, color, opacity);
      });
@@ -1976,7 +1971,7 @@ static void ink_hline16_replace(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16,
+    (GrayscaleTraits,
      if (*src_address == other_color) {
        *dst_address = _graya_blend_normal(*src_address, color, opacity);
      });
@@ -1991,7 +1986,7 @@ static void ink_hline8_replace(int x1, int y, int x2, ToolData *data)
   int opacity = data->opacity;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8,
+    (IndexedTraits,
      if (*src_address == other_color) {
        c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
        *dst_address = orig_rgb_map->data
@@ -2039,7 +2034,7 @@ static void ink_hline32_jumble(int x1, int y, int x2, ToolData *data)
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint32,
+    (RgbTraits,
      {
        JUMBLE_XY_IN_UV();
        *dst_address = _rgba_blend_MERGE(*src_address, color, opacity);
@@ -2056,7 +2051,7 @@ static void ink_hline16_jumble(int x1, int y, int x2, ToolData *data)
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint16,
+    (GrayscaleTraits,
      {
        JUMBLE_XY_IN_UV();
        *dst_address = _graya_blend_MERGE(*src_address, color, opacity);
@@ -2075,7 +2070,7 @@ static void ink_hline8_jumble(int x1, int y, int x2, ToolData *data)
   int u, v, color;
 
   DEFINE_INK_PROCESSING_SRCDST
-    (ase_uint8,
+    (IndexedTraits,
      {
        JUMBLE_XY_IN_UV();
 

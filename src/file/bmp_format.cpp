@@ -555,7 +555,7 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
       g = gscale ? gscale[g]: g;
       b = bscale ? bscale[b]: b;
 
-      image->method->putpixel(image, j, line, _rgba(r, g, b, 255));
+      image_putpixel_fast<RgbTraits>(image, j, line, _rgba(r, g, b, 255));
     }
 
     j = (bytes_per_pixel*j) % 4;
@@ -768,12 +768,12 @@ static bool save_BMP(FileOp *fop)
     for (j=0; j<image->w; j++) {
       if (bpp == 8) {
 	if (image->imgtype == IMAGE_INDEXED)
-	  fputc(image->method->getpixel(image, j, i), f);
+	  fputc(image_getpixel_fast<IndexedTraits>(image, j, i), f);
 	else if (image->imgtype == IMAGE_GRAYSCALE)
-	  fputc(_graya_getv(image->method->getpixel(image, j, i)), f);
+	  fputc(_graya_getv(image_getpixel_fast<GrayscaleTraits>(image, j, i)), f);
       }
       else {
-        c = image->method->getpixel(image, j, i);
+        c = image_getpixel_fast<RgbTraits>(image, j, i);
         fputc(_rgba_getb(c), f);
         fputc(_rgba_getg(c), f);
         fputc(_rgba_getr(c), f);
