@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 #include <allegro.h>
-#if defined ALLEGRO_WINDOWS && defined MEMLEAK
+#if defined ALLEGRO_WINDOWS && defined DEBUGMODE
 #include <winalleg.h>
 #include <psapi.h>
 #endif
@@ -29,6 +29,7 @@
 
 #include "commands/commands.h"
 #include "core/app.h"
+#include "widgets/statebar.h"
 
 static void cmd_refresh_execute(const char *argument)
 {
@@ -39,14 +40,15 @@ static void cmd_refresh_execute(const char *argument)
   app_refresh_screen();
 
   /* print memory information */
-#if defined ALLEGRO_WINDOWS && defined MEMLEAK
+#if defined ALLEGRO_WINDOWS && defined DEBUGMODE
   {
     PROCESS_MEMORY_COUNTERS pmc;
     if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
-      printf("----\n");
-      printf("current memory: %.16g KB (%lu)\n", pmc.WorkingSetSize / 1024.0, pmc.WorkingSetSize);
-      printf("peak of memory: %.16g KB (%lu)\n", pmc.PeakWorkingSetSize / 1024.0, pmc.PeakWorkingSetSize);
-      fflush(stdout);
+      statusbar_show_tip(app_get_statusbar(), 1000,
+			 "Current memory: %.16g KB (%lu)\n"
+			 "Peak of memory: %.16g KB (%lu)",
+			 pmc.WorkingSetSize / 1024.0, pmc.WorkingSetSize,
+			 pmc.PeakWorkingSetSize / 1024.0, pmc.PeakWorkingSetSize);
     }
   }
 #endif

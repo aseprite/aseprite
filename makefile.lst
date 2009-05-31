@@ -86,6 +86,7 @@ COMMON_SOURCES =					\
 	src/core/dirs.cpp				\
 	src/core/drop_files.cpp				\
 	src/core/file_system.cpp			\
+	src/core/job.cpp				\
 	src/core/modules.cpp				\
 	src/dialogs/aniedit.cpp				\
 	src/dialogs/canvasze.cpp			\

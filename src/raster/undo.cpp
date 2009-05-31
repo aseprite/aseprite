@@ -113,8 +113,10 @@ typedef struct UndoAction
   void (*invert)(UndoStream* stream, UndoChunk* chunk, int state);
 } UndoAction;
 
-static void run_undo(Undo* undo, int state, bool discard);
+static void run_undo(Undo* undo, int state);
+static void discard_undo_tail(Undo* undo);
 static int count_undo_groups(UndoStream* undo_stream);
+static bool out_of_group(UndoStream* undo_stream);
 static void update_undo(Undo* undo);
 
 /* Undo actions */
@@ -230,7 +232,7 @@ static int get_raw_mask_size(Mask* mask);
 static UndoStream* undo_stream_new(Undo* undo);
 static void undo_stream_free(UndoStream* stream);
 
-static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, int tail);
+static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail);
 static void undo_stream_push_chunk(UndoStream* stream, UndoChunk* chunk);
 
 //////////////////////////////////////////////////////////////////////
@@ -314,13 +316,13 @@ bool undo_can_redo(Undo* undo)
 void undo_do_undo(Undo* undo)
 {
   assert(undo);
-  run_undo(undo, DO_UNDO, FALSE);
+  run_undo(undo, DO_UNDO);
 }
 
 void undo_do_redo(Undo* undo)
 {
   assert(undo);
-  run_undo(undo, DO_REDO, FALSE);
+  run_undo(undo, DO_REDO);
 }
 
 void undo_clear_redo(Undo* undo)
@@ -357,7 +359,7 @@ const char *undo_get_next_redo_label(Undo* undo)
   return chunk->label;
 }
 
-static void run_undo(Undo* undo, int state, bool discard_tail)
+static void run_undo(Undo* undo, int state)
 {
   UndoStream* undo_stream = ((state == DO_UNDO)? undo->undo_stream:
 						 undo->redo_stream);
@@ -366,50 +368,55 @@ static void run_undo(Undo* undo, int state, bool discard_tail)
   UndoChunk* chunk;
   int level = 0;
 
-  if (!discard_tail) {
-    do {
-      chunk = undo_stream_pop_chunk(undo_stream, FALSE); /* read from head */
-      if (!chunk)
-	break;
+  do {
+    chunk = undo_stream_pop_chunk(undo_stream, false); // read from head
+    if (!chunk)
+      break;
 
-      { int c;
-	for (c=0; c<ABS(level); c++)
-	  PRINTF("  ");
-	PRINTF("%s: %s (Label: %s)\n",
-	       (state == DO_UNDO) ? "Undo": "Redo",
-	       undo_actions[chunk->type].name,
-	       chunk->label); }
+    { int c;
+      for (c=0; c<ABS(level); c++)
+	PRINTF("  ");
+      PRINTF("%s: %s (Label: %s)\n",
+	     (state == DO_UNDO) ? "Undo": "Redo",
+	     undo_actions[chunk->type].name,
+	     chunk->label); }
 
-      undo_set_label(undo, chunk->label);
-      (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
+    undo_set_label(undo, chunk->label);
+    (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
 
-      if (chunk->type == UNDO_TYPE_OPEN)
-	level++;
-      else if (chunk->type == UNDO_TYPE_CLOSE)
-	level--;
+    if (chunk->type == UNDO_TYPE_OPEN)
+      level++;
+    else if (chunk->type == UNDO_TYPE_CLOSE)
+      level--;
 
-      undo_chunk_free(chunk);
+    undo_chunk_free(chunk);
 
-      if (state == DO_UNDO)
-	undo->diff_count--;
-      else if (state == DO_REDO)
-	undo->diff_count++;
-    } while (level);
-  }
-  else {
-    do {
-      chunk = undo_stream_pop_chunk(undo_stream, TRUE); /* read from tail */
-      if (!chunk)
-	break;
+    if (state == DO_UNDO)
+      undo->diff_count--;
+    else if (state == DO_REDO)
+      undo->diff_count++;
+  } while (level);
+}
 
-      if (chunk->type == UNDO_TYPE_OPEN)
-	level++;
-      else if (chunk->type == UNDO_TYPE_CLOSE)
-	level--;
+static void discard_undo_tail(Undo* undo)
+{
+  UndoStream* undo_stream = undo->undo_stream;
+  UndoStream* redo_stream = undo->redo_stream;
+  UndoChunk* chunk;
+  int level = 0;
 
-      undo_chunk_free(chunk);
-    } while (level);
-  }
+  do {
+    chunk = undo_stream_pop_chunk(undo_stream, true); // read from tail
+    if (!chunk)
+      break;
+
+    if (chunk->type == UNDO_TYPE_OPEN)
+      level++;
+    else if (chunk->type == UNDO_TYPE_CLOSE)
+      level--;
+
+    undo_chunk_free(chunk);
+  } while (level);
 }
 
 static int count_undo_groups(UndoStream* undo_stream)
@@ -440,10 +447,33 @@ static int count_undo_groups(UndoStream* undo_stream)
   return groups;
 }
 
+static bool out_of_group(UndoStream* undo_stream)
+{
+  UndoChunk* chunk;
+  int level;
+  JLink link;
+
+  link = jlist_first(undo_stream->chunks);
+  while (link != undo_stream->chunks->end) {
+    level = 0;
+
+    do {
+      chunk = reinterpret_cast<UndoChunk*>(link->data);
+      link = link->next;
+
+      if (chunk->type == UNDO_TYPE_OPEN)
+	level++;
+      else if (chunk->type == UNDO_TYPE_CLOSE)
+	level--;
+    } while (level && (link != undo_stream->chunks->end));
+  }
+
+  return level == 0;
+}
+
 /* called every time a new undo is added */
 static void update_undo(Undo* undo)
 {
-  int groups = count_undo_groups(undo->undo_stream);
   int undo_size_limit = get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 
   /* more diff */
@@ -452,10 +482,14 @@ static void update_undo(Undo* undo)
   /* reset the "redo" stream */
   undo_clear_redo(undo);
 
-  /* "undo" is too big? */
-  while (groups > 1 && undo->undo_stream->size > undo_size_limit) {
-    run_undo(undo, DO_UNDO, TRUE);
-    groups--;
+  if (out_of_group(undo->undo_stream)) {
+    int groups = count_undo_groups(undo->undo_stream);
+
+    /* "undo" is too big? */
+    while (groups > 1 && undo->undo_stream->size > undo_size_limit) {
+      discard_undo_tail(undo);
+      groups--;
+    }
   }
 }
 
@@ -1990,7 +2024,7 @@ static void undo_stream_free(UndoStream* stream)
   jfree(stream);
 }
 
-static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, int tail)
+static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail)
 {
   UndoChunk* chunk;
   JLink link;

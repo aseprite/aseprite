@@ -18,13 +18,9 @@ endif
 CFLAGS =
 LFLAGS = -mwindows -lshlwapi
 ifdef DEBUGMODE
-  LFLAGS_LAST = -lalld
+  LFLAGS_LAST = -lalld -lpsapi
 else
   LFLAGS_LAST = -lalleg
-endif
-
-ifdef MEMLEAK
-  LFLAGS += -lpsapi
 endif
 
 WITHICON = 1

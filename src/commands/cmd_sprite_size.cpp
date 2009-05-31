@@ -23,6 +23,7 @@
 #include "jinete/jinete.h"
 
 #include "core/cfg.h"
+#include "core/job.h"
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -34,6 +35,84 @@
 #include "raster/undoable.h"
 
 #define PERC_FORMAT	"%.1f%%"
+
+class SpriteSizeJob : public Job
+{
+  Sprite* m_sprite;
+  int m_new_width;
+  int m_new_height;
+  ResizeMethod m_resize_method;
+
+public:
+
+  SpriteSizeJob(Sprite* sprite, int new_width, int new_height, ResizeMethod resize_method)
+  {
+    m_sprite = sprite;
+    m_new_width = new_width;
+    m_new_height = new_height;
+    m_resize_method = resize_method;
+  }
+
+protected:
+
+  /**
+   * [working thread]
+   */
+  virtual void on_job()
+  {
+    Undoable undoable(m_sprite, "Sprite Size");
+
+    // get all sprite cels
+    JList cels = jlist_new();
+    sprite_get_cels(m_sprite, cels);
+
+    // for each cel...
+    JLink link;
+    JI_LIST_FOR_EACH(cels, link) {
+      Cel* cel = (Cel*)link->data;
+
+      // change it location
+      undoable.set_cel_position(cel,
+				cel->x * m_new_width / m_sprite->w,
+				cel->y * m_new_height / m_sprite->h);
+    }
+    jlist_free(cels);
+
+    // for each stock's image
+    for (int i=0; i<m_sprite->stock->nimage; ++i) {
+      Image* image = stock_get_image(m_sprite->stock, i);
+      if (!image)
+	continue;
+
+      // resize the image
+      int w = image->w * m_new_width / m_sprite->w;
+      int h = image->h * m_new_height / m_sprite->h;
+      Image* new_image = image_new(image->imgtype, MAX(1, w), MAX(1, h));
+
+      image_resize(image, new_image,
+		   m_resize_method,
+		   get_current_palette(),
+		   orig_rgb_map);
+
+      undoable.replace_stock_image(i, new_image);
+
+      job_progress((float)i / m_sprite->stock->nimage);
+
+      // cancel all the operation?
+      if (is_canceled())
+	return;	       // Undoable destructor will undo all operations
+    }
+
+    // resize sprite
+    undoable.set_sprite_size(m_new_width, m_new_height);
+
+    // TODO resize mask
+
+    // commit changes
+    undoable.commit();
+  }
+
+};
 
 static bool lock_ratio_change_hook(JWidget widget, void *data);
 static bool width_px_change_hook(JWidget widget, void *data);
@@ -92,55 +171,16 @@ static void cmd_sprite_size_execute(const char *argument)
   if (jwindow_get_killer(window) == ok) {
     int new_width = width_px->text_int();
     int new_height = height_px->text_int();
+    ResizeMethod resize_method =
+      (ResizeMethod)jcombobox_get_selected_index(method);
+
+    set_config_int("SpriteSize", "Method", resize_method);
 
     {
-      Undoable undoable(sprite, "Sprite Size");
-      ResizeMethod resize_method =
-	(ResizeMethod)jcombobox_get_selected_index(method);
-
-      set_config_int("SpriteSize", "Method", resize_method);
-
-      // get all sprite cels
-      JList cels = jlist_new();
-      sprite_get_cels(sprite, cels);
-
-      // for each cel...
-      JLink link;
-      JI_LIST_FOR_EACH(cels, link) {
-	Cel* cel = (Cel*)link->data;
-
-	// change it location
-	undoable.set_cel_position(cel,
-				  cel->x * new_width / sprite->w,
-				  cel->y * new_height / sprite->h);
-      }
-      jlist_free(cels);
-
-      // for each stock's image
-      for (int i=0; i<sprite->stock->nimage; ++i) {
-	Image* image = stock_get_image(sprite->stock, i);
-	if (!image)
-	  continue;
-
-	// resize the image
-	int w = image->w * new_width / sprite->w;
-	int h = image->h * new_height / sprite->h;
-	Image* new_image = image_new(image->imgtype, MAX(1, w), MAX(1, h));
-
-	image_resize(image, new_image,
-		     resize_method,
-		     get_current_palette(),
-		     orig_rgb_map);
-
-	undoable.replace_stock_image(i, new_image);
-      }
-
-      // resize sprite
-      undoable.set_sprite_size(new_width, new_height);
-
-      // TODO resize mask
-      undoable.commit();
+      SpriteSizeJob job(sprite, new_width, new_height, resize_method);
+      job.do_job();
     }
+
     sprite_generate_mask_boundaries(sprite);
     update_screen_for_sprite(sprite);
   }

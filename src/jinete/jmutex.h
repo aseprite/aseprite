@@ -40,4 +40,15 @@ void jmutex_free(JMutex mutex);
 void jmutex_lock(JMutex mutex);
 void jmutex_unlock(JMutex mutex);
 
+//////////////////////////////////////////////////////////////////////
+// ScopedLock
+
+class ScopedLock
+{
+  JMutex m_mutex;
+public:
+  ScopedLock(JMutex mutex) : m_mutex(mutex) { jmutex_lock(m_mutex); }
+  ~ScopedLock() { jmutex_unlock(m_mutex); }
+};
+
 #endif /* JINETE_MUTEX_H */

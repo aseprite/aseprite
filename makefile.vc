@@ -39,7 +39,7 @@ LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
 ifdef DEBUGMODE
   CFLAGS += -Zi -MDd -DDEBUGMODE
   LFLAGS += -DEBUG
-  LIBS += Alld.lib
+  LIBS += Alld.lib psapi.lib
 else
   CFLAGS += -O2 -MD -DNDEBUG
   LFLAGS += -RELEASE

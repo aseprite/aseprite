@@ -1,3 +1,13 @@
+2009-05-31  David A. Capello  <davidcapello@gmail.com>
+
+	* src/file/file.cpp (fop_free): Fixed a mutex-handle leak.
+
+	* src/raster/undo.cpp (update_undo): Fixed a bug where
+	the current open-undo-chunk were discarded if the undo-limit
+	were reached.
+
+	* src/core/job.cpp: Added Job class to do background jobs more easily.
+
 2009-05-30  David A. Capello  <davidcapello@gmail.com>
 
 	* src/raster/image_impl.h (ImageImpl): Changed the implementation of

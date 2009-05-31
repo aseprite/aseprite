@@ -34,34 +34,43 @@
 
 #include "jinete/jmutex.h"
 
+struct {
+  void (*destroy)(JMutex mutex);
+  void (*lock)(JMutex mutex);
+  void (*unlock)(JMutex mutex);
+} mutex_vtable = { NULL, NULL, NULL };
+
 JMutex jmutex_new()
 {
   assert(system_driver != NULL);
   assert(system_driver->create_mutex != NULL);
+
+  if (!mutex_vtable.destroy) {
+    mutex_vtable.destroy = system_driver->destroy_mutex;
+    mutex_vtable.lock    = system_driver->lock_mutex;
+    mutex_vtable.unlock  = system_driver->unlock_mutex;
+  }
 
   return (JMutex)system_driver->create_mutex();
 }
 
 void jmutex_free(JMutex mutex)
 {
-  assert(system_driver != NULL);
-  assert(system_driver->destroy_mutex != NULL);
+  assert(mutex_vtable.destroy != NULL);
 
-  system_driver->destroy_mutex(mutex);
+  (*mutex_vtable.destroy)(mutex);
 }
 
 void jmutex_lock(JMutex mutex)
 {
-  assert(system_driver != NULL);
-  assert(system_driver->lock_mutex != NULL);
+  assert(mutex_vtable.lock != NULL);
 
-  system_driver->lock_mutex(mutex);
+  (*mutex_vtable.lock)(mutex);
 }
 
 void jmutex_unlock(JMutex mutex)
 {
-  assert(system_driver != NULL);
-  assert(system_driver->unlock_mutex != NULL);
+  assert(mutex_vtable.unlock != NULL);
 
-  system_driver->unlock_mutex(mutex);
+  (*mutex_vtable.unlock)(mutex);
 }

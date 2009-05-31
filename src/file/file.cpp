@@ -704,6 +704,9 @@ void fop_free(FileOp *fop)
   if (fop->seq.palette != NULL)
     palette_free(fop->seq.palette);
 
+  if (fop->mutex)
+    jmutex_free(fop->mutex);
+
   jfree(fop);
 }
 

@@ -2,6 +2,7 @@ High priority work
 ------------------
 
 - search for TODO;
+- fix bilinear: when getpixel have alpha = 0 get a neighbor color.
 - Ctrl+X / Ctrl+C / Ctrl+V should Cut/Copy/Paste in jentries.
 - fix problems with tiled mode XY in drawing corners (I cannot
   reproduce the exact scenario).
@@ -22,13 +23,7 @@ High priority work
 - add two DrawClick2:
   - DrawClick2FreeHand
   - DrawClick2Shape
-- remove the jfilesel.c & jquickmenu.c
 - see the new Allegro's load_font
-- fix Jinete examples:
-  + 05fsel
-  + 09lists
-  + 20combo
-  + 21manage
 + finished the support for ICO files.
 - add "size" to GUI font (for TTF fonts);
 - layer movement between sets in animation-editor;
@@ -45,10 +40,6 @@ High priority work
 Wish-list
 ---------
 
-- ideas from freelunchdesign.com forum:
-  Geti: angle locking, like, so the line tool can be
-        snapped to 90, 45, 30 & 12.5 degree increments.
-        would just be handy for isos.
 - dacap wish-list:
   + added starred file-items in the file-selector.
   + add AseContext structure to handle the current state of the
@@ -90,3 +81,9 @@ Low priority stuff
   various sizes have errors).
 - optimize the *_to_allegro image methods (I profiled ASE, and these
   are the more slow routines in all the program);
+- remove the jfilesel.c & jquickmenu.c
+- fix Jinete examples:
+  + 05fsel
+  + 09lists
+  + 20combo
+  + 21manage
