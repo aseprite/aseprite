@@ -28,12 +28,13 @@
 
 static bool cmd_invert_mask_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_invert_mask_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Mask *mask;
 
   /* change the selection */

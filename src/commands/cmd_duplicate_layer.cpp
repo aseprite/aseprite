@@ -33,20 +33,20 @@ static Layer *duplicate_layer();
 
 static bool cmd_duplicate_layer_enabled(const char *argument)
 {
-  return
-    current_sprite != NULL &&
-    current_sprite->layer != NULL;
+  CurrentSprite sprite;
+  return sprite && sprite->layer;
 }
 
 static void cmd_duplicate_layer_execute(const char *argument)
 {
+  CurrentSprite sprite;
   if (duplicate_layer() != NULL)
-    update_screen_for_sprite(current_sprite);
+    update_screen_for_sprite(sprite);
 }
 
 static Layer *duplicate_layer()
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Layer *layer_copy;
   char buf[1024];
 

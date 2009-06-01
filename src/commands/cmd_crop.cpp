@@ -38,15 +38,16 @@
 
 static bool cmd_crop_sprite_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    current_sprite->mask != NULL &&
-    current_sprite->mask->bitmap != NULL;
+    sprite != NULL &&
+    sprite->mask != NULL &&
+    sprite->mask->bitmap != NULL;
 }
 
 static void cmd_crop_sprite_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   {
     Undoable undoable(sprite, "Sprite Crop");
     int bgcolor = get_color_for_image(sprite->imgtype,
@@ -68,12 +69,13 @@ static void cmd_crop_sprite_execute(const char *argument)
 
 static bool cmd_autocrop_sprite_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_autocrop_sprite_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   {
     Undoable undoable(sprite, "Sprite Autocrop");
     undoable.autocrop_sprite(colorbar_get_bg_color(app_get_colorbar()));

@@ -24,6 +24,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
@@ -150,7 +151,8 @@ static void cmd_new_file_execute(const char *argument)
 	undo_enable(sprite->undo);
 
 	/* show the sprite to the user */
-	sprite_show(sprite);
+	UIContext* context = UIContext::instance();
+	context->show_sprite(sprite);
       }
     }
   }

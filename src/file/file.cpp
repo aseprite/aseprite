@@ -506,7 +506,7 @@ void fop_operate(FileOp *fop)
 	    if (fop->seq.image) image_free(fop->seq.image);
 	    if (fop->seq.last_cel) cel_free(fop->seq.last_cel);
 	    if (fop->sprite) {
-	      sprite_free(fop->sprite);
+	      delete fop->sprite;
 	      fop->sprite = NULL;
 	    }
 	    break;
@@ -744,7 +744,7 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
 
     layer = layer_new(sprite);
     if (!layer) {
-      sprite_free(sprite);
+      delete sprite;
       return NULL;
     }
 

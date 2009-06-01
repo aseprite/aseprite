@@ -36,9 +36,8 @@
 
 static bool cmd_cel_properties_enabled(const char *argument)
 {
-  return
-    is_current_sprite_not_locked()
-    && current_sprite->layer;
+  CurrentSprite sprite;
+  return sprite && sprite->layer;
 }
 
 static void cmd_cel_properties_execute(const char *argument)
@@ -46,14 +45,13 @@ static void cmd_cel_properties_execute(const char *argument)
   JWidget window = NULL;
   JWidget label_frame, label_pos, label_size;
   JWidget slider_opacity, button_ok;
-  Sprite *sprite;
   Layer *layer;
   Cel *cel;
   char buf[1024];
   int memsize;
 
   /* get current sprite */
-  sprite = lock_current_sprite();
+  CurrentSprite sprite;
   if (!sprite)
     return;
 
@@ -147,8 +145,6 @@ static void cmd_cel_properties_execute(const char *argument)
 done:;
   if (window)
     jwidget_free(window);
-
-  sprite_unlock(sprite);
 }
 
 Command cmd_cel_properties = {

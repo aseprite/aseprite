@@ -43,7 +43,8 @@ static void preview_sprite(int flags);
 
 static bool cmd_preview_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 /* ======================== */

@@ -28,14 +28,15 @@
 
 static bool cmd_remove_frame_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    current_sprite->frames > 1;
+    sprite != NULL &&
+    sprite->frames > 1;
 }
 
 static void cmd_remove_frame_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   {
     Undoable undoable(sprite, "Remove Frame");
     undoable.remove_frame(sprite->frame);

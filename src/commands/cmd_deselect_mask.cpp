@@ -27,14 +27,13 @@
 
 static bool cmd_deselect_mask_enabled(const char *argument)
 {
-  return
-    current_sprite != NULL &&
-    !mask_is_empty(current_sprite->mask);
+  CurrentSprite sprite;
+  return sprite && !mask_is_empty(sprite->mask);
 }
 
 static void cmd_deselect_mask_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Mask *mask;
 
   /* destroy the *deselected* mask */

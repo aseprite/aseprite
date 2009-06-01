@@ -30,19 +30,21 @@ void dialogs_frame_length(int sprite_frame);
 
 static bool cmd_frame_properties_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_frame_properties_execute(const char *argument)
 {
-  dialogs_frame_length(current_sprite->frame);
+  CurrentSprite sprite;
+  dialogs_frame_length(sprite->frame);
 }
 
 /* if sprite_frame < 0, set the frame length of all frames */
 void dialogs_frame_length(int sprite_frame)
 {
   JWidget window, frame, frlen, ok;
-  Sprite* sprite = current_sprite;
+  CurrentSprite sprite;
   char buf[64];
 
   window = load_widget("frlen.jid", "frame_duration");

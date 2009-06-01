@@ -47,7 +47,7 @@ void canvas_resize()
   JWidget check_w, check_h;
   JWidget button_offset;
   JWidget button_ok, button_cancel;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   if (!is_interactive () || !sprite)
     return;

@@ -20,6 +20,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -174,6 +175,7 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
 
 void editors_hide_sprite(Sprite *sprite)
 {
+  CurrentSprite current_sprite;
   JWidget widget;
   int refresh;
   JLink link;
@@ -188,7 +190,9 @@ void editors_hide_sprite(Sprite *sprite)
   }
 
   if (refresh) {
-    set_current_sprite(editor_get_sprite(current_editor));
+    UIContext* context = UIContext::instance();
+    context->set_current_sprite(editor_get_sprite(current_editor));
+
     app_refresh_screen();
   }
 }
@@ -218,7 +222,9 @@ void set_current_editor(JWidget editor)
 
     jwidget_dirty(jwidget_get_view(current_editor));
 
-    set_current_sprite(editor_get_sprite(current_editor));
+    UIContext* context = UIContext::instance();
+    context->set_current_sprite(editor_get_sprite(current_editor));
+
     app_refresh_screen();
     app_realloc_sprite_list();
   }
@@ -227,8 +233,11 @@ void set_current_editor(JWidget editor)
 void set_sprite_in_current_editor(Sprite *sprite)
 {
   if (current_editor) {
-    set_current_sprite(sprite);
-    send_sprite_to_top(sprite);
+    UIContext* context = UIContext::instance();
+    
+    context->set_current_sprite(sprite);
+    if (sprite != NULL)
+      context->send_sprite_to_top(sprite);
 
     editor_set_sprite(current_editor, sprite);
 
@@ -420,12 +429,12 @@ static int is_sprite_in_some_editor(Sprite *sprite)
  */
 static Sprite *get_more_reliable_sprite()
 {
-  Sprite *sprite;
-  JLink link;
+  UIContext* context = UIContext::instance();
+  const SpriteList& list = context->get_sprite_list();
 
-  JI_LIST_FOR_EACH(get_sprite_list(), link) {
-    sprite = reinterpret_cast<Sprite*>(link->data);
-
+  for (SpriteList::const_iterator
+	 it = list.begin(); it != list.end(); ++it) {
+    Sprite* sprite = *it;
     if (!(is_sprite_in_some_editor(sprite)))
       return sprite;
   }

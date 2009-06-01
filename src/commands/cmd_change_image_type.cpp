@@ -32,12 +32,14 @@
 
 static bool cmd_change_image_type_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_change_image_type_execute(const char *argument)
 {
   JWidget window, from, radio1, radio2, radio3, dither1, dither2;
+  CurrentSprite current_sprite;
 
   /* load the window widget */
   window = load_widget("imgtype.jid", "image_type");

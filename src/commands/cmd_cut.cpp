@@ -30,20 +30,22 @@
 
 static bool cmd_cut_enabled(const char *argument)
 {
-  if ((!current_sprite) ||
-      (!current_sprite->layer) ||
-      (!layer_is_readable(current_sprite->layer)) ||
-      (!layer_is_writable(current_sprite->layer)) ||
-      (!current_sprite->mask) ||
-      (!current_sprite->mask->bitmap))
-    return FALSE;
+  CurrentSprite sprite;
+  if ((!sprite) ||
+      (!sprite->layer) ||
+      (!layer_is_readable(sprite->layer)) ||
+      (!layer_is_writable(sprite->layer)) ||
+      (!sprite->mask) ||
+      (!sprite->mask->bitmap))
+    return false;
   else
-    return GetImage(current_sprite) ? TRUE: FALSE;
+    return GetImage(sprite) ? true: false;
 }
 
 static void cmd_cut_execute(const char *argument)
 {
-  clipboard::cut(current_sprite);
+  CurrentSprite sprite;
+  clipboard::cut(sprite);
 }
 
 Command cmd_cut = {

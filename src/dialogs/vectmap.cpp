@@ -127,7 +127,7 @@ void dialogs_vector_map()
 {
 #define PROJECT()	project(image, x, y, dmax, &u, &v)
 
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image, *image_copy;
   double u, v, dmax;
   int c, x, y;
@@ -135,7 +135,7 @@ void dialogs_vector_map()
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     return;
 

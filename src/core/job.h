@@ -35,9 +35,14 @@ class Job
   bool m_done_flag;
   bool m_canceled_flag;
 
+  // these methods are privated and not defined
+  Job();
+  Job(const Job&);
+  Job& operator==(const Job&);
+  
 public:
 
-  Job();
+  Job(const char* job_name);
   virtual ~Job();
 
   void do_job();

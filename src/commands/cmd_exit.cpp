@@ -20,6 +20,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
@@ -27,7 +28,8 @@
 
 static void cmd_exit_execute(const char *argument)
 {
-  Sprite *sprite = get_first_sprite();
+  UIContext* context = UIContext::instance();
+  Sprite *sprite = context->get_first_sprite();
 
   while (sprite) {
     // check if this sprite is modified
@@ -37,7 +39,7 @@ static void cmd_exit_execute(const char *argument)
       }
       break;
     }
-    sprite = get_next_sprite(sprite);
+    sprite = context->get_next_sprite(sprite);
   }
 
   /* close the window */

@@ -27,7 +27,6 @@
 #include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/rootmenu.h"
-#include "modules/sprites.h"
 #include "modules/tools.h"
 
 #define DEF_MODULE(name, reqs) \
@@ -48,7 +47,6 @@ static Module module[] =
      first ones.  */
 
   DEF_MODULE(palette,		REQUIRE_INTERFACE),
-  DEF_MODULE(sprites,		REQUIRE_INTERFACE),
   DEF_MODULE(effect,		REQUIRE_INTERFACE),
   DEF_MODULE(tools,		REQUIRE_INTERFACE),
   DEF_MODULE(graphics,		REQUIRE_INTERFACE),

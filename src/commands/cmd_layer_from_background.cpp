@@ -31,18 +31,19 @@
 
 static bool cmd_layer_from_background_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    current_sprite->layer != NULL &&
-    layer_is_image(current_sprite->layer) &&
-    layer_is_readable(current_sprite->layer) &&
-    layer_is_writable(current_sprite->layer) &&
-    layer_is_background(current_sprite->layer);
+    sprite &&
+    sprite->layer &&
+    layer_is_image(sprite->layer) &&
+    layer_is_readable(sprite->layer) &&
+    layer_is_writable(sprite->layer) &&
+    layer_is_background(sprite->layer);
 }
 
 static void cmd_layer_from_background_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   if (undo_is_enabled(sprite->undo))
     undo_set_label(sprite->undo, "Layer from Background");

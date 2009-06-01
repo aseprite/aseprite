@@ -21,6 +21,7 @@
 #include <assert.h>
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "file/file.h"
@@ -69,8 +70,10 @@ Sprite *NewSprite(int imgtype, int w, int h)
     return NULL;
 
   undo_disable(sprite->undo);
-  sprite_mount(sprite);
-  set_current_sprite(sprite);
+
+  UIContext* context = UIContext::instance();
+  context->add_sprite(sprite);
+  context->set_current_sprite(sprite);
 
   assert(undo_is_disabled(sprite->undo));
   return sprite;
@@ -99,8 +102,10 @@ Sprite *LoadSprite(const char *filename)
   sprite = sprite_load(filename);
   if (sprite) {
     undo_disable(sprite->undo);
-    sprite_mount(sprite);
-    set_current_sprite(sprite);
+
+    UIContext* context = UIContext::instance();
+    context->add_sprite(sprite);
+    context->set_current_sprite(sprite);
   }
 
   assert(undo_is_disabled(sprite->undo));
@@ -112,7 +117,9 @@ Sprite *LoadSprite(const char *filename)
  */
 void SaveSprite(const char *filename)
 {
-  if (current_sprite == NULL) {
+  CurrentSprite sprite;
+
+  if (sprite == NULL) {
     console_printf("SaveSprite: No current sprite\n");
     return;
   }
@@ -122,11 +129,11 @@ void SaveSprite(const char *filename)
     return;
   }
 
-  sprite_set_filename(current_sprite, filename);
+  sprite_set_filename(sprite, filename);
   app_realloc_sprite_list();
 
-  if (sprite_save(current_sprite) == 0)
-    sprite_mark_as_saved(current_sprite);
+  if (sprite_save(sprite) == 0)
+    sprite_mark_as_saved(sprite);
   else
     console_printf("SaveSprite: Error saving sprite file %s\n", filename);
 }
@@ -137,7 +144,8 @@ void SaveSprite(const char *filename)
  */
 void SetSprite(Sprite *sprite)
 {
-  set_current_sprite(sprite);
+  UIContext* context = UIContext::instance();
+  context->set_current_sprite(sprite);
 }
 
 /*===================================================================*/
@@ -396,7 +404,7 @@ static int get_max_layer_num(Layer *layer)
 
 void RemoveCel(Layer *layer, Cel *cel)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image;
   Cel *it;
   int frame;

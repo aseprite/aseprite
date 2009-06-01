@@ -26,7 +26,8 @@
 
 static bool cmd_film_editor_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_film_editor_execute(const char *argument)

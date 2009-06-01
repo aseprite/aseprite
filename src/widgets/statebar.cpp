@@ -316,23 +316,31 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       /* draw current sprite size in memory */
-      else if (current_sprite != NULL) {
-	char buf[1024];
+      else {
+	CurrentSprite sprite;
+	if (sprite != NULL) {
+	  char buf[1024];
 
-	ustrcpy(buf, "Sprite:");
-	get_pretty_memsize(sprite_get_memsize(current_sprite),
-			   buf+ustrsize(buf),
-			   sizeof(buf)-ustrsize(buf));
+	  if (sprite.writeable()) {
+	    ustrcpy(buf, "Sprite:");
+	    get_pretty_memsize(sprite_get_memsize(sprite),
+			       buf+ustrsize(buf),
+			       sizeof(buf)-ustrsize(buf));
 
-	ustrcat(buf, " Undo:");
-	get_pretty_memsize(undo_get_memsize(current_sprite->undo),
-			   buf+ustrsize(buf),
-			   sizeof(buf)-ustrsize(buf));
+	    ustrcat(buf, " Undo:");
+	    get_pretty_memsize(undo_get_memsize(sprite->undo),
+			       buf+ustrsize(buf),
+			       sizeof(buf)-ustrsize(buf));
+	  }
+	  else {
+	    ustrcpy(buf, "Sprite is Locked");
+	  }
 
-	textout_right_ex(ji_screen, widget->font(), buf,
-			 rc->x2-2,
-			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
-			 ji_color_foreground(), -1);
+	  textout_right_ex(ji_screen, widget->font(), buf,
+			   rc->x2-2,
+			   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
+			   ji_color_foreground(), -1);
+	}
       }
 
       jrect_free(rc);
@@ -341,7 +349,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
       if (!jwidget_has_child(widget, statusbar->commands_box)) {
-	Sprite *sprite = current_sprite;
+	CurrentSprite sprite;
 
 	if (!sprite) {
 	  jwidget_disable(statusbar->b_first);
@@ -401,8 +409,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 
 static bool slider_change_hook(JWidget widget, void *data)
 {
-  Sprite *sprite = current_sprite;
-
+  CurrentSprite sprite;
   if (sprite) {
     if ((sprite->layer) &&
 	(sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
@@ -423,7 +430,7 @@ static bool slider_change_hook(JWidget widget, void *data)
 
 static void button_command(JWidget widget, void *data)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   if (sprite) {
     const char *cmd = NULL;
@@ -462,7 +469,7 @@ static void button_command(JWidget widget, void *data)
 
 static void update_from_layer(StatusBar *statusbar)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Cel *cel;
 
   /* layer button */

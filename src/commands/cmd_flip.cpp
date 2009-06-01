@@ -36,7 +36,8 @@ static void do_flip(int horz);
 
 static bool cmd_flip_horizontal_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_flip_horizontal_execute(const char *argument)
@@ -50,7 +51,8 @@ static void cmd_flip_horizontal_execute(const char *argument)
 
 static bool cmd_flip_vertical_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_flip_vertical_execute(const char *argument)
@@ -63,7 +65,7 @@ static void cmd_flip_vertical_execute(const char *argument)
 
 static void do_flip(int horz)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image, *area;
   int x1, y1, x2, y2;
   int x, y;
@@ -108,7 +110,7 @@ static void do_flip(int horz)
 		     !horz? y2-y: y1+y,
 		     image_getpixel(area, x, y));
   image_free(area);
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_flip_horizontal = {

@@ -70,15 +70,19 @@ public:
     int zoom;
   } preferred;
 
+private:
+
   /**
    * Mutex to modify the 'locked' flag.
    */
-  JMutex mutex;
+  JMutex m_mutex;
 
   /**
-   * True when a thread is reading/writing the sprite.
+   * Greater than zero when a thread is reading/writing the sprite.
    */
-  bool locked;
+  int m_locked;
+
+public:
 
   /**
    * Data to save the file in the same format that it was loaded
@@ -87,23 +91,21 @@ public:
 
   Sprite(int imgtype, int w, int h);
   virtual ~Sprite();
+
+  bool lock();
+  void unlock();
 };
 
 Sprite* sprite_new(int imgtype, int w, int h);
 Sprite* sprite_new_copy(const Sprite* src_sprite);
 Sprite* sprite_new_flatten_copy(const Sprite* src_sprite);
 Sprite* sprite_new_with_layer(int imgtype, int w, int h);
-void sprite_free(Sprite* sprite);
 
 bool sprite_is_modified(Sprite* sprite);
 bool sprite_is_associated_to_file(Sprite* sprite);
-bool sprite_is_locked(Sprite* sprite);
 void sprite_mark_as_saved(Sprite* sprite);
 
 bool sprite_need_alpha(Sprite* sprite);
-
-bool sprite_lock(Sprite* sprite);
-void sprite_unlock(Sprite* sprite);
 
 struct Palette* sprite_get_palette(Sprite* sprite, int frame);
 void sprite_set_palette(Sprite* sprite, struct Palette* pal, bool truncate);

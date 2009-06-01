@@ -54,7 +54,8 @@ static void make_preview();
 
 static bool cmd_replace_color_enabled(const char *argument)
 {
-  return is_current_sprite_not_locked();
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_replace_color_execute(const char *argument)
@@ -65,13 +66,12 @@ static void cmd_replace_color_execute(const char *argument)
   JWidget button_ok;
   Image *image;
   Effect *effect;
-  Sprite *sprite;
 
-  sprite = lock_current_sprite();
+  CurrentSprite sprite;
   if (!sprite)
     return;
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     goto done;
 
@@ -103,14 +103,14 @@ static void cmd_replace_color_execute(const char *argument)
   button_color1 = colorbutton_new
     (get_config_color("ReplaceColor", "Color1",
 		      colorbar_get_fg_color(app_get_colorbar())),
-     current_sprite->imgtype);
+     sprite->imgtype);
 
   button_color2 = colorbutton_new
     (get_config_color("ReplaceColor", "Color2",
 		      colorbar_get_bg_color(app_get_colorbar())),
-     current_sprite->imgtype);
+     sprite->imgtype);
 
-  target_button = target_button_new(current_sprite->imgtype, FALSE);
+  target_button = target_button_new(sprite->imgtype, FALSE);
   target_button_set_target(target_button, effect->target);
 
   jslider_set_value(slider_fuzziness,
@@ -149,7 +149,7 @@ static void cmd_replace_color_execute(const char *argument)
   effect_free(effect);
 
   /* update editors */
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "ReplaceColor");
@@ -157,8 +157,6 @@ static void cmd_replace_color_execute(const char *argument)
 done:;
   if (window)
     jwidget_free(window);
-
-  sprite_unlock(sprite);
 }
 
 static bool color_change_hook(JWidget widget, void *data)
@@ -196,6 +194,7 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static void make_preview()
 {
+  CurrentSprite sprite;
   color_t from, to;
   int fuzziness;
 
@@ -203,8 +202,8 @@ static void make_preview()
   to = get_config_color("ReplaceColor", "Color2", color_mask());
   fuzziness = get_config_int("ReplaceColor", "Fuzziness", 0);
 
-  set_replace_colors(get_color_for_layer(current_sprite->layer, from),
-		     get_color_for_layer(current_sprite->layer, to),
+  set_replace_colors(get_color_for_layer(sprite->layer, from),
+		     get_color_for_layer(sprite->layer, to),
 		     MID(0, fuzziness, 255));
 
   if (jwidget_is_selected(check_preview))

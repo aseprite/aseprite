@@ -26,7 +26,8 @@
 
 static bool cmd_mask_by_color_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_mask_by_color_execute(const char *argument)

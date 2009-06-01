@@ -29,7 +29,7 @@
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
-Job::Job()
+Job::Job(const char* job_name)
 {
   m_mutex = NULL;
   m_thread = NULL;
@@ -45,7 +45,7 @@ Job::Job()
   m_monitor = add_gui_monitor(&Job::monitor_proc,
 			      &Job::monitor_free,
 			      (void*)this);
-  m_alert_window = jalert_new(PACKAGE "<<Working...||&Cancel");
+  m_alert_window = jalert_new("%s<<Working...||&Cancel", job_name);
 }
 
 Job::~Job()

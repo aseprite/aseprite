@@ -21,6 +21,7 @@
 #include <allegro.h>
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
@@ -34,7 +35,8 @@ static bool close_current_sprite();
 
 static bool cmd_close_file_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_close_file_execute(const char *argument)
@@ -48,17 +50,23 @@ static void cmd_close_file_execute(const char *argument)
 
 static bool cmd_close_all_files_enabled(const char *argument)
 {
-  return !jlist_empty(get_sprite_list());
+  return !UIContext::instance()->get_sprite_list().empty();
 }
 
 static void cmd_close_all_files_execute(const char *argument)
 {
-  if (!current_sprite)
-    sprite_show(get_first_sprite());
+  UIContext* context = UIContext::instance();
+  if (!context->get_current_sprite())
+    context->show_sprite(context->get_first_sprite());
 
-  while (current_sprite != NULL &&
-	 close_current_sprite())
-    ;
+  while (true) {
+    if (context->get_current_sprite() != NULL) {
+      if (!close_current_sprite())
+	break;
+    }
+    else
+      break;
+  }
 }
 
 /**
@@ -67,7 +75,9 @@ static void cmd_close_all_files_execute(const char *argument)
  */
 static bool close_current_sprite()
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
+  if (!sprite.writeable())
+    return false;
 
   /* see if the sprite has changes */
   while (sprite_is_modified(sprite)) {
@@ -83,7 +93,7 @@ static bool close_current_sprite()
     }
     else if (ret != 2) {
       /* "cancel" or "ESC" */
-      return FALSE; /* we back doing nothing */
+      return false; /* we back doing nothing */
     }
     else {
       /* "discard" */
@@ -92,9 +102,8 @@ static bool close_current_sprite()
   }
 
   /* closes the sprite */
-  sprite_unmount(sprite);
-  sprite_free(sprite);
-  return TRUE;
+  sprite.destroy();
+  return true;
 }
 
 Command cmd_close_file = {

@@ -48,7 +48,8 @@ static void make_preview();
 
 static bool cmd_color_curve_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_color_curve_execute(const char *argument)
@@ -56,7 +57,7 @@ static void cmd_color_curve_execute(const char *argument)
   JWidget window, button_ok;
   JWidget view_curve, curve_editor;
   JWidget box_target, target_button;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image;
   Effect *effect;
 
@@ -71,7 +72,7 @@ static void cmd_color_curve_execute(const char *argument)
 		 the_curve);
   }
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     return;
 

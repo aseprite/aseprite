@@ -32,7 +32,6 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/sprites.h"
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
@@ -75,8 +74,9 @@ static void cmd_palette_editor_execute(const char *argument)
   JWidget button_ramp, button_quantize;
   int frame, columns;
   Palette *palette = NULL;
-  int imgtype = current_sprite ? current_sprite->imgtype: IMAGE_INDEXED;
-  int frame_bak = current_sprite ? current_sprite->frame : 0;
+  CurrentSprite sprite;
+  int imgtype = sprite ? sprite->imgtype: IMAGE_INDEXED;
+  int frame_bak = sprite ? sprite->frame : 0;
   bool all_frames_same_palette = TRUE;
 
   if (imgtype == IMAGE_GRAYSCALE) {
@@ -114,16 +114,16 @@ static void cmd_palette_editor_execute(const char *argument)
   }
 
   /* create current_sprite->frames palettes */
-  if (current_sprite) {
-    palettes = (Palette **)jmalloc(sizeof(Palette *) * current_sprite->frames);
+  if (sprite) {
+    palettes = (Palette **)jmalloc(sizeof(Palette *) * sprite->frames);
     if (!palettes) {
       jalert(_("Error<<Not enough memory||&OK"));
       return;
     }
-    for (frame=0; frame<current_sprite->frames; ++frame) {
+    for (frame=0; frame<sprite->frames; ++frame) {
       palettes[frame] = palette_new(frame, MAX_PALETTE_COLORS);
       palette_copy_colors(palettes[frame],
-			  sprite_get_palette(current_sprite, frame));
+			  sprite_get_palette(sprite, frame));
 
       if (frame > 0 &&
 	  palette_count_diff(palettes[frame-1], palettes[frame], NULL, NULL) > 0) {
@@ -167,9 +167,9 @@ static void cmd_palette_editor_execute(const char *argument)
     jwidget_deselect(check_all_frames);
   
   /* frame */
-  if (current_sprite) {
-    jslider_set_range(slider_frame, 0, current_sprite->frames-1);
-    jslider_set_value(slider_frame, current_sprite->frame);
+  if (sprite) {
+    jslider_set_range(slider_frame, 0, sprite->frames-1);
+    jslider_set_value(slider_frame, sprite->frame);
     
     if (jwidget_is_selected(check_all_frames))
       jwidget_disable(slider_frame);
@@ -207,8 +207,8 @@ static void cmd_palette_editor_execute(const char *argument)
 
   /* check the killer widget */
   if (jwindow_get_killer(window) == button_ok) {
-    if (current_sprite) {
-      sprite_reset_palettes(current_sprite);
+    if (sprite) {
+      sprite_reset_palettes(sprite);
 
       /* one palette */
       if (jwidget_is_selected(check_all_frames)) {
@@ -216,7 +216,7 @@ static void cmd_palette_editor_execute(const char *argument)
 	palette_copy_colors(palettes[0],
 			    get_current_palette());
 
-	sprite_set_palette(current_sprite, palettes[0], TRUE);
+	sprite_set_palette(sprite, palettes[0], TRUE);
       }
       /* various palettes */
       else {
@@ -224,11 +224,11 @@ static void cmd_palette_editor_execute(const char *argument)
 	palette_copy_colors(palettes[frame],
 			    get_current_palette());
 
-	for (frame=0; frame<current_sprite->frames; ++frame) {
+	for (frame=0; frame<sprite->frames; ++frame) {
 	  if (frame == 0 ||
 	      palette_count_diff(palettes[frame],
 				 palettes[frame-1], NULL, NULL) > 0) {
-	    sprite_set_palette(current_sprite, palettes[frame], TRUE);
+	    sprite_set_palette(sprite, palettes[frame], TRUE);
 	  }
 	}
       }
@@ -242,9 +242,9 @@ static void cmd_palette_editor_execute(const char *argument)
   /* cancel or ESC */
   else {
     /* restore the system palette */
-    if (current_sprite) {
-      current_sprite->frame = frame_bak;
-      set_current_palette(sprite_get_palette(current_sprite, frame_bak), TRUE);
+    if (sprite) {
+      sprite->frame = frame_bak;
+      set_current_palette(sprite_get_palette(sprite, frame_bak), TRUE);
     }
     else {
       set_current_palette(NULL, TRUE);
@@ -264,9 +264,9 @@ static void cmd_palette_editor_execute(const char *argument)
   jwidget_free(window);
 
   if (palettes) {
-    assert(current_sprite);
+    assert(sprite);
 
-    for (frame=0; frame<current_sprite->frames; ++frame)
+    for (frame=0; frame<sprite->frames; ++frame)
       palette_free(palettes[frame]);
 
     jfree(palettes);
@@ -354,6 +354,7 @@ static void ramp_command(JWidget widget)
 
 static void quantize_command(JWidget widget)
 {
+  CurrentSprite sprite;
   Palette *palette = palette_new(0, MAX_PALETTE_COLORS);
   bool array[256];
 
@@ -361,8 +362,8 @@ static void quantize_command(JWidget widget)
   palette_copy_colors(palette,
 		      paledit_get_palette(palette_editor));
 
-  if (current_sprite && current_sprite->imgtype == IMAGE_RGB) {
-    sprite_quantize_ex(current_sprite, palette);
+  if (sprite && sprite->imgtype == IMAGE_RGB) {
+    sprite_quantize_ex(sprite, palette);
   }
   else {
     jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
@@ -436,12 +437,13 @@ static bool slider_columns_change_hook(JWidget widget, void *data)
 
 static bool slider_frame_change_hook(JWidget widget, void *data)
 {
-  int old_frame = current_sprite->frame;
+  CurrentSprite sprite;
+  int old_frame = sprite->frame;
   int new_frame = jslider_get_value(slider_frame);
 
   palette_copy_colors(palettes[old_frame],
 		      get_current_palette());
-  current_sprite->frame = new_frame;
+  sprite->frame = new_frame;
   set_new_palette(palettes[new_frame]);
 
   return FALSE;
@@ -449,6 +451,7 @@ static bool slider_frame_change_hook(JWidget widget, void *data)
 
 static bool check_all_frames_change_hook(JWidget widget, void *data)
 {
+  CurrentSprite sprite;
   int frame = jslider_get_value(slider_frame);
 
   palette_copy_colors(palettes[frame],
@@ -458,7 +461,7 @@ static bool check_all_frames_change_hook(JWidget widget, void *data)
     bool has_two_or_more_palettes = FALSE;
     int c;
 
-    for (c=1; c<current_sprite->frames; c++) {
+    for (c=1; c<sprite->frames; c++) {
       if (palette_count_diff(palettes[c-1], palettes[c], NULL, NULL) > 0) {
 	has_two_or_more_palettes = TRUE;
 	break;

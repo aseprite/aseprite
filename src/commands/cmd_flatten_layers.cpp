@@ -27,12 +27,13 @@
 
 static bool cmd_flatten_layers_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_flatten_layers_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   if (undo_is_enabled(sprite->undo))
     undo_set_label(sprite->undo, "Flatten Layers");

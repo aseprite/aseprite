@@ -57,17 +57,19 @@ static void make_preview();
 
 static bool cmd_despeckle_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_despeckle_execute(const char *argument)
 {
   JWidget window, box_target, target_button, button_ok;
+  CurrentSprite sprite;
   Image *image;
   Effect *effect;
   char buf[32];
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     return;
 
@@ -86,7 +88,7 @@ static void cmd_despeckle_execute(const char *argument)
     return;
   }
 
-  effect = effect_new(current_sprite, "median");
+  effect = effect_new(sprite, "median");
   if (!effect) {
     console_printf(_("Error creating the effect applicator for this sprite\n"));
     jwidget_free(window);
@@ -98,7 +100,7 @@ static void cmd_despeckle_execute(const char *argument)
 
   preview = preview_new(effect);
 
-  target_button = target_button_new(current_sprite->imgtype, TRUE);
+  target_button = target_button_new(sprite->imgtype, TRUE);
   target_button_set_target(target_button, effect->target);
 
   sprintf(buf, "%d", get_config_int("Median", "Width", 3));
@@ -141,7 +143,7 @@ static void cmd_despeckle_execute(const char *argument)
   effect_free(effect);
 
   /* update editors */
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "Median");

@@ -27,14 +27,15 @@
 
 static bool cmd_remove_layer_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    current_sprite->layer != NULL;
+    sprite != NULL &&
+    sprite->layer != NULL;
 }
 
 static void cmd_remove_layer_execute(const char *argument)
 {
-  Sprite* sprite = current_sprite;
+  CurrentSprite sprite;
   {
     Undoable undoable(sprite, "Remove Layer");
     undoable.remove_layer(sprite->layer);

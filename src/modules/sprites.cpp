@@ -18,17 +18,12 @@
 
 #include "config.h"
 
-#include <assert.h>
-#include <allegro/file.h>
+#include <cassert>
 
 #include "jinete/jlist.h"
 
-#include "core/app.h"
-#include "core/core.h"
-#include "file/file.h"
+#include "ase/ui_context.h"
 #include "effect/effect.h"
-#include "modules/editors.h"
-#include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -37,151 +32,43 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/misc.h"
-#include "widgets/editor.h"
-#include "widgets/tabs.h"
-
-/* Current selected sprite to operate, it could be not the same of
-   editor_get_sprite(current_editor).  */
-
-Sprite* current_sprite = NULL;
-
-static JList sprites_list;
 
 static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int target, bool write);
 static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
 
-int init_module_sprites()
+//////////////////////////////////////////////////////////////////////
+
+CurrentSprite::CurrentSprite()
 {
-  sprites_list = jlist_new();
-  current_sprite = NULL;
-  return 0;
+  UIContext* context = UIContext::instance();
+
+  m_sprite = context->get_current_sprite();
+  if (m_sprite)
+    m_writeable = m_sprite->lock();
 }
 
-void exit_module_sprites()
+CurrentSprite::~CurrentSprite()
 {
-  JLink link;
-
-  JI_LIST_FOR_EACH(sprites_list, link) {
-    sprite_free(reinterpret_cast<Sprite*>(link->data));
-  }
-  jlist_free(sprites_list);
-  sprites_list = NULL;
-
-  current_sprite = NULL;
+  if (m_sprite)
+    m_sprite->unlock();
 }
 
-JList get_sprite_list()
+void CurrentSprite::destroy()
 {
-  return sprites_list;
-}
+  if (m_sprite) {
+    UIContext* context = UIContext::instance();
 
-Sprite* get_first_sprite()
-{
-  return reinterpret_cast<Sprite*>(jlist_first_data(sprites_list));
-}
+    context->remove_sprite(m_sprite);
 
-Sprite* get_next_sprite(Sprite* sprite)
-{
-  JLink link = jlist_find(sprites_list, sprite);
+    m_sprite->unlock();
 
-  if (sprites_list->end != link &&
-      sprites_list->end != link->next)
-    return reinterpret_cast<Sprite*>(link->next->data);
-  else
-    return NULL;
-}
-
-/* adds the "sprite" in the list of sprites */
-void sprite_mount(Sprite* sprite)
-{
-  /* append the sprite to the list */
-  jlist_prepend(sprites_list, sprite);
-
-  if (is_interactive()) {
-    /* add the tab for this sprite */
-    tabs_append_tab(app_get_tabsbar(),
-		    get_filename(sprite->filename), sprite);
-
-    /* rebuild the menu list of sprites */
-    app_realloc_sprite_list();
+    delete m_sprite;
+    m_sprite = NULL;
+    m_writeable = false;
   }
 }
 
-/* removes the "sprite" from the list of sprites */
-void sprite_unmount(Sprite* sprite)
-{
-  /* remove from the sprite's list */
-  jlist_remove(sprites_list, sprite);
-
-  if (is_interactive()) {
-    /* remove this sprite from tabs */
-    tabs_remove_tab(app_get_tabsbar(), sprite);
-
-    /* rebuild the menu list of sprites */
-    app_realloc_sprite_list();
-
-    /* select other sprites in the editors where are this sprite */
-    editors_hide_sprite(sprite);
-  }
-  else {
-    if (current_sprite == sprite)
-      set_current_sprite(NULL);
-  }
-}
-
-/* sets current sprite (doesn't show it, only sets the
-   "current_sprite" pointer).  */
-void set_current_sprite(Sprite* sprite)
-{
-  current_sprite = sprite;
-
-  /* select the sprite in the tabs */
-  tabs_select_tab(app_get_tabsbar(), sprite);
-}
-
-void send_sprite_to_top(Sprite* sprite)
-{
-  if (sprite && jlist_find(sprites_list, sprite) != sprites_list->end) {
-    jlist_remove(sprites_list, sprite);
-    jlist_prepend(sprites_list, sprite);
-  }
-}
-
-/* puts the sprite in some editor */
-void sprite_show(Sprite* sprite)
-{
-  if (is_interactive())
-    set_sprite_in_more_reliable_editor(sprite);
-}
-
-bool is_current_sprite_not_locked()
-{
-  return
-    current_sprite != NULL &&
-    !sprite_is_locked(current_sprite);
-}
-
-bool is_current_sprite_writable()
-{
-  return
-    current_sprite != NULL
-    && !sprite_is_locked(current_sprite)
-    && current_sprite->layer != NULL
-    && layer_is_readable(current_sprite->layer)
-    && layer_is_writable(current_sprite->layer)
-    && layer_is_image(current_sprite->layer)
-    && layer_get_cel(current_sprite->layer,
-		     current_sprite->frame) != NULL;
-}
-
-Sprite* lock_current_sprite()
-{
-  if (current_sprite != NULL &&
-      sprite_lock(current_sprite))
-    return current_sprite;
-  else
-    return NULL;
-}
+//////////////////////////////////////////////////////////////////////
 
 ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
 {

@@ -163,7 +163,7 @@ bool animation_editor_is_movingcel()
  */
 void switch_between_animation_and_sprite_editor()
 {
-  Sprite* sprite = current_sprite;
+  CurrentSprite sprite;
   JWidget window;
   JWidget anieditor;
   int layer;

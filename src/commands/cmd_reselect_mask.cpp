@@ -27,14 +27,15 @@
 
 static bool cmd_reselect_mask_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    sprite_request_mask(current_sprite, "*deselected*") != NULL;
+    sprite != NULL &&
+    sprite_request_mask(sprite, "*deselected*") != NULL;
 }
 
 static void cmd_reselect_mask_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Mask *mask;
 
   /* request *deselected* mask */

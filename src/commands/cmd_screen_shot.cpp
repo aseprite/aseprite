@@ -100,7 +100,7 @@ static void cmd_screen_shot_execute(const char *argument)
     sprite_save(sprite);
 
     /* destroy the sprite */
-    sprite_free(sprite);
+    delete sprite;
   }
 
   /* destroy the bitmap */

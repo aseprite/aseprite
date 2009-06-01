@@ -751,7 +751,7 @@ static void openfile_bg(void *_data)
   sprite = fop->sprite;
   if (sprite) {
     if (fop_is_stop(fop))
-      sprite_free(fop->sprite);
+      delete fop->sprite;
     else {
       /* the palette to convert the Image to a BITMAP */
       palette_to_allegro(sprite_get_palette(sprite, 0), data->rgbpal);
@@ -760,7 +760,7 @@ static void openfile_bg(void *_data)
       image = image_new(sprite->imgtype, sprite->w, sprite->h);
       image_clear(image, 0);
       sprite_render(sprite, image, 0, 0);
-      sprite_free(sprite);
+      delete sprite;
 
       /* calculate the thumbnail size */
       thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);

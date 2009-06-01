@@ -28,18 +28,21 @@
 
 static bool cmd_redo_enabled(const char *argument)
 {
-  return current_sprite != NULL && undo_can_redo(current_sprite->undo);
+  CurrentSprite sprite;
+  return sprite != NULL && undo_can_redo(sprite->undo);
 }
 
 static void cmd_redo_execute(const char *argument)
 {
+  CurrentSprite sprite;
+
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Redid %s"),
-		     undo_get_next_redo_label(current_sprite->undo));
+		     undo_get_next_redo_label(sprite->undo));
 
-  undo_do_redo(current_sprite->undo);
-  sprite_generate_mask_boundaries(current_sprite);
-  update_screen_for_sprite(current_sprite);
+  undo_do_redo(sprite->undo);
+  sprite_generate_mask_boundaries(sprite);
+  update_screen_for_sprite(sprite);
 }
 
 Command cmd_redo = {

@@ -51,17 +51,18 @@ static void make_preview();
 
 static bool cmd_invert_color_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_invert_color_execute(const char *argument)
 {
   JWidget window, box_target, target_button, button_ok;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image;
   Effect *effect;
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     return;
 

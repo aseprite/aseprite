@@ -30,22 +30,27 @@
 
 static bool cmd_clear_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    current_sprite->layer != NULL &&
-    layer_is_image(current_sprite->layer) &&
-    layer_is_readable(current_sprite->layer) &&
-    layer_is_writable(current_sprite->layer);
+    sprite != NULL &&
+    sprite->layer != NULL &&
+    layer_is_image(sprite->layer) &&
+    layer_is_readable(sprite->layer) &&
+    layer_is_writable(sprite->layer);
 }
 
 static void cmd_clear_execute(const char *argument)
 {
-  Sprite* sprite = current_sprite;
+  CurrentSprite sprite;
+  if (!sprite)
+    return;
+
   {
     Undoable undoable(sprite, "Clear");
     undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
     undoable.commit();
   }
+
   update_screen_for_sprite(sprite);
 }
 

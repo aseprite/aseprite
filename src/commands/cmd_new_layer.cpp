@@ -31,13 +31,14 @@
 
 static bool cmd_new_layer_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_new_layer_execute(const char *argument)
 {
   JWidget window, name_widget;
-  Sprite* sprite = current_sprite; /* get current sprite */
+  CurrentSprite sprite;
 
   /* load the window widget */
   window = load_widget("newlay.jid", "new_layer");

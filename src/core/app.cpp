@@ -30,6 +30,7 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
@@ -291,10 +292,8 @@ void app_loop()
     switch (option->type) {
 
       case OPEN_GFX_FILE: {
-	Sprite *sprite;
-
 	/* load the sprite */
-	sprite = sprite_load(option->data);
+	Sprite *sprite = sprite_load(option->data);
 	if (!sprite) {
 	  /* error */
 	  if (ase_mode & MODE_GUI)
@@ -304,12 +303,13 @@ void app_loop()
 	}
 	else {
 	  /* mount and select the sprite */
-	  sprite_mount(sprite);
-	  set_current_sprite(sprite);
+	  UIContext* context = UIContext::instance();
+	  context->add_sprite(sprite);
+	  context->set_current_sprite(sprite);
 
 	  if (ase_mode & MODE_GUI) {
 	    /* show it */
-	    set_sprite_in_more_reliable_editor(get_first_sprite());
+	    set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
 	    /* recent file */
 	    recent_file(option->data);
@@ -333,8 +333,11 @@ void app_loop()
     dialogs_select_language(FALSE);
 
     /* show tips? */
-    if (!current_sprite)
-      dialogs_tips(FALSE);
+    {
+      CurrentSprite sprite;
+      if (!sprite)
+	dialogs_tips(FALSE);
+    }
 
     // support to drop files from Windows explorer
     install_drop_files();
@@ -383,6 +386,7 @@ void app_exit()
 
   /* finalize modules, configuration and core */
   modules_exit();
+  UIContext::destroy_instance();
   editor_cursor_exit();
   boundary_exit();
 
@@ -426,10 +430,11 @@ void app_trigger_event(int app_event)
 void app_refresh_screen()
 {
   if (ase_mode & MODE_GUI) {
+    CurrentSprite sprite;
+
     /* update the color palette */
-    set_current_palette(current_sprite != NULL ?
-			sprite_get_palette(current_sprite,
-					   current_sprite->frame): NULL,
+    set_current_palette(sprite != NULL ?
+			sprite_get_palette(sprite, sprite->frame): NULL,
 			FALSE);
 
     /* redraw the screen */
@@ -442,15 +447,14 @@ void app_refresh_screen()
  */
 void app_realloc_sprite_list()
 {
-  Sprite* sprite;
-  JLink link;
+  UIContext* context = UIContext::instance();
+  const SpriteList& list = context->get_sprite_list();
 
   /* insert all other sprites */
-  JI_LIST_FOR_EACH(get_sprite_list(), link) {
-    sprite = reinterpret_cast<Sprite*>(link->data);
-    tabs_set_text_for_tab(tabsbar,
-			  get_filename(sprite->filename),
-			  sprite);
+  for (SpriteList::const_iterator
+	 it = list.begin(); it != list.end(); ++it) {
+    Sprite* sprite = *it;
+    tabs_set_text_for_tab(tabsbar, get_filename(sprite->filename), sprite);
   }
 }
 
@@ -510,8 +514,9 @@ bool app_realloc_recent_list()
 
 int app_get_current_image_type()
 {
-  if (current_sprite)
-    return current_sprite->imgtype;
+  CurrentSprite sprite;
+  if (sprite)
+    return sprite->imgtype;
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else
@@ -568,9 +573,11 @@ int app_get_color_to_clear_layer(Layer *layer)
 static void tabsbar_select_callback(JWidget tabs, void *data, int button)
 {
   // Note: data can be NULL (the "Nothing" tab)
+  Sprite* sprite = (Sprite*)data;
 
   // put as current sprite
-  sprite_show((Sprite *)data);
+  UIContext* context = UIContext::instance();
+  context->show_sprite(sprite);
 
   // middle button: close the sprite
   if (data && (button & 4))

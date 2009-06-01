@@ -22,6 +22,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -31,13 +32,14 @@
 
 static bool cmd_duplicate_sprite_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_duplicate_sprite_execute(const char *argument)
 {
   JWidget window, src_name, dst_name, flatten;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   char buf[1024];
 
   /* load the window widget */
@@ -74,9 +76,11 @@ static void cmd_duplicate_sprite_execute(const char *argument)
     if (sprite_copy != NULL) {
       sprite_set_filename(sprite_copy, jwidget_get_text(dst_name));
 
-      sprite_mount(sprite_copy);
-      set_current_sprite(sprite_copy);
-      sprite_show(sprite_copy);
+      UIContext* context = UIContext::instance();
+
+      context->add_sprite(sprite_copy);
+      context->set_current_sprite(sprite_copy);
+      context->show_sprite(sprite_copy);
     }
   }
 

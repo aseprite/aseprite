@@ -43,10 +43,7 @@ Wish-list
 - dacap wish-list:
   + added starred file-items in the file-selector.
   + add AseContext structure to handle the current state of the
-    application (and hook changes in the context/options):
-  + src/ase/ directory
-  + src/ase/context.[ch]
-  + the current sprite should be in the AseContext
+    application (and hook changes in the context/options).
   + the commands should be enabled/disabled/checked by the current
     context state
   + the commands should use a new ase/ API and not the raster/ low-level
@@ -54,10 +51,6 @@ Wish-list
     - All "functions.c" should be in Undoable
   + the dependencies should be:
     commands/ -> ase/ -> raster/ -> jinete/
-  + the list of 'sprites' should be in the context (maybe a
-    AseSharedContext).
-  + the scripts should start with a new default AseContext (but
-    with the AseSharedContext visible)
 - manuq wish-list:
   + layer-with-constant-cel
 - Mateusz Czaplinski ideas:

@@ -46,6 +46,7 @@ class SpriteSizeJob : public Job
 public:
 
   SpriteSizeJob(Sprite* sprite, int new_width, int new_height, ResizeMethod resize_method)
+    : Job("Sprite Size")
   {
     m_sprite = sprite;
     m_new_width = new_width;
@@ -122,13 +123,16 @@ static bool height_perc_change_hook(JWidget widget, void *data);
 
 static bool cmd_sprite_size_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_sprite_size_execute(const char *argument)
 {
   JWidget window, width_px, height_px, width_perc, height_perc, lock_ratio, method, ok;
-  Sprite* sprite = current_sprite;
+  CurrentSprite sprite;
+  if (!sprite)
+    return;
 
   // load the window widget
   window = load_widget("sprsize.jid", "sprite_size");
@@ -190,6 +194,8 @@ static void cmd_sprite_size_execute(const char *argument)
 
 static bool lock_ratio_change_hook(JWidget widget, void *data)
 {
+  CurrentSprite sprite;
+
   if (widget->selected())
     width_px_change_hook(widget->find_sibling("width_px"), NULL);
 
@@ -198,14 +204,15 @@ static bool lock_ratio_change_hook(JWidget widget, void *data)
 
 static bool width_px_change_hook(JWidget widget, void *data)
 {
+  CurrentSprite sprite;
   int width = widget->text_int();
-  double perc = 100.0 * width / current_sprite->w;
+  double perc = 100.0 * width / sprite->w;
 
   widget->find_sibling("width_perc")->textf(PERC_FORMAT, perc);
 
   if (widget->find_sibling("lock_ratio")->selected()) {
     widget->find_sibling("height_perc")->textf(PERC_FORMAT, perc);
-    widget->find_sibling("height_px")->textf("%d", current_sprite->h * width / current_sprite->w);
+    widget->find_sibling("height_px")->textf("%d", sprite->h * width / sprite->w);
   }
 
   return true;
@@ -213,14 +220,15 @@ static bool width_px_change_hook(JWidget widget, void *data)
 
 static bool height_px_change_hook(JWidget widget, void *data)
 {
+  CurrentSprite sprite;
   int height = widget->text_int();
-  double perc = 100.0 * height / current_sprite->h;
+  double perc = 100.0 * height / sprite->h;
 
   widget->find_sibling("height_perc")->textf(PERC_FORMAT, perc);
 
   if (widget->find_sibling("lock_ratio")->selected()) {
     widget->find_sibling("width_perc")->textf(PERC_FORMAT, perc);
-    widget->find_sibling("width_px")->textf("%d", current_sprite->w * height / current_sprite->h);
+    widget->find_sibling("width_px")->textf("%d", sprite->w * height / sprite->h);
   }
 
   return true;
@@ -228,12 +236,13 @@ static bool height_px_change_hook(JWidget widget, void *data)
 
 static bool width_perc_change_hook(JWidget widget, void *data)
 {
+  CurrentSprite sprite;
   double width = widget->text_double();
 
-  widget->find_sibling("width_px")->textf("%d", (int)(current_sprite->w * width / 100));
+  widget->find_sibling("width_px")->textf("%d", (int)(sprite->w * width / 100));
 
   if (widget->find_sibling("lock_ratio")->selected()) {
-    widget->find_sibling("height_px")->textf("%d", (int)(current_sprite->h * width / 100));
+    widget->find_sibling("height_px")->textf("%d", (int)(sprite->h * width / 100));
     widget->find_sibling("height_perc")->text(widget->text());
   }
 
@@ -242,12 +251,13 @@ static bool width_perc_change_hook(JWidget widget, void *data)
 
 static bool height_perc_change_hook(JWidget widget, void *data)
 {
+  CurrentSprite sprite;
   double height = widget->text_double();
 
-  widget->find_sibling("height_px")->textf("%d", (int)(current_sprite->h * height / 100));
+  widget->find_sibling("height_px")->textf("%d", (int)(sprite->h * height / 100));
 
   if (widget->find_sibling("lock_ratio")->selected()) {
-    widget->find_sibling("width_px")->textf("%d", (int)(current_sprite->w * height / 100));
+    widget->find_sibling("width_px")->textf("%d", (int)(sprite->w * height / 100));
     widget->find_sibling("width_perc")->text(widget->text());
   }
 

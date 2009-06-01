@@ -26,6 +26,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -1026,8 +1027,10 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED: {
+      UIContext* context = UIContext::instance();
+
       set_current_editor(widget);
-      set_current_sprite(editor->sprite);
+      context->set_current_sprite(editor->sprite);
 
       if (!editor->sprite)
 	break;
@@ -1396,7 +1399,6 @@ static void editor_update_candraw(JWidget widget)
 
   editor->cursor_candraw =
     (editor->sprite != NULL &&
-     !sprite_is_locked(editor->sprite) &&
      editor->sprite->layer != NULL &&
      layer_is_image(editor->sprite->layer) &&
      layer_is_readable(editor->sprite->layer) &&

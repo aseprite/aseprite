@@ -112,7 +112,7 @@ void test ()
 
   image_free(image_screen);
   image_free(image_bg);
-  sprite_free(sprite);
+  delete sprite;
   destroy_bitmap(bmp);
 }
 

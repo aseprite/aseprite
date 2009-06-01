@@ -325,7 +325,7 @@ static bool view_grid_check_change_hook(JWidget widget, void *data)
 
 static bool set_grid_button_select_hook(JWidget widget, void *data)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   if (sprite && sprite->mask && sprite->mask->bitmap) {
     JRect rect = jrect_new(sprite->mask->x,

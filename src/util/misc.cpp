@@ -83,7 +83,8 @@ Image* GetImage2(Sprite* sprite, int* x, int* y, int* opacity)
 
 void LoadPalette(const char *filename)
 {
-  if (current_sprite) {
+  CurrentSprite sprite;
+  if (sprite) {
     DIRS *dir, *dirs;
     char buf[512];
 
@@ -101,8 +102,8 @@ void LoadPalette(const char *filename)
 	  set_current_palette(pal, FALSE);
 
 	  /* just one palette */
-	  sprite_reset_palettes(current_sprite);
-	  sprite_set_palette(current_sprite, pal, 0);
+	  sprite_reset_palettes(sprite);
+	  sprite_set_palette(sprite, pal, 0);
 
 	  /* redraw the entire screen */
 	  jmanager_refresh_screen();

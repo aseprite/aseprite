@@ -58,13 +58,13 @@ void dialogs_mask_color()
   JWidget label_color, button_1, button_2;
   JWidget label_fuzziness;
   JWidget button_ok, button_cancel;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image;
 
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     return;
 
@@ -190,18 +190,15 @@ static bool preview_change_hook(JWidget widget, void *data)
 static Mask *gen_mask()
 {
   int xpos, ypos, color, fuzziness;
-  Sprite *sprite;
-  Image *image;
-  Mask *mask;
+  CurrentSprite sprite;
 
-  sprite = current_sprite;
-  image = GetImage2(sprite, &xpos, &ypos, NULL);
+  Image* image = GetImage2(sprite, &xpos, &ypos, NULL);
 
   color = get_color_for_image(sprite->imgtype,
 			      colorbutton_get_color(button_color));
   fuzziness = jslider_get_value(slider_fuzziness);
 
-  mask = mask_new();
+  Mask* mask = mask_new();
   mask_by_color(mask, image, color, fuzziness);
   mask_move(mask, xpos, ypos);
 
@@ -211,7 +208,7 @@ static Mask *gen_mask()
 static void mask_preview()
 {
   if (jwidget_is_selected (check_preview)) {
-    Sprite *sprite = current_sprite;
+    CurrentSprite sprite;
     Mask *mask = gen_mask();
     Mask *old_mask = sprite->mask;
 

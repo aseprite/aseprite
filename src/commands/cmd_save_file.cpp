@@ -145,7 +145,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 
 static void save_as_dialog(const char* dlg_title, bool mark_as_saved)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   char exts[4096];
   jstring filename;
   jstring newfilename;
@@ -200,7 +200,8 @@ static void save_as_dialog(const char* dlg_title, bool mark_as_saved)
  */
 static bool cmd_save_file_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 /**
@@ -210,7 +211,7 @@ static bool cmd_save_file_enabled(const char *argument)
  */
 static void cmd_save_file_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   /* if the sprite is associated to a file in the file-system, we can
      save it directly without user interaction */
@@ -231,7 +232,8 @@ static void cmd_save_file_execute(const char *argument)
 
 static bool cmd_save_file_as_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_save_file_as_execute(const char *argument)
@@ -245,12 +247,13 @@ static void cmd_save_file_as_execute(const char *argument)
 
 static bool cmd_save_file_copy_as_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_save_file_copy_as_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   jstring old_filename = sprite->filename;
 
   // show "Save As" dialog

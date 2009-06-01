@@ -31,14 +31,16 @@
 
 static bool cmd_goto_first_frame_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_goto_first_frame_execute(const char *argument)
 {
-  current_sprite->frame = 0;
+  CurrentSprite sprite;
+  sprite->frame = 0;
 
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 }
 
@@ -48,17 +50,20 @@ static void cmd_goto_first_frame_execute(const char *argument)
 
 static bool cmd_goto_previous_frame_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_goto_previous_frame_execute(const char *argument)
 {
-  if (current_sprite->frame > 0)
-    current_sprite->frame--;
-  else
-    current_sprite->frame = current_sprite->frames-1;
+  CurrentSprite sprite;
 
-  update_screen_for_sprite(current_sprite);
+  if (sprite->frame > 0)
+    sprite->frame--;
+  else
+    sprite->frame = sprite->frames-1;
+
+  update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 }
 
@@ -68,17 +73,20 @@ static void cmd_goto_previous_frame_execute(const char *argument)
 
 static bool cmd_goto_next_frame_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_goto_next_frame_execute(const char *argument)
 {
-  if (current_sprite->frame < current_sprite->frames-1)
-    current_sprite->frame++;
-  else
-    current_sprite->frame = 0;
+  CurrentSprite sprite;
 
-  update_screen_for_sprite(current_sprite);
+  if (sprite->frame < sprite->frames-1)
+    sprite->frame++;
+  else
+    sprite->frame = 0;
+
+  update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 }
 
@@ -88,14 +96,16 @@ static void cmd_goto_next_frame_execute(const char *argument)
 
 static bool cmd_goto_last_frame_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_goto_last_frame_execute(const char *argument)
 {
-  current_sprite->frame = current_sprite->frames-1;
+  CurrentSprite sprite;
+  sprite->frame = sprite->frames-1;
 
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 }
 

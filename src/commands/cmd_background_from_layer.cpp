@@ -29,18 +29,19 @@
 
 static bool cmd_background_from_layer_enabled(const char *argument)
 {
+  CurrentSprite sprite;
   return
-    current_sprite != NULL &&
-    current_sprite->layer != NULL &&
-    sprite_get_background_layer(current_sprite) == NULL &&
-    layer_is_image(current_sprite->layer) &&
-    layer_is_readable(current_sprite->layer) &&
-    layer_is_writable(current_sprite->layer);
+    sprite != NULL &&
+    sprite->layer != NULL &&
+    sprite_get_background_layer(sprite) == NULL &&
+    layer_is_image(sprite->layer) &&
+    layer_is_readable(sprite->layer) &&
+    layer_is_writable(sprite->layer);
 }
 
 static void cmd_background_from_layer_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar

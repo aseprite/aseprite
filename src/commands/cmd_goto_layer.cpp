@@ -34,26 +34,28 @@
 
 static bool cmd_goto_previous_layer_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_goto_previous_layer_execute(const char *argument)
 {
-  int i = sprite_layer2index(current_sprite, current_sprite->layer);
+  CurrentSprite sprite;
+  int i = sprite_layer2index(sprite, sprite->layer);
   
   if (i > 0)
     i--;
   else
-    i = sprite_count_layers(current_sprite)-1;
+    i = sprite_count_layers(sprite)-1;
 
-  current_sprite->layer = sprite_index2layer(current_sprite, i);
+  sprite->layer = sprite_index2layer(sprite, i);
 
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Layer `%s' selected"),
-		     current_sprite->layer->name);
+		     sprite->layer->name);
 }
 
 /* ======================== */
@@ -62,26 +64,28 @@ static void cmd_goto_previous_layer_execute(const char *argument)
 
 static bool cmd_goto_next_layer_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_goto_next_layer_execute(const char *argument)
 {
-  int i = sprite_layer2index(current_sprite, current_sprite->layer);
+  CurrentSprite sprite;
+  int i = sprite_layer2index(sprite, sprite->layer);
 
-  if (i < sprite_count_layers(current_sprite)-1)
+  if (i < sprite_count_layers(sprite)-1)
     i++;
   else
     i = 0;
 
-  current_sprite->layer = sprite_index2layer(current_sprite, i);
+  sprite->layer = sprite_index2layer(sprite, i);
 
-  update_screen_for_sprite(current_sprite);
+  update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Layer `%s' selected"),
-		     current_sprite->layer->name);
+		     sprite->layer->name);
 }
 
 Command cmd_goto_previous_layer = {

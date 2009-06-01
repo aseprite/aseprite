@@ -31,13 +31,13 @@
 
 static bool cmd_load_mask_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_load_mask_execute(const char *argument)
 {
-  /* get current sprite */
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   jstring filename = ase_file_selector(_("Load .msk File"), "", "msk");
   if (!filename.empty()) {
     Mask *mask = load_msk_file(filename.c_str());

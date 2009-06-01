@@ -36,13 +36,14 @@ void dialogs_frame_length(int sprite_frpos);
 
 static bool cmd_sprite_properties_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_sprite_properties_execute(const char *argument)
 {
   JWidget window, killer, name, type, size, frames, speed, ok;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   jstring imgtype_text;
   char buf[256];
 

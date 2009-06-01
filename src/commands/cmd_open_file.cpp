@@ -23,6 +23,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
@@ -56,7 +57,7 @@ static void openfile_bg(void *fop_data)
   fop_operate(fop);
 
   if (fop_is_stop(fop) && fop->sprite) {
-    sprite_free(fop->sprite);
+    delete fop->sprite;
     fop->sprite = NULL;
   }
 
@@ -197,9 +198,11 @@ static void cmd_open_file_execute(const char *argument)
 	  else {
 	    Sprite *sprite = fop->sprite;
 	    if (sprite) {
+	      UIContext* context = UIContext::instance();
+
 	      recent_file(fop->filename);
-	      sprite_mount(sprite);
-	      sprite_show(sprite);
+	      context->add_sprite(sprite);
+	      context->show_sprite(sprite);
 	    }
 	    /* if the sprite isn't NULL and the file-operation wasn't
 	       stopped by the user...  */

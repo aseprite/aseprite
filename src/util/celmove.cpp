@@ -55,7 +55,7 @@ void set_frame_to_handle(Layer *_src_layer, int _src_frame,
 
 void move_cel()
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Cel *src_cel, *dst_cel;
 
   assert(src_layer != NULL);
@@ -147,7 +147,7 @@ void move_cel()
 
 void copy_cel()
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Cel *src_cel, *dst_cel;
 
   assert(src_layer != NULL);

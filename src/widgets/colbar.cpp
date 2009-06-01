@@ -477,11 +477,9 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       /* time to refresh all the editors which have the current
 	 sprite selected? */
       if (msg->timer.timer_id == colorbar->refresh_timer_id) {
-	Sprite *sprite = current_sprite;
-
-	if (sprite != NULL) {
+	CurrentSprite sprite;
+	if (sprite != NULL)
 	  update_editors_with_sprite(sprite);
-	}
 
 	jmanager_stop_timer(colorbar->refresh_timer_id);
       }
@@ -653,8 +651,8 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_CLOSE: {
-      /* change the sprite palette */
-      Sprite *sprite = current_sprite;
+      // change the sprite palette
+      CurrentSprite sprite;
 
       if (sprite != NULL) {
 	Palette *pal = sprite_get_palette(sprite, sprite->frame);
@@ -726,8 +724,8 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 	   different from the current sprite's palette, then we have
 	   to start the "refresh_timer" to refresh all the editors
 	   with that sprite */
-	if (current_sprite != NULL && bitmap_color_depth(screen) != 8) {
-	  Sprite *sprite = current_sprite;
+	CurrentSprite sprite;
+	if (sprite != NULL && bitmap_color_depth(screen) != 8) {
 	  Palette *pal = sprite_get_palette(sprite, sprite->frame);
 	  
 	  if (palette_count_diff(pal, get_current_palette(), NULL, NULL) > 0) {

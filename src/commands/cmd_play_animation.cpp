@@ -43,12 +43,13 @@ END_OF_STATIC_FUNCTION(speed_timer_callback);
 
 static bool cmd_play_animation_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite;
 }
 
 static void cmd_play_animation_execute(const char *argument)
 {
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   int old_frame, msecs;
   bool done = FALSE;
   bool onionskin = get_onionskin();

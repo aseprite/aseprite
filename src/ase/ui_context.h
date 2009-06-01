@@ -16,49 +16,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_SPRITES_H
-#define MODULES_SPRITES_H
+#ifndef ASE_UI_CONTEXT_H
+#define ASE_UI_CONTEXT_H
 
-#include <cassert>
+#include "ase/context.h"
 
-#include "jinete/jbase.h"
-#include "raster/sprite.h"
-
-class Image;
-class Layer;
-class Cel;
-
-struct ImageRef
+class UIContext : public Context
 {
-  Image* image;
-  Layer* layer;
-  Cel* cel;
-  ImageRef* next;
-};
-
-class CurrentSprite
-{
-  Sprite* m_sprite;
-  bool m_writeable;
-
 public:
-  CurrentSprite();
-  ~CurrentSprite();
 
-  bool writeable() const { return m_writeable; }
-  void destroy();
+  static UIContext* instance();
+  static void destroy_instance();
 
-  operator Sprite* () { return m_sprite; }
+  UIContext();
+  virtual ~UIContext();
 
-  Sprite* operator->() {
-    assert(m_sprite != NULL);
-    return m_sprite;
-  }
+  void show_sprite(Sprite* sprite) const;
+
+protected:
+
+  virtual void on_add_sprite(Sprite* sprite);
+  virtual void on_remove_sprite(Sprite* sprite);
+  virtual void on_set_current_sprite(Sprite* sprite);
 
 };
 
-ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write);
-void images_ref_free(ImageRef* image_ref);
-
-#endif /* MODULES_SPRITES_H */
-
+#endif // ASE_UI_CONTEXT_H

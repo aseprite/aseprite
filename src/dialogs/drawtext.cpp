@@ -53,12 +53,13 @@ void dialogs_draw_text()
   Image *image, *dest_image;
   JWidget window, button_ok, color_box, color_but;
   JWidget entry_size, entry_text;
+  CurrentSprite sprite;
   char buf[256];
 
-  if (!is_interactive() || !current_sprite)
+  if (!is_interactive() || !sprite)
     return;
 
-  dest_image = GetImage(current_sprite);
+  dest_image = GetImage(sprite);
   if (!dest_image)
     return;
 
@@ -84,7 +85,7 @@ void dialogs_draw_text()
   color_but = colorbutton_new
     (get_config_color("DrawText", "Color",
 		      colorbar_get_fg_color(app_get_colorbar())),
-     current_sprite->imgtype);
+     sprite->imgtype);
 
   jwidget_add_child(color_box, color_but);
 
@@ -126,7 +127,7 @@ void dialogs_draw_text()
       ji_font_set_size(f, size);
 
       /* setup color */
-      color = get_color_for_image(current_sprite->imgtype,
+      color = get_color_for_image(sprite->imgtype,
 				  color_with_type);
 
       /* update configuration */
@@ -137,9 +138,8 @@ void dialogs_draw_text()
       /* render text */
       image = render_text(f, text, color);
       if (image) {
-	clipboard::copy_image(image, sprite_get_palette(current_sprite,
-							current_sprite->frame));
-	clipboard::paste(current_sprite);
+	clipboard::copy_image(image, sprite_get_palette(sprite, sprite->frame));
+	clipboard::paste(sprite);
       }
       else
 	console_printf(_("Error rendering text.\n"));
@@ -186,6 +186,7 @@ static Image *render_text(FONT *f, const char *text, int color)
     }							\
   }
 
+  CurrentSprite sprite;
   int i, pixels, w, h;
   Image *image;
   BITMAP *bmp;
@@ -206,7 +207,7 @@ static Image *render_text(FONT *f, const char *text, int color)
   clear_to_color(bmp, makecol32 (255, 0, 255));
   textout(bmp, f, text, 0, 0, makecol32 (255, 255, 255));
 
-  image = image_new(current_sprite->imgtype, w, h);
+  image = image_new(sprite->imgtype, w, h);
   if (!image) {
     destroy_bitmap(bmp);
     return NULL;

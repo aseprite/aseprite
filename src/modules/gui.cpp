@@ -29,6 +29,7 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"
@@ -411,7 +412,7 @@ void gui_feedback()
 
   if (next_idle_flags & REFRESH_FULL_SCREEN) {
     next_idle_flags ^= REFRESH_FULL_SCREEN;
-    update_screen_for_sprite(current_sprite);
+    update_screen_for_sprite(UIContext::instance()->get_current_sprite());
   }
 
   /* record file if is necessary */

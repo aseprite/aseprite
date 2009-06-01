@@ -34,13 +34,14 @@
 
 static bool cmd_canvas_size_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_canvas_size_execute(const char *argument)
 {
   JWidget window, left, top, right, bottom, ok;
-  Sprite* sprite = current_sprite;
+  CurrentSprite sprite;
 
   // load the window widget
   window = load_widget("canvas.jid", "canvas_size");

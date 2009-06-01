@@ -254,7 +254,7 @@ error:;
   if (current_image_old) image_free(current_image_old);
   if (npal) palette_free(npal);
   if (opal) palette_free(opal);
-  if (sprite) sprite_free(sprite);
+  delete sprite;
   return ret;
 }
 

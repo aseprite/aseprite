@@ -24,6 +24,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/sprites.h"
@@ -44,6 +45,8 @@ static bool cmd_select_file_enabled(const char *argument)
 
 static bool cmd_select_file_checked(const char *argument)
 {
+  CurrentSprite current_sprite;
+
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj *gfxobj = gfxobj_find(sprite_id);
@@ -57,15 +60,17 @@ static bool cmd_select_file_checked(const char *argument)
 
 static void cmd_select_file_execute(const char *argument)
 {
+  UIContext* context = UIContext::instance();
+
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
-    GfxObj *gfxobj = gfxobj_find(sprite_id);
+    GfxObj* gfxobj = gfxobj_find(sprite_id);
     assert(gfxobj != NULL);
 
-    sprite_show((Sprite *)gfxobj);
+    context->show_sprite((Sprite*)gfxobj);
   }
   else {
-    sprite_show(NULL);
+    context->show_sprite(NULL);
   }
 }
 

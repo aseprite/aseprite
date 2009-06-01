@@ -70,7 +70,8 @@ static void make_preview();
 
 static bool cmd_convolution_matrix_enabled(const char *argument)
 {
-  return current_sprite != NULL;
+  CurrentSprite sprite;
+  return sprite != NULL;
 }
 
 static void cmd_convolution_matrix_execute(const char *argument)
@@ -79,11 +80,11 @@ static void cmd_convolution_matrix_execute(const char *argument)
   JWidget view_convmatr, list_convmatr;
   JWidget box_target;
   JWidget reload, generate;
-  Sprite *sprite = current_sprite;
+  CurrentSprite sprite;
   Image *image;
   Effect *effect;
 
-  image = GetImage(current_sprite);
+  image = GetImage(sprite);
   if (!image)
     return;
 

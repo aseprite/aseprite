@@ -91,8 +91,8 @@ Sprite::Sprite(int imgtype, int w, int h)
   sprite_set_speed(this, 100);
 
   /* multiple access */
-  this->locked = FALSE;
-  this->mutex = jmutex_new();
+  m_locked = 0;
+  m_mutex = jmutex_new();
 
   /* file format options */
   this->format_options = NULL;
@@ -105,7 +105,7 @@ Sprite::~Sprite()
 {
   JLink link;
 
-  assert(!this->locked);
+  // assert(m_locked == 1);
 
   /* destroy images' stock */
   if (this->stock)
@@ -143,7 +143,7 @@ Sprite::~Sprite()
   if (this->bound.seg) jfree(this->bound.seg);
 
   /* destroy mutex */
-  jmutex_free(this->mutex);
+  jmutex_free(this->m_mutex);
 
   /* destroy file format options */
   if (this->format_options)
@@ -178,7 +178,7 @@ Sprite* sprite_new_copy(const Sprite* src_sprite)
   undo_enable(dst_sprite->undo);
 
   if (dst_sprite->set == NULL) {
-    sprite_free(dst_sprite);
+    delete dst_sprite;
     return NULL;
   }
 
@@ -211,7 +211,7 @@ Sprite* sprite_new_flatten_copy(const Sprite* src_sprite)
 				      0, 0, src_sprite->w, src_sprite->h,
 				      0, src_sprite->frames-1);
   if (flat_layer == NULL) {
-    sprite_free(dst_sprite);
+    delete dst_sprite;
     return NULL;
   }
 
@@ -237,7 +237,7 @@ Sprite* sprite_new_with_layer(int imgtype, int w, int h)
   /* new image */
   image = image_new(imgtype, w, h);
   if (!image) {
-    sprite_free(sprite);
+    delete sprite;
     return NULL;
   }
 
@@ -245,7 +245,7 @@ Sprite* sprite_new_with_layer(int imgtype, int w, int h)
   layer = layer_new(sprite);
   if (!layer) {
     image_free(image);
-    sprite_free(sprite);
+    delete sprite;
     return NULL;
   }
 
@@ -276,16 +276,6 @@ Sprite* sprite_new_with_layer(int imgtype, int w, int h)
   return sprite;
 }
 
-/**
- * Destroys the sprite
- */
-void sprite_free(Sprite* sprite)
-{
-  assert(sprite);
-  delete sprite;
-}
-
-
 bool sprite_is_modified(Sprite* sprite)
 {
   assert(sprite != NULL);
@@ -299,19 +289,6 @@ bool sprite_is_associated_to_file(Sprite* sprite)
   assert(sprite != NULL);
 
   return sprite->associated_to_file;
-}
-
-bool sprite_is_locked(Sprite* sprite)
-{
-  bool locked;
-
-  assert(sprite != NULL);
-
-  jmutex_lock(sprite->mutex);
-  locked = sprite->locked;
-  jmutex_unlock(sprite->mutex);
-    
-  return locked;
 }
 
 void sprite_mark_as_saved(Sprite* sprite)
@@ -336,30 +313,27 @@ bool sprite_need_alpha(Sprite* sprite)
   return FALSE;
 }
 
-bool sprite_lock(Sprite* sprite)
+/**
+ * Lock the sprite to write or read it.
+ *
+ * @return true if the sprite can be written (because this is the first lock).
+ */
+bool Sprite::lock()
 {
-  bool res = FALSE;
+  ScopedLock hold(m_mutex);
 
-  assert(sprite != NULL);
-
-  jmutex_lock(sprite->mutex);
-  if (!sprite->locked) {
-    sprite->locked = TRUE;
-    res = TRUE;
-  }
-  jmutex_unlock(sprite->mutex);
-
-  return res;
+  if (++m_locked == 1)
+    return true;
+  else
+    return false;
 }
 
-void sprite_unlock(Sprite* sprite)
+void Sprite::unlock()
 {
-  assert(sprite != NULL);
+  ScopedLock hold(m_mutex);
 
-  jmutex_lock(sprite->mutex);
-  assert(sprite->locked);
-  sprite->locked = FALSE;
-  jmutex_unlock(sprite->mutex);
+  --m_locked;
+  assert(m_locked >= 0);
 }
 
 Palette* sprite_get_palette(Sprite* sprite, int frame)
@@ -838,7 +812,7 @@ static Sprite* general_copy(const Sprite* src_sprite)
   stock_free(dst_sprite->stock);
   dst_sprite->stock = stock_new_copy(src_sprite->stock);
   if (!dst_sprite->stock) {
-    sprite_free(dst_sprite);
+    delete dst_sprite;
     return NULL;
   }
 
@@ -862,7 +836,7 @@ static Sprite* general_copy(const Sprite* src_sprite)
   if (src_sprite->path) {
     dst_sprite->path = path_new_copy(src_sprite->path);
     if (!dst_sprite->path) {
-      sprite_free(dst_sprite);
+      delete dst_sprite;
       return NULL;
     }
   }
@@ -876,7 +850,7 @@ static Sprite* general_copy(const Sprite* src_sprite)
   if (src_sprite->mask) {
     dst_sprite->mask = mask_new_copy(src_sprite->mask);
     if (!dst_sprite->mask) {
-      sprite_free(dst_sprite);
+      delete dst_sprite;
       return NULL;
     }
   }
