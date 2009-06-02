@@ -1,7 +1,12 @@
 High priority work
 ------------------
 
-- search for TODO;
+- Fix paste behavior:
+  + paste when there are no images (create one image or put the
+    clipboard as the layer's image)
+  + create a 'floating' flag for image-layers and make the
+    trasformation embedded in the editor
+  + Ctrl+T should transform the current cel
 - fix bilinear: when getpixel have alpha = 0 get a neighbor color.
 - Ctrl+X / Ctrl+C / Ctrl+V should Cut/Copy/Paste in jentries.
 - fix problems with tiled mode XY in drawing corners (I cannot
