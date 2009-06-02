@@ -20,10 +20,11 @@
 #define DIALOGS_DRAWTEXT_H
 
 class Image;
+class Sprite;
 
-void dialogs_draw_text();
+void dialogs_draw_text(Sprite* sprite);
 
-Image* RenderText(const char* fontname, int size, int color, const char* text);
+Image* RenderText(Sprite* sprite, const char* fontname, int size, int color, const char* text);
 
 #endif /* DIALOGS_DRAWTEXT_H */
 

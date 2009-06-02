@@ -19,7 +19,9 @@
 #ifndef DIALOGS_CANVASZE_H
 #define DIALOGS_CANVASZE_H
 
-void canvas_resize();
+class Sprite;
+
+void canvas_resize(Sprite* sprite);
 
 #endif /* DIALOGS_CANVASZE_H */
 

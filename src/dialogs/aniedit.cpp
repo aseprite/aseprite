@@ -639,7 +639,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    /* move the cel */
 	    else if (msg->mouse.left) {
 	      if (movement) {
-		move_cel();
+		move_cel(anieditor->sprite);
 
 		destroy_thumbnails();
 		anieditor_regenerate_layers(widget);

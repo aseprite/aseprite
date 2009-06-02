@@ -38,38 +38,6 @@ static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, 
 
 //////////////////////////////////////////////////////////////////////
 
-CurrentSprite::CurrentSprite()
-{
-  UIContext* context = UIContext::instance();
-
-  m_sprite = context->get_current_sprite();
-  if (m_sprite)
-    m_writeable = m_sprite->lock();
-}
-
-CurrentSprite::~CurrentSprite()
-{
-  if (m_sprite)
-    m_sprite->unlock();
-}
-
-void CurrentSprite::destroy()
-{
-  if (m_sprite) {
-    UIContext* context = UIContext::instance();
-
-    context->remove_sprite(m_sprite);
-
-    m_sprite->unlock();
-
-    delete m_sprite;
-    m_sprite = NULL;
-    m_writeable = false;
-  }
-}
-
-//////////////////////////////////////////////////////////////////////
-
 ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
 {
   Layer *layer = target & TARGET_ALL_LAYERS ? sprite->set:

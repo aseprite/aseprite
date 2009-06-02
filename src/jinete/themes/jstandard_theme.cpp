@@ -398,6 +398,7 @@ static void theme_init_widget(JWidget widget)
     case JI_SLIDER:
       BORDER(4);
       widget->child_spacing = jwidget_get_text_height(widget);
+      widget->align(JI_CENTER | JI_MIDDLE);
       break;
 
     case JI_TEXTBOX:
@@ -1146,8 +1147,7 @@ static void theme_draw_slider(JWidget widget, JRect clip)
 
     usprintf(buf, "%d", value);
 
-    widget->align(JI_CENTER | JI_MIDDLE);
-    widget->text(buf);
+    widget->set_text_quiet(buf);
 
     r = jrect_new(x1, y1, x2+1, y2+1);
 
@@ -1172,7 +1172,7 @@ static void theme_draw_slider(JWidget widget, JRect clip)
 
     set_clip(ji_screen, cx1, cy1, cx2, cy2);
 
-    widget->text(old_text.c_str());
+    widget->set_text_quiet(old_text.c_str());
     jrect_free(r);
   }
 }

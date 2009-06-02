@@ -19,6 +19,8 @@
 #ifndef DIALOGS_MASKCOL_H
 #define DIALOGS_MASKCOL_H
 
-void dialogs_mask_color();
+class Sprite;
+
+void dialogs_mask_color(Sprite* sprite);
 
 #endif /* DIALOGS_MASKCOL_H */

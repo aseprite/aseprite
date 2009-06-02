@@ -19,11 +19,7 @@
 #ifndef MODULES_SPRITES_H
 #define MODULES_SPRITES_H
 
-#include <cassert>
-
-#include "jinete/jbase.h"
-#include "raster/sprite.h"
-
+class Sprite;
 class Image;
 class Layer;
 class Cel;
@@ -34,27 +30,6 @@ struct ImageRef
   Layer* layer;
   Cel* cel;
   ImageRef* next;
-};
-
-class CurrentSprite
-{
-  Sprite* m_sprite;
-  bool m_writeable;
-
-public:
-  CurrentSprite();
-  ~CurrentSprite();
-
-  bool writeable() const { return m_writeable; }
-  void destroy();
-
-  operator Sprite* () { return m_sprite; }
-
-  Sprite* operator->() {
-    assert(m_sprite != NULL);
-    return m_sprite;
-  }
-
 };
 
 ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write);

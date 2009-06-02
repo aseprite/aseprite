@@ -1,3 +1,7 @@
+2009-06-01  David A. Capello  <davidcapello@gmail.com>
+
+	* src/ase/current_sprite.h (CurrentSprite): Added.
+
 2009-05-31  David A. Capello  <davidcapello@gmail.com>
 
 	* src/file/file.cpp (fop_free): Fixed a mutex-handle leak.

@@ -38,6 +38,9 @@ const char *msgids_get(const char *id); /* src/intl/msgids.[ch] */
 
 #define _(msgid) (msgids_get(msgid))
 
+// asserts
+#include <cassert>
+
 #include <math.h>
 #undef PI
 #define PI 3.14159265358979323846
@@ -47,6 +50,9 @@ const char *msgids_get(const char *id); /* src/intl/msgids.[ch] */
 typedef uint8_t		ase_uint8;
 typedef uint16_t	ase_uint16;
 typedef uint32_t	ase_uint32;
+
+//////////////////////////////////////////////////////////////////////
+// Overloaded new/delete operators to detect memory-leaks
 
 #if defined __cplusplus && defined MEMLEAK
 

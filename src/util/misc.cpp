@@ -81,39 +81,38 @@ Image* GetImage2(Sprite* sprite, int* x, int* y, int* opacity)
   return image;
 }
 
-void LoadPalette(const char *filename)
+void LoadPalette(Sprite* sprite, const char *filename)
 {
-  CurrentSprite sprite;
-  if (sprite) {
-    DIRS *dir, *dirs;
-    char buf[512];
+  assert(sprite != NULL);
 
-    dirs = dirs_new();
-    dirs_add_path(dirs, filename);
+  DIRS *dir, *dirs;
+  char buf[512];
 
-    usprintf(buf, "palettes/%s", filename);
-    dirs_cat_dirs(dirs, filename_in_datadir (buf));
+  dirs = dirs_new();
+  dirs_add_path(dirs, filename);
 
-    for (dir=dirs; dir; dir=dir->next) {
-      if (exists(dir->path)) {
-	Palette *pal = palette_load(dir->path);
-	if (pal != NULL) {
-	  /* set the palette calling the hooks */
-	  set_current_palette(pal, FALSE);
+  usprintf(buf, "palettes/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_datadir (buf));
 
-	  /* just one palette */
-	  sprite_reset_palettes(sprite);
-	  sprite_set_palette(sprite, pal, 0);
+  for (dir=dirs; dir; dir=dir->next) {
+    if (exists(dir->path)) {
+      Palette *pal = palette_load(dir->path);
+      if (pal != NULL) {
+	/* set the palette calling the hooks */
+	set_current_palette(pal, FALSE);
 
-	  /* redraw the entire screen */
-	  jmanager_refresh_screen();
-	}
-	break;
+	/* just one palette */
+	sprite_reset_palettes(sprite);
+	sprite_set_palette(sprite, pal, 0);
+
+	/* redraw the entire screen */
+	jmanager_refresh_screen();
       }
+      break;
     }
-
-    dirs_free(dirs);
   }
+
+  dirs_free(dirs);
 }
 
 /* returns a new layer created from the current mask in the current

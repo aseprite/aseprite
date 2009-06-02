@@ -21,6 +21,7 @@
 #include <assert.h>
 #include "jinete/jinete.h"
 
+#include "ase/current_sprite.h"
 #include "ase/ui_context.h"
 #include "console/console.h"
 #include "core/app.h"

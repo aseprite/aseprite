@@ -49,16 +49,15 @@ static bool color_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
 
-static Mask *gen_mask();
-static void mask_preview();
+static Mask *gen_mask(Sprite* sprite);
+static void mask_preview(Sprite* sprite);
 
-void dialogs_mask_color()
+void dialogs_mask_color(Sprite* sprite)
 {
   JWidget window, box1, box2, box3, box4;
   JWidget label_color, button_1, button_2;
   JWidget label_fuzziness;
   JWidget button_ok, button_cancel;
-  CurrentSprite sprite;
   Image *image;
 
   if (!is_interactive () || !sprite)
@@ -90,12 +89,15 @@ void dialogs_mask_color()
   if (get_config_bool("MaskColor", "Preview", TRUE))
     jwidget_select(check_preview);
 
+  button_1->user_data[1] = sprite;
+  button_2->user_data[1] = sprite;
+
   jbutton_add_command(button_1, button_1_command);
   jbutton_add_command(button_2, button_2_command);
 
-  HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 0);
-  HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
+  HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, sprite);
+  HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
+  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, sprite);
 
   jwidget_magnetic(button_ok, TRUE);
   jwidget_expansive(button_color, TRUE);
@@ -113,7 +115,7 @@ void dialogs_mask_color()
   jwindow_center(window);
 
   /* mask first preview */
-  mask_preview();
+  mask_preview(sprite);
 
   /* load window configuration */
   load_window_pos(window, "MaskColor");
@@ -131,7 +133,7 @@ void dialogs_mask_color()
     }
 
     /* change the mask */
-    mask = gen_mask();
+    mask = gen_mask(sprite);
     sprite_set_mask(sprite, mask);
     mask_free(mask);
 
@@ -159,38 +161,37 @@ static void button_1_command(JWidget widget)
 {
   colorbutton_set_color(button_color,
 			colorbar_get_fg_color(app_get_colorbar()));
-  mask_preview();
+  mask_preview((Sprite*)widget->user_data[1]);
 }
 
 static void button_2_command(JWidget widget)
 {
   colorbutton_set_color(button_color,
 			colorbar_get_bg_color(app_get_colorbar()));
-  mask_preview();
+  mask_preview((Sprite*)widget->user_data[1]);
 }
 
 static bool color_change_hook(JWidget widget, void *data)
 {
-  mask_preview();
+  mask_preview((Sprite*)data);
   return FALSE;
 }
 
 static bool slider_change_hook(JWidget widget, void *data)
 {
-  mask_preview();
+  mask_preview((Sprite*)data);
   return FALSE;
 }
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
-  mask_preview();
+  mask_preview((Sprite*)data);
   return FALSE;
 }
 
-static Mask *gen_mask()
+static Mask *gen_mask(Sprite* sprite)
 {
   int xpos, ypos, color, fuzziness;
-  CurrentSprite sprite;
 
   Image* image = GetImage2(sprite, &xpos, &ypos, NULL);
 
@@ -205,11 +206,10 @@ static Mask *gen_mask()
   return mask;
 }
 
-static void mask_preview()
+static void mask_preview(Sprite* sprite)
 {
-  if (jwidget_is_selected (check_preview)) {
-    CurrentSprite sprite;
-    Mask *mask = gen_mask();
+  if (jwidget_is_selected(check_preview)) {
+    Mask *mask = gen_mask(sprite);
     Mask *old_mask = sprite->mask;
 
     sprite->mask = mask;

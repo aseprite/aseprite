@@ -7,6 +7,7 @@ ASE = aseprite$(EXE)
 
 COMMON_SOURCES =					\
 	src/ase/context.cpp				\
+	src/ase/current_sprite.cpp			\
 	src/ase/ui_context.cpp				\
 	src/commands/cmd_about.cpp			\
 	src/commands/cmd_advanced_mode.cpp		\

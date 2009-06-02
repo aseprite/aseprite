@@ -20,6 +20,7 @@
 
 #include "jinete/jinete.h"
 
+#include "ase/current_sprite.h"
 #include "ase/ui_context.h"
 #include "core/app.h"
 #include "modules/editors.h"

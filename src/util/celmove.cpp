@@ -37,8 +37,8 @@
 #include "util/celmove.h"
 #include "util/functions.h"
 
-/* these variables indicate what cel to move (and the current_sprite
-   frame indicates to where move it) */
+/* these variables indicate what cel to move (and the sprite's
+   frame indicates where to move it) */
 static Layer *src_layer = NULL;	/* TODO warning not thread safe */
 static Layer *dst_layer = NULL;
 static int src_frame = 0;
@@ -53,9 +53,8 @@ void set_frame_to_handle(Layer *_src_layer, int _src_frame,
   dst_frame = _dst_frame;
 }
 
-void move_cel()
+void move_cel(Sprite* sprite)
 {
-  CurrentSprite sprite;
   Cel *src_cel, *dst_cel;
 
   assert(src_layer != NULL);
@@ -64,7 +63,7 @@ void move_cel()
   assert(dst_frame >= 0 && dst_frame < sprite->frames);
 
   if (layer_is_background(src_layer)) {
-    copy_cel();
+    copy_cel(sprite);
     return;
   }
 
@@ -145,9 +144,8 @@ void move_cel()
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
 
-void copy_cel()
+void copy_cel(Sprite* sprite)
 {
-  CurrentSprite sprite;
   Cel *src_cel, *dst_cel;
 
   assert(src_layer != NULL);

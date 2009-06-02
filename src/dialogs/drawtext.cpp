@@ -42,18 +42,17 @@
 
 static JWidget font_button;
 
-static Image *render_text(FONT *f, const char *text, int color);
+static Image *render_text(Sprite* sprite, FONT *f, const char *text, int color);
 
 static FONT *my_load_font(const char *filename);
 static void button_font_command(JWidget widget);
 static void update_button_text();
 
-void dialogs_draw_text()
+void dialogs_draw_text(Sprite* sprite)
 {
   Image *image, *dest_image;
   JWidget window, button_ok, color_box, color_but;
   JWidget entry_size, entry_text;
-  CurrentSprite sprite;
   char buf[256];
 
   if (!is_interactive() || !sprite)
@@ -136,7 +135,7 @@ void dialogs_draw_text()
       set_config_int("DrawText", "Size", size);
 
       /* render text */
-      image = render_text(f, text, color);
+      image = render_text(sprite, f, text, color);
       if (image) {
 	clipboard::copy_image(image, sprite_get_palette(sprite, sprite->frame));
 	clipboard::paste(sprite);
@@ -152,7 +151,7 @@ void dialogs_draw_text()
   jwidget_free(window);
 }
 
-Image *RenderText(const char *fontname, int size, int color, const char *text)
+Image *RenderText(Sprite* sprite, const char *fontname, int size, int color, const char *text)
 {
   Image *render;
   FONT *f;
@@ -163,14 +162,14 @@ Image *RenderText(const char *fontname, int size, int color, const char *text)
 
   ji_font_set_size(f, size);
 
-  render = render_text(f, text, color);
+  render = render_text(sprite, f, text, color);
 
   destroy_font(f);
 
   return render;
 }
 
-static Image *render_text(FONT *f, const char *text, int color)
+static Image *render_text(Sprite* sprite, FONT *f, const char *text, int color)
 {
   /* TODO warning this uses Image->dat and not Image->line */
 #define DO(type, colfunc)				\
@@ -186,7 +185,6 @@ static Image *render_text(FONT *f, const char *text, int color)
     }							\
   }
 
-  CurrentSprite sprite;
   int i, pixels, w, h;
   Image *image;
   BITMAP *bmp;

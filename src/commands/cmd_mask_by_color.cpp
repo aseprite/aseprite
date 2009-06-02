@@ -32,7 +32,8 @@ static bool cmd_mask_by_color_enabled(const char *argument)
 
 static void cmd_mask_by_color_execute(const char *argument)
 {
-  dialogs_mask_color();
+  CurrentSprite sprite;
+  dialogs_mask_color(sprite);
 }
 
 Command cmd_mask_by_color = {

@@ -20,6 +20,7 @@
 #define COMMANDS_COMMANDS_H
 
 #include "jinete/jbase.h"
+#include "ase/current_sprite.h"
 
 #define CMD_ABOUT			"about"
 #define CMD_ADVANCED_MODE		"advanced_mode"

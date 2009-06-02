@@ -19,6 +19,8 @@
 #ifndef DIALOGS_VECTMAP_H
 #define DIALOGS_VECTMAP_H
 
-void dialogs_vector_map();
+class Sprite;
+
+void dialogs_vector_map(Sprite* sprite);
 
 #endif /* DIALOGS_VECTMAP_H */

@@ -39,7 +39,7 @@
 #include "widgets/colbut.h"
 #include "widgets/groupbut.h"
 
-void canvas_resize()
+void canvas_resize(Sprite* sprite)
 {
   JWidget window, box1, box2, box3, box4, box5, box6;
   JWidget label_w, label_h;
@@ -47,7 +47,6 @@ void canvas_resize()
   JWidget check_w, check_h;
   JWidget button_offset;
   JWidget button_ok, button_cancel;
-  CurrentSprite sprite;
 
   if (!is_interactive () || !sprite)
     return;

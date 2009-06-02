@@ -16,29 +16,42 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_MISC_H
-#define UTIL_MISC_H
+#ifndef ASE_CURRENT_SPRITE_H
+#define ASE_CURRENT_SPRITE_H
 
-#include "core/color.h"
-#include "widgets/editor.h"	/* for movement modes */
+#include <list>
 
-class Frame;
-class Image;
-class Layer;
+class Context;
 class Sprite;
-class Undo;
 
-Image* GetImage(Sprite* sprite);
-Image* GetImage2(Sprite* sprite, int *x, int *y, int *opacity);
+class CurrentSprite
+{
+  Context* m_context;
+  Sprite* m_sprite;
+  bool m_writeable;
 
-void LoadPalette(Sprite* sprite, const char* filename);
+  // // No-default constructor (undefined)
+  // CurrentSprite();
 
-Layer* NewLayerFromMask(Sprite* src, Sprite* dst);
-Image* NewImageFromMask(Sprite* src);
+  // Non-copyable
+  CurrentSprite(const CurrentSprite&);
+  CurrentSprite& operator=(const CurrentSprite&);
 
-Image* GetLayerImage(Layer* layer, int *x, int *y, int frame);
+public:
+  CurrentSprite();
+  CurrentSprite(Context* context);
+  ~CurrentSprite();
 
-int interactive_move_layer(int mode, bool use_undo, int (*callback)());
+  bool writeable() const { return m_writeable; }
+  void destroy();
 
-#endif /* UTIL_MISC_H */
+  operator Sprite* () { return m_sprite; }
 
+  Sprite* operator->() {
+    assert(m_sprite != NULL);
+    return m_sprite;
+  }
+
+};
+
+#endif // ASE_CURRENT_SPRITE_H

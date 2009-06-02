@@ -123,11 +123,10 @@ static int image_getpixel4 (Image *image, double x, double y)
   return bilinear4(a, b, c, d, ftofix(x), ftofix(y));
 }
 
-void dialogs_vector_map()
+void dialogs_vector_map(Sprite* sprite)
 {
 #define PROJECT()	project(image, x, y, dmax, &u, &v)
 
-  CurrentSprite sprite;
   Image *image, *image_copy;
   double u, v, dmax;
   int c, x, y;

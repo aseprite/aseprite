@@ -351,7 +351,6 @@ void jwidget::set_text_quiet(const char *text)
 void jwidget::align(int align)
 {
   m_align = align;
-  dirty();
 }
 
 FONT *jwidget::font()

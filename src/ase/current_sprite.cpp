@@ -16,18 +16,45 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_CELMOVE_H
-#define UTIL_CELMOVE_H
+#include "config.h"
 
-class Cel;
-class Layer;
-class Sprite;
+#include "ase/context.h"
+#include "ase/current_sprite.h"
+#include "ase/ui_context.h"	// TODO remove this line
+#include "raster/sprite.h"
 
-void set_frame_to_handle(Layer* src_layer, int src_frame,
-			 Layer* dst_layer, int dst_frame);
+CurrentSprite::CurrentSprite()
+{
+  m_context = UIContext::instance();
+  m_sprite = m_context->get_current_sprite();
+  if (m_sprite)
+    m_writeable = m_sprite->lock();
+}
 
-void move_cel(Sprite* sprite);
-void copy_cel(Sprite* sprite);
+CurrentSprite::CurrentSprite(Context* context)
+{
+  assert(context != NULL);
 
-#endif /* UTIL_CELMOVE_H */
+  m_context = context;
+  m_sprite = m_context->get_current_sprite();
+  if (m_sprite)
+    m_writeable = m_sprite->lock();
+}
 
+CurrentSprite::~CurrentSprite()
+{
+  if (m_sprite)
+    m_sprite->unlock();
+}
+
+void CurrentSprite::destroy()
+{
+  if (m_sprite) {
+    m_context->remove_sprite(m_sprite);
+    m_sprite->unlock();
+
+    delete m_sprite;
+    m_sprite = NULL;
+    m_writeable = false;
+  }
+}
