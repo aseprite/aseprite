@@ -249,6 +249,14 @@ public:
   void textf(const char* text, ...);
   void set_text_quiet(const char* text);
 
+  bool enabled() { return jwidget_is_enabled(this); }
+  void enabled(bool state) {
+    if (state)
+      jwidget_enable(this);
+    else
+      jwidget_disable(this);
+  }
+
   bool selected() { return jwidget_is_selected(this); }
   void selected(bool state) { jwidget_set_selected(this, state); }
 
