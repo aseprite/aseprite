@@ -223,6 +223,7 @@ public:
 //////////////////////////////////////////////////////////////////////
 // Specializations
 
+template<>
 void ImageImpl<IndexedTraits>::clear(int color)
 {
   memset(raw_pixels(), color, w*h);
@@ -230,6 +231,7 @@ void ImageImpl<IndexedTraits>::clear(int color)
 
 /* if "color_map" is not NULL, it's used by the routine to merge the
    source and the destionation pixels */
+template<>
 void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode)
 {
   Image* dst = this;
@@ -305,6 +307,7 @@ void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity
   }
 }
 
+template<>
 void ImageImpl<BitmapTraits>::clear(int color)
 {
   memset(raw_pixels(), color ? 0xff: 0x00, ((w+7)/8) * h);
@@ -316,6 +319,7 @@ void ImageImpl<BitmapTraits>::clear(int color)
     _image_bitmap_next_bit(d, addr);		\
   }
 
+template<>
 void ImageImpl<BitmapTraits>::hline(int x1, int y, int x2, int color)
 {
   div_t d = div(x1, 8);
@@ -330,6 +334,7 @@ void ImageImpl<BitmapTraits>::hline(int x1, int y, int x2, int color)
   }
 }
 
+template<>
 void ImageImpl<BitmapTraits>::rectfill(int x1, int y1, int x2, int y2, int color)
 {
   div_t d, beg_d = div(x1, 8);
@@ -352,6 +357,7 @@ void ImageImpl<BitmapTraits>::rectfill(int x1, int y1, int x2, int y2, int color
   }
 }
 
+template<>
 void ImageImpl<BitmapTraits>::copy(const Image* src, int x, int y)
 {
   Image* dst = this;
@@ -416,6 +422,7 @@ void ImageImpl<BitmapTraits>::copy(const Image* src, int x, int y)
   }
 }
 
+template<>
 void ImageImpl<BitmapTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode)
 {
   Image* dst = this;
@@ -478,6 +485,7 @@ void ImageImpl<BitmapTraits>::merge(const Image* src, int x, int y, int opacity,
   }
 }
 
+template<>
 void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 {
   const_address_t addr = raw_pixels();
@@ -609,6 +617,7 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   bmp_unwrite_line(bmp);
 }
 
+template<>
 void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 {
   const_address_t addr = raw_pixels();
@@ -734,6 +743,7 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   bmp_unwrite_line(bmp);
 }
 
+template<>
 void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 {
 #define RGB_TRIPLET						\
@@ -851,6 +861,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   bmp_unwrite_line(bmp);
 }
 
+template<>
 void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 {
   const_address_t addr;

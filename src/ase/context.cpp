@@ -22,6 +22,7 @@
 #include <algorithm>
 
 #include "ase/context.h"
+#include "raster/sprite.h"
 
 Context::Context()
 {

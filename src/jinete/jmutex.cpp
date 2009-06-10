@@ -34,7 +34,7 @@
 
 #include "jinete/jmutex.h"
 
-struct {
+static struct {
   void (*destroy)(JMutex mutex);
   void (*lock)(JMutex mutex);
   void (*unlock)(JMutex mutex);
