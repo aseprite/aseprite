@@ -13,7 +13,7 @@ High priority work
   reproduce the exact scenario).
 - fix sliders in Tools Configuration, they are too big
   for small resolutions.
-- rewritten palette-editor to edit multiple-palettes.
+- rewrite palette-editor to edit multiple-palettes.
   - fix quantize (one palette for all frames, one palette per frame)
   - pal-operations (sort, quantize, gamma by color-curves, etc.);
   - complete palette operations, and palette editor (it needs a slider
@@ -29,7 +29,7 @@ High priority work
   - DrawClick2FreeHand
   - DrawClick2Shape
 - see the new Allegro's load_font
-+ finished the support for ICO files.
+- finish ICO files support.
 - add "size" to GUI font (for TTF fonts);
 - layer movement between sets in animation-editor;
   + add all the "set" stuff again;
@@ -53,7 +53,6 @@ Wish-list
     context state
   + the commands should use a new ase/ API and not the raster/ low-level
     - "raster/Undoable" is the beginning
-    - All "functions.c" should be in Undoable
   + the dependencies should be:
     commands/ -> ase/ -> raster/ -> jinete/
 - manuq wish-list:
