@@ -92,9 +92,10 @@ static void cmd_change_image_type_execute(const char *argument)
     else
       dithermethod = DITHERING_ORDERED;
 
-    use_current_sprite_rgb_map();
-    sprite_set_imgtype(current_sprite, destimgtype, dithermethod);
-    restore_rgb_map();
+    {
+      CurrentSpriteRgbMap rgbmap;
+      sprite_set_imgtype(current_sprite, destimgtype, dithermethod);
+    }
 
     app_refresh_screen();
   }

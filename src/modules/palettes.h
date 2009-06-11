@@ -39,9 +39,12 @@ bool set_current_palette(Palette* palette, int forced);
 void set_black_palette();
 void set_current_color(int index, int r, int g, int b);
 
-void use_current_sprite_rgb_map();
-void use_sprite_rgb_map(Sprite* sprite);
-void restore_rgb_map();
+class CurrentSpriteRgbMap
+{
+public:
+  CurrentSpriteRgbMap();
+  ~CurrentSpriteRgbMap();
+};
 
 #endif /* MODULES_PALETTES_H */
 

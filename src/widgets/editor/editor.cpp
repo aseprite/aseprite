@@ -335,7 +335,7 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
 #else
       acquire_bitmap(ji_screen);
 
-      use_current_sprite_rgb_map();
+      CurrentSpriteRgbMap rgbmap;
       if (bitmap_color_depth(screen) == 8) {
 	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
       }
@@ -349,7 +349,6 @@ void editor_draw_sprite(JWidget widget, int x1, int y1, int x2, int y2)
 	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
 	unselect_palette();
       }
-      restore_rgb_map();
 
       release_bitmap(ji_screen);
 

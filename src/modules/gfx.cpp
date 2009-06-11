@@ -511,9 +511,10 @@ void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
         rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
       }
 
-      use_current_sprite_rgb_map();
-      blit(graph, bmp, 0, 0, x1, y1, w, h);
-      restore_rgb_map();
+      {
+	CurrentSpriteRgbMap rgbmap;
+	blit(graph, bmp, 0, 0, x1, y1, w, h);
+      }
 
       destroy_bitmap(graph);
       break;
@@ -529,9 +530,10 @@ void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
         rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
       }
 
-      use_current_sprite_rgb_map();
-      blit(graph, bmp, 0, 0, x1, y1, w, h);
-      restore_rgb_map();
+      {
+	CurrentSpriteRgbMap rgbmap;
+	blit(graph, bmp, 0, 0, x1, y1, w, h);
+      }
 
       destroy_bitmap(graph);
       break;

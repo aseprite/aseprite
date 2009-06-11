@@ -226,11 +226,11 @@ static Image *render_text(Sprite* sprite, FONT *f, const char *text, int color)
       DO(ase_uint16, _graya(_graya_getv(color), getg32(c)));
       break;
 
-    case IMAGE_INDEXED:
-      use_current_sprite_rgb_map();
+    case IMAGE_INDEXED: {
+      CurrentSpriteRgbMap rgbmap;
       DO(ase_uint8, c == makecol32(255, 0, 255) ? 0: color);
-      restore_rgb_map();
       break;
+    }
   }
 
   release_bitmap(bmp);

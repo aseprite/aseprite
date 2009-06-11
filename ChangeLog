@@ -1,3 +1,7 @@
+2009-06-10  David A. Capello  <davidcapello@gmail.com>
+
+	* src/modules/palettes.h: Added CurrentSpriteRgbMap class.
+
 2009-06-01  David A. Capello  <davidcapello@gmail.com>
 
 	* src/ase/current_sprite.h (CurrentSprite): Added.

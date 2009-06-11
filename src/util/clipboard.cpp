@@ -229,9 +229,8 @@ void clipboard::paste(Sprite* sprite)
 			  clipboard_image->w,
 			  clipboard_image->h);
 
-    use_current_sprite_rgb_map();
+    CurrentSpriteRgbMap rgbmap;
     image_convert(clipboard_image, src_image);
-    restore_rgb_map();
   }
 
   // do the interactive-transform loop (where the user can move the floating image)

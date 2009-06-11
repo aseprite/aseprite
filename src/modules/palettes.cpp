@@ -247,23 +247,12 @@ void set_current_color(int index, int r, int g, int b)
 
 /**********************************************************************/
 
-void use_current_sprite_rgb_map()
+CurrentSpriteRgbMap::CurrentSpriteRgbMap()
 {
   rgb_map = orig_rgb_map;
 }
 
-void use_sprite_rgb_map(Sprite *sprite)
-{
-  Palette *pal = sprite_get_palette(sprite, sprite->frame);
-  PALETTE rgbpal;
-
-  rgb_map = my_rgb_map;
-
-  regen_my_rgb_map = TRUE;
-  create_rgb_table(my_rgb_map, palette_to_allegro(pal, rgbpal), NULL);
-}
-
-void restore_rgb_map()
+CurrentSpriteRgbMap::~CurrentSpriteRgbMap()
 {
   rgb_map = my_rgb_map;
 
