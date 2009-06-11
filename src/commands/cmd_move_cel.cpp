@@ -31,7 +31,7 @@ static bool cmd_move_cel_enabled(const char *argument)
 
 static void cmd_move_cel_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   move_cel(sprite);
 }
 

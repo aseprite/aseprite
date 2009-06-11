@@ -318,7 +318,7 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
   menuitem = menuitem_new(jxmlelem_get_attr(elem, "name"),
 			  command_get_by_name(jxmlelem_get_attr(elem,
 								"command")),
-			  NULL);
+			  jxmlelem_get_attr(elem, "argument"));
   if (!menuitem)
     return 0;
 

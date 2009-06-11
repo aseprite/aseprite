@@ -99,9 +99,8 @@ static void monitor_openfile_bg(void *_data)
       progress_free(data->progress);
 
     if (fop->error) {
-      console_open();
-      console_printf(fop->error);
-      console_close();
+      Console console;
+      console.printf(fop->error);
     }
 #endif
 
@@ -143,6 +142,7 @@ static void monitor_free(void *_data)
  */
 static void cmd_open_file_execute(const char *argument)
 {
+  Console console;
   jstring filename;
 
   /* interactive */
@@ -161,13 +161,13 @@ static void cmd_open_file_execute(const char *argument)
 
     if (fop) {
       if (fop->error) {
-	console_printf(fop->error);
+	console.printf(fop->error);
 	fop_free(fop);
       }
       else {
 	JThread thread = jthread_new(openfile_bg, fop);
 	if (thread) {
-	  OpenFileData *data = jnew(OpenFileData, 1);
+	  OpenFileData* data = new OpenFileData;
 
 	  data->fop = fop;
 	  data->progress = progress_new(app_get_statusbar());
@@ -191,9 +191,7 @@ static void cmd_open_file_execute(const char *argument)
 
 	  /* show any error */
 	  if (fop->error) {
-	    console_open();
-	    console_printf(fop->error);
-	    console_close();
+	    console.printf(fop->error);
 	  }
 	  else {
 	    Sprite *sprite = fop->sprite;
@@ -216,10 +214,10 @@ static void cmd_open_file_execute(const char *argument)
 	  progress_free(data->progress);
 	  jwidget_free(data->alert_window);
 	  fop_free(fop);
-	  jfree(data);
+	  delete data;
 	}
 	else {
-	  console_printf(_("Error creating thread to load the sprite"));
+	  console.printf(_("Error creating thread to load the sprite"));
 	  fop_free(fop);
 	}
       }

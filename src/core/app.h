@@ -38,7 +38,7 @@ void app_exit();
 void app_add_hook(int app_event, void (*proc)(void *data), void *data);
 void app_trigger_event(int app_event);
 
-void app_refresh_screen();
+void app_refresh_screen(const Sprite* sprite);
 
 void app_realloc_sprite_list();
 bool app_realloc_recent_list();

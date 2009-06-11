@@ -31,6 +31,8 @@ public:
   UIContext();
   virtual ~UIContext();
 
+  virtual bool is_ui_available() const { return true; }
+
   void show_sprite(Sprite* sprite) const;
 
 protected:

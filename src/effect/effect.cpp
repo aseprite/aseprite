@@ -69,9 +69,9 @@ static EffectData effects_data[] = {
 };
 
 static EffectData *get_effect_data(const char *name);
-static int effect_init(Effect *effect, Layer *layer, Image *image, int offset_x, int offset_y);
+static void effect_init(Effect *effect, Layer *layer, Image *image, int offset_x, int offset_y);
 static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y);
-static int effect_update_mask(Effect *effect, Mask *mask, Image *image);
+static bool effect_update_mask(Effect *effect, Mask *mask, Image *image);
 
 int init_module_effect()
 {
@@ -84,68 +84,55 @@ void exit_module_effect()
   exit_convolution_matrix();
 }
 
-Effect *effect_new(Sprite *sprite, const char *name)
+Effect::Effect(const SpriteReader& sprite, const char* name)
 {
   int offset_x, offset_y;
-  EffectData *effect_data;
-  Effect *effect;
-  Image *image;
+  EffectData* effect_data;
+  Image* image;
   void (*apply)(Effect*);
 
   effect_data = get_effect_data(name);
-  if (!effect_data)
-    return NULL;
 
   apply = NULL;
   switch (sprite->imgtype) {
     case IMAGE_RGB:       apply = effect_data->apply_4; break;
     case IMAGE_GRAYSCALE: apply = effect_data->apply_2; break;
     case IMAGE_INDEXED:   apply = effect_data->apply_1; break;
+    default:
+      throw invalid_imgtype_exception();
   }
-  if (!apply)
-    return NULL;
 
-  effect = jnew(Effect, 1);
-  if (!effect)
-    return NULL;
-
-  effect->sprite = sprite;
-  effect->src = NULL;
-  effect->dst = NULL;
-  effect->row = 0;
-  effect->offset_x = 0;
-  effect->offset_y = 0;
-  effect->mask = NULL;
-  effect->preview_mask = NULL;
-  effect->mask_address = NULL;
-  effect->effect_data = effect_data;
-  effect->apply = apply;
-  effect->_target = TARGET_ALL_CHANNELS;
-  effect->target = TARGET_ALL_CHANNELS;
-  effect->progress_data = NULL;
-  effect->progress = NULL;
-  effect->is_cancelled = NULL;
+  this->sprite = sprite;
+  this->src = NULL;
+  this->dst = NULL;
+  this->row = 0;
+  this->offset_x = 0;
+  this->offset_y = 0;
+  this->mask = NULL;
+  this->preview_mask = NULL;
+  this->mask_address = NULL;
+  this->effect_data = effect_data;
+  this->apply = apply;
+  this->_target = TARGET_ALL_CHANNELS;
+  this->target = TARGET_ALL_CHANNELS;
+  this->progress_data = NULL;
+  this->progress = NULL;
+  this->is_cancelled = NULL;
 
   image = GetImage2(sprite, &offset_x, &offset_y, NULL);
-  if (image) {
-    if (!effect_init(effect, sprite->layer, image, offset_x, offset_y)) {
-      effect_free(effect);
-      return NULL;
-    }
-  }
+  if (image == NULL)
+    throw no_image_exception();
 
-  return effect;
+  effect_init(this, sprite->layer, image, offset_x, offset_y);
 }
 
-void effect_free(Effect *effect)
+Effect::~Effect()
 {
-  if (effect->preview_mask)
-    mask_free(effect->preview_mask);
+  if (this->preview_mask)
+    mask_free(this->preview_mask);
 
-  if (effect->dst)
-    image_free(effect->dst);
-
-  jfree(effect);
+  if (this->dst)
+    image_free(this->dst);
 }
 
 void effect_set_target(Effect *effect, int target)
@@ -363,17 +350,17 @@ static EffectData *get_effect_data(const char *name)
       return effects_data+c;
   }
 
-  return NULL;
+  throw invalid_effect_exception(name);
 }
 
-static int effect_init(Effect *effect, Layer *layer, Image *image,
-		       int offset_x, int offset_y)
+static void effect_init(Effect *effect, Layer *layer, Image *image,
+			int offset_x, int offset_y)
 {
   effect->offset_x = offset_x;
   effect->offset_y = offset_y;
 
   if (!effect_update_mask(effect, effect->sprite->mask, image))
-    return FALSE;
+    throw invalid_area_exception();
 
   if (effect->preview_mask) {
     mask_free(effect->preview_mask);
@@ -397,17 +384,15 @@ static int effect_init(Effect *effect, Layer *layer, Image *image,
   /* the alpha channel of the background layer can't be modified */
   if (layer_is_background(layer))
     effect->target &= ~TARGET_ALPHA_CHANNEL;
-  
-  return TRUE;
 }
 
 static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y)
 {
-  if (effect_init(effect, p->layer, p->image, x, y))
-    effect_apply(effect);
+  effect_init(effect, p->layer, p->image, x, y);
+  effect_apply(effect);
 }
 
-static int effect_update_mask(Effect *effect, Mask *mask, Image *image)
+static bool effect_update_mask(Effect *effect, Mask *mask, Image *image)
 {
   int x, y, w, h;
 
@@ -445,13 +430,13 @@ static int effect_update_mask(Effect *effect, Mask *mask, Image *image)
     effect->y = 0;
     effect->w = 0;
     effect->h = 0;
-    return FALSE;
+    return false;
   }
   else {
     effect->x = x;
     effect->y = y;
     effect->w = w;
     effect->h = h;
-    return TRUE;
+    return true;
   }
 }

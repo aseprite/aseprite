@@ -112,8 +112,10 @@ Sprite *sprite_load(const char *filename)
   fop_operate(fop);
   fop_done(fop);
 
-  if (fop->error)
-    console_printf(fop->error);
+  if (fop->error) {
+    Console console;
+    console.printf(fop->error);
+  }
 
   sprite = fop->sprite;
   fop_free(fop);
@@ -132,8 +134,10 @@ int sprite_save(Sprite *sprite)
   fop_operate(fop);
   fop_done(fop);
 
-  if (fop->error)
-    console_printf(fop->error);
+  if (fop->error) {
+    Console console;
+    console.printf(fop->error);
+  }
 
   ret = (fop->error == NULL) ? 0: -1;
   fop_free(fop);

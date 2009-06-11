@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <jinete/jlist.h>
 
+#include "sprite_wrappers.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "core/color.h"
@@ -35,7 +36,6 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 #include "util/celmove.h"
-#include "util/functions.h"
 
 /* these variables indicate what cel to move (and the sprite's
    frame indicates where to move it) */
@@ -43,6 +43,8 @@ static Layer *src_layer = NULL;	/* TODO warning not thread safe */
 static Layer *dst_layer = NULL;
 static int src_frame = 0;
 static int dst_frame = 0;
+
+static void remove_cel(Sprite* sprite, Layer *layer, Cel *cel);
 
 void set_frame_to_handle(Layer *_src_layer, int _src_frame,
 			 Layer *_dst_layer, int _dst_frame)
@@ -53,7 +55,7 @@ void set_frame_to_handle(Layer *_src_layer, int _src_frame,
   dst_frame = _dst_frame;
 }
 
-void move_cel(Sprite* sprite)
+void move_cel(SpriteWriter& sprite)
 {
   Cel *src_cel, *dst_cel;
 
@@ -84,7 +86,7 @@ void move_cel(Sprite* sprite)
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
   if ((dst_cel != NULL) && (!layer_is_background(dst_layer) || src_cel != NULL))
-    RemoveCel(dst_layer, dst_cel);
+    remove_cel(sprite, dst_layer, dst_cel);
 
   /* move the cel in the same layer */
   if (src_cel != NULL) {
@@ -144,7 +146,7 @@ void move_cel(Sprite* sprite)
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
 
-void copy_cel(Sprite* sprite)
+void copy_cel(SpriteWriter& sprite)
 {
   Cel *src_cel, *dst_cel;
 
@@ -170,7 +172,7 @@ void copy_cel(Sprite* sprite)
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
   if ((dst_cel != NULL) && (!layer_is_background(dst_layer) || src_cel != NULL))
-    RemoveCel(dst_layer, dst_cel);
+    remove_cel(sprite, dst_layer, dst_cel);
 
   /* move the cel in the same layer */
   if (src_cel != NULL) {
@@ -225,4 +227,49 @@ void copy_cel(Sprite* sprite)
     undo_close(sprite->undo);
 
   set_frame_to_handle(NULL, 0, NULL, 0);
+}
+
+static void remove_cel(Sprite* sprite, Layer *layer, Cel *cel)
+{
+  Image *image;
+  Cel *it;
+  int frame;
+  bool used;
+
+  if (sprite != NULL && layer_is_image(layer) && cel != NULL) {
+    /* find if the image that use the cel to remove, is used by
+       another cels */
+    used = FALSE;
+    for (frame=0; frame<sprite->frames; ++frame) {
+      it = layer_get_cel(layer, frame);
+      if (it != NULL && it != cel && it->image == cel->image) {
+	used = TRUE;
+	break;
+      }
+    }
+
+    if (undo_is_enabled(sprite->undo))
+      undo_open(sprite->undo);
+
+    if (!used) {
+      /* if the image is only used by this cel, we can remove the
+	 image from the stock */
+      image = stock_get_image(sprite->stock, cel->image);
+
+      if (undo_is_enabled(sprite->undo))
+	undo_remove_image(sprite->undo, sprite->stock, cel->image);
+
+      stock_remove_image(sprite->stock, image);
+      image_free(image);
+    }
+
+    if (undo_is_enabled(sprite->undo)) {
+      undo_remove_cel(sprite->undo, layer, cel);
+      undo_close(sprite->undo);
+    }
+
+    /* remove the cel */
+    layer_remove_cel(layer, cel);
+    cel_free(cel);
+  }
 }

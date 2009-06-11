@@ -193,13 +193,6 @@ void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color)
   statusbar_set_text(widget, msecs, "%s %s", _("Color"), buf);
 }
 
-void statusbar_update(JWidget widget)
-{
-  StatusBar *statusbar = statusbar_data(widget);
-
-  update_from_layer(statusbar);
-}
-
 Progress *progress_new(JWidget widget)
 {
   Progress *progress = jnew(Progress, 1);
@@ -317,11 +310,10 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       }
       /* draw current sprite size in memory */
       else {
-	CurrentSprite sprite;
-	if (sprite != NULL) {
-	  char buf[1024];
-
-	  if (sprite.writeable()) {
+	char buf[1024];
+	try {
+	  const CurrentSpriteReader sprite;
+	  if (sprite) {
 	    ustrcpy(buf, "Sprite:");
 	    get_pretty_memsize(sprite_get_memsize(sprite),
 			       buf+ustrsize(buf),
@@ -333,14 +325,17 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 			       sizeof(buf)-ustrsize(buf));
 	  }
 	  else {
-	    ustrcpy(buf, "Sprite is Locked");
+	    ustrcpy(buf, "No Sprite");
 	  }
-
-	  textout_right_ex(ji_screen, widget->font(), buf,
-			   rc->x2-2,
-			   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
-			   ji_color_foreground(), -1);
 	}
+	catch (locked_sprite_exception&) {
+	  ustrcpy(buf, "Sprite is Locked");
+	}
+
+	textout_right_ex(ji_screen, widget->font(), buf,
+			 rc->x2-2,
+			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
+			 ji_color_foreground(), -1);
       }
 
       jrect_free(rc);
@@ -349,22 +344,13 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
       if (!jwidget_has_child(widget, statusbar->commands_box)) {
-	CurrentSprite sprite;
+	bool state = (UIContext::instance()->get_current_sprite() != NULL);
 
-	if (!sprite) {
-	  jwidget_disable(statusbar->b_first);
-	  jwidget_disable(statusbar->b_prev);
-	  jwidget_disable(statusbar->b_play);
-	  jwidget_disable(statusbar->b_next);
-	  jwidget_disable(statusbar->b_last);
-	}
-	else {
-	  jwidget_enable(statusbar->b_first);
-	  jwidget_enable(statusbar->b_prev);
-	  jwidget_enable(statusbar->b_play);
-	  jwidget_enable(statusbar->b_next);
-	  jwidget_enable(statusbar->b_last);
-	}
+	statusbar->b_first->enabled(state);
+	statusbar->b_prev->enabled(state);
+	statusbar->b_play->enabled(state);
+	statusbar->b_next->enabled(state);
+	statusbar->b_last->enabled(state);
 
 	update_from_layer(statusbar);
 
@@ -409,92 +395,99 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 
 static bool slider_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
-  if (sprite) {
-    if ((sprite->layer) &&
-	(sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
-      Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
+  try {
+    CurrentSpriteWriter sprite;
+    if (sprite) {
+      if ((sprite->layer) &&
+	  (sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
+	Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
 
-      if (cel) {
-	/* update the opacity */
-	cel->opacity = jslider_get_value(widget);
+	if (cel) {
+	  // update the opacity
+	  cel->opacity = jslider_get_value(widget);
 
-	/* update the editors */
-	update_screen_for_sprite(sprite);
+	  // update the editors
+	  update_screen_for_sprite(sprite);
+	}
       }
     }
   }
-
-  return FALSE;
+  catch (locked_sprite_exception&) {
+    // do nothing
+  }
+  return false;
 }
 
 static void button_command(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const char *cmd = NULL;
 
-  if (sprite) {
-    const char *cmd = NULL;
+  switch ((size_t)data) {
 
-    switch ((size_t)data) {
+    case ACTION_LAYER:
+      cmd = CMD_LAYER_PROPERTIES;
+      break;
 
-      case ACTION_LAYER:
-	cmd = CMD_LAYER_PROPERTIES;
-	break;
+    case ACTION_FIRST:
+      cmd = CMD_GOTO_FIRST_FRAME;
+      break;
 
-      case ACTION_FIRST:
-	cmd = CMD_GOTO_FIRST_FRAME;
-	break;
+    case ACTION_PREV:
+      cmd = CMD_GOTO_PREVIOUS_FRAME;
+      break;
 
-      case ACTION_PREV:
-	cmd = CMD_GOTO_PREVIOUS_FRAME;
-	break;
+    case ACTION_PLAY:
+      cmd = CMD_PLAY_ANIMATION;
+      break;
 
-      case ACTION_PLAY:
-	cmd = CMD_PLAY_ANIMATION;
-	break;
+    case ACTION_NEXT:
+      cmd = CMD_GOTO_NEXT_FRAME;
+      break;
 
-      case ACTION_NEXT:
-	cmd = CMD_GOTO_NEXT_FRAME;
-	break;
-
-      case ACTION_LAST:
-	cmd = CMD_GOTO_LAST_FRAME;
-	break;
-    }
-
-    if (cmd)
-      command_execute(command_get_by_name(cmd), NULL);
+    case ACTION_LAST:
+      cmd = CMD_GOTO_LAST_FRAME;
+      break;
   }
+
+  if (cmd)
+    command_execute(command_get_by_name(cmd), NULL);
 }
 
 static void update_from_layer(StatusBar *statusbar)
 {
-  CurrentSprite sprite;
-  Cel *cel;
+  try {
+    const CurrentSpriteReader sprite;
+    Cel *cel;
 
-  /* layer button */
-  if (sprite && sprite->layer) {
-    char buf[512];
-    usprintf(buf, "[%d] %s", sprite->frame, sprite->layer->name);
-    jwidget_set_text(statusbar->b_layer, buf);
-    jwidget_enable(statusbar->b_layer);
+    /* layer button */
+    if (sprite && sprite->layer) {
+      char buf[512];
+      usprintf(buf, "[%d] %s", sprite->frame, sprite->layer->name);
+      jwidget_set_text(statusbar->b_layer, buf);
+      jwidget_enable(statusbar->b_layer);
+    }
+    else {
+      jwidget_set_text(statusbar->b_layer, "Nothing");
+      jwidget_disable(statusbar->b_layer);
+    }
+
+    /* opacity layer */
+    if (sprite &&
+	sprite->layer &&
+	layer_is_image(sprite->layer) &&
+	!layer_is_background(sprite->layer) &&
+	(cel = layer_get_cel(sprite->layer, sprite->frame))) {
+      jslider_set_value(statusbar->slider, MID(0, cel->opacity, 255));
+      jwidget_enable(statusbar->slider);
+    }
+    else {
+      jslider_set_value(statusbar->slider, 255);
+      jwidget_disable(statusbar->slider);
+    }
   }
-  else {
-    jwidget_set_text(statusbar->b_layer, "Nothing");
+  catch (locked_sprite_exception&) {
+    // disable all
     jwidget_disable(statusbar->b_layer);
-  }
-
-  /* opacity layer */
-  if (sprite &&
-      sprite->layer &&
-      layer_is_image(sprite->layer) &&
-      !layer_is_background(sprite->layer) &&
-      (cel = layer_get_cel(sprite->layer, sprite->frame))) {
-    jslider_set_value(statusbar->slider, MID(0, cel->opacity, 255));
-    jwidget_enable(statusbar->slider);
-  }
-  else {
-    jslider_set_value(statusbar->slider, 255);
     jwidget_disable(statusbar->slider);
   }
 }

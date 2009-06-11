@@ -24,14 +24,14 @@
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 
 static bool cmd_remove_cel_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
-    sprite &&
-    sprite->layer &&
+    sprite != NULL &&
+    sprite->layer != NULL &&
     layer_is_readable(sprite->layer) &&
     layer_is_writable(sprite->layer) &&
     layer_is_image(sprite->layer) &&
@@ -40,7 +40,7 @@ static bool cmd_remove_cel_enabled(const char *argument)
 
 static void cmd_remove_cel_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   Cel* cel = layer_get_cel(sprite->layer, sprite->frame);
   {
     Undoable undoable(sprite, "Remove Cel");

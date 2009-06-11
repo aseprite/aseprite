@@ -30,7 +30,7 @@
 
 static bool cmd_copy_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
 
   if ((!sprite) ||
       (!sprite->layer) ||
@@ -45,7 +45,7 @@ static bool cmd_copy_enabled(const char *argument)
 
 static void cmd_copy_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   clipboard::copy(sprite);
 }
 

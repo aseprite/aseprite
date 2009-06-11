@@ -32,23 +32,23 @@
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 
 #define PERC_FORMAT	"%.1f%%"
 
 class SpriteSizeJob : public Job
 {
-  Sprite* m_sprite;
+  SpriteWriter m_sprite;
   int m_new_width;
   int m_new_height;
   ResizeMethod m_resize_method;
 
 public:
 
-  SpriteSizeJob(Sprite* sprite, int new_width, int new_height, ResizeMethod resize_method)
+  SpriteSizeJob(const SpriteReader& sprite, int new_width, int new_height, ResizeMethod resize_method)
     : Job("Sprite Size")
+    , m_sprite(sprite)
   {
-    m_sprite = sprite;
     m_new_width = new_width;
     m_new_height = new_height;
     m_resize_method = resize_method;
@@ -109,6 +109,9 @@ protected:
 
     // TODO resize mask
 
+    // regenerate mask
+    sprite_generate_mask_boundaries(m_sprite);
+
     // commit changes
     undoable.commit();
   }
@@ -123,33 +126,26 @@ static bool height_perc_change_hook(JWidget widget, void *data);
 
 static bool cmd_sprite_size_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_sprite_size_execute(const char *argument)
 {
-  JWidget window, width_px, height_px, width_perc, height_perc, lock_ratio, method, ok;
-  CurrentSprite sprite;
-  if (!sprite)
-    return;
+  JWidget width_px, height_px, width_perc, height_perc, lock_ratio, method, ok;
+  const CurrentSpriteReader sprite;
 
   // load the window widget
-  window = load_widget("sprsize.jid", "sprite_size");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "width_px", &width_px,
-		   "height_px", &height_px,
-		   "width_perc", &width_perc,
-		   "height_perc", &height_perc,
-		   "lock_ratio", &lock_ratio,
-		   "method", &method,
-		   "ok", &ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("sprsize.jid", "sprite_size");
+  get_widgets(window,
+	      "width_px", &width_px,
+	      "height_px", &height_px,
+	      "width_perc", &width_perc,
+	      "height_perc", &height_perc,
+	      "lock_ratio", &lock_ratio,
+	      "method", &method,
+	      "ok", &ok, NULL);
 
   width_px->textf("%d", sprite->w);
   height_px->textf("%d", sprite->h);
@@ -185,16 +181,13 @@ static void cmd_sprite_size_execute(const char *argument)
       job.do_job();
     }
 
-    sprite_generate_mask_boundaries(sprite);
     update_screen_for_sprite(sprite);
   }
-
-  jwidget_free(window);
 }
 
 static bool lock_ratio_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
 
   if (widget->selected())
     width_px_change_hook(widget->find_sibling("width_px"), NULL);
@@ -204,7 +197,7 @@ static bool lock_ratio_change_hook(JWidget widget, void *data)
 
 static bool width_px_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   int width = widget->text_int();
   double perc = 100.0 * width / sprite->w;
 
@@ -220,7 +213,7 @@ static bool width_px_change_hook(JWidget widget, void *data)
 
 static bool height_px_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   int height = widget->text_int();
   double perc = 100.0 * height / sprite->h;
 
@@ -236,7 +229,7 @@ static bool height_px_change_hook(JWidget widget, void *data)
 
 static bool width_perc_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   double width = widget->text_double();
 
   widget->find_sibling("width_px")->textf("%d", (int)(sprite->w * width / 100));
@@ -251,7 +244,7 @@ static bool width_perc_change_hook(JWidget widget, void *data)
 
 static bool height_perc_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   double height = widget->text_double();
 
   widget->find_sibling("height_px")->textf("%d", (int)(sprite->h * height / 100));

@@ -272,7 +272,8 @@ static int tips_count_pages()
 
   f = tips_open_file();
   if (!f) {
-    console_printf("Error loading tips files\n");
+    Console console;
+    console.printf("Error loading tips files\n");
     return 0;
   }
 
@@ -283,8 +284,10 @@ static int tips_count_pages()
 
   fclose(f);
 
-  if (!page)
-    console_printf("No pages tips file\n");
+  if (!page) {
+    Console console;
+    console.printf("No pages tips file\n");
+  }
 
   return page;
 }

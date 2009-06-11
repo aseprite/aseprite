@@ -25,12 +25,12 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 #include "widgets/colbar.h"
 
 static bool cmd_clear_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -41,16 +41,12 @@ static bool cmd_clear_enabled(const char *argument)
 
 static void cmd_clear_execute(const char *argument)
 {
-  CurrentSprite sprite;
-  if (!sprite)
-    return;
-
+  CurrentSpriteWriter sprite;
   {
     Undoable undoable(sprite, "Clear");
     undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
     undoable.commit();
   }
-
   update_screen_for_sprite(sprite);
 }
 

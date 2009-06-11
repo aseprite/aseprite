@@ -31,7 +31,7 @@ static bool cmd_copy_cel_enabled(const char *argument)
 
 static void cmd_copy_cel_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   copy_cel(sprite);
 }
 

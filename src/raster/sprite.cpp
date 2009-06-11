@@ -91,7 +91,8 @@ Sprite::Sprite(int imgtype, int w, int h)
   sprite_set_speed(this, 100);
 
   /* multiple access */
-  m_locked = 0;
+  m_write_lock = false;
+  m_read_locks = 0;
   m_mutex = jmutex_new();
 
   /* file format options */
@@ -314,26 +315,82 @@ bool sprite_need_alpha(const Sprite* sprite)
 }
 
 /**
- * Lock the sprite to write or read it.
+ * Lock the sprite to read or write it.
  *
- * @return true if the sprite can be written (because this is the first lock).
+ * @return true if the sprite can be accessed in the desired mode.
  */
-bool Sprite::lock()
+bool Sprite::lock(bool write)
 {
   ScopedLock hold(m_mutex);
 
-  if (++m_locked == 1)
+  // read-only
+  if (!write) {
+    // If no body is writting the sprite...
+    if (!m_write_lock) {
+      // We can read it
+      ++m_read_locks;
+      return true;
+    }
+  }
+  // read and write
+  else {
+    // If no body is reading and writting...
+    if (m_read_locks == 0 && !m_write_lock) {
+      // We can start writting the sprite...
+      m_write_lock = true;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * If you have locked the sprite to read, using this method
+ * you can raise your access level to write it.
+ */
+bool Sprite::lock_to_write()
+{
+  ScopedLock hold(m_mutex);
+
+  // this only is possible if there are just one reader
+  if (m_read_locks == 1) {
+    assert(!m_write_lock);
+    m_read_locks = 0;
+    m_write_lock = true;
     return true;
+  }
   else
     return false;
+}
+
+/**
+ * If you have locked the sprite to write, using this method
+ * you can your access level to only read it.
+ */
+void Sprite::unlock_to_read()
+{
+  ScopedLock hold(m_mutex);
+  assert(m_read_locks == 0);
+  assert(m_write_lock);
+
+  m_write_lock = false;
+  m_read_locks = 1;
 }
 
 void Sprite::unlock()
 {
   ScopedLock hold(m_mutex);
 
-  --m_locked;
-  assert(m_locked >= 0);
+  if (m_write_lock) {
+    m_write_lock = false;
+  }
+  else if (m_read_locks > 0) {
+    --m_read_locks;
+  }
+  else {
+    assert(false);
+  }
 }
 
 Palette* sprite_get_palette(const Sprite* sprite, int frame)
@@ -362,9 +419,10 @@ Palette* sprite_get_palette(const Sprite* sprite, int frame)
 void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate)
 {
   assert(sprite != NULL);
+  assert(pal != NULL);
 
   if (!truncate) {
-    Palette* sprite_pal = sprite_get_palette(sprite, sprite->frame);
+    Palette* sprite_pal = sprite_get_palette(sprite, pal->frame);
     palette_copy_colors(sprite_pal, pal);
   }
   else {
@@ -400,6 +458,18 @@ void sprite_reset_palettes(Sprite* sprite)
       jlist_delete_link(sprite->palettes, link);
     }
   }
+}
+
+void sprite_delete_palette(Sprite* sprite, Palette* pal)
+{
+  assert(sprite != NULL);
+  assert(pal != NULL);
+
+  JLink link = jlist_find(sprite->palettes, pal);
+  assert(link != NULL);
+
+  palette_free(pal);
+  jlist_delete_link(sprite->palettes, link);
 }
 
 /**
@@ -504,76 +574,6 @@ void sprite_set_frame(Sprite* sprite, int frame)
   sprite->frame = frame;
 }
 
-/**
- * @warning: it uses the current Allegro "rgb_map"
- */
-void sprite_set_imgtype(Sprite* sprite, int imgtype, int dithering_method)
-{
-  Image *old_image;
-  Image *new_image;
-  int c;
-
-  /* nothing to do */
-  if (sprite->imgtype == imgtype)
-    return;
-
-  /* if the undo is enabled, open a "big" group */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Color Mode Change");
-    undo_open(sprite->undo);
-  }
-
-  /* change imgtype of the stock of images */
-  if (undo_is_enabled(sprite->undo))
-    undo_int(sprite->undo, (GfxObj *)sprite->stock, &sprite->stock->imgtype);
-
-  sprite->stock->imgtype = imgtype;
-
-  for (c=0; c<sprite->stock->nimage; c++) {
-    old_image = stock_get_image(sprite->stock, c);
-    if (!old_image)
-      continue;
-
-    new_image = image_set_imgtype(old_image, imgtype, dithering_method,
-				  rgb_map,
-				  /* TODO check this out */
-				  sprite_get_palette(sprite,
-						     sprite->frame));
-    if (!new_image)
-      return;		/* TODO error handling: not enough memory!
-			   we should undo all work done */
-
-    if (undo_is_enabled(sprite->undo))
-      undo_replace_image(sprite->undo, sprite->stock, c);
-
-    image_free(old_image);
-    stock_replace_image(sprite->stock, c, new_image);
-  }
-
-  /* change "sprite.imgtype" field */
-  if (undo_is_enabled(sprite->undo))
-    undo_int(sprite->undo, (GfxObj *)sprite, &sprite->imgtype);
-
-  sprite->imgtype = imgtype;
-
-#if 0				/* TODO */
-  /* change "sprite.palette" */
-  if (imgtype == IMAGE_GRAYSCALE) {
-    int c;
-    undo_data(sprite->undo, (GfxObj *)sprite,
-	      &sprite->palette, sizeof(PALETTE));
-    for (c=0; c<256; c++) {
-      sprite->palette[c].r = c >> 2;
-      sprite->palette[c].g = c >> 2;
-      sprite->palette[c].b = c >> 2;
-    }
-  }
-#endif
-
-  if (undo_is_enabled(sprite->undo))
-    undo_close(sprite->undo);
-}
-
 Layer *sprite_get_background_layer(const Sprite* sprite)
 {
   assert(sprite != NULL);
@@ -676,7 +676,7 @@ void sprite_generate_mask_boundaries(Sprite* sprite)
   }
 }
 
-Layer *sprite_index2layer(const Sprite* sprite, int index)
+Layer* sprite_index2layer(const Sprite* sprite, int index)
 {
   int index_count = -1;
   assert(sprite != NULL);

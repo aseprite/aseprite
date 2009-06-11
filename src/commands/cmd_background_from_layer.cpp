@@ -24,12 +24,12 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 #include "widgets/colbar.h"
 
 static bool cmd_background_from_layer_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -41,7 +41,7 @@ static bool cmd_background_from_layer_enabled(const char *argument)
 
 static void cmd_background_from_layer_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar

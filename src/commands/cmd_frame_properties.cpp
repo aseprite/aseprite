@@ -24,40 +24,35 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 
-void dialogs_frame_length(int sprite_frame);
+class SpriteReader;
+void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame);
 
 static bool cmd_frame_properties_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_frame_properties_execute(const char *argument)
 {
-  CurrentSprite sprite;
-  dialogs_frame_length(sprite->frame);
+  const CurrentSpriteReader sprite;
+  dialogs_frame_length(sprite, sprite->frame);
 }
 
 /* if sprite_frame < 0, set the frame length of all frames */
-void dialogs_frame_length(int sprite_frame)
+void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
 {
-  JWidget window, frame, frlen, ok;
-  CurrentSprite sprite;
+  JWidget frame, frlen, ok;
   char buf[64];
 
-  window = load_widget("frlen.jid", "frame_duration");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "frame", &frame,
-		   "frlen", &frlen,
-		   "ok", &ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("frlen.jid", "frame_duration");
+  get_widgets(window,
+	      "frame", &frame,
+	      "frlen", &frlen,
+	      "ok", &ok, NULL);
 
   if (sprite_frame < 0)
     strcpy(buf, "All");
@@ -76,18 +71,19 @@ void dialogs_frame_length(int sprite_frame)
       if (jalert("Warning"
 		 "<<Do you want to change the duration of all frames?"
 		 "||&Yes||&No") == 1) {
-	Undoable undoable(sprite, "Constant Frame-Rate");
+	SpriteWriter sprite_writer(sprite);
+	Undoable undoable(sprite_writer, "Constant Frame-Rate");
 	undoable.set_constant_frame_rate(num);
 	undoable.commit();
       }
     }
     else {
-      Undoable undoable(sprite, "Frame Duration");
+      SpriteWriter sprite_writer(sprite);
+      Undoable undoable(sprite_writer, "Frame Duration");
       undoable.set_frame_duration(sprite_frame, num);
       undoable.commit();
     }
   }
-  jwidget_free(window);
 }
 
 Command cmd_frame_properties = {

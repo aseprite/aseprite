@@ -23,7 +23,7 @@ class Cel;
 class Sprite;
 
 void destroy_thumbnails();
-struct BITMAP *generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite* sprite);
+struct BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite* sprite);
 
 #endif /* UTIL_THMBNAIL_H */
 

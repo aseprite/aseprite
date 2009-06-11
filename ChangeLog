@@ -1,6 +1,27 @@
+2009-06-11  David A. Capello  <davidcapello@gmail.com>
+
+	* src/modules/gui.h (JWidgetPtr): Added to automatically delete
+	the widget in the destructor.
+
+	* src/modules/gui.cpp (load_widget/get_widgets): In case of error
+	now they throw an exception.
+
+	* src/sprite_wrappers.h: CurrentSprite class was split in
+	SpriteWrapper/Reader/Writer, and CurrentSpriteReader/Writer
+	wrappers.
+
+	* src/console/console.h (Console): Added the class to
+	automatically open/close the console (with RAII idiom).
+
 2009-06-10  David A. Capello  <davidcapello@gmail.com>
 
 	* src/modules/palettes.h: Added CurrentSpriteRgbMap class.
+
+2009-06-04  David A. Capello  <davidcapello@gmail.com>
+
+	* src/raster/sprite.h (Sprite): Added m_write_lock and
+	m_read_locks members. Added lock(bool) and lock_to_write()
+	methods.
 
 2009-06-01  David A. Capello  <davidcapello@gmail.com>
 

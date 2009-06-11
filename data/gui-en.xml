@@ -126,7 +126,12 @@
 	</menu>
 	<menu name="&Sprite">
 	    <item command="sprite_properties" name="&Properties..." />
-	    <item command="change_image_type" name="Color &Mode..." />
+	    <menu name name="Color &Mode">
+	      <item command="change_image_type" name="&RGB Color" argument="rgb" />
+	      <item command="change_image_type" name="&Grayscale" argument="grayscale" />
+	      <item command="change_image_type" name="&Indexed (No Dithering)" argument="indexed" />
+	      <item command="change_image_type" name="Indexed (Ordered &Dither)" argument="indexed-dither" />
+	    </menu>
 	    <separator />
 	    <item command="duplicate_sprite" name="&Duplicate..." />
 	    <separator />

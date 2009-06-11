@@ -31,17 +31,17 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 #include "widgets/statebar.h"
 
 #include <stdexcept>
 
 static bool cmd_new_frame_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
-    sprite &&
-    sprite->layer &&
+    sprite != NULL &&
+    sprite->layer != NULL &&
     layer_is_readable(sprite->layer) &&
     layer_is_writable(sprite->layer) &&
     layer_is_image(sprite->layer);
@@ -49,7 +49,7 @@ static bool cmd_new_frame_enabled(const char *argument)
 
 static void cmd_new_frame_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   {
     Undoable undoable(sprite, "New Frame");
     undoable.new_frame();

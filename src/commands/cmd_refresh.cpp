@@ -37,7 +37,10 @@ static void cmd_refresh_execute(const char *argument)
   clear_to_color(screen, makecol(0, 0, 0));
   jmouse_show();
 
-  app_refresh_screen();
+  {
+    const CurrentSpriteReader sprite;
+    app_refresh_screen(sprite);
+  }
 
   /* print memory information */
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE

@@ -710,14 +710,8 @@ static void tool_rectangle_draw_trace(int x1, int y1, int x2, int y2, ToolData *
   }
 
   if (filled_mode) {
-    int bak_color;
-    bak_color = data->color;
-    data->color = data->other_color;
-
     for (c=y1; c<=y2; c++)
       do_ink_hline(x1, c, x2, data);
-
-    data->color = bak_color;
   }
 
   for (c=x1; c<=x2; c++) do_ink_brush(c, y1, data);
@@ -746,14 +740,8 @@ static Tool tool_rectangle =
 static void tool_ellipse_draw_trace(int x1, int y1, int x2, int y2, ToolData *data)
 {
   if (filled_mode) {
-    int bak_color;
-    bak_color = data->color;
-    data->color = data->other_color;
-
     algo_ellipsefill(x1, y1, x2, y2, data,
 		     (AlgoHLine)do_ink_hline);
-
-    data->color = bak_color;
   }
 
   algo_ellipse(x1, y1, x2, y2, data,

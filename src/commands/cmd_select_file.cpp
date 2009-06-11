@@ -45,17 +45,17 @@ static bool cmd_select_file_enabled(const char *argument)
 
 static bool cmd_select_file_checked(const char *argument)
 {
-  CurrentSprite current_sprite;
+  const CurrentSpriteReader sprite;
 
   if (argument) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj *gfxobj = gfxobj_find(sprite_id);
     return
       gfxobj && gfxobj->type == GFXOBJ_SPRITE &&
-      current_sprite == (Sprite *)gfxobj;
+      sprite == (Sprite *)gfxobj;
   }
   else
-    return current_sprite == NULL;
+    return sprite == NULL;
 }
 
 static void cmd_select_file_execute(const char *argument)

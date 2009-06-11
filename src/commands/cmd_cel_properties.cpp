@@ -36,13 +36,12 @@
 
 static bool cmd_cel_properties_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite && sprite->layer;
 }
 
 static void cmd_cel_properties_execute(const char *argument)
 {
-  JWidget window = NULL;
   JWidget label_frame, label_pos, label_size;
   JWidget slider_opacity, button_ok;
   Layer *layer;
@@ -51,31 +50,25 @@ static void cmd_cel_properties_execute(const char *argument)
   int memsize;
 
   /* get current sprite */
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   if (!sprite)
     return;
 
   /* get selected layer */
   layer = sprite->layer;
   if (!layer)
-    goto done;
+    return;
 
   /* get current cel (can be NULL) */
   cel = layer_get_cel(layer, sprite->frame);
 
-  window = load_widget("celprop.jid", "cel_properties");
-  if (!window)
-    goto done;
-
-  if (!get_widgets(window,
-		   "frame", &label_frame,
-		   "pos", &label_pos,
-		   "size", &label_size,
-		   "opacity", &slider_opacity,
-		   "ok", &button_ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("celprop.jid", "cel_properties");
+  get_widgets(window,
+	      "frame", &label_frame,
+	      "pos", &label_pos,
+	      "size", &label_size,
+	      "opacity", &slider_opacity,
+	      "ok", &button_ok, NULL);
 
   /* if the layer isn't writable */
   if (!layer_is_writable(layer)) {
@@ -141,10 +134,6 @@ static void cmd_cel_properties_execute(const char *argument)
       update_screen_for_sprite(sprite);
     }
   }
-
-done:;
-  if (window)
-    jwidget_free(window);
 }
 
 Command cmd_cel_properties = {

@@ -350,44 +350,41 @@ static bool save_JPEG(FileOp *fop)
  */
 static FormatOptions *get_options_JPEG(FileOp *fop)
 {
-  JWidget window, slider_quality, ok;
   JpegOptions *jpeg_options = jpeg_options_new();
+  try {
+    /* configuration parameters */
+    jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
 
-  /* configuration parameters */
-  jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
+    /* interactive mode */
+    if (!is_interactive())
+      return (FormatOptions*)jpeg_options;
 
-  /* interactive mode */
-  if (!is_interactive())
+    /* widgets */
+    JWidgetPtr window = load_widget("jpeg_options.jid", "jpeg_options");
+    JWidget slider_quality, ok;
+    get_widgets(window,
+		"quality", &slider_quality,
+		"ok", &ok, NULL);
+
+    jslider_set_value(slider_quality, jpeg_options->quality * 10.0f);
+
+    jwindow_open_fg(window);
+
+    if (jwindow_get_killer(window) == ok) {
+      jpeg_options->quality = jslider_get_value(slider_quality) / 10.0f;
+      set_config_float("JPEG", "Quality", jpeg_options->quality);
+    }
+    else {
+      format_options_free((FormatOptions *)jpeg_options);
+      jpeg_options = NULL;
+    }
+
     return (FormatOptions *)jpeg_options;
-
-  /* widgets */
-  window = load_widget("jpeg_options.jid", "jpeg_options");
-  if (!window) {
+  }
+  catch (ase_exception& e) {
     format_options_free((FormatOptions *)jpeg_options);
+
+    e.show();
     return NULL;
   }
-
-  if (!get_widgets(window,
-		   "quality", &slider_quality,
-		   "ok", &ok, NULL)) {
-    jwidget_free(window);
-    format_options_free((FormatOptions *)jpeg_options);
-    return NULL;
-  }
-
-  jslider_set_value(slider_quality, jpeg_options->quality * 10.0f);
-
-  jwindow_open_fg(window);
-
-  if (jwindow_get_killer(window) == ok) {
-    jpeg_options->quality = jslider_get_value(slider_quality) / 10.0f;
-    set_config_float("JPEG", "Quality", jpeg_options->quality);
-  }
-  else {
-    format_options_free((FormatOptions *)jpeg_options);
-    jpeg_options = NULL;
-  }
-
-  jwidget_free(window);
-  return (FormatOptions *)jpeg_options;
 }

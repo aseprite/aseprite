@@ -250,18 +250,28 @@ Command *command_get_by_key(JMessage msg)
  */
 bool command_is_enabled(Command *command, const char *argument)
 {
-  if (command && command->enabled)
-    return (*command->enabled)(argument);
-  else
-    return TRUE;
+  try {
+    if (command && command->enabled)
+      return (*command->enabled)(argument);
+    else
+      return true;
+  }
+  catch (...) {
+    // did the "is_enabled" throw an exception? disabled this command so...
+    return false;
+  }
 }
 
 bool command_is_checked(Command *command, const char *argument)
 {
-  if (command && command->checked)
-    return (*command->checked)(argument);
-  else
-    return FALSE;
+  try {
+    if (command && command->checked)
+      return (*command->checked)(argument);
+  }
+  catch (...) {
+    // do nothing
+  }
+  return false;
 }
 
 /**
@@ -270,7 +280,7 @@ bool command_is_checked(Command *command, const char *argument)
  */
 void command_execute(Command *command, const char *argument)
 {
-  console_open();
+  Console console;
 
   try {
     if (command && command->execute &&
@@ -278,14 +288,17 @@ void command_execute(Command *command, const char *argument)
       (*command->execute)(argument);
     }
   }
-  catch (std::exception& e) {
-    jalert("Error"
-	   "<<Uncaught exception:"
-	   "<<%s"
-	   "||&OK", e.what());
+  catch (ase_exception& e) {
+    e.show();
   }
-
-  console_close();
+  catch (std::exception& e) {
+    console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
+  }
+  catch (...) {
+    console.printf("An unknown error ocurred executing the command.\n"
+		   "Please try again or report this bug.\n\n"
+		   "Details: Unknown exception caught.");
+  }
 }
 
 bool command_is_key_pressed(Command *command, JMessage msg)

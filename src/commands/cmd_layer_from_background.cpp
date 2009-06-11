@@ -22,19 +22,15 @@
 
 #include "commands/commands.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
-#include "raster/cel.h"
 #include "raster/layer.h"
-#include "raster/sprite.h"
-#include "raster/undo.h"
-#include "util/functions.h"
+#include "undoable.h"
 
 static bool cmd_layer_from_background_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
-    sprite &&
-    sprite->layer &&
+    sprite != NULL &&
+    sprite->layer != NULL &&
     layer_is_image(sprite->layer) &&
     layer_is_readable(sprite->layer) &&
     layer_is_writable(sprite->layer) &&
@@ -43,12 +39,12 @@ static bool cmd_layer_from_background_enabled(const char *argument)
 
 static void cmd_layer_from_background_execute(const char *argument)
 {
-  CurrentSprite sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Layer from Background");
-
-  LayerFromBackground(sprite);
+  CurrentSpriteWriter sprite;
+  {
+    Undoable undoable(sprite, "Layer from Background");
+    undoable.layer_from_background();
+    undoable.commit();
+  }
   update_screen_for_sprite(sprite);
 }
 

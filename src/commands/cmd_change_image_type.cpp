@@ -18,89 +18,57 @@
 
 #include "config.h"
 
-#include "jinete/jinete.h"
+#include <allegro/unicode.h>
 
 #include "commands/commands.h"
 #include "core/app.h"
-#include "core/cfg.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/quant.h"
 #include "raster/sprite.h"
+#include "undoable.h"
 
 static bool cmd_change_image_type_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL &&
+    argument != NULL &&
+    ((ustrcmp(argument, "rgb") == 0 && sprite->imgtype != IMAGE_RGB) ||
+     (ustrcmp(argument, "grayscale") == 0 && sprite->imgtype != IMAGE_GRAYSCALE) ||
+     (ustrncmp(argument, "indexed", 7) == 0 && sprite->imgtype != IMAGE_INDEXED));
 }
 
 static void cmd_change_image_type_execute(const char *argument)
 {
-  JWidget window, from, radio1, radio2, radio3, dither1, dither2;
-  CurrentSprite current_sprite;
+  CurrentSpriteWriter sprite;
+  int destimgtype = sprite->imgtype;
+  int dithermethod = DITHERING_NONE;
 
-  /* load the window widget */
-  window = load_widget("imgtype.jid", "image_type");
-  if (!window)
-    return;
-
-  from = jwidget_find_name(window, "from");
-  radio1 = jwidget_find_name(window, "imgtype1");
-  radio2 = jwidget_find_name(window, "imgtype2");
-  radio3 = jwidget_find_name(window, "imgtype3");
-  dither1 = jwidget_find_name(window, "dither1");
-  dither2 = jwidget_find_name(window, "dither2");
-
-  if (current_sprite->imgtype == IMAGE_RGB) {
-    jwidget_set_text(from, _("RGB"));
-    jwidget_disable(radio1);
-    jwidget_select(radio3);	/* to Indexed by default */
+  if (ustrcmp(argument, "rgb") == 0) {
+    destimgtype = IMAGE_RGB;
   }
-  else if (current_sprite->imgtype == IMAGE_GRAYSCALE) {
-    jwidget_set_text(from, _("Grayscale"));
-    jwidget_disable(radio2);
-    jwidget_select(radio1);	/* to RGB by default */
+  else if (ustrcmp(argument, "grayscale") == 0) {
+    destimgtype = IMAGE_GRAYSCALE;
   }
-  else if (current_sprite->imgtype == IMAGE_INDEXED) {
-    jwidget_set_text(from, _("Indexed"));
-    jwidget_disable(radio3);
-    jwidget_select(radio1);	/* to RGB by default */
+  else if (ustrcmp(argument, "indexed") == 0) {
+    destimgtype = IMAGE_INDEXED;
+  }
+  else if (ustrcmp(argument, "indexed-dither") == 0) {
+    destimgtype = IMAGE_INDEXED;
+    dithermethod = DITHERING_ORDERED;
   }
 
-  if (get_config_bool("Options", "Dither", FALSE))
-    jwidget_select(dither2);
-  else
-    jwidget_select(dither1);
-
-  /* open the window */
-  jwindow_open_fg(window);
-
-  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
-    int destimgtype, dithermethod;
-
-    if (jwidget_is_selected(radio1))
-      destimgtype = IMAGE_RGB;
-    else if (jwidget_is_selected(radio2))
-      destimgtype = IMAGE_GRAYSCALE;
-    else
-      destimgtype = IMAGE_INDEXED;
-
-    if (jwidget_is_selected(dither1))
-      dithermethod = DITHERING_NONE;
-    else
-      dithermethod = DITHERING_ORDERED;
-
-    {
-      CurrentSpriteRgbMap rgbmap;
-      sprite_set_imgtype(current_sprite, destimgtype, dithermethod);
-    }
-
-    app_refresh_screen();
+  {
+    CurrentSpriteRgbMap rgbmap;
+    Undoable undoable(sprite, "Color Mode Change");
+    undoable.set_imgtype(destimgtype, dithermethod);
+    undoable.commit();
   }
 
-  jwidget_free(window);
+  app_refresh_screen(sprite);
 }
 
 Command cmd_change_image_type = {

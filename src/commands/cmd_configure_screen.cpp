@@ -74,21 +74,15 @@ static void cmd_configure_screen_execute(const char *argument)
 
 static void show_dialog()
 {
-  JWidget window, resolution, color_depth, pixel_scale, fullscreen;
+  JWidget resolution, color_depth, pixel_scale, fullscreen;
   char buf[512];
 
-  window = load_widget("confscr.jid", "configure_screen");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "resolution", &resolution,
-		   "color_depth", &color_depth,
-		   "pixel_scale", &pixel_scale,
-		   "fullscreen", &fullscreen, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("confscr.jid", "configure_screen");
+  get_widgets(window,
+	      "resolution", &resolution,
+	      "color_depth", &color_depth,
+	      "pixel_scale", &pixel_scale,
+	      "fullscreen", &fullscreen, NULL);
 
   jcombobox_add_string(resolution, "320x200", NULL);
   jcombobox_add_string(resolution, "320x240", NULL);
@@ -139,10 +133,10 @@ static void show_dialog()
 
     /* setup graphics mode */
     if (try_new_gfx_mode()) {
-      JWidget alert_window = jalert_new("Confirm Screen"
-					"<<Do you want to keep this screen resolution?"
-					"<<In 10 seconds the screen will be restored."
-					"||&Yes||&No");
+      JWidgetPtr alert_window = jalert_new("Confirm Screen"
+					   "<<Do you want to keep this screen resolution?"
+					   "<<In 10 seconds the screen will be restored."
+					   "||&Yes||&No");
       jwidget_add_hook(alert_window, -1, alert_msg_proc, NULL);
 
       seconds_to_accept = 10;
@@ -165,12 +159,8 @@ static void show_dialog()
 
 	try_new_gfx_mode();
       }
-
-      jwidget_free(alert_window);
     }
   }
-
-  jwidget_free(window);
 }
 
 static bool try_new_gfx_mode()
@@ -185,7 +175,7 @@ static bool try_new_gfx_mode()
     if (set_gfx_mode(old_card, old_w, old_h, 0, 0) < 0) {
       /* oh no! more errors!, we can't restore the old graphics mode! */
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      console_printf(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
+      user_printf(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
       app_exit();
       exit(1);
     }
@@ -197,12 +187,16 @@ static bool try_new_gfx_mode()
       set_black_palette();
 
       /* restore palette all screen stuff */
-      app_refresh_screen();
+      {
+	const CurrentSpriteReader sprite;
+	app_refresh_screen(sprite);
+      }
 
-      console_printf(_("Error setting graphics mode: %dx%d %d bpp\n"),
+      Console console;
+      console.printf(_("Error setting graphics mode: %dx%d %d bpp\n"),
 		     new_w, new_h, new_depth);
 
-      return FALSE;
+      return false;
     }
   }
   /* the new graphics mode is working */
@@ -212,8 +206,11 @@ static bool try_new_gfx_mode()
     /* set to a black palette */
     set_black_palette();
 
-    /* restore palette all screen stuff */
-    app_refresh_screen();
+    // restore palette all screen stuff
+    {
+      const CurrentSpriteReader sprite;
+      app_refresh_screen(sprite);
+    }
   }
   
   /* setup mouse */
@@ -225,7 +222,7 @@ static bool try_new_gfx_mode()
     jmanager_refresh_screen();
   }
 
-  return TRUE;
+  return true;
 }
 
 static bool alert_msg_proc(JWidget widget, JMessage msg)

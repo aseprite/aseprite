@@ -37,7 +37,6 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
-#include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
@@ -57,51 +56,35 @@ static void make_preview();
 
 static bool cmd_despeckle_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_despeckle_execute(const char *argument)
 {
-  JWidget window, box_target, target_button, button_ok;
-  CurrentSprite sprite;
-  Image *image;
-  Effect *effect;
+  const CurrentSpriteReader sprite;
+  JWidget box_target, target_button, button_ok;
   char buf[32];
 
-  image = GetImage(sprite);
-  if (!image)
-    return;
+  JWidgetPtr window = load_widget("median.jid", "median");
+  get_widgets(window,
+	      "width", &entry_width,
+	      "height", &entry_height,
+	      "preview", &check_preview,
+	      "tiled", &check_tiled,
+	      "target", &box_target,
+	      "button_ok", &button_ok, NULL);
 
-  window = load_widget("median.jid", "median");
-  if (!window)
-    return;
+  Effect effect(sprite, "median");
+  effect_set_target(&effect, TARGET_RED_CHANNEL |
+			     TARGET_GREEN_CHANNEL |
+			     TARGET_BLUE_CHANNEL);
 
-  if (!get_widgets(window,
-		   "width", &entry_width,
-		   "height", &entry_height,
-		   "preview", &check_preview,
-		   "tiled", &check_tiled,
-		   "target", &box_target,
-		   "button_ok", &button_ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
-
-  effect = effect_new(sprite, "median");
-  if (!effect) {
-    console_printf(_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free(window);
-    return;
-  }
-  effect_set_target(effect, TARGET_RED_CHANNEL |
-			    TARGET_GREEN_CHANNEL |
-			    TARGET_BLUE_CHANNEL);
-
-  preview = preview_new(effect);
+  preview = preview_new(&effect);
 
   target_button = target_button_new(sprite->imgtype, TRUE);
-  target_button_set_target(target_button, effect->target);
+  target_button_set_target(target_button, effect.target);
 
   sprintf(buf, "%d", get_config_int("Median", "Width", 3));
   jwidget_set_text(entry_width, buf);
@@ -136,19 +119,14 @@ static void cmd_despeckle_execute(const char *argument)
   /* open the window */
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer(window) == button_ok) {
-    effect_apply_to_target_with_progressbar(effect);
-  }
-
-  effect_free(effect);
+  if (jwindow_get_killer(window) == button_ok)
+    effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
   update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "Median");
-
-  jwidget_free(window);
 }
 
 static bool width_change_hook(JWidget widget, void *data)

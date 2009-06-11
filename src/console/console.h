@@ -19,10 +19,15 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-void console_open();
-void console_close();
+class Console
+{
+public:
+  Console();
+  ~Console();
 
-void console_printf(const char *format, ...);
+  void printf(const char *format, ...);
+};
+
 void user_printf(const char *format, ...);
 
 #endif /* CONSOLE_H */

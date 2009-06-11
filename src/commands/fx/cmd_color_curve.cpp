@@ -31,7 +31,6 @@
 #include "effect/effect.h"
 #include "modules/gui.h"
 #include "modules/sprites.h"
-#include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
@@ -48,18 +47,17 @@ static void make_preview();
 
 static bool cmd_color_curve_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_color_curve_execute(const char *argument)
 {
-  JWidget window, button_ok;
+  const CurrentSpriteReader sprite;
+  JWidget button_ok;
   JWidget view_curve, curve_editor;
   JWidget box_target, target_button;
-  CurrentSprite sprite;
-  Image *image;
-  Effect *effect;
 
   if (!the_curve) {
     /* default curve */
@@ -72,39 +70,24 @@ static void cmd_color_curve_execute(const char *argument)
 		 the_curve);
   }
 
-  image = GetImage(sprite);
-  if (!image)
-    return;
+  JWidgetPtr window = load_widget("colcurv.jid", "color_curve");
+  get_widgets(window,
+	      "preview", &check_preview,
+	      "button_ok", &button_ok,
+	      "curve", &view_curve,
+	      "target", &box_target, NULL);
 
-  window = load_widget("colcurv.jid", "color_curve");
-  if (!window)
-    return;
+  Effect effect(sprite, "color_curve");
+  effect_set_target(&effect, TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL |
+			     TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
 
-  if (!get_widgets(window,
-		   "preview", &check_preview,
-		   "button_ok", &button_ok,
-		   "curve", &view_curve,
-		   "target", &box_target, NULL)) {
-    jwidget_free(window);
-    return;
-  }
-
-  effect = effect_new(sprite, "color_curve");
-  if (!effect) {
-    console_printf(_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free(window);
-    return;
-  }
-  effect_set_target(effect, TARGET_RED_CHANNEL | TARGET_GREEN_CHANNEL |
-			    TARGET_BLUE_CHANNEL | TARGET_ALPHA_CHANNEL);
-
-  preview = preview_new(effect);
+  preview = preview_new(&effect);
 
   set_color_curve(the_curve);
 
   curve_editor = curve_editor_new(the_curve, 0, 0, 255, 255);
   target_button = target_button_new(sprite->imgtype, TRUE);
-  target_button_set_target(target_button, effect->target);
+  target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("ColorCurve", "Preview", TRUE))
     jwidget_select(check_preview);
@@ -130,19 +113,14 @@ static void cmd_color_curve_execute(const char *argument)
   /* open the window */
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer(window) == button_ok) {
-    effect_apply_to_target_with_progressbar(effect);
-  }
-
-  effect_free(effect);
+  if (jwindow_get_killer(window) == button_ok)
+    effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
   update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "ColorCurve");
-
-  jwidget_free(window);
 }
 
 static bool window_msg_proc(JWidget widget, JMessage msg)

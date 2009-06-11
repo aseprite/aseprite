@@ -31,6 +31,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
@@ -41,34 +42,38 @@ enum {
   DO_REDO,
 };
 
-/* undo types */
+// undo types
 enum {
-  /* group */
+  // group
   UNDO_TYPE_OPEN,
   UNDO_TYPE_CLOSE,
 
-  /* data management */
+  // data management
   UNDO_TYPE_DATA,
 
-  /* image management */
+  // image management
   UNDO_TYPE_IMAGE,
   UNDO_TYPE_FLIP,
   UNDO_TYPE_DIRTY,
 
-  /* stock management */
+  // stock management
   UNDO_TYPE_ADD_IMAGE,
   UNDO_TYPE_REMOVE_IMAGE,
   UNDO_TYPE_REPLACE_IMAGE,
 
-  /* cel management */
+  // cel management
   UNDO_TYPE_ADD_CEL,
   UNDO_TYPE_REMOVE_CEL,
 
-  /* layer management */
+  // layer management
   UNDO_TYPE_ADD_LAYER,
   UNDO_TYPE_REMOVE_LAYER,
   UNDO_TYPE_MOVE_LAYER,
   UNDO_TYPE_SET_LAYER,
+
+  // palette management
+  UNDO_TYPE_ADD_PALETTE,
+  UNDO_TYPE_REMOVE_PALETTE,
 
   /* misc */
   UNDO_TYPE_SET_MASK,
@@ -89,6 +94,8 @@ typedef struct UndoChunkAddLayer UndoChunkAddLayer;
 typedef struct UndoChunkRemoveLayer UndoChunkRemoveLayer;
 typedef struct UndoChunkMoveLayer UndoChunkMoveLayer;
 typedef struct UndoChunkSetLayer UndoChunkSetLayer;
+typedef struct UndoChunkAddPalette UndoChunkAddPalette;
+typedef struct UndoChunkRemovePalette UndoChunkRemovePalette;
 typedef struct UndoChunkSetMask UndoChunkSetMask;
 typedef struct UndoChunkSetFrames UndoChunkSetFrames;
 typedef struct UndoChunkSetFrlen UndoChunkSetFrlen;
@@ -166,6 +173,12 @@ static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chun
 static void chunk_set_layer_new(UndoStream* stream, Sprite *sprite);
 static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk, int state);
 
+static void chunk_add_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette);
+static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *chunk, int state);
+
+static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette);
+static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk, int state);
+
 static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite);
 static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, int state);
 
@@ -195,9 +208,11 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(remove_layer),
   DECL_UNDO_ACTION(move_layer),
   DECL_UNDO_ACTION(set_layer),
+  DECL_UNDO_ACTION(add_palette),
+  DECL_UNDO_ACTION(remove_palette),
   DECL_UNDO_ACTION(set_mask),
   DECL_UNDO_ACTION(set_frames),
-  DECL_UNDO_ACTION(set_frlen)
+  DECL_UNDO_ACTION(set_frlen),
 };
 
 /* UndoChunk */
@@ -222,6 +237,10 @@ static int get_raw_cel_size(Cel* cel);
 static Layer* read_raw_layer(ase_uint8* raw_data);
 static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer);
 static int get_raw_layer_size(Layer* layer);
+
+static Palette* read_raw_palette(ase_uint8* raw_data);
+static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette);
+static int get_raw_palette_size(Palette* palette);
 
 static Mask* read_raw_mask(ase_uint8* raw_data);
 static ase_uint8* write_raw_mask(ase_uint8* raw_data, Mask* mask);
@@ -1216,10 +1235,11 @@ static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chun
   Layer* layer = (Layer* )gfxobj_find(chunk->layer_id);
   Layer* after = (Layer* )gfxobj_find(chunk->after_id);
 
-  if (set && layer) {
-    chunk_move_layer_new(stream, layer);
-    layer_move_layer(set, layer, after);
-  }
+  if (set == NULL || layer == NULL)
+    throw undo_exception("chunk_move_layer_invert");
+
+  chunk_move_layer_new(stream, layer);
+  layer_move_layer(set, layer, after);
 }
 
 /***********************************************************************
@@ -1260,11 +1280,104 @@ static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk,
   Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
   Layer* layer = (Layer* )gfxobj_find(chunk->layer_id);
 
-  if (sprite) {
-    chunk_set_layer_new(stream, sprite);
+  if (sprite == NULL)
+    throw undo_exception("chunk_set_layer_invert");
 
-    sprite->layer = layer;
-  }
+  chunk_set_layer_new(stream, sprite);
+
+  sprite->layer = layer;
+}
+
+/***********************************************************************
+
+  "add_palette"
+
+     DWORD		sprite ID
+     DWORD		palette ID
+
+***********************************************************************/
+
+struct UndoChunkAddPalette
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 palette_id;
+};
+
+void undo_add_palette(Undo* undo, Sprite *sprite, Palette* palette)
+{
+  chunk_add_palette_new(undo->undo_stream, sprite, palette);
+  update_undo(undo);
+}
+
+static void chunk_add_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette)
+{
+  UndoChunkAddPalette* chunk = (UndoChunkAddPalette*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_ADD_PALETTE,
+		   sizeof(UndoChunkAddPalette));
+
+  chunk->sprite_id = sprite->id;
+  chunk->palette_id = palette->id;
+}
+
+static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *chunk, int state)
+{
+  Sprite* sprite = (Sprite*)gfxobj_find(chunk->sprite_id);
+  Palette* palette = (Palette*)gfxobj_find(chunk->palette_id);
+
+  if (sprite == NULL || palette == NULL)
+    throw undo_exception("chunk_add_palette_invert");
+
+  chunk_remove_palette_new(stream, sprite, palette);
+  sprite_delete_palette(sprite, palette);
+}
+
+/***********************************************************************
+
+  "remove_palette"
+
+     DWORD		sprite ID
+     PALETTE_DATA	see read/write_raw_palette
+
+***********************************************************************/
+
+struct UndoChunkRemovePalette
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint8 data[0];
+};
+
+void undo_remove_palette(Undo* undo, Sprite *sprite, Palette* palette)
+{
+  chunk_remove_palette_new(undo->undo_stream, sprite, palette);
+  update_undo(undo);
+}
+
+static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette)
+{
+  UndoChunkRemovePalette* chunk = (UndoChunkRemovePalette*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_REMOVE_PALETTE,
+		   sizeof(UndoChunkRemovePalette)+get_raw_palette_size(palette));
+
+  chunk->sprite_id = sprite->id;
+  write_raw_palette(chunk->data, palette);
+}
+
+static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk, int state)
+{
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+  if (sprite == NULL)
+    throw undo_exception("chunk_remove_palette_invert");
+
+  Palette* palette = read_raw_palette(chunk->data);
+
+  chunk_add_palette_new(stream, sprite, palette);
+  sprite_set_palette(sprite, palette, true);
+
+  palette_free(palette);
 }
 
 /***********************************************************************
@@ -1383,12 +1496,12 @@ void undo_set_frlen(Undo* undo, Sprite *sprite, int frame)
 
 static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame)
 {
+  assert(frame >= 0 && frame < sprite->frames);
+
   UndoChunkSetFrlen *chunk = (UndoChunkSetFrlen *)
     undo_chunk_new(stream,
 		   UNDO_TYPE_SET_FRLEN,
 		   sizeof(UndoChunkSetFrlen));
-
-  assert(frame >= 0 && frame < sprite->frames);
 
   chunk->sprite_id = sprite->id;
   chunk->frame = frame;
@@ -1929,6 +2042,64 @@ static int get_raw_layer_size(Layer* layer)
 
   return size;
 }
+
+/***********************************************************************
+
+  Raw palette data
+
+      WORD		frame
+      WORD		ncolors
+      for each color	("ncolors" times)
+        DWORD		_rgba color
+
+***********************************************************************/
+
+static Palette* read_raw_palette(ase_uint8* raw_data)
+{
+  ase_uint32 dword;
+  ase_uint16 word;
+  ase_uint32 color;
+  int frame, ncolors;
+  Palette* palette;
+
+  read_raw_uint16(frame);	/* frame */
+  read_raw_uint16(ncolors);	/* ncolors */
+
+  palette = palette_new(frame, ncolors);
+  if (!palette)
+    return NULL;
+
+  for (int c=0; c<ncolors; c++) {
+    read_raw_uint32(color);
+    palette_set_entry(palette, c, color);
+  }
+
+  return palette;
+}
+
+static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette)
+{
+  ase_uint32 dword;
+  ase_uint16 word;
+  ase_uint32 color;
+
+  write_raw_uint16(palette->frame);	/* frame */
+  write_raw_uint16(palette->ncolors);	/* ncolors*/
+
+  for (int c=0; c<palette->ncolors; c++) {
+    color = palette_get_entry(palette, c);
+    write_raw_uint32(color);
+  }
+
+  return raw_data;
+}
+
+static int get_raw_palette_size(Palette* palette)
+{
+  // 2 WORD + 4 BYTES*ncolors
+  return 2*2 + 4*palette->ncolors;
+}
+
 
 /***********************************************************************
 

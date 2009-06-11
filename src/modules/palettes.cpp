@@ -120,10 +120,10 @@ void set_default_palette(Palette *palette)
  * @param palette If "palette" is NULL will be used the default one
  * (ase_default_palette)
  */
-bool set_current_palette(Palette *_palette, int forced)
+bool set_current_palette(Palette *_palette, bool forced)
 {
   Palette *palette = _palette ? _palette: ase_default_palette;
-  bool ret = FALSE;
+  bool ret = false;
 
   /* have changes */
   if (forced ||
@@ -245,7 +245,7 @@ void set_current_color(int index, int r, int g, int b)
   }
 }
 
-/**********************************************************************/
+//////////////////////////////////////////////////////////////////////
 
 CurrentSpriteRgbMap::CurrentSpriteRgbMap()
 {
@@ -257,7 +257,7 @@ CurrentSpriteRgbMap::~CurrentSpriteRgbMap()
   rgb_map = my_rgb_map;
 
   if (regen_my_rgb_map) {
-    regen_my_rgb_map = FALSE;
+    regen_my_rgb_map = false;
     create_rgb_table(my_rgb_map, _current_palette, NULL);
   }
 }

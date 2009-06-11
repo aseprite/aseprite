@@ -24,6 +24,7 @@
 
 #include "jinete/jinete.h"
 
+#include "sprite_wrappers.h"
 #include "console/console.h"
 #include "core/app.h"
 #include "core/core.h"
@@ -37,11 +38,12 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/quant.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "raster/undoable.h"
 #include "raster/undo.h"
+#include "undoable.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
@@ -80,7 +82,7 @@ enum {
 
 static void destroy_clipboard(void* data);
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
-static bool copy_from_sprite(Sprite* sprite);
+static bool copy_from_sprite(const Sprite* sprite);
 
 static bool interactive_transform(JWidget widget, Image *dest_image, Image *image,
 				  int x, int y, int xout[4], int yout[4]);
@@ -131,9 +133,9 @@ static void set_clipboard(Image* image, Palette* palette, bool set_system_clipbo
 #endif
 }
 
-static bool copy_from_sprite(Sprite* sprite)
+static bool copy_from_sprite(const Sprite* sprite)
 {
-  assert(sprite);
+  assert(sprite != NULL);
   Image* image = NewImageFromMask(sprite);
   if (!image)
     return false;
@@ -161,13 +163,15 @@ bool clipboard::can_paste()
   return clipboard_image != NULL;
 }
 
-void clipboard::cut(Sprite* sprite)
+void clipboard::cut(SpriteWriter& sprite)
 {
   assert(sprite != NULL);
   assert(sprite->layer != NULL);
 
-  if (!copy_from_sprite(sprite))
-    console_printf("Can't copying an image portion from the current layer\n");
+  if (!copy_from_sprite(sprite)) {
+    Console console;
+    console.printf("Can't copying an image portion from the current layer\n");
+  }
   else {
     {
       Undoable undoable(sprite, "Cut");
@@ -178,12 +182,14 @@ void clipboard::cut(Sprite* sprite)
   }
 }
 
-void clipboard::copy(Sprite* sprite)
+void clipboard::copy(const SpriteReader& sprite)
 {
   assert(sprite != NULL);
 
-  if (!copy_from_sprite(sprite))
-    console_printf(_("Can't copying an image portion from the current layer\n"));
+  if (!copy_from_sprite(sprite)) {
+    Console console;
+    console.printf(_("Can't copying an image portion from the current layer\n"));
+  }
 }
 
 void clipboard::copy_image(Image* image, Palette* pal)
@@ -192,7 +198,7 @@ void clipboard::copy_image(Image* image, Palette* pal)
 		pal ? palette_new_copy(pal): NULL, true);
 }
 
-void clipboard::paste(Sprite* sprite)
+void clipboard::paste(SpriteWriter& sprite)
 {
   int xout[4], yout[4];
   int dst_x, dst_y;
@@ -217,7 +223,8 @@ void clipboard::paste(Sprite* sprite)
   // destination image (where to put this image)
   dst_image = GetImage2(sprite, &dst_x, &dst_y, NULL);
   if (!dst_image) {
-    console_printf(_("Error: no destination image\n"));
+    Console console;
+    console.printf(_("Error: no destination image\n"));
     return;
   }
 
@@ -225,12 +232,10 @@ void clipboard::paste(Sprite* sprite)
   if (clipboard_image->imgtype == sprite->imgtype)
     src_image = clipboard_image;
   else {
-    src_image = image_new(sprite->imgtype,
-			  clipboard_image->w,
-			  clipboard_image->h);
-
     CurrentSpriteRgbMap rgbmap;
-    image_convert(clipboard_image, src_image);
+    src_image = image_set_imgtype(clipboard_image, sprite->imgtype, DITHERING_NONE,
+				  rgb_map, sprite_get_palette(sprite,
+							      sprite->frame));
   }
 
   // do the interactive-transform loop (where the user can move the floating image)

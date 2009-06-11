@@ -50,8 +50,9 @@ static void update_button_text();
 
 void dialogs_draw_text(Sprite* sprite)
 {
+#if 0
   Image *image, *dest_image;
-  JWidget window, button_ok, color_box, color_but;
+  JWidget button_ok, color_box, color_but;
   JWidget entry_size, entry_text;
   char buf[256];
 
@@ -62,9 +63,7 @@ void dialogs_draw_text(Sprite* sprite)
   if (!dest_image)
     return;
 
-  window = load_widget("drawtext.jid", "drawtext_window");
-  if (!window)
-    return;
+  JWidgetPtr window = load_widget("drawtext.jid", "drawtext_window");
 
   if (!get_widgets(window,
 		   "font", &font_button,
@@ -72,7 +71,6 @@ void dialogs_draw_text(Sprite* sprite)
 		   "size", &entry_size,
 		   "color_box", &color_box,
 		   "ok", &button_ok, NULL)) {
-    jwidget_free(window);
     return;
   }
 
@@ -147,8 +145,7 @@ void dialogs_draw_text(Sprite* sprite)
       destroy_font(f);
     }
   }
-
-  jwidget_free(window);
+#endif
 }
 
 Image *RenderText(Sprite* sprite, const char *fontname, int size, int color, const char *text)
@@ -270,8 +267,10 @@ static FONT *my_load_font(const char *filename)
   dirs_free(dirs);
 
   /* error loading font */
-  if (!f)
-    console_printf(_("Error loading font.\n"));
+  if (!f) {
+    Console console;
+    console.printf(_("Error loading font.\n"));
+  }
 
   return f;
 }

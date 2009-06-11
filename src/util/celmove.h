@@ -22,12 +22,13 @@
 class Cel;
 class Layer;
 class Sprite;
+class SpriteWriter;
 
 void set_frame_to_handle(Layer* src_layer, int src_frame,
 			 Layer* dst_layer, int dst_frame);
 
-void move_cel(Sprite* sprite);
-void copy_cel(Sprite* sprite);
+void move_cel(SpriteWriter& sprite);
+void copy_cel(SpriteWriter& sprite);
 
-#endif /* UTIL_CELMOVE_H */
+#endif // UTIL_CELMOVE_H
 

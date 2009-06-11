@@ -33,24 +33,24 @@
 
 static bool cmd_merge_down_layer_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   if (!sprite)
-    return FALSE;
+    return false;
 
   Layer *src_layer = sprite->layer;
   if (!src_layer || !layer_is_image(src_layer))
-    return FALSE;
+    return false;
 
   Layer* dst_layer = layer_get_prev(sprite->layer);
   if (!dst_layer || !layer_is_image(dst_layer))
-    return FALSE;
+    return false;
 
   return TRUE;
 }
 
 static void cmd_merge_down_layer_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   Layer *src_layer, *dst_layer;
   Cel *src_cel, *dst_cel;
   Image *src_image, *dst_image;

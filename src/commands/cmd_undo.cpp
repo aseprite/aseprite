@@ -28,13 +28,15 @@
 
 static bool cmd_undo_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL && undo_can_undo(sprite->undo);
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL &&
+    undo_can_undo(sprite->undo);
 }
 
 static void cmd_undo_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Undid %s"),

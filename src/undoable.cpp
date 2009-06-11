@@ -23,15 +23,19 @@
 
 #include "jinete/jlist.h"
 
+#include "sprite_wrappers.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
+#include "raster/dirty.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
+#include "raster/palette.h"
+#include "raster/quant.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 
 /**
  * Starts a undoable sequence of operations.
@@ -39,18 +43,17 @@
  * All the operations will be grouped in the sprite's undo as an
  * atomic operation.
  */
-Undoable::Undoable(Sprite* sprite, const char* label)
+Undoable::Undoable(SpriteWriter& sprite, const char* label)
 {
-  assert(sprite);
-  assert(label);
+  assert(label != NULL);
 
-  this->sprite = sprite;
-  committed = false;
-  enabled_flag = undo_is_enabled(sprite->undo);
+  m_sprite = sprite;
+  m_committed = false;
+  m_enabled_flag = undo_is_enabled(m_sprite->undo);
 
   if (is_enabled()) {
-    undo_set_label(sprite->undo, label);
-    undo_open(sprite->undo);
+    undo_set_label(m_sprite->undo, label);
+    undo_open(m_sprite->undo);
   }
 }
 
@@ -58,16 +61,16 @@ Undoable::~Undoable()
 {
   if (is_enabled()) {
     // close the undo information
-    undo_close(sprite->undo);
+    undo_close(m_sprite->undo);
 
     // if it isn't committed, we have to rollback all changes
-    if (!committed) {
+    if (!m_committed) {
       // undo the group of operations
-      undo_do_undo(sprite->undo);
+      undo_do_undo(m_sprite->undo);
 
       // clear the redo (sorry to the user, here we lost the old redo
       // information)
-      undo_clear_redo(sprite->undo);
+      undo_clear_redo(m_sprite->undo);
     }
   }
 }
@@ -81,7 +84,7 @@ Undoable::~Undoable()
  */
 void Undoable::commit()
 {
-  committed = true;
+  m_committed = true;
 }
 
 void Undoable::set_number_of_frames(int frames)
@@ -90,9 +93,9 @@ void Undoable::set_number_of_frames(int frames)
 
   // increment frames counter in the sprite
   if (is_enabled())
-    undo_set_frames(sprite->undo, sprite);
+    undo_set_frames(m_sprite->undo, m_sprite);
 
-  sprite_set_frames(sprite, frames);
+  sprite_set_frames(m_sprite, frames);
 }
 
 void Undoable::set_current_frame(int frame)
@@ -100,9 +103,9 @@ void Undoable::set_current_frame(int frame)
   assert(frame >= 0);
 
   if (is_enabled())
-    undo_int(sprite->undo, sprite, &sprite->frame);
+    undo_int(m_sprite->undo, m_sprite, &m_sprite->frame);
 
-  sprite_set_frame(sprite, frame);
+  sprite_set_frame(m_sprite, frame);
 }
 
 /**
@@ -114,9 +117,9 @@ void Undoable::set_current_frame(int frame)
 void Undoable::set_current_layer(Layer* layer)
 {
   if (is_enabled())
-    undo_set_layer(sprite->undo, sprite);
+    undo_set_layer(m_sprite->undo, m_sprite);
 
-  sprite_set_layer(sprite, layer);
+  sprite_set_layer(m_sprite, layer);
 }
 
 void Undoable::set_sprite_size(int w, int h)
@@ -125,41 +128,41 @@ void Undoable::set_sprite_size(int w, int h)
   assert(h > 0);
 
   if (is_enabled()) {
-    undo_int(sprite->undo, sprite, &sprite->w);
-    undo_int(sprite->undo, sprite, &sprite->h);
+    undo_int(m_sprite->undo, m_sprite, &m_sprite->w);
+    undo_int(m_sprite->undo, m_sprite, &m_sprite->h);
   }
 
-  sprite_set_size(sprite, w, h);
+  sprite_set_size(m_sprite, w, h);
 }
 
 void Undoable::crop_sprite(int x, int y, int w, int h, int bgcolor)
 {
   set_sprite_size(w, h);
 
-  displace_layers(sprite->set, -x, -y);
+  displace_layers(m_sprite->set, -x, -y);
 
-  Layer *background_layer = sprite_get_background_layer(sprite);
+  Layer *background_layer = sprite_get_background_layer(m_sprite);
   if (background_layer)
-    crop_layer(background_layer, 0, 0, sprite->w, sprite->h, bgcolor);
+    crop_layer(background_layer, 0, 0, m_sprite->w, m_sprite->h, bgcolor);
 
-  if (!mask_is_empty(sprite->mask))
-    set_mask_position(sprite->mask->x-x, sprite->mask->y-y);
+  if (!mask_is_empty(m_sprite->mask))
+    set_mask_position(m_sprite->mask->x-x, m_sprite->mask->y-y);
 }
 
 void Undoable::autocrop_sprite(int bgcolor)
 {
-  int old_frame = sprite->frame;
+  int old_frame = m_sprite->frame;
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
 
   x1 = y1 = INT_MAX;
   x2 = y2 = INT_MIN;
 
-  Image* image = image_new(sprite->imgtype, sprite->w, sprite->h);
+  Image* image = image_new(m_sprite->imgtype, m_sprite->w, m_sprite->h);
 
-  for (sprite->frame=0; sprite->frame<sprite->frames; sprite->frame++) {
+  for (m_sprite->frame=0; m_sprite->frame<m_sprite->frames; m_sprite->frame++) {
     image_clear(image, 0);
-    sprite_render(sprite, image, 0, 0);
+    sprite_render(m_sprite, image, 0, 0);
 
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
@@ -171,7 +174,7 @@ void Undoable::autocrop_sprite(int bgcolor)
       y2 = MAX(y2, v2);
     }
   }
-  sprite->frame = old_frame;
+  m_sprite->frame = old_frame;
 
   image_free(image);
 
@@ -180,6 +183,79 @@ void Undoable::autocrop_sprite(int bgcolor)
     return;
 
   crop_sprite(x1, y1, x2-x1+1, y2-y1+1, bgcolor);
+}
+
+/**
+ * @warning: it uses the current Allegro "rgb_map"
+ */
+void Undoable::set_imgtype(int new_imgtype, int dithering_method)
+{
+  Image *old_image;
+  Image *new_image;
+  int c;
+
+  if (m_sprite->imgtype == new_imgtype)
+    return;
+
+  /* change imgtype of the stock of images */
+  if (is_enabled())
+    undo_int(m_sprite->undo, (GfxObj *)m_sprite->stock, &m_sprite->stock->imgtype);
+
+  m_sprite->stock->imgtype = new_imgtype;
+
+  for (c=0; c<m_sprite->stock->nimage; c++) {
+    old_image = stock_get_image(m_sprite->stock, c);
+    if (!old_image)
+      continue;
+
+    new_image = image_set_imgtype(old_image, new_imgtype, dithering_method,
+				  rgb_map,
+				  /* TODO check this out */
+				  sprite_get_palette(m_sprite,
+						     m_sprite->frame));
+    if (!new_image)
+      return;		/* TODO error handling: not enough memory!
+			   we should undo all work done */
+
+    if (is_enabled())
+      undo_replace_image(m_sprite->undo, m_sprite->stock, c);
+
+    image_free(old_image);
+    stock_replace_image(m_sprite->stock, c, new_image);
+  }
+
+  /* change "sprite.imgtype" field */
+  if (is_enabled())
+    undo_int(m_sprite->undo, m_sprite, &m_sprite->imgtype);
+
+  m_sprite->imgtype = new_imgtype;
+
+  // change "sprite.palette"
+  if (new_imgtype == IMAGE_GRAYSCALE) {
+    if (is_enabled()) {
+      Palette* palette;
+      JLink link;
+
+      JI_LIST_FOR_EACH(m_sprite->palettes, link) {
+	if (jlist_first(m_sprite->palettes) != link) {
+	  palette = reinterpret_cast<Palette*>(link->data);
+	  undo_remove_palette(m_sprite->undo, m_sprite, palette);
+	}
+      }
+
+      palette = sprite_get_palette(m_sprite, 0);
+      undo_data(m_sprite->undo, palette, palette->color, sizeof(palette->color));
+    }
+
+    Palette* graypal = palette_new(0, MAX_PALETTE_COLORS);
+    for (int c=0; c<256; c++)
+      palette_set_entry(graypal, c, _rgba(c, c, c, 255));
+
+    sprite_reset_palettes(m_sprite);
+    sprite_set_palette(m_sprite, graypal, false);
+
+    palette_free(graypal);
+  }
 }
 
 /**
@@ -193,10 +269,10 @@ int Undoable::add_image_in_stock(Image* image)
   assert(image);
 
   // add the image in the stock
-  int image_index = stock_add_image(sprite->stock, image);
+  int image_index = stock_add_image(m_sprite->stock, image);
 
   if (is_enabled())
-    undo_add_image(sprite->undo, sprite->stock, image_index);
+    undo_add_image(m_sprite->undo, m_sprite->stock, image_index);
 
   return image_index;
 }
@@ -208,27 +284,27 @@ void Undoable::remove_image_from_stock(int image_index)
 {
   assert(image_index >= 0);
 
-  Image* image = stock_get_image(sprite->stock, image_index);
+  Image* image = stock_get_image(m_sprite->stock, image_index);
   assert(image);
 
   if (is_enabled())
-    undo_remove_image(sprite->undo, sprite->stock, image_index);
+    undo_remove_image(m_sprite->undo, m_sprite->stock, image_index);
 
-  stock_remove_image(sprite->stock, image);
+  stock_remove_image(m_sprite->stock, image);
   image_free(image);
 }
 
 void Undoable::replace_stock_image(int image_index, Image* new_image)
 {
   // get the current image in the 'image_index' position
-  Image* old_image = stock_get_image(sprite->stock, image_index);
+  Image* old_image = stock_get_image(m_sprite->stock, image_index);
   assert(old_image);
 
   // replace the image in the stock
   if (is_enabled())
-    undo_replace_image(sprite->undo, sprite->stock, image_index);
+    undo_replace_image(m_sprite->undo, m_sprite->stock, image_index);
 
-  stock_replace_image(sprite->stock, image_index, new_image);
+  stock_replace_image(m_sprite->stock, image_index, new_image);
 
   // destroy the old image
   image_free(old_image);
@@ -240,15 +316,15 @@ void Undoable::replace_stock_image(int image_index, Image* new_image)
 Layer* Undoable::new_layer()
 {
   // new layer
-  Layer* layer = layer_new(sprite);
+  Layer* layer = layer_new(m_sprite);
 
   // configure layer name and blend mode
   layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
 
   // add the layer in the sprite set
   if (is_enabled())
-    undo_add_layer(sprite->undo, sprite->set, layer);
-  layer_add_layer(sprite->set, layer);
+    undo_add_layer(m_sprite->undo, m_sprite->set, layer);
+  layer_add_layer(m_sprite->set, layer);
 
   // select the new layer
   set_current_layer(layer);
@@ -266,7 +342,7 @@ void Undoable::remove_layer(Layer* layer)
   Layer* parent = layer->parent_layer;
 
   // if the layer to be removed is the selected layer
-  if (layer == sprite->layer) {
+  if (layer == m_sprite->layer) {
     Layer* layer_select = NULL;
 
     // select: previous layer, or next layer, or parent(if it is not the
@@ -275,7 +351,7 @@ void Undoable::remove_layer(Layer* layer)
       layer_select = layer_get_prev(layer);
     else if (layer_get_next(layer))
       layer_select = layer_get_next(layer);
-    else if (parent != sprite->set)
+    else if (parent != m_sprite->set)
       layer_select = parent;
 
     // select other layer
@@ -284,7 +360,7 @@ void Undoable::remove_layer(Layer* layer)
 
   // remove the layer
   if (is_enabled())
-    undo_remove_layer(sprite->undo, layer);
+    undo_remove_layer(m_sprite->undo, layer);
 
   layer_remove_layer(parent, layer);
 
@@ -296,7 +372,7 @@ void Undoable::remove_layer(Layer* layer)
 void Undoable::move_layer_after(Layer* layer, Layer* after_this)
 {
   if (is_enabled())
-    undo_move_layer(sprite->undo, layer);
+    undo_move_layer(m_sprite->undo, layer);
 
   layer_move_layer(layer->parent_layer, layer, after_this);
 }
@@ -348,25 +424,26 @@ void Undoable::background_from_layer(Layer* layer, int bgcolor)
   assert(layer_is_image(layer));
   assert(layer_is_readable(layer));
   assert(layer_is_writable(layer));
-  assert(layer->sprite == sprite);
-  assert(sprite_get_background_layer(sprite) == NULL);
+  assert(layer->sprite == m_sprite);
+  assert(sprite_get_background_layer(m_sprite) == NULL);
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
-  std::auto_ptr<Image> bg_image(image_new(sprite->imgtype, sprite->w, sprite->h));
+  std::auto_ptr<Image> bg_image_wrap(image_new(m_sprite->imgtype, m_sprite->w, m_sprite->h));
+  Image* bg_image = bg_image_wrap.get();
 
   JLink link;
   JI_LIST_FOR_EACH(layer->cels, link) {
     Cel* cel = reinterpret_cast<Cel*>(link->data);
     assert((cel->image > 0) &&
-	   (cel->image < sprite->stock->nimage));
+	   (cel->image < m_sprite->stock->nimage));
 
     // get the image from the sprite's stock of images
-    Image* cel_image = stock_get_image(sprite->stock, cel->image);
+    Image* cel_image = stock_get_image(m_sprite->stock, cel->image);
     assert(cel_image);
 
-    image_clear(bg_image.get(), bgcolor);
-    image_merge(bg_image.get(), cel_image,
+    image_clear(bg_image, bgcolor);
+    image_merge(bg_image, cel_image,
 		cel->x,
 		cel->y,
 		MID(0, cel->opacity, 255),
@@ -379,24 +456,139 @@ void Undoable::background_from_layer(Layer* layer, int bgcolor)
     if (bg_image->w == cel_image->w &&
 	bg_image->h == cel_image->h) {
       if (is_enabled())
-	undo_image(sprite->undo, cel_image, 0, 0, cel_image->w, cel_image->h);
+	undo_image(m_sprite->undo, cel_image, 0, 0, cel_image->w, cel_image->h);
 
-      image_copy(cel_image, bg_image.get(), 0, 0);
+      image_copy(cel_image, bg_image, 0, 0);
     }
     else {
-      replace_stock_image(cel->image, image_new_copy(bg_image.get()));
+      replace_stock_image(cel->image, image_new_copy(bg_image));
     }
   }
 
   configure_layer_as_background(layer);
 }
 
+void Undoable::layer_from_background()
+{
+  assert(sprite_get_background_layer(m_sprite) != NULL);
+  assert(m_sprite->layer != NULL);
+  assert(layer_is_image(m_sprite->layer));
+  assert(layer_is_readable(m_sprite->layer));
+  assert(layer_is_writable(m_sprite->layer));
+  assert(layer_is_background(m_sprite->layer));
+
+  if (is_enabled()) {
+    undo_data(m_sprite->undo,
+	      m_sprite->layer,
+	      &m_sprite->layer->flags,
+	      sizeof(m_sprite->layer->flags));
+
+    undo_data(m_sprite->undo,
+	      m_sprite->layer,
+	      &m_sprite->layer->name,
+	      LAYER_NAME_SIZE);
+  }
+
+  m_sprite->layer->flags &= ~(LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND);
+  layer_set_name(m_sprite->layer, "Layer 0");
+}
+
+void Undoable::flatten_layers(int bgcolor)
+{
+  JLink link, next;
+  Layer *background;
+  Image *cel_image;
+  Cel *cel;
+  int frame;
+
+  // create a temporary image
+  std::auto_ptr<Image> image_wrap(image_new(m_sprite->imgtype, m_sprite->w, m_sprite->h));
+  Image* image = image_wrap.get();
+
+  /* get the background layer from the sprite */
+  background = sprite_get_background_layer(m_sprite);
+  if (!background) {
+    /* if there aren't a background layer we must to create the background */
+    background = layer_new(m_sprite);
+
+    if (is_enabled())
+      undo_add_layer(m_sprite->undo, m_sprite->set, background);
+
+    layer_add_layer(m_sprite->set, background);
+
+    if (is_enabled())
+      undo_move_layer(m_sprite->undo, background);
+    
+    layer_configure_as_background(background);
+  }
+
+  /* copy all frames to the background */
+  for (frame=0; frame<m_sprite->frames; frame++) {
+    /* clear the image and render this frame */
+    image_clear(image, bgcolor);
+    layer_render(m_sprite->set, image, 0, 0, frame);
+
+    cel = layer_get_cel(background, frame);
+    if (cel) {
+      cel_image = m_sprite->stock->image[cel->image];
+      assert(cel_image != NULL);
+
+      /* we have to save the current state of `cel_image' in the undo */
+      if (is_enabled()) {
+	Dirty* dirty = dirty_new_from_differences(cel_image, image);
+	dirty_save_image_data(dirty);
+	undo_dirty(m_sprite->undo, dirty);
+      }
+    }
+    else {
+      /* if there aren't a cel in this frame in the background, we
+	 have to create a copy of the image for the new cel */
+      cel_image = image_new_copy(image);
+      /* TODO error handling: if (!cel_image) { ... } */
+
+      /* here we create the new cel (with the new image `cel_image') */
+      cel = cel_new(frame, stock_add_image(m_sprite->stock, cel_image));
+      /* TODO error handling: if (!cel) { ... } */
+
+      /* and finally we add the cel in the background */
+      layer_add_cel(background, cel);
+    }
+
+    image_copy(cel_image, image, 0, 0);
+  }
+
+  /* select the background */
+  if (m_sprite->layer != background) {
+    if (is_enabled())
+      undo_set_layer(m_sprite->undo, m_sprite);
+
+    sprite_set_layer(m_sprite, background);
+  }
+
+  /* remove old layers */
+  JI_LIST_FOR_EACH_SAFE(m_sprite->set->layers, link, next) {
+    if (link->data != background) {
+      Layer* old_layer = reinterpret_cast<Layer*>(link->data);
+
+      /* remove the layer */
+      if (is_enabled())
+	undo_remove_layer(m_sprite->undo, old_layer);
+
+      layer_remove_layer(m_sprite->set, old_layer);
+
+      /* destroy the layer */
+      layer_free_images(old_layer);
+      layer_free(old_layer);
+    }
+  }
+}
+
 void Undoable::configure_layer_as_background(Layer* layer)
 {
   if (is_enabled()) {
-    undo_data(sprite->undo, (GfxObj *)layer, &layer->flags, sizeof(layer->flags));
-    undo_data(sprite->undo, (GfxObj *)layer, &layer->name, LAYER_NAME_SIZE);
-    undo_move_layer(sprite->undo, layer);
+    undo_data(m_sprite->undo, (GfxObj *)layer, &layer->flags, sizeof(layer->flags));
+    undo_data(m_sprite->undo, (GfxObj *)layer, &layer->name, LAYER_NAME_SIZE);
+    undo_move_layer(m_sprite->undo, layer);
   }
 
   layer_configure_as_background(layer);
@@ -405,14 +597,14 @@ void Undoable::configure_layer_as_background(Layer* layer)
 void Undoable::new_frame()
 {
   // add a new cel to every layer
-  new_frame_for_layer(sprite->set,
-		      sprite->frame+1);
+  new_frame_for_layer(m_sprite->set,
+		      m_sprite->frame+1);
 
   // increment frames counter in the sprite
-  set_number_of_frames(sprite->frames+1);
+  set_number_of_frames(m_sprite->frames+1);
 
   // go to next frame (the new one)
-  set_current_frame(sprite->frame+1);
+  set_current_frame(m_sprite->frame+1);
 }
 
 void Undoable::new_frame_for_layer(Layer* layer, int frame)
@@ -424,7 +616,7 @@ void Undoable::new_frame_for_layer(Layer* layer, int frame)
 
     case GFXOBJ_LAYER_IMAGE:
       // displace all cels in '>=frame' to the next frame
-      for (int c=sprite->frames-1; c>=frame; --c) {
+      for (int c=m_sprite->frames-1; c>=frame; --c) {
 	Cel* cel = layer_get_cel(layer, c);
 	if (cel)
 	  set_cel_frame_position(cel, cel->frame+1);
@@ -449,20 +641,20 @@ void Undoable::remove_frame(int frame)
 
   // remove cels from this frame (and displace one position backward
   // all next frames)
-  remove_frame_of_layer(sprite->set, frame);
+  remove_frame_of_layer(m_sprite->set, frame);
 
   /* decrement frames counter in the sprite */
   if (is_enabled())
-    undo_set_frames(sprite->undo, sprite);
+    undo_set_frames(m_sprite->undo, m_sprite);
 
-  sprite_set_frames(sprite, sprite->frames-1);
+  sprite_set_frames(m_sprite, m_sprite->frames-1);
 
   /* move backward if we are outside the range of frames */
-  if (sprite->frame >= sprite->frames) {
+  if (m_sprite->frame >= m_sprite->frames) {
     if (is_enabled())
-      undo_int(sprite->undo, sprite, &sprite->frame);
+      undo_int(m_sprite->undo, m_sprite, &m_sprite->frame);
 
-    sprite_set_frame(sprite, sprite->frames-1);
+    sprite_set_frame(m_sprite, m_sprite->frames-1);
   }
 }
 
@@ -477,7 +669,7 @@ void Undoable::remove_frame_of_layer(Layer* layer, int frame)
       if (Cel* cel = layer_get_cel(layer, frame))
 	remove_cel(layer, cel);
 
-      for (++frame; frame<sprite->frames; ++frame)
+      for (++frame; frame<m_sprite->frames; ++frame)
 	if (Cel* cel = layer_get_cel(layer, frame))
 	  set_cel_frame_position(cel, cel->frame-1);
       break;
@@ -502,7 +694,7 @@ void Undoable::copy_previous_frame(Layer* layer, int frame)
 
   // create a copy of the previous cel
   Cel* src_cel = layer_get_cel(layer, frame-1);
-  Image* src_image = src_cel ? stock_get_image(sprite->stock,
+  Image* src_image = src_cel ? stock_get_image(m_sprite->stock,
 					       src_cel->image):
 			       NULL;
 
@@ -532,7 +724,7 @@ void Undoable::add_cel(Layer* layer, Cel* cel)
   assert(layer_is_image(layer));
 
   if (is_enabled())
-    undo_add_cel(sprite->undo, layer, cel);
+    undo_add_cel(m_sprite->undo, layer, cel);
 
   layer_add_cel(layer, cel);
 }
@@ -546,7 +738,7 @@ void Undoable::remove_cel(Layer* layer, Cel* cel)
   // find if the image that use the cel to remove, is used by
   // another cels
   bool used = false;
-  for (int frame=0; frame<sprite->frames; ++frame) {
+  for (int frame=0; frame<m_sprite->frames; ++frame) {
     Cel* it = layer_get_cel(layer, frame);
     if (it && it != cel && it->image == cel->image) {
       used = true;
@@ -560,7 +752,7 @@ void Undoable::remove_cel(Layer* layer, Cel* cel)
     remove_image_from_stock(cel->image);
 
   if (is_enabled())
-    undo_remove_cel(sprite->undo, layer, cel);
+    undo_remove_cel(m_sprite->undo, layer, cel);
 
   // remove the cel from the layer
   layer_remove_cel(layer, cel);
@@ -575,7 +767,7 @@ void Undoable::set_cel_frame_position(Cel* cel, int frame)
   assert(frame >= 0);
 
   if (is_enabled())
-    undo_int(sprite->undo, cel, &cel->frame);
+    undo_int(m_sprite->undo, cel, &cel->frame);
 
   cel->frame = frame;
 }
@@ -585,8 +777,8 @@ void Undoable::set_cel_position(Cel* cel, int x, int y)
   assert(cel);
 
   if (is_enabled()) {
-    undo_int(sprite->undo, cel, &cel->x);
-    undo_int(sprite->undo, cel, &cel->y);
+    undo_int(m_sprite->undo, cel, &cel->x);
+    undo_int(m_sprite->undo, cel, &cel->y);
   }
 
   cel->x = x;
@@ -596,53 +788,53 @@ void Undoable::set_cel_position(Cel* cel, int x, int y)
 void Undoable::set_frame_duration(int frame, int msecs)
 {
   if (is_enabled())
-    undo_set_frlen(sprite->undo, sprite, frame);
+    undo_set_frlen(m_sprite->undo, m_sprite, frame);
 
-  sprite_set_frlen(sprite, frame, msecs);
+  sprite_set_frlen(m_sprite, frame, msecs);
 }
 
 void Undoable::set_constant_frame_rate(int msecs)
 {
   if (is_enabled()) {
-    for (int fr=0; fr<sprite->frames; ++fr)
-      undo_set_frlen(sprite->undo, sprite, fr);
+    for (int fr=0; fr<m_sprite->frames; ++fr)
+      undo_set_frlen(m_sprite->undo, m_sprite, fr);
   }
 
-  sprite_set_speed(sprite, msecs);
+  sprite_set_speed(m_sprite, msecs);
 }
 
 void Undoable::move_frame_before(int frame, int before_frame)
 {
   if (frame != before_frame &&
       frame >= 0 &&
-      frame < sprite->frames &&
+      frame < m_sprite->frames &&
       before_frame >= 0 &&
-      before_frame < sprite->frames) {
+      before_frame < m_sprite->frames) {
     // change the frame-lengths...
 
-    int frlen_aux = sprite->frlens[frame];
+    int frlen_aux = m_sprite->frlens[frame];
 
     // moving the frame to the future
     if (frame < before_frame) {
-      frlen_aux = sprite->frlens[frame];
+      frlen_aux = m_sprite->frlens[frame];
 
       for (int c=frame; c<before_frame-1; c++)
-	set_frame_duration(c, sprite->frlens[c+1]);
+	set_frame_duration(c, m_sprite->frlens[c+1]);
 
       set_frame_duration(before_frame-1, frlen_aux);
     }
     // moving the frame to the past
     else if (before_frame < frame) {
-      frlen_aux = sprite->frlens[frame];
+      frlen_aux = m_sprite->frlens[frame];
 
       for (int c=frame; c>before_frame; c--)
-	set_frame_duration(c, sprite->frlens[c-1]);
+	set_frame_duration(c, m_sprite->frlens[c-1]);
 
       set_frame_duration(before_frame, frlen_aux);
     }
 
     // change the cels of position...
-    move_frame_before_layer(sprite->set, frame, before_frame);
+    move_frame_before_layer(m_sprite->set, frame, before_frame);
   }
 }
 
@@ -697,15 +889,15 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
 
 Cel* Undoable::get_current_cel()
 {
-  if (sprite->layer && layer_is_image(sprite->layer))
-    return layer_get_cel(sprite->layer, sprite->frame);
+  if (m_sprite->layer && layer_is_image(m_sprite->layer))
+    return layer_get_cel(m_sprite->layer, m_sprite->frame);
   else
     return NULL;
 }
 
 void Undoable::crop_cel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 {
-  Image* cel_image = stock_get_image(sprite->stock, cel->image);
+  Image* cel_image = stock_get_image(m_sprite->stock, cel->image);
   assert(cel_image);
     
   // create the new image through a crop
@@ -720,8 +912,8 @@ void Undoable::crop_cel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 
 Image* Undoable::get_cel_image(Cel* cel)
 {
-  if (cel && cel->image >= 0 && cel->image < sprite->stock->nimage)
-    return sprite->stock->image[cel->image];
+  if (cel && cel->image >= 0 && cel->image < m_sprite->stock->nimage)
+    return m_sprite->stock->image[cel->image];
   else
     return NULL;
 }
@@ -739,11 +931,11 @@ void Undoable::clear_mask(int bgcolor)
 
   // if the mask is empty then we have to clear the entire image
   // in the cel
-  if (mask_is_empty(sprite->mask)) {
+  if (mask_is_empty(m_sprite->mask)) {
     // if the layer is the background then we clear the image
-    if (layer_is_background(sprite->layer)) {
+    if (layer_is_background(m_sprite->layer)) {
       if (is_enabled())
-	undo_image(sprite->undo, image, 0, 0, image->w, image->h);
+	undo_image(m_sprite->undo, image, 0, 0, image->w, image->h);
 
       // clear all
       image_clear(image, bgcolor);
@@ -751,32 +943,32 @@ void Undoable::clear_mask(int bgcolor)
     // if the layer is transparent we can remove the cel (and its
     // associated image)
     else {
-      remove_cel(sprite->layer, cel);
+      remove_cel(m_sprite->layer, cel);
     }
   }
   else {
     int u, v, putx, puty;
-    int x1 = MAX(0, sprite->mask->x);
-    int y1 = MAX(0, sprite->mask->y);
-    int x2 = MIN(image->w-1, sprite->mask->x+sprite->mask->w-1);
-    int y2 = MIN(image->h-1, sprite->mask->y+sprite->mask->h-1);
+    int x1 = MAX(0, m_sprite->mask->x);
+    int y1 = MAX(0, m_sprite->mask->y);
+    int x2 = MIN(image->w-1, m_sprite->mask->x+m_sprite->mask->w-1);
+    int y2 = MIN(image->h-1, m_sprite->mask->y+m_sprite->mask->h-1);
 
     // do nothing
     if (x1 > x2 || y1 > y2)
       return;
 
     if (is_enabled())
-      undo_image(sprite->undo, image, x1, y1, x2-x1+1, y2-y1+1);
+      undo_image(m_sprite->undo, image, x1, y1, x2-x1+1, y2-y1+1);
 
     // clear the masked zones
-    for (v=0; v<sprite->mask->h; v++) {
+    for (v=0; v<m_sprite->mask->h; v++) {
       div_t d = div(0, 8);
-      ase_uint8* address = ((ase_uint8 **)sprite->mask->bitmap->line)[v]+d.quot;
+      ase_uint8* address = ((ase_uint8 **)m_sprite->mask->bitmap->line)[v]+d.quot;
 
-      for (u=0; u<sprite->mask->w; u++) {
+      for (u=0; u<m_sprite->mask->w; u++) {
 	if ((*address & (1<<d.rem))) {
-	  putx = u + sprite->mask->x - cel->x;
-	  puty = v + sprite->mask->y - cel->y;
+	  putx = u + m_sprite->mask->x - cel->x;
+	  puty = v + m_sprite->mask->y - cel->y;
 	  image_putpixel(image, putx, puty, bgcolor);
 	}
 
@@ -788,25 +980,24 @@ void Undoable::clear_mask(int bgcolor)
 
 void Undoable::copy_to_current_mask(Mask* mask)
 {
-  assert(sprite->mask);
+  assert(m_sprite->mask);
   assert(mask);
 
   if (is_enabled())
-    undo_set_mask(sprite->undo, sprite);
+    undo_set_mask(m_sprite->undo, m_sprite);
 
-  mask_copy(sprite->mask, mask);
+  mask_copy(m_sprite->mask, mask);
 }
 
 void Undoable::set_mask_position(int x, int y)
 {
-  assert(sprite->mask);
+  assert(m_sprite->mask);
 
   if (is_enabled()) {
-    undo_int(sprite->undo, sprite->mask, &sprite->mask->x);
-    undo_int(sprite->undo, sprite->mask, &sprite->mask->y);
+    undo_int(m_sprite->undo, m_sprite->mask, &m_sprite->mask->x);
+    undo_int(m_sprite->undo, m_sprite->mask, &m_sprite->mask->y);
   }
 
-  sprite->mask->x = x;
-  sprite->mask->y = y;
+  m_sprite->mask->x = x;
+  m_sprite->mask->y = y;
 }
-

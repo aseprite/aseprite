@@ -37,12 +37,10 @@ static int console_counter = 0;
 static bool console_locked;
 static bool want_close_flag = FALSE;
 
-void console_open()
+Console::Console()
 {
   console_counter++;
 
-  /* TODO verify if the ji_screen works */
-/*   if (!screen || */
   if (!ji_screen ||
       !is_interactive() ||
       wid_console ||
@@ -51,7 +49,7 @@ void console_open()
   else {
     JWidget window, grid, view, textbox, button;
 
-    window = jwindow_new(_("Processing..."));
+    window = jwindow_new(_("Errors Console"));
     if (!window)
       return;
 
@@ -87,7 +85,7 @@ void console_open()
   }
 }
 
-void console_close()
+Console::~Console()
 {
   console_counter--;
 
@@ -105,7 +103,7 @@ void console_close()
   }
 }
 
-void console_printf(const char *format, ...)
+void Console::printf(const char *format, ...)
 {
   char buf[1024];
   va_list ap;
@@ -154,6 +152,9 @@ void console_printf(const char *format, ...)
   else {
     fputs(buf, stdout);
     fflush(stdout);
+
+    if (ji_screen)
+      jalert("Error<<%s||OK", buf);
   }
 }
 

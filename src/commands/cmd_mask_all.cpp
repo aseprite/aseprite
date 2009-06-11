@@ -27,13 +27,13 @@
 
 static bool cmd_mask_all_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return sprite != NULL;
 }
   
 static void cmd_mask_all_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   /* undo */
   if (undo_is_enabled(sprite->undo)) {

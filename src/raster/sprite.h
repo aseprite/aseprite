@@ -78,9 +78,14 @@ private:
   JMutex m_mutex;
 
   /**
-   * Greater than zero when a thread is reading/writing the sprite.
+   * True if some thread is writing the sprite.
    */
-  int m_locked;
+  bool m_write_lock;
+
+  /**
+   * Greater than zero when one or more threads are reading the sprite.
+   */
+  int m_read_locks;
 
 public:
 
@@ -92,7 +97,9 @@ public:
   Sprite(int imgtype, int w, int h);
   virtual ~Sprite();
 
-  bool lock();
+  bool lock(bool write);
+  bool lock_to_write();
+  void unlock_to_read();
   void unlock();
 };
 
@@ -110,6 +117,7 @@ bool sprite_need_alpha(const Sprite* sprite);
 Palette* sprite_get_palette(const Sprite* sprite, int frame);
 void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate);
 void sprite_reset_palettes(Sprite* sprite);
+void sprite_delete_palette(Sprite* sprite, Palette* pal);
 
 void sprite_set_filename(Sprite* sprite, const char* filename);
 void sprite_set_format_options(Sprite* sprite, FormatOptions* format_options);
@@ -122,7 +130,6 @@ void sprite_set_path(Sprite* sprite, const Path* path);
 void sprite_set_mask(Sprite* sprite, const Mask* mask);
 void sprite_set_layer(Sprite* sprite, Layer* layer);
 void sprite_set_frame(Sprite* sprite, int frame);
-void sprite_set_imgtype(Sprite* sprite, int imgtype, int dithering_method);
 
 Layer* sprite_get_background_layer(const Sprite* sprite);
 

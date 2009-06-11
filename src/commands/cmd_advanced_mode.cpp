@@ -52,18 +52,13 @@ static void cmd_advanced_mode_execute(const char *argument)
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", TRUE)) {
     Command *cmd_advanced_mode = command_get_by_name(CMD_ADVANCED_MODE);
-    JWidget window, warning_label, donot_show;
     char warning[1024];
     char key[1024];
     char buf[1024];
 
-    /* load the window widget */
-    window = load_widget("advanced.jid", "advanced_mode_warning");
-    if (!window)
-      return;
-
-    warning_label = jwidget_find_name(window, "warning_label");
-    donot_show = jwidget_find_name(window, "donot_show");
+    JWidgetPtr window = load_widget("advanced.jid", "advanced_mode_warning");
+    JWidget warning_label = find_widget(window, "warning_label");
+    JWidget donot_show = find_widget(window, "donot_show");
 
     strcpy(warning, _("You can back pressing the \"%s\" key."));
     jaccel_to_string(cmd_advanced_mode->accel, key);
@@ -75,8 +70,6 @@ static void cmd_advanced_mode_execute(const char *argument)
     
     set_config_bool("AdvancedMode", "Warning",
 		    !jwidget_is_selected(donot_show));
-
-    jwidget_free(window);
   }
 }
 

@@ -26,38 +26,33 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "util/functions.h"
 
 static bool cmd_new_layer_set_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_new_layer_set_execute(const char *argument)
 {
-  JWidget window;
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   // load the window widget
-  window = load_widget("newlay.jid", "new_layer_set");
-  if (!window)
-    return;
+  JWidgetPtr window = load_widget("newlay.jid", "new_layer_set");
 
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
     const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
-    Layer *layer = NewLayerSet(sprite);
-    if (!layer) {
-      jalert(_("Error<<Not enough memory||&Close"));
-      return;
-    }
+    Layer *layer = layer_set_new(sprite);
+
     layer_set_name(layer, name);
+    layer_add_layer(sprite->set, layer);
+    sprite_set_layer(sprite, layer);
+
     update_screen_for_sprite(sprite);
   }
-
-  jwidget_free(window);
 }
 
 Command cmd_new_layer_set = {

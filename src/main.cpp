@@ -28,18 +28,33 @@ const char ase_ident[] =
     "$ASE: " VERSION " " COPYRIGHT " $\n"
     "$Website: " WEBSITE " $\n";
 
-/***********************************************************************
-			     Main Routine
- ***********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// Basic classes for some RAII
+
+class Allegro {
+public:
+  Allegro() { allegro_init(); }
+  ~Allegro() { allegro_exit(); }
+};
+
+class MemLeaks {
+public:
+#if defined MEMLEAK
+  MemLeaks() { jmemleak_init(); }
+  ~MemLeaks() { jmemleak_exit(); }
+#endif
+};
+
+//////////////////////////////////////////////////////////////////////
+//			       Main Routine
+//////////////////////////////////////////////////////////////////////
 
 int main(int argc, char *argv[])
 {
-  allegro_init();
-  set_uformat(U_ASCII);
+  Allegro allegro;
+  MemLeaks memleaks;
 
-#if defined MEMLEAK
-  jmemleak_init();
-#endif
+  set_uformat(U_ASCII);
 
   // initialises the application
   if (!app_init(argc, argv))
@@ -47,12 +62,6 @@ int main(int argc, char *argv[])
 
   app_loop();
   app_exit();
-
-#if defined  MEMLEAK
-  jmemleak_exit();
-#endif
-
-  allegro_exit();
   return 0;
 }
 

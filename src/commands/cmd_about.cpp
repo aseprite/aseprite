@@ -25,16 +25,18 @@
 #include "commands/commands.h"
 #include "core/core.h"
 #include "core/dirs.h"
+#include "modules/gui.h"
 
 static char *read_authors_txt(const char *filename);
 
 static void cmd_about_execute(const char *argument)
 {
-  JWidget window, box1, label1, label2, separator1;
+  JWidget box1, label1, label2, separator1;
   JWidget textbox, view, separator2;
   JWidget label3, label4, box2, box3, box4, button1;
   char *authors_txt = read_authors_txt("AUTHORS.txt");
 
+  JWidgetPtr window;
   if (authors_txt)
     window = jwindow_new_desktop();
   else
@@ -86,7 +88,6 @@ static void cmd_about_execute(const char *argument)
 		     button1->border_width.b);
 
   jwindow_open_fg(window);
-  jwidget_free(window);
 }
 
 static char *read_authors_txt(const char *filename)

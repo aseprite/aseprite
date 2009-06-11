@@ -64,7 +64,7 @@ void destroy_thumbnails()
   }
 }
 
-BITMAP* generate_thumbnail(const Layer *layer, const Cel *cel, const Sprite *sprite)
+BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *sprite)
 {
   Thumbnail* thumbnail;
   BITMAP* bmp;

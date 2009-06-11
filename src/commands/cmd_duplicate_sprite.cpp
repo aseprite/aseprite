@@ -32,20 +32,18 @@
 
 static bool cmd_duplicate_sprite_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite;
 }
 
 static void cmd_duplicate_sprite_execute(const char *argument)
 {
-  JWidget window, src_name, dst_name, flatten;
-  CurrentSprite sprite;
+  JWidget src_name, dst_name, flatten;
+  const CurrentSpriteReader sprite;
   char buf[1024];
 
   /* load the window widget */
-  window = load_widget("dupspr.jid", "duplicate_sprite");
-  if (!window)
-    return;
+  JWidgetPtr window = load_widget("dupspr.jid", "duplicate_sprite");
 
   src_name = jwidget_find_name(window, "src_name");
   dst_name = jwidget_find_name(window, "dst_name");
@@ -83,8 +81,6 @@ static void cmd_duplicate_sprite_execute(const char *argument)
       context->show_sprite(sprite_copy);
     }
   }
-
-  jwidget_free(window);
 }
 
 Command cmd_duplicate_sprite = {

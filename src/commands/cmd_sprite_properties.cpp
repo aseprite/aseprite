@@ -32,36 +32,31 @@
 #include "widgets/colbut.h"
 
 /* TODO remove this */
-void dialogs_frame_length(int sprite_frpos);
+void dialogs_frame_length(const SpriteReader& sprite, int sprite_frpos);
 
 static bool cmd_sprite_properties_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_sprite_properties_execute(const char *argument)
 {
-  JWidget window, killer, name, type, size, frames, speed, ok;
-  CurrentSprite sprite;
+  JWidget killer, name, type, size, frames, speed, ok;
+  const CurrentSpriteReader sprite;
   jstring imgtype_text;
   char buf[256];
 
   /* load the window widget */
-  window = load_widget("sprprop.jid", "sprite_properties");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "name", &name,
-		   "type", &type,
-		   "size", &size,
-		   "frames", &frames,
-		   "speed", &speed,
-		   "ok", &ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("sprprop.jid", "sprite_properties");
+  get_widgets(window,
+	      "name", &name,
+	      "type", &type,
+	      "size", &size,
+	      "frames", &frames,
+	      "speed", &speed,
+	      "ok", &ok, NULL);
 
   /* update widgets values */
   switch (sprite->imgtype) {
@@ -110,13 +105,11 @@ static void cmd_sprite_properties_execute(const char *argument)
     if (killer == ok)
       break;
     else if (killer == speed) {
-      dialogs_frame_length(-1);
+      dialogs_frame_length(sprite, -1);
     }
     else
       break;
   }
-
-  jwidget_free(window);
 }
 
 Command cmd_sprite_properties = {

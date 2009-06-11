@@ -88,7 +88,6 @@ void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);
 
 void image_to_allegro(const Image* image, BITMAP* bmp, int x, int y);
 
-void image_convert(const Image* src, Image* dst);
 void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* palette, RGB_MAP* rgb_map);
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);

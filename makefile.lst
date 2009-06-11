@@ -190,14 +190,12 @@ COMMON_SOURCES =					\
 	src/raster/sprite.cpp				\
 	src/raster/stock.cpp				\
 	src/raster/undo.cpp				\
-	src/raster/undoable.cpp				\
 	src/util/autocrop.cpp				\
 	src/util/boundary.cpp				\
 	src/util/celmove.cpp				\
 	src/util/clipboard.cpp				\
 	src/util/col_file.cpp				\
 	src/util/filetoks.cpp				\
-	src/util/functions.cpp				\
 	src/util/hash.cpp				\
 	src/util/misc.cpp				\
 	src/util/msk_file.cpp				\
@@ -235,7 +233,10 @@ COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
 	        $(addsuffix $(OBJ),				\
 	          $(notdir $(basename $(COMMON_SOURCES)))))
 
-ASE_SOURCES = src/main.cpp $(COMMON_SOURCES)
+ASE_SOURCES = \
+	src/main.cpp						\
+	src/undoable.cpp					\
+	$(COMMON_SOURCES)
 
 ASE_OBJS = $(addprefix $(OBJ_DIR)/,				\
 	     $(addsuffix $(OBJ),				\

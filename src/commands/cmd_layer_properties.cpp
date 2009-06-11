@@ -29,18 +29,20 @@
 
 static bool cmd_layer_properties_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite && sprite->layer;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL &&
+    sprite->layer != NULL;
 }
 
 static void cmd_layer_properties_execute(const char *argument)
 {
-  JWidget window, box1, box2, box3, label_name, entry_name;
+  JWidget box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   Layer *layer = sprite->layer;
 
-  window = jwindow_new(_("Layer Properties"));
+  JWidgetPtr window = jwindow_new(_("Layer Properties"));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
@@ -104,8 +106,6 @@ static void cmd_layer_properties_execute(const char *argument)
 
     update_screen_for_sprite(sprite);
   }
-
-  jwidget_free(window);
 }
 
 Command cmd_layer_properties = {

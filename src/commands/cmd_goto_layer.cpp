@@ -34,13 +34,14 @@
 
 static bool cmd_goto_previous_layer_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_goto_previous_layer_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   int i = sprite_layer2index(sprite, sprite->layer);
   
   if (i > 0)
@@ -64,13 +65,14 @@ static void cmd_goto_previous_layer_execute(const char *argument)
 
 static bool cmd_goto_next_layer_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_goto_next_layer_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   int i = sprite_layer2index(sprite, sprite->layer);
 
   if (i < sprite_count_layers(sprite)-1)

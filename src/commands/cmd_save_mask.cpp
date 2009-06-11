@@ -31,7 +31,7 @@
 
 static bool cmd_save_mask_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   if (!sprite)
     return false;
   else
@@ -41,7 +41,7 @@ static bool cmd_save_mask_enabled(const char *argument)
 
 static void cmd_save_mask_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   jstring filename = "default.msk";
   int ret;
 

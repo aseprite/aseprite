@@ -477,9 +477,14 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       /* time to refresh all the editors which have the current
 	 sprite selected? */
       if (msg->timer.timer_id == colorbar->refresh_timer_id) {
-	CurrentSprite sprite;
-	if (sprite != NULL)
-	  update_editors_with_sprite(sprite);
+	try {
+	  const CurrentSpriteReader sprite;
+	  if (sprite != NULL)
+	    update_editors_with_sprite(sprite);
+	}
+	catch (locked_sprite_exception& e) {
+	  // do nothing
+	}
 
 	jmanager_stop_timer(colorbar->refresh_timer_id);
       }
@@ -579,7 +584,7 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
       if (cmd->accel != NULL) {
 	ustrcat(buf, _(" - "));
 	jaccel_to_string(cmd->accel, buf+ustrsize(buf));
-	ustrcat(buf, _(" key switchs colors"));
+	ustrcat(buf, _(" key switches colors"));
       }
       break;
     }
@@ -650,44 +655,50 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
-    case JM_CLOSE: {
-      // change the sprite palette
-      CurrentSprite sprite;
+    case JM_CLOSE:
+      try {
+	// change the sprite palette
+	const CurrentSpriteReader sprite;
+	if (sprite != NULL) {
+	  Palette *pal = sprite_get_palette(sprite, sprite->frame);
+	  int from, to;
 
-      if (sprite != NULL) {
-	Palette *pal = sprite_get_palette(sprite, sprite->frame);
-	int from, to;
+	  if (palette_count_diff(pal, get_current_palette(), &from, &to) > 0) {
+	    SpriteWriter sprite_writer(sprite);
+	    /* TODO add undo support */
+	    /* 	  if (undo_is_enabled(sprite->undo)) */
+	    /* 	    undo_data(sprite->undo, (GfxObj *)sprite, pal, ); */
 
-	if (palette_count_diff(pal, get_current_palette(), &from, &to) > 0) {
-	  /* TODO add undo support */
-/* 	  if (undo_is_enabled(sprite->undo)) */
-/* 	    undo_data(sprite->undo, (GfxObj *)sprite, pal, ); */
+	    pal = get_current_palette();
+	    pal->frame = sprite_writer->frame; /* TODO warning, modifing
+						  the current palette in
+						  this point... */
 
-	  pal = get_current_palette();
-	  pal->frame = sprite->frame; /* TODO warning, modifing
-					 the current palette in
-					 this point... */
+	    sprite_set_palette(sprite_writer, pal, FALSE);
+	    set_current_palette(pal, TRUE);
+	  }
 
-	  sprite_set_palette(sprite, pal, FALSE);
-	  set_current_palette(pal, TRUE);
+	  update_editors_with_sprite(sprite);
 	}
+	/* change the system palette */
+	else
+	  set_default_palette(get_current_palette());
 
-	update_editors_with_sprite(sprite);
+	/* set the 'hot_editing' to NONE */
+	{
+	  JWidget colorbar_widget = (JWidget)widget->user_data[0];
+	  ColorBar *colorbar = colorbar_data(colorbar_widget);
+
+	  colorbar->hot_editing = HOTCOLOR_NONE;
+	  jwidget_dirty(colorbar_widget);
+	}
       }
-      /* change the system palette */
-      else
-	set_default_palette(get_current_palette());
-
-      /* set the 'hot_editing' to NONE */
-      {
-	JWidget colorbar_widget = (JWidget)widget->user_data[0];
-	ColorBar *colorbar = colorbar_data(colorbar_widget);
-
-	colorbar->hot_editing = HOTCOLOR_NONE;
-	jwidget_dirty(colorbar_widget);
+      catch (ase_exception& e) {
+	Console console;
+	console.printf("Error updating sprite palette.\n\n");
+	e.show();
       }
       break;
-    }
 
     case JM_SIGNAL:
       if (msg->signal.num == SIGNAL_COLORSELECTOR_COLOR_CHANGED) {
@@ -724,21 +735,28 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 	   different from the current sprite's palette, then we have
 	   to start the "refresh_timer" to refresh all the editors
 	   with that sprite */
-	CurrentSprite sprite;
-	if (sprite != NULL && bitmap_color_depth(screen) != 8) {
-	  Palette *pal = sprite_get_palette(sprite, sprite->frame);
+	try {
+	  CurrentSpriteWriter sprite;
+	  if (sprite != NULL && bitmap_color_depth(screen) != 8) {
+	    Palette *pal = sprite_get_palette(sprite, sprite->frame);
 	  
-	  if (palette_count_diff(pal, get_current_palette(), NULL, NULL) > 0) {
-	    pal = get_current_palette();
-	    pal->frame = sprite->frame;	/* TODO warning, modifing
-					   the current palette in
-					   this point... */
+	    if (palette_count_diff(pal, get_current_palette(), NULL, NULL) > 0) {
+	      pal = get_current_palette();
+	      pal->frame = sprite->frame;	/* TODO warning, modifing
+						   the current palette in
+						   this point... */
 
-	    sprite_set_palette(sprite, pal, FALSE);
-	    set_current_palette(pal, TRUE);
+	      sprite_set_palette(sprite, pal, FALSE);
+	      set_current_palette(pal, TRUE);
 
-	    jmanager_start_timer(colorbar->refresh_timer_id);
+	      jmanager_start_timer(colorbar->refresh_timer_id);
+	    }
 	  }
+	}
+	catch (ase_exception& e) {
+	  Console console;
+	  console.printf("Error updating sprite palette.\n\n");
+	  e.show();
 	}
 
 	jwidget_dirty(colorbar_widget);

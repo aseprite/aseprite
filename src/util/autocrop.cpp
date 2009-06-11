@@ -22,7 +22,6 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/autocrop.h"
-#include "util/functions.h"
 
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 		     Image *image, int refpixel)

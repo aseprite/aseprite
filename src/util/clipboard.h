@@ -22,15 +22,17 @@
 #include "jinete/jbase.h"
 
 class Image;
+class SpriteReader;
+class SpriteWriter;
 
 namespace clipboard {
 
-bool can_paste();
+  bool can_paste();
 
-void cut(Sprite* sprite);
-void copy(Sprite* sprite);
-void copy_image(Image* image, Palette* palette);
-void paste(Sprite* sprite);
+  void cut(SpriteWriter& sprite);
+  void copy(const SpriteReader& sprite);
+  void copy_image(Image* image, Palette* palette);
+  void paste(SpriteWriter& sprite);
 
 } // namespace clipboard
 

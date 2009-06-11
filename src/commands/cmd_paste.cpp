@@ -26,14 +26,15 @@
 
 static bool cmd_paste_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-
-  return (sprite && clipboard::can_paste());
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL &&
+    clipboard::can_paste();
 }
 
 static void cmd_paste_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   if (undo_is_enabled(sprite->undo))
     undo_set_label(sprite->undo, "Paste");

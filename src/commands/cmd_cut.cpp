@@ -30,7 +30,7 @@
 
 static bool cmd_cut_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   if ((!sprite) ||
       (!sprite->layer) ||
       (!layer_is_readable(sprite->layer)) ||
@@ -44,7 +44,7 @@ static bool cmd_cut_enabled(const char *argument)
 
 static void cmd_cut_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   clipboard::cut(sprite);
 }
 

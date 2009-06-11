@@ -45,7 +45,7 @@ static bool slider_mouse_hook(JWidget widget, void *data);
 /* shows option dialog */
 void dialogs_options()
 {
-  JWidget window, check_smooth, check_dither;
+  JWidget check_smooth, check_dither;
   JWidget button_ok;
   JWidget move_click2, draw_click2, killer;
   JWidget undo_size_limit;
@@ -60,23 +60,17 @@ void dialogs_options()
   old_y = y;
 
   /* load the window widget */
-  window = load_widget("options.jid", "options");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "mouse_x", &slider_x,
-		   "mouse_y", &slider_y,
-		   "lock_axis", &check_lockmouse,
-		   "smooth", &check_smooth,
-		   "dither", &check_dither,
-		   "move_click2", &move_click2,
-		   "draw_click2", &draw_click2,
-		   "undo_size_limit", &undo_size_limit,
-		   "button_ok", &button_ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("options.jid", "options");
+  get_widgets(window,
+	      "mouse_x", &slider_x,
+	      "mouse_y", &slider_y,
+	      "lock_axis", &check_lockmouse,
+	      "smooth", &check_smooth,
+	      "dither", &check_dither,
+	      "move_click2", &move_click2,
+	      "draw_click2", &draw_click2,
+	      "undo_size_limit", &undo_size_limit,
+	      "button_ok", &button_ok, NULL);
 
   jslider_set_value(slider_x, x);
   jslider_set_value(slider_y, y);
@@ -129,8 +123,6 @@ void dialogs_options()
 
     set_mouse_speed(8-old_x, 8-old_y);
   }
-
-  jwidget_free(window);
 }
 
 static bool slider_mouse_hook(JWidget widget, void *data)

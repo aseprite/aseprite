@@ -34,9 +34,8 @@
 #include "modules/rootmenu.h"
 #include "modules/sprites.h"
 #include "raster/raster.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 #include "util/celmove.h"
-#include "util/functions.h"
 #include "util/thmbnail.h"
 
 /*
@@ -98,9 +97,8 @@ enum {
 
 typedef struct AniEditor
 {
-  Sprite* sprite;
+  const Sprite* sprite;
   int state;
-  Layer* selected_layer;
   Layer** layers;
   int nlayers;
   int scroll_x;
@@ -122,7 +120,7 @@ typedef struct AniEditor
 
 static JWidget current_anieditor = NULL;
 
-static JWidget anieditor_new(Sprite* sprite);
+static JWidget anieditor_new(const Sprite* sprite);
 static int anieditor_type();
 static AniEditor* anieditor_data(JWidget widget);
 static bool anieditor_msg_proc(JWidget widget, JMessage msg);
@@ -163,7 +161,7 @@ bool animation_editor_is_movingcel()
  */
 void switch_between_animation_and_sprite_editor()
 {
-  CurrentSprite sprite;
+  const Sprite* sprite = UIContext::instance()->get_current_sprite();
   JWidget window;
   JWidget anieditor;
   int layer;
@@ -198,10 +196,10 @@ void switch_between_animation_and_sprite_editor()
    The Animation Editor
  *********************************************************************/
 
-static JWidget anieditor_new(Sprite* sprite)
+static JWidget anieditor_new(const Sprite* sprite)
 {
   JWidget widget = jwidget_new(anieditor_type());
-  AniEditor* anieditor = jnew0(AniEditor, 1);
+  AniEditor* anieditor = new AniEditor;
 
   anieditor->sprite = sprite;
   anieditor->state = STATE_STANDBY;
@@ -245,7 +243,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
     case JM_DESTROY:
       if (anieditor->layers)
 	jfree(anieditor->layers);
-      jfree(anieditor);
+      delete anieditor;
       break;
 
     case JM_REQSIZE:
@@ -325,18 +323,26 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  /* do nothing */
 	  break;
 	case PART_HEADER_FRAME:
-	  anieditor->sprite->frame = anieditor->clk_frame;
+	  {
+	    const SpriteReader sprite((Sprite*)anieditor->sprite);
+	    SpriteWriter sprite_writer(sprite);
+	    sprite_writer->frame = anieditor->clk_frame;
+	  }
 	  jwidget_dirty(widget); /* TODO replace this by redrawing old current frame and new current frame */
 	  jwidget_hard_capture_mouse(widget);
 	  anieditor->state = STATE_MOVING_FRAME;
 	  break;
 	case PART_LAYER: {
-	  int old_layer = anieditor_get_layer_index(widget, anieditor->sprite->layer);
+	  const SpriteReader sprite((Sprite*)anieditor->sprite);
+	  int old_layer = anieditor_get_layer_index(widget, sprite->layer);
 	  int frame = anieditor->sprite->frame;
 
 	  /* did the user select another layer? */
 	  if (old_layer != anieditor->clk_layer) {
-	    anieditor->sprite->layer = anieditor->layers[anieditor->clk_layer];
+	    {
+	      SpriteWriter sprite_writer(sprite);
+	      sprite_writer->layer = anieditor->layers[anieditor->clk_layer];
+	    }
 
 	    jmouse_hide();
 	    /* redraw the old & new selected cel */
@@ -348,9 +354,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  }
 
 	  /* change the scroll to show the new selected cel */
-	  anieditor_show_cel(widget,
-			     anieditor->clk_layer,
-			     anieditor->sprite->frame);
+	  anieditor_show_cel(widget, anieditor->clk_layer, sprite->frame);
 	  jwidget_hard_capture_mouse(widget);
 	  anieditor->state = STATE_MOVING_LAYER;
 	  break;
@@ -362,14 +366,18 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  jwidget_hard_capture_mouse(widget);
 	  break;
 	case PART_CEL: {
-	  int old_layer = anieditor_get_layer_index(widget, anieditor->sprite->layer);
-	  int old_frame = anieditor->sprite->frame;
+	  const SpriteReader sprite((Sprite*)anieditor->sprite);
+	  int old_layer = anieditor_get_layer_index(widget, sprite->layer);
+	  int old_frame = sprite->frame;
 
 	  /* select the new clicked-part */
 	  if (old_layer != anieditor->clk_layer ||
 	      old_frame != anieditor->clk_frame) {
-	    anieditor->sprite->layer = anieditor->layers[anieditor->clk_layer];
-	    anieditor->sprite->frame = anieditor->clk_frame;
+	    {
+	      SpriteWriter sprite_writer(sprite);
+	      sprite_writer->layer = anieditor->layers[anieditor->clk_layer];
+	      sprite_writer->frame = anieditor->clk_frame;
+	    }
 
 	    jmouse_hide();
 	    /* redraw the old & new selected layer */
@@ -385,9 +393,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  }
 
 	  /* change the scroll to show the new selected cel */
-	  anieditor_show_cel(widget,
-			     anieditor->clk_layer,
-			     anieditor->sprite->frame);
+	  anieditor_show_cel(widget, anieditor->clk_layer, sprite->frame);
 
 	  /* capture the mouse (to move the cel) */
 	  jwidget_hard_capture_mouse(widget);
@@ -533,11 +539,14 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      if (anieditor->clk_frame == anieditor->hot_frame)
 		command_execute(command_get_by_name(CMD_FRAME_PROPERTIES), NULL);
 	      else {
+		const SpriteReader sprite((Sprite*)anieditor->sprite);
+
 		if (anieditor->hot_frame >= 0 &&
-		    anieditor->hot_frame < anieditor->sprite->frames &&
+		    anieditor->hot_frame < sprite->frames &&
 		    anieditor->hot_frame != anieditor->clk_frame+1) {
 		  {
-		    Undoable undoable(anieditor->sprite, "Move Frame");
+		    SpriteWriter sprite_writer(sprite);
+		    Undoable undoable(sprite_writer, "Move Frame");
 		    undoable.move_frame_before(anieditor->clk_frame, anieditor->hot_frame);
 		    undoable.commit();
 		  }
@@ -568,15 +577,20 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		  anieditor->hot_layer != anieditor->clk_layer+1) {
 		if (!layer_is_background(anieditor->layers[anieditor->clk_layer])) {
 		  // move the clicked-layer after the hot-layer
-		  {
-		    Undoable undoable(anieditor->sprite, "Move Layer");
+		  try {
+		    const SpriteReader sprite((Sprite*)anieditor->sprite);
+		    SpriteWriter sprite_writer(sprite);
+		    Undoable undoable(sprite_writer, "Move Layer");
 		    undoable.move_layer_after(anieditor->layers[anieditor->clk_layer],
 					      anieditor->layers[anieditor->hot_layer]);
 		    undoable.commit();
-		  }
 
-		  /* select the new layer */
-		  anieditor->sprite->layer = anieditor->layers[anieditor->clk_layer];
+		    /* select the new layer */
+		    sprite_writer->layer = anieditor->layers[anieditor->clk_layer];
+		  }
+		  catch (locked_sprite_exception& e) {
+		    e.show();
+		  }
 
 		  jwidget_dirty(widget);
 		  anieditor_regenerate_layers(widget);
@@ -639,7 +653,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    /* move the cel */
 	    else if (msg->mouse.left) {
 	      if (movement) {
-		move_cel(anieditor->sprite);
+		{
+		  const SpriteReader sprite((Sprite*)anieditor->sprite);
+		  SpriteWriter sprite_writer(sprite);
+		  move_cel(sprite_writer);
+		}
 
 		destroy_thumbnails();
 		anieditor_regenerate_layers(widget);
@@ -668,7 +686,6 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
     case JM_KEYPRESSED: {
       Command *command = command_get_by_key(msg);
-      Sprite *sprite = anieditor->sprite;
 
       /* close animation editor */
       if ((command && (strcmp(command->name, CMD_FILM_EDITOR) == 0)) ||
@@ -679,8 +696,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* undo */
       if (command && strcmp(command->name, CMD_UNDO) == 0) {
+	const SpriteReader sprite((Sprite*)anieditor->sprite);
 	if (undo_can_undo(sprite->undo)) {
-	  undo_do_undo(sprite->undo);
+	  SpriteWriter sprite_writer(sprite);
+	  undo_do_undo(sprite_writer->undo);
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);
@@ -692,8 +711,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* redo */
       if (command && strcmp(command->name, CMD_REDO) == 0) {
+	const SpriteReader sprite((Sprite*)anieditor->sprite);
 	if (undo_can_redo(sprite->undo)) {
-	  undo_do_redo(sprite->undo);
+	  SpriteWriter sprite_writer(sprite);
+	  undo_do_redo(sprite_writer->undo);
 
 	  destroy_thumbnails();
 	  anieditor_regenerate_layers(widget);

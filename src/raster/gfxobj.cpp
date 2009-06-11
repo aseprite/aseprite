@@ -71,7 +71,9 @@ GfxObj::~GfxObj()
 {
   // we have to remove this object from the map
   jmutex_lock(objects_mutex);
-  erase_gfxobj(this);
+  {
+    erase_gfxobj(this);
+  }
   jmutex_unlock(objects_mutex);
 }
 
@@ -114,9 +116,11 @@ void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id)
   assert(gfxobj_find(id) == NULL);
 
   jmutex_lock(objects_mutex);
-  erase_gfxobj(gfxobj);		// remove the object
-  gfxobj->id = id;		// change the ID
-  insert_gfxobj(gfxobj);	// insert the object again in the map
+  {
+    erase_gfxobj(gfxobj);	// remove the object
+    gfxobj->id = id;		// change the ID
+    insert_gfxobj(gfxobj);	// insert the object again in the map
+  }
   jmutex_unlock(objects_mutex);
 }
 

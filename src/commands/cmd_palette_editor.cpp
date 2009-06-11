@@ -40,6 +40,8 @@
 #include "widgets/colview.h"
 #include "widgets/paledit.h"
 
+#define get_sprite(wgt) (*(const SpriteReader*)(jwidget_get_window(wgt))->user_data[0])
+
 static Palette **palettes;
 
 static JWidget slider_R, slider_G, slider_B;
@@ -66,7 +68,7 @@ static void set_new_palette(Palette *palette);
 
 static void cmd_palette_editor_execute(const char *argument)
 {
-  JWidget window, colorviewer_box, palette_editor_view;
+  JWidget colorviewer_box, palette_editor_view;
   JWidget slider_columns, button_ok;
   JWidget button_select_all;
   JWidget button_undo, button_redo;
@@ -74,7 +76,7 @@ static void cmd_palette_editor_execute(const char *argument)
   JWidget button_ramp, button_quantize;
   int frame, columns;
   Palette *palette = NULL;
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   int imgtype = sprite ? sprite->imgtype: IMAGE_INDEXED;
   int frame_bak = sprite ? sprite->frame : 0;
   bool all_frames_same_palette = TRUE;
@@ -85,33 +87,29 @@ static void cmd_palette_editor_execute(const char *argument)
   }
 
   /* load widgets */
-  window = load_widget("paledit.jid", "palette_editor");
-  if (!window)
-    return;
+  JWidgetPtr window = load_widget("paledit.jid", "palette_editor");
+  get_widgets(window,
+	      "red", &slider_R,
+	      "green", &slider_G,
+	      "blue", &slider_B,
+	      "hue", &slider_H,
+	      "saturation", &slider_S,
+	      "value", &slider_V,
+	      "columns", &slider_columns,
+	      "frame", &slider_frame,
+	      "select_all", &button_select_all,
+	      "undo", &button_undo,
+	      "redo", &button_redo,
+	      "load", &button_load,
+	      "save", &button_save,
+	      "ramp", &button_ramp,
+	      "quantize", &button_quantize,
+	      "button_ok", &button_ok,
+	      "colorviewer", &colorviewer_box,
+	      "palette_editor", &palette_editor_view,
+	      "all_frames", &check_all_frames, NULL);
 
-  if (!get_widgets(window,
-		   "red", &slider_R,
-		   "green", &slider_G,
-		   "blue", &slider_B,
-		   "hue", &slider_H,
-		   "saturation", &slider_S,
-		   "value", &slider_V,
-		   "columns", &slider_columns,
-		   "frame", &slider_frame,
-		   "select_all", &button_select_all,
-		   "undo", &button_undo,
-		   "redo", &button_redo,
-		   "load", &button_load,
-		   "save", &button_save,
-		   "ramp", &button_ramp,
-		   "quantize", &button_quantize,
-		   "button_ok", &button_ok,
-		   "colorviewer", &colorviewer_box,
-		   "palette_editor", &palette_editor_view,
-		   "all_frames", &check_all_frames, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  window->user_data[0] = (void*)&sprite;
 
   /* create current_sprite->frames palettes */
   if (sprite) {
@@ -174,8 +172,10 @@ static void cmd_palette_editor_execute(const char *argument)
     if (jwidget_is_selected(check_all_frames))
       jwidget_disable(slider_frame);
   }
-  else
+  else {
     jwidget_disable(slider_frame);
+    jwidget_disable(button_quantize);
+  }
 
   /* hook signals */
   HOOK(slider_R, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
@@ -208,7 +208,8 @@ static void cmd_palette_editor_execute(const char *argument)
   /* check the killer widget */
   if (jwindow_get_killer(window) == button_ok) {
     if (sprite) {
-      sprite_reset_palettes(sprite);
+      SpriteWriter sprite_writer(sprite);
+      sprite_reset_palettes(sprite_writer);
 
       /* one palette */
       if (jwidget_is_selected(check_all_frames)) {
@@ -216,7 +217,7 @@ static void cmd_palette_editor_execute(const char *argument)
 	palette_copy_colors(palettes[0],
 			    get_current_palette());
 
-	sprite_set_palette(sprite, palettes[0], TRUE);
+	sprite_set_palette(sprite_writer, palettes[0], TRUE);
       }
       /* various palettes */
       else {
@@ -224,11 +225,11 @@ static void cmd_palette_editor_execute(const char *argument)
 	palette_copy_colors(palettes[frame],
 			    get_current_palette());
 
-	for (frame=0; frame<sprite->frames; ++frame) {
+	for (frame=0; frame<sprite_writer->frames; ++frame) {
 	  if (frame == 0 ||
 	      palette_count_diff(palettes[frame],
 				 palettes[frame-1], NULL, NULL) > 0) {
-	    sprite_set_palette(sprite, palettes[frame], TRUE);
+	    sprite_set_palette(sprite_writer, palettes[frame], TRUE);
 	  }
 	}
       }
@@ -243,7 +244,9 @@ static void cmd_palette_editor_execute(const char *argument)
   else {
     /* restore the system palette */
     if (sprite) {
-      sprite->frame = frame_bak;
+      SpriteWriter sprite_writer(sprite);
+      sprite_writer->frame = frame_bak;
+
       set_current_palette(sprite_get_palette(sprite, frame_bak), TRUE);
     }
     else {
@@ -260,8 +263,6 @@ static void cmd_palette_editor_execute(const char *argument)
 
   /* save window configuration */
   save_window_pos(window, "PaletteEditor");
-
-  jwidget_free(window);
 
   if (palettes) {
     assert(sprite);
@@ -354,16 +355,19 @@ static void ramp_command(JWidget widget)
 
 static void quantize_command(JWidget widget)
 {
-  CurrentSprite sprite;
-  Palette *palette = palette_new(0, MAX_PALETTE_COLORS);
+  const SpriteReader& sprite = get_sprite(widget);
+  assert(sprite != NULL);
+
+  Palette* palette = palette_new(0, MAX_PALETTE_COLORS);
   bool array[256];
 
   paledit_get_selected_entries(palette_editor, array);
   palette_copy_colors(palette,
 		      paledit_get_palette(palette_editor));
 
-  if (sprite && sprite->imgtype == IMAGE_RGB) {
-    sprite_quantize_ex(sprite, palette);
+  if (sprite->imgtype == IMAGE_RGB) {
+    SpriteWriter sprite_writer(sprite);
+    sprite_quantize_ex(sprite_writer, palette);
   }
   else {
     jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
@@ -437,13 +441,18 @@ static bool slider_columns_change_hook(JWidget widget, void *data)
 
 static bool slider_frame_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const SpriteReader& sprite = get_sprite(widget);
+  assert(sprite != NULL);
+
   int old_frame = sprite->frame;
   int new_frame = jslider_get_value(slider_frame);
 
   palette_copy_colors(palettes[old_frame],
 		      get_current_palette());
-  sprite->frame = new_frame;
+  {
+    SpriteWriter sprite_writer(sprite);
+    sprite_writer->frame = new_frame;
+  }
   set_new_palette(palettes[new_frame]);
 
   return FALSE;
@@ -451,7 +460,9 @@ static bool slider_frame_change_hook(JWidget widget, void *data)
 
 static bool check_all_frames_change_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  const SpriteReader& sprite = get_sprite(widget);
+  assert(sprite != NULL);
+
   int frame = jslider_get_value(slider_frame);
 
   palette_copy_colors(palettes[frame],

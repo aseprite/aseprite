@@ -51,46 +51,30 @@ static void make_preview();
 
 static bool cmd_invert_color_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_invert_color_execute(const char *argument)
 {
-  JWidget window, box_target, target_button, button_ok;
-  CurrentSprite sprite;
-  Image *image;
-  Effect *effect;
+  JWidget box_target, target_button, button_ok;
+  const CurrentSpriteReader sprite;
 
-  image = GetImage(sprite);
-  if (!image)
-    return;
+  JWidgetPtr window = load_widget("invrtcol.jid", "invert_color");
+  get_widgets(window,
+	      "target", &box_target,
+	      "preview", &check_preview,
+	      "button_ok", &button_ok, NULL);
 
-  window = load_widget("invrtcol.jid", "invert_color");
-  if (!window)
-    return;
+  Effect effect(sprite, "invert_color");
+  effect_set_target(&effect, TARGET_RED_CHANNEL |
+			     TARGET_GREEN_CHANNEL |
+			     TARGET_BLUE_CHANNEL);
 
-  if (!get_widgets(window,
-		   "target", &box_target,
-		   "preview", &check_preview,
-		   "button_ok", &button_ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
-
-  effect = effect_new(sprite, "invert_color");
-  if (!effect) {
-    console_printf(_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free(window);
-    return;
-  }
-  effect_set_target(effect, TARGET_RED_CHANNEL |
-			    TARGET_GREEN_CHANNEL |
-			    TARGET_BLUE_CHANNEL);
-
-  preview = preview_new(effect);
+  preview = preview_new(&effect);
   target_button = target_button_new(sprite->imgtype, TRUE);
-  target_button_set_target(target_button, effect->target);
+  target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("InvertColor", "Preview", TRUE))
     jwidget_select(check_preview);
@@ -114,19 +98,14 @@ static void cmd_invert_color_execute(const char *argument)
   /* open the window */
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer(window) == button_ok) {
-    effect_apply_to_target_with_progressbar(effect);
-  }
-
-  effect_free(effect);
+  if (jwindow_get_killer(window) == button_ok)
+    effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
   update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "InvertColor");
-
-  jwidget_free(window);
 }
 
 static bool target_change_hook(JWidget widget, void *data)

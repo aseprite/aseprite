@@ -93,7 +93,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
   if (fop) {
     JThread thread = jthread_new(savefile_bg, fop);
     if (thread) {
-      SaveFileData *data = jnew(SaveFileData, 1);
+      SaveFileData* data = new SaveFileData;
 
       data->fop = fop;
       data->progress = progress_new(app_get_statusbar());
@@ -118,9 +118,8 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 
       /* show any error */
       if (fop->error) {
-	console_open();
-	console_printf(fop->error);
-	console_close();
+	Console console;
+	console.printf(fop->error);
       }
       /* no error? */
       else {
@@ -136,16 +135,15 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
       progress_free(data->progress);
       jwidget_free(data->alert_window);
       fop_free(fop);
-      jfree(data);
+      delete data;
     }
   }
 }
 
 /*********************************************************************/
 
-static void save_as_dialog(const char* dlg_title, bool mark_as_saved)
+static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_saved)
 {
-  CurrentSprite sprite;
   char exts[4096];
   jstring filename;
   jstring newfilename;
@@ -200,7 +198,7 @@ static void save_as_dialog(const char* dlg_title, bool mark_as_saved)
  */
 static bool cmd_save_file_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite;
 }
 
@@ -211,7 +209,7 @@ static bool cmd_save_file_enabled(const char *argument)
  */
 static void cmd_save_file_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   /* if the sprite is associated to a file in the file-system, we can
      save it directly without user interaction */
@@ -222,7 +220,7 @@ static void cmd_save_file_execute(const char *argument)
      save-as dialog to the user to select for first time the file-name
      for this sprite */
   else {
-    save_as_dialog(_("Save Sprite"), true);
+    save_as_dialog(sprite, _("Save Sprite"), true);
   }
 }
 
@@ -232,13 +230,15 @@ static void cmd_save_file_execute(const char *argument)
 
 static bool cmd_save_file_as_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_save_file_as_execute(const char *argument)
 {
-  save_as_dialog(_("Save Sprite As"), true);
+  CurrentSpriteWriter sprite;
+  save_as_dialog(sprite, _("Save Sprite As"), true);
 }
 
 /*********************************************************************
@@ -247,17 +247,18 @@ static void cmd_save_file_as_execute(const char *argument)
 
 static bool cmd_save_file_copy_as_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_save_file_copy_as_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   jstring old_filename = sprite->filename;
 
   // show "Save As" dialog
-  save_as_dialog(_("Save Sprite Copy As"), false);
+  save_as_dialog(sprite, _("Save Sprite Copy As"), false);
 
   // restore the file name
   sprite_set_filename(sprite, old_filename.c_str());

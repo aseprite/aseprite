@@ -16,11 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_UNDOABLE_H
-#define RASTER_UNDOABLE_H
+#ifndef UNDOABLE_H
+#define UNDOABLE_H
 
+class Cel;
 class Layer;
 class Sprite;
+class SpriteWriter;
 
 /**
  * Class with high-level set of routines to modify a sprite.
@@ -30,16 +32,16 @@ class Sprite;
  */
 class Undoable
 {
-  Sprite* sprite;
-  bool committed;
-  bool enabled_flag;
+  Sprite* m_sprite;
+  bool m_committed;
+  bool m_enabled_flag;
 
 public:
-  Undoable(Sprite* sprite, const char* label);
+  Undoable(SpriteWriter& sprite, const char* label);
   virtual ~Undoable();
 
-  inline Sprite* get_sprite() const { return sprite;  }
-  inline bool is_enabled() const { return enabled_flag; }
+  inline Sprite* get_sprite() const { return m_sprite;  }
+  inline bool is_enabled() const { return m_enabled_flag; }
 
   void commit();
 
@@ -50,6 +52,7 @@ public:
   void set_sprite_size(int w, int h);
   void crop_sprite(int x, int y, int w, int h, int bgcolor);
   void autocrop_sprite(int bgcolor);
+  void set_imgtype(int new_imgtype, int dithering_method);
 
   // for images in stock
   int add_image_in_stock(Image* image);
@@ -63,6 +66,8 @@ public:
   void crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor);
   void displace_layers(Layer* layer, int dx, int dy);
   void background_from_layer(Layer* layer, int bgcolor);
+  void layer_from_background();
+  void flatten_layers(int bgcolor);
 private:
   void configure_layer_as_background(Layer* layer);
 
@@ -96,4 +101,4 @@ public:
 
 };
 
-#endif /* RASTER_UNDOABLE_H */
+#endif // UNDOABLE_H

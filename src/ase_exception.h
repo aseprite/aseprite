@@ -16,42 +16,40 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ASE_CURRENT_SPRITE_H
-#define ASE_CURRENT_SPRITE_H
+#ifndef ASE_EXCEPTION_H
+#define ASE_EXCEPTION_H
 
-#include <list>
+#include <exception>
+#include <string>
+#include "console/console.h"
 
-class Context;
-class Sprite;
-
-class CurrentSprite
+class ase_exception : public std::exception
 {
-  Context* m_context;
-  Sprite* m_sprite;
-  bool m_writeable;
-
-  // // No-default constructor (undefined)
-  // CurrentSprite();
-
-  // Non-copyable
-  CurrentSprite(const CurrentSprite&);
-  CurrentSprite& operator=(const CurrentSprite&);
+  std::string m_msg;
 
 public:
-  CurrentSprite();
-  CurrentSprite(Context* context);
-  ~CurrentSprite();
 
-  bool writeable() const { return m_writeable; }
-  void destroy();
+  ase_exception(const char* msg) throw()
+    : m_msg(msg)
+  {
+  }
 
-  operator Sprite* () { return m_sprite; }
+  ase_exception(const std::string& msg) throw()
+    : m_msg(msg)
+  {
+  }
 
-  Sprite* operator->() {
-    assert(m_sprite != NULL);
-    return m_sprite;
+  void show()
+  {
+    Console console;
+    console.printf("An error ocurred executing the command.\n\nDetails:\n%s", what());
+  }
+
+  const char* what() const throw()
+  {
+    return m_msg.c_str();
   }
 
 };
 
-#endif // ASE_CURRENT_SPRITE_H
+#endif // ASE_EXCEPTION_H

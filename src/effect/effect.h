@@ -20,6 +20,8 @@
 #define EFFECT_H
 
 #include <stdlib.h>
+#include <cstring>
+#include "sprite_wrappers.h"
 #include "jinete/jbase.h"
 
 class Image;
@@ -42,14 +44,41 @@ class Sprite;
    TARGET_ALPHA_CHANNEL		|	\
    TARGET_GRAY_CHANNEL		)
 
-int init_module_effect();
-void exit_module_effect();
+
+class invalid_effect_exception : public ase_exception
+{
+public:
+  invalid_effect_exception(const char* effect_name) throw()
+    : ase_exception(std::string("Invalid effect specified: ") + effect_name) { }
+};
+
+class invalid_imgtype_exception : public ase_exception
+{
+public:
+  invalid_imgtype_exception() throw()
+  : ase_exception("Invalid image type specified.") { }
+};
+
+class invalid_area_exception : public ase_exception
+{
+public:
+  invalid_area_exception() throw()
+  : ase_exception("The current mask/area to apply the effect is completelly invalid.") { }
+};
+
+class no_image_exception : public ase_exception
+{
+public:
+  no_image_exception() throw()
+  : ase_exception("There are not an active image to apply the effect.\n"
+		  "Please select a layer/cel with an image and try again.") { }
+};
 
 struct EffectData;
 
 struct Effect
 {
-  Sprite* sprite;
+  SpriteWriter sprite;
   Image* src;
   Image* dst;
   int row;
@@ -68,10 +97,13 @@ struct Effect
   void *progress_data;
   void (*progress)(void *data, float progress);
   bool (*is_cancelled)(void *data);
+
+  Effect(const SpriteReader& sprite, const char* name);
+  ~Effect();
 };
 
-Effect* effect_new(Sprite* sprite, const char* name);
-void effect_free(Effect* effect);
+int init_module_effect();
+void exit_module_effect();
 
 void effect_set_target(Effect* effect, int target);
 

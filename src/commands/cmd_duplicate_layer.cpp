@@ -29,24 +29,23 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 
-static Layer *duplicate_layer();
+static Layer *duplicate_layer(Sprite* sprite);
 
 static bool cmd_duplicate_layer_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite && sprite->layer;
 }
 
 static void cmd_duplicate_layer_execute(const char *argument)
 {
-  CurrentSprite sprite;
-  if (duplicate_layer() != NULL)
+  CurrentSpriteWriter sprite;
+  if (duplicate_layer(sprite) != NULL)
     update_screen_for_sprite(sprite);
 }
 
-static Layer *duplicate_layer()
+static Layer *duplicate_layer(Sprite* sprite)
 {
-  CurrentSprite sprite;
   Layer *layer_copy;
   char buf[1024];
 
@@ -64,7 +63,8 @@ static Layer *duplicate_layer()
     if (undo_is_enabled(sprite->undo))
       undo_close(sprite->undo);
 
-    console_printf("Not enough memory");
+    Console console;
+    console.printf("Not enough memory");
     return NULL;
   }
 

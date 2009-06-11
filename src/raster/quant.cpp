@@ -28,20 +28,22 @@ Image *image_set_imgtype(Image *image, int imgtype,
 			 RGB_MAP *rgb_map,
 			 Palette *palette)
 {
-  ase_uint32 *rgb_address;
-  ase_uint16 *gray_address;
-  ase_uint8 *idx_address;
-  int i, c, r, g, b, size;
+  ase_uint32* rgb_address;
+  ase_uint16* gray_address;
+  ase_uint8* idx_address;
+  ase_uint32 c;
+  int i, r, g, b, size;
   Image *new_image;
 
-  /* no convertion */
+  // no convertion
   if (image->imgtype == imgtype)
     return NULL;
-  /* RGB -> Indexed with ordered dithering */
+  // RGB -> Indexed with ordered dithering
   else if (image->imgtype == IMAGE_RGB &&
 	   imgtype == IMAGE_INDEXED &&
-	   dithering_method == DITHERING_ORDERED)
+	   dithering_method == DITHERING_ORDERED) {
     return image_rgb_to_indexed(image, 0, 0, rgb_map, palette);
+  }
 
   new_image = image_new(imgtype, image->w, image->h);
   if (!new_image)
@@ -52,24 +54,24 @@ Image *image_set_imgtype(Image *image, int imgtype,
   switch (image->imgtype) {
 
     case IMAGE_RGB:
-      rgb_address = (ase_uint32 *)image->dat;
+      rgb_address = (ase_uint32*)image->dat;
 
       switch (new_image->imgtype) {
-	/* RGB -> Grayscale */
+	// RGB -> Grayscale
 	case IMAGE_GRAYSCALE:
-	  gray_address = (ase_uint16 *)new_image->dat;
+	  gray_address = (ase_uint16*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *rgb_address;
-	    r = _rgba_getr (c);
-	    g = _rgba_getg (c);
-	    b = _rgba_getb (c);
-	    rgb_to_hsv_int (&r, &g, &b);
-	    *gray_address = _graya (b, _rgba_geta (c));
+	    r = _rgba_getr(c);
+	    g = _rgba_getg(c);
+	    b = _rgba_getb(c);
+	    rgb_to_hsv_int(&r, &g, &b);
+	    *gray_address = _graya(b, _rgba_geta(c));
 	    rgb_address++;
 	    gray_address++;
 	  }
 	  break;
-        /* RGB -> Indexed */
+	// RGB -> Indexed
 	case IMAGE_INDEXED:
 	  idx_address = new_image->dat;
 	  for (i=0; i<size; i++) {
@@ -89,12 +91,12 @@ Image *image_set_imgtype(Image *image, int imgtype,
       break;
 
     case IMAGE_GRAYSCALE:
-      gray_address = (ase_uint16 *)image->dat;
+      gray_address = (ase_uint16*)image->dat;
 
       switch (new_image->imgtype) {
-	/* Grayscale -> RGB */
+	// Grayscale -> RGB
 	case IMAGE_RGB:
-	  rgb_address = (ase_uint32 *)new_image->dat;
+	  rgb_address = (ase_uint32*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *gray_address;
 	    g = _graya_getv(c);
@@ -103,7 +105,7 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    rgb_address++;
 	  }
 	  break;
-	/* Grayscale -> Indexed */
+	// Grayscale -> Indexed
 	case IMAGE_INDEXED:
 	  idx_address = new_image->dat;
 	  for (i=0; i<size; i++) {
@@ -123,9 +125,9 @@ Image *image_set_imgtype(Image *image, int imgtype,
       idx_address = image->dat;
 
       switch (new_image->imgtype) {
-	/* Indexed -> RGB */
+	// Indexed -> RGB
 	case IMAGE_RGB:
-	  rgb_address = (ase_uint32 *)new_image->dat;
+	  rgb_address = (ase_uint32*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
 	    if (c == 0)
@@ -138,9 +140,9 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    rgb_address++;
 	  }
 	  break;
-	/* Indexed -> Grayscale */
+	// Indexed -> Grayscale
 	case IMAGE_GRAYSCALE:
-	  gray_address = (ase_uint16 *)new_image->dat;
+	  gray_address = (ase_uint16*)new_image->dat;
 	  for (i=0; i<size; i++) {
 	    c = *idx_address;
 	    if (c == 0)

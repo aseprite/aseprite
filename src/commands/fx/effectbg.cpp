@@ -148,15 +148,9 @@ static void monitor_free(void *_data)
  * 
  * [main thread]
  */
-void effect_apply_to_target_with_progressbar(Effect *effect)
+void effect_apply_to_target_with_progressbar(Effect* effect)
 {
-  ThreadData *data;
-
-  data = jnew(ThreadData, 1);
-  if (data == NULL) {
-    jalert("Error<<Not enough memory||&OK");
-    return;
-  }
+  ThreadData *data = new ThreadData;
 
   effect->progress_data = data;
   effect->progress = effect_progress_hook;
@@ -190,5 +184,5 @@ void effect_apply_to_target_with_progressbar(Effect *effect)
 
   progress_free(data->progress);
   jwidget_free(data->alert_window);
-  jfree(data);
+  delete data;
 }

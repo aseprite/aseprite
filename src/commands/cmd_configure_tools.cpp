@@ -84,26 +84,29 @@ static void cmd_configure_tools_execute(const char *argument)
     return;
   }
 
-  if (!get_widgets(window,
-		   "filled", &filled,
-		   "tiled", &tiled,
-		   "tiled_x", &tiled_x,
-		   "tiled_y", &tiled_y,
-		   "use_grid", &use_grid,
-		   "view_grid", &view_grid,
-		   "set_grid", &set_grid,
-		   "brush_size", &brush_size,
-		   "brush_angle", &brush_angle,
-		   "glass_dirty", &glass_dirty,
-		   "spray_width", &spray_width,
-		   "air_speed", &air_speed,
-		   "cursor_color_box", &cursor_color_box,
-		   "brush_preview_box", &brush_preview_box,
-		   "brush_type_box", &brush_type_box,
-		   "onionskin", &check_onionskin, NULL)) {
+  try {
+    get_widgets(window,
+		"filled", &filled,
+		"tiled", &tiled,
+		"tiled_x", &tiled_x,
+		"tiled_y", &tiled_y,
+		"use_grid", &use_grid,
+		"view_grid", &view_grid,
+		"set_grid", &set_grid,
+		"brush_size", &brush_size,
+		"brush_angle", &brush_angle,
+		"glass_dirty", &glass_dirty,
+		"spray_width", &spray_width,
+		"air_speed", &air_speed,
+		"cursor_color_box", &cursor_color_box,
+		"brush_preview_box", &brush_preview_box,
+		"brush_type_box", &brush_type_box,
+		"onionskin", &check_onionskin, NULL);
+  }
+  catch (...) {
     jwidget_free(window);
     window = NULL;
-    return;
+    throw;
   }
 
   /* cursor-color */
@@ -325,24 +328,29 @@ static bool view_grid_check_change_hook(JWidget widget, void *data)
 
 static bool set_grid_button_select_hook(JWidget widget, void *data)
 {
-  CurrentSprite sprite;
+  try {
+    const CurrentSpriteReader sprite;
 
-  if (sprite && sprite->mask && sprite->mask->bitmap) {
-    JRect rect = jrect_new(sprite->mask->x,
-			   sprite->mask->y,
-			   sprite->mask->x+sprite->mask->w,
-			   sprite->mask->y+sprite->mask->h);
-    set_grid(rect);
-    jrect_free(rect);
+    if (sprite && sprite->mask && sprite->mask->bitmap) {
+      JRect rect = jrect_new(sprite->mask->x,
+			     sprite->mask->y,
+			     sprite->mask->x+sprite->mask->w,
+			     sprite->mask->y+sprite->mask->h);
+      set_grid(rect);
+      jrect_free(rect);
 
-    if (get_view_grid())
-      refresh_all_editors();
+      if (get_view_grid())
+	refresh_all_editors();
+    }
+    else {
+      jalert(_("Error"
+	       "<<You have to select a sprite with mask."
+	       "<<The boundaries of the mask will be used"
+	       "<<to specify the grid area.||&OK"));
+    }
   }
-  else {
-    jalert(_("Error"
-	     "<<You must select a sprite with mask."
-	     "<<The boundaries of the mask will be used"
-	     "<<to specify the grid area.||&OK"));
+  catch (locked_sprite_exception& e) {
+    e.show();
   }
 
   return TRUE;

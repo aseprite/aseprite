@@ -35,11 +35,10 @@ void remove_editor(JWidget editor);
 void set_current_editor(JWidget editor);
 
 void refresh_all_editors();
-void update_editors_with_sprite(Sprite* sprite);
-void editors_draw_sprite(Sprite* sprite, int x1, int y1, int x2, int y2);
-void editors_draw_sprite_tiled(Sprite* sprite, int x1, int y1, int x2, int y2);
-void editors_hide_sprite(Sprite* sprite);
-void replace_sprite_in_editors(Sprite* old_sprite, Sprite* new_sprite);
+void update_editors_with_sprite(const Sprite* sprite);
+void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2);
+void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int y2);
+void editors_hide_sprite(const Sprite* sprite);
 
 void set_sprite_in_current_editor(Sprite* sprite);
 void set_sprite_in_more_reliable_editor(Sprite* sprite);

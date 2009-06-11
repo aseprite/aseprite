@@ -22,6 +22,7 @@
 #include <list>
 
 class Sprite;
+class SpriteReader;
 
 typedef std::list<Sprite*> SpriteList;
 
@@ -41,6 +42,11 @@ public:
 
   Context();
   virtual ~Context();
+
+  virtual bool is_ui_available() const		{ return false; }
+  virtual bool is_recording_macro() const	{ return false; }
+  virtual bool is_executing_macro() const	{ return false; }
+  virtual bool is_executing_script() const	{ return false; }
 
   const SpriteList& get_sprite_list() const;
   Sprite* get_first_sprite() const;

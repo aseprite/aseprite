@@ -29,34 +29,28 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 #include "widgets/colbar.h"
 
 static bool cmd_canvas_size_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite != NULL;
 }
 
 static void cmd_canvas_size_execute(const char *argument)
 {
-  JWidget window, left, top, right, bottom, ok;
-  CurrentSprite sprite;
+  JWidget left, top, right, bottom, ok;
+  CurrentSpriteWriter sprite;
 
   // load the window widget
-  window = load_widget("canvas.jid", "canvas_size");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "left", &left,
-		   "top", &top,
-		   "right", &right,
-		   "bottom", &bottom,
-		   "ok", &ok, NULL)) {
-    jwidget_free(window);
-    return;
-  }
+  JWidgetPtr window = load_widget("canvas.jid", "canvas_size");
+  get_widgets(window,
+	      "left", &left,
+	      "top", &top,
+	      "right", &right,
+	      "bottom", &bottom,
+	      "ok", &ok, NULL);
 
   jwindow_remap(window);
   jwindow_center(window);
@@ -85,8 +79,6 @@ static void cmd_canvas_size_execute(const char *argument)
     sprite_generate_mask_boundaries(sprite);
     update_screen_for_sprite(sprite);
   }
-
-  jwidget_free(window);
 }
 
 Command cmd_canvas_size = {

@@ -20,7 +20,7 @@
 
 #include "jinete/jinete.h"
 
-#include "ase/current_sprite.h"
+#include "sprite_wrappers.h"
 #include "ase/ui_context.h"
 #include "core/app.h"
 #include "modules/editors.h"
@@ -82,7 +82,7 @@ void refresh_all_editors()
     jwidget_dirty(reinterpret_cast<JWidget>(link->data));
 }
 
-void update_editors_with_sprite(Sprite *sprite)
+void update_editors_with_sprite(const Sprite *sprite)
 {
   JWidget widget;
   JLink link;
@@ -95,7 +95,7 @@ void update_editors_with_sprite(Sprite *sprite)
   }
 }
 
-void editors_draw_sprite(Sprite *sprite, int x1, int y1, int x2, int y2)
+void editors_draw_sprite(const Sprite *sprite, int x1, int y1, int x2, int y2)
 {
   JWidget widget;
   JLink link;
@@ -110,7 +110,7 @@ void editors_draw_sprite(Sprite *sprite, int x1, int y1, int x2, int y2)
 
 /* TODO improve this (with JRegion or something, and without
    recursivity) */
-void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
+void editors_draw_sprite_tiled(const Sprite *sprite, int x1, int y1, int x2, int y2)
 {
   int cx1, cy1, cx2, cy2;	/* cel rectangle */
   int lx1, ly1, lx2, ly2;	/* limited rectangle to the cel rectangle */
@@ -174,43 +174,25 @@ void editors_draw_sprite_tiled(Sprite *sprite, int x1, int y1, int x2, int y2)
   }
 }
 
-void editors_hide_sprite(Sprite *sprite)
+void editors_hide_sprite(const Sprite *sprite)
 {
-  CurrentSprite current_sprite;
-  JWidget widget;
-  int refresh;
+  UIContext* context = UIContext::instance();
+  bool refresh = (context->get_current_sprite() == sprite) ? true: false;
+
   JLink link;
-
-  refresh = (current_sprite == sprite) ? TRUE: FALSE;
-
   JI_LIST_FOR_EACH(editors, link) {
-    widget = reinterpret_cast<JWidget>(link->data);
+    JWidget widget = reinterpret_cast<JWidget>(link->data);
 
     if (sprite == editor_get_sprite(widget))
       editor_set_sprite(widget, get_more_reliable_sprite());
   }
 
   if (refresh) {
-    UIContext* context = UIContext::instance();
-    context->set_current_sprite(editor_get_sprite(current_editor));
+    Sprite* sprite = editor_get_sprite(current_editor);
 
-    app_refresh_screen();
+    context->set_current_sprite(sprite);
+    app_refresh_screen(sprite);
   }
-}
-
-void replace_sprite_in_editors(Sprite *old_sprite, Sprite *new_sprite)
-{
-  JWidget widget;
-  JLink link;
-
-  JI_LIST_FOR_EACH(editors, link) {
-    widget = reinterpret_cast<JWidget>(link->data);
-
-    if (old_sprite == editor_get_sprite(widget))
-      editor_set_sprite(widget, new_sprite);
-  }
-
-  app_refresh_screen();
 }
 
 void set_current_editor(JWidget editor)
@@ -224,9 +206,10 @@ void set_current_editor(JWidget editor)
     jwidget_dirty(jwidget_get_view(current_editor));
 
     UIContext* context = UIContext::instance();
-    context->set_current_sprite(editor_get_sprite(current_editor));
+    Sprite* sprite = editor_get_sprite(current_editor);
+    context->set_current_sprite(sprite);
 
-    app_refresh_screen();
+    app_refresh_screen(sprite);
     app_realloc_sprite_list();
   }
 }
@@ -244,7 +227,7 @@ void set_sprite_in_current_editor(Sprite *sprite)
 
     jwidget_dirty(jwidget_get_view(current_editor));
 
-    app_refresh_screen();
+    app_refresh_screen(sprite);
     app_realloc_sprite_list();
   }
 }

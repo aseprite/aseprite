@@ -54,51 +54,32 @@ static void make_preview();
 
 static bool cmd_replace_color_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_replace_color_execute(const char *argument)
 {
-  JWidget window = NULL;
+  const CurrentSpriteReader sprite;
   JWidget color_buttons_box;
   JWidget box_target, target_button;
   JWidget button_ok;
-  Image *image;
-  Effect *effect;
 
-  CurrentSprite sprite;
-  if (!sprite)
-    return;
+  JWidgetPtr window = load_widget("replcol.jid", "replace_color");
+  get_widgets(window,
+	      "color_buttons_box", &color_buttons_box,
+	      "preview", &check_preview,
+	      "fuzziness", &slider_fuzziness,
+	      "target", &box_target,
+	      "button_ok", &button_ok, NULL);
 
-  image = GetImage(sprite);
-  if (!image)
-    goto done;
-
-  window = load_widget("replcol.jid", "replace_color");
-  if (!window)
-    goto done;
-
-  if (!get_widgets(window,
-		   "color_buttons_box", &color_buttons_box,
-		   "preview", &check_preview,
-		   "fuzziness", &slider_fuzziness,
-		   "target", &box_target,
-		   "button_ok", &button_ok, NULL)) {
-    goto done;
-  }
-
-  effect = effect_new(sprite, "replace_color");
-  if (!effect) {
-    console_printf(_("Error creating the effect applicator for this sprite\n"));
-    goto done;
-  }
-  effect_set_target(effect, TARGET_RED_CHANNEL |
-			    TARGET_GREEN_CHANNEL |
-			    TARGET_BLUE_CHANNEL |
-			    TARGET_ALPHA_CHANNEL);
-
-  preview = preview_new(effect);
+  Effect effect(sprite, "replace_color");
+  effect_set_target(&effect, TARGET_RED_CHANNEL |
+			     TARGET_GREEN_CHANNEL |
+			     TARGET_BLUE_CHANNEL |
+			     TARGET_ALPHA_CHANNEL);
+  preview = preview_new(&effect);
 
   button_color1 = colorbutton_new
     (get_config_color("ReplaceColor", "Color1",
@@ -111,7 +92,7 @@ static void cmd_replace_color_execute(const char *argument)
      sprite->imgtype);
 
   target_button = target_button_new(sprite->imgtype, FALSE);
-  target_button_set_target(target_button, effect->target);
+  target_button_set_target(target_button, effect.target);
 
   jslider_set_value(slider_fuzziness,
 		    get_config_int("ReplaceColor", "Fuzziness", 0));
@@ -142,21 +123,14 @@ static void cmd_replace_color_execute(const char *argument)
   /* open the window */
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer(window) == button_ok) {
-    effect_apply_to_target_with_progressbar(effect);
-  }
-
-  effect_free(effect);
+  if (jwindow_get_killer(window) == button_ok)
+    effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
   update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "ReplaceColor");
-
-done:;
-  if (window)
-    jwidget_free(window);
 }
 
 static bool color_change_hook(JWidget widget, void *data)
@@ -194,7 +168,7 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static void make_preview()
 {
-  CurrentSprite sprite;
+  Sprite* sprite = preview_get_effect(preview)->sprite;
   color_t from, to;
   int fuzziness;
 

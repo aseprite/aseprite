@@ -19,26 +19,28 @@
 #include "config.h"
 
 #include "commands/commands.h"
+#include "core/app.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
-#include "raster/undo.h"
 #include "raster/sprite.h"
-#include "util/functions.h"
+#include "undoable.h"
+#include "widgets/colbar.h"
 
 static bool cmd_flatten_layers_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return sprite != NULL;
 }
 
 static void cmd_flatten_layers_execute(const char *argument)
 {
-  CurrentSprite sprite;
-
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Flatten Layers");
-
-  FlattenLayers(sprite);
+  CurrentSpriteWriter sprite;
+  int bgcolor = get_color_for_image(sprite->imgtype,
+				    colorbar_get_bg_color(app_get_colorbar()));
+  {
+    Undoable undoable(sprite, "Flatten Layers");
+    undoable.flatten_layers(bgcolor);
+    undoable.commit();
+  }
   update_screen_for_sprite(sprite);
 }
 

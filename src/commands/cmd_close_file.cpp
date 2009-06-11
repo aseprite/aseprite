@@ -35,7 +35,7 @@ static bool close_current_sprite();
 
 static bool cmd_close_file_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite != NULL;
 }
 
@@ -75,9 +75,7 @@ static void cmd_close_all_files_execute(const char *argument)
  */
 static bool close_current_sprite()
 {
-  CurrentSprite sprite;
-  if (!sprite.writeable())
-    return false;
+  CurrentSpriteWriter sprite;
 
   /* see if the sprite has changes */
   while (sprite_is_modified(sprite)) {
@@ -89,6 +87,7 @@ static bool close_current_sprite()
 
     if (ret == 1) {
       /* "save": save the changes */
+      // TODO we have to pass the sprite to the save file command
       command_execute(command_get_by_name(CMD_SAVE_FILE), NULL);
     }
     else if (ret != 2) {

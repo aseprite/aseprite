@@ -26,10 +26,9 @@
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 #include "widgets/colbar.h"
 #include "util/autocrop.h"
-#include "util/functions.h"
 #include "util/misc.h"
 
 /* ======================== */
@@ -38,7 +37,7 @@
 
 static bool cmd_crop_sprite_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
     sprite != NULL &&
     sprite->mask != NULL &&
@@ -47,7 +46,7 @@ static bool cmd_crop_sprite_enabled(const char *argument)
 
 static void cmd_crop_sprite_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   {
     Undoable undoable(sprite, "Sprite Crop");
     int bgcolor = get_color_for_image(sprite->imgtype,
@@ -69,13 +68,13 @@ static void cmd_crop_sprite_execute(const char *argument)
 
 static bool cmd_autocrop_sprite_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite != NULL;
 }
 
 static void cmd_autocrop_sprite_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   {
     Undoable undoable(sprite, "Sprite Autocrop");
     undoable.autocrop_sprite(colorbar_get_bg_color(app_get_colorbar()));

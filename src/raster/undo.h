@@ -22,6 +22,7 @@
 #include <string.h>		/* for strlen */
 
 #include "raster/gfxobj.h"
+#include "ase_exception.h"
 
 class Cel;
 class Image;
@@ -32,6 +33,12 @@ class Stock;
 
 struct Dirty;
 struct UndoStream;
+
+class undo_exception : public ase_exception
+{
+public:
+  undo_exception(const char* msg) throw() : ase_exception(msg) { }
+};
 
 class Undo : public GfxObj
 {
@@ -87,6 +94,8 @@ void undo_add_layer(Undo* undo, Layer *set, Layer *layer);
 void undo_remove_layer(Undo* undo, Layer *layer);
 void undo_move_layer(Undo* undo, Layer *layer);
 void undo_set_layer(Undo* undo, Sprite* sprite);
+void undo_add_palette(Undo* undo, Sprite* sprite, Palette* palette);
+void undo_remove_palette(Undo* undo, Sprite* sprite, Palette* palette);
 void undo_set_mask(Undo* undo, Sprite* sprite);
 void undo_set_frames(Undo* undo, Sprite* sprite);
 void undo_set_frlen(Undo* undo, Sprite* sprite, int frame);

@@ -368,7 +368,7 @@ void set_screen_scaling(int scaling)
   screen_scaling = scaling;
 }
 
-void update_screen_for_sprite(Sprite *sprite)
+void update_screen_for_sprite(const Sprite* sprite)
 {
   if (!(ase_mode & MODE_GUI))
     return;
@@ -412,7 +412,9 @@ void gui_feedback()
 
   if (next_idle_flags & REFRESH_FULL_SCREEN) {
     next_idle_flags ^= REFRESH_FULL_SCREEN;
-    update_screen_for_sprite(UIContext::instance()->get_current_sprite());
+
+    const CurrentSpriteReader sprite;
+    update_screen_for_sprite(sprite);
   }
 
   /* record file if is necessary */
@@ -549,7 +551,7 @@ JWidget load_widget(const char *filename, const char *name)
   JWidget widget;
   DIRS *it, *dirs;
   char buf[512];
-  bool found = FALSE;
+  bool found = false;
 
   dirs = dirs_new();
 
@@ -561,23 +563,30 @@ JWidget load_widget(const char *filename, const char *name)
   for (it=dirs; it; it=it->next) {
     if (exists(it->path)) {
       ustrcpy(buf, it->path);
-      found = TRUE;
+      found = true;
       break;
     }
   }
 
   dirs_free(dirs);
 
-  if (!found) {
-    console_printf(_("File not found: \"%s\"\n"), filename);
-    return NULL;
-  }
+  if (!found)
+    throw widget_file_not_found(filename);
 
   widget = ji_load_widget(buf, name);
   if (!widget)
-    console_printf(_("Error loading widget: \"%s\"\n"), name);
+    throw widget_not_found(name);
 
   return widget;
+}
+
+JWidget find_widget(JWidget widget, const char *name)
+{
+  JWidget child = jwidget_find_name(widget, name);
+  if (!child)
+    throw widget_not_found(name);
+
+  return child;
 }
 
 void schedule_rebuild_recent_list()
@@ -653,7 +662,7 @@ void hook_signal(JWidget widget,
  * }
  * @endcode
  */
-bool get_widgets(JWidget window, ...)
+void get_widgets(JWidget window, ...)
 {
   JWidget *widget;
   char *name;
@@ -666,14 +675,10 @@ bool get_widgets(JWidget window, ...)
       break;
 
     *widget = jwidget_find_name(window, name);
-    if (!*widget) {
-      console_printf(_("Widget %s not found.\n"), name);
-      return FALSE;
-    }
+    if (!*widget)
+      throw widget_not_found(name);
   }
   va_end(ap);
-
-  return TRUE;
 }
 
 /**********************************************************************/

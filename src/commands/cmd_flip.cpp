@@ -28,7 +28,7 @@
 #include "raster/undo.h"
 #include "util/misc.h"
 
-static void do_flip(int horz);
+static void do_flip(Sprite* sprite, bool horz);
 
 /* ======================== */
 /* flip_horizontal          */
@@ -36,13 +36,15 @@ static void do_flip(int horz);
 
 static bool cmd_flip_horizontal_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_flip_horizontal_execute(const char *argument)
 {
-  do_flip(TRUE);
+  CurrentSpriteWriter sprite;
+  do_flip(sprite, true);
 }
 
 /* ======================== */
@@ -51,21 +53,22 @@ static void cmd_flip_horizontal_execute(const char *argument)
 
 static bool cmd_flip_vertical_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_flip_vertical_execute(const char *argument)
 {
-  do_flip(FALSE);
+  CurrentSpriteWriter sprite;
+  do_flip(sprite, false);
 }
 
 /************************************************************/
 /* do_flip */
 
-static void do_flip(int horz)
+static void do_flip(Sprite* sprite, bool horz)
 {
-  CurrentSprite sprite;
   Image *image, *area;
   int x1, y1, x2, y2;
   int x, y;

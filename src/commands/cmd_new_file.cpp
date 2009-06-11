@@ -36,18 +36,19 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "util/functions.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
 
 static int _sprite_counter = 0;
+
+static Sprite *new_sprite(Context* context, int imgtype, int w, int h);
 
 /**
  * Shows the "New Sprite" dialog.
  */
 static void cmd_new_file_execute(const char *argument)
 {
-  JWidget window, width, height, radio1, radio2, radio3, ok, bg_box;
+  JWidget width, height, radio1, radio2, radio3, ok, bg_box;
   int imgtype, w, h, bg;
   char buf[1024];
   Sprite *sprite;
@@ -61,9 +62,7 @@ static void cmd_new_file_execute(const char *argument)
   };
 
   /* load the window widget */
-  window = load_widget("newspr.jid", "new_sprite");
-  if (!window)
-    return;
+  JWidgetPtr window = load_widget("newspr.jid", "new_sprite");
 
   width = jwidget_find_name(window, "width");
   height = jwidget_find_name(window, "height");
@@ -127,9 +126,10 @@ static void cmd_new_file_execute(const char *argument)
       set_config_int("NewSprite", "Background", bg);
 
       /* create the new sprite */
-      sprite = NewSprite(imgtype, w, h);
+      sprite = new_sprite(UIContext::instance(), imgtype, w, h);
       if (!sprite) {
-	console_printf("Not enough memory to allocate the sprite\n");
+	Console console;
+	console.printf("Not enough memory to allocate the sprite\n");
       }
       else {
 	usprintf(buf, "Sprite-%04d", ++_sprite_counter);
@@ -143,21 +143,36 @@ static void cmd_new_file_execute(const char *argument)
 		      get_color_for_image(imgtype, color));
 	}
 
-	/* the undo should be disabled because we use NewSprite to
-	   create it (a function for scripts) */
-	assert(undo_is_disabled(sprite->undo));
-
-	/* enable undo */
-	undo_enable(sprite->undo);
-
 	/* show the sprite to the user */
 	UIContext* context = UIContext::instance();
 	context->show_sprite(sprite);
       }
     }
   }
+}
 
-  jwidget_free(window);
+/**
+ * Creates a new sprite with the given dimension with one transparent
+ * layer called "Layer 1".
+ *
+ * @param imgtype Color mode, one of the following values: IMAGE_RGB, IMAGE_GRAYSCALE, IMAGE_INDEXED
+ * @param w Width of the sprite
+ * @param h Height of the sprite
+ */
+static Sprite *new_sprite(Context* context, int imgtype, int w, int h)
+{
+  assert(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
+  assert(w >= 1 && w <= 9999);
+  assert(h >= 1 && h <= 9999);
+
+  Sprite *sprite = sprite_new_with_layer(imgtype, w, h);
+  if (!sprite)
+    return NULL;
+
+  context->add_sprite(sprite);
+  context->set_current_sprite(sprite);
+
+  return sprite;
 }
 
 Command cmd_new_file = {

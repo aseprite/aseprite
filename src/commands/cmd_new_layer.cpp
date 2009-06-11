@@ -26,28 +26,25 @@
 #include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
-#include "util/functions.h"
+#include "undoable.h"
 
-static bool cmd_new_layer_enabled(const char *argument)
+static char* get_unique_layer_name(Sprite* sprite);
+static int get_max_layer_num(Layer* layer);
+
+static bool cmd_new_layer_enabled(const char* argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite;
 }
 
-static void cmd_new_layer_execute(const char *argument)
+static void cmd_new_layer_execute(const char* argument)
 {
-  JWidget window, name_widget;
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
-  /* load the window widget */
-  window = load_widget("newlay.jid", "new_layer");
-  if (!window)
-    return;
-
-  name_widget = jwidget_find_name(window, "name");
+  JWidgetPtr window = load_widget("newlay.jid", "new_layer");
+  JWidget name_widget = find_widget(window, "name");
   {
-    char *name = GetUniqueLayerName(sprite);
+    char* name = get_unique_layer_name(sprite);
     jwidget_set_text(name_widget, name);
     jfree(name);
   }
@@ -66,8 +63,35 @@ static void cmd_new_layer_execute(const char *argument)
     layer_set_name(layer, name);
     update_screen_for_sprite(sprite);
   }
+}
 
-  jwidget_free(window);
+static char* get_unique_layer_name(Sprite* sprite)
+{
+  if (sprite != NULL) {
+    char buf[1024];
+    sprintf(buf, "Layer %d", get_max_layer_num(sprite->set)+1);
+    return jstrdup(buf);
+  }
+  else
+    return NULL;
+}
+
+static int get_max_layer_num(Layer* layer)
+{
+  int max = 0;
+
+  if (strncmp(layer->name, "Layer ", 6) == 0)
+    max = strtol(layer->name+6, NULL, 10);
+
+  if (layer_is_set(layer)) {
+    JLink link;
+    JI_LIST_FOR_EACH(layer->layers, link) {
+      int tmp = get_max_layer_num(reinterpret_cast<Layer*>(link->data));
+      max = MAX(tmp, max);
+    }
+  }
+  
+  return max;
 }
 
 Command cmd_new_layer = {

@@ -72,17 +72,22 @@ enum {
   OPEN_GFX_FILE,
 };
 
-typedef struct Option
+struct Option
 {
   int type;
   char *data;
-} Option;
+};
 
-typedef struct AppHook
+struct AppHook
 {
   void (*proc)(void *);
   void *data;
-} AppHook;
+
+  AppHook(void (*proc)(void *), void *data) {
+    this->proc = proc;
+    this->data = data;
+  }
+};
 
 static char *exe_name;		      /* name of the program */
 
@@ -110,9 +115,6 @@ static void usage(int status);
 
 static Option *option_new(int type, const char *data);
 static void option_free(Option *option);
-
-static AppHook *apphook_new(void (*proc)(void *), void *data);
-static void apphook_free(AppHook *apphook);
 
 /**
  * Initializes the application loading the modules, setting the
@@ -175,7 +177,8 @@ bool app_init(int argc, char *argv[])
     pal = palette_load(palette_filename);
     if (pal == NULL) {
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      console_printf(_("Error loading default palette from `%s'\n"),
+      Console console;
+      console.printf(_("Error loading default palette from `%s'\n"),
 		     palette_filename);
       return FALSE;
     }
@@ -332,12 +335,9 @@ void app_loop()
     /* select language */
     dialogs_select_language(FALSE);
 
-    /* show tips? */
-    {
-      CurrentSprite sprite;
-      if (!sprite)
-	dialogs_tips(FALSE);
-    }
+    // show tips only if there are not a current sprite
+    if (!UIContext::instance()->get_current_sprite())
+      dialogs_tips(FALSE);
 
     // support to drop files from Windows explorer
     install_drop_files();
@@ -377,7 +377,8 @@ void app_exit()
   for (c=0; c<APP_EVENTS; ++c) {
     if (apphooks[c] != NULL) {
       JI_LIST_FOR_EACH(apphooks[c], link) {
-	apphook_free(reinterpret_cast<AppHook*>(link->data));
+	AppHook* apphook = reinterpret_cast<AppHook*>(link->data);
+	delete apphook;
       }
       jlist_free(apphooks[c]);
       apphooks[c] = NULL;
@@ -406,7 +407,7 @@ void app_add_hook(int app_event, void (*proc)(void *data), void *data)
   if (apphooks[app_event] == NULL)
     apphooks[app_event] = jlist_new();
 
-  jlist_append(apphooks[app_event], apphook_new(proc, data));
+  jlist_append(apphooks[app_event], new AppHook(proc, data));
 }
 
 void app_trigger_event(int app_event)
@@ -427,19 +428,17 @@ void app_trigger_event(int app_event)
 /**
  * Updates palette and redraw the screen.
  */
-void app_refresh_screen()
+void app_refresh_screen(const Sprite* sprite)
 {
-  if (ase_mode & MODE_GUI) {
-    CurrentSprite sprite;
+  assert(screen != NULL);
 
-    /* update the color palette */
-    set_current_palette(sprite != NULL ?
-			sprite_get_palette(sprite, sprite->frame): NULL,
-			FALSE);
+  if (sprite)
+    set_current_palette(sprite_get_palette(sprite, sprite->frame), false);
+  else
+    set_current_palette(NULL, false);
 
-    /* redraw the screen */
-    jmanager_refresh_screen();
-  }
+  // redraw the screen
+  jmanager_refresh_screen();
 }
 
 /**
@@ -514,8 +513,11 @@ bool app_realloc_recent_list()
 
 int app_get_current_image_type()
 {
-  CurrentSprite sprite;
-  if (sprite)
+  Context* context = UIContext::instance();
+  assert(context != NULL);
+
+  Sprite* sprite = context->get_current_sprite();
+  if (sprite != NULL)
     return sprite->imgtype;
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
@@ -589,6 +591,7 @@ static void tabsbar_select_callback(JWidget tabs, void *data, int button)
  */
 static int check_args(int argc, char *argv[])
 {
+  Console console;
   int i, n, len;
   char *arg;
 
@@ -643,7 +646,7 @@ static int check_args(int argc, char *argv[])
 	  }
 	}
         else {
-	  console_printf(_("%s: option \"res\" requires an argument\n"), exe_name);
+	  console.printf(_("%s: option \"res\" requires an argument\n"), exe_name);
           usage(1);
 	}
       }
@@ -659,7 +662,7 @@ static int check_args(int argc, char *argv[])
       else if (strncmp(arg+n, "version", len) == 0) {
         ase_mode |= MODE_BATCH;
 
-        console_printf("ase %s\n", VERSION);
+        console.printf("ase %s\n", VERSION);
       }
       /* invalid argument */
       else {
@@ -679,21 +682,23 @@ static int check_args(int argc, char *argv[])
  */
 static void usage(int status)
 {
+  Console console;
+
   /* show options */
   if (!status) {
     /* copyright */
-    console_printf
+    console.printf
       ("ase %s -- allegro-sprite-editor, %s\n"
        COPYRIGHT "\n\n",
        VERSION, _("The Ultimate Sprites Factory"));
 
     /* usage */
-    console_printf
+    console.printf
       ("%s\n  %s [%s] [%s]...\n\n",
        _("Usage:"), exe_name, _("OPTION"), _("FILE"));
 
     /* options */
-    console_printf
+    console.printf
       ("%s:\n"
        "  -palette GFX-FILE        %s\n"
        "  -resolution WxH[xBPP]    %s\n"
@@ -709,24 +714,20 @@ static void usage(int status)
        _("Output version information and exit"));
 
     /* web-site */
-    console_printf
+    console.printf
       ("%s: %s\n%s\n\n  %s\n\n",
        _("Find more information in the ASE's official web site at:"), WEBSITE);
   }
   /* how to show options */
   else {
-    console_printf(_("Try \"%s --help\" for more information.\n"), exe_name);
+    console.printf(_("Try \"%s --help\" for more information.\n"), exe_name);
   }
   exit(status);
 }
 
 static Option *option_new(int type, const char *data)
 {
-  Option *option;
-
-  option = jnew(Option, 1);
-  if (!option)
-    return NULL;
+  Option *option = new Option;
 
   option->type = type;
   option->data = jstrdup(data);
@@ -737,22 +738,5 @@ static Option *option_new(int type, const char *data)
 static void option_free(Option* option)
 {
   jfree(option->data);
-  jfree(option);
-}
-
-static AppHook *apphook_new(void (*proc)(void*), void* data)
-{
-  AppHook* apphook = jnew(AppHook, 1);
-  if (!apphook)
-    return NULL;
-
-  apphook->proc = proc;
-  apphook->data = data;
-
-  return apphook;
-}
-
-static void apphook_free(AppHook *apphook)
-{
-  jfree(apphook);
+  delete option;
 }

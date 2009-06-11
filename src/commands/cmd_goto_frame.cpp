@@ -31,13 +31,13 @@
 
 static bool cmd_goto_first_frame_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return sprite != NULL;
 }
 
 static void cmd_goto_first_frame_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   sprite->frame = 0;
 
   update_screen_for_sprite(sprite);
@@ -50,13 +50,14 @@ static void cmd_goto_first_frame_execute(const char *argument)
 
 static bool cmd_goto_previous_frame_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_goto_previous_frame_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   if (sprite->frame > 0)
     sprite->frame--;
@@ -73,13 +74,14 @@ static void cmd_goto_previous_frame_execute(const char *argument)
 
 static bool cmd_goto_next_frame_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_goto_next_frame_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   if (sprite->frame < sprite->frames-1)
     sprite->frame++;
@@ -96,13 +98,14 @@ static void cmd_goto_next_frame_execute(const char *argument)
 
 static bool cmd_goto_last_frame_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_goto_last_frame_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   sprite->frame = sprite->frames-1;
 
   update_screen_for_sprite(sprite);

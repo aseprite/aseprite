@@ -43,7 +43,6 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "modules/tools.h"
-#include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"
@@ -70,54 +69,37 @@ static void make_preview();
 
 static bool cmd_convolution_matrix_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_convolution_matrix_execute(const char *argument)
 {
-  JWidget window, button_ok;
+  const CurrentSpriteReader sprite;
+  JWidget button_ok;
   JWidget view_convmatr, list_convmatr;
   JWidget box_target;
   JWidget reload, generate;
-  CurrentSprite sprite;
-  Image *image;
-  Effect *effect;
 
-  image = GetImage(sprite);
-  if (!image)
-    return;
+  JWidgetPtr window = load_widget("convmatr.jid", "convolution_matrix");
+  get_widgets(window,
+	      "preview", &check_preview,
+	      "tiled", &check_tiled,
+	      "button_ok", &button_ok,
+	      "view", &view_convmatr,
+	      "target", &box_target,
+	      "reload", &reload,
+	      "generate", &generate, NULL);
 
-  window = load_widget("convmatr.jid", "convolution_matrix");
-  if (!window)
-    return;
-
-  if (!get_widgets(window,
-		   "preview", &check_preview,
-		   "tiled", &check_tiled,
-		   "button_ok", &button_ok,
-		   "view", &view_convmatr,
-		   "target", &box_target,
-		   "reload", &reload,
-		   "generate", &generate, NULL)) {
-    jwidget_free(window);
-    return;
-  }
-
-  effect = effect_new(sprite, "convolution_matrix");
-  if (!effect) {
-    console_printf(_("Error creating the effect applicator for this sprite\n"));
-    jwidget_free(window);
-    return;
-  }
-
-  preview = preview_new(effect);
+  Effect effect(sprite, "convolution_matrix");
+  preview = preview_new(&effect);
   
   list_convmatr = jlistbox_new();
   listbox_fill_convmatg(list_convmatr);
 
   target_button = target_button_new(sprite->imgtype, TRUE);
-  target_button_set_target(target_button, effect->target);
+  target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("ConvolutionMatrix", "Preview", TRUE))
     jwidget_select(check_preview);
@@ -154,19 +136,14 @@ static void cmd_convolution_matrix_execute(const char *argument)
   /* open the window */
   jwindow_open_fg(window);
 
-  if (jwindow_get_killer(window) == button_ok) {
-    effect_apply_to_target_with_progressbar(effect);
-  }
-
-  effect_free(effect);
+  if (jwindow_get_killer(window) == button_ok)
+    effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
   update_screen_for_sprite(sprite);
 
   /* save window configuration */
   save_window_pos(window, "ConvolutionMatrix");
-
-  jwidget_free(window);
 }
 
 static void listbox_fill_convmatg(JWidget listbox)
@@ -235,7 +212,6 @@ static bool reload_select_hook(JWidget widget, void *data)
 static bool generate_select_hook(JWidget widget, void *data)
 {
 #if 0
-  JWidget window;
   JWidget view_x;
   JWidget view_y;
   JWidget curvedit_x;
@@ -245,20 +221,14 @@ static bool generate_select_hook(JWidget widget, void *data)
   JWidget div, div_auto;
   JWidget bias, bias_auto;
 
-  window = load_widget("convmatr.jid", "generate_convolution_matrix");
-  if (!window)
-    return TRUE;		/* don't close */
-
-  if (!get_widgets(window,
-		   "view_x", &view_x,
-		   "view_y", &view_y,
-		   "div", &div,
-		   "bias", &bias,
-		   "div_auto", &div_auto,
-		   "bias_auto", &bias_auto, NULL)) {
-    jwidget_free(window);
-    return TRUE;		/* don't close */
-  }
+  JWidgetPtr window = load_widget("convmatr.jid", "generate_convolution_matrix");
+  get_widgets(window,
+	      "view_x", &view_x,
+	      "view_y", &view_y,
+	      "div", &div,
+	      "bias", &bias,
+	      "div_auto", &div_auto,
+	      "bias_auto", &bias_auto, NULL);
 
   /* curve_x = curve_new(CURVE_SPLINE); */
   /* curve_y = curve_new(CURVE_SPLINE); */
@@ -291,12 +261,10 @@ static bool generate_select_hook(JWidget widget, void *data)
 
   /* TODO do something */
 
-  jwidget_free(window);
-
   curve_free(curve_x);
   curve_free(curve_y);
 #endif
-  return TRUE;			/* do not close */
+  return TRUE;
 }
 
 static bool list_change_hook(JWidget widget, void *data)

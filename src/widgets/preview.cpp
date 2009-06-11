@@ -91,7 +91,8 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      jmanager_remove_timer(preview->timer_id);
+      if (preview->timer_id >= 0)
+	jmanager_remove_timer(preview->timer_id);
       jfree(preview);
       break;
       

@@ -26,13 +26,14 @@
 
 static bool cmd_mask_by_color_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite;
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL;
 }
 
 static void cmd_mask_by_color_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   dialogs_mask_color(sprite);
 }
 

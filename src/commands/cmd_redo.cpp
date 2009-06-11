@@ -28,13 +28,15 @@
 
 static bool cmd_redo_enabled(const char *argument)
 {
-  CurrentSprite sprite;
-  return sprite != NULL && undo_can_redo(sprite->undo);
+  const CurrentSpriteReader sprite;
+  return
+    sprite != NULL &&
+    undo_can_redo(sprite->undo);
 }
 
 static void cmd_redo_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Redid %s"),

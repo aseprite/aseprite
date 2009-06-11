@@ -24,11 +24,11 @@
 #include "modules/gui.h"
 #include "modules/sprites.h"
 #include "raster/sprite.h"
-#include "raster/undoable.h"
+#include "undoable.h"
 
 static bool cmd_remove_frame_enabled(const char *argument)
 {
-  CurrentSprite sprite;
+  const CurrentSpriteReader sprite;
   return
     sprite != NULL &&
     sprite->frames > 1;
@@ -36,7 +36,7 @@ static bool cmd_remove_frame_enabled(const char *argument)
 
 static void cmd_remove_frame_execute(const char *argument)
 {
-  CurrentSprite sprite;
+  CurrentSpriteWriter sprite;
   {
     Undoable undoable(sprite, "Remove Frame");
     undoable.remove_frame(sprite->frame);
