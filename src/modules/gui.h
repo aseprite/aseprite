@@ -23,6 +23,7 @@
 #include <string>
 #include "ase_exception.h"
 #include "jinete/jbase.h"
+#include "jinete/jwidget.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -115,7 +116,7 @@ public:
     m_widget = NULL;
   }
 
-  JWidgetPtr(JWidget widget) {
+  explicit JWidgetPtr(JWidget widget) {
     m_widget = widget;
   }
 

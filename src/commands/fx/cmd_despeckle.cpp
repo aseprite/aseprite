@@ -67,7 +67,7 @@ static void cmd_despeckle_execute(const char *argument)
   JWidget box_target, target_button, button_ok;
   char buf[32];
 
-  JWidgetPtr window = load_widget("median.jid", "median");
+  JWidgetPtr window(load_widget("median.jid", "median"));
   get_widgets(window,
 	      "width", &entry_width,
 	      "height", &entry_height,

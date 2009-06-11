@@ -41,7 +41,7 @@ static void cmd_new_layer_execute(const char* argument)
 {
   CurrentSpriteWriter sprite;
 
-  JWidgetPtr window = load_widget("newlay.jid", "new_layer");
+  JWidgetPtr window(load_widget("newlay.jid", "new_layer"));
   JWidget name_widget = find_widget(window, "name");
   {
     char* name = get_unique_layer_name(sprite);

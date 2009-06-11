@@ -62,7 +62,7 @@ static void cmd_new_file_execute(const char *argument)
   };
 
   /* load the window widget */
-  JWidgetPtr window = load_widget("newspr.jid", "new_sprite");
+  JWidgetPtr window(load_widget("newspr.jid", "new_sprite"));
 
   width = jwidget_find_name(window, "width");
   height = jwidget_find_name(window, "height");

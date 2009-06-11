@@ -61,7 +61,7 @@ static void cmd_invert_color_execute(const char *argument)
   JWidget box_target, target_button, button_ok;
   const CurrentSpriteReader sprite;
 
-  JWidgetPtr window = load_widget("invrtcol.jid", "invert_color");
+  JWidgetPtr window(load_widget("invrtcol.jid", "invert_color"));
   get_widgets(window,
 	      "target", &box_target,
 	      "preview", &check_preview,

@@ -77,7 +77,7 @@ static void show_dialog()
   JWidget resolution, color_depth, pixel_scale, fullscreen;
   char buf[512];
 
-  JWidgetPtr window = load_widget("confscr.jid", "configure_screen");
+  JWidgetPtr window(load_widget("confscr.jid", "configure_screen"));
   get_widgets(window,
 	      "resolution", &resolution,
 	      "color_depth", &color_depth,
@@ -133,10 +133,10 @@ static void show_dialog()
 
     /* setup graphics mode */
     if (try_new_gfx_mode()) {
-      JWidgetPtr alert_window = jalert_new("Confirm Screen"
-					   "<<Do you want to keep this screen resolution?"
-					   "<<In 10 seconds the screen will be restored."
-					   "||&Yes||&No");
+      JWidgetPtr alert_window(jalert_new("Confirm Screen"
+					 "<<Do you want to keep this screen resolution?"
+					 "<<In 10 seconds the screen will be restored."
+					 "||&Yes||&No"));
       jwidget_add_hook(alert_window, -1, alert_msg_proc, NULL);
 
       seconds_to_accept = 10;

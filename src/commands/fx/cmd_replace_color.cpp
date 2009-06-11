@@ -66,7 +66,7 @@ static void cmd_replace_color_execute(const char *argument)
   JWidget box_target, target_button;
   JWidget button_ok;
 
-  JWidgetPtr window = load_widget("replcol.jid", "replace_color");
+  JWidgetPtr window(load_widget("replcol.jid", "replace_color"));
   get_widgets(window,
 	      "color_buttons_box", &color_buttons_box,
 	      "preview", &check_preview,

@@ -82,7 +82,7 @@ static void cmd_convolution_matrix_execute(const char *argument)
   JWidget box_target;
   JWidget reload, generate;
 
-  JWidgetPtr window = load_widget("convmatr.jid", "convolution_matrix");
+  JWidgetPtr window(load_widget("convmatr.jid", "convolution_matrix"));
   get_widgets(window,
 	      "preview", &check_preview,
 	      "tiled", &check_tiled,
@@ -221,7 +221,7 @@ static bool generate_select_hook(JWidget widget, void *data)
   JWidget div, div_auto;
   JWidget bias, bias_auto;
 
-  JWidgetPtr window = load_widget("convmatr.jid", "generate_convolution_matrix");
+  JWidgetPtr window(load_widget("convmatr.jid", "generate_convolution_matrix"));
   get_widgets(window,
 	      "view_x", &view_x,
 	      "view_y", &view_y,

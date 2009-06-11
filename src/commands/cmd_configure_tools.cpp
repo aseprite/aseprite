@@ -73,9 +73,6 @@ static void cmd_configure_tools_execute(const char *argument)
 
   if (!window) {
     window = load_widget("toolconf.jid", "configure_tool");
-    if (!window)
-      return;
-
     first_time = TRUE;
   }
   /* if the window is opened, close it */

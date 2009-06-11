@@ -44,7 +44,7 @@ static void cmd_canvas_size_execute(const char *argument)
   CurrentSpriteWriter sprite;
 
   // load the window widget
-  JWidgetPtr window = load_widget("canvas.jid", "canvas_size");
+  JWidgetPtr window(load_widget("canvas.jid", "canvas_size"));
   get_widgets(window,
 	      "left", &left,
 	      "top", &top,

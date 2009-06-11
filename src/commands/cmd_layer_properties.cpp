@@ -42,7 +42,7 @@ static void cmd_layer_properties_execute(const char *argument)
   CurrentSpriteWriter sprite;
   Layer *layer = sprite->layer;
 
-  JWidgetPtr window = jwindow_new(_("Layer Properties"));
+  JWidgetPtr window(jwindow_new(_("Layer Properties")));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);

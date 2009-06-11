@@ -62,7 +62,7 @@ static void cmd_cel_properties_execute(const char *argument)
   /* get current cel (can be NULL) */
   cel = layer_get_cel(layer, sprite->frame);
 
-  JWidgetPtr window = load_widget("celprop.jid", "cel_properties");
+  JWidgetPtr window(load_widget("celprop.jid", "cel_properties"));
   get_widgets(window,
 	      "frame", &label_frame,
 	      "pos", &label_pos,

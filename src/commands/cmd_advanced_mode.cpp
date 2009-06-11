@@ -56,7 +56,7 @@ static void cmd_advanced_mode_execute(const char *argument)
     char key[1024];
     char buf[1024];
 
-    JWidgetPtr window = load_widget("advanced.jid", "advanced_mode_warning");
+    JWidgetPtr window(load_widget("advanced.jid", "advanced_mode_warning"));
     JWidget warning_label = find_widget(window, "warning_label");
     JWidget donot_show = find_widget(window, "donot_show");
 

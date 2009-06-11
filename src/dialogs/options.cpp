@@ -60,7 +60,7 @@ void dialogs_options()
   old_y = y;
 
   /* load the window widget */
-  JWidgetPtr window = load_widget("options.jid", "options");
+  JWidgetPtr window(load_widget("options.jid", "options"));
   get_widgets(window,
 	      "mouse_x", &slider_x,
 	      "mouse_y", &slider_y,

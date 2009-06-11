@@ -43,7 +43,7 @@ static void cmd_duplicate_sprite_execute(const char *argument)
   char buf[1024];
 
   /* load the window widget */
-  JWidgetPtr window = load_widget("dupspr.jid", "duplicate_sprite");
+  JWidgetPtr window(load_widget("dupspr.jid", "duplicate_sprite"));
 
   src_name = jwidget_find_name(window, "src_name");
   dst_name = jwidget_find_name(window, "dst_name");

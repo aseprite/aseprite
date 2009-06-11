@@ -49,7 +49,7 @@ static void cmd_sprite_properties_execute(const char *argument)
   char buf[256];
 
   /* load the window widget */
-  JWidgetPtr window = load_widget("sprprop.jid", "sprite_properties");
+  JWidgetPtr window(load_widget("sprprop.jid", "sprite_properties"));
   get_widgets(window,
 	      "name", &name,
 	      "type", &type,

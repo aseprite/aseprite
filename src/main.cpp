@@ -37,13 +37,13 @@ public:
   ~Allegro() { allegro_exit(); }
 };
 
+#if defined MEMLEAK
 class MemLeaks {
 public:
-#if defined MEMLEAK
   MemLeaks() { jmemleak_init(); }
   ~MemLeaks() { jmemleak_exit(); }
-#endif
 };
+#endif
 
 //////////////////////////////////////////////////////////////////////
 //			       Main Routine
@@ -52,7 +52,9 @@ public:
 int main(int argc, char *argv[])
 {
   Allegro allegro;
+#if defined MEMLEAK
   MemLeaks memleaks;
+#endif
 
   set_uformat(U_ASCII);
 

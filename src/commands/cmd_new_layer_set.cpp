@@ -39,7 +39,7 @@ static void cmd_new_layer_set_execute(const char *argument)
   CurrentSpriteWriter sprite;
 
   // load the window widget
-  JWidgetPtr window = load_widget("newlay.jid", "new_layer_set");
+  JWidgetPtr window(load_widget("newlay.jid", "new_layer_set"));
 
   jwindow_open_fg(window);
 

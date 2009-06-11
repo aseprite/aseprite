@@ -70,7 +70,7 @@ static void cmd_color_curve_execute(const char *argument)
 		 the_curve);
   }
 
-  JWidgetPtr window = load_widget("colcurv.jid", "color_curve");
+  JWidgetPtr window(load_widget("colcurv.jid", "color_curve"));
   get_widgets(window,
 	      "preview", &check_preview,
 	      "button_ok", &button_ok,

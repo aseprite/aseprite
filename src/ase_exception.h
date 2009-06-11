@@ -39,6 +39,10 @@ public:
   {
   }
 
+  virtual ~ase_exception() throw()
+  {
+  }
+
   void show()
   {
     Console console;

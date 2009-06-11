@@ -87,7 +87,7 @@ static void cmd_palette_editor_execute(const char *argument)
   }
 
   /* load widgets */
-  JWidgetPtr window = load_widget("paledit.jid", "palette_editor");
+  JWidgetPtr window(load_widget("paledit.jid", "palette_editor"));
   get_widgets(window,
 	      "red", &slider_R,
 	      "green", &slider_G,

@@ -137,7 +137,7 @@ static void cmd_sprite_size_execute(const char *argument)
   const CurrentSpriteReader sprite;
 
   // load the window widget
-  JWidgetPtr window = load_widget("sprsize.jid", "sprite_size");
+  JWidgetPtr window(load_widget("sprsize.jid", "sprite_size"));
   get_widgets(window,
 	      "width_px", &width_px,
 	      "height_px", &height_px,
