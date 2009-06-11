@@ -41,13 +41,13 @@
 
 typedef struct Thumbnail
 {
-  Cel *cel;
+  const Cel *cel;
   BITMAP* bmp;
 } Thumbnail;
 
 static JList thumbnails = NULL;
 
-static Thumbnail* thumbnail_new(Cel *cel, BITMAP* bmp);
+static Thumbnail* thumbnail_new(const Cel *cel, BITMAP* bmp);
 static void thumbnail_free(Thumbnail* thumbnail);
 static void thumbnail_render(BITMAP* bmp, Image* image, bool has_alpha);
 
@@ -64,7 +64,7 @@ void destroy_thumbnails()
   }
 }
 
-BITMAP* generate_thumbnail(Layer *layer, Cel *cel, Sprite *sprite)
+BITMAP* generate_thumbnail(const Layer *layer, const Cel *cel, const Sprite *sprite)
 {
   Thumbnail* thumbnail;
   BITMAP* bmp;
@@ -98,7 +98,7 @@ BITMAP* generate_thumbnail(Layer *layer, Cel *cel, Sprite *sprite)
   return thumbnail->bmp;
 }
 
-static Thumbnail* thumbnail_new(Cel *cel, BITMAP* bmp)
+static Thumbnail* thumbnail_new(const Cel *cel, BITMAP* bmp)
 {
   Thumbnail* thumbnail;
 

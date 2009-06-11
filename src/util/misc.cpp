@@ -41,7 +41,7 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
-Image *GetImage(Sprite *sprite)
+Image *GetImage(const Sprite *sprite)
 {
   Image *image = NULL;
 
@@ -58,7 +58,7 @@ Image *GetImage(Sprite *sprite)
   return image;
 }
 
-Image* GetImage2(Sprite* sprite, int* x, int* y, int* opacity)
+Image* GetImage2(const Sprite* sprite, int* x, int* y, int* opacity)
 {
   Image* image = NULL;
 
@@ -117,7 +117,7 @@ void LoadPalette(Sprite* sprite, const char *filename)
 
 /* returns a new layer created from the current mask in the current
    sprite, the layer isn't added to the sprite */
-Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
+Layer *NewLayerFromMask(const Sprite *src_sprite, Sprite *dst_sprite)
 {
   ase_uint8 *address;
   int x, y, u, v, getx, gety;
@@ -173,7 +173,7 @@ Layer *NewLayerFromMask(Sprite *src_sprite, Sprite *dst_sprite)
   return layer;
 }
 
-Image* NewImageFromMask(Sprite* src_sprite)
+Image* NewImageFromMask(const Sprite* src_sprite)
 {
   ase_uint8 *address;
   int x, y, u, v, getx, gety;

@@ -269,7 +269,7 @@ void undo_free(Undo* undo)
   delete undo;
 }
 
-int undo_get_memsize(Undo* undo)
+int undo_get_memsize(const Undo* undo)
 {
   assert(undo);
   return
@@ -280,34 +280,34 @@ int undo_get_memsize(Undo* undo)
 void undo_enable(Undo* undo)
 {
   assert(undo);
-  undo->enabled = TRUE;
+  undo->enabled = true;
 }
 
 void undo_disable(Undo* undo)
 {
   assert(undo);
-  undo->enabled = FALSE;
+  undo->enabled = false;
 }
 
-bool undo_is_enabled(Undo* undo)
+bool undo_is_enabled(const Undo* undo)
 {
   assert(undo);
-  return undo->enabled ? TRUE: FALSE;
+  return undo->enabled ? true: false;
 }
 
-bool undo_is_disabled(Undo* undo)
+bool undo_is_disabled(const Undo* undo)
 {
   assert(undo);
   return !undo_is_enabled(undo);
 }
 
-bool undo_can_undo(Undo* undo)
+bool undo_can_undo(const Undo* undo)
 {
   assert(undo);
   return !jlist_empty(undo->undo_stream->chunks);
 }
 
-bool undo_can_redo(Undo* undo)
+bool undo_can_redo(const Undo* undo)
 {
   assert(undo);
   return !jlist_empty(undo->redo_stream->chunks);
@@ -339,7 +339,7 @@ void undo_set_label(Undo* undo, const char *label)
   undo->label = label;
 }
 
-const char *undo_get_next_undo_label(Undo* undo)
+const char *undo_get_next_undo_label(const Undo* undo)
 {
   UndoChunk* chunk;
 
@@ -349,7 +349,7 @@ const char *undo_get_next_undo_label(Undo* undo)
   return chunk->label;
 }
 
-const char *undo_get_next_redo_label(Undo* undo)
+const char *undo_get_next_redo_label(const Undo* undo)
 {
   UndoChunk* chunk;
 

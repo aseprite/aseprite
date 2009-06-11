@@ -52,16 +52,16 @@ public:
 Undo* undo_new(Sprite* sprite);
 void undo_free(Undo* undo);
 
-int undo_get_memsize(Undo* undo);
+int undo_get_memsize(const Undo* undo);
 
 void undo_enable(Undo* undo);
 void undo_disable(Undo* undo);
 
-bool undo_is_enabled(Undo* undo);
-bool undo_is_disabled(Undo* undo);
+bool undo_is_enabled(const Undo* undo);
+bool undo_is_disabled(const Undo* undo);
 
-bool undo_can_undo(Undo* undo);
-bool undo_can_redo(Undo* undo);
+bool undo_can_undo(const Undo* undo);
+bool undo_can_redo(const Undo* undo);
 
 void undo_do_undo(Undo* undo);
 void undo_do_redo(Undo* undo);
@@ -69,8 +69,8 @@ void undo_do_redo(Undo* undo);
 void undo_clear_redo(Undo* undo);
 
 void undo_set_label(Undo* undo, const char *label);
-const char* undo_get_next_undo_label(Undo* undo);
-const char* undo_get_next_redo_label(Undo* undo);
+const char* undo_get_next_undo_label(const Undo* undo);
+const char* undo_get_next_redo_label(const Undo* undo);
 
 void undo_open(Undo* undo);
 void undo_close(Undo* undo);

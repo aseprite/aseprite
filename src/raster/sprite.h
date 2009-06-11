@@ -101,14 +101,14 @@ Sprite* sprite_new_copy(const Sprite* src_sprite);
 Sprite* sprite_new_flatten_copy(const Sprite* src_sprite);
 Sprite* sprite_new_with_layer(int imgtype, int w, int h);
 
-bool sprite_is_modified(Sprite* sprite);
-bool sprite_is_associated_to_file(Sprite* sprite);
+bool sprite_is_modified(const Sprite* sprite);
+bool sprite_is_associated_to_file(const Sprite* sprite);
 void sprite_mark_as_saved(Sprite* sprite);
 
-bool sprite_need_alpha(Sprite* sprite);
+bool sprite_need_alpha(const Sprite* sprite);
 
-struct Palette* sprite_get_palette(Sprite* sprite, int frame);
-void sprite_set_palette(Sprite* sprite, struct Palette* pal, bool truncate);
+Palette* sprite_get_palette(const Sprite* sprite, int frame);
+void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate);
 void sprite_reset_palettes(Sprite* sprite);
 
 void sprite_set_filename(Sprite* sprite, const char* filename);
@@ -116,7 +116,7 @@ void sprite_set_format_options(Sprite* sprite, FormatOptions* format_options);
 void sprite_set_size(Sprite* sprite, int w, int h);
 void sprite_set_frames(Sprite* sprite, int frames);
 void sprite_set_frlen(Sprite* sprite, int frame, int msecs);
-int sprite_get_frlen(Sprite* sprite, int frame);
+int sprite_get_frlen(const Sprite* sprite, int frame);
 void sprite_set_speed(Sprite* sprite, int msecs);
 void sprite_set_path(Sprite* sprite, const Path* path);
 void sprite_set_mask(Sprite* sprite, const Mask* mask);
@@ -124,25 +124,25 @@ void sprite_set_layer(Sprite* sprite, Layer* layer);
 void sprite_set_frame(Sprite* sprite, int frame);
 void sprite_set_imgtype(Sprite* sprite, int imgtype, int dithering_method);
 
-Layer* sprite_get_background_layer(Sprite* sprite);
+Layer* sprite_get_background_layer(const Sprite* sprite);
 
 void sprite_add_path(Sprite* sprite, Path* path);
 void sprite_remove_path(Sprite* sprite, Path* path);
 
 void sprite_add_mask(Sprite* sprite, Mask* mask);
 void sprite_remove_mask(Sprite* sprite, Mask* mask);
-Mask* sprite_request_mask(Sprite* sprite, const char *name);
+Mask* sprite_request_mask(const Sprite* sprite, const char *name);
 
-void sprite_render(Sprite* sprite, Image* image, int x, int y);
+void sprite_render(const Sprite* sprite, Image* image, int x, int y);
 void sprite_generate_mask_boundaries(Sprite* sprite);
 
-Layer* sprite_index2layer(Sprite* sprite, int index);
+Layer* sprite_index2layer(const Sprite* sprite, int index);
 int sprite_layer2index(const Sprite* sprite, const Layer* layer);
 int sprite_count_layers(const Sprite* sprite);
-void sprite_get_cels(Sprite* sprite, JList cels);
+void sprite_get_cels(const Sprite* sprite, JList cels);
 
-int sprite_getpixel(Sprite* sprite, int x, int y);
+int sprite_getpixel(const Sprite* sprite, int x, int y);
 
-int sprite_get_memsize(Sprite* sprite);
+int sprite_get_memsize(const Sprite* sprite);
 
 #endif				/* RASTER_SPRITE_H */

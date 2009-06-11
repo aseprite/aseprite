@@ -29,7 +29,7 @@
 #include "raster/raster.h"
 #include "util/boundary.h"
 
-static Layer *index2layer(Layer *layer, int index, int *index_count);
+static Layer *index2layer(const Layer *layer, int index, int *index_count);
 static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count);
 static int layer_count_layers(const Layer *layer);
 
@@ -276,7 +276,7 @@ Sprite* sprite_new_with_layer(int imgtype, int w, int h)
   return sprite;
 }
 
-bool sprite_is_modified(Sprite* sprite)
+bool sprite_is_modified(const Sprite* sprite)
 {
   assert(sprite != NULL);
 
@@ -284,7 +284,7 @@ bool sprite_is_modified(Sprite* sprite)
 	  sprite->undo->diff_saved) ? FALSE: TRUE;
 }
 
-bool sprite_is_associated_to_file(Sprite* sprite)
+bool sprite_is_associated_to_file(const Sprite* sprite)
 {
   assert(sprite != NULL);
 
@@ -299,7 +299,7 @@ void sprite_mark_as_saved(Sprite* sprite)
   sprite->associated_to_file = TRUE;
 }
 
-bool sprite_need_alpha(Sprite* sprite)
+bool sprite_need_alpha(const Sprite* sprite)
 {
   assert(sprite != NULL);
 
@@ -336,7 +336,7 @@ void Sprite::unlock()
   assert(m_locked >= 0);
 }
 
-Palette* sprite_get_palette(Sprite* sprite, int frame)
+Palette* sprite_get_palette(const Sprite* sprite, int frame)
 {
   Palette* found = NULL;
   Palette* pal;
@@ -451,7 +451,7 @@ void sprite_set_frlen(Sprite* sprite, int frame, int msecs)
     sprite->frlens[frame] = MID(1, msecs, 65535);
 }
 
-int sprite_get_frlen(Sprite* sprite, int frame)
+int sprite_get_frlen(const Sprite* sprite, int frame)
 {
   if (frame >= 0 && frame < sprite->frames)
     return sprite->frlens[frame];
@@ -574,7 +574,7 @@ void sprite_set_imgtype(Sprite* sprite, int imgtype, int dithering_method)
     undo_close(sprite->undo);
 }
 
-Layer *sprite_get_background_layer(Sprite* sprite)
+Layer *sprite_get_background_layer(const Sprite* sprite)
 {
   assert(sprite != NULL);
 
@@ -633,7 +633,7 @@ void sprite_remove_mask(Sprite* sprite, Mask *mask)
 /**
  * Returns a mask from the sprite's repository searching it by its name
  */
-Mask *sprite_request_mask(Sprite* sprite, const char *name)
+Mask *sprite_request_mask(const Sprite* sprite, const char *name)
 {
   Mask *mask;
   JLink link;
@@ -647,7 +647,7 @@ Mask *sprite_request_mask(Sprite* sprite, const char *name)
   return NULL;
 }
 
-void sprite_render(Sprite* sprite, Image *image, int x, int y)
+void sprite_render(const Sprite* sprite, Image *image, int x, int y)
 {
   image_rectfill(image, x, y, x+sprite->w-1, y+sprite->h-1, 0);
   layer_render(sprite->set, image, x, y, sprite->frame);
@@ -676,7 +676,7 @@ void sprite_generate_mask_boundaries(Sprite* sprite)
   }
 }
 
-Layer *sprite_index2layer(Sprite* sprite, int index)
+Layer *sprite_index2layer(const Sprite* sprite, int index)
 {
   int index_count = -1;
   assert(sprite != NULL);
@@ -698,7 +698,7 @@ int sprite_count_layers(const Sprite* sprite)
   return layer_count_layers(sprite->set)-1;
 }
 
-void sprite_get_cels(Sprite* sprite, JList cels)
+void sprite_get_cels(const Sprite* sprite, JList cels)
 {
   return layer_get_cels(sprite->set, cels);
 }
@@ -708,7 +708,7 @@ void sprite_get_cels(Sprite* sprite, JList cels)
  * specified coordinates there're background this routine will return
  * the 0 color (the mask-color).
  */
-int sprite_getpixel(Sprite* sprite, int x, int y)
+int sprite_getpixel(const Sprite* sprite, int x, int y)
 {
   Image *image;
   int color = 0;
@@ -724,7 +724,7 @@ int sprite_getpixel(Sprite* sprite, int x, int y)
   return color;
 }
 
-int sprite_get_memsize(Sprite* sprite)
+int sprite_get_memsize(const Sprite* sprite)
 {
   Image *image;
   int i, size = 0;
@@ -739,10 +739,10 @@ int sprite_get_memsize(Sprite* sprite)
   return size;
 }
 
-static Layer *index2layer(Layer *layer, int index, int *index_count)
+static Layer *index2layer(const Layer *layer, int index, int *index_count)
 {
   if (index == *index_count)
-    return layer;
+    return (Layer*)layer;
   else {
     (*index_count)++;
 

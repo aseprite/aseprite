@@ -28,13 +28,13 @@ class Layer;
 class Sprite;
 class Undo;
 
-Image* GetImage(Sprite* sprite);
-Image* GetImage2(Sprite* sprite, int *x, int *y, int *opacity);
+Image* GetImage(const Sprite* sprite);
+Image* GetImage2(const Sprite* sprite, int *x, int *y, int *opacity);
 
 void LoadPalette(Sprite* sprite, const char* filename);
 
-Layer* NewLayerFromMask(Sprite* src, Sprite* dst);
-Image* NewImageFromMask(Sprite* src);
+Layer* NewLayerFromMask(const Sprite* src, Sprite* dst);
+Image* NewImageFromMask(const Sprite* src);
 
 Image* GetLayerImage(Layer* layer, int *x, int *y, int frame);
 
