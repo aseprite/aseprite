@@ -126,6 +126,46 @@ Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor)
   return trim;
 }
 
+void image_rotate(const Image* src, Image* dst, int angle)
+{
+  int x, y;
+
+  switch (angle) {
+
+    case 180:
+      assert(dst->w == src->w);
+      assert(dst->h == src->h);
+
+      for (y=0; y<src->h; ++y)
+	for (x=0; x<src->w; ++x)
+	  dst->putpixel(src->w - x - 1,
+			src->h - y - 1, src->getpixel(x, y));
+      break;
+
+    case 90:
+      assert(dst->w == src->h);
+      assert(dst->h == src->w);
+
+      for (y=0; y<src->h; ++y)
+	for (x=0; x<src->w; ++x)
+	  dst->putpixel(src->h - y - 1, x, src->getpixel(x, y));
+      break;
+
+    case -90:
+      assert(dst->w == src->h);
+      assert(dst->h == src->w);
+
+      for (y=0; y<src->h; ++y)
+	for (x=0; x<src->w; ++x)
+	  dst->putpixel(y, src->w - x - 1, src->getpixel(x, y));
+      break;
+
+    // bad angle
+    default:
+      throw std::invalid_argument("Invalid angle specified to rotate the image");
+  }
+}
+
 void image_hline(Image* image, int x1, int y, int x2, int color)
 {
   int t;

@@ -95,25 +95,7 @@ protected:
       Image* new_image = image_new(image->imgtype,
 				   m_angle == 180 ? image->w: image->h,
 				   m_angle == 180 ? image->h: image->w);
-
-      switch (m_angle) {
-	case 180:
-	  for (int y=0; y<image->h; ++y)
-	    for (int x=0; x<image->w; ++x)
-	      new_image->putpixel(image->w - x - 1,
-				  image->h - y - 1, image->getpixel(x, y));
-	  break;
-	case 90:
-	  for (int y=0; y<image->h; ++y)
-	    for (int x=0; x<image->w; ++x)
-	      new_image->putpixel(image->h - y - 1, x, image->getpixel(x, y));
-	  break;
-	case -90:
-	  for (int y=0; y<image->h; ++y)
-	    for (int x=0; x<image->w; ++x)
-	      new_image->putpixel(y, image->w - x - 1, image->getpixel(x, y));
-	  break;
-      }
+      image_rotate(image, new_image, m_angle);
 
       undoable.replace_stock_image(i, new_image);
 
@@ -124,14 +106,43 @@ protected:
 	return;	       // Undoable destructor will undo all operations
     }
 
-    // resize sprite
+    // rotate mask
+    if (m_sprite->mask->bitmap) {
+      Mask* new_mask = mask_new();
+      int x, y;
+
+      switch (m_angle) {
+	case 180:
+	  x = m_sprite->w - m_sprite->mask->x - m_sprite->mask->w;
+	  y = m_sprite->h - m_sprite->mask->y - m_sprite->mask->h;
+	  break;
+	case 90:
+	  x = m_sprite->h - m_sprite->mask->y - m_sprite->mask->h;
+	  y = m_sprite->mask->x;
+	  break;
+	case -90:
+	  x = m_sprite->mask->y;
+	  y = m_sprite->w - m_sprite->mask->x - m_sprite->mask->w;
+	  break;
+      }
+
+      // create the new rotated mask
+      mask_replace(new_mask, x, y,
+		   m_angle == 180 ? m_sprite->mask->w: m_sprite->mask->h,
+		   m_angle == 180 ? m_sprite->mask->h: m_sprite->mask->w);
+      image_rotate(m_sprite->mask->bitmap, new_mask->bitmap, m_angle);
+
+      // copy new mask
+      undoable.copy_to_current_mask(new_mask);
+      mask_free(new_mask);
+
+      // regenerate mask
+      sprite_generate_mask_boundaries(m_sprite);
+    }
+
+    // change the sprite's size
     if (m_angle != 180)
       undoable.set_sprite_size(m_sprite->h, m_sprite->w);
-
-    // TODO rotate mask
-
-    // regenerate mask
-    sprite_generate_mask_boundaries(m_sprite);
 
     // commit changes
     undoable.commit();

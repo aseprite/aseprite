@@ -77,6 +77,7 @@ void image_merge(Image* dst, const Image* src, int x, int y, int opacity,
 		 int blend_mode);
 
 Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor);
+void image_rotate(const Image* src, Image* dst, int angle);
 
 void image_hline(Image* image, int x1, int y, int x2, int color);
 void image_vline(Image* image, int x, int y1, int y2, int color);
