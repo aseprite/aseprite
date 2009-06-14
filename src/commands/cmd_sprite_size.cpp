@@ -92,6 +92,7 @@ protected:
       int h = scale_y(image->h);
       Image* new_image = image_new(image->imgtype, MAX(1, w), MAX(1, h));
 
+      image_fixup_transparent_colors(image);
       image_resize(image, new_image,
 		   m_resize_method,
 		   get_current_palette(),
@@ -108,17 +109,26 @@ protected:
 
     // resize mask
     if (m_sprite->mask->bitmap) {
-      int w = scale_x(m_sprite->mask->bitmap->w);
-      int h = scale_y(m_sprite->mask->bitmap->h);
+      Image* old_bitmap = image_crop(m_sprite->mask->bitmap, -1, -1,
+				     m_sprite->mask->bitmap->w+2,
+				     m_sprite->mask->bitmap->h+2, 0);
+
+      int w = scale_x(old_bitmap->w);
+      int h = scale_y(old_bitmap->h);
       Mask* new_mask = mask_new();
       mask_replace(new_mask,
-		   scale_x(m_sprite->mask->x),
-		   scale_y(m_sprite->mask->y), MAX(1, w), MAX(1, h));
-
-      image_resize(m_sprite->mask->bitmap, new_mask->bitmap,
-		   RESIZE_METHOD_NEAREST_NEIGHBOR,
+		   scale_x(m_sprite->mask->x-1),
+		   scale_y(m_sprite->mask->y-1), MAX(1, w), MAX(1, h));
+      image_resize(old_bitmap, new_mask->bitmap,
+		   m_resize_method,
 		   get_current_palette(),
 		   orig_rgb_map);
+      image_free(old_bitmap);
+
+      // reshrink
+      mask_intersect(new_mask,
+		     new_mask->x, new_mask->y,
+		     new_mask->w, new_mask->h);
 
       undoable.copy_to_current_mask(new_mask);
       mask_free(new_mask);

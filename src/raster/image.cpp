@@ -318,15 +318,106 @@ void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color)
 /*   } */
 /* } */
 
-/*********************************************************************
- Allegro <-> Image
- *********************************************************************/
-
 void image_to_allegro(const Image* image, BITMAP *bmp, int x, int y)
 {
   image->to_allegro(bmp, x, y);
 }
 
+/**
+ * This routine does not modify the image to the human eye, but
+ * internally tries to fixup all colors that are completelly
+ * transparent (alpha = 0) with the average of its 4-neighbors.
+ */
+void image_fixup_transparent_colors(Image* image)
+{
+  int x, y, u, v;
+
+  switch (image->imgtype) {
+
+    case IMAGE_RGB: {
+      ase_uint32 c;
+      int r, g, b, count;
+
+      for (y=0; y<image->h; ++y) {
+	for (x=0; x<image->w; ++x) {
+	  c = image_getpixel_fast<RgbTraits>(image, x, y);
+
+	  // if this is a completelly-transparent pixel...
+	  if (_rgba_geta(c) == 0) {
+	    count = 0;
+	    r = g = b = 0;
+
+	    for (v=y-1; v<=y+1; ++v) {
+	      for (u=x-1; u<=x+1; ++u) {
+	    	if ((u >= 0) && (v >= 0) && (u < image->w) && (v < image->h)) {
+	    	  c = image_getpixel_fast<RgbTraits>(image, u, v);
+	    	  if (_rgba_geta(c) > 0) {
+	    	    r += _rgba_getr(c);
+	    	    g += _rgba_getg(c);
+	    	    b += _rgba_getb(c);
+		    ++count;
+	    	  }
+	    	}
+	      }
+	    }
+
+	    if (count > 0) {
+	      r /= count;
+	      g /= count;
+	      b /= count;
+	      image_putpixel_fast<RgbTraits>(image, x, y, _rgba(r, g, b, 0));
+	    }
+	  }
+	}
+      }
+      break;
+    }
+
+    case IMAGE_GRAYSCALE: {
+      ase_uint16 c;
+      int k, count;
+
+      for (y=0; y<image->h; ++y) {
+	for (x=0; x<image->w; ++x) {
+	  c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
+
+	  // if this is a completelly-transparent pixel...
+	  if (_graya_geta(c) == 0) {
+	    count = 0;
+	    k = 0;
+
+	    for (v=y-1; v<=y+1; ++v) {
+	      for (u=x-1; u<=x+1; ++u) {
+	    	if ((u >= 0) && (v >= 0) && (u < image->w) && (v < image->h)) {
+	    	  c = image_getpixel_fast<GrayscaleTraits>(image, u, v);
+	    	  if (_graya_geta(c) > 0) {
+	    	    k += _graya_getv(c);
+		    ++count;
+	    	  }
+	    	}
+	      }
+	    }
+
+	    if (count > 0) {
+	      k /= count;
+	      image_putpixel_fast<GrayscaleTraits>(image, x, y, _graya(k, 0));
+	    }
+	  }
+	}
+      }
+      break;
+    }
+      
+  }
+}
+
+/**
+ * Resizes the source image @a src to the destination image @a dst.
+ *
+ * @warning If you are using the RESIZE_METHOD_BILINEAR, it is
+ * recommended to use @ref image_fixup_transparent_colors function
+ * over the source image @a src before using this routine.
+ */
 void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pal, RGB_MAP* rgb_map)
 {
   switch (method) {
@@ -353,29 +444,47 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pa
       break;
     }
 
-      // TODO optimize this
+    // TODO optimize this
     case RESIZE_METHOD_BILINEAR: {
       ase_uint32 color[4], dst_color;
       double u, v, du, dv;
+      int u_floor, u_floor2;
+      int v_floor, v_floor2;
       int x, y;
   
       u = v = 0.0;
-      du = src->w * 1.0 / dst->w;
-      dv = src->h * 1.0 / dst->h;
+      du = (src->w-1) * 1.0 / (dst->w-1);
+      dv = (src->h-1) * 1.0 / (dst->h-1);
       for (y=0; y<dst->h; ++y) {
 	for (x=0; x<dst->w; ++x) {
-	  int u_floor = floor(u);
-	  int v_floor = floor(v);
+	  u_floor = floor(u);
+	  v_floor = floor(v);
 
-	  color[0] = src->getpixel(MID(0, u_floor, src->w-1),
-				   MID(0, v_floor, src->h-1));
-	  color[1] = src->getpixel(MID(0, u_floor+1, src->w-1),
-				   MID(0, v_floor, src->h-1));
-	  color[2] = src->getpixel(MID(0, u_floor, src->w-1),
-				   MID(0, v_floor+1, src->h-1));
-	  color[3] = src->getpixel(MID(0, u_floor+1, src->w-1),
-				   MID(0, v_floor+1, src->h-1));
+	  if (u_floor > src->w-1) {
+	    u_floor = src->w-1;
+	    u_floor2 = src->w-1;
+	  }
+	  else if (u_floor == src->w-1)
+	    u_floor2 = u_floor;
+	  else
+	    u_floor2 = u_floor+1;
 
+	  if (v_floor > src->h-1) {
+	    v_floor = src->h-1;
+	    v_floor2 = src->h-1;
+	  }
+	  else if (v_floor == src->h-1)
+	    v_floor2 = v_floor;
+	  else
+	    v_floor2 = v_floor+1;
+
+	  // get the four colors
+	  color[0] = src->getpixel(u_floor,  v_floor);
+	  color[1] = src->getpixel(u_floor2, v_floor);
+	  color[2] = src->getpixel(u_floor,  v_floor2);
+	  color[3] = src->getpixel(u_floor2, v_floor2);
+
+	  // calculate the interpolated color
 	  double u1 = u - u_floor;
 	  double v1 = v - v_floor;
 	  double u2 = 1 - u1;
@@ -409,9 +518,15 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pa
 		       (_rgba_getg(pal->color[color[2]])*u2 + _rgba_getg(pal->color[color[3]])*u1)*v1);
 	      int b = ((_rgba_getb(pal->color[color[0]])*u2 + _rgba_getb(pal->color[color[1]])*u1)*v2 +
 		       (_rgba_getb(pal->color[color[2]])*u2 + _rgba_getb(pal->color[color[3]])*u1)*v1);
-	      int a = ((_rgba_geta(pal->color[color[0]])*u2 + _rgba_geta(pal->color[color[1]])*u1)*v2 +
-		       (_rgba_geta(pal->color[color[2]])*u2 + _rgba_geta(pal->color[color[3]])*u1)*v1);
+	      int a = (((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
+		       ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
 	      dst_color = a > 127 ? rgb_map->data[r>>3][g>>3][b>>3]: 0;
+	      break;
+	    }
+	    case IMAGE_BITMAP: {
+	      int g = ((255*color[0]*u2 + 255*color[1]*u1)*v2 +
+	      	       (255*color[2]*u2 + 255*color[3]*u1)*v1);
+	      dst_color = g > 127 ? 1: 0;
 	      break;
 	    }
 	  }
