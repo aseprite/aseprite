@@ -30,6 +30,7 @@
 #include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undoable.h"
@@ -42,6 +43,9 @@ class SpriteSizeJob : public Job
   int m_new_width;
   int m_new_height;
   ResizeMethod m_resize_method;
+
+  inline int scale_x(int x) const { return x * m_new_width / m_sprite->w; }
+  inline int scale_y(int y) const { return y * m_new_height / m_sprite->h; }
 
 public:
 
@@ -73,9 +77,7 @@ protected:
       Cel* cel = (Cel*)link->data;
 
       // change it location
-      undoable.set_cel_position(cel,
-				cel->x * m_new_width / m_sprite->w,
-				cel->y * m_new_height / m_sprite->h);
+      undoable.set_cel_position(cel, scale_x(cel->x), scale_y(cel->y));
     }
     jlist_free(cels);
 
@@ -86,8 +88,8 @@ protected:
 	continue;
 
       // resize the image
-      int w = image->w * m_new_width / m_sprite->w;
-      int h = image->h * m_new_height / m_sprite->h;
+      int w = scale_x(image->w);
+      int h = scale_y(image->h);
       Image* new_image = image_new(image->imgtype, MAX(1, w), MAX(1, h));
 
       image_resize(image, new_image,
@@ -104,13 +106,29 @@ protected:
 	return;	       // Undoable destructor will undo all operations
     }
 
+    // resize mask
+    if (m_sprite->mask->bitmap) {
+      int w = scale_x(m_sprite->mask->bitmap->w);
+      int h = scale_y(m_sprite->mask->bitmap->h);
+      Mask* new_mask = mask_new();
+      mask_replace(new_mask,
+		   scale_x(m_sprite->mask->x),
+		   scale_y(m_sprite->mask->y), MAX(1, w), MAX(1, h));
+
+      image_resize(m_sprite->mask->bitmap, new_mask->bitmap,
+		   RESIZE_METHOD_NEAREST_NEIGHBOR,
+		   get_current_palette(),
+		   orig_rgb_map);
+
+      undoable.copy_to_current_mask(new_mask);
+      mask_free(new_mask);
+
+      // regenerate mask
+      sprite_generate_mask_boundaries(m_sprite);
+    }
+
     // resize sprite
     undoable.set_sprite_size(m_new_width, m_new_height);
-
-    // TODO resize mask
-
-    // regenerate mask
-    sprite_generate_mask_boundaries(m_sprite);
 
     // commit changes
     undoable.commit();
