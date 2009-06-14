@@ -130,6 +130,7 @@ protected:
 		     new_mask->x, new_mask->y,
 		     new_mask->w, new_mask->h);
 
+      // copy new mask
       undoable.copy_to_current_mask(new_mask);
       mask_free(new_mask);
 
