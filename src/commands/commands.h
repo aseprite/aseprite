@@ -97,6 +97,7 @@
 #define CMD_REMOVE_LAYER		"remove_layer"
 #define CMD_REPLACE_COLOR		"replace_color"
 #define CMD_RESELECT_MASK		"reselect_mask"
+#define CMD_ROTATE_CANVAS		"rotate_canvas"
 #define CMD_SAVE_FILE			"save_file"
 #define CMD_SAVE_FILE_AS		"save_file_as"
 #define CMD_SAVE_FILE_COPY_AS		"save_file_copy_as"

@@ -1,3 +1,7 @@
+2009-06-14  David A. Capello  <davidcapello@gmail.com>
+
+	* src/commands/cmd_rotate_canvas.cpp: Added.
+
 2009-06-11  David A. Capello  <davidcapello@gmail.com>
 
 	* src/modules/gui.h (JWidgetPtr): Added to automatically delete

@@ -103,6 +103,7 @@ extern Command cmd_remove_frame;
 extern Command cmd_remove_layer;
 extern Command cmd_replace_color;
 extern Command cmd_reselect_mask;
+extern Command cmd_rotate_canvas;
 extern Command cmd_save_file;
 extern Command cmd_save_file_as;
 extern Command cmd_save_file_copy_as;
@@ -197,6 +198,7 @@ static Command *commands[] = {
   &cmd_remove_layer,
   &cmd_replace_color,
   &cmd_reselect_mask,
+  &cmd_rotate_canvas,
   &cmd_save_file,
   &cmd_save_file_as,
   &cmd_save_file_copy_as,

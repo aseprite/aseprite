@@ -62,6 +62,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_remove_frame.cpp		\
 	src/commands/cmd_remove_layer.cpp		\
 	src/commands/cmd_reselect_mask.cpp		\
+	src/commands/cmd_rotate_canvas.cpp		\
 	src/commands/cmd_save_file.cpp			\
 	src/commands/cmd_save_mask.cpp			\
 	src/commands/cmd_screen_shot.cpp		\
