@@ -28,7 +28,7 @@ FormatOptions* format_options_new(int type, int size)
 {
   FormatOptions* format_options;
 
-  assert(size >= sizeof(FormatOptions));
+  assert(size >= (int)sizeof(FormatOptions));
 
   format_options = (FormatOptions*)jmalloc0(size);
   if (format_options == NULL)
