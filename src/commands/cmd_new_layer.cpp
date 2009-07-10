@@ -99,5 +99,4 @@ Command cmd_new_layer = {
   cmd_new_layer_enabled,
   NULL,
   cmd_new_layer_execute,
-  NULL
 };

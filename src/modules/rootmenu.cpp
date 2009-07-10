@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
 
@@ -31,6 +32,7 @@
 #include "intl/intl.h"
 #include "modules/rootmenu.h"
 #include "modules/tools.h"
+#include "modules/gui.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
 
@@ -47,7 +49,7 @@ static int load_root_menu();
 static JWidget load_menu_by_id(JXml xml, const char *id, const char *filename);
 static JWidget convert_xmlelem_to_menu(JXmlElem elem);
 static JWidget convert_xmlelem_to_menuitem(JXmlElem elem);
-static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command);
+static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command* command, const char* argument, JAccel accel);
 
 int init_module_rootmenu()
 {
@@ -64,7 +66,6 @@ int init_module_rootmenu()
 
 void exit_module_rootmenu()
 {
-  command_reset_keys();
   jwidget_free(root_menu);
 
   if (layer_popup_menu) jwidget_free(layer_popup_menu);
@@ -103,10 +104,8 @@ static int load_root_menu()
     jmenubar_set_menu(app_get_menubar(), NULL);
 
   /* destroy `root-menu' if it exists */
-  if (root_menu) {
-    command_reset_keys();
+  if (root_menu)
     jwidget_free(root_menu);
-  }
 
   /* create a new empty-menu */
   root_menu = NULL;
@@ -171,21 +170,29 @@ static int load_root_menu()
 	      /* finally, we can read the <key /> */
 	      const char *command_name = jxmlelem_get_attr((JXmlElem)child2, "command");
 	      const char *command_key = jxmlelem_get_attr((JXmlElem)child2, "shortcut");
+	      const char *argument = jxmlelem_get_attr((JXmlElem)child2, "argument");
+
 	      if (command_name && command_key) {
 		Command *command = command_get_by_name(command_name);
 		if (command) {
-		  bool first_shortcut = !command->accel;
+		  if (!argument)
+		    argument = "";
 
-		  /* add the keyboard shortcut to the command */
-		  PRINTF("- Shortcut for command `%s': <%s>\n", command_name, command_key);
-		  command_add_key(command, command_key);
+		  bool first_shortcut =
+		    (get_accel_to_execute_command(command, argument) == NULL);
 
-		  /* add the shortcut to the menuitems with this
-		     command (this is only visual, the
-		     "manager_msg_proc" is the only one that process
-		     keyboard shortcuts) */
+		  PRINTF("- Shortcut for command `%s' with argument `%s': <%s>\n",
+			 command_name, argument, command_key);
+		  
+		  // add the keyboard shortcut to the command
+		  JAccel accel =
+		    add_keyboard_shortcut_to_execute_command(command_key, command, argument);
+
+		  // add the shortcut to the menuitems with this
+		  // command (this is only visual, the "manager_msg_proc"
+		  // is the only one that process keyboard shortcuts)
 		  if (first_shortcut)
-		    apply_shortcut_to_menuitems_with_command(root_menu, command);
+		    apply_shortcut_to_menuitems_with_command(root_menu, command, argument, accel);
 		}
 	      }
 	    }
@@ -220,7 +227,7 @@ static int load_root_menu()
 		if (tool) {
 		  /* add the keyboard shortcut to the tool */
 		  PRINTF("- Shortcut for tool `%s': <%s>\n", tool_name, tool_key);
-		  tool_add_key(tool, tool_key);
+		  add_keyboard_shortcut_to_change_tool(tool_key, tool);
 		}
 	      }
 	    }
@@ -348,7 +355,7 @@ static JWidget convert_xmlelem_to_menuitem(JXmlElem elem)
   return menuitem;
 }
 
-static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command)
+static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *command, const char* argument, JAccel accel)
 {
   JList children = jwidget_get_children(menu);
   JWidget menuitem, submenu;
@@ -358,14 +365,13 @@ static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *comm
     menuitem = (JWidget)link->data;
 
     if (jwidget_get_type(menuitem) == JI_MENUITEM) {
-      if (menuitem_get_command(menuitem) == command) {
-	jmenuitem_set_accel(menuitem, jaccel_new_copy(command->accel));
-      }
+      if (menuitem_get_command(menuitem) == command &&
+	  ustrcmp(menuitem_get_argument(menuitem), argument) == 0)
+	jmenuitem_set_accel(menuitem, jaccel_new_copy(accel));
 
       submenu = jmenuitem_get_submenu(menuitem);
-      if (submenu) {
-	apply_shortcut_to_menuitems_with_command(submenu, command);
-      }
+      if (submenu)
+	apply_shortcut_to_menuitems_with_command(submenu, command, argument, accel);
     }
   }
 

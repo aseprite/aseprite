@@ -47,5 +47,4 @@ Command cmd_paste = {
   cmd_paste_enabled,
   NULL,
   cmd_paste_execute,
-  NULL
 };

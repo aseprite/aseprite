@@ -253,5 +253,4 @@ Command cmd_configure_screen = {
   NULL,
   NULL,
   cmd_configure_screen_execute,
-  NULL
 };

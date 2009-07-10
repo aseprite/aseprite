@@ -42,5 +42,4 @@ Command cmd_mask_by_color = {
   cmd_mask_by_color_enabled,
   NULL,
   cmd_mask_by_color_execute,
-  NULL
 };

@@ -73,12 +73,14 @@ JWidget toolbar_new()
     child = jwidget_find_name(tools, buf);
 
     usprintf(buf, "%s", _(tools_list[c]->tips));
-    if (tools_list[c]->accel) {
+
+    JAccel accel = get_accel_to_change_tool(tools_list[c]);
+    if (accel) {
       ustrcat(buf, "\n(");
-      jaccel_to_string(tools_list[c]->accel, buf+ustrsize(buf));
+      jaccel_to_string(accel, buf+ustrsize(buf));
       ustrcat(buf, ")");
     }
-    
+
     jwidget_add_tooltip_text(child, buf);
   }
   

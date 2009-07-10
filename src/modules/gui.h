@@ -23,7 +23,11 @@
 #include <string>
 #include "ase_exception.h"
 #include "jinete/jbase.h"
+#include "jinete/jaccel.h"
 #include "jinete/jwidget.h"
+
+struct Command;
+struct Tool;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -92,8 +96,18 @@ JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
 JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4);
 /* void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4); */
 
-/********************************************************************/
-/* monitors */
+//////////////////////////////////////////////////////////////////////
+// Keyboard shortcuts
+
+JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut, Command* command, const char* argument);
+JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut, Tool* tool);
+
+Command* get_command_from_key_message(JMessage msg);
+JAccel get_accel_to_execute_command(Command* command, const char* argument);
+JAccel get_accel_to_change_tool(Tool* tool);
+
+//////////////////////////////////////////////////////////////////////
+// Monitors
 
 Monitor* add_gui_monitor(void (*proc)(void*),
 			 void (*free)(void*), void* data);

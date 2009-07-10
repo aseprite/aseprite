@@ -41,5 +41,4 @@ Command cmd_switch_colors = {
   NULL,
   NULL,
   cmd_switch_colors_execute,
-  NULL
 };

@@ -189,5 +189,4 @@ Command cmd_replace_color = {
   cmd_replace_color_enabled,
   NULL,
   cmd_replace_color_execute,
-  NULL
 };

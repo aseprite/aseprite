@@ -180,5 +180,4 @@ Command cmd_new_file = {
   NULL,
   NULL,
   cmd_new_file_execute,
-  NULL
 };

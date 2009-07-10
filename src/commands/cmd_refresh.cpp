@@ -62,5 +62,4 @@ Command cmd_refresh = {
   NULL,
   NULL,
   cmd_refresh_execute,
-  NULL
 };

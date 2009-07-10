@@ -65,7 +65,6 @@ struct Tool
   int flags;
   void (*preprocess_data)(ToolData *data);
   void (*draw_trace)(int x1, int y1, int x2, int y2, ToolData *data);
-  JAccel accel;
 };
 
 struct ToolData
@@ -95,11 +94,7 @@ extern Tool *tools_list[MAX_TOOLS];
 int init_module_tools();
 void exit_module_tools();
 
-void tool_add_key(Tool *tool, const char *string);
-bool tool_is_key_pressed(Tool *tool, JMessage msg);
-
 Tool *get_tool_by_name(const char *name);
-Tool *get_tool_by_key(JMessage msg);
 
 void select_tool(Tool *tool);
 

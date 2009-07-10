@@ -49,5 +49,4 @@ Command cmd_remove_layer = {
   cmd_remove_layer_enabled,
   NULL,
   cmd_remove_layer_execute,
-  NULL
 };

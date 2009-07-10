@@ -83,7 +83,7 @@ void undo_open(Undo* undo);
 void undo_close(Undo* undo);
 void undo_data(Undo* undo, GfxObj *gfxobj, void *data, int size);
 void undo_image(Undo* undo, Image *image, int x, int y, int w, int h);
-void undo_flip(Undo* undo, Image *image, int x1, int y1, int x2, int y2, int horz);
+void undo_flip(Undo* undo, Image *image, int x1, int y1, int x2, int y2, bool horz);
 void undo_dirty(Undo* undo, Dirty *dirty);
 void undo_add_image(Undo* undo, Stock *stock, int image_index);
 void undo_remove_image(Undo* undo, Stock *stock, int image_index);

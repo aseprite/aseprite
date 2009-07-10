@@ -40,5 +40,4 @@ Command cmd_copy_cel = {
   cmd_copy_cel_enabled,
   NULL,
   cmd_copy_cel_execute,
-  NULL
 };

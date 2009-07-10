@@ -134,5 +134,4 @@ Command cmd_invert_color = {
   cmd_invert_color_enabled,
   NULL,
   cmd_invert_color_execute,
-  NULL
 };

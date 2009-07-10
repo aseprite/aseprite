@@ -88,5 +88,4 @@ Command cmd_duplicate_sprite = {
   cmd_duplicate_sprite_enabled,
   NULL,
   cmd_duplicate_sprite_execute,
-  NULL
 };

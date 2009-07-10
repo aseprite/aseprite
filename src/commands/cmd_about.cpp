@@ -133,5 +133,4 @@ Command cmd_about = {
   NULL,
   NULL,
   cmd_about_execute,
-  NULL
 };

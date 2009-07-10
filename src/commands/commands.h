@@ -53,8 +53,7 @@
 #define CMD_EYEDROPPER_TOOL		"eyedropper_tool"
 #define CMD_FILM_EDITOR			"film_editor"
 #define CMD_FLATTEN_LAYERS		"flatten_layers"
-#define CMD_FLIP_HORIZONTAL		"flip_horizontal"
-#define CMD_FLIP_VERTICAL		"flip_vertical"
+#define CMD_FLIP			"flip"
 #define CMD_FLOODFILL_TOOL		"floodfill_tool"
 #define CMD_FRAME_PROPERTIES		"frame_properties"
 #define CMD_GOTO_FIRST_FRAME		"goto_first_frame"
@@ -123,18 +122,12 @@ struct Command
   bool (*enabled)(const char *argument); /* preconditions to execute the command */
   bool (*checked)(const char *argument); /* should the menu-item be checked? */
   void (*execute)(const char *argument); /* execute the command (after check the preconditions) */
-  JAccel accel;
 };
 
 Command *command_get_by_name(const char *name);
-Command *command_get_by_key(JMessage msg);
 
 bool command_is_enabled(Command *command, const char *argument);
 bool command_is_checked(Command *command, const char *argument);
 void command_execute(Command *command, const char *argument);
-
-bool command_is_key_pressed(Command *command, JMessage msg);
-void command_add_key(Command *command, const char *string);
-void command_reset_keys();
 
 #endif /* COMMANDS_COMMANDS_H */

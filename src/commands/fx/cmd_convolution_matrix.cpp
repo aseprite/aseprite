@@ -318,5 +318,4 @@ Command cmd_convolution_matrix = {
   cmd_convolution_matrix_enabled,
   NULL,
   cmd_convolution_matrix_execute,
-  NULL
 };

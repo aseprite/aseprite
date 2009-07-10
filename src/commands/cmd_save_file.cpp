@@ -273,7 +273,6 @@ Command cmd_save_file = {
   cmd_save_file_enabled,
   NULL,
   cmd_save_file_execute,
-  NULL
 };
 
 /**
@@ -284,7 +283,6 @@ Command cmd_save_file_as = {
   cmd_save_file_as_enabled,
   NULL,
   cmd_save_file_as_execute,
-  NULL
 };
 
 /**
@@ -295,5 +293,4 @@ Command cmd_save_file_copy_as = {
   cmd_save_file_copy_as_enabled,
   NULL,
   cmd_save_file_copy_as_execute,
-  NULL
 };

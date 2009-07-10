@@ -18,7 +18,10 @@
 
 #include "config.h"
 
-#include <assert.h>
+#include <list>
+#include <vector>
+#include <cassert>
+#include <algorithm>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -56,7 +59,7 @@
 
 #define MONITOR_TIMER_MSECS	100
 
-/**************************************************************/
+//////////////////////////////////////////////////////////////////////
 
 #ifdef ALLEGRO_WINDOWS
 #  define DEF_SCALE 2
@@ -78,22 +81,55 @@ static struct
 
 static int try_depths[] = { 32, 24, 16, 15, 8 };
 
-/**************************************************************/
+//////////////////////////////////////////////////////////////////////
+
+enum ShortcutType { Shortcut_ExecuteCommand,
+		    Shortcut_ChangeTool };
+
+struct Shortcut
+{
+  JAccel accel;
+  ShortcutType type;
+  union {
+    Command* command;
+    Tool* tool;
+  };
+  std::string argument;
+
+  Shortcut(ShortcutType type);
+  ~Shortcut();
+
+  void add_shortcut(const char* shortcut_string);
+  bool is_key_pressed(JMessage msg);
+
+};
+
+static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char* argument);
+static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool);
+
+//////////////////////////////////////////////////////////////////////
 
 struct Monitor
 {
-  /* returns true when the job is done and the monitor can be removed */
+  // returns true when the job is done and the monitor can be removed
   void (*proc)(void *);
   void (*free)(void *);
   void *data;
-  bool lock : 1;
-  bool deleted : 1;
+  bool lock;
+  bool deleted;
+
+  Monitor(void (*proc)(void *),
+	  void (*free)(void *), void *data);
+  ~Monitor();
 };
+
+//////////////////////////////////////////////////////////////////////
 
 static JWidget manager = NULL;
 
 static int monitor_timer = -1;
-static JList monitors;
+static std::list<Monitor*> monitors;
+static std::vector<Shortcut*> shortcuts;
 
 static bool ji_screen_created = FALSE;
 
@@ -103,10 +139,6 @@ static JList icon_buttons;
 /* default GUI screen configuration */
 static bool double_buffering;
 static int screen_scaling;
-
-static Monitor *monitor_new(void (*proc)(void *),
-			    void (*free)(void *), void *data);
-static void monitor_free(Monitor *monitor);
 
 /* load & save graphics configuration */
 static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen);
@@ -238,8 +270,6 @@ int init_module_gui()
   }
  gfx_done:;
 
-  monitors = jlist_new();
-
   /* window title */
   set_window_title("Allegro Sprite Editor v" VERSION);
 
@@ -282,14 +312,21 @@ int init_module_gui()
 
 void exit_module_gui()
 {
-  JLink link;
-
-  /* destroy monitors */
-  JI_LIST_FOR_EACH(monitors, link) {
-    monitor_free(reinterpret_cast<Monitor*>(link->data));
+  // destroy shortcuts
+  for (std::vector<Shortcut*>::iterator
+	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+    Shortcut* shortcut = *it;
+    delete shortcut;
   }
-  jlist_free(monitors);
-  monitors = NULL;
+  shortcuts.clear();
+
+  // destroy monitors
+  for (std::list<Monitor*>::iterator
+	 it2 = monitors.begin(); it2 != monitors.end(); ++it2) {
+    Monitor* monitor = *it2;
+    delete monitor;
+  }
+  monitors.clear();
 
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
@@ -315,28 +352,20 @@ int guiscale()
   return (JI_SCREEN_W > 512 ? 2: 1);
 }
 
-static Monitor *monitor_new(void (*proc)(void *),
-			    void (*free)(void *), void *data)
+Monitor::Monitor(void (*proc)(void *),
+		 void (*free)(void *), void *data)
 {
-  Monitor *monitor = jnew(Monitor, 1);
-  if (!monitor)
-    return NULL;
-
-  monitor->proc = proc;
-  monitor->free = free;
-  monitor->data = data;
-  monitor->lock = FALSE;
-  monitor->deleted = FALSE;
-
-  return monitor;
+  this->proc = proc;
+  this->free = free;
+  this->data = data;
+  this->lock = false;
+  this->deleted = false;
 }
 
-static void monitor_free(Monitor *monitor)
+Monitor::~Monitor()
 {
-  if (monitor->free)
-    (*monitor->free)(monitor->data);
-
-  jfree(monitor);
+  if (this->free)
+    (*this->free)(this->data);
 }
 
 static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
@@ -741,17 +770,148 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
   return widget;
 }
 
+//////////////////////////////////////////////////////////////////////
+// Keyboard shortcuts
+//////////////////////////////////////////////////////////////////////
+
+JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, Command* command, const char* argument)
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_command(command, argument);
+
+  if (!shortcut) {
+    shortcut = new Shortcut(Shortcut_ExecuteCommand);
+    shortcut->command = command;
+    shortcut->argument = argument ? argument: "";
+
+    shortcuts.push_back(shortcut);
+  }
+
+  shortcut->add_shortcut(shortcut_string);
+  return shortcut->accel;
+}
+
+JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, Tool* tool)
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
+
+  if (!shortcut) {
+    shortcut = new Shortcut(Shortcut_ChangeTool);
+    shortcut->tool = tool;
+
+    shortcuts.push_back(shortcut);
+  }
+
+  shortcut->add_shortcut(shortcut_string);
+  return shortcut->accel;
+}
+
+Command* get_command_from_key_message(JMessage msg)
+{
+  for (std::vector<Shortcut*>::iterator
+	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+    Shortcut* shortcut = *it;
+
+    if (shortcut->type == Shortcut_ExecuteCommand &&
+	shortcut->argument.empty() &&
+	shortcut->is_key_pressed(msg)) {
+      return shortcut->command;
+    }
+  }
+  return NULL;
+}
+
+JAccel get_accel_to_execute_command(Command* command, const char* argument)
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_command(command, argument);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+JAccel get_accel_to_change_tool(Tool* tool)
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+Shortcut::Shortcut(ShortcutType type)
+{
+  this->type = type;
+  this->accel = jaccel_new();
+}
+
+Shortcut::~Shortcut()
+{
+  jaccel_free(accel);
+}
+
+void Shortcut::add_shortcut(const char* shortcut_string)
+{
+  char buf[256];
+  usprintf(buf, "<%s>", shortcut_string);
+  jaccel_add_keys_from_string(this->accel, buf);
+}
+
+bool Shortcut::is_key_pressed(JMessage msg)
+{
+  if (accel) {
+    return jaccel_check(accel,
+			msg->any.shifts,
+			msg->key.ascii,
+			msg->key.scancode);
+  }
+  return false;
+}
+
+static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char* argument)
+{
+  if (!argument)
+    argument = "";
+
+  for (std::vector<Shortcut*>::iterator
+	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+    Shortcut* shortcut = *it;
+
+    if (shortcut->type == Shortcut_ExecuteCommand &&
+	shortcut->command == command &&
+        shortcut->argument == argument) {
+      return shortcut;
+    }
+  }
+
+  return NULL;
+}
+
+static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool)
+{
+  for (std::vector<Shortcut*>::iterator
+	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+    Shortcut* shortcut = *it;
+
+    if (shortcut->type == Shortcut_ChangeTool &&
+	shortcut->tool == tool) {
+      return shortcut;
+    }
+  }
+
+  return NULL;
+}
+
 /**
  * Adds a routine to be called each 100 milliseconds to monitor
  * whatever you want. It's mainly used to monitor the progress of a
  * file-operation (see @ref fop_operate)
  */
-Monitor *add_gui_monitor(void (*proc)(void *),
+Monitor* add_gui_monitor(void (*proc)(void *),
 			 void (*free)(void *), void *data)
 {
-  Monitor *monitor = monitor_new(proc, free, data);
+  Monitor* monitor = new Monitor(proc, free, data);
 
-  jlist_append(monitors, monitor);
+  monitors.push_back(monitor);
 
   if (monitor_timer < 0)
     monitor_timer = jmanager_add_timer(manager, MONITOR_TIMER_MSECS);
@@ -766,16 +926,18 @@ Monitor *add_gui_monitor(void (*proc)(void *),
  */
 void remove_gui_monitor(Monitor* monitor)
 {
-  JLink link = jlist_find(monitors, monitor);
-  assert(link != NULL);
+  std::list<Monitor*>::iterator it =
+    std::find(monitors.begin(), monitors.end(), monitor);
+
+  assert(it != monitors.end());
 
   if (!monitor->lock)
-    monitor_free(monitor);
+    delete monitor;
   else
-    monitor->deleted = TRUE;
+    monitor->deleted = true;
 
-  jlist_delete_link(monitors, link);
-  if (jlist_empty(monitors))
+  monitors.erase(it);
+  if (monitors.empty())
     jmanager_stop_timer(monitor_timer);
 }
 
@@ -795,77 +957,108 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_TIMER:
       if (msg->timer.timer_id == monitor_timer) {
-	JLink link, next;
-	JI_LIST_FOR_EACH_SAFE(monitors, link, next) {
-	  Monitor* monitor = reinterpret_cast<Monitor*>(link->data);
+	for (std::list<Monitor*>::iterator
+	       it = monitors.begin(), next; it != monitors.end(); it = next) {
+	  Monitor* monitor = *it;
+	  next = it;
+	  ++next;
 
-	  /* is the monitor not lock? */
+	  // is the monitor not lock?
 	  if (!monitor->lock) {
-	    /* call the monitor procedure */
-	    monitor->lock = TRUE;
+	    // call the monitor procedure
+	    monitor->lock = true;
 	    (*monitor->proc)(monitor->data);
-	    monitor->lock = FALSE;
+	    monitor->lock = false;
 
 	    if (monitor->deleted)
-	      monitor_free(monitor);
+	      delete monitor;
 	  }
 	}
 
-	/* is monitors empty? we can stop the timer so */
-	if (jlist_empty(monitors))
+	// is monitors empty? we can stop the timer so
+	if (monitors.empty())
 	  jmanager_stop_timer(monitor_timer);
       }
       break;
 
-    case JM_KEYPRESSED: {
-      /* check for commands */
-      Command *command = command_get_by_key(msg);
-      if (!command) {
-	/* check for tools */
-	Tool *tool = get_tool_by_key(msg);
-	if (tool != NULL)
-	  select_tool(tool);
-	break;
-      }
+    case JM_KEYPRESSED:
+      for (std::vector<Shortcut*>::iterator
+	     it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+	Shortcut* shortcut = *it;
 
-      /* the screen shot is available in everywhere */
-      if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {
-	if (command_is_enabled(command, NULL)) {
-	  command_execute(command, NULL);
-	  return TRUE;
-	}
-      }
-      /* all other keys are only available in the main-window */
-      else {
-	JWidget child;
-	JLink link;
+	if (shortcut->is_key_pressed(msg)) {
+	  switch (shortcut->type) {
 
-	JI_LIST_FOR_EACH(widget->children, link) {
-	  child = reinterpret_cast<JWidget>(link->data);
+	    case Shortcut_ChangeTool: {
+	      Tool* select_this_tool = shortcut->tool;
+	      Tool* group[MAX_TOOLS];
+	      int i, j;
 
-	  /* there are a foreground window executing? */
-	  if (jwindow_is_foreground(child)) {
-	    break;
-	  }
-	  /* is it the desktop and the top-window= */
-	  else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
-	    /* ok, so we can execute the command represented by the
-	       pressed-key in the message... */
-	    if (command_is_enabled(command, NULL)) {
-	      // if a menu is open, close everything
-	      command_execute(command, NULL);
-	      return TRUE;
+	      for (i=j=0; i<MAX_TOOLS; i++) {
+		if (get_keyboard_shortcut_for_tool(tools_list[i])->is_key_pressed(msg))
+		  group[j++] = tools_list[i];
+	      }
+
+	      if (j >= 2) {
+		for (i=0; i<j; i++) {
+		  if (group[i] == current_tool && i+1 < j) {
+		    select_this_tool = group[i+1];
+		    break;
+		  }
+		}
+	      }
+
+	      select_tool(select_this_tool);
+	      break;
 	    }
-	    break;
+
+	    case Shortcut_ExecuteCommand: {
+	      Command* command = shortcut->command;
+
+	      // the screen shot is available in everywhere
+	      if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {
+		if (command_is_enabled(command, NULL)) {
+		  command_execute(command, shortcut->argument.c_str());
+		  return true;
+		}
+	      }
+	      // all other keys are only available in the main-window
+	      else {
+		JWidget child;
+		JLink link;
+
+		JI_LIST_FOR_EACH(widget->children, link) {
+		  child = reinterpret_cast<JWidget>(link->data);
+
+		  /* there are a foreground window executing? */
+		  if (jwindow_is_foreground(child)) {
+		    break;
+		  }
+		  /* is it the desktop and the top-window= */
+		  else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
+		    /* ok, so we can execute the command represented by the
+		       pressed-key in the message... */
+		    if (command_is_enabled(command, shortcut->argument.c_str())) {
+		      // if a menu is open, close everything
+		      command_execute(command, shortcut->argument.c_str());
+		      return true;
+		    }
+		    break;
+		  }
+		}
+	      }
+	      break;
+	    }
+
 	  }
+	  break;
 	}
       }
       break;
-    }
 
   }
 
-  return FALSE;
+  return false;
 }
 
 /**********************************************************************/

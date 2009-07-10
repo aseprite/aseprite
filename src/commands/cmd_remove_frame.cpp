@@ -50,5 +50,4 @@ Command cmd_remove_frame = {
   cmd_remove_frame_enabled,
   NULL,
   cmd_remove_frame_execute,
-  NULL
 };

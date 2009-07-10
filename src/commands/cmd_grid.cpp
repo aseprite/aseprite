@@ -69,7 +69,6 @@ Command cmd_show_grid = {
   NULL,
   cmd_show_grid_checked,
   cmd_show_grid_execute,
-  NULL
 };
 
 Command cmd_snap_to_grid = {
@@ -77,5 +76,4 @@ Command cmd_snap_to_grid = {
   NULL,
   cmd_snap_to_grid_checked,
   cmd_snap_to_grid_execute,
-  NULL
 };

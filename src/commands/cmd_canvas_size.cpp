@@ -86,5 +86,4 @@ Command cmd_canvas_size = {
   cmd_canvas_size_enabled,
   NULL,
   cmd_canvas_size_execute,
-  NULL
 };

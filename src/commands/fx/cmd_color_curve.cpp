@@ -160,5 +160,4 @@ Command cmd_color_curve = {
   cmd_color_curve_enabled,
   NULL,
   cmd_color_curve_execute,
-  NULL
 };

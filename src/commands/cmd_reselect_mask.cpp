@@ -63,5 +63,4 @@ Command cmd_reselect_mask = {
   cmd_reselect_mask_enabled,
   NULL,
   cmd_reselect_mask_execute,
-  NULL
 };

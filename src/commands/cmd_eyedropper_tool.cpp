@@ -67,5 +67,4 @@ Command cmd_eyedropper_tool = {
   NULL,
   NULL,
   cmd_eyedropper_tool_execute,
-  NULL
 };

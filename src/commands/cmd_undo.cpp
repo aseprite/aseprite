@@ -52,5 +52,4 @@ Command cmd_undo = {
   cmd_undo_enabled,
   NULL,
   cmd_undo_execute,
-  NULL
 };

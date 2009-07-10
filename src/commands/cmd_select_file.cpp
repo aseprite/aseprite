@@ -79,5 +79,4 @@ Command cmd_select_file = {
   cmd_select_file_enabled,
   cmd_select_file_checked,
   cmd_select_file_execute,
-  NULL
 };

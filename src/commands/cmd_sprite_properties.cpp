@@ -117,5 +117,4 @@ Command cmd_sprite_properties = {
   cmd_sprite_properties_enabled,
   NULL,
   cmd_sprite_properties_execute,
-  NULL
 };

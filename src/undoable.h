@@ -94,6 +94,8 @@ public:
   // for image
   Image* get_cel_image(Cel* cel);
   void clear_mask(int bgcolor);
+  void flip_image(Image* image, int x1, int y1, int x2, int y2,
+		  bool flip_horizontal, bool flip_vertical);
 
   // for mask
   void copy_to_current_mask(Mask* mask);

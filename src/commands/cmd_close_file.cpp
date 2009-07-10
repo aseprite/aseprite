@@ -110,7 +110,6 @@ Command cmd_close_file = {
   cmd_close_file_enabled,
   NULL,
   cmd_close_file_execute,
-  NULL
 };
 
 Command cmd_close_all_files = {
@@ -118,5 +117,4 @@ Command cmd_close_all_files = {
   cmd_close_all_files_enabled,
   NULL,
   cmd_close_all_files_execute,
-  NULL
 };

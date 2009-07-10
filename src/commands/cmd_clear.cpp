@@ -55,5 +55,4 @@ Command cmd_clear = {
   cmd_clear_enabled,
   NULL,
   cmd_clear_execute,
-  NULL
 };

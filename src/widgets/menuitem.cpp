@@ -49,15 +49,15 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg);
  * 
  * @see jmenuitem_new
  */
-JWidget menuitem_new(const char *text,
-		     Command *command,
-		     const char *argument)
+JWidget menuitem_new(const char* text,
+		     Command* command,
+		     const char* argument)
 {
   JWidget widget = jmenuitem_new(text);
   MenuItem *menuitem = jnew0(MenuItem, 1);
 
   menuitem->command = command;
-  menuitem->argument = argument ? jstrdup(argument): NULL;
+  menuitem->argument = jstrdup(argument ? argument: "");
 
   jwidget_add_hook(widget,
 		   menuitem_type(),
@@ -67,10 +67,16 @@ JWidget menuitem_new(const char *text,
   return widget;
 }
 
-Command *menuitem_get_command(JWidget widget)
+Command* menuitem_get_command(JWidget widget)
 {
   MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
   return menuitem->command;
+}
+
+const char* menuitem_get_argument(JWidget widget)
+{
+  MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
+  return menuitem->argument;
 }
 
 static int menuitem_type()
@@ -87,8 +93,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DESTROY: {
       MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
-      if (menuitem->argument)
-	jfree(menuitem->argument);
+      jfree(menuitem->argument);
       jfree(menuitem);
       break;
     }

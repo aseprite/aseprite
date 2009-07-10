@@ -40,5 +40,4 @@ Command cmd_film_editor = {
   cmd_film_editor_enabled,
   NULL,
   cmd_film_editor_execute,
-  NULL
 };

@@ -291,5 +291,4 @@ Command cmd_sprite_size = {
   cmd_sprite_size_enabled,
   NULL,
   cmd_sprite_size_execute,
-  NULL
 };

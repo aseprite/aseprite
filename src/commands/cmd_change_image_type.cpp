@@ -76,5 +76,4 @@ Command cmd_change_image_type = {
   cmd_change_image_type_enabled,
   NULL,
   cmd_change_image_type_execute,
-  NULL
 };

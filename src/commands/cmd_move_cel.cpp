@@ -40,5 +40,4 @@ Command cmd_move_cel = {
   cmd_move_cel_enabled,
   NULL,
   cmd_move_cel_execute,
-  NULL
 };

@@ -51,5 +51,4 @@ Command cmd_record_screen = {
   NULL,
   cmd_record_screen_checked,
   cmd_record_screen_execute,
-  NULL
 };

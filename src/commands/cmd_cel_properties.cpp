@@ -141,5 +141,4 @@ Command cmd_cel_properties = {
   cmd_cel_properties_enabled,
   NULL,
   cmd_cel_properties_execute,
-  NULL
 };

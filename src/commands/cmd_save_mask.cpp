@@ -82,5 +82,4 @@ Command cmd_save_mask = {
   cmd_save_mask_enabled,
   NULL,
   cmd_save_mask_execute,
-  NULL
 };

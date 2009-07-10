@@ -91,5 +91,4 @@ Command cmd_frame_properties = {
   cmd_frame_properties_enabled,
   NULL,
   cmd_frame_properties_execute,
-  NULL
 };

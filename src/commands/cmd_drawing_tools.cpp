@@ -173,7 +173,6 @@ Command cmd_blur_tool = {
   NULL,
   cmd_blur_tool_checked,
   cmd_blur_tool_execute,
-  NULL
 };
 
 Command cmd_brush_tool = {
@@ -181,7 +180,6 @@ Command cmd_brush_tool = {
   NULL,
   cmd_brush_tool_checked,
   cmd_brush_tool_execute,
-  NULL
 };
 
 Command cmd_ellipse_tool = {
@@ -189,7 +187,6 @@ Command cmd_ellipse_tool = {
   NULL,
   cmd_ellipse_tool_checked,
   cmd_ellipse_tool_execute,
-  NULL
 };
 
 Command cmd_eraser_tool = {
@@ -197,7 +194,6 @@ Command cmd_eraser_tool = {
   NULL,
   cmd_eraser_tool_checked,
   cmd_eraser_tool_execute,
-  NULL
 };
 
 Command cmd_floodfill_tool = {
@@ -205,7 +201,6 @@ Command cmd_floodfill_tool = {
   NULL,
   cmd_floodfill_tool_checked,
   cmd_floodfill_tool_execute,
-  NULL
 };
 
 Command cmd_line_tool = {
@@ -213,7 +208,6 @@ Command cmd_line_tool = {
   NULL,
   cmd_line_tool_checked,
   cmd_line_tool_execute,
-  NULL
 };
 
 Command cmd_marker_tool = {
@@ -221,7 +215,6 @@ Command cmd_marker_tool = {
   NULL,
   cmd_marker_tool_checked,
   cmd_marker_tool_execute,
-  NULL
 };
 
 Command cmd_pencil_tool = {
@@ -229,7 +222,6 @@ Command cmd_pencil_tool = {
   NULL,
   cmd_pencil_tool_checked,
   cmd_pencil_tool_execute,
-  NULL
 };
 
 Command cmd_rectangle_tool = {
@@ -237,7 +229,6 @@ Command cmd_rectangle_tool = {
   NULL,
   cmd_rectangle_tool_checked,
   cmd_rectangle_tool_execute,
-  NULL
 };
 
 Command cmd_spray_tool = {
@@ -245,5 +236,4 @@ Command cmd_spray_tool = {
   NULL,
   cmd_spray_tool_checked,
   cmd_spray_tool_execute,
-  NULL
 };

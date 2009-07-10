@@ -685,7 +685,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYPRESSED: {
-      Command *command = command_get_by_key(msg);
+      Command *command = get_command_from_key_message(msg);
 
       /* close animation editor */
       if ((command && (strcmp(command->name, CMD_FILM_EDITOR) == 0)) ||
@@ -813,7 +813,7 @@ static void anieditor_setcursor(JWidget widget, int x, int y)
 {
   AniEditor* anieditor = anieditor_data(widget);
   int mx = x - widget->rc->x1;
-  int my = y - widget->rc->y1;
+//int my = y - widget->rc->y1;
 
   /* is the mouse in the separator */
   if (mx > anieditor->separator_x-2 && mx < anieditor->separator_x+2)  {

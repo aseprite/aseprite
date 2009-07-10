@@ -53,5 +53,4 @@ Command cmd_cut = {
   cmd_cut_enabled,
   NULL,
   cmd_cut_execute,
-  NULL
 };

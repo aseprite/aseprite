@@ -66,5 +66,4 @@ Command cmd_deselect_mask = {
   cmd_deselect_mask_enabled,
   NULL,
   cmd_deselect_mask_execute,
-  NULL
 };

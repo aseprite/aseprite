@@ -92,7 +92,6 @@ Command cmd_crop_sprite = {
   cmd_crop_sprite_enabled,
   NULL,
   cmd_crop_sprite_execute,
-  NULL
 };
 
 Command cmd_autocrop_sprite = {
@@ -100,5 +99,4 @@ Command cmd_autocrop_sprite = {
   cmd_autocrop_sprite_enabled,
   NULL,
   cmd_autocrop_sprite_execute,
-  NULL
 };

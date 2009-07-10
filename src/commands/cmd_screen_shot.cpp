@@ -115,5 +115,4 @@ Command cmd_screen_shot = {
   NULL,
   NULL,
   cmd_screen_shot_execute,
-  NULL
 };

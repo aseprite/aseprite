@@ -23,7 +23,6 @@
 #include <limits.h>
 #include <cmath>
 
-#include "jinete/jaccel.h"
 #include "jinete/jalert.h"
 #include "jinete/jlist.h"
 #include "jinete/jmanager.h"
@@ -201,8 +200,6 @@ int init_module_tools()
 
 void exit_module_tools()
 {
-  int c;
-
   set_config_color("Tools", "CursorColor", cursor_color);
   set_config_int("Tools", "GlassDirty", glass_dirty);
   set_config_int("Tools", "SprayWidth", spray_width);
@@ -220,35 +217,6 @@ void exit_module_tools()
 
   jrect_free(grid);
   brush_free(brush);
-
-  for (c=0; c<MAX_TOOLS; c++) {
-    if (tools_list[c]->accel) {
-      jaccel_free(tools_list[c]->accel);
-      tools_list[c]->accel = NULL;
-    }
-  }
-}
-
-void tool_add_key(Tool *tool, const char *string)
-{
-  char buf[256];
-
-  if (!tool->accel)
-    tool->accel = jaccel_new();
-
-  usprintf(buf, "<%s>", string);
-  jaccel_add_keys_from_string(tool->accel, buf);
-}
-
-bool tool_is_key_pressed(Tool *tool, JMessage msg)
-{
-  if (tool->accel) {
-    return jaccel_check(tool->accel,
-			msg->any.shifts,
-			msg->key.ascii,
-			msg->key.scancode);
-  }
-  return FALSE;
 }
 
 Tool *get_tool_by_name(const char *name)
@@ -260,27 +228,6 @@ Tool *get_tool_by_name(const char *name)
       return tools_list[c];
 
   return NULL;
-}
-
-Tool *get_tool_by_key(JMessage msg)
-{
-  Tool *group[MAX_TOOLS];
-  int i, j;
-
-  for (i=j=0; i<MAX_TOOLS; i++) {
-    if (tool_is_key_pressed(tools_list[i], msg))
-      group[j++] = tools_list[i];
-  }
-
-  if (j == 0)
-    return NULL;
-
-  for (i=0; i<j; i++)
-    if (group[i] == current_tool)
-      if (i+1 < j)
-	return group[i+1];
-
-  return group[0];
 }
 
 void select_tool(Tool *tool)
@@ -495,7 +442,8 @@ static Tool tool_marker =
   "Rectangular Marquee Tool",
   "Rectangular Marquee Tool",
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX,
-  NULL
+  NULL,
+  NULL,
 };
 
 /***********************************************************/
@@ -518,7 +466,6 @@ static Tool tool_pencil =
   TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   NULL,
   tool_pencil_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -532,7 +479,7 @@ static Tool tool_brush =
   "Brush Tool",
   TOOL_4OLD2LAST | TOOL_UPDATE_4PTS,
   NULL,
-  NULL
+  NULL,
 };
 
 /***********************************************************/
@@ -574,7 +521,6 @@ static Tool tool_eraser =
   TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   tool_eraser_preprocess_data,
   tool_eraser_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -597,7 +543,6 @@ static Tool tool_floodfill =
   TOOL_OLD2LAST | TOOL_UPDATE_ALL,
   NULL,
   tool_floodfill_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -640,7 +585,6 @@ static Tool tool_spray =
   TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_SPRAY,
   NULL,
   tool_spray_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -663,7 +607,6 @@ static Tool tool_line =
   TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_SNAP_ANGLES,
   NULL,
   tool_line_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -686,7 +629,6 @@ static Tool tool_curve =
   TOOL_COPY_SRC2DST | TOOL_4FIRST2LAST | TOOL_UPDATE_4PTS | TOOL_SNAP_ANGLES,
   NULL,
   tool_curve_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -730,7 +672,6 @@ static Tool tool_rectangle =
   TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   NULL,
   tool_rectangle_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -756,7 +697,6 @@ static Tool tool_ellipse =
   TOOL_COPY_SRC2DST | TOOL_FIRST2LAST | TOOL_UPDATE_BOX | TOOL_ACCEPT_FILL,
   NULL,
   tool_ellipse_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -785,7 +725,6 @@ static Tool tool_blur =
   TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   tool_blur_preprocess_data,
   tool_blur_draw_trace,
-  NULL
 };
 
 /***********************************************************/
@@ -814,7 +753,6 @@ static Tool tool_jumble =
   TOOL_COPY_DST2SRC | TOOL_OLD2LAST | TOOL_UPDATE_TRACE,
   tool_jumble_preprocess_data,
   tool_jumble_draw_trace,
-  NULL
 };
 
 /***********************************************************/

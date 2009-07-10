@@ -59,8 +59,7 @@ extern Command cmd_exit;
 extern Command cmd_eyedropper_tool;
 extern Command cmd_film_editor;
 extern Command cmd_flatten_layers;
-extern Command cmd_flip_horizontal;
-extern Command cmd_flip_vertical;
+extern Command cmd_flip;
 extern Command cmd_floodfill_tool;
 extern Command cmd_frame_properties;
 extern Command cmd_goto_first_frame;
@@ -154,8 +153,7 @@ static Command *commands[] = {
   &cmd_eyedropper_tool,
   &cmd_film_editor,
   &cmd_flatten_layers,
-  &cmd_flip_horizontal,
-  &cmd_flip_vertical,
+  &cmd_flip,
   &cmd_floodfill_tool,
   &cmd_frame_properties,
   &cmd_goto_first_frame,
@@ -234,18 +232,6 @@ Command *command_get_by_name(const char *name)
   return NULL;
 }
 
-Command *command_get_by_key(JMessage msg)
-{
-  Command **cmd;
-
-  for (cmd=commands; *cmd; cmd++) {
-    if (command_is_key_pressed(*cmd, msg))
-      return *cmd;
-  }
-
-  return NULL;
-}
-
 /**
  * Returns true if the current state of the program fulfills the
  * preconditions to execute this command.
@@ -300,39 +286,5 @@ void command_execute(Command *command, const char *argument)
     console.printf("An unknown error ocurred executing the command.\n"
 		   "Please try again or report this bug.\n\n"
 		   "Details: Unknown exception caught.");
-  }
-}
-
-bool command_is_key_pressed(Command *command, JMessage msg)
-{
-  if (command->accel) {
-    return jaccel_check(command->accel,
-			msg->any.shifts,
-			msg->key.ascii,
-			msg->key.scancode);
-  }
-  return FALSE;
-}
-
-void command_add_key(Command *command, const char *string)
-{
-  char buf[256];
-
-  if (!command->accel)
-    command->accel = jaccel_new();
-
-  usprintf(buf, "<%s>", string);
-  jaccel_add_keys_from_string(command->accel, buf);
-}
-
-void command_reset_keys()
-{
-  Command **cmd;
-
-  for (cmd=commands; *cmd; cmd++) {
-    if ((*cmd)->accel) {
-      jaccel_free((*cmd)->accel);
-      (*cmd)->accel = NULL;
-    }
   }
 }

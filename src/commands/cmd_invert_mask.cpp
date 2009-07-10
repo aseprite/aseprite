@@ -85,5 +85,4 @@ Command cmd_invert_mask = {
   cmd_invert_mask_enabled,
   NULL,
   cmd_invert_mask_execute,
-  NULL
 };

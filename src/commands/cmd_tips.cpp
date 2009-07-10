@@ -33,5 +33,4 @@ Command cmd_tips = {
   NULL,
   NULL,
   cmd_tips_execute,
-  NULL
 };

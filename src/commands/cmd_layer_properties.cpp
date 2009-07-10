@@ -113,5 +113,4 @@ Command cmd_layer_properties = {
   cmd_layer_properties_enabled,
   NULL,
   cmd_layer_properties_execute,
-  NULL
 };

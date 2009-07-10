@@ -173,5 +173,4 @@ Command cmd_merge_down_layer = {
   cmd_merge_down_layer_enabled,
   NULL,
   cmd_merge_down_layer_execute,
-  NULL
 };

@@ -54,5 +54,4 @@ Command cmd_copy = {
   cmd_copy_enabled,
   NULL,
   cmd_copy_execute,
-  NULL
 };

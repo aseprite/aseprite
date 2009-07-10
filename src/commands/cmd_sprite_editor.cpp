@@ -46,7 +46,6 @@ Command cmd_close_editor = {
   NULL,
   NULL,
   cmd_close_editor_execute,
-  NULL
 };
 
 Command cmd_make_unique_editor = {
@@ -54,7 +53,6 @@ Command cmd_make_unique_editor = {
   NULL,
   NULL,
   cmd_make_unique_editor_execute,
-  NULL
 };
 
 Command cmd_split_editor_horizontally = {
@@ -62,7 +60,6 @@ Command cmd_split_editor_horizontally = {
   NULL,
   NULL,
   cmd_split_editor_horizontally_execute,
-  NULL
 };
 
 Command cmd_split_editor_vertically = {
@@ -70,5 +67,4 @@ Command cmd_split_editor_vertically = {
   NULL,
   NULL,
   cmd_split_editor_vertically_execute,
-  NULL
 };

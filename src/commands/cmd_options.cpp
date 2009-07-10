@@ -33,5 +33,4 @@ Command cmd_options = {
   NULL,
   NULL,
   cmd_options_execute,
-  NULL
 };

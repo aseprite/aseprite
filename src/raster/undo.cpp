@@ -140,7 +140,7 @@ static void chunk_data_invert(UndoStream* stream, UndoChunkData *chunk, int stat
 static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int w, int h);
 static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk, int state);
 
-static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, int horz);
+static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, bool horz);
 static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip *chunk, int state);
 
 static void chunk_dirty_new(UndoStream* stream, Dirty *dirty);
@@ -739,13 +739,13 @@ struct UndoChunkFlip
   ase_uint8 horz;
 };
 
-void undo_flip(Undo* undo, Image* image, int x1, int y1, int x2, int y2, int horz)
+void undo_flip(Undo* undo, Image* image, int x1, int y1, int x2, int y2, bool horz)
 {
   chunk_flip_new(undo->undo_stream, image, x1, y1, x2, y2, horz);
   update_undo(undo);
 }
 
-static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, int horz)
+static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, bool horz)
 {
   UndoChunkFlip *chunk = (UndoChunkFlip *)
     undo_chunk_new(stream,
@@ -761,32 +761,31 @@ static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int
   chunk->horz = horz;
 }
 
-static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip *chunk, int state)
+static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk, int state)
 {
-  Image* image = (Image* )gfxobj_find(chunk->image_id);
+  Image* image = (Image*)gfxobj_find(chunk->image_id);
 
   if ((image) &&
       (image->type == GFXOBJ_IMAGE) &&
       (image->imgtype == chunk->imgtype)) {
-    int x1, y1, x2, y2;
-    int x, y, horz;
-    Image* area;
-
-    x1 = chunk->x1;
-    y1 = chunk->y1;
-    x2 = chunk->x2;
-    y2 = chunk->y2;
-    horz = chunk->horz;
+    int x1 = chunk->x1;
+    int y1 = chunk->y1;
+    int x2 = chunk->x2;
+    int y2 = chunk->y2;
+    bool horz = chunk->horz;
 
     chunk_flip_new(stream, image, x1, y1, x2, y2, horz);
 
-    area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1, 0);
+    Image* area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1, 0);
+    int x, y;
+
     for (y=0; y<(y2-y1+1); y++)
       for (x=0; x<(x2-x1+1); x++)
 	image_putpixel(image,
 		       horz ? x2-x: x1+x,
 		       !horz? y2-y: y1+y,
 		       image_getpixel(area, x, y));
+
     image_free(area);
   }
 }

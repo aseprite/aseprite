@@ -371,5 +371,4 @@ Command cmd_configure_tools = {
   NULL,
   NULL,
   cmd_configure_tools_execute,
-  NULL
 };

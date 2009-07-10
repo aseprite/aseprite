@@ -60,5 +60,4 @@ Command cmd_new_layer_set = {
   cmd_new_layer_set_enabled,
   NULL,
   cmd_new_layer_set_execute,
-  NULL
 };

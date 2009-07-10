@@ -538,5 +538,4 @@ Command cmd_palette_editor = {
   NULL,
   NULL,
   cmd_palette_editor_execute,
-  NULL
 };

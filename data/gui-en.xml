@@ -22,8 +22,8 @@
 	    <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
 	    <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
 	    <key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
-	    <key command="flip_horizontal" shortcut="Shift+H" />
-	    <key command="flip_vertical" shortcut="Shift+V" />
+	    <key command="flip" shortcut="Shift+H" argument="mask horizontal" />
+	    <key command="flip" shortcut="Shift+V" argument="mask vertical" />
 	    <key command="replace_color" shortcut="Shift+R" />
 	    <key command="invert_color" shortcut="Ctrl+I" />
 	    <!-- sprite -->
@@ -118,8 +118,8 @@
 	    <item command="paste" name="&Paste" />
 	    <item command="clear" name="C&lear" />
 	    <separator />
-	    <item command="flip_horizontal" name="Flip &Horizontal" />
-	    <item command="flip_vertical" name="Flip &Vertical" />
+	    <item command="flip" name="Flip &Horizontal" argument="mask horizontal" />
+	    <item command="flip" name="Flip &Vertical" argument="mask vertical" />
 	    <separator />
 	    <item command="replace_color" name="R&eplace Color..." />
 	    <item command="invert_color" name="&Invert" />
@@ -142,8 +142,8 @@
 		<item command="rotate_canvas" name="90 CW" argument="90" />
 		<item command="rotate_canvas" name="90 CCW" argument="-90" />
 		<separator />
-		<item command="flip_canvas_horizontal" name="Flip Canvas &Horizontal" />
-		<item command="flip_canvas_vertical" name="Flip Canvas &Vertical" />
+		<item command="flip" name="Flip Canvas &Horizontal" argument="canvas horizontal" />
+		<item command="flip" name="Flip Canvas &Vertical" argument="canvas vertical" />
 	    </menu>
 	    <separator />
 	    <item command="crop_sprite" name="Cr&op" />

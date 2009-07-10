@@ -978,6 +978,32 @@ void Undoable::clear_mask(int bgcolor)
   }
 }
 
+void Undoable::flip_image(Image* image, int x1, int y1, int x2, int y2,
+			  bool flip_horizontal, bool flip_vertical)
+{
+  // insert the undo operation
+  if (is_enabled()) {
+    if (flip_horizontal)
+      undo_flip(m_sprite->undo, image, x1, y1, x2, y2, true);
+
+    if (flip_vertical)
+      undo_flip(m_sprite->undo, image, x1, y1, x2, y2, false);
+  }
+
+  // flip the portion of the bitmap
+  Image* area = image_crop(image, x1, y1, x2-x1+1, y2-y1+1, 0);
+  int x, y;
+
+  for (y=0; y<(y2-y1+1); y++)
+    for (x=0; x<(x2-x1+1); x++)
+      image_putpixel(image,
+		     flip_horizontal ? x2-x: x1+x,
+		     flip_vertical ? y2-y: y1+y,
+		     image_getpixel(area, x, y));
+
+  image_free(area);
+}
+
 void Undoable::copy_to_current_mask(Mask* mask)
 {
   assert(m_sprite->mask);

@@ -113,13 +113,13 @@ static void monitor_openfile_bg(void *_data)
  * 
  * [main thread]
  */
-static void monitor_free(void *_data)
+static void monitor_free(void* _data)
 {
-  OpenFileData *data = (OpenFileData *)_data;
-  FileOp *fop = (FileOp *)data->fop;
+  OpenFileData* data = (OpenFileData*)_data;
 
 #if 0
   /* stop the file-operation and wait the thread to exit */
+  FileOp* fop = (FileOp*)data->fop;
   fop_stop(fop);
   jthread_join(data->thread);
 #endif
@@ -233,5 +233,4 @@ Command cmd_open_file = {
   NULL,
   NULL,
   cmd_open_file_execute,
-  NULL
 };

@@ -61,5 +61,4 @@ Command cmd_background_from_layer = {
   cmd_background_from_layer_enabled,
   NULL,
   cmd_background_from_layer_execute,
-  NULL
 };

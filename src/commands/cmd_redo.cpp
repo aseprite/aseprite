@@ -52,5 +52,4 @@ Command cmd_redo = {
   cmd_redo_enabled,
   NULL,
   cmd_redo_execute,
-  NULL
 };

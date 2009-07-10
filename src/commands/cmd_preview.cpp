@@ -210,6 +210,9 @@ static void preview_sprite(int flags)
 		      for (u=x-w; u<JI_SCREEN_W+w; u+=w)
 			blit(bmp, ji_screen, 0, 0, u, v, w, h);
 		    break;
+		  case TILED_NONE:
+		    assert(false);
+		    break;
 		}
 	      }
 	    }
@@ -233,6 +236,9 @@ static void preview_sprite(int flags)
 		      for (u=x-w; u<JI_SCREEN_W+w; u+=w)
 			stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, u, v, w, h);
 		    break;
+		  case TILED_NONE:
+		    assert(false);
+		    break;
 		}
 	      }
 	    }
@@ -243,11 +249,8 @@ static void preview_sprite(int flags)
 
 	if (keypressed()) {
 	  int readkey_value = readkey();
-	  Command *command;
-	  JMessage msg;
-
-	  msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
-	  command = command_get_by_key(msg);
+	  JMessage msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
+	  Command* command = get_command_from_key_message(msg);
 	  jmessage_free(msg);
 
 	  /* change frame */
@@ -315,7 +318,6 @@ Command cmd_preview_fit_to_screen = {
   cmd_preview_enabled,
   NULL,
   cmd_preview_fit_to_screen_execute,
-  NULL
 };
 
 Command cmd_preview_normal = {
@@ -323,7 +325,6 @@ Command cmd_preview_normal = {
   cmd_preview_enabled,
   NULL,
   cmd_preview_normal_execute,
-  NULL
 };
 
 Command cmd_preview_tiled = {
@@ -331,5 +332,4 @@ Command cmd_preview_tiled = {
   cmd_preview_enabled,
   NULL,
   cmd_preview_tiled_execute,
-  NULL
 };

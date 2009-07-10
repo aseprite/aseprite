@@ -49,5 +49,4 @@ Command cmd_flatten_layers = {
   cmd_flatten_layers_enabled,
   NULL,
   cmd_flatten_layers_execute,
-  NULL
 };

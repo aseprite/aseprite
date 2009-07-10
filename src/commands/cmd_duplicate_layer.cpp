@@ -96,5 +96,4 @@ Command cmd_duplicate_layer = {
   cmd_duplicate_layer_enabled,
   NULL,
   cmd_duplicate_layer_execute,
-  NULL
 };

@@ -67,5 +67,4 @@ Command cmd_load_mask = {
   cmd_load_mask_enabled,
   NULL,
   cmd_load_mask_execute,
-  NULL
 };

@@ -581,9 +581,10 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
       cmd = command_get_by_name(CMD_SWITCH_COLORS);
       assert(cmd != NULL);
 
-      if (cmd->accel != NULL) {
+      JAccel accel = get_accel_to_execute_command(cmd, NULL);
+      if (accel != NULL) {
 	ustrcat(buf, _(" - "));
-	jaccel_to_string(cmd->accel, buf+ustrsize(buf));
+	jaccel_to_string(accel, buf+ustrsize(buf));
 	ustrcat(buf, _(" key switches colors"));
       }
       break;

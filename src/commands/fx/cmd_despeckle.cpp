@@ -185,5 +185,4 @@ Command cmd_despeckle = {
   cmd_despeckle_enabled,
   NULL,
   cmd_despeckle_execute,
-  NULL
 };

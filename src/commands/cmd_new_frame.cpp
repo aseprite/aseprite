@@ -67,5 +67,4 @@ Command cmd_new_frame = {
   cmd_new_frame_enabled,
   NULL,
   cmd_new_frame_execute,
-  NULL
 };

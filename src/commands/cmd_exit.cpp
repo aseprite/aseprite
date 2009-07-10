@@ -51,5 +51,4 @@ Command cmd_exit = {
   NULL,
   NULL,
   cmd_exit_execute,
-  NULL
 };

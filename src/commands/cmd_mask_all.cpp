@@ -53,5 +53,4 @@ Command cmd_mask_all = {
   cmd_mask_all_enabled,
   NULL,
   cmd_mask_all_execute,
-  NULL
 };

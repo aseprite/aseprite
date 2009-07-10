@@ -55,5 +55,4 @@ Command cmd_remove_cel = {
   cmd_remove_cel_enabled,
   NULL,
   cmd_remove_cel_execute,
-  NULL
 };
