@@ -66,7 +66,7 @@ bool get_config_bool(const char *section, const char *name, bool value)
   return (got &&
 	  (ustricmp(got, "yes") == 0 ||
 	   ustricmp(got, "true") == 0 ||
-	   ustricmp(got, "1") == 0)) ? TRUE: FALSE;
+	   ustricmp(got, "1") == 0)) ? true: false;
 }
 
 void set_config_bool(const char *section, const char *name, bool value)

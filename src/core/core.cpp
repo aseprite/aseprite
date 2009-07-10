@@ -194,7 +194,7 @@ char *get_errno_string(int errnum, char *buf, int size)
   };
 
   if (errnum >= 0
-      && errnum < sizeof(errors)/sizeof(char *)
+      && errnum < (int)(sizeof(errors)/sizeof(char *))
       && errors[errnum] != NULL) {
     ustrncpy(buf, errors[errnum], size);
   }

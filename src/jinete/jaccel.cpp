@@ -469,14 +469,14 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
 	 || (key->ascii && key->ascii == ascii))
 	&& (key->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG)))) {
 #ifdef REPORT_KEYS
-      printf("TRUE\n");
+      printf("true\n");
 #endif
-      return TRUE;
+      return true;
     }
 #ifdef REPORT_KEYS
-    printf("FALSE\n");
+    printf("false\n");
 #endif
   }
 
-  return FALSE;
+  return false;
 }
