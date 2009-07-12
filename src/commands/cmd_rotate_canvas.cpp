@@ -175,5 +175,4 @@ Command cmd_rotate_canvas = {
   cmd_rotate_canvas_enabled,
   NULL,
   cmd_rotate_canvas_execute,
-  NULL
 };
