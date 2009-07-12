@@ -46,6 +46,11 @@ else
   LIBS += Alleg.lib
 endif
 
+ifdef MEMLEAK
+  CFLAGS += -DMEMLEAK
+  LIBS += dbghelp.lib
+endif
+
 ######################################################################
 # General rules
 

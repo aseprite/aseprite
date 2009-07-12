@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
+
 #include "jinete/jmessage.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"

@@ -908,7 +908,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
     case JM_DESTROY:
       jmanager_remove_timer(editor->mask_timer_id);
       remove_editor(widget);
-      jfree(editor_data(widget));
+      jfree(editor);
       break;
 
     case JM_REQSIZE:

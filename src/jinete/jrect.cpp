@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
+
 #include "jinete/jrect.h"
 
 JRect jrect_new(int x1, int y1, int x2, int y2)

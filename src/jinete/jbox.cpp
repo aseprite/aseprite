@@ -31,6 +31,8 @@
 
 /* Based on code from GTK+ 2.1.2 (gtk+/gtk/gtkhbox.c) */
 
+#include "config.h"
+
 #include "jinete/jlist.h"
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"

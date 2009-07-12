@@ -32,6 +32,8 @@
 #define REDRAW_MOVEMENT
 #define MOTION_CURSOR JI_CURSOR_NORMAL
 
+#include "config.h"
+
 #include <allegro.h>
 
 #include "jinete/jinete.h"

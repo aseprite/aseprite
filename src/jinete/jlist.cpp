@@ -31,6 +31,8 @@
 
 /* #define USE_JUNKLIST */
 
+#include "config.h"
+
 #include "jinete/jlist.h"
 
 #ifdef USE_JUNKLIST		/* TODO warning not thread safe */

@@ -34,6 +34,8 @@
    allegro/tools/plugins/datfont.c
 */
 
+#include "config.h"
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 

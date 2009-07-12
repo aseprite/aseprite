@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
+
 #include "jinete/jaccel.h"
 #include "jinete/jlist.h"
 #include "jinete/jmenu.h"

@@ -31,6 +31,8 @@
 
 /* jstream_string is based on streams of HTMLEX */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

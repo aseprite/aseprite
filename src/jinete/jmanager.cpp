@@ -32,6 +32,8 @@
 /* #define REPORT_EVENTS */
 /* #define LIMIT_DISPATCH_TIME */
 
+#include "config.h"
+
 #ifdef REPORT_EVENTS
 #include <stdio.h>
 #endif

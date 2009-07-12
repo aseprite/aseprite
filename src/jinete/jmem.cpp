@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -76,44 +78,130 @@ char *jstrdup(const char *string)
 
 #else
 
-/**********************************************************************/
-/* with leak detection */
-/**********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// With leak detection
+
+#define BACKTRACE_LEVELS 16
+
+#if defined _MSC_VER
+
+#include <windows.h>
+#include <dbghelp.h>
+
+// This is an implementation of the __builtin_return_address GCC
+// extension for the MSVC compiler.
+// 
+// Author: Unknown
+// Modified by David Capello to return NULL when the callstack
+// is not as high as the specified "level".
+// 
+__declspec (naked) void* __builtin_return_address(int level)
+{
+   __asm
+   {
+       push ebx
+
+       mov eax, ebp
+       mov ebx, DWORD PTR [esp + 8] // level
+__next:
+       test ebx, ebx
+       je  __break
+       dec ebx
+       mov eax, DWORD PTR [eax]
+       test eax, eax
+       je  __done
+       jmp __next
+__break:
+       mov eax, DWORD PTR [eax + 4]
+__done:
+       pop ebx
+       ret
+   }
+}
+
+#endif
 
 typedef struct slot_t
 {
-  void* backtrace[4];
+  void* backtrace[BACKTRACE_LEVELS];
   void* ptr;
   unsigned long size;
   struct slot_t* next;
 } slot_t;
 
+static bool memleak_status = false;
 static slot_t* headslot;
 static JMutex mutex;
 
 void jmemleak_init()
 {
+  assert(!memleak_status);
+
   headslot = NULL;
   mutex = jmutex_new();
+
+  memleak_status = true;
 }
 
 void jmemleak_exit()
 {
+  assert(memleak_status);
+  memleak_status = false;
+
   FILE* f = fopen("_ase_memlog.txt", "wt");
   slot_t* it;
-
+  
   if (f != NULL) {
-    /* memory leaks */
+#ifdef _MSC_VER
+    struct SYMBOL_INFO_EX {
+      SYMBOL_INFO header;
+      char filename[512];
+    } si;
+    si.header.SizeOfStruct = sizeof(SYMBOL_INFO_EX);
+
+    IMAGEHLP_LINE line;
+    line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+
+    HANDLE hproc = ::GetCurrentProcess();
+    ::SymInitialize(hproc, NULL, FALSE);
+
+    char filename[MAX_PATH];
+    ::GetModuleFileName(NULL, filename, sizeof filename);
+    ::SymLoadModule(hproc, NULL, filename, NULL, 0, 0);
+
+    char path[MAX_PATH];
+    strcpy(path, filename);
+    if (strrchr(path, '\\'))
+      *strrchr(path, '\\') = 0;
+    else
+      *path = 0;
+    ::SymSetSearchPath(hproc, path);
+#endif
+
+    // Memory leaks
     for (it=headslot; it!=NULL; it=it->next) {
-      fprintf(f,
-	      "Leak:\n%p\n%p\n%p\n%p\nptr: %p, size: %lu\n",
-	      it->backtrace[0],
-	      it->backtrace[1],
-	      it->backtrace[2],
-	      it->backtrace[3],
-	      it->ptr, it->size);
+      fprintf(f, "\nLEAK address: %p, size: %lu\n", it->ptr, it->size);
+
+      for (int c=0; c<BACKTRACE_LEVELS; ++c) {
+#ifdef _MSC_VER
+	DWORD displacement;
+	if (::SymGetLineFromAddr(hproc, (DWORD)it->backtrace[c], &displacement, &line) &&
+	    ::SymFromAddr(hproc, (DWORD)it->backtrace[c], NULL, &si.header)) {
+	  fprintf(f, "%p : %s(%lu) [%s]\n",
+		  it->backtrace[c],
+		  line.FileName, line.LineNumber,
+		  si.header.Name);
+	}
+	else
+#endif
+	  fprintf(f, "%p\n", it->backtrace[c]);
+      }
     }
     fclose(f);
+
+#ifdef _MSC_VER
+    ::SymCleanup(hproc);
+#endif
   }
 
   jmutex_free(mutex);
@@ -121,19 +209,22 @@ void jmemleak_exit()
 
 static void addslot(void *ptr, unsigned long size)
 {
+  if (!memleak_status)
+    return;
+
   slot_t* p = reinterpret_cast<slot_t*>(malloc(sizeof(slot_t)));
 
   assert(ptr != NULL);
   assert(size != 0);
 
-  p->backtrace[0] = __builtin_return_address(4); /* a GCC extension */
-  p->backtrace[1] = __builtin_return_address(3);
-  p->backtrace[2] = __builtin_return_address(2);
-  p->backtrace[3] = __builtin_return_address(1);
+  // __builtin_return_address is a GCC extension
+  for (int c=0; c<BACKTRACE_LEVELS; ++c)
+    p->backtrace[c] = __builtin_return_address(BACKTRACE_LEVELS-c);
+
   p->ptr = ptr;
   p->size = size;
   p->next = headslot;
-  
+
   jmutex_lock(mutex);
   headslot = p;
   jmutex_unlock(mutex);
@@ -141,6 +232,9 @@ static void addslot(void *ptr, unsigned long size)
 
 static void delslot(void *ptr)
 {
+  if (!memleak_status)
+    return;
+
   slot_t *it, *prev = NULL;
 
   assert(ptr != NULL);
