@@ -33,7 +33,7 @@
 static bool cmd_select_file_enabled(const char *argument)
 {
   /* with argument, the argument specified the ID of the GfxObj */
-  if (argument) {
+  if (ustrlen(argument) > 0) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj *gfxobj = gfxobj_find(sprite_id);
     return gfxobj && gfxobj->type == GFXOBJ_SPRITE;
@@ -47,7 +47,7 @@ static bool cmd_select_file_checked(const char *argument)
 {
   const CurrentSpriteReader sprite;
 
-  if (argument) {
+  if (ustrlen(argument) > 0) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj *gfxobj = gfxobj_find(sprite_id);
     return
@@ -62,7 +62,7 @@ static void cmd_select_file_execute(const char *argument)
 {
   UIContext* context = UIContext::instance();
 
-  if (argument) {
+  if (ustrlen(argument) > 0) {
     int sprite_id = ustrtol(argument, NULL, 10);
     GfxObj* gfxobj = gfxobj_find(sprite_id);
     assert(gfxobj != NULL);

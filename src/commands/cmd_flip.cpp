@@ -37,10 +37,10 @@
 
 static bool cmd_flip_enabled(const char *argument)
 {
+  assert(argument);
   const CurrentSpriteReader sprite;
   return
-    sprite != NULL &&
-    argument != NULL;
+    sprite != NULL;
 }
 
 static void cmd_flip_execute(const char *argument)

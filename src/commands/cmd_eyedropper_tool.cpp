@@ -55,7 +55,7 @@ static void cmd_eyedropper_tool_execute(const char *argument)
 
   if (color_type(color) != COLOR_TYPE_MASK) {
     /* set the color of the color-bar */
-    if (argument != NULL && ustrcmp(argument, "background") == 0)
+    if (ustrcmp(argument, "background") == 0)
       colorbar_set_bg_color(app_get_colorbar(), color);
     else
       colorbar_set_fg_color(app_get_colorbar(), color);

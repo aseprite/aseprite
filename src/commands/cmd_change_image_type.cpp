@@ -35,7 +35,6 @@ static bool cmd_change_image_type_enabled(const char *argument)
   const CurrentSpriteReader sprite;
   return
     sprite != NULL &&
-    argument != NULL &&
     ((ustrcmp(argument, "rgb") == 0 && sprite->imgtype != IMAGE_RGB) ||
      (ustrcmp(argument, "grayscale") == 0 && sprite->imgtype != IMAGE_GRAYSCALE) ||
      (ustrncmp(argument, "indexed", 7) == 0 && sprite->imgtype != IMAGE_INDEXED));

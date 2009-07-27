@@ -1068,7 +1068,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       else if (editor->alt_pressed) {
 	Command *command = command_get_by_name(CMD_EYEDROPPER_TOOL);
 	if (command_is_enabled(command, NULL))
-	  command_execute(command, msg->mouse.right ? "background": NULL);
+	  command_execute(command, msg->mouse.right ? "background": "");
 	return TRUE;
       }
       /* draw */

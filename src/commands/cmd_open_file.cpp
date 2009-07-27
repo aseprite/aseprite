@@ -145,13 +145,13 @@ static void cmd_open_file_execute(const char *argument)
   Console console;
   jstring filename;
 
-  /* interactive */
-  if (!argument) {
+  // interactive
+  if (ustrlen(argument) == 0) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
     filename = ase_file_selector(_("Open Sprite"), "", exts);
   }
-  /* load the file specified in the argument */
+  // load the file specified in the argument
   else {
     filename = argument;
   }
