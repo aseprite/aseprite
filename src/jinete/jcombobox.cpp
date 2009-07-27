@@ -541,6 +541,7 @@ static void combobox_close_window(JWidget widget)
   ComboBox* combobox = reinterpret_cast<ComboBox*>(jwidget_get_data(widget, JI_COMBOBOX));
   if (combobox->window) {
     jwindow_close(combobox->window, widget);
+    jwidget_free(combobox->window);
     combobox->window = NULL;
 
     jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);

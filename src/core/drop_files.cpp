@@ -52,9 +52,11 @@ void install_drop_files()
 void uninstall_drop_files()
 {
   unsubclass_hwnd();
-
+  
   jmutex_free(dropped_files_mutex);
   dropped_files_mutex = NULL;
+
+  dropped_files.clear();
 }
 
 void check_for_dropped_files()

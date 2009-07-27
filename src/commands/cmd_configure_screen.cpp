@@ -237,6 +237,7 @@ static bool alert_msg_proc(JWidget widget, JMessage msg)
 
       usprintf(buf, "In %d seconds the screen will be restored.", seconds_to_accept);
       jwidget_set_text((JWidget)labels->end->next->next->data, buf);
+      jlist_free(labels);
 
       if (seconds_to_accept == 0) {
 	jmanager_stop_timer(timer_to_accept);

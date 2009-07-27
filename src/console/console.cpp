@@ -133,6 +133,8 @@ void Console::printf(const char *format, ...)
       jwidget_set_rect(wid_console, rect);
       jwindow_center(wid_console);
       jwidget_dirty(wid_console);
+
+      jrect_free(rect);
     }
 
     text = jwidget_get_text(wid_textbox);
