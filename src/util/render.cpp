@@ -90,9 +90,9 @@ static void merge_zoomed_image(Image *dst, Image *src,
 			       int blend_mode, int zoom)
 {
   BlenderHelper<Traits> blender(blend_mode);
-  Traits::address_t src_address;
-  Traits::address_t dst_address, dst_address_end;
-  Traits::address_t scanline, scanline_address;
+  typename Traits::address_t src_address;
+  typename Traits::address_t dst_address, dst_address_end;
+  typename Traits::address_t scanline, scanline_address;
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
@@ -149,7 +149,7 @@ static void merge_zoomed_image(Image *dst, Image *src,
   bottom = dst_y+dst_h-1;
 
   // the scanline variable is used to 
-  scanline = new Traits::pixel_t[src_w];
+  scanline = new typename Traits::pixel_t[src_w];
 
   // for each line to draw of the source image...
   for (y=0; y<src_h; y++) {
