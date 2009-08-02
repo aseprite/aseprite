@@ -1,3 +1,9 @@
+2009-08-02  David A. Capello  <davidcapello@gmail.com>
+
+	* src/util/render.cpp (merge_zoomed_image): unified all
+	merge_zoomed_image8/16/32 in one generic method (and fixed
+	critical bugs).
+
 2009-06-14  David A. Capello  <davidcapello@gmail.com>
 
 	* src/commands/cmd_rotate_canvas.cpp: Added.

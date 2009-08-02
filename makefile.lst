@@ -181,6 +181,7 @@ COMMON_SOURCES =					\
 	src/raster/dirty.cpp				\
 	src/raster/gfxobj.cpp				\
 	src/raster/image.cpp				\
+	src/raster/image_impl.cpp			\
 	src/raster/layer.cpp				\
 	src/raster/mask.cpp				\
 	src/raster/palette.cpp				\

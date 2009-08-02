@@ -27,26 +27,240 @@
 
 #include "modules/palettes.h"
 #include "modules/tools.h"
+#include "raster/image.h"
+#include "raster/image_impl.h"
 #include "raster/raster.h"
 
-/************************************************************************/
-/* Render engine */
+//////////////////////////////////////////////////////////////////////
+// zoomed merge
+
+template<class Traits>
+class BlenderHelper
+{
+  BLEND_COLOR m_blend_color;
+public:
+  BlenderHelper(int blend_mode)
+  {
+    m_blend_color = Traits::get_blender(blend_mode);
+  }
+
+  inline void operator()(typename Traits::address_t& scanline_address,
+			 typename Traits::address_t& dst_address,
+			 typename Traits::address_t& src_address,
+			 int& opacity)
+  {
+    *scanline_address = (*m_blend_color)(*dst_address, *src_address, opacity);
+  }
+};
+
+template<>
+class BlenderHelper<IndexedTraits>
+{
+  int m_blend_mode;
+public:
+  BlenderHelper(int blend_mode)
+  {
+    m_blend_mode = blend_mode;
+  }
+
+  inline void operator()(IndexedTraits::address_t& scanline_address,
+			 IndexedTraits::address_t& dst_address,
+			 IndexedTraits::address_t& src_address,
+			 int& opacity)
+  {
+    if (m_blend_mode == BLEND_MODE_COPY) {
+      *scanline_address = *src_address;
+    }
+    else {
+      if (*src_address) {
+	if (color_map)
+	  *scanline_address = color_map->data[*src_address][*dst_address];
+	else
+	  *scanline_address = *src_address;
+      }
+      else
+	*scanline_address = *dst_address;
+    }
+  }
+};
+
+template<class Traits>
+static void merge_zoomed_image(Image *dst, Image *src,
+			       int x, int y, int opacity,
+			       int blend_mode, int zoom)
+{
+  BlenderHelper<Traits> blender(blend_mode);
+  Traits::address_t src_address;
+  Traits::address_t dst_address, dst_address_end;
+  Traits::address_t scanline, scanline_address;
+  int src_x, src_y, src_w, src_h;
+  int dst_x, dst_y, dst_w, dst_h;
+  int box_x, box_y, box_w, box_h;
+  int offsetx, offsety;
+  int line_h, bottom;
+
+  box_w = 1<<zoom;
+  box_h = 1<<zoom;
+
+  src_x = 0;
+  src_y = 0;
+  src_w = src->w;
+  src_h = src->h;
+
+  dst_x = x;
+  dst_y = y;
+  dst_w = src->w<<zoom;
+  dst_h = src->h<<zoom;
+
+  // clipping...
+  if (dst_x < 0) {
+    src_x += (-dst_x)>>zoom;
+    src_w -= (-dst_x)>>zoom;
+    dst_w -= (-dst_x);
+    offsetx = box_w - ((-dst_x) % box_w);
+    dst_x = 0;
+  }
+  else
+    offsetx = 0;
+
+  if (dst_y < 0) {
+    src_y += (-dst_y)>>zoom;
+    src_h -= (-dst_y)>>zoom;
+    dst_h -= (-dst_y);
+    offsety = box_h - ((-dst_y) % box_h);
+    dst_y = 0;
+  }
+  else
+    offsety = 0;
+
+  if (dst_x+dst_w > dst->w) {
+    src_w -= (dst_x+dst_w-dst->w) >> zoom;
+    dst_w = dst->w - dst_x;
+  }
+
+  if (dst_y+dst_h > dst->h) {
+    src_h -= (dst_y+dst_h-dst->h) >> zoom;
+    dst_h = dst->h - dst_y;
+  }
+
+  if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
+    return;
+
+  bottom = dst_y+dst_h-1;
+
+  // the scanline variable is used to 
+  scanline = new Traits::pixel_t[src_w];
+
+  // for each line to draw of the source image...
+  for (y=0; y<src_h; y++) {
+    assert(src_x >= 0 && src_x < src->w);
+    assert(dst_x >= 0 && dst_x < dst->w);
+
+    // get addresses to each line (beginning of 'src', 'dst', etc.)
+    src_address = ((ImageImpl<Traits>*)src)->line_address(src_y) + src_x;
+    dst_address = ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x;
+    dst_address_end = dst_address + dst_w;
+    scanline_address = scanline;
+
+    // read 'src' and 'dst' and blend them, put the result in `scanline'
+    for (x=0; x<src_w; x++) {
+      assert(scanline_address >= scanline);
+      assert(scanline_address <  scanline + src_w);
+      assert(src_address >= ((ImageImpl<Traits>*)src)->line_address(src_y) + src_x);
+      assert(src_address <  ((ImageImpl<Traits>*)src)->line_address(src_y) + src_x + src_w);
+      assert(dst_address >= ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x);
+      assert(dst_address <  ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x + dst_w);
+      assert(dst_address <  dst_address_end);
+
+      blender(scanline_address, dst_address, src_address, opacity);
+
+      src_address++;
+      if (x == 0 && offsetx > 0)
+	dst_address += offsetx;
+      else
+	dst_address += box_w;
+      scanline_address++;
+
+      if (dst_address >= dst_address_end)
+	break;
+    }
+    
+    // get the 'height' of the line to be painted in 'dst'
+    if ((offsety > 0) && (y == 0))
+      line_h = offsety;
+    else
+      line_h = box_h;
+
+    // draw the line in `dst'
+    for (box_y=0; box_y<line_h; box_y++) {
+      dst_address = ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x;
+      dst_address_end = dst_address + dst_w;
+      scanline_address = scanline;
+
+      x = 0;
+
+      // first pixel
+      if (offsetx > 0) {
+        for (box_x=0; box_x<offsetx; box_x++) {
+	  assert(scanline_address >= scanline);
+	  assert(scanline_address <  scanline + src_w);
+	  assert(dst_address >= ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x);
+	  assert(dst_address <  ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x + dst_w);
+	  assert(dst_address <  dst_address_end);
+
+	  (*dst_address++) = (*scanline_address);
+
+	  if (dst_address >= dst_address_end)
+	    goto done_with_line;
+        }
+
+        scanline_address++;
+        x++;
+      }
+
+      // the rest of the line
+      for (; x<src_w; x++) {
+        for (box_x=0; box_x<box_w; box_x++) {
+	  assert(dst_address >= ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x);
+	  assert(dst_address <  ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x + dst_w);
+
+	  (*dst_address++) = (*scanline_address);
+
+	  if (dst_address >= dst_address_end)
+	    goto done_with_line;
+        }
+
+        scanline_address++;
+      }
+
+done_with_line:;
+
+      if (++dst_y > bottom)
+        goto done_with_blit;
+    }
+
+    // go to the next line in the source image
+    src_y++;
+  }
+
+done_with_blit:;
+  delete[] scanline;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Render engine
 
 static int global_opacity = 255;
 
 static Layer *selected_layer = NULL;
 static Image *rastering_image = NULL;
 
-static void render_layer(Sprite *sprite, Layer *layer, Image *image,
+static void render_layer(Sprite* sprite, Layer* layer, Image* image,
 			 int source_x, int source_y,
 			 int frame, int zoom,
-			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int),
+			 void (*zoomed_func)(Image*, Image*, int, int, int, int, int),
 			 bool render_background,
 			 bool render_transparent);
-
-static void merge_zoomed_image8(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-static void merge_zoomed_image16(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
-static void merge_zoomed_image32(Image *dst, Image *src, int x, int y, int opacity, int blend_mode, int zoom);
 
 void set_preview_image(Layer *layer, Image *image)
 {
@@ -76,17 +290,17 @@ Image *render_sprite(Sprite *sprite,
 
     case IMAGE_RGB:
       depth = 32;
-      zoomed_func = merge_zoomed_image32;
+      zoomed_func = merge_zoomed_image<RgbTraits>;
       break;
 
     case IMAGE_GRAYSCALE:
       depth = 8;
-      zoomed_func = merge_zoomed_image16;
+      zoomed_func = merge_zoomed_image<GrayscaleTraits>;
       break;
 
     case IMAGE_INDEXED:
       depth = 8;
-      zoomed_func = merge_zoomed_image8;
+      zoomed_func = merge_zoomed_image<IndexedTraits>;
       break;
 
     default:
@@ -258,440 +472,4 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
     }
 
   }
-}
-
-static void merge_zoomed_image8(Image *dst, Image *src,
-				int x, int y, int opacity,
-				int blend_mode, int zoom)
-{
-  ase_uint8 *src_address;
-  ase_uint8 *dst_address;
-  ase_uint8 *scanline, *scanline_address;
-  int src_x, src_y, src_w, src_h;
-  int dst_x, dst_y, dst_w, dst_h;
-  int box_x, box_y, box_w, box_h;
-  int sizeof_box, offsetx, offsety;
-  int line_x, line_h, right, bottom;
-
-  box_w = 1<<zoom;
-  box_h = 1<<zoom;
-
-  src_x = 0;
-  src_y = 0;
-  src_w = src->w;
-  src_h = src->h;
-
-  dst_x = x;
-  dst_y = y;
-  dst_w = src->w<<zoom;
-  dst_h = src->h<<zoom;
-
-  if (dst_x < 0) {
-    src_x += (-dst_x)>>zoom;
-    src_w -= (-dst_x)>>zoom;
-    dst_w -= (-dst_x);
-    offsetx = box_w - ((-dst_x) % box_w);
-    dst_x = 0;
-  }
-  else
-    offsetx = 0;
-
-  if (dst_y < 0) {
-    src_y += (-dst_y)>>zoom;
-    src_h -= (-dst_y)>>zoom;
-    dst_h -= (-dst_y);
-    offsety = box_h - ((-dst_y) % box_h);
-    dst_y = 0;
-  }
-  else
-    offsety = 0;
-
-  if (dst_x+dst_w > dst->w) {
-    src_w -= (dst_x+dst_w-dst->w) >> zoom;
-    dst_w = dst->w - dst_x;
-  }
-
-  if (dst_y+dst_h > dst->h) {
-    src_h -= (dst_y+dst_h-dst->h) >> zoom;
-    dst_h = dst->h - dst_y;
-  }
-
-  if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
-    return;
-
-  sizeof_box = sizeof(ase_uint8) * box_w;
-  right = dst_x+dst_w-1;
-  bottom = dst_y+dst_h-1;
-
-  scanline = (ase_uint8*)jmalloc(sizeof(ase_uint8) * src_w);
-
-  /* merge process */
-
-  for (y=0; y<src_h; y++) {
-    /* process a new line */
-    src_address = ((ase_uint8 **)src->line)[src_y] + src_x;
-    dst_address = ((ase_uint8 **)dst->line)[dst_y] + dst_x;
-    scanline_address = scanline;
-
-    /* read `src' and `dst' and blend them, put the result in `scanline' */
-    for (x=0; x<src_w; x++) {
-      if (blend_mode == BLEND_MODE_COPY) {
-	*scanline_address = *src_address;
-      }
-      else {
-	if (*src_address) {
-	  if (color_map)
-	    *scanline_address = color_map->data[*src_address][*dst_address];
-	  else
-	    *scanline_address = *src_address;
-	}
-	else
-	    *scanline_address = *dst_address;
-      }
-
-      src_address++;
-      dst_address += box_w;
-      scanline_address++;
-    }
-
-    /* get the `height' of the line */
-    if ((offsety > 0) && (y == 0))
-      line_h = offsety;
-    else
-      line_h = box_h;
-
-    /* put the line in `dst' */
-    for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((ase_uint8 **)dst->line)[dst_y] + dst_x;
-      scanline_address = scanline;
-
-      line_x = dst_x;
-      x = 0;
-
-      /* first pixel */
-      if (offsetx > 0) {
-        for (box_x=0; box_x<offsetx; box_x++) {
-          (*dst_address++) = (*scanline_address);
-
-          line_x++;
-          if (line_x > right)
-            goto done_with_line;
-        }
-
-        scanline_address++;
-        x++;
-      }
-
-      /* the rest of the line */
-      for (; x<src_w; x++) {
-        for (box_x=0; box_x<box_w; box_x++) {
-          (*dst_address++) = (*scanline_address);
-
-          line_x++;
-          if (line_x > right)
-            goto done_with_line;
-        }
-
-        scanline_address++;
-      }
-
-done_with_line:;
-
-      dst_y++;
-      if (dst_y > bottom)
-        goto done_with_blit;
-    }
-
-    /* go to the next line */
-    src_y++;
-  }
-
-done_with_blit:;
-  jfree(scanline);
-}
-
-static void merge_zoomed_image16(Image *dst, Image *src,
-				 int x, int y, int opacity,
-				 int blend_mode, int zoom)
-{
-  BLEND_COLOR blender;
-  ase_uint16 *src_address;
-  ase_uint16 *dst_address;
-  ase_uint16 *scanline, *scanline_address;
-  int src_x, src_y, src_w, src_h;
-  int dst_x, dst_y, dst_w, dst_h;
-  int box_x, box_y, box_w, box_h;
-  int sizeof_box, offsetx, offsety;
-  int line_x, line_h, right, bottom;
-
-  blender = GrayscaleTraits::get_blender(blend_mode);
-
-  box_w = 1<<zoom;
-  box_h = 1<<zoom;
-
-  src_x = 0;
-  src_y = 0;
-  src_w = src->w;
-  src_h = src->h;
-
-  dst_x = x;
-  dst_y = y;
-  dst_w = src->w<<zoom;
-  dst_h = src->h<<zoom;
-
-  if (dst_x < 0) {
-    src_x += (-dst_x)>>zoom;
-    src_w -= (-dst_x)>>zoom;
-    dst_w -= (-dst_x);
-    offsetx = box_w - ((-dst_x) % box_w);
-    dst_x = 0;
-  }
-  else
-    offsetx = 0;
-
-  if (dst_y < 0) {
-    src_y += (-dst_y)>>zoom;
-    src_h -= (-dst_y)>>zoom;
-    dst_h -= (-dst_y);
-    offsety = box_h - ((-dst_y) % box_h);
-    dst_y = 0;
-  }
-  else
-    offsety = 0;
-
-  if (dst_x+dst_w > dst->w) {
-    src_w -= (dst_x+dst_w-dst->w) >> zoom;
-    dst_w = dst->w - dst_x;
-  }
-
-  if (dst_y+dst_h > dst->h) {
-    src_h -= (dst_y+dst_h-dst->h) >> zoom;
-    dst_h = dst->h - dst_y;
-  }
-
-  if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
-    return;
-
-  sizeof_box = sizeof(ase_uint16) * box_w;
-  right = dst_x+dst_w-1;
-  bottom = dst_y+dst_h-1;
-
-  scanline = (ase_uint16*)jmalloc(sizeof(ase_uint16) * src_w);
-
-  /* merge process */
-
-  /* opacity = (opacity)? opacity+1: 0; */
-
-  for (y=0; y<src_h; y++) {
-    /* process a new line */
-    src_address = ((ase_uint16 **)src->line)[src_y] + src_x;
-    dst_address = ((ase_uint16 **)dst->line)[dst_y] + dst_x;
-    scanline_address = scanline;
-
-    /* read `src' and `dst' and blend them, put the result in `scanline' */
-    for (x=0; x<src_w; x++) {
-      *scanline_address = (*blender)(*dst_address, *src_address, opacity);
-
-      src_address++;
-      dst_address += box_w;
-      scanline_address++;
-    }
-
-    /* get the `height' of the line */
-    if ((offsety > 0) && (y == 0))
-      line_h = offsety;
-    else
-      line_h = box_h;
-
-    /* put the line in `dst' */
-    for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((ase_uint16 **)dst->line)[dst_y] + dst_x;
-      scanline_address = scanline;
-
-      line_x = dst_x;
-      x = 0;
-
-      /* first pixel */
-      if (offsetx > 0) {
-        for (box_x=0; box_x<offsetx; box_x++) {
-          (*dst_address++) = (*scanline_address);
-
-          line_x++;
-          if (line_x > right)
-            goto done_with_line;
-        }
-
-        scanline_address++;
-        x++;
-      }
-
-      /* the rest of the line */
-      for (; x<src_w; x++) {
-        for (box_x=0; box_x<box_w; box_x++) {
-          (*dst_address++) = (*scanline_address);
-
-          line_x++;
-          if (line_x > right)
-            goto done_with_line;
-        }
-
-        scanline_address++;
-      }
-
-done_with_line:;
-
-      dst_y++;
-      if (dst_y > bottom)
-        goto done_with_blit;
-    }
-
-    /* go to the next line */
-    src_y++;
-  }
-
-done_with_blit:;
-  jfree(scanline);
-}
-
-static void merge_zoomed_image32(Image *dst, Image *src,
-				 int x, int y, int opacity,
-				 int blend_mode, int zoom)
-{
-  BLEND_COLOR blender;
-  ase_uint32 *src_address;
-  ase_uint32 *dst_address;
-  ase_uint32 *scanline, *scanline_address;
-  int src_x, src_y, src_w, src_h;
-  int dst_x, dst_y, dst_w, dst_h;
-  int box_x, box_y, box_w, box_h;
-  int sizeof_box, offsetx, offsety;
-  int line_x, line_h, right, bottom;
-
-  blender = RgbTraits::get_blender(blend_mode);
-
-  box_w = 1<<zoom;
-  box_h = 1<<zoom;
-
-  src_x = 0;
-  src_y = 0;
-  src_w = src->w;
-  src_h = src->h;
-
-  dst_x = x;
-  dst_y = y;
-  dst_w = src->w<<zoom;
-  dst_h = src->h<<zoom;
-
-  if (dst_x < 0) {
-    src_x += (-dst_x)>>zoom;
-    src_w -= (-dst_x)>>zoom;
-    dst_w -= (-dst_x);
-    offsetx = box_w - ((-dst_x) % box_w);
-    dst_x = 0;
-  }
-  else
-    offsetx = 0;
-
-  if (dst_y < 0) {
-    src_y += (-dst_y)>>zoom;
-    src_h -= (-dst_y)>>zoom;
-    dst_h -= (-dst_y);
-    offsety = box_h - ((-dst_y) % box_h);
-    dst_y = 0;
-  }
-  else
-    offsety = 0;
-
-  if (dst_x+dst_w > dst->w) {
-    src_w -= (dst_x+dst_w-dst->w) >> zoom;
-    dst_w = dst->w - dst_x;
-  }
-
-  if (dst_y+dst_h > dst->h) {
-    src_h -= (dst_y+dst_h-dst->h) >> zoom;
-    dst_h = dst->h - dst_y;
-  }
-
-  if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
-    return;
-
-  sizeof_box = sizeof(ase_uint32) * box_w;
-  right = dst_x+dst_w-1;
-  bottom = dst_y+dst_h-1;
-
-  scanline = (ase_uint32*)jmalloc(sizeof(ase_uint32) * src_w);
-
-  /* merge process */
-
-  /* opacity = (opacity)? opacity+1: 0; */
-
-  for (y=0; y<src_h; y++) {
-    /* process a new line */
-    src_address = ((ase_uint32 **)src->line)[src_y] + src_x;
-    dst_address = ((ase_uint32 **)dst->line)[dst_y] + dst_x;
-    scanline_address = scanline;
-
-    /* read `src' and `dst' and blend them, put the result in `scanline' */
-    for (x=0; x<src_w; x++) {
-      *scanline_address = (*blender)(*dst_address, *src_address, opacity);
-
-      src_address++;
-      dst_address += box_w;
-      scanline_address++;
-    }
-
-    /* get the `height' of the line */
-    if ((offsety > 0) && (y == 0))
-      line_h = offsety;
-    else
-      line_h = box_h;
-
-    /* put the line in `dst' */
-    for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((ase_uint32 **)dst->line)[dst_y] + dst_x;
-      scanline_address = scanline;
-
-      line_x = dst_x;
-      x = 0;
-
-      /* first pixel */
-      if (offsetx > 0) {
-        for (box_x=0; box_x<offsetx; box_x++) {
-          (*dst_address++) = (*scanline_address);
-
-          line_x++;
-          if (line_x > right)
-            goto done_with_line;
-        }
-
-        scanline_address++;
-        x++;
-      }
-
-      /* the rest of the line */
-      for (; x<src_w; x++) {
-        for (box_x=0; box_x<box_w; box_x++) {
-          (*dst_address++) = (*scanline_address);
-
-          line_x++;
-          if (line_x > right)
-            goto done_with_line;
-        }
-
-        scanline_address++;
-      }
-
-done_with_line:;
-
-      dst_y++;
-      if (dst_y > bottom)
-        goto done_with_blit;
-    }
-
-    /* go to the next line */
-    src_y++;
-  }
-
-done_with_blit:;
-  jfree(scanline);
 }
