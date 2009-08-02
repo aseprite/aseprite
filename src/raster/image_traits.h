@@ -192,6 +192,15 @@ struct BitmapTraits
 //////////////////////////////////////////////////////////////////////
 
 template<class Traits>
+inline typename Traits::address_t image_address_fast(const Image* image, int x, int y)
+{
+  assert(x >= 0 && x < image->w);
+  assert(y >= 0 && y < image->h);
+
+  return ((((typename Traits::pixel_t**)image->line)[y])+x);
+}
+
+template<class Traits>
 inline typename Traits::pixel_t image_getpixel_fast(const Image* image, int x, int y)
 {
   assert(x >= 0 && x < image->w);

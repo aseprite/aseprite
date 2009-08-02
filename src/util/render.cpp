@@ -28,7 +28,6 @@
 #include "modules/palettes.h"
 #include "modules/tools.h"
 #include "raster/image.h"
-#include "raster/image_impl.h"
 #include "raster/raster.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -157,8 +156,8 @@ static void merge_zoomed_image(Image *dst, Image *src,
     assert(dst_x >= 0 && dst_x < dst->w);
 
     // get addresses to each line (beginning of 'src', 'dst', etc.)
-    src_address = ((ImageImpl<Traits>*)src)->line_address(src_y) + src_x;
-    dst_address = ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x;
+    src_address = image_address_fast<Traits>(src, src_x, src_y);
+    dst_address = image_address_fast<Traits>(dst, dst_x, dst_y);
     dst_address_end = dst_address + dst_w;
     scanline_address = scanline;
 
@@ -166,10 +165,11 @@ static void merge_zoomed_image(Image *dst, Image *src,
     for (x=0; x<src_w; x++) {
       assert(scanline_address >= scanline);
       assert(scanline_address <  scanline + src_w);
-      assert(src_address >= ((ImageImpl<Traits>*)src)->line_address(src_y) + src_x);
-      assert(src_address <  ((ImageImpl<Traits>*)src)->line_address(src_y) + src_x + src_w);
-      assert(dst_address >= ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x);
-      assert(dst_address <  ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x + dst_w);
+
+      assert(src_address >= image_address_fast<Traits>(src, src_x, src_y));
+      assert(src_address <= image_address_fast<Traits>(src, src_x+src_w-1, src_y));
+      assert(dst_address >= image_address_fast<Traits>(dst, dst_x, dst_y));
+      assert(dst_address <= image_address_fast<Traits>(dst, dst_x+dst_w-1, dst_y));
       assert(dst_address <  dst_address_end);
 
       blender(scanline_address, dst_address, src_address, opacity);
@@ -193,7 +193,7 @@ static void merge_zoomed_image(Image *dst, Image *src,
 
     // draw the line in `dst'
     for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x;
+      dst_address = image_address_fast<Traits>(dst, dst_x, dst_y);
       dst_address_end = dst_address + dst_w;
       scanline_address = scanline;
 
@@ -204,8 +204,8 @@ static void merge_zoomed_image(Image *dst, Image *src,
         for (box_x=0; box_x<offsetx; box_x++) {
 	  assert(scanline_address >= scanline);
 	  assert(scanline_address <  scanline + src_w);
-	  assert(dst_address >= ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x);
-	  assert(dst_address <  ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x + dst_w);
+	  assert(dst_address >= image_address_fast<Traits>(dst, dst_x, dst_y));
+	  assert(dst_address <= image_address_fast<Traits>(dst, dst_x+dst_w-1, dst_y));
 	  assert(dst_address <  dst_address_end);
 
 	  (*dst_address++) = (*scanline_address);
@@ -221,8 +221,9 @@ static void merge_zoomed_image(Image *dst, Image *src,
       // the rest of the line
       for (; x<src_w; x++) {
         for (box_x=0; box_x<box_w; box_x++) {
-	  assert(dst_address >= ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x);
-	  assert(dst_address <  ((ImageImpl<Traits>*)dst)->line_address(dst_y) + dst_x + dst_w);
+	  assert(dst_address >= image_address_fast<Traits>(dst, dst_x, dst_y));
+	  assert(dst_address <= image_address_fast<Traits>(dst, dst_x+dst_w-1, dst_y));
+	  assert(dst_address <  dst_address_end);
 
 	  (*dst_address++) = (*scanline_address);
 

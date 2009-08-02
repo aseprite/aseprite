@@ -81,7 +81,11 @@ char *jstrdup(const char *string)
 //////////////////////////////////////////////////////////////////////
 // With leak detection
 
-#define BACKTRACE_LEVELS 16
+#if defined(__GNUC__)
+  #define BACKTRACE_LEVELS 4
+#else
+  #define BACKTRACE_LEVELS 16
+#endif
 
 #if defined _MSC_VER
 
@@ -218,8 +222,15 @@ static void addslot(void *ptr, unsigned long size)
   assert(size != 0);
 
   // __builtin_return_address is a GCC extension
+#if defined(__GNUC__)
+  p->backtrace[0] = __builtin_return_address(4);
+  p->backtrace[1] = __builtin_return_address(3);
+  p->backtrace[2] = __builtin_return_address(2);
+  p->backtrace[3] = __builtin_return_address(1);
+#else
   for (int c=0; c<BACKTRACE_LEVELS; ++c)
     p->backtrace[c] = __builtin_return_address(BACKTRACE_LEVELS-c);
+#endif
 
   p->ptr = ptr;
   p->size = size;

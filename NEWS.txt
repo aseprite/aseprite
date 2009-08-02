@@ -13,6 +13,7 @@ NEWS
 + Fixed a bug with multiple editors and paste command.
 + Fixed a bug in the File Open dialog when user presses ENTER key
   with an empty file name.
++ Fixed critical bugs in rendering code.
 
 0.6.1
 -----
