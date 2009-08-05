@@ -1,3 +1,13 @@
+2009-08-04  David A. Capello  <davidcapello@gmail.com>
+
+	* Version 0.7 released.
+
+	* makefile.vc: Prepared to be compiled with VC++ 9.0 Express Edition.
+
+2009-08-03  David A. Capello  <davidcapello@gmail.com>
+
+	* Modified some error handling code from return-value to exceptions.
+
 2009-08-02  David A. Capello  <davidcapello@gmail.com>
 
 	* src/util/render.cpp (merge_zoomed_image): unified all

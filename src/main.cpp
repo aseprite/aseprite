@@ -20,8 +20,10 @@
 
 #include <allegro.h>
 
+#include "ase_exception.h"
 #include "core/app.h"
 
+//////////////////////////////////////////////////////////////////////
 // Information for "ident".
 
 const char ase_ident[] =
@@ -29,41 +31,41 @@ const char ase_ident[] =
     "$Website: " WEBSITE " $\n";
 
 //////////////////////////////////////////////////////////////////////
-// Basic classes for some RAII
+// Allegro libray initialization
 
 class Allegro {
 public:
-  Allegro() { allegro_init(); }
-  ~Allegro() { allegro_exit(); }
+  Allegro() {
+    allegro_init();
+    set_uformat(U_ASCII);
+    install_timer();
+  }
+  ~Allegro() {
+    remove_timer();
+    allegro_exit();
+  }
 };
 
-#if defined MEMLEAK
-class MemLeaks {
-public:
-  MemLeaks() { jmemleak_init(); }
-  ~MemLeaks() { jmemleak_exit(); }
-};
-#endif
-
-//////////////////////////////////////////////////////////////////////
-//			       Main Routine
-//////////////////////////////////////////////////////////////////////
-
+/**
+ * Here ASE starts.
+ */
 int main(int argc, char *argv[])
 {
-  Allegro allegro;
-#if defined MEMLEAK
-  MemLeaks memleaks;
-#endif
+  try {
+    Allegro allegro;
+    try {
+      Jinete jinete;
+      Application app(argc, argv);
 
-  set_uformat(U_ASCII);
-
-  // initialises the application
-  if (!app_init(argc, argv))
-    return 1;
-
-  app_loop();
-  app_exit();
+      app.run();
+    }
+    catch (std::exception& e) {
+      allegro_message(e.what());
+    }
+  }
+  catch (...) {
+    // do nothing
+  }
   return 0;
 }
 

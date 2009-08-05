@@ -195,20 +195,17 @@ $1/docs/*.pdf"
 if [ ! -f $distdir-win32.zip ] ; then
 
 cd "$dir/.."
-make -f makefile.mgw CONFIGURED=1 clean
-make -f makefile.mgw CONFIGURED=1
-strip -s aseprite.exe
+make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1 clean
+make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1
 def_common_files .
 mkdir "$dir/$distdir-win32"
 cp -r --parents $txt_files $bin_files aseprite.exe "$dir/$distdir-win32"
 
 cd "$dir"
-cp alleg42.dll "$dir/$distdir-win32"
 def_common_files $distdir-win32
 zip -9 $distdir-win32.zip $txt_files
 zip -9 $distdir-win32.zip $bin_files		\
-    $distdir-win32/aseprite.exe			\
-    $distdir-win32/alleg42.dll
+    $distdir-win32/aseprite.exe
 rm -fr $distdir-win32
 
 fi

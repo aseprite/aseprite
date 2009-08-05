@@ -29,7 +29,7 @@ enum {
 
 extern int ase_mode;
 
-bool core_init();
+void core_init();
 void core_exit();
 
 void verbose_printf(const char *format, ...);

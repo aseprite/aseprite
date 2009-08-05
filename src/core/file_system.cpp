@@ -136,8 +136,8 @@ typedef std::map<jstring, BITMAP*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
-static FileItemMap fileitems_map;
-static ThumbnailMap thumbnail_map;
+static FileItemMap* fileitems_map;
+static ThumbnailMap* thumbnail_map;
 static unsigned int current_file_system_version = 0;
 
 #ifdef USE_PIDLS
@@ -174,8 +174,11 @@ static unsigned int current_file_system_version = 0;
 /**
  * Initializes the file-system module to navigate the file-system.
  */
-bool file_system_init()
+void file_system_init()
 {
+  fileitems_map = new FileItemMap;
+  thumbnail_map = new ThumbnailMap;
+
 #ifdef USE_PIDLS
   /* get the IMalloc interface */
   SHGetMalloc(&shl_imalloc);
@@ -190,8 +193,6 @@ bool file_system_init()
   // get the root element of the file system (this will create
   // the 'rootitem' FileItem)
   get_root_fileitem();
-
-  return TRUE;
 }
  
 /**
@@ -200,16 +201,16 @@ bool file_system_init()
 void file_system_exit()
 {
   for (FileItemMap::iterator
-	 it=fileitems_map.begin(); it!=fileitems_map.end(); ++it) {
+	 it=fileitems_map->begin(); it!=fileitems_map->end(); ++it) {
     delete it->second;
   }
-  fileitems_map.clear();
+  fileitems_map->clear();
 
   for (ThumbnailMap::iterator
-	 it=thumbnail_map.begin(); it!=thumbnail_map.end(); ++it) {
+	 it=thumbnail_map->begin(); it!=thumbnail_map->end(); ++it) {
     destroy_bitmap(it->second);
   }
-  thumbnail_map.clear();
+  thumbnail_map->clear();
 
 #ifdef USE_PIDLS
   // relase desktop IShellFolder interface
@@ -219,6 +220,9 @@ void file_system_exit()
   shl_imalloc->Release();
   shl_imalloc = NULL;
 #endif
+
+  delete fileitems_map;
+  delete thumbnail_map;
 }
 
 /**
@@ -534,8 +538,8 @@ BITMAP* fileitem_get_thumbnail(FileItem* fileitem)
 {
   assert(fileitem);
 
-  ThumbnailMap::iterator it = thumbnail_map.find(fileitem->filename);
-  if (it != thumbnail_map.end())
+  ThumbnailMap::iterator it = thumbnail_map->find(fileitem->filename);
+  if (it != thumbnail_map->end())
     return it->second;
   else
     return NULL;
@@ -546,14 +550,14 @@ void fileitem_set_thumbnail(FileItem* fileitem, BITMAP* thumbnail)
   assert(fileitem);
 
   // destroy the current thumbnail of the file (if exists)
-  ThumbnailMap::iterator it = thumbnail_map.find(fileitem->filename);
-  if (it != thumbnail_map.end()) {
+  ThumbnailMap::iterator it = thumbnail_map->find(fileitem->filename);
+  if (it != thumbnail_map->end()) {
     destroy_bitmap(it->second);
-    thumbnail_map.erase(it);
+    thumbnail_map->erase(it);
   }
 
   // insert the new one in the map
-  thumbnail_map.insert(std::make_pair(fileitem->filename, thumbnail));
+  thumbnail_map->insert(std::make_pair(fileitem->filename, thumbnail));
 }
 
 FileItem::FileItem(FileItem* parent)
@@ -899,8 +903,8 @@ static jstring get_key_for_pidl(LPITEMIDLIST pidl)
 
 static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_not)
 {
-  FileItemMap::iterator it = fileitems_map.find(get_key_for_pidl(fullpidl));
-  if (it != fileitems_map.end())
+  FileItemMap::iterator it = fileitems_map->find(get_key_for_pidl(fullpidl));
+  if (it != fileitems_map->end())
     return it->second;
 
   if (!create_if_not)
@@ -943,7 +947,7 @@ static void put_fileitem(FileItem* fileitem)
   assert(fileitem->keyname != NOTINITIALIZED);
 
   // insert this file-item in the hash-table
-  fileitems_map.insert(std::make_pair(fileitem->keyname, fileitem));
+  fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));
 }
 
 #else
@@ -957,8 +961,8 @@ static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
   if (path.empty())
     return rootitem;
 
-  FileItemMap::iterator it = fileitems_map.find(get_key_for_filename(path));
-  if (it != fileitems_map.end())
+  FileItemMap::iterator it = fileitems_map->find(get_key_for_filename(path));
+  if (it != fileitems_map->end())
     return it->second;
 
   if (!create_if_not)
@@ -1066,7 +1070,7 @@ static void put_fileitem(FileItem* fileitem)
   assert(fileitem->keyname != NOTINITIALIZED);
 
   // insert this file-item in the hash-table
-  fileitems_map.insert(std::make_pair(fileitem->keyname, fileitem));
+  fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));
 }
 
 #endif

@@ -50,7 +50,7 @@ private:
   void assign_id();
 };
 
-bool gfxobj_init();
+void gfxobj_init();
 void gfxobj_exit();
 
 GfxObj* gfxobj_find(gfxobj_id id);

@@ -137,7 +137,7 @@ static bool memleak_status = false;
 static slot_t* headslot;
 static JMutex mutex;
 
-void jmemleak_init()
+void _jmemleak_init()
 {
   assert(!memleak_status);
 
@@ -147,7 +147,7 @@ void jmemleak_init()
   memleak_status = true;
 }
 
-void jmemleak_exit()
+void _jmemleak_exit()
 {
   assert(memleak_status);
   memleak_status = false;

@@ -138,6 +138,7 @@ COMMON_SOURCES =					\
 	src/jinete/jfontbmp.cpp				\
 	src/jinete/jhook.cpp				\
 	src/jinete/jimage.cpp				\
+	src/jinete/jinete.cpp				\
 	src/jinete/jintern.cpp				\
 	src/jinete/jlabel.cpp				\
 	src/jinete/jlist.cpp				\

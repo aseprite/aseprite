@@ -128,8 +128,8 @@ struct Monitor
 static JWidget manager = NULL;
 
 static int monitor_timer = -1;
-static std::list<Monitor*> monitors;
-static std::vector<Shortcut*> shortcuts;
+static std::list<Monitor*>* monitors = NULL;
+static std::vector<Shortcut*>* shortcuts = NULL;
 
 static bool ji_screen_created = FALSE;
 
@@ -168,11 +168,8 @@ int init_module_gui()
   int c, w, h, bpp, autodetect;
   bool fullscreen;
 
-  /* install timer related stuff */
-  if (install_timer() < 0) {
-    user_printf(_("Error installing timer handler\n"));
-    return -1;
-  }
+  monitors = new std::list<Monitor*>();
+  shortcuts = new std::vector<Shortcut*>();
 
   /* install the mouse */
   if (install_mouse() < 0) {
@@ -313,20 +310,24 @@ int init_module_gui()
 void exit_module_gui()
 {
   // destroy shortcuts
+  assert(shortcuts != NULL);
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
     delete shortcut;
   }
-  shortcuts.clear();
+  delete shortcuts;
+  shortcuts = NULL;
 
   // destroy monitors
+  assert(monitors != NULL);
   for (std::list<Monitor*>::iterator
-	 it2 = monitors.begin(); it2 != monitors.end(); ++it2) {
+  	 it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
     Monitor* monitor = *it2;
     delete monitor;
   }
-  monitors.clear();
+  delete monitors;
+  monitors = NULL;
 
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
@@ -344,7 +345,6 @@ void exit_module_gui()
 
   remove_keyboard();
   remove_mouse();
-  remove_timer();
 }
 
 int guiscale()
@@ -783,7 +783,7 @@ JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, Com
     shortcut->command = command;
     shortcut->argument = argument ? argument: "";
 
-    shortcuts.push_back(shortcut);
+    shortcuts->push_back(shortcut);
   }
 
   shortcut->add_shortcut(shortcut_string);
@@ -798,7 +798,7 @@ JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, Tool* t
     shortcut = new Shortcut(Shortcut_ChangeTool);
     shortcut->tool = tool;
 
-    shortcuts.push_back(shortcut);
+    shortcuts->push_back(shortcut);
   }
 
   shortcut->add_shortcut(shortcut_string);
@@ -808,7 +808,7 @@ JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, Tool* t
 Command* get_command_from_key_message(JMessage msg)
 {
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ExecuteCommand &&
@@ -873,7 +873,7 @@ static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char*
     argument = "";
 
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ExecuteCommand &&
@@ -889,7 +889,7 @@ static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char*
 static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool)
 {
   for (std::vector<Shortcut*>::iterator
-	 it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ChangeTool &&
@@ -911,7 +911,7 @@ Monitor* add_gui_monitor(void (*proc)(void *),
 {
   Monitor* monitor = new Monitor(proc, free, data);
 
-  monitors.push_back(monitor);
+  monitors->push_back(monitor);
 
   if (monitor_timer < 0)
     monitor_timer = jmanager_add_timer(manager, MONITOR_TIMER_MSECS);
@@ -927,17 +927,17 @@ Monitor* add_gui_monitor(void (*proc)(void *),
 void remove_gui_monitor(Monitor* monitor)
 {
   std::list<Monitor*>::iterator it =
-    std::find(monitors.begin(), monitors.end(), monitor);
+    std::find(monitors->begin(), monitors->end(), monitor);
 
-  assert(it != monitors.end());
+  assert(it != monitors->end());
 
   if (!monitor->lock)
     delete monitor;
   else
     monitor->deleted = true;
 
-  monitors.erase(it);
-  if (monitors.empty())
+  monitors->erase(it);
+  if (monitors->empty())
     jmanager_stop_timer(monitor_timer);
 }
 
@@ -958,7 +958,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
     case JM_TIMER:
       if (msg->timer.timer_id == monitor_timer) {
 	for (std::list<Monitor*>::iterator
-	       it = monitors.begin(), next; it != monitors.end(); it = next) {
+	       it = monitors->begin(), next; it != monitors->end(); it = next) {
 	  Monitor* monitor = *it;
 	  next = it;
 	  ++next;
@@ -976,14 +976,14 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	// is monitors empty? we can stop the timer so
-	if (monitors.empty())
+	if (monitors->empty())
 	  jmanager_stop_timer(monitor_timer);
       }
       break;
 
     case JM_KEYPRESSED:
       for (std::vector<Shortcut*>::iterator
-	     it = shortcuts.begin(); it != shortcuts.end(); ++it) {
+	     it = shortcuts->begin(); it != shortcuts->end(); ++it) {
 	Shortcut* shortcut = *it;
 
 	if (shortcut->is_key_pressed(msg)) {

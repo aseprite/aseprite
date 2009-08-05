@@ -35,7 +35,7 @@
 #ifdef ALLEGRO_WINDOWS
 
 static WNDPROC base_wnd_proc = NULL;
-static std::vector<jstring> dropped_files;
+static std::vector<jstring>* dropped_files;
 static JMutex dropped_files_mutex;
 
 static void subclass_hwnd();
@@ -44,6 +44,7 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 void install_drop_files()
 {
+  dropped_files = new std::vector<jstring>();
   dropped_files_mutex = jmutex_new();
 
   subclass_hwnd();
@@ -56,7 +57,7 @@ void uninstall_drop_files()
   jmutex_free(dropped_files_mutex);
   dropped_files_mutex = NULL;
 
-  dropped_files.clear();
+  delete dropped_files;
 }
 
 void check_for_dropped_files()
@@ -68,9 +69,9 @@ void check_for_dropped_files()
     return;
 
   jmutex_lock(dropped_files_mutex);
-  if (!dropped_files.empty()) {
-    std::vector<jstring> files = dropped_files;
-    dropped_files.clear();
+  if (!dropped_files->empty()) {
+    std::vector<jstring> files = *dropped_files;
+    dropped_files->clear();
 
     // open all files
     Command* cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
@@ -117,7 +118,7 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	  if (length > 0) {
 	    TCHAR* lpstr = new TCHAR[length+1];
 	    DragQueryFile(hdrop, index, lpstr, length+1);
-	    dropped_files.push_back(lpstr);
+	    dropped_files->push_back(lpstr);
 	    delete[] lpstr;
 	  }
 	}

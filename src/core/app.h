@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 
-/* enumeration of ASE events in the highest application level */
+// enumeration of ASE events in the highest application level
 enum {
   APP_EXIT,
   APP_PALETTE_CHANGE,
@@ -31,9 +31,14 @@ enum {
 class Layer;
 class Sprite;
 
-bool app_init(int argc, char *argv[]);
-void app_loop();
-void app_exit();
+class Application
+{
+public:
+  Application(int argc, char *argv[]);
+  ~Application();
+
+  void run();
+};
 
 void app_add_hook(int app_event, void (*proc)(void *data), void *data);
 void app_trigger_event(int app_event);

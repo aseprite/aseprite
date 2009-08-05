@@ -157,10 +157,8 @@ JWidget jmanager_new()
   int c;
 
   if (!default_manager) {
-    /* initialize system */
-    _ji_system_init();
-    _ji_font_init();
-    _ji_theme_init();
+    if (!ji_screen)
+      ji_set_screen(screen);
 
     /* hook the window close message */
     want_close_stage = STAGE_NORMAL;
@@ -254,10 +252,6 @@ void jmanager_free(JWidget widget)
     default_manager = NULL;
 
     /* shutdown system */
-    _ji_theme_exit();
-    _ji_font_exit();
-    _ji_system_exit();
-
     jlist_free(msg_queue);
     jlist_free(new_windows);
     jlist_free(proc_windows_list);

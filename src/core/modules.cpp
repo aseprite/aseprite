@@ -58,27 +58,22 @@ static Module module[] =
 
 static int modules = sizeof(module) / sizeof(Module);
 
-bool modules_init(int requirements)
+void modules_init(int requirements)
 {
-  int c;
-
-  for (c=0; c<modules; c++)
+  for (int c=0; c<modules; c++)
     if (module[c].reqs & requirements) {
       PRINTF("Installing module: %s\n", module[c].name);
+
       if ((*module[c].init)() < 0)
-	return FALSE;
+	throw ase_exception(std::string("Error initializing module: ") + module[c].name);
 
       module[c].installed = TRUE;
     }
-
-  return TRUE;
 }
 
 void modules_exit()
 {
-  int c;
-
-  for (c=modules-1; c>=0; c--)
+  for (int c=modules-1; c>=0; c--)
     if (module[c].installed) {
       PRINTF("Unstalling module: %s\n", module[c].name);
       (*module[c].exit)();

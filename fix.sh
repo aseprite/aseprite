@@ -102,6 +102,9 @@ gen_makefile()
       echo "" >> $makefile
   fi
 
+  if [ X"$debug" == X"y" ] ; then echo -n "#" >> $makefile ; fi
+  echo "RELEASE = 1" >> $makefile
+
   if [ X"$debug" != X"y" ] ; then echo -n "#" >> $makefile ; fi
   echo "DEBUGMODE = 1" >> $makefile
 

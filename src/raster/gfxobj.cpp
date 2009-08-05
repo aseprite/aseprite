@@ -29,26 +29,24 @@
 #include "raster/gfxobj.h"
 
 static JMutex objects_mutex;
-static gfxobj_id object_id = 0;		         // last object ID created
-static std::map<gfxobj_id, GfxObj*> objects_map; // graphics objects map
+static gfxobj_id object_id = 0;		          // last object ID created
+static std::map<gfxobj_id, GfxObj*>* objects_map; // graphics objects map
 
 static void insert_gfxobj(GfxObj* gfxobj);
 static void erase_gfxobj(GfxObj* gfxobj);
 
 //////////////////////////////////////////////////////////////////////
-
-bool gfxobj_init()
-{
-  objects_mutex = jmutex_new();
-  if (!objects_mutex)
-    return false;
 
-  return true;
+void gfxobj_init()
+{
+  objects_map = new std::map<gfxobj_id, GfxObj*>;
+  objects_mutex = jmutex_new();
 }
 
 void gfxobj_exit()
 {
-  assert(objects_map.empty());
+  assert(objects_map->empty());
+  delete objects_map;
   jmutex_free(objects_mutex);
 }
 
@@ -100,9 +98,9 @@ GfxObj* gfxobj_find(gfxobj_id id)
   jmutex_lock(objects_mutex);
   {
     std::map<gfxobj_id, GfxObj*>::iterator
-      it = objects_map.find(id);
+      it = objects_map->find(id);
 
-    if (it != objects_map.end())
+    if (it != objects_map->end())
       ret = it->second;
   }
   jmutex_unlock(objects_mutex);
@@ -128,15 +126,15 @@ void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id)
 
 static void insert_gfxobj(GfxObj* gfxobj)
 {
-  objects_map.insert(std::make_pair(gfxobj->id, gfxobj));
+  objects_map->insert(std::make_pair(gfxobj->id, gfxobj));
 }
 
 static void erase_gfxobj(GfxObj* gfxobj)
 {
   std::map<gfxobj_id, GfxObj*>::iterator
-    it = objects_map.find(gfxobj->id);
+    it = objects_map->find(gfxobj->id);
   
-  assert(it != objects_map.end());
+  assert(it != objects_map->end());
 
-  objects_map.erase(it);
+  objects_map->erase(it);
 }

@@ -41,9 +41,25 @@ ifdef DEBUGMODE
   LFLAGS += -DEBUG
   LIBS += Alld.lib psapi.lib
 else
-  CFLAGS += -O2 -MD -DNDEBUG
-  LFLAGS += -RELEASE
-  LIBS += Alleg.lib
+  ifdef RELEASE
+    CFLAGS += -O2 -DNDEBUG
+    LFLAGS += -RELEASE
+
+    ifdef STATIC_ALLEG_LINK
+      CFLAGS += -MT -DALLEGRO_STATICLINK
+      LIBS += Alleg_s_crt.lib 
+      LIBS += dinput8.lib ddraw.lib dxguid.lib dsound.lib
+    else
+      CFLAGS += -MD
+      LIBS += Alleg.lib
+    endif
+  else
+    # Release with debug info
+    CFLAGS += -Zi -O2 -MD -DNDEBUG
+    LFLAGS += -DEBUG
+    LIBS += Alleg.lib
+    LIBS += psapi.lib
+  endif
 endif
 
 ifdef MEMLEAK
@@ -73,27 +89,27 @@ distclean: clean
 
 $(LIBART_LIB): $(LIBART_OBJS)
 	-rm -f $@
-	lib -NOLOGO /OUT:$@ $^
+	lib -NOLOGO -OUT:$@ $^
 
 $(LIBFREETYPE_LIB): $(LIBFREETYPE_OBJS)
 	-rm -f $@
-	lib -NOLOGO /OUT:$@ $^
+	lib -NOLOGO -OUT:$@ $^
 
 $(LIBGD_LIB): $(LIBGD_OBJS)
 	-rm -f $@
-	lib -NOLOGO /OUT:$@ $^
+	lib -NOLOGO -OUT:$@ $^
 
 $(LIBJPEG_LIB): $(LIBJPEG_OBJS)
 	-rm -f $@
-	lib -NOLOGO /OUT:$@ $^
+	lib -NOLOGO -OUT:$@ $^
 
 $(LIBPNG_LIB): $(LIBPNG_OBJS)
 	-rm -f $@
-	lib -NOLOGO /OUT:$@ $^
+	lib -NOLOGO -OUT:$@ $^
 
 $(ZLIB_LIB): $(ZLIB_OBJS)
 	-rm -f $@
-	lib -NOLOGO /OUT:$@ $^
+	lib -NOLOGO -OUT:$@ $^
 
 ######################################################################
 # Rules to build objects and the application
@@ -174,3 +190,7 @@ $(OBJ_DIR)/icon.res: src/icon.rc
 
 $(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
 	link $(LFLAGS) $^ $(LIBS) -OUT:$@
+
+# To embed the manifest file uncomment the following lines:
+#	mt -nologo -manifest $@.manifest -outputresource:$@;#2
+#	rm $@.manifest

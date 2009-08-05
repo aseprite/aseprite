@@ -29,55 +29,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_LOW_H
-#define JINETE_LOW_H
+#include "config.h"
 
 #include "jinete/jbase.h"
 
-struct FONT;
-struct BITMAP;
+#ifdef MEMLEAK
+void _jmemleak_init();
+void _jmemleak_exit();
+#endif
 
-//////////////////////////////////////////////////////////////////////
-// jintern.c
+int _ji_widgets_init();
+void _ji_widgets_exit();
 
-JWidget _ji_get_widget_by_id(JID widget_id);
-JWidget *_ji_get_widget_array(int *nwidgets);
+int _ji_system_init();
+void _ji_system_exit();
 
-void _ji_add_widget(JWidget widget);
-void _ji_remove_widget(JWidget widget);
-bool _ji_is_valid_widget(JWidget widget);
+int _ji_font_init();
+void _ji_font_exit();
 
-void _ji_set_font_of_all_widgets(struct FONT *f);
+int _ji_theme_init();
+void _ji_theme_exit();
 
-//////////////////////////////////////////////////////////////////////
-// jwidget.c
+/**
+ * Initializes the Jinete library.
+ */
+Jinete::Jinete()
+{
+#ifdef MEMLEAK
+  _jmemleak_init();
+#endif
 
-void _jwidget_add_hook(JWidget widget, JHook hook);
-void _jwidget_remove_hook(JWidget widget, JHook hook);
+  // initialize system
+  _ji_system_init();
+  _ji_font_init();
+  _ji_widgets_init();
+  _ji_theme_init();
+}
 
-//////////////////////////////////////////////////////////////////////
-// jwindow.c
+Jinete::~Jinete()
+{
+  // shutdown system
+  _ji_theme_exit();
+  _ji_widgets_exit();
+  _ji_font_exit();
+  _ji_system_exit();
 
-bool _jwindow_is_moving();
+#ifdef MEMLEAK
+  _jmemleak_exit();
+#endif
+}
 
-//////////////////////////////////////////////////////////////////////
-// jmanager.c
-
-void _jmanager_open_window(JWidget manager, JWidget window);
-void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_background);
-
-//////////////////////////////////////////////////////////////////////
-// jtheme.c
-
-void _ji_theme_draw_sprite_color(struct BITMAP *bmp, struct BITMAP *sprite,
-				 int x, int y, int color);
-
-void _ji_theme_textbox_draw(struct BITMAP *bmp, JWidget textbox,
-			    int *w, int *h, int bg, int fg);
-
-//////////////////////////////////////////////////////////////////////
-// jfontbmp.c
-
-struct FONT *_ji_bitmap2font(struct BITMAP *bmp);
-
-#endif /* JINETE_LOW_H */

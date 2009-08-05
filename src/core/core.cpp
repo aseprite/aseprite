@@ -50,7 +50,7 @@ static char *log_filename = NULL;
 static FILE *log_fileptr = NULL;
 #endif
 
-bool core_init()
+void core_init()
 {
 #ifdef NEED_LOG
   char buf[512];
@@ -69,8 +69,6 @@ bool core_init()
   log_filename = jstrdup(dirs->path);
   dirs_free(dirs);
 #endif
-
-  return TRUE;
 }
 
 void core_exit()

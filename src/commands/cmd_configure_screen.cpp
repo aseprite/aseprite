@@ -176,7 +176,6 @@ static bool try_new_gfx_mode()
       /* oh no! more errors!, we can't restore the old graphics mode! */
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
       user_printf(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
-      app_exit();
       exit(1);
     }
     /* only print a message of the old error */

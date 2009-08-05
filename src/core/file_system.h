@@ -29,7 +29,7 @@ class FileItem;
 
 typedef std::vector<FileItem*> FileItemList;
 
-bool file_system_init();
+void file_system_init();
 void file_system_exit();
 
 void file_system_refresh();

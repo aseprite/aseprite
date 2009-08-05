@@ -30,6 +30,7 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
+#include "ase_exception.h"
 #include "ase/ui_context.h"
 #include "commands/commands.h"
 #include "console/console.h"
@@ -110,7 +111,7 @@ static char *palette_filename = NULL;
 
 static void tabsbar_select_callback(JWidget tabs, void *data, int button);
 
-static int check_args(int argc, char *argv[]);
+static void check_args(int argc, char *argv[]);
 static void usage(int status);
 
 static Option *option_new(int type, const char *data);
@@ -120,29 +121,22 @@ static void option_free(Option *option);
  * Initializes the application loading the modules, setting the
  * graphics mode, loading the configuration and resources, etc.
  */
-bool app_init(int argc, char *argv[])
+Application::Application(int argc, char *argv[])
 {
   exe_name = argv[0];
 
   /* initialize application hooks */
-  {
-    int c;
-    for (c=0; c<APP_EVENTS; ++c)
-      apphooks[c] = NULL;
-  }
+  for (int c=0; c<APP_EVENTS; ++c)
+    apphooks[c] = NULL;
 
   /* initialize language suppport */
   intl_init();
 
   /* install the `core' of ASE application */
-  if (!core_init()) {
-    user_printf(_("ASE core initialization error.\n"));
-    return FALSE;
-  }
+  core_init();
 
   /* install the file-system access module */
-  if (!file_system_init())
-    return FALSE;
+  file_system_init();
 
   /* init configuration */
   ase_config_init();
@@ -151,22 +145,17 @@ bool app_init(int argc, char *argv[])
   intl_load_lang();
 
   /* search options in the arguments */
-  if (check_args(argc, argv) < 0)
-    return FALSE;
+  check_args(argc, argv);
 
   /* GUI is the default mode */
   if (!(ase_mode & MODE_BATCH))
     ase_mode |= MODE_GUI;
 
   /* install 'raster' stuff */
-  if (!gfxobj_init())
-    return FALSE;
+  gfxobj_init();
 
   /* install the modules */
-  if (!modules_init(REQUIRE_INTERFACE))
-    return FALSE;
-
-  _ji_font_init();
+  modules_init(REQUIRE_INTERFACE);
 
   /* custom default palette? */
   if (palette_filename) {
@@ -175,13 +164,9 @@ bool app_init(int argc, char *argv[])
     PRINTF("Loading custom palette file: %s\n", palette_filename);
 
     pal = palette_load(palette_filename);
-    if (pal == NULL) {
-      set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      Console console;
-      console.printf(_("Error loading default palette from `%s'\n"),
-		     palette_filename);
-      return FALSE;
-    }
+    if (pal == NULL)
+      throw ase_exception(std::string("Error loading default palette from: ")
+			  + palette_filename);
 
     set_default_palette(pal);
     palette_free(pal);
@@ -189,16 +174,13 @@ bool app_init(int argc, char *argv[])
 
   /* set system palette to the default one */
   set_current_palette(NULL, TRUE);
-
-  /* ok */
-  return TRUE;
 }
 
 /**
  * Runs the ASE application. In GUI mode it's the top-level window, in
  * console/scripting it just runs the specified scripts.
  */
-void app_loop()
+void Application::run()
 {
   Option *option;
   JLink link;
@@ -363,17 +345,17 @@ void app_loop()
 /**
  * Finishes the ASE application.
  */
-void app_exit()
+Application::~Application()
 {
   JLink link;
   int c;
 
-  /* remove ase handlers */
+  // remove ase handlers
   PRINTF("Uninstalling ASE\n");
 
   app_trigger_event(APP_EXIT);
 
-  /* destroy application hooks */
+  // destroy application hooks
   for (c=0; c<APP_EVENTS; ++c) {
     if (apphooks[c] != NULL) {
       JI_LIST_FOR_EACH(apphooks[c], link) {
@@ -395,8 +377,6 @@ void app_exit()
   ase_config_exit();
   file_system_exit();
   core_exit();
-  _ji_font_exit();
-
   intl_exit();
 }
 
@@ -589,7 +569,7 @@ static void tabsbar_select_callback(JWidget tabs, void *data, int button)
 /**
  * Looks the inpunt arguments in the command line.
  */
-static int check_args(int argc, char *argv[])
+static void check_args(int argc, char *argv[])
 {
   Console console;
   int i, n, len;
@@ -673,8 +653,6 @@ static int check_args(int argc, char *argv[])
     else if (n == 0)
       jlist_append(options, option_new(OPEN_GFX_FILE, argv[i]));
   }
-
-  return 0;
 }
 
 /**

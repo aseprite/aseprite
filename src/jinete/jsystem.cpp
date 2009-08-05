@@ -118,7 +118,8 @@ int _ji_system_init()
   if (install_int_ex(clock_inc, BPS_TO_TIMER(1000)) < 0)
     return -1;
 
-  jmouse_poll();
+  if (screen)
+    jmouse_poll();
 
   moved = TRUE;
   m_cursor = JI_CURSOR_NULL;
