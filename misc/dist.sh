@@ -86,7 +86,10 @@ ase_files="config.h				\
 	   obj/msvc/*.txt			\
 	   obj/unix/*.txt			\
 	   src/*.cpp				\
+	   src/*.h				\
 	   src/*.rc				\
+	   src/ase/*.cpp			\
+	   src/ase/*.h				\
 	   src/commands/*.cpp			\
 	   src/commands/*.h			\
 	   src/commands/fx/*.cpp		\
