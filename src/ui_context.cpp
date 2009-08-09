@@ -21,7 +21,7 @@
 #include <cassert>
 #include <allegro/file.h>
 
-#include "ase/ui_context.h"
+#include "ui_context.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"

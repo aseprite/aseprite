@@ -1,3 +1,13 @@
+2009-08-09  David A. Capello  <davidcapello@gmail.com>
+
+	* src/dialogs/filesel.cpp (ase_file_selector): Fixed a bug where
+	new sprites where saved with lower case file names in Windows.
+
+	* src/jinete/jentry.cpp (entry_msg_proc): Process Windows
+	shortcuts to cut/paste (Ctrl+X, Ctrl+C, Ctrl+V).
+
+	* src/jinete/jclipboard.cpp: Added support for Windows clipboard.
+
 2009-08-04  David A. Capello  <davidcapello@gmail.com>
 
 	* Version 0.7 released.

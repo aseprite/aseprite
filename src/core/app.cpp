@@ -31,7 +31,7 @@
 #include "jinete/jintern.h"
 
 #include "ase_exception.h"
-#include "ase/ui_context.h"
+#include "ui_context.h"
 #include "commands/commands.h"
 #include "console/console.h"
 #include "core/app.h"

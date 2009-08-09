@@ -22,7 +22,7 @@
 
 #include "jinete/jlist.h"
 
-#include "ase/ui_context.h"
+#include "ui_context.h"
 #include "effect/effect.h"
 #include "modules/sprites.h"
 #include "raster/cel.h"

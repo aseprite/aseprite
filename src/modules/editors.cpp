@@ -21,7 +21,7 @@
 #include "jinete/jinete.h"
 
 #include "sprite_wrappers.h"
-#include "ase/ui_context.h"
+#include "ui_context.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "modules/gui.h"

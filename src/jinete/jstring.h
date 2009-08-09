@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_STRING_H
-#define JINETE_STRING_H
+#ifndef ASE_JINETE_STRING_H
+#define ASE_JINETE_STRING_H
 
 #include <string>
 
@@ -126,4 +126,4 @@ inline jstring operator+(const char* _s1, const jstring& _s2)
   return _res;
 }
 
-#endif /* JINETE_STRING_H */
+#endif // ASE_JINETE_STRING_H

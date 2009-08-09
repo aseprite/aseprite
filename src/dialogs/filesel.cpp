@@ -243,8 +243,9 @@ again:
       // check if the user specified in "fn" a item of "fileview"
       const FileItemList& children = fileview_get_filelist(fileview);
 
+      jstring fn2 = fn;
 #ifdef ALLEGRO_WINDOWS
-      fn.tolower();
+      fn2.tolower();
 #endif
 
       for (FileItemList::const_iterator
@@ -255,7 +256,7 @@ again:
 #ifdef ALLEGRO_WINDOWS
 	child_name.tolower();
 #endif
-	if (child_name == fn) {
+	if (child_name == fn2) {
 	  enter_folder = *it;
 	  buf = fileitem_get_filename(enter_folder);
 	  break;

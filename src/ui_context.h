@@ -19,7 +19,7 @@
 #ifndef ASE_UI_CONTEXT_H
 #define ASE_UI_CONTEXT_H
 
-#include "ase/context.h"
+#include "context.h"
 
 class UIContext : public Context
 {

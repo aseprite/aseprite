@@ -32,6 +32,8 @@
 #include "config.h"
 
 #include "jinete/jbase.h"
+#include "jinete/jtheme.h"
+#include "jinete/jclipboard.h"
 
 #ifdef MEMLEAK
 void _jmemleak_init();
@@ -68,6 +70,12 @@ Jinete::Jinete()
 
 Jinete::~Jinete()
 {
+  // finish theme
+  ji_set_theme(NULL);
+
+  // destroy clipboard
+  jclipboard_set_text(NULL);
+
   // shutdown system
   _ji_theme_exit();
   _ji_widgets_exit();

@@ -2,6 +2,15 @@
 NEWS
 ===================================
 
+0.7.1
+-----
+
++ Added support to paste/copy text from/to Windows clipboard.
++ Added support to process Ctrl+C / Ctrl+V / Ctrl+P keys in all
+  entry fields.
++ Fixed a bug where file names for new sprites are lower-case always
+  (in Windows).
+
 0.7
 ---
 

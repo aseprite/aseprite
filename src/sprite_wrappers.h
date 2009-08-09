@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef SPRITE_WRAPPERS_H
-#define SPRITE_WRAPPERS_H
+#ifndef ASE_SPRITE_WRAPPERS_H
+#define ASE_SPRITE_WRAPPERS_H
 
 #include <list>
 #include <exception>
 #include "ase_exception.h"
-#include "ase/ui_context.h"
+#include "ui_context.h"
 #include "raster/sprite.h"
 
 class Context;
@@ -245,4 +245,4 @@ public:
 
 };
 
-#endif // SPRITE_WRAPPERS_H
+#endif // ASE_SPRITE_WRAPPERS_H

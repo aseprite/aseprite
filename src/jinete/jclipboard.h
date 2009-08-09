@@ -29,12 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_CLIPBRD_H
-#define JINETE_CLIPBRD_H
+#ifndef ASE_JINETE_JCLIPBOARD_H
+#define ASE_JINETE_JCLIPBOARD_H
 
 #include "jinete/jbase.h"
 
-const char *jclipboard_get_text();
-void jclipboard_set_text(const char *text);
+const char* jclipboard_get_text();
+void jclipboard_set_text(const char* text);
 
-#endif /* JINETE_CLIPBRD_H */
+#endif // ASE_JINETE_JCLIPBOARD_H

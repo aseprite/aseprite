@@ -42,10 +42,29 @@
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"
 #include "jinete/jsystem.h"
+#include "jinete/jstring.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
+
+namespace EntryCmd {
+  enum Type {
+    NoOp,
+    InsertChar,
+    ForwardChar,
+    ForwardWord,
+    BackwardChar,
+    BackwardWord,
+    BeginningOfLine,
+    EndOfLine,
+    DeleteForward,
+    DeleteBackward,
+    Cut,
+    Copy,
+    Paste,
+  };
+}
 
 typedef struct Entry
 {
@@ -66,6 +85,7 @@ static void entry_request_size(JWidget widget, int *w, int *h);
 
 static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg);
 
+static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd, int ascii, bool shift_pressed);
 static void entry_forward_word(JWidget widget);
 static void entry_backward_word(JWidget widget);
 
@@ -273,175 +293,75 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
     case JM_KEYPRESSED:
       if (jwidget_has_focus(widget) && !jentry_is_readonly(widget)) {
-	std::string text = widget->text();
-	int c, selbeg, selend;
-
-	jtheme_entry_info(widget, NULL, NULL, NULL, &selbeg, &selend);
+	// Command to execute
+	EntryCmd::Type cmd = EntryCmd::NoOp;
 
 	switch (msg->key.scancode) {
 
 	  case KEY_LEFT:
-	    /* selection */
-	    if (msg->any.shifts & KB_SHIFT_FLAG) {
-	      if (entry->select < 0)
-		entry->select = entry->cursor;
-	    }
-	    else
-	      entry->select = -1;
-
-	    /* backward word */
 	    if (msg->any.shifts & KB_CTRL_FLAG)
-	      entry_backward_word(widget);
-	    /* backward char */
-	    else if (entry->cursor > 0)
-	      entry->cursor--;
+	      cmd = EntryCmd::BackwardWord;
+	    else
+	      cmd = EntryCmd::BackwardChar;
 	    break;
 
 	  case KEY_RIGHT:
-	    /* selection */
-	    if (msg->any.shifts & KB_SHIFT_FLAG) {
-	      if (entry->select < 0)
-		entry->select = entry->cursor;
-	    }
-	    else
-	      entry->select = -1;
-
-	    /* forward word */
 	    if (msg->any.shifts & KB_CTRL_FLAG)
-	      entry_forward_word(widget);
-	    /* forward char */
-	    else if (entry->cursor < text.size())
-	      entry->cursor++;
+	      cmd = EntryCmd::ForwardWord;
+	    else
+	      cmd = EntryCmd::ForwardChar;
 	    break;
 
 	  case KEY_HOME:
-	    /* selection */
-	    if (msg->any.shifts & KB_SHIFT_FLAG) {
-	      if (entry->select < 0)
-		entry->select = entry->cursor;
-	    }
-	    else
-	      entry->select = -1;
-
-	    entry->cursor = 0;
+	    cmd = EntryCmd::BeginningOfLine;
 	    break;
 
 	  case KEY_END:
-	    /* selection */
-	    if (msg->any.shifts & KB_SHIFT_FLAG) {
-	      if (entry->select < 0)
-		entry->select = entry->cursor;
-	    }
-	    else
-	      entry->select = -1;
-
-	    entry->cursor = text.size();
+	    cmd = EntryCmd::EndOfLine;
 	    break;
 
 	  case KEY_DEL:
-	    // delete the entire selection
-	    if (selbeg >= 0) {
-	      // *cut* text!
-	      if (msg->any.shifts & KB_SHIFT_FLAG) {
-		char buf[1024];
-		ustrcpy(buf, empty_string);
-		for (c=selbeg; c<=selend; c++)
-		  uinsert(buf, ustrlen(buf), text[c]);
-		jclipboard_set_text(buf);
-	      }
-
-	      // remove text
-	      text.erase(selbeg, selend-selbeg+1);
-
-	      entry->cursor = selbeg;
-	    }
-	    /* delete the next character */
-	    else {
-	      if (entry->cursor < text.size())
-		text.erase(entry->cursor, 1);
-	    }
-
-	    entry->select = -1;
+	    if (msg->any.shifts & KB_SHIFT_FLAG)
+	      cmd = EntryCmd::Cut;
+	    else
+	      cmd = EntryCmd::DeleteForward;
 	    break;
 
 	  case KEY_INSERT:
-	    /* *paste* text */
-	    if (msg->any.shifts & KB_SHIFT_FLAG) {
-	      const char *clipboard;
-
-	      if ((clipboard = jclipboard_get_text())) {
-		/* delete the entire selection */
-		if (selbeg >= 0) {
-		  text.erase(selbeg, selend-selbeg+1);
-
-		  entry->cursor = selbeg;
-		  entry->select = -1;
-		}
-
-		/* paste text */
-		for (c=0; c<ustrlen(clipboard); c++)
-		  if (text.size() < entry->maxsize)
-		    text.insert(entry->cursor+c, 1, ugetat(clipboard, c));
-		  else
-		    break;
-
-		jentry_set_cursor_pos(widget, entry->cursor+c);
-	      }
-	    }
-	    /* *copy* text */
-	    else if ((selbeg >= 0) && (msg->any.shifts & KB_CTRL_FLAG)) {
-	      char buf[1024];
-	      ustrcpy(buf, empty_string);
-	      for (c=selbeg; c<=selend; c++)
-		uinsert(buf, ustrlen(buf), text[c]);
-	      jclipboard_set_text(buf);
-	    }
+	    if (msg->any.shifts & KB_SHIFT_FLAG)
+	      cmd = EntryCmd::Paste;
+	    else if (msg->any.shifts & KB_CTRL_FLAG)
+	      cmd = EntryCmd::Copy;
 	    break;
 
 	  case KEY_BACKSPACE:
-	    /* delete the entire selection */
-	    if (selbeg >= 0) {
-	      text.erase(selbeg, selend-selbeg+1);
-
-	      entry->cursor = selbeg;
-	    }
-	    /* delete the previous character */
-	    else {
-	      if (entry->cursor > 0)
-		text.erase(--entry->cursor, 1);
-	    }
-
-	    entry->select = -1;
+	    cmd = EntryCmd::DeleteBackward;
 	    break;
 
 	  default:
 	    if (msg->key.ascii >= 32) {
-	      /* delete the entire selection */
-	      if (selbeg >= 0) {
-		text.erase(selbeg, selend-selbeg+1);
-
-		entry->cursor = selbeg;
-	      }
-
-	      /* put the character */
-	      if (text.size() < entry->maxsize)
-		text.insert(entry->cursor++, 1, msg->key.ascii);
-
-	      entry->select = -1;
-	      break;
+	      cmd = EntryCmd::InsertChar;
 	    }
-	    else
-	      return false;
+	    else {
+	      // map common Windows shortcuts for Cut/Copy/Paste
+	      if ((msg->any.shifts & (KB_CTRL_FLAG | KB_SHIFT_FLAG | KB_ALT_FLAG)) == KB_CTRL_FLAG) {
+		switch (msg->key.scancode) {
+		  case KEY_X: cmd = EntryCmd::Cut; break;
+		  case KEY_C: cmd = EntryCmd::Copy; break;
+		  case KEY_V: cmd = EntryCmd::Paste; break;
+		}
+	      }
+	    }
+	    break;
 	}
 
-	if (text != widget->text()) {
-	  widget->text(text.c_str());
-	  jwidget_emit_signal(widget, JI_SIGNAL_ENTRY_CHANGE);
-	}
+	if (cmd == EntryCmd::NoOp)
+	  return false;
 
-	jentry_set_cursor_pos(widget, entry->cursor);
-	widget->dirty();
-	return TRUE;
+	entry_execute_cmd(widget, cmd,
+			  msg->key.ascii,
+			  (msg->any.shifts & KB_SHIFT_FLAG) ? true: false);
+	return true;
       }
       break;
 
@@ -585,6 +505,177 @@ static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
       cursor = c;
 
   return cursor;
+}
+
+static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
+			      int ascii, bool shift_pressed)
+{
+  Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
+  std::string text = widget->text();
+  int c, selbeg, selend;
+
+  jtheme_entry_info(widget, NULL, NULL, NULL, &selbeg, &selend);
+
+  switch (cmd) {
+
+    case EntryCmd::InsertChar:
+      // delete the entire selection
+      if (selbeg >= 0) {
+	text.erase(selbeg, selend-selbeg+1);
+
+	entry->cursor = selbeg;
+      }
+
+      // put the character
+      if (text.size() < entry->maxsize)
+	text.insert(entry->cursor++, 1, ascii);
+
+      entry->select = -1;
+      break;
+
+    case EntryCmd::BackwardChar:
+    case EntryCmd::BackwardWord:
+      // selection
+      if (shift_pressed) {
+	if (entry->select < 0)
+	  entry->select = entry->cursor;
+      }
+      else
+	entry->select = -1;
+
+      // backward word
+      if (cmd == EntryCmd::BackwardWord) {
+	entry_backward_word(widget);
+      }
+      // backward char
+      else if (entry->cursor > 0) {
+	entry->cursor--;
+      }
+      break;
+
+    case EntryCmd::ForwardChar:
+    case EntryCmd::ForwardWord:
+      // selection
+      if (shift_pressed) {
+	if (entry->select < 0)
+	  entry->select = entry->cursor;
+      }
+      else
+	entry->select = -1;
+
+      // forward word
+      if (cmd == EntryCmd::ForwardWord) {
+	entry_forward_word(widget);
+      }
+      // forward char
+      else if (entry->cursor < text.size()) {
+	entry->cursor++;
+      }
+      break;
+
+    case EntryCmd::BeginningOfLine:
+      // selection
+      if (shift_pressed) {
+	if (entry->select < 0)
+	  entry->select = entry->cursor;
+      }
+      else
+	entry->select = -1;
+
+      entry->cursor = 0;
+      break;
+
+    case EntryCmd::EndOfLine:
+      // selection
+      if (shift_pressed) {
+	if (entry->select < 0)
+	  entry->select = entry->cursor;
+      }
+      else
+	entry->select = -1;
+
+      entry->cursor = text.size();
+      break;
+
+    case EntryCmd::DeleteForward:
+    case EntryCmd::Cut:
+      // delete the entire selection
+      if (selbeg >= 0) {
+	// *cut* text!
+	if (cmd == EntryCmd::Cut) {
+	  jstring buf = text.substr(selbeg, selend - selbeg + 1);
+	  jclipboard_set_text(buf.c_str());
+	}
+
+	// remove text
+	text.erase(selbeg, selend-selbeg+1);
+
+	entry->cursor = selbeg;
+      }
+      // delete the next character
+      else {
+	if (entry->cursor < text.size())
+	  text.erase(entry->cursor, 1);
+      }
+
+      entry->select = -1;
+      break;
+
+    case EntryCmd::Paste: {
+      const char *clipboard;
+
+      if ((clipboard = jclipboard_get_text())) {
+	// delete the entire selection
+	if (selbeg >= 0) {
+	  text.erase(selbeg, selend-selbeg+1);
+
+	  entry->cursor = selbeg;
+	  entry->select = -1;
+	}
+
+	// paste text
+	for (c=0; c<ustrlen(clipboard); c++)
+	  if (text.size() < entry->maxsize)
+	    text.insert(entry->cursor+c, 1, ugetat(clipboard, c));
+	  else
+	    break;
+
+	jentry_set_cursor_pos(widget, entry->cursor+c);
+      }
+      break;
+    }
+
+    case EntryCmd::Copy:
+      if (selbeg >= 0) {
+	jstring buf = text.substr(selbeg, selend - selbeg + 1);
+	jclipboard_set_text(buf.c_str());
+      }
+      break;
+
+    case EntryCmd::DeleteBackward:
+      // delete the entire selection
+      if (selbeg >= 0) {
+	text.erase(selbeg, selend-selbeg+1);
+
+	entry->cursor = selbeg;
+      }
+      // delete the previous character
+      else {
+	if (entry->cursor > 0)
+	  text.erase(--entry->cursor, 1);
+      }
+
+      entry->select = -1;
+      break;
+  }
+
+  if (text != widget->text()) {
+    widget->text(text.c_str());
+    jwidget_emit_signal(widget, JI_SIGNAL_ENTRY_CHANGE);
+  }
+
+  jentry_set_cursor_pos(widget, entry->cursor);
+  widget->dirty();
 }
 
 #define IS_WORD_CHAR(ch)				\

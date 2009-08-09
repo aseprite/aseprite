@@ -221,12 +221,6 @@ void jmanager_free(JWidget widget)
     /* no more cursor */
     jmouse_set_cursor(JI_CURSOR_NULL);
 
-    /* finish theme */
-    ji_set_theme(NULL);
-
-    /* destroy clipboard */
-    jclipboard_set_text(NULL);
-
     /* destroy this widget */
     jwidget_free(widget);
 
