@@ -14,7 +14,7 @@
     <box vertical expansive name="box" />
     <box horizontal>
       <label text="Name:" />
-      <entry text="" maxsize=256 name="filename" expansive />
+      <entry text="" maxsize=256 name="filename" expansive magnetic />
       <combobox name="filetype" minwidth=70 />
     </box>
     <box horizontal>

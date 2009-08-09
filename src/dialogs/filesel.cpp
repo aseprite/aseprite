@@ -168,7 +168,6 @@ jstring ase_file_selector(const jstring& message,
     jwidget_add_hook(filename_entry, -1, filename_msg_proc, NULL);
 
     jwidget_set_name(fileview, "fileview");
-    jwidget_magnetic(fileview, TRUE);
 
     jview_attach(view, fileview);
     jwidget_expansive(view, TRUE);
@@ -210,6 +209,7 @@ jstring ase_file_selector(const jstring& message,
   // file name entry field
   jwidget_set_text(filename_entry, init_path.filename().c_str());
   select_filetype_from_filename(window);
+  jentry_select_text(filename_entry, 0, -1);
 
   // setup the title of the window
   jwidget_set_text(window, message.c_str());
@@ -622,6 +622,7 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 	if (p && *p != 0) {
 	  ustrcpy(p, ext);
 	  jwidget_set_text(entry, buf);
+	  jentry_select_text(entry, 0, -1);
 	}
 	break;
       }

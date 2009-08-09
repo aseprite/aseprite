@@ -967,8 +967,7 @@ void _jmanager_open_window(JWidget manager, JWidget window)
 {
   JMessage msg;
 
-  /* TODO check if this is necessary... */
-  /* free all widgets of special states */
+  // free all widgets of special states
   if (jwindow_is_wantfocus(window)) {
     jmanager_free_capture();
     jmanager_free_mouse();
