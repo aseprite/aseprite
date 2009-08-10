@@ -1,3 +1,7 @@
+2009-08-10  David A. Capello  <davidcapello@gmail.com>
+
+	* Version 0.7.1 released.
+
 2009-08-09  David A. Capello  <davidcapello@gmail.com>
 
 	* src/dialogs/filesel.cpp (ase_file_selector): Fixed a bug where

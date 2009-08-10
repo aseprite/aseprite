@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.7
+version=0.7.1
 distdir=ase-$version
 
 freetype_files="third_party/freetype/ChangeLog				\
@@ -88,8 +88,6 @@ ase_files="config.h				\
 	   src/*.cpp				\
 	   src/*.h				\
 	   src/*.rc				\
-	   src/ase/*.cpp			\
-	   src/ase/*.h				\
 	   src/commands/*.cpp			\
 	   src/commands/*.h			\
 	   src/commands/fx/*.cpp		\
@@ -198,8 +196,8 @@ $1/docs/*.pdf"
 if [ ! -f $distdir-win32.zip ] ; then
 
 cd "$dir/.."
-make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1 clean
-make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1
+#make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1 clean
+#make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1
 def_common_files .
 mkdir "$dir/$distdir-win32"
 cp -r --parents $txt_files $bin_files aseprite.exe "$dir/$distdir-win32"
