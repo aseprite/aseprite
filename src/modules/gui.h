@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <string>
+#include <list>
 #include "ase_exception.h"
 #include "jinete/jbase.h"
 #include "jinete/jaccel.h"
@@ -57,6 +58,7 @@ public:
 
 class Sprite;
 struct Monitor;
+typedef std::list<Monitor*> MonitorList;
 
 int init_module_gui();
 void exit_module_gui();
@@ -112,6 +114,7 @@ JAccel get_accel_to_change_tool(Tool* tool);
 Monitor* add_gui_monitor(void (*proc)(void*),
 			 void (*free)(void*), void* data);
 void remove_gui_monitor(Monitor* monitor);
+void* get_monitor_data(Monitor* monitor);
 
 //////////////////////////////////////////////////////////////////////
 // Smart JWidget pointer

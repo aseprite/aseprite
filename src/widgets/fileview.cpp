@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <allegro.h>
+#include <algorithm>
 
 #include "jinete/jinete.h"
 
@@ -60,16 +61,16 @@ typedef struct FileView
   /* thumbnail generation process */
   FileItem *item_to_generate_thumbnail;
   int timer_id;
-  JList monitors;	   /* list of monitors watching threads */
+  MonitorList monitors; // list of monitors watching threads
 } FileView;
 
 typedef struct ThumbnailData
 {
-  Monitor *monitor;
-  FileOp *fop;
-  FileItem *fileitem;
+  Monitor* monitor;
+  FileOp* fop;
+  FileItem* fileitem;
   JWidget fileview;
-  Image *thumbnail;
+  Image* thumbnail;
   JThread thread;
   PALETTE rgbpal;
 } ThumbnailData;
@@ -83,6 +84,7 @@ static int fileview_get_selected_index(JWidget widget);
 static void fileview_select_index(JWidget widget, int index);
 static void fileview_generate_preview_of_selected_item(JWidget widget);
 static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem);
+static void fileview_stop_threads(FileView* fileview);
 
 static void openfile_bg(void *data);
 static void monitor_thumbnail_generation(void *data);
@@ -116,7 +118,6 @@ JWidget fileview_new(FileItem *start_folder, const jstring& exts)
 
   fileview->item_to_generate_thumbnail = NULL;
   fileview->timer_id = jmanager_add_timer(widget, 200);
-  fileview->monitors = jlist_new();
 
   fileview_regenerate_list(widget);
 
@@ -185,22 +186,6 @@ void fileview_goup(JWidget widget)
   }
 }
 
-void fileview_stop_threads(JWidget widget)
-{
-  FileView* fileview = fileview_data(widget);
-  JLink link, next;
-
-  // stop the generation of threads
-  jmanager_stop_timer(fileview->timer_id);
-
-  // join all threads (removing all monitors)
-  JI_LIST_FOR_EACH_SAFE(fileview->monitors, link, next)
-    remove_gui_monitor(reinterpret_cast<Monitor*>(link->data));
-
-  // clear the list of monitors
-  jlist_clear(fileview->monitors);
-}
-
 static FileView* fileview_data(JWidget widget)
 {
   return reinterpret_cast<FileView*>(jwidget_get_data(widget, fileview_type()));
@@ -213,10 +198,10 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      /* at this point, can't be threads running in background */
-      assert(jlist_empty(fileview->monitors));
+      fileview_stop_threads(fileview);
 
-      jlist_free(fileview->monitors);
+      // at this point, can't be threads running in background
+      assert(fileview->monitors.empty());
 
       jmanager_remove_timer(fileview->timer_id);
       delete fileview;
@@ -291,7 +276,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		     "[+]", x, y+2,
 		     fgcolor, bgcolor, TRUE);
 
-	  /* background for the icon */
+	  // background for the icon
 	  jrectexclude(ji_screen,
 		       /* rectangle to fill */
 		       widget->rc->x1, y,
@@ -306,19 +291,19 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	  x += icon_w+2;
 	}
 	else {
-	  /* background for the left side of the item */
+	  // background for the left side of the item
 	  rectfill(ji_screen,
 		   widget->rc->x1, y,
 		   x-1, y+2+th+2-1,
 		   bgcolor);
 	}
 
-	/* item name */
+	// item name
 	jdraw_text(widget->font(),
 		   fileitem_get_displayname(fi).c_str(), x, y+2,
 		   fgcolor, bgcolor, TRUE);
 
-	/* background for the item name */
+	// background for the item name
 	jrectexclude(ji_screen,
 		     /* rectangle to fill */
 		     x, y,
@@ -331,7 +316,32 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		     /* fill with the background color */
 		     bgcolor);
 
-	/* thumbnail position */
+	// draw progress bar
+	if (!fileview->monitors.empty()) {
+	  for (MonitorList::iterator
+		 it2 = fileview->monitors.begin();
+	       it2 != fileview->monitors.end(); ++it2) {
+	    Monitor* monitor = *it2;
+	    ThumbnailData* data = (ThumbnailData*)get_monitor_data(monitor);
+
+	    // Check if this monitor is for this file-item
+	    if (data->fileitem == fi) {
+	      // If the file operation is not done, means that we are
+	      // still loading the file, so we can show a progress bar
+	      if (!fop_is_done(data->fop)) {
+		float progress = fop_get_progress(data->fop);
+
+		draw_progress_bar(ji_screen,
+				  widget->rc->x2-2-64, y+ih/2-3,
+				  widget->rc->x2-2, y+ih/2+3,
+				  progress);
+	      }
+	      break;
+	    }
+	  }
+	}
+
+	// thumbnail position
 	if (fi == fileview->selected) {
 	  thumbnail = fileitem_get_thumbnail(fi);
 	  if (thumbnail)
@@ -672,8 +682,10 @@ static void fileview_select_index(JWidget widget, int index)
   fileview_generate_preview_of_selected_item(widget);
 }
 
-/* puts the selected file-item as the next item to be processed by the
-   round-robin that generate thumbnails */
+/**
+ * Puts the selected file-item as the next item to be processed by the
+ * round-robin that generate thumbnails
+ */
 static void fileview_generate_preview_of_selected_item(JWidget widget)
 {
   FileView* fileview = fileview_data(widget);
@@ -690,23 +702,22 @@ static void fileview_generate_preview_of_selected_item(JWidget widget)
 /* returns true if it does some hard work like access to the disk */
 static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
 {
-  FileOp *fop;
-
   if (fileitem_is_browsable(fileitem) ||
       fileitem_get_thumbnail(fileitem) != NULL)
-    return FALSE;
+    return false;
 
-  fop = fop_to_load_sprite(fileitem_get_filename(fileitem).c_str(),
-			   FILE_LOAD_SEQUENCE_NONE |
-			   FILE_LOAD_ONE_FRAME);
+  FileOp* fop =
+    fop_to_load_sprite(fileitem_get_filename(fileitem).c_str(),
+		       FILE_LOAD_SEQUENCE_NONE |
+		       FILE_LOAD_ONE_FRAME);
   if (!fop)
-    return TRUE;
+    return true;
 
   if (fop->error) {
     fop_free(fop);
   }
   else {
-    ThumbnailData *data = jnew(ThumbnailData, 1);
+    ThumbnailData* data = new ThumbnailData;
 
     data->fop = fop;
     data->fileitem = fileitem;
@@ -715,20 +726,40 @@ static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
 
     data->thread = jthread_new(openfile_bg, data);
     if (data->thread) {
-      /* add a monitor to check the loading (FileOp) progress */
+      // add a monitor to check the loading (FileOp) progress
       data->monitor = add_gui_monitor(monitor_thumbnail_generation,
 				      monitor_free_thumbnail_generation, data);
 
-      jlist_append(fileview_data(widget)->monitors, data->monitor);
+      fileview_data(widget)->monitors.push_back(data->monitor);
       jwidget_dirty(widget);
     }
     else {
       fop_free(fop);
-      jfree(data);
+      delete data;
     }
   }
 
-  return TRUE;
+  return true;
+}
+
+static void fileview_stop_threads(FileView* fileview)
+{
+  JLink link, next;
+
+  // stop the generation of threads
+  jmanager_stop_timer(fileview->timer_id);
+
+  // join all threads (removing all monitors)
+  for (MonitorList::iterator
+	 it = fileview->monitors.begin();
+       it != fileview->monitors.end(); ) {
+    Monitor* monitor = *it;
+    ++it;
+    remove_gui_monitor(monitor);
+  }
+
+  // clear the list of monitors
+  fileview->monitors.clear();
 }
 
 /**
@@ -784,7 +815,7 @@ static void openfile_bg(void *_data)
 }
 
 /**
- * Called by the gui-monitor (a timer in the gui module that is called
+ * Called by the GUI-monitor (a timer in the gui module that is called
  * every 100 milliseconds).
  * 
  * [main thread]
@@ -820,6 +851,8 @@ static void monitor_thumbnail_generation(void *_data)
 
     remove_gui_monitor(data->monitor);
   }
+  else
+    jwidget_dirty(data->fileview);
 }
 
 /**
@@ -833,9 +866,14 @@ static void monitor_free_thumbnail_generation(void *_data)
   fop_stop(fop);
   jthread_join(data->thread);
 
-  jlist_remove(fileview_data(data->fileview)->monitors,
-	       data->monitor);
+  // remove the monitor from the list
+  MonitorList& monitors(fileview_data(data->fileview)->monitors);
+  MonitorList::iterator it =
+    std::find(monitors.begin(), monitors.end(), data->monitor);
+  assert(it != monitors.end());
+  monitors.erase(it);
 
+  // destroy the thumbnail
   if (data->thumbnail) {
     image_free(data->thumbnail);
     data->thumbnail = NULL;

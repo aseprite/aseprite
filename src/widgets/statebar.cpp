@@ -294,16 +294,10 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
 	JI_LIST_FOR_EACH(statusbar->progress, link) {
 	  Progress* progress = reinterpret_cast<Progress*>(link->data);
-	  int u = (int)((float)(width-2)*progress->pos);
-	  u = MID(0, u, width-2);
 
-	  rect(ji_screen, x, y1, x+width-1, y2, ji_color_foreground());
-
-	  if (u > 0)
-	    rectfill(ji_screen, x+1, y1+1, x+u, y2-1, ji_color_selected());
-
-	  if (1+u < width-2)
-	    rectfill(ji_screen, x+1+u, y1+1, x+width-2, y2-1, ji_color_background());
+	  draw_progress_bar(ji_screen,
+			    x, y1, x+width-1, y2,
+			    progress->pos);
 
 	  x -= width+4;
 	}

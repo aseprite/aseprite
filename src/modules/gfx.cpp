@@ -605,6 +605,23 @@ void draw_color_button(BITMAP *bmp,
   }
 }
 
+void draw_progress_bar(BITMAP* bmp,
+		       int x1, int y1, int x2, int y2,
+		       float progress)
+{
+  int w = x2 - x1 + 1;
+  int u = (int)((float)(w-2)*progress);
+  u = MID(0, u, w-2);
+
+  rect(bmp, x1, y1, x2, y2, ji_color_foreground());
+
+  if (u > 0)
+    rectfill(bmp, x1+1, y1+1, x1+u, y2-1, ji_color_selected());
+
+  if (1+u < w-2)
+    rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1, ji_color_background());
+}
+
 /************************************************************************/
 /* Font related */
 

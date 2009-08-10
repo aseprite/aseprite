@@ -128,7 +128,7 @@ struct Monitor
 static JWidget manager = NULL;
 
 static int monitor_timer = -1;
-static std::list<Monitor*>* monitors = NULL;
+static MonitorList* monitors = NULL;
 static std::vector<Shortcut*>* shortcuts = NULL;
 
 static bool ji_screen_created = FALSE;
@@ -168,8 +168,8 @@ int init_module_gui()
   int c, w, h, bpp, autodetect;
   bool fullscreen;
 
-  monitors = new std::list<Monitor*>();
-  shortcuts = new std::vector<Shortcut*>();
+  monitors = new MonitorList;
+  shortcuts = new std::vector<Shortcut*>;
 
   /* install the mouse */
   if (install_mouse() < 0) {
@@ -321,7 +321,7 @@ void exit_module_gui()
 
   // destroy monitors
   assert(monitors != NULL);
-  for (std::list<Monitor*>::iterator
+  for (MonitorList::iterator
   	 it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
     Monitor* monitor = *it2;
     delete monitor;
@@ -926,7 +926,7 @@ Monitor* add_gui_monitor(void (*proc)(void *),
  */
 void remove_gui_monitor(Monitor* monitor)
 {
-  std::list<Monitor*>::iterator it =
+  MonitorList::iterator it =
     std::find(monitors->begin(), monitors->end(), monitor);
 
   assert(it != monitors->end());
@@ -939,6 +939,11 @@ void remove_gui_monitor(Monitor* monitor)
   monitors->erase(it);
   if (monitors->empty())
     jmanager_stop_timer(monitor_timer);
+}
+
+void* get_monitor_data(Monitor* monitor)
+{
+  return monitor->data;
 }
 
 /**********************************************************************/
@@ -957,7 +962,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 
     case JM_TIMER:
       if (msg->timer.timer_id == monitor_timer) {
-	for (std::list<Monitor*>::iterator
+	for (MonitorList::iterator
 	       it = monitors->begin(), next; it != monitors->end(); it = next) {
 	  Monitor* monitor = *it;
 	  next = it;

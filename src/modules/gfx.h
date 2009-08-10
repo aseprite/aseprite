@@ -122,6 +122,9 @@ void draw_color_button(struct BITMAP *bmp,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
 		       bool hot, bool drag);
+void draw_progress_bar(struct BITMAP* bmp,
+		       int x1, int y1, int x2, int y2,
+		       float progress);
 
 int character_length(struct FONT *font, int chr);
 void render_character(struct BITMAP *bmp, struct FONT *font, int chr, int x, int y, int fg, int bg);

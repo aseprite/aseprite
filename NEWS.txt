@@ -10,6 +10,8 @@ NEWS
   entry fields.
 + Fixed a bug where file names for new sprites are lower-case always
   (in Windows).
++ Fixed a program crash when try to open a file in the middle of a
+  thumbnail generation process.
 
 0.7
 ---

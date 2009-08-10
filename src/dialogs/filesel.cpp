@@ -339,8 +339,6 @@ again:
 		      lastpath.c_str());
   }
 
-  // TODO why this doesn't work if I remove this?
-  fileview_stop_threads(fileview);
   jwidget_free(window);
   window = NULL;
 
