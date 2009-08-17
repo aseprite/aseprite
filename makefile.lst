@@ -89,7 +89,6 @@ COMMON_SOURCES =					\
 	src/core/job.cpp				\
 	src/core/modules.cpp				\
 	src/dialogs/aniedit.cpp				\
-	src/dialogs/canvasze.cpp			\
 	src/dialogs/drawtext.cpp			\
 	src/dialogs/filesel.cpp				\
 	src/dialogs/maskcol.cpp				\
