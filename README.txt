@@ -59,12 +59,13 @@ CONFIGURATION FILES
 
   In Windows 98/2K/XP/Vista:
 
-    ase-VERSION.cfg	- Program configuration
+    aseprite.cfg	- Program configuration
     data/convmatr.def	- Convolutions matrices
     data/gui-en.xml	- Menu definition and keyboard shortcuts
-    examples/*		- Examples of some sprites made with ASE
+    data/fonts/*.pcx	- Fonts to be used in the GUI
+    data/jids/*.jid	- XML files with dialogs
 
-  In GNU/Linux, the configuration file is ~/.aserc-VERSION, and
+  In GNU/Linux, the configuration file is ~/.asepriterc, and
   the data/ files are searched in these locations (in priority
   order):
 
