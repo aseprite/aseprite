@@ -24,7 +24,6 @@
 
 #include "commands/commands.h"
 #include "dialogs/filesel.h"
-#include "modules/sprites.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/msk_file.h"

@@ -27,7 +27,6 @@
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"

@@ -28,7 +28,6 @@
 #include "effect/effect.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"

@@ -31,7 +31,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"

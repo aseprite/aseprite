@@ -21,7 +21,6 @@
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"

@@ -30,7 +30,6 @@
 #include "effect/colcurve.h"
 #include "effect/effect.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/misc.h"

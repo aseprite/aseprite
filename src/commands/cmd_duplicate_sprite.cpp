@@ -27,7 +27,6 @@
 #include "core/app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 
 static bool cmd_duplicate_sprite_enabled(const char *argument)

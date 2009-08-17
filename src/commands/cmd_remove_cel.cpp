@@ -20,7 +20,6 @@
 
 #include "commands/commands.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"

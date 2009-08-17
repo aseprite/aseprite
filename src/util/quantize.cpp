@@ -22,7 +22,7 @@
 
 #include "console.h"
 #include "effect/effect.h"
-#include "modules/sprites.h"
+#include "effect/images_ref.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"

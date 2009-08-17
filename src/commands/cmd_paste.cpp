@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include "commands/commands.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/clipboard.h"

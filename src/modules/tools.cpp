@@ -40,7 +40,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/sprites.h"
 #include "modules/tools.h"
 #include "raster/raster.h"
 #include "util/misc.h"

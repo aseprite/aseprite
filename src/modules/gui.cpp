@@ -47,7 +47,6 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
-#include "modules/sprites.h"
 #include "modules/tools.h"
 #include "raster/sprite.h"
 #include "util/recscr.h"

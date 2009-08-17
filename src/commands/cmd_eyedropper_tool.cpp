@@ -25,7 +25,6 @@
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/editors.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/image.h"
 #include "widgets/colbar.h"

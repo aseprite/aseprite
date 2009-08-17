@@ -22,7 +22,6 @@
 
 #include "commands/commands.h"
 #include "dialogs/maskcol.h"
-#include "modules/sprites.h"
 
 static bool cmd_mask_by_color_enabled(const char *argument)
 {

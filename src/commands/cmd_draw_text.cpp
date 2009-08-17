@@ -22,7 +22,6 @@
 
 #include "commands/commands.h"
 #include "core/app.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 
 /* static void cmd_draw_text_execute(const char *argument) */

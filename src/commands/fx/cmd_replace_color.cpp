@@ -32,7 +32,6 @@
 #include "effect/effect.h"
 #include "effect/replcol.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"

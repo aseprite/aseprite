@@ -21,7 +21,6 @@
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
-#include "modules/sprites.h"
 #include "dialogs/aniedit.h"
 
 static bool cmd_film_editor_enabled(const char *argument)

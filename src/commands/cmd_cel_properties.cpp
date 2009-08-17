@@ -26,7 +26,6 @@
 #include "core/app.h"
 #include "core/core.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"

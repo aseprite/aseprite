@@ -34,7 +34,6 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/sprites.h"
 #include "raster/raster.h"
 #include "util/misc.h"
 #include "widgets/editor.h"

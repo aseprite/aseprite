@@ -31,7 +31,6 @@
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"

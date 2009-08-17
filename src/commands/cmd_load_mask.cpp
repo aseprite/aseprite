@@ -23,7 +23,6 @@
 #include "commands/commands.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h" 
-#include "modules/sprites.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"

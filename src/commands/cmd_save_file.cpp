@@ -29,7 +29,6 @@
 #include "file/file.h"
 #include "modules/gui.h"
 #include "modules/recent.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "widgets/statebar.h"
 

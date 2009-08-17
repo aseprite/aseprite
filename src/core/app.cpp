@@ -50,7 +50,6 @@
 #include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/rootmenu.h"
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"

@@ -34,7 +34,6 @@
 #include "core/core.h"
 #include "effect/effect.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_SPRITES_H_INCLUDED
-#define MODULES_SPRITES_H_INCLUDED
+#ifndef EFFECT_IMAGES_REF_H_INCLUDED
+#define EFFECT_IMAGES_REF_H_INCLUDED
 
 class Sprite;
 class Image;

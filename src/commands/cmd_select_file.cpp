@@ -27,7 +27,6 @@
 #include "ui_context.h"
 #include "commands/commands.h"
 #include "core/app.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 
 static bool cmd_select_file_enabled(const char *argument)

@@ -168,7 +168,6 @@ COMMON_SOURCES =					\
 	src/modules/palettes.cpp			\
 	src/modules/recent.cpp				\
 	src/modules/rootmenu.cpp			\
-	src/modules/sprites.cpp				\
 	src/modules/tools.cpp				\
 	src/raster/algo.cpp				\
 	src/raster/algofill.cpp				\
@@ -194,6 +193,7 @@ COMMON_SOURCES =					\
 	src/util/col_file.cpp				\
 	src/util/filetoks.cpp				\
 	src/util/hash.cpp				\
+	src/util/images_ref.cpp				\
 	src/util/misc.cpp				\
 	src/util/msk_file.cpp				\
 	src/util/pic_file.cpp				\

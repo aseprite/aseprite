@@ -35,7 +35,6 @@
 #include "effect/effect.h"
 #include "effect/median.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "modules/tools.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"

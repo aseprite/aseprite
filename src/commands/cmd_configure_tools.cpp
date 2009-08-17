@@ -28,7 +28,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
-#include "modules/sprites.h"
 #include "modules/tools.h"
 #include "raster/brush.h"
 #include "raster/image.h"

@@ -24,7 +24,6 @@
 #include "console.h"
 #include "core/app.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"

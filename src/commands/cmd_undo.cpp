@@ -21,7 +21,6 @@
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "widgets/statebar.h"

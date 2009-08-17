@@ -32,7 +32,6 @@
 #include "modules/gui.h"
 /* #include "modules/palettes.h" */
 #include "modules/rootmenu.h"
-#include "modules/sprites.h"
 #include "raster/raster.h"
 #include "undoable.h"
 #include "util/celmove.h"

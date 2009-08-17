@@ -21,7 +21,6 @@
 #include "jinete/jbase.h"
 
 #include "commands/commands.h"
-#include "modules/sprites.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"

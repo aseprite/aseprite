@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include "modules/sprites.h"
 
 #include <allegro.h>
 

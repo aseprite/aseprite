@@ -27,7 +27,6 @@
 #include "core/color.h"
 #include "core/core.h"
 #include "modules/gui.h"
-#include "modules/sprites.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"

@@ -22,22 +22,20 @@
 
 #include "jinete/jlist.h"
 
-#include "ui_context.h"
 #include "effect/effect.h"
-#include "modules/sprites.h"
+#include "effect/images_ref.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "util/misc.h"
 
-static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int target, bool write);
+static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int target, bool write);
 
-ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
+ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
 {
-  Layer *layer = target & TARGET_ALL_LAYERS ? sprite->set:
+  Layer* layer = target & TARGET_ALL_LAYERS ? sprite->set:
 					      sprite->layer;
 
   return images_ref_get_from_layer(sprite, layer, target, write);
@@ -53,7 +51,7 @@ void images_ref_free(ImageRef* image_ref)
   }
 }
 
-static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int target, bool write)
+static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int target, bool write)
 {
 #define ADD_IMAGES(images)			\
   {						\
@@ -72,7 +70,7 @@ static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int tar
 
 #define NEW_IMAGE(layer, cel)					\
   {								\
-    ImageRef *image_ref = jnew(ImageRef, 1);			\
+    ImageRef* image_ref = jnew(ImageRef, 1);			\
 								\
     image_ref->image = layer->sprite->stock->image[cel->image];	\
     image_ref->layer = layer;					\
@@ -82,8 +80,8 @@ static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int tar
     ADD_IMAGES(image_ref);					\
   }
   
-  ImageRef *first_image = NULL;
-  ImageRef *last_image = NULL;
+  ImageRef* first_image = NULL;
+  ImageRef* last_image = NULL;
   int frame = sprite->frame;
 
   if (!layer_is_readable(layer))
@@ -97,13 +95,13 @@ static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int tar
     case GFXOBJ_LAYER_IMAGE: {
       if (target & TARGET_ALL_FRAMES) {
 	for (frame=0; frame<sprite->frames; frame++) {
-	  Cel *cel = layer_get_cel(layer, frame);
+	  Cel* cel = layer_get_cel(layer, frame);
 	  if (cel != NULL)
 	    NEW_IMAGE(layer, cel);
 	}
       }
       else {
-	Cel *cel = layer_get_cel(layer, frame);
+	Cel* cel = layer_get_cel(layer, frame);
 	if (cel != NULL)
 	  NEW_IMAGE(layer, cel);
       }
@@ -111,7 +109,7 @@ static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int tar
     }
 
     case GFXOBJ_LAYER_SET: {
-      ImageRef *sub_images;
+      ImageRef* sub_images;
       JLink link;
 
       JI_LIST_FOR_EACH(layer->layers, link) {

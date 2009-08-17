@@ -33,7 +33,6 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/recent.h"
-#include "modules/sprites.h"
 #include "widgets/statebar.h"
 
 typedef struct OpenFileData
