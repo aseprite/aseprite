@@ -33,7 +33,7 @@
 
 #include "commands/commands.h"
 #include "commands/fx/effectbg.h"
-#include "console/console.h"
+#include "console.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"

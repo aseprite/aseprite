@@ -17,7 +17,6 @@ $GCC $CFLAGS							     \
     src/*.cpp							     \
     src/commands/*.cpp						     \
     src/commands/fx/*.cpp					     \
-    src/console/*.cpp						     \
     src/core/*.cpp						     \
     src/dialogs/*.cpp						     \
     src/effect/*.cpp						     \

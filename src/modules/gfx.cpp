@@ -25,7 +25,7 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 
-#include "console/console.h"
+#include "console.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/dirs.h"

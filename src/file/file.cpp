@@ -26,7 +26,7 @@
 #include "jinete/jlist.h"
 #include "jinete/jmutex.h"
 
-#include "console/console.h"
+#include "console.h"
 #include "core/app.h"
 #include "core/core.h"
 #include "file/file.h"

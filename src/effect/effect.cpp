@@ -27,7 +27,7 @@
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 
-#include "console/console.h"
+#include "console.h"
 #include "core/cfg.h"
 #include "effect/colcurve.h"
 #include "effect/convmatr.h"

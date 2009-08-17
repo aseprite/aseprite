@@ -25,7 +25,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
-#include "console/console.h"
+#include "console.h"
 #include "core/app.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"

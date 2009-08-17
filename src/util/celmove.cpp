@@ -22,7 +22,7 @@
 #include <jinete/jlist.h>
 
 #include "sprite_wrappers.h"
-#include "console/console.h"
+#include "console.h"
 #include "core/app.h"
 #include "core/color.h"
 #include "core/core.h"

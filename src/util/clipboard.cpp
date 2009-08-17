@@ -25,7 +25,7 @@
 #include "jinete/jinete.h"
 
 #include "sprite_wrappers.h"
-#include "console/console.h"
+#include "console.h"
 #include "core/app.h"
 #include "core/core.h"
 #include "modules/editors.h"

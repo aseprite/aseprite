@@ -25,7 +25,7 @@
 
 #include "jinete/jinete.h"
 
-#include "console/console.h"
+#include "console.h"
 #include "core/cfg.h"
 #include "core/dirs.h"
 #include "intl/intl.h"

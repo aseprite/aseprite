@@ -92,8 +92,6 @@ ase_files="config.h				\
 	   src/commands/*.h			\
 	   src/commands/fx/*.cpp		\
 	   src/commands/fx/*.h			\
-	   src/console/*.cpp			\
-	   src/console/*.h			\
 	   src/core/*.cpp			\
 	   src/core/*.h				\
 	   src/dialogs/*.cpp			\

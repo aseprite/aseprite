@@ -20,7 +20,7 @@
 
 #include <allegro/color.h>
 
-#include "console/console.h"
+#include "console.h"
 #include "effect/effect.h"
 #include "modules/sprites.h"
 #include "raster/image.h"

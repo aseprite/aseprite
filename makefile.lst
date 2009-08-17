@@ -78,7 +78,6 @@ COMMON_SOURCES =					\
 	src/commands/fx/cmd_invert_color.cpp		\
 	src/commands/fx/cmd_replace_color.cpp		\
 	src/commands/fx/effectbg.cpp			\
-	src/console/console.cpp				\
 	src/core/app.cpp				\
 	src/core/cfg.cpp				\
 	src/core/color.cpp				\
@@ -233,6 +232,7 @@ COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
 	          $(notdir $(basename $(COMMON_SOURCES)))))
 
 ASE_SOURCES = \
+	src/console.cpp						\
 	src/context.cpp						\
 	src/main.cpp						\
 	src/ui_context.cpp					\

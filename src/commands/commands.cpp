@@ -25,7 +25,7 @@
 
 #include "jinete/jinete.h"
 
-#include "console/console.h"
+#include "console.h"
 #include "commands/commands.h"
 
 extern Command cmd_about;

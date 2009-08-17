@@ -24,7 +24,7 @@
 
 #include "commands/commands.h"
 #include "core/app.h"
-#include "console/console.h"
+#include "console.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
 #include "modules/gui.h"
