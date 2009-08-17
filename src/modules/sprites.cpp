@@ -34,9 +34,6 @@
 #include "util/misc.h"
 
 static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int target, bool write);
-static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, int **x, int **y, int *count);
-
-//////////////////////////////////////////////////////////////////////
 
 ImageRef *images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
 {
@@ -130,51 +127,4 @@ static ImageRef *images_ref_get_from_layer(Sprite* sprite, Layer *layer, int tar
   }
 
   return first_image;
-}
-
-static void layer_get_pos(Sprite* sprite, Layer *layer, int target, bool write, int **x, int **y, int *count)
-{
-  int frame = sprite->frame;
-
-  if (!layer_is_readable(layer))
-    return;
-
-  if (write && !layer_is_writable(layer))
-    return;
-
-  switch (layer->type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      Image *image;
-      int u, v;
-
-      if (target & TARGET_ALL_FRAMES) {
-	for (frame=0; frame<sprite->frames; frame++) {
-	  image = GetLayerImage(layer, &u, &v, frame);
-	  if (image) {
-	    (*x)[*count] = u;
-	    (*y)[*count] = v;
-	    (*count)++;
-	  }
-	}
-      }
-      else {
-	image = GetLayerImage(layer, &u, &v, frame);
-	if (image) {
-	  (*x)[*count] = u;
-	  (*y)[*count] = v;
-	  (*count)++;
-	}
-      }
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	layer_get_pos(sprite, reinterpret_cast<Layer*>(link->data), target, write, x, y, count);
-      break;
-    }
-
-  }
 }
