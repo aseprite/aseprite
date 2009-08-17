@@ -26,7 +26,7 @@
 #include "util/filetoks.h"
 #include "util/hash.h"
 
-static HashTable *msgids = NULL;
+static HashTable* msgids = NULL;
 
 static void free_msgid(void *msgid);
 

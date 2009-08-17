@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_H
-#define JINETE_H
+#ifndef JINETE_JINETE_H_INCLUDED
+#define JINETE_JINETE_H_INCLUDED
 
 #include "jinete/jaccel.h"
 #include "jinete/jalert.h"
@@ -72,4 +72,4 @@
 #include "jinete/jwindow.h"
 #include "jinete/jxml.h"
 
-#endif /* JINETE_H */
+#endif

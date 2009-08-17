@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_SLIDER_H
-#define JINETE_SLIDER_H
+#ifndef JINETE_JSLIDER_H_INCLUDED
+#define JINETE_JSLIDER_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -44,4 +44,4 @@ int jslider_get_value(JWidget slider);
 /* for themes */
 void jtheme_slider_info(JWidget slider, int *min, int *max, int *value);
 
-#endif /* JINETE_SLIDER_H */
+#endif

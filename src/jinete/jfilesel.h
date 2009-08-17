@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_FILESEL_H
-#define JINETE_FILESEL_H
+#ifndef JINETE_JFILESEL_H_INCLUDED
+#define JINETE_JFILESEL_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -49,4 +49,4 @@ void ji_file_select_enter_to_path(const char *path);
 
 bool ji_dir_exists(const char *filename);
 
-#endif /* JINETE_FILESEL_H */
+#endif

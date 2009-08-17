@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_PALETTES_H
-#define MODULES_PALETTES_H
+#ifndef MODULES_PALETTES_H_INCLUDED
+#define MODULES_PALETTES_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include <allegro/color.h>
@@ -46,5 +46,5 @@ public:
   ~CurrentSpriteRgbMap();
 };
 
-#endif /* MODULES_PALETTES_H */
+#endif
 

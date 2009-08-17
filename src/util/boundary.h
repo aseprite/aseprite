@@ -21,8 +21,8 @@
  * See "LICENSE.txt" for more information.
  */
 
-#ifndef UTIL_BOUNDARY_H
-#define UTIL_BOUNDARY_H
+#ifndef UTIL_BOUNDARY_H_INCLUDED
+#define UTIL_BOUNDARY_H_INCLUDED
 
 #ifdef __cplusplus
   extern "C" {
@@ -53,4 +53,4 @@ void boundary_exit();
   }
 #endif
 
-#endif /* UTIL_BOUNDARY_H */
+#endif

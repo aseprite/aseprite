@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_THEME_H
-#define JINETE_THEME_H
+#ifndef JINETE_JTHEME_H_INCLUDED
+#define JINETE_JTHEME_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -87,4 +87,4 @@ int ji_color_hotface();
 int ji_color_selected();
 int ji_color_background();
 
-#endif /* JINETE_THEME_H */
+#endif

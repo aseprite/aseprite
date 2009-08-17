@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_BASE_H
-#define JINETE_BASE_H
+#ifndef JINETE_JBASE_H_INCLUDED
+#define JINETE_JBASE_H_INCLUDED
 
 /* get the system's definition of NULL */
 #include <stddef.h>
@@ -264,4 +264,4 @@ public:
   ~Jinete();
 };
 
-#endif /* JINETE_BASE_H */
+#endif

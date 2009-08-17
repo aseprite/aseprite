@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_MODULES_H
-#define CORE_MODULES_H
+#ifndef CORE_MODULES_H_INCLUDED
+#define CORE_MODULES_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -26,5 +26,5 @@
 void modules_init(int requirements);
 void modules_exit();
 
-#endif /* CORE_MODULES_H */
+#endif
 

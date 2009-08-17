@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_DIRTY_H
-#define RASTER_DIRTY_H
+#ifndef RASTER_DIRTY_H_INCLUDED
+#define RASTER_DIRTY_H_INCLUDED
 
 #include "raster/image.h"
 
@@ -79,5 +79,5 @@ inline int dirty_line_size(Dirty* dirty, int width)
   return image_line_size(dirty->image, width);
 }
 
-#endif /* RASTER_DIRTY_H */
+#endif
 

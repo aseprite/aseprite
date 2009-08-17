@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_XML_H
-#define JINETE_XML_H
+#ifndef JINETE_JXML_H_INCLUDED
+#define JINETE_JXML_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -121,4 +121,4 @@ void jxmltext_free(JXmlText text);
 const char *jxmltext_get_text(JXmlText text);
 void jxmltext_set_text(JXmlText text, const char *value);
 
-#endif /* JINETE_XML_H */
+#endif

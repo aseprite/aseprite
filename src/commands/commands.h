@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef COMMANDS_COMMANDS_H
-#define COMMANDS_COMMANDS_H
+#ifndef COMMANDS_COMMANDS_H_INCLUDED
+#define COMMANDS_COMMANDS_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "sprite_wrappers.h"
@@ -130,4 +130,4 @@ bool command_is_enabled(Command *command, const char *argument);
 bool command_is_checked(Command *command, const char *argument);
 void command_execute(Command *command, const char *argument);
 
-#endif /* COMMANDS_COMMANDS_H */
+#endif

@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_IMAGE_H
-#define JINETE_IMAGE_H
+#ifndef JINETE_JIMAGE_H_INCLUDED
+#define JINETE_JIMAGE_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -38,4 +38,4 @@ struct BITMAP;
 
 JWidget jimage_new(struct BITMAP *bmp, int align);
 
-#endif /* JINETE_IMAGE_H */
+#endif

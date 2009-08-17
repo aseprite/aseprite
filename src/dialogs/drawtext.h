@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_DRAWTEXT_H
-#define DIALOGS_DRAWTEXT_H
+#ifndef DIALOGS_DRAWTEXT_H_INCLUDED
+#define DIALOGS_DRAWTEXT_H_INCLUDED
 
 class Image;
 class Sprite;
@@ -26,5 +26,5 @@ void dialogs_draw_text(Sprite* sprite);
 
 Image* RenderText(Sprite* sprite, const char* fontname, int size, int color, const char* text);
 
-#endif /* DIALOGS_DRAWTEXT_H */
+#endif
 

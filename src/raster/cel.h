@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_CEL_H
-#define RASTER_CEL_H
+#ifndef RASTER_CEL_H_INCLUDED
+#define RASTER_CEL_H_INCLUDED
 
 #include "raster/gfxobj.h"
 
@@ -47,4 +47,4 @@ void cel_set_image(Cel* cel, int image);
 void cel_set_position(Cel* cel, int x, int y);
 void cel_set_opacity(Cel* cel, int opacity);
 
-#endif /* RASTER_FRAME_H */
+#endif

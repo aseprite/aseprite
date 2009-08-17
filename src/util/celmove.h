@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_CELMOVE_H
-#define UTIL_CELMOVE_H
+#ifndef UTIL_CELMOVE_H_INCLUDED
+#define UTIL_CELMOVE_H_INCLUDED
 
 class Cel;
 class Layer;
@@ -30,5 +30,5 @@ void set_frame_to_handle(Layer* src_layer, int src_frame,
 void move_cel(SpriteWriter& sprite);
 void copy_cel(SpriteWriter& sprite);
 
-#endif // UTIL_CELMOVE_H
+#endif
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef EFFECT_INVRTCOL_H
-#define EFFECT_INVRTCOL_H
+#ifndef EFFECT_INVRTCOL_H_INCLUDED
+#define EFFECT_INVRTCOL_H_INCLUDED
 
 struct Effect;
 
@@ -25,4 +25,4 @@ void apply_invert_color4 (struct Effect *effect);
 void apply_invert_color2 (struct Effect *effect);
 void apply_invert_color1 (struct Effect *effect);
 
-#endif /* EFFECT_INVRTCOL_H */
+#endif

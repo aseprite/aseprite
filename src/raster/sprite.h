@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_SPRITE_H
-#define RASTER_SPRITE_H
+#ifndef RASTER_SPRITE_H_INCLUDED
+#define RASTER_SPRITE_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
@@ -152,4 +152,4 @@ int sprite_getpixel(const Sprite* sprite, int x, int y);
 
 int sprite_get_memsize(const Sprite* sprite);
 
-#endif				/* RASTER_SPRITE_H */
+#endif

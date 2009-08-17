@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_RECT_H
-#define JINETE_RECT_H
+#ifndef JINETE_JRECT_H_INCLUDED
+#define JINETE_JRECT_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -62,4 +62,4 @@ void jrect_stretch(JRect rect, int border);
 void jrect_moveto(JRect rect, int x, int y);
 void jrect_displace(JRect rect, int dx, int dy);
 
-#endif /* JINETE_RECT_H */
+#endif

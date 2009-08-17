@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_FILESEL_H
-#define DIALOGS_FILESEL_H
+#ifndef DIALOGS_FILESEL_H_INCLUDED
+#define DIALOGS_FILESEL_H_INCLUDED
 
 #include "jinete/jstring.h"
 
@@ -25,5 +25,4 @@ jstring ase_file_selector(const jstring& message,
 			  const jstring& init_path,
 			  const jstring& exts);
 
-#endif /* DIALOGS_FILESEL_H */
-
+#endif

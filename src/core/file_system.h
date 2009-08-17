@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_FILE_SYSTEM_H
-#define CORE_FILE_SYSTEM_H
+#ifndef CORE_FILE_SYSTEM_H_INCLUDED
+#define CORE_FILE_SYSTEM_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "jinete/jstring.h"
@@ -52,5 +52,5 @@ bool fileitem_has_extension(FileItem* fileitem, const jstring& csv_extensions);
 BITMAP *fileitem_get_thumbnail(FileItem* fileitem);
 void fileitem_set_thumbnail(FileItem* fileitem, BITMAP *thumbnail);
 
-#endif /* CORE_FILE_SYSTEM_H */
+#endif
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_MISC_H
-#define UTIL_MISC_H
+#ifndef UTIL_MISC_H_INCLUDED
+#define UTIL_MISC_H_INCLUDED
 
 #include "core/color.h"
 #include "widgets/editor.h"	/* for movement modes */
@@ -40,5 +40,5 @@ Image* GetLayerImage(Layer* layer, int *x, int *y, int frame);
 
 int interactive_move_layer(int mode, bool use_undo, int (*callback)());
 
-#endif /* UTIL_MISC_H */
+#endif
 

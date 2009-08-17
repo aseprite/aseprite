@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_LABEL_H
-#define JINETE_LABEL_H
+#ifndef JINETE_JLABEL_H_INCLUDED
+#define JINETE_JLABEL_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JWidget jlabel_new(const char *text);
 
-#endif /* JINETE_LABEL_H */
+#endif

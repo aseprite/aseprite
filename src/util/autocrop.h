@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_AUTOCROP_H
-#define UTIL_AUTOCROP_H
+#ifndef UTIL_AUTOCROP_H_INCLUDED
+#define UTIL_AUTOCROP_H_INCLUDED
 
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 		     Image *image, int refpixel);
 bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
 		      Image *image, Image *regimage);
 
-#endif /* UTIL_AUTOCROP_H */
+#endif
 

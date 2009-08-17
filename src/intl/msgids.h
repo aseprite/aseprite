@@ -16,11 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef INTL_MSGIDS_H
-#define INTL_MSGIDS_H
+#ifndef INTL_MSGIDS_H_INCLUDED
+#define INTL_MSGIDS_H_INCLUDED
 
-int msgids_load(const char *filename);
+int msgids_load(const char* filename);
 void msgids_clear();
-const char *msgids_get(const char *id);
+const char* msgids_get(const char* id);
 
-#endif /* !INTL_MSGIDS_H */
+#endif

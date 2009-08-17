@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_REPO_H
-#define DIALOGS_REPO_H
+#ifndef DIALOGS_REPO_H_INCLUDED
+#define DIALOGS_REPO_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -62,5 +62,5 @@ typedef struct RepoDlg {	/* a window to shows repositories
 
 void ji_show_repo_dlg(RepoDlg *repo_dlg);
 
-#endif /* DIALOGS_REPO_H */
+#endif
 

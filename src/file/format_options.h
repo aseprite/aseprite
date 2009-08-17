@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef FILE_FORMAT_OPTIONS_H
-#define FILE_FORMAT_OPTIONS_H
+#ifndef FILE_FORMAT_OPTIONS_H_INCLUDED
+#define FILE_FORMAT_OPTIONS_H_INCLUDED
 
 enum {
   FORMAT_OPTIONS_BMP,
@@ -73,4 +73,4 @@ typedef struct JpegOptions
 
 JpegOptions* jpeg_options_new();
 
-#endif /* FILE_FORMAT_OPTIONS_H */
+#endif

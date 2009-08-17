@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_TOOLBAR_H
-#define WIDGETS_TOOLBAR_H
+#ifndef WIDGETS_TOOLBAR_H_INCLUDED
+#define WIDGETS_TOOLBAR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -25,4 +25,4 @@ JWidget toolbar_new();
 
 void toolbar_update(JWidget toolbar);
 
-#endif /* WIDGETS_TOOLBAR_H */
+#endif

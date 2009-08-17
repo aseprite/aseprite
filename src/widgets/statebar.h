@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_STATEBAR_H
-#define WIDGETS_STATEBAR_H
+#ifndef WIDGETS_STATEBAR_H_INCLUDED
+#define WIDGETS_STATEBAR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -68,4 +68,4 @@ Progress *progress_new(JWidget widget);
 void progress_free(Progress *progress);
 void progress_update(Progress *progress, float progress_pos);
 
-#endif /* WIDGETS_STATEBAR_H */
+#endif

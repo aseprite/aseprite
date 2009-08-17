@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_ROTATE_H
-#define RASTER_ROTATE_H
+#ifndef RASTER_ROTATE_H_INCLUDED
+#define RASTER_ROTATE_H_INCLUDED
 
 class Image;
 
@@ -32,4 +32,4 @@ void image_parallelogram(Image* bmp, Image* sprite,
 			 int x1, int y1, int x2, int y2,
 			 int x3, int y3, int x4, int y4);
 
-#endif /* RASTER_ROTATE_H */
+#endif

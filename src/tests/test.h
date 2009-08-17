@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef TEST_TEST_H
-#define TEST_TEST_H
+#ifndef TESTS_TEST_H_INCLUDED
+#define TESTS_TEST_H_INCLUDED
 
 #ifdef NDEBUG
 #error You should compile the tests with the NDEBUG flag activated
@@ -81,4 +81,4 @@ int test_exit_gui(JWidget manager)
 
 #endif
 
-#endif	/* TEST_TEST_H */
+#endif

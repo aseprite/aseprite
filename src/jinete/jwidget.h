@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_WIDGET_H
-#define JINETE_WIDGET_H
+#ifndef JINETE_JWIDGET_H_INCLUDED
+#define JINETE_JWIDGET_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -289,4 +289,4 @@ public:
 
 };
 
-#endif /* JINETE_WIDGET_H */
+#endif

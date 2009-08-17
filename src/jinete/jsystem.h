@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_SYSTEM_H
-#define JINETE_SYSTEM_H
+#ifndef JINETE_JSYSTEM_H_INCLUDED
+#define JINETE_JSYSTEM_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -106,4 +106,4 @@ int jmouse_z(int antique);
 
 bool jmouse_control_infinite_scroll(JRect rect);
 
-#endif /* JINETE_SYSTEM_H */
+#endif

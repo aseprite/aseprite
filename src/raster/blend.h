@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_BLEND_H
-#define RASTER_BLEND_H
+#ifndef RASTER_BLEND_H_INCLUDED
+#define RASTER_BLEND_H_INCLUDED
 
 #define INT_MULT(a, b, t)				\
   ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))
@@ -88,5 +88,5 @@ int _graya_blend_MERGE(int back, int front, int opacity);
 void rgb_to_hsv_int(int *red, int *green, int *blue);
 void hsv_to_rgb_int(int *hue, int *saturation, int *value);
 
-#endif /* RASTER_BLEND_H */
+#endif
 

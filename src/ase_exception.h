@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ASE_EXCEPTION_H
-#define ASE_EXCEPTION_H
+#ifndef ASE_EXCEPTION_H_INCLUDED
+#define ASE_EXCEPTION_H_INCLUDED
 
 #include <exception>
 #include <string>
@@ -56,4 +56,4 @@ public:
 
 };
 
-#endif // ASE_EXCEPTION_H
+#endif

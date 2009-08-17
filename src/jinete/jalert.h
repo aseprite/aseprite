@@ -29,13 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_ALERT_H
-#define JINETE_ALERT_H
+#ifndef JINETE_JALERT_H_INCLUDED
+#define JINETE_JALERT_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JWidget jalert_new(const char *format, ...);
 int jalert(const char *format, ...);
 
-#endif /* JINETE_ALERT_H */
+#endif
 

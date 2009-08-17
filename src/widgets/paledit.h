@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_PALEDIT_H
-#define WIDGETS_PALEDIT_H
+#ifndef WIDGETS_PALEDIT_H_INCLUDED
+#define WIDGETS_PALEDIT_H_INCLUDED
 
 #include <allegro/color.h>
 
@@ -53,4 +53,4 @@ int paledit_get_1st_color(JWidget widget);
 int paledit_get_2nd_color(JWidget widget);
 void paledit_get_selected_entries(JWidget widget, bool array[256]);
 
-#endif // WIDGETS_PALEDIT_H
+#endif

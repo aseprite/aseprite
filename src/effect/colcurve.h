@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef EFFECT_COLCURVE_H
-#define EFFECT_COLCURVE_H
+#ifndef EFFECT_COLCURVE_H_INCLUDED
+#define EFFECT_COLCURVE_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -54,4 +54,4 @@ void apply_color_curve4(struct Effect *effect);
 void apply_color_curve2(struct Effect *effect);
 void apply_color_curve1(struct Effect *effect);
 
-#endif /* EFFECT_COLCURVE_H */
+#endif

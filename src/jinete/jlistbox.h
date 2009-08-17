@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_LISTBOX_H
-#define JINETE_LISTBOX_H
+#ifndef JINETE_JLISTBOX_H_INCLUDED
+#define JINETE_JLISTBOX_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -48,4 +48,4 @@ void jlistbox_select_index(JWidget listbox, int index);
 
 void jlistbox_center_scroll(JWidget listbox);
 
-#endif /* JINETE_LISTBOX_H */
+#endif

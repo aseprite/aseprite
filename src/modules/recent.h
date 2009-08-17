@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_RECENT_H
-#define MODULES_RECENT_H
+#ifndef MODULES_RECENT_H_INCLUDED
+#define MODULES_RECENT_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -29,5 +29,5 @@ JList get_recent_files_list();
 void recent_file(const char *filename);
 void unrecent_file(const char *filename);
 
-#endif /* MODULES_RECENT_H */
+#endif
 

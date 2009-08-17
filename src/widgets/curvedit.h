@@ -16,19 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_CURVEDIT_H
-#define WIDGETS_CURVEDIT_H
+#ifndef WIDGETS_CURVEDIT_H_INCLUDED
+#define WIDGETS_CURVEDIT_H_INCLUDED
 
 #include "jinete/jbase.h"
 
-/* TODO use some JI_SIGNAL_USER */
+// TODO use some JI_SIGNAL_USER
 #define SIGNAL_CURVE_EDITOR_CHANGE   0x10004
 
 struct Curve;
 
-JWidget curve_editor_new (struct Curve *curve, int x1, int y1, int x2, int y2);
-int curve_editor_type ();
+JWidget curve_editor_new(Curve* curve, int x1, int y1, int x2, int y2);
+int curve_editor_type();
 
-struct Curve *curve_editor_get_curve (JWidget curve_editor);
+Curve* curve_editor_get_curve(JWidget curve_editor);
 
-#endif /* WIDGETS_CURVEDIT_H */
+#endif

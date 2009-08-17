@@ -65,7 +65,7 @@
 #include "widgets/toolbar.h"
 
 #ifdef ALLEGRO_WINDOWS
-#include <winalleg.h>
+  #include <winalleg.h>
 #endif
 
 /* options */

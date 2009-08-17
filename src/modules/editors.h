@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_EDITORS_H
-#define MODULES_EDITORS_H
+#ifndef MODULES_EDITORS_H_INCLUDED
+#define MODULES_EDITORS_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -47,5 +47,5 @@ void split_editor(JWidget editor, int align);
 void close_editor(JWidget editor);
 void make_unique_editor(JWidget editor);
 
-#endif /* MODULES_EDITORS_H */
+#endif
 

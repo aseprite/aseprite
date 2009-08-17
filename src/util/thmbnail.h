@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_THMBNAIL_H
-#define UTIL_THMBNAIL_H
+#ifndef UTIL_THMBNAIL_H_INCLUDED
+#define UTIL_THMBNAIL_H_INCLUDED
 
 class Cel;
 class Sprite;
@@ -25,5 +25,5 @@ class Sprite;
 void destroy_thumbnails();
 struct BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite* sprite);
 
-#endif /* UTIL_THMBNAIL_H */
+#endif
 

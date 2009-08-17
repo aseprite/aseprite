@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_QUANTIZE_H
-#define UTIL_QUANTIZE_H
+#ifndef UTIL_QUANTIZE_H_INCLUDED
+#define UTIL_QUANTIZE_H_INCLUDED
 
 class Palette;
 class Sprite;
@@ -26,5 +26,5 @@ class Stock;
 void sprite_quantize(Sprite* sprite);
 void sprite_quantize_ex(Sprite* sprite, Palette* palette);
 
-#endif /* UTIL_QUANTIZE_H */
+#endif
 

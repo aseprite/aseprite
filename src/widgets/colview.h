@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_COLVIEW_H
-#define WIDGETS_COLVIEW_H
+#ifndef WIDGETS_COLVIEW_H_INCLUDED
+#define WIDGETS_COLVIEW_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 #include "core/color.h"
 
-/* TODO use some JI_SIGNAL_USER */
+// TODO use some JI_SIGNAL_USER
 #define SIGNAL_COLORVIEWER_SELECT   0x10002
 
 JWidget colorviewer_new(color_t color, int imgtype);
@@ -34,4 +34,4 @@ int colorviewer_get_imgtype(JWidget colorviewer);
 color_t colorviewer_get_color(JWidget colorviewer);
 void colorviewer_set_color(JWidget colorviewer, color_t color);
 
-#endif /* WIDGETS_COLVIEW_H */
+#endif

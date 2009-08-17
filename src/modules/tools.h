@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_TOOLS_H
-#define MODULES_TOOLS_H
+#ifndef MODULES_TOOLS_H_INCLUDED
+#define MODULES_TOOLS_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
@@ -144,5 +144,5 @@ void control_tool(JWidget editor, Tool *tool,
 
 void apply_grid(int *x, int *y, bool flexible);
 
-#endif /* MODULES_TOOLS_H */
+#endif
 

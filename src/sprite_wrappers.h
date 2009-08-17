@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ASE_SPRITE_WRAPPERS_H
-#define ASE_SPRITE_WRAPPERS_H
+#ifndef SPRITE_WRAPPERS_H_INCLUDED
+#define SPRITE_WRAPPERS_H_INCLUDED
 
 #include <list>
 #include <exception>
@@ -249,4 +249,4 @@ public:
 
 };
 
-#endif // ASE_SPRITE_WRAPPERS_H
+#endif

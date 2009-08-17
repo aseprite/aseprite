@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_QUANT_H
-#define RASTER_QUANT_H
+#ifndef RASTER_QUANT_H_INCLUDED
+#define RASTER_QUANT_H_INCLUDED
 
 #include <allegro/color.h>
 
@@ -40,4 +40,4 @@ Image* image_rgb_to_indexed(Image* src_image,
 			    RGB_MAP* rgb_map,
 			    Palette* palette);
 
-#endif /* RASTER_QUANT_H */
+#endif

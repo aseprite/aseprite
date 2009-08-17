@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_COLOR_H
-#define CORE_COLOR_H
+#ifndef CORE_COLOR_H_INCLUDED
+#define CORE_COLOR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -68,5 +68,5 @@ color_t image_getpixel_color(Image* image, int x, int y);
 void color_to_formalstring(int imgtype, color_t color, char *buf,
 			   int size, bool long_format);
 
-#endif /* MODULES_COLOR_H */
+#endif
 

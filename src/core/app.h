@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_APP_H
-#define CORE_APP_H
+#ifndef CORE_APP_H_INCLUDED
+#define CORE_APP_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -63,5 +63,5 @@ int app_get_fg_color(Sprite* sprite);
 int app_get_bg_color(Sprite* sprite);
 int app_get_color_to_clear_layer(Layer* layer);
 
-#endif /* CORE_APP_H */
+#endif
 

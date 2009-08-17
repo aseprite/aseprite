@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_GROUPBUT_H
-#define WIDGETS_GROUPBUT_H
+#ifndef WIDGETS_GROUPBUT_H_INCLUDED
+#define WIDGETS_GROUPBUT_H_INCLUDED
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_GROUP_BUTTON_CHANGE   0x10000
@@ -27,4 +27,4 @@ JWidget group_button_new (int w, int h, int first_selected, ...);
 int group_button_get_selected (JWidget group);
 void group_button_select (JWidget group, int index);
 
-#endif /* WIDGETS_GROUPBUT_H */
+#endif

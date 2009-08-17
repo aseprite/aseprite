@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_BUTTON_H
-#define JINETE_BUTTON_H
+#ifndef JINETE_JBUTTON_H_INCLUDED
+#define JINETE_JBUTTON_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -76,4 +76,4 @@ void jradio_set_group(JWidget radio, int radio_group);
 int jradio_get_group(JWidget radio);
 void jradio_deselect_group(JWidget radio);
 
-#endif /* JINETE_BUTTON_H */
+#endif

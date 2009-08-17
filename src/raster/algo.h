@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_ALGO_H
-#define RASTER_ALGO_H
+#ifndef RASTER_ALGO_H_INCLUDED
+#define RASTER_ALGO_H_INCLUDED
 
 struct Dirty;
 class Image;
@@ -46,4 +46,4 @@ double algo_spline_get_tan (double x0, double y0, double x1, double y1,
 
 void algo_floodfill(Image* image, int x, int y, void* data, AlgoHLine proc);
 
-#endif /* RASTER_ALGO_H */
+#endif

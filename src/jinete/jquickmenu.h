@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_QCKMENU_H
-#define JINETE_QCKMENU_H
+#ifndef JINETE_JQUICKMENU_H_INCLUDED
+#define JINETE_JQUICKMENU_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -46,4 +46,4 @@ struct jquickmenu
 JWidget jmenubar_new_quickmenu(JQuickMenu quick_menu);
 JWidget jmenubox_new_quickmenu(JQuickMenu quick_menu);
 
-#endif /* JINETE_QCKMENU_H */
+#endif

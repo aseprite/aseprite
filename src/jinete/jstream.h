@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_STREAM_H
-#define JINETE_STREAM_H
+#ifndef JINETE_JSTREAM_H_INCLUDED
+#define JINETE_JSTREAM_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -63,4 +63,4 @@ int jstream_putc(JStream stream, int ch);
 int jstream_seek(JStream stream, int offset, int whence);
 int jstream_tell(JStream stream);
 
-#endif /* JINETE_STREAM_H */
+#endif

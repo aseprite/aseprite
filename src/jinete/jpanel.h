@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_PANEL_H
-#define JINETE_PANEL_H
+#ifndef JINETE_JPANEL_H_INCLUDED
+#define JINETE_JPANEL_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -39,4 +39,4 @@ JWidget jpanel_new(int align);
 double jpanel_get_pos(JWidget panel);
 void jpanel_set_pos(JWidget panel, double pos);
 
-#endif /* JINETE_PANEL_H */
+#endif

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef FILE_H
-#define FILE_H
+#ifndef FILE_FILE_H_INCLUDED
+#define FILE_FILE_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include <stdio.h>
@@ -140,4 +140,4 @@ long fgetl(FILE *file);
 int fputw(int w, FILE *file);
 int fputl(long l, FILE *file);
 
-#endif /* FILE_H */
+#endif

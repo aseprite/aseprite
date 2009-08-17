@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_SPRITES_H
-#define MODULES_SPRITES_H
+#ifndef MODULES_SPRITES_H_INCLUDED
+#define MODULES_SPRITES_H_INCLUDED
 
 class Sprite;
 class Image;
@@ -35,5 +35,5 @@ struct ImageRef
 ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write);
 void images_ref_free(ImageRef* image_ref);
 
-#endif /* MODULES_SPRITES_H */
+#endif
 

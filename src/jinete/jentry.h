@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_ENTRY_H
-#define JINETE_ENTRY_H
+#ifndef JINETE_JENTRY_H_INCLUDED
+#define JINETE_JENTRY_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -53,4 +53,4 @@ void jtheme_entry_info(JWidget entry,
 		       int *scroll, int *cursor, int *state,
 		       int *selbeg, int *selend);
 
-#endif /* JINETE_ENTRY_H */
+#endif

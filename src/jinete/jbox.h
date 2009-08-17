@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_BOX_H
-#define JINETE_BOX_H
+#ifndef JINETE_JBOX_H_INCLUDED
+#define JINETE_JBOX_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JWidget jbox_new(int align);
 
-#endif /* JINETE_BOX_H */
+#endif

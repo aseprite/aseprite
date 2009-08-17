@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_PREVIEW_H
-#define WIDGETS_PREVIEW_H
+#ifndef WIDGETS_PREVIEW_H_INCLUDED
+#define WIDGETS_PREVIEW_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -29,4 +29,4 @@ int preview_type();
 void preview_restart(JWidget preview);
 struct Effect *preview_get_effect(JWidget preview);
 
-#endif /* WIDGETS_PREVIEW_H */
+#endif

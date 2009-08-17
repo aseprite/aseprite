@@ -16,12 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_PLAYFLI_H
-#define DIALOGS_PLAYFLI_H
+#ifndef DIALOGS_PLAYFLI_H_INCLUDED
+#define DIALOGS_PLAYFLI_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 void play_fli_animation(const char *filename, bool loop, bool fullscreen);
 
-#endif /* DIALOGS_PLAYFLI_H */
+#endif
 

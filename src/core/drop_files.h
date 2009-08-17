@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_DROP_FILES_H
-#define CORE_DROP_FILES_H
+#ifndef CORE_DROP_FILES_H_INCLUDED
+#define CORE_DROP_FILES_H_INCLUDED
 
 void install_drop_files();
 void uninstall_drop_files();
 
 void check_for_dropped_files();
 
-#endif /* CORE_DROP_FILES_H */
+#endif
 

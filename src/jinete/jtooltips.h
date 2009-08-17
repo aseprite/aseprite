@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_TOOLTIPS_H
-#define JINETE_TOOLTIPS_H
+#ifndef JINETE_JTOOLTIPS_H_INCLUDED
+#define JINETE_JTOOLTIPS_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -39,4 +39,4 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text);
 JWidget jtooltip_window_new(const char *text);
 void jtooltip_window_set_hotregion(JWidget window, JRegion region);
 
-#endif /* JINETE_VIEW_H */
+#endif

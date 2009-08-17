@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_MASK_H
-#define RASTER_MASK_H
+#ifndef RASTER_MASK_H_INCLUDED
+#define RASTER_MASK_H_INCLUDED
 
 #include "raster/gfxobj.h"
 
@@ -58,4 +58,4 @@ void mask_merge(Mask* dst, const Mask* src);
 void mask_by_color(Mask* mask, const Image* image, int color, int fuzziness);
 void mask_crop(Mask* mask, const Image* image);
 
-#endif /* RASTER_MASK_H */
+#endif

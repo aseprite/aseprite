@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_MSG_H
-#define JINETE_MSG_H
+#ifndef JINETE_JMESSAGE_H_INCLUDED
+#define JINETE_JMESSAGE_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
@@ -154,4 +154,4 @@ void jmessage_add_pre_dest(JMessage msg, JWidget widget);
 void jmessage_broadcast_to_children(JMessage msg, JWidget widget);
 void jmessage_broadcast_to_parents(JMessage msg, JWidget widget);
 
-#endif /* JINETE_MSG_H */
+#endif

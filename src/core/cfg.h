@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_CFG_H
-#define CORE_CFG_H
+#ifndef CORE_CFG_H_INCLUDED
+#define CORE_CFG_H_INCLUDED
 
 #include <allegro/config.h>
 #include "jinete/jbase.h"
@@ -36,4 +36,4 @@ void set_config_rect(const char *section, const char *name, JRect rect);
 color_t get_config_color(const char *section, const char *name, color_t value);
 void set_config_color(const char *section, const char *name, color_t value);
 
-#endif /* CORE_CFG_H */
+#endif

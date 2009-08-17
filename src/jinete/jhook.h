@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_HOOK_H
-#define JINETE_HOOK_H
+#ifndef JINETE_JHOOK_H_INCLUDED
+#define JINETE_JHOOK_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -57,4 +57,4 @@ struct jhook
 JHook jhook_new();
 void jhook_free(JHook hook);
 
-#endif /* JINETE_HOOK_H */
+#endif

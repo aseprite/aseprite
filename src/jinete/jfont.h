@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_FONT_H
-#define JINETE_FONT_H
+#ifndef JINETE_JFONT_H_INCLUDED
+#define JINETE_JFONT_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -58,4 +58,4 @@ void ji_font_set_char_extra_spacing(struct FONT *f, int spacing);
 int ji_font_char_len(struct FONT *f, int chr);
 int ji_font_text_len(struct FONT *f, const char *text);
 
-#endif /* JINETE_FONT_H */
+#endif

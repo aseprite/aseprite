@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_VIEW_H
-#define JINETE_VIEW_H
+#ifndef JINETE_JVIEW_H_INCLUDED
+#define JINETE_JVIEW_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -58,4 +58,4 @@ void jtheme_scrollbar_info(JWidget scrollbar, int *pos, int *len);
 /* for viewable widgets */
 JWidget jwidget_get_view(JWidget viewable_widget);
 
-#endif /* JINETE_VIEW_H */
+#endif

@@ -93,7 +93,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #ifndef MAX_PATH
-#  define MAX_PATH 4096
+  #define MAX_PATH 4096
 #endif
 
 #define NOTINITIALIZED	"{__not_initialized_path__}"

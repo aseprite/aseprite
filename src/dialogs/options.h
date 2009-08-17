@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_OPTIONS_H
-#define DIALOGS_OPTIONS_H
+#ifndef DIALOGS_OPTIONS_H_INCLUDED
+#define DIALOGS_OPTIONS_H_INCLUDED
 
 void dialogs_select_language(bool force);
 void dialogs_options();
 
 void _setup_mouse_speed();
 
-#endif /* DIALOGS_OPTIONS_H */
+#endif
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_LAYER_H
-#define RASTER_LAYER_H
+#ifndef RASTER_LAYER_H_INCLUDED
+#define RASTER_LAYER_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
@@ -88,4 +88,4 @@ void layer_move_layer(Layer* set, Layer* layer, Layer* after);
 
 void layer_render(const Layer* layer, Image *image, int x, int y, int frame);
 
-#endif /* RASTER_LAYER_H */
+#endif

@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_ACCEL_H
-#define JINETE_ACCEL_H
+#ifndef JINETE_JACCEL_H_INCLUDED
+#define JINETE_JACCEL_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -46,4 +46,4 @@ void jaccel_to_string(JAccel accel, char *buf);
 
 bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode);
 
-#endif /* JINETE_ACCEL_H */
+#endif

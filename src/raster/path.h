@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_PATH_H
-#define RASTER_PATH_H
+#ifndef RASTER_PATH_H_INCLUDED
+#define RASTER_PATH_H_INCLUDED
 
 #include "raster/gfxobj.h"
 
@@ -76,4 +76,4 @@ void path_move(Path* path, double x, double y);
 void path_stroke(Path* path, Image* image, int color, double brush_size);
 void path_fill(Path* path, Image* image, int color);
 
-#endif /* RASTER_PATH_H */
+#endif

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef EFFECT_CONVMATR_H
-#define EFFECT_CONVMATR_H
+#ifndef EFFECT_CONVMATR_H_INCLUDED
+#define EFFECT_CONVMATR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -54,4 +54,4 @@ void apply_convolution_matrix4(struct Effect *effect);
 void apply_convolution_matrix2(struct Effect *effect);
 void apply_convolution_matrix1(struct Effect *effect);
 
-#endif /* EFFECT_CONVMATR_H */
+#endif

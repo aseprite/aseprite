@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_FILETOKS_H
-#define UTIL_FILETOKS_H
+#ifndef UTIL_FILETOKS_H_INCLUDED
+#define UTIL_FILETOKS_H_INCLUDED
 
 #include <stdio.h>
 
@@ -26,4 +26,4 @@ int tok_line_num ();
 
 char *tok_read (FILE *f, char *buf, char *leavings, int sizeof_leavings);
 
-#endif /* UTIL_FILETOKS_H */
+#endif

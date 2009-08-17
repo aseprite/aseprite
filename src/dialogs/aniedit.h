@@ -16,12 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_ANIEDIT_H
-#define DIALOGS_ANIEDIT_H
+#ifndef DIALOGS_ANIEDIT_H_INCLUDED
+#define DIALOGS_ANIEDIT_H_INCLUDED
 
 bool animation_editor_is_movingcel();
 
 void switch_between_animation_and_sprite_editor();
 
-#endif /* DIALOGS_ANIEDIT_H */
+#endif
 

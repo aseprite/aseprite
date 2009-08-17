@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_H
-#define RASTER_H
+#ifndef RASTER_RASTER_H_INCLUDED
+#define RASTER_RASTER_H_INCLUDED
 
 #include "raster/algo.h"
 #include "raster/blend.h"
@@ -36,4 +36,4 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 
-#endif /* RASTER_H */
+#endif

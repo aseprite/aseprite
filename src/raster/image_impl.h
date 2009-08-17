@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_IMAGE_IMPL_H
-#define RASTER_IMAGE_IMPL_H
+#ifndef RASTER_IMAGE_IMPL_H_INCLUDED
+#define RASTER_IMAGE_IMPL_H_INCLUDED
 
 #include <cassert>
 #include <allegro.h>
@@ -1008,4 +1008,4 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   bmp_unwrite_line(bmp);
 }
 
-#endif // RASTER_IMAGE_IMPL_H
+#endif

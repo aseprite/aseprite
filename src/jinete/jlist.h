@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_LIST_H
-#define JINETE_LIST_H
+#ifndef JINETE_JLIST_H_INCLUDED
+#define JINETE_JLIST_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -93,4 +93,4 @@ JLink jlist_find(JList list, const void *data);
        link!=((JList)(list))->end;				\
        link=next, next=link->next)
 
-#endif /* JINETE_LIST_H */
+#endif

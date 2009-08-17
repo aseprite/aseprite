@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_GFXOBJ_H
-#define RASTER_GFXOBJ_H
+#ifndef RASTER_GFXOBJ_H_INCLUDED
+#define RASTER_GFXOBJ_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -57,4 +57,4 @@ GfxObj* gfxobj_find(gfxobj_id id);
 
 void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id);
 
-#endif /* RASTER_GFXOBJ_H */
+#endif

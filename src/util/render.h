@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_RENDER_H
-#define UTIL_RENDER_H
+#ifndef UTIL_RENDER_H_INCLUDED
+#define UTIL_RENDER_H_INCLUDED
 
 class Image;
 class Layer;
@@ -30,4 +30,4 @@ Image* render_sprite(Sprite* sprite,
 		     int width, int height,
 		     int frpos, int zoom);
 
-#endif /* UTIL_RENDER_H */
+#endif

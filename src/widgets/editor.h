@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_EDITOR_H
-#define WIDGETS_EDITOR_H
+#ifndef WIDGETS_EDITOR_H_INCLUDED
+#define WIDGETS_EDITOR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -127,4 +127,4 @@ int editor_click(JWidget editor, int *x, int *y, int *update,
 		 void (*scroll_callback) (int before_change));
 int editor_click_cancel(JWidget editor);
 
-#endif /* WIDGETS_EDITOR_H */
+#endif

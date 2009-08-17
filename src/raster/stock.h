@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_STOCK_H
-#define RASTER_STOCK_H
+#ifndef RASTER_STOCK_H_INCLUDED
+#define RASTER_STOCK_H_INCLUDED
 
 #include "raster/gfxobj.h"
 
@@ -46,4 +46,4 @@ void stock_replace_image(Stock* stock, int index, Image* image);
 
 Image* stock_get_image(Stock* stock, int index);
 
-#endif /* RASTER_STOCK_H */
+#endif

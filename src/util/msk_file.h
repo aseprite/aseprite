@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_MSK_FILE_H
-#define UTIL_MSK_FILE_H
+#ifndef UTIL_MSK_FILE_H_INCLUDED
+#define UTIL_MSK_FILE_H_INCLUDED
 
 class Mask;
 
 Mask* load_msk_file(const char* filename);
 int save_msk_file(Mask* mask, const char* filename);
 
-#endif /* UTIL_MSK_FILE_H */
+#endif
 

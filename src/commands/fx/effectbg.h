@@ -16,11 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef COMMANDS_FX_EFFECTBG_H
-#define COMMANDS_FX_EFFECTBG_H
+#ifndef COMMANDS_FX_EFFECTBG_H_INCLUDED
+#define COMMANDS_FX_EFFECTBG_H_INCLUDED
 
 struct Effect;
 
-void effect_apply_to_target_with_progressbar(struct Effect *effect);
+void effect_apply_to_target_with_progressbar(struct Effect* effect);
 
-#endif /* COMMANDS_FX_EFFECTBG_H */
+#endif

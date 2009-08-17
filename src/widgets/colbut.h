@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_COLBUT_H
-#define WIDGETS_COLBUT_H
+#ifndef WIDGETS_COLBUT_H_INCLUDED
+#define WIDGETS_COLBUT_H_INCLUDED
 
 #include "core/color.h"
 
@@ -32,4 +32,4 @@ int colorbutton_get_imgtype(JWidget widget);
 color_t colorbutton_get_color(JWidget widget);
 void colorbutton_set_color(JWidget widget, color_t color);
 
-#endif /* WIDGETS_COLBUT_H */
+#endif

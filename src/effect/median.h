@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef EFFECT_MEDIAN_H
-#define EFFECT_MEDIAN_H
+#ifndef EFFECT_MEDIAN_H_INCLUDED
+#define EFFECT_MEDIAN_H_INCLUDED
 
 void set_median_size(int w, int h);
 
@@ -25,4 +25,4 @@ void apply_median4 (struct Effect *effect);
 void apply_median2 (struct Effect *effect);
 void apply_median1 (struct Effect *effect);
 
-#endif /* EFFECT_MEDIAN_H */
+#endif

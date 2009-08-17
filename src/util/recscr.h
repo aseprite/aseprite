@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_RECSCR_H
-#define UTIL_RECSCR_H
+#ifndef UTIL_RECSCR_H_INCLUDED
+#define UTIL_RECSCR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -28,5 +28,5 @@ void rec_screen_off();
 
 void rec_screen_poll();
 
-#endif /* UTIL_RECSCR_H */
+#endif
 

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_CLIPBRD_H
-#define UTIL_CLIPBRD_H
+#ifndef UTIL_CLIPBOARD_H_INCLUDED
+#define UTIL_CLIPBOARD_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -36,5 +36,5 @@ namespace clipboard {
 
 } // namespace clipboard
 
-#endif /* UTIL_CLIPBRD_H */
+#endif
 

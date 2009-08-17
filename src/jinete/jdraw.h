@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_DRAW_H
-#define JINETE_DRAW_H
+#ifndef JINETE_JDRAW_H_INCLUDED
+#define JINETE_JDRAW_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -68,4 +68,4 @@ void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int
 
 void ji_move_region(JRegion region, int dx, int dy);
 
-#endif /* JINETE_DRAW_H */
+#endif

@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_COMBOBOX_H
-#define JINETE_COMBOBOX_H
+#ifndef JINETE_JCOMBOBOX_H_INCLUDED
+#define JINETE_JCOMBOBOX_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -62,4 +62,4 @@ int jcombobox_get_count(JWidget combobox);
 JWidget jcombobox_get_entry_widget(JWidget combobox);
 JWidget jcombobox_get_button_widget(JWidget combobox);
 
-#endif /* JINETE_COMBOBOX_H */
+#endif

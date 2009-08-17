@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_REGION_H
-#define JINETE_REGION_H
+#ifndef JINETE_JREGION_H_INCLUDED
+#define JINETE_JREGION_H_INCLUDED
 
 #include "jinete/jrect.h"
 
@@ -96,4 +96,4 @@ bool jregion_notempty(JRegion reg);
 void jregion_empty(JRegion reg);
 JRect jregion_extents(JRegion reg);
 
-#endif /* JINETE_REGION_H */
+#endif

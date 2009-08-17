@@ -16,12 +16,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_COL_FILE_H
-#define UTIL_COL_FILE_H
+#ifndef UTIL_COL_FILE_H_INCLUDED
+#define UTIL_COL_FILE_H_INCLUDED
 
 class Palette;
 
 Palette* load_col_file(const char* filename);
 bool save_col_file(Palette* pal, const char* filename);
 
-#endif // UTIL_COL_FILE_H
+#endif

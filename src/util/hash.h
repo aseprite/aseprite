@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_HASH_H
-#define UTIL_HASH_H
+#ifndef UTIL_HASH_H_INCLUDED
+#define UTIL_HASH_H_INCLUDED
 
 typedef struct HashBucket
 {
@@ -40,4 +40,4 @@ void* hash_lookup(HashTable* table, const char* key);
 void* hash_remove(HashTable* table, const char* key);
 void hash_enumerate(HashTable* table, void (*callback)(const char*, void*));
 
-#endif /* UTIL_HASH_H */
+#endif

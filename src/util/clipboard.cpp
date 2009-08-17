@@ -52,8 +52,8 @@
 static ase_uint32 get_shift_from_mask(ase_uint32 mask);
 
 #if defined ALLEGRO_WINDOWS
-#include <winalleg.h>
-#include "util/clipboard_win32.h"
+  #include <winalleg.h>
+  #include "util/clipboard_win32.h"
 #endif
 
 #define SCALE_MODE	0

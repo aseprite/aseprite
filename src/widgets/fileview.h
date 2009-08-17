@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_FILEVIEW_H
-#define WIDGETS_FILEVIEW_H
+#ifndef WIDGETS_FILEVIEW_H_INCLUDED
+#define WIDGETS_FILEVIEW_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "jinete/jstring.h"
@@ -39,4 +39,4 @@ const FileItemList& fileview_get_filelist(JWidget fileview);
 
 void fileview_goup(JWidget fileview);
 
-#endif /* WIDGETS_FILEVIEW_H */
+#endif

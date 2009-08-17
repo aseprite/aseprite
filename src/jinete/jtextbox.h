@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_TEXTBOX_H
-#define JINETE_TEXTBOX_H
+#ifndef JINETE_JTEXTBOX_H_INCLUDED
+#define JINETE_JTEXTBOX_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JWidget jtextbox_new(const char *text, int align);
 
-#endif /* JINETE_TEXTBOX_H */
+#endif

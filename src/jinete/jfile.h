@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_FILE_H
-#define JINETE_FILE_H
+#ifndef JINETE_JFILE_H_INCLUDED
+#define JINETE_JFILE_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JWidget ji_load_widget(const char *filename, const char *name);
 
-#endif /* JINETE_FILE_H */
+#endif

@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_MANAGER_H
-#define JINETE_MANAGER_H
+#ifndef JINETE_JMANAGER_H_INCLUDED
+#define JINETE_JMANAGER_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -76,4 +76,4 @@ void jmanager_add_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter_for(JWidget widget);
 
-#endif /* JINETE_MANAGER_H */
+#endif

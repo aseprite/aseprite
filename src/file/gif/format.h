@@ -1,5 +1,5 @@
-#ifndef _GIF_H_
-#define _GIF_H_
+#ifndef FILE_GIF_FORMAT_H_INCLUDED
+#define FILE_GIF_FORMAT_H_INCLUDED
 
 #include <allegro/color.h>
 

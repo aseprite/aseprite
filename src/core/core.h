@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_H
-#define CORE_H
+#ifndef CORE_CORE_H_INCLUDED
+#define CORE_CORE_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -38,4 +38,4 @@ bool is_interactive();
 char *get_pretty_memsize(unsigned int memsize, char *buf, unsigned int bufsize);
 char *get_errno_string(int errnum, char *buf, int size);
 
-#endif /* CORE_H */
+#endif

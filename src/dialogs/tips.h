@@ -16,10 +16,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_TIPS_H
-#define DIALOGS_TIPS_H
+#ifndef DIALOGS_TIPS_H_INCLUDED
+#define DIALOGS_TIPS_H_INCLUDED
 
 void dialogs_tips(bool forced);
 
-#endif /* DIALOGS_TIPS_H */
+#endif
 

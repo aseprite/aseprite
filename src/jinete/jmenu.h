@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_MENU_H
-#define JINETE_MENU_H
+#ifndef JINETE_JMENU_H_INCLUDED
+#define JINETE_JMENU_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -54,4 +54,4 @@ int jmenuitem_is_highlight(JWidget menuitem);
 
 void jmenu_popup(JWidget menu, int x, int y);
 
-#endif /* JINETE_MENU_H */
+#endif

@@ -16,11 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef DIALOGS_MASKCOL_H
-#define DIALOGS_MASKCOL_H
+#ifndef DIALOGS_MASKCOL_H_INCLUDED
+#define DIALOGS_MASKCOL_H_INCLUDED
 
 class Sprite;
 
 void dialogs_mask_color(Sprite* sprite);
 
-#endif /* DIALOGS_MASKCOL_H */
+#endif

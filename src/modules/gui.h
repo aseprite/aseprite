@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_GUI_H
-#define MODULES_GUI_H
+#ifndef MODULES_GUI_H_INCLUDED
+#define MODULES_GUI_H_INCLUDED
 
 #include <cassert>
 #include <string>
@@ -160,5 +160,4 @@ public:
 
 };
 
-
-#endif /* MODULES_GUI_H */
+#endif

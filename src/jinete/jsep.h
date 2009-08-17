@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_SEP_H
-#define JINETE_SEP_H
+#ifndef JINETE_JSEP_H_INCLUDED
+#define JINETE_JSEP_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JWidget ji_separator_new(const char *text, int align);
 
-#endif /* JINETE_SEP_H */
+#endif

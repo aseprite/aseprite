@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_PALETTE_H
-#define RASTER_PALETTE_H
+#ifndef RASTER_PALETTE_H_INCLUDED
+#define RASTER_PALETTE_H_INCLUDED
 
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
@@ -64,4 +64,4 @@ bool palette_save(Palette* palette, const char *filename);
 
 int palette_find_bestfit(const Palette* pal, int r, int g, int b);
 
-#endif	/* RASTER_PALETTE_H */
+#endif

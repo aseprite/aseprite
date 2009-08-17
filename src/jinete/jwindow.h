@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_WINDOW_H
-#define JINETE_WINDOW_H
+#ifndef JINETE_JWINDOW_H_INCLUDED
+#define JINETE_JWINDOW_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -60,4 +60,4 @@ bool jwindow_is_desktop(JWidget window);
 bool jwindow_is_ontop(JWidget window);
 bool jwindow_is_wantfocus(JWidget window);
 
-#endif /* JINETE_WINDOW_H */
+#endif

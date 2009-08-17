@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_PIC_FILE_H
-#define UTIL_PIC_FILE_H
+#ifndef UTIL_PIC_FILE_H_INCLUDED
+#define UTIL_PIC_FILE_H_INCLUDED
 
 #include <allegro/color.h>
 
@@ -29,4 +29,4 @@ Image* load_pic_file(const char *filename, int *x, int *y,
 int save_pic_file(const char *filename, int x, int y,
 		  struct RGB *palette, Image* image);
 
-#endif /* UTIL_PIC_FILE_H */
+#endif

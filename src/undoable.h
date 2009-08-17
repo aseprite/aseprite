@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ASE_UNDOABLE_H
-#define ASE_UNDOABLE_H
+#ifndef UNDOABLE_H_INCLUDED
+#define UNDOABLE_H_INCLUDED
 
 class Cel;
 class Layer;
@@ -103,4 +103,4 @@ public:
 
 };
 
-#endif // ASE_UNDOABLE_H
+#endif

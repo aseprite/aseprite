@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_MENUITEM_H
-#define WIDGETS_MENUITEM_H
+#ifndef WIDGETS_MENUITEM_H_INCLUDED
+#define WIDGETS_MENUITEM_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -30,4 +30,4 @@ JWidget menuitem_new(const char* text,
 Command* menuitem_get_command(JWidget menuitem);
 const char* menuitem_get_argument(JWidget menuitem);
 
-#endif /* WIDGETS_MENUITEM_H */
+#endif

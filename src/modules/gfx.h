@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_GFX_H
-#define MODULES_GFX_H
+#ifndef MODULES_GFX_H_INCLUDED
+#define MODULES_GFX_H_INCLUDED
 
 #include "core/color.h"
 #include "jinete/jbase.h"
@@ -133,4 +133,4 @@ void render_character(struct BITMAP *bmp, struct FONT *font, int chr, int x, int
 
 /* void render_background(struct ASE_BITMAP *bitmap, int x1, int y1, int x2, int y2); */
 
-#endif /* MODULES_GFX_H */
+#endif

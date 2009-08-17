@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_COLSEL_H
-#define WIDGETS_COLSEL_H
+#ifndef WIDGETS_COLSEL_H_INCLUDED
+#define WIDGETS_COLSEL_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 #include "core/color.h"
 
-/* TODO use some JI_SIGNAL_USER */
+// TODO use some JI_SIGNAL_USER
 #define SIGNAL_COLORSELECTOR_COLOR_CHANGED	0x10009
 
 JWidget colorselector_new(bool editable_palette);
@@ -33,4 +33,4 @@ color_t colorselector_get_color(JWidget widget);
 
 JWidget colorselector_get_paledit(JWidget widget);
 
-#endif /* WIDGETS_COLSEL_H */
+#endif

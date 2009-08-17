@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_JOB_H
-#define CORE_JOB_H
+#ifndef CORE_JOB_H_INCLUDED
+#define CORE_JOB_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -65,4 +65,4 @@ private:
 
 };
 
-#endif // CORE_JOB_H
+#endif

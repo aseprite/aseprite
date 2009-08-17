@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_UNDO_H
-#define RASTER_UNDO_H
+#ifndef RASTER_UNDO_H_INCLUDED
+#define RASTER_UNDO_H_INCLUDED
 
 #include <string.h>		/* for strlen */
 
@@ -106,4 +106,4 @@ void undo_set_frlen(Undo* undo, Sprite* sprite, int frame);
 #define undo_double(undo, gfxobj, value_address) \
   undo_data((undo), (gfxobj), (void *)(value_address), sizeof(double))
 
-#endif /* RASTER_UNDO_H */
+#endif

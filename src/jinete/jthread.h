@@ -29,12 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_THREAD_H
-#define JINETE_THREAD_H
+#ifndef JINETE_JTHREAD_H_INCLUDED
+#define JINETE_JTHREAD_H_INCLUDED
 
 #include "jinete/jbase.h"
 
 JThread jthread_new(void (*proc)(void *data), void *data);
 void jthread_join(JThread thread);
 
-#endif /* JINETE_THREAD_H */
+#endif

@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_IMAGE_TRAITS_H
-#define RASTER_IMAGE_TRAITS_H
+#ifndef RASTER_IMAGE_TRAITS_H_INCLUDED
+#define RASTER_IMAGE_TRAITS_H_INCLUDED
 
 #include <cassert>
 
@@ -241,4 +241,4 @@ inline void image_putpixel_fast<BitmapTraits>(Image* image, int x, int y, Bitmap
     *(((BitmapTraits::pixel_t**)image->line)[y]+d.quot) &= ~(1<<d.rem);
 }
 
-#endif // RASTER_IMAGE_TRAITS_H
+#endif

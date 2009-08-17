@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_COLBAR_H
-#define WIDGETS_COLBAR_H
+#ifndef WIDGETS_COLBAR_H_INCLUDED
+#define WIDGETS_COLBAR_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -38,4 +38,4 @@ void colorbar_set_color(JWidget widget, int index, color_t color);
 
 color_t colorbar_get_color_by_position(JWidget widget, int x, int y);
 
-#endif /* WIDGETS_COLBAR_H */
+#endif

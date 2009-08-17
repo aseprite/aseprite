@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_MUTEX_H
-#define JINETE_MUTEX_H
+#ifndef JINETE_JMUTEX_H_INCLUDED
+#define JINETE_JMUTEX_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -51,4 +51,4 @@ public:
   ~ScopedLock() { jmutex_unlock(m_mutex); }
 };
 
-#endif /* JINETE_MUTEX_H */
+#endif

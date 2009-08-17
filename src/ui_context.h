@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ASE_UI_CONTEXT_H
-#define ASE_UI_CONTEXT_H
+#ifndef UI_CONTEXT_H_INCLUDED
+#define UI_CONTEXT_H_INCLUDED
 
 #include "context.h"
 
@@ -43,4 +43,4 @@ protected:
 
 };
 
-#endif // ASE_UI_CONTEXT_H
+#endif

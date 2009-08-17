@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_DIRS_H
-#define CORE_DIRS_H
+#ifndef CORE_DIRS_H_INCLUDED
+#define CORE_DIRS_H_INCLUDED
 
 typedef struct DIRS DIRS;
 
@@ -38,5 +38,5 @@ DIRS *filename_in_homedir(const char *filename);
 DIRS *filename_in_homedir(const char *filename);
 DIRS *cfg_filename_dirs();
 
-#endif /* CORE_DIRS_H */
+#endif
 

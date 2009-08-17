@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_IMAGE_H
-#define RASTER_IMAGE_H
+#ifndef RASTER_IMAGE_H_INCLUDED
+#define RASTER_IMAGE_H_INCLUDED
 
 #include <allegro/color.h>
 #include "raster/gfxobj.h"
@@ -112,4 +112,4 @@ inline void* image_address(Image* image, int x, int y)
 
 #include "image_traits.h"
 
-#endif				/* RASTER_IMAGE_H */
+#endif

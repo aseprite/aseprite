@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_ROOTMENU_H
-#define MODULES_ROOTMENU_H
+#ifndef MODULES_ROOTMENU_H_INCLUDED
+#define MODULES_ROOTMENU_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -42,4 +42,4 @@ JWidget get_cel_movement_popup_menu();
 
 /* void show_fx_popup_menu(); */
 
-#endif /* MODULES_ROOTMENU_H */
+#endif

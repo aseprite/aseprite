@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_BRUSH_H
-#define RASTER_BRUSH_H
+#ifndef RASTER_BRUSH_H_INCLUDED
+#define RASTER_BRUSH_H_INCLUDED
 
 class Image;
 
@@ -49,5 +49,5 @@ void brush_set_type(Brush* brush, int type);
 void brush_set_size(Brush* brush, int size);
 void brush_set_angle(Brush* brush, int angle);
 
-#endif /* RASTER_BRUSH_H */
+#endif
 

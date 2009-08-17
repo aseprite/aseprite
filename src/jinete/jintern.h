@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_LOW_H
-#define JINETE_LOW_H
+#ifndef JINETE_JINTERN_H_INCLUDED
+#define JINETE_JINTERN_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -80,4 +80,4 @@ void _ji_theme_textbox_draw(struct BITMAP *bmp, JWidget textbox,
 
 struct FONT *_ji_bitmap2font(struct BITMAP *bmp);
 
-#endif /* JINETE_LOW_H */
+#endif

@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_GRID_H
-#define JINETE_GRID_H
+#ifndef JINETE_JGRID_H_INCLUDED
+#define JINETE_JGRID_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -39,4 +39,4 @@ JWidget jgrid_new(int columns, bool same_width_columns);
 void jgrid_add_child(JWidget grid, JWidget child,
 		     int hspan, int vspan, int align);
 
-#endif /* JINETE_BOX_H */
+#endif

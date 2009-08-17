@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef INTL_H
-#define INTL_H
+#ifndef INTL_INTL_H_INCLUDED
+#define INTL_INTL_H_INCLUDED
 
 int intl_init();
 void intl_exit();
@@ -26,4 +26,4 @@ void intl_load_lang();
 const char *intl_get_lang();
 void intl_set_lang(const char *lang);
 
-#endif /* !INTL_H */
+#endif

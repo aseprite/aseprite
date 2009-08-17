@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONSOLE_H
-#define CONSOLE_H
+#ifndef CONSOLE_H_INCLUDED
+#define CONSOLE_H_INCLUDED
 
 class Console
 {
@@ -30,4 +30,4 @@ public:
 
 void user_printf(const char *format, ...);
 
-#endif /* CONSOLE_H */
+#endif

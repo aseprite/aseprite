@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef EFFECT_REPLCOL_H
-#define EFFECT_REPLCOL_H
+#ifndef EFFECT_REPLCOL_H_INCLUDED
+#define EFFECT_REPLCOL_H_INCLUDED
 
 struct Effect;
 
@@ -27,4 +27,4 @@ void apply_replace_color4(struct Effect *effect);
 void apply_replace_color2(struct Effect *effect);
 void apply_replace_color1(struct Effect *effect);
 
-#endif /* EFFECT_REPLCOL_H */
+#endif

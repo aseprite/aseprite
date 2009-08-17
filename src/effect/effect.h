@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef EFFECT_H
-#define EFFECT_H
+#ifndef EFFECT_EFFECT_H_INCLUDED
+#define EFFECT_EFFECT_H_INCLUDED
 
 #include <stdlib.h>
 #include <cstring>
@@ -193,4 +193,4 @@ void effect_apply_to_target(Effect* effect);
       gety = 0;								\
   }
 
-#endif /* EFFECT_H */
+#endif

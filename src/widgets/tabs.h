@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_TABS_H
-#define WIDGETS_TABS_H
+#ifndef WIDGETS_TABS_H_INCLUDED
+#define WIDGETS_TABS_H_INCLUDED
 
 #include "jinete/jbase.h"
 
@@ -31,4 +31,4 @@ void tabs_set_text_for_tab(JWidget widget, const char *text, void *data);
 void tabs_select_tab(JWidget widget, void *data);
 void *tabs_get_selected_tab(JWidget widget);
 
-#endif /* WIDGETS_TABS_H */
+#endif
