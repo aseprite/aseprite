@@ -503,7 +503,7 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   switch (depth) {
 
     case 8:
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       if (is_planar_bitmap(bmp)) {
 	for (y=0; y<h; y++) {
 	  bmp_address = (unsigned long)bmp->line[_y];
@@ -536,7 +536,7 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   
 	  _y++;
 	}
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       }
 #endif
       break;
@@ -635,7 +635,7 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   switch (depth) {
 
     case 8:
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       if (is_planar_bitmap(bmp)) {
         for (y=0; y<h; y++) {
           bmp_address = (unsigned long)bmp->line[_y];
@@ -663,7 +663,7 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 
           _y++;
         }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       }
 #endif
       break;
@@ -766,7 +766,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
   switch (depth) {
 
     case 8:
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       if (is_planar_bitmap (bmp)) {
         for (y=0; y<h; y++) {
           bmp_address = (unsigned long)bmp->line[_y];
@@ -793,7 +793,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 
           _y++;
         }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       }
 #endif
       break;
@@ -884,7 +884,7 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
       color[0] = makecol8(0, 0, 0);
       color[1] = makecol8(255, 255, 255);
 
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       if (is_planar_bitmap(bmp)) {
         for (y=0; y<h; y++) {
 	  addr = line_address(y);
@@ -915,7 +915,7 @@ void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 
           _y++;
         }
-#if defined GFX_MODEX && !defined ALLEGRO_UNIX
+#if defined GFX_MODEX && !defined ALLEGRO_UNIX && !defined ALLEGRO_MACOSX
       }
 #endif
       break;

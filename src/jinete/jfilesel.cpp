@@ -36,10 +36,10 @@
 #include <allegro/internal/aintern.h>
 #include <errno.h>
 #include <string.h>
-#if defined ALLEGRO_UNIX || defined ALLEGRO_DJGPP || defined ALLEGRO_MINGW32
+#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX || defined ALLEGRO_DJGPP || defined ALLEGRO_MINGW32
 #  include <sys/stat.h>
 #endif
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MINGW32
+#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX || defined ALLEGRO_MINGW32
 #  include <sys/unistd.h>
 #endif
 

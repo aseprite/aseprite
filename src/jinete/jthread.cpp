@@ -39,11 +39,11 @@
 #if defined ALLEGRO_WINDOWS
   #include <winalleg.h>
   #include <process.h>
-#elif defined ALLEGRO_UNIX
+#elif defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
   #include <pthread.h>
 #endif
 
-#if defined ALLEGRO_UNIX
+#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 struct pthread_proxy_data {
   void (*proc)(void*);
   void* data;
@@ -65,7 +65,7 @@ JThread jthread_new(void (*proc)(void*), void* data)
 {
 #if defined ALLEGRO_WINDOWS
   return (JThread)_beginthread(proc, 0, data);
-#elif defined ALLEGRO_UNIX
+#elif defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
   pthread_t thread = 0;
   struct pthread_proxy_data *ptr = jnew(struct pthread_proxy_data, 1);
   ptr->proc = proc;
@@ -84,7 +84,7 @@ void jthread_join(JThread thread)
 {
 #if defined ALLEGRO_WINDOWS
   WaitForSingleObject(thread, INFINITE);
-#elif defined ALLEGRO_UNIX
+#elif defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
   pthread_join((pthread_t)thread, NULL);
 #else
   #error ASE does not support threads for your platform

@@ -117,7 +117,7 @@ DIRS *filename_in_datadir(const char *filename)
   DIRS *dirs = dirs_new();
   char buf[1024];
 
-#if defined ALLEGRO_UNIX
+#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
   /* $HOME/.ase/filename */
   sprintf(buf, ".ase/%s", filename);
@@ -153,7 +153,7 @@ DIRS *filename_in_homedir(const char *filename)
 {
   DIRS *dirs = dirs_new();
 
-#if defined ALLEGRO_UNIX
+#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
   char *env = getenv("HOME");
   char buf[1024];
@@ -187,7 +187,7 @@ DIRS *cfg_filename_dirs()
 {
   DIRS *dirs = dirs_new();
 
-#if defined ALLEGRO_UNIX
+#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
   /* $HOME/.asepriterc */
   dirs_cat_dirs(dirs, filename_in_homedir(".asepriterc"));
