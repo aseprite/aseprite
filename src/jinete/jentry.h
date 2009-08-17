@@ -34,7 +34,7 @@
 
 #include "jinete/jbase.h"
 
-JWidget jentry_new(int maxsize, const char *format, ...);
+JWidget jentry_new(size_t maxsize, const char *format, ...);
 
 void jentry_readonly(JWidget entry, bool state);
 void jentry_password(JWidget entry, bool state);

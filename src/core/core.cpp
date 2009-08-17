@@ -123,7 +123,7 @@ void verbose_printf(const char *format, ...)
  */
 bool is_interactive()
 {
-  return ase_mode & MODE_GUI ? TRUE: FALSE;
+  return ase_mode & MODE_GUI ? true: false;
 }
 
 char *get_pretty_memsize(unsigned int memsize, char *buf, unsigned int bufsize)

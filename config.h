@@ -21,10 +21,11 @@
 #endif
 
 #define __ASE_CONFIG_H
+#define _CRT_SECURE_NO_WARNINGS
 
 /* general information */
 #define PACKAGE			"ASE"
-#define VERSION			"0.7.1"
+#define VERSION			"0.7.2"
 #define WEBSITE			"http://www.aseprite.org/"
 #define COPYRIGHT		"Copyright (C) 2001-2009 David Capello"
 

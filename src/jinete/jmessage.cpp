@@ -79,8 +79,8 @@ JMessage jmessage_new_key_related(int type, int readkey_value)
   msg->key.scancode = (readkey_value >> 8) & 0xff;
   msg->key.ascii = readkey_value & 0xff;
   msg->key.repeat = 0;
-  msg->key.propagate_to_children = FALSE;
-  msg->key.propagate_to_parent = TRUE;
+  msg->key.propagate_to_children = false;
+  msg->key.propagate_to_parent = true;
 
 #if 0
   printf("%i: %i %i [%c]\n", type, msg->key.scancode,
@@ -102,7 +102,7 @@ JMessage jmessage_new_copy(const JMessage msg)
   memcpy(copy, msg, sizeof(union jmessage));
 
   copy->any.widgets = jlist_copy(msg->any.widgets);
-  copy->any.used = FALSE;
+  copy->any.used = false;
 
   return copy;
 }

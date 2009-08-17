@@ -282,7 +282,7 @@ bool sprite_is_modified(const Sprite* sprite)
   assert(sprite != NULL);
 
   return (sprite->undo->diff_count ==
-	  sprite->undo->diff_saved) ? FALSE: TRUE;
+	  sprite->undo->diff_saved) ? false: true;
 }
 
 bool sprite_is_associated_to_file(const Sprite* sprite)

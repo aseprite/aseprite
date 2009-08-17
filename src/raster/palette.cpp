@@ -335,7 +335,7 @@ Palette* palette_load(const char *filename)
 
 bool palette_save(Palette* pal, const char *filename)
 {
-  bool ret = FALSE;
+  bool success = false;
   char ext[64];
 
   ustrcpy(ext, get_extension(filename));
@@ -354,14 +354,14 @@ bool palette_save(Palette* pal, const char *filename)
 
     palette_to_allegro(pal, rgbpal);
 
-    ret = save_bitmap(filename, bmp, rgbpal);
+    success = (save_bitmap(filename, bmp, rgbpal) == 0);
     destroy_bitmap(bmp);
   }
   else if (ustricmp(ext, "col") == 0) {
-    ret = save_col_file(pal, filename);
+    success = save_col_file(pal, filename);
   }
 
-  return ret;
+  return success;
 }
 
 /**********************************************************************/

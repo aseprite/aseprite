@@ -115,7 +115,7 @@ bool _ji_is_valid_widget(JWidget widget)
 
 void _ji_set_font_of_all_widgets(struct FONT *f)
 {
-  int c;
+  size_t c;
 
   // first of all, we have to set the font to all the widgets
   for (c=0; c<widgets->size(); c++)

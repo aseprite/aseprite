@@ -57,6 +57,10 @@ public:
     return *this;
   }
 
+  bool is_valid() const {
+    return m_sprite != NULL;
+  }
+
   operator Sprite* () { return m_sprite; }
   operator const Sprite* () const { return m_sprite; }
 

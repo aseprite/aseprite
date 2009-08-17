@@ -758,7 +758,7 @@ static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int
   chunk->y1 = y1;
   chunk->x2 = x2;
   chunk->y2 = y2;
-  chunk->horz = horz;
+  chunk->horz = horz ? 1: 0;
 }
 
 static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk, int state)
@@ -772,7 +772,7 @@ static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk, int stat
     int y1 = chunk->y1;
     int x2 = chunk->x2;
     int y2 = chunk->y2;
-    bool horz = chunk->horz;
+    bool horz = (chunk->horz != 0);
 
     chunk_flip_new(stream, image, x1, y1, x2, y2, horz);
 
@@ -1907,7 +1907,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
       /* read cels */
       for (c=0; c<cels; c++) {
 	Cel* cel;
-	bool has_image;
+	ase_uint8 has_image;
 
 	/* read the cel */
 	cel = read_raw_cel(raw_data);
@@ -1918,7 +1918,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 
 	/* read the image */
 	read_raw_uint8(has_image);
-	if (has_image) {
+	if (has_image != 0) {
 	  Image* image = read_raw_image(raw_data);
 	  raw_data += get_raw_image_size(image);
 

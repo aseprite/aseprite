@@ -68,28 +68,28 @@ static struct {
   bool mask : 1;
   unsigned char *data;
 } icons_data[ICONS] = {
-  { FALSE, default_theme_cnormal },
-  { FALSE, default_theme_cnoradd },
-  { FALSE, default_theme_cforbidden },
-  { FALSE, default_theme_chand },
-  { FALSE, default_theme_cscroll },
-  { FALSE, default_theme_cmove },
-  { FALSE, default_theme_csizetl },
-  { FALSE, default_theme_csizet },
-  { FALSE, default_theme_csizetr },
-  { FALSE, default_theme_csizel },
-  { FALSE, default_theme_csizer },
-  { FALSE, default_theme_csizebl },
-  { FALSE, default_theme_csizeb },
-  { FALSE, default_theme_csizebr },
-  { FALSE, default_theme_ceyedropper },
-  { FALSE, default_theme_ichecke },
-  { FALSE, default_theme_icheckm },
-  { FALSE, default_theme_iclose },
-  {  TRUE, default_theme_imenum },
-  { FALSE, default_theme_iradioe },
-  { FALSE, default_theme_iradiom },
-  { FALSE, default_theme_icombobox },
+  { false, default_theme_cnormal },
+  { false, default_theme_cnoradd },
+  { false, default_theme_cforbidden },
+  { false, default_theme_chand },
+  { false, default_theme_cscroll },
+  { false, default_theme_cmove },
+  { false, default_theme_csizetl },
+  { false, default_theme_csizet },
+  { false, default_theme_csizetr },
+  { false, default_theme_csizel },
+  { false, default_theme_csizer },
+  { false, default_theme_csizebl },
+  { false, default_theme_csizeb },
+  { false, default_theme_csizebr },
+  { false, default_theme_ceyedropper },
+  { false, default_theme_ichecke },
+  { false, default_theme_icheckm },
+  { false, default_theme_iclose },
+  {  true, default_theme_imenum },
+  { false, default_theme_iradioe },
+  { false, default_theme_iradiom },
+  { false, default_theme_icombobox },
 };
 
 static BITMAP *icons_bitmap[ICONS];
@@ -431,7 +431,7 @@ static void theme_init_widget(JWidget widget)
 	    jbutton_set_bevel(button, 0, 0, 0, 0);
 	    jwidget_add_hook(button, JI_WIDGET,
 			     theme_button_msg_proc, NULL);
-	    jwidget_decorative(button, TRUE);
+	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
 	    jwidget_set_name(button, "theme_close_button");
 	  }
@@ -595,7 +595,7 @@ static void theme_draw_button(JWidget widget, JRect clip)
 
   /* text */
   crect = jwidget_get_child_rect(widget);
-  draw_textstring(NULL, fg, bg, FALSE, widget, crect, 1);
+  draw_textstring(NULL, fg, bg, false, widget, crect, 1);
   jrect_free(crect);
 
   /* icon */
@@ -648,7 +648,7 @@ static void theme_draw_check(JWidget widget, JRect clip)
   }
 
   /* text */
-  draw_textstring(NULL, -1, bg, FALSE, widget, &text, 0);
+  draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
   /* icon */
   draw_icons(icon.x1, icon.y1, widget, ICON_CHECK_EDGE);
@@ -747,7 +747,7 @@ static void theme_draw_label(JWidget widget, JRect clip)
 
   jdraw_rectfill(widget->rc, bg);
 
-  draw_textstring(NULL, -1, bg, FALSE, widget, widget->rc, 0);
+  draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
 }
 
 static void theme_draw_listbox(JWidget widget, JRect clip)
@@ -785,7 +785,7 @@ static void theme_draw_listitem(JWidget widget, JRect clip)
 
   if (widget->has_text()) {
     /* text */
-    jdraw_text(widget->font(), widget->text(), x, y, fg, bg, TRUE);
+    jdraw_text(widget->font(), widget->text(), x, y, fg, bg, true);
 
     /* background */
     jrectexclude
@@ -871,7 +871,7 @@ static void theme_draw_menuitem(JWidget widget, JRect clip)
   pos = jwidget_get_rect(widget);
   if (!bar)
     jrect_displace(pos, widget->child_spacing/2, 0);
-  draw_textstring(NULL, fg, bg, FALSE, widget, pos, 0);
+  draw_textstring(NULL, fg, bg, false, widget, pos, 0);
   jrect_free(pos);
 
   /* for menu-box */
@@ -911,7 +911,7 @@ static void theme_draw_menuitem(JWidget widget, JRect clip)
       jaccel_to_string(jmenuitem_get_accel(widget), buf);
 
       widget->align(JI_RIGHT | JI_MIDDLE);
-      draw_textstring(buf, fg, bg, FALSE, widget, pos, 0);
+      draw_textstring(buf, fg, bg, false, widget, pos, 0);
       widget->align(old_align);
 
       jrect_free(pos);
@@ -998,7 +998,7 @@ static void theme_draw_radio(JWidget widget, JRect clip)
 	 COLOR_FOREGROUND);
 
   /* text */
-  draw_textstring(NULL, -1, bg, FALSE, widget, &text, 0);
+  draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
   /* icon */
   draw_icons(icon.x1, icon.y1, widget, ICON_RADIO_EDGE);
@@ -1051,7 +1051,7 @@ static void theme_draw_separator(JWidget widget, JRect clip)
   if (widget->has_text()) {
     int h = jwidget_get_text_height(widget);
     struct jrect r = { x1+h/2, y1-h/2, x2+1-h, y2+1+h };
-    draw_textstring(NULL, -1, BGCOLOR, FALSE, widget, &r, 0);
+    draw_textstring(NULL, -1, BGCOLOR, false, widget, &r, 0);
   }
 }
 
@@ -1066,11 +1066,11 @@ static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
   int v2 = MIN(y2, bitmap->cb-1);
 
   if (u1 > u2 || v1 > v2)
-    return FALSE;
+    return false;
   else
     set_clip(bitmap, u1, v1, u2, v2);
 
-  return TRUE;
+  return true;
 }
 #endif
 
@@ -1163,12 +1163,12 @@ static void theme_draw_slider(JWidget widget, JRect clip)
     if (my_add_clip_rect(ji_screen, x1, y1, x, y2))
       draw_textstring(NULL, COLOR_BACKGROUND,
 		      jwidget_is_disabled(widget) ?
-		      bg: COLOR_SELECTED, FALSE, widget, r, 0);
+		      bg: COLOR_SELECTED, false, widget, r, 0);
 
     set_clip(ji_screen, cx1, cy1, cx2, cy2);
 
     if (my_add_clip_rect(ji_screen, x+1, y1, x2, y2))
-      draw_textstring(NULL, COLOR_FOREGROUND, bg, FALSE, widget, r, 0);
+      draw_textstring(NULL, COLOR_FOREGROUND, bg, false, widget, r, 0);
 
     set_clip(ji_screen, cx1, cy1, cx2, cy2);
 
@@ -1300,7 +1300,7 @@ static void theme_draw_window(JWidget widget, JRect clip)
       jdraw_text(widget->font(), widget->text(),
 		 cpos->x1,
 		 pos->y1+jrect_h(pos)/2-text_height(widget->font())/2,
-		 COLOR_BACKGROUND, bg, FALSE);
+		 COLOR_BACKGROUND, bg, false);
     }
   }
   /* desktop */
@@ -1380,7 +1380,7 @@ static void draw_textstring(const char *t, int fg_color, int bg_color,
 		 COLOR_BACKGROUND, bg_color, fill_bg);
 
       if (fill_bg)
-	fill_bg = FALSE;
+	fill_bg = false;
     }
 
     jdraw_text(widget->font(), t, x, y,
@@ -1438,7 +1438,7 @@ static bool theme_button_msg_proc(JWidget widget, JMessage msg)
     case JM_KEYPRESSED:
       if (msg->key.scancode == KEY_ESC) {
 	jwidget_select(widget);
-	return TRUE;
+	return true;
       }
       break;
 
@@ -1447,12 +1447,12 @@ static bool theme_button_msg_proc(JWidget widget, JMessage msg)
 	if (jwidget_is_selected(widget)) {
 	  jwidget_deselect(widget);
 	  jwidget_close_window(widget);
-	  return TRUE;
+	  return true;
 	}
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }
 

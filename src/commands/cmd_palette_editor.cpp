@@ -319,9 +319,9 @@ static void save_command(JWidget widget)
 	return;
     }
 
-    if (palette_save(paledit_get_palette(palette_editor),
-		     filename.c_str()))
+    if (!palette_save(paledit_get_palette(palette_editor), filename.c_str())) {
       jalert(_("Error<<Saving palette file||&Close"));
+    }
   }
 }
 

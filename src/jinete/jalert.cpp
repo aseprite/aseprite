@@ -144,10 +144,10 @@ int jalert(const char *format, ...)
 static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 {
   JWidget box1, box2, grid, box3, box4, box5, window = NULL;
-  bool title = TRUE;
-  bool label = FALSE;
-  bool separator = FALSE;
-  bool button = FALSE;
+  bool title = true;
+  bool label = false;
+  bool separator = false;
+  bool button = false;
   int align = 0;
   char *beg;
   int c, chr;
@@ -197,16 +197,16 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 	break;
       /* next widget */
       else {
-	title = label = separator = button = FALSE;
+	title = label = separator = button = false;
 	beg = buf+c+2;
 	align = 0;
 
 	switch (buf[c]) {
-	  case '<': label=TRUE; align=JI_LEFT; break;
-	  case '=': label=TRUE; align=JI_CENTER; break;
-	  case '>': label=TRUE; align=JI_RIGHT; break;
-	  case '-': separator=TRUE; break;
-	  case '|': button=TRUE; break;
+	  case '<': label=true; align=JI_LEFT; break;
+	  case '=': label=true; align=JI_CENTER; break;
+	  case '>': label=true; align=JI_RIGHT; break;
+	  case '-': separator=true; break;
+	  case '|': button=true; break;
 	}
 	c++;
       }
@@ -216,7 +216,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
   if (window) {
     box1 = jbox_new(JI_VERTICAL);
     box2 = jbox_new(JI_VERTICAL);
-    grid = jgrid_new(1, FALSE);
+    grid = jgrid_new(1, false);
     box3 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
     /* to identify by the user */
@@ -227,8 +227,8 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
     box4 = jbox_new(0);
     box5 = jbox_new(0);
 
-    jwidget_expansive(box4, TRUE);
-    jwidget_expansive(box5, TRUE);
+    jwidget_expansive(box4, true);
+    jwidget_expansive(box5, true);
     jwidget_noborders(box4);
     jwidget_noborders(box5);
 
@@ -251,7 +251,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 
     /* default button is the last one */
     if (jlist_last(*buttons))
-      jwidget_magnetic((JWidget)jlist_last(*buttons)->data, TRUE);
+      jwidget_magnetic((JWidget)jlist_last(*buttons)->data, true);
   }
 
   return window;

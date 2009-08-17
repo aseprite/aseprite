@@ -121,7 +121,7 @@ int _ji_system_init()
   if (screen)
     jmouse_poll();
 
-  moved = TRUE;
+  moved = true;
   m_cursor = JI_CURSOR_NULL;
 
   return 0;
@@ -355,7 +355,7 @@ bool jmouse_is_shown()
 /**
  * Updates the mouse information (position, wheel and buttons).
  * 
- * @return Returns TRUE if the mouse moved.
+ * @return Returns true if the mouse moved.
  */
 bool jmouse_poll()
 {
@@ -374,20 +374,20 @@ bool jmouse_poll()
   if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
     poll_mouse();
     update_mouse_position();
-    moved = TRUE;
+    moved = true;
   }
 
   if (moved) {
-    moved = FALSE;
-    return TRUE;
+    moved = false;
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }
 
 void jmouse_set_position(int x, int y)
 {
-  moved = TRUE;
+  moved = true;
 
   m_x[0] = m_x[1] = x;
   m_y[0] = m_y[1] = y;
@@ -429,10 +429,10 @@ bool jmouse_control_infinite_scroll(JRect rect)
 
   if ((x != u) || (y != v)) {
     jmouse_set_position(x, y);
-    return TRUE;
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }
 
 static void update_mouse_position()

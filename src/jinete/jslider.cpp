@@ -66,7 +66,7 @@ JWidget jslider_new(int min, int max, int value)
   slider->value = MID(min, value, max);
 
   jwidget_add_hook(widget, JI_SLIDER, slider_msg_proc, slider);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_init_theme(widget);
 
   return widget;
@@ -124,7 +124,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       slider_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
@@ -134,7 +134,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONPRESSED:
       if (jwidget_is_disabled(widget))
-	return TRUE;
+	return true;
 
       jwidget_select(widget);
       jwidget_hard_capture_mouse(widget);
@@ -192,7 +192,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	jrect_free(rc);
-	return TRUE;
+	return true;
       }
       break;
 
@@ -236,7 +236,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	  case KEY_HOME:  value = min; break;
 	  case KEY_END:   value = max; break;
 	  default:
-	    return FALSE;
+	    return false;
 	}
 
 	if (slider->value != value) {
@@ -244,7 +244,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	  jwidget_emit_signal(widget, JI_SIGNAL_SLIDER_CHANGE);
 	}
 
-	return TRUE;
+	return true;
       }
       break;
 
@@ -258,16 +258,16 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	  jslider_set_value(widget, value);
 	  jwidget_emit_signal(widget, JI_SIGNAL_SLIDER_CHANGE);
 	}
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_SETCURSOR:
       slider_setcursor(widget);
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void slider_request_size(JWidget widget, int *w, int *h)

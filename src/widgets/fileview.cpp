@@ -744,8 +744,6 @@ static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
 
 static void fileview_stop_threads(FileView* fileview)
 {
-  JLink link, next;
-
   // stop the generation of threads
   jmanager_stop_timer(fileview->timer_id);
 

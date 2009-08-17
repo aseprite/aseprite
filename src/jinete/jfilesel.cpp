@@ -149,8 +149,8 @@ char *ji_file_select_ex(const char *message,
   /* create input widget (entry_path) */
   entry_path = NULL;
   entry_name = NULL;
-  entry_path_created = FALSE;
-  entry_name_created = FALSE;
+  entry_path_created = false;
+  entry_name_created = false;
 
   if (widget_extension) {
     entry_path = jwidget_find_name(widget_extension, "path");
@@ -159,12 +159,12 @@ char *ji_file_select_ex(const char *message,
 
   if (!entry_path) {
     entry_path = jentry_new(size-1, NULL);
-    entry_path_created = TRUE;
+    entry_path_created = true;
   }
 
   if (!entry_name) {
     entry_name = jentry_new(size-1, NULL);
-    entry_name_created = TRUE;
+    entry_name_created = true;
   }
 
   /* add hook */
@@ -178,10 +178,10 @@ char *ji_file_select_ex(const char *message,
   jview_attach(view1, listbox1);
   jview_attach(view2, listbox2);
 
-  jwidget_expansive(view1, TRUE);
-  jwidget_expansive(view2, TRUE);
-  jwidget_expansive(panel, TRUE);
-  jwidget_expansive(box2, TRUE);
+  jwidget_expansive(view1, true);
+  jwidget_expansive(view2, true);
+  jwidget_expansive(panel, true);
+  jwidget_expansive(box2, true);
 
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "top")))
     jwidget_add_child(box1, tmp);
@@ -196,7 +196,7 @@ char *ji_file_select_ex(const char *message,
   else {
     JWidget subbox1 = jbox_new(JI_VERTICAL);
     JWidget subbox2 = jbox_new(JI_HORIZONTAL);
-    jwidget_expansive(entry_name, TRUE);
+    jwidget_expansive(entry_name, true);
     jwidget_add_child(box2, subbox1);
     jwidget_add_child(subbox1, panel);
     jwidget_add_child(subbox1, subbox2);
@@ -215,7 +215,7 @@ char *ji_file_select_ex(const char *message,
   jwidget_add_child(window, box1);
 
   /* magnetic */
-  jwidget_magnetic(button_select, TRUE);
+  jwidget_magnetic(button_select, true);
 
   /* setup window size */
   jwidget_set_min_size(panel, JI_SCREEN_W*9/10, JI_SCREEN_H*3/5);
@@ -329,7 +329,7 @@ static bool filesel_msg_proc(JWidget widget, JMessage msg)
 	case JI_SIGNAL_BUTTON_SELECT:
 	  if (!enter_to_path_in_entry())
 	    jwidget_close_window(widget);
-	  return TRUE;
+	  return true;
 
 	case JI_SIGNAL_LISTBOX_SELECT: {
 	  char filename[1024];
@@ -382,17 +382,17 @@ static bool filesel_msg_proc(JWidget widget, JMessage msg)
 	   (msg->key.scancode == KEY_ENTER_PAD))) {
 	if (enter_to_path_in_entry()) {
 	  jmanager_set_focus(widget);
-	  return TRUE;
+	  return true;
 	}
 	else {
 	  jwidget_close_window(widget);
-	  return TRUE;
+	  return true;
 	}
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool enter_to_path_in_entry()
@@ -456,10 +456,10 @@ static bool enter_to_path_in_entry()
 	  break;
 	}
     }
-    return TRUE;
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }
 
 /* callback function for `for_each_file' routine */
@@ -476,7 +476,7 @@ static void fill_listbox_callback(const char* filename, int attrib, int param)
   /* all directories */
   if (attrib & FA_DIREC) {
     list = &paths;
-    found = TRUE;
+    found = true;
   }
   /* only files with an acceptable extension */
   else {
@@ -628,7 +628,7 @@ static bool check_extension(const char *filename_ext)
   assert(extensions != NULL);
 
   if (jlist_empty(extensions))
-    return TRUE;		/* all extensions */
+    return true;		/* all extensions */
 
   len = ustrlen(filename_ext);
 
@@ -639,23 +639,23 @@ static bool check_extension(const char *filename_ext)
 
       case EQUAL_TO_TEXT:
 	if (ustricmp(ext->text, filename_ext) == 0)
-	  return TRUE;
+	  return true;
 	break;
 
       case START_WITH_TEXT:
 	if (my_ustrnicmp(ext->text, filename_ext, ext->size) == 0)
-	  return TRUE;
+	  return true;
 	break;
 
       case END_WITH_TEXT:
 	if (len >= ext->size &&
 	    my_ustrnicmp(ext->text, filename_ext+len-ext->size, ext->size) == 0)
-	  return TRUE;
+	  return true;
 	break;
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 static void free_extensions()

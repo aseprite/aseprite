@@ -98,7 +98,7 @@ gif_save_animation (const char *filename, GIF_ANIMATION *gif,
     int i, j;
     FILE *file;
 
-    file = fopen (filename, "wb");
+    file = fopen(filename, "wb");
     if (!file)
 	return -1;
 

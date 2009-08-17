@@ -76,7 +76,7 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text)
  */
 JWidget jtooltip_window_new(const char *text)
 {
-  JWidget window = tipwindow_new(text, FALSE);
+  JWidget window = tipwindow_new(text, false);
 
   return window;
 }
@@ -96,7 +96,7 @@ void jtooltip_window_set_hotregion(JWidget widget, JRegion region)
     jregion_free(tipwindow->hot_region);
 
   if (!tipwindow->filtering) {
-    tipwindow->filtering = TRUE;
+    tipwindow->filtering = true;
     jmanager_add_msg_filter(JM_MOTION, widget);
     jmanager_add_msg_filter(JM_BUTTONPRESSED, widget);
     jmanager_add_msg_filter(JM_KEYPRESSED, widget);
@@ -153,7 +153,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
     case JM_TIMER:
       if (msg->timer.timer_id == tip->timer_id) {
 	if (!tip->window) {
-	  JWidget window = tipwindow_new(tip->text, TRUE);
+	  JWidget window = tipwindow_new(tip->text, true);
 /* 	  int x = tip->widget->rc->x1; */
 /* 	  int y = tip->widget->rc->y2; */
 	  int x = jmouse_x(0)+12;
@@ -182,7 +182,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
       break;
 
   }
-  return FALSE;
+  return false;
 }
 
 /********************************************************************/
@@ -196,11 +196,11 @@ static JWidget tipwindow_new(const char *text, bool close_on_buttonpressed)
 
   tipwindow->close_on_buttonpressed = close_on_buttonpressed;
   tipwindow->hot_region = NULL;
-  tipwindow->filtering = FALSE;
+  tipwindow->filtering = false;
 
-  jwindow_sizeable(window, FALSE);
-  jwindow_moveable(window, FALSE);
-  jwindow_wantfocus(window, FALSE);
+  jwindow_sizeable(window, false);
+  jwindow_moveable(window, false);
+  jwindow_wantfocus(window, false);
 
   jwidget_set_align(window, JI_LEFT | JI_TOP);
 
@@ -237,7 +237,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 
     case JM_CLOSE:
       if (tipwindow->filtering) {
-	tipwindow->filtering = FALSE;
+	tipwindow->filtering = false;
 	jmanager_remove_msg_filter(JM_MOTION, widget);
 	jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);
 	jmanager_remove_msg_filter(JM_KEYPRESSED, widget);
@@ -246,7 +246,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DESTROY:
       if (tipwindow->filtering) {
-	tipwindow->filtering = FALSE;
+	tipwindow->filtering = false;
 	jmanager_remove_msg_filter(JM_MOTION, widget);
 	jmanager_remove_msg_filter(JM_BUTTONPRESSED, widget);
 	jmanager_remove_msg_filter(JM_KEYPRESSED, widget);
@@ -285,7 +285,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 			     widget->border_width.l + max_w + widget->border_width.r);
 	msg->reqsize.h += max_h;
       }
-      return TRUE;
+      return true;
     }
 
     case JM_SIGNAL:
@@ -303,7 +303,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 
 	/* setup the background color */
 	jwidget_set_bg_color(widget, makecol(255, 255, 200));
-	return TRUE;
+	return true;
       }
       break;
 
@@ -363,9 +363,9 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
       widget->border_width.t = oldt;
 
       jrect_free(pos);
-      return TRUE;
+      return true;
     }
 
   }
-  return FALSE;
+  return false;
 }

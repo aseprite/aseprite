@@ -478,7 +478,7 @@ static void grid_distribute_size(JWidget widget, JRect rect)
   }
 
   DISTRIBUTE_SIZE(cols, colstrip, l, r, jrect_w, grid->same_width_columns);
-  DISTRIBUTE_SIZE(rows, rowstrip, t, b, jrect_h, FALSE);
+  DISTRIBUTE_SIZE(rows, rowstrip, t, b, jrect_h, false);
 }
 
 static bool grid_put_widget_in_cell(JWidget widget, JWidget child, int hspan, int vspan, int align)

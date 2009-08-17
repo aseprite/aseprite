@@ -442,5 +442,5 @@ static bool save_GIF(FileOp *fop)
   ret = gif_save_animation(fop->filename, gif,
 			   reinterpret_cast<void(*)(void*,float)>(fop_progress), fop);
   gif_destroy_animation(gif);
-  return ret == 0 ? TRUE: FALSE;
+  return ret == 0 ? true: false;
 }

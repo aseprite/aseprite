@@ -300,7 +300,7 @@ void layer_configure_as_background(Layer* layer)
  */
 bool layer_is_image(const Layer* layer)
 {
-  return (layer->type == GFXOBJ_LAYER_IMAGE) ? TRUE: FALSE;
+  return (layer->type == GFXOBJ_LAYER_IMAGE) ? true: false;
 }
 
 /**
@@ -308,7 +308,7 @@ bool layer_is_image(const Layer* layer)
  */
 bool layer_is_set(const Layer* layer)
 {
-  return (layer->type == GFXOBJ_LAYER_SET) ? TRUE: FALSE;
+  return (layer->type == GFXOBJ_LAYER_SET) ? true: false;
 }
 
 /**
@@ -513,7 +513,7 @@ static bool has_cels(const Layer* layer, int frame)
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE:
-      return layer_get_cel(layer, frame) ? TRUE: FALSE;
+      return layer_get_cel(layer, frame) ? true: false;
 
     case GFXOBJ_LAYER_SET: {
       JLink link;

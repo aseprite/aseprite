@@ -32,12 +32,12 @@ class Palette;
 
 Image* image_set_imgtype(Image* image, int imgtype,
 			 int dithering_method,
-			 RGB_MAP *rgb_map,
-			 struct Palette *palette);
+			 RGB_MAP* rgb_map,
+			 Palette* palette);
 
 Image* image_rgb_to_indexed(Image* src_image,
 			    int offsetx, int offsety,
-			    RGB_MAP *rgb_map,
-			    struct Palette *palette);
+			    RGB_MAP* rgb_map,
+			    Palette* palette);
 
 #endif /* RASTER_QUANT_H */

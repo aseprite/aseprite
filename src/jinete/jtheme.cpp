@@ -381,7 +381,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
       else			/* left */
 	xout = x;
 
-      draw_text(bmp, font, beg, xout, y, fg, bg, TRUE);
+      draw_text(bmp, font, beg, xout, y, fg, bg, true);
 
       jrectexclude(bmp,
 		   x1, y, x2, y+textheight-1,

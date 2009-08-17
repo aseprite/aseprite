@@ -402,7 +402,7 @@ static bool save_TGA(FileOp *fop)
   unsigned char image_palette[256][3];
   int x, y, c, r, g, b;
   int depth = (image->imgtype == IMAGE_RGB) ? 32 : 8;
-  bool need_pal = (image->imgtype == IMAGE_INDEXED)? TRUE: FALSE;
+  bool need_pal = (image->imgtype == IMAGE_INDEXED)? true: false;
   FILE *f;
 
   f = fopen(fop->filename, "wb");

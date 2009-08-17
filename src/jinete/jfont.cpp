@@ -75,7 +75,7 @@ typedef struct FONT_AA_DATA {
 } FONT_AA_DATA;
 
 static FT_Library ft_library;
-static bool ji_font_inited = FALSE;
+static bool ji_font_inited = false;
 
 extern FONT_VTABLE _ji_font_vtable_aa;
 extern FONT_VTABLE* ji_font_vtable_aa;
@@ -111,7 +111,7 @@ static void _font_uncache_glyphs(FONT* f)
 
     for (i=0; i<af->face->num_glyphs; i++) {
       if (af->cached_glyphs[i].is_cached) {
-        af->cached_glyphs[i].is_cached = FALSE;
+        af->cached_glyphs[i].is_cached = false;
         if (af->cached_glyphs[i].bmp) {
           jfree(af->cached_glyphs[i].bmp);
           af->cached_glyphs[i].bmp = NULL;
@@ -149,9 +149,9 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
     FT_Get_Glyph(af->face->glyph, &new_glyph);
 
     /* ok, this glyph is now cached */
-    af->cached_glyphs[glyph_number].is_cached = TRUE;
-    af->cached_glyphs[glyph_number].mono_available = FALSE;
-    af->cached_glyphs[glyph_number].aa_available = FALSE;
+    af->cached_glyphs[glyph_number].is_cached = true;
+    af->cached_glyphs[glyph_number].mono_available = false;
+    af->cached_glyphs[glyph_number].aa_available = false;
 
     /* render the mono bmp */
     {
@@ -172,7 +172,7 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
       /* save only if the bitmap is really 1 bit */
       if (ft_bmp->pixel_mode == ft_pixel_mode_mono) {
 
-        af->cached_glyphs[glyph_number].mono_available = TRUE;
+        af->cached_glyphs[glyph_number].mono_available = true;
 
         /* set width, height, left, top */
         af->cached_glyphs[glyph_number].width = ft_bmp->width;
@@ -235,7 +235,7 @@ static void _font_cache_glyph(AL_CONST FONT* f, int glyph_number)
       /* save only if the bitmap is really 8 bit */
       if (ft_bmp->pixel_mode == ft_pixel_mode_grays) {
 
-        af->cached_glyphs[glyph_number].aa_available = TRUE;
+        af->cached_glyphs[glyph_number].aa_available = true;
 
         /* set width, height, left, top */
         af->cached_glyphs[glyph_number].aawidth = ft_bmp->width;
@@ -298,7 +298,7 @@ static void _font_new_cache_glyph(FONT* f)
     af->cached_glyphs = jnew(struct CACHED_GLYPH, af->face->num_glyphs);
 
   for (i=0; i<af->face->num_glyphs; i++) {
-    af->cached_glyphs[i].is_cached = FALSE;
+    af->cached_glyphs[i].is_cached = false;
     af->cached_glyphs[i].bmp = NULL;
     af->cached_glyphs[i].aabmp = 0;
   }
@@ -312,7 +312,7 @@ int _ji_font_init()
     if (FT_Init_FreeType (&ft_library))
       return -1;
 
-    ji_font_inited = TRUE;
+    ji_font_inited = true;
   }
   return 0;
 }
@@ -322,7 +322,7 @@ void _ji_font_exit()
   if (ji_font_inited) {
     FT_Done_FreeType(ft_library);
 
-    ji_font_inited = FALSE;
+    ji_font_inited = false;
   }
 }
 
@@ -482,7 +482,7 @@ int ji_font_set_size(FONT* f, int h)
 
     /* check we arent at 0 */
     if (test_h <= 0) {
-      error = TRUE;
+      error = true;
       break;
     }
 
@@ -529,12 +529,12 @@ bool ji_font_is_fixed(FONT* f)
     FONT_AA_DATA* af = reinterpret_cast<FONT_AA_DATA*>(f->data);
 
     if (af->num_fixed_sizes < 0)
-      return FALSE;
+      return false;
     else
-      return TRUE;
+      return true;
   }
   else
-    return TRUE;
+    return true;
 }
 
 bool ji_font_is_scalable(FONT* f)
@@ -543,12 +543,12 @@ bool ji_font_is_scalable(FONT* f)
     FONT_AA_DATA* af = reinterpret_cast<FONT_AA_DATA*>(f->data);
 
     if (af->num_fixed_sizes < 0)
-      return TRUE;
+      return true;
     else
-      return FALSE;
+      return false;
   }
   else
-    return FALSE;
+    return false;
 }
 
 const int *ji_font_get_available_fixed_sizes(FONT* f, int *n)
@@ -996,12 +996,12 @@ int ji_font_set_aa_mode(struct FONT* f, int mode)
 
 bool ji_font_is_fixed(FONT* f)
 {
-  return TRUE;
+  return true;
 }
 
 bool ji_font_is_scalable(FONT* f)
 {
-  return FALSE;
+  return false;
 }
 
 const int *ji_font_get_available_fixed_sizes(FONT* f, int* n)

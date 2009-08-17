@@ -68,7 +68,7 @@ namespace EntryCmd {
 
 typedef struct Entry
 {
-  int maxsize;
+  size_t maxsize;
   int cursor;
   int scroll;
   int select;
@@ -89,7 +89,7 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd, int ascii, boo
 static void entry_forward_word(JWidget widget);
 static void entry_backward_word(JWidget widget);
 
-JWidget jentry_new(int maxsize, const char *format, ...)
+JWidget jentry_new(size_t maxsize, const char *format, ...)
 {
   JWidget widget = jwidget_new(JI_ENTRY);
   Entry* entry = (Entry*)jnew(Entry, 1);
@@ -114,17 +114,17 @@ JWidget jentry_new(int maxsize, const char *format, ...)
   entry->scroll = 0;
   entry->select = 0;
   entry->timer_id = jmanager_add_timer(widget, 500);
-  entry->hidden = FALSE;
-  entry->state = FALSE;
-  entry->password = FALSE;
-  entry->readonly = FALSE;
-  entry->recent_focused = FALSE;
+  entry->hidden = false;
+  entry->state = false;
+  entry->password = false;
+  entry->readonly = false;
+  entry->recent_focused = false;
 
   /* TODO support for text alignment and multi-line */
   /* widget->align = JI_LEFT | JI_MIDDLE; */
   widget->text(buf);
 
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_init_theme(widget);
 
   return widget;
@@ -162,7 +162,7 @@ void jentry_show_cursor(JWidget widget)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
 
-  entry->hidden = FALSE;
+  entry->hidden = false;
 
   jwidget_dirty(widget);
 }
@@ -171,7 +171,7 @@ void jentry_hide_cursor(JWidget widget)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
 
-  entry->hidden = TRUE;
+  entry->hidden = true;
 
   jwidget_dirty(widget);
 }
@@ -202,7 +202,7 @@ void jentry_set_cursor_pos(JWidget widget, int pos)
   } while (entry->cursor >= c);
 
   jmanager_start_timer(entry->timer_id);
-  entry->state = TRUE;
+  entry->state = true;
 
   jwidget_dirty(widget);
 }
@@ -262,12 +262,13 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       entry_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_TIMER:
       if (jwidget_has_focus(widget) &&
 	  msg->timer.timer_id == entry->timer_id) {
-	entry->state = entry->state ? FALSE: TRUE;
+	// blinking cursor
+	entry->state = entry->state ? false: true;
 	jwidget_dirty(widget);
       }
       break;
@@ -275,11 +276,11 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
     case JM_FOCUSENTER:
       jmanager_start_timer(entry->timer_id);
 
-      entry->state = TRUE;
+      entry->state = true;
       jwidget_dirty(widget);
 
       jentry_select_text(widget, 0, -1);
-      entry->recent_focused = TRUE;
+      entry->recent_focused = true;
       break;
 
     case JM_FOCUSLEAVE:
@@ -288,7 +289,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       jmanager_stop_timer(entry->timer_id);
       
       jentry_deselect_text(widget);
-      entry->recent_focused = FALSE;
+      entry->recent_focused = false;
       break;
 
     case JM_KEYPRESSED:
@@ -374,15 +375,15 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	bool move, dirty;
 	int c, x;
 
-	move = TRUE;
-	dirty = FALSE;
+	move = true;
+	dirty = false;
 
 	/* backward scroll */
 	if (msg->mouse.x < widget->rc->x1) {
 	  if (entry->scroll > 0) {
 	    entry->cursor = --entry->scroll;
-	    move = FALSE;
-	    dirty = TRUE;
+	    move = false;
+	    dirty = true;
 	    jwidget_dirty(widget);
 	  }
 	}
@@ -402,8 +403,8 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 		break;
 	    }
 	    entry->cursor = c;
-	    move = FALSE;
-	    dirty = TRUE;
+	    move = false;
+	    dirty = true;
 	    jwidget_dirty(widget);
 	  }
 	}
@@ -414,14 +415,14 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
 	  if (entry->cursor != c) {
 	    entry->cursor = c;
-	    dirty = TRUE;
+	    dirty = true;
 	    jwidget_dirty(widget);
 	  }
 	}
 
 	/* move selection */
 	if (entry->recent_focused) {
-	  entry->recent_focused = FALSE;
+	  entry->recent_focused = false;
 	  entry->select = entry->cursor;
 	}
 	else if (msg->type == JM_BUTTONPRESSED)
@@ -430,24 +431,24 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	/* show the cursor */
 	if (dirty) {
 	  jmanager_start_timer(entry->timer_id);
-	  entry->state = TRUE;
+	  entry->state = true;
 	}
 
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_BUTTONRELEASED:
       if (jwidget_has_capture(widget))
 	jwidget_release_mouse(widget);
-      return TRUE;
+      return true;
 
     case JM_DOUBLECLICK:
       entry_forward_word(widget);
       entry->select = entry->cursor;
       entry_backward_word(widget);
       jwidget_dirty(widget);
-      return TRUE;
+      return true;
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
@@ -457,7 +458,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void entry_request_size(JWidget widget, int *w, int *h)

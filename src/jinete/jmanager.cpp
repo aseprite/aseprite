@@ -103,7 +103,7 @@ static JWidget mouse_widget;	/* the widget with the mouse */
 static JWidget capture_widget;	/* the widget that captures the
 				   mouse */
 
-static bool first_time_poll;    /* TRUE when we don't enter in poll yet */
+static bool first_time_poll;    /* true when we don't enter in poll yet */
 
 static char old_readed_key[KEY_MAX]; /* keyboard status of previous
 					poll */
@@ -177,7 +177,7 @@ JWidget jmanager_new()
     mouse_widget = NULL;
     capture_widget = NULL;
 
-    first_time_poll = TRUE;
+    first_time_poll = true;
     double_click_level = DOUBLE_CLICK_NONE;
     double_click_ticks = 0;
 
@@ -265,7 +265,7 @@ void jmanager_run(JWidget widget)
 }
 
 /**
- * @return TRUE if there are messages in the queue to be distpatched
+ * @return true if there are messages in the queue to be distpatched
  *         through jmanager_dispatch_messages().
  */
 bool jmanager_generate_messages(JWidget manager)
@@ -281,7 +281,7 @@ bool jmanager_generate_messages(JWidget manager)
   poll_keyboard();
 
   if (first_time_poll) {
-    first_time_poll = FALSE;
+    first_time_poll = false;
     
     jmanager_refresh_screen();
     jmouse_set_cursor(JI_CURSOR_NORMAL);
@@ -289,11 +289,11 @@ bool jmanager_generate_messages(JWidget manager)
 
   /* first check: there are windows to manage? */
   if (jlist_empty(manager->children))
-    return FALSE;
+    return false;
 
   /* TODO check for STAGE */
 /*   if (want_close_stage == STAGE_WANT_CLOSE) */
-/*     return FALSE; */
+/*     return false; */
 
   /* new windows to show? */
   if (!jlist_empty(new_windows)) {
@@ -547,12 +547,12 @@ bool jmanager_generate_messages(JWidget manager)
   jwidget_flush_redraw(manager);
 
   if (!jlist_empty(msg_queue))
-    return TRUE;
+    return true;
   else {
     /* make some OSes happy */
     yield_timeslice();
     rest(1);
-    return FALSE;
+    return false;
   }
 }
 
@@ -715,14 +715,14 @@ void jmanager_set_focus(JWidget widget)
     JMessage msg;
 
     if (widget)
-      widget_parents = jwidget_get_parents(widget, FALSE);
+      widget_parents = jwidget_get_parents(widget, false);
     else
       widget_parents = jlist_new();
 
     /* fetch the focus */
 
     if (focus_widget) {
-      JList focus_parents = jwidget_get_parents(focus_widget, TRUE);
+      JList focus_parents = jwidget_get_parents(focus_widget, true);
       msg = jmessage_new(JM_FOCUSLEAVE);
 
       JI_LIST_FOR_EACH(focus_parents, link) {
@@ -786,14 +786,14 @@ void jmanager_set_mouse(JWidget widget)
     JMessage msg;
 
     if (widget)
-      widget_parents = jwidget_get_parents(widget, FALSE);
+      widget_parents = jwidget_get_parents(widget, false);
     else
       widget_parents = jlist_new();
 
     /* fetch the mouse */
 
     if (mouse_widget) {
-      JList mouse_parents = jwidget_get_parents(mouse_widget, TRUE);
+      JList mouse_parents = jwidget_get_parents(mouse_widget, true);
       msg = jmessage_new(JM_MOUSELEAVE);
 
       JI_LIST_FOR_EACH(mouse_parents, link) {
@@ -865,7 +865,7 @@ void jmanager_focus_first_child(JWidget widget)
   JWidget it;
 
   for (it=jwidget_get_window(widget); it; it=next_widget(it)) {
-    if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, TRUE))) {
+    if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true))) {
       jmanager_set_focus(it);
       break;
     }
@@ -1015,7 +1015,7 @@ void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_backgro
 	jregion_union(reg1, reg1, reg2);
 	jregion_free(reg2);
 
-	_jmanager_close_window(manager, reinterpret_cast<JWidget>(link->data), FALSE);
+	_jmanager_close_window(manager, reinterpret_cast<JWidget>(link->data), false);
       }
     }
   }
@@ -1069,30 +1069,30 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       assert(msg->deffree.widget_to_free != widget);
 
       jwidget_free(msg->deffree.widget_to_free);
-      return TRUE;
+      return true;
 
     case JM_REQSIZE:
       manager_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       manager_set_position(widget, &msg->setpos.rect);
-      return TRUE;
+      return true;
 
     case JM_DRAWRGN:
       manager_redraw_region(widget, msg->drawrgn.region);
-      return TRUE;
+      return true;
 
     case JM_DRAW:
       jdraw_rectfill(&msg->draw.rect, widget->theme->desktop_color);
-      return TRUE;
+      return true;
 
     case JM_KEYPRESSED:
     case JM_KEYRELEASED: {
       JLink link, link2;
 
-      msg->key.propagate_to_children = TRUE;
-      msg->key.propagate_to_parent = FALSE;
+      msg->key.propagate_to_children = true;
+      msg->key.propagate_to_parent = false;
 
       /* continue sending the message to the children of all windows
 	 (until a desktop or foreground window) */
@@ -1102,7 +1102,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	/* send to the window */
 	JI_LIST_FOR_EACH(w->children, link2)
 	  if (jwidget_send_message(reinterpret_cast<JWidget>(link2->data), msg))
-	    return TRUE;
+	    return true;
 
 	if (jwindow_is_foreground(w) ||
 	    jwindow_is_desktop(w))
@@ -1113,12 +1113,12 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       if (msg->type == JM_KEYPRESSED)
 	move_focus(widget, msg);
 
-      return TRUE;
+      return true;
     }
       
   }
 
-  return FALSE;
+  return false;
 }
 
 static void manager_request_size(JWidget widget, int *w, int *h)
@@ -1200,10 +1200,10 @@ static void manager_pump_queue(JWidget widget_manager)
     }
 
     /* this message is in use */
-    msg->any.used = TRUE;
+    msg->any.used = true;
     first_msg = msg;
 
-    done = FALSE;
+    done = false;
     JI_LIST_FOR_EACH(msg->any.widgets, link2) {
       widget = reinterpret_cast<JWidget>(link2->data);
 
@@ -1400,12 +1400,12 @@ static void generate_proc_windows_list2(JWidget widget)
 static int some_parent_is_focusrest(JWidget widget)
 {
   if (jwidget_is_focusrest(widget))
-    return TRUE;
+    return true;
 
   if (widget->parent)
     return some_parent_is_focusrest(widget->parent);
   else
-    return FALSE;
+    return false;
 }
 
 static JWidget find_magnetic_widget(JWidget widget)
@@ -1436,9 +1436,9 @@ static JMessage new_mouse_msg(int type, JWidget widget)
   msg->mouse.flags =
     type == JM_BUTTONRELEASED ? jmouse_b(1):
 				jmouse_b(0);
-  msg->mouse.left = msg->mouse.flags & 1 ? TRUE: FALSE;
-  msg->mouse.right = msg->mouse.flags & 2 ? TRUE: FALSE;
-  msg->mouse.middle = msg->mouse.flags & 4 ? TRUE: FALSE;
+  msg->mouse.left = msg->mouse.flags & 1 ? true: false;
+  msg->mouse.right = msg->mouse.flags & 2 ? true: false;
+  msg->mouse.middle = msg->mouse.flags & 4 ? true: false;
 
   if (widget != NULL)
     jmessage_add_dest(msg, widget);
@@ -1488,7 +1488,7 @@ static bool move_focus(JWidget manager, JMessage msg)
   int (*cmp)(JWidget, int, int) = NULL;
   JWidget focus = NULL;
   JWidget it, *list;
-  bool ret = FALSE;
+  bool ret = false;
   JWidget window;
   int c, count;
 
@@ -1514,12 +1514,12 @@ static bool move_focus(JWidget manager, JMessage msg)
 
     /* list's 1st element is the focused widget */
     for (it=focus_widget; it; it=next_widget(it)) {
-      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, TRUE)))
+      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true)))
 	list[c++] = it;
     }
 
     for (it=window; it != focus_widget; it=next_widget(it)) {
-      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, TRUE)))
+      if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true)))
 	list[c++] = it;
     }
 
@@ -1535,7 +1535,7 @@ static bool move_focus(JWidget manager, JMessage msg)
         else if (count > 1) {
           focus = list[1];
         }
-        ret = TRUE;
+        ret = true;
         break;
 
       /* arrow keys */
@@ -1579,7 +1579,7 @@ static bool move_focus(JWidget manager, JMessage msg)
         else
           focus = list[0];
 
-        ret = TRUE;
+        ret = true;
         break;
     }
 
@@ -1611,10 +1611,10 @@ static bool childs_accept_focus(JWidget widget, bool first)
   JLink link;
 
   JI_LIST_FOR_EACH(widget->children, link)
-    if (childs_accept_focus(reinterpret_cast<JWidget>(link->data), FALSE))
-      return TRUE;
+    if (childs_accept_focus(reinterpret_cast<JWidget>(link->data), false))
+      return true;
 
-  return first ? FALSE: ACCEPT_FOCUS(widget);
+  return first ? false: ACCEPT_FOCUS(widget);
 }
 
 static JWidget next_widget(JWidget widget)

@@ -104,19 +104,16 @@ Palette *load_col_file(const char *filename)
 /* saves an Animator Pro COL file */
 bool save_col_file(Palette *pal, const char *filename)
 {
-  ase_uint32 c;
-  FILE *f;
-  int i;
-
-  f = fopen(filename, "wb");
+  FILE *f = fopen(filename, "wb");
   if (!f)
-    return -1;
+    return false;
 
   fputl(8+768, f);		   /* file size */
   fputw(PROCOL_MAGIC_NUMBER, f);   /* file format identifier */
   fputw(0, f);			   /* version file */
 
-  for (i=0; i<MAX_PALETTE_COLORS; i++) {
+  ase_uint32 c;
+  for (int i=0; i<MAX_PALETTE_COLORS; i++) {
     c = palette_get_entry(pal, i);
 
     fputc(_rgba_getr(c), f);
@@ -127,5 +124,5 @@ bool save_col_file(Palette *pal, const char *filename)
   }
 
   fclose(f);
-  return 0;
+  return true;
 }

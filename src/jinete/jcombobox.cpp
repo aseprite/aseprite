@@ -80,9 +80,9 @@ JWidget jcombobox_new()
   combobox->window = NULL;
   combobox->items = jlist_new();
   combobox->selected = 0;
-  combobox->editable = FALSE;
-  combobox->clickopen = TRUE;
-  combobox->casesensitive = TRUE;
+  combobox->editable = false;
+  combobox->clickopen = true;
+  combobox->casesensitive = true;
 
   combobox->entry->user_data[0] = widget;
   combobox->button->user_data[0] = widget;
@@ -90,11 +90,11 @@ JWidget jcombobox_new()
   /* TODO this separation should be from the JTheme */
   widget->child_spacing = 0;
 
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_add_hook(widget, JI_COMBOBOX, combobox_msg_proc, combobox);
   jwidget_add_hook(combobox->entry, JI_WIDGET, combobox_entry_msg_proc, NULL);
 
-  jwidget_expansive(combobox->entry, TRUE);
+  jwidget_expansive(combobox->entry, true);
   jbutton_set_bevel(combobox->button, 0, 2, 0, 2);
   jbutton_add_command_data(combobox->button, combobox_button_cmd, widget);
 
@@ -115,11 +115,11 @@ void jcombobox_editable(JWidget widget, bool state)
   combobox->editable = state;
 
   if (state) {
-    jentry_readonly(combobox->entry, FALSE);
+    jentry_readonly(combobox->entry, false);
     jentry_show_cursor(combobox->entry);
   }
   else {
-    jentry_readonly(combobox->entry, TRUE);
+    jentry_readonly(combobox->entry, true);
     jentry_hide_cursor(combobox->entry);
   }
 }
@@ -332,7 +332,7 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
       msg->reqsize.w += w;
       msg->reqsize.h = MAX(msg->reqsize.h, h);
 
-      return TRUE;
+      return true;
     }
 
     case JM_SETPOS: {
@@ -352,7 +352,7 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
       jwidget_set_rect(combobox->entry, cbox);
 
       jrect_free(cbox);
-      return TRUE;
+      return true;
     }
       
     case JM_WINMOVE:
@@ -367,14 +367,14 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
       if (combobox->window != NULL) {
 	if (!jwidget_has_mouse(jwidget_get_view(combobox->listbox))) {
 	  combobox_close_window(widget);
-	  return TRUE;
+	  return true;
 	}
       }
       break;
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
@@ -390,14 +390,14 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
 	      msg->key.scancode == KEY_ENTER ||
 	      msg->key.scancode == KEY_ENTER_PAD) {
 	    combobox_switch_window(combo_widget);
-	    return TRUE;
+	    return true;
 	  }
 	}
 	else {
 	  if (msg->key.scancode == KEY_ENTER ||
 	      msg->key.scancode == KEY_ENTER_PAD) {
 	    combobox_switch_window(combo_widget);
-	    return TRUE;
+	    return true;
 	  }
 	}
       }
@@ -413,11 +413,11 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
 	jmanager_set_focus(widget);
       }
       else
-	return TRUE;
+	return true;
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
@@ -447,7 +447,7 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 	if (IS_VALID_ITEM(combo_widget, index))
 	  jwidget_emit_signal(combo_widget, JI_SIGNAL_COMBOBOX_SELECT);
       }
-      return TRUE;
+      return true;
 
 /*     case JM_IDLE: { */
 /*       /\* if the user clicks outside the listbox *\/ */
@@ -458,7 +458,7 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 /* 	    combobox->button && !jwidget_has_mouse(combobox->button) && */
 /* 	    combobox->window && !jwidget_has_mouse(combobox->window)) { */
 /* 	  combobox_close_window(combo_widget); */
-/* 	  return TRUE; */
+/* 	  return true; */
 /* 	} */
 /*       } */
 /*       break; */
@@ -470,13 +470,13 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 	    msg->key.scancode == KEY_ENTER ||
 	    msg->key.scancode == KEY_ENTER_PAD) {
 	  combobox_close_window(combo_widget);
-	  return TRUE;
+	  return true;
 	}
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void combobox_button_cmd(JWidget widget, void *data)
@@ -507,7 +507,7 @@ static void combobox_open_window(JWidget widget)
 			jlistitem_new(item->text));
     }
 
-    jwindow_ontop(combobox->window, TRUE);
+    jwindow_ontop(combobox->window, true);
     jwidget_noborders(combobox->window);
 
     size = jlist_length(combobox->items);

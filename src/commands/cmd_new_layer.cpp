@@ -34,7 +34,7 @@ static int get_max_layer_num(Layer* layer);
 static bool cmd_new_layer_enabled(const char* argument)
 {
   const CurrentSpriteReader sprite;
-  return sprite;
+  return sprite.is_valid();
 }
 
 static void cmd_new_layer_execute(const char* argument)

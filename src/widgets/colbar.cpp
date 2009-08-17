@@ -482,7 +482,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	  if (sprite != NULL)
 	    update_editors_with_sprite(sprite);
 	}
-	catch (locked_sprite_exception& e) {
+	catch (locked_sprite_exception&) {
 	  // do nothing
 	}
 

@@ -93,7 +93,7 @@ static void make_horiz_segs     (gint          start,
 				 gint          scanline,
 				 gint          empty[],
 				 gint          num_empty,
-				 gint          top);
+				 gboolean      top);
 static void generate_boundary   (PixelRegion  *PR,
 				 BoundaryType  type,
 				 gint          x1,
@@ -306,7 +306,7 @@ make_horiz_segs (gint start,
 		 gint scanline,
 		 gint empty[],
 		 gint num_empty,
-		 gint top)
+		 gboolean top)
 {
   gint empty_index;
   gint e_s, e_e;    /* empty segment start and end values */
@@ -383,9 +383,9 @@ generate_boundary (PixelRegion  *PR,
       for (i = 1; i < num_empty_c - 1; i += 2)
 	{
 	  make_horiz_segs (empty_segs_c [i], empty_segs_c [i+1],
-			   scanline, empty_segs_l, num_empty_l, 1);
+			   scanline, empty_segs_l, num_empty_l, true);
 	  make_horiz_segs (empty_segs_c [i], empty_segs_c [i+1],
-			   scanline+1, empty_segs_n, num_empty_n, 0);
+			   scanline+1, empty_segs_n, num_empty_n, false);
 	}
 
       /*  get the next scanline of empty segments, swap others  */

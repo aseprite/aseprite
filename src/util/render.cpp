@@ -283,7 +283,7 @@ Image *render_sprite(Sprite *sprite,
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   Layer *background = sprite_get_background_layer(sprite);
-  bool need_grid = (background != NULL ? !layer_is_readable(background): TRUE);
+  bool need_grid = (background != NULL ? !layer_is_readable(background): true);
   int depth;
   Image *image;
 

@@ -69,7 +69,7 @@ enum {
   EDIT_DRAWING,
 };
 
-static int use_dither = FALSE;
+static bool use_dither = false;
 
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 static bool editor_msg_proc(JWidget widget, JMessage msg);

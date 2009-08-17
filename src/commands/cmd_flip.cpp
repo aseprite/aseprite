@@ -59,7 +59,7 @@ static void cmd_flip_execute(const char *argument)
 						     "Flip Canvas Vertical"));
 
     if (flip_mask) {
-      Image *image, *area;
+      Image* image;
       int x1, y1, x2, y2;
       int x, y;
 

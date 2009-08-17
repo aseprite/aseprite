@@ -199,7 +199,7 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
 static bool cmd_save_file_enabled(const char *argument)
 {
   const CurrentSpriteReader sprite;
-  return sprite;
+  return sprite.is_valid();
 }
 
 /**

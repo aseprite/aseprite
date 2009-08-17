@@ -164,7 +164,7 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy);
 void jwidget_signal_on(JWidget widget);
 void jwidget_signal_off(JWidget widget);
 
-int jwidget_emit_signal(JWidget widget, int signal_num);
+bool jwidget_emit_signal(JWidget widget, int signal_num);
 
 /* manager handler */
 

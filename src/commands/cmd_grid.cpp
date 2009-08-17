@@ -37,7 +37,7 @@ static bool cmd_show_grid_checked(const char *argument)
 
 static void cmd_show_grid_execute(const char *argument)
 {
-  set_view_grid(get_view_grid() ? FALSE: TRUE);
+  set_view_grid(get_view_grid() ? false: true);
   refresh_all_editors();
 }
 
@@ -54,7 +54,7 @@ static void cmd_snap_to_grid_execute(const char *argument)
 {
   char buf[512];
 
-  set_use_grid(get_use_grid() ? FALSE: TRUE);
+  set_use_grid(get_use_grid() ? false: true);
   refresh_all_editors();
 
   usprintf(buf, _("Snap to grid: %s"),

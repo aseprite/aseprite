@@ -52,7 +52,7 @@ JWidget jtextbox_new(const char *text, int align)
   JWidget widget = jwidget_new(JI_TEXTBOX);
 
   jwidget_add_hook(widget, JI_TEXTBOX, textbox_msg_proc, NULL);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_set_align(widget, align);
   jwidget_set_text(widget, text);
 
@@ -67,7 +67,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       textbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT) {
@@ -126,11 +126,11 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
 	    default:
 	      jrect_free(vp);
-	      return FALSE;
+	      return false;
 	  }
 	  jrect_free(vp);
 	}
-	return TRUE;
+	return true;
       }
       break;
 
@@ -139,7 +139,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       if (view) {
 	jwidget_hard_capture_mouse(widget);
 	jmouse_set_cursor(JI_CURSOR_SCROLL);
-	return TRUE;
+	return true;
       }
       break;
     }
@@ -166,7 +166,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       if (view && jwidget_has_capture(widget)) {
 	jwidget_release_mouse(widget);
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
-	return TRUE;
+	return true;
       }
       break;
     }
@@ -187,7 +187,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 static void textbox_request_size(JWidget widget, int *w, int *h)

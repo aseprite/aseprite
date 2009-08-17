@@ -55,7 +55,7 @@ JWidget jlistbox_new()
   JWidget widget = jwidget_new(JI_LISTBOX);
 
   jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_init_theme(widget);
 
   return widget;
@@ -170,15 +170,15 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       listbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       listbox_set_position(widget, &msg->setpos.rect);
-      return TRUE;
+      return true;
 
     case JM_DIRTYCHILDREN:
       listbox_dirty_children(widget);
-      return TRUE;
+      return true;
 
     case JM_OPEN:
       jlistbox_center_scroll(widget);
@@ -191,7 +191,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget)) {
 	int select = jlistbox_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);
-	bool pick_item = TRUE;
+	bool pick_item = true;
 
 	if (view) {
 	  JRect vp = jview_get_viewport_position(view);
@@ -199,12 +199,12 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	  if (msg->mouse.y < vp->y1) {
 	    int num = MAX(1, (vp->y1 - msg->mouse.y) / 8);
 	    jlistbox_select_index(widget, select-num);
-	    pick_item = FALSE;
+	    pick_item = false;
 	  }
 	  else if (msg->mouse.y >= vp->y2) {
 	    int num = MAX(1, (msg->mouse.y - (vp->y2-1)) / 8);
 	    jlistbox_select_index(widget, select+num);
-	    pick_item = FALSE;
+	    pick_item = false;
 	  }
 
 	  jrect_free(vp);
@@ -226,7 +226,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	    jlistbox_select_child(widget, picked);
 	}
 
-	return TRUE;
+	return true;
       }
       break;
 
@@ -299,20 +299,20 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 	    }
 	    break;
 	  default:
-	    return FALSE;
+	    return false;
 	}
 
 	jlistbox_select_index(widget, MID(0, select, bottom));
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_DOUBLECLICK:
       jwidget_emit_signal(widget, JI_SIGNAL_LISTBOX_SELECT);
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void listbox_request_size(JWidget widget, int *w, int *h)
@@ -392,7 +392,7 @@ static bool listitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       listitem_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SETPOS: {
       JRect crect;
@@ -405,11 +405,11 @@ static bool listitem_msg_proc(JWidget widget, JMessage msg)
 	jwidget_set_rect(reinterpret_cast<JWidget>(link->data), crect);
 
       jrect_free(crect);
-      return TRUE;
+      return true;
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 static void listitem_request_size(JWidget widget, int *w, int *h)

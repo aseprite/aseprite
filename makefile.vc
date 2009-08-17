@@ -24,7 +24,7 @@ OBJ_DIR = obj/msvc
 include makefile.lst
 
 CFLAGS = -nologo						\
-         -I. -Isrc -Ithird_party -W1 -Gd -EHa			\
+         -I. -Isrc -Ithird_party -W3 -Gd -EHa			\
 	 -I$(LIBFREETYPE_DIR)/include				\
 	 -I$(LIBJPEG_DIR)					\
 	 -I$(LIBPNG_DIR)					\

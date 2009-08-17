@@ -85,7 +85,7 @@ static bool onionskin;
 
 static color_t cursor_color;
 static int _cursor_color;
-static int _cursor_mask;
+static bool _cursor_mask;
 
 /***********************************************************/
 /* INKS                                                    */

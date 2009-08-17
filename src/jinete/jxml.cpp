@@ -576,7 +576,7 @@ static JXmlElem read_elem(char *elem_string)
       char *name_beg = s;	/* here the name begins */
       char *name;
       char *value = NULL;
-      bool translatable = FALSE;
+      bool translatable = false;
 
       /* read the attribute-name */
       while (*s && !IS_BLANK(*s) && *s != '=')

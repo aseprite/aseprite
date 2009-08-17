@@ -42,7 +42,7 @@ static BITMAP *old_bmp;
 
 bool is_rec_screen()
 {
-  return rec_file ? TRUE: FALSE;
+  return rec_file ? true: false;
 }
 
 void rec_screen_on()

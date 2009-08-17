@@ -66,7 +66,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
 
       msg->reqsize.w = widget->border_width.l + jrect_w(&box) + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + jrect_h(&box) + widget->border_width.b;
-      return TRUE;
+      return true;
     }
 
     case JM_DRAW: {
@@ -81,9 +81,9 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
 
       blit(bmp, ji_screen, 0, 0,
 	   icon.x1, icon.y1, jrect_w(&icon), jrect_h(&icon));
-      return TRUE;
+      return true;
     }
   }
 
-  return FALSE;
+  return false;
 }

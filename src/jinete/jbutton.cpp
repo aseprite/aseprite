@@ -94,7 +94,7 @@ JWidget ji_generic_button_new(const char *text,
   jwidget_add_hook(widget, behavior_type, button_msg_proc, button);
   jwidget_set_align(widget, JI_CENTER | JI_MIDDLE);
   jwidget_set_text(widget, text);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_init_theme(widget);
 
   return widget;
@@ -171,7 +171,7 @@ void jbutton_add_command(JWidget widget,
   Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
   ButtonCommand* command = (ButtonCommand*)jnew(ButtonCommand, 1);
 
-  command->use_data = FALSE;
+  command->use_data = false;
   command->proc = (void *)command_proc;
   command->data = NULL;
 
@@ -186,7 +186,7 @@ void jbutton_add_command_data(JWidget widget,
   Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
   ButtonCommand* command = jnew(ButtonCommand, 1);
 
-  command->use_data = TRUE;
+  command->use_data = true;
   command->proc = (void *)command_proc;
   command->data = data;
 
@@ -262,7 +262,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       button_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SIGNAL:
       if (widget->type == JI_RADIO) {
@@ -302,14 +302,14 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 		(msg->key.scancode == KEY_ENTER_PAD) ||
 		(msg->key.scancode == KEY_SPACE)) {
 	      jwidget_select(widget);
-	      return TRUE;
+	      return true;
 	    }
 	  }
 	  /* the underscored letter with Alt */
 	  if ((msg->any.shifts & KB_ALT_FLAG) &&
 	      (jwidget_check_underscored(widget, msg->key.scancode))) {
 	    jwidget_select(widget);
-	    return TRUE;
+	    return true;
 	  }
 	  /* magnetic */
 	  else if (jwidget_is_magnetic(widget) &&
@@ -322,7 +322,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	    jmanager_dispatch_messages(ji_get_default_manager());
 
 	    jwidget_select(widget);
-	    return TRUE;
+	    return true;
 	  }
 	}
 	/* for JI_CHECK or JI_RADIO */
@@ -350,7 +350,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 		jwidget_emit_signal(widget, JI_SIGNAL_RADIO_CHANGE);
 	      }
 	    }
-	    return TRUE;
+	    return true;
 	  }
 	}
       }
@@ -361,7 +361,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	if (widget->type == JI_BUTTON) {
 	  if (jwidget_is_selected(widget)) {
 	    button_selected_signal(widget);
-	    return TRUE;
+	    return true;
 	  }
 	}
       }
@@ -375,7 +375,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	    jwidget_select(widget);
 	    jwidget_capture_mouse(widget);
 	  }
-	  return TRUE;
+	  return true;
 
 	case JI_CHECK:
 	  if (jwidget_is_enabled(widget)) {
@@ -386,7 +386,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
 	    jwidget_capture_mouse(widget);
 	  }
-	  return TRUE;
+	  return true;
 
 	case JI_RADIO:
 	  if (jwidget_is_enabled(widget)) {
@@ -398,7 +398,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	      jwidget_capture_mouse(widget);
 	    }
 	  }
-	  return TRUE;
+	  return true;
       }
       break;
 
@@ -425,7 +425,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	      break;
 	  }
 	}
-	return TRUE;
+	return true;
       }
       break;
 
@@ -448,7 +448,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void button_request_size(JWidget widget, int *w, int *h)
@@ -487,21 +487,19 @@ static void button_request_size(JWidget widget, int *w, int *h)
 
 static void button_selected_signal(JWidget widget)
 {
-  bool used;
-
-  /* deselect */
+  // deselect
   jwidget_deselect(widget);
 
-  /* emit the signal */
-  used = jwidget_emit_signal(widget, JI_SIGNAL_BUTTON_SELECT);
+  // emit the signal
+  bool used = jwidget_emit_signal(widget, JI_SIGNAL_BUTTON_SELECT);
 
-  /* not used? */
+  // not used?
   if (!used) {
     Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
 
     /* call commands */
     if (!jlist_empty(button->commands)) {
-      ButtonCommand *command;
+      ButtonCommand* command;
       JLink link;
 
       JI_LIST_FOR_EACH(button->commands, link) {

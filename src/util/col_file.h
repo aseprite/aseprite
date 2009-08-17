@@ -19,10 +19,9 @@
 #ifndef UTIL_COL_FILE_H
 #define UTIL_COL_FILE_H
 
-struct Palette;
+class Palette;
 
-struct Palette *load_col_file(const char *filename);
-bool save_col_file(struct Palette *pal, const char *filename);
+Palette* load_col_file(const char* filename);
+bool save_col_file(Palette* pal, const char* filename);
 
-#endif /* UTIL_COL_FILE_H */
-
+#endif // UTIL_COL_FILE_H

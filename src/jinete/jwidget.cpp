@@ -415,28 +415,28 @@ bool jwidget_is_magnetic(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_MAGNETIC) ? TRUE: FALSE;
+  return (widget->flags & JI_MAGNETIC) ? true: false;
 }
 
 bool jwidget_is_expansive(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_EXPANSIVE) ? TRUE: FALSE;
+  return (widget->flags & JI_EXPANSIVE) ? true: false;
 }
 
 bool jwidget_is_decorative(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_DECORATIVE) ? TRUE: FALSE;
+  return (widget->flags & JI_DECORATIVE) ? true: false;
 }
 
 bool jwidget_is_focusrest(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_FOCUSREST) ? TRUE: FALSE;
+  return (widget->flags & JI_FOCUSREST) ? true: false;
 }
 
 /**********************************************************************/
@@ -543,12 +543,12 @@ bool jwidget_is_hidden(JWidget widget)
 
   do {
     if (widget->flags & JI_HIDDEN)
-      return TRUE;
+      return true;
 
     widget = widget->parent;
   } while (widget);
 
-  return FALSE;
+  return false;
 }
 
 bool jwidget_is_enabled(JWidget widget)
@@ -564,19 +564,19 @@ bool jwidget_is_disabled(JWidget widget)
 
   do {
     if (widget->flags & JI_DISABLED)
-      return TRUE;
+      return true;
 
     widget = widget->parent;
   } while (widget);
 
-  return FALSE;
+  return false;
 }
 
 bool jwidget_is_selected(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_SELECTED) ? TRUE: FALSE;
+  return (widget->flags & JI_SELECTED) ? true: false;
 }
 
 bool jwidget_is_deselected(JWidget widget)
@@ -593,21 +593,21 @@ bool jwidget_has_focus(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_HASFOCUS) ? TRUE: FALSE;
+  return (widget->flags & JI_HASFOCUS) ? true: false;
 }
 
 bool jwidget_has_mouse(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_HASMOUSE) ? TRUE: FALSE;
+  return (widget->flags & JI_HASMOUSE) ? true: false;
 }
 
 bool jwidget_has_capture(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return (widget->flags & JI_HASCAPTURE) ? TRUE: FALSE;
+  return (widget->flags & JI_HASCAPTURE) ? true: false;
 }
 
 /**********************************************************************/
@@ -715,7 +715,7 @@ JWidget jwidget_get_manager(JWidget widget)
 }
 
 /* returns a list of parents (you must free the list), if "ascendant"
-   is TRUE the list is build from child to parents, else the list is
+   is true the list is build from child to parents, else the list is
    from parent to children */
 JList jwidget_get_parents(JWidget widget, bool ascendant)
 {
@@ -771,7 +771,7 @@ bool jwidget_has_child(JWidget widget, JWidget child)
   assert_valid_widget(widget);
   assert_valid_widget(child);
 
-  return jlist_find(widget->children, child) != widget->children->end ? TRUE: FALSE;
+  return jlist_find(widget->children, child) != widget->children->end ? true: false;
 }
 
 /**********************************************************************/
@@ -1303,13 +1303,13 @@ void jwidget_signal_off(JWidget widget)
   widget->emit_signals++;
 }
 
-int jwidget_emit_signal(JWidget widget, int signal_num)
+bool jwidget_emit_signal(JWidget widget, int signal_num)
 {
   assert_valid_widget(widget);
 
   if (!widget->emit_signals) {
     JMessage msg;
-    int ret;
+    bool ret;
 
 #ifdef REPORT_SIGNALS
     printf("Signal: %d (%d)\n", signal_num, widget->id);
@@ -1332,7 +1332,7 @@ int jwidget_emit_signal(JWidget widget, int signal_num)
     return ret;
   }
   else
-    return 0;
+    return false;
 }
 
 /**********************************************************************/
@@ -1347,7 +1347,7 @@ int jwidget_emit_signal(JWidget widget, int signal_num)
 
 bool jwidget_send_message(JWidget widget, JMessage msg)
 {
-  bool done = FALSE;
+  bool done = false;
   JHook hook;
   JLink link;
 
@@ -1364,8 +1364,8 @@ bool jwidget_send_message(JWidget widget, JMessage msg)
 
 bool jwidget_send_message_after_type(JWidget widget, JMessage msg, int type)
 {
-  bool done = FALSE;
-  bool send = FALSE;
+  bool done = false;
+  bool send = false;
   JHook hook;
   JLink link;
 
@@ -1376,7 +1376,7 @@ bool jwidget_send_message_after_type(JWidget widget, JMessage msg, int type)
     hook = reinterpret_cast<JHook>(link->data);
 
     if (hook->type == type) {
-      send = TRUE;
+      send = true;
       continue;
     }
     else if (!send)
@@ -1493,7 +1493,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
   else if (scancode >= KEY_A && scancode <= KEY_Z)
     ascii = 'a' + (scancode - KEY_A);
   else
-    return FALSE;
+    return false;
 
   if (widget->has_text()) {
     const char* text = widget->text();
@@ -1501,10 +1501,10 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
     for (c=0; text[c]; c++)
       if ((text[c] == '&') && (text[c+1] != '&'))
 	if (ascii == tolower(text[c+1]))
-	  return TRUE;
+	  return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 /**********************************************************************/
@@ -1531,14 +1531,14 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW:
       if (widget->draw_method) {
 	(*widget->draw_method)(widget, &msg->draw.rect);
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_REQSIZE:
       msg->reqsize.w = widget->min_w;
       msg->reqsize.h = widget->min_h;
-      return TRUE;
+      return true;
 
     case JM_SETPOS: {
       JRect cpos;
@@ -1552,13 +1552,13 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
 	jwidget_set_rect(reinterpret_cast<JWidget>(link->data), cpos);
 
       jrect_free(cpos);
-      return TRUE;
+      return true;
     }
 
     case JM_DRAWRGN:
 #if 0
       {
-	int redraw = FALSE;
+	int redraw = false;
 	JRegion region2;
 	JMessage msg2;
 	JRect rect;
@@ -1571,7 +1571,7 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
 	      (widget->rc->y <= rect->y+rect->h-1) &&
 	      (widget->rc->x+widget->rc->w-1 >= rect->x) &&
 	      (widget->rc->y+widget->rc->h-1 >= rect->y)) {
-	    redraw = TRUE;
+	    redraw = true;
 	    break;
 	  }
 	}
@@ -1605,7 +1605,7 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
       if (!(widget->flags & JI_HIDDEN)) /* is visible? */
 	jwidget_invalidate_region(widget, msg->drawrgn.region);
 #endif
-      return TRUE;
+      return true;
 
     case JM_DIRTYCHILDREN: {
       JLink link;
@@ -1613,7 +1613,7 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
       JI_LIST_FOR_EACH(widget->children, link)
 	jwidget_dirty(reinterpret_cast<JWidget>(link->data));
 
-      return TRUE;
+      return true;
     }
 
     case JM_KEYPRESSED:
@@ -1649,10 +1649,10 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
 	return jwidget_send_message(widget->parent, msg);
       else {
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
-	return TRUE;
+	return true;
       }
 
   }
 
-  return FALSE;
+  return false;
 }

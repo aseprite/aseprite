@@ -27,11 +27,11 @@
 #include "raster/palette.h"
 
 static struct {
-  bool tiled;
+  tiled_t tiled;
   int w, h;
   int ncolors;
   unsigned char *channel[4];
-} data = { FALSE, 0, 0, 0, { NULL, NULL, NULL, NULL } };
+} data = { TILED_NONE, 0, 0, 0, { NULL, NULL, NULL, NULL } };
 
 void set_median_size(int w, int h)
 {

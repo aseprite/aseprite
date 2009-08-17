@@ -23,7 +23,7 @@
 
 #include "jinete/jbase.h"
 
-struct Palette;
+class Palette;
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
@@ -34,10 +34,10 @@ enum {
   PALETTE_EDITOR_RANGE_RECTANGULAR,
 };
 
-JWidget paledit_new(struct Palette *palette, bool editable, int boxsize);
+JWidget paledit_new(Palette* palette, bool editable, int boxsize);
 int paledit_type();
 
-struct Palette *paledit_get_palette(JWidget widget);
+Palette* paledit_get_palette(JWidget widget);
 int paledit_get_range_type(JWidget widget);
 
 int paledit_get_columns(JWidget widget);
@@ -53,4 +53,4 @@ int paledit_get_1st_color(JWidget widget);
 int paledit_get_2nd_color(JWidget widget);
 void paledit_get_selected_entries(JWidget widget, bool array[256]);
 
-#endif /* WIDGETS_PALEDIT_H */
+#endif // WIDGETS_PALEDIT_H

@@ -167,7 +167,7 @@ void _jmemleak_exit()
     line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
 
     HANDLE hproc = ::GetCurrentProcess();
-    ::SymInitialize(hproc, NULL, FALSE);
+    ::SymInitialize(hproc, NULL, false);
 
     char filename[MAX_PATH];
     ::GetModuleFileName(NULL, filename, sizeof filename);

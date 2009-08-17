@@ -33,7 +33,7 @@
 static bool cmd_duplicate_sprite_enabled(const char *argument)
 {
   const CurrentSpriteReader sprite;
-  return sprite;
+  return sprite.is_valid();
 }
 
 static void cmd_duplicate_sprite_execute(const char *argument)

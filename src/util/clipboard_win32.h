@@ -32,7 +32,7 @@
  */
 static bool win32_clipboard_contains_bitmap()
 {
-  return IsClipboardFormatAvailable(CF_DIB);
+  return IsClipboardFormatAvailable(CF_DIB) ? true: false;
 }
 
 /**

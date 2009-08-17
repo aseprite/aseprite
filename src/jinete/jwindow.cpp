@@ -64,7 +64,7 @@ static JRect click_pos = NULL;
 static int press_x, press_y;
 static int window_action = WINDOW_NONE;
 
-static JWidget window_new(int desktop, const char *text);
+static JWidget window_new(bool desktop, const char *text);
 static bool window_msg_proc(JWidget widget, JMessage msg);
 static void window_request_size(JWidget widget, int *w, int *h);
 static void window_set_position(JWidget widget, JRect rect);
@@ -76,17 +76,17 @@ static void displace_widgets(JWidget widget, int x, int y);
 
 bool _jwindow_is_moving()
 {
-  return (window_action == WINDOW_MOVE) ? TRUE: FALSE;
+  return (window_action == WINDOW_MOVE) ? true: false;
 }
 
 JWidget jwindow_new(const char *text)
 {
-  return window_new(FALSE, text);
+  return window_new(false, text);
 }
 
 JWidget jwindow_new_desktop()
 {
-  return window_new(TRUE, NULL);
+  return window_new(true, NULL);
 }
 
 JWidget jwindow_get_killer(JWidget widget)
@@ -131,7 +131,7 @@ void jwindow_remap(JWidget widget)
   JRect rect;
 
   if (window->is_autoremap) {
-    window->is_autoremap = FALSE;
+    window->is_autoremap = false;
     jwidget_show(widget);
   }
 
@@ -182,7 +182,7 @@ void jwindow_position(JWidget widget, int x, int y)
 
 void jwindow_move(JWidget widget, JRect rect)
 {
-  move_window(widget, rect, TRUE);
+  move_window(widget, rect, true);
 }
 
 void jwindow_open(JWidget widget)
@@ -205,14 +205,14 @@ void jwindow_open_fg(JWidget widget)
   jwindow_open(widget);
   manager = jwidget_get_manager(widget);
 
-  window->is_foreground = TRUE;
+  window->is_foreground = true;
 
   while (!(widget->flags & JI_HIDDEN)) {
     if (jmanager_generate_messages(manager))
       jmanager_dispatch_messages(manager);
   }
 
-  window->is_foreground = FALSE;
+  window->is_foreground = false;
 }
 
 void jwindow_open_bg(JWidget widget)
@@ -226,7 +226,7 @@ void jwindow_close(JWidget widget, JWidget killer)
 
   window->killer = killer;
 
-  _jmanager_close_window(jwidget_get_manager(widget), widget, TRUE);
+  _jmanager_close_window(jwidget_get_manager(widget), widget, true);
 }
 
 bool jwindow_is_toplevel(JWidget widget)
@@ -267,7 +267,7 @@ bool jwindow_is_wantfocus(JWidget widget)
   return window->is_wantfocus;
 }
 
-static JWidget window_new(int desktop, const char *text)
+static JWidget window_new(bool desktop, const char *text)
 {
   JWidget widget = jwidget_new(JI_WINDOW);
   Window *window = jnew(Window, 1);
@@ -276,10 +276,10 @@ static JWidget window_new(int desktop, const char *text)
   window->is_desktop = desktop;
   window->is_moveable = !desktop;
   window->is_sizeable = !desktop;
-  window->is_ontop = FALSE;
-  window->is_wantfocus = TRUE;
-  window->is_foreground = FALSE;
-  window->is_autoremap = TRUE;
+  window->is_ontop = false;
+  window->is_wantfocus = true;
+  window->is_foreground = false;
+  window->is_autoremap = true;
 
   jwidget_hide(widget);
   jwidget_add_hook(widget, JI_WINDOW, window_msg_proc, window);
@@ -298,17 +298,17 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      _jmanager_close_window(jwidget_get_manager(widget), widget, FALSE);
+      _jmanager_close_window(jwidget_get_manager(widget), widget, false);
       jfree(window);
       break;
 
     case JM_REQSIZE:
       window_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       window_set_position(widget, &msg->setpos.rect);
-      return TRUE;
+      return true;
 
     case JM_OPEN:
       window->killer = NULL;
@@ -337,7 +337,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	  jrect_copy(click_pos, widget->rc);
 
 	jwidget_hard_capture_mouse(widget);
-	return TRUE;
+	return true;
       }
       else
 	break;
@@ -354,7 +354,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	window_action = WINDOW_NONE;
-	return TRUE;
+	return true;
       }
       break;
 
@@ -371,7 +371,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	  JRect rect = jrect_new(x, y,
 				 x+jrect_w(widget->rc),
 				 y+jrect_h(widget->rc));
-	  move_window(widget, rect, TRUE);
+	  move_window(widget, rect, true);
 	  jrect_free(rect);
 	}
 	else {
@@ -406,7 +406,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 
 	    {
 	      JRect rect = jrect_new(x, y, x+w, y+h); 
-	      move_window(widget, rect, FALSE);
+	      move_window(widget, rect, false);
 	      jrect_free(rect);
 
 	      jwidget_emit_signal(widget, JI_SIGNAL_WINDOW_RESIZE);
@@ -457,13 +457,13 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	  cursor = JI_CURSOR_SIZE_B;
 
 	jmouse_set_cursor(cursor);
-	return TRUE;
+	return true;
       }
       break;
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void window_request_size(JWidget widget, int *w, int *h)

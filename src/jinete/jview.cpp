@@ -79,7 +79,7 @@ JWidget jview_new()
   view->viewport = viewport_new();
   view->scrollbar_h = scrollbar_new(JI_HORIZONTAL);
   view->scrollbar_v = scrollbar_new(JI_VERTICAL);
-  view->hasbars = TRUE;
+  view->hasbars = true;
   view->wherepos = 0;
   view->whereclick = 0;
 
@@ -138,7 +138,7 @@ void jview_without_bars(JWidget widget)
 {
   View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
 
-  view->hasbars = FALSE;
+  view->hasbars = false;
 
   jview_update(widget);
 }
@@ -386,7 +386,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static JWidget viewport_new()
@@ -489,7 +489,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       View* view = reinterpret_cast<View*>(jwidget_get_data(widget->parent, JI_VIEW));
       int x1, y1, x2, y2;
       int u1, v1, u2, v2;
-      int ret = FALSE;
+      bool ret = false;
       int pos, len;
 
       jtheme_scrollbar_info(widget, &pos, &len);
@@ -518,14 +518,14 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 	  jview_set_scroll(widget->parent,
 			   view->scroll_x - jrect_w(view->viewport->rc)/2,
 			   view->scroll_y);
-	  ret = TRUE;
+	  ret = true;
 	}
 	/* right */
 	else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
 	  jview_set_scroll(widget->parent,
 			   view->scroll_x + jrect_w(view->viewport->rc)/2,
 			   view->scroll_y);
-	  ret = TRUE;
+	  ret = true;
 	}
       }
       else {
@@ -538,14 +538,14 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 	  jview_set_scroll(widget->parent,
 			   view->scroll_x,
 			   view->scroll_y - jrect_h(view->viewport->rc)/2);
-	  ret = TRUE;
+	  ret = true;
 	}
 	/* right */
 	else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
 	  jview_set_scroll(widget->parent,
 			   view->scroll_x,
 			   view->scroll_y + jrect_h(view->viewport->rc)/2);
-	  ret = TRUE;
+	  ret = true;
 	}
       }
 
@@ -554,6 +554,8 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 
       jwidget_select(widget);
       jwidget_hard_capture_mouse(widget);
+
+      // continue to JM_MOTION handler...
     }
 
     case JM_MOTION:
@@ -601,7 +603,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void scrollbar_info(JWidget widget, int *_pos, int *_len,
