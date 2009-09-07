@@ -2,6 +2,12 @@
 NEWS
 ===================================
 
+0.7.2
+-----
+
++ Fixed	bug #2847210: "Save" button when close a modified file was
+  not working.
+
 0.7.1
 -----
 

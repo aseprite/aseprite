@@ -1,3 +1,10 @@
+2009-09-03  David Capello  <davidcapello@gmail.com>
+
+	* Version 0.7.2 released.
+
+	* src/commands/cmd_close_file.cpp (close_current_sprite): Fixed
+	bug #2847210: "Save" button when close a modified file was not working.
+
 2009-08-10  David A. Capello  <davidcapello@gmail.com>
 
 	* Version 0.7.1 released.

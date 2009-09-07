@@ -74,33 +74,51 @@ static void cmd_close_all_files_execute(const char *argument)
  */
 static bool close_current_sprite()
 {
-  CurrentSpriteWriter sprite;
+  bool save_it;
 
-  /* see if the sprite has changes */
-  while (sprite_is_modified(sprite)) {
-    /* ask what want to do the user with the changes in the sprite */
-    int ret = jalert("%s<<%s<<%s||%s||%s||%s",
-		     _("Warning"), _("Saving changes in:"),
-		     get_filename(sprite->filename),
-		     _("&Save"), _("&Discard"), _("&Cancel"));
+try_again:;
+  // This flag indicates if we have to sabe the sprite before to destroy it
+  save_it = false;
+  {
+    // The sprite is locked as reader temporaly
+    CurrentSpriteReader sprite;
 
-    if (ret == 1) {
-      /* "save": save the changes */
-      // TODO we have to pass the sprite to the save file command
-      command_execute(command_get_by_name(CMD_SAVE_FILE), NULL);
-    }
-    else if (ret != 2) {
-      /* "cancel" or "ESC" */
-      return false; /* we back doing nothing */
-    }
-    else {
-      /* "discard" */
-      break;
+    /* see if the sprite has changes */
+    while (sprite_is_modified(sprite)) {
+      /* ask what want to do the user with the changes in the sprite */
+      int ret = jalert("%s<<%s<<%s||%s||%s||%s",
+		       _("Warning"), _("Saving changes in:"),
+		       get_filename(sprite->filename),
+		       _("&Save"), _("&Discard"), _("&Cancel"));
+
+      if (ret == 1) {
+	/* "save": save the changes */
+	save_it = true;
+	break;
+      }
+      else if (ret != 2) {
+	/* "cancel" or "ESC" */
+	return false; /* we back doing nothing */
+      }
+      else {
+	/* "discard" */
+	break;
+      }
     }
   }
 
-  /* closes the sprite */
-  sprite.destroy();
+  // Does we need to save the sprite?
+  if (save_it) {
+    // TODO we have to pass the sprite to the save file command
+    command_execute(command_get_by_name(CMD_SAVE_FILE), NULL);
+    goto try_again;
+  }
+
+  // Destroy the sprite (locking it as writer)
+  {
+    CurrentSpriteWriter sprite;
+    sprite.destroy();
+  }
   return true;
 }
 
