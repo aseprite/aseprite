@@ -75,7 +75,12 @@
 	    <key command="options" shortcut="Ctrl+Shift+O" />
 
 	    <!-- others -->
-	    <key command="eyedropper" shortcut="I" />
+	    <key command="eyedropper" shortcut="I">
+	      <param name="target" value="background" />
+	    </key>
+	    <key command="eyedropper" shortcut="Shift+I">
+	      <param name="target" value="foreground" />
+	    </key>
 	    <key command="switch_colors" shortcut="X" />
 	</commands>
 	<tools>
