@@ -1,5 +1,8 @@
 2009-10-08  David Capello  <davidcapello@gmail.com>
 
+	* src/modules/tools.cpp (tool_marker): Modified marquee tooltip.
+	Fixed bug #2874453 (thanks to Philippe Michael Groarke).
+
 	* src/core/dirs.cpp (filename_in_datadir): Modified folders to
 	load data on Mac OS X platform (thanks to Trent Gamblin).
 

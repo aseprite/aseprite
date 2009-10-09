@@ -439,7 +439,12 @@ static Tool tool_marker =
 {
   "rectangular_marquee",
   "Rectangular Marquee Tool",
-  "Rectangular Marquee Tool",
+  "Rectangular Marquee Tool:\n"
+  "* Left-button: add to current selection.\n"
+  "* Right-button: remove from current selection.\n"
+  "\nUsing Alt key:\n"
+  "* Left-button: replace the selection.\n"
+  "* Right-button: intersect with the selection.",
   TOOL_FIRST2LAST | TOOL_UPDATE_BOX,
   NULL,
   NULL,
