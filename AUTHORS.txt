@@ -5,6 +5,9 @@ AUTHORS
   David Capello <davidcapello@gmail.com>
   Programmer, designer, and maintainer.
 
+  Trent Gamblin
+  Mac OS X packager.
+
   Thanks for ideas, patches, bugs report and contributions to:
     Alex Winter
     Álvaro González (Kronoman X)
@@ -28,6 +31,7 @@ AUTHORS
     Nathan Smith (whitedoor)
     Nora Amendez
     Peter Wang (tjaden)
+    Philippe Michael Groarke
     Robert J Ohannessian (Bob)
     Scott Wilson
     Trent Gamblin (trentg)
