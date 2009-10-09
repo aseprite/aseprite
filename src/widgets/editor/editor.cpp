@@ -1067,7 +1067,7 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       /* call the eyedropper command */
       else if (editor->alt_pressed) {
 	Command* eyedropper_cmd = 
-	  CommandsModule::instance()->get_command_by_name(CommandId::eyedropper_tool);
+	  CommandsModule::instance()->get_command_by_name(CommandId::eyedropper);
 
 	Params params;
 	params.set("target", msg->mouse.right ? "background": "foreground");

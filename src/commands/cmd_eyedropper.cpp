@@ -32,9 +32,9 @@
 #include "widgets/editor.h"
 
 //////////////////////////////////////////////////////////////////////
-// eyedropper_tool
+// eyedropper
 
-class EyedropperToolCommand : public Command
+class EyedropperCommand : public Command
 {
   /**
    * True means "pick background color", false the foreground color.
@@ -42,30 +42,30 @@ class EyedropperToolCommand : public Command
   bool m_background;
 
 public:
-  EyedropperToolCommand();
-  Command* clone() const { return new EyedropperToolCommand(*this); }
+  EyedropperCommand();
+  Command* clone() const { return new EyedropperCommand(*this); }
 
 protected:
   void load_params(Params* params);
   void execute(Context* context);
 };
 
-EyedropperToolCommand::EyedropperToolCommand()
-  : Command("eyedropper_tool",
+EyedropperCommand::EyedropperCommand()
+  : Command("eyedropper",
 	    "Eyedropper",
 	    CmdUIOnlyFlag)
 {
   m_background = false;
 }
 
-void EyedropperToolCommand::load_params(Params* params)
+void EyedropperCommand::load_params(Params* params)
 {
   std::string target = params->get("target");
   if (target == "foreground") m_background = false;
   else if (target == "background") m_background = true;
 }
 
-void EyedropperToolCommand::execute(Context* context)
+void EyedropperCommand::execute(Context* context)
 {
   JWidget widget;
   Editor *editor;
@@ -101,7 +101,7 @@ void EyedropperToolCommand::execute(Context* context)
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_eyedropper_tool_command()
+Command* CommandFactory::create_eyedropper_command()
 {
-  return new EyedropperToolCommand;
+  return new EyedropperCommand;
 }

@@ -24,7 +24,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_duplicate_layer.cpp		\
 	src/commands/cmd_duplicate_sprite.cpp		\
 	src/commands/cmd_exit.cpp			\
-	src/commands/cmd_eyedropper_tool.cpp		\
+	src/commands/cmd_eyedropper.cpp			\
 	src/commands/cmd_film_editor.cpp		\
 	src/commands/cmd_flatten_layers.cpp		\
 	src/commands/cmd_flip.cpp			\
