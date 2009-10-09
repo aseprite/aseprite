@@ -117,7 +117,7 @@ DIRS *filename_in_datadir(const char *filename)
   DIRS *dirs = dirs_new();
   char buf[1024];
 
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
+#if defined ALLEGRO_UNIX
 
   /* $HOME/.ase/filename */
   sprintf(buf, ".ase/%s", filename);
@@ -137,6 +137,16 @@ DIRS *filename_in_datadir(const char *filename)
 
   /* $BINDIR/data/filename */
   sprintf(buf, "data/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_bindir(buf));
+
+#elif defined ALLEGRO_MACOSX
+
+  /* $HOME/.ase/filename */
+  sprintf(buf, ".ase/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_homedir(buf));
+
+  /* $BINDIR/data/filename */
+  sprintf(buf, "aseprite.app/Contents/Resources/data/%s", filename);
   dirs_cat_dirs(dirs, filename_in_bindir(buf));
 
 #else

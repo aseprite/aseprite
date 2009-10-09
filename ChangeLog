@@ -1,5 +1,8 @@
 2009-10-08  David Capello  <davidcapello@gmail.com>
 
+	* src/core/dirs.cpp (filename_in_datadir): Modified folders to
+	load data on Mac OS X platform (Trent Gamblin).
+
 	* Completelly refactored all the commands related stuff. This is
 	the beginning to implement macro recording.
 
