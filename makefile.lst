@@ -21,8 +21,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_crop.cpp			\
 	src/commands/cmd_cut.cpp			\
 	src/commands/cmd_deselect_mask.cpp		\
-	src/commands/cmd_draw_text.cpp			\
-	src/commands/cmd_drawing_tools.cpp		\
 	src/commands/cmd_duplicate_layer.cpp		\
 	src/commands/cmd_duplicate_sprite.cpp		\
 	src/commands/cmd_exit.cpp			\
@@ -51,7 +49,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_palette_editor.cpp		\
 	src/commands/cmd_paste.cpp			\
 	src/commands/cmd_play_animation.cpp		\
-	src/commands/cmd_play_flic.cpp			\
 	src/commands/cmd_preview.cpp			\
 	src/commands/cmd_record_screen.cpp		\
 	src/commands/cmd_redo.cpp			\
