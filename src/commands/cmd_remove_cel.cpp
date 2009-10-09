@@ -18,16 +18,38 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_remove_cel_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// remove_cel
+
+class RemoveCelCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  RemoveCelCommand();
+  Command* clone() { return new RemoveCelCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+RemoveCelCommand::RemoveCelCommand()
+  : Command("remove_cel",
+	    "Remove Cel",
+	    CmdRecordableFlag)
+{
+}
+
+bool RemoveCelCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -37,9 +59,9 @@ static bool cmd_remove_cel_enabled(const char *argument)
     layer_get_cel(sprite->layer, sprite->frame);
 }
 
-static void cmd_remove_cel_execute(const char *argument)
+void RemoveCelCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   Cel* cel = layer_get_cel(sprite->layer, sprite->frame);
   {
     Undoable undoable(sprite, "Remove Cel");
@@ -49,9 +71,10 @@ static void cmd_remove_cel_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_remove_cel = {
-  CMD_REMOVE_CEL,
-  cmd_remove_cel_enabled,
-  NULL,
-  cmd_remove_cel_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_remove_cel_command()
+{
+  return new RemoveCelCommand;
+}

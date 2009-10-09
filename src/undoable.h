@@ -20,6 +20,7 @@
 #define UNDOABLE_H_INCLUDED
 
 class Cel;
+class Mask;
 class Layer;
 class Sprite;
 class SpriteWriter;

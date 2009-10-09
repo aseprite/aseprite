@@ -20,22 +20,44 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_new_layer_set_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// new_layer_set
+
+class NewLayerSetCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  NewLayerSetCommand();
+  Command* clone() { return new NewLayerSetCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+NewLayerSetCommand::NewLayerSetCommand()
+  : Command("new_layer_set",
+	    "New Layer Set",
+	    CmdRecordableFlag)
+{
+}
+
+bool NewLayerSetCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_new_layer_set_execute(const char *argument)
+void NewLayerSetCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   // load the window widget
   JWidgetPtr window(load_widget("newlay.jid", "new_layer_set"));
@@ -54,9 +76,10 @@ static void cmd_new_layer_set_execute(const char *argument)
   }
 }
 
-Command cmd_new_layer_set = {
-  CMD_NEW_LAYER_SET,
-  cmd_new_layer_set_enabled,
-  NULL,
-  cmd_new_layer_set_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_new_layer_set_command()
+{
+  return new NewLayerSetCommand;
+}

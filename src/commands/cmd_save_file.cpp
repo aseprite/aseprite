@@ -22,7 +22,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "console.h"
 #include "dialogs/filesel.h"
@@ -31,6 +31,7 @@
 #include "modules/recent.h"
 #include "raster/sprite.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
 typedef struct SaveFileData
 {
@@ -186,19 +187,37 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
   save_sprite_in_background(sprite, mark_as_saved);
 }
 
-/*********************************************************************
- Save File
- *********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// save_file
+
+class SaveFileCommand : public Command
+{
+public:
+  SaveFileCommand();
+  Command* clone() { return new SaveFileCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+SaveFileCommand::SaveFileCommand()
+  : Command("save_file",
+	    "Save File",
+	    CmdRecordableFlag)
+{
+}
 
 /**
  * Returns true if there is a current sprite to save.
  *
  * [main thread]
  */
-static bool cmd_save_file_enabled(const char *argument)
+bool SaveFileCommand::enabled(Context* context)
 {
-  const CurrentSpriteReader sprite;
-  return sprite.is_valid();
+  const CurrentSpriteReader sprite(context);
+  return
+    sprite != NULL;
 }
 
 /**
@@ -206,9 +225,9 @@ static bool cmd_save_file_enabled(const char *argument)
  * 
  * [main thread]
  */
-static void cmd_save_file_execute(const char *argument)
+void SaveFileCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   /* if the sprite is associated to a file in the file-system, we can
      save it directly without user interaction */
@@ -223,37 +242,71 @@ static void cmd_save_file_execute(const char *argument)
   }
 }
 
-/*********************************************************************
- Save File As
- *********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// save_file_as
 
-static bool cmd_save_file_as_enabled(const char *argument)
+class SaveFileAsCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  SaveFileAsCommand();
+  Command* clone() { return new SaveFileAsCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+SaveFileAsCommand::SaveFileAsCommand()
+  : Command("save_file_as",
+	    "Save File As",
+	    CmdRecordableFlag)
+{
+}
+
+bool SaveFileAsCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_save_file_as_execute(const char *argument)
+void SaveFileAsCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   save_as_dialog(sprite, _("Save Sprite As"), true);
 }
 
-/*********************************************************************
- Save File Copy As
- *********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// save_file_copy_as
 
-static bool cmd_save_file_copy_as_enabled(const char *argument)
+class SaveFileCopyAsCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  SaveFileCopyAsCommand();
+  Command* clone() { return new SaveFileCopyAsCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+SaveFileCopyAsCommand::SaveFileCopyAsCommand()
+  : Command("save_file_copy_as",
+	    "Save File Copy As",
+	    CmdRecordableFlag)
+{
+}
+
+bool SaveFileCopyAsCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_save_file_copy_as_execute(const char *argument)
+void SaveFileCopyAsCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   jstring old_filename = sprite->filename;
 
   // show "Save As" dialog
@@ -264,32 +317,20 @@ static void cmd_save_file_copy_as_execute(const char *argument)
   app_realloc_sprite_list();
 }
 
-/**
- * Command to save the current sprite in its associated file.
- */
-Command cmd_save_file = {
-  CMD_SAVE_FILE,
-  cmd_save_file_enabled,
-  NULL,
-  cmd_save_file_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
 
-/**
- * Command to save the current sprite in another file.
- */
-Command cmd_save_file_as = {
-  CMD_SAVE_FILE_AS,
-  cmd_save_file_as_enabled,
-  NULL,
-  cmd_save_file_as_execute,
-};
+Command* CommandFactory::create_save_file_command()
+{
+  return new SaveFileCommand;
+}
 
-/**
- * Command to save a copy of the current sprite in another file.
- */
-Command cmd_save_file_copy_as = {
-  CMD_SAVE_FILE_COPY_AS,
-  cmd_save_file_copy_as_enabled,
-  NULL,
-  cmd_save_file_copy_as_execute,
-};
+Command* CommandFactory::create_save_file_as_command()
+{
+  return new SaveFileAsCommand;
+}
+
+Command* CommandFactory::create_save_file_copy_as_command()
+{
+  return new SaveFileCopyAsCommand;
+}

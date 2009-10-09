@@ -38,6 +38,8 @@
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 
 enum {
   ACTION_LAYER,
@@ -305,7 +307,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       else {
 	char buf[1024];
 	try {
-	  const CurrentSpriteReader sprite;
+	  const CurrentSpriteReader sprite(UIContext::instance());
 	  if (sprite) {
 	    ustrcpy(buf, "Sprite:");
 	    get_pretty_memsize(sprite_get_memsize(sprite),
@@ -389,7 +391,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
 static bool slider_change_hook(JWidget widget, void *data)
 {
   try {
-    CurrentSpriteWriter sprite;
+    CurrentSpriteWriter sprite(UIContext::instance());
     if (sprite) {
       if ((sprite->layer) &&
 	  (sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
@@ -413,43 +415,25 @@ static bool slider_change_hook(JWidget widget, void *data)
 
 static void button_command(JWidget widget, void *data)
 {
-  const char *cmd = NULL;
+  Command* cmd = NULL;
 
   switch ((size_t)data) {
-
-    case ACTION_LAYER:
-      cmd = CMD_LAYER_PROPERTIES;
-      break;
-
-    case ACTION_FIRST:
-      cmd = CMD_GOTO_FIRST_FRAME;
-      break;
-
-    case ACTION_PREV:
-      cmd = CMD_GOTO_PREVIOUS_FRAME;
-      break;
-
-    case ACTION_PLAY:
-      cmd = CMD_PLAY_ANIMATION;
-      break;
-
-    case ACTION_NEXT:
-      cmd = CMD_GOTO_NEXT_FRAME;
-      break;
-
-    case ACTION_LAST:
-      cmd = CMD_GOTO_LAST_FRAME;
-      break;
+    case ACTION_LAYER: cmd = CommandsModule::instance()->get_command_by_name(CommandId::layer_properties); break;
+    case ACTION_FIRST: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_first_frame); break;
+    case ACTION_PREV: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_previous_frame); break;
+    case ACTION_PLAY: cmd = CommandsModule::instance()->get_command_by_name(CommandId::play_animation); break;
+    case ACTION_NEXT: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_next_frame); break;
+    case ACTION_LAST: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_last_frame); break;
   }
 
   if (cmd)
-    command_execute(command_get_by_name(cmd), NULL);
+    UIContext::instance()->execute_command(cmd);
 }
 
 static void update_from_layer(StatusBar *statusbar)
 {
   try {
-    const CurrentSpriteReader sprite;
+    const CurrentSpriteReader sprite(UIContext::instance());
     Cel *cel;
 
     /* layer button */

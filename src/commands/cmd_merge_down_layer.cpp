@@ -20,7 +20,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
@@ -29,10 +29,32 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_merge_down_layer_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// merge_down_layer
+
+class MergeDownLayerCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  MergeDownLayerCommand();
+  Command* clone() { return new MergeDownLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+MergeDownLayerCommand::MergeDownLayerCommand()
+  : Command("merge_down_layer",
+	    "Merge Down Layer",
+	    CmdRecordableFlag)
+{
+}
+
+bool MergeDownLayerCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   if (!sprite)
     return false;
 
@@ -47,9 +69,9 @@ static bool cmd_merge_down_layer_enabled(const char *argument)
   return TRUE;
 }
 
-static void cmd_merge_down_layer_execute(const char *argument)
+void MergeDownLayerCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   Layer *src_layer, *dst_layer;
   Cel *src_cel, *dst_cel;
   Image *src_image, *dst_image;
@@ -167,9 +189,10 @@ static void cmd_merge_down_layer_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_merge_down_layer = {
-  CMD_MERGE_DOWN_LAYER,
-  cmd_merge_down_layer_enabled,
-  NULL,
-  cmd_merge_down_layer_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_merge_down_layer_command()
+{
+  return new MergeDownLayerCommand;
+}

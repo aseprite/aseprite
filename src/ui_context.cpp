@@ -27,37 +27,28 @@
 #include "raster/sprite.h"
 #include "widgets/tabs.h"
 
-//////////////////////////////////////////////////////////////////////
-// UIContext singleton
-
-static UIContext* g_instance = NULL;
-
-UIContext* UIContext::instance()
-{
-  if (!g_instance)
-    g_instance = new UIContext;
-  return g_instance;
-}
-
-void UIContext::destroy_instance()
-{
-  delete g_instance;
-  g_instance = NULL;
-}
-
-//////////////////////////////////////////////////////////////////////
+UIContext* UIContext::m_instance = NULL;
 
 UIContext::UIContext()
 {
+  assert(m_instance == NULL);
+  m_instance = this;
 }
 
 UIContext::~UIContext()
 {
+  assert(m_instance == this);
+  m_instance = NULL;
 }
 
-void UIContext::show_sprite(Sprite* sprite) const
+int UIContext::get_fg_color()
 {
-  set_sprite_in_more_reliable_editor(sprite);
+  return app_get_fg_color(get_current_sprite());
+}
+
+int UIContext::get_bg_color()
+{
+  return app_get_bg_color(get_current_sprite());
 }
 
 void UIContext::on_add_sprite(Sprite* sprite)

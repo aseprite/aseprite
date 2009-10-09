@@ -22,7 +22,8 @@
 
 #include "jinete/jlist.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
@@ -33,31 +34,66 @@
 #include "raster/undo.h"
 #include "util/misc.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_flip_enabled(const char *argument)
+class FlipCommand : public Command
 {
-  assert(argument);
-  const CurrentSpriteReader sprite;
+  bool m_flip_mask;
+  bool m_flip_horizontal;
+  bool m_flip_vertical;
+
+public:
+  FlipCommand();
+  Command* clone() const { return new FlipCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+  bool enabled(Context* context);
+  void execute(Context* context);
+
+private:
+  static char* read_authors_txt(const char *filename);
+};
+
+FlipCommand::FlipCommand()
+  : Command("flip",
+	    "Flip",
+	    CmdRecordableFlag)
+{
+  m_flip_mask = false;
+  m_flip_horizontal = false;
+  m_flip_vertical = false;
+}
+
+void FlipCommand::load_params(Params* params)
+{
+  std::string target = params->get("target");
+  m_flip_mask = (target == "mask");
+
+  std::string orientation = params->get("orientation");
+  m_flip_horizontal = (orientation == "horizontal");
+  m_flip_vertical = (orientation == "vertical");
+}
+
+bool FlipCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_flip_execute(const char *argument)
+void FlipCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
-  bool flip_mask       = ustrstr(argument, "mask") != NULL;
-  bool flip_canvas     = ustrstr(argument, "canvas") != NULL;
-  bool flip_horizontal = ustrstr(argument, "horizontal") != NULL;
-  bool flip_vertical   = ustrstr(argument, "vertical") != NULL;
+  CurrentSpriteWriter sprite(context);
 
   {
-    Undoable undoable(sprite,
-		      flip_mask ? (flip_horizontal ? "Flip Horizontal":
-						     "Flip Vertical"):
-				  (flip_horizontal ? "Flip Canvas Horizontal":
-						     "Flip Canvas Vertical"));
+    Undoable undoable(sprite, m_flip_mask ?
+			      (m_flip_horizontal ? "Flip Horizontal":
+						   "Flip Vertical"):
+			      (m_flip_horizontal ? "Flip Canvas Horizontal":
+						   "Flip Canvas Vertical"));
 
-    if (flip_mask) {
+    if (m_flip_mask) {
       Image* image;
       int x1, y1, x2, y2;
       int x, y;
@@ -88,9 +124,10 @@ static void cmd_flip_execute(const char *argument)
 	y2 = MID(0, y2, image->h-1);
       }
 
-      undoable.flip_image(image, x1, y1, x2, y2, flip_horizontal, flip_vertical);
+      undoable.flip_image(image, x1, y1, x2, y2, 
+			  m_flip_horizontal, m_flip_vertical);
     }
-    else if (flip_canvas) {
+    else {
       // get all sprite cels
       JList cels = jlist_new();
       sprite_get_cels(sprite, cels);
@@ -102,23 +139,25 @@ static void cmd_flip_execute(const char *argument)
 	Image* image = stock_get_image(sprite->stock, cel->image);
 
 	undoable.set_cel_position(cel,
-				  flip_horizontal ? sprite->w - image->w - cel->x: cel->x,
-				  flip_vertical ? sprite->h - image->h - cel->y: cel->y);
+				  m_flip_horizontal ? sprite->w - image->w - cel->x: cel->x,
+				  m_flip_vertical ? sprite->h - image->h - cel->y: cel->y);
 
 	undoable.flip_image(image, 0, 0, image->w-1, image->h-1,
-			    flip_horizontal, flip_vertical);
+			    m_flip_horizontal, m_flip_vertical);
       }
       jlist_free(cels);
     }
 
     undoable.commit();
   }
+
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_flip = {
-  CMD_FLIP,
-  cmd_flip_enabled,
-  NULL,
-  cmd_flip_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_flip_command()
+{
+  return new FlipCommand;
+}

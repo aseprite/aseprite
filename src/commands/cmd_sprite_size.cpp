@@ -24,7 +24,7 @@
 
 #include "core/cfg.h"
 #include "core/job.h"
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/cel.h"
@@ -33,6 +33,8 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undoable.h"
+#include "ui_context.h"
+#include "sprite_wrappers.h"
 
 #define PERC_FORMAT	"%.1f%%"
 
@@ -152,17 +154,39 @@ static bool height_px_change_hook(JWidget widget, void *data);
 static bool width_perc_change_hook(JWidget widget, void *data);
 static bool height_perc_change_hook(JWidget widget, void *data);
 
-static bool cmd_sprite_size_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// sprite_size
+
+class SpriteSizeCommand : public Command
+
 {
-  const CurrentSpriteReader sprite;
+public:
+  SpriteSizeCommand();
+  Command* clone() { return new SpriteSizeCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+SpriteSizeCommand::SpriteSizeCommand()
+  : Command("sprite_size",
+	    "Sprite Size",
+	    CmdRecordableFlag)
+{
+}
+
+bool SpriteSizeCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_sprite_size_execute(const char *argument)
+void SpriteSizeCommand::execute(Context* context)
 {
   JWidget width_px, height_px, width_perc, height_perc, lock_ratio, method, ok;
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
 
   // load the window widget
   JWidgetPtr window(load_widget("sprsize.jid", "sprite_size"));
@@ -215,7 +239,7 @@ static void cmd_sprite_size_execute(const char *argument)
 
 static bool lock_ratio_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
 
   if (widget->selected())
     width_px_change_hook(widget->find_sibling("width_px"), NULL);
@@ -225,7 +249,7 @@ static bool lock_ratio_change_hook(JWidget widget, void *data)
 
 static bool width_px_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   int width = widget->text_int();
   double perc = 100.0 * width / sprite->w;
 
@@ -241,7 +265,7 @@ static bool width_px_change_hook(JWidget widget, void *data)
 
 static bool height_px_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   int height = widget->text_int();
   double perc = 100.0 * height / sprite->h;
 
@@ -257,7 +281,7 @@ static bool height_px_change_hook(JWidget widget, void *data)
 
 static bool width_perc_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   double width = widget->text_double();
 
   widget->find_sibling("width_px")->textf("%d", (int)(sprite->w * width / 100));
@@ -272,7 +296,7 @@ static bool width_perc_change_hook(JWidget widget, void *data)
 
 static bool height_perc_change_hook(JWidget widget, void *data)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   double height = widget->text_double();
 
   widget->find_sibling("height_px")->textf("%d", (int)(sprite->h * height / 100));
@@ -285,9 +309,10 @@ static bool height_perc_change_hook(JWidget widget, void *data)
   return true;
 }
 
-Command cmd_sprite_size = {
-  CMD_SPRITE_SIZE,
-  cmd_sprite_size_enabled,
-  NULL,
-  cmd_sprite_size_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_sprite_size_command()
+{
+  return new SpriteSizeCommand;
+}

@@ -71,6 +71,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_switch_colors.cpp		\
 	src/commands/cmd_tips.cpp			\
 	src/commands/cmd_undo.cpp			\
+	src/commands/command.cpp			\
 	src/commands/commands.cpp			\
 	src/commands/fx/cmd_color_curve.cpp		\
 	src/commands/fx/cmd_convolution_matrix.cpp	\

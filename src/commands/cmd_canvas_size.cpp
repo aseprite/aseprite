@@ -22,67 +22,104 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
-#include "core/app.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/colbar.h"
 
-static bool cmd_canvas_size_enabled(const char *argument)
+class CanvasSizeCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+  int m_left, m_right, m_top, m_bottom;
+
+public:
+  CanvasSizeCommand();
+  Command* clone() const { return new CanvasSizeCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+CanvasSizeCommand::CanvasSizeCommand()
+  : Command("canvas_size",
+	    "Canvas Size",
+	    CmdRecordableFlag)
+{
+  m_left = m_right = m_top = m_bottom = 0;
+}
+
+bool CanvasSizeCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_canvas_size_execute(const char *argument)
+void CanvasSizeCommand::execute(Context* context)
 {
-  JWidget left, top, right, bottom, ok;
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
-  // load the window widget
-  JWidgetPtr window(load_widget("canvas.jid", "canvas_size"));
-  get_widgets(window,
-	      "left", &left,
-	      "top", &top,
-	      "right", &right,
-	      "bottom", &bottom,
-	      "ok", &ok, NULL);
+  if (context->is_ui_available()) {
+    JWidget left, top, right, bottom, ok;
 
-  jwindow_remap(window);
-  jwindow_center(window);
+    // load the window widget
+    JWidgetPtr window(load_widget("canvas.jid", "canvas_size"));
+    get_widgets(window,
+		"left", &left,
+		"top", &top,
+		"right", &right,
+		"bottom", &bottom,
+		"ok", &ok, NULL);
 
-  load_window_pos(window, "CanvasSize");
-  jwidget_show(window);
-  jwindow_open_fg(window);
-  save_window_pos(window, "CanvasSize");
+    jwindow_remap(window);
+    jwindow_center(window);
 
-  if (jwindow_get_killer(window) == ok) {
-    int x1 = -left->text_int();
-    int y1 = -top->text_int();
-    int x2 = sprite->w + right->text_int();
-    int y2 = sprite->h + bottom->text_int();
+    left->textf("%d", m_left);
+    right->textf("%d", m_right);
+    top->textf("%d", m_top);
+    bottom->textf("%d", m_bottom);
 
-    if (x2 <= x1) x2 = x1+1;
-    if (y2 <= y1) y2 = y1+1;
+    load_window_pos(window, "CanvasSize");
+    jwidget_show(window);
+    jwindow_open_fg(window);
+    save_window_pos(window, "CanvasSize");
 
-    {
-      Undoable undoable(sprite, "Canvas Size");
-      int bgcolor = get_color_for_image(sprite->imgtype,
-					colorbar_get_bg_color(app_get_colorbar()));
-      undoable.crop_sprite(x1, y1, x2-x1, y2-y1, bgcolor);
-      undoable.commit();
-    }
-    sprite_generate_mask_boundaries(sprite);
-    update_screen_for_sprite(sprite);
+    if (jwindow_get_killer(window) != ok)
+      return;
+
+    m_left = left->text_int();
+    m_right = right->text_int();
+    m_top = top->text_int();
+    m_bottom = bottom->text_int();
   }
+
+  // resize canvas
+
+  int x1 = -m_left;
+  int y1 = -m_top;
+  int x2 = sprite->w + m_right;
+  int y2 = sprite->h + m_bottom;
+
+  if (x2 <= x1) x2 = x1+1;
+  if (y2 <= y1) y2 = y1+1;
+
+  {
+    Undoable undoable(sprite, "Canvas Size");
+    int bgcolor = context->get_bg_color();
+    undoable.crop_sprite(x1, y1, x2-x1, y2-y1, bgcolor);
+    undoable.commit();
+  }
+  sprite_generate_mask_boundaries(sprite);
+  update_screen_for_sprite(sprite);
 }
 
-Command cmd_canvas_size = {
-  CMD_CANVAS_SIZE,
-  cmd_canvas_size_enabled,
-  NULL,
-  cmd_canvas_size_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_canvas_size_command()
+{
+  return new CanvasSizeCommand;
+}

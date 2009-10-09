@@ -2,14 +2,34 @@
 ASE Hacking Notes
 ======================================================================
 
+----------------------------------------------------------------------
+Change the name of a command
+----------------------------------------------------------------------
+
+  Rename the file "src/commands/cmd_OLD_NAME.cpp" to
+  "src/commands/cmd_NEW_NAME.cpp".
+
+  Update the file name in the COMMON_SOURCES variable inside
+  makefile.lst.
+
+  Update the command name in "src/commands/commands_list.h" file.
+
+  Find "get_command_by_name" in the whole source code, you have to
+  update the command id (anyway you will get a compiler error).
+
+  Change in the Command() constructor call, the name of the command.
+  E.g. MyCmd::MyCmd() : Command("new_name", ...) { }
+
+----------------------------------------------------------------------
 Add a new file to compile
 ----------------------------------------------------------------------
 
   Remember that if you add a new file to compile, it should have a
   different name of any other file name in the source code tree. Also,
-  you must add it in the ASE_SOURCES variable of the makefile.lst.
+  you must add it in the COMMON_SOURCES or ASE_SOURCES variable of the
+  makefile.lst.
 
-
+----------------------------------------------------------------------
 Add a new load/save file type
 ----------------------------------------------------------------------
 
@@ -29,7 +49,7 @@ Add a new load/save file type
   (src/raster/) if your format support animation or layers, like FLI,
   or GIF formats.
 
-
+----------------------------------------------------------------------
 Hook palette's changes
 ----------------------------------------------------------------------
 
@@ -45,7 +65,7 @@ Hook palette's changes
   "call_palette_hooks" will call the hooks from the first to the last
   one.
 
-
+----------------------------------------------------------------------
 Update the icon of buttons when the bitmap is destroyed in palette changes
 ----------------------------------------------------------------------
 
@@ -70,7 +90,7 @@ Update the icon of buttons when the bitmap is destroyed in palette changes
   automatically this button from the "list of buttons to fixup"
   ("icon_buttons" in "src/modules/gui.c").
 
-
+----------------------------------------------------------------------
 Reload the fonts
 ----------------------------------------------------------------------
 
@@ -83,7 +103,7 @@ Reload the fonts
   This routine uses the "_ji_set_font_of_all_widgets" to change the
   "text_font" property of EVERY widget.
 
-
+----------------------------------------------------------------------
 Undo
 ----------------------------------------------------------------------
 
@@ -98,6 +118,5 @@ Undo
     stock_add_image(stock, image);
     undo_add_image(undo, stock, image);
 
-
 ----------------------------------------------------------------------
-			   Copyright (C) 2003-2005 by David A. Capello
+                                 Copyright (C) 2001-2009 David Capello

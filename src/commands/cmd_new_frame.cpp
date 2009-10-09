@@ -21,7 +21,7 @@
 #include <assert.h>
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "console.h"
 #include "core/color.h"
 #include "core/app.h"
@@ -32,12 +32,34 @@
 #include "raster/sprite.h"
 #include "undoable.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
 #include <stdexcept>
 
-static bool cmd_new_frame_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// new_frame
+
+class NewFrameCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  NewFrameCommand();
+  Command* clone() { return new NewFrameCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+NewFrameCommand::NewFrameCommand()
+  : Command("new_frame",
+	    "New Frame",
+	    CmdRecordableFlag)
+{
+}
+
+bool NewFrameCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -46,9 +68,9 @@ static bool cmd_new_frame_enabled(const char *argument)
     layer_is_image(sprite->layer);
 }
 
-static void cmd_new_frame_execute(const char *argument)
+void NewFrameCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "New Frame");
     undoable.new_frame();
@@ -61,9 +83,10 @@ static void cmd_new_frame_execute(const char *argument)
 		     sprite->frames);
 }
 
-Command cmd_new_frame = {
-  CMD_NEW_FRAME,
-  cmd_new_frame_enabled,
-  NULL,
-  cmd_new_frame_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_new_frame_command()
+{
+  return new NewFrameCommand;
+}

@@ -22,28 +22,50 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/core.h"
 #include "core/color.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "widgets/colbut.h"
+#include "sprite_wrappers.h"
 
 /* TODO remove this */
 void dialogs_frame_length(const SpriteReader& sprite, int sprite_frpos);
 
-static bool cmd_sprite_properties_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// sprite_properties
+
+class SpritePropertiesCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  SpritePropertiesCommand();
+  Command* clone() { return new SpritePropertiesCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+SpritePropertiesCommand::SpritePropertiesCommand()
+  : Command("sprite_properties",
+	    "Sprite Properties",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool SpritePropertiesCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_sprite_properties_execute(const char *argument)
+void SpritePropertiesCommand::execute(Context* context)
 {
   JWidget killer, name, type, size, frames, speed, ok;
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   jstring imgtype_text;
   char buf[256];
 
@@ -111,9 +133,10 @@ static void cmd_sprite_properties_execute(const char *argument)
   }
 }
 
-Command cmd_sprite_properties = {
-  CMD_SPRITE_PROPERTIES,
-  cmd_sprite_properties_enabled,
-  NULL,
-  cmd_sprite_properties_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_sprite_properties_command()
+{
+  return new SpritePropertiesCommand;
+}

@@ -27,7 +27,9 @@
 #include "jinete/jtooltips.h"
 #include "jinete/jwidget.h"
 
+#include "ui_context.h"
 #include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/tools.h"
@@ -84,7 +86,7 @@ JWidget toolbar_new()
     jwidget_add_tooltip_text(child, buf);
   }
   
-  jwidget_expansive(box, TRUE);
+  jwidget_expansive(box, true);
 
   jwidget_add_child(box, tools);
   jwidget_add_child(box, confbutton);
@@ -116,10 +118,13 @@ static bool tools_change_hook(JWidget widget, void *data)
   if (current_tool != tools_list[c])
     select_tool(tools_list[c]);
 
-  return FALSE;
+  return false;
 }
 
 static void conf_command(JWidget widget)
 {
-  command_execute(command_get_by_name(CMD_CONFIGURE_TOOLS), NULL);
+  Command* conf_tools_cmd = 
+    CommandsModule::instance()->get_command_by_name(CommandId::configure_tools);
+
+  UIContext::instance()->execute_command(conf_tools_cmd);
 }

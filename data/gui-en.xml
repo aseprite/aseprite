@@ -22,8 +22,14 @@
 	    <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
 	    <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
 	    <key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
-	    <key command="flip" shortcut="Shift+H" argument="mask horizontal" />
-	    <key command="flip" shortcut="Shift+V" argument="mask vertical" />
+	    <key command="flip" shortcut="Shift+H">
+	      <param name="target" value="mask" />
+	      <param name="orientation" value="horizontal" />
+	    </key>
+	    <key command="flip" shortcut="Shift+V">
+	      <param name="target" value="mask" />
+	      <param name="orientation" value="vertical" />
+	    </key>
 	    <key command="replace_color" shortcut="Shift+R" />
 	    <key command="invert_color" shortcut="Ctrl+I" />
 	    <!-- sprite -->
@@ -118,8 +124,14 @@
 	    <item command="paste" name="&Paste" />
 	    <item command="clear" name="C&lear" />
 	    <separator />
-	    <item command="flip" name="Flip &Horizontal" argument="mask horizontal" />
-	    <item command="flip" name="Flip &Vertical" argument="mask vertical" />
+	    <item command="flip" name="Flip &Horizontal">
+	      <param name="target" value="mask" />
+	      <param name="orientation" value="horizontal" />
+	    </item>
+	    <item command="flip" name="Flip &Vertical">
+	      <param name="target" value="mask" />
+	      <param name="orientation" value="vertical" />
+	    </item>
 	    <separator />
 	    <item command="replace_color" name="R&eplace Color..." />
 	    <item command="invert_color" name="&Invert" />
@@ -127,10 +139,19 @@
 	<menu name="&Sprite">
 	    <item command="sprite_properties" name="&Properties..." />
 	    <menu name name="Color &Mode">
-	      <item command="change_image_type" name="&RGB Color" argument="rgb" />
-	      <item command="change_image_type" name="&Grayscale" argument="grayscale" />
-	      <item command="change_image_type" name="&Indexed (No Dithering)" argument="indexed" />
-	      <item command="change_image_type" name="Indexed (Ordered &Dither)" argument="indexed-dither" />
+	      <item command="change_image_type" name="&RGB Color">
+		<param name="imgtype" value="rgb" />
+	      </item>
+	      <item command="change_image_type" name="&Grayscale">
+		<param name="imgtype" value="grayscale" />
+	      </item>
+	      <item command="change_image_type" name="&Indexed (No Dithering)">
+		<param name="imgtype" value="indexed" />
+	      </item>
+	      <item command="change_image_type" name="Indexed (Ordered &Dither)">
+		<param name="imgtype" value="indexed" />
+		<param name="dithering" value="on" />
+	      </item>
 	    </menu>
 	    <separator />
 	    <item command="duplicate_sprite" name="&Duplicate..." />
@@ -138,12 +159,24 @@
 	    <item command="sprite_size" name="&Sprite Size..." />
 	    <item command="canvas_size" name="&Canvas Size..." />
 	    <menu name name="&Rotate Canvas">
-		<item command="rotate_canvas" name="180" argument="180" />
-		<item command="rotate_canvas" name="90 CW" argument="90" />
-		<item command="rotate_canvas" name="90 CCW" argument="-90" />
+		<item command="rotate_canvas" name="180">
+		  <param name="angle" value="180" />
+		</item>
+		<item command="rotate_canvas" name="90 CW">
+		  <param name="angle" value="90" />
+		</item>
+		<item command="rotate_canvas" name="90 CCW">
+		  <param name="angle" value="-90" />
+		</item>
 		<separator />
-		<item command="flip" name="Flip Canvas &Horizontal" argument="canvas horizontal" />
-		<item command="flip" name="Flip Canvas &Vertical" argument="canvas vertical" />
+		<item command="flip" name="Flip Canvas &Horizontal">
+		  <param name="target" value="canvas" />
+		  <param name="orientation" value="horizontal" />
+		</item>
+		<item command="flip" name="Flip Canvas &Vertical">
+		  <param name="target" value="canvas" />
+		  <param name="orientation" value="vertical" />
+		</item>
 	    </menu>
 	    <separator />
 	    <item command="crop_sprite" name="Cr&op" />

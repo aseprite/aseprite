@@ -20,17 +20,34 @@
 
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "dialogs/tips.h"
 
-static void cmd_tips_execute(const char *argument)
+class TipsCommand : public Command
 {
-  dialogs_tips(TRUE);
+public:
+  TipsCommand();
+
+protected:
+  void execute(Context* context);
+};
+
+TipsCommand::TipsCommand()
+  : Command("tips",
+	    "Tips",
+	    CmdUIOnlyFlag)
+{
 }
 
-Command cmd_tips = {
-  CMD_TIPS,
-  NULL,
-  NULL,
-  cmd_tips_execute,
-};
+void TipsCommand::execute(Context* context)
+{
+  dialogs_tips(true);
+}
+
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_tips_command()
+{
+  return new TipsCommand;
+}

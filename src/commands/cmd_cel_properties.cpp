@@ -22,7 +22,8 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "sprite_wrappers.h"
 #include "core/app.h"
 #include "core/core.h"
 #include "modules/gui.h"
@@ -33,13 +34,31 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 
-static bool cmd_cel_properties_enabled(const char *argument)
+class CelPropertiesCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  CelPropertiesCommand();
+  Command* clone() const { return new CelPropertiesCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+CelPropertiesCommand::CelPropertiesCommand()
+  : Command("cel_properties",
+	    "Cel Properties",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool CelPropertiesCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite && sprite->layer;
 }
 
-static void cmd_cel_properties_execute(const char *argument)
+void CelPropertiesCommand::execute(Context* context)
 {
   JWidget label_frame, label_pos, label_size;
   JWidget slider_opacity, button_ok;
@@ -49,7 +68,7 @@ static void cmd_cel_properties_execute(const char *argument)
   int memsize;
 
   /* get current sprite */
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   if (!sprite)
     return;
 
@@ -135,9 +154,10 @@ static void cmd_cel_properties_execute(const char *argument)
   }
 }
 
-Command cmd_cel_properties = {
-  CMD_CEL_PROPERTIES,
-  cmd_cel_properties_enabled,
-  NULL,
-  cmd_cel_properties_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_cel_properties_command()
+{
+  return new CelPropertiesCommand;
+}

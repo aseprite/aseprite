@@ -26,7 +26,9 @@
 #include "jinete/jwindow.h"
 
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "core/app.h"
+#include "ui_context.h"
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -74,9 +76,16 @@ void check_for_dropped_files()
     dropped_files->clear();
 
     // open all files
-    Command* cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
-    for (std::vector<jstring>::iterator it = files.begin(); it != files.end(); ++it)
-      command_execute(cmd_open_file, it->c_str());
+
+    Command* cmd_open_file =
+      CommandsModule::instance()->get_command_by_name(CommandId::open_file);
+    Params params;
+
+    for (std::vector<jstring>::iterator
+	   it = files.begin(); it != files.end(); ++it) {
+      params.set("filename", it->c_str());
+      UIContext::instance()->execute_command(cmd_open_file, &params);
+    }
   }
   jmutex_unlock(dropped_files_mutex);
 }

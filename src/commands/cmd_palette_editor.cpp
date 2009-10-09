@@ -25,7 +25,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "dialogs/filesel.h"
@@ -38,6 +38,20 @@
 #include "util/quantize.h"
 #include "widgets/colview.h"
 #include "widgets/paledit.h"
+#include "sprite_wrappers.h"
+
+//////////////////////////////////////////////////////////////////////
+// palette_editor
+
+class PaletteEditorCommand : public Command
+{
+public:
+  PaletteEditorCommand();
+  Command* clone() { return new PaletteEditorCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
 
 #define get_sprite(wgt) (*(const SpriteReader*)(jwidget_get_window(wgt))->user_data[0])
 
@@ -65,7 +79,14 @@ static bool palette_editor_change_hook(JWidget widget, void *data);
 
 static void set_new_palette(Palette *palette);
 
-static void cmd_palette_editor_execute(const char *argument)
+PaletteEditorCommand::PaletteEditorCommand()
+  : Command("palette_editor",
+	    "PaletteEditor",
+	    CmdRecordableFlag)
+{
+}
+
+void PaletteEditorCommand::execute(Context* context)
 {
   JWidget colorviewer_box, palette_editor_view;
   JWidget slider_columns, button_ok;
@@ -75,7 +96,7 @@ static void cmd_palette_editor_execute(const char *argument)
   JWidget button_ramp, button_quantize;
   int frame, columns;
   Palette *palette = NULL;
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   int imgtype = sprite ? sprite->imgtype: IMAGE_INDEXED;
   int frame_bak = sprite ? sprite->frame : 0;
   bool all_frames_same_palette = TRUE;
@@ -532,9 +553,10 @@ static void set_new_palette(Palette *palette)
   jmanager_refresh_screen();
 }
 
-Command cmd_palette_editor = {
-  CMD_PALETTE_EDITOR,
-  NULL,
-  NULL,
-  cmd_palette_editor_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_palette_editor_command()
+{
+  return new PaletteEditorCommand;
+}

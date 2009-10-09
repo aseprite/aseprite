@@ -22,6 +22,7 @@
 #include <algorithm>
 
 #include "context.h"
+#include "commands/command.h"
 #include "raster/sprite.h"
 
 Context::Context()
@@ -37,6 +38,16 @@ Context::~Context()
     delete sprite;
   }
   m_sprites.clear();
+}
+
+int Context::get_fg_color()
+{
+  return 0;			// TODO
+}
+
+int Context::get_bg_color()
+{
+  return 0;			// TODO
 }
 
 const SpriteList& Context::get_sprite_list() const
@@ -121,6 +132,32 @@ void Context::set_current_sprite(Sprite* sprite)
   m_current_sprite = sprite;
 
   on_set_current_sprite(sprite);
+}
+
+void Context::execute_command(Command* command, Params* params)
+{
+  Console console;
+
+  assert(command != NULL);
+
+  try {
+    if (params)
+      command->load_params(params);
+
+    if (command->enabled(this))
+      command->execute(this);
+  }
+  catch (ase_exception& e) {
+    e.show();
+  }
+  catch (std::exception& e) {
+    console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
+  }
+  catch (...) {
+    console.printf("An unknown error ocurred executing the command.\n"
+		   "Please try again or report this bug.\n\n"
+		   "Details: Unknown exception caught.");
+  }
 }
 
 void Context::on_add_sprite(Sprite* sprite)

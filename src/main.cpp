@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <stdio.h>
 
 #include "ase_exception.h"
 #include "core/app.h"
@@ -55,16 +56,19 @@ int main(int argc, char *argv[])
     Allegro allegro;
     try {
       Jinete jinete;
-      Application app(argc, argv);
+      App app(argc, argv);
 
       app.run();
     }
     catch (std::exception& e) {
       allegro_message(e.what());
     }
+    catch (...) {
+      allegro_message("Uncaught exception");
+    }
   }
   catch (...) {
-    // do nothing
+    printf("Uncaught exception");
   }
   return 0;
 }

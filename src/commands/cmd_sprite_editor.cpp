@@ -18,53 +18,128 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/editors.h"
 
-static void cmd_close_editor_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// close_editor
+
+class CloseEditorCommand : public Command
+{
+public:
+  CloseEditorCommand();
+  Command* clone() { return new CloseEditorCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+CloseEditorCommand::CloseEditorCommand()
+  : Command("close_editor",
+	    "Close Editor",
+	    CmdUIOnlyFlag)
+{
+}
+
+void CloseEditorCommand::execute(Context* context)
 {
   close_editor(current_editor);
 }
 
-static void cmd_make_unique_editor_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// make_unique_editor
+
+class MakeUniqueEditorCommand : public Command
+{
+public:
+  MakeUniqueEditorCommand();
+  Command* clone() { return new MakeUniqueEditorCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+MakeUniqueEditorCommand::MakeUniqueEditorCommand()
+  : Command("make_unique_editor",
+	    "Make Unique Editor",
+	    CmdUIOnlyFlag)
+{
+}
+
+void MakeUniqueEditorCommand::execute(Context* context)
 {
   make_unique_editor(current_editor);
 }
 
-static void cmd_split_editor_horizontally_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// split_editor_horizontally
+
+class SplitEditorHorizontallyCommand : public Command
+{
+public:
+  SplitEditorHorizontallyCommand();
+  Command* clone() { return new SplitEditorHorizontallyCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
+  : Command("split_editor_horizontally",
+	    "Split Editor Horizontally",
+	    CmdUIOnlyFlag)
+{
+}
+
+void SplitEditorHorizontallyCommand::execute(Context* context)
 {
   split_editor(current_editor, JI_HORIZONTAL);
 }
 
-static void cmd_split_editor_vertically_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// split_editor_vertically
+
+class SplitEditorVerticallyCommand : public Command
+{
+public:
+  SplitEditorVerticallyCommand();
+  Command* clone() { return new SplitEditorVerticallyCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
+  : Command("split_editor_vertically",
+	    "Split Editor Vertically",
+	    CmdUIOnlyFlag)
+{
+}
+
+void SplitEditorVerticallyCommand::execute(Context* context)
 {
   split_editor(current_editor, JI_VERTICAL);
 }
 
-Command cmd_close_editor = {
-  CMD_CLOSE_EDITOR,
-  NULL,
-  NULL,
-  cmd_close_editor_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
 
-Command cmd_make_unique_editor = {
-  CMD_MAKE_UNIQUE_EDITOR,
-  NULL,
-  NULL,
-  cmd_make_unique_editor_execute,
-};
+Command* CommandFactory::create_close_editor_command()
+{
+  return new CloseEditorCommand;
+}
 
-Command cmd_split_editor_horizontally = {
-  CMD_SPLIT_EDITOR_HORIZONTALLY,
-  NULL,
-  NULL,
-  cmd_split_editor_horizontally_execute,
-};
+Command* CommandFactory::create_make_unique_editor_command()
+{
+  return new MakeUniqueEditorCommand;
+}
 
-Command cmd_split_editor_vertically = {
-  CMD_SPLIT_EDITOR_VERTICALLY,
-  NULL,
-  NULL,
-  cmd_split_editor_vertically_execute,
-};
+Command* CommandFactory::create_split_editor_horizontally_command()
+{
+  return new SplitEditorHorizontallyCommand;
+}
+
+Command* CommandFactory::create_split_editor_vertically_command()
+{
+  return new SplitEditorVerticallyCommand;
+}

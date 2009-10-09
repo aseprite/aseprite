@@ -23,22 +23,45 @@
 #include "jinete/jinete.h"
 
 #include "ui_context.h"
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "core/cfg.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_duplicate_sprite_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// duplicate_sprite
+
+class DuplicateSpriteCommand : public Command
 {
-  const CurrentSpriteReader sprite;
-  return sprite.is_valid();
+public:
+  DuplicateSpriteCommand();
+  Command* clone() { return new DuplicateSpriteCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+DuplicateSpriteCommand::DuplicateSpriteCommand()
+  : Command("duplicate_sprite",
+	    "Duplicate Sprite",
+	    CmdUIOnlyFlag)
+{
 }
 
-static void cmd_duplicate_sprite_execute(const char *argument)
+bool DuplicateSpriteCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
+  return sprite != NULL;
+}
+
+void DuplicateSpriteCommand::execute(Context* context)
 {
   JWidget src_name, dst_name, flatten;
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   char buf[1024];
 
   /* load the window widget */
@@ -73,18 +96,16 @@ static void cmd_duplicate_sprite_execute(const char *argument)
     if (sprite_copy != NULL) {
       sprite_set_filename(sprite_copy, jwidget_get_text(dst_name));
 
-      UIContext* context = UIContext::instance();
-
       context->add_sprite(sprite_copy);
-      context->set_current_sprite(sprite_copy);
-      context->show_sprite(sprite_copy);
+      set_sprite_in_more_reliable_editor(sprite_copy);
     }
   }
 }
 
-Command cmd_duplicate_sprite = {
-  CMD_DUPLICATE_SPRITE,
-  cmd_duplicate_sprite_enabled,
-  NULL,
-  cmd_duplicate_sprite_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_duplicate_sprite_command()
+{
+  return new DuplicateSpriteCommand;
+}

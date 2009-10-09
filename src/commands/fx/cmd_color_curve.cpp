@@ -20,7 +20,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/app.h"
@@ -44,16 +44,37 @@ static JWidget check_preview, preview;
 static bool window_msg_proc(JWidget widget, JMessage msg);
 static void make_preview();
 
-static bool cmd_color_curve_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// ColorCurveCommand
+
+class ColorCurveCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  ColorCurveCommand();
+  Command* clone() const { return new ColorCurveCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+ColorCurveCommand::ColorCurveCommand()
+  : Command("color_curve",
+	    "Color Curve",
+	    CmdRecordableFlag)
+{
+}
+
+bool ColorCurveCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_color_curve_execute(const char *argument)
+void ColorCurveCommand::execute(Context* context)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   JWidget button_ok;
   JWidget view_curve, curve_editor;
   JWidget box_target, target_button;
@@ -154,9 +175,10 @@ static void make_preview()
     preview_restart(preview);
 }
 
-Command cmd_color_curve = {
-  CMD_COLOR_CURVE,
-  cmd_color_curve_enabled,
-  NULL,
-  cmd_color_curve_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_color_curve_command()
+{
+  return new ColorCurveCommand;
+}

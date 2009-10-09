@@ -31,7 +31,7 @@
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/cfg.h"
@@ -66,16 +66,37 @@ static bool preview_change_hook(JWidget widget, void *data);
 static bool tiled_change_hook(JWidget widget, void *data);
 static void make_preview();
 
-static bool cmd_convolution_matrix_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// convolution_matrix
+
+class ConvolutionMatrixCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  ConvolutionMatrixCommand();
+  Command* clone() const { return new ConvolutionMatrixCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+ConvolutionMatrixCommand::ConvolutionMatrixCommand()
+  : Command("convolution_matrix",
+	    "Convolution Matrix",
+	    CmdRecordableFlag)
+{
+}
+
+bool ConvolutionMatrixCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_convolution_matrix_execute(const char *argument)
+void ConvolutionMatrixCommand::execute(Context* context)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   JWidget button_ok;
   JWidget view_convmatr, list_convmatr;
   JWidget box_target;
@@ -312,9 +333,11 @@ static void make_preview()
     preview_restart(preview);
 }
 
-Command cmd_convolution_matrix = {
-  CMD_CONVOLUTION_MATRIX,
-  cmd_convolution_matrix_enabled,
-  NULL,
-  cmd_convolution_matrix_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_convolution_matrix_command()
+{
+  return new ConvolutionMatrixCommand;
+}
+

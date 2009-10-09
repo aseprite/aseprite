@@ -20,23 +20,47 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "dialogs/aniedit.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_film_editor_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// film_editor
+
+class FilmEditorCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  FilmEditorCommand();
+  Command* clone() { return new FilmEditorCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+FilmEditorCommand::FilmEditorCommand()
+  : Command("film_editor",
+	    "Animation Editor",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool FilmEditorCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_film_editor_execute(const char *argument)
+void FilmEditorCommand::execute(Context* context)
 {
   switch_between_animation_and_sprite_editor();
 }
 
-Command cmd_film_editor = {
-  CMD_FILM_EDITOR,
-  cmd_film_editor_enabled,
-  NULL,
-  cmd_film_editor_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_film_editor_command()
+{
+  return new FilmEditorCommand;
+}
+

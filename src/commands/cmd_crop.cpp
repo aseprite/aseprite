@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -29,23 +29,41 @@
 #include "widgets/colbar.h"
 #include "util/autocrop.h"
 #include "util/misc.h"
+#include "sprite_wrappers.h"
 
-/* ======================== */
-/* crop_sprite              */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// crop_sprite
 
-static bool cmd_crop_sprite_enabled(const char *argument)
+class CropSpriteCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  CropSpriteCommand();
+  Command* clone() const { return new CropSpriteCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+CropSpriteCommand::CropSpriteCommand()
+  : Command("crop_sprite",
+	    "Crop Sprite",
+	    CmdRecordableFlag)
+{
+}
+
+bool CropSpriteCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->mask != NULL &&
     sprite->mask->bitmap != NULL;
 }
 
-static void cmd_crop_sprite_execute(const char *argument)
+void CropSpriteCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Sprite Crop");
     int bgcolor = get_color_for_image(sprite->imgtype,
@@ -61,19 +79,36 @@ static void cmd_crop_sprite_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-/* ======================== */
-/* autocrop_sprite          */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// autocrop_sprite
 
-static bool cmd_autocrop_sprite_enabled(const char *argument)
+class AutocropSpriteCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  AutocropSpriteCommand();
+  Command* clone() const { return new AutocropSpriteCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+AutocropSpriteCommand::AutocropSpriteCommand()
+  : Command("autocrop_sprite",
+	    "Autocrop Sprite",
+	    CmdRecordableFlag)
+{
+}
+
+bool AutocropSpriteCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_autocrop_sprite_execute(const char *argument)
+void AutocropSpriteCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Sprite Autocrop");
     undoable.autocrop_sprite(colorbar_get_bg_color(app_get_colorbar()));
@@ -83,19 +118,15 @@ static void cmd_autocrop_sprite_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-/**********************************************************************/
-/* local */
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
 
-Command cmd_crop_sprite = {
-  CMD_CROP_SPRITE,
-  cmd_crop_sprite_enabled,
-  NULL,
-  cmd_crop_sprite_execute,
-};
+Command* CommandFactory::create_crop_sprite_command()
+{
+  return new CropSpriteCommand;
+}
 
-Command cmd_autocrop_sprite = {
-  CMD_AUTOCROP_SPRITE,
-  cmd_autocrop_sprite_enabled,
-  NULL,
-  cmd_autocrop_sprite_execute,
-};
+Command* CommandFactory::create_autocrop_sprite_command()
+{
+  return new AutocropSpriteCommand;
+}

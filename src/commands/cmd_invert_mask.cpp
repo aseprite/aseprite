@@ -18,29 +18,62 @@
 
 #include "config.h"
 
+#include "commands/command.h"
 #include "commands/commands.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_invert_mask_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// invert_mask
+
+class InvertMaskCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  InvertMaskCommand();
+  Command* clone() { return new InvertMaskCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+InvertMaskCommand::InvertMaskCommand()
+  : Command("invert_mask",
+	    "Invert Mask",
+	    CmdRecordableFlag)
+{
+}
+
+bool InvertMaskCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_invert_mask_execute(const char *argument)
+void InvertMaskCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
-  Mask *mask;
-
-  /* change the selection */
-  if (!sprite->mask->bitmap) {
-    command_execute(command_get_by_name(CMD_MASK_ALL), argument);
+  bool has_mask = false;
+  {
+    const CurrentSpriteReader sprite(context);
+    if (sprite->mask->bitmap)
+      has_mask = true;
   }
+
+  // without mask?...
+  if (!has_mask) {
+    // so we select all
+    Command* mask_all_cmd =
+      CommandsModule::instance()->get_command_by_name(CommandId::mask_all);
+    context->execute_command(mask_all_cmd);
+  }
+  // invert the current mask
   else {
+    CurrentSpriteWriter sprite(context);
+
     /* undo */
     if (undo_is_enabled(sprite->undo)) {
       undo_set_label(sprite->undo, "Mask Invert");
@@ -48,7 +81,7 @@ static void cmd_invert_mask_execute(const char *argument)
     }
 
     /* create a new mask */
-    mask = mask_new();
+    Mask* mask = mask_new();
 
     /* select all the sprite area */
     mask_replace(mask, 0, 0, sprite->w, sprite->h);
@@ -79,9 +112,10 @@ static void cmd_invert_mask_execute(const char *argument)
   }
 }
 
-Command cmd_invert_mask = {
-  CMD_INVERT_MASK,
-  cmd_invert_mask_enabled,
-  NULL,
-  cmd_invert_mask_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_invert_mask_command()
+{
+  return new InvertMaskCommand;
+}

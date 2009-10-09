@@ -22,7 +22,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/app.h"
@@ -51,16 +51,37 @@ static bool slider_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
 static void make_preview();
 
-static bool cmd_replace_color_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// replace_color
+
+class ReplaceColorCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  ReplaceColorCommand();
+  Command* clone() const { return new ReplaceColorCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+ReplaceColorCommand::ReplaceColorCommand()
+  : Command("replace_color",
+	    "Replace Color",
+	    CmdRecordableFlag)
+{
+}
+
+bool ReplaceColorCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_replace_color_execute(const char *argument)
+void ReplaceColorCommand::execute(Context* context)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   JWidget color_buttons_box;
   JWidget box_target, target_button;
   JWidget button_ok;
@@ -183,9 +204,10 @@ static void make_preview()
     preview_restart(preview);
 }
 
-Command cmd_replace_color = {
-  CMD_REPLACE_COLOR,
-  cmd_replace_color_enabled,
-  NULL,
-  cmd_replace_color_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_replace_color_command()
+{
+  return new ReplaceColorCommand;
+}

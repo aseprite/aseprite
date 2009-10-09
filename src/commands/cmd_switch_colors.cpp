@@ -22,11 +22,27 @@
 
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "widgets/colbar.h"
 
-static void cmd_switch_colors_execute(const char *argument)
+class SwitchColorsCommand : public Command
+{
+public:
+  SwitchColorsCommand();
+
+protected:
+  void execute(Context* context);
+};
+
+SwitchColorsCommand::SwitchColorsCommand()
+  : Command("switch_colors",
+	    "SwitchColors",
+	    CmdUIOnlyFlag)
+{
+}
+
+void SwitchColorsCommand::execute(Context* context)
 {
   JWidget colorbar = app_get_colorbar();
   color_t fg = colorbar_get_fg_color(colorbar);
@@ -36,9 +52,10 @@ static void cmd_switch_colors_execute(const char *argument)
   colorbar_set_bg_color(colorbar, fg);
 }
 
-Command cmd_switch_colors = {
-  CMD_SWITCH_COLORS,
-  NULL,
-  NULL,
-  cmd_switch_colors_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_switch_colors_command()
+{
+  return new SwitchColorsCommand;
+}

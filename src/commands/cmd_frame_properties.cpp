@@ -20,24 +20,46 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
+
+//////////////////////////////////////////////////////////////////////
+// frame_properties
+
+class FramePropertiesCommand : public Command
+{
+public:
+  FramePropertiesCommand();
+  Command* clone() { return new FramePropertiesCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
 
 class SpriteReader;
 void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame);
 
-static bool cmd_frame_properties_enabled(const char *argument)
+FramePropertiesCommand::FramePropertiesCommand()
+  : Command("frame_properties",
+	    "Frame Properties",
+	    CmdUIOnlyFlag)
 {
-  const CurrentSpriteReader sprite;
+}
+
+bool FramePropertiesCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_frame_properties_execute(const char *argument)
+void FramePropertiesCommand::execute(Context* context)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   dialogs_frame_length(sprite, sprite->frame);
 }
 
@@ -85,9 +107,10 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
   }
 }
 
-Command cmd_frame_properties = {
-  CMD_FRAME_PROPERTIES,
-  cmd_frame_properties_enabled,
-  NULL,
-  cmd_frame_properties_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_frame_properties_command()
+{
+  return new FramePropertiesCommand;
+}

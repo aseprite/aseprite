@@ -22,11 +22,12 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "console.h"
 #include "core/app.h"
 #include "dialogs/options.h"
 #include "modules/gui.h"
+#include "sprite_wrappers.h"
 #include "modules/palettes.h"
 
 #define DEPTH_TO_INDEX(bpp)			\
@@ -49,11 +50,30 @@ static int old_card, old_w, old_h, old_depth, old_scaling;
 static int timer_to_accept;
 static int seconds_to_accept;
 
-static void show_dialog();
-static bool try_new_gfx_mode();
+static void show_dialog(Context* context);
+static bool try_new_gfx_mode(Context* context);
 static bool alert_msg_proc(JWidget widget, JMessage msg);
 
-static void cmd_configure_screen_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+
+class ConfigureScreen : public Command
+{
+public:
+  ConfigureScreen();
+  Command* clone() const { return new ConfigureScreen(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+ConfigureScreen::ConfigureScreen()
+  : Command("configure_screen",
+	    "Configure Screen",
+	    CmdUIOnlyFlag)
+{
+}
+
+void ConfigureScreen::execute(Context* context)
 {
   /* get the active status */
   old_card    = gfx_driver->id;
@@ -69,10 +89,10 @@ static void cmd_configure_screen_execute(const char *argument)
   new_depth = old_depth;
   new_scaling = old_scaling;
 
-  show_dialog();
+  show_dialog(context);
 }
 
-static void show_dialog()
+static void show_dialog(Context* context)
 {
   JWidget resolution, color_depth, pixel_scale, fullscreen;
   char buf[512];
@@ -132,7 +152,7 @@ static void show_dialog()
     new_scaling = jcombobox_get_selected_index(pixel_scale)+1;
 
     /* setup graphics mode */
-    if (try_new_gfx_mode()) {
+    if (try_new_gfx_mode(context)) {
       JWidgetPtr alert_window(jalert_new("Confirm Screen"
 					 "<<Do you want to keep this screen resolution?"
 					 "<<In 10 seconds the screen will be restored."
@@ -157,13 +177,13 @@ static void show_dialog()
 	new_depth = old_depth;
 	new_scaling = old_scaling;
 
-	try_new_gfx_mode();
+	try_new_gfx_mode(context);
       }
     }
   }
 }
 
-static bool try_new_gfx_mode()
+static bool try_new_gfx_mode(Context* context)
 {
   /* try change the new graphics mode */
   set_color_depth(new_depth);
@@ -187,7 +207,7 @@ static bool try_new_gfx_mode()
 
       /* restore palette all screen stuff */
       {
-	const CurrentSpriteReader sprite;
+	const CurrentSpriteReader sprite(context);
 	app_refresh_screen(sprite);
       }
 
@@ -207,7 +227,7 @@ static bool try_new_gfx_mode()
 
     // restore palette all screen stuff
     {
-      const CurrentSpriteReader sprite;
+      const CurrentSpriteReader sprite(context);
       app_refresh_screen(sprite);
     }
   }
@@ -248,9 +268,10 @@ static bool alert_msg_proc(JWidget widget, JMessage msg)
   return FALSE;
 }
 
-Command cmd_configure_screen = {
-  CMD_CONFIGURE_SCREEN,
-  NULL,
-  NULL,
-  cmd_configure_screen_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_configure_screen_command()
+{
+  return new ConfigureScreen;
+}

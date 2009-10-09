@@ -22,13 +22,33 @@
 
 #include "jinete/jsystem.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/core.h"
 #include "file/file.h"
 #include "raster/raster.h"
 #include "util/misc.h"
 
-static void cmd_screen_shot_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// screen_shot
+
+class ScreenShotCommand : public Command
+{
+public:
+  ScreenShotCommand();
+  Command* clone() { return new ScreenShotCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+ScreenShotCommand::ScreenShotCommand()
+  : Command("screen_shot",
+	    "Screen Shot",
+	    CmdUIOnlyFlag)
+{
+}
+
+void ScreenShotCommand::execute(Context* context)
 {
   int c, old_flag;
   char buf[512];
@@ -110,9 +130,10 @@ static void cmd_screen_shot_execute(const char *argument)
   freeze_mouse_flag = old_flag;
 }
 
-Command cmd_screen_shot = {
-  CMD_SCREEN_SHOT,
-  NULL,
-  NULL,
-  cmd_screen_shot_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_screen_shot_command()
+{
+  return new ScreenShotCommand;
+}

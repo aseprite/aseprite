@@ -18,61 +18,98 @@
 
 #include "config.h"
 
+#include <memory>
 #include <allegro.h>
 #include "jinete/jinete.h"
 
-#include "ui_context.h"
+#include "commands/command.h"
 #include "commands/commands.h"
 #include "core/app.h"
+#include "modules/editors.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 
-static bool close_current_sprite();
+static bool close_current_sprite(Context* context);
 
-/* ======================== */
-/* close_file               */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// close_file
 
-static bool cmd_close_file_enabled(const char *argument)
+class CloseFileCommand : public Command
 {
-  const CurrentSpriteReader sprite;
-  return sprite != NULL;
-}
+public:
+  CloseFileCommand()
+    : Command("close_file",
+	      "Close File",
+	      CmdUIOnlyFlag)
+  {
+  }
 
-static void cmd_close_file_execute(const char *argument)
+  Command* clone() const { return new CloseFileCommand(*this); }
+
+protected:
+
+  bool enabled(Context* context)
+  {
+    const CurrentSpriteReader sprite(context);
+    return sprite != NULL;
+  }
+
+  void execute(Context* context)
+  {
+    close_current_sprite(context);
+  }
+
+private:
+  static char* read_authors_txt(const char *filename);
+};
+
+//////////////////////////////////////////////////////////////////////
+// close_all_files
+
+class CloseAllFilesCommand : public Command
 {
-  close_current_sprite();
-}
+public:
+  CloseAllFilesCommand()
+    : Command("close_all_files",
+	      "Close All Files",
+	      CmdRecordableFlag)
+  {
+  }
 
-/* ======================== */
-/* close_all_files          */
-/* ======================== */
+  Command* clone() const { return new CloseAllFilesCommand(*this); }
 
-static bool cmd_close_all_files_enabled(const char *argument)
-{
-  return !UIContext::instance()->get_sprite_list().empty();
-}
+protected:
 
-static void cmd_close_all_files_execute(const char *argument)
-{
-  UIContext* context = UIContext::instance();
-  if (!context->get_current_sprite())
-    context->show_sprite(context->get_first_sprite());
+  bool enabled(Context* context)
+  {
+    return !context->get_sprite_list().empty();
+  }
 
-  while (true) {
-    if (context->get_current_sprite() != NULL) {
-      if (!close_current_sprite())
+  void execute(Context* context)
+  {
+    if (!context->get_current_sprite())
+      set_sprite_in_more_reliable_editor(context->get_first_sprite());
+
+    while (true) {
+      if (context->get_current_sprite() != NULL) {
+	if (!close_current_sprite(context))
+	  break;
+      }
+      else
 	break;
     }
-    else
-      break;
   }
-}
+
+};
+
+//////////////////////////////////////////////////////////////////////
 
 /**
  * Closes the current sprite, asking to the user if to save it if it's
  * modified.
  */
-static bool close_current_sprite()
+static bool close_current_sprite(Context* context)
 {
   bool save_it;
 
@@ -81,27 +118,27 @@ try_again:;
   save_it = false;
   {
     // The sprite is locked as reader temporaly
-    CurrentSpriteReader sprite;
+    CurrentSpriteReader sprite(context);
 
-    /* see if the sprite has changes */
+    // see if the sprite has changes
     while (sprite_is_modified(sprite)) {
-      /* ask what want to do the user with the changes in the sprite */
+      // ask what want to do the user with the changes in the sprite
       int ret = jalert("%s<<%s<<%s||%s||%s||%s",
 		       _("Warning"), _("Saving changes in:"),
 		       get_filename(sprite->filename),
 		       _("&Save"), _("&Discard"), _("&Cancel"));
 
       if (ret == 1) {
-	/* "save": save the changes */
+	// "save": save the changes
 	save_it = true;
 	break;
       }
       else if (ret != 2) {
-	/* "cancel" or "ESC" */
-	return false; /* we back doing nothing */
+	// "cancel" or "ESC" */
+	return false; // we back doing nothing
       }
       else {
-	/* "discard" */
+	// "discard"
 	break;
       }
     }
@@ -109,29 +146,30 @@ try_again:;
 
   // Does we need to save the sprite?
   if (save_it) {
-    // TODO we have to pass the sprite to the save file command
-    command_execute(command_get_by_name(CMD_SAVE_FILE), NULL);
+    Command* save_command =
+      CommandsModule::instance()->get_command_by_name(CommandId::save_file);
+    context->execute_command(save_command);
+
     goto try_again;
   }
 
   // Destroy the sprite (locking it as writer)
   {
-    CurrentSpriteWriter sprite;
+    CurrentSpriteWriter sprite(context);
     sprite.destroy();
   }
   return true;
 }
 
-Command cmd_close_file = {
-  CMD_CLOSE_FILE,
-  cmd_close_file_enabled,
-  NULL,
-  cmd_close_file_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
 
-Command cmd_close_all_files = {
-  CMD_CLOSE_ALL_FILES,
-  cmd_close_all_files_enabled,
-  NULL,
-  cmd_close_all_files_execute,
-};
+Command* CommandFactory::create_close_file_command()
+{
+  return new CloseFileCommand;
+}
+
+Command* CommandFactory::create_close_all_files_command()
+{
+  return new CloseAllFilesCommand;
+}

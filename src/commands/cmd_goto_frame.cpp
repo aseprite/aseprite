@@ -18,45 +18,81 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
+#include "sprite_wrappers.h"
 
-/* ======================== */
-/* goto_first_frame         */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// goto_first_frame
 
-static bool cmd_goto_first_frame_enabled(const char *argument)
+class GotoFirstFrameCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  GotoFirstFrameCommand();
+  Command* clone() { return new GotoFirstFrameCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+GotoFirstFrameCommand::GotoFirstFrameCommand()
+  : Command("goto_first_frame",
+	    "Goto First Frame",
+	    CmdRecordableFlag)
+{
+}
+
+bool GotoFirstFrameCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_goto_first_frame_execute(const char *argument)
+void GotoFirstFrameCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   sprite->frame = 0;
 
   update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 }
 
-/* ======================== */
-/* goto_previous_frame      */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// goto_previous_frame
 
-static bool cmd_goto_previous_frame_enabled(const char *argument)
+class GotoPreviousFrameCommand : public Command
+
 {
-  const CurrentSpriteReader sprite;
+public:
+  GotoPreviousFrameCommand();
+  Command* clone() { return new GotoPreviousFrameCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+GotoPreviousFrameCommand::GotoPreviousFrameCommand()
+  : Command("goto_previous_frame",
+	    "Goto Previous Frame",
+	    CmdRecordableFlag)
+{
+}
+
+bool GotoPreviousFrameCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_goto_previous_frame_execute(const char *argument)
+void GotoPreviousFrameCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   if (sprite->frame > 0)
     sprite->frame--;
@@ -67,20 +103,38 @@ static void cmd_goto_previous_frame_execute(const char *argument)
   editor_update_statusbar_for_standby(current_editor);
 }
 
-/* ======================== */
-/* goto_next_frame          */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// goto_next_frame
 
-static bool cmd_goto_next_frame_enabled(const char *argument)
+class GotoNextFrameCommand : public Command
+
 {
-  const CurrentSpriteReader sprite;
+public:
+  GotoNextFrameCommand();
+  Command* clone() { return new GotoNextFrameCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+GotoNextFrameCommand::GotoNextFrameCommand()
+  : Command("goto_next_frame",
+	    "Goto Next Frame",
+	    CmdRecordableFlag)
+{
+}
+
+bool GotoNextFrameCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_goto_next_frame_execute(const char *argument)
+void GotoNextFrameCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   if (sprite->frame < sprite->frames-1)
     sprite->frame++;
@@ -91,50 +145,63 @@ static void cmd_goto_next_frame_execute(const char *argument)
   editor_update_statusbar_for_standby(current_editor);
 }
 
-/* ======================== */
-/* goto_last_frame          */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// goto_last_frame
 
-static bool cmd_goto_last_frame_enabled(const char *argument)
+class GotoLastFrameCommand : public Command
+
 {
-  const CurrentSpriteReader sprite;
+public:
+  GotoLastFrameCommand();
+  Command* clone() { return new GotoLastFrameCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+GotoLastFrameCommand::GotoLastFrameCommand()
+  : Command("goto_last_frame",
+	    "Goto Last Frame",
+	    CmdRecordableFlag)
+{
+}
+
+bool GotoLastFrameCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_goto_last_frame_execute(const char *argument)
+void GotoLastFrameCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   sprite->frame = sprite->frames-1;
 
   update_screen_for_sprite(sprite);
   editor_update_statusbar_for_standby(current_editor);
 }
 
-Command cmd_goto_first_frame = {
-  CMD_GOTO_FIRST_FRAME,
-  cmd_goto_first_frame_enabled,
-  NULL,
-  cmd_goto_first_frame_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
 
-Command cmd_goto_previous_frame = {
-  CMD_GOTO_PREVIOUS_FRAME,
-  cmd_goto_previous_frame_enabled,
-  NULL,
-  cmd_goto_previous_frame_execute,
-};
+Command* CommandFactory::create_goto_first_frame_command()
+{
+  return new GotoFirstFrameCommand;
+}
 
-Command cmd_goto_next_frame = {
-  CMD_GOTO_NEXT_FRAME,
-  cmd_goto_next_frame_enabled,
-  NULL,
-  cmd_goto_next_frame_execute,
-};
+Command* CommandFactory::create_goto_previous_frame_command()
+{
+  return new GotoPreviousFrameCommand;
+}
 
-Command cmd_goto_last_frame = {
-  CMD_GOTO_LAST_FRAME,
-  cmd_goto_last_frame_enabled,
-  NULL,
-  cmd_goto_last_frame_execute,
-};
+Command* CommandFactory::create_goto_next_frame_command()
+{
+  return new GotoNextFrameCommand;
+}
+
+Command* CommandFactory::create_goto_last_frame_command()
+{
+  return new GotoLastFrameCommand;
+}

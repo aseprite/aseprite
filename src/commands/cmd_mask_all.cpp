@@ -18,21 +18,43 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_mask_all_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// mask_all
+
+class MaskAllCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  MaskAllCommand();
+  Command* clone() { return new MaskAllCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+MaskAllCommand::MaskAllCommand()
+  : Command("mask_all",
+	    "Mask All",
+	    CmdRecordableFlag)
+{
+}
+
+bool MaskAllCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
   
-static void cmd_mask_all_execute(const char *argument)
+void MaskAllCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   /* undo */
   if (undo_is_enabled(sprite->undo)) {
@@ -47,9 +69,10 @@ static void cmd_mask_all_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_mask_all = {
-  CMD_MASK_ALL,
-  cmd_mask_all_enabled,
-  NULL,
-  cmd_mask_all_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_mask_all_command()
+{
+  return new MaskAllCommand;
+}

@@ -18,21 +18,43 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_deselect_mask_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// deselect_mask
+
+class DeselectMaskCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  DeselectMaskCommand();
+  Command* clone() const { return new DeselectMaskCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+DeselectMaskCommand::DeselectMaskCommand()
+  : Command("deselect_mask",
+	    "Deselect Mask",
+	    CmdRecordableFlag)
+{
+}
+
+bool DeselectMaskCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite && !mask_is_empty(sprite->mask);
 }
 
-static void cmd_deselect_mask_execute(const char *argument)
+void DeselectMaskCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   Mask *mask;
 
   /* destroy the *deselected* mask */
@@ -60,9 +82,10 @@ static void cmd_deselect_mask_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_deselect_mask = {
-  CMD_DESELECT_MASK,
-  cmd_deselect_mask_enabled,
-  NULL,
-  cmd_deselect_mask_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_deselect_mask_command()
+{
+  return new DeselectMaskCommand;
+}

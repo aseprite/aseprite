@@ -20,14 +20,36 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_layer_from_background_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// layer_from_background
+
+class LayerFromBackgroundCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  LayerFromBackgroundCommand();
+  Command* clone() { return new LayerFromBackgroundCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+LayerFromBackgroundCommand::LayerFromBackgroundCommand()
+  : Command("layer_from_background",
+	    "Layer From Background",
+	    CmdRecordableFlag)
+{
+}
+
+bool LayerFromBackgroundCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -37,9 +59,9 @@ static bool cmd_layer_from_background_enabled(const char *argument)
     layer_is_background(sprite->layer);
 }
 
-static void cmd_layer_from_background_execute(const char *argument)
+void LayerFromBackgroundCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Layer from Background");
     undoable.layer_from_background();
@@ -48,9 +70,11 @@ static void cmd_layer_from_background_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_layer_from_background = {
-  CMD_LAYER_FROM_BACKGROUND,
-  cmd_layer_from_background_enabled,
-  NULL,
-  cmd_layer_from_background_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_layer_from_background_command()
+{
+  return new LayerFromBackgroundCommand;
+}
+

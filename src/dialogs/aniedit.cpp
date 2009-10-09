@@ -25,6 +25,7 @@
 /* #include "jinete/jintern.h" */
 
 #include "commands/commands.h"
+#include "commands/command.h"
 /* #include "core/app.h" */
 /* #include "core/cfg.h" */
 /* #include "core/core.h" */
@@ -36,6 +37,8 @@
 #include "undoable.h"
 #include "util/celmove.h"
 #include "util/thmbnail.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 
 /*
    Animator Editor
@@ -535,8 +538,11 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    }
 	    /* show the frame's properties dialog */
 	    else if (msg->mouse.left) {
-	      if (anieditor->clk_frame == anieditor->hot_frame)
-		command_execute(command_get_by_name(CMD_FRAME_PROPERTIES), NULL);
+	      if (anieditor->clk_frame == anieditor->hot_frame) {
+		UIContext::instance()
+		  ->execute_command(CommandsModule::instance()
+				    ->get_command_by_name(CommandId::frame_properties));
+	      }
 	      else {
 		const SpriteReader sprite((Sprite*)anieditor->sprite);
 
@@ -687,14 +693,14 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       Command *command = get_command_from_key_message(msg);
 
       /* close animation editor */
-      if ((command && (strcmp(command->name, CMD_FILM_EDITOR) == 0)) ||
+      if ((command && (strcmp(command->short_name(), CommandId::film_editor) == 0)) ||
 	  (msg->key.scancode == KEY_ESC)) {
 	jwidget_close_window(widget);
 	return TRUE;
       }
 
       /* undo */
-      if (command && strcmp(command->name, CMD_UNDO) == 0) {
+      if (command && strcmp(command->short_name(), CommandId::undo) == 0) {
 	const SpriteReader sprite((Sprite*)anieditor->sprite);
 	if (undo_can_undo(sprite->undo)) {
 	  SpriteWriter sprite_writer(sprite);
@@ -709,7 +715,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       }
 
       /* redo */
-      if (command && strcmp(command->name, CMD_REDO) == 0) {
+      if (command && strcmp(command->short_name(), CommandId::redo) == 0) {
 	const SpriteReader sprite((Sprite*)anieditor->sprite);
 	if (undo_can_redo(sprite->undo)) {
 	  SpriteWriter sprite_writer(sprite);
@@ -725,25 +731,27 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* new_frame, remove_frame, new_cel, remove_cel */
       if (command != NULL) {
-	if (strcmp(command->name, CMD_NEW_FRAME) == 0 ||
-	    strcmp(command->name, CMD_REMOVE_CEL) == 0 ||
-	    strcmp(command->name, CMD_REMOVE_FRAME) == 0 ||
-	    strcmp(command->name, CMD_GOTO_FIRST_FRAME) == 0 ||
-	    strcmp(command->name, CMD_GOTO_PREVIOUS_FRAME) == 0 ||
-	    strcmp(command->name, CMD_GOTO_PREVIOUS_LAYER) == 0 ||
-	    strcmp(command->name, CMD_GOTO_NEXT_FRAME) == 0 ||
-	    strcmp(command->name, CMD_GOTO_NEXT_LAYER) == 0 ||
-	    strcmp(command->name, CMD_GOTO_LAST_FRAME) == 0) {
-	  command_execute(command, NULL);
+	if (strcmp(command->short_name(), CommandId::new_frame) == 0 ||
+	    strcmp(command->short_name(), CommandId::remove_cel) == 0 ||
+	    strcmp(command->short_name(), CommandId::remove_frame) == 0 ||
+	    strcmp(command->short_name(), CommandId::goto_first_frame) == 0 ||
+	    strcmp(command->short_name(), CommandId::goto_previous_frame) == 0 ||
+	    strcmp(command->short_name(), CommandId::goto_previous_layer) == 0 ||
+	    strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
+	    strcmp(command->short_name(), CommandId::goto_next_layer) == 0 ||
+	    strcmp(command->short_name(), CommandId::goto_last_frame) == 0) {
+	  // execute the command
+	  UIContext::instance()->execute_command(command);
 
 	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	  return TRUE;
 	}
 
-	if (strcmp(command->name, CMD_NEW_LAYER) == 0 ||
-	    strcmp(command->name, CMD_REMOVE_LAYER) == 0) {
-	  command_execute(command, NULL);
+	if (strcmp(command->short_name(), CommandId::new_layer) == 0 ||
+	    strcmp(command->short_name(), CommandId::remove_layer) == 0) {
+	  // execute the command
+	  UIContext::instance()->execute_command(command);
 
 	  anieditor_regenerate_layers(widget);
 	  anieditor_show_current_cel(widget);

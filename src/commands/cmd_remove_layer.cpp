@@ -18,23 +18,45 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_remove_layer_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// remove_layer
+
+class RemoveLayerCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  RemoveLayerCommand();
+  Command* clone() { return new RemoveLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+RemoveLayerCommand::RemoveLayerCommand()
+  : Command("remove_layer",
+	    "Remove Layer",
+	    CmdRecordableFlag)
+{
+}
+
+bool RemoveLayerCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL;
 }
 
-static void cmd_remove_layer_execute(const char *argument)
+void RemoveLayerCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Remove Layer");
     undoable.remove_layer(sprite->layer);
@@ -43,9 +65,10 @@ static void cmd_remove_layer_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_remove_layer = {
-  CMD_REMOVE_LAYER,
-  cmd_remove_layer_enabled,
-  NULL,
-  cmd_remove_layer_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_remove_layer_command()
+{
+  return new RemoveLayerCommand;
+}

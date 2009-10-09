@@ -20,58 +20,77 @@
 
 #include <allegro/unicode.h>
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/quant.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 #include "undoable.h"
 
-static bool cmd_change_image_type_enabled(const char *argument)
+class ChangeImageTypeCommand : public Command
 {
-  const CurrentSpriteReader sprite;
-  return
-    sprite != NULL &&
-    ((ustrcmp(argument, "rgb") == 0 && sprite->imgtype != IMAGE_RGB) ||
-     (ustrcmp(argument, "grayscale") == 0 && sprite->imgtype != IMAGE_GRAYSCALE) ||
-     (ustrncmp(argument, "indexed", 7) == 0 && sprite->imgtype != IMAGE_INDEXED));
+  int m_imgtype;
+  bool m_dithering;
+public:
+  ChangeImageTypeCommand();
+  Command* clone() const { return new ChangeImageTypeCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+ChangeImageTypeCommand::ChangeImageTypeCommand()
+  : Command("change_image_type",
+	    "Change Image Type",
+	    CmdUIOnlyFlag)
+{
+  m_imgtype = IMAGE_RGB;
+  m_dithering = DITHERING_NONE;
 }
 
-static void cmd_change_image_type_execute(const char *argument)
+void ChangeImageTypeCommand::load_params(Params* params)
 {
-  CurrentSpriteWriter sprite;
-  int destimgtype = sprite->imgtype;
-  int dithermethod = DITHERING_NONE;
+  std::string imgtype = params->get("imgtype");
+  if (imgtype == "rgb") m_imgtype = IMAGE_RGB;
+  else if (imgtype == "grayscale") m_imgtype = IMAGE_GRAYSCALE;
+  else if (imgtype == "indexed") m_imgtype = IMAGE_INDEXED;
 
-  if (ustrcmp(argument, "rgb") == 0) {
-    destimgtype = IMAGE_RGB;
-  }
-  else if (ustrcmp(argument, "grayscale") == 0) {
-    destimgtype = IMAGE_GRAYSCALE;
-  }
-  else if (ustrcmp(argument, "indexed") == 0) {
-    destimgtype = IMAGE_INDEXED;
-  }
-  else if (ustrcmp(argument, "indexed-dither") == 0) {
-    destimgtype = IMAGE_INDEXED;
-    dithermethod = DITHERING_ORDERED;
-  }
+  std::string dithering = params->get("dithering");
+  if (dithering == "ordered")
+    m_dithering = DITHERING_ORDERED;
+  else
+    m_dithering = DITHERING_NONE;
+}
 
+bool ChangeImageTypeCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
+  return
+    sprite != NULL;
+}
+
+void ChangeImageTypeCommand::execute(Context* context)
+{
+  CurrentSpriteWriter sprite(context);
   {
     CurrentSpriteRgbMap rgbmap;
     Undoable undoable(sprite, "Color Mode Change");
-    undoable.set_imgtype(destimgtype, dithermethod);
+    undoable.set_imgtype(m_imgtype, m_dithering);
     undoable.commit();
   }
-
   app_refresh_screen(sprite);
 }
 
-Command cmd_change_image_type = {
-  CMD_CHANGE_IMAGE_TYPE,
-  cmd_change_image_type_enabled,
-  NULL,
-  cmd_change_image_type_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_change_image_type_command()
+{
+  return new ChangeImageTypeCommand;
+}

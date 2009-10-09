@@ -22,10 +22,8 @@
 #include <list>
 #include <exception>
 #include "ase_exception.h"
-#include "ui_context.h"
+#include "context.h"
 #include "raster/sprite.h"
-
-class Context;
 
 class locked_sprite_exception : public ase_exception
 {
@@ -52,24 +50,23 @@ public:
   explicit SpriteWrapper(Sprite* sprite) : m_sprite(sprite) { }
   ~SpriteWrapper() { }
 
-  SpriteWrapper& operator=(const SpriteWrapper& copy) {
+  SpriteWrapper& operator=(const SpriteWrapper& copy) 
+  {
     m_sprite = copy.m_sprite;
     return *this;
-  }
-
-  bool is_valid() const {
-    return m_sprite != NULL;
   }
 
   operator Sprite* () { return m_sprite; }
   operator const Sprite* () const { return m_sprite; }
 
-  Sprite* operator->() {
+  Sprite* operator->() 
+  {
     assert(m_sprite != NULL);
     return m_sprite;
   }
 
-  const Sprite* operator->() const {
+  const Sprite* operator->() const 
+  {
     assert(m_sprite != NULL);
     return m_sprite;
   }
@@ -116,7 +113,8 @@ public:
     return *this;
   }
 
-  ~SpriteReader() {
+  ~SpriteReader()
+  {
     // unlock the sprite
     if (m_sprite)
       m_sprite->unlock();
@@ -170,7 +168,8 @@ public:
     }
   }
 
-  ~SpriteWriter() {
+  ~SpriteWriter() 
+  {
     unlock_writer();
   }
 
@@ -211,12 +210,13 @@ class CurrentSpriteReader : public SpriteReader
 {
 public:
 
-  CurrentSpriteReader(Context* context = UIContext::instance())
+  CurrentSpriteReader(Context* context)
     : SpriteReader(context->get_current_sprite())
   {
   }
 
-  ~CurrentSpriteReader() {
+  ~CurrentSpriteReader() 
+  {
   }
 
 };
@@ -227,13 +227,14 @@ class CurrentSpriteWriter : public SpriteWriter
 
 public:
 
-  CurrentSpriteWriter(Context* context = UIContext::instance())
+  CurrentSpriteWriter(Context* context)
     : SpriteWriter(context->get_current_sprite())
     , m_context(context)
   {
   }
 
-  ~CurrentSpriteWriter() {
+  ~CurrentSpriteWriter() 
+  {
   }
 
   void destroy()

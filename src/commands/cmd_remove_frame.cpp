@@ -20,22 +20,44 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_remove_frame_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// remove_frame
+
+class RemoveFrameCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  RemoveFrameCommand();
+  Command* clone() { return new RemoveFrameCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+RemoveFrameCommand::RemoveFrameCommand()
+  : Command("remove_frame",
+	    "Remove Frame",
+	    CmdRecordableFlag)
+{
+}
+
+bool RemoveFrameCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->frames > 1;
 }
 
-static void cmd_remove_frame_execute(const char *argument)
+void RemoveFrameCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Remove Frame");
     undoable.remove_frame(sprite->frame);
@@ -44,9 +66,10 @@ static void cmd_remove_frame_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_remove_frame = {
-  CMD_REMOVE_FRAME,
-  cmd_remove_frame_enabled,
-  NULL,
-  cmd_remove_frame_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_remove_frame_command()
+{
+  return new RemoveFrameCommand;
+}

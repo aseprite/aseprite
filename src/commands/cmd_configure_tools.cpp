@@ -22,8 +22,9 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
+#include "ui_context.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -37,6 +38,7 @@
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
 static JWidget window = NULL;
 
@@ -58,7 +60,26 @@ static bool set_grid_button_select_hook(JWidget widget, void *data);
 static bool cursor_button_change_hook(JWidget widget, void *data);
 static bool onionskin_check_change_hook(JWidget widget, void *data);
 
-static void cmd_configure_tools_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+
+class ConfigureTools : public Command
+{
+public:
+  ConfigureTools();
+  Command* clone() const { return new ConfigureTools(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+ConfigureTools::ConfigureTools()
+  : Command("configure_tools",
+	    "Configure Tools",
+	    CmdUIOnlyFlag)
+{
+}
+
+void ConfigureTools::execute(Context* context)
 {
   JWidget filled, tiled, tiled_x, tiled_y, use_grid, view_grid, set_grid;
   JWidget brush_size, brush_angle, glass_dirty;
@@ -325,7 +346,8 @@ static bool view_grid_check_change_hook(JWidget widget, void *data)
 static bool set_grid_button_select_hook(JWidget widget, void *data)
 {
   try {
-    const CurrentSpriteReader sprite;
+    // TODO use the same context as in ConfigureTools::execute
+    const CurrentSpriteReader sprite(UIContext::instance());
 
     if (sprite && sprite->mask && sprite->mask->bitmap) {
       JRect rect = jrect_new(sprite->mask->x,
@@ -365,9 +387,10 @@ static bool onionskin_check_change_hook(JWidget widget, void *data)
   return FALSE;
 }
 
-Command cmd_configure_tools = {
-  CMD_CONFIGURE_TOOLS,
-  NULL,
-  NULL,
-  cmd_configure_tools_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_configure_tools_command()
+{
+  return new ConfigureTools;
+}

@@ -18,22 +18,44 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
 #include "widgets/colbar.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_flatten_layers_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// flatten_layers
+
+class FlattenLayersCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  FlattenLayersCommand();
+  Command* clone() { return new FlattenLayersCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+FlattenLayersCommand::FlattenLayersCommand()
+  : Command("flatten_layers",
+	    "Flatten Layers",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool FlattenLayersCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_flatten_layers_execute(const char *argument)
+void FlattenLayersCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   int bgcolor = get_color_for_image(sprite->imgtype,
 				    colorbar_get_bg_color(app_get_colorbar()));
   {
@@ -44,9 +66,10 @@ static void cmd_flatten_layers_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_flatten_layers = {
-  CMD_FLATTEN_LAYERS,
-  cmd_flatten_layers_enabled,
-  NULL,
-  cmd_flatten_layers_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_flatten_layers_command()
+{
+  return new FlattenLayersCommand;
+}

@@ -18,17 +18,35 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
-#include "core/app.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/colbar.h"
 
-static bool cmd_background_from_layer_enabled(const char *argument)
+class BackgroundFromLayerCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  BackgroundFromLayerCommand();
+  Command* clone() const { return new BackgroundFromLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+BackgroundFromLayerCommand::BackgroundFromLayerCommand()
+  : Command("background_from_layer",
+	    "BackgroundFromLayer",
+	    CmdRecordableFlag)
+{
+}
+
+bool BackgroundFromLayerCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -38,13 +56,13 @@ static bool cmd_background_from_layer_enabled(const char *argument)
     layer_is_writable(sprite->layer);
 }
 
-static void cmd_background_from_layer_execute(const char *argument)
+void BackgroundFromLayerCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar
-  int bgcolor = app_get_bg_color(sprite);
+  int bgcolor = context->get_bg_color();
   bgcolor = fixup_color_for_background(sprite->imgtype, bgcolor);
 
   {
@@ -55,9 +73,10 @@ static void cmd_background_from_layer_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_background_from_layer = {
-  CMD_BACKGROUND_FROM_LAYER,
-  cmd_background_from_layer_enabled,
-  NULL,
-  cmd_background_from_layer_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_background_from_layer_command()
+{
+  return new BackgroundFromLayerCommand;
+}

@@ -22,7 +22,8 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
@@ -30,7 +31,41 @@
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 
-static void cmd_eyedropper_tool_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// eyedropper_tool
+
+class EyedropperToolCommand : public Command
+{
+  /**
+   * True means "pick background color", false the foreground color.
+   */
+  bool m_background;
+
+public:
+  EyedropperToolCommand();
+  Command* clone() const { return new EyedropperToolCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+  void execute(Context* context);
+};
+
+EyedropperToolCommand::EyedropperToolCommand()
+  : Command("eyedropper_tool",
+	    "Eyedropper",
+	    CmdUIOnlyFlag)
+{
+  m_background = false;
+}
+
+void EyedropperToolCommand::load_params(Params* params)
+{
+  std::string target = params->get("target");
+  if (target == "foreground") m_background = false;
+  else if (target == "background") m_background = true;
+}
+
+void EyedropperToolCommand::execute(Context* context)
 {
   JWidget widget;
   Editor *editor;
@@ -53,17 +88,20 @@ static void cmd_eyedropper_tool_execute(const char *argument)
 			   sprite_getpixel(editor->sprite, x, y));
 
   if (color_type(color) != COLOR_TYPE_MASK) {
-    /* set the color of the color-bar */
-    if (ustrcmp(argument, "background") == 0)
+    // TODO replace the color in the "context", not directly from the color-bar
+
+    // set the color of the color-bar
+    if (m_background)
       colorbar_set_bg_color(app_get_colorbar(), color);
     else
       colorbar_set_fg_color(app_get_colorbar(), color);
   }
 }
 
-Command cmd_eyedropper_tool = {
-  CMD_EYEDROPPER_TOOL,
-  NULL,
-  NULL,
-  cmd_eyedropper_tool_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_eyedropper_tool_command()
+{
+  return new EyedropperToolCommand;
+}

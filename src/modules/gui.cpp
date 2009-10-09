@@ -33,7 +33,9 @@
 #include "jinete/jintern.h"
 
 #include "ui_context.h"
+#include "commands/command.h"
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "console.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -52,6 +54,7 @@
 #include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
@@ -93,7 +96,7 @@ struct Shortcut
     Command* command;
     Tool* tool;
   };
-  std::string argument;
+  Params* params;
 
   Shortcut(ShortcutType type);
   ~Shortcut();
@@ -103,7 +106,7 @@ struct Shortcut
 
 };
 
-static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char* argument);
+static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params);
 static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool);
 
 //////////////////////////////////////////////////////////////////////
@@ -441,7 +444,7 @@ void gui_feedback()
   if (next_idle_flags & REFRESH_FULL_SCREEN) {
     next_idle_flags ^= REFRESH_FULL_SCREEN;
 
-    const CurrentSpriteReader sprite;
+    const CurrentSpriteReader sprite(UIContext::instance());
     update_screen_for_sprite(sprite);
   }
 
@@ -773,14 +776,14 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
 // Keyboard shortcuts
 //////////////////////////////////////////////////////////////////////
 
-JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, Command* command, const char* argument)
+JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut_string, const char* command_name, Params* params)
 {
-  Shortcut* shortcut = get_keyboard_shortcut_for_command(command, argument);
+  Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
 
   if (!shortcut) {
     shortcut = new Shortcut(Shortcut_ExecuteCommand);
-    shortcut->command = command;
-    shortcut->argument = argument ? argument: "";
+    shortcut->command = CommandsModule::instance()->get_command_by_name(command_name);
+    shortcut->params = params ? params->clone(): new Params;
 
     shortcuts->push_back(shortcut);
   }
@@ -811,7 +814,8 @@ Command* get_command_from_key_message(JMessage msg)
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ExecuteCommand &&
-	shortcut->argument.empty() &&
+	// TODO why?
+	// shortcut->argument.empty() &&
 	shortcut->is_key_pressed(msg)) {
       return shortcut->command;
     }
@@ -819,9 +823,9 @@ Command* get_command_from_key_message(JMessage msg)
   return NULL;
 }
 
-JAccel get_accel_to_execute_command(Command* command, const char* argument)
+JAccel get_accel_to_execute_command(const char* command_name, Params* params)
 {
-  Shortcut* shortcut = get_keyboard_shortcut_for_command(command, argument);
+  Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
   if (shortcut)
     return shortcut->accel;
   else
@@ -841,10 +845,14 @@ Shortcut::Shortcut(ShortcutType type)
 {
   this->type = type;
   this->accel = jaccel_new();
+  this->command = NULL;
+  this->tool = NULL;
+  this->params = NULL;
 }
 
 Shortcut::~Shortcut()
 {
+  delete params;
   jaccel_free(accel);
 }
 
@@ -866,10 +874,11 @@ bool Shortcut::is_key_pressed(JMessage msg)
   return false;
 }
 
-static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char* argument)
+static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params)
 {
-  if (!argument)
-    argument = "";
+  Command* command = CommandsModule::instance()->get_command_by_name(command_name);
+  if (!command)
+    return NULL;
 
   for (std::vector<Shortcut*>::iterator
 	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
@@ -877,7 +886,8 @@ static Shortcut* get_keyboard_shortcut_for_command(Command* command, const char*
 
     if (shortcut->type == Shortcut_ExecuteCommand &&
 	shortcut->command == command &&
-        shortcut->argument == argument) {
+	((!params && shortcut->params->empty()) ||
+	 (params && *shortcut->params == *params))) {
       return shortcut;
     }
   }
@@ -1020,11 +1030,9 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	      Command* command = shortcut->command;
 
 	      // the screen shot is available in everywhere
-	      if (strcmp(command->name, CMD_SCREEN_SHOT) == 0) {
-		if (command_is_enabled(command, NULL)) {
-		  command_execute(command, shortcut->argument.c_str());
-		  return true;
-		}
+	      if (strcmp(command->short_name(), CommandId::screen_shot) == 0) {
+		UIContext::instance()->execute_command(command, shortcut->params);
+		return true;
 	      }
 	      // all other keys are only available in the main-window
 	      else {
@@ -1042,12 +1050,8 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 		  else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
 		    /* ok, so we can execute the command represented by the
 		       pressed-key in the message... */
-		    if (command_is_enabled(command, shortcut->argument.c_str())) {
-		      // if a menu is open, close everything
-		      command_execute(command, shortcut->argument.c_str());
-		      return true;
-		    }
-		    break;
+		    UIContext::instance()->execute_command(command, shortcut->params);
+		    return true;
 		  }
 		}
 	      }

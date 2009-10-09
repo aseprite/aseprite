@@ -20,25 +20,47 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "console.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 
 static Layer *duplicate_layer(Sprite* sprite);
 
-static bool cmd_duplicate_layer_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// duplicate_layer
+
+class DuplicateLayerCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  DuplicateLayerCommand();
+  Command* clone() const { return new DuplicateLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+DuplicateLayerCommand::DuplicateLayerCommand()
+  : Command("duplicate_layer",
+	    "Duplicate Layer",
+	    CmdRecordableFlag)
+{
+}
+
+bool DuplicateLayerCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite && sprite->layer;
 }
 
-static void cmd_duplicate_layer_execute(const char *argument)
+void DuplicateLayerCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   if (duplicate_layer(sprite) != NULL)
     update_screen_for_sprite(sprite);
 }
@@ -90,9 +112,10 @@ static Layer *duplicate_layer(Sprite* sprite)
   return layer_copy;
 }
 
-Command cmd_duplicate_layer = {
-  CMD_DUPLICATE_LAYER,
-  cmd_duplicate_layer_enabled,
-  NULL,
-  cmd_duplicate_layer_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_duplicate_layer_command()
+{
+  return new DuplicateLayerCommand;
+}

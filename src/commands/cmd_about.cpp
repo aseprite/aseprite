@@ -22,14 +22,35 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/core.h"
 #include "core/dirs.h"
 #include "modules/gui.h"
 
-static char *read_authors_txt(const char *filename);
+//////////////////////////////////////////////////////////////////////
+// about
 
-static void cmd_about_execute(const char *argument)
+class AboutCommand : public Command
+{
+public:
+  AboutCommand();
+  Command* clone() const { return new AboutCommand(*this); }
+
+protected:
+  void execute(Context* context);
+
+private:
+  static char* read_authors_txt(const char *filename);
+};
+
+AboutCommand::AboutCommand()
+  : Command("about",
+	    "About",
+	    CmdUIOnlyFlag)
+{
+}
+
+void AboutCommand::execute(Context* context)
 {
   JWidget box1, label1, label2, separator1;
   JWidget textbox, view, separator2;
@@ -90,7 +111,7 @@ static void cmd_about_execute(const char *argument)
   jwindow_open_fg(window);
 }
 
-static char *read_authors_txt(const char *filename)
+char* AboutCommand::read_authors_txt(const char *filename)
 {
   DIRS *dirs, *dir;
   char *txt = NULL;
@@ -128,9 +149,10 @@ static char *read_authors_txt(const char *filename)
   return txt;
 }
 
-Command cmd_about = {
-  CMD_ABOUT,
-  NULL,
-  NULL,
-  cmd_about_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_about_command()
+{
+  return new AboutCommand;
+}

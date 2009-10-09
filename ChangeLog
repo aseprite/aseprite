@@ -1,3 +1,8 @@
+2009-10-08  David Capello  <davidcapello@gmail.com>
+
+	* Completelly refactored all the commands related stuff. This is
+	the beginning to implement macro recording.
+
 2009-09-03  David Capello  <davidcapello@gmail.com>
 
 	* Version 0.7.2 released.

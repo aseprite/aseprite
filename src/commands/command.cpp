@@ -18,40 +18,49 @@
 
 #include "config.h"
 
-#include "jinete/jbase.h"
-
+#include "console.h"
 #include "commands/command.h"
-#include "dialogs/options.h"
+#include "commands/params.h"
 
-//////////////////////////////////////////////////////////////////////
-// options
-
-class OptionsCommand : public Command
+Command::Command(const char* short_name, const char* friendly_name, CommandFlags flags)
 {
-public:
-  OptionsCommand();
-  Command* clone() { return new OptionsCommand(*this); }
+  m_short_name = short_name;
+  m_friendly_name = friendly_name;
+  m_flags = flags;
+}
 
-protected:
-  void execute(Context* context);
-};
-
-OptionsCommand::OptionsCommand()
-  : Command("options",
-	    "Options",
-	    CmdUIOnlyFlag)
+Command::~Command()
 {
 }
 
-void OptionsCommand::execute(Context* context)
+/**
+ * Converts specified parameters to class members.
+ */
+void Command::load_params(Params* params)
 {
-  dialogs_options();
+  // do nothing
 }
 
-//////////////////////////////////////////////////////////////////////
-// CommandFactory
-
-Command* CommandFactory::create_options_command()
+/**
+ * Preconditions to execute the command
+ */
+bool Command::enabled(Context* context)
 {
-  return new OptionsCommand;
+  return true;
+}
+
+/**
+ * Should the menu-item be checked?
+ */
+bool Command::checked(Context* context)
+{
+  return false;
+}
+
+/**
+ * Execute the command (after checking the preconditions).
+ */
+void Command::execute(Context* context)
+{
+  // do nothing
 }

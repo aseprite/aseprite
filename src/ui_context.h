@@ -23,17 +23,18 @@
 
 class UIContext : public Context
 {
-public:
+  static UIContext* m_instance;
 
-  static UIContext* instance();
-  static void destroy_instance();
+public:
+  static UIContext* instance() { return m_instance; }
 
   UIContext();
   virtual ~UIContext();
 
   virtual bool is_ui_available() const { return true; }
 
-  void show_sprite(Sprite* sprite) const;
+  virtual int get_fg_color();
+  virtual int get_bg_color();
 
 protected:
 

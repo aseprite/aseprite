@@ -20,25 +20,48 @@
 
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "dialogs/maskcol.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_mask_by_color_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// mask_by_color
+
+class MaskByColorCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  MaskByColorCommand();
+  Command* clone() { return new MaskByColorCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+MaskByColorCommand::MaskByColorCommand()
+  : Command("mask_by_color",
+	    "Mask By Color",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool MaskByColorCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_mask_by_color_execute(const char *argument)
+void MaskByColorCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   dialogs_mask_color(sprite);
 }
 
-Command cmd_mask_by_color = {
-  CMD_MASK_BY_COLOR,
-  cmd_mask_by_color_enabled,
-  NULL,
-  cmd_mask_by_color_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_mask_by_color_command()
+{
+  return new MaskByColorCommand;
+}

@@ -18,22 +18,44 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/clipboard.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_paste_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// paste
+
+class PasteCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  PasteCommand();
+  Command* clone() { return new PasteCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+PasteCommand::PasteCommand()
+  : Command("paste",
+	    "Paste",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool PasteCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     clipboard::can_paste();
 }
 
-static void cmd_paste_execute(const char *argument)
+void PasteCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   if (undo_is_enabled(sprite->undo))
     undo_set_label(sprite->undo, "Paste");
@@ -41,9 +63,10 @@ static void cmd_paste_execute(const char *argument)
   clipboard::paste(sprite);
 }
 
-Command cmd_paste = {
-  CMD_PASTE,
-  cmd_paste_enabled,
-  NULL,
-  cmd_paste_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_paste_command()
+{
+  return new PasteCommand;
+}

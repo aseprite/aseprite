@@ -27,15 +27,29 @@
 #include "jinete/jmessage.h"
 #include "jinete/jwidget.h"
 
-#include "commands/commands.h"
+#include "ui_context.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "core/core.h"
 #include "modules/gui.h"
 
-typedef struct MenuItem
+struct MenuItem
 {
-  Command *command;
-  char *argument;
-} MenuItem;
+  Command *m_command;
+  Params *m_params;
+
+  MenuItem(Command *command, Params* params)
+    : m_command(command)
+    , m_params(params ? params->clone(): NULL)
+  {
+  }
+
+  ~MenuItem()
+  {
+    delete m_params;
+  }
+
+};
 
 static int menuitem_type();
 static bool menuitem_msg_proc(JWidget widget, JMessage msg);
@@ -49,15 +63,10 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg);
  * 
  * @see jmenuitem_new
  */
-JWidget menuitem_new(const char* text,
-		     Command* command,
-		     const char* argument)
+JWidget menuitem_new(const char* text, Command* command, Params* params)
 {
   JWidget widget = jmenuitem_new(text);
-  MenuItem *menuitem = jnew0(MenuItem, 1);
-
-  menuitem->command = command;
-  menuitem->argument = jstrdup(argument ? argument: "");
+  MenuItem* menuitem = new MenuItem(command, params);
 
   jwidget_add_hook(widget,
 		   menuitem_type(),
@@ -70,13 +79,13 @@ JWidget menuitem_new(const char* text,
 Command* menuitem_get_command(JWidget widget)
 {
   MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
-  return menuitem->command;
+  return menuitem->m_command;
 }
 
-const char* menuitem_get_argument(JWidget widget)
+Params* menuitem_get_params(JWidget widget)
 {
   MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
-  return menuitem->argument;
+  return menuitem->m_params;
 }
 
 static int menuitem_type()
@@ -93,51 +102,46 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DESTROY: {
       MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
-      jfree(menuitem->argument);
-      jfree(menuitem);
+      delete menuitem;
       break;
     }
 
     case JM_OPEN: {
       MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
+      UIContext* context = UIContext::instance();
 
-      if (menuitem->command) {
-	/* enabled? */
-	if (command_is_enabled(menuitem->command, menuitem->argument))
-	  jwidget_enable(widget);
-	else
-	  jwidget_disable(widget);
+      if (menuitem->m_command) {
+	if (menuitem->m_params)
+	  menuitem->m_command->load_params(menuitem->m_params);
 
-	/* selected? */
-	if (command_is_checked(menuitem->command, menuitem->argument))
-	  jwidget_select(widget);
-	else
-	  jwidget_deselect(widget);
+	widget->enabled(menuitem->m_command->enabled(context));
+	widget->selected(menuitem->m_command->checked(context));
       }
       break;
     }
 
-    case JM_CLOSE: {
-      MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
-
-      /* disable the menu (the keyboard shortcuts are processed by "manager_msg_proc") */
-      if (menuitem->command)
-	jwidget_disable(widget);
+    case JM_CLOSE:
+      // disable the menu (the keyboard shortcuts are processed by "manager_msg_proc")
+      jwidget_disable(widget);
       break;
-    }
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_MENUITEM_SELECT) {
-	MenuItem *menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
+	MenuItem* menuitem = reinterpret_cast<MenuItem*>(jwidget_get_data(widget, menuitem_type()));
+	UIContext* context = UIContext::instance();
 
-	if (menuitem->command && command_is_enabled(menuitem->command,
-						    menuitem->argument)) {
-	  command_execute(menuitem->command, menuitem->argument);
-	  return TRUE;
+	if (menuitem->m_command) {
+	  if (menuitem->m_params)
+	    menuitem->m_command->load_params(menuitem->m_params);
+
+	  if (menuitem->m_command->enabled(context)) {
+	    context->execute_command(menuitem->m_command);
+	    return true;
+	  }
 	}
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }

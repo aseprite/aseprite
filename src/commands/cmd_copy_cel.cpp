@@ -20,24 +20,44 @@
 
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "sprite_wrappers.h"
 #include "dialogs/aniedit.h"
 #include "util/celmove.h"
 
-static bool cmd_copy_cel_enabled(const char *argument)
+class CopyCelCommand : public Command
+{
+public:
+  CopyCelCommand();
+  Command* clone() const { return new CopyCelCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+CopyCelCommand::CopyCelCommand()
+  : Command("copy_cel",
+	    "Copy Cel",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool CopyCelCommand::enabled(Context* context)
 {
   return animation_editor_is_movingcel();
 }
 
-static void cmd_copy_cel_execute(const char *argument)
+void CopyCelCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   copy_cel(sprite);
 }
 
-Command cmd_copy_cel = {
-  CMD_COPY_CEL,
-  cmd_copy_cel_enabled,
-  NULL,
-  cmd_copy_cel_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_copy_cel_command()
+{
+  return new CopyCelCommand;
+}

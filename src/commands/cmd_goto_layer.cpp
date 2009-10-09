@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "modules/editors.h"
@@ -26,21 +26,39 @@
 #include "raster/sprite.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
-/* ======================== */
-/* goto_previous_layer      */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// goto_previous_layer
 
-static bool cmd_goto_previous_layer_enabled(const char *argument)
+class GotoPreviousLayerCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  GotoPreviousLayerCommand();
+  Command* clone() { return new GotoPreviousLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+GotoPreviousLayerCommand::GotoPreviousLayerCommand()
+  : Command("goto_previous_layer",
+	    "Goto Previous Layer",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool GotoPreviousLayerCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_goto_previous_layer_execute(const char *argument)
+void GotoPreviousLayerCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   int i = sprite_layer2index(sprite, sprite->layer);
   
   if (i > 0)
@@ -58,20 +76,37 @@ static void cmd_goto_previous_layer_execute(const char *argument)
 		     sprite->layer->name);
 }
 
-/* ======================== */
-/* goto_next_layer          */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// goto_next_layer
 
-static bool cmd_goto_next_layer_enabled(const char *argument)
+class GotoNextLayerCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  GotoNextLayerCommand();
+  Command* clone() { return new GotoNextLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+GotoNextLayerCommand::GotoNextLayerCommand()
+  : Command("goto_next_layer",
+	    "Goto Next Layer",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool GotoNextLayerCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_goto_next_layer_execute(const char *argument)
+void GotoNextLayerCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   int i = sprite_layer2index(sprite, sprite->layer);
 
   if (i < sprite_count_layers(sprite)-1)
@@ -89,16 +124,15 @@ static void cmd_goto_next_layer_execute(const char *argument)
 		     sprite->layer->name);
 }
 
-Command cmd_goto_previous_layer = {
-  CMD_GOTO_PREVIOUS_LAYER,
-  cmd_goto_previous_layer_enabled,
-  NULL,
-  cmd_goto_previous_layer_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
 
-Command cmd_goto_next_layer = {
-  CMD_GOTO_NEXT_LAYER,
-  cmd_goto_next_layer_enabled,
-  NULL,
-  cmd_goto_next_layer_execute,
-};
+Command* CommandFactory::create_goto_previous_layer_command()
+{
+  return new GotoPreviousLayerCommand;
+}
+
+Command* CommandFactory::create_goto_next_layer_command()
+{
+  return new GotoNextLayerCommand;
+}

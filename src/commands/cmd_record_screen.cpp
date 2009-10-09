@@ -23,15 +23,36 @@
 #include "jinete/jbase.h"
 #include "jinete/jalert.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "util/recscr.h"
 
-static bool cmd_record_screen_checked(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// record_screen
+
+class RecordScreenCommand : public Command
+{
+public:
+  RecordScreenCommand();
+  Command* clone() { return new RecordScreenCommand(*this); }
+
+protected:
+  bool checked(Context* context);
+  void execute(Context* context);
+};
+
+RecordScreenCommand::RecordScreenCommand()
+  : Command("record_screen",
+	    "Record Screen",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool RecordScreenCommand::checked(Context* context)
 {
   return is_rec_screen();
 }
 
-static void cmd_record_screen_execute(const char *argument)
+void RecordScreenCommand::execute(Context* context)
 {
   if (is_rec_screen())
     rec_screen_off();
@@ -46,9 +67,10 @@ static void cmd_record_screen_execute(const char *argument)
   }
 }
 
-Command cmd_record_screen = {
-  CMD_RECORD_SCREEN,
-  NULL,
-  cmd_record_screen_checked,
-  cmd_record_screen_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_record_screen_command()
+{
+  return new RecordScreenCommand;
+}

@@ -28,6 +28,7 @@
 
 #include "ui_context.h"
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/color.h"
@@ -1065,10 +1066,14 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       }
       /* call the eyedropper command */
       else if (editor->alt_pressed) {
-	Command *command = command_get_by_name(CMD_EYEDROPPER_TOOL);
-	if (command_is_enabled(command, NULL))
-	  command_execute(command, msg->mouse.right ? "background": "");
-	return TRUE;
+	Command* eyedropper_cmd = 
+	  CommandsModule::instance()->get_command_by_name(CommandId::eyedropper_tool);
+
+	Params params;
+	params.set("target", msg->mouse.right ? "background": "foreground");
+
+	UIContext::instance()->execute_command(eyedropper_cmd, &params);
+	return true;
       }
       /* draw */
       else if (current_tool && editor->sprite->layer) {

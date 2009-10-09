@@ -22,7 +22,8 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "core/app.h"
 #include "core/job.h"
 #include "modules/gui.h"
@@ -33,6 +34,24 @@
 #include "raster/stock.h"
 #include "undoable.h"
 #include "widgets/colbar.h"
+#include "sprite_wrappers.h"
+
+//////////////////////////////////////////////////////////////////////
+// rotate_canvas
+
+class RotateCanvasCommand : public Command
+{
+  int m_angle;
+
+public:
+  RotateCanvasCommand();
+  Command* clone() { return new RotateCanvasCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
 
 class RotateCanvasJob : public Job
 {
@@ -149,29 +168,42 @@ protected:
 
 };
 
-static bool cmd_rotate_canvas_enabled(const char *argument)
+RotateCanvasCommand::RotateCanvasCommand()
+  : Command("rotate_canvas",
+	    "Rotate Canvas",
+	    CmdRecordableFlag)
 {
-  const CurrentSpriteReader sprite;
+  m_angle = 0;
+}
+
+void RotateCanvasCommand::load_params(Params* params)
+{
+  if (params->has_param("angle")) {
+    m_angle = ustrtol(params->get("angle").c_str(), NULL, 10);
+  }
+}
+
+bool RotateCanvasCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_rotate_canvas_execute(const char *argument)
+void RotateCanvasCommand::execute(Context* context)
 {
-  int angle = ustrtol(argument, NULL, 10);
-  CurrentSpriteReader sprite;
-
+  CurrentSpriteReader sprite(context);
   {
-    RotateCanvasJob job(sprite, angle);
+    RotateCanvasJob job(sprite, m_angle);
     job.do_job();
   }
-
   sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_rotate_canvas = {
-  CMD_ROTATE_CANVAS,
-  cmd_rotate_canvas_enabled,
-  NULL,
-  cmd_rotate_canvas_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_rotate_canvas_command()
+{
+  return new RotateCanvasCommand;
+}

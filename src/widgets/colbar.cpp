@@ -40,6 +40,8 @@
 #include "widgets/colsel.h"
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 
 #define COLORBAR_MAX_COLORS	256
 
@@ -477,7 +479,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	 sprite selected? */
       if (msg->timer.timer_id == colorbar->refresh_timer_id) {
 	try {
-	  const CurrentSpriteReader sprite;
+	  const CurrentSpriteReader sprite(UIContext::instance());
 	  if (sprite != NULL)
 	    update_editors_with_sprite(sprite);
 	}
@@ -573,14 +575,9 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
       assert(FALSE);
       break;
     case HOTCOLOR_FGCOLOR: {
-      Command *cmd;
-
       ustrcpy(buf, _("Foreground Color"));
 
-      cmd = command_get_by_name(CMD_SWITCH_COLORS);
-      assert(cmd != NULL);
-
-      JAccel accel = get_accel_to_execute_command(cmd, NULL);
+      JAccel accel = get_accel_to_execute_command(CommandId::switch_colors, NULL);
       if (accel != NULL) {
 	ustrcat(buf, _(" - "));
 	jaccel_to_string(accel, buf+ustrsize(buf));
@@ -658,7 +655,7 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
     case JM_CLOSE:
       try {
 	// change the sprite palette
-	const CurrentSpriteReader sprite;
+	const CurrentSpriteReader sprite(UIContext::instance());
 	if (sprite != NULL) {
 	  Palette *pal = sprite_get_palette(sprite, sprite->frame);
 	  int from, to;
@@ -736,7 +733,7 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 	   to start the "refresh_timer" to refresh all the editors
 	   with that sprite */
 	try {
-	  CurrentSpriteWriter sprite;
+	  CurrentSpriteWriter sprite(UIContext::instance());
 	  if (sprite != NULL && bitmap_color_depth(screen) != 8) {
 	    Palette *pal = sprite_get_palette(sprite, sprite->frame);
 	  

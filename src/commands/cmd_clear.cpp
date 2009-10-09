@@ -18,7 +18,8 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "sprite_wrappers.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
@@ -27,9 +28,30 @@
 #include "undoable.h"
 #include "widgets/colbar.h"
 
-static bool cmd_clear_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// ClearCommand
+
+class ClearCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  ClearCommand();
+  Command* clone() const { return new ClearCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+ClearCommand::ClearCommand()
+  : Command("clear",
+	    "Clear",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool ClearCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL &&
@@ -38,9 +60,9 @@ static bool cmd_clear_enabled(const char *argument)
     layer_is_writable(sprite->layer);
 }
 
-static void cmd_clear_execute(const char *argument)
+void ClearCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Clear");
     undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
@@ -49,9 +71,10 @@ static void cmd_clear_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_clear = {
-  CMD_CLEAR,
-  cmd_clear_enabled,
-  NULL,
-  cmd_clear_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_clear_command()
+{
+  return new ClearCommand;
+}

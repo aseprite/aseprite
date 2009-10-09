@@ -18,24 +18,43 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_redo_enabled(const char *argument)
+class RedoCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  RedoCommand();
+  Command* clone() { return new RedoCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+RedoCommand::RedoCommand()
+  : Command("redo",
+	    "Redo",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool RedoCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     undo_can_redo(sprite->undo);
 }
 
-static void cmd_redo_execute(const char *argument)
+void RedoCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Redid %s"),
@@ -46,9 +65,10 @@ static void cmd_redo_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_redo = {
-  CMD_REDO,
-  cmd_redo_enabled,
-  NULL,
-  cmd_redo_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_redo_command()
+{
+  return new RedoCommand;
+}

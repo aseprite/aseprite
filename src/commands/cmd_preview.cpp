@@ -23,6 +23,7 @@
 
 #include "jinete/jinete.h"
 
+#include "commands/command.h"
 #include "commands/commands.h"
 #include "core/app.h"
 #include "modules/editors.h"
@@ -34,50 +35,45 @@
 #include "util/render.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
 #define PREVIEW_TILED		1
 #define PREVIEW_FIT_ON_SCREEN	2
 
-static void preview_sprite(int flags);
+//////////////////////////////////////////////////////////////////////
+// base class
 
-static bool cmd_preview_enabled(const char *argument)
+class PreviewCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  PreviewCommand(const char* short_name, const char* friendly_name);
+  Command* clone() { return new PreviewCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+
+  void preview_sprite(Context* context, int flags);
+};
+
+PreviewCommand::PreviewCommand(const char* short_name, const char* friendly_name)
+  : Command(short_name, 
+	    friendly_name, 
+	    CmdUIOnlyFlag)
+{
+}
+
+bool PreviewCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-/* ======================== */
-/* preview_fit_to_screen    */
-/* ======================== */
-
-static void cmd_preview_fit_to_screen_execute(const char *argument)
-{
-  preview_sprite(PREVIEW_FIT_ON_SCREEN);
-}
-
-/* ======================== */
-/* preview_normal           */
-/* ======================== */
-
-static void cmd_preview_normal_execute(const char *argument)
-{
-  preview_sprite(0);
-}
-
-/* ======================== */
-/* preview_tiled            */
-/* ======================== */
-
-static void cmd_preview_tiled_execute(const char *argument)
-{
-  preview_sprite(PREVIEW_TILED);
-}
 
 /**
  * Shows the sprite using the complete screen.
  */
-static void preview_sprite(int flags)
+void PreviewCommand::preview_sprite(Context* context, int flags)
 {
   JWidget widget = current_editor;
 
@@ -253,13 +249,13 @@ static void preview_sprite(int flags)
 	  jmessage_free(msg);
 
 	  /* change frame */
-	  if (command &&
-	      (strcmp(command->name, CMD_GOTO_FIRST_FRAME) == 0 ||
-	       strcmp(command->name, CMD_GOTO_PREVIOUS_FRAME) == 0 ||
-	       strcmp(command->name, CMD_GOTO_NEXT_FRAME) == 0 ||
-	       strcmp(command->name, CMD_GOTO_LAST_FRAME) == 0)) {
+	  if (command != NULL &&
+	      (strcmp(command->short_name(), CommandId::goto_first_frame) == 0 ||
+	       strcmp(command->short_name(), CommandId::goto_previous_frame) == 0 ||
+	       strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
+	       strcmp(command->short_name(), CommandId::goto_last_frame) == 0)) {
 	    /* execute the command */
-	    command_execute(command, NULL);
+	    context->execute_command(command);
 
 	    /* redraw */
 	    redraw = TRUE;
@@ -273,8 +269,8 @@ static void preview_sprite(int flags)
 	    }
 	  }
 	  /* play the animation */
-	  else if (command &&
-		   strcmp(command->name, CMD_PLAY_ANIMATION) == 0) {
+	  else if (command != NULL &&
+		   strcmp(command->short_name(), CommandId::play_animation) == 0) {
 	    /* TODO */
 	  }
 	  /* change background color */
@@ -312,23 +308,92 @@ static void preview_sprite(int flags)
   }
 }
 
-Command cmd_preview_fit_to_screen = {
-  CMD_PREVIEW_FIT_TO_SCREEN,
-  cmd_preview_enabled,
-  NULL,
-  cmd_preview_fit_to_screen_execute,
+//////////////////////////////////////////////////////////////////////
+// preview_fit_to_screen
+
+class PreviewFitToScreenCommand : public PreviewCommand
+{
+public:
+  PreviewFitToScreenCommand();
+  Command* clone() { return new PreviewFitToScreenCommand(*this); }
+
+protected:
+  void execute(Context* context);
 };
 
-Command cmd_preview_normal = {
-  CMD_PREVIEW_NORMAL,
-  cmd_preview_enabled,
-  NULL,
-  cmd_preview_normal_execute,
+PreviewFitToScreenCommand::PreviewFitToScreenCommand()
+  : PreviewCommand("preview_fit_to_screen",
+		   "Preview Fit to Screen")
+{
+}
+
+void PreviewFitToScreenCommand::execute(Context* context)
+{
+  preview_sprite(context, PREVIEW_FIT_ON_SCREEN);
+}
+
+//////////////////////////////////////////////////////////////////////
+// preview_normal
+
+class PreviewNormalCommand : public PreviewCommand
+{
+public:
+  PreviewNormalCommand();
+  Command* clone() { return new PreviewNormalCommand(*this); }
+
+protected:
+  void execute(Context* context);
 };
 
-Command cmd_preview_tiled = {
-  CMD_PREVIEW_TILED,
-  cmd_preview_enabled,
-  NULL,
-  cmd_preview_tiled_execute,
+PreviewNormalCommand::PreviewNormalCommand()
+  : PreviewCommand("preview_normal",
+		   "Preview Normal")
+{
+}
+
+void PreviewNormalCommand::execute(Context* context)
+{
+  preview_sprite(context, 0);
+}
+
+//////////////////////////////////////////////////////////////////////
+// preview_tiled
+
+class PreviewTiledCommand : public PreviewCommand
+{
+public:
+  PreviewTiledCommand();
+  Command* clone() { return new PreviewTiledCommand(*this); }
+
+protected:
+  void execute(Context* context);
 };
+
+PreviewTiledCommand::PreviewTiledCommand()
+  : PreviewCommand("preview_tiled",
+		   "Preview Tiled")
+{
+}
+
+void PreviewTiledCommand::execute(Context* context)
+{
+  preview_sprite(context, PREVIEW_TILED);
+}
+
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_preview_fit_to_screen_command()
+{
+  return new PreviewFitToScreenCommand;
+}
+
+Command* CommandFactory::create_preview_normal_command()
+{
+  return new PreviewNormalCommand;
+}
+
+Command* CommandFactory::create_preview_tiled_command()
+{
+  return new PreviewTiledCommand;
+}

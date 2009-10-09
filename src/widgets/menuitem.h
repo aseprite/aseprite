@@ -21,13 +21,12 @@
 
 #include "jinete/jbase.h"
 
-struct Command;
+class Command;
+class Params;
 
-JWidget menuitem_new(const char* text,
-		     struct Command* command,
-		     const char* argument);
+JWidget menuitem_new(const char* text, Command* command, Params* params);
 
 Command* menuitem_get_command(JWidget menuitem);
-const char* menuitem_get_argument(JWidget menuitem);
+Params* menuitem_get_params(JWidget menuitem);
 
 #endif

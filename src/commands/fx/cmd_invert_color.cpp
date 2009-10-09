@@ -26,7 +26,7 @@
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/cfg.h"
@@ -48,18 +48,38 @@ static bool target_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
 static void make_preview();
 
-static bool cmd_invert_color_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// invert_color
+
+class InvertColorCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  InvertColorCommand();
+  Command* clone() const { return new InvertColorCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+InvertColorCommand::InvertColorCommand()
+  : Command("invert_color",
+	    "Invert Color",
+	    CmdRecordableFlag)
+{
+}
+
+bool InvertColorCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_invert_color_execute(const char *argument)
+void InvertColorCommand::execute(Context* context)
 {
+  const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;
-  const CurrentSpriteReader sprite;
-
   JWidgetPtr window(load_widget("invrtcol.jid", "invert_color"));
   get_widgets(window,
 	      "target", &box_target,
@@ -128,9 +148,10 @@ static void make_preview()
     preview_restart(preview);
 }
 
-Command cmd_invert_color = {
-  CMD_INVERT_COLOR,
-  cmd_invert_color_enabled,
-  NULL,
-  cmd_invert_color_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_invert_color_command()
+{
+  return new InvertColorCommand;
+}

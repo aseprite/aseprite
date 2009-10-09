@@ -20,7 +20,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "console.h"
 #include "core/color.h"
 #include "modules/gui.h"
@@ -31,7 +31,21 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 
-static bool cmd_new_cel_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// new_cel
+
+class NewCelCommand : public Command
+{
+public:
+  NewCelCommand();
+  Command* clone() { return new NewCelCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+bool NewCelCommand::enabled(Context* context)
 {
   return
     current_sprite &&
@@ -42,7 +56,7 @@ static bool cmd_new_cel_enabled(const char *argument)
     !layer_get_cel(current_sprite->layer, current_sprite->frame);
 }
 
-static void cmd_new_cel_execute(const char *argument)
+void NewCelCommand::execute(Context* context)
 {
   int image_index;
   Image *image;
@@ -85,10 +99,10 @@ static void cmd_new_cel_execute(const char *argument)
   update_screen_for_sprite(current_sprite);
 }
 
-Command cmd_new_cel = {
-  CMD_NEW_CEL,
-  cmd_new_cel_enabled,
-  NULL,
-  cmd_new_cel_execute,
-  NULL
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_new_cel_command()
+{
+  return new NewCelCommand;
+}

@@ -33,6 +33,7 @@
 #include "ase_exception.h"
 #include "ui_context.h"
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "console.h"
 #include "core/app.h"
 #include "core/cfg.h"
@@ -89,6 +90,8 @@ struct AppHook
   }
 };
 
+App* App::m_instance = NULL;
+
 static char *exe_name;		      /* name of the program */
 
 static JList apphooks[APP_EVENTS];
@@ -116,12 +119,24 @@ static void usage(int status);
 static Option *option_new(int type, const char *data);
 static void option_free(Option *option);
 
+class App::Pimpl
+{
+  CommandsModule m_commands_modules;
+  UIContext m_ui_context;
+public:
+  Pimpl() { }
+  ~Pimpl() { }
+};
+
 /**
  * Initializes the application loading the modules, setting the
  * graphics mode, loading the configuration and resources, etc.
  */
-Application::Application(int argc, char *argv[])
+App::App(int argc, char *argv[])
 {
+  assert(m_instance == NULL);
+  m_instance = this;
+
   exe_name = argv[0];
 
   /* initialize application hooks */
@@ -153,7 +168,10 @@ Application::Application(int argc, char *argv[])
   /* install 'raster' stuff */
   gfxobj_init();
 
-  /* install the modules */
+  // create singletons
+  m_pimpl = new Pimpl;
+
+  // install the modules
   modules_init(REQUIRE_INTERFACE);
 
   /* custom default palette? */
@@ -179,7 +197,7 @@ Application::Application(int argc, char *argv[])
  * Runs the ASE application. In GUI mode it's the top-level window, in
  * console/scripting it just runs the specified scripts.
  */
-void Application::run()
+void App::run()
 {
   Option *option;
   JLink link;
@@ -344,10 +362,9 @@ void Application::run()
 /**
  * Finishes the ASE application.
  */
-Application::~Application()
+App::~App()
 {
-  JLink link;
-  int c;
+  assert(m_instance == this);
 
   // remove ase handlers
   PRINTF("Uninstalling ASE\n");
@@ -355,8 +372,9 @@ Application::~Application()
   app_trigger_event(APP_EXIT);
 
   // destroy application hooks
-  for (c=0; c<APP_EVENTS; ++c) {
+  for (int c=0; c<APP_EVENTS; ++c) {
     if (apphooks[c] != NULL) {
+      JLink link;
       JI_LIST_FOR_EACH(apphooks[c], link) {
 	AppHook* apphook = reinterpret_cast<AppHook*>(link->data);
 	delete apphook;
@@ -366,9 +384,9 @@ Application::~Application()
     }
   }
 
-  /* finalize modules, configuration and core */
+  // finalize modules, configuration and core
   modules_exit();
-  UIContext::destroy_instance();
+  delete m_pimpl;
   editor_cursor_exit();
   boundary_exit();
 
@@ -377,6 +395,8 @@ Application::~Application()
   file_system_exit();
   core_exit();
   intl_exit();
+  
+  m_instance = NULL;
 }
 
 void app_add_hook(int app_event, void (*proc)(void *data), void *data)
@@ -450,15 +470,12 @@ bool app_realloc_recent_list()
 
   /* update the recent file list menu item */
   if (list_menuitem) {
-    Command *cmd_open_file;
-    JWidget submenu;
-
     if (jmenuitem_has_submenu_opened(list_menuitem))
       return FALSE;
 
-    cmd_open_file = command_get_by_name(CMD_OPEN_FILE);
+    Command *cmd_open_file = CommandsModule::instance()->get_command_by_name(CommandId::open_file);
 
-    submenu = jmenuitem_get_submenu(list_menuitem);
+    JWidget submenu = jmenuitem_get_submenu(list_menuitem);
     if (submenu) {
       jmenuitem_set_submenu(list_menuitem, NULL);
       jwidget_free(submenu);
@@ -469,14 +486,15 @@ bool app_realloc_recent_list()
 
     if (jlist_first(get_recent_files_list())) {
       const char *filename;
+      Params params;
       JLink link;
 
       JI_LIST_FOR_EACH(get_recent_files_list(), link) {
 	filename = reinterpret_cast<const char*>(link->data);
 
-	menuitem = menuitem_new(get_filename(filename),
-				cmd_open_file,
-				filename);
+	params.set("filename", filename);
+
+	menuitem = menuitem_new(get_filename(filename), cmd_open_file, &params);
 	jwidget_add_child(submenu, menuitem);
       }
     }
@@ -557,12 +575,15 @@ static void tabsbar_select_callback(JWidget tabs, void *data, int button)
   Sprite* sprite = (Sprite*)data;
 
   // put as current sprite
-  UIContext* context = UIContext::instance();
-  context->show_sprite(sprite);
+  set_sprite_in_more_reliable_editor(sprite);
 
-  // middle button: close the sprite
-  if (data && (button & 4))
-    command_execute(command_get_by_name(CMD_CLOSE_FILE), NULL);
+  // middle-button: close the sprite
+  if (data && (button & 4)) {
+    Command* close_file_cmd =
+      CommandsModule::instance()->get_command_by_name(CommandId::close_file);
+
+    UIContext::instance()->execute_command(close_file_cmd, NULL);
+  }
 }
 
 /**

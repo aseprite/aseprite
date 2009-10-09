@@ -22,15 +22,37 @@
 
 #include "jinete/jalert.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "dialogs/filesel.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/msk_file.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_save_mask_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// save_mask
+
+class SaveMaskCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  SaveMaskCommand();
+  Command* clone() { return new SaveMaskCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+SaveMaskCommand::SaveMaskCommand()
+  : Command("save_mask",
+	    "Save Mask",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool SaveMaskCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   if (!sprite)
     return false;
   else
@@ -38,9 +60,9 @@ static bool cmd_save_mask_enabled(const char *argument)
 	    sprite->mask->bitmap) ? true: false;
 }
 
-static void cmd_save_mask_execute(const char *argument)
+void SaveMaskCommand::execute(Context* context)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   jstring filename = "default.msk";
   int ret;
 
@@ -76,9 +98,10 @@ static void cmd_save_mask_execute(const char *argument)
 	   filename.c_str(), _("&Close"));
 }
 
-Command cmd_save_mask = {
-  CMD_SAVE_MASK,
-  cmd_save_mask_enabled,
-  NULL,
-  cmd_save_mask_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_save_mask_command()
+{
+  return new SaveMaskCommand;
+}

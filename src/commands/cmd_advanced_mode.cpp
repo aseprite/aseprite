@@ -20,14 +20,34 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
 
-static bool advanced_mode = FALSE;
+class AdvancedModeCommand : public Command
+{
+public:
+  AdvancedModeCommand();
+  Command* clone() const { return new AdvancedModeCommand(*this); }
 
-static void cmd_advanced_mode_execute(const char *argument)
+protected:
+  void execute(Context* context);
+
+private:
+  static bool advanced_mode;
+};
+
+bool AdvancedModeCommand::advanced_mode = false;
+
+AdvancedModeCommand::AdvancedModeCommand()
+  : Command("advanced_mode",
+	    "Advanced Mode",
+	    CmdUIOnlyFlag)
+{
+}
+
+void AdvancedModeCommand::execute(Context* context)
 {
   advanced_mode = !advanced_mode;
 
@@ -51,8 +71,7 @@ static void cmd_advanced_mode_execute(const char *argument)
   
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
-    Command* cmd_advanced_mode = command_get_by_name(CMD_ADVANCED_MODE);
-    JAccel accel = get_accel_to_execute_command(cmd_advanced_mode, NULL);
+    JAccel accel = get_accel_to_execute_command(short_name());
     if (accel != NULL) {
       char warning[1024];
       char key[1024];
@@ -76,9 +95,10 @@ static void cmd_advanced_mode_execute(const char *argument)
   }
 }
 
-Command cmd_advanced_mode = {
-  CMD_ADVANCED_MODE,
-  NULL,
-  NULL,
-  cmd_advanced_mode_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_advanced_mode_command()
+{
+  return new AdvancedModeCommand;
+}

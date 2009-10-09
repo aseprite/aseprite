@@ -30,12 +30,22 @@ enum {
 
 class Layer;
 class Sprite;
+class Params;
+class Command;
+class CommandsModule;
 
-class Application
+class App
 {
+  static App* m_instance;
+
+  class Pimpl;
+  Pimpl* m_pimpl;
+
 public:
-  Application(int argc, char *argv[]);
-  ~Application();
+  App(int argc, char *argv[]);
+  ~App();
+
+  static App* instance() { return m_instance; }
 
   void run();
 };

@@ -27,18 +27,39 @@
 
 #include "jinete/jsystem.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
-static void cmd_refresh_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// refresh
+
+class RefreshCommand : public Command
+{
+public:
+  RefreshCommand();
+  Command* clone() { return new RefreshCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+RefreshCommand::RefreshCommand()
+  : Command("refresh",
+	    "Refresh",
+	    CmdUIOnlyFlag)
+{
+}
+
+void RefreshCommand::execute(Context* context)
 {
   jmouse_hide();
   clear_to_color(screen, makecol(0, 0, 0));
   jmouse_show();
 
   {
-    const CurrentSpriteReader sprite;
+    const CurrentSpriteReader sprite(context);
     app_refresh_screen(sprite);
   }
 
@@ -57,9 +78,10 @@ static void cmd_refresh_execute(const char *argument)
 #endif
 }
 
-Command cmd_refresh = {
-  CMD_REFRESH,
-  NULL,
-  NULL,
-  cmd_refresh_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_refresh_command()
+{
+  return new RefreshCommand;
+}

@@ -20,25 +20,48 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "undoable.h"
+#include "sprite_wrappers.h"
+
+//////////////////////////////////////////////////////////////////////
+// new_layer
+
+class NewLayerCommand : public Command
+{
+public:
+  NewLayerCommand();
+  Command* clone() { return new NewLayerCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
 
 static char* get_unique_layer_name(Sprite* sprite);
 static int get_max_layer_num(Layer* layer);
 
-static bool cmd_new_layer_enabled(const char* argument)
+NewLayerCommand::NewLayerCommand()
+  : Command("new_layer",
+	    "New Layer",
+	    CmdRecordableFlag)
 {
-  const CurrentSpriteReader sprite;
-  return sprite.is_valid();
 }
 
-static void cmd_new_layer_execute(const char* argument)
+bool NewLayerCommand::enabled(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  const CurrentSpriteReader sprite(context);
+  return
+    sprite != NULL;
+}
+
+void NewLayerCommand::execute(Context* context)
+{
+  CurrentSpriteWriter sprite(context);
 
   JWidgetPtr window(load_widget("newlay.jid", "new_layer"));
   JWidget name_widget = find_widget(window, "name");
@@ -93,9 +116,10 @@ static int get_max_layer_num(Layer* layer)
   return max;
 }
 
-Command cmd_new_layer = {
-  CMD_NEW_LAYER,
-  cmd_new_layer_enabled,
-  NULL,
-  cmd_new_layer_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_new_layer_command()
+{
+  return new NewLayerCommand;
+}

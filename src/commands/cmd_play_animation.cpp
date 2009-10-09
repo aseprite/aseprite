@@ -22,7 +22,7 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -30,6 +30,21 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
+#include "sprite_wrappers.h"
+
+//////////////////////////////////////////////////////////////////////
+// play_animation
+
+class PlayAnimationCommand : public Command
+{
+public:
+  PlayAnimationCommand();
+  Command* clone() { return new PlayAnimationCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
 
 static int speed_timer;
 
@@ -40,16 +55,23 @@ static void speed_timer_callback()
 
 END_OF_STATIC_FUNCTION(speed_timer_callback);
 
-static bool cmd_play_animation_enabled(const char *argument)
+PlayAnimationCommand::PlayAnimationCommand()
+  : Command("play_animation",
+	    "Play Animation",
+	    CmdUIOnlyFlag)
 {
-  const CurrentSpriteReader sprite;
+}
+
+bool PlayAnimationCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-static void cmd_play_animation_execute(const char *argument)
+void PlayAnimationCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   int old_frame, msecs;
   bool done = FALSE;
   bool onionskin = get_onionskin();
@@ -129,9 +151,10 @@ static void cmd_play_animation_execute(const char *argument)
   jmouse_show();
 }
 
-Command cmd_play_animation = {
-  CMD_PLAY_ANIMATION,
-  cmd_play_animation_enabled,
-  NULL,
-  cmd_play_animation_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_play_animation_command()
+{
+  return new PlayAnimationCommand;
+}

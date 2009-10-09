@@ -25,11 +25,12 @@
 #include "jinete/jinete.h"
 
 #include "ui_context.h"
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "console.h"
 #include "core/app.h"
 #include "core/cfg.h"
 #include "core/color.h"
+#include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -38,14 +39,34 @@
 #include "util/misc.h"
 #include "widgets/colbar.h"
 
+//////////////////////////////////////////////////////////////////////
+// new_file
+
+class NewFileCommand : public Command
+{
+public:
+  NewFileCommand();
+  Command* clone() { return new NewFileCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
 static int _sprite_counter = 0;
 
 static Sprite *new_sprite(Context* context, int imgtype, int w, int h);
 
+NewFileCommand::NewFileCommand()
+  : Command("new_file",
+	    "New File",
+	    CmdRecordableFlag)
+{
+}
+
 /**
  * Shows the "New Sprite" dialog.
  */
-static void cmd_new_file_execute(const char *argument)
+void NewFileCommand::execute(Context* context)
 {
   JWidget width, height, radio1, radio2, radio3, ok, bg_box;
   int imgtype, w, h, bg;
@@ -143,8 +164,8 @@ static void cmd_new_file_execute(const char *argument)
 	}
 
 	/* show the sprite to the user */
-	UIContext* context = UIContext::instance();
-	context->show_sprite(sprite);
+	context->add_sprite(sprite);
+	set_sprite_in_more_reliable_editor(sprite);
       }
     }
   }
@@ -164,19 +185,13 @@ static Sprite *new_sprite(Context* context, int imgtype, int w, int h)
   assert(w >= 1 && w <= 9999);
   assert(h >= 1 && h <= 9999);
 
-  Sprite *sprite = sprite_new_with_layer(imgtype, w, h);
-  if (!sprite)
-    return NULL;
-
-  context->add_sprite(sprite);
-  context->set_current_sprite(sprite);
-
-  return sprite;
+  return sprite_new_with_layer(imgtype, w, h);
 }
 
-Command cmd_new_file = {
-  CMD_NEW_FILE,
-  NULL,
-  NULL,
-  cmd_new_file_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_new_file_command()
+{
+  return new NewFileCommand;
+}

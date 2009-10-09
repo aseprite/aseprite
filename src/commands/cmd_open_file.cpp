@@ -24,7 +24,8 @@
 #include "jinete/jinete.h"
 
 #include "ui_context.h"
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "console.h"
 #include "core/app.h"
 #include "dialogs/filesel.h"
@@ -34,6 +35,22 @@
 #include "modules/gui.h"
 #include "modules/recent.h"
 #include "widgets/statebar.h"
+
+//////////////////////////////////////////////////////////////////////
+// open_file
+
+class OpenFileCommand : public Command
+{
+  std::string m_filename;
+
+public:
+  OpenFileCommand();
+  Command* clone() { return new OpenFileCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+  void execute(Context* context);
+};
 
 typedef struct OpenFileData
 {
@@ -134,29 +151,37 @@ static void monitor_free(void* _data)
 #endif
 }
 
+OpenFileCommand::OpenFileCommand()
+  : Command("open_file",
+	    "Open Sprite",
+	    CmdRecordableFlag)
+{
+  m_filename = "";
+}
+
+void OpenFileCommand::load_params(Params* params)
+{
+  m_filename = params->get("filename");
+}
+
 /**
  * Command to open a file.
  *
  * [main thread]
  */
-static void cmd_open_file_execute(const char *argument)
+void OpenFileCommand::execute(Context* context)
 {
   Console console;
-  jstring filename;
 
   // interactive
-  if (ustrlen(argument) == 0) {
+  if (context->is_ui_available() && m_filename.empty()) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
-    filename = ase_file_selector(_("Open Sprite"), "", exts);
-  }
-  // load the file specified in the argument
-  else {
-    filename = argument;
+    m_filename = ase_file_selector(friendly_name(), "", exts);
   }
 
-  if (!filename.empty()) {
-    FileOp *fop = fop_to_load_sprite(filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
+  if (!m_filename.empty()) {
+    FileOp *fop = fop_to_load_sprite(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
 
     if (fop) {
       if (fop->error) {
@@ -173,7 +198,7 @@ static void cmd_open_file_execute(const char *argument)
 	  data->thread = thread;
 	  data->alert_window = jalert_new(PACKAGE
 					  "<<Loading file:<<%s||&Cancel",
-					  get_filename(filename.c_str()));
+					  get_filename(m_filename.c_str()));
 
 	  /* add a monitor to check the loading (FileOp) progress */
 	  data->monitor = add_gui_monitor(monitor_openfile_bg,
@@ -199,7 +224,8 @@ static void cmd_open_file_execute(const char *argument)
 
 	      recent_file(fop->filename);
 	      context->add_sprite(sprite);
-	      context->show_sprite(sprite);
+
+	      set_sprite_in_more_reliable_editor(sprite);
 	    }
 	    /* if the sprite isn't NULL and the file-operation wasn't
 	       stopped by the user...  */
@@ -227,9 +253,10 @@ static void cmd_open_file_execute(const char *argument)
   }
 }
 
-Command cmd_open_file = {
-  CMD_OPEN_FILE,
-  NULL,
-  NULL,
-  cmd_open_file_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_open_file_command()
+{
+  return new OpenFileCommand;
+}

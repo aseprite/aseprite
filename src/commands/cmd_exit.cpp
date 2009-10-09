@@ -20,14 +20,33 @@
 
 #include "jinete/jinete.h"
 
-#include "ui_context.h"
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "context.h"
 #include "core/app.h"
 #include "raster/sprite.h"
 
-static void cmd_exit_execute(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// exit
+
+class ExitCommand : public Command
 {
-  UIContext* context = UIContext::instance();
+public:
+  ExitCommand();
+  Command* clone() { return new ExitCommand(*this); }
+
+protected:
+  void execute(Context* context);
+};
+
+ExitCommand::ExitCommand()
+  : Command("exit",
+	    "Exit",
+	    CmdUIOnlyFlag)
+{
+}
+
+void ExitCommand::execute(Context* context)
+{
   Sprite *sprite = context->get_first_sprite();
 
   while (sprite) {
@@ -45,9 +64,11 @@ static void cmd_exit_execute(const char *argument)
   jwindow_close(app_get_top_window(), 0);
 }
 
-Command cmd_exit = {
-  CMD_EXIT,
-  NULL,
-  NULL,
-  cmd_exit_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_exit_command()
+{
+  return new ExitCommand;
+}
+

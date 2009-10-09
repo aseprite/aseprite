@@ -20,25 +20,47 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_layer_properties_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// layer_properties
+
+class LayerPropertiesCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  LayerPropertiesCommand();
+  Command* clone() { return new LayerPropertiesCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+LayerPropertiesCommand::LayerPropertiesCommand()
+  : Command("layer_properties",
+	    "Layer Properties",
+	    CmdRecordableFlag)
+{
+}
+
+bool LayerPropertiesCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     sprite->layer != NULL;
 }
 
-static void cmd_layer_properties_execute(const char *argument)
+void LayerPropertiesCommand::execute(Context* context)
 {
   JWidget box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   Layer *layer = sprite->layer;
 
   JWidgetPtr window(jwindow_new(_("Layer Properties")));
@@ -107,9 +129,10 @@ static void cmd_layer_properties_execute(const char *argument)
   }
 }
 
-Command cmd_layer_properties = {
-  CMD_LAYER_PROPERTIES,
-  cmd_layer_properties_enabled,
-  NULL,
-  cmd_layer_properties_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_layer_properties_command()
+{
+  return new LayerPropertiesCommand;
+}

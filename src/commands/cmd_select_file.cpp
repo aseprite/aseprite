@@ -25,30 +25,64 @@
 #include "jinete/jinete.h"
 
 #include "ui_context.h"
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "core/app.h"
+#include "modules/editors.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_select_file_enabled(const char *argument)
+//////////////////////////////////////////////////////////////////////
+// select_file
+
+class SelectFileCommand : public Command
 {
-  /* with argument, the argument specified the ID of the GfxObj */
-  if (ustrlen(argument) > 0) {
-    int sprite_id = ustrtol(argument, NULL, 10);
-    GfxObj *gfxobj = gfxobj_find(sprite_id);
-    return gfxobj && gfxobj->type == GFXOBJ_SPRITE;
-  }
-  /* argument=NULL, means the select "Nothing" option  */
-  else
-    return TRUE;
+  gfxobj_id m_sprite_id;
+
+public:
+  SelectFileCommand();
+  Command* clone() { return new SelectFileCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+  bool enabled(Context* context);
+  bool checked(Context* context);
+  void execute(Context* context);
+};
+
+SelectFileCommand::SelectFileCommand()
+  : Command("select_file",
+	    "Select File",
+	    CmdUIOnlyFlag)
+{
+  m_sprite_id = 0;
 }
 
-static bool cmd_select_file_checked(const char *argument)
+void SelectFileCommand::load_params(Params* params)
 {
-  const CurrentSpriteReader sprite;
+  if (params->has_param("sprite_id")) {
+    m_sprite_id = ustrtol(params->get("sprite_id").c_str(), NULL, 10);
+  }
+}
 
-  if (ustrlen(argument) > 0) {
-    int sprite_id = ustrtol(argument, NULL, 10);
-    GfxObj *gfxobj = gfxobj_find(sprite_id);
+bool SelectFileCommand::enabled(Context* context)
+{
+  /* m_sprite_id != 0, the ID specifies a GfxObj */
+  if (m_sprite_id > 0) {
+    GfxObj *gfxobj = gfxobj_find(m_sprite_id);
+    return gfxobj && gfxobj->type == GFXOBJ_SPRITE;
+  }
+  /* m_sprite_id=0, means the select "Nothing" option  */
+  else
+    return true;
+}
+
+bool SelectFileCommand::checked(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
+
+  if (m_sprite_id > 0) {
+    GfxObj *gfxobj = gfxobj_find(m_sprite_id);
     return
       gfxobj && gfxobj->type == GFXOBJ_SPRITE &&
       sprite == (Sprite *)gfxobj;
@@ -57,25 +91,23 @@ static bool cmd_select_file_checked(const char *argument)
     return sprite == NULL;
 }
 
-static void cmd_select_file_execute(const char *argument)
+void SelectFileCommand::execute(Context* context)
 {
-  UIContext* context = UIContext::instance();
-
-  if (ustrlen(argument) > 0) {
-    int sprite_id = ustrtol(argument, NULL, 10);
-    GfxObj* gfxobj = gfxobj_find(sprite_id);
+  if (m_sprite_id > 0) {
+    GfxObj* gfxobj = gfxobj_find(m_sprite_id);
     assert(gfxobj != NULL);
 
-    context->show_sprite((Sprite*)gfxobj);
+    set_sprite_in_more_reliable_editor((Sprite*)gfxobj);
   }
   else {
-    context->show_sprite(NULL);
+    set_sprite_in_more_reliable_editor(NULL);
   }
 }
 
-Command cmd_select_file = {
-  CMD_SELECT_FILE,
-  cmd_select_file_enabled,
-  cmd_select_file_checked,
-  cmd_select_file_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_select_file_command()
+{
+  return new SelectFileCommand;
+}

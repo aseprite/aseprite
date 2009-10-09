@@ -20,16 +20,35 @@
 
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_copy_enabled(const char *argument)
+class CopyCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  CopyCommand();
+  Command* clone() const { return new CopyCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+CopyCommand::CopyCommand()
+  : Command("copy",
+	    "Copy",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool CopyCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
 
   if ((!sprite) ||
       (!sprite->layer) ||
@@ -42,15 +61,16 @@ static bool cmd_copy_enabled(const char *argument)
     return GetImage(sprite) ? true: false;
 }
 
-static void cmd_copy_execute(const char *argument)
+void CopyCommand::execute(Context* context)
 {
-  const CurrentSpriteReader sprite;
+  const CurrentSpriteReader sprite(context);
   clipboard::copy(sprite);
 }
 
-Command cmd_copy = {
-  CMD_COPY,
-  cmd_copy_enabled,
-  NULL,
-  cmd_copy_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_copy_command()
+{
+  return new CopyCommand;
+}

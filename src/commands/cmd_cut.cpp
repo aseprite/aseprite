@@ -20,16 +20,35 @@
 
 #include "jinete/jbase.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "util/clipboard.h"
+#include "sprite_wrappers.h"
 #include "util/misc.h"
 
-static bool cmd_cut_enabled(const char *argument)
+class CutCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  CutCommand();
+  Command* clone() const { return new CutCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+CutCommand::CutCommand()
+  : Command("cut",
+	    "Cut",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool CutCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   if ((!sprite) ||
       (!sprite->layer) ||
       (!layer_is_readable(sprite->layer)) ||
@@ -41,15 +60,16 @@ static bool cmd_cut_enabled(const char *argument)
     return GetImage(sprite) ? true: false;
 }
 
-static void cmd_cut_execute(const char *argument)
+void CutCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
   clipboard::cut(sprite);
 }
 
-Command cmd_cut = {
-  CMD_CUT,
-  cmd_cut_enabled,
-  NULL,
-  cmd_cut_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_cut_command()
+{
+  return new CutCommand;
+}

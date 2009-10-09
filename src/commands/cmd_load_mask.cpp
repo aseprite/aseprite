@@ -20,50 +20,85 @@
 
 #include "jinete/jalert.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
+#include "commands/params.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h" 
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 #include "util/msk_file.h"
 
-static bool cmd_load_mask_enabled(const char *argument)
+class LoadMaskCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+  std::string m_filename;
+
+public:
+  LoadMaskCommand();
+  Command* clone() const { return new LoadMaskCommand(*this); }
+
+protected:
+  void load_params(Params* params);
+
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+LoadMaskCommand::LoadMaskCommand()
+  : Command("load_mask",
+	    "LoadMask",
+	    CmdRecordableFlag)
+{
+  m_filename = "";
+}
+
+void LoadMaskCommand::load_params(Params* params)
+{
+  m_filename = params->get("filename");
+}
+
+bool LoadMaskCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-static void cmd_load_mask_execute(const char *argument)
+void LoadMaskCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
-  jstring filename = ase_file_selector(_("Load .msk File"), "", "msk");
-  if (!filename.empty()) {
-    Mask *mask = load_msk_file(filename.c_str());
-    if (!mask) {
-      jalert("%s<<%s<<%s||%s",
-	     _("Error"), _("Error loading .msk file"),
-	     filename.c_str(), _("&Close"));
+  CurrentSpriteWriter sprite(context);
+
+  jstring filename = m_filename;
+
+  if (context->is_ui_available()) {
+    filename = ase_file_selector(_("Load .msk File"), filename, "msk");
+    if (filename.empty())
       return;
-    }
 
-    /* undo */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Mask Load");
-      undo_set_mask(sprite->undo, sprite);
-    }
-
-    sprite_set_mask(sprite, mask);
-    mask_free(mask);
-
-    sprite_generate_mask_boundaries(sprite);
-    update_screen_for_sprite(sprite);
+    m_filename = filename;
   }
+
+  Mask *mask = load_msk_file(m_filename.c_str());
+  if (!mask)
+    throw ase_exception("Error loading .msk file: " + m_filename);
+
+  // undo
+  if (undo_is_enabled(sprite->undo)) {
+    undo_set_label(sprite->undo, "Mask Load");
+    undo_set_mask(sprite->undo, sprite);
+  }
+
+  sprite_set_mask(sprite, mask);
+  mask_free(mask);
+
+  sprite_generate_mask_boundaries(sprite);
+  update_screen_for_sprite(sprite);
 }
 
-Command cmd_load_mask = {
-  CMD_LOAD_MASK,
-  cmd_load_mask_enabled,
-  NULL,
-  cmd_load_mask_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_load_mask_command()
+{
+  return new LoadMaskCommand;
+}

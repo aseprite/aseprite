@@ -231,7 +231,7 @@ void set_sprite_in_current_editor(Sprite *sprite)
   }
 }
 
-void set_sprite_in_more_reliable_editor(Sprite *sprite)
+void set_sprite_in_more_reliable_editor(Sprite* sprite)
 {
   JWidget editor, best;
   JLink link;

@@ -20,11 +20,21 @@
 #define CONTEXT_H_INCLUDED
 
 #include <list>
+#include "ase_exception.h"
 
 class Sprite;
 class SpriteReader;
+class Command;
+class Params;
 
 typedef std::list<Sprite*> SpriteList;
+
+class Command_precondition_exception : public ase_exception
+{
+public:
+  Command_precondition_exception() throw()
+  : ase_exception("Cannot execute the command because its pre-conditions are false.") { }
+};
 
 class Context
 {
@@ -48,6 +58,9 @@ public:
   virtual bool is_executing_macro() const	{ return false; }
   virtual bool is_executing_script() const	{ return false; }
 
+  virtual int get_fg_color();
+  virtual int get_bg_color();
+
   const SpriteList& get_sprite_list() const;
   Sprite* get_first_sprite() const;
   Sprite* get_next_sprite(Sprite* sprite) const;
@@ -58,6 +71,8 @@ public:
 
   Sprite* get_current_sprite() const;
   void set_current_sprite(Sprite* sprite);
+
+  virtual void execute_command(Command* command, Params* params = NULL);
 
 protected:
 

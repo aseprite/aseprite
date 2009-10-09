@@ -20,60 +20,85 @@
 
 #include <allegro/unicode.h>
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/editors.h"
 #include "modules/tools.h"
 #include "widgets/statebar.h"
 
-/* ======================== */
-/* show_grid                */
-/* ======================== */
+//////////////////////////////////////////////////////////////////////
+// show_grid
 
-static bool cmd_show_grid_checked(const char *argument)
+class ShowGridCommand : public Command
 {
-  return get_view_grid();
-}
+public:
+  ShowGridCommand()
+    : Command("show_grid",
+	      "Show Grid",
+	      CmdUIOnlyFlag)
+  {
+  }
 
-static void cmd_show_grid_execute(const char *argument)
-{
-  set_view_grid(get_view_grid() ? false: true);
-  refresh_all_editors();
-}
+  Command* clone() const { return new ShowGridCommand(*this); }
 
-/* ======================== */
-/* snap_to_grid             */
-/* ======================== */
-
-static bool cmd_snap_to_grid_checked(const char *argument)
-{
-  return get_use_grid();
-}
-
-static void cmd_snap_to_grid_execute(const char *argument)
-{
-  char buf[512];
-
-  set_use_grid(get_use_grid() ? false: true);
-  refresh_all_editors();
-
-  usprintf(buf, _("Snap to grid: %s"),
-	   get_use_grid() ? _("On"):
-			    _("Off"));
-
-  statusbar_set_text(app_get_statusbar(), 250, buf);
-}
-
-Command cmd_show_grid = {
-  CMD_SHOW_GRID,
-  NULL,
-  cmd_show_grid_checked,
-  cmd_show_grid_execute,
+protected:
+  bool checked(Context* context)
+  {
+    return get_view_grid();
+  }
+  
+  void execute(Context* context)
+  {
+    set_view_grid(get_view_grid() ? false: true);
+    refresh_all_editors();
+  }
 };
 
-Command cmd_snap_to_grid = {
-  CMD_SNAP_TO_GRID,
-  NULL,
-  cmd_snap_to_grid_checked,
-  cmd_snap_to_grid_execute,
+//////////////////////////////////////////////////////////////////////
+// snap_to_grid
+
+class SnapToGridCommand : public Command
+{
+public:
+  SnapToGridCommand()
+    : Command("snap_to_grid",
+	      "Snap to Grid",
+	      CmdUIOnlyFlag)
+  {
+  }
+
+  Command* clone() const { return new SnapToGridCommand(*this); }
+
+protected:
+  bool checked(Context* context)
+  {
+    return get_use_grid();
+  }
+  
+  void execute(Context* context)
+  {
+    char buf[512];
+
+    set_use_grid(get_use_grid() ? false: true);
+    refresh_all_editors();
+
+    usprintf(buf, _("Snap to grid: %s"),
+	     get_use_grid() ? _("On"):
+			      _("Off"));
+
+    statusbar_set_text(app_get_statusbar(), 250, buf);
+  }
 };
+
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_show_grid_command()
+{
+  return new ShowGridCommand;
+}
+
+Command* CommandFactory::create_snap_to_grid_command()
+{
+  return new SnapToGridCommand;
+}

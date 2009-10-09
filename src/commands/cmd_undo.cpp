@@ -18,24 +18,43 @@
 
 #include "config.h"
 
-#include "commands/commands.h"
+#include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
-static bool cmd_undo_enabled(const char *argument)
+class UndoCommand : public Command
 {
-  const CurrentSpriteReader sprite;
+public:
+  UndoCommand();
+  Command* clone() { return new UndoCommand(*this); }
+
+protected:
+  bool enabled(Context* context);
+  void execute(Context* context);
+};
+
+UndoCommand::UndoCommand()
+  : Command("undo",
+	    "Undo",
+	    CmdUIOnlyFlag)
+{
+}
+
+bool UndoCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
     undo_can_undo(sprite->undo);
 }
 
-static void cmd_undo_execute(const char *argument)
+void UndoCommand::execute(Context* context)
 {
-  CurrentSpriteWriter sprite;
+  CurrentSpriteWriter sprite(context);
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Undid %s"),
@@ -46,9 +65,10 @@ static void cmd_undo_execute(const char *argument)
   update_screen_for_sprite(sprite);
 }
 
-Command cmd_undo = {
-  CMD_UNDO,
-  cmd_undo_enabled,
-  NULL,
-  cmd_undo_execute,
-};
+//////////////////////////////////////////////////////////////////////
+// CommandFactory
+
+Command* CommandFactory::create_undo_command()
+{
+  return new UndoCommand;
+}
