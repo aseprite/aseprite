@@ -632,12 +632,11 @@ int FileItem::compare(const FileItem& that) const
   else if (IS_FOLDER(&that))
     return 1;
 
-#ifndef USE_PIDLS
   {
     int c1, c2;
     int x1, x2;
     char *t1, *t2;
-    const char* s1 = this->displayname.c_str(); // TODO fix this
+    const char* s1 = this->displayname.c_str();
     const char* s2 = that.displayname.c_str();
 
     for (;;) {
@@ -670,7 +669,6 @@ int FileItem::compare(const FileItem& that) const
 	return 0;
     }
   }
-#endif
 
   return -1;
 }
