@@ -68,34 +68,32 @@ static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
   }
 }
 
-static void gen_gfx(void *data)
+class GenGfx : public IAppHook
 {
-  int c;
+public:
+  void on_event()
+  {
+    for (int c=0; c<GFX_BITMAP_COUNT; c++) {
+      if (gfx_bmps[c])
+	destroy_bitmap(gfx_bmps[c]);
 
-  for (c=0; c<GFX_BITMAP_COUNT; c++) {
-    if (gfx_bmps[c])
-      destroy_bitmap(gfx_bmps[c]);
-
-    gfx_bmps[c] = NULL;
+      gfx_bmps[c] = NULL;
+    }
   }
-}
+};
 
 int init_module_graphics()
 {
-  int c;
-  
-  for (c=0; c<GFX_BITMAP_COUNT; c++)
+  for (int c=0; c<GFX_BITMAP_COUNT; c++)
     gfx_bmps[c] = NULL;
 
-  app_add_hook(APP_PALETTE_CHANGE, gen_gfx, NULL);
+  App::instance()->add_hook(AppEvent::PaletteChange, new GenGfx);
   return 0;
 }
 
 void exit_module_graphics()
 {
-  int c;
-
-  for (c=0; c<GFX_BITMAP_COUNT; c++)
+  for (int c=0; c<GFX_BITMAP_COUNT; c++)
     if (gfx_bmps[c]) {
       destroy_bitmap(gfx_bmps[c]);
       gfx_bmps[c] = NULL;

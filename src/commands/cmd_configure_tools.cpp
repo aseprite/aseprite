@@ -40,6 +40,17 @@
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 
+class FreeWidget : public IAppHook
+{
+  JWidget m_widget;
+public:
+  FreeWidget(JWidget widget) : m_widget(widget) { }
+  void on_event()
+  {
+    jwidget_free(m_widget);
+  }
+};
+
 static JWidget window = NULL;
 
 static bool brush_preview_msg_proc(JWidget widget, JMessage msg);
@@ -201,9 +212,7 @@ void ConfigureTools::execute(Context* context)
     HOOK(cursor_color, SIGNAL_COLORBUTTON_CHANGE, cursor_button_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
 
-    app_add_hook(APP_EXIT,
-		 reinterpret_cast<void(*)(void*)>(jwidget_free),
-		 window);
+    App::instance()->add_hook(AppEvent::Exit, new FreeWidget(window));
   }
 
   /* default position */

@@ -52,13 +52,14 @@ public:
  */
 int main(int argc, char *argv[])
 {
+  int status = 1;		// 1 = error
   try {
     Allegro allegro;
     try {
       Jinete jinete;
       App app(argc, argv);
 
-      app.run();
+      status = app.run();
     }
     catch (std::exception& e) {
       allegro_message(e.what());
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
   catch (...) {
     printf("Uncaught exception");
   }
-  return 0;
+  return status;
 }
 
 END_OF_MAIN();

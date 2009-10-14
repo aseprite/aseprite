@@ -195,8 +195,8 @@ bool set_current_palette(Palette *_palette, bool forced)
     create_rgb_table(my_rgb_map, rgbpal, NULL);
     set_palette(rgbpal);	/* change system color palette */
 
-    /* call hooks */
-    app_trigger_event(APP_PALETTE_CHANGE);
+    // call hooks
+    App::instance()->trigger_event(AppEvent::PaletteChange);
 
     ret = TRUE;
   }

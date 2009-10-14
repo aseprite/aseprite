@@ -68,33 +68,43 @@
   #include <winalleg.h>
 #endif
 
-/* options */
-enum {
-  OPEN_GFX_FILE,
-};
-
-struct Option
+class Option
 {
-  int type;
-  char *data;
-};
+  int m_type;
+  jstring m_data;
 
-struct AppHook
-{
-  void (*proc)(void *);
-  void *data;
+public:
 
-  AppHook(void (*proc)(void *), void *data) {
-    this->proc = proc;
-    this->data = data;
+  enum {
+    OpenSprite,
+  };
+
+  Option(int type, const char* data)
+  {
+    m_type = type;
+    m_data = data;
   }
+
+  int type() const { return m_type; }
+  const char* data() const { return m_data.c_str(); }
+
+};
+
+class App::Pimpl
+{
+public:
+  const char* m_exe_name;
+  std::vector<Option*> m_options;
+  CommandsModule m_commands_modules;
+  UIContext m_ui_context;
+  int m_return_code;
+  std::vector<std::vector<IAppHook*> > m_apphooks;
+
+  Pimpl() { }
+  ~Pimpl() { }
 };
 
 App* App::m_instance = NULL;
-
-static char *exe_name;		      /* name of the program */
-
-static JList apphooks[APP_EVENTS];
 
 static JWidget top_window = NULL;     /* top level window (the desktop) */
 static JWidget box_menubar = NULL;    /* box where the menu bar is */
@@ -108,25 +118,9 @@ static JWidget colorbar = NULL;	      /* the color bar widget */
 static JWidget toolbar = NULL;	      /* the tool bar widget */
 static JWidget tabsbar = NULL;	      /* the tabs bar widget */
 
-static JList options; /* list of "Option" structures (options to execute) */
 static char *palette_filename = NULL;
 
 static void tabsbar_select_callback(JWidget tabs, void *data, int button);
-
-static void check_args(int argc, char *argv[]);
-static void usage(int status);
-
-static Option *option_new(int type, const char *data);
-static void option_free(Option *option);
-
-class App::Pimpl
-{
-  CommandsModule m_commands_modules;
-  UIContext m_ui_context;
-public:
-  Pimpl() { }
-  ~Pimpl() { }
-};
 
 /**
  * Initializes the application loading the modules, setting the
@@ -137,11 +131,11 @@ App::App(int argc, char *argv[])
   assert(m_instance == NULL);
   m_instance = this;
 
-  exe_name = argv[0];
-
-  /* initialize application hooks */
-  for (int c=0; c<APP_EVENTS; ++c)
-    apphooks[c] = NULL;
+  // create private implementation data
+  m_pimpl = new Pimpl;
+  m_pimpl->m_exe_name = argv[0];
+  m_pimpl->m_return_code = 0;
+  m_pimpl->m_apphooks.resize(AppEvent::NumEvents);
 
   /* initialize language suppport */
   intl_init();
@@ -155,7 +149,7 @@ App::App(int argc, char *argv[])
   /* init configuration */
   ase_config_init();
 
-  /* load the language file */
+  // load the language file
   intl_load_lang();
 
   /* search options in the arguments */
@@ -168,11 +162,8 @@ App::App(int argc, char *argv[])
   /* install 'raster' stuff */
   gfxobj_init();
 
-  // create singletons
-  m_pimpl = new Pimpl;
-
   // install the modules
-  modules_init(REQUIRE_INTERFACE);
+  modules_init(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
 
   /* custom default palette? */
   if (palette_filename) {
@@ -197,11 +188,8 @@ App::App(int argc, char *argv[])
  * Runs the ASE application. In GUI mode it's the top-level window, in
  * console/scripting it just runs the specified scripts.
  */
-void App::run()
+int App::run()
 {
-  Option *option;
-  JLink link;
-
   /* initialize GUI interface */
   if (ase_mode & MODE_GUI) {
     JWidget view, editor;
@@ -217,7 +205,7 @@ void App::run()
     if (!top_window) {
       allegro_message("Error loading data data/jids/main.jid file.\n"
 		      "You have to reinstall the program.\n");
-      exit(1);
+      return 1;
     }
 
     box_menubar = jwidget_find_name(top_window, "menubar");
@@ -285,23 +273,24 @@ void App::run()
 /*     set_display_switch_mode(SWITCH_BACKAMNESIA); */
     set_display_switch_mode(SWITCH_BACKGROUND);
 
-  /* procress options */
+    // procress options
   PRINTF("Processing options...\n");
+  
+  for (std::vector<Option*>::iterator
+	 it = m_pimpl->m_options.begin(); it != m_pimpl->m_options.end(); ++it) {
+    Option* option = *it;
 
-  JI_LIST_FOR_EACH(options, link) {
-    option = reinterpret_cast<Option*>(link->data);
+    switch (option->type()) {
 
-    switch (option->type) {
-
-      case OPEN_GFX_FILE: {
+      case Option::OpenSprite: {
 	/* load the sprite */
-	Sprite *sprite = sprite_load(option->data);
+	Sprite *sprite = sprite_load(option->data());
 	if (!sprite) {
 	  /* error */
 	  if (ase_mode & MODE_GUI)
-	    jalert(_("Error<<Error loading file \"%s\"||&Close"), option->data);
+	    jalert(_("Error<<Error loading file \"%s\"||&Close"), option->data());
 	  else
-	    user_printf(_("Error loading file \"%s\"\n"), option->data);
+	    user_printf(_("Error loading file \"%s\"\n"), option->data());
 	}
 	else {
 	  /* mount and select the sprite */
@@ -314,16 +303,15 @@ void App::run()
 	    set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
 	    /* recent file */
-	    recent_file(option->data);
+	    recent_file(option->data());
 	  }
 	}
 	break;
       }
     }
-    option_free(option);
+    delete option;
   }
-
-  jlist_free(options);
+  m_pimpl->m_options.clear();
 
   /* just batch mode */
   if (ase_mode & MODE_BATCH) {
@@ -357,6 +345,7 @@ void App::run()
     jwidget_free(top_window);
     top_window = NULL;
   }
+  return 0;
 }
 
 /**
@@ -364,63 +353,63 @@ void App::run()
  */
 App::~App()
 {
-  assert(m_instance == this);
+  try {
+    assert(m_instance == this);
 
-  // remove ase handlers
-  PRINTF("Uninstalling ASE\n");
+    // remove ase handlers
+    PRINTF("Uninstalling ASE\n");
 
-  app_trigger_event(APP_EXIT);
+    App::trigger_event(AppEvent::Exit);
 
-  // destroy application hooks
-  for (int c=0; c<APP_EVENTS; ++c) {
-    if (apphooks[c] != NULL) {
-      JLink link;
-      JI_LIST_FOR_EACH(apphooks[c], link) {
-	AppHook* apphook = reinterpret_cast<AppHook*>(link->data);
+    // destroy application hooks
+    for (int c=0; c<AppEvent::NumEvents; ++c) {
+      for (std::vector<IAppHook*>::iterator
+	     it = m_pimpl->m_apphooks[c].begin(); 
+	   it != m_pimpl->m_apphooks[c].end(); ++it) {
+	IAppHook* apphook = *it;
 	delete apphook;
       }
-      jlist_free(apphooks[c]);
-      apphooks[c] = NULL;
+
+      // clear the list of hooks (so nobody can call the deleted hooks)
+      m_pimpl->m_apphooks[c].clear();
     }
-  }
 
-  // finalize modules, configuration and core
-  modules_exit();
-  delete m_pimpl;
-  editor_cursor_exit();
-  boundary_exit();
+    // finalize modules, configuration and core
+    modules_exit();
+    delete m_pimpl;
+    editor_cursor_exit();
+    boundary_exit();
 
-  gfxobj_exit();
-  ase_config_exit();
-  file_system_exit();
-  core_exit();
-  intl_exit();
+    gfxobj_exit();
+    ase_config_exit();
+    file_system_exit();
+    core_exit();
+    intl_exit();
   
-  m_instance = NULL;
+    m_instance = NULL;
+  }
+  catch (...) {
+    allegro_message("Uncaught exception in ~App");
+    // no throw
+  }
 }
 
-void app_add_hook(int app_event, void (*proc)(void *data), void *data)
+void App::add_hook(AppEvent::Type event, IAppHook* hook)
 {
-  assert(app_event >= 0 && app_event < APP_EVENTS);
+  assert(event >= 0 && event < AppEvent::NumEvents);
 
-  if (apphooks[app_event] == NULL)
-    apphooks[app_event] = jlist_new();
-
-  jlist_append(apphooks[app_event], new AppHook(proc, data));
+  m_pimpl->m_apphooks[event].push_back(hook);
 }
 
-void app_trigger_event(int app_event)
+void App::trigger_event(AppEvent::Type event)
 {
-  assert(app_event >= 0 && app_event < APP_EVENTS);
+  assert(event >= 0 && event < AppEvent::NumEvents);
 
-  if (apphooks[app_event] != NULL) {
-    JList list = apphooks[app_event];
-    JLink link;
-
-    JI_LIST_FOR_EACH(list, link) {
-      AppHook *h = (AppHook *)link->data;
-      (h->proc)(h->data);
-    }
+  for (std::vector<IAppHook*>::iterator
+	 it = m_pimpl->m_apphooks[event].begin();
+       it != m_pimpl->m_apphooks[event].end(); ++it) {
+    IAppHook* apphook = *it;
+    apphook->on_event();
   }
 }
 
@@ -589,13 +578,11 @@ static void tabsbar_select_callback(JWidget tabs, void *data, int button)
 /**
  * Looks the inpunt arguments in the command line.
  */
-static void check_args(int argc, char *argv[])
+void App::check_args(int argc, char *argv[])
 {
   Console console;
   int i, n, len;
   char *arg;
-
-  options = jlist_new();
 
   for (i=1; i<argc; i++) {
     arg = argv[i];
@@ -610,7 +597,7 @@ static void check_args(int argc, char *argv[])
         if (++i < argc)
 	  palette_filename = argv[i];
         else
-          usage(1);
+          usage(false);
       }
       /* video resolution */
       else if (strncmp(arg+n, "resolution", len) == 0) {
@@ -646,8 +633,9 @@ static void check_args(int argc, char *argv[])
 	  }
 	}
         else {
-	  console.printf(_("%s: option \"res\" requires an argument\n"), exe_name);
-          usage(1);
+	  console.printf(_("%s: option \"res\" requires an argument\n"), 
+			 m_pimpl->m_exe_name);
+          usage(false);
 	}
       }
       /* verbose mode */
@@ -656,7 +644,7 @@ static void check_args(int argc, char *argv[])
       }
       /* show help */
       else if (strncmp(arg+n, "help", len) == 0) {
-        usage(0);
+        usage(true);
       }
       /* show version */
       else if (strncmp(arg+n, "version", len) == 0) {
@@ -666,34 +654,38 @@ static void check_args(int argc, char *argv[])
       }
       /* invalid argument */
       else {
-        usage(1);
+        usage(false);
       }
     }
     /* graphic file to open */
     else if (n == 0)
-      jlist_append(options, option_new(OPEN_GFX_FILE, argv[i]));
+      m_pimpl->m_options.push_back(new Option(Option::OpenSprite, argv[i]));
   }
 }
 
 /**
  * Shows the available options for the program
  */
-static void usage(int status)
+void App::usage(bool show_help)
 {
   Console console;
 
-  /* show options */
-  if (!status) {
-    /* copyright */
-    console.printf
-      ("ase %s -- allegro-sprite-editor, %s\n"
-       COPYRIGHT "\n\n",
-       VERSION, _("The Ultimate Sprites Factory"));
+  ase_mode |= MODE_BATCH;
+  if (!show_help)
+    m_pimpl->m_return_code = 1;
 
-    /* usage */
+  // show options
+  if (show_help) {
+    // copyright
+    console.printf
+      ("ase %s -- Allegro Sprite Editor, %s\n"
+       COPYRIGHT "\n\n",
+       VERSION, _("Just another tool to create sprites"));
+
+    // usage
     console.printf
       ("%s\n  %s [%s] [%s]...\n\n",
-       _("Usage:"), exe_name, _("OPTION"), _("FILE"));
+       _("Usage:"), m_pimpl->m_exe_name, _("OPTION"), _("FILE"));
 
     /* options */
     console.printf
@@ -713,28 +705,12 @@ static void usage(int status)
 
     /* web-site */
     console.printf
-      ("%s: %s\n%s\n\n  %s\n\n",
+      ("%s: %s\n\n",
        _("Find more information in the ASE's official web site at:"), WEBSITE);
   }
   /* how to show options */
   else {
-    console.printf(_("Try \"%s --help\" for more information.\n"), exe_name);
+    console.printf(_("Try \"%s --help\" for more information.\n"), 
+		   m_pimpl->m_exe_name);
   }
-  exit(status);
-}
-
-static Option *option_new(int type, const char *data)
-{
-  Option *option = new Option;
-
-  option->type = type;
-  option->data = jstrdup(data);
-
-  return option;
-}
-
-static void option_free(Option* option)
-{
-  jfree(option->data);
-  delete option;
 }

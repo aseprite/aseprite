@@ -35,8 +35,6 @@ static std::map<gfxobj_id, GfxObj*>* objects_map; // graphics objects map
 static void insert_gfxobj(GfxObj* gfxobj);
 static void erase_gfxobj(GfxObj* gfxobj);
 
-//////////////////////////////////////////////////////////////////////
-
 void gfxobj_init()
 {
   objects_map = new std::map<gfxobj_id, GfxObj*>;
@@ -52,7 +50,7 @@ void gfxobj_exit()
 
 //////////////////////////////////////////////////////////////////////
 // GfxObj class
-
+
 GfxObj::GfxObj(int type)
 {
   this->type = type;
@@ -89,7 +87,6 @@ void GfxObj::assign_id()
 }
 
 //////////////////////////////////////////////////////////////////////
-
 
 GfxObj* gfxobj_find(gfxobj_id id)
 {

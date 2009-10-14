@@ -1,3 +1,10 @@
+2009-10-14  David Capello  <davidcapello@gmail.com>
+
+	* src/core/app.h (IAppHook, AppEvent): Added IAppHook interface
+	for a cleaner event/hook interface.
+
+	* src/core/app.cpp (Option): Converted to a class.
+
 2009-10-08  David Capello  <davidcapello@gmail.com>
 
 	* src/modules/tools.cpp (tool_marker): Modified marquee tooltip.

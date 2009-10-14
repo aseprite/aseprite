@@ -65,7 +65,7 @@ void AboutCommand::execute(Context* context)
 
   box1 = jbox_new(JI_VERTICAL);
   label1 = jlabel_new("Allegro Sprite Editor - " VERSION);
-  label2 = jlabel_new(_("Just Another Tool to Create Sprites"));
+  label2 = jlabel_new(_("Just another tool to create sprites"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
 
   if (authors_txt) {

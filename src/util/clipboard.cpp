@@ -79,7 +79,6 @@ enum {
   ACTION_ROTATE_BR,
 };
 
-static void destroy_clipboard(void* data);
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
 static bool copy_from_sprite(const Sprite* sprite);
 
@@ -106,17 +105,21 @@ static bool first_time = true;
 static Palette* clipboard_palette = NULL;
 static Image* clipboard_image = NULL;
 
-static void destroy_clipboard(void* data)
+class DestroyClipboard : public IAppHook
 {
-  delete clipboard_palette;
-  delete clipboard_image;
-}
+public:
+  void on_event()
+  {
+    delete clipboard_palette;
+    delete clipboard_image;
+  }
+};
 
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard)
 {
   if (first_time) {
     first_time = false;
-    app_add_hook(APP_EXIT, destroy_clipboard, NULL);
+    App::instance()->add_hook(AppEvent::Exit, new DestroyClipboard());
   }
 
   delete clipboard_palette;

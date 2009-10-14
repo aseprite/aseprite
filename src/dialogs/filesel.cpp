@@ -46,6 +46,17 @@
 #  define MAX_PATH 4096		/* TODO this is needed for Linux, is it correct? */
 #endif
 
+class FreeList : public IAppHook
+{
+  JList m_list;
+public:
+  FreeList(JList list) : m_list(list) { }
+  void on_event()
+  {
+    jlist_free(m_list);
+  }
+};
+
 /* Variables used only to maintain the history of navigation. */
 static JLink navigation_position = NULL; /* current position in the navigation history */
 static JList navigation_history = NULL;	/* set of FileItems navigated */
@@ -89,9 +100,8 @@ jstring ase_file_selector(const jstring& message,
 
   if (!navigation_history) {
     navigation_history = jlist_new();
-    app_add_hook(APP_EXIT,
-		 reinterpret_cast<void(*)(void*)>(jlist_free),
-		 navigation_history);
+    App::instance()->add_hook(AppEvent::Exit, 
+			      new FreeList(navigation_history));
   }
 
   // we have to find where the user should begin to browse files (start_folder)

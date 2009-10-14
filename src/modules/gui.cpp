@@ -149,7 +149,11 @@ static void save_gui_config();
 static bool button_with_icon_msg_proc(JWidget widget, JMessage msg);
 static bool manager_msg_proc(JWidget widget, JMessage msg);
 
-static void regen_theme_and_fixup_icons(void *data);
+class RegenIcons : public IAppHook
+{
+public:
+  void on_event();
+};
 
 /**
  * Used by set_display_switch_callback(SWITCH_IN, ...).
@@ -298,7 +302,7 @@ int init_module_gui()
   reload_default_font();
 
   /* hook for palette change to regenerate the theme */
-  app_add_hook(APP_PALETTE_CHANGE, regen_theme_and_fixup_icons, NULL);
+  App::instance()->add_hook(AppEvent::PaletteChange, new RegenIcons());
 
   /* icon buttons */
   icon_buttons = jlist_new();
@@ -955,9 +959,9 @@ void* get_monitor_data(Monitor* monitor)
   return monitor->data;
 }
 
-/**********************************************************************/
-/* manager event handler */
-
+/**
+ * Manager event handler.
+ */
 static bool manager_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
@@ -1069,10 +1073,10 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-/**********************************************************************/
-/* graphics */
-
-static void regen_theme_and_fixup_icons(void *data)
+/**
+ * IAppHook to regenerate graphics when the App palette is changed.
+ */
+void RegenIcons::on_event()
 {
   JWidget button;
   JLink link;

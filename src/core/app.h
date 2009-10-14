@@ -21,18 +21,29 @@
 
 #include "jinete/jbase.h"
 
-// enumeration of ASE events in the highest application level
-enum {
-  APP_EXIT,
-  APP_PALETTE_CHANGE,
-  APP_EVENTS
-};
-
 class Layer;
 class Sprite;
 class Params;
 class Command;
 class CommandsModule;
+
+class AppEvent
+{
+public:
+  // enumeration of ASE events in the highest application level
+  enum Type {
+    Exit,
+    PaletteChange,
+    NumEvents
+  };
+};
+
+class IAppHook
+{
+public:
+  virtual ~IAppHook() { }
+  virtual void on_event() = 0;
+};
 
 class App
 {
@@ -47,11 +58,16 @@ public:
 
   static App* instance() { return m_instance; }
 
-  void run();
-};
+  int run();
 
-void app_add_hook(int app_event, void (*proc)(void *data), void *data);
-void app_trigger_event(int app_event);
+  void add_hook(AppEvent::Type event, IAppHook* hook);
+  void trigger_event(AppEvent::Type event);
+
+private:
+  void check_args(int argc, char *argv[]);
+  void usage(bool show_help);
+  
+};
 
 void app_refresh_screen(const Sprite* sprite);
 

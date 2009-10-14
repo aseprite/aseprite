@@ -72,6 +72,17 @@ bool ColorCurveCommand::enabled(Context* context)
     sprite != NULL;
 }
 
+class DestroyCurve : public IAppHook
+{
+  Curve* m_curve;
+public:
+  DestroyCurve(Curve* curve) : m_curve(curve) { }
+  void on_event()
+  {
+    curve_free(m_curve);
+  }
+};
+
 void ColorCurveCommand::execute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
@@ -85,9 +96,7 @@ void ColorCurveCommand::execute(Context* context)
     curve_add_point(the_curve, curve_point_new(0, 0));
     curve_add_point(the_curve, curve_point_new(255, 255));
 
-    app_add_hook(APP_EXIT,
-		 reinterpret_cast<void(*)(void*)>(curve_free),
-		 the_curve);
+    App::instance()->add_hook(AppEvent::Exit, new DestroyCurve(the_curve));
   }
 
   JWidgetPtr window(load_widget("colcurv.jid", "color_curve"));

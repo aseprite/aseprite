@@ -137,7 +137,7 @@ static AlgoHLine inks_hline[][3] =
 /* CURSOR COLOR                                            */
 /***********************************************************/
 
-static void update_cursor_color(void *data)
+static void update_cursor_color()
 {
   if (ji_screen)
     _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
@@ -147,6 +147,15 @@ static void update_cursor_color(void *data)
 
   _cursor_mask = (color_type(cursor_color) == COLOR_TYPE_MASK);
 }
+
+class UpdateCursorColor : public IAppHook
+{
+public:
+  void on_event()
+  {
+    update_cursor_color();
+  }
+};
 
 /***********************************************************/
 /* TOOLS                                                   */
@@ -192,7 +201,7 @@ int init_module_tools()
   air_speed   = MID(1, air_speed, 100);
   tiled_mode  = (tiled_t)MID(0, (int)tiled_mode, TILED_BOTH);
 
-  app_add_hook(APP_PALETTE_CHANGE, update_cursor_color, NULL);
+  App::instance()->add_hook(AppEvent::PaletteChange, new UpdateCursorColor);
 
   return 0;
 }
@@ -309,7 +318,7 @@ color_t get_cursor_color()
 void set_cursor_color(color_t color)
 {
   cursor_color = color;
-  update_cursor_color(NULL);
+  update_cursor_color();
 }
 
 /* returns the size which use the current tool */
