@@ -99,38 +99,34 @@ typedef struct RectTracker RectTracker;
 int init_module_graphics();
 void exit_module_graphics();
 
-struct BITMAP *get_gfx(int id);
+BITMAP* get_gfx(int id);
 
 void dotted_mode(int offset);
-void simple_dotted_mode(struct BITMAP *bmp, int fg, int bg);
+void simple_dotted_mode(BITMAP* bmp, int fg, int bg);
 
-void *subclip(struct BITMAP *bmp, int x1, int y1, int x2, int y2);
+void *subclip(BITMAP* bmp, int x1, int y1, int x2, int y2);
 void backclip(void *data);
 
-RectTracker *rect_tracker_new(struct BITMAP *bmp, int x1, int y1, int x2, int y2);
+RectTracker *rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
 void rect_tracker_free(RectTracker *tracker);
 
-void bevel_box(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel);
-void rectdotted(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int bg);
-void rectgrid(struct BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h);
+void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel);
+void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg);
+void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
 void draw_emptyset_symbol(JRect rc, int color);
-void draw_color(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
+void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
 		int imgtype, color_t color);
-void draw_color_button(struct BITMAP *bmp,
+void draw_color_button(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
 		       bool hot, bool drag);
-void draw_progress_bar(struct BITMAP* bmp,
+void draw_progress_bar(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,
 		       float progress);
 
-int character_length(struct FONT *font, int chr);
-void render_character(struct BITMAP *bmp, struct FONT *font, int chr, int x, int y, int fg, int bg);
-
-/* void swap_bitmap(struct ASE_BITMAP *bmp, struct ASE_BITMAP *area, int x, int y); */
-
-/* void render_background(struct ASE_BITMAP *bitmap, int x1, int y1, int x2, int y2); */
+int character_length(FONT* font, int chr);
+void render_character(BITMAP* bmp, FONT* font, int chr, int x, int y, int fg, int bg);
 
 #endif

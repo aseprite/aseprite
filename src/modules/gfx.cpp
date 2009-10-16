@@ -37,12 +37,11 @@
 #include "raster/image.h"
 #include "widgets/editor.h"
 
-/* static BITMAP *icons_pcx; */
-static BITMAP *gfx_bmps[GFX_BITMAP_COUNT];
+static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
 
 #include "modules/gfxdata.cpp"
 
-static void convert_data_to_bitmap(DATA *data, BITMAP **bmp)
+static void convert_data_to_bitmap(DATA *data, BITMAP** bmp)
 {
   int scale = guiscale();
   const char *p;
@@ -100,7 +99,7 @@ void exit_module_graphics()
     }
 }
 
-BITMAP *get_gfx(int id)
+BITMAP* get_gfx(int id)
 {
   if (!gfx_bmps[id])
     convert_data_to_bitmap(&gfx_data[id], &gfx_bmps[id]);
@@ -195,7 +194,7 @@ void dotted_mode(int offset)
     },
   };
 
-  static BITMAP *pattern = NULL;
+  static BITMAP* pattern = NULL;
   int x, y, fg, bg;
 
   if (offset < 0) {
@@ -225,9 +224,9 @@ void dotted_mode(int offset)
   drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
 }
 
-void simple_dotted_mode(BITMAP *bmp, int fg, int bg)
+void simple_dotted_mode(BITMAP* bmp, int fg, int bg)
 {
-  static BITMAP *pattern = NULL;
+  static BITMAP* pattern = NULL;
 
   if (pattern && bitmap_color_depth(pattern) != bitmap_color_depth(bmp))
     destroy_bitmap(pattern);
@@ -245,7 +244,7 @@ void simple_dotted_mode(BITMAP *bmp, int fg, int bg)
 
 /**********************************************************************/
 /* Set/Restore sub-clip regions */
-
+
 struct CLIP_DATA
 {
   BITMAP* bmp;
@@ -291,10 +290,10 @@ void backclip(void* _data)
 
 /**********************************************************************/
 /* Rectangle Tracker (Save/Restore rectangles from/to the screen) */
-
+
 struct RectTracker
 {
-  BITMAP *bmp;
+  BITMAP* bmp;
   int x1, y1, x2, y2;
   int npixel;
   int *pixel;
@@ -400,8 +399,8 @@ void rect_tracker_free(RectTracker* rt)
 
 /**********************************************************************/
 /* Rectangles */
-
-void bevel_box(BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
+
+void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int bevel)
 {
   hline(bmp, x1+bevel, y1, x2-bevel, c1); /* top */
   hline(bmp, x1+bevel, y2, x2-bevel, c2); /* bottom */
@@ -416,14 +415,14 @@ void bevel_box(BITMAP *bmp, int x1, int y1, int x2, int y2, int c1, int c2, int 
   line(bmp, x2-bevel, y2, x2, y2-bevel, c2); /* bottom-right */
 }
 
-void rectdotted(BITMAP *bmp, int x1, int y1, int x2, int y2, int fg, int bg)
+void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg)
 {
   simple_dotted_mode(bmp, fg, bg);
   rect(bmp, x1, y1, x2, y2, 0);
   solid_mode();
 }
 
-void rectgrid(BITMAP *bmp, int x1, int y1, int x2, int y2, int w, int h)
+void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 {
   int x, y, u, v, c1, c2;
 
@@ -472,14 +471,14 @@ void draw_emptyset_symbol(JRect rc, int color)
   line(ji_screen, x1, y2, x2, y1, color);
 }
 
-void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
+void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
 		int imgtype, color_t color)
 {
   int type = color_type(color);
   int data;
   int w = x2 - x1 + 1;
   int h = y2 - y1 + 1;
-  BITMAP *graph;
+  BITMAP* graph;
 
   if (type == COLOR_TYPE_INDEX) {
     data = color_get_index(imgtype, color);
@@ -538,7 +537,7 @@ void draw_color(BITMAP *bmp, int x1, int y1, int x2, int y2,
   }
 }
 
-void draw_color_button(BITMAP *bmp,
+void draw_color_button(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
@@ -623,13 +622,13 @@ void draw_progress_bar(BITMAP* bmp,
 /************************************************************************/
 /* Font related */
 
-int character_length(FONT *font, int chr)
+int character_length(FONT* font, int chr)
 {
   return font->vtable->char_length(font, chr);
 }
 
 /* renders a character of the font centered in x and y */
-void render_character(BITMAP *bmp, FONT *font, int chr, int x, int y, int fg, int bg)
+void render_character(BITMAP* bmp, FONT* font, int chr, int x, int y, int fg, int bg)
 {
   font->vtable->render_char(font, chr, fg, bg, bmp, x, y);
 }
