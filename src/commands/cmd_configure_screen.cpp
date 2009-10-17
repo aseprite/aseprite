@@ -19,30 +19,20 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <vector>
+#include <utility>
 
 #include "jinete/jinete.h"
 
 #include "commands/command.h"
 #include "console.h"
 #include "core/app.h"
+#include "core/dirs.h"
+#include "intl/intl.h"
 #include "dialogs/options.h"
 #include "modules/gui.h"
 #include "sprite_wrappers.h"
 #include "modules/palettes.h"
-
-#define DEPTH_TO_INDEX(bpp)			\
-  ((bpp == 8)? 0:				\
-   (bpp == 15)? 1:				\
-   (bpp == 16)? 2:				\
-   (bpp == 24)? 3:				\
-   (bpp == 32)? 4: -1)
-
-#define INDEX_TO_DEPTH(index)			\
-  ((index == 0)? 8:				\
-   (index == 1)? 15:				\
-   (index == 2)? 16:				\
-   (index == 3)? 24:				\
-   (index == 4)? 32: -1)
 
 static int new_card, new_w, new_h, new_depth, new_scaling;
 static int old_card, old_w, old_h, old_depth, old_scaling;
@@ -58,12 +48,20 @@ static bool alert_msg_proc(JWidget widget, JMessage msg);
 
 class ConfigureScreen : public Command
 {
+  std::vector<std::pair<int, int> > m_resolutions;
+  std::vector<int> m_colordepths;
+  std::vector<int> m_pixelscale;
+
 public:
   ConfigureScreen();
   Command* clone() const { return new ConfigureScreen(*this); }
 
 protected:
   void execute(Context* context);
+
+private:
+  void show_dialog(Context* context);
+  void load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale);
 };
 
 ConfigureScreen::ConfigureScreen()
@@ -92,10 +90,9 @@ void ConfigureScreen::execute(Context* context)
   show_dialog(context);
 }
 
-static void show_dialog(Context* context)
+void ConfigureScreen::show_dialog(Context* context)
 {
   JWidget resolution, color_depth, pixel_scale, fullscreen;
-  char buf[512];
 
   JWidgetPtr window(load_widget("confscr.jid", "configure_screen"));
   get_widgets(window,
@@ -104,29 +101,7 @@ static void show_dialog(Context* context)
 	      "pixel_scale", &pixel_scale,
 	      "fullscreen", &fullscreen, NULL);
 
-  jcombobox_add_string(resolution, "320x200", NULL);
-  jcombobox_add_string(resolution, "320x240", NULL);
-  jcombobox_add_string(resolution, "640x400", NULL);
-  jcombobox_add_string(resolution, "640x480", NULL);
-  jcombobox_add_string(resolution, "800x600", NULL);
-  jcombobox_add_string(resolution, "1024x768", NULL);
-
-  jcombobox_add_string(color_depth, _("8 bpp (256 colors)"), NULL);
-  jcombobox_add_string(color_depth, _("15 bpp (32K colors)"), NULL);
-  jcombobox_add_string(color_depth, _("16 bpp (64K colors)"), NULL);
-  jcombobox_add_string(color_depth, _("24 bpp (16M colors)"), NULL);
-  jcombobox_add_string(color_depth, _("32 bpp (16M colors)"), NULL);
-
-  jcombobox_add_string(pixel_scale, _("x1 (normal)"), NULL);
-  jcombobox_add_string(pixel_scale, _("x2 (double)"), NULL);
-  jcombobox_add_string(pixel_scale, _("x3 (big)"), NULL);
-  jcombobox_add_string(pixel_scale, _("x4 (huge)"), NULL);
-
-  usprintf(buf, "%dx%d", old_w, old_h);
-  jcombobox_select_string(resolution, buf);
-
-  jcombobox_select_index(color_depth, DEPTH_TO_INDEX(old_depth));
-  jcombobox_select_index(pixel_scale, old_scaling-1);
+  load_resolutions(resolution, color_depth, pixel_scale);
 
   if (is_windowed_mode())
     jwidget_deselect(fullscreen);
@@ -136,20 +111,12 @@ static void show_dialog(Context* context)
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
-    int depth_index;
-    char *xbuf;
-
-    ustrcpy(buf, jcombobox_get_selected_string(resolution));
-    new_w = ustrtol(buf, &xbuf, 10);
-    new_h = ustrtol(xbuf+1, NULL, 10);
-
+    new_w = m_resolutions[jcombobox_get_selected_index(resolution)].first;
+    new_h = m_resolutions[jcombobox_get_selected_index(resolution)].second;
+    new_depth = m_colordepths[jcombobox_get_selected_index(color_depth)];
+    new_scaling = m_pixelscale[jcombobox_get_selected_index(pixel_scale)];
     new_card = jwidget_is_selected(fullscreen) ? GFX_AUTODETECT_FULLSCREEN:
 						 GFX_AUTODETECT_WINDOWED;
-
-    depth_index = jcombobox_get_selected_index(color_depth);
-    new_depth = INDEX_TO_DEPTH(depth_index);
-
-    new_scaling = jcombobox_get_selected_index(pixel_scale)+1;
 
     /* setup graphics mode */
     if (try_new_gfx_mode(context)) {
@@ -181,6 +148,90 @@ static void show_dialog(Context* context)
       }
     }
   }
+}
+
+void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale)
+{
+  DIRS *dirs, *dir;
+  JXml xml;
+  char buf[512];
+
+  dirs = filename_in_datadir("usergui.xml");
+  {
+    sprintf(buf, "gui-%s.xml", intl_get_lang());
+    dirs_cat_dirs(dirs, filename_in_datadir(buf));
+    dirs_cat_dirs(dirs, filename_in_datadir("gui-en.xml"));
+  }
+
+  m_resolutions.clear();
+  m_colordepths.clear();
+  m_pixelscale.clear();
+
+  for (dir=dirs; dir; dir=dir->next) {
+    PRINTF("Trying to load screen resolutions file from \"%s\"...\n", dir->path);
+    
+    // open the XML menu definition file
+    xml = jxml_new_from_file(dir->path);
+    if (xml && jxml_get_root(xml)) {
+      JXmlElem xml_resolutions = jxmlelem_get_elem_by_name(jxml_get_root(xml), "resolutions");
+      if (xml_resolutions) {
+	JLink link;
+	JI_LIST_FOR_EACH(((JXmlNode)xml_resolutions)->children, link) {
+	  JXmlNode child = (JXmlNode)link->data;
+	  JXmlElem elem = (JXmlElem)child;
+
+	  if (strcmp(jxmlelem_get_name(elem), "screensize") == 0) {
+	    int w = ustrtol(jxmlelem_get_attr(elem, "width"), NULL, 10);
+	    int h = ustrtol(jxmlelem_get_attr(elem, "height"), NULL, 10);
+	    const char* aspect = jxmlelem_get_attr(elem, "aspect");
+
+	    if (w > 0 && h > 0) {
+	      m_resolutions.push_back(std::make_pair(w, h));
+
+	      if (aspect)
+		sprintf(buf, "%dx%d (%s)", w, h, aspect);
+	      else
+		sprintf(buf, "%dx%d", w, h, aspect);
+
+	      jcombobox_add_string(resolution, buf, NULL);
+	      if (old_w == w && old_h == h)
+		jcombobox_select_index(resolution, jcombobox_get_count(resolution)-1);
+	    }
+	  }
+	  else if (strcmp(jxmlelem_get_name(elem), "colordepth") == 0) {
+	    int bpp = ustrtol(jxmlelem_get_attr(elem, "bpp"), NULL, 10);
+	    const char* label = jxmlelem_get_attr(elem, "label");
+
+	    if (bpp > 0 && label) {
+	      m_colordepths.push_back(bpp);
+
+	      jcombobox_add_string(color_depth, label, NULL);
+	      if (old_depth == bpp)
+		jcombobox_select_index(color_depth, jcombobox_get_count(color_depth)-1);
+	    }
+	  }
+	  else if (strcmp(jxmlelem_get_name(elem), "pixelscale") == 0) {
+	    int factor = ustrtol(jxmlelem_get_attr(elem, "factor"), NULL, 10);
+	    const char* label = jxmlelem_get_attr(elem, "label");
+
+	    if (factor > 0 && label) {
+	      m_pixelscale.push_back(factor);
+
+	      jcombobox_add_string(pixel_scale, label, NULL);
+	      if (old_scaling == factor)
+		jcombobox_select_index(pixel_scale, jcombobox_get_count(pixel_scale)-1);
+	    }
+	  }
+	}
+      }
+
+      // free the XML file
+      jxml_free(xml);
+      break;
+    }
+  }
+
+  dirs_free(dirs);
 }
 
 static bool try_new_gfx_mode(Context* context)

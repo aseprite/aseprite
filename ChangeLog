@@ -1,3 +1,8 @@
+2009-10-17  David Capello  <davidcapello@gmail.com>
+
+	* src/commands/cmd_configure_screen.cpp: Fixed issue #2874422
+	"More screen resolutions" (Philippe Michael Groarke idea).
+
 2009-10-14  David Capello  <davidcapello@gmail.com>
 
 	* src/core/app.h (IAppHook, AppEvent): Added IAppHook interface

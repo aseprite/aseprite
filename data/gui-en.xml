@@ -304,4 +304,34 @@
 	<item command="copy_cel" name="&Copy" />
     </menu>
 
+    <!-- resolutions -->
+
+    <resolutions>
+
+      <screensize width="320" height="200" aspect="16:10" />
+      <screensize width="320" height="240" aspect="4:3" />
+      <screensize width="640" height="400" aspect="16:10" />
+      <screensize width="640" height="480" aspect="4:3" />
+      <screensize width="800" height="600" aspect="4:3" />
+      <screensize width="1024" height="768" aspect="4:3" />
+      <screensize width="1280" height="800" aspect="16:10" />
+      <screensize width="1600" height="900" aspect="16:9" />
+      <screensize width="1600" height="1200" aspect="4:3" />
+      <screensize width="1680" height="1050" aspect="16:10" />
+      <screensize width="1920" height="1200" aspect="16:10" />
+      <screensize width="2560" height="1600" aspect="16:10" />
+
+      <colordepth bpp="8" label="8 bpp (256 colors)" />
+      <colordepth bpp="15" label="15 bpp (32K colors)" />
+      <colordepth bpp="16" label="16 bpp (64K colors)" />
+      <colordepth bpp="24" label="24 bpp (16M colors)" />
+      <colordepth bpp="32" label="32 bpp (16M colors)" />
+
+      <pixelscale factor="1" label="x1 (normal)" />
+      <pixelscale factor="2" label="x2 (double)" />
+      <pixelscale factor="3" label="x3 (big)" />
+      <pixelscale factor="4" label="x4 (huge)" />
+
+    </resolutions>
+
 </gui>
