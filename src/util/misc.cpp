@@ -43,13 +43,13 @@ Image *GetImage(const Sprite *sprite)
 {
   Image *image = NULL;
 
-  if (sprite && sprite->layer && layer_is_image(sprite->layer)) {
-    Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
-
+  if (sprite && sprite->layer && sprite->layer->is_image()) {
+    Cel *cel = static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
     if (cel) {
-      if ((cel->image >= 0) &&
-	  (cel->image < sprite->stock->nimage))
-	image = sprite->stock->image[cel->image];
+      assert((cel->image >= 0) &&
+	     (cel->image < sprite->stock->nimage));
+
+      image = sprite->stock->image[cel->image];
     }
   }
 
@@ -62,13 +62,13 @@ Image* GetImage2(const Sprite* sprite, int* x, int* y, int* opacity)
 
   if (sprite != NULL &&
       sprite->layer != NULL &&
-      layer_is_image(sprite->layer)) {
-    Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
-
+      sprite->layer->is_image()) {
+    Cel* cel = static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
     if (cel) {
-      if ((cel->image >= 0) &&
-	  (cel->image < sprite->stock->nimage))
-	image = sprite->stock->image[cel->image];
+      assert((cel->image >= 0) &&
+	     (cel->image < sprite->stock->nimage));
+
+      image = sprite->stock->image[cel->image];
 
       if (x) *x = cel->x;
       if (y) *y = cel->y;
@@ -111,64 +111,6 @@ void LoadPalette(Sprite* sprite, const char *filename)
   }
 
   dirs_free(dirs);
-}
-
-/* returns a new layer created from the current mask in the current
-   sprite, the layer isn't added to the sprite */
-Layer *NewLayerFromMask(const Sprite *src_sprite, Sprite *dst_sprite)
-{
-  ase_uint8 *address;
-  int x, y, u, v, getx, gety;
-  Image *dst, *src = GetImage2(src_sprite, &x, &y, NULL);
-  Layer *layer;
-  Cel *cel;
-  div_t d;
-
-  if (!src_sprite || !src_sprite->mask || !src_sprite->mask->bitmap || !src)
-    return NULL;
-
-  dst = image_new(dst_sprite->imgtype,
-		  src_sprite->mask->w,
-		  src_sprite->mask->h);
-  if (!dst)
-    return NULL;
-
-  /* clear the new image */
-  image_clear(dst, 0);
-
-  /* copy the masked zones */
-  for (v=0; v<src_sprite->mask->h; v++) {
-    d = div(0, 8);
-    address = ((ase_uint8 **)src_sprite->mask->bitmap->line)[v]+d.quot;
-
-    for (u=0; u<src_sprite->mask->w; u++) {
-      if ((*address & (1<<d.rem))) {
-	getx = u+src_sprite->mask->x-x;
-	gety = v+src_sprite->mask->y-y;
-
-	if ((getx >= 0) && (getx < src->w) &&
-	    (gety >= 0) && (gety < src->h))
-	  dst->putpixel(u, v, src->getpixel(getx, gety));
-      }
-
-      _image_bitmap_next_bit(d, address);
-    }
-  }
-
-  layer = layer_new(dst_sprite);
-  if (!layer) {
-    image_free(dst);
-    return NULL;
-  }
-
-  layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
-
-  cel = cel_new(dst_sprite->frame, stock_add_image(dst_sprite->stock, dst));
-  cel_set_position(cel, dst_sprite->mask->x, dst_sprite->mask->y);
-
-  layer_add_cel(layer, cel);
-
-  return layer;
 }
 
 Image* NewImageFromMask(const Sprite* src_sprite)
@@ -214,34 +156,17 @@ Image* NewImageFromMask(const Sprite* src_sprite)
   return dst;
 }
 
-Image *GetLayerImage(Layer *layer, int *x, int *y, int frame)
-{
-  Image *image = NULL;
-
-  if (layer_is_image (layer)) {
-    Cel *cel = layer_get_cel(layer, frame);
-
-    if (cel) {
-      if ((cel->image >= 0) &&
-	  (cel->image < layer->sprite->stock->nimage))
-	image = layer->sprite->stock->image[cel->image];
-
-      if (x) *x = cel->x;
-      if (y) *y = cel->y;
-    }
-  }
-
-  return image;
-}
-
 /* Gives to the user the possibility to move the sprite's layer in the
    current editor, returns TRUE if the position was changed.  */
 int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   JWidget editor = current_editor;
-  Sprite *sprite = editor_get_sprite (editor);
-  Layer *layer = sprite->layer;
-  Cel *cel = layer_get_cel(layer, sprite->frame);
+  Sprite *sprite = editor_get_sprite(editor);
+
+  assert(sprite->layer->is_image());
+
+  LayerImage* layer = static_cast<LayerImage*>(sprite->layer);
+  Cel *cel = layer->get_cel(sprite->frame);
   int start_x, new_x;
   int start_y, new_y;
   int start_b;

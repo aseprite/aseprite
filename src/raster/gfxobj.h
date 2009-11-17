@@ -20,12 +20,13 @@
 #define RASTER_GFXOBJ_H_INCLUDED
 
 #include "jinete/jbase.h"
+#include <list>
 
 enum {
   GFXOBJ_CEL,
   GFXOBJ_IMAGE,
   GFXOBJ_LAYER_IMAGE,
-  GFXOBJ_LAYER_SET,
+  GFXOBJ_LAYER_FOLDER,
   GFXOBJ_MASK,
   GFXOBJ_PALETTE,
   GFXOBJ_PATH,
@@ -35,6 +36,17 @@ enum {
 };
 
 typedef unsigned int gfxobj_id;
+
+class Cel;
+class Layer;
+
+typedef std::list<Cel*> CelList;
+typedef std::list<Cel*>::iterator CelIterator;
+typedef std::list<Cel*>::const_iterator CelConstIterator;
+
+typedef std::list<Layer*> LayerList;
+typedef std::list<Layer*>::iterator LayerIterator;
+typedef std::list<Layer*>::const_iterator LayerConstIterator;
 
 class GfxObj
 {

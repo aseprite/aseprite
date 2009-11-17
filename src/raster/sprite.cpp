@@ -53,7 +53,7 @@ Sprite::Sprite(int imgtype, int w, int h)
   this->frame = 0;
   this->palettes = jlist_new();
   this->stock = stock_new(imgtype);
-  this->set = layer_set_new(this);
+  this->m_folder = new LayerFolder(this);
   this->layer = NULL;
   this->path = NULL;
   this->mask = mask_new();
@@ -106,9 +106,10 @@ Sprite::~Sprite()
 {
   JLink link;
 
-  // assert(m_locked == 1);
+  // destroy layers
+  delete m_folder;		// destroy layers
 
-  /* destroy images' stock */
+  // destroy images' stock
   if (this->stock)
     stock_free(this->stock);
 
@@ -140,7 +141,6 @@ Sprite::~Sprite()
   if (this->frlens) jfree(this->frlens);
   if (this->undo) undo_free(this->undo);
   if (this->mask) mask_free(this->mask);
-  if (this->set) layer_free(this->set);
   if (this->bound.seg) jfree(this->bound.seg);
 
   /* destroy mutex */
@@ -167,18 +167,18 @@ Sprite* sprite_new_copy(const Sprite* src_sprite)
     return NULL;
 
   /* copy layers */
-  if (dst_sprite->set) {
-    layer_free(dst_sprite->set);
-    dst_sprite->set = NULL;
+  if (dst_sprite->m_folder) {
+    delete dst_sprite->m_folder; // delete
+    dst_sprite->m_folder = NULL;
   }
 
-  assert(src_sprite->set != NULL);
+  assert(src_sprite->get_folder() != NULL);
 
   undo_disable(dst_sprite->undo);
-  dst_sprite->set = layer_new_copy(dst_sprite, src_sprite->set);
+  dst_sprite->m_folder = src_sprite->get_folder()->duplicate_for(dst_sprite);
   undo_enable(dst_sprite->undo);
 
-  if (dst_sprite->set == NULL) {
+  if (dst_sprite->m_folder == NULL) {
     delete dst_sprite;
     return NULL;
   }
@@ -205,10 +205,10 @@ Sprite* sprite_new_flatten_copy(const Sprite* src_sprite)
     return NULL;
 
   /* flatten layers */
-  assert(src_sprite->set != NULL);
+  assert(src_sprite->get_folder() != NULL);
 
   flat_layer = layer_new_flatten_copy(dst_sprite,
-				      src_sprite->set,
+				      src_sprite->get_folder(),
 				      0, 0, src_sprite->w, src_sprite->h,
 				      0, src_sprite->frames-1);
   if (flat_layer == NULL) {
@@ -217,7 +217,7 @@ Sprite* sprite_new_flatten_copy(const Sprite* src_sprite)
   }
 
   /* add and select the new flat layer */
-  layer_add_layer(dst_sprite->set, flat_layer);
+  dst_sprite->get_folder()->add_layer(flat_layer);
   dst_sprite->layer = flat_layer;
 
   return dst_sprite;
@@ -225,54 +225,45 @@ Sprite* sprite_new_flatten_copy(const Sprite* src_sprite)
 
 Sprite* sprite_new_with_layer(int imgtype, int w, int h)
 {
-  Sprite* sprite;
-  Layer *layer;
-  Cel *cel;
-  Image *image;
-  int index;
+  Sprite* sprite = NULL;
+  LayerImage *layer = NULL;
+  Image *image = NULL;
+  Cel *cel = NULL;
 
-  sprite = sprite_new(imgtype, w, h);
-  if (!sprite)
-    return NULL;
+  try {
+    sprite = sprite_new(imgtype, w, h);
+    image = image_new(imgtype, w, h);
+    layer = new LayerImage(sprite);
 
-  /* new image */
-  image = image_new(imgtype, w, h);
-  if (!image) {
-    delete sprite;
-    return NULL;
+    /* clear with mask color */
+    image_clear(image, 0);
+
+    /* configure the first transparent layer */
+    layer->set_name("Layer 1");
+    layer->set_blend_mode(BLEND_MODE_NORMAL);
+
+    /* add image in the layer stock */
+    int index = stock_add_image(sprite->stock, image);
+
+    /* create the cel */
+    cel = cel_new(0, index);
+    cel_set_position(cel, 0, 0);
+
+    /* add the cel in the layer */
+    layer->add_cel(cel);
+
+    /* add the layer in the sprite */
+    sprite->get_folder()->add_layer(layer);
+
+    sprite_set_frames(sprite, 1);
+    sprite_set_filename(sprite, "Sprite");
+    sprite_set_layer(sprite, layer);
   }
-
-  /* new layer */
-  layer = layer_new(sprite);
-  if (!layer) {
-    image_free(image);
+  catch (...) {
     delete sprite;
-    return NULL;
+    delete image;
+    throw;
   }
-
-  /* clear with mask color */
-  image_clear(image, 0);
-
-  /* configure the first transparent layer */
-  layer_set_name(layer, "Layer 1");
-  layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
-
-  /* add image in the layer stock */
-  index = stock_add_image(sprite->stock, image);
-
-  /* create the cel */
-  cel = cel_new(0, index);
-  cel_set_position(cel, 0, 0);
-
-  /* add the cel in the layer */
-  layer_add_cel(layer, cel);
-
-  /* add the layer in the sprite */
-  layer_add_layer(sprite->set, layer);
-
-  sprite_set_frames(sprite, 1);
-  sprite_set_filename(sprite, "Sprite");
-  sprite_set_layer(sprite, layer);
 
   return sprite;
 }
@@ -574,15 +565,15 @@ void sprite_set_frame(Sprite* sprite, int frame)
   sprite->frame = frame;
 }
 
-Layer *sprite_get_background_layer(const Sprite* sprite)
+LayerImage* sprite_get_background_layer(const Sprite* sprite)
 {
   assert(sprite != NULL);
 
-  if (jlist_length(sprite->set->layers) > 0) {
-    Layer *bglayer = reinterpret_cast<Layer*>(jlist_first_data(sprite->set->layers));
+  if (sprite->get_folder()->get_layers_count() > 0) {
+    Layer* bglayer = *sprite->get_folder()->get_layer_begin();
 
-    if (layer_is_background(bglayer))
-      return bglayer;
+    if (bglayer->is_background())
+      return static_cast<LayerImage*>(bglayer);
   }
 
   return NULL;
@@ -650,7 +641,7 @@ Mask *sprite_request_mask(const Sprite* sprite, const char *name)
 void sprite_render(const Sprite* sprite, Image *image, int x, int y)
 {
   image_rectfill(image, x, y, x+sprite->w-1, y+sprite->h-1, 0);
-  layer_render(sprite->set, image, x, y, sprite->frame);
+  layer_render(sprite->get_folder(), image, x, y, sprite->frame);
 }
 
 void sprite_generate_mask_boundaries(Sprite* sprite)
@@ -681,7 +672,7 @@ Layer* sprite_index2layer(const Sprite* sprite, int index)
   int index_count = -1;
   assert(sprite != NULL);
 
-  return index2layer(sprite->set, index, &index_count);
+  return index2layer(sprite->get_folder(), index, &index_count);
 }
 
 int sprite_layer2index(const Sprite* sprite, const Layer *layer)
@@ -689,18 +680,18 @@ int sprite_layer2index(const Sprite* sprite, const Layer *layer)
   int index_count = -1;
   assert(sprite != NULL);
 
-  return layer2index(sprite->set, layer, &index_count);
+  return layer2index(sprite->get_folder(), layer, &index_count);
 }
 
 int sprite_count_layers(const Sprite* sprite)
 {
   assert(sprite != NULL);
-  return layer_count_layers(sprite->set)-1;
+  return sprite->get_folder()->get_layers_count();
 }
 
-void sprite_get_cels(const Sprite* sprite, JList cels)
+void sprite_get_cels(const Sprite* sprite, CelList& cels)
 {
-  return layer_get_cels(sprite->set, cels);
+  sprite->get_folder()->get_cels(cels);
 }
 
 /**
@@ -746,12 +737,14 @@ static Layer *index2layer(const Layer *layer, int index, int *index_count)
   else {
     (*index_count)++;
 
-    if (layer_is_set (layer)) {
+    if (layer->is_folder()) {
       Layer *found;
-      JLink link;
 
-      JI_LIST_FOR_EACH(layer->layers, link) {
-	if ((found = index2layer(reinterpret_cast<Layer*>(link->data), index, index_count)))
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it) {
+	if ((found = index2layer(*it, index, index_count)))
 	  return found;
       }
     }
@@ -767,13 +760,14 @@ static int layer2index(const Layer *layer, const Layer *find_layer, int *index_c
   else {
     (*index_count)++;
 
-    if (layer_is_set(layer)) {
-      JLink link;
+    if (layer->is_folder()) {
       int found;
 
-      JI_LIST_FOR_EACH(layer->layers, link) {
-	if ((found = layer2index(reinterpret_cast<Layer*>(link->data),
-				 find_layer, index_count)) >= 0)
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it) {
+	if ((found = layer2index(*it, find_layer, index_count)) >= 0)
 	  return found;
       }
     }
@@ -782,15 +776,16 @@ static int layer2index(const Layer *layer, const Layer *find_layer, int *index_c
   }
 }
 
-static int layer_count_layers(const Layer *layer)
+static int layer_count_layers(const Layer* layer)
 {
   int count = 1;
 
-  if (layer_is_set(layer)) {
-    JLink link;
-    JI_LIST_FOR_EACH(layer->layers, link) {
-      count += layer_count_layers(reinterpret_cast<Layer*>(link->data));
-    }
+  if (layer->is_folder()) {
+    LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
+    LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+
+    for (; it != end; ++it)
+      count += layer_count_layers(*it);
   }
 
   return count;

@@ -1,3 +1,8 @@
+2009-11-17  David Capello  <davidcapello@gmail.com>
+
+	* src/raster/layer.h (Layer, LayerImage, LayerFolder): Converted
+	layer to a class with member functions.
+
 2009-10-17  David Capello  <davidcapello@gmail.com>
 
 	* src/commands/cmd_configure_screen.cpp: Fixed issue #2874422

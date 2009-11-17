@@ -94,7 +94,7 @@ static bool save_ICO(FileOp *fop)
 
   for (n=0; n<num; ++n) {
     image_clear(bmp, 0);
-    layer_render(fop->sprite->set, bmp, 0, 0, n);
+    layer_render(fop->sprite->get_folder(), bmp, 0, 0, n);
 
     depth = 8; /* bitmap_color_depth(bmp); */
     bpp = (depth == 8) ? 8 : 24;

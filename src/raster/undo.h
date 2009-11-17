@@ -88,6 +88,7 @@ void undo_dirty(Undo* undo, Dirty *dirty);
 void undo_add_image(Undo* undo, Stock *stock, int image_index);
 void undo_remove_image(Undo* undo, Stock *stock, int image_index);
 void undo_replace_image(Undo* undo, Stock *stock, int image_index);
+void undo_set_layer_name(Undo* undo, Layer *layer);
 void undo_add_cel(Undo* undo, Layer *layer, Cel *cel);
 void undo_remove_cel(Undo* undo, Layer *layer, Cel *cel);
 void undo_add_layer(Undo* undo, Layer *set, Layer *layer);

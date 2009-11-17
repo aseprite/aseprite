@@ -62,7 +62,7 @@ static bool load_FLI(FileOp *fop)
   s_fli_header fli_header;
   Image *bmp, *old, *image;
   Sprite *sprite;
-  Layer *layer;
+  LayerImage *layer;
   Palette *pal;
   int c, w, h;
   int frpos_in;
@@ -104,9 +104,9 @@ static bool load_FLI(FileOp *fop)
 
   /* create the image */
   sprite = sprite_new(IMAGE_INDEXED, w, h);
-  layer = layer_new(sprite);
-  layer_add_layer(sprite->set, layer);
-  layer_configure_as_background(layer);
+  layer = new LayerImage(sprite);
+  sprite->get_folder()->add_layer(layer);
+  layer->configure_as_background();
 
   /* set frames and speed */
   sprite_set_frames(sprite, fli_header.frames);
@@ -151,7 +151,7 @@ static bool load_FLI(FileOp *fop)
 	fop_error(fop, _("Not enough memory\n"));
 	break;
       }
-      layer_add_cel(layer, cel);
+      layer->add_cel(cel);
 
       /* first frame or the palette changes */
       if ((frpos_in == 0) || (memcmp(omap, cmap, 768) != 0))
@@ -272,7 +272,7 @@ static bool save_FLI(FileOp *fop)
 
     /* render the frame in the bitmap */
     image_clear(bmp, 0);
-    layer_render(sprite->set, bmp, 0, 0, frpos);
+    layer_render(sprite->get_folder(), bmp, 0, 0, frpos);
 
     /* how many times this frame should be written to get the same
        time that it has in the sprite */

@@ -35,7 +35,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
 
 ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
 {
-  Layer* layer = target & TARGET_ALL_LAYERS ? sprite->set:
+  Layer* layer = target & TARGET_ALL_LAYERS ? sprite->get_folder():
 					      sprite->layer;
 
   return images_ref_get_from_layer(sprite, layer, target, write);
@@ -72,7 +72,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   {								\
     ImageRef* image_ref = jnew(ImageRef, 1);			\
 								\
-    image_ref->image = layer->sprite->stock->image[cel->image];	\
+    image_ref->image = layer->get_sprite()->stock->image[cel->image];	\
     image_ref->layer = layer;					\
     image_ref->cel = cel;					\
     image_ref->next = NULL;					\
@@ -84,10 +84,10 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   ImageRef* last_image = NULL;
   int frame = sprite->frame;
 
-  if (!layer_is_readable(layer))
+  if (!layer->is_readable())
     return NULL;
 
-  if (write && !layer_is_writable(layer))
+  if (write && !layer->is_writable())
     return NULL;
 
   switch (layer->type) {
@@ -95,27 +95,26 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
     case GFXOBJ_LAYER_IMAGE: {
       if (target & TARGET_ALL_FRAMES) {
 	for (frame=0; frame<sprite->frames; frame++) {
-	  Cel* cel = layer_get_cel(layer, frame);
+	  Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);
 	  if (cel != NULL)
 	    NEW_IMAGE(layer, cel);
 	}
       }
       else {
-	Cel* cel = layer_get_cel(layer, frame);
+	Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);
 	if (cel != NULL)
 	  NEW_IMAGE(layer, cel);
       }
       break;
     }
 
-    case GFXOBJ_LAYER_SET: {
+    case GFXOBJ_LAYER_FOLDER: {
       ImageRef* sub_images;
-      JLink link;
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
-      JI_LIST_FOR_EACH(layer->layers, link) {
-	sub_images = images_ref_get_from_layer
-	  (sprite, reinterpret_cast<Layer*>(link->data), target, write);
-
+      for (; it != end; ++it) {
+	sub_images = images_ref_get_from_layer(sprite, *it, target, write);
 	if (sub_images != NULL)
 	  ADD_IMAGES(sub_images);
       }

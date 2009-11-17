@@ -552,7 +552,7 @@ int app_get_color_to_clear_layer(Layer *layer)
   color_t color = color_mask();
   
   /* the `Background' is erased with the `Background Color' */
-  if (layer != NULL && layer_is_background(layer))
+  if (layer != NULL && layer->is_background())
     color = colorbar_get_bg_color(colorbar);
 
   return get_color_for_layer(layer, color);

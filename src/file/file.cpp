@@ -306,15 +306,15 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
       break;
   }
 
-  /* check frames support */
+  // check frames support
   if (!(fop->format->flags & (FILE_SUPPORT_FRAMES |
 			      FILE_SUPPORT_SEQUENCES))) {
     if (fop->sprite->frames > 1)
       usprintf(buf+ustrlen(buf), "<<- %s", _("Frames"));
   }
 
-  /* layers support */
-  if (jlist_length(fop->sprite->set->layers) > 1) {
+  // layers support
+  if (fop->sprite->get_folder()->get_layers_count() > 1) {
     if (!(fop->format->flags & FILE_SUPPORT_LAYERS)) {
       usprintf(buf+ustrlen(buf), "<<- %s", _("Layers"));
     }
@@ -470,8 +470,7 @@ void fop_operate(FileOp *fop)
 				      fop->seq.image);			\
 									\
 	fop->seq.last_cel->image = image_index;				\
-									\
-	layer_add_cel(fop->seq.layer, fop->seq.last_cel);		\
+	fop->seq.layer->add_cel(fop->seq.last_cel);			\
 									\
 	if (palette_count_diff(sprite_get_palette(fop->sprite, frame),	\
 			       fop->seq.palette, NULL, NULL) > 0) {	\
@@ -561,7 +560,7 @@ void fop_operate(FileOp *fop)
       if (fop->sprite != NULL) {
 	/* configure the layer as the `Background' */
 	if (!fop->seq.has_alpha)
-	  layer_configure_as_background(fop->seq.layer);
+	  fop->seq.layer->configure_as_background();
 
 	/* set the frames range */
 	sprite_set_frames(fop->sprite, frame);
@@ -581,8 +580,10 @@ void fop_operate(FileOp *fop)
 
     if (fop->sprite != NULL) {
       /* select the last layer */
-      Layer* last_layer = reinterpret_cast<Layer*>(jlist_last_data(fop->sprite->set->layers));
-      sprite_set_layer(fop->sprite, last_layer);
+      if (fop->sprite->get_folder()->get_layers_count() > 0) {
+	LayerIterator last_layer = --fop->sprite->get_folder()->get_layer_end();
+	sprite_set_layer(fop->sprite, *last_layer);
+      }
 
       /* set the filename */
       if (fop->seq.filename_list)
@@ -736,28 +737,25 @@ void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
 
 Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
 {
-  Sprite *sprite;
-  Image *image;
-  Layer *layer;
+  Sprite* sprite;
 
   /* create the image */
   if (!fop->sprite) {
     sprite = sprite_new(imgtype, w, h);
-    if (!sprite)
-      return NULL;
+    try {
+      LayerImage* layer = new LayerImage(sprite);
 
-    layer = layer_new(sprite);
-    if (!layer) {
-      delete sprite;
-      return NULL;
+      /* add the layer */
+      sprite->get_folder()->add_layer(layer);
+
+      /* done */
+      fop->sprite = sprite;
+      fop->seq.layer = layer;
     }
-
-    /* add the layer */
-    layer_add_layer(sprite->set, layer);
-
-    /* done */
-    fop->sprite = sprite;
-    fop->seq.layer = layer;
+    catch (...) {
+      delete sprite;
+      throw;
+    }
   }
   else {
     sprite = fop->sprite;
@@ -773,7 +771,7 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
     return NULL;
   }
 
-  image = image_new(imgtype, w, h);
+  Image* image = image_new(imgtype, w, h);
   if (!image) {
     fop_error(fop, _("Not enough memory to allocate a bitmap.\n"));
     return NULL;

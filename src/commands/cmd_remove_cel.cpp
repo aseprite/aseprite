@@ -51,21 +51,21 @@ bool RemoveCelCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
-    sprite != NULL &&
-    sprite->layer != NULL &&
-    layer_is_readable(sprite->layer) &&
-    layer_is_writable(sprite->layer) &&
-    layer_is_image(sprite->layer) &&
-    layer_get_cel(sprite->layer, sprite->frame);
+    sprite &&
+    sprite->layer &&
+    sprite->layer->is_readable() &&
+    sprite->layer->is_writable() &&
+    sprite->layer->is_image() &&
+    static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
 }
 
 void RemoveCelCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  Cel* cel = layer_get_cel(sprite->layer, sprite->frame);
+  Cel* cel = static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
   {
     Undoable undoable(sprite, "Remove Cel");
-    undoable.remove_cel(sprite->layer, cel);
+    undoable.remove_cel(static_cast<LayerImage*>(sprite->layer), cel);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

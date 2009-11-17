@@ -142,7 +142,7 @@ void effect_set_target(Effect *effect, int target)
 
   /* the alpha channel of the background layer can't be modified */
   if (effect->sprite->layer &&
-      layer_is_background(effect->sprite->layer))
+      effect->sprite->layer->is_background())
     effect->target &= ~TARGET_ALPHA_CHANNEL;
 }
 
@@ -382,7 +382,7 @@ static void effect_init(Effect *effect, Layer *layer, Image *image,
   effect->target = effect->_target;
 
   /* the alpha channel of the background layer can't be modified */
-  if (layer_is_background(layer))
+  if (layer->is_background())
     effect->target &= ~TARGET_ALPHA_CHANNEL;
 }
 

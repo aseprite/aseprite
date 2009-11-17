@@ -19,72 +19,139 @@
 #ifndef RASTER_LAYER_H_INCLUDED
 #define RASTER_LAYER_H_INCLUDED
 
+#include <string>
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 
 class Cel;
 class Image;
 class Sprite;
-
-#define LAYER_NAME_SIZE		256
+class Layer;
+class LayerImage;
+class LayerFolder;
 
 #define LAYER_IS_READABLE	0x0001
 #define LAYER_IS_WRITABLE	0x0002
 #define LAYER_IS_LOCKMOVE	0x0004
 #define LAYER_IS_BACKGROUND	0x0008
 
+//////////////////////////////////////////////////////////////////////
+// Layer class
+
 class Layer : public GfxObj
 {
-public:
-  char name[LAYER_NAME_SIZE];	/* layer name */
-  Sprite* sprite;		/* owner of the layer */
-  Layer* parent_layer;		/* parent layer */
-  unsigned short flags;
+  std::string m_name;		// layer name
+  Sprite* m_sprite;		// owner of the layer
+  LayerFolder* m_parent;	// parent layer
+  unsigned short m_flags;
 
-  /* for GFXOBJ_LAYER_IMAGE */
-  int blend_mode;		/* constant blend mode */
-  JList cels;			/* list of cels */
-
-  /* for GFXOBJ_LAYER_SET */
-  JList layers;
-
+protected:
   Layer(int type, Sprite* sprite);
+  Layer(Sprite* sprite);
+  Layer(Layer* src_layer, Sprite* dst_sprite);
+
+public:
   virtual ~Layer();
+
+  std::string get_name() const { return m_name; }
+  void set_name(const std::string& name) { m_name = name; }
+
+  Sprite* get_sprite() const { return m_sprite; }
+  LayerFolder* get_parent() const { return m_parent; }
+  void set_parent(LayerFolder* folder) { m_parent = folder; }
+  Layer* get_prev() const;
+  Layer* get_next() const;
+
+  bool is_image() const { return type == GFXOBJ_LAYER_IMAGE; }
+  bool is_folder() const { return type == GFXOBJ_LAYER_FOLDER; }
+  bool is_background() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
+  bool is_moveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
+  bool is_readable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }
+  bool is_writable() const { return (m_flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE; }
+
+  void set_background(bool b) { if (b) m_flags |= LAYER_IS_BACKGROUND; else m_flags &= ~LAYER_IS_BACKGROUND; }
+  void set_moveable(bool b) { if (b) m_flags &= ~LAYER_IS_LOCKMOVE; else m_flags |= LAYER_IS_LOCKMOVE; }
+  void set_readable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
+  void set_writable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
+
+  virtual void get_cels(CelList& cels) = 0;
+  virtual Layer* duplicate_for(Sprite* sprite) = 0;
+
+  // TODO remove these methods (from C backward-compatibility)
+  unsigned short* flags_addr() { return &m_flags; }
+  
 };
 
-Layer* layer_new(Sprite* sprite);
-Layer* layer_set_new(Sprite* sprite);
-Layer* layer_new_copy(Sprite* dst_sprite, const Layer* src_layer);
+//////////////////////////////////////////////////////////////////////
+// LayerImage class
+
+class LayerImage : public Layer
+{
+  int m_blend_mode;		// constant blend mode
+  CelList m_cels;		// list of cels
+
+public:
+  LayerImage(Sprite* sprite);
+  LayerImage(LayerImage* copy, Sprite* sprite);
+  virtual ~LayerImage();
+
+  int get_blend_mode() const { return m_blend_mode; }
+  void set_blend_mode(int blend_mode);
+
+  void add_cel(Cel *cel);
+  void remove_cel(Cel *cel);
+  const Cel* get_cel(int frame) const;
+  Cel* get_cel(int frame);
+
+  void get_cels(CelList& cels);
+
+  void configure_as_background();
+
+  CelIterator get_cel_begin() { return m_cels.begin(); }
+  CelIterator get_cel_end() { return m_cels.end(); }
+  CelConstIterator get_cel_begin() const { return m_cels.begin(); }
+  CelConstIterator get_cel_end() const { return m_cels.end(); }
+  int get_cels_count() const { return m_cels.size(); }
+
+  LayerImage* duplicate_for(Sprite* sprite) { return new LayerImage(this, sprite); }
+
+private:
+  void destroy_all_cels();
+};
+
+//////////////////////////////////////////////////////////////////////
+// LayerFolder class
+
+class LayerFolder : public Layer
+{
+  LayerList m_layers;
+
+public:
+  LayerFolder(Sprite* sprite);
+  LayerFolder(LayerFolder* copy, Sprite* sprite);
+  virtual ~LayerFolder();
+
+  LayerList get_layers_list() { return m_layers; }
+  LayerIterator get_layer_begin() { return m_layers.begin(); }
+  LayerIterator get_layer_end() { return m_layers.end(); }
+  LayerConstIterator get_layer_begin() const { return m_layers.begin(); }
+  LayerConstIterator get_layer_end() const { return m_layers.end(); }
+  int get_layers_count() const { return m_layers.size(); }
+
+  void add_layer(Layer* layer);
+  void remove_layer(Layer* layer);
+  void move_layer(Layer* layer, Layer* after);
+
+  void get_cels(CelList& cels);
+
+  LayerFolder* duplicate_for(Sprite* sprite) { return new LayerFolder(this, sprite); }
+
+private:
+  void destroy_all_layers();
+};
+
 Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
 			      int x, int y, int w, int h, int frmin, int frmax);
-void layer_free(Layer* layer);
-void layer_free_images(Layer* layer);
-
-void layer_configure_as_background(Layer* layer);
-
-bool layer_is_image(const Layer* layer);
-bool layer_is_set(const Layer* layer);
-bool layer_is_background(const Layer* layer);
-bool layer_is_moveable(const Layer* layer);
-bool layer_is_readable(const Layer* layer);
-bool layer_is_writable(const Layer* layer);
-
-Layer* layer_get_prev(Layer* layer);
-Layer* layer_get_next(Layer* layer);
-
-void layer_set_name(Layer* layer, const char *name);
-void layer_set_blend_mode(Layer* layer, int blend_mode);
-void layer_get_cels(const Layer* layer, JList cels);
-
-/* for LAYER_IMAGE */
-void layer_add_cel(Layer* layer, Cel *cel);
-void layer_remove_cel(Layer* layer, Cel *cel);
-Cel *layer_get_cel(const Layer* layer, int frame);
-
-/* for LAYER_SET */
-void layer_add_layer(Layer* set, Layer* layer);
-void layer_remove_layer(Layer* set, Layer* layer);
-void layer_move_layer(Layer* set, Layer* layer, Layer* after);
 
 void layer_render(const Layer* layer, Image *image, int x, int y, int frame);
 

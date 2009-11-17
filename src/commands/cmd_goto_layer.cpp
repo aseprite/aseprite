@@ -73,7 +73,7 @@ void GotoPreviousLayerCommand::execute(Context* context)
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Layer `%s' selected"),
-		     sprite->layer->name);
+		     sprite->layer->get_name().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ void GotoNextLayerCommand::execute(Context* context)
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Layer `%s' selected"),
-		     sprite->layer->name);
+		     sprite->layer->get_name().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

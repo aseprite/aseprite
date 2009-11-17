@@ -158,9 +158,10 @@ void NewFileCommand::execute(Context* context)
 	/* if the background color isn't transparent, we have to
 	   convert the `Layer 1' in a `Background' */
 	if (color_type(color) != COLOR_TYPE_MASK) {
-	  layer_configure_as_background(sprite->layer);
-	  image_clear(GetImage(sprite),
-		      get_color_for_image(imgtype, color));
+	  assert(sprite->layer && sprite->layer->is_image());
+
+	  static_cast<LayerImage*>(sprite->layer)->configure_as_background();
+	  image_clear(GetImage(sprite), get_color_for_image(imgtype, color));
 	}
 
 	/* show the sprite to the user */

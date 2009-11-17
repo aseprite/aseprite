@@ -129,13 +129,12 @@ void FlipCommand::execute(Context* context)
     }
     else {
       // get all sprite cels
-      JList cels = jlist_new();
+      CelList cels;
       sprite_get_cels(sprite, cels);
 
       // for each cel...
-      JLink link;
-      JI_LIST_FOR_EACH(cels, link) {
-	Cel* cel = (Cel*)link->data;
+      for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
+	Cel* cel = *it;
 	Image* image = stock_get_image(sprite->stock, cel->image);
 
 	undoable.set_cel_position(cel,
@@ -145,7 +144,6 @@ void FlipCommand::execute(Context* context)
 	undoable.flip_image(image, 0, 0, image->w-1, image->h-1,
 			    m_flip_horizontal, m_flip_vertical);
       }
-      jlist_free(cels);
     }
 
     undoable.commit();

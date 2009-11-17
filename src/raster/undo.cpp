@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <vector>
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
@@ -66,6 +67,7 @@ enum {
   UNDO_TYPE_REMOVE_CEL,
 
   // layer management
+  UNDO_TYPE_SET_LAYER_NAME,
   UNDO_TYPE_ADD_LAYER,
   UNDO_TYPE_REMOVE_LAYER,
   UNDO_TYPE_MOVE_LAYER,
@@ -81,44 +83,45 @@ enum {
   UNDO_TYPE_SET_FRLEN,
 };
 
-typedef struct UndoChunkData UndoChunkData;
-typedef struct UndoChunkImage UndoChunkImage;
-typedef struct UndoChunkFlip UndoChunkFlip;
-typedef struct UndoChunkDirty UndoChunkDirty;
-typedef struct UndoChunkAddImage UndoChunkAddImage;
-typedef struct UndoChunkRemoveImage UndoChunkRemoveImage;
-typedef struct UndoChunkReplaceImage UndoChunkReplaceImage;
-typedef struct UndoChunkAddCel UndoChunkAddCel;
-typedef struct UndoChunkRemoveCel UndoChunkRemoveCel;
-typedef struct UndoChunkAddLayer UndoChunkAddLayer;
-typedef struct UndoChunkRemoveLayer UndoChunkRemoveLayer;
-typedef struct UndoChunkMoveLayer UndoChunkMoveLayer;
-typedef struct UndoChunkSetLayer UndoChunkSetLayer;
-typedef struct UndoChunkAddPalette UndoChunkAddPalette;
-typedef struct UndoChunkRemovePalette UndoChunkRemovePalette;
-typedef struct UndoChunkSetMask UndoChunkSetMask;
-typedef struct UndoChunkSetFrames UndoChunkSetFrames;
-typedef struct UndoChunkSetFrlen UndoChunkSetFrlen;
+struct UndoChunkData;
+struct UndoChunkImage;
+struct UndoChunkFlip;
+struct UndoChunkDirty;
+struct UndoChunkAddImage;
+struct UndoChunkRemoveImage;
+struct UndoChunkReplaceImage;
+struct UndoChunkAddCel;
+struct UndoChunkRemoveCel;
+struct UndoChunkSetLayerName;
+struct UndoChunkAddLayer;
+struct UndoChunkRemoveLayer;
+struct UndoChunkMoveLayer;
+struct UndoChunkSetLayer;
+struct UndoChunkAddPalette;
+struct UndoChunkRemovePalette;
+struct UndoChunkSetMask;
+struct UndoChunkSetFrames;
+struct UndoChunkSetFrlen;
 
-typedef struct UndoChunk
+struct UndoChunk
 {
   int type;
   int size;
   const char *label;
-} UndoChunk;
+};
 
-typedef struct UndoStream
+struct UndoStream
 {
   Undo* undo;
   JList chunks;
   int size;
-} UndoStream;
+};
 
-typedef struct UndoAction
+struct UndoAction
 {
   const char *name;
   void (*invert)(UndoStream* stream, UndoChunk* chunk, int state);
-} UndoAction;
+};
 
 static void run_undo(Undo* undo, int state);
 static void discard_undo_tail(Undo* undo);
@@ -160,6 +163,9 @@ static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk, int
 
 static void chunk_remove_cel_new(UndoStream* stream, Layer* layer, Cel* cel);
 static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chunk, int state);
+
+static void chunk_set_layer_name_new(UndoStream* stream, Layer *layer);
+static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerName* chunk, int state);
 
 static void chunk_add_layer_new(UndoStream* stream, Layer* set, Layer* layer);
 static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk, int state);
@@ -204,6 +210,7 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(replace_image),
   DECL_UNDO_ACTION(add_cel),
   DECL_UNDO_ACTION(remove_cel),
+  DECL_UNDO_ACTION(set_layer_name),
   DECL_UNDO_ACTION(add_layer),
   DECL_UNDO_ACTION(remove_layer),
   DECL_UNDO_ACTION(move_layer),
@@ -1029,13 +1036,13 @@ static void chunk_add_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
 
 static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk, int state)
 {
-  Layer* layer = (Layer* )gfxobj_find(chunk->layer_id);
-  Cel* cel = (Cel* )gfxobj_find(chunk->cel_id);
+  LayerImage* layer = (LayerImage*)gfxobj_find(chunk->layer_id);
+  Cel* cel = (Cel*)gfxobj_find(chunk->cel_id);
 
   if (layer && cel) {
     chunk_remove_cel_new(stream, layer, cel);
 
-    layer_remove_cel(layer, cel);
+    layer->remove_cel(cel);
     cel_free(cel);
   }
 }
@@ -1064,7 +1071,7 @@ void undo_remove_cel(Undo* undo, Layer* layer, Cel* cel)
 
 static void chunk_remove_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
 {
-  UndoChunkRemoveCel* chunk = (UndoChunkRemoveCel* )
+  UndoChunkRemoveCel* chunk = (UndoChunkRemoveCel*)
     undo_chunk_new(stream,
 		   UNDO_TYPE_REMOVE_CEL,
 		   sizeof(UndoChunkRemoveCel)+get_raw_cel_size(cel));
@@ -1076,7 +1083,7 @@ static void chunk_remove_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
 static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chunk, int state)
 {
   unsigned int layer_id = chunk->layer_id;
-  Layer* layer = (Layer* )gfxobj_find(layer_id);
+  LayerImage* layer = (LayerImage*)gfxobj_find(layer_id);
 
   if (layer) {
     Cel* cel = read_raw_cel(chunk->data);
@@ -1084,7 +1091,64 @@ static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chun
     /* assert(cel != NULL); */
 
     chunk_add_cel_new(stream, layer, cel);
-    layer_add_cel(layer, cel);
+    layer->add_cel(cel);
+  }
+}
+
+/***********************************************************************
+
+  "set_layer_name"
+
+     DWORD		layer ID
+     DWORD		name length
+     BYTES[length]	name text
+
+***********************************************************************/
+
+struct UndoChunkSetLayerName
+{
+  UndoChunk head;
+  ase_uint32 layer_id;
+  ase_uint16 name_length;
+  ase_uint8 name_text[0];
+};
+
+void undo_set_layer_name(Undo* undo, Layer* layer)
+{
+  chunk_set_layer_name_new(undo->undo_stream, layer);
+  update_undo(undo);
+}
+
+static void chunk_set_layer_name_new(UndoStream* stream, Layer *layer)
+{
+  std::string layer_name = layer->get_name();
+
+  UndoChunkSetLayerName* chunk = (UndoChunkSetLayerName*)
+    undo_chunk_new(stream,
+  		   UNDO_TYPE_SET_LAYER_NAME,
+  		   sizeof(UndoChunkSetLayerName) + layer_name.size());
+
+  chunk->layer_id = layer->id;
+  chunk->name_length = layer_name.size();
+
+  for (int c=0; c<chunk->name_length; c++)
+    chunk->name_text[c] = layer_name[c];
+}
+
+static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerName* chunk, int state)
+{
+  Layer* layer = (Layer*)gfxobj_find(chunk->layer_id);
+
+  if (layer) {
+    chunk_set_layer_name_new(stream, layer);
+
+    std::string layer_name;
+    layer_name.reserve(chunk->name_length);
+
+    for (int c=0; c<chunk->name_length; c++)
+      layer_name.push_back(chunk->name_text[c]);
+
+    layer->set_name(layer_name.c_str());
   }
 }
 
@@ -1100,38 +1164,37 @@ static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chun
 struct UndoChunkAddLayer
 {
   UndoChunk head;
-  ase_uint32 set_id;
+  ase_uint32 folder_id;
   ase_uint32 layer_id;
 };
 
-void undo_add_layer(Undo* undo, Layer* set, Layer* layer)
+void undo_add_layer(Undo* undo, Layer* folder, Layer* layer)
 {
-  chunk_add_layer_new(undo->undo_stream, set, layer);
+  chunk_add_layer_new(undo->undo_stream, folder, layer);
   update_undo(undo);
 }
 
-static void chunk_add_layer_new(UndoStream* stream, Layer* set, Layer* layer)
+static void chunk_add_layer_new(UndoStream* stream, Layer* folder, Layer* layer)
 {
   UndoChunkAddLayer* chunk = (UndoChunkAddLayer* )
     undo_chunk_new(stream,
 		   UNDO_TYPE_ADD_LAYER,
 		   sizeof(UndoChunkAddLayer));
 
-  chunk->set_id = set->id;
+  chunk->folder_id = folder->id;
   chunk->layer_id = layer->id;
 }
 
 static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk, int state)
 {
-  Layer* set = (Layer* )gfxobj_find(chunk->set_id);
-  Layer* layer = (Layer* )gfxobj_find(chunk->layer_id);
+  LayerFolder* folder = (LayerFolder*)gfxobj_find(chunk->folder_id);
+  Layer* layer = (Layer*)gfxobj_find(chunk->layer_id);
 
-  if (set && layer) {
+  if (folder && layer) {
     chunk_remove_layer_new(stream, layer);
 
-    layer_remove_layer(set, layer);
-    layer_free_images(layer);
-    layer_free(layer);
+    folder->remove_layer(layer);
+    delete layer;
   }
 }
 
@@ -1139,7 +1202,7 @@ static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk,
 
   "remove_layer"
 
-     DWORD		parent layer set ID
+     DWORD		parent layer folder ID
      DWORD		after layer ID
      LAYER_DATA		see read/write_raw_layer
 
@@ -1148,7 +1211,7 @@ static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk,
 struct UndoChunkRemoveLayer
 {
   UndoChunk head;
-  ase_uint32 set_id;
+  ase_uint32 folder_id;
   ase_uint32 after_id;
   ase_uint8 data[0];
 };
@@ -1161,14 +1224,14 @@ void undo_remove_layer(Undo* undo, Layer* layer)
 
 static void chunk_remove_layer_new(UndoStream* stream, Layer* layer)
 {
-  UndoChunkRemoveLayer* chunk = (UndoChunkRemoveLayer* )
+  UndoChunkRemoveLayer* chunk = (UndoChunkRemoveLayer*)
     undo_chunk_new(stream,
 		   UNDO_TYPE_REMOVE_LAYER,
 		   sizeof(UndoChunkRemoveLayer)+get_raw_layer_size(layer));
-  Layer* set = layer->parent_layer;
-  Layer* after = layer_get_prev(layer);
+  LayerFolder* folder = layer->get_parent();
+  Layer* after = layer->get_prev();
 
-  chunk->set_id = set->id;
+  chunk->folder_id = folder->id;
   chunk->after_id = after != NULL ? after->id: 0;
 
   write_raw_layer(chunk->data, layer);
@@ -1176,17 +1239,17 @@ static void chunk_remove_layer_new(UndoStream* stream, Layer* layer)
 
 static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* chunk, int state)
 {
-  Layer* set = (Layer* )gfxobj_find(chunk->set_id);
-  Layer* after = (Layer* )gfxobj_find(chunk->after_id);
+  LayerFolder* folder = (LayerFolder*)gfxobj_find(chunk->folder_id);
+  Layer* after = (Layer*)gfxobj_find(chunk->after_id);
 
-  if (set != NULL) {
+  if (folder) {
     Layer* layer = read_raw_layer(chunk->data);
 
     /* assert(layer != NULL); */
 
-    chunk_add_layer_new(stream, set, layer);
-    layer_add_layer(set, layer);
-    layer_move_layer(set, layer, after);
+    chunk_add_layer_new(stream, folder, layer);
+    folder->add_layer(layer);
+    folder->move_layer(layer, after);
   }
 }
 
@@ -1194,7 +1257,7 @@ static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* 
 
   "move_layer"
 
-     DWORD		parent layer set ID
+     DWORD		parent layer folder ID
      DWORD		layer ID
      DWORD		after layer ID
 
@@ -1203,7 +1266,7 @@ static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* 
 struct UndoChunkMoveLayer
 {
   UndoChunk head;
-  ase_uint32 set_id;
+  ase_uint32 folder_id;
   ase_uint32 layer_id;
   ase_uint32 after_id;
 };
@@ -1220,25 +1283,25 @@ static void chunk_move_layer_new(UndoStream* stream, Layer* layer)
     undo_chunk_new(stream,
 		   UNDO_TYPE_MOVE_LAYER,
 		   sizeof(UndoChunkMoveLayer));
-  Layer* set = layer->parent_layer;
-  Layer* after = layer_get_prev(layer);
+  LayerFolder* folder = layer->get_parent();
+  Layer* after = layer->get_prev();
 
-  chunk->set_id = set->id;
+  chunk->folder_id = folder->id;
   chunk->layer_id = layer->id;
   chunk->after_id = after ? after->id: 0;
 }
 
 static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chunk, int state)
 {
-  Layer* set = (Layer* )gfxobj_find(chunk->set_id);
-  Layer* layer = (Layer* )gfxobj_find(chunk->layer_id);
-  Layer* after = (Layer* )gfxobj_find(chunk->after_id);
+  LayerFolder* folder = (LayerFolder*)gfxobj_find(chunk->folder_id);
+  Layer* layer = (Layer*)gfxobj_find(chunk->layer_id);
+  Layer* after = (Layer*)gfxobj_find(chunk->after_id);
 
-  if (set == NULL || layer == NULL)
+  if (folder == NULL || layer == NULL)
     throw undo_exception("chunk_move_layer_invert");
 
   chunk_move_layer_new(stream, layer);
-  layer_move_layer(set, layer, after);
+  folder->move_layer(layer, after);
 }
 
 /***********************************************************************
@@ -1265,7 +1328,7 @@ void undo_set_layer(Undo* undo, Sprite *sprite)
 
 static void chunk_set_layer_new(UndoStream* stream, Sprite *sprite)
 {
-  UndoChunkSetLayer* chunk = (UndoChunkSetLayer* )
+  UndoChunkSetLayer* chunk = (UndoChunkSetLayer*)
     undo_chunk_new(stream,
 		   UNDO_TYPE_SET_LAYER,
 		   sizeof(UndoChunkSetLayer));
@@ -1877,18 +1940,27 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
   ase_uint32 dword;
   ase_uint16 word;
   gfxobj_id layer_id, sprite_id;
-  char name[LAYER_NAME_SIZE];
-  int flags, layer_type;
+  std::vector<char> name(1);
+  int name_length, flags, layer_type;
   Layer* layer = NULL;
   Sprite *sprite;
 
   read_raw_uint32(layer_id);			    /* ID */
-  read_raw_data(name, LAYER_NAME_SIZE);		    /* name */
+
+  read_raw_uint16(name_length);			    /* name length */
+  name.resize(name_length+1);
+  if (name_length > 0) {
+    read_raw_data(&name[0], name_length);	    /* name */
+    name[name_length] = 0;
+  }
+  else
+    name[0] = 0;
+
   read_raw_uint8(flags);			    /* flags */
   read_raw_uint16(layer_type);			    /* type */
   read_raw_uint32(sprite_id);			    /* sprite */
 
-  sprite = (Sprite *)gfxobj_find(sprite_id);
+  sprite = (Sprite*)gfxobj_find(sprite_id);
 
   switch (layer_type) {
 
@@ -1899,10 +1971,10 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
       read_raw_uint16(cels);	  /* cels */
 
       /* create layer */
-      layer = layer_new(sprite);
+      layer = new LayerImage(sprite);
 
       /* set blend mode */
-      layer_set_blend_mode(layer, blend_mode);
+      static_cast<LayerImage*>(layer)->set_blend_mode(blend_mode);
 
       /* read cels */
       for (c=0; c<cels; c++) {
@@ -1914,7 +1986,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 	raw_data += get_raw_cel_size(cel);
 
 	/* add the cel in the layer */
-	layer_add_cel(layer, cel);
+	static_cast<LayerImage*>(layer)->add_cel(cel);
 
 	/* read the image */
 	read_raw_uint8(has_image);
@@ -1922,17 +1994,17 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 	  Image* image = read_raw_image(raw_data);
 	  raw_data += get_raw_image_size(image);
 
-	  stock_replace_image(layer->sprite->stock, cel->image, image);
+	  stock_replace_image(layer->get_sprite()->stock, cel->image, image);
 	}
       }
       break;
     }
 
-    case GFXOBJ_LAYER_SET: {
+    case GFXOBJ_LAYER_FOLDER: {
       int c, layers;
 
       /* create the layer set */
-      layer = layer_set_new(sprite);
+      layer = new LayerFolder(sprite);
 
       /* read how many sub-layers */
       read_raw_uint16(layers);
@@ -1940,7 +2012,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
       for (c=0; c<layers; c++) {
 	Layer* child = read_raw_layer(raw_data);
 	if (child) {
-	  layer_add_layer(layer, child);
+	  static_cast<LayerFolder*>(layer)->add_layer(child);
 	  raw_data += get_raw_layer_size(child);
 	}
 	else
@@ -1952,10 +2024,10 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
   }
 
   if (layer != NULL) {
-    layer_set_name(layer, name);
-    layer->flags = flags;
+    layer->set_name(&name[0]);
+    *layer->flags_addr() = flags;
 
-    _gfxobj_set_id((GfxObj *)layer, layer_id);
+    _gfxobj_set_id((GfxObj*)layer, layer_id);
   }
 
   return layer;
@@ -1965,30 +2037,39 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 {
   ase_uint32 dword;
   ase_uint16 word;
-  JLink link;
+  std::string name = layer->get_name();
 
   write_raw_uint32(layer->id);			    /* ID */
-  write_raw_data(layer->name, LAYER_NAME_SIZE);	    /* name */
-  write_raw_uint8(layer->flags);		    /* flags */
+
+  write_raw_uint16(name.size());		    /* name length */
+  if (!name.empty())
+    write_raw_data(name.c_str(), name.size());	    /* name */
+
+  write_raw_uint8(*layer->flags_addr());	    /* flags */
   write_raw_uint16(layer->type);		    /* type */
-  write_raw_uint32(layer->sprite->id);		    /* sprite */
+  write_raw_uint32(layer->get_sprite()->id);	    /* sprite */
 
   switch (layer->type) {
 
-    case GFXOBJ_LAYER_IMAGE:
-      /* blend mode */
-      write_raw_uint8(layer->blend_mode);
-      /* cels */
-      write_raw_uint16(jlist_length(layer->cels));
-      JI_LIST_FOR_EACH(layer->cels, link) {
-	Cel* cel = reinterpret_cast<Cel*>(link->data);
+    case GFXOBJ_LAYER_IMAGE: {
+      // blend mode
+      write_raw_uint8(static_cast<LayerImage*>(layer)->get_blend_mode());
+
+      // cels
+      write_raw_uint16(static_cast<LayerImage*>(layer)->get_cels_count());
+
+      CelIterator it = static_cast<LayerImage*>(layer)->get_cel_begin();
+      CelIterator end = static_cast<LayerImage*>(layer)->get_cel_end();
+
+      for (; it != end; ++it) {
+	Cel* cel = *it;
 	raw_data = write_raw_cel(raw_data, cel);
 
-	if (cel_is_link(cel, layer)) {
+	if (cel_is_link(cel, static_cast<LayerImage*>(layer))) {
 	  write_raw_uint8(0);
 	}
 	else {
-	  Image* image = layer->sprite->stock->image[cel->image];
+	  Image* image = layer->get_sprite()->stock->image[cel->image];
 	  assert(image != NULL);
 
 	  write_raw_uint8(1);
@@ -1996,13 +2077,19 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 	}
       }
       break;
+    }
 
-    case GFXOBJ_LAYER_SET:
-      write_raw_uint16(jlist_length(layer->layers)); /* how many sub-layers */
-      JI_LIST_FOR_EACH(layer->layers, link) {
-	raw_data = write_raw_layer(raw_data, reinterpret_cast<Layer*>(link->data));
-      }
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+      // how many sub-layers
+      write_raw_uint16(static_cast<LayerFolder*>(layer)->get_layers_count());
+
+      for (; it != end; ++it)
+	raw_data = write_raw_layer(raw_data, *it);
       break;
+    }
 
   }
 
@@ -2011,31 +2098,39 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 
 static int get_raw_layer_size(Layer* layer)
 {
-  JLink link;
-  int size = 4+LAYER_NAME_SIZE+1+2+4;
+  int size = 4+2+layer->get_name().size()+1+2+4;
 
   switch (layer->type) {
 
-    case GFXOBJ_LAYER_IMAGE:
-      size += 1;		/* blend mode */
-      size += 2;		/* num of cels */
-      JI_LIST_FOR_EACH(layer->cels, link) {
-	Cel* cel = reinterpret_cast<Cel*>(link->data);
+    case GFXOBJ_LAYER_IMAGE: {
+      size += 1;		// blend mode
+      size += 2;		// num of cels
+
+      CelIterator it = static_cast<LayerImage*>(layer)->get_cel_begin();
+      CelIterator end = static_cast<LayerImage*>(layer)->get_cel_end();
+
+      for (; it != end; ++it) {
+	Cel* cel = *it;
 	size += get_raw_cel_size(cel);
-	size++;			/* has image? */
-	if (!cel_is_link(cel, layer)) {
-	  Image* image = layer->sprite->stock->image[cel->image];
+	size++;			// has image?
+	if (!cel_is_link(cel, static_cast<LayerImage*>(layer))) {
+	  Image* image = layer->get_sprite()->stock->image[cel->image];
 	  size += get_raw_image_size(image);
 	}
       }
       break;
+    }
 
-    case GFXOBJ_LAYER_SET:
-      size += 2;		/* how many sub-layers */
-      JI_LIST_FOR_EACH(layer->layers, link) {
-	size += get_raw_layer_size(reinterpret_cast<Layer*>(link->data));
-      }
+    case GFXOBJ_LAYER_FOLDER: {
+      size += 2;		// how many sub-layers
+
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it)
+	size += get_raw_layer_size(*it);
       break;
+    }
 
   }
 

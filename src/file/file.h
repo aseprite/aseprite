@@ -42,6 +42,7 @@
 class Cel;
 class Image;
 class Layer;
+class LayerImage;
 class Palette;
 class Sprite;
 
@@ -98,7 +99,7 @@ struct FileOp
     /* to load sequences */
     int frame;
     bool has_alpha;
-    Layer* layer;
+    LayerImage* layer;
     Cel* last_cel;
     FormatOptions* format_options;
   } seq;

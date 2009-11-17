@@ -82,7 +82,7 @@ void NewLayerCommand::execute(Context* context)
       layer = undoable.new_layer();
       undoable.commit();
     }
-    layer_set_name(layer, name);
+    layer->set_name(name);
     update_screen_for_sprite(sprite);
   }
 }
@@ -91,7 +91,7 @@ static char* get_unique_layer_name(Sprite* sprite)
 {
   if (sprite != NULL) {
     char buf[1024];
-    sprintf(buf, "Layer %d", get_max_layer_num(sprite->set)+1);
+    sprintf(buf, "Layer %d", get_max_layer_num(sprite->get_folder())+1);
     return jstrdup(buf);
   }
   else
@@ -102,13 +102,15 @@ static int get_max_layer_num(Layer* layer)
 {
   int max = 0;
 
-  if (strncmp(layer->name, "Layer ", 6) == 0)
-    max = strtol(layer->name+6, NULL, 10);
+  if (strncmp(layer->get_name().c_str(), "Layer ", 6) == 0)
+    max = strtol(layer->get_name().c_str()+6, NULL, 10);
 
-  if (layer_is_set(layer)) {
-    JLink link;
-    JI_LIST_FOR_EACH(layer->layers, link) {
-      int tmp = get_max_layer_num(reinterpret_cast<Layer*>(link->data));
+  if (layer->is_folder()) {
+    LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+    LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+    for (; it != end; ++it) {
+      int tmp = get_max_layer_num(*it);
       max = MAX(tmp, max);
     }
   }

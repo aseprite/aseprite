@@ -77,7 +77,7 @@ static bool load_GIF(FileOp *fop)
 {
   GIF_ANIMATION *gif = NULL;
   Sprite *sprite = NULL;
-  Layer *layer = NULL;
+  LayerImage *layer = NULL;
   Cel *cel = NULL;
   Image *image = NULL;
   Image *current_image_old = NULL;
@@ -111,14 +111,14 @@ static bool load_GIF(FileOp *fop)
 
   sprite_set_frames(sprite, gif->frames_count);
 
-  layer = layer_new(sprite);
+  layer = new LayerImage(sprite);
   if (!layer) {
     fop_error(fop, _("Error creating main layer.\n"));
     goto error;
   }
 
-  layer_add_layer(sprite->set, layer);
-  layer_configure_as_background(layer);
+  sprite->get_folder()->add_layer(layer);
+  layer->configure_as_background();
 
   image_clear(current_image, gif->background_index);
   image_clear(current_image_old, gif->background_index);
@@ -196,7 +196,7 @@ static bool load_GIF(FileOp *fop)
 #endif
 	       );
     cel->image = stock_add_image(sprite->stock, image);
-    layer_add_cel(layer, cel);
+    layer->add_cel(cel);
 
 #ifdef LOAD_GIF_STRUCTURE
     /* when load the GIF structure, the disposal method is ever
@@ -330,7 +330,7 @@ static bool save_GIF(FileOp *fop)
 
     /* render the frame in the bitmap */
     image_clear(bmp, 0);
-    layer_render(sprite->set, bmp, 0, 0, i);
+    layer_render(sprite->get_folder(), bmp, 0, 0, i);
 
     /* first frame */
     if (i == 0) {

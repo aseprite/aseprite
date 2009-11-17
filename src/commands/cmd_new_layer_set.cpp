@@ -66,10 +66,10 @@ void NewLayerSetCommand::execute(Context* context)
 
   if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
     const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
-    Layer *layer = layer_set_new(sprite);
+    Layer* layer = new LayerFolder(sprite);
 
-    layer_set_name(layer, name);
-    layer_add_layer(sprite->set, layer);
+    layer->set_name(name);
+    sprite->get_folder()->add_layer(layer);
     sprite_set_layer(sprite, layer);
 
     update_screen_for_sprite(sprite);

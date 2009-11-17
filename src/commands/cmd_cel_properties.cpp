@@ -55,30 +55,26 @@ CelPropertiesCommand::CelPropertiesCommand()
 bool CelPropertiesCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  return sprite && sprite->layer;
+  return
+    sprite &&
+    sprite->layer &&
+    sprite->layer->is_image();
 }
 
 void CelPropertiesCommand::execute(Context* context)
 {
   JWidget label_frame, label_pos, label_size;
   JWidget slider_opacity, button_ok;
-  Layer *layer;
-  Cel *cel;
+  Layer* layer;
+  Cel* cel;
   char buf[1024];
   int memsize;
 
-  /* get current sprite */
   const CurrentSpriteReader sprite(context);
-  if (!sprite)
-    return;
-
-  /* get selected layer */
   layer = sprite->layer;
-  if (!layer)
-    return;
 
   /* get current cel (can be NULL) */
-  cel = layer_get_cel(layer, sprite->frame);
+  cel = static_cast<LayerImage*>(layer)->get_cel(sprite->frame);
 
   JWidgetPtr window(load_widget("celprop.jid", "cel_properties"));
   get_widgets(window,
@@ -89,7 +85,7 @@ void CelPropertiesCommand::execute(Context* context)
 	      "ok", &button_ok, NULL);
 
   /* if the layer isn't writable */
-  if (!layer_is_writable(layer)) {
+  if (!layer->is_writable()) {
     jwidget_set_text(button_ok, _("Locked"));
     jwidget_disable(button_ok);
   }
@@ -120,7 +116,7 @@ void CelPropertiesCommand::execute(Context* context)
 
     /* opacity */
     jslider_set_value(slider_opacity, cel->opacity);
-    if (layer_is_background(layer)) {
+    if (layer->is_background()) {
       jwidget_disable(slider_opacity);
       jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
 					       "you can't change its opacity.");

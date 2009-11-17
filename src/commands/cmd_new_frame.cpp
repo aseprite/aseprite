@@ -63,9 +63,9 @@ bool NewFrameCommand::enabled(Context* context)
   return
     sprite != NULL &&
     sprite->layer != NULL &&
-    layer_is_readable(sprite->layer) &&
-    layer_is_writable(sprite->layer) &&
-    layer_is_image(sprite->layer);
+    sprite->layer->is_readable() &&
+    sprite->layer->is_writable() &&
+    sprite->layer->is_image();
 }
 
 void NewFrameCommand::execute(Context* context)

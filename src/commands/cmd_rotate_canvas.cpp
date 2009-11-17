@@ -77,13 +77,12 @@ protected:
     Undoable undoable(m_sprite, "Rotate Canvas");
 
     // get all sprite cels
-    JList cels = jlist_new();
+    CelList cels;
     sprite_get_cels(m_sprite, cels);
 
     // for each cel...
-    JLink link;
-    JI_LIST_FOR_EACH(cels, link) {
-      Cel* cel = (Cel*)link->data;
+    for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
+      Cel* cel = *it;
       Image* image = stock_get_image(m_sprite->stock, cel->image);
 
       // change it location
@@ -101,7 +100,6 @@ protected:
 	  break;
       }
     }
-    jlist_free(cels);
 
     // for each stock's image
     for (int i=0; i<m_sprite->stock->nimage; ++i) {

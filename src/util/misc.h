@@ -33,10 +33,7 @@ Image* GetImage2(const Sprite* sprite, int *x, int *y, int *opacity);
 
 void LoadPalette(Sprite* sprite, const char* filename);
 
-Layer* NewLayerFromMask(const Sprite* src, Sprite* dst);
 Image* NewImageFromMask(const Sprite* src);
-
-Image* GetLayerImage(Layer* layer, int *x, int *y, int frame);
 
 int interactive_move_layer(int mode, bool use_undo, int (*callback)());
 

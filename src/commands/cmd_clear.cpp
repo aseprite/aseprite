@@ -55,9 +55,9 @@ bool ClearCommand::enabled(Context* context)
   return
     sprite != NULL &&
     sprite->layer != NULL &&
-    layer_is_image(sprite->layer) &&
-    layer_is_readable(sprite->layer) &&
-    layer_is_writable(sprite->layer);
+    sprite->layer->is_image() &&
+    sprite->layer->is_readable() &&
+    sprite->layer->is_writable();
 }
 
 void ClearCommand::execute(Context* context)

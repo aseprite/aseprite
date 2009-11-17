@@ -1045,12 +1045,12 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	if ((editor->sprite->layer) &&
 	    (editor->sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
 	  /* TODO you can move the `Background' with tiled mode */
-	  if (layer_is_background(editor->sprite->layer)) {
+	  if (editor->sprite->layer->is_background()) {
 	    jalert(_(PACKAGE
 		     "<<You can't move the `Background' layer."
 		     "||&Close"));
 	  }
-	  else if (!layer_is_moveable(editor->sprite->layer)) {
+	  else if (!editor->sprite->layer->is_moveable()) {
 	    jalert(_(PACKAGE
 		     "<<The layer movement is locked."
 		     "||&Close"));
@@ -1403,9 +1403,9 @@ static void editor_update_candraw(JWidget widget)
   editor->cursor_candraw =
     (editor->sprite != NULL &&
      editor->sprite->layer != NULL &&
-     layer_is_image(editor->sprite->layer) &&
-     layer_is_readable(editor->sprite->layer) &&
-     layer_is_writable(editor->sprite->layer) /* && */
+     editor->sprite->layer->is_image() &&
+     editor->sprite->layer->is_readable() &&
+     editor->sprite->layer->is_writable() /* && */
      /* layer_get_cel(editor->sprite->layer, editor->sprite->frame) != NULL */
      );
 }

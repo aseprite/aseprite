@@ -42,6 +42,7 @@ public:
 protected:
   void load_params(Params* params);
   bool enabled(Context* context);
+  bool checked(Context* context);
   void execute(Context* context);
 };
 
@@ -71,8 +72,27 @@ void ChangeImageTypeCommand::load_params(Params* params)
 bool ChangeImageTypeCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
+
+  if (sprite != NULL) {
+    if (sprite->imgtype == IMAGE_INDEXED && m_imgtype == IMAGE_INDEXED && m_dithering == DITHERING_NONE)
+      return false;
+  }
+
+  return true;
+}
+
+bool ChangeImageTypeCommand::checked(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
+
+  if (sprite != NULL) {
+    if (sprite->imgtype == IMAGE_INDEXED && m_imgtype == IMAGE_INDEXED && m_dithering == DITHERING_NONE)
+      return false;
+  }
+
   return
-    sprite != NULL;
+    sprite != NULL &&
+    sprite->imgtype == m_imgtype;
 }
 
 void ChangeImageTypeCommand::execute(Context* context)

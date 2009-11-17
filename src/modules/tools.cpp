@@ -850,7 +850,7 @@ void control_tool(JWidget widget, Tool *tool,
   jwidget_flush_redraw(jwidget_get_manager(widget));
 
   /* error, the active layer is not visible */
-  if (!layer_is_readable(sprite->layer)) {
+  if (!sprite->layer->is_readable()) {
     jalert(_(PACKAGE
 	     "<<The current layer is hidden,"
 	     "<<make it visible and try again"
@@ -858,7 +858,7 @@ void control_tool(JWidget widget, Tool *tool,
     return;
   }
   /* error, the active layer is locked */
-  else if (!layer_is_writable(sprite->layer)) {
+  else if (!sprite->layer->is_writable()) {
     jalert(_(PACKAGE
 	     "<<The current layer is locked,"
 	     "<<unlock it and try again"
@@ -871,9 +871,8 @@ void control_tool(JWidget widget, Tool *tool,
 
   if (sprite != NULL &&
       sprite->layer != NULL &&
-      layer_is_image(sprite->layer)) {
-    cel = layer_get_cel(sprite->layer,
-			sprite->frame);
+      sprite->layer->is_image()) {
+    cel = ((LayerImage*)sprite->layer)->get_cel(sprite->frame);
     if (cel != NULL)
       cel_image = sprite->stock->image[cel->image];
   }
@@ -885,7 +884,7 @@ void control_tool(JWidget widget, Tool *tool,
 
     /* create the cel */
     cel = cel_new(sprite->frame, 0);
-    layer_add_cel(sprite->layer, cel);
+    ((LayerImage*)sprite->layer)->add_cel(cel);
 
     cel_created = TRUE;
   }
@@ -1482,7 +1481,7 @@ next_pts:;
 	  /* is the undo enabled? */
 	  if (undo_is_enabled(sprite->undo)) {
 	    /* we can temporary remove the cel */
-	    layer_remove_cel(sprite->layer, cel);
+	    static_cast<LayerImage*>(sprite->layer)->remove_cel(cel);
 
 	    /* we create the undo information (for the new cel_image
 	       in the stock and the new cel in the layer)... */
@@ -1492,7 +1491,7 @@ next_pts:;
 	    undo_close(sprite->undo);
 
 	    /* and finally we add the cel again in the layer */
-	    layer_add_cel(sprite->layer, cel);
+	    static_cast<LayerImage*>(sprite->layer)->add_cel(cel);
 	  }
 	}
 	else {
@@ -1557,7 +1556,7 @@ next_pts:;
     cel->y = old_cel_y;
 
     if (cel_created) {
-      layer_remove_cel(sprite->layer, cel);
+      static_cast<LayerImage*>(sprite->layer)->remove_cel(cel);
       cel_free(cel);
       image_free(cel_image);
     }

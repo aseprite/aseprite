@@ -23,6 +23,7 @@
 #include "commands/command.h"
 #include "core/app.h"
 #include "modules/gui.h"
+#include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"
@@ -61,18 +62,19 @@ void LayerPropertiesCommand::execute(Context* context)
   JWidget box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
   CurrentSpriteWriter sprite(context);
-  Layer *layer = sprite->layer;
+  Layer* layer = sprite->layer;
+  bool with_blend_modes = (layer->is_image() && sprite->imgtype != IMAGE_INDEXED);
 
   JWidgetPtr window(jwindow_new(_("Layer Properties")));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
   label_name = jlabel_new(_("Name:"));
-  entry_name = jentry_new(256, layer->name);
+  entry_name = jentry_new(256, layer->get_name().c_str());
   button_ok = jbutton_new(_("&OK"));
   button_cancel = jbutton_new(_("&Cancel"));
 
-  if (layer->type == GFXOBJ_LAYER_IMAGE) {
+  if (with_blend_modes) {
     label_bm = jlabel_new(_("Blend mode:"));
     view_bm = jview_new();
     list_bm = jlistbox_new();
@@ -95,19 +97,20 @@ void LayerPropertiesCommand::execute(Context* context)
     jwidget_add_child(list_bm, jlistitem_new(_("Color")));
     jwidget_add_child(list_bm, jlistitem_new(_("Luminosity")));
 
-    jlistbox_select_index(list_bm, layer->blend_mode);
+    jlistbox_select_index(list_bm, static_cast<LayerImage*>(layer)->get_blend_mode());
 
     jview_attach(view_bm, list_bm);
     jwidget_set_min_size(view_bm, 128*guiscale(), 64*guiscale());
     jwidget_expansive(view_bm, TRUE);
   }
 
-  jwidget_expansive(entry_name, TRUE);
+  jwidget_set_min_size(entry_name, 128, 0);
+  jwidget_expansive(entry_name, true);
 
   jwidget_add_child(box2, label_name);
   jwidget_add_child(box2, entry_name);
   jwidget_add_child(box1, box2);
-  if (layer->type == GFXOBJ_LAYER_IMAGE) {
+  if (with_blend_modes) {
     jwidget_add_child(box1, label_bm);
     jwidget_add_child(box1, view_bm);
   }
@@ -116,14 +119,16 @@ void LayerPropertiesCommand::execute(Context* context)
   jwidget_add_child(box1, box3);
   jwidget_add_child(window, box1);
 
-  jwidget_magnetic(button_ok, TRUE);
+  jwidget_magnetic(entry_name, true);
+  jwidget_magnetic(button_ok, true);
 
   jwindow_open_fg(window);
 
   if (jwindow_get_killer(window) == button_ok) {
-    layer_set_name(layer, jwidget_get_text(entry_name));
-    if (layer->type == GFXOBJ_LAYER_IMAGE)
-      layer_set_blend_mode(layer, jlistbox_get_selected_index(list_bm));
+    layer->set_name(jwidget_get_text(entry_name));
+
+    if (with_blend_modes)
+      static_cast<LayerImage*>(layer)->set_blend_mode(jlistbox_get_selected_index(list_bm));
 
     update_screen_for_sprite(sprite);
   }

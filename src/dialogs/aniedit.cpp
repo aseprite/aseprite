@@ -580,7 +580,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		  anieditor->hot_layer < anieditor->nlayers &&
 		  anieditor->hot_layer != anieditor->clk_layer &&
 		  anieditor->hot_layer != anieditor->clk_layer+1) {
-		if (!layer_is_background(anieditor->layers[anieditor->clk_layer])) {
+		if (!anieditor->layers[anieditor->clk_layer]->is_background()) {
 		  // move the clicked-layer after the hot-layer
 		  try {
 		    const SpriteReader sprite((Sprite*)anieditor->sprite);
@@ -611,9 +611,9 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    if (anieditor->hot_layer == anieditor->clk_layer &&
 		anieditor->hot_layer >= 0 &&
 		anieditor->hot_layer < anieditor->nlayers) {
-	      Layer *layer = anieditor->layers[anieditor->clk_layer];
+	      Layer* layer = anieditor->layers[anieditor->clk_layer];
 	      assert(layer != NULL);
-	      layer->flags ^= LAYER_IS_READABLE;
+	      layer->set_readable(!layer->is_readable());
 	    }
 	    break;
 	  case PART_LAYER_LOCK_ICON:
@@ -621,9 +621,9 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    if (anieditor->hot_layer == anieditor->clk_layer &&
 		anieditor->hot_layer >= 0 &&
 		anieditor->hot_layer < anieditor->nlayers) {
-	      Layer *layer = anieditor->layers[anieditor->clk_layer];
+	      Layer* layer = anieditor->layers[anieditor->clk_layer];
 	      assert(layer != NULL);
-	      layer->flags ^= LAYER_IS_WRITABLE;
+	      layer->set_writable(!layer->is_writable());
 	    }
 	    break;
 	  case PART_CEL: {
@@ -843,7 +843,7 @@ static void anieditor_setcursor(JWidget widget, int x, int y)
 	   anieditor->clk_part == PART_LAYER &&
 	   anieditor->hot_part == PART_LAYER &&
 	   anieditor->clk_layer != anieditor->hot_layer) {
-    if (layer_is_background(anieditor->layers[anieditor->clk_layer]))
+    if (anieditor->layers[anieditor->clk_layer]->is_background())
       jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
     else
       jmouse_set_cursor(JI_CURSOR_MOVE);
@@ -1025,8 +1025,8 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 {
   AniEditor* anieditor = anieditor_data(widget);
   Layer *layer = anieditor->layers[layer_index];
-  BITMAP *icon1 = get_gfx(layer_is_readable(layer) ? GFX_BOX_SHOW: GFX_BOX_HIDE);
-  BITMAP *icon2 = get_gfx(layer_is_writable(layer) ? GFX_BOX_UNLOCK: GFX_BOX_LOCK);
+  BITMAP *icon1 = get_gfx(layer->is_readable() ? GFX_BOX_SHOW: GFX_BOX_HIDE);
+  BITMAP *icon2 = get_gfx(layer->is_writable() ? GFX_BOX_UNLOCK: GFX_BOX_LOCK);
   bool selected_layer = (layer == anieditor->sprite->layer);
   bool is_hot = (anieditor->hot_part == PART_LAYER && anieditor->hot_layer == layer_index);
   bool is_clk = (anieditor->clk_part == PART_LAYER && anieditor->clk_layer == layer_index);
@@ -1102,16 +1102,16 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   /* draw the layer's name */
-  jdraw_text(widget->font(), layer->name,
+  jdraw_text(widget->font(), layer->get_name().c_str(),
 	     u, y_mid - ji_font_get_size(widget->font())/2,
 	     fg, bg, TRUE);
 
   /* the background should be underlined */
-  if (layer_is_background(layer)) {
+  if (layer->is_background()) {
     hline(ji_screen,
 	  u,
 	  y_mid - ji_font_get_size(widget->font())/2 + ji_font_get_size(widget->font()) + 1,
-	  u + text_length(widget->font(), layer->name),
+	  u + text_length(widget->font(), layer->get_name().c_str()),
 	  fg);
   }
 
@@ -1199,7 +1199,7 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   hline(ji_screen, x1, y2, x2, ji_color_foreground());
 
   /* get the cel of this layer in this frame */
-  cel = layer_get_cel(layer, frame);
+  cel = layer->is_image() ? static_cast<LayerImage*>(layer)->get_cel(frame): NULL;
 
   /* empty cel? */
   if (cel == NULL ||

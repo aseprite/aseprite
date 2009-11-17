@@ -394,9 +394,8 @@ static bool slider_change_hook(JWidget widget, void *data)
     CurrentSpriteWriter sprite(UIContext::instance());
     if (sprite) {
       if ((sprite->layer) &&
-	  (sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
-	Cel *cel = layer_get_cel(sprite->layer, sprite->frame);
-
+	  (sprite->layer->is_image())) {
+	Cel* cel = ((LayerImage*)sprite->layer)->get_cel(sprite->frame);
 	if (cel) {
 	  // update the opacity
 	  cel->opacity = jslider_get_value(widget);
@@ -439,7 +438,7 @@ static void update_from_layer(StatusBar *statusbar)
     /* layer button */
     if (sprite && sprite->layer) {
       char buf[512];
-      usprintf(buf, "[%d] %s", sprite->frame, sprite->layer->name);
+      usprintf(buf, "[%d] %s", sprite->frame, sprite->layer->get_name().c_str());
       jwidget_set_text(statusbar->b_layer, buf);
       jwidget_enable(statusbar->b_layer);
     }
@@ -451,9 +450,9 @@ static void update_from_layer(StatusBar *statusbar)
     /* opacity layer */
     if (sprite &&
 	sprite->layer &&
-	layer_is_image(sprite->layer) &&
-	!layer_is_background(sprite->layer) &&
-	(cel = layer_get_cel(sprite->layer, sprite->frame))) {
+	sprite->layer->is_image() &&
+	!sprite->layer->is_background() &&
+	(cel = ((LayerImage*)sprite->layer)->get_cel(sprite->frame))) {
       jslider_set_value(statusbar->slider, MID(0, cel->opacity, 255));
       jwidget_enable(statusbar->slider);
     }

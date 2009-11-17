@@ -59,14 +59,14 @@ bool MergeDownLayerCommand::enabled(Context* context)
     return false;
 
   Layer *src_layer = sprite->layer;
-  if (!src_layer || !layer_is_image(src_layer))
+  if (!src_layer || !src_layer->is_image())
     return false;
 
-  Layer* dst_layer = layer_get_prev(sprite->layer);
-  if (!dst_layer || !layer_is_image(dst_layer))
+  Layer* dst_layer = sprite->layer->get_prev();
+  if (!dst_layer || !dst_layer->is_image())
     return false;
 
-  return TRUE;
+  return true;
 }
 
 void MergeDownLayerCommand::execute(Context* context)
@@ -78,7 +78,7 @@ void MergeDownLayerCommand::execute(Context* context)
   int frpos, index;
 
   src_layer = sprite->layer;
-  dst_layer = layer_get_prev(sprite->layer);
+  dst_layer = sprite->layer->get_prev();
 
   if (undo_is_enabled(sprite->undo)) {
     undo_set_label(sprite->undo, "Merge Down Layer");
@@ -87,8 +87,8 @@ void MergeDownLayerCommand::execute(Context* context)
 
   for (frpos=0; frpos<sprite->frames; ++frpos) {
     /* get frames */
-    src_cel = layer_get_cel(src_layer, frpos);
-    dst_cel = layer_get_cel(dst_layer, frpos);
+    src_cel = static_cast<LayerImage*>(src_layer)->get_cel(frpos);
+    dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(frpos);
 
     /* get images */
     if (src_cel != NULL)
@@ -122,7 +122,8 @@ void MergeDownLayerCommand::execute(Context* context)
 
 	if (undo_is_enabled(sprite->undo))
 	  undo_add_cel(sprite->undo, dst_layer, dst_cel);
-	layer_add_cel(dst_layer, dst_cel);
+
+	static_cast<LayerImage*>(dst_layer)->add_cel(dst_cel);
       }
       /* with destination */
       else {
@@ -130,7 +131,7 @@ void MergeDownLayerCommand::execute(Context* context)
 	Image *new_image;
 
 	/* merge down in the background layer */
-	if (layer_is_background(dst_layer)) {
+	if (dst_layer->is_background()) {
 	  x1 = 0;
 	  y1 = 0;
 	  x2 = sprite->w;
@@ -156,7 +157,7 @@ void MergeDownLayerCommand::execute(Context* context)
 		    src_cel->x-x1,
 		    src_cel->y-y1,
 		    src_cel->opacity,
-		    src_layer->blend_mode);
+		    static_cast<LayerImage*>(src_layer)->get_blend_mode());
 
 	if (undo_is_enabled(sprite->undo)) {
 	  undo_int(sprite->undo, (GfxObj *)dst_cel, &dst_cel->x);
@@ -181,10 +182,9 @@ void MergeDownLayerCommand::execute(Context* context)
   }
 
   sprite_set_layer(sprite, dst_layer);
-  layer_remove_layer(src_layer->parent_layer, src_layer);
+  src_layer->get_parent()->remove_layer(src_layer);
 
-  layer_free_images(src_layer);
-  layer_free(src_layer);
+  delete src_layer;
 
   update_screen_for_sprite(sprite);
 }

@@ -25,17 +25,24 @@
 struct FormatOptions;
 class Image;
 class Layer;
+class LayerFolder;
+class LayerImage;
 class Mask;
 class Palette;
 class Path;
 class Stock;
 class Undo;
+class Sprite;
+
+Sprite* sprite_new_copy(const Sprite* src_sprite);
 
 /**
  * The main structure used in the whole program to handle a sprite.
  */
 class Sprite : public GfxObj
 {
+  friend Sprite* sprite_new_copy(const Sprite* src_sprite);
+
 public:
   char filename[512];		/* sprite's file name */
   bool associated_to_file;	/* true if this sprite is associated
@@ -47,7 +54,9 @@ public:
   int frame;			/* current frame, range [0,frames) */
   JList palettes;		/* list of palettes */
   Stock *stock;			/* stock to get images */
-  Layer *set;			/* layer list */
+private:
+  LayerFolder *m_folder;	/* main folder of layers */
+public:
   Layer *layer;			/* current layer */
   Path *path;			/* working path */
   Mask *mask;			/* selected mask region */
@@ -101,10 +110,11 @@ public:
   bool lock_to_write();
   void unlock_to_read();
   void unlock();
+
+  LayerFolder* get_folder() const { return m_folder; }
 };
 
 Sprite* sprite_new(int imgtype, int w, int h);
-Sprite* sprite_new_copy(const Sprite* src_sprite);
 Sprite* sprite_new_flatten_copy(const Sprite* src_sprite);
 Sprite* sprite_new_with_layer(int imgtype, int w, int h);
 
@@ -131,7 +141,7 @@ void sprite_set_mask(Sprite* sprite, const Mask* mask);
 void sprite_set_layer(Sprite* sprite, Layer* layer);
 void sprite_set_frame(Sprite* sprite, int frame);
 
-Layer* sprite_get_background_layer(const Sprite* sprite);
+LayerImage* sprite_get_background_layer(const Sprite* sprite);
 
 void sprite_add_path(Sprite* sprite, Path* path);
 void sprite_remove_path(Sprite* sprite, Path* path);
@@ -146,7 +156,7 @@ void sprite_generate_mask_boundaries(Sprite* sprite);
 Layer* sprite_index2layer(const Sprite* sprite, int index);
 int sprite_layer2index(const Sprite* sprite, const Layer* layer);
 int sprite_count_layers(const Sprite* sprite);
-void sprite_get_cels(const Sprite* sprite, JList cels);
+void sprite_get_cels(const Sprite* sprite, CelList& cels);
 
 int sprite_getpixel(const Sprite* sprite, int x, int y);
 

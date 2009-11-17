@@ -22,6 +22,7 @@
 class Cel;
 class Mask;
 class Layer;
+class LayerImage;
 class Sprite;
 class SpriteWriter;
 
@@ -66,11 +67,11 @@ public:
   void move_layer_after(Layer *layer, Layer *after_this);
   void crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor);
   void displace_layers(Layer* layer, int dx, int dy);
-  void background_from_layer(Layer* layer, int bgcolor);
+  void background_from_layer(LayerImage* layer, int bgcolor);
   void layer_from_background();
   void flatten_layers(int bgcolor);
 private:
-  void configure_layer_as_background(Layer* layer);
+  void configure_layer_as_background(LayerImage* layer);
 
 public:
   // for frames
@@ -85,8 +86,8 @@ public:
   void move_frame_before_layer(Layer* layer, int frame, int before_frame);
 
   // for cels
-  void add_cel(Layer* layer, Cel* cel);
-  void remove_cel(Layer* layer, Cel* cel);
+  void add_cel(LayerImage* layer, Cel* cel);
+  void remove_cel(LayerImage* layer, Cel* cel);
   void set_cel_frame_position(Cel* cel, int frame);
   void set_cel_position(Cel* cel, int x, int y);
   Cel* get_current_cel();

@@ -69,13 +69,13 @@ void cel_free(Cel* cel)
   delete cel;
 }
 
-Cel* cel_is_link(Cel* cel, Layer *layer)
+Cel* cel_is_link(Cel* cel, LayerImage* layer)
 {
   Cel* link;
   int frame;
 
   for (frame=0; frame<cel->frame; frame++) {
-    link = layer_get_cel(layer, frame);
+    link = layer->get_cel(frame);
     if (link && link->image == cel->image)
       return link;
   }

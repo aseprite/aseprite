@@ -139,7 +139,7 @@ void Undoable::crop_sprite(int x, int y, int w, int h, int bgcolor)
 {
   set_sprite_size(w, h);
 
-  displace_layers(m_sprite->set, -x, -y);
+  displace_layers(m_sprite->get_folder(), -x, -y);
 
   Layer *background_layer = sprite_get_background_layer(m_sprite);
   if (background_layer)
@@ -316,15 +316,16 @@ void Undoable::replace_stock_image(int image_index, Image* new_image)
 Layer* Undoable::new_layer()
 {
   // new layer
-  Layer* layer = layer_new(m_sprite);
+  LayerImage* layer = new LayerImage(m_sprite);
 
   // configure layer name and blend mode
-  layer_set_blend_mode(layer, BLEND_MODE_NORMAL);
+  layer->set_blend_mode(BLEND_MODE_NORMAL);
 
   // add the layer in the sprite set
   if (is_enabled())
-    undo_add_layer(m_sprite->undo, m_sprite->set, layer);
-  layer_add_layer(m_sprite->set, layer);
+    undo_add_layer(m_sprite->undo, m_sprite->get_folder(), layer);
+
+  m_sprite->get_folder()->add_layer(layer);
 
   // select the new layer
   set_current_layer(layer);
@@ -339,7 +340,7 @@ void Undoable::remove_layer(Layer* layer)
 {
   assert(layer);
 
-  Layer* parent = layer->parent_layer;
+  LayerFolder* parent = layer->get_parent();
 
   // if the layer to be removed is the selected layer
   if (layer == m_sprite->layer) {
@@ -347,11 +348,11 @@ void Undoable::remove_layer(Layer* layer)
 
     // select: previous layer, or next layer, or parent(if it is not the
     // main layer of sprite set)
-    if (layer_get_prev(layer))
-      layer_select = layer_get_prev(layer);
-    else if (layer_get_next(layer))
-      layer_select = layer_get_next(layer);
-    else if (parent != m_sprite->set)
+    if (layer->get_prev())
+      layer_select = layer->get_prev();
+    else if (layer->get_next())
+      layer_select = layer->get_next();
+    else if (parent != m_sprite->get_folder())
       layer_select = parent;
 
     // select other layer
@@ -362,11 +363,10 @@ void Undoable::remove_layer(Layer* layer)
   if (is_enabled())
     undo_remove_layer(m_sprite->undo, layer);
 
-  layer_remove_layer(parent, layer);
+  parent->remove_layer(layer);
 
   // destroy the layer
-  layer_free_images(layer);
-  layer_free(layer);
+  delete layer;
 }
 
 void Undoable::move_layer_after(Layer* layer, Layer* after_this)
@@ -374,20 +374,21 @@ void Undoable::move_layer_after(Layer* layer, Layer* after_this)
   if (is_enabled())
     undo_move_layer(m_sprite->undo, layer);
 
-  layer_move_layer(layer->parent_layer, layer, after_this);
+  layer->get_parent()->move_layer(layer, after_this);
 }
 
 void Undoable::crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor)
 {
-  JLink link;
+  if (!layer->is_image())
+    return;
 
-  if (!layer_is_background(layer))
+  if (!layer->is_background())
     bgcolor = 0;
 
-  JI_LIST_FOR_EACH(layer->cels, link) {
-    Cel* cel = reinterpret_cast<Cel*>(link->data);
-    crop_cel(cel, x, y, w, h, bgcolor);
-  }
+  CelIterator it = ((LayerImage*)layer)->get_cel_begin();
+  CelIterator end = ((LayerImage*)layer)->get_cel_end();
+  for (; it != end; ++it)
+    crop_cel(*it, x, y, w, h, bgcolor);
 }
 
 /**
@@ -398,33 +399,33 @@ void Undoable::displace_layers(Layer* layer, int dx, int dy)
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Cel* cel;
-      JLink link;
-
-      JI_LIST_FOR_EACH(layer->cels, link) {
-	cel = reinterpret_cast<Cel*>(link->data);
+      CelIterator it = ((LayerImage*)layer)->get_cel_begin();
+      CelIterator end = ((LayerImage*)layer)->get_cel_end();
+      for (; it != end; ++it) {
+	Cel* cel = *it;
 	set_cel_position(cel, cel->x+dx, cel->y+dy);
       }
       break;
     }
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	displace_layers(reinterpret_cast<Layer*>(link->data), dx, dy);
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerIterator it = ((LayerFolder*)layer)->get_layer_begin();
+      LayerIterator end = ((LayerFolder*)layer)->get_layer_end();
+      for (; it != end; ++it)
+	displace_layers(*it, dx, dy);
       break;
     }
 
   }
 }
 
-void Undoable::background_from_layer(Layer* layer, int bgcolor)
+void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
 {
   assert(layer);
-  assert(layer_is_image(layer));
-  assert(layer_is_readable(layer));
-  assert(layer_is_writable(layer));
-  assert(layer->sprite == m_sprite);
+  assert(layer->is_image());
+  assert(layer->is_readable());
+  assert(layer->is_writable());
+  assert(layer->get_sprite() == m_sprite);
   assert(sprite_get_background_layer(m_sprite) == NULL);
 
   // create a temporary image to draw each frame of the new
@@ -432,9 +433,11 @@ void Undoable::background_from_layer(Layer* layer, int bgcolor)
   std::auto_ptr<Image> bg_image_wrap(image_new(m_sprite->imgtype, m_sprite->w, m_sprite->h));
   Image* bg_image = bg_image_wrap.get();
 
-  JLink link;
-  JI_LIST_FOR_EACH(layer->cels, link) {
-    Cel* cel = reinterpret_cast<Cel*>(link->data);
+  CelIterator it = layer->get_cel_begin();
+  CelIterator end = layer->get_cel_end();
+
+  for (; it != end; ++it) {
+    Cel* cel = *it;
     assert((cel->image > 0) &&
 	   (cel->image < m_sprite->stock->nimage));
 
@@ -447,7 +450,7 @@ void Undoable::background_from_layer(Layer* layer, int bgcolor)
 		cel->x,
 		cel->y,
 		MID(0, cel->opacity, 255),
-		layer->blend_mode);
+		layer->get_blend_mode());
 
     // now we have to copy the new image (bg_image) to the cel...
     set_cel_position(cel, 0, 0);
@@ -472,33 +475,29 @@ void Undoable::layer_from_background()
 {
   assert(sprite_get_background_layer(m_sprite) != NULL);
   assert(m_sprite->layer != NULL);
-  assert(layer_is_image(m_sprite->layer));
-  assert(layer_is_readable(m_sprite->layer));
-  assert(layer_is_writable(m_sprite->layer));
-  assert(layer_is_background(m_sprite->layer));
+  assert(m_sprite->layer->is_image());
+  assert(m_sprite->layer->is_readable());
+  assert(m_sprite->layer->is_writable());
+  assert(m_sprite->layer->is_background());
 
   if (is_enabled()) {
     undo_data(m_sprite->undo,
 	      m_sprite->layer,
-	      &m_sprite->layer->flags,
-	      sizeof(m_sprite->layer->flags));
+	      m_sprite->layer->flags_addr(),
+	      sizeof(*m_sprite->layer->flags_addr()));
 
-    undo_data(m_sprite->undo,
-	      m_sprite->layer,
-	      &m_sprite->layer->name,
-	      LAYER_NAME_SIZE);
+    undo_set_layer_name(m_sprite->undo, m_sprite->layer);
   }
 
-  m_sprite->layer->flags &= ~(LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND);
-  layer_set_name(m_sprite->layer, "Layer 0");
+  m_sprite->layer->set_background(false);
+  m_sprite->layer->set_moveable(true);
+  m_sprite->layer->set_name("Layer 0");
 }
 
 void Undoable::flatten_layers(int bgcolor)
 {
-  JLink link, next;
-  Layer *background;
-  Image *cel_image;
-  Cel *cel;
+  Image* cel_image;
+  Cel* cel;
   int frame;
 
   // create a temporary image
@@ -506,29 +505,29 @@ void Undoable::flatten_layers(int bgcolor)
   Image* image = image_wrap.get();
 
   /* get the background layer from the sprite */
-  background = sprite_get_background_layer(m_sprite);
+  LayerImage* background = sprite_get_background_layer(m_sprite);
   if (!background) {
     /* if there aren't a background layer we must to create the background */
-    background = layer_new(m_sprite);
+    background = new LayerImage(m_sprite);
 
     if (is_enabled())
-      undo_add_layer(m_sprite->undo, m_sprite->set, background);
+      undo_add_layer(m_sprite->undo, m_sprite->get_folder(), background);
 
-    layer_add_layer(m_sprite->set, background);
+    m_sprite->get_folder()->add_layer(background);
 
     if (is_enabled())
       undo_move_layer(m_sprite->undo, background);
     
-    layer_configure_as_background(background);
+    background->configure_as_background();
   }
 
   /* copy all frames to the background */
   for (frame=0; frame<m_sprite->frames; frame++) {
     /* clear the image and render this frame */
     image_clear(image, bgcolor);
-    layer_render(m_sprite->set, image, 0, 0, frame);
+    layer_render(m_sprite->get_folder(), image, 0, 0, frame);
 
-    cel = layer_get_cel(background, frame);
+    cel = background->get_cel(frame);
     if (cel) {
       cel_image = m_sprite->stock->image[cel->image];
       assert(cel_image != NULL);
@@ -551,7 +550,7 @@ void Undoable::flatten_layers(int bgcolor)
       /* TODO error handling: if (!cel) { ... } */
 
       /* and finally we add the cel in the background */
-      layer_add_cel(background, cel);
+      background->add_cel(cel);
     }
 
     image_copy(cel_image, image, 0, 0);
@@ -566,38 +565,41 @@ void Undoable::flatten_layers(int bgcolor)
   }
 
   /* remove old layers */
-  JI_LIST_FOR_EACH_SAFE(m_sprite->set->layers, link, next) {
-    if (link->data != background) {
-      Layer* old_layer = reinterpret_cast<Layer*>(link->data);
+  LayerList layers = m_sprite->get_folder()->get_layers_list();
+  LayerIterator it = layers.begin();
+  LayerIterator end = layers.end();
 
-      /* remove the layer */
+  for (; it != end; ++it) {
+    if (*it != background) {
+      Layer* old_layer = *it;
+
+      // remove the layer
       if (is_enabled())
 	undo_remove_layer(m_sprite->undo, old_layer);
 
-      layer_remove_layer(m_sprite->set, old_layer);
+      m_sprite->get_folder()->remove_layer(old_layer);
 
-      /* destroy the layer */
-      layer_free_images(old_layer);
-      layer_free(old_layer);
+      // destroy the layer
+      delete old_layer;
     }
   }
 }
 
-void Undoable::configure_layer_as_background(Layer* layer)
+void Undoable::configure_layer_as_background(LayerImage* layer)
 {
   if (is_enabled()) {
-    undo_data(m_sprite->undo, (GfxObj *)layer, &layer->flags, sizeof(layer->flags));
-    undo_data(m_sprite->undo, (GfxObj *)layer, &layer->name, LAYER_NAME_SIZE);
+    undo_data(m_sprite->undo, layer, layer->flags_addr(), sizeof(*layer->flags_addr()));
+    undo_set_layer_name(m_sprite->undo, layer);
     undo_move_layer(m_sprite->undo, layer);
   }
 
-  layer_configure_as_background(layer);
+  layer->configure_as_background();
 }
 
 void Undoable::new_frame()
 {
   // add a new cel to every layer
-  new_frame_for_layer(m_sprite->set,
+  new_frame_for_layer(m_sprite->get_folder(),
 		      m_sprite->frame+1);
 
   // increment frames counter in the sprite
@@ -617,7 +619,7 @@ void Undoable::new_frame_for_layer(Layer* layer, int frame)
     case GFXOBJ_LAYER_IMAGE:
       // displace all cels in '>=frame' to the next frame
       for (int c=m_sprite->frames-1; c>=frame; --c) {
-	Cel* cel = layer_get_cel(layer, c);
+	Cel* cel = static_cast<LayerImage*>(layer)->get_cel(c);
 	if (cel)
 	  set_cel_frame_position(cel, cel->frame+1);
       }
@@ -625,10 +627,12 @@ void Undoable::new_frame_for_layer(Layer* layer, int frame)
       copy_previous_frame(layer, frame);
       break;
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	new_frame_for_layer(reinterpret_cast<Layer*>(link->data), frame);
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it)
+	new_frame_for_layer(*it, frame);
       break;
     }
 
@@ -641,7 +645,7 @@ void Undoable::remove_frame(int frame)
 
   // remove cels from this frame (and displace one position backward
   // all next frames)
-  remove_frame_of_layer(m_sprite->set, frame);
+  remove_frame_of_layer(m_sprite->get_folder(), frame);
 
   /* decrement frames counter in the sprite */
   if (is_enabled())
@@ -666,18 +670,20 @@ void Undoable::remove_frame_of_layer(Layer* layer, int frame)
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE:
-      if (Cel* cel = layer_get_cel(layer, frame))
-	remove_cel(layer, cel);
+      if (Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame))
+	remove_cel(static_cast<LayerImage*>(layer), cel);
 
       for (++frame; frame<m_sprite->frames; ++frame)
-	if (Cel* cel = layer_get_cel(layer, frame))
+	if (Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame))
 	  set_cel_frame_position(cel, cel->frame-1);
       break;
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	remove_frame_of_layer(reinterpret_cast<Layer*>(link->data), frame);
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it)
+	remove_frame_of_layer(*it, frame);
       break;
     }
 
@@ -693,7 +699,7 @@ void Undoable::copy_previous_frame(Layer* layer, int frame)
   assert(frame > 0);
 
   // create a copy of the previous cel
-  Cel* src_cel = layer_get_cel(layer, frame-1);
+  Cel* src_cel = static_cast<LayerImage*>(layer)->get_cel(frame-1);
   Image* src_image = src_cel ? stock_get_image(m_sprite->stock,
 					       src_cel->image):
 			       NULL;
@@ -714,32 +720,30 @@ void Undoable::copy_previous_frame(Layer* layer, int frame)
   }
 
   // add the cel in the layer
-  add_cel(layer, dst_cel);
+  static_cast<LayerImage*>(layer)->add_cel(dst_cel);
 }
 
-void Undoable::add_cel(Layer* layer, Cel* cel)
+void Undoable::add_cel(LayerImage* layer, Cel* cel)
 {
   assert(layer);
   assert(cel);
-  assert(layer_is_image(layer));
 
   if (is_enabled())
     undo_add_cel(m_sprite->undo, layer, cel);
 
-  layer_add_cel(layer, cel);
+  layer->add_cel(cel);
 }
 
-void Undoable::remove_cel(Layer* layer, Cel* cel)
+void Undoable::remove_cel(LayerImage* layer, Cel* cel)
 {
   assert(layer);
   assert(cel);
-  assert(layer_is_image(layer));
 
   // find if the image that use the cel to remove, is used by
   // another cels
   bool used = false;
   for (int frame=0; frame<m_sprite->frames; ++frame) {
-    Cel* it = layer_get_cel(layer, frame);
+    Cel* it = layer->get_cel(frame);
     if (it && it != cel && it->image == cel->image) {
       used = true;
       break;
@@ -755,7 +759,7 @@ void Undoable::remove_cel(Layer* layer, Cel* cel)
     undo_remove_cel(m_sprite->undo, layer, cel);
 
   // remove the cel from the layer
-  layer_remove_cel(layer, cel);
+  layer->remove_cel(cel);
 
   // and here we destroy the cel
   cel_free(cel);
@@ -834,7 +838,7 @@ void Undoable::move_frame_before(int frame, int before_frame)
     }
 
     // change the cels of position...
-    move_frame_before_layer(m_sprite->set, frame, before_frame);
+    move_frame_before_layer(m_sprite->get_folder(), frame, before_frame);
   }
 }
 
@@ -845,9 +849,11 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->cels, link) {
-	Cel* cel = reinterpret_cast<Cel*>(link->data);
+      CelIterator it = ((LayerImage*)layer)->get_cel_begin();
+      CelIterator end = ((LayerImage*)layer)->get_cel_end();
+
+      for (; it != end; ++it) {
+	Cel* cel = *it;
 	int new_frame = cel->frame;
 
 	// moving the frame to the future
@@ -877,10 +883,12 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
       break;
     }
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	move_frame_before_layer(reinterpret_cast<Layer*>(link->data), frame, before_frame);
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it)
+	move_frame_before_layer(*it, frame, before_frame);
       break;
     }
 
@@ -889,8 +897,8 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
 
 Cel* Undoable::get_current_cel()
 {
-  if (m_sprite->layer && layer_is_image(m_sprite->layer))
-    return layer_get_cel(m_sprite->layer, m_sprite->frame);
+  if (m_sprite->layer && m_sprite->layer->is_image())
+    return static_cast<LayerImage*>(m_sprite->layer)->get_cel(m_sprite->frame);
   else
     return NULL;
 }
@@ -933,7 +941,7 @@ void Undoable::clear_mask(int bgcolor)
   // in the cel
   if (mask_is_empty(m_sprite->mask)) {
     // if the layer is the background then we clear the image
-    if (layer_is_background(m_sprite->layer)) {
+    if (m_sprite->layer->is_background()) {
       if (is_enabled())
 	undo_image(m_sprite->undo, image, 0, 0, image->w, image->h);
 
@@ -943,7 +951,7 @@ void Undoable::clear_mask(int bgcolor)
     // if the layer is transparent we can remove the cel (and its
     // associated image)
     else {
-      remove_cel(m_sprite->layer, cel);
+      static_cast<LayerImage*>(m_sprite->layer)->remove_cel(cel);
     }
   }
   else {

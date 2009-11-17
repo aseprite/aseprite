@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <string.h>
 #include <allegro/unicode.h>
@@ -33,161 +34,329 @@
 #include "raster/undo.h"
 
 static bool has_cels(const Layer* layer, int frame);
-static void layer_set_parent(Layer* layer, Layer* parent_set);
 
 //////////////////////////////////////////////////////////////////////
+// Layer class
 
 Layer::Layer(int type, Sprite* sprite)
   : GfxObj(type)
 {
-  assert(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_SET);
+  assert(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_FOLDER);
 
-  layer_set_name(this, "");
+  set_name("Layer");
 
-  this->sprite = sprite;
-  this->parent_layer = NULL;
-  this->flags =
+  m_sprite = sprite;
+  m_parent = NULL;
+  m_flags =
     LAYER_IS_READABLE |
     LAYER_IS_WRITABLE;
-  
-  this->blend_mode = 0;
-  this->cels = NULL;
+}
 
-  this->layers = NULL;
+Layer::Layer(Layer* src_layer, Sprite* dst_sprite)
+  : GfxObj(src_layer->type)
+{
+  m_sprite = dst_sprite;
+  m_parent = NULL;
+  m_flags =
+    LAYER_IS_READABLE |
+    LAYER_IS_WRITABLE;
+
+  set_name(src_layer->get_name());
+  m_flags = src_layer->m_flags;
 }
 
 Layer::~Layer()
 {
-  switch (this->type) {
+}
 
-    case GFXOBJ_LAYER_IMAGE: {
-      JLink link;
+/**
+ * Gets the previous layer of "layer" that are in the parent set.
+ */
+Layer* Layer::get_prev() const
+{
+  if (m_parent != NULL) {
+    LayerConstIterator it =
+      std::find(m_parent->get_layer_begin(),
+		m_parent->get_layer_end(), this);
 
-      /* remove cels */
-      JI_LIST_FOR_EACH(this->cels, link)
-	cel_free(reinterpret_cast<Cel*>(link->data));
-
-      jlist_free(this->cels);
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(this->layers, link)
-	layer_free(reinterpret_cast<Layer*>(link->data));
-      jlist_free(this->layers);
-      break;
+    if (it != m_parent->get_layer_end() &&
+	it != m_parent->get_layer_begin()) {
+      it--;
+      return *it;
     }
   }
+  return NULL;
+}
+
+Layer* Layer::get_next() const
+{
+  if (m_parent != NULL) {
+    LayerConstIterator it =
+      std::find(m_parent->get_layer_begin(),
+		m_parent->get_layer_end(), this);
+
+    if (it != m_parent->get_layer_end()) {
+      it++;
+      if (it != m_parent->get_layer_end())
+	return *it;
+    }
+  }
+  return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////
+// LayerImage class
+
+LayerImage::LayerImage(Sprite* sprite)
+  : Layer(GFXOBJ_LAYER_IMAGE, sprite)
+{
+  m_blend_mode = BLEND_MODE_NORMAL;
+}
+
+LayerImage::LayerImage(LayerImage* src_layer, Sprite* dst_sprite)
+  : Layer(src_layer, dst_sprite)
+{
+  set_blend_mode(src_layer->get_blend_mode());
+
+  try {
+    // copy cels
+    CelIterator it = static_cast<LayerImage*>(src_layer)->get_cel_begin();
+    CelIterator end = static_cast<LayerImage*>(src_layer)->get_cel_end();
+
+    for (; it != end; ++it) {
+      Cel* cel = *it;
+      Cel* cel_copy = cel_new_copy(cel);
+
+      assert((cel->image >= 0) &&
+	     (cel->image < src_layer->get_sprite()->stock->nimage));
+
+      Image* image = src_layer->get_sprite()->stock->image[cel->image];
+      assert(image != NULL);
+
+      Image* image_copy = image_new_copy(image);
+
+      cel_copy->image = stock_add_image(dst_sprite->stock, image_copy);
+      if (undo_is_enabled(dst_sprite->undo))
+	undo_add_image(dst_sprite->undo, dst_sprite->stock, cel_copy->image);
+
+      add_cel(cel_copy);
+    }
+  }
+  catch (...) {
+    destroy_all_cels();
+    throw;
+  }
+}
+
+LayerImage::~LayerImage()
+{
+  destroy_all_cels();
+}
+
+void LayerImage::destroy_all_cels()
+{
+  CelIterator it = get_cel_begin();
+  CelIterator end = get_cel_end();
+
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+
+    if (!cel_is_link(cel, this)) {
+      Image* image = get_sprite()->stock->image[cel->image];
+
+      assert(image != NULL);
+
+      stock_remove_image(get_sprite()->stock, image);
+      image_free(image);
+    }
+
+    cel_free(cel);
+  }
+}
+
+void LayerImage::set_blend_mode(int blend_mode)
+{
+  m_blend_mode = blend_mode;
+}
+
+void LayerImage::get_cels(CelList& cels)
+{
+  CelIterator it = m_cels.begin();
+  CelIterator end = m_cels.begin();
+
+  for (; it != end; ++it)
+    cels.push_back(*it);
+}
+
+void LayerImage::add_cel(Cel *cel)
+{
+  CelIterator it = get_cel_begin();
+  CelIterator end = get_cel_end();
+
+  for (; it != end; ++it) {
+    if ((*it)->frame > cel->frame)
+      break;
+  }
+
+  m_cels.insert(it, cel);
+}
 
 /**
- * Creates a new empty (without frames) normal (image) layer.
+ * Removes the cel from the layer.
+ *
+ * It doesn't destroy the cel, you have to delete it after calling
+ * this routine.
  */
-Layer* layer_new(Sprite* sprite)
+void LayerImage::remove_cel(Cel *cel)
 {
-  Layer* layer = new Layer(GFXOBJ_LAYER_IMAGE, sprite);
+  CelIterator it = std::find(m_cels.begin(), m_cels.end(), cel);
 
-  layer_set_name(layer, "Layer");
+  assert(it != m_cels.end());
 
-  layer->blend_mode = BLEND_MODE_NORMAL;
-  layer->cels = jlist_new();
-
-  return layer;
+  m_cels.erase(it);
 }
 
-Layer* layer_set_new(Sprite *sprite)
+const Cel* LayerImage::get_cel(int frame) const
 {
-  Layer* layer = new Layer(GFXOBJ_LAYER_SET, sprite);
+  CelConstIterator it = get_cel_begin();
+  CelConstIterator end = get_cel_end();
 
-  layer_set_name(layer, "Layer Set");
-
-  layer->layers = jlist_new();
-
-  return layer;
-}
-
-Layer* layer_new_copy(Sprite *dst_sprite, const Layer* src_layer)
-{
-  Layer* layer_copy = NULL;
-
-  assert(dst_sprite != NULL);
-  
-  switch (src_layer->type) {
-
-    case GFXOBJ_LAYER_IMAGE: {
-      Cel* cel_copy, *cel;
-      Image* image_copy, *image;
-      JLink link;
-
-      layer_copy = layer_new(dst_sprite);
-      if (!layer_copy)
-	break;
-
-      layer_set_blend_mode(layer_copy, src_layer->blend_mode);
-
-      /* copy cels */
-      JI_LIST_FOR_EACH(src_layer->cels, link) {
-	cel = (Cel* )link->data;
-	cel_copy = cel_new_copy(cel);
-	if (!cel_copy) {
-	  layer_free(layer_copy);
-	  return NULL;
-	}
-
-	assert((cel->image >= 0) &&
-	       (cel->image < src_layer->sprite->stock->nimage));
-
-	image = src_layer->sprite->stock->image[cel->image];
-	assert(image != NULL);
-
-	image_copy = image_new_copy(image);
-
-	cel_copy->image = stock_add_image(dst_sprite->stock, image_copy);
-	if (undo_is_enabled(dst_sprite->undo))
-	  undo_add_image(dst_sprite->undo, dst_sprite->stock, cel_copy->image);
-
-	layer_add_cel(layer_copy, cel_copy);
-      }
-      break;
-    }
-
-    case GFXOBJ_LAYER_SET: {
-      Layer* child_copy;
-      JLink link;
-
-      layer_copy = layer_set_new(dst_sprite);
-      if (!layer_copy)
-	break;
-
-      JI_LIST_FOR_EACH(src_layer->layers, link) {
-	/* copy the child */
-	child_copy = layer_new_copy(dst_sprite,
-				    reinterpret_cast<Layer*>(link->data));
-	/* not enough memory? */
-	if (!child_copy) {
-	  layer_free(layer_copy);
-	  return NULL;
-	}
-
-	/* add the new child in the layer copy */
-	layer_add_layer(layer_copy, child_copy);
-      }
-      break;
-    }
-
+  for (; it != end; ++it) {
+    const Cel* cel = *it;
+    if (cel->frame == frame)
+      return cel;
   }
 
-  /* copy general properties */
-  if (layer_copy != NULL) {
-    layer_set_name(layer_copy, src_layer->name);
-    layer_copy->flags = src_layer->flags;
+  return NULL;
+}
+
+Cel* LayerImage::get_cel(int frame)
+{
+  CelIterator it = get_cel_begin();
+  CelIterator end = get_cel_end();
+
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+    if (cel->frame == frame)
+      return cel;
   }
 
-  return layer_copy;
+  return NULL;
 }
+
+/**
+ * Configures some properties of the specified layer to make it as the
+ * "Background" of the sprite.
+ *
+ * You can't use this routine if the sprite already has a background
+ * layer.
+ */
+void LayerImage::configure_as_background()
+{
+  assert(get_sprite() != NULL);
+  assert(sprite_get_background_layer(get_sprite()) == NULL);
+
+  *flags_addr() |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
+  set_name("Background");
+
+  get_sprite()->get_folder()->move_layer(this, NULL);
+}
+
+//////////////////////////////////////////////////////////////////////
+// LayerFolder class
+
+LayerFolder::LayerFolder(Sprite* sprite)
+  : Layer(GFXOBJ_LAYER_FOLDER, sprite)
+{
+  set_name("Layer Set");
+}
+
+LayerFolder::LayerFolder(LayerFolder* src_layer, Sprite* dst_sprite)
+  : Layer(src_layer, dst_sprite)
+{
+  try {
+    LayerIterator it = static_cast<LayerFolder*>(src_layer)->get_layer_begin();
+    LayerIterator end = static_cast<LayerFolder*>(src_layer)->get_layer_end();
+
+    for (; it != end; ++it) {
+      // duplicate the child
+      Layer* child_copy = (*it)->duplicate_for(dst_sprite);
+
+      // add the new child in the layer copy
+      add_layer(child_copy);
+    }
+  }
+  catch (...) {
+    destroy_all_layers();
+    throw;
+  }
+}
+
+LayerFolder::~LayerFolder()
+{
+  destroy_all_layers();
+}
+
+void LayerFolder::destroy_all_layers()
+{
+  LayerIterator it = get_layer_begin();
+  LayerIterator end = get_layer_end();
+
+  for (; it != end; ++it) {
+    Layer* layer = *it;
+    delete layer;
+  }
+}
+
+void LayerFolder::get_cels(CelList& cels)
+{
+  LayerIterator it = get_layer_begin();
+  LayerIterator end = get_layer_end();
+
+  for (; it != end; ++it)
+    (*it)->get_cels(cels);
+}
+
+void LayerFolder::add_layer(Layer* layer)
+{
+  m_layers.push_back(layer);
+  layer->set_parent(this);
+}
+
+void LayerFolder::remove_layer(Layer* layer)
+{
+  LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
+  assert(it != m_layers.end());
+  m_layers.erase(it);
+
+  layer->set_parent(NULL);
+}
+
+void LayerFolder::move_layer(Layer* layer, Layer* after)
+{
+  LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
+  assert(it != m_layers.end());
+  m_layers.erase(it);
+
+  if (after) {
+    LayerIterator after_it = std::find(m_layers.begin(), m_layers.end(), after);
+    assert(after_it != m_layers.end());
+    after_it++;
+    m_layers.insert(after_it, layer);
+  }
+  else
+    m_layers.push_front(layer);
+
+  // TODO
+  // if (after) {
+  //   JLink before = jlist_find(m_layers, after)->next;
+  //   jlist_insert_before(m_layers, before, layer);
+  // }
+  // else
+  //   jlist_prepend(m_layers, layer);
+}
+
+//////////////////////////////////////////////////////////////////////
 
 /**
  * Returns a new layer (flat_layer) with all "layer" rendered frame by
@@ -198,303 +367,78 @@ Layer* layer_new_copy(Sprite *dst_sprite, const Layer* src_layer)
  * @param dst_sprite The sprite where to put the new flattened layer.
  * @param src_layer Generally a set of layers to be flattened.
  */
-Layer* layer_new_flatten_copy(Sprite *dst_sprite, const Layer* src_layer,
+Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
 			      int x, int y, int w, int h, int frmin, int frmax)
 {
-  Layer* flat_layer;
-  Image* image;
-  Cel* cel;
-  int frame;
+  LayerImage* flat_layer = new LayerImage(dst_sprite);
 
-  flat_layer = layer_new(dst_sprite);
-  if (!flat_layer)
-    return NULL;
+  try {
+    for (int frame=frmin; frame<=frmax; frame++) {
+      /* does this frame have cels to render? */
+      if (has_cels(src_layer, frame)) {
+	/* create a new image */
+	Image* image = image_new(flat_layer->get_sprite()->imgtype, w, h);
 
-  for (frame=frmin; frame<=frmax; frame++) {
-    /* does this frame have cels to render? */
-    if (has_cels(src_layer, frame)) {
-      /* create a new image */
-      image = image_new(flat_layer->sprite->imgtype, w, h);
-      if (!image) {
-	layer_free(flat_layer);
-	return NULL;
+	try {
+	  /* create the new cel for the output layer (add the image to
+	     stock too) */
+	  Cel* cel = cel_new(frame, stock_add_image(flat_layer->get_sprite()->stock, image));
+	  cel_set_position(cel, x, y);
+
+	  /* clear the image and render this frame */
+	  image_clear(image, 0);
+	  layer_render(src_layer, image, -x, -y, frame);
+	  flat_layer->add_cel(cel);
+	}
+	catch (...) {
+	  delete image;
+	  throw;
+	}
       }
-
-      /* create the new cel for the output layer (add the image to
-	 stock too) */
-      cel = cel_new(frame, stock_add_image(flat_layer->sprite->stock, image));
-      cel_set_position(cel, x, y);
-      if (!cel) {
-	layer_free(flat_layer);
-	image_free(image);
-	return NULL;
-      }
-
-      /* clear the image and render this frame */
-      image_clear(image, 0);
-      layer_render(src_layer, image, -x, -y, frame);
-      layer_add_cel(flat_layer, cel);
     }
+  }
+  catch (...) {
+    delete flat_layer;
+    throw;
   }
 
   return flat_layer;
 }
 
-void layer_free(Layer* layer)
-{
-  assert(layer);
-  delete layer;
-}
-
-
-void layer_free_images(Layer* layer)
-{
-  JLink link;
-
-  switch (layer->type) {
-
-    case GFXOBJ_LAYER_IMAGE:
-      JI_LIST_FOR_EACH(layer->cels, link) {
-	Cel* cel = reinterpret_cast<Cel*>(link->data);
-
-	if (!cel_is_link(cel, layer)) {
-	  Image* image = layer->sprite->stock->image[cel->image];
-
-	  assert(image != NULL);
-
-	  stock_remove_image(layer->sprite->stock, image);
-	  image_free(image);
-	}
-      }
-      break;
-
-    case GFXOBJ_LAYER_SET: {
-      JI_LIST_FOR_EACH(layer->layers, link)
-	layer_free_images(reinterpret_cast<Layer*>(link->data));
-      break;
-    }
-  }
-}
-
-/**
- * Configures some properties of the specified layer to make it as the
- * "Background" of the sprite.
- *
- * You can't use this routine if the sprite already has a background
- * layer.
- */
-void layer_configure_as_background(Layer* layer)
-{
-  assert(layer != NULL);
-  assert(layer->sprite != NULL);
-  assert(sprite_get_background_layer(layer->sprite) == NULL);
-
-  layer->flags |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
-  layer_set_name(layer, "Background");
-
-  layer_move_layer(layer->sprite->set, layer, NULL);
-}
-
-/**
- * Returns TRUE if "layer" is a normal layer type (an image layer)
- */
-bool layer_is_image(const Layer* layer)
-{
-  return (layer->type == GFXOBJ_LAYER_IMAGE) ? true: false;
-}
-
-/**
- * Returns TRUE if "layer" is a set of layers
- */
-bool layer_is_set(const Layer* layer)
-{
-  return (layer->type == GFXOBJ_LAYER_SET) ? true: false;
-}
-
-/**
- * Returns TRUE if the layer is readable/viewable.
- */
-bool layer_is_readable(const Layer* layer)
-{
-  return (layer->flags & LAYER_IS_READABLE) == LAYER_IS_READABLE;
-}
-
-/**
- * Returns TRUE if the layer is writable/editable.
- */
-bool layer_is_writable(const Layer* layer)
-{
-  return (layer->flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE;
-}
-
-/**
- * Returns TRUE if the layer is moveable.
- */
-bool layer_is_moveable(const Layer* layer)
-{
-  return (layer->flags & LAYER_IS_LOCKMOVE) == 0;
-}
-
-/**
- * Returns TRUE if the layer is the background.
- */
-bool layer_is_background(const Layer* layer)
-{
-  return (layer->flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND;
-}
-
-/**
- * Gets the previous layer of "layer" that are in the parent set.
- */
-Layer* layer_get_prev(Layer* layer)
-{
-  if (layer->parent_layer != NULL) {
-    JList list = layer->parent_layer->layers;
-    JLink link = jlist_find(list, layer);
-    if (link != list->end && link->prev != list->end)
-      return reinterpret_cast<Layer*>(link->prev->data);
-  }
-  return NULL;
-}
-
-Layer* layer_get_next(Layer* layer)
-{
-  if (layer->parent_layer != NULL) {
-    JList list = layer->parent_layer->layers;
-    JLink link = jlist_find(list, layer);
-    if (link != list->end && link->next != list->end)
-      return reinterpret_cast<Layer*>(link->next->data);
-  }
-  return NULL;
-}
-
-void layer_set_name(Layer* layer, const char *name)
-{
-  ustrzcpy(layer->name, LAYER_NAME_SIZE, name);
-}
-
-void layer_set_blend_mode(Layer* layer, int blend_mode)
-{
-  if (layer_is_image(layer))
-    layer->blend_mode = blend_mode;
-}
-
-void layer_get_cels(const Layer* layer, JList cels)
-{
-  JLink link;
-
-  if (layer_is_image(layer)) {
-    JI_LIST_FOR_EACH(layer->cels, link)
-      jlist_append(cels, link->data);
-  }
-  else if (layer_is_set(layer)) {
-    JI_LIST_FOR_EACH(layer->layers, link)
-      layer_get_cels((const Layer*)link->data, cels);
-  }
-}
-
-void layer_add_cel(Layer* layer, Cel* cel)
-{
-  if (layer_is_image(layer)) {
-    JLink link;
-
-    JI_LIST_FOR_EACH(layer->cels, link)
-      if (((Cel* )link->data)->frame >= cel->frame)
-	break;
-
-    jlist_insert_before(layer->cels, link, cel);
-  }
-}
-
-/**
- * Removes the cel from the layer.
- *
- * It doesn't destroy the cel, you have to delete it after calling
- * this routine.
- */
-void layer_remove_cel(Layer* layer, Cel* cel)
-{
-  assert(layer_is_image(layer));
-  jlist_remove(layer->cels, cel);
-}
-
-Cel* layer_get_cel(const Layer* layer, int frame)
-{
-  if (layer_is_image(layer)) {
-    Cel* cel;
-    JLink link;
-
-    JI_LIST_FOR_EACH(layer->cels, link) {
-      cel = reinterpret_cast<Cel*>(link->data);
-      if (cel->frame == frame)
-	return cel;
-    }
-  }
-
-  return NULL;
-}
-
-void layer_add_layer(Layer* set, Layer* layer)
-{
-  assert(set != NULL && layer_is_set(set));
-
-  jlist_append(set->layers, layer);
-  layer_set_parent(layer, set);
-}
-
-void layer_remove_layer(Layer* set, Layer* layer)
-{
-  assert(set != NULL && layer_is_set(set));
-
-  jlist_remove(set->layers, layer);
-  layer_set_parent(layer, NULL);
-}
-
-void layer_move_layer(Layer* set, Layer* layer, Layer* after)
-{
-  assert(set != NULL && layer_is_set(set));
-
-  jlist_remove(set->layers, layer);
-
-  if (after) {
-    JLink before = jlist_find(set->layers, after)->next;
-    jlist_insert_before(set->layers, before, layer);
-  }
-  else
-    jlist_prepend(set->layers, layer);
-}
-
 void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 {
-  if (!layer_is_readable(layer))
+  if (!layer->is_readable())
     return;
 
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Cel* cel = layer_get_cel(layer, frame);
+      const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(frame);
       Image* src_image;
 
       if (cel) {
 	assert((cel->image >= 0) &&
-	       (cel->image < layer->sprite->stock->nimage));
+	       (cel->image < layer->get_sprite()->stock->nimage));
 
-	src_image = layer->sprite->stock->image[cel->image];
+	src_image = layer->get_sprite()->stock->image[cel->image];
 	assert(src_image != NULL);
 
 	image_merge(image, src_image,
 		    cel->x + x,
 		    cel->y + y,
 		    MID (0, cel->opacity, 255),
-		    layer->blend_mode);
+		    static_cast<const LayerImage*>(layer)->get_blend_mode());
       }
       break;
     }
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	layer_render(reinterpret_cast<Layer*>(link->data), image, x, y, frame);
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it)
+	layer_render(*it, image, x, y, frame);
+
       break;
     }
 
@@ -502,36 +446,31 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 }
 
 /**
- * Returns TRUE if the "layer" (or him childs) has cels to render in
+ * Returns true if the "layer" (or him childs) has cels to render in
  * frame.
  */
 static bool has_cels(const Layer* layer, int frame)
 {
-  if (!layer_is_readable(layer))
-    return FALSE;
+  if (!layer->is_readable())
+    return false;
 
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE:
-      return layer_get_cel(layer, frame) ? true: false;
+      return static_cast<const LayerImage*>(layer)->get_cel(frame) ? true: false;
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link) {
-	if (has_cels(reinterpret_cast<const Layer*>(link->data), frame))
-	  return TRUE;
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it) {
+	if (has_cels(*it, frame))
+	  return true;
       }
       break;
     }
 
   }
 
-  return FALSE;
-}
-
-static void layer_set_parent(Layer* layer, Layer* parent_set)
-{
-  assert(parent_set == NULL || layer_is_set(parent_set));
-
-  layer->parent_layer = parent_set;
+  return false;
 }

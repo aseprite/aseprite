@@ -282,8 +282,8 @@ Image *render_sprite(Sprite *sprite,
 		     int frame, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
-  Layer *background = sprite_get_background_layer(sprite);
-  bool need_grid = (background != NULL ? !layer_is_readable(background): true);
+  LayerImage* background = sprite_get_background_layer(sprite);
+  bool need_grid = (background != NULL ? !background->is_readable(): true);
   int depth;
   Image *image;
 
@@ -375,26 +375,26 @@ Image *render_sprite(Sprite *sprite,
     color_map = NULL;
     global_opacity = 255;
 
-    render_layer(sprite, sprite->set, image, source_x, source_y,
+    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
 		 frame, zoom, zoomed_func, TRUE, FALSE);
 
     /* draw transparent layers of the previous frame with opacity=128 */
     color_map = orig_trans_map;
     global_opacity = 128;
 
-    render_layer(sprite, sprite->set, image, source_x, source_y,
+    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
 		 frame-1, zoom, zoomed_func, FALSE, TRUE);
 
     /* draw transparent layers of the current frame with opacity=255 */
     color_map = NULL;
     global_opacity = 255;
 
-    render_layer(sprite, sprite->set, image, source_x, source_y,
+    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
 		 frame, zoom, zoomed_func, FALSE, TRUE);
   }
-  /* just draw the current frame */
+  // just draw the current frame
   else {
-    render_layer(sprite, sprite->set, image, source_x, source_y,
+    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
 		 frame, zoom, zoomed_func, TRUE, TRUE);
   }
 
@@ -408,22 +408,21 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 			 bool render_background,
 			 bool render_transparent)
 {
-  /* we can't read from this layer */
-  if (!layer_is_readable(layer))
+  // we can't read from this layer
+  if (!layer->is_readable())
     return;
 
   switch (layer->type) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      Image *src_image;
-      Cel *cel;
-
-      if ((!render_background  &&  layer_is_background(layer)) ||
-	  (!render_transparent && !layer_is_background(layer)))
+      if ((!render_background  &&  layer->is_background()) ||
+	  (!render_transparent && !layer->is_background()))
 	break;
 
-      cel = layer_get_cel(layer, frame);      
+      Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);      
       if (cel != NULL) {
+	Image *src_image;
+
 	/* is the 'rastering_image' setted to be used with this layer? */
 	if ((frame == sprite->frame) &&
 	    (selected_layer == layer) &&
@@ -432,8 +431,8 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 	}
 	/* if not, we use the original cel-image from the images' stock */
 	else if ((cel->image >= 0) &&
-		 (cel->image < layer->sprite->stock->nimage))
-	  src_image = layer->sprite->stock->image[cel->image];
+		 (cel->image < layer->get_sprite()->stock->nimage))
+	  src_image = layer->get_sprite()->stock->image[cel->image];
 	else
 	  src_image = NULL;
 
@@ -448,27 +447,30 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 	    image_merge(image, src_image,
 			cel->x - source_x,
 			cel->y - source_y,
-			output_opacity, layer->blend_mode);
+			output_opacity, static_cast<LayerImage*>(layer)->get_blend_mode());
 	  }
 	  else {
 	    (*zoomed_func)(image, src_image,
 			   (cel->x << zoom) - source_x,
 			   (cel->y << zoom) - source_y,
-			   output_opacity, layer->blend_mode, zoom);
+			   output_opacity, static_cast<LayerImage*>(layer)->get_blend_mode(), zoom);
 	  }
 	}
       }
       break;
     }
 
-    case GFXOBJ_LAYER_SET: {
-      JLink link;
-      JI_LIST_FOR_EACH(layer->layers, link)
-	render_layer(sprite, reinterpret_cast<Layer*>(link->data), image,
+    case GFXOBJ_LAYER_FOLDER: {
+      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+
+      for (; it != end; ++it) {
+	render_layer(sprite, *it, image,
 		     source_x, source_y,
 		     frame, zoom, zoomed_func,
 		     render_background,
 		     render_transparent);
+      }
       break;
     }
 

@@ -51,9 +51,9 @@ bool BackgroundFromLayerCommand::enabled(Context* context)
     sprite != NULL &&
     sprite->layer != NULL &&
     sprite_get_background_layer(sprite) == NULL &&
-    layer_is_image(sprite->layer) &&
-    layer_is_readable(sprite->layer) &&
-    layer_is_writable(sprite->layer);
+    sprite->layer->is_image() &&
+    sprite->layer->is_readable() &&
+    sprite->layer->is_writable();
 }
 
 void BackgroundFromLayerCommand::execute(Context* context)
@@ -67,7 +67,7 @@ void BackgroundFromLayerCommand::execute(Context* context)
 
   {
     Undoable undoable(sprite, "Background from Layer");
-    undoable.background_from_layer(sprite->layer, bgcolor);
+    undoable.background_from_layer(static_cast<LayerImage*>(sprite->layer), bgcolor);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);
