@@ -73,22 +73,25 @@ bool ChangeImageTypeCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
 
-  if (sprite != NULL) {
-    if (sprite->imgtype == IMAGE_INDEXED && m_imgtype == IMAGE_INDEXED && m_dithering == DITHERING_NONE)
-      return false;
-  }
+  if (sprite != NULL &&
+      sprite->imgtype == IMAGE_INDEXED &&
+      m_imgtype == IMAGE_INDEXED &&
+      m_dithering == DITHERING_ORDERED)
+    return false;
 
-  return true;
+  return
+    sprite != NULL;
 }
 
 bool ChangeImageTypeCommand::checked(Context* context)
 {
   const CurrentSpriteReader sprite(context);
 
-  if (sprite != NULL) {
-    if (sprite->imgtype == IMAGE_INDEXED && m_imgtype == IMAGE_INDEXED && m_dithering == DITHERING_NONE)
-      return false;
-  }
+  if (sprite != NULL &&
+      sprite->imgtype == IMAGE_INDEXED &&
+      m_imgtype == IMAGE_INDEXED &&
+      m_dithering == DITHERING_ORDERED)
+    return false;
 
   return
     sprite != NULL &&

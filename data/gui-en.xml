@@ -155,7 +155,7 @@
 	      </item>
 	      <item command="change_image_type" name="Indexed (Ordered &Dither)">
 		<param name="imgtype" value="indexed" />
-		<param name="dithering" value="on" />
+		<param name="dithering" value="ordered" />
 	      </item>
 	    </menu>
 	    <separator />
