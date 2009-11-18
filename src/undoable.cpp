@@ -468,6 +468,22 @@ void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
     }
   }
 
+  // Fill all empty cels with a flat-image filled with bgcolor
+  for (int frame=0; frame<m_sprite->frames; frame++) {
+    Cel* cel = layer->get_cel(frame);
+    if (!cel) {
+      Image* cel_image = image_new(m_sprite->imgtype, m_sprite->w, m_sprite->h);
+      image_clear(cel_image, bgcolor);
+
+      // Add the new image in the stock
+      int image_index = add_image_in_stock(cel_image);
+
+      // Create the new cel and add it to the new background layer
+      cel = cel_new(frame, image_index);
+      add_cel(layer, cel);
+    }
+  }
+
   configure_layer_as_background(layer);
 }
 
