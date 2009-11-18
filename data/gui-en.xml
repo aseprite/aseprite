@@ -21,7 +21,7 @@
 	    <key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
 	    <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
 	    <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
-	    <key command="clear" shortcut="Ctrl+B" /> <key command="clear" shortcut="Ctrl+Del" />
+	    <key command="clear" shortcut="Del" /> <key command="clear" shortcut="Backspace" />
 	    <key command="flip" shortcut="Shift+H">
 	      <param name="target" value="mask" />
 	      <param name="orientation" value="horizontal" />
@@ -82,6 +82,30 @@
 	      <param name="target" value="foreground" />
 	    </key>
 	    <key command="switch_colors" shortcut="X" />
+	    <key command="change_color" shortcut="9">
+	      <param name="target" value="foreground" />
+	      <param name="change" value="decrement-index" />
+	    </key>
+	    <key command="change_color" shortcut="0">
+	      <param name="target" value="foreground" />
+	      <param name="change" value="increment-index" />
+	    </key>
+	    <key command="change_color" shortcut="[">
+	      <param name="target" value="foreground" />
+	      <param name="change" value="decrement-index" />
+	    </key>
+	    <key command="change_color" shortcut="]">
+	      <param name="target" value="foreground" />
+	      <param name="change" value="increment-index" />
+	    </key>
+	    <key command="change_color" shortcut="Ctrl+9">
+	      <param name="target" value="background" />
+	      <param name="change" value="decrement-index" />
+	    </key>
+	    <key command="change_color" shortcut="Ctrl+0">
+	      <param name="target" value="background" />
+	      <param name="change" value="increment-index" />
+	    </key>
 	</commands>
 	<tools>
 	    <key tool="rectangular_marquee" shortcut="M" />
