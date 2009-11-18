@@ -297,7 +297,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 
       h = (y2-y1+1-(4+FGBGSIZE*2+4));
 
-      /* draw gradient */
+      /* draw range */
       for (c=beg; c<=end; c++) {
 	v1 = y1 + h*(c-beg  )/(end-beg+1);
 	v2 = y1 + h*(c-beg+1)/(end-beg+1) - 1;
@@ -309,6 +309,25 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 			   c == colorbar->hot_editing),
 			  (colorbar->hot_drag == c &&
 			   colorbar->hot_drag != colorbar->hot_drop));
+	
+	if (color_equals(colorbar->fgcolor, colorbar->color[c])) {
+	  int neg = blackandwhite_neg(color_get_red(imgtype, colorbar->fgcolor),
+				      color_get_green(imgtype, colorbar->fgcolor),
+				      color_get_blue(imgtype, colorbar->fgcolor));
+
+	  textout_ex(doublebuffer, widget->font(), "FG",
+		     x1+4, v1+2, neg, -1);
+	}
+
+	if (color_equals(colorbar->bgcolor, colorbar->color[c])) {
+	  int neg = blackandwhite_neg(color_get_red(imgtype, colorbar->bgcolor),
+				      color_get_green(imgtype, colorbar->bgcolor),
+				      color_get_blue(imgtype, colorbar->bgcolor));
+
+	  textout_ex(doublebuffer, widget->font(), "BG",
+		     x2-3-text_length(widget->font(), "BG"),
+		     v2-jwidget_get_text_height(widget), neg, -1);
+	}
       }
 
       /* draw foreground color */
