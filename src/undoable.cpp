@@ -951,7 +951,7 @@ void Undoable::clear_mask(int bgcolor)
     // if the layer is transparent we can remove the cel (and its
     // associated image)
     else {
-      static_cast<LayerImage*>(m_sprite->layer)->remove_cel(cel);
+      remove_cel(static_cast<LayerImage*>(m_sprite->layer), cel);
     }
   }
   else {
