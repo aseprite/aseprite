@@ -72,7 +72,7 @@ static void comboitem_free(ComboItem *item);
 
 JWidget jcombobox_new()
 {
-  JWidget widget = jwidget_new(JI_COMBOBOX);
+  JWidget widget = new jwidget(JI_COMBOBOX);
   ComboBox *combobox = jnew(ComboBox, 1);
 
   combobox->entry = jentry_new(256, "");

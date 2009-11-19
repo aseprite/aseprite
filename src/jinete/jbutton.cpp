@@ -57,6 +57,7 @@ typedef struct ButtonCommand
 typedef struct Button
 {
   /* generic */
+  int draw_type;
   BITMAP *icon;
   int icon_align;
   /* button */
@@ -77,11 +78,10 @@ JWidget ji_generic_button_new(const char *text,
 			      int behavior_type,
 			      int draw_type)
 {
-  JWidget widget = jwidget_new(behavior_type);
+  JWidget widget = new jwidget(behavior_type);
   Button *button = jnew(Button, 1);
 
-  widget->draw_type = draw_type;
-
+  button->draw_type = draw_type;
   button->icon = NULL;
   button->icon_align = JI_LEFT | JI_MIDDLE;
   button->commands = jlist_new();
@@ -95,7 +95,11 @@ JWidget ji_generic_button_new(const char *text,
   jwidget_set_align(widget, JI_CENTER | JI_MIDDLE);
   jwidget_set_text(widget, text);
   jwidget_focusrest(widget, true);
+
+  // initialize theme
+  widget->type = button->draw_type;
   jwidget_init_theme(widget);
+  widget->type = behavior_type;
 
   return widget;
 }
@@ -263,6 +267,16 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
     case JM_REQSIZE:
       button_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
       return true;
+
+    case JM_DRAW: {
+      Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
+      switch (button->draw_type) {
+	case JI_BUTTON: widget->theme->draw_button(widget, &msg->draw.rect); break;
+	case JI_CHECK:  widget->theme->draw_check(widget, &msg->draw.rect); break;
+	case JI_RADIO:  widget->theme->draw_radio(widget, &msg->draw.rect); break;
+      }
+      return true;
+    }
 
     case JM_SIGNAL:
       if (widget->type == JI_RADIO) {
@@ -458,7 +472,7 @@ static void button_request_size(JWidget widget, int *w, int *h)
   int icon_w = 0;
   int icon_h = 0;
 
-  switch (widget->draw_type) {
+  switch (button->draw_type) {
 
     case JI_BUTTON:
       if (button->icon) {

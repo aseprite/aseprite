@@ -45,7 +45,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg);
 
 JWidget jimage_new(BITMAP *bmp, int align)
 {
-  JWidget widget = jwidget_new(JI_IMAGE);
+  JWidget widget = new jwidget(JI_IMAGE);
 
   jwidget_add_hook(widget, JI_IMAGE, image_msg_proc, bmp);
   jwidget_set_align(widget, align);

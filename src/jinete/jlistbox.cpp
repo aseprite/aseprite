@@ -52,7 +52,7 @@ static void listitem_request_size(JWidget widget, int *w, int *h);
 
 JWidget jlistbox_new()
 {
-  JWidget widget = jwidget_new(JI_LISTBOX);
+  JWidget widget = new jwidget(JI_LISTBOX);
 
   jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
   jwidget_focusrest(widget, true);
@@ -63,7 +63,7 @@ JWidget jlistbox_new()
 
 JWidget jlistitem_new(const char *text)
 {
-  JWidget widget = jwidget_new(JI_LISTITEM);
+  JWidget widget = new jwidget(JI_LISTITEM);
 
   jwidget_add_hook(widget, JI_LISTITEM, listitem_msg_proc, NULL);
   jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
@@ -174,6 +174,10 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SETPOS:
       listbox_set_position(widget, &msg->setpos.rect);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_listbox(widget, &msg->draw.rect);
       return true;
 
     case JM_DIRTYCHILDREN:
@@ -407,6 +411,10 @@ static bool listitem_msg_proc(JWidget widget, JMessage msg)
       jrect_free(crect);
       return true;
     }
+
+    case JM_DRAW:
+      widget->theme->draw_listitem(widget, &msg->draw.rect);
+      return true;
   }
 
   return false;

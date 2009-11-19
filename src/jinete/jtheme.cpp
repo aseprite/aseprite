@@ -57,73 +57,27 @@ int _ji_theme_init()
 void _ji_theme_exit()
 {
   if (ji_standard_theme) {
-    jtheme_free(ji_standard_theme);
+    delete ji_standard_theme;
     ji_standard_theme = NULL;
   }
 }
 
-JTheme jtheme_new()
+jtheme::jtheme()
 {
-  JTheme theme = (JTheme)jmalloc(sizeof(struct jtheme));
-  if (!theme)
-    return NULL;
-
-  theme->name = "Theme";
-  theme->default_font = font;	/* default Allegro font */
-  theme->desktop_color = 0;
-  theme->textbox_fg_color = 0;
-  theme->textbox_bg_color = 0;
-  theme->check_icon_size = 0;
-  theme->radio_icon_size = 0;
-  theme->scrollbar_size = 0;
-  theme->destroy = NULL;
-  theme->regen = NULL;
-  theme->set_cursor = NULL;
-  theme->init_widget = NULL;
-  theme->get_window_mask = NULL;
-  theme->map_decorative_widget = NULL;
-  theme->nmethods = 0;
-  theme->methods = NULL;
-
-  return theme;
+  this->name = "Theme";
+  this->default_font = font;	/* default Allegro font */
+  this->desktop_color = 0;
+  this->textbox_fg_color = 0;
+  this->textbox_bg_color = 0;
+  this->check_icon_size = 0;
+  this->radio_icon_size = 0;
+  this->scrollbar_size = 0;
 }
 
-void jtheme_free(JTheme theme)
+jtheme::~jtheme()
 {
-  if (theme->destroy)
-    (*theme->destroy)();
-
-  if (ji_current_theme == theme)
+  if (ji_current_theme == this)
     ji_set_theme(NULL);
-
-  if (theme->methods)
-    jfree(theme->methods);
-
-  jfree(theme);
-}
-
-void jtheme_set_method(JTheme theme, int widget_type, JDrawFunc draw_widget)
-{
-  if (widget_type >= theme->nmethods) {
-    int c, old_nmethods = theme->nmethods;
-
-    theme->nmethods = widget_type+1;
-    theme->methods = (JDrawFunc*)jrealloc(theme->methods,
-					  sizeof(JDrawFunc) * theme->nmethods);
-
-    for (c=old_nmethods; c<theme->nmethods; c++)
-      theme->methods[c] = NULL;
-  }
-
-  theme->methods[widget_type] = draw_widget;
-}
-
-JDrawFunc jtheme_get_method(JTheme theme, int widget_type)
-{
-  if (theme->methods && widget_type >= 0 && widget_type < theme->nmethods)
-    return theme->methods[widget_type];
-  else
-    return NULL;
 }
 
 /**********************************************************************/
@@ -137,7 +91,6 @@ void ji_set_theme(JTheme theme)
   if (ji_current_theme) {
     ji_regen_theme();
 
-    /* TODO any better idea? */
     if (manager && jwidget_get_theme(manager) == NULL)
       jwidget_set_theme(manager, theme);
   }
@@ -162,44 +115,28 @@ JTheme ji_get_theme()
 void ji_regen_theme()
 {
   if (ji_current_theme) {
-    /* hide the cursor */
-/*     if () { */
-/*       show_mouse(NULL); */
-/*       set_mouse_sprite(NULL); */
-/*     } */
     int type = jmouse_get_cursor();
     jmouse_set_cursor(JI_CURSOR_NULL);
 
-    if (ji_current_theme->regen)
-      (*ji_current_theme->regen)();
+    ji_current_theme->regen();
 
-    /* ok, reset the mouse cursor */
     jmouse_set_cursor(type);
   }
 }
 
 int ji_color_foreground()
 {
-  if (ji_current_theme && ji_current_theme->color_foreground)
-    return (*ji_current_theme->color_foreground)();
-  else
-    return makecol(0, 0, 0);
+  return ji_current_theme->color_foreground();
 }
 
 int ji_color_disabled()
 {
-  if (ji_current_theme && ji_current_theme->color_disabled)
-    return (*ji_current_theme->color_disabled)();
-  else
-    return makecol(128, 128, 128);
+  return ji_current_theme->color_disabled();
 }
 
 int ji_color_face()
 {
-  if (ji_current_theme && ji_current_theme->color_face)
-    return (*ji_current_theme->color_face)();
-  else
-    return makecol(255, 255, 255);
+  return ji_current_theme->color_face();
 }
 
 int ji_color_facelight()
@@ -220,26 +157,17 @@ int ji_color_faceshadow()
 
 int ji_color_hotface()
 {
-  if (ji_current_theme && ji_current_theme->color_hotface)
-    return (*ji_current_theme->color_hotface)();
-  else
-    return makecol(255, 255, 255);
+  return ji_current_theme->color_hotface();
 }
 
 int ji_color_selected()
 {
-  if (ji_current_theme && ji_current_theme->color_selected)
-    return (*ji_current_theme->color_selected)();
-  else
-    return makecol(0, 0, 255);
+  return ji_current_theme->color_selected();
 }
 
 int ji_color_background()
 {
-  if (ji_current_theme && ji_current_theme->color_background)
-    return (*ji_current_theme->color_background)();
-  else
-    return makecol(255, 255, 255);
+  return ji_current_theme->color_background();
 }
 
 void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,

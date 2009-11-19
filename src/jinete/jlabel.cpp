@@ -39,7 +39,7 @@ static bool label_msg_proc(JWidget widget, JMessage msg);
 
 JWidget jlabel_new(const char *text)
 {
-  JWidget widget = jwidget_new(JI_LABEL);
+  JWidget widget = new jwidget(JI_LABEL);
 
   jwidget_add_hook(widget, JI_LABEL, label_msg_proc, NULL);
   jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
@@ -63,6 +63,10 @@ static bool label_msg_proc(JWidget widget, JMessage msg)
 
       msg->reqsize.w += widget->border_width.l + widget->border_width.r;
       msg->reqsize.h += widget->border_width.t + widget->border_width.b;
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_label(widget, &msg->draw.rect);
       return true;
   }
 

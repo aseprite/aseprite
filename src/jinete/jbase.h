@@ -72,7 +72,7 @@ struct jlist;
 union  jmessage;
 struct jrect;
 struct jregion;
-struct jtheme;
+class  jtheme;
 class  jwidget;
 
 /* alignment */
@@ -232,7 +232,7 @@ typedef union  jmessage*	JMessage;
 typedef struct jstream*		JStream;
 typedef struct jrect*		JRect;
 typedef struct jregion*		JRegion;
-typedef struct jtheme*		JTheme;
+typedef class  jtheme*		JTheme;
 typedef class  jwidget*		JWidget;
 typedef struct jxml*		JXml;
 typedef struct jxmlattr*	JXmlAttr;

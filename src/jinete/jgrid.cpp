@@ -40,6 +40,7 @@
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
+#include "jinete/jtheme.h"
 
 struct Cell
 {
@@ -79,7 +80,7 @@ static void grid_inc_row_size(Grid *grid, int row, int size);
 
 JWidget jgrid_new(int columns, bool same_width_columns)
 {
-  JWidget widget = jwidget_new(JI_GRID);
+  JWidget widget = new jwidget(JI_GRID);
   Grid *grid = jnew(Grid, 1);
   int col;
 
@@ -171,6 +172,10 @@ static bool grid_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SETPOS:
       grid_set_position(widget, &msg->setpos.rect);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_grid(widget, &msg->draw.rect);
       return true;
 
   }

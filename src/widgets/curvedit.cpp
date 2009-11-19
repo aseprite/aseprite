@@ -91,7 +91,7 @@ static int edit_node_manual(CurvePoint* point);
 
 JWidget curve_editor_new(Curve *curve, int x1, int y1, int x2, int y2)
 {
-  JWidget widget = jwidget_new(curve_editor_type());
+  JWidget widget = new jwidget(curve_editor_type());
   CurveEditor* curve_editor = jnew(CurveEditor, 1);
 
   jwidget_add_hook(widget, curve_editor_type(),

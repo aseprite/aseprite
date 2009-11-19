@@ -148,7 +148,7 @@ void ConfigureTools::execute(Context* context)
 
   /* brush-preview */
   if (first_time) {
-    brush_preview = jwidget_new(JI_WIDGET);
+    brush_preview = new jwidget(JI_WIDGET);
     brush_preview->min_w = 32 + 4;
     brush_preview->min_h = 32 + 4;
 

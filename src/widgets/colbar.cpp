@@ -87,7 +87,7 @@ static void get_info(JWidget widget, int *beg, int *end);
 
 JWidget colorbar_new(int align)
 {
-  JWidget widget = jwidget_new(colorbar_type());
+  JWidget widget = new jwidget(colorbar_type());
   ColorBar *colorbar = jnew0(ColorBar, 1);
 
   colorbar->widget = widget;

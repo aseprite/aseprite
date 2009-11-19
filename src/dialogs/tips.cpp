@@ -152,7 +152,7 @@ void dialogs_tips(bool forced)
 
 static JWidget tips_new()
 {
-  JWidget widget = jwidget_new(tips_type());
+  JWidget widget = new jwidget(tips_type());
 
   jwidget_add_hook(widget, tips_type(), tips_msg_proc, NULL);
   jwidget_focusrest(widget, TRUE);

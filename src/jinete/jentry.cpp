@@ -91,7 +91,7 @@ static void entry_backward_word(JWidget widget);
 
 JWidget jentry_new(size_t maxsize, const char *format, ...)
 {
-  JWidget widget = jwidget_new(JI_ENTRY);
+  JWidget widget = new jwidget(JI_ENTRY);
   Entry* entry = (Entry*)jnew(Entry, 1);
   char buf[4096];
 
@@ -262,6 +262,10 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       entry_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_entry(widget, &msg->draw.rect);
       return true;
 
     case JM_TIMER:

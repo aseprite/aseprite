@@ -43,7 +43,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg);
 
 JWidget colorviewer_new(color_t color, int imgtype)
 {
-  JWidget widget = jwidget_new(colorviewer_type());
+  JWidget widget = new jwidget(colorviewer_type());
   ColorViewer *colorviewer = jnew(ColorViewer, 1);
 
   colorviewer->color = color;

@@ -59,7 +59,7 @@ static void paledit_update_scroll(JWidget widget, int color);
 
 JWidget paledit_new(Palette *palette, bool editable, int boxsize)
 {
-  JWidget widget = jwidget_new(paledit_type());
+  JWidget widget = new jwidget(paledit_type());
   PalEdit *paledit = jnew(PalEdit, 1);
 
   paledit->widget = widget;

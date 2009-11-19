@@ -92,109 +92,81 @@ static struct {
   { false, default_theme_icombobox },
 };
 
-static BITMAP *icons_bitmap[ICONS];
+class jstandard_theme : public jtheme
+{
+  BITMAP *icons_bitmap[ICONS];
 
-static void theme_destroy();
-static void theme_regen();
-static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y);
-static void theme_init_widget(JWidget widget);
-static JRegion theme_get_window_mask(JWidget widget);
-static void theme_map_decorative_widget(JWidget widget);
-static int theme_color_foreground();
-static int theme_color_disabled();
-static int theme_color_face();
-static int theme_color_hotface();
-static int theme_color_selected();
-static int theme_color_background();
-static void theme_draw_box(JWidget widget, JRect clip);
-static void theme_draw_button(JWidget widget, JRect clip);
-static void theme_draw_check(JWidget widget, JRect clip);
-static void theme_draw_entry(JWidget widget, JRect clip);
-static void theme_draw_grid(JWidget widget, JRect clip);
-static void theme_draw_label(JWidget widget, JRect clip);
-static void theme_draw_listbox(JWidget widget, JRect clip);
-static void theme_draw_listitem(JWidget widget, JRect clip);
-static void theme_draw_menu(JWidget widget, JRect clip);
-static void theme_draw_menuitem(JWidget widget, JRect clip);
-static void theme_draw_panel(JWidget widget, JRect clip);
-static void theme_draw_radio(JWidget widget, JRect clip);
-static void theme_draw_separator(JWidget widget, JRect clip);
-static void theme_draw_slider(JWidget widget, JRect clip);
-static void theme_draw_textbox(JWidget widget, JRect clip);
-static void theme_draw_view(JWidget widget, JRect clip);
-static void theme_draw_view_scrollbar(JWidget widget, JRect clip);
-static void theme_draw_view_viewport(JWidget widget, JRect clip);
-static void theme_draw_window(JWidget widget, JRect clip);
+public:
+  jstandard_theme();
+  ~jstandard_theme();
 
-static int get_bg_color(JWidget widget);
-static void draw_textstring(const char *t, int fg_color, int bg_color,
-			    bool fill_bg, JWidget widget, const JRect rect,
-			    int selected_offset);
-static void draw_entry_cursor(JWidget widget, int x, int y);
-static void draw_icons(int x, int y, JWidget widget, int edge_icon);
-static void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
-static void less_bevel(int *bevel);
+  void regen();
+  BITMAP *set_cursor(int type, int *focus_x, int *focus_y);
+  void init_widget(JWidget widget);
+  JRegion get_window_mask(JWidget widget);
+  void map_decorative_widget(JWidget widget);
+
+  int color_foreground();
+  int color_disabled();
+  int color_face();
+  int color_hotface();
+  int color_selected();
+  int color_background();
+
+  void draw_box(JWidget widget, JRect clip);
+  void draw_button(JWidget widget, JRect clip);
+  void draw_check(JWidget widget, JRect clip);
+  void draw_entry(JWidget widget, JRect clip);
+  void draw_grid(JWidget widget, JRect clip);
+  void draw_label(JWidget widget, JRect clip);
+  void draw_listbox(JWidget widget, JRect clip);
+  void draw_listitem(JWidget widget, JRect clip);
+  void draw_menu(JWidget widget, JRect clip);
+  void draw_menuitem(JWidget widget, JRect clip);
+  void draw_panel(JWidget widget, JRect clip);
+  void draw_radio(JWidget widget, JRect clip);
+  void draw_separator(JWidget widget, JRect clip);
+  void draw_slider(JWidget widget, JRect clip);
+  void draw_textbox(JWidget widget, JRect clip);
+  void draw_view(JWidget widget, JRect clip);
+  void draw_view_scrollbar(JWidget widget, JRect clip);
+  void draw_view_viewport(JWidget widget, JRect clip);
+  void draw_window(JWidget widget, JRect clip);
+
+private:
+
+  int get_bg_color(JWidget widget);
+  void draw_textstring(const char *t, int fg_color, int bg_color,
+		       bool fill_bg, JWidget widget, const JRect rect,
+		       int selected_offset);
+  void draw_entry_cursor(JWidget widget, int x, int y);
+  void draw_icons(int x, int y, JWidget widget, int edge_icon);
+  void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
+  void less_bevel(int *bevel);
+
+};
 
 static bool theme_button_msg_proc(JWidget widget, JMessage msg);
 
 JTheme jtheme_new_standard()
 {
-  JTheme theme;
-  int c;
-
-  theme = jtheme_new();
-  if (!theme)
-    return NULL;
-
-  for (c=0; c<ICONS; c++)
-    icons_bitmap[c] = NULL;
-
-  theme->name = "Standard Theme";
-  theme->check_icon_size = 8;
-  theme->radio_icon_size = 8;
-  theme->scrollbar_size = 12;
-
-  theme->destroy = theme_destroy;
-  theme->regen = theme_regen;
-  theme->set_cursor = theme_set_cursor;
-  theme->init_widget = theme_init_widget;
-  theme->get_window_mask = theme_get_window_mask;
-  theme->map_decorative_widget = theme_map_decorative_widget;
-  theme->color_foreground = theme_color_foreground;
-  theme->color_disabled = theme_color_disabled;
-  theme->color_face = theme_color_face;
-  theme->color_hotface = theme_color_hotface;
-  theme->color_selected = theme_color_selected;
-  theme->color_background = theme_color_background;
-
-  jtheme_set_method(theme, JI_BOX, theme_draw_box);
-  jtheme_set_method(theme, JI_BUTTON, theme_draw_button);
-  jtheme_set_method(theme, JI_CHECK, theme_draw_check);
-  jtheme_set_method(theme, JI_ENTRY, theme_draw_entry);
-  jtheme_set_method(theme, JI_GRID, theme_draw_grid);
-  jtheme_set_method(theme, JI_LABEL, theme_draw_label);
-  jtheme_set_method(theme, JI_LISTBOX, theme_draw_listbox);
-  jtheme_set_method(theme, JI_LISTITEM, theme_draw_listitem);
-  jtheme_set_method(theme, JI_MENU, theme_draw_menu);
-  jtheme_set_method(theme, JI_MENUITEM, theme_draw_menuitem);
-  jtheme_set_method(theme, JI_PANEL, theme_draw_panel);
-  jtheme_set_method(theme, JI_RADIO, theme_draw_radio);
-  jtheme_set_method(theme, JI_SEPARATOR, theme_draw_separator);
-  jtheme_set_method(theme, JI_SLIDER, theme_draw_slider);
-  jtheme_set_method(theme, JI_TEXTBOX, theme_draw_textbox);
-  jtheme_set_method(theme, JI_VIEW, theme_draw_view);
-  jtheme_set_method(theme, JI_VIEW_SCROLLBAR, theme_draw_view_scrollbar);
-  jtheme_set_method(theme, JI_VIEW_VIEWPORT, theme_draw_view_viewport);
-  jtheme_set_method(theme, JI_WINDOW, theme_draw_window);
-
-  return theme;
+  return new jstandard_theme();
 }
 
-static void theme_destroy()
+jstandard_theme::jstandard_theme()
 {
-  int c;
+  for (int c=0; c<ICONS; c++)
+    icons_bitmap[c] = NULL;
 
-  for (c=0; c<ICONS; c++) {
+  this->name = "Standard Theme";
+  this->check_icon_size = 8;
+  this->radio_icon_size = 8;
+  this->scrollbar_size = 12;
+}
+
+jstandard_theme::~jstandard_theme()
+{
+  for (int c=0; c<ICONS; c++) {
     if (icons_bitmap[c]) {
       destroy_bitmap(icons_bitmap[c]);
       icons_bitmap[c] = NULL;
@@ -202,7 +174,7 @@ static void theme_destroy()
   }
 }
 
-static void theme_regen()
+void jstandard_theme::regen()
 {
   JTheme theme = ji_get_theme();
   int c, cmap[8], mask_cmap[2];
@@ -235,7 +207,7 @@ static void theme_regen()
   }
 }
 
-static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
+BITMAP *jstandard_theme::set_cursor(int type, int *focus_x, int *focus_y)
 {
   BITMAP *sprite = NULL;
   int icon_index = type-1+FIRST_CURSOR;
@@ -285,7 +257,7 @@ static BITMAP *theme_set_cursor(int type, int *focus_x, int *focus_y)
   return sprite;
 }
 
-static void theme_init_widget(JWidget widget)
+void jstandard_theme::init_widget(JWidget widget)
 {
 #define BORDER(n)				\
   widget->border_width.l = n;			\
@@ -304,7 +276,7 @@ static void theme_init_widget(JWidget widget)
       (widget->type != JI_SEPARATOR))
     return;
 
-  switch (widget->draw_type) {
+  switch (widget->type) {
 
     case JI_BOX:
       BORDER(0);
@@ -452,12 +424,12 @@ static void theme_init_widget(JWidget widget)
   }
 }
 
-static JRegion theme_get_window_mask(JWidget widget)
+JRegion jstandard_theme::get_window_mask(JWidget widget)
 {
   return jregion_new(widget->rc, 1);
 }
 
-static void theme_map_decorative_widget(JWidget widget)
+void jstandard_theme::map_decorative_widget(JWidget widget)
 {
   if (widget->name != NULL &&
       strcmp(widget->name, "theme_close_button") == 0) {
@@ -476,42 +448,42 @@ static void theme_map_decorative_widget(JWidget widget)
   }
 }
 
-static int theme_color_foreground()
+int jstandard_theme::color_foreground()
 {
   return COLOR_FOREGROUND;
 }
 
-static int theme_color_disabled()
+int jstandard_theme::color_disabled()
 {
   return COLOR_DISABLED;
 }
 
-static int theme_color_face()
+int jstandard_theme::color_face()
 {
   return COLOR_FACE;
 }
 
-static int theme_color_hotface()
+int jstandard_theme::color_hotface()
 {
   return COLOR_HOTFACE;
 }
 
-static int theme_color_selected()
+int jstandard_theme::color_selected()
 {
   return COLOR_SELECTED;
 }
 
-static int theme_color_background()
+int jstandard_theme::color_background()
 {
   return COLOR_BACKGROUND;
 }
 
-static void theme_draw_box(JWidget widget, JRect clip)
+void jstandard_theme::draw_box(JWidget widget, JRect clip)
 {
   jdraw_rectfill(clip, BGCOLOR);
 }
 
-static void theme_draw_button(JWidget widget, JRect clip)
+void jstandard_theme::draw_button(JWidget widget, JRect clip)
 {
   BITMAP *icon_bmp = ji_generic_button_get_icon(widget);
   int icon_align = ji_generic_button_get_icon_align(widget);
@@ -624,7 +596,7 @@ static void theme_draw_button(JWidget widget, JRect clip)
   }
 }
 
-static void theme_draw_check(JWidget widget, JRect clip)
+void jstandard_theme::draw_check(JWidget widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg;
@@ -654,12 +626,12 @@ static void theme_draw_check(JWidget widget, JRect clip)
   draw_icons(icon.x1, icon.y1, widget, ICON_CHECK_EDGE);
 }
 
-static void theme_draw_grid(JWidget widget, JRect clip)
+void jstandard_theme::draw_grid(JWidget widget, JRect clip)
 {
   jdraw_rectfill(clip, BGCOLOR);
 }
 
-static void theme_draw_entry(JWidget widget, JRect clip)
+void jstandard_theme::draw_entry(JWidget widget, JRect clip)
 {
   bool password = jentry_is_password(widget);
   int scroll, cursor, state, selbeg, selend;
@@ -741,7 +713,7 @@ static void theme_draw_entry(JWidget widget, JRect clip)
     draw_entry_cursor(widget, x, y);
 }
 
-static void theme_draw_label(JWidget widget, JRect clip)
+void jstandard_theme::draw_label(JWidget widget, JRect clip)
 {
   int bg = BGCOLOR;
 
@@ -750,7 +722,7 @@ static void theme_draw_label(JWidget widget, JRect clip)
   draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
 }
 
-static void theme_draw_listbox(JWidget widget, JRect clip)
+void jstandard_theme::draw_listbox(JWidget widget, JRect clip)
 {
   int bg;
 
@@ -762,7 +734,7 @@ static void theme_draw_listbox(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, COLOR_BACKGROUND);
 }
 
-static void theme_draw_listitem(JWidget widget, JRect clip)
+void jstandard_theme::draw_listitem(JWidget widget, JRect clip)
 {
   int fg, bg;
   int x, y;
@@ -802,12 +774,12 @@ static void theme_draw_listitem(JWidget widget, JRect clip)
   }
 }
 
-static void theme_draw_menu(JWidget widget, JRect clip)
+void jstandard_theme::draw_menu(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-static void theme_draw_menuitem(JWidget widget, JRect clip)
+void jstandard_theme::draw_menuitem(JWidget widget, JRect clip)
 {
   int c, bg, fg, bar;
   int x1, y1, x2, y2;
@@ -919,7 +891,7 @@ static void theme_draw_menuitem(JWidget widget, JRect clip)
   }
 }
 
-static void theme_draw_panel(JWidget widget, JRect clip)
+void jstandard_theme::draw_panel(JWidget widget, JRect clip)
 {
   JWidget c1, c2;
   JLink link;
@@ -975,7 +947,7 @@ static void theme_draw_panel(JWidget widget, JRect clip)
   }
 }
 
-static void theme_draw_radio(JWidget widget, JRect clip)
+void jstandard_theme::draw_radio(JWidget widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg = BGCOLOR;
@@ -1004,7 +976,7 @@ static void theme_draw_radio(JWidget widget, JRect clip)
   draw_icons(icon.x1, icon.y1, widget, ICON_RADIO_EDGE);
 }
 
-static void theme_draw_separator(JWidget widget, JRect clip)
+void jstandard_theme::draw_separator(JWidget widget, JRect clip)
 {
   int x1, y1, x2, y2;
 
@@ -1074,7 +1046,7 @@ static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 }
 #endif
 
-static void theme_draw_slider(JWidget widget, JRect clip)
+void jstandard_theme::draw_slider(JWidget widget, JRect clip)
 {
   int x, x1, y1, x2, y2, bg, c1, c2;
   int min, max, value;
@@ -1177,14 +1149,14 @@ static void theme_draw_slider(JWidget widget, JRect clip)
   }
 }
 
-static void theme_draw_textbox(JWidget widget, JRect clip)
+void jstandard_theme::draw_textbox(JWidget widget, JRect clip)
 {
   _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
 			 widget->theme->textbox_bg_color,
 			 widget->theme->textbox_fg_color);
 }
 
-static void theme_draw_view(JWidget widget, JRect clip)
+void jstandard_theme::draw_view(JWidget widget, JRect clip)
 {
   JRect pos = jwidget_get_rect(widget);
 
@@ -1212,7 +1184,7 @@ static void theme_draw_view(JWidget widget, JRect clip)
   jrect_free(pos);
 }
 
-static void theme_draw_view_scrollbar(JWidget widget, JRect clip)
+void jstandard_theme::draw_view_scrollbar(JWidget widget, JRect clip)
 {
   int x1, y1, x2, y2;
   int u1, v1, u2, v2;
@@ -1267,12 +1239,12 @@ static void theme_draw_view_scrollbar(JWidget widget, JRect clip)
     rectfill(ji_screen, u1, v1, u2, v2, BGCOLOR);
 }
 
-static void theme_draw_view_viewport(JWidget widget, JRect clip)
+void jstandard_theme::draw_view_viewport(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-static void theme_draw_window(JWidget widget, JRect clip)
+void jstandard_theme::draw_window(JWidget widget, JRect clip)
 {
   JRect pos = jwidget_get_rect(widget);
   JRect cpos = jwidget_get_child_rect(widget);
@@ -1312,7 +1284,7 @@ static void theme_draw_window(JWidget widget, JRect clip)
   jrect_free(cpos);
 }
 
-static int get_bg_color(JWidget widget)
+int jstandard_theme::get_bg_color(JWidget widget)
 {
   int c = jwidget_get_bg_color(widget);
   int decorative = jwidget_is_decorative(widget);
@@ -1321,9 +1293,9 @@ static int get_bg_color(JWidget widget)
 				   COLOR_FACE);
 }
 
-static void draw_textstring(const char *t, int fg_color, int bg_color,
-			    bool fill_bg, JWidget widget, const JRect rect,
-			    int selected_offset)
+void jstandard_theme::draw_textstring(const char *t, int fg_color, int bg_color,
+				      bool fill_bg, JWidget widget, const JRect rect,
+				      int selected_offset)
 {
   if (t || widget->has_text()) {
     int x, y, w, h;
@@ -1391,7 +1363,7 @@ static void draw_textstring(const char *t, int fg_color, int bg_color,
   }
 }
 
-static void draw_entry_cursor(JWidget widget, int x, int y)
+void jstandard_theme::draw_entry_cursor(JWidget widget, int x, int y)
 {
   int h = jwidget_get_text_height(widget);
 
@@ -1399,7 +1371,7 @@ static void draw_entry_cursor(JWidget widget, int x, int y)
   vline(ji_screen, x+1, y-1, y+h, COLOR_FOREGROUND);
 }
 
-static void draw_icons(int x, int y, JWidget widget, int edge_icon)
+void jstandard_theme::draw_icons(int x, int y, JWidget widget, int edge_icon)
 {
   draw_sprite(ji_screen, icons_bitmap[edge_icon], x, y);
 
@@ -1407,7 +1379,7 @@ static void draw_icons(int x, int y, JWidget widget, int edge_icon)
     draw_sprite(ji_screen, icons_bitmap[edge_icon+1], x, y);
 }
 
-static void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)
+void jstandard_theme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)
 {
   hline(ji_screen, x1+bevel[0], y1, x2-bevel[1], c1); /* top */
   hline(ji_screen, x1+bevel[2], y2, x2-bevel[3], c2); /* bottom */
@@ -1422,7 +1394,7 @@ static void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *
   line(ji_screen, x2-bevel[3], y2, x2, y2-bevel[3], c2); /* bottom-right */
 }
 
-static void less_bevel(int *bevel)
+void jstandard_theme::less_bevel(int *bevel)
 {
   if (bevel[0] > 0) --bevel[0];
   if (bevel[1] > 0) --bevel[1];

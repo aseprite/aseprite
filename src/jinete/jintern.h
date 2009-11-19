@@ -50,12 +50,6 @@ bool _ji_is_valid_widget(JWidget widget);
 void _ji_set_font_of_all_widgets(struct FONT *f);
 
 //////////////////////////////////////////////////////////////////////
-// jwidget.c
-
-void _jwidget_add_hook(JWidget widget, JHook hook);
-void _jwidget_remove_hook(JWidget widget, JHook hook);
-
-//////////////////////////////////////////////////////////////////////
 // jwindow.c
 
 bool _jwindow_is_moving();

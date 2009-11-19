@@ -49,7 +49,6 @@ struct BITMAP;
 
 int ji_register_widget_type();
 
-JWidget jwidget_new(int type);
 void jwidget_free(JWidget widget);
 void jwidget_free_deferred(JWidget widget);
 
@@ -210,9 +209,6 @@ public:
 
   /* virtual properties */
   JList hooks;			/* hooks with msg_proc and specific data */
-  int draw_type;
-  JDrawFunc draw_method;	/* virtual method to draw the widget
-				   (the default msg_proc uses it) */
 
   /* common widget properties */
 private:
@@ -266,6 +262,9 @@ public:
   struct FONT* font();
   void font(struct FONT* font);
 
+  /**
+   * Gets the background color of the widget.
+   */
   int bg_color()
   {
     if (m_bg_color < 0 && parent)
@@ -274,18 +273,25 @@ public:
       return m_bg_color;
   }
 
+  /**
+   * Sets the background color of the widget.
+   */
   void bg_color(int bg_color)
   {
     m_bg_color = bg_color;
   }
 
-  // Returns a widget in the same window that is located "sibling".
+  /**
+   * Returns a widget in the same window that is located "sibling".
+   */
   inline JWidget find_sibling(const char* name)
   {
     return jwidget_find_name(jwidget_get_window(this), name);
   }
 
   void dirty() { jwidget_dirty(this); }
+
+  virtual bool msg_proc(JMessage msg);
 
 };
 

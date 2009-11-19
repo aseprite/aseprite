@@ -154,7 +154,7 @@ static JWidget find_previtem(JWidget menu, JWidget menuitem);
 
 JWidget jmenu_new()
 {
-  JWidget widget = jwidget_new(JI_MENU);
+  JWidget widget = new jwidget(JI_MENU);
   Menu *menu = jnew(Menu, 1);
 
   menu->menuitem = NULL;
@@ -179,7 +179,7 @@ JWidget jmenubar_new()
 
 JWidget jmenubox_new()
 {
-  JWidget widget = jwidget_new(JI_MENUBOX);
+  JWidget widget = new jwidget(JI_MENUBOX);
   MenuBox *menubox = jnew(MenuBox, 1);
 
   menubox->base = NULL;
@@ -193,7 +193,7 @@ JWidget jmenubox_new()
 
 JWidget jmenuitem_new(const char *text)
 {
-  JWidget widget = jwidget_new(JI_MENUITEM);
+  JWidget widget = new jwidget(JI_MENUITEM);
   MenuItem *menuitem = jnew(MenuItem, 1);
 
   menuitem->accel = NULL;
@@ -394,6 +394,10 @@ static bool menu_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SETPOS:
       menu_set_position(widget, &msg->setpos.rect);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_menu(widget, &msg->draw.rect);
       return true;
 
   }
@@ -820,6 +824,10 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       menuitem_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_menuitem(widget, &msg->draw.rect);
       return true;
 
     case JM_MOUSEENTER:

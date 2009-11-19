@@ -57,12 +57,6 @@ int ji_register_widget_type()
   return type++;
 }
 
-/* creates a new widget with an unique JID */
-JWidget jwidget_new(int type)
-{
-  return new jwidget(type);
-}
-
 jwidget::jwidget(int type)
 {
   _ji_add_widget(this);
@@ -85,8 +79,6 @@ jwidget::jwidget(int type)
   this->parent = NULL;
   this->theme = ji_get_theme();
   this->hooks = jlist_new();
-  this->draw_type = type;
-  this->draw_method = NULL;
 
   this->m_align = 0;
   this->m_text = "";
@@ -104,8 +96,6 @@ jwidget::jwidget(int type)
   this->user_data[1] = NULL;
   this->user_data[2] = NULL;
   this->user_data[3] = NULL;
-
-  jwidget_add_hook(this, JI_WIDGET, widget_msg_proc, NULL);
 }
 
 void jwidget_free(JWidget widget)
@@ -177,17 +167,12 @@ void jwidget_init_theme(JWidget widget)
   assert_valid_widget(widget);
 
   if (widget->theme) {
-    if (!widget->draw_method)
-      widget->draw_method = jtheme_get_method(widget->theme, widget->draw_type);
+    widget->theme->init_widget(widget);
 
-    if (widget->theme->init_widget) {
-      (*widget->theme->init_widget)(widget);
+    if (!(widget->flags & JI_INITIALIZED))
+      widget->flags |= JI_INITIALIZED;
 
-      if (!(widget->flags & JI_INITIALIZED))
-	widget->flags |= JI_INITIALIZED;
-
-      jwidget_emit_signal(widget, JI_SIGNAL_INIT_THEME);
-    }
+    jwidget_emit_signal(widget, JI_SIGNAL_INIT_THEME);
   }
 }
 
@@ -243,20 +228,6 @@ void *jwidget_get_data(JWidget widget, int type)
   }
 
   return NULL;
-}
-
-void _jwidget_add_hook(JWidget widget, JHook hook)
-{
-  assert_valid_widget(widget);
-
-  jlist_prepend(widget->hooks, hook);
-}
-
-void _jwidget_remove_hook(JWidget widget, JHook hook)
-{
-  assert_valid_widget(widget);
-
-  jlist_remove(widget->hooks, hook);
 }
 
 /**********************************************************************/
@@ -821,8 +792,8 @@ JRegion jwidget_get_region(JWidget widget)
 
   assert_valid_widget(widget);
 
-  if ((widget->type == JI_WINDOW) && (widget->theme->get_window_mask))
-    region = (*widget->theme->get_window_mask)(widget);
+  if (widget->type == JI_WINDOW)
+    region = widget->theme->get_window_mask(widget);
   else
     region = jregion_new(widget->rc, 1);
 
@@ -1359,6 +1330,9 @@ bool jwidget_send_message(JWidget widget, JMessage msg)
     SENDMSG();
   }
 
+  if (!done)
+    done = widget->msg_proc(msg);
+
   return done;
 }
 
@@ -1510,8 +1484,10 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 /**********************************************************************/
 /* widget message procedure */
 
-static bool widget_msg_proc(JWidget widget, JMessage msg)
+bool jwidget::msg_proc(JMessage msg)
 {
+  JWidget widget = this;
+
   assert(msg != NULL);
   assert_valid_widget(widget);
 
@@ -1529,10 +1505,7 @@ static bool widget_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_DRAW:
-      if (widget->draw_method) {
-	(*widget->draw_method)(widget, &msg->draw.rect);
-	return true;
-      }
+      // do nothing
       break;
 
     case JM_REQSIZE:

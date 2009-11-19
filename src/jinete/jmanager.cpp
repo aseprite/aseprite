@@ -192,7 +192,7 @@ JWidget jmanager_new()
     n_timers = 0;
   }
 
-  widget = jwidget_new(JI_MANAGER);
+  widget = new jwidget(JI_MANAGER);
 
   jwidget_add_hook(widget, JI_MANAGER, manager_msg_proc, NULL);
 

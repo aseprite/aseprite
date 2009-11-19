@@ -69,7 +69,7 @@ JWidget statusbar_new()
   BUTTON_NEW((name), NULL, (action));					\
   add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);
 
-  JWidget widget = jwidget_new(statusbar_type());
+  JWidget widget = new jwidget(statusbar_type());
   StatusBar *statusbar = jnew(StatusBar, 1);
 
   jwidget_add_hook(widget, statusbar_type(),

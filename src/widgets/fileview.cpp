@@ -91,7 +91,7 @@ static void monitor_free_thumbnail_generation(void *data);
 
 JWidget fileview_new(FileItem *start_folder, const jstring& exts)
 {
-  JWidget widget = jwidget_new(fileview_type());
+  JWidget widget = new jwidget(fileview_type());
   FileView* fileview = new FileView;
 
   if (!start_folder)

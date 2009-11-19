@@ -73,7 +73,7 @@ static void displace_widgets(JWidget widget, int x, int y);
 
 JWidget jview_new()
 {
-  JWidget widget = jwidget_new(JI_VIEW);
+  JWidget widget = new jwidget(JI_VIEW);
   View *view = jnew(View, 1);
 
   view->viewport = viewport_new();
@@ -374,6 +374,10 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
       }
       return true;
 
+    case JM_DRAW:
+      widget->theme->draw_view(widget, &msg->draw.rect);
+      return true;
+
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
       /* TODO add something to avoid this (theme specific stuff) */
@@ -391,7 +395,7 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
 
 static JWidget viewport_new()
 {
-  JWidget widget = jwidget_new(JI_VIEW_VIEWPORT);
+  JWidget widget = new jwidget(JI_VIEW_VIEWPORT);
 
   jwidget_add_hook(widget, JI_VIEW_VIEWPORT, viewport_msg_proc, NULL);
   jwidget_init_theme(widget);
@@ -410,6 +414,10 @@ static bool viewport_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SETPOS:
       viewport_set_position(widget, &msg->setpos.rect);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_view_viewport(widget, &msg->draw.rect);
       return true;
   }
 
@@ -468,7 +476,7 @@ static void viewport_set_position(JWidget widget, JRect rect)
 
 static JWidget scrollbar_new(int align)
 {
-  JWidget widget = jwidget_new(JI_VIEW_SCROLLBAR);
+  JWidget widget = new jwidget(JI_VIEW_SCROLLBAR);
 
   jwidget_add_hook(widget, JI_VIEW_SCROLLBAR, scrollbar_msg_proc, NULL);
   jwidget_set_align(widget, align);
@@ -601,6 +609,10 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       /* TODO add something to avoid this (theme specific stuff) */
       jwidget_invalidate(widget);
       break;
+
+    case JM_DRAW:
+      widget->theme->draw_view_scrollbar(widget, &msg->draw.rect);
+      return true;
   }
 
   return false;

@@ -269,7 +269,7 @@ bool jwindow_is_wantfocus(JWidget widget)
 
 static JWidget window_new(bool desktop, const char *text)
 {
-  JWidget widget = jwidget_new(JI_WINDOW);
+  JWidget widget = new jwidget(JI_WINDOW);
   Window *window = jnew(Window, 1);
 
   window->killer = NULL;
@@ -460,6 +460,10 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	return true;
       }
       break;
+
+    case JM_DRAW:
+      widget->theme->draw_window(widget, &msg->draw.rect);
+      return true;
 
   }
 

@@ -42,7 +42,7 @@ static bool preview_msg_proc(JWidget widget, JMessage msg);
  */
 JWidget preview_new(Effect *effect)
 {
-  JWidget widget = jwidget_new(preview_type());
+  JWidget widget = new jwidget(preview_type());
   Preview *preview = jnew(Preview, 1);
 
   preview->effect = effect;

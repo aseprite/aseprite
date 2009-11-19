@@ -200,7 +200,7 @@ void switch_between_animation_and_sprite_editor()
 
 static JWidget anieditor_new(const Sprite* sprite)
 {
-  JWidget widget = jwidget_new(anieditor_type());
+  JWidget widget = new jwidget(anieditor_type());
   AniEditor* anieditor = new AniEditor;
 
   anieditor->sprite = sprite;

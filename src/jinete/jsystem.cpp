@@ -258,12 +258,12 @@ int jmouse_set_cursor(int type)
     else {
       show_mouse(NULL);
 
-      if (theme->set_cursor) {
+      {
 	BITMAP *sprite;
 	int x = 0;
 	int y = 0;
 
-	sprite = (*theme->set_cursor)(type, &x, &y);
+	sprite = theme->set_cursor(type, &x, &y);
 	set_cursor(sprite, x, y);
       }
 

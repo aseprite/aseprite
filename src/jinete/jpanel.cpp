@@ -49,7 +49,7 @@ static void panel_set_position(JWidget widget, JRect rect);
 
 JWidget jpanel_new(int align)
 {
-  JWidget widget = jwidget_new(JI_PANEL);
+  JWidget widget = new jwidget(JI_PANEL);
   Panel *panel = jnew(Panel, 1);
 
   jwidget_add_hook(widget, JI_PANEL, panel_msg_proc, panel);
@@ -95,6 +95,10 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SETPOS:
       panel_set_position(widget, &msg->setpos.rect);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_panel(widget, &msg->draw.rect);
       return true;
 
     case JM_BUTTONPRESSED: 

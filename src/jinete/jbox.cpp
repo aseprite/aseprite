@@ -37,6 +37,7 @@
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
+#include "jinete/jtheme.h"
 
 static bool box_msg_proc(JWidget widget, JMessage msg);
 static void box_request_size(JWidget widget, int *w, int *h);
@@ -44,7 +45,7 @@ static void box_set_position(JWidget widget, JRect rect);
 
 JWidget jbox_new(int align)
 {
-  JWidget widget = jwidget_new(JI_BOX);
+  JWidget widget = new jwidget(JI_BOX);
 
   jwidget_add_hook(widget, JI_BOX, box_msg_proc, NULL);
   jwidget_set_align(widget, align);
@@ -55,7 +56,7 @@ JWidget jbox_new(int align)
 
 static bool box_msg_proc(JWidget widget, JMessage msg)
 {
-  switch(msg->type) {
+  switch (msg->type) {
 
     case JM_REQSIZE:
       box_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
@@ -64,6 +65,11 @@ static bool box_msg_proc(JWidget widget, JMessage msg)
     case JM_SETPOS:
       box_set_position(widget, &msg->setpos.rect);
       return true;
+
+    case JM_DRAW:
+      widget->theme->draw_box(widget, &msg->draw.rect);
+      return true;
+
   }
 
   return false;

@@ -90,7 +90,7 @@ JWidget editor_view_new()
 
 JWidget editor_new()
 {
-  JWidget widget = jwidget_new(editor_type());
+  JWidget widget = new jwidget(editor_type());
   Editor* editor = jnew0(Editor, 1);
 
   editor->widget = widget;

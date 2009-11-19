@@ -49,7 +49,7 @@ static void textbox_request_size(JWidget widget, int *w, int *h);
 
 JWidget jtextbox_new(const char *text, int align)
 {
-  JWidget widget = jwidget_new(JI_TEXTBOX);
+  JWidget widget = new jwidget(JI_TEXTBOX);
 
   jwidget_add_hook(widget, JI_TEXTBOX, textbox_msg_proc, NULL);
   jwidget_focusrest(widget, true);
@@ -67,6 +67,10 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       textbox_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_textbox(widget, &msg->draw.rect);
       return true;
 
     case JM_SIGNAL:

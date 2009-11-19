@@ -58,7 +58,7 @@ static void slider_setcursor(JWidget widget);
 
 JWidget jslider_new(int min, int max, int value)
 {
-  JWidget widget = jwidget_new(JI_SLIDER);
+  JWidget widget = new jwidget(JI_SLIDER);
   Slider *slider = jnew(Slider, 1);
 
   slider->min = min;
@@ -124,6 +124,10 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       slider_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
+      return true;
+
+    case JM_DRAW:
+      widget->theme->draw_slider(widget, &msg->draw.rect);
       return true;
 
     case JM_FOCUSENTER:

@@ -75,7 +75,7 @@ static void tab_free(Tab *tab);
 
 JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
 {
-  JWidget widget = jwidget_new(tabs_type());
+  JWidget widget = new jwidget(tabs_type());
   Tabs *tabs = jnew0(Tabs, 1);
 
   tabs->list_of_tabs = jlist_new();

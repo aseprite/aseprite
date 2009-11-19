@@ -37,41 +37,57 @@
 struct FONT;
 struct BITMAP;
 
-struct jtheme
+class jtheme
 {
-  const char *name;
-  struct FONT *default_font;
+public:
+  const char* name;
+  struct FONT* default_font;
   int desktop_color;
   int textbox_fg_color;
   int textbox_bg_color;
   int check_icon_size;
   int radio_icon_size;
   int scrollbar_size;
-  void (*destroy)();
-  void (*regen)();
-  struct BITMAP *(*set_cursor)(int type, int *focus_x, int *focus_y);
-  void (*init_widget)(JWidget widget);
-  JRegion (*get_window_mask)(JWidget widget);
-  void (*map_decorative_widget)(JWidget widget);
-  int (*color_foreground)();
-  int (*color_disabled)();
-  int (*color_face)();
-  int (*color_hotface)();
-  int (*color_selected)();
-  int (*color_background)();
-  int nmethods;
-  JDrawFunc *methods;
+
+  jtheme();
+  virtual ~jtheme();
+
+  virtual void regen() = 0;
+  virtual BITMAP* set_cursor(int type, int *focus_x, int *focus_y) = 0;
+  virtual void init_widget(JWidget widget) = 0;
+  virtual JRegion get_window_mask(JWidget widget) = 0;
+  virtual void map_decorative_widget(JWidget widget) = 0;
+
+  virtual int color_foreground() = 0;
+  virtual int color_disabled() = 0;
+  virtual int color_face() = 0;
+  virtual int color_hotface() = 0;
+  virtual int color_selected() = 0;
+  virtual int color_background() = 0;
+
+  virtual void draw_box(JWidget widget, JRect clip) = 0;
+  virtual void draw_button(JWidget widget, JRect clip) = 0;
+  virtual void draw_check(JWidget widget, JRect clip) = 0;
+  virtual void draw_entry(JWidget widget, JRect clip) = 0;
+  virtual void draw_grid(JWidget widget, JRect clip) = 0;
+  virtual void draw_label(JWidget widget, JRect clip) = 0;
+  virtual void draw_listbox(JWidget widget, JRect clip) = 0;
+  virtual void draw_listitem(JWidget widget, JRect clip) = 0;
+  virtual void draw_menu(JWidget widget, JRect clip) = 0;
+  virtual void draw_menuitem(JWidget widget, JRect clip) = 0;
+  virtual void draw_panel(JWidget widget, JRect clip) = 0;
+  virtual void draw_radio(JWidget widget, JRect clip) = 0;
+  virtual void draw_separator(JWidget widget, JRect clip) = 0;
+  virtual void draw_slider(JWidget widget, JRect clip) = 0;
+  virtual void draw_textbox(JWidget widget, JRect clip) = 0;
+  virtual void draw_view(JWidget widget, JRect clip) = 0;
+  virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;
+  virtual void draw_view_viewport(JWidget widget, JRect clip) = 0;
+  virtual void draw_window(JWidget widget, JRect clip) = 0;
+
 };
 
-JTheme jtheme_new();
 JTheme jtheme_new_standard();
-JTheme jtheme_new_simple();
-void jtheme_free(JTheme theme);
-
-void jtheme_set_method(JTheme theme, int widget_type, JDrawFunc draw_widget);
-JDrawFunc jtheme_get_method(JTheme theme, int widget_type);
-
-/* current theme handle */
 
 void ji_set_theme(JTheme theme);
 void ji_set_standard_theme();

@@ -41,7 +41,7 @@ static bool separator_msg_proc(JWidget widget, JMessage msg);
 
 JWidget ji_separator_new(const char *text, int align)
 {
-  JWidget widget = jwidget_new(JI_SEPARATOR);
+  JWidget widget = new jwidget(JI_SEPARATOR);
 
   jwidget_add_hook(widget, JI_SEPARATOR, separator_msg_proc, NULL);
   jwidget_set_align(widget, align);
@@ -77,6 +77,10 @@ static bool separator_msg_proc(JWidget widget, JMessage msg)
       msg->reqsize.h = widget->border_width.t + max_h + widget->border_width.b;
       return true;
     }
+
+    case JM_DRAW:
+      widget->theme->draw_separator(widget, &msg->draw.rect);
+      return true;
   }
 
   return false;
