@@ -176,12 +176,11 @@ jstandard_theme::~jstandard_theme()
 
 void jstandard_theme::regen()
 {
-  JTheme theme = ji_get_theme();
   int c, cmap[8], mask_cmap[2];
 
-  theme->desktop_color = COLOR_DISABLED;
-  theme->textbox_fg_color = COLOR_FOREGROUND;
-  theme->textbox_bg_color = COLOR_BACKGROUND;
+  this->desktop_color = COLOR_DISABLED;
+  this->textbox_fg_color = COLOR_FOREGROUND;
+  this->textbox_bg_color = COLOR_BACKGROUND;
 
   /* fixup cursors */
 
