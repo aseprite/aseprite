@@ -76,4 +76,6 @@ void jmanager_add_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter(int message, JWidget widget);
 void jmanager_remove_msg_filter_for(JWidget widget);
 
+void jmanager_invalidate_region(JWidget widget, JRegion region);
+
 #endif

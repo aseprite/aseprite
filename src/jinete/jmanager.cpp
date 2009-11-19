@@ -115,7 +115,6 @@ static bool manager_msg_proc(JWidget widget, JMessage msg);
 static void manager_request_size(JWidget widget, int *w, int *h);
 static void manager_set_position(JWidget widget, JRect rect);
 static void manager_pump_queue(JWidget widget);
-static void manager_redraw_region(JWidget widget, JRegion region);
 
 /* auxiliary */
 static void generate_setcursor_message();
@@ -1079,10 +1078,6 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       manager_set_position(widget, &msg->setpos.rect);
       return true;
 
-    case JM_DRAWRGN:
-      manager_redraw_region(widget, msg->drawrgn.region);
-      return true;
-
     case JM_DRAW:
       jdraw_rectfill(&msg->draw.rect, widget->theme->desktop_color);
       return true;
@@ -1298,7 +1293,7 @@ static void manager_pump_queue(JWidget widget_manager)
   }
 }
 
-static void manager_redraw_region(JWidget widget, JRegion region)
+void jmanager_invalidate_region(JWidget widget, JRegion region)
 {
   JWidget window;
   JRegion reg1 = jregion_new(NULL, 0);
@@ -1313,8 +1308,8 @@ static void manager_redraw_region(JWidget widget, JRegion region)
   JI_LIST_FOR_EACH(widget->children, link) {
     window = (JWidget)link->data;
 
-    /* redraw this window */
-    jwidget_redraw_region(window, reg1);
+    // invalidate regions of this window
+    jwidget_invalidate_region(window, reg1);
 
     /* there is desktop? */
     if (jwindow_is_desktop(window))
@@ -1327,13 +1322,9 @@ static void manager_redraw_region(JWidget widget, JRegion region)
     jregion_free(reg3);
   }
 
-  /* clean areas outside windows (only for non-desktop enviroments) */
-  if (link == widget->children->end) {
-    JMessage msg = jmessage_new(JM_DRAWRGN);
-    msg->drawrgn.region = reg1;
-    jwidget_send_message_after_type(widget, msg, JI_MANAGER);
-    jmessage_free(msg);
-  }
+  // invalidate areas outside windows (only when there are not a desktop window)
+  if (link == widget->children->end)
+    jwidget_invalidate_region(widget, reg1);
 
   jregion_free(reg1);
   jregion_free(reg2);

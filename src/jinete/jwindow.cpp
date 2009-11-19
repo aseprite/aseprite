@@ -614,7 +614,6 @@ static void limit_size(JWidget widget, int *w, int *h)
   *h = MAX(*h, widget->border_width.t+widget->border_width.b);
 }
 
-/* TODO add support to blit available regions */
 static void move_window(JWidget widget, JRect rect, bool use_blit)
 {
 #define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
@@ -719,8 +718,8 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
     jregion_free(moveable_region);
   }
 
-  jwidget_redraw_region(manager, manager_refresh_region);
-  jwidget_redraw_region(widget, window_refresh_region);
+  jmanager_invalidate_region(manager, manager_refresh_region);
+  jwidget_invalidate_region(widget, window_refresh_region);
 
   jregion_free(old_drawable_region);
   jregion_free(new_drawable_region);

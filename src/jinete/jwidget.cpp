@@ -1162,22 +1162,6 @@ void jwidget_flush_redraw(JWidget widget)
     jwidget_flush_redraw((JWidget)link->data);
 }
 
-void jwidget_redraw_region(JWidget widget, const JRegion region)
-{
-  assert_valid_widget(widget);
-
-  if (jwidget_is_visible(widget)) {
-#if 1
-    JMessage msg = jmessage_new(JM_DRAWRGN);
-    msg->drawrgn.region = region;
-    jwidget_send_message(widget, msg);
-    jmessage_free(msg);
-#else
-    jwidget_invalidate_region(widget, region);
-#endif
-  }
-}
-
 void jwidget_invalidate(JWidget widget)
 {
   assert_valid_widget(widget);
@@ -1332,32 +1316,6 @@ bool jwidget_send_message(JWidget widget, JMessage msg)
 
   if (!done)
     done = widget->msg_proc(msg);
-
-  return done;
-}
-
-bool jwidget_send_message_after_type(JWidget widget, JMessage msg, int type)
-{
-  bool done = false;
-  bool send = false;
-  JHook hook;
-  JLink link;
-
-  assert_valid_widget(widget);
-  assert(msg != NULL);
-
-  JI_LIST_FOR_EACH(widget->hooks, link) {
-    hook = reinterpret_cast<JHook>(link->data);
-
-    if (hook->type == type) {
-      send = true;
-      continue;
-    }
-    else if (!send)
-      continue;
-
-    SENDMSG();
-  }
 
   return done;
 }
@@ -1527,58 +1485,6 @@ bool jwidget::msg_proc(JMessage msg)
       jrect_free(cpos);
       return true;
     }
-
-    case JM_DRAWRGN:
-#if 0
-      {
-	int redraw = false;
-	JRegion region2;
-	JMessage msg2;
-	JRect rect;
-	JLink link;
-	int count;
-
-	for (it=msg->drawrgn.region->rects; it; it=it->next) {
-	  rect = it->data;
-	  if ((widget->rc->x <= rect->x+rect->w-1) &&
-	      (widget->rc->y <= rect->y+rect->h-1) &&
-	      (widget->rc->x+widget->rc->w-1 >= rect->x) &&
-	      (widget->rc->y+widget->rc->h-1 >= rect->y)) {
-	    redraw = true;
-	    break;
-	  }
-	}
-
-	if (redraw) {
-	  /* get areas to draw */
-	  region2 = jwidget_get_drawable_region(widget, 0);
-	  jregion_intersect2 (region2, msg->drawrgn.region);
-
-	  /* draw the widget */
-	  count = jlist_length(region2->rects);
-	  for (it=region2->rects; it; it=it->next) {
-	    /* create the draw message */
-	    msg2 = jmessage_new(JM_DRAW);
-	    msg2->draw.count = --count;
-	    jrect_copy(&msg2->draw.rect, (JRect)it->data);
-	    jmessage_add_dest(msg2, widget);
-
-	    /* enqueue message */
-	    jmanager_enqueue_message(msg2);
-	  }
-
-	  jregion_free(region2);
-
-	  /* send message to children */
-	  JI_LIST_FOR_EACH(widget->children, link)
-	    jwidget_send_message((JWidget)link->data, msg);
-	}
-      }
-#else
-      if (!(widget->flags & JI_HIDDEN)) /* is visible? */
-	jwidget_invalidate_region(widget, msg->drawrgn.region);
-#endif
-      return true;
 
     case JM_DIRTYCHILDREN: {
       JLink link;

@@ -152,7 +152,6 @@ void jwidget_set_theme(JWidget widget, JTheme theme);
 /* drawing methods */
 
 void jwidget_flush_redraw(JWidget widget);
-void jwidget_redraw_region(JWidget widget, const JRegion region);
 void jwidget_invalidate(JWidget widget);
 void jwidget_invalidate_rect(JWidget widget, const JRect rect);
 void jwidget_invalidate_region(JWidget widget, const JRegion region);
@@ -168,7 +167,6 @@ bool jwidget_emit_signal(JWidget widget, int signal_num);
 /* manager handler */
 
 bool jwidget_send_message(JWidget widget, JMessage msg);
-bool jwidget_send_message_after_type(JWidget widget, JMessage msg, int type);
 void jwidget_close_window(JWidget widget);
 void jwidget_capture_mouse(JWidget widget);
 void jwidget_hard_capture_mouse(JWidget widget);

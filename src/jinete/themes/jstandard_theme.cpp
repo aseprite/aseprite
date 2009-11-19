@@ -1251,13 +1251,14 @@ void jstandard_theme::draw_window(JWidget widget, JRect clip)
 
   /* extra lines */
   if (!jwindow_is_desktop(widget)) {
+    // draw window borders
     jdraw_rect(pos, COLOR_FOREGROUND);
     jrect_shrink(pos, 1);
     jdraw_rectedge(pos, COLOR_BACKGROUND, COLOR_DISABLED);
     jrect_shrink(pos, 1);
     jdraw_rectfill(pos, BGCOLOR);
 
-    /* draw title bar */
+    // draw title bar
     if (widget->has_text()) {
       int bg = COLOR_SELECTED;
 

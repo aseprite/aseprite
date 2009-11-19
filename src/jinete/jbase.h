@@ -150,7 +150,6 @@ enum {
   JM_REQSIZE,			/* request size */
   JM_SETPOS,			/* set position */
   JM_WINMOVE,			/* window movement */
-  JM_DRAWRGN,			/* redraw region */
   JM_DEFERREDFREE,		/* deferred jwidget_free call */
   JM_DIRTYCHILDREN,		/* dirty children */
   JM_QUEUEPROCESSING,		/* only sent to manager which indicate
