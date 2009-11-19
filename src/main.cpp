@@ -23,6 +23,7 @@
 
 #include "ase_exception.h"
 #include "core/app.h"
+#include "loadpng.h"
 
 //////////////////////////////////////////////////////////////////////
 // Information for "ident".
@@ -40,6 +41,9 @@ public:
     allegro_init();
     set_uformat(U_ASCII);
     install_timer();
+
+    // Register PNG as a supported bitmap type
+    register_bitmap_file_type("png", load_png, save_png);
   }
   ~Allegro() {
     remove_timer();

@@ -305,7 +305,7 @@ static void select_all_command(JWidget widget)
 static void load_command(JWidget widget)
 {
   Palette *palette;
-  jstring filename = ase_file_selector(_("Load Palette"), "", "pcx,bmp,tga,lbm,col");
+  jstring filename = ase_file_selector(_("Load Palette"), "", "png,pcx,bmp,tga,lbm,col");
   if (!filename.empty()) {
     palette = palette_load(filename.c_str());
     if (!palette) {
@@ -324,7 +324,7 @@ static void save_command(JWidget widget)
   int ret;
 
  again:
-  filename = ase_file_selector(_("Save Palette"), "", "pcx,bmp,tga,col");
+  filename = ase_file_selector(_("Save Palette"), "", "png,pcx,bmp,tga,col");
   if (!filename.empty()) {
     if (exists(filename.c_str())) {
       ret = jalert("%s<<%s<<%s||%s",

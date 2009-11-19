@@ -1,0 +1,165 @@
+------- April 1999 -------
+
+??	Wrote load_png wrapper
+
+??+1	Cleaned up a bit, tried getting grayscale and
+	auto-MagicPink conversion working.
+
+9	Now can read gamma from environment variable.
+	Changed default gamma to 2.2.
+
+13	Added save_png, using pieces from allpng.c
+
+15	Fixed stupid bug I created in save_hicolour.
+	Added copyright notice.
+	Now uses packfile routines.
+	Added #ifdef __cplusplus hack.
+	Released: version 0.1.
+	
+------- December 1999 -------
+
+22	Updated to work with Allegro 3.9.xx.
+	Fixed alpha channel support.
+	Added alpha.c
+	test.c renamed to example.c
+	Released: version 0.2
+
+------- January 1999 -------
+
+3	Applied fix for < 8 bpp images (thanks to Dave Dribin)
+	Released: version 0.3
+	
+------- October 2000 -------
+
+12	Updated const-correctness in accordance with Allegro.
+	Released: version 0.4
+
+------- April 2001 -------
+
+11	"Fixed" RGB/BGR problem with loading RGBA images.
+	Use GFX_AUTODETECT in examples (GFX_SAFE changed in Allegro).
+	Released: version 0.5
+
+------- July 2001 -------
+
+13	Reverted to 0.4 codebase, as 0.5 was really broken (oops).
+	Added "depth" argument to examples.
+	Commented out the BGR flipping code, which was incorrect I think
+	  anyway.  Someone with a BGR card should check it out.
+	Released: version 0.6
+
+------- January 2002 -------
+
+03	allegro/aintern.h -> allegro/internal/aintern.h (Allegro 4.0)
+	Released: version 0.7
+
+------- February 2002 -------
+
+25	Fixed a problem with passing NULL for pal to load_png.
+	Released: version 0.8
+
+------- March 2002 -------
+
+30	Tentative fixes for loading/saving RGBA images.
+	  Thanks to Chris Graham for reporting the problem.
+	Minor changes to examples and makefile.
+
+------- May 2002 -------
+
+06	Added shared library (unix) and install support into makefiles, 
+	  and cleaned them up.  Thanks to Robbert Haarman for the start.
+	Minor changes for -W warnings.
+
+07	Dave Dribin fixed a problem that surfaced with some buggy versions
+	  of libpng (1.0.13, 1.2.2).
+	Moved the thanks section into a separate document.
+
+08	Fixed a puny mistake in the makefile.
+
+12	Released: version 0.9
+
+16	Tentative fixes for sometimes-problems loading RGB images.
+
+19	Released: version 0.10
+
+------- September 2002 -------
+
+03	Dave Dribin fixed two problems with images with alpha channels.
+
+04	Released: version 0.11
+
+------- April 2003 -------
+
+27	Mostly incorporated Ceniza's changes (load_memory_png and loading
+	  from datafile support, plus an example).
+
+28	Reworked those changes a little.
+
+------- May 2003 -------
+
+02	Miscellaneous changes; put examples into separate directory
+	  (now that we have three!).
+
+04	Signal errors on read/write failure.
+	Released: version 1.0.
+
+20	Calling load_png with NULL for palette argument was not converting
+	  paletted images to high/truecolour properly.  Fixed.  Thanks to
+	  Lothar May for pointing it out.
+	Released: version 1.1.
+
+------- October 2003 -------
+
+13	Changed the method of scaling of palette values from 6 bits
+	  to 8 bits.  Instead of just multiplying by 4, now we use
+	  _rgb_scale_6[] so that e.g. 0 -> 0, but 63 -> 255.
+	  Thanks Nicolas Lemal for the idea.
+	Released: version 1.2.
+
+16	MSVC doesn't like pointer arithmetic on void*'s, pointed out by
+	  Chris Condrat.
+	Re-released: version 1.2 (I forgot to update version constants anyway).
+
+------- April 2004 -------
+
+26	Jon Rafkind suggested to use _getpixel*/_putpixel* in loader to
+	  speed up loading of large images.
+	Split up the code into three files.  This prevents the linker pulling
+	  in unused code, e.g. many people don't need save_png.
+
+28	It turns out that loadpng's origin (example.c from libpng docs) was in
+	  the public domain, so now loadpng is in the public domain as well.
+	Released: version 1.3.
+
+------- October 2004 -------
+
+09	Made save_png handle non-memory bitmaps as well.
+
+10	Fixed some bugs with load_png().  Now everything in PngSuite loads
+	  properly, and with correct gamma correction, except for:
+	  - bKGD chunks (solid background colours) are not respected.
+            I chose this in the past, but I wonder if I should change it?
+	  - pHYs chunks (physical dimensions) are not respected.
+	  (BTW, this was all tested with Valgrind - no errors)
+
+	_png_screen_gamma can now be 0.0 to disable gamma correction, i.e. if
+	  you don't know the screen gamma, it might be best not to guess.
+
+	Got rid of inefficient BGR-handling hack and did things properly.
+
+	New example: browse.c (for mass testing, e.g. PngSuite)
+
+	Released: version 1.4pre1.
+
+------- August 2005 -------
+
+18	Emmanuel Anne made _png_compression_level actually work.
+
+	Released: version 1.4.
+
+------- April 2006 -------
+
+9	Fix an endianness on big-endian machines, from Siarhei Siamashka.
+	I haven't tested it.
+
+	Released: version 1.5.

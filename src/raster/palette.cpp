@@ -311,7 +311,8 @@ Palette* palette_load(const char *filename)
 
   ustrcpy(ext, get_extension(filename));
 
-  if ((ustricmp(ext, "pcx") == 0) ||
+  if ((ustricmp(ext, "png") == 0) ||
+      (ustricmp(ext, "pcx") == 0) ||
       (ustricmp(ext, "bmp") == 0) ||
       (ustricmp(ext, "tga") == 0) ||
       (ustricmp(ext, "lbm") == 0)) {
@@ -340,7 +341,8 @@ bool palette_save(Palette* pal, const char *filename)
 
   ustrcpy(ext, get_extension(filename));
 
-  if ((ustricmp(ext, "pcx") == 0) ||
+  if ((ustricmp(ext, "png") == 0) ||
+      (ustricmp(ext, "pcx") == 0) ||
       (ustricmp(ext, "bmp") == 0) ||
       (ustricmp(ext, "tga") == 0)) {
     PALETTE rgbpal;

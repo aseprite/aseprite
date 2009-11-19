@@ -467,6 +467,20 @@ ZLIB_OBJS = $(addprefix $(OBJ_DIR)/zlib.,		\
 		$(notdir $(basename $(ZLIB_SOURCES)))))
 
 ######################################################################
+# loadpng
+
+LOADPNG_LIB = $(OBJ_DIR)/libloadpng$(LIB_EXT)
+LOADPNG_DIR = third_party/loadpng
+LOADPNG_SOURCES =					\
+	$(LOADPNG_DIR)/loadpng.c			\
+	$(LOADPNG_DIR)/savepng.c			\
+	$(LOADPNG_DIR)/regpng.c
+
+LOADPNG_OBJS = $(addprefix $(OBJ_DIR)/loadpng.,		\
+		 $(addsuffix $(OBJ),			\
+		   $(notdir $(basename $(LOADPNG_SOURCES)))))
+
+######################################################################
 # All objects and libraries
 
 ALL_OBJS =					\
@@ -475,14 +489,16 @@ ALL_OBJS =					\
 	$(LIBART_OBJS)				\
 	$(LIBJPEG_OBJS)				\
 	$(LIBPNG_OBJS)				\
-	$(ZLIB_OBJS)
+	$(ZLIB_OBJS)				\
+	$(LOADPNG_OBJS)
 
 THIRD_PARTY_LIBS =				\
 	$(LIBART_LIB)				\
 	$(LIBFREETYPE_LIB)			\
 	$(LIBJPEG_LIB)				\
 	$(LIBPNG_LIB)				\
-	$(ZLIB_LIB)
+	$(ZLIB_LIB)				\
+	$(LOADPNG_LIB)
 
 ######################################################################
 # Tests

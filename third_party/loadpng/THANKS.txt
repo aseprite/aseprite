@@ -1,0 +1,16 @@
+Peter Wang is me.
+
+Thanks to Martijn Versteegh for allpng.c, from which I took the actual
+routine which saves 15 / 16 bpp images.
+
+The following people reported or fixed bugs or did something else
+(assuming I didn't forget):
+
+- Dave Dribin
+- Lennart Steinke
+- Chris Graham
+- Robbert Haarman
+- Ceniza
+- Nicolas Lemal
+- Jon Rafkind
+- Emmanuel Anne

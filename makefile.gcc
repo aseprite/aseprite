@@ -6,12 +6,13 @@ _default: default
 ######################################################################
 # Setup CFLAGS and LFLAGS for GCC
 
-CFLAGS += -Wall -I. -Isrc -Ithird_party \
-	  -I$(LIBFREETYPE_DIR)/include \
-	  -I$(LIBJPEG_DIR) \
-	  -I$(LIBPNG_DIR) \
-	  -I$(ZLIB_DIR) \
-	  -Wno-deprecated-declarations \
+CFLAGS += -Wall -I. -Isrc -Ithird_party		\
+	  -I$(LIBFREETYPE_DIR)/include		\
+	  -I$(LIBJPEG_DIR)			\
+	  -I$(LIBPNG_DIR)			\
+	  -I$(ZLIB_DIR)				\
+	  -I$(LOADPNG_DIR)			\
+	  -Wno-deprecated-declarations		\
 	  -DPNG_NO_MMX_CODE
 
 LFLAGS += $(THIRD_PARTY_LIBS)
@@ -76,6 +77,10 @@ $(ZLIB_LIB): $(ZLIB_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
+$(LOADPNG_LIB): $(LOADPNG_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
 ######################################################################
 # Rules to build objects and the application
 
@@ -118,7 +123,8 @@ VPATH = src					\
 	$(LIBGD_DIR)				\
 	$(LIBJPEG_DIR)				\
 	$(LIBPNG_DIR)				\
-	$(ZLIB_DIR)
+	$(ZLIB_DIR)				\
+	$(LOADPNG_DIR)
 
 ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 
@@ -147,6 +153,9 @@ $(OBJ_DIR)/png.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -I$(LIBPNG_DIR) -o $@ -c $<
 
 $(OBJ_DIR)/zlib.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/loadpng.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 ######################################################################
