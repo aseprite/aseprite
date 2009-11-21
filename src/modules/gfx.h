@@ -121,7 +121,8 @@ void draw_color_button(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
-		       bool hot, bool drag);
+		       bool hot, bool drag,
+		       int bg);
 void draw_progress_bar(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,
 		       float progress);

@@ -18,12 +18,12 @@
 
 #include "config.h"
 
-#include <list>
-#include <vector>
-#include <cassert>
 #include <algorithm>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
+#include <cassert>
+#include <list>
+#include <vector>
 
 #ifdef ALLEGRO_WINDOWS
 #include <winalleg.h>
@@ -32,7 +32,6 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
-#include "ui_context.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -49,12 +48,14 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
+#include "modules/skinneable_theme.h"
 #include "modules/tools.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 #include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
@@ -128,6 +129,7 @@ struct Monitor
 //////////////////////////////////////////////////////////////////////
 
 static JWidget manager = NULL;
+static JTheme ase_theme = NULL;
 
 static int monitor_timer = -1;
 static MonitorList* monitors = NULL;
@@ -281,7 +283,7 @@ int init_module_gui()
   jwidget_add_hook(manager, JI_WIDGET, manager_msg_proc, NULL);
 
   /* setup the standard jinete theme for widgets */
-  ji_set_standard_theme();
+  ji_set_theme(ase_theme = new SkinneableTheme());
 
   /* set hook to translate strings */
   ji_set_translation_hook(msgids_get);
@@ -348,6 +350,8 @@ void exit_module_gui()
   icon_buttons = NULL;
 
   jmanager_free(manager);
+  ji_set_theme(NULL);
+  delete ase_theme;
 
   remove_keyboard();
   remove_mouse();

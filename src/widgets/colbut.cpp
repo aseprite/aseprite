@@ -229,7 +229,7 @@ static void colorbutton_draw(JWidget widget)
      colorbutton->imgtype,
      colorbutton->color,
      jwidget_has_mouse(widget),
-     FALSE);
+     FALSE, ji_color_face());
 
   /* draw text */
   color_to_formalstring(colorbutton->imgtype,

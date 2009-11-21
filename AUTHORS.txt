@@ -5,6 +5,11 @@ AUTHORS
   David Capello <davidcapello@gmail.com>
   Programmer, designer, and maintainer.
 
+  Ilija Melentijevic
+  New GUI skin (from ASE 0.8).
+    http://ilkke.blogspot.com/
+    http://www.pixeljoint.com/p/9270.htm
+
   Trent Gamblin
   Mac OS X packager.
 
@@ -21,6 +26,7 @@ AUTHORS
     Elio Cuevas Gómez
     Emmanuel Rousseau (God_Cells)
     Hernán Echegoyemberry
+    Ilija Melentijevic (iLKke)
     Jon Rafkind (kazzmir)
     Jonathan Taylor
     Jorge Ramírez Flores

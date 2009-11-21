@@ -32,6 +32,7 @@
 #include "commands/command.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
+#include "modules/skinneable_theme.h"
 #include "modules/tools.h"
 #include "widgets/groupbut.h"
 #include "widgets/toolbar.h"
@@ -95,6 +96,9 @@ JWidget toolbar_new()
   jbutton_add_command(confbutton, conf_command);
 
   box->user_data[0] = tools;
+
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(box->theme);
+  box->bg_color(theme->get_panel_face_color());
 
   return box;
 }

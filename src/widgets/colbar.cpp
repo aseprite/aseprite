@@ -32,6 +32,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "modules/skinneable_theme.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
@@ -279,11 +280,13 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_DRAW: {
+      SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       int imgtype = app_get_current_image_type();
       int x1, y1, x2, y2, v1, v2;
       int c, h, beg, end;
+      int bg = theme->get_panel_face_color();
 
       get_info(widget, &beg, &end);
 
@@ -292,7 +295,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       x2 = x1 + jrect_w(widget->rc) - 1;
       y2 = y1 + jrect_h(widget->rc) - 1;
 
-      rectfill(doublebuffer, x1, y1, x2, y2, ji_color_face());
+      rectfill(doublebuffer, x1, y1, x2, y2, bg);
       ++x1, ++y1, --x2, --y2;
 
       h = (y2-y1+1-(4+FGBGSIZE*2+4));
@@ -308,7 +311,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 			  (c == colorbar->hot ||
 			   c == colorbar->hot_editing),
 			  (colorbar->hot_drag == c &&
-			   colorbar->hot_drag != colorbar->hot_drop));
+			   colorbar->hot_drag != colorbar->hot_drop),
+			  bg);
 	
 	if (color_equals(colorbar->fgcolor, colorbar->color[c])) {
 	  int neg = blackandwhite_neg(color_get_red(imgtype, colorbar->fgcolor),
@@ -338,7 +342,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 			(colorbar->hot         == HOTCOLOR_FGCOLOR ||
 			 colorbar->hot_editing == HOTCOLOR_FGCOLOR),
 			(colorbar->hot_drag == HOTCOLOR_FGCOLOR &&
-			 colorbar->hot_drag != colorbar->hot_drop));
+			 colorbar->hot_drag != colorbar->hot_drop), bg);
 
       /* draw background color */
       v1 = y2-4-FGBGSIZE+1;
@@ -348,7 +352,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 			(colorbar->hot         == HOTCOLOR_BGCOLOR ||
 			 colorbar->hot_editing == HOTCOLOR_BGCOLOR),
 			(colorbar->hot_drag == HOTCOLOR_BGCOLOR &&
-			 colorbar->hot_drag != colorbar->hot_drop));
+			 colorbar->hot_drag != colorbar->hot_drop),
+			bg);
 
       blit(doublebuffer, ji_screen, 0, 0,
 	   msg->draw.rect.x1,

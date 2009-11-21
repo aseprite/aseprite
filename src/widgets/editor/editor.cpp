@@ -35,6 +35,7 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
+#include "modules/skinneable_theme.h"
 #include "modules/palettes.h"
 #include "modules/tools.h"
 #include "raster/brush.h"
@@ -80,8 +81,13 @@ static void editor_update_candraw(JWidget widget);
 JWidget editor_view_new()
 {
   JWidget widget = jview_new();
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+  int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
+  int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
+  int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
+  int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
-  jwidget_set_border(widget, 3, 3, 3, 3);
+  jwidget_set_border(widget, l, t, r, b);
   jview_without_bars(widget);
   jwidget_add_hook(widget, JI_WIDGET, editor_view_msg_proc, NULL);
 
@@ -856,37 +862,12 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 	JWidget viewport = jview_get_viewport(widget);
 	JWidget child = reinterpret_cast<JWidget>(jlist_first_data(viewport->children));
 	JRect pos = jwidget_get_rect(widget);
-	int has_focus;
+	SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
 
-	if (child == current_editor)
-	  has_focus = TRUE;
-	else
-	  has_focus = FALSE;
-
-	if (has_focus) {
-	  /* 1st border */
-	  jdraw_rect(pos, ji_color_selected());
-
-	  /* 2nd border */
-	  jrect_shrink(pos, 1);
-	  jdraw_rect(pos, ji_color_selected());
-
-	  /* 3rd border */
-	  jrect_shrink(pos, 1);
-	  jdraw_rectedge(pos, ji_color_faceshadow(), ji_color_facelight());
-	}
-	else {
-	  /* 1st border */
-	  jdraw_rect(pos, ji_color_face());
-
-	  /* 2nd border */
-	  jrect_shrink(pos, 1);
-	  jdraw_rect(pos, ji_color_face());
-
-	  /* 3rd border */
-	  jrect_shrink(pos, 1);
-	  jdraw_rectedge(pos, ji_color_faceshadow(), ji_color_facelight());
-	}
+	theme->draw_bounds(pos->x1, pos->y1,
+			   pos->x2-1, pos->y2-1,
+			   (child == current_editor) ? PART_EDITOR_SELECTED_NW:
+						       PART_EDITOR_NORMAL_NW, false);
 
 	jrect_free(pos);
       }
@@ -921,6 +902,8 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW: {
+      SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+
       if (editor->old_cursor_thick == 0) {
 	editor->old_cursor_thick = editor->cursor_thick;
       }
@@ -932,8 +915,8 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
       if (!editor->sprite) {
 	JWidget view = jwidget_get_view(widget);
 	JRect vp = jview_get_viewport_position(view);
-	
-	jdraw_rectfill(vp, makecol(128, 128, 128));
+
+	jdraw_rectfill(vp, theme->get_editor_face_color());
 	draw_emptyset_symbol(vp, makecol(64, 64, 64));
 
 	jrect_free(vp);
@@ -953,14 +936,15 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	jrectexclude(ji_screen,
 		     widget->rc->x1, widget->rc->y1,
 		     widget->rc->x2-1, widget->rc->y2-1,
-		     x1-1, y1-1, x2+1, y2+1, makecol(128, 128, 128));
+		     x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
 
 	/* draw the sprite in the editor */
 	editor_draw_sprite(widget, 0, 0,
 			   editor->sprite->w-1, editor->sprite->h-1);
 
 	/* draw the sprite boundary */
-	rect(ji_screen, x1-1, y1-1, x2+1, y2+1, makecol(0, 0, 0));
+	rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
+	hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
 
 	/* draw the grid */
 	if (get_view_grid())
@@ -1233,7 +1217,9 @@ static bool editor_msg_proc(JWidget widget, JMessage msg)
 	  int dz = jmouse_z(1) - jmouse_z(0);
 
 	  /* with the ALT */
-	  if (has_only_shifts(msg, KB_ALT_FLAG)) {
+	  if (!(msg->any.shifts & (KB_SHIFT_FLAG |
+				   KB_ALT_FLAG |
+				   KB_CTRL_FLAG))) {
 	    JWidget view = jwidget_get_view(widget);
 	    JRect vp = jview_get_viewport_position(view);
 	    int x, y, zoom;

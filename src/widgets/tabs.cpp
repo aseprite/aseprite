@@ -26,21 +26,29 @@
 
 #include "modules/gfx.h"
 #include "modules/gui.h"
+#include "modules/skinneable_theme.h"
 #include "widgets/tabs.h"
 
-#define CALC_TAB_WIDTH(widget, tab)			\
-  (4 + text_length(widget->font(), tab->text) + 4)
+#define CALC_TAB_WIDTH(widget, tab)				\
+  (4 + text_length(widget->font(), tab->text.c_str()) + 4)
 
 #define ARROW_W		12
 
 #define HAS_ARROWS ((jwidget_get_parent(tabs->button_left) == widget))
 
-typedef struct Tab
+struct Tab
 {
-  char *text;
+  std::string text;
   void *data;
   int width;
-} Tab;
+
+  Tab(const char* text, void* data)
+  {
+    this->text = text;
+    this->data = data;
+    this->width = 0;
+  }
+};
 
 typedef struct Tabs
 {
@@ -65,9 +73,6 @@ static void make_tab_visible(JWidget widget, Tab *tab);
 static void set_scroll_x(JWidget widget, int scroll_x);
 static void calculate_hot(JWidget widget);
 static void draw_bevel_box(JRect box, int c1, int c2, int bottom);
-
-static Tab *tab_new(const char *text, void *data);
-static void tab_free(Tab *tab);
 
 /**************************************************************/
 /* Tabs                                                       */
@@ -110,7 +115,7 @@ JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
 void tabs_append_tab(JWidget widget, const char *text, void *data)
 {
   Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  Tab *tab = tab_new(text, data);
+  Tab *tab = new Tab(text, data);
   tab->width = CALC_TAB_WIDTH(widget, tab);
 
   jlist_append(tabs->list_of_tabs, tab);
@@ -128,7 +133,7 @@ void tabs_remove_tab(JWidget widget, void *data)
 
   if (tab) {
     jlist_remove(tabs->list_of_tabs, tab);
-    tab_free(tab);
+    delete tab;
 
     /* update scroll (in the same position if we can */
     set_scroll_x(widget, tabs->scroll_x);
@@ -143,12 +148,8 @@ void tabs_set_text_for_tab(JWidget widget, const char *text, void *data)
   Tab *tab = get_tab_by_data(widget, data);
 
   if (tab) {
-    /* free old text */
-    if (tab->text)
-      jfree(tab->text);
-
     /* change text of the tab */
-    tab->text = jstrdup(text);
+    tab->text = text;
     tab->width = CALC_TAB_WIDTH(widget, tab);
 
     /* make it visible (if it's the selected) */
@@ -192,6 +193,7 @@ static int tabs_type()
 static bool tabs_msg_proc(JWidget widget, JMessage msg)
 {
   Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
 
   switch (msg->type) {
 
@@ -199,7 +201,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       JLink link;
 
       JI_LIST_FOR_EACH(tabs->list_of_tabs, link)
-	tab_free(reinterpret_cast<Tab*>(link->data));
+	delete reinterpret_cast<Tab*>(link->data); // tab
 
       jwidget_free(tabs->button_left);
       jwidget_free(tabs->button_right);
@@ -212,8 +214,10 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_REQSIZE:
-      msg->reqsize.w =
-	msg->reqsize.h = 4 + jwidget_get_text_height(widget) + 5;
+      msg->reqsize.w = 0; // msg->reqsize.h = 4 + jwidget_get_text_height(widget) + 5;
+      msg->reqsize.h =
+	theme->get_part(PART_TAB_FILLER)->h +
+	theme->get_part(PART_TAB_BOTTOM_NORMAL)->h;
       return TRUE;
 
     case JM_SETPOS:
@@ -223,62 +227,67 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DRAW: {
       JRect rect = jwidget_get_rect(widget);
-      JRect box = jrect_new(rect->x1-tabs->scroll_x, rect->y1, 0, rect->y2-1);
+      JRect box = jrect_new(rect->x1-tabs->scroll_x, rect->y1,
+			    rect->x1-tabs->scroll_x+2, rect->y1+theme->get_part(PART_TAB_FILLER)->h);
       JLink link;
+
+      theme->draw_hline(box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
+      theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+
+      box->x1 = box->x2;
 
       /* for each tab */
       JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
 	Tab* tab = reinterpret_cast<Tab*>(link->data);
-	int fg, face, bottom;
 
 	box->x2 = box->x1 + tab->width;
 
 	/* is the tab inside the bounds of the widget? */
 	if (box->x1 < rect->x2 && box->x2 > rect->x1) {
+	  int text_color;
+	  int face_color;
+
 	  /* selected */
 	  if (tabs->selected == tab) {
-	    fg = ji_color_background();
-	    face = ji_color_selected();
-	    bottom = face;
+	    text_color = theme->get_tab_selected_text_color();
+	    face_color = theme->get_tab_selected_face_color();
 	  }
 	  /* non-selected */
 	  else {
-	    fg = ji_color_foreground();
-	    face = tabs->hot == tab ? ji_color_hotface():
-				      ji_color_face();
-	    bottom = ji_color_facelight();
+	    text_color = theme->get_tab_normal_text_color();
+	    face_color = theme->get_tab_normal_face_color();
 	  }
 
-	  hline(ji_screen, box->x1, box->y1, box->x2-1, widget->bg_color());
-	  rectfill(ji_screen, box->x1+1, box->y1+1, box->x2-2, box->y2-1, face);
-	  hline(ji_screen, box->x1, rect->y2-1, box->x2-1, ji_color_selected());
+	  theme->draw_bounds(box->x1, box->y1, box->x2-1, box->y2-1,
+			     (tabs->selected == tab) ? PART_TAB_SELECTED_NW:
+						       PART_TAB_NORMAL_NW, face_color);
 
-	  draw_bevel_box(box,
-			 ji_color_facelight(),
-			 ji_color_faceshadow(),
-			 bottom);
-
-	  jdraw_text(widget->font(), tab->text,
+	  if (tabs->selected == tab)
+	    theme->draw_bounds(box->x1, box->y2, box->x2-1, rect->y2-1,
+			       PART_TAB_BOTTOM_SELECTED_NW,
+			       theme->get_tab_selected_face_color());
+	  else
+	    theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+	  
+	  jdraw_text(widget->font(), tab->text.c_str(),
 		     box->x1+4,
 		     (box->y1+box->y2)/2-text_height(widget->font())/2,
-		     fg, face, FALSE);
+		     text_color, face_color, false);
 	}
+
+	box->x1 = box->x2;
+	box->x2 = box->x1 + theme->get_part(PART_TAB_FILLER_SEPARATOR)->w;
+
+	theme->draw_hline(box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER_SEPARATOR);
+	theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 
 	box->x1 = box->x2;
       }
 
       /* fill the gap to the right-side */
       if (box->x1 < rect->x2) {
-	rectfill(ji_screen, box->x1, rect->y1, rect->x2-1, rect->y2-3,
-		 widget->bg_color());
-	hline(ji_screen, box->x1, rect->y2-2, rect->x2-1, ji_color_facelight());
-	hline(ji_screen, box->x1, rect->y2-1, rect->x2-1, ji_color_selected());
-      }
-
-      /* draw bottom lines below the arrow-buttons */
-      if (HAS_ARROWS) {
-	hline(ji_screen, box->x1, rect->y2-2, rect->x2-1, ji_color_facelight());
-	hline(ji_screen, box->x1, rect->y2-1, rect->x2-1, ji_color_selected());
+	theme->draw_hline(box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
+	theme->draw_hline(box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
       }
 
       jrect_free(rect);
@@ -531,28 +540,4 @@ static void draw_bevel_box(JRect box, int c1, int c2, int bottom)
   hline(ji_screen, box->x1, box->y2-1, box->x2-1, bottom); /* bottom */
   vline(ji_screen, box->x1, box->y1+1, box->y2-2, c1);	   /* left */
   vline(ji_screen, box->x2-1, box->y1+1, box->y2-2, c2);   /* right */
-}
-
-/**************************************************************/
-/* Tab                                                        */
-/**************************************************************/
-
-static Tab *tab_new(const char *text, void *data)
-{
-  Tab *tab = jnew0(Tab, 1);
-  if (!tab)
-    return NULL;
-
-  tab->text = jstrdup(text);
-  tab->data = data;
-  tab->width = 0;
-
-  return tab;
-}
-
-static void tab_free(Tab *tab)
-{
-  if (tab->text)
-    jfree(tab->text);
-  jfree(tab);
 }

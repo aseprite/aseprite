@@ -167,6 +167,7 @@ COMMON_SOURCES =					\
 	src/modules/palettes.cpp			\
 	src/modules/recent.cpp				\
 	src/modules/rootmenu.cpp			\
+	src/modules/skinneable_theme.cpp		\
 	src/modules/tools.cpp				\
 	src/raster/algo.cpp				\
 	src/raster/algofill.cpp				\

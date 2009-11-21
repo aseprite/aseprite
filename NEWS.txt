@@ -5,8 +5,7 @@ NEWS
 0.8
 ---
 
-+ Internal refactoring of commands to support record/play macros in
-  the near future.
++ New ASE skin created by Ilija Melentijevic.
 
 0.7.2
 -----

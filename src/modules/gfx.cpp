@@ -541,9 +541,9 @@ void draw_color_button(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,
 		       int b0, int b1, int b2, int b3,
 		       int imgtype, color_t color,
-		       bool hot, bool drag)
+		       bool hot, bool drag,
+		       int bg)
 {
-  int face = ji_color_face();
   int fore = ji_color_foreground();
 
   draw_color(bmp, x1, y1, x2, y2, imgtype, color);
@@ -571,26 +571,26 @@ void draw_color_button(BITMAP* bmp,
   }
 
   if (b0) {
-    hline(bmp, x1, y1, x1+1, face);
-    putpixel(bmp, x1, y1+1, face);
+    hline(bmp, x1, y1, x1+1, bg);
+    putpixel(bmp, x1, y1+1, bg);
     putpixel(bmp, x1+1, y1+1, fore);
   }
 
   if (b1) {
-    hline(bmp, x2-1, y1, x2, face);
-    putpixel(bmp, x2, y1+1, face);
+    hline(bmp, x2-1, y1, x2, bg);
+    putpixel(bmp, x2, y1+1, bg);
     putpixel(bmp, x2-1, y1+1, fore);
   }
 
   if (b2) {
-    putpixel(bmp, x1, y2-1, face);
-    hline(bmp, x1, y2, x1+1, face);
+    putpixel(bmp, x1, y2-1, bg);
+    hline(bmp, x1, y2, x1+1, bg);
     putpixel(bmp, x1+1, y2-1, fore);
   }
 
   if (b3) {
-    putpixel(bmp, x2, y2-1, face);
-    hline(bmp, x2-1, y2, x2, face);
+    putpixel(bmp, x2, y2-1, bg);
+    hline(bmp, x2-1, y2, x2, bg);
     putpixel(bmp, x2-1, y2-1, fore);
   }
 
