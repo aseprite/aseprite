@@ -127,6 +127,8 @@ public:
   void draw_radio(JWidget widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
   void draw_slider(JWidget widget, JRect clip);
+  void draw_combobox_entry(JWidget widget, JRect clip);
+  void draw_combobox_button(JWidget widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
@@ -1146,6 +1148,16 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
     widget->set_text_quiet(old_text.c_str());
     jrect_free(r);
   }
+}
+
+void jstandard_theme::draw_combobox_entry(JWidget widget, JRect clip)
+{
+  draw_entry(widget, clip);
+}
+
+void jstandard_theme::draw_combobox_button(JWidget widget, JRect clip)
+{
+  draw_button(widget, clip);
 }
 
 void jstandard_theme::draw_textbox(JWidget widget, JRect clip)

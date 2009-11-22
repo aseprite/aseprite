@@ -60,6 +60,7 @@ typedef struct ComboItem
 
 static bool combobox_msg_proc(JWidget widget, JMessage msg);
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg);
+static bool combobox_button_msg_proc(JWidget widget, JMessage msg);
 static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg);
 static void combobox_button_cmd(JWidget widget, void *data);
 static void combobox_open_window(JWidget widget);
@@ -93,6 +94,7 @@ JWidget jcombobox_new()
   jwidget_focusrest(widget, true);
   jwidget_add_hook(widget, JI_COMBOBOX, combobox_msg_proc, combobox);
   jwidget_add_hook(combobox->entry, JI_WIDGET, combobox_entry_msg_proc, NULL);
+  jwidget_add_hook(combobox->button, JI_WIDGET, combobox_button_msg_proc, NULL);
 
   jwidget_expansive(combobox->entry, true);
   jbutton_set_bevel(combobox->button, 0, 2, 0, 2);
@@ -415,8 +417,24 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
       else
 	return true;
       break;
+
+    case JM_DRAW:
+      widget->theme->draw_combobox_entry(widget, &msg->draw.rect);
+      return true;
   }
 
+  return false;
+}
+
+static bool combobox_button_msg_proc(JWidget widget, JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_DRAW:
+      widget->theme->draw_combobox_button(widget, &msg->draw.rect);
+      return true;
+
+  }
   return false;
 }
 

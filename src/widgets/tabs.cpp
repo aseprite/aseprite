@@ -276,12 +276,6 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	box->x1 = box->x2;
-	box->x2 = box->x1 + theme->get_part(PART_TAB_FILLER_SEPARATOR)->w;
-
-	theme->draw_hline(box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER_SEPARATOR);
-	theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
-
-	box->x1 = box->x2;
       }
 
       /* fill the gap to the right-side */

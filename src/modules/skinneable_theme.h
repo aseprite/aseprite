@@ -120,6 +120,24 @@ enum {
   PART_SUNKEN_FOCUSED_SW,
   PART_SUNKEN_FOCUSED_W,
 
+  PART_SUNKEN2_NORMAL_NW,
+  PART_SUNKEN2_NORMAL_N,
+  PART_SUNKEN2_NORMAL_NE,
+  PART_SUNKEN2_NORMAL_E,
+  PART_SUNKEN2_NORMAL_SE,
+  PART_SUNKEN2_NORMAL_S,
+  PART_SUNKEN2_NORMAL_SW,
+  PART_SUNKEN2_NORMAL_W,
+
+  PART_SUNKEN2_FOCUSED_NW,
+  PART_SUNKEN2_FOCUSED_N,
+  PART_SUNKEN2_FOCUSED_NE,
+  PART_SUNKEN2_FOCUSED_E,
+  PART_SUNKEN2_FOCUSED_SE,
+  PART_SUNKEN2_FOCUSED_S,
+  PART_SUNKEN2_FOCUSED_SW,
+  PART_SUNKEN2_FOCUSED_W,
+
   PART_WINDOW_NW,
   PART_WINDOW_N,
   PART_WINDOW_NE,
@@ -180,6 +198,35 @@ enum {
 
   PART_SEPARATOR,
 
+  PART_COMBOBOX_ARROW,
+
+  PART_TOOLBUTTON_NORMAL_NW,
+  PART_TOOLBUTTON_NORMAL_N,
+  PART_TOOLBUTTON_NORMAL_NE,
+  PART_TOOLBUTTON_NORMAL_E,
+  PART_TOOLBUTTON_NORMAL_SE,
+  PART_TOOLBUTTON_NORMAL_S,
+  PART_TOOLBUTTON_NORMAL_SW,
+  PART_TOOLBUTTON_NORMAL_W,
+
+  PART_TOOLBUTTON_HOT_NW,
+  PART_TOOLBUTTON_HOT_N,
+  PART_TOOLBUTTON_HOT_NE,
+  PART_TOOLBUTTON_HOT_E,
+  PART_TOOLBUTTON_HOT_SE,
+  PART_TOOLBUTTON_HOT_S,
+  PART_TOOLBUTTON_HOT_SW,
+  PART_TOOLBUTTON_HOT_W,
+
+  PART_TOOLBUTTON_LAST_NW,
+  PART_TOOLBUTTON_LAST_N,
+  PART_TOOLBUTTON_LAST_NE,
+  PART_TOOLBUTTON_LAST_E,
+  PART_TOOLBUTTON_LAST_SE,
+  PART_TOOLBUTTON_LAST_S,
+  PART_TOOLBUTTON_LAST_SW,
+  PART_TOOLBUTTON_LAST_W,
+
   PART_TAB_NORMAL_NW,
   PART_TAB_NORMAL_N,
   PART_TAB_NORMAL_NE,
@@ -210,7 +257,6 @@ enum {
   PART_TAB_BOTTOM_NORMAL,
 
   PART_TAB_FILLER,
-  PART_TAB_FILLER_SEPARATOR,
 
   PART_EDITOR_NORMAL_NW,
   PART_EDITOR_NORMAL_N,
@@ -269,6 +315,8 @@ public:
   void draw_radio(JWidget widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
   void draw_slider(JWidget widget, JRect clip);
+  void draw_combobox_entry(JWidget widget, JRect clip);
+  void draw_combobox_button(JWidget widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
@@ -339,7 +387,9 @@ private:
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);
 
-  static bool theme_button_msg_proc(JWidget widget, JMessage msg);
+  static bool theme_window_button_msg_proc(JWidget widget, JMessage msg);
+  static bool theme_combobox_button_msg_proc(JWidget widget, JMessage msg);
+
 };
 
 #endif

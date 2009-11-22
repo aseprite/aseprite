@@ -139,6 +139,24 @@ static struct
   {  0, 56,  4,  4 }, //  PART_SUNKEN_FOCUSED_SW
   {  0, 52,  4,  4 }, //  PART_SUNKEN_FOCUSED_W
 
+  {  0, 64,  5,  5 }, //  PART_SUNKEN2_NORMAL_NW
+  {  5, 64,  6,  5 }, //  PART_SUNKEN2_NORMAL_N
+  { 11, 64,  5,  5 }, //  PART_SUNKEN2_NORMAL_NE
+  { 11, 69,  5,  6 }, //  PART_SUNKEN2_NORMAL_E
+  { 11, 75,  5,  5 }, //  PART_SUNKEN2_NORMAL_SE
+  {  5, 75,  6,  5 }, //  PART_SUNKEN2_NORMAL_S
+  {  0, 75,  5,  5 }, //  PART_SUNKEN2_NORMAL_SW
+  {  0, 69,  5,  6 }, //  PART_SUNKEN2_NORMAL_W
+
+  {  0, 80,  5,  5 }, //  PART_SUNKEN2_FOCUSED_NW
+  {  5, 80,  6,  5 }, //  PART_SUNKEN2_FOCUSED_N
+  { 11, 80,  5,  5 }, //  PART_SUNKEN2_FOCUSED_NE
+  { 11, 85,  5,  6 }, //  PART_SUNKEN2_FOCUSED_E
+  { 11, 91,  5,  5 }, //  PART_SUNKEN2_FOCUSED_SE
+  {  5, 91,  6,  5 }, //  PART_SUNKEN2_FOCUSED_S
+  {  0, 91,  5,  5 }, //  PART_SUNKEN2_FOCUSED_SW
+  {  0, 85,  5,  6 }, //  PART_SUNKEN2_FOCUSED_W
+
   {  0,  0,  3, 15 }, //  PART_WINDOW_NW
   {  3,  0,  7, 15 }, //  PART_WINDOW_N
   { 10,  0,  3, 15 }, //  PART_WINDOW_NE
@@ -148,14 +166,14 @@ static struct
   {  0, 19,  3,  5 }, //  PART_WINDOW_SW
   {  0, 15,  3,  4 }, //  PART_WINDOW_W
 
-  {  0, 80,  3,  3 }, //  PART_MENU_NW
-  {  3, 80, 10,  3 }, //  PART_MENU_N
-  { 13, 80,  3,  3 }, //  PART_MENU_NE
-  { 13, 83,  3,  9 }, //  PART_MENU_E
-  { 13, 92,  3,  4 }, //  PART_MENU_SE
-  {  3, 92, 10,  4 }, //  PART_MENU_S
-  {  0, 92,  3,  4 }, //  PART_MENU_SW
-  {  0, 83,  3,  9 }, //  PART_MENU_W
+  {  0, 96,  3,  3 }, //  PART_MENU_NW
+  {  3, 96, 10,  3 }, //  PART_MENU_N
+  { 13, 96,  3,  3 }, //  PART_MENU_NE
+  { 13, 99,  3,  9 }, //  PART_MENU_E
+  { 13,108,  3,  4 }, //  PART_MENU_SE
+  {  3,108, 10,  4 }, //  PART_MENU_S
+  {  0,108,  3,  4 }, //  PART_MENU_SW
+  {  0, 99,  3,  9 }, //  PART_MENU_W
 
   { 16,  0,  9, 11 }, //  PART_WINDOW_CLOSE_BUTTON_NORMAL
   { 16, 16,  9, 11 }, //  PART_WINDOW_CLOSE_BUTTON_HOT
@@ -199,48 +217,67 @@ static struct
 
   { 32, 80,  9,  5 }, //  PART_SEPARATOR
 
+  { 96, 32, 16, 16 }, //  PART_COMBOBOX_ARROW
+
+  { 96,  0,  3,  3 }, //  PART_TOOLBUTTON_NORMAL_NW
+  { 99,  0, 10,  3 }, //  PART_TOOLBUTTON_NORMAL_N
+  {109,  0,  3,  3 }, //  PART_TOOLBUTTON_NORMAL_NE
+  {109,  3,  3,  9 }, //  PART_TOOLBUTTON_NORMAL_E
+  {109, 12,  3,  4 }, //  PART_TOOLBUTTON_NORMAL_SE
+  { 99, 12, 10,  4 }, //  PART_TOOLBUTTON_NORMAL_S
+  { 96, 12,  3,  4 }, //  PART_TOOLBUTTON_NORMAL_SW
+  { 96,  3,  3,  9 }, //  PART_TOOLBUTTON_NORMAL_W
+
+  {112,  0,  3,  3 }, //  PART_TOOLBUTTON_HOT_NW
+  {115,  0, 10,  3 }, //  PART_TOOLBUTTON_HOT_N
+  {125,  0,  3,  3 }, //  PART_TOOLBUTTON_HOT_NE
+  {125,  3,  3,  9 }, //  PART_TOOLBUTTON_HOT_E
+  {125, 12,  3,  4 }, //  PART_TOOLBUTTON_HOT_SE
+  {115, 12, 10,  4 }, //  PART_TOOLBUTTON_HOT_S
+  {112, 12,  3,  4 }, //  PART_TOOLBUTTON_HOT_SW
+  {112,  3,  3,  9 }, //  PART_TOOLBUTTON_HOT_W
+
+  { 96, 16,  3,  3 }, //  PART_TOOLBUTTON_LAST_NORMAL_NW
+  { 99, 16, 10,  3 }, //  PART_TOOLBUTTON_LAST_NORMAL_N
+  {109, 16,  3,  3 }, //  PART_TOOLBUTTON_LAST_NORMAL_NE
+  {109, 19,  3,  9 }, //  PART_TOOLBUTTON_LAST_NORMAL_E
+  {109, 28,  3,  4 }, //  PART_TOOLBUTTON_LAST_NORMAL_SE
+  { 99, 28, 10,  4 }, //  PART_TOOLBUTTON_LAST_NORMAL_S
+  { 96, 28,  3,  4 }, //  PART_TOOLBUTTON_LAST_NORMAL_SW
+  { 96, 19,  3,  9 }, //  PART_TOOLBUTTON_LAST_NORMAL_W
+
   // Tabs
 
   {  2,112,  4,  4 }, //  PART_TAB_NORMAL_NW
-  {  6,112,  4,  4 }, //  PART_TAB_NORMAL_N
-  { 10,112,  4,  4 }, //  PART_TAB_NORMAL_NE
-  { 10,116,  4,  4 }, //  PART_TAB_NORMAL_E
-  { 10,120,  4,  4 }, //  PART_TAB_NORMAL_SE
-  {  6,120,  4,  4 }, //  PART_TAB_NORMAL_S
-  {  2,120,  4,  4 }, //  PART_TAB_NORMAL_SW
-  {  2,116,  4,  4 }, //  PART_TAB_NORMAL_W
+  {  6,112,  5,  4 }, //  PART_TAB_NORMAL_N
+  { 11,112,  5,  4 }, //  PART_TAB_NORMAL_NE
+  { 11,116,  5,  6 }, //  PART_TAB_NORMAL_E
+  { 11,122,  5,  2 }, //  PART_TAB_NORMAL_SE
+  {  6,122,  4,  2 }, //  PART_TAB_NORMAL_S
+  {  2,122,  4,  2 }, //  PART_TAB_NORMAL_SW
+  {  2,116,  4,  6 }, //  PART_TAB_NORMAL_W
 
-  { 15,112,  4,  4 }, //  PART_TAB_SELECTED_NW
-  { 19,112,  4,  4 }, //  PART_TAB_SELECTED_N
-  { 23,112,  4,  4 }, //  PART_TAB_SELECTED_NE
-  { 23,116,  4,  4 }, //  PART_TAB_SELECTED_E
-  { 23,120,  4,  4 }, //  PART_TAB_SELECTED_SE
-  { 19,120,  4,  4 }, //  PART_TAB_SELECTED_S
-  { 15,120,  4,  4 }, //  PART_TAB_SELECTED_SW
-  { 15,116,  4,  4 }, //  PART_TAB_SELECTED_W
+  { 16,112,  4,  4 }, //  PART_TAB_SELECTED_NW
+  { 20,112,  7,  4 }, //  PART_TAB_SELECTED_N
+  { 27,112,  5,  4 }, //  PART_TAB_SELECTED_NE
+  { 27,116,  5,  6 }, //  PART_TAB_SELECTED_E
+  { 27,122,  5,  2 }, //  PART_TAB_SELECTED_SE
+  { 20,122,  7,  2 }, //  PART_TAB_SELECTED_S
+  { 16,122,  4,  2 }, //  PART_TAB_SELECTED_SW
+  { 16,116,  4,  6 }, //  PART_TAB_SELECTED_W
 
-  // { 15,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_NW
-  // { 19,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_N
-  // { 23,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_NE
-  // { 23,128,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_E
-  // { 23,132,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_SE
-  // { 19,132,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_S
-  // { 15,132,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_SW
-  // { 15,128,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_W
-  { 15,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_NW
-  { 19,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_N
-  { 23,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_NE
-  { 23,128,  4,  1 }, //  PART_TAB_BOTTOM_SELECTED_E
-  { 23,129,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_SE
-  { 19,129,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_S
-  { 15,129,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_SW
-  { 15,128,  4,  1 }, //  PART_TAB_BOTTOM_SELECTED_W
+  { 16,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_NW
+  { 20,124,  7,  4 }, //  PART_TAB_BOTTOM_SELECTED_N
+  { 27,124,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_NE
+  { 27,128,  4,  1 }, //  PART_TAB_BOTTOM_SELECTED_E
+  { 27,129,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_SE
+  { 20,129,  7,  4 }, //  PART_TAB_BOTTOM_SELECTED_S
+  { 16,129,  4,  4 }, //  PART_TAB_BOTTOM_SELECTED_SW
+  { 16,128,  4,  1 }, //  PART_TAB_BOTTOM_SELECTED_W
 
-  // {  2,124, 12, 12 }, //  PART_TAB_BOTTOM_NORMAL
   {  2,124, 12,  9 }, //  PART_TAB_BOTTOM_NORMAL
 
   {  0,112,  2, 12 }, //  PART_TAB_FILLER
-  { 14,112,  1, 12 }, //  PART_TAB_FILLER_SEPARATOR
 
   { 32,112,  3,  3 }, //  PART_EDITOR_NORMAL_NW
   { 35,112, 10,  3 }, //  PART_EDITOR_NORMAL_N
@@ -368,11 +405,6 @@ void SkinneableTheme::init_widget(JWidget widget)
   widget->border_width.r = R;			\
   widget->border_width.b = B;
 
-  if ((widget->flags & JI_INITIALIZED) &&
-      (widget->type != JI_WINDOW) &&
-      (widget->type != JI_SEPARATOR))
-    return;
-
   switch (widget->type) {
 
     case JI_BOX:
@@ -418,11 +450,20 @@ void SkinneableTheme::init_widget(JWidget widget)
       BORDER(1);
       break;
 
-    case JI_COMBOBOX: {
-      // JWidget button = jcombobox_get_button_widget(widget);
-      // ji_generic_button_set_icon(button, icons_bitmap[ICON_COMBOBOX]);
+    case JI_COMBOBOX:
+      if (!(widget->flags & JI_INITIALIZED)) {
+	JWidget button = jcombobox_get_button_widget(widget);
+
+	button->border_width.l = 0;
+	button->border_width.t = 0;
+	button->border_width.r = 0;
+	button->border_width.b = 0;
+	button->child_spacing = 0;
+
+	jwidget_add_hook(button, JI_WIDGET,
+			 &SkinneableTheme::theme_combobox_button_msg_proc, NULL);
+      }
       break;
-    }
 
     case JI_MENU:
     case JI_MENUBAR:
@@ -511,7 +552,7 @@ void SkinneableTheme::init_widget(JWidget widget)
 	    JWidget button = jbutton_new("");
 	    jbutton_set_bevel(button, 0, 0, 0, 0);
 	    jwidget_add_hook(button, JI_WIDGET,
-			     &SkinneableTheme::theme_button_msg_proc, NULL);
+			     &SkinneableTheme::theme_window_button_msg_proc, NULL);
 	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
 	    jwidget_set_name(button, "theme_close_button");
@@ -1125,6 +1166,124 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
   }
 }
 
+void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
+{
+  bool password = jentry_is_password(widget);
+  int scroll, cursor, state, selbeg, selend;
+  const char *text = widget->text();
+  int c, ch, x, y, w, fg, bg;
+  int x1, y1, x2, y2;
+  int cursor_x;
+
+  jtheme_entry_info(widget, &scroll, &cursor, &state, &selbeg, &selend);
+
+  /* main pos */
+  x1 = widget->rc->x1;
+  y1 = widget->rc->y1;
+  x2 = widget->rc->x2-1;
+  y2 = widget->rc->y2-1;
+
+  bg = COLOR_BACKGROUND;
+
+  draw_bounds(x1, y1, x2, y2,
+	      jwidget_has_focus(widget) ? PART_SUNKEN2_FOCUSED_NW:
+					  PART_SUNKEN2_NORMAL_NW, bg);
+
+  /* draw the text */
+  x = widget->rc->x1 + widget->border_width.l;
+  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
+
+  for (c=scroll; ugetat(text, c); c++) {
+    ch = password ? '*': ugetat(text, c);
+
+    /* normal text */
+    bg = -1;
+    fg = COLOR_FOREGROUND;
+
+    /* selected */
+    if ((c >= selbeg) && (c <= selend)) {
+      if (jwidget_has_focus(widget))
+	bg = COLOR_SELECTED;
+      else
+	bg = COLOR_DISABLED;
+      fg = COLOR_BACKGROUND;
+    }
+
+    /* disabled */
+    if (jwidget_is_disabled (widget)) {
+      bg = -1;
+      fg = COLOR_DISABLED;
+    }
+
+    w = CHARACTER_LENGTH(widget->font(), ch);
+    if (x+w > widget->rc->x2-3)
+      return;
+
+    cursor_x = x;
+    ji_font_set_aa_mode(widget->font(), bg >= 0 ? bg: COLOR_BACKGROUND);
+    widget->font()->vtable->render_char(widget->font(),
+					ch, fg, bg, ji_screen, x, y);
+    x += w;
+
+    /* cursor */
+    if ((c == cursor) && (state) && (jwidget_has_focus (widget)))
+      draw_entry_cursor(widget, cursor_x, y);
+  }
+
+  /* draw the cursor if it is next of the last character */
+  if ((c == cursor) && (state) &&
+      (jwidget_has_focus(widget)) &&
+      (jwidget_is_enabled(widget)))
+    draw_entry_cursor(widget, x, y);
+}
+
+void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
+{
+  BITMAP* icon_bmp = m_part[PART_COMBOBOX_ARROW];
+  struct jrect icon;
+  int x1, y1, x2, y2;
+  int fg, bg, part_nw;
+
+  /* with mouse */
+  if (jwidget_is_selected(widget) ||
+      (jwidget_is_enabled(widget) && jwidget_has_mouse(widget))) {
+    fg = get_button_hot_text_color();
+    bg = get_button_hot_face_color();
+    part_nw = PART_TOOLBUTTON_HOT_NW;
+  }
+  /* without mouse */
+  else {
+    fg = get_button_normal_text_color();
+    bg = get_button_normal_face_color();
+    part_nw = PART_TOOLBUTTON_LAST_NW;
+  }
+
+  /* widget position */
+  x1 = widget->rc->x1;
+  y1 = widget->rc->y1;
+  x2 = widget->rc->x2-1;
+  y2 = widget->rc->y2-1;
+
+  // external background
+  rectfill(ji_screen, x1, y1, x2, y2, BGCOLOR);
+
+  // draw borders
+  draw_bounds(x1, y1, x2, y2, part_nw, bg);
+
+  // icon
+  icon.x1 = (x1+x2)/2 - icon_bmp->w/2;
+  icon.y1 = (y1+y2)/2 - icon_bmp->h/2;
+  icon.x2 = icon.x1 + icon_bmp->w;
+  icon.y2 = icon.y1 + icon_bmp->h;
+
+  if (jwidget_is_selected(widget))
+    jrect_displace(&icon,
+		   get_button_selected_offset(),
+		   get_button_selected_offset());
+
+  draw_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
+}
+
 void SkinneableTheme::draw_textbox(JWidget widget, JRect clip)
 {
   _ji_theme_textbox_draw(ji_screen, widget, NULL, NULL,
@@ -1461,7 +1620,7 @@ void SkinneableTheme::less_bevel(int *bevel)
 }
 
 /* controls the "X" button in a window to close it */
-bool SkinneableTheme::theme_button_msg_proc(JWidget widget, JMessage msg)
+bool SkinneableTheme::theme_window_button_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -1489,6 +1648,20 @@ bool SkinneableTheme::theme_button_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       break;
+  }
+
+  return false;
+}
+
+bool SkinneableTheme::theme_combobox_button_msg_proc(JWidget widget, JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_REQSIZE:
+      msg->reqsize.w = 15;
+      msg->reqsize.h = 16;
+      return true;
+
   }
 
   return false;

@@ -79,6 +79,8 @@ public:
   virtual void draw_radio(JWidget widget, JRect clip) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
   virtual void draw_slider(JWidget widget, JRect clip) = 0;
+  virtual void draw_combobox_entry(JWidget widget, JRect clip) = 0;
+  virtual void draw_combobox_button(JWidget widget, JRect clip) = 0;
   virtual void draw_textbox(JWidget widget, JRect clip) = 0;
   virtual void draw_view(JWidget widget, JRect clip) = 0;
   virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;
