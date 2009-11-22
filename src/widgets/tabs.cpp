@@ -132,6 +132,9 @@ void tabs_remove_tab(JWidget widget, void *data)
   Tab *tab = get_tab_by_data(widget, data);
 
   if (tab) {
+    if (tabs->hot == tab) tabs->hot = NULL;
+    if (tabs->selected == tab) tabs->selected = NULL;
+
     jlist_remove(tabs->list_of_tabs, tab);
     delete tab;
 
@@ -302,15 +305,17 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       return TRUE;
 
     case JM_BUTTONPRESSED:
-      if (tabs->selected != tabs->hot && tabs->hot != NULL) {
-	tabs->selected = tabs->hot;
-	jwidget_dirty(widget);
-      }
+      if (tabs->hot != NULL) {
+	if (tabs->selected != tabs->hot) {
+	  tabs->selected = tabs->hot;
+	  jwidget_dirty(widget);
+	}
 
-      if (tabs->selected && tabs->select_callback)
-	(*tabs->select_callback)(widget,
-				 tabs->selected->data,
-				 msg->mouse.flags);
+	if (tabs->selected && tabs->select_callback)
+	  (*tabs->select_callback)(widget,
+				   tabs->selected->data,
+				   msg->mouse.flags);
+      }
       return TRUE;
 
     case JM_WHEEL: {
