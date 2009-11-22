@@ -59,6 +59,7 @@
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
+#define SYSTEM_WINDOW_RESIZE    8
 
 #define MONITOR_TIMER_MSECS	100
 
@@ -145,7 +146,7 @@ static bool double_buffering;
 static int screen_scaling;
 
 /* load & save graphics configuration */
-static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen);
+static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized);
 static void save_gui_config();
 
 static bool button_with_icon_msg_proc(JWidget widget, JMessage msg);
@@ -167,6 +168,13 @@ static void display_switch_in_callback()
 
 END_OF_STATIC_FUNCTION(display_switch_in_callback);
 
+#ifdef HAVE_RESIZE_PATCH
+static void resize_callback(void)
+{
+  next_idle_flags |= SYSTEM_WINDOW_RESIZE;
+}
+#endif
+
 /**
  * Initializes GUI.
  */
@@ -175,6 +183,7 @@ int init_module_gui()
   int min_possible_dsk_res = 0;
   int c, w, h, bpp, autodetect;
   bool fullscreen;
+  bool maximized;
 
   monitors = new MonitorList;
   shortcuts = new std::vector<Shortcut*>;
@@ -198,7 +207,7 @@ int init_module_gui()
   three_finger_flag = TRUE;	/* TODO remove this line */
 
   /* set the graphics mode... */
-  load_gui_config(&w, &h, &bpp, &fullscreen);
+  load_gui_config(w, h, bpp, fullscreen, maximized);
 
   autodetect = fullscreen ? GFX_AUTODETECT_FULLSCREEN:
 			    GFX_AUTODETECT_WINDOWED;
@@ -288,8 +297,18 @@ int init_module_gui()
   /* set hook to translate strings */
   ji_set_translation_hook(msgids_get);
 
+#ifdef HAVE_RESIZE_PATCH
+  set_resize_callback(resize_callback);
+
+  #ifdef ALLEGRO_WINDOWS
+  if (maximized) {
+    ShowWindow(win_get_window(), SW_MAXIMIZE);
+  }
+  #endif
+#endif
+
   /* configure ji_screen */
-  gui_setup_screen();
+  gui_setup_screen(true);
 
   /* add a hook to display-switch so when the user returns to the
      screen it's completelly refreshed/redrawn */
@@ -359,7 +378,7 @@ void exit_module_gui()
 
 int guiscale()
 {
-  return (JI_SCREEN_W > 512 ? 2: 1);
+  return (screen_scaling == 1 && JI_SCREEN_W > 512 ? 2: 1);
 }
 
 Monitor::Monitor(void (*proc)(void *),
@@ -378,14 +397,20 @@ Monitor::~Monitor()
     (*this->free)(this->data);
 }
 
-static void load_gui_config(int *w, int *h, int *bpp, bool *fullscreen)
+static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized)
 {
-  *w = get_config_int("GfxMode", "Width", 0);
-  *h = get_config_int("GfxMode", "Height", 0);
-  *bpp = get_config_int("GfxMode", "Depth", 0);
-  *fullscreen = get_config_bool("GfxMode", "FullScreen", FALSE);
+  w = get_config_int("GfxMode", "Width", 0);
+  h = get_config_int("GfxMode", "Height", 0);
+  bpp = get_config_int("GfxMode", "Depth", 0);
+  fullscreen = get_config_bool("GfxMode", "FullScreen", false);
   screen_scaling = get_config_int("GfxMode", "Scale", 1);
   screen_scaling = MID(1, screen_scaling, 4);
+
+#if defined HAVE_RESIZE_PATCH && defined ALLEGRO_WINDOWS
+  maximized = get_config_bool("GfxMode", "Maximized", false);
+#else
+  maximized = false;
+#endif
 }
 
 static void save_gui_config()
@@ -395,6 +420,11 @@ static void save_gui_config()
   set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
   set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? false: true);
   set_config_int("GfxMode", "Scale", screen_scaling);
+
+#if defined HAVE_RESIZE_PATCH && defined ALLEGRO_WINDOWS
+  set_config_bool("GfxMode", "Maximized",
+		  GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
+#endif
 }
 
 int get_screen_scaling()
@@ -443,6 +473,17 @@ void gui_run()
 
 void gui_feedback()
 {
+#ifdef HAVE_RESIZE_PATCH
+  if (next_idle_flags & SYSTEM_WINDOW_RESIZE) {
+    next_idle_flags ^= SYSTEM_WINDOW_RESIZE;
+
+    resize_screen();
+    gui_setup_screen(false);
+    jwindow_remap(app_get_top_window());
+    jmanager_refresh_screen();
+  }
+#endif
+
   /* menu stuff */
   if (next_idle_flags & REBUILD_RECENT_LIST) {
     if (app_realloc_recent_list())
@@ -485,7 +526,7 @@ void gui_feedback()
  * This routine should be called everytime you changes the graphics
  * mode.
  */
-void gui_setup_screen()
+void gui_setup_screen(bool reload_font)
 {
   /* double buffering is required when screen scaling is used */
   double_buffering = (screen_scaling > 1);
@@ -505,7 +546,8 @@ void gui_setup_screen()
     ji_screen_created = FALSE;
   }
 
-  reload_default_font();
+  if (reload_font)
+    reload_default_font();
 
   /* set the configuration */
   save_gui_config();

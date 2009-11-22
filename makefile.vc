@@ -68,6 +68,10 @@ ifdef MEMLEAK
   LIBS += dbghelp.lib
 endif
 
+ifdef HAVE_RESIZE_PATCH
+  CFLAGS += -DHAVE_RESIZE_PATCH
+endif
+
 ######################################################################
 # General rules
 

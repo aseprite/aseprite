@@ -50,6 +50,10 @@ ifdef USE_SSE_ASM
   CFLAGS += -DUSE_SSE_ASM -msse
 endif
 
+ifdef HAVE_RESIZE_PATCH
+  CFLAGS += -DHAVE_RESIZE_PATCH
+endif
+
 ######################################################################
 # Rules to make third party libraries
 

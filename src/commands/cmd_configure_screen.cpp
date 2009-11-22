@@ -251,7 +251,7 @@ static bool try_new_gfx_mode(Context* context)
     }
     /* only print a message of the old error */
     else {
-      gui_setup_screen();
+      gui_setup_screen(true);
 
       /* set to a black palette */
       set_black_palette();
@@ -271,7 +271,7 @@ static bool try_new_gfx_mode(Context* context)
   }
   /* the new graphics mode is working */
   else {
-    gui_setup_screen();
+    gui_setup_screen(true);
 
     /* set to a black palette */
     set_black_palette();

@@ -73,7 +73,7 @@ void update_screen_for_sprite(const Sprite* sprite);
 
 void gui_run();
 void gui_feedback();
-void gui_setup_screen();
+void gui_setup_screen(bool reload_font);
 
 void reload_default_font();
 
