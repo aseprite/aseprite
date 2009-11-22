@@ -1,3 +1,3 @@
 @echo off
 
-edit makefile.cfg
+notepad makefile.cfg
