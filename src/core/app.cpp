@@ -223,10 +223,7 @@ int App::run()
     view = editor_view_new();
     editor = create_new_editor();
 
-    /* append the NULL sprite to the tabs */
-    tabs_append_tab(tabsbar, "Nothing", NULL);
-
-    /* configure all widgets to expansives */
+    // configure all widgets to expansives
     jwidget_expansive(menubar, TRUE);
     jwidget_expansive(statusbar, TRUE);
     jwidget_expansive(colorbar, TRUE);
