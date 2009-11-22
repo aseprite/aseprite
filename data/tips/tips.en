@@ -20,6 +20,8 @@ http://www.aseprite.org/
 
 Use the <1>, <2>, <3>, <4>, <5> and <6> keys to set the zoom in the
 current editor's viewport.
+
+You can use the mouse wheel too.
  **********************************************************************
 \image eyedropper.pcx
 
@@ -30,8 +32,9 @@ replaces the ``Tool Foreground Color''.
 switches the Foreground and Background colors.
  **********************************************************************
 \image anicontrols.pcx
+The animation controls appears when you put the mouse above the status bar.
 
-Move through the frames with the arrows keys
+Also you can move through frames using the keyboard:
 
 \split
 <Left> = go to previous frame
@@ -49,13 +52,13 @@ Move through the frames with the arrows keys
 
 Do you want edit layers, frames and cels?  Use the ``Animation Editor''.
 
-Go to ``Tools/Animation Editor'' menu or press <Tab> key when you are
+Go to ``Tools > Animation Editor'' menu or press <Tab> key when you are
 editing a sprite.
  **********************************************************************
 \image newframe.pcx
 
 You can add new animation frames pressing <N> key or using
-``Frame/New'' menu.
+``Frame > New'' menu.
  **********************************************************************
 \image onion.pcx
 
@@ -93,7 +96,7 @@ Current frame in current layer
 All frames of current layer
 \next
 \image tar_3.pcx
-Current frames of all layers
+All layers in current frame
 \next
 \image tar_4.pcx
 All frames in all layers
@@ -114,7 +117,7 @@ A RGB image without dithering.
 Ordered dithering method.
 \done
 
-See ``Tool/Options'' menu or press <Ctrl+Shift+O>.
+See ``Tool > Options'' menu or press <Ctrl+Shift+O>.
  **********************************************************************
 \palette sprite.pcx
 \image sprite.pcx

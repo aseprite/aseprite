@@ -5,6 +5,8 @@ NEWS
 0.8
 ---
 
++ Added support to resize and maximize the main window (only in
+  Windows platform).
 + New ASE skin created by Ilija Melentijevic.
 
 0.7.2
