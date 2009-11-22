@@ -290,10 +290,6 @@ bool jmanager_generate_messages(JWidget manager)
   if (jlist_empty(manager->children))
     return false;
 
-  /* TODO check for STAGE */
-/*   if (want_close_stage == STAGE_WANT_CLOSE) */
-/*     return false; */
-
   /* new windows to show? */
   if (!jlist_empty(new_windows)) {
     JWidget magnet;
@@ -466,6 +462,19 @@ bool jmanager_generate_messages(JWidget manager)
       jmanager_set_focus(mouse_widget);
     }
 
+    jmanager_enqueue_message(msg);
+  }
+
+  /* generate ESC key when the user press close button in the system window */
+  if (want_close_stage == STAGE_WANT_CLOSE) {
+    want_close_stage = STAGE_NORMAL;
+
+    msg = jmessage_new_key_related(JM_KEYPRESSED, (KEY_ESC << 8) | 27);
+    broadcast_key_msg(manager, msg);
+    jmanager_enqueue_message(msg);
+
+    msg = jmessage_new_key_related(JM_KEYRELEASED, (KEY_ESC << 8) | 27);
+    broadcast_key_msg(manager, msg);
     jmanager_enqueue_message(msg);
   }
 

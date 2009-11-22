@@ -1,3 +1,8 @@
+2009-11-22  David Capello  <davidcapello@gmail.com>
+
+	* src/jinete/jmanager.cpp (jmanager_generate_messages): Added
+	support for the Close button in the system window.
+
 2009-11-21  David Capello  <davidcapello@gmail.com>
 
 	* src/modules/skinneable_theme.h (jtheme): Added SkinneableTheme
