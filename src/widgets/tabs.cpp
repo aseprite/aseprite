@@ -271,7 +271,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	  
 	  jdraw_text(widget->font(), tab->text.c_str(),
 		     box->x1+4,
-		     (box->y1+box->y2)/2-text_height(widget->font())/2,
+		     (box->y1+box->y2)/2-text_height(widget->font())/2+1,
 		     text_color, face_color, false);
 	}
 
