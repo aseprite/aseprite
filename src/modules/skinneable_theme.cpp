@@ -328,6 +328,8 @@ SkinneableTheme::SkinneableTheme()
   this->scrollbar_size = 12;
 
   m_sheet_bmp = NULL;
+  for (int c=0; c<PARTS; ++c)
+    m_part[c] = NULL;
 
   // Try to load the skin data
   {
