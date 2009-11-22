@@ -89,7 +89,7 @@ static BITMAP *really_load_png(png_structp png_ptr, png_infop info_ptr, RGB *pal
     int tRNS_to_alpha = FALSE;
     int number_passes, pass;
 
-    ASSERT(png_ptr && info_ptr && rgb);
+    ASSERT(png_ptr && info_ptr && pal);
 
     /* The call to png_read_info() gives us all of the information from the
      * PNG file before the first IDAT (image data chunk).
