@@ -736,7 +736,7 @@ void Undoable::copy_previous_frame(Layer* layer, int frame)
   }
 
   // add the cel in the layer
-  static_cast<LayerImage*>(layer)->add_cel(dst_cel);
+  add_cel(static_cast<LayerImage*>(layer), dst_cel);
 }
 
 void Undoable::add_cel(LayerImage* layer, Cel* cel)
