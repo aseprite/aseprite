@@ -1,0 +1,269 @@
+Changes in version 1.0.1:
+- Fixed comment tags which were outputing as '<?--' instead of 
+  the correct '<!--'.
+- Implemented the Next and Prev methods of the TiXmlAttribute class.
+- Renamed 'LastAttribtute' to 'LastAttribute'
+- Fixed bad pointer to 'isspace' that could occur while parsing text.
+- Errors finding beginning and end of tags no longer throw it into an
+  infinite loop. (Hopefully.)
+
+Changes in version 1.0.2
+- Minor documentation fixes.
+
+Changes in version 1.0.3
+- After nodes are added to a document, they return a pointer
+  to the new node instead of a bool for success.
+- Elements can be constructed with a value, which is the
+  element name. Every element must have a value or it will be
+  invalid, but the code changes to enforce this are not fully
+  in place.
+
+Changes in version 1.1.0
+- Added the	TiXmlAttributeSet class to pull the attributes into
+  a seperate container.
+- Moved the doubly liked list out of XmlBase. Now XmlBase only
+  requires the Print() function and defines some utility functions.
+- Moved errors into a seperate file. (With the idea of internationalization
+  to the other latin-1 languages.)
+- Added the "NodeType"
+- Fixed white space parsing in text to conform with the standard. 
+  Basically, all white space becomes just one space.
+- Added the TiXmlDeclaration class to read xml declarations.
+
+Changes in version 1.2.0
+- Removed the factory. The factory was not really in the spirit 
+  of small and simple, confused the code, and was of limited value.
+- Added FirstChildElement and NextSiblingElement, because they
+  are such common functions.
+- Re-wrote the example to test and demonstrate more functionality.
+
+Changes in version 1.2.1
+- Fixed a bug where comments couldn't be inside elements.
+- Loading now clears out existing XML rather than appending.
+- Added the "Clear" method on a node to delete all its children.
+
+Changes in version 1.2.2
+- Fixed TiXmlAttribute::Previous actually returning "next." Thanks
+  to Rickard Troedsson for the bug fix.
+
+Changes in version 1.2.3
+- Added the TIXML prefix to the error strings to resolve conflicts
+  with #defines in OS headers. Thanks to Steve Lhomme.
+- Fixed a delete buf that should be a delete [] buf. 
+  Thanks to Ephi Sinowitz.
+
+Changes in version 1.2.4
+- ReplaceChild() was almost guarenteed to fail. Should be fixed,
+  thanks to Joe Smith. Joe also pointed out that the Print() functions
+  should take stream references: I agree, and would like to overload
+  the Print() method to take either format, but I don't want to do 
+  this in a dot release.
+- Some compilers seem to need an extra <ctype.h> include. Thanks
+  to Steve Lhomme for that.
+
+Changes in version 2.0.0 BETA
+- Made the ToXXX() casts safe if 'this' is null. 
+  When "LoadFile" is called with a filename, the value will correctly get set.
+  Thanks to Brian Yoder.
+- Fixed bug where isalpha() and isalnum() would get called with a negative value for 
+  high ascii numbers. Thanks to Alesky Aksenov.
+- Fixed some errors codes that were not getting set.
+- Made methods "const" that were not.
+- Added a switch to enable or disable the ignoring of white space. ( TiXmlDocument::SetIgnoreWhiteSpace() )
+- Greater standardization and code re-use in the parser.
+- Added a stream out operator.
+- Added a stream in operator.
+- Entity support, of predefined entites. &#x entities are untouched by input or output.
+- Improved text out formatting.
+- Fixed ReplaceChild bug, thanks to Tao Chen.
+
+Changes in version 2.0.1
+- Fixed hanging on loading a 0 length file. Thanks to Jeff Scozzafava.
+- Fixed crashing on InsertBeforeChild and InsertAfterChild. Also possibility of bad links being
+  created by same function. Thanks to Frank De prins.
+- Added missing licence text. Thanks to Lars Willemsens.
+- Added <ctype.h> include, at the suggestion of Steve Walters.
+
+Changes in version 2.1.0
+- Yves Berquin brings us the STL switch. The forum on SourceForge, and various emails to
+  me, have long debated all out STL vs. no STL at all. And now you can have it both ways.
+  TinyXml will compile either way.
+
+Changes in version 2.1.1
+- Compilation warnings.
+
+Changes in version 2.1.2
+- Uneeded code is not compiled in the STL case.
+- Changed headers so that STL can be turned on or off in tinyxml.h
+
+Changes in version 2.1.3
+- Fixed non-const reference in API; now uses a pointer.
+- Copy constructor of TiXmlString not checking for assignment to self.
+- Nimrod Cohen found a truly evil bug in the STL implementation that occurs
+  when a string is converted to a c_str and then assigned to self. Search for
+  STL_STRING_BUG for a full description. I'm asserting this is a Microsoft STL
+  bug, since &string and string.c_str() should never be the same. Nevertheless,
+  the code works around it.
+- Urivan Saaib pointed out a compiler conflict, where the C headers define
+  the isblank macro, which was wiping out the TiXmlString::isblank() method.
+  The method was unused and has been removed.
+
+Changes in version 2.1.4
+- Reworked the entity code. Entities were not correctly surving round trip input and output.
+  Will now automatically create entities for high ascii in output.
+
+Changes in version 2.1.5
+- Bug fix by kylotan : infinite loop on some input (tinyxmlparser.cpp rev 1.27)
+- Contributed by Ivica Aracic (bytelord) : 1 new VC++ project to compile versions as static libraries (tinyxml_lib.dsp), 
+  and an example usage in xmltest.dsp
+  (Patch request ID 678605)
+- A suggestion by Ronald Fenner Jr (dormlock) to add #include <istream> and <ostream> for Apple's Project Builder 
+  (Patch request ID 697642)
+- A patch from ohommes that allows to parse correctly dots in element names and attribute names
+  (Patch request 602600 and kylotan 701728)
+- A patch from  hermitgeek ( James ) and wasteland for improper error reporting
+- Reviewed by Lee, with the following changes:
+	- Got sick of fighting the STL/non-STL thing in the windows build. Broke
+	  them out as seperate projects.
+	- I have too long not included the dsw. Added.
+	- TinyXmlText had a protected Print. Odd.
+	- Made LinkEndChild public, with docs and appropriate warnings.
+	- Updated the docs.
+
+2.2.0
+- Fixed an uninitialized pointer in the TiXmlAttributes
+- Fixed STL compilation problem in MinGW (and gcc 3?) - thanks Brian Yoder for finding this one
+- Fixed a syntax error in TiXmlDeclaration - thanks Brian Yoder
+- Fletcher Dunn proposed and submitted new error handling that tracked the row and column. Lee
+  modified it to not have performance impact.
+- General cleanup suggestions from Fletcher Dunn.
+- In error handling, general errors will no longer clear the error state of specific ones.
+- Fix error in documentation : comments starting with "<?--" instead of "<!--" (thanks ion_pulse)
+- Added the TiXmlHandle. An easy, safe way to browse XML DOMs with less code.
+- Added QueryAttribute calls which have better error messaging. (Proposed by Fletcher Dunn)
+- Nodes and attributes can now print themselves to strings. (Yves suggestion)
+- Fixed bug where entities with one character would confuse parser. (Thanks Roman)
+
+2.2.1
+- Additional testing (no more bugs found to be fixed in this release)
+- Significant performance improvement to the cursor code.
+
+2.3.0
+- User Data are now defined in TiXmlBase instead of TiXmlNode
+- Character Entities are now UCS-2
+- Character Entities can be decimal or hexadecimal
+- UTF-8 conversion.
+- Fixed many, many bugs.
+
+2.3.1
+- Fixed bug in handling nulls embedded in the input.
+- Make UTF-8 parser tolerant of bad text encoding.
+- Added encoding detection. 
+- Many fixes and input from John-Philip Leonard Johansson (JP) and Ellers, 
+  including UTF-8 feedback, bug reports, and patches. Thanks!
+- Added version # constants - a suggestion from JP and Ellers.
+- [ 979180 ] Missing ; in entity reference, fix from Rob Laveaux.
+- Copy constructors and assignment have been a long time coming. Thanks to
+  Fokke and JP.
+
+2.3.2
+- Made the IsAlpha and IsAlphaNum much more tolerant of non-UTF-8 encodings. Thanks
+  Volker Boerchers for finding the issue.
+- Ran the program though the magnificent Valgrind - http://valgrind.kde.org - to check
+  for memory errors. Fixed some minor issues.
+
+2.3.3
+- Fixed crash when test program was run from incorrect directory.
+- Fixed bug 1070717 - empty document not returned correctly - thanks Katsuhisa Yuasa.
+- Bug 1079301 resolved - deprecated stdlib calls. Thanks Adrian Boeing.
+- Bug 1035218 fixed - documentation errors. Xunji Luo
+- Other bug fixes have accumulated and been fixed on the way as well; my apologies to
+  authors not credited!
+- Big fix / addition is to correctly return const values. TinyXml could basically
+  remove const in a method like this: TiXmlElement* Foo() const, where the returned element
+  was a pointer to internal data. That is now: const TiXmlElement* Foo() const and
+  TiXmlElement* Foo().
+
+2.3.4
+- Fixed additional const errors, thanks Kent Gibson.
+- Correctly re-enable warnings after tinyxml header. Thanks Cory Nelson.
+- Variety of type cleanup and warning fixes. Thanks Warren Stevens.
+- Cleaned up unneeded constructor calls in TinyString - thanks to Geoff Carlton and
+  the discussion group on sourceforge.
+
+2.4.0
+- Improved string class, thanks Tyge Lovset (whose name gets mangled in English - sorry)
+- Type cast compiler warning, thanks Rob van den Bogaard
+- Added GetText() convenience function. Thanks Ilya Parniuk & Andrew Ellers for input.
+- Many thanks to marlonism for finding an infinite loop in bad xml.
+- A patch to cleanup warnings from Robert Gebis.
+- Added ValueStr() to get the value of a node as a string.
+- TiXmlText can now parse and output as CDATA
+- Additional string improvement from James (z2895)
+- Removed extraneous 'const', thanks David Aldrich
+- First pass at switching to the "safe" stdlib functions. Many people have suggested and
+  pushed on this, but Warren Stevens put together the first proposal.
+- TinyXml now will do EOL normalization before parsing, consistent with the W3C XML spec.
+- Documents loaded with the UTF-8 BOM will now save with the UTF-8 BOM. Good suggestion 
+  from 'instructor_'
+- Ellers submitted his very popular tutorials, which have been added to the distribution.
+
+2.4.1
+- Fixed CDATA output formatting
+- Fixed memory allocators in TinyString to work with overloaded new/delete
+
+2.4.2
+- solosnake pointed out that TIXML_LOG causes problems on an XBOX. The definition in the header
+  was superflous and was moved inside of DEBUG_PARSING
+
+2.4.3
+- Fixed a test bug that caused a crash in 'xmltest'. TinyXML was fine, but it isn't good
+  to ship with a broken test suite.
+- Started converting some functions to not cast between std::string and const char* 
+  quite as often.
+- Added FILE* versions of the document loads - good suggestion from Wade Brainerd
+- Empty documents might not always return the errors they should. [1398915] Thanks to igor v.
+- Added some asserts for multiply adding a node, regardng bug [1391937] suggested by Paco Arjonilla.
+
+2.4.4
+- Bug find thanks to andre-gross found a memory leak that occured when a document failed to load.
+- Bug find (and good analysis) by VirtualJim who found a case where attribute parsing 
+  should be throwing an error and wasn't.
+- Steve Hyatt suggested the QueryValueAttribute method, which is now implemented.
+- DavidA identified a chunk of dead code.
+- Andrew Baxter sent in some compiler warnings that were good clean up points.
+
+2.5
+- Added the Visit() API. Many thanks to both Andrew Ellerton and John-Philip for all their
+  work, code, suggestion, and just general pushing that it should be done.
+- Removed existing streaming code and use TiXmlPrinter instead.
+- [ tinyxml-Bugs-1527079 ] Compile error in tinystr.cpp fixed, thanks to Paul Suggs
+- [ tinyxml-Bugs-1522890 ] SaveFile has no error checks fixed, thanks to Ivan Dobrokotov
+- Ivan Dobrokotov also reported redundant memory allocation in the Attribute() method, which
+  upon investigation was a mess. The attribute should now be fixed for both const char* and 
+  std::string, and the return types match the input parameters.
+- Feature [ 1511105 ] Make TiXmlComment constructor accept a string / char*, implemented.
+  Thanks to Karl Itschen for the feedback.
+- [ 1480108 ] Stream parsing fails when CDATA contains tags was found by Tobias Grimm, who also
+  submitted a test case and patch. A significant bug in CDATA streaming (operator>>) has now
+  been fixed.
+
+2.5.2
+- Lieven, and others, pointed out a missing const-cast that upset the Open Watcom compiler.
+  Should now be fixed.
+- ErrorRow and ErrorCol should have been const, and weren't. Fixed thanks to Dmitry Polutov.
+
+2.5.3
+- zloe_zlo identified a missing string specialization for QueryValueAttribute() [ 1695429 ]. Worked
+  on this bug, but not sure how to fix it in a safe, cross-compiler way.
+- increased warning level to 4 and turned on detect 64 bit portability issues for VC2005.
+  May address [ 1677737 ] VS2005: /Wp64 warnings
+- grosheck identified several problems with the Document copy. Many thanks for [ 1660367 ]
+- Nice catch, and suggested fix, be Gilad Novik on the Printer dropping entities.
+  "[ 1600650 ] Bug when printing xml text" is now fixed.
+- A subtle fix from Nicos Gollan in the tinystring initializer: 
+  [ 1581449 ] Fix initialiser of TiXmlString::nullrep_
+- Great catch, although there isn't a submitter for the bug. [ 1475201 ] TinyXML parses entities in comments. 
+  Comments should not, in fact, parse entities. Fixed the code path and added tests.
+- We were not catching all the returns from ftell. Thanks to Bernard for catching that.
+  
