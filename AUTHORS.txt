@@ -7,8 +7,8 @@ AUTHORS
 
   Ilija Melentijevic
   New GUI skin (from ASE 0.8).
-    http://ilkke.blogspot.com/
-    http://www.pixeljoint.com/p/9270.htm
+  http://ilkke.blogspot.com/
+  http://www.pixeljoint.com/p/9270.htm
 
   Trent Gamblin
   Mac OS X packager.
@@ -67,12 +67,12 @@ THANKFULNESS
 
   David Turner, Robert Wilhelm, and Werner Lemberg: For the FreeType
   project.
-  <http://www.freetype.org/>
+  http://www.freetype.org/
 
   Derek Liauw Kie Fa and Robert J Ohannessian for 2xSaI.
 
   DJ Delorie: For the DJGPP port to DOS of the GNU software.
-  <http://www.delorie.com/djgpp/>
+  http://www.delorie.com/djgpp/
 
   Elias Pschernig: For his excelent bresenham ellipse algorithm and to
   report some nasty keyboard bugs. And his patch to load/save GIF files.
@@ -96,20 +96,23 @@ THANKFULNESS
 
   Johan Halmén and Anders "Trezker" Andersson for mapgen (included in
   old ASE versions).
-  <http://edu.loviisa.fi/~lg/jh/mapgen/>
-  <http://www.angelfire.com/art/dumlesoft/Projects.html>
+  http://edu.loviisa.fi/~lg/jh/mapgen/
+  http://www.angelfire.com/art/dumlesoft/Projects.html
 
   Jordan Russell and Martijn Laan: For Inno Setup.
-  <http://www.innosetup.com/>
+  http://www.innosetup.com/
 
   Jose Luis Torres Pantoja for his gift: the book "Digital Image
   Processing, Gonzalez and Woods, Addison-Wesley, 2002"
 
   Juraj Michalek: For the support to ASE in his portal.
-  <http://games.linux.sk/>
+  http://games.linux.sk/
+
+  Lee Thomason: For tinyxml library.
+  http://www.sourceforge.net/projects/tinyxml
 
   Matthew Leverton: For his Allegro portal.
-  <http://www.allegro.cc/>
+  http://www.allegro.cc/
 
   Max Maischein: For the documents about various file formats of the
   Animator and Animator Pro.
@@ -121,43 +124,44 @@ THANKFULNESS
   FULL-SCREEN.txt document.
 
   Peter Wang: For his Red Pixel II game, it was very helpful for the
-  scripting routines.
-  <http://redpixel.sourceforge.net/>
+  scripting routines. Also for loadpng library.
+  http://redpixel.sourceforge.net/
+  http://tjaden.strangesoft.net/
 
   Raph Levien: For his excelent work with the libart library.
-  <http://www.levien.com/libart/>
+  http://www.levien.com/libart/
 
   Richard M. Stallman: For the Free Software Foundation, GNU and
   Emacs, and everyone who contributed with free software.
-  <http://www.fsf.org/>
-  <http://www.gnu.org/>
-  <http://www.emacs.org/>
+  http://www.fsf.org/
+  http://www.gnu.org/
+  http://www.emacs.org/
 
   Robert Höhne: For the RHIDE enviroment.
-  <http://www.lanet.lv/~pavenis/rhide.html>
+  http://www.lanet.lv/~pavenis/rhide.html
 
   Salvador Eduardo Tropea: For the SETEdit editor (although I don't
   use it anymore, the first months in Linux without it would have been
   impossibles)
-  <http://setedit.sourceforge.net/>
+  http://setedit.sourceforge.net/
 
   Shawn Hargreaves: And hundreds of people who helped in the Allegro
   library.
-  <http://alleg.sourceforge.net/>
+  http://alleg.sourceforge.net/
 
   Spencer Kimball and Peter Mattis: And a lot of people who
   contributed with The GIMP and GTK+.  I personally "borrow" source
   code for differents task in the program.
-  <http://www.gimp.org/>
-  <http://www.gtk.org/>
+  http://www.gimp.org/
+  http://www.gtk.org/
 
   The Independent JPEG Group: For the JPEG library to load/save Jpeg
   files.
-  <ftp://ftp.uu.net/graphics/jpeg/>
+  ftp://ftp.uu.net/graphics/jpeg/
 
   The Open Group: For XFree86.
-  <http://www.x.org/>
+  http://www.x.org/
 
   Waldemar Celes, Roberto Ierusalimschy, and Luiz Henrique de
   Figueiredo: For their excelent work with Lua.
-  <http://www.lua.org/>
+  http://www.lua.org/
