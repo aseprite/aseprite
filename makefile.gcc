@@ -12,6 +12,7 @@ CFLAGS += -Wall -I. -Isrc -Ithird_party		\
 	  -I$(LIBPNG_DIR)			\
 	  -I$(ZLIB_DIR)				\
 	  -I$(LOADPNG_DIR)			\
+	  -I$(TINYXML_DIR)			\
 	  -Wno-deprecated-declarations		\
 	  -DPNG_NO_MMX_CODE
 
@@ -85,6 +86,10 @@ $(LOADPNG_LIB): $(LOADPNG_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
+$(TINYXML_LIB): $(TINYXML_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
 ######################################################################
 # Rules to build objects and the application
 
@@ -128,7 +133,8 @@ VPATH = src					\
 	$(LIBJPEG_DIR)				\
 	$(LIBPNG_DIR)				\
 	$(ZLIB_DIR)				\
-	$(LOADPNG_DIR)
+	$(LOADPNG_DIR)				\
+	$(TINYXML_DIR)
 
 ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 
@@ -161,6 +167,9 @@ $(OBJ_DIR)/zlib.%$(OBJ): %.c
 
 $(OBJ_DIR)/loadpng.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/tinyxml.%$(OBJ): %.cpp
+	$(CPP) $(CFLAGS) -o $@ -c $<
 
 ######################################################################
 # Application

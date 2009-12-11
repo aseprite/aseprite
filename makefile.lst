@@ -482,6 +482,21 @@ LOADPNG_OBJS = $(addprefix $(OBJ_DIR)/loadpng.,		\
 		   $(notdir $(basename $(LOADPNG_SOURCES)))))
 
 ######################################################################
+# tinyxml
+
+TINYXML_LIB = $(OBJ_DIR)/libtinyxml$(LIB_EXT)
+TINYXML_DIR = third_party/tinyxml
+TINYXML_SOURCES =					\
+	$(TINYXML_DIR)/tinystr.cpp			\
+	$(TINYXML_DIR)/tinyxml.cpp			\
+	$(TINYXML_DIR)/tinyxmlerror.cpp			\
+	$(TINYXML_DIR)/tinyxmlparser.cpp
+
+TINYXML_OBJS = $(addprefix $(OBJ_DIR)/tinyxml.,		\
+		 $(addsuffix $(OBJ),			\
+		   $(notdir $(basename $(TINYXML_SOURCES)))))
+
+######################################################################
 # All objects and libraries
 
 ALL_OBJS =					\
@@ -491,7 +506,8 @@ ALL_OBJS =					\
 	$(LIBJPEG_OBJS)				\
 	$(LIBPNG_OBJS)				\
 	$(ZLIB_OBJS)				\
-	$(LOADPNG_OBJS)
+	$(LOADPNG_OBJS)				\
+	$(TINYXML_OBJS)
 
 THIRD_PARTY_LIBS =				\
 	$(LIBART_LIB)				\
@@ -499,7 +515,8 @@ THIRD_PARTY_LIBS =				\
 	$(LIBJPEG_LIB)				\
 	$(LIBPNG_LIB)				\
 	$(ZLIB_LIB)				\
-	$(LOADPNG_LIB)
+	$(LOADPNG_LIB)				\
+	$(TINYXML_LIB)
 
 ######################################################################
 # Tests

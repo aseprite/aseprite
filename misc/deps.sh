@@ -8,6 +8,8 @@ CFLAGS="-I.					\
 	-Ithird_party/libpng			\
 	-Ithird_party/zlib			\
 	-Ithird_party/jpeg			\
+	-Ithird_party/tinyxml			\
+	-Ithird_party/loadpng			\
 	-Ithird_party/freetype/include		\
 	-Ithird_party"
 

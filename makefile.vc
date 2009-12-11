@@ -30,6 +30,7 @@ CFLAGS = -nologo						\
 	 -I$(LIBPNG_DIR)					\
 	 -I$(ZLIB_DIR)						\
 	 -I$(LOADPNG_DIR)					\
+	 -I$(TINYXML_DIR)					\
 	 -DPNG_NO_MMX_CODE
 
 LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86
@@ -120,6 +121,10 @@ $(LOADPNG_LIB): $(LOADPNG_OBJS)
 	-rm -f $@
 	lib -NOLOGO -OUT:$@ $^
 
+$(TINYXML_LIB): $(TINYXML_OBJS)
+	-rm -f $@
+	lib -NOLOGO -OUT:$@ $^
+
 ######################################################################
 # Rules to build objects and the application
 
@@ -163,7 +168,8 @@ VPATH = src					\
 	$(LIBJPEG_DIR)				\
 	$(LIBPNG_DIR)				\
 	$(ZLIB_DIR)				\
-	$(LOADPNG_DIR)
+	$(LOADPNG_DIR)				\
+	$(TINYXML_DIR)
 
 ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 
@@ -192,6 +198,9 @@ $(OBJ_DIR)/zlib.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -Fo$@ -c $<
 
 $(OBJ_DIR)/loadpng.%$(OBJ): %.c
+	$(CC) $(CFLAGS) -Fo$@ -c $<
+
+$(OBJ_DIR)/tinyxml.%$(OBJ): %.cpp
 	$(CC) $(CFLAGS) -Fo$@ -c $<
 
 ######################################################################
