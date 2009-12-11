@@ -27,7 +27,7 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
 #include "raster/sprite.h"

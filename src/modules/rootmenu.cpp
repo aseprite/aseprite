@@ -28,7 +28,7 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/core.h"
 #include "core/dirs.h"
 #include "intl/intl.h"

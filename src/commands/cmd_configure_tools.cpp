@@ -23,7 +23,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "ui_context.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"

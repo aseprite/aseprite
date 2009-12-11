@@ -26,7 +26,7 @@
 
 #include "commands/commands.h"
 #include "commands/command.h"
-/* #include "core/app.h" */
+/* #include "app.h" */
 /* #include "core/cfg.h" */
 /* #include "core/core.h" */
 #include "modules/gfx.h"

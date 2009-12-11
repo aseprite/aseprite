@@ -27,7 +27,7 @@
 #include "jinete/jmutex.h"
 
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/core.h"
 #include "file/file.h"
 #include "file/format_options.h"

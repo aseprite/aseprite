@@ -25,7 +25,7 @@
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"

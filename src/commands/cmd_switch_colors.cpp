@@ -23,7 +23,7 @@
 #include "jinete/jbase.h"
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "widgets/colbar.h"
 
 class SwitchColorsCommand : public Command

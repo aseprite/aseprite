@@ -24,7 +24,7 @@
 #include "commands/command.h"
 #include "console.h"
 #include "core/color.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"

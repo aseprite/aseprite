@@ -24,7 +24,7 @@
 
 #include "commands/command.h"
 #include "sprite_wrappers.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/core.h"
 #include "modules/gui.h"
 #include "raster/cel.h"

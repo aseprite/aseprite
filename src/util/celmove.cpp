@@ -23,7 +23,7 @@
 
 #include "sprite_wrappers.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/color.h"
 #include "core/core.h"
 #include "modules/gui.h"

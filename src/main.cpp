@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 #include "ase_exception.h"
-#include "core/app.h"
+#include "app.h"
 #include "loadpng.h"
 
 //////////////////////////////////////////////////////////////////////

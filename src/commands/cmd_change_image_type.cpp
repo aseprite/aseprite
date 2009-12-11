@@ -22,7 +22,7 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"

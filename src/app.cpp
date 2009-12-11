@@ -35,7 +35,7 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/core.h"
 #include "core/drop_files.h"

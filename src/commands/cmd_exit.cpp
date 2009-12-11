@@ -22,7 +22,7 @@
 
 #include "commands/command.h"
 #include "context.h"
-#include "core/app.h"
+#include "app.h"
 #include "raster/sprite.h"
 
 //////////////////////////////////////////////////////////////////////

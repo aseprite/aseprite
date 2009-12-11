@@ -26,7 +26,7 @@
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"

@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/core.h"
 #include "file/file.h"

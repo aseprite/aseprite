@@ -28,7 +28,7 @@
 #include "jinete/jsystem.h"
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 

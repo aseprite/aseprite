@@ -24,7 +24,7 @@
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/job.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"

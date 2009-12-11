@@ -24,7 +24,8 @@
 
 #include "jinete/jinete.h"
 
-#include "core/app.h"
+#include "console.h"
+#include "app.h"
 #include "core/core.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"

@@ -23,7 +23,7 @@
 
 #include "jinete/jinete.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "effect/effect.h"
 #include "modules/editors.h"

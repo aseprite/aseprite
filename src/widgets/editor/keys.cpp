@@ -24,7 +24,7 @@
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/color.h"
 #include "modules/editors.h"
 #include "modules/gui.h"

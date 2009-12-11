@@ -22,7 +22,7 @@
 #include <allegro/file.h>
 
 #include "ui_context.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "widgets/tabs.h"

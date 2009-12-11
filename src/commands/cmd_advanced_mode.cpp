@@ -21,7 +21,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
 

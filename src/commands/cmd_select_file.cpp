@@ -27,7 +27,7 @@
 #include "ui_context.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"

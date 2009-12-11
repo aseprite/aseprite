@@ -24,7 +24,7 @@
 
 #include "ui_context.h"
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "modules/editors.h"
 #include "modules/gui.h"

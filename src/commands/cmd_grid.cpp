@@ -21,7 +21,7 @@
 #include <allegro/unicode.h>
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/editors.h"
 #include "modules/tools.h"
 #include "widgets/statebar.h"

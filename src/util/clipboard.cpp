@@ -26,7 +26,7 @@
 
 #include "sprite_wrappers.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/core.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"

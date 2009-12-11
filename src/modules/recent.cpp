@@ -23,7 +23,7 @@
 
 #include "jinete/jlist.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
 #include "modules/recent.h"

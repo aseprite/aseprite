@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/gui.h"
 #include "modules/editors.h"
 #include "raster/layer.h"

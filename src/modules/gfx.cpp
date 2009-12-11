@@ -26,7 +26,7 @@
 #include "jinete/jtheme.h"
 
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/dirs.h"
 #include "modules/gfx.h"

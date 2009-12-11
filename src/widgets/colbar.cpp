@@ -25,7 +25,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/commands.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "modules/editors.h"

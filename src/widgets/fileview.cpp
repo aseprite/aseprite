@@ -26,7 +26,7 @@
 
 #include "commands/commands.h"
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
 #include "modules/editors.h"

@@ -22,7 +22,7 @@
 
 #include "sprite_wrappers.h"
 #include "ui_context.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

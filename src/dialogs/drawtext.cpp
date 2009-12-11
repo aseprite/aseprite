@@ -23,7 +23,7 @@
 #include "jinete/jinete.h"
 
 #include "console.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"

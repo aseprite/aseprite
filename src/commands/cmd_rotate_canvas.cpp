@@ -24,7 +24,7 @@
 
 #include "commands/command.h"
 #include "commands/params.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/job.h"
 #include "modules/gui.h"
 #include "raster/cel.h"

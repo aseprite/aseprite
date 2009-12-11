@@ -20,7 +20,7 @@
 
 #include "commands/command.h"
 #include "sprite_wrappers.h"
-#include "core/app.h"
+#include "app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"

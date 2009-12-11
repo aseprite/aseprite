@@ -29,7 +29,7 @@
 #include "ui_context.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "modules/editors.h"

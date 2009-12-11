@@ -27,7 +27,7 @@
 
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "core/app.h"
+#include "app.h"
 #include "ui_context.h"
 
 #ifdef ALLEGRO_WINDOWS

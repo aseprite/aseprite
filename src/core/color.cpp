@@ -23,7 +23,7 @@
 
 #include "jinete/jbase.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/color.h"
 #include "core/core.h"
 #include "modules/gfx.h"

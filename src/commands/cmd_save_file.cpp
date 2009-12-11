@@ -23,7 +23,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/command.h"
-#include "core/app.h"
+#include "app.h"
 #include "console.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"

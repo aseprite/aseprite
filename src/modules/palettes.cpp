@@ -24,7 +24,7 @@
 
 #include "jinete/jlist.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"
 #include "raster/image.h"

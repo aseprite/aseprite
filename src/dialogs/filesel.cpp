@@ -30,7 +30,7 @@
 
 #include "jinete/jinete.h"
 
-#include "core/app.h"
+#include "app.h"
 #include "core/cfg.h"
 #include "core/dirs.h"
 #include "file/file.h"
