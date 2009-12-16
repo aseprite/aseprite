@@ -1,16 +1,16 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
-<window noborders desktop text="Main Window" name="main_window">
-  <box noborders vertical>
-    <box noborders horizontal name="menubar" />
-    <box noborders horizontal name="tabsbar" />
-    <box noborders horizontal expansive>
-      <box noborders vertical name="colorbar" />
-      <box noborders horizontal name="editor" expansive />
-      <box noborders vertical name="toolbar" />
+<window noborders="true" desktop="true" text="Main Window" name="main_window">
+  <box noborders="true" vertical="true">
+    <box noborders="true" horizontal="true" name="menubar" />
+    <box noborders="true" horizontal="true" name="tabsbar" />
+    <box noborders="true" horizontal="true" expansive="true">
+      <box noborders="true" vertical="true" name="colorbar" />
+      <box noborders="true" horizontal="true" name="editor" expansive="true" />
+      <box noborders="true" vertical="true" name="toolbar" />
     </box>
-    <box noborders horizontal name="statusbar" />
+    <box noborders="true" horizontal="true" name="statusbar" />
   </box>
 </window>
 </jinete>

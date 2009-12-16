@@ -72,7 +72,7 @@ ase_files="config.h				\
 	   *.txt				\
 	   data/aseicon.*			\
 	   data/convmatr.def			\
-	   data/gui-en.xml			\
+	   data/*.xml				\
 	   data/fonts/*.pcx			\
 	   data/jids/*.jid			\
 	   data/palettes/*.col			\
@@ -175,7 +175,7 @@ $1/WARNING.txt							     \
 $1/COPYING							     \
 $1/data/convmatr.def						     \
 $1/data/jids/*.jid						     \
-$1/data/gui-en.xml						     \
+$1/data/*.xml						     	     \
 $1/data/tips/*.en						     \
 $1/docs/*.pdf							     \
 $1/docs/files/*.txt						     \

@@ -40,6 +40,8 @@
 
 #include "jinete/jinete.h"
 
+#include "tinyxml.h"
+
 /* determine is the characer is a blank space */
 #define IS_BLANK(c) (((c) ==  ' ') ||  \
 		     ((c) == '\t') ||	\
@@ -53,46 +55,48 @@
 
 #define TRANSLATE_ATTR(a) a
 
-static JWidget convert_tag_to_widget(JXmlElem elem);
+static bool bool_attr_is_true(TiXmlElement* elem, const char* attribute_name);
+static JWidget convert_xmlelement_to_widget(TiXmlElement* elem);
 static int convert_align_value_to_flags(const char *value);
 
 JWidget ji_load_widget(const char *filename, const char *name)
 {
   JWidget widget = NULL;
-  JXml xml;
-  JList children;
-  JLink link;
 
-  xml = jxml_new_from_file(filename);
-  if (!xml)
-    return NULL;
+  TiXmlDocument doc;
+  if (!doc.LoadFile(filename))
+    throw jexception(&doc);
 
-  /* search the requested widget */
-  children = jxml_get_root(xml)->head.children;
-  JI_LIST_FOR_EACH(children, link) {
-    JXmlNode node = reinterpret_cast<JXmlNode>(link->data);
+  // search the requested widget
+  TiXmlHandle handle(&doc);
+  TiXmlElement* xmlElement = handle
+    .FirstChild("jinete")
+    .FirstChildElement().ToElement();
 
-    /* if this node is an XML Element and has a "name" property... */
-    if (node->type == JI_XML_ELEM &&
-	jxmlelem_has_attr((JXmlElem)node, "name")) {
-      /* ...then we can compare both names (the requested one with the
-	 element's name) */
-      const char *nodename = jxmlelem_get_attr((JXmlElem)node, "name");
-      if (nodename != NULL && ustrcmp(nodename, name) == 0) {
-	/* convert tags to Jinete widgets */
-	widget = convert_tag_to_widget((JXmlElem)node);
-	break;
-      }
+  while (xmlElement) {
+    const char* nodename = xmlElement->Attribute("name");
+
+    if (nodename && ustrcmp(nodename, name) == 0) {
+      widget = convert_xmlelement_to_widget(xmlElement);
+      break;
     }
+
+    xmlElement = xmlElement->NextSiblingElement();
   }
 
-  jxml_free(xml);
   return widget;
 }
 
-static JWidget convert_tag_to_widget(JXmlElem elem)
+static bool bool_attr_is_true(TiXmlElement* elem, const char* attribute_name)
 {
-  const char *elem_name = jxmlelem_get_name(elem);
+  const char* value = elem->Attribute(attribute_name);
+
+  return (value != NULL) && (strcmp(value, "true") == 0);
+}
+
+static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
+{
+  const char *elem_name = elem->Value();
   JWidget widget = NULL;
   JWidget child;
 
@@ -100,9 +104,9 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
 
   /* box */
   if (ustrcmp(elem_name, "box") == 0) {
-    bool horizontal  = jxmlelem_has_attr(elem, "horizontal");
-    bool vertical    = jxmlelem_has_attr(elem, "vertical");
-    bool homogeneous = jxmlelem_has_attr(elem, "homogeneous");
+    bool horizontal  = bool_attr_is_true(elem, "horizontal");
+    bool vertical    = bool_attr_is_true(elem, "vertical");
+    bool homogeneous = bool_attr_is_true(elem, "homogeneous");
 
     widget = jbox_new((horizontal ? JI_HORIZONTAL:
 		       vertical ? JI_VERTICAL: 0) |
@@ -110,15 +114,15 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* button */
   else if (ustrcmp(elem_name, "button") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *text = elem->Attribute("text");
 
     widget = jbutton_new(text ? TRANSLATE_ATTR(text): NULL);
     if (widget) {
-      bool left   = jxmlelem_has_attr(elem, "left");
-      bool right  = jxmlelem_has_attr(elem, "right");
-      bool top    = jxmlelem_has_attr(elem, "top");
-      bool bottom = jxmlelem_has_attr(elem, "bottom");
-      const char *_bevel = jxmlelem_get_attr(elem, "bevel");
+      bool left   = bool_attr_is_true(elem, "left");
+      bool right  = bool_attr_is_true(elem, "right");
+      bool top    = bool_attr_is_true(elem, "top");
+      bool bottom = bool_attr_is_true(elem, "bottom");
+      const char *_bevel = elem->Attribute("bevel");
 
       jwidget_set_align(widget,
 			(left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
@@ -146,14 +150,14 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* check */
   else if (ustrcmp(elem_name, "check") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *text = elem->Attribute("text");
 
     widget = jcheck_new(text ? TRANSLATE_ATTR(text): NULL);
     if (widget) {
-      bool center = jxmlelem_has_attr(elem, "center");
-      bool right  = jxmlelem_has_attr(elem, "right");
-      bool top    = jxmlelem_has_attr(elem, "top");
-      bool bottom = jxmlelem_has_attr(elem, "bottom");
+      bool center = bool_attr_is_true(elem, "center");
+      bool right  = bool_attr_is_true(elem, "right");
+      bool top    = bool_attr_is_true(elem, "top");
+      bool bottom = bool_attr_is_true(elem, "bottom");
 
       jwidget_set_align(widget,
 			(center ? JI_CENTER:
@@ -168,11 +172,11 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* entry */
   else if (ustrcmp(elem_name, "entry") == 0) {
-    const char *maxsize = jxmlelem_get_attr(elem, "maxsize");
-    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *maxsize = elem->Attribute("maxsize");
+    const char *text = elem->Attribute("text");
 
     if (maxsize != NULL) {
-      bool readonly = jxmlelem_has_attr(elem, "readonly");
+      bool readonly = bool_attr_is_true(elem, "readonly");
 
       widget = jentry_new(ustrtol(maxsize, NULL, 10),
 			  text ? TRANSLATE_ATTR(text): NULL);
@@ -183,8 +187,8 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* grid */
   else if (ustrcmp(elem_name, "grid") == 0) {
-    const char *columns = jxmlelem_get_attr(elem, "columns");
-    bool same_width_columns = jxmlelem_has_attr(elem, "same_width_columns");
+    const char *columns = elem->Attribute("columns");
+    bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
 
     if (columns != NULL) {
       widget = jgrid_new(ustrtol(columns, NULL, 10),
@@ -193,14 +197,14 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* label */
   else if (ustrcmp(elem_name, "label") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *text = elem->Attribute("text");
 
     widget = jlabel_new(text ? TRANSLATE_ATTR(text): NULL);
     if (widget) {
-      bool center = jxmlelem_has_attr(elem, "center");
-      bool right  = jxmlelem_has_attr(elem, "right");
-      bool top    = jxmlelem_has_attr(elem, "top");
-      bool bottom = jxmlelem_has_attr(elem, "bottom");
+      bool center = bool_attr_is_true(elem, "center");
+      bool right  = bool_attr_is_true(elem, "right");
+      bool top    = bool_attr_is_true(elem, "top");
+      bool bottom = bool_attr_is_true(elem, "bottom");
 
       jwidget_set_align(widget,
 			(center ? JI_CENTER:
@@ -215,30 +219,30 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* listitem */
   else if (ustrcmp(elem_name, "listitem") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *text = elem->Attribute("text");
 
     widget = jlistitem_new(text ? TRANSLATE_ATTR(text): NULL);
   }
   /* panel */
   else if (ustrcmp(elem_name, "panel") == 0) {
-    bool horizontal = jxmlelem_has_attr(elem, "horizontal");
-    bool vertical = jxmlelem_has_attr(elem, "vertical");
+    bool horizontal = bool_attr_is_true(elem, "horizontal");
+    bool vertical = bool_attr_is_true(elem, "vertical");
 
     widget = jpanel_new(horizontal ? JI_HORIZONTAL:
 			vertical ? JI_VERTICAL: 0);
   }
   /* radio */
   else if (ustrcmp(elem_name, "radio") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
-    const char *group = jxmlelem_get_attr(elem, "group");
+    const char* text = elem->Attribute("text");
+    const char* group = elem->Attribute("group");
 
     widget = jradio_new(text ? TRANSLATE_ATTR(text): NULL,
 			group ? ustrtol(group, NULL, 10): 1);
     if (widget) {
-      bool center = jxmlelem_has_attr(elem, "center");
-      bool right  = jxmlelem_has_attr(elem, "right");
-      bool top    = jxmlelem_has_attr(elem, "top");
-      bool bottom = jxmlelem_has_attr(elem, "bottom");
+      bool center = bool_attr_is_true(elem, "center");
+      bool right  = bool_attr_is_true(elem, "right");
+      bool top    = bool_attr_is_true(elem, "top");
+      bool bottom = bool_attr_is_true(elem, "bottom");
 
       jwidget_set_align(widget,
 			(center ? JI_CENTER:
@@ -249,13 +253,13 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* separator */
   else if (ustrcmp(elem_name, "separator") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
-    bool center      = jxmlelem_has_attr(elem, "center");
-    bool right       = jxmlelem_has_attr(elem, "right");
-    bool middle      = jxmlelem_has_attr(elem, "middle");
-    bool bottom      = jxmlelem_has_attr(elem, "bottom");
-    bool horizontal  = jxmlelem_has_attr(elem, "horizontal");
-    bool vertical    = jxmlelem_has_attr(elem, "vertical");
+    const char *text = elem->Attribute("text");
+    bool center      = bool_attr_is_true(elem, "center");
+    bool right       = bool_attr_is_true(elem, "right");
+    bool middle      = bool_attr_is_true(elem, "middle");
+    bool bottom      = bool_attr_is_true(elem, "bottom");
+    bool horizontal  = bool_attr_is_true(elem, "horizontal");
+    bool vertical    = bool_attr_is_true(elem, "vertical");
 
     widget = ji_separator_new(text ? TRANSLATE_ATTR(text): NULL,
 			      (horizontal ? JI_HORIZONTAL: 0) |
@@ -267,8 +271,8 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* slider */
   else if (ustrcmp(elem_name, "slider") == 0) {
-    const char *min = jxmlelem_get_attr(elem, "min");
-    const char *max = jxmlelem_get_attr(elem, "max");
+    const char *min = elem->Attribute("min");
+    const char *max = elem->Attribute("max");
     int min_value = min != NULL ? ustrtol(min, NULL, 10): 0;
     int max_value = max != NULL ? ustrtol(max, NULL, 10): 0;
 
@@ -276,7 +280,7 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* textbox */
   else if (ustrcmp(elem_name, "textbox") == 0) {
-    bool wordwrap = jxmlelem_has_attr(elem, "wordwrap");
+    bool wordwrap = bool_attr_is_true(elem, "wordwrap");
 
     /* TODO add translatable support */
     /* TODO here we need jxmlelem_get_text(elem) */
@@ -289,10 +293,10 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
   }
   /* window */
   else if (ustrcmp(elem_name, "window") == 0) {
-    const char *text = jxmlelem_get_attr(elem, "text");
+    const char *text = elem->Attribute("text");
 
     if (text) {
-      bool desktop = jxmlelem_has_attr(elem, "desktop");
+      bool desktop = bool_attr_is_true(elem, "desktop");
 
       if (desktop)
 	widget = jwindow_new_desktop();
@@ -303,20 +307,19 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
 
   /* the widget was created? */
   if (widget) {
-    const char *name      = jxmlelem_get_attr(elem, "name");
-    const char *tooltip   = jxmlelem_get_attr(elem, "tooltip");
-    bool selected         = jxmlelem_has_attr(elem, "selected");
-    bool expansive        = jxmlelem_has_attr(elem, "expansive");
-    bool magnetic         = jxmlelem_has_attr(elem, "magnetic");
-    bool noborders        = jxmlelem_has_attr(elem, "noborders");
-    const char *width     = jxmlelem_get_attr(elem, "width");
-    const char *height    = jxmlelem_get_attr(elem, "height");
-    const char *minwidth  = jxmlelem_get_attr(elem, "minwidth");
-    const char *minheight = jxmlelem_get_attr(elem, "minheight");
-    const char *maxwidth  = jxmlelem_get_attr(elem, "maxwidth");
-    const char *maxheight = jxmlelem_get_attr(elem, "maxheight");
-    const char *childspacing = jxmlelem_get_attr(elem, "childspacing");
-    JLink link;
+    const char *name      = elem->Attribute("name");
+    const char *tooltip   = elem->Attribute("tooltip");
+    bool selected         = bool_attr_is_true(elem, "selected");
+    bool expansive        = bool_attr_is_true(elem, "expansive");
+    bool magnetic         = bool_attr_is_true(elem, "magnetic");
+    bool noborders        = bool_attr_is_true(elem, "noborders");
+    const char *width     = elem->Attribute("width");
+    const char *height    = elem->Attribute("height");
+    const char *minwidth  = elem->Attribute("minwidth");
+    const char *minheight = elem->Attribute("minheight");
+    const char *maxwidth  = elem->Attribute("maxwidth");
+    const char *maxheight = elem->Attribute("maxheight");
+    const char *childspacing = elem->Attribute("childspacing");
 
     if (name != NULL)
       jwidget_set_name(widget, name);
@@ -351,37 +354,35 @@ static JWidget convert_tag_to_widget(JXmlElem elem)
     }
 
     /* children */
-    JI_LIST_FOR_EACH(elem->head.children, link) {
-      if (((JXmlNode)link->data)->type == JI_XML_ELEM) {
-	JXmlElem child_elem = (JXmlElem)link->data;
-	child = convert_tag_to_widget(child_elem);
-
-	if (child != NULL) {
-	  /* attach the child in the view */
-	  if (widget->type == JI_VIEW) {
-	    jview_attach(widget, child);
-	    break;
-	  }
-	  /* add the child in the grid */
-	  else if (widget->type == JI_GRID) {
-	    const char *cell_hspan = jxmlelem_get_attr(child_elem, "cell_hspan");
-	    const char *cell_vspan = jxmlelem_get_attr(child_elem, "cell_vspan");
-	    const char *cell_align = jxmlelem_get_attr(child_elem, "cell_align");
-	    int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
-	    int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
-	    int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
-
-	    jgrid_add_child(widget, child, hspan, vspan, align);
-	  }
-	  /* just add the child in any other kind of widget */
-	  else
-	    jwidget_add_child(widget, child);
+    TiXmlElement* child_elem = elem->FirstChildElement();
+    while (child_elem) {
+      child = convert_xmlelement_to_widget(child_elem);
+      if (child) {
+	/* attach the child in the view */
+	if (widget->type == JI_VIEW) {
+	  jview_attach(widget, child);
+	  break;
 	}
+	/* add the child in the grid */
+	else if (widget->type == JI_GRID) {
+	  const char* cell_hspan = child_elem->Attribute("cell_hspan");
+	  const char* cell_vspan = child_elem->Attribute("cell_vspan");
+	  const char* cell_align = child_elem->Attribute("cell_align");
+	  int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
+	  int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
+	  int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
+
+	  jgrid_add_child(widget, child, hspan, vspan, align);
+	}
+	/* just add the child in any other kind of widget */
+	else
+	  jwidget_add_child(widget, child);
       }
+      child_elem = child_elem->NextSiblingElement();
     }
 
     if (widget->type == JI_VIEW) {
-      bool maxsize = jxmlelem_has_attr(elem, "maxsize");
+      bool maxsize = bool_attr_is_true(elem, "maxsize");
       if (maxsize)
 	jview_maxsize(widget);
     }

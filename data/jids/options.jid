@@ -2,30 +2,30 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="Options" name="options">
-  <box vertical>
-    <box vertical>
+  <box vertical="true">
+    <box vertical="true">
 
       <label text="Mouse Speed:" />
-      <box horizontal>
-	<box vertical homogeneous>
+      <box horizontal="true">
+	<box vertical="true" homogeneous="true">
           <label text="X:" />
           <label text="Y:" />
 	</box>
-	<box vertical homogeneous expansive>
+	<box vertical="true" homogeneous="true" expansive="true">
           <slider min="-8" max="8" name="mouse_x" />
           <slider min="-8" max="8" name="mouse_y" />
 	</box>
       </box>
       <check text="Lock X/Y" name="lock_axis" />
 
-      <separator horizontal />
+      <separator horizontal="true" />
 
       <check text="Smooth auto-scroll" name="smooth" />
       <check text="Real-time ordered dithering" name="dither" />
       <check text="2 Click Movement" name="move_click2" />
       <check text="2 Click Drawing" name="draw_click2" />
 
-      <box horizontal>
+      <box horizontal="true">
         <label text="Undo size limit:" />
         <entry name="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used\nfor undo information per sprite.\nSpecified in megabytes." />
         <label text="MB" />
@@ -33,11 +33,11 @@
 
     </box>
 
-    <box horizontal>
-      <box horizontal expansive />
-      <box horizontal homogeneous>
-	<button text="&OK" name="button_ok" magnetic width="60" />
-	<button text="&Cancel" />
+    <box horizontal="true">
+      <box horizontal="true" expansive="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" name="button_ok" magnetic="true" width="60" />
+	<button text="&amp;Cancel" />
       </box>
     </box>
   </box>

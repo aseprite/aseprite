@@ -1,3 +1,8 @@
+2009-11-27  David Capello  <davidcapello@gmail.com>
+
+	* Now XML files are loaded with tinyxml library (for better error
+	handling/reporting).
+
 2009-11-22  David Capello  <davidcapello@gmail.com>
 
 	* src/jinete/jmanager.cpp (jmanager_generate_messages): Added

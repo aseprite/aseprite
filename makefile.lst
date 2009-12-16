@@ -125,6 +125,7 @@ COMMON_SOURCES =					\
 	src/jinete/jcombobox.cpp			\
 	src/jinete/jdraw.cpp				\
 	src/jinete/jentry.cpp				\
+	src/jinete/jexception.cpp			\
 	src/jinete/jgrid.cpp				\
 	src/jinete/jfile.cpp				\
 	src/jinete/jfilesel.cpp				\
@@ -231,6 +232,7 @@ COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
 
 ASE_SOURCES = \
 	src/app.cpp						\
+	src/ase_exception.cpp					\
 	src/console.cpp						\
 	src/context.cpp						\
 	src/main.cpp						\

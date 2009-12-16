@@ -2,64 +2,64 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="Palette Editor" name="palette_editor">
-  <box vertical>
-    <box horizontal expansive>
-      <box vertical>
-	<view name="palette_editor" expansive /> <!-- custom-widget -->
+  <box vertical="true">
+    <box horizontal="true" expansive="true">
+      <box vertical="true">
+	<view name="palette_editor" expansive="true" /> <!-- custom-widget -->
 	<slider min="1" max="256" name="columns" />
       </box>
-      <box vertical expansive>
-	<box horizontal>
-          <box vertical homogeneous>
+      <box vertical="true" expansive="true">
+	<box horizontal="true">
+          <box vertical="true" homogeneous="true">
 	    <label text="R" />
 	    <label text="G" />
 	    <label text="B" />
           </box>
-          <box vertical homogeneous expansive>
+          <box vertical="true" homogeneous="true" expansive="true">
 	    <slider min="0" max="255" name="red" />
 	    <slider min="0" max="255" name="green" />
 	    <slider min="0" max="255" name="blue" />
           </box>
-          <box vertical homogeneous>
+          <box vertical="true" homogeneous="true">
 	    <label text="H" />
 	    <label text="S" />
 	    <label text="V" />
           </box>
-          <box vertical homogeneous expansive>
+          <box vertical="true" homogeneous="true" expansive="true">
 	    <slider min="0" max="255" name="hue" />
 	    <slider min="0" max="255" name="saturation" />
 	    <slider min="0" max="255" name="value" />
           </box>
 	</box>
-	<box name="colorviewer" expansive /> <!-- custom-widget -->
-	<button text="Select &All" name="select_all" />
-	<box vertical>
-	  <box horizontal homogeneous>
-	    <button text="&Undo" name="undo" />
-	    <button text="&Redo" name="redo" />
+	<box name="colorviewer" expansive="true" /> <!-- custom-widget -->
+	<button text="Select &amp;All" name="select_all" />
+	<box vertical="true">
+	  <box horizontal="true" homogeneous="true">
+	    <button text="&amp;Undo" name="undo" />
+	    <button text="&amp;Redo" name="redo" />
 	  </box>
-	  <box horizontal homogeneous>
-	    <button text="&Load" name="load" />
-	    <button text="&Save" name="save" />
+	  <box horizontal="true" homogeneous="true">
+	    <button text="&amp;Load" name="load" />
+	    <button text="&amp;Save" name="save" />
 	  </box>
-	  <box horizontal homogeneous>
-	    <button text="&Ramp" name="ramp" />
-	    <button text="&Quantize" name="quantize" />
+	  <box horizontal="true" homogeneous="true">
+	    <button text="&amp;Ramp" name="ramp" />
+	    <button text="&amp;Quantize" name="quantize" />
 	  </box>
 	</box>
       </box>
     </box>
-    <box horizontal >
+    <box horizontal="true">
       <label text="Frame:" />
-      <slider min="0" max="1" name="frame" expansive />
+      <slider min="0" max="1" name="frame" expansive="true" />
     </box>
 
-    <box horizontal>
+    <box horizontal="true">
       <check name="all_frames" text="All frames the same palette" />
-      <box horizontal expansive />
-      <box horizontal homogeneous>
-	<button text="&OK" name="button_ok" magnetic width="60" />
-	<button text="&Cancel" />
+      <box horizontal="true" expansive="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" name="button_ok" magnetic="true" width="60" />
+	<button text="&amp;Cancel" />
       </box>
     </box>
   </box>

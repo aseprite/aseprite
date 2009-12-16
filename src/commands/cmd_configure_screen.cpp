@@ -34,6 +34,8 @@
 #include "sprite_wrappers.h"
 #include "modules/palettes.h"
 
+#include "tinyxml.h"
+
 static int new_card, new_w, new_h, new_depth, new_scaling;
 static int old_card, old_w, old_h, old_depth, old_scaling;
 
@@ -152,82 +154,78 @@ void ConfigureScreen::show_dialog(Context* context)
 
 void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale)
 {
-  DIRS *dirs, *dir;
-  JXml xml;
   char buf[512];
-
-  dirs = filename_in_datadir("usergui.xml");
-  {
-    sprintf(buf, "gui-%s.xml", intl_get_lang());
-    dirs_cat_dirs(dirs, filename_in_datadir(buf));
-    dirs_cat_dirs(dirs, filename_in_datadir("gui-en.xml"));
-  }
 
   m_resolutions.clear();
   m_colordepths.clear();
   m_pixelscale.clear();
 
-  for (dir=dirs; dir; dir=dir->next) {
+  DIRS* dirs = filename_in_datadir("gui.xml");
+
+  for (DIRS* dir=dirs; dir; dir=dir->next) {
     PRINTF("Trying to load screen resolutions file from \"%s\"...\n", dir->path);
-    
-    // open the XML menu definition file
-    xml = jxml_new_from_file(dir->path);
-    if (xml && jxml_get_root(xml)) {
-      JXmlElem xml_resolutions = jxmlelem_get_elem_by_name(jxml_get_root(xml), "resolutions");
-      if (xml_resolutions) {
-	JLink link;
-	JI_LIST_FOR_EACH(((JXmlNode)xml_resolutions)->children, link) {
-	  JXmlNode child = (JXmlNode)link->data;
-	  JXmlElem elem = (JXmlElem)child;
 
-	  if (strcmp(jxmlelem_get_name(elem), "screensize") == 0) {
-	    int w = ustrtol(jxmlelem_get_attr(elem, "width"), NULL, 10);
-	    int h = ustrtol(jxmlelem_get_attr(elem, "height"), NULL, 10);
-	    const char* aspect = jxmlelem_get_attr(elem, "aspect");
+    if (!exists(dir->path))
+      continue;
 
-	    if (w > 0 && h > 0) {
-	      m_resolutions.push_back(std::make_pair(w, h));
+    PRINTF(" - \"%s\" found\n", dir->path);
 
-	      if (aspect)
-		sprintf(buf, "%dx%d (%s)", w, h, aspect);
-	      else
-		sprintf(buf, "%dx%d", w, h, aspect);
+    TiXmlDocument doc;
+    if (!doc.LoadFile(dir->path))
+      throw ase_exception(&doc);
 
-	      jcombobox_add_string(resolution, buf, NULL);
-	      if (old_w == w && old_h == h)
-		jcombobox_select_index(resolution, jcombobox_get_count(resolution)-1);
-	    }
-	  }
-	  else if (strcmp(jxmlelem_get_name(elem), "colordepth") == 0) {
-	    int bpp = ustrtol(jxmlelem_get_attr(elem, "bpp"), NULL, 10);
-	    const char* label = jxmlelem_get_attr(elem, "label");
+    TiXmlHandle handle(&doc);
 
-	    if (bpp > 0 && label) {
-	      m_colordepths.push_back(bpp);
+    TiXmlElement* xmlElement = handle
+      .FirstChild("gui")
+      .FirstChild("resolutions")
+      .FirstChildElement().ToElement();
 
-	      jcombobox_add_string(color_depth, label, NULL);
-	      if (old_depth == bpp)
-		jcombobox_select_index(color_depth, jcombobox_get_count(color_depth)-1);
-	    }
-	  }
-	  else if (strcmp(jxmlelem_get_name(elem), "pixelscale") == 0) {
-	    int factor = ustrtol(jxmlelem_get_attr(elem, "factor"), NULL, 10);
-	    const char* label = jxmlelem_get_attr(elem, "label");
+    while (xmlElement) {
+      if (strcmp(xmlElement->Value(), "screensize") == 0) {
+	int w = ustrtol(xmlElement->Attribute("width"), NULL, 10);
+	int h = ustrtol(xmlElement->Attribute("height"), NULL, 10);
+	const char* aspect = xmlElement->Attribute("aspect");
 
-	    if (factor > 0 && label) {
-	      m_pixelscale.push_back(factor);
+	if (w > 0 && h > 0) {
+	  m_resolutions.push_back(std::make_pair(w, h));
 
-	      jcombobox_add_string(pixel_scale, label, NULL);
-	      if (old_scaling == factor)
-		jcombobox_select_index(pixel_scale, jcombobox_get_count(pixel_scale)-1);
-	    }
-	  }
+	  if (aspect)
+	    sprintf(buf, "%dx%d (%s)", w, h, aspect);
+	  else
+	    sprintf(buf, "%dx%d", w, h, aspect);
+
+	  jcombobox_add_string(resolution, buf, NULL);
+	  if (old_w == w && old_h == h)
+	    jcombobox_select_index(resolution, jcombobox_get_count(resolution)-1);
+	}
+      }
+      else if (strcmp(xmlElement->Value(), "colordepth") == 0) {
+	int bpp = ustrtol(xmlElement->Attribute("bpp"), NULL, 10);
+	const char* label = xmlElement->Attribute("label");
+
+	if (bpp > 0 && label) {
+	  m_colordepths.push_back(bpp);
+
+	  jcombobox_add_string(color_depth, label, NULL);
+	  if (old_depth == bpp)
+	    jcombobox_select_index(color_depth, jcombobox_get_count(color_depth)-1);
+	}
+      }
+      else if (strcmp(xmlElement->Value(), "pixelscale") == 0) {
+	int factor = ustrtol(xmlElement->Attribute("factor"), NULL, 10);
+	const char* label = xmlElement->Attribute("label");
+
+	if (factor > 0 && label) {
+	  m_pixelscale.push_back(factor);
+
+	  jcombobox_add_string(pixel_scale, label, NULL);
+	  if (old_scaling == factor)
+	    jcombobox_select_index(pixel_scale, jcombobox_get_count(pixel_scale)-1);
 	}
       }
 
-      // free the XML file
-      jxml_free(xml);
-      break;
+      xmlElement = xmlElement->NextSiblingElement();
     }
   }
 

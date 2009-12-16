@@ -3,11 +3,11 @@
 <jinete>
 <window text="Warning - Important" name="advanced_mode_warning">
   <grid columns="1">
-    <label text="You are going to enter in \"Advanced Mode\"." />
+    <label text="You are going to enter in &quot;Advanced Mode&quot;." />
     <label text="" name="warning_label" />
     <check text="Don't show this again" name="donot_show" />
-    <separator horizontal />
-    <button text="&OK" magnetic minwidth="60" cell_align="center" />
+    <separator horizontal="true" />
+    <button text="&amp;OK" magnetic="true" minwidth="60" cell_align="center" />
   </grid>
 </window>
 </jinete>

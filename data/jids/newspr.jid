@@ -2,34 +2,34 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="New Sprite" name="new_sprite">
-  <box vertical>
-    <box horizontal>
-      <box vertical expansive>
-        <separator text="Size:" left horizontal />
-        <box vertical expansive>
-          <box horizontal>
-            <box vertical homogeneous>
+  <box vertical="true">
+    <box horizontal="true">
+      <box vertical="true" expansive="true">
+        <separator text="Size:" left="true" horizontal="true" />
+        <box vertical="true" expansive="true">
+          <box horizontal="true">
+            <box vertical="true" homogeneous="true">
               <label text="Width:" />
               <label text="Height:" />
             </box>
-            <box vertical homogeneous expansive>
-              <entry expansive name="width" maxsize=8 magnetic tooltip="Width of the new sprite (in pixels)" />
-              <entry expansive name="height" maxsize=8 tooltip="Height of the new sprite (in pixels)" />
+            <box vertical="true" homogeneous="true" expansive="true">
+              <entry expansive="true" name="width" maxsize="8" magnetic="true" tooltip="Width of the new sprite (in pixels)" />
+              <entry expansive="true" name="height" maxsize="8" tooltip="Height of the new sprite (in pixels)" />
             </box>
           </box>
         </box>
       </box>
-      <box vertical>
-        <separator text="Color Mode:" left horizontal />
-        <box vertical homogeneous>
-          <radio name="radio1" text="&RGB Color" group=1 tooltip="RGBA color mode\n(32 bits per pixel)" />
-	  <radio name="radio2" text="&Grayscale" group=1 tooltip="Value and Alpha\n(16 bits per pixel)" />
-	  <radio name="radio3" text="&Indexed" group=1 tooltip="Using a palette of 256 colors\n(8 bits per pixel)" />
+      <box vertical="true">
+        <separator text="Color Mode:" left="true" horizontal="true" />
+        <box vertical="true" homogeneous="true">
+          <radio name="radio1" text="&amp;RGB Color" group="1" tooltip="RGBA color mode\n(32 bits per pixel)" />
+	  <radio name="radio2" text="&amp;Grayscale" group="1" tooltip="Value and Alpha\n(16 bits per pixel)" />
+	  <radio name="radio3" text="&amp;Indexed" group="1" tooltip="Using a palette of 256 colors\n(8 bits per pixel)" />
 	</box>
       </box>
     </box>
-    <separator text="Background:" left horizontal />
-    <view maxsize expansive>
+    <separator text="Background:" left="true" horizontal="true" />
+    <view maxsize="true" expansive="true">
       <listbox name="bg_box">
         <listitem text="Transparent" />
         <listitem text="Black" />
@@ -39,11 +39,11 @@
       </listbox>
     </view>
 
-    <box horizontal>
-      <box horizontal expansive />
-      <box horizontal homogeneous>
-	<button text="&OK" name="ok_button" magnetic width="60" />
-	<button text="&Cancel" />
+    <box horizontal="true">
+      <box horizontal="true" expansive="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" name="ok_button" magnetic="true" width="60" />
+	<button text="&amp;Cancel" />
       </box>
     </box>
   </box>

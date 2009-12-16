@@ -2,34 +2,34 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="Draw Text" name="drawtext_window">
-  <box vertical>
-    <box horizontal>
-      <box vertical homogeneous>
+  <box vertical="true">
+    <box horizontal="true">
+      <box vertical="true" homogeneous="true">
 	<label text="Font:" />
 	<label text="Size:" />
       </box>
-      <box vertical homogeneous expansive>
+      <box vertical="true" homogeneous="true" expansive="true">
 	<button text="" name="font" />
-	<entry maxsize=8 name="size"/>
+	<entry maxsize="8" name="size"/>
       </box>
     </box>
 <!--     <label text="Fixed Size:" /> -->
-<!--     <view expansive> -->
+<!--     <view expansive="true"> -->
 <!--       <listbox /> -->
 <!--     </view> -->
-    <separator horizontal />
-    <box horizontal>
-      <box vertical homogeneous>
+    <separator horizontal="true" />
+    <box horizontal="true">
+      <box vertical="true" homogeneous="true">
 	<label text="Text:" />
 	<label text="Color:" />
       </box>
-      <box vertical homogeneous expansive name="color_box">
-	<entry maxsize=256 name="text" expansive />
+      <box vertical="true" homogeneous="true" expansive="true" name="color_box">
+	<entry maxsize="256" name="text" expansive="true" />
       </box>
     </box>
-    <box horizontal homogeneous>
-      <button text="&OK" name="ok" magnetic />
-      <button text="&Cancel" />
+    <box horizontal="true" homogeneous="true">
+      <button text="&amp;OK" name="ok" magnetic="true" />
+      <button text="&amp;Cancel" />
     </box>
   </box>
 </window>

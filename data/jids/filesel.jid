@@ -2,26 +2,26 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="" name="file_selector">
-  <box vertical>
-    <box horizontal>
-      <box horizontal noborders>
+  <box vertical="true">
+    <box horizontal="true">
+      <box horizontal="true" noborders="true">
 	<button text="" name="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
 	<button text="" name="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
       </box>
       <button text="" name="goup" tooltip="Up to parent folder\n(Backspace)" />
-      <combobox name="location" expansive />
+      <combobox name="location" expansive="true" />
     </box>
-    <box vertical expansive name="box" />
-    <box horizontal>
+    <box vertical="true" expansive="true" name="box" />
+    <box horizontal="true">
       <label text="Name:" />
-      <entry text="" maxsize=256 name="filename" expansive magnetic />
-      <combobox name="filetype" minwidth=70 />
+      <entry text="" maxsize="256" name="filename" expansive="true" magnetic="true" />
+      <combobox name="filetype" minwidth="70" />
     </box>
-    <box horizontal>
-      <box horizontal expansive />
-      <box horizontal homogeneous>
-	<button text="&OK" name="ok" magnetic width="60" />
-	<button text="&Cancel" name="cancel" />
+    <box horizontal="true">
+      <box horizontal="true" expansive="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" name="ok" magnetic="true" width="60" />
+	<button text="&amp;Cancel" name="cancel" />
       </box>
     </box>
   </box>

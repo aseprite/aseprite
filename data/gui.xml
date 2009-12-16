@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ASE menus, tools and keyboard shortcuts -->
+<gui>
+  <!-- keyboard shortcuts -->
+  <keyboard>
+    <commands>
+      <!-- file -->
+      <key command="new_file" shortcut="Ctrl+N" />
+      <key command="open_file" shortcut="Ctrl+O" />
+      <key command="save_file" shortcut="Ctrl+S" />
+      <key command="save_file_as" shortcut="Ctrl+Shift+S" />
+      <key command="save_file_copy_as" shortcut="Ctrl+Shift+C" />
+      <key command="close_file" shortcut="Ctrl+W" />
+      <key command="close_all_files" shortcut="Ctrl+Shift+W" />
+      <key command="screen_shot" shortcut="F12" />
+      <key command="exit" shortcut="Ctrl+Q" />
+      <key command="exit" shortcut="Esc" />
+      <!-- edit -->
+      <key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
+      <key command="redo" shortcut="Ctrl+R" />
+      <key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
+      <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
+      <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
+      <key command="clear" shortcut="Del" /> <key command="clear" shortcut="Backspace" />
+      <key command="flip" shortcut="Shift+H">
+	<param name="target" value="mask" />
+	<param name="orientation" value="horizontal" />
+      </key>
+      <key command="flip" shortcut="Shift+V">
+	<param name="target" value="mask" />
+	<param name="orientation" value="vertical" />
+      </key>
+      <key command="replace_color" shortcut="Shift+R" />
+      <key command="invert_color" shortcut="Ctrl+I" />
+      <!-- sprite -->
+      <key command="sprite_properties" shortcut="Ctrl+P" />
+      <!-- layer -->
+      <key command="layer_properties" shortcut="Shift+P" />
+      <key command="new_layer" shortcut="Shift+N" />
+      <key command="goto_previous_layer" shortcut="Down" />
+      <key command="goto_next_layer" shortcut="Up" />
+      <!-- frame -->
+      <key command="new_frame" shortcut="N" />
+      <key command="frame_properties" shortcut="P" />
+      <key command="goto_first_frame" shortcut="Home" />
+      <key command="goto_previous_frame" shortcut="Left" />
+      <key command="goto_next_frame" shortcut="Right" />
+      <key command="goto_last_frame" shortcut="End" />
+      <key command="play_animation" shortcut="Enter" />
+      <!-- mask -->
+      <key command="mask_all" shortcut="Ctrl+A" />
+      <key command="deselect_mask" shortcut="Ctrl+D" />
+      <key command="reselect_mask" shortcut="Ctrl+Shift+D" />
+      <key command="invert_mask" shortcut="Ctrl+Shift+I" />
+      <!-- view -->
+      <key command="refresh" shortcut="F5" />
+      <key command="advanced_mode" shortcut="A" />
+      <key command="make_unique_editor" shortcut="Ctrl+1" />
+      <key command="split_editor_vertically" shortcut="Ctrl+2" />
+      <key command="split_editor_horizontally" shortcut="Ctrl+3" />
+      <key command="close_editor" shortcut="Ctrl+4" />
+      <key command="preview_fit_to_screen" shortcut="F6" />
+      <key command="preview_normal" shortcut="F7" />
+      <key command="preview_tiled" shortcut="F8" />
+      <key command="show_grid" shortcut="Shift+G" />
+      <key command="snap_to_grid" shortcut="Shift+S" />
+      <!-- tools -->
+      <key command="configure_tools" shortcut="C" />
+      <key command="film_editor" shortcut="Tab" />
+      <key command="palette_editor" shortcut="F4" />
+      <key command="convolution_matrix" shortcut="F9" />
+      <key command="color_curve" shortcut="Ctrl+M" />
+      <key command="color_curve" shortcut="F10" />
+      <key command="tips" shortcut="F1" />
+      <key command="options" shortcut="Ctrl+Shift+O" />
+      
+      <!-- others -->
+      <key command="eyedropper" shortcut="I">
+	<param name="target" value="background" />
+      </key>
+      <key command="eyedropper" shortcut="Shift+I">
+	<param name="target" value="foreground" />
+      </key>
+      <key command="switch_colors" shortcut="X" />
+      <key command="change_color" shortcut="9">
+	<param name="target" value="foreground" />
+	<param name="change" value="decrement-index" />
+      </key>
+      <key command="change_color" shortcut="0">
+	<param name="target" value="foreground" />
+	<param name="change" value="increment-index" />
+      </key>
+      <key command="change_color" shortcut="[">
+	<param name="target" value="foreground" />
+	<param name="change" value="decrement-index" />
+      </key>
+      <key command="change_color" shortcut="]">
+	<param name="target" value="foreground" />
+	<param name="change" value="increment-index" />
+      </key>
+      <key command="change_color" shortcut="Ctrl+9">
+	<param name="target" value="background" />
+	<param name="change" value="decrement-index" />
+      </key>
+      <key command="change_color" shortcut="Ctrl+0">
+	<param name="target" value="background" />
+	<param name="change" value="increment-index" />
+      </key>
+    </commands>
+    <tools>
+      <key tool="rectangular_marquee" shortcut="M" />
+      <key tool="eraser" shortcut="E" />
+      <key tool="pencil" shortcut="B" />
+      <key tool="brush" shortcut="B" />
+      <key tool="spray" shortcut="S" />
+      <key tool="paint_bucket" shortcut="G" />
+      <key tool="line" shortcut="L" />
+      <key tool="curve" shortcut="V" />
+      <key tool="rectangle" shortcut="U" />
+      <key tool="ellipse" shortcut="O" />
+      <key tool="ellipse" shortcut="U" />
+      <key tool="blur" shortcut="R" />
+      <key tool="jumble" shortcut="J" />
+    </tools>
+  </keyboard>
+  
+  <menus>
+    <!-- main bar menu -->
+    <menu id="main_menu">
+      <menu text="&amp;File">
+	<item command="new_file" text="&amp;New..." />
+	<item command="open_file" text="&amp;Open..." />
+	<item id="recent_list" text="Open &amp;Recent" />
+	<separator />
+	<item command="save_file" text="&amp;Save" />
+	<item command="save_file_as" text="Save &amp;As..." />
+	<item command="save_file_copy_as" text="Save Cop&amp;y As..." />
+	<item command="close_file" text="&amp;Close" />
+	<item command="close_all_files" text="Close All" />
+	<separator />
+	<menu text="Ca&amp;pture">
+	  <item command="screen_shot" text="Screen Shot" />
+	  <item command="record_screen" text="Record Screen" />
+	</menu>
+	<separator />
+	<item command="exit" text="E&amp;xit" />
+      </menu>
+      <menu text="&amp;Edit">
+	<item command="undo" text="&amp;Undo" />
+	<item command="redo" text="&amp;Redo" />
+	<separator />
+	<item command="cut" text="Cu&amp;t" />
+	<item command="copy" text="&amp;Copy" />
+	<item command="paste" text="&amp;Paste" />
+	<item command="clear" text="C&amp;lear" />
+	<separator />
+	<item command="flip" text="Flip &amp;Horizontal">
+	  <param name="target" value="mask" />
+	  <param name="orientation" value="horizontal" />
+	</item>
+	<item command="flip" text="Flip &amp;Vertical">
+	  <param name="target" value="mask" />
+	  <param name="orientation" value="vertical" />
+	</item>
+	<separator />
+	<item command="replace_color" text="R&amp;eplace Color..." />
+	<item command="invert_color" text="&amp;Invert" />
+      </menu>
+      <menu text="&amp;Sprite">
+	<item command="sprite_properties" text="&amp;Properties..." />
+	<menu text="Color &amp;Mode">
+	  <item command="change_image_type" text="&amp;RGB Color">
+	    <param name="imgtype" value="rgb" />
+	  </item>
+	  <item command="change_image_type" text="&amp;Grayscale">
+	    <param name="imgtype" value="grayscale" />
+	  </item>
+	  <item command="change_image_type" text="&amp;Indexed (No Dithering)">
+	    <param name="imgtype" value="indexed" />
+	  </item>
+	  <item command="change_image_type" text="Indexed (Ordered &amp;Dither)">
+	    <param name="imgtype" value="indexed" />
+	    <param name="dithering" value="ordered" />
+	  </item>
+	</menu>
+	<separator />
+	<item command="duplicate_sprite" text="&amp;Duplicate..." />
+	<separator />
+	<item command="sprite_size" text="&amp;Sprite Size..." />
+	<item command="canvas_size" text="&amp;Canvas Size..." />
+	<menu text="&amp;Rotate Canvas">
+	  <item command="rotate_canvas" text="180">
+	    <param name="angle" value="180" />
+	  </item>
+	  <item command="rotate_canvas" text="90 CW">
+	    <param name="angle" value="90" />
+	  </item>
+	  <item command="rotate_canvas" text="90 CCW">
+	    <param name="angle" value="-90" />
+	  </item>
+	  <separator />
+	  <item command="flip" text="Flip Canvas &amp;Horizontal">
+	    <param name="target" value="canvas" />
+	    <param name="orientation" value="horizontal" />
+	  </item>
+	  <item command="flip" text="Flip Canvas &amp;Vertical">
+	    <param name="target" value="canvas" />
+	    <param name="orientation" value="vertical" />
+	  </item>
+	</menu>
+	<separator />
+	<item command="crop_sprite" text="Cr&amp;op" />
+	<item command="autocrop_sprite" text="&amp;Trim" />
+      </menu>
+      <menu text="&amp;Layer">
+	<item command="layer_properties" text="&amp;Properties..." />
+	<separator />
+	<item command="new_layer" text="&amp;New Layer..." />
+	<item command="remove_layer" text="&amp;Remove Layer" />
+	<item command="background_from_layer" text="&amp;Background from Layer" />
+	<item command="layer_from_background" text="&amp;Layer from Background" />
+	<separator />
+	<item command="duplicate_layer" text="&amp;Duplicate..." />
+	<item command="merge_down_layer" text="&amp;Merge Down" />
+	<item command="flatten_layers" text="&amp;Flatten" />
+      </menu>
+      <menu text="F&amp;rame">
+	<item command="frame_properties" text="&amp;Properties..." />
+	<separator />
+	<item command="new_frame" text="&amp;New Frame" />
+	<item command="remove_frame" text="&amp;Remove Frame" />
+	<separator />
+	<menu text="&amp;Jump to">
+	  <item command="goto_first_frame" text="&amp;First Frame" />
+	  <item command="goto_previous_frame" text="&amp;Previous Frame" />
+	  <item command="goto_next_frame" text="&amp;Next Frame" />
+	  <item command="goto_last_frame" text="&amp;Last Frame" />
+	</menu>
+	<item command="play_animation" text="&amp;Play Animation" />
+      </menu>
+      <menu text="&amp;Cel">
+	<item command="cel_properties" text="&amp;Properties..." />
+      </menu>
+      <menu text="&amp;Mask">
+	<item command="mask_all" text="&amp;All" />
+	<item command="deselect_mask" text="&amp;Deselect" />
+	<item command="reselect_mask" text="&amp;Reselect" />
+	<item command="invert_mask" text="&amp;Inverse" />
+	<separator />
+	<item command="mask_by_color" text="&amp;Color Range" />
+	<separator />
+	<item command="load_mask" text="&amp;Load from MSK file" />
+	<item command="save_mask" text="&amp;Save to MSK file" />
+      </menu>
+      <menu text="&amp;View">
+	<item command="advanced_mode" text="&amp;Advanced Mode" />
+	<menu text="&amp;Editor">
+	  <item command="make_unique_editor" text="Make &amp;Unique" />
+	  <separator />
+	  <item command="split_editor_vertically" text="Split &amp;Vertically" />
+	  <item command="split_editor_horizontally" text="Split &amp;Horizontally" />
+	  <separator />
+	  <item command="close_editor" text="&amp;Close" />
+	</menu>
+	<separator />
+	<menu text="&amp;Grid">
+	  <item command="show_grid" text="Show &amp;Grid" />
+	  <item command="snap_to_grid" text="&amp;Snap to Grid" />
+	</menu>
+	<menu text="&amp;Preview">
+	  <item command="preview_fit_to_screen" text="&amp;Fit to screen" />
+	  <item command="preview_normal" text="&amp;Normal" />
+	  <item command="preview_tiled" text="&amp;Tiled" />
+	</menu>
+	<separator />
+	<item command="refresh" text="&amp;Refresh" />
+	<item command="configure_screen" text="Configure &amp;Screen" />
+      </menu>
+      <menu text="&amp;Tools">
+	<item command="configure_tools" text="&amp;Configure" />
+	<separator />
+	<item command="film_editor" text="&amp;Animation Editor" />
+	<item command="palette_editor" text="&amp;Palette Editor" />
+	<separator />
+	<menu text="F&amp;X" id="fx_popup">
+	  <item command="convolution_matrix" text="Convolution &amp;Matrix" />
+	  <item command="color_curve" text="&amp;Color Curve" />
+	  <separator />
+	  <item command="despeckle" text="&amp;Despeckle (median filter)" />
+	</menu>
+	<separator />
+	<item command="options" text="&amp;Options" />
+      </menu>
+      <menu text="&amp;Help">
+	<item command="tips" text="&amp;Tips" />
+	<separator />
+	<item command="about" text="&amp;About" />
+      </menu>
+    </menu>
+    
+    <menu id="layer_popup">
+      <item command="layer_properties" text="&amp;Properties..." />
+      <separator />
+      <item command="new_layer" text="&amp;New..." />
+      <item command="remove_layer" text="&amp;Remove" />
+      <item command="background_from_layer" text="&amp;Background from Layer" />
+      <item command="layer_from_background" text="&amp;Layer from Background" />
+      <separator />
+      <item command="duplicate_layer" text="&amp;Duplicate..." />
+      <item command="merge_down_layer" text="&amp;Merge Down" />
+      <item command="flatten_layers" text="&amp;Flatten" />
+    </menu>
+    
+    <menu id="frame_popup">
+      <item command="frame_properties" text="&amp;Properties..." />
+      <separator />
+      <item command="new_frame" text="&amp;New" />
+      <item command="remove_frame" text="&amp;Remove" />
+    </menu>
+    
+    <menu id="cel_popup">
+      <item command="cel_properties" text="&amp;Properties..." />
+      <separator />
+      <item command="clear" text="&amp;Clear" />
+    </menu>
+    
+    <menu id="cel_movement_popup">
+      <item command="move_cel" text="&amp;Move" />
+      <item command="copy_cel" text="&amp;Copy" />
+    </menu>
+  </menus>
+  
+  <!-- resolutions -->
+  <resolutions>
+    
+    <screensize width="320" height="200" aspect="16:10" />
+    <screensize width="320" height="240" aspect="4:3" />
+    <screensize width="640" height="400" aspect="16:10" />
+    <screensize width="640" height="480" aspect="4:3" />
+    <screensize width="800" height="600" aspect="4:3" />
+    <screensize width="1024" height="768" aspect="4:3" />
+    <screensize width="1280" height="800" aspect="16:10" />
+    <screensize width="1600" height="900" aspect="16:9" />
+    <screensize width="1600" height="1200" aspect="4:3" />
+    <screensize width="1680" height="1050" aspect="16:10" />
+    <screensize width="1920" height="1200" aspect="16:10" />
+    <screensize width="2560" height="1600" aspect="16:10" />
+    
+    <colordepth bpp="8" label="8 bpp (256 colors)" />
+    <colordepth bpp="15" label="15 bpp (32K colors)" />
+    <colordepth bpp="16" label="16 bpp (64K colors)" />
+    <colordepth bpp="24" label="24 bpp (16M colors)" />
+    <colordepth bpp="32" label="32 bpp (16M colors)" />
+    
+    <pixelscale factor="1" label="x1 (normal)" />
+    <pixelscale factor="2" label="x2 (double)" />
+    <pixelscale factor="3" label="x3 (big)" />
+    <pixelscale factor="4" label="x4 (huge)" />
+    
+  </resolutions>
+  
+</gui>

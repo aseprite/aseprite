@@ -29,48 +29,71 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_JINETE_H_INCLUDED
-#define JINETE_JINETE_H_INCLUDED
+#include "config.h"
 
-#include "jinete/jaccel.h"
-#include "jinete/jalert.h"
-#include "jinete/jbase.h"
-#include "jinete/jbox.h"
-#include "jinete/jbutton.h"
-#include "jinete/jclipboard.h"
-#include "jinete/jcombobox.h"
-#include "jinete/jdraw.h"
-#include "jinete/jentry.h"
-#include "jinete/jgrid.h"
+#include <allegro.h>
+#include <stdio.h>
+
 #include "jinete/jexception.h"
-#include "jinete/jfile.h"
-#include "jinete/jfilesel.h"
-#include "jinete/jfont.h"
-#include "jinete/jhook.h"
-#include "jinete/jimage.h"
-#include "jinete/jlabel.h"
-#include "jinete/jlist.h"
-#include "jinete/jlistbox.h"
-#include "jinete/jmanager.h"
-#include "jinete/jmenu.h"
-#include "jinete/jmessage.h"
-#include "jinete/jmutex.h"
-#include "jinete/jpanel.h"
-#include "jinete/jquickmenu.h"
-#include "jinete/jrect.h"
-#include "jinete/jregion.h"
-#include "jinete/jsep.h"
-#include "jinete/jslider.h"
-#include "jinete/jstream.h"
-#include "jinete/jstring.h"
-#include "jinete/jsystem.h"
-#include "jinete/jtextbox.h"
-#include "jinete/jtheme.h"
-#include "jinete/jthread.h"
-#include "jinete/jtooltips.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
-#include "jinete/jxml.h"
+#include "tinyxml.h"
 
-#endif
+jexception::jexception(const char* msg, ...) throw()
+{
+  try {
+    if (!ustrchr(msg, '%')) {
+      m_msg = msg;
+    }
+    else {
+      va_list ap;
+      va_start(ap, msg);
+
+      char buf[1024];		// TODO warning buffer overflow
+      uvsprintf(buf, msg, ap);
+      m_msg = buf;
+
+      va_end(ap);
+    }
+  }
+  catch (...) {
+    // no throw
+  }
+}
+
+jexception::jexception(const std::string& msg) throw()
+{
+  try {
+    m_msg = msg;
+  }
+  catch (...) {
+    // no throw
+  }
+}
+
+jexception::jexception(TiXmlDocument* doc) throw()
+{
+  try {
+    char buf[1024];
+    usprintf(buf, "Error in XML file '%s' (line %d, column %d)\nError %d: %s",
+	     doc->Value(), doc->ErrorRow(), doc->ErrorCol(),
+	     doc->ErrorId(), doc->ErrorDesc());
+
+    m_msg = buf;
+  }
+  catch (...) {
+    // no throw
+  }
+}
+
+jexception::~jexception() throw()
+{
+}
+
+void jexception::show()
+{
+  allegro_message("An error occurred.\n\nDetails:\n%s", what());
+}
+
+const char* jexception::what() const throw()
+{
+  return m_msg.c_str();
+}

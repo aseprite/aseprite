@@ -566,7 +566,7 @@ Here you have some explanation about how to customize your own copy of
 ASE. Take care of all modifications you made in configuration files, and
 make sure you have a backup copy of everything.
 
-Most of the customizable UI elements are taken from ``<ase-folder>/data/gui-en.xml`` file.
+Most of the customizable UI elements are taken from ``<ase-folder>/data/gui.xml`` file.
 
 Keyboard Shortcuts
 ==================
@@ -595,7 +595,7 @@ Menus
 Tools
 =====
 
-In the ``data/gui-en.xml`` file you will found a the following sections:
+In the ``data/gui.xml`` file you will found a the following sections:
 
 ::
 

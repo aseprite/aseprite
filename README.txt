@@ -61,7 +61,7 @@ CONFIGURATION FILES
 
     aseprite.cfg	- Program configuration
     data/convmatr.def	- Convolutions matrices
-    data/gui-en.xml	- Menu definition and keyboard shortcuts
+    data/gui.xml	- Menu definition and keyboard shortcuts
     data/fonts/*.pcx	- Fonts to be used in the GUI
     data/jids/*.jid	- XML files with dialogs
 

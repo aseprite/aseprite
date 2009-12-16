@@ -43,6 +43,7 @@
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
+#include "console.h"
 
 #define COLORBAR_MAX_COLORS	256
 

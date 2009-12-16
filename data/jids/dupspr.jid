@@ -2,21 +2,21 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="Duplicate Sprite" name="duplicate_sprite">
-  <box vertical>
-    <box horizontal expansive>
-      <box vertical homogeneous>
+  <box vertical="true">
+    <box horizontal="true" expansive="true">
+      <box vertical="true" homogeneous="true">
         <label text="Duplicate:" />
         <label text="As:" />
       </box>
-      <box vertical homogeneous expansive>
+      <box vertical="true" homogeneous="true" expansive="true">
         <label text="" name="src_name" />
-        <entry maxsize="256" name="dst_name" magnetic />
+        <entry maxsize="256" name="dst_name" magnetic="true" />
       </box>
     </box>
     <check text="Duplicate merged layers only" name="flatten" />
-    <box horizontal homogeneous>
-      <button text="&OK" name="ok" magnetic />
-      <button text="&Cancel" />
+    <box horizontal="true" homogeneous="true">
+      <button text="&amp;OK" name="ok" magnetic="true" />
+      <button text="&amp;Cancel" />
     </box>
   </box>
 </window>

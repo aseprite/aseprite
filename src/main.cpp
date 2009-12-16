@@ -59,7 +59,7 @@ public:
 /**
  * Here ASE starts.
  */
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   int status = 1;		// 1 = error
   try {
@@ -69,6 +69,9 @@ int main(int argc, char *argv[])
       App app(argc, argv);
 
       status = app.run();
+    }
+    catch (jexception& e) {
+      e.show();
     }
     catch (std::exception& e) {
       allegro_message(e.what());

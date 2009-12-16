@@ -16,23 +16,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef ASE_EXCEPTION_H_INCLUDED
-#define ASE_EXCEPTION_H_INCLUDED
+#include "config.h"
 
-#include "jinete/jexception.h"
+#include <allegro/unicode.h>
+#include <stdio.h>
 
-class ase_exception : public jexception
+#include "ase_exception.h"
+#include "console.h"
+
+ase_exception::ase_exception(const char* msg, ...) throw()
 {
-public:
+  try {
+    if (!ustrchr(msg, '%')) {
+      m_msg = msg;
+    }
+    else {
+      va_list ap;
+      va_start(ap, msg);
 
-  ase_exception() throw() { }
-  ase_exception(const char* msg, ...) throw();
-  ase_exception(const std::string& msg) throw() : jexception(msg) { }
-  ase_exception(TiXmlDocument* doc) throw() : jexception(doc) { }
-  ~ase_exception() throw() { }
+      char buf[1024];		// TODO warning buffer overflow
+      uvsprintf(buf, msg, ap);
+      m_msg = buf;
 
-  virtual void show();
+      va_end(ap);
+    }
+  }
+  catch (...) {
+    // no throw
+  }
+}
 
-};
-
-#endif
+void ase_exception::show()
+{
+  Console console;
+  console.printf("An error occurred.\n\nDetails:\n%s", what());
+}

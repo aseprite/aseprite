@@ -2,49 +2,49 @@
 <!-- Copyright (C) 2001-2009 by David Capello -->
 <jinete>
 <window text="Sprite Size" name="sprite_size">
-  <box vertical>
-    <box vertical>
-      <separator text="Pixels:" left horizontal />
-      <box vertical expansive>
-        <box horizontal>
-          <box vertical homogeneous>
+  <box vertical="true">
+    <box vertical="true">
+      <separator text="Pixels:" left="true" horizontal="true" />
+      <box vertical="true" expansive="true">
+        <box horizontal="true">
+          <box vertical="true" homogeneous="true">
             <label text="Width:" />
             <label text="Height:" />
           </box>
-          <box vertical homogeneous expansive>
-            <entry expansive name="width_px" maxsize=8 magnetic tooltip="New width for the sprite (in pixels)" />
-            <entry expansive name="height_px" maxsize=8 tooltip="New height for the sprite (in pixels)" />
+          <box vertical="true" homogeneous="true" expansive="true">
+            <entry expansive="true" name="width_px" maxsize="8" magnetic="true" tooltip="New width for the sprite (in pixels)" />
+            <entry expansive="true" name="height_px" maxsize="8" tooltip="New height for the sprite (in pixels)" />
           </box>
-          <check text="Lock Ratio" name="lock_ratio" selected />
+          <check text="Lock Ratio" name="lock_ratio" selected="true" />
         </box>
       </box>
-      <separator text="Percentage:" left horizontal />
-      <box vertical expansive>
-        <box horizontal>
-          <box vertical homogeneous>
+      <separator text="Percentage:" left="true" horizontal="true" />
+      <box vertical="true" expansive="true">
+        <box horizontal="true">
+          <box vertical="true" homogeneous="true">
             <label text="Width:" />
             <label text="Height:" />
           </box>
-          <box vertical homogeneous expansive>
-            <entry expansive text="100%%" name="width_perc" maxsize=8 magnetic tooltip="New width for the sprite\nPercentage of current width." />
-            <entry expansive text="100%%" name="height_perc" maxsize=8 tooltip="New height for the sprite\nPercentage of current height." />
+          <box vertical="true" homogeneous="true" expansive="true">
+            <entry expansive="true" text="100%%" name="width_perc" maxsize="8" magnetic="true" tooltip="New width for the sprite\nPercentage of current width." />
+            <entry expansive="true" text="100%%" name="height_perc" maxsize="8" tooltip="New height for the sprite\nPercentage of current height." />
           </box>
-          <box horizontal width="64" />
+          <box horizontal="true" width="64" />
         </box>
       </box>
     </box>
-    <separator text="Interpolation:" left horizontal />
-    <box vertical expansive>
-      <box horizontal>
+    <separator text="Interpolation:" left="true" horizontal="true" />
+    <box vertical="true" expansive="true">
+      <box horizontal="true">
         <label text="Method:" />
-        <combobox name="method" expansive />
+        <combobox name="method" expansive="true" />
       </box>
     </box>
-    <box horizontal>
-      <box horizontal expansive />
-      <box horizontal homogeneous>
-	<button text="&OK" name="ok" magnetic width="60" />
-	<button text="&Cancel" />
+    <box horizontal="true">
+      <box horizontal="true" expansive="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" name="ok" magnetic="true" width="60" />
+	<button text="&amp;Cancel" />
       </box>
     </box>
   </box>
