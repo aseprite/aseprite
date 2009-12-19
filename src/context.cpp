@@ -21,6 +21,7 @@
 #include <cassert>
 #include <algorithm>
 
+#include "console.h"
 #include "context.h"
 #include "commands/command.h"
 #include "raster/sprite.h"
