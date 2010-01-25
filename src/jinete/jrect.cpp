@@ -128,3 +128,6 @@ void jrect_displace(JRect rect, int dx, int dy)
   rect->x2 += dx;
   rect->y2 += dy;
 }
+
+// Jinete+Vaca merge
+#include "jinete/vaca_fusion/src/Rect.cpp"
