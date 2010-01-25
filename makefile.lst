@@ -144,10 +144,12 @@ COMMON_SOURCES =					\
 	src/jinete/jmessage.cpp				\
 	src/jinete/jmutex.cpp				\
 	src/jinete/jpanel.cpp				\
+	src/jinete/jpoint.cpp				\
 	src/jinete/jquickmenu.cpp			\
 	src/jinete/jrect.cpp				\
 	src/jinete/jregion.cpp				\
 	src/jinete/jsep.cpp				\
+	src/jinete/jsize.cpp				\
 	src/jinete/jslider.cpp				\
 	src/jinete/jstream.cpp				\
 	src/jinete/jstring.cpp				\
@@ -497,6 +499,11 @@ TINYXML_SOURCES =					\
 TINYXML_OBJS = $(addprefix $(OBJ_DIR)/tinyxml.,		\
 		 $(addsuffix $(OBJ),			\
 		   $(notdir $(basename $(TINYXML_SOURCES)))))
+
+######################################################################
+# Vaca
+
+VACA_DIR = src/jinete/vaca_fusion
 
 ######################################################################
 # All objects and libraries
