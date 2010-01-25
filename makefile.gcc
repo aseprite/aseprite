@@ -13,8 +13,10 @@ CFLAGS += -Wall -I. -Isrc -Ithird_party		\
 	  -I$(ZLIB_DIR)				\
 	  -I$(LOADPNG_DIR)			\
 	  -I$(TINYXML_DIR)			\
+	  -I$(VACA_DIR)/include			\
 	  -Wno-deprecated-declarations		\
-	  -DPNG_NO_MMX_CODE
+	  -DPNG_NO_MMX_CODE			\
+	  -DVACA_ALLEGRO
 
 LFLAGS += $(THIRD_PARTY_LIBS)
 

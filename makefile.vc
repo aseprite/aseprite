@@ -31,7 +31,9 @@ CFLAGS = -nologo						\
 	 -I$(ZLIB_DIR)						\
 	 -I$(LOADPNG_DIR)					\
 	 -I$(TINYXML_DIR)					\
-	 -DPNG_NO_MMX_CODE
+	 -I$(VACA_DIR)/include					\
+	 -DPNG_NO_MMX_CODE					\
+	 -DVACA_ALLEGRO
 
 LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86
 
