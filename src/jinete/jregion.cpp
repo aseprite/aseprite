@@ -34,12 +34,6 @@
 #include <string.h>
 
 #include <allegro.h>
-#ifndef min
-#define min			MIN
-#endif
-#ifndef max
-#define max			MAX
-#endif
 
 #include <stdlib.h>
 #define xalloc			jmalloc
@@ -95,6 +89,14 @@ struct ji_point { int x, y; };
 #define MAXINT INT_MAX
 #undef MININT
 #define MININT INT_MIN
+
+// min/max macros
+#ifndef min
+#define min			MIN
+#endif
+#ifndef max
+#define max			MAX
+#endif
 
 #define miBrokenData		ji_broken_data
 #define miBrokenRegion		ji_broken_region
