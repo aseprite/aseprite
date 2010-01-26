@@ -76,12 +76,12 @@ bool app_realloc_recent_list();
 
 int app_get_current_image_type();
 
-JWidget app_get_top_window();
-JWidget app_get_menubar();
-JWidget app_get_statusbar();
-JWidget app_get_colorbar();
-JWidget app_get_toolbar();
-JWidget app_get_tabsbar();
+Frame* app_get_top_window();
+Widget* app_get_menubar();
+Widget* app_get_statusbar();
+Widget* app_get_colorbar();
+Widget* app_get_toolbar();
+Widget* app_get_tabsbar();
 
 void app_default_statusbar_message();
 

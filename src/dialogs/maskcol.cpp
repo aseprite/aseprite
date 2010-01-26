@@ -53,7 +53,7 @@ static void mask_preview(Sprite* sprite);
 
 void dialogs_mask_color(Sprite* sprite)
 {
-  JWidget window, box1, box2, box3, box4;
+  JWidget box1, box2, box3, box4;
   JWidget label_color, button_1, button_2;
   JWidget label_fuzziness;
   JWidget button_ok, button_cancel;
@@ -66,7 +66,7 @@ void dialogs_mask_color(Sprite* sprite)
   if (!image)
     return;
 
-  window = jwindow_new(_("Mask by Color"));
+  FramePtr window(new Frame(false, _("Mask by Color")));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL);
@@ -110,8 +110,8 @@ void dialogs_mask_color(Sprite* sprite)
   jwidget_add_children(box4, button_ok, button_cancel, NULL);
 
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* mask first preview */
   mask_preview(sprite);
@@ -120,9 +120,9 @@ void dialogs_mask_color(Sprite* sprite)
   load_window_pos(window, "MaskColor");
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok) {
+  if (window->get_killer() == button_ok) {
     Mask *mask;
 
     /* undo */
@@ -152,8 +152,6 @@ void dialogs_mask_color(Sprite* sprite)
 
   /* save window configuration */
   save_window_pos(window, "MaskColor");
-
-  jwidget_free(window);
 }
 
 static void button_1_command(JWidget widget)

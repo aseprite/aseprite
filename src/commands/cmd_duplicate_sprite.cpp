@@ -65,24 +65,24 @@ void DuplicateSpriteCommand::execute(Context* context)
   char buf[1024];
 
   /* load the window widget */
-  JWidgetPtr window(load_widget("dupspr.jid", "duplicate_sprite"));
+  FramePtr window(load_widget("dupspr.jid", "duplicate_sprite"));
 
   src_name = jwidget_find_name(window, "src_name");
   dst_name = jwidget_find_name(window, "dst_name");
   flatten = jwidget_find_name(window, "flatten");
 
-  jwidget_set_text(src_name, get_filename(sprite->filename));
+  src_name->setText(get_filename(sprite->filename));
 
   sprintf(buf, "%s %s", sprite->filename, _("Copy"));
-  jwidget_set_text(dst_name, buf);
+  dst_name->setText(buf);
 
   if (get_config_bool("DuplicateSprite", "Flatten", FALSE))
     jwidget_select(flatten);
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
+  if (window->get_killer() == jwidget_find_name(window, "ok")) {
     set_config_bool("DuplicateSprite", "Flatten",
 		    jwidget_is_selected(flatten));
 
@@ -94,7 +94,7 @@ void DuplicateSpriteCommand::execute(Context* context)
       sprite_copy = sprite_new_copy(sprite);
 
     if (sprite_copy != NULL) {
-      sprite_set_filename(sprite_copy, jwidget_get_text(dst_name));
+      sprite_set_filename(sprite_copy, dst_name->getText());
 
       context->add_sprite(sprite_copy);
       set_sprite_in_more_reliable_editor(sprite_copy);

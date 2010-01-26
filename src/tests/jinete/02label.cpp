@@ -59,10 +59,10 @@ int main (int argc, char *argv[])
   label3 = jlabel_new ("&Right Bottom");
   label4 = jlabel_new ("&Disabled");
 
-  jwidget_set_align (label1, JI_LEFT | JI_TOP);
-  jwidget_set_align (label2, JI_CENTER | JI_MIDDLE);
-  jwidget_set_align (label3, JI_RIGHT | JI_BOTTOM);
-  jwidget_set_align (label4, JI_CENTER | JI_BOTTOM);
+  label1->set_align(JI_LEFT | JI_TOP);
+  label2->set_align(JI_CENTER | JI_MIDDLE);
+  label3->set_align(JI_RIGHT | JI_BOTTOM);
+  label4->set_align(JI_CENTER | JI_BOTTOM);
 
   jwidget_disable (label4);
 
@@ -72,7 +72,7 @@ int main (int argc, char *argv[])
   jwidget_add_child (box, label3);
   jwidget_add_child (box, label4);
 
-  jwindow_open_bg (window);
+  window->open_window_bg();
 
   jmanager_run (manager);
   jmanager_free (manager);

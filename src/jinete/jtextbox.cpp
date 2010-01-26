@@ -49,12 +49,12 @@ static void textbox_request_size(JWidget widget, int *w, int *h);
 
 JWidget jtextbox_new(const char *text, int align)
 {
-  JWidget widget = new jwidget(JI_TEXTBOX);
+  Widget* widget = new Widget(JI_TEXTBOX);
 
   jwidget_add_hook(widget, JI_TEXTBOX, textbox_msg_proc, NULL);
   jwidget_focusrest(widget, true);
-  jwidget_set_align(widget, align);
-  jwidget_set_text(widget, text);
+  widget->setAlign(align);
+  widget->setText(text);
 
   jwidget_init_theme(widget);
 
@@ -204,7 +204,7 @@ static void textbox_request_size(JWidget widget, int *w, int *h)
 
   _ji_theme_textbox_draw(NULL, widget, w, h, 0, 0);
 
-  if (widget->align() & JI_WORDWRAP) {
+  if (widget->getAlign() & JI_WORDWRAP) {
     JWidget view = jwidget_get_view(widget);
     int width, min = *w;
 

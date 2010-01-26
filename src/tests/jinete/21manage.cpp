@@ -35,7 +35,8 @@
 
 int main (int argc, char *argv[])
 {
-  JWidget manager1, manager2, manager3, window1, window2, window3;
+  JWidget manager1, manager2, manager3;
+  Window* window1, *window2, *window3;
   JWidget view2, view3;
   JRect rect;
 
@@ -69,9 +70,9 @@ int main (int argc, char *argv[])
   jwidget_add_child(window1, view2);
   jwidget_add_child(window2, view3);
 
-  jwindow_remap(window1);
-  jwindow_remap(window2);
-  jwindow_remap(window3);
+  window1->remap_window();
+  window2->remap_window();
+  window3->remap_window();
 
   rect = jrect_new(JI_SCREEN_W/2-100, JI_SCREEN_H/2-70,
 		   JI_SCREEN_W/2+100, JI_SCREEN_H/2+70);
@@ -88,7 +89,7 @@ int main (int argc, char *argv[])
   jwidget_set_rect(window3, rect);
   jrect_free(rect);
 
-  jwindow_open_bg(window1);
+  window1->open_window_bg();
   _jmanager_open_window(manager2, window2);
   _jmanager_open_window(manager3, window3);
 

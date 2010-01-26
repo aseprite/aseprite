@@ -187,7 +187,7 @@ void SpriteSizeCommand::execute(Context* context)
   const CurrentSpriteReader sprite(context);
 
   // load the window widget
-  JWidgetPtr window(load_widget("sprsize.jid", "sprite_size"));
+  FramePtr window(load_widget("sprsize.jid", "sprite_size"));
   get_widgets(window,
 	      "width_px", &width_px,
 	      "height_px", &height_px,
@@ -197,8 +197,8 @@ void SpriteSizeCommand::execute(Context* context)
 	      "method", &method,
 	      "ok", &ok, NULL);
 
-  width_px->textf("%d", sprite->w);
-  height_px->textf("%d", sprite->h);
+  width_px->setTextf("%d", sprite->w);
+  height_px->setTextf("%d", sprite->h);
 
   HOOK(lock_ratio, JI_SIGNAL_CHECK_CHANGE, lock_ratio_change_hook, 0);
   HOOK(width_px, JI_SIGNAL_ENTRY_CHANGE, width_px_change_hook, 0);
@@ -210,17 +210,17 @@ void SpriteSizeCommand::execute(Context* context)
   jcombobox_add_string(method, "Bilinear", NULL);
   jcombobox_select_index(method, get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
 
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   load_window_pos(window, "SpriteSize");
   jwidget_show(window);
-  jwindow_open_fg(window);
+  window->open_window_fg();
   save_window_pos(window, "SpriteSize");
 
-  if (jwindow_get_killer(window) == ok) {
-    int new_width = width_px->text_int();
-    int new_height = height_px->text_int();
+  if (window->get_killer() == ok) {
+    int new_width = width_px->getTextInt();
+    int new_height = height_px->getTextInt();
     ResizeMethod resize_method =
       (ResizeMethod)jcombobox_get_selected_index(method);
 
@@ -239,8 +239,8 @@ static bool lock_ratio_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
 
-  if (widget->selected())
-    width_px_change_hook(widget->find_sibling("width_px"), NULL);
+  if (widget->isSelected())
+    width_px_change_hook(widget->findSibling("width_px"), NULL);
 
   return true;
 }
@@ -248,14 +248,14 @@ static bool lock_ratio_change_hook(JWidget widget, void *data)
 static bool width_px_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
-  int width = widget->text_int();
+  int width = widget->getTextInt();
   double perc = 100.0 * width / sprite->w;
 
-  widget->find_sibling("width_perc")->textf(PERC_FORMAT, perc);
+  widget->findSibling("width_perc")->setTextf(PERC_FORMAT, perc);
 
-  if (widget->find_sibling("lock_ratio")->selected()) {
-    widget->find_sibling("height_perc")->textf(PERC_FORMAT, perc);
-    widget->find_sibling("height_px")->textf("%d", sprite->h * width / sprite->w);
+  if (widget->findSibling("lock_ratio")->isSelected()) {
+    widget->findSibling("height_perc")->setTextf(PERC_FORMAT, perc);
+    widget->findSibling("height_px")->setTextf("%d", sprite->h * width / sprite->w);
   }
 
   return true;
@@ -264,14 +264,14 @@ static bool width_px_change_hook(JWidget widget, void *data)
 static bool height_px_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
-  int height = widget->text_int();
+  int height = widget->getTextInt();
   double perc = 100.0 * height / sprite->h;
 
-  widget->find_sibling("height_perc")->textf(PERC_FORMAT, perc);
+  widget->findSibling("height_perc")->setTextf(PERC_FORMAT, perc);
 
-  if (widget->find_sibling("lock_ratio")->selected()) {
-    widget->find_sibling("width_perc")->textf(PERC_FORMAT, perc);
-    widget->find_sibling("width_px")->textf("%d", sprite->w * height / sprite->h);
+  if (widget->findSibling("lock_ratio")->isSelected()) {
+    widget->findSibling("width_perc")->setTextf(PERC_FORMAT, perc);
+    widget->findSibling("width_px")->setTextf("%d", sprite->w * height / sprite->h);
   }
 
   return true;
@@ -280,13 +280,13 @@ static bool height_px_change_hook(JWidget widget, void *data)
 static bool width_perc_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
-  double width = widget->text_double();
+  double width = widget->getTextDouble();
 
-  widget->find_sibling("width_px")->textf("%d", (int)(sprite->w * width / 100));
+  widget->findSibling("width_px")->setTextf("%d", (int)(sprite->w * width / 100));
 
-  if (widget->find_sibling("lock_ratio")->selected()) {
-    widget->find_sibling("height_px")->textf("%d", (int)(sprite->h * width / 100));
-    widget->find_sibling("height_perc")->text(widget->text());
+  if (widget->findSibling("lock_ratio")->isSelected()) {
+    widget->findSibling("height_px")->setTextf("%d", (int)(sprite->h * width / 100));
+    widget->findSibling("height_perc")->setText(widget->getText());
   }
 
   return true;
@@ -295,13 +295,13 @@ static bool width_perc_change_hook(JWidget widget, void *data)
 static bool height_perc_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
-  double height = widget->text_double();
+  double height = widget->getTextDouble();
 
-  widget->find_sibling("height_px")->textf("%d", (int)(sprite->h * height / 100));
+  widget->findSibling("height_px")->setTextf("%d", (int)(sprite->h * height / 100));
 
-  if (widget->find_sibling("lock_ratio")->selected()) {
-    widget->find_sibling("width_px")->textf("%d", (int)(sprite->w * height / 100));
-    widget->find_sibling("width_perc")->text(widget->text());
+  if (widget->findSibling("lock_ratio")->isSelected()) {
+    widget->findSibling("width_px")->setTextf("%d", (int)(sprite->w * height / 100));
+    widget->findSibling("width_perc")->setText(widget->getText());
   }
 
   return true;

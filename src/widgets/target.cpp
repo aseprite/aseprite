@@ -73,17 +73,17 @@ JWidget target_button_new(int imgtype, bool with_channels)
 	g = check_button_new("G", 0, 0, 0, 0);
 	b = check_button_new("B", 0, (imgtype == IMAGE_RGB) ? 0: 2, 0, 0);
 
-	jwidget_set_name(r, "r");
-	jwidget_set_name(g, "g");
-	jwidget_set_name(b, "b");
+	r->setName("r");
+	g->setName("g");
+	b->setName("b");
 	
 	if (imgtype == IMAGE_RGB) {
 	  a = check_button_new("A", 0, 2, 0, 0);
-	  jwidget_set_name(a, "a");
+	  a->setName("a");
 	}
 	else {
 	  index = check_button_new("Index", 0, 0, 0, 0);
-	  jwidget_set_name(index, "i");
+	  index->setName("i");
 	}
 	break;
 
@@ -91,8 +91,8 @@ JWidget target_button_new(int imgtype, bool with_channels)
 	k = check_button_new("K", 2, 0, 0, 0);
 	a = check_button_new("A", 0, 2, 0, 0);
 
-	jwidget_set_name(k, "k");
-	jwidget_set_name(a, "a");
+	k->setName("k");
+	a->setName("a");
 	break;
     }
   }

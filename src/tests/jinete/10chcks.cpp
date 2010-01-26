@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
   jwidget_expansive (check, TRUE);
   update_radios ();
 
-  jwindow_open_bg (window);
+  window->open_window_bg();
   jmanager_run (manager);
   jmanager_free (manager);
   return 0;
@@ -162,7 +162,7 @@ static bool hooked_check_msg_proc (JWidget widget, JMessage msg)
     }
 
     if (text_align != jwidget_get_align(check))
-      jwidget_set_align(check, text_align);
+      check->set_align(text_align);
 
     if (icon_align != ji_generic_button_get_icon_align(check))
       ji_generic_button_set_icon_align(check, icon_align);

@@ -39,9 +39,9 @@ static void delete_command(JWidget widget, void *data);
 
 void ji_show_repo_dlg(RepoDlg *repo_dlg)
 {
-  JWidget window, box1, box2, view, button_close;
+  JWidget box1, box2, view, button_close;
 
-  window = jwindow_new(repo_dlg->title);
+  Frame* window = new Frame(false, repo_dlg->title);
   box1 = jbox_new(JI_HORIZONTAL);
   box2 = jbox_new(JI_VERTICAL);
   view = jview_new();
@@ -84,14 +84,14 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   jwidget_add_child(window, box1);
 
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* load window configuration */
   load_window_pos(window, repo_dlg->config_section);
 
   /* open window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
   /* kill the list */
   kill_listbox(repo_dlg);

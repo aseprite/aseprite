@@ -53,7 +53,7 @@ protected:
   void execute(Context* context);
 };
 
-#define get_sprite(wgt) (*(const SpriteReader*)(jwidget_get_window(wgt))->user_data[0])
+#define get_sprite(wgt) (*(const SpriteReader*)(wgt->getRoot())->user_data[0])
 
 static Palette **palettes;
 
@@ -107,7 +107,7 @@ void PaletteEditorCommand::execute(Context* context)
   }
 
   /* load widgets */
-  JWidgetPtr window(load_widget("paledit.jid", "palette_editor"));
+  FramePtr window(load_widget("paledit.jid", "palette_editor"));
   get_widgets(window,
 	      "red", &slider_R,
 	      "green", &slider_G,
@@ -216,17 +216,17 @@ void PaletteEditorCommand::execute(Context* context)
   jbutton_add_command(button_quantize, quantize_command);
 
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* load window configuration */
   load_window_pos(window, "PaletteEditor");
 
   /* open and run the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
   /* check the killer widget */
-  if (jwindow_get_killer(window) == button_ok) {
+  if (window->get_killer() == button_ok) {
     if (sprite) {
       SpriteWriter sprite_writer(sprite);
       sprite_reset_palettes(sprite_writer);

@@ -120,7 +120,7 @@ void _ji_set_font_of_all_widgets(struct FONT *f)
   // first of all, we have to set the font to all the widgets
   for (c=0; c<widgets->size(); c++)
     if (_ji_is_valid_widget((*widgets)[c]))
-      (*widgets)[c]->font(f);
+      (*widgets)[c]->setFont(f);
 
   /* then we can reinitialize the theme of each widget */
   for (c=0; c<widgets->size(); c++)
@@ -130,8 +130,8 @@ void _ji_set_font_of_all_widgets(struct FONT *f)
   /* remap the windows */
   for (c=0; c<widgets->size(); c++)
     if (_ji_is_valid_widget((*widgets)[c])) {
-      if ((*widgets)[c]->type == JI_WINDOW)
-	jwindow_remap((*widgets)[c]);
+      if ((*widgets)[c]->type == JI_FRAME)
+	static_cast<Frame*>((*widgets)[c])->remap_window();
     }
 
   /* refresh the screen */

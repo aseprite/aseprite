@@ -91,7 +91,7 @@ static void entry_backward_word(JWidget widget);
 
 JWidget jentry_new(size_t maxsize, const char *format, ...)
 {
-  JWidget widget = new jwidget(JI_ENTRY);
+  Widget* widget = new Widget(JI_ENTRY);
   Entry* entry = (Entry*)jnew(Entry, 1);
   char buf[4096];
 
@@ -122,7 +122,7 @@ JWidget jentry_new(size_t maxsize, const char *format, ...)
 
   /* TODO support for text alignment and multi-line */
   /* widget->align = JI_LEFT | JI_MIDDLE; */
-  widget->text(buf);
+  widget->setText(buf);
 
   jwidget_focusrest(widget, true);
   jwidget_init_theme(widget);
@@ -179,7 +179,7 @@ void jentry_hide_cursor(JWidget widget)
 void jentry_set_cursor_pos(JWidget widget, int pos)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  const char *text = widget->text();
+  const char *text = widget->getText();
   int x, c;
 
   entry->cursor = pos;
@@ -193,7 +193,7 @@ void jentry_set_cursor_pos(JWidget widget, int pos)
   do {
     x = widget->rc->x1 + widget->border_width.l;
     for (c=++entry->scroll; ; c++) {
-      x += CHARACTER_LENGTH(widget->font(),
+      x += CHARACTER_LENGTH(widget->getFont(),
 			    (c < ustrlen(text))? ugetat(text, c): ' ');
 
       if (x >= widget->rc->x2-widget->border_width.r)
@@ -210,7 +210,7 @@ void jentry_set_cursor_pos(JWidget widget, int pos)
 void jentry_select_text(JWidget widget, int from, int to)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  int end = ustrlen(widget->text());
+  int end = ustrlen(widget->getText());
 
   entry->select = from;
   jentry_set_cursor_pos(widget, from); // to move scroll
@@ -375,7 +375,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOTION:
       if (jwidget_has_capture(widget)) {
-	const char *text = widget->text();
+	const char *text = widget->getText();
 	bool move, dirty;
 	int c, x;
 
@@ -397,7 +397,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
 	    entry->scroll++;
 	    x = widget->rc->x1 + widget->border_width.l;
 	    for (c=entry->scroll; ; c++) {
-	      x += CHARACTER_LENGTH(widget->font(),
+	      x += CHARACTER_LENGTH(widget->getFont(),
 				   (c < ustrlen(text))? ugetat(text, c): ' ');
 	      if (x > widget->rc->x2-widget->border_width.r) {
 		c--;
@@ -471,14 +471,14 @@ static void entry_request_size(JWidget widget, int *w, int *h)
 
   *w =
     + widget->border_width.l
-    + ji_font_char_len(widget->font(), 'w') * MIN(entry->maxsize, 6)
+    + ji_font_char_len(widget->getFont(), 'w') * MIN(entry->maxsize, 6)
     + 2 + widget->border_width.r;
 
   *w = MIN(*w, JI_SCREEN_W/2);
 
   *h = 
     + widget->border_width.t
-    + text_height(widget->font())
+    + text_height(widget->getFont())
     + widget->border_width.b;
 }
 
@@ -493,8 +493,8 @@ static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
 	   widget->rc->x2-widget->border_width.r-1);
 
   x = widget->rc->x1 + widget->border_width.l;
-  for (c=entry->scroll; ugetat(widget->text(), c); c++) {
-    w = CHARACTER_LENGTH(widget->font(), ugetat(widget->text(), c));
+  for (c=entry->scroll; ugetat(widget->getText(), c); c++) {
+    w = CHARACTER_LENGTH(widget->getFont(), ugetat(widget->getText(), c));
     if (x+w >= widget->rc->x2-widget->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {
@@ -504,7 +504,7 @@ static int entry_get_cursor_from_mouse(JWidget widget, JMessage msg)
     x += w;
   }
 
-  if (!ugetat(widget->text(), c))
+  if (!ugetat(widget->getText(), c))
     if ((mx >= x) &&
 	(mx <= widget->rc->x2-widget->border_width.r-1))
       cursor = c;
@@ -516,7 +516,7 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
 			      int ascii, bool shift_pressed)
 {
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
-  std::string text = widget->text();
+  std::string text = widget->getText();
   int c, selbeg, selend;
 
   jtheme_entry_info(widget, NULL, NULL, NULL, &selbeg, &selend);
@@ -674,8 +674,8 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
       break;
   }
 
-  if (text != widget->text()) {
-    widget->text(text.c_str());
+  if (text != widget->getText()) {
+    widget->setText(text.c_str());
     jwidget_emit_signal(widget, JI_SIGNAL_ENTRY_CHANGE);
   }
 
@@ -692,14 +692,14 @@ static void entry_forward_word(JWidget widget)
   Entry* entry = reinterpret_cast<Entry*>(jwidget_get_data(widget, JI_ENTRY));
   int ch;
 
-  for (; entry->cursor<ustrlen(widget->text()); entry->cursor++) {
-    ch = ugetat(widget->text(), entry->cursor);
+  for (; entry->cursor<ustrlen(widget->getText()); entry->cursor++) {
+    ch = ugetat(widget->getText(), entry->cursor);
     if (IS_WORD_CHAR (ch))
       break;
   }
 
-  for (; entry->cursor<ustrlen(widget->text()); entry->cursor++) {
-    ch = ugetat(widget->text(), entry->cursor);
+  for (; entry->cursor<ustrlen(widget->getText()); entry->cursor++) {
+    ch = ugetat(widget->getText(), entry->cursor);
     if (!IS_WORD_CHAR(ch)) {
       entry->cursor++;
       break;
@@ -713,13 +713,13 @@ static void entry_backward_word(JWidget widget)
   int ch;
 
   for (entry->cursor--; entry->cursor >= 0; entry->cursor--) {
-    ch = ugetat(widget->text(), entry->cursor);
+    ch = ugetat(widget->getText(), entry->cursor);
     if (IS_WORD_CHAR(ch))
       break;
   }
 
   for (; entry->cursor >= 0; entry->cursor--) {
-    ch = ugetat(widget->text(), entry->cursor);
+    ch = ugetat(widget->getText(), entry->cursor);
     if (!IS_WORD_CHAR(ch)) {
       entry->cursor++;
       break;

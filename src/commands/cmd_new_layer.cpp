@@ -63,19 +63,19 @@ void NewLayerCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 
-  JWidgetPtr window(load_widget("newlay.jid", "new_layer"));
+  FramePtr window(load_widget("newlay.jid", "new_layer"));
   JWidget name_widget = find_widget(window, "name");
   {
     char* name = get_unique_layer_name(sprite);
-    jwidget_set_text(name_widget, name);
+    name_widget->setText(name);
     jfree(name);
   }
   jwidget_set_min_size(name_widget, 128, 0);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
-    const char* name = jwidget_get_text(jwidget_find_name(window, "name"));
+  if (window->get_killer() == jwidget_find_name(window, "ok")) {
+    const char* name = jwidget_find_name(window, "name")->getText();
     Layer* layer;
     {
       Undoable undoable(sprite, "New Layer");

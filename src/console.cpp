@@ -30,10 +30,10 @@
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
-static JWidget wid_console = NULL;
-static JWidget wid_view = NULL;
-static JWidget wid_textbox = NULL;
-static JWidget wid_cancel = NULL;
+static Frame* wid_console = NULL;
+static Widget* wid_view = NULL;
+static Widget* wid_textbox = NULL;
+static Widget* wid_cancel = NULL;
 static int console_counter = 0;
 static bool console_locked;
 static bool want_close_flag = FALSE;
@@ -48,16 +48,11 @@ Console::Console()
       console_counter > 1)
     return;
   else {
-    JWidget window, grid, view, textbox, button;
-
-    window = jwindow_new(_("Errors Console"));
-    if (!window)
-      return;
-
-    grid = jgrid_new(1, FALSE);
-    view = jview_new();
-    textbox = jtextbox_new(NULL, JI_WORDWRAP);
-    button = jbutton_new(_("&Cancel"));
+    Frame* window = new Frame(false, _("Errors Console"));
+    Widget* grid = jgrid_new(1, FALSE);
+    Widget* view = jview_new();
+    Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
+    Widget* button = jbutton_new(_("&Cancel"));
 
     if (!grid || !textbox || !button)
       return;
@@ -95,10 +90,10 @@ Console::~Console()
 	&& !want_close_flag
 	&& jwidget_is_visible(wid_console)) {
       /* open in foreground */
-      jwindow_open_fg(wid_console);
+      wid_console->open_window_fg();
     }
 
-    jwidget_free(wid_console);
+    delete wid_console; 	// window
     wid_console = NULL;
     want_close_flag = FALSE;
   }
@@ -106,7 +101,7 @@ Console::~Console()
 
 void Console::printf(const char *format, ...)
 {
-  char buf[1024];
+  char buf[1024];		// TODO warning buffer overflow
   va_list ap;
 
   va_start(ap, format);
@@ -119,7 +114,7 @@ void Console::printf(const char *format, ...)
 
     /* open the window */
     if (jwidget_is_hidden(wid_console)) {
-      jwindow_open(wid_console);
+      wid_console->open_window();
       jmanager_refresh_screen();
     }
 
@@ -130,15 +125,15 @@ void Console::printf(const char *format, ...)
       
       jwidget_show(wid_view);
 
-      jwindow_remap(wid_console);
+      wid_console->remap_window();
       jwidget_set_rect(wid_console, rect);
-      jwindow_center(wid_console);
-      jwidget_dirty(wid_console);
+      wid_console->center_window();
+      wid_console->dirty();
 
       jrect_free(rect);
     }
 
-    text = jwidget_get_text(wid_textbox);
+    text = wid_textbox->getText();
     if (!text)
       final = jstrdup(buf);
     else {
@@ -149,21 +144,24 @@ void Console::printf(const char *format, ...)
       ustrcat(final, buf);
     }
 
-    jwidget_set_text(wid_textbox, final);
+    wid_textbox->setText(final);
     jfree(final);
   }
   else {
-    fputs(buf, stdout);
-    fflush(stdout);
+    if (ji_screen) {
+      fputs(buf, stdout);
+      fflush(stdout);
 
-    if (ji_screen)
       jalert("Error<<%s||OK", buf);
+    }
+    else
+      allegro_message(buf);
   }
 }
 
 void user_printf(const char *format, ...)
 {
-  char buf[1024];
+  char buf[1024];		// TODO warning buffer overflow
   va_list ap;
 
   va_start(ap, format);

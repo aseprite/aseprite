@@ -360,7 +360,7 @@ static FormatOptions *get_options_JPEG(FileOp *fop)
       return (FormatOptions*)jpeg_options;
 
     /* widgets */
-    JWidgetPtr window(load_widget("jpeg_options.jid", "jpeg_options"));
+    FramePtr window(load_widget("jpeg_options.jid", "jpeg_options"));
     JWidget slider_quality, ok;
     get_widgets(window,
 		"quality", &slider_quality,
@@ -368,9 +368,9 @@ static FormatOptions *get_options_JPEG(FileOp *fop)
 
     jslider_set_value(slider_quality, jpeg_options->quality * 10.0f);
 
-    jwindow_open_fg(window);
+    window->open_window_fg();
 
-    if (jwindow_get_killer(window) == ok) {
+    if (window->get_killer() == ok) {
       jpeg_options->quality = jslider_get_value(slider_quality) / 10.0f;
       set_config_float("JPEG", "Quality", jpeg_options->quality);
     }

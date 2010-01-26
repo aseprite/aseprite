@@ -57,15 +57,15 @@ void AboutCommand::execute(Context* context)
   JWidget label3, label4, box2, box3, box4, button1;
   char *authors_txt = read_authors_txt("AUTHORS.txt");
 
-  JWidgetPtr window;
+  FramePtr window;
   if (authors_txt)
-    window = jwindow_new_desktop();
+    window = new Frame(true, NULL);
   else
-    window = jwindow_new(_("About ASE"));
+    window = new Frame(false, _("About ASE"));
 
   box1 = jbox_new(JI_VERTICAL);
   label1 = jlabel_new("Allegro Sprite Editor - " VERSION);
-  label2 = jlabel_new(_("Just another tool to create sprites"));
+  label2 = jlabel_new(_("A pixel-art program"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
 
   if (authors_txt) {
@@ -108,7 +108,7 @@ void AboutCommand::execute(Context* context)
 		     button1->border_width.r+16,
 		     button1->border_width.b);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 }
 
 char* AboutCommand::read_authors_txt(const char *filename)

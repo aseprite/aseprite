@@ -44,7 +44,7 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
-#define TOPWND(manager) reinterpret_cast<JWidget>(jlist_first_data((manager)->children))
+#define TOPWND(manager) reinterpret_cast<Frame*>(jlist_first_data((manager)->children))
 
 #define ACCEPT_FOCUS(widget)				\
   (((widget)->flags & (JI_FOCUSREST |			\
@@ -191,7 +191,7 @@ JWidget jmanager_new()
     n_timers = 0;
   }
 
-  widget = new jwidget(JI_MANAGER);
+  widget = new Widget(JI_MANAGER);
 
   jwidget_add_hook(widget, JI_MANAGER, manager_msg_proc, NULL);
 
@@ -303,7 +303,7 @@ bool jmanager_generate_messages(JWidget manager)
 
       /* attract the focus to the magnetic widget... */
       /* 1) get the magnetic widget */
-      magnet = find_magnetic_widget(jwidget_get_window(window));
+      magnet = find_magnetic_widget(window->getRoot());
       /* 2) if magnetic widget exists and it doesn't have the focus */
       if (magnet && !jwidget_has_focus(magnet))
 	jmanager_set_focus(magnet);
@@ -433,21 +433,21 @@ bool jmanager_generate_messages(JWidget manager)
        that aren't the desktop) */
     if (msg->type == JM_BUTTONPRESSED &&
 	!capture_widget && mouse_widget) {
-      JWidget window = jwidget_get_window(mouse_widget);
-      JWidget win_manager = window ? jwidget_get_manager(window): NULL;
+      Frame* window = static_cast<Frame*>(mouse_widget->getRoot());
+      JWidget win_manager = window ? window->getManager(): NULL;
 
       if ((window) &&
-	  (!jwindow_is_desktop(window)) &&
+	  (!window->is_desktop()) &&
 	  (window != TOPWND(win_manager))) {
 	/* put it in the top of the list */
 	jlist_remove(win_manager->children, window);
 
-	if (jwindow_is_ontop(window))
+	if (window->is_ontop())
 	  jlist_prepend(win_manager->children, window);
 	else {
 	  int pos = jlist_length(win_manager->children);
 	  JI_LIST_FOR_EACH_BACK(win_manager->children, link) {
-	    if (jwindow_is_ontop((JWidget)link->data))
+	    if (((Frame*)link->data)->is_ontop())
 	      break;
 	    pos--;
 	  }
@@ -861,7 +861,7 @@ void jmanager_set_capture(JWidget widget)
 void jmanager_attract_focus(JWidget widget)
 {
   /* get the magnetic widget */
-  JWidget magnet = find_magnetic_widget(jwidget_get_window(widget));
+  JWidget magnet = find_magnetic_widget(widget->getRoot());
 
   /* if magnetic widget exists and it doesn't have the focus */
   if (magnet && !jwidget_has_focus(magnet))
@@ -870,9 +870,7 @@ void jmanager_attract_focus(JWidget widget)
 
 void jmanager_focus_first_child(JWidget widget)
 {
-  JWidget it;
-
-  for (it=jwidget_get_window(widget); it; it=next_widget(it)) {
+  for (Widget* it=widget->getRoot(); it; it=next_widget(it)) {
     if (ACCEPT_FOCUS(it) && !(childs_accept_focus(it, true))) {
       jmanager_set_focus(it);
       break;
@@ -971,12 +969,12 @@ void jmanager_remove_msg_filter_for(JWidget widget)
 }
 
 /* configures the window for begin the loop */
-void _jmanager_open_window(JWidget manager, JWidget window)
+void _jmanager_open_window(JWidget manager, Frame* window)
 {
   JMessage msg;
 
   // free all widgets of special states
-  if (jwindow_is_wantfocus(window)) {
+  if (window->is_wantfocus()) {
     jmanager_free_capture();
     jmanager_free_mouse();
     jmanager_free_focus();
@@ -998,7 +996,7 @@ void _jmanager_open_window(JWidget manager, JWidget window)
   jlist_append(new_windows, window);
 }
 
-void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_background)
+void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_background)
 {
   JMessage msg;
   JRegion reg1;
@@ -1012,7 +1010,7 @@ void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_backgro
     reg1 = NULL;
 
   /* close all windows to this desktop */
-  if (jwindow_is_desktop(window)) {
+  if (window->is_desktop()) {
     JLink link, next;
 
     JI_LIST_FOR_EACH_SAFE(manager->children, link, next) {
@@ -1023,19 +1021,19 @@ void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_backgro
 	jregion_union(reg1, reg1, reg2);
 	jregion_free(reg2);
 
-	_jmanager_close_window(manager, reinterpret_cast<JWidget>(link->data), false);
+	_jmanager_close_window(manager, reinterpret_cast<Frame*>(link->data), false);
       }
     }
   }
 
   /* free all widgets of special states */
-  if (capture_widget != NULL && jwidget_get_window(capture_widget) == window)
+  if (capture_widget != NULL && capture_widget->getRoot() == window)
     jmanager_free_capture();
 
-  if (mouse_widget != NULL && jwidget_get_window(mouse_widget) == window)
+  if (mouse_widget != NULL && mouse_widget->getRoot() == window)
     jmanager_free_mouse();
 
-  if (focus_widget != NULL && jwidget_get_window(focus_widget) == window)
+  if (focus_widget != NULL && focus_widget->getRoot() == window)
     jmanager_free_focus();
 
   /* hide window */
@@ -1101,15 +1099,15 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       /* continue sending the message to the children of all windows
 	 (until a desktop or foreground window) */
       JI_LIST_FOR_EACH(widget->children, link) {
-	JWidget w = (JWidget)link->data;
+	Frame* w = (Frame*)link->data;
 
 	/* send to the window */
 	JI_LIST_FOR_EACH(w->children, link2)
 	  if (jwidget_send_message(reinterpret_cast<JWidget>(link2->data), msg))
 	    return true;
 
-	if (jwindow_is_foreground(w) ||
-	    jwindow_is_desktop(w))
+	if (w->is_foreground() ||
+	    w->is_desktop())
 	  break;
       }
 
@@ -1214,38 +1212,37 @@ static void manager_pump_queue(JWidget widget_manager)
 #ifdef REPORT_EVENTS
       {
 	static char *msg_name[] = {
-	  "Open",
-	  "Close",
-	  "Destroy",
-	  "Draw",
-	  "Signal",
-	  "Timer",
-	  "ReqSize",
-	  "SetPos",
-	  "WinMove",
-	  "DrawRgn",
-	  "DeferredFree",
-	  "DirtyChildren",
-	  "QueueProcessing",
-	  "KeyPressed",
-	  "KeyReleased",
-	  "FocusEnter",
-	  "FocusLeave",
-	  "ButtonPressed",
-	  "ButtonReleased",
-	  "DoubleClick",
-	  "MouseEnter",
-	  "MouseLeave",
-	  "Motion",
-	  "SetCursor",
-	  "Wheel",
+	  "JM_OPEN",
+	  "JM_CLOSE",
+	  "JM_DESTROY",
+	  "JM_DRAW",
+	  "JM_SIGNAL",
+	  "JM_TIMER",
+	  "JM_REQSIZE",
+	  "JM_SETPOS",
+	  "JM_WINMOVE",
+	  "JM_DEFERREDFREE",
+	  "JM_DIRTYCHILDREN",
+	  "JM_QUEUEPROCESSING",
+	  "JM_KEYPRESSED",
+	  "JM_KEYRELEASED",
+	  "JM_FOCUSENTER",
+	  "JM_FOCUSLEAVE",
+	  "JM_BUTTONPRESSED",
+	  "JM_BUTTONRELEASED",
+	  "JM_DOUBLECLICK",
+	  "JM_MOUSEENTER",
+	  "JM_MOUSELEAVE",
+	  "JM_MOTION",
+	  "JM_SETCURSOR",
+	  "JM_WHEEL",
 	};
 	const char *string =
 	  (msg->type >= JM_OPEN &&
 	   msg->type <= JM_WHEEL) ? msg_name[msg->type]:
 				    "Unknown";
 
-	printf("Event: %s (%d)\n", string, widget->id);
+	printf("Event #%d: %s (%d)\n", msg->type, string, widget->id);
 	fflush(stdout);
       }
 #endif
@@ -1264,7 +1261,7 @@ static void manager_pump_queue(JWidget widget_manager)
 		 msg->draw.rect.x1, msg->draw.rect.y1,
 		 msg->draw.rect.x2-1, msg->draw.rect.y2-1);
 #ifdef REPORT_EVENTS
-	printf("set_clip(%d, %d, %d, %d)\n",
+	printf(" - set_clip(%d, %d, %d, %d)\n",
 	       msg->draw.rect.x1, msg->draw.rect.y1,
 	       msg->draw.rect.x2-1, msg->draw.rect.y2-1);
 	fflush(stdout);
@@ -1304,7 +1301,7 @@ static void manager_pump_queue(JWidget widget_manager)
 
 void jmanager_invalidate_region(JWidget widget, JRegion region)
 {
-  JWidget window;
+  Frame* window;
   JRegion reg1 = jregion_new(NULL, 0);
   JRegion reg2 = jregion_new(widget->rc, 0);
   JRegion reg3;
@@ -1315,13 +1312,13 @@ void jmanager_invalidate_region(JWidget widget, JRegion region)
 
   /* redraw windows from top to background */
   JI_LIST_FOR_EACH(widget->children, link) {
-    window = (JWidget)link->data;
+    window = (Frame*)link->data;
 
     // invalidate regions of this window
     jwidget_invalidate_region(window, reg1);
 
     /* there is desktop? */
-    if (jwindow_is_desktop(window))
+    if (window->is_desktop())
       break;					/* work done */
 
     /* clip this window area for the next window */
@@ -1380,15 +1377,15 @@ static void generate_proc_windows_list()
 
 static void generate_proc_windows_list2(JWidget widget)
 {
-  JWidget window;
+  Frame* window;
   JLink link;
 
   if (widget->type == JI_MANAGER) {
     JI_LIST_FOR_EACH(widget->children, link) {
-      window = reinterpret_cast<JWidget>(link->data);
+      window = reinterpret_cast<Frame*>(link->data);
       jlist_append(proc_windows_list, window);
-      if (jwindow_is_foreground(window) ||
-	  jwindow_is_desktop(window))
+      if (window->is_foreground() ||
+	  window->is_desktop())
 	break;
     }
   }
@@ -1486,15 +1483,15 @@ static void filter_free(Filter* filter)
 static bool move_focus(JWidget manager, JMessage msg)
 {
   int (*cmp)(JWidget, int, int) = NULL;
-  JWidget focus = NULL;
-  JWidget it, *list;
+  Widget* focus = NULL;
+  Widget* it, **list;
   bool ret = false;
-  JWidget window;
+  Frame* window;
   int c, count;
 
   /* who have the focus */
   if (focus_widget)
-    window = jwidget_get_window(focus_widget);
+    window = static_cast<Frame*>(focus_widget->getRoot());
   else if (!jlist_empty(manager->children))
     window = TOPWND(manager);
   else

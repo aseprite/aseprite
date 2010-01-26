@@ -96,7 +96,7 @@ void ConfigureScreen::show_dialog(Context* context)
 {
   JWidget resolution, color_depth, pixel_scale, fullscreen;
 
-  JWidgetPtr window(load_widget("confscr.jid", "configure_screen"));
+  FramePtr window(load_widget("confscr.jid", "configure_screen"));
   get_widgets(window,
 	      "resolution", &resolution,
 	      "color_depth", &color_depth,
@@ -110,9 +110,9 @@ void ConfigureScreen::show_dialog(Context* context)
   else
     jwidget_select(fullscreen);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
+  if (window->get_killer() == jwidget_find_name(window, "ok")) {
     new_w = m_resolutions[jcombobox_get_selected_index(resolution)].first;
     new_h = m_resolutions[jcombobox_get_selected_index(resolution)].second;
     new_depth = m_colordepths[jcombobox_get_selected_index(color_depth)];
@@ -122,21 +122,21 @@ void ConfigureScreen::show_dialog(Context* context)
 
     /* setup graphics mode */
     if (try_new_gfx_mode(context)) {
-      JWidgetPtr alert_window(jalert_new("Confirm Screen"
-					 "<<Do you want to keep this screen resolution?"
-					 "<<In 10 seconds the screen will be restored."
-					 "||&Yes||&No"));
+      FramePtr alert_window(jalert_new("Confirm Screen"
+				       "<<Do you want to keep this screen resolution?"
+				       "<<In 10 seconds the screen will be restored."
+				       "||&Yes||&No"));
       jwidget_add_hook(alert_window, -1, alert_msg_proc, NULL);
 
       seconds_to_accept = 10;
       timer_to_accept = jmanager_add_timer(alert_window, 1000);
       jmanager_start_timer(timer_to_accept);
 
-      jwindow_open_fg(alert_window);
+      alert_window->open_window_fg();
       jmanager_remove_timer(timer_to_accept);
 
-      if (jwindow_get_killer(alert_window) != NULL &&
-	  ustrcmp(jwidget_get_name(jwindow_get_killer(alert_window)), "button-1") == 0) {
+      if (alert_window->get_killer() != NULL &&
+	  ustrcmp(alert_window->get_killer()->getName(), "button-1") == 0) {
 	/* do nothing */
       }
       else {
@@ -286,7 +286,7 @@ static bool try_new_gfx_mode(Context* context)
 
   /* redraw top window */
   if (app_get_top_window()) {
-    jwindow_remap(app_get_top_window());
+    app_get_top_window()->remap_window();
     jmanager_refresh_screen();
   }
 
@@ -304,13 +304,13 @@ static bool alert_msg_proc(JWidget widget, JMessage msg)
       seconds_to_accept = MAX(0, seconds_to_accept);
 
       usprintf(buf, "In %d seconds the screen will be restored.", seconds_to_accept);
-      jwidget_set_text((JWidget)labels->end->next->next->data, buf);
+      ((JWidget)labels->end->next->next->data)->setText(buf);
       jlist_free(labels);
 
       if (seconds_to_accept == 0) {
 	jmanager_stop_timer(timer_to_accept);
-	jwindow_close(widget, NULL);
-	return TRUE;
+	static_cast<Frame*>(widget)->closeWindow(NULL);
+	return true;
       }
     }
   }

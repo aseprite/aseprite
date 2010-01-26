@@ -479,7 +479,7 @@ void gui_feedback()
 
     resize_screen();
     gui_setup_screen(false);
-    jwindow_remap(app_get_top_window());
+    app_get_top_window()->remap_window();
     jmanager_refresh_screen();
   }
 #endif
@@ -1086,18 +1086,17 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	      }
 	      // all other keys are only available in the main-window
 	      else {
-		JWidget child;
 		JLink link;
 
 		JI_LIST_FOR_EACH(widget->children, link) {
-		  child = reinterpret_cast<JWidget>(link->data);
+		  Frame* child = reinterpret_cast<Frame*>(link->data);
 
 		  /* there are a foreground window executing? */
-		  if (jwindow_is_foreground(child)) {
+		  if (child->is_foreground()) {
 		    break;
 		  }
 		  /* is it the desktop and the top-window= */
-		  else if (jwindow_is_desktop(child) && child == app_get_top_window()) {
+		  else if (child->is_desktop() && child == app_get_top_window()) {
 		    /* ok, so we can execute the command represented by the
 		       pressed-key in the message... */
 		    UIContext::instance()->execute_command(command, shortcut->params);

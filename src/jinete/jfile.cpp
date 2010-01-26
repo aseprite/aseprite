@@ -124,9 +124,8 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       bool bottom = bool_attr_is_true(elem, "bottom");
       const char *_bevel = elem->Attribute("bevel");
 
-      jwidget_set_align(widget,
-			(left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
-			(top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      widget->setAlign((left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
+		       (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
       if (_bevel != NULL) {
 	char *bevel = jstrdup(_bevel);
@@ -159,11 +158,10 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       bool top    = bool_attr_is_true(elem, "top");
       bool bottom = bool_attr_is_true(elem, "bottom");
 
-      jwidget_set_align(widget,
-			(center ? JI_CENTER:
-			 (right ? JI_RIGHT: JI_LEFT)) |
-			(top    ? JI_TOP:
-			 (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      widget->setAlign((center ? JI_CENTER:
+			(right ? JI_RIGHT: JI_LEFT)) |
+		       (top    ? JI_TOP:
+			(bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* combobox */
@@ -206,11 +204,10 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       bool top    = bool_attr_is_true(elem, "top");
       bool bottom = bool_attr_is_true(elem, "bottom");
 
-      jwidget_set_align(widget,
-			(center ? JI_CENTER:
-			 (right ? JI_RIGHT: JI_LEFT)) |
-			(top    ? JI_TOP:
-			 (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      widget->setAlign((center ? JI_CENTER:
+			(right ? JI_RIGHT: JI_LEFT)) |
+		       (top    ? JI_TOP:
+			(bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* listbox */
@@ -244,11 +241,10 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       bool top    = bool_attr_is_true(elem, "top");
       bool bottom = bool_attr_is_true(elem, "bottom");
 
-      jwidget_set_align(widget,
-			(center ? JI_CENTER:
-			 (right ? JI_RIGHT: JI_LEFT)) |
-			(top    ? JI_TOP:
-			 (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      widget->setAlign((center ? JI_CENTER:
+			(right ? JI_RIGHT: JI_LEFT)) |
+		       (top    ? JI_TOP:
+			(bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
   /* separator */
@@ -299,9 +295,9 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       bool desktop = bool_attr_is_true(elem, "desktop");
 
       if (desktop)
-	widget = jwindow_new_desktop();
+	widget = new Frame(true, NULL);
       else
-	widget = jwindow_new(TRANSLATE_ATTR(text));
+	widget = new Frame(false, TRANSLATE_ATTR(text));
     }
   }
 
@@ -322,7 +318,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     const char *childspacing = elem->Attribute("childspacing");
 
     if (name != NULL)
-      jwidget_set_name(widget, name);
+      widget->setName(name);
 
     if (tooltip != NULL)
       jwidget_add_tooltip_text(widget, tooltip);

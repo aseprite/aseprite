@@ -56,10 +56,10 @@ typedef enum {
   HOTCOLOR_GRADIENT = 0,
 } hotcolor_t;
 
-typedef struct ColorBar
+struct ColorBar
 {
-  JWidget widget;
-  JWidget tooltip_window;
+  Widget* widget;
+  Frame* tooltip_window;
   int ncolor;
   int refresh_timer_id;
   color_t color[COLORBAR_MAX_COLORS];
@@ -70,7 +70,7 @@ typedef struct ColorBar
   /* drag & drop colors */
   hotcolor_t hot_drag;
   hotcolor_t hot_drop;
-} ColorBar;
+};
 
 static ColorBar *colorbar_data(JWidget colorbar);
 
@@ -89,7 +89,7 @@ static void get_info(JWidget widget, int *beg, int *end);
 
 JWidget colorbar_new(int align)
 {
-  JWidget widget = new jwidget(colorbar_type());
+  Widget* widget = new Widget(colorbar_type());
   ColorBar *colorbar = jnew0(ColorBar, 1);
 
   colorbar->widget = widget;
@@ -104,8 +104,8 @@ JWidget colorbar_new(int align)
   colorbar->hot_drop = HOTCOLOR_NONE;
 
   jwidget_add_hook(widget, colorbar_type(), colorbar_msg_proc, colorbar);
-  jwidget_focusrest(widget, TRUE);
-  jwidget_set_align(widget, align);
+  jwidget_focusrest(widget, true);
+  widget->setAlign(align);
 
   widget->border_width.l = 2;
   widget->border_width.t = 2;
@@ -320,7 +320,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 				      color_get_green(imgtype, colorbar->fgcolor),
 				      color_get_blue(imgtype, colorbar->fgcolor));
 
-	  textout_ex(doublebuffer, widget->font(), "FG",
+	  textout_ex(doublebuffer, widget->getFont(), "FG",
 		     x1+4, v1+2, neg, -1);
 	}
 
@@ -329,8 +329,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 				      color_get_green(imgtype, colorbar->bgcolor),
 				      color_get_blue(imgtype, colorbar->bgcolor));
 
-	  textout_ex(doublebuffer, widget->font(), "BG",
-		     x2-3-text_length(widget->font(), "BG"),
+	  textout_ex(doublebuffer, widget->getFont(), "BG",
+		     x2-3-text_length(widget->getFont(), "BG"),
 		     v2-jwidget_get_text_height(widget), neg, -1);
 	}
       }
@@ -580,12 +580,12 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
 				  color_t color, hotcolor_t hot)
 {
   ColorBar *colorbar = colorbar_data(widget);
-  JWidget window;
+  Frame* window;
   char buf[1024];		/* TODO warning buffer overflow */
   int x, y;
 
   if (colorbar->tooltip_window == NULL) {
-    window = colorselector_new(TRUE);
+    window = colorselector_new(true);
     window->user_data[0] = widget;
     jwidget_add_hook(window, -1, tooltip_window_msg_proc, NULL);
 
@@ -617,12 +617,12 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
       usprintf(buf, _("Gradient Entry %d"), colorbar->hot);
       break;
   }
-  jwidget_set_text(window, buf);
+  window->setText(buf);
 
   colorselector_set_color(window, color);
   colorbar->hot_editing = hot;
 
-  jwindow_open(window);
+  window->open_window();
 
   /* window position */
   if (x2+jrect_w(window->rc) <= JI_SCREEN_W)
@@ -634,7 +634,7 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
   x = MID(0, x, JI_SCREEN_W-jrect_w(window->rc));
   y = MID(widget->rc->y1, y, widget->rc->y2-jrect_h(window->rc));
   
-  jwindow_position(window, x, y);
+  window->position_window(x, y);
 
   jmanager_dispatch_messages(jwidget_get_manager(window));
   jwidget_relayout(window);
@@ -656,7 +656,7 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
     jrect_free(rc2);
     jrect_free(rc);
 
-    jtooltip_window_set_hotregion(window, rgn);
+    static_cast<TipWindow*>(window)->set_hotregion(rgn);
   }
 }
 
@@ -666,7 +666,7 @@ static void colorbar_close_tooltip(JWidget widget)
 
   if (colorbar->tooltip_window != NULL) {
     /* close the widget */
-    jwindow_close(colorbar->tooltip_window, NULL);
+    colorbar->tooltip_window->closeWindow(NULL);
 
     /* dispatch the JM_CLOSE event to 'tooltip_window_msg_proc' */
     jmanager_dispatch_messages(jwidget_get_manager(widget));

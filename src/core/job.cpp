@@ -78,7 +78,7 @@ Job::~Job()
 void Job::do_job()
 {
   m_thread = jthread_new(&Job::thread_proc, (void*)this);
-  jwindow_open_fg(m_alert_window);
+  m_alert_window->open_window_fg();
 }
 
 void Job::job_progress(float f)
@@ -129,7 +129,7 @@ void Job::on_monitor_destroyed()
 {
   if (m_alert_window != NULL) {
     m_monitor = NULL;
-    jwindow_close(m_alert_window, NULL);
+    m_alert_window->closeWindow(NULL);
   }
 }
 

@@ -70,7 +70,7 @@ int main (int argc, char *argv[])
   jwidget_add_child(box, button1);
   jwidget_add_child(box, button2);
 
-  jwindow_open_bg(window);
+  window->open_window_bg();
 
   jmanager_run(manager);
   jmanager_free(manager);
@@ -143,7 +143,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
 	JWidget window = tip_window_new(tip->text);
 	int w = jrect_w(window->rc);
 	int h = jrect_h(window->rc);
-	jwindow_remap(window);
+	window->remap_window();
 	jwindow_position(window,
 			 MID(0, jmouse_x(0)-w/2, JI_SCREEN_W-w),
 			 MID(0, jmouse_y(0)-h/2, JI_SCREEN_H-h));
@@ -165,7 +165,7 @@ static JWidget tip_window_new(const char *text)
   jwindow_sizeable(window, FALSE);
   jwindow_moveable(window, FALSE);
 
-  jwidget_set_align(window, JI_CENTER | JI_MIDDLE);
+  window->set_align(JI_CENTER | JI_MIDDLE);
 
   /* remove decorative widgets */
   JI_LIST_FOR_EACH_SAFE(window->children, link, next) {
@@ -194,7 +194,7 @@ static bool tip_window_hook(JWidget widget, JMessage msg)
 
     case JM_MOUSELEAVE:
     case JM_BUTTONPRESSED:
-      jwindow_close(widget, NULL);
+      widget->close_window(NULL);
       break;
 
     case JM_DRAW: {

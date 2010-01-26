@@ -63,13 +63,13 @@
 #define THUMBSIZE	(32*guiscale())
 
 /* height of the headers */
-#define HDRSIZE		(3 + text_height(widget->font())*2 + 3 + 3)
+#define HDRSIZE		(3 + text_height(widget->getFont())*2 + 3 + 3)
 
 /* width of the frames */
 #define FRMSIZE		(3 + THUMBSIZE + 3)
 
 /* height of the layers */
-#define LAYSIZE		(3 + MAX(text_height(widget->font()), THUMBSIZE) + 4)
+#define LAYSIZE		(3 + MAX(text_height(widget->getFont()), THUMBSIZE) + 4)
 
 /* space between icons and other information in the layer */
 #define ICONSEP		(2*guiscale())
@@ -164,25 +164,22 @@ bool animation_editor_is_movingcel()
 void switch_between_animation_and_sprite_editor()
 {
   const Sprite* sprite = UIContext::instance()->get_current_sprite();
-  JWidget window;
-  JWidget anieditor;
-  int layer;
 
   /* create the window & the animation-editor */
-  window = jwindow_new_desktop();
-  anieditor = anieditor_new(sprite);
+  Frame* window = new Frame(true, NULL);
+  Widget* anieditor = anieditor_new(sprite);
   current_anieditor = anieditor;
 
   jwidget_add_child(window, anieditor);
-  jwindow_remap(window);
+  window->remap_window();
 
   /* show the current cel */
-  layer = anieditor_get_layer_index(anieditor, sprite->layer);
+  int layer = anieditor_get_layer_index(anieditor, sprite->layer);
   if (layer >= 0)
     anieditor_center_cel(anieditor, layer, sprite->frame);
 
   /* show the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
   /* destroy the window */
   jwidget_free(window);
@@ -200,7 +197,7 @@ void switch_between_animation_and_sprite_editor()
 
 static JWidget anieditor_new(const Sprite* sprite)
 {
-  JWidget widget = new jwidget(anieditor_type());
+  Widget* widget = new Widget(anieditor_type());
   AniEditor* anieditor = new AniEditor;
 
   anieditor->sprite = sprite;
@@ -979,11 +976,11 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     if (align1 < 0)
       x = x1+3;
     else if (align1 == 0)
-      x = (x1+x2)/2 - text_length(widget->font(), line1)/2;
+      x = (x1+x2)/2 - text_length(widget->getFont(), line1)/2;
     else
-      x = x2 - 3 - text_length(widget->font(), line1);
+      x = x2 - 3 - text_length(widget->getFont(), line1);
       
-    jdraw_text(widget->font(), line1,
+    jdraw_text(widget->getFont(), line1,
 	       x, y1+3,
 	       fg, face, TRUE);
   }
@@ -992,12 +989,12 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     if (align2 < 0)
       x = x1+3;
     else if (align2 == 0)
-      x = (x1+x2)/2 - text_length(widget->font(), line2)/2;
+      x = (x1+x2)/2 - text_length(widget->getFont(), line2)/2;
     else
-      x = x2 - 3 - text_length(widget->font(), line2);
+      x = x2 - 3 - text_length(widget->getFont(), line2);
     
-    jdraw_text(widget->font(), line2,
-	       x, y1+3+ji_font_get_size(widget->font())+3,
+    jdraw_text(widget->getFont(), line2,
+	       x, y1+3+ji_font_get_size(widget->getFont())+3,
 	       fg, face, TRUE);
   }
 }
@@ -1102,16 +1099,16 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   /* draw the layer's name */
-  jdraw_text(widget->font(), layer->get_name().c_str(),
-	     u, y_mid - ji_font_get_size(widget->font())/2,
+  jdraw_text(widget->getFont(), layer->get_name().c_str(),
+	     u, y_mid - ji_font_get_size(widget->getFont())/2,
 	     fg, bg, TRUE);
 
   /* the background should be underlined */
   if (layer->is_background()) {
     hline(ji_screen,
 	  u,
-	  y_mid - ji_font_get_size(widget->font())/2 + ji_font_get_size(widget->font()) + 1,
-	  u + text_length(widget->font(), layer->get_name().c_str()),
+	  y_mid - ji_font_get_size(widget->getFont())/2 + ji_font_get_size(widget->getFont()) + 1,
+	  u + text_length(widget->getFont(), layer->get_name().c_str()),
 	  fg);
   }
 

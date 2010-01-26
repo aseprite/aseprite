@@ -52,7 +52,7 @@ static void listitem_request_size(JWidget widget, int *w, int *h);
 
 JWidget jlistbox_new()
 {
-  JWidget widget = new jwidget(JI_LISTBOX);
+  JWidget widget = new Widget(JI_LISTBOX);
 
   jwidget_add_hook(widget, JI_LISTBOX, listbox_msg_proc, NULL);
   jwidget_focusrest(widget, true);
@@ -63,11 +63,11 @@ JWidget jlistbox_new()
 
 JWidget jlistitem_new(const char *text)
 {
-  JWidget widget = new jwidget(JI_LISTITEM);
+  JWidget widget = new Widget(JI_LISTITEM);
 
   jwidget_add_hook(widget, JI_LISTITEM, listitem_msg_proc, NULL);
-  jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
-  jwidget_set_text(widget, text);
+  widget->setAlign(JI_LEFT | JI_MIDDLE);
+  widget->setText(text);
   jwidget_init_theme(widget);
 
   return widget;
@@ -426,7 +426,7 @@ static void listitem_request_size(JWidget widget, int *w, int *h)
   int req_w, req_h;
   JLink link;
 
-  if (widget->has_text()) {
+  if (widget->hasText()) {
     max_w = jwidget_get_text_length(widget);
     max_h = jwidget_get_text_height(widget);
   }

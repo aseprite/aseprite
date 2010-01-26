@@ -33,6 +33,7 @@
 #define JINETE_JWIDGET_H_INCLUDED
 
 #include "jinete/jbase.h"
+#include "jinete/jrect.h"
 
 #include <string>
 
@@ -60,16 +61,6 @@ void jwidget_add_hook(JWidget widget, int type,
 		      JMessageFunc msg_proc, void *data);
 JHook jwidget_get_hook(JWidget widget, int type);
 void *jwidget_get_data(JWidget widget, int type);
-
-/* main properties */
-
-int jwidget_get_type(JWidget widget);
-const char *jwidget_get_name(JWidget widget);
-const char *jwidget_get_text(JWidget widget);
-
-void jwidget_set_name(JWidget widget, const char *name);
-void jwidget_set_text(JWidget widget, const char *text);
-void jwidget_set_align(JWidget widget, int align);
  
 /* behavior properties */
 
@@ -118,8 +109,7 @@ void jwidget_replace_child(JWidget widget, JWidget old_child,
 /* parents and children */
 
 JWidget jwidget_get_parent(JWidget widget);
-JWidget jwidget_get_window(JWidget widget);
-JWidget jwidget_get_manager(JWidget window);
+JWidget jwidget_get_manager(JWidget widget);
 JList jwidget_get_parents(JWidget widget, bool ascendant);
 JList jwidget_get_children(JWidget widget);
 JWidget jwidget_pick(JWidget widget, int x, int y);
@@ -179,7 +169,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode);
 
 //////////////////////////////////////////////////////////////////////
 
-class jwidget
+class Widget
 {
 public:
   JID id;			/* identify code */
@@ -230,43 +220,57 @@ public:
   //////////////////////////////////////////////////////////////////////
   // Methods
 
-  jwidget(int type);
-  ~jwidget();
+  Widget(int type);
+  virtual ~Widget();
 
-  bool has_text() { return flags & JI_NOTEXT ? false: true; }
+  // main properties
 
-  const char* text() const { return m_text.c_str(); }
-  int text_int() const;
-  double text_double() const;
-  void text(const char* text) { jwidget_set_text(this, text); }
-  size_t text_size() const { return m_text.size(); }
-  void textf(const char* text, ...);
-  void set_text_quiet(const char* text);
+  int getType();
+  const char* getName();
+  int getAlign() const;
 
-  bool enabled() { return jwidget_is_enabled(this); }
-  void enabled(bool state) {
+  void setName(const char* name);
+  void setAlign(int align);
+
+  // text property
+
+  bool hasText() { return flags & JI_NOTEXT ? false: true; }
+
+  const char* getText() const { return m_text.c_str(); }
+  int getTextInt() const;
+  double getTextDouble() const;
+  size_t getTextSize() const { return m_text.size(); }
+  void setText(const char* text);
+  void setTextf(const char* text, ...);
+  void setTextQuiet(const char* text);
+
+  // enable/disable
+
+  bool isEnabled() { return jwidget_is_enabled(this); }
+  void setEnabled(bool state) {
     if (state)
       jwidget_enable(this);
     else
       jwidget_disable(this);
   }
 
-  bool selected() { return jwidget_is_selected(this); }
-  void selected(bool state) { jwidget_set_selected(this, state); }
+  // selected
 
-  int align() const { return m_align; }
-  void align(int align);
+  bool isSelected() { return jwidget_is_selected(this); }
+  void setSelected(bool state) { jwidget_set_selected(this, state); }
 
-  struct FONT* font();
-  void font(struct FONT* font);
+  // font
+
+  FONT* getFont();
+  void setFont(FONT* font);
 
   /**
    * Gets the background color of the widget.
    */
-  int bg_color()
+  int getBgColor()
   {
     if (m_bg_color < 0 && parent)
-      return parent->bg_color();
+      return parent->getBgColor();
     else
       return m_bg_color;
   }
@@ -274,21 +278,44 @@ public:
   /**
    * Sets the background color of the widget.
    */
-  void bg_color(int bg_color)
+  void setBgColor(int bg_color)
   {
     m_bg_color = bg_color;
   }
 
-  /**
-   * Returns a widget in the same window that is located "sibling".
-   */
-  inline JWidget find_sibling(const char* name)
-  {
-    return jwidget_find_name(jwidget_get_window(this), name);
+  //////////////////////////////////////////////////////////////////////
+  // parents and children
+
+  Widget* getRoot();
+  Widget* getParent();
+  Widget* getManager();
+  JList getParents(bool ascendant);
+  JList getChildren();
+  Widget* pick(int x, int y);
+  bool hasChild(Widget* child);
+  Widget* findChild(const char* name);
+  Widget* findSibling(const char* name);
+
+  void dirty() {
+    jwidget_dirty(this);
   }
 
-  void dirty() { jwidget_dirty(this); }
+  //////////////////////////////////////////////////////////////////////
+  // position and geometry
 
+  Rect getBounds() const;
+  void setBounds(const Rect& rc);
+
+  //////////////////////////////////////////////////////////////////////
+  // manager handler
+
+  bool sendMessage(JMessage msg);
+  void closeWindow();
+  void captureMouse();
+  void hardCaptureMouse();
+  void releaseMouse();
+
+protected:
   virtual bool msg_proc(JMessage msg);
 
 };

@@ -60,12 +60,12 @@ void NewLayerSetCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
 
   // load the window widget
-  JWidgetPtr window(load_widget("newlay.jid", "new_layer_set"));
+  FramePtr window(load_widget("newlay.jid", "new_layer_set"));
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == jwidget_find_name(window, "ok")) {
-    const char *name = jwidget_get_text(jwidget_find_name(window, "name"));
+  if (window->get_killer() == jwidget_find_name(window, "ok")) {
+    const char *name = jwidget_find_name(window, "name")->getText();
     Layer* layer = new LayerFolder(sprite);
 
     layer->set_name(name);

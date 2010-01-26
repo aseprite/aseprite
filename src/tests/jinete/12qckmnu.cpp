@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
   jwidget_add_child (box, menubar);
   jwidget_add_child (box, button);
 
-  jwindow_open_bg (window);
+  window->open_window_bg();
 
   jmanager_run (manager);
   jmanager_free (manager);

@@ -93,10 +93,10 @@ JRect test1()
   jwidget_add_child (box, listbox);
   jwidget_add_child (box, button);
 
-  jwindow_center(window);
+  window->center_window();
   pos = jwidget_get_rect(window);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
   jwidget_free(window);
 
   return pos;
@@ -129,10 +129,10 @@ void test2(JRect pos)
   jwidget_add_child (box, view);
   jwidget_add_child (box, button);
 
-  jwindow_remap(window);
+  window->remap_window();
   jwidget_set_rect(window, pos);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
   jwidget_free(window);
 }
 
@@ -163,10 +163,10 @@ void test3(JRect pos)
   jwidget_add_child (box, view);
   jwidget_add_child (box, button);
 
-  jwindow_remap(window);
+  window->remap_window();
   jwidget_set_rect(window, pos);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
   jwidget_free(window);
 }
 
@@ -199,9 +199,9 @@ void test4(JRect pos)
   jwidget_add_child (box, view);
   jwidget_add_child (box, button);
 
-  jwindow_remap(window);
+  window->remap_window();
   jwidget_set_rect(window, pos);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
   jwidget_free(window);
 }

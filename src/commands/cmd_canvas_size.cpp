@@ -66,7 +66,7 @@ void CanvasSizeCommand::execute(Context* context)
     JWidget left, top, right, bottom, ok;
 
     // load the window widget
-    JWidgetPtr window(load_widget("canvas.jid", "canvas_size"));
+    FramePtr window(load_widget("canvas.jid", "canvas_size"));
     get_widgets(window,
 		"left", &left,
 		"top", &top,
@@ -74,26 +74,26 @@ void CanvasSizeCommand::execute(Context* context)
 		"bottom", &bottom,
 		"ok", &ok, NULL);
 
-    jwindow_remap(window);
-    jwindow_center(window);
+    window->remap_window();
+    window->center_window();
 
-    left->textf("%d", m_left);
-    right->textf("%d", m_right);
-    top->textf("%d", m_top);
-    bottom->textf("%d", m_bottom);
+    left->setTextf("%d", m_left);
+    right->setTextf("%d", m_right);
+    top->setTextf("%d", m_top);
+    bottom->setTextf("%d", m_bottom);
 
     load_window_pos(window, "CanvasSize");
     jwidget_show(window);
-    jwindow_open_fg(window);
+    window->open_window_fg();
     save_window_pos(window, "CanvasSize");
 
-    if (jwindow_get_killer(window) != ok)
+    if (window->get_killer() != ok)
       return;
 
-    m_left = left->text_int();
-    m_right = right->text_int();
-    m_top = top->text_int();
-    m_bottom = bottom->text_int();
+    m_left = left->getTextInt();
+    m_right = right->getTextInt();
+    m_top = top->getTextInt();
+    m_bottom = bottom->getTextInt();
   }
 
   // resize canvas

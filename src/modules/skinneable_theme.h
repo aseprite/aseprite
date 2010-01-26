@@ -321,8 +321,8 @@ public:
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
   void draw_view_viewport(JWidget widget, JRect clip);
-  void draw_window(JWidget widget, JRect clip);
-  void draw_window_button(JWidget widget, JRect clip);
+  void draw_frame(Frame* frame, JRect clip);
+  void draw_frame_button(JWidget widget, JRect clip);
 
   int get_button_normal_text_color() const { return makecol(0, 0, 0); }
   int get_button_normal_face_color() const { return makecol(198, 198, 198); }
@@ -387,7 +387,7 @@ private:
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);
 
-  static bool theme_window_button_msg_proc(JWidget widget, JMessage msg);
+  static bool theme_frame_button_msg_proc(JWidget widget, JMessage msg);
   static bool theme_combobox_button_msg_proc(JWidget widget, JMessage msg);
 
 };

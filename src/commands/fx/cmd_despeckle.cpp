@@ -85,9 +85,8 @@ void DespeckleCommand::execute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;
-  char buf[32];
 
-  JWidgetPtr window(load_widget("median.jid", "median"));
+  FramePtr window(load_widget("median.jid", "median"));
   get_widgets(window,
 	      "width", &entry_width,
 	      "height", &entry_height,
@@ -106,10 +105,8 @@ void DespeckleCommand::execute(Context* context)
   target_button = target_button_new(sprite->imgtype, TRUE);
   target_button_set_target(target_button, effect.target);
 
-  sprintf(buf, "%d", get_config_int("Median", "Width", 3));
-  jwidget_set_text(entry_width, buf);
-  sprintf(buf, "%d", get_config_int("Median", "Height", 3));
-  jwidget_set_text(entry_height, buf);
+  entry_width->setTextf("%d", get_config_int("Median", "Width", 3));
+  entry_height->setTextf("%d", get_config_int("Median", "Height", 3));
 
   if (get_config_bool("Median", "Preview", TRUE))
     jwidget_select(check_preview);
@@ -127,8 +124,8 @@ void DespeckleCommand::execute(Context* context)
   HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
   
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* first preview */
   make_preview();
@@ -137,9 +134,9 @@ void DespeckleCommand::execute(Context* context)
   load_window_pos(window, "Median");
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok)
+  if (window->get_killer() == button_ok)
     effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
@@ -151,16 +148,14 @@ void DespeckleCommand::execute(Context* context)
 
 static bool width_change_hook(JWidget widget, void *data)
 {
-  set_config_int("Median", "Width",
-		 strtol(jwidget_get_text(widget), NULL, 10));
+  set_config_int("Median", "Width", widget->getTextInt());
   make_preview();
   return TRUE;
 }
 
 static bool height_change_hook(JWidget widget, void *data)
 {
-  set_config_int("Median", "Height",
-		 strtol(jwidget_get_text(widget), NULL, 10));
+  set_config_int("Median", "Height", widget->getTextInt());
   make_preview();
   return TRUE;
 }
@@ -177,7 +172,7 @@ static bool preview_change_hook(JWidget widget, void *data)
 {
   set_config_bool("Median", "Preview", jwidget_is_selected(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool tiled_change_hook(JWidget widget, void *data)

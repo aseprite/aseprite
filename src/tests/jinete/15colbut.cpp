@@ -85,7 +85,7 @@ int main (int argc, char *argv[])
   jwidget_add_child (box1, button5);
   jwidget_add_child (window1, box1);
 
-  jwindow_open_bg(window1);
+  window1->open_window_bg();
 
   jmanager_run(manager);
   jlist_free(windows);
@@ -97,12 +97,12 @@ END_OF_MAIN();
 
 static JWidget my_button_new(const char *text, int color)
 {
-  JWidget widget = jbutton_new (text);
+  JWidget widget = jbutton_new(text);
 
   widget->user_data[0] = (void *)color;
 
-  jwidget_add_hook (widget, JI_WIDGET, my_button_msg_proc, NULL);
-  jwidget_set_align (widget, JI_LEFT | JI_BOTTOM);
+  jwidget_add_hook(widget, JI_WIDGET, my_button_msg_proc, NULL);
+  widget->set_align(JI_LEFT | JI_BOTTOM);
 
   return widget;
 }
@@ -174,7 +174,7 @@ static bool my_button_msg_proc(JWidget widget, JMessage msg)
 
     jlist_append(windows, alert);
     jwidget_add_hook(alert, JI_WIDGET, hooked_window_bg_msg_proc, NULL);
-    jwindow_open_bg(alert);
+    alert->open_window_bg();
 
     /* return TRUE to avoid close the window */
     return TRUE;
@@ -199,7 +199,7 @@ static void new_palette_window(JWidget widget)
 
   jlist_append(windows, window);
   jwidget_add_hook(window, JI_WIDGET, hooked_window_bg_msg_proc, NULL);
-  jwindow_open_bg(window);
+  window->open_window_bg();
 }
 
 static bool hooked_window1_msg_proc(JWidget widget, JMessage msg)
@@ -207,7 +207,7 @@ static bool hooked_window1_msg_proc(JWidget widget, JMessage msg)
   if (msg->type == JM_CLOSE) {
     JLink link, next;
     JI_LIST_FOR_EACH_SAFE(windows, link, next) /* close all windows */
-      jwindow_close(reinterpret_cast<JWidget>(link->data), NULL);
+      reinterpret_cast<Window*>(link->data)->close_window(NULL);
   }
   return FALSE;
 }

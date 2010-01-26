@@ -85,7 +85,7 @@ public:
   virtual void draw_view(JWidget widget, JRect clip) = 0;
   virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;
   virtual void draw_view_viewport(JWidget widget, JRect clip) = 0;
-  virtual void draw_window(JWidget widget, JRect clip) = 0;
+  virtual void draw_frame(Frame* frame, JRect clip) = 0;
 
 };
 

@@ -82,7 +82,7 @@ void NewFileCommand::execute(Context* context)
   };
 
   /* load the window widget */
-  JWidgetPtr window(load_widget("newspr.jid", "new_sprite"));
+  FramePtr window(load_widget("newspr.jid", "new_sprite"));
 
   width = jwidget_find_name(window, "width");
   height = jwidget_find_name(window, "height");
@@ -99,8 +99,8 @@ void NewFileCommand::execute(Context* context)
   h = get_config_int("NewSprite", "Height", 200); /* default = 200 */
   bg = get_config_int("NewSprite", "Background", 2); /* default = white */
 
-  usprintf(buf, "%d", w); jwidget_set_text(width, buf);
-  usprintf(buf, "%d", h); jwidget_set_text(height, buf);
+  width->setTextf("%d", w);
+  height->setTextf("%d", h);
 
   /* select image-type */
   switch (imgtype) {
@@ -113,9 +113,9 @@ void NewFileCommand::execute(Context* context)
   jlistbox_select_index(bg_box, bg);
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == ok) {
+  if (window->get_killer() == ok) {
     bool ok = FALSE;
 
     /* get the options */
@@ -123,8 +123,8 @@ void NewFileCommand::execute(Context* context)
     else if (jwidget_is_selected(radio2)) imgtype = IMAGE_GRAYSCALE;
     else if (jwidget_is_selected(radio3)) imgtype = IMAGE_INDEXED;
 
-    w = width->text_int();
-    h = height->text_int();
+    w = width->getTextInt();
+    h = height->getTextInt();
     bg = jlistbox_get_selected_index(bg_box);
 
     w = MID(1, w, 9999);

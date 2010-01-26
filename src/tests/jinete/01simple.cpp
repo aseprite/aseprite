@@ -61,7 +61,7 @@ int main (int argc, char *argv[])
   button_ok = jbutton_new ("&OK");
   button_cancel = jbutton_new ("&Cancel");
 
-  jwidget_set_align (label, JI_CENTER | JI_MIDDLE);
+  label->set_align(JI_CENTER | JI_MIDDLE);
   jwidget_expansive (label, TRUE);
 
   jwidget_add_child (window, box1);
@@ -70,7 +70,7 @@ int main (int argc, char *argv[])
   jwidget_add_child (box2, button_ok);
   jwidget_add_child (box2, button_cancel);
 
-  jwindow_open_bg (window);
+  window->open_window_bg();
 
   jmanager_run (manager);
   jmanager_free (manager);

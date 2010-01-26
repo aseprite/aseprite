@@ -90,10 +90,10 @@ jstring ase_file_selector(const jstring& message,
 			  const jstring& init_path,
 			  const jstring& exts)
 {
-  static JWidget window = NULL;
-  JWidget fileview;
-  JWidget filename_entry;
-  JWidget filetype;
+  static Frame* window = NULL;
+  Widget* fileview;
+  Widget* filename_entry;
+  Widget* filetype;
   jstring result;
 
   file_system_refresh();
@@ -145,9 +145,7 @@ jstring ase_file_selector(const jstring& message,
 
   if (!window) {
     // load the window widget
-    window = load_widget("filesel.jid", "file_selector");
-    if (!window)
-      return NULL;
+    window = static_cast<Frame*>(load_widget("filesel.jid", "file_selector"));
 
     JWidget box = jwidget_find_name(window, "box");
     JWidget goback = jwidget_find_name(window, "goback");
@@ -177,7 +175,7 @@ jstring ase_file_selector(const jstring& message,
     jwidget_add_hook(filetype, -1, filetype_msg_proc, NULL);
     jwidget_add_hook(filename_entry, -1, filename_msg_proc, NULL);
 
-    jwidget_set_name(fileview, "fileview");
+    fileview->setName("fileview");
 
     jview_attach(view, fileview);
     jwidget_expansive(view, TRUE);
@@ -185,8 +183,8 @@ jstring ase_file_selector(const jstring& message,
     jwidget_add_child(box, view);
 
     jwidget_set_min_size(window, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
-    jwindow_remap(window);
-    jwindow_center(window);
+    window->remap_window();
+    window->center_window();
   }
   else {
     fileview = jwidget_find_name(window, "fileview");
@@ -217,12 +215,12 @@ jstring ase_file_selector(const jstring& message,
     jcombobox_add_string(filetype, tok->c_str(), NULL);
 
   // file name entry field
-  jwidget_set_text(filename_entry, init_path.filename().c_str());
+  filename_entry->setText(init_path.filename().c_str());
   select_filetype_from_filename(window);
   jentry_select_text(filename_entry, 0, -1);
 
   // setup the title of the window
-  jwidget_set_text(window, message.c_str());
+  window->setText(message.c_str());
 
   // get the ok-button
   JWidget ok = jwidget_find_name(window, "ok");
@@ -232,14 +230,14 @@ jstring ase_file_selector(const jstring& message,
 
   // open the window and run... the user press ok?
 again:
-  jwindow_open_fg(window);
-  if (jwindow_get_killer(window) == ok ||
-      jwindow_get_killer(window) == fileview) {
+  window->open_window_fg();
+  if (window->get_killer() == ok ||
+      window->get_killer() == fileview) {
     // open the selected file
     FileItem *folder = fileview_get_current_folder(fileview);
     assert(folder);
 
-    jstring fn = jwidget_get_text(filename_entry);
+    jstring fn = filename_entry->getText();
     jstring buf;
     FileItem* enter_folder = NULL;
 
@@ -325,7 +323,7 @@ again:
       fileview_set_current_folder(fileview, enter_folder);
 
       // clear the text of the entry widget
-      jwidget_set_text(filename_entry, "");
+      filename_entry->setText("");
 
       // show the window again
       jwidget_show(window);
@@ -401,8 +399,8 @@ static void update_location(JWidget window)
 
   jwidget_signal_off(location);
   jcombobox_select_index(location, selected_index);
-  jwidget_set_text(jcombobox_get_entry_widget(location),
-		   fileitem_get_displayname(current_folder).c_str());
+  jcombobox_get_entry_widget(location)
+    ->setText(fileitem_get_displayname(current_folder).c_str());
   jentry_deselect_text(jcombobox_get_entry_widget(location));
   jwidget_signal_on(location);
 
@@ -480,7 +478,7 @@ static void select_filetype_from_filename(JWidget window)
 {
   JWidget entry = jwidget_find_name(window, "filename");
   JWidget filetype = jwidget_find_name(window, "filetype");
-  const char *filename = jwidget_get_text(entry);
+  const char *filename = entry->getText();
   char *p = get_extension(filename);
   char buf[MAX_PATH];
 
@@ -493,8 +491,7 @@ static void select_filetype_from_filename(JWidget window)
 
 static void goback_command(JWidget widget)
 {
-  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
-				       "fileview");
+  JWidget fileview = widget->findSibling("fileview");
 
   if (jlist_length(navigation_history) > 1) {
     if (!navigation_position)
@@ -513,8 +510,7 @@ static void goback_command(JWidget widget)
 
 static void goforward_command(JWidget widget)
 {
-  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
-				       "fileview");
+  JWidget fileview = widget->findSibling("fileview");
 
   if (jlist_length(navigation_history) > 1) {
     if (!navigation_position)
@@ -533,8 +529,7 @@ static void goforward_command(JWidget widget)
 
 static void goup_command(JWidget widget)
 {
-  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
-				       "fileview");
+  JWidget fileview = widget->findSibling("fileview");
   fileview_goup(fileview);
 }
 
@@ -548,11 +543,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	FileItem* fileitem = fileview_get_selected(widget);
 
 	if (!fileitem_is_folder(fileitem)) {
-	  JWidget window = jwidget_get_window(widget);
-	  JWidget entry = jwidget_find_name(window, "filename");
+	  Frame* window = static_cast<Frame*>(widget->getRoot());
+	  Widget* entry = window->findChild("filename");
 	  jstring filename = fileitem_get_filename(fileitem).filename();
 
-	  jwidget_set_text(entry, filename.c_str());
+	  entry->setText(filename.c_str());
 	  select_filetype_from_filename(window);
 	}
 	break;
@@ -565,7 +560,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	/* when the current folder change */
       case SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED: {
-	JWidget window = jwidget_get_window(widget);
+	Frame* window = static_cast<Frame*>(widget->getRoot());
 
 	if (!navigation_locked)
 	  add_in_navigation_history(fileview_get_current_folder(widget));
@@ -594,8 +589,7 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
 			      jcombobox_get_selected_index(widget)));
 
 	if (fileitem) {
-	  JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
-					       "fileview");
+	  Widget* fileview = widget->findSibling("fileview");
 
 	  fileview_set_current_folder(fileview, fileitem);
 
@@ -620,16 +614,16 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 	 change the file-extension in the 'filename' entry widget */
       case JI_SIGNAL_COMBOBOX_SELECT: {
 	const char *ext = jcombobox_get_selected_string(widget);
-	JWidget window = jwidget_get_window(widget);
-	JWidget entry = jwidget_find_name(window, "filename");
+	Frame* window = static_cast<Frame*>(widget->getRoot());
+	Widget* entry = window->findChild("filename");
 	char buf[MAX_PATH];
 	char *p;
 
-	ustrcpy(buf, jwidget_get_text(entry));
+	ustrcpy(buf, entry->getText());
 	p = get_extension(buf);
 	if (p && *p != 0) {
 	  ustrcpy(p, ext);
-	  jwidget_set_text(entry, buf);
+	  entry->setText(buf);
 	  jentry_select_text(entry, 0, -1);
 	}
 	break;
@@ -650,13 +644,12 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
     }
 
     // string to be autocompleted
-    jstring left_part = jwidget_get_text(widget);
+    jstring left_part = widget->getText();
     if (left_part.empty())
       return FALSE;
 
     // first we'll need the fileview widget
-    JWidget fileview = jwidget_find_name(jwidget_get_window(widget),
-					 "fileview");
+    Widget* fileview = widget->findSibling("fileview");
 
     const FileItemList& children = fileview_get_filelist(fileview);
 
@@ -676,7 +669,7 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
 
       // is the pattern (left_part) in the child_name's beginning?
       if (it2 == left_part.end()) {
-	jwidget_set_text(widget, child_name.c_str());
+	widget->setText(child_name.c_str());
 	jentry_select_text(widget,
 			   child_name.size(),
 			   left_part.size());

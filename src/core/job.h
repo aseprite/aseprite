@@ -21,6 +21,7 @@
 
 #include "jinete/jbase.h"
 
+class Frame;
 struct Monitor;
 struct Progress;
 
@@ -30,7 +31,7 @@ class Job
   Monitor* m_monitor;
   Progress* m_progress;
   JMutex m_mutex;
-  JWidget m_alert_window;
+  Frame* m_alert_window;
   float m_last_progress;
   bool m_done_flag;
   bool m_canceled_flag;

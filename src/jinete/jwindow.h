@@ -32,32 +32,64 @@
 #ifndef JINETE_JWINDOW_H_INCLUDED
 #define JINETE_JWINDOW_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "jinete/jwidget.h"
+#include "Vaca/Signal.h"
 
-JWidget jwindow_new(const char *text);
-JWidget jwindow_new_desktop();
+namespace Vaca {
+  class CloseEvent { };		// TODO
+}
 
-JWidget jwindow_get_killer(JWidget window);
+class Frame : public Widget
+{
+  JWidget m_killer;
+  bool m_is_desktop : 1;
+  bool m_is_moveable : 1;
+  bool m_is_sizeable : 1;
+  bool m_is_ontop : 1;
+  bool m_is_wantfocus : 1;
+  bool m_is_foreground : 1;
+  bool m_is_autoremap : 1;
 
-void jwindow_moveable(JWidget window, bool state);
-void jwindow_sizeable(JWidget window, bool state);
-void jwindow_ontop(JWidget window, bool state);
-void jwindow_wantfocus(JWidget window, bool state);
+public:
+  Frame(bool is_desktop, const char* text);
 
-void jwindow_remap(JWidget window);
-void jwindow_center(JWidget window);
-void jwindow_position(JWidget window, int x, int y);
-void jwindow_move(JWidget window, JRect rect);
+  Widget* get_killer();
 
-void jwindow_open(JWidget window);
-void jwindow_open_fg(JWidget window);
-void jwindow_open_bg(JWidget window);
-void jwindow_close(JWidget window, JWidget killer);
+  void set_autoremap(bool state);
+  void set_moveable(bool state);
+  void set_sizeable(bool state);
+  void set_ontop(bool state);
+  void set_wantfocus(bool state);
 
-bool jwindow_is_toplevel(JWidget window);
-bool jwindow_is_foreground(JWidget window);
-bool jwindow_is_desktop(JWidget window);
-bool jwindow_is_ontop(JWidget window);
-bool jwindow_is_wantfocus(JWidget window);
+  void remap_window();
+  void center_window();
+  void position_window(int x, int y);
+  void move_window(JRect rect);
+
+  void open_window();
+  void open_window_fg();
+  void open_window_bg();
+  void closeWindow(Widget* killer);
+
+  bool is_toplevel();
+  bool is_foreground() const;
+  bool is_desktop() const;
+  bool is_ontop() const;
+  bool is_wantfocus() const;
+
+  // Signals
+  Vaca::Signal1<void, Vaca::CloseEvent&> Close;
+
+protected:
+  bool msg_proc(JMessage msg);
+
+private:
+  void window_request_size(int* w, int* h);
+  void window_set_position(JRect rect);
+  int get_action(int x, int y);
+  void limit_size(int* w, int* h);
+  void move_window(JRect rect, bool use_blit);
+
+};
 
 #endif

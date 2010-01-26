@@ -36,6 +36,7 @@
 
 struct FONT;
 struct BITMAP;
+class Frame;
 
 //////////////////////////////////////////////////////////////////////
 // jintern.c
@@ -57,8 +58,8 @@ bool _jwindow_is_moving();
 //////////////////////////////////////////////////////////////////////
 // jmanager.c
 
-void _jmanager_open_window(JWidget manager, JWidget window);
-void _jmanager_close_window(JWidget manager, JWidget window, bool redraw_background);
+void _jmanager_open_window(JWidget manager, Frame* frame);
+void _jmanager_close_window(JWidget manager, Frame* frame, bool redraw_background);
 
 //////////////////////////////////////////////////////////////////////
 // jtheme.c

@@ -98,7 +98,7 @@ JWidget toolbar_new()
   box->user_data[0] = tools;
 
   SkinneableTheme* theme = static_cast<SkinneableTheme*>(box->theme);
-  box->bg_color(theme->get_panel_face_color());
+  box->setBgColor(theme->get_panel_face_color());
 
   return box;
 }

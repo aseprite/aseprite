@@ -69,7 +69,7 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
   JWidget frame, frlen, ok;
   char buf[64];
 
-  JWidgetPtr window(load_widget("frlen.jid", "frame_duration"));
+  FramePtr window(load_widget("frlen.jid", "frame_duration"));
   get_widgets(window,
 	      "frame", &frame,
 	      "frlen", &frlen,
@@ -79,14 +79,13 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
     strcpy(buf, "All");
   else
     sprintf(buf, "%d", sprite_frame+1);
-  jwidget_set_text(frame, buf);
+  frame->setText(buf);
 
-  sprintf(buf, "%d", sprite_get_frlen(sprite, sprite->frame));
-  jwidget_set_text(frlen, buf);
+  frlen->setTextf("%d", sprite_get_frlen(sprite, sprite->frame));
 
-  jwindow_open_fg(window);
-  if (jwindow_get_killer(window) == ok) {
-    int num = strtol(jwidget_get_text(frlen), NULL, 10);
+  window->open_window_fg();
+  if (window->get_killer() == ok) {
+    int num = strtol(frlen->getText(), NULL, 10);
 
     if (sprite_frame < 0) {
       if (jalert("Warning"

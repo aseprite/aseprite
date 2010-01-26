@@ -33,7 +33,7 @@
 #include "modules/palettes.h"
 #include "raster/palette.h"
 
-static JWidget tips_new();
+static Widget* tips_new();
 static int tips_type();
 static bool tips_msg_proc(JWidget widget, JMessage msg);
 static void tips_request_size(JWidget widget, int *w, int *h);
@@ -54,7 +54,7 @@ static bool check_change_hook(JWidget widget, void *data);
 
 void dialogs_tips(bool forced)
 {
-  JWidget window, vbox, hbox, box;
+  JWidget vbox, hbox, box;
   JWidget button_close, button_prev, button_next;
   JWidget view, tips;
   JWidget check;
@@ -83,7 +83,7 @@ void dialogs_tips(bool forced)
     }
   }
 
-  window = jwindow_new("Allegro Sprite Editor");
+  Frame* window = new Frame(false, "Allegro Sprite Editor");
   vbox = jbox_new(JI_VERTICAL);
   hbox = jbox_new(JI_HORIZONTAL);
   box = jbox_new(0);
@@ -128,7 +128,7 @@ void dialogs_tips(bool forced)
 /*     jwidget_set_static_size(window, 282, 200); */
 
   /* open the window */
-  jwindow_open(window);
+  window->open_window();
   jwidget_set_min_size(window, 0, 0);
 
   /* load first page */
@@ -136,7 +136,7 @@ void dialogs_tips(bool forced)
   tips_load_page(tips);
 
   /* run the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
   jwidget_free(window);
 
   /* restore the palette */
@@ -150,9 +150,9 @@ void dialogs_tips(bool forced)
 				Tips
  ***********************************************************************/
 
-static JWidget tips_new()
+static Widget* tips_new()
 {
-  JWidget widget = new jwidget(tips_type());
+  Widget* widget = new Widget(tips_type());
 
   jwidget_add_hook(widget, tips_type(), tips_msg_proc, NULL);
   jwidget_focusrest(widget, TRUE);
@@ -367,7 +367,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
       /* add a box with an static size to separate paragraphs */
       JWidget box = jbox_new(0);
 
-      jwidget_set_min_size(box, 0, text_height(box->font()));
+      jwidget_set_min_size(box, 0, text_height(box->getFont()));
 
       jwidget_add_child(vbox, box);
     }

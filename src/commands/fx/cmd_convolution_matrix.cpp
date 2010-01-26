@@ -102,7 +102,7 @@ void ConvolutionMatrixCommand::execute(Context* context)
   JWidget box_target;
   JWidget reload, generate;
 
-  JWidgetPtr window(load_widget("convmatr.jid", "convolution_matrix"));
+  FramePtr window(load_widget("convmatr.jid", "convolution_matrix"));
   get_widgets(window,
 	      "preview", &check_preview,
 	      "tiled", &check_tiled,
@@ -144,8 +144,8 @@ void ConvolutionMatrixCommand::execute(Context* context)
   jwidget_disable(generate);
 
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* load window configuration */
   load_window_pos(window, "ConvolutionMatrix");
@@ -154,9 +154,9 @@ void ConvolutionMatrixCommand::execute(Context* context)
   listbox_select_current_convmatr(list_convmatr);
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok)
+  if (window->get_killer() == button_ok)
     effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */
@@ -192,7 +192,7 @@ static void listbox_select_current_convmatr(JWidget listbox)
     JI_LIST_FOR_EACH(listbox->children, link) {
       child = reinterpret_cast<JWidget>(link->data);
 
-      if (strcmp(jwidget_get_text(child), selected) == 0) {
+      if (strcmp(child->getText(), selected) == 0) {
 	select_this = child;
 	break;
       }
@@ -277,7 +277,7 @@ static bool generate_select_hook(JWidget widget, void *data)
   jwidget_set_min_size(div, 1, 1);
   jwidget_set_min_size(bias, 1, 1);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
   /* TODO do something */
 

@@ -45,10 +45,10 @@ static bool image_msg_proc(JWidget widget, JMessage msg);
 
 JWidget jimage_new(BITMAP *bmp, int align)
 {
-  JWidget widget = new jwidget(JI_IMAGE);
+  JWidget widget = new Widget(JI_IMAGE);
 
   jwidget_add_hook(widget, JI_IMAGE, image_msg_proc, bmp);
-  jwidget_set_align(widget, align);
+  widget->setAlign(align);
 
   return widget;
 }
@@ -62,7 +62,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(widget, &box, &text, &icon,
-				widget->align(), bmp->w, bmp->h);
+				widget->getAlign(), bmp->w, bmp->h);
 
       msg->reqsize.w = widget->border_width.l + jrect_w(&box) + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + jrect_h(&box) + widget->border_width.b;
@@ -74,7 +74,7 @@ static bool image_msg_proc(JWidget widget, JMessage msg)
       struct jrect box, text, icon;
 
       jwidget_get_texticon_info(widget, &box, &text, &icon,
-				widget->align(), bmp->w, bmp->h);
+				widget->getAlign(), bmp->w, bmp->h);
 
       jdraw_rectexclude(widget->rc, &icon,
 			jwidget_get_bg_color(widget));

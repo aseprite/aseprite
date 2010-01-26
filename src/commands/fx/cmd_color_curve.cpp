@@ -99,7 +99,7 @@ void ColorCurveCommand::execute(Context* context)
     App::instance()->add_hook(AppEvent::Exit, new DestroyCurve(the_curve));
   }
 
-  JWidgetPtr window(load_widget("colcurv.jid", "color_curve"));
+  FramePtr window(load_widget("colcurv.jid", "color_curve"));
   get_widgets(window,
 	      "preview", &check_preview,
 	      "button_ok", &button_ok,
@@ -130,8 +130,8 @@ void ColorCurveCommand::execute(Context* context)
   jwidget_add_hook(window, -1, window_msg_proc, NULL);
   
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* first preview */
   make_preview();
@@ -140,9 +140,9 @@ void ColorCurveCommand::execute(Context* context)
   load_window_pos(window, "ColorCurve");
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok)
+  if (window->get_killer() == button_ok)
     effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */

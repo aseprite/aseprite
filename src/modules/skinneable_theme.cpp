@@ -492,12 +492,12 @@ void SkinneableTheme::init_widget(JWidget widget)
 
     case JI_SEPARATOR:
       /* frame */
-      if ((widget->align() & JI_HORIZONTAL) &&
-	  (widget->align() & JI_VERTICAL)) {
+      if ((widget->getAlign() & JI_HORIZONTAL) &&
+	  (widget->getAlign() & JI_VERTICAL)) {
 	BORDER(4);
       }
       /* horizontal bar */
-      else if (widget->align() & JI_HORIZONTAL) {
+      else if (widget->getAlign() & JI_HORIZONTAL) {
 	BORDER4(2, 4, 2, 0);
       }
       /* vertical bar */
@@ -505,10 +505,10 @@ void SkinneableTheme::init_widget(JWidget widget)
 	BORDER4(4, 2, 0, 2);
       }
 
-      if (widget->has_text()) {
-	if (widget->align() & JI_TOP)
+      if (widget->hasText()) {
+	if (widget->getAlign() & JI_TOP)
 	  widget->border_width.t = jwidget_get_text_height(widget);
-	else if (widget->align() & JI_BOTTOM)
+	else if (widget->getAlign() & JI_BOTTOM)
 	  widget->border_width.b = jwidget_get_text_height(widget);
       }
       break;
@@ -519,7 +519,7 @@ void SkinneableTheme::init_widget(JWidget widget)
       widget->border_width.r = m_part[PART_SLIDER_EMPTY_E]->w-1;
       widget->border_width.b = m_part[PART_SLIDER_EMPTY_S]->h-1;
       widget->child_spacing = jwidget_get_text_height(widget);
-      widget->align(JI_CENTER | JI_MIDDLE);
+      widget->setAlign(JI_CENTER | JI_MIDDLE);
       break;
 
     case JI_TEXTBOX:
@@ -545,19 +545,19 @@ void SkinneableTheme::init_widget(JWidget widget)
       widget->child_spacing = 0;
       break;
 
-    case JI_WINDOW:
-      if (!jwindow_is_desktop(widget)) {
-	if (widget->has_text()) {
+    case JI_FRAME:
+      if (!static_cast<Frame*>(widget)->is_desktop()) {
+	if (widget->hasText()) {
 	  BORDER4(6, 4+jwidget_get_text_height(widget)+6, 6, 6);
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
 	    JWidget button = jbutton_new("");
 	    jbutton_set_bevel(button, 0, 0, 0, 0);
 	    jwidget_add_hook(button, JI_WIDGET,
-			     &SkinneableTheme::theme_window_button_msg_proc, NULL);
+			     &SkinneableTheme::theme_frame_button_msg_proc, NULL);
 	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
-	    jwidget_set_name(button, "theme_close_button");
+	    button->setName("theme_close_button");
 	  }
 #endif
 	}
@@ -569,7 +569,7 @@ void SkinneableTheme::init_widget(JWidget widget)
 	BORDER(0);
       }
       widget->child_spacing = 4;
-      widget->bg_color(get_window_face_color());
+      widget->setBgColor(get_window_face_color());
       break;
 
     default:
@@ -766,7 +766,7 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
 {
   bool password = jentry_is_password(widget);
   int scroll, cursor, state, selbeg, selend;
-  const char *text = widget->text();
+  const char *text = widget->getText();
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
   int cursor_x;
@@ -811,14 +811,14 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
       fg = COLOR_DISABLED;
     }
 
-    w = CHARACTER_LENGTH(widget->font(), ch);
+    w = CHARACTER_LENGTH(widget->getFont(), ch);
     if (x+w > widget->rc->x2-3)
       return;
 
     cursor_x = x;
-    ji_font_set_aa_mode(widget->font(), bg >= 0 ? bg: COLOR_BACKGROUND);
-    widget->font()->vtable->render_char(widget->font(),
-					ch, fg, bg, ji_screen, x, y);
+    ji_font_set_aa_mode(widget->getFont(), bg >= 0 ? bg: COLOR_BACKGROUND);
+    widget->getFont()->vtable->render_char(widget->getFont(),
+					   ch, fg, bg, ji_screen, x, y);
     x += w;
 
     /* cursor */
@@ -868,9 +868,9 @@ void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
   x = widget->rc->x1+widget->border_width.l;
   y = widget->rc->y1+widget->border_width.t;
 
-  if (widget->has_text()) {
+  if (widget->hasText()) {
     /* text */
-    jdraw_text(widget->font(), widget->text(), x, y, fg, bg, true);
+    jdraw_text(widget->getFont(), widget->getText(), x, y, fg, bg, true);
 
     /* background */
     jrectexclude
@@ -946,9 +946,9 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
 
   /* text */
   if (bar)
-    widget->align(JI_CENTER | JI_MIDDLE);
+    widget->setAlign(JI_CENTER | JI_MIDDLE);
   else
-    widget->align(JI_LEFT | JI_MIDDLE);
+    widget->setAlign(JI_LEFT | JI_MIDDLE);
 
   pos = jwidget_get_rect(widget);
   if (!bar)
@@ -984,7 +984,7 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
     }
     /* draw the keyboard shortcut */
     else if (jmenuitem_get_accel(widget)) {
-      int old_align = widget->align();
+      int old_align = widget->getAlign();
       char buf[256];
 
       pos = jwidget_get_rect(widget);
@@ -992,9 +992,9 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
 
       jaccel_to_string(jmenuitem_get_accel(widget), buf);
 
-      widget->align(JI_RIGHT | JI_MIDDLE);
+      widget->setAlign(JI_RIGHT | JI_MIDDLE);
       draw_textstring(buf, fg, bg, false, widget, pos, 0);
-      widget->align(old_align);
+      widget->setAlign(old_align);
 
       jrect_free(pos);
     }
@@ -1058,7 +1058,7 @@ void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
   // background
   jdraw_rectfill(widget->rc, BGCOLOR);
 
-  if (widget->align() & JI_HORIZONTAL) {
+  if (widget->getAlign() & JI_HORIZONTAL) {
     draw_hline(widget->rc->x1,
 	       widget->rc->y1,
 	       widget->rc->x2-1,
@@ -1066,7 +1066,7 @@ void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
   }
 
   // text
-  if (widget->has_text()) {
+  if (widget->hasText()) {
     int h = jwidget_get_text_height(widget);
     struct jrect r = { x1+h/2, y1-h/2, x2+1-h, y2+1+h };
     draw_textstring(NULL, -1, BGCOLOR, false, widget, &r, 0);
@@ -1130,13 +1130,13 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 
   /* text */
   {
-    std::string old_text = widget->text();
+    std::string old_text = widget->getText();
     int cx1, cy1, cx2, cy2;
     JRect r;
 
     usprintf(buf, "%d", value);
 
-    widget->set_text_quiet(buf);
+    widget->setTextQuiet(buf);
 
     r = jrect_new(x1, y1, x2+1, y2+1);
 
@@ -1163,7 +1163,7 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 
     set_clip(ji_screen, cx1, cy1, cx2, cy2);
 
-    widget->set_text_quiet(old_text.c_str());
+    widget->setTextQuiet(old_text.c_str());
     jrect_free(r);
   }
 }
@@ -1172,7 +1172,7 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
 {
   bool password = jentry_is_password(widget);
   int scroll, cursor, state, selbeg, selend;
-  const char *text = widget->text();
+  const char *text = widget->getText();
   int c, ch, x, y, w, fg, bg;
   int x1, y1, x2, y2;
   int cursor_x;
@@ -1217,14 +1217,14 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
       fg = COLOR_DISABLED;
     }
 
-    w = CHARACTER_LENGTH(widget->font(), ch);
+    w = CHARACTER_LENGTH(widget->getFont(), ch);
     if (x+w > widget->rc->x2-3)
       return;
 
     cursor_x = x;
-    ji_font_set_aa_mode(widget->font(), bg >= 0 ? bg: COLOR_BACKGROUND);
-    widget->font()->vtable->render_char(widget->font(),
-					ch, fg, bg, ji_screen, x, y);
+    ji_font_set_aa_mode(widget->getFont(), bg >= 0 ? bg: COLOR_BACKGROUND);
+    widget->getFont()->vtable->render_char(widget->getFont(),
+					   ch, fg, bg, ji_screen, x, y);
     x += w;
 
     /* cursor */
@@ -1324,7 +1324,7 @@ void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
   x1++, y1++, x2--, y2--;
 
   /* horizontal bar */
-  if (widget->align() & JI_HORIZONTAL) {
+  if (widget->getAlign() & JI_HORIZONTAL) {
     u1 = x1+pos;
     v1 = y1;
     u2 = x1+pos+len-1;
@@ -1364,14 +1364,14 @@ void SkinneableTheme::draw_view_viewport(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, BGCOLOR);
 }
 
-void SkinneableTheme::draw_window(JWidget widget, JRect clip)
+void SkinneableTheme::draw_frame(Frame* window, JRect clip)
 {
-  JRect pos = jwidget_get_rect(widget);
-  JRect cpos = jwidget_get_child_rect(widget);
+  JRect pos = jwidget_get_rect(window);
+  JRect cpos = jwidget_get_child_rect(window);
 
-  if (!jwindow_is_desktop(widget)) {
+  if (!window->is_desktop()) {
     // window frame
-    if (widget->has_text()) {
+    if (window->hasText()) {
       draw_bounds(pos->x1,
 		  pos->y1,
 		  pos->x2-1,
@@ -1381,9 +1381,9 @@ void SkinneableTheme::draw_window(JWidget widget, JRect clip)
       pos->y2 = cpos->y1;
 
       // titlebar
-      jdraw_text(widget->font(), widget->text(),
+      jdraw_text(window->getFont(), window->getText(),
 		 cpos->x1,
-		 pos->y1+jrect_h(pos)/2-text_height(widget->font())/2,
+		 pos->y1+jrect_h(pos)/2-text_height(window->getFont())/2,
 		 COLOR_BACKGROUND, -1, false);
     }
     // menubox
@@ -1397,18 +1397,18 @@ void SkinneableTheme::draw_window(JWidget widget, JRect clip)
   }
   // desktop
   else {
-    jdraw_rectfill(pos, widget->theme->desktop_color);
+    jdraw_rectfill(pos, window->theme->desktop_color);
   }
 
   jrect_free(pos);
   jrect_free(cpos);
 }
 
-void SkinneableTheme::draw_window_button(JWidget widget, JRect clip)
+void SkinneableTheme::draw_frame_button(JWidget widget, JRect clip)
 {
   int part;
 
-  if (widget->selected())
+  if (widget->isSelected())
     part = PART_WINDOW_CLOSE_BUTTON_SELECTED;
   else if (jwidget_has_mouse(widget))
     part = PART_WINDOW_CLOSE_BUTTON_HOT;
@@ -1431,33 +1431,33 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 				       bool fill_bg, JWidget widget, const JRect rect,
 				       int selected_offset)
 {
-  if (t || widget->has_text()) {
+  if (t || widget->hasText()) {
     int x, y, w, h;
 
     if (!t) {
-      t = widget->text();
+      t = widget->getText();
       w = jwidget_get_text_length(widget);
       h = jwidget_get_text_height(widget);
     }
     else {
-      w = ji_font_text_len(widget->font(), t);
-      h = text_height(widget->font());
+      w = ji_font_text_len(widget->getFont(), t);
+      h = text_height(widget->getFont());
     }
 
     /* horizontally text alignment */
 
-    if (widget->align() & JI_RIGHT)
+    if (widget->getAlign() & JI_RIGHT)
       x = rect->x2 - w;
-    else if (widget->align() & JI_CENTER)
+    else if (widget->getAlign() & JI_CENTER)
       x = (rect->x1+rect->x2)/2 - w/2;
     else
       x = rect->x1;
 
     /* vertically text alignment */
 
-    if (widget->align() & JI_BOTTOM)
+    if (widget->getAlign() & JI_BOTTOM)
       y = rect->y2 - h;
-    else if (widget->align() & JI_MIDDLE)
+    else if (widget->getAlign() & JI_MIDDLE)
       y = (rect->y1+rect->y2)/2 - h/2;
     else
       y = rect->y1;
@@ -1479,17 +1479,17 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
     if (jwidget_is_disabled (widget)) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
-	jdraw_text(widget->font(), t, x, y, 0, bg_color, fill_bg);
+	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg);
 
       /* draw white part */
-      jdraw_text(widget->font(), t, x+1, y+1,
+      jdraw_text(widget->getFont(), t, x+1, y+1,
 		 COLOR_BACKGROUND, bg_color, fill_bg);
 
       if (fill_bg)
 	fill_bg = false;
     }
 
-    jdraw_text(widget->font(), t, x, y,
+    jdraw_text(widget->getFont(), t, x, y,
 	       jwidget_is_disabled(widget) ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),
@@ -1622,7 +1622,7 @@ void SkinneableTheme::less_bevel(int *bevel)
 }
 
 /* controls the "X" button in a window to close it */
-bool SkinneableTheme::theme_window_button_msg_proc(JWidget widget, JMessage msg)
+bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
@@ -1631,7 +1631,7 @@ bool SkinneableTheme::theme_window_button_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      ((SkinneableTheme*)widget->theme)->draw_window_button(widget, &msg->draw.rect);
+      ((SkinneableTheme*)widget->theme)->draw_frame_button(widget, &msg->draw.rect);
       return true;
 
     case JM_KEYPRESSED:

@@ -66,8 +66,8 @@ void AdvancedModeCommand::execute(Context* context)
     jwidget_show(app_get_tabsbar());
   }
 
-  jwindow_remap(app_get_top_window());
-  jwidget_dirty(app_get_top_window());
+  app_get_top_window()->remap_window();
+  app_get_top_window()->dirty();
   
   if (advanced_mode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
@@ -77,17 +77,17 @@ void AdvancedModeCommand::execute(Context* context)
       char key[1024];
       char buf[1024];
 
-      JWidgetPtr window(load_widget("advanced.jid", "advanced_mode_warning"));
-      JWidget warning_label = find_widget(window, "warning_label");
-      JWidget donot_show = find_widget(window, "donot_show");
+      FramePtr window(load_widget("advanced.jid", "advanced_mode_warning"));
+      Widget* warning_label = find_widget(window, "warning_label");
+      Widget* donot_show = find_widget(window, "donot_show");
 
       strcpy(warning, _("You can back pressing the \"%s\" key."));
       jaccel_to_string(accel, key);
       sprintf(buf, warning, key);
 
-      jwidget_set_text(warning_label, buf);
+      warning_label->setText(buf);
 
-      jwindow_open_fg(window);
+      window->open_window_fg();
 
       set_config_bool("AdvancedMode", "Warning",
 		      !jwidget_is_selected(donot_show));

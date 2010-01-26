@@ -33,10 +33,23 @@
 #define JINETE_JTOOLTIPS_H_INCLUDED
 
 #include "jinete/jbase.h"
+#include "jinete/jwindow.h"
 
-void jwidget_add_tooltip_text(JWidget widget, const char *text);
+class TipWindow : public Frame
+{
+  bool m_close_on_buttonpressed;
+  JRegion m_hot_region;
+  bool m_filtering;
 
-JWidget jtooltip_window_new(const char *text);
-void jtooltip_window_set_hotregion(JWidget window, JRegion region);
+public:
+  TipWindow(const char *text, bool close_on_buttonpressed = false);
+
+  void set_hotregion(JRegion region);
+
+protected:
+  bool msg_proc(JMessage msg);
+};
+
+void jwidget_add_tooltip_text(Widget* widget, const char *text);
 
 #endif

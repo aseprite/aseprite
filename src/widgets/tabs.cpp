@@ -30,7 +30,7 @@
 #include "widgets/tabs.h"
 
 #define CALC_TAB_WIDTH(widget, tab)				\
-  (4 + text_length(widget->font(), tab->text.c_str()) + 4)
+  (4 + text_length(widget->getFont(), tab->text.c_str()) + 4)
 
 #define ARROW_W		12
 
@@ -80,7 +80,7 @@ static void draw_bevel_box(JRect box, int c1, int c2, int bottom);
 
 JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
 {
-  JWidget widget = new jwidget(tabs_type());
+  Widget* widget = new Widget(tabs_type());
   Tabs *tabs = jnew0(Tabs, 1);
 
   tabs->list_of_tabs = jlist_new();
@@ -272,9 +272,9 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	  else
 	    theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 	  
-	  jdraw_text(widget->font(), tab->text.c_str(),
+	  jdraw_text(widget->getFont(), tab->text.c_str(),
 		     box->x1+4,
-		     (box->y1+box->y2)/2-text_height(widget->font())/2+1,
+		     (box->y1+box->y2)/2-text_height(widget->getFont())/2+1,
 		     text_color, face_color, false);
 	}
 

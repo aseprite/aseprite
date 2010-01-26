@@ -43,6 +43,7 @@
 #include "jinete/jrect.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
+#include "jinete/jwindow.h"
 
 typedef void (*command_t)(JWidget widget);
 typedef void (*command_data_t)(JWidget widget, void *data);
@@ -78,7 +79,7 @@ JWidget ji_generic_button_new(const char *text,
 			      int behavior_type,
 			      int draw_type)
 {
-  JWidget widget = new jwidget(behavior_type);
+  Widget* widget = new Widget(behavior_type);
   Button *button = jnew(Button, 1);
 
   button->draw_type = draw_type;
@@ -92,8 +93,8 @@ JWidget ji_generic_button_new(const char *text,
   button->group = 0;
 
   jwidget_add_hook(widget, behavior_type, button_msg_proc, button);
-  jwidget_set_align(widget, JI_CENTER | JI_MIDDLE);
-  jwidget_set_text(widget, text);
+  widget->setAlign(JI_CENTER | JI_MIDDLE);
+  widget->setText(text);
   jwidget_focusrest(widget, true);
 
   // initialize theme
@@ -143,7 +144,7 @@ JWidget jbutton_new(const char *text)
 {
   JWidget widget = ji_generic_button_new(text, JI_BUTTON, JI_BUTTON);
   if (widget)
-    jwidget_set_align(widget, JI_CENTER | JI_MIDDLE);
+    widget->setAlign(JI_CENTER | JI_MIDDLE);
   return widget;
 }
 
@@ -204,7 +205,7 @@ JWidget jcheck_new(const char *text)
 {
   JWidget widget = ji_generic_button_new(text, JI_CHECK, JI_CHECK);
   if (widget) {
-    jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
+    widget->setAlign(JI_LEFT | JI_MIDDLE);
   }
   return widget;
 }
@@ -216,7 +217,7 @@ JWidget jradio_new(const char *text, int radio_group)
 {
   JWidget widget = ji_generic_button_new(text, JI_RADIO, JI_RADIO);
   if (widget) {
-    jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
+    widget->setAlign(JI_LEFT | JI_MIDDLE);
     jradio_set_group(widget, radio_group);
   }
   return widget;
@@ -240,7 +241,7 @@ int jradio_get_group(JWidget widget)
 
 void jradio_deselect_group(JWidget widget)
 {
-  JWidget window = jwidget_get_window(widget);
+  Frame* window = static_cast<Frame*>(widget->getRoot());
   if (window)
     button_deselect_group(window, jradio_get_group(widget));
 }

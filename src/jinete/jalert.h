@@ -32,9 +32,9 @@
 #ifndef JINETE_JALERT_H_INCLUDED
 #define JINETE_JALERT_H_INCLUDED
 
-#include "jinete/jbase.h"
+class Frame;
 
-JWidget jalert_new(const char *format, ...);
+Frame* jalert_new(const char *format, ...);
 int jalert(const char *format, ...);
 
 #endif

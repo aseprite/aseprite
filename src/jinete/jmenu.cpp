@@ -154,7 +154,7 @@ static JWidget find_previtem(JWidget menu, JWidget menuitem);
 
 JWidget jmenu_new()
 {
-  JWidget widget = new jwidget(JI_MENU);
+  JWidget widget = new Widget(JI_MENU);
   Menu *menu = jnew(Menu, 1);
 
   menu->menuitem = NULL;
@@ -179,7 +179,7 @@ JWidget jmenubar_new()
 
 JWidget jmenubox_new()
 {
-  JWidget widget = new jwidget(JI_MENUBOX);
+  JWidget widget = new Widget(JI_MENUBOX);
   MenuBox *menubox = jnew(MenuBox, 1);
 
   menubox->base = NULL;
@@ -193,7 +193,7 @@ JWidget jmenubox_new()
 
 JWidget jmenuitem_new(const char *text)
 {
-  JWidget widget = new jwidget(JI_MENUITEM);
+  JWidget widget = new Widget(JI_MENUITEM);
   MenuItem *menuitem = jnew(MenuItem, 1);
 
   menuitem->accel = NULL;
@@ -202,7 +202,7 @@ JWidget jmenuitem_new(const char *text)
   menuitem->submenu_menubox = NULL;
 
   jwidget_add_hook(widget, JI_MENUITEM, menuitem_msg_proc, menuitem);
-  jwidget_set_text(widget, text);
+  widget->setText(text);
   jwidget_init_theme(widget);
 
   return widget;
@@ -321,41 +321,39 @@ int jmenuitem_is_highlight(JWidget widget)
 
 void jmenu_popup(JWidget menu, int x, int y)
 {
-  JWidget window, menubox;
   Base *base;
 
   do {
     jmouse_poll();
   } while (jmouse_b(0));
 
-  /* new window and new menu-box */
-  window = jwindow_new(NULL);
-  menubox = jmenubox_new();
+  // new window and new menu-box
+  Frame* window = new Frame(false, NULL);
+  Widget* menubox = jmenubox_new();
 
   base = create_base(menubox);
   base->was_clicked = true;
   base->is_filtering = true;
   jmanager_add_msg_filter(JM_BUTTONPRESSED, menubox);
 
-  jwindow_moveable(window, false);	 /* can't move the window */
+  window->set_moveable(false);	 /* can't move the window */
 
   /* set children */
   jmenubox_set_menu(menubox, menu);
   jwidget_add_child(window, menubox);
 
-  jwindow_remap(window);
+  window->remap_window();
 
   /* menubox position */
-  jwindow_position(window,
-		   MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
-		   MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
+  window->position_window(MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
+			  MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
 
   /* set the focus to the new menubox */
   jmanager_set_focus(menubox);
   jwidget_magnetic(menubox, true);
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
   /* free the keyboard focus */
   jmanager_free_focus();
@@ -768,8 +766,8 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 
     default:
       if (msg->type == JM_CLOSE_POPUP) {
-	_jmanager_close_window(jwidget_get_manager(widget),
-			       jwidget_get_window(widget), true);
+	_jmanager_close_window(widget->getManager(),
+			       static_cast<Frame*>(widget->getRoot()), true);
       }
       break;
 
@@ -839,9 +837,10 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
     default:
       if (msg->type == JM_OPEN_MENUITEM) {
 	Base* base = get_base(widget);
-	JWidget window, menubox;
+	Frame* window;
+	Widget* menubox;
 	JRect pos, old_pos;
-	bool select_first = (bool)msg->user.a;
+	bool select_first = msg->user.a ? true: false;
 
 	assert(base != NULL);
 	assert(base->is_processing);
@@ -850,20 +849,20 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	old_pos = jwidget_get_rect(widget->parent->parent);
 
 	/* new window and new menu-box */
-	window = jwindow_new(NULL);
+	window = new Frame(false, NULL);
 	jwidget_add_hook(window, -1, window_msg_proc, NULL);
 
 	menubox = jmenubox_new();
 
 	menuitem->submenu_menubox = menubox;
 
-	jwindow_moveable(window, false); /* can't move the window */
+	window->set_moveable(false); // can't move the window
 
 	/* set children */
 	jmenubox_set_menu(menubox, menuitem->submenu);
 	jwidget_add_child(window, menubox);
 
-	jwindow_remap(window);
+	window->remap_window();
 
 	/* menubox position */
 	pos = jwidget_get_rect(window);
@@ -910,7 +909,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	  jrect_moveto(pos, x, y);
 	}
 
-	jwindow_position(window, pos->x1, pos->y1);
+	window->position_window(pos->x1, pos->y1);
 	jrect_free(pos);
 
 	/* set the focus to the new menubox */
@@ -943,7 +942,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	  unhighlight(menuitem->submenu);
 
 	/* run in background */
-	jwindow_open_bg(window);
+	window->open_window_bg();
 
 	base->is_processing = false;
 
@@ -952,8 +951,9 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
       }
       else if (msg->type == JM_CLOSE_MENUITEM) {
 	Base* base = get_base(widget);
-	JWidget menubox, window;
-	bool last_of_close_chain = (bool)msg->user.a;
+	Frame* window;
+	Widget* menubox;
+	bool last_of_close_chain = msg->user.a ? true: false;
 
 	assert(base != NULL);
 	assert(base->is_processing);
@@ -963,14 +963,14 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 	assert(menubox != NULL);
 
-	window = menubox->parent;
-	assert(window && window->type == JI_WINDOW);
+	window = (Frame*)menubox->parent;
+	assert(window && window->type == JI_FRAME);
 
 	/* fetch the "menu" to avoid free it with 'jwidget_free()' */
 	jmenubox_set_menu(menubox, NULL);
 
 	/* destroy the window */
-	jwindow_close(window, NULL);
+	window->closeWindow(NULL);
 
 	/* set the focus to this menu-box of this menu-item */
 	if (base->close_all)
@@ -1006,7 +1006,7 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
   MenuItem *menuitem = MITEM(widget);
   int bar = widget->parent->parent->type == JI_MENUBAR;
 
-  if (widget->has_text()) {
+  if (widget->hasText()) {
     *w =
       + widget->border_width.l
       + jwidget_get_text_length(widget)
@@ -1021,7 +1021,7 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
     if (menuitem->accel) {
       char buf[256];
       jaccel_to_string(menuitem->accel, buf);
-      *w += ji_font_text_len(widget->font(), buf);
+      *w += ji_font_text_len(widget->getFont(), buf);
     }
   }
   else {
@@ -1341,10 +1341,10 @@ static JWidget check_for_letter(JWidget menu, int ascii)
     if (menuitem->type != JI_MENUITEM)
       continue;
 
-    if (menuitem->has_text())
-      for (c=0; menuitem->text()[c]; c++)
-        if ((menuitem->text()[c] == '&') && (menuitem->text()[c+1] != '&'))
-          if (tolower(ascii) == tolower(menuitem->text()[c+1]))
+    if (menuitem->hasText())
+      for (c=0; menuitem->getText()[c]; c++)
+        if ((menuitem->getText()[c] == '&') && (menuitem->getText()[c+1] != '&'))
+          if (tolower(ascii) == tolower(menuitem->getText()[c+1]))
 	    return menuitem;
   }
 

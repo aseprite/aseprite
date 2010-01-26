@@ -106,17 +106,17 @@ public:
 
 App* App::m_instance = NULL;
 
-static JWidget top_window = NULL;     /* top level window (the desktop) */
-static JWidget box_menubar = NULL;    /* box where the menu bar is */
-static JWidget box_colorbar = NULL;   /* box where the color bar is */
-static JWidget box_toolbar = NULL;    /* box where the tools bar is */
-static JWidget box_statusbar = NULL;  /* box where the status bar is */
-static JWidget box_tabsbar = NULL;    /* box where the tabs bar is */
-static JWidget menubar = NULL;	      /* the menu bar widget */
-static JWidget statusbar = NULL;      /* the status bar widget */
-static JWidget colorbar = NULL;	      /* the color bar widget */
-static JWidget toolbar = NULL;	      /* the tool bar widget */
-static JWidget tabsbar = NULL;	      /* the tabs bar widget */
+static Frame* top_window = NULL;      /* top level window (the desktop) */
+static Widget* box_menubar = NULL;    /* box where the menu bar is */
+static Widget* box_colorbar = NULL;   /* box where the color bar is */
+static Widget* box_toolbar = NULL;    /* box where the tools bar is */
+static Widget* box_statusbar = NULL;  /* box where the status bar is */
+static Widget* box_tabsbar = NULL;    /* box where the tabs bar is */
+static Widget* menubar = NULL;	      /* the menu bar widget */
+static Widget* statusbar = NULL;      /* the status bar widget */
+static Widget* colorbar = NULL;	      /* the color bar widget */
+static Widget* toolbar = NULL;	      /* the tool bar widget */
+static Widget* tabsbar = NULL;	      /* the tabs bar widget */
 
 static char *palette_filename = NULL;
 
@@ -192,7 +192,7 @@ int App::run()
 {
   /* initialize GUI interface */
   if (ase_mode & MODE_GUI) {
-    JWidget view, editor;
+    Widget* view, *editor;
 
     PRINTF("GUI mode\n");
 
@@ -200,8 +200,8 @@ int App::run()
     jmouse_set_cursor(JI_CURSOR_NORMAL);
     jmanager_refresh_screen();
 
-    /* load main window */
-    top_window = load_widget("main.jid", "main_window");
+    // load main window
+    top_window = static_cast<Frame*>(load_widget("main.jid", "main_window"));
     if (!top_window) {
       allegro_message("Error loading data data/jids/main.jid file.\n"
 		      "You have to reinstall the program.\n");
@@ -217,7 +217,7 @@ int App::run()
 
     menubar = jmenubar_new();
     statusbar = statusbar_new();
-    colorbar = colorbar_new(box_colorbar->align());
+    colorbar = colorbar_new(box_colorbar->getAlign());
     toolbar = toolbar_new();
     tabsbar = tabs_new(tabsbar_select_callback);
     view = editor_view_new();
@@ -249,7 +249,7 @@ int App::run()
     if (box_tabsbar) jwidget_add_child(box_tabsbar, tabsbar);
 
     /* prepare the window */
-    jwindow_remap(top_window);
+    top_window->remap_window();
 
     /* rebuild menus */
     app_realloc_sprite_list();
@@ -259,7 +259,7 @@ int App::run()
     set_current_editor(editor);
 
     /* open the window */
-    jwindow_open(top_window);
+    top_window->open_window();
 
     /* refresh the screen */
     jmanager_refresh_screen();
@@ -338,7 +338,7 @@ int App::run()
        module should destroy it) */
     jmenubar_set_menu(menubar, NULL);
 
-    /* destroy the top-window */
+    // destroy the top-window
     jwidget_free(top_window);
     top_window = NULL;
   }
@@ -451,8 +451,8 @@ void app_realloc_sprite_list()
  */
 bool app_realloc_recent_list()
 {
-  JWidget list_menuitem = get_recent_list_menuitem();
-  JWidget menuitem;
+  Widget* list_menuitem = get_recent_list_menuitem();
+  Widget* menuitem;
 
   /* update the recent file list menu item */
   if (list_menuitem) {
@@ -461,7 +461,7 @@ bool app_realloc_recent_list()
 
     Command *cmd_open_file = CommandsModule::instance()->get_command_by_name(CommandId::open_file);
 
-    JWidget submenu = jmenuitem_get_submenu(list_menuitem);
+    Widget* submenu = jmenuitem_get_submenu(list_menuitem);
     if (submenu) {
       jmenuitem_set_submenu(list_menuitem, NULL);
       jwidget_free(submenu);
@@ -508,12 +508,12 @@ int app_get_current_image_type()
     return IMAGE_RGB;
 }
 
-JWidget app_get_top_window() { return top_window; }
-JWidget app_get_menubar() { return menubar; }
-JWidget app_get_statusbar() { return statusbar; }
-JWidget app_get_colorbar() { return colorbar; }
-JWidget app_get_toolbar() { return toolbar; }
-JWidget app_get_tabsbar() { return tabsbar; }
+Frame* app_get_top_window() { return top_window; }
+Widget* app_get_menubar() { return menubar; }
+Widget* app_get_statusbar() { return statusbar; }
+Widget* app_get_colorbar() { return colorbar; }
+Widget* app_get_toolbar() { return toolbar; }
+Widget* app_get_tabsbar() { return tabsbar; }
 
 void app_default_statusbar_message()
 {
@@ -555,7 +555,7 @@ int app_get_color_to_clear_layer(Layer *layer)
   return get_color_for_layer(layer, color);
 }
 
-static void tabsbar_select_callback(JWidget tabs, void *data, int button)
+static void tabsbar_select_callback(Widget* tabs, void *data, int button)
 {
   // Note: data can be NULL (the "Nothing" tab)
   Sprite* sprite = (Sprite*)data;

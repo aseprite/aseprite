@@ -39,13 +39,13 @@
 
 static bool separator_msg_proc(JWidget widget, JMessage msg);
 
-JWidget ji_separator_new(const char *text, int align)
+JWidget ji_separator_new(const char* text, int align)
 {
-  JWidget widget = new jwidget(JI_SEPARATOR);
+  Widget* widget = new Widget(JI_SEPARATOR);
 
   jwidget_add_hook(widget, JI_SEPARATOR, separator_msg_proc, NULL);
-  jwidget_set_align(widget, align);
-  jwidget_set_text(widget, text);
+  widget->setAlign(align);
+  widget->setText(text);
   jwidget_init_theme(widget);
 
   return widget;
@@ -70,7 +70,7 @@ static bool separator_msg_proc(JWidget widget, JMessage msg)
 	max_h = MAX(max_h, req_h);
       }
 
-      if (widget->has_text())
+      if (widget->hasText())
 	max_w = MAX(max_w, jwidget_get_text_length(widget));
 
       msg->reqsize.w = widget->border_width.l + max_w + widget->border_width.r;

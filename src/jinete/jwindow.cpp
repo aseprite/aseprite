@@ -39,18 +39,6 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
-typedef struct Window
-{
-  JWidget killer;
-  bool is_desktop : 1;
-  bool is_moveable : 1;
-  bool is_sizeable : 1;
-  bool is_ontop : 1;
-  bool is_wantfocus : 1;
-  bool is_foreground : 1;
-  bool is_autoremap : 1;
-} Window;
-
 enum {
   WINDOW_NONE = 0,
   WINDOW_MOVE = 1,
@@ -64,14 +52,6 @@ static JRect click_pos = NULL;
 static int press_x, press_y;
 static int window_action = WINDOW_NONE;
 
-static JWidget window_new(bool desktop, const char *text);
-static bool window_msg_proc(JWidget widget, JMessage msg);
-static void window_request_size(JWidget widget, int *w, int *h);
-static void window_set_position(JWidget widget, JRect rect);
-
-static int get_action(JWidget widget, int x, int y);
-static void limit_size(JWidget widget, int *w, int *h);
-static void move_window(JWidget widget, JRect rect, bool use_blit);
 static void displace_widgets(JWidget widget, int x, int y);
 
 bool _jwindow_is_moving()
@@ -79,264 +59,227 @@ bool _jwindow_is_moving()
   return (window_action == WINDOW_MOVE) ? true: false;
 }
 
-JWidget jwindow_new(const char *text)
+Frame::Frame(bool desktop, const char* text)
+  : Widget(JI_FRAME)
 {
-  return window_new(false, text);
+  m_killer = NULL;
+  m_is_desktop = desktop;
+  m_is_moveable = !desktop;
+  m_is_sizeable = !desktop;
+  m_is_ontop = false;
+  m_is_wantfocus = true;
+  m_is_foreground = false;
+  m_is_autoremap = true;
+
+  jwidget_hide(this);
+  this->setText(text);
+  this->setAlign(JI_LEFT | JI_MIDDLE);
+
+  jwidget_init_theme(this);
 }
 
-JWidget jwindow_new_desktop()
+Widget* Frame::get_killer()
 {
-  return window_new(true, NULL);
+  return m_killer;
 }
 
-JWidget jwindow_get_killer(JWidget widget)
+void Frame::set_autoremap(bool state)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW));
-
-  return window->killer;
+  m_is_autoremap = state;
 }
 
-void jwindow_moveable(JWidget widget, bool state)
+void Frame::set_moveable(bool state)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  window->is_moveable = state;
+  m_is_moveable = state;
 }
 
-void jwindow_sizeable(JWidget widget, bool state)
+void Frame::set_sizeable(bool state)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  window->is_sizeable = state;
+  m_is_sizeable = state;
 }
 
-void jwindow_ontop(JWidget widget, bool state)
+void Frame::set_ontop(bool state)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  window->is_ontop = state;
+  m_is_ontop = state;
 }
 
-void jwindow_wantfocus(JWidget widget, bool state)
+void Frame::set_wantfocus(bool state)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  window->is_wantfocus = state;
+  m_is_wantfocus = state;
 }
 
-void jwindow_remap(JWidget widget)
+void Frame::remap_window()
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
   int req_w, req_h;
   JRect rect;
 
-  if (window->is_autoremap) {
-    window->is_autoremap = false;
-    jwidget_show(widget);
+  if (m_is_autoremap) {
+    m_is_autoremap = false;
+    jwidget_show(this);
   }
 
-  jwidget_request_size(widget, &req_w, &req_h);
+  jwidget_request_size(this, &req_w, &req_h);
 
-  rect = jrect_new(widget->rc->x1, widget->rc->y1,
-		   widget->rc->x1+req_w,
-		   widget->rc->y1+req_h);
-  jwidget_set_rect(widget, rect);
+  rect = jrect_new(this->rc->x1, this->rc->y1,
+		   this->rc->x1+req_w,
+		   this->rc->y1+req_h);
+  jwidget_set_rect(this, rect);
   jrect_free(rect);
 
-  jwidget_emit_signal(widget, JI_SIGNAL_WINDOW_RESIZE);
-  jwidget_dirty(widget);
+  jwidget_emit_signal(this, JI_SIGNAL_WINDOW_RESIZE);
+  jwidget_dirty(this);
 }
 
-void jwindow_center(JWidget widget)
+void Frame::center_window()
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-  JWidget manager = jwidget_get_manager(widget);
+  JWidget manager = getManager();
 
-  if (window->is_autoremap)
-    jwindow_remap(widget);
+  if (m_is_autoremap)
+    this->remap_window();
 
-  jwindow_position(widget,
-		   jrect_w(manager->rc)/2 - jrect_w(widget->rc)/2,
-		   jrect_h(manager->rc)/2 - jrect_h(widget->rc)/2);
+  position_window(jrect_w(manager->rc)/2 - jrect_w(this->rc)/2,
+		  jrect_h(manager->rc)/2 - jrect_h(this->rc)/2);
 }
 
-void jwindow_position(JWidget widget, int x, int y)
+void Frame::position_window(int x, int y)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
   int old_action = window_action;
   JRect rect;
 
   window_action = WINDOW_MOVE;
 
-  if (window->is_autoremap)
-    jwindow_remap(widget);
+  if (m_is_autoremap)
+    remap_window();
 
-  rect = jrect_new(x, y, x+jrect_w(widget->rc), y+jrect_h(widget->rc));
-  jwidget_set_rect(widget, rect);
+  rect = jrect_new(x, y, x+jrect_w(this->rc), y+jrect_h(this->rc));
+  jwidget_set_rect(this, rect);
   jrect_free(rect);
 
   window_action = old_action;
 
-  jwidget_dirty(widget);
+  dirty();
 }
 
-void jwindow_move(JWidget widget, JRect rect)
+void Frame::move_window(JRect rect)
 {
-  move_window(widget, rect, true);
+  move_window(rect, true);
 }
 
-void jwindow_open(JWidget widget)
+void Frame::open_window()
 {
-  if (!widget->parent) {
-    Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
+  if (!this->parent) {
+    if (m_is_autoremap)
+      center_window();
 
-    if (window->is_autoremap)
-      jwindow_center(widget);
-
-    _jmanager_open_window(ji_get_default_manager(), widget);
+    _jmanager_open_window(ji_get_default_manager(), this);
   }
 }
 
-void jwindow_open_fg(JWidget widget)
+void Frame::open_window_fg()
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-  JWidget manager;
+  open_window();
 
-  jwindow_open(widget);
-  manager = jwidget_get_manager(widget);
+  JWidget manager = getManager();
 
-  window->is_foreground = true;
+  m_is_foreground = true;
 
-  while (!(widget->flags & JI_HIDDEN)) {
+  while (!(this->flags & JI_HIDDEN)) {
     if (jmanager_generate_messages(manager))
       jmanager_dispatch_messages(manager);
   }
 
-  window->is_foreground = false;
+  m_is_foreground = false;
 }
 
-void jwindow_open_bg(JWidget widget)
+void Frame::open_window_bg()
 {
-  jwindow_open(widget);
+  this->open_window();
 }
 
-void jwindow_close(JWidget widget, JWidget killer)
+void Frame::closeWindow(Widget* killer)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW));
+  m_killer = killer;
 
-  window->killer = killer;
-
-  _jmanager_close_window(jwidget_get_manager(widget), widget, true);
+  _jmanager_close_window(getManager(), this, true);
 }
 
-bool jwindow_is_toplevel(JWidget widget)
+bool Frame::is_toplevel()
 {
-  JWidget manager = jwidget_get_manager(widget);
+  JWidget manager = getManager();
 
   if (!jlist_empty(manager->children))
-    return (widget == jlist_first(manager->children)->data);
+    return (this == jlist_first(manager->children)->data);
   else
     return false;
 }
 
-bool jwindow_is_foreground(JWidget widget)
+bool Frame::is_foreground() const
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  return window->is_foreground;
+  return m_is_foreground;
 }
 
-bool jwindow_is_desktop(JWidget widget)
+bool Frame::is_desktop() const
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW));
-
-  return window->is_desktop;
+  return m_is_desktop;
 }
 
-bool jwindow_is_ontop(JWidget widget)
+bool Frame::is_ontop() const
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  return window->is_ontop;
+  return m_is_ontop;
 }
 
-bool jwindow_is_wantfocus(JWidget widget)
+bool Frame::is_wantfocus() const
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW)); 
-
-  return window->is_wantfocus;
+  return m_is_wantfocus;
 }
 
-static JWidget window_new(bool desktop, const char *text)
+bool Frame::msg_proc(JMessage msg)
 {
-  JWidget widget = new jwidget(JI_WINDOW);
-  Window *window = jnew(Window, 1);
-
-  window->killer = NULL;
-  window->is_desktop = desktop;
-  window->is_moveable = !desktop;
-  window->is_sizeable = !desktop;
-  window->is_ontop = false;
-  window->is_wantfocus = true;
-  window->is_foreground = false;
-  window->is_autoremap = true;
-
-  jwidget_hide(widget);
-  jwidget_add_hook(widget, JI_WINDOW, window_msg_proc, window);
-  jwidget_set_text(widget, text);
-  jwidget_set_align(widget, JI_LEFT | JI_MIDDLE);
-
-  jwidget_init_theme(widget);
-
-  return widget;
-}
-
-static bool window_msg_proc(JWidget widget, JMessage msg)
-{
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW));
-
   switch (msg->type) {
 
     case JM_DESTROY:
-      _jmanager_close_window(jwidget_get_manager(widget), widget, false);
-      jfree(window);
+      _jmanager_close_window(getManager(), this, false);
       break;
 
     case JM_REQSIZE:
-      window_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
+      this->window_request_size(&msg->reqsize.w, &msg->reqsize.h);
       return true;
 
     case JM_SETPOS:
-      window_set_position(widget, &msg->setpos.rect);
+      this->window_set_position(&msg->setpos.rect);
       return true;
 
     case JM_OPEN:
-      window->killer = NULL;
+      m_killer = NULL;
       break;
 
     case JM_CLOSE:
-      jwidget_emit_signal(widget, JI_SIGNAL_WINDOW_CLOSE);
+      // Fire Close signal
+      {
+	Vaca::CloseEvent ev;
+	Close(ev);
+      }
       break;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_TEXT)
-	jwidget_init_theme(widget);
+	jwidget_init_theme(this);
       break;
 
     case JM_BUTTONPRESSED: {
-      if (!window->is_moveable)
+      if (!m_is_moveable)
 	break;
 
       press_x = msg->mouse.x;
       press_y = msg->mouse.y;
-      window_action = get_action(widget, press_x, press_y);
+      window_action = this->get_action(press_x, press_y);
       if (window_action != WINDOW_NONE) {
 	if (click_pos == NULL)
-	  click_pos = jrect_new_copy(widget->rc);
+	  click_pos = jrect_new_copy(this->rc);
 	else
-	  jrect_copy(click_pos, widget->rc);
+	  jrect_copy(click_pos, this->rc);
 
-	jwidget_hard_capture_mouse(widget);
+	jwidget_hard_capture_mouse(this);
 	return true;
       }
       else
@@ -344,8 +287,8 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (jwidget_has_capture(this)) {
+	jwidget_release_mouse(this);
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
 
 	if (click_pos != NULL) {
@@ -359,19 +302,19 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOTION:
-      if (!window->is_moveable)
+      if (!m_is_moveable)
 	break;
 
       /* does it have the mouse captured? */
-      if (jwidget_has_capture(widget)) {
+      if (jwidget_has_capture(this)) {
 	/* reposition/resize */
 	if (window_action == WINDOW_MOVE) {
 	  int x = click_pos->x1 + (msg->mouse.x - press_x);
 	  int y = click_pos->y1 + (msg->mouse.y - press_y);
 	  JRect rect = jrect_new(x, y,
-				 x+jrect_w(widget->rc),
-				 y+jrect_h(widget->rc));
-	  move_window(widget, rect, true);
+				 x+jrect_w(this->rc),
+				 y+jrect_h(this->rc));
+	  this->move_window(rect, true);
 	  jrect_free(rect);
 	}
 	else {
@@ -390,27 +333,27 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	  else if (window_action & WINDOW_RESIZE_BOTTOM)
 	    h += (msg->mouse.y - press_y);
 
-	  limit_size(widget, &w, &h);
+	  this->limit_size(&w, &h);
 
-	  if ((jrect_w(widget->rc) != w) ||
-	      (jrect_h(widget->rc) != h)) {
+	  if ((jrect_w(this->rc) != w) ||
+	      (jrect_h(this->rc) != h)) {
 	    if (window_action & WINDOW_RESIZE_LEFT)
 	      x = click_pos->x1 - (w - jrect_w(click_pos));
 	    else
-	      x = widget->rc->x1;
+	      x = this->rc->x1;
 
 	    if (window_action & WINDOW_RESIZE_TOP)
 	      y = click_pos->y1 - (h - jrect_h(click_pos));
 	    else
-	      y = widget->rc->y1;
+	      y = this->rc->y1;
 
 	    {
 	      JRect rect = jrect_new(x, y, x+w, y+h); 
-	      move_window(widget, rect, false);
+	      this->move_window(rect, false);
 	      jrect_free(rect);
 
-	      jwidget_emit_signal(widget, JI_SIGNAL_WINDOW_RESIZE);
-	      jwidget_dirty(widget);
+	      jwidget_emit_signal(this, JI_SIGNAL_WINDOW_RESIZE);
+	      jwidget_dirty(this);
 	    }
 	  }
 	}
@@ -418,7 +361,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 
       /* TODO */
 /*       { */
-/* 	JWidget manager = jwindow_get_manager(widget); */
+/* 	JWidget manager = get_manager(); */
 /* 	JWidget view = jwidget_get_view(manager); */
 /* 	if (view) { */
 /* 	  jview_update(view); */
@@ -427,10 +370,8 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_SETCURSOR:
-      if (window->is_moveable) {
-	int action = get_action(widget,
-				msg->mouse.x,
-				msg->mouse.y);
+      if (m_is_moveable) {
+	int action = this->get_action(msg->mouse.x, msg->mouse.y);
 	int cursor = JI_CURSOR_NORMAL;
 
 	if (action == WINDOW_MOVE)
@@ -462,20 +403,19 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW:
-      widget->theme->draw_window(widget, &msg->draw.rect);
+      this->theme->draw_frame(this, &msg->draw.rect);
       return true;
 
   }
 
-  return false;
+  return Widget::msg_proc(msg);
 }
 
-static void window_request_size(JWidget widget, int *w, int *h)
+void Frame::window_request_size(int *w, int *h)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW));
-  JWidget manager = jwidget_get_manager(widget);
+  JWidget manager = getManager();
 
-  if (window->is_desktop) {
+  if (m_is_desktop) {
     JRect cpos = jwidget_get_child_rect(manager);
     *w = jrect_w(cpos);
     *h = jrect_h(cpos);
@@ -488,7 +428,7 @@ static void window_request_size(JWidget widget, int *w, int *h)
     JLink link;
 
     max_w = max_h = 0;
-    JI_LIST_FOR_EACH(widget->children, link) {
+    JI_LIST_FOR_EACH(this->children, link) {
       child = (JWidget)link->data;
 
       if (!jwidget_is_decorative(child)) {
@@ -499,26 +439,26 @@ static void window_request_size(JWidget widget, int *w, int *h)
       }
     }
 
-    if (widget->has_text())
-      max_w = MAX(max_w, jwidget_get_text_length(widget));
+    if (this->hasText())
+      max_w = MAX(max_w, jwidget_get_text_length(this));
 
-    *w = widget->border_width.l + max_w + widget->border_width.r;
-    *h = widget->border_width.t + max_h + widget->border_width.b;
+    *w = this->border_width.l + max_w + this->border_width.r;
+    *h = this->border_width.t + max_h + this->border_width.b;
   }
 }
 
-static void window_set_position(JWidget widget, JRect rect)
+void Frame::window_set_position(JRect rect)
 {
   JWidget child;
   JRect cpos;
   JLink link;
 
   /* copy the new position rectangle */
-  jrect_copy(widget->rc, rect);
-  cpos = jwidget_get_child_rect(widget);
+  jrect_copy(this->rc, rect);
+  cpos = jwidget_get_child_rect(this);
 
   /* set all the children to the same "child_pos" */
-  JI_LIST_FOR_EACH(widget->children, link) {
+  JI_LIST_FOR_EACH(this->children, link) {
     child = (JWidget)link->data;
 
     if (jwidget_is_decorative(child))
@@ -530,30 +470,29 @@ static void window_set_position(JWidget widget, JRect rect)
   jrect_free(cpos);
 }
 
-static int get_action(JWidget widget, int x, int y)
+int Frame::get_action(int x, int y)
 {
-  Window* window = reinterpret_cast<Window*>(jwidget_get_data(widget, JI_WINDOW));
   int action = WINDOW_NONE;
   JRect pos;
   JRect cpos;
 
-  if (!window->is_moveable)
+  if (!m_is_moveable)
     return action;
 
-  pos = jwidget_get_rect(widget);
-  cpos = jwidget_get_child_rect(widget);
+  pos = jwidget_get_rect(this);
+  cpos = jwidget_get_child_rect(this);
 
   /* move */
-  if ((widget->has_text())
+  if ((this->hasText())
       && (((x >= cpos->x1) &&
 	   (x < cpos->x2) &&
-	   (y >= pos->y1+widget->border_width.b) &&
+	   (y >= pos->y1+this->border_width.b) &&
 	   (y < cpos->y1))
 	  || (key_shifts & KB_ALT_FLAG))) {
     action = WINDOW_MOVE;
   }
   /* resize */
-  else if (window->is_sizeable) {
+  else if (m_is_sizeable) {
     /* left *****************************************/
     if ((x >= pos->x1) && (x < cpos->x1)) {
       action |= WINDOW_RESIZE_LEFT;
@@ -604,21 +543,21 @@ static int get_action(JWidget widget, int x, int y)
   return action;
 }
 
-static void limit_size(JWidget widget, int *w, int *h)
+void Frame::limit_size(int *w, int *h)
 {
   int req_w, req_h;
 
-  jwidget_request_size(widget, &req_w, &req_h);
+  jwidget_request_size(this, &req_w, &req_h);
 
-  *w = MAX(*w, widget->border_width.l+widget->border_width.r);
-  *h = MAX(*h, widget->border_width.t+widget->border_width.b);
+  *w = MAX(*w, this->border_width.l+this->border_width.r);
+  *h = MAX(*h, this->border_width.t+this->border_width.b);
 }
 
-static void move_window(JWidget widget, JRect rect, bool use_blit)
+void Frame::move_window(JRect rect, bool use_blit)
 {
 #define FLAGS JI_GDR_CUTTOPWINDOWS | JI_GDR_USECHILDAREA
 
-  JWidget manager = jwidget_get_manager(widget);
+  JWidget manager = getManager();
   JRegion old_drawable_region;
   JRegion new_drawable_region;
   JRegion manager_refresh_region;
@@ -630,37 +569,37 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   jmanager_dispatch_messages(manager);
 
   /* get the window's current position */
-  old_pos = jrect_new_copy(widget->rc);
+  old_pos = jrect_new_copy(this->rc);
 
   /* get the manager's current position */
   man_pos = jwidget_get_rect(manager);
 
   /* sent a JM_WINMOVE message to the window */
   msg = jmessage_new(JM_WINMOVE);
-  jmessage_add_dest(msg, widget);
+  jmessage_add_dest(msg, this);
   jmanager_enqueue_message(msg);
 
   /* get the region & the drawable region of the window */
-  old_drawable_region = jwidget_get_drawable_region(widget, FLAGS);
+  old_drawable_region = jwidget_get_drawable_region(this, FLAGS);
 
   /* if the size of the window changes... */
   if (jrect_w(old_pos) != jrect_w(rect) ||
       jrect_h(old_pos) != jrect_h(rect)) {
     /* we have to change the whole positions sending JM_SETPOS
        messages... */
-    window_set_position(widget, rect);
+    window_set_position(rect);
   }
   else {
     /* we can just displace all the widgets
        by a delta (new_position - old_position)... */
-    displace_widgets(widget,
+    displace_widgets(this,
 		     rect->x1 - old_pos->x1,
 		     rect->y1 - old_pos->y1);
   }
 
   /* get the new drawable region of the window (it's new because we
      moved the window to "rect") */
-  new_drawable_region = jwidget_get_drawable_region(widget, FLAGS);
+  new_drawable_region = jwidget_get_drawable_region(this, FLAGS);
 
   /* create a new region to refresh the manager later */
   manager_refresh_region = jregion_new(NULL, 0);
@@ -693,14 +632,14 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
     /* add a region to draw areas which were outside of the screen */
     jregion_copy(reg1, new_drawable_region);
     jregion_translate(reg1,
-		      old_pos->x1 - widget->rc->x1,
-		      old_pos->y1 - widget->rc->y1);
+		      old_pos->x1 - this->rc->x1,
+		      old_pos->y1 - this->rc->y1);
     jregion_intersect(moveable_region, old_drawable_region, reg1);
 
     jregion_subtract(reg1, reg1, moveable_region);
     jregion_translate(reg1,
-		      widget->rc->x1 - old_pos->x1,
-		      widget->rc->y1 - old_pos->y1);
+		      this->rc->x1 - old_pos->x1,
+		      this->rc->y1 - old_pos->y1);
     jregion_union(window_refresh_region, window_refresh_region, reg1);
 
     /* move the window's graphics */
@@ -709,8 +648,8 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
 	     man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
 
     ji_move_region(moveable_region,
-		   widget->rc->x1 - old_pos->x1,
-		   widget->rc->y1 - old_pos->y1);
+		   this->rc->x1 - old_pos->x1,
+		   this->rc->y1 - old_pos->y1);
     set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
 
@@ -719,7 +658,7 @@ static void move_window(JWidget widget, JRect rect, bool use_blit)
   }
 
   jmanager_invalidate_region(manager, manager_refresh_region);
-  jwidget_invalidate_region(widget, window_refresh_region);
+  jwidget_invalidate_region(this, window_refresh_region);
 
   jregion_free(old_drawable_region);
   jregion_free(new_drawable_region);

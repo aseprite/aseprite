@@ -92,11 +92,11 @@ void dialogs_draw_text(Sprite* sprite)
 		   get_config_string("DrawText", "Text", "ABCabc"));
 
   /* window */
-  jwindow_remap(window);
-  jwindow_center(window);
-  jwindow_open_fg(window);
+  window->remap_window();
+  window->center_window();
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok) {
+  if (window->get_killer() == button_ok) {
     color_t color_with_type = colorbutton_get_color(color_but);
     const char *text = jwidget_get_text(entry_text);
     const char *size_str = jwidget_get_text(entry_size);
@@ -291,5 +291,5 @@ static void update_button_text()
 {
   const char *font_str = get_config_string("DrawText", "Font", "allegro.pcx");
 
-  jwidget_set_text(font_button, get_filename(font_str));
+  font_button->setText(get_filename(font_str));
 }

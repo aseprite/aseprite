@@ -67,7 +67,7 @@ void check_for_dropped_files()
   if (!base_wnd_proc)		// drop-files hook not installed
     return;
 
-  if (!jwindow_is_toplevel(app_get_top_window()))
+  if (!app_get_top_window()->is_toplevel())
     return;
 
   jmutex_lock(dropped_files_mutex);

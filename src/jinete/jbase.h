@@ -73,7 +73,9 @@ union  jmessage;
 struct jrect;
 struct jregion;
 class  jtheme;
-class  jwidget;
+
+class  Widget;
+class  Frame;
 
 /* alignment */
 #define JI_HORIZONTAL	0x0001
@@ -132,7 +134,7 @@ enum {
   JI_VIEW,
   JI_VIEW_SCROLLBAR,
   JI_VIEW_VIEWPORT,
-  JI_WINDOW,
+  JI_FRAME,
 
   /* user widgets */
   JI_USER_WIDGET,
@@ -232,7 +234,7 @@ typedef struct jstream*		JStream;
 typedef struct jrect*		JRect;
 typedef struct jregion*		JRegion;
 typedef class  jtheme*		JTheme;
-typedef class  jwidget*		JWidget;
+typedef class  Widget*		JWidget;
 typedef struct jxml*		JXml;
 typedef struct jxmlattr*	JXmlAttr;
 typedef struct jxmlnode*	JXmlNode;

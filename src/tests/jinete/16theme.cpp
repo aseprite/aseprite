@@ -166,7 +166,7 @@ JTheme my_theme_new()
   jtheme_set_method(theme, JI_BOX, theme_draw_box);
   jtheme_set_method(theme, JI_BUTTON, theme_draw_button);
   jtheme_set_method(theme, JI_LABEL, theme_draw_label);
-  jtheme_set_method(theme, JI_WINDOW, theme_draw_window);
+  jtheme_set_method(theme, JI_FRAME, theme_draw_frame);
 
   return theme;
 }
@@ -207,7 +207,7 @@ static void theme_init_widget(JWidget widget)
       widget->child_spacing = 0;
       break;
 
-    case JI_WINDOW:
+    case JI_FRAME:
       BORDER4(8, 12+jwidget_get_text_height(widget)+12, 8, 8);
       widget->child_spacing = 1;
       break;

@@ -49,11 +49,11 @@ static void panel_set_position(JWidget widget, JRect rect);
 
 JWidget jpanel_new(int align)
 {
-  JWidget widget = new jwidget(JI_PANEL);
+  Widget* widget = new Widget(JI_PANEL);
   Panel *panel = jnew(Panel, 1);
 
   jwidget_add_hook(widget, JI_PANEL, panel_msg_proc, panel);
-  jwidget_set_align(widget, align);
+  widget->setAlign(align);
 
   panel->pos = 50;
 
@@ -117,7 +117,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 
 	    ++bar;
 
-	    if (widget->align() & JI_HORIZONTAL) {
+	    if (widget->getAlign() & JI_HORIZONTAL) {
 	      x1 = c1->rc->x2;
 	      y1 = widget->rc->y1;
 	      x2 = c2->rc->x1;
@@ -149,7 +149,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget)) {
 	Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
 
-	if (widget->align() & JI_HORIZONTAL) {
+	if (widget->getAlign() & JI_HORIZONTAL) {
 	  panel->pos =
 	    100.0 * (msg->mouse.x-widget->rc->x1) / jrect_w(widget->rc);
 	}
@@ -185,7 +185,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	    c1 = reinterpret_cast<JWidget>(link->data);
 	    c2 = reinterpret_cast<JWidget>(link->next->data);
 
-	    if (widget->align() & JI_HORIZONTAL) {
+	    if (widget->getAlign() & JI_HORIZONTAL) {
 	      x1 = c1->rc->x2;
 	      y1 = widget->rc->y1;
 	      x2 = c2->rc->x1;
@@ -207,7 +207,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	if (change_cursor) {
-	  if (widget->align() & JI_HORIZONTAL)
+	  if (widget->getAlign() & JI_HORIZONTAL)
 	    jmouse_set_cursor(JI_CURSOR_SIZE_L);
 	  else
 	    jmouse_set_cursor(JI_CURSOR_SIZE_T);
@@ -259,14 +259,14 @@ static void panel_request_size(JWidget widget, int *w, int *h)
 
     jwidget_request_size(child, &req_w, &req_h);
 
-    if (widget->align() & JI_HORIZONTAL)
+    if (widget->getAlign() & JI_HORIZONTAL)
       GET_CHILD_SIZE(w, h);
     else
       GET_CHILD_SIZE(h, w);
   }
 
   if (nvis_children > 0) {
-    if (widget->align() & JI_HORIZONTAL)
+    if (widget->getAlign() & JI_HORIZONTAL)
       FINAL_SIZE(w);
     else
       FINAL_SIZE(h);
@@ -315,7 +315,7 @@ static void panel_set_position(JWidget widget, JRect rect)
     jwidget_request_size(child1, &req1_w, &req1_h);
     jwidget_request_size(child2, &req2_w, &req2_h);
 
-    if (widget->align() & JI_HORIZONTAL)
+    if (widget->getAlign() & JI_HORIZONTAL)
       FIXUP(x, y, w, h, l, t, r, b);
     else
       FIXUP(y, x, h, w, t, l, b, r);

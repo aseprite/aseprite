@@ -69,7 +69,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       radio->user_data[1] = (void *)c;
 
       usprintf(buf, "radio%d", c);
-      jwidget_set_name(radio, buf);
+      radio->setName(buf);
 
       if (icon >= 0)
 	add_gfxicon_to_button(radio, icon, JI_CENTER | JI_MIDDLE);

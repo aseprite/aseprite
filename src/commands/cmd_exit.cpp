@@ -61,7 +61,7 @@ void ExitCommand::execute(Context* context)
   }
 
   /* close the window */
-  jwindow_close(app_get_top_window(), 0);
+  app_get_top_window()->closeWindow(NULL);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -65,6 +65,7 @@ CommandsModule::~CommandsModule()
 
 CommandsModule* CommandsModule::instance()
 {
+  assert(m_instance != NULL);
   return m_instance;
 }
 

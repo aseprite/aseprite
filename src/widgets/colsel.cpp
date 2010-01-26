@@ -86,9 +86,9 @@ static Model models[] = {
   { NULL,	0,		0,			NULL }
 };
 
-JWidget colorselector_new(bool editable_palette)
+Frame* colorselector_new(bool editable_palette)
 {
-  JWidget window = jtooltip_window_new("");
+  Frame* window = new TipWindow("");
   JWidget grid1 = jgrid_new(3, FALSE);
   JWidget grid2 = jgrid_new(5, FALSE);
   JWidget tabs = tabs_new(select_tab_callback);
@@ -99,11 +99,11 @@ JWidget colorselector_new(bool editable_palette)
   ColorSelector* colorselector = jnew(ColorSelector, 1);
   Model* m;
 
-  jwidget_set_name(pal, "pal");
-  jwidget_set_name(idx, "idx");
-  jwidget_set_name(lock, "lock");
-  jwidget_set_name(tabs, "tabs");
-  jwidget_set_name(grid2, "grid2");
+  pal->setName("pal");
+  idx->setName("idx");
+  lock->setName("lock");
+  tabs->setName("tabs");
+  grid2->setName("grid2");
 
   /* color selector */
   colorselector->color = color_mask();
@@ -117,7 +117,7 @@ JWidget colorselector_new(bool editable_palette)
   add_gfxicon_to_button(lock, GFX_BOX_LOCK, JI_CENTER | JI_MIDDLE);
 
   /* tabs */
-  jwidget_set_bg_color(tabs, window->bg_color());
+  tabs->setBgColor(window->getBgColor());
 
   /* data for a better layout */
   grid1->child_spacing = 0;
@@ -129,7 +129,7 @@ JWidget colorselector_new(bool editable_palette)
     tabs_append_tab(tabs, _(m->text), (void*)m);
 
     child = (*m->create)();
-    jwidget_set_name(child, m->text);
+    child->setName(m->text);
     jgrid_add_child(grid2, child, 1, 1, JI_HORIZONTAL | JI_TOP);
   }
 
@@ -189,9 +189,9 @@ static JWidget create_rgb_container()
   jgrid_add_child(grid, blabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, bslider, 1, 1, JI_HORIZONTAL);
 
-  jwidget_set_name(rslider, "rgb_r");
-  jwidget_set_name(gslider, "rgb_g");
-  jwidget_set_name(bslider, "rgb_b");
+  rslider->setName("rgb_r");
+  gslider->setName("rgb_g");
+  bslider->setName("rgb_b");
 
   HOOK(rslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(gslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
@@ -216,9 +216,9 @@ static JWidget create_hsv_container()
   jgrid_add_child(grid, vlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
 
-  jwidget_set_name(hslider, "hsv_h");
-  jwidget_set_name(sslider, "hsv_s");
-  jwidget_set_name(vslider, "hsv_v");
+  hslider->setName("hsv_h");
+  sslider->setName("hsv_s");
+  vslider->setName("hsv_v");
 
   HOOK(hslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(sslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
@@ -235,7 +235,7 @@ static JWidget create_gray_container()
   jgrid_add_child(grid, klabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
 
-  jwidget_set_name(vslider, "gray_v");
+  vslider->setName("gray_v");
 
   HOOK(vslider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
 
@@ -278,7 +278,7 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
 	JWidget idx = jwidget_find_name(widget, "idx");
 	JWidget pal = jwidget_find_name(widget, "pal");
 	JWidget grid2 = jwidget_find_name(widget, "grid2");
-	int idxlen = ji_font_text_len(idx->font(), "Index=888");
+	int idxlen = ji_font_text_len(idx->getFont(), "Index=888");
 
 	jwidget_set_min_size(idx, idxlen, 0);
 	paledit_set_boxsize(pal, 4*guiscale());
@@ -417,12 +417,12 @@ static void colorselector_set_paledit_index(JWidget widget, int index, bool sele
     jwidget_disable(lock);
   }
 
-  jwidget_set_text(idx, buf);
+  idx->setText(buf);
 }
 
 static void select_tab_callback(JWidget tabs, void* data, int button)
 {
-  JWidget window = jwidget_get_window(tabs);
+  Frame* window = static_cast<Frame*>(tabs->getRoot());
   Model* selected_model = (Model*)data;
   JWidget child;
   Model* m;
@@ -451,7 +451,7 @@ static void select_tab_callback(JWidget tabs, void* data, int button)
 
 static bool slider_change_hook(JWidget widget, void* data)
 {
-  JWidget window = jwidget_get_window(widget);
+  Frame* window = static_cast<Frame*>(widget->getRoot());
   ColorSelector* colorselector = colorselector_data(window);
   JWidget tabs = jwidget_find_name(window, "tabs");
   JWidget pal = jwidget_find_name(window, "pal");
@@ -522,7 +522,7 @@ static bool slider_change_hook(JWidget widget, void* data)
 
 static bool button_mask_select_hook(JWidget widget, void* data)
 {
-  JWidget window = jwidget_get_window(widget);
+  Frame* window = static_cast<Frame*>(widget->getRoot());
   colorselector_set_color(window, color_mask());
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
   return TRUE;
@@ -530,7 +530,7 @@ static bool button_mask_select_hook(JWidget widget, void* data)
 
 static bool paledit_change_hook(JWidget widget, void* data)
 {
-  JWidget window = jwidget_get_window(widget);
+  Frame* window = static_cast<Frame*>(widget->getRoot());
   bool array[256];
   color_t color = colorselector_get_color(window);
   int i;
@@ -549,7 +549,7 @@ static bool paledit_change_hook(JWidget widget, void* data)
 
 static bool lock_button_select_hook(JWidget widget, void* data)
 {
-  JWidget window = jwidget_get_window(widget);
+  Frame* window = static_cast<Frame*>(widget->getRoot());
   ColorSelector* colorselector = colorselector_data(window);
 
   colorselector->palette_locked = !colorselector->palette_locked;

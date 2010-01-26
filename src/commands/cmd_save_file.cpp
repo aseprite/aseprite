@@ -39,7 +39,7 @@ typedef struct SaveFileData
   FileOp *fop;
   Progress *progress;
   JThread thread;
-  JWidget alert_window;
+  Frame* alert_window;
 } SaveFileData;
 
 /**
@@ -79,11 +79,11 @@ static void monitor_savefile_bg(void *_data)
  */
 static void monitor_free(void *_data)
 {
-  SaveFileData *data = (SaveFileData *)_data;
+  SaveFileData *data = (SaveFileData*)_data;
 
   if (data->alert_window != NULL) {
     data->monitor = NULL;
-    jwindow_close(data->alert_window, NULL);
+    data->alert_window->closeWindow(NULL);
   }
 }
 
@@ -108,7 +108,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 
       /* TODO error handling */
 
-      jwindow_open_fg(data->alert_window);
+      data->alert_window->open_window_fg();
 
       if (data->monitor != NULL)
 	remove_gui_monitor(data->monitor);

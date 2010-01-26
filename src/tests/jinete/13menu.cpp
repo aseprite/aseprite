@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
   jwidget_add_child(box1, button);
   jwidget_add_child(window, box1);
 
-  jwindow_open_bg(window);
+  window->open_window_bg();
 
   jmanager_run(manager);
   jmanager_free(manager);

@@ -87,7 +87,7 @@ int main (int argc, char *argv[])
   jwidget_add_children(box1, label1, combobox1, label2, combobox2, box2, 0);
   jwidget_add_children(box2, button_ok, button_cancel, 0);
 
-  jwindow_open_bg(window);
+  window->open_window_bg();
 
   jmanager_run(manager);
   jmanager_free(manager);

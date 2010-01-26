@@ -69,8 +69,8 @@ JWidget statusbar_new()
   BUTTON_NEW((name), NULL, (action));					\
   add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);
 
-  JWidget widget = new jwidget(statusbar_type());
-  StatusBar *statusbar = jnew(StatusBar, 1);
+  Widget* widget = new Widget(statusbar_type());
+  StatusBar* statusbar = jnew(StatusBar, 1);
 
   jwidget_add_hook(widget, statusbar_type(),
 		   statusbar_msg_proc, statusbar);
@@ -142,7 +142,7 @@ void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
     vsprintf(buf, format, ap);
     va_end(ap);
 
-    widget->text(buf);
+    widget->setText(buf);
     statusbar->timeout = ji_clock + msecs;
     jwidget_dirty(widget);
   }
@@ -151,7 +151,7 @@ void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
 void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
 {
   StatusBar *statusbar = statusbar_data(widget);
-  JWidget tipwindow = statusbar->tipwindow;
+  Frame* tipwindow = statusbar->tipwindow;
   char buf[256];		/* TODO warning buffer overflow */
   va_list ap;
   int x, y;
@@ -161,7 +161,7 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
   va_end(ap);
 
   if (tipwindow == NULL) {
-    tipwindow = jtooltip_window_new(buf);
+    tipwindow = new TipWindow(buf);
     tipwindow->user_data[0] = (void *)jmanager_add_timer(tipwindow, msecs);
     tipwindow->user_data[1] = statusbar;
     jwidget_add_hook(tipwindow, -1, tipwindow_msg_proc, NULL);
@@ -169,20 +169,20 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
     statusbar->tipwindow = tipwindow;
   }
   else {
-    jwidget_set_text(tipwindow, buf);
+    tipwindow->setText(buf);
 
     jmanager_set_timer_interval((size_t)tipwindow->user_data[0], msecs);
   }
 
   if (jwidget_is_visible(tipwindow))
-    jwindow_close(tipwindow, NULL);
+    tipwindow->closeWindow(NULL);
 
-  jwindow_open(tipwindow);
-  jwindow_remap(tipwindow);
+  tipwindow->open_window();
+  tipwindow->remap_window();
 
   x = widget->rc->x2 - jrect_w(tipwindow->rc);
   y = widget->rc->y1 - jrect_h(tipwindow->rc);
-  jwindow_position(tipwindow, x, y);
+  tipwindow->position_window(x, y);
 
   jmanager_start_timer((size_t)tipwindow->user_data[0]);
 }
@@ -274,12 +274,12 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       jrect_shrink(rc, 1);
 
       /* status bar text */
-      if (widget->text()) {
+      if (widget->getText()) {
 	jdraw_rectfill(rc, ji_color_face());
 
-	textout_ex(ji_screen, widget->font(), widget->text(),
+	textout_ex(ji_screen, widget->getFont(), widget->getText(),
 		   rc->x1+2,
-		   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
+		   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->getFont())/2,
 		   ji_color_foreground(), -1);
       }
 
@@ -327,9 +327,9 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	  ustrcpy(buf, "Sprite is Locked");
 	}
 
-	textout_right_ex(ji_screen, widget->font(), buf,
+	textout_right_ex(ji_screen, widget->getFont(), buf,
 			 rc->x2-2,
-			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->font())/2,
+			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->getFont())/2,
 			 ji_color_foreground(), -1);
       }
 
@@ -341,11 +341,11 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       if (!jwidget_has_child(widget, statusbar->commands_box)) {
 	bool state = (UIContext::instance()->get_current_sprite() != NULL);
 
-	statusbar->b_first->enabled(state);
-	statusbar->b_prev->enabled(state);
-	statusbar->b_play->enabled(state);
-	statusbar->b_next->enabled(state);
-	statusbar->b_last->enabled(state);
+	statusbar->b_first->setEnabled(state);
+	statusbar->b_prev->setEnabled(state);
+	statusbar->b_play->setEnabled(state);
+	statusbar->b_next->setEnabled(state);
+	statusbar->b_last->setEnabled(state);
 
 	update_from_layer(statusbar);
 
@@ -381,7 +381,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_TIMER:
-      jwindow_close(widget, NULL);
+      static_cast<Frame*>(widget)->closeWindow(NULL);
       break;
   }
 
@@ -437,13 +437,11 @@ static void update_from_layer(StatusBar *statusbar)
 
     /* layer button */
     if (sprite && sprite->layer) {
-      char buf[512];
-      usprintf(buf, "[%d] %s", sprite->frame, sprite->layer->get_name().c_str());
-      jwidget_set_text(statusbar->b_layer, buf);
+      statusbar->b_layer->setTextf("[%d] %s", sprite->frame, sprite->layer->get_name().c_str());
       jwidget_enable(statusbar->b_layer);
     }
     else {
-      jwidget_set_text(statusbar->b_layer, "Nothing");
+      statusbar->b_layer->setText("Nothing");
       jwidget_disable(statusbar->b_layer);
     }
 

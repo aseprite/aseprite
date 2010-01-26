@@ -23,33 +23,36 @@
 
 #include "core/color.h"
 
-typedef struct Progress
-{
-  JWidget statusbar;
-  float pos;
-} Progress;
+class Widget;
+class Frame;
 
-typedef struct StatusBar
+struct Progress
 {
-  JWidget widget;
+  Widget* statusbar;
+  float pos;
+};
+
+struct StatusBar
+{
+  Widget* widget;
   int timeout;
 
   /* progress bar */
   JList progress;
 
   /* box of main commands */
-  JWidget commands_box;
-  JWidget b_layer;			/* layer button */
-  JWidget slider;			/* opacity slider */
-  JWidget b_first;			/* go to first frame */
-  JWidget b_prev;			/* go to previous frame */
-  JWidget b_play;			/* play animation */
-  JWidget b_next;			/* go to next frame */
-  JWidget b_last;			/* go to last frame */
+  Widget* commands_box;
+  Widget* b_layer;			/* layer button */
+  Widget* slider;			/* opacity slider */
+  Widget* b_first;			/* go to first frame */
+  Widget* b_prev;			/* go to previous frame */
+  Widget* b_play;			/* play animation */
+  Widget* b_next;			/* go to next frame */
+  Widget* b_last;			/* go to last frame */
 
   /* tip window */
-  JWidget tipwindow;
-} StatusBar;
+  Frame* tipwindow;
+};
 
 /* statusbar */
 

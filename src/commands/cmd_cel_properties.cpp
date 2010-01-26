@@ -76,7 +76,7 @@ void CelPropertiesCommand::execute(Context* context)
   /* get current cel (can be NULL) */
   cel = static_cast<LayerImage*>(layer)->get_cel(sprite->frame);
 
-  JWidgetPtr window(load_widget("celprop.jid", "cel_properties"));
+  FramePtr window(load_widget("celprop.jid", "cel_properties"));
   get_widgets(window,
 	      "frame", &label_frame,
 	      "pos", &label_pos,
@@ -86,17 +86,17 @@ void CelPropertiesCommand::execute(Context* context)
 
   /* if the layer isn't writable */
   if (!layer->is_writable()) {
-    jwidget_set_text(button_ok, _("Locked"));
-    jwidget_disable(button_ok);
+    button_ok->setText(_("Locked"));
+    button_ok->setEnabled(false);
   }
 
   usprintf(buf, "%d/%d", sprite->frame+1, sprite->frames);
-  jwidget_set_text(label_frame, buf);
+  label_frame->setText(buf);
 
   if (cel != NULL) {
     /* position */
     usprintf(buf, "%d, %d", cel->x, cel->y);
-    jwidget_set_text(label_pos, buf);
+    label_pos->setText(buf);
 
     /* dimension (and memory size) */
     memsize =
@@ -112,7 +112,7 @@ void CelPropertiesCommand::execute(Context* context)
 		       sizeof(buf)-ustrsize(buf));
     ustrcat(buf, ")");
 
-    jwidget_set_text(label_size, buf);
+    label_size->setText(buf);
 
     /* opacity */
     jslider_set_value(slider_opacity, cel->opacity);
@@ -123,15 +123,15 @@ void CelPropertiesCommand::execute(Context* context)
     }
   }
   else {
-    jwidget_set_text(label_pos, "None");
-    jwidget_set_text(label_size, "Empty (0 bytes)");
+    label_pos->setText("None");
+    label_size->setText("Empty (0 bytes)");
     jslider_set_value(slider_opacity, 0);
     jwidget_disable(slider_opacity);
   }
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok) {
+  if (window->get_killer() == button_ok) {
     int new_opacity = jslider_get_value(slider_opacity);
 
     /* the opacity was changed? */

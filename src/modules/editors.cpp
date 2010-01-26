@@ -32,8 +32,8 @@
 #include "widgets/editor.h"
 
 #define FIXUP_TOP_WINDOW()			\
-  jwindow_remap(app_get_top_window());		\
-  jwidget_dirty(app_get_top_window());
+  app_get_top_window()->remap_window();		\
+  app_get_top_window()->dirty();
 
 JWidget current_editor = NULL;
 JWidget box_editors = NULL;

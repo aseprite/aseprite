@@ -77,27 +77,27 @@ void gui_setup_screen(bool reload_font);
 
 void reload_default_font();
 
-void load_window_pos(JWidget window, const char *section);
-void save_window_pos(JWidget window, const char *section);
+void load_window_pos(Widget* window, const char *section);
+void save_window_pos(Widget* window, const char *section);
 
-JWidget load_widget(const char *filename, const char *name);
-JWidget find_widget(JWidget widget, const char *name);
+Widget* load_widget(const char *filename, const char *name);
+Widget* find_widget(Widget* widget, const char *name);
 
 void schedule_rebuild_recent_list();
 
-void hook_signal(JWidget widget,
+void hook_signal(Widget* widget,
 		 int signal_num,
-		 bool (*signal_handler)(JWidget widget, void *data),
+		 bool (*signal_handler)(Widget* widget, void *data),
 		 void *data);
 
-void get_widgets(JWidget window, ...);
+void get_widgets(Widget* window, ...);
 
-void add_gfxicon_to_button(JWidget button, int gfx_id, int icon_align);
-void set_gfxicon_in_button(JWidget button, int gfx_id);
+void add_gfxicon_to_button(Widget* button, int gfx_id, int icon_align);
+void set_gfxicon_in_button(Widget* button, int gfx_id);
 
-JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
-JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4);
-/* void change_to_button_style(JWidget widget, int b1, int b2, int b3, int b4); */
+Widget* radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
+Widget* check_button_new(const char *text, int b1, int b2, int b3, int b4);
+/* void change_to_button_style(Widget* widget, int b1, int b2, int b3, int b4); */
 
 //////////////////////////////////////////////////////////////////////
 // Keyboard shortcuts
@@ -118,47 +118,56 @@ void remove_gui_monitor(Monitor* monitor);
 void* get_monitor_data(Monitor* monitor);
 
 //////////////////////////////////////////////////////////////////////
-// Smart JWidget pointer
+// Smart Widget* pointer
 
-class JWidgetPtr
+template<typename T>
+class ScopedPtr
 {
-  JWidget m_widget;
+  T* m_ptr;
 
   // TODO make this class copyable and count references (so this is
   //      really "smart" pointer)...
-  JWidgetPtr(const JWidgetPtr&);
-  JWidgetPtr& operator=(const JWidgetPtr&);
+  ScopedPtr(const ScopedPtr&);
+  ScopedPtr& operator=(const ScopedPtr&);
 
 public:
-  JWidgetPtr() {
-    m_widget = NULL;
+  ScopedPtr() {
+    m_ptr = NULL;
   }
 
-  explicit JWidgetPtr(JWidget widget) {
-    m_widget = widget;
+  explicit ScopedPtr(T* widget) {
+    m_ptr = widget;
   }
 
-  ~JWidgetPtr() {
-    delete m_widget;
+  template<typename T2>
+  explicit ScopedPtr(T2* widget) {
+    m_ptr = static_cast<T*>(widget);
   }
 
-  JWidgetPtr& operator=(JWidget widget) {
-    if (m_widget)
-      delete m_widget;
+  ~ScopedPtr() {
+    delete m_ptr;
+  }
 
-    m_widget = widget;
+  ScopedPtr& operator=(T* widget) {
+    if (m_ptr)
+      delete m_ptr;
+
+    m_ptr = widget;
     return *this;
   }
 
-  operator JWidget() {
-    return m_widget;
+  operator T*() {
+    return m_ptr;
   }
 
-  JWidget operator->() {
-    assert(m_widget != NULL);
-    return m_widget;
+  T* operator->() {
+    assert(m_ptr != NULL);
+    return m_ptr;
   }
 
 };
+
+typedef ScopedPtr<Widget> WidgetPtr;
+typedef ScopedPtr<Frame> FramePtr;
 
 #endif

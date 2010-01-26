@@ -114,8 +114,8 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	if (menuitem->m_params)
 	  menuitem->m_command->load_params(menuitem->m_params);
 
-	widget->enabled(menuitem->m_command->enabled(context));
-	widget->selected(menuitem->m_command->checked(context));
+	widget->setEnabled(menuitem->m_command->enabled(context));
+	widget->setSelected(menuitem->m_command->checked(context));
       }
       break;
     }

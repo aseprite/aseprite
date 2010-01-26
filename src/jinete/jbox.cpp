@@ -45,10 +45,10 @@ static void box_set_position(JWidget widget, JRect rect);
 
 JWidget jbox_new(int align)
 {
-  JWidget widget = new jwidget(JI_BOX);
+  Widget* widget = new Widget(JI_BOX);
 
   jwidget_add_hook(widget, JI_BOX, box_msg_proc, NULL);
-  jwidget_set_align(widget, align);
+  widget->setAlign(align);
   jwidget_init_theme(widget);
 
   return widget;
@@ -79,7 +79,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
 {
 #define GET_CHILD_SIZE(w, h)			\
   {						\
-    if (widget->align() & JI_HOMOGENEOUS)	\
+    if (widget->getAlign() & JI_HOMOGENEOUS)	\
       *w = MAX(*w, req_##w);			\
     else					\
       *w += req_##w;				\
@@ -89,7 +89,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
 
 #define FINAL_SIZE(w)					\
   {							\
-    if (widget->align() & JI_HOMOGENEOUS)		\
+    if (widget->getAlign() & JI_HOMOGENEOUS)		\
       *w *= nvis_children;				\
 							\
     *w += widget->child_spacing * (nvis_children-1);	\
@@ -117,7 +117,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
 
     jwidget_request_size(child, &req_w, &req_h);
 
-    if (widget->align() & JI_HORIZONTAL) {
+    if (widget->getAlign() & JI_HORIZONTAL) {
       GET_CHILD_SIZE(w, h);
     }
     else {
@@ -126,7 +126,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
   }
 
   if (nvis_children > 0) {
-    if (widget->align() & JI_HORIZONTAL) {
+    if (widget->getAlign() & JI_HORIZONTAL) {
       FINAL_SIZE(w);
     }
     else {
@@ -143,7 +143,7 @@ static void box_set_position(JWidget widget, JRect rect)
 #define FIXUP(x, y, w, h, l, t, r, b)					\
   {									\
     if (nvis_children > 0) {						\
-      if (widget->align() & JI_HOMOGENEOUS) {				\
+      if (widget->getAlign() & JI_HOMOGENEOUS) {			\
 	width = (jrect_##w(widget->rc)					\
 		 - widget->border_width.l				\
 		 - widget->border_width.r				\
@@ -169,7 +169,7 @@ static void box_set_position(JWidget widget, JRect rect)
 	child = (JWidget)link->data;					\
 									\
 	if (!(child->flags & JI_HIDDEN)) {				\
-	  if (widget->align() & JI_HOMOGENEOUS) {			\
+	  if (widget->getAlign() & JI_HOMOGENEOUS) {			\
 	    if (nvis_children == 1)					\
 	      child_width = width;					\
 	    else							\
@@ -196,7 +196,7 @@ static void box_set_position(JWidget widget, JRect rect)
 									\
 	  w = MAX(1, child_width);					\
 									\
-	  if (widget->align() & JI_HORIZONTAL)				\
+	  if (widget->getAlign() & JI_HORIZONTAL)			\
 	    jrect_replace(&cpos, x, y, x+w, y+h);			\
 	  else								\
 	    jrect_replace(&cpos, y, x, y+h, x+w);			\
@@ -234,7 +234,7 @@ static void box_set_position(JWidget widget, JRect rect)
 
   jwidget_request_size(widget, &req_w, &req_h);
 
-  if (widget->align() & JI_HORIZONTAL) {
+  if (widget->getAlign() & JI_HORIZONTAL) {
     FIXUP(x, y, w, h, l, t, r, b);
   }
   else {

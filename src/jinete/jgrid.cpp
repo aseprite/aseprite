@@ -80,7 +80,7 @@ static void grid_inc_row_size(Grid *grid, int row, int size);
 
 JWidget jgrid_new(int columns, bool same_width_columns)
 {
-  JWidget widget = new jwidget(JI_GRID);
+  Widget* widget = new Widget(JI_GRID);
   Grid *grid = jnew(Grid, 1);
   int col;
 

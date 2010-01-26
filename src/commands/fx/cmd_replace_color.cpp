@@ -86,7 +86,7 @@ void ReplaceColorCommand::execute(Context* context)
   JWidget box_target, target_button;
   JWidget button_ok;
 
-  JWidgetPtr window(load_widget("replcol.jid", "replace_color"));
+  FramePtr window(load_widget("replcol.jid", "replace_color"));
   get_widgets(window,
 	      "color_buttons_box", &color_buttons_box,
 	      "preview", &check_preview,
@@ -131,8 +131,8 @@ void ReplaceColorCommand::execute(Context* context)
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
 
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* first preview */
   make_preview();
@@ -141,9 +141,9 @@ void ReplaceColorCommand::execute(Context* context)
   load_window_pos(window, "ReplaceColor");
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok)
+  if (window->get_killer() == button_ok)
     effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */

@@ -43,7 +43,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg);
 
 JWidget colorviewer_new(color_t color, int imgtype)
 {
-  JWidget widget = new jwidget(colorviewer_type());
+  Widget* widget = new Widget(colorviewer_type());
   ColorViewer *colorviewer = jnew(ColorViewer, 1);
 
   colorviewer->color = color;
@@ -53,7 +53,7 @@ JWidget colorviewer_new(color_t color, int imgtype)
 		   colorviewer_msg_proc, colorviewer);
   jwidget_focusrest(widget, TRUE);
   jwidget_set_border(widget, 2, 2, 2, 2);
-  jwidget_set_align(widget, JI_CENTER | JI_MIDDLE);
+  widget->setAlign(JI_CENTER | JI_MIDDLE);
 
   return widget;
 }
@@ -105,7 +105,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_REQSIZE: {
-      msg->reqsize.w = ji_font_text_len(widget->font(), "255,255,255,255");
+      msg->reqsize.w = ji_font_text_len(widget->getFont(), "255,255,255,255");
       msg->reqsize.h = jwidget_get_text_height(widget);
 
       msg->reqsize.w += widget->border_width.l + widget->border_width.r;
@@ -137,11 +137,11 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
       color_to_formalstring(colorviewer->imgtype,
 			    colorviewer->color, buf, sizeof(buf), FALSE);
 
-      widget->set_text_quiet(buf);
+      widget->setTextQuiet(buf);
       jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
       jdraw_rectfill(&text, makecol(0, 0, 0));
-      jdraw_text(widget->font(), widget->text(), text.x1, text.y1,
+      jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
 		 makecol(255, 255, 255), makecol(0, 0, 0), FALSE);
 
       jrect_free(rect);

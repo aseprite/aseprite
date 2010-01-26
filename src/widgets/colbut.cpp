@@ -34,7 +34,7 @@ typedef struct ColorButton
 {
   color_t color;
   int imgtype;
-  JWidget tooltip_window;
+  Frame* tooltip_window;
 } ColorButton;
 
 static ColorButton* colorbutton_data(JWidget widget);
@@ -235,11 +235,11 @@ static void colorbutton_draw(JWidget widget)
   color_to_formalstring(colorbutton->imgtype,
 			colorbutton->color, buf, sizeof(buf), FALSE);
 
-  widget->set_text_quiet(buf);
+  widget->setTextQuiet(buf);
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
   rectfill(ji_screen, text.x1, text.y1, text.x2-1, text.y2-1, makecol(0, 0, 0));
-  jdraw_text(widget->font(), widget->text(), text.x1, text.y1,
+  jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
 	     makecol(255, 255, 255),
 	     makecol(0, 0, 0), FALSE);
 }
@@ -247,14 +247,14 @@ static void colorbutton_draw(JWidget widget)
 static void colorbutton_open_tooltip(JWidget widget)
 {
   ColorButton* colorbutton = colorbutton_data(widget);
-  JWidget window;
+  Frame* window;
   int x, y;
 
   if (colorbutton->tooltip_window == NULL) {
-    window = colorselector_new(FALSE);
+    window = colorselector_new(false);
     window->user_data[0] = widget;
     jwidget_add_hook(window, -1, tooltip_window_msg_proc, NULL);
-    jwidget_set_text(window, "Select color");
+    window->setText("Select color");
 
     colorbutton->tooltip_window = window;
   }
@@ -264,7 +264,7 @@ static void colorbutton_open_tooltip(JWidget widget)
 
   colorselector_set_color(window, colorbutton->color);
 
-  jwindow_open(window);
+  window->open_window();
 
   x = MID(0, widget->rc->x1, JI_SCREEN_W-jrect_w(window->rc));
   if (widget->rc->y2 <= JI_SCREEN_H-jrect_h(window->rc))
@@ -272,7 +272,7 @@ static void colorbutton_open_tooltip(JWidget widget)
   else
     y = MAX(0, widget->rc->y1-jrect_h(window->rc));
 
-  jwindow_position(window, x, y);
+  window->position_window(x, y);
 
   jmanager_dispatch_messages(jwidget_get_manager(window));
   jwidget_relayout(window);
@@ -286,7 +286,7 @@ static void colorbutton_open_tooltip(JWidget widget)
     JRegion rgn = jregion_new(rc, 1);
     jrect_free(rc);
 
-    jtooltip_window_set_hotregion(window, rgn);
+    static_cast<TipWindow*>(window)->set_hotregion(rgn);
   }
 }
 
@@ -295,7 +295,7 @@ static void colorbutton_close_tooltip(JWidget widget)
   ColorButton* colorbutton = colorbutton_data(widget);
 
   if (colorbutton->tooltip_window != NULL)
-    jwindow_close(colorbutton->tooltip_window, NULL);
+    colorbutton->tooltip_window->closeWindow(NULL);
 }
 
 static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)

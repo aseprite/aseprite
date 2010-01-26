@@ -91,12 +91,12 @@ static int edit_node_manual(CurvePoint* point);
 
 JWidget curve_editor_new(Curve *curve, int x1, int y1, int x2, int y2)
 {
-  JWidget widget = new jwidget(curve_editor_type());
+  JWidget widget = new Widget(curve_editor_type());
   CurveEditor* curve_editor = jnew(CurveEditor, 1);
 
   jwidget_add_hook(widget, curve_editor_type(),
 		   curve_editor_msg_proc, curve_editor);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
 
   widget->border_width.l = widget->border_width.r = 1;
   widget->border_width.t = widget->border_width.b = 1;
@@ -471,32 +471,24 @@ static CurvePoint* curve_editor_get_more_close_point(JWidget widget,
 
 static int edit_node_manual(CurvePoint* point)
 {
-  JWidget window, entry_x, entry_y, button_ok;
+  JWidget entry_x, entry_y, button_ok;
   CurvePoint point_copy = *point;
-  char buf[512];
   int res;
 
-  window = load_widget("pntprop.jid", "point_properties");
-  if (!window) {
-    jalert(_("Error<<Loading %s file||&OK"), "pntprop.jid");
-    return FALSE;
-  }
+  FramePtr window(load_widget("pntprop.jid", "point_properties"));
 
   entry_x = jwidget_find_name(window, "x");
   entry_y = jwidget_find_name(window, "y");
   button_ok = jwidget_find_name(window, "button_ok");
 
-  sprintf(buf, "%d", point->x);
-  jwidget_set_text(entry_x, buf);
+  entry_x->setTextf("%d", point->x);
+  entry_y->setTextf("%d", point->y);
 
-  sprintf(buf, "%d", point->y);
-  jwidget_set_text(entry_y, buf);
+  window->open_window_fg();
 
-  jwindow_open_fg(window);
-
-  if (jwindow_get_killer(window) == button_ok) {
-    point->x = strtod(jwidget_get_text(entry_x), NULL);
-    point->y = strtod(jwidget_get_text(entry_y), NULL);
+  if (window->get_killer() == button_ok) {
+    point->x = entry_x->getTextDouble();
+    point->y = entry_y->getTextDouble();
     res = TRUE;
   }
   else {
@@ -505,6 +497,5 @@ static int edit_node_manual(CurvePoint* point)
     res = FALSE;
   }
 
-  jwidget_free(window);
   return res;
 }

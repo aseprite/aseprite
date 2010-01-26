@@ -51,7 +51,7 @@ public:
   }
 };
 
-static JWidget window = NULL;
+static Frame* window = NULL;
 
 static bool brush_preview_msg_proc(JWidget widget, JMessage msg);
 
@@ -103,12 +103,12 @@ void ConfigureTools::execute(Context* context)
   bool first_time = FALSE;
 
   if (!window) {
-    window = load_widget("toolconf.jid", "configure_tool");
+    window = static_cast<Frame*>(load_widget("toolconf.jid", "configure_tool"));
     first_time = TRUE;
   }
   /* if the window is opened, close it */
   else if (jwidget_is_visible(window)) {
-    jwindow_close(window, NULL);
+    window->closeWindow(NULL);
     return;
   }
 
@@ -140,7 +140,7 @@ void ConfigureTools::execute(Context* context)
   /* cursor-color */
   if (first_time) {
     cursor_color = colorbutton_new(get_cursor_color(), IMAGE_INDEXED);
-    jwidget_set_name(cursor_color, "cursor_color");
+    cursor_color->setName("cursor_color");
   }
   else {
     cursor_color = jwidget_find_name(window, "cursor_color");
@@ -148,11 +148,11 @@ void ConfigureTools::execute(Context* context)
 
   /* brush-preview */
   if (first_time) {
-    brush_preview = new jwidget(JI_WIDGET);
+    brush_preview = new Widget(JI_WIDGET);
     brush_preview->min_w = 32 + 4;
     brush_preview->min_h = 32 + 4;
 
-    jwidget_set_name(brush_preview, "brush_preview");
+    brush_preview->setName("brush_preview");
     jwidget_add_hook(brush_preview, JI_WIDGET,
 		     brush_preview_msg_proc, NULL);
   }
@@ -167,7 +167,7 @@ void ConfigureTools::execute(Context* context)
 				  GFX_BRUSH_SQUARE,
 				  GFX_BRUSH_LINE);
 
-    jwidget_set_name(brush_type, "brush_type");
+    brush_type->setName("brush_type");
   }
   else {
     brush_type = jwidget_find_name(window, "brush_type");
@@ -216,13 +216,13 @@ void ConfigureTools::execute(Context* context)
   }
 
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* load window configuration */
   load_window_pos(window, "ConfigureTool");
 
-  jwindow_open_bg(window);
+  window->open_window_bg();
 }
 
 static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
@@ -317,8 +317,8 @@ static bool tiled_check_change_hook(JWidget widget, void *data)
 {
   bool flag = jwidget_is_selected(widget);
   set_tiled_mode(flag ? TILED_BOTH: TILED_NONE);
-  jwidget_set_selected(jwidget_find_name(jwidget_get_window(widget), "tiled_x"), flag);
-  jwidget_set_selected(jwidget_find_name(jwidget_get_window(widget), "tiled_y"), flag);
+  widget->findSibling("tiled_x")->setSelected(flag);
+  widget->findSibling("tiled_y")->setSelected(flag);
   return FALSE;
 }
 
@@ -332,8 +332,7 @@ static bool tiled_xy_check_change_hook(JWidget widget, void *data)
   else
     tiled_mode &= ~tiled_axis;
 
-  jwidget_set_selected(jwidget_find_name(jwidget_get_window(widget), "tiled"),
-		       (tiled_mode != TILED_NONE));
+  widget->findSibling("tiled")->setSelected(tiled_mode != TILED_NONE);
 
   set_tiled_mode((tiled_t)tiled_mode);
   return FALSE;

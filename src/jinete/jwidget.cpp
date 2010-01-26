@@ -57,7 +57,7 @@ int ji_register_widget_type()
   return type++;
 }
 
-jwidget::jwidget(int type)
+Widget::Widget(int type)
 {
   _ji_add_widget(this);
 
@@ -104,7 +104,7 @@ void jwidget_free(JWidget widget)
   delete widget;
 }
 
-jwidget::~jwidget()
+Widget::~Widget()
 {
   JLink link, next;
   JMessage msg;
@@ -233,64 +233,53 @@ void *jwidget_get_data(JWidget widget, int type)
 /**********************************************************************/
 /* main properties */
 
-int jwidget_get_type(JWidget widget)
+int Widget::getType()
 {
-  assert_valid_widget(widget);
-
-  return widget->type;
+  return this->type;
 }
 
-const char *jwidget_get_name(JWidget widget)
+const char *Widget::getName()
 {
-  assert_valid_widget(widget);
-
-  return widget->name;
+  return this->name;
 }
 
-const char *jwidget_get_text(JWidget widget)
+int Widget::getAlign() const
 {
-  assert_valid_widget(widget);
-  return widget->text();
+  return m_align;
 }
 
-void jwidget_set_name(JWidget widget, const char *name)
+void Widget::setName(const char *name)
 {
-  assert_valid_widget(widget);
+  if (this->name)
+    jfree(this->name);
 
-  if (widget->name)
-    jfree(widget->name);
-
-  widget->name = name ? jstrdup(name) : NULL;
+  this->name = name ? jstrdup(name) : NULL;
 }
 
-void jwidget_set_text(JWidget widget, const char *text)
+void Widget::setAlign(int align)
 {
-  assert_valid_widget(widget);
-
-  widget->set_text_quiet(text);
-
-  jwidget_emit_signal(widget, JI_SIGNAL_SET_TEXT);
-  jwidget_dirty(widget);
+  m_align = align;
 }
 
-void jwidget_set_align(JWidget widget, int align)
-{
-  assert_valid_widget(widget);
-
-  widget->align(align);
-}
-
-int jwidget::text_int() const
+int Widget::getTextInt() const
 {
   return ustrtol(m_text.c_str(), NULL, 10);
 }
 
-double jwidget::text_double() const
+double Widget::getTextDouble() const
 {
   return ustrtod(m_text.c_str(), NULL);
 }
 
-void jwidget::textf(const char *format, ...)
+void Widget::setText(const char *text)
+{
+  this->setTextQuiet(text);
+
+  jwidget_emit_signal(this, JI_SIGNAL_SET_TEXT);
+  dirty();
+}
+
+void Widget::setTextf(const char *format, ...)
 {
   char buf[4096];
 
@@ -306,10 +295,10 @@ void jwidget::textf(const char *format, ...)
     ustrcpy(buf, empty_string);
   }
 
-  text(buf);
+  setText(buf);
 }
 
-void jwidget::set_text_quiet(const char *text)
+void Widget::setTextQuiet(const char *text)
 {
   if (text) {
     m_text = text;
@@ -321,17 +310,12 @@ void jwidget::set_text_quiet(const char *text)
   }
 }
 
-void jwidget::align(int align)
-{
-  m_align = align;
-}
-
-FONT *jwidget::font()
+FONT *Widget::getFont()
 {
   return m_font;
 }
 
-void jwidget::font(FONT* f)
+void Widget::setFont(FONT* f)
 {
   m_font = f;
 
@@ -648,21 +632,30 @@ void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
 /**********************************************************************/
 /* parents and children */
 
-/* gets the widget parent */
 JWidget jwidget_get_parent(JWidget widget)
-{
-  assert_valid_widget(widget);
+{ return widget->getParent(); }
 
-  return widget->parent;
-}
+JWidget jwidget_get_manager(JWidget widget)
+{ return widget->getManager(); }
 
-/* get the parent window */
-JWidget jwidget_get_window(JWidget widget)
+JList jwidget_get_parents(JWidget widget, bool ascendant)
+{ return widget->getParents(ascendant); }
+
+JList jwidget_get_children(JWidget widget)
+{ return widget->getChildren(); }
+
+JWidget jwidget_pick(JWidget widget, int x, int y)
+{ return widget->pick(x, y); }
+
+bool jwidget_has_child(JWidget widget, JWidget child)
+{ return widget->hasChild(child); }
+
+Widget* Widget::getRoot()
 {
-  assert_valid_widget(widget);
+  Widget* widget = this;
 
   while (widget) {
-    if (widget->type == JI_WINDOW)
+    if (widget->type == JI_FRAME)
       return widget;
 
     widget = widget->parent;
@@ -671,9 +664,14 @@ JWidget jwidget_get_window(JWidget widget)
   return NULL;
 }
 
-JWidget jwidget_get_manager(JWidget widget)
+Widget* Widget::getParent()
 {
-  assert_valid_widget(widget);
+  return this->parent;
+}
+
+Widget* Widget::getManager()
+{
+  Widget* widget = this;
 
   while (widget) {
     if (widget->type == JI_MANAGER)
@@ -688,17 +686,15 @@ JWidget jwidget_get_manager(JWidget widget)
 /* returns a list of parents (you must free the list), if "ascendant"
    is true the list is build from child to parents, else the list is
    from parent to children */
-JList jwidget_get_parents(JWidget widget, bool ascendant)
+JList Widget::getParents(bool ascendant)
 {
   JList list = jlist_new();
 
-  assert_valid_widget(widget);
-
-  for (; widget; widget=widget->parent) {
-    /* append parents in tail */
+  for (Widget* widget=this; widget; widget=widget->parent) {
+    // append parents in tail
     if (ascendant)
       jlist_append(list, widget);
-    /* append parents in head */
+    // append parents in head
     else
       jlist_prepend(list, widget);
   }
@@ -707,26 +703,22 @@ JList jwidget_get_parents(JWidget widget, bool ascendant)
 }
 
 /* returns a list of children (you must free the list) */
-JList jwidget_get_children(JWidget widget)
+JList Widget::getChildren()
 {
-  assert_valid_widget(widget);
-
-  return jlist_copy(widget->children);
+  return jlist_copy(this->children);
 }
 
-JWidget jwidget_pick(JWidget widget, int x, int y)
+Widget* Widget::pick(int x, int y)
 {
-  JWidget inside, picked = NULL;
+  Widget* inside, *picked = NULL;
   JLink link;
 
-  assert_valid_widget(widget);
+  if (!(this->flags & JI_HIDDEN) &&   /* is visible */
+      jrect_point_in(this->rc, x, y)) { /* the point is inside the bounds */
+    picked = this;
 
-  if (!(widget->flags & JI_HIDDEN) &&   /* is visible */
-      jrect_point_in(widget->rc, x, y)) { /* the point is inside the bounds */
-    picked = widget;
-
-    JI_LIST_FOR_EACH(widget->children, link) {
-      inside = jwidget_pick(reinterpret_cast<JWidget>(link->data), x, y);
+    JI_LIST_FOR_EACH(this->children, link) {
+      inside = jwidget_pick(reinterpret_cast<Widget*>(link->data), x, y);
       if (inside) {
 	picked = inside;
 	break;
@@ -737,16 +729,53 @@ JWidget jwidget_pick(JWidget widget, int x, int y)
   return picked;
 }
 
-bool jwidget_has_child(JWidget widget, JWidget child)
+bool Widget::hasChild(Widget* child)
 {
-  assert_valid_widget(widget);
   assert_valid_widget(child);
 
-  return jlist_find(widget->children, child) != widget->children->end ? true: false;
+  return jlist_find(this->children, child) != this->children->end ? true: false;
+}
+
+Widget* Widget::findChild(const char* name)
+{
+  Widget* child;
+  JLink link;
+
+  JI_LIST_FOR_EACH(this->children, link) {
+    child = (Widget*)link->data;
+    if (child->name != NULL && strcmp(child->name, name) == 0)
+      return child;
+  }
+
+  JI_LIST_FOR_EACH(this->children, link) {
+    if ((child = ((Widget*)link->data)->findChild(name)))
+      return child;
+  }
+
+  return 0;
+}
+
+/**
+ * Returns a widget in the same window that is located "sibling".
+ */
+Widget* Widget::findSibling(const char* name)
+{
+  return getRoot()->findChild(name);
 }
 
 /**********************************************************************/
 /* position and geometry */
+
+Rect Widget::getBounds() const
+{
+  return Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
+}
+
+void Widget::setBounds(const Rect& rc)
+{
+  jrect jrc = { rc.x, rc.y, rc.x+rc.w, rc.y+rc.h };
+  jwidget_set_rect(this, &jrc);
+}
 
 void jwidget_request_size(JWidget widget, int *w, int *h)
 {
@@ -792,7 +821,7 @@ JRegion jwidget_get_region(JWidget widget)
 
   assert_valid_widget(widget);
 
-  if (widget->type == JI_WINDOW)
+  if (widget->type == JI_FRAME)
     region = widget->theme->get_window_mask(widget);
   else
     region = jregion_new(widget->rc, 1);
@@ -815,7 +844,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 
   /* cut the top windows areas */
   if (flags & JI_GDR_CUTTOPWINDOWS) {
-    window = jwidget_get_window(widget);
+    window = widget->getRoot();
     manager = window ? jwidget_get_manager(window): NULL;
 
     while (manager) {
@@ -833,8 +862,8 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 	}
       }
 
-      window = jwidget_get_window(manager);
-      manager = window ? jwidget_get_manager(window): NULL;
+      window = manager->getRoot();
+      manager = window ? window->getManager(): NULL;
     }
   }
 
@@ -893,8 +922,8 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
   }
 
   /* limit to the manager area */
-  window = jwidget_get_window(widget);
-  manager = window ? jwidget_get_manager(window): NULL;
+  window = widget->getRoot();
+  manager = window ? window->getManager(): NULL;
 
   while (manager) {
     view = jwidget_get_view(manager);
@@ -912,8 +941,8 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     jregion_free(reg1);
     jrect_free(cpos);
 
-    window = jwidget_get_window(manager);
-    manager = window ? jwidget_get_manager(window): NULL;
+    window = manager->getRoot();
+    manager = window ? window->getManager(): NULL;
   }
 
   /* return the region */
@@ -924,7 +953,7 @@ int jwidget_get_bg_color(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return widget->bg_color();
+  return widget->getBgColor();
 }
 
 JTheme jwidget_get_theme(JWidget widget)
@@ -937,7 +966,7 @@ JTheme jwidget_get_theme(JWidget widget)
 int jwidget_get_text_length(JWidget widget)
 {
 #if 1
-  return ji_font_text_len(widget->font(), widget->text());
+  return ji_font_text_len(widget->getFont(), widget->getText());
 #else  /* use cached text size */
   return widget->text_size_pix;
 #endif
@@ -947,7 +976,7 @@ int jwidget_get_text_height(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  return text_height(widget->font());
+  return text_height(widget->getFont());
 }
 
 void jwidget_get_texticon_info(JWidget widget,
@@ -970,7 +999,7 @@ void jwidget_get_texticon_info(JWidget widget,
   text_x = text_y = 0;
 
   /* size of the text */
-  if (widget->has_text()) {
+  if (widget->hasText()) {
     text_w = jwidget_get_text_length(widget);
     text_h = jwidget_get_text_height(widget);
   }
@@ -987,32 +1016,32 @@ void jwidget_get_texticon_info(JWidget widget,
     /* with the icon in the top or bottom */
     else {
       box_w = MAX(icon_w, text_w);
-      box_h = icon_h + (widget->has_text() ? widget->child_spacing: 0) + text_h;
+      box_h = icon_h + (widget->hasText() ? widget->child_spacing: 0) + text_h;
     }
   }
   /* with the icon in left or right that doesn't care by now */
   else {
-    box_w = icon_w + (widget->has_text() ? widget->child_spacing: 0) + text_w;
+    box_w = icon_w + (widget->hasText() ? widget->child_spacing: 0) + text_w;
     box_h = MAX(icon_h, text_h);
   }
 
   /* box position */
-  if (widget->align() & JI_RIGHT)
+  if (widget->getAlign() & JI_RIGHT)
     box_x = widget->rc->x2 - box_w - widget->border_width.r;
-  else if (widget->align() & JI_CENTER)
+  else if (widget->getAlign() & JI_CENTER)
     box_x = (widget->rc->x1+widget->rc->x2)/2 - box_w/2;
   else
     box_x = widget->rc->x1 + widget->border_width.l;
 
-  if (widget->align() & JI_BOTTOM)
+  if (widget->getAlign() & JI_BOTTOM)
     box_y = widget->rc->y2 - box_h - widget->border_width.b;
-  else if (widget->align() & JI_MIDDLE)
+  else if (widget->getAlign() & JI_MIDDLE)
     box_y = (widget->rc->y1+widget->rc->y2)/2 - box_h/2;
   else
     box_y = widget->rc->y1 + widget->border_width.t;
 
   /* with text */
-  if (widget->has_text()) {
+  if (widget->hasText()) {
     /* text/icon X position */
     if (icon_align & JI_RIGHT) {
       text_x = box_x;
@@ -1107,7 +1136,8 @@ void jwidget_set_max_size(JWidget widget, int w, int h)
 void jwidget_set_bg_color(JWidget widget, int color)
 {
   assert_valid_widget(widget);
-  widget->bg_color(color);
+
+  widget->setBgColor(color);
 }
 
 void jwidget_set_theme(JWidget widget, JTheme theme)
@@ -1116,7 +1146,7 @@ void jwidget_set_theme(JWidget widget, JTheme theme)
 
   widget->theme = theme;
   /* TODO mmhhh... maybe some JStyle in JWidget should be great */
-  widget->font(widget->theme ? widget->theme->default_font: NULL);
+  widget->setFont(widget->theme ? widget->theme->default_font: NULL);
 }
 
 /**********************************************************************/
@@ -1277,10 +1307,10 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
     ret = jwidget_send_message(widget, msg);
 
     /* send the signal to the window too */
-    if (!ret && widget->type != JI_WINDOW) {
-      JWidget window = jwidget_get_window(widget);
+    if (!ret && widget->type != JI_FRAME) {
+      Widget* window = widget->getRoot();
       if (window)
-	ret = jwidget_send_message(window, msg);
+	ret = window->sendMessage(msg);
     }
 
     jmessage_free(msg);
@@ -1293,42 +1323,48 @@ bool jwidget_emit_signal(JWidget widget, int signal_num)
 /**********************************************************************/
 /* manager handler */
 
-#define SENDMSG()					\
-  if (hook->msg_proc) {					\
-    done = (*hook->msg_proc)(widget, msg);		\
-    if (done)						\
-      break;						\
-  }
-
 bool jwidget_send_message(JWidget widget, JMessage msg)
+{ return widget->sendMessage(msg); }
+
+void jwidget_close_window(JWidget widget)
+{ widget->closeWindow(); }
+
+void jwidget_capture_mouse(JWidget widget)
+{ widget->captureMouse(); }
+
+void jwidget_hard_capture_mouse(JWidget widget)
+{ widget->hardCaptureMouse(); }
+
+void jwidget_release_mouse(JWidget widget)
+{ widget->releaseMouse(); }
+
+bool Widget::sendMessage(JMessage msg)
 {
   bool done = false;
   JHook hook;
   JLink link;
 
-  assert_valid_widget(widget);
   assert(msg != NULL);
 
-  JI_LIST_FOR_EACH(widget->hooks, link) {
+  JI_LIST_FOR_EACH(this->hooks, link) {
     hook = reinterpret_cast<JHook>(link->data);
-    SENDMSG();
+    if (hook->msg_proc) {
+      done = (*hook->msg_proc)(this, msg);
+      if (done)
+	break;
+    }
   }
 
   if (!done)
-    done = widget->msg_proc(msg);
+    done = this->msg_proc(msg);
 
   return done;
 }
 
-void jwidget_close_window(JWidget widget)
+void Widget::closeWindow()
 {
-  JWidget window;
-
-  assert_valid_widget(widget);
-
-  window = jwidget_get_window(widget);  
-  if (window)
-    jwindow_close(window, widget);
+  if (Frame* frame = static_cast<Frame*>(getRoot()))
+    frame->closeWindow(this);
 }
 
 /**
@@ -1339,15 +1375,13 @@ void jwidget_close_window(JWidget widget)
  *
  * @see jwidget_hard_capture_mouse
  */
-void jwidget_capture_mouse(JWidget widget)
+void Widget::captureMouse()
 {
-  assert_valid_widget(widget);
-
   if (!jmanager_get_capture()) {
-    jmanager_set_capture(widget);
+    jmanager_set_capture(this);
 
-    if (jmanager_get_capture() == widget)
-      widget->flags &= ~JI_HARDCAPTURE;
+    if (jmanager_get_capture() == this)
+      this->flags &= ~JI_HARDCAPTURE;
   }
 }
 
@@ -1357,35 +1391,31 @@ void jwidget_capture_mouse(JWidget widget)
  * 
  * @see jwidget_capture_mouse
  */
-void jwidget_hard_capture_mouse(JWidget widget)
+void Widget::hardCaptureMouse()
 {
-  assert_valid_widget(widget);
-
   if (!jmanager_get_capture()) {
-    jmanager_set_capture(widget);
+    jmanager_set_capture(this);
 #ifdef ALLEGRO_WINDOWS
     SetCapture(win_get_window());
 #endif
 
-    if (jmanager_get_capture() == widget)
-      widget->flags |= JI_HARDCAPTURE;
+    if (jmanager_get_capture() == this)
+      this->flags |= JI_HARDCAPTURE;
   }
 }
 
 /**
  * Releases the capture of the mouse events.
  */
-void jwidget_release_mouse(JWidget widget)
+void Widget::releaseMouse()
 {
-  assert_valid_widget(widget);
-
-  if (jmanager_get_capture() == widget) {
+  if (jmanager_get_capture() == this) {
     jmanager_free_capture();
 #ifdef ALLEGRO_WINDOWS
-    ReleaseCapture();
+    ::ReleaseCapture();		// Win32 API
 #endif
 
-    widget->flags &= ~JI_HARDCAPTURE;
+    this->flags &= ~JI_HARDCAPTURE;
   }
 }
 
@@ -1394,23 +1424,8 @@ void jwidget_release_mouse(JWidget widget)
 
 JWidget jwidget_find_name(JWidget widget, const char *name)
 {
-  JWidget child;
-  JLink link;
-
   assert_valid_widget(widget);
-
-  JI_LIST_FOR_EACH(widget->children, link) {
-    child = (JWidget)link->data;
-    if (child->name != NULL && strcmp(child->name, name) == 0)
-      return child;
-  }
-
-  JI_LIST_FOR_EACH(widget->children, link) {
-    if ((child = jwidget_find_name((JWidget)link->data, name)))
-      return child;
-  }
-
-  return 0;
+  return widget->findChild(name);
 }
 
 bool jwidget_check_underscored(JWidget widget, int scancode)
@@ -1427,8 +1442,8 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
   else
     return false;
 
-  if (widget->has_text()) {
-    const char* text = widget->text();
+  if (widget->hasText()) {
+    const char* text = widget->getText();
 
     for (c=0; text[c]; c++)
       if ((text[c] == '&') && (text[c+1] != '&'))
@@ -1442,7 +1457,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 /**********************************************************************/
 /* widget message procedure */
 
-bool jwidget::msg_proc(JMessage msg)
+bool Widget::msg_proc(JMessage msg)
 {
   JWidget widget = this;
 

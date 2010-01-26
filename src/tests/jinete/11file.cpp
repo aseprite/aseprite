@@ -59,7 +59,7 @@ int main (int argc, char *argv[])
   if (window) {
     JWidget button_poll = jwidget_find_name (window, "Poll");
     jbutton_add_command (button_poll, poll_button);
-    jwindow_open_bg (window);
+    window->open_window_bg();
   }
   else
     jalert ("Error loading main window||&OK");
@@ -83,9 +83,9 @@ static void poll_button (JWidget widget)
   if (window) {
     JWidget button_select = jwidget_find_name (window, "Select");
 
-    jwindow_open_fg (window);
+    window->open_window_fg();
 
-    if (jwindow_get_killer (window) == button_select) {
+    if (window->get_killer() == button_select) {
       JWidget option1 = jwidget_find_name (window, "Option1");
       JWidget option2 = jwidget_find_name (window, "Option2");
       JWidget option3 = jwidget_find_name (window, "Option3");

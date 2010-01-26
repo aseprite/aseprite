@@ -106,9 +106,9 @@ int main(int argc, char *argv[])
   jwindow_sizeable(window, FALSE);
 
  again:;
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button1) {
+  if (window->get_killer() == button1) {
     if (*jwidget_get_text(entry_username) &&
 	*jwidget_get_text(entry_password))
       jalert("Login Successful"
@@ -202,7 +202,7 @@ JTheme my_theme_new()
   jtheme_set_method(theme, JI_BUTTON, theme_draw_button);
   jtheme_set_method(theme, JI_ENTRY, theme_draw_entry);
   jtheme_set_method(theme, JI_LABEL, theme_draw_label);
-  jtheme_set_method(theme, JI_WINDOW, theme_draw_window);
+  jtheme_set_method(theme, JI_FRAME, theme_draw_frame);
 
   return theme;
 }
@@ -248,7 +248,7 @@ static void theme_init_widget(JWidget widget)
       widget->child_spacing = 0;
       break;
 
-    case JI_WINDOW:
+    case JI_FRAME:
       BORDER4(7, 7+jwidget_get_text_height(widget)+7, 7, 7);
       widget->child_spacing = 1;
       break;

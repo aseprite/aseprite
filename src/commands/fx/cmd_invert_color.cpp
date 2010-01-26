@@ -80,7 +80,8 @@ void InvertColorCommand::execute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;
-  JWidgetPtr window(load_widget("invrtcol.jid", "invert_color"));
+
+  FramePtr window(load_widget("invrtcol.jid", "invert_color"));
   get_widgets(window,
 	      "target", &box_target,
 	      "preview", &check_preview,
@@ -105,8 +106,8 @@ void InvertColorCommand::execute(Context* context)
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
   
   /* default position */
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   /* first preview */
   make_preview();
@@ -115,9 +116,9 @@ void InvertColorCommand::execute(Context* context)
   load_window_pos(window, "InvertColor");
 
   /* open the window */
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok)
+  if (window->get_killer() == button_ok)
     effect_apply_to_target_with_progressbar(&effect);
 
   /* update editors */

@@ -58,7 +58,7 @@ typedef struct OpenFileData
   FileOp *fop;
   Progress *progress;
   JThread thread;
-  JWidget alert_window;
+  Frame* alert_window;
 } OpenFileData;
 
 /**
@@ -142,7 +142,7 @@ static void monitor_free(void* _data)
 
   if (data->alert_window != NULL) {
     data->monitor = NULL;
-    jwindow_close(data->alert_window, NULL);
+    data->alert_window->closeWindow(NULL);
   }
 
 #if 0
@@ -204,7 +204,7 @@ void OpenFileCommand::execute(Context* context)
 	  data->monitor = add_gui_monitor(monitor_openfile_bg,
 					  monitor_free, data);
 
-	  jwindow_open_fg(data->alert_window);
+	  data->alert_window->open_window_fg();
 
 	  if (data->monitor != NULL)
 	    remove_gui_monitor(data->monitor);

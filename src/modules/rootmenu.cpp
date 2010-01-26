@@ -89,11 +89,10 @@ static int load_root_menu()
   if (app_get_menubar())
     jmenubar_set_menu(app_get_menubar(), NULL);
 
-  /* destroy `root-menu' if it exists */
-  if (root_menu)
-    jwidget_free(root_menu);
+  // destroy `root-menu'
+  delete root_menu;		// widget
 
-  /* create a new empty-menu */
+  // create a new empty-menu
   root_menu = NULL;
   recent_list_menuitem = NULL;
   layer_popup_menu = NULL;
@@ -230,7 +229,7 @@ static int load_root_menu()
   /* sets the "menu" of the "menu-bar" to the new "root-menu" */
   if (app_get_menubar()) {
     jmenubar_set_menu(app_get_menubar(), root_menu);
-    jwindow_remap(app_get_top_window());
+    app_get_top_window()->remap_window();
     jwidget_dirty(app_get_top_window());
   }
 
@@ -345,7 +344,7 @@ static void apply_shortcut_to_menuitems_with_command(JWidget menu, Command *comm
   JI_LIST_FOR_EACH(children, link) {
     menuitem = (JWidget)link->data;
 
-    if (jwidget_get_type(menuitem) == JI_MENUITEM) {
+    if (menuitem->getType() == JI_MENUITEM) {
       Command* mi_command = menuitem_get_command(menuitem);
       Params* mi_params = menuitem_get_params(menuitem);
 

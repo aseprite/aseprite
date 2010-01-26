@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		       slider1, slider2, slider3,
 		       slider4, slider5, button1, NULL);
 
-  jwindow_open_bg(window);
+  window->open_window_bg();
 
   jmanager_run(manager);
   jmanager_free(manager);

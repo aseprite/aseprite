@@ -65,7 +65,7 @@ void LayerPropertiesCommand::execute(Context* context)
   Layer* layer = sprite->layer;
   bool with_blend_modes = (layer->is_image() && sprite->imgtype != IMAGE_INDEXED);
 
-  JWidgetPtr window(jwindow_new(_("Layer Properties")));
+  FramePtr window(new Frame(false, _("Layer Properties")));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
@@ -122,10 +122,10 @@ void LayerPropertiesCommand::execute(Context* context)
   jwidget_magnetic(entry_name, true);
   jwidget_magnetic(button_ok, true);
 
-  jwindow_open_fg(window);
+  window->open_window_fg();
 
-  if (jwindow_get_killer(window) == button_ok) {
-    layer->set_name(jwidget_get_text(entry_name));
+  if (window->get_killer() == button_ok) {
+    layer->set_name(entry_name->getText());
 
     if (with_blend_modes)
       static_cast<LayerImage*>(layer)->set_blend_mode(jlistbox_get_selected_index(list_bm));

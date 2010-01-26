@@ -70,7 +70,7 @@ void SpritePropertiesCommand::execute(Context* context)
   char buf[256];
 
   /* load the window widget */
-  JWidgetPtr window(load_widget("sprprop.jid", "sprite_properties"));
+  FramePtr window(load_widget("sprprop.jid", "sprite_properties"));
   get_widgets(window,
 	      "name", &name,
 	      "type", &type,
@@ -96,10 +96,10 @@ void SpritePropertiesCommand::execute(Context* context)
   }
 
   /* filename */
-  jwidget_set_text(name, sprite->filename);
+  name->setText(sprite->filename);
 
   /* color mode */
-  jwidget_set_text(type, imgtype_text.c_str());
+  type->setText(imgtype_text.c_str());
 
   /* sprite size (width and height) */
   usprintf(buf, "%dx%d (", sprite->w, sprite->h);
@@ -107,22 +107,21 @@ void SpritePropertiesCommand::execute(Context* context)
  		     buf+ustrsize(buf),
 		     sizeof(buf)-ustrsize(buf));
   ustrcat(buf, ")");
-  jwidget_set_text(size, buf);
+  size->setText(buf);
 
   /* how many frames */
-  usprintf(buf, "%d", sprite->frames);
-  jwidget_set_text(frames, buf);
+  frames->setTextf("%d", sprite->frames);
 
-  jwindow_remap(window);
-  jwindow_center(window);
+  window->remap_window();
+  window->center_window();
 
   for (;;) {
     load_window_pos(window, "SpriteProperties");
     jwidget_show(window);
-    jwindow_open_fg(window);
+    window->open_window_fg();
     save_window_pos(window, "SpriteProperties");
 
-    killer = jwindow_get_killer(window);
+    killer = window->get_killer();
     if (killer == ok)
       break;
     else if (killer == speed) {

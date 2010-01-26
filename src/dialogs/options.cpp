@@ -50,7 +50,6 @@ void dialogs_options()
   JWidget move_click2, draw_click2, killer;
   JWidget undo_size_limit;
   int x, y, old_x, old_y;
-  char buf[512];
 
   x = get_config_int("Options", "MouseX", 6);
   y = get_config_int("Options", "MouseY", 6);
@@ -60,7 +59,7 @@ void dialogs_options()
   old_y = y;
 
   /* load the window widget */
-  JWidgetPtr window(load_widget("options.jid", "options"));
+  FramePtr window(load_widget("options.jid", "options"));
   get_widgets(window,
 	      "mouse_x", &slider_x,
 	      "mouse_y", &slider_y,
@@ -87,14 +86,13 @@ void dialogs_options()
   if (get_config_bool("Options", "Dither", FALSE))
     jwidget_select(check_dither);
 
-  uszprintf(buf, sizeof(buf), "%d", get_config_int("Options", "UndoSizeLimit", 8));
-  jwidget_set_text(undo_size_limit, buf);
+  undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
 
   HOOK(slider_x, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
   HOOK(slider_y, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
 
-  jwindow_open_fg(window);
-  killer = jwindow_get_killer(window);
+  window->open_window_fg();
+  killer = window->get_killer();
 
   if (killer == button_ok) {
     int undo_size_limit_value;
@@ -109,7 +107,7 @@ void dialogs_options()
       refresh_all_editors();
     }
 
-    undo_size_limit_value = undo_size_limit->text_int();
+    undo_size_limit_value = undo_size_limit->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
     set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
 

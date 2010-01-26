@@ -61,17 +61,17 @@
 
 #include "jinete/jinete.h"
 
-static JWidget create_alert(char *buf, JList *labels, JList *buttons);
+static Frame* create_alert(char *buf, JList *labels, JList *buttons);
 
 /* creates a new alert-box
 
    the buttons will have names like: button-1, button-2, etc.
  */
-JWidget jalert_new(const char *format, ...)
+Frame* jalert_new(const char *format, ...)
 {
   JList labels, buttons;
   char buf[4096];
-  JWidget window;
+  Frame* window;
   va_list ap;
 
   /* process arguments */
@@ -95,7 +95,8 @@ JWidget jalert_new(const char *format, ...)
 int jalert(const char *format, ...)
 {
   JList labels, buttons;
-  JWidget window, killer;
+  Frame* window;
+  Widget* killer;
   char buf[4096];
   int c, ret = 0;
   JLink link;
@@ -115,10 +116,10 @@ int jalert(const char *format, ...)
   /* was created succefully? */
   if (window) {
     /* open it */
-    jwindow_open_fg(window);
+    window->open_window_fg();
 
     /* check the killer */
-    killer = jwindow_get_killer(window);
+    killer = window->get_killer();
     if (killer) {
       c = 1;
       JI_LIST_FOR_EACH(buttons, link) {
@@ -141,9 +142,10 @@ int jalert(const char *format, ...)
   return ret;
 }
 
-static JWidget create_alert(char *buf, JList *labels, JList *buttons)
+static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 {
-  JWidget box1, box2, grid, box3, box4, box5, window = NULL;
+  JWidget box1, box2, grid, box3, box4, box5;
+  Frame* window = NULL;
   bool title = true;
   bool label = false;
   bool separator = false;
@@ -169,11 +171,11 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 	buf[c] = 0;
 
 	if (title) {
-	  window = jwindow_new(beg);
+	  window = new Frame(false, beg);
 	}
 	else if (label) {
 	  JWidget label = jlabel_new(beg);
-	  jwidget_set_align(label, align);
+	  label->setAlign(align);
 	  jlist_append(*labels, label);
 	}
 	else if (separator) {
@@ -186,7 +188,7 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
 	  jlist_append(*buttons, button_widget);
 
 	  usprintf(button_name, "button-%d", jlist_length(*buttons));
-	  jwidget_set_name(button_widget, button_name);
+	  button_widget->setName(button_name);
 	}
 
 	buf[c] = chr;
@@ -220,8 +222,8 @@ static JWidget create_alert(char *buf, JList *labels, JList *buttons)
     box3 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
     /* to identify by the user */
-    jwidget_set_name(box2, "labels");
-    jwidget_set_name(box3, "buttons");
+    box2->setName("labels");
+    box3->setName("buttons");
 
     /* pseudo separators (only to fill blank space) */
     box4 = jbox_new(0);

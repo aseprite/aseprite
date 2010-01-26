@@ -34,8 +34,9 @@
 
 int main (int argc, char *argv[])
 {
-  JWidget manager, desktop, box, view, sub_manager, button, window;
-  JWidget subwindows[256];
+  JWidget manager, desktop, box, view, sub_manager, button;
+  Window* subwindows[256];
+  Window* window;
   char buf[256];
   int c;
 
@@ -69,7 +70,7 @@ int main (int argc, char *argv[])
   jwidget_add_child(box, view);
   jwidget_add_child(box, button);
 
-  jwindow_open_bg(desktop);
+  desktop->open_window_bg();
 
   /* generate 128 windows in random positions */
   for (c=0; c<128; c++) {
@@ -80,7 +81,7 @@ int main (int argc, char *argv[])
 
     jwidget_add_child(window, button);
 
-    jwindow_remap(window);
+    window->remap_window();
     jwindow_position
       (window,
        sub_manager->rc->x1 + (rand () % (jrect_w(sub_manager->rc) - jrect_w(window->rc))),

@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
   /* create a simple centered label with "Hello World!" text */
   label = jlabel_new("Hello World!");
-  jwidget_set_align(label, JI_CENTER | JI_MIDDLE);
+  label->set_align(JI_CENTER | JI_MIDDLE);
 
   /* create a button to close the window */
   button = jbutton_new("&Close");
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
   /* show the window in the screen and leave it in the background (the
      manager will free it) */
-  jwindow_open_bg(window);
+  window->open_window_bg();
 
   /* run windows */
   jmanager_run(manager);

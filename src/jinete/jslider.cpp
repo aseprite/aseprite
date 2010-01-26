@@ -58,8 +58,8 @@ static void slider_setcursor(JWidget widget);
 
 JWidget jslider_new(int min, int max, int value)
 {
-  JWidget widget = new jwidget(JI_SLIDER);
-  Slider *slider = jnew(Slider, 1);
+  Widget* widget = new Widget(JI_SLIDER);
+  Slider* slider = jnew(Slider, 1);
 
   slider->min = min;
   slider->max = max;
@@ -281,13 +281,13 @@ static void slider_request_size(JWidget widget, int *w, int *h)
   char buf[256];
 
   usprintf(buf, "%d", slider->min);
-  min_w = ji_font_text_len(widget->font(), buf);
+  min_w = ji_font_text_len(widget->getFont(), buf);
 
   usprintf(buf, "%d", slider->max);
-  max_w = ji_font_text_len(widget->font(), buf);
+  max_w = ji_font_text_len(widget->getFont(), buf);
 
   *w = MAX(min_w, max_w);
-  *h = text_height(widget->font());
+  *h = text_height(widget->getFont());
 
   *w += widget->border_width.l + widget->border_width.r;
   *h += widget->border_width.t + widget->border_width.b;

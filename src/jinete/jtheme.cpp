@@ -185,14 +185,14 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
 			    int *w, int *h, int bg, int fg)
 {
   JWidget view = jwidget_get_view(widget);
-  char *text = (char*)widget->text(); // TODO warning: removing const modifier
+  char *text = (char*)widget->getText(); // TODO warning: removing const modifier
   char *beg, *end;
   int x1, y1, x2, y2;
   int x, y, chr, len;
   int scroll_x, scroll_y;
   int viewport_w, viewport_h;
   int textheight = jwidget_get_text_height(widget);
-  FONT *font = widget->font();
+  FONT *font = widget->getFont();
   char *beg_end, *old_end;
   int width;
 
@@ -218,7 +218,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
   chr = 0;
 
   /* without word-wrap */
-  if (!(widget->align() & JI_WORDWRAP)) {
+  if (!(widget->getAlign() & JI_WORDWRAP)) {
     width = jrect_w(widget->rc);
   }
   /* with word-wrap */
@@ -252,7 +252,7 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
     x = x1 - scroll_x;
 
     /* without word-wrap */
-    if (!(widget->align() & JI_WORDWRAP)) {
+    if (!(widget->getAlign() & JI_WORDWRAP)) {
       end = ustrchr(beg, '\n');
       if (end) {
 	chr = *end;
@@ -302,9 +302,9 @@ void _ji_theme_textbox_draw(BITMAP *bmp, JWidget widget,
     if (bmp) {
       int xout;
 
-      if (widget->align() & JI_CENTER)
+      if (widget->getAlign() & JI_CENTER)
 	xout = x + width/2 - len/2;
-      else if (widget->align() & JI_RIGHT)
+      else if (widget->getAlign() & JI_RIGHT)
 	xout = x + width - len;
       else			/* left */
 	xout = x;

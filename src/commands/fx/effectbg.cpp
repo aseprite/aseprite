@@ -49,7 +49,7 @@ typedef struct ThreadData
   Monitor *monitor;		/* monitor to update the progress-bar */
   Progress *progress;		/* the progress-bar */
   JThread thread;		/* thread to apply the effect in background */
-  JWidget alert_window;		/* alert for the user to cancel the
+  Frame* alert_window;		/* alert for the user to cancel the
 				   effect-progress if he wants */
 } ThreadData;
 
@@ -138,7 +138,7 @@ static void monitor_free(void *_data)
   ThreadData *data = (ThreadData *)_data;
 
   if (data->alert_window != NULL)
-    jwindow_close(data->alert_window, NULL);
+    data->alert_window->closeWindow(NULL);
 }
 
 /**
@@ -169,7 +169,7 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
 
   /* TODO error handling */
 
-  jwindow_open_fg(data->alert_window);
+  data->alert_window->open_window_fg();
 
   jmutex_lock(data->mutex);
   if (!data->done) {
