@@ -75,12 +75,11 @@ bool PreviewCommand::enabled(Context* context)
  */
 void PreviewCommand::preview_sprite(Context* context, int flags)
 {
-  JWidget widget = current_editor;
+  Editor* editor = current_editor;
 
-  if (widget && editor_get_sprite(widget)) {
-    Editor *editor = editor_data(widget);
-    Sprite *sprite = editor_get_sprite(widget);
-    JWidget view = jwidget_get_view(widget);
+  if (editor && editor->editor_get_sprite()) {
+    Sprite *sprite = editor->editor_get_sprite();
+    JWidget view = jwidget_get_view(editor);
     int old_mouse_x, old_mouse_y;
     int scroll_x, scroll_y;
     int u, v, x, y, w, h;
@@ -131,11 +130,11 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
       else
 	bg_color = makecol(128, 128, 128);
 
-      shiftx = - scroll_x + vp->x1 + editor->offset_x;
-      shifty = - scroll_y + vp->y1 + editor->offset_y;
+      shiftx = - scroll_x + vp->x1 + editor->editor_get_offset_x();
+      shifty = - scroll_y + vp->y1 + editor->editor_get_offset_y();
 
-      w = sprite->w << editor->zoom;
-      h = sprite->h << editor->zoom;
+      w = sprite->w << editor->editor_get_zoom();
+      h = sprite->h << editor->editor_get_zoom();
 
       redraw = TRUE;
       do {
@@ -185,7 +184,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	      clear_to_color(ji_screen, bg_color);
 	    }
 
-	    if (!editor->zoom) {
+	    if (!editor->editor_get_zoom()) {
 	      /* in the center */
 	      if (!(flags & PREVIEW_TILED))
 		draw_sprite(ji_screen, bmp, x, y);

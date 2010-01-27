@@ -806,13 +806,12 @@ static void marker_scroll_callback(int before_change)
 }
 
 /* controls any tool to draw in the current sprite */
-void control_tool(JWidget widget, Tool *tool,
+void control_tool(Editor* editor, Tool *tool,
 		  color_t _color,
 		  color_t _other_color,
 		  bool left_button)
 {
-  Editor *editor = editor_data(widget);
-  Sprite *sprite = editor->sprite;
+  Sprite *sprite = editor->editor_get_sprite();
   JWidget statusbar = app_get_statusbar();
   int x1, y1, x2, y2;
   int old_x1, old_y1, old_x2, old_y2;
@@ -846,8 +845,8 @@ void control_tool(JWidget widget, Tool *tool,
      the user click outside the window, it is closed, but the filtered
      JM_BUTTONPRESSED message is not "eaten" so the editor receive it
      anyway */
-  jmanager_dispatch_messages(jwidget_get_manager(widget));
-  jwidget_flush_redraw(jwidget_get_manager(widget));
+  jmanager_dispatch_messages(editor->getManager());
+  jwidget_flush_redraw(editor->getManager());
 
   /* error, the active layer is not visible */
   if (!sprite->layer->is_readable()) {
@@ -954,10 +953,9 @@ void control_tool(JWidget widget, Tool *tool,
   old_x1 = old_y1 = old_x2 = old_y2 = 0;
 
   /* start click */
-  editor_click_start(widget,
-		     click2 ? MODE_CLICKANDCLICK:
-			      MODE_CLICKANDRELEASE,
-		     &start_x, &start_y, &start_b);
+  editor->editor_click_start(click2 ? Editor::MODE_CLICKANDCLICK:
+				      Editor::MODE_CLICKANDRELEASE,
+			     &start_x, &start_y, &start_b);
 
 next_pts:;
 
@@ -1168,8 +1166,8 @@ next_pts:;
       acquire_bitmap(ji_screen);
 
       /* clean the area occupied by the cursor in the screen */
-      if (editor->cursor_thick)
-	editor_clean_cursor(widget);
+      if (editor->editor_get_cursor_thick())
+	editor->editor_clean_cursor();
 
 /*       /\* for Path *\/ */
 /*       if (tool == &ase_tool_path) { */
@@ -1206,16 +1204,14 @@ next_pts:;
 	  int nrects;
 	  JRect rc;
 
-	  editor_to_screen(widget,
-			   MIN(x1, x2)-offset_x,
-			   MIN(y1, y2)-offset_y, &outx1, &outy1);
+	  editor->editor_to_screen(MIN(x1, x2)-offset_x,
+				   MIN(y1, y2)-offset_y, &outx1, &outy1);
 
-	  editor_to_screen(widget,
-			   MAX(x1, x2)-offset_x,
-			   MAX(y1, y2)-offset_y, &outx2, &outy2);
+	  editor->editor_to_screen(MAX(x1, x2)-offset_x,
+				   MAX(y1, y2)-offset_y, &outx2, &outy2);
 
-	  outx2 += (1<<editor->zoom)-1;
-	  outy2 += (1<<editor->zoom)-1;
+	  outx2 += (1<<editor->editor_get_zoom())-1;
+	  outy2 += (1<<editor->editor_get_zoom())-1;
 
 	  if (rect_tracker)
 	    rect_tracker_free(rect_tracker);
@@ -1224,7 +1220,7 @@ next_pts:;
 	  dotted_mode(0);
 
 	  /* draw the rectangle in the drawable region */
-	  region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+	  region = jwidget_get_drawable_region(editor, JI_GDR_CUTTOPWINDOWS);
 	  nrects = JI_REGION_NUM_RECTS(region);
 	  for (c=0, rc=JI_REGION_RECTS(region);
 	       c<nrects;
@@ -1322,10 +1318,9 @@ next_pts:;
 #if 0 /* use this code to see what parts are updated  */
 	    {
 	      int x1, y1, x2, y2;
-	      editor_to_screen(widget, 0, 0, &x1, &y1);
-	      editor_to_screen(widget,
-			       sprite->w,
-			       sprite->h, &x2, &y2);
+	      editor->editor_to_screen(0, 0, &x1, &y1);
+	      editor->editor_to_screen(sprite->w,
+				       sprite->h, &x2, &y2);
 	      rectfill(ji_screen, x1, y1, x2-1, y2-1, makecol(255, 0, 0));
 	      vsync();
 	    }
@@ -1337,7 +1332,7 @@ next_pts:;
       }
 
       /* draw the cursor in the screen */
-      editor_draw_cursor(widget, jmouse_x(0), jmouse_y(0));
+      editor->editor_draw_cursor(jmouse_x(0), jmouse_y(0));
 
       /* update the state-bar */
       if (jwidget_is_visible(statusbar)) {
@@ -1389,14 +1384,10 @@ next_pts:;
       release_bitmap(ji_screen);
       forced_update = FALSE;
       first_time = FALSE;
-
-      /* draw extra stuff */
-      editor_draw_grid_safe(widget);
-      /* editor_draw_path_safe(widget, FALSE); */
     }
 
     /* draw mask */
-    editor_draw_mask_safe(widget);
+    editor->editor_draw_mask_safe();
 
     /* spray updating process */
     if (current_tool == tools_list[TOOL_SPRAY]) {
@@ -1417,17 +1408,17 @@ next_pts:;
     }
 
     gui_feedback();
-  } while (editor_click(widget, &new_x, &new_y, &update,
-			marker_scroll_callback));
+  } while (editor->editor_click(&new_x, &new_y, &update,
+				marker_scroll_callback));
 
   /* if we finished with the same button that we start began */
-  if (!editor_click_cancel(widget)) {
+  if (!editor->editor_click_cancel()) {
     /* in curve we have to input four points */
     if ((tool->flags & TOOL_4FIRST2LAST) &&
     	(curve_pts < 3)) {
       ++curve_pts;
-      editor_click_continue(widget, MODE_CLICKANDCLICK,
-			    &start_x, &start_y);
+      editor->editor_click_continue(Editor::MODE_CLICKANDCLICK,
+				    &start_x, &start_y);
       goto next_pts;
     }
 
@@ -1565,7 +1556,7 @@ next_pts:;
   /* redraw all the sprites */
   update_screen_for_sprite(sprite);
 
-  editor_click_done(widget);
+  editor->editor_click_done();
 
   /* no more preview image */
   set_preview_image(NULL, NULL);

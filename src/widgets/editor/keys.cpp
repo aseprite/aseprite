@@ -34,14 +34,12 @@
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 
-int editor_keys_toset_zoom(JWidget widget, int scancode)
+bool Editor::editor_keys_toset_zoom(int scancode)
 {
-  Editor *editor = editor_data (widget);
-
-  if ((editor->sprite) &&
-      (jwidget_has_mouse (widget)) &&
+  if ((m_sprite) &&
+      (jwidget_has_mouse(this)) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    JWidget view = jwidget_get_view(widget);
+    JWidget view = jwidget_get_view(this);
     JRect vp = jview_get_viewport_position(view);
     int x, y, zoom;
 
@@ -60,42 +58,40 @@ int editor_keys_toset_zoom(JWidget widget, int scancode)
 
     /* zoom */
     if (zoom >= 0) {
-      hide_drawing_cursor(widget);
-      screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
+      hide_drawing_cursor();
+      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 
-      x = editor->offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
-      y = editor->offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
+      x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
+      y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
 
-      if ((editor->zoom != zoom) ||
-	  (editor->cursor_editor_x != (vp->x1+vp->x2)/2) ||
-	  (editor->cursor_editor_y != (vp->y1+vp->y2)/2)) {
-	int use_refresh_region = (editor->zoom == zoom) ? TRUE: FALSE;
+      if ((m_zoom != zoom) ||
+	  (m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
+	  (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
+	int use_refresh_region = (m_zoom == zoom) ? TRUE: FALSE;
 
-	editor->zoom = zoom;
+	m_zoom = zoom;
 
-	editor_update(widget);
-	editor_set_scroll(widget, x, y, use_refresh_region);
+	editor_update();
+	editor_set_scroll(x, y, use_refresh_region);
 
 	jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
 	jrect_free(vp);
 
-	show_drawing_cursor(widget);
-	return TRUE;
+	show_drawing_cursor();
+	return true;
       }
     }
 
     jrect_free(vp);
   }
 
-  return FALSE;
+  return false;
 }
 
-int editor_keys_toset_brushsize(JWidget widget, int scancode)
+bool Editor::editor_keys_toset_brushsize(int scancode)
 {
-  Editor *editor = editor_data(widget);
-
-  if ((editor->sprite) &&
-      (jwidget_has_mouse (widget)) &&
+  if ((m_sprite) &&
+      (jwidget_has_mouse(this)) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
     /* TODO configurable keys */
     /* set the thickness */

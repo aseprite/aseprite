@@ -109,7 +109,7 @@ void PlayAnimationCommand::execute(Context* context)
       oldpal = newpal;
     }
 
-    editor_draw_sprite_safe(current_editor, 0, 0, sprite->w, sprite->h);
+    current_editor->editor_draw_sprite_safe(0, 0, sprite->w, sprite->h);
 
     do {
       poll_mouse();

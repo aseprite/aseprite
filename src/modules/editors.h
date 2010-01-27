@@ -21,7 +21,9 @@
 
 #include "jinete/jbase.h"
 
-extern JWidget current_editor;
+class Editor;
+
+extern Editor* current_editor;
 extern JWidget box_editors;
 
 class Sprite;
@@ -29,10 +31,10 @@ class Sprite;
 int init_module_editors();
 void exit_module_editors();
 
-JWidget create_new_editor();
-void remove_editor(JWidget editor);
+Editor* create_new_editor();
+void remove_editor(Editor* editor);
 
-void set_current_editor(JWidget editor);
+void set_current_editor(Editor* editor);
 
 void refresh_all_editors();
 void update_editors_with_sprite(const Sprite* sprite);
@@ -43,9 +45,9 @@ void editors_hide_sprite(const Sprite* sprite);
 void set_sprite_in_current_editor(Sprite* sprite);
 void set_sprite_in_more_reliable_editor(Sprite* sprite);
 
-void split_editor(JWidget editor, int align);
-void close_editor(JWidget editor);
-void make_unique_editor(JWidget editor);
+void split_editor(Editor* editor, int align);
+void close_editor(Editor* editor);
+void make_unique_editor(Editor* editor);
 
 #endif
 

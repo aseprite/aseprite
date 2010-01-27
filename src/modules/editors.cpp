@@ -18,6 +18,9 @@
 
 #include "config.h"
 
+#include <vector>
+#include <algorithm>
+
 #include "jinete/jinete.h"
 
 #include "sprite_wrappers.h"
@@ -35,10 +38,12 @@
   app_get_top_window()->remap_window();		\
   app_get_top_window()->dirty();
 
-JWidget current_editor = NULL;
-JWidget box_editors = NULL;
+typedef std::vector<Editor*> EditorList;
 
-static JList editors;		/* list of "Editor" structures */
+Editor* current_editor = NULL;
+Widget* box_editors = NULL;
+
+static EditorList editors;
 
 static int is_sprite_in_some_editor(Sprite *sprite);
 static Sprite *get_more_reliable_sprite();
@@ -47,69 +52,65 @@ static int count_parents(JWidget widget);
 
 int init_module_editors()
 {
-  editors = jlist_new();
   return 0;
 }
 
 void exit_module_editors()
 {
-  jlist_free(editors);
+  editors.clear();
 }
 
-JWidget create_new_editor()
+Editor* create_new_editor()
 {
-  JWidget editor = editor_new();
-
-  /* add the new editor in the "editors" list */
-  if (editor)
-    jlist_append(editors, editor);
-
+  Editor* editor = new Editor();
+  editors.push_back(editor);
   return editor;
 }
 
-void remove_editor(JWidget editor)
+/**
+ * Removes the specified editor from the "editors" list.
+ *
+ * It does not delete the editor.
+ */
+void remove_editor(Editor* editor)
 {
-  /* remove the new editor from the "editors" list */
-  jlist_remove(editors, editor);
+  EditorList::iterator it = std::find(editors.begin(), editors.end(), editor);
+
+  assert(it != editors.end());
+
+  editors.erase(it);
 }
 
 void refresh_all_editors()
 {
-  JLink link;
-
-  JI_LIST_FOR_EACH(editors, link)
-    jwidget_dirty(reinterpret_cast<JWidget>(link->data));
-}
-
-void update_editors_with_sprite(const Sprite *sprite)
-{
-  JWidget widget;
-  JLink link;
-
-  JI_LIST_FOR_EACH(editors, link) {
-    widget = reinterpret_cast<JWidget>(link->data);
-
-    if (sprite == editor_get_sprite(widget))
-      editor_update(widget);
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    jwidget_dirty(*it);
   }
 }
 
-void editors_draw_sprite(const Sprite *sprite, int x1, int y1, int x2, int y2)
+void update_editors_with_sprite(const Sprite* sprite)
 {
-  JWidget widget;
-  JLink link;
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    Editor* editor = *it;
 
-  JI_LIST_FOR_EACH(editors, link) {
-    widget = reinterpret_cast<JWidget>(link->data);
+    if (sprite == editor->editor_get_sprite())
+      editor->editor_update();
+  }
+}
 
-    if (sprite == editor_get_sprite(widget))
-      editor_draw_sprite_safe(widget, x1, y1, x2, y2);
+void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2)
+{
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    Editor* editor = *it;
+
+    if (sprite == editor->editor_get_sprite())
+      editor->editor_draw_sprite_safe(x1, y1, x2, y2);
   }
 }
 
 /* TODO improve this (with JRegion or something, and without
    recursivity) */
-void editors_draw_sprite_tiled(const Sprite *sprite, int x1, int y1, int x2, int y2)
+void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int y2)
 {
   int cx1, cy1, cx2, cy2;	/* cel rectangle */
   int lx1, ly1, lx2, ly2;	/* limited rectangle to the cel rectangle */
@@ -173,28 +174,27 @@ void editors_draw_sprite_tiled(const Sprite *sprite, int x1, int y1, int x2, int
   }
 }
 
-void editors_hide_sprite(const Sprite *sprite)
+void editors_hide_sprite(const Sprite* sprite)
 {
   UIContext* context = UIContext::instance();
   bool refresh = (context->get_current_sprite() == sprite) ? true: false;
 
-  JLink link;
-  JI_LIST_FOR_EACH(editors, link) {
-    JWidget widget = reinterpret_cast<JWidget>(link->data);
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    Editor* editor = *it;
 
-    if (sprite == editor_get_sprite(widget))
-      editor_set_sprite(widget, get_more_reliable_sprite());
+    if (sprite == editor->editor_get_sprite())
+      editor->editor_set_sprite(get_more_reliable_sprite());
   }
 
   if (refresh) {
-    Sprite* sprite = editor_get_sprite(current_editor);
+    Sprite* sprite = current_editor->editor_get_sprite();
 
     context->set_current_sprite(sprite);
     app_refresh_screen(sprite);
   }
 }
 
-void set_current_editor(JWidget editor)
+void set_current_editor(Editor* editor)
 {
   if (current_editor != editor) {
     if (current_editor)
@@ -205,7 +205,7 @@ void set_current_editor(JWidget editor)
     jwidget_dirty(jwidget_get_view(current_editor));
 
     UIContext* context = UIContext::instance();
-    Sprite* sprite = editor_get_sprite(current_editor);
+    Sprite* sprite = current_editor->editor_get_sprite();
     context->set_current_sprite(sprite);
 
     app_refresh_screen(sprite);
@@ -222,7 +222,7 @@ void set_sprite_in_current_editor(Sprite *sprite)
     if (sprite != NULL)
       context->send_sprite_to_top(sprite);
 
-    editor_set_sprite(current_editor, sprite);
+    current_editor->editor_set_sprite(sprite);
 
     jwidget_dirty(jwidget_get_view(current_editor));
 
@@ -233,17 +233,15 @@ void set_sprite_in_current_editor(Sprite *sprite)
 
 void set_sprite_in_more_reliable_editor(Sprite* sprite)
 {
-  JWidget editor, best;
-  JLink link;
-
   /* the current editor */
-  best = current_editor;
+  Editor* best = current_editor;
 
   /* search for any empty editor */
-  if (editor_get_sprite(best)) {
-    JI_LIST_FOR_EACH(editors, link) {
-      editor = reinterpret_cast<JWidget>(link->data);
-      if (!editor_get_sprite(editor)) {
+  if (best->editor_get_sprite()) {
+    for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+      Editor* editor = *it;
+
+      if (!editor->editor_get_sprite()) {
 	best = editor;
 	break;
       }
@@ -254,24 +252,21 @@ void set_sprite_in_more_reliable_editor(Sprite* sprite)
   set_sprite_in_current_editor(sprite);
 }
 
-void split_editor(JWidget editor, int align)
+void split_editor(Editor* editor, int align)
 {
-  JWidget view = jwidget_get_view(editor);
-  JWidget parent_box = jwidget_get_parent(view); /* box or panel */
-  JWidget new_panel;
-  JWidget new_view;
-  JWidget new_editor;
-
   if (count_parents(editor) > 10) {
-    jalert(_("Error<<You can't split the editor more||&Close"));
+    jalert(_("Error<<You cannot split this editor more||&Close"));
     return;
   }
 
+  JWidget view = jwidget_get_view(editor);
+  JWidget parent_box = jwidget_get_parent(view); /* box or panel */
+
   /* create a new box to contain both editors, and a new view to put
      the new editor */
-  new_panel = jpanel_new(align);
-  new_view = editor_view_new();
-  new_editor = create_new_editor();
+  JWidget new_panel = jpanel_new(align);
+  JWidget new_view = editor_view_new();
+  Editor* new_editor = create_new_editor();
 
   /* insert the "new_box" in the same location that the view */
   jwidget_replace_child(parent_box, view, new_panel);
@@ -280,12 +275,12 @@ void split_editor(JWidget editor, int align)
   jview_attach(new_view, new_editor);
 
   /* set the sprite for the new editor */
-  editor_set_sprite(new_editor, editor_data(editor)->sprite);
-  editor_data(new_editor)->zoom = editor_data(editor)->zoom;
+  new_editor->editor_set_sprite(editor->editor_get_sprite());
+  new_editor->editor_set_zoom(editor->editor_get_zoom());
 
   /* expansive widgets */
-  jwidget_expansive(new_panel, TRUE);
-  jwidget_expansive(new_view, TRUE);
+  jwidget_expansive(new_panel, true);
+  jwidget_expansive(new_view, true);
 
   /* append both views to the "new_panel" */
   jwidget_add_child(new_panel, view);
@@ -303,27 +298,26 @@ void split_editor(JWidget editor, int align)
 	       jview_get_viewport(view)->rc);
     jrect_copy(new_editor->rc, editor->rc);
 
-    editor_data(new_editor)->offset_x = editor_data(editor)->offset_x;
-    editor_data(new_editor)->offset_y = editor_data(editor)->offset_y;
+    new_editor->editor_set_offset_x(editor->editor_get_offset_x());
+    new_editor->editor_set_offset_y(editor->editor_get_offset_y());
   }
 
   /* fixup window */
   FIXUP_TOP_WINDOW();
 
   /* update both editors */
-  editor_update(editor);
-  editor_update(new_editor);
+  editor->editor_update();
+  new_editor->editor_update();
 }
 
-void close_editor(JWidget editor)
+void close_editor(Editor* editor)
 {
   JWidget view = jwidget_get_view(editor);
   JWidget parent_box = jwidget_get_parent(view); /* box or panel */
   JWidget other_widget;
-  JLink link;
 
   /* you can't remove all editors */
-  if (jlist_length(editors) == 1)
+  if (editors.size() == 1)
     return;
 
   /* deselect the editor */
@@ -345,26 +339,31 @@ void close_editor(JWidget editor)
   /* find next editor to select */
   if (!current_editor) {
     JWidget next_editor = find_next_editor(other_widget);
-    if (next_editor)
-      set_current_editor(next_editor);
+    if (next_editor) {
+      assert(next_editor->type == editor_type());
+
+      set_current_editor(static_cast<Editor*>(next_editor));
+    }
   }
 
   /* fixup window */
   FIXUP_TOP_WINDOW();
 
   /* update all editors */
-  JI_LIST_FOR_EACH(editors, link)
-    editor_update(reinterpret_cast<JWidget>(link->data));
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    Editor* editor = *it;
+    editor->editor_update();
+  }
 }
 
-void make_unique_editor(JWidget editor)
+void make_unique_editor(Editor* editor)
 {
   JWidget view = jwidget_get_view(editor);
   JLink link, next;
   JWidget child;
 
   /* it's the unique editor */
-  if (jlist_length(editors) == 1)
+  if (editors.size() == 1)
     return;
 
   /* remove the editor-view of its parent */
@@ -375,7 +374,7 @@ void make_unique_editor(JWidget editor)
     child = (JWidget)link->data;
 
     jwidget_remove_child(box_editors, child);
-    jwidget_free(child);
+    delete child; // widget
   }
 
   /* append the editor to main box */
@@ -388,29 +387,25 @@ void make_unique_editor(JWidget editor)
   FIXUP_TOP_WINDOW();
 
   /* update new editor */
-  editor_update(editor);
+  editor->editor_update();
 }
 
-static int is_sprite_in_some_editor(Sprite *sprite)
+static int is_sprite_in_some_editor(Sprite* sprite)
 {
-  JWidget widget;
-  JLink link;
+  for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
+    Editor* editor = *it;
 
-  JI_LIST_FOR_EACH(editors, link) {
-    widget = reinterpret_cast<JWidget>(link->data);
-
-    if (sprite == editor_get_sprite (widget))
-      return TRUE;
+    if (sprite == editor->editor_get_sprite())
+      return true;
   }
-
-  return FALSE;
+  return false;
 }
 
 /**
  * Returns the next sprite that should be show if we close the current
  * one.
  */
-static Sprite *get_more_reliable_sprite()
+static Sprite* get_more_reliable_sprite()
 {
   UIContext* context = UIContext::instance();
   const SpriteList& list = context->get_sprite_list();

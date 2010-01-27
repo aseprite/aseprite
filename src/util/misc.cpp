@@ -160,8 +160,8 @@ Image* NewImageFromMask(const Sprite* src_sprite)
    current editor, returns TRUE if the position was changed.  */
 int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
-  JWidget editor = current_editor;
-  Sprite *sprite = editor_get_sprite(editor);
+  Editor* editor = current_editor;
+  Sprite* sprite = editor->editor_get_sprite();
 
   assert(sprite->layer->is_image());
 
@@ -183,10 +183,10 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   begin_x = cel->x;
   begin_y = cel->y;
 
-  hide_drawing_cursor(editor);
+  editor->hide_drawing_cursor();
   jmouse_set_cursor(JI_CURSOR_MOVE);
 
-  editor_click_start(editor, mode, &start_x, &start_y, &start_b);
+  editor->editor_click_start(mode, &start_x, &start_y, &start_b);
 
   do {
     if (update) {
@@ -219,14 +219,14 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
     jmanager_dispatch_messages(ji_get_default_manager());
 
     gui_feedback();
-  } while (editor_click(editor, &new_x, &new_y, &update, NULL));
+  } while (editor->editor_click(&new_x, &new_y, &update, NULL));
 
   new_x = cel->x;
   new_y = cel->y;
   cel_set_position(cel, begin_x, begin_y);
   
   /* the position was changed */
-  if (!editor_click_cancel(editor)) {
+  if (!editor->editor_click_cancel()) {
     if (use_undo && undo_is_enabled(sprite->undo)) {
       undo_set_label(sprite->undo, "Cel Movement");
       undo_open(sprite->undo);
@@ -247,9 +247,9 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   update_screen_for_sprite(sprite);
 
   /* restore the cursor */
-  show_drawing_cursor(editor);
+  editor->show_drawing_cursor();
 
-  editor_click_done(editor);
+  editor->editor_click_done();
 
   return ret;
 }

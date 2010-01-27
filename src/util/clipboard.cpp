@@ -82,7 +82,7 @@ enum {
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
 static bool copy_from_sprite(const Sprite* sprite);
 
-static bool interactive_transform(JWidget widget, Image *dest_image, Image *image,
+static bool interactive_transform(Editor* widget, Image *dest_image, Image *image,
 				  int x, int y, int xout[4], int yout[4]);
 static void apply_rotation(int x1, int y1, int x2, int y2,
 			   fixed angle, int cx, int cy,
@@ -97,7 +97,7 @@ static void fill_in_vars(int *in_box,
 			 int *in_top, int *in_middle, int *in_bottom,
 			 int x1, int y1, int x2, int y2, fixed angle,
 			 int cx, int cy);
-static void update_status_bar(JWidget editor, Image *image,
+static void update_status_bar(Editor* editor, Image *image,
 			      int x1, int y1, int x2, int y2, fixed angle);
 
 static bool first_time = true;
@@ -246,8 +246,8 @@ void clipboard::paste(SpriteWriter& sprite)
     JRect vp = jview_get_viewport_position(view);
     int x, y, x1, y1, x2, y2;
 
-    screen_to_editor(current_editor, vp->x1, vp->y1, &x1, &y1);
-    screen_to_editor(current_editor, vp->x2-1, vp->y2-1, &x2, &y2);
+    current_editor->screen_to_editor(vp->x1, vp->y1, &x1, &y1);
+    current_editor->screen_to_editor(vp->x2-1, vp->y2-1, &x2, &y2);
     x = (x1+x2)/2-src_image->w/2;
     y = (y1+y2)/2-src_image->h/2;
 
@@ -297,7 +297,7 @@ void clipboard::paste(SpriteWriter& sprite)
 
 enum { DONE_NONE, DONE_CANCEL, DONE_PASTE };
 
-static bool interactive_transform(JWidget widget,
+static bool interactive_transform(Editor* editor,
 				  Image *dest_image, Image *image,
 				  int x, int y,
 				  int xout[4], int yout[4])
@@ -319,7 +319,7 @@ static bool interactive_transform(JWidget widget,
 	   x1-vp->x1, y1-vp->y1, x2-vp->x1, y2-vp->y1,			\
 	   preview, mode, angle, cx-vp->x1, cy-vp->y1);			\
   blit(bmp2, ji_screen, 0, 0, vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)); \
-  update_status_bar(widget, image, x1, y1, x2, y2, angle);		\
+  update_status_bar(editor, image, x1, y1, x2, y2, angle);		\
   jmouse_show();
 
   int x1, y1, x2, y2;
@@ -327,16 +327,16 @@ static bool interactive_transform(JWidget widget,
   int action = ACTION_SETMODE;
   int mode = SCALE_MODE;
   BITMAP *bmp1, *bmp2, *preview, *old_screen;
-  JRect vp = jview_get_viewport_position(jwidget_get_view(widget));
+  JRect vp = jview_get_viewport_position(jwidget_get_view(editor));
   int done = DONE_NONE;
   fixed angle = 0;
   int cx, cy;
   int mask_color;
 
-  hide_drawing_cursor(widget);
+  editor->hide_drawing_cursor();
 
-  editor_to_screen(widget, x, y, &x1, &y1);
-  editor_to_screen(widget, x+image->w, y+image->h, &x2, &y2);
+  editor->editor_to_screen(x, y, &x1, &y1);
+  editor->editor_to_screen(x+image->w, y+image->h, &x2, &y2);
   cx = (x1+x2)/2;
   cy = (y1+y2)/2;
 
@@ -473,7 +473,7 @@ static bool interactive_transform(JWidget widget,
       /* left button+shift || middle button = scroll movement */
       if ((jmouse_b(0) == 1 && (key_shifts & KB_SHIFT_FLAG)) ||
 	  (jmouse_b(0) == 4)) {
-	JWidget view = jwidget_get_view(widget);
+	JWidget view = jwidget_get_view(editor);
 	int scroll_x, scroll_y;
 
 	x = jmouse_x(0) - jmouse_x(1);
@@ -485,7 +485,7 @@ static bool interactive_transform(JWidget widget,
 	/* TODO */
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
-	editor_set_scroll(widget, scroll_x-x, scroll_y-y, TRUE);
+	editor->editor_set_scroll(scroll_x-x, scroll_y-y, TRUE);
 
 /* 	editor_to_screen (widget, x1, y1, &x1, &y1); */
 /* 	editor_to_screen (widget, x2, y2, &x2, &y2); */
@@ -634,8 +634,8 @@ static bool interactive_transform(JWidget widget,
 		break;
 	    }
 
-	    screen_to_editor(widget, x1, y1, &x1, &y1);
-	    screen_to_editor(widget, x2, y2, &x2, &y2);
+	    editor->screen_to_editor(x1, y1, &x1, &y1);
+	    editor->screen_to_editor(x2, y2, &x2, &y2);
 
 	    if (get_use_grid() && angle == 0) {
 	      int ox = x1;
@@ -645,8 +645,8 @@ static bool interactive_transform(JWidget widget,
 	      y2 += y1 - oy;
 	    }
 
-	    editor_to_screen(widget, x1, y1, &x1, &y1);
-	    editor_to_screen(widget, x2, y2, &x2, &y2);
+	    editor->editor_to_screen(x1, y1, &x1, &y1);
+	    editor->editor_to_screen(x2, y2, &x2, &y2);
 
 	    /* redraw the screen */
 	    REDRAW();
@@ -688,7 +688,7 @@ static bool interactive_transform(JWidget widget,
     int c;
     apply_rotation(x1, y1, x2, y2, angle, cx, cy, xout, yout);
     for (c=0; c<4; c++)
-      screen_to_editor(widget, xout[c], yout[c], xout+c, yout+c);
+      editor->screen_to_editor(xout[c], yout[c], xout+c, yout+c);
   }
 
   destroy_bitmap(bmp1);
@@ -698,7 +698,7 @@ static bool interactive_transform(JWidget widget,
   clear_keybuf();
 
   /* restore the cursor */
-  show_drawing_cursor(widget);
+  editor->show_drawing_cursor();
 
   jrect_free(vp);
   return done == DONE_PASTE;
@@ -844,14 +844,14 @@ static void fill_in_vars(int *in_box,
   *in_middle = (my > (y1+y2)/2-6 && my < (y1+y2)/2+6);
 }
 
-static void update_status_bar(JWidget editor, Image *image,
+static void update_status_bar(Editor* editor, Image *image,
 			      int x1, int y1, int x2, int y2, fixed angle)
 {
   int u1, v1, u2, v2;
   int iangle = 360*(fixtoi (angle & (255<<16)))/256;
 
-  screen_to_editor(editor, x1, y1, &u1, &v1);
-  screen_to_editor(editor, x2, y2, &u2, &v2);
+  editor->screen_to_editor(x1, y1, &u1, &v1);
+  editor->screen_to_editor(x2, y2, &u2, &v2);
 
   statusbar_set_text
     (app_get_statusbar(), 0,

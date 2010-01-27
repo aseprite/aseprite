@@ -69,7 +69,7 @@ void GotoPreviousLayerCommand::execute(Context* context)
   sprite->layer = sprite_index2layer(sprite, i);
 
   update_screen_for_sprite(sprite);
-  editor_update_statusbar_for_standby(current_editor);
+  current_editor->editor_update_statusbar_for_standby();
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Layer `%s' selected"),
@@ -117,7 +117,7 @@ void GotoNextLayerCommand::execute(Context* context)
   sprite->layer = sprite_index2layer(sprite, i);
 
   update_screen_for_sprite(sprite);
-  editor_update_statusbar_for_standby(current_editor);
+  current_editor->editor_update_statusbar_for_standby();
 
   statusbar_show_tip(app_get_statusbar(), 1000,
 		     _("Layer `%s' selected"),

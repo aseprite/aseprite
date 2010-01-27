@@ -29,6 +29,7 @@ class Image;
 class Layer;
 class Mask;
 class Sprite;
+class Editor;
 
 struct Brush;
 
@@ -134,7 +135,7 @@ void set_cursor_color(color_t color);
 
 int get_thickness_for_cursor();
 
-void control_tool(JWidget editor, Tool *tool,
+void control_tool(Editor* editor, Tool *tool,
 		  color_t color,
 		  color_t other_color,
 		  bool left_button);

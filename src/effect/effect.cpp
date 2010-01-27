@@ -174,13 +174,13 @@ void effect_begin_for_preview(Effect *effect)
   effect->mask = effect->preview_mask;
 
   {
-    JWidget editor = current_editor;
+    Editor* editor = current_editor;
     JRect vp = jview_get_viewport_position(jwidget_get_view(editor));
     int x1, y1, x2, y2;
     int x, y, w, h;
 
-    screen_to_editor(editor, vp->x1, vp->y1, &x1, &y1);
-    screen_to_editor(editor, vp->x2-1, vp->y2-1, &x2, &y2);
+    editor->screen_to_editor(vp->x1, vp->y1, &x1, &y1);
+    editor->screen_to_editor(vp->x2-1, vp->y2-1, &x2, &y2);
 
     jrect_free(vp);
 
@@ -271,17 +271,15 @@ void effect_flush(Effect *effect)
   if (effect->row >= 0) {
     JRegion reg1, reg2;
     struct jrect rect;
-    JWidget editor;
+    Editor* editor = current_editor;
 
-    editor = current_editor;
     reg1 = jregion_new(NULL, 0);
 
-    editor_to_screen(editor,
-		     effect->x+effect->offset_x,
-		     effect->y+effect->offset_y+effect->row-1,
-		     &rect.x1, &rect.y1);
-    rect.x2 = rect.x1 + (effect->w << editor_data(editor)->zoom);
-    rect.y2 = rect.y1 + (1 << editor_data(editor)->zoom);
+    editor->editor_to_screen(effect->x+effect->offset_x,
+			     effect->y+effect->offset_y+effect->row-1,
+			     &rect.x1, &rect.y1);
+    rect.x2 = rect.x1 + (effect->w << editor->editor_get_zoom());
+    rect.y2 = rect.y1 + (1 << editor->editor_get_zoom());
 
     reg2 = jregion_new(&rect, 1);
     jregion_union(reg1, reg1, reg2);

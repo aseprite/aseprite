@@ -67,25 +67,22 @@ void EyedropperCommand::load_params(Params* params)
 
 void EyedropperCommand::execute(Context* context)
 {
-  JWidget widget;
-  Editor *editor;
-  color_t color;
-  int x, y;
-
-  widget = jmanager_get_mouse();
+  JWidget widget = jmanager_get_mouse();
   if (!widget || widget->type != editor_type())
     return;
 
-  editor = editor_data(widget);
-  if (!editor->sprite)
+  Editor* editor = static_cast<Editor*>(widget);
+  Sprite* sprite = editor->editor_get_sprite();
+  if (!sprite)
     return;
 
-  /* pixel position to get */
-  screen_to_editor(widget, jmouse_x(0), jmouse_y(0), &x, &y);
+  // pixel position to get
+  int x, y;
+  editor->screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 
-  /* get the color from the image */
-  color = color_from_image(editor->sprite->imgtype,
-			   sprite_getpixel(editor->sprite, x, y));
+  // get the color from the image
+  color_t color = color_from_image(sprite->imgtype,
+				   sprite_getpixel(sprite, x, y));
 
   if (color_type(color) != COLOR_TYPE_MASK) {
     // TODO replace the color in the "context", not directly from the color-bar

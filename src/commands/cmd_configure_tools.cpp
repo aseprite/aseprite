@@ -385,7 +385,7 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
 static bool cursor_button_change_hook(JWidget widget, void *data)
 {
   set_cursor_color(colorbutton_get_color(widget));
-  return TRUE;
+  return true;
 }
 
 static bool onionskin_check_change_hook(JWidget widget, void *data)

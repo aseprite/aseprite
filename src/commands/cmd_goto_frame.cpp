@@ -58,7 +58,7 @@ void GotoFirstFrameCommand::execute(Context* context)
   sprite->frame = 0;
 
   update_screen_for_sprite(sprite);
-  editor_update_statusbar_for_standby(current_editor);
+  current_editor->editor_update_statusbar_for_standby();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ void GotoPreviousFrameCommand::execute(Context* context)
     sprite->frame = sprite->frames-1;
 
   update_screen_for_sprite(sprite);
-  editor_update_statusbar_for_standby(current_editor);
+  current_editor->editor_update_statusbar_for_standby();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ void GotoNextFrameCommand::execute(Context* context)
     sprite->frame = 0;
 
   update_screen_for_sprite(sprite);
-  editor_update_statusbar_for_standby(current_editor);
+  current_editor->editor_update_statusbar_for_standby();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ void GotoLastFrameCommand::execute(Context* context)
   sprite->frame = sprite->frames-1;
 
   update_screen_for_sprite(sprite);
-  editor_update_statusbar_for_standby(current_editor);
+  current_editor->editor_update_statusbar_for_standby();
 }
 
 //////////////////////////////////////////////////////////////////////

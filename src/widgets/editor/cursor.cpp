@@ -41,13 +41,12 @@
 /**
  * Returns true if the cursor of the editor needs subpixel movement.
  */
-#define IS_SUBPIXEL(editor)	((editor)->zoom >= 2)
+#define IS_SUBPIXEL(editor)	((editor)->m_zoom >= 2)
 
 /**
  * Maximum quantity of colors to save pixels overlapped by the cursor.
  */
-#define MAX_SAVED   4096	/* TODO maybe more size is required for
-				   high resolutions */
+#define MAX_SAVED   4096
 
 static struct {
   int brush_type;
@@ -72,7 +71,6 @@ static JRegion clipping_region;
 static JRegion old_clipping_region;
 
 static void generate_cursor_boundaries();
-static void for_each_pixel_of_brush(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
 static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thickness, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
@@ -83,7 +81,11 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
 static int point_inside_region(int x, int y, JRegion region);
 
-void editor_cursor_exit()
+/***********************************************************/
+/* CURSOR                                                  */
+/***********************************************************/
+
+void Editor::editor_cursor_exit()
 {
   if (cursor_bound.seg != NULL)
     jfree(cursor_bound.seg);
@@ -101,26 +103,25 @@ void editor_cursor_exit()
  *
  * @see editor_clean_cursor
  */
-void editor_draw_cursor(JWidget widget, int x, int y)
+void Editor::editor_draw_cursor(int x, int y)
 {
-  Editor *editor = editor_data(widget);
   int color;
 
-  assert(editor->cursor_thick == 0);
+  assert(m_cursor_thick == 0);
 
   /* get drawable region */
-  clipping_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+  clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
 
   /* get cursor color */
   cursor_negative = is_cursor_mask();
   color = get_raw_cursor_color();
 
   /* cursor in the screen (view) */
-  editor->cursor_screen_x = x;
-  editor->cursor_screen_y = y;
+  m_cursor_screen_x = x;
+  m_cursor_screen_y = y;
   
   /* get cursor position in the editor */
-  screen_to_editor(widget, x, y, &x, &y);
+  screen_to_editor(x, y, &x, &y);
 
   /* get cursor type */
   if (get_thickness_for_cursor() == 1) {
@@ -131,7 +132,7 @@ void editor_draw_cursor(JWidget widget, int x, int y)
       case BRUSH_CIRCLE:
       case BRUSH_SQUARE:
 	cursor_type = CURSOR_BRUSH;
-	if ((get_brush_size()<<editor->zoom)/2 > 3+(1<<editor->zoom))
+	if ((get_brush_size()<<m_zoom)/2 > 3+(1<<m_zoom))
 	  cursor_type |= CURSOR_CROSS_ONE;
 	break;
       case BRUSH_LINE:
@@ -145,18 +146,18 @@ void editor_draw_cursor(JWidget widget, int x, int y)
 
   /* save area and draw the cursor */
   acquire_bitmap(ji_screen);
-  ji_screen->clip = FALSE;
-  for_each_pixel_of_brush(editor, x, y, color, savepixel);
-  for_each_pixel_of_brush(editor, x, y, color, drawpixel);
-  ji_screen->clip = TRUE;
+  ji_screen->clip = false;
+  for_each_pixel_of_brush(x, y, color, savepixel);
+  for_each_pixel_of_brush(x, y, color, drawpixel);
+  ji_screen->clip = true;
   release_bitmap(ji_screen);
 
   /* cursor thickness */
-  editor->cursor_thick = get_thickness_for_cursor();
+  m_cursor_thick = get_thickness_for_cursor();
 
   /* cursor in the editor (model) */
-  editor->cursor_editor_x = x;
-  editor->cursor_editor_y = y;
+  m_cursor_editor_x = x;
+  m_cursor_editor_y = y;
 
   /* save the clipping-region to know where to clean the pixels */
   if (old_clipping_region)
@@ -177,26 +178,25 @@ void editor_draw_cursor(JWidget widget, int x, int y)
  *
  * @see editor_draw_cursor
  */
-void editor_clean_cursor(JWidget widget)
+void Editor::editor_clean_cursor()
 {
-  Editor *editor = editor_data(widget);
   int x, y;
 
-  assert(editor->cursor_thick != 0);
+  assert(m_cursor_thick != 0);
 
-  clipping_region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+  clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
 
-  x = editor->cursor_editor_x;
-  y = editor->cursor_editor_y;
+  x = m_cursor_editor_x;
+  y = m_cursor_editor_y;
 
   /* restore points */
   acquire_bitmap(ji_screen);
-  ji_screen->clip = FALSE;
-  for_each_pixel_of_brush(editor, x, y, 0, cleanpixel);
-  ji_screen->clip = TRUE;
+  ji_screen->clip = false;
+  for_each_pixel_of_brush(x, y, 0, cleanpixel);
+  ji_screen->clip = true;
   release_bitmap(ji_screen);
 
-  editor->cursor_thick = 0;
+  m_cursor_thick = 0;
 
   jregion_free(clipping_region);
   if (old_clipping_region)
@@ -211,13 +211,12 @@ void editor_clean_cursor(JWidget widget)
  * movement (a little pixel of the screen that indicates where is the
  * mouse inside the pixel of the sprite).
  */
-bool editor_cursor_is_subpixel(JWidget widget)
+bool Editor::editor_cursor_is_subpixel()
 {
-  Editor *editor = editor_data(widget);
-  return IS_SUBPIXEL(editor);
+  return IS_SUBPIXEL(this);
 }
 
-/**********************************************************************/
+//////////////////////////////////////////////////////////////////////
 
 static void generate_cursor_boundaries()
 {
@@ -238,23 +237,23 @@ static void generate_cursor_boundaries()
   }
 }
 
-static void for_each_pixel_of_brush(Editor *editor, int x, int y, int color,
-				    void (*pixel) (BITMAP *bmp, int x, int y, int color))
+void Editor::for_each_pixel_of_brush(int x, int y, int color,
+				     void (*pixel)(BITMAP *bmp, int x, int y, int color))
 {
   saved_pixel_n = 0;
 
   if (cursor_type & CURSOR_CROSS_ONE) {
-    editor_cursor_cross(editor, x, y, color, 1, pixel);
+    editor_cursor_cross(this, x, y, color, 1, pixel);
   }
 
   if (cursor_type & CURSOR_BRUSH) {
-    editor_cursor_brush(editor, x, y, color, pixel);
+    editor_cursor_brush(this, x, y, color, pixel);
   }
 
-  if (IS_SUBPIXEL(editor)) {
+  if (IS_SUBPIXEL(this)) {
     (*pixel)(ji_screen,
-	     editor->cursor_screen_x,
-	     editor->cursor_screen_y, color);
+	     m_cursor_screen_x,
+	     m_cursor_screen_y, color);
   }
 }
 
@@ -272,19 +271,20 @@ static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thi
     0, 0, 1, 1, 0, 0,
   };
   int u, v, xout, yout;
+  int zoom = editor->editor_get_zoom();
 
   for (v=0; v<6; v++) {
     for (u=0; u<6; u++) {
       if (cursor_cross[v*6+u]) {
-	editor_to_screen(editor->widget, x, y, &xout, &yout);
+	editor->editor_to_screen(x, y, &xout, &yout);
 
 	xout += ((u<3) ?
-		 u-((thickness>>1)<<editor->zoom)-3:
-		 u-((thickness>>1)<<editor->zoom)-3+(thickness<<editor->zoom));
+		 u-((thickness>>1)<<zoom)-3:
+		 u-((thickness>>1)<<zoom)-3+(thickness<<zoom));
 
 	yout += ((v<3)?
-		 v-((thickness>>1)<<editor->zoom)-3:
-		 v-((thickness>>1)<<editor->zoom)-3+(thickness<<editor->zoom));
+		 v-((thickness>>1)<<zoom)-3:
+		 v-((thickness>>1)<<zoom)-3+(thickness<<zoom));
 
 	(*pixel)(ji_screen, xout, yout, color);
       }
@@ -308,8 +308,8 @@ static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*
     x2 = seg->x2 - cursor_bound.brush_size/2;
     y2 = seg->y2 - cursor_bound.brush_size/2;
 
-    editor_to_screen(editor->widget, x+x1, y+y1, &x1, &y1);
-    editor_to_screen(editor->widget, x+x2, y+y2, &x2, &y2);
+    editor->editor_to_screen(x+x1, y+y1, &x1, &y1);
+    editor->editor_to_screen(x+x2, y+y2, &x2, &y2);
 
     if (seg->open) {		/* outside */
       if (x1 == x2) {
@@ -336,8 +336,8 @@ static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*
   }
 }
 
-/**********************************************************************/
-/* extra routines */
+//////////////////////////////////////////////////////////////////////
+// Helpers
 
 static void savepixel(BITMAP *bmp, int x, int y, int color)
 {

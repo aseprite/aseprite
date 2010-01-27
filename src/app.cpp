@@ -192,7 +192,8 @@ int App::run()
 {
   /* initialize GUI interface */
   if (ase_mode & MODE_GUI) {
-    Widget* view, *editor;
+    Widget* view;
+    Editor* editor;
 
     PRINTF("GUI mode\n");
 
@@ -374,7 +375,7 @@ App::~App()
     // finalize modules, configuration and core
     modules_exit();
     delete m_pimpl;
-    editor_cursor_exit();
+    Editor::editor_cursor_exit();
     boundary_exit();
 
     gfxobj_exit();
