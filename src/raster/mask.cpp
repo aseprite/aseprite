@@ -25,8 +25,6 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 
-static void shrink_mask(Mask* mask);
-
 //////////////////////////////////////////////////////////////////////
 
 Mask::Mask()
@@ -44,6 +42,8 @@ Mask::Mask(const Mask& mask)
 
 Mask::~Mask()
 {
+  assert(m_freeze_count == 0);
+
   if (this->name)
     jfree(this->name);
 
@@ -53,12 +53,29 @@ Mask::~Mask()
 
 void Mask::initialize()
 {
+  this->m_freeze_count = 0;
   this->name = NULL;
   this->x = 0;
   this->y = 0;
   this->w = 0;
   this->h = 0;
   this->bitmap = NULL;
+}
+
+void Mask::freeze()
+{
+  assert(m_freeze_count >= 0);
+  m_freeze_count++;
+}
+
+void Mask::unfreeze()
+{
+  assert(m_freeze_count > 0);
+  m_freeze_count--;
+
+  // Shrink just in case
+  if (m_freeze_count == 0)
+    shrink();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -80,11 +97,6 @@ void mask_free(Mask* mask)
   delete mask;
 }
 
-int mask_is_empty(Mask* mask)
-{
-  return (!mask->bitmap)? TRUE: FALSE;
-}
-
 void mask_set_name(Mask* mask, const char *name)
 {
   if (mask->name)
@@ -101,9 +113,9 @@ void mask_copy(Mask* mask_dst, const Mask* mask_src)
     mask_set_name(mask_dst, mask_src->name);
 
   if (mask_src->bitmap) {
-    /* add all the area of "mask" */
-    mask_union(mask_dst, mask_src->x, mask_src->y,
-	       mask_src->w, mask_src->h);
+    // add all the area of "mask"
+    mask_dst->add(mask_src->x, mask_src->y,
+		  mask_src->w, mask_src->h);
 
     /* and copy the "mask" bitmap */
     image_copy(mask_dst->bitmap, mask_src->bitmap, 0, 0);
@@ -140,11 +152,11 @@ void mask_invert(Mask* mask)
       address = ((ase_uint8 **)mask->bitmap->line)[v];
       for (u=0; u<mask->w; u++) {
 	*address ^= (1<<d.rem);
-	_image_bitmap_next_bit (d, address);
+	_image_bitmap_next_bit(d, address);
       }
     }
 
-    shrink_mask (mask);
+    mask->shrink();
   }
 }
 
@@ -164,33 +176,17 @@ void mask_replace(Mask* mask, int x, int y, int w, int h)
 
 void mask_union(Mask* mask, int x, int y, int w, int h)
 {
-  if (!mask->bitmap) {
-    mask->x = x;
-    mask->y = y;
-    mask->w = w;
-    mask->h = h;
-    mask->bitmap = image_new(IMAGE_BITMAP, w, h);
-  }
-  else {
-    Image *image;
-    int x1 = mask->x;
-    int y1 = mask->y;
-    int x2 = MAX(mask->x+mask->w-1, x+w-1);
-    int y2 = MAX(mask->y+mask->h-1, y+h-1);
+  mask->add(x, y, w, h);
+}
 
-    mask->x = MIN(x, x1);
-    mask->y = MIN(y, y1);
-    mask->w = x2 - mask->x + 1;
-    mask->h = y2 - mask->y + 1;
+void Mask::add(int x, int y, int w, int h)
+{
+  if (m_freeze_count == 0)
+    this->reserve(x, y, w, h);
 
-    image = image_crop(mask->bitmap, mask->x-x1, mask->y-y1, mask->w, mask->h, 0);
-    image_free(mask->bitmap);
-    mask->bitmap = image;
-  }
-
-  image_rectfill(mask->bitmap,
-		 x-mask->x, y-mask->y,
-		 x-mask->x+w-1, y-mask->y+h-1, 1);
+  image_rectfill(this->bitmap,
+		 x-this->x, y-this->y,
+		 x-this->x+w-1, y-this->y+h-1, 1);
 }
 
 void mask_subtract(Mask* mask, int x, int y, int w, int h)
@@ -199,7 +195,7 @@ void mask_subtract(Mask* mask, int x, int y, int w, int h)
     image_rectfill(mask->bitmap,
 		   x-mask->x, y-mask->y,
 		   x-mask->x+w-1, y-mask->y+h-1, 0);
-    shrink_mask(mask);
+    mask->shrink();
   }
 }
 
@@ -221,14 +217,8 @@ void mask_intersect(Mask* mask, int x, int y, int w, int h)
     image_free(mask->bitmap);
     mask->bitmap = image;
 
-    shrink_mask(mask);
+    mask->shrink();
   }
-}
-
-void mask_merge(Mask* mask, const Mask* src)
-{
-  /* TODO!!! */
-  assert(FALSE);
 }
 
 void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
@@ -335,29 +325,8 @@ void mask_by_color(Mask* mask, const Image *src, int color, int fuzziness)
     } break;
   }
 
-  shrink_mask(mask);
+  mask->shrink();
 }
-
-/* void mask_fill (Mask* mask, Image *image, int color) */
-/* { */
-/*   if (mask) { */
-/*     ase_uint8 *address; */
-/*     int u, v; */
-/*     div_t d; */
-
-/*     for (v=0; v<h; v++) { */
-/*       d = div (0, 8); */
-/*       address = ((ase_uint8 **)drawable->lines)[v]+d.quot; */
-
-/*       for (u=0; u<w; u++) { */
-/* 	if ((*address) & (1<<d.rem)) */
-/* 	  drawable->putpixel (x+u, y+v, color); */
-
-/* 	_drawable_bitmap_next_bit (d, address); */
-/*       } */
-/*     } */
-/*   } */
-/* } */
 
 void mask_crop(Mask* mask, const Image *image)
 {
@@ -393,44 +362,86 @@ void mask_crop(Mask* mask, const Image *image)
   beg_x2 = beg_x1 + mask->w - 1;
   beg_y2 = beg_y1 + mask->h - 1;
 
-  beg_x1 = MID (0, beg_x1, mask->w-1);
-  beg_y1 = MID (0, beg_y1, mask->h-1);
-  beg_x2 = MID (beg_x1, beg_x2, mask->w-1);
-  beg_y2 = MID (beg_y1, beg_y2, mask->h-1);
+  beg_x1 = MID(0, beg_x1, mask->w-1);
+  beg_y1 = MID(0, beg_y1, mask->h-1);
+  beg_x2 = MID(beg_x1, beg_x2, mask->w-1);
+  beg_y2 = MID(beg_y1, beg_y2, mask->h-1);
 
   /* left */
-  ADVANCE (x1, x2, y2, <=, ++,
-	   image_getpixel (image, x1, c=beg_y1),
-	   image_getpixel (image, x1, c));
+  ADVANCE(x1, x2, y2, <=, ++,
+	  image_getpixel(image, x1, c=beg_y1),
+	  image_getpixel(image, x1, c));
   /* right */
-  ADVANCE (x2, x1, y2, >=, --,
-	   image_getpixel (image, x2, c=beg_y1),
-	   image_getpixel (image, x2, c));
+  ADVANCE(x2, x1, y2, >=, --,
+	  image_getpixel(image, x2, c=beg_y1),
+	  image_getpixel(image, x2, c));
   /* top */
-  ADVANCE (y1, y2, x2, <=, ++,
-	   image_getpixel (image, c=beg_x1, y1),
-	   image_getpixel (image, c, y1));
+  ADVANCE(y1, y2, x2, <=, ++,
+	  image_getpixel(image, c=beg_x1, y1),
+	  image_getpixel(image, c, y1));
   /* bottom */
-  ADVANCE (y2, y1, x2, >=, --,
-	   image_getpixel (image, c=beg_x1, y2),
-	   image_getpixel (image, c, y2));
+  ADVANCE(y2, y1, x2, >=, --,
+	  image_getpixel(image, c=beg_x1, y2),
+	  image_getpixel(image, c, y2));
 
   if (done_count < 4)
-    mask_intersect (mask, x1, y1, x2, y2);
+    mask_intersect(mask, x1, y1, x2, y2);
   else
-    mask_none (mask);
+    mask_none(mask);
 
 #undef ADVANCE
 }
 
-static void shrink_mask(Mask* mask)
+void Mask::reserve(int x, int y, int w, int h)
 {
+  assert(w > 0 && h > 0);
+
+  if (!this->bitmap) {
+    this->x = x;
+    this->y = y;
+    this->w = w;
+    this->h = h;
+    this->bitmap = image_new(IMAGE_BITMAP, w, h);
+    image_clear(this->bitmap, 0);
+  }
+  else {
+    int x1 = this->x;
+    int y1 = this->y;
+    int x2 = MAX(this->x+this->w-1, x+w-1);
+    int y2 = MAX(this->y+this->h-1, y+h-1);
+    int new_mask_x = MIN(x, x1);
+    int new_mask_y = MIN(y, y1);
+    int new_mask_w = x2 - new_mask_x + 1;
+    int new_mask_h = y2 - new_mask_y + 1;
+
+    if (this->x != new_mask_x ||
+	this->y != new_mask_y ||
+	this->w != new_mask_w ||
+	this->h != new_mask_h) {
+      this->x = new_mask_x;
+      this->y = new_mask_y;
+      this->w = new_mask_w;
+      this->h = new_mask_h;
+
+      Image* image = image_crop(this->bitmap, this->x-x1, this->y-y1, this->w, this->h, 0);
+      delete this->bitmap;	// image
+      this->bitmap = image;
+    }
+  }
+}
+
+void Mask::shrink()
+{
+  // If the mask is frozen we avoid the shrinking
+  if (m_freeze_count > 0)
+    return;
+    
 #define SHRINK_SIDE(u_begin, u_op, u_final, u_add,			\
 		    v_begin, v_op, v_final, v_add, U, V, var)		\
   {									\
     for (u = u_begin; u u_op u_final; u u_add) {			\
       for (v = v_begin; v v_op v_final; v v_add) {			\
-	if (mask->bitmap->getpixel(U, V))				\
+	if (this->bitmap->getpixel(U, V))				\
 	  break;							\
       }									\
       if (v == v_final)							\
@@ -442,41 +453,39 @@ static void shrink_mask(Mask* mask)
 
   int u, v, x1, y1, x2, y2;
 
-  x1 = mask->x;
-  y1 = mask->y;
-  x2 = mask->x+mask->w-1;
-  y2 = mask->y+mask->h-1;
+  x1 = this->x;
+  y1 = this->y;
+  x2 = this->x+this->w-1;
+  y2 = this->y+this->h-1;
 
-  SHRINK_SIDE(0, <, mask->w, ++,
-	      0, <, mask->h, ++, u, v, x1++);
+  SHRINK_SIDE(0, <, this->w, ++,
+	      0, <, this->h, ++, u, v, x1++);
 
-  SHRINK_SIDE(0, <, mask->h, ++,
-	      0, <, mask->w, ++, v, u, y1++);
+  SHRINK_SIDE(0, <, this->h, ++,
+	      0, <, this->w, ++, v, u, y1++);
 
-  SHRINK_SIDE(mask->w-1, >, 0, --,
-	      0, <, mask->h, ++, u, v, x2--);
+  SHRINK_SIDE(this->w-1, >, 0, --,
+	      0, <, this->h, ++, u, v, x2--);
 
-  SHRINK_SIDE(mask->h-1, >, 0, --,
-	      0, <, mask->w, ++, v, u, y2--);
+  SHRINK_SIDE(this->h-1, >, 0, --,
+	      0, <, this->w, ++, v, u, y2--);
 
   if ((x1 > x2) || (y1 > y2)) {
-    mask_none(mask);
+    mask_none(this);
   }
-  else if ((x1 != mask->x) || (x2 != mask->x+mask->w-1) ||
-	   (y1 != mask->y) || (y2 != mask->y+mask->h-1)) {
-    Image *image;
+  else if ((x1 != this->x) || (x2 != this->x+this->w-1) ||
+	   (y1 != this->y) || (y2 != this->y+this->h-1)) {
+    u = this->x;
+    v = this->y;
 
-    u = mask->x;
-    v = mask->y;
+    this->x = x1;
+    this->y = y1;
+    this->w = x2 - x1 + 1;
+    this->h = y2 - y1 + 1;
 
-    mask->x = x1;
-    mask->y = y1;
-    mask->w = x2 - x1 + 1;
-    mask->h = y2 - y1 + 1;
-
-    image = image_crop(mask->bitmap, mask->x-u, mask->y-v, mask->w, mask->h, 0);
-    image_free(mask->bitmap);
-    mask->bitmap = image;
+    Image* image = image_crop(this->bitmap, this->x-u, this->y-v, this->w, this->h, 0);
+    image_free(this->bitmap);
+    this->bitmap = image;
   }
 
 #undef SHRINK_SIDE

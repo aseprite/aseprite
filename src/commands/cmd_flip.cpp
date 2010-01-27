@@ -100,13 +100,13 @@ void FlipCommand::execute(Context* context)
 
       image = GetImage2(sprite, &x, &y, NULL);
       if (!image)
-	return;
-
-      // mask is empty?
-      if (mask_is_empty(sprite->mask)) {
-	// so we flip the entire image
-	x1 = 0;
-	y1 = 0;
+	return;
+
+      // mask is empty?
+      if (sprite->mask->is_empty()) {
+	// so we flip the entire image
+	x1 = 0;
+	y1 = 0;
 	x2 = image->w-1;
 	y2 = image->h-1;
       }

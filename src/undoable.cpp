@@ -145,7 +145,7 @@ void Undoable::crop_sprite(int x, int y, int w, int h, int bgcolor)
   if (background_layer)
     crop_layer(background_layer, 0, 0, m_sprite->w, m_sprite->h, bgcolor);
 
-  if (!mask_is_empty(m_sprite->mask))
+  if (!m_sprite->mask->is_empty())
     set_mask_position(m_sprite->mask->x-x, m_sprite->mask->y-y);
 }
 
@@ -955,7 +955,7 @@ void Undoable::clear_mask(int bgcolor)
 
   // if the mask is empty then we have to clear the entire image
   // in the cel
-  if (mask_is_empty(m_sprite->mask)) {
+  if (m_sprite->mask->is_empty()) {
     // if the layer is the background then we clear the image
     if (m_sprite->layer->is_background()) {
       if (is_enabled())

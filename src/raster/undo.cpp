@@ -2225,7 +2225,7 @@ static Mask* read_raw_mask(ase_uint8* raw_data)
   if (w > 0 && h > 0) {
     size = (w+7)/8;
 
-    mask_union(mask, x, y, w, h);
+    mask->add(x, y, w, h);
     for (c=0; c<mask->h; c++)
       read_raw_data(mask->bitmap->line[c], size);
   }

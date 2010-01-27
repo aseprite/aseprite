@@ -46,13 +46,13 @@ DeselectMaskCommand::DeselectMaskCommand()
 {
 }
 
-bool DeselectMaskCommand::enabled(Context* context)
-{
-  const CurrentSpriteReader sprite(context);
-  return sprite && !mask_is_empty(sprite->mask);
-}
-
-void DeselectMaskCommand::execute(Context* context)
+bool DeselectMaskCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
+  return sprite && !sprite->mask->is_empty();
+}
+
+void DeselectMaskCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   Mask *mask;
