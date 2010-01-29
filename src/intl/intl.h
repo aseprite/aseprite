@@ -19,8 +19,12 @@
 #ifndef INTL_INTL_H_INCLUDED
 #define INTL_INTL_H_INCLUDED
 
-int intl_init();
-void intl_exit();
+class IntlModule
+{
+public:
+  IntlModule();
+  ~IntlModule();
+};
 
 void intl_load_lang();
 const char *intl_get_lang();

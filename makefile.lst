@@ -78,6 +78,7 @@ COMMON_SOURCES =					\
 	src/commands/fx/cmd_replace_color.cpp		\
 	src/commands/fx/effectbg.cpp			\
 	src/core/cfg.cpp				\
+	src/core/check_args.cpp				\
 	src/core/color.cpp				\
 	src/core/config.cpp				\
 	src/core/core.cpp				\

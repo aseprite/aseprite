@@ -29,14 +29,23 @@
 #include "intl/msgids.h"
 #include "modules/gui.h"
 
-int intl_init()
+IntlModule::IntlModule()
 {
-  return 0;
+  PRINTF("Internationalization module: starting\n");
+
+  // load the language file
+  intl_load_lang();
+
+  PRINTF("Internationalization module: started\n");
 }
 
-void intl_exit()
+IntlModule::~IntlModule()
 {
+  PRINTF("Internationalization module: shutting down\n");
+
   msgids_clear();
+
+  PRINTF("Internationalization module: shut down\n");
 }
 
 void intl_load_lang()

@@ -1,3 +1,7 @@
+2010-01-29  David Capello  <davidcapello@gmail.com>
+
+	* src/app.cpp (Modules): A lot of modules converted to classes.
+
 2009-11-27  David Capello  <davidcapello@gmail.com>
 
 	* Now XML files are loaded with tinyxml library (for better error

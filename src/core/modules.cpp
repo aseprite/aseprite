@@ -58,7 +58,7 @@ static Module module[] =
 
 static int modules = sizeof(module) / sizeof(Module);
 
-void modules_init(int requirements)
+LegacyModules::LegacyModules(int requirements)
 {
   for (int c=0; c<modules; c++)
     if ((module[c].reqs & requirements) == module[c].reqs) {
@@ -71,7 +71,7 @@ void modules_init(int requirements)
     }
 }
 
-void modules_exit()
+LegacyModules::~LegacyModules()
 {
   for (int c=modules-1; c>=0; c--)
     if (module[c].installed) {

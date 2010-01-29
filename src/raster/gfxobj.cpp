@@ -35,13 +35,13 @@ static std::map<gfxobj_id, GfxObj*>* objects_map; // graphics objects map
 static void insert_gfxobj(GfxObj* gfxobj);
 static void erase_gfxobj(GfxObj* gfxobj);
 
-void gfxobj_init()
+RasterModule::RasterModule()
 {
   objects_map = new std::map<gfxobj_id, GfxObj*>;
   objects_mutex = jmutex_new();
 }
 
-void gfxobj_exit()
+RasterModule::~RasterModule()
 {
   assert(objects_map->empty());
   delete objects_map;

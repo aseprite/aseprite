@@ -29,8 +29,12 @@ class FileItem;
 
 typedef std::vector<FileItem*> FileItemList;
 
-void file_system_init();
-void file_system_exit();
+class FileSystemModule
+{
+public:
+  FileSystemModule();
+  ~FileSystemModule();
+};
 
 void file_system_refresh();
 

@@ -18,8 +18,8 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
+#include <assert.h>
 /* #include <allegro/internal/aintern.h> */
 #include <stdarg.h>
 #include <stdio.h>
@@ -30,13 +30,13 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
+#include "app.h"
 #include "ase_exception.h"
-#include "ui_context.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "app.h"
 #include "core/cfg.h"
+#include "core/check_args.h"
 #include "core/core.h"
 #include "core/drop_files.h"
 #include "core/file_system.h"
@@ -55,6 +55,7 @@
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "ui_context.h"
 #include "util/boundary.h"
 #include "util/recscr.h"
 #include "widgets/colbar.h"
@@ -68,40 +69,26 @@
   #include <winalleg.h>
 #endif
 
-class Option
-{
-  int m_type;
-  jstring m_data;
-
-public:
-
-  enum {
-    OpenSprite,
-  };
-
-  Option(int type, const char* data)
-  {
-    m_type = type;
-    m_data = data;
-  }
-
-  int type() const { return m_type; }
-  const char* data() const { return m_data.c_str(); }
-
-};
-
-class App::Pimpl
+/**
+ * ASE modules.
+ */
+class App::Modules
 {
 public:
-  const char* m_exe_name;
-  std::vector<Option*> m_options;
+  // ASE Modules
+  ConfigModule m_config_module;
+  CheckArgs m_check_args;
+  LoggerModule m_logger_module;
+  IntlModule m_intl_module;
+  FileSystemModule m_file_system_module;
+  RasterModule m_raster;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
-  int m_return_code;
-  std::vector<std::vector<IAppHook*> > m_apphooks;
 
-  Pimpl() { }
-  ~Pimpl() { }
+  Modules(int argc, char* argv[])
+    : m_check_args(argc, argv)
+  { }
+  ~Modules() { }
 };
 
 App* App::m_instance = NULL;
@@ -120,50 +107,25 @@ static Widget* tabsbar = NULL;	      /* the tabs bar widget */
 
 static char *palette_filename = NULL;
 
-static void tabsbar_select_callback(JWidget tabs, void *data, int button);
+static void tabsbar_select_callback(Widget* tabs, void *data, int button);
 
 /**
  * Initializes the application loading the modules, setting the
  * graphics mode, loading the configuration and resources, etc.
  */
-App::App(int argc, char *argv[])
+App::App(int argc, char* argv[])
+  : m_modules(NULL)
+  , m_legacy(NULL)
 {
   assert(m_instance == NULL);
   m_instance = this;
 
+  // init hooks
+  m_apphooks.resize(AppEvent::NumEvents);
+
   // create private implementation data
-  m_pimpl = new Pimpl;
-  m_pimpl->m_exe_name = argv[0];
-  m_pimpl->m_return_code = 0;
-  m_pimpl->m_apphooks.resize(AppEvent::NumEvents);
-
-  /* initialize language suppport */
-  intl_init();
-
-  /* install the `core' of ASE application */
-  core_init();
-
-  /* install the file-system access module */
-  file_system_init();
-
-  /* init configuration */
-  ase_config_init();
-
-  // load the language file
-  intl_load_lang();
-
-  /* search options in the arguments */
-  check_args(argc, argv);
-
-  /* GUI is the default mode */
-  if (!(ase_mode & MODE_BATCH))
-    ase_mode |= MODE_GUI;
-
-  /* install 'raster' stuff */
-  gfxobj_init();
-
-  // install the modules
-  modules_init(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
+  m_modules = new Modules(argc, argv);
+  m_legacy = new LegacyModules(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
 
   /* custom default palette? */
   if (palette_filename) {
@@ -274,13 +236,14 @@ int App::run()
     // procress options
   PRINTF("Processing options...\n");
   
-  for (std::vector<Option*>::iterator
-	 it = m_pimpl->m_options.begin(); it != m_pimpl->m_options.end(); ++it) {
-    Option* option = *it;
+  for (CheckArgs::iterator
+	 it  = m_modules->m_check_args.begin();
+         it != m_modules->m_check_args.end(); ++it) {
+    CheckArgs::Option* option = *it;
 
     switch (option->type()) {
 
-      case Option::OpenSprite: {
+      case CheckArgs::Option::OpenSprite: {
 	/* load the sprite */
 	Sprite *sprite = sprite_load(option->data());
 	if (!sprite) {
@@ -307,9 +270,8 @@ int App::run()
 	break;
       }
     }
-    delete option;
   }
-  m_pimpl->m_options.clear();
+  m_modules->m_check_args.clear();
 
   /* just batch mode */
   if (ase_mode & MODE_BATCH) {
@@ -343,6 +305,7 @@ int App::run()
     jwidget_free(top_window);
     top_window = NULL;
   }
+
   return 0;
 }
 
@@ -355,39 +318,34 @@ App::~App()
     assert(m_instance == this);
 
     // remove ase handlers
-    PRINTF("Uninstalling ASE\n");
+    PRINTF("ASE: Uninstalling\n");
 
     App::trigger_event(AppEvent::Exit);
 
     // destroy application hooks
     for (int c=0; c<AppEvent::NumEvents; ++c) {
       for (std::vector<IAppHook*>::iterator
-	     it = m_pimpl->m_apphooks[c].begin(); 
-	   it != m_pimpl->m_apphooks[c].end(); ++it) {
+	     it = m_apphooks[c].begin(); 
+	   it != m_apphooks[c].end(); ++it) {
 	IAppHook* apphook = *it;
 	delete apphook;
       }
 
       // clear the list of hooks (so nobody can call the deleted hooks)
-      m_pimpl->m_apphooks[c].clear();
+      m_apphooks[c].clear();
     }
 
     // finalize modules, configuration and core
-    modules_exit();
-    delete m_pimpl;
     Editor::editor_cursor_exit();
     boundary_exit();
 
-    gfxobj_exit();
-    ase_config_exit();
-    file_system_exit();
-    core_exit();
-    intl_exit();
+    delete m_legacy;
+    delete m_modules;
   
     m_instance = NULL;
   }
   catch (...) {
-    allegro_message("Uncaught exception in ~App");
+    allegro_message("Error closing ASE.\n(uncaught exception)");
     // no throw
   }
 }
@@ -396,7 +354,7 @@ void App::add_hook(AppEvent::Type event, IAppHook* hook)
 {
   assert(event >= 0 && event < AppEvent::NumEvents);
 
-  m_pimpl->m_apphooks[event].push_back(hook);
+  m_apphooks[event].push_back(hook);
 }
 
 void App::trigger_event(AppEvent::Type event)
@@ -404,8 +362,8 @@ void App::trigger_event(AppEvent::Type event)
   assert(event >= 0 && event < AppEvent::NumEvents);
 
   for (std::vector<IAppHook*>::iterator
-	 it = m_pimpl->m_apphooks[event].begin();
-       it != m_pimpl->m_apphooks[event].end(); ++it) {
+	 it = m_apphooks[event].begin();
+       it != m_apphooks[event].end(); ++it) {
     IAppHook* apphook = *it;
     apphook->on_event();
   }
@@ -570,145 +528,5 @@ static void tabsbar_select_callback(Widget* tabs, void *data, int button)
       CommandsModule::instance()->get_command_by_name(CommandId::close_file);
 
     UIContext::instance()->execute_command(close_file_cmd, NULL);
-  }
-}
-
-/**
- * Looks the inpunt arguments in the command line.
- */
-void App::check_args(int argc, char *argv[])
-{
-  Console console;
-  int i, n, len;
-  char *arg;
-
-  for (i=1; i<argc; i++) {
-    arg = argv[i];
-
-    for (n=0; arg[n] == '-'; n++);
-    len = strlen(arg+n);
-
-    /* option */
-    if ((n > 0) && (len > 0)) {
-      /* use other palette file */
-      if (strncmp(arg+n, "palette", len) == 0) {
-        if (++i < argc)
-	  palette_filename = argv[i];
-        else
-          usage(false);
-      }
-      /* video resolution */
-      else if (strncmp(arg+n, "resolution", len) == 0) {
-        if (++i < argc) {
-	  int c, num1=0, num2=0, num3=0;
-	  char *tok;
-
-	  /* el próximo argumento debe indicar un formato de
-	     resolución algo como esto: 320x240[x8] o [8] */
-	  c = 0;
-
-	  for (tok=ustrtok(argv[i], "x"); tok;
-	       tok=ustrtok(NULL, "x")) {
-	    switch (c) {
-	      case 0: num1 = ustrtol(tok, NULL, 10); break;
-	      case 1: num2 = ustrtol(tok, NULL, 10); break;
-	      case 2: num3 = ustrtol(tok, NULL, 10); break;
-	    }
-	    c++;
-	  }
-
-	  switch (c) {
-	    case 1:
-	      set_config_int("GfxMode", "Depth", num1);
-	      break;
-	    case 2:
-	    case 3:
-	      set_config_int("GfxMode", "Width", num1);
-	      set_config_int("GfxMode", "Height", num2);
-	      if (c == 3)
-		set_config_int("GfxMode", "Depth", num3);
-	      break;
-	  }
-	}
-        else {
-	  console.printf(_("%s: option \"res\" requires an argument\n"), 
-			 m_pimpl->m_exe_name);
-          usage(false);
-	}
-      }
-      /* verbose mode */
-      else if (strncmp(arg+n, "verbose", len) == 0) {
-        ase_mode |= MODE_VERBOSE;
-      }
-      /* show help */
-      else if (strncmp(arg+n, "help", len) == 0) {
-        usage(true);
-      }
-      /* show version */
-      else if (strncmp(arg+n, "version", len) == 0) {
-        ase_mode |= MODE_BATCH;
-
-        console.printf("ase %s\n", VERSION);
-      }
-      /* invalid argument */
-      else {
-        usage(false);
-      }
-    }
-    /* graphic file to open */
-    else if (n == 0)
-      m_pimpl->m_options.push_back(new Option(Option::OpenSprite, argv[i]));
-  }
-}
-
-/**
- * Shows the available options for the program
- */
-void App::usage(bool show_help)
-{
-  Console console;
-
-  ase_mode |= MODE_BATCH;
-  if (!show_help)
-    m_pimpl->m_return_code = 1;
-
-  // show options
-  if (show_help) {
-    // copyright
-    console.printf
-      ("ase %s -- Allegro Sprite Editor, %s\n"
-       COPYRIGHT "\n\n",
-       VERSION, _("Just another tool to create sprites"));
-
-    // usage
-    console.printf
-      ("%s\n  %s [%s] [%s]...\n\n",
-       _("Usage:"), m_pimpl->m_exe_name, _("OPTION"), _("FILE"));
-
-    /* options */
-    console.printf
-      ("%s:\n"
-       "  -palette GFX-FILE        %s\n"
-       "  -resolution WxH[xBPP]    %s\n"
-       "  -verbose                 %s\n"
-       "  -help                    %s\n"
-       "  -version                 %s\n"
-       "\n",
-       _("Options"),
-       _("Use a specific palette by default"),
-       _("Change the resolution to use"),
-       _("Explain what is being done (in stderr or a log file)"),
-       _("Display this help and exits"),
-       _("Output version information and exit"));
-
-    /* web-site */
-    console.printf
-      ("%s: %s\n\n",
-       _("Find more information in the ASE's official web site at:"), WEBSITE);
-  }
-  /* how to show options */
-  else {
-    console.printf(_("Try \"%s --help\" for more information.\n"), 
-		   m_pimpl->m_exe_name);
   }
 }

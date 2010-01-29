@@ -30,11 +30,9 @@
 
 static char config_filename[512];
 
-void ase_config_init()
+ConfigModule::ConfigModule()
 {
-  DIRS *dirs, *dir;
-
-  dirs = cfg_filename_dirs();
+  DIRS *dir, *dirs = cfg_filename_dirs();
 
   /* search the configuration file from first to last path */
   for (dir=dirs; dir; dir=dir->next) {
@@ -54,10 +52,10 @@ void ase_config_init()
   override_config_file(config_filename);
 }
 
-void ase_config_exit()
+ConfigModule::~ConfigModule()
 {
+  //override_config_file(NULL);
   flush_config_file();
-/*   override_config_file(NULL); */
 }
 
 bool get_config_bool(const char *section, const char *name, bool value)

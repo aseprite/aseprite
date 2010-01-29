@@ -62,8 +62,12 @@ private:
   void assign_id();
 };
 
-void gfxobj_init();
-void gfxobj_exit();
+class RasterModule
+{
+public:
+  RasterModule();
+  ~RasterModule();
+};
 
 GfxObj* gfxobj_find(gfxobj_id id);
 

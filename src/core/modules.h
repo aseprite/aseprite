@@ -23,8 +23,18 @@
 
 #define REQUIRE_INTERFACE    1
 
-void modules_init(int requirements);
-void modules_exit();
+/**
+ * Class to install and uninstall old modules.
+ *
+ * Legacy modules are programmed in C code and should be refactored to
+ * C++ classes.
+ */
+class LegacyModules
+{
+public:
+  LegacyModules(int requirements);
+  ~LegacyModules();
+};
 
 #endif
 

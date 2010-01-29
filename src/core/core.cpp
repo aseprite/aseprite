@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 
 #include "jinete/jbase.h"
 
@@ -46,42 +47,31 @@ int ase_mode = 0;
 
 #ifdef NEED_LOG
 /* log file info */
-static char *log_filename = NULL;
+static std::string log_filename;
 static FILE *log_fileptr = NULL;
 #endif
 
-void core_init()
+LoggerModule::LoggerModule()
 {
+  PRINTF("Logger module: starting\n");
+
 #ifdef NEED_LOG
-  char buf[512];
-  int count = 0;
-  DIRS *dirs;
-
-  for (;;) {
-    sprintf(buf, "log%04d.txt", count++);
-    dirs = filename_in_bindir(buf);
-    if (!exists(dirs->path))
-      break;
-    else
-      dirs_free(dirs);
-  }
-
-  log_filename = jstrdup(dirs->path);
+  DIRS* dirs = filename_in_bindir("aseprite.log");
+  log_filename = dirs->path;
   dirs_free(dirs);
 #endif
+
+  PRINTF("Logger module: started\n");
 }
 
-void core_exit()
+LoggerModule::~LoggerModule()
 {
+  PRINTF("Logger module: shutting down (this is the last line)\n");
+
 #ifdef NEED_LOG
   if (log_fileptr) {
     fclose(log_fileptr);
     log_fileptr = NULL;
-  }
-
-  if (log_filename) {
-    jfree(log_filename);
-    log_filename = NULL;
   }
 #endif
 }
@@ -93,8 +83,8 @@ void verbose_printf(const char *format, ...)
 
 #ifdef NEED_LOG
   if (!log_fileptr)
-    if (log_filename)
-      log_fileptr = fopen(log_filename, "w");
+    if (log_filename.size() > 0)
+      log_fileptr = fopen(log_filename.c_str(), "w");
 
   if (log_fileptr)
 #endif

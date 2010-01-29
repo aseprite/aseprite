@@ -21,6 +21,8 @@
 
 #include "jinete/jbase.h"
 
+#include <vector>
+
 class Layer;
 class Sprite;
 class Params;
@@ -45,15 +47,20 @@ public:
   virtual void on_event() = 0;
 };
 
+class LegacyModules;
+
 class App
 {
+  class Modules;
+
   static App* m_instance;
 
-  class Pimpl;
-  Pimpl* m_pimpl;
+  std::vector<std::vector<IAppHook*> > m_apphooks;
+  Modules* m_modules;
+  LegacyModules* m_legacy;
 
 public:
-  App(int argc, char *argv[]);
+  App(int argc, char* argv[]);
   ~App();
 
   static App* instance() { return m_instance; }
@@ -62,10 +69,6 @@ public:
 
   void add_hook(AppEvent::Type event, IAppHook* hook);
   void trigger_event(AppEvent::Type event);
-
-private:
-  void check_args(int argc, char *argv[]);
-  void usage(bool show_help);
   
 };
 

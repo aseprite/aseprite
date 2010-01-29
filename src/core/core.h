@@ -29,8 +29,12 @@ enum {
 
 extern int ase_mode;
 
-void core_init();
-void core_exit();
+class LoggerModule
+{
+public:
+  LoggerModule();
+  ~LoggerModule();
+};
 
 void verbose_printf(const char *format, ...);
 bool is_interactive();

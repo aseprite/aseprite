@@ -174,7 +174,7 @@ static unsigned int current_file_system_version = 0;
 /**
  * Initializes the file-system module to navigate the file-system.
  */
-void file_system_init()
+FileSystemModule::FileSystemModule()
 {
   fileitems_map = new FileItemMap;
   thumbnail_map = new ThumbnailMap;
@@ -193,13 +193,17 @@ void file_system_init()
   // get the root element of the file system (this will create
   // the 'rootitem' FileItem)
   get_root_fileitem();
+
+  PRINTF("File system module installed\n");
 }
  
 /**
  * Shutdowns the file-system module.
  */
-void file_system_exit()
+FileSystemModule::~FileSystemModule()
 {
+  PRINTF("File system module: uninstalling\n");
+
   for (FileItemMap::iterator
 	 it=fileitems_map->begin(); it!=fileitems_map->end(); ++it) {
     delete it->second;
@@ -223,6 +227,8 @@ void file_system_exit()
 
   delete fileitems_map;
   delete thumbnail_map;
+
+  PRINTF("File system module: uninstalled\n");
 }
 
 /**

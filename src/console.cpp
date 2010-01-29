@@ -148,14 +148,8 @@ void Console::printf(const char *format, ...)
     jfree(final);
   }
   else {
-    if (ji_screen) {
-      fputs(buf, stdout);
-      fflush(stdout);
-
-      jalert("Error<<%s||OK", buf);
-    }
-    else
-      allegro_message(buf);
+    fputs(buf, stdout);
+    fflush(stdout);
   }
 }
 
@@ -168,8 +162,5 @@ void user_printf(const char *format, ...)
   uvsprintf(buf, format, ap);
   va_end(ap);
 
-/*   if (script_is_running()) */
-/*     plugin_printf(buf); */
-/*   else */
   allegro_message(buf);
 }
