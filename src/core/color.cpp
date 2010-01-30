@@ -208,7 +208,7 @@ int color_get_red(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -243,7 +243,7 @@ int color_get_green(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -278,7 +278,7 @@ int color_get_blue(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -316,7 +316,7 @@ int color_get_hue(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -354,7 +354,7 @@ int color_get_saturation(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -392,7 +392,7 @@ int color_get_value(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -405,12 +405,12 @@ int color_get_index(int imgtype, color_t color)
 
     case COLOR_TYPE_RGB:
       PRINTF("Getting `index' from a RGB color\n"); /* TODO */
-      assert(FALSE);
+      assert(false);
       break;
 
     case COLOR_TYPE_HSV:
       PRINTF("Getting `index' from a HSV color\n"); /* TODO */
-      assert(FALSE);
+      assert(false);
       break;
 
     case COLOR_TYPE_GRAY:
@@ -421,7 +421,7 @@ int color_get_index(int imgtype, color_t color)
 
   }
 
-  assert(FALSE);
+  assert(false);
   return -1;
 }
 
@@ -751,7 +751,7 @@ void color_to_formalstring(int imgtype, color_t color,
       }
 
       default:
-	assert(FALSE);
+	assert(false);
 	break;
     }
   }
@@ -812,7 +812,7 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
 
       default:
-	assert(FALSE);
+	assert(false);
 	break;
     }
   }

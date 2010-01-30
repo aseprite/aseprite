@@ -136,7 +136,7 @@ static int monitor_timer = -1;
 static MonitorList* monitors = NULL;
 static std::vector<Shortcut*>* shortcuts = NULL;
 
-static bool ji_screen_created = FALSE;
+static bool ji_screen_created = false;
 
 static volatile int next_idle_flags = 0;
 static JList icon_buttons;
@@ -202,9 +202,9 @@ int init_module_gui()
 
   /* disable Ctrl+Shift+End in non-DOS */
 #if !defined(ALLEGRO_DOS)
-  three_finger_flag = FALSE;
+  three_finger_flag = false;
 #endif
-  three_finger_flag = TRUE;	/* TODO remove this line */
+  three_finger_flag = true;	/* TODO remove this line */
 
   /* set the graphics mode... */
   load_gui_config(w, h, bpp, fullscreen, maximized);
@@ -214,7 +214,7 @@ int init_module_gui()
 
   /* default resolution */
   if (!w || !h) {
-    bool has_desktop = FALSE;
+    bool has_desktop = false;
     int dsk_w, dsk_h;
 
     has_desktop = get_desktop_resolution(&dsk_w, &dsk_h) == 0;
@@ -229,7 +229,7 @@ int init_module_gui()
 	if (try_resolutions[c].width <= dsk_w &&
 	    try_resolutions[c].height <= dsk_h) {
 	  min_possible_dsk_res = c;
-	  fullscreen = FALSE;
+	  fullscreen = false;
 	  w = try_resolutions[c].width;
 	  h = try_resolutions[c].height;
 	  screen_scaling = try_resolutions[c].scale;
@@ -239,7 +239,7 @@ int init_module_gui()
     }
     /* full screen */
     else {
-      fullscreen = TRUE;
+      fullscreen = true;
       w = 320;
       h = 200;
       screen_scaling = 1;
@@ -362,7 +362,7 @@ void exit_module_gui()
 
     if (ji_screen_created)
       destroy_bitmap(old_bmp);
-    ji_screen_created = FALSE;
+    ji_screen_created = false;
   }
 
   jlist_free(icon_buttons);
@@ -445,7 +445,7 @@ void update_screen_for_sprite(const Sprite* sprite)
   /* without sprite */
   if (!sprite) {
     /* well, change to the default palette */
-    if (set_current_palette(NULL, FALSE)) {
+    if (set_current_palette(NULL, false)) {
       /* if the palette changes, refresh the whole screen */
       jmanager_refresh_screen();
     }
@@ -453,7 +453,7 @@ void update_screen_for_sprite(const Sprite* sprite)
   /* with a sprite */
   else {
     /* select the palette of the sprite */
-    if (set_current_palette(sprite_get_palette(sprite, sprite->frame), FALSE)) {
+    if (set_current_palette(sprite_get_palette(sprite, sprite->frame), false)) {
       /* if the palette changes, refresh the whole screen */
       jmanager_refresh_screen();
     }
@@ -539,11 +539,11 @@ void gui_setup_screen(bool reload_font)
     if (ji_screen_created)
       destroy_bitmap(old_bmp);
 
-    ji_screen_created = TRUE;
+    ji_screen_created = true;
   }
   else {
     ji_set_screen(screen);
-    ji_screen_created = FALSE;
+    ji_screen_created = false;
   }
 
   if (reload_font)
@@ -710,7 +710,7 @@ static bool hook_msg_proc(JWidget widget, JMessage msg)
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 /**
@@ -796,7 +796,7 @@ static bool button_with_icon_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_DESTROY)
     jlist_remove(icon_buttons, widget);
-  return FALSE;
+  return false;
 }
 
 /**********************************************************************/

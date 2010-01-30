@@ -92,7 +92,7 @@ static bool load_JPEG(FileOp *fop)
 
   file = fopen(fop->filename, "rb");
   if (!file)
-    return FALSE;
+    return false;
 
   /* initialize the JPEG decompression object with error handling */
   jerr.fop = fop;
@@ -105,7 +105,7 @@ static bool load_JPEG(FileOp *fop)
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
-    return FALSE;
+    return false;
   }
 
   jpeg_create_decompress(&cinfo);
@@ -114,7 +114,7 @@ static bool load_JPEG(FileOp *fop)
   jpeg_stdio_src(&cinfo, file);
 
   /* read file header, set default decompression parameters */
-  jpeg_read_header(&cinfo, TRUE);
+  jpeg_read_header(&cinfo, true);
 
   if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
     cinfo.out_color_space = JCS_GRAYSCALE;
@@ -133,7 +133,7 @@ static bool load_JPEG(FileOp *fop)
   if (!image) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
-    return FALSE;
+    return false;
   }
 
   /* create the buffer */
@@ -142,7 +142,7 @@ static bool load_JPEG(FileOp *fop)
   if (!buffer) {
     jpeg_destroy_decompress(&cinfo);
     fclose(file);
-    return FALSE;
+    return false;
   }
 
   for (c=0; c<(int)buffer_height; c++) {
@@ -154,7 +154,7 @@ static bool load_JPEG(FileOp *fop)
       jfree(buffer);
       jpeg_destroy_decompress(&cinfo);
       fclose(file);
-      return FALSE;
+      return false;
     }
   }
 
@@ -218,7 +218,7 @@ static bool load_JPEG(FileOp *fop)
   jpeg_destroy_decompress(&cinfo);
 
   fclose(file);
-  return TRUE;
+  return true;
 }
 
 static bool save_JPEG(FileOp *fop)
@@ -236,7 +236,7 @@ static bool save_JPEG(FileOp *fop)
   file = fopen(fop->filename, "wb");
   if (!file) {
     fop_error(fop, _("Error creating file.\n"));
-    return FALSE;
+    return false;
   }
 
   /* Allocate and initialize JPEG compression object.  */
@@ -261,12 +261,12 @@ static bool save_JPEG(FileOp *fop)
   }
 
   jpeg_set_defaults(&cinfo);
-  jpeg_set_quality(&cinfo, (int)MID(0, 100.0f * jpeg_options->quality, 100), TRUE);
+  jpeg_set_quality(&cinfo, (int)MID(0, 100.0f * jpeg_options->quality, 100), true);
   cinfo.dct_method = JDCT_ISLOW;
   cinfo.smoothing_factor = 0;
 
   /* Start compressor.  */
-  jpeg_start_compress(&cinfo, TRUE);
+  jpeg_start_compress(&cinfo, true);
 
   /* Create the buffer.  */
   buffer_height = 1;
@@ -275,7 +275,7 @@ static bool save_JPEG(FileOp *fop)
     fop_error(fop, _("Not enough memory for the buffer.\n"));
     jpeg_destroy_compress(&cinfo);
     fclose(file);
-    return FALSE;
+    return false;
   }
 
   for (c=0; c<(int)buffer_height; c++) {
@@ -288,7 +288,7 @@ static bool save_JPEG(FileOp *fop)
       jfree(buffer);
       jpeg_destroy_compress(&cinfo);
       fclose(file);
-      return FALSE;
+      return false;
     }
   }
 
@@ -342,7 +342,7 @@ static bool save_JPEG(FileOp *fop)
   fclose(file);
 
   /* All fine.  */
-  return TRUE;
+  return true;
 }
 
 /**

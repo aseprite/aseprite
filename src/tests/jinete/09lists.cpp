@@ -87,7 +87,7 @@ JRect test1()
 
   jlistbox_select_index(listbox, 0);
 
-  jwidget_expansive(listbox, TRUE);
+  jwidget_expansive(listbox, true);
 
   jwidget_add_child (window, box);
   jwidget_add_child (box, listbox);
@@ -123,7 +123,7 @@ void test2(JRect pos)
 
   jview_attach(view, listbox);
 
-  jwidget_expansive(view, TRUE);
+  jwidget_expansive(view, true);
 
   jwidget_add_child (window, box);
   jwidget_add_child (box, view);
@@ -157,7 +157,7 @@ void test3(JRect pos)
 
   jview_attach(view, listbox);
 
-  jwidget_expansive(view, TRUE);
+  jwidget_expansive(view, true);
 
   jwidget_add_child (window, box);
   jwidget_add_child (box, view);
@@ -193,7 +193,7 @@ void test4(JRect pos)
 
   jview_attach(view, listbox);
 
-  jwidget_expansive(view, TRUE);
+  jwidget_expansive(view, true);
 
   jwidget_add_child (window, box);
   jwidget_add_child (box, view);

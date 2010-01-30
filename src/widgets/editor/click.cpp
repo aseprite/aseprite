@@ -51,7 +51,7 @@ static int click_prev_last_b;
 void Editor::editor_click_start(int mode, int *x, int *y, int *b)
 {
   click_mode = mode;
-  click_first = TRUE;
+  click_first = true;
 
   click_start_x = click_last_x = jmouse_x(0);
   click_start_y = click_last_y = jmouse_y(0);
@@ -68,7 +68,7 @@ void Editor::editor_click_start(int mode, int *x, int *y, int *b)
 void Editor::editor_click_continue(int mode, int *x, int *y)
 {
   click_mode = mode;
-  click_first = TRUE;
+  click_first = true;
 
   click_start_x = click_last_x = jmouse_x(0);
   click_start_y = click_last_y = jmouse_y(0);
@@ -83,7 +83,7 @@ void Editor::editor_click_done()
   clear_keybuf();
 }
 
-/* returns FALSE when the user stop the click-loop: releases the
+/* returns false when the user stop the click-loop: releases the
    button or press the second click (depend of the mode) */
 int Editor::editor_click(int *x, int *y, int *update,
 			 void (*scroll_callback) (int before_change))
@@ -93,7 +93,7 @@ int Editor::editor_click(int *x, int *y, int *update,
   poll_keyboard();
 
   if (click_first) {
-    click_first = FALSE;
+    click_first = false;
 
     if (click_mode == MODE_CLICKANDCLICK) {
       do {
@@ -129,10 +129,10 @@ int Editor::editor_click(int *x, int *y, int *update,
       int scroll_x, scroll_y;
 
       if (scroll_callback)
-	(*scroll_callback)(TRUE);
+	(*scroll_callback)(true);
 
       /* smooth scroll movement */
-      if (get_config_bool("Options", "MoveSmooth", TRUE)) {
+      if (get_config_bool("Options", "MoveSmooth", true)) {
 	jmouse_set_position(MID(vp->x1+1, click_last_x, vp->x2-2),
 			    MID(vp->y1+1, click_last_y, vp->y2-2));
       }
@@ -147,13 +147,13 @@ int Editor::editor_click(int *x, int *y, int *update,
 
       jview_get_scroll(view, &scroll_x, &scroll_y);
       editor_set_scroll(scroll_x+click_last_x-jmouse_x(0),
-			scroll_y+click_last_y-jmouse_y(0), TRUE);
+			scroll_y+click_last_y-jmouse_y(0), true);
 
       click_last_x = jmouse_x(0);
       click_last_y = jmouse_y(0);
 
       if (scroll_callback)
-	(*scroll_callback)(FALSE);
+	(*scroll_callback)(false);
     }
 
     /* if the cursor hasn't subpixel movement */
@@ -182,15 +182,15 @@ int Editor::editor_click(int *x, int *y, int *update,
       jmouse_set_position(click_last_x, click_last_y);
       clear_keybuf();
 
-      return FALSE;
+      return false;
     }
     else {
-      return TRUE;
+      return true;
     }
   }
   /* click-and-release mode */
   else {
-    return (click_last_b) ? TRUE: FALSE;
+    return (click_last_b) ? true: false;
   }
 }
 

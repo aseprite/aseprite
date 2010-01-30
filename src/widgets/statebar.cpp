@@ -74,7 +74,7 @@ JWidget statusbar_new()
 
   jwidget_add_hook(widget, statusbar_type(),
 		   statusbar_msg_proc, statusbar);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
 
   {
     JWidget box1, box2;
@@ -101,7 +101,7 @@ JWidget statusbar_new()
     jwidget_noborders(box1);
     jwidget_noborders(box2);
 
-    jwidget_expansive(statusbar->b_layer, TRUE);
+    jwidget_expansive(statusbar->b_layer, true);
     jwidget_add_child(box1, statusbar->b_layer);
     jwidget_add_child(box1, statusbar->slider);
     jwidget_add_child(box2, statusbar->b_first);
@@ -190,7 +190,7 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
 void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color)
 {
   char buf[128];		/* TODO warning buffer overflow */
-  color_to_formalstring(imgtype, color, buf, sizeof(buf), TRUE);
+  color_to_formalstring(imgtype, color, buf, sizeof(buf), true);
   statusbar_set_text(widget, msecs, "%s %s", _("Color"), buf);
 }
 
@@ -250,12 +250,12 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
     case JM_REQSIZE:
       msg->reqsize.w =
 	msg->reqsize.h = 2 + jwidget_get_text_height(widget) + 2;
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       jrect_copy(widget->rc, &msg->setpos.rect);
       jwidget_set_rect(statusbar->commands_box, widget->rc);
-      return TRUE;
+      return true;
 
     case JM_CLOSE:
       if (!jwidget_has_child(widget, statusbar->commands_box)) {
@@ -334,7 +334,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       }
 
       jrect_free(rc);
-      return TRUE;
+      return true;
     }
 
     case JM_MOUSEENTER:
@@ -369,7 +369,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
@@ -385,7 +385,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool slider_change_hook(JWidget widget, void *data)

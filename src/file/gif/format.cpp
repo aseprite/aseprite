@@ -370,7 +370,7 @@ load_object(FILE* file, long size, void(*progress)(void*, float), void* dp)
 		return gif;
 	}
     }
-    while (TRUE);
+    while (true);
   error:
     if (file)
 	fclose (file);

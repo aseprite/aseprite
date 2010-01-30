@@ -58,9 +58,9 @@ int main (int argc, char *argv[])
   view2 = jview_new();
   button = jbutton_new("&Close");
 
-  jwidget_expansive(view1, TRUE);
-  jwidget_expansive(view2, TRUE);
-  jwidget_expansive(box2, TRUE);
+  jwidget_expansive(view1, true);
+  jwidget_expansive(view2, true);
+  jwidget_expansive(box2, true);
 
   jwidget_add_child(window, box1);
   jwidget_add_children(box1, box2, button, NULL);

@@ -62,7 +62,7 @@ int main (int argc, char *argv[])
   button_cancel = jbutton_new ("&Cancel");
 
   label->set_align(JI_CENTER | JI_MIDDLE);
-  jwidget_expansive (label, TRUE);
+  jwidget_expansive (label, true);
 
   jwidget_add_child (window, box1);
   jwidget_add_child (box1, label);

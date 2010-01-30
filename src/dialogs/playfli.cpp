@@ -124,7 +124,7 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 
   /* stretch routine doesn't support bitmaps of different color depths */
   if (bitmap_color_depth(ji_screen) != 8)
-    fullscreen = FALSE;
+    fullscreen = false;
 
   w = fli_header.width;
   h = fli_header.height;
@@ -151,7 +151,7 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
   install_int_ex(speed_timer_callback, MSEC_TO_TIMER(fli_header.speed));
 
   frpos = 0;
-  done = FALSE;
+  done = false;
 
   while (!done) {
     /* read the frame */
@@ -180,7 +180,7 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 
     do {
       if ((*callback) ()) {
-	done = TRUE;
+	done = true;
 	break;
       }
     } while (speed_timer <= 0);

@@ -96,7 +96,7 @@ void image_rotate (Image *dst, Image *src, int x, int y, int w, int h,
 				     ftofix (256 * angle / PI),
 				     fixdiv (itofix (w), itofix (src->w)),
 				     fixdiv (itofix (h), itofix (src->h)),
-				     FALSE, FALSE, xs, ys);
+				     false, false, xs, ys);
 
   ase_parallelogram_map_standard (dst, src, xs, ys);
 }
@@ -213,10 +213,10 @@ SCANLINE_DRAWER(32,
  *  bitmap. With the default scanline drawer, a pixel in the destination
  *  bitmap is drawn if and only if its center is covered by any pixel in the
  *  sprite. The color of this covering sprite pixel is used to draw.
- *  If sub_pixel_accuracy=FALSE, then the scanline drawer will be called with
+ *  If sub_pixel_accuracy=false, then the scanline drawer will be called with
  *  *_bmp_x being a fixed point representation of the integers representing
  *  the x coordinate of the first and last point in bmp whose centre is
- *  covered by the sprite. If sub_pixel_accuracy=TRUE, then the scanline
+ *  covered by the sprite. If sub_pixel_accuracy=true, then the scanline
  *  drawer will be called with the exact fixed point position of the first
  *  and last point in which the horizontal line passing through the centre is
  *  at least partly covered by the sprite. This is useful for doing
@@ -636,15 +636,15 @@ static void ase_parallelogram_map_standard (Image *bmp, Image *sprite,
   switch (bmp->imgtype) {
 
     case IMAGE_RGB:
-      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_32, FALSE);
+      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_32, false);
       break;
 
     case IMAGE_GRAYSCALE:
-      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_16, FALSE);
+      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_16, false);
       break;
 
     case IMAGE_INDEXED:
-      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_8, FALSE);
+      ase_parallelogram_map (bmp, sprite, xs, ys, draw_scanline_8, false);
       break;
   }
 }

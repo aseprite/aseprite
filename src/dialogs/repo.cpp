@@ -58,9 +58,9 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   jbutton_add_command_data(repo_dlg->button_add, add_command, repo_dlg);
   jbutton_add_command_data(repo_dlg->button_delete, delete_command, repo_dlg);
 
-  jwidget_magnetic(repo_dlg->button_use, TRUE);
+  jwidget_magnetic(repo_dlg->button_use, true);
 
-  jwidget_expansive(view, TRUE);
+  jwidget_expansive(view, true);
   jview_attach(view, repo_dlg->listbox);
   jwidget_set_min_size(view, JI_SCREEN_W*25/100, JI_SCREEN_H*25/100);
 
@@ -176,7 +176,7 @@ static bool repo_listbox_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void use_command(JWidget widget, void *data)
@@ -195,7 +195,7 @@ static void add_command(JWidget widget, void *data)
   int ret, added;
 
   if (repo_dlg->add_listitem) {
-    added = FALSE;
+    added = false;
     ret = (*repo_dlg->add_listitem)(repo_dlg, &added);
 
     if (added) {
@@ -218,7 +218,7 @@ static void delete_command(JWidget widget, void *data)
   int ret, kill, index, last;
 
   if (repo_dlg->delete_listitem) {
-    kill = FALSE;
+    kill = false;
     ret = (*repo_dlg->delete_listitem) (repo_dlg, &kill);
 
     if (kill) {

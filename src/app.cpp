@@ -143,7 +143,7 @@ App::App(int argc, char* argv[])
   }
 
   /* set system palette to the default one */
-  set_current_palette(NULL, TRUE);
+  set_current_palette(NULL, true);
 }
 
 /**
@@ -187,12 +187,12 @@ int App::run()
     editor = create_new_editor();
 
     // configure all widgets to expansives
-    jwidget_expansive(menubar, TRUE);
-    jwidget_expansive(statusbar, TRUE);
-    jwidget_expansive(colorbar, TRUE);
-    jwidget_expansive(toolbar, TRUE);
-    jwidget_expansive(tabsbar, TRUE);
-    jwidget_expansive(view, TRUE);
+    jwidget_expansive(menubar, true);
+    jwidget_expansive(statusbar, true);
+    jwidget_expansive(colorbar, true);
+    jwidget_expansive(toolbar, true);
+    jwidget_expansive(tabsbar, true);
+    jwidget_expansive(view, true);
 
     /* prepare the first editor */
     jview_attach(view, editor);
@@ -280,11 +280,11 @@ int App::run()
   /* run the GUI */
   else if (ase_mode & MODE_GUI) {
     /* select language */
-    dialogs_select_language(FALSE);
+    dialogs_select_language(false);
 
     // show tips only if there are not a current sprite
     if (!UIContext::instance()->get_current_sprite())
-      dialogs_tips(FALSE);
+      dialogs_tips(false);
 
     // support to drop files from Windows explorer
     install_drop_files();
@@ -416,7 +416,7 @@ bool app_realloc_recent_list()
   /* update the recent file list menu item */
   if (list_menuitem) {
     if (jmenuitem_has_submenu_opened(list_menuitem))
-      return FALSE;
+      return false;
 
     Command *cmd_open_file = CommandsModule::instance()->get_command_by_name(CommandId::open_file);
 
@@ -450,7 +450,7 @@ bool app_realloc_recent_list()
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 int app_get_current_image_type()

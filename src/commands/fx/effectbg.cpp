@@ -100,7 +100,7 @@ static void effect_bg(void *_data)
 
   /* mark the work as 'done' */
   jmutex_lock(data->mutex);
-  data->done = TRUE;
+  data->done = true;
   jmutex_unlock(data->mutex);
 }
 
@@ -158,8 +158,8 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   data->mutex = jmutex_new();
   data->effect = effect;
   data->pos = 0.0;
-  data->done = FALSE;
-  data->cancelled = FALSE;
+  data->done = false;
+  data->cancelled = false;
   data->progress = progress_new(app_get_statusbar());
   data->thread = jthread_new(effect_bg, data);
   data->alert_window = jalert_new(PACKAGE
@@ -174,7 +174,7 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   jmutex_lock(data->mutex);
   if (!data->done) {
     remove_gui_monitor(data->monitor);
-    data->cancelled = TRUE;
+    data->cancelled = true;
   }
   jmutex_unlock(data->mutex);
 

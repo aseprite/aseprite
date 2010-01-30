@@ -155,10 +155,10 @@ static bool my_button_msg_proc(JWidget widget, JMessage msg)
     jdraw_rectfill (rect, bg);
 
     /* text */
-    jdraw_widget_text (widget, makecol (255, 255, 255), bg, FALSE);
+    jdraw_widget_text (widget, makecol (255, 255, 255), bg, false);
 
     jrect_free (rect);
-    return TRUE;
+    return true;
   }
   /* button select signal */
   else if (msg->type == JM_SIGNAL &&
@@ -176,11 +176,11 @@ static bool my_button_msg_proc(JWidget widget, JMessage msg)
     jwidget_add_hook(alert, JI_WIDGET, hooked_window_bg_msg_proc, NULL);
     alert->open_window_bg();
 
-    /* return TRUE to avoid close the window */
-    return TRUE;
+    /* return true to avoid close the window */
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }
 
 static void new_palette_window(JWidget widget)
@@ -209,12 +209,12 @@ static bool hooked_window1_msg_proc(JWidget widget, JMessage msg)
     JI_LIST_FOR_EACH_SAFE(windows, link, next) /* close all windows */
       reinterpret_cast<Window*>(link->data)->close_window(NULL);
   }
-  return FALSE;
+  return false;
 }
 
 static bool hooked_window_bg_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_CLOSE)
     jlist_remove(windows, widget);
-  return FALSE;
+  return false;
 }

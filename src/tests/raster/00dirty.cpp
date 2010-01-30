@@ -48,10 +48,10 @@ int main (int argc, char *argv[])
   gfxobj_init();
 
   bmp = create_bitmap(320, 240);
-  redraw = TRUE;
+  redraw = true;
 
   image = image_new(IMAGE_INDEXED, bmp->w, bmp->h);
-  dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
+  dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, false);
   brush1 = brush_new();
   brush2 = brush_new();
 
@@ -83,7 +83,7 @@ int main (int argc, char *argv[])
       if (mb) {
 	dirty_line_brush(dirty, (mb & 2) ? brush2: brush1,
 			 ox, oy, mx, my);
-	redraw = TRUE;
+	redraw = true;
       }
 
       dirty_save_image_data(dirty);
@@ -98,20 +98,20 @@ int main (int argc, char *argv[])
     if (key[KEY_R]) {
       dirty_restore_image_data(dirty);
       dirty_free(dirty);
-      dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, FALSE);
+      dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, false);
       while (key[KEY_R]);
-      redraw = TRUE;
+      redraw = true;
     }
 
     /* with S swap */
     if (key[KEY_S]) {
       dirty_swap(dirty);
       while (key[KEY_S]);
-      redraw = TRUE;
+      redraw = true;
     }
 
     if (redraw) {
-      redraw = FALSE;
+      redraw = false;
 
       scare_mouse();
       clear(bmp);

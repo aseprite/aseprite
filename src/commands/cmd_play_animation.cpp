@@ -73,7 +73,7 @@ void PlayAnimationCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int old_frame, msecs;
-  bool done = FALSE;
+  bool done = false;
   bool onionskin = get_onionskin();
   Palette *oldpal, *newpal;
   PALETTE rgbpal;
@@ -82,7 +82,7 @@ void PlayAnimationCommand::execute(Context* context)
     return;
 
   /* desactivate the onion-skin */
-  set_onionskin(FALSE);
+  set_onionskin(false);
 
   jmouse_hide();
 
@@ -115,7 +115,7 @@ void PlayAnimationCommand::execute(Context* context)
       poll_mouse();
       poll_keyboard();
       if (keypressed() || mouse_b)
-	done = TRUE;
+	done = true;
       gui_feedback();
     } while (!done && (speed_timer <= 0));
 
@@ -138,7 +138,7 @@ void PlayAnimationCommand::execute(Context* context)
 
   /* refresh all */
   newpal = sprite_get_palette(sprite, sprite->frame);
-  set_current_palette(newpal, TRUE);
+  set_current_palette(newpal, true);
   jmanager_refresh_screen();
   gui_feedback();
 

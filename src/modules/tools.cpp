@@ -186,11 +186,11 @@ int init_module_tools()
   glass_dirty  = get_config_int("Tools", "GlassDirty", 255);
   spray_width  = get_config_int("Tools", "SprayWidth", 16);
   air_speed    = get_config_int("Tools", "AirSpeed", 75);
-  filled_mode  = get_config_bool("Tools", "Filled", FALSE);
+  filled_mode  = get_config_bool("Tools", "Filled", false);
   tiled_mode   = (tiled_t)get_config_int("Tools", "Tiled", (int)TILED_NONE);
-  use_grid     = get_config_bool("Tools", "UseGrid", FALSE);
-  view_grid    = get_config_bool("Tools", "ViewGrid", FALSE);
-  onionskin    = get_config_bool("Tools", "Onionskin", FALSE);
+  use_grid     = get_config_bool("Tools", "UseGrid", false);
+  view_grid    = get_config_bool("Tools", "ViewGrid", false);
+  onionskin    = get_config_bool("Tools", "Onionskin", false);
 
   grid = jrect_new(0, 0, 16, 16);
   get_config_rect("Tools", "GridRect", grid);
@@ -828,11 +828,11 @@ void control_tool(Editor* editor, Tool *tool,
   const char *_start = _("Start");
   const char *_end = _("End");
   const char *_size = _("Size");
-  bool click2 = get_config_bool("Options", "DrawClick2", FALSE);
+  bool click2 = get_config_bool("Options", "DrawClick2", false);
   Cel *cel = NULL;
   Image *cel_image = NULL;
-  bool cel_created = FALSE;
-  bool destroy_cel = FALSE;
+  bool cel_created = false;
+  bool destroy_cel = false;
   int curve_pts = 0;	   /* to iterate points in the 'curve' tool */
   ToolData tool_data;
 
@@ -885,7 +885,7 @@ void control_tool(Editor* editor, Tool *tool,
     cel = cel_new(sprite->frame, 0);
     ((LayerImage*)sprite->layer)->add_cel(cel);
 
-    cel_created = TRUE;
+    cel_created = true;
   }
 
   old_cel_x = cel->x;
@@ -945,9 +945,9 @@ void control_tool(Editor* editor, Tool *tool,
   offset_x = -x1;
   offset_y = -y1;
   
-  update = FALSE;
-  forced_update = TRUE;
-  first_time = TRUE;
+  update = false;
+  forced_update = true;
+  first_time = true;
   old_key_shifts = key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG);
   spray_time = ji_clock;
   old_x1 = old_y1 = old_x2 = old_y2 = 0;
@@ -970,7 +970,7 @@ next_pts:;
     y1 = mouse_y[0];
 
     if (use_grid)
-      apply_grid(&x1, &y1, TRUE);
+      apply_grid(&x1, &y1, true);
 
     x1 += offset_x;
     y1 += offset_y;
@@ -1004,8 +1004,8 @@ next_pts:;
 
 	/* grid */
         if (use_grid) {
-	  apply_grid(&x1, &y1, TRUE);
-	  apply_grid(&x2, &y2, TRUE);
+	  apply_grid(&x1, &y1, true);
+	  apply_grid(&x2, &y2, true);
         }
 
 	/* square aspect */
@@ -1079,8 +1079,8 @@ next_pts:;
 
 	/* grid */
         if (use_grid && (tool != tools_list[TOOL_FLOODFILL])) {
-	  apply_grid(&x1, &y1, TRUE);
-	  apply_grid(&x2, &y2, TRUE);
+	  apply_grid(&x1, &y1, true);
+	  apply_grid(&x2, &y2, true);
         }
 
 	x1 += offset_x;
@@ -1099,7 +1099,7 @@ next_pts:;
 
 	  /* grid */
 	  if (use_grid)
-	    apply_grid(&pts[c*2], &pts[c*2+1], TRUE);
+	    apply_grid(&pts[c*2], &pts[c*2+1], true);
 
 	  pts[c*2  ] += offset_x;
 	  pts[c*2+1] += offset_y;
@@ -1114,7 +1114,7 @@ next_pts:;
 	y1 = mouse_y[0];
 
         if (use_grid)
-	  apply_grid(&x1, &y1, TRUE);
+	  apply_grid(&x1, &y1, true);
 
 	x1 += offset_x;
 	y1 += offset_y;
@@ -1382,8 +1382,8 @@ next_pts:;
       }
 
       release_bitmap(ji_screen);
-      forced_update = FALSE;
-      first_time = FALSE;
+      forced_update = false;
+      first_time = false;
     }
 
     /* draw mask */
@@ -1393,7 +1393,7 @@ next_pts:;
     if (current_tool == tools_list[TOOL_SPRAY]) {
       if (ji_clock-spray_time > (1000/20)*(100-air_speed)/100) {
 	spray_time = ji_clock;
-	forced_update = TRUE;
+	forced_update = true;
       }
     }
 
@@ -1403,7 +1403,7 @@ next_pts:;
 				     KB_CTRL_FLAG | KB_ALT_FLAG);
       if (old_key_shifts != new_shifts) {
 	old_key_shifts = new_shifts;
-	forced_update = TRUE;
+	forced_update = true;
       }
     }
 
@@ -1448,7 +1448,7 @@ next_pts:;
       sprite_generate_mask_boundaries(sprite);
       update_screen_for_sprite(sprite);
 
-      destroy_cel = TRUE;
+      destroy_cel = true;
     }
 
     /* draw trace ***************************************************/
@@ -1540,7 +1540,7 @@ next_pts:;
   /* if the user canceled the operation we have to restore the cel
      position */
   else
-    destroy_cel = TRUE;
+    destroy_cel = true;
 
   if (destroy_cel) {
     cel->x = old_cel_x;

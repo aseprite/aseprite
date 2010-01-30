@@ -314,7 +314,7 @@ static bool alert_msg_proc(JWidget widget, JMessage msg)
       }
     }
   }
-  return FALSE;
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////

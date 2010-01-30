@@ -89,10 +89,10 @@ static Model models[] = {
 Frame* colorselector_new(bool editable_palette)
 {
   Frame* window = new TipWindow("");
-  JWidget grid1 = jgrid_new(3, FALSE);
-  JWidget grid2 = jgrid_new(5, FALSE);
+  JWidget grid1 = jgrid_new(3, false);
+  JWidget grid2 = jgrid_new(5, false);
   JWidget tabs = tabs_new(select_tab_callback);
-  JWidget pal = paledit_new(get_current_palette(), FALSE, 1);
+  JWidget pal = paledit_new(get_current_palette(), false, 1);
   JWidget idx = jlabel_new("None");
   JWidget lock = jbutton_new("");
   JWidget child;
@@ -107,7 +107,7 @@ Frame* colorselector_new(bool editable_palette)
 
   /* color selector */
   colorselector->color = color_mask();
-  colorselector->palette_locked = TRUE;
+  colorselector->palette_locked = true;
   colorselector->editable_palette = editable_palette;
 
   /* palette */
@@ -122,7 +122,7 @@ Frame* colorselector_new(bool editable_palette)
   /* data for a better layout */
   grid1->child_spacing = 0;
   grid2->border_width.t = 3;
-  jwidget_expansive(grid2, TRUE);
+  jwidget_expansive(grid2, true);
 
   /* append a tab for each color-model */
   for (m=models; m->text!=NULL; ++m) {
@@ -158,7 +158,7 @@ Frame* colorselector_new(bool editable_palette)
 
 void colorselector_set_color(JWidget widget, color_t color)
 {
-  colorselector_set_color2(widget, color, TRUE, TRUE, NULL);
+  colorselector_set_color2(widget, color, true, true, NULL);
 }
 
 color_t colorselector_get_color(JWidget widget)
@@ -175,7 +175,7 @@ JWidget colorselector_get_paledit(JWidget widget)
 
 static JWidget create_rgb_container()
 {
-  JWidget grid = jgrid_new(2, FALSE);
+  JWidget grid = jgrid_new(2, false);
   JWidget rlabel = jlabel_new("R");
   JWidget glabel = jlabel_new("G");
   JWidget blabel = jlabel_new("B");
@@ -202,7 +202,7 @@ static JWidget create_rgb_container()
 
 static JWidget create_hsv_container()
 {
-  JWidget grid = jgrid_new(2, FALSE);
+  JWidget grid = jgrid_new(2, false);
   JWidget hlabel = jlabel_new("H");
   JWidget slabel = jlabel_new("S");
   JWidget vlabel = jlabel_new("V");
@@ -229,7 +229,7 @@ static JWidget create_hsv_container()
 
 static JWidget create_gray_container()
 {
-  JWidget grid = jgrid_new(2, FALSE);
+  JWidget grid = jgrid_new(2, false);
   JWidget klabel = jlabel_new("V");
   JWidget vslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, klabel, 1, 1, JI_RIGHT);
@@ -288,7 +288,7 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void colorselector_update_lock_button(JWidget widget)
@@ -359,7 +359,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
       m = models+MODEL_GRAY;
       break;
     default:
-      assert(FALSE);
+      assert(false);
   }
 
   tabs_select_tab(tabs, m);
@@ -372,7 +372,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 					select_index_entry);
 	break;
       case COLOR_TYPE_MASK:
-	colorselector_set_paledit_index(widget, 0, TRUE);
+	colorselector_set_paledit_index(widget, 0, true);
 	break;
       default: {
 	int r = color_get_red  (IMAGE_RGB, color);
@@ -380,9 +380,9 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 	int b = color_get_blue (IMAGE_RGB, color);
 	int i = palette_find_bestfit(get_current_palette(), r, g, b);
 	if (i >= 0 && i < 256)
-	  colorselector_set_paledit_index(widget, i, TRUE);
+	  colorselector_set_paledit_index(widget, i, true);
 	else
-	  colorselector_set_paledit_index(widget, -1, TRUE);
+	  colorselector_set_paledit_index(widget, -1, true);
 	break;
       }
     }
@@ -426,7 +426,7 @@ static void select_tab_callback(JWidget tabs, void* data, int button)
   Model* selected_model = (Model*)data;
   JWidget child;
   Model* m;
-  bool something_change = FALSE;
+  bool something_change = false;
 
   for (m=models; m->text!=NULL; ++m) {
     child = jwidget_find_name(window, m->text);
@@ -434,13 +434,13 @@ static void select_tab_callback(JWidget tabs, void* data, int button)
     if (m == selected_model) {
       if (child->flags & JI_HIDDEN) {
 	jwidget_show(child);
-	something_change = TRUE;
+	something_change = true;
       }
     }
     else {
       if (!(child->flags & JI_HIDDEN)) {
 	jwidget_hide(child);
-	something_change = TRUE;
+	something_change = true;
       }
     }
   }
@@ -497,7 +497,7 @@ static bool slider_change_hook(JWidget widget, void* data)
   if (colorselector->palette_locked) {
     i = palette_find_bestfit(get_current_palette(), r, g, b);
     if (i >= 0 && i < 256)
-      colorselector_set_paledit_index(window, i, TRUE);
+      colorselector_set_paledit_index(window, i, true);
   }
   /* the palette is unlocked, we have to modify the select entries */
   else {
@@ -515,7 +515,7 @@ static bool slider_change_hook(JWidget widget, void* data)
       color = color_index(i);
   }
 
-  colorselector_set_color2(window, color, FALSE, FALSE, m);
+  colorselector_set_color2(window, color, false, false, m);
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
   return 0;
 }
@@ -525,7 +525,7 @@ static bool button_mask_select_hook(JWidget widget, void* data)
   Frame* window = static_cast<Frame*>(widget->getRoot());
   colorselector_set_color(window, color_mask());
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
-  return TRUE;
+  return true;
 }
 
 static bool paledit_change_hook(JWidget widget, void* data)
@@ -542,7 +542,7 @@ static bool paledit_change_hook(JWidget widget, void* data)
       break;
     }
 
-  colorselector_set_color2(window, color, TRUE, FALSE, NULL);
+  colorselector_set_color2(window, color, true, false, NULL);
   jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
   return 0;
 }
@@ -554,5 +554,5 @@ static bool lock_button_select_hook(JWidget widget, void* data)
 
   colorselector->palette_locked = !colorselector->palette_locked;
   colorselector_update_lock_button(window);
-  return TRUE;
+  return true;
 }

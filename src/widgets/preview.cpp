@@ -116,5 +116,5 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
       break;
   }
 
-  return FALSE;
+  return false;
 }

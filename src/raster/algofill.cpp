@@ -197,7 +197,7 @@ static int check_flood_line(Image *image, int y, int left, int right,
 {
   int c;
   FLOODED_LINE *p;
-  int ret = FALSE;
+  int ret = false;
 
   while (left <= right) {
     c = y;
@@ -214,7 +214,7 @@ static int check_flood_line(Image *image, int y, int left, int right,
 
       if (!c) {
         left = flooder (image, left, y, src_color, data, proc);
-        ret = TRUE;
+        ret = true;
         break;
       }
     }
@@ -259,7 +259,7 @@ void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
 
   /* continue as long as there are some segments still to test */
   do {
-    done = TRUE;
+    done = true;
 
     /* for each line on the screen */
     for (c=0; c<flood_count; c++) {
@@ -271,7 +271,7 @@ void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
         p->flags &= ~FLOOD_TODO_BELOW;
         if (check_flood_line(image, p->y+1, p->lpos, p->rpos,
 			     src_color, data, proc)) {
-          done = FALSE;
+          done = false;
           p = FLOOD_LINE(c);
         }
       }
@@ -281,7 +281,7 @@ void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
         p->flags &= ~FLOOD_TODO_ABOVE;
         if (check_flood_line(image, p->y-1, p->lpos, p->rpos,
 			     src_color, data, proc)) {
-          done = FALSE;
+          done = false;
           /* special case shortcut for going backwards */
           if ((c < image->h) && (c > 0))
             c -= 2;

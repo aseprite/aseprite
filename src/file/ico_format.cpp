@@ -56,7 +56,7 @@ static bool save_ICO(FileOp *fop)
 
   f = fopen(fop->filename, "wb");
   if (!f)
-    return FALSE;
+    return false;
 
   offset = 6 + num * 16;  /* ICONDIR + ICONDIRENTRYs */
    
@@ -180,5 +180,5 @@ static bool save_ICO(FileOp *fop)
   image_free(bmp);
   fclose(f);
 
-  return TRUE;
+  return true;
 }

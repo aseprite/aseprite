@@ -61,9 +61,9 @@ bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 	      0, <, image->w, ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
-    return FALSE;
+    return false;
   else
-    return TRUE;
+    return true;
 
 #undef SHRINK_SIDE
 }
@@ -106,9 +106,9 @@ bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
 	      0, <, image->w, ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
-    return FALSE;
+    return false;
   else
-    return TRUE;
+    return true;
 
 #undef SHRINK_SIDE
 }

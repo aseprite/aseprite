@@ -187,7 +187,7 @@ Dirty* dirty_new_copy(Dirty* src)
 
 Dirty* dirty_new_from_differences(Image* image, Image* image_diff)
 {
-  Dirty* dirty = dirty_new(image, 0, 0, image->w, image->h, FALSE);
+  Dirty* dirty = dirty_new(image, 0, 0, image->w, image->h, false);
   int x, y, x1, x2;
 
   for (y=0; y<image->h; y++) {
@@ -349,7 +349,7 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
     if (x1 > x2)
       return;
 
-    dirty->tiled = FALSE;
+    dirty->tiled = false;
 
     if (y < 0)
       y = dirty->image->h - (-(y+1) % dirty->image->h) - 1;
@@ -374,7 +374,7 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
       }
     }
 
-    dirty->tiled = TRUE;
+    dirty->tiled = true;
     return;
   }
 

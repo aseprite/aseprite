@@ -85,7 +85,7 @@ void dialogs_mask_color(Sprite* sprite)
   button_ok = jbutton_new(_("&OK"));
   button_cancel = jbutton_new(_("&Cancel"));
 
-  if (get_config_bool("MaskColor", "Preview", TRUE))
+  if (get_config_bool("MaskColor", "Preview", true))
     jwidget_select(check_preview);
 
   button_1->user_data[1] = sprite;
@@ -98,10 +98,10 @@ void dialogs_mask_color(Sprite* sprite)
   HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, sprite);
 
-  jwidget_magnetic(button_ok, TRUE);
-  jwidget_expansive(button_color, TRUE);
-  jwidget_expansive(slider_fuzziness, TRUE);
-  jwidget_expansive(box2, TRUE);
+  jwidget_magnetic(button_ok, true);
+  jwidget_expansive(button_color, true);
+  jwidget_expansive(slider_fuzziness, true);
+  jwidget_expansive(box2, true);
 
   jwidget_add_child(window, box1);
   jwidget_add_children(box1, box2, box3, check_preview, box4, NULL);
@@ -171,19 +171,19 @@ static void button_2_command(JWidget widget)
 static bool color_change_hook(JWidget widget, void *data)
 {
   mask_preview((Sprite*)data);
-  return FALSE;
+  return false;
 }
 
 static bool slider_change_hook(JWidget widget, void *data)
 {
   mask_preview((Sprite*)data);
-  return FALSE;
+  return false;
 }
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
   mask_preview((Sprite*)data);
-  return FALSE;
+  return false;
 }
 
 static Mask *gen_mask(Sprite* sprite)

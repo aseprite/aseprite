@@ -134,7 +134,7 @@ void rec_screen_poll()
     old_flag = freeze_mouse_flag;
 
     /* freeze the mouse obligatory */
-    freeze_mouse_flag = TRUE;
+    freeze_mouse_flag = true;
 
     /* get the active palette color */
     for (c=i=0; c<256; c++) {

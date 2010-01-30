@@ -99,7 +99,7 @@ void PaletteEditorCommand::execute(Context* context)
   const CurrentSpriteReader sprite(context);
   int imgtype = sprite ? sprite->imgtype: IMAGE_INDEXED;
   int frame_bak = sprite ? sprite->frame : 0;
-  bool all_frames_same_palette = TRUE;
+  bool all_frames_same_palette = true;
 
   if (imgtype == IMAGE_GRAYSCALE) {
     jalert(_("Error<<You can't edit grayscale palette||&OK"));
@@ -145,7 +145,7 @@ void PaletteEditorCommand::execute(Context* context)
 
       if (frame > 0 &&
 	  palette_count_diff(palettes[frame-1], palettes[frame], NULL, NULL) > 0) {
-	all_frames_same_palette = FALSE;
+	all_frames_same_palette = false;
       }
     }
   }
@@ -163,9 +163,9 @@ void PaletteEditorCommand::execute(Context* context)
 
   /* custom widgets */
   colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
-  palette_editor = paledit_new(palette, TRUE, 6);
+  palette_editor = paledit_new(palette, true, 6);
 
-  jwidget_expansive(colorviewer, TRUE);
+  jwidget_expansive(colorviewer, true);
   jwidget_add_child(colorviewer_box, colorviewer);
 
   jwidget_disable(button_undo);
@@ -237,7 +237,7 @@ void PaletteEditorCommand::execute(Context* context)
 	palette_copy_colors(palettes[0],
 			    get_current_palette());
 
-	sprite_set_palette(sprite_writer, palettes[0], TRUE);
+	sprite_set_palette(sprite_writer, palettes[0], true);
       }
       /* various palettes */
       else {
@@ -249,7 +249,7 @@ void PaletteEditorCommand::execute(Context* context)
 	  if (frame == 0 ||
 	      palette_count_diff(palettes[frame],
 				 palettes[frame-1], NULL, NULL) > 0) {
-	    sprite_set_palette(sprite_writer, palettes[frame], TRUE);
+	    sprite_set_palette(sprite_writer, palettes[frame], true);
 	  }
 	}
       }
@@ -258,7 +258,7 @@ void PaletteEditorCommand::execute(Context* context)
     else
       set_default_palette(palette);
 
-    set_current_palette(palette, TRUE);
+    set_current_palette(palette, true);
   }
   /* cancel or ESC */
   else {
@@ -267,10 +267,10 @@ void PaletteEditorCommand::execute(Context* context)
       SpriteWriter sprite_writer(sprite);
       sprite_writer->frame = frame_bak;
 
-      set_current_palette(sprite_get_palette(sprite, frame_bak), TRUE);
+      set_current_palette(sprite_get_palette(sprite, frame_bak), true);
     }
     else {
-      set_current_palette(NULL, TRUE);
+      set_current_palette(NULL, true);
     }
   }
 
@@ -422,7 +422,7 @@ static bool sliderRGB_change_hook(JWidget widget, void *data)
   jslider_set_value(slider_S, 255.0 * s);
 
   jwidget_dirty(palette_editor);
-  return FALSE;
+  return false;
 }
 
 static bool sliderHSV_change_hook(JWidget widget, void *data)
@@ -449,14 +449,14 @@ static bool sliderHSV_change_hook(JWidget widget, void *data)
   jslider_set_value(slider_B, b);
 
   jwidget_dirty(palette_editor);
-  return FALSE;
+  return false;
 }
 
 static bool slider_columns_change_hook(JWidget widget, void *data)
 {
   paledit_set_columns(palette_editor,
 		      (int)jslider_get_value(widget));
-  return FALSE;
+  return false;
 }
 
 static bool slider_frame_change_hook(JWidget widget, void *data)
@@ -475,7 +475,7 @@ static bool slider_frame_change_hook(JWidget widget, void *data)
   }
   set_new_palette(palettes[new_frame]);
 
-  return FALSE;
+  return false;
 }
 
 static bool check_all_frames_change_hook(JWidget widget, void *data)
@@ -489,12 +489,12 @@ static bool check_all_frames_change_hook(JWidget widget, void *data)
 		      get_current_palette());
 
   if (jwidget_is_selected(check_all_frames)) {
-    bool has_two_or_more_palettes = FALSE;
+    bool has_two_or_more_palettes = false;
     int c;
 
     for (c=1; c<sprite->frames; c++) {
       if (palette_count_diff(palettes[c-1], palettes[c], NULL, NULL) > 0) {
-	has_two_or_more_palettes = TRUE;
+	has_two_or_more_palettes = true;
 	break;
       }
     }
@@ -506,7 +506,7 @@ static bool check_all_frames_change_hook(JWidget widget, void *data)
 		 "<<Do you want to continue?"
 		 "||&Yes||&No") != 1) {
 	jwidget_deselect(check_all_frames);
-	return FALSE;
+	return false;
       }
     }
 
@@ -515,7 +515,7 @@ static bool check_all_frames_change_hook(JWidget widget, void *data)
   else
     jwidget_enable(slider_frame);
 
-  return FALSE;
+  return false;
 }
 
 static bool palette_editor_change_hook(JWidget widget, void *data)
@@ -537,7 +537,7 @@ static bool palette_editor_change_hook(JWidget widget, void *data)
   jslider_set_value(slider_H, 255.0 * h / 360.0);
   jslider_set_value(slider_V, 255.0 * v);
   jslider_set_value(slider_S, 255.0 * s);
-  return FALSE;
+  return false;
 }
 
 static void set_new_palette(Palette *palette)
@@ -547,7 +547,7 @@ static void set_new_palette(Palette *palette)
 		      palette);
 
   /* set the palette calling the hooks */
-  set_current_palette(palette, FALSE);
+  set_current_palette(palette, false);
 
   /* redraw the entire screen */
   jmanager_refresh_screen();

@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   set_mouse_sprite_focus(0, 0);
   show_mouse(screen);
 
-  redraw = TRUE;
+  redraw = true;
   do {
     if (mouse_b) {
       int xbeg, ybeg, xend, yend, xold, yold;
@@ -57,14 +57,14 @@ int main(int argc, char *argv[])
 	  scare_mouse();
 
 	  if (xold >= 0) {
-	    xor_mode (TRUE);
+	    xor_mode (true);
 	    rect (screen, xbeg, ybeg, xold, yold, 0xff);
-	    xor_mode (FALSE);
+	    xor_mode (false);
 	  }
 
-	  xor_mode (TRUE);
+	  xor_mode (true);
 	  rect (screen, xbeg, ybeg, xold = xend, yold = yend, 0xff);
-	  xor_mode (FALSE);
+	  xor_mode (false);
 
 	  unscare_mouse();
 	}
@@ -102,20 +102,20 @@ int main(int argc, char *argv[])
 			 MAX (ybeg, yend) - MIN (ybeg, yend) + 1);
       }
 
-      redraw = TRUE;
+      redraw = true;
     }
 
     if (key[KEY_SPACE]) {
       while (key[KEY_SPACE]);
       mask_invert (mask);
-      redraw = TRUE;
+      redraw = true;
     }
 
     if (redraw || key[KEY_R]) {
       BITMAP *bmp;
       int x, y;
 
-      redraw = FALSE;
+      redraw = false;
 
       bmp = create_bitmap (SCREEN_W, SCREEN_H);
       clear (bmp);

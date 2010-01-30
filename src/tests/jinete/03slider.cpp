@@ -69,11 +69,11 @@ int main(int argc, char *argv[])
   jwidget_set_min_size(slider4, 128, 0);
   jwidget_set_min_size(slider5, 128, 0);
 
-  jwidget_expansive(slider1, TRUE);
-  jwidget_expansive(slider2, TRUE);
-  jwidget_expansive(slider3, TRUE);
-  jwidget_expansive(slider4, TRUE);
-  jwidget_expansive(slider5, TRUE);
+  jwidget_expansive(slider1, true);
+  jwidget_expansive(slider2, true);
+  jwidget_expansive(slider3, true);
+  jwidget_expansive(slider4, true);
+  jwidget_expansive(slider5, true);
 
   jwidget_add_child(window, box);
   jwidget_add_children(box,

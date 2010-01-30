@@ -69,9 +69,9 @@ void do_text(const char *title, int align)
   jview_attach(view1, text_box1);
   jview_attach(view2, text_box2);
 
-  jwidget_expansive(view1, TRUE);
-  jwidget_expansive(view2, TRUE);
-  jwidget_expansive(box2, TRUE);
+  jwidget_expansive(view1, true);
+  jwidget_expansive(view2, true);
+  jwidget_expansive(box2, true);
 
   jwidget_set_min_size(view1, 64, 64);
   jwidget_set_min_size(view2, 64, 64);

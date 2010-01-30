@@ -61,7 +61,7 @@ void dialogs_tips(bool forced)
   Palette *old_pal;
 
   /* don't show it? */
-  if (!forced && !get_config_bool("Tips", "Show", TRUE))
+  if (!forced && !get_config_bool("Tips", "Show", true))
     return;
 
   /* next page */
@@ -103,13 +103,13 @@ void dialogs_tips(bool forced)
 
   HOOK(check, JI_SIGNAL_CHECK_CHANGE, check_change_hook, 0);
 
-  if (get_config_bool("Tips", "Show", TRUE))
+  if (get_config_bool("Tips", "Show", true))
     jwidget_select(check);
 
   jview_attach(view, tips);
 
-  jwidget_expansive(view, TRUE);
-  jwidget_expansive(box, TRUE);
+  jwidget_expansive(view, true);
+  jwidget_expansive(box, true);
 
   jwidget_add_child(vbox, view);
   jwidget_add_child(hbox, button_close);
@@ -140,7 +140,7 @@ void dialogs_tips(bool forced)
   jwidget_free(window);
 
   /* restore the palette */
-  set_current_palette(old_pal, TRUE);
+  set_current_palette(old_pal, true);
   palette_free(old_pal);
 
   jmanager_refresh_screen();
@@ -155,7 +155,7 @@ static Widget* tips_new()
   Widget* widget = new Widget(tips_type());
 
   jwidget_add_hook(widget, tips_type(), tips_msg_proc, NULL);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_noborders(widget);
 
   return widget;
@@ -175,7 +175,7 @@ static bool tips_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       tips_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_WHEEL:
       {
@@ -193,7 +193,7 @@ static bool tips_msg_proc(JWidget widget, JMessage msg)
       
   }
 
-  return FALSE;
+  return false;
 }
 
 static void tips_request_size(JWidget widget, int *w, int *h)
@@ -238,7 +238,7 @@ static bool tips_image_msg_proc(JWidget widget, JMessage msg)
   if (msg->type == JM_DESTROY)
     destroy_bitmap(reinterpret_cast<BITMAP*>(jwidget_get_data(widget, tips_image_type())));
 
-  return FALSE;
+  return false;
 }
 
 static FILE *tips_open_file()
@@ -297,7 +297,7 @@ static void tips_load_page(JWidget widget)
   int use_page = get_config_int("Tips", "Page", 0);
   char buf[1024];
   int page = 0;
-  int take = TRUE;
+  int take = true;
   FILE *f;
 
   /* destroy old page */
@@ -308,7 +308,7 @@ static void tips_load_page(JWidget widget)
   }
 
   /* set default palette */
-  set_current_palette(NULL, FALSE);
+  set_current_palette(NULL, false);
 
   f = tips_open_file();
   if (!f) {
@@ -349,7 +349,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 	break;
     }
     else
-      *take = TRUE;
+      *take = true;
 
     if (*buf == 12)
       break;
@@ -385,7 +385,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 	} while (ustrncmp(buf, "\\next", 5) == 0);
 
 	jwidget_add_child(vbox, hbox);
-	*take = TRUE;
+	*take = true;
       }
       /* \next and \done */
       else if ((ustrncmp(buf+1, "next", 4) == 0) ||
@@ -419,7 +419,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 	bmp = tips_load_image(filename, rgbpal);
 	if (bmp) {
 	  Palette *pal = palette_new(0, MAX_PALETTE_COLORS);
-	  set_current_palette(palette_from_allegro(pal, rgbpal), FALSE);
+	  set_current_palette(palette_from_allegro(pal, rgbpal), false);
 	  palette_free(pal);
 	  
 	  destroy_bitmap(bmp);
@@ -439,7 +439,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
       if (*text != '*') {
 	while (fgets(buf, sizeof_buf, f)) {
 	  if (*buf == 12 || *buf == '\\') {
-	    *take = FALSE;
+	    *take = false;
 	    break;
 	  }
 	  /* comment */
@@ -452,7 +452,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 
 	  /* empty? */
 	  if (!*buf) {
-	    *take = FALSE;
+	    *take = false;
 	    break;
 	  }
 
@@ -519,5 +519,5 @@ static void next_command(JWidget widget, void *data)
 static bool check_change_hook(JWidget widget, void *data)
 {
   set_config_bool("Tips", "Show", jwidget_is_selected(widget));
-  return TRUE;
+  return true;
 }

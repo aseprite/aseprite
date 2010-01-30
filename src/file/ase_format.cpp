@@ -135,12 +135,12 @@ static bool load_ASE(FileOp *fop)
 
   f = fopen(fop->filename, "rb");
   if (!f)
-    return FALSE;
+    return false;
 
   if (!ase_file_read_header(f, &header)) {
     fop_error(fop, _("Error reading header\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* create the new sprite */
@@ -150,7 +150,7 @@ static bool load_ASE(FileOp *fop)
   if (!sprite) {
     fop_error(fop, _("Error creating sprite with file spec\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* set frames and speed */
@@ -201,7 +201,7 @@ static bool load_ASE(FileOp *fop)
 		ase_file_read_color2_chunk(f, sprite, frame);
 
 	      if (palette_count_diff(prev_pal, pal, NULL, NULL) > 0) {
-		sprite_set_palette(sprite, pal, TRUE);
+		sprite_set_palette(sprite, pal, true);
 	      }
 
 	      palette_free(pal);
@@ -271,11 +271,11 @@ static bool load_ASE(FileOp *fop)
   if (ferror(f)) {
     fop_error(fop, _("Error reading file.\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
   else {
     fclose(f);
-    return TRUE;
+    return true;
   }
 }
 
@@ -290,7 +290,7 @@ static bool save_ASE(FileOp *fop)
 
   f = fopen(fop->filename, "wb");
   if (!f)
-    return FALSE;
+    return false;
 
   /* prepare the header */
   ase_file_prepare_header(f, &header, sprite);
@@ -343,11 +343,11 @@ static bool save_ASE(FileOp *fop)
   if (ferror(f)) {
     fop_error(fop, _("Error writing file.\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
   else {
     fclose(f);
-    return TRUE;
+    return true;
   }
 }
 
@@ -358,7 +358,7 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   header->size  = fgetl(f);
   header->magic = fgetw(f);
   if (header->magic != ASE_FILE_MAGIC)
-    return FALSE;
+    return false;
 
   header->frames     = fgetw(f);
   header->width      = fgetw(f);
@@ -370,7 +370,7 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   header->frit       = fgetl(f);
 
   fseek(f, header->pos+128, SEEK_SET);
-  return TRUE;
+  return true;
 }
 
 static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)

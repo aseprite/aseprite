@@ -38,7 +38,7 @@ void sprite_quantize(Sprite *sprite)
 
   /* just one palette */
   sprite_reset_palettes(sprite);
-  sprite_set_palette(sprite, palette, FALSE);
+  sprite_set_palette(sprite, palette, false);
 
   palette_free(palette);
 }
@@ -52,7 +52,7 @@ void sprite_quantize_ex(Sprite *sprite, Palette *palette)
   int c, nimage;
 
   images = images_ref_get_from_sprite(sprite, TARGET_ALL_LAYERS |
-					      TARGET_ALL_FRAMES, FALSE);
+					      TARGET_ALL_FRAMES, false);
   if (images != NULL) {
     /* add a flat image with the current sprite's frame rendered */
     flat_image = image_new(sprite->imgtype, sprite->w, sprite->h);
@@ -86,7 +86,7 @@ void sprite_quantize_ex(Sprite *sprite, Palette *palette)
       for (c=0; c<nimage; c++)
 	ibmp[c] = 128;
 
-      quantize_bitmaps(image_array, nimage, rgbpal, ibmp, TRUE);
+      quantize_bitmaps(image_array, nimage, rgbpal, ibmp, true);
 
       palette_from_allegro(palette, rgbpal);
 

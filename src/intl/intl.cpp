@@ -108,7 +108,7 @@ void intl_set_lang(const char *lang)
 /*   setlocale(LC_MESSAGES, ""); */
 /*   bindtextdomain(PACKAGE, locale_path); */
 /*   textdomain(PACKAGE); */
-/*   setenv("OUTPUT_CHARSET", "ISO-8859-1", TRUE); */
+/*   setenv("OUTPUT_CHARSET", "ISO-8859-1", true); */
 /* #endif */
 
 /*   /\* Set current language.  *\/ */

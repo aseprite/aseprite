@@ -448,7 +448,7 @@ find_segment (BoundSeg *segs,
 
   for (index = 0; index < ns; index++)
     if (((segs[index].x1 == x && segs[index].y1 == y) || (segs[index].x2 == x && segs[index].y2 == y)) &&
-	segs[index].visited == FALSE)
+	segs[index].visited == false)
       return index;
 
   return -1;
@@ -471,20 +471,20 @@ sort_boundary (BoundSeg *segs,
   new_segs = NULL;
 
   for (i = 0; i < ns; i++)
-    segs[i].visited = FALSE;
+    segs[i].visited = false;
 
   num_segs = 0;
   *num_groups = 0;
   while (! empty)
     {
-      empty = TRUE;
+      empty = true;
 
       /*  find the index of a non-visited segment to start a group  */
       for (i = 0; i < ns; i++)
-	if (segs[i].visited == FALSE)
+	if (segs[i].visited == false)
 	  {
 	    index = i;
-	    empty = FALSE;
+	    empty = false;
 	    i = ns;
 	  }
 
@@ -493,7 +493,7 @@ sort_boundary (BoundSeg *segs,
 	  make_seg (segs[index].x1, segs[index].y1,
 		    segs[index].x2, segs[index].y2,
 		    segs[index].open);
-	  segs[index].visited = TRUE;
+	  segs[index].visited = true;
 
 	  startx = segs[index].x1;
 	  starty = segs[index].y1;
@@ -520,7 +520,7 @@ sort_boundary (BoundSeg *segs,
 		  y = segs[index].y1;
 		}
 
-	      segs[index].visited = TRUE;
+	      segs[index].visited = true;
 	    }
 
 	  if (x != startx || y != starty)

@@ -278,7 +278,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       msg->reqsize.w = msg->reqsize.h = 24;
-      return TRUE;
+      return true;
 
     case JM_DRAW: {
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
@@ -362,7 +362,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	   doublebuffer->w,
 	   doublebuffer->h);
       destroy_bitmap(doublebuffer);
-      return TRUE;
+      return true;
     }
 
     case JM_BUTTONPRESSED:
@@ -448,7 +448,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 	}
       }
 
-      return TRUE;
+      return true;
     }
 
     case JM_MOUSELEAVE:
@@ -491,11 +491,11 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       if (colorbar->hot_drag != HOTCOLOR_NONE &&
 	  colorbar->hot_drag != colorbar->hot_drop) {
 	jmouse_set_cursor(JI_CURSOR_MOVE);
-	return TRUE;
+	return true;
       }
       else if (colorbar->hot != HOTCOLOR_NONE) {
 	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	return TRUE;
+	return true;
       }
       break;
 
@@ -518,7 +518,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static color_t colorbar_get_hotcolor(JWidget widget, hotcolor_t hot)
@@ -541,7 +541,7 @@ static void colorbar_set_hotcolor(JWidget widget, hotcolor_t hot, color_t color)
 
   switch (hot) {
     case HOTCOLOR_NONE:
-      assert(FALSE);
+      assert(false);
       break;
     case HOTCOLOR_FGCOLOR:
       colorbar->fgcolor = color;
@@ -597,7 +597,7 @@ static void colorbar_open_tooltip(JWidget widget, int x1, int x2, int y1, int y2
 
   switch (colorbar->hot) {
     case HOTCOLOR_NONE:
-      assert(FALSE);
+      assert(false);
       break;
     case HOTCOLOR_FGCOLOR: {
       ustrcpy(buf, _("Foreground Color"));
@@ -696,8 +696,8 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 						  the current palette in
 						  this point... */
 
-	    sprite_set_palette(sprite_writer, pal, FALSE);
-	    set_current_palette(pal, TRUE);
+	    sprite_set_palette(sprite_writer, pal, false);
+	    set_current_palette(pal, true);
 	  }
 
 	  update_editors_with_sprite(sprite);
@@ -768,8 +768,8 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 						   the current palette in
 						   this point... */
 
-	      sprite_set_palette(sprite, pal, FALSE);
-	      set_current_palette(pal, TRUE);
+	      sprite_set_palette(sprite, pal, false);
+	      set_current_palette(pal, true);
 
 	      jmanager_start_timer(colorbar->refresh_timer_id);
 	    }
@@ -787,7 +787,7 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 
   }
   
-  return FALSE;
+  return false;
 }
 
 static void update_status_bar(color_t color, int msecs)

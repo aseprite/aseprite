@@ -376,26 +376,26 @@ Image *render_sprite(Sprite *sprite,
     global_opacity = 255;
 
     render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame, zoom, zoomed_func, TRUE, FALSE);
+		 frame, zoom, zoomed_func, true, false);
 
     /* draw transparent layers of the previous frame with opacity=128 */
     color_map = orig_trans_map;
     global_opacity = 128;
 
     render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame-1, zoom, zoomed_func, FALSE, TRUE);
+		 frame-1, zoom, zoomed_func, false, true);
 
     /* draw transparent layers of the current frame with opacity=255 */
     color_map = NULL;
     global_opacity = 255;
 
     render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame, zoom, zoomed_func, FALSE, TRUE);
+		 frame, zoom, zoomed_func, false, true);
   }
   // just draw the current frame
   else {
     render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame, zoom, zoomed_func, TRUE, TRUE);
+		 frame, zoom, zoomed_func, true, true);
   }
 
   return image;

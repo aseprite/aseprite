@@ -579,11 +579,11 @@ static bool load_BMP(FileOp *fop)
 
   f = fopen(fop->filename, "rb");
   if (!f)
-    return FALSE;
+    return false;
 
   if (read_bmfileheader(f, &fileheader) != 0) {
     fclose(f);
-    return FALSE;
+    return false;
   }
  
   biSize = fgetl(f);
@@ -593,25 +593,25 @@ static bool load_BMP(FileOp *fop)
 
     if (read_win_bminfoheader(f, &infoheader) != 0) {
       fclose(f);
-      return FALSE;
+      return false;
     }
     if (infoheader.biCompression != BI_BITFIELDS)
-      read_bmicolors(fop, fileheader.bfOffBits - 54, f, TRUE);
+      read_bmicolors(fop, fileheader.bfOffBits - 54, f, true);
   }
   else if (biSize == OS2INFOHEADERSIZE) {
     format = BMP_OPTIONS_FORMAT_OS2;
 
     if (read_os2_bminfoheader(f, &infoheader) != 0) {
       fclose(f);
-      return FALSE;
+      return false;
     }
     /* compute number of colors recorded */
     if (infoheader.biCompression != BI_BITFIELDS)
-      read_bmicolors(fop, fileheader.bfOffBits - 26, f, FALSE);
+      read_bmicolors(fop, fileheader.bfOffBits - 26, f, false);
   }
   else {
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   if ((infoheader.biBitCount == 32) ||
@@ -635,7 +635,7 @@ static bool load_BMP(FileOp *fop)
 			     ABS((int)infoheader.biHeight));
   if (!image) {
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   if (type == IMAGE_RGB)
@@ -662,20 +662,20 @@ static bool load_BMP(FileOp *fop)
 	image_free(image);
 	fop_error(fop, _("Unsupported bitfields in the BMP file.\n"));
 	fclose(f);
-	return FALSE;
+	return false;
       }
       break;
 
     default:
       fop_error(fop, _("Unsupported BMP compression.\n"));
       fclose(f);
-      return FALSE;
+      return false;
   }
 
   if (ferror(f)) {
     fop_error(fop, _("Error reading file.\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* setup the file-data */
@@ -693,7 +693,7 @@ static bool load_BMP(FileOp *fop)
   }
 
   fclose(f);
-  return TRUE;
+  return true;
 }
 
 static bool save_BMP(FileOp *fop)
@@ -720,7 +720,7 @@ static bool save_BMP(FileOp *fop)
   f = fopen(fop->filename, "wb");
   if (!f) {
     fop_error(fop, _("Error creating file.\n"));
-    return FALSE;
+    return false;
   }
 
   /* file_header */
@@ -789,10 +789,10 @@ static bool save_BMP(FileOp *fop)
   if (ferror(f)) {
     fop_error(fop, _("Error writing file.\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
   else {
     fclose(f);
-    return TRUE;
+    return true;
   }
 }

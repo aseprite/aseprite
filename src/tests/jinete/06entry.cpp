@@ -67,9 +67,9 @@ int main (int argc, char *argv[])
   button1 = jbutton_new ("&OK");
   button2 = jbutton_new ("&Cancel");
 
-  jwidget_expansive (box4, TRUE);
-  jwidget_expansive (box5, TRUE);
-  jwidget_magnetic (button1, TRUE);
+  jwidget_expansive (box4, true);
+  jwidget_expansive (box5, true);
+  jwidget_magnetic (button1, true);
 
   /* hierarchy */
   jwidget_add_child (window1, box1);

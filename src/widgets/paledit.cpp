@@ -72,7 +72,7 @@ JWidget paledit_new(Palette *palette, bool editable, int boxsize)
   paledit->color[1] = -1;
 
   jwidget_add_hook(widget, paledit_type(), paledit_msg_proc, paledit);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
 
   widget->border_width.l = widget->border_width.r = 1;
   widget->border_width.t = widget->border_width.b = 1;
@@ -305,7 +305,7 @@ void paledit_move_selection(JWidget widget, int x, int y)
   paledit_update_scroll(widget, paledit->color[1]);
 
   /* set the palette */
-  set_current_palette(paledit->palette, FALSE);
+  set_current_palette(paledit->palette, false);
 
   /* refresh the screen */
   jmanager_refresh_screen();
@@ -327,13 +327,13 @@ void paledit_get_selected_entries(JWidget widget, bool array[256])
 {
   PalEdit *paledit = paledit_data(widget);
 
-  memset(array, FALSE, sizeof(bool)*256);
+  memset(array, false, sizeof(bool)*256);
 
   switch (paledit->range_type) {
 
     case PALETTE_EDITOR_RANGE_NONE:
       if (paledit->color[1] >= 0)
-	array[paledit->color[1]] = TRUE;
+	array[paledit->color[1]] = true;
       break;
 
     case PALETTE_EDITOR_RANGE_LINEAL: {
@@ -342,7 +342,7 @@ void paledit_get_selected_entries(JWidget widget, bool array[256])
       int c;
 
       for (c=c1; c<=c2; c++)
-	array[c] = TRUE;
+	array[c] = true;
       break;
     }
 
@@ -369,7 +369,7 @@ void paledit_get_selected_entries(JWidget widget, bool array[256])
 
       for (y=y1; y<=y2; y++)
 	for (x=x1; x<=x2; x++)
-	  array[y*cols + x] = TRUE;
+	  array[y*cols + x] = true;
       break;
     }
   }
@@ -392,7 +392,7 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       paledit_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_KEYPRESSED:
       if (jwidget_has_focus(widget)) {
@@ -406,9 +406,9 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
 	    case KEY_DOWN:  paledit_move_selection(widget, 0, +1); break;
 
 	    default:
-	      return FALSE;
+	      return false;
 	  }
-	  return TRUE;
+	  return true;
 	}
       }
       break;
@@ -613,16 +613,16 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	jrect_free(cpos);
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_BUTTONRELEASED:
       jwidget_release_mouse(widget);
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void paledit_request_size(JWidget widget, int *w, int *h)

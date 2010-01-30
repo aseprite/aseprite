@@ -32,7 +32,7 @@ void dialogs_select_language(bool force)
 {
   /* only english */
   intl_set_lang("en");
-  set_config_bool("Options", "SelectLanguage", FALSE);
+  set_config_bool("Options", "SelectLanguage", false);
 }
 
 /**********************************************************************/
@@ -73,17 +73,17 @@ void dialogs_options()
 
   jslider_set_value(slider_x, x);
   jslider_set_value(slider_y, y);
-  if (get_config_bool("Options", "LockMouse", TRUE))
+  if (get_config_bool("Options", "LockMouse", true))
     jwidget_select(check_lockmouse);
-  if (get_config_bool("Options", "MoveClick2", FALSE))
+  if (get_config_bool("Options", "MoveClick2", false))
     jwidget_select(move_click2);
-  if (get_config_bool("Options", "DrawClick2", FALSE))
+  if (get_config_bool("Options", "DrawClick2", false))
     jwidget_select(draw_click2);
 
-  if (get_config_bool("Options", "MoveSmooth", TRUE))
+  if (get_config_bool("Options", "MoveSmooth", true))
     jwidget_select(check_smooth);
 
-  if (get_config_bool("Options", "Dither", FALSE))
+  if (get_config_bool("Options", "Dither", false))
     jwidget_select(check_dither);
 
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
@@ -102,7 +102,7 @@ void dialogs_options()
     set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
     set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
     
-    if (get_config_bool("Options", "Dither", FALSE) != jwidget_is_selected(check_dither)) {
+    if (get_config_bool("Options", "Dither", false) != jwidget_is_selected(check_dither)) {
       set_config_bool("Options", "Dither", jwidget_is_selected(check_dither));
       refresh_all_editors();
     }
@@ -143,7 +143,7 @@ static bool slider_mouse_hook(JWidget widget, void *data)
   set_config_int("Options", "MouseX", x);
   set_config_int("Options", "MouseY", y);
 
-  return FALSE;
+  return false;
 }
 
 /**********************************************************************/

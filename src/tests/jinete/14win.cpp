@@ -64,7 +64,7 @@ int main (int argc, char *argv[])
   button = jbutton_new("&Close All");
 
   jview_attach(view, sub_manager);
-  jwidget_expansive(view, TRUE);
+  jwidget_expansive(view, true);
 
   jwidget_add_child(desktop, box);
   jwidget_add_child(box, view);

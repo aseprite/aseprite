@@ -59,7 +59,7 @@ void ScreenShotCommand::execute(Context* context)
   old_flag = freeze_mouse_flag;
 
   /* freeze the mouse obligatory */
-  freeze_mouse_flag = TRUE;
+  freeze_mouse_flag = true;
 
   /* get the active palette color */
   get_palette(rgbpal);
@@ -86,7 +86,7 @@ void ScreenShotCommand::execute(Context* context)
 
     Palette *pal = palette_new(0, MAX_PALETTE_COLORS);
     palette_from_allegro(pal, rgbpal);
-    sprite_set_palette(sprite, pal, TRUE);
+    sprite_set_palette(sprite, pal, true);
     palette_free(pal);
 
     /* convert Allegro "BITMAP" to ASE "Image" */

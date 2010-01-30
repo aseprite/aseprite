@@ -166,7 +166,7 @@ static bool channel_change_hook(JWidget widget, void *data)
     case 'a': flag = TARGET_ALPHA_CHANNEL; break;
     case 'i': flag = TARGET_INDEX_CHANNEL; break;
     default:
-      return TRUE;
+      return true;
   }
 
   if (jwidget_is_selected(widget))
@@ -177,7 +177,7 @@ static bool channel_change_hook(JWidget widget, void *data)
   target_button->user_data[0] = (void *)target;
   
   jwidget_emit_signal(target_button, SIGNAL_TARGET_BUTTON_CHANGE);
-  return TRUE;
+  return true;
 }
 
 static bool images_change_hook(JWidget widget, void *data)
@@ -202,7 +202,7 @@ static bool images_change_hook(JWidget widget, void *data)
 
   target_button->user_data[0] = (void *)target;
   jwidget_emit_signal(target_button, SIGNAL_TARGET_BUTTON_CHANGE);
-  return TRUE;
+  return true;
 }
 
 static int get_target_image_gfx(int target)

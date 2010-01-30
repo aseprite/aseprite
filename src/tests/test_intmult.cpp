@@ -32,7 +32,7 @@ static void test()
   for (x=0; x<256; ++x)
     for (y=0; y<256; ++y)
       if (_int_mult(x, y) != INT_MULT(x, y, t)) {
-	assert(FALSE);
+	assert(false);
       }
 }
 #endif

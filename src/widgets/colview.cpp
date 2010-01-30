@@ -51,7 +51,7 @@ JWidget colorviewer_new(color_t color, int imgtype)
 
   jwidget_add_hook(widget, colorviewer_type(),
 		   colorviewer_msg_proc, colorviewer);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
   jwidget_set_border(widget, 2, 2, 2, 2);
   widget->setAlign(JI_CENTER | JI_MIDDLE);
 
@@ -110,7 +110,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
 
       msg->reqsize.w += widget->border_width.l + widget->border_width.r;
       msg->reqsize.h += widget->border_width.t + widget->border_width.b;
-      return TRUE;
+      return true;
     }
 
     case JM_DRAW: {
@@ -135,24 +135,24 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
 
       /* draw text */
       color_to_formalstring(colorviewer->imgtype,
-			    colorviewer->color, buf, sizeof(buf), FALSE);
+			    colorviewer->color, buf, sizeof(buf), false);
 
       widget->setTextQuiet(buf);
       jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
       jdraw_rectfill(&text, makecol(0, 0, 0));
       jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
-		 makecol(255, 255, 255), makecol(0, 0, 0), FALSE);
+		 makecol(255, 255, 255), makecol(0, 0, 0), false);
 
       jrect_free(rect);
-      return TRUE;
+      return true;
     }
 
     case JM_BUTTONPRESSED:
       jwidget_emit_signal(widget, SIGNAL_COLORVIEWER_SELECT);
-      return TRUE;
+      return true;
 
   }
 
-  return FALSE;
+  return false;
 }

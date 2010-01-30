@@ -107,8 +107,8 @@ void init_gui()
   check = jcheck_new("AI/Center after hit");
   button = jbutton_new("&Game Over");
 
-  jwidget_expansive(box2, TRUE);
-  jwidget_expansive(entry, TRUE);
+  jwidget_expansive(box2, true);
+  jwidget_expansive(entry, true);
 
   jwidget_add_child(window, box1);
   jwidget_add_children(box1, box2, check, button, NULL);
@@ -162,19 +162,19 @@ static bool my_manager_hook(JWidget widget, JMessage msg)
     case JM_KEYPRESSED:
       /* don't use UP & DOWN keys for focus movement */
       if (msg->key.scancode == KEY_UP || msg->key.scancode == KEY_DOWN) {
-	/* returning TRUE means that we use that keys (we don't use
+	/* returning true means that we use that keys (we don't use
 	   that keys here, but the game use them) */
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_DRAW:
       /* draw nothing (this avoid the default behavior: paint with the
 	 desktop color of the current manager's theme) */
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 /**********************************************************************/
@@ -202,8 +202,8 @@ static void calc_ball_dest(float *y);
 
 void play_game()
 {
-  bool gameover = FALSE;
-  bool trans_mode = FALSE;
+  bool gameover = false;
+  bool trans_mode = false;
   BITMAP *bmp, *bmp2;
 
   /* create a temporary bitmap to make double-buffered technique */
@@ -235,13 +235,13 @@ void play_game()
     /* use transparent bitmap */
     if (jwidget_pick(manager, mouse_x, mouse_y) == manager) {
       if (!trans_mode) {
-	trans_mode = TRUE;
+	trans_mode = true;
 	ji_set_screen(bmp2);
 	show_mouse(NULL);
       }
     }
     else if (trans_mode) {
-      trans_mode = FALSE;
+      trans_mode = false;
       ji_set_screen(bmp);
       show_mouse(NULL);
     }
@@ -256,11 +256,11 @@ void play_game()
 
     /* blit to screen (with the mouse on it) */
     show_mouse(ji_screen);
-    freeze_mouse_flag = TRUE;
+    freeze_mouse_flag = true;
     if (trans_mode)
       draw_trans_sprite (bmp, bmp2, 0, 0);
     blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-    freeze_mouse_flag = FALSE;
+    freeze_mouse_flag = false;
     show_mouse(NULL);
   }
 
@@ -371,9 +371,9 @@ static bool move_ball(float *x, float *y, float *dx, float *dy)
 
   /* ball goes out of screen */
   if (*x < 0 || *x > SCREEN_W-1)
-    return FALSE;
+    return false;
   else
-    return TRUE;
+    return true;
 }
 
 static void calc_ball_dest(float *y)

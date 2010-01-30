@@ -101,7 +101,7 @@ void LayerPropertiesCommand::execute(Context* context)
 
     jview_attach(view_bm, list_bm);
     jwidget_set_min_size(view_bm, 128*guiscale(), 64*guiscale());
-    jwidget_expansive(view_bm, TRUE);
+    jwidget_expansive(view_bm, true);
   }
 
   jwidget_set_min_size(entry_name, 128, 0);

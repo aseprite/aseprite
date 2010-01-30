@@ -40,7 +40,7 @@ public:
   Allegro() {
 #ifdef HAVE_RESIZE_PATCH
     // resize window ability
-    allegro_resizable_window_flag = TRUE;
+    allegro_resizable_window_flag = true;
 #endif
 
     allegro_init();

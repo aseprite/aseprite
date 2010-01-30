@@ -162,7 +162,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
       msg->reqsize.w = widget->border_width.l + 1 + widget->border_width.r;
       msg->reqsize.h = widget->border_width.t + 1 + widget->border_width.b;
 #endif
-      return TRUE;
+      return true;
     }
 
     case JM_KEYPRESSED: {
@@ -197,9 +197,9 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	default:
-	  return FALSE;
+	  return false;
       }
-      return TRUE;
+      return true;
     }
 
     case JM_DRAW: {
@@ -259,7 +259,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
       blit(bmp, ji_screen,
 	   0, 0, widget->rc->x1, widget->rc->y1, bmp->w, bmp->h);
       destroy_bitmap(bmp);
-      return TRUE;
+      return true;
     }
 
     case JM_BUTTONPRESSED:
@@ -291,7 +291,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	  jwidget_dirty(widget);
 	}
 	
-	return TRUE;
+	return true;
       }
       /* edit node */
       else {
@@ -379,7 +379,7 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	    break;
 	}
 
-	return TRUE;
+	return true;
       }
 #if 0				/* TODO */
       /* if the mouse move above a curve_editor, the focus change to
@@ -414,12 +414,12 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	curve_editor->status = STATUS_STANDBY;
-	return TRUE;
+	return true;
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static CurvePoint* curve_editor_get_more_close_point(JWidget widget,
@@ -489,12 +489,12 @@ static int edit_node_manual(CurvePoint* point)
   if (window->get_killer() == button_ok) {
     point->x = entry_x->getTextDouble();
     point->y = entry_y->getTextDouble();
-    res = TRUE;
+    res = true;
   }
   else {
     point->x = point_copy.x;
     point->y = point_copy.y;
-    res = FALSE;
+    res = false;
   }
 
   return res;

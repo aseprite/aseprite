@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   button = jbutton_new("&Close");
 
   /* a expansive widget can get more space that other ones */
-  jwidget_expansive(label, TRUE);
+  jwidget_expansive(label, true);
 
   /* put the label and button in the box and that box in the window */
   jwidget_add_child(box, label);

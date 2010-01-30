@@ -111,12 +111,12 @@ void ReplaceColorCommand::execute(Context* context)
 		      colorbar_get_bg_color(app_get_colorbar())),
      sprite->imgtype);
 
-  target_button = target_button_new(sprite->imgtype, FALSE);
+  target_button = target_button_new(sprite->imgtype, false);
   target_button_set_target(target_button, effect.target);
 
   jslider_set_value(slider_fuzziness,
 		    get_config_int("ReplaceColor", "Fuzziness", 0));
-  if (get_config_bool("ReplaceColor", "Preview", TRUE))
+  if (get_config_bool("ReplaceColor", "Preview", true))
     jwidget_select(check_preview);
 
   jwidget_add_child(color_buttons_box, button_color1);
@@ -161,7 +161,7 @@ static bool color_change_hook(JWidget widget, void *data)
   set_config_color("ReplaceColor", buf, colorbutton_get_color(widget));
 
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool target_change_hook(JWidget widget, void *data)
@@ -169,21 +169,21 @@ static bool target_change_hook(JWidget widget, void *data)
   effect_set_target(preview_get_effect(preview),
 		    target_button_get_target(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool slider_change_hook(JWidget widget, void *data)
 {
   set_config_int("ReplaceColor", "Fuzziness", jslider_get_value(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
   set_config_bool("ReplaceColor", "Preview", jwidget_is_selected(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static void make_preview()

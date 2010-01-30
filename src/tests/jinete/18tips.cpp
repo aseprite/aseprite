@@ -154,7 +154,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
       break;
 
   }
-  return FALSE;
+  return false;
 }
 
 static JWidget tip_window_new(const char *text)
@@ -162,8 +162,8 @@ static JWidget tip_window_new(const char *text)
   JWidget window = jwindow_new(text);
   JLink link, next;
 
-  jwindow_sizeable(window, FALSE);
-  jwindow_moveable(window, FALSE);
+  jwindow_sizeable(window, false);
+  jwindow_moveable(window, false);
 
   window->set_align(JI_CENTER | JI_MIDDLE);
 
@@ -188,7 +188,7 @@ static bool tip_window_hook(JWidget widget, JMessage msg)
 	widget->border_width.t = 3+jwidget_get_text_height(widget);
 	widget->border_width.r = 3;
 	widget->border_width.b = 3;
-	return TRUE;
+	return true;
       }
       break;
 
@@ -206,9 +206,9 @@ static bool tip_window_hook(JWidget widget, JMessage msg)
       jdraw_rectfill(pos, makecol(255, 255, 140));
 
       jdraw_widget_text(widget, makecol(0, 0, 0),
-			makecol(255, 255, 140), FALSE);
-      return TRUE;
+			makecol(255, 255, 140), false);
+      return true;
     }
   }
-  return FALSE;
+  return false;
 }

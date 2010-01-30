@@ -102,13 +102,13 @@ void DespeckleCommand::execute(Context* context)
 
   preview = preview_new(&effect);
 
-  target_button = target_button_new(sprite->imgtype, TRUE);
+  target_button = target_button_new(sprite->imgtype, true);
   target_button_set_target(target_button, effect.target);
 
   entry_width->setTextf("%d", get_config_int("Median", "Width", 3));
   entry_height->setTextf("%d", get_config_int("Median", "Height", 3));
 
-  if (get_config_bool("Median", "Preview", TRUE))
+  if (get_config_bool("Median", "Preview", true))
     jwidget_select(check_preview);
 
   if (get_tiled_mode() != TILED_NONE)
@@ -150,14 +150,14 @@ static bool width_change_hook(JWidget widget, void *data)
 {
   set_config_int("Median", "Width", widget->getTextInt());
   make_preview();
-  return TRUE;
+  return true;
 }
 
 static bool height_change_hook(JWidget widget, void *data)
 {
   set_config_int("Median", "Height", widget->getTextInt());
   make_preview();
-  return TRUE;
+  return true;
 }
 
 static bool target_change_hook(JWidget widget, void *data)
@@ -165,7 +165,7 @@ static bool target_change_hook(JWidget widget, void *data)
   effect_set_target(preview_get_effect(preview),
 		    target_button_get_target(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool preview_change_hook(JWidget widget, void *data)
@@ -179,7 +179,7 @@ static bool tiled_change_hook(JWidget widget, void *data)
 {
   set_tiled_mode(jwidget_is_selected(widget) ? TILED_BOTH: TILED_NONE);
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static void make_preview()

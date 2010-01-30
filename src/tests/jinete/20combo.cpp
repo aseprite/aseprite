@@ -67,8 +67,8 @@ int main (int argc, char *argv[])
   button_ok = jbutton_new("&OK");
   button_cancel = jbutton_new("&Cancel");
 
-  jwidget_expansive(label1, TRUE);
-  jwidget_expansive(label2, TRUE);
+  jwidget_expansive(label1, true);
+  jwidget_expansive(label2, true);
 
   for (c=0; c<16; c++) {
     usprintf(buf, "Option %d", c);
@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
   jcombobox_add_string(combobox2, "Fourth", NULL);
   jcombobox_add_string(combobox2, "Fifth", NULL);
   jcombobox_add_string(combobox2, "Sixth", NULL);
-  jcombobox_editable(combobox2, TRUE);
+  jcombobox_editable(combobox2, true);
 
   jwidget_add_child(window, box1);
   jwidget_add_children(box1, label1, combobox1, label2, combobox2, box2, 0);

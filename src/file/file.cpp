@@ -235,7 +235,7 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
 
   /* load just one frame */
   if (flags & FILE_LOAD_ONE_FRAME)
-    fop->oneframe = TRUE;
+    fop->oneframe = true;
 
 done:;
   jfree(extension);
@@ -271,7 +271,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
 
   /* warnings */
   ustrcpy(buf, empty_string);
-  fatal = FALSE;
+  fatal = false;
 
   /* check image type support */
   switch (fop->sprite->imgtype) {
@@ -279,7 +279,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     case IMAGE_RGB:
       if (!(fop->format->flags & FILE_SUPPORT_RGB)) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("RGB format"));
-	fatal = TRUE;
+	fatal = true;
       }
       if (!(fop->format->flags & FILE_SUPPORT_RGBA) &&
 	  sprite_need_alpha(fop->sprite)) {
@@ -290,7 +290,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     case IMAGE_GRAYSCALE:
       if (!(fop->format->flags & FILE_SUPPORT_GRAY)) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Grayscale format"));
-	fatal = TRUE;
+	fatal = true;
       }
       if (!(fop->format->flags & FILE_SUPPORT_GRAYA) &&
 	  sprite_need_alpha(fop->sprite)) {
@@ -301,7 +301,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     case IMAGE_INDEXED:
       if (!(fop->format->flags & FILE_SUPPORT_INDEXED)) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Indexed format"));
-	fatal = TRUE;
+	fatal = true;
       }
       break;
   }
@@ -475,7 +475,7 @@ void fop_operate(FileOp *fop)
 	if (palette_count_diff(sprite_get_palette(fop->sprite, frame),	\
 			       fop->seq.palette, NULL, NULL) > 0) {	\
 	  fop->seq.palette->frame = frame;				\
-	  sprite_set_palette(fop->sprite, fop->seq.palette, TRUE);	\
+	  sprite_set_palette(fop->sprite, fop->seq.palette, true);	\
 	}								\
 									\
 	old_image = fop->seq.image;					\
@@ -488,7 +488,7 @@ void fop_operate(FileOp *fop)
       frame = 0;
       old_image = NULL;
       
-      fop->seq.has_alpha = FALSE;
+      fop->seq.has_alpha = false;
       fop->seq.progress_offset = 0.0f;
       fop->seq.progress_fraction = 1.0f / (float)frames;
 
@@ -673,7 +673,7 @@ void fop_done(FileOp *fop)
   /* finally done */
   jmutex_lock(fop->mutex);
   {
-    fop->done = TRUE;
+    fop->done = true;
   }
   jmutex_unlock(fop->mutex);
 }
@@ -683,7 +683,7 @@ void fop_stop(FileOp *fop)
   jmutex_lock(fop->mutex);
   {
     if (!fop->done)
-      fop->stop = TRUE;
+      fop->stop = true;
   }
   jmutex_unlock(fop->mutex);
 }
@@ -884,9 +884,9 @@ static FileOp *fop_new(FileOpType type)
   fop->mutex = jmutex_new();
   fop->progress = 0.0f;
   fop->error = NULL;
-  fop->done = FALSE;
-  fop->stop = FALSE;
-  fop->oneframe = FALSE;
+  fop->done = false;
+  fop->stop = false;
+  fop->oneframe = false;
 
   fop->seq.filename_list = NULL;
   fop->seq.palette = NULL;

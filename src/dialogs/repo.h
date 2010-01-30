@@ -42,7 +42,7 @@ typedef struct RepoDlg {	/* a window to shows repositories
      jwidget_free(), it's called automatically */
   void (*free_listitem)(struct RepoDlg *repo_dlg);
 
-  /* return FALSE if to close the window, TRUE to continue (use the
+  /* return false if to close the window, true to continue (use the
      "repo_dlg->listitem") */
   bool (*use_listitem)(struct RepoDlg *repo_dlg);
   bool (*add_listitem)(struct RepoDlg *repo_dlg, int *added);

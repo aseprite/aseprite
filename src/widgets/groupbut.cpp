@@ -139,20 +139,20 @@ static int select_button(JWidget widget, int index)
   if (widget->type == JI_RADIO) {
     if ((size_t)widget->user_data[1] == index) {
       jwidget_select(widget);
-      return TRUE;
+      return true;
     }
   }
   else {
     JI_LIST_FOR_EACH(widget->children, link)
       if (select_button(reinterpret_cast<JWidget>(link->data), index))
-	return TRUE;
+	return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool radio_change_hook(JWidget widget, void *data)
 {
   jwidget_emit_signal((JWidget)data, SIGNAL_GROUP_BUTTON_CHANGE);
-  return TRUE;
+  return true;
 }

@@ -84,7 +84,7 @@ static bool load_GIF(FileOp *fop)
   Image *current_image = NULL;
   Palette *opal = NULL;
   Palette *npal = NULL;
-  bool ret = FALSE;
+  bool ret = false;
   int i, c;
 
   gif = gif_load_animation(fop->filename,
@@ -150,7 +150,7 @@ static bool load_GIF(FileOp *fop)
     /* first frame or palette changes */
     if (i == 0 || palette_count_diff(opal, npal, NULL, NULL)) {
       npal->frame = i;
-      sprite_set_palette(sprite, npal, TRUE);
+      sprite_set_palette(sprite, npal, true);
     }
 
     /* copy new palette to old palette */
@@ -246,7 +246,7 @@ static bool load_GIF(FileOp *fop)
 
   fop->sprite = sprite;
   sprite = NULL;
-  ret = TRUE;
+  ret = true;
 
 error:;
   if (gif) gif_destroy_animation(gif);
@@ -297,7 +297,7 @@ static bool save_GIF(FileOp *fop)
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
-    return FALSE;
+    return false;
   }
 
   gif = gif_create_animation(sprite->frames);
@@ -305,7 +305,7 @@ static bool save_GIF(FileOp *fop)
     image_free(bmp);
     image_free(old);
     fop_error(fop, _("Error creating GIF structure.\n"));
-    return FALSE;
+    return false;
   }
 
   gif->width = sprite->w;

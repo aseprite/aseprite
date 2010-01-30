@@ -116,7 +116,7 @@ void NewFileCommand::execute(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == ok) {
-    bool ok = FALSE;
+    bool ok = false;
 
     /* get the options */
     if (jwidget_is_selected(radio1))      imgtype = IMAGE_RGB;
@@ -135,7 +135,7 @@ void NewFileCommand::execute(Context* context)
 
     if (bg >= 0 && bg <= 4) {
       color = bg_table[bg];
-      ok = TRUE;
+      ok = true;
     }
 
     if (ok) {

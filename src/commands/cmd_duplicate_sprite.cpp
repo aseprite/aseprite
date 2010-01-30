@@ -76,7 +76,7 @@ void DuplicateSpriteCommand::execute(Context* context)
   sprintf(buf, "%s %s", sprite->filename, _("Copy"));
   dst_name->setText(buf);
 
-  if (get_config_bool("DuplicateSprite", "Flatten", FALSE))
+  if (get_config_bool("DuplicateSprite", "Flatten", false))
     jwidget_select(flatten);
 
   /* open the window */

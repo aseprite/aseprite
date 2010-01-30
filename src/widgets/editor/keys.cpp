@@ -67,7 +67,7 @@ bool Editor::editor_keys_toset_zoom(int scancode)
       if ((m_zoom != zoom) ||
 	  (m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
 	  (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
-	int use_refresh_region = (m_zoom == zoom) ? TRUE: FALSE;
+	int use_refresh_region = (m_zoom == zoom) ? true: false;
 
 	m_zoom = zoom;
 
@@ -98,14 +98,14 @@ bool Editor::editor_keys_toset_brushsize(int scancode)
     if (scancode == KEY_MINUS_PAD) {
       if (get_brush_size () > 1)
 	set_brush_size (get_brush_size ()-1);
-      return TRUE;
+      return true;
     }
     else if (scancode == KEY_PLUS_PAD) {
       if (get_brush_size () < 32)
 	set_brush_size (get_brush_size ()+1);
-      return TRUE;
+      return true;
     }
   }
 
-  return FALSE;
+  return false;
 }

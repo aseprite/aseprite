@@ -312,9 +312,9 @@ static void theme_draw_button(JWidget widget, JRect clip)
     jwidget_get_texticon_info(widget, NULL, &text, NULL, 0, 0, 0);
 
     jdraw_text(widget->text_font, widget->text,
-	       text.x1+s+1, text.y1+s+1, makecol (0, 0, 0), bg, FALSE);
+	       text.x1+s+1, text.y1+s+1, makecol (0, 0, 0), bg, false);
     jdraw_text(widget->text_font, widget->text,
-	       text.x1+s, text.y1+s, fg, bg, FALSE);
+	       text.x1+s, text.y1+s, fg, bg, false);
   }
 
   jrect_free(pos);
@@ -325,7 +325,7 @@ static void theme_draw_label(JWidget widget, JRect clip)
   /* draw background as Box */
   theme_draw_box(widget, clip);
 
-  jdraw_widget_text(widget, makecol(0, 0, 0), makecol(196, 196, 196), FALSE);
+  jdraw_widget_text(widget, makecol(0, 0, 0), makecol(196, 196, 196), false);
 }
 
 static void theme_draw_window(JWidget widget, JRect clip)
@@ -343,7 +343,7 @@ static void theme_draw_window(JWidget widget, JRect clip)
   pos->x1 += 1;
   jdraw_text(widget->text_font, widget->text, pos->x1, pos->y1+4,
 	     makecol(255, 255, 255),
-	     makecol(196, 196, 0), FALSE);
+	     makecol(196, 196, 0), false);
 
   jrect_free(pos);
 }

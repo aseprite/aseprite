@@ -240,11 +240,11 @@ static void remove_cel(Sprite* sprite, LayerImage *layer, Cel *cel)
   if (sprite != NULL && layer->is_image() && cel != NULL) {
     /* find if the image that use the cel to remove, is used by
        another cels */
-    used = FALSE;
+    used = false;
     for (frame=0; frame<sprite->frames; ++frame) {
       it = layer->get_cel(frame);
       if (it != NULL && it != cel && it->image == cel->image) {
-	used = TRUE;
+	used = true;
 	break;
       }
     }

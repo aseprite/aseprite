@@ -485,7 +485,7 @@ static bool interactive_transform(Editor* editor,
 	/* TODO */
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
-	editor->editor_set_scroll(scroll_x-x, scroll_y-y, TRUE);
+	editor->editor_set_scroll(scroll_x-x, scroll_y-y, true);
 
 /* 	editor_to_screen (widget, x1, y1, &x1, &y1); */
 /* 	editor_to_screen (widget, x2, y2, &x2, &y2); */
@@ -640,7 +640,7 @@ static bool interactive_transform(Editor* editor,
 	    if (get_use_grid() && angle == 0) {
 	      int ox = x1;
 	      int oy = y1;
-	      apply_grid(&x1, &y1, FALSE);
+	      apply_grid(&x1, &y1, false);
 	      x2 += x1 - ox;
 	      y2 += y1 - oy;
 	    }

@@ -201,7 +201,7 @@ static bool load_TGA(FileOp *fop)
 
   f = fopen(fop->filename, "rb");
   if (!f)
-    return FALSE;
+    return false;
 
   id_length = fgetc(f);
   palette_type = fgetc(f);
@@ -242,7 +242,7 @@ static bool load_TGA(FileOp *fop)
   }
   else if (palette_type != 0) {
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* Image type:
@@ -263,7 +263,7 @@ static bool load_TGA(FileOp *fop)
     case 1:
       if ((palette_type != 1) || (bpp != 8)) {
         fclose(f);
-        return FALSE;
+        return false;
       }
 
       for (i=0; i<palette_colors; i++) {
@@ -282,7 +282,7 @@ static bool load_TGA(FileOp *fop)
           ((bpp != 15) && (bpp != 16) &&
            (bpp != 24) && (bpp != 32))) {
         fclose(f);
-        return FALSE;
+        return false;
       }
 
       type = IMAGE_RGB;
@@ -292,7 +292,7 @@ static bool load_TGA(FileOp *fop)
     case 3:
       if ((palette_type != 0) || (bpp != 8)) {
         fclose(f);
-        return FALSE;
+        return false;
       }
 
       for (i=0; i<256; i++)
@@ -305,13 +305,13 @@ static bool load_TGA(FileOp *fop)
       /* TODO add support for more TGA types? */
 
       fclose(f);
-      return FALSE;
+      return false;
   }
 
   image = fop_sequence_image(fop, type, image_width, image_height);
   if (!image) {
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   for (y=image_height; y; y--) {
@@ -384,11 +384,11 @@ static bool load_TGA(FileOp *fop)
   if (ferror(f)) {
     fop_error(fop, _("Error reading file.\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
   else {
     fclose(f);
-    return TRUE;
+    return true;
   }
 }
 
@@ -408,7 +408,7 @@ static bool save_TGA(FileOp *fop)
   f = fopen(fop->filename, "wb");
   if (!f) {
     fop_error(fop, _("Error creating file.\n"));
-    return FALSE;
+    return false;
   }
 
   fputc(0, f);                          /* id length (no id saved) */
@@ -477,10 +477,10 @@ static bool save_TGA(FileOp *fop)
   if (ferror(f)) {
     fop_error(fop, _("Error writing file.\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
   else {
     fclose(f);
-    return TRUE;
+    return true;
   }
 }

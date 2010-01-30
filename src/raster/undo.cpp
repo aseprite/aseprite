@@ -271,7 +271,7 @@ Undo::Undo(Sprite* sprite)
   this->redo_stream = undo_stream_new(this);
   this->diff_count = 0;
   this->diff_saved = 0;
-  this->enabled = TRUE;
+  this->enabled = true;
   this->label = NULL;
 }
 
@@ -1727,7 +1727,7 @@ static Dirty *read_raw_dirty(ase_uint8* raw_data)
     read_raw_uint16(x2);
     read_raw_uint16(y2);
 
-    dirty = dirty_new(image, x1, y1, x2, y2, FALSE);
+    dirty = dirty_new(image, x1, y1, x2, y2, false);
     read_raw_uint16(dirty->rows);
 
     if (dirty->rows > 0) {

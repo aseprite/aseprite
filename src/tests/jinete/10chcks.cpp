@@ -105,7 +105,7 @@ int main (int argc, char *argv[])
   jwidget_add_child (box3, radio[10]);
   jwidget_add_child (box3, radio[11]);
 
-  jwidget_expansive (check, TRUE);
+  jwidget_expansive (check, true);
   update_radios ();
 
   window->open_window_bg();
@@ -167,8 +167,8 @@ static bool hooked_check_msg_proc (JWidget widget, JMessage msg)
     if (icon_align != ji_generic_button_get_icon_align(check))
       ji_generic_button_set_icon_align(check, icon_align);
 
-    return TRUE;
+    return true;
   }
   else
-    return FALSE;
+    return false;
 }

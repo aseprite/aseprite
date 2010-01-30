@@ -85,18 +85,18 @@ void AboutCommand::execute(Context* context)
   box4 = jbox_new(JI_HORIZONTAL);
   button1 = jbutton_new(_("&Close"));
   
-  jwidget_magnetic(button1, TRUE);
+  jwidget_magnetic(button1, true);
 
   jwidget_set_border(box1, 4, 4, 4, 4);
   jwidget_add_children(box1, label1, label2, separator1, NULL);
   if (textbox) {
     jview_attach(view, textbox);
-    jwidget_expansive(view, TRUE);
+    jwidget_expansive(view, true);
     jwidget_set_min_size(view, JI_SCREEN_W/3, JI_SCREEN_H/4);
     jwidget_add_children(box1, view, separator2, NULL);
   }
-  jwidget_expansive(box3, TRUE);
-  jwidget_expansive(box4, TRUE);
+  jwidget_expansive(box3, true);
+  jwidget_expansive(box4, true);
   jwidget_add_children(box2, box3, button1, box4, NULL);
   jwidget_add_children(box1, label3, label4, NULL);
   jwidget_add_child(box1, box2);

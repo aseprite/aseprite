@@ -100,11 +100,11 @@ void ConfigureTools::execute(Context* context)
   JWidget brush_type_box, brush_type;
   JWidget check_onionskin;
   JWidget brush_preview;
-  bool first_time = FALSE;
+  bool first_time = false;
 
   if (!window) {
     window = static_cast<Frame*>(load_widget("toolconf.jid", "configure_tool"));
-    first_time = TRUE;
+    first_time = true;
   }
   /* if the window is opened, close it */
   else if (jwidget_is_visible(window)) {
@@ -241,11 +241,11 @@ static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
       blit(bmp, ji_screen, 0, 0, widget->rc->x1, widget->rc->y1,
 	   bmp->w, bmp->h);
       destroy_bitmap(bmp);
-      return TRUE;
+      return true;
     }
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool window_close_hook(JWidget widget, void *data)
@@ -256,21 +256,21 @@ static bool window_close_hook(JWidget widget, void *data)
   /* save window configuration */
   save_window_pos(widget, "ConfigureTool");
 
-  return FALSE;
+  return false;
 }
 
 static bool brush_size_slider_change_hook(JWidget widget, void *data)
 {
   set_brush_size(jslider_get_value(widget));
   jwidget_dirty((JWidget)data);
-  return FALSE;
+  return false;
 }
 
 static bool brush_angle_slider_change_hook(JWidget widget, void *data)
 {
   set_brush_angle(jslider_get_value(widget));
   jwidget_dirty((JWidget)data);
-  return FALSE;
+  return false;
 }
 
 static bool brush_type_change_hook(JWidget widget, void *data)
@@ -286,31 +286,31 @@ static bool brush_type_change_hook(JWidget widget, void *data)
 		      type == BRUSH_SQUARE ? "Square":
 		      type == BRUSH_LINE ? "Line": "Unknown");
 
-  return TRUE;
+  return true;
 }
 
 static bool glass_dirty_slider_change_hook(JWidget widget, void *data)
 {
   set_glass_dirty(jslider_get_value(widget));
-  return FALSE;
+  return false;
 }
 
 static bool spray_width_slider_change_hook(JWidget widget, void *data)
 {
   set_spray_width(jslider_get_value(widget));
-  return FALSE;
+  return false;
 }
 
 static bool air_speed_slider_change_hook(JWidget widget, void *data)
 {
   set_air_speed(jslider_get_value(widget));
-  return FALSE;
+  return false;
 }
 
 static bool filled_check_change_hook(JWidget widget, void *data)
 {
   set_filled_mode(jwidget_is_selected(widget));
-  return FALSE;
+  return false;
 }
 
 static bool tiled_check_change_hook(JWidget widget, void *data)
@@ -319,7 +319,7 @@ static bool tiled_check_change_hook(JWidget widget, void *data)
   set_tiled_mode(flag ? TILED_BOTH: TILED_NONE);
   widget->findSibling("tiled_x")->setSelected(flag);
   widget->findSibling("tiled_y")->setSelected(flag);
-  return FALSE;
+  return false;
 }
 
 static bool tiled_xy_check_change_hook(JWidget widget, void *data)
@@ -335,20 +335,20 @@ static bool tiled_xy_check_change_hook(JWidget widget, void *data)
   widget->findSibling("tiled")->setSelected(tiled_mode != TILED_NONE);
 
   set_tiled_mode((tiled_t)tiled_mode);
-  return FALSE;
+  return false;
 }
 
 static bool use_grid_check_change_hook(JWidget widget, void *data)
 {
   set_use_grid(jwidget_is_selected(widget));
-  return FALSE;
+  return false;
 }
 
 static bool view_grid_check_change_hook(JWidget widget, void *data)
 {
   set_view_grid(jwidget_is_selected(widget));
   refresh_all_editors();
-  return FALSE;
+  return false;
 }
 
 static bool set_grid_button_select_hook(JWidget widget, void *data)
@@ -379,7 +379,7 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
     e.show();
   }
 
-  return TRUE;
+  return true;
 }
 
 static bool cursor_button_change_hook(JWidget widget, void *data)
@@ -392,7 +392,7 @@ static bool onionskin_check_change_hook(JWidget widget, void *data)
 {
   set_onionskin(jwidget_is_selected(widget));
   refresh_all_editors();
-  return FALSE;
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////

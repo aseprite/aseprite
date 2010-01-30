@@ -118,10 +118,10 @@ void ConvolutionMatrixCommand::execute(Context* context)
   list_convmatr = jlistbox_new();
   listbox_fill_convmatg(list_convmatr);
 
-  target_button = target_button_new(sprite->imgtype, TRUE);
+  target_button = target_button_new(sprite->imgtype, true);
   target_button_set_target(target_button, effect.target);
 
-  if (get_config_bool("ConvolutionMatrix", "Preview", TRUE))
+  if (get_config_bool("ConvolutionMatrix", "Preview", true))
     jwidget_select(check_preview);
 
   if (get_tiled_mode() != TILED_NONE)
@@ -226,7 +226,7 @@ static bool reload_select_hook(JWidget widget, void *data)
   listbox_select_current_convmatr(listbox);
   jview_update(jwidget_get_view(listbox));
 
-  return TRUE;			/* do not close */
+  return true;			/* do not close */
 }
 
 static bool generate_select_hook(JWidget widget, void *data)
@@ -284,7 +284,7 @@ static bool generate_select_hook(JWidget widget, void *data)
   curve_free(curve_x);
   curve_free(curve_y);
 #endif
-  return TRUE;
+  return true;
 }
 
 static bool list_change_hook(JWidget widget, void *data)
@@ -301,7 +301,7 @@ static bool list_change_hook(JWidget widget, void *data)
   effect_set_target(preview_get_effect(preview), new_target);
 
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool target_change_hook(JWidget widget, void *data)
@@ -309,7 +309,7 @@ static bool target_change_hook(JWidget widget, void *data)
   effect_set_target(preview_get_effect(preview),
 		    target_button_get_target(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool preview_change_hook(JWidget widget, void *data)
@@ -317,14 +317,14 @@ static bool preview_change_hook(JWidget widget, void *data)
   set_config_bool("ConvolutionMatrix", "Preview",
 		  jwidget_is_selected(widget));
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
   set_tiled_mode(jwidget_is_selected(widget) ? TILED_BOTH: TILED_NONE);
   make_preview();
-  return FALSE;
+  return false;
 }
 
 static void make_preview()

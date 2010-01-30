@@ -105,10 +105,10 @@ JWidget fileview_new(FileItem *start_folder, const jstring& exts)
 
   jwidget_add_hook(widget, fileview_type(),
 		   fileview_msg_proc, fileview);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
 
   fileview->current_folder = start_folder;
-  fileview->req_valid = FALSE;
+  fileview->req_valid = false;
   fileview->selected = NULL;
   fileview->exts = exts;
 
@@ -149,7 +149,7 @@ void fileview_set_current_folder(JWidget widget, FileItem *folder)
   assert(fileitem_is_browsable(folder));
 
   fileview->current_folder = folder;
-  fileview->req_valid = FALSE;
+  fileview->req_valid = false;
   fileview->selected = NULL;
 
   fileview_regenerate_list(widget);
@@ -223,14 +223,14 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	  h += ih;
 	}
 
-	fileview->req_valid = TRUE;
+	fileview->req_valid = true;
 	fileview->req_w = w;
 	fileview->req_h = h;
       }
 
       msg->reqsize.w = fileview->req_w;
       msg->reqsize.h = fileview->req_h;
-      return TRUE;
+      return true;
 
     case JM_DRAW: {
       JWidget view = jwidget_get_view(widget);
@@ -273,7 +273,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	  jdraw_text(widget->getFont(),
 		     "[+]", x, y+2,
-		     fgcolor, bgcolor, TRUE);
+		     fgcolor, bgcolor, true);
 
 	  // background for the icon
 	  jrectexclude(ji_screen,
@@ -300,7 +300,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	// item name
 	jdraw_text(widget->getFont(),
 		   fileitem_get_displayname(fi).c_str(), x, y+2,
-		   fgcolor, bgcolor, TRUE);
+		   fgcolor, bgcolor, true);
 
 	// background for the item name
 	jrectexclude(ji_screen,
@@ -472,23 +472,23 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	    if (fileview->selected) {
 	      if (fileitem_is_browsable(fileview->selected)) {
 		fileview_set_current_folder(widget, fileview->selected);
-		return TRUE;
+		return true;
 	      }
 	      if (fileitem_is_folder(fileview->selected)) {
 		// do nothing (is a folder but not browseable
-		return TRUE;
+		return true;
 	      }
 	      else {
 		// a file was selected
 		jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
-		return TRUE;
+		return true;
 	      }
 	    }
 	    else
-	      return FALSE;
+	      return false;
 	  case KEY_BACKSPACE:
 	    fileview_goup(widget);
-	    return TRUE;
+	    return true;
 	  default:
 	    if (msg->key.ascii == ' ' ||
 		(utolower(msg->key.ascii) >= 'a' &&
@@ -520,12 +520,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	      /* go to fileview_select_index... */
 	    }
 	    else
-	      return FALSE;
+	      return false;
 	}
 
 	if (bottom > 0)
 	  fileview_select_index(widget, MID(0, select, bottom-1));
-	return TRUE;
+	return true;
       }
       break;
 
@@ -548,11 +548,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       if (fileview->selected) {
 	if (fileitem_is_browsable(fileview->selected)) {
 	  fileview_set_current_folder(widget, fileview->selected);
-	  return TRUE;
+	  return true;
 	}
 	else {
 	  jwidget_emit_signal(widget, SIGNAL_FILEVIEW_FILE_ACCEPT);
-	  return TRUE;
+	  return true;
 	}
       }
       break;
@@ -571,7 +571,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void fileview_get_fileitem_size(JWidget widget, FileItem *fi, int *w, int *h)

@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
   {
     JWidget grid, label1, label2, label3, entry1, entry2, entry3;
     JWidget grid2, button1, button2;
-    grid = jgrid_new(2, FALSE);
-    grid2 = jgrid_new(2, TRUE);
+    grid = jgrid_new(2, false);
+    grid2 = jgrid_new(2, true);
     label1 = jlabel_new("A:");
     label2 = jlabel_new("BB:");
     label3 = jlabel_new("CCC:");

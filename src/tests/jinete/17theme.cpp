@@ -87,9 +87,9 @@ int main(int argc, char *argv[])
   button1 = jbutton_new("&OK");
   button2 = jbutton_new("&Cancel");
 
-  jentry_password(entry_password, TRUE);
-  jwidget_magnetic(entry_username, TRUE);
-  jwidget_magnetic(button1, TRUE);
+  jentry_password(entry_password, true);
+  jwidget_magnetic(entry_username, true);
+  jwidget_magnetic(button1, true);
 
   jwidget_add_child(window, box1);
   jwidget_add_child(box1, box2);
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
   jwidget_add_child(box5, button1);
   jwidget_add_child(box5, button2);
 
-  jwindow_sizeable(window, FALSE);
+  jwindow_sizeable(window, false);
 
  again:;
   window->open_window_fg();
@@ -296,9 +296,9 @@ static void theme_draw_box(JWidget widget, JRect clip)
   JWidget window = jwidget_get_window(widget);
   if (window) {
     JRect pos = jwidget_get_child_rect(window);
-    draw_edge(pos, makecol(255, 196, 64), FALSE);
+    draw_edge(pos, makecol(255, 196, 64), false);
     jrect_shrink(pos, 1);
-    draw_rect(pos, makecol(255, 196, 64), FALSE);
+    draw_rect(pos, makecol(255, 196, 64), false);
     jrect_free(pos);
   }
 }
@@ -318,11 +318,11 @@ static void theme_draw_button(JWidget widget, JRect clip)
 				     makecol(0, 196, 255);
   }
 
-  draw_edge(pos, makecol(255, 196, 64), TRUE);
+  draw_edge(pos, makecol(255, 196, 64), true);
 
   if (jwidget_has_focus (widget)) {
     jrect_shrink(pos, 1);
-    draw_edge(pos, makecol(0, 0, 0), FALSE);
+    draw_edge(pos, makecol(0, 0, 0), false);
   }
 
   jrect_shrink(pos, 1);
@@ -343,9 +343,9 @@ static void theme_draw_button(JWidget widget, JRect clip)
       jrect_displace(&text, 1, 1);
 
     jdraw_text(widget->text_font, widget->text, text.x1+1, text.y1+1,
-	       makecol(255, 255, 255), bg, FALSE);
+	       makecol(255, 255, 255), bg, false);
     jdraw_text(widget->text_font, widget->text,
-	       text.x1, text.y1, fg, bg, FALSE);
+	       text.x1, text.y1, fg, bg, false);
   }
 
   jrect_free(pos);
@@ -365,7 +365,7 @@ static void theme_draw_entry(JWidget widget, JRect clip)
   bg = makecol(255, 255, 255);
 
   /* 1st border */
-  draw_edge(pos, makecol (255, 196, 64), TRUE);
+  draw_edge(pos, makecol (255, 196, 64), true);
 
   /* 2nd border */
   jrect_shrink(pos, 1);
@@ -373,7 +373,7 @@ static void theme_draw_entry(JWidget widget, JRect clip)
     jdraw_rect(pos, makecol(0, 0, 0));
     jrect_shrink(pos, 1);
   }
-  draw_edge(pos, makecol(192, 192, 192), FALSE);
+  draw_edge(pos, makecol(192, 192, 192), false);
 
   /* background */
   jrect_shrink(pos, 1);
@@ -440,9 +440,9 @@ static void theme_draw_label(JWidget widget, JRect clip)
     jwidget_get_texticon_info(widget, NULL, &text, NULL, 0, 0, 0);
 
     jdraw_text(widget->text_font, widget->text, text.x1+1, text.y1+1,
-	       makecol(0, 0, 0), makecol(196, 128, 0), FALSE);
+	       makecol(0, 0, 0), makecol(196, 128, 0), false);
     jdraw_text(widget->text_font, widget->text, text.x1, text.y1,
-	       makecol(255, 255, 255), makecol(196, 128, 0), FALSE);
+	       makecol(255, 255, 255), makecol(196, 128, 0), false);
   }
 }
 
@@ -462,15 +462,15 @@ static void theme_draw_window(JWidget widget, JRect clip)
   }
 
   /* background */
-  draw_rect(pos, makecol(0, 127, 255), FALSE);
+  draw_rect(pos, makecol(0, 127, 255), false);
 
   /* title bar */
   pos->x1 += 8;
   pos->y1 += 6;
   jdraw_text(widget->text_font, widget->text, pos->x1+1, pos->y1+1,
-	     makecol(0, 0, 0), makecol(0, 127, 255), FALSE);
+	     makecol(0, 0, 0), makecol(0, 127, 255), false);
   jdraw_text(widget->text_font, widget->text, pos->x1, pos->y1,
-	     makecol(255, 255, 255), makecol(0, 127, 255), FALSE);
+	     makecol(255, 255, 255), makecol(0, 127, 255), false);
 
   /* border to client area */
   jrect_free(pos);

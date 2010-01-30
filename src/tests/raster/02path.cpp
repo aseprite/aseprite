@@ -329,7 +329,7 @@ int main()
         case 4:
           if (mouse_b & 1) {
             BEZIER_NODE *node;
-            node = create_bezier_node(TRUE,
+            node = create_bezier_node(true,
               x[1], y[1],
               x[3], y[3],
               x[3] + x[3] - x[2], y[3] + y[3] - y[2]);
@@ -414,10 +414,10 @@ int main()
           old_y = mouse_y;
 
           if (key[KEY_S])
-            node->tangent = FALSE;
+            node->tangent = false;
 
           if (key[KEY_T])
-            node->tangent = TRUE;
+            node->tangent = true;
         }
       }
     }

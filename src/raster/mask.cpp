@@ -332,13 +332,13 @@ void mask_crop(Mask* mask, const Image *image)
 {
 #define ADVANCE(beg, end, o_end, cmp, op, getpixel1, getpixel)	\
   {								\
-    done = TRUE;						\
+    done = true;						\
     for (beg=beg_##beg; beg cmp beg_##end; beg op) {		\
       old_color = getpixel1;					\
-      done = TRUE;						\
+      done = true;						\
       for (c++; c<=beg_##o_end; c++) {				\
 	if (getpixel != old_color) {				\
-	  done = FALSE;						\
+	  done = false;						\
 	  break;						\
 	}							\
       }								\

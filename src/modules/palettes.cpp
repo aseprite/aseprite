@@ -48,7 +48,7 @@ static Palette *ase_current_palette = NULL;
 
 /* current rgb map */
 static RGB_MAP *my_rgb_map = NULL;
-static int regen_my_rgb_map = FALSE;
+static int regen_my_rgb_map = false;
 
 /* system color (in order of importance) */
 static ase_uint32 ase_system_color[] =
@@ -155,13 +155,13 @@ bool set_current_palette(Palette *_palette, bool forced)
 
       /* first of all, we can search for system colors in the palette */
       for (i=0; i<SYSTEM_COLORS; i++) {
-	found[i] = FALSE;
+	found[i] = false;
 
 	for (j=1; j<256; j++) {
 	  if ((_rgba_getr(ase_system_color[i])>>2) == (_rgba_getr(palette->color[j])>>2) &&
 	      (_rgba_getg(ase_system_color[i])>>2) == (_rgba_getg(palette->color[j])>>2) &&
 	      (_rgba_getb(ase_system_color[i])>>2) == (_rgba_getb(palette->color[j])>>2)) {
-	    found[i] = TRUE;
+	    found[i] = true;
 	    break;
 	  }
 	}
@@ -198,7 +198,7 @@ bool set_current_palette(Palette *_palette, bool forced)
     // call hooks
     App::instance()->trigger_event(AppEvent::PaletteChange);
 
-    ret = TRUE;
+    ret = true;
   }
 
   return ret;
@@ -207,7 +207,7 @@ bool set_current_palette(Palette *_palette, bool forced)
 void set_black_palette()
 {
   Palette *p = palette_new(0, MAX_PALETTE_COLORS);
-  set_current_palette(p, TRUE);
+  set_current_palette(p, true);
   palette_free(p);
 }
 

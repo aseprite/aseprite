@@ -600,7 +600,7 @@ void Editor::editor_update_statusbar_for_standby()
       color_to_formalstring(m_sprite->imgtype,
 			    color,
 			    buf+ustrlen(buf),
-			    sizeof(buf)-ustrlen(buf), TRUE);
+			    sizeof(buf)-ustrlen(buf), true);
     }
     else {
       usprintf(buf, "%s", _("Transparent"));
@@ -668,7 +668,7 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 
       jrect_copy(widget->rc, &msg->setpos.rect);
       jview_update(widget);
-      return TRUE;
+      return true;
 
     case JM_DRAW:
       {
@@ -684,10 +684,10 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 
 	jrect_free(pos);
       }
-      return TRUE;
+      return true;
 
   }
-  return FALSE;
+  return false;
 }
 
 /**********************************************************************/
@@ -702,7 +702,7 @@ bool Editor::msg_proc(JMessage msg)
 
     case JM_REQSIZE:
       editor_request_size(&msg->reqsize.w, &msg->reqsize.h);
-      return TRUE;
+      return true;
 
     case JM_CLOSE:
       // if (m_refresh_region)
@@ -771,7 +771,7 @@ bool Editor::msg_proc(JMessage msg)
       if (msg->draw.count == 0)
 	m_old_cursor_thick = 0;
 
-      return TRUE;
+      return true;
     }
 
     case JM_TIMER:
@@ -838,12 +838,12 @@ bool Editor::msg_proc(JMessage msg)
 		     "||&Close"));
 	  }
 	  else {
-	    bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
+	    bool click2 = get_config_bool("Options", "MoveClick2", false);
 	    interactive_move_layer(click2 ? MODE_CLICKANDCLICK:
 					    MODE_CLICKANDRELEASE,
-				   TRUE, NULL);
+				   true, NULL);
 	  }
-	  return TRUE;
+	  return true;
 	}
       }
       /* call the eyedropper command */
@@ -878,7 +878,7 @@ bool Editor::msg_proc(JMessage msg)
 
 	jview_get_scroll(view, &scroll_x, &scroll_y);
 	editor_set_scroll(scroll_x+jmouse_x(1)-jmouse_x(0),
-			  scroll_y+jmouse_y(1)-jmouse_y(0), TRUE);
+			  scroll_y+jmouse_y(1)-jmouse_y(0), true);
 
 	jmouse_control_infinite_scroll(vp);
 	jrect_free(vp);
@@ -931,7 +931,7 @@ bool Editor::msg_proc(JMessage msg)
 	     m_sprite->w, m_sprite->h);
 	}
       }
-      return TRUE;
+      return true;
     }
 
     case JM_BUTTONRELEASED:
@@ -942,32 +942,32 @@ bool Editor::msg_proc(JMessage msg)
       editor_setcursor(msg->mouse.x, msg->mouse.y);
 
       jwidget_release_mouse(this);
-      return TRUE;
+      return true;
 
     case JM_KEYPRESSED:
       if (editor_keys_toset_zoom(msg->key.scancode) ||
 	  editor_keys_toset_brushsize(msg->key.scancode))
-	return TRUE;
+	return true;
 
       if (jwidget_has_mouse(this)) {
 	switch (msg->key.scancode) {
 	  
 	  /* eye-dropper is activated with ALT key */
 	  case KEY_ALT:
-	    m_alt_pressed = TRUE;
+	    m_alt_pressed = true;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return TRUE;
+	    return true;
 
 	  case KEY_LCONTROL:
 	  case KEY_RCONTROL:
-	    m_ctrl_pressed = TRUE;
+	    m_ctrl_pressed = true;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return TRUE;
+	    return true;
 
 	  case KEY_SPACE:
-	    m_space_pressed = TRUE;
+	    m_space_pressed = true;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return TRUE;
+	    return true;
 	}
       }
       break;
@@ -978,18 +978,18 @@ bool Editor::msg_proc(JMessage msg)
 	/* eye-dropper is deactivated with ALT key */
 	case KEY_ALT:
 	  if (m_alt_pressed) {
-	    m_alt_pressed = FALSE;
+	    m_alt_pressed = false;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return TRUE;
+	    return true;
 	  }
 	  break;
 
 	  case KEY_LCONTROL:
 	  case KEY_RCONTROL:
 	    if (m_ctrl_pressed) {
-	      m_ctrl_pressed = FALSE;
+	      m_ctrl_pressed = false;
 	      editor_setcursor(jmouse_x(0), jmouse_y(0));
-	      return TRUE;
+	      return true;
 	    }
 	    break;
 
@@ -998,9 +998,9 @@ bool Editor::msg_proc(JMessage msg)
 	    /* we have to clear all the KEY_SPACE in buffer */
 	    clear_keybuf();
 
-	    m_space_pressed = FALSE;
+	    m_space_pressed = false;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return TRUE;
+	    return true;
 	  }
 	  break;
       }
@@ -1038,7 +1038,7 @@ bool Editor::msg_proc(JMessage msg)
 
 	      if ((m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
 		  (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
-		int use_refresh_region = (m_zoom == zoom) ? TRUE: FALSE;
+		int use_refresh_region = (m_zoom == zoom) ? true: false;
 
 		m_zoom = zoom;
 
@@ -1078,7 +1078,7 @@ bool Editor::msg_proc(JMessage msg)
 	    jmouse_hide();
 	    if (thick)
 	      editor_clean_cursor();
-	    editor_set_scroll(scroll_x+dx, scroll_y+dy, TRUE);
+	    editor_set_scroll(scroll_x+dx, scroll_y+dy, true);
 	    if (thick)
 	      editor_draw_cursor(jmouse_x(0), jmouse_y(0));
 	    jmouse_show();
@@ -1091,7 +1091,7 @@ bool Editor::msg_proc(JMessage msg)
 
     case JM_SETCURSOR:
       editor_setcursor(msg->mouse.x, msg->mouse.y);
-      return TRUE;
+      return true;
 
   }
 

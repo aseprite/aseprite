@@ -210,10 +210,10 @@ static JWidget anieditor_new(const Sprite* sprite)
   anieditor->separator_w = 1;
   anieditor->hot_part = PART_NOTHING;
   anieditor->clk_part = PART_NOTHING;
-  anieditor->space_pressed = FALSE;
+  anieditor->space_pressed = false;
 
   jwidget_add_hook(widget, anieditor_type(), anieditor_msg_proc, anieditor);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
 
   anieditor_regenerate_layers(widget);
 
@@ -250,7 +250,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	 anyway */
       msg->reqsize.w = 32;
       msg->reqsize.h = 32;
-      return TRUE;
+      return true;
 
     /* case JM_CLOSE: */
     /*   break; */
@@ -284,25 +284,25 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       anieditor_draw_layer_padding(widget);
 
-      return TRUE;
+      return true;
     }
 
     case JM_TIMER:
       break;
 
     case JM_MOUSEENTER:
-      if (key[KEY_SPACE]) anieditor->space_pressed = TRUE;
+      if (key[KEY_SPACE]) anieditor->space_pressed = true;
       break;
 
     case JM_MOUSELEAVE:
-      if (anieditor->space_pressed) anieditor->space_pressed = FALSE;
+      if (anieditor->space_pressed) anieditor->space_pressed = false;
       break;
 
     case JM_BUTTONPRESSED:
       if (msg->mouse.middle || anieditor->space_pressed) {
 	jwidget_hard_capture_mouse(widget);
 	anieditor->state = STATE_SCROLLING;
-	return TRUE;
+	return true;
       }
 
       /* clicked-part = hot-part */
@@ -421,10 +421,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	if (anieditor->state == STATE_SCROLLING) {
 	  anieditor_set_scroll(widget,
 			       anieditor->scroll_x+jmouse_x(1)-jmouse_x(0),
-			       anieditor->scroll_y+jmouse_y(1)-jmouse_y(0), TRUE);
+			       anieditor->scroll_y+jmouse_y(1)-jmouse_y(0), true);
 
 	  jmouse_control_infinite_scroll(widget->rc);
-	  return TRUE;
+	  return true;
 	}
 	/* if the mouse pressed the mouse's button in the separator, we
 	   shouldn't change the hot (so the separator can be tracked to
@@ -433,7 +433,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  hot_part = anieditor->clk_part;
 	  anieditor->separator_x = mx;
 	  jwidget_dirty(widget);
-	  return TRUE;
+	  return true;
 	}
       }
 
@@ -498,7 +498,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* set the new 'hot' thing */
       anieditor_hot_this(widget, hot_part, hot_layer, hot_frame);
-      return TRUE;
+      return true;
     }
 
     case JM_BUTTONRELEASED:
@@ -507,7 +507,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	if (anieditor->state == STATE_SCROLLING) {
 	  anieditor->state = STATE_STANDBY;
-	  return TRUE;
+	  return true;
 	}
 
 	switch (anieditor->hot_part) {
@@ -682,7 +682,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	/* restore the cursor */
 	anieditor->state = STATE_STANDBY;
 	anieditor_setcursor(widget, msg->mouse.x, msg->mouse.y);
-	return TRUE;
+	return true;
       }
       break;
 
@@ -693,7 +693,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       if ((command && (strcmp(command->short_name(), CommandId::film_editor) == 0)) ||
 	  (msg->key.scancode == KEY_ESC)) {
 	jwidget_close_window(widget);
-	return TRUE;
+	return true;
       }
 
       /* undo */
@@ -708,7 +708,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	}
-	return TRUE;
+	return true;
       }
 
       /* redo */
@@ -723,7 +723,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
 	}
-	return TRUE;
+	return true;
       }
 
       /* new_frame, remove_frame, new_cel, remove_cel */
@@ -742,7 +742,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
-	  return TRUE;
+	  return true;
 	}
 
 	if (strcmp(command->short_name(), CommandId::new_layer) == 0 ||
@@ -753,15 +753,15 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  anieditor_regenerate_layers(widget);
 	  anieditor_show_current_cel(widget);
 	  jwidget_dirty(widget);
-	  return TRUE;
+	  return true;
 	}
       }
 
       switch (msg->key.scancode) {
 	case KEY_SPACE:
-	  anieditor->space_pressed = TRUE;
+	  anieditor->space_pressed = true;
 	  anieditor_setcursor(widget, jmouse_x(0), jmouse_y(0));
-	  return TRUE;
+	  return true;
       }
 
       break;
@@ -775,9 +775,9 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    /* we have to clear all the KEY_SPACE in buffer */
 	    clear_keybuf();
 
-	    anieditor->space_pressed = FALSE;
+	    anieditor->space_pressed = false;
 	    anieditor_setcursor(widget, jmouse_x(0), jmouse_y(0));
-	    return TRUE;
+	    return true;
 	  }
 	  break;
       }
@@ -800,17 +800,17 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       anieditor_set_scroll(widget,
 			   anieditor->scroll_x+dx,
-			   anieditor->scroll_y+dy, TRUE);
+			   anieditor->scroll_y+dy, true);
       break;
     }
 
     case JM_SETCURSOR:
       anieditor_setcursor(widget, msg->mouse.x, msg->mouse.y);
-      return TRUE;
+      return true;
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void anieditor_setcursor(JWidget widget, int x, int y)
@@ -890,7 +890,7 @@ static void anieditor_draw_header(JWidget widget, JRect clip)
   /* draw the header for the layers */
   anieditor_draw_header_part(widget, clip, x1, y1, x2, y2,
 			     /* is_hot, is_clk, */
-			     FALSE, FALSE,
+			     false, false,
 			     "Frames >>", 1,
 			     "Layers", -1);
 }
@@ -982,7 +982,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
       
     jdraw_text(widget->getFont(), line1,
 	       x, y1+3,
-	       fg, face, TRUE);
+	       fg, face, true);
   }
 
   if (line2 != NULL) {
@@ -995,7 +995,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     
     jdraw_text(widget->getFont(), line2,
 	       x, y1+3+ji_font_get_size(widget->getFont())+3,
-	       fg, face, TRUE);
+	       fg, face, true);
   }
 }
 
@@ -1101,7 +1101,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   /* draw the layer's name */
   jdraw_text(widget->getFont(), layer->get_name().c_str(),
 	     u, y_mid - ji_font_get_size(widget->getFont())/2,
-	     fg, bg, TRUE);
+	     fg, bg, true);
 
   /* the background should be underlined */
   if (layer->is_background()) {
@@ -1255,17 +1255,17 @@ static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame)
   switch (part) {
     case PART_NOTHING:
       /* do nothing */
-      return TRUE;
+      return true;
     case PART_SEPARATOR:
       anieditor_draw_separator(widget, widget->rc);
-      return TRUE;
+      return true;
     case PART_HEADER_LAYER:
       anieditor_draw_header(widget, widget->rc);
-      return TRUE;
+      return true;
     case PART_HEADER_FRAME:
       if (frame >= 0 && frame < anieditor->sprite->frames) {
 	anieditor_draw_header_frame(widget, widget->rc, frame);
-	return TRUE;
+	return true;
       }
       break;
     case PART_LAYER:
@@ -1273,19 +1273,19 @@ static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame)
     case PART_LAYER_LOCK_ICON:
       if (layer >= 0 && layer < anieditor->nlayers) {
 	anieditor_draw_layer(widget, widget->rc, layer);
-	return TRUE;
+	return true;
       }
       break;
     case PART_CEL:
       if (layer >= 0 && layer < anieditor->nlayers &&
 	  frame >= 0 && frame < anieditor->sprite->frames) {
 	anieditor_draw_cel(widget, widget->rc, layer, frame);
-	return TRUE;
+	return true;
       }
       break;
   }
 
-  return FALSE;
+  return false;
 }
 
 static void anieditor_regenerate_layers(JWidget widget)
@@ -1351,7 +1351,7 @@ static void anieditor_center_cel(JWidget widget, int layer, int frame)
   int scroll_x = widget->rc->x1 + anieditor->separator_x + anieditor->separator_w + FRMSIZE*frame - target_x;
   int scroll_y = widget->rc->y1 + HDRSIZE + LAYSIZE*layer - target_y;
 
-  anieditor_set_scroll(widget, scroll_x, scroll_y, FALSE);
+  anieditor_set_scroll(widget, scroll_x, scroll_y, false);
 }
 
 static void anieditor_show_cel(JWidget widget, int layer, int frame)
@@ -1384,7 +1384,7 @@ static void anieditor_show_cel(JWidget widget, int layer, int frame)
 
   if (scroll_x != anieditor->scroll_x ||
       scroll_y != anieditor->scroll_y)
-    anieditor_set_scroll(widget, scroll_x, scroll_y, TRUE);
+    anieditor_set_scroll(widget, scroll_x, scroll_y, true);
 }
 
 static void anieditor_show_current_cel(JWidget widget)

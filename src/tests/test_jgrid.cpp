@@ -24,7 +24,7 @@
  */
 static void test_grid_2x1()
 {
-  JWidget grid = jgrid_new(2, FALSE);
+  JWidget grid = jgrid_new(2, false);
   JWidget w1 = jwidget_new(JI_WIDGET);
   JWidget w2 = jwidget_new(JI_WIDGET);
   int req_w, req_h;
@@ -60,7 +60,7 @@ static void test_grid_2x1()
 
 static void test_grid_2x1_expand2nd()
 {
-  JWidget grid = jgrid_new(2, FALSE);
+  JWidget grid = jgrid_new(2, false);
   JWidget w1 = jwidget_new(JI_WIDGET);
   JWidget w2 = jwidget_new(JI_WIDGET);
   JRect rect;
@@ -96,7 +96,7 @@ static void test_grid_2x1_expand2nd()
 
 static void test_grid_2x1_samewidth()
 {
-  JWidget grid = jgrid_new(2, TRUE);
+  JWidget grid = jgrid_new(2, true);
   JWidget w1 = jwidget_new(JI_WIDGET);
   JWidget w2 = jwidget_new(JI_WIDGET);
   JRect rect;
@@ -165,7 +165,7 @@ static void test_grid_2x1_samewidth()
  */
 static void test_grid_3x3_intrincate()
 {
-  JWidget grid = jgrid_new(3, FALSE);
+  JWidget grid = jgrid_new(3, false);
   JWidget w1 = jwidget_new(JI_WIDGET);
   JWidget w2 = jwidget_new(JI_WIDGET);
   JWidget w3 = jwidget_new(JI_WIDGET);

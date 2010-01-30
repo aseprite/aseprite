@@ -60,7 +60,7 @@ public:
 /* Variables used only to maintain the history of navigation. */
 static JLink navigation_position = NULL; /* current position in the navigation history */
 static JList navigation_history = NULL;	/* set of FileItems navigated */
-static bool navigation_locked = FALSE;	/* if TRUE the navigation_history isn't
+static bool navigation_locked = false;	/* if true the navigation_history isn't
 					   modified if the current folder
 					   changes (used when the back/forward
 					   buttons are pushed) */
@@ -155,9 +155,9 @@ jstring ase_file_selector(const jstring& message,
     filetype = jwidget_find_name(window, "filetype");
     filename_entry = jwidget_find_name(window, "filename");
 
-    jwidget_focusrest(goback, FALSE);
-    jwidget_focusrest(goforward, FALSE);
-    jwidget_focusrest(goup, FALSE);
+    jwidget_focusrest(goback, false);
+    jwidget_focusrest(goforward, false);
+    jwidget_focusrest(goup, false);
 
     add_gfxicon_to_button(goback, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
     add_gfxicon_to_button(goforward, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
@@ -178,7 +178,7 @@ jstring ase_file_selector(const jstring& message,
     fileview->setName("fileview");
 
     jview_attach(view, fileview);
-    jwidget_expansive(view, TRUE);
+    jwidget_expansive(view, true);
 
     jwidget_add_child(box, view);
 
@@ -500,10 +500,10 @@ static void goback_command(JWidget widget)
     if (navigation_position->prev != navigation_history->end) {
       navigation_position = navigation_position->prev;
 
-      navigation_locked = TRUE;
+      navigation_locked = true;
       fileview_set_current_folder(fileview,
 				  reinterpret_cast<FileItem*>(navigation_position->data));
-      navigation_locked = FALSE;
+      navigation_locked = false;
     }
   }
 }
@@ -519,10 +519,10 @@ static void goforward_command(JWidget widget)
     if (navigation_position->next != navigation_history->end) {
       navigation_position = navigation_position->next;
 
-      navigation_locked = TRUE;
+      navigation_locked = true;
       fileview_set_current_folder(fileview,
 				  reinterpret_cast<FileItem*>(navigation_position->data));
-      navigation_locked = FALSE;
+      navigation_locked = false;
     }
   }
 }
@@ -572,7 +572,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
     }
   }
-  return FALSE;
+  return false;
 }
 
 /* hook for the 'location' combo-box */
@@ -601,7 +601,7 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
       }
     }
   }
-  return FALSE;
+  return false;
 }
 
 /* hook for the 'filetype' combo-box */
@@ -631,7 +631,7 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 
     }
   }
-  return FALSE;
+  return false;
 }
 
 static bool filename_msg_proc(JWidget widget, JMessage msg)
@@ -640,13 +640,13 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
     // check if all keys are released
     for (int c=0; c<KEY_MAX; ++c) {
       if (key[c])
-	return FALSE;
+	return false;
     }
 
     // string to be autocompleted
     jstring left_part = widget->getText();
     if (left_part.empty())
-      return FALSE;
+      return false;
 
     // first we'll need the fileview widget
     Widget* fileview = widget->findSibling("fileview");
@@ -674,10 +674,10 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
 			   child_name.size(),
 			   left_part.size());
 	clear_keybuf();
-	return TRUE;
+	return true;
       }
     }
   }
-  return FALSE;
+  return false;
 }
 

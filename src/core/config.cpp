@@ -64,7 +64,7 @@ static CONFIG *system_config = NULL;
 
 static CONFIG_HOOK *config_hook = NULL;
 
-static int config_installed = FALSE;
+static int config_installed = false;
 
 
 
@@ -107,7 +107,7 @@ static void flush_config(CONFIG *cfg)
          }
 
 	 pack_fclose(f);
-	 cfg->dirty = FALSE;
+	 cfg->dirty = false;
       }
    }
 }
@@ -208,7 +208,7 @@ static void config_cleanup()
    }
 
    _remove_exit_func(config_cleanup);
-   config_installed = FALSE;
+   config_installed = false;
 }
 
 
@@ -224,7 +224,7 @@ static void init_config(int loaddata)
 
    if (!config_installed) {
       _add_exit_func(config_cleanup);
-      config_installed = TRUE;
+      config_installed = true;
    }
 
    if ((loaddata) && (!config[0])) {
@@ -244,7 +244,7 @@ static void init_config(int loaddata)
       if (system_config) {
 	 system_config->head = NULL;
 	 system_config->filename = NULL;
-	 system_config->dirty = FALSE;
+	 system_config->dirty = false;
       }
    }
 }
@@ -378,7 +378,7 @@ static void set_config(CONFIG **config, AL_CONST char *data, int length, AL_CONS
    char *name, *val;
    int ret, pos;
 
-   init_config(FALSE);
+   init_config(false);
 
    if (*config) {
       destroy_config(*config);
@@ -392,7 +392,7 @@ static void set_config(CONFIG **config, AL_CONST char *data, int length, AL_CONS
    }
 
    (*config)->head = NULL;
-   (*config)->dirty = FALSE;
+   (*config)->dirty = false;
 
    if (filename) {
       (*config)->filename = ustrdup(filename);
@@ -638,7 +638,7 @@ void hook_config_section(AL_CONST char *section, int (*intgetter)(AL_CONST char 
    CONFIG_HOOK *hook, **prev;
    char section_name[256];
 
-   init_config(FALSE);
+   init_config(false);
 
    prettify_section_name(section, section_name, sizeof(section_name));
 
@@ -700,12 +700,12 @@ int config_is_hooked(AL_CONST char *section)
 
    while (hook) {
       if (ustricmp(section_name, hook->section) == 0)
-	 return TRUE;
+	 return true;
 
       hook = hook->next;
    }
 
-   return FALSE;
+   return false;
 }
 
 
@@ -725,9 +725,9 @@ static CONFIG_ENTRY *find_config_string(CONFIG *config, AL_CONST char *section, 
 	 *prev = NULL;
 
       if (section && ugetc(section))
-         in_section = FALSE;
+         in_section = false;
       else
-         in_section = TRUE;
+         in_section = true;
 
       while (p) {
 	 if (p->name) {
@@ -763,7 +763,7 @@ AL_CONST char *get_config_string(AL_CONST char *section, AL_CONST char *name, AL
    CONFIG_HOOK *hook;
    CONFIG_ENTRY *p;
 
-   init_config(TRUE);
+   init_config(true);
 
    prettify_section_name(section, section_name, sizeof(section_name));
 
@@ -1027,7 +1027,7 @@ void set_config_string(AL_CONST char *section, AL_CONST char *name, AL_CONST cha
    CONFIG_ENTRY *p, *prev;
    char section_name[256];
 
-   init_config(TRUE);
+   init_config(true);
 
    prettify_section_name(section, section_name, sizeof(section_name));
 
@@ -1113,7 +1113,7 @@ void set_config_string(AL_CONST char *section, AL_CONST char *name, AL_CONST cha
 	 } 
       }
 
-      the_config->dirty = TRUE;
+      the_config->dirty = true;
    }
 }
 
@@ -1236,7 +1236,7 @@ void reload_config_texts(AL_CONST char *new_language)
    if (config_language ) {
       config_language ->head = NULL;
       config_language ->filename = NULL;
-      config_language ->dirty = FALSE;
+      config_language ->dirty = false;
    }
 }
 
@@ -1260,7 +1260,7 @@ AL_CONST char *get_config_text(AL_CONST char *msg)
    int c, pos, size;
    ASSERT(msg);
 
-   init_config(TRUE);
+   init_config(true);
 
    /* allocate memory and convert message to current encoding format */
    if (need_uconvert(msg, U_ASCII, U_CURRENT)) {

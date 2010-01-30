@@ -75,9 +75,9 @@ int main(int argc, char *argv[])
 
   jbutton_add_command(button, read_xml);
 
-  jwidget_expansive(hbox, TRUE);
-  jwidget_expansive(textsrc, TRUE);
-  jwidget_expansive(textdst, TRUE);
+  jwidget_expansive(hbox, true);
+  jwidget_expansive(textsrc, true);
+  jwidget_expansive(textdst, true);
   jwidget_set_min_size(textsrc, 600, 200);
   jwidget_set_min_size(textdst, 600, 200);
 

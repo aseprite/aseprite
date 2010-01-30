@@ -324,13 +324,13 @@ FileItem* get_fileitem_from_path(const jstring& path)
       return NULL;
     }
 
-    fileitem = get_fileitem_by_fullpidl(fullpidl, TRUE);
+    fileitem = get_fileitem_by_fullpidl(fullpidl, true);
     free_pidl(fullpidl);
   }
 #else
   {
     jstring buf = remove_backslash_if_needed(path);
-    fileitem = get_fileitem_by_path(buf, TRUE);
+    fileitem = get_fileitem_by_path(buf, true);
   }
 #endif
 
@@ -461,7 +461,7 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 	      LPITEMIDLIST fullpidl = concat_pidl(fileitem->fullpidl,
 						  itempidl[c]);
 
-	      child = get_fileitem_by_fullpidl(fullpidl, FALSE);
+	      child = get_fileitem_by_fullpidl(fullpidl, false);
 	      if (!child) {
 		child = new FileItem(fileitem);
 
@@ -927,7 +927,7 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
     remove_last_pidl(parent_fullpidl);
 
     fileitem->pidl = get_last_pidl(fileitem->fullpidl);
-    fileitem->parent = get_fileitem_by_fullpidl(parent_fullpidl, TRUE);
+    fileitem->parent = get_fileitem_by_fullpidl(parent_fullpidl, true);
 
     free_pidl(parent_fullpidl);
   }
@@ -990,7 +990,7 @@ static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
   // get the parent
   {
     jstring parent_path = remove_backslash_if_needed(path.filepath() / "");
-    fileitem->parent = get_fileitem_by_path(parent_path, TRUE);
+    fileitem->parent = get_fileitem_by_path(parent_path, true);
   }
 
   put_fileitem(fileitem);
@@ -1013,7 +1013,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
        ustrcmp(filename_without_path, "..") == 0))
     return;
 
-  child = get_fileitem_by_path(filename, FALSE);
+  child = get_fileitem_by_path(filename, false);
   if (!child) {
     assert(fileitem != NULL);
     child = new FileItem(fileitem);

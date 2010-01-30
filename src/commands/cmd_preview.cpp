@@ -136,7 +136,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
       w = sprite->w << editor->editor_get_zoom();
       h = sprite->h << editor->editor_get_zoom();
 
-      redraw = TRUE;
+      redraw = true;
       do {
 	/* update scroll */
 	if (jmouse_poll()) {
@@ -145,11 +145,11 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	  jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 	  jmouse_poll();
 
-	  redraw = TRUE;
+	  redraw = true;
 	}
 
 	if (redraw) {
-	  redraw = FALSE;
+	  redraw = false;
 
 	  /* fit on screen */
 	  if (flags & PREVIEW_FIT_ON_SCREEN) {
@@ -257,7 +257,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	    context->execute_command(command);
 
 	    /* redraw */
-	    redraw = TRUE;
+	    redraw = true;
 
 	    /* render the sprite in the bitmap */
 	    image = render_sprite(sprite, 0, 0, sprite->w, sprite->h,
@@ -276,13 +276,13 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	  else if ((readkey_value>>8) == KEY_PLUS_PAD) {
 	    if (index_bg_color < 255) {
 	      bg_color = palette_color[++index_bg_color];
-	      redraw = TRUE;
+	      redraw = true;
 	    }
 	  }
 	  else if ((readkey_value>>8) == KEY_MINUS_PAD) {
 	    if (index_bg_color > 0) {
 	      bg_color = palette_color[--index_bg_color];
-	      redraw = TRUE;
+	      redraw = true;
 	    }
 	  }
 	  else

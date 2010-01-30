@@ -28,7 +28,7 @@
 #include "modules/gui.h"
 #include "modules/recent.h"
 
-static int installed = FALSE;
+static int installed = false;
 
 static JList recent_files;
 static int recent_files_limit = 16;
@@ -39,7 +39,7 @@ int init_module_recent()
   char buf[512];
   int c;
 
-  installed = TRUE;
+  installed = true;
   recent_files = jlist_new();
 
   for (c=recent_files_limit-1; c>=0; c--) {
@@ -68,7 +68,7 @@ void exit_module_recent()
   }
 
   jlist_free(recent_files);
-  installed = FALSE;
+  installed = false;
 }
 
 JList get_recent_files_list()

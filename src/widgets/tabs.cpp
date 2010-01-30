@@ -97,8 +97,8 @@ JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
   jbutton_set_bevel(tabs->button_left, 0, 0, 0, 0);
   jbutton_set_bevel(tabs->button_right, 0, 0, 0, 0);
 
-  jwidget_focusrest(tabs->button_left, FALSE);
-  jwidget_focusrest(tabs->button_right, FALSE);
+  jwidget_focusrest(tabs->button_left, false);
+  jwidget_focusrest(tabs->button_right, false);
   
   add_gfxicon_to_button(tabs->button_left, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
   add_gfxicon_to_button(tabs->button_right, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
@@ -221,12 +221,12 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       msg->reqsize.h =
 	theme->get_part(PART_TAB_FILLER)->h +
 	theme->get_part(PART_TAB_BOTTOM_NORMAL)->h;
-      return TRUE;
+      return true;
 
     case JM_SETPOS:
       jrect_copy(widget->rc, &msg->setpos.rect);
       set_scroll_x(widget, tabs->scroll_x);
-      return TRUE;
+      return true;
 
     case JM_DRAW: {
       JRect rect = jwidget_get_rect(widget);
@@ -289,20 +289,20 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
       jrect_free(rect);
       jrect_free(box);
-      return TRUE;
+      return true;
     }
 
     case JM_MOUSEENTER:
     case JM_MOTION:
       calculate_hot(widget);
-      return TRUE;
+      return true;
 
     case JM_MOUSELEAVE:
       if (tabs->hot != NULL) {
 	tabs->hot = NULL;
 	jwidget_dirty(widget);
       }
-      return TRUE;
+      return true;
 
     case JM_BUTTONPRESSED:
       if (tabs->hot != NULL) {
@@ -316,12 +316,12 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 				   tabs->selected->data,
 				   msg->mouse.flags);
       }
-      return TRUE;
+      return true;
 
     case JM_WHEEL: {
       int dx = (jmouse_z(1) - jmouse_z(0)) * jrect_w(widget->rc)/6;
       set_scroll_x(widget, tabs->scroll_x+dx);
-      return TRUE;
+      return true;
     }
 
     case JM_TIMER: {
@@ -347,7 +347,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
@@ -363,7 +363,7 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-	return TRUE;
+	return true;
       }
       else if (msg->signal.num == JI_SIGNAL_DISABLE) {
 	assert(tabs != NULL);
@@ -372,7 +372,7 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 	  jmanager_stop_timer(tabs->timer_id);
 	  jwidget_deselect(widget);
 	}
-	return TRUE;
+	return true;
       }
       break;
 
@@ -388,7 +388,7 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static Tab *get_tab_by_data(JWidget widget, void *data)

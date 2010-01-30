@@ -34,7 +34,7 @@ int msgids_load(const char *filename)
 {
   char buf[4096], leavings[4096];
   char id[4096], trans[4096];
-  int donotread = FALSE;
+  int donotread = false;
   FILE *f;
 
   f = fopen(filename, "r");
@@ -48,7 +48,7 @@ int msgids_load(const char *filename)
   strcpy(leavings, "");
 
   while (donotread || tok_read (f, buf, leavings, sizeof (leavings))) {
-    donotread = FALSE;
+    donotread = false;
 
     /* new msgid */
     if (strncmp ("msgid", buf, 5) == 0) {
@@ -65,7 +65,7 @@ int msgids_load(const char *filename)
 	  strcat(trans, buf);
 
 	if (strncmp("msgid", buf, 5) == 0)
-	  donotread = TRUE;
+	  donotread = true;
 
 	if (strlen(id) > 0 && strlen(trans) > 0)
 	  hash_insert(msgids, id, jstrdup(trans));

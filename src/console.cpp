@@ -36,7 +36,7 @@ static Widget* wid_textbox = NULL;
 static Widget* wid_cancel = NULL;
 static int console_counter = 0;
 static bool console_locked;
-static bool want_close_flag = FALSE;
+static bool want_close_flag = false;
 
 Console::Console()
 {
@@ -49,7 +49,7 @@ Console::Console()
     return;
   else {
     Frame* window = new Frame(false, _("Errors Console"));
-    Widget* grid = jgrid_new(1, FALSE);
+    Widget* grid = jgrid_new(1, false);
     Widget* view = jview_new();
     Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
     Widget* button = jbutton_new(_("&Cancel"));
@@ -66,18 +66,18 @@ Console::Console()
     jwidget_add_child(window, grid);
 
     jwidget_hide(view);
-    jwidget_magnetic(button, TRUE);
-    jwidget_expansive(view, TRUE);
+    jwidget_magnetic(button, true);
+    jwidget_expansive(view, true);
 
     /* force foreground mode */
-/*     ji_find_widget(window)->in_foreground = TRUE; */
+/*     ji_find_widget(window)->in_foreground = true; */
 
     wid_console = window;
     wid_view = view;
     wid_textbox = textbox;
     wid_cancel = button;
-    console_locked = FALSE;
-    want_close_flag = FALSE;
+    console_locked = false;
+    want_close_flag = false;
   }
 }
 
@@ -95,7 +95,7 @@ Console::~Console()
 
     delete wid_console; 	// window
     wid_console = NULL;
-    want_close_flag = FALSE;
+    want_close_flag = false;
   }
 }
 
@@ -121,7 +121,7 @@ void Console::printf(const char *format, ...)
     /* update the textbox */
     if (!console_locked) {
       JRect rect = jrect_new(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
-      console_locked = TRUE;
+      console_locked = true;
       
       jwidget_show(wid_view);
 

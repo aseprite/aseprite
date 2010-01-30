@@ -162,6 +162,6 @@ static bool hooked_menuitem_msg_proc(JWidget widget, JMessage msg)
   if (msg->type == JM_SIGNAL &&
       msg->signal.num == JI_SIGNAL_MENUITEM_SELECT)
     printf("Selected item: %s\n", widget->text);
-  return FALSE;
+  return false;
 }
 

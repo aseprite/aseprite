@@ -226,16 +226,16 @@ bool effect_apply_step(Effect *effect)
 
     (*effect->apply)(effect);
     effect->row++;
-    return TRUE;
+    return true;
   }
   else {
-    return FALSE;
+    return false;
   }
 }
 
 void effect_apply(Effect *effect)
 {
-  bool cancelled = FALSE;
+  bool cancelled = false;
 
   effect_begin(effect);
   while (!cancelled && effect_apply_step(effect)) {
@@ -297,10 +297,10 @@ void effect_flush(Effect *effect)
 void effect_apply_to_target(Effect *effect)
 {
   ImageRef *p, *images;
-  bool cancelled = FALSE;
+  bool cancelled = false;
   int nimages;
 
-  images = images_ref_get_from_sprite(effect->sprite, effect->target, TRUE);
+  images = images_ref_get_from_sprite(effect->sprite, effect->target, true);
   if (images == NULL)
     return;
 

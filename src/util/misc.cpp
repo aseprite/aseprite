@@ -97,7 +97,7 @@ void LoadPalette(Sprite* sprite, const char *filename)
       Palette *pal = palette_load(dir->path);
       if (pal != NULL) {
 	/* set the palette calling the hooks */
-	set_current_palette(pal, FALSE);
+	set_current_palette(pal, false);
 
 	/* just one palette */
 	sprite_reset_palettes(sprite);
@@ -157,7 +157,7 @@ Image* NewImageFromMask(const Sprite* src_sprite)
 }
 
 /* Gives to the user the possibility to move the sprite's layer in the
-   current editor, returns TRUE if the position was changed.  */
+   current editor, returns true if the position was changed.  */
 int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   Editor* editor = current_editor;
@@ -171,14 +171,14 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   int start_y, new_y;
   int start_b;
   int ret;
-  int update = FALSE;
+  int update = false;
   int quiet_clock = -1;
-  int first_time = TRUE;
+  int first_time = true;
   int begin_x;
   int begin_y;
 
   if (!cel)
-    return FALSE;
+    return false;
 
   begin_x = cel->x;
   begin_y = cel->y;
@@ -207,7 +207,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 
       /* update clock */
       quiet_clock = ji_clock;
-      first_time = FALSE;
+      first_time = false;
     }
 
     /* call the user's routine */
@@ -236,11 +236,11 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
     }
 
     cel_set_position(cel, new_x, new_y);
-    ret = TRUE;
+    ret = true;
   }
   /* the position wasn't changed */
   else {
-    ret = FALSE;
+    ret = false;
   }
 
   /* redraw the sprite in all editors */

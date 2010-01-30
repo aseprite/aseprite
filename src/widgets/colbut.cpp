@@ -56,7 +56,7 @@ JWidget colorbutton_new(color_t color, int imgtype)
 
   jwidget_add_hook(widget, colorbutton_type(),
 		   colorbutton_msg_proc, colorbutton);
-  jwidget_focusrest(widget, TRUE);
+  jwidget_focusrest(widget, true);
 
   return widget;
 }
@@ -119,7 +119,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 
       msg->reqsize.w = jrect_w(&box) + widget->border_width.l + widget->border_width.r;
       msg->reqsize.h = jrect_h(&box) + widget->border_width.t + widget->border_width.b;
-      return TRUE;
+      return true;
     }
 
     case JM_MOUSEENTER:
@@ -128,20 +128,20 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DRAW:
       colorbutton_draw(widget);
-      return TRUE;
+      return true;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
 	colorbutton_close_tooltip(widget);
 	jwidget_hard_capture_mouse(widget);
-	return TRUE;
+	return true;
       }
       break;
 
     case JM_BUTTONPRESSED:
       if (jwidget_has_capture(widget) &&
 	  widget->flags & JI_HARDCAPTURE) {
-	return TRUE;
+	return true;
       }
       break;
 
@@ -190,7 +190,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	  jwidget_emit_signal(widget, SIGNAL_COLORBUTTON_CHANGE);
 	}
 
-	return TRUE;
+	return true;
       }
       break;
 
@@ -205,13 +205,13 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_has_capture(widget) &&
 	  widget->flags & JI_HARDCAPTURE) {
 	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	return TRUE;
+	return true;
       }
       break;
 
   }
 
-  return FALSE;
+  return false;
 }
 
 static void colorbutton_draw(JWidget widget)
@@ -230,11 +230,11 @@ static void colorbutton_draw(JWidget widget)
      colorbutton->imgtype,
      colorbutton->color,
      jwidget_has_mouse(widget),
-     FALSE, ji_color_face());
+     false, ji_color_face());
 
   /* draw text */
   color_to_formalstring(colorbutton->imgtype,
-			colorbutton->color, buf, sizeof(buf), FALSE);
+			colorbutton->color, buf, sizeof(buf), false);
 
   widget->setTextQuiet(buf);
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
@@ -242,7 +242,7 @@ static void colorbutton_draw(JWidget widget)
   rectfill(ji_screen, text.x1, text.y1, text.x2-1, text.y2-1, makecol(0, 0, 0));
   jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
 	     makecol(255, 255, 255),
-	     makecol(0, 0, 0), FALSE);
+	     makecol(0, 0, 0), false);
 }
 
 static void colorbutton_open_tooltip(JWidget widget)
@@ -315,5 +315,5 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
 
   }
   
-  return FALSE;
+  return false;
 }

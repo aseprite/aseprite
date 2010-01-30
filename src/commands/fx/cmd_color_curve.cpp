@@ -115,10 +115,10 @@ void ColorCurveCommand::execute(Context* context)
   set_color_curve(the_curve);
 
   curve_editor = curve_editor_new(the_curve, 0, 0, 255, 255);
-  target_button = target_button_new(sprite->imgtype, TRUE);
+  target_button = target_button_new(sprite->imgtype, true);
   target_button_set_target(target_button, effect.target);
 
-  if (get_config_bool("ColorCurve", "Preview", TRUE))
+  if (get_config_bool("ColorCurve", "Preview", true))
     jwidget_select(check_preview);
 
   jview_attach(view_curve, curve_editor);
@@ -175,7 +175,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 	break;
     }
   }
-  return FALSE;
+  return false;
 }
 
 static void make_preview()

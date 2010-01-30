@@ -162,7 +162,7 @@ static void regenerate_brush(Brush *brush)
 
   brush->scanline = jnew(BrushScanline, brush->size);
   for (y=0; y<brush->size; y++) {
-    brush->scanline[y].state = FALSE;
+    brush->scanline[y].state = false;
 
     for (x=0; x<brush->size; x++) {
       if (image_getpixel(brush->image, x, y)) {
@@ -173,7 +173,7 @@ static void regenerate_brush(Brush *brush)
 	    break;
 
 	brush->scanline[y].x2 = x-1;
-	brush->scanline[y].state = TRUE;
+	brush->scanline[y].state = true;
 	break;
       }
     }

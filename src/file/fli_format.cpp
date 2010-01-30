@@ -54,7 +54,7 @@ static bool load_FLI(FileOp *fop)
 					cmap[c*3+2], 255));	\
       }								\
       pal->frame = frpos_out;					\
-      sprite_set_palette(sprite, pal, TRUE);			\
+      sprite_set_palette(sprite, pal, true);			\
     } while (0)
 
   unsigned char cmap[768];
@@ -74,7 +74,7 @@ static bool load_FLI(FileOp *fop)
   /* open the file to read in binary mode */
   f = fopen(fop->filename, "rb");
   if (!f)
-    return FALSE;
+    return false;
 
   fli_read_header(f, &fli_header);
   fseek(f, 128, SEEK_SET);
@@ -82,7 +82,7 @@ static bool load_FLI(FileOp *fop)
   if (fli_header.magic == NO_HEADER) {
     fop_error(fop, _("The file doesn't have a FLIC header\n"));
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* size by frame */
@@ -99,7 +99,7 @@ static bool load_FLI(FileOp *fop)
     if (old) image_free(old);
     if (pal) palette_free(pal);
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* create the image */
@@ -205,7 +205,7 @@ static bool load_FLI(FileOp *fop)
   palette_free(pal);
 
   fop->sprite = sprite;
-  return TRUE;
+  return true;
 }
 
 /* saves a FLC file */
@@ -243,7 +243,7 @@ static bool save_FLI(FileOp *fop)
   /* open the file to write in binary mode */
   f = fopen(fop->filename, "wb");
   if (!f)
-    return FALSE;
+    return false;
 
   fseek(f, 128, SEEK_SET);
 
@@ -255,7 +255,7 @@ static bool save_FLI(FileOp *fop)
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     fclose(f);
-    return FALSE;
+    return false;
   }
 
   /* write frame by frame */
@@ -305,7 +305,7 @@ static bool save_FLI(FileOp *fop)
   image_free(bmp);
   image_free(old);
 
-  return TRUE;
+  return true;
 }
 
 static int get_time_precision(Sprite *sprite)

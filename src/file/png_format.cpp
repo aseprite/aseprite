@@ -70,7 +70,7 @@ static bool load_PNG(FileOp *fop)
 
   fp = fopen(fop->filename, "rb");
   if (!fp)
-    return FALSE;
+    return false;
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -83,7 +83,7 @@ static bool load_PNG(FileOp *fop)
   if (png_ptr == NULL) {
     fop_error(fop, "png_create_read_struct\n");
     fclose(fp);
-    return FALSE;
+    return false;
   }
 
   /* Allocate/initialize the memory for image information. */
@@ -92,7 +92,7 @@ static bool load_PNG(FileOp *fop)
     fop_error(fop, "png_create_info_struct\n");
     fclose(fp);
     png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
-    return FALSE;
+    return false;
   }
 
   /* Set error handling if you are using the setjmp/longjmp method (this is
@@ -104,7 +104,7 @@ static bool load_PNG(FileOp *fop)
     png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
     fclose(fp);
     /* If we get here, we had a problem reading the file */
-    return FALSE;
+    return false;
   }
 
   /* Set up the input control if you are using standard C streams */
@@ -155,13 +155,13 @@ static bool load_PNG(FileOp *fop)
   switch (info_ptr->color_type) {
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
-      fop->seq.has_alpha = TRUE;
+      fop->seq.has_alpha = true;
     case PNG_COLOR_TYPE_RGB: 
       imgtype = IMAGE_RGB;
       break;
 
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-      fop->seq.has_alpha = TRUE;
+      fop->seq.has_alpha = true;
     case PNG_COLOR_TYPE_GRAY:
       imgtype = IMAGE_GRAYSCALE;
       break;
@@ -174,7 +174,7 @@ static bool load_PNG(FileOp *fop)
       fop_error(fop, "Color type not supported\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
       fclose(fp);
-      return FALSE;
+      return false;
   }
   
   image = fop_sequence_image(fop, imgtype, info_ptr->width, info_ptr->height);
@@ -182,7 +182,7 @@ static bool load_PNG(FileOp *fop)
     fop_error(fop, "file_sequence_image %dx%d\n", info_ptr->width, info_ptr->height);
     png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
     fclose(fp);
-    return FALSE;
+    return false;
   }
 
   /* read palette */
@@ -288,7 +288,7 @@ static bool load_PNG(FileOp *fop)
 
   /* close the file */
   fclose(fp);
-  return TRUE;
+  return true;
 }
 
 static bool save_PNG(FileOp *fop)
@@ -306,7 +306,7 @@ static bool save_PNG(FileOp *fop)
   /* open the file */
   fp = fopen(fop->filename, "wb");
   if (fp == NULL)
-    return FALSE;
+    return false;
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -318,7 +318,7 @@ static bool save_PNG(FileOp *fop)
 				    report_png_error, report_png_error);
   if (png_ptr == NULL) {
     fclose(fp);
-    return FALSE;
+    return false;
   }
 
   /* Allocate/initialize the image information data.  REQUIRED */
@@ -326,7 +326,7 @@ static bool save_PNG(FileOp *fop)
   if (info_ptr == NULL) {
     fclose(fp);
     png_destroy_write_struct(&png_ptr, png_infopp_NULL);
-    return FALSE;
+    return false;
   }
 
   /* Set error handling.  REQUIRED if you aren't supplying your own
@@ -336,7 +336,7 @@ static bool save_PNG(FileOp *fop)
     /* If we get here, we had a problem reading the file */
     fclose(fp);
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    return FALSE;
+    return false;
   }
 
   /* set up the output control if you are using standard C streams */
@@ -501,5 +501,5 @@ static bool save_PNG(FileOp *fop)
   fclose(fp);
 
   /* all right */
-  return TRUE;
+  return true;
 }

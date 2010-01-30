@@ -183,12 +183,12 @@ void path_move(Path* path, double x, double y)
 
 void path_stroke(Path* path, Image *image, int color, double brush_size)
 {
-  draw_path (path, image, color, brush_size, FALSE);
+  draw_path (path, image, color, brush_size, false);
 }
 
 void path_fill(Path* path, Image *image, int color)
 {
-  draw_path (path, image, color, 0, TRUE);
+  draw_path (path, image, color, 0, true);
 }
 
 static int path_get_element(Path* path, double x, double y)

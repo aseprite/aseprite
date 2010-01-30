@@ -44,7 +44,7 @@ Sprite::Sprite(int imgtype, int w, int h)
 
   /* main properties */
   strcpy(this->filename, "Sprite");
-  this->associated_to_file = FALSE;
+  this->associated_to_file = false;
   this->imgtype = imgtype;
   this->w = w;
   this->h = h;
@@ -87,7 +87,7 @@ Sprite::Sprite(int imgtype, int w, int h)
 	palette_set_entry(pal, c, _rgba(c, c, c, 255));
       break;
   }
-  sprite_set_palette(this, pal, TRUE);
+  sprite_set_palette(this, pal, true);
   sprite_set_speed(this, 100);
 
   /* multiple access */
@@ -288,7 +288,7 @@ void sprite_mark_as_saved(Sprite* sprite)
   assert(sprite != NULL);
 
   sprite->undo->diff_saved = sprite->undo->diff_count;
-  sprite->associated_to_file = TRUE;
+  sprite->associated_to_file = true;
 }
 
 bool sprite_need_alpha(const Sprite* sprite)
@@ -302,7 +302,7 @@ bool sprite_need_alpha(const Sprite* sprite)
       return sprite_get_background_layer(sprite) == NULL;
 
   }
-  return FALSE;
+  return false;
 }
 
 /**
@@ -819,7 +819,7 @@ static Sprite* general_copy(const Sprite* src_sprite)
   /* copy color palettes */
   JI_LIST_FOR_EACH(src_sprite->palettes, link) {
     Palette* pal = reinterpret_cast<Palette*>(link->data);
-    sprite_set_palette(dst_sprite, pal, TRUE);
+    sprite_set_palette(dst_sprite, pal, true);
   }
 
   /* copy path */
