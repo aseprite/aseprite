@@ -27,7 +27,7 @@
 
       <box horizontal="true">
         <label text="Undo size limit:" />
-        <entry name="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used\nfor undo information per sprite.\nSpecified in megabytes." />
+        <entry name="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used&#10;for undo information per sprite.&#10;Specified in megabytes." />
         <label text="MB" />
       </box>
 

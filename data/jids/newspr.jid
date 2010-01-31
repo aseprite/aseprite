@@ -22,9 +22,9 @@
       <box vertical="true">
         <separator text="Color Mode:" left="true" horizontal="true" />
         <box vertical="true" homogeneous="true">
-          <radio name="radio1" text="&amp;RGB Color" group="1" tooltip="RGBA color mode\n(32 bits per pixel)" />
-	  <radio name="radio2" text="&amp;Grayscale" group="1" tooltip="Value and Alpha\n(16 bits per pixel)" />
-	  <radio name="radio3" text="&amp;Indexed" group="1" tooltip="Using a palette of 256 colors\n(8 bits per pixel)" />
+          <radio name="radio1" text="&amp;RGB Color" group="1" tooltip="RGBA color mode&#10;(32 bits per pixel)" />
+	  <radio name="radio2" text="&amp;Grayscale" group="1" tooltip="Value and Alpha&#10;(16 bits per pixel)" />
+	  <radio name="radio3" text="&amp;Indexed" group="1" tooltip="Using a palette of 256 colors&#10;(8 bits per pixel)" />
 	</box>
       </box>
     </box>

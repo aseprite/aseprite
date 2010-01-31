@@ -8,7 +8,7 @@
 	<button text="" name="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
 	<button text="" name="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
       </box>
-      <button text="" name="goup" tooltip="Up to parent folder\n(Backspace)" />
+      <button text="" name="goup" tooltip="Up to parent folder&#10;(Backspace)" />
       <combobox name="location" expansive="true" />
     </box>
     <box vertical="true" expansive="true" name="box" />
