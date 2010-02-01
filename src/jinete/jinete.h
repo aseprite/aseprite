@@ -73,6 +73,5 @@
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
-#include "jinete/jxml.h"
 
 #endif

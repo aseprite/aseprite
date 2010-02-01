@@ -162,7 +162,6 @@ COMMON_SOURCES =					\
 	src/jinete/jview.cpp				\
 	src/jinete/jwidget.cpp				\
 	src/jinete/jwindow.cpp				\
-	src/jinete/jxml.cpp				\
 	src/jinete/themes/jstandard_theme.cpp		\
 	src/modules/editors.cpp				\
 	src/modules/gfx.cpp				\
