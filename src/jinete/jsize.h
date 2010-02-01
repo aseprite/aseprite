@@ -1,5 +1,5 @@
 /* Jinete - a GUI library
- * Copyright (C) 2003-2009 David Capello.
+ * Copyright (C) 2003-2010 David Capello.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -1,5 +1,5 @@
 /* ASE - Allegro Sprite Editor
- * Copyright (C) 2001-2009 David Capello
+ * Copyright (C) 2001-2010 David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #define PACKAGE			"ASE"
 #define VERSION			"0.8"
 #define WEBSITE			"http://www.aseprite.org/"
-#define COPYRIGHT		"Copyright (C) 2001-2009 David Capello"
+#define COPYRIGHT		"Copyright (C) 2001-2010 David Capello"
 
 #define PRINTF			verbose_printf
 
