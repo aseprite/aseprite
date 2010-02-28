@@ -8,6 +8,8 @@ default: all
 
 all:
 	$(PYTHON) $(RST2HTML) --config manual.conf manual.rst > manual.html
+
+split:
 	$(PYTHON) split.py
 
 clean:
