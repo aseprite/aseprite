@@ -24,7 +24,6 @@
 #include "raster/layer.h"
 
 //////////////////////////////////////////////////////////////////////
-
 
 Cel::Cel(int frame, int image)
   : GfxObj(GFXOBJ_CEL)
@@ -51,7 +50,7 @@ Cel::~Cel()
 }
 
 //////////////////////////////////////////////////////////////////////
-
+
 Cel* cel_new(int frame, int image)
 {
   return new Cel(frame, image);
