@@ -1,0 +1,496 @@
+<!DOCTYPE html  PUBLIC '-//W3C//DTD XHTML 1.0 Transitional//EN'  'http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd'><html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml"> 
+<head> 
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/> 
+  <title>as&euml;prite | animated sprite editor</title> 
+  <style text="text/css">
+	body { font-family:sans-serif; font-size:11pt; }
+    a { text-decoration:none; }
+    a:hover { text-decoration:underline; }
+	#page { width:600px; margin-left:auto; margin-right:auto; }
+	#title { font-size:20pt; }
+	#subtitle { font-size:12pt; color:#aaa; }
+	#warning { font-size:12pt; color:#f77; background-color:#fee; border:1px solid #f77; padding:8px; margin:8px auto; width:80%; }
+	#footer { font-size:10pt; color:#aaa; border-top:1px solid #aaa; }
+	h1 { font-size:14pt; font-weight:bold; color:#080; }
+	h2 { font-size:12pt; font-weight:bold; color:#0a0; }
+	p { margin-left:8px; }
+	.author { margin-left:8px; }
+	.details { margin-left:16px; margin-bottom:8px; color:#aaa; }
+	.details a { display:block; }
+	.ideas { margin-left:16px; }
+    pre { background-color:#e0f0e0; padding:8px; margin-left:32px; }
+  </style>
+</head>
+<body>
+<div id="page">
+
+<div id="title">
+  <span style="color:#f00">a</span><span style="color:#0a0">s</span><span style="color:#00f;font-size:18pt">&euml;</span><span style="color:#0a0">prite</span>
+  <span style="color:#aca">| animated sprite editor</span>
+</div>
+<div id="subtitle">Copyright &copy; 2001-2010 David Capello</div>
+<div id="warning">
+  THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY<br/>
+  See <a href="#license">license</a> section for more information.
+</div>
+
+<h1>TABLE OF CONTENTS</h1>
+<p id="tableofcontent">
+  <a href="#introduction">Introduction</a><br/>
+  <a href="#features">Features</a><br/>
+  <a href="#configuration_files">Configuration Files</a><br/>
+  <a href="#developers">Developers</a><br/>
+  <a style="margin-left:32px;" href="#compilation">Compilation</a><br/>
+  <a style="margin-left:32px;" href="#installation">Installation</a><br/>
+  <a style="margin-left:32px;" href="#uninstallation">Uninstallation</a><br/>
+  <a style="margin-left:32px;" href="#subversion">Subversion</a><br/>
+  <a href="#contact_information">Contact Information</a><br/>
+  <a href="#license">License</a><br/>
+  <a style="margin-left:32px;" href="#legal_issues">Legal Issues</a><br/>
+  <a href="#authors">Authors</a><br/>
+  <a style="margin-left:32px;" href="#thankfulness">Thankfulness</a><br/>
+</p>
+
+<a name="introduction"></a><h1>INTRODUCTION</h1>
+<p>
+  <b>as&euml;prite</b> is an open source program to create animated
+  sprites. Sprites are little images that can be used in your website
+  or in a video game. You can draw characters with movement, intros,
+  textures, patterns, backgrounds, logos, color palettes, isometric
+  levels, etc.
+</p>
+<p>
+  What makes as&euml;prite different? It focuses on pixel editing, to do
+  pixel-art. Indeed, it isn't a photo retouching tool or a vector
+  graphics editor. Mainly it is a tool to create tiny animations
+  pixel-by-pixel.
+</p>
+
+<a name="features"></a><h1>FEATURES</h1>
+<p>
+  The biggest features of as&euml;prite are:
+</p>
+<p>
+<ul>
+  <li>
+	Sprites are composed by <b>layers and frames</b>. These two concept are separated.
+	You have layers in one side and frames on the other side. You can imagine this as a
+	matrix, where each row is a layer and each column is a frame.
+  </li>
+  <li>
+	Supported color modes: <b>RGBA</b>, Grayscale and <b>Indexed images</b> (palettes up to 256 colors).
+  </li>
+  <li>
+	Supported image formats (load/save): <b>PNG</b>, <b>GIF</b>, JPG, FLC, FLI, BMP, PCX, TGA, and ASE (special format).
+  </li>
+  <li>
+	Load and save animations in a <b>sequence of bitmaps</b> (e.g. frame1.png, frame2.png, etc.).
+  </li>
+  <li>
+	Tiled drawing mode, useful to draw patterns and textures.
+  </li>
+  <li>
+	<b>Undo/Redo</b> for every operation.
+  </li>
+  <li>
+	Special tools like Blur, Jumble, Convolution Matrices.
+  </li>
+  <li>
+	<b>Multiple editors</b> support. You can split an editor horizontally or vertically multiple times
+	to edit and view the same sprite with different zooms, or different sprites.
+  </li>
+  <li>
+	<b>Onion skinning</b>.
+  </li>
+</ul>
+</p>
+
+<a name="configuration_files"></a><h1>CONFIGURATION FILES</h1>
+<p>
+  In Windows 98/2K/XP/Vista the main configuration file is
+  <em>aseprite.cfg</em> which is saved in the same folder of
+  <em>aseprite.exe</em>
+  executable file (in this way as&euml;prite is a portable
+  application, i.e. you can transport a copy of the program
+  in your USB drive).
+</p>
+<p>
+  The following is a list of all configuration files that you could
+  modify (it is not recommended to do so, but is useful if you want to
+  <em>super</em>-customize as&euml;prite):
+<p>
+<p>
+  <pre>aseprite.cfg          Program configuration
+data/gui.xml          Menus, shortcuts, and tools
+data/convmatr.def     Convolutions matrices
+data/fonts/*.pcx      Fonts to be used in the GUI
+data/jids/*.jid       XML files with dialogs
+data/skins/*.*        as&euml;prite skins</pre>
+</p>
+<p>
+  In GNU/Linux, the configuration file is ~/.asepriterc, and
+  the data/ files are searched in these locations (in priority
+  order):
+</p>
+<p>
+  <pre>$HOME/.aseprite/
+/usr/local/share/aseprite/
+data/</pre>
+</p>
+
+<a name="developers"></a><h1>DEVELOPERS</h1>
+<a name="compilation"></a><h2>COMPILATION</h2>
+<p>
+  Before compile, you have to configure how to compile as&euml;prite, what
+  libraries are available, release-debug-profile mode, etc.  You can
+  run the "fix.sh" script, answer some questions and done: the main
+  makefile is created, just do
+</p>
+<p>
+  <pre>make</pre>
+</p>
+<p>
+  Or you could edit the "makefile.cfg", uncomment CONFIGURED=1 and
+  uncomment the necessary options, and then run
+</p>
+<p>
+  <pre>makefile -f makefile.lnx</pre>
+</p>
+<p>
+
+  For MinGW, edit the "makefile.cfg" file, and then
+</p>
+<p>
+  <pre>makefile -f makefile.mgw</pre>
+</p>
+
+<a name="installation"></a><h2>INSTALLATION</h2>
+<p>
+  After compilation, you have two options:
+</p>
+<p>
+  <ol>
+	<li>
+	  <p>
+		Running as&euml;prite from its source directory.
+	  </p>
+	</li>
+	<li>
+	  <p>
+		Install as&euml;prite in the directory that you specified in the "fix.sh" question:
+		"Where do you want install ASE by default?" (generally "/usr/local")
+		(in the "makefile.cfg", it's the DEFAULT_PREFIX variable)
+	  </p>
+	  <p>
+		Run "make install" (it only works in Unix like systems)
+	  </p>
+	</li>
+  </ol>
+</p>
+<a name="uninstallation"></a><h2>UNINSTALLATION</h2>
+<p>
+  Run "make uninstall".
+</p>
+<a name="subversion"></a><h2>SUBVERSION</h2>
+<p>
+  If you downloaded as&euml;prite from the Subversion repository, after
+  updating I recommend you to do:
+</p>
+<p>
+  <pre>~/ase-trunk/$ make clean
+~/ase-trunk/$ ./fix.sh
+~/ase-trunk/$ make</pre>
+</p>
+<p>
+  Also, you can make dependencies of the files (if you are trying to
+  hack the as&euml;prite source code):
+</p>
+<p>
+  <pre>~/ase-trunk/$ sh misc/deps.sh</pre>
+</p>
+
+<a name="contact_information"></a><h1>CONTACT INFORMATION</h1>
+<p>We recommend you to use the SourceForge tracker to do specific reporting of issues:</p>
+<p>
+<ul>
+  <li><a href="http://sourceforge.net/tracker/?group_id=20848&atid=120848&func=add">Bugs</a></li>
+  <li><a href="http://sourceforge.net/tracker/?group_id=20848&atid=370848&func=add">Request features</a></li>
+  <li><a href="http://sourceforge.net/tracker/?group_id=20848&atid=320848&func=add">Patches</a></li>
+  <li><a href="http://sourceforge.net/tracker/?group_id=20848&atid=220848&func=add">Support request</a></li>
+</ul>
+</p>
+<p>
+  For more information, visit the official page of the project:
+</p>
+<p>
+  <a href="http://www.aseprite.org/">http://www.aseprite.org/</a>
+</p>
+
+<a name="license"></a><h1>LICENSE</h1>
+<p>
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+</p>
+<p>
+  This program is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+</p>
+<p>
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+  USA
+<p>
+<a name="legal_issues"></a><h2>LEGAL ISSUES</h2>
+<p>
+  <ul>
+	<li>as&euml;prite is distributed under <a href="http://www.opensource.org/licenses/gpl-2.0.php">GPL license</a>.</li>
+	<li>Jinete and Vaca are under <a href="http://www.opensource.org/licenses/bsd-license.php">BSD license</a>.</li>
+	<li>Allegro is giftware license (similar to <a href="http://www.opensource.org/licenses/mit-license.html">MIT license</a>).</li>
+	<li>ALFONT is under <a href="http://www.opensource.org/licenses/lgpl-2.1.php">LGPL license</a>.</li>
+	<li>quantize.c is copyright by Ben Davis (you need his authorization to use his code in your own program).</li>
+	<li>quantize2.c is distributed under the <a href="http://www.opensource.org/licenses/mit-license.html">MIT license</a></li>
+	<li>Lua-5.0 is distributed under the <a href="http://www.opensource.org/licenses/mit-license.html">MIT license</a></li>
+	<li>GIMP is distributed under <a href="http://www.opensource.org/licenses/gpl-2.0.php">GPL license</a></li>
+	<li>GLib and GTK+ are distributed under <a href="http://www.opensource.org/licenses/lgpl-2.1.php">LGPL license</a>.</li>
+	<li>GFLI-1.3 is distributed under <a href="http://www.opensource.org/licenses/gpl-2.0.php">GPL license</a>.</li>
+	<li>Libart 2.3.3 is distributed under <a href="http://www.opensource.org/licenses/lgpl-2.1.php">LGPL license</a>.</li>
+	<li>Libintl is distributed under <a href="http://www.opensource.org/licenses/lgpl-2.1.php">LGPL license</a>.</li>
+	<li>The FreeType Project is distributed under <a href="http://freetype.sourceforge.net/FTL.TXT">FTL license</a>.</li>
+	<li>zlib & Libpng are under the <a href="http://www.opensource.org/licenses/zlib-license.php">ZLIB license</a>.</li>
+  </ul>
+</p>
+
+<a name="authors"></a><h1>AUTHORS</h1>
+<div class="author">David Capello &lt;<a href="mailto:davidcapello@gmail.com">davidcapello@gmail.com</a>&gt;</div>
+<div class="details">Programmer, designer, and maintainer.</div>
+<div class="author">Ilija Melentijevic</div>
+<div class="details">
+  New GUI skin (from ASE 0.8). A lot of good ideas for ASE 0.8.
+  <a href="http://ilkke.blogspot.com/">http://ilkke.blogspot.com/</a>
+  <a href="http://www.pixeljoint.com/p/9270.htm">http://www.pixeljoint.com/p/9270.htm</a>
+</div>
+<div class="author">Trent Gamblin</div>
+<div class="details">Mac OS X packager.</div>
+<p>
+  Thanks for ideas, patches, bugs report and contributions to:
+</p>
+<div class="ideas">
+  Alex&nbsp;Winter,
+    &Aacute;lvaro&nbsp;"Kronoman&nbsp;X"&nbsp;Gonz&aacute;lez,
+    Angelo&nbsp;Mottola,
+    Ben&nbsp;"entheh"&nbsp;Davis,
+    Carl&nbsp;Olsson,
+    Christer&nbsp;Sandberg,
+    Clayton&nbsp;Enga,
+    David&nbsp;Campo,
+    Elias&nbsp;"networm"&nbsp;Pschernig,
+    Elio&nbsp;Cuevas&nbsp;G&oacute;mez,
+    Emmanuel&nbsp;"God_Cells"&nbsp;Rousseau,
+    Hern&aacute;n&nbsp;Echegoyemberry,
+    Ilija&nbsp;"iLKke"&nbsp;Melentijevic,
+    Jon&nbsp;"kazzmir"&nbsp;Rafkind,
+    Jonathan&nbsp;Taylor,
+    Jorge&nbsp;Ram&iacute;rez&nbsp;Flores,
+    Juraj&nbsp;Michalek,
+    Manuel&nbsp;De&nbsp;Miguel&nbsp;Moreno,
+    Manuel&nbsp;"manuq"&nbsp;Qui&ntilde;ones,
+    Mateusz&nbsp;Czaplinski,
+    Nathan&nbsp;"whitedoor"&nbsp;Smith,
+    Nora&nbsp;Amendez,
+    Peter&nbsp;"tjaden"&nbsp;Wang,
+    Philippe&nbsp;Michael&nbsp;Groarke,
+    Robert&nbsp;"Bob"&nbsp;J&nbsp;Ohannessian,
+    Scott&nbsp;Wilson,
+    Trent&nbsp;"trentg"&nbsp;Gamblin.
+</div>
+<a name="thankfulness"></a><h2>THANKFULNESS</h2>
+<p>
+  Some people didn't contribute to the project in a direct way,
+  but their work was indispensable to make it real:
+</p>
+<div class="author">&Aacute;lvaro Gonz&aacute;lez</div>
+<div class="details">
+  For the other routine to generate
+  optimized palettes (used in old versions of ASE).
+</div>
+<div class="author">Angelo Mottola</div>
+<div class="details">
+  For the routines to load/save JPEG files with JPGalleg
+  (alternative use instead of libjpeg).
+</div>
+<div class="author">Ben Davis</div>
+<div class="details">
+  For his optimized palette generation routine.
+</div>
+<div class="author">Billy Biggs and Lauris Kaplinski</div>
+<div class="details">
+  For the help with the alpha blending routines.
+</div>
+<div class="author">Csaba Biegl</div>
+<div class="details">
+  For his ellipse routine in the GRX library (used in old versions
+  of ASE).
+</div>
+<div class="author">David Turner, Robert Wilhelm, and Werner Lemberg</div>
+<div class="details">
+  For the FreeType project.
+  <a href="http://www.freetype.org/">http://www.freetype.org/</a>
+</div>
+<div class="author">Derek Liauw Kie Fa and Robert J Ohannessian</div>
+<div class="details">
+  for 2xSaI.
+</div>
+<div class="author">DJ Delorie</div>
+<div class="details">
+  For the DJGPP port to DOS of the GNU software.
+  <a href="http://www.delorie.com/djgpp/">http://www.delorie.com/djgpp/</a>
+</div>
+<div class="author">Elias Pschernig</div>
+<div class="details">
+  For his excelent bresenham ellipse algorithm and to report some
+  nasty keyboard bugs. And his patch to load/save GIF files.
+</div>
+<div class="author">Elver Loho</div>
+<div class="details">
+  For port ASE to BeOS.
+</div>
+<div class="author">Frank J. T. Wojcik, Guy Eric Schalnat, Andreas Dilger, Glenn
+  Randers-Pehrson</div>
+<div class="details">
+  For libpng.
+</div>
+<div class="author">Gary Oberbrunner</div>
+<div class="details">
+  For his code to quantize RGB images with ordered dither method.
+</div>
+<div class="author">Javier Gonzalez</div>
+<div class="details">
+  For his AllegroFont wrapper.
+</div>
+<div class="author">Jean-loup Gailly and Mark Adler</div>
+<div class="details">
+  For zlib
+</div>
+<div class="author">Jens Ch. Restemeier</div>
+<div class="details">
+  For GFLI, his code to save FLI files is just "amazing".
+</div>
+<div class="author">Jerry Coffin and HenkJan Wolthuis</div>
+<div class="details">
+  For the hash table routines.
+</div>
+<div class="author">Johan Halmén and Anders "Trezker" Andersson</div>
+<div class="details">
+  for mapgen (included in old ASE versions).
+  <a href="http://edu.loviisa.fi/~lg/jh/mapgen/">http://edu.loviisa.fi/~lg/jh/mapgen/</a>
+  <a href="http://www.angelfire.com/art/dumlesoft/Projects.html">http://www.angelfire.com/art/dumlesoft/Projects.html</a>
+</div>
+<div class="author">Jordan Russell and Martijn Laan</div>
+<div class="details">
+  For Inno Setup.
+  <a href="http://www.innosetup.com/">http://www.innosetup.com/</a>
+</div>
+<div class="author">Jose Luis Torres Pantoja</div>
+<div class="details">
+  For his gift, the book "Digital Image Processing, Gonzalez and
+  Woods, Addison-Wesley, 2002"
+</div>
+<div class="author">Juraj Michalek</div>
+<div class="details">
+  For the support to ASE in his portal.
+  <a href="http://games.linux.sk/">http://games.linux.sk/</a>
+</div>
+<div class="author">Lee Thomason</div>
+<div class="details">
+  For tinyxml library.
+  <a href="http://www.sourceforge.net/projects/tinyxml">http://www.sourceforge.net/projects/tinyxml</a>
+</div>
+<div class="author">Matthew Leverton</div>
+<div class="details">
+  For his Allegro portal.
+  <a href="http://www.allegro.cc/">http://www.allegro.cc/</a>
+</div>
+<div class="author">Max Maischein</div>
+<div class="details">
+  For the documents about various file formats of the Animator and
+  Animator Pro.
+</div>
+<div class="author">Mike Haaland</div>
+<div class="details">
+  For his documentation about the FLI/FLC, COL, PIC, and MSK files
+  format.
+</div>
+<div class="author">Paúl Andrés "Ceniza" Jiménez</div>
+<div class="details">
+  For his help in the translation of FULL-SCREEN.txt document.
+</div>
+<div class="author">Peter Wang</div>
+<div class="details">
+  For his Red Pixel II game, it was very helpful for the scripting
+  routines. Also for loadpng library.
+  <a href="http://redpixel.sourceforge.net/">http://redpixel.sourceforge.net/</a>
+  <a href="http://tjaden.strangesoft.net/">http://tjaden.strangesoft.net/</a>
+</div>
+<div class="author">Raph Levien</div>
+<div class="details">
+  For his excelent work with the libart library.
+  <a href="http://www.levien.com/divbart/">http://www.levien.com/divbart/</a>
+</div>
+<div class="author">Richard M. Stallman</div>
+<div class="details">
+  For the Free Software Foundation, GNU and Emacs, and everyone
+  who contributed with free software.
+  <a href="http://www.fsf.org/">http://www.fsf.org/</a>
+  <a href="http://www.gnu.org/">http://www.gnu.org/</a>
+  <a href="http://www.emacs.org/">http://www.emacs.org/</a>
+</div>
+<div class="author">Robert Höhne</div>
+<div class="details">
+  For the RHIDE enviroment.
+  <a href="http://www.lanet.lv/~pavenis/rhide.html">http://www.lanet.lv/~pavenis/rhide.html</a>
+</div>
+<div class="author">Salvador Eduardo Tropea</div>
+<div class="details">
+  For the SETEdit editor (although I don't use it anymore, the
+  first months in Linux without it would have been impossibles)
+  <a href="http://setedit.sourceforge.net/">http://setedit.sourceforge.net/</a>
+</div>
+<div class="author">Shawn Hargreaves</div>
+<div class="details">
+  And hundreds of people who helped in the Allegro library.
+  <a href="http://alleg.sourceforge.net/">http://alleg.sourceforge.net/</a>
+</div>
+<div class="author">Spencer Kimball and Peter Mattis</div>
+<div class="details">
+  And a lot of people who contributed with The GIMP and GTK+.  I
+  personally "borrow" source code for differents task in the
+  program.
+  <a href="http://www.gimp.org/">http://www.gimp.org/</a>
+  <a href="http://www.gtk.org/">http://www.gtk.org/</a>
+</div>
+<div class="author">The Independent JPEG Group</div>
+<div class="details">
+  For the JPEG library to load/save Jpeg files.
+  <a href="ftp://ftp.uu.net/graphics/jpeg/">ftp://ftp.uu.net/graphics/jpeg/</a>
+</div>
+<div class="author">The Open Group</div>
+<div class="details">
+  For XFree86.
+  <a href="http://www.x.org/">http://www.x.org/</a>
+</div>
+<div class="author">Waldemar Celes, Roberto Ierusalimschy, and Luiz Henrique de Figueiredo</div>
+<div class="details">
+  For their excelent work with Lua.
+  <a href="http://www.lua.org/">http://www.lua.org/</a>
+</div>
+
+<div id="footer">Copyright &copy; 2001-2010 David Capello</div>
+</div>
+</body> 
+</html>
+
