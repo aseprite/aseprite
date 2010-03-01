@@ -927,7 +927,7 @@ void control_tool(Editor* editor, Tool *tool,
 
   /* the 'tool_image' should be used to draw the `sprite->layer' in
      the `render_sprite' routine */
-  set_preview_image(sprite->layer, tool_data.dst_image);
+  RenderEngine::setPreviewImage(sprite->layer, tool_data.dst_image);
 
   /* we have to modify the cel position because it's used in the
      `render_sprite' routine to draw the `dst_image' */
@@ -1550,7 +1550,7 @@ next_pts:;
   editor->editor_click_done();
 
   /* no more preview image */
-  set_preview_image(NULL, NULL);
+  RenderEngine::setPreviewImage(NULL, NULL);
 
   /* destroy temporary images */
   if (tool_data.src_image) image_free(tool_data.src_image);
