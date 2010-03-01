@@ -173,6 +173,7 @@ COMMON_SOURCES =					\
 	src/modules/tools.cpp				\
 	src/raster/algo.cpp				\
 	src/raster/algofill.cpp				\
+	src/raster/algo_polygon.cpp			\
 	src/raster/blend.cpp				\
 	src/raster/brush.cpp				\
 	src/raster/cel.cpp				\
