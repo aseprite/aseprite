@@ -249,21 +249,13 @@ done_with_blit:;
 }
 
 //////////////////////////////////////////////////////////////////////
-// Render engine
+// Render Engine
 
 static int global_opacity = 255;
-
 static Layer *selected_layer = NULL;
 static Image *rastering_image = NULL;
 
-static void render_layer(Sprite* sprite, Layer* layer, Image* image,
-			 int source_x, int source_y,
-			 int frame, int zoom,
-			 void (*zoomed_func)(Image*, Image*, int, int, int, int, int),
-			 bool render_background,
-			 bool render_transparent);
-
-void set_preview_image(Layer *layer, Image *image)
+void RenderEngine::setPreviewImage(Layer *layer, Image *image)
 {
   selected_layer = layer;
   rastering_image = image;
@@ -276,10 +268,10 @@ void set_preview_image(Layer *layer, Image *image)
  *
  * This routine is used to render the sprite 
  */
-Image *render_sprite(Sprite *sprite,
-		     int source_x, int source_y,
-		     int width, int height,
-		     int frame, int zoom)
+Image* RenderEngine::renderSprite(Sprite* sprite,
+				  int source_x, int source_y,
+				  int width, int height,
+				  int frame, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   LayerImage* background = sprite_get_background_layer(sprite);
@@ -375,38 +367,38 @@ Image *render_sprite(Sprite *sprite,
     color_map = NULL;
     global_opacity = 255;
 
-    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame, zoom, zoomed_func, true, false);
+    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+		frame, zoom, zoomed_func, true, false);
 
-    /* draw transparent layers of the previous frame with opacity=128 */
+    // Draw transparent layers of the previous frame with opacity=128
     color_map = orig_trans_map;
     global_opacity = 128;
 
-    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame-1, zoom, zoomed_func, false, true);
+    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+		frame-1, zoom, zoomed_func, false, true);
 
-    /* draw transparent layers of the current frame with opacity=255 */
+    // Draw transparent layers of the current frame with opacity=255
     color_map = NULL;
     global_opacity = 255;
 
-    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame, zoom, zoomed_func, false, true);
+    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+		frame, zoom, zoomed_func, false, true);
   }
-  // just draw the current frame
+  // Just draw the current frame
   else {
-    render_layer(sprite, sprite->get_folder(), image, source_x, source_y,
-		 frame, zoom, zoomed_func, true, true);
+    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+		frame, zoom, zoomed_func, true, true);
   }
 
   return image;
 }
 
-static void render_layer(Sprite *sprite, Layer *layer, Image *image,
-			 int source_x, int source_y,
-			 int frame, int zoom,
-			 void (*zoomed_func)(Image *, Image *, int, int, int, int, int),
-			 bool render_background,
-			 bool render_transparent)
+void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
+			       int source_x, int source_y,
+			       int frame, int zoom,
+			       void (*zoomed_func)(Image *, Image *, int, int, int, int, int),
+			       bool render_background,
+			       bool render_transparent)
 {
   // we can't read from this layer
   if (!layer->is_readable())
@@ -421,7 +413,7 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
 
       Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);      
       if (cel != NULL) {
-	Image *src_image;
+	Image* src_image;
 
 	/* is the 'rastering_image' setted to be used with this layer? */
 	if ((frame == sprite->frame) &&
@@ -465,11 +457,11 @@ static void render_layer(Sprite *sprite, Layer *layer, Image *image,
       LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
-	render_layer(sprite, *it, image,
-		     source_x, source_y,
-		     frame, zoom, zoomed_func,
-		     render_background,
-		     render_transparent);
+	renderLayer(sprite, *it, image,
+		    source_x, source_y,
+		    frame, zoom, zoomed_func,
+		    render_background,
+		    render_transparent);
       }
       break;
     }

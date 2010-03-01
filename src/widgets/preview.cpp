@@ -97,11 +97,11 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
       break;
       
     case JM_OPEN:
-      set_preview_image(effect->sprite->layer, effect->dst);
+      RenderEngine::setPreviewImage(effect->sprite->layer, effect->dst);
       break;
 
     case JM_CLOSE:
-      set_preview_image(NULL, NULL);
+      RenderEngine::setPreviewImage(NULL, NULL);
       /* stop the preview timer */
       jmanager_stop_timer(preview->timer_id);
       break;

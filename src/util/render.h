@@ -23,11 +23,23 @@ class Image;
 class Layer;
 class Sprite;
 
-void set_preview_image(Layer* layer, Image* drawable);
+class RenderEngine
+{
+public:
+  static void setPreviewImage(Layer* layer, Image* drawable);
 
-Image* render_sprite(Sprite* sprite,
-		     int source_x, int source_y,
-		     int width, int height,
-		     int frpos, int zoom);
+  static Image* renderSprite(Sprite* sprite,
+			     int source_x, int source_y,
+			     int width, int height,
+			     int frpos, int zoom);
+
+private:
+  static void renderLayer(Sprite* sprite, Layer* layer, Image* image,
+			  int source_x, int source_y,
+			  int frame, int zoom,
+			  void (*zoomed_func)(Image*, Image*, int, int, int, int, int),
+			  bool render_background,
+			  bool render_transparent);
+};
 
 #endif

@@ -118,8 +118,8 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
       jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
       /* render the sprite in the bitmap */
-      image = render_sprite(sprite, 0, 0, sprite->w, sprite->h,
-			    sprite->frame, 0);
+      image = RenderEngine::renderSprite(sprite, 0, 0, sprite->w, sprite->h,
+					 sprite->frame, 0);
       if (image) {
 	image_to_allegro(image, bmp, 0, 0);
 	image_free(image);
@@ -260,8 +260,8 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	    redraw = true;
 
 	    /* render the sprite in the bitmap */
-	    image = render_sprite(sprite, 0, 0, sprite->w, sprite->h,
-				  sprite->frame, 0);
+	    image = RenderEngine::renderSprite(sprite, 0, 0, sprite->w, sprite->h,
+					       sprite->frame, 0);
 	    if (image) {
 	      image_to_allegro(image, bmp, 0, 0);
 	      image_free(image);
