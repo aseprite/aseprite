@@ -29,6 +29,7 @@
 #include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/raster.h"
+#include "util/render.h"
 
 //////////////////////////////////////////////////////////////////////
 // zoomed merge
