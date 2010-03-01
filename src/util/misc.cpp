@@ -161,7 +161,7 @@ Image* NewImageFromMask(const Sprite* src_sprite)
 int interactive_move_layer(int mode, bool use_undo, int (*callback)())
 {
   Editor* editor = current_editor;
-  Sprite* sprite = editor->editor_get_sprite();
+  Sprite* sprite = editor->getSprite();
 
   assert(sprite->layer->is_image());
 

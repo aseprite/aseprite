@@ -72,7 +72,7 @@ void EyedropperCommand::execute(Context* context)
     return;
 
   Editor* editor = static_cast<Editor*>(widget);
-  Sprite* sprite = editor->editor_get_sprite();
+  Sprite* sprite = editor->getSprite();
   if (!sprite)
     return;
 

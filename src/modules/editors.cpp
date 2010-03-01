@@ -93,7 +93,7 @@ void update_editors_with_sprite(const Sprite* sprite)
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->editor_get_sprite())
+    if (sprite == editor->getSprite())
       editor->editor_update();
   }
 }
@@ -103,7 +103,7 @@ void editors_draw_sprite(const Sprite* sprite, int x1, int y1, int x2, int y2)
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->editor_get_sprite())
+    if (sprite == editor->getSprite())
       editor->editor_draw_sprite_safe(x1, y1, x2, y2);
   }
 }
@@ -182,12 +182,12 @@ void editors_hide_sprite(const Sprite* sprite)
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->editor_get_sprite())
+    if (sprite == editor->getSprite())
       editor->editor_set_sprite(get_more_reliable_sprite());
   }
 
   if (refresh) {
-    Sprite* sprite = current_editor->editor_get_sprite();
+    Sprite* sprite = current_editor->getSprite();
 
     context->set_current_sprite(sprite);
     app_refresh_screen(sprite);
@@ -205,7 +205,7 @@ void set_current_editor(Editor* editor)
     jwidget_dirty(jwidget_get_view(current_editor));
 
     UIContext* context = UIContext::instance();
-    Sprite* sprite = current_editor->editor_get_sprite();
+    Sprite* sprite = current_editor->getSprite();
     context->set_current_sprite(sprite);
 
     app_refresh_screen(sprite);
@@ -237,11 +237,11 @@ void set_sprite_in_more_reliable_editor(Sprite* sprite)
   Editor* best = current_editor;
 
   /* search for any empty editor */
-  if (best->editor_get_sprite()) {
+  if (best->getSprite()) {
     for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
       Editor* editor = *it;
 
-      if (!editor->editor_get_sprite()) {
+      if (!editor->getSprite()) {
 	best = editor;
 	break;
       }
@@ -275,7 +275,7 @@ void split_editor(Editor* editor, int align)
   jview_attach(new_view, new_editor);
 
   /* set the sprite for the new editor */
-  new_editor->editor_set_sprite(editor->editor_get_sprite());
+  new_editor->editor_set_sprite(editor->getSprite());
   new_editor->editor_set_zoom(editor->editor_get_zoom());
 
   /* expansive widgets */
@@ -395,7 +395,7 @@ static int is_sprite_in_some_editor(Sprite* sprite)
   for (EditorList::iterator it = editors.begin(); it != editors.end(); ++it) {
     Editor* editor = *it;
 
-    if (sprite == editor->editor_get_sprite())
+    if (sprite == editor->getSprite())
       return true;
   }
   return false;

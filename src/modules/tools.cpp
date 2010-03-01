@@ -811,7 +811,7 @@ void control_tool(Editor* editor, Tool *tool,
 		  color_t _other_color,
 		  bool left_button)
 {
-  Sprite *sprite = editor->editor_get_sprite();
+  Sprite *sprite = editor->getSprite();
   JWidget statusbar = app_get_statusbar();
   int x1, y1, x2, y2;
   int old_x1, old_y1, old_x2, old_y2;

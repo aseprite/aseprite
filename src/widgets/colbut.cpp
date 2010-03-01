@@ -167,7 +167,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	  /* pick a color from a editor */
 	  else if (picked->type == editor_type()) {
 	    Editor* editor = static_cast<Editor*>(picked);
-	    Sprite* sprite = editor->editor_get_sprite();
+	    Sprite* sprite = editor->getSprite();
 	    int x, y, imgcolor;
 	    color_t tmp;
 

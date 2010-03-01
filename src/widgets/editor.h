@@ -75,7 +75,7 @@ public:
   int editor_get_zoom() const { return m_zoom; }
   int editor_get_offset_x() const { return m_offset_x; }
   int editor_get_offset_y() const { return m_offset_y; }
-  Sprite* editor_get_sprite() { return m_sprite; }
+  Sprite* getSprite() { return m_sprite; }
   int editor_get_cursor_thick() { return m_cursor_thick; }
 
   void editor_set_zoom(int zoom) { m_zoom = zoom; }

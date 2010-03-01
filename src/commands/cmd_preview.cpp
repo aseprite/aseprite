@@ -77,8 +77,8 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 {
   Editor* editor = current_editor;
 
-  if (editor && editor->editor_get_sprite()) {
-    Sprite *sprite = editor->editor_get_sprite();
+  if (editor && editor->getSprite()) {
+    Sprite *sprite = editor->getSprite();
     JWidget view = jwidget_get_view(editor);
     int old_mouse_x, old_mouse_y;
     int scroll_x, scroll_y;
