@@ -38,11 +38,17 @@
 #include "widgets/preview.h"
 #include "widgets/target.h"
 
-static Curve *the_curve = NULL;
+static Curve* the_curve = NULL;
 static JWidget check_preview, preview;
 
 static bool window_msg_proc(JWidget widget, JMessage msg);
 static void make_preview();
+
+// Slot for App::Exit signal 
+static void on_exit_delete_curve()
+{
+  curve_free(the_curve);
+}
 
 //////////////////////////////////////////////////////////////////////
 // ColorCurveCommand
@@ -72,17 +78,6 @@ bool ColorCurveCommand::enabled(Context* context)
     sprite != NULL;
 }
 
-class DestroyCurve : public IAppHook
-{
-  Curve* m_curve;
-public:
-  DestroyCurve(Curve* curve) : m_curve(curve) { }
-  void on_event()
-  {
-    curve_free(m_curve);
-  }
-};
-
 void ColorCurveCommand::execute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
@@ -96,7 +91,7 @@ void ColorCurveCommand::execute(Context* context)
     curve_add_point(the_curve, curve_point_new(0, 0));
     curve_add_point(the_curve, curve_point_new(255, 255));
 
-    App::instance()->add_hook(AppEvent::Exit, new DestroyCurve(the_curve));
+    App::instance()->Exit.connect(&on_exit_delete_curve);
   }
 
   FramePtr window(load_widget("colcurv.jid", "color_curve"));

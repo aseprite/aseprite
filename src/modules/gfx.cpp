@@ -67,26 +67,23 @@ static void convert_data_to_bitmap(DATA *data, BITMAP** bmp)
   }
 }
 
-class GenGfx : public IAppHook
+// Slot for App::PaletteChange signal
+static void on_palette_change_signal()
 {
-public:
-  void on_event()
-  {
-    for (int c=0; c<GFX_BITMAP_COUNT; c++) {
-      if (gfx_bmps[c])
-	destroy_bitmap(gfx_bmps[c]);
+  for (int c=0; c<GFX_BITMAP_COUNT; c++) {
+    if (gfx_bmps[c])
+      destroy_bitmap(gfx_bmps[c]);
 
-      gfx_bmps[c] = NULL;
-    }
+    gfx_bmps[c] = NULL;
   }
-};
+}
 
 int init_module_graphics()
 {
   for (int c=0; c<GFX_BITMAP_COUNT; c++)
     gfx_bmps[c] = NULL;
 
-  App::instance()->add_hook(AppEvent::PaletteChange, new GenGfx);
+  App::instance()->PaletteChange.connect(&on_palette_change_signal);
   return 0;
 }
 

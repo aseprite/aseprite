@@ -191,12 +191,12 @@ bool set_current_palette(Palette *_palette, bool forced)
       }
     }
 
-    /* create a map for the mapped-palette */
+    // Create a map for the mapped-palette
     create_rgb_table(my_rgb_map, rgbpal, NULL);
-    set_palette(rgbpal);	/* change system color palette */
+    set_palette(rgbpal);	// Change system color palette
 
-    // call hooks
-    App::instance()->trigger_event(AppEvent::PaletteChange);
+    // Call slots in signals
+    App::instance()->PaletteChange();
 
     ret = true;
   }

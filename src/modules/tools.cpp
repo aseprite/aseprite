@@ -148,15 +148,6 @@ static void update_cursor_color()
   _cursor_mask = (color_type(cursor_color) == COLOR_TYPE_MASK);
 }
 
-class UpdateCursorColor : public IAppHook
-{
-public:
-  void on_event()
-  {
-    update_cursor_color();
-  }
-};
-
 /***********************************************************/
 /* TOOLS                                                   */
 /***********************************************************/
@@ -201,7 +192,7 @@ int init_module_tools()
   air_speed   = MID(1, air_speed, 100);
   tiled_mode  = (tiled_t)MID(0, (int)tiled_mode, TILED_BOTH);
 
-  App::instance()->add_hook(AppEvent::PaletteChange, new UpdateCursorColor);
+  App::instance()->PaletteChange.connect(&update_cursor_color);
 
   return 0;
 }

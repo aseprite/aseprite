@@ -40,17 +40,6 @@
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 
-class FreeWidget : public IAppHook
-{
-  JWidget m_widget;
-public:
-  FreeWidget(JWidget widget) : m_widget(widget) { }
-  void on_event()
-  {
-    jwidget_free(m_widget);
-  }
-};
-
 static Frame* window = NULL;
 
 static bool brush_preview_msg_proc(JWidget widget, JMessage msg);
@@ -70,6 +59,13 @@ static bool view_grid_check_change_hook(JWidget widget, void *data);
 static bool set_grid_button_select_hook(JWidget widget, void *data);
 static bool cursor_button_change_hook(JWidget widget, void *data);
 static bool onionskin_check_change_hook(JWidget widget, void *data);
+
+// Slot for App::Exit signal 
+static void on_exit_delete_this_widget()
+{
+  assert(window != NULL);
+  jwidget_free(window);
+}
 
 //////////////////////////////////////////////////////////////////////
 
@@ -212,7 +208,7 @@ void ConfigureTools::execute(Context* context)
     HOOK(cursor_color, SIGNAL_COLORBUTTON_CHANGE, cursor_button_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
 
-    App::instance()->add_hook(AppEvent::Exit, new FreeWidget(window));
+    App::instance()->Exit.connect(&on_exit_delete_this_widget);
   }
 
   // Default position

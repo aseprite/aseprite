@@ -118,9 +118,6 @@ App::App(int argc, char* argv[])
   assert(m_instance == NULL);
   m_instance = this;
 
-  // init hooks
-  m_apphooks.resize(AppEvent::NumEvents);
-
   // create private implementation data
   m_modules = new Modules(argc, argv);
   m_legacy = new LegacyModules(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
@@ -314,20 +311,8 @@ App::~App()
     // Remove ASE handlers
     PRINTF("ASE: Uninstalling\n");
 
-    App::trigger_event(AppEvent::Exit);
-
-    // destroy application hooks
-    for (int c=0; c<AppEvent::NumEvents; ++c) {
-      for (std::vector<IAppHook*>::iterator
-	     it = m_apphooks[c].begin(); 
-	   it != m_apphooks[c].end(); ++it) {
-	IAppHook* apphook = *it;
-	delete apphook;
-      }
-
-      // clear the list of hooks (so nobody can call the deleted hooks)
-      m_apphooks[c].clear();
-    }
+    // Fire App Exit signal
+    App::instance()->Exit();
 
     // Finalize modules, configuration and core
     Editor::editor_cursor_exit();
@@ -340,26 +325,8 @@ App::~App()
   }
   catch (...) {
     allegro_message("Error closing ASE.\n(uncaught exception)");
-    // no throw
-  }
-}
 
-void App::add_hook(AppEvent::Type event, IAppHook* hook)
-{
-  assert(event >= 0 && event < AppEvent::NumEvents);
-
-  m_apphooks[event].push_back(hook);
-}
-
-void App::trigger_event(AppEvent::Type event)
-{
-  assert(event >= 0 && event < AppEvent::NumEvents);
-
-  for (std::vector<IAppHook*>::iterator
-	 it = m_apphooks[event].begin();
-       it != m_apphooks[event].end(); ++it) {
-    IAppHook* apphook = *it;
-    apphook->on_event();
+    // no re-throw
   }
 }
 

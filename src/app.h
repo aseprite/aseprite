@@ -20,34 +20,15 @@
 #define APP_H_INCLUDED
 
 #include "jinete/jbase.h"
+#include "Vaca/Signal.h"
 
 #include <vector>
 
+class Frame;
 class Layer;
-class Sprite;
-class Params;
-class Command;
-class CommandsModule;
-
-class AppEvent
-{
-public:
-  // enumeration of ASE events in the highest application level
-  enum Type {
-    Exit,
-    PaletteChange,
-    NumEvents
-  };
-};
-
-class IAppHook
-{
-public:
-  virtual ~IAppHook() { }
-  virtual void on_event() = 0;
-};
-
 class LegacyModules;
+class Params;
+class Sprite;
 
 class App
 {
@@ -55,7 +36,6 @@ class App
 
   static App* m_instance;
 
-  std::vector<std::vector<IAppHook*> > m_apphooks;
   Modules* m_modules;
   LegacyModules* m_legacy;
 
@@ -67,8 +47,9 @@ public:
 
   int run();
 
-  void add_hook(AppEvent::Type event, IAppHook* hook);
-  void trigger_event(AppEvent::Type event);
+  // App Signals
+  Vaca::Signal0<void> Exit;
+  Vaca::Signal0<void> PaletteChange;
   
 };
 

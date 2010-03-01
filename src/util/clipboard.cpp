@@ -105,21 +105,17 @@ static bool first_time = true;
 static Palette* clipboard_palette = NULL;
 static Image* clipboard_image = NULL;
 
-class DestroyClipboard : public IAppHook
+static void on_exit_delete_clipboard()
 {
-public:
-  void on_event()
-  {
-    delete clipboard_palette;
-    delete clipboard_image;
-  }
-};
+  delete clipboard_palette;
+  delete clipboard_image;
+}
 
 static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard)
 {
   if (first_time) {
     first_time = false;
-    App::instance()->add_hook(AppEvent::Exit, new DestroyClipboard());
+    App::instance()->Exit.connect(&on_exit_delete_clipboard);
   }
 
   delete clipboard_palette;
