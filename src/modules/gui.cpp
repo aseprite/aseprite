@@ -285,7 +285,7 @@ int init_module_gui()
  gfx_done:;
 
   /* window title */
-  set_window_title("Allegro Sprite Editor v" VERSION);
+  set_window_title(PACKAGE " v" VERSION);
 
   /* create the default-manager */
   manager = jmanager_new();

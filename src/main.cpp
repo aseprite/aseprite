@@ -29,7 +29,7 @@
 // Information for "ident".
 
 const char ase_ident[] =
-    "$ASE: " VERSION " " COPYRIGHT " $\n"
+    "$" PACKAGE ": " VERSION " " COPYRIGHT " $\n"
     "$Website: " WEBSITE " $\n";
 
 //////////////////////////////////////////////////////////////////////

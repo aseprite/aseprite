@@ -83,7 +83,7 @@ void dialogs_tips(bool forced)
     }
   }
 
-  Frame* window = new Frame(false, "Allegro Sprite Editor");
+  Frame* window = new Frame(false, PACKAGE " | tips");
   vbox = jbox_new(JI_VERTICAL);
   hbox = jbox_new(JI_HORIZONTAL);
   box = jbox_new(0);

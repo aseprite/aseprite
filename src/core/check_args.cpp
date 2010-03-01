@@ -98,7 +98,7 @@ CheckArgs::CheckArgs(int argc, char* argv[])
       else if (strncmp(arg+n, "version", len) == 0) {
 	ase_mode |= MODE_BATCH;
 
-	console.printf("ase %s\n", VERSION);
+	console.printf("%s %s\n", PACKAGE, VERSION);
       }
       /* invalid argument */
       else {
@@ -139,9 +139,8 @@ void CheckArgs::usage(bool show_help)
   if (show_help) {
     // copyright
     console.printf
-      ("ase %s -- Allegro Sprite Editor, %s\n"
-       COPYRIGHT "\n\n",
-       VERSION, _("A tool to create sprites"));
+      ("%s v%s | animated sprite editor\n%s\n\n",
+       PACKAGE, VERSION, COPYRIGHT);
 
     // usage
     console.printf
@@ -166,8 +165,8 @@ void CheckArgs::usage(bool show_help)
 
     /* web-site */
     console.printf
-      ("%s: %s\n\n",
-       _("Find more information in the ASE's official web site at:"), WEBSITE);
+      ("Find more information in %s web site: %s\n\n",
+       PACKAGE, WEBSITE);
   }
   /* how to show options */
   else {
