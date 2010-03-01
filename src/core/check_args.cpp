@@ -128,9 +128,7 @@ void CheckArgs::clear()
   }
 }
 
-/**
- * Shows the available options for the program
- */
+// Shows the available options for the program
 void CheckArgs::usage(bool show_help)
 {
   Console console;

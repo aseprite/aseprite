@@ -560,14 +560,13 @@ void reload_default_font()
   DIRS *dirs, *dir;
   char buf[512];
 
-  /* no font for now */
-
+  // No font for now
   if (theme->default_font && theme->default_font != font)
     destroy_font(theme->default_font);
 
   theme->default_font = NULL;
 
-  /* directories */
+  // Directories
   dirs = dirs_new();
 
   user_font = get_config_string("Options", "UserFont", "");
@@ -577,7 +576,7 @@ void reload_default_font()
   usprintf(buf, "fonts/ase%d.pcx", guiscale());
   dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
-  /* try to load the font */
+  // Try to load the font
   for (dir=dirs; dir; dir=dir->next) {
     theme->default_font = ji_font_load(dir->path);
     if (theme->default_font) {
@@ -589,12 +588,11 @@ void reload_default_font()
 
   dirs_free(dirs);
 
-  /* default font: the Allegro one */
-
+  // default font: the Allegro one
   if (!theme->default_font)
     theme->default_font = font;
 
-  /* set all widgets fonts */
+  // Set all widgets fonts
   _ji_set_font_of_all_widgets(theme->default_font);
 }
 
@@ -1005,9 +1003,7 @@ void* get_monitor_data(Monitor* monitor)
   return monitor->data;
 }
 
-/**
- * Manager event handler.
- */
+// Manager event handler.
 static bool manager_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
@@ -1126,10 +1122,10 @@ void RegenIcons::on_event()
   JWidget button;
   JLink link;
 
-  /* regenerate the theme */
+  // Regenerate the theme
   ji_regen_theme();
 
-  /* fixup the icons */
+  // Fixup the icons
   JI_LIST_FOR_EACH(icon_buttons, link) {
     button = reinterpret_cast<JWidget>(link->data);
     ji_generic_button_set_icon(button, get_gfx((size_t)button->user_data[3]));

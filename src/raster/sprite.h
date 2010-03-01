@@ -44,31 +44,28 @@ class Sprite : public GfxObj
   friend Sprite* sprite_new_copy(const Sprite* src_sprite);
 
 public:
-  char filename[512];		/* sprite's file name */
-  bool associated_to_file;	/* true if this sprite is associated
-				   to a file in the file-system */
-  int imgtype;			/* image type */
-  int w, h;			/* image width/height size (in pixels) */
-  int frames;			/* how many frames has this sprite */
-  int *frlens;			/* duration per frame */
-  int frame;			/* current frame, range [0,frames) */
-  JList palettes;		/* list of palettes */
-  Stock *stock;			/* stock to get images */
+  char filename[512];		// sprite's file name
+  bool associated_to_file;	// true if this sprite is associated to a file in the file-system
+  int imgtype;			// image type
+  int w, h;			// image width/height size (in pixels)
+  int frames;			// how many frames has this sprite
+  int* frlens;			// duration per frame
+  int frame;			// current frame, range [0,frames)
+  JList palettes;		// list of palettes
+  Stock *stock;			// stock to get images
 private:
-  LayerFolder *m_folder;	/* main folder of layers */
+  LayerFolder* m_folder;	// main folder of layers
 public:
-  Layer *layer;			/* current layer */
-  Path *path;			/* working path */
-  Mask *mask;			/* selected mask region */
-  Undo *undo;			/* undo stack */
+  Layer* layer;			// current layer
+  Path* path;			// working path
+  Mask* mask;			// selected mask region
+  Undo* undo;			// undo stack
   struct {
-    JList paths;		/* paths */
-    JList masks;		/* masks */
+    JList paths;		// paths
+    JList masks;		// masks
   } repository;
 
-  /**
-   * Selected mask region boundaries
-   */
+  // Selected mask region boundaries
   struct {
     int nseg;
     struct _BoundSeg *seg;
@@ -81,26 +78,18 @@ public:
 
 private:
 
-  /**
-   * Mutex to modify the 'locked' flag.
-   */
+  // Mutex to modify the 'locked' flag.
   JMutex m_mutex;
 
-  /**
-   * True if some thread is writing the sprite.
-   */
+  // True if some thread is writing the sprite.
   bool m_write_lock;
 
-  /**
-   * Greater than zero when one or more threads are reading the sprite.
-   */
+  // Greater than zero when one or more threads are reading the sprite.
   int m_read_locks;
 
 public:
 
-  /**
-   * Data to save the file in the same format that it was loaded
-   */
+  // Data to save the file in the same format that it was loaded
   FormatOptions *format_options;
 
   Sprite(int imgtype, int w, int h);

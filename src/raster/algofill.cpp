@@ -15,7 +15,7 @@
  *      See readme.txt for copyright information.
  */
 
-/* Adapted to ASE by David A. Capello */
+// Adapted to ASE by David Capello
 
 #include "config.h"
 

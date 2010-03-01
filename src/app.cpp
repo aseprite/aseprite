@@ -109,10 +109,8 @@ static char *palette_filename = NULL;
 
 static void tabsbar_select_callback(Widget* tabs, void *data, int button);
 
-/**
- * Initializes the application loading the modules, setting the
- * graphics mode, loading the configuration and resources, etc.
- */
+// Initializes the application loading the modules, setting the
+// graphics mode, loading the configuration and resources, etc.
 App::App(int argc, char* argv[])
   : m_modules(NULL)
   , m_legacy(NULL)
@@ -146,10 +144,8 @@ App::App(int argc, char* argv[])
   set_current_palette(NULL, true);
 }
 
-/**
- * Runs the ASE application. In GUI mode it's the top-level window, in
- * console/scripting it just runs the specified scripts.
- */
+// Runs the ASE application. In GUI mode it's the top-level window, in
+// console/scripting it just runs the specified scripts.
 int App::run()
 {
   /* initialize GUI interface */
@@ -309,15 +305,13 @@ int App::run()
   return 0;
 }
 
-/**
- * Finishes the ASE application.
- */
+// Finishes the ASE application.
 App::~App()
 {
   try {
     assert(m_instance == this);
 
-    // remove ase handlers
+    // Remove ASE handlers
     PRINTF("ASE: Uninstalling\n");
 
     App::trigger_event(AppEvent::Exit);
@@ -335,7 +329,7 @@ App::~App()
       m_apphooks[c].clear();
     }
 
-    // finalize modules, configuration and core
+    // Finalize modules, configuration and core
     Editor::editor_cursor_exit();
     boundary_exit();
 

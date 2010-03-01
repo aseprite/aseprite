@@ -38,14 +38,10 @@ public:
 
 class Context
 {
-  /**
-   * List of all sprites.
-   */
+  // List of all sprites.
   SpriteList m_sprites;
 
-  /**
-   * Current selected sprite to operate.
-   */
+  // Current selected sprite to operate.
   Sprite* m_current_sprite;
 
 public:

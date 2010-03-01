@@ -137,7 +137,7 @@ Sprite::~Sprite()
     jlist_free(this->palettes);
   }
 
-  /* destroy undo, mask, all layers, stock, boundaries */
+  // destroy undo, mask, etc.
   if (this->frlens) jfree(this->frlens);
   if (this->undo) undo_free(this->undo);
   if (this->mask) mask_free(this->mask);

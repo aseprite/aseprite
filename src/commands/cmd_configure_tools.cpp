@@ -189,12 +189,12 @@ void ConfigureTools::execute(Context* context)
   if (get_onionskin()) jwidget_select(check_onionskin);
 
   if (first_time) {
-    /* append children */
+    // Append children
     jwidget_add_child(cursor_color_box, cursor_color);
     jwidget_add_child(brush_preview_box, brush_preview);
     jwidget_add_child(brush_type_box, brush_type);
 
-    /* append hooks */
+    // Append hooks
     HOOK(window, JI_SIGNAL_WINDOW_CLOSE, window_close_hook, 0);
     HOOK(filled, JI_SIGNAL_CHECK_CHANGE, filled_check_change_hook, 0);
     HOOK(tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
@@ -215,11 +215,11 @@ void ConfigureTools::execute(Context* context)
     App::instance()->add_hook(AppEvent::Exit, new FreeWidget(window));
   }
 
-  /* default position */
+  // Default position
   window->remap_window();
   window->center_window();
 
-  /* load window configuration */
+  // Load window configuration
   load_window_pos(window, "ConfigureTool");
 
   window->open_window_bg();

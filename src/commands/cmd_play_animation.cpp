@@ -81,7 +81,7 @@ void PlayAnimationCommand::execute(Context* context)
   if (sprite->frames < 2)
     return;
 
-  /* desactivate the onion-skin */
+  // desactivate the onionskin
   set_onionskin(false);
 
   jmouse_hide();

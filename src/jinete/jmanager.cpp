@@ -370,7 +370,7 @@ bool jmanager_generate_messages(JWidget manager)
     jmanager_enqueue_message(msg);
   }
 
-  /* mouse clicks */
+  // mouse clicks
   if ((jmouse_b(0) != jmouse_b(1)) &&
       ((!jmouse_b(0)) || (!jmouse_b(1)))) {
     int current_ticks = ji_clock;
