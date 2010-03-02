@@ -128,9 +128,9 @@ LayerImage::LayerImage(LayerImage* src_layer, Sprite* dst_sprite)
       Cel* cel_copy = cel_new_copy(cel);
 
       assert((cel->image >= 0) &&
-	     (cel->image < src_layer->get_sprite()->stock->nimage));
+	     (cel->image < src_layer->getSprite()->stock->nimage));
 
-      Image* image = src_layer->get_sprite()->stock->image[cel->image];
+      Image* image = src_layer->getSprite()->stock->image[cel->image];
       assert(image != NULL);
 
       Image* image_copy = image_new_copy(image);
@@ -162,11 +162,11 @@ void LayerImage::destroy_all_cels()
     Cel* cel = *it;
 
     if (!cel_is_link(cel, this)) {
-      Image* image = get_sprite()->stock->image[cel->image];
+      Image* image = getSprite()->stock->image[cel->image];
 
       assert(image != NULL);
 
-      stock_remove_image(get_sprite()->stock, image);
+      stock_remove_image(getSprite()->stock, image);
       image_free(image);
     }
 
@@ -253,13 +253,13 @@ Cel* LayerImage::get_cel(int frame)
  */
 void LayerImage::configure_as_background()
 {
-  assert(get_sprite() != NULL);
-  assert(sprite_get_background_layer(get_sprite()) == NULL);
+  assert(getSprite() != NULL);
+  assert(sprite_get_background_layer(getSprite()) == NULL);
 
   *flags_addr() |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
   set_name("Background");
 
-  get_sprite()->get_folder()->move_layer(this, NULL);
+  getSprite()->get_folder()->move_layer(this, NULL);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -377,12 +377,12 @@ Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
       /* does this frame have cels to render? */
       if (has_cels(src_layer, frame)) {
 	/* create a new image */
-	Image* image = image_new(flat_layer->get_sprite()->imgtype, w, h);
+	Image* image = image_new(flat_layer->getSprite()->imgtype, w, h);
 
 	try {
 	  /* create the new cel for the output layer (add the image to
 	     stock too) */
-	  Cel* cel = cel_new(frame, stock_add_image(flat_layer->get_sprite()->stock, image));
+	  Cel* cel = cel_new(frame, stock_add_image(flat_layer->getSprite()->stock, image));
 	  cel_set_position(cel, x, y);
 
 	  /* clear the image and render this frame */
@@ -418,9 +418,9 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 
       if (cel) {
 	assert((cel->image >= 0) &&
-	       (cel->image < layer->get_sprite()->stock->nimage));
+	       (cel->image < layer->getSprite()->stock->nimage));
 
-	src_image = layer->get_sprite()->stock->image[cel->image];
+	src_image = layer->getSprite()->stock->image[cel->image];
 	assert(src_image != NULL);
 
 	image_merge(image, src_image,

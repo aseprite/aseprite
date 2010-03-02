@@ -56,7 +56,7 @@ public:
   std::string get_name() const { return m_name; }
   void set_name(const std::string& name) { m_name = name; }
 
-  Sprite* get_sprite() const { return m_sprite; }
+  Sprite* getSprite() const { return m_sprite; }
   LayerFolder* get_parent() const { return m_parent; }
   void set_parent(LayerFolder* folder) { m_parent = folder; }
   Layer* get_prev() const;

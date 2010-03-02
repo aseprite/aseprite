@@ -640,14 +640,14 @@ int get_color_for_layer(Layer *layer, color_t color)
 {
   return
     fixup_color_for_layer(layer,
-			  get_color_for_image(layer->get_sprite()->imgtype,
+			  get_color_for_image(layer->getSprite()->imgtype,
 					      color));
 }
 
 int fixup_color_for_layer(Layer *layer, int color)
 {
   if (layer->is_background())
-    return fixup_color_for_background(layer->get_sprite()->imgtype, color);
+    return fixup_color_for_background(layer->getSprite()->imgtype, color);
   else
     return color;
 }

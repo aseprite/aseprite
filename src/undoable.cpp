@@ -425,7 +425,7 @@ void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
   assert(layer->is_image());
   assert(layer->is_readable());
   assert(layer->is_writable());
-  assert(layer->get_sprite() == m_sprite);
+  assert(layer->getSprite() == m_sprite);
   assert(sprite_get_background_layer(m_sprite) == NULL);
 
   // create a temporary image to draw each frame of the new

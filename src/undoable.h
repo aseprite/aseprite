@@ -42,7 +42,7 @@ public:
   Undoable(SpriteWriter& sprite, const char* label);
   virtual ~Undoable();
 
-  inline Sprite* get_sprite() const { return m_sprite;  }
+  inline Sprite* getSprite() const { return m_sprite;  }
   inline bool is_enabled() const { return m_enabled_flag; }
 
   void commit();

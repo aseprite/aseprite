@@ -1994,7 +1994,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 	  Image* image = read_raw_image(raw_data);
 	  raw_data += get_raw_image_size(image);
 
-	  stock_replace_image(layer->get_sprite()->stock, cel->image, image);
+	  stock_replace_image(layer->getSprite()->stock, cel->image, image);
 	}
       }
       break;
@@ -2047,7 +2047,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 
   write_raw_uint8(*layer->flags_addr());	    /* flags */
   write_raw_uint16(layer->type);		    /* type */
-  write_raw_uint32(layer->get_sprite()->id);	    /* sprite */
+  write_raw_uint32(layer->getSprite()->id);	    /* sprite */
 
   switch (layer->type) {
 
@@ -2069,7 +2069,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 	  write_raw_uint8(0);
 	}
 	else {
-	  Image* image = layer->get_sprite()->stock->image[cel->image];
+	  Image* image = layer->getSprite()->stock->image[cel->image];
 	  assert(image != NULL);
 
 	  write_raw_uint8(1);
@@ -2114,7 +2114,7 @@ static int get_raw_layer_size(Layer* layer)
 	size += get_raw_cel_size(cel);
 	size++;			// has image?
 	if (!cel_is_link(cel, static_cast<LayerImage*>(layer))) {
-	  Image* image = layer->get_sprite()->stock->image[cel->image];
+	  Image* image = layer->getSprite()->stock->image[cel->image];
 	  size += get_raw_image_size(image);
 	}
       }

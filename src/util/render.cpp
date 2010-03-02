@@ -424,8 +424,8 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
 	}
 	/* if not, we use the original cel-image from the images' stock */
 	else if ((cel->image >= 0) &&
-		 (cel->image < layer->get_sprite()->stock->nimage))
-	  src_image = layer->get_sprite()->stock->image[cel->image];
+		 (cel->image < layer->getSprite()->stock->nimage))
+	  src_image = layer->getSprite()->stock->image[cel->image];
 	else
 	  src_image = NULL;
 
