@@ -174,8 +174,10 @@ void clipboard::cut(SpriteWriter& sprite)
     {
       Undoable undoable(sprite, "Cut");
       undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
+      undoable.deselect_mask();
       undoable.commit();
     }
+    sprite_generate_mask_boundaries(sprite);
     update_screen_for_sprite(sprite);
   }
 }
