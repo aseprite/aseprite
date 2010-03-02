@@ -1051,3 +1051,24 @@ void Undoable::set_mask_position(int x, int y)
   m_sprite->mask->x = x;
   m_sprite->mask->y = y;
 }
+
+void Undoable::deselect_mask()
+{
+  // Destroy the *deselected* mask
+  Mask* mask = sprite_request_mask(m_sprite, "*deselected*");
+  if (mask) {
+    sprite_remove_mask(m_sprite, mask);
+    mask_free(mask);
+  }
+
+  // Save the selection in the repository
+  mask = mask_new_copy(m_sprite->mask);
+  mask_set_name(mask, "*deselected*");
+  sprite_add_mask(m_sprite, mask);
+
+  if (undo_is_enabled(m_sprite->undo))
+    undo_set_mask(m_sprite->undo, m_sprite);
+
+  /// Deselect the mask
+  mask_none(m_sprite->mask);
+}

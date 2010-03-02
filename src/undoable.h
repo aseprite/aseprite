@@ -102,6 +102,7 @@ public:
   // for mask
   void copy_to_current_mask(Mask* mask);
   void set_mask_position(int x, int y);
+  void deselect_mask();
 
 };
 

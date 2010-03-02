@@ -22,8 +22,8 @@
 #include "modules/gui.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
-#include "raster/undo.h"
 #include "sprite_wrappers.h"
+#include "undoable.h"
 
 //////////////////////////////////////////////////////////////////////
 // deselect_mask
@@ -46,38 +46,20 @@ DeselectMaskCommand::DeselectMaskCommand()
 {
 }
 
-bool DeselectMaskCommand::enabled(Context* context)
-{
-  const CurrentSpriteReader sprite(context);
-  return sprite && !sprite->mask->is_empty();
-}
-
-void DeselectMaskCommand::execute(Context* context)
+bool DeselectMaskCommand::enabled(Context* context)
+{
+  const CurrentSpriteReader sprite(context);
+  return sprite && !sprite->mask->is_empty();
+}
+
+void DeselectMaskCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  Mask *mask;
-
-  /* destroy the *deselected* mask */
-  mask = sprite_request_mask(sprite, "*deselected*");
-  if (mask) {
-    sprite_remove_mask(sprite, mask);
-    mask_free(mask);
+  {
+    Undoable undoable(sprite, "Mask Deselection");
+    undoable.deselect_mask();
+    undoable.commit();
   }
-
-  /* save the selection in the repository */
-  mask = mask_new_copy(sprite->mask);
-  mask_set_name(mask, "*deselected*");
-  sprite_add_mask(sprite, mask);
-
-  /* undo */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Mask Deselection");
-    undo_set_mask(sprite->undo, sprite);
-  }
-
-  /* deselect the mask */
-  mask_none(sprite->mask);
-
   sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
