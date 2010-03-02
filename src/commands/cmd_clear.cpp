@@ -18,13 +18,14 @@
 
 #include "config.h"
 
-#include "commands/command.h"
-#include "sprite_wrappers.h"
 #include "app.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
+#include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/colbar.h"
 
@@ -63,11 +64,16 @@ bool ClearCommand::enabled(Context* context)
 void ClearCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
+  bool empty_mask = sprite->mask->is_empty();
   {
     Undoable undoable(sprite, "Clear");
     undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
+    if (!empty_mask)
+      undoable.deselect_mask();
     undoable.commit();
   }
+  if (!empty_mask)
+    sprite_generate_mask_boundaries(sprite);
   update_screen_for_sprite(sprite);
 }
 
