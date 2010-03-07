@@ -130,7 +130,7 @@ static void swap_hline32(void* image, void* data, int x1, int x2);
 static void swap_hline16(void* image, void* data, int x1, int x2);
 static void swap_hline8(void* image, void* data, int x1, int x2);
 
-Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, int tiled)
+Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled)
 {
   Dirty* dirty;
 

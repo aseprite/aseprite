@@ -48,13 +48,13 @@ struct Dirty
   Image* image;
   int x1, y1;
   int x2, y2;
-  int tiled;
+  bool tiled;
   int rows;
   DirtyRow* row;
   Mask* mask;
 };
 
-Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, int tiled);
+Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled);
 Dirty* dirty_new_copy(Dirty* src);
 Dirty* dirty_new_from_differences(Image* image, Image* image_diff);
 void dirty_free(Dirty* dirty);
