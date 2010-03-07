@@ -28,7 +28,7 @@
 
 Context::Context()
 {
-  m_current_sprite = NULL;
+  m_currentSprite = NULL;
 }
 
 Context::~Context()
@@ -105,7 +105,7 @@ void Context::remove_sprite(Sprite* sprite)
   on_remove_sprite(sprite);
 
   // the current sprite cannot be the removed sprite anymore
-  if (m_current_sprite == sprite)
+  if (m_currentSprite == sprite)
     set_current_sprite(NULL);
 }
 
@@ -125,12 +125,12 @@ void Context::send_sprite_to_top(Sprite* sprite)
 
 Sprite* Context::get_current_sprite() const
 {
-  return m_current_sprite;
+  return m_currentSprite;
 }
 
 void Context::set_current_sprite(Sprite* sprite)
 {
-  m_current_sprite = sprite;
+  m_currentSprite = sprite;
 
   on_set_current_sprite(sprite);
 }

@@ -42,7 +42,7 @@ class Context
   SpriteList m_sprites;
 
   // Current selected sprite to operate.
-  Sprite* m_current_sprite;
+  Sprite* m_currentSprite;
 
 public:
 
