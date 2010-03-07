@@ -146,6 +146,7 @@ COMMON_SOURCES =					\
 	src/jinete/jmutex.cpp				\
 	src/jinete/jpanel.cpp				\
 	src/jinete/jpoint.cpp				\
+	src/jinete/jpoint.cpp				\
 	src/jinete/jquickmenu.cpp			\
 	src/jinete/jrect.cpp				\
 	src/jinete/jregion.cpp				\
