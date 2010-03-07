@@ -30,6 +30,8 @@
 #include "modules/skinneable_theme.h"
 #include "modules/gui.h"
 
+#include "tinyxml.h"
+
 #define CHARACTER_LENGTH(f, c)	((f)->vtable->char_length((f), (c)))
 
 #define BGCOLOR			(get_bg_color(widget))
@@ -362,6 +364,11 @@ SkinneableTheme::~SkinneableTheme()
   for (int c=0; c<PARTS; ++c)
     destroy_bitmap(m_part[c]);
 
+  for (std::map<std::string, BITMAP*>::iterator
+	 it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
+    destroy_bitmap(it->second);
+  }
+
   destroy_bitmap(m_sheet_bmp);
 }
 
@@ -382,6 +389,50 @@ void SkinneableTheme::regen()
     set_trans_blender(0, 0, 0, 0);
 
     m_part[c] = apply_gui_scale(m_part[c]);
+  }
+
+  // Load tool icons
+  {
+    DIRS* dirs = filename_in_datadir("skins/default_skin.xml");
+    for (DIRS* dir=dirs; dir; dir=dir->next) {
+      if ((dir->path) && exists(dir->path)) {
+
+	TiXmlDocument doc;
+	if (!doc.LoadFile(dir->path))
+	  throw ase_exception(&doc);
+
+	TiXmlHandle handle(&doc);
+	
+	TiXmlElement* xmlIcon = handle
+	  .FirstChild("skin")
+	  .FirstChild("tools")
+	  .FirstChild("tool").ToElement();
+	while (xmlIcon) {
+	  // Get the tool-icon rectangle
+	  const char* tool_id = xmlIcon->Attribute("id");
+	  int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
+	  int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
+	  int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
+	  int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
+
+	  // Crop the tool-icon from the sheet
+	  BITMAP* toolicon = create_bitmap(w, h);
+	  clear_to_color(toolicon, bitmap_mask_color(m_sheet_bmp));
+
+	  set_alpha_blender();
+	  draw_trans_sprite(toolicon, m_sheet_bmp, -x, -y);
+	  set_trans_blender(0, 0, 0, 0);
+
+	  // Add the tool-icon in the map
+	  if (m_toolicon[tool_id]) destroy_bitmap(m_toolicon[tool_id]);
+	  m_toolicon[tool_id] = apply_gui_scale(toolicon);
+
+	  xmlIcon = xmlIcon->NextSiblingElement();
+	}
+	break;
+      }
+    }
+    dirs_free(dirs);
   }
 }
 
@@ -1512,6 +1563,15 @@ void SkinneableTheme::draw_entry_cursor(JWidget widget, int x, int y)
 
   vline(ji_screen, x,   y-1, y+h, COLOR_FOREGROUND);
   vline(ji_screen, x+1, y-1, y+h, COLOR_FOREGROUND);
+}
+
+BITMAP* SkinneableTheme::get_toolicon(const char* tool_id) const
+{
+  std::map<std::string, BITMAP*>::const_iterator it = m_toolicon.find(tool_id);
+  if (it != m_toolicon.end())
+    return it->second;
+  else
+    return NULL;
 }
 
 void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg)

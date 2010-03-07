@@ -26,9 +26,10 @@
 #include "commands/command.h"
 #include "raster/sprite.h"
 
-Context::Context()
+Context::Context(ISettings* settings)
 {
   m_currentSprite = NULL;
+  m_settings = settings;
 }
 
 Context::~Context()
@@ -39,16 +40,8 @@ Context::~Context()
     delete sprite;
   }
   m_sprites.clear();
-}
 
-int Context::get_fg_color()
-{
-  return 0;			// TODO
-}
-
-int Context::get_bg_color()
-{
-  return 0;			// TODO
+  delete m_settings;
 }
 
 const SpriteList& Context::get_sprite_list() const

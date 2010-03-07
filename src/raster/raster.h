@@ -21,7 +21,6 @@
 
 #include "raster/algo.h"
 #include "raster/blend.h"
-#include "raster/brush.h"
 #include "raster/cel.h"
 #include "raster/dirty.h"
 #include "raster/gfxobj.h"
@@ -30,6 +29,7 @@
 #include "raster/mask.h"
 #include "raster/palette.h"
 #include "raster/path.h"
+#include "raster/pen.h"
 #include "raster/quant.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"

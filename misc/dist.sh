@@ -77,6 +77,7 @@ ase_files="config.h				\
 	   data/jids/*.jid			\
 	   data/palettes/*.col			\
 	   data/skins/*.png			\
+	   data/skins/*.xml			\
 	   data/tips/*.pcx			\
 	   data/tips/tips.en			\
 	   docs/*.pdf				\
@@ -186,6 +187,7 @@ $1/data/aseicon.*						     \
 $1/data/fonts/*.pcx						     \
 $1/data/palettes/*.col						     \
 $1/data/skins/*.png						     \
+$1/data/skins/*.xml						     \
 $1/data/tips/*.pcx						     \
 $1/docs/*.pdf"
 }

@@ -35,9 +35,10 @@
 #include "effect/effect.h"
 #include "effect/median.h"
 #include "modules/gui.h"
-#include "modules/tools.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "settings/settings.h"
+#include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
@@ -111,7 +112,7 @@ void DespeckleCommand::execute(Context* context)
   if (get_config_bool("Median", "Preview", true))
     jwidget_select(check_preview);
 
-  if (get_tiled_mode() != TILED_NONE)
+  if (context->getSettings()->getTiledMode() != TILED_NONE)
     jwidget_select(check_tiled);
 
   jwidget_add_child(box_target, target_button);
@@ -177,7 +178,11 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
-  set_tiled_mode(jwidget_is_selected(widget) ? TILED_BOTH: TILED_NONE);
+  TiledMode tiled = jwidget_is_selected(widget) ? TILED_BOTH:
+							  TILED_NONE;
+
+  // TODO save context in some place, don't use UIContext directly
+  UIContext::instance()->getSettings()->setTiledMode(tiled);
   make_preview();
   return false;
 }
@@ -189,7 +194,9 @@ static void make_preview()
   w = get_config_int("Median", "Width", 3);
   h = get_config_int("Median", "Height", 3);
 
-  set_median_size(MID(1, w, 32), MID(1, h, 32));
+  // TODO do not use UIContext::instance
+  set_median_size(UIContext::instance()->getSettings()->getTiledMode(),
+		  MID(1, w, 32), MID(1, h, 32));
 
   if (jwidget_is_selected (check_preview))
     preview_restart(preview);

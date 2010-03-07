@@ -55,7 +55,6 @@
       <key command="invert_mask" shortcut="Ctrl+Shift+I" />
       <!-- view -->
       <key command="refresh" shortcut="F5" />
-      <key command="advanced_mode" shortcut="A" />
       <key command="make_unique_editor" shortcut="Ctrl+1" />
       <key command="split_editor_vertically" shortcut="Ctrl+2" />
       <key command="split_editor_horizontally" shortcut="Ctrl+3" />
@@ -76,12 +75,6 @@
       <key command="options" shortcut="Ctrl+Shift+O" />
       
       <!-- others -->
-      <key command="eyedropper" shortcut="I">
-	<param name="target" value="background" />
-      </key>
-      <key command="eyedropper" shortcut="Shift+I">
-	<param name="target" value="foreground" />
-      </key>
       <key command="switch_colors" shortcut="X" />
       <key command="change_color" shortcut="9">
 	<param name="target" value="foreground" />
@@ -110,18 +103,35 @@
     </commands>
     <tools>
       <key tool="rectangular_marquee" shortcut="M" />
-      <key tool="eraser" shortcut="E" />
+      <key tool="elliptical_marquee" shortcut="M" />
+      <key tool="lasso" shortcut="Q" />
+      <key tool="polygonal_lasso" shortcut="Q" />
+      <key tool="magic_wand" shortcut="W" />
+
       <key tool="pencil" shortcut="B" />
-      <key tool="brush" shortcut="B" />
       <key tool="spray" shortcut="S" />
+
+      <key tool="eraser" shortcut="E" />
+      <key tool="eyedropper" shortcut="I" />
+      <key tool="hand" shortcut="H" />
+      <key tool="move" shortcut="V" />
+      <key tool="zoom" shortcut="Z" />
+
       <key tool="paint_bucket" shortcut="G" />
+
       <key tool="line" shortcut="L" />
-      <key tool="curve" shortcut="V" />
+      <key tool="curve" shortcut="P" />
+
       <key tool="rectangle" shortcut="U" />
-      <key tool="ellipse" shortcut="O" />
+      <key tool="filled_rectangle" shortcut="U" />
       <key tool="ellipse" shortcut="U" />
+      <key tool="filled_ellipse" shortcut="U" />
+
+      <key tool="contour" shortcut="D" />
+      <key tool="polygon" shortcut="D" />
+
       <key tool="blur" shortcut="R" />
-      <key tool="jumble" shortcut="J" />
+      <key tool="jumble" shortcut="R" />
     </tools>
   </keyboard>
   
@@ -359,5 +369,215 @@
     <pixelscale factor="4" label="x4 (huge)" />
     
   </resolutions>
-  
+
+  <!-- tools -->
+  <tools>
+
+    <group id="selection_tools" text="Selection Tools">
+      <tool id="rectangular_marquee"
+	    text="Rectangular Marquee Tool"
+	    fill="always"
+	    ink="selection"
+	    controller="two_points"
+	    pointshape="pixel"
+	    intertwine="as_rectangles"
+	    tracepolicy="last"
+	    />
+      <tool id="elliptical_marquee"
+	    text="Elliptical Marquee Tool"
+	    fill="always"
+	    ink="selection"
+	    controller="two_points"
+	    pointshape="pixel"
+	    intertwine="as_ellipses"
+	    tracepolicy="last"
+	    />
+      <tool id="lasso"
+	    text="Lasso Tool"
+	    fill="always"
+	    ink="selection"
+	    controller="freehand"
+	    pointshape="pixel"
+	    intertwine="as_lines"
+	    tracepolicy="accumulative"
+	    />
+      <tool id="polygonal_lasso"
+	    text="Polygonal Lasso Tool"
+	    fill="always"
+	    ink="selection"
+	    controller="point_by_point"
+	    pointshape="pixel"
+	    intertwine="as_lines"
+	    tracepolicy="last"
+	    />
+      <tool id="magic_wand"
+	    text="Magic Wand Tool"
+	    fill="always"
+	    ink="selection"
+	    controller="one_point"
+	    pointshape="floodfill"
+	    tracepolicy="accumulative"
+	    />
+    </group>
+
+    <group id="pencil_tools" text="Pencil Tools">
+      <tool id="pencil"
+	    text="Pencil Tool"
+	    ink="paint"
+	    controller="freehand"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="accumulative"
+	    />
+      <tool id="spray"
+	    text="Spray Tool"
+	    ink="paint"
+	    controller="freehand"
+	    pointshape="spray"
+	    tracepolicy="accumulative"
+	    />
+    </group>
+
+    <group id="helpers" text="Helpers">
+      <tool id="eraser"
+	    text="Eraser Tool"
+	    ink_left="eraser"
+	    ink_right="replace_fg_with_bg"
+	    controller="freehand"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="accumulative"
+	    default_pen_size="8"
+	    />
+      <tool id="eyedropper"
+	    text="Eyedropper Tool"
+	    ink_left="pick_fg"
+	    ink_right="pick_bg"
+	    controller="freehand"
+	    pointshape="pixel"
+	    />
+      <tool id="hand"
+	    text="Hand Tool"
+	    ink="scroll"
+	    controller="freehand"
+	    />
+      <tool id="move"
+	    text="Move Tool"
+	    ink="move"
+	    controller="freehand"
+	    />
+    </group>
+
+    <group id="paint_bucket" text="Paint Bucket Tool">
+      <tool id="paint_bucket"
+	    text="Paint Bucket Tool"
+	    ink="paint"
+	    controller="one_point"
+	    pointshape="floodfill"
+	    tracepolicy="accumulative"
+	    />
+    </group>
+
+    <group id="perfect_traces" text="Perfect Traces">
+      <tool id="line"
+	    text="Line Tool"
+	    ink="paint"
+	    controller="two_points"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="last"
+	    />
+      <tool id="curve"
+	    text="Curve Tool"
+	    ink="paint"
+	    controller="four_points"
+	    pointshape="pen"
+	    intertwine="as_bezier"
+	    tracepolicy="last"
+	    />
+    </group>
+
+    <group id="shapes" text="Shapes">
+      <tool id="rectangle"
+	    text="Rectangle Tool"
+	    fill="optional"
+	    ink="paint"
+	    controller="two_points"
+	    pointshape="pen"
+	    intertwine="as_rectangles"
+	    tracepolicy="last"
+	    />
+      <tool id="filled_rectangle"
+	    text="Filled Rectangle Tool"
+	    fill="always"
+	    ink="paint"
+	    controller="two_points"
+	    pointshape="pen"
+	    intertwine="as_rectangles"
+	    tracepolicy="last"
+	    />
+      <tool id="ellipse"
+	    text="Ellipse Tool"
+	    fill="optional"
+	    ink="paint"
+	    controller="two_points"
+	    pointshape="pen"
+	    intertwine="as_ellipses"
+	    tracepolicy="last"
+	    />
+      <tool id="filled_ellipse"
+	    text="Filled Ellipse Tool"
+	    fill="always"
+	    ink="paint"
+	    controller="two_points"
+	    pointshape="pen"
+	    intertwine="as_ellipses"
+	    tracepolicy="last"
+	    />
+    </group>
+
+    <group id="contours" text="Contours">
+      <tool id="contour"
+	    text="Contour Tool"
+	    fill="always"
+	    ink="paint"
+	    controller="freehand"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="accumulative"
+	    />
+      <tool id="polygon"
+	    text="Polygon Tool"
+	    fill="always"
+	    ink="paint"
+	    controller="point_by_point"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="last"
+	    />
+    </group>
+
+    <group id="effects" text="Effects">
+      <tool id="blur"
+	    text="Blur Tool"
+	    ink="blur"
+	    controller="freehand"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="accumulative"
+	    default_pen_size="16"
+	    />
+      <tool id="jumble"
+	    text="Jumble Tool"
+	    ink="jumble"
+	    controller="freehand"
+	    pointshape="pen"
+	    intertwine="as_lines"
+	    tracepolicy="accumulative"
+	    default_pen_size="16"
+	    />
+    </group>
+
+  </tools>
+
 </gui>

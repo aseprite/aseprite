@@ -18,18 +18,20 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <allegro/file.h>
+#include <cassert>
 
-#include "ui_context.h"
 #include "app.h"
 #include "modules/editors.h"
 #include "raster/sprite.h"
+#include "settings/ui_settings_impl.h"
+#include "ui_context.h"
 #include "widgets/tabs.h"
 
 UIContext* UIContext::m_instance = NULL;
 
 UIContext::UIContext()
+  : Context(new UISettingsImpl)
 {
   assert(m_instance == NULL);
   m_instance = this;
@@ -39,16 +41,6 @@ UIContext::~UIContext()
 {
   assert(m_instance == this);
   m_instance = NULL;
-}
-
-int UIContext::get_fg_color()
-{
-  return app_get_fg_color(get_current_sprite());
-}
-
-int UIContext::get_bg_color()
-{
-  return app_get_bg_color(get_current_sprite());
 }
 
 void UIContext::on_add_sprite(Sprite* sprite)

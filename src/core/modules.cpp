@@ -27,7 +27,6 @@
 #include "modules/palettes.h"
 #include "modules/recent.h"
 #include "modules/rootmenu.h"
-#include "modules/tools.h"
 
 #define DEF_MODULE(name, reqs) \
   { #name, init_module_##name, exit_module_##name, (reqs), false }
@@ -48,7 +47,6 @@ static Module module[] =
 
   DEF_MODULE(palette,		0),
   DEF_MODULE(effect,		0),
-  DEF_MODULE(tools,		0),
   DEF_MODULE(graphics,		REQUIRE_INTERFACE),
   DEF_MODULE(gui,		REQUIRE_INTERFACE),
   DEF_MODULE(recent,		REQUIRE_INTERFACE),

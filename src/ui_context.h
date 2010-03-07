@@ -33,9 +33,6 @@ public:
 
   virtual bool is_ui_available() const { return true; }
 
-  virtual int get_fg_color();
-  virtual int get_bg_color();
-
 protected:
 
   virtual void on_add_sprite(Sprite* sprite);

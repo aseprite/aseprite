@@ -29,8 +29,8 @@ static void draw_dirty(int x1, int y, int y2, void *data)
 
 int main (int argc, char *argv[])
 {
-  Brush* brush1;
-  Brush* brush2;
+  Pen* pen1;
+  Pen* pen2;
   Dirty* dirty;
   Image* image;
   BITMAP* bmp;
@@ -52,11 +52,11 @@ int main (int argc, char *argv[])
 
   image = image_new(IMAGE_INDEXED, bmp->w, bmp->h);
   dirty = dirty_new(image, 0, 0, image->w-1, image->h-1, false);
-  brush1 = brush_new();
-  brush2 = brush_new();
+  pen1 = pen_new();
+  pen2 = pen_new();
 
-  brush_set_size(brush1, 1);
-  brush_set_size(brush2, 8);
+  pen_set_size(pen1, 1);
+  pen_set_size(pen2, 8);
 
   image_clear(image, 0);
   for (c=128; c>0; c-=8)
@@ -81,8 +81,8 @@ int main (int argc, char *argv[])
       mb = mouse_b;
 
       if (mb) {
-	dirty_line_brush(dirty, (mb & 2) ? brush2: brush1,
-			 ox, oy, mx, my);
+	dirty_line_pen(dirty, (mb & 2) ? pen2: pen1,
+		       ox, oy, mx, my);
 	redraw = true;
       }
 

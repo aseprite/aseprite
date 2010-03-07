@@ -25,7 +25,7 @@
 
 #include "raster/algo.h"
 #include "raster/blend.h"
-#include "raster/brush.h"
+#include "raster/pen.h"
 #include "raster/image.h"
 #include "raster/image_impl.h"
 #include "raster/palette.h"
@@ -96,6 +96,22 @@ void image_putpixel(Image* image, int x, int y, int color)
 {
   if ((x >= 0) && (y >= 0) && (x < image->w) && (y < image->h))
     image->putpixel(x, y, color);
+}
+
+void image_putpen(Image* image, Pen* pen, int x, int y, int color)
+{
+  Image* pen_image = pen->get_image();
+  int u, v, size = pen->get_size();
+
+  x -= size/2;
+  y -= size/2;
+
+  for (v=0; v<pen_image->h; v++) {
+    for (u=0; u<pen_image->w; u++) {
+      if (image_getpixel(pen_image, u, v))
+	image_putpixel(image, x+u, y+v, color);
+    }
+  }
 }
 
 void image_clear(Image* image, int color)
@@ -292,71 +308,6 @@ void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color)
   Data data = { image, color };
   algo_ellipsefill(x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
 }
-
-/*********************************************************************
- Brushes
- *********************************************************************/
-
-/* typedef struct AlgoData */
-/* { */
-/*   Image* image; */
-/*   Brush *brush; */
-/*   int color; */
-/* } AlgoData; */
-
-/* static void algo_putpixel(int x, int y, AlgoData *data); */
-/* static void algo_putbrush(int x, int y, AlgoData *data); */
-
-/* void image_putpixel_brush(Image* image, Brush *brush, int x, int y, int color) */
-/* { */
-/*   AlgoData data = { image, brush, color }; */
-/*   if (brush->size == 1) */
-/*     algo_putpixel(x, y, &data); */
-/*   else */
-/*     algo_putbrush(x, y, &data); */
-/* } */
-
-/* void image_hline_brush(Image* image, Brush *brush, int x1, int y, int x2, int color) */
-/* { */
-/*   AlgoData data = { image, brush, color }; */
-/*   int x; */
-
-/*   if (brush->size == 1) */
-/*     for (x=x1; x<=x2; ++x) */
-/*       algo_putpixel(x, y, &data); */
-/*   else */
-/*     for (x=x1; x<=x2; ++x) */
-/*       algo_putbrush(x, y, &data); */
-/* } */
-
-/* void image_line_brush(Image* image, Brush *brush, int x1, int y1, int x2, int y2, int color) */
-/* { */
-/*   AlgoData data = { image, brush, color }; */
-/*   algo_line(x1, y1, x2, y2, &data, */
-/* 	    (brush->size == 1)? */
-/* 	    (AlgoPixel)algo_putpixel: */
-/* 	    (AlgoPixel)algo_putbrush); */
-/* } */
-
-/* static void algo_putpixel(int x, int y, AlgoData *data) */
-/* { */
-/*   image_putpixel(data->image, x, y, data->color); */
-/* } */
-
-/* static void algo_putbrush(int x, int y, AlgoData *data) */
-/* { */
-/*   register struct BrushScanline *scanline = data->brush->scanline; */
-/*   register int c = data->brush->size/2; */
-
-/*   x -= c; */
-/*   y -= c; */
-
-/*   for (c=0; c<data->brush->size; ++c) { */
-/*     if (scanline->state) */
-/*       image_hline(data->image, x+scanline->x1, y+c, x+scanline->x2, data->color); */
-/*     ++scanline; */
-/*   } */
-/* } */
 
 void image_to_allegro(const Image* image, BITMAP *bmp, int x, int y)
 {

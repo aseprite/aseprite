@@ -29,7 +29,6 @@
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
 #include "util/render.h"
@@ -89,10 +88,10 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
     int redraw;
     JRect vp;
     int bg_color, index_bg_color = -1;
-    tiled_t tiled;
+    TiledMode tiled;
 
     if (flags & PREVIEW_TILED) {
-      tiled = get_tiled_mode();
+      tiled = context->getSettings()->getTiledMode();
       if (tiled == TILED_NONE)
 	tiled = TILED_BOTH;
     }

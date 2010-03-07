@@ -21,9 +21,10 @@
 #include <allegro/unicode.h>
 
 #include "commands/command.h"
+#include "context.h"
 #include "app.h"
 #include "modules/editors.h"
-#include "modules/tools.h"
+#include "settings/settings.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -44,12 +45,16 @@ public:
 protected:
   bool checked(Context* context)
   {
-    return get_view_grid();
+    ISettings* settings = context->getSettings();
+
+    return settings->getGridVisible();
   }
   
   void execute(Context* context)
   {
-    set_view_grid(get_view_grid() ? false: true);
+    ISettings* settings = context->getSettings();
+
+    settings->setGridVisible(settings->getGridVisible() ? false: true);
     refresh_all_editors();
   }
 };
@@ -72,19 +77,22 @@ public:
 protected:
   bool checked(Context* context)
   {
-    return get_use_grid();
+    ISettings* settings = context->getSettings();
+
+    return settings->getSnapToGrid();
   }
   
   void execute(Context* context)
   {
+    ISettings* settings = context->getSettings();
     char buf[512];
 
-    set_use_grid(get_use_grid() ? false: true);
+    settings->setSnapToGrid(settings->getSnapToGrid() ? false: true);
     refresh_all_editors();
 
     usprintf(buf, _("Snap to grid: %s"),
-	     get_use_grid() ? _("On"):
-			      _("Off"));
+	     settings->getSnapToGrid() ? _("On"):
+					 _("Off"));
 
     statusbar_set_text(app_get_statusbar(), 250, buf);
   }

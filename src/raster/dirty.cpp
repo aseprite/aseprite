@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "raster/algo.h"
-#include "raster/brush.h"
+#include "raster/pen.h"
 #include "raster/dirty.h"
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -115,7 +115,7 @@
 typedef struct AlgoData
 {
   Dirty* dirty;
-  Brush* brush;
+  Pen* pen;
   int thickness;
 } AlgoData;
 
@@ -123,7 +123,7 @@ typedef void (*HLineSwapper)(void*,void*,int,int);
 
 static void algo_putpixel(int x, int y, AlgoData *data);
 /* static void algo_putthick(int x, int y, AlgoData *data); */
-static void algo_putbrush(int x, int y, AlgoData *data);
+static void algo_putpen(int x, int y, AlgoData *data);
 
 static HLineSwapper swap_hline(Image* image);
 static void swap_hline32(void* image, void* data, int x1, int x2);
@@ -608,35 +608,35 @@ void dirty_rectfill(Dirty* dirty, int x1, int y1, int x2, int y2)
     dirty_hline(dirty, x1, y, x2);
 }
 
-void dirty_putpixel_brush(Dirty* dirty, Brush* brush, int x, int y)
+void dirty_putpixel_pen(Dirty* dirty, Pen* pen, int x, int y)
 {
-  AlgoData data = { dirty, brush, 0 };
-  if (brush->size == 1)
+  AlgoData data = { dirty, pen, 0 };
+  if (pen->get_size() == 1)
     algo_putpixel(x, y, &data);
   else
-    algo_putbrush(x, y, &data);
+    algo_putpen(x, y, &data);
 }
 
-void dirty_hline_brush(Dirty* dirty, struct Brush* brush, int x1, int y, int x2)
+void dirty_hline_pen(Dirty* dirty, Pen* pen, int x1, int y, int x2)
 {
-  AlgoData data = { dirty, brush, 0 };
+  AlgoData data = { dirty, pen, 0 };
   int x;
 
-  if (brush->size == 1)
+  if (pen->get_size() == 1)
     for (x=x1; x<=x2; ++x)
       algo_putpixel(x, y, &data);
   else
     for (x=x1; x<=x2; ++x)
-      algo_putbrush(x, y, &data);
+      algo_putpen(x, y, &data);
 }
 
-void dirty_line_brush(Dirty* dirty, Brush* brush, int x1, int y1, int x2, int y2)
+void dirty_line_pen(Dirty* dirty, Pen* pen, int x1, int y1, int x2, int y2)
 {
-  AlgoData data = { dirty, brush, 0 };
+  AlgoData data = { dirty, pen, 0 };
   algo_line(x1, y1, x2, y2, &data,
-	    (brush->size == 1)?
+	    (pen->get_size() == 1)?
 	    (AlgoPixel)algo_putpixel:
-	    (AlgoPixel)algo_putbrush);
+	    (AlgoPixel)algo_putpen);
 }
 
 void dirty_save_image_data(Dirty* dirty)
@@ -711,15 +711,15 @@ static void algo_putpixel(int x, int y, AlgoData *data)
   dirty_putpixel(data->dirty, x, y);
 }
 
-static void algo_putbrush(int x, int y, AlgoData *data)
+static void algo_putpen(int x, int y, AlgoData *data)
 {
-  register BrushScanline* scanline = data->brush->scanline;
-  register int c = data->brush->size/2;
+  register PenScanline* scanline = data->pen->get_scanline();
+  register int c = data->pen->get_size()/2;
 
   x -= c;
   y -= c;
 
-  for (c=0; c<data->brush->size; ++c) {
+  for (c=0; c<data->pen->get_size(); ++c) {
     if (scanline->state)
       dirty_hline(data->dirty, x+scanline->x1, y+c, x+scanline->x2);
     ++scanline;

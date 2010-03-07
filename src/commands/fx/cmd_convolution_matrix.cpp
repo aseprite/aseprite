@@ -41,9 +41,9 @@
 #include "effect/convmatr.h"
 #include "effect/effect.h"
 #include "modules/gui.h"
-#include "modules/tools.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/colbut.h"
 #include "widgets/curvedit.h"
@@ -124,7 +124,7 @@ void ConvolutionMatrixCommand::execute(Context* context)
   if (get_config_bool("ConvolutionMatrix", "Preview", true))
     jwidget_select(check_preview);
 
-  if (get_tiled_mode() != TILED_NONE)
+  if (context->getSettings()->getTiledMode() != TILED_NONE)
     jwidget_select(check_tiled);
 
   jview_attach(view_convmatr, list_convmatr);
@@ -295,7 +295,9 @@ static bool list_change_hook(JWidget widget, void *data)
 
   set_config_string("ConvolutionMatrix", "Selected", convmatr->name);
 
-  set_convmatr(convmatr);
+  // TODO avoid UIContext::instance, hold the context in some place
+  TiledMode tiled = UIContext::instance()->getSettings()->getTiledMode();
+  set_convmatr(convmatr, tiled);
 
   target_button_set_target(target_button, new_target);
   effect_set_target(preview_get_effect(preview), new_target);
@@ -322,7 +324,12 @@ static bool preview_change_hook(JWidget widget, void *data)
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
-  set_tiled_mode(jwidget_is_selected(widget) ? TILED_BOTH: TILED_NONE);
+  TiledMode tiled = jwidget_is_selected(widget) ? TILED_BOTH:
+						  TILED_NONE;
+
+  // TODO avoid UIContext::instance, hold the context in some place
+  UIContext::instance()->getSettings()->setTiledMode(tiled);
+
   make_preview();
   return false;
 }

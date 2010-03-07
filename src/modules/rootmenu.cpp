@@ -34,8 +34,8 @@
 #include "core/dirs.h"
 #include "intl/intl.h"
 #include "modules/rootmenu.h"
-#include "modules/tools.h"
 #include "modules/gui.h"
+#include "tools/toolbox.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
 
@@ -203,7 +203,7 @@ static int load_root_menu()
       const char* tool_key = xmlKey->Attribute("shortcut");
 
       if (tool_id && tool_key) {
-	Tool *tool = get_tool_by_name(tool_id);
+	Tool* tool = App::instance()->get_toolbox()->getToolById(tool_id);
 	if (tool) {
 	  /* add the keyboard shortcut to the tool */
 	  PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);

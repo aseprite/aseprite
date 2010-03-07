@@ -72,25 +72,29 @@ void set_config_bool(const char *section, const char *name, bool value)
   set_config_string(section, name, value ? "yes": "no");
 }
 
-void get_config_rect(const char *section, const char *name, JRect rect)
+Rect get_config_rect(const char *section, const char *name, const Rect& rect)
 {
+  Rect rect2(rect);
   char **argv;
   int argc;
 
   argv = get_config_argv(section, name, &argc);
+
   if (argv && argc == 4) {
-    rect->x1 = ustrtol(argv[0], NULL, 10);
-    rect->y1 = ustrtol(argv[1], NULL, 10);
-    rect->x2 = ustrtol(argv[2], NULL, 10);
-    rect->y2 = ustrtol(argv[3], NULL, 10);
+    rect2.x = ustrtol(argv[0], NULL, 10);
+    rect2.y = ustrtol(argv[1], NULL, 10);
+    rect2.w = ustrtol(argv[2], NULL, 10);
+    rect2.h = ustrtol(argv[3], NULL, 10);
   }
+
+  return rect2;
 }
 
-void set_config_rect(const char *section, const char *name, JRect rect)
+void set_config_rect(const char *section, const char *name, const Rect& rect)
 {
   char buf[128];
   uszprintf(buf, sizeof(buf), "%d %d %d %d",
-	    rect->x1, rect->y1, rect->x2, rect->y2);
+	    rect.x, rect.y, rect.w, rect.h);
   set_config_string(section, name, buf);
 }
 

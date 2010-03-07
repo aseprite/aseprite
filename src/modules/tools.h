@@ -19,6 +19,8 @@
 #ifndef MODULES_TOOLS_H_INCLUDED
 #define MODULES_TOOLS_H_INCLUDED
 
+#error Deprecated
+
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
 

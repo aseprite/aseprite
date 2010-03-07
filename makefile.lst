@@ -172,12 +172,11 @@ COMMON_SOURCES =					\
 	src/modules/recent.cpp				\
 	src/modules/rootmenu.cpp			\
 	src/modules/skinneable_theme.cpp		\
-	src/modules/tools.cpp				\
 	src/raster/algo.cpp				\
 	src/raster/algofill.cpp				\
 	src/raster/algo_polygon.cpp			\
 	src/raster/blend.cpp				\
-	src/raster/brush.cpp				\
+	src/raster/pen.cpp				\
 	src/raster/cel.cpp				\
 	src/raster/dirty.cpp				\
 	src/raster/gfxobj.cpp				\
@@ -191,6 +190,9 @@ COMMON_SOURCES =					\
 	src/raster/sprite.cpp				\
 	src/raster/stock.cpp				\
 	src/raster/undo.cpp				\
+	src/settings/ui_settings_impl.cpp		\
+	src/tools/tool.cpp				\
+	src/tools/toolbox.cpp				\
 	src/util/autocrop.cpp				\
 	src/util/boundary.cpp				\
 	src/util/celmove.cpp				\

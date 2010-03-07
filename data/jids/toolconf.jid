@@ -6,7 +6,6 @@
     <box horizontal="true" expansive="true">
       <box vertical="true">
         <separator text="General:" horizontal="true" left="true" />
-        <check text="Filled" name="filled" />
 	<box horizontal="true" childspacing="0">
             <check text="Tiled" name="tiled" />
             <check text="x" name="tiled_x" />
@@ -14,14 +13,14 @@
 	</box>
 	<check text="Onionskin" name="onionskin" />
         <separator text="Grid:" horizontal="true" left="true" />
-        <check text="Snap to Grid" name="use_grid" />
+        <check text="Snap to Grid" name="snap_to_grid" />
         <check text="View Grid" name="view_grid" />
         <button text="Set &amp;Grid" name="set_grid" />
         <separator text="Cursor:" horizontal="true" left="true" />
 	<box name="cursor_color_box" /><!-- custom widget -->
       </box>
       <box vertical="true" expansive="true">
-        <separator text="Brush:" horizontal="true" left="true" />
+        <separator text="Pen:" horizontal="true" left="true" />
         <box horizontal="true">
           <box vertical="true" homogeneous="true">
             <label text="Size:" />
@@ -38,7 +37,7 @@
 	  <box name="brush_preview_box" /><!-- custom widget -->
         </box>
 	<separator text="Opacity:" horizontal="true" left="true" />
-        <slider min="0" max="255" name="glass_dirty" />
+        <slider min="0" max="255" name="opacity" />
         <separator text="Spray:" horizontal="true" left="true" />
 	<box horizontal="true">
 	  <box vertical="true" homogeneous="true">

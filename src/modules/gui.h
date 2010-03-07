@@ -25,11 +25,12 @@
 #include "ase_exception.h"
 #include "jinete/jbase.h"
 #include "jinete/jaccel.h"
-#include "jinete/jwidget.h"
 
 class Command;
 class Params;
-struct Tool;
+class Tool;
+class Widget;
+class Frame;
 
 //////////////////////////////////////////////////////////////////////
 

@@ -26,10 +26,11 @@
 #include "jinete/jlist.h"
 
 #include "modules/palettes.h"
-#include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/raster.h"
 #include "util/render.h"
+#include "settings/settings.h"
+#include "ui_context.h"
 
 //////////////////////////////////////////////////////////////////////
 // zoomed merge
@@ -362,9 +363,9 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
 
   color_map = NULL;
 
-  /* onion-skin feature: draw the previous frame */
-  if (get_onionskin() && (frame > 0)) {
-    /* draw background layer of the current frame with opacity=255 */
+  // Onion-skin feature: draw the previous frame
+  if (UIContext::instance()->getSettings()->getUseOnionskin() && (frame > 0)) {
+    // Draw background layer of the current frame with opacity=255
     color_map = NULL;
     global_opacity = 255;
 

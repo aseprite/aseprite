@@ -28,9 +28,15 @@
 #include "jinete/jsystem.h"
 #include "jinete/jwidget.h"
 
+#include "app.h"
+#include "core/cfg.h"
 #include "core/color.h"
-#include "modules/tools.h"
-#include "raster/brush.h"
+#include "modules/editors.h"
+#include "raster/image.h"
+#include "raster/pen.h"
+#include "raster/sprite.h"
+#include "tools/tool.h"
+#include "ui_context.h"
 #include "util/boundary.h"
 #include "widgets/editor.h"
 
@@ -49,17 +55,20 @@
 #define MAX_SAVED   4096
 
 static struct {
-  int brush_type;
-  int brush_size;
-  int brush_angle;
+  int pen_type;
+  int pen_size;
+  int pen_angle;
   int nseg;
   BoundSeg *seg;
 } cursor_bound = { 0, 0, 0, 0, NULL };
 
-enum { CURSOR_CROSS_ONE   = 1,
-       CURSOR_BRUSH	  = 2 };
+enum {
+  CURSOR_PENCIL      = 1,	// New cursor style (with preview)
+  CURSOR_CROSS_ONE   = 2,	// Old cursor style (deprecated)
+  CURSOR_BOUNDS      = 4	// Old cursor boundaries (deprecated)
+};
 
-static int cursor_type;
+static int cursor_type = CURSOR_PENCIL;
 static int cursor_negative;
 
 static int saved_pixel[MAX_SAVED];
@@ -72,8 +81,9 @@ static JRegion old_clipping_region;
 
 static void generate_cursor_boundaries();
 
+static void editor_cursor_pencil(Editor *editor, int x, int y, int color, int thickness, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thickness, void (*pixel)(BITMAP *bmp, int x, int y, int color));
-static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
+static void editor_cursor_bounds(Editor *editor, int x, int y, int color, void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
 static void savepixel(BITMAP *bmp, int x, int y, int color);
 static void drawpixel(BITMAP *bmp, int x, int y, int color);
@@ -81,18 +91,98 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
 static int point_inside_region(int x, int y, JRegion region);
 
-/***********************************************************/
-/* CURSOR                                                  */
-/***********************************************************/
+//////////////////////////////////////////////////////////////////////
+// CURSOR COLOR
+//////////////////////////////////////////////////////////////////////
+
+static color_t cursor_color;
+static int _cursor_color;
+static bool _cursor_mask;
+
+static void update_cursor_color()
+{
+  if (ji_screen)
+    _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
+					  cursor_color);
+  else
+    _cursor_color = 0;
+
+  _cursor_mask = (color_type(cursor_color) == COLOR_TYPE_MASK);
+}
+
+int Editor::get_raw_cursor_color()
+{
+  return _cursor_color;
+}
+
+bool Editor::is_cursor_mask()
+{
+  return _cursor_mask;
+}
+
+color_t Editor::get_cursor_color()
+{
+  return cursor_color;
+}
+
+void Editor::set_cursor_color(color_t color)
+{
+  cursor_color = color;
+  update_cursor_color();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Slots for App signals
+//////////////////////////////////////////////////////////////////////
+
+static void on_palette_change_update_cursor_color()
+{
+  update_cursor_color();
+}
+
+static int pen_size_thick = 0;
+
+static void on_pen_size_before_change()
+{
+  assert(current_editor != NULL);
+
+  pen_size_thick = current_editor->editor_get_cursor_thick();
+  if (pen_size_thick)
+    current_editor->hide_drawing_cursor();
+}
+
+static void on_pen_size_after_change()
+{
+  assert(current_editor != NULL);
+
+  if (current_editor->getSprite() && pen_size_thick > 0)
+    current_editor->show_drawing_cursor();
+}
+
+//////////////////////////////////////////////////////////////////////
+// CURSOR
+//////////////////////////////////////////////////////////////////////
+
+void Editor::editor_cursor_init()
+{
+  /* cursor color */
+  set_cursor_color(get_config_color("Tools", "CursorColor", color_mask()));
+
+  App::instance()->PaletteChange.connect(&on_palette_change_update_cursor_color);
+  App::instance()->PenSizeBeforeChange.connect(&on_pen_size_before_change);
+  App::instance()->PenSizeAfterChange.connect(&on_pen_size_after_change);
+}
 
 void Editor::editor_cursor_exit()
 {
+  set_config_color("Tools", "CursorColor", cursor_color);
+
   if (cursor_bound.seg != NULL)
     jfree(cursor_bound.seg);
 }
 
 /**
- * Draws the brush cursor inside the specified editor.
+ * Draws the pen cursor inside the specified editor.
  *
  * @warning You should clean the cursor before to use
  * this routine with other editor.
@@ -119,41 +209,70 @@ void Editor::editor_draw_cursor(int x, int y)
   /* cursor in the screen (view) */
   m_cursor_screen_x = x;
   m_cursor_screen_y = y;
-  
+
   /* get cursor position in the editor */
   screen_to_editor(x, y, &x, &y);
 
-  /* get cursor type */
-  if (get_thickness_for_cursor() == 1) {
+  // Get the current tool
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  // Setup the cursor type depending the current tool
+  if (current_tool->getInk(0)->isSelection()) {
     cursor_type = CURSOR_CROSS_ONE;
   }
-  else {
-    switch (get_brush_type()) {
-      case BRUSH_CIRCLE:
-      case BRUSH_SQUARE:
-	cursor_type = CURSOR_BRUSH;
-	if ((get_brush_size()<<m_zoom)/2 > 3+(1<<m_zoom))
-	  cursor_type |= CURSOR_CROSS_ONE;
-	break;
-      case BRUSH_LINE:
-	cursor_type = CURSOR_BRUSH;
-	break;
-    }
+  else if (current_tool->getInk(0)->isEffect()) {
+    cursor_type = CURSOR_BOUNDS;
   }
+  else
+    cursor_type = CURSOR_PENCIL;
 
-  if (cursor_type & CURSOR_BRUSH)
+  // For cursor type 'bounds' we have to generate cursor boundaries
+  if (cursor_type & CURSOR_BOUNDS)
     generate_cursor_boundaries();
+
+  // draw pixel/pen preview
+  if (cursor_type & CURSOR_PENCIL &&
+      m_state != EDITOR_STATE_DRAWING) {
+    int color = app_get_fg_color(m_sprite);
+
+    IToolSettings* tool_settings = UIContext::instance()
+      ->getSettings()
+      ->getToolSettings(current_tool);
+
+    IPenSettings* pen_settings =
+      tool_settings->getPen();
+
+    assert(pen_settings != NULL);
+
+    Pen* pen = new Pen(pen_settings->getType(),
+		       pen_settings->getSize(),
+		       pen_settings->getAngle());
+
+    m_sprite->set_extras_opacity(tool_settings->getOpacity());
+
+    m_sprite->prepare_extra();
+    image_putpen(m_sprite->get_extras(), pen, x, y, color);
+    editors_draw_sprite(m_sprite,
+			x-pen->get_size()/2,
+			y-pen->get_size()/2,
+			x+pen->get_size()/2,
+			y+pen->get_size()/2);
+
+    delete pen;
+  }
 
   /* save area and draw the cursor */
   acquire_bitmap(ji_screen);
   ji_screen->clip = false;
-  for_each_pixel_of_brush(x, y, color, savepixel);
-  for_each_pixel_of_brush(x, y, color, drawpixel);
+  for_each_pixel_of_pen(x, y, color, savepixel);
+  for_each_pixel_of_pen(x, y, color, drawpixel);
   ji_screen->clip = true;
   release_bitmap(ji_screen);
 
-  /* cursor thickness */
-  m_cursor_thick = get_thickness_for_cursor();
+  // cursor thickness
+  m_cursor_thick = 1; // get_thickness_for_cursor();
 
   /* cursor in the editor (model) */
   m_cursor_editor_x = x;
@@ -166,7 +285,7 @@ void Editor::editor_draw_cursor(int x, int y)
 }
 
 /**
- * Cleans the brush cursor from the specified editor.
+ * Cleans the pen cursor from the specified editor.
  *
  * The mouse position is got from the last
  * call to @c editor_draw_cursor. So you must
@@ -191,10 +310,39 @@ void Editor::editor_clean_cursor()
 
   /* restore points */
   acquire_bitmap(ji_screen);
-  ji_screen->clip = false;
-  for_each_pixel_of_brush(x, y, 0, cleanpixel);
-  ji_screen->clip = true;
+  ji_screen->clip = FALSE;
+  for_each_pixel_of_pen(x, y, 0, cleanpixel);
+  ji_screen->clip = TRUE;
   release_bitmap(ji_screen);
+
+  // clean pixel/pen preview
+  if (cursor_type & CURSOR_PENCIL &&
+      m_state != EDITOR_STATE_DRAWING) {
+    Tool* current_tool = UIContext::instance()
+      ->getSettings()
+      ->getCurrentTool();
+
+    IPenSettings* pen_settings = UIContext::instance()
+      ->getSettings()
+      ->getToolSettings(current_tool)
+      ->getPen();
+
+    assert(pen_settings != NULL);
+
+    Pen* pen = new Pen(pen_settings->getType(),
+		       pen_settings->getSize(),
+		       pen_settings->getAngle());
+    
+    m_sprite->prepare_extra();
+    image_putpen(m_sprite->get_extras(), pen, x, y, 0);
+    editors_draw_sprite(m_sprite,
+			x-pen->get_size()/2,
+			y-pen->get_size()/2,
+			x+pen->get_size()/2,
+			y+pen->get_size()/2);
+
+    delete pen;
+  }
 
   m_cursor_thick = 0;
 
@@ -220,34 +368,63 @@ bool Editor::editor_cursor_is_subpixel()
 
 static void generate_cursor_boundaries()
 {
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  IPenSettings* pen_settings = UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool)
+    ->getPen();
+
   if (cursor_bound.seg == NULL || 
-      cursor_bound.brush_type != get_brush_type() ||
-      cursor_bound.brush_size != get_brush_size() ||
-      cursor_bound.brush_angle != get_brush_angle()) {
-    cursor_bound.brush_type = get_brush_type();
-    cursor_bound.brush_size = get_brush_size();
-    cursor_bound.brush_angle = get_brush_angle();
+      cursor_bound.pen_type != pen_settings->getType() ||
+      cursor_bound.pen_size != pen_settings->getSize() ||
+      cursor_bound.pen_angle != pen_settings->getAngle()) {
+    cursor_bound.pen_type = pen_settings->getType();
+    cursor_bound.pen_size = pen_settings->getSize();
+    cursor_bound.pen_angle = pen_settings->getAngle();
 
     if (cursor_bound.seg != NULL)
       jfree(cursor_bound.seg);
 
-    cursor_bound.seg = find_mask_boundary(get_brush()->image,
-					  &cursor_bound.nseg,
-					  IgnoreBounds, 0, 0, 0, 0);
+    Pen* pen;
+
+    UIContext* context = UIContext::instance();
+    Tool* current_tool = context->getSettings()->getCurrentTool();
+    if (current_tool) {
+      IPenSettings* pen_settings = context->getSettings()
+	->getToolSettings(current_tool)->getPen();
+      assert(pen_settings != NULL);
+      pen = new Pen(pen_settings->getType(),
+		    pen_settings->getSize(),
+		    pen_settings->getAngle());
+    }
+    else
+      pen = new Pen();
+
+    cursor_bound.seg = find_mask_boundary(pen->get_image(),
+    					  &cursor_bound.nseg,
+    					  IgnoreBounds, 0, 0, 0, 0);
+    delete pen;
   }
 }
 
-void Editor::for_each_pixel_of_brush(int x, int y, int color,
-				     void (*pixel)(BITMAP *bmp, int x, int y, int color))
+void Editor::for_each_pixel_of_pen(int x, int y, int color,
+				   void (*pixel)(BITMAP *bmp, int x, int y, int color))
 {
   saved_pixel_n = 0;
+
+  if (cursor_type & CURSOR_PENCIL) {
+    editor_cursor_pencil(this, m_cursor_screen_x, m_cursor_screen_y, color, 1, pixel);
+  }
 
   if (cursor_type & CURSOR_CROSS_ONE) {
     editor_cursor_cross(this, x, y, color, 1, pixel);
   }
 
-  if (cursor_type & CURSOR_BRUSH) {
-    editor_cursor_brush(this, x, y, color, pixel);
+  if (cursor_type & CURSOR_BOUNDS) {
+    editor_cursor_bounds(this, x, y, color, pixel);
   }
 
   if (IS_SUBPIXEL(this)) {
@@ -257,10 +434,38 @@ void Editor::for_each_pixel_of_brush(int x, int y, int color,
   }
 }
 
-/**********************************************************************/
-/* cross */
+//////////////////////////////////////////////////////////////////////
+// New cross
 
-static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thickness, void (*pixel) (BITMAP *bmp, int x, int y, int color))
+static void editor_cursor_pencil(Editor *editor, int x, int y, int color, int thickness, void (*pixel)(BITMAP *bmp, int x, int y, int color))
+{
+  static int cursor_cross[7*7] = {
+    0, 0, 0, 1, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    1, 1, 0, 0, 0, 1, 1,
+    0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 0,
+    0, 0, 0, 1, 0, 0, 0,
+  };
+  int u, v, xout, yout;
+
+  for (v=0; v<7; v++) {
+    for (u=0; u<7; u++) {
+      if (cursor_cross[v*7+u]) {
+	xout = x-3+u;
+	yout = y-3+v;
+	(*pixel)(ji_screen, xout, yout, color);
+      }
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+// Old cross
+
+static void editor_cursor_cross(Editor* editor, int x, int y, int color, int thickness,
+				void (*pixel)(BITMAP *bmp, int x, int y, int color))
 {
   static int cursor_cross[6*6] = {
     0, 0, 1, 1, 0, 0,
@@ -292,10 +497,10 @@ static void editor_cursor_cross(Editor *editor, int x, int y, int color, int thi
   }
 }
 
-/**********************************************************************/
-/* brush */
+//////////////////////////////////////////////////////////////////////
+// Cursor Bounds
 
-static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*pixel) (BITMAP *bmp, int x, int y, int color))
+static void editor_cursor_bounds(Editor *editor, int x, int y, int color, void (*pixel) (BITMAP *bmp, int x, int y, int color))
 {
   int c, x1, y1, x2, y2;
   BoundSeg *seg;
@@ -303,10 +508,10 @@ static void editor_cursor_brush(Editor *editor, int x, int y, int color, void (*
   for (c=0; c<cursor_bound.nseg; c++) {
     seg = cursor_bound.seg+c;
 
-    x1 = seg->x1 - cursor_bound.brush_size/2;
-    y1 = seg->y1 - cursor_bound.brush_size/2;
-    x2 = seg->x2 - cursor_bound.brush_size/2;
-    y2 = seg->y2 - cursor_bound.brush_size/2;
+    x1 = seg->x1 - cursor_bound.pen_size/2;
+    y1 = seg->y1 - cursor_bound.pen_size/2;
+    x2 = seg->x2 - cursor_bound.pen_size/2;
+    y2 = seg->y2 - cursor_bound.pen_size/2;
 
     editor->editor_to_screen(x+x1, y+y1, &x1, &y1);
     editor->editor_to_screen(x+x2, y+y2, &x2, &y2);

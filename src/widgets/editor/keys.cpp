@@ -20,6 +20,7 @@
 
 #include <allegro/keyboard.h>
 
+#include "jinete/jrect.h"
 #include "jinete/jsystem.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
@@ -28,9 +29,10 @@
 #include "core/color.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
-#include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "settings/settings.h"
+#include "ui_context.h"
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 
@@ -88,21 +90,25 @@ bool Editor::editor_keys_toset_zoom(int scancode)
   return false;
 }
 
-bool Editor::editor_keys_toset_brushsize(int scancode)
+bool Editor::editor_keys_toset_pensize(int scancode)
 {
+  Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
+  IToolSettings* tool_settings = UIContext::instance()->getSettings()->getToolSettings(current_tool);
+  IPenSettings* pen = tool_settings->getPen();
+
   if ((m_sprite) &&
       (jwidget_has_mouse(this)) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    /* TODO configurable keys */
-    /* set the thickness */
-    if (scancode == KEY_MINUS_PAD) {
-      if (get_brush_size () > 1)
-	set_brush_size (get_brush_size ()-1);
+    if (scancode == KEY_MINUS_PAD) { // TODO configurable keys
+      if (pen->getSize() > 1) {
+	pen->setSize(pen->getSize()-1);
+      }
       return true;
     }
     else if (scancode == KEY_PLUS_PAD) {
-      if (get_brush_size () < 32)
-	set_brush_size (get_brush_size ()+1);
+      if (pen->getSize() < 32) {
+	pen->setSize(pen->getSize()+1);
+      }
       return true;
     }
   }

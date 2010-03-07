@@ -22,22 +22,22 @@
 
 #include "effect/effect.h"
 #include "modules/palettes.h"
-#include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "tiled_mode.h"
 
 static struct {
-  tiled_t tiled;
+  TiledMode tiled;
   int w, h;
   int ncolors;
   unsigned char *channel[4];
 } data = { TILED_NONE, 0, 0, 0, { NULL, NULL, NULL, NULL } };
 
-void set_median_size(int w, int h)
+void set_median_size(TiledMode tiled, int w, int h)
 {
   int c;
 
-  data.tiled = get_tiled_mode();
+  data.tiled = tiled;
   data.w = w;
   data.h = h;
   data.ncolors = w*h;

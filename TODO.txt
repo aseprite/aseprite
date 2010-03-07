@@ -1,5 +1,27 @@
+Refactoring
+-----------
+
+- editors_ -> Editors class widget
+- rename core/cfg.h to cfg_file.h
+- convert all widgets to classes:
+  + match Jinete design with Vaca library (Vaca Fusion)
+  + move all functions (jwidget_*) to methods in Widget class.
+  + the same for each widget (e.g. jbutton_* to Button widget)
+  + AppHooks to Vaca::Signals
+  + Convert all JI_SIGNAL to Vaca::Signals
+- all member functions should be named verbNoun instead of verb_noun or noun_verb.
+- all functions to handle an object should be converted to member functions:
+  - e.g. jwidget_set_text -> Widget::setText
+
 High priority work
 ------------------
+
++ Selection tools do not have "move" functionality incorporated yet as we talked (they just add/subtract selection)
++ The following tools do not work: spray, eraser, blur, jumble, eyedropper, scroll, move.
++ You cannot cancel trace pressing the other mouse button
++ "shade" drawing mode
++ A lot of tool configurations are not working (grid, tiled, opacity)
++ Improve polygon tool (and polygon lasso)
 
 - Fix paste behavior:
   + paste when there are no images (create one image or put the
@@ -8,9 +30,6 @@ High priority work
     trasformation embedded in the editor
   + Ctrl+T should transform the current cel
 - fix bilinear: when getpixel have alpha = 0 get a neighbor color.
-- Ctrl+X / Ctrl+C / Ctrl+V should Cut/Copy/Paste in jentries.
-- fix problems with tiled mode XY in drawing corners (I cannot
-  reproduce the exact scenario).
 - fix sliders in Tools Configuration, they are too big
   for small resolutions.
 - rewrite palette-editor to edit multiple-palettes.
@@ -24,7 +43,6 @@ High priority work
   Shift+G and Shift+S should update it
 - when press Plus/Minus pad in the editor and the configuration tool
   window is active, the slider of the "Brush Size" must be updated.
-- add a consistent error handling.
 - add two DrawClick2:
   - DrawClick2FreeHand
   - DrawClick2Shape
@@ -33,10 +51,6 @@ High priority work
 - add "size" to GUI font (for TTF fonts);
 - layer movement between sets in animation-editor;
   + add all the "set" stuff again;
-- options to change the curve type (in curedit.c);
-- gaussian blur;
-- RGB and HSV effects;
-- color-curve stock;
 - fix algo_ellipsefill;
 - view_tiled() should support animation playback (partial support:
   with left and right keys).
@@ -47,14 +61,11 @@ Wish-list
 
 - dacap wish-list:
   + added starred file-items in the file-selector.
-  + add AseContext structure to handle the current state of the
-    application (and hook changes in the context/options).
-  + the commands should be enabled/disabled/checked by the current
-    context state
   + the commands should use a new ase/ API and not the raster/ low-level
     - "raster/Undoable" is the beginning
   + the dependencies should be:
     commands/ -> ase/ -> raster/ -> jinete/
+  + consistent error handling (now I'm using exception).
 - manuq wish-list:
   + layer-with-constant-cel
 - Mateusz Czaplinski ideas:

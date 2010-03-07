@@ -24,6 +24,7 @@
 #include "jinete/jintern.h"
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
+#include "jinete/jrect.h"
 
 #include "console.h"
 #include "app.h"
@@ -32,7 +33,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/tools.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "widgets/editor.h"

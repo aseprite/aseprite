@@ -29,6 +29,7 @@ class Layer;
 class LegacyModules;
 class Params;
 class Sprite;
+class ToolBox;
 
 class App
 {
@@ -47,9 +48,14 @@ public:
 
   int run();
 
+  ToolBox* get_toolbox();
+
   // App Signals
   Vaca::Signal0<void> Exit;
   Vaca::Signal0<void> PaletteChange;
+  Vaca::Signal0<void> PenSizeBeforeChange;
+  Vaca::Signal0<void> PenSizeAfterChange;
+  Vaca::Signal0<void> CurrentToolChange;
   
 };
 

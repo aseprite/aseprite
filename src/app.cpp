@@ -55,6 +55,7 @@
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "tools/toolbox.h"
 #include "ui_context.h"
 #include "util/boundary.h"
 #include "util/recscr.h"
@@ -81,6 +82,7 @@ public:
   LoggerModule m_logger_module;
   IntlModule m_intl_module;
   FileSystemModule m_file_system_module;
+  ToolBox m_toolbox;
   RasterModule m_raster;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
@@ -121,6 +123,9 @@ App::App(int argc, char* argv[])
   // create private implementation data
   m_modules = new Modules(argc, argv);
   m_legacy = new LegacyModules(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
+ 
+  // init editor cursor
+  Editor::editor_cursor_init();
 
   /* custom default palette? */
   if (palette_filename) {
@@ -328,6 +333,12 @@ App::~App()
 
     // no re-throw
   }
+}
+
+ToolBox* App::get_toolbox()
+{
+  assert(m_modules != NULL);
+  return &m_modules->m_toolbox;
 }
 
 /**

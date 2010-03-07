@@ -23,8 +23,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "Vaca/Bind.h"
 #include "jinete/jinete.h"
 
+#include "app.h"
 #include "commands/commands.h"
 #include "core/core.h"
 #include "modules/editors.h"
@@ -35,11 +37,12 @@
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
+#include "tools/tool.h"
+#include "ui_context.h"
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
-#include "ui_context.h"
 
 enum {
   ACTION_LAYER,
@@ -57,6 +60,16 @@ static bool slider_change_hook(JWidget widget, void *data);
 static void button_command(JWidget widget, void *data);
 
 static void update_from_layer(StatusBar *statusbar);
+
+static void on_current_tool_change(JWidget widget)
+{
+  if (jwidget_is_visible(widget)) {
+    Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
+    if (currentTool)
+      statusbar_set_text(widget, 500, "%s selected",
+			 currentTool->getText().c_str());
+  }
+}
 
 JWidget statusbar_new()
 {
@@ -112,6 +125,8 @@ JWidget statusbar_new()
     jwidget_add_child(box1, box2);
 
     statusbar->commands_box = box1;
+
+    App::instance()->CurrentToolChange.connect(Vaca::Bind<void>(&on_current_tool_change, widget));
   }
 
   return widget;

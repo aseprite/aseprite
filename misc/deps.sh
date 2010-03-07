@@ -28,6 +28,8 @@ $GCC $CFLAGS							     \
     src/jinete/*.cpp						     \
     src/modules/*.cpp						     \
     src/raster/*.cpp						     \
+    src/settings/*.cpp						     \
+    src/tools/*.cpp						     \
     src/util/*.cpp						     \
     src/widgets/*.cpp						     \
     src/widgets/editor/*.cpp					     \

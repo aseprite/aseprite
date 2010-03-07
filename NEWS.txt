@@ -5,9 +5,19 @@ NEWS
 0.8
 ---
 
++ IMPORTANT USER INTERFACE CHANGES!
+  - Now you zoom using the mouse wheel without pressing Alt key.
+  - Now tools are grouped.
+  - New ASE skin created by Ilija Melentijevic.
++ New tools: Lasso, Polygonal Lasso, Magic Wand, Eyedropper (as
+  an independet tool instead of Alt+click shortcut), Hand, Move,
+  (Filled) Countour, and (Filled) Polygon.
++ Now the editor cursor displays pen preview (Ilija Melentijevic
+  idea, like Animator Pro).
++ Added support to zoom when you are drawing (e.g. you can use the
+  wheel mouse when you are drawing a polygon or a long line).
 + Added support to resize and maximize the main window (only in
   Windows platform).
-+ New ASE skin created by Ilija Melentijevic.
 
 0.7.2
 -----

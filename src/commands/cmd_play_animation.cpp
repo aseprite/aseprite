@@ -26,7 +26,6 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/tools.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
@@ -74,7 +73,7 @@ void PlayAnimationCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
   int old_frame, msecs;
   bool done = false;
-  bool onionskin = get_onionskin();
+  bool onionskin_state = context->getSettings()->getUseOnionskin();
   Palette *oldpal, *newpal;
   PALETTE rgbpal;
 
@@ -82,7 +81,7 @@ void PlayAnimationCommand::execute(Context* context)
     return;
 
   // desactivate the onionskin
-  set_onionskin(false);
+  context->getSettings()->setUseOnionskin(false);
 
   jmouse_hide();
 
@@ -129,7 +128,8 @@ void PlayAnimationCommand::execute(Context* context)
     gui_feedback();
   }
 
-  set_onionskin(onionskin);
+  // restore onionskin flag
+  context->getSettings()->setUseOnionskin(onionskin_state);
 
   /* if right-click or ESC */
   if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC))

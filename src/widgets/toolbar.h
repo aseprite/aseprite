@@ -23,6 +23,7 @@
 
 JWidget toolbar_new();
 
-void toolbar_update(JWidget toolbar);
+bool toolbar_is_tool_visible(JWidget toolbar, Tool* tool);
+void toolbar_select_tool(JWidget toolbar, Tool* tool);
 
 #endif

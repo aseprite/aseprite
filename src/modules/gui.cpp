@@ -49,13 +49,14 @@
 #include "modules/palettes.h"
 #include "modules/rootmenu.h"
 #include "modules/skinneable_theme.h"
-#include "modules/tools.h"
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+#include "widgets/toolbar.h"
+#include "tools/toolbox.h"
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
@@ -506,7 +507,7 @@ void gui_feedback()
   rec_screen_poll();
 
   /* double buffering? */
-  if (double_buffering) {
+  if (double_buffering && ji_screen) {
     jmouse_draw_cursor();
 
     if (ji_dirty_region) {
@@ -603,31 +604,25 @@ void reload_default_font()
 
 void load_window_pos(JWidget window, const char *section)
 {
-  JRect pos, orig_pos;
+  // Default position
+  Rect orig_pos = window->getBounds();
+  Rect pos = orig_pos;
 
-  /* default position */
-  orig_pos = jwidget_get_rect(window);
-  pos = jrect_new_copy(orig_pos);
+  // Load configurated position
+  pos = get_config_rect(section, "WindowPos", pos);
 
-  /* load configurated position */
-  get_config_rect(section, "WindowPos", pos);
+  pos.w = MID(orig_pos.w, pos.w, JI_SCREEN_W);
+  pos.h = MID(orig_pos.h, pos.h, JI_SCREEN_H);
 
-  pos->x2 = pos->x1 + MID(jrect_w(orig_pos), jrect_w(pos), JI_SCREEN_W);
-  pos->y2 = pos->y1 + MID(jrect_h(orig_pos), jrect_h(pos), JI_SCREEN_H);
+  pos.setOrigin(Point(MID(0, pos.x, JI_SCREEN_W-pos.w),
+		      MID(0, pos.y, JI_SCREEN_H-pos.h)));
 
-  jrect_moveto(pos,
-	       MID(0, pos->x1, JI_SCREEN_W-jrect_w(pos)),
-	       MID(0, pos->y1, JI_SCREEN_H-jrect_h(pos)));
-
-  jwidget_set_rect(window, pos);
-
-  jrect_free(pos);
-  jrect_free(orig_pos);
+  window->setBounds(pos);
 }
 
 void save_window_pos(JWidget window, const char *section)
 {
-  set_config_rect(section, "WindowPos", window->rc);
+  set_config_rect(section, "WindowPos", window->getBounds());
 }
 
 JWidget load_widget(const char *filename, const char *name)
@@ -1055,25 +1050,45 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	  switch (shortcut->type) {
 
 	    case Shortcut_ChangeTool: {
+	      Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
 	      Tool* select_this_tool = shortcut->tool;
-	      Tool* group[MAX_TOOLS];
-	      int i, j;
+	      ToolBox* toolbox = App::instance()->get_toolbox();
+	      std::vector<Tool*> possibles;
 
-	      for (i=j=0; i<MAX_TOOLS; i++) {
-		if (get_keyboard_shortcut_for_tool(tools_list[i])->is_key_pressed(msg))
-		  group[j++] = tools_list[i];
+	      // Iterate over all tools
+	      for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+		Shortcut* shortcut = get_keyboard_shortcut_for_tool(*it);
+
+		// Collect all tools with the pressed keyboard-shortcut
+		if (shortcut && shortcut->is_key_pressed(msg))
+		  possibles.push_back(*it);
 	      }
 
-	      if (j >= 2) {
-		for (i=0; i<j; i++) {
-		  if (group[i] == current_tool && i+1 < j) {
-		    select_this_tool = group[i+1];
+	      if (possibles.size() >= 2) {
+		bool done = false;
+
+		for (size_t i=0; i<possibles.size(); ++i) {
+		  if (possibles[i] != current_tool &&
+		      toolbar_is_tool_visible(app_get_toolbar(), possibles[i])) {
+		    select_this_tool = possibles[i];
+		    done = true;
 		    break;
+		  }
+		}
+
+		if (!done) {
+		  for (size_t i=0; i<possibles.size(); ++i) {
+		    // If one of the possibilities is the current tool
+		    if (possibles[i] == current_tool) {
+		      // We select the next tool in the possibilities
+		      select_this_tool = possibles[(i+1) % possibles.size()];
+		      break;
+		    }
 		  }
 		}
 	      }
 
-	      select_tool(select_this_tool);
+	      toolbar_select_tool(app_get_toolbar(), select_this_tool);
 	      break;
 	    }
 

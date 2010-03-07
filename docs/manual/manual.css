@@ -357,6 +357,29 @@ div.admonition-keyboard-shortcut p {
   display: inline;
 }
 
+div.admonition-summary {
+  color: #1020ff;
+  border: 1px solid #2080ff;
+  background-color: #00ffff;
+  padding: 14px;
+}
+div.admonition-summary dl {
+  margin-top: 0px;
+}
+div.admonition-summary dd {
+  margin-left: 0px;
+}
+div.admonition-summary p.admonition-title {
+  border: 1px solid #2080ff;
+  background-color: #ffffff;
+  padding: 8px;
+  float: right;
+  margin-left: 14px;
+}
+div.admonition-summary p {
+  margin-top: 0px;
+}
+
 tt.literal {
   background-color: #eee;
   padding: 0px 4px;

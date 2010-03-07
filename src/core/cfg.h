@@ -21,6 +21,7 @@
 
 #include <allegro/config.h>
 #include "jinete/jbase.h"
+#include "jinete/jrect.h"
 
 #include "core/color.h"
 
@@ -34,8 +35,8 @@ public:
 bool get_config_bool(const char *section, const char *name, bool value);
 void set_config_bool(const char *section, const char *name, bool value);
 
-void get_config_rect(const char *section, const char *name, JRect rect);
-void set_config_rect(const char *section, const char *name, JRect rect);
+Rect get_config_rect(const char *section, const char *name, const Rect& rect);
+void set_config_rect(const char *section, const char *name, const Rect& rect);
 
 color_t get_config_color(const char *section, const char *name, color_t value);
 void set_config_color(const char *section, const char *name, color_t value);

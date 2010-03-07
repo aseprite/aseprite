@@ -19,8 +19,11 @@
 #ifndef MODULES_SKINNEABLE_THEME_H_INCLUDED
 #define MODULES_SKINNEABLE_THEME_H_INCLUDED
 
+#include <map>
+#include <string>
 #include <allegro/color.h>
 #include "jinete/jtheme.h"
+#include "jinete/jrect.h"
 
 enum {
 
@@ -283,6 +286,7 @@ class SkinneableTheme : public jtheme
 {
   BITMAP* m_sheet_bmp;
   BITMAP* m_part[PARTS];
+  std::map<std::string, BITMAP*> m_toolicon;
 
 public:
   SkinneableTheme();
@@ -371,11 +375,17 @@ public:
   int get_panel_face_color() const { return makecol(125, 146, 158); }
 
   BITMAP* get_part(int part_i) const { return m_part[part_i]; }
+  BITMAP* get_toolicon(const char* tool_id) const;
 
   // helper functions to draw parts
   void draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg);
   void draw_bounds2(int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2);
   void draw_hline(int x1, int y1, int x2, int y2, int part);
+
+  // Wrapper to use the new "Rect" class (x, y, w, h)
+  void draw_bounds(const Rect& rc, int nw, int bg) {
+    draw_bounds(rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
+  }
 
 private:
 

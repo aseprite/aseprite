@@ -29,7 +29,6 @@
 #include "effect/convmatr.h"
 #include "effect/effect.h"
 #include "modules/palettes.h"
-#include "modules/tools.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "util/filetoks.h"
@@ -40,7 +39,7 @@
 static struct {			/* TODO warning: not thread safe */
   JList matrices;
   ConvMatr *convmatr;
-  tiled_t tiled;
+  TiledMode tiled;
   unsigned char **lines;
 } data;
 
@@ -112,10 +111,10 @@ void convmatr_free(ConvMatr *convmatr)
   jfree(convmatr);
 }
 
-void set_convmatr(ConvMatr *convmatr)
+void set_convmatr(ConvMatr *convmatr, TiledMode tiled)
 {
   data.convmatr = convmatr;
-  data.tiled = get_tiled_mode();
+  data.tiled = tiled;
 
   if (data.lines != NULL)
     jfree(data.lines);

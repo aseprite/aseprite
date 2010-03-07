@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ASE Default Skin -->
+<skin name="ASE Default Skin"
+      author="Ilija Melentijevic"
+      url="http://ilkke.blogspot.com/">
+  <tools>
+
+    <tool id="rectangular_marquee"	x="144" y="0" w="16" h="16" />
+    <tool id="elliptical_marquee"	x="160" y="0" w="16" h="16" />
+    <tool id="lasso"			x="176" y="0" w="16" h="16" />
+    <tool id="polygonal_lasso"		x="192" y="0" w="16" h="16" />
+    <tool id="magic_wand"		x="208" y="0" w="16" h="16" />
+
+    <tool id="pencil"			x="144" y="16" w="16" h="16" />
+    <tool id="spray"			x="160" y="16" w="16" h="16" />
+
+    <tool id="eraser"			x="144" y="32" w="16" h="16" />
+    <tool id="eyedropper"		x="160" y="32" w="16" h="16" />
+    <tool id="hand"			x="176" y="32" w="16" h="16" />
+    <tool id="move"			x="192" y="32" w="16" h="16" />
+
+    <tool id="paint_bucket"		x="144" y="48" w="16" h="16" />
+
+    <tool id="line"			x="144" y="64" w="16" h="16" />
+    <tool id="curve"			x="160" y="64" w="16" h="16" />
+
+    <tool id="rectangle"		x="144" y="80" w="16" h="16" />
+    <tool id="filled_rectangle"		x="160" y="80" w="16" h="16" />
+    <tool id="ellipse"			x="176" y="80" w="16" h="16" />
+    <tool id="filled_ellipse"		x="192" y="80" w="16" h="16" />
+
+    <tool id="contour"			x="144" y="96" w="16" h="16" />
+    <tool id="polygon"			x="160" y="96" w="16" h="16" />
+
+    <!--tool id="shade"			x="144" y="112" w="16" h="16" /-->
+    <tool id="blur"			x="160" y="112" w="16" h="16" />
+    <tool id="jumble"			x="176" y="112" w="16" h="16" />
+
+    <tool id="configuration"		x="144" y="128" w="16" h="16" />
+  </tools>
+</skin>

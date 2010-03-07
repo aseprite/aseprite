@@ -18,13 +18,12 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
+#include <cassert>
 
 #include "jinete/jinete.h"
 
-#include "sprite_wrappers.h"
 #include "console.h"
 #include "app.h"
 #include "core/core.h"
@@ -32,7 +31,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/tools.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -42,6 +40,9 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "settings/settings.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 #include "undoable.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
@@ -635,13 +636,13 @@ static bool interactive_transform(Editor* editor,
 	    editor->screen_to_editor(x1, y1, &x1, &y1);
 	    editor->screen_to_editor(x2, y2, &x2, &y2);
 
-	    if (get_use_grid() && angle == 0) {
-	      int ox = x1;
-	      int oy = y1;
-	      apply_grid(&x1, &y1, false);
-	      x2 += x1 - ox;
-	      y2 += y1 - oy;
-	    }
+	    // if (UIContext::instance()->getSettings()->get_snap_to_grid() && angle == 0) {
+	    //   int ox = x1;
+	    //   int oy = y1;
+	    //   apply_grid(&x1, &y1, false);
+	    //   x2 += x1 - ox;
+	    //   y2 += y1 - oy;
+	    // }
 
 	    editor->editor_to_screen(x1, y1, &x1, &y1);
 	    editor->editor_to_screen(x2, y2, &x2, &y2);

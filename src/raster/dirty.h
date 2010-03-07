@@ -21,7 +21,7 @@
 
 #include "raster/image.h"
 
-struct Brush;
+class Pen;
 class Image;
 class Mask;
 
@@ -66,9 +66,9 @@ void dirty_line(Dirty* dirty, int x1, int y1, int x2, int y2);
 void dirty_rect(Dirty* dirty, int x1, int y1, int x2, int y2);
 void dirty_rectfill(Dirty* dirty, int x1, int y1, int x2, int y2);
 
-void dirty_putpixel_brush(Dirty* dirty, Brush* brush, int x, int y);
-void dirty_hline_brush(Dirty* dirty, Brush* brush, int x1, int y, int x2);
-void dirty_line_brush(Dirty* dirty, Brush* brush, int x1, int y1, int x2, int y2);
+void dirty_putpixel_pen(Dirty* dirty, Pen* pen, int x, int y);
+void dirty_hline_pen(Dirty* dirty, Pen* pen, int x1, int y, int x2);
+void dirty_line_pen(Dirty* dirty, Pen* pen, int x1, int y1, int x2, int y2);
 
 void dirty_save_image_data(Dirty* dirty);
 void dirty_restore_image_data(Dirty* dirty);

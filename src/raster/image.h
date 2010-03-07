@@ -24,6 +24,7 @@
 #include "raster/blend.h"
 
 class Palette;
+class Pen;
 
 // Image Types
 enum {
@@ -69,6 +70,7 @@ int image_depth(Image* image);
 
 int image_getpixel(const Image* image, int x, int y);
 void image_putpixel(Image* image, int x, int y, int color);
+void image_putpen(Image* image, Pen* pen, int x, int y, int color);
 
 void image_clear(Image* image, int color);
 

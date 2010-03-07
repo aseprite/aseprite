@@ -23,18 +23,53 @@
 #include "jinete/jwidget.h"
 #include "core/color.h"
 
+#include "Vaca/Signal.h"
+
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
 
+class Context;
 class Sprite;
+class IToolLoop;
+class ToolLoopManager;
+class Tool;
 
 class Editor : public Widget
 {
+
+  // Editor's decorators. These are useful to add some extra-graphics
+  // visualizators in the editor to show feedback and get user events (click)
+  class Decorator
+  {
+  public:
+    enum Type {
+      SELECTION_NW,
+      SELECTION_N,
+      SELECTION_NE,
+      SELECTION_E,
+      SELECTION_SE,
+      SELECTION_S,
+      SELECTION_SW,
+      SELECTION_W,
+    };
+  private:
+    Type m_type;
+    Rect m_bounds;
+  public:
+    Decorator(Type type, const Rect& bounds);
+    ~Decorator();
+
+    void drawDecorator(Editor*editor, BITMAP* bmp);
+    bool isInsideDecorator(int x, int y);
+
+    Vaca::Signal0<void> Click;
+  };
+
   // editor states
   enum {
-    EDIT_STANDBY,
-    EDIT_MOVING_SCROLL,
-    EDIT_DRAWING,
+    EDITOR_STATE_STANDBY,
+    EDITOR_STATE_MOVING_SCROLL,
+    EDITOR_STATE_DRAWING,
   };
 
   /* main stuff */
@@ -51,6 +86,9 @@ class Editor : public Widget
   int m_old_cursor_thick;
   bool m_cursor_candraw : 1;
 
+  // True if the cursor is inside the mask/selection
+  bool m_insideSelection : 1;
+
   bool m_alt_pressed : 1;
   bool m_ctrl_pressed : 1;
   bool m_space_pressed : 1;
@@ -65,6 +103,12 @@ class Editor : public Widget
 
   /* region that must be updated */
   JRegion m_refresh_region;
+
+  // Tool-loop manager
+  ToolLoopManager* m_toolLoopManager;
+
+  // Decorators
+  std::vector<Decorator*> m_decorators;
 
 public:
   // in editor.c
@@ -104,7 +148,15 @@ public:
 
   // in cursor.c
 
+  static int get_raw_cursor_color();
+  static bool is_cursor_mask();
+  static color_t get_cursor_color();
+  static void set_cursor_color(color_t color);
+
+  static void editor_cursor_init();
   static void editor_cursor_exit();
+
+private:
 
   void editor_draw_cursor(int x, int y);
   void editor_clean_cursor();
@@ -113,7 +165,9 @@ public:
   // keys.c
 
   bool editor_keys_toset_zoom(int scancode);
-  bool editor_keys_toset_brushsize(int scancode);
+  bool editor_keys_toset_pensize(int scancode);
+
+public:
 
   // click.c
 
@@ -134,12 +188,15 @@ protected:
 
 private:
   void drawGrid();
+  void turnOnSelectionModifiers();
+
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);
   void editor_update_candraw();
+  IToolLoop* createToolLoopImpl(Context* context, JMessage msg);
 
-  void for_each_pixel_of_brush(int x, int y, int color,
-			       void (*pixel)(BITMAP *bmp, int x, int y, int color));
+  void for_each_pixel_of_pen(int x, int y, int color,
+			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
 };
 
 JWidget editor_view_new();

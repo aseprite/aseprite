@@ -21,6 +21,7 @@
 
 #include <list>
 #include "ase_exception.h"
+#include "settings/settings.h"
 
 class Sprite;
 class SpriteReader;
@@ -44,9 +45,18 @@ class Context
   // Current selected sprite to operate.
   Sprite* m_currentSprite;
 
-public:
+  // Settings in this context.
+  ISettings* m_settings;
 
+private:
   Context();
+  Context(const Context&);
+
+protected:
+  // The "settings" are deleted automatically in the ~Context destructor
+  Context(ISettings* settings);
+
+public:
   virtual ~Context();
 
   virtual bool is_ui_available() const		{ return false; }
@@ -54,8 +64,9 @@ public:
   virtual bool is_executing_macro() const	{ return false; }
   virtual bool is_executing_script() const	{ return false; }
 
-  virtual int get_fg_color();
-  virtual int get_bg_color();
+  ISettings* getSettings() { return m_settings; }
+  int getFgColor() { return m_settings->getFgColor(); }
+  int getBgColor() { return m_settings->getBgColor(); }
 
   const SpriteList& get_sprite_list() const;
   Sprite* get_first_sprite() const;

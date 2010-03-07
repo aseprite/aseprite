@@ -25,21 +25,21 @@
 
 #include "commands/command.h"
 #include "app.h"
-#include "ui_context.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
-#include "modules/tools.h"
-#include "raster/brush.h"
+#include "raster/pen.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 #include "widgets/colbut.h"
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
+#include "settings/settings.h"
 
 static Frame* window = NULL;
 
@@ -49,13 +49,12 @@ static bool window_close_hook(JWidget widget, void *data);
 static bool brush_size_slider_change_hook(JWidget widget, void *data);
 static bool brush_angle_slider_change_hook(JWidget widget, void *data);
 static bool brush_type_change_hook(JWidget widget, void *data);
-static bool glass_dirty_slider_change_hook(JWidget widget, void *data);
+static bool opacity_slider_change_hook(JWidget widget, void *data);
 static bool spray_width_slider_change_hook(JWidget widget, void *data);
 static bool air_speed_slider_change_hook(JWidget widget, void *data);
-static bool filled_check_change_hook(JWidget widget, void *data);
 static bool tiled_check_change_hook(JWidget widget, void *data);
 static bool tiled_xy_check_change_hook(JWidget widget, void *data);
-static bool use_grid_check_change_hook(JWidget widget, void *data);
+static bool snap_to_grid_check_change_hook(JWidget widget, void *data);
 static bool view_grid_check_change_hook(JWidget widget, void *data);
 static bool set_grid_button_select_hook(JWidget widget, void *data);
 static bool cursor_button_change_hook(JWidget widget, void *data);
@@ -66,6 +65,55 @@ static void on_exit_delete_this_widget()
 {
   assert(window != NULL);
   jwidget_free(window);
+}
+
+static void on_pen_size_after_change()
+{
+  Widget* brush_size = window->findChild("brush_size");
+  Widget* brush_preview = window->findChild("brush_preview");
+
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  IToolSettings* tool_settings = UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool);
+
+  jslider_set_value(brush_size, tool_settings->getPen()->getSize());
+
+  // Regenerate the preview
+  brush_preview->dirty();
+}
+
+static void on_current_tool_change()
+{
+  Widget* brush_size = window->findChild("brush_size");
+  Widget* brush_angle = window->findChild("brush_angle");
+  Widget* brush_type = window->findChild("brush_type");
+  Widget* brush_preview = window->findChild("brush_preview");
+  Widget* opacity = window->findChild("opacity");
+  Widget* spray_width = window->findChild("spray_width");
+  Widget* air_speed = window->findChild("air_speed");
+
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  IToolSettings* tool_settings = UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool);
+
+  jslider_set_value(opacity, tool_settings->getOpacity());
+  jslider_set_value(brush_size, tool_settings->getPen()->getSize());
+  jslider_set_value(brush_angle, tool_settings->getPen()->getAngle());
+  jslider_set_value(spray_width, tool_settings->getSprayWidth());
+  jslider_set_value(air_speed, tool_settings->getSpraySpeed());
+
+  group_button_select(brush_type, tool_settings->getPen()->getType());
+
+  // Regenerate the preview
+  brush_preview->dirty();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -89,8 +137,8 @@ ConfigureTools::ConfigureTools()
 
 void ConfigureTools::execute(Context* context)
 {
-  JWidget filled, tiled, tiled_x, tiled_y, use_grid, view_grid, set_grid;
-  JWidget brush_size, brush_angle, glass_dirty;
+  JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, set_grid;
+  JWidget brush_size, brush_angle, opacity;
   JWidget spray_width, air_speed;
   JWidget cursor_color, cursor_color_box;
   JWidget brush_preview_box;
@@ -111,16 +159,15 @@ void ConfigureTools::execute(Context* context)
 
   try {
     get_widgets(window,
-		"filled", &filled,
 		"tiled", &tiled,
 		"tiled_x", &tiled_x,
 		"tiled_y", &tiled_y,
-		"use_grid", &use_grid,
+		"snap_to_grid", &snap_to_grid,
 		"view_grid", &view_grid,
 		"set_grid", &set_grid,
 		"brush_size", &brush_size,
 		"brush_angle", &brush_angle,
-		"glass_dirty", &glass_dirty,
+		"opacity", &opacity,
 		"spray_width", &spray_width,
 		"air_speed", &air_speed,
 		"cursor_color_box", &cursor_color_box,
@@ -136,7 +183,7 @@ void ConfigureTools::execute(Context* context)
 
   /* cursor-color */
   if (first_time) {
-    cursor_color = colorbutton_new(get_cursor_color(), IMAGE_INDEXED);
+    cursor_color = colorbutton_new(Editor::get_cursor_color(), IMAGE_INDEXED);
     cursor_color->setName("cursor_color");
   }
   else {
@@ -157,9 +204,16 @@ void ConfigureTools::execute(Context* context)
     brush_preview = jwidget_find_name(window, "brush_preview");
   }
 
+  // Current settings
+  ISettings* settings = UIContext::instance()->getSettings();
+  Tool* current_tool = settings->getCurrentTool();
+  IToolSettings* tool_settings = settings->getToolSettings(current_tool);
+
   /* brush-type */
   if (first_time) {
-    brush_type = group_button_new(3, 1, get_brush_type(),
+    PenType type = tool_settings->getPen()->getType();
+
+    brush_type = group_button_new(3, 1, type,
 				  GFX_BRUSH_CIRCLE,
 				  GFX_BRUSH_SQUARE,
 				  GFX_BRUSH_LINE);
@@ -167,23 +221,18 @@ void ConfigureTools::execute(Context* context)
     brush_type->setName("brush_type");
   }
   else {
-    brush_type = jwidget_find_name(window, "brush_type");
+    brush_type = window->findChild("brush_type");
   }
 
-  if (get_filled_mode()) jwidget_select(filled);
-  if (get_tiled_mode() != TILED_NONE) {
+  if (settings->getTiledMode() != TILED_NONE) {
     jwidget_select(tiled);
-    if (get_tiled_mode() & TILED_X_AXIS) jwidget_select(tiled_x);
-    if (get_tiled_mode() & TILED_Y_AXIS) jwidget_select(tiled_y);
+    if (settings->getTiledMode() & TILED_X_AXIS) jwidget_select(tiled_x);
+    if (settings->getTiledMode() & TILED_Y_AXIS) jwidget_select(tiled_y);
   }
-  if (get_use_grid()) jwidget_select(use_grid);
-  if (get_view_grid()) jwidget_select(view_grid);
-  jslider_set_value(brush_size, get_brush_size());
-  jslider_set_value(brush_angle, get_brush_angle());
-  jslider_set_value(glass_dirty, get_glass_dirty());
-  jslider_set_value(spray_width, get_spray_width());
-  jslider_set_value(air_speed, get_air_speed());
-  if (get_onionskin()) jwidget_select(check_onionskin);
+      
+  if (settings->getSnapToGrid()) jwidget_select(snap_to_grid);
+  if (settings->getGridVisible()) jwidget_select(view_grid);
+  if (settings->getUseOnionskin()) jwidget_select(check_onionskin);
 
   if (first_time) {
     // Append children
@@ -193,24 +242,28 @@ void ConfigureTools::execute(Context* context)
 
     // Append hooks
     window->Close.connect(Vaca::Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
-    HOOK(filled, JI_SIGNAL_CHECK_CHANGE, filled_check_change_hook, 0);
     HOOK(tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
     HOOK(tiled_x, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_X_AXIS);
     HOOK(tiled_y, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_Y_AXIS);
-    HOOK(use_grid, JI_SIGNAL_CHECK_CHANGE, use_grid_check_change_hook, 0);
+    HOOK(snap_to_grid, JI_SIGNAL_CHECK_CHANGE, snap_to_grid_check_change_hook, 0);
     HOOK(view_grid, JI_SIGNAL_CHECK_CHANGE, view_grid_check_change_hook, 0);
     HOOK(set_grid, JI_SIGNAL_BUTTON_SELECT, set_grid_button_select_hook, 0);
     HOOK(brush_size, JI_SIGNAL_SLIDER_CHANGE, brush_size_slider_change_hook, brush_preview);
     HOOK(brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
     HOOK(brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
-    HOOK(glass_dirty, JI_SIGNAL_SLIDER_CHANGE, glass_dirty_slider_change_hook, 0);
+    HOOK(opacity, JI_SIGNAL_SLIDER_CHANGE, opacity_slider_change_hook, 0);
     HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
     HOOK(cursor_color, SIGNAL_COLORBUTTON_CHANGE, cursor_button_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
 
     App::instance()->Exit.connect(&on_exit_delete_this_widget);
+    App::instance()->PenSizeAfterChange.connect(&on_pen_size_after_change);
+    App::instance()->CurrentToolChange.connect(&on_current_tool_change);
   }
+
+  // Update current pen properties
+  on_current_tool_change();
 
   // Default position
   window->remap_window();
@@ -229,15 +282,31 @@ static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       BITMAP *bmp = create_bitmap(jrect_w(widget->rc),
 				  jrect_h(widget->rc));
-      Brush *brush = get_brush();
+
+      Tool* current_tool = UIContext::instance()
+	->getSettings()
+	->getCurrentTool();
+
+      IPenSettings* pen_settings = UIContext::instance()
+	->getSettings()
+	->getToolSettings(current_tool)
+	->getPen();
+
+      assert(pen_settings != NULL);
+
+      Pen* pen = new Pen(pen_settings->getType(),
+			 pen_settings->getSize(),
+			 pen_settings->getAngle());
 
       clear_to_color(bmp, makecol(0, 0, 0));
-      image_to_allegro(brush->image, bmp,
-		       bmp->w/2 - brush->size/2,
-		       bmp->h/2 - brush->size/2);
+      image_to_allegro(pen->get_image(), bmp,
+		       bmp->w/2 - pen->get_size()/2,
+		       bmp->h/2 - pen->get_size()/2);
       blit(bmp, ji_screen, 0, 0, widget->rc->x1, widget->rc->y1,
 	   bmp->w, bmp->h);
       destroy_bitmap(bmp);
+
+      delete pen;
       return true;
     }
   }
@@ -258,62 +327,91 @@ static bool window_close_hook(JWidget widget, void *data)
 
 static bool brush_size_slider_change_hook(JWidget widget, void *data)
 {
-  set_brush_size(jslider_get_value(widget));
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool)
+    ->getPen()
+    ->setSize(jslider_get_value(widget));
+
   jwidget_dirty((JWidget)data);
   return false;
 }
 
 static bool brush_angle_slider_change_hook(JWidget widget, void *data)
 {
-  set_brush_angle(jslider_get_value(widget));
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool)
+    ->getPen()
+    ->setAngle(jslider_get_value(widget));
+
   jwidget_dirty((JWidget)data);
   return false;
 }
 
 static bool brush_type_change_hook(JWidget widget, void *data)
 {
-  int type = group_button_get_selected(widget);
+  PenType type = (PenType)group_button_get_selected(widget);
 
-  set_brush_type(type);
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool)
+    ->getPen()
+    ->setType(type);
+
   jwidget_dirty((JWidget)data);
 
   statusbar_set_text(app_get_statusbar(), 250,
-		      "Brush type: %s",
-		      type == BRUSH_CIRCLE ? "Circle":
-		      type == BRUSH_SQUARE ? "Square":
-		      type == BRUSH_LINE ? "Line": "Unknown");
+		      "Pen shape: %s",
+		      type == PEN_TYPE_CIRCLE ? "Circle":
+		      type == PEN_TYPE_SQUARE ? "Square":
+		      type == PEN_TYPE_LINE ? "Line": "Unknown");
 
   return true;
 }
 
-static bool glass_dirty_slider_change_hook(JWidget widget, void *data)
+static bool opacity_slider_change_hook(JWidget widget, void *data)
 {
-  set_glass_dirty(jslider_get_value(widget));
+  ISettings* settings = UIContext::instance()->getSettings();
+  Tool* current_tool = settings->getCurrentTool();
+  settings->getToolSettings(current_tool)->setOpacity(jslider_get_value(widget));
   return false;
 }
 
 static bool spray_width_slider_change_hook(JWidget widget, void *data)
 {
-  set_spray_width(jslider_get_value(widget));
+  ISettings* settings = UIContext::instance()->getSettings();
+  Tool* current_tool = settings->getCurrentTool();
+  settings->getToolSettings(current_tool)->setSprayWidth(jslider_get_value(widget));
   return false;
 }
 
 static bool air_speed_slider_change_hook(JWidget widget, void *data)
 {
-  set_air_speed(jslider_get_value(widget));
-  return false;
-}
-
-static bool filled_check_change_hook(JWidget widget, void *data)
-{
-  set_filled_mode(jwidget_is_selected(widget));
+  ISettings* settings = UIContext::instance()->getSettings();
+  Tool* current_tool = settings->getCurrentTool();
+  settings->getToolSettings(current_tool)->setSpraySpeed(jslider_get_value(widget));
   return false;
 }
 
 static bool tiled_check_change_hook(JWidget widget, void *data)
 {
   bool flag = jwidget_is_selected(widget);
-  set_tiled_mode(flag ? TILED_BOTH: TILED_NONE);
+
+  UIContext::instance()->getSettings()->setTiledMode(flag ? TILED_BOTH: TILED_NONE);
+
   widget->findSibling("tiled_x")->setSelected(flag);
   widget->findSibling("tiled_y")->setSelected(flag);
   return false;
@@ -322,7 +420,7 @@ static bool tiled_check_change_hook(JWidget widget, void *data)
 static bool tiled_xy_check_change_hook(JWidget widget, void *data)
 {
   int tiled_axis = (int)((size_t)data);
-  int tiled_mode = get_tiled_mode();
+  int tiled_mode = UIContext::instance()->getSettings()->getTiledMode();
 
   if (jwidget_is_selected(widget))
     tiled_mode |= tiled_axis;
@@ -331,19 +429,19 @@ static bool tiled_xy_check_change_hook(JWidget widget, void *data)
 
   widget->findSibling("tiled")->setSelected(tiled_mode != TILED_NONE);
 
-  set_tiled_mode((tiled_t)tiled_mode);
+  UIContext::instance()->getSettings()->setTiledMode((TiledMode)tiled_mode);
   return false;
 }
 
-static bool use_grid_check_change_hook(JWidget widget, void *data)
+static bool snap_to_grid_check_change_hook(JWidget widget, void *data)
 {
-  set_use_grid(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setSnapToGrid(jwidget_is_selected(widget));
   return false;
 }
 
 static bool view_grid_check_change_hook(JWidget widget, void *data)
 {
-  set_view_grid(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setGridVisible(jwidget_is_selected(widget));
   refresh_all_editors();
   return false;
 }
@@ -355,14 +453,12 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
     const CurrentSpriteReader sprite(UIContext::instance());
 
     if (sprite && sprite->mask && sprite->mask->bitmap) {
-      JRect rect = jrect_new(sprite->mask->x,
-			     sprite->mask->y,
-			     sprite->mask->x+sprite->mask->w,
-			     sprite->mask->y+sprite->mask->h);
-      set_grid(rect);
-      jrect_free(rect);
+      Rect bounds(sprite->mask->x, sprite->mask->y,
+		  sprite->mask->w, sprite->mask->h);
 
-      if (get_view_grid())
+      UIContext::instance()->getSettings()->setGridBounds(bounds);
+
+      if (UIContext::instance()->getSettings()->getGridVisible())
 	refresh_all_editors();
     }
     else {
@@ -381,13 +477,13 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
 
 static bool cursor_button_change_hook(JWidget widget, void *data)
 {
-  set_cursor_color(colorbutton_get_color(widget));
+  Editor::set_cursor_color(colorbutton_get_color(widget));
   return true;
 }
 
 static bool onionskin_check_change_hook(JWidget widget, void *data)
 {
-  set_onionskin(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setUseOnionskin(jwidget_is_selected(widget));
   refresh_all_editors();
   return false;
 }

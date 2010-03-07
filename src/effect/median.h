@@ -19,10 +19,14 @@
 #ifndef EFFECT_MEDIAN_H_INCLUDED
 #define EFFECT_MEDIAN_H_INCLUDED
 
-void set_median_size(int w, int h);
+#include "tiled_mode.h"
 
-void apply_median4 (struct Effect *effect);
-void apply_median2 (struct Effect *effect);
-void apply_median1 (struct Effect *effect);
+struct Effect;
+
+void set_median_size(TiledMode tiled, int w, int h);
+
+void apply_median4(Effect* effect);
+void apply_median2(Effect* effect);
+void apply_median1(Effect* effect);
 
 #endif

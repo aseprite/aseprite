@@ -4,7 +4,7 @@
 
 :Author: David Capello
 :Contact: davidcapello@gmail.com
-:Date: November 2009
+:Date: March 2010
 
 .. contents::
 
@@ -49,7 +49,7 @@ In this dialog you select:
     With **RGB** images you can have an independent color for each pixel, in
     this way each little pixel has its Red, Green, Blue and Alpha
     (opacity) values. **Indexed** sprites have a special element associated:
-    a palette color (with a maximum of 256 colors), in this way each
+    a color palette (with a maximum of 256 colors), in this way each
     pixel has a palette entry associated, if you change the palette
     color, all pixels associated to that color will change their aspect.
 
@@ -115,9 +115,9 @@ You have created a new sprite, now you want to draw. You need to know two things
 
    ``TODO screenshot a selected tab and the editor showing the sprite``
 
- - With what you draw: there are various elements that are used when you draw in the sprite
+ - With what you draw: there are various elements that are used when you draw in the sprite:
    tool, color, pen, and other configuration that modifies how you draw (e.g. snap to grid,
-   patterned mode, etc.).
+   tiled mode, fill or not the shape, etc.).
 
 You will notice that a sprite is not just one image, it can have
 frames and layers, so in next sections, the first point ("Where you
@@ -129,7 +129,7 @@ To draw you can use one of the tools at the right of the screen:
 
 ``TODO screenshot of tool bar``
 
-By default the `Pencil`_ tool is selected (if it is not selected, you
+By default the `Pencil Tool`_ is selected (if it is not selected, you
 can press the |pencil icon| icon to select it). The pencil is one of the most
 basic tools: You press the left mouse button, hold it, drag the mouse
 and then release the same button. This will draw a freehanded trace
@@ -162,8 +162,17 @@ You can zoom using the ``mouse wheel`` or just pressing the numbers ``1``, ``2``
 ``3``, ``4``, ``5``, or ``6`` in the keyboard. When you zoom, the pixel above
 the mouse cursor will be centered in the current editor.
 
+You can zoom while you are drawing too.
+
 Scrolling
 =========
+
+To scroll the image you can press the ``Space bar`` key (and keep it pressed) and
+then drag the image with the mouse button.
+
+When you are drawing you will notice that moving the mouse outside the
+bounds of the editor will scroll the image to continue.
+``TODO configuration about smooth/big step scroll``
 
 Selecting
 =========
@@ -220,17 +229,186 @@ Current Editor
  Tools
 -------
 
-Rectangle Selection
-===================
+Rectangular Marquee Tool
+========================
 
-Contour Selection
-=================
+With this tool you can select rectangular regions in the sprite. You
+select a rectangular portion of sprite pressing left mouse button,
+moving the mouse, and finally releasing the same button. If you repeat this same
+operation over and over again you can add more rectangles to the
+selected area. If you move the mouse over the selected region, you can drag-and-drop
+this portion of sprite using the left mouse button.
 
-Magic Wand
+Using the right mouse button you can substract rectangles from selection.
+
+  .. admonition:: Summary
+
+    **Left button**: Outside the selection adds rectangles;
+    inside the selection *drag-and-drop* it.
+
+    **Right button**: Subtracts rectangles from selection.
+
+Lasso Tool
 ==========
 
-Pencil
-======
+  .. admonition:: Summary
+
+    **Left button**: Outside the selection adds contours;
+    inside the selection *drag-and-drop* it.
+
+    **Right button**: Subtracts contours from selection.
+
+Polygonal Lasso Tool
+====================
+
+  .. admonition:: Summary
+
+    **Left button**: Outside the selection adds polygons;
+    inside the selection *drag-and-drop* it.
+
+    **Right button**: Subtracts polygons from selection.
+
+Magic Wand Tool
+===============
+
+  .. admonition:: Summary
+
+    **Left button**: Select the adjacent region of clicked color.
+
+Pencil Tool
+===========
+
+  .. admonition:: Summary
+
+    **Left button**: Paint a freehanded trace with foreground color.
+
+    **Right button**: Paint a freehanded trace with background color.
+
+Spray Tool
+==========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Eraser Tool
+===========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Eyedropper Tool
+===============
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Hand Tool
+=========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Move Tool
+=========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Paint Bucket Tool
+=================
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Line Tool
+=========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Curve Tool
+==========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Rectangle Tool
+==============
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Ellipse Tool
+============
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Contour Tool
+============
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Polygon Tool
+============
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Blur Tool
+=========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
+
+Jumble Tool
+===========
+
+  .. admonition:: Summary
+
+    **Left button**: .
+
+    **Right button**: .
 
 -------
  Menus
@@ -656,7 +834,6 @@ select, pick a color, etc. Available inks are:
  - pick_bg
  - scroll
  - move
- - shade
  - blur
  - jumble
 

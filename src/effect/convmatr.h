@@ -20,6 +20,7 @@
 #define EFFECT_CONVMATR_H_INCLUDED
 
 #include "jinete/jbase.h"
+#include "tiled_mode.h"
 
 struct Effect;
 
@@ -39,7 +40,7 @@ ConvMatr *convmatr_new(int w, int h);
 ConvMatr *convmatr_new_string(const char *format);
 void convmatr_free(ConvMatr *convmatr);
 
-void set_convmatr(ConvMatr *convmatr);
+void set_convmatr(ConvMatr *convmatr, TiledMode tiled);
 ConvMatr *get_convmatr();
 ConvMatr *get_convmatr_by_name(const char *name);
 
