@@ -80,7 +80,8 @@ void LoadMaskCommand::execute(Context* context)
 
   Mask *mask = load_msk_file(m_filename.c_str());
   if (!mask)
-    throw ase_exception("Error loading .msk file: " + m_filename);
+    throw ase_exception("Error loading .msk file: %s",
+			static_cast<const char*>(m_filename.c_str()));
 
   // undo
   if (undo_is_enabled(sprite->undo)) {
