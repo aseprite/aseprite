@@ -18,6 +18,7 @@
       <!-- edit -->
       <key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
       <key command="redo" shortcut="Ctrl+R" />
+      <key command="redo" shortcut="Ctrl+Shift+Z" />
       <key command="cut" shortcut="Ctrl+X" /> <key command="cut" shortcut="Shift+Del" />
       <key command="copy" shortcut="Ctrl+C" /> <key command="copy" shortcut="Ctrl+Ins" />
       <key command="paste" shortcut="Ctrl+V" /> <key command="paste" shortcut="Shift+Ins" />
