@@ -372,9 +372,13 @@ void exit_module_gui()
   remove_mouse();
 }
 
+// This value is a factor to multiply every screen size/coordinate.
+// Every icon should be scaled to this factor too.
 int guiscale()
 {
-  return (screen_scaling == 1 && JI_SCREEN_W > 512 ? 2: 1);
+  return (screen_scaling == 1 &&
+	  JI_SCREEN_W > 512 &&
+	  JI_SCREEN_H > 256) ? 2: 1;
 }
 
 Monitor::Monitor(void (*proc)(void *),
