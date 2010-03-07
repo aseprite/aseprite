@@ -26,6 +26,7 @@
 #include "loadpng.h"
 #include "ase_exception.h"
 #include "modules/skinneable_theme.h"
+#include "modules/gui.h"
 
 #define CHARACTER_LENGTH(f, c)	((f)->vtable->char_length((f), (c)))
 
@@ -1619,6 +1620,24 @@ void SkinneableTheme::less_bevel(int *bevel)
   if (bevel[1] > 0) --bevel[1];
   if (bevel[2] > 0) --bevel[2];
   if (bevel[3] > 0) --bevel[3];
+}
+
+BITMAP* SkinneableTheme::apply_gui_scale(BITMAP* original)
+{
+  int scale = guiscale();
+  if (scale > 1) {
+    BITMAP* scaled = create_bitmap(original->w*scale,
+				   original->h*scale);
+
+    for (int y=0; y<scaled->h; ++y)
+      for (int x=0; x<scaled->w; ++x)
+	putpixel(scaled, x, y, getpixel(original, x/scale, y/scale));
+
+    destroy_bitmap(original);
+    return scaled;
+  }
+  else
+    return original;
 }
 
 /* controls the "X" button in a window to close it */

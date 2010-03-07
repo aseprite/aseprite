@@ -386,6 +386,7 @@ private:
   void draw_entry_cursor(JWidget widget, int x, int y);
   void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
   void less_bevel(int *bevel);
+  BITMAP* apply_gui_scale(BITMAP* original);
 
   static bool theme_frame_button_msg_proc(JWidget widget, JMessage msg);
   static bool theme_combobox_button_msg_proc(JWidget widget, JMessage msg);
