@@ -29,10 +29,10 @@ class Params;
 
 typedef std::list<Sprite*> SpriteList;
 
-class Command_precondition_exception : public ase_exception
+class CommandPreconditionException : public ase_exception
 {
 public:
-  Command_precondition_exception() throw()
+  CommandPreconditionException() throw()
   : ase_exception("Cannot execute the command because its pre-conditions are false.") { }
 };
 
