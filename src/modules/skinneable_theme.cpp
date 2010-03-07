@@ -368,15 +368,18 @@ void SkinneableTheme::regen()
   textbox_fg_color = COLOR_FOREGROUND;
   textbox_bg_color = COLOR_BACKGROUND;
 
-  set_alpha_blender();
-
   for (int c=0; c<PARTS; ++c) {
-    if (m_part[c])
-      destroy_bitmap(m_part[c]);
+    if (m_part[c]) destroy_bitmap(m_part[c]);
 
     m_part[c] = create_bitmap(sheet_info[c].w, sheet_info[c].h);
     clear_to_color(m_part[c], bitmap_mask_color(m_part[c]));
+
+    set_alpha_blender();
     draw_trans_sprite(m_part[c], m_sheet_bmp, -sheet_info[c].x, -sheet_info[c].y);
+    set_trans_blender(0, 0, 0, 0);
+
+    m_part[c] = apply_gui_scale(m_part[c]);
+  }
   }
 }
 
