@@ -21,6 +21,7 @@
 #include <allegro.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "app.h"
@@ -191,7 +192,7 @@ void ConfigureTools::execute(Context* context)
     jwidget_add_child(brush_type_box, brush_type);
 
     // Append hooks
-    HOOK(window, JI_SIGNAL_WINDOW_CLOSE, window_close_hook, 0);
+    window->Close.connect(Vaca::Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
     HOOK(filled, JI_SIGNAL_CHECK_CHANGE, filled_check_change_hook, 0);
     HOOK(tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
     HOOK(tiled_x, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_X_AXIS);
