@@ -493,8 +493,13 @@ void gui_feedback()
   if (next_idle_flags & REFRESH_FULL_SCREEN) {
     next_idle_flags ^= REFRESH_FULL_SCREEN;
 
-    const CurrentSpriteReader sprite(UIContext::instance());
-    update_screen_for_sprite(sprite);
+    try {
+      const CurrentSpriteReader sprite(UIContext::instance());
+      update_screen_for_sprite(sprite);
+    }
+    catch (...) {
+      // do nothing
+    }
   }
 
   /* record file if is necessary */
