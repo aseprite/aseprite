@@ -130,8 +130,8 @@ App::App(int argc, char* argv[])
 
     pal = palette_load(palette_filename);
     if (pal == NULL)
-      throw ase_exception(std::string("Error loading default palette from: ")
-			  + palette_filename);
+      throw ase_exception("Error loading default palette from: %s",
+			  static_cast<const char*>(palette_filename));
 
     set_default_palette(pal);
     palette_free(pal);
