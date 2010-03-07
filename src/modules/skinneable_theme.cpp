@@ -332,9 +332,9 @@ SkinneableTheme::SkinneableTheme()
   for (int c=0; c<PARTS; ++c)
     m_part[c] = NULL;
 
-  // Try to load the skin data
+  // Load the skin sheet
   {
-    DIRS* dirs = filename_in_datadir("skins/sheet.png");
+    DIRS* dirs = filename_in_datadir("skins/default_skin_sheet.png");
     for (DIRS* dir=dirs; dir; dir=dir->next) {
       if ((dir->path) && exists(dir->path)) {
 	int old_color_conv = _color_conv;
@@ -349,9 +349,8 @@ SkinneableTheme::SkinneableTheme()
     }
     dirs_free(dirs);
   }
-
   if (!m_sheet_bmp)
-    throw ase_exception("Error loading data/skins/sheet.png file");
+    throw ase_exception("Error loading data/skins/default_skin_sheet.png file");
 }
 
 SkinneableTheme::~SkinneableTheme()
