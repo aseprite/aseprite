@@ -1107,8 +1107,8 @@ void Editor::editor_request_size(int *w, int *h)
     JWidget view = jwidget_get_view(this);
     JRect vp = jview_get_viewport_position(view);
 
-    m_offset_x = jrect_w(vp) - 1;
-    m_offset_y = jrect_h(vp) - 1;
+    m_offset_x = jrect_w(vp)/2 - 1;
+    m_offset_y = jrect_h(vp)/2 - 1;
 
     *w = (m_sprite->w << m_zoom) + m_offset_x*2;
     *h = (m_sprite->h << m_zoom) + m_offset_y*2;
