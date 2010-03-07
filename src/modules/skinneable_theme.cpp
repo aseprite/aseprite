@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "config.h"
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -323,10 +325,12 @@ static struct
 
 SkinneableTheme::SkinneableTheme()
 {
+  int scale = guiscale();
+
   this->name = "Skinneable Theme";
-  this->check_icon_size = 8;
-  this->radio_icon_size = 8;
-  this->scrollbar_size = 12;
+  this->check_icon_size = 8 * scale;
+  this->radio_icon_size = 8 * scale;
+  this->scrollbar_size = 12 * scale;
 
   m_sheet_bmp = NULL;
   for (int c=0; c<PARTS; ++c)
@@ -398,52 +402,54 @@ BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
 
 void SkinneableTheme::init_widget(JWidget widget)
 {
-#define BORDER(n)				\
-  widget->border_width.l = n;			\
-  widget->border_width.t = n;			\
-  widget->border_width.r = n;			\
-  widget->border_width.b = n;
+#define BORDER(n)			\
+  widget->border_width.l = (n);		\
+  widget->border_width.t = (n);		\
+  widget->border_width.r = (n);		\
+  widget->border_width.b = (n);
 
-#define BORDER4(L,T,R,B)			\
-  widget->border_width.l = L;			\
-  widget->border_width.t = T;			\
-  widget->border_width.r = R;			\
-  widget->border_width.b = B;
+#define BORDER4(L,T,R,B)		\
+  widget->border_width.l = (L);		\
+  widget->border_width.t = (T);		\
+  widget->border_width.r = (R);		\
+  widget->border_width.b = (B);
+
+  int scale = guiscale();
 
   switch (widget->type) {
 
     case JI_BOX:
       BORDER(0);
-      widget->child_spacing = 4;
+      widget->child_spacing = 4 * scale;
       break;
 
     case JI_BUTTON:
-      widget->border_width.l = m_part[PART_BUTTON_NORMAL_W]->w;
-      widget->border_width.t = m_part[PART_BUTTON_NORMAL_N]->h;
-      widget->border_width.r = m_part[PART_BUTTON_NORMAL_E]->w;
-      widget->border_width.b = m_part[PART_BUTTON_NORMAL_S]->h;
+      BORDER4(m_part[PART_BUTTON_NORMAL_W]->w,
+	      m_part[PART_BUTTON_NORMAL_N]->h,
+	      m_part[PART_BUTTON_NORMAL_E]->w,
+	      m_part[PART_BUTTON_NORMAL_S]->h);
       widget->child_spacing = 0;
       break;
 
     case JI_CHECK:
-      BORDER(2);
-      widget->child_spacing = 4;
+      BORDER(2 * scale);
+      widget->child_spacing = 4 * scale;
       break;
 
     case JI_ENTRY:
-      widget->border_width.l = m_part[PART_SUNKEN_NORMAL_W]->w;
-      widget->border_width.t = m_part[PART_SUNKEN_NORMAL_N]->h;
-      widget->border_width.r = m_part[PART_SUNKEN_NORMAL_E]->w;
-      widget->border_width.b = m_part[PART_SUNKEN_NORMAL_S]->h;
+      BORDER4(m_part[PART_SUNKEN_NORMAL_W]->w,
+	      m_part[PART_SUNKEN_NORMAL_N]->h,
+	      m_part[PART_SUNKEN_NORMAL_E]->w,
+	      m_part[PART_SUNKEN_NORMAL_S]->h);
       break;
 
     case JI_GRID:
       BORDER(0);
-      widget->child_spacing = 4;
+      widget->child_spacing = 4 * scale;
       break;
 
     case JI_LABEL:
-      BORDER(1);
+      BORDER(1 * scale);
       break;
 
     case JI_LISTBOX:
@@ -452,7 +458,7 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_LISTITEM:
-      BORDER(1);
+      BORDER(1 * scale);
       break;
 
     case JI_COMBOBOX:
@@ -479,33 +485,32 @@ void SkinneableTheme::init_widget(JWidget widget)
 
     case JI_MENUITEM:
       BORDER(2);
-      widget->child_spacing = 18;
+      widget->child_spacing = 18 * scale;
       break;
 
     case JI_PANEL:
       BORDER(0);
-      widget->child_spacing = 3;
+      widget->child_spacing = 3 * scale;
       break;
 
     case JI_RADIO:
-      BORDER(2);
-/*       widget->child_spacing = 2; */
-      widget->child_spacing = 4;
+      BORDER(2 * scale);
+      widget->child_spacing = 4 * scale;
       break;
 
     case JI_SEPARATOR:
       /* frame */
       if ((widget->getAlign() & JI_HORIZONTAL) &&
 	  (widget->getAlign() & JI_VERTICAL)) {
-	BORDER(4);
+	BORDER(4 * scale);
       }
       /* horizontal bar */
       else if (widget->getAlign() & JI_HORIZONTAL) {
-	BORDER4(2, 4, 2, 0);
+	BORDER4(2 * scale, 4 * scale, 2 * scale, 0);
       }
       /* vertical bar */
       else {
-	BORDER4(4, 2, 0, 2);
+	BORDER4(4 * scale, 2 * scale, 0, 2 * scale);
       }
 
       if (widget->hasText()) {
@@ -517,10 +522,10 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_SLIDER:
-      widget->border_width.l = m_part[PART_SLIDER_EMPTY_W]->w-1;
-      widget->border_width.t = m_part[PART_SLIDER_EMPTY_N]->h;
-      widget->border_width.r = m_part[PART_SLIDER_EMPTY_E]->w-1;
-      widget->border_width.b = m_part[PART_SLIDER_EMPTY_S]->h-1;
+      BORDER4(m_part[PART_SLIDER_EMPTY_W]->w-1,
+	      m_part[PART_SLIDER_EMPTY_N]->h,
+	      m_part[PART_SLIDER_EMPTY_E]->w-1,
+	      m_part[PART_SLIDER_EMPTY_S]->h-1);
       widget->child_spacing = jwidget_get_text_height(widget);
       widget->setAlign(JI_CENTER | JI_MIDDLE);
       break;
@@ -531,15 +536,15 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_VIEW:
-      widget->border_width.l = m_part[PART_SUNKEN_NORMAL_W]->w-1;
-      widget->border_width.t = m_part[PART_SUNKEN_NORMAL_N]->h;
-      widget->border_width.r = m_part[PART_SUNKEN_NORMAL_E]->w-1;
-      widget->border_width.b = m_part[PART_SUNKEN_NORMAL_S]->h-1;
+      BORDER4(m_part[PART_SUNKEN_NORMAL_W]->w-1,
+	      m_part[PART_SUNKEN_NORMAL_N]->h,
+	      m_part[PART_SUNKEN_NORMAL_E]->w-1,
+	      m_part[PART_SUNKEN_NORMAL_S]->h-1);
       widget->child_spacing = 0;
       break;
 
     case JI_VIEW_SCROLLBAR:
-      BORDER(1);
+      BORDER(1 * scale);
       widget->child_spacing = 0;
       break;
 
@@ -551,7 +556,9 @@ void SkinneableTheme::init_widget(JWidget widget)
     case JI_FRAME:
       if (!static_cast<Frame*>(widget)->is_desktop()) {
 	if (widget->hasText()) {
-	  BORDER4(6, 4+jwidget_get_text_height(widget)+6, 6, 6);
+	  BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
+	  widget->border_width.t += jwidget_get_text_height(widget);
+
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
 	    JWidget button = jbutton_new("");
@@ -565,13 +572,13 @@ void SkinneableTheme::init_widget(JWidget widget)
 #endif
 	}
 	else if (!(widget->flags & JI_INITIALIZED)) {
-	  BORDER(3);
+	  BORDER(3 * scale);
 	}
       }
       else {
 	BORDER(0);
       }
-      widget->child_spacing = 4;
+      widget->child_spacing = 4 * scale;
       widget->setBgColor(get_window_face_color());
       break;
 
@@ -713,7 +720,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
     }
     /* disabled */
     else {
-      _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1+1, icon.y1+1,
+      _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1+guiscale(), icon.y1+guiscale(),
 				  COLOR_BACKGROUND);
       _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1, icon.y1,
 				  COLOR_DISABLED);
