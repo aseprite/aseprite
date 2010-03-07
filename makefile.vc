@@ -38,12 +38,19 @@ CFLAGS = -nologo						\
 LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86
 
 LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
-       Msimg32.lib WinMM.lib AdvAPI32.lib Ole32.lib ShLwApi.lib Vfw32.Lib
+       Msimg32.lib WinMM.lib AdvAPI32.lib Ole32.lib ShLwApi.lib Vfw32.Lib   \
+       ddraw.lib dxguid.lib dsound.lib dinput8.lib
 
 ifdef DEBUGMODE
-  CFLAGS += -Zi -MDd -DDEBUGMODE
-  LFLAGS += -DEBUG
-  LIBS += Alld.lib psapi.lib
+  ifdef STATIC_ALLEG_LINK
+    CFLAGS += -Zi -MTd -DDEBUGMODE -DALLEGRO_STATICLINK
+    LFLAGS += -DEBUG
+    LIBS += alld_s_crt.lib psapi.lib
+  else
+    CFLAGS += -Zi -MDd -DDEBUGMODE
+    LFLAGS += -DEBUG
+    LIBS += Alld.lib psapi.lib
+  endif
 else
   ifdef RELEASE
     CFLAGS += -O2 -DNDEBUG
