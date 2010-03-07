@@ -468,4 +468,22 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
     }
 
   }
+
+  // Draw extras
+  if (layer == sprite->layer && sprite->get_extras() != NULL) {
+    int opacity = sprite->get_extras_opacity();
+
+    if (zoom == 0) {
+      image_merge(image, sprite->get_extras(),
+		  -source_x,
+		  -source_y,
+		  opacity, BLEND_MODE_NORMAL);
+    }
+    else {
+      (*zoomed_func)(image, sprite->get_extras(),
+		     -source_x,
+		     -source_y,
+		     opacity, BLEND_MODE_NORMAL, zoom);
+    }
+  }
 }

@@ -78,6 +78,9 @@ public:
 
 private:
 
+  Image* m_extras;		// Image with the sprite size to draw some extra stuff (e.g. editor's cursor)
+  int m_extras_opacity;		// Opacity to be used to draw the extra image
+
   // Mutex to modify the 'locked' flag.
   JMutex m_mutex;
 
@@ -101,6 +104,11 @@ public:
   void unlock();
 
   LayerFolder* get_folder() const { return m_folder; }
+
+  void prepare_extra();
+  Image* get_extras() { return m_extras; }
+  int get_extras_opacity() const { return m_extras_opacity; }
+  void set_extras_opacity(int opacity) { m_extras_opacity = opacity; }
 };
 
 Sprite* sprite_new(int imgtype, int w, int h);

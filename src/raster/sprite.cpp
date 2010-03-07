@@ -60,6 +60,7 @@ Sprite::Sprite(int imgtype, int w, int h)
   this->undo = undo_new(this);
   this->repository.paths = jlist_new();
   this->repository.masks = jlist_new();
+  this->m_extras = NULL;
 
   /* boundary stuff */
   this->bound.nseg = 0;
@@ -140,6 +141,7 @@ Sprite::~Sprite()
   // destroy undo, mask, etc.
   delete this->undo;
   delete this->mask;
+  delete this->m_extras;	// image
   if (this->frlens) jfree(this->frlens);
   if (this->bound.seg) jfree(this->bound.seg);
 
@@ -381,6 +383,18 @@ void Sprite::unlock()
   }
   else {
     assert(false);
+  }
+}
+
+void Sprite::prepare_extra()
+{
+  if (!m_extras ||
+      m_extras->imgtype != imgtype ||
+      m_extras->w != w ||
+      m_extras->h != h) {
+    delete m_extras;		// image
+    m_extras = image_new(imgtype, w, h);
+    image_clear(m_extras, 0);
   }
 }
 
