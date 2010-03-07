@@ -383,7 +383,6 @@ void SkinneableTheme::regen()
 
     m_part[c] = apply_gui_scale(m_part[c]);
   }
-  }
 }
 
 BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
