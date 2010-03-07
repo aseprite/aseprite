@@ -20,8 +20,7 @@
 #define RASTER_MASK_H_INCLUDED
 
 #include "raster/gfxobj.h"
-
-class Image;
+#include "raster/image.h"
 
 // Represents the selection (selected pixels, 0/1, 0=non-selected, 1=selected)
 class Mask : public GfxObj
@@ -40,7 +39,15 @@ public:
   // Returns true if the mask is completely empty (i.e. nothing
   // selected)
   bool is_empty() const {
-    return (!this->bitmap)? true: false;
+    return (!this->bitmap) ? true: false;
+  }
+
+  // Returns true if the point is inside the mask
+  bool contains_point(int u, int v) const {
+    return (bitmap &&
+	    u >= x && u < x+w &&
+	    v >= y && v < y+h &&
+	    image_getpixel(bitmap, u-x, v-y));
   }
 
   // These functions can be used to disable the automatic call to
