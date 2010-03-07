@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* #define REPORT_EVENTS */
-/* #define LIMIT_DISPATCH_TIME */
+// #define REPORT_EVENTS
+// #define LIMIT_DISPATCH_TIME
 
 #include "config.h"
 
