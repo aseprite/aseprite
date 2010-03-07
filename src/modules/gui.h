@@ -37,8 +37,7 @@ class widget_file_not_found : public ase_exception
 {
 public:
   widget_file_not_found(const char* file_name) throw()
-    : ase_exception(std::string("Cannot load file: ") + file_name
-		    + "\nPlease reinstall " PACKAGE) { }
+    : ase_exception("Cannot load file: %s\nPlease reinstall %s", file_name, PACKAGE) { }
 };
 
 /**
@@ -48,8 +47,8 @@ class widget_not_found : public ase_exception
 {
 public:
   widget_not_found(const char* widget_name) throw()
-  : ase_exception("A data file is corrupted.\nPlease reinstall " PACKAGE
-		  "\n\nDetails: Widget not found: " + std::string(widget_name)) { }
+    : ase_exception("A data file is corrupted.\nPlease reinstall %s\n\n" 
+		    "Details: Widget not found: %s", PACKAGE, widget_name) { }
 };
 
 //////////////////////////////////////////////////////////////////////
