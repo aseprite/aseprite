@@ -138,9 +138,9 @@ Sprite::~Sprite()
   }
 
   // destroy undo, mask, etc.
+  delete this->undo;
+  delete this->mask;
   if (this->frlens) jfree(this->frlens);
-  if (this->undo) undo_free(this->undo);
-  if (this->mask) mask_free(this->mask);
   if (this->bound.seg) jfree(this->bound.seg);
 
   /* destroy mutex */
