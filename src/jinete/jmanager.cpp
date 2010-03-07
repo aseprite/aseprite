@@ -371,12 +371,15 @@ bool jmanager_generate_messages(JWidget manager)
   }
 
   // mouse clicks
-  if ((jmouse_b(0) != jmouse_b(1)) &&
-      ((!jmouse_b(0)) || (!jmouse_b(1)))) {
+  if (jmouse_b(0) != jmouse_b(1)) {
     int current_ticks = ji_clock;
+    bool pressed =
+      ((jmouse_b(1) & 1) == 0 && (jmouse_b(0) & 1) == 1) ||
+      ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
+      ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
 
-    msg = new_mouse_msg(!jmouse_b(1) ? JM_BUTTONPRESSED:
-				       JM_BUTTONRELEASED,
+    msg = new_mouse_msg(pressed ? JM_BUTTONPRESSED:
+				  JM_BUTTONRELEASED,
 			capture_widget ? capture_widget:
 					 mouse_widget);
 
