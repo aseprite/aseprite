@@ -49,7 +49,7 @@ class invalid_effect_exception : public ase_exception
 {
 public:
   invalid_effect_exception(const char* effect_name) throw()
-    : ase_exception(std::string("Invalid effect specified: ") + effect_name) { }
+    : ase_exception("Invalid effect specified: %s", effect_name) { }
 };
 
 class invalid_imgtype_exception : public ase_exception
