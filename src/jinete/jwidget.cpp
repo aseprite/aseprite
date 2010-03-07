@@ -1263,9 +1263,8 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
     jregion_union(widget->update_region, widget->update_region, region);
     jregion_subtract(widget->update_region, widget->update_region, reg2);
 
-    /* refresh the update_region */
+    // Generate the JM_DRAW messages for the widget's update_region
     jwidget_flush_redraw(widget);
-    jmanager_dispatch_messages(ji_get_default_manager());
 
     jregion_free(reg2);
   }
