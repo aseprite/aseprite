@@ -62,13 +62,23 @@ public:
 int main(int argc, char* argv[])
 {
   int status = 1;		// 1 = error
+
+#ifndef DEBUGMODE
   try {
+#endif
+
     Allegro allegro;
+
+#ifndef DEBUGMODE
     try {
+#endif DEBUGMODE
+
       Jinete jinete;
       App app(argc, argv);
 
       status = app.run();
+
+#ifndef DEBUGMODE
     }
     catch (jexception& e) {
       e.show();
@@ -83,6 +93,8 @@ int main(int argc, char* argv[])
   catch (...) {
     printf("Uncaught exception");
   }
+#endif
+
   return status;
 }
 
