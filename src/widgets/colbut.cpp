@@ -24,6 +24,7 @@
 
 #include "core/color.h"
 #include "modules/gfx.h"
+#include "modules/gui.h"
 #include "raster/sprite.h"
 #include "widgets/colbar.h"
 #include "widgets/colbut.h"
@@ -242,7 +243,7 @@ static void colorbutton_draw(JWidget widget)
   rectfill(ji_screen, text.x1, text.y1, text.x2-1, text.y2-1, makecol(0, 0, 0));
   jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
 	     makecol(255, 255, 255),
-	     makecol(0, 0, 0), false);
+	     makecol(0, 0, 0), false, guiscale());
 }
 
 static void colorbutton_open_tooltip(JWidget widget)

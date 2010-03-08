@@ -155,18 +155,17 @@ void jdraw_rectexclude(const JRect rc, const JRect exclude, int color)
 	       exclude->x2-1, exclude->y2-1, color);
 }
 
-void jdraw_char(FONT *f, int chr, int x, int y, int fg, int bg, bool fill_bg)
+void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg)
 {
   SETUP_ANTIALISING(f, bg, fill_bg);
 
   f->vtable->render_char(f, chr, fg, fill_bg ? bg: -1, ji_screen, x, y);
 }
 
-/* see ji_font_text_len */
-void jdraw_text(FONT *font, const char *s, int x, int y,
-		int fg_color, int bg_color, bool fill_bg)
+void jdraw_text(FONT* font, const char *s, int x, int y,
+		int fg_color, int bg_color, bool fill_bg, int underline_height)
 {
-  /* original code from allegro/src/guiproc.c */
+  // original code from allegro/src/guiproc.c
   char tmp[1024];
   int hline_pos = -1;
   int len = 0;
@@ -207,20 +206,11 @@ void jdraw_text(FONT *font, const char *s, int x, int y,
     c = usetc(tmp, c);
     usetc(tmp+c, 0);
     c = text_length(font, tmp);
-    hline(ji_screen, x+hline_pos,
-	  /* y+text_height(font)-1, */
-	  y+text_height(font),
-	  x+hline_pos+c-1, fg_color);
-  }
-}
 
-void jdraw_widget_text(JWidget widget, int fg, int bg, bool fill_bg)
-{
-  if (widget->getText()) {
-    struct jrect box, text, icon;
-    jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
-    jdraw_text(widget->getFont(), widget->getText(),
-	       text.x1, text.y1, fg, bg, fill_bg);
+    rectfill(ji_screen, x+hline_pos,
+	     y+text_height(font),
+	     x+hline_pos+c-1,
+	     y+text_height(font)+underline_height-1, fg_color);
   }
 }
 

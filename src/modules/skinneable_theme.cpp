@@ -930,7 +930,7 @@ void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
 
   if (widget->hasText()) {
     /* text */
-    jdraw_text(widget->getFont(), widget->getText(), x, y, fg, bg, true);
+    jdraw_text(widget->getFont(), widget->getText(), x, y, fg, bg, true, guiscale());
 
     /* background */
     jrectexclude
@@ -1444,7 +1444,7 @@ void SkinneableTheme::draw_frame(Frame* window, JRect clip)
       jdraw_text(window->getFont(), window->getText(),
 		 cpos->x1,
 		 pos->y1+jrect_h(pos)/2-text_height(window->getFont())/2,
-		 COLOR_BACKGROUND, -1, false);
+		 COLOR_BACKGROUND, -1, false, guiscale());
     }
     // menubox
     else {
@@ -1539,11 +1539,11 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
     if (jwidget_is_disabled (widget)) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
-	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg);
+	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg, guiscale());
 
       /* draw white part */
       jdraw_text(widget->getFont(), t, x+1, y+1,
-		 COLOR_BACKGROUND, bg_color, fill_bg);
+		 COLOR_BACKGROUND, bg_color, fill_bg, guiscale());
 
       if (fill_bg)
 	fill_bg = false;
@@ -1553,7 +1553,7 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 	       jwidget_is_disabled(widget) ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),
-	       bg_color, fill_bg);
+	       bg_color, fill_bg, guiscale());
   }
 }
 

@@ -273,7 +273,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	  jdraw_text(widget->getFont(),
 		     "[+]", x, y+2,
-		     fgcolor, bgcolor, true);
+		     fgcolor, bgcolor, true, guiscale());
 
 	  // background for the icon
 	  jrectexclude(ji_screen,
@@ -300,7 +300,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	// item name
 	jdraw_text(widget->getFont(),
 		   fileitem_get_displayname(fi).c_str(), x, y+2,
-		   fgcolor, bgcolor, true);
+		   fgcolor, bgcolor, true, guiscale());
 
 	// background for the item name
 	jrectexclude(ji_screen,
