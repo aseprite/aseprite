@@ -512,7 +512,7 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_COMBOBOX:
-      if (!(widget->flags & JI_INITIALIZED)) {
+      {
 	JWidget button = jcombobox_get_button_widget(widget);
 
 	button->border_width.l = 0;
@@ -521,8 +521,10 @@ void SkinneableTheme::init_widget(JWidget widget)
 	button->border_width.b = 0;
 	button->child_spacing = 0;
 
-	jwidget_add_hook(button, JI_WIDGET,
-			 &SkinneableTheme::theme_combobox_button_msg_proc, NULL);
+	if (!(widget->flags & JI_INITIALIZED)) {
+	  jwidget_add_hook(button, JI_WIDGET,
+			   &SkinneableTheme::theme_combobox_button_msg_proc, NULL);
+	}
       }
       break;
 
@@ -621,7 +623,7 @@ void SkinneableTheme::init_widget(JWidget widget)
 	  }
 #endif
 	}
-	else if (!(widget->flags & JI_INITIALIZED)) {
+	else {
 	  BORDER(3 * scale);
 	}
       }
