@@ -60,7 +60,7 @@
 /* size of the thumbnail in the screen (width x height), the really
    size of the thumbnail bitmap is specified in the
    'generate_thumbnail' routine */
-#define THUMBSIZE	(32*guiscale())
+#define THUMBSIZE	(32*jguiscale())
 
 /* height of the headers */
 #define HDRSIZE		(3 + text_height(widget->getFont())*2 + 3 + 3)
@@ -72,10 +72,10 @@
 #define LAYSIZE		(3 + MAX(text_height(widget->getFont()), THUMBSIZE) + 4)
 
 /* space between icons and other information in the layer */
-#define ICONSEP		(2*guiscale())
+#define ICONSEP		(2*jguiscale())
 
 /* space between the icon-bitmap and the edge of the surrounding button */
-#define ICONBORDER	(4*guiscale())
+#define ICONBORDER	(4*jguiscale())
 
 enum {
   STATE_STANDBY,
@@ -206,7 +206,7 @@ static JWidget anieditor_new(const Sprite* sprite)
   anieditor->nlayers = 0;
   anieditor->scroll_x = 0;
   anieditor->scroll_y = 0;
-  anieditor->separator_x = 100 * guiscale();
+  anieditor->separator_x = 100 * jguiscale();
   anieditor->separator_w = 1;
   anieditor->hot_part = PART_NOTHING;
   anieditor->clk_part = PART_NOTHING;
@@ -981,7 +981,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
       x = x2 - 3 - text_length(widget->getFont(), line1);
       
     jdraw_text(widget->getFont(), line1, x, y1+3,
-	       fg, face, true, guiscale());
+	       fg, face, true, jguiscale());
   }
 
   if (line2 != NULL) {
@@ -994,7 +994,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     
     jdraw_text(widget->getFont(), line2,
 	       x, y1+3+ji_font_get_size(widget->getFont())+3,
-	       fg, face, true, guiscale());
+	       fg, face, true, jguiscale());
   }
 }
 
@@ -1100,7 +1100,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   /* draw the layer's name */
   jdraw_text(widget->getFont(), layer->get_name().c_str(),
 	     u, y_mid - ji_font_get_size(widget->getFont())/2,
-	     fg, bg, true, guiscale());
+	     fg, bg, true, jguiscale());
 
   /* the background should be underlined */
   if (layer->is_background()) {

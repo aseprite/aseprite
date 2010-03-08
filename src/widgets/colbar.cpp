@@ -47,7 +47,7 @@
 
 #define COLORBAR_MAX_COLORS	256
 
-#define FGBGSIZE		(16*guiscale())
+#define FGBGSIZE		(16*jguiscale())
 
 typedef enum {
   HOTCOLOR_NONE = -3,

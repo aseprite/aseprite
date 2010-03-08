@@ -72,6 +72,7 @@ jtheme::jtheme()
   this->check_icon_size = 0;
   this->radio_icon_size = 0;
   this->scrollbar_size = 0;
+  this->guiscale = 1;
 }
 
 jtheme::~jtheme()

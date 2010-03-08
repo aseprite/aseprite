@@ -373,15 +373,6 @@ void exit_module_gui()
   remove_mouse();
 }
 
-// This value is a factor to multiply every screen size/coordinate.
-// Every icon should be scaled to this factor too.
-int guiscale()
-{
-  return (screen_scaling == 1 &&
-	  JI_SCREEN_W > 512 &&
-	  JI_SCREEN_H > 256) ? 2: 1;
-}
-
 Monitor::Monitor(void (*proc)(void *),
 		 void (*free)(void *), void *data)
 {
@@ -552,6 +543,11 @@ void gui_setup_screen(bool reload_font)
     ji_screen_created = false;
   }
 
+  // Update gui_scale factor
+  ji_get_theme()->guiscale = (screen_scaling == 1 &&
+			      JI_SCREEN_W > 512 &&
+			      JI_SCREEN_H > 256) ? 2: 1;
+
   if (reload_font)
     reload_default_font();
 
@@ -579,7 +575,7 @@ void reload_default_font()
   if ((user_font) && (*user_font))
     dirs_add_path(dirs, user_font);
 
-  usprintf(buf, "fonts/ase%d.pcx", guiscale());
+  usprintf(buf, "fonts/ase%d.pcx", jguiscale());
   dirs_cat_dirs(dirs, filename_in_datadir(buf));
 
   // Try to load the font
@@ -587,7 +583,7 @@ void reload_default_font()
     theme->default_font = ji_font_load(dir->path);
     if (theme->default_font) {
       if (ji_font_is_scalable(theme->default_font))
-	ji_font_set_size(theme->default_font, 8*guiscale());
+	ji_font_set_size(theme->default_font, 8*jguiscale());
       break;
     }
   }

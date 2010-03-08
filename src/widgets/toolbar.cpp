@@ -100,7 +100,7 @@ static Size getToolIconSize(Widget* widget)
   if (icon)
     return Size(icon->w, icon->h);
   else
-    return Size(16, 16) * guiscale();
+    return Size(16, 16) * jguiscale();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -124,9 +124,9 @@ void toolbar_select_tool(JWidget toolbar, Tool* tool)
 ToolBar::ToolBar()
   : Widget(JI_WIDGET)
 {
-  this->border_width.l = 1*guiscale();
+  this->border_width.l = 1*jguiscale();
   this->border_width.t = 0;
-  this->border_width.r = 1*guiscale();
+  this->border_width.r = 1*jguiscale();
   this->border_width.b = 0;
 
   m_hot_tool = NULL;
@@ -358,7 +358,7 @@ Rect ToolBar::getToolGroupBounds(int group_index)
 		group_index < groups-1 ? iconsize.h+1: iconsize.h+2);
   else
     return Rect(rc->x1+border_width.l,
-		rc->y1+border_width.t+groups*(iconsize.h-1)+ 8*guiscale(),
+		rc->y1+border_width.t+groups*(iconsize.h-1)+ 8*jguiscale(),
 		jrect_w(rc)-border_width.l-border_width.r,
 		iconsize.h+2);
 }

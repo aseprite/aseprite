@@ -64,8 +64,6 @@ typedef std::list<Monitor*> MonitorList;
 int init_module_gui();
 void exit_module_gui();
 
-int guiscale();
-
 int get_screen_scaling();
 void set_screen_scaling(int scaling);
 

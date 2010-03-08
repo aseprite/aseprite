@@ -100,7 +100,7 @@ void LayerPropertiesCommand::execute(Context* context)
     jlistbox_select_index(list_bm, static_cast<LayerImage*>(layer)->get_blend_mode());
 
     jview_attach(view_bm, list_bm);
-    jwidget_set_min_size(view_bm, 128*guiscale(), 64*guiscale());
+    jwidget_set_min_size(view_bm, 128*jguiscale(), 64*jguiscale());
     jwidget_expansive(view_bm, true);
   }
 

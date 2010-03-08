@@ -327,7 +327,7 @@ static struct
 
 SkinneableTheme::SkinneableTheme()
 {
-  int scale = guiscale();
+  int scale = jguiscale();
 
   this->name = "Skinneable Theme";
   this->check_icon_size = 8 * scale;
@@ -464,7 +464,7 @@ void SkinneableTheme::init_widget(JWidget widget)
   widget->border_width.r = (R);		\
   widget->border_width.b = (B);
 
-  int scale = guiscale();
+  int scale = jguiscale();
 
   switch (widget->type) {
 
@@ -770,7 +770,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
     }
     /* disabled */
     else {
-      _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1+guiscale(), icon.y1+guiscale(),
+      _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1+jguiscale(), icon.y1+jguiscale(),
 				  COLOR_BACKGROUND);
       _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1, icon.y1,
 				  COLOR_DISABLED);
@@ -930,7 +930,7 @@ void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
 
   if (widget->hasText()) {
     /* text */
-    jdraw_text(widget->getFont(), widget->getText(), x, y, fg, bg, true, guiscale());
+    jdraw_text(widget->getFont(), widget->getText(), x, y, fg, bg, true, jguiscale());
 
     /* background */
     jrectexclude
@@ -1444,7 +1444,7 @@ void SkinneableTheme::draw_frame(Frame* window, JRect clip)
       jdraw_text(window->getFont(), window->getText(),
 		 cpos->x1,
 		 pos->y1+jrect_h(pos)/2-text_height(window->getFont())/2,
-		 COLOR_BACKGROUND, -1, false, guiscale());
+		 COLOR_BACKGROUND, -1, false, jguiscale());
     }
     // menubox
     else {
@@ -1539,11 +1539,11 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
     if (jwidget_is_disabled (widget)) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
-	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg, guiscale());
+	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg, jguiscale());
 
       /* draw white part */
       jdraw_text(widget->getFont(), t, x+1, y+1,
-		 COLOR_BACKGROUND, bg_color, fill_bg, guiscale());
+		 COLOR_BACKGROUND, bg_color, fill_bg, jguiscale());
 
       if (fill_bg)
 	fill_bg = false;
@@ -1553,7 +1553,7 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 	       jwidget_is_disabled(widget) ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),
-	       bg_color, fill_bg, guiscale());
+	       bg_color, fill_bg, jguiscale());
   }
 }
 
@@ -1692,7 +1692,7 @@ void SkinneableTheme::less_bevel(int *bevel)
 
 BITMAP* SkinneableTheme::apply_gui_scale(BITMAP* original)
 {
-  int scale = guiscale();
+  int scale = jguiscale();
   if (scale > 1) {
     BITMAP* scaled = create_bitmap(original->w*scale,
 				   original->h*scale);

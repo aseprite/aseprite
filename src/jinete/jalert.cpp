@@ -184,7 +184,7 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 	else if (button) {
 	  char button_name[256];
 	  JWidget button_widget = jbutton_new(beg);
-	  jwidget_set_min_size(button_widget, 60, 0);
+	  jwidget_set_min_size(button_widget, 60*jguiscale(), 0);
 	  jlist_append(*buttons, button_widget);
 
 	  usprintf(button_name, "button-%d", jlist_length(*buttons));

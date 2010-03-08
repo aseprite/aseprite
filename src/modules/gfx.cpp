@@ -43,7 +43,7 @@ static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
 
 static void convert_data_to_bitmap(DATA *data, BITMAP** bmp)
 {
-  int scale = guiscale();
+  int scale = jguiscale();
   const char *p;
   int x, y;
   int black = makecol(0, 0, 0);

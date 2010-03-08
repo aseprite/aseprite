@@ -48,6 +48,7 @@ public:
   int check_icon_size;
   int radio_icon_size;
   int scrollbar_size;
+  int guiscale;
 
   jtheme();
   virtual ~jtheme();
@@ -104,5 +105,12 @@ int ji_color_faceshadow();
 int ji_color_hotface();
 int ji_color_selected();
 int ji_color_background();
+
+// This value is a factor to multiply every screen size/coordinate.
+// Every icon/graphics/font should be scaled to this factor.
+inline int jguiscale()
+{
+  return ji_get_theme() ? ji_get_theme()->guiscale: 1;
+}
 
 #endif

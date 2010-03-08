@@ -281,8 +281,8 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
 	int idxlen = ji_font_text_len(idx->getFont(), "Index=888");
 
 	jwidget_set_min_size(idx, idxlen, 0);
-	paledit_set_boxsize(pal, 4*guiscale());
-	jwidget_set_min_size(grid2, 200*guiscale(), 0);
+	paledit_set_boxsize(pal, 4*jguiscale());
+	jwidget_set_min_size(grid2, 200*jguiscale(), 0);
       }
       break;
 
