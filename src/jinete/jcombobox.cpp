@@ -173,6 +173,18 @@ void jcombobox_add_string(JWidget widget, const char *string, void *data)
     jcombobox_select_index(widget, 0);
 }
 
+void jcombobox_insert_string(JWidget widget, int index, const char *string, void *data)
+{
+  ComboBox* combobox = reinterpret_cast<ComboBox*>(jwidget_get_data(widget, JI_COMBOBOX));
+  bool sel_first = jlist_empty(combobox->items);
+  ComboItem *item = comboitem_new(string, data);
+
+  jlist_insert(combobox->items, item, index);
+
+  if (sel_first)
+    jcombobox_select_index(widget, 0);
+}
+
 void jcombobox_del_string(JWidget widget, const char *string)
 {
   jcombobox_del_index(widget, jcombobox_get_index(widget, string));

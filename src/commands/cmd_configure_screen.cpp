@@ -155,11 +155,13 @@ void ConfigureScreen::show_dialog(Context* context)
 void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale)
 {
   char buf[512];
+  bool old_res_selected = false;
 
   m_resolutions.clear();
   m_colordepths.clear();
   m_pixelscale.clear();
 
+  // Read from gui.xml
   DIRS* dirs = filename_in_datadir("gui.xml");
 
   for (DIRS* dir=dirs; dir; dir=dir->next) {
@@ -196,8 +198,10 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	    sprintf(buf, "%dx%d", w, h, aspect);
 
 	  jcombobox_add_string(resolution, buf, NULL);
-	  if (old_w == w && old_h == h)
+	  if (old_w == w && old_h == h) {
+	    old_res_selected = true;
 	    jcombobox_select_index(resolution, jcombobox_get_count(resolution)-1);
+	  }
 	}
       }
       else if (strcmp(xmlElement->Value(), "colordepth") == 0) {
@@ -230,6 +234,15 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
   }
 
   dirs_free(dirs);
+
+  // Current screen size
+  if (!old_res_selected) {
+    m_resolutions.insert(m_resolutions.begin(), std::make_pair(old_w, old_h));
+
+    sprintf(buf, "%dx%d (Current)", m_resolutions[0].first, m_resolutions[0].second);
+    jcombobox_insert_string(resolution, 0, buf, NULL);
+    jcombobox_select_index(resolution, 0);
+  }
 }
 
 static bool try_new_gfx_mode(Context* context)

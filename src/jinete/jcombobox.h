@@ -45,6 +45,7 @@ bool jcombobox_is_clickopen(JWidget combobox);
 bool jcombobox_is_casesensitive(JWidget combobox);
 
 void jcombobox_add_string(JWidget combobox, const char *string, void *data);
+void jcombobox_insert_string(JWidget combobox, int index, const char *string, void *data);
 void jcombobox_del_string(JWidget combobox, const char *string);
 void jcombobox_del_index(JWidget combobox, int index);
 void jcombobox_clear(JWidget combobox);
