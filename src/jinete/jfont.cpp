@@ -40,6 +40,35 @@
 
 #include "jinete/jfont.h"
 #include "jinete/jintern.h"
+#include "jinete/jtheme.h"
+
+FONT* ji_font_load(const char* filepathname)
+{
+  FONT* f = ji_font_load_bmp(filepathname);
+  if (!f)
+    f = ji_font_load_ttf(filepathname);
+  return f;
+}
+
+FONT* ji_font_load_bmp(const char* filepathname)
+{
+  int old_color_conv = _color_conv;
+  FONT* f = NULL;
+  PALETTE junk;
+  BITMAP *bmp;
+
+  set_color_conversion(COLORCONV_NONE);
+  bmp = load_bitmap(filepathname, junk);
+  set_color_conversion(old_color_conv);
+
+  if (bmp) {
+    bmp = ji_apply_guiscale(bmp);
+    f = _ji_bitmap2font(bmp);
+    destroy_bitmap(bmp);
+  }
+
+  return f;
+}
 
 /**********************************************************************/
 #if 1 /* with FreeType */
@@ -324,33 +353,6 @@ void _ji_font_exit()
 
     ji_font_inited = false;
   }
-}
-
-FONT* ji_font_load(const char *filepathname)
-{
-  FONT* f = ji_font_load_bmp(filepathname);
-  if (!f)
-    f = ji_font_load_ttf(filepathname);
-  return f;
-}
-
-FONT* ji_font_load_bmp(const char *filepathname)
-{
-  int old_color_conv = _color_conv;
-  FONT* f = NULL;
-  PALETTE junk;
-  BITMAP *bmp;
-
-  set_color_conversion(COLORCONV_NONE);
-  bmp = load_bitmap(filepathname, junk);
-  set_color_conversion(old_color_conv);
-
-  if (bmp) {
-    f = _ji_bitmap2font(bmp);
-    destroy_bitmap(bmp);
-  }
-
-  return f;
 }
 
 FONT* ji_font_load_ttf(const char *filepathname)
@@ -939,33 +941,6 @@ int _ji_font_init()
 
 void _ji_font_exit()
 {
-}
-
-FONT* ji_font_load(const char* filepathname)
-{
-  FONT* f = ji_font_load_bmp(filepathname);
-  if (!f)
-    f = ji_font_load_ttf(filepathname);
-  return f;
-}
-
-FONT* ji_font_load_bmp(const char* filepathname)
-{
-  int old_color_conv = _color_conv;
-  FONT* f = NULL;
-  PALETTE junk;
-  BITMAP *bmp;
-
-  set_color_conversion(COLORCONV_NONE);
-  bmp = load_bitmap(filepathname, junk);
-  set_color_conversion(old_color_conv);
-
-  if (bmp) {
-    f = _ji_bitmap2font(bmp);
-    destroy_bitmap(bmp);
-  }
-
-  return f;
 }
 
 FONT* ji_font_load_ttf(const char* filepathname)
