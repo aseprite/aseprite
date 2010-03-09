@@ -106,6 +106,8 @@ int ji_color_hotface();
 int ji_color_selected();
 int ji_color_background();
 
+BITMAP* ji_apply_guiscale(BITMAP* original);
+
 // This value is a factor to multiply every screen size/coordinate.
 // Every icon/graphics/font should be scaled to this factor.
 inline int jguiscale()

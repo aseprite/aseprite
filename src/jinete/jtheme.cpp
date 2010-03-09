@@ -171,6 +171,25 @@ int ji_color_background()
   return ji_current_theme->color_background();
 }
 
+BITMAP* ji_apply_guiscale(BITMAP* original)
+{
+  int scale = jguiscale();
+  if (scale > 1) {
+    BITMAP* scaled = create_bitmap_ex(bitmap_color_depth(original),
+				      original->w*scale,
+				      original->h*scale);
+
+    for (int y=0; y<scaled->h; ++y)
+      for (int x=0; x<scaled->w; ++x)
+	putpixel(scaled, x, y, getpixel(original, x/scale, y/scale));
+
+    destroy_bitmap(original);
+    return scaled;
+  }
+  else
+    return original;
+}
+
 void _ji_theme_draw_sprite_color(BITMAP *bmp, BITMAP *sprite,
 				 int x, int y, int color)
 {
