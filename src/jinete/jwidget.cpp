@@ -1093,6 +1093,18 @@ void jwidget_noborders(JWidget widget)
   jwidget_dirty(widget);
 }
 
+void jwidget_set_border(JWidget widget, int value)
+{
+  assert_valid_widget(widget);
+
+  widget->border_width.l = value;
+  widget->border_width.t = value;
+  widget->border_width.r = value;
+  widget->border_width.b = value;
+
+  jwidget_dirty(widget);
+}
+
 void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
 {
   assert_valid_widget(widget);

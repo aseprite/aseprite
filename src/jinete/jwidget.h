@@ -132,6 +132,7 @@ void jwidget_get_texticon_info(JWidget widget,
 			       int icon_align, int icon_w, int icon_h);
 
 void jwidget_noborders(JWidget widget);
+void jwidget_set_border(JWidget widget, int value);
 void jwidget_set_border(JWidget widget, int l, int t, int r, int b);
 void jwidget_set_rect(JWidget widget, JRect rect);
 void jwidget_set_min_size(JWidget widget, int w, int h);
