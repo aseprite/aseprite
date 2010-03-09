@@ -316,9 +316,6 @@ int init_module_gui()
   /* set graphics options for next time */
   save_gui_config();
 
-  /* load the font */
-  reload_default_font();
-
   // Hook for palette change to regenerate the theme
   App::instance()->PaletteChange.connect(&on_palette_change_signal);
 
@@ -525,10 +522,12 @@ void gui_feedback()
  */
 void gui_setup_screen(bool reload_font)
 {
-  /* double buffering is required when screen scaling is used */
+  bool regen = false;
+
+  // Double buffering is required when screen scaling is used
   double_buffering = (screen_scaling > 1);
 
-  /* is double buffering active */
+  // Is double buffering active?
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
     ji_set_screen(create_bitmap(SCREEN_W / screen_scaling,
@@ -543,15 +542,26 @@ void gui_setup_screen(bool reload_font)
     ji_screen_created = false;
   }
 
-  // Update gui_scale factor
+  // Update guiscale factor
+  int old_guiscale = jguiscale();
   ji_get_theme()->guiscale = (screen_scaling == 1 &&
 			      JI_SCREEN_W > 512 &&
 			      JI_SCREEN_H > 256) ? 2: 1;
 
+  // If the guiscale have changed
+  if (old_guiscale != jguiscale()) {
+    reload_font = true;
+    regen = true;
+  }
+
   if (reload_font)
     reload_default_font();
 
-  /* set the configuration */
+  // Regenerate the theme
+  if (regen)
+    ji_regen_theme();
+
+  // Set the configuration
   save_gui_config();
 }
 
