@@ -575,8 +575,8 @@ void reload_default_font()
   if ((user_font) && (*user_font))
     dirs_add_path(dirs, user_font);
 
-  usprintf(buf, "fonts/ase%d.pcx", jguiscale());
-  dirs_cat_dirs(dirs, filename_in_datadir(buf));
+  // TODO This should be in SkinneableTheme class
+  dirs_cat_dirs(dirs, filename_in_datadir("skins/default_skin_font.pcx"));
 
   // Try to load the font
   for (dir=dirs; dir; dir=dir->next) {
