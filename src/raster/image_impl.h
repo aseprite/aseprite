@@ -20,7 +20,6 @@
 #define RASTER_IMAGE_IMPL_H_INCLUDED
 
 #include <cassert>
-#include <allegro.h>
 
 #include "raster/image.h"
 
