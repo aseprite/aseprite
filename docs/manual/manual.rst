@@ -251,6 +251,13 @@ Using the right mouse button you can substract rectangles from selection.
 Lasso Tool
 ==========
 
+With this tool you can select free hand drawn contours. You
+press the mouse button, move it to draw a contour, and then
+when you release the button, a line will close the contour
+from the starting point to the end point. The are will be
+selected (if you used the left mouse button) or deselected
+(if you used the right mouse button).
+
   .. admonition:: Summary
 
     **Left button**: Outside the selection adds contours;
@@ -270,6 +277,9 @@ Polygonal Lasso Tool
 
 Magic Wand Tool
 ===============
+
+With this tool you can select a continuous area filled with the same
+color.
 
   .. admonition:: Summary
 
