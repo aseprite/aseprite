@@ -113,7 +113,7 @@ bool _ji_is_valid_widget(JWidget widget)
 	  (*widgets)[widget->id]->id == widget->id);
 }
 
-void _ji_set_font_of_all_widgets(struct FONT *f)
+void _ji_set_font_of_all_widgets(FONT* f)
 {
   size_t c;
 
@@ -122,18 +122,26 @@ void _ji_set_font_of_all_widgets(struct FONT *f)
     if (_ji_is_valid_widget((*widgets)[c]))
       (*widgets)[c]->setFont(f);
 
-  /* then we can reinitialize the theme of each widget */
-  for (c=0; c<widgets->size(); c++)
-    if (_ji_is_valid_widget((*widgets)[c]))
-      jwidget_init_theme((*widgets)[c]);
+}
 
-  /* remap the windows */
+void _ji_reinit_theme_in_all_widgets()
+{
+  size_t c;
+
+  // Then we can reinitialize the theme of each widget
+  for (c=0; c<widgets->size(); c++)
+    if (_ji_is_valid_widget((*widgets)[c])) {
+      (*widgets)[c]->theme = ji_get_theme();
+      jwidget_init_theme((*widgets)[c]);
+    }
+
+  // Remap the windows
   for (c=0; c<widgets->size(); c++)
     if (_ji_is_valid_widget((*widgets)[c])) {
       if ((*widgets)[c]->type == JI_FRAME)
 	static_cast<Frame*>((*widgets)[c])->remap_window();
     }
 
-  /* refresh the screen */
+  // Refresh the screen
   jmanager_refresh_screen();
 }

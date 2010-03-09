@@ -73,8 +73,6 @@ void gui_run();
 void gui_feedback();
 void gui_setup_screen(bool reload_font);
 
-void reload_default_font();
-
 void load_window_pos(Widget* window, const char *section);
 void save_window_pos(Widget* window, const char *section);
 

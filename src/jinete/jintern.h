@@ -48,7 +48,8 @@ void _ji_add_widget(JWidget widget);
 void _ji_remove_widget(JWidget widget);
 bool _ji_is_valid_widget(JWidget widget);
 
-void _ji_set_font_of_all_widgets(struct FONT *f);
+void _ji_set_font_of_all_widgets(FONT* f);
+void _ji_reinit_theme_in_all_widgets();
 
 //////////////////////////////////////////////////////////////////////
 // jwindow.c

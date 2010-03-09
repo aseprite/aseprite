@@ -146,6 +146,8 @@ static JList icon_buttons;
 static bool double_buffering;
 static int screen_scaling;
 
+static void reload_default_font();
+
 /* load & save graphics configuration */
 static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& maximized);
 static void save_gui_config();
@@ -523,6 +525,7 @@ void gui_feedback()
 void gui_setup_screen(bool reload_font)
 {
   bool regen = false;
+  bool reinit = false;
 
   // Double buffering is required when screen scaling is used
   double_buffering = (screen_scaling > 1);
@@ -554,18 +557,25 @@ void gui_setup_screen(bool reload_font)
     regen = true;
   }
 
-  if (reload_font)
+  if (reload_font) {
     reload_default_font();
+    reinit = true;
+  }
 
   // Regenerate the theme
-  if (regen)
+  if (regen) {
     ji_regen_theme();
+    reinit = true;
+  }
+
+  if (reinit)
+    _ji_reinit_theme_in_all_widgets();
 
   // Set the configuration
   save_gui_config();
 }
 
-void reload_default_font()
+static void reload_default_font()
 {
   JTheme theme = ji_get_theme();
   const char *user_font;
