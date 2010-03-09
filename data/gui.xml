@@ -264,7 +264,6 @@
 	<item command="save_mask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
-	<item command="advanced_mode" text="&amp;Advanced Mode" />
 	<menu text="&amp;Editor">
 	  <item command="make_unique_editor" text="Make &amp;Unique" />
 	  <separator />
