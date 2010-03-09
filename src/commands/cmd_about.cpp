@@ -87,7 +87,7 @@ void AboutCommand::execute(Context* context)
   
   jwidget_magnetic(button1, true);
 
-  jwidget_set_border(box1, 4, 4, 4, 4);
+  jwidget_set_border(box1, 4 * jguiscale());
   jwidget_add_children(box1, label1, label2, separator1, NULL);
   if (textbox) {
     jview_attach(view, textbox);
@@ -103,9 +103,9 @@ void AboutCommand::execute(Context* context)
   jwidget_add_child(window, box1);
 
   jwidget_set_border(button1,
-		     button1->border_width.l+16,
+		     button1->border_width.l + 16*jguiscale(),
 		     button1->border_width.t,
-		     button1->border_width.r+16,
+		     button1->border_width.r + 16*jguiscale(),
 		     button1->border_width.b);
 
   window->open_window_fg();

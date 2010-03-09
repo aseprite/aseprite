@@ -29,6 +29,7 @@
 #include "jinete/jsystem.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
+#include "jinete/jtheme.h"
 
 #include "core/color.h"
 #include "modules/gui.h"
@@ -74,9 +75,9 @@ JWidget paledit_new(Palette *palette, bool editable, int boxsize)
   jwidget_add_hook(widget, paledit_type(), paledit_msg_proc, paledit);
   jwidget_focusrest(widget, true);
 
-  widget->border_width.l = widget->border_width.r = 1;
-  widget->border_width.t = widget->border_width.b = 1;
-  widget->child_spacing = 1;
+  widget->border_width.l = widget->border_width.r = 1 * jguiscale();
+  widget->border_width.t = widget->border_width.b = 1 * jguiscale();
+  widget->child_spacing = 1 * jguiscale();
 
   return widget;
 }

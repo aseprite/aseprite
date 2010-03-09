@@ -327,12 +327,7 @@ static struct
 
 SkinneableTheme::SkinneableTheme()
 {
-  int scale = jguiscale();
-
   this->name = "Skinneable Theme";
-  this->check_icon_size = 8 * scale;
-  this->radio_icon_size = 8 * scale;
-  this->scrollbar_size = 12 * scale;
 
   m_sheet_bmp = NULL;
   for (int c=0; c<PARTS; ++c)
@@ -374,6 +369,10 @@ SkinneableTheme::~SkinneableTheme()
 
 void SkinneableTheme::regen()
 {
+  check_icon_size = 8 * jguiscale();
+  radio_icon_size = 8 * jguiscale();
+  scrollbar_size = 12 * jguiscale();
+
   desktop_color = COLOR_DISABLED;
   textbox_fg_color = COLOR_FOREGROUND;
   textbox_bg_color = COLOR_BACKGROUND;
@@ -536,7 +535,7 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_MENUITEM:
-      BORDER(2);
+      BORDER(2 * scale);
       widget->child_spacing = 18 * scale;
       break;
 
@@ -574,10 +573,10 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_SLIDER:
-      BORDER4(m_part[PART_SLIDER_EMPTY_W]->w-1,
+      BORDER4(m_part[PART_SLIDER_EMPTY_W]->w-1*scale,
 	      m_part[PART_SLIDER_EMPTY_N]->h,
-	      m_part[PART_SLIDER_EMPTY_E]->w-1,
-	      m_part[PART_SLIDER_EMPTY_S]->h-1);
+	      m_part[PART_SLIDER_EMPTY_E]->w-1*scale,
+	      m_part[PART_SLIDER_EMPTY_S]->h-1*scale);
       widget->child_spacing = jwidget_get_text_height(widget);
       widget->setAlign(JI_CENTER | JI_MIDDLE);
       break;
@@ -588,10 +587,10 @@ void SkinneableTheme::init_widget(JWidget widget)
       break;
 
     case JI_VIEW:
-      BORDER4(m_part[PART_SUNKEN_NORMAL_W]->w-1,
+      BORDER4(m_part[PART_SUNKEN_NORMAL_W]->w-1*scale,
 	      m_part[PART_SUNKEN_NORMAL_N]->h,
-	      m_part[PART_SUNKEN_NORMAL_E]->w-1,
-	      m_part[PART_SUNKEN_NORMAL_S]->h-1);
+	      m_part[PART_SUNKEN_NORMAL_E]->w-1*scale,
+	      m_part[PART_SUNKEN_NORMAL_S]->h-1*scale);
       widget->child_spacing = 0;
       break;
 
@@ -1022,24 +1021,26 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
   if (!bar) {
     /* draw the arrown (to indicate which this menu has a sub-menu) */
     if (jmenuitem_get_submenu(widget)) {
+      int scale = jguiscale();
+
       /* enabled */
       if (jwidget_is_enabled(widget)) {
-	for (c=0; c<3; c++)
+	for (c=0; c<3*scale; c++)
 	  vline(ji_screen,
-		widget->rc->x2-3-c,
+		widget->rc->x2-3*scale-c,
 		(widget->rc->y1+widget->rc->y2)/2-c,
 		(widget->rc->y1+widget->rc->y2)/2+c, fg);
       }
       /* disabled */
       else {
-	for (c=0; c<3; c++)
+	for (c=0; c<3*scale; c++)
 	  vline(ji_screen,
-		widget->rc->x2-3-c+1,
+		widget->rc->x2-3*scale-c+1,
 		(widget->rc->y1+widget->rc->y2)/2-c+1,
 		(widget->rc->y1+widget->rc->y2)/2+c+1, COLOR_BACKGROUND);
-	for (c=0; c<3; c++)
+	for (c=0; c<3*scale; c++)
 	  vline(ji_screen,
-		widget->rc->x2-3-c,
+		widget->rc->x2-3*scale-c,
 		(widget->rc->y1+widget->rc->y2)/2-c,
 		(widget->rc->y1+widget->rc->y2)/2+c, COLOR_DISABLED);
       }
@@ -1731,8 +1732,8 @@ bool SkinneableTheme::theme_combobox_button_msg_proc(JWidget widget, JMessage ms
   switch (msg->type) {
 
     case JM_REQSIZE:
-      msg->reqsize.w = 15;
-      msg->reqsize.h = 16;
+      msg->reqsize.w = 15 * jguiscale();
+      msg->reqsize.h = 16 * jguiscale();
       return true;
 
   }

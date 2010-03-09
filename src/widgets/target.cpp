@@ -24,6 +24,7 @@
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
+#include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 
 #include "core/cfg.h"
@@ -47,7 +48,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
 {
 #define ADD(box, widget, hook)						\
   if (widget) {								\
-    jwidget_set_border(widget, 2, 2, 2, 2);				\
+    jwidget_set_border(widget, 2 * jguiscale());			\
     jwidget_add_child(box, widget);					\
     HOOK(widget,							\
 	 widget->type == JI_BUTTON ?					\

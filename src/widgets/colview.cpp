@@ -53,7 +53,7 @@ JWidget colorviewer_new(color_t color, int imgtype)
   jwidget_add_hook(widget, colorviewer_type(),
 		   colorviewer_msg_proc, colorviewer);
   jwidget_focusrest(widget, true);
-  jwidget_set_border(widget, 2, 2, 2, 2);
+  jwidget_set_border(widget, 2 * jguiscale());
   widget->setAlign(JI_CENTER | JI_MIDDLE);
 
   return widget;

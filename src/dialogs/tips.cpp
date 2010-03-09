@@ -341,7 +341,7 @@ static JWidget tips_load_box(FILE *f, char *buf, int sizeof_buf, int *take)
 {
   JWidget vbox = jbox_new(JI_VERTICAL);
 
-  jwidget_set_border(vbox, 2, 2, 2, 2);
+  jwidget_set_border(vbox, 2 * jguiscale());
 
   for (;;) {
     if (*take) {

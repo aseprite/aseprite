@@ -121,7 +121,7 @@ Frame* colorselector_new(bool editable_palette)
 
   /* data for a better layout */
   grid1->child_spacing = 0;
-  grid2->border_width.t = 3;
+  grid2->border_width.t = 3 * jguiscale();
   jwidget_expansive(grid2, true);
 
   /* append a tab for each color-model */

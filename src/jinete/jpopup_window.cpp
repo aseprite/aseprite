@@ -138,14 +138,14 @@ bool PopupWindow::msg_proc(JMessage msg)
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
 	int w = 0, h = 0;
 
-	this->border_width.l = 3;
-	this->border_width.t = 3;
-	this->border_width.r = 3;
-	this->border_width.b = 3;
+	this->border_width.l = 3 * jguiscale();
+	this->border_width.t = 3 * jguiscale();
+	this->border_width.r = 3 * jguiscale();
+	this->border_width.b = 3 * jguiscale();
 
 	_ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
 
-	this->border_width.t = h-3;
+	this->border_width.t = h - 3 * jguiscale();
 
 	/* setup the background color */
 	jwidget_set_bg_color(this, makecol(255, 255, 200));
@@ -202,7 +202,7 @@ bool PopupWindow::msg_proc(JMessage msg)
       jdraw_rectfill(pos, this->getBgColor());
 
       oldt = this->border_width.t;
-      this->border_width.t = 3;
+      this->border_width.t = 3 * jguiscale();
       _ji_theme_textbox_draw(ji_screen, this, NULL, NULL,
 			     this->getBgColor(),
 			     ji_color_foreground());
