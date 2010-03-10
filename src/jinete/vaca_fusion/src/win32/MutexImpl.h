@@ -29,38 +29,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <pthread.h>
+#include <windows.h>
 
-class Vaca::Mutex::MutexPimpl
+class Vaca::Mutex::MutexImpl
 {
-  pthread_mutex_t m_handle;
+  CRITICAL_SECTION m_handle;
 
 public:
 
-  MutexPimpl()
+  MutexImpl()
   {
-    pthread_mutex_init(&m_handle, NULL);
+    InitializeCriticalSection(&m_handle);
   }
 
-  ~MutexPimpl()
+  ~MutexImpl()
   {
-    pthread_mutex_destroy(&m_handle);
+    DeleteCriticalSection(&m_handle);
   }
 
   void lock()
   {
-    pthread_mutex_lock(&m_handle);
+    EnterCriticalSection(&m_handle);
   }
 
   bool tryLock()
   {
-    return pthread_mutex_trylock(&m_handle) != EBUSY;
+    return TryEnterCriticalSection(&m_handle) ? true: false;
   }
 
   void unlock()
   {
-    pthread_mutex_unlock(&m_handle);
+    LeaveCriticalSection(&m_handle);
   }
 
 };
-

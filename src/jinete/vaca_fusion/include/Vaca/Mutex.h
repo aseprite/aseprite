@@ -54,8 +54,8 @@ namespace Vaca {
 */
 class VACA_DLL Mutex : private NonCopyable
 {
-  class MutexPimpl;
-  MutexPimpl* m_pimpl;
+  class MutexImpl;
+  MutexImpl* m_pimpl;
 
 public:
 

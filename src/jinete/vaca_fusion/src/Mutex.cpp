@@ -32,16 +32,16 @@
 #include "Vaca/Mutex.h"
 
 #if defined(VACA_WINDOWS)
-  #include "win32/MutexPimpl.h"
+  #include "win32/MutexImpl.h"
 #elif defined(VACA_ALLEGRO)
   #include <allegro/base.h>
   #if defined(ALLEGRO_WINDOWS)
-    #include "win32/MutexPimpl.h"
+    #include "win32/MutexImpl.h"
   #else
-    #include "unix/MutexPimpl.h"
+    #include "unix/MutexImpl.h"
   #endif
 #else
-  #include "unix/MutexPimpl.h"
+  #include "unix/MutexImpl.h"
 #endif 
 
 using namespace Vaca;
@@ -55,7 +55,7 @@ using namespace Vaca;
 */
 Mutex::Mutex()
 {
-  m_pimpl = new MutexPimpl();
+  m_pimpl = new MutexImpl();
 }
 
 /**
