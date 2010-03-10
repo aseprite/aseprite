@@ -143,16 +143,12 @@ COMMON_SOURCES =					\
 	src/jinete/jmem.cpp				\
 	src/jinete/jmenu.cpp				\
 	src/jinete/jmessage.cpp				\
-	src/jinete/jmutex.cpp				\
 	src/jinete/jpanel.cpp				\
-	src/jinete/jpoint.cpp				\
 	src/jinete/jpopup_window.cpp			\
-	src/jinete/jpoint.cpp				\
 	src/jinete/jquickmenu.cpp			\
 	src/jinete/jrect.cpp				\
 	src/jinete/jregion.cpp				\
 	src/jinete/jsep.cpp				\
-	src/jinete/jsize.cpp				\
 	src/jinete/jslider.cpp				\
 	src/jinete/jstream.cpp				\
 	src/jinete/jstring.cpp				\
@@ -508,7 +504,21 @@ TINYXML_OBJS = $(addprefix $(OBJ_DIR)/tinyxml.,		\
 ######################################################################
 # Vaca
 
+VACA_LIB = $(OBJ_DIR)/libvaca$(LIB_EXT)
 VACA_DIR = src/jinete/vaca_fusion
+VACA_SOURCES =					\
+	$(VACA_DIR)/src/Component.cpp		\
+	$(VACA_DIR)/src/Debug.cpp		\
+	$(VACA_DIR)/src/Mutex.cpp		\
+	$(VACA_DIR)/src/Point.cpp		\
+	$(VACA_DIR)/src/Referenceable.cpp	\
+	$(VACA_DIR)/src/Rect.cpp		\
+	$(VACA_DIR)/src/Size.cpp		\
+	$(VACA_DIR)/src/win32/Mutex.cpp
+
+VACA_OBJS = $(addprefix $(OBJ_DIR)/vaca.,		\
+		 $(addsuffix $(OBJ),			\
+		   $(notdir $(basename $(VACA_SOURCES)))))
 
 ######################################################################
 # All objects and libraries
@@ -521,7 +531,8 @@ ALL_OBJS =					\
 	$(LIBPNG_OBJS)				\
 	$(ZLIB_OBJS)				\
 	$(LOADPNG_OBJS)				\
-	$(TINYXML_OBJS)
+	$(TINYXML_OBJS)				\
+	$(VACA_OBJS)
 
 THIRD_PARTY_LIBS =				\
 	$(LIBART_LIB)				\
@@ -530,7 +541,8 @@ THIRD_PARTY_LIBS =				\
 	$(LIBPNG_LIB)				\
 	$(ZLIB_LIB)				\
 	$(LOADPNG_LIB)				\
-	$(TINYXML_LIB)
+	$(TINYXML_LIB)				\
+	$(VACA_LIB)
 
 ######################################################################
 # Tests

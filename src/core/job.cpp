@@ -19,15 +19,19 @@
 #include "config.h"
 
 #include "jinete/jalert.h"
-#include "jinete/jmutex.h"
 #include "jinete/jthread.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #include "app.h"
 #include "core/job.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
+
+using Vaca::Mutex;
+using Vaca::ScopedLock;
 
 Job::Job(const char* job_name)
 {
@@ -40,7 +44,7 @@ Job::Job(const char* job_name)
   m_done_flag = false;
   m_canceled_flag = false;
 
-  m_mutex = jmutex_new();
+  m_mutex = new Mutex();
   m_progress = progress_new(app_get_statusbar());
   m_monitor = add_gui_monitor(&Job::monitor_proc,
 			      &Job::monitor_free,
@@ -52,7 +56,7 @@ Job::~Job()
 {
   // The job was canceled by the user?
   {
-    ScopedLock hold(m_mutex);
+    ScopedLock hold(*m_mutex);
     if (!m_done_flag)
       m_canceled_flag = true;
   }
@@ -69,7 +73,7 @@ Job::~Job()
     progress_free(m_progress);
 
   if (m_mutex)
-    jmutex_free(m_mutex);
+    delete m_mutex;
 
   if (m_alert_window)
     jwidget_free(m_alert_window);
@@ -83,13 +87,13 @@ void Job::do_job()
 
 void Job::job_progress(float f)
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock hold(*m_mutex);
   m_last_progress = f;
 }
 
 bool Job::is_canceled()
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock hold(*m_mutex);
   return m_canceled_flag;
 }
 
@@ -110,7 +114,7 @@ void Job::on_job()
  */
 void Job::on_monitor_tick()
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock hold(*m_mutex);
 
   // update progress
   progress_update(m_progress, m_last_progress);
@@ -135,7 +139,7 @@ void Job::on_monitor_destroyed()
 
 void Job::done()
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock hold(*m_mutex);
   m_done_flag = true;
 }
 

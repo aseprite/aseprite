@@ -22,6 +22,8 @@
 #include <string.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #include "app.h"
 #include "core/cfg.h"
@@ -32,15 +34,18 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
+using Vaca::Mutex;
+using Vaca::ScopedLock;
+
 /**********************************************************************
  Apply effect in two threads: bg-thread to modify the sprite, and the
  main thread to monitoring the progress.
  **********************************************************************/
 
-typedef struct ThreadData
+struct ThreadData
 {
-  Effect *effect;		/* effect to be applied */
-  JMutex mutex;			/* mutex to access to 'pos', 'done'
+  Effect* effect;		/* effect to be applied */
+  Mutex mutex;			/* mutex to access to 'pos', 'done'
 				   and 'cancelled' fields in different
 				   threads */
   float pos;			/* current progress position */
@@ -51,7 +56,7 @@ typedef struct ThreadData
   JThread thread;		/* thread to apply the effect in background */
   Frame* alert_window;		/* alert for the user to cancel the
 				   effect-progress if he wants */
-} ThreadData;
+};
 
 /**
  * Called by @ref effect_apply to informate the progress of the
@@ -63,9 +68,8 @@ static void effect_progress_hook(void *_data, float progress)
 {
   ThreadData *data = (ThreadData *)_data;
 
-  jmutex_lock(data->mutex);
+  ScopedLock lock(data->mutex);
   data->pos = progress;
-  jmutex_unlock(data->mutex);
 }
 
 /**
@@ -79,9 +83,8 @@ static bool effect_is_cancelled_hook(void *_data)
   ThreadData *data = (ThreadData *)_data;
   bool cancelled;
 
-  jmutex_lock(data->mutex);
+  ScopedLock lock(data->mutex);
   cancelled = data->cancelled;
-  jmutex_unlock(data->mutex);
 
   return cancelled;
 }
@@ -99,9 +102,8 @@ static void effect_bg(void *_data)
   effect_apply_to_target(data->effect);
 
   /* mark the work as 'done' */
-  jmutex_lock(data->mutex);
+  ScopedLock lock(data->mutex);
   data->done = true;
-  jmutex_unlock(data->mutex);
 }
 
 /**
@@ -116,10 +118,11 @@ static void monitor_effect_bg(void *_data)
   float pos;
   bool done;
 
-  jmutex_lock(data->mutex);
-  pos = data->pos;
-  done = data->done;
-  jmutex_unlock(data->mutex);
+  {
+    ScopedLock lock(data->mutex);
+    pos = data->pos;
+    done = data->done;
+  }
 
   if (data->progress)
     progress_update(data->progress, pos);
@@ -149,13 +152,12 @@ static void monitor_free(void *_data)
  */
 void effect_apply_to_target_with_progressbar(Effect* effect)
 {
-  ThreadData *data = new ThreadData;
+  ThreadData* data = new ThreadData;
 
   effect->progress_data = data;
   effect->progress = effect_progress_hook;
   effect->is_cancelled = effect_is_cancelled_hook;
 
-  data->mutex = jmutex_new();
   data->effect = effect;
   data->pos = 0.0;
   data->done = false;
@@ -171,12 +173,13 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
 
   data->alert_window->open_window_fg();
 
-  jmutex_lock(data->mutex);
-  if (!data->done) {
-    remove_gui_monitor(data->monitor);
-    data->cancelled = true;
+  {
+    ScopedLock lock(data->mutex);
+    if (!data->done) {
+      remove_gui_monitor(data->monitor);
+      data->cancelled = true;
+    }
   }
-  jmutex_unlock(data->mutex);
 
   /* wait the `effect_bg' thread */
   jthread_join(data->thread);

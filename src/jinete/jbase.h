@@ -221,7 +221,6 @@ enum {
 typedef unsigned int		JID;
 
 typedef void*			JThread;
-typedef void*			JMutex;
 
 typedef struct jaccel*		JAccel;
 typedef struct jhook*		JHook;

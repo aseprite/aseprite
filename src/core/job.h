@@ -21,6 +21,8 @@
 
 #include "jinete/jbase.h"
 
+namespace Vaca { class Mutex; }
+
 class Frame;
 struct Monitor;
 struct Progress;
@@ -30,7 +32,7 @@ class Job
   JThread m_thread;
   Monitor* m_monitor;
   Progress* m_progress;
-  JMutex m_mutex;
+  Vaca::Mutex* m_mutex;
   Frame* m_alert_window;
   float m_last_progress;
   bool m_done_flag;

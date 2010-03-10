@@ -23,12 +23,15 @@
 #include <map>
 #include <utility>
 
-#include "jinete/jbase.h"
-#include "jinete/jmutex.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #include "raster/gfxobj.h"
 
-static JMutex objects_mutex;
+using Vaca::Mutex;
+using Vaca::ScopedLock;
+
+static Mutex* objects_mutex;
 static gfxobj_id object_id = 0;		          // last object ID created
 static std::map<gfxobj_id, GfxObj*>* objects_map; // graphics objects map
 
@@ -38,14 +41,14 @@ static void erase_gfxobj(GfxObj* gfxobj);
 RasterModule::RasterModule()
 {
   objects_map = new std::map<gfxobj_id, GfxObj*>;
-  objects_mutex = jmutex_new();
+  objects_mutex = new Mutex();
 }
 
 RasterModule::~RasterModule()
 {
   assert(objects_map->empty());
   delete objects_map;
-  jmutex_free(objects_mutex);
+  delete objects_mutex;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -65,25 +68,21 @@ GfxObj::GfxObj(const GfxObj& gfxobj)
 
 GfxObj::~GfxObj()
 {
+  ScopedLock lock(*objects_mutex);
+
   // we have to remove this object from the map
-  jmutex_lock(objects_mutex);
-  {
-    erase_gfxobj(this);
-  }
-  jmutex_unlock(objects_mutex);
+  erase_gfxobj(this);
 }
 
 void GfxObj::assign_id()
 {
-  // we have to assign an ID for this object
-  jmutex_lock(objects_mutex);
-  {
-    this->id = ++object_id;
+  ScopedLock lock(*objects_mutex);
 
-    // and here we add the object in the map of graphics-objects
-    insert_gfxobj(this);
-  }
-  jmutex_unlock(objects_mutex);
+  // we have to assign an ID for this object
+  this->id = ++object_id;
+
+  // and here we add the object in the map of graphics-objects
+  insert_gfxobj(this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -91,17 +90,15 @@ void GfxObj::assign_id()
 GfxObj* gfxobj_find(gfxobj_id id)
 {
   GfxObj* ret = NULL;
-
-  jmutex_lock(objects_mutex);
   {
+    ScopedLock lock(*objects_mutex);
+
     std::map<gfxobj_id, GfxObj*>::iterator
       it = objects_map->find(id);
 
     if (it != objects_map->end())
       ret = it->second;
   }
-  jmutex_unlock(objects_mutex);
-
   return ret;
 }
 
@@ -110,13 +107,11 @@ void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id)
   assert(gfxobj_find(gfxobj->id) == gfxobj);
   assert(gfxobj_find(id) == NULL);
 
-  jmutex_lock(objects_mutex);
-  {
-    erase_gfxobj(gfxobj);	// remove the object
-    gfxobj->id = id;		// change the ID
-    insert_gfxobj(gfxobj);	// insert the object again in the map
-  }
-  jmutex_unlock(objects_mutex);
+  ScopedLock lock(*objects_mutex);
+
+  erase_gfxobj(gfxobj);	// remove the object
+  gfxobj->id = id;		// change the ID
+  insert_gfxobj(gfxobj);	// insert the object again in the map
 }
 
 //////////////////////////////////////////////////////////////////////

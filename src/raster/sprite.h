@@ -22,6 +22,8 @@
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 
+namespace Vaca { class Mutex; }
+
 struct FormatOptions;
 class Image;
 class Layer;
@@ -82,7 +84,7 @@ private:
   int m_extras_opacity;		// Opacity to be used to draw the extra image
 
   // Mutex to modify the 'locked' flag.
-  JMutex m_mutex;
+  Vaca::Mutex* m_mutex;
 
   // True if some thread is writing the sprite.
   bool m_write_lock;

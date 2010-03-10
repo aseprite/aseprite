@@ -34,6 +34,7 @@
 
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
+#include "Vaca/Widget.h"
 
 #include <string>
 
@@ -170,7 +171,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode);
 
 //////////////////////////////////////////////////////////////////////
 
-class Widget
+class Widget : public Vaca::Widget
 {
 public:
   JID id;			/* identify code */

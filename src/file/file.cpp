@@ -24,7 +24,8 @@
 
 #include "jinete/jalert.h"
 #include "jinete/jlist.h"
-#include "jinete/jmutex.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #include "console.h"
 #include "app.h"
@@ -35,6 +36,9 @@
 #include "modules/palettes.h"
 #include "raster/raster.h"
 #include "widgets/statebar.h"
+
+using Vaca::Mutex;
+using Vaca::ScopedLock;
 
 extern FileFormat format_ase;
 extern FileFormat format_bmp;
@@ -671,21 +675,15 @@ void fop_operate(FileOp *fop)
 void fop_done(FileOp *fop)
 {
   /* finally done */
-  jmutex_lock(fop->mutex);
-  {
-    fop->done = true;
-  }
-  jmutex_unlock(fop->mutex);
+  ScopedLock lock(*fop->mutex);
+  fop->done = true;
 }
 
 void fop_stop(FileOp *fop)
 {
-  jmutex_lock(fop->mutex);
-  {
-    if (!fop->done)
-      fop->stop = true;
-  }
-  jmutex_unlock(fop->mutex);
+  ScopedLock lock(*fop->mutex);
+  if (!fop->done)
+    fop->stop = true;
 }
 
 void fop_free(FileOp *fop)
@@ -710,7 +708,7 @@ void fop_free(FileOp *fop)
     palette_free(fop->seq.palette);
 
   if (fop->mutex)
-    jmutex_free(fop->mutex);
+    delete fop->mutex;
 
   jfree(fop);
 }
@@ -792,9 +790,10 @@ void fop_error(FileOp *fop, const char *format, ...)
   uvszprintf(buf_error, sizeof(buf_error), format, ap);
   va_end(ap);
 
-  jmutex_lock(fop->mutex);
   {
-    /* concatenate old errors with the new one */
+    ScopedLock lock(*fop->mutex);
+
+    // Concatenate old errors with the new one
     if (fop->error) {
       char *old_error = fop->error;
       fop->error = reinterpret_cast<char*>(jmalloc(ustrsizez(old_error) + ustrsizez(buf_error) + 1));
@@ -806,37 +805,31 @@ void fop_error(FileOp *fop, const char *format, ...)
     else
       fop->error = jstrdup(buf_error);
   }
-  jmutex_unlock(fop->mutex);
 }
 
 void fop_progress(FileOp *fop, float progress)
 {
   /* rest(8); */
 
-  jmutex_lock(fop->mutex);
-  {
-    if (fop->seq.filename_list != NULL) {
-      fop->progress =
-	fop->seq.progress_offset +
-	fop->seq.progress_fraction*progress;
-    }
-    else {
-      fop->progress = progress;
-    }
+  ScopedLock lock(*fop->mutex);
+
+  if (fop->seq.filename_list != NULL) {
+    fop->progress =
+      fop->seq.progress_offset +
+      fop->seq.progress_fraction*progress;
   }
-  jmutex_unlock(fop->mutex);
+  else {
+    fop->progress = progress;
+  }
 }
 
 float fop_get_progress(FileOp *fop)
 {
   float progress;
-
-  jmutex_lock(fop->mutex);
   {
+    ScopedLock lock(*fop->mutex);
     progress = fop->progress;
   }
-  jmutex_unlock(fop->mutex);
-
   return progress;
 }
 
@@ -847,26 +840,20 @@ float fop_get_progress(FileOp *fop)
 bool fop_is_done(FileOp *fop)
 {
   bool done;
-
-  jmutex_lock(fop->mutex);
   {
+    ScopedLock lock(*fop->mutex);
     done = fop->done;
   }
-  jmutex_unlock(fop->mutex);
-
   return done;
 }
 
 bool fop_is_stop(FileOp *fop)
 {
   bool stop;
-
-  jmutex_lock(fop->mutex);
   {
+    ScopedLock lock(*fop->mutex);
     stop = fop->stop;
   }
-  jmutex_unlock(fop->mutex);
-
   return stop;
 }
 
@@ -881,7 +868,7 @@ static FileOp *fop_new(FileOpType type)
   fop->sprite = NULL;
   fop->filename = NULL;
 
-  fop->mutex = jmutex_new();
+  fop->mutex = new Mutex();
   fop->progress = 0.0f;
   fop->error = NULL;
   fop->done = false;

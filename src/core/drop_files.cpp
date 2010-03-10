@@ -21,9 +21,10 @@
 #include <allegro.h>
 #include <vector>
 
-#include "jinete/jmutex.h"
 #include "jinete/jstring.h"
 #include "jinete/jwindow.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -36,9 +37,12 @@
 
 #ifdef ALLEGRO_WINDOWS
 
+using Vaca::Mutex;
+using Vaca::ScopedLock;
+
 static WNDPROC base_wnd_proc = NULL;
 static std::vector<jstring>* dropped_files;
-static JMutex dropped_files_mutex;
+static Mutex* dropped_files_mutex = NULL;
 
 static void subclass_hwnd();
 static void unsubclass_hwnd();
@@ -47,7 +51,7 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 void install_drop_files()
 {
   dropped_files = new std::vector<jstring>();
-  dropped_files_mutex = jmutex_new();
+  dropped_files_mutex = new Mutex();
 
   subclass_hwnd();
 }
@@ -56,7 +60,7 @@ void uninstall_drop_files()
 {
   unsubclass_hwnd();
   
-  jmutex_free(dropped_files_mutex);
+  delete dropped_files_mutex;
   dropped_files_mutex = NULL;
 
   delete dropped_files;
@@ -70,7 +74,7 @@ void check_for_dropped_files()
   if (!app_get_top_window()->is_toplevel())
     return;
 
-  jmutex_lock(dropped_files_mutex);
+  ScopedLock lock(*dropped_files_mutex);
   if (!dropped_files->empty()) {
     std::vector<jstring> files = *dropped_files;
     dropped_files->clear();
@@ -87,7 +91,6 @@ void check_for_dropped_files()
       UIContext::instance()->execute_command(cmd_open_file, &params);
     }
   }
-  jmutex_unlock(dropped_files_mutex);
 }
 
 static void subclass_hwnd()
@@ -116,8 +119,8 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   switch (msg) {
 
     case WM_DROPFILES:
-      jmutex_lock(dropped_files_mutex);
       {
+	ScopedLock lock(*dropped_files_mutex);
 	HDROP hdrop = (HDROP)(wparam);
 	int index, count, length;
 
@@ -134,7 +137,6 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	DragFinish(hdrop);
       }
-      jmutex_unlock(dropped_files_mutex);
       break;
 
   }

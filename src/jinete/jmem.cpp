@@ -37,8 +37,8 @@
 #include <string.h>
 #include <allegro/unicode.h>
 
-#include "jinete/jbase.h"
-#include "jinete/jmutex.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #if !defined MEMLEAK
 
@@ -133,16 +133,19 @@ typedef struct slot_t
   struct slot_t* next;
 } slot_t;
 
+using Vaca::Mutex;
+using Vaca::ScopedLock;
+
 static bool memleak_status = false;
 static slot_t* headslot;
-static JMutex mutex;
+static Mutex mutex;
 
 void _jmemleak_init()
 {
   assert(!memleak_status);
 
   headslot = NULL;
-  mutex = jmutex_new();
+  mutex = new Mutex();
 
   memleak_status = true;
 }
@@ -208,7 +211,7 @@ void _jmemleak_exit()
 #endif
   }
 
-  jmutex_free(mutex);
+  delete mutex;
 }
 
 static void addslot(void *ptr, unsigned long size)
@@ -236,9 +239,8 @@ static void addslot(void *ptr, unsigned long size)
   p->size = size;
   p->next = headslot;
 
-  jmutex_lock(mutex);
+  ScopedLock lock(mutex);
   headslot = p;
-  jmutex_unlock(mutex);
 }
 
 static void delslot(void *ptr)
@@ -250,7 +252,7 @@ static void delslot(void *ptr)
 
   assert(ptr != NULL);
 
-  jmutex_lock(mutex);
+  ScopedLock lock(mutex);
 
   for (it=headslot; it!=NULL; prev=it, it=it->next) {
     if (it->ptr == ptr) {
@@ -263,8 +265,6 @@ static void delslot(void *ptr)
       break;
     }
   }
-
-  jmutex_unlock(mutex);
 }
 
 void *jmalloc(unsigned long n_bytes)

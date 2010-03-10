@@ -92,6 +92,10 @@ $(TINYXML_LIB): $(TINYXML_OBJS)
 	-rm -f $@
 	ar rs $@ $^
 
+$(VACA_LIB): $(VACA_OBJS)
+	-rm -f $@
+	ar rs $@ $^
+
 ######################################################################
 # Rules to build objects and the application
 
@@ -138,7 +142,8 @@ VPATH = src					\
 	$(LIBPNG_DIR)				\
 	$(ZLIB_DIR)				\
 	$(LOADPNG_DIR)				\
-	$(TINYXML_DIR)
+	$(TINYXML_DIR)				\
+	$(VACA_DIR)/src
 
 ASE_DEPS = $(ASE_OBJS) $(THIRD_PARTY_LIBS)
 
@@ -173,6 +178,9 @@ $(OBJ_DIR)/loadpng.%$(OBJ): %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OBJ_DIR)/tinyxml.%$(OBJ): %.cpp
+	$(CPP) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/vaca.%$(OBJ): %.cpp
 	$(CPP) $(CFLAGS) -o $@ -c $<
 
 ######################################################################

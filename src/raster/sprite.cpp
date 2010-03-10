@@ -22,12 +22,16 @@
 #include <string.h>
 
 #include "jinete/jlist.h"
-#include "jinete/jmutex.h"
+#include "Vaca/Mutex.h"
+#include "Vaca/ScopedLock.h"
 
 #include "file/format_options.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
+
+using Vaca::Mutex;
+using Vaca::ScopedLock;
 
 static Layer *index2layer(const Layer *layer, int index, int *index_count);
 static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count);
@@ -94,7 +98,7 @@ Sprite::Sprite(int imgtype, int w, int h)
   /* multiple access */
   m_write_lock = false;
   m_read_locks = 0;
-  m_mutex = jmutex_new();
+  m_mutex = new Mutex();
 
   /* file format options */
   this->format_options = NULL;
@@ -144,9 +148,7 @@ Sprite::~Sprite()
   delete this->m_extras;	// image
   if (this->frlens) jfree(this->frlens);
   if (this->bound.seg) jfree(this->bound.seg);
-
-  /* destroy mutex */
-  jmutex_free(this->m_mutex);
+  delete this->m_mutex;
 
   /* destroy file format options */
   if (this->format_options)
@@ -314,7 +316,7 @@ bool sprite_need_alpha(const Sprite* sprite)
  */
 bool Sprite::lock(bool write)
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock lock(*m_mutex);
 
   // read-only
   if (!write) {
@@ -344,7 +346,7 @@ bool Sprite::lock(bool write)
  */
 bool Sprite::lock_to_write()
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock lock(*m_mutex);
 
   // this only is possible if there are just one reader
   if (m_read_locks == 1) {
@@ -363,7 +365,8 @@ bool Sprite::lock_to_write()
  */
 void Sprite::unlock_to_read()
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock lock(*m_mutex);
+
   assert(m_read_locks == 0);
   assert(m_write_lock);
 
@@ -373,7 +376,7 @@ void Sprite::unlock_to_read()
 
 void Sprite::unlock()
 {
-  ScopedLock hold(m_mutex);
+  ScopedLock lock(*m_mutex);
 
   if (m_write_lock) {
     m_write_lock = false;

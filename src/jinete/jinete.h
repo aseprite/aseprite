@@ -54,7 +54,6 @@
 #include "jinete/jmanager.h"
 #include "jinete/jmenu.h"
 #include "jinete/jmessage.h"
-#include "jinete/jmutex.h"
 #include "jinete/jpanel.h"
 #include "jinete/jpoint.h"
 #include "jinete/jpopup_window.h"
