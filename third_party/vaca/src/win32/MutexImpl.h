@@ -29,6 +29,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0400
+#endif
 #include <windows.h>
 
 class Vaca::Mutex::MutexImpl
@@ -54,7 +57,11 @@ public:
 
   bool tryLock()
   {
+#if(_WIN32_WINNT >= 0x0400)
     return TryEnterCriticalSection(&m_handle) ? true: false;
+#else
+    return false;
+#endif
   }
 
   void unlock()

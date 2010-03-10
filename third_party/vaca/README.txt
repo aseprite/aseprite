@@ -1,6 +1,6 @@
-======================
- What is Vaca Fusion?
-======================
+===============
+ What is Vaca?
+===============
 
 This directory contains some code that is an attempt to merge Jinete
 source code (the original ASE GUI library which uses Allegro) and Vaca
