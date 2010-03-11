@@ -34,6 +34,10 @@
 
 #include "Vaca/base.h"
 
+#ifdef VACA_WINDOWS
+  struct tagRECT;
+#endif
+
 namespace Vaca {
 
 /**
@@ -110,8 +114,8 @@ public:
   bool operator!=(const Rect& rc) const;
 
 #ifdef VACA_WINDOWS
-  explicit Rect(LPCRECT rc);
-  operator RECT() const;
+  explicit Rect(const tagRECT* rc);
+  operator tagRECT() const;
 #endif
 
 };

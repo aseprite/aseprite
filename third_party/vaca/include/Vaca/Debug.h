@@ -58,6 +58,11 @@ void VACA_DLL trace(const char* filename, size_t line, const char* msg, ...);
 void VACA_DLL closeLogFile();
 
 #ifndef __GNUC__
+
+#include <cstdarg>
+
+#pragma warning(disable: 4996)
+
 /**
    @internal
       Dirty trick for compilers that does not support
@@ -75,12 +80,14 @@ struct trace_t {
     Vaca::details::trace(filename, line, buf);
   }
 };
+
 inline trace_t make_trace(const char* filename, size_t line) {
   trace_t tmp;
   tmp.filename = filename;
   tmp.line = line;
   return tmp;
 }
+
 #endif
 
 } // namespace details

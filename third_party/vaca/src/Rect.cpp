@@ -33,6 +33,10 @@
 #include "Vaca/Point.h"
 #include "Vaca/Size.h"
 
+#ifdef VACA_WINDOWS
+#include <windef.h>
+#endif
+
 using namespace Vaca;
 
 /**
@@ -422,7 +426,7 @@ bool Rect::operator!=(const Rect& rc) const
 
    @internal
 */
-Rect::Rect(LPCRECT rc)
+Rect::Rect(const tagRECT rc)
 {
   x = rc->left;
   y = rc->top;
@@ -436,9 +440,9 @@ Rect::Rect(LPCRECT rc)
 
    @internal
 */
-Rect::operator RECT() const
+Rect::operator tagRECT() const
 {
-  RECT rc;
+  tagRECT rc;
   rc.left = x;
   rc.top = y;
   rc.right = x+w;

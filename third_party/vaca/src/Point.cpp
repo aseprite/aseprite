@@ -32,6 +32,10 @@
 #include "Vaca/Point.h"
 #include "Vaca/Size.h"
 
+#ifdef VACA_WINDOWS
+#include <windef.h>
+#endif
+
 using namespace Vaca;
 
 Point::Point()
@@ -154,19 +158,19 @@ bool Point::operator!=(const Point& pt) const
 
 #ifdef VACA_WINDOWS
 
-Point::Point(CONST LPPOINT pt)
+Point::Point(const tagPOINT* pt)
 {
   x = pt->x;
   y = pt->y;
 }
 
-Point::Point(CONST LPPOINTS pt)
+Point::Point(const tagPOINTS* pt)
 {
   x = pt->x;
   y = pt->y;
 }
 
-Point::operator POINT() const
+Point::operator tagPOINT() const
 {
   POINT pt;
   pt.x = x;

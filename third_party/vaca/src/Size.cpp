@@ -32,6 +32,10 @@
 #include "Vaca/Size.h"
 #include "Vaca/Point.h"
 
+#ifdef VACA_WINDOWS
+#include <windef.h>
+#endif
+
 using namespace Vaca;
 
 Size::Size()
@@ -166,15 +170,15 @@ bool Size::operator!=(const Size& sz) const
 
 #ifdef VACA_WINDOWS
 
-Size::Size(CONST LPSIZE sz)
+Size::Size(const tagSIZE* sz)
 {
   w = sz->cx;
   h = sz->cy;
 }
 
-Size::operator SIZE() const
+Size::operator tagSIZE() const
 {
-  SIZE sz;
+  tagSIZE sz;
   sz.cx = w;
   sz.cy = h;
   return sz;

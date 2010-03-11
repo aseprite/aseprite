@@ -34,6 +34,11 @@
 
 #include "Vaca/base.h"
 
+#ifdef VACA_WINDOWS
+  struct tagPOINT;
+  struct tagPOINTS;
+#endif
+
 namespace Vaca {
 
 /**
@@ -69,9 +74,9 @@ public:
   bool operator!=(const Point& pt) const;
 
 #ifdef VACA_WINDOWS
-  explicit Point(CONST LPPOINT pt);
-  explicit Point(CONST LPPOINTS pt);
-  operator POINT() const;
+  explicit Point(const tagPOINT* pt);
+  explicit Point(const tagPOINTS* pt);
+  operator tagPOINT() const;
 #endif
 
 };

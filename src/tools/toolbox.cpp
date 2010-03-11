@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include <allegro/file.h>
 #include <allegro/fixed.h>
 #include <allegro/fmaths.h>
@@ -93,12 +94,12 @@ ToolBox::~ToolBox()
 {
   PRINTF("Toolbox module: uninstalling\n");
 
-  for_each(m_tools.begin(), m_tools.end(), deleter());
-  for_each(m_groups.begin(), m_groups.end(), deleter());
-  for_each(m_intertwiners.begin(), m_intertwiners.end(), deleter());
-  for_each(m_pointshapers.begin(), m_pointshapers.end(), deleter());
-  for_each(m_controllers.begin(), m_controllers.end(), deleter());
-  for_each(m_inks.begin(), m_inks.end(), deleter());
+  std::for_each(m_tools.begin(), m_tools.end(), deleter());
+  std::for_each(m_groups.begin(), m_groups.end(), deleter());
+  std::for_each(m_intertwiners.begin(), m_intertwiners.end(), deleter());
+  std::for_each(m_pointshapers.begin(), m_pointshapers.end(), deleter());
+  std::for_each(m_controllers.begin(), m_controllers.end(), deleter());
+  std::for_each(m_inks.begin(), m_inks.end(), deleter());
 
   PRINTF("Toolbox module: uninstalled\n");
 }

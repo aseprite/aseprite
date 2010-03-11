@@ -37,61 +37,17 @@
   #define VACA_WINDOWS
 #endif
 
-#pragma warning(disable: 4251)
-#pragma warning(disable: 4275)
-#pragma warning(disable: 4355)
-#pragma warning(disable: 4996)
 
-#include <algorithm>
-#include <stdarg.h>
 #include <string>
 
-#ifdef VACA_WINDOWS
-  #include <windows.h>
-  #include <commctrl.h>
-#endif
 
 #include "Vaca/Enum.h"
-
-// memory leaks
-#ifdef MEMORY_LEAK_DETECTOR
-  #include "debug_new.h"
-#endif
 
 namespace Vaca {
 
 #define VACA_VERSION     0
 #define VACA_SUB_VERSION 0
 #define VACA_WIP_VERSION 8
-
-/**
-   @def VACA_MAIN()
-   @brief Defines the name and arguments that the main routine
-   of the program should contain.
-
-   You can use it as:
-   @code
-   int VACA_MAIN()
-   {
-     ...
-   }
-   @endcode
-
-   @win32
-     It is the signature of @msdn{WinMain}. In other
-     operating systems this could be @c "main(int argc, char* argv[])".
-   @endwin32
-*/
-#ifdef VACA_WINDOWS
-  #define VACA_MAIN()				\
-    PASCAL WinMain(HINSTANCE hInstance,		\
-		   HINSTANCE hPrevInstance,	\
-		   LPSTR lpCmdLine,		\
-		   int nCmdShow)
-#else
-  #define VACA_MAIN()				\
-    int main(int argc, char* argv[])
-#endif
 
 /**
    @def VACA_DLL
@@ -374,13 +330,16 @@ template<typename ContainerType>
 void remove_from_container(ContainerType& container,
 			   typename ContainerType::const_reference element)
 {
-  typename ContainerType::iterator
-    it = std::find(container.begin(),
-		   container.end(),
-		   element);
-
-  if (it != container.end())
-    container.erase(it);
+  for (typename ContainerType::iterator
+	 it = container.begin(),
+	 end = container.end(); it != end; ) {
+    if (*it == element) {
+      it = container.erase(it);
+      end = container.end();
+    }
+    else
+      ++it;
+  }
 }
 
 // ======================================================================
