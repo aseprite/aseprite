@@ -20,10 +20,10 @@
 #define CORE_CFG_H_INCLUDED
 
 #include <allegro/config.h>
-#include "jinete/jbase.h"
-#include "jinete/jrect.h"
-
+#include "Vaca/Rect.h"
 #include "core/color.h"
+
+using Vaca::Rect;
 
 class ConfigModule
 {

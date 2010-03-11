@@ -19,10 +19,12 @@
 #ifndef SETTINGS_SETTINGS_H_INCLUDED
 #define SETTINGS_SETTINGS_H_INCLUDED
 
-#include "jinete/jrect.h"
+#include "Vaca/Rect.h"
 #include "core/color.h"
 #include "tiled_mode.h"
 #include "pen_type.h"
+
+using Vaca::Rect;
 
 class IToolSettings;
 class IPenSettings;

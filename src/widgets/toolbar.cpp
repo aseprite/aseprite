@@ -25,6 +25,7 @@
 #include "jinete/jinete.h"
 #include "Vaca/Bind.h"
 #include "Vaca/Signal.h"
+#include "Vaca/Size.h"
 
 #include "app.h"
 #include "ui_context.h"
@@ -36,6 +37,8 @@
 #include "tools/toolbox.h"
 #include "widgets/groupbut.h"
 #include "widgets/toolbar.h"
+
+using Vaca::Size;
 
 // Class to show selected tools for each tool (vertically)
 class ToolBar : public Widget

@@ -23,11 +23,15 @@
 #include <list>
 #include <vector>
 
+#include "Vaca/Point.h"
+#include "Vaca/Rect.h"
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"
-#include "jinete/jpoint.h"
 
 #include "tiled_mode.h"
+
+using Vaca::Point;
+using Vaca::Rect;
 
 class Context;
 class Sprite;

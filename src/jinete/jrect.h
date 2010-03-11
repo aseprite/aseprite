@@ -33,8 +33,6 @@
 #define JINETE_JRECT_H_INCLUDED
 
 #include "jinete/jbase.h"
-#include "jinete/jpoint.h"
-#include "jinete/jsize.h"
 
 #define jrect_w(r) (((JRect)(r))->x2-((JRect)(r))->x1)
 #define jrect_h(r) (((JRect)(r))->y2-((JRect)(r))->y1)
@@ -63,10 +61,5 @@ void jrect_stretch(JRect rect, int border);
 
 void jrect_moveto(JRect rect, int x, int y);
 void jrect_displace(JRect rect, int dx, int dy);
-
-// Jinete+Vaca merge
-#include "Vaca/Rect.h"
-
-using Vaca::Rect;
 
 #endif

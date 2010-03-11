@@ -32,11 +32,12 @@
 #ifndef JINETE_JWIDGET_H_INCLUDED
 #define JINETE_JWIDGET_H_INCLUDED
 
+#include <string>
+
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
+#include "Vaca/Rect.h"
 #include "Vaca/Widget.h"
-
-#include <string>
 
 #ifndef NDEBUG
 #include "jinete/jintern.h"
@@ -45,6 +46,8 @@
 #else
 #define assert_valid_widget(widget) ((void)0)
 #endif
+
+using Vaca::Rect;
 
 struct FONT;
 struct BITMAP;
