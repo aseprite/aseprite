@@ -31,17 +31,12 @@
 
 #include "Vaca/Mutex.h"
 
-#if defined(VACA_WINDOWS)
+#if defined(VACA_ON_WINDOWS)
   #include "win32/MutexImpl.h"
-#elif defined(VACA_ALLEGRO)
-  #include <allegro/base.h>
-  #if defined(ALLEGRO_WINDOWS)
-    #include "win32/MutexImpl.h"
-  #else
-    #include "unix/MutexImpl.h"
-  #endif
-#else
+#elif defined(VACA_ON_UNIXLIKE)
   #include "unix/MutexImpl.h"
+#else
+  #error Your pltform does not support mutexes
 #endif 
 
 using namespace Vaca;

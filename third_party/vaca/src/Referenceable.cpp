@@ -33,17 +33,21 @@
 #include "Vaca/Debug.h"
 
 #ifndef NDEBUG
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
-#include <vector>
-#include <typeinfo>
+  #include "Vaca/Mutex.h"
+  #include "Vaca/ScopedLock.h"
+  #include <vector>
+  #include <typeinfo>
+  #ifdef VACA_ON_WINDOWS
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+  #endif
 #endif
 
 using namespace Vaca;
 
 #ifndef NDEBUG
-static Mutex s_mutex;
-static std::vector<Referenceable*> s_list;
+  static Mutex s_mutex;
+  static std::vector<Referenceable*> s_list;
 #endif
 
 /**
@@ -129,7 +133,7 @@ unsigned Referenceable::getRefCount()
 #ifndef NDEBUG
 void Referenceable::showLeaks()
 {
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   if (!s_list.empty())
     ::Beep(400, 100);
 #endif

@@ -33,8 +33,9 @@
 #include "Vaca/Point.h"
 #include "Vaca/Size.h"
 
-#ifdef VACA_WINDOWS
-#include <windef.h>
+#ifdef VACA_ON_WINDOWS
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
 #endif
 
 using namespace Vaca;
@@ -418,7 +419,7 @@ bool Rect::operator!=(const Rect& rc) const
     y != rc.y || h != rc.h;
 }
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
 
 /**
    Converts a Win32's rectangle (RECT structure) to a Vaca's rectangle
@@ -426,12 +427,12 @@ bool Rect::operator!=(const Rect& rc) const
 
    @internal
 */
-Rect::Rect(const tagRECT rc)
+Rect::Rect(const tagRECT* rc)
 {
   x = rc->left;
   y = rc->top;
-  w = rc->right-rc->left;
-  h = rc->bottom-rc->top;
+  w = rc->right - rc->left;
+  h = rc->bottom - rc->top;
 }
 
 /**

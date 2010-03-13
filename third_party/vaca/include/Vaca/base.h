@@ -32,15 +32,34 @@
 #ifndef VACA_BASE_H
 #define VACA_BASE_H
 
-// Windows is the default Vaca platform
-#if !defined(VACA_ALLEGRO) && !defined(VACA_GTK)
-  #define VACA_WINDOWS
+// If there are not a defined target (like VACA_WINDOWS)...
+#if !defined(VACA_WINDOWS) &&			\
+    !defined(VACA_ALLEGRO) &&			\
+    !defined(VACA_SDL) &&			\
+    !defined(VACA_GTK) &&			\
+    !defined(VACA_X11)
+  // ...we define VACA_DEFAULT_PLATFORM to specify that the default
+  // target will be used
+  #define VACA_DEFAULT_TARGET
 #endif
 
+// If we are in Windows compiler
+#if defined(_MSC_VER) || \
+    defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || \
+    defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+  #ifdef VACA_DEFAULT_TARGET
+    #define VACA_WINDOWS
+  #endif
+  // We define a macro to know that we can use Windows API
+  #define VACA_ON_WINDOWS
+#else
+  #ifdef VACA_DEFAULT_TARGET
+    #define VACA_ALLEGRO // TODO change this to VACA_X11 when X11 support be completed
+  #endif
+  #define VACA_ON_UNIXLIKE
+#endif
 
 #include <string>
-
-
 #include "Vaca/Enum.h"
 
 namespace Vaca {
@@ -343,7 +362,7 @@ void remove_from_container(ContainerType& container,
 }
 
 // ======================================================================
-// Classes
+// Forward declarations
 
 class Anchor;
 class AnchorLayout;

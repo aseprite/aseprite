@@ -34,7 +34,7 @@
 
 #include "Vaca/base.h"
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   struct tagPOINT;
   struct tagPOINTS;
 #endif
@@ -73,7 +73,7 @@ public:
   bool operator==(const Point& pt) const;
   bool operator!=(const Point& pt) const;
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   explicit Point(const tagPOINT* pt);
   explicit Point(const tagPOINTS* pt);
   operator tagPOINT() const;

@@ -32,8 +32,9 @@
 #include "Vaca/Size.h"
 #include "Vaca/Point.h"
 
-#ifdef VACA_WINDOWS
-#include <windef.h>
+#ifdef VACA_ON_WINDOWS
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
 #endif
 
 using namespace Vaca;
@@ -168,7 +169,7 @@ bool Size::operator!=(const Size& sz) const
   return w != sz.w || h != sz.h;
 }
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
 
 Size::Size(const tagSIZE* sz)
 {

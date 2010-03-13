@@ -34,7 +34,7 @@
 
 #include "Vaca/base.h"
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   struct tagSIZE;
 #endif
 
@@ -75,7 +75,7 @@ public:
   bool operator==(const Size& sz) const;
   bool operator!=(const Size& sz) const;
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   explicit Size(const tagSIZE* sz);
   operator tagSIZE() const;
 #endif

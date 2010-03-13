@@ -34,7 +34,7 @@
 
 #include "Vaca/base.h"
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   struct tagRECT;
 #endif
 
@@ -113,7 +113,7 @@ public:
   bool operator==(const Rect& rc) const;
   bool operator!=(const Rect& rc) const;
 
-#ifdef VACA_WINDOWS
+#ifdef VACA_ON_WINDOWS
   explicit Rect(const tagRECT* rc);
   operator tagRECT() const;
 #endif
