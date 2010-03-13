@@ -30,6 +30,8 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
+#include "Vaca/String.h"
+
 #include "app.h"
 #include "ase_exception.h"
 #include "commands/commands.h"
@@ -78,7 +80,7 @@ class App::Modules
 public:
   // ASE Modules
   ConfigModule m_config_module;
-  CheckArgs m_check_args;
+  CheckArgs m_checkArgs;
   LoggerModule m_logger_module;
   IntlModule m_intl_module;
   FileSystemModule m_file_system_module;
@@ -86,11 +88,6 @@ public:
   RasterModule m_raster;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
-
-  Modules(int argc, char* argv[])
-    : m_check_args(argc, argv)
-  { }
-  ~Modules() { }
 };
 
 App* App::m_instance = NULL;
@@ -113,7 +110,7 @@ static void tabsbar_select_callback(Widget* tabs, void *data, int button);
 
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
-App::App(int argc, char* argv[])
+App::App()
   : m_modules(NULL)
   , m_legacy(NULL)
 {
@@ -121,7 +118,7 @@ App::App(int argc, char* argv[])
   m_instance = this;
 
   // create private implementation data
-  m_modules = new Modules(argc, argv);
+  m_modules = new Modules();
   m_legacy = new LegacyModules(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
  
   // init editor cursor
@@ -235,15 +232,15 @@ int App::run()
   PRINTF("Processing options...\n");
   
   for (CheckArgs::iterator
-	 it  = m_modules->m_check_args.begin();
-         it != m_modules->m_check_args.end(); ++it) {
+	 it  = m_modules->m_checkArgs.begin();
+         it != m_modules->m_checkArgs.end(); ++it) {
     CheckArgs::Option* option = *it;
 
     switch (option->type()) {
 
       case CheckArgs::Option::OpenSprite: {
 	/* load the sprite */
-	Sprite *sprite = sprite_load(option->data());
+	Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
 	if (!sprite) {
 	  /* error */
 	  if (ase_mode & MODE_GUI)
@@ -262,14 +259,14 @@ int App::run()
 	    set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
 	    /* recent file */
-	    recent_file(option->data());
+	    recent_file(Vaca::convert_to<std::string>(option->data()).c_str());
 	  }
 	}
 	break;
       }
     }
   }
-  m_modules->m_check_args.clear();
+  m_modules->m_checkArgs.clear();
 
   /* just batch mode */
   if (ase_mode & MODE_BATCH) {

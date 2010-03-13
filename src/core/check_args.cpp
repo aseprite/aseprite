@@ -18,96 +18,97 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
+#include "Vaca/String.h"
+#include "Vaca/System.h"
 
 #include "core/core.h"
 #include "core/check_args.h"
 #include "core/cfg.h"
 #include "console.h"
-  
-CheckArgs::CheckArgs(int argc, char* argv[])
-  : m_exe_name(argv[0])
-{
-  Console console;
-  int i, n, len;
-  char *arg;
 
-  for (i=1; i<argc; i++) {
-    arg = argv[i];
+using namespace Vaca;
+  
+CheckArgs::CheckArgs()
+{
+  const std::vector<String>& args(System::getArgs());
+
+  // Exe name
+  m_exeName = args[0];
+
+  // Convert arguments to recognized options
+  Console console;
+  size_t i, n, len;
+
+  for (i=1; i<args.size(); i++) {
+    const String& arg(args[i]);
 
     for (n=0; arg[n] == '-'; n++);
-    len = strlen(arg+n);
+    len = arg.size()-n;
 
-    /* option */
+    // Option
     if ((n > 0) && (len > 0)) {
-      /* use other palette file */
-      if (strncmp(arg+n, "palette", len) == 0) {
-	if (++i < argc)
-	  m_palette_filename = argv[i];
+      String option = arg.substr(n);
+      
+      // Use other palette file
+      if (option == L"palette") {
+	if (++i < args.size())
+	  m_paletteFilename = args[i];
 	else
 	  usage(false);
       }
-      /* video resolution */
-      else if (strncmp(arg+n, "resolution", len) == 0) {
-	if (++i < argc) {
-	  int c, num1=0, num2=0, num3=0;
-	  char *tok;
+      // Video resolution
+      else if (option == L"resolution") {
+	if (++i < args.size()) {
+	  // The following argument should indicate the resolution
+	  // in a format like: 320x240[x8]
+	  std::vector<String> parts;
+	  split_string(args[i], parts, L"x");
 
-	  /* el próximo argumento debe indicar un formato de
-	     resolución algo como esto: 320x240[x8] o [8] */
-	  c = 0;
-
-	  for (tok=ustrtok(argv[i], "x"); tok;
-	       tok=ustrtok(NULL, "x")) {
-	    switch (c) {
-	      case 0: num1 = ustrtol(tok, NULL, 10); break;
-	      case 1: num2 = ustrtol(tok, NULL, 10); break;
-	      case 2: num3 = ustrtol(tok, NULL, 10); break;
-	    }
-	    c++;
-	  }
-
-	  switch (c) {
+	  switch (parts.size()) {
 	    case 1:
-	      set_config_int("GfxMode", "Depth", num1);
+	      set_config_int("GfxMode", "Depth", convert_to<double>(parts[0]));
 	      break;
 	    case 2:
 	    case 3:
-	      set_config_int("GfxMode", "Width", num1);
-	      set_config_int("GfxMode", "Height", num2);
-	      if (c == 3)
-		set_config_int("GfxMode", "Depth", num3);
+	      set_config_int("GfxMode", "Width", convert_to<double>(parts[0]));
+	      set_config_int("GfxMode", "Height", convert_to<double>(parts[1]));
+	      if (parts.size() == 3)
+		set_config_int("GfxMode", "Depth", convert_to<double>(parts[2]));
+	      break;
+	    default:
+	      usage(false);
 	      break;
 	  }
 	}
 	else {
 	  console.printf(_("%s: option \"res\" requires an argument\n"), 
-			 m_exe_name);
+			 m_exeName.c_str());
 	  usage(false);
 	}
       }
-      /* verbose mode */
-      else if (strncmp(arg+n, "verbose", len) == 0) {
+      // Verbose mode
+      else if (option == L"verbose") {
 	ase_mode |= MODE_VERBOSE;
       }
-      /* show help */
-      else if (strncmp(arg+n, "help", len) == 0) {
+      // Show help
+      else if (option == L"help") {
 	usage(true);
       }
-      /* show version */
-      else if (strncmp(arg+n, "version", len) == 0) {
+      // Show version
+      else if (option == L"version") {
 	ase_mode |= MODE_BATCH;
 
 	console.printf("%s %s\n", PACKAGE, VERSION);
       }
-      /* invalid argument */
+      // Invalid argument
       else {
 	usage(false);
       }
     }
-    /* graphic file to open */
-    else if (n == 0)
-      m_options.push_back(new Option(Option::OpenSprite, argv[i]));
+    // Graphic file to open
+    else if (n == 0) {
+      m_options.push_back(new Option(Option::OpenSprite, args[i]));
+    }
   }
 
   // GUI is the default mode
@@ -129,14 +130,14 @@ void CheckArgs::clear()
 }
 
 // Shows the available options for the program
-void CheckArgs::usage(bool show_help)
+void CheckArgs::usage(bool showHelp)
 {
   Console console;
 
   ase_mode |= MODE_BATCH;
 
   // show options
-  if (show_help) {
+  if (showHelp) {
     // copyright
     console.printf
       ("%s v%s | animated sprite editor\n%s\n\n",
@@ -145,7 +146,7 @@ void CheckArgs::usage(bool show_help)
     // usage
     console.printf
       ("%s\n  %s [%s] [%s]...\n\n",
-       _("Usage:"), m_exe_name, _("OPTION"), _("FILE"));
+       _("Usage:"), m_exeName.c_str(), _("OPTION"), _("FILE"));
 
     /* options */
     console.printf
@@ -171,6 +172,6 @@ void CheckArgs::usage(bool show_help)
   /* how to show options */
   else {
     console.printf(_("Try \"%s --help\" for more information.\n"), 
-		   m_exe_name);
+		   m_exeName.c_str());
   }
 }

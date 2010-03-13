@@ -56,10 +56,8 @@ public:
   }
 };
 
-/**
- * Here ASE starts.
- */
-int main(int argc, char* argv[])
+// ASE entry point (this function is called from Vaca library)
+int vaca_main()
 {
   int status = 1;		// 1 = error
 
@@ -74,7 +72,7 @@ int main(int argc, char* argv[])
 #endif DEBUGMODE
 
       Jinete jinete;
-      App app(argc, argv);
+      App app;
 
       status = app.run();
 
@@ -97,5 +95,3 @@ int main(int argc, char* argv[])
 
   return status;
 }
-
-END_OF_MAIN();

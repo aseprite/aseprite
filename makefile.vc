@@ -39,7 +39,7 @@ LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86
 
 LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
        Msimg32.lib WinMM.lib AdvAPI32.lib Ole32.lib ShLwApi.lib Vfw32.Lib   \
-       ddraw.lib dxguid.lib dsound.lib dinput8.lib
+       wininet.lib ddraw.lib dxguid.lib dsound.lib dinput8.lib
 
 ifdef DEBUGMODE
   ifdef STATIC_ALLEG_LINK

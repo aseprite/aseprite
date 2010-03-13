@@ -19,8 +19,10 @@
 #ifndef CORE_CHECK_ARGS_H_INCLUDED
 #define CORE_CHECK_ARGS_H_INCLUDED
 
-#include <string>
+#include "Vaca/String.h"
 #include <vector>
+
+using Vaca::String;
 
 /**
  * Looks the input arguments in the command line.
@@ -34,28 +36,28 @@ public:
   class Option
   {
     int m_type;
-    std::string m_data;
+    String m_data;
 
   public:
     enum {
       OpenSprite,
     };
 
-    Option(int type, const char* data) : m_type(type), m_data(data) { }
+    Option(int type, const String& data) : m_type(type), m_data(data) { }
 
     int type() const { return m_type; }
-    const char* data() const { return m_data.c_str(); }
+    const String& data() const { return m_data; }
   };
 
 private:
   std::vector<Option*> m_options;
-  std::string m_palette_filename;
-  const char* m_exe_name;
+  String m_paletteFilename;
+  String m_exeName;
 
 public:
   typedef std::vector<Option*>::iterator iterator;
   
-  CheckArgs(int argc, char *argv[]);
+  CheckArgs();
   ~CheckArgs();
 
   void clear();
@@ -63,10 +65,10 @@ public:
   iterator begin() { return m_options.begin(); }
   iterator end() { return m_options.end(); }
 
-  std::string get_palette_filename() { return m_palette_filename; }
+  String getPaletteFilename() const { return m_paletteFilename; }
 
 private:
-  void usage(bool show_help);
+  void usage(bool showHelp);
 
 };
 

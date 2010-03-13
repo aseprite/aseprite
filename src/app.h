@@ -41,7 +41,7 @@ class App
   LegacyModules* m_legacy;
 
 public:
-  App(int argc, char* argv[]);
+  App();
   ~App();
 
   static App* instance() { return m_instance; }
