@@ -277,7 +277,7 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_REQSIZE:
-      msg->reqsize.w = msg->reqsize.h = 24;
+      msg->reqsize.w = msg->reqsize.h = 24 * jguiscale();
       return true;
 
     case JM_DRAW: {
