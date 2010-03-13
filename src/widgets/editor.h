@@ -22,7 +22,6 @@
 #include "jinete/jbase.h"
 #include "jinete/jwidget.h"
 #include "core/color.h"
-
 #include "Vaca/Signal.h"
 
 #define MIN_ZOOM 0
@@ -158,8 +157,9 @@ public:
 
 private:
 
-  void editor_draw_cursor(int x, int y);
-  void editor_clean_cursor();
+  void editor_draw_cursor(int x, int y, bool refresh = true);
+  void editor_move_cursor(int x, int y, bool refresh = true);
+  void editor_clean_cursor(bool refresh = true);
   bool editor_cursor_is_subpixel();
 
   // keys.c
@@ -195,7 +195,8 @@ private:
   void editor_update_candraw();
   IToolLoop* createToolLoopImpl(Context* context, JMessage msg);
 
-  void for_each_pixel_of_pen(int x, int y, int color,
+  void for_each_pixel_of_pen(int screen_x, int screen_y,
+			     int sprite_x, int sprite_y, int color,
 			     void (*pixel)(BITMAP *bmp, int x, int y, int color));
 };
 

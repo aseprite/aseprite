@@ -1047,8 +1047,7 @@ bool Editor::msg_proc(JMessage msg)
 	     when the mouse moves only).  */
 	  if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
 	    jmouse_hide();
-	    editor_clean_cursor();
-	    editor_draw_cursor(x, y);
+	    editor_move_cursor(x, y);
 	    jmouse_show();
 	  }
 	}

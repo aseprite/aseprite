@@ -76,8 +76,8 @@ static int saved_pixel_n;
 
 // These clipping regions are shared between all editors, so we cannot
 // make assumptions about their old state
-static JRegion clipping_region;
-static JRegion old_clipping_region;
+static JRegion clipping_region = NULL;
+static JRegion old_clipping_region = NULL;
 
 static void generate_cursor_boundaries();
 
@@ -135,12 +135,13 @@ void Editor::set_cursor_color(color_t color)
 // Slots for App signals
 //////////////////////////////////////////////////////////////////////
 
+static int pen_size_thick = 0;
+static Pen* current_pen = NULL;
+
 static void on_palette_change_update_cursor_color()
 {
   update_cursor_color();
 }
-
-static int pen_size_thick = 0;
 
 static void on_pen_size_before_change()
 {
@@ -155,8 +156,36 @@ static void on_pen_size_after_change()
 {
   assert(current_editor != NULL);
 
+  // Show drawing cursor
   if (current_editor->getSprite() && pen_size_thick > 0)
     current_editor->show_drawing_cursor();
+}
+
+static Pen* editor_get_current_pen()
+{
+  // Create the current pen from settings
+  Tool* current_tool = UIContext::instance()
+    ->getSettings()
+    ->getCurrentTool();
+
+  IPenSettings* pen_settings = UIContext::instance()
+    ->getSettings()
+    ->getToolSettings(current_tool)
+    ->getPen();
+
+  assert(pen_settings != NULL);
+
+  if (!current_pen ||
+      current_pen->get_type() != pen_settings->getType() ||
+      current_pen->get_size() != pen_settings->getSize() ||
+      current_pen->get_angle() != pen_settings->getAngle()) {
+    delete current_pen;
+    current_pen = new Pen(pen_settings->getType(),
+			  pen_settings->getSize(),
+			  pen_settings->getAngle());
+  }
+
+  return current_pen;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -179,6 +208,9 @@ void Editor::editor_cursor_exit()
 
   if (cursor_bound.seg != NULL)
     jfree(cursor_bound.seg);
+
+  delete current_pen;
+  current_pen = NULL;
 }
 
 /**
@@ -193,10 +225,8 @@ void Editor::editor_cursor_exit()
  *
  * @see editor_clean_cursor
  */
-void Editor::editor_draw_cursor(int x, int y)
+void Editor::editor_draw_cursor(int x, int y, bool refresh)
 {
-  int color;
-
   assert(m_cursor_thick == 0);
 
   /* get drawable region */
@@ -204,7 +234,7 @@ void Editor::editor_draw_cursor(int x, int y)
 
   /* get cursor color */
   cursor_negative = is_cursor_mask();
-  color = get_raw_cursor_color();
+  int color = get_raw_cursor_color();
 
   /* cursor in the screen (view) */
   m_cursor_screen_x = x;
@@ -235,41 +265,36 @@ void Editor::editor_draw_cursor(int x, int y)
   // draw pixel/pen preview
   if (cursor_type & CURSOR_PENCIL &&
       m_state != EDITOR_STATE_DRAWING) {
-    int color = app_get_fg_color(m_sprite);
-
     IToolSettings* tool_settings = UIContext::instance()
       ->getSettings()
       ->getToolSettings(current_tool);
 
-    IPenSettings* pen_settings =
-      tool_settings->getPen();
-
-    assert(pen_settings != NULL);
-
-    Pen* pen = new Pen(pen_settings->getType(),
-		       pen_settings->getSize(),
-		       pen_settings->getAngle());
+    int pen_color = app_get_fg_color(m_sprite);
+    Pen* pen = editor_get_current_pen();
 
     m_sprite->set_extras_opacity(tool_settings->getOpacity());
 
     m_sprite->prepare_extra();
-    image_putpen(m_sprite->get_extras(), pen, x, y, color);
-    editors_draw_sprite(m_sprite,
-			x-pen->get_size()/2,
-			y-pen->get_size()/2,
-			x+pen->get_size()/2,
-			y+pen->get_size()/2);
+    image_putpen(m_sprite->get_extras(), pen, x, y, pen_color);
 
-    delete pen;
+    if (refresh) {
+      editors_draw_sprite(m_sprite,
+			  x-pen->get_size()/2,
+			  y-pen->get_size()/2,
+			  x+pen->get_size()/2,
+			  y+pen->get_size()/2);
+    }
   }
 
   /* save area and draw the cursor */
-  acquire_bitmap(ji_screen);
-  ji_screen->clip = false;
-  for_each_pixel_of_pen(x, y, color, savepixel);
-  for_each_pixel_of_pen(x, y, color, drawpixel);
-  ji_screen->clip = true;
-  release_bitmap(ji_screen);
+  if (refresh) {
+    acquire_bitmap(ji_screen);
+    ji_screen->clip = false;
+    for_each_pixel_of_pen(m_cursor_screen_x, m_cursor_screen_y, x, y, color, savepixel);
+    for_each_pixel_of_pen(m_cursor_screen_x, m_cursor_screen_y, x, y, color, drawpixel);
+    ji_screen->clip = true;
+    release_bitmap(ji_screen);
+  }
 
   // cursor thickness
   m_cursor_thick = 1; // get_thickness_for_cursor();
@@ -282,6 +307,48 @@ void Editor::editor_draw_cursor(int x, int y)
   if (old_clipping_region)
     jregion_free(old_clipping_region);
   old_clipping_region = clipping_region;
+}
+
+void Editor::editor_move_cursor(int x, int y, bool refresh)
+{
+  int old_screen_x = m_cursor_screen_x;
+  int old_screen_y = m_cursor_screen_y;
+  int old_x = m_cursor_editor_x;
+  int old_y = m_cursor_editor_y;
+
+  editor_clean_cursor(false);
+  editor_draw_cursor(x, y, false);
+
+  int new_x = m_cursor_editor_x;
+  int new_y = m_cursor_editor_y;
+
+  if (refresh) {
+    /* restore points */
+    acquire_bitmap(ji_screen);
+    ji_screen->clip = FALSE;
+    for_each_pixel_of_pen(old_screen_x, old_screen_y, old_x, old_y, 0, cleanpixel);
+    ji_screen->clip = TRUE;
+    release_bitmap(ji_screen);
+    
+    if (cursor_type & CURSOR_PENCIL &&
+	m_state != EDITOR_STATE_DRAWING) {
+      Pen* pen = editor_get_current_pen();
+      editors_draw_sprite(m_sprite,
+			  Vaca::min_value(new_x, old_x)-pen->get_size()/2,
+			  Vaca::min_value(new_y, old_y)-pen->get_size()/2,
+			  Vaca::max_value(new_x, old_x)+pen->get_size()/2,
+			  Vaca::max_value(new_y, old_y)+pen->get_size()/2);
+    }
+
+    /* save area and draw the cursor */
+    int color = get_raw_cursor_color();
+    acquire_bitmap(ji_screen);
+    ji_screen->clip = false;
+    for_each_pixel_of_pen(m_cursor_screen_x, m_cursor_screen_y, new_x, new_y, color, savepixel);
+    for_each_pixel_of_pen(m_cursor_screen_x, m_cursor_screen_y, new_x, new_y, color, drawpixel);
+    ji_screen->clip = true;
+    release_bitmap(ji_screen);
+  }
 }
 
 /**
@@ -297,7 +364,7 @@ void Editor::editor_draw_cursor(int x, int y)
  *
  * @see editor_draw_cursor
  */
-void Editor::editor_clean_cursor()
+void Editor::editor_clean_cursor(bool refresh)
 {
   int x, y;
 
@@ -308,40 +375,30 @@ void Editor::editor_clean_cursor()
   x = m_cursor_editor_x;
   y = m_cursor_editor_y;
 
-  /* restore points */
-  acquire_bitmap(ji_screen);
-  ji_screen->clip = FALSE;
-  for_each_pixel_of_pen(x, y, 0, cleanpixel);
-  ji_screen->clip = TRUE;
-  release_bitmap(ji_screen);
+  if (refresh) {
+    /* restore points */
+    acquire_bitmap(ji_screen);
+    ji_screen->clip = FALSE;
+    for_each_pixel_of_pen(m_cursor_screen_x, m_cursor_screen_y, x, y, 0, cleanpixel);
+    ji_screen->clip = TRUE;
+    release_bitmap(ji_screen);
+  }
 
   // clean pixel/pen preview
   if (cursor_type & CURSOR_PENCIL &&
       m_state != EDITOR_STATE_DRAWING) {
-    Tool* current_tool = UIContext::instance()
-      ->getSettings()
-      ->getCurrentTool();
+    Pen* pen = editor_get_current_pen();
 
-    IPenSettings* pen_settings = UIContext::instance()
-      ->getSettings()
-      ->getToolSettings(current_tool)
-      ->getPen();
-
-    assert(pen_settings != NULL);
-
-    Pen* pen = new Pen(pen_settings->getType(),
-		       pen_settings->getSize(),
-		       pen_settings->getAngle());
-    
     m_sprite->prepare_extra();
     image_putpen(m_sprite->get_extras(), pen, x, y, 0);
-    editors_draw_sprite(m_sprite,
-			x-pen->get_size()/2,
-			y-pen->get_size()/2,
-			x+pen->get_size()/2,
-			y+pen->get_size()/2);
 
-    delete pen;
+    if (refresh) {
+      editors_draw_sprite(m_sprite,
+			  x-pen->get_size()/2,
+			  y-pen->get_size()/2,
+			  x+pen->get_size()/2,
+			  y+pen->get_size()/2);
+    }
   }
 
   m_cursor_thick = 0;
@@ -410,27 +467,26 @@ static void generate_cursor_boundaries()
   }
 }
 
-void Editor::for_each_pixel_of_pen(int x, int y, int color,
+void Editor::for_each_pixel_of_pen(int screen_x, int screen_y,
+				   int sprite_x, int sprite_y, int color,
 				   void (*pixel)(BITMAP *bmp, int x, int y, int color))
 {
   saved_pixel_n = 0;
 
   if (cursor_type & CURSOR_PENCIL) {
-    editor_cursor_pencil(this, m_cursor_screen_x, m_cursor_screen_y, color, 1, pixel);
+    editor_cursor_pencil(this, screen_x, screen_y, color, 1, pixel);
   }
 
   if (cursor_type & CURSOR_CROSS_ONE) {
-    editor_cursor_cross(this, x, y, color, 1, pixel);
+    editor_cursor_cross(this, sprite_x, sprite_y, color, 1, pixel);
   }
 
   if (cursor_type & CURSOR_BOUNDS) {
-    editor_cursor_bounds(this, x, y, color, pixel);
+    editor_cursor_bounds(this, sprite_x, sprite_y, color, pixel);
   }
 
   if (IS_SUBPIXEL(this)) {
-    (*pixel)(ji_screen,
-	     m_cursor_screen_x,
-	     m_cursor_screen_y, color);
+    (*pixel)(ji_screen, screen_x, screen_y, color);
   }
 }
 
