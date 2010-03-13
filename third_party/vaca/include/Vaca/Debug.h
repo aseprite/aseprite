@@ -39,17 +39,17 @@
 namespace Vaca {
 
 #ifdef NDEBUG
-#  ifdef __GNUC__
-#    define VACA_TRACE(msg...)
-#  else
-#    define VACA_TRACE(...)
-#  endif
+  #ifdef __GNUC__
+    #define VACA_TRACE(msg...)
+  #else
+    #define VACA_TRACE(...)
+  #endif
 #else
-#  ifdef __GNUC__
-#    define VACA_TRACE(msg...) Vaca::details::trace(__FILE__, __LINE__, msg)
-#  else
-#    define VACA_TRACE         Vaca::details::make_trace(__FILE__, __LINE__)
-#  endif
+  #ifdef __GNUC__
+    #define VACA_TRACE(msg...) Vaca::details::trace(__FILE__, __LINE__, msg)
+  #else
+    #define VACA_TRACE         Vaca::details::make_trace(__FILE__, __LINE__)
+  #endif
 #endif
 
 namespace details {
@@ -70,7 +70,7 @@ void VACA_DLL closeLogFile();
       Dirty trick for compilers that does not support
       macros with ellipsis (...).
 */
-struct trace_t {
+struct Tracer {
   const char* filename;
   size_t line;
   void operator()(const char* fmt, ...) {
@@ -83,8 +83,8 @@ struct trace_t {
   }
 };
 
-inline trace_t make_trace(const char* filename, size_t line) {
-  trace_t tmp;
+inline Tracer make_trace(const char* filename, size_t line) {
+  Tracer tmp;
   tmp.filename = filename;
   tmp.line = line;
   return tmp;
