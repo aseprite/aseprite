@@ -263,8 +263,10 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_REQSIZE:
-      msg->reqsize.w =
-	msg->reqsize.h = 2 + jwidget_get_text_height(widget) + 2;
+      msg->reqsize.w = msg->reqsize.h =
+	2*jguiscale()
+	+ jwidget_get_text_height(widget)
+	+ 2*jguiscale();
       return true;
 
     case JM_SETPOS:
@@ -282,11 +284,15 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       JRect rc = jwidget_get_rect(widget);
 
-      jdraw_rectedge(rc, ji_color_facelight(), ji_color_faceshadow());
-      jrect_shrink(rc, 1);
+      for (int i=0; i<jguiscale(); ++i) {
+	jdraw_rectedge(rc, ji_color_facelight(), ji_color_faceshadow());
+	jrect_shrink(rc, 1);
+      }
 
-      jdraw_rect(rc, ji_color_face());
-      jrect_shrink(rc, 1);
+      for (int i=0; i<jguiscale(); ++i) {
+	jdraw_rect(rc, ji_color_face());
+	jrect_shrink(rc, 1);
+      }
 
       /* status bar text */
       if (widget->getText()) {
