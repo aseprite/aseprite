@@ -30,9 +30,9 @@
 #include "widgets/tabs.h"
 
 #define CALC_TAB_WIDTH(widget, tab)				\
-  (4 + text_length(widget->getFont(), tab->text.c_str()) + 4)
+  (4*jguiscale() + text_length(widget->getFont(), tab->text.c_str()) + 4*jguiscale())
 
-#define ARROW_W		12
+#define ARROW_W		(12*jguiscale())
 
 #define HAS_ARROWS ((jwidget_get_parent(tabs->button_left) == widget))
 
@@ -231,7 +231,8 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       JRect rect = jwidget_get_rect(widget);
       JRect box = jrect_new(rect->x1-tabs->scroll_x, rect->y1,
-			    rect->x1-tabs->scroll_x+2, rect->y1+theme->get_part(PART_TAB_FILLER)->h);
+			    rect->x1-tabs->scroll_x+2*jguiscale(),
+			    rect->y1+theme->get_part(PART_TAB_FILLER)->h);
       JLink link;
 
       theme->draw_hline(box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
@@ -273,7 +274,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	    theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 	  
 	  jdraw_text(widget->getFont(), tab->text.c_str(),
-		     box->x1+4,
+		     box->x1+4*jguiscale(),
 		     (box->y1+box->y2)/2-text_height(widget->getFont())/2+1,
 		     text_color, face_color, false, jguiscale());
 	}
