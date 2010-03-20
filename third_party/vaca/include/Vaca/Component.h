@@ -34,6 +34,7 @@
 
 #include "Vaca/base.h"
 #include "Vaca/Referenceable.h"
+#include <map>
 
 namespace Vaca {
 
@@ -48,8 +49,21 @@ namespace Vaca {
 class VACA_DLL Component : public Referenceable
 {
 public:
+  typedef std::map<String, PropertyPtr> Properties;
+
   Component();
   virtual ~Component();
+
+  PropertyPtr getProperty(const String& name);
+  void setProperty(PropertyPtr property);
+
+  bool hasProperty(const String& name);
+  void removeProperty(const String& name);
+
+  const Properties& getProperties() const;
+
+private:
+  Properties m_properties;
 };
 
 } // namespace Vaca

@@ -512,6 +512,7 @@ VACA_SOURCES =					\
 	$(VACA_DIR)/src/Exception.cpp		\
 	$(VACA_DIR)/src/Mutex.cpp		\
 	$(VACA_DIR)/src/Point.cpp		\
+	$(VACA_DIR)/src/Property.cpp		\
 	$(VACA_DIR)/src/Rect.cpp		\
 	$(VACA_DIR)/src/Referenceable.cpp	\
 	$(VACA_DIR)/src/Size.cpp		\
