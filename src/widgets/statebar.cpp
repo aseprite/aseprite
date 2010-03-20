@@ -283,24 +283,32 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DRAW: {
       JRect rc = jwidget_get_rect(widget);
+      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
+					   jrect_h(&msg->draw.rect));
+      jrect_displace(rc,
+		     -msg->draw.rect.x1,
+		     -msg->draw.rect.y1);
 
       for (int i=0; i<jguiscale(); ++i) {
-	jdraw_rectedge(rc, ji_color_facelight(), ji_color_faceshadow());
+	jrectedge(doublebuffer, rc->x1, rc->y1, rc->x2-1, rc->y2-1,
+		  ji_color_facelight(), ji_color_faceshadow());
 	jrect_shrink(rc, 1);
       }
 
       for (int i=0; i<jguiscale(); ++i) {
-	jdraw_rect(rc, ji_color_face());
+	rect(doublebuffer, rc->x1, rc->y1, rc->x2-1, rc->y2-1,
+	     ji_color_face());
 	jrect_shrink(rc, 1);
       }
 
       /* status bar text */
       if (widget->getText()) {
-	jdraw_rectfill(rc, ji_color_face());
+	rectfill(doublebuffer,
+		 rc->x1, rc->y1, rc->x2-1, rc->y2-1, ji_color_face());
 
-	textout_ex(ji_screen, widget->getFont(), widget->getText(),
+	textout_ex(doublebuffer, widget->getFont(), widget->getText(),
 		   rc->x1+2,
-		   (widget->rc->y1+widget->rc->y2)/2-text_height(widget->getFont())/2,
+		   (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
 		   ji_color_foreground(), -1);
       }
 
@@ -317,7 +325,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	JI_LIST_FOR_EACH(statusbar->progress, link) {
 	  Progress* progress = reinterpret_cast<Progress*>(link->data);
 
-	  draw_progress_bar(ji_screen,
+	  draw_progress_bar(doublebuffer,
 			    x, y1, x+width-1, y2,
 			    progress->pos);
 
@@ -348,13 +356,20 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	  ustrcpy(buf, "Sprite is Locked");
 	}
 
-	textout_right_ex(ji_screen, widget->getFont(), buf,
+	textout_right_ex(doublebuffer, widget->getFont(), buf,
 			 rc->x2-2,
-			 (widget->rc->y1+widget->rc->y2)/2-text_height(widget->getFont())/2,
+			 (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
 			 ji_color_foreground(), -1);
       }
 
       jrect_free(rc);
+
+      blit(doublebuffer, ji_screen, 0, 0,
+	   msg->draw.rect.x1,
+	   msg->draw.rect.y1,
+	   doublebuffer->w,
+	   doublebuffer->h);
+      destroy_bitmap(doublebuffer);
       return true;
     }
 
