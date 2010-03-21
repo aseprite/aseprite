@@ -78,17 +78,8 @@ namespace Vaca {
   template<> VACA_DLL std::string   convert_to(const Char* const& from);
 
   template<> inline std::string convert_to(Char* const& from) {
-    // return convert_to<std::string, const Char* const&>(from);
-    return convert_to<std::string, Char*>(from);
+    return convert_to<std::string, const Char*>(from);
   }
-
-  // template<> inline std::string convert_to(const Char* from) {
-  //   return convert_to<std::string, const Char* const&>(from);
-  // }
-
-  // template<> inline std::string convert_to(const Char from[]) {
-  //   return convert_to<std::string, const Char* const&>(from);
-  // }
 
   // Convert to String
   template<> VACA_DLL String convert_to(const std::string& from);
@@ -101,17 +92,8 @@ namespace Vaca {
   template<> VACA_DLL String convert_to(const char* const& from);
 
   template<> inline String convert_to(char* const& from) {
-    // return convert_to<String, const char* const&>(from);
-    return convert_to<String, char*>(from);
+    return convert_to<String, const char*>(from);
   }
-
-  // template<> inline String convert_to(const char* from) {
-  //   return convert_to<String, const char* const&>(from);
-  // }
-
-  // template<> inline String convert_to(const char from[]) {
-  //   return convert_to<String, const char* const&>(from);
-  // }
 
   // Copy to a raw string
   VACA_DLL void copy_string_to(const String& src, Char* dest, int size);
