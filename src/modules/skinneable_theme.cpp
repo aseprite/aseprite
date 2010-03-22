@@ -345,21 +345,21 @@ static struct
 {
   int x, y;
 } focus_info[] = {
-  {  0,  0 }, //  PART_CURSOR_NORMAL,
-  {  0,  0 }, //  PART_CURSOR_NORMAL_ADD,
-  {  0,  0 }, //  PART_CURSOR_FORBIDDEN,
-  {  5,  3 }, //  PART_CURSOR_HAND,
-  {  8,  8 }, //  PART_CURSOR_SCROLL,
-  {  0,  0 }, //  PART_CURSOR_MOVE,
-  {  8,  8 }, //  PART_CURSOR_SIZE_TL,
-  {  8,  8 }, //  PART_CURSOR_SIZE_T,
-  {  8,  8 }, //  PART_CURSOR_SIZE_TR,
-  {  8,  8 }, //  PART_CURSOR_SIZE_L,
-  {  8,  8 }, //  PART_CURSOR_SIZE_R,
-  {  8,  8 }, //  PART_CURSOR_SIZE_BL,
-  {  8,  8 }, //  PART_CURSOR_SIZE_B,
-  {  8,  8 }, //  PART_CURSOR_SIZE_BR,
-  {  0, 15 }, //  PART_CURSOR_EYEDROPPER,
+  {  0,  0 }, //  JI_CURSOR_NORMAL,
+  {  0,  0 }, //  JI_CURSOR_NORMAL_ADD,
+  {  0,  0 }, //  JI_CURSOR_FORBIDDEN,
+  {  5,  3 }, //  JI_CURSOR_HAND,
+  {  8,  8 }, //  JI_CURSOR_SCROLL,
+  {  0,  0 }, //  JI_CURSOR_MOVE,
+  {  8,  8 }, //  JI_CURSOR_SIZE_TL,
+  {  8,  8 }, //  JI_CURSOR_SIZE_T,
+  {  8,  8 }, //  JI_CURSOR_SIZE_TR,
+  {  8,  8 }, //  JI_CURSOR_SIZE_L,
+  {  8,  8 }, //  JI_CURSOR_SIZE_R,
+  {  8,  8 }, //  JI_CURSOR_SIZE_BL,
+  {  8,  8 }, //  JI_CURSOR_SIZE_B,
+  {  8,  8 }, //  JI_CURSOR_SIZE_BR,
+  {  0, 15 }, //  JI_CURSOR_EYEDROPPER,
 };
 
 SkinneableTheme::SkinneableTheme()
@@ -480,8 +480,8 @@ BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
     return NULL;
   }
   else {
-    *focus_x = focus_info[type-JI_CURSOR_NORMAL].x;
-    *focus_y = focus_info[type-JI_CURSOR_NORMAL].y;
+    *focus_x = focus_info[type-JI_CURSOR_NORMAL].x*jguiscale();
+    *focus_y = focus_info[type-JI_CURSOR_NORMAL].y*jguiscale();
     return m_part[PART_CURSOR_NORMAL+type-JI_CURSOR_NORMAL];
   }
 }
