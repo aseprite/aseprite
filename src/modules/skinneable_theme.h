@@ -24,6 +24,22 @@
 #include <allegro/color.h>
 #include "jinete/jtheme.h"
 #include "jinete/jrect.h"
+#include "Vaca/Property.h"
+
+class SkinProperty : public Vaca::Property
+{
+public:
+  static const Vaca::Char* SkinPropertyName;
+
+  SkinProperty();
+  ~SkinProperty();
+
+  bool isMiniLook() const;
+  void setMiniLook(bool state);
+
+private:
+  bool m_isMiniLook;
+};
 
 enum {
 

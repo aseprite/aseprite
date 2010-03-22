@@ -1740,3 +1740,27 @@ bool SkinneableTheme::theme_combobox_button_msg_proc(JWidget widget, JMessage ms
 
   return false;
 }
+
+//////////////////////////////////////////////////////////////////////
+
+const Vaca::Char* SkinProperty::SkinPropertyName = L"SkinProperty";
+
+SkinProperty::SkinProperty()
+  : Property(SkinPropertyName)
+{
+  m_isMiniLook = false;
+}
+
+SkinProperty::~SkinProperty()
+{
+}
+
+bool SkinProperty::isMiniLook() const
+{
+  return m_isMiniLook;
+}
+
+void SkinProperty::setMiniLook(bool state)
+{
+  m_isMiniLook = state;
+}
