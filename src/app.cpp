@@ -446,7 +446,7 @@ Widget* app_get_tabsbar() { return tabsbar; }
 void app_default_statusbar_message()
 {
   statusbar_set_text(app_get_statusbar(), 250,
-		     "ASE " VERSION ", " COPYRIGHT);
+		     "%s %s | %s", PACKAGE, VERSION, COPYRIGHT);
 }
 
 int app_get_fg_color(Sprite *sprite)
