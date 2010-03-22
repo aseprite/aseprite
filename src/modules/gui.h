@@ -88,6 +88,8 @@ void hook_signal(Widget* widget,
 
 void get_widgets(Widget* window, ...);
 
+void setup_mini_look(Widget* widget);
+
 void add_gfxicon_to_button(Widget* button, int gfx_id, int icon_align);
 void set_gfxicon_in_button(Widget* button, int gfx_id);
 

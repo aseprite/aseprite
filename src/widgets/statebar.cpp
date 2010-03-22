@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "Vaca/Bind.h"
-#include "Vaca/SharedPtr.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
@@ -34,7 +33,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/skinneable_theme.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -79,11 +77,7 @@ JWidget statusbar_new()
   {									\
     (name) = jbutton_new(text);						\
     (name)->user_data[0] = statusbar;					\
-									\
-    Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);		\
-    skinProp->setMiniLook(true);					\
-    (name)->setProperty(skinProp);					\
-									\
+    setup_mini_look(name);						\
     jbutton_add_command_data((name), button_command, (void *)(data));	\
   }
 
@@ -114,9 +108,7 @@ JWidget statusbar_new()
     BUTTON_NEW(statusbar->b_layer, "*Current Layer*", ACTION_LAYER);
     statusbar->slider = jslider_new(0, 255, 255);
 
-    Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);
-    skinProp->setMiniLook(true);
-    statusbar->slider->setProperty(skinProp);
+    setup_mini_look(statusbar->slider);
 
     ICON_NEW(statusbar->b_first, GFX_ANI_FIRST, ACTION_FIRST);
     ICON_NEW(statusbar->b_prev, GFX_ANI_PREV, ACTION_PREV);

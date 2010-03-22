@@ -31,6 +31,7 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
+#include "Vaca/SharedPtr.h"
 
 #include "commands/command.h"
 #include "commands/commands.h"
@@ -771,6 +772,13 @@ void get_widgets(JWidget window, ...)
       throw widget_not_found(name);
   }
   va_end(ap);
+}
+
+void setup_mini_look(Widget* widget)
+{
+  Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);
+  skinProp->setMiniLook(true);
+  widget->setProperty(skinProp);
 }
 
 /**********************************************************************/
