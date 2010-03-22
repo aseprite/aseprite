@@ -157,6 +157,10 @@ jstring ase_file_selector(const jstring& message,
     add_gfxicon_to_button(goforward, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
     add_gfxicon_to_button(goup, GFX_ARROW_UP, JI_CENTER | JI_MIDDLE);
 
+    setup_mini_look(goback);
+    setup_mini_look(goforward);
+    setup_mini_look(goup);
+
     jbutton_add_command(goback, goback_command);
     jbutton_add_command(goforward, goforward_command);
     jbutton_add_command(goup, goup_command);
