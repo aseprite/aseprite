@@ -1669,23 +1669,35 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
   draw_sprite(ji_screen, m_part[nw+5], x2-m_part[nw+4]->w-m_part[nw+5]->w+1, y2-m_part[nw+5]->h+1);
   draw_sprite(ji_screen, m_part[nw+4], x2-m_part[nw+4]->w+1, y2-m_part[nw+4]->h+1);
 
-  // left
+  // Sub-clip
+  int cx1, cy1, cx2, cy2;
 
-  for (y = y1+m_part[nw]->h;
-       y < y2-m_part[nw+6]->h-m_part[nw+7]->h+1;
-       y += m_part[nw+7]->h) {
-    draw_sprite(ji_screen, m_part[nw+7], x1, y);
+  cx1 = ji_screen->cl;
+  cy1 = ji_screen->ct;
+  cx2 = ji_screen->cr-1;
+  cy2 = ji_screen->cb-1;
+
+  if (my_add_clip_rect(ji_screen, x1, y1+m_part[nw]->h, x2, y2-m_part[nw+6]->h)) {
+    // left
+
+    for (y = y1+m_part[nw]->h;
+	 y < y2-m_part[nw+6]->h-m_part[nw+7]->h+1;
+	 y += m_part[nw+7]->h) {
+      draw_sprite(ji_screen, m_part[nw+7], x1, y);
+    }
+    draw_sprite(ji_screen, m_part[nw+7], x1, y2-m_part[nw+6]->h-m_part[nw+7]->h+1);
+
+    // right
+
+    for (y = y1+m_part[nw+2]->h;
+	 y < y2-m_part[nw+4]->h-m_part[nw+3]->h+1;
+	 y += m_part[nw+3]->h) {
+      draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y);
+    }
+    draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y2-m_part[nw+4]->h-m_part[nw+3]->h+1);
   }
-  draw_sprite(ji_screen, m_part[nw+7], x1, y2-m_part[nw+6]->h-m_part[nw+7]->h+1);
 
-  // right
-
-  for (y = y1+m_part[nw+2]->h;
-       y < y2-m_part[nw+4]->h-m_part[nw+3]->h+1;
-       y += m_part[nw+3]->h) {
-    draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y);
-  }
-  draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y2-m_part[nw+4]->h-m_part[nw+3]->h+1);
+  set_clip(ji_screen, cx1, cy1, cx2, cy2);
 
   // background 
   if (bg >= 0) {
