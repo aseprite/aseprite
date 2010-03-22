@@ -453,8 +453,6 @@ void update_screen_for_sprite(const Sprite* sprite)
       update_editors_with_sprite(sprite);
     }
   }
-
-  statusbar_set_text(app_get_statusbar(), -1, "");
 }
 
 void gui_run()
