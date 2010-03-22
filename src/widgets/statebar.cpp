@@ -33,6 +33,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "modules/skinneable_theme.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -290,6 +291,8 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW: {
+      int text_color = ji_color_foreground();
+      int face_color = ji_color_face();
       JRect rc = jwidget_get_rect(widget);
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
@@ -297,7 +300,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 		     -msg->draw.rect.x1,
 		     -msg->draw.rect.y1);
 
-      clear_to_color(doublebuffer, ji_color_face());
+      clear_to_color(doublebuffer, face_color);
 
       rc->x1 += 2*jguiscale();
       rc->y1 += 1*jguiscale();
@@ -306,13 +309,10 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
       /* status bar text */
       if (widget->getText()) {
-	rectfill(doublebuffer,
-		 rc->x1, rc->y1, rc->x2-1, rc->y2-1, ji_color_face());
-
 	textout_ex(doublebuffer, widget->getFont(), widget->getText(),
 		   rc->x1+2,
 		   (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
-		   ji_color_foreground(), -1);
+		   text_color, -1);
       }
 
       /* draw progress bar */
@@ -362,7 +362,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	textout_right_ex(doublebuffer, widget->getFont(), buf,
 			 rc->x2-2,
 			 (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
-			 ji_color_foreground(), -1);
+			 text_color, -1);
       }
 
       jrect_free(rc);
