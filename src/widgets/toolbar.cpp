@@ -356,14 +356,15 @@ Rect ToolBar::getToolGroupBounds(int group_index)
 
   if (group_index >= 0)
     return Rect(rc->x1+border_width.l,
-		rc->y1+border_width.t+group_index*(iconsize.h-1),
+		rc->y1+border_width.t+group_index*(iconsize.h-1*jguiscale()),
 		jrect_w(rc)-border_width.l-border_width.r,
-		group_index < groups-1 ? iconsize.h+1: iconsize.h+2);
+		group_index < groups-1 ? iconsize.h+1*jguiscale():
+					 iconsize.h+2*jguiscale());
   else
     return Rect(rc->x1+border_width.l,
-		rc->y1+border_width.t+groups*(iconsize.h-1)+ 8*jguiscale(),
+		rc->y1+border_width.t+groups*(iconsize.h-1*jguiscale())+ 8*jguiscale(),
 		jrect_w(rc)-border_width.l-border_width.r,
-		iconsize.h+2);
+		iconsize.h+2*jguiscale());
 }
 
 void ToolBar::onToolSelected(Tool* tool)
