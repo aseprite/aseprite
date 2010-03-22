@@ -21,12 +21,14 @@
 #include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/SharedPtr.h"
 
 #include "commands/command.h"
 #include "sprite_wrappers.h"
 #include "app.h"
 #include "core/core.h"
 #include "modules/gui.h"
+#include "modules/skinneable_theme.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -83,6 +85,11 @@ void CelPropertiesCommand::execute(Context* context)
 	      "size", &label_size,
 	      "opacity", &slider_opacity,
 	      "ok", &button_ok, NULL);
+
+  // Mini look for the opacity slider
+  Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);
+  skinProp->setMiniLook(true);
+  slider_opacity->setProperty(skinProp);
 
   /* if the layer isn't writable */
   if (!layer->is_writable()) {
