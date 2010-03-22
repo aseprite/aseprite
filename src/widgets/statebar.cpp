@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "Vaca/Bind.h"
+#include "Vaca/SharedPtr.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
@@ -33,6 +34,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "modules/skinneable_theme.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
@@ -74,13 +76,22 @@ static void on_current_tool_change(JWidget widget)
 JWidget statusbar_new()
 {
 #define BUTTON_NEW(name, text, data)					\
-  (name) = jbutton_new(text);						\
-  (name)->user_data[0] = statusbar;					\
-  jbutton_add_command_data((name), button_command, (void *)(data));
+  {									\
+    (name) = jbutton_new(text);						\
+    (name)->user_data[0] = statusbar;					\
+									\
+    Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);		\
+    skinProp->setMiniLook(true);					\
+    (name)->setProperty(skinProp);					\
+									\
+    jbutton_add_command_data((name), button_command, (void *)(data));	\
+  }
 
 #define ICON_NEW(name, icon, action)					\
-  BUTTON_NEW((name), NULL, (action));					\
-  add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);
+  {									\
+    BUTTON_NEW((name), NULL, (action));					\
+    add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);	\
+  }
 
   Widget* widget = new Widget(statusbar_type());
   StatusBar* statusbar = jnew(StatusBar, 1);
@@ -102,6 +113,11 @@ JWidget statusbar_new()
     box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
     BUTTON_NEW(statusbar->b_layer, "*Current Layer*", ACTION_LAYER);
     statusbar->slider = jslider_new(0, 255, 255);
+
+    Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);
+    skinProp->setMiniLook(true);
+    statusbar->slider->setProperty(skinProp);
+
     ICON_NEW(statusbar->b_first, GFX_ANI_FIRST, ACTION_FIRST);
     ICON_NEW(statusbar->b_prev, GFX_ANI_PREV, ACTION_PREV);
     ICON_NEW(statusbar->b_play, GFX_ANI_PLAY, ACTION_PLAY);
