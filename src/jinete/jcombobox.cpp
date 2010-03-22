@@ -543,11 +543,14 @@ static void combobox_open_window(JWidget widget)
     combobox->window->set_ontop(true);
     jwidget_noborders(combobox->window);
 
+    Widget* viewport = jview_get_viewport(view);
     size = jlist_length(combobox->items);
     jwidget_set_min_size
-      (view,
-       combobox->button->rc->x2 - combobox->entry->rc->x1,
-       2+(2+jwidget_get_text_height(combobox->listbox))*MID(1, size, 16)+2);
+      (viewport,
+       combobox->button->rc->x2 - combobox->entry->rc->x1 - view->border_width.l - view->border_width.r,
+       +viewport->border_width.t
+       +(2*jguiscale()+jwidget_get_text_height(combobox->listbox))*MID(1, size, 16)+
+       +viewport->border_width.b);
 
     jwidget_add_child(combobox->window, view);
     jview_attach(view, combobox->listbox);
