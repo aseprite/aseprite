@@ -578,7 +578,6 @@ static void reload_default_font()
   JTheme theme = ji_get_theme();
   const char *user_font;
   DIRS *dirs, *dir;
-  char buf[512];
 
   // No font for now
   if (theme->default_font && theme->default_font != font)
