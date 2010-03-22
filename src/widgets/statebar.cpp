@@ -127,7 +127,7 @@ JWidget statusbar_new()
     HOOK(statusbar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
     jwidget_set_min_size(statusbar->slider, JI_SCREEN_W/5, 0);
 
-    jwidget_noborders(box1);
+    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
     jwidget_noborders(box2);
 
     jwidget_expansive(statusbar->b_layer, true);
@@ -280,9 +280,9 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_REQSIZE:
       msg->reqsize.w = msg->reqsize.h =
-	2*jguiscale()
+	4*jguiscale()
 	+ jwidget_get_text_height(widget)
-	+ 2*jguiscale();
+	+ 4*jguiscale();
       return true;
 
     case JM_SETPOS:
@@ -305,17 +305,12 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 		     -msg->draw.rect.x1,
 		     -msg->draw.rect.y1);
 
-      for (int i=0; i<jguiscale(); ++i) {
-	jrectedge(doublebuffer, rc->x1, rc->y1, rc->x2-1, rc->y2-1,
-		  ji_color_facelight(), ji_color_faceshadow());
-	jrect_shrink(rc, 1);
-      }
+      clear_to_color(doublebuffer, ji_color_face());
 
-      for (int i=0; i<jguiscale(); ++i) {
-	rect(doublebuffer, rc->x1, rc->y1, rc->x2-1, rc->y2-1,
-	     ji_color_face());
-	jrect_shrink(rc, 1);
-      }
+      rc->x1 += 2*jguiscale();
+      rc->y1 += 1*jguiscale();
+      rc->x2 -= 2*jguiscale();
+      rc->y2 -= 2*jguiscale();
 
       /* status bar text */
       if (widget->getText()) {
