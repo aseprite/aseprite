@@ -23,6 +23,7 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
+#include "Vaca/SharedPtr.h"
 
 #include "core/dirs.h"
 #include "loadpng.h"
@@ -219,6 +220,42 @@ static struct
   { 21,170,  6,  6 }, //  PART_SLIDER_EMPTY_FOCUSED_S
   { 16,170,  5,  6 }, //  PART_SLIDER_EMPTY_FOCUSED_SW
   { 16,165,  5,  5 }, //  PART_SLIDER_EMPTY_FOCUSED_W
+
+  { 32,144,  5,  5 }, //  PART_MINI_SLIDER_FULL_NW
+  { 37,144,  6,  5 }, //  PART_MINI_SLIDER_FULL_N
+  { 43,144,  5,  5 }, //  PART_MINI_SLIDER_FULL_NE
+  { 43,149,  5,  5 }, //  PART_MINI_SLIDER_FULL_E
+  { 43,154,  5,  6 }, //  PART_MINI_SLIDER_FULL_SE
+  { 37,154,  6,  6 }, //  PART_MINI_SLIDER_FULL_S
+  { 32,154,  5,  6 }, //  PART_MINI_SLIDER_FULL_SW
+  { 32,149,  5,  5 }, //  PART_MINI_SLIDER_FULL_W
+
+  { 48,144,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_NW
+  { 53,144,  6,  5 }, //  PART_MINI_SLIDER_EMPTY_N
+  { 59,144,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_NE
+  { 59,149,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_E
+  { 59,154,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_SE
+  { 53,154,  6,  6 }, //  PART_MINI_SLIDER_EMPTY_S
+  { 48,154,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_SW
+  { 48,149,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_W
+
+  { 32,160,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_NW
+  { 37,160,  6,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_N
+  { 43,160,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_NE
+  { 43,165,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_E
+  { 43,170,  5,  6 }, //  PART_MINI_SLIDER_FULL_FOCUSED_SE
+  { 37,170,  6,  6 }, //  PART_MINI_SLIDER_FULL_FOCUSED_S
+  { 32,170,  5,  6 }, //  PART_MINI_SLIDER_FULL_FOCUSED_SW
+  { 32,165,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_W
+
+  { 48,160,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_NW
+  { 53,160,  6,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_N
+  { 59,160,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_NE
+  { 59,165,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_E
+  { 59,170,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_SE
+  { 53,170,  6,  6 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_S
+  { 48,170,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_SW
+  { 48,165,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_W
 
   { 32, 80,  9,  5 }, //  PART_SEPARATOR
 
@@ -711,30 +748,40 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
 			    icon_bmp ? icon_bmp->w : 0,
 			    icon_bmp ? icon_bmp->h : 0);
 
-  /* selected */
+  // Tool buttons are smaller
+  bool isMiniLook = false;
+  Vaca::SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinPropery != NULL)
+    isMiniLook = skinPropery->isMiniLook();
+
+  // selected
   if (jwidget_is_selected(widget)) {
     fg = get_button_selected_text_color();
     bg = get_button_selected_face_color();
-    part_nw = PART_BUTTON_SELECTED_NW;
+    part_nw = isMiniLook ? PART_TOOLBUTTON_NORMAL_NW:
+			   PART_BUTTON_SELECTED_NW;
   }
-  /* with mouse */
+  // with mouse
   else if (jwidget_is_enabled(widget) && jwidget_has_mouse(widget)) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
-    part_nw = PART_BUTTON_HOT_NW;
+    part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
+			   PART_BUTTON_HOT_NW;
   }
-  /* without mouse */
+  // without mouse
   else {
     fg = get_button_normal_text_color();
     bg = get_button_normal_face_color();
 
     if (jwidget_has_focus(widget))
-      part_nw = PART_BUTTON_FOCUSED_NW;
+      part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
+			     PART_BUTTON_FOCUSED_NW;
     else
-      part_nw = PART_BUTTON_NORMAL_NW;
+      part_nw = isMiniLook ? PART_TOOLBUTTON_NORMAL_NW:
+			     PART_BUTTON_NORMAL_NW;
   }
 
-  /* widget position */
+  // widget position
   x1 = widget->rc->x1;
   y1 = widget->rc->y1;
   x2 = widget->rc->x2-1;
@@ -758,18 +805,18 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
 		     get_button_selected_offset(),
 		     get_button_selected_offset());
 
-    /* enabled */
+    // enabled
     if (jwidget_is_enabled(widget)) {
-      /* selected */
+      // selected
       if (jwidget_is_selected(widget)) {
 	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
       }
-      /* non-selected */
+      // non-selected
       else {
 	draw_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
       }
     }
-    /* disabled */
+    // disabled
     else {
       _ji_theme_draw_sprite_color(ji_screen, icon_bmp, icon.x1+jguiscale(), icon.y1+jguiscale(),
 				  COLOR_BACKGROUND);
@@ -1163,6 +1210,12 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 
   jtheme_slider_info(widget, &min, &max, &value);
 
+  // Tool buttons are smaller
+  bool isMiniLook = false;
+  Vaca::SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinPropery != NULL)
+    isMiniLook = skinPropery->isMiniLook();
+
   x1 = widget->rc->x1 + widget->border_width.l;
   y1 = widget->rc->y1 + widget->border_width.t;
   x2 = widget->rc->x2 - widget->border_width.r - 1;
@@ -1178,8 +1231,21 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
   x2 = widget->rc->x2 - 1;
   y2 = widget->rc->y2 - 1;
 
-  int full_part_nw = jwidget_has_focus(widget) ? PART_SLIDER_FULL_FOCUSED_NW: PART_SLIDER_FULL_NW;
-  int empty_part_nw = jwidget_has_focus(widget) ? PART_SLIDER_EMPTY_FOCUSED_NW: PART_SLIDER_EMPTY_NW;
+  int full_part_nw;
+  int empty_part_nw;
+
+  if (isMiniLook) {
+    full_part_nw = jwidget_has_mouse(widget) ? PART_MINI_SLIDER_FULL_FOCUSED_NW:
+					       PART_MINI_SLIDER_FULL_NW;
+    empty_part_nw = jwidget_has_mouse(widget) ? PART_MINI_SLIDER_EMPTY_FOCUSED_NW:
+						PART_MINI_SLIDER_EMPTY_NW;
+  }
+  else {
+    full_part_nw = jwidget_has_focus(widget) ? PART_SLIDER_FULL_FOCUSED_NW:
+					       PART_SLIDER_FULL_NW;
+    empty_part_nw = jwidget_has_focus(widget) ? PART_SLIDER_EMPTY_FOCUSED_NW:
+						PART_SLIDER_EMPTY_NW;
+  }
 
   if (value == min)
     draw_bounds(x1, y1, x2, y2, empty_part_nw, get_slider_empty_face_color());
