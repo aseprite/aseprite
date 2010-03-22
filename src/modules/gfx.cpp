@@ -240,52 +240,6 @@ void simple_dotted_mode(BITMAP* bmp, int fg, int bg)
 }
 
 /**********************************************************************/
-/* Set/Restore sub-clip regions */
-
-struct CLIP_DATA
-{
-  BITMAP* bmp;
-  int cl, ct, cr, cb;
-};
-
-void* subclip(BITMAP* bmp, int x1, int y1, int x2, int y2)
-{
-  int cl, ct, cr, cb;
-  CLIP_DATA* data;
-
-  cl = bmp->cl;
-  ct = bmp->ct;
-  cr = bmp->cr;
-  cb = bmp->cb;
-
-  if ((x2 < cl) || (x1 >= cr) || (y2 < ct) || (y1 >= cb))
-    return NULL;
-
-  x1 = MID(cl, x1, cr-1);
-  y1 = MID(ct, y1, cb-1);
-  x2 = MID(x1, x2, cr-1);
-  y2 = MID(y1, y2, cb-1);
-
-  set_clip(bmp, x1, y1, x2, y2);
-
-  data = new CLIP_DATA;
-  data->bmp = bmp;
-  data->cl = cl;
-  data->ct = ct;
-  data->cr = cr;
-  data->cb = cb;
-
-  return data;
-}
-
-void backclip(void* _data)
-{
-  CLIP_DATA* data = reinterpret_cast<CLIP_DATA*>(_data);
-  set_clip(data->bmp, data->cl, data->ct, data->cr, data->cb);
-  delete data;
-}
-
-/**********************************************************************/
 /* Rectangle Tracker (Save/Restore rectangles from/to the screen) */
 
 struct RectTracker

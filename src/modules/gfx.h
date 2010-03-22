@@ -104,9 +104,6 @@ BITMAP* get_gfx(int id);
 void dotted_mode(int offset);
 void simple_dotted_mode(BITMAP* bmp, int fg, int bg);
 
-void *subclip(BITMAP* bmp, int x1, int y1, int x2, int y2);
-void backclip(void *data);
-
 RectTracker *rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
 void rect_tracker_free(RectTracker *tracker);
 
