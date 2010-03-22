@@ -36,7 +36,7 @@
 #elif defined(VACA_ON_UNIXLIKE)
   #include "unix/MutexImpl.h"
 #else
-  #error Your pltform does not support mutexes
+  #error Your platform does not support mutexes
 #endif 
 
 using namespace Vaca;
