@@ -302,9 +302,11 @@ bool TipWindow::msg_proc(JMessage msg)
       JRect pos = jwidget_get_rect(this);
       int oldt;
 
-      jdraw_rect(pos, makecol(0, 0, 0));
+      for (int i=0; i<jguiscale(); ++i) {
+	jdraw_rect(pos, makecol(0, 0, 0));
+	jrect_shrink(pos, 1);
+      }
 
-      jrect_shrink(pos, 1);
       jdraw_rectfill(pos, this->getBgColor());
 
       oldt = this->border_width.t;
