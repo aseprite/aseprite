@@ -43,12 +43,23 @@
   #include <pthread.h>
 #endif
 
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 struct pthread_proxy_data {
   void (*proc)(void*);
   void* data;
 };
 
+#if defined ALLEGRO_WINDOWS
+static DWORD WINAPI pthread_proxy(void* arg)
+{
+  pthread_proxy_data* ptr = reinterpret_cast<pthread_proxy_data*>(arg);
+  void (*proc)(void*) = ptr->proc;
+  void* data = ptr->data;
+  jfree(ptr);
+
+  (*proc)(data);
+  return 0;
+}
+#elif defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 static void* pthread_proxy(void* arg)
 {
   pthread_proxy_data* ptr = reinterpret_cast<pthread_proxy_data*>(arg);
@@ -63,18 +74,27 @@ static void* pthread_proxy(void* arg)
   
 JThread jthread_new(void (*proc)(void*), void* data)
 {
-#if defined ALLEGRO_WINDOWS
-  return (JThread)_beginthread(proc, 0, data);
-#elif defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
-  pthread_t thread = 0;
   struct pthread_proxy_data *ptr = jnew(struct pthread_proxy_data, 1);
   ptr->proc = proc;
   ptr->data = data;
 
+#if defined ALLEGRO_WINDOWS
+
+  DWORD id;
+  HANDLE thread = CreateThread(NULL, 0, pthread_proxy, ptr,
+			       CREATE_SUSPENDED, &id);
+  if (thread)
+    ResumeThread(thread);
+  return thread;
+
+#elif defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
+
+  pthread_t thread = 0;
   if (pthread_create(&thread, NULL, pthread_proxy, ptr))
     return NULL;
   else
     return (JThread)thread;
+
 #else
   #error ASE does not support threads for your platform
 #endif
