@@ -34,6 +34,10 @@
 
 namespace Vaca {
 
+#ifdef _MSC_VER
+  #pragma warning(disable: 4251)
+#endif
+
 /**
    This class is used to define enumerations "a la" C++0x.
 
