@@ -29,6 +29,7 @@
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
+#include "widgets/statebar.h"
 
 static bool close_current_sprite(Context* context);
 
@@ -156,6 +157,8 @@ try_again:;
   // Destroy the sprite (locking it as writer)
   {
     CurrentSpriteWriter sprite(context);
+    statusbar_set_text(app_get_statusbar(), 0, "Sprite '%s' closed.",
+		       get_filename(sprite->filename));
     sprite.destroy();
   }
   return true;
