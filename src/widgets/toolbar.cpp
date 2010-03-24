@@ -58,6 +58,12 @@ class ToolBar : public Widget
   // Window displayed to show a tool-group
   PopupWindow* m_popup_window;
 
+  // Tool-tip window
+  TipWindow* m_tipWindow;
+
+  int m_tipTimerId;
+  bool m_tipOpened;
+
 public:
   ToolBar();
   ~ToolBar();
@@ -65,15 +71,18 @@ public:
   bool isToolVisible(Tool* tool);
   void selectTool(Tool* tool);
 
+  void openTipWindow(ToolGroup* tool_group, Tool* tool);
+  void closeTipWindow();
+
 protected:
   bool msg_proc(JMessage msg);
 
 private:
-  void onToolSelected(Tool* tool);
-  void onClosePopup();
-
+  int getToolGroupIndex(ToolGroup* group);
   void openPopupWindow(int group_index, ToolGroup* group);
   Rect getToolGroupBounds(int group_index);
+  void openTipWindow(int group_index, Tool* tool);
+  void onClosePopup();
 };
 
 // Class to show a group of tools (horizontally)
@@ -82,9 +91,10 @@ class ToolStrip : public Widget
 {
   ToolGroup* m_group;
   Tool* m_hot_tool;
+  ToolBar* m_toolbar;
 
 public:
-  ToolStrip(ToolGroup* group);
+  ToolStrip(ToolGroup* group, ToolBar* toolbar);
   ~ToolStrip();
 
   Vaca::Signal1<void, Tool*> ToolSelected;
@@ -136,7 +146,10 @@ ToolBar::ToolBar()
   m_hot_conf = false;
   m_open_on_hot = false;
   m_popup_window = NULL;
-
+  m_tipWindow = NULL;
+  m_tipTimerId = jmanager_add_timer(this, 300);
+  m_tipOpened = false;
+  
   ToolBox* toolbox = App::instance()->get_toolbox();
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
@@ -147,17 +160,14 @@ ToolBar::ToolBar()
 
 ToolBar::~ToolBar()
 {
+  jmanager_remove_timer(m_tipTimerId);
   delete m_popup_window;
+  delete m_tipWindow;
 }
 
 bool ToolBar::isToolVisible(Tool* tool)
 {
   return (m_selected_in_group[tool->getGroup()] == tool);
-}
-
-void ToolBar::selectTool(Tool* tool)
-{
-  onToolSelected(tool);
 }
 
 bool ToolBar::msg_proc(JMessage msg)
@@ -172,13 +182,18 @@ bool ToolBar::msg_proc(JMessage msg)
     }
 
     case JM_DRAW: {
+      BITMAP* old_ji_screen = ji_screen; // TODO switching ji_screen is an horrible hack,
+                                         // JM_DRAW must be changed to onPaint event as in Vaca library
+      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
+					   jrect_h(&msg->draw.rect));
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
       ToolBox* toolbox = App::instance()->get_toolbox();
       ToolGroupList::iterator it = toolbox->begin_group();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
-      jdraw_rectfill(this->rc, theme->get_tab_selected_face_color());
+      ji_screen = doublebuffer;
+      clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
 
       for (int c=0; c<groups; ++c, ++it) {
 	ToolGroup* tool_group = *it;
@@ -197,17 +212,19 @@ bool ToolBar::msg_proc(JMessage msg)
 	}
 
 	toolrc = getToolGroupBounds(c);
+	toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
 	theme->draw_bounds(toolrc, nw, face);
 
 	// Draw the tool icon
 	BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
 	if (icon)
-	  draw_sprite(ji_screen, icon,
+	  draw_sprite(doublebuffer, icon,
 		      toolrc.x+toolrc.w/2-icon->w/2,
 		      toolrc.y+toolrc.h/2-icon->h/2);
       }
 
       toolrc = getToolGroupBounds(-1);
+      toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
       theme->draw_bounds(toolrc,
 			 m_hot_conf ? PART_TOOLBUTTON_HOT_NW:
 				      PART_TOOLBUTTON_LAST_NW,
@@ -216,11 +233,20 @@ bool ToolBar::msg_proc(JMessage msg)
 
       // Draw the tool icon
       BITMAP* icon = theme->get_toolicon("configuration");
-      if (icon)
-	draw_sprite(ji_screen, icon,
+      if (icon) {
+	draw_sprite(doublebuffer, icon,
 		    toolrc.x+toolrc.w/2-icon->w/2,
 		    toolrc.y+toolrc.h/2-icon->h/2);
+      }
 
+      ji_screen = old_ji_screen;
+
+      blit(doublebuffer, ji_screen, 0, 0,
+	   msg->draw.rect.x1,
+	   msg->draw.rect.y1,
+	   doublebuffer->w,
+	   doublebuffer->h);
+      destroy_bitmap(doublebuffer);
       return true;
     }
       
@@ -229,6 +255,8 @@ bool ToolBar::msg_proc(JMessage msg)
       int groups = toolbox->getGroupsCount();
       int y = rc->y1;
       Rect toolrc;
+
+      closeTipWindow();
 
       ToolGroupList::iterator it = toolbox->begin_group();
 
@@ -261,6 +289,7 @@ bool ToolBar::msg_proc(JMessage msg)
       Tool* hot_tool = NULL;
       bool hot_conf = false;
       Rect toolrc;
+      int tip_index = -1;
 
       ToolGroupList::iterator it = toolbox->begin_group();
 
@@ -275,6 +304,7 @@ bool ToolBar::msg_proc(JMessage msg)
 	  if (m_open_on_hot)
 	    openPopupWindow(c, tool_group);
 
+	  tip_index = c;
 	  break;
 	}
       }
@@ -290,19 +320,53 @@ bool ToolBar::msg_proc(JMessage msg)
 	m_hot_tool = hot_tool;
 	m_hot_conf = hot_conf;
 	dirty();
+
+	if (m_hot_tool || m_hot_conf)
+	  openTipWindow(tip_index, m_hot_tool);
+	else
+	  closeTipWindow();
       }
       break;
     }
 
     case JM_MOUSELEAVE:
+      closeTipWindow();
+
+      if (!m_popup_window)
+	m_tipOpened = false;
+
       m_hot_tool = NULL;
       m_hot_conf = false;
       dirty();
       break;
 
+    case JM_TIMER:
+      if (msg->timer.timer_id == m_tipTimerId) {
+	if (m_tipWindow)
+	  m_tipWindow->open_window();
+
+	jmanager_stop_timer(m_tipTimerId);
+	m_tipOpened = true;
+      }
+      break;
+
   }
 
   return Widget::msg_proc(msg);
+}
+
+int ToolBar::getToolGroupIndex(ToolGroup* group)
+{
+  ToolBox* toolbox = App::instance()->get_toolbox();
+  ToolGroupList::iterator it = toolbox->begin_group();
+  int groups = toolbox->getGroupsCount();
+
+  for (int c=0; c<groups; ++c, ++it) {
+    if (group == *it)
+      return c;
+  }
+
+  return -1;
 }
 
 void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
@@ -316,8 +380,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   m_popup_window = new PopupWindow(NULL, false);
   m_popup_window->Close.connect(Vaca::Bind<void>(&ToolBar::onClosePopup, this));
 
-  ToolStrip* groupbox = new ToolStrip(tool_group);
-  groupbox->ToolSelected.connect(&ToolBar::onToolSelected, this);
+  ToolStrip* groupbox = new ToolStrip(tool_group, this);
   jwidget_add_child(m_popup_window, groupbox);
 
   Rect rc = getToolGroupBounds(group_index);
@@ -367,7 +430,58 @@ Rect ToolBar::getToolGroupBounds(int group_index)
 		iconsize.h+2*jguiscale());
 }
 
-void ToolBar::onToolSelected(Tool* tool)
+void ToolBar::openTipWindow(ToolGroup* tool_group, Tool* tool)
+{
+  openTipWindow(getToolGroupIndex(tool_group), tool);
+}
+
+void ToolBar::openTipWindow(int group_index, Tool* tool)
+{
+  if (m_tipWindow)
+    closeTipWindow();
+
+  std::string tooltip;
+  if (tool) {
+    tooltip = tool->getText();
+    if (tool->getTips().size() > 0) {
+      tooltip += ":\n";
+      tooltip += tool->getTips();
+    }
+  }
+  else {
+    tooltip = "Configure Tool";
+  }
+
+  m_tipWindow = new TipWindow(tooltip.c_str(), true);
+  m_tipWindow->remap_window();
+
+  Rect toolrc = getToolGroupBounds(group_index);
+  int w = jrect_w(m_tipWindow->rc);
+  int h = jrect_h(m_tipWindow->rc);
+  int x = toolrc.x - w;
+  int y = toolrc.y + toolrc.h;
+
+  m_tipWindow->position_window(MID(0, x, JI_SCREEN_W-w),
+			       MID(0, y, JI_SCREEN_H-h));
+
+  if (m_tipOpened)
+    m_tipWindow->open_window();
+  else
+    jmanager_start_timer(m_tipTimerId);
+}
+
+void ToolBar::closeTipWindow()
+{
+  jmanager_stop_timer(m_tipTimerId);
+
+  if (m_tipWindow) {
+    m_tipWindow->closeWindow(NULL);
+    delete m_tipWindow;
+    m_tipWindow = NULL;
+  }
+}
+
+void ToolBar::selectTool(Tool* tool)
 {
   assert(tool != NULL);
 
@@ -379,6 +493,11 @@ void ToolBar::onToolSelected(Tool* tool)
 
 void ToolBar::onClosePopup()
 {
+  closeTipWindow();
+
+  if (!jwidget_has_mouse(this))
+    m_tipOpened = false;
+
   m_open_on_hot = false;
   m_hot_tool = NULL;
   dirty();
@@ -386,12 +505,14 @@ void ToolBar::onClosePopup()
 
 //////////////////////////////////////////////////////////////////////
 // ToolStrip
+//////////////////////////////////////////////////////////////////////
 
-ToolStrip::ToolStrip(ToolGroup* group)
+ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   : Widget(JI_WIDGET)
 {
   m_group = group;
   m_hot_tool = NULL;
+  m_toolbar = toolbar;
 }
 
 ToolStrip::~ToolStrip()
@@ -420,12 +541,17 @@ bool ToolStrip::msg_proc(JMessage msg)
     }
 
     case JM_DRAW: {
+      BITMAP* old_ji_screen = ji_screen; // TODO switching ji_screen is an horrible hack,
+                                         // JM_DRAW must be changed to onPaint event as in Vaca library
+      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
+					   jrect_h(&msg->draw.rect));
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
       ToolBox* toolbox = App::instance()->get_toolbox();
       Rect toolrc;
       int index = 0;
 
-      jdraw_rectfill(this->rc, theme->get_tab_selected_face_color());
+      ji_screen = doublebuffer;
+      clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
 
       for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
 	Tool* tool = *it;
@@ -443,16 +569,26 @@ bool ToolStrip::msg_proc(JMessage msg)
 	  }
 
 	  toolrc = getToolBounds(index++);
+	  toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
 	  theme->draw_bounds(toolrc, nw, face);
 
 	  // Draw the tool icon
 	  BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
 	  if (icon)
-	    draw_sprite(ji_screen, icon,
+	    draw_sprite(doublebuffer, icon,
 			toolrc.x+toolrc.w/2-icon->w/2,
 			toolrc.y+toolrc.h/2-icon->h/2);
 	}
       }
+
+      ji_screen = old_ji_screen;
+
+      blit(doublebuffer, ji_screen, 0, 0,
+	   msg->draw.rect.x1,
+	   msg->draw.rect.y1,
+	   doublebuffer->w,
+	   doublebuffer->h);
+      destroy_bitmap(doublebuffer);
       return true;
     }
 
@@ -473,17 +609,23 @@ bool ToolStrip::msg_proc(JMessage msg)
 	}
       }
 
-      // hot button changed
+      // Hot button changed
       if (m_hot_tool != hot_tool) {
 	m_hot_tool = hot_tool;
 	dirty();
+
+	// Show the tooltip for the hot tool
+	if (m_hot_tool)
+	  m_toolbar->openTipWindow(m_group, m_hot_tool);
+	else
+	  m_toolbar->closeTipWindow();
       }
       break;
     }
 
     case JM_BUTTONPRESSED:
       if (m_hot_tool) {
-	ToolSelected(m_hot_tool);
+	m_toolbar->selectTool(m_hot_tool);
 	closeWindow();
       }
       break;

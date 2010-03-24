@@ -373,6 +373,7 @@
   <tools>
 
     <group id="selection_tools" text="Selection Tools">
+
       <tool id="rectangular_marquee"
 	    text="Rectangular Marquee Tool"
 	    fill="always"
@@ -380,8 +381,13 @@
 	    controller="two_points"
 	    pointshape="pixel"
 	    intertwine="as_rectangles"
-	    tracepolicy="last"
-	    />
+	    tracepolicy="last">
+	<tooltip>*
+	Left-button: add to current selection.&#10;*
+	Right-button: remove from current selection.
+	</tooltip>
+      </tool>
+
       <tool id="elliptical_marquee"
 	    text="Elliptical Marquee Tool"
 	    fill="always"
@@ -389,8 +395,13 @@
 	    controller="two_points"
 	    pointshape="pixel"
 	    intertwine="as_ellipses"
-	    tracepolicy="last"
-	    />
+	    tracepolicy="last">
+	<tooltip>*
+	Left-button: add to current selection.&#10;*
+	Right-button: remove from current selection.
+	</tooltip>
+      </tool>
+
       <tool id="lasso"
 	    text="Lasso Tool"
 	    fill="always"
@@ -398,8 +409,13 @@
 	    controller="freehand"
 	    pointshape="pixel"
 	    intertwine="as_lines"
-	    tracepolicy="accumulative"
-	    />
+	    tracepolicy="accumulative">
+	<tooltip>*
+	Left-button: add to current selection.&#10;*
+	Right-button: remove from current selection.
+	</tooltip>
+      </tool>
+
       <tool id="polygonal_lasso"
 	    text="Polygonal Lasso Tool"
 	    fill="always"
@@ -407,16 +423,25 @@
 	    controller="point_by_point"
 	    pointshape="pixel"
 	    intertwine="as_lines"
-	    tracepolicy="last"
-	    />
+	    tracepolicy="last">
+	<tooltip>*
+	Left-button: add to current selection.&#10;*
+	Right-button: remove from current selection.
+	</tooltip>
+      </tool>
+
       <tool id="magic_wand"
 	    text="Magic Wand Tool"
 	    fill="always"
 	    ink="selection"
 	    controller="one_point"
 	    pointshape="floodfill"
-	    tracepolicy="accumulative"
-	    />
+	    tracepolicy="accumulative">
+	<tooltip>*
+	Left-button: add to current selection.&#10;*
+	Right-button: remove from current selection.
+	</tooltip>
+      </tool>
     </group>
 
     <group id="pencil_tools" text="Pencil Tools">
@@ -446,8 +471,13 @@
 	    pointshape="pen"
 	    intertwine="as_lines"
 	    tracepolicy="accumulative"
-	    default_pen_size="8"
-	    />
+	    default_pen_size="8">
+	<tooltip>*
+	Left-button: Erase with the background color in `Background' layer&#10;
+	or transparent color in any other layer.&#10;*
+	Right-button: Replace foreground with background color.
+	</tooltip>
+      </tool>
       <tool id="eyedropper"
 	    text="Eyedropper Tool"
 	    ink_left="pick_fg"

@@ -154,11 +154,10 @@ void ToolBox::loadTools()
       while (xmlTool) {
 	const char* tool_id = xmlTool->Attribute("id");
 	const char* tool_text = xmlTool->Attribute("text");
-	const char* tool_tips = xmlTool->Attribute("tips");
+	const char* tool_tips = xmlTool->FirstChild("tooltip") ? ((TiXmlElement*)xmlTool->FirstChild("tooltip"))->GetText(): "";
 	const char* default_pen_size = xmlTool->Attribute("default_pen_size");
 
-	Tool* tool = new Tool(tool_group, tool_id, tool_text,
-			      tool_tips ? tool_tips: "",
+	Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
 			      default_pen_size ? strtol(default_pen_size, NULL, 10): 1);
 
 	PRINTF(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
