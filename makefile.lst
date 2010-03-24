@@ -518,8 +518,7 @@ VACA_SOURCES =					\
 	$(VACA_DIR)/src/Size.cpp		\
 	$(VACA_DIR)/src/String.cpp		\
 	$(VACA_DIR)/src/System.cpp		\
-	$(VACA_DIR)/src/Vaca.cpp		\
-	$(VACA_DIR)/src/win32/Mutex.cpp
+	$(VACA_DIR)/src/Vaca.cpp
 
 VACA_OBJS = $(addprefix $(OBJ_DIR)/vaca.,		\
 		 $(addsuffix $(OBJ),			\
