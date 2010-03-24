@@ -71,7 +71,6 @@
       <key command="convolution_matrix" shortcut="F9" />
       <key command="color_curve" shortcut="Ctrl+M" />
       <key command="color_curve" shortcut="F10" />
-      <key command="tips" shortcut="F1" />
       <key command="options" shortcut="Ctrl+Shift+O" />
       
       <!-- others -->
@@ -302,8 +301,6 @@
 	<item command="options" text="&amp;Options" />
       </menu>
       <menu text="&amp;Help">
-	<item command="tips" text="&amp;Tips" />
-	<separator />
 	<item command="about" text="&amp;About" />
       </menu>
     </menu>

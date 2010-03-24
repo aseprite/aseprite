@@ -67,7 +67,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_sprite_properties.cpp		\
 	src/commands/cmd_sprite_size.cpp		\
 	src/commands/cmd_switch_colors.cpp		\
-	src/commands/cmd_tips.cpp			\
 	src/commands/cmd_undo.cpp			\
 	src/commands/command.cpp			\
 	src/commands/commands.cpp			\
@@ -94,7 +93,6 @@ COMMON_SOURCES =					\
 	src/dialogs/options.cpp				\
 	src/dialogs/playfli.cpp				\
 	src/dialogs/repo.cpp				\
-	src/dialogs/tips.cpp				\
 	src/dialogs/vectmap.cpp				\
 	src/effect/colcurve.cpp				\
 	src/effect/convmatr.cpp				\

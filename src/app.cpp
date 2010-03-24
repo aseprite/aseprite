@@ -44,7 +44,6 @@
 #include "core/file_system.h"
 #include "core/modules.h"
 #include "dialogs/options.h"
-#include "dialogs/tips.h"
 #include "file/file.h"
 #include "intl/intl.h"
 #include "modules/editors.h"
@@ -272,14 +271,10 @@ int App::run()
   if (ase_mode & MODE_BATCH) {
     PRINTF("Batch mode\n");
   }
-  /* run the GUI */
+  // Run the GUI
   else if (ase_mode & MODE_GUI) {
-    /* select language */
+    // Select language
     dialogs_select_language(false);
-
-    // show tips only if there are not a current sprite
-    if (!UIContext::instance()->get_current_sprite())
-      dialogs_tips(false);
 
     // support to drop files from Windows explorer
     install_drop_files();
