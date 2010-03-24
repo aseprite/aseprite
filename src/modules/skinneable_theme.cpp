@@ -453,7 +453,7 @@ void SkinneableTheme::regen()
 
 	  // Crop the tool-icon from the sheet
 	  BITMAP* toolicon = create_bitmap(w, h);
-	  clear_to_color(toolicon, bitmap_mask_color(m_sheet_bmp));
+	  clear_to_color(toolicon, bitmap_mask_color(toolicon));
 
 	  set_alpha_blender();
 	  draw_trans_sprite(toolicon, m_sheet_bmp, -x, -y);
