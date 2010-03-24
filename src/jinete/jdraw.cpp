@@ -71,7 +71,8 @@ void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
     my2 = MIN(y2, ey2);
 
     // top
-    rectfill(bmp, x1, y1, x2, ey1-1, color);
+    if (y1 < ey1)
+      rectfill(bmp, x1, y1, x2, ey1-1, color);
 
     // left
     if (x1 < ex1)
@@ -82,7 +83,8 @@ void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
       rectfill(bmp, ex2+1, my1, x2, my2, color);
 
     // bottom
-    rectfill(bmp, x1, ey2+1, x2, y2, color);
+    if (y2 > ey2)
+      rectfill(bmp, x1, ey2+1, x2, y2, color);
   }
 }
 
