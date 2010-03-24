@@ -103,6 +103,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
   jbutton_set_bevel(images,
 		    with_channels ? 0: 2,
 		    with_channels ? 0: 2, 2, 2);
+  setup_mini_look(images);
   add_gfxicon_to_button(images, get_target_image_gfx(default_targets),
 			JI_CENTER | JI_MIDDLE);
 

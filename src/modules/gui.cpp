@@ -837,6 +837,7 @@ JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4)
   if (widget) {
     jradio_set_group(widget, radio_group);
     jbutton_set_bevel(widget, b1, b2, b3, b4);
+    setup_mini_look(widget);
   }
   return widget;
 }
@@ -846,6 +847,7 @@ JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
   JWidget widget = ji_generic_button_new(text, JI_CHECK, JI_BUTTON);
   if (widget) {
     jbutton_set_bevel(widget, b1, b2, b3, b4);
+    setup_mini_look(widget);
   }
   return widget;
 }
