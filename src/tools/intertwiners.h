@@ -54,16 +54,13 @@ public:
 
 	algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
       }
+    }
 
-      // Closed shape
-      if (loop->getFilled()) {
-	int x1 = points[points.size()-1].x;
-	int y1 = points[points.size()-1].y;
-	int x2 = points[0].x;
-	int y2 = points[0].y;
-
-	algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
-      }
+    // Closed shape (polygon outline)
+    if (loop->getFilled()) {
+      algo_line(points[0].x, points[0].y,
+		points[points.size()-1].x,
+		points[points.size()-1].y, loop, (AlgoPixel)doPointshapePoint);
     }
   }
 
