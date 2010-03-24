@@ -1,253 +1,148 @@
-/*         ______   ___    ___ 
- *        /\  _  \ /\_ \  /\_ \ 
- *        \ \ \L\ \\//\ \ \//\ \      __     __   _ __   ___ 
- *         \ \  __ \ \ \ \  \ \ \   /'__`\ /'_ `\/\`'__\/ __`\
- *          \ \ \/\ \ \_\ \_ \_\ \_/\  __//\ \L\ \ \ \//\ \L\ \
- *           \ \_\ \_\/\____\/\____\ \____\ \____ \ \_\\ \____/
- *            \/_/\/_/\/____/\/____/\/____/\/___L\ \/_/ \/___/
- *                                           /\____/
- *                                           \_/__/
+/* ASE - Allegro Sprite Editor
+ * Copyright (C) 2001-2010  David Capello
  *
- *      The 2d polygon rasteriser.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *      By Shawn Hargreaves.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *      See readme.txt for copyright information.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-/* Adapted to ASE by David Capello */
 
 #include "config.h"
 
-#include <limits.h>
-
-#include "allegro.h"
-#include "allegro/internal/aintern.h"
+#include <vector>
+#include "Vaca/Point.h"
 
 #include "raster/algo.h"
-#include "raster/image.h"
 
+using Vaca::Point;
 
+// algo_polygon is an adaptation from Matthieu Haller code of GD library
 
-/* fill_edge_structure:
- *  Polygon helper function: initialises an edge structure for the 2d
- *  rasteriser.
- */
-static void fill_edge_structure(POLYGON_EDGE *edge, AL_CONST int *i1, AL_CONST int *i2)
+/* THANKS to Kirsten Schulz for the polygon fixes! */
+
+/* The intersection finding technique of this code could be improved  */
+/* by remembering the previous intertersection, and by using the slope. */
+/* That could help to adjust intersections  to produce a nice */
+/* interior_extrema. */
+
+void algo_polygon(int vertices, const int* points, void* data, AlgoHLine proc)
 {
-   if (i2[1] < i1[1]) {
-      AL_CONST int *it;
+  int n = vertices;
+  if (!n)
+    return;
 
-      it = i1;
-      i1 = i2;
-      i2 = it;
-   }
+  int i;
+  int j;
+  int index;
+  int y;
+  int miny, maxy;
+  int x1, y1;
+  int x2, y2;
+  int ind1, ind2;
+  int ints;
+  int fill_color;
 
-   edge->top = i1[1];
-   edge->bottom = i2[1];
-   edge->x = (i1[0] << POLYGON_FIX_SHIFT) + (1 << (POLYGON_FIX_SHIFT-1));
-   if (i2[1] != i1[1]) {
-      edge->dx = ((i2[0] - i1[0]) << POLYGON_FIX_SHIFT) / (i2[1] - i1[1]);
-   }
-   else {
-      edge->dx = ((i2[0] - i1[0]) << POLYGON_FIX_SHIFT) << 1;
-   }     
-   edge->w = MAX(ABS(edge->dx)-1, 0);
-   edge->prev = NULL;
-   edge->next = NULL;
-   if (edge->dx < 0)
-      edge->x += edge->dx/2 ;
-}
+  std::vector<int> polyInts(n);
+  std::vector<Point> p(n);
+  for (i = 0; (i < n); i++) {
+    p[i].x = points[i*2];
+    p[i].y = points[i*2+1];
+  }
+  
+  miny = p[0].y;
+  maxy = p[0].y;
+  for (i = 1; (i < n); i++) {
+    if (p[i].y < miny) miny = p[i].y;
+    if (p[i].y > maxy) maxy = p[i].y;
+  }
 
+  /* 2.0.16: Optimization by Ilia Chipitsine -- don't waste time offscreen */
+  /* 2.0.26: clipping rectangle is even better */
+// if (miny < im->cy1) {
+//   miny = im->cy1;
+// }
+// if (maxy > im->cy2) {
+//   maxy = im->cy2;
+// }
 
+  /* Fix in 1.3: count a vertex only once */
+  for (y = miny; (y <= maxy); y++) {
+    /*1.4           int interLast = 0; */
+    /*              int dirLast = 0; */
+    /*              int interFirst = 1; */
+    /* 2.0.26+      int yshift = 0; */
 
-/* _add_edge2:
- *  Adds an edge structure to a linked list, returning the new head pointer.
- */
-static POLYGON_EDGE *_add_edge2(POLYGON_EDGE *list, POLYGON_EDGE *edge, int sort_by_x)
-{
-   POLYGON_EDGE *pos = list;
-   POLYGON_EDGE *prev = NULL;
-
-   if (sort_by_x) {
-      while ((pos) && (pos->x < edge->x)) {
-	 prev = pos;
-	 pos = pos->next;
+    ints = 0;
+    for (i = 0; (i < n); i++) {
+      if (!i) {
+	ind1 = n - 1;
+	ind2 = 0;
       }
-   }
-   else {
-      while ((pos) && (pos->top < edge->top)) {
-	 prev = pos;
-	 pos = pos->next;
+      else {
+	ind1 = i - 1;
+	ind2 = i;
       }
-   }
-
-   edge->next = pos;
-   edge->prev = prev;
-
-   if (pos)
-      pos->prev = edge;
-
-   if (prev) {
-      prev->next = edge;
-      return list;
-   }
-   else
-      return edge;
-}
-
-
-
-/* _remove_edge2:
- *  Removes an edge structure from a list, returning the new head pointer.
- */
-static POLYGON_EDGE *_remove_edge2(POLYGON_EDGE *list, POLYGON_EDGE *edge)
-{
-   if (edge->next) 
-      edge->next->prev = edge->prev;
-
-   if (edge->prev) {
-      edge->prev->next = edge->next;
-      return list;
-   }
-   else
-      return edge->next;
-}
-
-
-
-/* polygon:
- *  Draws a filled polygon with an arbitrary number of corners. Pass the 
- *  number of vertices, then an array containing a series of x, y points 
- *  (a total of vertices*2 values).
- */
-void algo_polygon(Image* image, int vertices, const int* points, void* data, AlgoHLine proc)
-{
-   int c;
-   int top = INT_MAX;
-   int bottom = INT_MIN;
-   AL_CONST int *i1, *i2;
-   POLYGON_EDGE *edge, *next_edge;
-   POLYGON_EDGE *active_edges = NULL;
-   POLYGON_EDGE *inactive_edges = NULL;
-
-   /* allocate some space and fill the edge table */
-   _grow_scratch_mem(sizeof(POLYGON_EDGE) * vertices);
-
-   edge = (POLYGON_EDGE *)_scratch_mem;
-   i1 = points;
-   i2 = points + (vertices-1) * 2;
-
-   for (c=0; c<vertices; c++) {
-      fill_edge_structure(edge, i1, i2);
-
-      if (edge->bottom >= edge->top) {
-
-	 if (edge->top < top)
-	    top = edge->top;
-
-	 if (edge->bottom > bottom)
-	    bottom = edge->bottom;
-
-	 inactive_edges = _add_edge2(inactive_edges, edge, FALSE);
-	 edge++;
+      y1 = p[ind1].y;
+      y2 = p[ind2].y;
+      if (y1 < y2) {
+	x1 = p[ind1].x;
+	x2 = p[ind2].x;
+      }
+      else if (y1 > y2) {
+	y2 = p[ind1].y;
+	y1 = p[ind2].y;
+	x2 = p[ind1].x;
+	x1 = p[ind2].x;
+      }
+      else {
+	continue;
       }
 
-      i2 = i1;
-      i1 += 2;
-   }
-
-   if (bottom >= image->h)
-      bottom = image->h-1;
-
-   /* for each scanline in the polygon... */
-   for (c=top; c<=bottom; c++) {
-      int hid = 0;
-      int b1 = 0;
-      int e1 = 0;
-      int up = 0;
-      int draw = 0;
-      int e;
-
-      /* check for newly active edges */
-      edge = inactive_edges;
-      while ((edge) && (edge->top == c)) {
-	 next_edge = edge->next;
-	 inactive_edges = _remove_edge2(inactive_edges, edge);
-	 active_edges = _add_edge2(active_edges, edge, TRUE);
-	 edge = next_edge;
+      /* Do the following math as float intermediately, and round to ensure
+       * that Polygon and FilledPolygon for the same set of points have the
+       * same footprint. */
+ 
+      if ((y >= y1) && (y < y2)) {
+	polyInts[ints++] = (int) ((float) ((y - y1) * (x2 - x1)) /
+				  (float) (y2 - y1) + 0.5 + x1);
       }
-
-      /* draw horizontal line segments */
-      edge = active_edges;
-      while (edge) {
-	 e = edge->w;
-	 if (edge->bottom != c) {
-	    up = 1 - up;
-	 }
-	 else {
-	    e = edge->w >> 1;
-	 }
-
-	 if (edge->top == c) {
-	    e = edge->w >> 1;
-	 }
-
-	 if ((draw < 1) && (up >= 1)) {
-	    b1 = (edge->x + e) >> POLYGON_FIX_SHIFT;	 
-	 }
-	 else if (draw >= 1) {
-	    /* filling the polygon */
-	    e1 = edge->x >> POLYGON_FIX_SHIFT;	 
-	    hid = MAX(hid, b1 + 1);
-
-	    if (hid <= e1-1) {
-	       proc(hid, c, e1-1, data);
-	    }
-
-	    b1 = (edge->x + e) >> POLYGON_FIX_SHIFT;	 
-	 }
-
-	 /* drawing the edge */
-	 hid = MAX(hid, edge->x >> POLYGON_FIX_SHIFT);
-	 if (hid <= ((edge->x + e) >> POLYGON_FIX_SHIFT)) {	 
-	    proc(hid, c, (edge->x + e) >> POLYGON_FIX_SHIFT, data);
-	    hid = 1 + ((edge->x + e) >> POLYGON_FIX_SHIFT);
-	 }
-
-	 edge = edge->next;
-	 draw = up;
+      else if ((y == maxy) && (y > y1) && (y <= y2)) {
+	polyInts[ints++] = (int) ((float) ((y - y1) * (x2 - x1)) /
+				  (float) (y2 - y1) + 0.5 + x1);
       }
-
-      /* update edges, sorting and removing dead ones */
-      edge = active_edges;
-      while (edge) {
-	 next_edge = edge->next;
-	 if (c >= edge->bottom) {
-	    active_edges = _remove_edge2(active_edges, edge);
-	 }
-	 else {
-	    edge->x += edge->dx;
-	    if ((edge->top == c) && (edge->dx > 0)) {
-	       edge->x -= edge->dx/2;
-	    }
-	    if ((edge->bottom == c+1) && (edge->dx < 0)) {
-	       edge->x -= edge->dx/2;
-	    }
-	    while ((edge->prev) && (edge->x < edge->prev->x)) {
-	       if (edge->next)
-		  edge->next->prev = edge->prev;
-	       edge->prev->next = edge->next;
-	       edge->next = edge->prev;
-	       edge->prev = edge->prev->prev;
-	       edge->next->prev = edge;
-	       if (edge->prev)
-		  edge->prev->next = edge;
-	       else
-		  active_edges = edge;
-	    }
-	 }
-	 edge = next_edge;
+    }
+    /* 
+       2.0.26: polygons pretty much always have less than 100 points,
+       and most of the time they have considerably less. For such trivial
+       cases, insertion sort is a good choice. Also a good choice for
+       future implementations that may wish to indirect through a table.
+    */
+    for (i = 1; (i < ints); i++) {
+      index = polyInts[i];
+      j = i;
+      while ((j > 0) && (polyInts[j - 1] > index)) {
+	polyInts[j] = polyInts[j - 1];
+	j--;
       }
-   }
+      polyInts[j] = index;
+    }
+    for (i = 0; (i < (ints)); i += 2) {
+#if 0
+      int minx = polyInts[i];
+      int maxx = polyInts[i + 1];
+#endif
+      /* 2.0.29: back to gdImageLine to prevent segfaults when
+	 performing a pattern fill */
+      proc(polyInts[i], y, polyInts[i + 1], data);
+    }
+  }
 }

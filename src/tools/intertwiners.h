@@ -74,9 +74,7 @@ public:
       return;
     }
 
-    algo_polygon(loop->getDstImage(),
-		 points.size(),
-		 (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
+    algo_polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
 
