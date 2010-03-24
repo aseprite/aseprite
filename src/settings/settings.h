@@ -86,6 +86,7 @@ public:
 
   virtual int getOpacity() = 0;
   virtual bool getFilled() = 0;
+  virtual bool getPreviewFilled() = 0;
   virtual int getSprayWidth() = 0;
   virtual int getSpraySpeed() = 0;
 

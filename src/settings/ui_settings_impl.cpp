@@ -252,6 +252,7 @@ class UIToolSettingsImpl : public IToolSettings
   UIPenSettingsImpl m_pen;
   int m_opacity;
   bool m_filled;
+  bool m_previewFilled;
   int m_spray_width;
   int m_spray_speed;
 
@@ -265,6 +266,7 @@ public:
     m_opacity = get_config_int(cfg_section.c_str(), "Opacity", 255);
     m_opacity = MID(0, m_opacity, 255);
     m_filled = false;
+    m_previewFilled = get_config_bool(cfg_section.c_str(), "PreviewFilled", false);
     m_spray_width = 16;
     m_spray_speed = 32;
 
@@ -295,17 +297,21 @@ public:
       set_config_int(cfg_section.c_str(), "SprayWidth", m_spray_width);
       set_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
     }
+
+    set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
   }
 
   IPenSettings* getPen() { return &m_pen; }
 
   int getOpacity() { return m_opacity; }
   bool getFilled() { return m_filled; }
+  bool getPreviewFilled() { return m_previewFilled; }
   int getSprayWidth() { return m_spray_width; }
   int getSpraySpeed() { return m_spray_speed; }
 
   void setOpacity(int opacity) { m_opacity = opacity; }
   void setFilled(bool state) { m_filled = state; }
+  bool setPreviewFilled(bool state) { m_previewFilled = state; }
   void setSprayWidth(int width) { m_spray_width = width; }
   void setSpraySpeed(int speed) { m_spray_speed = speed; }
 

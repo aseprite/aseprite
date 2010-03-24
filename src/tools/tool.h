@@ -284,6 +284,9 @@ public:
   // To fill a shape, the ToolIntertwine::fillPoints function is used.
   virtual bool getFilled() = 0;
 
+  // Returns true if the preview should be with filled shapes.
+  virtual bool getPreviewFilled() = 0;
+
   // Spray configuration
   virtual int getSprayWidth() = 0;
   virtual int getSpraySpeed() = 0;
@@ -343,7 +346,6 @@ class ToolLoopManager
   IToolLoop* m_toolLoop;
   std::vector<Point> m_points;
   Point m_oldPoint;
-  bool m_previewFilled;
   
 public:
 

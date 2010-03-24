@@ -1439,6 +1439,7 @@ class ToolLoopImpl : public IToolLoop
   int m_old_cel_x;
   int m_old_cel_y;
   bool m_filled;
+  bool m_previewFilled;
   int m_sprayWidth;
   int m_spraySpeed;
   TiledMode m_tiled_mode;
@@ -1487,6 +1488,7 @@ public:
 	m_filled = settings->getToolSettings(m_tool)->getFilled();
 	break;
     }
+    m_previewFilled = settings->getToolSettings(m_tool)->getPreviewFilled();
 
     m_sprayWidth = settings->getToolSettings(m_tool)->getSprayWidth();
     m_spraySpeed = settings->getToolSettings(m_tool)->getSpraySpeed();
@@ -1696,6 +1698,7 @@ public:
   int getOpacity() { return m_opacity; }
   TiledMode getTiledMode() { return m_tiled_mode; }
   bool getFilled() { return m_filled; }
+  bool getPreviewFilled() { return m_previewFilled; }
   int getSprayWidth() { return m_sprayWidth; }
   int getSpraySpeed() { return m_spraySpeed; }
   Point getOffset() { return m_offset; }
