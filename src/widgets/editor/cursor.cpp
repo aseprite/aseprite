@@ -270,12 +270,28 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       ->getToolSettings(current_tool);
 
     int pen_color = app_get_fg_color(m_sprite);
+    int new_mask_color;
     Pen* pen = editor_get_current_pen();
 
+    // Set the opacity for the 'extra' layer used to show the cursor preview
     m_sprite->set_extras_opacity(tool_settings->getOpacity());
 
+    // Create the 'extra' image/layer
     m_sprite->prepare_extra();
-    image_putpen(m_sprite->get_extras(), pen, x, y, pen_color);
+
+    // In 'indexed' images, if the current color is 0, we have to use
+    // a different mask color (different from 0) to draw the extra layer
+    if (m_sprite->imgtype == IMAGE_INDEXED && pen_color == 0) {
+      new_mask_color = 1;
+    }
+    else {
+      new_mask_color = 0;
+    }
+
+    Image* extras = m_sprite->get_extras();
+    if (extras->mask_color != new_mask_color)
+      image_clear(extras, extras->mask_color = new_mask_color);
+    image_putpen(extras, pen, x, y, pen_color, extras->mask_color);
 
     if (refresh) {
       editors_draw_sprite(m_sprite,
@@ -390,7 +406,9 @@ void Editor::editor_clean_cursor(bool refresh)
     Pen* pen = editor_get_current_pen();
 
     m_sprite->prepare_extra();
-    image_putpen(m_sprite->get_extras(), pen, x, y, 0);
+    image_putpen(m_sprite->get_extras(), pen, x, y,
+		 m_sprite->get_extras()->mask_color,
+		 m_sprite->get_extras()->mask_color);
 
     if (refresh) {
       editors_draw_sprite(m_sprite,

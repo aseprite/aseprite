@@ -292,12 +292,14 @@ void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity
   }
   // with mask
   else {
+    register int mask_color = src->mask_color;
+
     for (ydst=ybeg; ydst<=yend; ydst++, ysrc++) {
       src_address = ((ImageImpl<IndexedTraits>*)src)->line_address(ysrc)+xsrc;
       dst_address = ((ImageImpl<IndexedTraits>*)dst)->line_address(ydst)+xbeg;
 
       for (xdst=xbeg; xdst<=xend; xdst++) {
-	if (*src_address) {
+	if (*src_address != mask_color) {
 	  if (color_map)
 	    *dst_address = color_map->data[*src_address][*dst_address];
 	  else

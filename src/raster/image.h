@@ -46,8 +46,9 @@ class Image : public GfxObj
 public:
   int imgtype;
   int w, h;
-  ase_uint8* dat;		/* pixmap data */
-  ase_uint8** line;		/* start of each scanline */
+  ase_uint8* dat;		// pixmap data
+  ase_uint8** line;		// start of each scanline
+  ase_uint32 mask_color;	// skipped color in merge process
 
   Image(int imgtype, int w, int h);
   virtual ~Image();
@@ -70,7 +71,7 @@ int image_depth(Image* image);
 
 int image_getpixel(const Image* image, int x, int y);
 void image_putpixel(Image* image, int x, int y, int color);
-void image_putpen(Image* image, Pen* pen, int x, int y, int color);
+void image_putpen(Image* image, Pen* pen, int x, int y, int fg_color, int bg_color);
 
 void image_clear(Image* image, int color);
 

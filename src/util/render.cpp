@@ -40,7 +40,7 @@ class BlenderHelper
 {
   BLEND_COLOR m_blend_color;
 public:
-  BlenderHelper(int blend_mode)
+  BlenderHelper(int blend_mode, Image* src)
   {
     m_blend_color = Traits::get_blender(blend_mode);
   }
@@ -58,10 +58,12 @@ template<>
 class BlenderHelper<IndexedTraits>
 {
   int m_blend_mode;
+  int m_mask_color;
 public:
-  BlenderHelper(int blend_mode)
+  BlenderHelper(int blend_mode, Image* src)
   {
     m_blend_mode = blend_mode;
+    m_mask_color = src->mask_color;
   }
 
   inline void operator()(IndexedTraits::address_t& scanline_address,
@@ -73,7 +75,7 @@ public:
       *scanline_address = *src_address;
     }
     else {
-      if (*src_address) {
+      if (*src_address != m_mask_color) {
 	if (color_map)
 	  *scanline_address = color_map->data[*src_address][*dst_address];
 	else
@@ -90,7 +92,7 @@ static void merge_zoomed_image(Image *dst, Image *src,
 			       int x, int y, int opacity,
 			       int blend_mode, int zoom)
 {
-  BlenderHelper<Traits> blender(blend_mode);
+  BlenderHelper<Traits> blender(blend_mode, src);
   typename Traits::address_t src_address;
   typename Traits::address_t dst_address, dst_address_end;
   typename Traits::address_t scanline, scanline_address;

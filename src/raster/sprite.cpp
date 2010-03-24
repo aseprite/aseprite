@@ -397,7 +397,7 @@ void Sprite::prepare_extra()
       m_extras->h != h) {
     delete m_extras;		// image
     m_extras = image_new(imgtype, w, h);
-    image_clear(m_extras, 0);
+    image_clear(m_extras, m_extras->mask_color = 0);
   }
 }
 

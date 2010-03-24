@@ -40,6 +40,7 @@ Image::Image(int imgtype, int w, int h)
   this->h = h;
   this->dat = NULL;
   this->line = NULL;
+  this->mask_color = 0;
 }
 
 Image::~Image()
@@ -98,7 +99,7 @@ void image_putpixel(Image* image, int x, int y, int color)
     image->putpixel(x, y, color);
 }
 
-void image_putpen(Image* image, Pen* pen, int x, int y, int color)
+void image_putpen(Image* image, Pen* pen, int x, int y, int fg_color, int bg_color)
 {
   Image* pen_image = pen->get_image();
   int u, v, size = pen->get_size();
@@ -106,10 +107,17 @@ void image_putpen(Image* image, Pen* pen, int x, int y, int color)
   x -= size/2;
   y -= size/2;
 
-  for (v=0; v<pen_image->h; v++) {
-    for (u=0; u<pen_image->w; u++) {
-      if (image_getpixel(pen_image, u, v))
-	image_putpixel(image, x+u, y+v, color);
+  if (fg_color == bg_color) {
+    image_rectfill(image, x, y, x+pen_image->w-1, y+pen_image->h-1, bg_color);
+  }
+  else {
+    for (v=0; v<pen_image->h; v++) {
+      for (u=0; u<pen_image->w; u++) {
+	if (image_getpixel(pen_image, u, v))
+	  image_putpixel(image, x+u, y+v, fg_color);
+	else
+	  image_putpixel(image, x+u, y+v, bg_color);
+      }
     }
   }
 }
