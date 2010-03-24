@@ -223,12 +223,6 @@ COMMON_SOURCES =					\
 	src/widgets/target.cpp				\
 	src/widgets/toolbar.cpp
 
-ifdef USE_386_ASM
-  COMMON_SOURCES += \
-	src/raster/x86/blenders.s			\
-	src/raster/x86/int_mult.s
-endif
-
 COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
 	        $(addsuffix $(OBJ),				\
 	          $(notdir $(basename $(COMMON_SOURCES)))))

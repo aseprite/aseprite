@@ -27,24 +27,12 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 
-#ifdef USE_386_ASM
-#  undef INT_MULT
-/* #  define INT_MULT(a, b, t) (_int_mult(a, b)) */
-#  define INT_MULT(a, b, t) (_int_mult_fast(a, b))
-#  define T_VAR
-#  define NT_VAR register int t;
-#else
-#  define T_VAR register int t;
-#  define NT_VAR
-#endif
+#define T_VAR register int t;
+#define NT_VAR
 
 BLEND_COLOR _rgba_blenders[] =
 {
-#ifdef USE_SSE_ASM
-  _rgba_blend_normal_sse,
-#else
   _rgba_blend_normal,
-#endif
   _rgba_blend_normal, /* _rgba_blend_dissolve, */
   _rgba_blend_multiply,
   _rgba_blend_screen,

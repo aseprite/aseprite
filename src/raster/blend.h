@@ -22,15 +22,6 @@
 #define INT_MULT(a, b, t)				\
   ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))
 
-#ifdef USE_386_ASM
-extern int _int_mult(int a, int b);
-extern int _int_mult_fast(int a, int b) __attribute__((fastcall));
-#endif
-
-#ifdef USE_SSE_ASM
-extern int _rgba_blend_normal_sse(int back, int front, int opacity);
-#endif
-
 enum {
   BLEND_MODE_NORMAL,
   BLEND_MODE_DISSOLVE,

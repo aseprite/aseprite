@@ -41,16 +41,12 @@ ifdef DEFAULT_PREFIX
   CFLAGS += -DDEFAULT_PREFIX="\"$(DEFAULT_PREFIX)\""
 endif
 
-ifdef USE_386_ASM
-  CFLAGS += -DUSE_386_ASM
-endif
-
 ifdef USE_MMX_ASM
-  CFLAGS += -DUSE_MMX_ASM -mmmx
+  CFLAGS += -mmmx
 endif
 
 ifdef USE_SSE_ASM
-  CFLAGS += -DUSE_SSE_ASM -msse
+  CFLAGS += -msse
 endif
 
 ifdef HAVE_RESIZE_PATCH
