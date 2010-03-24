@@ -85,7 +85,7 @@ static struct
 			{  320, 200, 1 },
 			{    0,   0, 0 } };
 
-static int try_depths[] = { 32, 24, 16, 15, 8 };
+static int try_depths[] = { 32, 24, 16, 15 };
 
 //////////////////////////////////////////////////////////////////////
 
@@ -250,11 +250,16 @@ int init_module_gui()
   if (!bpp) {
     bpp = desktop_color_depth();
     if (!bpp)
-      bpp = 8;
+      bpp = 16;
   }
 
   for (;;) {
-    /* original */
+    if (bpp == 8) {
+      allegro_message("You cannot use aseprite in 8 bits per pixel\n");
+      return -1;
+    }
+
+    // Original
     set_color_depth(bpp);
     if (set_gfx_mode(autodetect, w, h, 0, 0) == 0)
       break;
@@ -268,7 +273,7 @@ int init_module_gui()
       }
     }
 
-    if (bpp == 8) {
+    if (bpp == 15) {
       user_printf(_("Error setting graphics mode\n%s\n"
 		    "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
       return -1;
@@ -403,6 +408,10 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
 #else
   maximized = false;
 #endif
+
+  // Avoid 8 bpp
+  if (bpp == 8)
+    bpp = 32;
 }
 
 static void save_gui_config()

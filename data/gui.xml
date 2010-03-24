@@ -356,7 +356,6 @@
     <screensize width="1920" height="1200" aspect="16:10" />
     <screensize width="2560" height="1600" aspect="16:10" />
     
-    <colordepth bpp="8" label="8 bpp (256 colors)" />
     <colordepth bpp="15" label="15 bpp (32K colors)" />
     <colordepth bpp="16" label="16 bpp (64K colors)" />
     <colordepth bpp="24" label="24 bpp (16M colors)" />
