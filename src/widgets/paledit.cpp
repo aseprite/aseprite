@@ -437,7 +437,7 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
 	    break;
 
 	  if (bitmap_color_depth(ji_screen) == 8)
-	    color = _index_cmap[c];
+	    color = c;
 	  else
 	    color = makecol_depth
 	      (bitmap_color_depth(ji_screen),

@@ -48,7 +48,6 @@ typedef int (*BLEND_COLOR)(int back, int front, int opacity);
 
 extern BLEND_COLOR _rgba_blenders[];
 extern BLEND_COLOR _graya_blenders[];
-extern unsigned char _index_cmap[256];
 
 int _rgba_blend_normal(int back, int front, int opacity);
 int _rgba_blend_dissolve(int back, int front, int opacity);

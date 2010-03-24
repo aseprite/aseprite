@@ -518,9 +518,6 @@ int get_color_for_allegro(int depth, color_t color)
 
   }
 
-  if (depth == 8 && c >= 0 && c < 256)
-    c = _index_cmap[c];
-
   return c;
 }
 

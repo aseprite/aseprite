@@ -435,7 +435,7 @@ void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
     data = color_get_index(imgtype, color);
     rectfill(bmp, x1, y1, x2, y2,
 	     /* get_color_for_allegro(bitmap_color_depth(bmp), color)); */
-	     palette_color[_index_cmap[data]]);
+	     palette_color[data]);
     return;
   }
 
@@ -443,7 +443,7 @@ void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
 
     case IMAGE_INDEXED:
       rectfill(bmp, x1, y1, x2, y2,
-	       palette_color[_index_cmap[get_color_for_image(imgtype, color)]]);
+	       palette_color[get_color_for_image(imgtype, color)]);
       break;
 
     case IMAGE_RGB:

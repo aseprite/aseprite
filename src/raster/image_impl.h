@@ -641,8 +641,7 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 
           for (x=0; x<w; x++) {
             outportw(0x3C4, (0x100<<((_x+x)&3))|2);
-            bmp_write8(bmp_address+((_x+x)>>2),
-		       _index_cmap[(*addr) & 0xff]);
+            bmp_write8(bmp_address+((_x+x)>>2), (*addr) & 0xff);
             addr++;
           }
 
@@ -655,7 +654,7 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
           bmp_address = bmp_write_line(bmp, _y)+_x;
 
           for (x=0; x<w; x++) {
-            bmp_write8(bmp_address, _index_cmap[(*addr) & 0xff]);
+            bmp_write8(bmp_address, (*addr) & 0xff);
             addr++;
             bmp_address++;
           }
@@ -750,10 +749,10 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 template<>
 void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 {
-#define RGB_TRIPLET						\
-  _rgb_scale_6[_current_palette[_index_cmap[(*addr)]].r],	\
-  _rgb_scale_6[_current_palette[_index_cmap[(*addr)]].g],	\
-  _rgb_scale_6[_current_palette[_index_cmap[(*addr)]].b]
+#define RGB_TRIPLET				\
+  _rgb_scale_6[_current_palette[(*addr)].r],	\
+  _rgb_scale_6[_current_palette[(*addr)].g],	\
+  _rgb_scale_6[_current_palette[(*addr)].b]
 
   const_address_t addr = raw_pixels();
   unsigned long bmp_address;
@@ -772,7 +771,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 
           for (x=0; x<w; x++) {
             outportw(0x3C4, (0x100<<((_x+x)&3))|2);
-            bmp_write8(bmp_address+((_x+x)>>2), _index_cmap[(*addr)]);
+            bmp_write8(bmp_address+((_x+x)>>2), (*addr));
             address++;
           }
 
@@ -785,7 +784,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
           bmp_address = bmp_write_line(bmp, _y)+_x;
 
           for (x=0; x<w; x++) {
-            bmp_write8(bmp_address, _index_cmap[(*addr)]);
+            bmp_write8(bmp_address, (*addr));
             addr++;
             bmp_address++;
           }

@@ -50,22 +50,6 @@ static Palette *ase_current_palette = NULL;
 static RGB_MAP *my_rgb_map = NULL;
 static int regen_my_rgb_map = false;
 
-/* system color (in order of importance) */
-static ase_uint32 ase_system_color[] =
-{
-  _rgba(255, 255, 255, 255),	/* background */
-  _rgba(0,     0,   0, 255),	/* foreground */
-  _rgba(128, 128, 128, 255),	/* disabled */
-  _rgba(210, 200, 190, 255),	/* face */
-  _rgba( 44,  76, 145, 255),	/* selected */
-  _rgba(250, 240, 230, 255),	/* hotface */
-  _rgba(255, 255,   0, 255),	/* yellow */
-  _rgba(  0,   0, 255, 255),	/* blue */
-  _rgba(255, 255, 200, 255),	/* yellow for tooltips */
-};
-
-#define SYSTEM_COLORS   (sizeof(ase_system_color) / sizeof(RGB))
-
 int init_module_palette()
 {
   orig_rgb_map = jnew(RGB_MAP, 1);
@@ -142,55 +126,6 @@ bool set_current_palette(Palette *_palette, bool forced)
     create_trans_table(orig_trans_map, rgbpal, 128, 128, 128, NULL);
     rgb_map = my_rgb_map;
 
-    /* create the mapped-palette fixing up the _index_cmap[] to map
-       similar colors... */
-
-    /* fill maps with default values */
-    for (i=0; i<256; i++)
-      _index_cmap[i] = i;
-
-    /* a mapped-palette is only necessary for 8 bpp screen */
-    if (screen != NULL && bitmap_color_depth(screen) == 8) {
-      bool found[SYSTEM_COLORS];
-
-      /* first of all, we can search for system colors in the palette */
-      for (i=0; i<SYSTEM_COLORS; i++) {
-	found[i] = false;
-
-	for (j=1; j<256; j++) {
-	  if ((_rgba_getr(ase_system_color[i])>>2) == (_rgba_getr(palette->color[j])>>2) &&
-	      (_rgba_getg(ase_system_color[i])>>2) == (_rgba_getg(palette->color[j])>>2) &&
-	      (_rgba_getb(ase_system_color[i])>>2) == (_rgba_getb(palette->color[j])>>2)) {
-	    found[i] = true;
-	    break;
-	  }
-	}
-      }
-
-      /* after that, we can search for repeated colors in the system
-	 palette, to make a mapping between two same colors */
-      for (i=0, j=255; i<SYSTEM_COLORS; i++) {
-	if (found[i])
-	  continue;
-
-	for (; j>=1; j--) {
-	  for (k=1; k<j; k++) {
-	    /* if the "j" color is the same as "k" color... */
-	    if (palette->color[j] == palette->color[k]) {
-	      /* ...then we can paint "j" using "k" */
-	      _index_cmap[j] = k;
-	      rgbpal[j].r = _rgba_getr(ase_system_color[i]) >> 2;
-	      rgbpal[j].g = _rgba_getg(ase_system_color[i]) >> 2;
-	      rgbpal[j].b = _rgba_getb(ase_system_color[i]) >> 2;
-	      --j;
-	      goto next;
-	    }
-	  }
-	}
-      next:;
-      }
-    }
-
     // Create a map for the mapped-palette
     create_rgb_table(my_rgb_map, rgbpal, NULL);
     set_palette(rgbpal);	// Change system color palette
@@ -229,13 +164,6 @@ void set_current_color(int index, int r, int g, int b)
     RGB rgb;
 
     ase_current_palette->color[index] = _rgba(r, g, b, 255);
-
-    if (screen && bitmap_color_depth(screen) == 8 &&
-	/* this color is mapped? */
-	_index_cmap[index] != index) {
-      /* ok, restore the it to point to the original index */
-      _index_cmap[index] = index;
-    }
 
     rgb.r = r>>2;
     rgb.g = g>>2;
