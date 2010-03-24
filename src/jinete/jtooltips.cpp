@@ -112,8 +112,8 @@ static bool tip_hook(JWidget widget, JMessage msg)
 	  Frame* window = new TipWindow(tip->text, true);
 /* 	  int x = tip->widget->rc->x1; */
 /* 	  int y = tip->widget->rc->y2; */
-	  int x = jmouse_x(0)+12;
-	  int y = jmouse_y(0)+12;
+	  int x = jmouse_x(0)+12*jguiscale();
+	  int y = jmouse_y(0)+12*jguiscale();
 	  int w, h;
 
 	  tip->window = window;
@@ -124,7 +124,7 @@ static bool tip_hook(JWidget widget, JMessage msg)
 	  h = jrect_h(window->rc);
 
 	  if (x+w > JI_SCREEN_W) {
-	    x = jmouse_x(0) - w - 4;
+	    x = jmouse_x(0) - w - 4*jguiscale();
 	    y = jmouse_y(0);
 	  }
 
