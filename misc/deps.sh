@@ -11,6 +11,7 @@ CFLAGS="-I.					\
 	-Ithird_party/tinyxml			\
 	-Ithird_party/loadpng			\
 	-Ithird_party/freetype/include		\
+	-Ithird_party/vaca/include		\
 	-Ithird_party"
 
 rm -f makefile.dep
