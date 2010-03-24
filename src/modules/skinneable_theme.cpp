@@ -1267,7 +1267,7 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 
     widget->setTextQuiet(buf);
 
-    r = jrect_new(x1, y1, x2+1, y2+1);
+    r = jrect_new(x1, y1, x2, y2);
 
     /* TODO when Allegro 4.1 will be officially released, replace this
        with the get_clip_rect, add_clip_rect, set_clip_rect
