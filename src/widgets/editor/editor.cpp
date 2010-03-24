@@ -56,8 +56,6 @@
 		         KB_ALT_FLAG |		\
 		         KB_CTRL_FLAG)) == (shift))
 
-static bool use_dither = false;
-
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 
 JWidget editor_view_new()
@@ -304,18 +302,6 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 						 width, height,
 						 m_sprite->frame,
 						 m_zoom);
-
-    /* dithering */
-    if (use_dither &&
-	rendered &&
-	rendered->imgtype == IMAGE_RGB &&
-	bitmap_color_depth(ji_screen) == 8) {
-      Image *rgb_rendered = rendered;
-      rendered = image_rgb_to_indexed(rgb_rendered, source_x, source_y,
-				      orig_rgb_map,
-				      get_current_palette());
-      image_free(rgb_rendered);
-    }
 
     if (rendered) {
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
@@ -766,8 +752,6 @@ bool Editor::msg_proc(JMessage msg)
       else {
 	int x1, y1, x2, y2;
 
-	use_dither = get_config_bool("Options", "Dither", use_dither);
-	
 	/* draw the background outside of image */
 	x1 = this->rc->x1 + m_offset_x;
 	y1 = this->rc->y1 + m_offset_y;

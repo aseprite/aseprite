@@ -45,7 +45,7 @@ static bool slider_mouse_hook(JWidget widget, void *data);
 /* shows option dialog */
 void dialogs_options()
 {
-  JWidget check_smooth, check_dither;
+  JWidget check_smooth;
   JWidget button_ok;
   JWidget move_click2, draw_click2, killer;
   JWidget undo_size_limit;
@@ -65,7 +65,6 @@ void dialogs_options()
 	      "mouse_y", &slider_y,
 	      "lock_axis", &check_lockmouse,
 	      "smooth", &check_smooth,
-	      "dither", &check_dither,
 	      "move_click2", &move_click2,
 	      "draw_click2", &draw_click2,
 	      "undo_size_limit", &undo_size_limit,
@@ -83,9 +82,6 @@ void dialogs_options()
   if (get_config_bool("Options", "MoveSmooth", true))
     jwidget_select(check_smooth);
 
-  if (get_config_bool("Options", "Dither", false))
-    jwidget_select(check_dither);
-
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
 
   HOOK(slider_x, JI_SIGNAL_SLIDER_CHANGE, slider_mouse_hook, NULL);
@@ -101,11 +97,6 @@ void dialogs_options()
     set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
     set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
     set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
-    
-    if (get_config_bool("Options", "Dither", false) != jwidget_is_selected(check_dither)) {
-      set_config_bool("Options", "Dither", jwidget_is_selected(check_dither));
-      refresh_all_editors();
-    }
 
     undo_size_limit_value = undo_size_limit->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);

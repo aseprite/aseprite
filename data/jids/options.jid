@@ -21,7 +21,6 @@
       <separator horizontal="true" />
 
       <check text="Smooth auto-scroll" name="smooth" />
-      <check text="Real-time ordered dithering" name="dither" />
       <check text="2 Click Movement" name="move_click2" />
       <check text="2 Click Drawing" name="draw_click2" />
 
