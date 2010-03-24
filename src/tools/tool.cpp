@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "core/cfg.h"
 #include "raster/algo.h"
 #include "raster/image.h"
 #include "tools/tool.h"
@@ -106,6 +107,7 @@ void ToolIntertwine::doPointshapeLine(int x1, int y1, int x2, int y2, IToolLoop*
 ToolLoopManager::ToolLoopManager(IToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
 {
+  m_previewFilled = get_config_bool("Options", "PreviewFilled", false);
 }
 
 ToolLoopManager::~ToolLoopManager()
@@ -223,7 +225,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   }
 
   // Get the modified area in the sprite with this intertwined set of points
-  if (!last_step || !m_toolLoop->getFilled())
+  if (!m_toolLoop->getFilled() || (!last_step && !m_previewFilled))
     m_toolLoop->getIntertwine()->joinPoints(m_toolLoop, points_to_interwine);
   else
     m_toolLoop->getIntertwine()->fillPoints(m_toolLoop, points_to_interwine);

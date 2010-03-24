@@ -343,6 +343,7 @@ class ToolLoopManager
   IToolLoop* m_toolLoop;
   std::vector<Point> m_points;
   Point m_oldPoint;
+  bool m_previewFilled;
   
 public:
 
