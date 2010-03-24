@@ -2,8 +2,8 @@
 NEWS
 ===================================
 
-0.8
----
+0.8.0
+-----
 
 + IMPORTANT USER INTERFACE CHANGES!
   - Now you zoom using the mouse wheel without pressing Alt key.

@@ -25,7 +25,7 @@
 
 /* general information */
 #define PACKAGE			"aseprite"
-#define VERSION			"0.8"
+#define VERSION			"0.8.0"
 #define WEBSITE			"http://www.aseprite.org/"
 #define COPYRIGHT		"Copyright (C) 2001-2010 David Capello"
 
