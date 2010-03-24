@@ -455,6 +455,8 @@ static bool colorbar_msg_proc(JWidget widget, JMessage msg)
       if (colorbar->hot != HOTCOLOR_NONE) {
 	colorbar->hot = HOTCOLOR_NONE;
 	jwidget_dirty(widget);
+
+	statusbar_set_text(app_get_statusbar(), 0, "");
       }
       break;
 
