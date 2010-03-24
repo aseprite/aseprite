@@ -23,12 +23,8 @@ High priority work
 ------------------
 
 + Selection tools do not have "move" functionality incorporated yet as we talked (they just add/subtract selection)
-+ The following tools do not work: spray, eraser, blur, jumble, eyedropper, scroll, move.
-+ You cannot cancel trace pressing the other mouse button
++ The following tools do not work: scroll, move.
 + "shade" drawing mode
-+ A lot of tool configurations are not working (grid, tiled, opacity)
-+ Improve polygon tool (and polygon lasso)
-
 - Fix paste behavior:
   + paste when there are no images (create one image or put the
     clipboard as the layer's image)
@@ -44,7 +40,6 @@ High priority work
   - complete palette operations, and palette editor (it needs a slider
     or something to move between palette changes)
 - add undo support for palette changes.
-- brush options by tool.
 - if there is activated the Tools Configuration dialog box, the
   Shift+G and Shift+S should update it
 - when press Plus/Minus pad in the editor and the configuration tool
