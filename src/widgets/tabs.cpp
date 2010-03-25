@@ -94,6 +94,9 @@ JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
   tabs->button_left = jbutton_new(NULL);
   tabs->button_right = jbutton_new(NULL);
 
+  setup_mini_look(tabs->button_left);
+  setup_mini_look(tabs->button_right);
+
   jbutton_set_bevel(tabs->button_left, 0, 0, 0, 0);
   jbutton_set_bevel(tabs->button_right, 0, 0, 0, 0);
 
