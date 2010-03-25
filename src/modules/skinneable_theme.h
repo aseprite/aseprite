@@ -43,22 +43,6 @@ private:
 
 enum {
 
-  PART_CURSOR_NORMAL,
-  PART_CURSOR_NORMAL_ADD,
-  PART_CURSOR_FORBIDDEN,
-  PART_CURSOR_HAND,
-  PART_CURSOR_SCROLL,
-  PART_CURSOR_MOVE,
-  PART_CURSOR_SIZE_TL,
-  PART_CURSOR_SIZE_T,
-  PART_CURSOR_SIZE_TR,
-  PART_CURSOR_SIZE_L,
-  PART_CURSOR_SIZE_R,
-  PART_CURSOR_SIZE_BL,
-  PART_CURSOR_SIZE_B,
-  PART_CURSOR_SIZE_BR,
-  PART_CURSOR_EYEDROPPER,
-
   PART_RADIO_NORMAL,
   PART_RADIO_SELECTED,
   PART_RADIO_DISABLED,
@@ -337,6 +321,7 @@ enum {
 class SkinneableTheme : public jtheme
 {
   BITMAP* m_sheet_bmp;
+  BITMAP* m_cursors[JI_CURSORS];
   BITMAP* m_part[PARTS];
   std::map<std::string, BITMAP*> m_toolicon;
 
@@ -441,6 +426,7 @@ public:
 
 private:
 
+  BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
   int get_bg_color(JWidget widget);
   void draw_textstring(const char *t, int fg_color, int bg_color,
 		       bool fill_bg, JWidget widget, const JRect rect,

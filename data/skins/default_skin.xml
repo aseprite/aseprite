@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ASE Default Skin -->
-<skin name="ASE Default Skin"
+<skin name="Default Skin"
       author="Ilija Melentijevic"
       url="http://ilkke.blogspot.com/">
+
+  <cursors>
+    <cursor id="normal"		x="80" y="0" w="16" h="16"	focusx="0" focusy="0" />
+    <cursor id="normal_add"	x="80" y="16" w="16" h="16"	focusx="0" focusy="0" />
+    <cursor id="forbidden"	x="80" y="32" w="16" h="16"	focusx="0" focusy="0" />
+    <cursor id="hand"		x="80" y="48" w="16" h="16"	focusx="5" focusy="3" />
+    <cursor id="scroll"		x="80" y="64" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="move"		x="80" y="80" w="16" h="16"	focusx="0" focusy="0" />
+    <cursor id="size_tl"	x="80" y="96" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_t"		x="80" y="112" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_tr"	x="80" y="128" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_l"		x="80" y="144" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_r"		x="80" y="160" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_bl"	x="80" y="176" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_b"		x="80" y="192" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="size_br"	x="80" y="208" w="16" h="16"	focusx="8" focusy="8" />
+    <cursor id="eyedropper"	x="80" y="224" w="16" h="16"	focusx="0" focusy="15" />
+  </cursors>
+
   <tools>
 
     <tool id="rectangular_marquee"	x="144" y="0" w="16" h="16" />

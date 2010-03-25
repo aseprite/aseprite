@@ -49,22 +49,6 @@ static struct
   int x, y, w, h;
 } sheet_info[PARTS] = {
 
-  { 80,  0, 16, 16 }, //  PART_CURSOR_NORMAL,
-  { 80, 16, 16, 16 }, //  PART_CURSOR_NORMAL_ADD,
-  { 80, 32, 16, 16 }, //  PART_CURSOR_FORBIDDEN,
-  { 80, 48, 16, 16 }, //  PART_CURSOR_HAND,
-  { 80, 64, 16, 16 }, //  PART_CURSOR_SCROLL,
-  { 80, 80, 16, 16 }, //  PART_CURSOR_MOVE,
-  { 80, 96, 16, 16 }, //  PART_CURSOR_SIZE_TL,
-  { 80,112, 16, 16 }, //  PART_CURSOR_SIZE_T,
-  { 80,128, 16, 16 }, //  PART_CURSOR_SIZE_TR,
-  { 80,144, 16, 16 }, //  PART_CURSOR_SIZE_L,
-  { 80,160, 16, 16 }, //  PART_CURSOR_SIZE_R,
-  { 80,176, 16, 16 }, //  PART_CURSOR_SIZE_BL,
-  { 80,192, 16, 16 }, //  PART_CURSOR_SIZE_B,
-  { 80,208, 16, 16 }, //  PART_CURSOR_SIZE_BR,
-  { 80,224, 16, 16 }, //  PART_CURSOR_EYEDROPPER,
-
   { 32, 32,  8,  8 }, //  PART_RADIO_NORMAL
   { 32, 48,  8,  8 }, //  PART_RADIO_SELECTED
   { 32, 32,  8,  8 }, //  PART_RADIO_DISABLED
@@ -343,23 +327,25 @@ static struct
 
 static struct
 {
-  int x, y;
-} focus_info[] = {
-  {  0,  0 }, //  JI_CURSOR_NORMAL,
-  {  0,  0 }, //  JI_CURSOR_NORMAL_ADD,
-  {  0,  0 }, //  JI_CURSOR_FORBIDDEN,
-  {  5,  3 }, //  JI_CURSOR_HAND,
-  {  8,  8 }, //  JI_CURSOR_SCROLL,
-  {  0,  0 }, //  JI_CURSOR_MOVE,
-  {  8,  8 }, //  JI_CURSOR_SIZE_TL,
-  {  8,  8 }, //  JI_CURSOR_SIZE_T,
-  {  8,  8 }, //  JI_CURSOR_SIZE_TR,
-  {  8,  8 }, //  JI_CURSOR_SIZE_L,
-  {  8,  8 }, //  JI_CURSOR_SIZE_R,
-  {  8,  8 }, //  JI_CURSOR_SIZE_BL,
-  {  8,  8 }, //  JI_CURSOR_SIZE_B,
-  {  8,  8 }, //  JI_CURSOR_SIZE_BR,
-  {  0, 15 }, //  JI_CURSOR_EYEDROPPER,
+  const char* id;
+  int focusx, focusy;
+} cursors_info[JI_CURSORS] = {
+  { "null",		0, 0 },	// JI_CURSOR_NULL
+  { "normal",		0, 0 },	// JI_CURSOR_NORMAL
+  { "normal_add",	0, 0 },	// JI_CURSOR_NORMAL_ADD
+  { "forbidden",	0, 0 },	// JI_CURSOR_FORBIDDEN
+  { "hand",		0, 0 },	// JI_CURSOR_HAND
+  { "scroll",		0, 0 },	// JI_CURSOR_SCROLL
+  { "move",		0, 0 },	// JI_CURSOR_MOVE
+  { "size_tl",		0, 0 },	// JI_CURSOR_SIZE_TL
+  { "size_t",		0, 0 },	// JI_CURSOR_SIZE_T
+  { "size_tr",		0, 0 },	// JI_CURSOR_SIZE_TR
+  { "size_l",		0, 0 },	// JI_CURSOR_SIZE_L
+  { "size_r",		0, 0 },	// JI_CURSOR_SIZE_R
+  { "size_bl",		0, 0 },	// JI_CURSOR_SIZE_BL
+  { "size_b",		0, 0 },	// JI_CURSOR_SIZE_B
+  { "size_br",		0, 0 },	// JI_CURSOR_SIZE_BR
+  { "eyedropper",	0, 0 },	// JI_CURSOR_EYEDROPPER
 };
 
 SkinneableTheme::SkinneableTheme()
@@ -367,6 +353,8 @@ SkinneableTheme::SkinneableTheme()
   this->name = "Skinneable Theme";
 
   m_sheet_bmp = NULL;
+  for (int c=0; c<JI_CURSORS; ++c)
+    m_cursors[c] = NULL;
   for (int c=0; c<PARTS; ++c)
     m_part[c] = NULL;
 
@@ -393,6 +381,10 @@ SkinneableTheme::SkinneableTheme()
 
 SkinneableTheme::~SkinneableTheme()
 {
+  for (int c=0; c<JI_CURSORS; ++c)
+    if (m_cursors[c])
+      destroy_bitmap(m_cursors[c]);
+
   for (int c=0; c<PARTS; ++c)
     destroy_bitmap(m_part[c]);
 
@@ -414,62 +406,101 @@ void SkinneableTheme::regen()
   textbox_fg_color = COLOR_FOREGROUND;
   textbox_bg_color = COLOR_BACKGROUND;
 
-  for (int c=0; c<PARTS; ++c) {
-    if (m_part[c]) destroy_bitmap(m_part[c]);
+  // Load the skin XML
+  DIRS* dirs = filename_in_datadir("skins/default_skin.xml");
+  for (DIRS* dir=dirs; dir; dir=dir->next) {
+    if (!dir->path || !exists(dir->path))
+      continue;
 
-    m_part[c] = create_bitmap(sheet_info[c].w, sheet_info[c].h);
-    clear_to_color(m_part[c], bitmap_mask_color(m_part[c]));
+    TiXmlDocument doc;
+    if (!doc.LoadFile(dir->path))
+      throw ase_exception(&doc);
 
-    set_alpha_blender();
-    draw_trans_sprite(m_part[c], m_sheet_bmp, -sheet_info[c].x, -sheet_info[c].y);
-    set_trans_blender(0, 0, 0, 0);
+    TiXmlHandle handle(&doc);
 
-    m_part[c] = ji_apply_guiscale(m_part[c]);
-  }
+    // Load cursors
+    {
+      TiXmlElement* xmlCursor = handle
+	.FirstChild("skin")
+	.FirstChild("cursors")
+	.FirstChild("cursor").ToElement();
+      while (xmlCursor) {
+	std::string id = xmlCursor->Attribute("id");
+	int x = strtol(xmlCursor->Attribute("x"), NULL, 10);
+	int y = strtol(xmlCursor->Attribute("y"), NULL, 10);
+	int w = strtol(xmlCursor->Attribute("w"), NULL, 10);
+	int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
+	int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
+	int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
 
-  // Load tool icons
-  {
-    DIRS* dirs = filename_in_datadir("skins/default_skin.xml");
-    for (DIRS* dir=dirs; dir; dir=dir->next) {
-      if ((dir->path) && exists(dir->path)) {
+	for (int c=0; c<JI_CURSORS; ++c) {
+	  if (id != cursors_info[c].id)
+	    continue;
 
-	TiXmlDocument doc;
-	if (!doc.LoadFile(dir->path))
-	  throw ase_exception(&doc);
+	  cursors_info[c].focusx = focusx;
+	  cursors_info[c].focusy = focusy;
 
-	TiXmlHandle handle(&doc);
-	
-	TiXmlElement* xmlIcon = handle
-	  .FirstChild("skin")
-	  .FirstChild("tools")
-	  .FirstChild("tool").ToElement();
-	while (xmlIcon) {
-	  // Get the tool-icon rectangle
-	  const char* tool_id = xmlIcon->Attribute("id");
-	  int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
-	  int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
-	  int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
-	  int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
-
-	  // Crop the tool-icon from the sheet
-	  BITMAP* toolicon = create_bitmap(w, h);
-	  clear_to_color(toolicon, bitmap_mask_color(toolicon));
-
-	  set_alpha_blender();
-	  draw_trans_sprite(toolicon, m_sheet_bmp, -x, -y);
-	  set_trans_blender(0, 0, 0, 0);
-
-	  // Add the tool-icon in the map
-	  if (m_toolicon[tool_id]) destroy_bitmap(m_toolicon[tool_id]);
-	  m_toolicon[tool_id] = ji_apply_guiscale(toolicon);
-
-	  xmlIcon = xmlIcon->NextSiblingElement();
+	  m_cursors[c] = cropPartFromSheet(m_cursors[c], x, y, w, h);
+	  break;
 	}
-	break;
+
+	xmlCursor = xmlCursor->NextSiblingElement();
       }
     }
-    dirs_free(dirs);
+
+    // Load parts
+    for (int c=0; c<PARTS; ++c) {
+      m_part[c] = cropPartFromSheet(m_part[c],
+				    sheet_info[c].x, sheet_info[c].y,
+				    sheet_info[c].w, sheet_info[c].h);
+    }
+
+    // Load tool icons
+    {
+      TiXmlElement* xmlIcon = handle
+	.FirstChild("skin")
+	.FirstChild("tools")
+	.FirstChild("tool").ToElement();
+      while (xmlIcon) {
+	// Get the tool-icon rectangle
+	const char* tool_id = xmlIcon->Attribute("id");
+	int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
+	int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
+	int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
+	int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
+	
+	// Crop the tool-icon from the sheet
+	m_toolicon[tool_id] = cropPartFromSheet(m_toolicon[tool_id], x, y, w, h);
+
+	xmlIcon = xmlIcon->NextSiblingElement();
+      }
+    }
+
+    break;
   }
+  dirs_free(dirs);
+}
+
+BITMAP* SkinneableTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h)
+{
+  if (bmp &&
+      (bmp->w != w ||
+       bmp->h != h ||
+       bitmap_color_depth(bmp) != bitmap_color_depth(screen))) {
+    destroy_bitmap(bmp);
+    bmp = NULL;
+  }
+
+  if (!bmp)
+    bmp = create_bitmap(w, h);
+
+  clear_to_color(bmp, bitmap_mask_color(bmp));
+
+  set_alpha_blender();
+  draw_trans_sprite(bmp, m_sheet_bmp, -x, -y);
+  set_trans_blender(0, 0, 0, 0);
+
+  return ji_apply_guiscale(bmp);
 }
 
 BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
@@ -480,9 +511,11 @@ BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
     return NULL;
   }
   else {
-    *focus_x = focus_info[type-JI_CURSOR_NORMAL].x*jguiscale();
-    *focus_y = focus_info[type-JI_CURSOR_NORMAL].y*jguiscale();
-    return m_part[PART_CURSOR_NORMAL+type-JI_CURSOR_NORMAL];
+    assert(type >= 0 && type < JI_CURSORS);
+
+    *focus_x = cursors_info[type].focusx*jguiscale();
+    *focus_y = cursors_info[type].focusy*jguiscale();
+    return m_cursors[type];
   }
 }
 
