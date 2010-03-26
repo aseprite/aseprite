@@ -127,6 +127,7 @@ void CheckArgs::clear()
     Option* option = *it;
     delete option;
   }
+  m_options.clear();
 }
 
 // Shows the available options for the program
