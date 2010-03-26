@@ -1260,11 +1260,12 @@ static void manager_pump_queue(JWidget widget_manager)
 	acquire_bitmap(ji_screen);
 
 	/* set clip */
-	set_clip(ji_screen,
-		 msg->draw.rect.x1, msg->draw.rect.y1,
-		 msg->draw.rect.x2-1, msg->draw.rect.y2-1);
+	assert(get_clip_state(ji_screen));
+	set_clip_rect(ji_screen,
+		      msg->draw.rect.x1, msg->draw.rect.y1,
+		      msg->draw.rect.x2-1, msg->draw.rect.y2-1);
 #ifdef REPORT_EVENTS
-	printf(" - set_clip(%d, %d, %d, %d)\n",
+	printf(" - clip(%d, %d, %d, %d)\n",
 	       msg->draw.rect.x1, msg->draw.rect.y1,
 	       msg->draw.rect.x2-1, msg->draw.rect.y2-1);
 	fflush(stdout);
@@ -1278,7 +1279,7 @@ static void manager_pump_queue(JWidget widget_manager)
 
       /* restore clip */
       if (msg->type == JM_DRAW) {
-	set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+	set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
 
 	/* dirty rectangles */
 	if (ji_dirty_region)

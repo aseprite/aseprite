@@ -1026,10 +1026,7 @@ void jstandard_theme::draw_separator(JWidget widget, JRect clip)
   }
 }
 
-#if 1
-/* TODO when Allegro 4.1 will be officially released, replace this
-   with the get_clip_rect, add_clip_rect, set_clip_rect functions */
-static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
+static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 {
   int u1 = MAX(x1, bitmap->cl);
   int v1 = MAX(y1, bitmap->ct);
@@ -1039,11 +1036,10 @@ static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
   if (u1 > u2 || v1 > v2)
     return false;
   else
-    set_clip(bitmap, u1, v1, u2, v2);
+    set_clip_rect(bitmap, u1, v1, u2, v2);
 
   return true;
 }
-#endif
 
 void jstandard_theme::draw_slider(JWidget widget, JRect clip)
 {
@@ -1113,8 +1109,9 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
   /* text */
   {
     std::string old_text = widget->getText();
-    int cx1, cy1, cx2, cy2;
     JRect r;
+    int cx1, cy1, cx2, cy2;
+    get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
     usprintf(buf, "%d", value);
 
@@ -1122,26 +1119,17 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
 
     r = jrect_new(x1, y1, x2+1, y2+1);
 
-    /* TODO when Allegro 4.1 will be officially released, replace this
-       with the get_clip_rect, add_clip_rect, set_clip_rect
-       functions */
-
-    cx1 = ji_screen->cl;
-    cy1 = ji_screen->ct;
-    cx2 = ji_screen->cr-1;
-    cy2 = ji_screen->cb-1;
-
     if (my_add_clip_rect(ji_screen, x1, y1, x, y2))
       draw_textstring(NULL, COLOR_BACKGROUND,
 		      jwidget_is_disabled(widget) ?
 		      bg: COLOR_SELECTED, false, widget, r, 0);
 
-    set_clip(ji_screen, cx1, cy1, cx2, cy2);
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
     if (my_add_clip_rect(ji_screen, x+1, y1, x2, y2))
       draw_textstring(NULL, COLOR_FOREGROUND, bg, false, widget, r, 0);
 
-    set_clip(ji_screen, cx1, cy1, cx2, cy2);
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
     widget->setTextQuiet(old_text.c_str());
     jrect_free(r);

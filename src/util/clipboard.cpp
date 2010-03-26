@@ -732,7 +732,7 @@ static void draw_box(BITMAP *bmp,
   int x[4], y[4];
   int c;
 
-  set_clip(bmp, cx1, cy1, cx2, cy2);
+  set_clip_rect(bmp, cx1, cy1, cx2, cy2);
 
   /* calculate corner positions */
   apply_rotation(x1, y1, x2, y2, angle, cx, cy, x, y);
@@ -767,7 +767,7 @@ static void draw_box(BITMAP *bmp,
   DRAWICON(3, 2, fixadd(angle, itofix(192)));
   DRAWICON(2, 2, fixadd(angle, itofix(224)));
 
-  set_clip(bmp, 0, 0, bmp->w-1, bmp->h-1);
+  set_clip_rect(bmp, 0, 0, bmp->w-1, bmp->h-1);
 }
 
 static void draw_icon(BITMAP *bmp, int x, int y, int mode, fixed angle)

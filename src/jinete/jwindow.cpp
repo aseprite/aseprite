@@ -644,13 +644,13 @@ void Frame::move_window(JRect rect, bool use_blit)
 
     /* move the window's graphics */
     jmouse_hide();
-    set_clip(ji_screen,
-	     man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
+    set_clip_rect(ji_screen,
+		  man_pos->x1, man_pos->y1, man_pos->x2-1, man_pos->y2-1);
 
     ji_move_region(moveable_region,
 		   this->rc->x1 - old_pos->x1,
 		   this->rc->y1 - old_pos->y1);
-    set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+    set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
 
     jregion_free(reg1);

@@ -1019,10 +1019,7 @@ void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
   }
 }
 
-#if 1
-/* TODO when Allegro 4.1 will be officially released, replace this
-   with the get_clip_rect, add_clip_rect, set_clip_rect functions */
-static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
+static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
 {
   int u1 = MAX(x1, bitmap->cl);
   int v1 = MAX(y1, bitmap->ct);
@@ -1032,11 +1029,10 @@ static int my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
   if (u1 > u2 || v1 > v2)
     return false;
   else
-    set_clip(bitmap, u1, v1, u2, v2);
+    set_clip_rect(bitmap, u1, v1, u2, v2);
 
   return true;
 }
-#endif
 
 void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 {
@@ -1096,8 +1092,9 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
   /* text */
   {
     std::string old_text = widget->getText();
-    int cx1, cy1, cx2, cy2;
     JRect r;
+    int cx1, cy1, cx2, cy2;
+    get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
     usprintf(buf, "%d", value);
 
@@ -1105,28 +1102,19 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 
     r = jrect_new(x1, y1, x2, y2);
 
-    /* TODO when Allegro 4.1 will be officially released, replace this
-       with the get_clip_rect, add_clip_rect, set_clip_rect
-       functions */
-
-    cx1 = ji_screen->cl;
-    cy1 = ji_screen->ct;
-    cx2 = ji_screen->cr-1;
-    cy2 = ji_screen->cb-1;
-
     if (my_add_clip_rect(ji_screen, x1, y1, x, y2))
       draw_textstring(NULL,
 		      get_slider_full_text_color(),
 		      get_slider_full_face_color(), false, widget, r, 0);
 
-    set_clip(ji_screen, cx1, cy1, cx2, cy2);
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
     if (my_add_clip_rect(ji_screen, x+1, y1, x2, y2))
       draw_textstring(NULL, 
 		      get_slider_empty_text_color(),
 		      get_slider_empty_face_color(), false, widget, r, 0);
 
-    set_clip(ji_screen, cx1, cy1, cx2, cy2);
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
     widget->setTextQuiet(old_text.c_str());
     jrect_free(r);
@@ -1482,10 +1470,7 @@ BITMAP* SkinneableTheme::get_toolicon(const char* tool_id) const
 void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg)
 {
   int cx1, cy1, cx2, cy2;
-  cx1 = ji_screen->cl;
-  cy1 = ji_screen->ct;
-  cx2 = ji_screen->cr-1;
-  cy2 = ji_screen->cb-1;
+  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
   int x, y;
 
@@ -1503,7 +1488,7 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
     }
     draw_sprite(ji_screen, m_part[nw+1], x2-m_part[nw+2]->w-m_part[nw+1]->w+1, y1);
   }
-  set_clip(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
   draw_sprite(ji_screen, m_part[nw+2], x2-m_part[nw+2]->w+1, y1);
 
@@ -1521,7 +1506,7 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
     }
     draw_sprite(ji_screen, m_part[nw+5], x2-m_part[nw+4]->w-m_part[nw+5]->w+1, y2-m_part[nw+5]->h+1);
   }
-  set_clip(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
   draw_sprite(ji_screen, m_part[nw+4], x2-m_part[nw+4]->w+1, y2-m_part[nw+4]->h+1);
 
@@ -1544,7 +1529,7 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
     }
     draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y2-m_part[nw+4]->h-m_part[nw+3]->h+1);
   }
-  set_clip(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
   // background 
   if (bg >= 0) {
@@ -1560,25 +1545,17 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
 void SkinneableTheme::draw_bounds2(int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2)
 {
   int cx1, cy1, cx2, cy2;
-
-  /* TODO when Allegro 4.1 will be officially released, replace this
-     with the get_clip_rect, add_clip_rect, set_clip_rect
-     functions */
-
-  cx1 = ji_screen->cl;
-  cy1 = ji_screen->ct;
-  cx2 = ji_screen->cr-1;
-  cy2 = ji_screen->cb-1;
+  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
 
   if (my_add_clip_rect(ji_screen, x1, y1, x_mid, y2))
     draw_bounds(x1, y1, x2, y2, nw1, bg1);
 
-  set_clip(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 
   if (my_add_clip_rect(ji_screen, x_mid+1, y1, x2, y2))
     draw_bounds(x1, y1, x2, y2, nw2, bg2);
 
-  set_clip(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
 }
 
 void SkinneableTheme::draw_hline(int x1, int y1, int x2, int y2, int part)

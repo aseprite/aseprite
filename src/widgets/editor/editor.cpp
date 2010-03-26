@@ -456,10 +456,10 @@ void Editor::editor_draw_mask_safe()
     for (c=0, rc=JI_REGION_RECTS(region);
 	 c<nrects;
 	 c++, rc++) {
-      set_clip(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
+      set_clip_rect(ji_screen, rc->x1, rc->y1, rc->x2-1, rc->y2-1);
       editor_draw_mask();
     }
-    set_clip(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+    set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jregion_free(region);
 
     /* draw the cursor */
