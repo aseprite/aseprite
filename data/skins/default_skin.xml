@@ -56,4 +56,49 @@
 
     <tool id="configuration"		x="144" y="128" w="16" h="16" />
   </tools>
+
+  <parts>
+    <part id="radio_normal"			x="32" y="32" w="8" h="8" />
+    <part id="radio_selected"			x="32" y="48" w="8" h="8" />
+    <part id="radio_disabled"			x="32" y="32" w="8" h="8" />
+    <part id="check_normal"			x="48" y="32" w="8" h="8" />
+    <part id="check_selected"			x="48" y="48" w="8" h="8" />
+    <part id="check_disabled"			x="48" y="32" w="8" h="8" />
+    <part id="check_focus"			x="32" y="64" w1="2" w2="6" w3="2" h1="2" h2="6" h3="2" />
+    <part id="radio_focus"			x="32" y="64" w1="2" w2="6" w3="2" h1="2" h2="6" h3="2" />
+    <part id="button_normal"			x="48" y="0" w1="4" w2="6" w3="4" h1="4" h2="6" h3="6" />
+    <part id="button_hot"			x="64" y="0" w1="4" w2="6" w3="4" h1="4" h2="6" h3="6" />
+    <part id="button_focused"			x="48" y="16" w1="4" w2="6" w3="4" h1="4" h2="6" h3="6" />
+    <part id="button_selected"			x="64" y="16" w1="4" w2="6" w3="4" h1="4" h2="6" h3="6" />
+    <part id="sunken_normal"			x="0" y="32" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
+    <part id="sunken_focused"			x="0" y="48" w1="4" w2="4" w3="4" h1="4" h2="4" h3="4" />
+    <part id="sunken2_normal"			x="0" y="64" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="sunken2_focused"			x="0" y="80" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="window"				x="0" y="0" w1="3" w2="7" w3="3" h1="15" h2="4" h3="5" />
+    <part id="menu"				x="0" y="96" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+    <part id="window_close_button_normal"	x="16" y= "0" w="9" h="11" />
+    <part id="window_close_button_hot"		x="16" y="16" w="9" h="11" />
+    <part id="window_close_button_selected"	x="16" y="32" w="9" h="11" />
+    <part id="slider_full"			x="0" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="slider_empty"			x="16" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="slider_full_focused"		x="0" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="slider_empty_focused"		x="16" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="mini_slider_full"			x="32" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="mini_slider_empty"		x="48" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="mini_slider_full_focused"		x="32" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="mini_slider_empty_focused"	x="48" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
+    <part id="separator"			x="32" y="80" w="9" h="5" />
+    <part id="combobox_arrow"			x="96" y="32" w="16" h="16" />
+    <part id="toolbutton_normal"		x="96" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+    <part id="toolbutton_hot"			x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+    <part id="toolbutton_last"			x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
+    <part id="tab_normal"			x="2" y="112" w1="4" w2="5" w3="5" h1="4" h2="6" h3="2" />
+    <part id="tab_selected"			x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
+    <part id="tab_bottom_selected"		x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
+    <part id="tab_bottom_normal"		x="2" y="124" w="12" h="5" />
+    <part id="tab_filler"			x="0" y="112" w="2" h="12" />
+    <part id="editor_normal"			x="32" y="112" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
+    <part id="editor_selected"			x="48" y="112" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
+  </parts>
+
 </skin>

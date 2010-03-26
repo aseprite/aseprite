@@ -47,283 +47,9 @@
 static struct
 {
   int x, y, w, h;
-} sheet_info[PARTS] = {
+} sheet_info[PARTS];
 
-  { 32, 32,  8,  8 }, //  PART_RADIO_NORMAL
-  { 32, 48,  8,  8 }, //  PART_RADIO_SELECTED
-  { 32, 32,  8,  8 }, //  PART_RADIO_DISABLED
-
-  { 48, 32,  8,  8 }, //  PART_CHECK_NORMAL
-  { 48, 48,  8,  8 }, //  PART_CHECK_SELECTED
-  { 48, 32,  8,  8 }, //  PART_CHECK_DISABLED
-
-  { 32, 64,  2,  2 }, //  PART_CHECK_FOCUS_NW
-  { 34, 64,  6,  2 }, //  PART_CHECK_FOCUS_N
-  { 40, 64,  2,  2 }, //  PART_CHECK_FOCUS_NE
-  { 40, 66,  2,  6 }, //  PART_CHECK_FOCUS_E
-  { 40, 72,  2,  2 }, //  PART_CHECK_FOCUS_SE
-  { 34, 72,  6,  2 }, //  PART_CHECK_FOCUS_S
-  { 32, 72,  2,  2 }, //  PART_CHECK_FOCUS_SW
-  { 32, 66,  2,  6 }, //  PART_CHECK_FOCUS_W
-
-  { 32, 64,  2,  2 }, //  PART_RADIO_FOCUS_NW
-  { 34, 64,  6,  2 }, //  PART_RADIO_FOCUS_N
-  { 40, 64,  2,  2 }, //  PART_RADIO_FOCUS_NE
-  { 40, 66,  2,  6 }, //  PART_RADIO_FOCUS_E
-  { 40, 72,  2,  2 }, //  PART_RADIO_FOCUS_SE
-  { 34, 72,  6,  2 }, //  PART_RADIO_FOCUS_S
-  { 32, 72,  2,  2 }, //  PART_RADIO_FOCUS_SW
-  { 32, 66,  2,  6 }, //  PART_RADIO_FOCUS_W
-
-  { 48,  0,  4,  4 }, //  PART_BUTTON_NORMAL_NW
-  { 52,  0,  6,  4 }, //  PART_BUTTON_NORMAL_N
-  { 58,  0,  4,  4 }, //  PART_BUTTON_NORMAL_NE
-  { 58,  4,  4,  6 }, //  PART_BUTTON_NORMAL_E
-  { 58, 10,  4,  6 }, //  PART_BUTTON_NORMAL_SE
-  { 52, 10,  6,  6 }, //  PART_BUTTON_NORMAL_S
-  { 48, 10,  4,  6 }, //  PART_BUTTON_NORMAL_SW
-  { 48,  4,  4,  6 }, //  PART_BUTTON_NORMAL_W
-
-  { 64,  0,  4,  4 }, //  PART_BUTTON_HOT_NW
-  { 68,  0,  6,  4 }, //  PART_BUTTON_HOT_N
-  { 74,  0,  4,  4 }, //  PART_BUTTON_HOT_NE
-  { 74,  4,  4,  6 }, //  PART_BUTTON_HOT_E
-  { 74, 10,  4,  6 }, //  PART_BUTTON_HOT_SE
-  { 68, 10,  6,  6 }, //  PART_BUTTON_HOT_S
-  { 64, 10,  4,  6 }, //  PART_BUTTON_HOT_SW
-  { 64,  4,  4,  6 }, //  PART_BUTTON_HOT_W
-
-  { 48, 16,  4,  4 }, //  PART_BUTTON_FOCUSED_NW
-  { 52, 16,  6,  4 }, //  PART_BUTTON_FOCUSED_N
-  { 58, 16,  4,  4 }, //  PART_BUTTON_FOCUSED_NE
-  { 58, 20,  4,  6 }, //  PART_BUTTON_FOCUSED_E
-  { 58, 26,  4,  6 }, //  PART_BUTTON_FOCUSED_SE
-  { 52, 26,  6,  6 }, //  PART_BUTTON_FOCUSED_S
-  { 48, 26,  4,  6 }, //  PART_BUTTON_FOCUSED_SW
-  { 48, 20,  4,  6 }, //  PART_BUTTON_FOCUSED_W
-
-  { 64, 16,  4,  4 }, //  PART_BUTTON_SELECTED_NW
-  { 68, 16,  6,  4 }, //  PART_BUTTON_SELECTED_N
-  { 74, 16,  4,  4 }, //  PART_BUTTON_SELECTED_NE
-  { 74, 20,  4,  6 }, //  PART_BUTTON_SELECTED_E
-  { 74, 26,  4,  6 }, //  PART_BUTTON_SELECTED_SE
-  { 68, 26,  6,  6 }, //  PART_BUTTON_SELECTED_S
-  { 64, 26,  4,  6 }, //  PART_BUTTON_SELECTED_SW
-  { 64, 20,  4,  6 }, //  PART_BUTTON_SELECTED_W
-
-  {  0, 32,  4,  4 }, //  PART_SUNKEN_NORMAL_NW
-  {  4, 32,  4,  4 }, //  PART_SUNKEN_NORMAL_N
-  {  8, 32,  4,  4 }, //  PART_SUNKEN_NORMAL_NE
-  {  8, 36,  4,  4 }, //  PART_SUNKEN_NORMAL_E
-  {  8, 40,  4,  4 }, //  PART_SUNKEN_NORMAL_SE
-  {  4, 40,  4,  4 }, //  PART_SUNKEN_NORMAL_S
-  {  0, 40,  4,  4 }, //  PART_SUNKEN_NORMAL_SW
-  {  0, 36,  4,  4 }, //  PART_SUNKEN_NORMAL_W
-
-  {  0, 48,  4,  4 }, //  PART_SUNKEN_FOCUSED_NW
-  {  4, 48,  4,  4 }, //  PART_SUNKEN_FOCUSED_N
-  {  8, 48,  4,  4 }, //  PART_SUNKEN_FOCUSED_NE
-  {  8, 52,  4,  4 }, //  PART_SUNKEN_FOCUSED_E
-  {  8, 56,  4,  4 }, //  PART_SUNKEN_FOCUSED_SE
-  {  4, 56,  4,  4 }, //  PART_SUNKEN_FOCUSED_S
-  {  0, 56,  4,  4 }, //  PART_SUNKEN_FOCUSED_SW
-  {  0, 52,  4,  4 }, //  PART_SUNKEN_FOCUSED_W
-
-  {  0, 64,  5,  5 }, //  PART_SUNKEN2_NORMAL_NW
-  {  5, 64,  6,  5 }, //  PART_SUNKEN2_NORMAL_N
-  { 11, 64,  5,  5 }, //  PART_SUNKEN2_NORMAL_NE
-  { 11, 69,  5,  6 }, //  PART_SUNKEN2_NORMAL_E
-  { 11, 75,  5,  5 }, //  PART_SUNKEN2_NORMAL_SE
-  {  5, 75,  6,  5 }, //  PART_SUNKEN2_NORMAL_S
-  {  0, 75,  5,  5 }, //  PART_SUNKEN2_NORMAL_SW
-  {  0, 69,  5,  6 }, //  PART_SUNKEN2_NORMAL_W
-
-  {  0, 80,  5,  5 }, //  PART_SUNKEN2_FOCUSED_NW
-  {  5, 80,  6,  5 }, //  PART_SUNKEN2_FOCUSED_N
-  { 11, 80,  5,  5 }, //  PART_SUNKEN2_FOCUSED_NE
-  { 11, 85,  5,  6 }, //  PART_SUNKEN2_FOCUSED_E
-  { 11, 91,  5,  5 }, //  PART_SUNKEN2_FOCUSED_SE
-  {  5, 91,  6,  5 }, //  PART_SUNKEN2_FOCUSED_S
-  {  0, 91,  5,  5 }, //  PART_SUNKEN2_FOCUSED_SW
-  {  0, 85,  5,  6 }, //  PART_SUNKEN2_FOCUSED_W
-
-  {  0,  0,  3, 15 }, //  PART_WINDOW_NW
-  {  3,  0,  7, 15 }, //  PART_WINDOW_N
-  { 10,  0,  3, 15 }, //  PART_WINDOW_NE
-  { 10, 15,  3,  4 }, //  PART_WINDOW_E
-  { 10, 19,  3,  5 }, //  PART_WINDOW_SE
-  {  3, 19,  7,  5 }, //  PART_WINDOW_S
-  {  0, 19,  3,  5 }, //  PART_WINDOW_SW
-  {  0, 15,  3,  4 }, //  PART_WINDOW_W
-
-  {  0, 96,  3,  3 }, //  PART_MENU_NW
-  {  3, 96, 10,  3 }, //  PART_MENU_N
-  { 13, 96,  3,  3 }, //  PART_MENU_NE
-  { 13, 99,  3,  9 }, //  PART_MENU_E
-  { 13,108,  3,  4 }, //  PART_MENU_SE
-  {  3,108, 10,  4 }, //  PART_MENU_S
-  {  0,108,  3,  4 }, //  PART_MENU_SW
-  {  0, 99,  3,  9 }, //  PART_MENU_W
-
-  { 16,  0,  9, 11 }, //  PART_WINDOW_CLOSE_BUTTON_NORMAL
-  { 16, 16,  9, 11 }, //  PART_WINDOW_CLOSE_BUTTON_HOT
-  { 16, 32,  9, 11 }, //  PART_WINDOW_CLOSE_BUTTON_SELECTED
-
-  {  0,144,  5,  5 }, //  PART_SLIDER_FULL_NW
-  {  5,144,  6,  5 }, //  PART_SLIDER_FULL_N
-  { 11,144,  5,  5 }, //  PART_SLIDER_FULL_NE
-  { 11,149,  5,  5 }, //  PART_SLIDER_FULL_E
-  { 11,154,  5,  6 }, //  PART_SLIDER_FULL_SE
-  {  5,154,  6,  6 }, //  PART_SLIDER_FULL_S
-  {  0,154,  5,  6 }, //  PART_SLIDER_FULL_SW
-  {  0,149,  5,  5 }, //  PART_SLIDER_FULL_W
-
-  { 16,144,  5,  5 }, //  PART_SLIDER_EMPTY_NW
-  { 21,144,  6,  5 }, //  PART_SLIDER_EMPTY_N
-  { 27,144,  5,  5 }, //  PART_SLIDER_EMPTY_NE
-  { 27,149,  5,  5 }, //  PART_SLIDER_EMPTY_E
-  { 27,154,  5,  6 }, //  PART_SLIDER_EMPTY_SE
-  { 21,154,  6,  6 }, //  PART_SLIDER_EMPTY_S
-  { 16,154,  5,  6 }, //  PART_SLIDER_EMPTY_SW
-  { 16,149,  5,  5 }, //  PART_SLIDER_EMPTY_W
-
-  {  0,160,  5,  5 }, //  PART_SLIDER_FULL_FOCUSED_NW
-  {  5,160,  6,  5 }, //  PART_SLIDER_FULL_FOCUSED_N
-  { 11,160,  5,  5 }, //  PART_SLIDER_FULL_FOCUSED_NE
-  { 11,165,  5,  5 }, //  PART_SLIDER_FULL_FOCUSED_E
-  { 11,170,  5,  6 }, //  PART_SLIDER_FULL_FOCUSED_SE
-  {  5,170,  6,  6 }, //  PART_SLIDER_FULL_FOCUSED_S
-  {  0,170,  5,  6 }, //  PART_SLIDER_FULL_FOCUSED_SW
-  {  0,165,  5,  5 }, //  PART_SLIDER_FULL_FOCUSED_W
-
-  { 16,160,  5,  5 }, //  PART_SLIDER_EMPTY_FOCUSED_NW
-  { 21,160,  6,  5 }, //  PART_SLIDER_EMPTY_FOCUSED_N
-  { 27,160,  5,  5 }, //  PART_SLIDER_EMPTY_FOCUSED_NE
-  { 27,165,  5,  5 }, //  PART_SLIDER_EMPTY_FOCUSED_E
-  { 27,170,  5,  6 }, //  PART_SLIDER_EMPTY_FOCUSED_SE
-  { 21,170,  6,  6 }, //  PART_SLIDER_EMPTY_FOCUSED_S
-  { 16,170,  5,  6 }, //  PART_SLIDER_EMPTY_FOCUSED_SW
-  { 16,165,  5,  5 }, //  PART_SLIDER_EMPTY_FOCUSED_W
-
-  { 32,144,  5,  5 }, //  PART_MINI_SLIDER_FULL_NW
-  { 37,144,  6,  5 }, //  PART_MINI_SLIDER_FULL_N
-  { 43,144,  5,  5 }, //  PART_MINI_SLIDER_FULL_NE
-  { 43,149,  5,  5 }, //  PART_MINI_SLIDER_FULL_E
-  { 43,154,  5,  6 }, //  PART_MINI_SLIDER_FULL_SE
-  { 37,154,  6,  6 }, //  PART_MINI_SLIDER_FULL_S
-  { 32,154,  5,  6 }, //  PART_MINI_SLIDER_FULL_SW
-  { 32,149,  5,  5 }, //  PART_MINI_SLIDER_FULL_W
-
-  { 48,144,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_NW
-  { 53,144,  6,  5 }, //  PART_MINI_SLIDER_EMPTY_N
-  { 59,144,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_NE
-  { 59,149,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_E
-  { 59,154,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_SE
-  { 53,154,  6,  6 }, //  PART_MINI_SLIDER_EMPTY_S
-  { 48,154,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_SW
-  { 48,149,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_W
-
-  { 32,160,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_NW
-  { 37,160,  6,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_N
-  { 43,160,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_NE
-  { 43,165,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_E
-  { 43,170,  5,  6 }, //  PART_MINI_SLIDER_FULL_FOCUSED_SE
-  { 37,170,  6,  6 }, //  PART_MINI_SLIDER_FULL_FOCUSED_S
-  { 32,170,  5,  6 }, //  PART_MINI_SLIDER_FULL_FOCUSED_SW
-  { 32,165,  5,  5 }, //  PART_MINI_SLIDER_FULL_FOCUSED_W
-
-  { 48,160,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_NW
-  { 53,160,  6,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_N
-  { 59,160,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_NE
-  { 59,165,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_E
-  { 59,170,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_SE
-  { 53,170,  6,  6 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_S
-  { 48,170,  5,  6 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_SW
-  { 48,165,  5,  5 }, //  PART_MINI_SLIDER_EMPTY_FOCUSED_W
-
-  { 32, 80,  9,  5 }, //  PART_SEPARATOR
-
-  { 96, 32, 16, 16 }, //  PART_COMBOBOX_ARROW
-
-  { 96,  0,  3,  3 }, //  PART_TOOLBUTTON_NORMAL_NW
-  { 99,  0, 10,  3 }, //  PART_TOOLBUTTON_NORMAL_N
-  {109,  0,  3,  3 }, //  PART_TOOLBUTTON_NORMAL_NE
-  {109,  3,  3,  9 }, //  PART_TOOLBUTTON_NORMAL_E
-  {109, 12,  3,  4 }, //  PART_TOOLBUTTON_NORMAL_SE
-  { 99, 12, 10,  4 }, //  PART_TOOLBUTTON_NORMAL_S
-  { 96, 12,  3,  4 }, //  PART_TOOLBUTTON_NORMAL_SW
-  { 96,  3,  3,  9 }, //  PART_TOOLBUTTON_NORMAL_W
-
-  {112,  0,  3,  3 }, //  PART_TOOLBUTTON_HOT_NW
-  {115,  0, 10,  3 }, //  PART_TOOLBUTTON_HOT_N
-  {125,  0,  3,  3 }, //  PART_TOOLBUTTON_HOT_NE
-  {125,  3,  3,  9 }, //  PART_TOOLBUTTON_HOT_E
-  {125, 12,  3,  4 }, //  PART_TOOLBUTTON_HOT_SE
-  {115, 12, 10,  4 }, //  PART_TOOLBUTTON_HOT_S
-  {112, 12,  3,  4 }, //  PART_TOOLBUTTON_HOT_SW
-  {112,  3,  3,  9 }, //  PART_TOOLBUTTON_HOT_W
-
-  { 96, 16,  3,  3 }, //  PART_TOOLBUTTON_LAST_NORMAL_NW
-  { 99, 16, 10,  3 }, //  PART_TOOLBUTTON_LAST_NORMAL_N
-  {109, 16,  3,  3 }, //  PART_TOOLBUTTON_LAST_NORMAL_NE
-  {109, 19,  3,  9 }, //  PART_TOOLBUTTON_LAST_NORMAL_E
-  {109, 28,  3,  4 }, //  PART_TOOLBUTTON_LAST_NORMAL_SE
-  { 99, 28, 10,  4 }, //  PART_TOOLBUTTON_LAST_NORMAL_S
-  { 96, 28,  3,  4 }, //  PART_TOOLBUTTON_LAST_NORMAL_SW
-  { 96, 19,  3,  9 }, //  PART_TOOLBUTTON_LAST_NORMAL_W
-
-  // Tabs
-
-  {  2,112,  4,  4 }, //  PART_TAB_NORMAL_NW
-  {  6,112,  5,  4 }, //  PART_TAB_NORMAL_N
-  { 11,112,  5,  4 }, //  PART_TAB_NORMAL_NE
-  { 11,116,  5,  6 }, //  PART_TAB_NORMAL_E
-  { 11,122,  5,  2 }, //  PART_TAB_NORMAL_SE
-  {  6,122,  4,  2 }, //  PART_TAB_NORMAL_S
-  {  2,122,  4,  2 }, //  PART_TAB_NORMAL_SW
-  {  2,116,  4,  6 }, //  PART_TAB_NORMAL_W
-
-  { 16,112,  4,  4 }, //  PART_TAB_SELECTED_NW
-  { 20,112,  7,  4 }, //  PART_TAB_SELECTED_N
-  { 27,112,  5,  4 }, //  PART_TAB_SELECTED_NE
-  { 27,116,  5,  6 }, //  PART_TAB_SELECTED_E
-  { 27,122,  5,  2 }, //  PART_TAB_SELECTED_SE
-  { 20,122,  7,  2 }, //  PART_TAB_SELECTED_S
-  { 16,122,  4,  2 }, //  PART_TAB_SELECTED_SW
-  { 16,116,  4,  6 }, //  PART_TAB_SELECTED_W
-
-  { 16,124,  4,  2 }, //  PART_TAB_BOTTOM_SELECTED_NW
-  { 20,124,  7,  2 }, //  PART_TAB_BOTTOM_SELECTED_N
-  { 27,124,  5,  2 }, //  PART_TAB_BOTTOM_SELECTED_NE
-  { 27,126,  5,  1 }, //  PART_TAB_BOTTOM_SELECTED_E
-  { 27,127,  5,  2 }, //  PART_TAB_BOTTOM_SELECTED_SE
-  { 20,127,  7,  2 }, //  PART_TAB_BOTTOM_SELECTED_S
-  { 16,127,  4,  2 }, //  PART_TAB_BOTTOM_SELECTED_SW
-  { 16,126,  4,  1 }, //  PART_TAB_BOTTOM_SELECTED_W
-
-  {  2,124, 12,  5 }, //  PART_TAB_BOTTOM_NORMAL
-
-  {  0,112,  2, 12 }, //  PART_TAB_FILLER
-
-  { 32,112,  3,  3 }, //  PART_EDITOR_NORMAL_NW
-  { 35,112, 10,  3 }, //  PART_EDITOR_NORMAL_N
-  { 45,112,  3,  3 }, //  PART_EDITOR_NORMAL_NE
-  { 45,115,  3, 10 }, //  PART_EDITOR_NORMAL_E
-  { 45,125,  3,  3 }, //  PART_EDITOR_NORMAL_SE
-  { 35,125, 10,  3 }, //  PART_EDITOR_NORMAL_S
-  { 32,125,  3,  3 }, //  PART_EDITOR_NORMAL_SW
-  { 32,115,  3, 10 }, //  PART_EDITOR_NORMAL_W
-
-  { 48,112,  3,  3 }, //  PART_EDITOR_SELECTED_NW
-  { 51,112, 10,  3 }, //  PART_EDITOR_SELECTED_N
-  { 61,112,  3,  3 }, //  PART_EDITOR_SELECTED_NE
-  { 61,115,  3, 10 }, //  PART_EDITOR_SELECTED_E
-  { 61,125,  3,  3 }, //  PART_EDITOR_SELECTED_SE
-  { 51,125, 10,  3 }, //  PART_EDITOR_SELECTED_S
-  { 48,125,  3,  3 }, //  PART_EDITOR_SELECTED_SW
-  { 48,115,  3, 10 }, //  PART_EDITOR_SELECTED_W
-
-};
+static std::map<std::string, int> sheet_mapping;
 
 static struct
 {
@@ -352,11 +78,54 @@ SkinneableTheme::SkinneableTheme()
 {
   this->name = "Skinneable Theme";
 
+  // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
   for (int c=0; c<JI_CURSORS; ++c)
     m_cursors[c] = NULL;
   for (int c=0; c<PARTS; ++c)
     m_part[c] = NULL;
+
+  sheet_mapping["radio_normal"] = PART_RADIO_NORMAL;
+  sheet_mapping["radio_selected"] = PART_RADIO_SELECTED;
+  sheet_mapping["radio_disabled"] = PART_RADIO_DISABLED;
+  sheet_mapping["check_normal"] = PART_CHECK_NORMAL;
+  sheet_mapping["check_selected"] = PART_CHECK_SELECTED;
+  sheet_mapping["check_disabled"] = PART_CHECK_DISABLED;
+  sheet_mapping["check_focus"] = PART_CHECK_FOCUS_NW;
+  sheet_mapping["radio_focus"] = PART_RADIO_FOCUS_NW;
+  sheet_mapping["button_normal"] = PART_BUTTON_NORMAL_NW;
+  sheet_mapping["button_hot"] = PART_BUTTON_HOT_NW;
+  sheet_mapping["button_focused"] = PART_BUTTON_FOCUSED_NW;
+  sheet_mapping["button_selected"] = PART_BUTTON_SELECTED_NW;
+  sheet_mapping["sunken_normal"] = PART_SUNKEN_NORMAL_NW;
+  sheet_mapping["sunken_focused"] = PART_SUNKEN_FOCUSED_NW;
+  sheet_mapping["sunken2_normal"] = PART_SUNKEN2_NORMAL_NW;
+  sheet_mapping["sunken2_focused"] = PART_SUNKEN2_FOCUSED_NW;
+  sheet_mapping["window"] = PART_WINDOW_NW;
+  sheet_mapping["menu"] = PART_MENU_NW;
+  sheet_mapping["window_close_button_normal"] = PART_WINDOW_CLOSE_BUTTON_NORMAL;
+  sheet_mapping["window_close_button_hot"] = PART_WINDOW_CLOSE_BUTTON_HOT;
+  sheet_mapping["window_close_button_selected"] = PART_WINDOW_CLOSE_BUTTON_SELECTED;
+  sheet_mapping["slider_full"] = PART_SLIDER_FULL_NW;
+  sheet_mapping["slider_empty"] = PART_SLIDER_EMPTY_NW;
+  sheet_mapping["slider_full_focused"] = PART_SLIDER_FULL_FOCUSED_NW;
+  sheet_mapping["slider_empty_focused"] = PART_SLIDER_EMPTY_FOCUSED_NW;
+  sheet_mapping["mini_slider_full"] = PART_MINI_SLIDER_FULL_NW;
+  sheet_mapping["mini_slider_empty"] = PART_MINI_SLIDER_EMPTY_NW;
+  sheet_mapping["mini_slider_full_focused"] = PART_MINI_SLIDER_FULL_FOCUSED_NW;
+  sheet_mapping["mini_slider_empty_focused"] = PART_MINI_SLIDER_EMPTY_FOCUSED_NW;
+  sheet_mapping["separator"] = PART_SEPARATOR;
+  sheet_mapping["combobox_arrow"] = PART_COMBOBOX_ARROW;
+  sheet_mapping["toolbutton_normal"] = PART_TOOLBUTTON_NORMAL_NW;
+  sheet_mapping["toolbutton_hot"] = PART_TOOLBUTTON_HOT_NW;
+  sheet_mapping["toolbutton_last"] = PART_TOOLBUTTON_LAST_NW;
+  sheet_mapping["tab_normal"] = PART_TAB_NORMAL_NW;
+  sheet_mapping["tab_selected"] = PART_TAB_SELECTED_NW;
+  sheet_mapping["tab_bottom_selected"] = PART_TAB_BOTTOM_SELECTED_NW;
+  sheet_mapping["tab_bottom_normal"] = PART_TAB_BOTTOM_NORMAL;
+  sheet_mapping["tab_filler"] = PART_TAB_FILLER;
+  sheet_mapping["editor_normal"] = PART_EDITOR_NORMAL_NW;
+  sheet_mapping["editor_selected"] = PART_EDITOR_SELECTED_NW;
 
   // Load the skin sheet
   {
@@ -448,13 +217,6 @@ void SkinneableTheme::regen()
       }
     }
 
-    // Load parts
-    for (int c=0; c<PARTS; ++c) {
-      m_part[c] = cropPartFromSheet(m_part[c],
-				    sheet_info[c].x, sheet_info[c].y,
-				    sheet_info[c].w, sheet_info[c].h);
-    }
-
     // Load tool icons
     {
       TiXmlElement* xmlIcon = handle
@@ -473,6 +235,47 @@ void SkinneableTheme::regen()
 	m_toolicon[tool_id] = cropPartFromSheet(m_toolicon[tool_id], x, y, w, h);
 
 	xmlIcon = xmlIcon->NextSiblingElement();
+      }
+    }
+
+    // Load parts
+    {
+      TiXmlElement* xmlPart = handle
+	.FirstChild("skin")
+	.FirstChild("parts")
+	.FirstChild("part").ToElement();
+      while (xmlPart) {
+	// Get the tool-icon rectangle
+	const char* part_id = xmlPart->Attribute("id");
+	int x = strtol(xmlPart->Attribute("x"), NULL, 10);
+	int y = strtol(xmlPart->Attribute("y"), NULL, 10);
+	int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
+	int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
+	int c = sheet_mapping[part_id];
+
+	if (w > 0 && h > 0) {
+	  // Crop the part from the sheet
+	  m_part[c] = cropPartFromSheet(m_part[c], x, y, w, h);
+	}
+	else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
+	  int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
+	  int w2 = strtol(xmlPart->Attribute("w2"), NULL, 10);
+	  int w3 = strtol(xmlPart->Attribute("w3"), NULL, 10);
+	  int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
+	  int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
+	  int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
+
+	  m_part[c  ] = cropPartFromSheet(m_part[c  ], x, y, w1, h1); // NW
+	  m_part[c+1] = cropPartFromSheet(m_part[c+1], x+w1, y, w2, h1); // N
+	  m_part[c+2] = cropPartFromSheet(m_part[c+2], x+w1+w2, y, w3, h1); // NE
+	  m_part[c+3] = cropPartFromSheet(m_part[c+3], x+w1+w2, y+h1, w3, h2); // E
+	  m_part[c+4] = cropPartFromSheet(m_part[c+4], x+w1+w2, y+h1+h2, w3, h3); // SE
+	  m_part[c+5] = cropPartFromSheet(m_part[c+5], x+w1, y+h1+h2, w2, h3); // S
+	  m_part[c+6] = cropPartFromSheet(m_part[c+6], x, y+h1+h2, w1, h3); // SW
+	  m_part[c+7] = cropPartFromSheet(m_part[c+7], x, y+h1, w1, h2); // W
+	}
+
+	xmlPart = xmlPart->NextSiblingElement();
       }
     }
 
