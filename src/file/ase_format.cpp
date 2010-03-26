@@ -830,8 +830,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite)
 {
   int layer_index = sprite_layer2index(sprite, layer);
-  Cel *link = cel_is_link(cel, layer);
-  int cel_type = link ? ASE_FILE_LINK_CEL: ASE_FILE_RAW_CEL;
+  int cel_type = ASE_FILE_RAW_CEL;
 
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_CEL);
 
@@ -896,7 +895,8 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
 
     case ASE_FILE_LINK_CEL:
       /* linked cel to another frame */
-      fputw(link->frame, f);
+      //fputw(link->frame, f);
+      fputw(0, f);
       break;
 
     case ASE_FILE_RLE_COMPRESSED_CEL:

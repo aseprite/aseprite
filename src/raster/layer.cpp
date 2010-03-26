@@ -160,18 +160,15 @@ void LayerImage::destroy_all_cels()
 
   for (; it != end; ++it) {
     Cel* cel = *it;
+    Image* image = getSprite()->stock->image[cel->image];
 
-    if (!cel_is_link(cel, this)) {
-      Image* image = getSprite()->stock->image[cel->image];
+    assert(image != NULL);
 
-      assert(image != NULL);
-
-      stock_remove_image(getSprite()->stock, image);
-      image_free(image);
-    }
-
+    stock_remove_image(getSprite()->stock, image);
+    image_free(image);
     cel_free(cel);
   }
+  m_cels.clear();
 }
 
 void LayerImage::set_blend_mode(int blend_mode)
@@ -306,6 +303,7 @@ void LayerFolder::destroy_all_layers()
     Layer* layer = *it;
     delete layer;
   }
+  m_layers.clear();
 }
 
 void LayerFolder::get_cels(CelList& cels)

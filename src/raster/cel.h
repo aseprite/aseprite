@@ -40,8 +40,6 @@ Cel* cel_new(int frame, int image);
 Cel* cel_new_copy(const Cel* cel);
 void cel_free(Cel* cel);
 
-Cel* cel_is_link(Cel* cel, LayerImage* layer);
-
 void cel_set_frame(Cel* cel, int frame);
 void cel_set_image(Cel* cel, int image);
 void cel_set_position(Cel* cel, int x, int y);

@@ -68,20 +68,6 @@ void cel_free(Cel* cel)
   delete cel;
 }
 
-Cel* cel_is_link(Cel* cel, LayerImage* layer)
-{
-  Cel* link;
-  int frame;
-
-  for (frame=0; frame<cel->frame; frame++) {
-    link = layer->get_cel(frame);
-    if (link && link->image == cel->image)
-      return link;
-  }
-
-  return NULL;
-}
-
 /**
  * @warning You have to remove the cel from the layer before to change
  *          the frame position.

@@ -2065,16 +2065,11 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 	Cel* cel = *it;
 	raw_data = write_raw_cel(raw_data, cel);
 
-	if (cel_is_link(cel, static_cast<LayerImage*>(layer))) {
-	  write_raw_uint8(0);
-	}
-	else {
-	  Image* image = layer->getSprite()->stock->image[cel->image];
-	  assert(image != NULL);
+	Image* image = layer->getSprite()->stock->image[cel->image];
+	assert(image != NULL);
 
-	  write_raw_uint8(1);
-	  raw_data = write_raw_image(raw_data, image);
-	}
+	write_raw_uint8(1);
+	raw_data = write_raw_image(raw_data, image);
       }
       break;
     }
@@ -2113,10 +2108,9 @@ static int get_raw_layer_size(Layer* layer)
 	Cel* cel = *it;
 	size += get_raw_cel_size(cel);
 	size++;			// has image?
-	if (!cel_is_link(cel, static_cast<LayerImage*>(layer))) {
-	  Image* image = layer->getSprite()->stock->image[cel->image];
-	  size += get_raw_image_size(image);
-	}
+
+	Image* image = layer->getSprite()->stock->image[cel->image];
+	size += get_raw_image_size(image);
       }
       break;
     }
