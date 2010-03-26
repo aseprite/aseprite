@@ -230,42 +230,42 @@ int App::run()
     // procress options
   PRINTF("Processing options...\n");
   
-  for (CheckArgs::iterator
-	 it  = m_modules->m_checkArgs.begin();
+  {
+    Console console;
+    for (CheckArgs::iterator
+	   it  = m_modules->m_checkArgs.begin();
          it != m_modules->m_checkArgs.end(); ++it) {
-    CheckArgs::Option* option = *it;
+      CheckArgs::Option* option = *it;
 
-    switch (option->type()) {
+      switch (option->type()) {
 
-      case CheckArgs::Option::OpenSprite: {
-	/* load the sprite */
-	Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
-	if (!sprite) {
-	  /* error */
-	  if (ase_mode & MODE_GUI)
-	    jalert(_("Error<<Error loading file \"%s\"||&Close"), option->data());
-	  else
-	    user_printf(_("Error loading file \"%s\"\n"), option->data());
-	}
-	else {
-	  /* mount and select the sprite */
-	  UIContext* context = UIContext::instance();
-	  context->add_sprite(sprite);
-	  context->set_current_sprite(sprite);
-
-	  if (ase_mode & MODE_GUI) {
-	    /* show it */
-	    set_sprite_in_more_reliable_editor(context->get_first_sprite());
-
-	    /* recent file */
-	    recent_file(Vaca::convert_to<std::string>(option->data()).c_str());
+	case CheckArgs::Option::OpenSprite: {
+	  /* load the sprite */
+	  Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
+	  if (!sprite) {
+	    if (!(ase_mode & MODE_GUI))
+	      user_printf(_("Error loading file \"%s\"\n"), option->data().c_str());
 	  }
+	  else {
+	    /* mount and select the sprite */
+	    UIContext* context = UIContext::instance();
+	    context->add_sprite(sprite);
+	    context->set_current_sprite(sprite);
+
+	    if (ase_mode & MODE_GUI) {
+	      /* show it */
+	      set_sprite_in_more_reliable_editor(context->get_first_sprite());
+
+	      /* recent file */
+	      recent_file(Vaca::convert_to<std::string>(option->data()).c_str());
+	    }
+	  }
+	  break;
 	}
-	break;
       }
     }
+    m_modules->m_checkArgs.clear();
   }
-  m_modules->m_checkArgs.clear();
 
   /* just batch mode */
   if (ase_mode & MODE_BATCH) {
