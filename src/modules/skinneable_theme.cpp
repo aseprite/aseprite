@@ -126,6 +126,16 @@ SkinneableTheme::SkinneableTheme()
   sheet_mapping["tab_filler"] = PART_TAB_FILLER;
   sheet_mapping["editor_normal"] = PART_EDITOR_NORMAL_NW;
   sheet_mapping["editor_selected"] = PART_EDITOR_SELECTED_NW;
+  sheet_mapping["colorbar_0"] = PART_COLORBAR_0_NW;
+  sheet_mapping["colorbar_1"] = PART_COLORBAR_1_NW;
+  sheet_mapping["colorbar_2"] = PART_COLORBAR_2_NW;
+  sheet_mapping["colorbar_3"] = PART_COLORBAR_3_NW;
+  sheet_mapping["colorbar_border_0"] = PART_COLORBAR_BORDER_0_NW;
+  sheet_mapping["colorbar_border_1"] = PART_COLORBAR_BORDER_1_NW;
+  sheet_mapping["colorbar_border_2"] = PART_COLORBAR_BORDER_2_NW;
+  sheet_mapping["colorbar_border_3"] = PART_COLORBAR_BORDER_3_NW;
+  sheet_mapping["colorbar_border_fg"] = PART_COLORBAR_BORDER_FG_NW;
+  sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
 
   // Load the skin sheet
   {
@@ -1473,71 +1483,100 @@ BITMAP* SkinneableTheme::get_toolicon(const char* tool_id) const
     return NULL;
 }
 
+#define draw_bounds_template(_nw, _n, _ne, _e, _se, _s, _sw, _w, draw_func) \
+  {									\
+    int x, y;								\
+    int cx1, cy1, cx2, cy2;						\
+    get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);			\
+									\
+    /* top */								\
+									\
+    draw_func(ji_screen, m_part[_nw], x1, y1);				\
+									\
+    if (my_add_clip_rect(ji_screen,					\
+			 x1+m_part[_nw]->w, y1,				\
+			 x2-m_part[_ne]->w, y2)) {			\
+      for (x = x1+m_part[_nw]->w;					\
+	   x <= x2-m_part[_ne]->w;					\
+	   x += m_part[_n]->w) {					\
+	draw_func(ji_screen, m_part[_n], x, y1);			\
+      }									\
+    }									\
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);			\
+									\
+    draw_func(ji_screen, m_part[_ne], x2-m_part[_ne]->w+1, y1);		\
+									\
+    /* bottom */							\
+									\
+    draw_func(ji_screen, m_part[_sw], x1, y2-m_part[_sw]->h+1);		\
+									\
+    if (my_add_clip_rect(ji_screen,					\
+			 x1+m_part[_sw]->w, y1,				\
+			 x2-m_part[_se]->w, y2)) {			\
+      for (x = x1+m_part[_sw]->w;					\
+	   x <= x2-m_part[_se]->w;					\
+	   x += m_part[_s]->w) {					\
+	draw_func(ji_screen, m_part[_s], x, y2-m_part[_s]->h+1);	\
+      }									\
+    }									\
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);			\
+									\
+    draw_func(ji_screen, m_part[_se], x2-m_part[_se]->w+1, y2-m_part[_se]->h+1); \
+									\
+    if (my_add_clip_rect(ji_screen,					\
+			 x1, y1+m_part[_nw]->h,				\
+			 x2, y2-m_part[_sw]->h)) {			\
+      /* left */							\
+      for (y = y1+m_part[_nw]->h;					\
+	   y <= y2-m_part[_sw]->h;					\
+	   y += m_part[_w]->h) {					\
+	draw_func(ji_screen, m_part[_w], x1, y);			\
+      }									\
+									\
+      /* right */							\
+      for (y = y1+m_part[_ne]->h;					\
+	   y <= y2-m_part[_se]->h;					\
+	   y += m_part[_e]->h) {					\
+	draw_func(ji_screen, m_part[_e], x2-m_part[_e]->w+1, y);	\
+      }									\
+    }									\
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);			\
+  }
+
+void SkinneableTheme::draw_bounds0(int x1, int y1, int x2, int y2, int parts[8])
+{
+  int nw = parts[0];
+  int n  = parts[1];
+  int ne = parts[2];
+  int e  = parts[3];
+  int se = parts[4];
+  int s  = parts[5];
+  int sw = parts[6];
+  int w  = parts[7];
+
+  draw_bounds_template(nw, n, ne, e, se, s, sw, w, draw_sprite);
+}
+
+void SkinneableTheme::draw_trans_bounds0(int x1, int y1, int x2, int y2, int parts[8])
+{
+  int nw = parts[0];
+  int n  = parts[1];
+  int ne = parts[2];
+  int e  = parts[3];
+  int se = parts[4];
+  int s  = parts[5];
+  int sw = parts[6];
+  int w  = parts[7];
+
+  draw_bounds_template(nw, n, ne, e, se, s, sw, w, draw_trans_sprite);
+}
+
 void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg)
 {
-  int cx1, cy1, cx2, cy2;
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+  draw_bounds_template(nw+0, nw+1, nw+2, nw+3,
+		       nw+4, nw+5, nw+6, nw+7, draw_sprite);
 
-  int x, y;
-
-  // top
-
-  draw_sprite(ji_screen, m_part[nw], x1, y1);
-
-  if (my_add_clip_rect(ji_screen,
-		       x1+m_part[nw]->w, y1,
-		       x2-m_part[nw+2]->w, y2)) {
-    for (x = x1+m_part[nw]->w;
-	 x < x2-m_part[nw+2]->w-m_part[nw+1]->w+1;
-	 x += m_part[nw+1]->w) {
-      draw_sprite(ji_screen, m_part[nw+1], x, y1);
-    }
-    draw_sprite(ji_screen, m_part[nw+1], x2-m_part[nw+2]->w-m_part[nw+1]->w+1, y1);
-  }
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
-
-  draw_sprite(ji_screen, m_part[nw+2], x2-m_part[nw+2]->w+1, y1);
-
-  // bottom
-
-  draw_sprite(ji_screen, m_part[nw+6], x1, y2-m_part[nw+6]->h+1);
-
-  if (my_add_clip_rect(ji_screen,
-		       x1+m_part[nw+6]->w, y1,
-		       x2-m_part[nw+4]->w, y2)) {
-    for (x = x1+m_part[nw+6]->w;
-	 x < x2-m_part[nw+4]->w-m_part[nw+5]->w+1;
-	 x += m_part[nw+5]->w) {
-      draw_sprite(ji_screen, m_part[nw+5], x, y2-m_part[nw+5]->h+1);
-    }
-    draw_sprite(ji_screen, m_part[nw+5], x2-m_part[nw+4]->w-m_part[nw+5]->w+1, y2-m_part[nw+5]->h+1);
-  }
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
-
-  draw_sprite(ji_screen, m_part[nw+4], x2-m_part[nw+4]->w+1, y2-m_part[nw+4]->h+1);
-
-  if (my_add_clip_rect(ji_screen,
-		       x1, y1+m_part[nw]->h,
-		       x2, y2-m_part[nw+6]->h)) {
-    // left
-    for (y = y1+m_part[nw]->h;
-	 y < y2-m_part[nw+6]->h-m_part[nw+7]->h+1;
-	 y += m_part[nw+7]->h) {
-      draw_sprite(ji_screen, m_part[nw+7], x1, y);
-    }
-    draw_sprite(ji_screen, m_part[nw+7], x1, y2-m_part[nw+6]->h-m_part[nw+7]->h+1);
-
-    // right
-    for (y = y1+m_part[nw+2]->h;
-	 y < y2-m_part[nw+4]->h-m_part[nw+3]->h+1;
-	 y += m_part[nw+3]->h) {
-      draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y);
-    }
-    draw_sprite(ji_screen, m_part[nw+3], x2-m_part[nw+3]->w+1, y2-m_part[nw+4]->h-m_part[nw+3]->h+1);
-  }
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
-
-  // background 
+  // Background 
   if (bg >= 0) {
     x1 += m_part[nw+7]->w;
     y1 += m_part[nw+1]->h;
@@ -1546,6 +1585,12 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
 
     rectfill(ji_screen, x1, y1, x2, y2, bg);
   }
+}
+
+void SkinneableTheme::draw_trans_bounds(int x1, int y1, int x2, int y2, int nw)
+{
+  draw_bounds_template(nw+0, nw+1, nw+2, nw+3,
+		       nw+4, nw+5, nw+6, nw+7, draw_trans_sprite);
 }
 
 void SkinneableTheme::draw_bounds2(int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2)

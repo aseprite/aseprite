@@ -27,6 +27,7 @@
 #include "jinete/jrect.h"
 
 #include "Vaca/Rect.h"
+#include "Vaca/Point.h"
 
 #include "console.h"
 #include "app.h"
@@ -35,11 +36,13 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "modules/skinneable_theme.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "widgets/editor.h"
 
 using Vaca::Rect;
+using Vaca::Point;
 
 static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
 
@@ -420,18 +423,15 @@ void draw_emptyset_symbol(const Rect& rc, int color)
        center.x+size/2, center.y-size/2, color);
 }
 
-void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
-		int imgtype, color_t color)
+void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
 {
   int type = color_type(color);
   int data;
-  int w = x2 - x1 + 1;
-  int h = y2 - y1 + 1;
   BITMAP* graph;
 
   if (type == COLOR_TYPE_INDEX) {
     data = color_get_index(imgtype, color);
-    rectfill(bmp, x1, y1, x2, y2,
+    rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
 	     /* get_color_for_allegro(bitmap_color_depth(bmp), color)); */
 	     palette_color[data]);
     return;
@@ -440,12 +440,12 @@ void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
   switch (imgtype) {
 
     case IMAGE_INDEXED:
-      rectfill(bmp, x1, y1, x2, y2,
+      rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
 	       palette_color[get_color_for_image(imgtype, color)]);
       break;
 
     case IMAGE_RGB:
-      graph = create_bitmap_ex(32, w, h);
+      graph = create_bitmap_ex(32, rc.w, rc.h);
       if (!graph)
         return;
 
@@ -454,31 +454,31 @@ void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
         color_t color2 = color_rgb(_rgba_getr(rgb_bitmap_color),
 				   _rgba_getg(rgb_bitmap_color),
 				   _rgba_getb(rgb_bitmap_color));
-        rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
+        rectfill(graph, 0, 0, rc.w-1, rc.h-1, get_color_for_allegro(32, color2));
       }
 
       {
 	CurrentSpriteRgbMap rgbmap;
-	blit(graph, bmp, 0, 0, x1, y1, w, h);
+	blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
       }
 
       destroy_bitmap(graph);
       break;
 
     case IMAGE_GRAYSCALE:
-      graph = create_bitmap_ex(32, w, h);
+      graph = create_bitmap_ex(32, rc.w, rc.h);
       if (!graph)
         return;
 
       {
         int gray_bitmap_color = get_color_for_image(imgtype, color);
 	color_t color2 = color_gray(_graya_getv(gray_bitmap_color));
-        rectfill(graph, 0, 0, w-1, h-1, get_color_for_allegro(32, color2));
+        rectfill(graph, 0, 0, rc.w-1, rc.h-1, get_color_for_allegro(32, color2));
       }
 
       {
 	CurrentSpriteRgbMap rgbmap;
-	blit(graph, bmp, 0, 0, x1, y1, w, h);
+	blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
       }
 
       destroy_bitmap(graph);
@@ -487,67 +487,72 @@ void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
 }
 
 void draw_color_button(BITMAP* bmp,
-		       int x1, int y1, int x2, int y2,
-		       int b0, int b1, int b2, int b3,
-		       int imgtype, color_t color,
-		       bool hot, bool drag,
-		       int bg)
+		       const Rect& rc,
+		       bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
+		       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
+		       int imgtype, color_t color, bool hot, bool drag)
 {
+  SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
   int fore = ji_color_foreground();
+  int scale = jguiscale();
 
-  draw_color(bmp, x1, y1, x2, y2, imgtype, color);
+  // Draw background (the color)
+  draw_color(bmp,
+	     Rect(rc.x+1*jguiscale(),
+		  rc.y+1*jguiscale(),
+		  rc.w-((outer_e) ? 2*jguiscale(): 1*jguiscale()),
+		  rc.h-((outer_s) ? 2*jguiscale(): 1*jguiscale())), imgtype, color);
 
-  hline(bmp, x1, y1, x2, fore);
-  if (b2 && b3)
-    hline(bmp, x1, y2, x2, fore);
-  vline(bmp, x1, y1, y2, fore);
-  vline(bmp, x2, y1, y2, fore);
-
-  if (!hot) {
-    int r = color_get_red(imgtype, color);
-    int g = color_get_green(imgtype, color);
-    int b = color_get_blue(imgtype, color);
-    int c = makecol(MIN(255, r+64),
-		    MIN(255, g+64),
-		    MIN(255, b+64));
-    rect(bmp, x1+1, y1+1, x2-1, y2-((b2 && b3)?1:0), c);
-  }
-  else {
-    rect(bmp, x1+1, y1+1, x2-1, y2-((b2 && b3)?1:0), fore);
-    bevel_box(bmp,
-	      x1+1, y1+1, x2-1, y2-((b2 && b3)?1:0),
-	      ji_color_facelight(), ji_color_faceshadow(), 1);
-  }
-
-  if (b0) {
-    hline(bmp, x1, y1, x1+1, bg);
-    putpixel(bmp, x1, y1+1, bg);
-    putpixel(bmp, x1+1, y1+1, fore);
+  // Draw opaque border
+  {
+    int parts[8] = {
+      outer_nw ? PART_COLORBAR_0_NW: PART_COLORBAR_3_NW,
+      outer_n  ? PART_COLORBAR_0_N : PART_COLORBAR_2_N,
+      outer_ne ? PART_COLORBAR_1_NE: (outer_e ? PART_COLORBAR_3_NE: PART_COLORBAR_2_NE),
+      outer_e  ? PART_COLORBAR_1_E : PART_COLORBAR_0_E,
+      outer_se ? PART_COLORBAR_3_SE: (outer_s ? PART_COLORBAR_2_SE: (outer_e ? PART_COLORBAR_1_SE: PART_COLORBAR_0_SE)),
+      outer_s  ? PART_COLORBAR_2_S : PART_COLORBAR_0_S,
+      outer_sw ? PART_COLORBAR_2_SW: (outer_s ? PART_COLORBAR_3_SW: PART_COLORBAR_1_SW),
+      outer_w  ? PART_COLORBAR_0_W : PART_COLORBAR_1_W,
+    };
+    BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
+    ji_screen = bmp;
+    theme->draw_bounds0(rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, parts);
+    ji_screen = old_ji_screen;
   }
 
-  if (b1) {
-    hline(bmp, x2-1, y1, x2, bg);
-    putpixel(bmp, x2, y1+1, bg);
-    putpixel(bmp, x2-1, y1+1, fore);
+  // Draw transparent border
+  set_trans_blender(0, 0, 0, 128);
+  {
+    SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
+    int parts[8] = {
+      outer_nw ? PART_COLORBAR_BORDER_0_NW: PART_COLORBAR_BORDER_3_NW,
+      outer_n  ? PART_COLORBAR_BORDER_0_N : PART_COLORBAR_BORDER_2_N,
+      outer_ne ? PART_COLORBAR_BORDER_1_NE: (outer_e ? PART_COLORBAR_BORDER_3_NE: PART_COLORBAR_BORDER_2_NE),
+      outer_e  ? PART_COLORBAR_BORDER_1_E : PART_COLORBAR_BORDER_0_E,
+      outer_se ? PART_COLORBAR_BORDER_3_SE: (outer_s ? PART_COLORBAR_BORDER_2_SE: (outer_e ? PART_COLORBAR_BORDER_1_SE: PART_COLORBAR_BORDER_0_SE)),
+      outer_s  ? PART_COLORBAR_BORDER_2_S : PART_COLORBAR_BORDER_0_S,
+      outer_sw ? PART_COLORBAR_BORDER_2_SW: (outer_s ? PART_COLORBAR_BORDER_3_SW: PART_COLORBAR_BORDER_1_SW),
+      outer_w  ? PART_COLORBAR_BORDER_0_W : PART_COLORBAR_BORDER_1_W,
+    };
+    BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
+    ji_screen = bmp;
+    theme->draw_trans_bounds0(rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, parts);
+    ji_screen = old_ji_screen;
   }
+  set_trans_blender(0, 0, 0, 0);
 
-  if (b2) {
-    putpixel(bmp, x1, y2-1, bg);
-    hline(bmp, x1, y2, x1+1, bg);
-    putpixel(bmp, x1+1, y2-1, fore);
-  }
-
-  if (b3) {
-    putpixel(bmp, x2, y2-1, bg);
-    hline(bmp, x2-1, y2, x2, bg);
-    putpixel(bmp, x2-1, y2-1, fore);
-  }
-
-  if (drag) {
-    rect(bmp, x1+2, y1+2, x2-2, y2-2,
-	 blackandwhite_neg(color_get_red(imgtype, color),
-			   color_get_green(imgtype, color),
-			   color_get_blue(imgtype, color)));
+  // Draw hot
+  if (hot) {
+    set_trans_blender(0, 0, 0, 128);
+    BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
+    ji_screen = bmp;
+    theme->draw_trans_bounds(rc.x, rc.y,
+			     rc.x+rc.w-1,
+			     rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
+			     PART_COLORBAR_BORDER_FG_NW);
+    ji_screen = old_ji_screen;
+    set_trans_blender(0, 0, 0, 0);
   }
 }
 

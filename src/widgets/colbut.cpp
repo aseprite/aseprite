@@ -223,15 +223,16 @@ static void colorbutton_draw(JWidget widget)
 
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
+  jdraw_rectfill(widget->rc, ji_color_face());
+
   draw_color_button
     (ji_screen,
-     widget->rc->x1, widget->rc->y1,
-     widget->rc->x2-1, widget->rc->y2-1,
-     1, 1, 1, 1,
+     widget->getBounds(),
+     true, true, true, true,
+     true, true, true, true,
      colorbutton->imgtype,
      colorbutton->color,
-     jwidget_has_mouse(widget),
-     false, ji_color_face());
+     jwidget_has_mouse(widget), false);
 
   /* draw text */
   color_to_formalstring(colorbutton->imgtype,

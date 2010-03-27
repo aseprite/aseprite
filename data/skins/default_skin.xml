@@ -99,6 +99,16 @@
     <part id="tab_filler"			x="0" y="112" w="2" h="12" />
     <part id="editor_normal"			x="32" y="112" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
     <part id="editor_selected"			x="48" y="112" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
+    <part id="colorbar_0"			x="0" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_1"			x="16" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_2"			x="0" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_3"			x="16" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_border_0"		x="32" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_border_1"		x="48" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_border_2"		x="32" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_border_3"		x="48" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_border_fg"		x="0" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="colorbar_border_bg"		x="16" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
   </parts>
 
 </skin>
