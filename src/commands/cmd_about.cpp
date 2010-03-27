@@ -56,7 +56,7 @@ void AboutCommand::execute(Context* context)
   FramePtr window(new Frame(false, _("About " PACKAGE)));
 
   box1 = jbox_new(JI_VERTICAL);
-  label1 = jlabel_new(PACKAGE " | allegro sprite editor | " VERSION);
+  label1 = jlabel_new(PACKAGE " | Allegro Sprite Editor | " VERSION);
   label2 = jlabel_new(_("A pixel art program"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
 
