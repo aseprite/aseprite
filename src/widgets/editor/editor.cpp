@@ -744,7 +744,7 @@ bool Editor::msg_proc(JMessage msg)
 	JRect vp = jview_get_viewport_position(view);
 
 	jdraw_rectfill(vp, theme->get_editor_face_color());
-	draw_emptyset_symbol(vp, makecol(64, 64, 64));
+	draw_emptyset_symbol(Rect(vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)), makecol(64, 64, 64));
 
 	jrect_free(vp);
       }

@@ -22,6 +22,9 @@
 #include "core/color.h"
 #include "jinete/jbase.h"
 
+namespace Vaca { class Rect; }
+using Vaca::Rect;
+
 struct FONT;
 struct BITMAP;
 
@@ -111,7 +114,7 @@ void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int 
 void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg);
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
-void draw_emptyset_symbol(JRect rc, int color);
+void draw_emptyset_symbol(const Rect& rc, int color);
 void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
 		int imgtype, color_t color);
 void draw_color_button(BITMAP* bmp,

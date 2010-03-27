@@ -26,6 +26,8 @@
 #include "jinete/jtheme.h"
 #include "jinete/jrect.h"
 
+#include "Vaca/Rect.h"
+
 #include "console.h"
 #include "app.h"
 #include "core/cfg.h"
@@ -36,6 +38,8 @@
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "widgets/editor.h"
+
+using Vaca::Rect;
 
 static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
 
@@ -404,22 +408,16 @@ void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 /**********************************************************************/
 /* Specials */
 
-void draw_emptyset_symbol(JRect rc, int color)
+void draw_emptyset_symbol(const Rect& rc, int color)
 {
-  int cx, cy, x1, y1, x2, y2, size;
-
-  size = MIN(jrect_w(rc), jrect_h(rc)) - 8;
+  Point center = rc.getCenter();
+  int size = MIN(rc.w, rc.h) - 8;
   size = MID(4, size, 64);
 
-  cx = (rc->x1+rc->x2)/2;
-  cy = (rc->y1+rc->y2)/2;
-  x1 = cx-size/2;
-  y1 = cy-size/2;
-  x2 = x1+size-1;
-  y2 = y1+size-1;
-
-  circle(ji_screen, cx, cy, size*4/10, color);
-  line(ji_screen, x1, y2, x2, y1, color);
+  circle(ji_screen, center.x, center.y, size*4/10, color);
+  line(ji_screen,
+       center.x-size/2, center.y+size/2,
+       center.x+size/2, center.y-size/2, color);
 }
 
 void draw_color(BITMAP* bmp, int x1, int y1, int x2, int y2,
