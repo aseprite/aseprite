@@ -64,8 +64,6 @@ typedef enum {
 
 class ColorBar : public Widget
 {
-  Frame* m_tooltip_window;
-  int m_refresh_timer_id;
   size_t m_firstIndex;
   size_t m_columns;
   size_t m_colorsPerColum;
@@ -99,15 +97,11 @@ private:
 
   color_t getHotColor(hotcolor_t hot);
   void setHotColor(hotcolor_t hot, color_t color);
-  void openTooltip(int x1, int x2, int y1, int y2, color_t color, hotcolor_t hot);
-  void closeTooltip();
   Rect getColumnBounds(size_t column) const;
   Rect getEntryBounds(size_t index) const;
   Rect getFgBounds() const;
   Rect getBgBounds() const;
   void updateStatusBar(color_t color, int msecs);
-
-  static bool tooltip_window_msg_proc(JWidget widget, JMessage msg);
 };
 
 int colorbar_type()
@@ -164,12 +158,10 @@ color_t colorbar_get_color_by_position(JWidget widget, int x, int y)
 ColorBar::ColorBar(int align)
   : Widget(colorbar_type())
 {
-  m_tooltip_window = NULL;
   m_entrySize = 16;
   m_firstIndex = 0;
   m_columns = 2;
   m_colorsPerColum = 12;
-  m_refresh_timer_id = jmanager_add_timer(this, 250);
   m_fgcolor = color_index(15);
   m_bgcolor = color_index(0);
   m_hot = HOTCOLOR_NONE;
@@ -199,11 +191,6 @@ ColorBar::ColorBar(int align)
 
 ColorBar::~ColorBar()
 {
-  jmanager_remove_timer(m_refresh_timer_id);
-
-  if (m_tooltip_window != NULL)
-    jwidget_free(m_tooltip_window);
-
   set_config_color("ColorBar", "FG", m_fgcolor);
   set_config_color("ColorBar", "BG", m_bgcolor);
   set_config_int("ColorBar", "Columns", m_columns);
@@ -420,19 +407,12 @@ bool ColorBar::msg_proc(JMessage msg)
       if (m_hot != old_hot) {
 	dirty();
 
-	// Close the old tooltip window to edit the 'old_hot' color slot
-	//closeTooltip();
-
 	// Open the new hot-color to be edited
 	if ((m_hot != HOTCOLOR_NONE) &&
 	    (m_hot_drag == m_hot_drop)) {
 	  color_t color = getHotColor(m_hot);
 
 	  updateStatusBar(color, 0);
-
-	  // // Open the tooltip window to edit the hot color
-	  // openTooltip(this->rc->x1-1, this->rc->x2+1,
-	  // 	      hot_v1, hot_v2, color, m_hot);
 	}
       }
 
@@ -547,23 +527,6 @@ bool ColorBar::msg_proc(JMessage msg)
       }
       break;
 
-    case JM_TIMER:
-      /* time to refresh all the editors which have the current
-	 sprite selected? */
-      if (msg->timer.timer_id == m_refresh_timer_id) {
-	try {
-	  const CurrentSpriteReader sprite(UIContext::instance());
-	  if (sprite != NULL)
-	    update_editors_with_sprite(sprite);
-	}
-	catch (locked_sprite_exception&) {
-	  // do nothing
-	}
-
-	jmanager_stop_timer(m_refresh_timer_id);
-      }
-      break;
-
   }
 
   return Widget::msg_proc(msg);
@@ -620,217 +583,6 @@ void ColorBar::setHotColor(hotcolor_t hot, color_t color)
 #endif
       break;
   }
-}
-
-void ColorBar::openTooltip(int x1, int x2, int y1, int y2,
-			   color_t color, hotcolor_t hot)
-{
-  Frame* window;
-  char buf[1024];		/* TODO warning buffer overflow */
-  int x, y;
-
-  if (m_tooltip_window == NULL) {
-    window = colorselector_new(true);
-    window->user_data[0] = this;
-    jwidget_add_hook(window, -1, ColorBar::tooltip_window_msg_proc, NULL);
-
-    m_tooltip_window = window;
-  }
-  else {
-    window = m_tooltip_window;
-  }
-
-  switch (m_hot) {
-    case HOTCOLOR_NONE:
-      assert(false);
-      break;
-    case HOTCOLOR_FGCOLOR: {
-      ustrcpy(buf, _("Foreground Color"));
-
-      JAccel accel = get_accel_to_execute_command(CommandId::switch_colors, NULL);
-      if (accel != NULL) {
-	ustrcat(buf, _(" - "));
-	jaccel_to_string(accel, buf+ustrsize(buf));
-	ustrcat(buf, _(" key switches colors"));
-      }
-      break;
-    }
-    case HOTCOLOR_BGCOLOR:
-      ustrcpy(buf, _("Background Color"));
-      break;
-    default:
-      usprintf(buf, _("Gradient Entry %d"), m_hot);
-      break;
-  }
-  window->setText(buf);
-
-  colorselector_set_color(window, color);
-  m_hot_editing = hot;
-
-  window->open_window();
-
-  /* window position */
-  if (x2+jrect_w(window->rc) <= JI_SCREEN_W)
-    x = x2;
-  else
-    x = x1-jrect_w(window->rc);
-  y = (y1+y2)/2-jrect_h(window->rc)/2;
-
-  x = MID(0, x, JI_SCREEN_W-jrect_w(window->rc));
-  y = MID(this->rc->y1, y, this->rc->y2-jrect_h(window->rc));
-  
-  window->position_window(x, y);
-
-  jmanager_dispatch_messages(jwidget_get_manager(window));
-  jwidget_relayout(window);
-
-  /* setup the hot-region */
-  {
-    JRect rc = jrect_new(window->rc->x1-8,
-			 window->rc->y1-8,
-			 window->rc->x2+8,
-			 window->rc->y2+8);
-/*     JRect rc2 = jrect_new(widget->rc->x1, y1, x, y2+1); */
-    JRect rc2 = jrect_new(x1, y1, x2, y2+1);
-    JRegion rgn = jregion_new(rc, 1);
-    JRegion rgn2 = jregion_new(rc2, 1);
-
-    jregion_union(rgn, rgn, rgn2);
-
-    jregion_free(rgn2);
-    jrect_free(rc2);
-    jrect_free(rc);
-
-    static_cast<TipWindow*>(window)->set_hotregion(rgn);
-  }
-}
-
-void ColorBar::closeTooltip()
-{
-  if (m_tooltip_window != NULL) {
-    /* close the widget */
-    m_tooltip_window->closeWindow(NULL);
-
-    /* dispatch the JM_CLOSE event to 'tooltip_window_msg_proc' */
-    jmanager_dispatch_messages(jwidget_get_manager(this));
-  }
-}
-
-bool ColorBar::tooltip_window_msg_proc(JWidget widget, JMessage msg)
-{
-  switch (msg->type) {
-
-    case JM_CLOSE:
-      try {
-	// change the sprite palette
-	const CurrentSpriteReader sprite(UIContext::instance());
-	if (sprite != NULL) {
-	  Palette *pal = sprite_get_palette(sprite, sprite->frame);
-	  int from, to;
-
-	  if (palette_count_diff(pal, get_current_palette(), &from, &to) > 0) {
-	    SpriteWriter sprite_writer(sprite);
-	    /* TODO add undo support */
-	    /* 	  if (undo_is_enabled(sprite->undo)) */
-	    /* 	    undo_data(sprite->undo, (GfxObj *)sprite, pal, ); */
-
-	    pal = get_current_palette();
-	    pal->frame = sprite_writer->frame; /* TODO warning, modifing
-						  the current palette in
-						  this point... */
-
-	    sprite_set_palette(sprite_writer, pal, false);
-	    set_current_palette(pal, true);
-	  }
-
-	  update_editors_with_sprite(sprite);
-	}
-	/* change the system palette */
-	else
-	  set_default_palette(get_current_palette());
-
-	/* set the 'hot_editing' to NONE */
-	{
-	  ColorBar* colorbar = (ColorBar*)widget->user_data[0];
-
-	  colorbar->m_hot_editing = HOTCOLOR_NONE;
-	  colorbar->dirty();
-	}
-      }
-      catch (ase_exception& e) {
-	Console console;
-	console.printf("Error updating sprite palette.\n\n");
-	e.show();
-      }
-      break;
-
-    case JM_SIGNAL:
-#if 0
-      if (msg->signal.num == SIGNAL_COLORSELECTOR_COLOR_CHANGED) {
-	ColorBar* colorbar = (ColorBar*)widget->user_data[0];
-	color_t color = colorselector_get_color(widget);
-	JWidget pal = colorselector_get_paledit(widget);
-
-	if (paledit_get_range_type(pal) != PALETTE_EDITOR_RANGE_NONE) {
-	  bool array[256];
-	  int i, j;
-
-	  paledit_get_selected_entries(pal, array);
-
-	  for (i=j=0; i<256; ++i)
-	    if (array[i])
-	      ++j;
-
-	  colorbar->m_ncolor = j;
-	  assert(colorbar->m_ncolor >= 1);
-
-	  colorbar->m_hot = MIN(colorbar->m_hot, static_cast<hotcolor_t>(colorbar->m_ncolor-1));
-	  colorbar->m_hot_editing = MIN(colorbar->m_hot_editing, static_cast<hotcolor_t>(colorbar->m_ncolor-1));
-
-	  for (i=j=0; i<256; ++i)
-	    if (array[i])
-	      colorbar->m_color[j++] = color_index(i);
-	}
-	else {
-	  colorbar->setHotColor(colorbar->m_hot_editing, color);
-	}
-
-	/* ONLY FOR TRUE-COLOR GRAPHICS MODE: if the palette is
-	   different from the current sprite's palette, then we have
-	   to start the "refresh_timer" to refresh all the editors
-	   with that sprite */
-	try {
-	  CurrentSpriteWriter sprite(UIContext::instance());
-	  if (sprite != NULL && bitmap_color_depth(screen) != 8) {
-	    Palette *pal = sprite_get_palette(sprite, sprite->frame);
-	  
-	    if (palette_count_diff(pal, get_current_palette(), NULL, NULL) > 0) {
-	      pal = get_current_palette();
-	      pal->frame = sprite->frame;	/* TODO warning, modifing
-						   the current palette in
-						   this point... */
-
-	      sprite_set_palette(sprite, pal, false);
-	      set_current_palette(pal, true);
-
-	      jmanager_start_timer(colorbar->m_refresh_timer_id);
-	    }
-	  }
-	}
-	catch (ase_exception& e) {
-	  Console console;
-	  console.printf("Error updating sprite palette.\n\n");
-	  e.show();
-	}
-
-	colorbar->dirty();
-      }
-#endif
-      break;
-
-  }
-  
-  return false;
 }
 
 Rect ColorBar::getColumnBounds(size_t column) const
