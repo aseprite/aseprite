@@ -213,7 +213,7 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
 
 void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color)
 {
-  char buf[128];		/* TODO warning buffer overflow */
+  char buf[128];		// TODO warning buffer overflow
   color_to_formalstring(imgtype, color, buf, sizeof(buf), true);
   statusbar_set_text(widget, msecs, "%s %s", _("Color"), buf);
 }
