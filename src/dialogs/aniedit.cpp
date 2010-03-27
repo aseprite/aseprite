@@ -24,6 +24,9 @@
 #include "jinete/jinete.h"
 /* #include "jinete/jintern.h" */
 
+#include "Vaca/Rect.h"
+#include "Vaca/Point.h"
+
 #include "commands/commands.h"
 #include "commands/command.h"
 /* #include "app.h" */
@@ -39,6 +42,9 @@
 #include "util/thmbnail.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
+
+using Vaca::Rect;
+using Vaca::Point;
 
 /*
    Animator Editor
@@ -1150,7 +1156,6 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
 		    ji_color_face();
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
-  JRect thumbnail_rect;
   BITMAP *thumbnail;
   Cel *cel;
 
@@ -1169,7 +1174,7 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
 		widget->rc->x2-1,
 		widget->rc->y2-1);
 
-  thumbnail_rect = jrect_new(x1+3, y1+3, x2-2, y2-2);
+  Rect thumbnail_rect(Point(x1+3, y1+3), Point(x2-2, y2-2));
 
   /* draw the box for the cel */
   if (selected_layer && frame == anieditor->sprite->frame) {
@@ -1209,13 +1214,10 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
     if (thumbnail != NULL) {
       stretch_blit(thumbnail, ji_screen,
 		   0, 0, thumbnail->w, thumbnail->h,
-		   thumbnail_rect->x1, thumbnail_rect->y1,
-		   jrect_w(thumbnail_rect),
-		   jrect_h(thumbnail_rect));
+		   thumbnail_rect.x, thumbnail_rect.y,
+		   thumbnail_rect.w, thumbnail_rect.h);
     }
   }
-
-  jrect_free(thumbnail_rect);
 
   /* if this cel is hot and other cel was clicked, we have to draw
      some indicators to show that the user can move cels */
