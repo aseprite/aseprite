@@ -1159,7 +1159,7 @@ bool Editor::msg_proc(JMessage msg)
 	    jwidget_has_mouse(this)) {
 	  int dz = jmouse_z(1) - jmouse_z(0);
 
-	  /* with the ALT */
+	  // Without modifiers
 	  if (!(msg->any.shifts & (KB_SHIFT_FLAG |
 				   KB_ALT_FLAG |
 				   KB_CTRL_FLAG))) {
