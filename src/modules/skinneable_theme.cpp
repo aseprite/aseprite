@@ -201,8 +201,9 @@ void SkinneableTheme::regen()
 	int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
 	int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
 	int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
+	int c;
 
-	for (int c=0; c<JI_CURSORS; ++c) {
+	for (c=0; c<JI_CURSORS; ++c) {
 	  if (id != cursors_info[c].id)
 	    continue;
 
@@ -211,6 +212,11 @@ void SkinneableTheme::regen()
 
 	  m_cursors[c] = cropPartFromSheet(m_cursors[c], x, y, w, h);
 	  break;
+	}
+
+	if (c == JI_CURSORS) {
+	  throw ase_exception("Unknown cursor specified in data/skins/default_skin.xml:\n"
+			      "<cursor id='%s' ... />\n", id.c_str());
 	}
 
 	xmlCursor = xmlCursor->NextSiblingElement();
