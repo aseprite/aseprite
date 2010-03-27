@@ -49,7 +49,6 @@ void algo_polygon(int vertices, const int* points, void* data, AlgoHLine proc)
   int x2, y2;
   int ind1, ind2;
   int ints;
-  int fill_color;
 
   std::vector<int> polyInts(n);
   std::vector<Point> p(n);

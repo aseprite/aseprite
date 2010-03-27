@@ -113,7 +113,6 @@ bool set_current_palette(Palette *_palette, bool forced)
   if (forced ||
       palette_count_diff(palette, ase_current_palette, NULL, NULL) > 0) {
     PALETTE rgbpal;
-    int i, j, k;
 
     /* copy current palette */
     palette_copy_colors(ase_current_palette, palette);
