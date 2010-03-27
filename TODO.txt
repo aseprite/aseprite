@@ -5,8 +5,8 @@ Refactoring
   1) jinete -> third_party/vaca (it has the core for mutex/threads)
   2) sprite-core
   3) file-io
-  4) undo
-  5) aseprite
+  4) undo (uses sprite-core)
+  5) aseprite (the application)
 - editors_ -> Editors class widget
 - rename core/cfg.h to cfg_file.h
 - convert all widgets to classes:
