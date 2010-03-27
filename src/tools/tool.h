@@ -81,6 +81,9 @@ public:
   // Returns true if this ink picks colors from the image
   virtual bool isEyedropper() const { return false; }
 
+  // Returns true if this ink moves the scroll only
+  virtual bool isScrollMovement() const { return false; }
+
   // It is called when the tool-loop start (generally when the user
   // presses a mouse button over a sprite editor)
   virtual void prepareInk(IToolLoop* loop) { }

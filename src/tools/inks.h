@@ -109,13 +109,18 @@ class ScrollInk : public ToolInk
 {
 public:
 
+  bool isScrollMovement() const { return true; }
+
   void prepareInk(IToolLoop* loop)
   {
+    // Do nothing
   }
 
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
   {
+    // Do nothing
   }
+
 };
 
 

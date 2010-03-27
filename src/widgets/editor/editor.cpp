@@ -865,7 +865,8 @@ bool Editor::msg_proc(JMessage msg)
 	context->set_current_sprite(m_sprite);
 
 	/* move the scroll */
-	if (msg->mouse.middle || m_space_pressed) {
+	if (msg->mouse.middle || m_space_pressed ||
+	    current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
 	  m_state = EDITOR_STATE_MOVING_SCROLL;
 
 	  editor_setcursor(msg->mouse.x, msg->mouse.y);
@@ -1334,6 +1335,11 @@ void Editor::editor_setcursor(int x, int y)
 	    else if (current_tool->getInk(0)->isEyedropper()) {
 	      hide_drawing_cursor();
 	      jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
+	      return;
+	    }
+	    else if (current_tool->getInk(0)->isScrollMovement()) {
+	      hide_drawing_cursor();
+	      jmouse_set_cursor(JI_CURSOR_SCROLL);
 	      return;
 	    }
 	  }
