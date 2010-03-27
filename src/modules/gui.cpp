@@ -255,7 +255,7 @@ int init_module_gui()
 
   for (;;) {
     if (bpp == 8) {
-      allegro_message("You cannot use aseprite in 8 bits per pixel\n");
+      allegro_message("You cannot use ASE in 8 bits per pixel\n");
       return -1;
     }
 
