@@ -136,6 +136,11 @@ void jdraw_rectfill(const JRect r, int color)
   rectfill(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, color);
 }
 
+void jdraw_rectfill(const Rect& r, int color)
+{
+  rectfill(ji_screen, r.x, r.y, r.x+r.w-1, r.y+r.h-1, color);
+}
+
 void jdraw_rectedge(const JRect r, int c1, int c2)
 {
   jrectedge(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, c1, c2);

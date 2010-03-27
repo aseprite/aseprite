@@ -34,6 +34,9 @@
 
 #include "jinete/jbase.h"
 
+namespace Vaca { class Rect; }
+using Vaca::Rect;
+
 #define JI_COLOR_SHADE(color, r, g, b)		\
   makecol(MID(0, getr(color)+(r), 255),		\
 	  MID(0, getg(color)+(g), 255),		\
@@ -56,6 +59,7 @@ void jrectshade(struct BITMAP *bmp, int x1, int y1, int x2, int y2,
 
 void jdraw_rect(const JRect rect, int color);
 void jdraw_rectfill(const JRect rect, int color);
+void jdraw_rectfill(const Rect& rect, int color);
 void jdraw_rectedge(const JRect rect, int c1, int c2);
 void jdraw_rectshade(const JRect rect, int c1, int c2, int align);
 void jdraw_rectexclude(const JRect rc, const JRect exclude, int color);
