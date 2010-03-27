@@ -78,6 +78,11 @@ Frame::Frame(bool desktop, const char* text)
   jwidget_init_theme(this);
 }
 
+Frame::~Frame()
+{
+  _jmanager_close_window(getManager(), this, false);
+}
+
 Widget* Frame::get_killer()
 {
   return m_killer;
@@ -236,10 +241,6 @@ bool Frame::is_wantfocus() const
 bool Frame::msg_proc(JMessage msg)
 {
   switch (msg->type) {
-
-    case JM_DESTROY:
-      _jmanager_close_window(getManager(), this, false);
-      break;
 
     case JM_REQSIZE:
       this->window_request_size(&msg->reqsize.w, &msg->reqsize.h);

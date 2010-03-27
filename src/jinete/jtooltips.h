@@ -43,6 +43,7 @@ class TipWindow : public Frame
 
 public:
   TipWindow(const char *text, bool close_on_buttonpressed = false);
+  ~TipWindow();
 
   void set_hotregion(JRegion region);
 

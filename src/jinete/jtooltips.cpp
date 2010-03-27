@@ -164,6 +164,19 @@ TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
   jwidget_init_theme(this);
 }
 
+TipWindow::~TipWindow()
+{
+  if (m_filtering) {
+    m_filtering = false;
+    jmanager_remove_msg_filter(JM_MOTION, this);
+    jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
+    jmanager_remove_msg_filter(JM_KEYPRESSED, this);
+  }
+  if (m_hot_region != NULL) {
+    jregion_free(m_hot_region);
+  }
+}
+
 /**
  * @param region The new hot-region. This pointer is holded by the @a widget.
  * So you can't destroy it after calling this routine.
@@ -194,18 +207,6 @@ bool TipWindow::msg_proc(JMessage msg)
 	jmanager_remove_msg_filter(JM_MOTION, this);
 	jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
 	jmanager_remove_msg_filter(JM_KEYPRESSED, this);
-      }
-      break;
-
-    case JM_DESTROY:
-      if (m_filtering) {
-	m_filtering = false;
-	jmanager_remove_msg_filter(JM_MOTION, this);
-	jmanager_remove_msg_filter(JM_BUTTONPRESSED, this);
-	jmanager_remove_msg_filter(JM_KEYPRESSED, this);
-      }
-      if (m_hot_region != NULL) {
-	jregion_free(m_hot_region);
       }
       break;
 

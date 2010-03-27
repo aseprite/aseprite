@@ -52,6 +52,7 @@ class Frame : public Widget
 
 public:
   Frame(bool is_desktop, const char* text);
+  ~Frame();
 
   Widget* get_killer();
 

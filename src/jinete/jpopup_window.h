@@ -42,6 +42,7 @@ class PopupWindow : public Frame
 
 public:
   PopupWindow(const char* text, bool close_on_buttonpressed);
+  ~PopupWindow();
 
   void setHotRegion(JRegion region);
 
