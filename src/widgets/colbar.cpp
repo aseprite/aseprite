@@ -436,7 +436,7 @@ bool ColorBar::msg_proc(JMessage msg)
 	if (!(msg->any.shifts & (KB_ALT_FLAG |
 				 KB_CTRL_FLAG))) {
 	  if (msg->any.shifts & KB_SHIFT_FLAG)
-	    delta *= m_colorsPerColum/2;
+	    delta *= m_colorsPerColum;
 
 	  if (((int)m_firstIndex)+delta < 0)
 	    m_firstIndex = 0;
