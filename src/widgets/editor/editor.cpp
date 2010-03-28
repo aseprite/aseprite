@@ -910,7 +910,11 @@ bool Editor::msg_proc(JMessage msg)
 	else if (m_sprite->layer) {
 	  assert(m_toolLoopManager == NULL);
 
-	  m_toolLoopManager = new ToolLoopManager(createToolLoopImpl(UIContext::instance(), msg));
+	  IToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
+	  if (!toolLoop)
+	    return true;	// Return without capturing mouse
+
+	  m_toolLoopManager = new ToolLoopManager(toolLoop);
 	  if (!m_toolLoopManager)
 	    return true;	// Return without capturing mouse
 
