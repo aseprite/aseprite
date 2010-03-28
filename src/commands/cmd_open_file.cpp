@@ -52,14 +52,14 @@ protected:
   void execute(Context* context);
 };
 
-typedef struct OpenFileData
+struct OpenFileData
 {
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
   JThread thread;
   Frame* alert_window;
-} OpenFileData;
+};
 
 /**
  * Thread to do the hard work: load the file from the disk.
@@ -68,7 +68,7 @@ typedef struct OpenFileData
  */
 static void openfile_bg(void *fop_data)
 {
-  FileOp *fop = (FileOp *)fop_data;
+  FileOp* fop = (FileOp*)fop_data;
 
   fop_operate(fop);
 
@@ -86,42 +86,17 @@ static void openfile_bg(void *fop_data)
  * 
  * [main thread]
  */
-static void monitor_openfile_bg(void *_data)
+static void monitor_openfile_bg(void* _data)
 {
-  OpenFileData *data = (OpenFileData *)_data;
-  FileOp *fop = (FileOp *)data->fop;
+  OpenFileData* data = (OpenFileData*)_data;
+  FileOp* fop = (FileOp*)data->fop;
 
   if (data->progress)
     progress_update(data->progress, fop_get_progress(fop));
 
-  /* is done? ...ok, now the sprite is in the main thread only... */
-  if (fop_is_done(fop)) {
-#if 0
-    Sprite *sprite = fop->sprite;
-    if (sprite) {
-      recent_file(fop->filename);
-      sprite_mount(sprite);
-      sprite_show(sprite);
-    }
-    /* if the sprite isn't NULL and the file-operation wasn't
-       stopped by the user...  */
-    else if (!fop_is_stop(fop)) {
-      /* ...the file can't be loaded by errors, so we can remove it
-	 from the recent-file list */
-      unrecent_file(fop->filename);
-    }
-
-    if (data->progress)
-      progress_free(data->progress);
-
-    if (fop->error) {
-      Console console;
-      console.printf(fop->error);
-    }
-#endif
-
+  // Is done? ...ok, now the sprite is in the main thread only...
+  if (fop_is_done(fop))
     remove_gui_monitor(data->monitor);
-  }
 }
 
 /**
@@ -133,22 +108,10 @@ static void monitor_free(void* _data)
 {
   OpenFileData* data = (OpenFileData*)_data;
 
-#if 0
-  /* stop the file-operation and wait the thread to exit */
-  FileOp* fop = (FileOp*)data->fop;
-  fop_stop(fop);
-  jthread_join(data->thread);
-#endif
-
   if (data->alert_window != NULL) {
     data->monitor = NULL;
     data->alert_window->closeWindow(NULL);
   }
-
-#if 0
-  fop_free(fop);
-  jfree(data);
-#endif
 }
 
 OpenFileCommand::OpenFileCommand()
