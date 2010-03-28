@@ -54,7 +54,7 @@ typedef struct ASE_Header
   ase_uint16 speed;	/* deprecated, use "duration" of FrameHeader */
   ase_uint32 next;
   ase_uint32 frit;
-  ase_uint16 unknown;
+  ase_uint32 unknown;
   ase_uint16 ncolors;
 } ASE_Header;
 
@@ -66,7 +66,7 @@ typedef struct ASE_FrameHeader
   ase_uint16 duration;
 } ASE_FrameHeader;
 
-/* TODO warning: the writing routines aren't thread-safe */
+// TODO warning: the writing routines aren't thread-safe
 static ASE_FrameHeader *current_frame_header = NULL;
 static int chunk_type;
 static int chunk_start;
@@ -369,7 +369,7 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   header->speed      = fgetw(f);
   header->next       = fgetl(f);
   header->frit       = fgetl(f);
-  header->unknown    = fgetw(f);
+  header->unknown    = fgetl(f);
   header->ncolors    = fgetw(f);
   if (header->ncolors == 0)	// 0 means 256 (old .ase files)
     header->ncolors = 256;
@@ -416,7 +416,7 @@ static void ase_file_write_header(FILE *f, ASE_Header *header)
   fputw(header->speed, f);
   fputl(header->next, f);
   fputl(header->frit, f);
-  fputw(header->unknown, f);
+  fputl(header->unknown, f);
   fputw(header->ncolors, f);
 
   fseek(f, header->pos+header->size, SEEK_SET);
