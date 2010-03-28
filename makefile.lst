@@ -163,7 +163,6 @@ COMMON_SOURCES =					\
 	src/modules/gfx.cpp				\
 	src/modules/gui.cpp				\
 	src/modules/palettes.cpp			\
-	src/modules/recent.cpp				\
 	src/modules/rootmenu.cpp			\
 	src/modules/skinneable_theme.cpp		\
 	src/raster/algo.cpp				\
@@ -231,6 +230,7 @@ ASE_SOURCES = \
 	src/console.cpp						\
 	src/context.cpp						\
 	src/main.cpp						\
+	src/recent_files.cpp					\
 	src/ui_context.cpp					\
 	src/undoable.cpp					\
 	$(COMMON_SOURCES)

@@ -28,7 +28,7 @@
 #include "dialogs/filesel.h"
 #include "file/file.h"
 #include "modules/gui.h"
-#include "modules/recent.h"
+#include "recent_files.h"
 #include "raster/sprite.h"
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
@@ -123,7 +123,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
       }
       /* no error? */
       else {
-	recent_file(sprite->filename);
+	RecentFiles::addRecentFile(sprite->filename);
 	if (mark_as_saved)
 	  sprite_mark_as_saved(sprite);
 

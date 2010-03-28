@@ -33,7 +33,6 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/recent.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/rotate.h"

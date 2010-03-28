@@ -16,18 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULES_RECENT_H_INCLUDED
-#define MODULES_RECENT_H_INCLUDED
+#ifndef RECENT_FILES_H_INCLUDED
+#define RECENT_FILES_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include <list>
+#include <string>
 
-int init_module_recent();
-void exit_module_recent();
+class RecentFiles
+{
+public:
+  typedef std::list<std::string> FilesList;
+  typedef FilesList::iterator iterator;
+  typedef FilesList::const_iterator const_iterator;
 
-JList get_recent_files_list();
+  static const_iterator begin();
+  static const_iterator end();
 
-void recent_file(const char *filename);
-void unrecent_file(const char *filename);
+  RecentFiles();
+  ~RecentFiles();
+
+  static void addRecentFile(const char* filename);
+  static void removeRecentFile(const char* filename);
+};
 
 #endif
 

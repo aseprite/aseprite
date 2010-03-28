@@ -33,7 +33,7 @@
 #include "raster/sprite.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
-#include "modules/recent.h"
+#include "recent_files.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -182,11 +182,14 @@ void OpenFileCommand::execute(Context* context)
 
   if (!m_filename.empty()) {
     FileOp *fop = fop_to_load_sprite(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK);
+    bool unrecent = false;
 
     if (fop) {
       if (fop->error) {
 	console.printf(fop->error);
 	fop_free(fop);
+
+	unrecent = true;
       }
       else {
 	JThread thread = jthread_new(openfile_bg, fop);
@@ -200,7 +203,7 @@ void OpenFileCommand::execute(Context* context)
 					  "<<Loading file:<<%s||&Cancel",
 					  get_filename(m_filename.c_str()));
 
-	  /* add a monitor to check the loading (FileOp) progress */
+	  // Add a monitor to check the loading (FileOp) progress
 	  data->monitor = add_gui_monitor(monitor_openfile_bg,
 					  monitor_free, data);
 
@@ -209,31 +212,27 @@ void OpenFileCommand::execute(Context* context)
 	  if (data->monitor != NULL)
 	    remove_gui_monitor(data->monitor);
 
-	  /* stop the file-operation and wait the thread to exit */
+	  // Stop the file-operation and wait the thread to exit
 	  fop_stop(data->fop);
 	  jthread_join(data->thread);
 
-	  /* show any error */
+	  // Show any error
 	  if (fop->error) {
 	    console.printf(fop->error);
+	    unrecent = true;
 	  }
 	  else {
 	    Sprite *sprite = fop->sprite;
 	    if (sprite) {
 	      UIContext* context = UIContext::instance();
 
-	      recent_file(fop->filename);
+	      RecentFiles::addRecentFile(fop->filename);
 	      context->add_sprite(sprite);
 
 	      set_sprite_in_more_reliable_editor(sprite);
 	    }
-	    /* if the sprite isn't NULL and the file-operation wasn't
-	       stopped by the user...  */
-	    else if (!fop_is_stop(fop)) {
-	      /* ...the file can't be loaded by errors, so we can remove it
-		 from the recent-file list */
-	      unrecent_file(fop->filename);
-	    }
+	    else if (!fop_is_stop(fop))
+	      unrecent = true;
 	  }
 
 	  progress_free(data->progress);
@@ -246,9 +245,15 @@ void OpenFileCommand::execute(Context* context)
 	  fop_free(fop);
 	}
       }
+
+      // The file was not found or was loaded loaded with errors,
+      // so we can remove it from the recent-file list
+      if (unrecent) {
+	RecentFiles::removeRecentFile(m_filename.c_str());
+      }
     }
     else {
-      /* do nothing (the user cancelled or something like that) */
+      // Do nothing (the user cancelled or something like that)
     }
   }
 }

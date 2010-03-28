@@ -50,12 +50,12 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "modules/recent.h"
 #include "modules/rootmenu.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
+#include "recent_files.h"
 #include "tools/toolbox.h"
 #include "ui_context.h"
 #include "util/boundary.h"
@@ -87,6 +87,7 @@ public:
   RasterModule m_raster;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
+  RecentFiles m_recent_files_module;
 };
 
 App* App::m_instance = NULL;
@@ -256,8 +257,8 @@ int App::run()
 	      /* show it */
 	      set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
-	      /* recent file */
-	      recent_file(Vaca::convert_to<std::string>(option->data()).c_str());
+	      // Recent file
+	      RecentFiles::addRecentFile(Vaca::convert_to<std::string>(option->data()).c_str());
 	    }
 	  }
 	  break;
@@ -390,16 +391,18 @@ bool app_realloc_recent_list()
       jwidget_free(submenu);
     }
 
+    // Build the menu of recent files
     submenu = jmenu_new();
     jmenuitem_set_submenu(list_menuitem, submenu);
 
-    if (jlist_first(get_recent_files_list())) {
-      const char *filename;
-      Params params;
-      JLink link;
+    RecentFiles::const_iterator it = RecentFiles::begin();
+    RecentFiles::const_iterator end = RecentFiles::end();
 
-      JI_LIST_FOR_EACH(get_recent_files_list(), link) {
-	filename = reinterpret_cast<const char*>(link->data);
+    if (it != end) {
+      Params params;
+
+      for (; it != end; ++it) {
+	const char* filename = it->c_str();
 
 	params.set("filename", filename);
 
