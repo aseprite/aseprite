@@ -133,9 +133,9 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    if (c == 0)
 	      *rgb_address = 0;
 	    else
-	      *rgb_address = _rgba(_rgba_getr(palette->color[c]),
-				   _rgba_getg(palette->color[c]),
-				   _rgba_getb(palette->color[c]), 255);
+	      *rgb_address = _rgba(_rgba_getr(palette->getEntry(c)),
+				   _rgba_getg(palette->getEntry(c)),
+				   _rgba_getb(palette->getEntry(c)), 255);
 	    idx_address++;
 	    rgb_address++;
 	  }
@@ -148,9 +148,9 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    if (c == 0)
 	      *gray_address = 0;
 	    else {
-	      r = _rgba_getr(palette->color[c]);
-	      g = _rgba_getg(palette->color[c]);
-	      b = _rgba_getb(palette->color[c]);
+	      r = _rgba_getr(palette->getEntry(c));
+	      g = _rgba_getg(palette->getEntry(c));
+	      b = _rgba_getb(palette->getEntry(c));
 	      rgb_to_hsv_int(&r, &g, &b);
 	      *gray_address = _graya(b, 255);
 	    }
@@ -225,9 +225,9 @@ Image *image_rgb_to_indexed(Image *src_image,
       if (a != 0) {
 	nearestcm = rgb_map->data[r>>3][g>>3][b>>3];
 	/* rgb values for nearest color */
-	nr = _rgba_getr(palette->color[nearestcm]);
-	ng = _rgba_getg(palette->color[nearestcm]);
-	nb = _rgba_getb(palette->color[nearestcm]);
+	nr = _rgba_getr(palette->getEntry(nearestcm));
+	ng = _rgba_getg(palette->getEntry(nearestcm));
+	nb = _rgba_getb(palette->getEntry(nearestcm));
 	/* Color as far from rgb as nrngnb but in the other direction */
 	oppr = MID(0, 2*r - nr, 255);
 	oppg = MID(0, 2*g - ng, 255);
@@ -243,9 +243,9 @@ Image *image_rgb_to_indexed(Image *src_image,
 	   case the r-nr distance can actually be less than the nr-oppr
 	   distance. */
 	if (oppnrcm != nearestcm) {
-	  oppr = _rgba_getr(palette->color[oppnrcm]);
-	  oppg = _rgba_getg(palette->color[oppnrcm]);
-	  oppb = _rgba_getb(palette->color[oppnrcm]);
+	  oppr = _rgba_getr(palette->getEntry(oppnrcm));
+	  oppg = _rgba_getg(palette->getEntry(oppnrcm));
+	  oppb = _rgba_getb(palette->getEntry(oppnrcm));
 
 	  dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
 	  if (dither_const != 0) {

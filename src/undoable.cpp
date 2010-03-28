@@ -236,25 +236,17 @@ void Undoable::set_imgtype(int new_imgtype, int dithering_method)
       Palette* palette;
       JLink link;
 
+      // Save all palettes
       JI_LIST_FOR_EACH(m_sprite->palettes, link) {
-	if (jlist_first(m_sprite->palettes) != link) {
-	  palette = reinterpret_cast<Palette*>(link->data);
-	  undo_remove_palette(m_sprite->undo, m_sprite, palette);
-	}
+	palette = reinterpret_cast<Palette*>(link->data);
+	undo_remove_palette(m_sprite->undo, m_sprite, palette);
       }
-
-      palette = sprite_get_palette(m_sprite, 0);
-      undo_data(m_sprite->undo, palette, palette->color, sizeof(palette->color));
     }
 
-    Palette* graypal = palette_new(0, MAX_PALETTE_COLORS);
-    for (int c=0; c<256; c++)
-      palette_set_entry(graypal, c, _rgba(c, c, c, 255));
+    std::auto_ptr<Palette> graypal(Palette::createGrayscale());
 
     sprite_reset_palettes(m_sprite);
-    sprite_set_palette(m_sprite, graypal, false);
-
-    palette_free(graypal);
+    sprite_set_palette(m_sprite, graypal.get(), true);
   }
 }
 

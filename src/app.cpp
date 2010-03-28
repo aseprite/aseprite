@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <memory>
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
@@ -126,17 +127,14 @@ App::App()
 
   /* custom default palette? */
   if (palette_filename) {
-    Palette *pal;
-
     PRINTF("Loading custom palette file: %s\n", palette_filename);
 
-    pal = palette_load(palette_filename);
-    if (pal == NULL)
+    std::auto_ptr<Palette> pal(Palette::load(palette_filename));
+    if (pal.get() == NULL)
       throw ase_exception("Error loading default palette from: %s",
 			  static_cast<const char*>(palette_filename));
 
-    set_default_palette(pal);
-    palette_free(pal);
+    set_default_palette(pal.get());
   }
 
   /* set system palette to the default one */

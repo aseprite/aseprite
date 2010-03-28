@@ -41,7 +41,7 @@ static Sprite* general_copy(const Sprite* src_sprite);
 
 //////////////////////////////////////////////////////////////////////
 
-Sprite::Sprite(int imgtype, int w, int h)
+Sprite::Sprite(int imgtype, int w, int h, int ncolors)
   : GfxObj(GFXOBJ_SPRITE)
 {
   assert(w > 0 && h > 0);
@@ -75,21 +75,24 @@ Sprite::Sprite(int imgtype, int w, int h)
   this->preferred.scroll_y = 0;
   this->preferred.zoom = 0;
 
-  /* generate palette */
-  Palette* pal = palette_new(0, MAX_PALETTE_COLORS);
+  // Generate palette
+  Palette* pal = new Palette(0, ncolors);
   switch (imgtype) {
 
-    /* for colored images */
+    // For colored images
     case IMAGE_RGB:
     case IMAGE_INDEXED:
-      palette_copy_colors(pal, get_default_palette());
+      get_default_palette()->copyColorsTo(pal);
       break;
 
-    /* for black and white images */
+    // For black and white images
     case IMAGE_GRAYSCALE:
     case IMAGE_BITMAP:
-      for (int c=0; c<256; c++)
-	palette_set_entry(pal, c, _rgba(c, c, c, 255));
+      for (int c=0; c<ncolors; c++) {
+	int g = 255 * c / (ncolors-1);
+	g = MID(0, g, 255);
+	pal->setEntry(c, _rgba(g, g, g, 255));
+      }
       break;
   }
   sprite_set_palette(this, pal, true);
@@ -100,11 +103,11 @@ Sprite::Sprite(int imgtype, int w, int h)
   m_read_locks = 0;
   m_mutex = new Mutex();
 
-  /* file format options */
+  // File format options
   this->format_options = NULL;
 
-  /* free the temporary palette */
-  palette_free(pal);
+  // Free the temporary palette
+  delete pal;
 }
 
 Sprite::~Sprite()
@@ -137,7 +140,7 @@ Sprite::~Sprite()
   /* destroy palettes */
   if (this->palettes) {
     JI_LIST_FOR_EACH(this->palettes, link)
-      palette_free(reinterpret_cast<Palette*>(link->data));
+      delete reinterpret_cast<Palette*>(link->data);
 
     jlist_free(this->palettes);
   }
@@ -156,11 +159,6 @@ Sprite::~Sprite()
 }
 
 //////////////////////////////////////////////////////////////////////
-
-Sprite* sprite_new(int imgtype, int w, int h)
-{
-  return new Sprite(imgtype, w, h);
-}
 
 Sprite* sprite_new_copy(const Sprite* src_sprite)
 {
@@ -227,7 +225,7 @@ Sprite* sprite_new_flatten_copy(const Sprite* src_sprite)
   return dst_sprite;
 }
 
-Sprite* sprite_new_with_layer(int imgtype, int w, int h)
+Sprite* sprite_new_with_layer(int imgtype, int w, int h, int ncolors)
 {
   Sprite* sprite = NULL;
   LayerImage *layer = NULL;
@@ -235,7 +233,7 @@ Sprite* sprite_new_with_layer(int imgtype, int w, int h)
   Cel *cel = NULL;
 
   try {
-    sprite = sprite_new(imgtype, w, h);
+    sprite = new Sprite(imgtype, w, h, ncolors);
     image = image_new(imgtype, w, h);
     layer = new LayerImage(sprite);
 
@@ -412,11 +410,11 @@ Palette* sprite_get_palette(const Sprite* sprite, int frame)
 
   JI_LIST_FOR_EACH(sprite->palettes, link) {
     pal = reinterpret_cast<Palette*>(link->data);
-    if (frame < pal->frame)
+    if (frame < pal->getFrame())
       break;
 
     found = pal;
-    if (frame == pal->frame)
+    if (frame == pal->getFrame())
       break;
   }
 
@@ -430,26 +428,25 @@ void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate)
   assert(pal != NULL);
 
   if (!truncate) {
-    Palette* sprite_pal = sprite_get_palette(sprite, pal->frame);
-    palette_copy_colors(sprite_pal, pal);
+    Palette* sprite_pal = sprite_get_palette(sprite, pal->getFrame());
+    pal->copyColorsTo(sprite_pal);
   }
   else {
-    JLink link;
+    JLink link = NULL;
     Palette* other;
 
     JI_LIST_FOR_EACH(sprite->palettes, link) {
       other = reinterpret_cast<Palette*>(link->data);
 
-      if (pal->frame == other->frame) {
-	palette_copy_colors(other, pal);
+      if (pal->getFrame() == other->getFrame()) {
+	pal->copyColorsTo(other);
 	return;
       }
-      else if (pal->frame < other->frame)
+      else if (pal->getFrame() < other->getFrame())
 	break;
     }
 
-    jlist_insert_before(sprite->palettes, link,
-			palette_new_copy(pal));
+    jlist_insert_before(sprite->palettes, link, new Palette(*pal));
   }
 }
 
@@ -462,7 +459,7 @@ void sprite_reset_palettes(Sprite* sprite)
 
   JI_LIST_FOR_EACH_SAFE(sprite->palettes, link, next) {
     if (jlist_first(sprite->palettes) != link) {
-      palette_free(reinterpret_cast<Palette*>(link->data));
+      delete reinterpret_cast<Palette*>(link->data);
       jlist_delete_link(sprite->palettes, link);
     }
   }
@@ -476,7 +473,7 @@ void sprite_delete_palette(Sprite* sprite, Palette* pal)
   JLink link = jlist_find(sprite->palettes, pal);
   assert(link != NULL);
 
-  palette_free(pal);
+  delete pal;
   jlist_delete_link(sprite->palettes, link);
 }
 
@@ -816,7 +813,9 @@ static Sprite* general_copy(const Sprite* src_sprite)
   Sprite* dst_sprite;
   JLink link;
 
-  dst_sprite = sprite_new(src_sprite->imgtype, src_sprite->w, src_sprite->h);
+  dst_sprite = new Sprite(src_sprite->imgtype,
+			  src_sprite->w, src_sprite->h,
+			  sprite_get_palette(src_sprite, 0)->size());
   if (!dst_sprite)
     return NULL;
 

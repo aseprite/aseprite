@@ -503,9 +503,9 @@ void apply_convolution_matrix1(Effect *effect)
 
       GET_CONVMATR_DATA
 	(IndexedTraits,
-	 r += _rgba_getr(pal->color[color]) * (*mdata);
-	 g += _rgba_getg(pal->color[color]) * (*mdata);
-	 b += _rgba_getb(pal->color[color]) * (*mdata);
+	 r += _rgba_getr(pal->getEntry(color)) * (*mdata);
+	 g += _rgba_getg(pal->getEntry(color)) * (*mdata);
+	 b += _rgba_getb(pal->getEntry(color)) * (*mdata);
 	 index += color * (*mdata);
 	 );
 
@@ -521,21 +521,21 @@ void apply_convolution_matrix1(Effect *effect)
 	  r = MID(0, r, 255);
 	}
 	else
-	  r = _rgba_getr(pal->color[color]);
+	  r = _rgba_getr(pal->getEntry(color));
 
 	if (effect->target & TARGET_GREEN_CHANNEL) {
 	  g = g / div + matrix->bias;
 	  g = MID(0, g, 255);
 	}
 	else
-	  g = _rgba_getg(pal->color[color]);
+	  g = _rgba_getg(pal->getEntry(color));
 
 	if (effect->target & TARGET_BLUE_CHANNEL) {
 	  b = b / div + matrix->bias;
 	  b = MID(0, b, 255);
 	}
 	else
-	  b = _rgba_getb(pal->color[color]);
+	  b = _rgba_getb(pal->getEntry(color));
 
 	*(dst_address++) = orig_rgb_map->data[r>>3][g>>3][b>>3];
       }

@@ -54,7 +54,7 @@ protected:
 
 static int _sprite_counter = 0;
 
-static Sprite *new_sprite(Context* context, int imgtype, int w, int h);
+static Sprite *new_sprite(Context* context, int imgtype, int w, int h, int ncolors);
 
 NewFileCommand::NewFileCommand()
   : Command("new_file",
@@ -80,6 +80,7 @@ void NewFileCommand::execute(Context* context)
     color_rgb(255, 0, 255),
     colorbar_get_bg_color(app_get_colorbar())
   };
+  int ncolors = 256;
 
   /* load the window widget */
   FramePtr window(load_widget("newspr.jid", "new_sprite"));
@@ -146,7 +147,7 @@ void NewFileCommand::execute(Context* context)
       set_config_int("NewSprite", "Background", bg);
 
       /* create the new sprite */
-      sprite = new_sprite(UIContext::instance(), imgtype, w, h);
+      sprite = new_sprite(UIContext::instance(), imgtype, w, h, ncolors);
       if (!sprite) {
 	Console console;
 	console.printf("Not enough memory to allocate the sprite\n");
@@ -180,13 +181,13 @@ void NewFileCommand::execute(Context* context)
  * @param w Width of the sprite
  * @param h Height of the sprite
  */
-static Sprite *new_sprite(Context* context, int imgtype, int w, int h)
+static Sprite *new_sprite(Context* context, int imgtype, int w, int h, int ncolors)
 {
   assert(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
   assert(w >= 1 && w <= 9999);
   assert(h >= 1 && h <= 9999);
 
-  return sprite_new_with_layer(imgtype, w, h);
+  return sprite_new_with_layer(imgtype, w, h, ncolors);
 }
 
 //////////////////////////////////////////////////////////////////////

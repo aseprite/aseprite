@@ -172,11 +172,11 @@ void paledit_select_range(JWidget widget, int begin, int end, int range_type)
 
 static void swap_color(Palette *palette, int i1, int i2)
 {
-  ase_uint32 c1 = palette_get_entry(palette, i1);
-  ase_uint32 c2 = palette_get_entry(palette, i2);
+  ase_uint32 c1 = palette->getEntry(i1);
+  ase_uint32 c2 = palette->getEntry(i2);
 
-  palette_set_entry(palette, i2, c1);
-  palette_set_entry(palette, i1, c2);
+  palette->setEntry(i2, c1);
+  palette->setEntry(i1, c2);
 }
 
 void paledit_move_selection(JWidget widget, int x, int y)
@@ -441,9 +441,9 @@ static bool paledit_msg_proc(JWidget widget, JMessage msg)
 	  else
 	    color = makecol_depth
 	      (bitmap_color_depth(ji_screen),
-	       _rgba_getr(paledit->palette->color[c]),
-	       _rgba_getg(paledit->palette->color[c]),
-	       _rgba_getb(paledit->palette->color[c]));
+	       _rgba_getr(paledit->palette->getEntry(c)),
+	       _rgba_getg(paledit->palette->getEntry(c)),
+	       _rgba_getb(paledit->palette->getEntry(c)));
 
 	  rectfill(bmp, x, y, x+COLOR_SIZE-1, y+COLOR_SIZE-1, color);
 

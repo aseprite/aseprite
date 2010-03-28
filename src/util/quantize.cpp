@@ -32,15 +32,15 @@ static int quantize_bitmaps(Image **image, int nimage, RGB *pal, int *bmp_i, int
 
 void sprite_quantize(Sprite *sprite)
 {
-  Palette *palette = palette_new(0, MAX_PALETTE_COLORS);
+  Palette* palette = new Palette(0, 256); // TODO sprite_quantize_ex should change the number of colors of this palette
 
   sprite_quantize_ex(sprite, palette);
 
-  /* just one palette */
+  // Just one palette
   sprite_reset_palettes(sprite);
   sprite_set_palette(sprite, palette, false);
 
-  palette_free(palette);
+  delete palette;
 }
 
 void sprite_quantize_ex(Sprite *sprite, Palette *palette)
@@ -88,7 +88,7 @@ void sprite_quantize_ex(Sprite *sprite, Palette *palette)
 
       quantize_bitmaps(image_array, nimage, rgbpal, ibmp, true);
 
-      palette_from_allegro(palette, rgbpal);
+      palette->fromAllegro(rgbpal);
 
       jfree(ibmp);
     }

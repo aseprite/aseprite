@@ -104,7 +104,8 @@ void PlayAnimationCommand::execute(Context* context)
 
     newpal = sprite_get_palette(sprite, sprite->frame);
     if (oldpal != newpal) {
-      set_palette(palette_to_allegro(newpal, rgbpal));
+      newpal->toAllegro(rgbpal);
+      set_palette(rgbpal);
       oldpal = newpal;
     }
 

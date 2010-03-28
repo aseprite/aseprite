@@ -140,7 +140,7 @@ static bool copy_from_sprite(const Sprite* sprite)
     return false;
 
   Palette* pal = sprite_get_palette(sprite, sprite->frame);
-  set_clipboard(image, pal ? palette_new_copy(pal): NULL, true);
+  set_clipboard(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
 
@@ -196,7 +196,7 @@ void clipboard::copy(const SpriteReader& sprite)
 void clipboard::copy_image(Image* image, Palette* pal)
 {
   set_clipboard(image_new_copy(image),
-		pal ? palette_new_copy(pal): NULL, true);
+		pal ? new Palette(*pal): NULL, true);
 }
 
 void clipboard::paste(SpriteWriter& sprite)

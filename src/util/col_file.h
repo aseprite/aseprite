@@ -22,6 +22,6 @@
 class Palette;
 
 Palette* load_col_file(const char* filename);
-bool save_col_file(Palette* pal, const char* filename);
+bool save_col_file(const Palette* pal, const char* filename);
 
 #endif

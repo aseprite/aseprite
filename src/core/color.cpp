@@ -183,7 +183,7 @@ int color_get_red(int imgtype, color_t color)
 
     case COLOR_TYPE_MASK:
       if (imgtype == IMAGE_INDEXED)
-	return _rgba_getr(palette_get_entry(get_current_palette(), 0));
+	return _rgba_getr(get_current_palette()->getEntry(0));
       else
 	return 0;
 
@@ -203,8 +203,7 @@ int color_get_red(int imgtype, color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
-      return _rgba_getr(palette_get_entry(get_current_palette(),
-					  GET_COLOR_DATA_INDEX(color)));
+      return _rgba_getr(get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color)));
 
   }
 
@@ -218,7 +217,7 @@ int color_get_green(int imgtype, color_t color)
 
     case COLOR_TYPE_MASK:
       if (imgtype == IMAGE_INDEXED)
-	return _rgba_getg(palette_get_entry(get_current_palette(), 0));
+	return _rgba_getg(get_current_palette()->getEntry(0));
       else
 	return 0;
 
@@ -238,8 +237,7 @@ int color_get_green(int imgtype, color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
-      return _rgba_getg(palette_get_entry(get_current_palette(),
-					  GET_COLOR_DATA_INDEX(color)));
+      return _rgba_getg(get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color)));
 
   }
 
@@ -253,7 +251,7 @@ int color_get_blue(int imgtype, color_t color)
 
     case COLOR_TYPE_MASK:
       if (imgtype == IMAGE_INDEXED)
-	return _rgba_getb(palette_get_entry(get_current_palette(), 0));
+	return _rgba_getb(get_current_palette()->getEntry(0));
       else
 	return 0;
 
@@ -273,8 +271,7 @@ int color_get_blue(int imgtype, color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX:
-      return _rgba_getb(palette_get_entry(get_current_palette(),
-					  GET_COLOR_DATA_INDEX(color)));
+      return _rgba_getb(get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color)));
 
   }
 
@@ -305,8 +302,7 @@ int color_get_hue(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      ase_uint32 c = palette_get_entry(get_current_palette(),
-				       GET_COLOR_DATA_INDEX(color));
+      ase_uint32 c = get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color));
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -343,8 +339,7 @@ int color_get_saturation(int imgtype, color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      ase_uint32 c = palette_get_entry(get_current_palette(),
-				       GET_COLOR_DATA_INDEX(color));
+      ase_uint32 c = get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color));
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -381,8 +376,7 @@ int color_get_value(int imgtype, color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      ase_uint32 c = palette_get_entry(get_current_palette(),
-				       GET_COLOR_DATA_INDEX(color));
+      ase_uint32 c = get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color));
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -508,7 +502,7 @@ int get_color_for_allegro(int depth, color_t color)
     case COLOR_TYPE_INDEX:
       c = GET_COLOR_DATA_INDEX(color);
       if (depth != 8) {
-	ase_uint32 _c = palette_get_entry(get_current_palette(), c);
+	ase_uint32 _c = get_current_palette()->getEntry(c);
 	c = makeacol_depth(depth,
 			   _rgba_getr(_c),
 			   _rgba_getg(_c),
@@ -613,7 +607,7 @@ int get_color_for_image(int imgtype, color_t color)
       data = GET_COLOR_DATA_INDEX(color);
       switch (imgtype) {
 	case IMAGE_RGB: {
-	  ase_uint32 _c = palette_get_entry(get_current_palette(), data);
+	  ase_uint32 _c = get_current_palette()->getEntry(data);
 	  c = _rgba(_rgba_getr(_c),
 		    _rgba_getg(_c),
 		    _rgba_getb(_c), 255);
@@ -737,7 +731,7 @@ void color_to_formalstring(int imgtype, color_t color,
       case COLOR_TYPE_INDEX: {
 	ase_uint32 _c;
 	data = GET_COLOR_DATA_INDEX(color);
-	_c = palette_get_entry(get_current_palette(), data & 0xff);
+	_c = get_current_palette()->getEntry(data & 0xff);
 	uszprintf(buf, size, "%s %d (RGB %d %d %d)",
 		  _("Index"),
 		  data & 0xff,

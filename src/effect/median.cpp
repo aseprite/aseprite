@@ -216,9 +216,9 @@ void apply_median1(Effect *effect)
 	 data.channel[0][c] = color;
        }
        else {
-	 data.channel[0][c] = _rgba_getr(pal->color[color]);
-	 data.channel[1][c] = _rgba_getg(pal->color[color]);
-	 data.channel[2][c] = _rgba_getb(pal->color[color]);
+	 data.channel[0][c] = _rgba_getr(pal->getEntry(color));
+	 data.channel[1][c] = _rgba_getg(pal->getEntry(color));
+	 data.channel[2][c] = _rgba_getb(pal->getEntry(color));
        }
        c++;
        );
@@ -239,17 +239,17 @@ void apply_median1(Effect *effect)
       if (effect->target & TARGET_RED_CHANNEL)
 	r = data.channel[0][data.ncolors/2];
       else
-	r = _rgba_getr(pal->color[color]);
+	r = _rgba_getr(pal->getEntry(color));
 
       if (effect->target & TARGET_GREEN_CHANNEL)
 	g = data.channel[1][data.ncolors/2];
       else
-	g = _rgba_getg(pal->color[color]);
+	g = _rgba_getg(pal->getEntry(color));
 
       if (effect->target & TARGET_BLUE_CHANNEL)
 	b = data.channel[2][data.ncolors/2];
       else
-	b = _rgba_getb(pal->color[color]);
+	b = _rgba_getb(pal->getEntry(color));
 
       *(dst_address++) = orig_rgb_map->data[r>>3][g>>3][b>>3];
     }

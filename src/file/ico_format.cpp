@@ -125,9 +125,9 @@ static bool save_ICO(FileOp *fop)
       fputl(0, f);  /* color 0 is black, so the XOR mask works */
 
       for (i=1; i<256; i++) {
-	fputc(_rgba_getb(pal->color[i]), f);
-	fputc(_rgba_getg(pal->color[i]), f);
-	fputc(_rgba_getr(pal->color[i]), f);
+	fputc(_rgba_getb(pal->getEntry(i)), f);
+	fputc(_rgba_getg(pal->getEntry(i)), f);
+	fputc(_rgba_getr(pal->getEntry(i)), f);
 	fputc(0, f);
       }
     }

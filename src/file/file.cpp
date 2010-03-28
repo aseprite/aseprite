@@ -465,7 +465,7 @@ void fop_operate(FileOp *fop)
       bool loadres;
 
       /* default palette */
-      palette_black(fop->seq.palette);
+      fop->seq.palette->makeBlack();
 
        /* TODO set_palette for each frame??? */
 #define SEQUENCE_IMAGE()						\
@@ -476,9 +476,9 @@ void fop_operate(FileOp *fop)
 	fop->seq.last_cel->image = image_index;				\
 	fop->seq.layer->add_cel(fop->seq.last_cel);			\
 									\
-	if (palette_count_diff(sprite_get_palette(fop->sprite, frame),	\
-			       fop->seq.palette, NULL, NULL) > 0) {	\
-	  fop->seq.palette->frame = frame;				\
+	if (sprite_get_palette(fop->sprite, frame)			\
+	      ->countDiff(fop->seq.palette, NULL, NULL) > 0) {		\
+	  fop->seq.palette->setFrame(frame);				\
 	  sprite_set_palette(fop->sprite, fop->seq.palette, true);	\
 	}								\
 									\
@@ -626,9 +626,8 @@ void fop_operate(FileOp *fop)
 	  sprite_render(fop->sprite, fop->seq.image, 0, 0);
 
 	  /* setup the palette */
-	  palette_copy_colors(fop->seq.palette,
-			      sprite_get_palette(fop->sprite,
-						 fop->sprite->frame));
+	  sprite_get_palette(fop->sprite, fop->sprite->frame)
+	    ->copyColorsTo(fop->seq.palette);
 
 	  /* setup the filename to be used */
 	  fop->filename = reinterpret_cast<char*>
@@ -705,7 +704,7 @@ void fop_free(FileOp *fop)
   }
 
   if (fop->seq.palette != NULL)
-    palette_free(fop->seq.palette);
+    delete fop->seq.palette;
 
   if (fop->mutex)
     delete fop->mutex;
@@ -721,12 +720,12 @@ void fop_sequence_set_format_options(FileOp *fop, FormatOptions *format_options)
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 {
-  palette_set_entry(fop->seq.palette, index, _rgba(r, g, b, 255));
+  fop->seq.palette->setEntry(index, _rgba(r, g, b, 255));
 }
 
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
 {
-  ase_uint32 c = palette_get_entry(fop->seq.palette, index);
+  ase_uint32 c = fop->seq.palette->getEntry(index);
 
   *r = _rgba_getr(c);
   *g = _rgba_getg(c);
@@ -737,16 +736,16 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
 {
   Sprite* sprite;
 
-  /* create the image */
+  // Create the image
   if (!fop->sprite) {
-    sprite = sprite_new(imgtype, w, h);
+    sprite = new Sprite(imgtype, w, h, 256);
     try {
       LayerImage* layer = new LayerImage(sprite);
 
-      /* add the layer */
+      // Add the layer
       sprite->get_folder()->add_layer(layer);
 
-      /* done */
+      // Done
       fop->sprite = sprite;
       fop->seq.layer = layer;
     }
@@ -762,7 +761,7 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
       return NULL;
   }
 
-  /* create a bitmap */
+  // Create a bitmap
 
   if (fop->seq.last_cel) {
     fop_error(fop, _("Error: called two times \"fop_sequence_image()\".\n"));
@@ -890,7 +889,7 @@ static FileOp *fop_new(FileOpType type)
 static void fop_prepare_for_sequence(FileOp *fop)
 {
   fop->seq.filename_list = jlist_new();
-  fop->seq.palette = palette_new(0, MAX_PALETTE_COLORS);
+  fop->seq.palette = new Palette(0, 256);
   fop->seq.format_options = NULL;
 }
 

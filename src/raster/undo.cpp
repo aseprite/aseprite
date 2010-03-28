@@ -1439,7 +1439,7 @@ static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalet
   chunk_add_palette_new(stream, sprite, palette);
   sprite_set_palette(sprite, palette, true);
 
-  palette_free(palette);
+  delete palette;
 }
 
 /***********************************************************************
@@ -2153,13 +2153,13 @@ static Palette* read_raw_palette(ase_uint8* raw_data)
   read_raw_uint16(frame);	/* frame */
   read_raw_uint16(ncolors);	/* ncolors */
 
-  palette = palette_new(frame, ncolors);
+  palette = new Palette(frame, ncolors);
   if (!palette)
     return NULL;
 
   for (int c=0; c<ncolors; c++) {
     read_raw_uint32(color);
-    palette_set_entry(palette, c, color);
+    palette->setEntry(c, color);
   }
 
   return palette;
@@ -2171,11 +2171,11 @@ static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette)
   ase_uint16 word;
   ase_uint32 color;
 
-  write_raw_uint16(palette->frame);	/* frame */
-  write_raw_uint16(palette->ncolors);	/* ncolors*/
+  write_raw_uint16(palette->getFrame()); // frame
+  write_raw_uint16(palette->size());	 // number of colors
 
-  for (int c=0; c<palette->ncolors; c++) {
-    color = palette_get_entry(palette, c);
+  for (int c=0; c<palette->size(); c++) {
+    color = palette->getEntry(c);
     write_raw_uint32(color);
   }
 
@@ -2185,7 +2185,7 @@ static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette)
 static int get_raw_palette_size(Palette* palette)
 {
   // 2 WORD + 4 BYTES*ncolors
-  return 2*2 + 4*palette->ncolors;
+  return 2*2 + 4*palette->size();
 }
 
 

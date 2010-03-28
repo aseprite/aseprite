@@ -96,14 +96,14 @@ static bool load_GIF(FileOp *fop)
 
   current_image = image_new(IMAGE_INDEXED, gif->width, gif->height);
   current_image_old = image_new(IMAGE_INDEXED, gif->width, gif->height);
-  opal = palette_new(0, MAX_PALETTE_COLORS);
-  npal = palette_new(0, MAX_PALETTE_COLORS);
+  opal = new Palette(0, 256);
+  npal = new Palette(0, 256);
   if (!current_image || !current_image_old || !opal || !npal) {
     fop_error(fop, _("Error creating temporary image.\n"));
     goto error;
   }
 
-  sprite = sprite_new(IMAGE_INDEXED, gif->width, gif->height);
+  sprite = new Sprite(IMAGE_INDEXED, gif->width, gif->height, 256);
   if (!sprite) {
     fop_error(fop, _("Error creating sprite.\n"));
     goto error;
@@ -135,26 +135,26 @@ static bool load_GIF(FileOp *fop)
 
     /* make the palette */
     for (c=0; c<pal->colors_count; c++) {
-      palette_set_entry(npal, c, _rgba(pal->colors[c].r,
-				       pal->colors[c].g,
-				       pal->colors[c].b, 255));
+      npal->setEntry(c, _rgba(pal->colors[c].r,
+			      pal->colors[c].g,
+			      pal->colors[c].b, 255));
     }
     if (i == 0)
       for (; c<256; c++)
-	palette_set_entry(npal, c, _rgba(0, 0, 0, 255));
+	npal->setEntry(c, _rgba(0, 0, 0, 255));
     else
       for (; c<256; c++) {
-	palette_set_entry(npal, c, palette_get_entry(opal, c));
+	npal->setEntry(c, opal->getEntry(c));
       }
 
     /* first frame or palette changes */
-    if (i == 0 || palette_count_diff(opal, npal, NULL, NULL)) {
-      npal->frame = i;
+    if (i == 0 || opal->countDiff(npal, NULL, NULL)) {
+      npal->setFrame(i);
       sprite_set_palette(sprite, npal, true);
     }
 
     /* copy new palette to old palette */
-    palette_copy_colors(opal, npal);
+    npal->copyColorsTo(opal);
 
     cel = cel_new(i, 0);
     image = image_new(IMAGE_INDEXED,
@@ -252,8 +252,8 @@ error:;
   if (gif) gif_destroy_animation(gif);
   if (current_image) image_free(current_image);
   if (current_image_old) image_free(current_image_old);
-  if (npal) palette_free(npal);
-  if (opal) palette_free(opal);
+  if (npal) delete npal;
+  if (opal) delete opal;
   delete sprite;
   return ret;
 }
@@ -337,9 +337,9 @@ static bool save_GIF(FileOp *fop)
       /* TODO: don't use 256 colors, but only as much as needed. */
       gif->palette.colors_count = max_used_index(bmp)+1;
       for (c=0; c<gif->palette.colors_count; ++c) {
-	gif->palette.colors[c].r = _rgba_getr(npal->color[c]);
-	gif->palette.colors[c].g = _rgba_getg(npal->color[c]);
-	gif->palette.colors[c].b = _rgba_getb(npal->color[c]);
+	gif->palette.colors[c].r = _rgba_getr(npal->getEntry(c));
+	gif->palette.colors[c].g = _rgba_getg(npal->getEntry(c));
+	gif->palette.colors[c].b = _rgba_getb(npal->getEntry(c));
       }
 
       /* render all */
@@ -407,9 +407,9 @@ static bool save_GIF(FileOp *fop)
       if (opal != npal) {
 	gif->frames[i].palette.colors_count = max_used_index(bmp)+1;
 	for (c=0; c<gif->frames[i].palette.colors_count; ++c) {
-	  gif->frames[i].palette.colors[c].r = _rgba_getr(npal->color[c]);
-	  gif->frames[i].palette.colors[c].g = _rgba_getg(npal->color[c]);
-	  gif->frames[i].palette.colors[c].b = _rgba_getb(npal->color[c]);
+	  gif->frames[i].palette.colors[c].r = _rgba_getr(npal->getEntry(c));
+	  gif->frames[i].palette.colors[c].g = _rgba_getg(npal->getEntry(c));
+	  gif->frames[i].palette.colors[c].b = _rgba_getb(npal->getEntry(c));
 	}
       }
     }

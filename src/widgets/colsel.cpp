@@ -378,7 +378,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 	int r = color_get_red  (IMAGE_RGB, color);
 	int g = color_get_green(IMAGE_RGB, color);
 	int b = color_get_blue (IMAGE_RGB, color);
-	int i = palette_find_bestfit(get_current_palette(), r, g, b);
+	int i = get_current_palette()->findBestfit(r, g, b);
 	if (i >= 0 && i < 256)
 	  colorselector_set_paledit_index(widget, i, true);
 	else
@@ -495,7 +495,7 @@ static bool slider_change_hook(JWidget widget, void* data)
   /* if the palette is locked then we have to search for the closest
      color to the RGB values */
   if (colorselector->palette_locked) {
-    i = palette_find_bestfit(get_current_palette(), r, g, b);
+    i = get_current_palette()->findBestfit(r, g, b);
     if (i >= 0 && i < 256)
       colorselector_set_paledit_index(window, i, true);
   }

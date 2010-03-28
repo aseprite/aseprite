@@ -325,7 +325,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 	PALETTE rgbpal;
 	Palette *pal = sprite_get_palette(m_sprite,
 					  m_sprite->frame);
-	palette_to_allegro(pal, rgbpal);
+	pal->toAllegro(rgbpal);
 
 	select_palette(rgbpal);
 	image_to_allegro(rendered, ji_screen, dest_x, dest_y);

@@ -52,7 +52,7 @@ Palette *load_col_file(const char *filename)
 
   /* Animator format */
   if (!pro) {
-    pal = palette_new(0, MAX_PALETTE_COLORS);
+    pal = new Palette(0, 256);
 
     for (c=0; c<256; c++) {
       r = fgetc(f);
@@ -61,10 +61,9 @@ Palette *load_col_file(const char *filename)
       if (ferror(f))
 	break;
 
-      palette_set_entry(pal, c,
-			_rgba(_rgb_scale_6[MID(0, r, 63)],
-			      _rgb_scale_6[MID(0, g, 63)],
-			      _rgb_scale_6[MID(0, b, 63)], 255));
+      pal->setEntry(c, _rgba(_rgb_scale_6[MID(0, r, 63)],
+			     _rgb_scale_6[MID(0, g, 63)],
+			     _rgb_scale_6[MID(0, b, 63)], 255));
     }
   }
   /* Animator Pro format */
@@ -81,19 +80,18 @@ Palette *load_col_file(const char *filename)
       return NULL;
     }
 
-    pal = palette_new(0, MIN(d.quot, MAX_PALETTE_COLORS));
+    pal = new Palette(0, MIN(d.quot, 256));
 
-    for (c=0; c<pal->ncolors; c++) {
+    for (c=0; c<pal->size(); c++) {
       r = fgetc(f);
       g = fgetc(f);
       b = fgetc(f);
       if (ferror(f))
 	break;
 
-      palette_set_entry(pal, c,
-			_rgba(MID(0, r, 255),
-			      MID(0, g, 255),
-			      MID(0, b, 255), 255));
+      pal->setEntry(c, _rgba(MID(0, r, 255),
+			     MID(0, g, 255),
+			     MID(0, b, 255), 255));
     }
   }
 
@@ -102,7 +100,7 @@ Palette *load_col_file(const char *filename)
 }
 
 /* saves an Animator Pro COL file */
-bool save_col_file(Palette *pal, const char *filename)
+bool save_col_file(const Palette *pal, const char *filename)
 {
   FILE *f = fopen(filename, "wb");
   if (!f)
@@ -113,8 +111,8 @@ bool save_col_file(Palette *pal, const char *filename)
   fputw(0, f);			   /* version file */
 
   ase_uint32 c;
-  for (int i=0; i<MAX_PALETTE_COLORS; i++) {
-    c = palette_get_entry(pal, i);
+  for (int i=0; i<256; i++) {
+    c = pal->getEntry(i);
 
     fputc(_rgba_getr(c), f);
     fputc(_rgba_getg(c), f);

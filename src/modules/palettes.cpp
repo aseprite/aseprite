@@ -59,11 +59,11 @@ int init_module_palette()
   rgb_map = my_rgb_map;
   color_map = NULL;
 
-  ase_default_palette = palette_new(0, MAX_PALETTE_COLORS);
-  palette_from_allegro(ase_default_palette, default_palette);
+  ase_default_palette = new Palette(0, 256);
+  ase_default_palette->fromAllegro(default_palette);
 
-  ase_current_palette = palette_new(0, MAX_PALETTE_COLORS);
-  palette_from_allegro(ase_current_palette, black_palette);
+  ase_current_palette = new Palette(0, 256);
+  ase_current_palette->fromAllegro(black_palette);
 
   return 0;
 }
@@ -73,10 +73,10 @@ void exit_module_palette()
   rgb_map = NULL;
 
   if (ase_default_palette != NULL)
-    palette_free(ase_default_palette);
+    delete ase_default_palette;
 
   if (ase_current_palette != NULL)
-    palette_free(ase_current_palette);
+    delete ase_current_palette;
 
   jfree(my_rgb_map);
   jfree(orig_trans_map);
@@ -93,9 +93,9 @@ Palette *get_default_palette()
   return ase_default_palette;
 }
 
-void set_default_palette(Palette *palette)
+void set_default_palette(Palette* palette)
 {
-  palette_copy_colors(ase_default_palette, palette);
+  palette->copyColorsTo(ase_default_palette);
 }
 
 /**
@@ -111,14 +111,15 @@ bool set_current_palette(Palette *_palette, bool forced)
 
   /* have changes */
   if (forced ||
-      palette_count_diff(palette, ase_current_palette, NULL, NULL) > 0) {
+      palette->countDiff(ase_current_palette, NULL, NULL) > 0) {
     PALETTE rgbpal;
 
     /* copy current palette */
-    palette_copy_colors(ase_current_palette, palette);
+    palette->copyColorsTo(ase_current_palette);
 
     /* create a RGB map for the original palette */
-    create_rgb_table(orig_rgb_map, palette_to_allegro(palette, rgbpal), NULL);
+    palette->toAllegro(rgbpal);
+    create_rgb_table(orig_rgb_map, rgbpal, NULL);
 
     /* create a transparency-map with the original palette */
     rgb_map = orig_rgb_map;
@@ -140,9 +141,9 @@ bool set_current_palette(Palette *_palette, bool forced)
 
 void set_black_palette()
 {
-  Palette *p = palette_new(0, MAX_PALETTE_COLORS);
+  Palette* p = new Palette(0, 256);
   set_current_palette(p, true);
-  palette_free(p);
+  delete p;
 }
 
 /* changes a color of the current system palette */
@@ -155,14 +156,14 @@ void set_current_color(int index, int r, int g, int b)
   assert(g >= 0 && g <= 255);
   assert(b >= 0 && b <= 255);
 
-  c = ase_current_palette->color[index];
+  c = ase_current_palette->getEntry(index);
 
   if (_rgba_getr(c) != r ||
       _rgba_getg(c) != g ||
       _rgba_getb(c) != b) {
     RGB rgb;
 
-    ase_current_palette->color[index] = _rgba(r, g, b, 255);
+    ase_current_palette->setEntry(index, _rgba(r, g, b, 255));
 
     rgb.r = r>>2;
     rgb.g = g>>2;

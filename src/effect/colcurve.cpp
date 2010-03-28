@@ -356,9 +356,9 @@ void apply_color_curve1(Effect *effect)
     if (effect->target & TARGET_INDEX_CHANNEL)
       c = data.cmap[c];
     else {
-      r = _rgba_getr(pal->color[c]);
-      g = _rgba_getg(pal->color[c]);
-      b = _rgba_getb(pal->color[c]);
+      r = _rgba_getr(pal->getEntry(c));
+      g = _rgba_getg(pal->getEntry(c));
+      b = _rgba_getb(pal->getEntry(c));
 
       if (effect->target & TARGET_RED_CHANNEL) r = data.cmap[r];
       if (effect->target & TARGET_GREEN_CHANNEL) g = data.cmap[g];

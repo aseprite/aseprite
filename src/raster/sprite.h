@@ -97,7 +97,7 @@ public:
   // Data to save the file in the same format that it was loaded
   FormatOptions *format_options;
 
-  Sprite(int imgtype, int w, int h);
+  Sprite(int imgtype, int w, int h, int ncolors);
   virtual ~Sprite();
 
   bool lock(bool write);
@@ -113,9 +113,8 @@ public:
   void set_extras_opacity(int opacity) { m_extras_opacity = opacity; }
 };
 
-Sprite* sprite_new(int imgtype, int w, int h);
 Sprite* sprite_new_flatten_copy(const Sprite* src_sprite);
-Sprite* sprite_new_with_layer(int imgtype, int w, int h);
+Sprite* sprite_new_with_layer(int imgtype, int w, int h, int ncolors);
 
 bool sprite_is_modified(const Sprite* sprite);
 bool sprite_is_associated_to_file(const Sprite* sprite);

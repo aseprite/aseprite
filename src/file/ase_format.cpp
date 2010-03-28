@@ -54,6 +54,8 @@ typedef struct ASE_Header
   ase_uint16 speed;	/* deprecated, use "duration" of FrameHeader */
   ase_uint32 next;
   ase_uint32 frit;
+  ase_uint16 unknown;
+  ase_uint16 ncolors;
 } ASE_Header;
 
 typedef struct ASE_FrameHeader
@@ -144,9 +146,9 @@ static bool load_ASE(FileOp *fop)
   }
 
   /* create the new sprite */
-  sprite = sprite_new(header.depth == 32 ? IMAGE_RGB:
+  sprite = new Sprite(header.depth == 32 ? IMAGE_RGB:
 		      header.depth == 16 ? IMAGE_GRAYSCALE: IMAGE_INDEXED,
-		      header.width, header.height);
+		      header.width, header.height, header.ncolors);
   if (!sprite) {
     fop_error(fop, _("Error creating sprite with file spec\n"));
     fclose(f);
@@ -200,11 +202,11 @@ static bool load_ASE(FileOp *fop)
 		ase_file_read_color_chunk(f, sprite, frame):
 		ase_file_read_color2_chunk(f, sprite, frame);
 
-	      if (palette_count_diff(prev_pal, pal, NULL, NULL) > 0) {
+	      if (prev_pal->countDiff(pal, NULL, NULL) > 0) {
 		sprite_set_palette(sprite, pal, true);
 	      }
 
-	      palette_free(pal);
+	      delete pal;
 	    }
 	    else
 	      fop_error(fop, _("Warning: was found a color chunk in non-8bpp file\n"));
@@ -306,8 +308,7 @@ static bool save_ASE(FileOp *fop)
     /* the sprite is indexed and the palette changes? (or is the first frame) */
     if (sprite->imgtype == IMAGE_INDEXED &&
 	(frame == 0 ||
-	 palette_count_diff(sprite_get_palette(sprite, frame-1),
-			    sprite_get_palette(sprite, frame), NULL, NULL) > 0)) {
+	 sprite_get_palette(sprite, frame-1)->countDiff(sprite_get_palette(sprite, frame), NULL, NULL) > 0)) {
       /* write the color chunk */
       ase_file_write_color2_chunk(f, sprite_get_palette(sprite, frame));
     }
@@ -368,6 +369,10 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   header->speed      = fgetw(f);
   header->next       = fgetl(f);
   header->frit       = fgetl(f);
+  header->unknown    = fgetw(f);
+  header->ncolors    = fgetw(f);
+  if (header->ncolors == 0)	// 0 means 256 (old .ase files)
+    header->ncolors = 256;
 
   fseek(f, header->pos+128, SEEK_SET);
   return true;
@@ -389,6 +394,8 @@ static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
   header->speed = sprite_get_frlen(sprite, 0);
   header->next = 0;
   header->frit = 0;
+  header->unknown = 0;
+  header->ncolors = sprite_get_palette(sprite, 0)->size();
 
   fseek(f, header->pos+128, SEEK_SET);
 }
@@ -409,8 +416,8 @@ static void ase_file_write_header(FILE *f, ASE_Header *header)
   fputw(header->speed, f);
   fputl(header->next, f);
   fputl(header->frit, f);
-
-  ase_file_write_padding(f, 96);
+  fputw(header->unknown, f);
+  fputw(header->ncolors, f);
 
   fseek(f, header->pos+header->size, SEEK_SET);
 }
@@ -551,13 +558,13 @@ static void ase_file_write_close_chunk(FILE *f)
 static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
 {
   int i, c, r, g, b, packets, skip, size;
-  Palette *pal = palette_new(frame, MAX_PALETTE_COLORS);
-  palette_copy_colors(pal, sprite_get_palette(sprite, frame));
+  Palette* pal = new Palette(frame, 256);
+  sprite_get_palette(sprite, frame)->copyColorsTo(pal);
 
-  packets = fgetw(f);	/* number of packets */
+  packets = fgetw(f);	// Number of packets
   skip = 0;
 
-  /* read all packets */
+  // Read all packets
   for (i=0; i<packets; i++) {
     skip += fgetc(f);
     size = fgetc(f);
@@ -567,10 +574,9 @@ static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
       r = fgetc(f);
       g = fgetc(f);
       b = fgetc(f);
-      palette_set_entry(pal, c,
-			_rgba(_rgb_scale_6[r],
-			      _rgb_scale_6[g],
-			      _rgb_scale_6[b], 255));
+      pal->setEntry(c, _rgba(_rgb_scale_6[r],
+			     _rgb_scale_6[g],
+			     _rgb_scale_6[b], 255));
     }
   }
 
@@ -580,8 +586,8 @@ static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
 static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame)
 {
   int i, c, r, g, b, packets, skip, size;
-  Palette *pal = palette_new(frame, MAX_PALETTE_COLORS);
-  palette_copy_colors(pal, sprite_get_palette(sprite, frame));
+  Palette* pal = new Palette(frame, 256);
+  sprite_get_palette(sprite, frame)->copyColorsTo(pal);
 
   packets = fgetw(f);	/* number of packets */
   skip = 0;
@@ -596,7 +602,7 @@ static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame)
       r = fgetc(f);
       g = fgetc(f);
       b = fgetc(f);
-      palette_set_entry(pal, c, _rgba(r, g, b, 255));
+      pal->setEntry(c, _rgba(r, g, b, 255));
     }
   }
 
@@ -613,8 +619,8 @@ static void ase_file_write_color2_chunk(FILE *f, Palette *pal)
   fputw(1, f);
   fputc(0, f);
   fputc(0, f);
-  for (c=0; c<MAX_PALETTE_COLORS; c++) {
-    color = palette_get_entry(pal, c);
+  for (c=0; c<256; c++) {
+    color = pal->getEntry(c);
 
     fputc(_rgba_getr(color), f);
     fputc(_rgba_getg(color), f);

@@ -138,13 +138,13 @@ static void ink_hline8_transparent(int x1, int y, int x2, IToolLoop* loop)
 {
   Palette* pal = get_current_palette();
   ase_uint32 c;
-  ase_uint32 tc = pal->color[loop->getPrimaryColor()];
+  ase_uint32 tc = pal->getEntry(loop->getPrimaryColor());
   int opacity = loop->getOpacity();
 
   DEFINE_INK_PROCESSING_SRCDST
     (IndexedTraits,
      {
-       c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
+       c = _rgba_blend_normal(pal->getEntry(*src_address), tc, opacity);
        *dst_address = orig_rgb_map->data
 	 [_rgba_getr(c)>>3]
 	 [_rgba_getg(c)>>3]
@@ -275,7 +275,7 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 	  color = *src_address2;
 	  a += (color == 0 ? 0: 255);
 
-	  color = pal->color[color];
+	  color = pal->getEntry(color);
 	  r += _rgba_getr(color);
 	  g += _rgba_getg(color);
 	  b += _rgba_getb(color);
@@ -287,7 +287,7 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 	 g /= c;
 	 b /= c;
 
-	 c = pal->color[*src_address];
+	 c = pal->getEntry(*src_address);
 	 r = _rgba_getr(c) + (r-_rgba_getr(c)) * opacity / 255;
 	 g = _rgba_getg(c) + (g-_rgba_getg(c)) * opacity / 255;
 	 b = _rgba_getb(c) + (b-_rgba_getb(c)) * opacity / 255;
@@ -335,13 +335,13 @@ static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
   int color1 = loop->getPrimaryColor();
   Palette *pal = get_current_palette();
   ase_uint32 c;
-  ase_uint32 tc = pal->color[loop->getSecondaryColor()];
+  ase_uint32 tc = pal->getEntry(loop->getSecondaryColor());
   int opacity = loop->getOpacity();
 
   DEFINE_INK_PROCESSING_SRCDST
     (IndexedTraits,
      if (*src_address == color1) {
-       c = _rgba_blend_normal(pal->color[*src_address], tc, opacity);
+       c = _rgba_blend_normal(pal->getEntry(*src_address), tc, opacity);
        *dst_address = orig_rgb_map->data
 	 [_rgba_getr(c)>>3]
 	 [_rgba_getg(c)>>3]
@@ -424,8 +424,8 @@ static void ink_hline8_jumble(int x1, int y, int x2, IToolLoop* loop)
      {
        JUMBLE_XY_IN_UV();
 
-       tc = color != 0 ? pal->color[color]: 0;
-       c = _rgba_blend_MERGE(*src_address != 0 ? pal->color[*src_address]: 0,
+       tc = color != 0 ? pal->getEntry(color): 0;
+       c = _rgba_blend_MERGE(*src_address != 0 ? pal->getEntry(*src_address): 0,
 			     tc, opacity);
 
        if (_rgba_geta(c) >= 128)

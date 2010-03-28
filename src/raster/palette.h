@@ -19,49 +19,53 @@
 #ifndef RASTER_PALETTE_H_INCLUDED
 #define RASTER_PALETTE_H_INCLUDED
 
-#include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 #include <allegro/color.h>
-
-#define MAX_PALETTE_COLORS	256
+#include <vector>
+#include <cassert>
 
 class Palette : public GfxObj
 {
 public:
-  int frame;
-  int ncolors;
-  ase_uint32 color[MAX_PALETTE_COLORS];
-
-  Palette(int frame, int ncolors);
+  Palette(int frame, size_t ncolors);
   Palette(const Palette& palette);
-  virtual ~Palette();
+  ~Palette();
+
+  static Palette* createGrayscale();
+
+  size_t size() const { return m_colors.size(); }
+  void resize(size_t ncolors);
+
+  int getFrame() const { return m_frame; }
+  void setFrame(int frame);
+
+  ase_uint32 getEntry(size_t i) const {
+    assert(i >= 0 && i < size());
+    return m_colors[i];
+  }
+
+  void setEntry(size_t i, ase_uint32 color);
+
+  void copyColorsTo(Palette* dst) const;
+
+  int countDiff(const Palette* other, int* from, int* to) const;
+
+  void makeBlack();
+  void makeHorzRamp(int from, int to);
+  void makeVertRamp(int from, int to, int columns);
+  void makeRectRamp(int from, int to, int columns);
+
+  void toAllegro(RGB* rgb) const;
+  void fromAllegro(const RGB* rgb);
+
+  static Palette* load(const char *filename);
+  bool save(const char *filename) const;
+
+  int findBestfit(int r, int g, int b) const;
+
+private:
+  int m_frame;
+  std::vector<ase_uint32> m_colors;
 };
-
-Palette* palette_new(int frame, int ncolors);
-Palette* palette_new_copy(const Palette* pal);
-void palette_free(Palette* pal);
-
-void palette_black(Palette* pal);
-
-void palette_copy_colors(Palette* pal, const Palette* src);
-int palette_count_diff(const Palette* p1, const Palette* p2, int *from, int *to);
-
-void palette_set_ncolors(Palette* pal, int ncolors);
-void palette_set_frame(Palette* pal, int frame);
-
-ase_uint32 palette_get_entry(const Palette* pal, int i);
-void palette_set_entry(Palette* pal, int i, ase_uint32 color);
-
-void palette_make_horz_ramp(Palette* palette, int from, int to);
-void palette_make_vert_ramp(Palette* palette, int from, int to, int columns);
-void palette_make_rect_ramp(Palette* palette, int from, int to, int columns);
-
-struct RGB *palette_to_allegro(const Palette* pal, struct RGB *rgb);
-Palette* palette_from_allegro(Palette* pal, const struct RGB *rgb);
-
-Palette* palette_load(const char *filename);
-bool palette_save(Palette* palette, const char *filename);
-
-int palette_find_bestfit(const Palette* pal, int r, int g, int b);
 
 #endif

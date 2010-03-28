@@ -94,7 +94,7 @@ void LoadPalette(Sprite* sprite, const char *filename)
 
   for (dir=dirs; dir; dir=dir->next) {
     if (exists(dir->path)) {
-      Palette *pal = palette_load(dir->path);
+      Palette *pal = Palette::load(dir->path);
       if (pal != NULL) {
 	/* set the palette calling the hooks */
 	set_current_palette(pal, false);

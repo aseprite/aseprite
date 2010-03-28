@@ -782,7 +782,7 @@ static void openfile_bg(void *_data)
       delete fop->sprite;
     else {
       /* the palette to convert the Image to a BITMAP */
-      palette_to_allegro(sprite_get_palette(sprite, 0), data->rgbpal);
+      sprite_get_palette(sprite, 0)->toAllegro(data->rgbpal);
 
       /* render the 'sprite' in one plain 'image' */
       image = image_new(sprite->imgtype, sprite->w, sprite->h);

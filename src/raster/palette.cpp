@@ -28,87 +28,83 @@
 
 //////////////////////////////////////////////////////////////////////
 
-Palette::Palette(int frame, int ncolors)
+Palette::Palette(int frame, size_t ncolors)
   : GfxObj(GFXOBJ_PALETTE)
 {
-  assert(ncolors >= 1 && ncolors <= MAX_PALETTE_COLORS);
+  assert(ncolors >= 1 && ncolors <= 256);
 
-  this->frame = frame;
-  this->ncolors = ncolors;
+  m_frame = frame;
+  m_colors.resize(ncolors);
 
-  std::fill(this->color,
-	    this->color+MAX_PALETTE_COLORS,
-	    _rgba(0, 0, 0, 255));
+  std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));
 }
 
 Palette::Palette(const Palette& palette)
   : GfxObj(palette)
 {
-  this->frame = palette.frame;
-  this->ncolors = palette.ncolors;
-
-  std::copy(palette.color,
-	    palette.color+MAX_PALETTE_COLORS,
-	    this->color);
+  m_frame = palette.m_frame;
+  m_colors = palette.m_colors;
 }
 
 Palette::~Palette()
 {
 }
 
-//////////////////////////////////////////////////////////////////////
-
-Palette* palette_new(int frame, int ncolors)
+Palette* Palette::createGrayscale()
 {
-  return new Palette(frame, ncolors);
+  Palette* graypal = new Palette(0, 256);
+  for (int c=0; c<256; c++)
+    graypal->setEntry(c, _rgba(c, c, c, 255));
+  return graypal;
 }
 
-Palette* palette_new_copy(const Palette* pal)
+void Palette::resize(size_t ncolors)
 {
-  assert(pal);
-  return new Palette(*pal);
+  assert(ncolors >= 1 && ncolors <= 256);
+
+  size_t old_size = m_colors.size();
+  m_colors.resize(ncolors);
+
+  if (m_colors.size() > old_size) {
+    // Fill new colors with black
+    std::fill(m_colors.begin()+old_size,
+	      m_colors.begin()+m_colors.size(),
+	      _rgba(0, 0, 0, 255));
+  }
 }
 
-void palette_free(Palette* palette)
+void Palette::setFrame(int frame)
 {
-  delete palette;
+  assert(frame >= 0);
+
+  m_frame = frame;
 }
 
-void palette_black(Palette* pal)
+void Palette::setEntry(size_t i, ase_uint32 color)
 {
-  int c;
+  assert(i >= 0 && i < size());
+  assert(_rgba_geta(color) == 255);
 
-  for (c=0; c<MAX_PALETTE_COLORS; ++c)
-    pal->color[c] = 0;
+  m_colors[i] = color;
 }
 
-/**
- * Copies the color of both palettes.
- */
-void palette_copy_colors(Palette* pal, const Palette* src)
+void Palette::copyColorsTo(Palette* dst) const
 {
-  int c;
-
-  /* don't copy the frame property "pal->frame = src->frame;" !... */
-
-  /* just copy the colors */
-  pal->ncolors = src->ncolors;
-  for (c=0; c<MAX_PALETTE_COLORS; ++c)
-    pal->color[c] = src->color[c];
+  dst->m_colors = m_colors;
 }
 
-int palette_count_diff(const Palette* p1, const Palette* p2, int *from, int *to)
+int Palette::countDiff(const Palette* other, int* from, int* to) const
 {
   register int c, diff = 0;
-  int min = MIN(p1->ncolors, p2->ncolors);
-  int max = MAX(p1->ncolors, p2->ncolors);
+  int min = MIN(this->m_colors.size(), other->m_colors.size());
+  int max = MAX(this->m_colors.size(), other->m_colors.size());
 
   if (from) *from = -1;
   if (to) *to = -1;
 
-  /* compare palettes */
+  // Compare palettes
   for (c=0; c<min; ++c) {
-    if (p1->color[c] != p2->color[c]) {
+    if (this->m_colors[c] != other->m_colors[c]) {
       if (from && *from < 0) *from = c;
       if (to) *to = c;
       ++diff;
@@ -123,56 +119,13 @@ int palette_count_diff(const Palette* p1, const Palette* p2, int *from, int *to)
   return diff;
 }
 
-void palette_set_ncolors(Palette* pal, int ncolors)
+void Palette::makeBlack()
 {
-  int i;
-
-  assert(pal != NULL);
-  assert(ncolors >= 1 && ncolors <= MAX_PALETTE_COLORS);
-
-  if (pal->ncolors != ncolors) {
-    if (pal->ncolors > ncolors) {
-      for (i=pal->ncolors-1; i>=ncolors; --i) {
-	pal->color[i] = _rgba(0, 0, 0, 255);
-      }
-    }
-    else {
-      for (i=pal->ncolors; i<ncolors; ++i) {
-	pal->color[i] = _rgba(0, 0, 0, 255);
-      }
-    }
-
-    pal->ncolors = ncolors;
-  }
+  std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));
 }
 
-void palette_set_frame(Palette* pal, int frame)
-{
-  assert(pal != NULL);
-  assert(frame >= 0);
-
-  pal->frame = frame;
-}
-
-ase_uint32 palette_get_entry(const Palette* pal, int i)
-{
-  assert(pal != NULL);
-  assert(i >= 0 && i < MAX_PALETTE_COLORS);
-
-  return pal->color[i];
-}
-
-void palette_set_entry(Palette* pal, int i, ase_uint32 color)
-{
-  assert(pal != NULL);
-  assert(i >= 0 && i < pal->ncolors);
-  assert(_rgba_geta(color) == 255);
-
-  pal->color[i] = color;
-}
-
-/* creates a linear ramp in the palette */
-void palette_make_horz_ramp(Palette* p, int from, int to)
+// Creates a linear ramp in the palette.
+void Palette::makeHorzRamp(int from, int to)
 {
   int r, g, b;
   int r1, g1, b1;
@@ -192,22 +145,22 @@ void palette_make_horz_ramp(Palette* p, int from, int to)
   if (n < 2)
     return;
 
-  r1 = _rgba_getr(p->color[from]);
-  g1 = _rgba_getg(p->color[from]);
-  b1 = _rgba_getb(p->color[from]);
-  r2 = _rgba_getr(p->color[to]);
-  g2 = _rgba_getg(p->color[to]);
-  b2 = _rgba_getb(p->color[to]);
+  r1 = _rgba_getr(getEntry(from));
+  g1 = _rgba_getg(getEntry(from));
+  b1 = _rgba_getb(getEntry(from));
+  r2 = _rgba_getr(getEntry(to));
+  g2 = _rgba_getg(getEntry(to));
+  b2 = _rgba_getb(getEntry(to));
 
   for (i=from+1; i<to; ++i) {
     r = r1 + (r2-r1) * (i-from) / n;
     g = g1 + (g2-g1) * (i-from) / n;
     b = b1 + (b2-b1) * (i-from) / n;
-    p->color[i] = _rgba(r, g, b, 255);
+    setEntry(i, _rgba(r, g, b, 255));
   }
 }
 
-void palette_make_vert_ramp(Palette* p, int from, int to, int columns)
+void Palette::makeVertRamp(int from, int to, int columns)
 {
   int r, g, b;
   int r1, g1, b1;
@@ -234,12 +187,12 @@ void palette_make_vert_ramp(Palette* p, int from, int to, int columns)
   if (n < 2)
     return;
 
-  r1 = _rgba_getr(p->color[from]);
-  g1 = _rgba_getg(p->color[from]);
-  b1 = _rgba_getb(p->color[from]);
-  r2 = _rgba_getr(p->color[to]);
-  g2 = _rgba_getg(p->color[to]);
-  b2 = _rgba_getb(p->color[to]);
+  r1 = _rgba_getr(getEntry(from));
+  g1 = _rgba_getg(getEntry(from));
+  b1 = _rgba_getb(getEntry(from));
+  r2 = _rgba_getr(getEntry(to));
+  g2 = _rgba_getg(getEntry(to));
+  b2 = _rgba_getb(getEntry(to));
 
   offset = from % columns;
 
@@ -247,12 +200,12 @@ void palette_make_vert_ramp(Palette* p, int from, int to, int columns)
     r = r1 + (r2-r1) * (y-ybeg) / n;
     g = g1 + (g2-g1) * (y-ybeg) / n;
     b = b1 + (b2-b1) * (y-ybeg) / n;
-    p->color[y*columns+offset] = _rgba(r, g, b, 255);
+    setEntry(y*columns+offset, _rgba(r, g, b, 255));
   }
 }
 
-/* creates a rectangular ramp in the palette */
-void palette_make_rect_ramp(Palette* p, int from, int to, int columns)
+// Creates a rectangular ramp in the palette
+void Palette::makeRectRamp(int from, int to, int columns)
 {
   int x1, y1, x2, y2, y;
 
@@ -265,12 +218,12 @@ void palette_make_rect_ramp(Palette* p, int from, int to, int columns)
   x2 = to % columns;
   y2 = to / columns;
 
-  palette_make_vert_ramp(p, from, y2*columns+x1, columns);
+  makeVertRamp(from, y2*columns+x1, columns);
   if (x1 < x2) {
-    palette_make_vert_ramp(p, y1*columns+x2, to, columns);
+    makeVertRamp(y1*columns+x2, to, columns);
     if (x2 - x1 >= 2)
       for (y=y1; y<=y2; ++y)
-	palette_make_horz_ramp(p, y*columns+x1, y*columns+x2);
+	makeHorzRamp(y*columns+x1, y*columns+x2);
   }
 
 }
@@ -281,30 +234,33 @@ void palette_make_rect_ramp(Palette* p, int from, int to, int columns)
  *
  * @return The same @a rgb pointer specified in the parameters.
  */
-RGB *palette_to_allegro(const Palette* pal, RGB *rgb)
+void Palette::toAllegro(RGB *rgb) const
 {
   int i;
-  for (i=0; i<MAX_PALETTE_COLORS; ++i) {
-    rgb[i].r = _rgba_getr(pal->color[i]) / 4;
-    rgb[i].g = _rgba_getg(pal->color[i]) / 4;
-    rgb[i].b = _rgba_getb(pal->color[i]) / 4;
+  for (i=0; i<256; ++i) {
+    rgb[i].r = _rgba_getr(m_colors[i]) / 4;
+    rgb[i].g = _rgba_getg(m_colors[i]) / 4;
+    rgb[i].b = _rgba_getb(m_colors[i]) / 4;
   }
-  return rgb;
+  for (; i<256; ++i) {
+    rgb[i].r = 0;
+    rgb[i].g = 0;
+    rgb[i].b = 0;
+  }
 }
 
-Palette* palette_from_allegro(Palette* pal, const struct RGB *rgb)
+void Palette::fromAllegro(const RGB* rgb)
 {
   int i;
-  pal->ncolors = MAX_PALETTE_COLORS;
-  for (i=0; i<MAX_PALETTE_COLORS; ++i) {
-    pal->color[i] = _rgba(_rgb_scale_6[rgb[i].r],
-			  _rgb_scale_6[rgb[i].g],
-			  _rgb_scale_6[rgb[i].b], 255);
+  m_colors.resize(256);
+  for (i=0; i<256; ++i) {
+    m_colors[i] = _rgba(_rgb_scale_6[rgb[i].r],
+			_rgb_scale_6[rgb[i].g],
+			_rgb_scale_6[rgb[i].b], 255);
   }
-  return pal;
 }
 
-Palette* palette_load(const char *filename)
+Palette* Palette::load(const char *filename)
 {
   Palette* pal = NULL;
   char ext[64];
@@ -323,8 +279,8 @@ Palette* palette_load(const char *filename)
     if (bmp) {
       destroy_bitmap(bmp);
 
-      pal = palette_new(0, MAX_PALETTE_COLORS);
-      palette_from_allegro(pal, rgbpal);
+      pal = new Palette(0, 256);
+      pal->fromAllegro(rgbpal);
     }
   }
   else if (ustricmp(ext, "col") == 0) {
@@ -334,7 +290,7 @@ Palette* palette_load(const char *filename)
   return pal;
 }
 
-bool palette_save(Palette* pal, const char *filename)
+bool Palette::save(const char *filename) const
 {
   bool success = false;
   char ext[64];
@@ -354,13 +310,13 @@ bool palette_save(Palette* pal, const char *filename)
       for (x=0; x<16; x++)
 	putpixel(bmp, x, y, c++);
 
-    palette_to_allegro(pal, rgbpal);
+    toAllegro(rgbpal);
 
     success = (save_bitmap(filename, bmp, rgbpal) == 0);
     destroy_bitmap(bmp);
   }
   else if (ustricmp(ext, "col") == 0) {
-    success = save_col_file(pal, filename);
+    success = save_col_file(this, filename);
   }
 
   return success;
@@ -383,7 +339,7 @@ static void bestfit_init()
   }
 }
 
-int palette_find_bestfit(const Palette* pal, int r, int g, int b)
+int Palette::findBestfit(int r, int g, int b) const
 {
 #ifdef __GNUC__
   register int bestfit asm("%eax");
@@ -407,8 +363,8 @@ int palette_find_bestfit(const Palette* pal, int r, int g, int b)
   b >>= 3;
 
   i = 1;
-  while (i<PAL_SIZE) {
-    ase_uint32 rgb = pal->color[i];
+  while (i < size()) {
+    ase_uint32 rgb = m_colors[i];
 
     coldiff = (col_diff + 0) [ ((_rgba_getg(rgb)>>3) - g) & 0x7F ];
     if (coldiff < lowest) {

@@ -71,7 +71,9 @@ WORD		Speed (milliseconds between frame, like in FLC files)
                             field from each frame header
 DWORD		Set be 0
 DWORD		Set be 0
-BYTE[100]	For future (set to zero)
+WORD		Ignore this field
+WORD		Number of colors (0 means 256 for old sprites)
+BYTE[96]	For future (set to zero)
 
 
 ========================================

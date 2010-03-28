@@ -120,9 +120,9 @@ void apply_invert_color1(Effect *effect)
     if (effect->target & TARGET_INDEX_CHANNEL)
       c ^= 0xff;
     else {
-      r = _rgba_getr(pal->color[c])>>3;
-      g = _rgba_getg(pal->color[c])>>3;
-      b = _rgba_getb(pal->color[c])>>3;
+      r = _rgba_getr(pal->getEntry(c))>>3;
+      g = _rgba_getg(pal->getEntry(c))>>3;
+      b = _rgba_getb(pal->getEntry(c))>>3;
 
       if (effect->target & TARGET_RED_CHANNEL) r ^= 0x1f;
       if (effect->target & TARGET_GREEN_CHANNEL) g ^= 0x1f;

@@ -511,12 +511,12 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pa
 	      break;
 	    }
 	    case IMAGE_INDEXED: {
-	      int r = ((_rgba_getr(pal->color[color[0]])*u2 + _rgba_getr(pal->color[color[1]])*u1)*v2 +
-		       (_rgba_getr(pal->color[color[2]])*u2 + _rgba_getr(pal->color[color[3]])*u1)*v1);
-	      int g = ((_rgba_getg(pal->color[color[0]])*u2 + _rgba_getg(pal->color[color[1]])*u1)*v2 +
-		       (_rgba_getg(pal->color[color[2]])*u2 + _rgba_getg(pal->color[color[3]])*u1)*v1);
-	      int b = ((_rgba_getb(pal->color[color[0]])*u2 + _rgba_getb(pal->color[color[1]])*u1)*v2 +
-		       (_rgba_getb(pal->color[color[2]])*u2 + _rgba_getb(pal->color[color[3]])*u1)*v1);
+	      int r = ((_rgba_getr(pal->getEntry(color[0]))*u2 + _rgba_getr(pal->getEntry(color[1]))*u1)*v2 +
+		       (_rgba_getr(pal->getEntry(color[2]))*u2 + _rgba_getr(pal->getEntry(color[3]))*u1)*v1);
+	      int g = ((_rgba_getg(pal->getEntry(color[0]))*u2 + _rgba_getg(pal->getEntry(color[1]))*u1)*v2 +
+		       (_rgba_getg(pal->getEntry(color[2]))*u2 + _rgba_getg(pal->getEntry(color[3]))*u1)*v1);
+	      int b = ((_rgba_getb(pal->getEntry(color[0]))*u2 + _rgba_getb(pal->getEntry(color[1]))*u1)*v2 +
+		       (_rgba_getb(pal->getEntry(color[2]))*u2 + _rgba_getb(pal->getEntry(color[3]))*u1)*v1);
 	      int a = (((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
 		       ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
 	      dst_color = a > 127 ? rgb_map->data[r>>3][g>>3][b>>3]: 0;

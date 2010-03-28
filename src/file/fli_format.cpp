@@ -49,11 +49,11 @@ static bool load_FLI(FileOp *fop)
 #define SETPAL()						\
   do {								\
       for (c=0; c<256; c++) {					\
-	palette_set_entry(pal, c, _rgba(cmap[c*3],		\
-					cmap[c*3+1],		\
-					cmap[c*3+2], 255));	\
+	pal->setEntry(c, _rgba(cmap[c*3],			\
+			       cmap[c*3+1],			\
+			       cmap[c*3+2], 255));		\
       }								\
-      pal->frame = frpos_out;					\
+      pal->setFrame(frpos_out);					\
       sprite_set_palette(sprite, pal, true);			\
     } while (0)
 
@@ -92,18 +92,18 @@ static bool load_FLI(FileOp *fop)
   /* create the bitmaps */
   bmp = image_new(IMAGE_INDEXED, w, h);
   old = image_new(IMAGE_INDEXED, w, h);
-  pal = palette_new(0, MAX_PALETTE_COLORS);
+  pal = new Palette(0, 256);
   if (!bmp || !old || !pal) {
     fop_error(fop, _("Not enough memory.\n"));
     if (bmp) image_free(bmp);
     if (old) image_free(old);
-    if (pal) palette_free(pal);
+    if (pal) delete pal;
     fclose(f);
     return false;
   }
 
   /* create the image */
-  sprite = sprite_new(IMAGE_INDEXED, w, h);
+  sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
   layer = new LayerImage(sprite);
   sprite->get_folder()->add_layer(layer);
   layer->configure_as_background();
@@ -202,7 +202,7 @@ static bool load_FLI(FileOp *fop)
   /* destroy the bitmaps */
   image_free(bmp);
   image_free(old);
-  palette_free(pal);
+  delete pal;
 
   fop->sprite = sprite;
   return true;
@@ -265,9 +265,9 @@ static bool save_FLI(FileOp *fop)
     /* get color map */
     pal = sprite_get_palette(sprite, frpos);
     for (c=0; c<256; c++) {
-      cmap[3*c  ] = _rgba_getr(pal->color[c]);
-      cmap[3*c+1] = _rgba_getg(pal->color[c]);
-      cmap[3*c+2] = _rgba_getb(pal->color[c]);
+      cmap[3*c  ] = _rgba_getr(pal->getEntry(c));
+      cmap[3*c+1] = _rgba_getg(pal->getEntry(c));
+      cmap[3*c+2] = _rgba_getb(pal->getEntry(c));
     }
 
     /* render the frame in the bitmap */

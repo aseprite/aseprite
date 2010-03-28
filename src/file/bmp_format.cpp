@@ -162,7 +162,7 @@ static void read_bmicolors(FileOp *fop, int bytes, FILE *f, bool win_flag)
 {
   int i, j, r, g, b;
 
-  for (i=j=0; i+3 <= bytes && j < MAX_PALETTE_COLORS; ) {
+  for (i=j=0; i+3 <= bytes && j < 256; ) {
     b = fgetc(f);
     g = fgetc(f);
     r = fgetc(f);

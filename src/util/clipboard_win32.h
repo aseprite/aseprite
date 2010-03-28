@@ -70,7 +70,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       scanline = sizeof(ase_uint8) * image->w;
       scanline += padding;
       color_depth = 8;
-      palette_entries = palette->ncolors;
+      palette_entries = palette->size();
       break;
   }
   assert(scanline > 0 && color_depth > 0);
@@ -128,10 +128,10 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
     case IMAGE_INDEXED: {
       Palette* palette = get_current_palette();
       RGBQUAD* rgbquad = (RGBQUAD*)(((ase_uint8*)bi)+bi->bV5Size);
-      for (int i=0; i<palette->ncolors; ++i) {
-	rgbquad->rgbRed   = _rgba_getr(palette->color[i]);
-	rgbquad->rgbGreen = _rgba_getg(palette->color[i]);
-	rgbquad->rgbBlue  = _rgba_getb(palette->color[i]);
+      for (int i=0; i<palette->size(); ++i) {
+	rgbquad->rgbRed   = _rgba_getr(palette->getEntry(i));
+	rgbquad->rgbGreen = _rgba_getg(palette->getEntry(i));
+	rgbquad->rgbBlue  = _rgba_getb(palette->getEntry(i));
 	rgbquad++;
       }
 
@@ -274,25 +274,21 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	// 8 BPP
 	case 8: {
 	  int colors = bi->bmiHeader.biClrUsed > 0 ? bi->bmiHeader.biClrUsed: 256;
-	  palette = palette_new(0, 256);
-	  for (int c=0; c<256; ++c) {
-	    int alpha = (c == 0) ? 0: 255;
-	    if (c < colors) {
-	      palette->color[c] = _rgba(bi->bmiColors[c].rgbRed,
-					bi->bmiColors[c].rgbGreen,
-					bi->bmiColors[c].rgbBlue, alpha);
-	    }
-	    else {
-	      palette->color[c] = _rgba(0, 0, 0, alpha);
-	    }
+	  palette = new Palette(0, colors);
+	  for (int c=0; c<colors; ++c) {
+	    palette->setEntry(c, _rgba(bi->bmiColors[c].rgbRed,
+				       bi->bmiColors[c].rgbGreen,
+				       bi->bmiColors[c].rgbBlue, 255));
 	  }
 
 	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*colors);
 	  int padding = (4-(image->w&3))&3;
 
 	  for (int y=image->h-1; y>=0; --y) {
-	    for (int x=0; x<image->w; ++x)
-	      image_putpixel_fast<IndexedTraits>(image, x, y, *(src++) & 0xff);
+	    for (int x=0; x<image->w; ++x) {
+	      int c = *(src++);
+	      image_putpixel_fast<IndexedTraits>(image, x, y, MID(0, c, colors-1));
+	    }
 
 	    src += padding;
 	  }
