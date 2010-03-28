@@ -416,10 +416,15 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
 
 static void save_gui_config()
 {
-  set_config_int("GfxMode", "Width", SCREEN_W);
-  set_config_int("GfxMode", "Height", SCREEN_H);
-  set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
-  set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? false: true);
+  if (screen) {
+    set_config_int("GfxMode", "Width", SCREEN_W);
+    set_config_int("GfxMode", "Height", SCREEN_H);
+    set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
+  }
+
+  if (gfx_driver)
+    set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? false: true);
+
   set_config_int("GfxMode", "Scale", screen_scaling);
 
 #if defined HAVE_RESIZE_PATCH && defined ALLEGRO_WINDOWS
