@@ -244,7 +244,7 @@ bool ColorBar::msg_proc(JMessage msg)
       if (get_config_bool("ColorBar", "CanGrow", false))
 	msg->reqsize.w = 20*jguiscale() * m_columns;
       else
-	msg->reqsize.w = 20*jguiscale() * MAX(1, m_columns);
+	msg->reqsize.w = 20*jguiscale() * MIN(2, m_columns);
       msg->reqsize.h = 20*jguiscale();
       return true;
 
