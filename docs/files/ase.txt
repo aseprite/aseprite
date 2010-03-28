@@ -24,6 +24,12 @@ RECT		Four LONGs (in the order: x-pos, y-pos, width, heigth)
 STRING		length=WORD (how many characters to read next)
                 string=BYTE[length]
 		The \0 character isn't included.
+PIXEL		Pixel format:
+		- In RGB images, each pixel have 4 bytes in
+                  this order Red, Green, Blue, Alpha.
+		- In Grayscale images, each pixel have 2 bytes
+                  in the order Value, Alpha.
+		- In Indexed images, each pixel uses 1 byte (the index).
 
 
 ========================================
@@ -155,17 +161,20 @@ Cel Chunk (0x2005)
 
     WORD	Width in pixels
     WORD	Height in pixels
-    BYTE[]	Pixel data (see NOTE.3)
+    PIXEL[]	Raw pixel data: row by row from top to bottom,
+                for each scanline read pixels from left to right.
 
   + For cel type = 1 (Linked Cel):
 
     WORD	Frame position to link with
 
-  + For cel type = 2 (RLE compressed image, only for Indexed images):
+  + For cel type = 2 (compressed image):
 
     WORD	Width in pixels
     WORD	Height in pixels
-    XXXXX	-todo-
+    BYTE[]	Compressed "Raw Cel" data. Details about the
+                compression method: 
+                http://www.ietf.org/rfc/rfc1951.txt
 
 
 Mask Chunk (0x2016) DEPRECATED
@@ -215,13 +224,6 @@ NOTE.2: The layer index is a number to identify any layer in the
     |- My set1			3
     |  `- Layer2		4
     `- Layer3			5
-
-
-NOTE.3: The raw pixel data is saved row by row from top to bottom, and
-        each scanline is from pixel by pixel from left to right.
-	In RGB images, each pixel have 4 bytes in the order R, G, B, A.
-	In Grayscale images, each pixel have 2 bytes in the order K, A.
-	In Indexed images, each pixel have 1 byte (the index).
 
 
 ========================================

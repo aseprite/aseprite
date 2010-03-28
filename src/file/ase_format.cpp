@@ -21,8 +21,8 @@
 #include <stdio.h>
 
 #include "jinete/jlist.h"
+#include "zlib.h"
 
-/* #include "file/ase_format.h" */
 #include "file/file.h"
 #include "raster/raster.h"
 
@@ -38,7 +38,7 @@
 
 #define ASE_FILE_RAW_CEL		0
 #define ASE_FILE_LINK_CEL		1
-#define ASE_FILE_RLE_COMPRESSED_CEL	2 /* TODO change this with zlib */
+#define ASE_FILE_COMPRESSED_CEL		2
 
 typedef struct ASE_Header
 {
@@ -98,7 +98,7 @@ static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame);
 static void ase_file_write_color2_chunk(FILE *f, Palette *pal);
 static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previous_layer, int *current_level);
 static void ase_file_write_layer_chunk(FILE *f, Layer *layer);
-static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header);
+static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, int chunk_end);
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite);
 static Mask *ase_file_read_mask_chunk(FILE *f);
 static void ase_file_write_mask_chunk(FILE *f, Mask *mask);
@@ -225,7 +225,8 @@ static bool load_ASE(FileOp *fop)
 	    /* fop_error(fop, "Cel chunk\n"); */
 
 	    ase_file_read_cel_chunk(f, sprite, frame,
-				    sprite->imgtype, fop, &header);
+				    sprite->imgtype, fop, &header,
+				    chunk_pos+chunk_size);
 	    break;
 	  }
 
@@ -717,7 +718,270 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   /* fop_error(fop, "Layer name \"%s\" child level: %d\n", layer->name, child_level); */
 }
 
-static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header)
+//////////////////////////////////////////////////////////////////////
+// Pixel I/O
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class PixelIO
+{
+public:
+  typename ImageTraits::pixel_t read_pixel(FILE* f);
+  void write_pixel(FILE* f, typename ImageTraits::pixel_t c);
+  void read_scanline(typename ImageTraits::address_t address, int w, ase_uint8* buffer);
+  void write_scanline(typename ImageTraits::address_t address, int w, ase_uint8* buffer);
+};
+
+template<>
+class PixelIO<RgbTraits>
+{
+  int r, g, b, a;
+public:
+  RgbTraits::pixel_t read_pixel(FILE* f) {
+    r = fgetc(f);
+    g = fgetc(f);
+    b = fgetc(f);
+    a = fgetc(f);
+    return _rgba(r, g, b, a);
+  }
+  void write_pixel(FILE* f, RgbTraits::pixel_t c) {
+    fputc(_rgba_getr(c), f);
+    fputc(_rgba_getg(c), f);
+    fputc(_rgba_getb(c), f);
+    fputc(_rgba_geta(c), f);
+  }
+  void read_scanline(RgbTraits::address_t address, int w, ase_uint8* buffer)
+  {
+    for (int x=0; x<w; ++x) {
+      r = *(buffer++);
+      g = *(buffer++);
+      b = *(buffer++);
+      a = *(buffer++);
+      *(address++) = _rgba(r, g, b, a);
+    }
+  }
+  void write_scanline(RgbTraits::address_t address, int w, ase_uint8* buffer)
+  {
+    for (int x=0; x<w; ++x) {
+      *(buffer++) = _rgba_getr(*address);
+      *(buffer++) = _rgba_getg(*address);
+      *(buffer++) = _rgba_getb(*address);
+      *(buffer++) = _rgba_geta(*address);
+      ++address;
+    }
+  }
+};
+
+template<>
+class PixelIO<GrayscaleTraits>
+{
+  int k, a;
+public:
+  GrayscaleTraits::pixel_t read_pixel(FILE* f) {
+    k = fgetc(f);
+    a = fgetc(f);
+    return _graya(k, a);
+  }
+  void write_pixel(FILE* f, GrayscaleTraits::pixel_t c) {
+    fputc(_graya_getv(c), f);
+    fputc(_graya_geta(c), f);
+  }
+  void read_scanline(GrayscaleTraits::address_t address, int w, ase_uint8* buffer)
+  {
+    for (int x=0; x<w; ++x) {
+      k = *(buffer++);
+      a = *(buffer++);
+      *(address++) = _graya(k, a);
+    }
+  }
+  void write_scanline(GrayscaleTraits::address_t address, int w, ase_uint8* buffer)
+  {
+    for (int x=0; x<w; ++x) {
+      *(buffer++) = _graya_getv(*address);
+      *(buffer++) = _graya_geta(*address);
+      ++address;
+    }
+  }
+};
+
+template<>
+class PixelIO<IndexedTraits>
+{
+public:
+  IndexedTraits::pixel_t read_pixel(FILE* f) {
+    return fgetc(f);
+  }
+  void write_pixel(FILE* f, IndexedTraits::pixel_t c) {
+    fputc(c, f);
+  }
+  void read_scanline(IndexedTraits::address_t address, int w, ase_uint8* buffer)
+  {
+    memcpy(address, buffer, w);
+  }
+  void write_scanline(IndexedTraits::address_t address, int w, ase_uint8* buffer)
+  {
+    memcpy(buffer, address, w);
+  }
+};
+
+//////////////////////////////////////////////////////////////////////
+// Raw Image
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+static void read_raw_image(FILE* f, Image* image, FileOp* fop, ASE_Header* header)
+{
+  PixelIO<ImageTraits> pixel_io;
+  int x, y;
+
+  for (y=0; y<image->h; y++) {
+    for (x=0; x<image->w; x++)
+      image_putpixel_fast<ImageTraits>(image, x, y, pixel_io.read_pixel(f));
+
+    fop_progress(fop, (float)ftell(f) / (float)header->size);
+  }
+}
+
+template<typename ImageTraits>
+static void write_raw_image(FILE* f, Image* image)
+{
+  PixelIO<ImageTraits> pixel_io;
+  int x, y;
+
+  for (y=0; y<image->h; y++)
+    for (x=0; x<image->w; x++)
+      pixel_io.write_pixel(f, image_getpixel_fast<ImageTraits>(image, x, y));
+}
+
+//////////////////////////////////////////////////////////////////////
+// Compressed Image
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+static void read_compressed_image(FILE* f, Image* image, int chunk_end, FileOp* fop, ASE_Header* header)
+{
+  PixelIO<ImageTraits> pixel_io;
+  z_stream zstream;
+  int x, y, err;
+
+  zstream.zalloc = (alloc_func)0;
+  zstream.zfree  = (free_func)0;
+  zstream.opaque = (voidpf)0;
+
+  err = inflateInit(&zstream);
+  if (err != Z_OK)
+    throw ase_exception("ZLib error %d in inflateInit().", err);
+
+  std::vector<ase_uint8> scanline(ImageTraits::scanline_size(image->w));
+  std::vector<ase_uint8> uncompressed(image->h * ImageTraits::scanline_size(image->w));
+  std::vector<ase_uint8> compressed(4096);
+  int uncompressed_offset = 0;
+  
+  while (true) {
+    int input_bytes;
+
+    if (ftell(f)+compressed.size() > chunk_end) {
+      input_bytes = chunk_end - ftell(f); // Remaining bytes
+      assert(input_bytes < compressed.size());
+
+      if (input_bytes == 0)
+	break;			// Done, we consumed all chunk
+    }
+    else
+      input_bytes = compressed.size();
+
+    fread(&compressed[0], 1, input_bytes, f);
+
+    zstream.next_in = (Bytef*)&compressed[0];
+    zstream.avail_in = input_bytes;
+
+    do {
+      zstream.next_out = (Bytef*)&scanline[0];
+      zstream.avail_out = scanline.size();
+
+      err = inflate(&zstream, Z_NO_FLUSH);
+      if (err != Z_OK && err != Z_STREAM_END)
+	throw ase_exception("ZLib error %d in inflate().", err);
+
+      int input_bytes = scanline.size() - zstream.avail_out;
+      if (input_bytes > 0) {
+	if (uncompressed_offset+input_bytes > uncompressed.size())
+	  throw ase_exception("Bad compressed image.");
+
+      	std::copy(scanline.begin(), scanline.begin()+input_bytes,
+		  uncompressed.begin()+uncompressed_offset);
+      	uncompressed_offset += input_bytes;
+      }
+    } while (zstream.avail_out == 0);
+
+    fop_progress(fop, (float)ftell(f) / (float)header->size);
+  }
+
+  uncompressed_offset = 0;
+  for (y=0; y<image->h; y++) {
+    ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);
+    pixel_io.read_scanline(address, image->w, &uncompressed[uncompressed_offset]);
+
+    uncompressed_offset += ImageTraits::scanline_size(image->w);
+  }
+
+  err = inflateEnd(&zstream);
+  if (err != Z_OK)
+    throw ase_exception("ZLib error %d in inflateEnd().", err);
+}
+
+template<typename ImageTraits>
+static void write_compressed_image(FILE* f, Image* image)
+{
+  PixelIO<ImageTraits> pixel_io;
+  z_stream zstream;
+  int y, err;
+
+  zstream.zalloc = (alloc_func)0;
+  zstream.zfree  = (free_func)0;
+  zstream.opaque = (voidpf)0;
+  err = deflateInit(&zstream, Z_DEFAULT_COMPRESSION);
+  if (err != Z_OK)
+    throw ase_exception("ZLib error %d in deflateInit().", err);
+
+  std::vector<ase_uint8> scanline(ImageTraits::scanline_size(image->w));
+  std::vector<ase_uint8> compressed(4096);
+
+  for (y=0; y<image->h; y++) {
+    ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);
+    pixel_io.write_scanline(address, image->w, &scanline[0]);
+
+    zstream.next_in = (Bytef*)&scanline[0];
+    zstream.avail_in = scanline.size();
+
+    do {
+      zstream.next_out = (Bytef*)&compressed[0];
+      zstream.avail_out = compressed.size();
+
+      // Compress
+      err = deflate(&zstream, (y < image->h-1 ? Z_NO_FLUSH: Z_FINISH));
+      if (err != Z_OK && err != Z_STREAM_END)
+	throw ase_exception("ZLib error %d in deflate().", err);
+
+      int output_bytes = compressed.size() - zstream.avail_out;
+      if (output_bytes > 0) {
+	if ((fwrite(&compressed[0], 1, output_bytes, f) != output_bytes)
+	    || ferror(f))
+	  throw ase_exception("Error writing compressed image pixels.\n");
+      }
+    } while (zstream.avail_out == 0);
+  }
+
+  err = deflateEnd(&zstream);
+  if (err != Z_OK)
+    throw ase_exception("ZLib error %d in deflateEnd().", err);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Cel Chunk
+//////////////////////////////////////////////////////////////////////
+
+static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, int chunk_end)
 {
   Cel *cel;
   /* read chunk data */
@@ -750,54 +1014,31 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
   switch (cel_type) {
 
     case ASE_FILE_RAW_CEL: {
-      int x, y, r, g, b, a, k;
-      Image *image;
-      /* read width and height */
+      // Read width and height
       int w = fgetw(f);
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-	image = image_new(imgtype, w, h);
+	Image* image = image_new(imgtype, w, h);
 	if (!image) {
 	  cel_free(cel);
-	  /* not enough memory for frame's image */
+	  // Not enough memory for frame's image
 	  return NULL;
 	}
 
-	/* read pixel data */
+	// Read pixel data
 	switch (image->imgtype) {
 
 	  case IMAGE_RGB:
-	    for (y=0; y<image->h; y++) {
-	      for (x=0; x<image->w; x++) {
-		r = fgetc(f);
-		g = fgetc(f);
-		b = fgetc(f);
-		a = fgetc(f);
-		image_putpixel_fast<RgbTraits>(image, x, y, _rgba(r, g, b, a));
-	      }
-	      fop_progress(fop, (float)ftell(f) / (float)header->size);
-	    }
+	    read_raw_image<RgbTraits>(f, image, fop, header);
 	    break;
 
 	  case IMAGE_GRAYSCALE:
-	    for (y=0; y<image->h; y++) {
-	      for (x=0; x<image->w; x++) {
-		k = fgetc(f);
-		a = fgetc(f);
-		image_putpixel_fast<GrayscaleTraits>(image, x, y, _graya(k, a));
-	      }
-	      fop_progress(fop, (float)ftell(f) / (float)header->size);
-	    }
+	    read_raw_image<GrayscaleTraits>(f, image, fop, header);
 	    break;
 
 	  case IMAGE_INDEXED:
-	    for (y=0; y<image->h; y++) {
-	      for (x=0; x<image->w; x++)
-		image_putpixel_fast<IndexedTraits>(image, x, y, fgetc(f));
-
-	      fop_progress(fop, (float)ftell(f) / (float)header->size);
-	    }
+	    read_raw_image<IndexedTraits>(f, image, fop, header);
 	    break;
 	}
 
@@ -807,26 +1048,57 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
     }
 
     case ASE_FILE_LINK_CEL: {
-      /* read link position */
+      // Read link position
       int link_frame = fgetw(f);
       Cel* link = static_cast<LayerImage*>(layer)->get_cel(link_frame);
 
       if (link) {
-	// create a copy of the linked cel (avoid using links cel)
+	// Create a copy of the linked cel (avoid using links cel)
 	Image* image = image_new_copy(stock_get_image(sprite->stock, link->image));
 	cel->image = stock_add_image(sprite->stock, image);
       }
       else {
 	cel_free(cel);
-	// linked cel doesn't found
+	// Linked cel doesn't found
 	return NULL;
       }
       break;
     }
 
-    case ASE_FILE_RLE_COMPRESSED_CEL:
-      // TODO
+    case ASE_FILE_COMPRESSED_CEL: {
+      // Read width and height
+      int w = fgetw(f);
+      int h = fgetw(f);
+
+      if (w > 0 && h > 0) {
+	Image* image = image_new(imgtype, w, h);
+	if (!image) {
+	  cel_free(cel);
+	  // Not enough memory for frame's image
+	  return NULL;
+	}
+
+	// Read pixel data
+	switch (image->imgtype) {
+
+	  case IMAGE_RGB:
+	    read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
+	    break;
+
+	  case IMAGE_GRAYSCALE:
+	    read_compressed_image<GrayscaleTraits>(f, image, chunk_end, fop, header);
+	    break;
+
+	  case IMAGE_INDEXED:
+	    read_compressed_image<IndexedTraits>(f, image, chunk_end, fop, header);
+	    break;
+	}
+
+	cel->image = stock_add_image(sprite->stock, image);
+      }
       break;
+    }
+
   }
 
   static_cast<LayerImage*>(layer)->add_cel(cel);
@@ -836,7 +1108,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite)
 {
   int layer_index = sprite_layer2index(sprite, layer);
-  int cel_type = ASE_FILE_RAW_CEL;
+  int cel_type = ASE_FILE_COMPRESSED_CEL;
 
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_CEL);
 
@@ -850,49 +1122,31 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
   switch (cel_type) {
 
     case ASE_FILE_RAW_CEL: {
-      Image *image = stock_get_image(sprite->stock, cel->image);
-      int x, y, c;
+      Image* image = stock_get_image(sprite->stock, cel->image);
 
       if (image) {
-	/* width and height */
+	// Width and height
 	fputw(image->w, f);
 	fputw(image->h, f);
 
-	/* pixel data */
+	// Pixel data
 	switch (image->imgtype) {
 
 	  case IMAGE_RGB:
-	    for (y=0; y<image->h; y++) {
-	      for (x=0; x<image->w; x++) {
-		c = image_getpixel_fast<RgbTraits>(image, x, y);
-		fputc(_rgba_getr(c), f);
-		fputc(_rgba_getg(c), f);
-		fputc(_rgba_getb(c), f);
-		fputc(_rgba_geta(c), f);
-	      }
-	    }
+	    write_raw_image<RgbTraits>(f, image);
 	    break;
 
 	  case IMAGE_GRAYSCALE:
-	    for (y=0; y<image->h; y++) {
-	      for (x=0; x<image->w; x++) {
-		c = image_getpixel_fast<GrayscaleTraits>(image, x, y);
-		fputc(_graya_getv(c), f);
-		fputc(_graya_geta(c), f);
-	      }
-	    }
+	    write_raw_image<GrayscaleTraits>(f, image);
 	    break;
 
 	  case IMAGE_INDEXED:
-	    for (y=0; y<image->h; y++) {
-	      for (x=0; x<image->w; x++)
-		fputc(image_getpixel_fast<IndexedTraits>(image, x, y), f);
-	    }
+	    write_raw_image<IndexedTraits>(f, image);
 	    break;
 	}
       }
       else {
-	/* width and height */
+	// Width and height
 	fputw(0, f);
 	fputw(0, f);
       }
@@ -900,14 +1154,42 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
     }
 
     case ASE_FILE_LINK_CEL:
-      /* linked cel to another frame */
+      // Linked cel to another frame
       //fputw(link->frame, f);
       fputw(0, f);
       break;
 
-    case ASE_FILE_RLE_COMPRESSED_CEL:
-      /* TODO */
+    case ASE_FILE_COMPRESSED_CEL: {
+      Image* image = stock_get_image(sprite->stock, cel->image);
+
+      if (image) {
+	// Width and height
+	fputw(image->w, f);
+	fputw(image->h, f);
+
+	// Pixel data
+	switch (image->imgtype) {
+
+	  case IMAGE_RGB:
+	    write_compressed_image<RgbTraits>(f, image);
+	    break;
+
+	  case IMAGE_GRAYSCALE:
+	    write_compressed_image<GrayscaleTraits>(f, image);
+	    break;
+
+	  case IMAGE_INDEXED:
+	    write_compressed_image<IndexedTraits>(f, image);
+	    break;
+	}
+      }
+      else {
+	// Width and height
+	fputw(0, f);
+	fputw(0, f);
+      }
       break;
+    }
   }
 
   ase_file_write_close_chunk(f);
