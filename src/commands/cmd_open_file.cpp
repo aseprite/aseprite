@@ -70,7 +70,12 @@ static void openfile_bg(void *fop_data)
 {
   FileOp* fop = (FileOp*)fop_data;
 
-  fop_operate(fop);
+  try {
+    fop_operate(fop);
+  }
+  catch (const std::exception& e) {
+    fop_error(fop, _("Error loading file:\n%s"), e.what());
+  }
 
   if (fop_is_stop(fop) && fop->sprite) {
     delete fop->sprite;

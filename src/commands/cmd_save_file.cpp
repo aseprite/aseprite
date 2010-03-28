@@ -50,7 +50,12 @@ typedef struct SaveFileData
 static void savefile_bg(void *fop_data)
 {
   FileOp *fop = (FileOp *)fop_data;
-  fop_operate(fop);
+  try {
+    fop_operate(fop);
+  }
+  catch (const std::exception& e) {
+    fop_error(fop, _("Error saving file:\n%s"), e.what());
+  }
   fop_done(fop);
 }
 
