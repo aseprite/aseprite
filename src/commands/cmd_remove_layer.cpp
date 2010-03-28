@@ -18,12 +18,17 @@
 
 #include "config.h"
 
+#include "jinete/jwidget.h"
+
+#include "app.h"
 #include "commands/command.h"
 #include "modules/gui.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "undoable.h"
 #include "sprite_wrappers.h"
+#include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
 // remove_layer
@@ -56,13 +61,22 @@ bool RemoveLayerCommand::enabled(Context* context)
 
 void RemoveLayerCommand::execute(Context* context)
 {
+  std::string layer_name;
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Remove Layer");
+
+    layer_name = sprite->layer->get_name();
+
     undoable.remove_layer(sprite->layer);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);
+
+  app_get_statusbar()->dirty();
+  statusbar_show_tip(app_get_statusbar(), 1000,
+		     _("Layer `%s' removed"),
+		     layer_name.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

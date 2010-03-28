@@ -27,6 +27,7 @@
 #include "raster/sprite.h"
 #include "undoable.h"
 #include "sprite_wrappers.h"
+#include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
 // new_layer
@@ -84,6 +85,10 @@ void NewLayerCommand::execute(Context* context)
     }
     layer->set_name(name);
     update_screen_for_sprite(sprite);
+
+    app_get_statusbar()->dirty();
+    statusbar_show_tip(app_get_statusbar(), 1000,
+		       _("Layer `%s' created"), name);
   }
 }
 

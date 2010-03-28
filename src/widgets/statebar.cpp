@@ -291,6 +291,7 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_DRAW: {
+      SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
       int text_color = ji_color_foreground();
       int face_color = ji_color_face();
       JRect rc = jwidget_get_rect(widget);
@@ -307,15 +308,15 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       rc->x2 -= 2*jguiscale();
       rc->y2 -= 2*jguiscale();
 
-      /* status bar text */
+      // Status bar text
       if (widget->getText()) {
 	textout_ex(doublebuffer, widget->getFont(), widget->getText(),
-		   rc->x1+2,
+		   rc->x1+4*jguiscale(),
 		   (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
 		   text_color, -1);
       }
 
-      /* draw progress bar */
+      // Draw progress bar
       if (!jlist_empty(statusbar->progress)) {
 	int width = 64;
 	int y1, y2;
@@ -335,34 +336,66 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	  x -= width+4;
 	}
       }
-      /* draw current sprite size in memory */
       else {
-	char buf[1024];
+	// Available width for layers buttons
+	int width = jrect_w(rc)/4;
+
+	// Draw layers
 	try {
 	  const CurrentSpriteReader sprite(UIContext::instance());
 	  if (sprite) {
-	    ustrcpy(buf, "Sprite:");
-	    get_pretty_memsize(sprite_get_memsize(sprite),
-			       buf+ustrsize(buf),
-			       sizeof(buf)-ustrsize(buf));
+	    LayerFolder* folder = sprite->get_folder();
+	    LayerIterator it = folder->get_layer_begin();
+	    LayerIterator end = folder->get_layer_end();
+	    size_t count = folder->get_layers_count();
+	    char buf[256];
 
-	    ustrcat(buf, " Undo:");
-	    get_pretty_memsize(undo_get_memsize(sprite->undo),
-			       buf+ustrsize(buf),
-			       sizeof(buf)-ustrsize(buf));
+	    for (size_t c=0; it != end; ++it, ++c) {
+	      int x1 = rc->x2-width + c*width/count;
+	      int x2 = rc->x2-width + (c+1)*width/count;
+	      bool hot = (*it == sprite->layer);
+
+	      {
+		BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
+		ji_screen = doublebuffer;
+		theme->draw_bounds(x1, rc->y1, x2, rc->y2,
+				   hot ? PART_TOOLBUTTON_HOT_NW:
+					 PART_TOOLBUTTON_NORMAL_NW,
+				   hot ? theme->get_button_hot_face_color():
+					 theme->get_button_normal_face_color());
+		ji_screen = old_ji_screen;
+	      }
+	      
+	      usprintf(buf, "%d", c);
+	      textout_centre_ex(doublebuffer, widget->getFont(), buf,
+				(x1+x2)/2,
+				(rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
+				hot ? theme->get_button_hot_text_color():
+				      theme->get_button_normal_text_color(), -1);
+	    }
 	  }
 	  else {
-	    ustrcpy(buf, "No Sprite");
+	    int x1 = rc->x2-width;
+	    int x2 = rc->x2;
+
+	    {
+	      BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
+	      ji_screen = doublebuffer;
+	      theme->draw_bounds(x1, rc->y1, x2, rc->y2,
+				 PART_TOOLBUTTON_NORMAL_NW,
+				 theme->get_button_normal_face_color());
+	      ji_screen = old_ji_screen;
+	    }
+
+	    textout_centre_ex(doublebuffer, widget->getFont(), "No Sprite",
+			      (x1+x2)/2,
+			      (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
+			      theme->get_button_normal_text_color(), -1);
 	  }
 	}
 	catch (locked_sprite_exception&) {
-	  ustrcpy(buf, "Sprite is Locked");
+	  // Do nothing...
 	}
-
-	textout_right_ex(doublebuffer, widget->getFont(), buf,
-			 rc->x2-2,
-			 (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
-			 text_color, -1);
       }
 
       jrect_free(rc);
