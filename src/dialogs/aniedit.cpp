@@ -22,19 +22,15 @@
 #include <assert.h>
 
 #include "jinete/jinete.h"
-/* #include "jinete/jintern.h" */
 
 #include "Vaca/Rect.h"
 #include "Vaca/Point.h"
 
 #include "commands/commands.h"
 #include "commands/command.h"
-/* #include "app.h" */
-/* #include "core/cfg.h" */
-/* #include "core/core.h" */
 #include "modules/gfx.h"
 #include "modules/gui.h"
-/* #include "modules/palettes.h" */
+#include "modules/skinneable_theme.h"
 #include "modules/rootmenu.h"
 #include "raster/raster.h"
 #include "undoable.h"
@@ -93,14 +89,14 @@ enum {
 };
 
 enum {
-  PART_NOTHING,
-  PART_SEPARATOR,
-  PART_HEADER_LAYER,
-  PART_HEADER_FRAME,
-  PART_LAYER,
-  PART_LAYER_EYE_ICON,
-  PART_LAYER_LOCK_ICON,
-  PART_CEL
+  A_PART_NOTHING,
+  A_PART_SEPARATOR,
+  A_PART_HEADER_LAYER,
+  A_PART_HEADER_FRAME,
+  A_PART_LAYER,
+  A_PART_LAYER_EYE_ICON,
+  A_PART_LAYER_LOCK_ICON,
+  A_PART_CEL
 };
 
 typedef struct AniEditor
@@ -214,8 +210,8 @@ static JWidget anieditor_new(const Sprite* sprite)
   anieditor->scroll_y = 0;
   anieditor->separator_x = 100 * jguiscale();
   anieditor->separator_w = 1;
-  anieditor->hot_part = PART_NOTHING;
-  anieditor->clk_part = PART_NOTHING;
+  anieditor->hot_part = A_PART_NOTHING;
+  anieditor->clk_part = A_PART_NOTHING;
   anieditor->space_pressed = false;
 
   jwidget_add_hook(widget, anieditor_type(), anieditor_msg_proc, anieditor);
@@ -317,17 +313,17 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       anieditor->clk_frame = anieditor->hot_frame;
 	
       switch (anieditor->hot_part) {
-	case PART_NOTHING:
+	case A_PART_NOTHING:
 	  /* do nothing */
 	  break;
-	case PART_SEPARATOR:
+	case A_PART_SEPARATOR:
 	  jwidget_hard_capture_mouse(widget);
 	  anieditor->state = STATE_MOVING_SEPARATOR;
 	  break;
-	case PART_HEADER_LAYER:
+	case A_PART_HEADER_LAYER:
 	  /* do nothing */
 	  break;
-	case PART_HEADER_FRAME:
+	case A_PART_HEADER_FRAME:
 	  {
 	    const SpriteReader sprite((Sprite*)anieditor->sprite);
 	    SpriteWriter sprite_writer(sprite);
@@ -337,7 +333,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  jwidget_hard_capture_mouse(widget);
 	  anieditor->state = STATE_MOVING_FRAME;
 	  break;
-	case PART_LAYER: {
+	case A_PART_LAYER: {
 	  const SpriteReader sprite((Sprite*)anieditor->sprite);
 	  int old_layer = anieditor_get_layer_index(widget, sprite->layer);
 	  int frame = anieditor->sprite->frame;
@@ -351,10 +347,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	    jmouse_hide();
 	    /* redraw the old & new selected cel */
-	    anieditor_draw_part(widget, PART_CEL, old_layer, frame);
-	    anieditor_draw_part(widget, PART_CEL, anieditor->clk_layer, frame);
+	    anieditor_draw_part(widget, A_PART_CEL, old_layer, frame);
+	    anieditor_draw_part(widget, A_PART_CEL, anieditor->clk_layer, frame);
 	    /* redraw the old selected layer */
-	    anieditor_draw_part(widget, PART_LAYER, old_layer, frame);
+	    anieditor_draw_part(widget, A_PART_LAYER, old_layer, frame);
 	    jmouse_show();
 	  }
 
@@ -364,13 +360,13 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  anieditor->state = STATE_MOVING_LAYER;
 	  break;
 	}
-	case PART_LAYER_EYE_ICON:
+	case A_PART_LAYER_EYE_ICON:
 	  jwidget_hard_capture_mouse(widget);
 	  break;
-	case PART_LAYER_LOCK_ICON:
+	case A_PART_LAYER_LOCK_ICON:
 	  jwidget_hard_capture_mouse(widget);
 	  break;
-	case PART_CEL: {
+	case A_PART_CEL: {
 	  const SpriteReader sprite((Sprite*)anieditor->sprite);
 	  int old_layer = anieditor_get_layer_index(widget, sprite->layer);
 	  int old_frame = sprite->frame;
@@ -387,13 +383,13 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    jmouse_hide();
 	    /* redraw the old & new selected layer */
 	    if (old_layer != anieditor->clk_layer) {
-	      anieditor_draw_part(widget, PART_LAYER, old_layer, old_frame);
-	      anieditor_draw_part(widget, PART_LAYER,
+	      anieditor_draw_part(widget, A_PART_LAYER, old_layer, old_frame);
+	      anieditor_draw_part(widget, A_PART_LAYER,
 				  anieditor->clk_layer,
 				  anieditor->clk_frame);
 	    }
 	    /* redraw the old selected cel */
-	    anieditor_draw_part(widget, PART_CEL, old_layer, old_frame);
+	    anieditor_draw_part(widget, A_PART_CEL, old_layer, old_frame);
 	    jmouse_show();
 	  }
 
@@ -417,7 +413,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       break;
       
     case JM_MOTION: {
-      int hot_part = PART_NOTHING;
+      int hot_part = A_PART_NOTHING;
       int hot_layer = -1;
       int hot_frame = -1;
       int mx = msg->mouse.x - widget->rc->x1;
@@ -435,7 +431,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	/* if the mouse pressed the mouse's button in the separator, we
 	   shouldn't change the hot (so the separator can be tracked to
 	   the mouse's released) */
-	else if (anieditor->clk_part == PART_SEPARATOR) {
+	else if (anieditor->clk_part == A_PART_SEPARATOR) {
 	  hot_part = anieditor->clk_part;
 	  anieditor->separator_x = mx;
 	  jwidget_dirty(widget);
@@ -445,16 +441,16 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
       /* is the mouse on the separator= */
       if (mx > anieditor->separator_x-4 && mx < anieditor->separator_x+4)  {
-	hot_part = PART_SEPARATOR;
+	hot_part = A_PART_SEPARATOR;
       }
       /* is the mouse on the headers? */
       else if (my < HDRSIZE) {
 	/* is on the layers' header? */
 	if (mx < anieditor->separator_x)
-	  hot_part = PART_HEADER_LAYER;
+	  hot_part = A_PART_HEADER_LAYER;
 	/* is on a frame header? */
 	else {
-	  hot_part = PART_HEADER_FRAME;
+	  hot_part = A_PART_HEADER_FRAME;
 	  hot_frame = (mx
 		       - anieditor->separator_x
 		       - anieditor->separator_w
@@ -482,19 +478,19 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER-1 &&
 	      my >= y_mid-icon1->h/2-ICONBORDER &&
 	      my <= y_mid+icon1->h/2+ICONBORDER) {
-	    hot_part = PART_LAYER_EYE_ICON;
+	    hot_part = A_PART_LAYER_EYE_ICON;
 	  }
 	  else if (mx >= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER &&
 		   mx <= x1+ICONSEP+ICONBORDER+icon1->w+ICONBORDER+ICONBORDER+icon2->w+ICONBORDER-1 &&
 		   my >= y_mid-icon2->h/2-ICONBORDER &&
 		   my <= y_mid+icon2->h/2+ICONBORDER) {
-	    hot_part = PART_LAYER_LOCK_ICON;
+	    hot_part = A_PART_LAYER_LOCK_ICON;
 	  }
 	  else
-	    hot_part = PART_LAYER;
+	    hot_part = A_PART_LAYER;
 	}
 	else {
-	  hot_part = PART_CEL;
+	  hot_part = A_PART_CEL;
 	  hot_frame = (mx
 		       - anieditor->separator_x
 		       - anieditor->separator_w
@@ -517,16 +513,16 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	switch (anieditor->hot_part) {
-	  case PART_NOTHING:
+	  case A_PART_NOTHING:
 	    /* do nothing */
 	    break;
-	  case PART_SEPARATOR:
+	  case A_PART_SEPARATOR:
 	    /* do nothing */
 	    break;
-	  case PART_HEADER_LAYER:
+	  case A_PART_HEADER_LAYER:
 	    /* do nothing */
 	    break;
-	  case PART_HEADER_FRAME:
+	  case A_PART_HEADER_FRAME:
 	    /* show the frame pop-up menu */
 	    if (msg->mouse.right) {
 	      if (anieditor->clk_frame == anieditor->hot_frame) {
@@ -563,7 +559,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      }
 	    }
 	    break;
-	  case PART_LAYER:
+	  case A_PART_LAYER:
 	    /* show the layer pop-up menu */
 	    if (msg->mouse.right) {
 	      if (anieditor->clk_layer == anieditor->hot_layer) {
@@ -609,7 +605,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      }
 	    }
 	    break;
-	  case PART_LAYER_EYE_ICON:
+	  case A_PART_LAYER_EYE_ICON:
 	    /* hide/show layer */
 	    if (anieditor->hot_layer == anieditor->clk_layer &&
 		anieditor->hot_layer >= 0 &&
@@ -619,7 +615,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      layer->set_readable(!layer->is_readable());
 	    }
 	    break;
-	  case PART_LAYER_LOCK_ICON:
+	  case A_PART_LAYER_LOCK_ICON:
 	    /* lock/unlock layer */
 	    if (anieditor->hot_layer == anieditor->clk_layer &&
 		anieditor->hot_layer >= 0 &&
@@ -629,10 +625,10 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	      layer->set_writable(!layer->is_writable());
 	    }
 	    break;
-	  case PART_CEL: {
+	  case A_PART_CEL: {
 	    bool movement =
-	      anieditor->clk_part == PART_CEL &&
-	      anieditor->hot_part == PART_CEL &&
+	      anieditor->clk_part == A_PART_CEL &&
+	      anieditor->hot_part == A_PART_CEL &&
 	      (anieditor->clk_layer != anieditor->hot_layer ||
 	       anieditor->clk_frame != anieditor->hot_frame);
 
@@ -836,15 +832,15 @@ static void anieditor_setcursor(JWidget widget, int x, int y)
   }
   /* moving a frame */
   else if (anieditor->state == STATE_MOVING_FRAME &&
-	   anieditor->clk_part == PART_HEADER_FRAME &&
-	   anieditor->hot_part == PART_HEADER_FRAME &&
+	   anieditor->clk_part == A_PART_HEADER_FRAME &&
+	   anieditor->hot_part == A_PART_HEADER_FRAME &&
 	   anieditor->clk_frame != anieditor->hot_frame) {
     jmouse_set_cursor(JI_CURSOR_MOVE);
   }
   /* moving a layer */
   else if (anieditor->state == STATE_MOVING_LAYER &&
-	   anieditor->clk_part == PART_LAYER &&
-	   anieditor->hot_part == PART_LAYER &&
+	   anieditor->clk_part == A_PART_LAYER &&
+	   anieditor->hot_part == A_PART_LAYER &&
 	   anieditor->clk_layer != anieditor->hot_layer) {
     if (anieditor->layers[anieditor->clk_layer]->is_background())
       jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
@@ -853,8 +849,8 @@ static void anieditor_setcursor(JWidget widget, int x, int y)
   }
   /* moving a cel */
   else if (anieditor->state == STATE_MOVING_CEL &&
-	   anieditor->clk_part == PART_CEL &&
-	   anieditor->hot_part == PART_CEL &&
+	   anieditor->clk_part == A_PART_CEL &&
+	   anieditor->hot_part == A_PART_CEL &&
 	   (anieditor->clk_frame != anieditor->hot_frame ||
 	    anieditor->clk_layer != anieditor->hot_layer)) {
     jmouse_set_cursor(JI_CURSOR_MOVE);
@@ -884,8 +880,8 @@ static void anieditor_get_drawable_frames(JWidget widget, JRect clip, int *first
 static void anieditor_draw_header(JWidget widget, JRect clip)
 {
   AniEditor* anieditor = anieditor_data(widget);
-  /* bool is_hot = (anieditor->hot_part == PART_HEADER_LAYER); */
-  /* bool is_clk = (anieditor->clk_part == PART_HEADER_LAYER); */
+  /* bool is_hot = (anieditor->hot_part == A_PART_HEADER_LAYER); */
+  /* bool is_clk = (anieditor->clk_part == A_PART_HEADER_LAYER); */
   int x1, y1, x2, y2;
 
   x1 = widget->rc->x1;
@@ -904,9 +900,9 @@ static void anieditor_draw_header(JWidget widget, JRect clip)
 static void anieditor_draw_header_frame(JWidget widget, JRect clip, int frame)
 {
   AniEditor* anieditor = anieditor_data(widget);
-  bool is_hot = (anieditor->hot_part == PART_HEADER_FRAME &&
+  bool is_hot = (anieditor->hot_part == A_PART_HEADER_FRAME &&
 		 anieditor->hot_frame == frame);
-  bool is_clk = (anieditor->clk_part == PART_HEADER_FRAME &&
+  bool is_clk = (anieditor->clk_part == A_PART_HEADER_FRAME &&
 		 anieditor->clk_frame == frame);
   int x1, y1, x2, y2;
   int cx1, cy1, cx2, cy2;
@@ -937,7 +933,7 @@ static void anieditor_draw_header_frame(JWidget widget, JRect clip, int frame)
      header clicked, we have to draw some indicators to show that the
      user can move frames */
   if (is_hot && !is_clk &&
-      anieditor->clk_part == PART_HEADER_FRAME) {
+      anieditor->clk_part == A_PART_HEADER_FRAME) {
     rectfill(ji_screen, x1+1, y1+1, x1+4, y2-1, ji_color_selected());
   }
 
@@ -1007,7 +1003,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
 static void anieditor_draw_separator(JWidget widget, JRect clip)
 {
   AniEditor* anieditor = anieditor_data(widget);
-  bool is_hot = (anieditor->hot_part == PART_SEPARATOR);
+  bool is_hot = (anieditor->hot_part == A_PART_SEPARATOR);
   int x1, y1, x2, y2;
 
   x1 = widget->rc->x1 + anieditor->separator_x;
@@ -1030,8 +1026,8 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   BITMAP *icon1 = get_gfx(layer->is_readable() ? GFX_BOX_SHOW: GFX_BOX_HIDE);
   BITMAP *icon2 = get_gfx(layer->is_writable() ? GFX_BOX_UNLOCK: GFX_BOX_LOCK);
   bool selected_layer = (layer == anieditor->sprite->layer);
-  bool is_hot = (anieditor->hot_part == PART_LAYER && anieditor->hot_layer == layer_index);
-  bool is_clk = (anieditor->clk_part == PART_LAYER && anieditor->clk_layer == layer_index);
+  bool is_hot = (anieditor->hot_part == A_PART_LAYER && anieditor->hot_layer == layer_index);
+  bool is_clk = (anieditor->clk_part == A_PART_LAYER && anieditor->clk_layer == layer_index);
   int bg = selected_layer ?
     ji_color_selected(): (is_hot ? ji_color_hotface():
 			  (is_clk ? ji_color_selected():
@@ -1068,7 +1064,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
      we have to draw some indicators to show that the user can move
      layers */
   if (is_hot && !is_clk &&
-      anieditor->clk_part == PART_LAYER) {
+      anieditor->clk_part == A_PART_LAYER) {
     rectfill(ji_screen, x1+1, y1+1, x2-1, y1+5, ji_color_selected());
   }
 
@@ -1082,9 +1078,9 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 	    u+ICONBORDER+icon1->w+ICONBORDER-1,
 	    y_mid-icon1->h/2+icon1->h+ICONBORDER-1,
 	    selected_layer,
-	    (anieditor->hot_part == PART_LAYER_EYE_ICON &&
+	    (anieditor->hot_part == A_PART_LAYER_EYE_ICON &&
 	     anieditor->hot_layer == layer_index),
-	    (anieditor->clk_part == PART_LAYER_EYE_ICON &&
+	    (anieditor->clk_part == A_PART_LAYER_EYE_ICON &&
 	     anieditor->clk_layer == layer_index));
 
   u += u+ICONBORDER+icon1->w+ICONBORDER;
@@ -1096,9 +1092,9 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 	    u+ICONBORDER+icon2->w+ICONBORDER-1,
 	    y_mid-icon1->h/2+icon1->h-1+ICONBORDER,
 	    selected_layer,
-	    (anieditor->hot_part == PART_LAYER_LOCK_ICON &&
+	    (anieditor->hot_part == A_PART_LAYER_LOCK_ICON &&
 	     anieditor->hot_layer == layer_index),
-	    (anieditor->clk_part == PART_LAYER_LOCK_ICON &&
+	    (anieditor->clk_part == A_PART_LAYER_LOCK_ICON &&
 	     anieditor->clk_layer == layer_index));
 
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
@@ -1122,6 +1118,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
 
 static void anieditor_draw_layer_padding(JWidget widget)
 {
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
   AniEditor* anieditor = anieditor_data(widget);
   int layer_index = anieditor->nlayers-1;
   int x1, y1, x2, y2;
@@ -1133,23 +1130,25 @@ static void anieditor_draw_layer_padding(JWidget widget)
 
   /* padding in the bottom side */
   if (y2+1 <= widget->rc->y2-1) {
-    rectfill(ji_screen, x1, y2+1, x2, widget->rc->y2-1, ji_color_disabled());
+    rectfill(ji_screen, x1, y2+1, x2, widget->rc->y2-1,
+	     theme->get_editor_face_color());
     rectfill(ji_screen,
 	     x2+1+anieditor->separator_w, y2+1,
 	     widget->rc->x2-1, widget->rc->y2-1,
-	     ji_color_disabled());
+	     theme->get_editor_face_color());
   }
 }
 
 static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int frame)
 {
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
   AniEditor* anieditor = anieditor_data(widget);
   Layer *layer = anieditor->layers[layer_index];
   bool selected_layer = (layer == anieditor->sprite->layer);
-  bool is_hot = (anieditor->hot_part == PART_CEL &&
+  bool is_hot = (anieditor->hot_part == A_PART_CEL &&
 		 anieditor->hot_layer == layer_index &&
 		 anieditor->hot_frame == frame);
-  bool is_clk = (anieditor->clk_part == PART_CEL &&
+  bool is_clk = (anieditor->clk_part == A_PART_CEL &&
 		 anieditor->clk_layer == layer_index &&
 		 anieditor->clk_frame == frame);
   int bg = is_hot ? ji_color_hotface():
@@ -1222,7 +1221,7 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   /* if this cel is hot and other cel was clicked, we have to draw
      some indicators to show that the user can move cels */
   if (is_hot && !is_clk &&
-      anieditor->clk_part == PART_CEL) {
+      anieditor->clk_part == A_PART_CEL) {
     rectfill(ji_screen, x1+1, y1+1, x1+FRMSIZE/3, y1+4, ji_color_selected());
     rectfill(ji_screen, x1+1, y1+5, x1+4, y1+FRMSIZE/3, ji_color_selected());
 
@@ -1242,7 +1241,8 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
       /* right side */
       vline(ji_screen, x2+1, y1, y2, ji_color_foreground());
       if (x2+2 <= widget->rc->x2-1)
-	rectfill(ji_screen, x2+2, y1, widget->rc->x2-1, y2, ji_color_disabled());
+	rectfill(ji_screen, x2+2, y1, widget->rc->x2-1, y2,
+		 theme->get_editor_face_color());
     }
   }
 
@@ -1254,30 +1254,30 @@ static bool anieditor_draw_part(JWidget widget, int part, int layer, int frame)
   AniEditor* anieditor = anieditor_data(widget);
 
   switch (part) {
-    case PART_NOTHING:
+    case A_PART_NOTHING:
       /* do nothing */
       return true;
-    case PART_SEPARATOR:
+    case A_PART_SEPARATOR:
       anieditor_draw_separator(widget, widget->rc);
       return true;
-    case PART_HEADER_LAYER:
+    case A_PART_HEADER_LAYER:
       anieditor_draw_header(widget, widget->rc);
       return true;
-    case PART_HEADER_FRAME:
+    case A_PART_HEADER_FRAME:
       if (frame >= 0 && frame < anieditor->sprite->frames) {
 	anieditor_draw_header_frame(widget, widget->rc, frame);
 	return true;
       }
       break;
-    case PART_LAYER:
-    case PART_LAYER_EYE_ICON:
-    case PART_LAYER_LOCK_ICON:
+    case A_PART_LAYER:
+    case A_PART_LAYER_EYE_ICON:
+    case A_PART_LAYER_LOCK_ICON:
       if (layer >= 0 && layer < anieditor->nlayers) {
 	anieditor_draw_layer(widget, widget->rc, layer);
 	return true;
       }
       break;
-    case PART_CEL:
+    case A_PART_CEL:
       if (layer >= 0 && layer < anieditor->nlayers &&
 	  frame >= 0 && frame < anieditor->sprite->frames) {
 	anieditor_draw_cel(widget, widget->rc, layer, frame);
@@ -1324,7 +1324,7 @@ static void anieditor_hot_this(JWidget widget, int hot_part, int hot_layer, int 
 
     /* clean the old 'hot' thing */
     old_hot_part = anieditor->hot_part;
-    anieditor->hot_part = PART_NOTHING;
+    anieditor->hot_part = A_PART_NOTHING;
 
     anieditor_draw_part(widget,
 			old_hot_part,
@@ -1337,7 +1337,7 @@ static void anieditor_hot_this(JWidget widget, int hot_part, int hot_layer, int 
     anieditor->hot_frame = hot_frame;
 
     if (!anieditor_draw_part(widget, hot_part, hot_layer, hot_frame)) {
-      anieditor->hot_part = PART_NOTHING;
+      anieditor->hot_part = A_PART_NOTHING;
     }
 
     jmouse_show();
@@ -1400,7 +1400,7 @@ static void anieditor_clean_clk(JWidget widget)
 {
   AniEditor* anieditor = anieditor_data(widget);
   int clk_part = anieditor->clk_part;
-  anieditor->clk_part = PART_NOTHING;
+  anieditor->clk_part = A_PART_NOTHING;
   
   anieditor_draw_part(widget,
 		      clk_part,
