@@ -225,7 +225,7 @@
       <menu text="&amp;Layer">
 	<item command="layer_properties" text="&amp;Properties..." />
 	<separator />
-	<item command="new_layer" text="&amp;New Layer..." />
+	<item command="new_layer" text="&amp;New Layer" />
 	<item command="remove_layer" text="&amp;Remove Layer" />
 	<item command="background_from_layer" text="&amp;Background from Layer" />
 	<item command="layer_from_background" text="&amp;Layer from Background" />

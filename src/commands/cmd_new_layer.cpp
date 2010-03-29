@@ -21,6 +21,7 @@
 #include "jinete/jinete.h"
 
 #include "commands/command.h"
+#include "commands/params.h"
 #include "app.h"
 #include "modules/gui.h"
 #include "raster/layer.h"
@@ -39,11 +40,16 @@ public:
   Command* clone() { return new NewLayerCommand(*this); }
 
 protected:
+  void load_params(Params* params);
   bool enabled(Context* context);
   void execute(Context* context);
+
+private:
+  bool m_ask;
+  std::string m_name;
 };
 
-static char* get_unique_layer_name(Sprite* sprite);
+static std::string get_unique_layer_name(Sprite* sprite);
 static int get_max_layer_num(Layer* layer);
 
 NewLayerCommand::NewLayerCommand()
@@ -51,6 +57,16 @@ NewLayerCommand::NewLayerCommand()
 	    "New Layer",
 	    CmdRecordableFlag)
 {
+  m_ask = false;
+  m_name = "";
+}
+
+void NewLayerCommand::load_params(Params* params)
+{
+  std::string ask = params->get("ask");
+  if (ask == "true") m_ask = true;
+
+  m_name = params->get("name");
 }
 
 bool NewLayerCommand::enabled(Context* context)
@@ -63,43 +79,48 @@ bool NewLayerCommand::enabled(Context* context)
 void NewLayerCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
+  std::string name;
 
-  FramePtr window(load_widget("newlay.jid", "new_layer"));
-  JWidget name_widget = find_widget(window, "name");
+  // Default name (m_name is a name specified in params)
+  if (!m_name.empty())
+    name = m_name;
+  else
+    name = get_unique_layer_name(sprite);
+
+  // If params specify to ask the user about the name...
+  if (m_ask) {
+    // We open the window to ask the name
+    FramePtr window(load_widget("newlay.jid", "new_layer"));
+    JWidget name_widget = find_widget(window, "name");
+    name_widget->setText(name.c_str());
+    jwidget_set_min_size(name_widget, 128, 0);
+
+    window->open_window_fg();
+
+    if (window->get_killer() != jwidget_find_name(window, "ok"))
+      return;
+
+    name = jwidget_find_name(window, "name")->getText();
+  }
+
+  Layer* layer;
   {
-    char* name = get_unique_layer_name(sprite);
-    name_widget->setText(name);
-    jfree(name);
+    Undoable undoable(sprite, "New Layer");
+    layer = undoable.new_layer();
+    undoable.commit();
   }
-  jwidget_set_min_size(name_widget, 128, 0);
+  layer->set_name(name);
+  update_screen_for_sprite(sprite);
 
-  window->open_window_fg();
-
-  if (window->get_killer() == jwidget_find_name(window, "ok")) {
-    const char* name = jwidget_find_name(window, "name")->getText();
-    Layer* layer;
-    {
-      Undoable undoable(sprite, "New Layer");
-      layer = undoable.new_layer();
-      undoable.commit();
-    }
-    layer->set_name(name);
-    update_screen_for_sprite(sprite);
-
-    app_get_statusbar()->dirty();
-    app_get_statusbar()->showTip(1000, _("Layer `%s' created"), name);
-  }
+  app_get_statusbar()->dirty();
+  app_get_statusbar()->showTip(1000, _("Layer `%s' created"), name.c_str());
 }
 
-static char* get_unique_layer_name(Sprite* sprite)
+static std::string get_unique_layer_name(Sprite* sprite)
 {
-  if (sprite != NULL) {
-    char buf[1024];
-    sprintf(buf, "Layer %d", get_max_layer_num(sprite->get_folder())+1);
-    return jstrdup(buf);
-  }
-  else
-    return NULL;
+  char buf[1024];
+  sprintf(buf, "Layer %d", get_max_layer_num(sprite->get_folder())+1);
+  return buf;
 }
 
 static int get_max_layer_num(Layer* layer)
