@@ -54,6 +54,17 @@ libpng_files="third_party/libpng/*.[ch]		\
 	      third_party/libpng/TODO		\
 	      third_party/libpng/Y2KINFO"
 
+tinyxml_files="third_party/tinyxml/*.txt	\
+	       third_party/tinyxml/*.cpp	\
+	       third_party/tinyxml/*.h"
+
+vaca_files="third_party/vaca/*.txt		\
+	    third_party/vaca/include/Vaca/*.h	\
+	    third_party/vaca/src/*.cpp		\
+	    third_party/vaca/src/allegro/*.h	\
+	    third_party/vaca/src/unix/*.h	\
+	    third_party/vaca/src/win32/*.h"
+
 zlib_files="third_party/zlib/*.[ch]		\
 	    third_party/zlib/*.txt		\
 	    third_party/zlib/README"
@@ -70,6 +81,7 @@ ase_files="config.h				\
 	   makefile.mgw				\
 	   makefile.vc				\
 	   *.txt				\
+	   *.html				\
 	   data/aseicon.*			\
 	   data/convmatr.def			\
 	   data/*.xml				\
@@ -149,6 +161,8 @@ cp --parents					\
     $jpeg_files					\
     $libart_files				\
     $libpng_files				\
+    $tinyxml_files				\
+    $vaca_files					\
     $zlib_files					\
     $ase_files					\
     "$dir/$distdir"
@@ -168,11 +182,8 @@ fi
 function def_common_files()
 {
   txt_files="							     \
-$1/AUTHORS.txt							     \
-$1/LEGAL.txt							     \
 $1/NEWS.txt							     \
-$1/README.txt							     \
-$1/WARNING.txt							     \
+$1/README.html							     \
 $1/COPYING							     \
 $1/data/convmatr.def						     \
 $1/data/jids/*.jid						     \
