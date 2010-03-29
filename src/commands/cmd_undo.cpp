@@ -56,9 +56,9 @@ void UndoCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 
-  statusbar_show_tip(app_get_statusbar(), 1000,
-		     _("Undid %s"),
-		     undo_get_next_undo_label(sprite->undo));
+  app_get_statusbar()
+    ->showTip(1000, _("Undid %s"),
+	      undo_get_next_undo_label(sprite->undo));
 
   undo_do_undo(sprite->undo);
   sprite_generate_mask_boundaries(sprite);

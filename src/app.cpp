@@ -100,7 +100,7 @@ static Widget* box_toolbar = NULL;    /* box where the tools bar is */
 static Widget* box_statusbar = NULL;  /* box where the status bar is */
 static Widget* box_tabsbar = NULL;    /* box where the tabs bar is */
 static Widget* menubar = NULL;	      /* the menu bar widget */
-static Widget* statusbar = NULL;      /* the status bar widget */
+static StatusBar* statusbar = NULL;      /* the status bar widget */
 static Widget* colorbar = NULL;	      /* the color bar widget */
 static Widget* toolbar = NULL;	      /* the tool bar widget */
 static Widget* tabsbar = NULL;	      /* the tabs bar widget */
@@ -172,7 +172,7 @@ int App::run()
     box_tabsbar = jwidget_find_name(top_window, "tabsbar");
 
     menubar = jmenubar_new();
-    statusbar = statusbar_new();
+    statusbar = new StatusBar();
     colorbar = colorbar_new(box_colorbar->getAlign());
     toolbar = toolbar_new();
     tabsbar = tabs_new(tabsbar_select_callback);
@@ -434,15 +434,15 @@ int app_get_current_image_type()
 
 Frame* app_get_top_window() { return top_window; }
 Widget* app_get_menubar() { return menubar; }
-Widget* app_get_statusbar() { return statusbar; }
+StatusBar* app_get_statusbar() { return statusbar; }
 Widget* app_get_colorbar() { return colorbar; }
 Widget* app_get_toolbar() { return toolbar; }
 Widget* app_get_tabsbar() { return tabsbar; }
 
 void app_default_statusbar_message()
 {
-  statusbar_set_text(app_get_statusbar(), 250,
-		     "%s %s | %s", PACKAGE, VERSION, COPYRIGHT);
+  app_get_statusbar()
+    ->setStatusText(250, "%s %s | %s", PACKAGE, VERSION, COPYRIGHT);
 }
 
 int app_get_fg_color(Sprite *sprite)

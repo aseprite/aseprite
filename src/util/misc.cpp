@@ -197,8 +197,8 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
       jwidget_dirty(editor);
 
       /* update status bar */
-      statusbar_set_text
-	(app_get_statusbar(), 0,
+      app_get_statusbar()->setStatusText
+	(0,
 	 "Pos %3d %3d Offset %3d %3d",
 	 (int)cel->x,
 	 (int)cel->y,

@@ -71,7 +71,7 @@ static void monitor_savefile_bg(void *_data)
   FileOp *fop = (FileOp *)data->fop;
 
   if (data->progress)
-    progress_update(data->progress, fop_get_progress(fop));
+    data->progress->setPos(fop_get_progress(fop));
 
   if (fop_is_done(fop))
     remove_gui_monitor(data->monitor);
@@ -101,7 +101,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
       SaveFileData* data = new SaveFileData;
 
       data->fop = fop;
-      data->progress = progress_new(app_get_statusbar());
+      data->progress = app_get_statusbar()->addProgress();
       data->thread = thread;
       data->alert_window = jalert_new(PACKAGE
 				      "<<Saving file:<<%s||&Cancel",
@@ -132,12 +132,12 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 	if (mark_as_saved)
 	  sprite_mark_as_saved(sprite);
 
-	statusbar_set_text(app_get_statusbar(),
-			   2000, "File %s, saved.",
-			   get_filename(sprite->filename));
+	app_get_statusbar()
+	  ->setStatusText(2000, "File %s, saved.",
+			  get_filename(sprite->filename));
       }
 
-      progress_free(data->progress);
+      delete data->progress;
       jwidget_free(data->alert_window);
       fop_free(fop);
       delete data;

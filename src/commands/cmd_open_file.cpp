@@ -97,7 +97,7 @@ static void monitor_openfile_bg(void* _data)
   FileOp* fop = (FileOp*)data->fop;
 
   if (data->progress)
-    progress_update(data->progress, fop_get_progress(fop));
+    data->progress->setPos(fop_get_progress(fop));
 
   // Is done? ...ok, now the sprite is in the main thread only...
   if (fop_is_done(fop))
@@ -165,7 +165,7 @@ void OpenFileCommand::execute(Context* context)
 	  OpenFileData* data = new OpenFileData;
 
 	  data->fop = fop;
-	  data->progress = progress_new(app_get_statusbar());
+	  data->progress = app_get_statusbar()->addProgress();
 	  data->thread = thread;
 	  data->alert_window = jalert_new(PACKAGE
 					  "<<Loading file:<<%s||&Cancel",
@@ -203,7 +203,7 @@ void OpenFileCommand::execute(Context* context)
 	      unrecent = true;
 	  }
 
-	  progress_free(data->progress);
+	  delete data->progress;
 	  jwidget_free(data->alert_window);
 	  fop_free(fop);
 	  delete data;

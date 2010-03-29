@@ -45,7 +45,7 @@ Job::Job(const char* job_name)
   m_canceled_flag = false;
 
   m_mutex = new Mutex();
-  m_progress = progress_new(app_get_statusbar());
+  m_progress = app_get_statusbar()->addProgress();
   m_monitor = add_gui_monitor(&Job::monitor_proc,
 			      &Job::monitor_free,
 			      (void*)this);
@@ -70,7 +70,7 @@ Job::~Job()
     jthread_join(m_thread);
 
   if (m_progress)
-    progress_free(m_progress);
+    delete m_progress;
 
   if (m_mutex)
     delete m_mutex;
@@ -117,7 +117,7 @@ void Job::on_monitor_tick()
   ScopedLock hold(*m_mutex);
 
   // update progress
-  progress_update(m_progress, m_last_progress);
+  m_progress->setPos(m_last_progress);
 
   // is job done? we can close the monitor
   if (m_done_flag)

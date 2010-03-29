@@ -53,30 +53,26 @@ enum {
   ACTION_LAST,
 };
 
-static bool statusbar_msg_proc(JWidget widget, JMessage msg);
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
 static bool slider_change_hook(JWidget widget, void *data);
 static void button_command(JWidget widget, void *data);
 
-static void update_from_layer(StatusBar *statusbar);
-
-static void on_current_tool_change(JWidget widget)
+static int statusbar_type()
 {
-  if (jwidget_is_visible(widget)) {
-    Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
-    if (currentTool)
-      statusbar_set_text(widget, 500, "%s selected",
-			 currentTool->getText().c_str());
-  }
+  static int type = 0;
+  if (!type)
+    type = ji_register_widget_type();
+  return type;
 }
 
-JWidget statusbar_new()
+StatusBar::StatusBar()
+  : Widget(statusbar_type())
 {
 #define BUTTON_NEW(name, text, data)					\
   {									\
     (name) = jbutton_new(text);						\
-    (name)->user_data[0] = statusbar;					\
+    (name)->user_data[0] = this;					\
     setup_mini_look(name);						\
     jbutton_add_command_data((name), button_command, (void *)(data));	\
   }
@@ -87,97 +83,91 @@ JWidget statusbar_new()
     add_gfxicon_to_button((name), (icon), JI_CENTER | JI_MIDDLE);	\
   }
 
-  Widget* widget = new Widget(statusbar_type());
-  StatusBar* statusbar = jnew(StatusBar, 1);
+  jwidget_focusrest(this, true);
 
-  jwidget_add_hook(widget, statusbar_type(),
-		   statusbar_msg_proc, statusbar);
-  jwidget_focusrest(widget, true);
+  m_timeout = 0;
+  m_progress = jlist_new();
+  m_tipwindow = NULL;
 
-  {
-    JWidget box1, box2, box3;
+  // Construct the commands box
+  Widget* box1 = jbox_new(JI_HORIZONTAL);
+  Widget* box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  Widget* box3 = jbox_new(JI_HORIZONTAL);
+  m_slider = jslider_new(0, 255, 255);
 
-    statusbar->widget = widget;
-    statusbar->timeout = 0;
-    statusbar->progress = jlist_new();
-    statusbar->tipwindow = NULL;
+  setup_mini_look(m_slider);
 
-    /* construct the commands box */
-    box1 = jbox_new(JI_HORIZONTAL);
-    box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-    box3 = jbox_new(JI_HORIZONTAL);
-    statusbar->slider = jslider_new(0, 255, 255);
+  ICON_NEW(m_b_first, GFX_ANI_FIRST, ACTION_FIRST);
+  ICON_NEW(m_b_prev, GFX_ANI_PREV, ACTION_PREV);
+  ICON_NEW(m_b_play, GFX_ANI_PLAY, ACTION_PLAY);
+  ICON_NEW(m_b_next, GFX_ANI_NEXT, ACTION_NEXT);
+  ICON_NEW(m_b_last, GFX_ANI_LAST, ACTION_LAST);
 
-    setup_mini_look(statusbar->slider);
+  HOOK(m_slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
-    ICON_NEW(statusbar->b_first, GFX_ANI_FIRST, ACTION_FIRST);
-    ICON_NEW(statusbar->b_prev, GFX_ANI_PREV, ACTION_PREV);
-    ICON_NEW(statusbar->b_play, GFX_ANI_PLAY, ACTION_PLAY);
-    ICON_NEW(statusbar->b_next, GFX_ANI_NEXT, ACTION_NEXT);
-    ICON_NEW(statusbar->b_last, GFX_ANI_LAST, ACTION_LAST);
+  jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
+  jwidget_noborders(box2);
+  jwidget_noborders(box3);
+  jwidget_expansive(box3, true);
 
-    HOOK(statusbar->slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-    jwidget_set_min_size(statusbar->slider, JI_SCREEN_W/5, 0);
+  jwidget_add_child(box2, m_b_first);
+  jwidget_add_child(box2, m_b_prev);
+  jwidget_add_child(box2, m_b_play);
+  jwidget_add_child(box2, m_b_next);
+  jwidget_add_child(box2, m_b_last);
 
-    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
-    jwidget_noborders(box3);
-    jwidget_expansive(box3, true);
+  jwidget_add_child(box1, box3);
+  jwidget_add_child(box1, box2);
+  jwidget_add_child(box1, m_slider);
 
-    jwidget_add_child(box2, statusbar->b_first);
-    jwidget_add_child(box2, statusbar->b_prev);
-    jwidget_add_child(box2, statusbar->b_play);
-    jwidget_add_child(box2, statusbar->b_next);
-    jwidget_add_child(box2, statusbar->b_last);
+  m_commands_box = box1;
 
-    jwidget_add_child(box1, box3);
-    jwidget_add_child(box1, box2);
-    jwidget_add_child(box1, statusbar->slider);
+  App::instance()->CurrentToolChange.connect(Vaca::Bind<void>(&StatusBar::onCurrentToolChange, this));
+}
 
-    statusbar->commands_box = box1;
+StatusBar::~StatusBar()
+{
+  JLink link;
 
-    App::instance()->CurrentToolChange.connect(Vaca::Bind<void>(&on_current_tool_change, widget));
+  JI_LIST_FOR_EACH(m_progress, link) {
+    jfree(link->data);
   }
+  jlist_free(m_progress);
 
-  return widget;
+  if (m_tipwindow != NULL)
+    jwidget_free(m_tipwindow);
 }
 
-int statusbar_type()
+void StatusBar::onCurrentToolChange()
 {
-  static int type = 0;
-  if (!type)
-    type = ji_register_widget_type();
-  return type;
+  if (jwidget_is_visible(this)) {
+    Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
+    if (currentTool)
+      this->setStatusText(500, "%s selected",
+			  currentTool->getText().c_str());
+  }
 }
 
-StatusBar *statusbar_data(JWidget widget)
+void StatusBar::setStatusText(int msecs, const char *format, ...)
 {
-  return reinterpret_cast<StatusBar*>(jwidget_get_data(widget, statusbar_type()));
-}
-
-void statusbar_set_text(JWidget widget, int msecs, const char *format, ...)
-{
-  StatusBar *statusbar = statusbar_data(widget);
-
-  if ((ji_clock > statusbar->timeout) || (msecs > 0)) {
-    char buf[256];		/* TODO warning buffer overflow */
+  if ((ji_clock > m_timeout) || (msecs > 0)) {
+    char buf[256];		// TODO warning buffer overflow
     va_list ap;
 
     va_start(ap, format);
     vsprintf(buf, format, ap);
     va_end(ap);
 
-    widget->setText(buf);
-    statusbar->timeout = ji_clock + msecs;
-    jwidget_dirty(widget);
+    this->setText(buf);
+    m_timeout = ji_clock + msecs;
+    this->dirty();
   }
 }
 
-void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
+void StatusBar::showTip(int msecs, const char *format, ...)
 {
-  StatusBar *statusbar = statusbar_data(widget);
-  Frame* tipwindow = statusbar->tipwindow;
-  char buf[256];		/* TODO warning buffer overflow */
+  char buf[256];		// TODO warning buffer overflow
   va_list ap;
   int x, y;
 
@@ -185,122 +175,120 @@ void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...)
   vsprintf(buf, format, ap);
   va_end(ap);
 
-  if (tipwindow == NULL) {
-    tipwindow = new TipWindow(buf);
-    tipwindow->user_data[0] = (void *)jmanager_add_timer(tipwindow, msecs);
-    tipwindow->user_data[1] = statusbar;
-    jwidget_add_hook(tipwindow, -1, tipwindow_msg_proc, NULL);
-
-    statusbar->tipwindow = tipwindow;
+  if (m_tipwindow == NULL) {
+    m_tipwindow = new TipWindow(buf);
+    m_tipwindow->user_data[0] = (void *)jmanager_add_timer(m_tipwindow, msecs);
+    m_tipwindow->user_data[1] = this;
+    jwidget_add_hook(m_tipwindow, -1, tipwindow_msg_proc, NULL);
   }
   else {
-    tipwindow->setText(buf);
+    m_tipwindow->setText(buf);
 
-    jmanager_set_timer_interval((size_t)tipwindow->user_data[0], msecs);
+    jmanager_set_timer_interval((size_t)m_tipwindow->user_data[0], msecs);
   }
 
-  if (jwidget_is_visible(tipwindow))
-    tipwindow->closeWindow(NULL);
+  if (jwidget_is_visible(m_tipwindow))
+    m_tipwindow->closeWindow(NULL);
 
-  tipwindow->open_window();
-  tipwindow->remap_window();
+  m_tipwindow->open_window();
+  m_tipwindow->remap_window();
 
-  x = widget->rc->x2 - jrect_w(tipwindow->rc);
-  y = widget->rc->y1 - jrect_h(tipwindow->rc);
-  tipwindow->position_window(x, y);
+  x = this->rc->x2 - jrect_w(m_tipwindow->rc);
+  y = this->rc->y1 - jrect_h(m_tipwindow->rc);
+  m_tipwindow->position_window(x, y);
 
-  jmanager_start_timer((size_t)tipwindow->user_data[0]);
+  jmanager_start_timer((size_t)m_tipwindow->user_data[0]);
 }
 
-void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color)
+void StatusBar::showColor(int msecs, int imgtype, color_t color)
 {
   char buf[128];		// TODO warning buffer overflow
   color_to_formalstring(imgtype, color, buf, sizeof(buf), true);
-  statusbar_set_text(widget, msecs, "%s %s", _("Color"), buf);
+  setStatusText(msecs, "%s %s", _("Color"), buf);
 }
 
-Progress *progress_new(JWidget widget)
+//////////////////////////////////////////////////////////////////////
+// Progress bars stuff
+
+Progress* StatusBar::addProgress()
 {
-  Progress *progress = jnew(Progress, 1);
-  if (!progress)
-    return NULL;
-
-  progress->statusbar = widget;
-  progress->pos = 0.0f;
-
-  jlist_append(statusbar_data(widget)->progress, progress);
-  jwidget_dirty(widget);
-
+  Progress* progress = new Progress(this);
+  jlist_append(m_progress, progress);
+  jwidget_dirty(this);
   return progress;
 }
 
-void progress_free(Progress *progress)
+void StatusBar::removeProgress(Progress* progress)
 {
-  jlist_remove(statusbar_data(progress->statusbar)->progress,
-	       progress);
-  jwidget_dirty(progress->statusbar);
+  assert(progress->m_statusbar == this);
 
-  jfree(progress);
+  jlist_remove(m_progress, progress);
+  jwidget_dirty(this);
 }
 
-void progress_update(Progress *progress, float progress_pos)
+Progress::Progress(StatusBar* statusbar)
+  : m_statusbar(statusbar)
+  , m_pos(0.0f)
 {
-  if (progress->pos != progress_pos) {
-    progress->pos = progress_pos;
-    jwidget_dirty(progress->statusbar);
+}
+
+Progress::~Progress()
+{
+  if (m_statusbar) {
+    m_statusbar->removeProgress(this);
+    m_statusbar = NULL;
   }
 }
 
-static bool statusbar_msg_proc(JWidget widget, JMessage msg)
+void Progress::setPos(float pos)
 {
-  StatusBar *statusbar = statusbar_data(widget);
+  if (m_pos != pos) {
+    m_pos = pos;
+    m_statusbar->dirty();
+  }
+}
 
+float Progress::getPos() const
+{
+  return m_pos;
+}
+
+//////////////////////////////////////////////////////////////////////
+// StatusBar message handler
+
+bool StatusBar::msg_proc(JMessage msg)
+{
   switch (msg->type) {
-
-    case JM_DESTROY: {
-      JLink link;
-
-      JI_LIST_FOR_EACH(statusbar->progress, link) {
-	jfree(link->data);
-      }
-      jlist_free(statusbar->progress);
-
-      if (statusbar->tipwindow != NULL)
-	jwidget_free(statusbar->tipwindow);
-
-      jfree(statusbar);
-      break;
-    }
 
     case JM_REQSIZE:
       msg->reqsize.w = msg->reqsize.h =
 	4*jguiscale()
-	+ jwidget_get_text_height(widget)
+	+ jwidget_get_text_height(this)
 	+ 4*jguiscale();
       return true;
 
     case JM_SETPOS:
-      jrect_copy(widget->rc, &msg->setpos.rect);
+      jrect_copy(this->rc, &msg->setpos.rect);
       {
-	JRect rc = jrect_new_copy(widget->rc);
+	JRect rc = jrect_new_copy(this->rc);
 	rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
-	jwidget_set_rect(statusbar->commands_box, rc);
+	jwidget_set_rect(m_commands_box, rc);
 	jrect_free(rc);
       }
       return true;
 
     case JM_CLOSE:
-      if (!jwidget_has_child(widget, statusbar->commands_box)) {
+      if (!jwidget_has_child(this, m_commands_box)) {
 	/* append the "commands_box" to destroy it in the jwidget_free */
-	jwidget_add_child(widget, statusbar->commands_box);
+	jwidget_add_child(this, m_commands_box);
       }
       break;
 
     case JM_DRAW: {
-      SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+      SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
       int text_color = ji_color_foreground();
       int face_color = ji_color_face();
-      JRect rc = jwidget_get_rect(widget);
+      JRect rc = jwidget_get_rect(this);
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       jrect_displace(rc,
@@ -315,15 +303,15 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
       rc->y2 -= 2*jguiscale();
 
       // Status bar text
-      if (widget->getText()) {
-	textout_ex(doublebuffer, widget->getFont(), widget->getText(),
+      if (this->getText()) {
+	textout_ex(doublebuffer, this->getFont(), this->getText(),
 		   rc->x1+4*jguiscale(),
-		   (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
+		   (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
 		   text_color, -1);
       }
 
       // Draw progress bar
-      if (!jlist_empty(statusbar->progress)) {
+      if (!jlist_empty(m_progress)) {
 	int width = 64;
 	int y1, y2;
 	int x = rc->x2 - (width+4);
@@ -332,12 +320,12 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	y1 = rc->y1;
 	y2 = rc->y2-1;
 
-	JI_LIST_FOR_EACH(statusbar->progress, link) {
+	JI_LIST_FOR_EACH(m_progress, link) {
 	  Progress* progress = reinterpret_cast<Progress*>(link->data);
 
 	  draw_progress_bar(doublebuffer,
 			    x, y1, x+width-1, y2,
-			    progress->pos);
+			    progress->getPos());
 
 	  x -= width+4;
 	}
@@ -373,9 +361,9 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	      }
 	      
 	      usprintf(buf, "%d", c);
-	      textout_centre_ex(doublebuffer, widget->getFont(), buf,
+	      textout_centre_ex(doublebuffer, this->getFont(), buf,
 				(x1+x2)/2,
-				(rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
+				(rc->y1+rc->y2)/2-text_height(this->getFont())/2,
 				hot ? theme->get_button_hot_text_color():
 				      theme->get_button_normal_text_color(), -1);
 	    }
@@ -393,9 +381,9 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 	      ji_screen = old_ji_screen;
 	    }
 
-	    textout_centre_ex(doublebuffer, widget->getFont(), "No Sprite",
+	    textout_centre_ex(doublebuffer, this->getFont(), "No Sprite",
 			      (x1+x2)/2,
-			      (rc->y1+rc->y2)/2-text_height(widget->getFont())/2,
+			      (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
 			      theme->get_button_normal_text_color(), -1);
 	  }
 	}
@@ -416,38 +404,38 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_MOUSEENTER:
-      if (!jwidget_has_child(widget, statusbar->commands_box)) {
+      if (!jwidget_has_child(this, m_commands_box)) {
 	bool state = (UIContext::instance()->get_current_sprite() != NULL);
 
-	statusbar->b_first->setEnabled(state);
-	statusbar->b_prev->setEnabled(state);
-	statusbar->b_play->setEnabled(state);
-	statusbar->b_next->setEnabled(state);
-	statusbar->b_last->setEnabled(state);
+	m_b_first->setEnabled(state);
+	m_b_prev->setEnabled(state);
+	m_b_play->setEnabled(state);
+	m_b_next->setEnabled(state);
+	m_b_last->setEnabled(state);
 
-	update_from_layer(statusbar);
+	updateFromLayer();
 
-	jwidget_add_child(widget, statusbar->commands_box);
-	jwidget_dirty(widget);
+	jwidget_add_child(this, m_commands_box);
+	jwidget_dirty(this);
       }
       break;
 
     case JM_MOUSELEAVE:
-      if (jwidget_has_child(widget, statusbar->commands_box)) {
+      if (jwidget_has_child(this, m_commands_box)) {
 	/* if we want restore the state-bar and the slider doesn't have
 	   the capture... */
-	if (jmanager_get_capture() != statusbar->slider) {
+	if (jmanager_get_capture() != m_slider) {
 	  /* exit from command mode */
 	  jmanager_free_focus();
 
-	  jwidget_remove_child(widget, statusbar->commands_box);
-	  jwidget_dirty(widget);
+	  jwidget_remove_child(this, m_commands_box);
+	  jwidget_dirty(this);
 	}
       }
       break;
   }
 
-  return false;
+  return Widget::msg_proc(msg);
 }
 
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
@@ -507,7 +495,7 @@ static void button_command(JWidget widget, void *data)
     UIContext::instance()->execute_command(cmd);
 }
 
-static void update_from_layer(StatusBar *statusbar)
+void StatusBar::updateFromLayer()
 {
   try {
     const CurrentSpriteReader sprite(UIContext::instance());
@@ -519,16 +507,16 @@ static void update_from_layer(StatusBar *statusbar)
 	sprite->layer->is_image() &&
 	!sprite->layer->is_background() &&
 	(cel = ((LayerImage*)sprite->layer)->get_cel(sprite->frame))) {
-      jslider_set_value(statusbar->slider, MID(0, cel->opacity, 255));
-      jwidget_enable(statusbar->slider);
+      jslider_set_value(m_slider, MID(0, cel->opacity, 255));
+      jwidget_enable(m_slider);
     }
     else {
-      jslider_set_value(statusbar->slider, 255);
-      jwidget_disable(statusbar->slider);
+      jslider_set_value(m_slider, 255);
+      jwidget_disable(m_slider);
     }
   }
   catch (locked_sprite_exception&) {
     // disable all
-    jwidget_disable(statusbar->slider);
+    jwidget_disable(m_slider);
   }
 }

@@ -25,7 +25,7 @@ namespace Vaca { class Mutex; }
 
 class Frame;
 struct Monitor;
-struct Progress;
+class Progress;
 
 class Job
 {

@@ -373,11 +373,12 @@ static bool brush_type_change_hook(JWidget widget, void *data)
 
   jwidget_dirty((JWidget)data);
 
-  statusbar_set_text(app_get_statusbar(), 250,
-		      "Pen shape: %s",
-		      type == PEN_TYPE_CIRCLE ? "Circle":
-		      type == PEN_TYPE_SQUARE ? "Square":
-		      type == PEN_TYPE_LINE ? "Line": "Unknown");
+  app_get_statusbar()
+    ->setStatusText(250,
+		    "Pen shape: %s",
+		    type == PEN_TYPE_CIRCLE ? "Circle":
+		    type == PEN_TYPE_SQUARE ? "Square":
+		    type == PEN_TYPE_LINE ? "Line": "Unknown");
 
   return true;
 }

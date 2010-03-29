@@ -71,9 +71,9 @@ void GotoPreviousLayerCommand::execute(Context* context)
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
 
-  statusbar_show_tip(app_get_statusbar(), 1000,
-		     _("Layer `%s' selected"),
-		     sprite->layer->get_name().c_str());
+  app_get_statusbar()
+    ->showTip(1000, _("Layer `%s' selected"),
+	      sprite->layer->get_name().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -119,9 +119,9 @@ void GotoNextLayerCommand::execute(Context* context)
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
 
-  statusbar_show_tip(app_get_statusbar(), 1000,
-		     _("Layer `%s' selected"),
-		     sprite->layer->get_name().c_str());
+  app_get_statusbar()
+    ->showTip(1000, _("Layer `%s' selected"),
+	      sprite->layer->get_name().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

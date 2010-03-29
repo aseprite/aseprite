@@ -24,6 +24,7 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
+#include "widgets/statebar.h"
 
 class AdvancedModeCommand : public Command
 {

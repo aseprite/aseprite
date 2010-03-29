@@ -30,6 +30,7 @@ class LegacyModules;
 class Params;
 class Sprite;
 class ToolBox;
+class StatusBar;
 
 class App
 {
@@ -68,7 +69,7 @@ int app_get_current_image_type();
 
 Frame* app_get_top_window();
 Widget* app_get_menubar();
-Widget* app_get_statusbar();
+StatusBar* app_get_statusbar();
 Widget* app_get_colorbar();
 Widget* app_get_toolbar();
 Widget* app_get_tabsbar();

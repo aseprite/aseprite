@@ -94,7 +94,7 @@ protected:
 	     settings->getSnapToGrid() ? _("On"):
 					 _("Off"));
 
-    statusbar_set_text(app_get_statusbar(), 250, buf);
+    app_get_statusbar()->setStatusText(250, buf);
   }
 };
 

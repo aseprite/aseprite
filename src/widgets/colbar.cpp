@@ -424,7 +424,7 @@ bool ColorBar::msg_proc(JMessage msg)
 	m_hot = HOTCOLOR_NONE;
 	dirty();
 
-	statusbar_set_text(app_get_statusbar(), 0, "");
+	app_get_statusbar()->setStatusText(0, "");
       }
       break;
 
@@ -632,8 +632,6 @@ Rect ColorBar::getBgBounds() const
 
 void ColorBar::updateStatusBar(color_t color, int msecs)
 {
-  statusbar_show_color(app_get_statusbar(),
-		       msecs,
-		       app_get_current_image_type(),
-		       color);
+  app_get_statusbar()
+    ->showColor(msecs, app_get_current_image_type(), color);
 }

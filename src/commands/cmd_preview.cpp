@@ -109,7 +109,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
     bmp = create_bitmap(sprite->w, sprite->h);
     if (bmp) {
       /* print a informative text */
-      statusbar_set_text(app_get_statusbar(), 1, _("Rendering..."));
+      app_get_statusbar()->setStatusText(1, _("Rendering..."));
       jwidget_flush_redraw(app_get_statusbar());
       jmanager_dispatch_messages(ji_get_default_manager());
 

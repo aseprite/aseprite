@@ -77,10 +77,10 @@ void NewFrameCommand::execute(Context* context)
     undoable.commit();
   }
   update_screen_for_sprite(sprite);
-  statusbar_show_tip(app_get_statusbar(), 1000,
-		     _("New frame %d/%d"),
-		     sprite->frame+1,
-		     sprite->frames);
+  app_get_statusbar()
+    ->showTip(1000, _("New frame %d/%d"),
+	      sprite->frame+1,
+	      sprite->frames);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -125,7 +125,7 @@ static void monitor_effect_bg(void *_data)
   }
 
   if (data->progress)
-    progress_update(data->progress, pos);
+    data->progress->setPos(pos);
 
   if (data->done)
     remove_gui_monitor(data->monitor);
@@ -162,7 +162,7 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   data->pos = 0.0;
   data->done = false;
   data->cancelled = false;
-  data->progress = progress_new(app_get_statusbar());
+  data->progress = app_get_statusbar()->addProgress();
   data->thread = jthread_new(effect_bg, data);
   data->alert_window = jalert_new(PACKAGE
 				  "<<Applying effect...||&Cancel");
@@ -184,7 +184,7 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   /* wait the `effect_bg' thread */
   jthread_join(data->thread);
 
-  progress_free(data->progress);
+  delete data->progress;
   jwidget_free(data->alert_window);
   delete data;
 }

@@ -627,9 +627,8 @@ void Editor::editor_update_statusbar_for_standby()
     ustrcpy(buf, empty_string);
   }
 
-  statusbar_set_text
-    (app_get_statusbar(), 0,
-     "%s %3d %3d (%s %3d %3d) [%s %d] %s",
+  app_get_statusbar()->setStatusText
+    (0, "%s %3d %3d (%s %3d %3d) [%s %d] %s",
      _("Pos"), x, y,
      _("Size"),
      ((m_sprite->mask->bitmap)?
@@ -1048,9 +1047,8 @@ bool Editor::msg_proc(JMessage msg)
 	else if (m_state == EDITOR_STATE_MOVING_SCROLL) {
 	  int x, y;
 	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
-	  statusbar_set_text
-	    (app_get_statusbar(), 0,
-	     "Pos %3d %3d (Size %3d %3d)", x, y,
+	  app_get_statusbar()->setStatusText
+	    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
 	     m_sprite->w, m_sprite->h);
 	}
       }
@@ -1726,7 +1724,7 @@ public:
 
   void updateStatusBar(const char* text)
   {
-    statusbar_set_text(app_get_statusbar(), 0, text);
+    app_get_statusbar()->setStatusText(0, text);
   }
 
 };

@@ -20,55 +20,65 @@
 #define WIDGETS_STATEBAR_H_INCLUDED
 
 #include "jinete/jbase.h"
+#include "jinete/jwidget.h"
 
 #include "core/color.h"
 
-class Widget;
 class Frame;
+class StatusBar;
 
-struct Progress
+class Progress
 {
-  Widget* statusbar;
-  float pos;
+  friend class StatusBar;
+
+public:
+  ~Progress();
+  void setPos(float pos);
+  float getPos() const;
+
+private:
+  Progress();
+  Progress(StatusBar* statusbar);
+  StatusBar* m_statusbar;
+  float m_pos;
 };
 
-struct StatusBar
+class StatusBar : public Widget
 {
-  Widget* widget;
-  int timeout;
+  int m_timeout;
 
-  /* progress bar */
-  JList progress;
+  // Progress bar
+  JList m_progress;
 
-  /* box of main commands */
-  Widget* commands_box;
-  Widget* b_layer;			/* layer button */
-  Widget* slider;			/* opacity slider */
-  Widget* b_first;			/* go to first frame */
-  Widget* b_prev;			/* go to previous frame */
-  Widget* b_play;			/* play animation */
-  Widget* b_next;			/* go to next frame */
-  Widget* b_last;			/* go to last frame */
+  // Box of main commands
+  Widget* m_commands_box;
+  Widget* m_slider;			// Opacity slider
+  Widget* m_b_first;			// Go to first frame
+  Widget* m_b_prev;			// Go to previous frame
+  Widget* m_b_play;			// Play animation
+  Widget* m_b_next;			// Go to next frame
+  Widget* m_b_last;			// Go to last frame
 
-  /* tip window */
-  Frame* tipwindow;
+  // Tip window
+  Frame* m_tipwindow;
+
+public:
+  StatusBar();
+  ~StatusBar();
+
+  void setStatusText(int msecs, const char *format, ...);
+  void showTip(int msecs, const char *format, ...);
+  void showColor(int msecs, int imgtype, color_t color);
+  
+  Progress* addProgress();
+  void removeProgress(Progress* progress);
+
+protected:
+  virtual bool msg_proc(JMessage msg);
+
+private:
+  void onCurrentToolChange();
+  void updateFromLayer();
 };
-
-/* statusbar */
-
-JWidget statusbar_new();
-int statusbar_type();
-
-StatusBar *statusbar_data(JWidget widget);
-
-void statusbar_set_text(JWidget widget, int msecs, const char *format, ...);
-void statusbar_show_tip(JWidget widget, int msecs, const char *format, ...);
-void statusbar_show_color(JWidget widget, int msecs, int imgtype, color_t color);
-
-/* progress */
-
-Progress *progress_new(JWidget widget);
-void progress_free(Progress *progress);
-void progress_update(Progress *progress, float progress_pos);
 
 #endif

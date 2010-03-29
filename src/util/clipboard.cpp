@@ -852,8 +852,8 @@ static void update_status_bar(Editor* editor, Image *image,
   editor->screen_to_editor(x1, y1, &u1, &v1);
   editor->screen_to_editor(x2, y2, &u2, &v2);
 
-  statusbar_set_text
-    (app_get_statusbar(), 0,
+  app_get_statusbar()->setStatusText
+    (0,
      "Pos: %3d %3d Size: %3d %3d Orig: %3d %3d (%.02f%% %.02f%%) Angle: %3d",
      u1, v1, u2-u1, v2-v1,
      image->w, image->h,

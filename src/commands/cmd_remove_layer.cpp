@@ -74,9 +74,9 @@ void RemoveLayerCommand::execute(Context* context)
   update_screen_for_sprite(sprite);
 
   app_get_statusbar()->dirty();
-  statusbar_show_tip(app_get_statusbar(), 1000,
-		     _("Layer `%s' removed"),
-		     layer_name.c_str());
+  app_get_statusbar()
+    ->showTip(1000, _("Layer `%s' removed"),
+	      layer_name.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
