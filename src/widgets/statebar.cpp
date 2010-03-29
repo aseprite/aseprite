@@ -46,7 +46,6 @@
 #include "widgets/statebar.h"
 
 enum {
-  ACTION_LAYER,
   ACTION_FIRST,
   ACTION_PREV,
   ACTION_PLAY,
@@ -96,7 +95,7 @@ JWidget statusbar_new()
   jwidget_focusrest(widget, true);
 
   {
-    JWidget box1, box2;
+    JWidget box1, box2, box3;
 
     statusbar->widget = widget;
     statusbar->timeout = 0;
@@ -106,7 +105,7 @@ JWidget statusbar_new()
     /* construct the commands box */
     box1 = jbox_new(JI_HORIZONTAL);
     box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-    BUTTON_NEW(statusbar->b_layer, "*Current Layer*", ACTION_LAYER);
+    box3 = jbox_new(JI_HORIZONTAL);
     statusbar->slider = jslider_new(0, 255, 255);
 
     setup_mini_look(statusbar->slider);
@@ -122,16 +121,18 @@ JWidget statusbar_new()
 
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
     jwidget_noborders(box2);
+    jwidget_noborders(box3);
+    jwidget_expansive(box3, true);
 
-    jwidget_expansive(statusbar->b_layer, true);
-    jwidget_add_child(box1, statusbar->b_layer);
-    jwidget_add_child(box1, statusbar->slider);
     jwidget_add_child(box2, statusbar->b_first);
     jwidget_add_child(box2, statusbar->b_prev);
     jwidget_add_child(box2, statusbar->b_play);
     jwidget_add_child(box2, statusbar->b_next);
     jwidget_add_child(box2, statusbar->b_last);
+
+    jwidget_add_child(box1, box3);
     jwidget_add_child(box1, box2);
+    jwidget_add_child(box1, statusbar->slider);
 
     statusbar->commands_box = box1;
 
@@ -280,7 +281,12 @@ static bool statusbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SETPOS:
       jrect_copy(widget->rc, &msg->setpos.rect);
-      jwidget_set_rect(statusbar->commands_box, widget->rc);
+      {
+	JRect rc = jrect_new_copy(widget->rc);
+	rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
+	jwidget_set_rect(statusbar->commands_box, rc);
+	jrect_free(rc);
+      }
       return true;
 
     case JM_CLOSE:
@@ -489,7 +495,7 @@ static void button_command(JWidget widget, void *data)
   Command* cmd = NULL;
 
   switch ((size_t)data) {
-    case ACTION_LAYER: cmd = CommandsModule::instance()->get_command_by_name(CommandId::layer_properties); break;
+    //case ACTION_LAYER: cmd = CommandsModule::instance()->get_command_by_name(CommandId::layer_properties); break;
     case ACTION_FIRST: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_first_frame); break;
     case ACTION_PREV: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_previous_frame); break;
     case ACTION_PLAY: cmd = CommandsModule::instance()->get_command_by_name(CommandId::play_animation); break;
@@ -507,16 +513,6 @@ static void update_from_layer(StatusBar *statusbar)
     const CurrentSpriteReader sprite(UIContext::instance());
     Cel *cel;
 
-    /* layer button */
-    if (sprite && sprite->layer) {
-      statusbar->b_layer->setTextf("[%d] %s", sprite->frame, sprite->layer->get_name().c_str());
-      jwidget_enable(statusbar->b_layer);
-    }
-    else {
-      statusbar->b_layer->setText("Nothing");
-      jwidget_disable(statusbar->b_layer);
-    }
-
     /* opacity layer */
     if (sprite &&
 	sprite->layer &&
@@ -533,7 +529,6 @@ static void update_from_layer(StatusBar *statusbar)
   }
   catch (locked_sprite_exception&) {
     // disable all
-    jwidget_disable(statusbar->b_layer);
     jwidget_disable(statusbar->slider);
   }
 }
