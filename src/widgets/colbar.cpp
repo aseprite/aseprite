@@ -440,7 +440,7 @@ bool ColorBar::msg_proc(JMessage msg)
 
 	  if (((int)m_firstIndex)+delta < 0)
 	    m_firstIndex = 0;
-	  else if (m_firstIndex+delta > 256-getEntriesCount())
+	  else if (((int)m_firstIndex)+delta > 256-getEntriesCount())
 	    m_firstIndex = 256-getEntriesCount();
 	  else
 	    m_firstIndex += delta;
