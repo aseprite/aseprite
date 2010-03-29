@@ -359,8 +359,12 @@ bool StatusBar::msg_proc(JMessage msg)
 					 theme->get_button_normal_face_color());
 		ji_screen = old_ji_screen;
 	      }
-	      
-	      usprintf(buf, "%d", c);
+
+	      if (count == 1)
+		uszprintf(buf, sizeof(buf), "%s", (*it)->get_name().c_str());
+	      else
+		usprintf(buf, "%d", c);
+
 	      textout_centre_ex(doublebuffer, this->getFont(), buf,
 				(x1+x2)/2,
 				(rc->y1+rc->y2)/2-text_height(this->getFont())/2,
