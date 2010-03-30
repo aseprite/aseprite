@@ -94,7 +94,7 @@ Mask *load_msk_file(const char *filename)
 }
 
 /* saves an Animator Pro MSK file (really a PIC file) */
-int save_msk_file(Mask *mask, const char *filename)
+int save_msk_file(const Mask *mask, const char *filename)
 {
   if (mask->bitmap)
     return save_pic_file(filename, mask->x, mask->y, NULL, mask->bitmap);

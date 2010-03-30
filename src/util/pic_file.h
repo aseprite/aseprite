@@ -23,10 +23,10 @@
 
 class Image;
 
-Image* load_pic_file(const char *filename, int *x, int *y,
-		     struct RGB *palette);
+Image* load_pic_file(const char* filename, int *x, int *y,
+		     RGB* palette);
 
-int save_pic_file(const char *filename, int x, int y,
-		  struct RGB *palette, Image* image);
+int save_pic_file(const char* filename, int x, int y,
+		  const RGB* palette, const Image* image);
 
 #endif

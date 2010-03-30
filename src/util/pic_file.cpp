@@ -173,10 +173,11 @@ Image *load_pic_file(const char *filename, int *x, int *y, RGB *palette)
 }
 
 /* saves an Animator Pro PIC file */
-int save_pic_file(const char *filename, int x, int y, RGB *palette, Image *image)
+int save_pic_file(const char *filename, int x, int y,
+		  const RGB* palette, const Image* image)
 {
   int c, u, v, bpp, size, byte;
-  PACKFILE *f;
+  PACKFILE* f;
 
   if (image->imgtype == IMAGE_INDEXED)
     bpp = 8;
