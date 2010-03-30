@@ -98,7 +98,7 @@ static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame);
 static void ase_file_write_color2_chunk(FILE *f, Palette *pal);
 static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previous_layer, int *current_level);
 static void ase_file_write_layer_chunk(FILE *f, Layer *layer);
-static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, int chunk_end);
+static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, size_t chunk_end);
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite);
 static Mask *ase_file_read_mask_chunk(FILE *f);
 static void ase_file_write_mask_chunk(FILE *f, Mask *mask);
@@ -858,11 +858,11 @@ static void write_raw_image(FILE* f, Image* image)
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-static void read_compressed_image(FILE* f, Image* image, int chunk_end, FileOp* fop, ASE_Header* header)
+static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileOp* fop, ASE_Header* header)
 {
   PixelIO<ImageTraits> pixel_io;
   z_stream zstream;
-  int x, y, err;
+  int y, err;
 
   zstream.zalloc = (alloc_func)0;
   zstream.zfree  = (free_func)0;
@@ -878,7 +878,7 @@ static void read_compressed_image(FILE* f, Image* image, int chunk_end, FileOp* 
   int uncompressed_offset = 0;
   
   while (true) {
-    int input_bytes;
+    size_t input_bytes;
 
     if (ftell(f)+compressed.size() > chunk_end) {
       input_bytes = chunk_end - ftell(f); // Remaining bytes
@@ -903,7 +903,7 @@ static void read_compressed_image(FILE* f, Image* image, int chunk_end, FileOp* 
       if (err != Z_OK && err != Z_STREAM_END)
 	throw ase_exception("ZLib error %d in inflate().", err);
 
-      int input_bytes = scanline.size() - zstream.avail_out;
+      size_t input_bytes = scanline.size() - zstream.avail_out;
       if (input_bytes > 0) {
 	if (uncompressed_offset+input_bytes > uncompressed.size())
 	  throw ase_exception("Bad compressed image.");
@@ -981,7 +981,7 @@ static void write_compressed_image(FILE* f, Image* image)
 // Cel Chunk
 //////////////////////////////////////////////////////////////////////
 
-static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, int chunk_end)
+static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgtype, FileOp *fop, ASE_Header *header, size_t chunk_end)
 {
   Cel *cel;
   /* read chunk data */
