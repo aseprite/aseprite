@@ -31,6 +31,7 @@
 
 #include "Vaca/Application.h"
 #include <vector>
+#include <cassert>
 
 using namespace Vaca;
 
