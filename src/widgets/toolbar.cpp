@@ -253,7 +253,6 @@ bool ToolBar::msg_proc(JMessage msg)
     case JM_BUTTONPRESSED: {
       ToolBox* toolbox = App::instance()->get_toolbox();
       int groups = toolbox->getGroupsCount();
-      int y = rc->y1;
       Rect toolrc;
 
       closeTipWindow();
@@ -636,7 +635,6 @@ bool ToolStrip::msg_proc(JMessage msg)
 
 Rect ToolStrip::getToolBounds(int index)
 {
-  ToolBox* toolbox = App::instance()->get_toolbox();
   Size iconsize = getToolIconSize(this);
 
   return Rect(rc->x1+index*(iconsize.w-1), rc->y1,

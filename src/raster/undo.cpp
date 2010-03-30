@@ -427,7 +427,6 @@ static void run_undo(Undo* undo, int state)
 static void discard_undo_tail(Undo* undo)
 {
   UndoStream* undo_stream = undo->undo_stream;
-  UndoStream* redo_stream = undo->redo_stream;
   UndoChunk* chunk;
   int level = 0;
 
@@ -476,7 +475,7 @@ static int count_undo_groups(UndoStream* undo_stream)
 static bool out_of_group(UndoStream* undo_stream)
 {
   UndoChunk* chunk;
-  int level;
+  int level = 0;
   JLink link;
 
   link = jlist_first(undo_stream->chunks);

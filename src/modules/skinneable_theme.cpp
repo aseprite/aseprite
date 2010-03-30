@@ -44,11 +44,6 @@
 #define COLOR_SELECTED		makecol(44, 76, 145)
 #define COLOR_BACKGROUND	makecol(255, 255, 255)
 
-static struct
-{
-  int x, y, w, h;
-} sheet_info[PARTS];
-
 static std::map<std::string, int> sheet_mapping;
 
 static struct

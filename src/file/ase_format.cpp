@@ -919,7 +919,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
 
   uncompressed_offset = 0;
   for (y=0; y<image->h; y++) {
-    ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);
+    typename ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);
     pixel_io.read_scanline(address, image->w, &uncompressed[uncompressed_offset]);
 
     uncompressed_offset += ImageTraits::scanline_size(image->w);
@@ -948,7 +948,7 @@ static void write_compressed_image(FILE* f, Image* image)
   std::vector<ase_uint8> compressed(4096);
 
   for (y=0; y<image->h; y++) {
-    ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);
+    typename ImageTraits::address_t address = image_address_fast<ImageTraits>(image, 0, y);
     pixel_io.write_scanline(address, image->w, &scanline[0]);
 
     zstream.next_in = (Bytef*)&scanline[0];

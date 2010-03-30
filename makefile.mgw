@@ -18,9 +18,9 @@ endif
 CFLAGS =
 LFLAGS = -mwindows -lshlwapi
 ifdef DEBUGMODE
-  LFLAGS_LAST = -lalld -lpsapi
+  LFLAGS_LAST = -lalld -lpsapi -lwininet
 else
-  LFLAGS_LAST = -lalleg
+  LFLAGS_LAST = -lalleg -lwininet
 endif
 
 WITHICON = 1

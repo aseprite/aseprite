@@ -708,9 +708,6 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 /**********************************************************************/
 /* message handler for the editor */
 
-static int click_last_x = 0;
-static int click_last_y = 0;
-
 bool Editor::msg_proc(JMessage msg)
 {
   assert((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||

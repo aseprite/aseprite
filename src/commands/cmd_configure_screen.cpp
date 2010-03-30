@@ -42,7 +42,6 @@ static int old_card, old_w, old_h, old_depth, old_scaling;
 static int timer_to_accept;
 static int seconds_to_accept;
 
-static void show_dialog(Context* context);
 static bool try_new_gfx_mode(Context* context);
 static bool alert_msg_proc(JWidget widget, JMessage msg);
 
@@ -195,7 +194,7 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	  if (aspect)
 	    sprintf(buf, "%dx%d (%s)", w, h, aspect);
 	  else
-	    sprintf(buf, "%dx%d", w, h, aspect);
+	    sprintf(buf, "%dx%d", w, h);
 
 	  jcombobox_add_string(resolution, buf, NULL);
 	  if (old_w == w && old_h == h) {

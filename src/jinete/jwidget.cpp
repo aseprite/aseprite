@@ -49,8 +49,6 @@
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
-static bool widget_msg_proc(JWidget widget, JMessage msg);
-
 int ji_register_widget_type()
 {
   static int type = JI_USER_WIDGET;

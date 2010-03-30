@@ -72,7 +72,6 @@ static int get_max_scroll_x(JWidget widget);
 static void make_tab_visible(JWidget widget, Tab *tab);
 static void set_scroll_x(JWidget widget, int scroll_x);
 static void calculate_hot(JWidget widget);
-static void draw_bevel_box(JRect box, int c1, int c2, int bottom);
 
 /**************************************************************/
 /* Tabs                                                       */
@@ -535,12 +534,4 @@ static void calculate_hot(JWidget widget)
 
   jrect_free(rect);
   jrect_free(box);
-}
-
-static void draw_bevel_box(JRect box, int c1, int c2, int bottom)
-{
-  hline(ji_screen, box->x1+1, box->y1, box->x2-2, c1);	   /* top */
-  hline(ji_screen, box->x1, box->y2-1, box->x2-1, bottom); /* bottom */
-  vline(ji_screen, box->x1, box->y1+1, box->y2-2, c1);	   /* left */
-  vline(ji_screen, box->x2-1, box->y1+1, box->y2-2, c2);   /* right */
 }

@@ -311,7 +311,7 @@ public:
 
   void setOpacity(int opacity) { m_opacity = opacity; }
   void setFilled(bool state) { m_filled = state; }
-  bool setPreviewFilled(bool state) { m_previewFilled = state; }
+  void setPreviewFilled(bool state) { m_previewFilled = state; }
   void setSprayWidth(int width) { m_spray_width = width; }
   void setSpraySpeed(int speed) { m_spray_speed = speed; }
 

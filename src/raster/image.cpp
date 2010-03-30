@@ -445,7 +445,7 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pa
 
     // TODO optimize this
     case RESIZE_METHOD_BILINEAR: {
-      ase_uint32 color[4], dst_color;
+      ase_uint32 color[4], dst_color = 0;
       double u, v, du, dv;
       int u_floor, u_floor2;
       int v_floor, v_floor2;

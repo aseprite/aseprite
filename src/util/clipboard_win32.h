@@ -232,7 +232,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	case 24: {
 	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
 	  ase_uint8 r, g, b;
-	  int padding = (4-(image->w*3)&3)&3;
+	  int padding = (4-((image->w*3)&3))&3;
 
 	  for (int y=image->h-1; y>=0; --y) {
 	    ase_uint32* dst = (ase_uint32*)image->line[y];
@@ -254,7 +254,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
 	  // TODO I am not sure if this really works
 	  ase_uint8* src = (((ase_uint8*)bi)+bi->bmiHeader.biSize);
 	  ase_uint8 b1, b2, r, g, b;
-	  int padding = (4-(image->w*2)&3)&3;
+	  int padding = (4-((image->w*2)&3))&3;
 
 	  for (int y=image->h-1; y>=0; --y) {
 	    for (int x=0; x<image->w; ++x) {

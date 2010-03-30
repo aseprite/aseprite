@@ -69,7 +69,7 @@ int vaca_main()
 
 #ifndef DEBUGMODE
     try {
-#endif DEBUGMODE
+#endif
 
       Jinete jinete;
       App app;

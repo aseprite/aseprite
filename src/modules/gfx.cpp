@@ -493,7 +493,6 @@ void draw_color_button(BITMAP* bmp,
 		       int imgtype, color_t color, bool hot, bool drag)
 {
   SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
-  int fore = ji_color_foreground();
   int scale = jguiscale();
 
   // Draw background (the color)

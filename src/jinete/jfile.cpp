@@ -276,11 +276,11 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
   }
   /* textbox */
   else if (ustrcmp(elem_name, "textbox") == 0) {
-    bool wordwrap = bool_attr_is_true(elem, "wordwrap");
+    //bool wordwrap = bool_attr_is_true(elem, "wordwrap");
 
     /* TODO add translatable support */
     /* TODO here we need jxmlelem_get_text(elem) */
-/* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
+    /* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
     assert(false);
   }
   /* view */
