@@ -29,38 +29,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef VACA_SYSTEM_H
-#define VACA_SYSTEM_H
+#include <allegro.h>
+#include "Vaca/String.h"
 
-#include "Vaca/base.h"
-#include <vector>
-
-namespace Vaca {
-
-namespace details { class MainArgs; }
-
-/**
-   Class to access to operating system information.
-
-   It is more like a namespace than a class, because all member
-   functions are static.
-*/
-class VACA_DLL System
+void Vaca::details::MainArgs::setArgs(int argc, char* argv[])
 {
-  friend class details::MainArgs;
+  std::vector<String> args;
+  args.reserve(argc);
+  for (int i=0; i<argc; ++i)
+    args.push_back(convert_to<String>(argv[i]));
 
-public:
-
-  static size_t getArgc();
-  static const String& getArgv(size_t i);
-  static const std::vector<String>& getArgs();
-
-private:
-
-  static void setArgs(const std::vector<String>& args);
-
-};
-
-} // namespace Vaca
-
-#endif // VACA_SYSTEM_H
+  Application::setArgs(args);
+}

@@ -29,11 +29,58 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "Vaca/base.h"
-#include "Vaca/Application.h"
+#ifndef VACA_APPLICATION_H
+#define VACA_APPLICATION_H
 
-#if defined(VACA_WINDOWS)
-  #include "win32/MainArgs.h"
-#else
-  #include "std/MainArgs.h"
-#endif
+#include "Vaca/base.h"
+#include <vector>
+
+namespace Vaca {
+
+  namespace details {
+    class VACA_DLL MainArgs
+    {
+    public:
+      static void setArgs(int, char**);
+    };
+  }
+
+/**
+   The main class of Vaca: initializes and destroys the GUI library
+   resources.
+
+   A program that uses Vaca library must to create one instance of
+   this class, or an instance of a derived class.
+*/
+class VACA_DLL Application
+{
+public:
+
+  Application();
+  virtual ~Application();
+
+  static size_t getArgc();
+  static const String& getArgv(size_t i);
+  static const std::vector<String>& getArgs();
+
+  static Application* getInstance();
+
+private:
+
+  friend class details::MainArgs;
+
+  /**
+     The singleton, the only instance of Application (or a class
+     derived from Application) that a program can contain.
+   */
+  static Application* m_instance;
+
+  static std::vector<String> m_args;
+
+  static void setArgs(const std::vector<String>& args);
+
+};
+
+} // namespace Vaca
+
+#endif // VACA_APPLICATION_H

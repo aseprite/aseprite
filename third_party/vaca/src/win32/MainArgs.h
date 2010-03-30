@@ -29,37 +29,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-class Vaca::details::MainArgs
+void Vaca::details::MainArgs::setArgs(int, char**)
 {
-public:
-  static void setArgs()
-  {
-    // Convert the command-line to a vector of arguments using Win32 API
-    std::vector<String> args;
-    LPWSTR* arglist;
-    int argc;
+  // Convert the command-line to a vector of arguments using Win32 API
+  std::vector<String> args;
+  LPWSTR* arglist;
+  int argc;
 
-    arglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
-    if (arglist != NULL) {
-      args.reserve(argc);
-      for (int i=0; i<argc; ++i)
-	args.push_back(arglist[i]);
+  arglist = ::CommandLineToArgvW(::GetCommandLineW(), &argc);
+  if (arglist != NULL) {
+    args.reserve(argc);
+    for (int i=0; i<argc; ++i)
+      args.push_back(arglist[i]);
 
-      ::LocalFree(arglist);
-    }
-
-    System::setArgs(args);
+    ::LocalFree(arglist);
   }
-};
 
-int PASCAL WinMain(HINSTANCE hInstance,
-		   HINSTANCE hPrevInstance,
-		   LPSTR lpCmdLine,
-		   int nCmdShow)
-{
-  Vaca::details::MainArgs::setArgs();
-  return vaca_main();
+  Application::setArgs(args);
 }

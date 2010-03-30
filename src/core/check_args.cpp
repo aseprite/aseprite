@@ -18,8 +18,8 @@
 
 #include "config.h"
 
+#include "Vaca/Application.h"
 #include "Vaca/String.h"
-#include "Vaca/System.h"
 
 #include "core/core.h"
 #include "core/check_args.h"
@@ -30,7 +30,7 @@ using namespace Vaca;
   
 CheckArgs::CheckArgs()
 {
-  const std::vector<String>& args(System::getArgs());
+  const std::vector<String>& args(Application::getArgs());
 
   // Exe name
   m_exeName = args[0];

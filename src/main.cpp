@@ -95,3 +95,5 @@ int vaca_main()
 
   return status;
 }
+
+#include "Vaca/main.h"

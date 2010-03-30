@@ -29,27 +29,55 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <allegro.h>
-#include "Vaca/String.h"
+#include "Vaca/Application.h"
+#include <vector>
 
-class Vaca::details::MainArgs
+using namespace Vaca;
+
+Application* Application::m_instance = NULL;
+std::vector<String> Application::m_args;
+
+Application::Application()
 {
-public:
-  static void setArgs(int argc, char* argv[])
-  {
-    std::vector<String> args;
-    args.reserve(argc);
-    for (int i=0; i<argc; ++i)
-      args.push_back(convert_to<String>(argv[i]));
-
-    System::setArgs(args);
-  }
-};
-
-int main(int argc, char* argv[])
-{
-  Vaca::details::MainArgs::setArgs(argc, argv);
-  return vaca_main();
 }
 
-END_OF_MAIN();
+Application::~Application()
+{
+}
+
+size_t Application::getArgc()
+{
+  return m_args.size();
+}
+
+const String& Application::getArgv(size_t i)
+{
+  return m_args[i];
+}
+
+/**
+   Returns the parameters in the command line.
+
+   @c Application::getArgs()[0] is the name of the executable file.
+*/
+const std::vector<String>& Application::getArgs()
+{
+  return m_args;
+}
+
+void Application::setArgs(const std::vector<String>& args)
+{
+  m_args = args;
+}
+
+/**
+   Returns the Application's singleton.
+
+   A program using Vaca must have one instance of Applicaton or a
+   class derived from it.
+*/
+Application* Application::getInstance()
+{
+  assert(m_instance != NULL);
+  return m_instance;
+}

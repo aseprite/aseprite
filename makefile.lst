@@ -499,6 +499,7 @@ TINYXML_OBJS = $(addprefix $(OBJ_DIR)/tinyxml.,		\
 VACA_LIB = $(OBJ_DIR)/libvaca$(LIB_EXT)
 VACA_DIR = third_party/vaca
 VACA_SOURCES =					\
+	$(VACA_DIR)/src/Application.cpp		\
 	$(VACA_DIR)/src/Component.cpp		\
 	$(VACA_DIR)/src/Debug.cpp		\
 	$(VACA_DIR)/src/Exception.cpp		\
@@ -509,7 +510,6 @@ VACA_SOURCES =					\
 	$(VACA_DIR)/src/Referenceable.cpp	\
 	$(VACA_DIR)/src/Size.cpp		\
 	$(VACA_DIR)/src/String.cpp		\
-	$(VACA_DIR)/src/System.cpp		\
 	$(VACA_DIR)/src/Vaca.cpp
 
 VACA_OBJS = $(addprefix $(OBJ_DIR)/vaca.,		\

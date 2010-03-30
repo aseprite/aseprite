@@ -29,33 +29,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "Vaca/System.h"
+#ifndef VACA_MAIN_H
+#define VACA_MAIN_H
 
-using namespace Vaca;
+#include "Vaca/Application.h"
 
-static std::vector<String> g_args;
+//////////////////////////////////////////////////////////////////////
+// WinMain for Win32
 
-size_t System::getArgc()
-{
-  return g_args.size();
-}
+#if defined(VACA_WINDOWS)
 
-const String& System::getArgv(size_t i)
-{
-  return g_args[i];
-}
+  #define WIN32_LEAN_AND_MEAN
+  #include <windows.h>
 
-/**
-   Returns the parameters in the command line.
+  int PASCAL WinMain(HINSTANCE hInstance,
+		     HINSTANCE hPrevInstance,
+		     LPSTR lpCmdLine,
+		     int nCmdShow)
+  {
+    Vaca::details::MainArgs::setArgs(NULL, NULL);
+    return vaca_main();
+  }
 
-   @c System::getArgs()[0] is the name of the executable file.
-*/
-const std::vector<String>& System::getArgs()
-{
-  return g_args;
-}
+//////////////////////////////////////////////////////////////////////
+// main()/END_OF_MAIN() for Allegro 4.2
 
-void System::setArgs(const std::vector<String>& args)
-{
-  g_args = args;
-}
+#elif defined(VACA_ALLEGRO)
+
+  #include <allegro.h>
+
+  int main(int argc, char* argv[])
+  {
+    Vaca::details::MainArgs::setArgs(argc, argv);
+    return vaca_main();
+  }
+
+  END_OF_MAIN();
+
+#endif
+
+#endif // VACA_MAIN_H
