@@ -135,6 +135,8 @@ public:
   void editor_draw_mask();
   void editor_draw_mask_safe();
 
+  void flashCurrentLayer();
+
   void screen_to_editor(int xin, int yin, int *xout, int *yout);
   void editor_to_screen(int xin, int yin, int *xout, int *yout);
 

@@ -19,9 +19,10 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 
 #include "Vaca/Bind.h"
 #include "jinete/jinete.h"
@@ -479,17 +480,25 @@ bool StatusBar::msg_proc(JMessage msg)
       }
       break;
     }
-
+      
     case JM_BUTTONPRESSED:
+      // When the user press the mouse-button over a hot-layer-button...
       if (m_hot_layer >= 0) {
 	try {
 	  CurrentSpriteWriter sprite(UIContext::instance());
 	  if (sprite) {
 	    Layer* layer = sprite->indexToLayer(m_hot_layer);
-	    if (layer && layer != sprite->getCurrentLayer()) {
-	      sprite->setCurrentLayer(layer);
-	      update_screen_for_sprite(sprite);
-	      dirty();		// Redraw the status-bar
+	    if (layer) {
+	      // Set the current layer
+	      if (layer != sprite->getCurrentLayer())
+		sprite->setCurrentLayer(layer);
+
+	      // Flash the current layer
+	      assert(current_editor != NULL); // Cannot be null when we have a current sprite
+	      current_editor->flashCurrentLayer();
+
+	      // Redraw the status-bar
+	      dirty();
 	    }
 	  }
 	}

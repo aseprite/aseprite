@@ -509,6 +509,11 @@ void gui_feedback()
   /* record file if is necessary */
   rec_screen_poll();
 
+  gui_flip_screen();
+}
+
+void gui_flip_screen()
+{
   /* double buffering? */
   if (double_buffering && ji_screen) {
     jmouse_draw_cursor();

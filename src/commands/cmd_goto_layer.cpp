@@ -68,8 +68,9 @@ void GotoPreviousLayerCommand::execute(Context* context)
 
   sprite->setCurrentLayer(sprite->indexToLayer(i));
 
-  update_screen_for_sprite(sprite);
-  current_editor->editor_update_statusbar_for_standby();
+  // Flash the current layer
+  assert(current_editor != NULL); // Cannot be null when we have a current sprite
+  current_editor->flashCurrentLayer();
 
   app_get_statusbar()
     ->showTip(1000, _("Layer `%s' selected"),
@@ -116,8 +117,9 @@ void GotoNextLayerCommand::execute(Context* context)
 
   sprite->setCurrentLayer(sprite->indexToLayer(i));
 
-  update_screen_for_sprite(sprite);
-  current_editor->editor_update_statusbar_for_standby();
+  // Flash the current layer
+  assert(current_editor != NULL); // Cannot be null when we have a current sprite
+  current_editor->flashCurrentLayer();
 
   app_get_statusbar()
     ->showTip(1000, _("Layer `%s' selected"),

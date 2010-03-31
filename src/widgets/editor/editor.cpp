@@ -532,6 +532,38 @@ void Editor::drawGrid()
   jrect_free(vp);
 }
 
+void Editor::flashCurrentLayer()
+{
+  int x, y;
+  const Image* src_image = m_sprite->getCurrentImage(&x, &y);
+  if (src_image) {
+    m_sprite->prepareExtra();
+    Image* flash_image = m_sprite->getExtras();
+    int u, v;
+
+    image_clear(flash_image, flash_image->mask_color);
+    for (v=0; v<flash_image->h; ++v) {
+      for (u=0; u<flash_image->w; ++u) {
+	if (u-x >= 0 && u-x < src_image->w &&
+	    v-y >= 0 && v-y < src_image->h) {
+	  ase_uint32 color = image_getpixel(src_image, u-x, v-y);
+	  if (color != src_image->mask_color) {
+	    color_t ccc = color_rgb(255, 255, 255);
+	    image_putpixel(flash_image, u, v,
+			   get_color_for_image(flash_image->imgtype, ccc));
+	  }
+	}
+      }
+    }
+
+    editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    gui_flip_screen();
+
+    image_clear(flash_image, flash_image->mask_color);
+    editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+  }
+}
+
 void Editor::turnOnSelectionModifiers()
 {
   // TODO deleteDecorators()
