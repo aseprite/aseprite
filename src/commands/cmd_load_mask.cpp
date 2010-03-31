@@ -84,15 +84,15 @@ void LoadMaskCommand::execute(Context* context)
 			static_cast<const char*>(m_filename.c_str()));
 
   // undo
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Mask Load");
-    undo_set_mask(sprite->undo, sprite);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_set_label(sprite->getUndo(), "Mask Load");
+    undo_set_mask(sprite->getUndo(), sprite);
   }
 
-  sprite_set_mask(sprite, mask);
+  sprite->setMask(mask);
   mask_free(mask);
 
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

@@ -56,8 +56,8 @@ bool SaveMaskCommand::enabled(Context* context)
   if (!sprite)
     return false;
   else
-    return (sprite->mask &&
-	    sprite->mask->bitmap) ? true: false;
+    return (sprite->getMask() &&
+	    sprite->getMask()->bitmap) ? true: false;
 }
 
 void SaveMaskCommand::execute(Context* context)
@@ -92,7 +92,7 @@ void SaveMaskCommand::execute(Context* context)
     /* "no": we must back to select other file-name */
   }
 
-  if (save_msk_file(sprite->mask, filename.c_str()) != 0)
+  if (save_msk_file(sprite->getMask(), filename.c_str()) != 0)
     jalert("%s<<%s<<%s||%s",
 	   _("Error"), _("Error saving .msk file"),
 	   filename.c_str(), _("&Close"));

@@ -98,8 +98,8 @@ void PaletteEditorCommand::execute(Context* context)
   int frame, columns;
   Palette *palette = NULL;
   const CurrentSpriteReader sprite(context);
-  int imgtype = sprite ? sprite->imgtype: IMAGE_INDEXED;
-  int frame_bak = sprite ? sprite->frame : 0;
+  int imgtype = sprite ? sprite->getImgType(): IMAGE_INDEXED;
+  int frame_bak = sprite ? sprite->getCurrentFrame() : 0;
   bool all_frames_same_palette = true;
 
   if (imgtype == IMAGE_GRAYSCALE) {
@@ -134,10 +134,10 @@ void PaletteEditorCommand::execute(Context* context)
 
   /* create current_sprite->frames palettes */
   if (sprite) {
-    palettes.resize(sprite->frames);
+    palettes.resize(sprite->getTotalFrames());
 
-    for (frame=0; frame<sprite->frames; ++frame) {
-      Palette* orig = sprite_get_palette(sprite, frame);
+    for (frame=0; frame<sprite->getTotalFrames(); ++frame) {
+      const Palette* orig = sprite->getPalette(frame);
 
       palettes[frame] = new Palette(frame, orig->size());
       orig->copyColorsTo(palettes[frame]);
@@ -185,8 +185,8 @@ void PaletteEditorCommand::execute(Context* context)
   
   /* frame */
   if (sprite) {
-    jslider_set_range(slider_frame, 0, sprite->frames-1);
-    jslider_set_value(slider_frame, sprite->frame);
+    jslider_set_range(slider_frame, 0, sprite->getTotalFrames()-1);
+    jslider_set_value(slider_frame, sprite->getCurrentFrame());
     
     if (jwidget_is_selected(check_all_frames))
       jwidget_disable(slider_frame);
@@ -228,24 +228,24 @@ void PaletteEditorCommand::execute(Context* context)
   if (window->get_killer() == button_ok) {
     if (sprite) {
       SpriteWriter sprite_writer(sprite);
-      sprite_reset_palettes(sprite_writer);
+      sprite_writer->resetPalettes();
 
       /* one palette */
       if (jwidget_is_selected(check_all_frames)) {
 	// Copy the current palette in the first frame
 	get_current_palette()->copyColorsTo(palettes[0]);
 
-	sprite_set_palette(sprite_writer, palettes[0], true);
+	sprite_writer->setPalette(palettes[0], true);
       }
       /* various palettes */
       else {
 	frame = jslider_get_value(slider_frame);
 	get_current_palette()->copyColorsTo(palettes[frame]);
 
-	for (frame=0; frame<sprite_writer->frames; ++frame) {
+	for (frame=0; frame<sprite_writer->getTotalFrames(); ++frame) {
 	  if (frame == 0 ||
 	      palettes[frame]->countDiff(palettes[frame-1], NULL, NULL) > 0) {
-	    sprite_set_palette(sprite_writer, palettes[frame], true);
+	    sprite_writer->setPalette(palettes[frame], true);
 	  }
 	}
       }
@@ -261,9 +261,9 @@ void PaletteEditorCommand::execute(Context* context)
     /* restore the system palette */
     if (sprite) {
       SpriteWriter sprite_writer(sprite);
-      sprite_writer->frame = frame_bak;
+      sprite_writer->setCurrentFrame(frame_bak);
 
-      set_current_palette(sprite_get_palette(sprite, frame_bak), true);
+      set_current_palette(sprite->getPalette(frame_bak), true);
     }
     else {
       set_current_palette(NULL, true);
@@ -283,7 +283,7 @@ void PaletteEditorCommand::execute(Context* context)
   if (!palettes.empty()) {
     assert(sprite);
 
-    for (frame=0; frame<sprite->frames; ++frame)
+    for (frame=0; frame<sprite->getTotalFrames(); ++frame)
       delete palettes[frame];
 
     palettes.clear();
@@ -379,7 +379,7 @@ static void quantize_command(JWidget widget)
   paledit_get_selected_entries(palette_editor, array);
   paledit_get_palette(palette_editor)->copyColorsTo(palette);
 
-  if (sprite->imgtype == IMAGE_RGB) {
+  if (sprite->getImgType() == IMAGE_RGB) {
     SpriteWriter sprite_writer(sprite);
     sprite_quantize_ex(sprite_writer, palette);
   }
@@ -458,13 +458,13 @@ static bool slider_frame_change_hook(JWidget widget, void *data)
   const SpriteReader& sprite = get_sprite(widget);
   assert(sprite != NULL);
 
-  int old_frame = sprite->frame;
+  int old_frame = sprite->getCurrentFrame();
   int new_frame = jslider_get_value(slider_frame);
 
   get_current_palette()->copyColorsTo(palettes[old_frame]);
   {
     SpriteWriter sprite_writer(sprite);
-    sprite_writer->frame = new_frame;
+    sprite_writer->setCurrentFrame(new_frame);
   }
   set_new_palette(palettes[new_frame]);
 
@@ -484,7 +484,7 @@ static bool check_all_frames_change_hook(JWidget widget, void *data)
     bool has_two_or_more_palettes = false;
     int c;
 
-    for (c=1; c<sprite->frames; c++) {
+    for (c=1; c<sprite->getTotalFrames(); c++) {
       if (palettes[c-1]->countDiff(palettes[c], NULL, NULL) > 0) {
 	has_two_or_more_palettes = true;
 	break;

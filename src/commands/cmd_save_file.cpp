@@ -105,7 +105,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
       data->thread = thread;
       data->alert_window = jalert_new(PACKAGE
 				      "<<Saving file:<<%s||&Cancel",
-				      get_filename(sprite->filename));
+				      get_filename(sprite->getFilename()));
 
       /* add a monitor to check the saving (FileOp) progress */
       data->monitor = add_gui_monitor(monitor_savefile_bg,
@@ -128,13 +128,13 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
       }
       /* no error? */
       else {
-	RecentFiles::addRecentFile(sprite->filename);
+	RecentFiles::addRecentFile(sprite->getFilename());
 	if (mark_as_saved)
-	  sprite_mark_as_saved(sprite);
+	  sprite->markAsSaved();
 
 	app_get_statusbar()
 	  ->setStatusText(2000, "File %s, saved.",
-			  get_filename(sprite->filename));
+			  get_filename(sprite->getFilename()));
       }
 
       delete data->progress;
@@ -154,7 +154,7 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
   jstring newfilename;
   int ret;
 
-  filename = sprite->filename;
+  filename = sprite->getFilename();
   get_writable_extensions(exts, sizeof(exts));
 
   for (;;) {
@@ -186,7 +186,7 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
     /* "no": we must back to select other file-name */
   }
 
-  sprite_set_filename(sprite, filename.c_str());
+  sprite->setFilename(filename.c_str());
   app_realloc_sprite_list();
 
   save_sprite_in_background(sprite, mark_as_saved);
@@ -236,7 +236,7 @@ void SaveFileCommand::execute(Context* context)
 
   /* if the sprite is associated to a file in the file-system, we can
      save it directly without user interaction */
-  if (sprite_is_associated_to_file(sprite)) {
+  if (sprite->isAssociatedToFile()) {
     save_sprite_in_background(sprite, true);
   }
   /* if the sprite isn't associated to a file, we must to show the
@@ -312,13 +312,13 @@ bool SaveFileCopyAsCommand::enabled(Context* context)
 void SaveFileCopyAsCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  jstring old_filename = sprite->filename;
+  jstring old_filename = sprite->getFilename();
 
   // show "Save As" dialog
   save_as_dialog(sprite, _("Save Sprite Copy As"), false);
 
   // restore the file name
-  sprite_set_filename(sprite, old_filename.c_str());
+  sprite->setFilename(old_filename.c_str());
   app_realloc_sprite_list();
 }
 

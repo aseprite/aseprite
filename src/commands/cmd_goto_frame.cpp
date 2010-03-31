@@ -55,7 +55,7 @@ bool GotoFirstFrameCommand::enabled(Context* context)
 void GotoFirstFrameCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  sprite->frame = 0;
+  sprite->setCurrentFrame(0);
 
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
@@ -93,11 +93,12 @@ bool GotoPreviousFrameCommand::enabled(Context* context)
 void GotoPreviousFrameCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
+  int frame = sprite->getCurrentFrame();
 
-  if (sprite->frame > 0)
-    sprite->frame--;
+  if (frame > 0)
+    sprite->setCurrentFrame(frame-1);
   else
-    sprite->frame = sprite->frames-1;
+    sprite->setCurrentFrame(sprite->getTotalFrames()-1);
 
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
@@ -135,11 +136,12 @@ bool GotoNextFrameCommand::enabled(Context* context)
 void GotoNextFrameCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
+  int frame = sprite->getCurrentFrame();
 
-  if (sprite->frame < sprite->frames-1)
-    sprite->frame++;
+  if (frame < sprite->getTotalFrames()-1)
+    sprite->setCurrentFrame(frame+1);
   else
-    sprite->frame = 0;
+    sprite->setCurrentFrame(0);
 
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
@@ -177,7 +179,7 @@ bool GotoLastFrameCommand::enabled(Context* context)
 void GotoLastFrameCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  sprite->frame = sprite->frames-1;
+  sprite->setCurrentFrame(sprite->getTotalFrames()-1);
 
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();

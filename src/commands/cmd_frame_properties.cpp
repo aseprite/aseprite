@@ -60,7 +60,7 @@ bool FramePropertiesCommand::enabled(Context* context)
 void FramePropertiesCommand::execute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  dialogs_frame_length(sprite, sprite->frame);
+  dialogs_frame_length(sprite, sprite->getCurrentFrame());
 }
 
 /* if sprite_frame < 0, set the frame length of all frames */
@@ -81,7 +81,7 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
     sprintf(buf, "%d", sprite_frame+1);
   frame->setText(buf);
 
-  frlen->setTextf("%d", sprite_get_frlen(sprite, sprite->frame));
+  frlen->setTextf("%d", sprite->getFrameDuration(sprite->getCurrentFrame()));
 
   window->open_window_fg();
   if (window->get_killer() == ok) {

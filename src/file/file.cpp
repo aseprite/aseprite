@@ -70,7 +70,7 @@ static void fop_prepare_for_sequence(FileOp *fop);
 static FileFormat *get_fileformat(const char *extension);
 static int split_filename(const char *filename, char *left, char *right, int *width);
 
-void get_readable_extensions(char *buf, int size)
+void get_readable_extensions(char* buf, int size)
 {
   int c;
 
@@ -87,7 +87,7 @@ void get_readable_extensions(char *buf, int size)
   }
 }
 
-void get_writable_extensions(char *buf, int size)
+void get_writable_extensions(char* buf, int size)
 {
   int c;
 
@@ -260,10 +260,10 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   fop->sprite = sprite;
 
   /* get the extension of the filename (in lower case) */
-  ustrcpy(extension, get_extension(fop->sprite->filename));
+  ustrcpy(extension, get_extension(fop->sprite->getFilename()));
   ustrlwr(extension);
 
-  PRINTF("Saving sprite \"%s\" (%s)\n", fop->sprite->filename, extension);
+  PRINTF("Saving sprite \"%s\" (%s)\n", fop->sprite->getFilename(), extension);
 
   /* get the format through the extension of the filename */
   fop->format = get_fileformat(extension);
@@ -278,7 +278,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   fatal = false;
 
   /* check image type support */
-  switch (fop->sprite->imgtype) {
+  switch (fop->sprite->getImgType()) {
 
     case IMAGE_RGB:
       if (!(fop->format->flags & FILE_SUPPORT_RGB)) {
@@ -286,7 +286,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
 	fatal = true;
       }
       if (!(fop->format->flags & FILE_SUPPORT_RGBA) &&
-	  sprite_need_alpha(fop->sprite)) {
+	  fop->sprite->needAlpha()) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
       }
       break;
@@ -297,7 +297,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
 	fatal = true;
       }
       if (!(fop->format->flags & FILE_SUPPORT_GRAYA) &&
-	  sprite_need_alpha(fop->sprite)) {
+	  fop->sprite->needAlpha()) {
 	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
       }
       break;
@@ -313,19 +313,19 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   // check frames support
   if (!(fop->format->flags & (FILE_SUPPORT_FRAMES |
 			      FILE_SUPPORT_SEQUENCES))) {
-    if (fop->sprite->frames > 1)
+    if (fop->sprite->getTotalFrames() > 1)
       usprintf(buf+ustrlen(buf), "<<- %s", _("Frames"));
   }
 
   // layers support
-  if (fop->sprite->get_folder()->get_layers_count() > 1) {
+  if (fop->sprite->getFolder()->get_layers_count() > 1) {
     if (!(fop->format->flags & FILE_SUPPORT_LAYERS)) {
       usprintf(buf+ustrlen(buf), "<<- %s", _("Layers"));
     }
   }
 
   /* palettes support */
-  if (jlist_length(fop->sprite->palettes) > 1) {
+  if (jlist_length(fop->sprite->getPalettes()) > 1) {
     if (!(fop->format->flags & (FILE_SUPPORT_PALETTES |
 				FILE_SUPPORT_SEQUENCES))) {
       usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes between frames"));
@@ -333,15 +333,16 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   }
 
   /* repositories */
-  if (!jlist_empty(fop->sprite->repository.masks)) {
+  JList masks = fop->sprite->getMasksRepository();
+  if (!jlist_empty(masks)) {
     Mask *mask;
     JLink link;
     int count = 0;
 
-    JI_LIST_FOR_EACH(fop->sprite->repository.masks, link) {
+    JI_LIST_FOR_EACH(masks, link) {
       mask = reinterpret_cast<Mask*>(link->data);
 
-      /* names starting with '*' are ignored */
+      // Names starting with '*' are ignored
       if (mask->name && *mask->name == '*')
 	continue;
 
@@ -353,7 +354,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
   }
 
-  if (!jlist_empty(fop->sprite->repository.paths)) {
+  if (!jlist_empty(fop->sprite->getPathsRepository())) {
     if (!(fop->format->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
       usprintf(buf+ustrlen(buf), "<<- %s", _("Path Repository"));
     }
@@ -394,25 +395,25 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     fop_prepare_for_sequence(fop);
 
     /* to save one frame */
-    if (fop->sprite->frames == 1) {
+    if (fop->sprite->getTotalFrames() == 1) {
       jlist_append(fop->seq.filename_list,
-		   jstrdup(fop->sprite->filename));
+		   jstrdup(fop->sprite->getFilename()));
     }
     /* to save more frames */
     else {
       char buf[256], left[256], right[256];
       int frame, width, start_from;
 
-      start_from = split_filename(fop->sprite->filename, left, right, &width);
+      start_from = split_filename(fop->sprite->getFilename(), left, right, &width);
       if (start_from < 0) {
 	start_from = 0;
 	width =
-	  (fop->sprite->frames < 10)? 1:
-	  (fop->sprite->frames < 100)? 2:
-	  (fop->sprite->frames < 1000)? 3: 4;
+	  (fop->sprite->getTotalFrames() < 10)? 1:
+	  (fop->sprite->getTotalFrames() < 100)? 2:
+	  (fop->sprite->getTotalFrames() < 1000)? 3: 4;
       }
 
-      for (frame=0; frame<fop->sprite->frames; frame++) {
+      for (frame=0; frame<fop->sprite->getTotalFrames(); frame++) {
 	/* get the name for this frame */
 	usprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
 	jlist_append(fop->seq.filename_list, jstrdup(buf));
@@ -420,7 +421,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
   }
   else
-    fop->filename = jstrdup(fop->sprite->filename);
+    fop->filename = jstrdup(fop->sprite->getFilename());
 
   /* configure output format? */
   if (fop->format->get_options != NULL) {
@@ -433,8 +434,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
 
     fop->seq.format_options = format_options;
-    sprite_set_format_options(fop->sprite,
-			      format_options);
+    fop->sprite->setFormatOptions(format_options);
   }
 
   return fop;
@@ -470,16 +470,16 @@ void fop_operate(FileOp *fop)
        /* TODO set_palette for each frame??? */
 #define SEQUENCE_IMAGE()						\
       do {								\
-	image_index = stock_add_image(fop->sprite->stock,		\
+	image_index = stock_add_image(fop->sprite->getStock(),		\
 				      fop->seq.image);			\
 									\
 	fop->seq.last_cel->image = image_index;				\
 	fop->seq.layer->add_cel(fop->seq.last_cel);			\
 									\
-	if (sprite_get_palette(fop->sprite, frame)			\
+	if (fop->sprite->getPalette(frame)				\
 	      ->countDiff(fop->seq.palette, NULL, NULL) > 0) {		\
 	  fop->seq.palette->setFrame(frame);				\
-	  sprite_set_palette(fop->sprite, fop->seq.palette, true);	\
+	  fop->sprite->setPalette(fop->seq.palette, true);		\
 	}								\
 									\
 	old_image = fop->seq.image;					\
@@ -560,18 +560,17 @@ void fop_operate(FileOp *fop)
       }
       fop->filename = jstrdup((char*)jlist_first_data(fop->seq.filename_list));
 
-      /* final setup */
+      // Final setup
       if (fop->sprite != NULL) {
-	/* configure the layer as the `Background' */
+	// Configure the layer as the 'Background'
 	if (!fop->seq.has_alpha)
 	  fop->seq.layer->configure_as_background();
 
-	/* set the frames range */
-	sprite_set_frames(fop->sprite, frame);
+	// Set the frames range
+	fop->sprite->setTotalFrames(frame);
 
-	/* set the frames range */
-	sprite_set_format_options(fop->sprite,
-				  fop->seq.format_options);
+	// Set the frames range
+	fop->sprite->setFormatOptions(fop->seq.format_options);
       }
     }
     /* direct load from one file */
@@ -584,19 +583,18 @@ void fop_operate(FileOp *fop)
 
     if (fop->sprite != NULL) {
       /* select the last layer */
-      if (fop->sprite->get_folder()->get_layers_count() > 0) {
-	LayerIterator last_layer = --fop->sprite->get_folder()->get_layer_end();
-	sprite_set_layer(fop->sprite, *last_layer);
+      if (fop->sprite->getFolder()->get_layers_count() > 0) {
+	LayerIterator last_layer = --fop->sprite->getFolder()->get_layer_end();
+	fop->sprite->setCurrentLayer(*last_layer);
       }
 
       /* set the filename */
       if (fop->seq.filename_list)
-	sprite_set_filename(fop->sprite,
-			    reinterpret_cast<char*>(jlist_first_data(fop->seq.filename_list)));
+	fop->sprite->setFilename(reinterpret_cast<char*>(jlist_first_data(fop->seq.filename_list)));
       else
-	sprite_set_filename(fop->sprite, fop->filename);
+	fop->sprite->setFilename(fop->filename);
 
-      sprite_mark_as_saved(fop->sprite);
+      fop->sprite->markAsSaved();
     }
   }
   /* save ***********************************************************/
@@ -608,36 +606,36 @@ void fop_operate(FileOp *fop)
       assert(fop->format->flags & FILE_SUPPORT_SEQUENCES);
 
       /* create a temporary bitmap */
-      fop->seq.image = image_new(fop->sprite->imgtype,
-				 fop->sprite->w,
-				 fop->sprite->h);
+      fop->seq.image = image_new(fop->sprite->getImgType(),
+				 fop->sprite->getWidth(),
+				 fop->sprite->getHeight());
       if (fop->seq.image != NULL) {
-	int old_frame = fop->sprite->frame;
+	int old_frame = fop->sprite->getCurrentFrame();
 
 	fop->seq.progress_offset = 0.0f;
-	fop->seq.progress_fraction = 1.0f / (float)fop->sprite->frames;
+	fop->seq.progress_fraction = 1.0f / (float)fop->sprite->getTotalFrames();
 
 	/* for each frame in the sprite */
-	for (fop->sprite->frame=0;
-	     fop->sprite->frame<fop->sprite->frames;
-	     fop->sprite->frame++) {
+	for (int frame=0; frame < fop->sprite->getTotalFrames(); ++frame) {
+	  fop->sprite->setCurrentFrame(frame);
+
 	  /* draw all the sprite in this frame in the image */
 	  image_clear(fop->seq.image, 0);
-	  sprite_render(fop->sprite, fop->seq.image, 0, 0);
+	  fop->sprite->render(fop->seq.image, 0, 0);
 
 	  /* setup the palette */
-	  sprite_get_palette(fop->sprite, fop->sprite->frame)
+	  fop->sprite->getPalette(fop->sprite->getCurrentFrame())
 	    ->copyColorsTo(fop->seq.palette);
 
 	  /* setup the filename to be used */
 	  fop->filename = reinterpret_cast<char*>
 	    (jlist_nth_data(fop->seq.filename_list,
-			    fop->sprite->frame));
+			    fop->sprite->getCurrentFrame()));
 
 	  /* call the "save" procedure... did it fail? */
 	  if (!(*fop->format->save)(fop)) {
 	    fop_error(fop, _("Error saving frame %d in the file \"%s\"\n"),
-		      fop->sprite->frame+1, fop->filename);
+		      fop->sprite->getCurrentFrame()+1, fop->filename);
 	    break;
 	  }
 
@@ -645,11 +643,11 @@ void fop_operate(FileOp *fop)
 	}
 	fop->filename = jstrdup(reinterpret_cast<char*>(jlist_first_data(fop->seq.filename_list)));
 
-	/* destroy the image */
+	// Destroy the image
 	image_free(fop->seq.image);
 
-	/* restore frame */
-	fop->sprite->frame = old_frame;
+	// Restore frame
+	fop->sprite->setCurrentFrame(old_frame);
       }
       else {
 	fop_error(fop, _("Not enough memory for the temporary bitmap.\n"));
@@ -743,7 +741,7 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
       LayerImage* layer = new LayerImage(sprite);
 
       // Add the layer
-      sprite->get_folder()->add_layer(layer);
+      sprite->getFolder()->add_layer(layer);
 
       // Done
       fop->sprite = sprite;
@@ -757,7 +755,7 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
   else {
     sprite = fop->sprite;
 
-    if (sprite->imgtype != imgtype)
+    if (sprite->getImgType() != imgtype)
       return NULL;
   }
 

@@ -18,8 +18,9 @@
 
 #include "config.h"
 
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
+#include <vector>
 
 #include "jinete/jlist.h"
 #include "Vaca/Mutex.h"
@@ -30,59 +31,425 @@
 #include "raster/raster.h"
 #include "util/boundary.h"
 
+#ifdef _MSC_VER
+  #pragma warning(disable: 4355)
+#endif
+
 using Vaca::Mutex;
 using Vaca::ScopedLock;
 
-static Layer *index2layer(const Layer *layer, int index, int *index_count);
-static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count);
-static int layer_count_layers(const Layer *layer);
-
-static Sprite* general_copy(const Sprite* src_sprite);
+static Layer* index2layer(const Layer* layer, int index, int* index_count);
+static int layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
 
 //////////////////////////////////////////////////////////////////////
+// SpriteImpl
 
-Sprite::Sprite(int imgtype, int w, int h, int ncolors)
-  : GfxObj(GFXOBJ_SPRITE)
+class SpriteImpl
 {
-  assert(w > 0 && h > 0);
+public:
+  SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int ncolors);
+  ~SpriteImpl();
 
-  /* main properties */
-  strcpy(this->filename, "Sprite");
-  this->associated_to_file = false;
-  this->imgtype = imgtype;
-  this->w = w;
-  this->h = h;
-  this->frames = 1;
-  this->frlens = (int*)jmalloc(sizeof(int)*this->frames);
-  this->frame = 0;
-  this->palettes = jlist_new();
-  this->stock = stock_new(imgtype);
-  this->m_folder = new LayerFolder(this);
-  this->layer = NULL;
-  this->path = NULL;
-  this->mask = mask_new();
-  this->undo = undo_new(this);
-  this->repository.paths = jlist_new();
-  this->repository.masks = jlist_new();
-  this->m_extras = NULL;
+  static SpriteImpl* copy(Sprite* new_sprite, const SpriteImpl* src_sprite);
+  static SpriteImpl* copyBase(Sprite* new_sprite, const SpriteImpl* src_sprite);
 
-  /* boundary stuff */
-  this->bound.nseg = 0;
-  this->bound.seg = NULL;
+  bool lock(bool write);
+  bool lockToWrite();
+  void unlockToRead();
+  void unlock();
 
-  /* preferred edition options */
-  this->preferred.scroll_x = 0;
-  this->preferred.scroll_y = 0;
-  this->preferred.zoom = 0;
+  int getImgType() const { 
+    return m_imgtype;
+  }
+
+  void setImgType(int imgtype) {
+    m_imgtype = imgtype;
+  }
+
+  int getWidth() const {
+    return m_width;
+  }
+
+  int getHeight() const {
+    return m_height;
+  }
+
+  void setSize(int width, int height) {
+    assert(width > 0);
+    assert(height > 0);
+
+    m_width = width;
+    m_height = height;
+  }
+
+  const char* getFilename() const {
+    return m_filename.c_str();
+  }
+
+  void setFilename(const char* filename) {
+    m_filename = filename;
+  }
+
+  bool isModified() const {
+    return (m_undo->diff_count ==
+	    m_undo->diff_saved) ? false: true;
+  }
+
+  bool isAssociatedToFile() const {
+    return m_associated_to_file;
+  }
+
+  void markAsSaved() {
+    m_undo->diff_saved = m_undo->diff_count;
+    m_associated_to_file = true;
+  }
+
+  bool needAlpha() const {
+    switch (m_imgtype) {
+      case IMAGE_RGB:
+      case IMAGE_GRAYSCALE:
+	return (getBackgroundLayer() == NULL);
+    }
+    return false;
+  }
+
+  int getMemSize() const;
+
+  const LayerFolder* getFolder() const {
+    return m_folder;
+  }
+
+  LayerFolder* getFolder() {
+    return m_folder;
+  }
+
+  const LayerImage* getBackgroundLayer() const;
+  LayerImage* getBackgroundLayer();
+
+  const Layer* getCurrentLayer() const {
+    return m_layer;
+  }
+
+  Layer* getCurrentLayer() {
+    return m_layer;
+  }
+
+  void setCurrentLayer(Layer* layer) {
+    m_layer = layer;
+  }
+
+  int countLayers() const {
+    return getFolder()->get_layers_count();
+  }
+
+  const Layer* indexToLayer(int index) const {
+    int index_count = -1;
+    return index2layer(getFolder(), index, &index_count);
+  }
+
+  Layer* indexToLayer(int index) {
+    int index_count = -1;
+    return index2layer(getFolder(), index, &index_count);
+  }
+
+  int layerToIndex(const Layer* layer) const {
+    int index_count = -1;
+    return layer2index(getFolder(), layer, &index_count);
+  }
+
+  const Palette* getPalette(int frame) const;
+
+  Palette* getPalette(int frame);
+
+  JList getPalettes() {
+    return m_palettes;
+  }
+
+  void setPalette(Palette* pal, bool truncate);
+  void resetPalettes();
+  void deletePalette(Palette* pal);
+
+  const Palette* getCurrentPalette() const {
+    return getPalette(getCurrentFrame());
+  }
+
+  Palette* getCurrentPalette() {
+    return getPalette(getCurrentFrame());
+  }
+
+  int getTotalFrames() const {
+    return m_frames;
+  }
+
+  void setTotalFrames(int frames);
+
+  int getFrameDuration(int frame) const {
+    if (frame >= 0 && frame < m_frames)
+      return m_frlens[frame];
+    else
+      return 0;
+  }
+
+  void setFrameDuration(int frame, int msecs) {
+    if (frame >= 0 && frame < m_frames)
+      m_frlens[frame] = MID(1, msecs, 65535);
+  }
+
+  void setDurationForAllFrames(int msecs) {
+    std::fill(m_frlens.begin(), m_frlens.end(), MID(1, msecs, 65535));
+  }
+
+  int getCurrentFrame() const {
+    return m_frame;
+  }
+
+  void setCurrentFrame(int frame) {
+    m_frame = frame;
+  }
+
+  const Stock* getStock() const {
+    return m_stock;
+  }
+
+  Stock* getStock() {
+    return m_stock;
+  }
+
+  const Image* getCurrentImage(int* x, int* y, int* opacity) const {
+    const Image* image = NULL;
+
+    if (getCurrentLayer() != NULL &&
+	getCurrentLayer()->is_image()) {
+      const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->get_cel(getCurrentFrame());
+      if (cel) {
+	assert((cel->image >= 0) &&
+	       (cel->image < getStock()->nimage));
+
+	image = getStock()->image[cel->image];
+
+	if (x) *x = cel->x;
+	if (y) *y = cel->y;
+	if (opacity) *opacity = MID(0, cel->opacity, 255);
+      }
+    }
+
+    return image;
+  }
+
+  Image* getCurrentImage(int* x, int* y, int* opacity) {
+    Image* image = NULL;
+
+    if (getCurrentLayer() != NULL &&
+	getCurrentLayer()->is_image()) {
+      Cel* cel = static_cast<LayerImage*>(getCurrentLayer())->get_cel(getCurrentFrame());
+      if (cel) {
+	assert((cel->image >= 0) &&
+	       (cel->image < getStock()->nimage));
+
+	image = getStock()->image[cel->image];
+
+	if (x) *x = cel->x;
+	if (y) *y = cel->y;
+	if (opacity) *opacity = MID(0, cel->opacity, 255);
+      }
+    }
+
+    return image;
+  }
+
+  void getCels(CelList& cels) {
+    getFolder()->get_cels(cels);
+  }
+
+  const Undo* getUndo() const {
+    return m_undo;
+  }
+
+  Undo* getUndo() {
+    return m_undo;
+  }
+
+  const Mask* getMask() const {
+    return m_mask;
+  }
+
+  Mask* getMask() {
+    return m_mask;
+  }
+
+  void setMask(const Mask* mask) {
+    if (m_mask)
+      mask_free(m_mask);
+
+    m_mask = mask_new_copy(mask);
+  }
+
+  void addMask(Mask* mask) {
+    if (!mask->name) // You can't add masks to repository without name
+      return;
+    
+    if (requestMask(mask->name)) // You can't add a mask that already exists
+      return;
+
+    // And add the new mask
+    jlist_append(m_repository.masks, mask);
+  }
+
+  void removeMask(Mask* mask) {
+    // Remove the mask from the repository
+    jlist_remove(m_repository.masks, mask);
+  }
+
+  Mask* requestMask(const char* name) const;
+
+  void generateMaskBoundaries(Mask* mask = NULL);
+
+  JList getMasksRepository() {
+    return m_repository.masks;
+  }
+
+  void addPath(Path* path) {
+    jlist_append(m_repository.paths, path);
+  }
+
+  void removePath(Path* path) {
+    jlist_remove(m_repository.paths, path);
+  }
+
+  void setPath(const Path* path) {
+    if (m_path)
+      path_free(m_path);
+
+    m_path = path_new_copy(path);
+  }
+
+  JList getPathsRepository() {
+    return m_repository.paths;
+  }
+
+  void setFormatOptions(FormatOptions* format_options) {
+    if (m_format_options)
+      jfree(m_format_options);
+
+    m_format_options = format_options;
+  }
+
+  void render(Image* image, int x, int y) const {
+    image_rectfill(image, x, y, x+m_width-1, y+m_height-1, 0);
+    layer_render(getFolder(), image, x, y, getCurrentFrame());
+  }
+
+  int getPixel(int x, int y) const;
+
+  PreferredEditorSettings getPreferredEditorSettings() const {
+    return m_preferred;
+  }
+
+  void setPreferredEditorSettings(const PreferredEditorSettings& settings) {
+    m_preferred = settings;
+  }
+
+  int getBoundariesSegmentsCount() const {
+    return m_bound.nseg;
+  }
+
+  const _BoundSeg* getBoundariesSegments() const {
+    return m_bound.seg;
+  }
+
+  void prepareExtra();
+  Image* getExtras() { return m_extras; }
+  int getExtrasOpacity() const { return m_extras_opacity; }
+  void setExtrasOpacity(int opacity) { m_extras_opacity = opacity; }
+
+private:
+  Sprite* m_self;			 // pointer to the Sprite
+  int m_imgtype;			 // image type
+  int m_width;				 // image width (in pixels)
+  int m_height;				 // image height (in pixels)
+  std::string m_filename;		 // sprite's file name
+  bool m_associated_to_file;		 // true if this sprite is associated to a file in the file-system
+  int m_frames;				 // how many frames has this sprite
+  std::vector<int> m_frlens;		 // duration per frame
+  int m_frame;				 // current frame, range [0,frames)
+  JList m_palettes;			 // list of palettes
+  Stock* m_stock;			 // stock to get images
+  LayerFolder* m_folder;		 // main folder of layers
+  Layer* m_layer;			 // current layer
+  Path* m_path;				 // working path
+  Mask* m_mask;				 // selected mask region
+  Undo* m_undo;				 // undo stack
+  struct {
+    JList paths;				// paths
+    JList masks;				// masks
+  } m_repository;
+
+  // Selected mask region boundaries
+  struct {
+    int nseg;
+    _BoundSeg* seg;
+  } m_bound;
+
+  PreferredEditorSettings m_preferred;
+
+  Image* m_extras;		// Image with the sprite size to draw some extra stuff (e.g. editor's cursor)
+  int m_extras_opacity;		// Opacity to be used to draw the extra image
+
+  // Mutex to modify the 'locked' flag.
+  Vaca::Mutex* m_mutex;
+
+  // True if some thread is writing the sprite.
+  bool m_write_lock;
+
+  // Greater than zero when one or more threads are reading the sprite.
+  int m_read_locks;
+
+  // Data to save the file in the same format that it was loaded
+  FormatOptions* m_format_options;
+};
+
+SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int ncolors)
+  : m_self(sprite)
+  , m_imgtype(imgtype)
+  , m_width(width)
+  , m_height(height)
+  , m_filename("Sprite")
+{
+  assert(width > 0 && height > 0);
+
+  m_associated_to_file = false;
+  m_frames = 1;
+  m_frlens.push_back(100);	// First frame with 100 msecs of duration
+  m_frame = 0;
+  m_palettes = jlist_new();
+  m_stock = stock_new(imgtype);
+  m_folder = new LayerFolder(m_self);
+  m_layer = NULL;
+  m_path = NULL;
+  m_mask = mask_new();
+  m_undo = undo_new(m_self);
+  m_repository.paths = jlist_new();
+  m_repository.masks = jlist_new();
+  m_extras = NULL;
+
+  // Boundary stuff
+  m_bound.nseg = 0;
+  m_bound.seg = NULL;
+
+  // Preferred edition options
+  m_preferred.scroll_x = 0;
+  m_preferred.scroll_y = 0;
+  m_preferred.zoom = 0;
 
   // Generate palette
-  Palette* pal = new Palette(0, ncolors);
+  Palette pal(0, ncolors);
+
   switch (imgtype) {
 
     // For colored images
     case IMAGE_RGB:
     case IMAGE_INDEXED:
-      get_default_palette()->copyColorsTo(pal);
+      get_default_palette()->copyColorsTo(&pal);
       break;
 
     // For black and white images
@@ -91,220 +458,167 @@ Sprite::Sprite(int imgtype, int w, int h, int ncolors)
       for (int c=0; c<ncolors; c++) {
 	int g = 255 * c / (ncolors-1);
 	g = MID(0, g, 255);
-	pal->setEntry(c, _rgba(g, g, g, 255));
+	pal.setEntry(c, _rgba(g, g, g, 255));
       }
       break;
   }
-  sprite_set_palette(this, pal, true);
-  sprite_set_speed(this, 100);
 
-  /* multiple access */
+  // Multiple access
   m_write_lock = false;
   m_read_locks = 0;
   m_mutex = new Mutex();
 
   // File format options
-  this->format_options = NULL;
+  m_format_options = NULL;
 
-  // Free the temporary palette
-  delete pal;
+  setPalette(&pal, true);
 }
 
-Sprite::~Sprite()
+SpriteImpl* SpriteImpl::copy(Sprite* sprite, const SpriteImpl* src_sprite)
 {
-  JLink link;
+  SpriteImpl* dst_sprite = copyBase(sprite, src_sprite);
 
-  // destroy layers
-  delete m_folder;		// destroy layers
-
-  // destroy images' stock
-  if (this->stock)
-    stock_free(this->stock);
-
-  /* destroy paths */
-  if (this->repository.paths) {
-    JI_LIST_FOR_EACH(this->repository.paths, link)
-      path_free(reinterpret_cast<Path*>(link->data));
-
-    jlist_free(this->repository.paths);
-  }
-
-  /* destroy masks */
-  if (this->repository.masks) {
-    JI_LIST_FOR_EACH(this->repository.masks, link)
-      mask_free(reinterpret_cast<Mask*>(link->data));
-
-    jlist_free(this->repository.masks);
-  }
-
-  /* destroy palettes */
-  if (this->palettes) {
-    JI_LIST_FOR_EACH(this->palettes, link)
-      delete reinterpret_cast<Palette*>(link->data);
-
-    jlist_free(this->palettes);
-  }
-
-  // destroy undo, mask, etc.
-  delete this->undo;
-  delete this->mask;
-  delete this->m_extras;	// image
-  if (this->frlens) jfree(this->frlens);
-  if (this->bound.seg) jfree(this->bound.seg);
-  delete this->m_mutex;
-
-  /* destroy file format options */
-  if (this->format_options)
-    format_options_free(this->format_options);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-Sprite* sprite_new_copy(const Sprite* src_sprite)
-{
-  assert(src_sprite != NULL);
-
-  Sprite* dst_sprite = general_copy(src_sprite);
-  if (!dst_sprite)
-    return NULL;
-
-  /* copy layers */
+  // Copy layers
   if (dst_sprite->m_folder) {
     delete dst_sprite->m_folder; // delete
     dst_sprite->m_folder = NULL;
   }
 
-  assert(src_sprite->get_folder() != NULL);
+  assert(src_sprite->getFolder() != NULL);
 
-  undo_disable(dst_sprite->undo);
-  dst_sprite->m_folder = src_sprite->get_folder()->duplicate_for(dst_sprite);
-  undo_enable(dst_sprite->undo);
+  undo_disable(dst_sprite->getUndo());
+  dst_sprite->m_folder = src_sprite->getFolder()->duplicate_for(dst_sprite->m_self);
+  undo_enable(dst_sprite->getUndo());
 
   if (dst_sprite->m_folder == NULL) {
     delete dst_sprite;
     return NULL;
   }
 
-  /* selected layer */
-  if (src_sprite->layer != NULL) { 
-    int selected_layer = sprite_layer2index(src_sprite, src_sprite->layer);
-    dst_sprite->layer = sprite_index2layer(dst_sprite, selected_layer);
+  // Selected layer
+  if (src_sprite->getCurrentLayer() != NULL) { 
+    int selected_layer = src_sprite->layerToIndex(src_sprite->getCurrentLayer());
+    dst_sprite->setCurrentLayer(dst_sprite->indexToLayer(selected_layer));
   }
 
-  sprite_generate_mask_boundaries(dst_sprite);
+  dst_sprite->generateMaskBoundaries();
   return dst_sprite;
 }
 
-Sprite* sprite_new_flatten_copy(const Sprite* src_sprite)
+/**
+ * Makes a copy "sprite" without the layers (only with the empty layer set)
+ */
+SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprite)
 {
-  Sprite* dst_sprite;
-  Layer *flat_layer;
+  JLink link;
+  SpriteImpl* dst_sprite = new SpriteImpl(new_sprite,
+					  src_sprite->m_imgtype,
+					  src_sprite->m_width, src_sprite->m_height,
+					  src_sprite->getPalette(0)->size());
 
-  assert(src_sprite != NULL);
-
-  dst_sprite = general_copy(src_sprite);
-  if (dst_sprite == NULL)
-    return NULL;
-
-  /* flatten layers */
-  assert(src_sprite->get_folder() != NULL);
-
-  flat_layer = layer_new_flatten_copy(dst_sprite,
-				      src_sprite->get_folder(),
-				      0, 0, src_sprite->w, src_sprite->h,
-				      0, src_sprite->frames-1);
-  if (flat_layer == NULL) {
+  // Copy stock
+  stock_free(dst_sprite->m_stock);
+  dst_sprite->m_stock = stock_new_copy(src_sprite->m_stock);
+  if (!dst_sprite->m_stock) {
     delete dst_sprite;
     return NULL;
   }
 
-  /* add and select the new flat layer */
-  dst_sprite->get_folder()->add_layer(flat_layer);
-  dst_sprite->layer = flat_layer;
+  /* copy general properties */
+  dst_sprite->m_filename = src_sprite->m_filename;
+  dst_sprite->setTotalFrames(src_sprite->m_frames);
+  std::copy(src_sprite->m_frlens.begin(),
+	    src_sprite->m_frlens.end(),
+	    dst_sprite->m_frlens.begin());
+
+  // Copy color palettes
+  JI_LIST_FOR_EACH(src_sprite->m_palettes, link) {
+    Palette* pal = reinterpret_cast<Palette*>(link->data);
+    dst_sprite->setPalette(pal, true);
+  }
+
+  // Copy path
+  if (dst_sprite->m_path) {
+    path_free(dst_sprite->m_path);
+    dst_sprite->m_path = NULL;
+  }
+
+  if (src_sprite->m_path)
+    dst_sprite->m_path = path_new_copy(src_sprite->m_path);
+
+  // Copy mask
+  if (dst_sprite->m_mask) {
+    mask_free(dst_sprite->m_mask);
+    dst_sprite->m_mask = NULL;
+  }
+
+  if (src_sprite->m_mask)
+    dst_sprite->m_mask = mask_new_copy(src_sprite->m_mask);
+
+  /* copy repositories */
+  JI_LIST_FOR_EACH(src_sprite->m_repository.paths, link) {
+    Path* path_copy = path_new_copy(reinterpret_cast<Path*>(link->data));
+    if (path_copy)
+      dst_sprite->addPath(path_copy);
+  }
+
+  JI_LIST_FOR_EACH(src_sprite->m_repository.masks, link) {
+    Mask* mask_copy = mask_new_copy(reinterpret_cast<Mask*>(link->data));
+    if (mask_copy)
+      dst_sprite->addMask(mask_copy);
+  }
+
+  // Copy preferred edition options
+  dst_sprite->m_preferred = src_sprite->m_preferred;
 
   return dst_sprite;
 }
 
-Sprite* sprite_new_with_layer(int imgtype, int w, int h, int ncolors)
+SpriteImpl::~SpriteImpl()
 {
-  Sprite* sprite = NULL;
-  LayerImage *layer = NULL;
-  Image *image = NULL;
-  Cel *cel = NULL;
+  JLink link;
 
-  try {
-    sprite = new Sprite(imgtype, w, h, ncolors);
-    image = image_new(imgtype, w, h);
-    layer = new LayerImage(sprite);
+  // Destroy layers
+  delete m_folder;
 
-    /* clear with mask color */
-    image_clear(image, 0);
+  // Destroy images' stock
+  if (m_stock)
+    stock_free(m_stock);
 
-    /* configure the first transparent layer */
-    layer->set_name("Layer 1");
-    layer->set_blend_mode(BLEND_MODE_NORMAL);
+  // Destroy paths
+  if (m_repository.paths) {
+    JI_LIST_FOR_EACH(m_repository.paths, link)
+      path_free(reinterpret_cast<Path*>(link->data));
 
-    /* add image in the layer stock */
-    int index = stock_add_image(sprite->stock, image);
-
-    /* create the cel */
-    cel = cel_new(0, index);
-    cel_set_position(cel, 0, 0);
-
-    /* add the cel in the layer */
-    layer->add_cel(cel);
-
-    /* add the layer in the sprite */
-    sprite->get_folder()->add_layer(layer);
-
-    sprite_set_frames(sprite, 1);
-    sprite_set_filename(sprite, "Sprite");
-    sprite_set_layer(sprite, layer);
-  }
-  catch (...) {
-    delete sprite;
-    delete image;
-    throw;
+    jlist_free(m_repository.paths);
   }
 
-  return sprite;
-}
+  // Destroy masks
+  if (m_repository.masks) {
+    JI_LIST_FOR_EACH(m_repository.masks, link)
+      mask_free(reinterpret_cast<Mask*>(link->data));
 
-bool sprite_is_modified(const Sprite* sprite)
-{
-  assert(sprite != NULL);
-
-  return (sprite->undo->diff_count ==
-	  sprite->undo->diff_saved) ? false: true;
-}
-
-bool sprite_is_associated_to_file(const Sprite* sprite)
-{
-  assert(sprite != NULL);
-
-  return sprite->associated_to_file;
-}
-
-void sprite_mark_as_saved(Sprite* sprite)
-{
-  assert(sprite != NULL);
-
-  sprite->undo->diff_saved = sprite->undo->diff_count;
-  sprite->associated_to_file = true;
-}
-
-bool sprite_need_alpha(const Sprite* sprite)
-{
-  assert(sprite != NULL);
-
-  switch (sprite->imgtype) {
-
-    case IMAGE_RGB:
-    case IMAGE_GRAYSCALE:
-      return sprite_get_background_layer(sprite) == NULL;
-
+    jlist_free(m_repository.masks);
   }
-  return false;
+
+  // Destroy palettes
+  if (m_palettes) {
+    JI_LIST_FOR_EACH(m_palettes, link)
+      delete reinterpret_cast<Palette*>(link->data);
+
+    jlist_free(m_palettes);
+  }
+
+  // Destroy undo, mask, etc.
+  delete m_undo;
+  delete m_mask;
+  delete m_extras;	// image
+  if (m_bound.seg) jfree(m_bound.seg);
+  delete m_mutex;
+
+  // Destroy file format options
+  if (m_format_options)
+    format_options_free(m_format_options);
 }
 
 /**
@@ -312,7 +626,7 @@ bool sprite_need_alpha(const Sprite* sprite)
  *
  * @return true if the sprite can be accessed in the desired mode.
  */
-bool Sprite::lock(bool write)
+bool SpriteImpl::lock(bool write)
 {
   ScopedLock lock(*m_mutex);
 
@@ -342,7 +656,7 @@ bool Sprite::lock(bool write)
  * If you have locked the sprite to read, using this method
  * you can raise your access level to write it.
  */
-bool Sprite::lock_to_write()
+bool SpriteImpl::lockToWrite()
 {
   ScopedLock lock(*m_mutex);
 
@@ -361,7 +675,7 @@ bool Sprite::lock_to_write()
  * If you have locked the sprite to write, using this method
  * you can your access level to only read it.
  */
-void Sprite::unlock_to_read()
+void SpriteImpl::unlockToRead()
 {
   ScopedLock lock(*m_mutex);
 
@@ -372,7 +686,7 @@ void Sprite::unlock_to_read()
   m_read_locks = 1;
 }
 
-void Sprite::unlock()
+void SpriteImpl::unlock()
 {
   ScopedLock lock(*m_mutex);
 
@@ -387,28 +701,145 @@ void Sprite::unlock()
   }
 }
 
-void Sprite::prepare_extra()
+int SpriteImpl::getMemSize() const
 {
-  if (!m_extras ||
-      m_extras->imgtype != imgtype ||
-      m_extras->w != w ||
-      m_extras->h != h) {
-    delete m_extras;		// image
-    m_extras = image_new(imgtype, w, h);
-    image_clear(m_extras, m_extras->mask_color = 0);
+  Image *image;
+  int i, size = 0;
+
+  for (i=0; i<m_stock->nimage; i++) {
+    image = m_stock->image[i];
+
+    if (image != NULL)
+      size += image_line_size(image, image->w) * image->h;
+  }
+
+  return size;
+}
+
+const LayerImage* SpriteImpl::getBackgroundLayer() const
+{
+  if (getFolder()->get_layers_count() > 0) {
+    const Layer* bglayer = *getFolder()->get_layer_begin();
+
+    if (bglayer->is_background())
+      return static_cast<const LayerImage*>(bglayer);
+  }
+  return NULL;
+}
+
+LayerImage* SpriteImpl::getBackgroundLayer()
+{
+  if (getFolder()->get_layers_count() > 0) {
+    Layer* bglayer = *getFolder()->get_layer_begin();
+
+    if (bglayer->is_background())
+      return static_cast<LayerImage*>(bglayer);
+  }
+  return NULL;
+}
+
+void SpriteImpl::setTotalFrames(int frames)
+{
+  frames = MAX(1, frames);
+  m_frlens.resize(frames);
+
+  if (frames > m_frames) {
+    int c;
+    for (c=m_frames; c<frames; c++)
+      m_frlens[c] = m_frlens[m_frames-1];
+  }
+
+  m_frames = frames;
+}
+
+Mask *SpriteImpl::requestMask(const char *name) const
+{
+  Mask *mask;
+  JLink link;
+
+  JI_LIST_FOR_EACH(m_repository.masks, link) {
+    mask = reinterpret_cast<Mask*>(link->data);
+    if (strcmp(mask->name, name) == 0)
+      return mask;
+  }
+
+  return NULL;
+}
+
+
+void SpriteImpl::generateMaskBoundaries(Mask* mask)
+{
+  // No mask specified? Use the current one in the sprite
+  if (!mask)
+    mask = m_mask;
+
+  if (m_bound.seg) {
+    jfree(m_bound.seg);
+    m_bound.seg = NULL;
+    m_bound.nseg = 0;
+  }
+
+  assert(mask != NULL);
+
+  if (mask->bitmap) {
+    m_bound.seg = find_mask_boundary(mask->bitmap,
+				     &m_bound.nseg,
+				     IgnoreBounds, 0, 0, 0, 0);
+    for (int c=0; c<m_bound.nseg; c++) {
+      m_bound.seg[c].x1 += mask->x;
+      m_bound.seg[c].y1 += mask->y;
+      m_bound.seg[c].x2 += mask->x;
+      m_bound.seg[c].y2 += mask->y;
+    }
   }
 }
 
-Palette* sprite_get_palette(const Sprite* sprite, int frame)
+int SpriteImpl::getPixel(int x, int y) const
+{
+  int color = 0;
+
+  if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
+    Image* image = image_new(m_imgtype, 1, 1);
+    image_clear(image, 0);
+    this->render(image, -x, -y);
+    color = image_getpixel(image, 0, 0);
+    image_free(image);
+  }
+
+  return color;
+}
+
+const Palette* SpriteImpl::getPalette(int frame) const
+{
+  const Palette* found = NULL;
+  const Palette* pal;
+  JLink link;
+
+  assert(frame >= 0);
+
+  JI_LIST_FOR_EACH(m_palettes, link) {
+    pal = reinterpret_cast<const Palette*>(link->data);
+    if (frame < pal->getFrame())
+      break;
+
+    found = pal;
+    if (frame == pal->getFrame())
+      break;
+  }
+
+  assert(found != NULL);
+  return found;
+}
+
+Palette* SpriteImpl::getPalette(int frame)
 {
   Palette* found = NULL;
   Palette* pal;
   JLink link;
 
-  assert(sprite != NULL);
   assert(frame >= 0);
 
-  JI_LIST_FOR_EACH(sprite->palettes, link) {
+  JI_LIST_FOR_EACH(m_palettes, link) {
     pal = reinterpret_cast<Palette*>(link->data);
     if (frame < pal->getFrame())
       break;
@@ -422,20 +853,19 @@ Palette* sprite_get_palette(const Sprite* sprite, int frame)
   return found;
 }
 
-void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate)
+void SpriteImpl::setPalette(Palette* pal, bool truncate)
 {
-  assert(sprite != NULL);
   assert(pal != NULL);
 
   if (!truncate) {
-    Palette* sprite_pal = sprite_get_palette(sprite, pal->getFrame());
+    Palette* sprite_pal = getPalette(pal->getFrame());
     pal->copyColorsTo(sprite_pal);
   }
   else {
     JLink link = NULL;
     Palette* other;
 
-    JI_LIST_FOR_EACH(sprite->palettes, link) {
+    JI_LIST_FOR_EACH(m_palettes, link) {
       other = reinterpret_cast<Palette*>(link->data);
 
       if (pal->getFrame() == other->getFrame()) {
@@ -446,266 +876,544 @@ void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate)
 	break;
     }
 
-    jlist_insert_before(sprite->palettes, link, new Palette(*pal));
+    jlist_insert_before(m_palettes, link, new Palette(*pal));
   }
 }
 
-/**
- * Leaves the first palette only in the sprite
- */
-void sprite_reset_palettes(Sprite* sprite)
+void SpriteImpl::resetPalettes()
 {
   JLink link, next;
 
-  JI_LIST_FOR_EACH_SAFE(sprite->palettes, link, next) {
-    if (jlist_first(sprite->palettes) != link) {
+  JI_LIST_FOR_EACH_SAFE(m_palettes, link, next) {
+    if (jlist_first(m_palettes) != link) {
       delete reinterpret_cast<Palette*>(link->data);
-      jlist_delete_link(sprite->palettes, link);
+      jlist_delete_link(m_palettes, link);
     }
   }
 }
 
-void sprite_delete_palette(Sprite* sprite, Palette* pal)
+void SpriteImpl::deletePalette(Palette* pal)
 {
-  assert(sprite != NULL);
   assert(pal != NULL);
 
-  JLink link = jlist_find(sprite->palettes, pal);
+  JLink link = jlist_find(m_palettes, pal);
   assert(link != NULL);
 
   delete pal;
-  jlist_delete_link(sprite->palettes, link);
+  jlist_delete_link(m_palettes, link);
+}
+
+void SpriteImpl::prepareExtra()
+{
+  if (!m_extras ||
+      m_extras->imgtype != m_imgtype ||
+      m_extras->w != m_width ||
+      m_extras->h != m_height) {
+    delete m_extras;		// image
+    m_extras = image_new(m_imgtype, m_width, m_height);
+    image_clear(m_extras, m_extras->mask_color = 0);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
+// Constructors/Destructor
+
+Sprite::Sprite()
+  : GfxObj(GFXOBJ_SPRITE)
+  , m_impl(NULL)
+{
+}
+
+Sprite::Sprite(int imgtype, int width, int height, int ncolors)
+  : GfxObj(GFXOBJ_SPRITE)
+  , m_impl(new SpriteImpl(this, imgtype, width, height, ncolors))
+{
+}
+
+Sprite::~Sprite()
+{
+  delete m_impl;
+}
+
+Sprite::Sprite(const Sprite& original)
+  : GfxObj(GFXOBJ_SPRITE)
+  , m_impl(SpriteImpl::copy(this, original.m_impl))
+{
+}
+
+Sprite* Sprite::createFlattenCopy(const Sprite& src_sprite)
+{
+  Sprite* dst_sprite = new Sprite();
+  SpriteImpl* dst_sprite_impl = SpriteImpl::copyBase(dst_sprite, src_sprite.m_impl);
+  dst_sprite->m_impl = dst_sprite_impl;
+
+  // Flatten layers
+  assert(src_sprite.getFolder() != NULL);
+
+  Layer* flat_layer;
+  try {
+    flat_layer = layer_new_flatten_copy(dst_sprite,
+					src_sprite.getFolder(),
+					0, 0, src_sprite.getWidth(), src_sprite.getHeight(),
+					0, src_sprite.getTotalFrames()-1);
+  }
+  catch (const std::bad_alloc&) {
+    delete dst_sprite;
+    throw;
+  }
+
+  // Add and select the new flat layer
+  dst_sprite->getFolder()->add_layer(flat_layer);
+  dst_sprite->setCurrentLayer(flat_layer);
+
+  return dst_sprite;
+}
+
+Sprite* Sprite::createWithLayer(int imgtype, int width, int height, int ncolors)
+{
+  Sprite* sprite = NULL;
+  LayerImage *layer = NULL;
+  Image *image = NULL;
+  Cel *cel = NULL;
+
+  try {
+    sprite = new Sprite(imgtype, width, height, ncolors);
+    image = image_new(imgtype, width, height);
+    layer = new LayerImage(sprite);
+
+    /* clear with mask color */
+    image_clear(image, 0);
+
+    /* configure the first transparent layer */
+    layer->set_name("Layer 1");
+    layer->set_blend_mode(BLEND_MODE_NORMAL);
+
+    /* add image in the layer stock */
+    int index = stock_add_image(sprite->getStock(), image);
+
+    /* create the cel */
+    cel = cel_new(0, index);
+    cel_set_position(cel, 0, 0);
+
+    /* add the cel in the layer */
+    layer->add_cel(cel);
+
+    /* add the layer in the sprite */
+    sprite->getFolder()->add_layer(layer);
+
+    sprite->setTotalFrames(1);
+    sprite->setFilename("Sprite");
+    sprite->setCurrentLayer(layer);
+  }
+  catch (...) {
+    delete sprite;
+    delete image;
+    throw;
+  }
+
+  return sprite;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Multi-threading ("sprite wrappers" use this)
+
+/**
+ * Lock the sprite to read or write it.
+ *
+ * @return true if the sprite can be accessed in the desired mode.
+ */
+bool Sprite::lock(bool write)
+{
+  return m_impl->lock(write);
+}
+
+/**
+ * If you have locked the sprite to read, using this method
+ * you can raise your access level to write it.
+ */
+bool Sprite::lockToWrite()
+{
+  return m_impl->lockToWrite();
+}
+
+/**
+ * If you have locked the sprite to write, using this method
+ * you can your access level to only read it.
+ */
+void Sprite::unlockToRead()
+{
+  m_impl->unlockToRead();
+}
+
+void Sprite::unlock()
+{
+  m_impl->unlock();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Main properties
+
+int Sprite::getImgType() const
+{
+  return m_impl->getImgType();
+}
+
+void Sprite::setImgType(int imgtype)
+{
+  m_impl->setImgType(imgtype);
+}
+
+int Sprite::getWidth() const
+{
+  return m_impl->getWidth();
+}
+
+int Sprite::getHeight() const
+{
+  return m_impl->getHeight();
+}
+
+void Sprite::setSize(int width, int height)
+{
+  m_impl->setSize(width, height);
+}
+
+const char* Sprite::getFilename() const
+{
+  return m_impl->getFilename();
 }
 
 /**
  * Changes the sprite's filename
  */
-void sprite_set_filename(Sprite* sprite, const char *filename)
+void Sprite::setFilename(const char* filename)
 {
-  strcpy(sprite->filename, filename);
+  m_impl->setFilename(filename);
 }
 
-void sprite_set_format_options(Sprite* sprite, struct FormatOptions *format_options)
+bool Sprite::isModified() const
 {
-  if (sprite->format_options)
-    jfree(sprite->format_options);
-
-  sprite->format_options = format_options;
+  return m_impl->isModified();
 }
 
-void sprite_set_size(Sprite* sprite, int w, int h)
+bool Sprite::isAssociatedToFile() const
 {
-  assert(w > 0);
-  assert(h > 0);
-
-  sprite->w = w;
-  sprite->h = h;
+  return m_impl->isAssociatedToFile();
 }
 
-/**
- * Changes the quantity of frames
- */
-void sprite_set_frames(Sprite* sprite, int frames)
+void Sprite::markAsSaved()
 {
-  frames = MAX(1, frames);
-
-  sprite->frlens = (int*)jrealloc(sprite->frlens, sizeof(int)*frames);
-
-  if (frames > sprite->frames) {
-    int c;
-    for (c=sprite->frames; c<frames; c++)
-      sprite->frlens[c] = sprite->frlens[sprite->frames-1];
-  }
-
-  sprite->frames = frames;
-}
-
-void sprite_set_frlen(Sprite* sprite, int frame, int msecs)
-{
-  if (frame >= 0 && frame < sprite->frames)
-    sprite->frlens[frame] = MID(1, msecs, 65535);
-}
-
-int sprite_get_frlen(const Sprite* sprite, int frame)
-{
-  if (frame >= 0 && frame < sprite->frames)
-    return sprite->frlens[frame];
-  else
-    return 0;
+  m_impl->markAsSaved();
 }
 
 /**
- * Sets a constant frame-rate.
+   Returns true if the rendered images will contain alpha values less than 255.
+
+   @note Only RGB and Grayscale images without background needs alpha channel in the render.
  */
-void sprite_set_speed(Sprite* sprite, int msecs)
+bool Sprite::needAlpha() const
 {
-  int c;
-  for (c=0; c<sprite->frames; c++)
-    sprite->frlens[c] = MID(1, msecs, 65535);
+  return m_impl->needAlpha();
 }
 
-/**
- * Changes the current path (makes a copy of "path")
- */
-void sprite_set_path(Sprite* sprite, const Path* path)
+int Sprite::getMemSize() const
 {
-  if (sprite->path)
-    path_free(sprite->path);
-
-  sprite->path = path_new_copy(path);
+  return m_impl->getMemSize();
 }
 
-/**
- * Changes the current mask (makes a copy of "mask")
- */
-void sprite_set_mask(Sprite* sprite, const Mask *mask)
-{
-  if (sprite->mask)
-    mask_free(sprite->mask);
+//////////////////////////////////////////////////////////////////////
+// Layers
 
-  sprite->mask = mask_new_copy(mask);
+const LayerFolder* Sprite::getFolder() const
+{
+  return m_impl->getFolder();
+}
+
+LayerFolder* Sprite::getFolder()
+{
+  return m_impl->getFolder();
+}
+
+const LayerImage* Sprite::getBackgroundLayer() const
+{
+  return m_impl->getBackgroundLayer();
+}
+
+LayerImage* Sprite::getBackgroundLayer()
+{
+  return m_impl->getBackgroundLayer();
+}
+
+const Layer* Sprite::getCurrentLayer() const
+{
+  return m_impl->getCurrentLayer();
+}
+
+Layer* Sprite::getCurrentLayer()
+{
+  return m_impl->getCurrentLayer();
 }
 
 /**
  * Changes the current layer
  */
-void sprite_set_layer(Sprite* sprite, Layer *layer)
+void Sprite::setCurrentLayer(Layer* layer)
 {
-  sprite->layer = layer;
+  m_impl->setCurrentLayer(layer);
 }
 
-void sprite_set_frame(Sprite* sprite, int frame)
+int Sprite::countLayers() const
 {
-  sprite->frame = frame;
+  return m_impl->countLayers();
 }
 
-LayerImage* sprite_get_background_layer(const Sprite* sprite)
+const Layer* Sprite::indexToLayer(int index) const
 {
-  assert(sprite != NULL);
+  return m_impl->indexToLayer(index);
+}
 
-  if (sprite->get_folder()->get_layers_count() > 0) {
-    Layer* bglayer = *sprite->get_folder()->get_layer_begin();
+Layer* Sprite::indexToLayer(int index)
+{
+  return m_impl->indexToLayer(index);
+}
 
-    if (bglayer->is_background())
-      return static_cast<LayerImage*>(bglayer);
-  }
+int Sprite::layerToIndex(const Layer* layer) const
+{
+  return m_impl->layerToIndex(layer);
+}
 
-  return NULL;
+//////////////////////////////////////////////////////////////////////
+// Palettes
+
+const Palette* Sprite::getPalette(int frame) const
+{
+  return m_impl->getPalette(frame);
+}
+
+Palette* Sprite::getPalette(int frame)
+{
+  return m_impl->getPalette(frame);
+}
+
+JList Sprite::getPalettes()
+{
+  return m_impl->getPalettes();
+}
+
+void Sprite::setPalette(Palette* pal, bool truncate)
+{
+  m_impl->setPalette(pal, truncate);
 }
 
 /**
- * Adds a path to the sprites's repository
+ * Removes all palettes from the sprites except the first one.
  */
-void sprite_add_path(Sprite* sprite, Path* path)
+void Sprite::resetPalettes()
 {
-  jlist_append(sprite->repository.paths, path);
+  m_impl->resetPalettes();
+}
+
+void Sprite::deletePalette(Palette* pal)
+{
+  m_impl->deletePalette(pal);
+}
+
+const Palette* Sprite::getCurrentPalette() const
+{
+  return m_impl->getCurrentPalette();
+}
+
+Palette* Sprite::getCurrentPalette()
+{
+  return m_impl->getCurrentPalette();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Frames
+
+int Sprite::getTotalFrames() const
+{
+  return m_impl->getTotalFrames();
 }
 
 /**
- * Removes a path from the sprites's repository
+ * Changes the quantity of frames
  */
-void sprite_remove_path (Sprite* sprite, Path* path)
+void Sprite::setTotalFrames(int frames)
 {
-  jlist_remove(sprite->repository.paths, path);
+  m_impl->setTotalFrames(frames);
+}
+
+int Sprite::getFrameDuration(int frame) const
+{
+  return m_impl->getFrameDuration(frame);
+}
+
+void Sprite::setFrameDuration(int frame, int msecs)
+{
+  m_impl->setFrameDuration(frame, msecs);
+}
+
+/**
+ * Sets a constant frame-rate.
+ */
+void Sprite::setDurationForAllFrames(int msecs)
+{
+  m_impl->setDurationForAllFrames(msecs);
+}
+
+int Sprite::getCurrentFrame() const
+{
+  return m_impl->getCurrentFrame();
+}
+
+void Sprite::setCurrentFrame(int frame)
+{
+  m_impl->setCurrentFrame(frame);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Images
+
+const Stock* Sprite::getStock() const
+{
+  return m_impl->getStock();
+}
+
+Stock* Sprite::getStock()
+{
+  return m_impl->getStock();
+}
+
+const Image* Sprite::getCurrentImage(int* x, int* y, int* opacity) const
+{
+  return m_impl->getCurrentImage(x, y, opacity);
+}
+
+Image* Sprite::getCurrentImage(int* x, int* y, int* opacity)
+{
+  return m_impl->getCurrentImage(x, y, opacity);
+}
+
+void Sprite::getCels(CelList& cels)
+{
+  m_impl->getCels(cels);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Undo
+
+const Undo* Sprite::getUndo() const
+{
+  return m_impl->getUndo();
+}
+
+Undo* Sprite::getUndo()
+{
+  return m_impl->getUndo();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Mask
+
+const Mask* Sprite::getMask() const
+{
+  return m_impl->getMask();
+}
+
+Mask* Sprite::getMask()
+{
+  return m_impl->getMask();
+}
+
+/**
+ * Changes the current mask (makes a copy of "mask")
+ */
+void Sprite::setMask(const Mask* mask)
+{
+  m_impl->setMask(mask);
 }
 
 /**
  * Adds a mask to the sprites's repository
  */
-void sprite_add_mask (Sprite* sprite, Mask *mask)
+void Sprite::addMask(Mask* mask)
 {
-  /* you can't add masks to repository without name */
-  if (!mask->name)
-    return;
-
-  /* you can't add a mask that already exists */
-  if (sprite_request_mask(sprite, mask->name))
-    return;
-
-  /* and add the new mask */
-  jlist_append(sprite->repository.masks, mask);
+  m_impl->addMask(mask);
 }
 
 /**
  * Removes a mask from the sprites's repository
  */
-void sprite_remove_mask(Sprite* sprite, Mask *mask)
+void Sprite::removeMask(Mask* mask)
 {
-  /* remove the mask from the repository */
-  jlist_remove(sprite->repository.masks, mask);
+  m_impl->removeMask(mask);
 }
 
 /**
  * Returns a mask from the sprite's repository searching it by its name
  */
-Mask *sprite_request_mask(const Sprite* sprite, const char *name)
+Mask* Sprite::requestMask(const char* name) const
 {
-  Mask *mask;
-  JLink link;
-
-  JI_LIST_FOR_EACH(sprite->repository.masks, link) {
-    mask = reinterpret_cast<Mask*>(link->data);
-    if (strcmp(mask->name, name) == 0)
-      return mask;
-  }
-
-  return NULL;
+  return m_impl->requestMask(name);
 }
 
-void sprite_render(const Sprite* sprite, Image *image, int x, int y)
+void Sprite::generateMaskBoundaries(Mask* mask)
 {
-  image_rectfill(image, x, y, x+sprite->w-1, y+sprite->h-1, 0);
-  layer_render(sprite->get_folder(), image, x, y, sprite->frame);
+  m_impl->generateMaskBoundaries(mask);
 }
 
-void sprite_generate_mask_boundaries(Sprite* sprite)
+JList Sprite::getMasksRepository()
 {
-  int c;
-
-  if (sprite->bound.seg) {
-    jfree(sprite->bound.seg);
-    sprite->bound.seg = NULL;
-    sprite->bound.nseg = 0;
-  }
-
-  if (sprite->mask->bitmap) {
-    sprite->bound.seg = find_mask_boundary(sprite->mask->bitmap,
-					   &sprite->bound.nseg,
-					   IgnoreBounds, 0, 0, 0, 0);
-    for (c=0; c<sprite->bound.nseg; c++) {
-      sprite->bound.seg[c].x1 += sprite->mask->x;
-      sprite->bound.seg[c].y1 += sprite->mask->y;
-      sprite->bound.seg[c].x2 += sprite->mask->x;
-      sprite->bound.seg[c].y2 += sprite->mask->y;
-    }
-  }
+  return m_impl->getMasksRepository();
 }
 
-Layer* sprite_index2layer(const Sprite* sprite, int index)
-{
-  int index_count = -1;
-  assert(sprite != NULL);
+//////////////////////////////////////////////////////////////////////
+// Path
 
-  return index2layer(sprite->get_folder(), index, &index_count);
+/**
+ * Adds a path to the sprites's repository
+ */
+void Sprite::addPath(Path* path)
+{
+  m_impl->addPath(path);
 }
 
-int sprite_layer2index(const Sprite* sprite, const Layer *layer)
+/**
+ * Removes a path from the sprites's repository
+ */
+void Sprite::removePath(Path* path)
 {
-  int index_count = -1;
-  assert(sprite != NULL);
-
-  return layer2index(sprite->get_folder(), layer, &index_count);
+  m_impl->removePath(path);
 }
 
-int sprite_count_layers(const Sprite* sprite)
+/**
+ * Changes the current path (makes a copy of "path")
+ */
+void Sprite::setPath(const Path* path)
 {
-  assert(sprite != NULL);
-  return sprite->get_folder()->get_layers_count();
+  m_impl->setPath(path);
 }
 
-void sprite_get_cels(const Sprite* sprite, CelList& cels)
+JList Sprite::getPathsRepository()
 {
-  sprite->get_folder()->get_cels(cels);
+  return m_impl->getPathsRepository();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Loaded options from file
+
+void Sprite::setFormatOptions(FormatOptions* format_options)
+{
+  m_impl->setFormatOptions(format_options);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Drawing
+
+void Sprite::render(Image* image, int x, int y) const
+{
+  m_impl->render(image, x, y);
 }
 
 /**
@@ -713,38 +1421,61 @@ void sprite_get_cels(const Sprite* sprite, CelList& cels)
  * specified coordinates there're background this routine will return
  * the 0 color (the mask-color).
  */
-int sprite_getpixel(const Sprite* sprite, int x, int y)
+int Sprite::getPixel(int x, int y) const
 {
-  Image *image;
-  int color = 0;
-
-  if ((x >= 0) && (y >= 0) && (x < sprite->w) && (y < sprite->h)) {
-    image = image_new(sprite->imgtype, 1, 1);
-    image_clear(image, 0);
-    sprite_render(sprite, image, -x, -y);
-    color = image_getpixel(image, 0, 0);
-    image_free(image);
-  }
-
-  return color;
+  return m_impl->getPixel(x, y);
 }
 
-int sprite_get_memsize(const Sprite* sprite)
+//////////////////////////////////////////////////////////////////////
+// Preferred editor settings
+
+PreferredEditorSettings Sprite::getPreferredEditorSettings() const
 {
-  Image *image;
-  int i, size = 0;
-
-  for (i=0; i<sprite->stock->nimage; i++) {
-    image = sprite->stock->image[i];
-
-    if (image != NULL)
-      size += image_line_size(image, image->w) * image->h;
-  }
-
-  return size;
+  return m_impl->getPreferredEditorSettings();
 }
 
-static Layer *index2layer(const Layer *layer, int index, int *index_count)
+void Sprite::setPreferredEditorSettings(const PreferredEditorSettings& settings)
+{
+  m_impl->setPreferredEditorSettings(settings);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Boundaries
+
+int Sprite::getBoundariesSegmentsCount() const
+{
+  return m_impl->getBoundariesSegmentsCount();
+}
+
+const _BoundSeg* Sprite::getBoundariesSegments() const
+{
+  return m_impl->getBoundariesSegments();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Extras
+
+void Sprite::prepareExtra()
+{
+  m_impl->prepareExtra();
+}
+
+Image* Sprite::getExtras()
+{
+  return m_impl->getExtras();
+}
+
+int Sprite::getExtrasOpacity() const
+{
+  return m_impl->getExtrasOpacity();
+}
+
+void Sprite::setExtrasOpacity(int opacity)
+{
+  m_impl->setExtrasOpacity(opacity);
+}
+
+static Layer* index2layer(const Layer* layer, int index, int* index_count)
 {
   if (index == *index_count)
     return (Layer*)layer;
@@ -767,7 +1498,7 @@ static Layer *index2layer(const Layer *layer, int index, int *index_count)
   }
 }
 
-static int layer2index(const Layer *layer, const Layer *find_layer, int *index_count)
+static int layer2index(const Layer* layer, const Layer* find_layer, int* index_count)
 {
   if (layer == find_layer)
     return *index_count;
@@ -788,101 +1519,4 @@ static int layer2index(const Layer *layer, const Layer *find_layer, int *index_c
 
     return -1;
   }
-}
-
-static int layer_count_layers(const Layer* layer)
-{
-  int count = 1;
-
-  if (layer->is_folder()) {
-    LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
-    LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
-
-    for (; it != end; ++it)
-      count += layer_count_layers(*it);
-  }
-
-  return count;
-}
-
-/**
- * Makes a copy "sprite" without the layers (only with the empty layer set)
- */
-static Sprite* general_copy(const Sprite* src_sprite)
-{
-  Sprite* dst_sprite;
-  JLink link;
-
-  dst_sprite = new Sprite(src_sprite->imgtype,
-			  src_sprite->w, src_sprite->h,
-			  sprite_get_palette(src_sprite, 0)->size());
-  if (!dst_sprite)
-    return NULL;
-
-  /* copy stock */
-  stock_free(dst_sprite->stock);
-  dst_sprite->stock = stock_new_copy(src_sprite->stock);
-  if (!dst_sprite->stock) {
-    delete dst_sprite;
-    return NULL;
-  }
-
-  /* copy general properties */
-  strcpy(dst_sprite->filename, src_sprite->filename);
-  sprite_set_frames(dst_sprite, src_sprite->frames);
-  memcpy(dst_sprite->frlens, src_sprite->frlens, sizeof(int)*src_sprite->frames);
-
-  /* copy color palettes */
-  JI_LIST_FOR_EACH(src_sprite->palettes, link) {
-    Palette* pal = reinterpret_cast<Palette*>(link->data);
-    sprite_set_palette(dst_sprite, pal, true);
-  }
-
-  /* copy path */
-  if (dst_sprite->path) {
-    path_free(dst_sprite->path);
-    dst_sprite->path = NULL;
-  }
-
-  if (src_sprite->path) {
-    dst_sprite->path = path_new_copy(src_sprite->path);
-    if (!dst_sprite->path) {
-      delete dst_sprite;
-      return NULL;
-    }
-  }
-
-  /* copy mask */
-  if (dst_sprite->mask) {
-    mask_free(dst_sprite->mask);
-    dst_sprite->mask = NULL;
-  }
-
-  if (src_sprite->mask) {
-    dst_sprite->mask = mask_new_copy(src_sprite->mask);
-    if (!dst_sprite->mask) {
-      delete dst_sprite;
-      return NULL;
-    }
-  }
-
-  /* copy repositories */
-  JI_LIST_FOR_EACH(src_sprite->repository.paths, link) {
-    Path* path_copy = path_new_copy(reinterpret_cast<Path*>(link->data));
-    if (path_copy)
-      sprite_add_path(dst_sprite, path_copy);
-  }
-
-  JI_LIST_FOR_EACH(src_sprite->repository.masks, link) {
-    Mask* mask_copy = mask_new_copy(reinterpret_cast<Mask*>(link->data));
-    if (mask_copy)
-      sprite_add_mask(dst_sprite, mask_copy);
-  }
-
-  /* copy preferred edition options */
-  dst_sprite->preferred.scroll_x = src_sprite->preferred.scroll_x;
-  dst_sprite->preferred.scroll_y = src_sprite->preferred.scroll_y;
-  dst_sprite->preferred.zoom = src_sprite->preferred.zoom;
-
-  return dst_sprite;
 }

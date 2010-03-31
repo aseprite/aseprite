@@ -55,7 +55,7 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 bool DuplicateLayerCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  return sprite && sprite->layer;
+  return sprite && sprite->getCurrentLayer();
 }
 
 void DuplicateLayerCommand::execute(Context* context)
@@ -68,15 +68,15 @@ void DuplicateLayerCommand::execute(Context* context)
 static Layer* duplicate_layer(Sprite* sprite)
 {
   /* open undo */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Layer Duplication");
-    undo_open(sprite->undo);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_set_label(sprite->getUndo(), "Layer Duplication");
+    undo_open(sprite->getUndo());
   }
 
-  Layer* layer_copy = sprite->layer->duplicate_for(sprite);
+  Layer* layer_copy = sprite->getCurrentLayer()->duplicate_for(sprite);
   if (!layer_copy) {
-    if (undo_is_enabled(sprite->undo))
-      undo_close(sprite->undo);
+    if (undo_is_enabled(sprite->getUndo()))
+      undo_close(sprite->getUndo());
 
     Console console;
     console.printf("Not enough memory");
@@ -88,19 +88,19 @@ static Layer* duplicate_layer(Sprite* sprite)
   layer_copy->set_name(layer_copy->get_name() + " " + _("Copy"));
 
   /* add the new layer in the sprite */
-  if (undo_is_enabled(sprite->undo))
-    undo_add_layer(sprite->undo, sprite->layer->get_parent(), layer_copy);
+  if (undo_is_enabled(sprite->getUndo()))
+    undo_add_layer(sprite->getUndo(), sprite->getCurrentLayer()->get_parent(), layer_copy);
 
-  sprite->layer->get_parent()->add_layer(layer_copy);
+  sprite->getCurrentLayer()->get_parent()->add_layer(layer_copy);
 
-  if (undo_is_enabled(sprite->undo)) {
-    undo_move_layer(sprite->undo, layer_copy);
-    undo_set_layer(sprite->undo, sprite);
-    undo_close(sprite->undo);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_move_layer(sprite->getUndo(), layer_copy);
+    undo_set_layer(sprite->getUndo(), sprite);
+    undo_close(sprite->getUndo());
   }
 
-  sprite->layer->get_parent()->move_layer(layer_copy, sprite->layer);
-  sprite_set_layer(sprite, layer_copy);
+  sprite->getCurrentLayer()->get_parent()->move_layer(layer_copy, sprite->getCurrentLayer());
+  sprite->setCurrentLayer(layer_copy);
 
   return layer_copy;
 }

@@ -79,6 +79,9 @@ enum {
 
   /* misc */
   UNDO_TYPE_SET_MASK,
+  UNDO_TYPE_SET_IMGTYPE,
+  UNDO_TYPE_SET_SIZE,
+  UNDO_TYPE_SET_FRAME,
   UNDO_TYPE_SET_FRAMES,
   UNDO_TYPE_SET_FRLEN,
 };
@@ -100,6 +103,9 @@ struct UndoChunkSetLayer;
 struct UndoChunkAddPalette;
 struct UndoChunkRemovePalette;
 struct UndoChunkSetMask;
+struct UndoChunkSetImgType;
+struct UndoChunkSetSize;
+struct UndoChunkSetFrame;
 struct UndoChunkSetFrames;
 struct UndoChunkSetFrlen;
 
@@ -188,6 +194,15 @@ static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalet
 static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite);
 static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, int state);
 
+static void chunk_set_imgtype_new(UndoStream* stream, Sprite *sprite);
+static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk, int state);
+
+static void chunk_set_size_new(UndoStream* stream, Sprite *sprite);
+static void chunk_set_size_invert(UndoStream* stream, UndoChunkSetSize *chunk, int state);
+
+static void chunk_set_frame_new(UndoStream* stream, Sprite *sprite);
+static void chunk_set_frame_invert(UndoStream* stream, UndoChunkSetFrame *chunk, int state);
+
 static void chunk_set_frames_new(UndoStream* stream, Sprite *sprite);
 static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chunk, int state);
 
@@ -218,6 +233,9 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(add_palette),
   DECL_UNDO_ACTION(remove_palette),
   DECL_UNDO_ACTION(set_mask),
+  DECL_UNDO_ACTION(set_imgtype),
+  DECL_UNDO_ACTION(set_size),
+  DECL_UNDO_ACTION(set_frame),
   DECL_UNDO_ACTION(set_frames),
   DECL_UNDO_ACTION(set_frlen),
 };
@@ -1333,7 +1351,7 @@ static void chunk_set_layer_new(UndoStream* stream, Sprite *sprite)
 		   sizeof(UndoChunkSetLayer));
 
   chunk->sprite_id = sprite->id;
-  chunk->layer_id = sprite->layer ? sprite->layer->id: 0;
+  chunk->layer_id = sprite->getCurrentLayer() ? sprite->getCurrentLayer()->id: 0;
 }
 
 static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk, int state)
@@ -1346,7 +1364,7 @@ static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk,
 
   chunk_set_layer_new(stream, sprite);
 
-  sprite->layer = layer;
+  sprite->setCurrentLayer(layer);
 }
 
 /***********************************************************************
@@ -1391,7 +1409,7 @@ static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *ch
     throw undo_exception("chunk_add_palette_invert");
 
   chunk_remove_palette_new(stream, sprite, palette);
-  sprite_delete_palette(sprite, palette);
+  sprite->deletePalette(palette);
 }
 
 /***********************************************************************
@@ -1436,7 +1454,7 @@ static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalet
   Palette* palette = read_raw_palette(chunk->data);
 
   chunk_add_palette_new(stream, sprite, palette);
-  sprite_set_palette(sprite, palette, true);
+  sprite->setPalette(palette, true);
 
   delete palette;
 }
@@ -1468,10 +1486,10 @@ static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite)
   UndoChunkSetMask* chunk = (UndoChunkSetMask* )
     undo_chunk_new(stream,
 		   UNDO_TYPE_SET_MASK,
-		   sizeof(UndoChunkSetMask)+get_raw_mask_size(sprite->mask));
+		   sizeof(UndoChunkSetMask)+get_raw_mask_size(sprite->getMask()));
 
   chunk->sprite_id = sprite->id;
-  write_raw_mask(chunk->data, sprite->mask);
+  write_raw_mask(chunk->data, sprite->getMask());
 }
 
 static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, int state)
@@ -1482,9 +1500,141 @@ static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, i
     Mask* mask = read_raw_mask(chunk->data);
 
     chunk_set_mask_new(stream, sprite);
-    mask_copy(sprite->mask, mask);
+    mask_copy(sprite->getMask(), mask);
 
     mask_free(mask);
+  }
+}
+
+/***********************************************************************
+
+  "set_imgtype"
+
+     DWORD		sprite ID
+     DWORD		imgtype
+
+***********************************************************************/
+
+struct UndoChunkSetImgType
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 imgtype;
+};
+
+void undo_set_imgtype(Undo* undo, Sprite* sprite)
+{
+  chunk_set_imgtype_new(undo->undo_stream, sprite);
+  update_undo(undo);
+}
+
+static void chunk_set_imgtype_new(UndoStream* stream, Sprite* sprite)
+{
+  UndoChunkSetImgType* chunk = (UndoChunkSetImgType*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_SET_IMGTYPE,
+		   sizeof(UndoChunkSetImgType));
+
+  chunk->sprite_id = sprite->id;
+  chunk->imgtype = sprite->getImgType();
+}
+
+static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk, int state)
+{
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+
+  if (sprite) {
+    chunk_set_imgtype_new(stream, sprite);
+    sprite->setImgType(chunk->imgtype);
+  }
+}
+
+/***********************************************************************
+
+  "set_size"
+
+     DWORD		sprite ID
+     DWORD		width
+     DWORD		height
+
+***********************************************************************/
+
+struct UndoChunkSetSize
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 width;
+  ase_uint32 height;
+};
+
+void undo_set_size(Undo* undo, Sprite* sprite)
+{
+  chunk_set_size_new(undo->undo_stream, sprite);
+  update_undo(undo);
+}
+
+static void chunk_set_size_new(UndoStream* stream, Sprite* sprite)
+{
+  UndoChunkSetSize* chunk = (UndoChunkSetSize*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_SET_SIZE,
+		   sizeof(UndoChunkSetSize));
+
+  chunk->sprite_id = sprite->id;
+  chunk->width = sprite->getWidth();
+  chunk->height = sprite->getHeight();
+}
+
+static void chunk_set_size_invert(UndoStream* stream, UndoChunkSetSize *chunk, int state)
+{
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+
+  if (sprite) {
+    chunk_set_size_new(stream, sprite);
+    sprite->setSize(chunk->width, chunk->height);
+  }
+}
+
+/***********************************************************************
+
+  "set_frame"
+
+     DWORD		sprite ID
+     DWORD		frame
+
+***********************************************************************/
+
+struct UndoChunkSetFrame
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 frame;
+};
+
+void undo_set_frame(Undo* undo, Sprite* sprite)
+{
+  chunk_set_frame_new(undo->undo_stream, sprite);
+  update_undo(undo);
+}
+
+static void chunk_set_frame_new(UndoStream* stream, Sprite* sprite)
+{
+  UndoChunkSetFrame* chunk = (UndoChunkSetFrame*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_SET_FRAME,
+		   sizeof(UndoChunkSetFrame));
+
+  chunk->sprite_id = sprite->id;
+  chunk->frame = sprite->getCurrentFrame();
+}
+
+static void chunk_set_frame_invert(UndoStream* stream, UndoChunkSetFrame *chunk, int state)
+{
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+
+  if (sprite) {
+    chunk_set_frame_new(stream, sprite);
+    sprite->setCurrentFrame(chunk->frame);
   }
 }
 
@@ -1518,7 +1668,7 @@ static void chunk_set_frames_new(UndoStream* stream, Sprite *sprite)
 		   sizeof(UndoChunkSetFrames));
 
   chunk->sprite_id = sprite->id;
-  chunk->frames = sprite->frames;
+  chunk->frames = sprite->getTotalFrames();
 }
 
 static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chunk, int state)
@@ -1527,7 +1677,7 @@ static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chun
 
   if (sprite) {
     chunk_set_frames_new(stream, sprite);
-    sprite_set_frames(sprite, chunk->frames);
+    sprite->setTotalFrames(chunk->frames);
   }
 }
 
@@ -1537,7 +1687,7 @@ static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chun
 
      DWORD		sprite ID
      DWORD		frame
-     DWORD		frlen
+     DWORD		duration
 
 ***********************************************************************/
 
@@ -1546,7 +1696,7 @@ struct UndoChunkSetFrlen
   UndoChunk head;
   ase_uint32 sprite_id;
   ase_uint32 frame;
-  ase_uint32 frlen;
+  ase_uint32 duration;
 };
 
 void undo_set_frlen(Undo* undo, Sprite *sprite, int frame)
@@ -1557,7 +1707,7 @@ void undo_set_frlen(Undo* undo, Sprite *sprite, int frame)
 
 static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame)
 {
-  assert(frame >= 0 && frame < sprite->frames);
+  assert(frame >= 0 && frame < sprite->getTotalFrames());
 
   UndoChunkSetFrlen *chunk = (UndoChunkSetFrlen *)
     undo_chunk_new(stream,
@@ -1566,7 +1716,7 @@ static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame)
 
   chunk->sprite_id = sprite->id;
   chunk->frame = frame;
-  chunk->frlen = sprite->frlens[frame];
+  chunk->duration = sprite->getFrameDuration(frame);
 }
 
 static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk, int state)
@@ -1575,7 +1725,7 @@ static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk,
 
   if (sprite != NULL) {
     chunk_set_frlen_new(stream, sprite, chunk->frame);
-    sprite_set_frlen(sprite, chunk->frame, chunk->frlen);
+    sprite->setFrameDuration(chunk->frame, chunk->duration);
   }
 }
 
@@ -1993,7 +2143,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 	  Image* image = read_raw_image(raw_data);
 	  raw_data += get_raw_image_size(image);
 
-	  stock_replace_image(layer->getSprite()->stock, cel->image, image);
+	  stock_replace_image(layer->getSprite()->getStock(), cel->image, image);
 	}
       }
       break;
@@ -2064,7 +2214,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 	Cel* cel = *it;
 	raw_data = write_raw_cel(raw_data, cel);
 
-	Image* image = layer->getSprite()->stock->image[cel->image];
+	Image* image = layer->getSprite()->getStock()->image[cel->image];
 	assert(image != NULL);
 
 	write_raw_uint8(1);
@@ -2108,7 +2258,7 @@ static int get_raw_layer_size(Layer* layer)
 	size += get_raw_cel_size(cel);
 	size++;			// has image?
 
-	Image* image = layer->getSprite()->stock->image[cel->image];
+	Image* image = layer->getSprite()->getStock()->image[cel->image];
 	size += get_raw_image_size(image);
       }
       break;
@@ -2173,7 +2323,7 @@ static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette)
   write_raw_uint16(palette->getFrame()); // frame
   write_raw_uint16(palette->size());	 // number of colors
 
-  for (int c=0; c<palette->size(); c++) {
+  for (size_t c=0; c<palette->size(); c++) {
     color = palette->getEntry(c);
     write_raw_uint32(color);
   }

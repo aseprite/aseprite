@@ -48,7 +48,7 @@ class Layer : public GfxObj
 protected:
   Layer(int type, Sprite* sprite);
   Layer(Sprite* sprite);
-  Layer(Layer* src_layer, Sprite* dst_sprite);
+  Layer(const Layer* src_layer, Sprite* dst_sprite);
 
 public:
   virtual ~Layer();
@@ -75,7 +75,7 @@ public:
   void set_writable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
 
   virtual void get_cels(CelList& cels) = 0;
-  virtual Layer* duplicate_for(Sprite* sprite) = 0;
+  virtual Layer* duplicate_for(Sprite* sprite) const = 0;
 
   // TODO remove these methods (from C backward-compatibility)
   unsigned short* flags_addr() { return &m_flags; }
@@ -92,7 +92,7 @@ class LayerImage : public Layer
 
 public:
   LayerImage(Sprite* sprite);
-  LayerImage(LayerImage* copy, Sprite* sprite);
+  LayerImage(const LayerImage* copy, Sprite* sprite);
   virtual ~LayerImage();
 
   int get_blend_mode() const { return m_blend_mode; }
@@ -113,7 +113,7 @@ public:
   CelConstIterator get_cel_end() const { return m_cels.end(); }
   int get_cels_count() const { return m_cels.size(); }
 
-  LayerImage* duplicate_for(Sprite* sprite) { return new LayerImage(this, sprite); }
+  LayerImage* duplicate_for(Sprite* sprite) const { return new LayerImage(this, sprite); }
 
 private:
   void destroy_all_cels();
@@ -128,7 +128,7 @@ class LayerFolder : public Layer
 
 public:
   LayerFolder(Sprite* sprite);
-  LayerFolder(LayerFolder* copy, Sprite* sprite);
+  LayerFolder(const LayerFolder* copy, Sprite* sprite);
   virtual ~LayerFolder();
 
   LayerList get_layers_list() { return m_layers; }
@@ -144,7 +144,7 @@ public:
 
   void get_cels(CelList& cels);
 
-  LayerFolder* duplicate_for(Sprite* sprite) { return new LayerFolder(this, sprite); }
+  LayerFolder* duplicate_for(Sprite* sprite) const { return new LayerFolder(this, sprite); }
 
 private:
   void destroy_all_layers();

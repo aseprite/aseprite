@@ -106,7 +106,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
     old_mouse_x = jmouse_x(0);
     old_mouse_y = jmouse_y(0);
 
-    bmp = create_bitmap(sprite->w, sprite->h);
+    bmp = create_bitmap(sprite->getWidth(), sprite->getHeight());
     if (bmp) {
       /* print a informative text */
       app_get_statusbar()->setStatusText(1, _("Rendering..."));
@@ -117,8 +117,8 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
       jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
 
       /* render the sprite in the bitmap */
-      image = RenderEngine::renderSprite(sprite, 0, 0, sprite->w, sprite->h,
-					 sprite->frame, 0);
+      image = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
+					 sprite->getCurrentFrame(), 0);
       if (image) {
 	image_to_allegro(image, bmp, 0, 0);
 	image_free(image);
@@ -132,8 +132,8 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
       shiftx = - scroll_x + vp->x1 + editor->editor_get_offset_x();
       shifty = - scroll_y + vp->y1 + editor->editor_get_offset_y();
 
-      w = sprite->w << editor->editor_get_zoom();
-      h = sprite->h << editor->editor_get_zoom();
+      w = sprite->getWidth() << editor->editor_get_zoom();
+      h = sprite->getHeight() << editor->editor_get_zoom();
 
       redraw = true;
       do {
@@ -259,8 +259,8 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	    redraw = true;
 
 	    /* render the sprite in the bitmap */
-	    image = RenderEngine::renderSprite(sprite, 0, 0, sprite->w, sprite->h,
-					       sprite->frame, 0);
+	    image = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
+					       sprite->getCurrentFrame(), 0);
 	    if (image) {
 	      image_to_allegro(image, bmp, 0, 0);
 	      image_free(image);

@@ -37,8 +37,8 @@ void sprite_quantize(Sprite *sprite)
   sprite_quantize_ex(sprite, palette);
 
   // Just one palette
-  sprite_reset_palettes(sprite);
-  sprite_set_palette(sprite, palette, false);
+  sprite->resetPalettes();
+  sprite->setPalette(palette, false);
 
   delete palette;
 }
@@ -55,9 +55,9 @@ void sprite_quantize_ex(Sprite *sprite, Palette *palette)
 					      TARGET_ALL_FRAMES, false);
   if (images != NULL) {
     /* add a flat image with the current sprite's frame rendered */
-    flat_image = image_new(sprite->imgtype, sprite->w, sprite->h);
+    flat_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
     image_clear(flat_image, 0);
-    sprite_render(sprite, flat_image, 0, 0);
+    sprite->render(flat_image, 0, 0);
 
     /* count images in the 'images' list */
     c = 0;

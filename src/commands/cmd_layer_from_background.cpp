@@ -52,11 +52,11 @@ bool LayerFromBackgroundCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite &&
-    sprite->layer &&
-    sprite->layer->is_image() &&
-    sprite->layer->is_readable() &&
-    sprite->layer->is_writable() &&
-    sprite->layer->is_background();
+    sprite->getCurrentLayer() &&
+    sprite->getCurrentLayer()->is_image() &&
+    sprite->getCurrentLayer()->is_readable() &&
+    sprite->getCurrentLayer()->is_writable() &&
+    sprite->getCurrentLayer()->is_background();
 }
 
 void LayerFromBackgroundCommand::execute(Context* context)

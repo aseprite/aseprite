@@ -48,7 +48,7 @@ static bool color_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
 static bool preview_change_hook(JWidget widget, void *data);
 
-static Mask *gen_mask(Sprite* sprite);
+static Mask *gen_mask(const Sprite* sprite);
 static void mask_preview(Sprite* sprite);
 
 void dialogs_mask_color(Sprite* sprite)
@@ -62,7 +62,7 @@ void dialogs_mask_color(Sprite* sprite)
   if (!is_interactive () || !sprite)
     return;
 
-  image = GetImage(sprite);
+  image = sprite->getCurrentImage();
   if (!image)
     return;
 
@@ -75,7 +75,7 @@ void dialogs_mask_color(Sprite* sprite)
   button_color = colorbutton_new
    (get_config_color("MaskColor", "Color",
 		     colorbar_get_fg_color(app_get_colorbar())),
-    sprite->imgtype);
+    sprite->getImgType());
   button_1 = jbutton_new("1");
   button_2 = jbutton_new("2");
   label_fuzziness = jlabel_new(_("Fuzziness:"));
@@ -126,14 +126,14 @@ void dialogs_mask_color(Sprite* sprite)
     Mask *mask;
 
     /* undo */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Mask by Color");
-      undo_set_mask(sprite->undo, sprite);
+    if (undo_is_enabled(sprite->getUndo())) {
+      undo_set_label(sprite->getUndo(), "Mask by Color");
+      undo_set_mask(sprite->getUndo(), sprite);
     }
 
     /* change the mask */
     mask = gen_mask(sprite);
-    sprite_set_mask(sprite, mask);
+    sprite->setMask(mask);
     mask_free(mask);
 
     set_config_color("MaskColor", "Color",
@@ -147,7 +147,7 @@ void dialogs_mask_color(Sprite* sprite)
   }
 
   /* update boundaries and editors */
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 
   /* save window configuration */
@@ -186,13 +186,13 @@ static bool preview_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static Mask *gen_mask(Sprite* sprite)
+static Mask *gen_mask(const Sprite* sprite)
 {
   int xpos, ypos, color, fuzziness;
 
-  Image* image = GetImage2(sprite, &xpos, &ypos, NULL);
+  const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
 
-  color = get_color_for_image(sprite->imgtype,
+  color = get_color_for_image(sprite->getImgType(),
 			      colorbutton_get_color(button_color));
   fuzziness = jslider_get_value(slider_fuzziness);
 
@@ -206,15 +206,11 @@ static Mask *gen_mask(Sprite* sprite)
 static void mask_preview(Sprite* sprite)
 {
   if (jwidget_is_selected(check_preview)) {
-    Mask *mask = gen_mask(sprite);
-    Mask *old_mask = sprite->mask;
+    Mask* mask = gen_mask(sprite);
 
-    sprite->mask = mask;
-
-    sprite_generate_mask_boundaries(sprite);
+    sprite->generateMaskBoundaries(mask);
     update_screen_for_sprite(sprite);
 
-    sprite->mask = old_mask;
     mask_free(mask);
   }
 }

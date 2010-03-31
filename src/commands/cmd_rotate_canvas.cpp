@@ -78,32 +78,32 @@ protected:
 
     // get all sprite cels
     CelList cels;
-    sprite_get_cels(m_sprite, cels);
+    m_sprite->getCels(cels);
 
     // for each cel...
     for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
       Cel* cel = *it;
-      Image* image = stock_get_image(m_sprite->stock, cel->image);
+      Image* image = stock_get_image(m_sprite->getStock(), cel->image);
 
       // change it location
       switch (m_angle) {
 	case 180:
 	  undoable.set_cel_position(cel,
-				    m_sprite->w - cel->x - image->w,
-				    m_sprite->h - cel->y - image->h);
+				    m_sprite->getWidth() - cel->x - image->w,
+				    m_sprite->getHeight() - cel->y - image->h);
 	  break;
 	case 90:
-	  undoable.set_cel_position(cel, m_sprite->h - cel->y - image->h, cel->x);
+	  undoable.set_cel_position(cel, m_sprite->getHeight() - cel->y - image->h, cel->x);
 	  break;
 	case -90:
-	  undoable.set_cel_position(cel, cel->y, m_sprite->w - cel->x - image->w);
+	  undoable.set_cel_position(cel, cel->y, m_sprite->getWidth() - cel->x - image->w);
 	  break;
       }
     }
 
     // for each stock's image
-    for (int i=0; i<m_sprite->stock->nimage; ++i) {
-      Image* image = stock_get_image(m_sprite->stock, i);
+    for (int i=0; i<m_sprite->getStock()->nimage; ++i) {
+      Image* image = stock_get_image(m_sprite->getStock(), i);
       if (!image)
 	continue;
 
@@ -115,7 +115,7 @@ protected:
 
       undoable.replace_stock_image(i, new_image);
 
-      job_progress((float)i / m_sprite->stock->nimage);
+      job_progress((float)i / m_sprite->getStock()->nimage);
 
       // cancel all the operation?
       if (is_canceled())
@@ -123,42 +123,42 @@ protected:
     }
 
     // rotate mask
-    if (m_sprite->mask->bitmap) {
+    if (m_sprite->getMask()->bitmap) {
       Mask* new_mask = mask_new();
       int x, y;
 
       switch (m_angle) {
 	case 180:
-	  x = m_sprite->w - m_sprite->mask->x - m_sprite->mask->w;
-	  y = m_sprite->h - m_sprite->mask->y - m_sprite->mask->h;
+	  x = m_sprite->getWidth() - m_sprite->getMask()->x - m_sprite->getMask()->w;
+	  y = m_sprite->getHeight() - m_sprite->getMask()->y - m_sprite->getMask()->h;
 	  break;
 	case 90:
-	  x = m_sprite->h - m_sprite->mask->y - m_sprite->mask->h;
-	  y = m_sprite->mask->x;
+	  x = m_sprite->getHeight() - m_sprite->getMask()->y - m_sprite->getMask()->h;
+	  y = m_sprite->getMask()->x;
 	  break;
 	case -90:
-	  x = m_sprite->mask->y;
-	  y = m_sprite->w - m_sprite->mask->x - m_sprite->mask->w;
+	  x = m_sprite->getMask()->y;
+	  y = m_sprite->getWidth() - m_sprite->getMask()->x - m_sprite->getMask()->w;
 	  break;
       }
 
       // create the new rotated mask
       mask_replace(new_mask, x, y,
-		   m_angle == 180 ? m_sprite->mask->w: m_sprite->mask->h,
-		   m_angle == 180 ? m_sprite->mask->h: m_sprite->mask->w);
-      image_rotate(m_sprite->mask->bitmap, new_mask->bitmap, m_angle);
+		   m_angle == 180 ? m_sprite->getMask()->w: m_sprite->getMask()->h,
+		   m_angle == 180 ? m_sprite->getMask()->h: m_sprite->getMask()->w);
+      image_rotate(m_sprite->getMask()->bitmap, new_mask->bitmap, m_angle);
 
       // copy new mask
       undoable.copy_to_current_mask(new_mask);
       mask_free(new_mask);
 
       // regenerate mask
-      sprite_generate_mask_boundaries(m_sprite);
+      m_sprite->generateMaskBoundaries();
     }
 
     // change the sprite's size
     if (m_angle != 180)
-      undoable.set_sprite_size(m_sprite->h, m_sprite->w);
+      undoable.set_sprite_size(m_sprite->getHeight(), m_sprite->getWidth());
 
     // commit changes
     undoable.commit();
@@ -194,7 +194,7 @@ void RotateCanvasCommand::execute(Context* context)
     RotateCanvasJob job(sprite, m_angle);
     job.do_job();
   }
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

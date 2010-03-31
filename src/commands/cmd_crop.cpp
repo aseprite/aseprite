@@ -57,8 +57,8 @@ bool CropSpriteCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->mask != NULL &&
-    sprite->mask->bitmap != NULL;
+    sprite->getMask() != NULL &&
+    sprite->getMask()->bitmap != NULL;
 }
 
 void CropSpriteCommand::execute(Context* context)
@@ -66,16 +66,16 @@ void CropSpriteCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Sprite Crop");
-    int bgcolor = get_color_for_image(sprite->imgtype,
+    int bgcolor = get_color_for_image(sprite->getImgType(),
 				      colorbar_get_bg_color(app_get_colorbar()));
-    undoable.crop_sprite(sprite->mask->x,
-			 sprite->mask->y,
-			 sprite->mask->w,
-			 sprite->mask->h,
+    undoable.crop_sprite(sprite->getMask()->x,
+			 sprite->getMask()->y,
+			 sprite->getMask()->w,
+			 sprite->getMask()->h,
 			 bgcolor);
     undoable.commit();
   }
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 
@@ -114,7 +114,7 @@ void AutocropSpriteCommand::execute(Context* context)
     undoable.autocrop_sprite(colorbar_get_bg_color(app_get_colorbar()));
     undoable.commit();
   }
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

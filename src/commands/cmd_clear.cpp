@@ -55,25 +55,25 @@ bool ClearCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->layer != NULL &&
-    sprite->layer->is_image() &&
-    sprite->layer->is_readable() &&
-    sprite->layer->is_writable();
+    sprite->getCurrentLayer() != NULL &&
+    sprite->getCurrentLayer()->is_image() &&
+    sprite->getCurrentLayer()->is_readable() &&
+    sprite->getCurrentLayer()->is_writable();
 }
 
 void ClearCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  bool empty_mask = sprite->mask->is_empty();
+  bool empty_mask = sprite->getMask()->is_empty();
   {
     Undoable undoable(sprite, "Clear");
-    undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
+    undoable.clear_mask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
     if (!empty_mask)
       undoable.deselect_mask();
     undoable.commit();
   }
   if (!empty_mask)
-    sprite_generate_mask_boundaries(sprite);
+    sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

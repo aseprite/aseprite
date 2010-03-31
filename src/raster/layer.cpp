@@ -52,7 +52,7 @@ Layer::Layer(int type, Sprite* sprite)
     LAYER_IS_WRITABLE;
 }
 
-Layer::Layer(Layer* src_layer, Sprite* dst_sprite)
+Layer::Layer(const Layer* src_layer, Sprite* dst_sprite)
   : GfxObj(src_layer->type)
 {
   m_sprite = dst_sprite;
@@ -113,31 +113,31 @@ LayerImage::LayerImage(Sprite* sprite)
   m_blend_mode = BLEND_MODE_NORMAL;
 }
 
-LayerImage::LayerImage(LayerImage* src_layer, Sprite* dst_sprite)
+LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
   : Layer(src_layer, dst_sprite)
 {
   set_blend_mode(src_layer->get_blend_mode());
 
   try {
     // copy cels
-    CelIterator it = static_cast<LayerImage*>(src_layer)->get_cel_begin();
-    CelIterator end = static_cast<LayerImage*>(src_layer)->get_cel_end();
+    CelConstIterator it = src_layer->get_cel_begin();
+    CelConstIterator end = src_layer->get_cel_end();
 
     for (; it != end; ++it) {
-      Cel* cel = *it;
+      const Cel* cel = *it;
       Cel* cel_copy = cel_new_copy(cel);
 
       assert((cel->image >= 0) &&
-	     (cel->image < src_layer->getSprite()->stock->nimage));
+	     (cel->image < src_layer->getSprite()->getStock()->nimage));
 
-      Image* image = src_layer->getSprite()->stock->image[cel->image];
+      Image* image = src_layer->getSprite()->getStock()->image[cel->image];
       assert(image != NULL);
 
       Image* image_copy = image_new_copy(image);
 
-      cel_copy->image = stock_add_image(dst_sprite->stock, image_copy);
-      if (undo_is_enabled(dst_sprite->undo))
-	undo_add_image(dst_sprite->undo, dst_sprite->stock, cel_copy->image);
+      cel_copy->image = stock_add_image(dst_sprite->getStock(), image_copy);
+      if (undo_is_enabled(dst_sprite->getUndo()))
+	undo_add_image(dst_sprite->getUndo(), dst_sprite->getStock(), cel_copy->image);
 
       add_cel(cel_copy);
     }
@@ -160,11 +160,11 @@ void LayerImage::destroy_all_cels()
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    Image* image = getSprite()->stock->image[cel->image];
+    Image* image = getSprite()->getStock()->image[cel->image];
 
     assert(image != NULL);
 
-    stock_remove_image(getSprite()->stock, image);
+    stock_remove_image(getSprite()->getStock(), image);
     image_free(image);
     cel_free(cel);
   }
@@ -251,12 +251,12 @@ Cel* LayerImage::get_cel(int frame)
 void LayerImage::configure_as_background()
 {
   assert(getSprite() != NULL);
-  assert(sprite_get_background_layer(getSprite()) == NULL);
+  assert(getSprite()->getBackgroundLayer() == NULL);
 
   *flags_addr() |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
   set_name("Background");
 
-  getSprite()->get_folder()->move_layer(this, NULL);
+  getSprite()->getFolder()->move_layer(this, NULL);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -268,12 +268,12 @@ LayerFolder::LayerFolder(Sprite* sprite)
   set_name("Layer Set");
 }
 
-LayerFolder::LayerFolder(LayerFolder* src_layer, Sprite* dst_sprite)
+LayerFolder::LayerFolder(const LayerFolder* src_layer, Sprite* dst_sprite)
   : Layer(src_layer, dst_sprite)
 {
   try {
-    LayerIterator it = static_cast<LayerFolder*>(src_layer)->get_layer_begin();
-    LayerIterator end = static_cast<LayerFolder*>(src_layer)->get_layer_end();
+    LayerConstIterator it = src_layer->get_layer_begin();
+    LayerConstIterator end = src_layer->get_layer_end();
 
     for (; it != end; ++it) {
       // duplicate the child
@@ -375,12 +375,12 @@ Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
       /* does this frame have cels to render? */
       if (has_cels(src_layer, frame)) {
 	/* create a new image */
-	Image* image = image_new(flat_layer->getSprite()->imgtype, w, h);
+	Image* image = image_new(flat_layer->getSprite()->getImgType(), w, h);
 
 	try {
 	  /* create the new cel for the output layer (add the image to
 	     stock too) */
-	  Cel* cel = cel_new(frame, stock_add_image(flat_layer->getSprite()->stock, image));
+	  Cel* cel = cel_new(frame, stock_add_image(flat_layer->getSprite()->getStock(), image));
 	  cel_set_position(cel, x, y);
 
 	  /* clear the image and render this frame */
@@ -416,9 +416,9 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 
       if (cel) {
 	assert((cel->image >= 0) &&
-	       (cel->image < layer->getSprite()->stock->nimage));
+	       (cel->image < layer->getSprite()->getStock()->nimage));
 
-	src_image = layer->getSprite()->stock->image[cel->image];
+	src_image = layer->getSprite()->getStock()->image[cel->image];
 	assert(src_image != NULL);
 
 	image_merge(image, src_image,

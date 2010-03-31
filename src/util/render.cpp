@@ -278,12 +278,12 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
 				  int frame, int zoom)
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
-  LayerImage* background = sprite_get_background_layer(sprite);
+  LayerImage* background = sprite->getBackgroundLayer();
   bool need_grid = (background != NULL ? !background->is_readable(): true);
   int depth;
   Image *image;
 
-  switch (sprite->imgtype) {
+  switch (sprite->getImgType()) {
 
     case IMAGE_RGB:
       depth = 32;
@@ -305,7 +305,7 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
   }
 
   /* create a temporary bitmap to draw all to it */
-  image = image_new(sprite->imgtype, width, height);
+  image = image_new(sprite->getImgType(), width, height);
   if (!image)
     return NULL;
 
@@ -371,26 +371,26 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
     color_map = NULL;
     global_opacity = 255;
 
-    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, true, false);
 
     // Draw transparent layers of the previous frame with opacity=128
     color_map = orig_trans_map;
     global_opacity = 128;
 
-    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame-1, zoom, zoomed_func, false, true);
 
     // Draw transparent layers of the current frame with opacity=255
     color_map = NULL;
     global_opacity = 255;
 
-    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, false, true);
   }
   // Just draw the current frame
   else {
-    renderLayer(sprite, sprite->get_folder(), image, source_x, source_y,
+    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, true, true);
   }
 
@@ -420,15 +420,15 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
 	Image* src_image;
 
 	/* is the 'rastering_image' setted to be used with this layer? */
-	if ((frame == sprite->frame) &&
+	if ((frame == sprite->getCurrentFrame()) &&
 	    (selected_layer == layer) &&
 	    (rastering_image != NULL)) {
 	  src_image = rastering_image;
 	}
 	/* if not, we use the original cel-image from the images' stock */
 	else if ((cel->image >= 0) &&
-		 (cel->image < layer->getSprite()->stock->nimage))
-	  src_image = layer->getSprite()->stock->image[cel->image];
+		 (cel->image < layer->getSprite()->getStock()->nimage))
+	  src_image = layer->getSprite()->getStock()->image[cel->image];
 	else
 	  src_image = NULL;
 
@@ -473,17 +473,17 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
   }
 
   // Draw extras
-  if (layer == sprite->layer && sprite->get_extras() != NULL) {
-    int opacity = sprite->get_extras_opacity();
+  if (layer == sprite->getCurrentLayer() && sprite->getExtras() != NULL) {
+    int opacity = sprite->getExtrasOpacity();
 
     if (zoom == 0) {
-      image_merge(image, sprite->get_extras(),
+      image_merge(image, sprite->getExtras(),
 		  -source_x,
 		  -source_y,
 		  opacity, BLEND_MODE_NORMAL);
     }
     else {
-      (*zoomed_func)(image, sprite->get_extras(),
+      (*zoomed_func)(image, sprite->getExtras(),
 		     -source_x,
 		     -source_y,
 		     opacity, BLEND_MODE_NORMAL, zoom);

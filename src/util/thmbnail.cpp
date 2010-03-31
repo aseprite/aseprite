@@ -49,7 +49,7 @@ static JList thumbnails = NULL;
 
 static Thumbnail* thumbnail_new(const Cel *cel, BITMAP* bmp);
 static void thumbnail_free(Thumbnail* thumbnail);
-static void thumbnail_render(BITMAP* bmp, Image* image, bool has_alpha);
+static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha);
 
 void destroy_thumbnails()
 {
@@ -85,7 +85,7 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
     return NULL;
 
   thumbnail_render(bmp,
-		   stock_get_image(sprite->stock, cel->image),
+		   stock_get_image(sprite->getStock(), cel->image),
 		   !layer->is_background());
 
   thumbnail = thumbnail_new(cel, bmp);
@@ -118,7 +118,7 @@ static void thumbnail_free(Thumbnail* thumbnail)
   jfree(thumbnail);
 }
 
-static void thumbnail_render(BITMAP* bmp, Image* image, bool has_alpha)
+static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha)
 {
   register int c, x, y;
   int w, h, x1, y1;
@@ -179,9 +179,9 @@ static void thumbnail_render(BITMAP* bmp, Image* image, bool has_alpha)
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 	    if (c != 0) {
-	      assert(c >= 0 && c < pal->size());
+	      assert(c >= 0 && (size_t)c < pal->size());
 
-	      c = pal->getEntry(MID(0, c, pal->size()-1));
+	      c = pal->getEntry(MID(0, (size_t)c, pal->size()-1));
 	      putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
 						_rgba_getg(c),
 						_rgba_getb(c)));
@@ -221,9 +221,9 @@ static void thumbnail_render(BITMAP* bmp, Image* image, bool has_alpha)
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 
-	    assert(c >= 0 && c < pal->size());
+	    assert(c >= 0 && (size_t)c < pal->size());
 
-	    c = pal->getEntry(MID(0, c, pal->size()-1));
+	    c = pal->getEntry(MID(0, (size_t)c, pal->size()-1));
 	    putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
 					      _rgba_getg(c),
 					      _rgba_getb(c)));

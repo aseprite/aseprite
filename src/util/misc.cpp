@@ -39,46 +39,6 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
-Image *GetImage(const Sprite *sprite)
-{
-  Image *image = NULL;
-
-  if (sprite && sprite->layer && sprite->layer->is_image()) {
-    Cel *cel = static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
-    if (cel) {
-      assert((cel->image >= 0) &&
-	     (cel->image < sprite->stock->nimage));
-
-      image = sprite->stock->image[cel->image];
-    }
-  }
-
-  return image;
-}
-
-Image* GetImage2(const Sprite* sprite, int* x, int* y, int* opacity)
-{
-  Image* image = NULL;
-
-  if (sprite != NULL &&
-      sprite->layer != NULL &&
-      sprite->layer->is_image()) {
-    Cel* cel = static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
-    if (cel) {
-      assert((cel->image >= 0) &&
-	     (cel->image < sprite->stock->nimage));
-
-      image = sprite->stock->image[cel->image];
-
-      if (x) *x = cel->x;
-      if (y) *y = cel->y;
-      if (opacity) *opacity = MID(0, cel->opacity, 255);
-    }
-  }
-
-  return image;
-}
-
 void LoadPalette(Sprite* sprite, const char *filename)
 {
   assert(sprite != NULL);
@@ -100,8 +60,8 @@ void LoadPalette(Sprite* sprite, const char *filename)
 	set_current_palette(pal, false);
 
 	/* just one palette */
-	sprite_reset_palettes(sprite);
-	sprite_set_palette(sprite, pal, 0);
+	sprite->resetPalettes();
+	sprite->setPalette(pal, 0);
 
 	/* redraw the entire screen */
 	jmanager_refresh_screen();
@@ -115,19 +75,20 @@ void LoadPalette(Sprite* sprite, const char *filename)
 
 Image* NewImageFromMask(const Sprite* src_sprite)
 {
-  ase_uint8 *address;
+  const ase_uint8* address;
   int x, y, u, v, getx, gety;
-  Image *dst, *src = GetImage2(src_sprite, &x, &y, NULL);
+  Image *dst;
+  const Image *src = src_sprite->getCurrentImage(&x, &y);
   div_t d;
 
   assert(src_sprite);
-  assert(src_sprite->mask);
-  assert(src_sprite->mask->bitmap);
+  assert(src_sprite->getMask());
+  assert(src_sprite->getMask()->bitmap);
   assert(src);
 
-  dst = image_new(src_sprite->imgtype,
-		  src_sprite->mask->w,
-		  src_sprite->mask->h);
+  dst = image_new(src_sprite->getImgType(),
+		  src_sprite->getMask()->w,
+		  src_sprite->getMask()->h);
   if (!dst)
     return NULL;
 
@@ -135,14 +96,14 @@ Image* NewImageFromMask(const Sprite* src_sprite)
   image_clear(dst, 0);
 
   /* copy the masked zones */
-  for (v=0; v<src_sprite->mask->h; v++) {
+  for (v=0; v<src_sprite->getMask()->h; v++) {
     d = div(0, 8);
-    address = ((ase_uint8 **)src_sprite->mask->bitmap->line)[v]+d.quot;
+    address = ((const ase_uint8 **)src_sprite->getMask()->bitmap->line)[v]+d.quot;
 
-    for (u=0; u<src_sprite->mask->w; u++) {
+    for (u=0; u<src_sprite->getMask()->w; u++) {
       if ((*address & (1<<d.rem))) {
-	getx = u+src_sprite->mask->x-x;
-	gety = v+src_sprite->mask->y-y;
+	getx = u+src_sprite->getMask()->x-x;
+	gety = v+src_sprite->getMask()->y-y;
 
 	if ((getx >= 0) && (getx < src->w) &&
 	    (gety >= 0) && (gety < src->h))
@@ -163,10 +124,10 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   Editor* editor = current_editor;
   Sprite* sprite = editor->getSprite();
 
-  assert(sprite->layer->is_image());
+  assert(sprite->getCurrentLayer()->is_image());
 
-  LayerImage* layer = static_cast<LayerImage*>(sprite->layer);
-  Cel *cel = layer->get_cel(sprite->frame);
+  LayerImage* layer = static_cast<LayerImage*>(sprite->getCurrentLayer());
+  Cel *cel = layer->get_cel(sprite->getCurrentFrame());
   int start_x, new_x;
   int start_y, new_y;
   int start_b;
@@ -227,12 +188,12 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   
   /* the position was changed */
   if (!editor->editor_click_cancel()) {
-    if (use_undo && undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Cel Movement");
-      undo_open(sprite->undo);
-      undo_int(sprite->undo, (GfxObj *)cel, &cel->x);
-      undo_int(sprite->undo, (GfxObj *)cel, &cel->y);
-      undo_close(sprite->undo);
+    if (use_undo && undo_is_enabled(sprite->getUndo())) {
+      undo_set_label(sprite->getUndo(), "Cel Movement");
+      undo_open(sprite->getUndo());
+      undo_int(sprite->getUndo(), (GfxObj *)cel, &cel->x);
+      undo_int(sprite->getUndo(), (GfxObj *)cel, &cel->y);
+      undo_close(sprite->getUndo());
     }
 
     cel_set_position(cel, new_x, new_y);

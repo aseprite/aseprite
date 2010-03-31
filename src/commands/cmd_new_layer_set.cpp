@@ -69,8 +69,8 @@ void NewLayerSetCommand::execute(Context* context)
     Layer* layer = new LayerFolder(sprite);
 
     layer->set_name(name);
-    sprite->get_folder()->add_layer(layer);
-    sprite_set_layer(sprite, layer);
+    sprite->getFolder()->add_layer(layer);
+    sprite->setCurrentLayer(layer);
 
     update_screen_for_sprite(sprite);
   }

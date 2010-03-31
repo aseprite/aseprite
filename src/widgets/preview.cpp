@@ -97,7 +97,7 @@ static bool preview_msg_proc(JWidget widget, JMessage msg)
       break;
       
     case JM_OPEN:
-      RenderEngine::setPreviewImage(effect->sprite->layer, effect->dst);
+      RenderEngine::setPreviewImage(effect->sprite->getCurrentLayer(), effect->dst);
       break;
 
     case JM_CLOSE:

@@ -52,7 +52,7 @@ bool RemoveFrameCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->frames > 1;
+    sprite->getTotalFrames() > 1;
 }
 
 void RemoveFrameCommand::execute(Context* context)
@@ -60,7 +60,7 @@ void RemoveFrameCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Remove Frame");
-    undoable.remove_frame(sprite->frame);
+    undoable.remove_frame(sprite->getCurrentFrame());
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

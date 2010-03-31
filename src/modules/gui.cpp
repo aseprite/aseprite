@@ -459,7 +459,7 @@ void update_screen_for_sprite(const Sprite* sprite)
   /* with a sprite */
   else {
     /* select the palette of the sprite */
-    if (set_current_palette(sprite_get_palette(sprite, sprite->frame), false)) {
+    if (set_current_palette(sprite->getPalette(sprite->getCurrentFrame()), false)) {
       /* if the palette changes, refresh the whole screen */
       jmanager_refresh_screen();
     }

@@ -59,21 +59,21 @@ bool GotoPreviousLayerCommand::enabled(Context* context)
 void GotoPreviousLayerCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  int i = sprite_layer2index(sprite, sprite->layer);
+  int i = sprite->layerToIndex(sprite->getCurrentLayer());
   
   if (i > 0)
     i--;
   else
-    i = sprite_count_layers(sprite)-1;
+    i = sprite->countLayers()-1;
 
-  sprite->layer = sprite_index2layer(sprite, i);
+  sprite->setCurrentLayer(sprite->indexToLayer(i));
 
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
 
   app_get_statusbar()
     ->showTip(1000, _("Layer `%s' selected"),
-	      sprite->layer->get_name().c_str());
+	      sprite->getCurrentLayer()->get_name().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -107,21 +107,21 @@ bool GotoNextLayerCommand::enabled(Context* context)
 void GotoNextLayerCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  int i = sprite_layer2index(sprite, sprite->layer);
+  int i = sprite->layerToIndex(sprite->getCurrentLayer());
 
-  if (i < sprite_count_layers(sprite)-1)
+  if (i < sprite->countLayers()-1)
     i++;
   else
     i = 0;
 
-  sprite->layer = sprite_index2layer(sprite, i);
+  sprite->setCurrentLayer(sprite->indexToLayer(i));
 
   update_screen_for_sprite(sprite);
   current_editor->editor_update_statusbar_for_standby();
 
   app_get_statusbar()
     ->showTip(1000, _("Layer `%s' selected"),
-	      sprite->layer->get_name().c_str());
+	      sprite->getCurrentLayer()->get_name().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

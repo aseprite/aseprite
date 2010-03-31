@@ -49,7 +49,7 @@ DeselectMaskCommand::DeselectMaskCommand()
 bool DeselectMaskCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  return sprite && !sprite->mask->is_empty();
+  return sprite && !sprite->getMask()->is_empty();
 }
 
 void DeselectMaskCommand::execute(Context* context)
@@ -60,7 +60,7 @@ void DeselectMaskCommand::execute(Context* context)
     undoable.deselect_mask();
     undoable.commit();
   }
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

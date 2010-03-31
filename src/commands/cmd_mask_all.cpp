@@ -57,15 +57,15 @@ void MaskAllCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
 
   /* undo */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Mask All");
-    undo_set_mask(sprite->undo, sprite);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_set_label(sprite->getUndo(), "Mask All");
+    undo_set_mask(sprite->getUndo(), sprite);
   }
 
   /* change the selection */
-  mask_replace(sprite->mask, 0, 0, sprite->w, sprite->h);
+  mask_replace(sprite->getMask(), 0, 0, sprite->getWidth(), sprite->getHeight());
 
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

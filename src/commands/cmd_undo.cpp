@@ -49,7 +49,7 @@ bool UndoCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    undo_can_undo(sprite->undo);
+    undo_can_undo(sprite->getUndo());
 }
 
 void UndoCommand::execute(Context* context)
@@ -58,10 +58,10 @@ void UndoCommand::execute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, _("Undid %s"),
-	      undo_get_next_undo_label(sprite->undo));
+	      undo_get_next_undo_label(sprite->getUndo()));
 
-  undo_do_undo(sprite->undo);
-  sprite_generate_mask_boundaries(sprite);
+  undo_do_undo(sprite->getUndo());
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

@@ -54,6 +54,7 @@ public:
 
   Undo(Sprite* sprite);
   virtual ~Undo();
+
 };
 
 Undo* undo_new(Sprite* sprite);
@@ -98,6 +99,9 @@ void undo_set_layer(Undo* undo, Sprite* sprite);
 void undo_add_palette(Undo* undo, Sprite* sprite, Palette* palette);
 void undo_remove_palette(Undo* undo, Sprite* sprite, Palette* palette);
 void undo_set_mask(Undo* undo, Sprite* sprite);
+void undo_set_imgtype(Undo* undo, Sprite* sprite);
+void undo_set_size(Undo* undo, Sprite* sprite);
+void undo_set_frame(Undo* undo, Sprite* sprite);
 void undo_set_frames(Undo* undo, Sprite* sprite);
 void undo_set_frlen(Undo* undo, Sprite* sprite, int frame);
 

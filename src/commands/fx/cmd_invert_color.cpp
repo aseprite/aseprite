@@ -93,7 +93,7 @@ void InvertColorCommand::execute(Context* context)
 			     TARGET_BLUE_CHANNEL);
 
   preview = preview_new(&effect);
-  target_button = target_button_new(sprite->imgtype, true);
+  target_button = target_button_new(sprite->getImgType(), true);
   target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("InvertColor", "Preview", true))

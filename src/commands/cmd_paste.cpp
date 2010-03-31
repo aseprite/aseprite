@@ -57,8 +57,8 @@ void PasteCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 
-  if (undo_is_enabled(sprite->undo))
-    undo_set_label(sprite->undo, "Paste");
+  if (undo_is_enabled(sprite->getUndo()))
+    undo_set_label(sprite->getUndo(), "Paste");
 
   clipboard::paste(sprite);
 }

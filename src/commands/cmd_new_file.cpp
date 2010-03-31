@@ -154,15 +154,15 @@ void NewFileCommand::execute(Context* context)
       }
       else {
 	usprintf(buf, "Sprite-%04d", ++_sprite_counter);
-	sprite_set_filename(sprite, buf);
+	sprite->setFilename(buf);
 
 	/* if the background color isn't transparent, we have to
 	   convert the `Layer 1' in a `Background' */
 	if (color_type(color) != COLOR_TYPE_MASK) {
-	  assert(sprite->layer && sprite->layer->is_image());
+	  assert(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
 
-	  static_cast<LayerImage*>(sprite->layer)->configure_as_background();
-	  image_clear(GetImage(sprite), get_color_for_image(imgtype, color));
+	  static_cast<LayerImage*>(sprite->getCurrentLayer())->configure_as_background();
+	  image_clear(sprite->getCurrentImage(), get_color_for_image(imgtype, color));
 	}
 
 	/* show the sprite to the user */
@@ -187,7 +187,7 @@ static Sprite *new_sprite(Context* context, int imgtype, int w, int h, int ncolo
   assert(w >= 1 && w <= 9999);
   assert(h >= 1 && h <= 9999);
 
-  return sprite_new_with_layer(imgtype, w, h, ncolors);
+  return Sprite::createWithLayer(imgtype, w, h, ncolors);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -332,11 +332,11 @@ JList get_convmatr_stock()
 
 void apply_convolution_matrix4(Effect *effect)
 {
-  ConvMatr *matrix = data.convmatr;
-  Image *src = effect->src;
-  Image *dst = effect->dst;
-  ase_uint32 *src_address;
-  ase_uint32 *dst_address;
+  ConvMatr* matrix = data.convmatr;
+  const Image* src = effect->src;
+  Image* dst = effect->dst;
+  ase_uint32* src_address;
+  ase_uint32* dst_address;
   int x, y, dx, dy, color;
   int getx, gety, addx, addy;
   int r, g, b, a;
@@ -409,11 +409,11 @@ void apply_convolution_matrix4(Effect *effect)
 
 void apply_convolution_matrix2(Effect *effect)
 {
-  ConvMatr *matrix = data.convmatr;
-  Image *src = effect->src;
-  Image *dst = effect->dst;
-  ase_uint16 *src_address;
-  ase_uint16 *dst_address;
+  ConvMatr* matrix = data.convmatr;
+  const Image* src = effect->src;
+  Image* dst = effect->dst;
+  ase_uint16* src_address;
+  ase_uint16* dst_address;
   int x, y, dx, dy, color;
   int getx, gety, addx, addy;
   int k, a;
@@ -470,12 +470,12 @@ void apply_convolution_matrix2(Effect *effect)
 
 void apply_convolution_matrix1(Effect *effect)
 {
-  Palette *pal = get_current_palette();
-  ConvMatr *matrix = data.convmatr;
-  Image *src = effect->src;
-  Image *dst = effect->dst;
-  ase_uint8 *src_address;
-  ase_uint8 *dst_address;
+  Palette* pal = get_current_palette();
+  ConvMatr* matrix = data.convmatr;
+  const Image* src = effect->src;
+  Image* dst = effect->dst;
+  ase_uint8* src_address;
+  ase_uint8* dst_address;
   int x, y, dx, dy, color;
   int getx, gety, addx, addy;
   int r, g, b, index;

@@ -340,7 +340,7 @@ void app_refresh_screen(const Sprite* sprite)
   assert(screen != NULL);
 
   if (sprite)
-    set_current_palette(sprite_get_palette(sprite, sprite->frame), false);
+    set_current_palette(sprite->getCurrentPalette(), false);
   else
     set_current_palette(NULL, false);
 
@@ -360,7 +360,7 @@ void app_realloc_sprite_list()
   for (SpriteList::const_iterator
 	 it = list.begin(); it != list.end(); ++it) {
     Sprite* sprite = *it;
-    tabs_set_text_for_tab(tabsbar, get_filename(sprite->filename), sprite);
+    tabs_set_text_for_tab(tabsbar, get_filename(sprite->getFilename()), sprite);
   }
 }
 
@@ -425,7 +425,7 @@ int app_get_current_image_type()
 
   Sprite* sprite = context->get_current_sprite();
   if (sprite != NULL)
-    return sprite->imgtype;
+    return sprite->getImgType();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else
@@ -450,10 +450,10 @@ int app_get_fg_color(Sprite *sprite)
   color_t c = colorbar_get_fg_color(colorbar);
   assert(sprite != NULL);
 
-  if (sprite->layer != NULL)
-    return get_color_for_layer(sprite->layer, c);
+  if (sprite->getCurrentLayer() != NULL)
+    return get_color_for_layer(sprite->getCurrentLayer(), c);
   else
-    return get_color_for_image(sprite->imgtype, c);
+    return get_color_for_image(sprite->getImgType(), c);
 }
 
 int app_get_bg_color(Sprite *sprite)
@@ -461,10 +461,10 @@ int app_get_bg_color(Sprite *sprite)
   color_t c = colorbar_get_bg_color(colorbar);
   assert(sprite != NULL);
 
-  if (sprite->layer != NULL)
-    return get_color_for_layer(sprite->layer, c);
+  if (sprite->getCurrentLayer() != NULL)
+    return get_color_for_layer(sprite->getCurrentLayer(), c);
   else
-    return get_color_for_image(sprite->imgtype, c);
+    return get_color_for_image(sprite->getImgType(), c);
 }
 
 int app_get_color_to_clear_layer(Layer *layer)

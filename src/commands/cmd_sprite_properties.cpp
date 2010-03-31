@@ -80,7 +80,7 @@ void SpritePropertiesCommand::execute(Context* context)
 	      "ok", &ok, NULL);
 
   /* update widgets values */
-  switch (sprite->imgtype) {
+  switch (sprite->getImgType()) {
     case IMAGE_RGB:
       imgtype_text = "RGB";
       break;
@@ -96,21 +96,21 @@ void SpritePropertiesCommand::execute(Context* context)
   }
 
   /* filename */
-  name->setText(sprite->filename);
+  name->setText(sprite->getFilename());
 
   /* color mode */
   type->setText(imgtype_text.c_str());
 
   /* sprite size (width and height) */
-  usprintf(buf, "%dx%d (", sprite->w, sprite->h);
-  get_pretty_memsize(sprite_get_memsize(sprite),
+  usprintf(buf, "%dx%d (", sprite->getWidth(), sprite->getHeight());
+  get_pretty_memsize(sprite->getMemSize(),
  		     buf+ustrsize(buf),
 		     sizeof(buf)-ustrsize(buf));
   ustrcat(buf, ")");
   size->setText(buf);
 
   /* how many frames */
-  frames->setTextf("%d", sprite->frames);
+  frames->setTextf("%d", sprite->getTotalFrames());
 
   window->remap_window();
   window->center_window();

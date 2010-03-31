@@ -139,7 +139,7 @@ static bool copy_from_sprite(const Sprite* sprite)
   if (!image)
     return false;
 
-  Palette* pal = sprite_get_palette(sprite, sprite->frame);
+  const Palette* pal = sprite->getPalette(sprite->getCurrentFrame());
   set_clipboard(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
@@ -165,7 +165,7 @@ bool clipboard::can_paste()
 void clipboard::cut(SpriteWriter& sprite)
 {
   assert(sprite != NULL);
-  assert(sprite->layer != NULL);
+  assert(sprite->getCurrentLayer() != NULL);
 
   if (!copy_from_sprite(sprite)) {
     Console console;
@@ -174,11 +174,11 @@ void clipboard::cut(SpriteWriter& sprite)
   else {
     {
       Undoable undoable(sprite, "Cut");
-      undoable.clear_mask(app_get_color_to_clear_layer(sprite->layer));
+      undoable.clear_mask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
       undoable.deselect_mask();
       undoable.commit();
     }
-    sprite_generate_mask_boundaries(sprite);
+    sprite->generateMaskBoundaries();
     update_screen_for_sprite(sprite);
   }
 }
@@ -222,7 +222,7 @@ void clipboard::paste(SpriteWriter& sprite)
   assert(sprite != NULL);
 
   // destination image (where to put this image)
-  dst_image = GetImage2(sprite, &dst_x, &dst_y, NULL);
+  dst_image = sprite->getCurrentImage(&dst_x, &dst_y);
   if (!dst_image) {
     Console console;
     console.printf(_("Error: no destination image\n"));
@@ -230,13 +230,12 @@ void clipboard::paste(SpriteWriter& sprite)
   }
 
   // source image (clipboard or a converted copy to the destination 'imgtype')
-  if (clipboard_image->imgtype == sprite->imgtype)
+  if (clipboard_image->imgtype == sprite->getImgType())
     src_image = clipboard_image;
   else {
     CurrentSpriteRgbMap rgbmap;
-    src_image = image_set_imgtype(clipboard_image, sprite->imgtype, DITHERING_NONE,
-				  rgb_map, sprite_get_palette(sprite,
-							      sprite->frame));
+    src_image = image_set_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
+				  rgb_map, sprite->getPalette(sprite->getCurrentFrame()));
   }
 
   // do the interactive-transform loop (where the user can move the floating image)
@@ -276,8 +275,8 @@ void clipboard::paste(SpriteWriter& sprite)
 
     if (w >= 1 && h >= 1) {
       /* undo region */
-      if (undo_is_enabled(sprite->undo))
-	undo_image(sprite->undo, dst_image, u1, v1, w, h);
+      if (undo_is_enabled(sprite->getUndo()))
+	undo_image(sprite->getUndo(), dst_image, u1, v1, w, h);
 
       /* draw the transformed image */
       image_parallelogram(dst_image, src_image,

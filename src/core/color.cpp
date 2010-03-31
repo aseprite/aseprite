@@ -631,14 +631,14 @@ int get_color_for_layer(Layer *layer, color_t color)
 {
   return
     fixup_color_for_layer(layer,
-			  get_color_for_image(layer->getSprite()->imgtype,
+			  get_color_for_image(layer->getSprite()->getImgType(),
 					      color));
 }
 
 int fixup_color_for_layer(Layer *layer, int color)
 {
   if (layer->is_background())
-    return fixup_color_for_background(layer->getSprite()->imgtype, color);
+    return fixup_color_for_background(layer->getSprite()->getImgType(), color);
   else
     return color;
 }

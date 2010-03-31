@@ -782,12 +782,12 @@ static void openfile_bg(void *_data)
       delete fop->sprite;
     else {
       /* the palette to convert the Image to a BITMAP */
-      sprite_get_palette(sprite, 0)->toAllegro(data->rgbpal);
+      sprite->getPalette(0)->toAllegro(data->rgbpal);
 
       /* render the 'sprite' in one plain 'image' */
-      image = image_new(sprite->imgtype, sprite->w, sprite->h);
+      image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
       image_clear(image, 0);
-      sprite_render(sprite, image, 0, 0);
+      sprite->render(image, 0, 0);
       delete sprite;
 
       /* calculate the thumbnail size */

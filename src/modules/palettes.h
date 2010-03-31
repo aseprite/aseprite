@@ -35,7 +35,7 @@ Palette* get_default_palette();
 Palette* get_current_palette();
 
 void set_default_palette(Palette* palette);
-bool set_current_palette(Palette* palette, bool forced);
+bool set_current_palette(const Palette* palette, bool forced);
 void set_black_palette();
 void set_current_color(int index, int r, int g, int b);
 

@@ -35,8 +35,8 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
 
 ImageRef* images_ref_get_from_sprite(Sprite* sprite, int target, bool write)
 {
-  Layer* layer = target & TARGET_ALL_LAYERS ? sprite->get_folder():
-					      sprite->layer;
+  Layer* layer = target & TARGET_ALL_LAYERS ? sprite->getFolder():
+					      sprite->getCurrentLayer();
 
   return images_ref_get_from_layer(sprite, layer, target, write);
 }
@@ -72,7 +72,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   {								\
     ImageRef* image_ref = jnew(ImageRef, 1);			\
 								\
-    image_ref->image = layer->getSprite()->stock->image[cel->image];	\
+    image_ref->image = layer->getSprite()->getStock()->image[cel->image]; \
     image_ref->layer = layer;					\
     image_ref->cel = cel;					\
     image_ref->next = NULL;					\
@@ -82,7 +82,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   
   ImageRef* first_image = NULL;
   ImageRef* last_image = NULL;
-  int frame = sprite->frame;
+  int frame = sprite->getCurrentFrame();
 
   if (!layer->is_readable())
     return NULL;
@@ -94,7 +94,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
 
     case GFXOBJ_LAYER_IMAGE: {
       if (target & TARGET_ALL_FRAMES) {
-	for (frame=0; frame<sprite->frames; frame++) {
+	for (frame=0; frame<sprite->getTotalFrames(); frame++) {
 	  Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);
 	  if (cel != NULL)
 	    NEW_IMAGE(layer, cel);

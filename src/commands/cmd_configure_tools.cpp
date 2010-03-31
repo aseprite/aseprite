@@ -453,9 +453,9 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
     // TODO use the same context as in ConfigureTools::execute
     const CurrentSpriteReader sprite(UIContext::instance());
 
-    if (sprite && sprite->mask && sprite->mask->bitmap) {
-      Rect bounds(sprite->mask->x, sprite->mask->y,
-		  sprite->mask->w, sprite->mask->h);
+    if (sprite && sprite->getMask() && sprite->getMask()->bitmap) {
+      Rect bounds(sprite->getMask()->x, sprite->getMask()->y,
+		  sprite->getMask()->w, sprite->getMask()->h);
 
       UIContext::instance()->getSettings()->setGridBounds(bounds);
 

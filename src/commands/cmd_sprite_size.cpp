@@ -45,8 +45,8 @@ class SpriteSizeJob : public Job
   int m_new_height;
   ResizeMethod m_resize_method;
 
-  inline int scale_x(int x) const { return x * m_new_width / m_sprite->w; }
-  inline int scale_y(int y) const { return y * m_new_height / m_sprite->h; }
+  inline int scale_x(int x) const { return x * m_new_width / m_sprite->getWidth(); }
+  inline int scale_y(int y) const { return y * m_new_height / m_sprite->getHeight(); }
 
 public:
 
@@ -70,7 +70,7 @@ protected:
 
     // get all sprite cels
     CelList cels;
-    sprite_get_cels(m_sprite, cels);
+    m_sprite->getCels(cels);
 
     // for each cel...
     for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
@@ -81,8 +81,8 @@ protected:
     }
 
     // for each stock's image
-    for (int i=0; i<m_sprite->stock->nimage; ++i) {
-      Image* image = stock_get_image(m_sprite->stock, i);
+    for (int i=0; i<m_sprite->getStock()->nimage; ++i) {
+      Image* image = stock_get_image(m_sprite->getStock(), i);
       if (!image)
 	continue;
 
@@ -99,7 +99,7 @@ protected:
 
       undoable.replace_stock_image(i, new_image);
 
-      job_progress((float)i / m_sprite->stock->nimage);
+      job_progress((float)i / m_sprite->getStock()->nimage);
 
       // cancel all the operation?
       if (is_canceled())
@@ -107,17 +107,17 @@ protected:
     }
 
     // resize mask
-    if (m_sprite->mask->bitmap) {
-      Image* old_bitmap = image_crop(m_sprite->mask->bitmap, -1, -1,
-				     m_sprite->mask->bitmap->w+2,
-				     m_sprite->mask->bitmap->h+2, 0);
+    if (m_sprite->getMask()->bitmap) {
+      Image* old_bitmap = image_crop(m_sprite->getMask()->bitmap, -1, -1,
+				     m_sprite->getMask()->bitmap->w+2,
+				     m_sprite->getMask()->bitmap->h+2, 0);
 
       int w = scale_x(old_bitmap->w);
       int h = scale_y(old_bitmap->h);
       Mask* new_mask = mask_new();
       mask_replace(new_mask,
-		   scale_x(m_sprite->mask->x-1),
-		   scale_y(m_sprite->mask->y-1), MAX(1, w), MAX(1, h));
+		   scale_x(m_sprite->getMask()->x-1),
+		   scale_y(m_sprite->getMask()->y-1), MAX(1, w), MAX(1, h));
       image_resize(old_bitmap, new_mask->bitmap,
 		   m_resize_method,
 		   get_current_palette(),
@@ -134,7 +134,7 @@ protected:
       mask_free(new_mask);
 
       // regenerate mask
-      sprite_generate_mask_boundaries(m_sprite);
+      m_sprite->generateMaskBoundaries();
     }
 
     // resize sprite
@@ -197,8 +197,8 @@ void SpriteSizeCommand::execute(Context* context)
 	      "method", &method,
 	      "ok", &ok, NULL);
 
-  width_px->setTextf("%d", sprite->w);
-  height_px->setTextf("%d", sprite->h);
+  width_px->setTextf("%d", sprite->getWidth());
+  height_px->setTextf("%d", sprite->getHeight());
 
   HOOK(lock_ratio, JI_SIGNAL_CHECK_CHANGE, lock_ratio_change_hook, 0);
   HOOK(width_px, JI_SIGNAL_ENTRY_CHANGE, width_px_change_hook, 0);
@@ -249,13 +249,13 @@ static bool width_px_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   int width = widget->getTextInt();
-  double perc = 100.0 * width / sprite->w;
+  double perc = 100.0 * width / sprite->getWidth();
 
   widget->findSibling("width_perc")->setTextf(PERC_FORMAT, perc);
 
   if (widget->findSibling("lock_ratio")->isSelected()) {
     widget->findSibling("height_perc")->setTextf(PERC_FORMAT, perc);
-    widget->findSibling("height_px")->setTextf("%d", sprite->h * width / sprite->w);
+    widget->findSibling("height_px")->setTextf("%d", sprite->getHeight() * width / sprite->getWidth());
   }
 
   return true;
@@ -265,13 +265,13 @@ static bool height_px_change_hook(JWidget widget, void *data)
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   int height = widget->getTextInt();
-  double perc = 100.0 * height / sprite->h;
+  double perc = 100.0 * height / sprite->getHeight();
 
   widget->findSibling("height_perc")->setTextf(PERC_FORMAT, perc);
 
   if (widget->findSibling("lock_ratio")->isSelected()) {
     widget->findSibling("width_perc")->setTextf(PERC_FORMAT, perc);
-    widget->findSibling("width_px")->setTextf("%d", sprite->w * height / sprite->h);
+    widget->findSibling("width_px")->setTextf("%d", sprite->getWidth() * height / sprite->getHeight());
   }
 
   return true;
@@ -282,10 +282,10 @@ static bool width_perc_change_hook(JWidget widget, void *data)
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   double width = widget->getTextDouble();
 
-  widget->findSibling("width_px")->setTextf("%d", (int)(sprite->w * width / 100));
+  widget->findSibling("width_px")->setTextf("%d", (int)(sprite->getWidth() * width / 100));
 
   if (widget->findSibling("lock_ratio")->isSelected()) {
-    widget->findSibling("height_px")->setTextf("%d", (int)(sprite->h * width / 100));
+    widget->findSibling("height_px")->setTextf("%d", (int)(sprite->getHeight() * width / 100));
     widget->findSibling("height_perc")->setText(widget->getText());
   }
 
@@ -297,10 +297,10 @@ static bool height_perc_change_hook(JWidget widget, void *data)
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
   double height = widget->getTextDouble();
 
-  widget->findSibling("height_px")->setTextf("%d", (int)(sprite->h * height / 100));
+  widget->findSibling("height_px")->setTextf("%d", (int)(sprite->getHeight() * height / 100));
 
   if (widget->findSibling("lock_ratio")->isSelected()) {
-    widget->findSibling("width_px")->setTextf("%d", (int)(sprite->w * height / 100));
+    widget->findSibling("width_px")->setTextf("%d", (int)(sprite->getWidth() * height / 100));
     widget->findSibling("width_perc")->setText(widget->getText());
   }
 

@@ -74,7 +74,7 @@ bool ChangeImageTypeCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
 
   if (sprite != NULL &&
-      sprite->imgtype == IMAGE_INDEXED &&
+      sprite->getImgType() == IMAGE_INDEXED &&
       m_imgtype == IMAGE_INDEXED &&
       m_dithering == DITHERING_ORDERED)
     return false;
@@ -88,14 +88,14 @@ bool ChangeImageTypeCommand::checked(Context* context)
   const CurrentSpriteReader sprite(context);
 
   if (sprite != NULL &&
-      sprite->imgtype == IMAGE_INDEXED &&
+      sprite->getImgType() == IMAGE_INDEXED &&
       m_imgtype == IMAGE_INDEXED &&
       m_dithering == DITHERING_ORDERED)
     return false;
 
   return
     sprite != NULL &&
-    sprite->imgtype == m_imgtype;
+    sprite->getImgType() == m_imgtype;
 }
 
 void ChangeImageTypeCommand::execute(Context* context)

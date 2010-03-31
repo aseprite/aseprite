@@ -104,14 +104,14 @@ void ReplaceColorCommand::execute(Context* context)
   button_color1 = colorbutton_new
     (get_config_color("ReplaceColor", "Color1",
 		      colorbar_get_fg_color(app_get_colorbar())),
-     sprite->imgtype);
+     sprite->getImgType());
 
   button_color2 = colorbutton_new
     (get_config_color("ReplaceColor", "Color2",
 		      colorbar_get_bg_color(app_get_colorbar())),
-     sprite->imgtype);
+     sprite->getImgType());
 
-  target_button = target_button_new(sprite->imgtype, false);
+  target_button = target_button_new(sprite->getImgType(), false);
   target_button_set_target(target_button, effect.target);
 
   jslider_set_value(slider_fuzziness,
@@ -196,8 +196,8 @@ static void make_preview()
   to = get_config_color("ReplaceColor", "Color2", color_mask());
   fuzziness = get_config_int("ReplaceColor", "Fuzziness", 0);
 
-  set_replace_colors(get_color_for_layer(sprite->layer, from),
-		     get_color_for_layer(sprite->layer, to),
+  set_replace_colors(get_color_for_layer(sprite->getCurrentLayer(), from),
+		     get_color_for_layer(sprite->getCurrentLayer(), to),
 		     MID(0, fuzziness, 255));
 
   if (jwidget_is_selected(check_preview))

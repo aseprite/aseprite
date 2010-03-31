@@ -62,8 +62,8 @@ public:
     }
 
     m_proc = loop->getOpacity() == 255 ?
-      ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->imgtype, 2)]:
-      ink_processing[INK_TRANSPARENT][MID(0, loop->getSprite()->imgtype, 2)];
+      ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getImgType(), 2)]:
+      ink_processing[INK_TRANSPARENT][MID(0, loop->getSprite()->getImgType(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
@@ -157,7 +157,7 @@ public:
     switch (m_type) {
 
       case Eraser:
-	m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->imgtype, 2)];
+	m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getImgType(), 2)];
 
 	// TODO app_get_color_to_clear_layer should receive the context as parameter
 	loop->setPrimaryColor(app_get_color_to_clear_layer(loop->getLayer()));
@@ -165,7 +165,7 @@ public:
 	break;
 
       case ReplaceFgWithBg:
-	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->imgtype, 2)];
+	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
 
 	loop->setPrimaryColor(get_color_for_layer(loop->getLayer(),
 						  loop->getContext()->getSettings()->getFgColor()));
@@ -174,7 +174,7 @@ public:
 	break;
 
       case ReplaceBgWithFg:
-	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->imgtype, 2)];
+	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
 
 	loop->setPrimaryColor(get_color_for_layer(loop->getLayer(),
 						  loop->getContext()->getSettings()->getBgColor()));
@@ -201,7 +201,7 @@ public:
 
   void prepareInk(IToolLoop* loop)
   {
-    m_proc = ink_processing[INK_BLUR][MID(0, loop->getSprite()->imgtype, 2)];
+    m_proc = ink_processing[INK_BLUR][MID(0, loop->getSprite()->getImgType(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
@@ -221,7 +221,7 @@ public:
 
   void prepareInk(IToolLoop* loop)
   {
-    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->getSprite()->imgtype, 2)];
+    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->getSprite()->getImgType(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
@@ -258,11 +258,11 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      if (undo_is_enabled(loop->getSprite()->undo))
-	undo_set_mask(loop->getSprite()->undo, loop->getSprite());
+      if (undo_is_enabled(loop->getSprite()->getUndo()))
+	undo_set_mask(loop->getSprite()->getUndo(), loop->getSprite());
 
       loop->getMask()->freeze();
-      loop->getMask()->reserve(0, 0, loop->getSprite()->w, loop->getSprite()->h);
+      loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());
     }
     else {
       loop->getMask()->unfreeze();

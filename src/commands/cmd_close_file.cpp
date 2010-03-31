@@ -122,11 +122,11 @@ try_again:;
     CurrentSpriteReader sprite(context);
 
     // see if the sprite has changes
-    while (sprite_is_modified(sprite)) {
+    while (sprite->isModified()) {
       // ask what want to do the user with the changes in the sprite
       int ret = jalert("%s<<%s<<%s||%s||%s||%s",
 		       _("Warning"), _("Saving changes in:"),
-		       get_filename(sprite->filename),
+		       get_filename(sprite->getFilename()),
 		       _("&Save"), _("&Discard"), _("&Cancel"));
 
       if (ret == 1) {
@@ -159,7 +159,7 @@ try_again:;
     CurrentSpriteWriter sprite(context);
     app_get_statusbar()
       ->setStatusText(0, "Sprite '%s' closed.",
-		      get_filename(sprite->filename));
+		      get_filename(sprite->getFilename()));
     sprite.destroy();
   }
   return true;

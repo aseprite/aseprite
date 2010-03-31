@@ -54,7 +54,7 @@ bool LayerPropertiesCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->layer != NULL;
+    sprite->getCurrentLayer() != NULL;
 }
 
 void LayerPropertiesCommand::execute(Context* context)
@@ -62,8 +62,8 @@ void LayerPropertiesCommand::execute(Context* context)
   JWidget box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
   CurrentSpriteWriter sprite(context);
-  Layer* layer = sprite->layer;
-  bool with_blend_modes = (layer->is_image() && sprite->imgtype != IMAGE_INDEXED);
+  Layer* layer = sprite->getCurrentLayer();
+  bool with_blend_modes = (layer->is_image() && sprite->getImgType() != IMAGE_INDEXED);
 
   FramePtr window(new Frame(false, _("Layer Properties")));
   box1 = jbox_new(JI_VERTICAL);

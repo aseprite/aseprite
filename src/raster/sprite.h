@@ -35,129 +35,185 @@ class Path;
 class Stock;
 class Undo;
 class Sprite;
+struct _BoundSeg;
 
-Sprite* sprite_new_copy(const Sprite* src_sprite);
+struct PreferredEditorSettings
+{
+  int scroll_x;
+  int scroll_y;
+  int zoom;
+};
 
 /**
  * The main structure used in the whole program to handle a sprite.
  */
 class Sprite : public GfxObj
 {
-  friend Sprite* sprite_new_copy(const Sprite* src_sprite);
-
-public:
-  char filename[512];		// sprite's file name
-  bool associated_to_file;	// true if this sprite is associated to a file in the file-system
-  int imgtype;			// image type
-  int w, h;			// image width/height size (in pixels)
-  int frames;			// how many frames has this sprite
-  int* frlens;			// duration per frame
-  int frame;			// current frame, range [0,frames)
-  JList palettes;		// list of palettes
-  Stock *stock;			// stock to get images
-private:
-  LayerFolder* m_folder;	// main folder of layers
-public:
-  Layer* layer;			// current layer
-  Path* path;			// working path
-  Mask* mask;			// selected mask region
-  Undo* undo;			// undo stack
-  struct {
-    JList paths;		// paths
-    JList masks;		// masks
-  } repository;
-
-  // Selected mask region boundaries
-  struct {
-    int nseg;
-    struct _BoundSeg *seg;
-  } bound;
-  struct {
-    int scroll_x;
-    int scroll_y;
-    int zoom;
-  } preferred;
-
-private:
-
-  Image* m_extras;		// Image with the sprite size to draw some extra stuff (e.g. editor's cursor)
-  int m_extras_opacity;		// Opacity to be used to draw the extra image
-
-  // Mutex to modify the 'locked' flag.
-  Vaca::Mutex* m_mutex;
-
-  // True if some thread is writing the sprite.
-  bool m_write_lock;
-
-  // Greater than zero when one or more threads are reading the sprite.
-  int m_read_locks;
-
 public:
 
-  // Data to save the file in the same format that it was loaded
-  FormatOptions *format_options;
+  ////////////////////////////////////////
+  // Constructors/Destructor
 
-  Sprite(int imgtype, int w, int h, int ncolors);
+  Sprite(int imgtype, int width, int height, int ncolors);
+  Sprite(const Sprite& original);
   virtual ~Sprite();
 
+  ////////////////////////////////////////
+  // Special constructors
+
+  static Sprite* createFlattenCopy(const Sprite& original);
+  static Sprite* createWithLayer(int imgtype, int width, int height, int ncolors);
+
+  ////////////////////////////////////////
+  // Multi-threading ("sprite wrappers" use this)
+
   bool lock(bool write);
-  bool lock_to_write();
-  void unlock_to_read();
+  bool lockToWrite();
+  void unlockToRead();
   void unlock();
 
-  LayerFolder* get_folder() const { return m_folder; }
+  ////////////////////////////////////////
+  // Main properties
 
-  void prepare_extra();
-  Image* get_extras() { return m_extras; }
-  int get_extras_opacity() const { return m_extras_opacity; }
-  void set_extras_opacity(int opacity) { m_extras_opacity = opacity; }
+  int getImgType() const;
+  void setImgType(int imgtype);
+
+  int getWidth() const;
+  int getHeight() const;
+  void setSize(int width, int height);
+
+  const char* getFilename() const;
+  void setFilename(const char* filename);
+
+  bool isModified() const;
+  bool isAssociatedToFile() const;
+  void markAsSaved();
+
+  bool needAlpha() const;
+
+  int getMemSize() const;
+
+  ////////////////////////////////////////
+  // Layers
+
+  const LayerFolder* getFolder() const;
+  LayerFolder* getFolder();
+
+  const LayerImage* getBackgroundLayer() const;
+  LayerImage* getBackgroundLayer();
+
+  const Layer* getCurrentLayer() const;
+  Layer* getCurrentLayer();
+  void setCurrentLayer(Layer* layer);
+
+  int countLayers() const;
+
+  const Layer* indexToLayer(int index) const;
+  Layer* indexToLayer(int index);
+  int layerToIndex(const Layer* layer) const;
+
+  ////////////////////////////////////////
+  // Palettes
+
+  const Palette* getPalette(int frame) const;
+  Palette* getPalette(int frame);
+  JList getPalettes();
+
+  void setPalette(Palette* pal, bool truncate);
+  void resetPalettes();
+  void deletePalette(Palette* pal);
+
+  const Palette* getCurrentPalette() const;
+  Palette* getCurrentPalette();
+
+  ////////////////////////////////////////
+  // Frames
+
+  int getTotalFrames() const;
+  void setTotalFrames(int frames);
+
+  int getFrameDuration(int frame) const;
+  void setFrameDuration(int frame, int msecs);
+  void setDurationForAllFrames(int msecs);
+
+  int getCurrentFrame() const;
+  void setCurrentFrame(int frame);
+
+  ////////////////////////////////////////
+  // Images
+
+  const Stock* getStock() const;
+  Stock* getStock();
+
+  const Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL) const;
+  Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL);
+
+  void getCels(CelList& cels);
+
+  ////////////////////////////////////////
+  // Undo
+
+  const Undo* getUndo() const;
+  Undo* getUndo();
+
+  ////////////////////////////////////////
+  // Mask
+
+  const Mask* getMask() const;
+  Mask* getMask();
+  void setMask(const Mask* mask);
+
+  void addMask(Mask* mask);
+  void removeMask(Mask* mask);
+  Mask* requestMask(const char* name) const;
+
+  void generateMaskBoundaries(Mask* mask = NULL);
+
+  JList getMasksRepository();
+
+  ////////////////////////////////////////
+  // Path
+
+  void addPath(Path* path);
+  void removePath(Path* path);
+  void setPath(const Path* path);
+
+  JList getPathsRepository();
+
+  ////////////////////////////////////////
+  // Loaded options from file
+
+  void setFormatOptions(FormatOptions* format_options);
+
+  ////////////////////////////////////////
+  // Drawing
+
+  void render(Image* image, int x, int y) const;
+  int getPixel(int x, int y) const;
+
+  ////////////////////////////////////////
+  // Preferred editor settings
+
+  PreferredEditorSettings getPreferredEditorSettings() const;
+  void setPreferredEditorSettings(const PreferredEditorSettings& settings);
+
+  ////////////////////////////////////////
+  // Boundaries
+
+  int getBoundariesSegmentsCount() const;
+  const _BoundSeg* getBoundariesSegments() const;
+
+  ////////////////////////////////////////
+  // Extras
+
+  void prepareExtra();
+  Image* getExtras();
+  int getExtrasOpacity() const;
+  void setExtrasOpacity(int opacity);
+
+private:
+  Sprite();
+  class SpriteImpl* m_impl;
 };
-
-Sprite* sprite_new_flatten_copy(const Sprite* src_sprite);
-Sprite* sprite_new_with_layer(int imgtype, int w, int h, int ncolors);
-
-bool sprite_is_modified(const Sprite* sprite);
-bool sprite_is_associated_to_file(const Sprite* sprite);
-void sprite_mark_as_saved(Sprite* sprite);
-
-bool sprite_need_alpha(const Sprite* sprite);
-
-Palette* sprite_get_palette(const Sprite* sprite, int frame);
-void sprite_set_palette(Sprite* sprite, Palette* pal, bool truncate);
-void sprite_reset_palettes(Sprite* sprite);
-void sprite_delete_palette(Sprite* sprite, Palette* pal);
-
-void sprite_set_filename(Sprite* sprite, const char* filename);
-void sprite_set_format_options(Sprite* sprite, FormatOptions* format_options);
-void sprite_set_size(Sprite* sprite, int w, int h);
-void sprite_set_frames(Sprite* sprite, int frames);
-void sprite_set_frlen(Sprite* sprite, int frame, int msecs);
-int sprite_get_frlen(const Sprite* sprite, int frame);
-void sprite_set_speed(Sprite* sprite, int msecs);
-void sprite_set_path(Sprite* sprite, const Path* path);
-void sprite_set_mask(Sprite* sprite, const Mask* mask);
-void sprite_set_layer(Sprite* sprite, Layer* layer);
-void sprite_set_frame(Sprite* sprite, int frame);
-
-LayerImage* sprite_get_background_layer(const Sprite* sprite);
-
-void sprite_add_path(Sprite* sprite, Path* path);
-void sprite_remove_path(Sprite* sprite, Path* path);
-
-void sprite_add_mask(Sprite* sprite, Mask* mask);
-void sprite_remove_mask(Sprite* sprite, Mask* mask);
-Mask* sprite_request_mask(const Sprite* sprite, const char *name);
-
-void sprite_render(const Sprite* sprite, Image* image, int x, int y);
-void sprite_generate_mask_boundaries(Sprite* sprite);
-
-Layer* sprite_index2layer(const Sprite* sprite, int index);
-int sprite_layer2index(const Sprite* sprite, const Layer* layer);
-int sprite_count_layers(const Sprite* sprite);
-void sprite_get_cels(const Sprite* sprite, CelList& cels);
-
-int sprite_getpixel(const Sprite* sprite, int x, int y);
-
-int sprite_get_memsize(const Sprite* sprite);
 
 #endif

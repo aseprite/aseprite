@@ -51,7 +51,7 @@ static bool save_ICO(FileOp *fop)
   int depth, bpp, bw, bitsw;
   int size, offset, n, i;
   int c, x, y, b, m, v;
-  int num = fop->sprite->frames;
+  int num = fop->sprite->getTotalFrames();
   Image *bmp;
 
   f = fopen(fop->filename, "wb");
@@ -68,16 +68,16 @@ static bool save_ICO(FileOp *fop)
   for (n=0; n<num; ++n) {
     depth = 8;/* bitmap_color_depth(bmp[n]); */
     bpp = (depth == 8) ? 8 : 24;
-    bw = (((fop->sprite->w * bpp / 8) + 3) / 4) * 4;
-    bitsw = ((((fop->sprite->w + 7) / 8) + 3) / 4) * 4;
-    size = fop->sprite->h * (bw + bitsw) + 40;
+    bw = (((fop->sprite->getWidth() * bpp / 8) + 3) / 4) * 4;
+    bitsw = ((((fop->sprite->getWidth() + 7) / 8) + 3) / 4) * 4;
+    size = fop->sprite->getHeight() * (bw + bitsw) + 40;
 
     if (bpp == 8)
       size += 256 * 4;
 
     /* ICONDIRENTRY */
-    fputc(fop->sprite->w, f);	/* width                       */
-    fputc(fop->sprite->h, f);	/* height                      */
+    fputc(fop->sprite->getWidth(), f);	/* width                       */
+    fputc(fop->sprite->getHeight(), f);	/* height                      */
     fputc(0, f);		/* color count                 */
     fputc(0, f);		/* reserved                    */
     fputw(1, f);		/* color planes                */
@@ -88,13 +88,13 @@ static bool save_ICO(FileOp *fop)
     offset += size;
   }
 
-  bmp = image_new(fop->sprite->imgtype,
-		  fop->sprite->w,
-		  fop->sprite->h);
+  bmp = image_new(fop->sprite->getImgType(),
+		  fop->sprite->getWidth(),
+		  fop->sprite->getHeight());
 
   for (n=0; n<num; ++n) {
     image_clear(bmp, 0);
-    layer_render(fop->sprite->get_folder(), bmp, 0, 0, n);
+    layer_render(fop->sprite->getFolder(), bmp, 0, 0, n);
 
     depth = 8; /* bitmap_color_depth(bmp); */
     bpp = (depth == 8) ? 8 : 24;
@@ -120,7 +120,7 @@ static bool save_ICO(FileOp *fop)
 
     /* PALETTE */
     if (bpp == 8) {
-      Palette *pal = sprite_get_palette(fop->sprite, n);
+      Palette *pal = fop->sprite->getPalette(n);
 
       fputl(0, f);  /* color 0 is black, so the XOR mask works */
 

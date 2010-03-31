@@ -71,9 +71,9 @@ void DuplicateSpriteCommand::execute(Context* context)
   dst_name = jwidget_find_name(window, "dst_name");
   flatten = jwidget_find_name(window, "flatten");
 
-  src_name->setText(get_filename(sprite->filename));
+  src_name->setText(get_filename(sprite->getFilename()));
 
-  sprintf(buf, "%s %s", sprite->filename, _("Copy"));
+  sprintf(buf, "%s %s", sprite->getFilename(), _("Copy"));
   dst_name->setText(buf);
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
@@ -89,12 +89,12 @@ void DuplicateSpriteCommand::execute(Context* context)
     // make a copy of the current sprite
     Sprite *sprite_copy;
     if (jwidget_is_selected(flatten))
-      sprite_copy = sprite_new_flatten_copy(sprite);
+      sprite_copy = Sprite::createFlattenCopy(*sprite);
     else
-      sprite_copy = sprite_new_copy(sprite);
+      sprite_copy = new Sprite(*sprite);
 
     if (sprite_copy != NULL) {
-      sprite_set_filename(sprite_copy, dst_name->getText());
+      sprite_copy->setFilename(dst_name->getText());
 
       context->add_sprite(sprite_copy);
       set_sprite_in_more_reliable_editor(sprite_copy);

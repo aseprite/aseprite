@@ -49,11 +49,11 @@ bool BackgroundFromLayerCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->layer != NULL &&
-    sprite_get_background_layer(sprite) == NULL &&
-    sprite->layer->is_image() &&
-    sprite->layer->is_readable() &&
-    sprite->layer->is_writable();
+    sprite->getCurrentLayer() != NULL &&
+    sprite->getBackgroundLayer() == NULL &&
+    sprite->getCurrentLayer()->is_image() &&
+    sprite->getCurrentLayer()->is_readable() &&
+    sprite->getCurrentLayer()->is_writable();
 }
 
 void BackgroundFromLayerCommand::execute(Context* context)
@@ -63,11 +63,11 @@ void BackgroundFromLayerCommand::execute(Context* context)
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar
   int bgcolor = context->getBgColor();
-  bgcolor = fixup_color_for_background(sprite->imgtype, bgcolor);
+  bgcolor = fixup_color_for_background(sprite->getImgType(), bgcolor);
 
   {
     Undoable undoable(sprite, "Background from Layer");
-    undoable.background_from_layer(static_cast<LayerImage*>(sprite->layer), bgcolor);
+    undoable.background_from_layer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

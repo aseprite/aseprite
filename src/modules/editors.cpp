@@ -121,8 +121,8 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
 #else
   cx1 = 0;
   cy1 = 0;
-  cx2 = cx1+sprite->w-1;
-  cy2 = cy1+sprite->h-1;
+  cx2 = cx1+sprite->getWidth()-1;
+  cy2 = cy1+sprite->getHeight()-1;
 #endif
 
   lx1 = MAX(x1, cx1);
@@ -156,7 +156,7 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
 #else
     editors_draw_sprite_tiled(sprite,
 			      cx1, y1,
-			      MIN(lx1-1, x2-sprite->w), y2);
+			      MIN(lx1-1, x2-sprite->getWidth()), y2);
 #endif
   }
 
@@ -169,7 +169,7 @@ void editors_draw_sprite_tiled(const Sprite* sprite, int x1, int y1, int x2, int
 #else
     editors_draw_sprite_tiled(sprite,
 			      x1, cy1,
-			      x2, MIN(ly1-1, y2-sprite->h));
+			      x2, MIN(ly1-1, y2-sprite->getHeight()));
 #endif
   }
 }

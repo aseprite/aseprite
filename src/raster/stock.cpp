@@ -149,3 +149,11 @@ Image* stock_get_image(Stock* stock, int index)
   return ((index >= 0) && (index < stock->nimage)) ? stock->image[index]: NULL;
 }
 
+/**
+ * Returns the image in the "index" position
+ */
+const Image* stock_get_image(const Stock* stock, int index)
+{
+  return ((index >= 0) && (index < stock->nimage)) ? stock->image[index]: NULL;
+}
+

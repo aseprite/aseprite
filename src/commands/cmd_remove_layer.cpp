@@ -56,7 +56,7 @@ bool RemoveLayerCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->layer != NULL;
+    sprite->getCurrentLayer() != NULL;
 }
 
 void RemoveLayerCommand::execute(Context* context)
@@ -66,9 +66,9 @@ void RemoveLayerCommand::execute(Context* context)
   {
     Undoable undoable(sprite, "Remove Layer");
 
-    layer_name = sprite->layer->get_name();
+    layer_name = sprite->getCurrentLayer()->get_name();
 
-    undoable.remove_layer(sprite->layer);
+    undoable.remove_layer(sprite->getCurrentLayer());
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

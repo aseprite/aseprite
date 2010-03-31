@@ -100,8 +100,8 @@ void CanvasSizeCommand::execute(Context* context)
 
   int x1 = -m_left;
   int y1 = -m_top;
-  int x2 = sprite->w + m_right;
-  int y2 = sprite->h + m_bottom;
+  int x2 = sprite->getWidth() + m_right;
+  int y2 = sprite->getHeight() + m_bottom;
 
   if (x2 <= x1) x2 = x1+1;
   if (y2 <= y1) y2 = y1+1;
@@ -112,7 +112,7 @@ void CanvasSizeCommand::execute(Context* context)
     undoable.crop_sprite(x1, y1, x2-x1, y2-y1, bgcolor);
     undoable.commit();
   }
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

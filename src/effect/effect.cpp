@@ -69,9 +69,9 @@ static EffectData effects_data[] = {
 };
 
 static EffectData *get_effect_data(const char *name);
-static void effect_init(Effect *effect, Layer *layer, Image *image, int offset_x, int offset_y);
+static void effect_init(Effect* effect, const Layer* layer, Image* image, int offset_x, int offset_y);
 static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y);
-static bool effect_update_mask(Effect *effect, Mask *mask, Image *image);
+static bool effect_update_mask(Effect* effect, Mask* mask, const Image* image);
 
 int init_module_effect()
 {
@@ -88,13 +88,12 @@ Effect::Effect(const SpriteReader& sprite, const char* name)
 {
   int offset_x, offset_y;
   EffectData* effect_data;
-  Image* image;
   void (*apply)(Effect*);
 
   effect_data = get_effect_data(name);
 
   apply = NULL;
-  switch (sprite->imgtype) {
+  switch (sprite->getImgType()) {
     case IMAGE_RGB:       apply = effect_data->apply_4; break;
     case IMAGE_GRAYSCALE: apply = effect_data->apply_2; break;
     case IMAGE_INDEXED:   apply = effect_data->apply_1; break;
@@ -119,11 +118,11 @@ Effect::Effect(const SpriteReader& sprite, const char* name)
   this->progress = NULL;
   this->is_cancelled = NULL;
 
-  image = GetImage2(sprite, &offset_x, &offset_y, NULL);
+  Image* image = this->sprite->getCurrentImage(&offset_x, &offset_y);
   if (image == NULL)
     throw no_image_exception();
 
-  effect_init(this, sprite->layer, image, offset_x, offset_y);
+  effect_init(this, sprite->getCurrentLayer(), image, offset_x, offset_y);
 }
 
 Effect::~Effect()
@@ -141,15 +140,15 @@ void effect_set_target(Effect *effect, int target)
   effect->target = target;
 
   /* the alpha channel of the background layer can't be modified */
-  if (effect->sprite->layer &&
-      effect->sprite->layer->is_background())
+  if (effect->sprite->getCurrentLayer() &&
+      effect->sprite->getCurrentLayer()->is_background())
     effect->target &= ~TARGET_ALPHA_CHANNEL;
 }
 
 void effect_begin(Effect *effect)
 {
   effect->row = 0;
-  effect->mask = effect->sprite->mask;
+  effect->mask = effect->sprite->getMask();
 
   effect_update_mask(effect, effect->mask, effect->src);
 }
@@ -161,8 +160,8 @@ void effect_begin_for_preview(Effect *effect)
     effect->preview_mask = NULL;
   }
 
-  if ((effect->sprite->mask) && (effect->sprite->mask->bitmap))
-    effect->preview_mask = mask_new_copy(effect->sprite->mask);
+  if ((effect->sprite->getMask()) && (effect->sprite->getMask()->bitmap))
+    effect->preview_mask = mask_new_copy(effect->sprite->getMask());
   else {
     effect->preview_mask = mask_new();
     mask_replace(effect->preview_mask,
@@ -186,8 +185,8 @@ void effect_begin_for_preview(Effect *effect)
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;
-    if (x2 >= effect->sprite->w) x2 = effect->sprite->w-1;
-    if (y2 >= effect->sprite->h) y2 = effect->sprite->h-1;
+    if (x2 >= effect->sprite->getWidth()) x2 = effect->sprite->getWidth()-1;
+    if (y2 >= effect->sprite->getHeight()) y2 = effect->sprite->getHeight()-1;
 
     x = x1;
     y = y1;
@@ -233,7 +232,7 @@ bool effect_apply_step(Effect *effect)
   }
 }
 
-void effect_apply(Effect *effect)
+void effect_apply(Effect* effect)
 {
   bool cancelled = false;
 
@@ -249,15 +248,15 @@ void effect_apply(Effect *effect)
   }
 
   if (!cancelled) {
-    /* undo stuff */
-    if (undo_is_enabled(effect->sprite->undo)) {
-      undo_set_label(effect->sprite->undo,
+    // Undo stuff
+    if (undo_is_enabled(effect->sprite->getUndo())) {
+      undo_set_label(effect->sprite->getUndo(),
 		     effect->effect_data->label);
-      undo_image(effect->sprite->undo, effect->src,
+      undo_image(effect->sprite->getUndo(), effect->src,
 		 effect->x, effect->y, effect->w, effect->h);
     }
 
-    /* copy "dst" to "src" */
+    // Copy "dst" to "src"
     image_copy(effect->src, effect->dst, 0, 0);
   }
 }
@@ -310,8 +309,8 @@ void effect_apply_to_target(Effect *effect)
 
   /* open undo group of operations */
   if (nimages > 1) {
-    if (undo_is_enabled(effect->sprite->undo))
-      undo_open(effect->sprite->undo);
+    if (undo_is_enabled(effect->sprite->getUndo()))
+      undo_open(effect->sprite->getUndo());
   }
   
   effect->progress_base = 0.0f;
@@ -331,8 +330,8 @@ void effect_apply_to_target(Effect *effect)
 
   /* close undo group of operations */
   if (nimages > 1) {
-    if (undo_is_enabled(effect->sprite->undo))
-      undo_close(effect->sprite->undo);
+    if (undo_is_enabled(effect->sprite->getUndo()))
+      undo_close(effect->sprite->getUndo());
   }
 
   /* free all ImageRefs */
@@ -351,13 +350,13 @@ static EffectData *get_effect_data(const char *name)
   throw invalid_effect_exception(name);
 }
 
-static void effect_init(Effect *effect, Layer *layer, Image *image,
+static void effect_init(Effect* effect, const Layer* layer, Image* image,
 			int offset_x, int offset_y)
 {
   effect->offset_x = offset_x;
   effect->offset_y = offset_y;
 
-  if (!effect_update_mask(effect, effect->sprite->mask, image))
+  if (!effect_update_mask(effect, effect->sprite->getMask(), image))
     throw invalid_area_exception();
 
   if (effect->preview_mask) {
@@ -384,13 +383,13 @@ static void effect_init(Effect *effect, Layer *layer, Image *image,
     effect->target &= ~TARGET_ALPHA_CHANNEL;
 }
 
-static void effect_apply_to_image(Effect *effect, ImageRef *p, int x, int y)
+static void effect_apply_to_image(Effect* effect, ImageRef* p, int x, int y)
 {
   effect_init(effect, p->layer, p->image, x, y);
   effect_apply(effect);
 }
 
-static bool effect_update_mask(Effect *effect, Mask *mask, Image *image)
+static bool effect_update_mask(Effect* effect, Mask* mask, const Image* image)
 {
   int x, y, w, h;
 

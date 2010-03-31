@@ -77,7 +77,7 @@ void PlayAnimationCommand::execute(Context* context)
   Palette *oldpal, *newpal;
   PALETTE rgbpal;
 
-  if (sprite->frames < 2)
+  if (sprite->getTotalFrames() < 2)
     return;
 
   // desactivate the onionskin
@@ -85,7 +85,7 @@ void PlayAnimationCommand::execute(Context* context)
 
   jmouse_hide();
 
-  old_frame = sprite->frame;
+  old_frame = sprite->getCurrentFrame();
 
   LOCK_VARIABLE(speed_timer);
   LOCK_FUNCTION(speed_timer_callback);
@@ -99,17 +99,17 @@ void PlayAnimationCommand::execute(Context* context)
   oldpal = NULL;
   speed_timer = 0;
   while (!done) {
-    msecs = sprite_get_frlen(sprite, sprite->frame);
+    msecs = sprite->getFrameDuration(sprite->getCurrentFrame());
     install_int_ex(speed_timer_callback, MSEC_TO_TIMER(msecs));
 
-    newpal = sprite_get_palette(sprite, sprite->frame);
+    newpal = sprite->getPalette(sprite->getCurrentFrame());
     if (oldpal != newpal) {
       newpal->toAllegro(rgbpal);
       set_palette(rgbpal);
       oldpal = newpal;
     }
 
-    current_editor->editor_draw_sprite_safe(0, 0, sprite->w, sprite->h);
+    current_editor->editor_draw_sprite_safe(0, 0, sprite->getWidth(), sprite->getHeight());
 
     do {
       poll_mouse();
@@ -120,9 +120,10 @@ void PlayAnimationCommand::execute(Context* context)
     } while (!done && (speed_timer <= 0));
 
     if (!done) {
-      sprite->frame++;
-      if (sprite->frame >= sprite->frames)
-	sprite->frame = 0;
+      int frame = sprite->getCurrentFrame()+1;
+      if (frame >= sprite->getTotalFrames())
+	frame = 0;
+      sprite->setCurrentFrame(frame);
 
       speed_timer--;
     }
@@ -135,10 +136,10 @@ void PlayAnimationCommand::execute(Context* context)
   /* if right-click or ESC */
   if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC))
     /* return to the old frame position */
-    sprite->frame = old_frame;
+    sprite->setCurrentFrame(old_frame);
 
   /* refresh all */
-  newpal = sprite_get_palette(sprite, sprite->frame);
+  newpal = sprite->getPalette(sprite->getCurrentFrame());
   set_current_palette(newpal, true);
   jmanager_refresh_screen();
   gui_feedback();

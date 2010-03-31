@@ -109,12 +109,12 @@ struct FileOp
 
 /* available extensions for each load/save operation */
 
-void get_readable_extensions(char *buf, int size);
-void get_writable_extensions(char *buf, int size);
+void get_readable_extensions(char* buf, int size);
+void get_writable_extensions(char* buf, int size);
 
 /* high-level routines to load/save sprites */
 
-Sprite* sprite_load(const char *filename);
+Sprite* sprite_load(const char* filename);
 int sprite_save(Sprite* sprite);
 
 /* low-level routines to load/save sprites */

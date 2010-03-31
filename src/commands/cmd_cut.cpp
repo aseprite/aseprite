@@ -50,12 +50,12 @@ bool CutCommand::enabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   if ((sprite) &&
-      (sprite->layer) &&
-      (sprite->layer->is_readable()) &&
-      (sprite->layer->is_writable()) &&
-      (sprite->mask) &&
-      (sprite->mask->bitmap))
-    return GetImage(sprite) ? true: false;
+      (sprite->getCurrentLayer()) &&
+      (sprite->getCurrentLayer()->is_readable()) &&
+      (sprite->getCurrentLayer()->is_writable()) &&
+      (sprite->getMask()) &&
+      (sprite->getMask()->bitmap))
+    return sprite->getCurrentImage() ? true: false;
   else
     return false;
 }

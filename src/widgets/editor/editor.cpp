@@ -135,11 +135,12 @@ void Editor::editor_set_sprite(Sprite* sprite)
 
   m_sprite = sprite;
   if (m_sprite) {
-    m_zoom = m_sprite->preferred.zoom;
+    PreferredEditorSettings preferred = m_sprite->getPreferredEditorSettings();
+    m_zoom = preferred.zoom;
 
     editor_update();
-    editor_set_scroll(m_offset_x + m_sprite->preferred.scroll_x,
-		      m_offset_y + m_sprite->preferred.scroll_y,
+    editor_set_scroll(m_offset_x + preferred.scroll_x,
+		      m_offset_y + preferred.scroll_y,
 		      false);
   }
   else {
@@ -169,9 +170,13 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
   jview_set_scroll(view, x, y);
 
   if (m_sprite) {
-    m_sprite->preferred.scroll_x = x - m_offset_x;
-    m_sprite->preferred.scroll_y = y - m_offset_y;
-    m_sprite->preferred.zoom = m_zoom;
+    PreferredEditorSettings preferred;
+
+    preferred.scroll_x = x - m_offset_x;
+    preferred.scroll_y = y - m_offset_y;
+    preferred.zoom = m_zoom;
+
+    m_sprite->setPreferredEditorSettings(preferred);
   }
 
   if (use_refresh_region) {
@@ -285,12 +290,12 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
     source_y = 0;
   }
 
-  if (source_x+width > (m_sprite->w << m_zoom)) {
-    width = (m_sprite->w << m_zoom) - source_x;
+  if (source_x+width > (m_sprite->getWidth() << m_zoom)) {
+    width = (m_sprite->getWidth() << m_zoom) - source_x;
   }
 
-  if (source_y+height > (m_sprite->h << m_zoom)) {
-    height = (m_sprite->h << m_zoom) - source_y;
+  if (source_y+height > (m_sprite->getHeight() << m_zoom)) {
+    height = (m_sprite->getHeight() << m_zoom) - source_y;
   }
 
   /* draw the sprite */
@@ -300,7 +305,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
     Image* rendered = RenderEngine::renderSprite(m_sprite,
 						 source_x, source_y,
 						 width, height,
-						 m_sprite->frame,
+						 m_sprite->getCurrentFrame(),
 						 m_zoom);
 
     if (rendered) {
@@ -323,8 +328,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
       }
       else {
 	PALETTE rgbpal;
-	Palette *pal = sprite_get_palette(m_sprite,
-					  m_sprite->frame);
+	Palette *pal = m_sprite->getPalette(m_sprite->getCurrentFrame());
 	pal->toAllegro(rgbpal);
 
 	select_palette(rgbpal);
@@ -384,7 +388,6 @@ void Editor::editor_draw_mask()
   JRect vp = jview_get_viewport_position(view);
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
-  BoundSeg *seg;
   int c, x, y;
 
   jview_get_scroll(view, &scroll_x, &scroll_y);
@@ -394,17 +397,18 @@ void Editor::editor_draw_mask()
   x = vp->x1 - scroll_x + m_offset_x;
   y = vp->y1 - scroll_y + m_offset_y;
 
-  for (c=0; c<m_sprite->bound.nseg; c++) {
-    seg = &m_sprite->bound.seg[c];
+  int nseg = m_sprite->getBoundariesSegmentsCount();
+  const _BoundSeg* seg = m_sprite->getBoundariesSegments();
 
+  for (c=0; c<nseg; ++c, ++seg) {
     x1 = seg->x1<<m_zoom;
     y1 = seg->y1<<m_zoom;
     x2 = seg->x2<<m_zoom;
     y2 = seg->y2<<m_zoom;
 
-#if 1				/* bounds inside mask */
+#if 1				// Bounds inside mask
     if (!seg->open)
-#else				/* bounds outside mask */
+#else				// Bounds outside mask
     if (seg->open)
 #endif
       {
@@ -439,7 +443,7 @@ void Editor::editor_draw_mask()
 
 void Editor::editor_draw_mask_safe()
 {
-  if ((m_sprite) && (m_sprite->bound.seg)) {
+  if ((m_sprite) && (m_sprite->getBoundariesSegments())) {
     int thick = m_cursor_thick;
 
     JRegion region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
@@ -538,9 +542,9 @@ void Editor::turnOnSelectionModifiers()
 
   int x1, y1, x2, y2;
 
-  editor_to_screen(m_sprite->mask->x, m_sprite->mask->y, &x1, &y1);
-  editor_to_screen(m_sprite->mask->x+m_sprite->mask->w-1,
-		   m_sprite->mask->y+m_sprite->mask->h-1, &x2, &y2);
+  editor_to_screen(m_sprite->getMask()->x, m_sprite->getMask()->y, &x1, &y1);
+  editor_to_screen(m_sprite->getMask()->x+m_sprite->getMask()->w-1,
+		   m_sprite->getMask()->y+m_sprite->getMask()->h-1, &x2, &y2);
 
   // TODO addDecorator
   m_decorators.push_back(new Decorator(Decorator::SELECTION_NW, Rect(x1-8,        y1-8, 8, 8)));
@@ -610,11 +614,11 @@ void Editor::editor_update_statusbar_for_standby()
 
   /* for eye-dropper */
   if (m_alt_pressed) {
-    color_t color = color_from_image(m_sprite->imgtype,
-				     sprite_getpixel(m_sprite, x, y));
+    color_t color = color_from_image(m_sprite->getImgType(),
+				     m_sprite->getPixel(x, y));
     if (color_type(color) != COLOR_TYPE_MASK) {
       usprintf(buf, "%s ", _("Color"));
-      color_to_formalstring(m_sprite->imgtype,
+      color_to_formalstring(m_sprite->getImgType(),
 			    color,
 			    buf+ustrlen(buf),
 			    sizeof(buf)-ustrlen(buf), true);
@@ -631,13 +635,13 @@ void Editor::editor_update_statusbar_for_standby()
     (0, "%s %3d %3d (%s %3d %3d) [%s %d] %s",
      _("Pos"), x, y,
      _("Size"),
-     ((m_sprite->mask->bitmap)?
-      m_sprite->mask->w:
-      m_sprite->w),
-     ((m_sprite->mask->bitmap)?
-      m_sprite->mask->h:
-      m_sprite->h),
-     _("Frame"), m_sprite->frame+1,
+     ((m_sprite->getMask()->bitmap)?
+      m_sprite->getMask()->w:
+      m_sprite->getWidth()),
+     ((m_sprite->getMask()->bitmap)?
+      m_sprite->getMask()->h:
+      m_sprite->getHeight()),
+     _("Frame"), m_sprite->getCurrentFrame()+1,
      buf);
 }
 
@@ -751,8 +755,8 @@ bool Editor::msg_proc(JMessage msg)
 	/* draw the background outside of image */
 	x1 = this->rc->x1 + m_offset_x;
 	y1 = this->rc->y1 + m_offset_y;
-	x2 = x1 + (m_sprite->w << m_zoom) - 1;
-	y2 = y1 + (m_sprite->h << m_zoom) - 1;
+	x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
+	y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
 
 	jrectexclude(ji_screen,
 		     this->rc->x1, this->rc->y1,
@@ -760,14 +764,14 @@ bool Editor::msg_proc(JMessage msg)
 		     x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
 
 	/* draw the sprite in the editor */
-	editor_draw_sprite(0, 0, m_sprite->w-1, m_sprite->h-1);
+	editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
 
-	/* draw the sprite boundary */
+	// Draw the sprite boundary
 	rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
 	hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
 
-	/* draw the mask */
-	if (m_sprite->bound.seg) {
+	// Draw the mask boundaries
+	if (m_sprite->getBoundariesSegments()) {
 	  editor_draw_mask();
 	  jmanager_start_timer(m_mask_timer_id);
 	}
@@ -869,15 +873,15 @@ bool Editor::msg_proc(JMessage msg)
 	}
 	/* move frames position */
 	else if (m_ctrl_pressed) {
-	  if ((m_sprite->layer) &&
-	      (m_sprite->layer->type == GFXOBJ_LAYER_IMAGE)) {
+	  if ((m_sprite->getCurrentLayer()) &&
+	      (m_sprite->getCurrentLayer()->type == GFXOBJ_LAYER_IMAGE)) {
 	    /* TODO you can move the `Background' with tiled mode */
-	    if (m_sprite->layer->is_background()) {
+	    if (m_sprite->getCurrentLayer()->is_background()) {
 	      jalert(_(PACKAGE
 		       "<<You can't move the `Background' layer."
 		       "||&Close"));
 	    }
-	    else if (!m_sprite->layer->is_moveable()) {
+	    else if (!m_sprite->getCurrentLayer()->is_moveable()) {
 	      jalert(_(PACKAGE
 		       "<<The layer movement is locked."
 		       "||&Close"));
@@ -903,7 +907,7 @@ bool Editor::msg_proc(JMessage msg)
 	  return true;
 	}
 	// Start the Tool-Loop
-	else if (m_sprite->layer) {
+	else if (m_sprite->getCurrentLayer()) {
 	  assert(m_toolLoopManager == NULL);
 
 	  IToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
@@ -1046,7 +1050,7 @@ bool Editor::msg_proc(JMessage msg)
 	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 	  app_get_statusbar()->setStatusText
 	    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
-	     m_sprite->w, m_sprite->h);
+	     m_sprite->getWidth(), m_sprite->getHeight());
 	}
       }
       return true;
@@ -1256,8 +1260,8 @@ void Editor::editor_request_size(int *w, int *h)
     m_offset_x = jrect_w(vp)/2 - 1;
     m_offset_y = jrect_h(vp)/2 - 1;
 
-    *w = (m_sprite->w << m_zoom) + m_offset_x*2;
-    *h = (m_sprite->h << m_zoom) + m_offset_y*2;
+    *w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
+    *h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
 
     jrect_free(vp);
   }
@@ -1320,7 +1324,7 @@ void Editor::editor_setcursor(int x, int y)
 	      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 	    
 	      // Move selection
-	      if (m_sprite->mask->contains_point(x, y)) {
+	      if (m_sprite->getMask()->contains_point(x, y)) {
 		hide_drawing_cursor();
 		jmouse_set_cursor(JI_CURSOR_MOVE);
 
@@ -1372,10 +1376,10 @@ void Editor::editor_update_candraw()
 {
   m_cursor_candraw =
     (m_sprite != NULL &&
-     m_sprite->layer != NULL &&
-     m_sprite->layer->is_image() &&
-     m_sprite->layer->is_readable() &&
-     m_sprite->layer->is_writable() /* && */
+     m_sprite->getCurrentLayer() != NULL &&
+     m_sprite->getCurrentLayer()->is_image() &&
+     m_sprite->getCurrentLayer()->is_readable() &&
+     m_sprite->getCurrentLayer()->is_writable() /* && */
      /* layer_get_cel(m_sprite->layer, m_sprite->frame) != NULL */
      );
 }
@@ -1493,19 +1497,19 @@ public:
     // Get cel and image where we can draw
 
     if (m_layer->is_image()) {
-      m_cel = static_cast<LayerImage*>(sprite->layer)->get_cel(sprite->frame);
+      m_cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
       if (m_cel)
-	m_cel_image = sprite->stock->image[m_cel->image];
+	m_cel_image = sprite->getStock()->image[m_cel->image];
     }
 
     if (m_cel == NULL) {
       // create the image
-      m_cel_image = image_new(sprite->imgtype, sprite->w, sprite->h);
+      m_cel_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
       image_clear(m_cel_image, 0);
 
       // create the cel
-      m_cel = cel_new(sprite->frame, 0);
-      static_cast<LayerImage*>(sprite->layer)->add_cel(m_cel);
+      m_cel = cel_new(sprite->getCurrentFrame(), 0);
+      static_cast<LayerImage*>(sprite->getCurrentLayer())->add_cel(m_cel);
 
       m_cel_created = true;
     }
@@ -1520,14 +1524,14 @@ public:
     if (m_tiled_mode == TILED_NONE) {
       x1 = MIN(m_cel->x, 0);
       y1 = MIN(m_cel->y, 0);
-      x2 = MAX(m_cel->x+m_cel_image->w, m_sprite->w);
-      y2 = MAX(m_cel->y+m_cel_image->h, m_sprite->h);
+      x2 = MAX(m_cel->x+m_cel_image->w, m_sprite->getWidth());
+      y2 = MAX(m_cel->y+m_cel_image->h, m_sprite->getHeight());
     }
     else { 			// tiled
       x1 = 0;
       y1 = 0;
-      x2 = m_sprite->w;
-      y2 = m_sprite->h;
+      x2 = m_sprite->getWidth();
+      y2 = m_sprite->getHeight();
     }
 
     // create two copies of the image region which we'll modify with the tool
@@ -1536,7 +1540,7 @@ public:
 			     y1-m_cel->y, x2-x1, y2-y1, 0);
     m_dst_image = image_new_copy(m_src_image);
 
-    m_mask = m_sprite->mask;
+    m_mask = m_sprite->getMask();
     m_maskOrigin = (!m_mask->is_empty() ? Point(m_mask->x-x1, m_mask->y-y1):
 					  Point(0, 0));
 
@@ -1552,8 +1556,8 @@ public:
     m_offset.y = -y1;
 
     // Set undo label for any kind of undo used in the whole loop
-    if (undo_is_enabled(m_sprite->undo))
-      undo_set_label(m_sprite->undo, m_tool->getText().c_str());
+    if (undo_is_enabled(m_sprite->getUndo()))
+      undo_set_label(m_sprite->getUndo(), m_tool->getText().c_str());
   }
 
   ~ToolLoopImpl()
@@ -1575,34 +1579,34 @@ public:
 	    image_copy(m_cel_image, m_dst_image, 0, 0);
 
 	    /* add the 'cel_image' in the images' stock of the sprite */
-	    m_cel->image = stock_add_image(m_sprite->stock, m_cel_image);
+	    m_cel->image = stock_add_image(m_sprite->getStock(), m_cel_image);
 
 	    /* is the undo enabled? */
-	    if (undo_is_enabled(m_sprite->undo)) {
+	    if (undo_is_enabled(m_sprite->getUndo())) {
 	      /* we can temporary remove the cel */
-	      static_cast<LayerImage*>(m_sprite->layer)->remove_cel(m_cel);
+	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->remove_cel(m_cel);
 
 	      /* we create the undo information (for the new cel_image
 		 in the stock and the new cel in the layer)... */
-	      undo_open(m_sprite->undo);
-	      undo_add_image(m_sprite->undo, m_sprite->stock, m_cel->image);
-	      undo_add_cel(m_sprite->undo, m_sprite->layer, m_cel);
-	      undo_close(m_sprite->undo);
+	      undo_open(m_sprite->getUndo());
+	      undo_add_image(m_sprite->getUndo(), m_sprite->getStock(), m_cel->image);
+	      undo_add_cel(m_sprite->getUndo(), m_sprite->getCurrentLayer(), m_cel);
+	      undo_close(m_sprite->getUndo());
 
 	      /* and finally we add the cel again in the layer */
-	      static_cast<LayerImage*>(m_sprite->layer)->add_cel(m_cel);
+	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->add_cel(m_cel);
 	    }
 	  }
 	  else {
 	    /* undo the dirty region */
-	    if (undo_is_enabled(m_sprite->undo)) {
+	    if (undo_is_enabled(m_sprite->getUndo())) {
 	      Dirty* dirty = dirty_new_from_differences(m_cel_image,
 							m_dst_image);
 	      // TODO error handling
 
 	      dirty_save_image_data(dirty);
 	      if (dirty != NULL)
-		undo_dirty(m_sprite->undo, dirty);
+		undo_dirty(m_sprite->getUndo(), dirty);
 
 	      dirty_free(dirty);
 	    }
@@ -1614,28 +1618,28 @@ public:
 	/* if the size of both images are different, we have to replace
 	   the entire image */
 	else {
-	  if (undo_is_enabled(m_sprite->undo)) {
-	    undo_open(m_sprite->undo);
+	  if (undo_is_enabled(m_sprite->getUndo())) {
+	    undo_open(m_sprite->getUndo());
 
 	    if (m_cel->x != m_old_cel_x) {
 	      int x = m_cel->x;
 	      m_cel->x = m_old_cel_x;
-	      undo_int(m_sprite->undo, (GfxObj*)m_cel, &m_cel->x);
+	      undo_int(m_sprite->getUndo(), (GfxObj*)m_cel, &m_cel->x);
 	      m_cel->x = x;
 	    }
 	    if (m_cel->y != m_old_cel_y) {
 	      int y = m_cel->y;
 	      m_cel->y = m_old_cel_y;
-	      undo_int(m_sprite->undo, (GfxObj*)m_cel, &m_cel->y);
+	      undo_int(m_sprite->getUndo(), (GfxObj*)m_cel, &m_cel->y);
 	      m_cel->y = y;
 	    }
 
-	    undo_replace_image(m_sprite->undo, m_sprite->stock, m_cel->image);
-	    undo_close(m_sprite->undo);
+	    undo_replace_image(m_sprite->getUndo(), m_sprite->getStock(), m_cel->image);
+	    undo_close(m_sprite->getUndo());
 	  }
 
 	  /* replace the image in the stock */
-	  stock_replace_image(m_sprite->stock, m_cel->image, m_dst_image);
+	  stock_replace_image(m_sprite->getStock(), m_cel->image, m_dst_image);
 
 	  /* destroy the old cel image */
 	  image_free(m_cel_image);
@@ -1647,7 +1651,7 @@ public:
 
       // Selection ink
       if (getInk()->isSelection())
-	sprite_generate_mask_boundaries(m_sprite);
+	m_sprite->generateMaskBoundaries();
     }
 
     // If the trace was not canceled or it is not a 'paint' ink...
@@ -1733,9 +1737,9 @@ IToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
     return NULL;
 
   Sprite* sprite = getSprite();
-  Layer* layer = sprite->layer;
+  Layer* layer = sprite->getCurrentLayer();
 
-  if (!sprite->layer) {
+  if (!layer) {
     jalert(_(PACKAGE
 	     "<<The current sprite does not have any layer."
 	     "||&Close"));

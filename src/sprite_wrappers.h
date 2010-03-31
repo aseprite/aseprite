@@ -161,7 +161,7 @@ public:
     , m_locked(false)
   {
     if (m_sprite) {
-      if (!m_sprite->lock_to_write())
+      if (!m_sprite->lockToWrite())
 	throw locked_sprite_exception();
 
       m_locked = true;
@@ -183,7 +183,7 @@ public:
     if (m_sprite) {
       m_from_reader = true;
 
-      if (!m_sprite->lock_to_write())
+      if (!m_sprite->lockToWrite())
 	throw locked_sprite_exception();
 
       m_locked = true;
@@ -198,7 +198,7 @@ protected:
   {
     if (m_sprite && m_locked) {
       if (m_from_reader)
-	m_sprite->unlock_to_read();
+	m_sprite->unlockToRead();
       else
 	m_sprite->unlock();
     }

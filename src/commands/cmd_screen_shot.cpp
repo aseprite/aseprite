@@ -80,13 +80,13 @@ void ScreenShotCommand::execute(Context* context)
   /* creates a sprite with one layer, one image to save the bitmap as a PNG */
   {
     int imgtype = bitmap_color_depth(bmp) == 8 ? IMAGE_INDEXED: IMAGE_RGB;
-    Sprite *sprite = sprite_new_with_layer(imgtype, bmp->w, bmp->h, 256);
-    Image *image = GetImage2(sprite, NULL, NULL, NULL);
+    Sprite* sprite = Sprite::createWithLayer(imgtype, bmp->w, bmp->h, 256);
+    Image* image = sprite->getCurrentImage();
     int x, y, r, g, b;
 
     Palette *pal = new Palette(0, 256);
     pal->fromAllegro(rgbpal);
-    sprite_set_palette(sprite, pal, true);
+    sprite->setPalette(pal, true);
     delete pal;
 
     /* convert Allegro "BITMAP" to ASE "Image" */
@@ -116,7 +116,7 @@ void ScreenShotCommand::execute(Context* context)
     }
 
     /* save the sprite */
-    sprite_set_filename(sprite, buf);
+    sprite->setFilename(buf);
     sprite_save(sprite);
 
     /* destroy the sprite */

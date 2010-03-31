@@ -57,24 +57,22 @@ bool CelPropertiesCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite &&
-    sprite->layer &&
-    sprite->layer->is_image();
+    sprite->getCurrentLayer() &&
+    sprite->getCurrentLayer()->is_image();
 }
 
 void CelPropertiesCommand::execute(Context* context)
 {
   JWidget label_frame, label_pos, label_size;
   JWidget slider_opacity, button_ok;
-  Layer* layer;
-  Cel* cel;
   char buf[1024];
   int memsize;
 
   const CurrentSpriteReader sprite(context);
-  layer = sprite->layer;
+  const Layer* layer = sprite->getCurrentLayer();
 
-  /* get current cel (can be NULL) */
-  cel = static_cast<LayerImage*>(layer)->get_cel(sprite->frame);
+  // Get current cel (can be NULL)
+  const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(sprite->getCurrentFrame());
 
   FramePtr window(load_widget("celprop.jid", "cel_properties"));
   get_widgets(window,
@@ -93,7 +91,7 @@ void CelPropertiesCommand::execute(Context* context)
     button_ok->setEnabled(false);
   }
 
-  usprintf(buf, "%d/%d", sprite->frame+1, sprite->frames);
+  usprintf(buf, "%d/%d", sprite->getCurrentFrame()+1, sprite->getTotalFrames());
   label_frame->setText(buf);
 
   if (cel != NULL) {
@@ -103,13 +101,13 @@ void CelPropertiesCommand::execute(Context* context)
 
     /* dimension (and memory size) */
     memsize =
-      image_line_size(sprite->stock->image[cel->image],
-		      sprite->stock->image[cel->image]->w)*
-      sprite->stock->image[cel->image]->h;
+      image_line_size(sprite->getStock()->image[cel->image],
+		      sprite->getStock()->image[cel->image]->w)*
+      sprite->getStock()->image[cel->image]->h;
 
     usprintf(buf, "%dx%d (",
-	     sprite->stock->image[cel->image]->w,
-	     sprite->stock->image[cel->image]->h);
+	     sprite->getStock()->image[cel->image]->w,
+	     sprite->getStock()->image[cel->image]->h);
     get_pretty_memsize(memsize,
 		       buf+ustrsize(buf),
 		       sizeof(buf)-ustrsize(buf));
@@ -135,18 +133,22 @@ void CelPropertiesCommand::execute(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
+    SpriteWriter sprite_writer(sprite);
+    Layer* layer_writer = sprite_writer->getCurrentLayer();
+    Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->get_cel(sprite->getCurrentFrame());
+
     int new_opacity = jslider_get_value(slider_opacity);
 
     /* the opacity was changed? */
-    if (cel != NULL &&
-	cel->opacity != new_opacity) {
-      if (undo_is_enabled(sprite->undo)) {
-	undo_set_label(sprite->undo, "Cel Opacity Change");
-	undo_int(sprite->undo, (GfxObj *)cel, &cel->opacity);
+    if (cel_writer != NULL &&
+	cel_writer->opacity != new_opacity) {
+      if (undo_is_enabled(sprite_writer->getUndo())) {
+	undo_set_label(sprite_writer->getUndo(), "Cel Opacity Change");
+	undo_int(sprite_writer->getUndo(), (GfxObj *)cel_writer, &cel_writer->opacity);
       }
 
       /* change cel opacity */
-      cel_set_opacity(cel, new_opacity);
+      cel_set_opacity(cel_writer, new_opacity);
 
       update_screen_for_sprite(sprite);
     }

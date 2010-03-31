@@ -50,7 +50,7 @@ void UIContext::on_add_sprite(Sprite* sprite)
 
   // add the tab for this sprite
   tabs_append_tab(app_get_tabsbar(),
-		  get_filename(sprite->filename), sprite);
+		  get_filename(sprite->getFilename()), sprite);
 
   // rebuild the menu list of sprites
   app_realloc_sprite_list();

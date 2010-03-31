@@ -98,11 +98,11 @@ void FlipCommand::execute(Context* context)
       int x1, y1, x2, y2;
       int x, y;
 
-      image = GetImage2(sprite, &x, &y, NULL);
+      image = sprite->getCurrentImage(&x, &y);
       if (!image)
 	return;
       // mask is empty?
-      if (sprite->mask->is_empty()) {
+      if (sprite->getMask()->is_empty()) {
 	// so we flip the entire image
 	x1 = 0;
 	y1 = 0;
@@ -111,10 +111,10 @@ void FlipCommand::execute(Context* context)
       }
       else {
 	// apply the cel offset
-	x1 = sprite->mask->x - x;
-	y1 = sprite->mask->y - y;
-	x2 = sprite->mask->x + sprite->mask->w - 1 - x;
-	y2 = sprite->mask->y + sprite->mask->h - 1 - y;
+	x1 = sprite->getMask()->x - x;
+	y1 = sprite->getMask()->y - y;
+	x2 = sprite->getMask()->x + sprite->getMask()->w - 1 - x;
+	y2 = sprite->getMask()->y + sprite->getMask()->h - 1 - y;
 
 	// clip
 	x1 = MID(0, x1, image->w-1);
@@ -129,16 +129,16 @@ void FlipCommand::execute(Context* context)
     else {
       // get all sprite cels
       CelList cels;
-      sprite_get_cels(sprite, cels);
+      sprite->getCels(cels);
 
       // for each cel...
       for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
 	Cel* cel = *it;
-	Image* image = stock_get_image(sprite->stock, cel->image);
+	Image* image = stock_get_image(sprite->getStock(), cel->image);
 
 	undoable.set_cel_position(cel,
-				  m_flip_horizontal ? sprite->w - image->w - cel->x: cel->x,
-				  m_flip_vertical ? sprite->h - image->h - cel->y: cel->y);
+				  m_flip_horizontal ? sprite->getWidth() - image->w - cel->x: cel->x,
+				  m_flip_vertical ? sprite->getHeight() - image->h - cel->y: cel->y);
 
 	undoable.flip_image(image, 0, 0, image->w-1, image->h-1,
 			    m_flip_horizontal, m_flip_vertical);

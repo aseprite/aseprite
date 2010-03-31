@@ -103,7 +103,7 @@ void DespeckleCommand::execute(Context* context)
 
   preview = preview_new(&effect);
 
-  target_button = target_button_new(sprite->imgtype, true);
+  target_button = target_button_new(sprite->getImgType(), true);
   target_button_set_target(target_button, effect.target);
 
   entry_width->setTextf("%d", get_config_int("Median", "Width", 3));

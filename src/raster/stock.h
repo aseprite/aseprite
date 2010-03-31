@@ -45,5 +45,6 @@ void stock_remove_image(Stock* stock, Image* image);
 void stock_replace_image(Stock* stock, int index, Image* image);
 
 Image* stock_get_image(Stock* stock, int index);
+const Image* stock_get_image(const Stock* stock, int index);
 
 #endif

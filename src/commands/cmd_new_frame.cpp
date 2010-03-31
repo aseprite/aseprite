@@ -62,10 +62,10 @@ bool NewFrameCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite->layer != NULL &&
-    sprite->layer->is_readable() &&
-    sprite->layer->is_writable() &&
-    sprite->layer->is_image();
+    sprite->getCurrentLayer() != NULL &&
+    sprite->getCurrentLayer()->is_readable() &&
+    sprite->getCurrentLayer()->is_writable() &&
+    sprite->getCurrentLayer()->is_image();
 }
 
 void NewFrameCommand::execute(Context* context)
@@ -79,8 +79,8 @@ void NewFrameCommand::execute(Context* context)
   update_screen_for_sprite(sprite);
   app_get_statusbar()
     ->showTip(1000, _("New frame %d/%d"),
-	      sprite->frame+1,
-	      sprite->frames);
+	      sprite->getCurrentFrame()+1,
+	      sprite->getTotalFrames());
 }
 
 //////////////////////////////////////////////////////////////////////

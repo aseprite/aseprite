@@ -56,7 +56,7 @@ bool FlattenLayersCommand::enabled(Context* context)
 void FlattenLayersCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  int bgcolor = get_color_for_image(sprite->imgtype,
+  int bgcolor = get_color_for_image(sprite->getImgType(),
 				    colorbar_get_bg_color(app_get_colorbar()));
   {
     Undoable undoable(sprite, "Flatten Layers");

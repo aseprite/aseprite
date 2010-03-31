@@ -109,7 +109,7 @@ static bool load_GIF(FileOp *fop)
     goto error;
   }
 
-  sprite_set_frames(sprite, gif->frames_count);
+  sprite->setTotalFrames(gif->frames_count);
 
   layer = new LayerImage(sprite);
   if (!layer) {
@@ -117,7 +117,7 @@ static bool load_GIF(FileOp *fop)
     goto error;
   }
 
-  sprite->get_folder()->add_layer(layer);
+  sprite->getFolder()->add_layer(layer);
   layer->configure_as_background();
 
   image_clear(current_image, gif->background_index);
@@ -131,7 +131,7 @@ static bool load_GIF(FileOp *fop)
       pal = &gif->palette;
 
     /* 1/100th seconds to milliseconds */
-    sprite_set_frlen(sprite, i, gif->frames[i].duration*10);
+    sprite->setFrameDuration(i, gif->frames[i].duration*10);
 
     /* make the palette */
     for (c=0; c<pal->colors_count; c++) {
@@ -150,7 +150,7 @@ static bool load_GIF(FileOp *fop)
     /* first frame or palette changes */
     if (i == 0 || opal->countDiff(npal, NULL, NULL)) {
       npal->setFrame(i);
-      sprite_set_palette(sprite, npal, true);
+      sprite->setPalette(npal, true);
     }
 
     /* copy new palette to old palette */
@@ -162,7 +162,7 @@ static bool load_GIF(FileOp *fop)
 		      gif->frames[i].w,
 		      gif->frames[i].h
 #else
-		      sprite->w, sprite->h
+		      sprite->getWidth(), sprite->getHeight()
 #endif
 		      );
     if (!cel || !image) {
@@ -195,7 +195,7 @@ static bool load_GIF(FileOp *fop)
 	       0, 0
 #endif
 	       );
-    cel->image = stock_add_image(sprite->stock, image);
+    cel->image = stock_add_image(sprite->getStock(), image);
     layer->add_cel(cel);
 
 #ifdef LOAD_GIF_STRUCTURE
@@ -291,8 +291,8 @@ static bool save_GIF(FileOp *fop)
   int w, h;
   int ret;
 
-  bmp = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
-  old = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
+  bmp = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
+  old = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
   if (!bmp || !old) {
     if (bmp) image_free(bmp);
     if (old) image_free(old);
@@ -300,7 +300,7 @@ static bool save_GIF(FileOp *fop)
     return false;
   }
 
-  gif = gif_create_animation(sprite->frames);
+  gif = gif_create_animation(sprite->getTotalFrames());
   if (!gif) {
     image_free(bmp);
     image_free(old);
@@ -308,8 +308,8 @@ static bool save_GIF(FileOp *fop)
     return false;
   }
 
-  gif->width = sprite->w;
-  gif->height = sprite->h;
+  gif->width = sprite->getWidth();
+  gif->height = sprite->getHeight();
   gif->background_index = 0;
 
   /* defaults:
@@ -324,13 +324,13 @@ static bool save_GIF(FileOp *fop)
   x1 = y1 = x2 = y2 = 0;
 
   opal = NULL;
-  for (i=0; i<sprite->frames; ++i) {
+  for (i=0; i<sprite->getTotalFrames(); ++i) {
     /* frame palette */
-    npal = sprite_get_palette(sprite, i);
+    npal = sprite->getPalette(i);
 
     /* render the frame in the bitmap */
     image_clear(bmp, 0);
-    layer_render(sprite->get_folder(), bmp, 0, 0, i);
+    layer_render(sprite->getFolder(), bmp, 0, 0, i);
 
     /* first frame */
     if (i == 0) {
@@ -424,7 +424,7 @@ static bool save_GIF(FileOp *fop)
     gif->frames[i].yoff = y1;
 
     /* milliseconds to 1/100th seconds */
-    gif->frames[i].duration = sprite_get_frlen(sprite, i)/10;
+    gif->frames[i].duration = sprite->getFrameDuration(i)/10;
 
     /* image data */
     for (y = 0; y < h; y++) {

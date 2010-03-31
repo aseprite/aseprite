@@ -59,7 +59,7 @@ void InvertMaskCommand::execute(Context* context)
   bool has_mask = false;
   {
     const CurrentSpriteReader sprite(context);
-    if (sprite->mask->bitmap)
+    if (sprite->getMask()->bitmap)
       has_mask = true;
   }
 
@@ -75,39 +75,39 @@ void InvertMaskCommand::execute(Context* context)
     CurrentSpriteWriter sprite(context);
 
     /* undo */
-    if (undo_is_enabled(sprite->undo)) {
-      undo_set_label(sprite->undo, "Mask Invert");
-      undo_set_mask(sprite->undo, sprite);
+    if (undo_is_enabled(sprite->getUndo())) {
+      undo_set_label(sprite->getUndo(), "Mask Invert");
+      undo_set_mask(sprite->getUndo(), sprite);
     }
 
     /* create a new mask */
     Mask* mask = mask_new();
 
     /* select all the sprite area */
-    mask_replace(mask, 0, 0, sprite->w, sprite->h);
+    mask_replace(mask, 0, 0, sprite->getWidth(), sprite->getHeight());
 
     /* remove in the new mask the current sprite marked region */
     image_rectfill(mask->bitmap,
-		   sprite->mask->x, sprite->mask->y,
-		   sprite->mask->x + sprite->mask->w-1,
-		   sprite->mask->y + sprite->mask->h-1, 0);
+		   sprite->getMask()->x, sprite->getMask()->y,
+		   sprite->getMask()->x + sprite->getMask()->w-1,
+		   sprite->getMask()->y + sprite->getMask()->h-1, 0);
 
     /* invert the current mask in the sprite */
-    mask_invert(sprite->mask);
-    if (sprite->mask->bitmap) {
+    mask_invert(sprite->getMask());
+    if (sprite->getMask()->bitmap) {
       /* copy the inverted region in the new mask */
-      image_copy(mask->bitmap, sprite->mask->bitmap,
-		 sprite->mask->x, sprite->mask->y);
+      image_copy(mask->bitmap, sprite->getMask()->bitmap,
+		 sprite->getMask()->x, sprite->getMask()->y);
     }
 
     /* we need only need the area inside the sprite */
-    mask_intersect(mask, 0, 0, sprite->w, sprite->h);
+    mask_intersect(mask, 0, 0, sprite->getWidth(), sprite->getHeight());
 
     /* set the new mask */
-    sprite_set_mask(sprite, mask);
+    sprite->setMask(mask);
     mask_free(mask);
 
-    sprite_generate_mask_boundaries(sprite);
+    sprite->generateMaskBoundaries();
     update_screen_for_sprite(sprite);
   }
 }

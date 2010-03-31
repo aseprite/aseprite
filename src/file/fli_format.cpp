@@ -54,7 +54,7 @@ static bool load_FLI(FileOp *fop)
 			       cmap[c*3+2], 255));		\
       }								\
       pal->setFrame(frpos_out);					\
-      sprite_set_palette(sprite, pal, true);			\
+      sprite->setPalette(pal, true);				\
     } while (0)
 
   unsigned char cmap[768];
@@ -102,19 +102,19 @@ static bool load_FLI(FileOp *fop)
     return false;
   }
 
-  /* create the image */
+  // Create the image
   sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
   layer = new LayerImage(sprite);
-  sprite->get_folder()->add_layer(layer);
+  sprite->getFolder()->add_layer(layer);
   layer->configure_as_background();
 
-  /* set frames and speed */
-  sprite_set_frames(sprite, fli_header.frames);
-  sprite_set_speed(sprite, fli_header.speed);
+  // Set frames and speed
+  sprite->setTotalFrames(fli_header.frames);
+  sprite->setDurationForAllFrames(fli_header.speed);
 
   /* write frame by frame */
   for (frpos_in=frpos_out=0;
-       frpos_in<sprite->frames;
+       frpos_in<sprite->getTotalFrames();
        frpos_in++) {
     /* read the frame */
     fli_read_frame(f, &fli_header,
@@ -139,7 +139,7 @@ static bool load_FLI(FileOp *fop)
 	break;
       }
 
-      index = stock_add_image(sprite->stock, image);
+      index = stock_add_image(sprite->getStock(), image);
       if (index < 0) {
 	image_free(image);
 	fop_error(fop, _("Not enough memory\n"));
@@ -173,10 +173,10 @@ static bool load_FLI(FileOp *fop)
       layer_add_cel(layer, cel);
     }
 #endif
-    /* the palette and the image don't change: add duration to the last added frame */
+    // The palette and the image don't change: add duration to the last added frame
     else {
-      sprite_set_frlen(sprite, frpos_out,
-		       sprite_get_frlen(sprite, frpos_out)+fli_header.speed);
+      sprite->setFrameDuration(frpos_out,
+			       sprite->getFrameDuration(frpos_out)+fli_header.speed);
     }
 
     /* update the old image and color-map to the new ones to compare later */
@@ -184,7 +184,7 @@ static bool load_FLI(FileOp *fop)
     memcpy(omap, cmap, 768);
 
     /* update progress */
-    fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->frames));
+    fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->getTotalFrames()));
     if (fop_is_stop(fop))
       break;
 
@@ -193,13 +193,13 @@ static bool load_FLI(FileOp *fop)
       break;
   }
 
-  /* update sprites frames */
-  sprite_set_frames(sprite, frpos_out+1);
+  // Update number of frames
+  sprite->setTotalFrames(frpos_out+1);
 
-  /* close the file */
+  // Close the file
   fclose(f);
 
-  /* destroy the bitmaps */
+  // Destroy the bitmaps
   image_free(bmp);
   image_free(old);
   delete pal;
@@ -223,8 +223,8 @@ static bool save_FLI(FileOp *fop)
   /* prepare fli header */
   fli_header.filesize = 0;
   fli_header.frames = 0;
-  fli_header.width = sprite->w;
-  fli_header.height = sprite->h;
+  fli_header.width = sprite->getWidth();
+  fli_header.height = sprite->getHeight();
 
   if ((fli_header.width == 320) && (fli_header.height == 200))
     fli_header.magic = HEADER_FLI;
@@ -248,8 +248,8 @@ static bool save_FLI(FileOp *fop)
   fseek(f, 128, SEEK_SET);
 
   /* create the bitmaps */
-  bmp = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
-  old = image_new(IMAGE_INDEXED, sprite->w, sprite->h);
+  bmp = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
+  old = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
   if ((!bmp) || (!old)) {
     fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
     if (bmp) image_free(bmp);
@@ -260,10 +260,10 @@ static bool save_FLI(FileOp *fop)
 
   /* write frame by frame */
   for (frpos=0;
-       frpos<sprite->frames;
+       frpos<sprite->getTotalFrames();
        frpos++) {
     /* get color map */
-    pal = sprite_get_palette(sprite, frpos);
+    pal = sprite->getPalette(frpos);
     for (c=0; c<256; c++) {
       cmap[3*c  ] = _rgba_getr(pal->getEntry(c));
       cmap[3*c+1] = _rgba_getg(pal->getEntry(c));
@@ -272,11 +272,11 @@ static bool save_FLI(FileOp *fop)
 
     /* render the frame in the bitmap */
     image_clear(bmp, 0);
-    layer_render(sprite->get_folder(), bmp, 0, 0, frpos);
+    layer_render(sprite->getFolder(), bmp, 0, 0, frpos);
 
     /* how many times this frame should be written to get the same
        time that it has in the sprite */
-    times = sprite_get_frlen(sprite, frpos) / fli_header.speed;
+    times = sprite->getFrameDuration(frpos) / fli_header.speed;
 
     for (c=0; c<times; c++) {
       /* write this frame */
@@ -294,7 +294,7 @@ static bool save_FLI(FileOp *fop)
     }
 
     /* update progress */
-    fop_progress(fop, (float)(frpos+1) / (float)(sprite->frames));
+    fop_progress(fop, (float)(frpos+1) / (float)(sprite->getTotalFrames()));
   }
 
   /* write the header and close the file */
@@ -313,8 +313,8 @@ static int get_time_precision(Sprite *sprite)
   int precision = 1000;
   int c, len;
 
-  for (c = 0; c < sprite->frames && precision > 1; c++) {
-    len = sprite_get_frlen(sprite, c);
+  for (c = 0; c < sprite->getTotalFrames() && precision > 1; c++) {
+    len = sprite->getFrameDuration(c);
 
     while (len / precision == 0)
       precision /= 10;

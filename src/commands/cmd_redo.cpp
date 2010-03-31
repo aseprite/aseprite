@@ -49,7 +49,7 @@ bool RedoCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    undo_can_redo(sprite->undo);
+    undo_can_redo(sprite->getUndo());
 }
 
 void RedoCommand::execute(Context* context)
@@ -58,10 +58,10 @@ void RedoCommand::execute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, _("Redid %s"),
-	      undo_get_next_redo_label(sprite->undo));
+	      undo_get_next_redo_label(sprite->getUndo()));
 
-  undo_do_redo(sprite->undo);
-  sprite_generate_mask_boundaries(sprite);
+  undo_do_redo(sprite->getUndo());
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 

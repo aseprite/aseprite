@@ -28,9 +28,6 @@ class Layer;
 class Sprite;
 class Undo;
 
-Image* GetImage(const Sprite* sprite);
-Image* GetImage2(const Sprite* sprite, int *x, int *y, int *opacity);
-
 void LoadPalette(Sprite* sprite, const char* filename);
 
 Image* NewImageFromMask(const Sprite* src);

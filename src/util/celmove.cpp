@@ -60,8 +60,8 @@ void move_cel(SpriteWriter& sprite)
 
   assert(src_layer != NULL);
   assert(dst_layer != NULL);
-  assert(src_frame >= 0 && src_frame < sprite->frames);
-  assert(dst_frame >= 0 && dst_frame < sprite->frames);
+  assert(src_frame >= 0 && src_frame < sprite->getTotalFrames());
+  assert(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
   if (src_layer->is_background()) {
     copy_cel(sprite);
@@ -71,16 +71,16 @@ void move_cel(SpriteWriter& sprite)
   src_cel = static_cast<LayerImage*>(src_layer)->get_cel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(dst_frame);
 
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Move Cel");
-    undo_open(sprite->undo);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_set_label(sprite->getUndo(), "Move Cel");
+    undo_open(sprite->getUndo());
 
-    undo_set_layer(sprite->undo, sprite);
-    undo_int(sprite->undo, sprite, &sprite->frame);
+    undo_set_layer(sprite->getUndo(), sprite);
+    undo_set_frame(sprite->getUndo(), sprite);
   }
 
-  sprite_set_layer(sprite, dst_layer);
-  sprite_set_frame(sprite, dst_frame);
+  sprite->setCurrentLayer(dst_layer);
+  sprite->setCurrentFrame(dst_frame);
 
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
@@ -90,15 +90,15 @@ void move_cel(SpriteWriter& sprite)
   /* move the cel in the same layer */
   if (src_cel != NULL) {
     if (src_layer == dst_layer) {
-      if (undo_is_enabled(sprite->undo))
-	undo_int(sprite->undo, (GfxObj *)src_cel, &src_cel->frame);
+      if (undo_is_enabled(sprite->getUndo()))
+	undo_int(sprite->getUndo(), (GfxObj *)src_cel, &src_cel->frame);
 
       src_cel->frame = dst_frame;
     }
     /* move the cel in different layers */
     else {
-      if (undo_is_enabled(sprite->undo))
-	undo_remove_cel(sprite->undo, src_layer, src_cel);
+      if (undo_is_enabled(sprite->getUndo()))
+	undo_remove_cel(sprite->getUndo(), src_layer, src_cel);
       static_cast<LayerImage*>(src_layer)->remove_cel(src_cel);
 
       src_cel->frame = dst_frame;
@@ -108,18 +108,18 @@ void move_cel(SpriteWriter& sprite)
 	 image */
       if (!src_layer->is_background() &&
 	  dst_layer->is_background()) {
-	Image *src_image = stock_get_image(sprite->stock, src_cel->image);
+	Image *src_image = stock_get_image(sprite->getStock(), src_cel->image);
 	Image *dst_image = image_crop(src_image,
 				      -src_cel->x,
 				      -src_cel->y,
-				      sprite->w,
-				      sprite->h, 0);
+				      sprite->getWidth(),
+				      sprite->getHeight(), 0);
 
-	if (undo_is_enabled(sprite->undo)) {
-	  undo_replace_image(sprite->undo, sprite->stock, src_cel->image);
-	  undo_int(sprite->undo, (GfxObj *)src_cel, &src_cel->x);
-	  undo_int(sprite->undo, (GfxObj *)src_cel, &src_cel->y);
-	  undo_int(sprite->undo, (GfxObj *)src_cel, &src_cel->opacity);
+	if (undo_is_enabled(sprite->getUndo())) {
+	  undo_replace_image(sprite->getUndo(), sprite->getStock(), src_cel->image);
+	  undo_int(sprite->getUndo(), (GfxObj *)src_cel, &src_cel->x);
+	  undo_int(sprite->getUndo(), (GfxObj *)src_cel, &src_cel->y);
+	  undo_int(sprite->getUndo(), (GfxObj *)src_cel, &src_cel->opacity);
 	}
 
 	image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
@@ -129,19 +129,19 @@ void move_cel(SpriteWriter& sprite)
 	src_cel->y = 0;
 	src_cel->opacity = 255;
 
-	stock_replace_image(sprite->stock, src_cel->image, dst_image);
+	stock_replace_image(sprite->getStock(), src_cel->image, dst_image);
 	image_free(src_image);
       }
       
-      if (undo_is_enabled(sprite->undo))
-	undo_add_cel(sprite->undo, dst_layer, src_cel);
+      if (undo_is_enabled(sprite->getUndo()))
+	undo_add_cel(sprite->getUndo(), dst_layer, src_cel);
 
       static_cast<LayerImage*>(dst_layer)->add_cel(src_cel);
     }
   }
 
-  if (undo_is_enabled(sprite->undo))
-    undo_close(sprite->undo);
+  if (undo_is_enabled(sprite->getUndo()))
+    undo_close(sprite->getUndo());
 
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
@@ -152,22 +152,22 @@ void copy_cel(SpriteWriter& sprite)
 
   assert(src_layer != NULL);
   assert(dst_layer != NULL);
-  assert(src_frame >= 0 && src_frame < sprite->frames);
-  assert(dst_frame >= 0 && dst_frame < sprite->frames);
+  assert(src_frame >= 0 && src_frame < sprite->getTotalFrames());
+  assert(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
   src_cel = static_cast<LayerImage*>(src_layer)->get_cel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(dst_frame);
 
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Move Cel");
-    undo_open(sprite->undo);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_set_label(sprite->getUndo(), "Move Cel");
+    undo_open(sprite->getUndo());
 
-    undo_set_layer(sprite->undo, sprite);
-    undo_int(sprite->undo, sprite, &sprite->frame);
+    undo_set_layer(sprite->getUndo(), sprite);
+    undo_set_frame(sprite->getUndo(), sprite);
   }
 
-  sprite_set_layer(sprite, dst_layer);
-  sprite_set_frame(sprite, dst_frame);
+  sprite->setCurrentLayer(dst_layer);
+  sprite->setCurrentFrame(dst_frame);
 
   /* remove the 'dst_cel' (if it exists) because it must be
      replaced with 'src_cel' */
@@ -176,7 +176,7 @@ void copy_cel(SpriteWriter& sprite)
 
   /* move the cel in the same layer */
   if (src_cel != NULL) {
-    Image *src_image = stock_get_image(sprite->stock, src_cel->image);
+    Image *src_image = stock_get_image(sprite->getStock(), src_cel->image);
     Image *dst_image;
     int image_index;
     int dst_cel_x;
@@ -191,8 +191,8 @@ void copy_cel(SpriteWriter& sprite)
       dst_image = image_crop(src_image,
 			     -src_cel->x,
 			     -src_cel->y,
-			     sprite->w,
-			     sprite->h, 0);
+			     sprite->getWidth(),
+			     sprite->getHeight(), 0);
 
       image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
       image_merge(dst_image, src_image, src_cel->x, src_cel->y, 255, BLEND_MODE_NORMAL);
@@ -209,23 +209,23 @@ void copy_cel(SpriteWriter& sprite)
     }
 
     /* add the image in the stock */
-    image_index = stock_add_image(sprite->stock, dst_image);
-    if (undo_is_enabled(sprite->undo))
-      undo_add_image(sprite->undo, sprite->stock, image_index);
+    image_index = stock_add_image(sprite->getStock(), dst_image);
+    if (undo_is_enabled(sprite->getUndo()))
+      undo_add_image(sprite->getUndo(), sprite->getStock(), image_index);
 
     /* create the new cel */
     dst_cel = cel_new(dst_frame, image_index);
     cel_set_position(dst_cel, dst_cel_x, dst_cel_y);
     cel_set_opacity(dst_cel, dst_cel_opacity);
 
-    if (undo_is_enabled(sprite->undo))
-      undo_add_cel(sprite->undo, dst_layer, dst_cel);
+    if (undo_is_enabled(sprite->getUndo()))
+      undo_add_cel(sprite->getUndo(), dst_layer, dst_cel);
 
     static_cast<LayerImage*>(dst_layer)->add_cel(dst_cel);
   }
 
-  if (undo_is_enabled(sprite->undo))
-    undo_close(sprite->undo);
+  if (undo_is_enabled(sprite->getUndo()))
+    undo_close(sprite->getUndo());
 
   set_frame_to_handle(NULL, 0, NULL, 0);
 }
@@ -241,7 +241,7 @@ static void remove_cel(Sprite* sprite, LayerImage *layer, Cel *cel)
     /* find if the image that use the cel to remove, is used by
        another cels */
     used = false;
-    for (frame=0; frame<sprite->frames; ++frame) {
+    for (frame=0; frame<sprite->getTotalFrames(); ++frame) {
       it = layer->get_cel(frame);
       if (it != NULL && it != cel && it->image == cel->image) {
 	used = true;
@@ -249,24 +249,24 @@ static void remove_cel(Sprite* sprite, LayerImage *layer, Cel *cel)
       }
     }
 
-    if (undo_is_enabled(sprite->undo))
-      undo_open(sprite->undo);
+    if (undo_is_enabled(sprite->getUndo()))
+      undo_open(sprite->getUndo());
 
     if (!used) {
       /* if the image is only used by this cel, we can remove the
 	 image from the stock */
-      image = stock_get_image(sprite->stock, cel->image);
+      image = stock_get_image(sprite->getStock(), cel->image);
 
-      if (undo_is_enabled(sprite->undo))
-	undo_remove_image(sprite->undo, sprite->stock, cel->image);
+      if (undo_is_enabled(sprite->getUndo()))
+	undo_remove_image(sprite->getUndo(), sprite->getStock(), cel->image);
 
-      stock_remove_image(sprite->stock, image);
+      stock_remove_image(sprite->getStock(), image);
       image_free(image);
     }
 
-    if (undo_is_enabled(sprite->undo)) {
-      undo_remove_cel(sprite->undo, layer, cel);
-      undo_close(sprite->undo);
+    if (undo_is_enabled(sprite->getUndo())) {
+      undo_remove_cel(sprite->getUndo(), layer, cel);
+      undo_close(sprite->getUndo());
     }
 
     /* remove the cel */

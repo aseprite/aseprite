@@ -51,7 +51,7 @@ void ExitCommand::execute(Context* context)
 
   while (sprite) {
     // check if this sprite is modified
-    if (sprite_is_modified(sprite)) {
+    if (sprite->isModified()) {
       if (jalert(_("Warning<<There are sprites with changes.<<Do you want quit anyway?||&Yes||&No")) != 1) {
 	return;
       }

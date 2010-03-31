@@ -74,9 +74,9 @@ static int chunk_start;
 static bool load_ASE(FileOp *fop);
 static bool save_ASE(FileOp *fop);
 
-static bool ase_file_read_header(FILE *f, ASE_Header *header);
-static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite);
-static void ase_file_write_header(FILE *f, ASE_Header *header);
+static bool ase_file_read_header(FILE* f, ASE_Header* header);
+static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* sprite);
+static void ase_file_write_header(FILE* f, ASE_Header* header);
 
 static void ase_file_read_frame_header(FILE *f, ASE_FrameHeader *frame_header);
 static void ase_file_prepare_frame_header(FILE *f, ASE_FrameHeader *frame_header);
@@ -156,15 +156,15 @@ static bool load_ASE(FileOp *fop)
   }
 
   /* set frames and speed */
-  sprite_set_frames(sprite, header.frames);
-  sprite_set_speed(sprite, header.speed);
+  sprite->setTotalFrames(header.frames);
+  sprite->setDurationForAllFrames(header.speed);
 
   /* prepare variables for layer chunks */
-  Layer* last_layer = sprite->get_folder();
+  Layer* last_layer = sprite->getFolder();
   current_level = -1;
 
   /* read frame by frame to end-of-file */
-  for (frame=0; frame<sprite->frames; frame++) {
+  for (frame=0; frame<sprite->getTotalFrames(); frame++) {
     /* start frame position */
     frame_pos = ftell(f);
     fop_progress(fop, (float)frame_pos / (float)header.size);
@@ -176,7 +176,7 @@ static bool load_ASE(FileOp *fop)
     if (frame_header.magic == ASE_FILE_FRAME_MAGIC) {
       /* use frame-duration field? */
       if (frame_header.duration > 0)
-	sprite_set_frlen(sprite, frame, frame_header.duration);
+	sprite->setFrameDuration(frame, frame_header.duration);
 
       /* read chunks */
       for (c=0; c<frame_header.chunks; c++) {
@@ -195,15 +195,15 @@ static bool load_ASE(FileOp *fop)
 	  case ASE_FILE_CHUNK_FLI_COLOR2:
 	    /* fop_error(fop, "Color chunk\n"); */
 
-	    if (sprite->imgtype == IMAGE_INDEXED) {
-	      Palette *prev_pal = sprite_get_palette(sprite, frame);
+	    if (sprite->getImgType() == IMAGE_INDEXED) {
+	      Palette *prev_pal = sprite->getPalette(frame);
 	      Palette *pal =
 		chunk_type == ASE_FILE_CHUNK_FLI_COLOR ? 
 		ase_file_read_color_chunk(f, sprite, frame):
 		ase_file_read_color2_chunk(f, sprite, frame);
 
 	      if (prev_pal->countDiff(pal, NULL, NULL) > 0) {
-		sprite_set_palette(sprite, pal, true);
+		sprite->setPalette(pal, true);
 	      }
 
 	      delete pal;
@@ -225,7 +225,7 @@ static bool load_ASE(FileOp *fop)
 	    /* fop_error(fop, "Cel chunk\n"); */
 
 	    ase_file_read_cel_chunk(f, sprite, frame,
-				    sprite->imgtype, fop, &header,
+				    sprite->getImgType(), fop, &header,
 				    chunk_pos+chunk_size);
 	    break;
 	  }
@@ -237,7 +237,7 @@ static bool load_ASE(FileOp *fop)
 
 	    mask = ase_file_read_mask_chunk(f);
 	    if (mask)
-	      sprite_add_mask(sprite, mask);
+	      sprite->addMask(mask);
 	    else
 	      fop_error(fop, _("Warning: error loading a mask chunk\n"));
 
@@ -299,44 +299,45 @@ static bool save_ASE(FileOp *fop)
   ase_file_prepare_header(f, &header, sprite);
 
   /* write frame */
-  for (frame=0; frame<sprite->frames; frame++) {
+  for (frame=0; frame<sprite->getTotalFrames(); frame++) {
     /* prepare the header */
     ase_file_prepare_frame_header(f, &frame_header);
 
     /* frame duration */
-    frame_header.duration = sprite_get_frlen(sprite, frame);
+    frame_header.duration = sprite->getFrameDuration(frame);
 
     /* the sprite is indexed and the palette changes? (or is the first frame) */
-    if (sprite->imgtype == IMAGE_INDEXED &&
+    if (sprite->getImgType() == IMAGE_INDEXED &&
 	(frame == 0 ||
-	 sprite_get_palette(sprite, frame-1)->countDiff(sprite_get_palette(sprite, frame), NULL, NULL) > 0)) {
+	 sprite->getPalette(frame-1)->countDiff(sprite->getPalette(frame), NULL, NULL) > 0)) {
       /* write the color chunk */
-      ase_file_write_color2_chunk(f, sprite_get_palette(sprite, frame));
+      ase_file_write_color2_chunk(f, sprite->getPalette(frame));
     }
 
     /* write extra chunks in the first frame */
     if (frame == 0) {
-      LayerIterator it = sprite->get_folder()->get_layer_begin();
-      LayerIterator end = sprite->get_folder()->get_layer_end();
+      LayerIterator it = sprite->getFolder()->get_layer_begin();
+      LayerIterator end = sprite->getFolder()->get_layer_end();
 
       /* write layer chunks */
       for (; it != end; ++it)
 	ase_file_write_layers(f, *it);
 
       /* write masks */
-      JI_LIST_FOR_EACH(sprite->repository.masks, link)
+      JList masks = sprite->getMasksRepository();
+      JI_LIST_FOR_EACH(masks, link)
 	ase_file_write_mask_chunk(f, reinterpret_cast<Mask*>(link->data));
     }
 
     /* write cel chunks */
-    ase_file_write_cels(f, sprite, sprite->get_folder(), frame);
+    ase_file_write_cels(f, sprite, sprite->getFolder(), frame);
 
     /* write the frame header */
     ase_file_write_frame_header(f, &frame_header);
 
     /* progress */
-    if (sprite->frames > 1)
-      fop_progress(fop, (float)(frame+1) / (float)(sprite->frames));
+    if (sprite->getTotalFrames() > 1)
+      fop_progress(fop, (float)(frame+1) / (float)(sprite->getTotalFrames()));
   }
 
   /* write the header */
@@ -379,24 +380,24 @@ static bool ase_file_read_header(FILE *f, ASE_Header *header)
   return true;
 }
 
-static void ase_file_prepare_header(FILE *f, ASE_Header *header, Sprite *sprite)
+static void ase_file_prepare_header(FILE *f, ASE_Header *header, const Sprite* sprite)
 {
   header->pos = ftell(f);
 
   header->size = 0;
   header->magic = ASE_FILE_MAGIC;
-  header->frames = sprite->frames;
-  header->width = sprite->w;
-  header->height = sprite->h;
-  header->depth = sprite->imgtype == IMAGE_RGB ? 32:
-		  sprite->imgtype == IMAGE_GRAYSCALE ? 16:
-                  sprite->imgtype == IMAGE_INDEXED ? 8: 0;
+  header->frames = sprite->getTotalFrames();
+  header->width = sprite->getWidth();
+  header->height = sprite->getHeight();
+  header->depth = (sprite->getImgType() == IMAGE_RGB ? 32:
+		   sprite->getImgType() == IMAGE_GRAYSCALE ? 16:
+		   sprite->getImgType() == IMAGE_INDEXED ? 8: 0);
   header->flags = 0;
-  header->speed = sprite_get_frlen(sprite, 0);
+  header->speed = sprite->getFrameDuration(0);
   header->next = 0;
   header->frit = 0;
   header->unknown = 0;
-  header->ncolors = sprite_get_palette(sprite, 0)->size();
+  header->ncolors = sprite->getPalette(0)->size();
 
   fseek(f, header->pos+128, SEEK_SET);
 }
@@ -560,7 +561,7 @@ static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
 {
   int i, c, r, g, b, packets, skip, size;
   Palette* pal = new Palette(frame, 256);
-  sprite_get_palette(sprite, frame)->copyColorsTo(pal);
+  sprite->getPalette(frame)->copyColorsTo(pal);
 
   packets = fgetw(f);	// Number of packets
   skip = 0;
@@ -588,7 +589,7 @@ static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame)
 {
   int i, c, r, g, b, packets, skip, size;
   Palette* pal = new Palette(frame, 256);
-  sprite_get_palette(sprite, frame)->copyColorsTo(pal);
+  sprite->getPalette(frame)->copyColorsTo(pal);
 
   packets = fgetw(f);	/* number of packets */
   skip = 0;
@@ -994,7 +995,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
   ase_file_read_padding(f, 7);
 
-  layer = sprite_index2layer(sprite, layer_index);
+  layer = sprite->indexToLayer(layer_index);
   if (!layer) {
     fop_error(fop, _("Frame %d didn't found layer with index %d\n"),
 	      frame, layer_index);
@@ -1042,7 +1043,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	    break;
 	}
 
-	cel->image = stock_add_image(sprite->stock, image);
+	cel->image = stock_add_image(sprite->getStock(), image);
       }
       break;
     }
@@ -1054,8 +1055,8 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
       if (link) {
 	// Create a copy of the linked cel (avoid using links cel)
-	Image* image = image_new_copy(stock_get_image(sprite->stock, link->image));
-	cel->image = stock_add_image(sprite->stock, image);
+	Image* image = image_new_copy(stock_get_image(sprite->getStock(), link->image));
+	cel->image = stock_add_image(sprite->getStock(), image);
       }
       else {
 	cel_free(cel);
@@ -1094,7 +1095,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	    break;
 	}
 
-	cel->image = stock_add_image(sprite->stock, image);
+	cel->image = stock_add_image(sprite->getStock(), image);
       }
       break;
     }
@@ -1107,7 +1108,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
 static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprite *sprite)
 {
-  int layer_index = sprite_layer2index(sprite, layer);
+  int layer_index = sprite->layerToIndex(layer);
   int cel_type = ASE_FILE_COMPRESSED_CEL;
 
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_CEL);
@@ -1122,7 +1123,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
   switch (cel_type) {
 
     case ASE_FILE_RAW_CEL: {
-      Image* image = stock_get_image(sprite->stock, cel->image);
+      Image* image = stock_get_image(sprite->getStock(), cel->image);
 
       if (image) {
 	// Width and height
@@ -1160,7 +1161,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
-      Image* image = stock_get_image(sprite->stock, cel->image);
+      Image* image = stock_get_image(sprite->getStock(), cel->image);
 
       if (image) {
 	// Width and height

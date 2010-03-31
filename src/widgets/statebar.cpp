@@ -338,16 +338,16 @@ bool StatusBar::msg_proc(JMessage msg)
 	try {
 	  const CurrentSpriteReader sprite(UIContext::instance());
 	  if (sprite) {
-	    LayerFolder* folder = sprite->get_folder();
-	    LayerIterator it = folder->get_layer_begin();
-	    LayerIterator end = folder->get_layer_end();
+	    const LayerFolder* folder = sprite->getFolder();
+	    LayerConstIterator it = folder->get_layer_begin();
+	    LayerConstIterator end = folder->get_layer_end();
 	    size_t count = folder->get_layers_count();
 	    char buf[256];
 
 	    for (size_t c=0; it != end; ++it, ++c) {
 	      int x1 = rc->x2-width + c*width/count;
 	      int x2 = rc->x2-width + (c+1)*width/count;
-	      bool hot = (*it == sprite->layer);
+	      bool hot = (*it == sprite->getCurrentLayer());
 
 	      {
 		BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
@@ -463,9 +463,9 @@ static bool slider_change_hook(JWidget widget, void *data)
   try {
     CurrentSpriteWriter sprite(UIContext::instance());
     if (sprite) {
-      if ((sprite->layer) &&
-	  (sprite->layer->is_image())) {
-	Cel* cel = ((LayerImage*)sprite->layer)->get_cel(sprite->frame);
+      if ((sprite->getCurrentLayer()) &&
+	  (sprite->getCurrentLayer()->is_image())) {
+	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
 	if (cel) {
 	  // update the opacity
 	  cel->opacity = jslider_get_value(widget);
@@ -507,10 +507,10 @@ void StatusBar::updateFromLayer()
 
     /* opacity layer */
     if (sprite &&
-	sprite->layer &&
-	sprite->layer->is_image() &&
-	!sprite->layer->is_background() &&
-	(cel = ((LayerImage*)sprite->layer)->get_cel(sprite->frame))) {
+	sprite->getCurrentLayer() &&
+	sprite->getCurrentLayer()->is_image() &&
+	!sprite->getCurrentLayer()->is_background() &&
+	(cel = ((LayerImage*)sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame()))) {
       jslider_set_value(m_slider, MID(0, cel->opacity, 255));
       jwidget_enable(m_slider);
     }

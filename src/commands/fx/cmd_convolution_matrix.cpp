@@ -118,7 +118,7 @@ void ConvolutionMatrixCommand::execute(Context* context)
   list_convmatr = jlistbox_new();
   listbox_fill_convmatg(list_convmatr);
 
-  target_button = target_button_new(sprite->imgtype, true);
+  target_button = target_button_new(sprite->getImgType(), true);
   target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("ConvolutionMatrix", "Preview", true))

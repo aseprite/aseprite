@@ -104,9 +104,9 @@ void set_default_palette(Palette* palette)
  * @param palette If "palette" is NULL will be used the default one
  * (ase_default_palette)
  */
-bool set_current_palette(Palette *_palette, bool forced)
+bool set_current_palette(const Palette *_palette, bool forced)
 {
-  Palette *palette = _palette ? _palette: ase_default_palette;
+  const Palette *palette = _palette ? _palette: ase_default_palette;
   bool ret = false;
 
   /* have changes */

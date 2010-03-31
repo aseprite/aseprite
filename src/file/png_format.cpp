@@ -355,12 +355,12 @@ static bool save_PNG(FileOp *fop)
 
   switch (image->imgtype) {
     case IMAGE_RGB:
-      color_type = sprite_need_alpha(fop->sprite) ?
+      color_type = fop->sprite->needAlpha() ?
 	PNG_COLOR_TYPE_RGB_ALPHA:
 	PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
-      color_type = sprite_need_alpha(fop->sprite) ?
+      color_type = fop->sprite->needAlpha() ?
 	PNG_COLOR_TYPE_GRAY_ALPHA:
 	PNG_COLOR_TYPE_GRAY;
       break;

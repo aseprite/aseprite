@@ -176,8 +176,8 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	      x = msg->mouse.x;
 	      y = msg->mouse.y;
 	      editor->screen_to_editor(x, y, &x, &y);
-	      imgcolor = sprite_getpixel(sprite, x, y);
-	      tmp = color_from_image(sprite->imgtype, imgcolor);
+	      imgcolor = sprite->getPixel(x, y);
+	      tmp = color_from_image(sprite->getImgType(), imgcolor);
 
 	      if (color_type(tmp) != COLOR_TYPE_MASK)
 		color = tmp;

@@ -51,7 +51,7 @@ bool ReselectMaskCommand::enabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    sprite_request_mask(sprite, "*deselected*") != NULL;
+    sprite->requestMask("*deselected*") != NULL;
 }
 
 void ReselectMaskCommand::execute(Context* context)
@@ -59,23 +59,23 @@ void ReselectMaskCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
   Mask *mask;
 
-  /* request *deselected* mask */
-  mask = sprite_request_mask(sprite, "*deselected*");
+  // Request *deselected* mask
+  mask = sprite->requestMask("*deselected*");
 
   /* undo */
-  if (undo_is_enabled(sprite->undo)) {
-    undo_set_label(sprite->undo, "Mask Reselection");
-    undo_set_mask(sprite->undo, sprite);
+  if (undo_is_enabled(sprite->getUndo())) {
+    undo_set_label(sprite->getUndo(), "Mask Reselection");
+    undo_set_mask(sprite->getUndo(), sprite);
   }
 
   /* set the mask */
-  sprite_set_mask(sprite, mask);
+  sprite->setMask(mask);
 
   /* remove the *deselected* mask */
-  sprite_remove_mask(sprite, mask);
+  sprite->removeMask(mask);
   mask_free(mask);
 
-  sprite_generate_mask_boundaries(sprite);
+  sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }
 
