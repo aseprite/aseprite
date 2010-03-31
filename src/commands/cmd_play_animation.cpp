@@ -26,6 +26,7 @@
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
+#include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "widgets/editor.h"
@@ -92,8 +93,13 @@ void PlayAnimationCommand::execute(Context* context)
 
   clear_keybuf();
 
-  /* clear all the screen */
+  // Clear all the screen
   clear_bitmap(ji_screen);
+
+  // Clear extras (e.g. pen preview)
+  sprite->prepareExtra();
+  image_clear(sprite->getExtras(),
+	      sprite->getExtras()->mask_color);
 
   /* do animation */
   oldpal = NULL;
