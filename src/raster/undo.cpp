@@ -1546,6 +1546,12 @@ static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *ch
   if (sprite) {
     chunk_set_imgtype_new(stream, sprite);
     sprite->setImgType(chunk->imgtype);
+
+    // Regenerate extras
+    sprite->prepareExtra();
+    image_clear(sprite->getExtras(),
+		sprite->getExtras()->mask_color);
+
   }
 }
 
