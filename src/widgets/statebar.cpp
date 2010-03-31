@@ -88,6 +88,7 @@ StatusBar::StatusBar()
   m_timeout = 0;
   m_progress = jlist_new();
   m_tipwindow = NULL;
+  m_hot_layer = -1;
 
   // Construct the commands box
   Widget* box1 = jbox_new(JI_HORIZONTAL);
@@ -336,18 +337,21 @@ bool StatusBar::msg_proc(JMessage msg)
 
 	// Draw layers
 	try {
+	  --rc->y2;
+
 	  const CurrentSpriteReader sprite(UIContext::instance());
 	  if (sprite) {
 	    const LayerFolder* folder = sprite->getFolder();
 	    LayerConstIterator it = folder->get_layer_begin();
 	    LayerConstIterator end = folder->get_layer_end();
-	    size_t count = folder->get_layers_count();
+	    int count = folder->get_layers_count();
 	    char buf[256];
 
-	    for (size_t c=0; it != end; ++it, ++c) {
+	    for (int c=0; it != end; ++it, ++c) {
 	      int x1 = rc->x2-width + c*width/count;
 	      int x2 = rc->x2-width + (c+1)*width/count;
-	      bool hot = (*it == sprite->getCurrentLayer());
+	      bool hot = (*it == sprite->getCurrentLayer())
+		|| (c == m_hot_layer);
 
 	      {
 		BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
@@ -424,6 +428,72 @@ bool StatusBar::msg_proc(JMessage msg)
       }
       break;
 
+    case JM_MOTION: {
+      JRect rc = jwidget_get_rect(this);
+
+      rc->x1 += 2*jguiscale();
+      rc->y1 += 1*jguiscale();
+      rc->x2 -= 2*jguiscale();
+      rc->y2 -= 2*jguiscale();
+      
+      // Available width for layers buttons
+      int width = jrect_w(rc)/4;
+
+      // Check layers bounds
+      try {
+	--rc->y2;
+
+	const CurrentSpriteReader sprite(UIContext::instance());
+	if (sprite) {
+	  const LayerFolder* folder = sprite->getFolder();
+	  LayerConstIterator it = folder->get_layer_begin();
+	  LayerConstIterator end = folder->get_layer_end();
+	  int count = folder->get_layers_count();
+	  int hot_layer = -1;
+
+	  for (int c=0; it != end; ++it, ++c) {
+	    int x1 = rc->x2-width + c*width/count;
+	    int x2 = rc->x2-width + (c+1)*width/count;
+
+	    if (Rect(Point(x1, rc->y1),
+		     Point(x2, rc->y2)).contains(Point(msg->mouse.x,
+						       msg->mouse.y))) {
+	      hot_layer = c;
+	      break;
+	    }
+	  }
+
+	  if (m_hot_layer != hot_layer) {
+	    m_hot_layer = hot_layer;
+	    dirty();
+	  }
+	}
+      }
+      catch (locked_sprite_exception&) {
+	// Do nothing...
+      }
+      break;
+    }
+
+    case JM_BUTTONPRESSED:
+      if (m_hot_layer >= 0) {
+	try {
+	  CurrentSpriteWriter sprite(UIContext::instance());
+	  if (sprite) {
+	    Layer* layer = sprite->indexToLayer(m_hot_layer);
+	    if (layer && layer != sprite->getCurrentLayer()) {
+	      sprite->setCurrentLayer(layer);
+	      update_screen_for_sprite(sprite);
+	      dirty();		// Redraw the status-bar
+	    }
+	  }
+	}
+	catch (locked_sprite_exception&) {
+	  // Do nothing...
+	}
+      }
+      break;
+
     case JM_MOUSELEAVE:
       if (jwidget_has_child(this, m_commands_box)) {
 	/* if we want restore the state-bar and the slider doesn't have
@@ -435,8 +505,14 @@ bool StatusBar::msg_proc(JMessage msg)
 	  jwidget_remove_child(this, m_commands_box);
 	  jwidget_dirty(this);
 	}
+
+	if (m_hot_layer >= 0) {
+	  m_hot_layer = -1;
+	  dirty();
+	}
       }
       break;
+
   }
 
   return Widget::msg_proc(msg);

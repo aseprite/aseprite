@@ -45,23 +45,6 @@ private:
 
 class StatusBar : public Widget
 {
-  int m_timeout;
-
-  // Progress bar
-  JList m_progress;
-
-  // Box of main commands
-  Widget* m_commands_box;
-  Widget* m_slider;			// Opacity slider
-  Widget* m_b_first;			// Go to first frame
-  Widget* m_b_prev;			// Go to previous frame
-  Widget* m_b_play;			// Play animation
-  Widget* m_b_next;			// Go to next frame
-  Widget* m_b_last;			// Go to last frame
-
-  // Tip window
-  Frame* m_tipwindow;
-
 public:
   StatusBar();
   ~StatusBar();
@@ -79,6 +62,25 @@ protected:
 private:
   void onCurrentToolChange();
   void updateFromLayer();
+
+  int m_timeout;
+
+  // Progress bar
+  JList m_progress;
+
+  // Box of main commands
+  Widget* m_commands_box;
+  Widget* m_slider;			// Opacity slider
+  Widget* m_b_first;			// Go to first frame
+  Widget* m_b_prev;			// Go to previous frame
+  Widget* m_b_play;			// Play animation
+  Widget* m_b_next;			// Go to next frame
+  Widget* m_b_last;			// Go to last frame
+
+  // Tip window
+  Frame* m_tipwindow;
+
+  int m_hot_layer;
 };
 
 #endif
