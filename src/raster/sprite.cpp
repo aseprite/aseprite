@@ -50,8 +50,8 @@ public:
   SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int ncolors);
   ~SpriteImpl();
 
-  static SpriteImpl* copy(Sprite* new_sprite, const SpriteImpl* src_sprite);
   static SpriteImpl* copyBase(Sprite* new_sprite, const SpriteImpl* src_sprite);
+  static SpriteImpl* copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src_sprite);
 
   bool lock(bool write);
   bool lockToWrite();
@@ -474,37 +474,6 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   setPalette(&pal, true);
 }
 
-SpriteImpl* SpriteImpl::copy(Sprite* sprite, const SpriteImpl* src_sprite)
-{
-  SpriteImpl* dst_sprite = copyBase(sprite, src_sprite);
-
-  // Copy layers
-  if (dst_sprite->m_folder) {
-    delete dst_sprite->m_folder; // delete
-    dst_sprite->m_folder = NULL;
-  }
-
-  assert(src_sprite->getFolder() != NULL);
-
-  undo_disable(dst_sprite->getUndo());
-  dst_sprite->m_folder = src_sprite->getFolder()->duplicate_for(dst_sprite->m_self);
-  undo_enable(dst_sprite->getUndo());
-
-  if (dst_sprite->m_folder == NULL) {
-    delete dst_sprite;
-    return NULL;
-  }
-
-  // Selected layer
-  if (src_sprite->getCurrentLayer() != NULL) { 
-    int selected_layer = src_sprite->layerToIndex(src_sprite->getCurrentLayer());
-    dst_sprite->setCurrentLayer(dst_sprite->indexToLayer(selected_layer));
-  }
-
-  dst_sprite->generateMaskBoundaries();
-  return dst_sprite;
-}
-
 /**
  * Makes a copy "sprite" without the layers (only with the empty layer set)
  */
@@ -516,6 +485,7 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
 					  src_sprite->m_width, src_sprite->m_height,
 					  src_sprite->getPalette(0)->size());
 
+
   // Copy stock
   stock_free(dst_sprite->m_stock);
   dst_sprite->m_stock = stock_new_copy(src_sprite->m_stock);
@@ -524,7 +494,7 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
     return NULL;
   }
 
-  /* copy general properties */
+  // Copy general properties
   dst_sprite->m_filename = src_sprite->m_filename;
   dst_sprite->setTotalFrames(src_sprite->m_frames);
   std::copy(src_sprite->m_frlens.begin(),
@@ -571,6 +541,35 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
   // Copy preferred edition options
   dst_sprite->m_preferred = src_sprite->m_preferred;
 
+  return dst_sprite;
+}
+
+SpriteImpl* SpriteImpl::copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src_sprite)
+{
+  // Copy layers
+  if (dst_sprite->m_folder) {
+    delete dst_sprite->m_folder; // delete
+    dst_sprite->m_folder = NULL;
+  }
+
+  assert(src_sprite->getFolder() != NULL);
+
+  undo_disable(dst_sprite->getUndo());
+  dst_sprite->m_folder = src_sprite->getFolder()->duplicate_for(dst_sprite->m_self);
+  undo_enable(dst_sprite->getUndo());
+
+  if (dst_sprite->m_folder == NULL) {
+    delete dst_sprite;
+    return NULL;
+  }
+
+  // Selected layer
+  if (src_sprite->getCurrentLayer() != NULL) { 
+    int selected_layer = src_sprite->layerToIndex(src_sprite->getCurrentLayer());
+    dst_sprite->setCurrentLayer(dst_sprite->indexToLayer(selected_layer));
+  }
+
+  dst_sprite->generateMaskBoundaries();
   return dst_sprite;
 }
 
@@ -937,8 +936,9 @@ Sprite::~Sprite()
 
 Sprite::Sprite(const Sprite& original)
   : GfxObj(GFXOBJ_SPRITE)
-  , m_impl(SpriteImpl::copy(this, original.m_impl))
+  , m_impl(SpriteImpl::copyBase(this, original.m_impl))
 {
+  SpriteImpl::copyLayers(m_impl, original.m_impl);
 }
 
 Sprite* Sprite::createFlattenCopy(const Sprite& src_sprite)
