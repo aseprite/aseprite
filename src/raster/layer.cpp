@@ -178,8 +178,8 @@ void LayerImage::set_blend_mode(int blend_mode)
 
 void LayerImage::get_cels(CelList& cels)
 {
-  CelIterator it = m_cels.begin();
-  CelIterator end = m_cels.begin();
+  CelIterator it = get_cel_begin();
+  CelIterator end = get_cel_end();
 
   for (; it != end; ++it)
     cels.push_back(*it);
