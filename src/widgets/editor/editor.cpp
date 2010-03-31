@@ -559,6 +559,9 @@ void Editor::flashCurrentLayer()
     editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
     gui_flip_screen();
 
+    vsync();
+    rest(1);
+
     image_clear(flash_image, flash_image->mask_color);
     editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
   }
