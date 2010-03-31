@@ -160,8 +160,8 @@ void StatusBar::setStatusText(int msecs, const char *format, ...)
     vsprintf(buf, format, ap);
     va_end(ap);
 
-    this->setText(buf);
     m_timeout = ji_clock + msecs;
+    this->setText(buf);
     this->dirty();
   }
 }
@@ -199,6 +199,11 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   m_tipwindow->position_window(x, y);
 
   jmanager_start_timer((size_t)m_tipwindow->user_data[0]);
+
+  // Set the text in status-bar (with inmediate timeout)
+  m_timeout = ji_clock;
+  this->setText(buf);
+  this->dirty();
 }
 
 void StatusBar::showColor(int msecs, int imgtype, color_t color)
