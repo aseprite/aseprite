@@ -22,8 +22,6 @@
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
 
-namespace Vaca { class Mutex; }
-
 struct FormatOptions;
 class Image;
 class Layer;
