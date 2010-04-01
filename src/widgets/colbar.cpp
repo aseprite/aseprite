@@ -27,6 +27,7 @@
 #include "Vaca/Rect.h"
 
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
@@ -498,13 +499,25 @@ bool ColorBar::msg_proc(JMessage msg)
 	}
 	/* pick the color */
 	else if (m_hot != HOTCOLOR_NONE) {
-	  color_t color = getHotColor(m_hot);
+	  switch (m_hot) {
+	    case HOTCOLOR_FGCOLOR:
+	    case HOTCOLOR_BGCOLOR: {
+	      Command* paledit_cmd = 
+		CommandsModule::instance()->get_command_by_name(CommandId::palette_editor);
+	      Params params;
 
-	  if (msg->mouse.left) {
-	    colorbar_set_fg_color(this, color);
-	  }
-	  if (msg->mouse.right) {
-	    colorbar_set_bg_color(this, color);
+	      UIContext::instance()->execute_command(paledit_cmd, &params);
+	      break;
+	    }
+	    default:
+	      color_t color = getHotColor(m_hot);
+	      if (msg->mouse.left) {
+		colorbar_set_fg_color(this, color);
+	      }
+	      if (msg->mouse.right) {
+		colorbar_set_bg_color(this, color);
+	      }
+	      break;
 	  }
 	}
 
