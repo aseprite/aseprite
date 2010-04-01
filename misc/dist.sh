@@ -58,10 +58,10 @@ tinyxml_files="third_party/tinyxml/*.txt	\
 	       third_party/tinyxml/*.cpp	\
 	       third_party/tinyxml/*.h"
 
-vaca_files="third_party/vaca/*.txt		\
-	    third_party/vaca/include/Vaca/*.h	\
+vaca_files="third_party/vaca/include/Vaca/*.h	\
 	    third_party/vaca/src/*.cpp		\
 	    third_party/vaca/src/allegro/*.h	\
+	    third_party/vaca/src/std/*.h	\
 	    third_party/vaca/src/unix/*.h	\
 	    third_party/vaca/src/win32/*.h"
 
@@ -70,7 +70,6 @@ zlib_files="third_party/zlib/*.[ch]		\
 	    third_party/zlib/README"
 
 ase_files="config.h				\
-	   ChangeLog				\
 	   COPYING				\
 	   fix.bat				\
 	   fix.sh				\
@@ -88,10 +87,9 @@ ase_files="config.h				\
 	   data/fonts/*.pcx			\
 	   data/jids/*.jid			\
 	   data/palettes/*.col			\
+	   data/skins/*.pcx			\
 	   data/skins/*.png			\
 	   data/skins/*.xml			\
-	   data/tips/*.pcx			\
-	   data/tips/tips.en			\
 	   docs/*.pdf				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\
@@ -131,7 +129,8 @@ ase_files="config.h				\
 	   src/modules/*.h			\
 	   src/raster/*.cpp			\
 	   src/raster/*.h			\
-	   src/raster/x86/*.s			\
+	   src/settings/*.cpp			\
+	   src/settings/*.h			\
 	   src/tests/*.cpp			\
 	   src/tests/*.h			\
 	   src/tests/jinete/*.cpp		\
@@ -140,6 +139,8 @@ ase_files="config.h				\
 	   src/tests/jinete/*.ttf		\
 	   src/tests/jinete/*.txt		\
 	   src/tests/raster/*.cpp		\
+	   src/tools/*.cpp			\
+	   src/tools/*.h			\
 	   src/util/*.cpp			\
 	   src/util/*.h				\
 	   src/widgets/*.cpp			\
@@ -188,7 +189,6 @@ $1/COPYING							     \
 $1/data/convmatr.def						     \
 $1/data/jids/*.jid						     \
 $1/data/*.xml						     	     \
-$1/data/tips/*.en						     \
 $1/docs/*.pdf							     \
 $1/docs/files/*.txt						     \
 $1/docs/licenses/*.txt"
@@ -197,9 +197,9 @@ $1/docs/licenses/*.txt"
 $1/data/aseicon.*						     \
 $1/data/fonts/*.pcx						     \
 $1/data/palettes/*.col						     \
+$1/data/skins/*.pcx						     \
 $1/data/skins/*.png						     \
 $1/data/skins/*.xml						     \
-$1/data/tips/*.pcx						     \
 $1/docs/*.pdf"
 }
 
