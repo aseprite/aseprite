@@ -515,7 +515,7 @@ void gui_feedback()
 void gui_flip_screen()
 {
   /* double buffering? */
-  if (double_buffering && ji_screen) {
+  if (double_buffering && ji_screen && screen) {
     jmouse_draw_cursor();
 
     if (ji_dirty_region) {
