@@ -54,7 +54,7 @@ protected:
 
 static int _sprite_counter = 0;
 
-static Sprite *new_sprite(Context* context, int imgtype, int w, int h, int ncolors);
+static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolors);
 
 NewFileCommand::NewFileCommand()
   : Command("new_file",
@@ -82,7 +82,7 @@ void NewFileCommand::execute(Context* context)
   };
   int ncolors = 256;
 
-  /* load the window widget */
+  // Load the window widget
   FramePtr window(load_widget("newspr.jid", "new_sprite"));
 
   width = jwidget_find_name(window, "width");
@@ -93,33 +93,33 @@ void NewFileCommand::execute(Context* context)
   ok = jwidget_find_name(window, "ok_button");
   bg_box = jwidget_find_name(window, "bg_box");
 
-  /* default values: Indexed, 320x200, Transparent */
-  imgtype = get_config_int("NewSprite", "Type", IMAGE_RGB);
+  // Default values: Indexed, 320x240, Background color
+  imgtype = get_config_int("NewSprite", "Type", IMAGE_INDEXED);
   imgtype = MID(IMAGE_RGB, imgtype, IMAGE_INDEXED);
-  w = get_config_int("NewSprite", "Width", 320); /* default = 320 */
-  h = get_config_int("NewSprite", "Height", 200); /* default = 200 */
-  bg = get_config_int("NewSprite", "Background", 2); /* default = white */
+  w = get_config_int("NewSprite", "Width", 320);
+  h = get_config_int("NewSprite", "Height", 240);
+  bg = get_config_int("NewSprite", "Background", 4); // Default = Background color
 
   width->setTextf("%d", w);
   height->setTextf("%d", h);
 
-  /* select image-type */
+  // Select image-type
   switch (imgtype) {
     case IMAGE_RGB:       jwidget_select(radio1); break;
     case IMAGE_GRAYSCALE: jwidget_select(radio2); break;
     case IMAGE_INDEXED:   jwidget_select(radio3); break;
   }
 
-  /* select background color */
+  // Select background color
   jlistbox_select_index(bg_box, bg);
 
-  /* open the window */
+  // Open the window
   window->open_window_fg();
 
   if (window->get_killer() == ok) {
     bool ok = false;
 
-    /* get the options */
+    // Get the options
     if (jwidget_is_selected(radio1))      imgtype = IMAGE_RGB;
     else if (jwidget_is_selected(radio2)) imgtype = IMAGE_GRAYSCALE;
     else if (jwidget_is_selected(radio3)) imgtype = IMAGE_INDEXED;
@@ -131,7 +131,7 @@ void NewFileCommand::execute(Context* context)
     w = MID(1, w, 9999);
     h = MID(1, h, 9999);
 
-    /* select the color */
+    // Select the color
     color = color_mask();
 
     if (bg >= 0 && bg <= 4) {
@@ -140,13 +140,13 @@ void NewFileCommand::execute(Context* context)
     }
 
     if (ok) {
-      /* save the configuration */
+      // Save the configuration
       set_config_int("NewSprite", "Type", imgtype);
       set_config_int("NewSprite", "Width", w);
       set_config_int("NewSprite", "Height", h);
       set_config_int("NewSprite", "Background", bg);
 
-      /* create the new sprite */
+      // Create the new sprite
       sprite = new_sprite(UIContext::instance(), imgtype, w, h, ncolors);
       if (!sprite) {
 	Console console;
@@ -156,8 +156,8 @@ void NewFileCommand::execute(Context* context)
 	usprintf(buf, "Sprite-%04d", ++_sprite_counter);
 	sprite->setFilename(buf);
 
-	/* if the background color isn't transparent, we have to
-	   convert the `Layer 1' in a `Background' */
+	// If the background color isn't transparent, we have to
+	// convert the `Layer 1' in a `Background'
 	if (color_type(color) != COLOR_TYPE_MASK) {
 	  assert(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
 
@@ -165,7 +165,7 @@ void NewFileCommand::execute(Context* context)
 	  image_clear(sprite->getCurrentImage(), get_color_for_image(imgtype, color));
 	}
 
-	/* show the sprite to the user */
+	// Show the sprite to the user
 	context->add_sprite(sprite);
 	set_sprite_in_more_reliable_editor(sprite);
       }
@@ -181,7 +181,7 @@ void NewFileCommand::execute(Context* context)
  * @param w Width of the sprite
  * @param h Height of the sprite
  */
-static Sprite *new_sprite(Context* context, int imgtype, int w, int h, int ncolors)
+static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolors)
 {
   assert(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
   assert(w >= 1 && w <= 9999);
