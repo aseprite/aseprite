@@ -130,7 +130,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
 
       /* draw color background */
       jrect_shrink(rect, 1);
-      draw_color(ji_screen, Rect(rect->x1, rect->y1, jrect_w(rect->x2), jrect_h(rect->y2)),
+      draw_color(ji_screen, Rect(rect->x1, rect->y1, jrect_w(rect), jrect_h(rect)),
 		 colorviewer->imgtype,
 		 colorviewer->color);
 
