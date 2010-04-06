@@ -60,36 +60,23 @@ public:
 int vaca_main()
 {
   int status = 1;		// 1 = error
+  Allegro allegro;
 
-#ifndef DEBUGMODE
   try {
-#endif
+    Jinete jinete;
+    App app;
 
-    Allegro allegro;
-
-#ifndef DEBUGMODE
-    try {
-#endif
-
-      Jinete jinete;
-      App app;
-
-      status = app.run();
-
-#ifndef DEBUGMODE
-    }
-    catch (jexception& e) {
-      e.show();
-    }
-    catch (std::exception& e) {
-      allegro_message(e.what());
-    }
-    catch (...) {
-      allegro_message("Uncaught exception");
-    }
+    status = app.run();
   }
+  catch (jexception& e) {
+    e.show();
+  }
+  catch (std::exception& e) {
+    allegro_message(e.what());
+  }
+#ifndef DEBUGMODE
   catch (...) {
-    printf("Uncaught exception");
+    allegro_message("Uncaught exception");
   }
 #endif
 

@@ -147,11 +147,15 @@ void Context::execute_command(Command* command, Params* params)
   catch (std::exception& e) {
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
+#ifndef DEBUGMODE
   catch (...) {
     console.printf("An unknown error ocurred executing the command.\n"
-		   "Please try again or report this bug.\n\n"
-		   "Details: Unknown exception caught.");
+  		   "Please save your work, close the program, try it\n"
+		   "again, and report this bug.\n\n"
+  		   "Details: Unknown exception caught. This can be bad\n"
+		   "memory access, divison by zero, etc.");
   }
+#endif
 }
 
 void Context::on_add_sprite(Sprite* sprite)
