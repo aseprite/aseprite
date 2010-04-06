@@ -71,6 +71,10 @@ public:
       return;
     }
 
+    // Contour
+    joinPoints(loop, points);
+
+    // Fill content
     algo_polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
