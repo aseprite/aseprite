@@ -187,7 +187,7 @@ void SpriteSizeCommand::execute(Context* context)
   const CurrentSpriteReader sprite(context);
 
   // load the window widget
-  FramePtr window(load_widget("sprsize.jid", "sprite_size"));
+  FramePtr window(load_widget("sprite_size.xml", "sprite_size"));
   get_widgets(window,
 	      "width_px", &width_px,
 	      "height_px", &height_px,

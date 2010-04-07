@@ -108,7 +108,7 @@ void PaletteEditorCommand::execute(Context* context)
   }
 
   /* load widgets */
-  FramePtr window(load_widget("paledit.jid", "palette_editor"));
+  FramePtr window(load_widget("palette_editor.xml", "palette_editor"));
   get_widgets(window,
 	      "red", &slider_R,
 	      "green", &slider_G,

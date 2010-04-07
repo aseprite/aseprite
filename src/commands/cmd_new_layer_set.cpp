@@ -60,7 +60,7 @@ void NewLayerSetCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
 
   // load the window widget
-  FramePtr window(load_widget("newlay.jid", "new_layer_set"));
+  FramePtr window(load_widget("new_layer.xml", "new_layer_set"));
 
   window->open_window_fg();
 

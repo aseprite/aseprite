@@ -360,7 +360,7 @@ static FormatOptions *get_options_JPEG(FileOp *fop)
       return (FormatOptions*)jpeg_options;
 
     /* widgets */
-    FramePtr window(load_widget("jpeg_options.jid", "jpeg_options"));
+    FramePtr window(load_widget("jpeg_options.xml", "jpeg_options"));
     JWidget slider_quality, ok;
     get_widgets(window,
 		"quality", &slider_quality,

@@ -148,7 +148,7 @@ void ConfigureTools::execute(Context* context)
   bool first_time = false;
 
   if (!window) {
-    window = static_cast<Frame*>(load_widget("toolconf.jid", "configure_tool"));
+    window = static_cast<Frame*>(load_widget("tools_configuration.xml", "configure_tool"));
     first_time = true;
   }
   /* if the window is opened, close it */

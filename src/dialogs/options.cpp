@@ -59,7 +59,7 @@ void dialogs_options()
   old_y = y;
 
   /* load the window widget */
-  FramePtr window(load_widget("options.jid", "options"));
+  FramePtr window(load_widget("options.xml", "options"));
   get_widgets(window,
 	      "mouse_x", &slider_x,
 	      "mouse_y", &slider_y,

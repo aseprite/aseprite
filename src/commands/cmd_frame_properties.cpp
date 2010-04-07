@@ -69,7 +69,7 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
   JWidget frame, frlen, ok;
   char buf[64];
 
-  FramePtr window(load_widget("frlen.jid", "frame_duration"));
+  FramePtr window(load_widget("frame_duration.xml", "frame_duration"));
   get_widgets(window,
 	      "frame", &frame,
 	      "frlen", &frlen,

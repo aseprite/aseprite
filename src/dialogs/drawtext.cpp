@@ -62,7 +62,7 @@ void dialogs_draw_text(Sprite* sprite)
   if (!dest_image)
     return;
 
-  JWidgetPtr window = load_widget("drawtext.jid", "drawtext_window");
+  JWidgetPtr window = load_widget("draw_text.xml", "drawtext_window");
 
   if (!get_widgets(window,
 		   "font", &font_button,

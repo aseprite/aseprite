@@ -90,7 +90,7 @@ void NewLayerCommand::execute(Context* context)
   // If params specify to ask the user about the name...
   if (m_ask) {
     // We open the window to ask the name
-    FramePtr window(load_widget("newlay.jid", "new_layer"));
+    FramePtr window(load_widget("new_layer.xml", "new_layer"));
     JWidget name_widget = find_widget(window, "name");
     name_widget->setText(name.c_str());
     jwidget_set_min_size(name_widget, 128, 0);

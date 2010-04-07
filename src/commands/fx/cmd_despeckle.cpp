@@ -87,7 +87,7 @@ void DespeckleCommand::execute(Context* context)
   const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;
 
-  FramePtr window(load_widget("median.jid", "median"));
+  FramePtr window(load_widget("median_blur.xml", "median"));
   get_widgets(window,
 	      "width", &entry_width,
 	      "height", &entry_height,

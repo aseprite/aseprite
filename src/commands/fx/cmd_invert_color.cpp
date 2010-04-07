@@ -81,7 +81,7 @@ void InvertColorCommand::execute(Context* context)
   const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;
 
-  FramePtr window(load_widget("invrtcol.jid", "invert_color"));
+  FramePtr window(load_widget("invert_color.xml", "invert_color"));
   get_widgets(window,
 	      "target", &box_target,
 	      "preview", &check_preview,

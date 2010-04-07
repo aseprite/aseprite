@@ -157,12 +157,7 @@ int App::run()
     jmanager_refresh_screen();
 
     // load main window
-    top_window = static_cast<Frame*>(load_widget("main.jid", "main_window"));
-    if (!top_window) {
-      allegro_message("Error loading data data/jids/main.jid file.\n"
-		      "You have to reinstall the program.\n");
-      return 1;
-    }
+    top_window = static_cast<Frame*>(load_widget("main_window.xml", "main_window"));
 
     box_menubar = jwidget_find_name(top_window, "menubar");
     box_editors = jwidget_find_name(top_window, "editor");

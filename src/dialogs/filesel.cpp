@@ -139,7 +139,7 @@ jstring ase_file_selector(const jstring& message,
 
   if (!window) {
     // load the window widget
-    window = static_cast<Frame*>(load_widget("filesel.jid", "file_selector"));
+    window = static_cast<Frame*>(load_widget("file_selector.xml", "file_selector"));
 
     JWidget box = jwidget_find_name(window, "box");
     JWidget goback = jwidget_find_name(window, "goback");

@@ -95,7 +95,7 @@ void ConfigureScreen::show_dialog(Context* context)
 {
   JWidget resolution, color_depth, pixel_scale, fullscreen;
 
-  FramePtr window(load_widget("confscr.jid", "configure_screen"));
+  FramePtr window(load_widget("configure_screen.xml", "configure_screen"));
   get_widgets(window,
 	      "resolution", &resolution,
 	      "color_depth", &color_depth,

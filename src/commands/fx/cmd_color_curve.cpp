@@ -94,7 +94,7 @@ void ColorCurveCommand::execute(Context* context)
     App::instance()->Exit.connect(&on_exit_delete_curve);
   }
 
-  FramePtr window(load_widget("colcurv.jid", "color_curve"));
+  FramePtr window(load_widget("color_curve.xml", "color_curve"));
   get_widgets(window,
 	      "preview", &check_preview,
 	      "button_ok", &button_ok,

@@ -74,7 +74,7 @@ void CelPropertiesCommand::execute(Context* context)
   // Get current cel (can be NULL)
   const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(sprite->getCurrentFrame());
 
-  FramePtr window(load_widget("celprop.jid", "cel_properties"));
+  FramePtr window(load_widget("cel_properties.xml", "cel_properties"));
   get_widgets(window,
 	      "frame", &label_frame,
 	      "pos", &label_pos,

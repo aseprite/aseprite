@@ -70,7 +70,7 @@ void SpritePropertiesCommand::execute(Context* context)
   char buf[256];
 
   /* load the window widget */
-  FramePtr window(load_widget("sprprop.jid", "sprite_properties"));
+  FramePtr window(load_widget("sprite_properties.xml", "sprite_properties"));
   get_widgets(window,
 	      "name", &name,
 	      "type", &type,

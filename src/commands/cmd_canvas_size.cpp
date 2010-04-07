@@ -66,7 +66,7 @@ void CanvasSizeCommand::execute(Context* context)
     JWidget left, top, right, bottom, ok;
 
     // load the window widget
-    FramePtr window(load_widget("canvas.jid", "canvas_size"));
+    FramePtr window(load_widget("canvas_size.xml", "canvas_size"));
     get_widgets(window,
 		"left", &left,
 		"top", &top,

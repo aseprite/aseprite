@@ -667,7 +667,7 @@ JWidget load_widget(const char *filename, const char *name)
 
   dirs = dirs_new();
 
-  usprintf(buf, "jids/%s", filename);
+  usprintf(buf, "widgets/%s", filename);
 
   dirs_add_path(dirs, filename);
   dirs_cat_dirs(dirs, filename_in_datadir(buf));

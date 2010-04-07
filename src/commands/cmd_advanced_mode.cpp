@@ -78,7 +78,7 @@ void AdvancedModeCommand::execute(Context* context)
       char key[1024];
       char buf[1024];
 
-      FramePtr window(load_widget("advanced.jid", "advanced_mode_warning"));
+      FramePtr window(load_widget("advanced_mode.xml", "advanced_mode_warning"));
       Widget* warning_label = find_widget(window, "warning_label");
       Widget* donot_show = find_widget(window, "donot_show");
 

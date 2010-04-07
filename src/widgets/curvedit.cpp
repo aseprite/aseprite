@@ -475,7 +475,7 @@ static int edit_node_manual(CurvePoint* point)
   CurvePoint point_copy = *point;
   int res;
 
-  FramePtr window(load_widget("pntprop.jid", "point_properties"));
+  FramePtr window(load_widget("color_curve.xml", "point_properties"));
 
   entry_x = jwidget_find_name(window, "x");
   entry_y = jwidget_find_name(window, "y");

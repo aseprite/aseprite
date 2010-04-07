@@ -83,7 +83,7 @@ void NewFileCommand::execute(Context* context)
   int ncolors = 256;
 
   // Load the window widget
-  FramePtr window(load_widget("newspr.jid", "new_sprite"));
+  FramePtr window(load_widget("new_sprite.xml", "new_sprite"));
 
   width = jwidget_find_name(window, "width");
   height = jwidget_find_name(window, "height");

@@ -65,7 +65,7 @@ void DuplicateSpriteCommand::execute(Context* context)
   char buf[1024];
 
   /* load the window widget */
-  FramePtr window(load_widget("dupspr.jid", "duplicate_sprite"));
+  FramePtr window(load_widget("duplicate_sprite.xml", "duplicate_sprite"));
 
   src_name = jwidget_find_name(window, "src_name");
   dst_name = jwidget_find_name(window, "dst_name");

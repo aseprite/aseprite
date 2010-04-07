@@ -86,7 +86,7 @@ void ReplaceColorCommand::execute(Context* context)
   JWidget box_target, target_button;
   JWidget button_ok;
 
-  FramePtr window(load_widget("replcol.jid", "replace_color"));
+  FramePtr window(load_widget("replace_color.xml", "replace_color"));
   get_widgets(window,
 	      "color_buttons_box", &color_buttons_box,
 	      "preview", &check_preview,
