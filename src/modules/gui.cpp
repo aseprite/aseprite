@@ -596,6 +596,7 @@ void gui_setup_screen(bool reload_font)
 static void reload_default_font()
 {
   JTheme theme = ji_get_theme();
+  SkinneableTheme* skinneable_theme = static_cast<SkinneableTheme*>(theme);
   const char *user_font;
   DIRS *dirs, *dir;
 
@@ -613,7 +614,7 @@ static void reload_default_font()
     dirs_add_path(dirs, user_font);
 
   // TODO This should be in SkinneableTheme class
-  dirs_cat_dirs(dirs, filename_in_datadir("skins/default_skin_font.pcx"));
+  dirs_cat_dirs(dirs, filename_in_datadir(skinneable_theme->get_font_filename().c_str()));
 
   // Try to load the font
   for (dir=dirs; dir; dir=dir->next) {

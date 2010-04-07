@@ -72,6 +72,7 @@ static struct
 SkinneableTheme::SkinneableTheme()
 {
   this->name = "Skinneable Theme";
+  m_selected_skin = get_config_string("Skin", "Selected", "default_skin");
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
@@ -133,8 +134,9 @@ SkinneableTheme::SkinneableTheme()
   sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
 
   // Load the skin sheet
+  std::string sheet_filename = ("skins/" + m_selected_skin + "/sheet.png");
   {
-    DIRS* dirs = filename_in_datadir("skins/default_skin_sheet.png");
+    DIRS* dirs = filename_in_datadir(sheet_filename.c_str());
     for (DIRS* dir=dirs; dir; dir=dir->next) {
       if ((dir->path) && exists(dir->path)) {
 	int old_color_conv = _color_conv;
@@ -150,7 +152,7 @@ SkinneableTheme::SkinneableTheme()
     dirs_free(dirs);
   }
   if (!m_sheet_bmp)
-    throw ase_exception("Error loading data/skins/default_skin_sheet.png file");
+    throw ase_exception("Error loading %s file", sheet_filename.c_str());
 }
 
 SkinneableTheme::~SkinneableTheme()
@@ -170,6 +172,11 @@ SkinneableTheme::~SkinneableTheme()
   destroy_bitmap(m_sheet_bmp);
 }
 
+std::string SkinneableTheme::get_font_filename() const
+{
+  return "skins/" + m_selected_skin + "/font.pcx";
+}
+
 void SkinneableTheme::regen()
 {
   check_icon_size = 8 * jguiscale();
@@ -181,7 +188,8 @@ void SkinneableTheme::regen()
   textbox_bg_color = COLOR_BACKGROUND;
 
   // Load the skin XML
-  DIRS* dirs = filename_in_datadir("skins/default_skin.xml");
+  std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
+  DIRS* dirs = filename_in_datadir(xml_filename.c_str());
   for (DIRS* dir=dirs; dir; dir=dir->next) {
     if (!dir->path || !exists(dir->path))
       continue;
@@ -220,8 +228,8 @@ void SkinneableTheme::regen()
 	}
 
 	if (c == JI_CURSORS) {
-	  throw ase_exception("Unknown cursor specified in data/skins/default_skin.xml:\n"
-			      "<cursor id='%s' ... />\n", id.c_str());
+	  throw ase_exception("Unknown cursor specified in '%s':\n"
+			      "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
 	}
 
 	xmlCursor = xmlCursor->NextSiblingElement();

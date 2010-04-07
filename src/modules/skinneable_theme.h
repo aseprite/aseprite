@@ -410,6 +410,7 @@ enum {
 
 class SkinneableTheme : public jtheme
 {
+  std::string m_selected_skin;
   BITMAP* m_sheet_bmp;
   BITMAP* m_cursors[JI_CURSORS];
   BITMAP* m_part[PARTS];
@@ -418,6 +419,8 @@ class SkinneableTheme : public jtheme
 public:
   SkinneableTheme();
   ~SkinneableTheme();
+
+  std::string get_font_filename() const;
 
   void regen();
   BITMAP* set_cursor(int type, int* focus_x, int* focus_y);
