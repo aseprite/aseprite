@@ -662,6 +662,14 @@ void jmanager_set_timer_interval(int timer_id, int interval)
   timers[timer_id]->interval = interval;
 }
 
+bool jmanager_timer_is_running(int timer_id)
+{
+  assert(timer_id >= 0 && timer_id < n_timers);
+  assert(timers[timer_id] != NULL);
+
+  return (timers[timer_id]->last_time >= 0);
+}
+
 /**
  * @param msg You can't use the this message after calling this
  *            routine. The message will be automatically freed through

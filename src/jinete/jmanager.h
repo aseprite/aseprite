@@ -50,6 +50,7 @@ void jmanager_remove_timer(int timer_id);
 void jmanager_start_timer(int timer_id);
 void jmanager_stop_timer(int timer_id);
 void jmanager_set_timer_interval(int timer_id, int interval);
+bool jmanager_timer_is_running(int timer_id);
 
 /* routines that uses the ji_get_default_manager() */
 
