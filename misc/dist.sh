@@ -85,11 +85,11 @@ ase_files="config.h				\
 	   data/convmatr.def			\
 	   data/*.xml				\
 	   data/fonts/*.pcx			\
-	   data/jids/*.jid			\
 	   data/palettes/*.col			\
-	   data/skins/*.pcx			\
-	   data/skins/*.png			\
-	   data/skins/*.xml			\
+	   data/skins/*/*.pcx			\
+	   data/skins/*/*.png			\
+	   data/skins/*/*.xml			\
+	   data/widgets/*.xml			\
 	   docs/*.pdf				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\
@@ -187,19 +187,19 @@ $1/NEWS.txt							     \
 $1/README.html							     \
 $1/COPYING							     \
 $1/data/convmatr.def						     \
-$1/data/jids/*.jid						     \
 $1/data/*.xml						     	     \
 $1/docs/*.pdf							     \
 $1/docs/files/*.txt						     \
-$1/docs/licenses/*.txt"
+$1/docs/licenses/*.txt						     \
+$1/data/widgets/*.xml"
 
   bin_files="							     \
 $1/data/aseicon.*						     \
 $1/data/fonts/*.pcx						     \
 $1/data/palettes/*.col						     \
-$1/data/skins/*.pcx						     \
-$1/data/skins/*.png						     \
-$1/data/skins/*.xml						     \
+$1/data/skins/*/*.pcx						     \
+$1/data/skins/*/*.png						     \
+$1/data/skins/*/*.xml						     \
 $1/docs/*.pdf"
 }
 
