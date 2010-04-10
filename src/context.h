@@ -20,6 +20,7 @@
 #define CONTEXT_H_INCLUDED
 
 #include <list>
+#include "Vaca/NonCopyable.h"
 #include "ase_exception.h"
 #include "settings/settings.h"
 
@@ -37,25 +38,8 @@ public:
   : ase_exception("Cannot execute the command because its pre-conditions are false.") { }
 };
 
-class Context
+class Context : Vaca::NonCopyable
 {
-  // List of all sprites.
-  SpriteList m_sprites;
-
-  // Current selected sprite to operate.
-  Sprite* m_currentSprite;
-
-  // Settings in this context.
-  ISettings* m_settings;
-
-private:
-  Context();
-  Context(const Context&);
-
-protected:
-  // The "settings" are deleted automatically in the ~Context destructor
-  Context(ISettings* settings);
-
 public:
   virtual ~Context();
 
@@ -83,9 +67,26 @@ public:
 
 protected:
 
+  // The "settings" are deleted automatically in the ~Context destructor
+  Context(ISettings* settings);
+
   virtual void on_add_sprite(Sprite* sprite);
   virtual void on_remove_sprite(Sprite* sprite);
   virtual void on_set_current_sprite(Sprite* sprite);
+
+private:
+
+  // Without default constructor
+  Context();
+
+  // List of all sprites.
+  SpriteList m_sprites;
+
+  // Current selected sprite to operate.
+  Sprite* m_currentSprite;
+
+  // Settings in this context.
+  ISettings* m_settings;
 
 };
 

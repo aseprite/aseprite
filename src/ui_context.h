@@ -23,8 +23,6 @@
 
 class UIContext : public Context
 {
-  static UIContext* m_instance;
-
 public:
   static UIContext* instance() { return m_instance; }
 
@@ -34,10 +32,12 @@ public:
   virtual bool is_ui_available() const { return true; }
 
 protected:
-
   virtual void on_add_sprite(Sprite* sprite);
   virtual void on_remove_sprite(Sprite* sprite);
   virtual void on_set_current_sprite(Sprite* sprite);
+
+private:
+  static UIContext* m_instance;
 
 };
 
