@@ -44,6 +44,7 @@
   <a style="margin-left:32px;" href="#installation">Installation</a><br/>
   <a style="margin-left:32px;" href="#uninstallation">Uninstallation</a><br/>
   <a style="margin-left:32px;" href="#sourcecode">Source Code</a><br/>
+  <a style="margin-left:32px;" href="#design">Design</a><br/>
   <a href="#contact_information">Contact Information</a><br/>
   <a href="#license">License</a><br/>
   <a style="margin-left:32px;" href="#legal_issues">Legal Issues</a><br/>
@@ -203,10 +204,25 @@ data/</pre>
 </p>
 <p>
   Also, you can make dependencies of the files (if you are trying to
-  hack the ASE source code):
+  modify ASE source code):
 </p>
 <p>
   <pre>~/aseprite-src/$ sh misc/deps.sh</pre>
+</p>
+
+<a name="design"></a><h2>DESIGN</h2>
+<p>
+  I started ASE development about 10 years ago. It was originally
+  programmed in C language. Recently I changed it to C++ and started
+  to refactor some code. Anyway there are big parts of source code
+  which does not follow "good design" practices, and maybe those parts
+  will stay just like they are for a long time.
+</p>
+<p>
+  Refactoring code to improve the design of the application is
+  something I love to do, but users do not appreciate it so much.
+  "New features" and "fixing bugs" are the main goal, then refactoring
+  (and avoid incorporating new bugs) should be second priority.
 </p>
 
 <a name="contact_information"></a><h1>CONTACT INFORMATION</h1>
