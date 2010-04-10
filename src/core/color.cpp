@@ -177,15 +177,12 @@ color_t color_index(int index)
   return MAKE_COLOR(COLOR_TYPE_INDEX, index & 0xff);
 }
 
-int color_get_red(int imgtype, color_t color)
+int color_get_red(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      if (imgtype == IMAGE_INDEXED)
-	return _rgba_getr(get_current_palette()->getEntry(0));
-      else
-	return 0;
+      return 0;
 
     case COLOR_TYPE_RGB:
       return GET_DATA_C1(GET_COLOR_DATA_RGB(color));
@@ -211,15 +208,12 @@ int color_get_red(int imgtype, color_t color)
   return -1;
 }
 
-int color_get_green(int imgtype, color_t color)
+int color_get_green(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      if (imgtype == IMAGE_INDEXED)
-	return _rgba_getg(get_current_palette()->getEntry(0));
-      else
-	return 0;
+      return 0;
 
     case COLOR_TYPE_RGB:
       return GET_DATA_C2(GET_COLOR_DATA_RGB(color));
@@ -245,15 +239,12 @@ int color_get_green(int imgtype, color_t color)
   return -1;
 }
 
-int color_get_blue(int imgtype, color_t color)
+int color_get_blue(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_MASK:
-      if (imgtype == IMAGE_INDEXED)
-	return _rgba_getb(get_current_palette()->getEntry(0));
-      else
-	return 0;
+      return 0;
 
     case COLOR_TYPE_RGB:
       return GET_DATA_C3(GET_COLOR_DATA_RGB(color));
@@ -279,7 +270,7 @@ int color_get_blue(int imgtype, color_t color)
   return -1;
 }
 
-int color_get_hue(int imgtype, color_t color)
+int color_get_hue(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 
@@ -316,7 +307,7 @@ int color_get_hue(int imgtype, color_t color)
   return -1;
 }
 
-int color_get_saturation(int imgtype, color_t color)
+int color_get_saturation(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 
@@ -353,7 +344,7 @@ int color_get_saturation(int imgtype, color_t color)
   return -1;
 }
 
-int color_get_value(int imgtype, color_t color)
+int color_get_value(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 
@@ -390,7 +381,7 @@ int color_get_value(int imgtype, color_t color)
   return -1;
 }
 
-int color_get_index(int imgtype, color_t color)
+int color_get_index(color_t color)
 {
   switch (GET_COLOR_TYPE(color)) {
 

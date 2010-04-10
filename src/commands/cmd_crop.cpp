@@ -67,7 +67,7 @@ void CropSpriteCommand::execute(Context* context)
   {
     Undoable undoable(sprite, "Sprite Crop");
     int bgcolor = get_color_for_image(sprite->getImgType(),
-				      colorbar_get_bg_color(app_get_colorbar()));
+				      app_get_colorbar()->getBgColor());
     undoable.crop_sprite(sprite->getMask()->x,
 			 sprite->getMask()->y,
 			 sprite->getMask()->w,
@@ -111,7 +111,7 @@ void AutocropSpriteCommand::execute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Sprite Autocrop");
-    undoable.autocrop_sprite(colorbar_get_bg_color(app_get_colorbar()));
+    undoable.autocrop_sprite(app_get_colorbar()->getBgColor());
     undoable.commit();
   }
   sprite->generateMaskBoundaries();

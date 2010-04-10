@@ -103,12 +103,12 @@ void ReplaceColorCommand::execute(Context* context)
 
   button_color1 = colorbutton_new
     (get_config_color("ReplaceColor", "Color1",
-		      colorbar_get_fg_color(app_get_colorbar())),
+		      app_get_colorbar()->getFgColor()),
      sprite->getImgType());
 
   button_color2 = colorbutton_new
     (get_config_color("ReplaceColor", "Color2",
-		      colorbar_get_bg_color(app_get_colorbar())),
+		      app_get_colorbar()->getBgColor()),
      sprite->getImgType());
 
   target_button = target_button_new(sprite->getImgType(), false);

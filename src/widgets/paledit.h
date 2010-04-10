@@ -21,11 +21,9 @@
 
 #include <allegro/color.h>
 
-#include "jinete/jbase.h"
+#include "jinete/jwidget.h"
 
-class Palette;
-
-/* TODO use some JI_SIGNAL_USER */
+// TODO use some JI_SIGNAL_USER
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005
 
 enum {
@@ -34,23 +32,38 @@ enum {
   PALETTE_EDITOR_RANGE_RECTANGULAR,
 };
 
-JWidget paledit_new(Palette* palette, bool editable, int boxsize);
-int paledit_type();
+class PalEdit : public Widget
+{
+public:
+  PalEdit(bool editable);
 
-Palette* paledit_get_palette(JWidget widget);
-int paledit_get_range_type(JWidget widget);
+  int getRangeType();
 
-int paledit_get_columns(JWidget widget);
-void paledit_set_columns(JWidget widget, int columns);
-void paledit_set_boxsize(JWidget widget, int boxsize);
+  int getColumns();
+  void setColumns(int columns);
+  void setBoxSize(int boxsize);
 
-void paledit_select_color(JWidget widget, int index);
-void paledit_select_range(JWidget widget, int begin, int end, int range_type);
+  void selectColor(int index);
+  void selectRange(int begin, int end, int range_type);
 
-void paledit_move_selection(JWidget widget, int x, int y);
+  void moveSelection(int x, int y);
 
-int paledit_get_1st_color(JWidget widget);
-int paledit_get_2nd_color(JWidget widget);
-void paledit_get_selected_entries(JWidget widget, bool array[256]);
+  int get1stColor();
+  int get2ndColor();
+  void getSelectedEntries(bool array[256]);
+
+protected:
+  virtual bool msg_proc(JMessage msg);
+
+private:
+  void request_size(int* w, int* h);
+  void update_scroll(int color);
+
+  bool m_editable;
+  unsigned m_range_type;
+  unsigned m_columns;
+  int m_boxsize;
+  int m_color[2];
+};
 
 #endif

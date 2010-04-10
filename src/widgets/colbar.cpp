@@ -57,100 +57,12 @@ using Vaca::Rect;
 #define FGBUTTON_SIZE		(16*jguiscale())
 #define BGBUTTON_SIZE	        (18*jguiscale())
 
-typedef enum {
-  HOTCOLOR_NONE = -3,
-  HOTCOLOR_FGCOLOR = -2,
-  HOTCOLOR_BGCOLOR = -1,
-} hotcolor_t;
-
-class ColorBar : public Widget
-{
-  size_t m_firstIndex;
-  size_t m_columns;
-  size_t m_colorsPerColum;
-  int m_entrySize;
-  color_t m_fgcolor;
-  color_t m_bgcolor;
-  hotcolor_t m_hot;
-  hotcolor_t m_hot_editing;
-  // Drag & drop colors
-  hotcolor_t m_hot_drag;
-  hotcolor_t m_hot_drop;
-
-public:
-  ColorBar(int align);
-  ~ColorBar();
-
-  color_t getFgColor() const { return m_fgcolor; }
-  color_t getBgColor() const { return m_bgcolor; }
-  void setFgColor(color_t color);
-  void setBgColor(color_t color);
-
-  void setColor(int index, color_t color);
-  color_t getColorByPosition(int x, int y);
-
-protected:
-  virtual bool msg_proc(JMessage msg);
-
-private:
-  int getEntriesCount() const { return m_columns*m_colorsPerColum; }
-  color_t getEntryColor(size_t i) const { return color_index(i+m_firstIndex); }
-
-  color_t getHotColor(hotcolor_t hot);
-  void setHotColor(hotcolor_t hot, color_t color);
-  Rect getColumnBounds(size_t column) const;
-  Rect getEntryBounds(size_t index) const;
-  Rect getFgBounds() const;
-  Rect getBgBounds() const;
-  void updateStatusBar(color_t color, int msecs);
-};
-
 int colorbar_type()
 {
   static int type = 0;
   if (!type)
     type = ji_register_widget_type();
   return type;
-}
-
-Widget* colorbar_new(int align)
-{
-  return new ColorBar(align);
-}
-
-void colorbar_set_size(JWidget widget, int size)
-{
-  // TODO remove this
-}
-
-color_t colorbar_get_fg_color(JWidget widget)
-{
-  return ((ColorBar*)widget)->getFgColor();
-}
-
-color_t colorbar_get_bg_color(JWidget widget)
-{
-  return ((ColorBar*)widget)->getBgColor();
-}
-
-void colorbar_set_fg_color(JWidget widget, color_t color)
-{
-  ((ColorBar*)widget)->setFgColor(color);
-}
-
-void colorbar_set_bg_color(JWidget widget, color_t color)
-{
-  ((ColorBar*)widget)->setBgColor(color);
-}
-
-void colorbar_set_color(JWidget widget, int index, color_t color)
-{
-  ((ColorBar*)widget)->setColor(index, color);
-}
-
-color_t colorbar_get_color_by_position(JWidget widget, int x, int y)
-{
-  return ((ColorBar*)widget)->getColorByPosition(x, y);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -204,6 +116,7 @@ void ColorBar::setFgColor(color_t color)
   dirty();
 
   updateStatusBar(m_fgcolor, 100);
+  FgColorChange(m_fgcolor);
 }
 
 void ColorBar::setBgColor(color_t color)
@@ -212,11 +125,7 @@ void ColorBar::setBgColor(color_t color)
   dirty();
 
   updateStatusBar(m_bgcolor, 100);
-}
-
-void ColorBar::setColor(int index, color_t color)
-{
-  // TODO remove me
+  BgColorChange(m_bgcolor);
 }
 
 color_t ColorBar::getColorByPosition(int x, int y)
@@ -500,22 +409,25 @@ bool ColorBar::msg_proc(JMessage msg)
 	/* pick the color */
 	else if (m_hot != HOTCOLOR_NONE) {
 	  switch (m_hot) {
+
 	    case HOTCOLOR_FGCOLOR:
 	    case HOTCOLOR_BGCOLOR: {
-	      Command* paledit_cmd = 
-		CommandsModule::instance()->get_command_by_name(CommandId::palette_editor);
+	      Command* paledit_cmd = CommandsModule::instance()->get_command_by_name(CommandId::palette_editor);
 	      Params params;
+	      params.set("target", (m_hot == HOTCOLOR_FGCOLOR ? "foreground": "background"));
+	      params.set("open", "true");
 
 	      UIContext::instance()->execute_command(paledit_cmd, &params);
 	      break;
 	    }
+
 	    default:
 	      color_t color = getHotColor(m_hot);
 	      if (msg->mouse.left) {
-		colorbar_set_fg_color(this, color);
+		this->setFgColor(color);
 	      }
 	      if (msg->mouse.right) {
-		colorbar_set_bg_color(this, color);
+		this->setBgColor(color);
 	      }
 	      break;
 	  }
@@ -564,10 +476,10 @@ void ColorBar::setHotColor(hotcolor_t hot, color_t color)
       assert(false);
       break;
     case HOTCOLOR_FGCOLOR:
-      m_fgcolor = color;
+      setFgColor(color);
       break;
     case HOTCOLOR_BGCOLOR:
-      m_bgcolor = color;
+      setBgColor(color);
       break;
     default:
       assert(hot >= 0 && hot < getEntriesCount());

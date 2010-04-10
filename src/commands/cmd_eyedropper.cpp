@@ -89,9 +89,9 @@ void EyedropperCommand::execute(Context* context)
 
     // set the color of the color-bar
     if (m_background)
-      colorbar_set_bg_color(app_get_colorbar(), color);
+      app_get_colorbar()->setBgColor(color);
     else
-      colorbar_set_fg_color(app_get_colorbar(), color);
+      app_get_colorbar()->setFgColor(color);
   }
 }
 

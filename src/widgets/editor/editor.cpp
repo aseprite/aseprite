@@ -1799,9 +1799,9 @@ IToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
   }
 
   // Get fg/bg colors
-  JWidget colorbar = app_get_colorbar();
-  color_t fg = colorbar_get_fg_color(colorbar);
-  color_t bg = colorbar_get_bg_color(colorbar);
+  ColorBar* colorbar = app_get_colorbar();
+  color_t fg = colorbar->getFgColor();
+  color_t bg = colorbar->getBgColor();
 
   // Create the new tool loop
   ToolLoopImpl* tool_loop = new ToolLoopImpl(this,

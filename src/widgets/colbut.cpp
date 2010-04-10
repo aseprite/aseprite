@@ -161,9 +161,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	  }
 	  /* pick a color from the color-bar */
 	  else if (picked->type == colorbar_type()) {
-	    color = colorbar_get_color_by_position(picked,
-						   msg->mouse.x,
-						   msg->mouse.y);
+	    color = ((ColorBar*)picked)->getColorByPosition(msg->mouse.x, msg->mouse.y);
 	  }
 	  /* pick a color from a editor */
 	  else if (picked->type == editor_type()) {

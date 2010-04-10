@@ -430,10 +430,10 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
   BITMAP* graph;
 
   if (type == COLOR_TYPE_INDEX) {
-    data = color_get_index(imgtype, color);
+    data = color_get_index(color);
     rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	     /* get_color_for_allegro(bitmap_color_depth(bmp), color)); */
-	     palette_color[data]);
+	     get_color_for_allegro(bitmap_color_depth(bmp), color));
+	     // palette_color[data]);
     return;
   }
 
@@ -441,7 +441,9 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
 
     case IMAGE_INDEXED:
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	       palette_color[get_color_for_image(imgtype, color)]);
+	       get_color_for_allegro(imgtype, color_index(get_color_for_image(imgtype, color))));
+	       // get_color_for_allegro(bitmap_color_depth(bmp), color));
+	       // palette_color[get_color_for_image(imgtype, color)]);
       break;
 
     case IMAGE_RGB:

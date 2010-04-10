@@ -67,7 +67,9 @@
       <!-- tools -->
       <key command="configure_tools" shortcut="C" />
       <key command="film_editor" shortcut="Tab" />
-      <key command="palette_editor" shortcut="F4" />
+      <key command="palette_editor" shortcut="F4">
+	<param name="switch" value="true" />
+      </key>
       <key command="convolution_matrix" shortcut="F9" />
       <key command="color_curve" shortcut="Ctrl+M" />
       <key command="color_curve" shortcut="F10" />
@@ -289,7 +291,9 @@
 	<item command="configure_tools" text="&amp;Configure" />
 	<separator />
 	<item command="film_editor" text="&amp;Animation Editor" />
-	<item command="palette_editor" text="&amp;Palette Editor" />
+	<item command="palette_editor" text="&amp;Palette Editor">
+	  <param name="switch" value="true" />
+	</item>
 	<separator />
 	<menu text="F&amp;X" id="fx_popup">
 	  <item command="convolution_matrix" text="Convolution &amp;Matrix" />

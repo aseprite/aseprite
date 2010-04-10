@@ -78,7 +78,7 @@ void NewFileCommand::execute(Context* context)
     color_rgb(0, 0, 0),
     color_rgb(255, 255, 255),
     color_rgb(255, 0, 255),
-    colorbar_get_bg_color(app_get_colorbar())
+    app_get_colorbar()->getBgColor()
   };
   int ncolors = 256;
 

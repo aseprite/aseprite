@@ -46,13 +46,14 @@ color_t color_rgb(int r, int g, int b);
 color_t color_hsv(int h, int s, int v);
 color_t color_gray(int g);
 color_t color_index(int index);
-int color_get_red(int imgtype, color_t color);
-int color_get_green(int imgtype, color_t color);
-int color_get_blue(int imgtype, color_t color);
-int color_get_hue(int imgtype, color_t color);
-int color_get_saturation(int imgtype, color_t color);
-int color_get_value(int imgtype, color_t color);
-int color_get_index(int imgtype, color_t color);
+int color_get_red(color_t color);
+int color_get_green(color_t color);
+int color_get_blue(color_t color);
+int color_get_hue(color_t color);
+int color_get_saturation(color_t color);
+int color_get_value(color_t color);
+int color_get_index(color_t color);
+
 color_t color_from_image(int imgtype, int c);
 
 int blackandwhite(int r, int g, int b);

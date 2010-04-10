@@ -19,23 +19,64 @@
 #ifndef WIDGETS_COLBAR_H_INCLUDED
 #define WIDGETS_COLBAR_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "Vaca/Signal.h"
+#include "jinete/jwidget.h"
 
 #include "core/color.h"
 
-JWidget colorbar_new(int align);
+class ColorBar : public Widget
+{
+  typedef enum {
+    HOTCOLOR_NONE = -3,
+    HOTCOLOR_FGCOLOR = -2,
+    HOTCOLOR_BGCOLOR = -1,
+  } hotcolor_t;
+
+public:
+  ColorBar(int align);
+  ~ColorBar();
+
+  color_t getFgColor() const { return m_fgcolor; }
+  color_t getBgColor() const { return m_bgcolor; }
+  void setFgColor(color_t color);
+  void setBgColor(color_t color);
+
+  color_t getColorByPosition(int x, int y);
+
+  // Signals
+  Vaca::Signal1<void, color_t> FgColorChange;
+  Vaca::Signal1<void, color_t> BgColorChange;
+
+protected:
+  virtual bool msg_proc(JMessage msg);
+
+private:
+  int getEntriesCount() const { return m_columns*m_colorsPerColum; }
+  color_t getEntryColor(size_t i) const { return color_index(i+m_firstIndex); }
+
+  color_t getHotColor(hotcolor_t hot);
+  void setHotColor(hotcolor_t hot, color_t color);
+  Rect getColumnBounds(size_t column) const;
+  Rect getEntryBounds(size_t index) const;
+  Rect getFgBounds() const;
+  Rect getBgBounds() const;
+  void updateStatusBar(color_t color, int msecs);
+
+  size_t m_firstIndex;
+  size_t m_columns;
+  size_t m_colorsPerColum;
+  int m_entrySize;
+  color_t m_fgcolor;
+  color_t m_bgcolor;
+  hotcolor_t m_hot;
+  hotcolor_t m_hot_editing;
+
+  // Drag & drop colors
+  hotcolor_t m_hot_drag;
+  hotcolor_t m_hot_drop;
+
+};
+
 int colorbar_type();
-
-void colorbar_set_size(JWidget widget, int size);
-
-color_t colorbar_get_fg_color(JWidget widget);
-color_t colorbar_get_bg_color(JWidget widget);
-
-void colorbar_set_fg_color(JWidget widget, color_t color);
-void colorbar_set_bg_color(JWidget widget, color_t color);
-
-void colorbar_set_color(JWidget widget, int index, color_t color);
-
-color_t colorbar_get_color_by_position(JWidget widget, int x, int y);
 
 #endif

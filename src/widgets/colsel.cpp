@@ -92,7 +92,7 @@ Frame* colorselector_new(bool editable_palette)
   JWidget grid1 = jgrid_new(3, false);
   JWidget grid2 = jgrid_new(5, false);
   JWidget tabs = tabs_new(select_tab_callback);
-  JWidget pal = paledit_new(get_current_palette(), false, 1);
+  PalEdit* pal = new PalEdit(false);
   JWidget idx = jlabel_new("None");
   JWidget lock = jbutton_new("");
   JWidget child;
@@ -275,13 +275,13 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
-	JWidget idx = jwidget_find_name(widget, "idx");
-	JWidget pal = jwidget_find_name(widget, "pal");
-	JWidget grid2 = jwidget_find_name(widget, "grid2");
+	Widget* idx = widget->findChild("idx");
+	PalEdit* pal = static_cast<PalEdit*>(widget->findChild("pal"));
+	Widget* grid2 = widget->findChild("grid2");
 	int idxlen = ji_font_text_len(idx->getFont(), "Index=888");
 
 	jwidget_set_min_size(idx, idxlen, 0);
-	paledit_set_boxsize(pal, 4*jguiscale());
+	pal->setBoxSize(4*jguiscale());
 	jwidget_set_min_size(grid2, 200*jguiscale(), 0);
       }
       break;
@@ -326,17 +326,17 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   colorselector->color = color;
 
   if (exclude_this_model != models+MODEL_RGB) {
-    jslider_set_value(rgb_rslider, color_get_red(imgtype, color));
-    jslider_set_value(rgb_gslider, color_get_green(imgtype, color));
-    jslider_set_value(rgb_bslider, color_get_blue(imgtype, color));
+    jslider_set_value(rgb_rslider, color_get_red(color));
+    jslider_set_value(rgb_gslider, color_get_green(color));
+    jslider_set_value(rgb_bslider, color_get_blue(color));
   }
   if (exclude_this_model != models+MODEL_HSV) {
-    jslider_set_value(hsv_hslider, color_get_hue(imgtype, color));
-    jslider_set_value(hsv_sslider, color_get_saturation(imgtype, color));
-    jslider_set_value(hsv_vslider, color_get_value(imgtype, color));
+    jslider_set_value(hsv_hslider, color_get_hue(color));
+    jslider_set_value(hsv_sslider, color_get_saturation(color));
+    jslider_set_value(hsv_vslider, color_get_value(color));
   }
   if (exclude_this_model != models+MODEL_GRAY) {
-    jslider_set_value(gray_vslider, color_get_value(imgtype, color));
+    jslider_set_value(gray_vslider, color_get_value(color));
   }
   
   switch (color_type(color)) {
@@ -368,16 +368,15 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   if (update_index_entry) {
     switch (color_type(color)) {
       case COLOR_TYPE_INDEX:
-	colorselector_set_paledit_index(widget, color_get_index(IMAGE_INDEXED, color),
-					select_index_entry);
+	colorselector_set_paledit_index(widget, color_get_index(color), select_index_entry);
 	break;
       case COLOR_TYPE_MASK:
 	colorselector_set_paledit_index(widget, 0, true);
 	break;
       default: {
-	int r = color_get_red  (IMAGE_RGB, color);
-	int g = color_get_green(IMAGE_RGB, color);
-	int b = color_get_blue (IMAGE_RGB, color);
+	int r = color_get_red  (color);
+	int g = color_get_green(color);
+	int b = color_get_blue (color);
 	int i = get_current_palette()->findBestfit(r, g, b);
 	if (i >= 0 && i < 256)
 	  colorselector_set_paledit_index(widget, i, true);
@@ -392,14 +391,14 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 static void colorselector_set_paledit_index(JWidget widget, int index, bool select_index_entry)
 {
   ColorSelector* colorselector = colorselector_data(widget);
-  JWidget pal = jwidget_find_name(widget, "pal");
-  JWidget idx = jwidget_find_name(widget, "idx");
-  JWidget lock = jwidget_find_name(widget, "lock");
+  PalEdit* pal = static_cast<PalEdit*>(widget->findChild("pal"));
+  Widget* idx = widget->findChild("idx");
+  Widget* lock = widget->findChild("lock");
   char buf[256];
 
   if (index >= 0) {
     if (select_index_entry)
-      paledit_select_color(pal, index);
+      pal->selectColor(index);
 
     sprintf(buf, "Index=%d", index);
 
@@ -410,7 +409,7 @@ static void colorselector_set_paledit_index(JWidget widget, int index, bool sele
   }
   else {
     if (select_index_entry)
-      paledit_select_range(pal, -1, -1, PALETTE_EDITOR_RANGE_NONE);
+      pal->selectRange(-1, -1, PALETTE_EDITOR_RANGE_NONE);
 
     sprintf(buf, "None");
 
@@ -454,7 +453,7 @@ static bool slider_change_hook(JWidget widget, void* data)
   Frame* window = static_cast<Frame*>(widget->getRoot());
   ColorSelector* colorselector = colorselector_data(window);
   JWidget tabs = jwidget_find_name(window, "tabs");
-  JWidget pal = jwidget_find_name(window, "pal");
+  PalEdit* pal = static_cast<PalEdit*>(window->findChild("pal"));
   Model* m = reinterpret_cast<Model*>(tabs_get_selected_tab(tabs));
   color_t color = colorselector->color;
   int i, r, g, b;
@@ -488,9 +487,9 @@ static bool slider_change_hook(JWidget widget, void* data)
     }
   }
 
-  r = color_get_red  (IMAGE_RGB, color);
-  g = color_get_green(IMAGE_RGB, color);
-  b = color_get_blue (IMAGE_RGB, color);
+  r = color_get_red  (color);
+  g = color_get_green(color);
+  b = color_get_blue (color);
   
   /* if the palette is locked then we have to search for the closest
      color to the RGB values */
@@ -503,14 +502,14 @@ static bool slider_change_hook(JWidget widget, void* data)
   else {
     bool array[256];
 
-    paledit_get_selected_entries(pal, array);
+    pal->getSelectedEntries(array);
     for (i=0; i<256; ++i)
       if (array[i])
 	set_current_color(i, r, g, b);
 
     jwidget_dirty(pal);
 
-    i = paledit_get_2nd_color(pal);
+    i = pal->get2ndColor();
     if (i >= 0)
       color = color_index(i);
   }
@@ -528,14 +527,15 @@ static bool button_mask_select_hook(JWidget widget, void* data)
   return true;
 }
 
-static bool paledit_change_hook(JWidget widget, void* data)
+static bool paledit_change_hook(Widget* widget, void* data)
 {
   Frame* window = static_cast<Frame*>(widget->getRoot());
+  PalEdit* paledit = static_cast<PalEdit*>(widget);
   bool array[256];
   color_t color = colorselector_get_color(window);
   int i;
 
-  paledit_get_selected_entries(widget, array);
+  paledit->getSelectedEntries(array);
   for (i=0; i<256; ++i)
     if (array[i]) {
       color = color_index(i);

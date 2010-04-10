@@ -62,7 +62,8 @@ void BackgroundFromLayerCommand::execute(Context* context)
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar
-  int bgcolor = context->getBgColor();
+  int bgcolor = get_color_for_image(sprite->getImgType(),
+				    context->getSettings()->getBgColor());
   bgcolor = fixup_color_for_background(sprite->getImgType(), bgcolor);
 
   {

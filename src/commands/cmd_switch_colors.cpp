@@ -44,12 +44,12 @@ SwitchColorsCommand::SwitchColorsCommand()
 
 void SwitchColorsCommand::execute(Context* context)
 {
-  JWidget colorbar = app_get_colorbar();
-  color_t fg = colorbar_get_fg_color(colorbar);
-  color_t bg = colorbar_get_bg_color(colorbar);
+  ColorBar* colorbar = app_get_colorbar();
+  color_t fg = colorbar->getFgColor();
+  color_t bg = colorbar->getBgColor();
 
-  colorbar_set_fg_color(colorbar, bg);
-  colorbar_set_bg_color(colorbar, fg);
+  colorbar->setFgColor(bg);
+  colorbar->setBgColor(fg);
 }
 
 //////////////////////////////////////////////////////////////////////

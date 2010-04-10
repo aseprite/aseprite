@@ -49,8 +49,6 @@ public:
   virtual bool is_executing_script() const	{ return false; }
 
   ISettings* getSettings() { return m_settings; }
-  int getFgColor() { return m_settings->getFgColor(); }
-  int getBgColor() { return m_settings->getBgColor(); }
 
   const SpriteList& get_sprite_list() const;
   Sprite* get_first_sprite() const;

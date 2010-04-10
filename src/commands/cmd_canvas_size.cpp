@@ -108,7 +108,10 @@ void CanvasSizeCommand::execute(Context* context)
 
   {
     Undoable undoable(sprite, "Canvas Size");
-    int bgcolor = context->getBgColor();
+    int bgcolor = get_color_for_image(sprite->getImgType(),
+				      context->getSettings()->getBgColor());
+    bgcolor = fixup_color_for_background(sprite->getImgType(), bgcolor);
+
     undoable.crop_sprite(x1, y1, x2-x1, y2-y1, bgcolor);
     undoable.commit();
   }

@@ -74,7 +74,7 @@ void dialogs_mask_color(Sprite* sprite)
   label_color = jlabel_new(_("Color:"));
   button_color = colorbutton_new
    (get_config_color("MaskColor", "Color",
-		     colorbar_get_fg_color(app_get_colorbar())),
+		     app_get_colorbar()->getFgColor()),
     sprite->getImgType());
   button_1 = jbutton_new("1");
   button_2 = jbutton_new("2");
@@ -156,15 +156,13 @@ void dialogs_mask_color(Sprite* sprite)
 
 static void button_1_command(JWidget widget)
 {
-  colorbutton_set_color(button_color,
-			colorbar_get_fg_color(app_get_colorbar()));
+  colorbutton_set_color(button_color, app_get_colorbar()->getFgColor());
   mask_preview((Sprite*)widget->user_data[1]);
 }
 
 static void button_2_command(JWidget widget)
 {
-  colorbutton_set_color(button_color,
-			colorbar_get_bg_color(app_get_colorbar()));
+  colorbutton_set_color(button_color, app_get_colorbar()->getBgColor());
   mask_preview((Sprite*)widget->user_data[1]);
 }
 

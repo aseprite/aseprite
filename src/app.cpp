@@ -100,8 +100,8 @@ static Widget* box_toolbar = NULL;    /* box where the tools bar is */
 static Widget* box_statusbar = NULL;  /* box where the status bar is */
 static Widget* box_tabsbar = NULL;    /* box where the tabs bar is */
 static Widget* menubar = NULL;	      /* the menu bar widget */
-static StatusBar* statusbar = NULL;      /* the status bar widget */
-static Widget* colorbar = NULL;	      /* the color bar widget */
+static StatusBar* statusbar = NULL;   /* the status bar widget */
+static ColorBar* colorbar = NULL;     /* the color bar widget */
 static Widget* toolbar = NULL;	      /* the tool bar widget */
 static Widget* tabsbar = NULL;	      /* the tabs bar widget */
 
@@ -168,7 +168,7 @@ int App::run()
 
     menubar = jmenubar_new();
     statusbar = new StatusBar();
-    colorbar = colorbar_new(box_colorbar->getAlign());
+    colorbar = new ColorBar(box_colorbar->getAlign());
     toolbar = toolbar_new();
     tabsbar = tabs_new(tabsbar_select_callback);
     view = editor_view_new();
@@ -430,7 +430,7 @@ int app_get_current_image_type()
 Frame* app_get_top_window() { return top_window; }
 Widget* app_get_menubar() { return menubar; }
 StatusBar* app_get_statusbar() { return statusbar; }
-Widget* app_get_colorbar() { return colorbar; }
+ColorBar* app_get_colorbar() { return colorbar; }
 Widget* app_get_toolbar() { return toolbar; }
 Widget* app_get_tabsbar() { return tabsbar; }
 
@@ -442,7 +442,7 @@ void app_default_statusbar_message()
 
 int app_get_fg_color(Sprite *sprite)
 {
-  color_t c = colorbar_get_fg_color(colorbar);
+  color_t c = colorbar->getFgColor();
   assert(sprite != NULL);
 
   if (sprite->getCurrentLayer() != NULL)
@@ -453,7 +453,7 @@ int app_get_fg_color(Sprite *sprite)
 
 int app_get_bg_color(Sprite *sprite)
 {
-  color_t c = colorbar_get_bg_color(colorbar);
+  color_t c = colorbar->getBgColor();
   assert(sprite != NULL);
 
   if (sprite->getCurrentLayer() != NULL)
@@ -469,7 +469,7 @@ int app_get_color_to_clear_layer(Layer *layer)
   
   /* the `Background' is erased with the `Background Color' */
   if (layer != NULL && layer->is_background())
-    color = colorbar_get_bg_color(colorbar);
+    color = colorbar->getBgColor();
 
   return get_color_for_layer(layer, color);
 }

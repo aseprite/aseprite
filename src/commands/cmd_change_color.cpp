@@ -70,10 +70,9 @@ void ChangeColorCommand::load_params(Params* params)
 
 void ChangeColorCommand::execute(Context* context)
 {
-  JWidget colorbar = app_get_colorbar();
-  color_t color = m_background ? colorbar_get_bg_color(colorbar):
-				 colorbar_get_fg_color(colorbar);
-  int imgtype = app_get_current_image_type();
+  ColorBar* colorbar = app_get_colorbar();
+  color_t color = m_background ? colorbar->getBgColor():
+				 colorbar->getFgColor();
 
   switch (m_change) {
     case None:
@@ -81,7 +80,7 @@ void ChangeColorCommand::execute(Context* context)
       break;
     case IncrementIndex:
       if (color_type(color) == COLOR_TYPE_INDEX) {
-	int index = color_get_index(imgtype, color);
+	int index = color_get_index(color);
 	if (index < 255)	// TODO use sprite palette limit
 	  color = color_index(index+1);
       }
@@ -90,7 +89,7 @@ void ChangeColorCommand::execute(Context* context)
       break;
     case DecrementIndex:
       if (color_type(color) == COLOR_TYPE_INDEX) {
-	int index = color_get_index(imgtype, color);
+	int index = color_get_index(color);
 	if (index > 0)
 	  color = color_index(index-1);
       }
@@ -100,9 +99,9 @@ void ChangeColorCommand::execute(Context* context)
   }
 
   if (m_background)
-    colorbar_set_bg_color(colorbar, color);
+    colorbar->setBgColor(color);
   else
-    colorbar_set_fg_color(colorbar, color);
+    colorbar->setFgColor(color);
 }
 
 //////////////////////////////////////////////////////////////////////

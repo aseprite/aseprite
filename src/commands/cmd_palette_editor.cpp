@@ -24,22 +24,44 @@
 #include <assert.h>
 #include <vector>
 
+#include "Vaca/Bind.h"
 #include "jinete/jinete.h"
 
+#include "app.h"
 #include "commands/command.h"
+#include "commands/params.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
+#include "modules/editors.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "util/quantize.h"
+#include "widgets/colbar.h"
 #include "widgets/colview.h"
+#include "widgets/editor.h"
 #include "widgets/paledit.h"
 #include "sprite_wrappers.h"
+#include "ui_context.h"
+
+static Frame* window = NULL;
+static int redraw_timer_id = -1;
+static bool redraw_all = false;
+
+// Slot for App::Exit signal 
+static void on_exit_delete_this_widget()
+{
+  assert(window != NULL);
+
+  jmanager_remove_timer(redraw_timer_id);
+  redraw_timer_id = -1;
+
+  jwidget_free(window);
+}
 
 //////////////////////////////////////////////////////////////////////
 // palette_editor
@@ -51,21 +73,30 @@ public:
   Command* clone() { return new PaletteEditorCommand(*this); }
 
 protected:
+  void load_params(Params* params);
   void execute(Context* context);
+
+private:
+  bool m_open;
+  bool m_close;
+  bool m_switch;
+  bool m_background;
 };
 
-#define get_sprite(wgt) (*(const SpriteReader*)(wgt->getRoot())->user_data[0])
+// #define get_sprite(wgt) (*(const SpriteReader*)(wgt->getRoot())->user_data[0])
 
-static std::vector<Palette*> palettes;
+static Widget *R_label, *G_label, *B_label;
+static Widget *H_label, *S_label, *V_label;
+static Widget *R_slider, *G_slider, *B_slider;
+static Widget *H_slider, *S_slider, *V_slider;
+static Widget *R_entry, *G_entry, *B_entry;
+static Widget *H_entry, *S_entry, *V_entry;
+static Widget *hex_entry;
+static PalEdit* palette_editor;
+static bool disable_colorbar_signals = false;
 
-static JWidget slider_R, slider_G, slider_B;
-static JWidget slider_H, slider_S, slider_V;
-static JWidget colorviewer;
-static JWidget palette_editor;
-static JWidget slider_frame;
-static JWidget check_all_frames;
-
-static void select_all_command(JWidget widget);
+static bool window_msg_proc(JWidget widget, JMessage msg);
+static bool window_close_hook(JWidget widget, void *data);
 static void load_command(JWidget widget);
 static void save_command(JWidget widget);
 static void ramp_command(JWidget widget);
@@ -73,10 +104,19 @@ static void quantize_command(JWidget widget);
 
 static bool sliderRGB_change_hook(JWidget widget, void *data);
 static bool sliderHSV_change_hook(JWidget widget, void *data);
-static bool slider_columns_change_hook(JWidget widget, void *data);
-static bool slider_frame_change_hook(JWidget widget, void *data);
-static bool check_all_frames_change_hook(JWidget widget, void *data);
+static bool entryRGB_change_hook(JWidget widget, void *data);
+static bool entryHSV_change_hook(JWidget widget, void *data);
+static bool hex_entry_change_hook(JWidget widget, void *data);
+static void update_entries_from_sliders();
+static void update_sliders_from_entries();
+static void update_hex_entry();
+static void update_current_sprite_palette();
+static void update_colorbar();
 static bool palette_editor_change_hook(JWidget widget, void *data);
+static bool select_rgb_hook(JWidget widget, void *data);
+static bool select_hsv_hook(JWidget widget, void *data);
+static void modify_all_selected_entries_in_palette(int r, int g, int b);
+static void on_color_changed(color_t color);
 
 static void set_new_palette(Palette *palette);
 
@@ -85,217 +125,201 @@ PaletteEditorCommand::PaletteEditorCommand()
 	    "PaletteEditor",
 	    CmdRecordableFlag)
 {
+  m_open = true;
+  m_close = false;
+  m_switch = false;
+  m_background = false;
+}
+
+void PaletteEditorCommand::load_params(Params* params)
+{
+  std::string target = params->get("target");
+  if (target == "foreground") m_background = false;
+  else if (target == "background") m_background = true;
+
+  std::string open_str = params->get("open");
+  if (open_str == "true") m_open = true;
+  else m_open = false;
+
+  std::string close_str = params->get("close");
+  if (close_str == "true") m_close = true;
+  else m_close = false;
+
+  std::string switch_str = params->get("switch");
+  if (switch_str == "true") m_switch = true;
+  else m_switch = false;
 }
 
 void PaletteEditorCommand::execute(Context* context)
 {
-  JWidget colorviewer_box, palette_editor_view;
-  JWidget slider_columns, button_ok;
-  JWidget button_select_all;
-  JWidget button_undo, button_redo;
-  JWidget button_load, button_save;
-  JWidget button_ramp, button_quantize;
-  int frame, columns;
-  Palette *palette = NULL;
-  const CurrentSpriteReader sprite(context);
-  int imgtype = sprite ? sprite->getImgType(): IMAGE_INDEXED;
-  int frame_bak = sprite ? sprite->getCurrentFrame() : 0;
-  bool all_frames_same_palette = true;
+  Widget* palette_editor_view;
+  Widget* select_rgb;
+  Widget* select_hsv;
+  bool first_time = false;
 
-  if (imgtype == IMAGE_GRAYSCALE) {
-    jalert(_("Error<<You can't edit grayscale palette||&OK"));
+  // If the window was never loaded yet, load it
+  if (!window) {
+    if (m_close)
+      return;			// Do nothing (the user want to close and inexistent window)
+
+    // Load the palette editor window
+    window = static_cast<Frame*>(load_widget("palette_editor.xml", "palette_editor"));
+    redraw_timer_id = jmanager_add_timer(window, 250);
+
+    first_time = true;
+
+    // Append hooks
+    window->Close.connect(Vaca::Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
+
+    // Hook fg/bg color changes (by eyedropper mainly)
+    app_get_colorbar()->FgColorChange.connect(&on_color_changed);
+    app_get_colorbar()->BgColorChange.connect(&on_color_changed);
+
+    // Hook App::Exit signal
+    App::instance()->Exit.connect(&on_exit_delete_this_widget);
+  }
+  // If the window is opened, close it (only in "switch" mode)
+  else if (jwidget_is_visible(window) && (m_switch || m_close)) {
+    window->closeWindow(NULL);
     return;
   }
 
-  /* load widgets */
-  FramePtr window(load_widget("palette_editor.xml", "palette_editor"));
   get_widgets(window,
-	      "red", &slider_R,
-	      "green", &slider_G,
-	      "blue", &slider_B,
-	      "hue", &slider_H,
-	      "saturation", &slider_S,
-	      "value", &slider_V,
-	      "columns", &slider_columns,
-	      "frame", &slider_frame,
-	      "select_all", &button_select_all,
-	      "undo", &button_undo,
-	      "redo", &button_redo,
-	      "load", &button_load,
-	      "save", &button_save,
-	      "ramp", &button_ramp,
-	      "quantize", &button_quantize,
-	      "button_ok", &button_ok,
-	      "colorviewer", &colorviewer_box,
-	      "palette_editor", &palette_editor_view,
-	      "all_frames", &check_all_frames, NULL);
+	      "R_label",  &R_label,
+	      "R_slider", &R_slider,
+	      "R_entry",  &R_entry,
+	      "G_label",  &G_label,
+	      "G_slider", &G_slider,
+	      "G_entry",  &G_entry,
+	      "B_label",  &B_label,
+	      "B_slider", &B_slider,
+	      "B_entry",  &B_entry,
+	      "H_label",  &H_label,
+	      "H_slider", &H_slider,
+	      "H_entry",  &H_entry,
+	      "S_label",  &S_label,
+	      "S_slider", &S_slider,
+	      "S_entry",  &S_entry,
+	      "V_label",  &V_label,
+	      "V_slider", &V_slider,
+	      "V_entry",  &V_entry,
+	      "hex_entry", &hex_entry,
+	      "select_rgb", &select_rgb,
+	      "select_hsv", &select_hsv,
+	      // "load", &button_load,
+	      // "save", &button_save,
+	      // "ramp", &button_ramp,
+	      // "quantize", &button_quantize,
+	      // "button_ok", &button_ok,
+	      // "colorviewer_box", &colorviewer_box,
+	      "palette_editor", &palette_editor_view, NULL);
 
-  window->user_data[0] = (void*)&sprite;
-
-  /* create current_sprite->frames palettes */
-  if (sprite) {
-    palettes.resize(sprite->getTotalFrames());
-
-    for (frame=0; frame<sprite->getTotalFrames(); ++frame) {
-      const Palette* orig = sprite->getPalette(frame);
-
-      palettes[frame] = new Palette(frame, orig->size());
-      orig->copyColorsTo(palettes[frame]);
+  // window->user_data[0] = (void*)&sprite;
       
-      if (frame > 0 &&
-	  palettes[frame-1]->countDiff(palettes[frame], NULL, NULL) > 0) {
-	all_frames_same_palette = false;
-      }
-    }
-  }
-  else {
-    palettes.clear();
-    jwidget_disable(check_all_frames);
-  }
+  // Custom widgets
+  if (first_time) {
+    // colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
+    palette_editor = new PalEdit(true);
+    palette_editor->setBoxSize(4);
 
-  /* get current palette */
-  palette = new Palette(*get_current_palette());
+    // jwidget_expansive(colorviewer, true);
+    // jwidget_add_child(colorviewer_box, colorviewer);
 
-  /* get configuration */
-  columns = get_config_int("PaletteEditor", "Columns", 16);
-  columns = MID(1, columns, 256);
+    // jwidget_disable(button_undo);
+    // jwidget_disable(button_redo);
 
-  /* custom widgets */
-  colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
-  palette_editor = paledit_new(palette, true, 6);
+    jview_attach(palette_editor_view, palette_editor);
+    jview_maxsize(palette_editor_view);
 
-  jwidget_expansive(colorviewer, true);
-  jwidget_add_child(colorviewer_box, colorviewer);
-
-  jwidget_disable(button_undo);
-  jwidget_disable(button_redo);
-
-  jview_attach(palette_editor_view, palette_editor);
-  jview_maxsize(palette_editor_view);
-
-  /* set columns */
-  jslider_set_value(slider_columns, columns);
-  paledit_set_columns(palette_editor, columns);
-
-  /* all frames */
-  if (all_frames_same_palette)
-    jwidget_select(check_all_frames);
-  else
-    jwidget_deselect(check_all_frames);
+    // Set palette editor columns
+    palette_editor->setColumns(16);
   
-  /* frame */
-  if (sprite) {
-    jslider_set_range(slider_frame, 0, sprite->getTotalFrames()-1);
-    jslider_set_value(slider_frame, sprite->getCurrentFrame());
-    
-    if (jwidget_is_selected(check_all_frames))
-      jwidget_disable(slider_frame);
+    // Hook signals
+    jwidget_add_hook(window, -1, window_msg_proc, NULL);
+    HOOK(R_slider, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
+    HOOK(G_slider, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
+    HOOK(B_slider, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
+    HOOK(H_slider, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
+    HOOK(S_slider, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
+    HOOK(V_slider, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
+    HOOK(R_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
+    HOOK(G_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
+    HOOK(B_entry, JI_SIGNAL_ENTRY_CHANGE, entryRGB_change_hook, 0);
+    HOOK(H_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
+    HOOK(S_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
+    HOOK(V_entry, JI_SIGNAL_ENTRY_CHANGE, entryHSV_change_hook, 0);
+    HOOK(hex_entry, JI_SIGNAL_ENTRY_CHANGE, hex_entry_change_hook, 0);
+    HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_hook, 0);
+    HOOK(select_rgb, JI_SIGNAL_RADIO_CHANGE, select_rgb_hook, 0);
+    HOOK(select_hsv, JI_SIGNAL_RADIO_CHANGE, select_hsv_hook, 0);
+
+    setup_mini_look(select_rgb);
+    setup_mini_look(select_hsv);
+
+    // jbutton_add_command(button_load, load_command);
+    // jbutton_add_command(button_save, save_command);
+    // jbutton_add_command(button_ramp, ramp_command);
+    // jbutton_add_command(button_quantize, quantize_command);
+
+    select_rgb_hook(NULL, NULL);
   }
-  else {
-    jwidget_disable(slider_frame);
-    jwidget_disable(button_quantize);
+
+  // Show the specified target color
+  {
+    int imgtype = app_get_current_image_type();
+    color_t color =
+      (m_background ? context->getSettings()->getBgColor():
+  		      context->getSettings()->getFgColor());
+
+    on_color_changed(color);
   }
 
-  /* hook signals */
-  HOOK(slider_R, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
-  HOOK(slider_G, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
-  HOOK(slider_B, JI_SIGNAL_SLIDER_CHANGE, sliderRGB_change_hook, 0);
-  HOOK(slider_H, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
-  HOOK(slider_S, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
-  HOOK(slider_V, JI_SIGNAL_SLIDER_CHANGE, sliderHSV_change_hook, 0);
-  HOOK(slider_columns, JI_SIGNAL_SLIDER_CHANGE, slider_columns_change_hook, 0);
-  HOOK(slider_frame, JI_SIGNAL_SLIDER_CHANGE, slider_frame_change_hook, 0);
-  HOOK(check_all_frames, JI_SIGNAL_CHECK_CHANGE, check_all_frames_change_hook, 0);
-  HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_hook, 0);
+  if (m_switch || m_open) {
+    if (!jwidget_is_visible(window)) {
+      // Default position
+      window->remap_window();
+      window->center_window();
 
-  jbutton_add_command(button_select_all, select_all_command);
-  jbutton_add_command(button_load, load_command);
-  jbutton_add_command(button_save, save_command);
-  jbutton_add_command(button_ramp, ramp_command);
-  jbutton_add_command(button_quantize, quantize_command);
-
-  /* default position */
-  window->remap_window();
-  window->center_window();
-
-  /* load window configuration */
-  load_window_pos(window, "PaletteEditor");
-
-  /* open and run the window */
-  window->open_window_fg();
-
-  /* check the killer widget */
-  if (window->get_killer() == button_ok) {
-    if (sprite) {
-      SpriteWriter sprite_writer(sprite);
-      sprite_writer->resetPalettes();
-
-      /* one palette */
-      if (jwidget_is_selected(check_all_frames)) {
-	// Copy the current palette in the first frame
-	get_current_palette()->copyColorsTo(palettes[0]);
-
-	sprite_writer->setPalette(palettes[0], true);
-      }
-      /* various palettes */
-      else {
-	frame = jslider_get_value(slider_frame);
-	get_current_palette()->copyColorsTo(palettes[frame]);
-
-	for (frame=0; frame<sprite_writer->getTotalFrames(); ++frame) {
-	  if (frame == 0 ||
-	      palettes[frame]->countDiff(palettes[frame-1], NULL, NULL) > 0) {
-	    sprite_writer->setPalette(palettes[frame], true);
-	  }
-	}
-      }
+      // Load window configuration
+      load_window_pos(window, "PaletteEditor");
     }
-    /* change the system palette */
-    else
-      set_default_palette(palette);
 
-    set_current_palette(palette, true);
+    // Run the window in background
+    window->open_window_bg();
   }
-  /* cancel or ESC */
-  else {
-    /* restore the system palette */
-    if (sprite) {
-      SpriteWriter sprite_writer(sprite);
-      sprite_writer->setCurrentFrame(frame_bak);
-
-      set_current_palette(sprite->getPalette(frame_bak), true);
-    }
-    else {
-      set_current_palette(NULL, true);
-    }
-  }
-
-  /* redraw the entire screen */
-  jmanager_refresh_screen();
-
-  /* save columns configuration */
-  columns = jslider_get_value(slider_columns);
-  set_config_int("PaletteEditors", "Columns", MID(1, columns, 256));
-
-  /* save window configuration */
-  save_window_pos(window, "PaletteEditor");
-
-  if (!palettes.empty()) {
-    assert(sprite);
-
-    for (frame=0; frame<sprite->getTotalFrames(); ++frame)
-      delete palettes[frame];
-
-    palettes.clear();
-  }
-
-  delete palette;
 }
 
-static void select_all_command(JWidget widget)
+static bool window_msg_proc(JWidget widget, JMessage msg)
 {
-  paledit_select_range(palette_editor, 0, 255,
-		       PALETTE_EDITOR_RANGE_LINEAL);
+  if (msg->type == JM_TIMER &&
+      msg->timer.timer_id == redraw_timer_id) {
+    // Redraw all editors
+    if (redraw_all) {
+      redraw_all = false;
+      jmanager_stop_timer(redraw_timer_id);
+
+      try {
+	const CurrentSpriteReader sprite(UIContext::instance());
+	update_editors_with_sprite(sprite);
+      }
+      catch (...) {
+	// Do nothing
+      }
+    }
+    // Redraw just the current editor
+    else {
+      redraw_all = true;
+      current_editor->editor_update();
+    }
+  }
+  return false;
+}
+
+static bool window_close_hook(JWidget widget, void *data)
+{
+  // Save window configuration
+  save_window_pos(window, "PaletteEditor");
+  return false;
 }
 
 static void load_command(JWidget widget)
@@ -335,22 +359,24 @@ static void save_command(JWidget widget)
 	return;
     }
 
-    if (!paledit_get_palette(palette_editor)->save(filename.c_str())) {
-      jalert(_("Error<<Saving palette file||&Close"));
-    }
+    // TODO
+    // if (!palette_editor->getPalette()->save(filename.c_str())) {
+    //   jalert(_("Error<<Saving palette file||&Close"));
+    // }
   }
 }
 
 static void ramp_command(JWidget widget)
 {
-  int range_type = paledit_get_range_type(palette_editor);
-  int i1 = paledit_get_1st_color(palette_editor);
-  int i2 = paledit_get_2nd_color(palette_editor);
+#if 0
+  int range_type = palette_editor->getRangeType();
+  int i1 = palette_editor->get1stColor();
+  int i2 = palette_editor->get2ndColor();
   Palette* palette = new Palette(0, 256);
   bool array[256];
 
-  paledit_get_selected_entries(palette_editor, array);
-  paledit_get_palette(palette_editor)->copyColorsTo(palette);
+  palette_editor->getSelectedEntries(array);
+  palette_editor->getPalette()->copyColorsTo(palette);
 
   if ((i1 >= 0) && (i2 >= 0)) {
     /* make the ramp */
@@ -366,181 +392,348 @@ static void ramp_command(JWidget widget)
 
   set_new_palette(palette);
   delete palette;
+#endif
 }
 
 static void quantize_command(JWidget widget)
 {
-  const SpriteReader& sprite = get_sprite(widget);
-  assert(sprite != NULL);
+  // const SpriteReader& sprite = get_sprite(widget);
+  // assert(sprite != NULL);
 
-  Palette* palette = new Palette(0, 256);
-  bool array[256];
+  // Palette* palette = new Palette(0, 256);
+  // bool array[256];
 
-  paledit_get_selected_entries(palette_editor, array);
-  paledit_get_palette(palette_editor)->copyColorsTo(palette);
+  // paledit_get_selected_entries(palette_editor, array);
+  // paledit_get_palette(palette_editor)->copyColorsTo(palette);
 
-  if (sprite->getImgType() == IMAGE_RGB) {
-    SpriteWriter sprite_writer(sprite);
-    sprite_quantize_ex(sprite_writer, palette);
-  }
-  else {
-    jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
-  }
+  // if (sprite->getImgType() == IMAGE_RGB) {
+  //   SpriteWriter sprite_writer(sprite);
+  //   sprite_quantize_ex(sprite_writer, palette);
+  // }
+  // else {
+  //   jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
+  // }
 
-  set_new_palette(palette);
-  delete palette;
+  // set_new_palette(palette);
+  // delete palette;
 }
 
 static bool sliderRGB_change_hook(JWidget widget, void *data)
 {
-  Palette *palette = paledit_get_palette(palette_editor);
-  int r = jslider_get_value(slider_R);
-  int g = jslider_get_value(slider_G);
-  int b = jslider_get_value(slider_B);
-  float h, s, v;
-  bool array[256];
-  int c;
+  Palette* palette = get_current_palette();
+  int r = jslider_get_value(R_slider);
+  int g = jslider_get_value(G_slider);
+  int b = jslider_get_value(B_slider);
+  color_t color = color_rgb(r, g, b);
 
-  rgb_to_hsv(r, g, b, &h, &s, &v);
+  jslider_set_value(H_slider, color_get_hue(color));
+  jslider_set_value(V_slider, color_get_value(color));
+  jslider_set_value(S_slider, color_get_saturation(color));
 
-  paledit_get_selected_entries(palette_editor, array);
-  for (c=0; c<256; c++) {
-    if (array[c]) {
-      palette->setEntry(c, _rgba(r, g, b, 255));
-      set_current_color(c, r, g, b);
-    }
-  }
+  modify_all_selected_entries_in_palette(r, g, b);
 
-  jslider_set_value(slider_H, 255.0 * h / 360.0);
-  jslider_set_value(slider_V, 255.0 * v);
-  jslider_set_value(slider_S, 255.0 * s);
-
-  jwidget_dirty(palette_editor);
+  update_entries_from_sliders();
+  update_hex_entry();
+  update_current_sprite_palette();
+  update_colorbar();
   return false;
 }
 
 static bool sliderHSV_change_hook(JWidget widget, void *data)
 {
-  Palette *palette = paledit_get_palette(palette_editor);
-  int h = jslider_get_value(slider_H);
-  int s = jslider_get_value(slider_S);
-  int v = jslider_get_value(slider_V);
+  Palette* palette = get_current_palette();
+  int h = jslider_get_value(H_slider);
+  int s = jslider_get_value(S_slider);
+  int v = jslider_get_value(V_slider);
+  color_t color = color_hsv(h, s, v);
+  int r, g, b;
+
+  jslider_set_value(R_slider, r = color_get_red(color));
+  jslider_set_value(G_slider, g = color_get_green(color));
+  jslider_set_value(B_slider, b = color_get_blue(color));
+
+  modify_all_selected_entries_in_palette(r, g, b);
+
+  update_entries_from_sliders();
+  update_hex_entry();
+  update_current_sprite_palette();
+  update_colorbar();
+  return false;
+}
+
+static bool entryRGB_change_hook(JWidget widget, void *data)
+{
+  int r = R_entry->getTextInt();
+  int g = G_entry->getTextInt();
+  int b = B_entry->getTextInt();
+  r = MID(0, r, 255);
+  g = MID(0, g, 255);
+  b = MID(0, b, 255);
+  color_t color = color_rgb(r, g, b);
+
+  H_entry->setTextf("%d", color_get_hue(color));
+  V_entry->setTextf("%d", color_get_value(color));
+  S_entry->setTextf("%d", color_get_saturation(color));
+
+  modify_all_selected_entries_in_palette(r, g, b);
+
+  update_sliders_from_entries();
+  update_hex_entry();
+  update_current_sprite_palette();
+  update_colorbar();
+  return false;
+}
+
+static bool entryHSV_change_hook(JWidget widget, void *data)
+{
+  Palette* palette = get_current_palette();
+  int h = H_entry->getTextInt();
+  int s = S_entry->getTextInt();
+  int v = V_entry->getTextInt();
+  color_t color = color_hsv(h, s, v);
+  int r, g, b;
+
+  R_entry->setTextf("%d", r = color_get_red(color));
+  G_entry->setTextf("%d", g = color_get_green(color));
+  B_entry->setTextf("%d", b = color_get_blue(color));
+
+  modify_all_selected_entries_in_palette(r, g, b);
+
+  update_sliders_from_entries();
+  update_hex_entry();
+  update_current_sprite_palette();
+  update_colorbar();
+  return false;
+}
+
+static bool hex_entry_change_hook(JWidget widget, void *data)
+{
+  Palette* palette = get_current_palette();
+  std::string text = hex_entry->getText();
+  int r, g, b;
+  float h, s, v;
   bool array[256];
-  int c, r, g, b;
+  int c;
 
-  hsv_to_rgb(360.0 * h / 255.0, s / 255.0, v / 255.0, &r, &g, &b);
+  // Fill with zeros at the end of the text
+  while (text.size() < 6)
+    text.push_back('0');
 
-  paledit_get_selected_entries(palette_editor, array);
+  // Convert text (Base 16) to integer
+  int hex = strtol(text.c_str(), NULL, 16);
+
+  jslider_set_value(R_slider, r = ((hex & 0xff0000) >> 16));
+  jslider_set_value(G_slider, g = ((hex & 0xff00) >> 8));
+  jslider_set_value(B_slider, b = ((hex & 0xff)));
+
+  rgb_to_hsv(r, g, b, &h, &s, &v);
+
+  palette_editor->getSelectedEntries(array);
   for (c=0; c<256; c++) {
     if (array[c]) {
       palette->setEntry(c, _rgba(r, g, b, 255));
-      set_current_color(c, r, g, b);
     }
   }
 
-  jslider_set_value(slider_R, r);
-  jslider_set_value(slider_G, g);
-  jslider_set_value(slider_B, b);
+  jslider_set_value(H_slider, 255.0 * h / 360.0);
+  jslider_set_value(V_slider, 255.0 * v);
+  jslider_set_value(S_slider, 255.0 * s);
+
+  update_entries_from_sliders();
+  update_current_sprite_palette();
+  update_colorbar();
+  return false;
+}
+
+static void update_entries_from_sliders()
+{
+  R_entry->setTextf("%d", jslider_get_value(R_slider));
+  G_entry->setTextf("%d", jslider_get_value(G_slider));
+  B_entry->setTextf("%d", jslider_get_value(B_slider));
+
+  H_entry->setTextf("%d", jslider_get_value(H_slider));
+  S_entry->setTextf("%d", jslider_get_value(S_slider));
+  V_entry->setTextf("%d", jslider_get_value(V_slider));
+}
+
+static void update_sliders_from_entries()
+{
+  jslider_set_value(R_slider, R_entry->getTextInt());
+  jslider_set_value(G_slider, G_entry->getTextInt());
+  jslider_set_value(B_slider, B_entry->getTextInt());
+
+  jslider_set_value(H_slider, H_entry->getTextInt());
+  jslider_set_value(S_slider, S_entry->getTextInt());
+  jslider_set_value(V_slider, V_entry->getTextInt());
+}
+
+static void update_hex_entry()
+{
+  hex_entry->setTextf("%02x%02x%02x",
+		      jslider_get_value(R_slider),
+		      jslider_get_value(G_slider),
+		      jslider_get_value(B_slider));
+}
+
+static void update_current_sprite_palette()
+{
+  if (UIContext::instance()->get_current_sprite()) {
+    try {
+      CurrentSpriteWriter sprite(UIContext::instance());
+      sprite->setPalette(get_current_palette(), false);
+    }
+    catch (...) {
+      // Ignore
+    }
+  }
 
   jwidget_dirty(palette_editor);
-  return false;
+
+  if (!jmanager_timer_is_running(redraw_timer_id))
+    jmanager_start_timer(redraw_timer_id);
+  redraw_all = false;
 }
 
-static bool slider_columns_change_hook(JWidget widget, void *data)
+static void update_colorbar()
 {
-  paledit_set_columns(palette_editor,
-		      (int)jslider_get_value(widget));
-  return false;
+  app_get_colorbar()->dirty();
 }
 
-static bool slider_frame_change_hook(JWidget widget, void *data)
+static void update_sliders_from_color(color_t color)
 {
-  const SpriteReader& sprite = get_sprite(widget);
-  assert(sprite != NULL);
-
-  int old_frame = sprite->getCurrentFrame();
-  int new_frame = jslider_get_value(slider_frame);
-
-  get_current_palette()->copyColorsTo(palettes[old_frame]);
-  {
-    SpriteWriter sprite_writer(sprite);
-    sprite_writer->setCurrentFrame(new_frame);
-  }
-  set_new_palette(palettes[new_frame]);
-
-  return false;
-}
-
-static bool check_all_frames_change_hook(JWidget widget, void *data)
-{
-  const SpriteReader& sprite = get_sprite(widget);
-  assert(sprite != NULL);
-
-  int frame = jslider_get_value(slider_frame);
-
-  get_current_palette()->copyColorsTo(palettes[frame]);
-
-  if (jwidget_is_selected(check_all_frames)) {
-    bool has_two_or_more_palettes = false;
-    int c;
-
-    for (c=1; c<sprite->getTotalFrames(); c++) {
-      if (palettes[c-1]->countDiff(palettes[c], NULL, NULL) > 0) {
-	has_two_or_more_palettes = true;
-	break;
-      }
-    }
-
-    if (has_two_or_more_palettes) {
-      if (jalert(PACKAGE
-		 "<<There are more than one palette. Only the"
-		 "<<current palette will be kept (for all frames)."
-		 "<<Do you want to continue?"
-		 "||&Yes||&No") != 1) {
-	jwidget_deselect(check_all_frames);
-	return false;
-      }
-    }
-
-    jwidget_disable(slider_frame);
-  }
-  else
-    jwidget_enable(slider_frame);
-
-  return false;
+  jslider_set_value(R_slider, color_get_red(color));
+  jslider_set_value(G_slider, color_get_green(color));
+  jslider_set_value(B_slider, color_get_blue(color));
+  jslider_set_value(H_slider, color_get_hue(color));
+  jslider_set_value(S_slider, color_get_saturation(color));
+  jslider_set_value(V_slider, color_get_hue(color));
 }
 
 static bool palette_editor_change_hook(JWidget widget, void *data)
 {
-  int imgtype = colorviewer_get_imgtype(colorviewer);
-  color_t color = color_index(paledit_get_2nd_color(palette_editor));
-  int r = color_get_red(imgtype, color);
-  int g = color_get_green(imgtype, color);
-  int b = color_get_blue(imgtype, color);
+  int imgtype = app_get_current_image_type();
+  color_t color = color_index(palette_editor->get2ndColor());
+  int r = color_get_red(color);
+  int g = color_get_green(color);
+  int b = color_get_blue(color);
   float h, s, v;
 
   rgb_to_hsv(r, g, b, &h, &s, &v);
 
-  colorviewer_set_color(colorviewer, color);
+  // colorviewer_set_color(colorviewer, color);
 
-  jslider_set_value(slider_R, r);
-  jslider_set_value(slider_G, g);
-  jslider_set_value(slider_B, b);
-  jslider_set_value(slider_H, 255.0 * h / 360.0);
-  jslider_set_value(slider_V, 255.0 * v);
-  jslider_set_value(slider_S, 255.0 * s);
+  {
+    disable_colorbar_signals = true;
+
+    if (jmouse_b(0) & 2)
+      app_get_colorbar()->setBgColor(color);
+    else
+      app_get_colorbar()->setFgColor(color);
+
+    disable_colorbar_signals = false;
+  }
+
+  jslider_set_value(R_slider, r);
+  jslider_set_value(G_slider, g);
+  jslider_set_value(B_slider, b);
+  jslider_set_value(H_slider, 255.0 * h / 360.0);
+  jslider_set_value(V_slider, 255.0 * v);
+  jslider_set_value(S_slider, 255.0 * s);
   return false;
+}
+
+static bool select_rgb_hook(JWidget widget, void *data)
+{
+  jwidget_show(R_label);
+  jwidget_show(R_slider);
+  jwidget_show(R_entry);
+  jwidget_show(G_label);
+  jwidget_show(G_slider);
+  jwidget_show(G_entry);
+  jwidget_show(B_label);
+  jwidget_show(B_slider);
+  jwidget_show(B_entry);
+
+  jwidget_hide(H_label);
+  jwidget_hide(H_slider);
+  jwidget_hide(H_entry);
+  jwidget_hide(S_label);
+  jwidget_hide(S_slider);
+  jwidget_hide(S_entry);
+  jwidget_hide(V_label);
+  jwidget_hide(V_slider);
+  jwidget_hide(V_entry);
+
+  window->setBounds(window->getBounds());
+  window->dirty();
+
+  return true;
+}
+
+static bool select_hsv_hook(JWidget widget, void *data)
+{
+  jwidget_hide(R_label);
+  jwidget_hide(R_slider);
+  jwidget_hide(R_entry);
+  jwidget_hide(G_label);
+  jwidget_hide(G_slider);
+  jwidget_hide(G_entry);
+  jwidget_hide(B_label);
+  jwidget_hide(B_slider);
+  jwidget_hide(B_entry);
+
+  jwidget_show(H_label);
+  jwidget_show(H_slider);
+  jwidget_show(H_entry);
+  jwidget_show(S_label);
+  jwidget_show(S_slider);
+  jwidget_show(S_entry);
+  jwidget_show(V_label);
+  jwidget_show(V_slider);
+  jwidget_show(V_entry);
+
+  window->setBounds(window->getBounds());
+  window->dirty();
+
+  return true;
+}
+
+static void modify_all_selected_entries_in_palette(int r, int g, int b)
+{
+  bool array[256];
+  palette_editor->getSelectedEntries(array);
+
+  Palette* palette = get_current_palette();
+  for (int c=0; c<256; c++)
+    if (array[c])
+      palette->setEntry(c, _rgba(r, g, b, 255));
+}
+
+static void on_color_changed(color_t color)
+{
+  if (disable_colorbar_signals)
+    return;
+
+  int imgtype = app_get_current_image_type();
+  int index = color_get_index(color);
+  palette_editor->selectColor(index);
+
+  update_sliders_from_color(color); // Update sliders
+  update_entries_from_sliders();    // Update entries
+  update_hex_entry();		    // Update hex field
+
+  jwidget_flush_redraw(window);
 }
 
 static void set_new_palette(Palette* palette)
 {
-  /* copy the palette */
-  palette->copyColorsTo(paledit_get_palette(palette_editor));
+  // Copy the palette
+  palette->copyColorsTo(get_current_palette());
 
-  /* set the palette calling the hooks */
+  // Set the palette calling the hooks
   set_current_palette(palette, false);
 
-  /* redraw the entire screen */
+  // Redraw the entire screen
   jmanager_refresh_screen();
 }
 
