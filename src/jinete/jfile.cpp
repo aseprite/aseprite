@@ -150,8 +150,17 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
   /* check */
   else if (ustrcmp(elem_name, "check") == 0) {
     const char *text = elem->Attribute("text");
+    const char *looklike = elem->Attribute("looklike");
 
-    widget = jcheck_new(text ? TRANSLATE_ATTR(text): NULL);
+    text = (text ? TRANSLATE_ATTR(text): NULL);
+
+    if (looklike != NULL && strcmp(looklike, "button") == 0) {
+      widget = ji_generic_button_new(text, JI_CHECK, JI_BUTTON);
+    }
+    else {
+      widget = jcheck_new(text);
+    }
+
     if (widget) {
       bool center = bool_attr_is_true(elem, "center");
       bool right  = bool_attr_is_true(elem, "right");
@@ -232,9 +241,20 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
   else if (ustrcmp(elem_name, "radio") == 0) {
     const char* text = elem->Attribute("text");
     const char* group = elem->Attribute("group");
+    const char *looklike = elem->Attribute("looklike");
 
-    widget = jradio_new(text ? TRANSLATE_ATTR(text): NULL,
-			group ? ustrtol(group, NULL, 10): 1);
+    text = (text ? TRANSLATE_ATTR(text): NULL);
+    int radio_group = (group ? ustrtol(group, NULL, 10): 1);
+    
+    if (looklike != NULL && strcmp(looklike, "button") == 0) {
+      widget = ji_generic_button_new(text, JI_RADIO, JI_BUTTON);
+      if (widget)
+	jradio_set_group(widget, radio_group);
+    }
+    else {
+      widget = jradio_new(text, radio_group);
+    }
+
     if (widget) {
       bool center = bool_attr_is_true(elem, "center");
       bool right  = bool_attr_is_true(elem, "right");
