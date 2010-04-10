@@ -1171,6 +1171,9 @@ void jwidget_flush_redraw(JWidget widget)
 
   assert_valid_widget(widget);
 
+  if (jwidget_is_hidden(widget))
+    return;
+
   nrects = JI_REGION_NUM_RECTS(widget->update_region);
   if (nrects > 0) {
     /* get areas to draw */
