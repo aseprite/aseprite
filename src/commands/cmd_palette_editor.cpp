@@ -613,12 +613,6 @@ static bool palette_editor_change_hook(JWidget widget, void *data)
 {
   int imgtype = app_get_current_image_type();
   color_t color = color_index(palette_editor->get2ndColor());
-  int r = color_get_red(color);
-  int g = color_get_green(color);
-  int b = color_get_blue(color);
-  float h, s, v;
-
-  rgb_to_hsv(r, g, b, &h, &s, &v);
 
   // colorviewer_set_color(colorviewer, color);
 
@@ -633,12 +627,9 @@ static bool palette_editor_change_hook(JWidget widget, void *data)
     disable_colorbar_signals = false;
   }
 
-  jslider_set_value(R_slider, r);
-  jslider_set_value(G_slider, g);
-  jslider_set_value(B_slider, b);
-  jslider_set_value(H_slider, 255.0 * h / 360.0);
-  jslider_set_value(V_slider, 255.0 * v);
-  jslider_set_value(S_slider, 255.0 * s);
+  update_sliders_from_color(color); // Update sliders
+  update_entries_from_sliders();    // Update entries
+  update_hex_entry();		    // Update hex field
   return false;
 }
 
