@@ -606,7 +606,7 @@ static void update_sliders_from_color(color_t color)
   jslider_set_value(B_slider, color_get_blue(color));
   jslider_set_value(H_slider, color_get_hue(color));
   jslider_set_value(S_slider, color_get_saturation(color));
-  jslider_set_value(V_slider, color_get_hue(color));
+  jslider_set_value(V_slider, color_get_value(color));
 }
 
 static bool palette_editor_change_hook(JWidget widget, void *data)
