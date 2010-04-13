@@ -35,6 +35,7 @@
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/raster.h"
+#include "util/quantize.h"
 #include "widgets/statebar.h"
 
 using Vaca::Mutex;
@@ -593,6 +594,10 @@ void fop_operate(FileOp *fop)
 	fop->sprite->setFilename(reinterpret_cast<char*>(jlist_first_data(fop->seq.filename_list)));
       else
 	fop->sprite->setFilename(fop->filename);
+
+      // Quantize a palette for RGB images
+      if (fop->sprite->getImgType() == IMAGE_RGB)
+	sprite_quantize(fop->sprite);
 
       fop->sprite->markAsSaved();
     }
