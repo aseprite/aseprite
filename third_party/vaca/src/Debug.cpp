@@ -36,6 +36,7 @@
 // #include "Vaca/Thread.h"
 
 #include <cstdio>
+#include <cstdarg>
 
 using namespace std;
 using namespace Vaca;
