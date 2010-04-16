@@ -30,6 +30,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <pthread.h>
+#include <errno.h>
 
 class Vaca::Mutex::MutexImpl
 {
