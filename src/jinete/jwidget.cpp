@@ -716,7 +716,7 @@ Widget* Widget::pick(int x, int y)
     picked = this;
 
     JI_LIST_FOR_EACH(this->children, link) {
-      inside = jwidget_pick(reinterpret_cast<Widget*>(link->data), x, y);
+      inside = reinterpret_cast<Widget*>(link->data)->pick(x, y);
       if (inside) {
 	picked = inside;
 	break;

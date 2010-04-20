@@ -329,7 +329,7 @@ bool jmanager_generate_messages(JWidget manager)
 
     JI_LIST_FOR_EACH(proc_windows_list, link) {
       window = reinterpret_cast<JWidget>(link->data);
-      widget = jwidget_pick(window, jmouse_x(0), jmouse_y(0));
+      widget = window->pick(jmouse_x(0), jmouse_y(0));
       if (widget)
 	break;
     }
