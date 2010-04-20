@@ -33,13 +33,14 @@
 
 #include "config.h"
 
-#include <assert.h>
-#include <ctype.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <string.h>
+#include <cassert>
+#include <cctype>
+#include <climits>
+#include <cstdarg>
+#include <cstring>
+#include <queue>
 #ifdef REPORT_SIGNALS
-#  include <stdio.h>
+#  include <cstdio>
 #endif
 #include <allegro.h>
 #ifdef ALLEGRO_WINDOWS
@@ -1164,45 +1165,53 @@ void jwidget_set_theme(JWidget widget, JTheme theme)
 
 void jwidget_flush_redraw(JWidget widget)
 {
+  std::queue<Widget*> processing;
   int c, nrects;
   JMessage msg;
   JLink link;
   JRect rc;
 
-  assert_valid_widget(widget);
+  processing.push(widget);
 
-  if (jwidget_is_hidden(widget))
-    return;
+  while (!processing.empty()) {
+    widget = processing.front();
+    processing.pop();
 
-  nrects = JI_REGION_NUM_RECTS(widget->update_region);
-  if (nrects > 0) {
-    /* get areas to draw */
-    JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
-    jregion_intersect(widget->update_region,
-		      widget->update_region, region);
-    jregion_free(region);
+    assert_valid_widget(widget);
+
+    if (jwidget_is_hidden(widget))
+      continue;
+
+    JI_LIST_FOR_EACH(widget->children, link)
+      processing.push((Widget*)link->data);
 
     nrects = JI_REGION_NUM_RECTS(widget->update_region);
+    if (nrects > 0) {
+      /* get areas to draw */
+      JRegion region = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
+      jregion_intersect(widget->update_region,
+			widget->update_region, region);
+      jregion_free(region);
 
-    /* draw the widget */
-    for (c=0, rc=JI_REGION_RECTS(widget->update_region);
-	 c<nrects;
-	 c++, rc++) {
-      /* create the draw message */
-      msg = jmessage_new(JM_DRAW);
-      msg->draw.count = nrects-1 - c;
-      msg->draw.rect = *rc;
-      jmessage_add_dest(msg, widget);
+      nrects = JI_REGION_NUM_RECTS(widget->update_region);
 
-      /* enqueue the draw message */
-      jmanager_enqueue_message(msg);
+      /* draw the widget */
+      for (c=0, rc=JI_REGION_RECTS(widget->update_region);
+	   c<nrects;
+	   c++, rc++) {
+	/* create the draw message */
+	msg = jmessage_new(JM_DRAW);
+	msg->draw.count = nrects-1 - c;
+	msg->draw.rect = *rc;
+	jmessage_add_dest(msg, widget);
+
+	/* enqueue the draw message */
+	jmanager_enqueue_message(msg);
+      }
+
+      jregion_empty(widget->update_region);
     }
-
-    jregion_empty(widget->update_region);
   }
-
-  JI_LIST_FOR_EACH(widget->children, link)
-    jwidget_flush_redraw((JWidget)link->data);
 }
 
 void jwidget_invalidate(JWidget widget)
