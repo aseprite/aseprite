@@ -21,8 +21,8 @@ CFLAGS += -Wall -I. -Isrc -Ithird_party		\
 LFLAGS += $(THIRD_PARTY_LIBS)
 
 ifdef PROFILE
-  CFLAGS += -pg
-  LFLAGS += -pg
+  CFLAGS += -pg -O3 -DNDEBUG
+  LFLAGS += -pg -O3 -DNDEBUG
 else
 ifdef DEBUGMODE
   CFLAGS += -g3 -DDEBUGMODE
