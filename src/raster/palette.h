@@ -36,6 +36,8 @@ public:
   size_t size() const { return m_colors.size(); }
   void resize(size_t ncolors);
 
+  size_t getModifications() const { return m_modifications; }
+
   int getFrame() const { return m_frame; }
   void setFrame(int frame);
 
@@ -66,6 +68,7 @@ public:
 private:
   int m_frame;
   std::vector<ase_uint32> m_colors;
+  size_t m_modifications;
 };
 
 #endif

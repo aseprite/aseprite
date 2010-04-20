@@ -35,6 +35,7 @@ Palette::Palette(int frame, size_t ncolors)
 
   m_frame = frame;
   m_colors.resize(ncolors);
+  m_modifications = 0;
 
   std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));
 }
@@ -44,6 +45,7 @@ Palette::Palette(const Palette& palette)
 {
   m_frame = palette.m_frame;
   m_colors = palette.m_colors;
+  m_modifications = 0;
 }
 
 Palette::~Palette()
@@ -71,6 +73,8 @@ void Palette::resize(size_t ncolors)
 	      m_colors.begin()+m_colors.size(),
 	      _rgba(0, 0, 0, 255));
   }
+
+  ++m_modifications;
 }
 
 void Palette::setFrame(int frame)
@@ -86,11 +90,13 @@ void Palette::setEntry(size_t i, ase_uint32 color)
   assert(_rgba_geta(color) == 255);
 
   m_colors[i] = color;
+  ++m_modifications;
 }
 
 void Palette::copyColorsTo(Palette* dst) const
 {
   dst->m_colors = m_colors;
+  ++dst->m_modifications;
 }
 
 int Palette::countDiff(const Palette* other, int* from, int* to) const
@@ -122,6 +128,7 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
 void Palette::makeBlack()
 {
   std::fill(m_colors.begin(), m_colors.end(), _rgba(0, 0, 0, 255));
+  ++m_modifications;
 }
 
 // Creates a linear ramp in the palette.
@@ -258,6 +265,7 @@ void Palette::fromAllegro(const RGB* rgb)
 			_rgb_scale_6[rgb[i].g],
 			_rgb_scale_6[rgb[i].b], 255);
   }
+  ++m_modifications;
 }
 
 Palette* Palette::load(const char *filename)
