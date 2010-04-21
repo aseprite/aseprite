@@ -354,7 +354,8 @@ int Palette::findBestfit(int r, int g, int b) const
 #else
   register int bestfit;
 #endif
-  int i, coldiff, lowest;
+  int coldiff, lowest;
+  size_t i;
 
   assert(r >= 0 && r <= 255);
   assert(g >= 0 && g <= 255);
