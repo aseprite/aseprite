@@ -16,25 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_RASTER_H_INCLUDED
-#define RASTER_RASTER_H_INCLUDED
+#ifndef RASTER_RGBMAP_H_INCLUDED
+#define RASTER_RGBMAP_H_INCLUDED
 
-#include "raster/algo.h"
-#include "raster/blend.h"
-#include "raster/cel.h"
-#include "raster/dirty.h"
+#include "Vaca/NonCopyable.h"
 #include "raster/gfxobj.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/palette.h"
-#include "raster/path.h"
-#include "raster/pen.h"
-#include "raster/quant.h"
-#include "raster/rgbmap.h"
-#include "raster/rotate.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
-#include "raster/undo.h"
+
+class Palette;
+
+class RgbMap : public GfxObj
+	     , Vaca::NonCopyable
+{
+public:
+  RgbMap();
+  virtual ~RgbMap();
+
+  bool match(const Palette* palette) const;
+  void regenerate(const Palette* palette);
+
+  int mapColor(int r, int g, int b) const;
+
+private:
+  class RgbMapImpl* m_impl;
+};
 
 #endif

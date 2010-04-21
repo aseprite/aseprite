@@ -179,6 +179,7 @@ COMMON_SOURCES =					\
 	src/raster/palette.cpp				\
 	src/raster/path.cpp				\
 	src/raster/quant.cpp				\
+	src/raster/rgbmap.cpp				\
 	src/raster/rotate.cpp				\
 	src/raster/sprite.cpp				\
 	src/raster/stock.cpp				\

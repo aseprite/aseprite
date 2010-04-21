@@ -33,6 +33,7 @@ enum {
   GFXOBJ_SPRITE,
   GFXOBJ_STOCK,
   GFXOBJ_UNDO,
+  GFXOBJ_RGBMAP,
 };
 
 typedef unsigned int gfxobj_id;
