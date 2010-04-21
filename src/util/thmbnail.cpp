@@ -26,7 +26,6 @@
 #include "jinete/jlist.h"
 
 #include "modules/gfx.h"
-#include "modules/palettes.h"
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -39,17 +38,17 @@
 #define THUMBNAIL_W	32
 #define THUMBNAIL_H	32
 
-typedef struct Thumbnail
+struct Thumbnail
 {
   const Cel *cel;
   BITMAP* bmp;
-} Thumbnail;
+};
 
 static JList thumbnails = NULL;
 
 static Thumbnail* thumbnail_new(const Cel *cel, BITMAP* bmp);
 static void thumbnail_free(Thumbnail* thumbnail);
-static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha);
+static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, const Palette* palette);
 
 void destroy_thumbnails()
 {
@@ -86,7 +85,8 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
 
   thumbnail_render(bmp,
 		   stock_get_image(sprite->getStock(), cel->image),
-		   !layer->is_background());
+		   !layer->is_background(),
+		   sprite->getPalette(cel->frame));
 
   thumbnail = thumbnail_new(cel, bmp);
   if (!thumbnail) {
@@ -118,7 +118,7 @@ static void thumbnail_free(Thumbnail* thumbnail)
   jfree(thumbnail);
 }
 
-static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha)
+static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, const Palette* palette)
 {
   register int c, x, y;
   int w, h, x1, y1;
@@ -173,15 +173,13 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha)
 	  }
 	break;
       case IMAGE_INDEXED: {
-	Palette *pal = get_current_palette();
-
 	for (y=0; y<h; y++)
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 	    if (c != 0) {
-	      assert(c >= 0 && (size_t)c < pal->size());
+	      assert(c >= 0 && (size_t)c < palette->size());
 
-	      c = pal->getEntry(MID(0, (size_t)c, pal->size()-1));
+	      c = palette->getEntry(MID(0, (size_t)c, palette->size()-1));
 	      putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
 						_rgba_getg(c),
 						_rgba_getb(c)));
@@ -215,15 +213,13 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha)
 	  }
 	break;
       case IMAGE_INDEXED: {
-	Palette *pal = get_current_palette();
-
 	for (y=0; y<h; y++)
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 
-	    assert(c >= 0 && (size_t)c < pal->size());
+	    assert(c >= 0 && (size_t)c < palette->size());
 
-	    c = pal->getEntry(MID(0, (size_t)c, pal->size()-1));
+	    c = palette->getEntry(MID(0, (size_t)c, palette->size()-1));
 	    putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
 					      _rgba_getg(c),
 					      _rgba_getb(c)));
