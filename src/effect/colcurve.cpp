@@ -25,6 +25,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
 
 static struct {
   Curve *curve;
@@ -332,12 +333,13 @@ void apply_color_curve2 (Effect *effect)
 void apply_color_curve1(Effect *effect)
 {
   Palette *pal = get_current_palette();
-  ase_uint8 *src_address;
-  ase_uint8 *dst_address;
+  RgbMap* rgbmap = effect->sprite->getRgbMap();
+  ase_uint8* src_address;
+  ase_uint8* dst_address;
   int x, c, r, g, b;
 
-  src_address = ((ase_uint8 **)effect->src->line)[effect->row+effect->y]+effect->x;
-  dst_address = ((ase_uint8 **)effect->dst->line)[effect->row+effect->y]+effect->x;
+  src_address = ((ase_uint8**)effect->src->line)[effect->row+effect->y]+effect->x;
+  dst_address = ((ase_uint8**)effect->dst->line)[effect->row+effect->y]+effect->x;
 
   for (x=0; x<effect->w; x++) {
     if (effect->mask_address) {
@@ -364,7 +366,7 @@ void apply_color_curve1(Effect *effect)
       if (effect->target & TARGET_GREEN_CHANNEL) g = data.cmap[g];
       if (effect->target & TARGET_BLUE_CHANNEL) b = data.cmap[b];
 
-      c = orig_rgb_map->data[r>>3][g>>3][b>>3];
+      c = rgbmap->mapColor(r, g, b);
     }
 
     *(dst_address++) = MID(0, c, 255);

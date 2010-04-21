@@ -22,11 +22,12 @@
 #include "raster/image.h"
 #include "raster/quant.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
 
-Image *image_set_imgtype(Image *image, int imgtype,
+Image *image_set_imgtype(const Image* image, int imgtype,
 			 int dithering_method,
-			 RGB_MAP *rgb_map,
-			 Palette *palette)
+			 const RgbMap* rgbmap,
+			 const Palette* palette)
 {
   ase_uint32* rgb_address;
   ase_uint16* gray_address;
@@ -42,7 +43,7 @@ Image *image_set_imgtype(Image *image, int imgtype,
   else if (image->imgtype == IMAGE_RGB &&
 	   imgtype == IMAGE_INDEXED &&
 	   dithering_method == DITHERING_ORDERED) {
-    return image_rgb_to_indexed(image, 0, 0, rgb_map, palette);
+    return image_rgb_to_indexed(image, 0, 0, rgbmap, palette);
   }
 
   new_image = image_new(imgtype, image->w, image->h);
@@ -82,7 +83,7 @@ Image *image_set_imgtype(Image *image, int imgtype,
 	    if (_rgba_geta(c) == 0)
 	      *idx_address = 0;
 	    else
-	      *idx_address = rgb_map->data[r>>3][g>>3][b>>3];
+	      *idx_address = rgbmap->mapColor(r, g, b);
 	    rgb_address++;
 	    idx_address++;
 	  }
@@ -196,10 +197,10 @@ static int pattern[8][8] = {
 				 4 * ((g1)-(g2)) * ((g1)-(g2)) +	\
 				 2 * ((b1)-(b2)) * ((b1)-(b2)))
 
-Image *image_rgb_to_indexed(Image *src_image,
+Image* image_rgb_to_indexed(const Image* src_image,
 			    int offsetx, int offsety,
-			    RGB_MAP *rgb_map,
-			    Palette *palette)
+			    const RgbMap* rgbmap,
+			    const Palette* palette)
 {
   int oppr, oppg, oppb, oppnrcm;
   Image *dst_image;
@@ -223,7 +224,7 @@ Image *image_rgb_to_indexed(Image *src_image,
       a = _rgba_geta(c);
 
       if (a != 0) {
-	nearestcm = rgb_map->data[r>>3][g>>3][b>>3];
+	nearestcm = rgbmap->mapColor(r, g, b);
 	/* rgb values for nearest color */
 	nr = _rgba_getr(palette->getEntry(nearestcm));
 	ng = _rgba_getg(palette->getEntry(nearestcm));
@@ -233,7 +234,7 @@ Image *image_rgb_to_indexed(Image *src_image,
 	oppg = MID(0, 2*g - ng, 255);
 	oppb = MID(0, 2*b - nb, 255);
 	/* Nearest match for opposite color: */
-	oppnrcm = rgb_map->data[oppr>>3][oppg>>3][oppb>>3];
+	oppnrcm = rgbmap->mapColor(oppr, oppg, oppb);
 	/* If they're not the same, dither between them. */
 	/* Dither constant is measured by where the true
 	   color lies between the two nearest approximations.

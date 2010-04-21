@@ -21,7 +21,7 @@
 
 #include <allegro/color.h>
 
-/* dithering methods */
+// Dithering methods
 enum {
   DITHERING_NONE,
   DITHERING_ORDERED,
@@ -29,15 +29,16 @@ enum {
 
 class Image;
 class Palette;
+class RgbMap;
 
-Image* image_set_imgtype(Image* image, int imgtype,
+Image* image_set_imgtype(const Image* image, int imgtype,
 			 int dithering_method,
-			 RGB_MAP* rgb_map,
-			 Palette* palette);
+			 const RgbMap* rgbmap,
+			 const Palette* palette);
 
-Image* image_rgb_to_indexed(Image* src_image,
+Image* image_rgb_to_indexed(const Image* src_image,
 			    int offsetx, int offsety,
-			    RGB_MAP* rgb_map,
-			    Palette* palette);
+			    const RgbMap* rgbmap,
+			    const Palette* palette);
 
 #endif

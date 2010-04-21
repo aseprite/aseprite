@@ -68,25 +68,24 @@ protected:
   {
     Undoable undoable(m_sprite, "Sprite Size");
 
-    // get all sprite cels
+    // Get all sprite cels
     CelList cels;
     m_sprite->getCels(cels);
 
-    // for each cel...
-    for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
+    // For each cel...
+    int progress = 0;
+    for (CelIterator it = cels.begin(); it != cels.end(); ++it, ++progress) {
       Cel* cel = *it;
 
-      // change it location
+      // Change its location
       undoable.set_cel_position(cel, scale_x(cel->x), scale_y(cel->y));
-    }
 
-    // for each stock's image
-    for (int i=0; i<m_sprite->getStock()->nimage; ++i) {
-      Image* image = stock_get_image(m_sprite->getStock(), i);
+      // Get cel's image
+      Image* image = stock_get_image(m_sprite->getStock(), cel->image);
       if (!image)
 	continue;
 
-      // resize the image
+      // Resize the image
       int w = scale_x(image->w);
       int h = scale_y(image->h);
       Image* new_image = image_new(image->imgtype, MAX(1, w), MAX(1, h));
@@ -94,12 +93,12 @@ protected:
       image_fixup_transparent_colors(image);
       image_resize(image, new_image,
 		   m_resize_method,
-		   get_current_palette(),
-		   orig_rgb_map);
+		   m_sprite->getPalette(cel->frame),
+		   m_sprite->getRgbMap(cel->frame));
 
-      undoable.replace_stock_image(i, new_image);
+      undoable.replace_stock_image(cel->image, new_image);
 
-      job_progress((float)i / m_sprite->getStock()->nimage);
+      job_progress((float)progress / cels.size());
 
       // cancel all the operation?
       if (is_canceled())
@@ -120,8 +119,8 @@ protected:
 		   scale_y(m_sprite->getMask()->y-1), MAX(1, w), MAX(1, h));
       image_resize(old_bitmap, new_mask->bitmap,
 		   m_resize_method,
-		   get_current_palette(),
-		   orig_rgb_map);
+		   m_sprite->getCurrentPalette(), // Ignored
+		   m_sprite->getRgbMap());	  // Ignored
       image_free(old_bitmap);
 
       // reshrink

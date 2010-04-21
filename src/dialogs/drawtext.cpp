@@ -165,7 +165,7 @@ Image *RenderText(Sprite* sprite, const char *fontname, int size, int color, con
   return render;
 }
 
-static Image *render_text(Sprite* sprite, FONT *f, const char *text, int color)
+static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
 {
   /* TODO warning this uses Image->dat and not Image->line */
 #define DO(type, colfunc)				\
@@ -222,11 +222,9 @@ static Image *render_text(Sprite* sprite, FONT *f, const char *text, int color)
       DO(ase_uint16, _graya(_graya_getv(color), getg32(c)));
       break;
 
-    case IMAGE_INDEXED: {
-      CurrentSpriteRgbMap rgbmap;
+    case IMAGE_INDEXED:
       DO(ase_uint8, c == makecol32(255, 0, 255) ? 0: color);
       break;
-    }
   }
 
   release_bitmap(bmp);

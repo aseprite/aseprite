@@ -375,14 +375,14 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
 		frame, zoom, zoomed_func, true, false);
 
     // Draw transparent layers of the previous frame with opacity=128
-    color_map = orig_trans_map;
+    //color_map = orig_trans_map;
     global_opacity = 128;
 
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame-1, zoom, zoomed_func, false, true);
 
     // Draw transparent layers of the current frame with opacity=255
-    color_map = NULL;
+    //color_map = NULL;
     global_opacity = 255;
 
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,

@@ -31,34 +31,19 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 
-RGB_MAP *orig_rgb_map = NULL;	/* color map for the original palette
-				   (not for the mapped-palette) */
-COLOR_MAP *orig_trans_map = NULL;
-
 /**
  * The default color palette.
  */
-static Palette *ase_default_palette = NULL;
+static Palette* ase_default_palette = NULL;
 
 /**
  * Current original palette (you can use _current_palette from Allegro
  * to refer to the current system "mapped-palette").
  */
-static Palette *ase_current_palette = NULL;
-
-/* current rgb map */
-static RGB_MAP *my_rgb_map = NULL;
-static int regen_my_rgb_map = false;
+static Palette* ase_current_palette = NULL;
 
 int init_module_palette()
 {
-  orig_rgb_map = jnew(RGB_MAP, 1);
-  orig_trans_map = jnew(COLOR_MAP, 1);
-  my_rgb_map = jnew(RGB_MAP, 1);
-
-  rgb_map = my_rgb_map;
-  color_map = NULL;
-
   ase_default_palette = new Palette(0, 256);
   ase_default_palette->fromAllegro(default_palette);
 
@@ -70,25 +55,16 @@ int init_module_palette()
 
 void exit_module_palette()
 {
-  rgb_map = NULL;
-
-  if (ase_default_palette != NULL)
-    delete ase_default_palette;
-
-  if (ase_current_palette != NULL)
-    delete ase_current_palette;
-
-  jfree(my_rgb_map);
-  jfree(orig_trans_map);
-  jfree(orig_rgb_map);
+  delete ase_default_palette;
+  delete ase_current_palette;
 }
 
-Palette *get_current_palette()
+Palette* get_current_palette()
 {
   return ase_current_palette;
 }
 
-Palette *get_default_palette()
+Palette* get_default_palette()
 {
   return ase_default_palette;
 }
@@ -106,29 +82,19 @@ void set_default_palette(Palette* palette)
  */
 bool set_current_palette(const Palette *_palette, bool forced)
 {
-  const Palette *palette = _palette ? _palette: ase_default_palette;
+  const Palette* palette = _palette ? _palette: ase_default_palette;
   bool ret = false;
 
-  /* have changes */
+  // Have changes
   if (forced ||
       palette->countDiff(ase_current_palette, NULL, NULL) > 0) {
-    PALETTE rgbpal;
-
-    /* copy current palette */
+    // Copy current palette
     palette->copyColorsTo(ase_current_palette);
 
-    /* create a RGB map for the original palette */
-    palette->toAllegro(rgbpal);
-    create_rgb_table(orig_rgb_map, rgbpal, NULL);
-
-    /* create a transparency-map with the original palette */
-    rgb_map = orig_rgb_map;
-    create_trans_table(orig_trans_map, rgbpal, 128, 128, 128, NULL);
-    rgb_map = my_rgb_map;
-
-    // Create a map for the mapped-palette
-    create_rgb_table(my_rgb_map, rgbpal, NULL);
-    set_palette(rgbpal);	// Change system color palette
+    // Change system color palette
+    PALETTE allegPal;
+    palette->toAllegro(allegPal);
+    set_palette(allegPal);
 
     // Call slots in signals
     App::instance()->PaletteChange();
@@ -146,7 +112,7 @@ void set_black_palette()
   delete p;
 }
 
-/* changes a color of the current system palette */
+// Changes a color of the current system palette
 void set_current_color(int index, int r, int g, int b)
 {
   register int c;
@@ -170,22 +136,5 @@ void set_current_color(int index, int r, int g, int b)
     rgb.b = b>>2;
 
     set_color(index, &rgb);
-  }
-}
-
-//////////////////////////////////////////////////////////////////////
-
-CurrentSpriteRgbMap::CurrentSpriteRgbMap()
-{
-  rgb_map = orig_rgb_map;
-}
-
-CurrentSpriteRgbMap::~CurrentSpriteRgbMap()
-{
-  rgb_map = my_rgb_map;
-
-  if (regen_my_rgb_map) {
-    regen_my_rgb_map = false;
-    create_rgb_table(my_rgb_map, _current_palette, NULL);
   }
 }

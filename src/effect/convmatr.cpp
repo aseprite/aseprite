@@ -31,6 +31,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
 #include "util/filetoks.h"
 
 /* TODO warning: this number could be dangerous for big filters */
@@ -470,8 +471,9 @@ void apply_convolution_matrix2(Effect *effect)
 
 void apply_convolution_matrix1(Effect *effect)
 {
-  Palette* pal = get_current_palette();
-  ConvMatr* matrix = data.convmatr;
+  const Palette* pal = get_current_palette();
+  const RgbMap* rgbmap = effect->sprite->getRgbMap();
+  const ConvMatr* matrix = data.convmatr;
   const Image* src = effect->src;
   Image* dst = effect->dst;
   ase_uint8* src_address;
@@ -537,7 +539,7 @@ void apply_convolution_matrix1(Effect *effect)
 	else
 	  b = _rgba_getb(pal->getEntry(color));
 
-	*(dst_address++) = orig_rgb_map->data[r>>3][g>>3][b>>3];
+	*(dst_address++) = rgbmap->mapColor(r, g, b);
       }
     }
   }

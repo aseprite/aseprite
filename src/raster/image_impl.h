@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include "raster/image.h"
+#include "raster/palette.h"
 
 template<class Traits>
 class ImageImpl : public Image
@@ -220,7 +221,7 @@ public:
     }
   }
 
-  virtual void to_allegro(BITMAP* bmp, int x, int y) const;
+  virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const;
 
 };
 
@@ -492,7 +493,7 @@ void ImageImpl<BitmapTraits>::merge(const Image* src, int x, int y, int opacity,
 }
 
 template<>
-void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
+void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
 {
   const_address_t addr = raw_pixels();
   unsigned long bmp_address;
@@ -624,7 +625,7 @@ void ImageImpl<RgbTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 }
 
 template<>
-void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
+void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
 {
   const_address_t addr = raw_pixels();
   unsigned long bmp_address;
@@ -749,17 +750,13 @@ void ImageImpl<GrayscaleTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 }
 
 template<>
-void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
+void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
 {
-#define RGB_TRIPLET				\
-  _rgb_scale_6[_current_palette[(*addr)].r],	\
-  _rgb_scale_6[_current_palette[(*addr)].g],	\
-  _rgb_scale_6[_current_palette[(*addr)].b]
-
   const_address_t addr = raw_pixels();
   unsigned long bmp_address;
   int depth = bitmap_color_depth(bmp);
   int x, y;
+  ase_uint32 c;
 
   bmp_select(bmp);
 
@@ -805,7 +802,8 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-          bmp_write15(bmp_address, makecol15(RGB_TRIPLET));
+	  c = palette->getEntry(*addr);
+          bmp_write15(bmp_address, makecol15(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
           addr++;
           bmp_address += 2;
         }
@@ -821,7 +819,8 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-          bmp_write16(bmp_address, makecol16(RGB_TRIPLET));
+	  c = palette->getEntry(*addr);
+          bmp_write16(bmp_address, makecol16(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
           addr++;
           bmp_address += 2;
         }
@@ -837,7 +836,8 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-          bmp_write24(bmp_address, makecol24(RGB_TRIPLET));
+	  c = palette->getEntry(*addr);
+          bmp_write24(bmp_address, makecol24(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c)));
           addr++;
           bmp_address += 3;
         }
@@ -853,7 +853,8 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
         bmp_address = bmp_write_line(bmp, _y)+_x;
 
         for (x=0; x<w; x++) {
-          bmp_write32(bmp_address, makeacol32(RGB_TRIPLET, 255));
+	  c = palette->getEntry(*addr);
+          bmp_write32(bmp_address, makeacol32(_rgba_getr(c), _rgba_getg(c), _rgba_getb(c), 255));
           addr++;
           bmp_address += 4;
         }
@@ -867,7 +868,7 @@ void ImageImpl<IndexedTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
 }
 
 template<>
-void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y) const
+void ImageImpl<BitmapTraits>::to_allegro(BITMAP *bmp, int _x, int _y, const Palette* palette) const
 {
   const_address_t addr;
   unsigned long bmp_address;

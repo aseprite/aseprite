@@ -25,6 +25,7 @@
 
 class Palette;
 class Pen;
+class RgbMap;
 
 // Image Types
 enum {
@@ -60,7 +61,7 @@ public:
   virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode) = 0;
   virtual void hline(int x1, int y, int x2, int color) = 0;
   virtual void rectfill(int x1, int y1, int x2, int y2, int color) = 0;
-  virtual void to_allegro(BITMAP* bmp, int x, int y) const = 0;
+  virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const = 0;
 };
 
 Image* image_new(int imgtype, int w, int h);
@@ -90,10 +91,10 @@ void image_line(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_ellipse(Image* image, int x1, int y1, int x2, int y2, int color);
 void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);
 
-void image_to_allegro(const Image* image, BITMAP* bmp, int x, int y);
+void image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palette* palette);
 
 void image_fixup_transparent_colors(Image* image);
-void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* palette, RGB_MAP* rgb_map);
+void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palette* palette, const RgbMap* rgbmap);
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
 

@@ -19,6 +19,8 @@
 #include "effect/effect.h"
 #include "modules/palettes.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
+#include "raster/sprite.h"
 
 //////////////////////////////////////////////////////////////////////
 // Ink Processing
@@ -137,6 +139,7 @@ static void ink_hline16_transparent(int x1, int y, int x2, IToolLoop* loop)
 static void ink_hline8_transparent(int x1, int y, int x2, IToolLoop* loop)
 {
   Palette* pal = get_current_palette();
+  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
   ase_uint32 c;
   ase_uint32 tc = pal->getEntry(loop->getPrimaryColor());
   int opacity = loop->getOpacity();
@@ -145,10 +148,9 @@ static void ink_hline8_transparent(int x1, int y, int x2, IToolLoop* loop)
     (IndexedTraits,
      {
        c = _rgba_blend_normal(pal->getEntry(*src_address), tc, opacity);
-       *dst_address = orig_rgb_map->data
-	 [_rgba_getr(c)>>3]
-	 [_rgba_getg(c)>>3]
-	 [_rgba_getb(c)>>3];
+       *dst_address = rgbmap->mapColor(_rgba_getr(c),
+				       _rgba_getg(c),
+				       _rgba_getb(c));
      });
 }  
 
@@ -253,6 +255,7 @@ static void ink_hline16_blur(int x1, int y, int x2, IToolLoop* loop)
 static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 {
   Palette *pal = get_current_palette();
+  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
   int c, r, g, b, a;
   int opacity = loop->getOpacity();
   TiledMode tiled = loop->getTiledMode();
@@ -292,7 +295,7 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 	 g = _rgba_getg(c) + (g-_rgba_getg(c)) * opacity / 255;
 	 b = _rgba_getb(c) + (b-_rgba_getb(c)) * opacity / 255;
 
-	 *dst_address = orig_rgb_map->data[r>>3][g>>3][b>>3];
+	 *dst_address = rgbmap->mapColor(r, g, b);
        }
        else {
 	 *dst_address = *src_address;
@@ -334,6 +337,7 @@ static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
 {
   int color1 = loop->getPrimaryColor();
   Palette *pal = get_current_palette();
+  RgbMap* rgbmap = loop->getSprite()->getRgbMap();
   ase_uint32 c;
   ase_uint32 tc = pal->getEntry(loop->getSecondaryColor());
   int opacity = loop->getOpacity();
@@ -342,10 +346,9 @@ static void ink_hline8_replace(int x1, int y, int x2, IToolLoop* loop)
     (IndexedTraits,
      if (*src_address == color1) {
        c = _rgba_blend_normal(pal->getEntry(*src_address), tc, opacity);
-       *dst_address = orig_rgb_map->data
-	 [_rgba_getr(c)>>3]
-	 [_rgba_getg(c)>>3]
-	 [_rgba_getb(c)>>3];
+       *dst_address = rgbmap->mapColor(_rgba_getr(c),
+				       _rgba_getg(c),
+				       _rgba_getb(c));
      });
 }
 
@@ -412,7 +415,8 @@ static void ink_hline16_jumble(int x1, int y, int x2, IToolLoop* loop)
 
 static void ink_hline8_jumble(int x1, int y, int x2, IToolLoop* loop)
 {
-  Palette *pal = get_current_palette();
+  const Palette *pal = get_current_palette();
+  const RgbMap* rgbmap = loop->getSprite()->getRgbMap();
   ase_uint32 c, tc;
   int opacity = loop->getOpacity();
   Point speed(loop->getSpeed() / 4);
@@ -429,10 +433,9 @@ static void ink_hline8_jumble(int x1, int y, int x2, IToolLoop* loop)
 			     tc, opacity);
 
        if (_rgba_geta(c) >= 128)
-	 *dst_address = orig_rgb_map->data
-	   [_rgba_getr(c)>>3]
-	   [_rgba_getg(c)>>3]
-	   [_rgba_getb(c)>>3];
+	 *dst_address = rgbmap->mapColor(_rgba_getr(c),
+					 _rgba_getg(c),
+					 _rgba_getb(c));
        else
 	 *dst_address = 0;
      }

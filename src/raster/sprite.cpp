@@ -177,6 +177,17 @@ public:
     return getPalette(getCurrentFrame());
   }
 
+  RgbMap* getRgbMap(int frame) {
+    if (m_rgbMap == NULL) {
+      m_rgbMap = new RgbMap();
+      m_rgbMap->regenerate(getPalette(frame));
+    }
+    else if (!m_rgbMap->match(getPalette(frame))) {
+      m_rgbMap->regenerate(getPalette(frame));
+    }
+    return m_rgbMap;
+  }
+
   int getTotalFrames() const {
     return m_frames;
   }
@@ -406,6 +417,9 @@ private:
 
   // Data to save the file in the same format that it was loaded
   FormatOptions* m_format_options;
+
+  // Current rgb map
+  RgbMap* m_rgbMap;
 };
 
 SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int ncolors)
@@ -470,6 +484,9 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
 
   // File format options
   m_format_options = NULL;
+
+  // Initial RGB map
+  m_rgbMap = NULL;
 
   setPalette(&pal, true);
 }
@@ -618,6 +635,8 @@ SpriteImpl::~SpriteImpl()
   // Destroy file format options
   if (m_format_options)
     format_options_free(m_format_options);
+
+  delete m_rgbMap;
 }
 
 /**
@@ -1226,6 +1245,16 @@ const Palette* Sprite::getCurrentPalette() const
 Palette* Sprite::getCurrentPalette()
 {
   return m_impl->getCurrentPalette();
+}
+
+RgbMap* Sprite::getRgbMap()
+{
+  return m_impl->getRgbMap(getCurrentFrame());
+}
+
+RgbMap* Sprite::getRgbMap(int frame)
+{
+  return m_impl->getRgbMap(frame);
 }
 
 //////////////////////////////////////////////////////////////////////

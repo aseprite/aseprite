@@ -24,6 +24,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
 #include "tiled_mode.h"
 
 static struct {
@@ -57,9 +58,9 @@ static int cmp_channel(const void *p1, const void *p2)
 
 void apply_median4(Effect *effect)
 {
-  Image *src = effect->src;
+  const Image *src = effect->src;
   Image *dst = effect->dst;
-  ase_uint32 *src_address;
+  const ase_uint32 *src_address;
   ase_uint32 *dst_address;
   int x, y, dx, dy, color;
   int c, w, r, g, b, a;
@@ -125,9 +126,9 @@ void apply_median4(Effect *effect)
 
 void apply_median2(Effect *effect)
 {
-  Image *src = effect->src;
+  const Image *src = effect->src;
   Image *dst = effect->dst;
-  ase_uint16 *src_address;
+  const ase_uint16 *src_address;
   ase_uint16 *dst_address;
   int x, y, dx, dy, color;
   int c, w, k, a;
@@ -181,11 +182,12 @@ void apply_median2(Effect *effect)
 
 void apply_median1(Effect *effect)
 {
-  Palette *pal = get_current_palette();
-  Image *src = effect->src;
-  Image *dst = effect->dst;
-  ase_uint8 *src_address;
-  ase_uint8 *dst_address;
+  const Palette* pal = get_current_palette();
+  const RgbMap* rgbmap = effect->sprite->getRgbMap();
+  const Image* src = effect->src;
+  Image* dst = effect->dst;
+  const ase_uint8* src_address;
+  ase_uint8* dst_address;
   int x, y, dx, dy, color;
   int c, w, r, g, b;
   int getx, gety, addx, addy;
@@ -251,7 +253,7 @@ void apply_median1(Effect *effect)
       else
 	b = _rgba_getb(pal->getEntry(color));
 
-      *(dst_address++) = orig_rgb_map->data[r>>3][g>>3][b>>3];
+      *(dst_address++) = rgbmap->mapColor(r, g, b);
     }
   }
 }

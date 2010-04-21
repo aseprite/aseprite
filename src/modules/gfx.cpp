@@ -433,7 +433,6 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
     data = color_get_index(color);
     rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
 	     get_color_for_allegro(bitmap_color_depth(bmp), color));
-	     // palette_color[data]);
     return;
   }
 
@@ -442,8 +441,6 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
     case IMAGE_INDEXED:
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
 	       get_color_for_allegro(imgtype, color_index(get_color_for_image(imgtype, color))));
-	       // get_color_for_allegro(bitmap_color_depth(bmp), color));
-	       // palette_color[get_color_for_image(imgtype, color)]);
       break;
 
     case IMAGE_RGB:
@@ -459,10 +456,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
         rectfill(graph, 0, 0, rc.w-1, rc.h-1, get_color_for_allegro(32, color2));
       }
 
-      {
-	CurrentSpriteRgbMap rgbmap;
-	blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
-      }
+      blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
 
       destroy_bitmap(graph);
       break;
@@ -478,10 +472,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
         rectfill(graph, 0, 0, rc.w-1, rc.h-1, get_color_for_allegro(32, color2));
       }
 
-      {
-	CurrentSpriteRgbMap rgbmap;
-	blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
-      }
+      blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
 
       destroy_bitmap(graph);
       break;

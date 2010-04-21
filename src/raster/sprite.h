@@ -33,6 +33,7 @@ class Path;
 class Stock;
 class Undo;
 class Sprite;
+class RgbMap;
 struct _BoundSeg;
 
 struct PreferredEditorSettings
@@ -123,6 +124,9 @@ public:
 
   const Palette* getCurrentPalette() const;
   Palette* getCurrentPalette();
+
+  RgbMap* getRgbMap();
+  RgbMap* getRgbMap(int frame);
 
   ////////////////////////////////////////
   // Frames

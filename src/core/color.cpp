@@ -546,7 +546,7 @@ int get_color_for_image(int imgtype, color_t color)
 	  break;
 	}
 	case IMAGE_INDEXED:
-	  c = orig_rgb_map->data[r >> 3][g >> 3][b >> 3];
+	  c = get_current_palette()->findBestfit(r, g, b);
 	  break;
       }
       break;
@@ -571,7 +571,7 @@ int get_color_for_image(int imgtype, color_t color)
 	}
 	case IMAGE_INDEXED:
 	  hsv_to_rgb_int(&h, &s, &v);
-	  c = orig_rgb_map->data[h >> 3][s >> 3][v >> 3];
+	  c = get_current_palette()->findBestfit(h, s, v);
 	  break;
       }
       break;
@@ -589,7 +589,7 @@ int get_color_for_image(int imgtype, color_t color)
 	  break;
 	case IMAGE_INDEXED:
 	  c = data;
-	  c = orig_rgb_map->data[c >> 3][c >> 3][c >> 3];
+	  c = get_current_palette()->findBestfit(c, c, c);
 	  break;
       }
       break;

@@ -313,7 +313,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
       BITMAP *bmp = create_bitmap(width, height);
 
       use_current_sprite_rgb_map();
-      image_to_allegro(rendered, bmp, 0, 0);
+      image_to_allegro(rendered, bmp, 0, 0, m_sprite->getCurrentPalette());
       blit(bmp, ji_screen, 0, 0, dest_x, dest_y, width, height);
       restore_rgb_map();
 
@@ -321,21 +321,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
       destroy_bitmap(bmp);
 #else
       acquire_bitmap(ji_screen);
-
-      CurrentSpriteRgbMap rgbmap;
-      if (bitmap_color_depth(screen) == 8) {
-	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
-      }
-      else {
-	PALETTE rgbpal;
-	Palette *pal = m_sprite->getPalette(m_sprite->getCurrentFrame());
-	pal->toAllegro(rgbpal);
-
-	select_palette(rgbpal);
-	image_to_allegro(rendered, ji_screen, dest_x, dest_y);
-	unselect_palette();
-      }
-
+      image_to_allegro(rendered, ji_screen, dest_x, dest_y, m_sprite->getCurrentPalette());
       release_bitmap(ji_screen);
 
       image_free(rendered);

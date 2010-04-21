@@ -188,9 +188,6 @@ void Undoable::autocrop_sprite(int bgcolor)
   crop_sprite(x1, y1, x2-x1+1, y2-y1+1, bgcolor);
 }
 
-/**
- * @warning: it uses the current Allegro "rgb_map"
- */
 void Undoable::set_imgtype(int new_imgtype, int dithering_method)
 {
   Image *old_image;
@@ -206,13 +203,15 @@ void Undoable::set_imgtype(int new_imgtype, int dithering_method)
 
   m_sprite->getStock()->imgtype = new_imgtype;
 
+  // Use the rgbmap for the specified sprite
+  const RgbMap* rgbmap = m_sprite->getRgbMap();
+
   for (c=0; c<m_sprite->getStock()->nimage; c++) {
     old_image = stock_get_image(m_sprite->getStock(), c);
     if (!old_image)
       continue;
 
-    new_image = image_set_imgtype(old_image, new_imgtype, dithering_method,
-				  rgb_map,
+    new_image = image_set_imgtype(old_image, new_imgtype, dithering_method, rgbmap,
 				  // TODO check this out
 				  m_sprite->getCurrentPalette());
     if (!new_image)

@@ -19,14 +19,7 @@
 #ifndef MODULES_PALETTES_H_INCLUDED
 #define MODULES_PALETTES_H_INCLUDED
 
-#include "jinete/jbase.h"
-#include <allegro/color.h>
-
 class Palette;
-class Sprite;
-
-extern RGB_MAP* orig_rgb_map;
-extern COLOR_MAP* orig_trans_map;
 
 int init_module_palette();
 void exit_module_palette();
@@ -38,13 +31,6 @@ void set_default_palette(Palette* palette);
 bool set_current_palette(const Palette* palette, bool forced);
 void set_black_palette();
 void set_current_color(int index, int r, int g, int b);
-
-class CurrentSpriteRgbMap
-{
-public:
-  CurrentSpriteRgbMap();
-  ~CurrentSpriteRgbMap();
-};
 
 #endif
 

@@ -301,7 +301,7 @@ static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
       clear_to_color(bmp, makecol(0, 0, 0));
       image_to_allegro(pen->get_image(), bmp,
 		       bmp->w/2 - pen->get_size()/2,
-		       bmp->h/2 - pen->get_size()/2);
+		       bmp->h/2 - pen->get_size()/2, NULL);
       blit(bmp, ji_screen, 0, 0, widget->rc->x1, widget->rc->y1,
 	   bmp->w, bmp->h);
       destroy_bitmap(bmp);

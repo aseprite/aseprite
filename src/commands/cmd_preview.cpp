@@ -120,7 +120,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
       image = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
 					 sprite->getCurrentFrame(), 0);
       if (image) {
-	image_to_allegro(image, bmp, 0, 0);
+	image_to_allegro(image, bmp, 0, 0, sprite->getCurrentPalette());
 	image_free(image);
       }
 
@@ -262,7 +262,7 @@ void PreviewCommand::preview_sprite(Context* context, int flags)
 	    image = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
 					       sprite->getCurrentFrame(), 0);
 	    if (image) {
-	      image_to_allegro(image, bmp, 0, 0);
+	      image_to_allegro(image, bmp, 0, 0, sprite->getCurrentPalette());
 	      image_free(image);
 	    }
 	  }

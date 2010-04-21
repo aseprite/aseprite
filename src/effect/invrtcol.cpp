@@ -22,6 +22,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
 
 void apply_invert_color4(Effect *effect)
 {
@@ -96,6 +97,7 @@ void apply_invert_color2(Effect *effect)
 void apply_invert_color1(Effect *effect)
 {
   Palette *pal = get_current_palette();
+  RgbMap* rgbmap = effect->sprite->getRgbMap();
   ase_uint8 *src_address;
   ase_uint8 *dst_address;
   int x, c, r, g, b;
@@ -120,15 +122,15 @@ void apply_invert_color1(Effect *effect)
     if (effect->target & TARGET_INDEX_CHANNEL)
       c ^= 0xff;
     else {
-      r = _rgba_getr(pal->getEntry(c))>>3;
-      g = _rgba_getg(pal->getEntry(c))>>3;
-      b = _rgba_getb(pal->getEntry(c))>>3;
+      r = _rgba_getr(pal->getEntry(c));
+      g = _rgba_getg(pal->getEntry(c));
+      b = _rgba_getb(pal->getEntry(c));
 
-      if (effect->target & TARGET_RED_CHANNEL) r ^= 0x1f;
-      if (effect->target & TARGET_GREEN_CHANNEL) g ^= 0x1f;
-      if (effect->target & TARGET_BLUE_CHANNEL) b ^= 0x1f;
+      if (effect->target & TARGET_RED_CHANNEL  ) r ^= 0xff;
+      if (effect->target & TARGET_GREEN_CHANNEL) g ^= 0xff;
+      if (effect->target & TARGET_BLUE_CHANNEL ) b ^= 0xff;
 
-      c = orig_rgb_map->data[r][g][b];
+      c = rgbmap->mapColor(r, g, b);
     }
 
     *(dst_address++) = c;

@@ -102,7 +102,6 @@ void ChangeImageTypeCommand::execute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {
-    CurrentSpriteRgbMap rgbmap;
     Undoable undoable(sprite, "Color Mode Change");
     undoable.set_imgtype(m_imgtype, m_dithering);
 

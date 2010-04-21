@@ -233,9 +233,9 @@ void clipboard::paste(SpriteWriter& sprite)
   if (clipboard_image->imgtype == sprite->getImgType())
     src_image = clipboard_image;
   else {
-    CurrentSpriteRgbMap rgbmap;
+    RgbMap* rgbmap = sprite->getRgbMap();
     src_image = image_set_imgtype(clipboard_image, sprite->getImgType(), DITHERING_NONE,
-				  rgb_map, sprite->getPalette(sprite->getCurrentFrame()));
+				  rgbmap, sprite->getPalette(sprite->getCurrentFrame()));
   }
 
   // do the interactive-transform loop (where the user can move the floating image)
@@ -350,7 +350,7 @@ static bool interactive_transform(Editor* editor,
   /* generate the preview bitmap (for fast-blitting) */
   preview = create_bitmap(image->w, image->h);
   mask_color = bitmap_mask_color(preview);
-  image_to_allegro(image, preview, 0, 0);
+  image_to_allegro(image, preview, 0, 0, get_current_palette());
 
   switch (image->imgtype) {
 

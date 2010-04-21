@@ -70,7 +70,7 @@ typedef struct ThumbnailData
   JWidget fileview;
   Image* thumbnail;
   JThread thread;
-  PALETTE rgbpal;
+  Palette* palette;
 } ThumbnailData;
 
 static FileView* fileview_data(JWidget widget);
@@ -781,16 +781,16 @@ static void openfile_bg(void *_data)
     if (fop_is_stop(fop))
       delete fop->sprite;
     else {
-      /* the palette to convert the Image to a BITMAP */
-      sprite->getPalette(0)->toAllegro(data->rgbpal);
+      // The palette to convert the Image to a BITMAP
+      data->palette = new Palette(*sprite->getPalette(0));
 
-      /* render the 'sprite' in one plain 'image' */
+      // Render the 'sprite' in one plain 'image'
       image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
       image_clear(image, 0);
       sprite->render(image, 0, 0);
       delete sprite;
 
-      /* calculate the thumbnail size */
+      // Calculate the thumbnail size
       thumb_w = MAX_THUMBNAIL_SIZE * image->w / MAX(image->w, image->h);
       thumb_h = MAX_THUMBNAIL_SIZE * image->h / MAX(image->w, image->h);
       if (MAX(thumb_w, thumb_h) > MAX(image->w, image->h)) {
@@ -800,7 +800,7 @@ static void openfile_bg(void *_data)
       thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
       thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
 
-      /* stretch the 'image' */
+      // Stretch the 'image'
       data->thumbnail = image_new(image->imgtype, thumb_w, thumb_h);
       image_clear(data->thumbnail, 0);
       image_scale(data->thumbnail, image, 0, 0, thumb_w, thumb_h);
@@ -830,12 +830,12 @@ static void monitor_thumbnail_generation(void *_data)
 				     data->thumbnail->w,
 				     data->thumbnail->h);
 
-      select_palette(data->rgbpal);
-      image_to_allegro(data->thumbnail, bmp, 0, 0);
-      unselect_palette();
+      image_to_allegro(data->thumbnail, bmp, 0, 0, data->palette);
 
-      image_free(data->thumbnail);
+      delete data->thumbnail;	// image
+      delete data->palette;
       data->thumbnail = NULL;
+      data->palette = NULL;
 
       fileitem_set_thumbnail(data->fileitem, bmp);
 
@@ -848,8 +848,9 @@ static void monitor_thumbnail_generation(void *_data)
 
     remove_gui_monitor(data->monitor);
   }
-  else
+  else {
     jwidget_dirty(data->fileview);
+  }
 }
 
 /**

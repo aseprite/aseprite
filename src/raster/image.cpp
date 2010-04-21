@@ -29,6 +29,7 @@
 #include "raster/image.h"
 #include "raster/image_impl.h"
 #include "raster/palette.h"
+#include "raster/rgbmap.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -317,9 +318,9 @@ void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color)
   algo_ellipsefill(x1, y1, x2, y2, &data, (AlgoHLine)hline_for_image);
 }
 
-void image_to_allegro(const Image* image, BITMAP *bmp, int x, int y)
+void image_to_allegro(const Image* image, BITMAP *bmp, int x, int y, const Palette* palette)
 {
-  image->to_allegro(bmp, x, y);
+  image->to_allegro(bmp, x, y, palette);
 }
 
 /**
@@ -417,7 +418,7 @@ void image_fixup_transparent_colors(Image* image)
  * recommended to use @ref image_fixup_transparent_colors function
  * over the source image @a src before using this routine.
  */
-void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pal, RGB_MAP* rgb_map)
+void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palette* pal, const RgbMap* rgbmap)
 {
   switch (method) {
 
@@ -519,7 +520,7 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, Palette* pa
 		       (_rgba_getb(pal->getEntry(color[2]))*u2 + _rgba_getb(pal->getEntry(color[3]))*u1)*v1);
 	      int a = (((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
 		       ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
-	      dst_color = a > 127 ? rgb_map->data[r>>3][g>>3][b>>3]: 0;
+	      dst_color = a > 127 ? rgbmap->mapColor(r, g, b): 0;
 	      break;
 	    }
 	    case IMAGE_BITMAP: {
