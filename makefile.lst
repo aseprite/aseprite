@@ -6,6 +6,13 @@
 ASE = aseprite$(EXE)
 
 COMMON_SOURCES =					\
+	src/app.cpp					\
+	src/ase_exception.cpp				\
+	src/console.cpp					\
+	src/context.cpp					\
+	src/recent_files.cpp				\
+	src/ui_context.cpp				\
+	src/undoable.cpp				\
 	src/commands/cmd_about.cpp			\
 	src/commands/cmd_advanced_mode.cpp		\
 	src/commands/cmd_background_from_layer.cpp	\
@@ -226,14 +233,7 @@ COMMON_OBJS = $(addprefix $(OBJ_DIR)/,				\
 	          $(notdir $(basename $(COMMON_SOURCES)))))
 
 ASE_SOURCES = \
-	src/app.cpp						\
-	src/ase_exception.cpp					\
-	src/console.cpp						\
-	src/context.cpp						\
 	src/main.cpp						\
-	src/recent_files.cpp					\
-	src/ui_context.cpp					\
-	src/undoable.cpp					\
 	$(COMMON_SOURCES)
 
 ASE_OBJS = $(addprefix $(OBJ_DIR)/,				\
