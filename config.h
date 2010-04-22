@@ -17,29 +17,30 @@
  */
 
 #ifdef __ASE_CONFIG_H
-#  error You cannot use config.h two times
+#error You cannot use config.h two times
 #endif
 
 #define __ASE_CONFIG_H
 #define _CRT_SECURE_NO_WARNINGS
 
-/* general information */
+// General information
 #define PACKAGE			"ASE"
-#define VERSION			"0.8.0"
+#define VERSION			"0.8.0-beta1"
+#define ASE_BETA		1
 #define WEBSITE			"http://www.aseprite.org/"
 #define COPYRIGHT		"Copyright (C) 2001-2010 David Capello"
 
 #define PRINTF			verbose_printf
 
-/* defined in src/core/core.c */
-void verbose_printf(const char *format, ...);
+// Defined in src/core/core.c
+void verbose_printf(const char* format, ...);
 
-/* strings */
-const char *msgids_get(const char *id); /* src/intl/msgids.[ch] */
+// Strings
+const char* msgids_get(const char* id); // src/intl/msgids.[ch]
 
 #define _(msgid) (msgids_get(msgid))
 
-// asserts
+// Asserts
 #include <cassert>
 
 #include <math.h>

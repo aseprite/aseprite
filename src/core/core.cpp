@@ -42,8 +42,14 @@
 
 /**
  * Current running mode of ASE.
+ *
+ * In beta releases it starts with MODE_VERBOSE value.
  */
-int ase_mode = 0;
+#ifdef ASE_BETA
+  int ase_mode = MODE_VERBOSE;
+#else
+  int ase_mode = 0;
+#endif
 
 #ifdef NEED_LOG
 /* log file info */
