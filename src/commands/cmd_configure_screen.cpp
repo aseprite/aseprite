@@ -28,6 +28,7 @@
 #include "console.h"
 #include "app.h"
 #include "core/dirs.h"
+#include "gfxmode.h"
 #include "intl/intl.h"
 #include "dialogs/options.h"
 #include "modules/gui.h"
@@ -36,23 +37,15 @@
 
 #include "tinyxml.h"
 
-static int new_card, new_w, new_h, new_depth, new_scaling;
-static int old_card, old_w, old_h, old_depth, old_scaling;
-
 static int timer_to_accept;
 static int seconds_to_accept;
 
-static bool try_new_gfx_mode(Context* context);
 static bool alert_msg_proc(JWidget widget, JMessage msg);
 
 //////////////////////////////////////////////////////////////////////
 
 class ConfigureScreen : public Command
 {
-  std::vector<std::pair<int, int> > m_resolutions;
-  std::vector<int> m_colordepths;
-  std::vector<int> m_pixelscale;
-
 public:
   ConfigureScreen();
   Command* clone() const { return new ConfigureScreen(*this); }
@@ -61,8 +54,12 @@ protected:
   void execute(Context* context);
 
 private:
-  void show_dialog(Context* context);
   void load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale);
+
+  GfxMode m_newMode;
+  std::vector<std::pair<int, int> > m_resolutions;
+  std::vector<int> m_colordepths;
+  std::vector<int> m_pixelscale;
 };
 
 ConfigureScreen::ConfigureScreen()
@@ -74,27 +71,10 @@ ConfigureScreen::ConfigureScreen()
 
 void ConfigureScreen::execute(Context* context)
 {
-  /* get the active status */
-  old_card    = gfx_driver->id;
-  old_w       = SCREEN_W;
-  old_h       = SCREEN_H;
-  old_depth   = bitmap_color_depth(screen);
-  old_scaling = get_screen_scaling();
+  CurrentGfxModeGuard currentGfxModeGuard;
+  m_newMode = currentGfxModeGuard.getOriginal(); // Default values
 
-  /* default values */
-  new_card = old_card;
-  new_w = old_w;
-  new_h = old_h;
-  new_depth = old_depth;
-  new_scaling = old_scaling;
-
-  show_dialog(context);
-}
-
-void ConfigureScreen::show_dialog(Context* context)
-{
   JWidget resolution, color_depth, pixel_scale, fullscreen;
-
   FramePtr window(load_widget("configure_screen.xml", "configure_screen"));
   get_widgets(window,
 	      "resolution", &resolution,
@@ -112,15 +92,15 @@ void ConfigureScreen::show_dialog(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == jwidget_find_name(window, "ok")) {
-    new_w = m_resolutions[jcombobox_get_selected_index(resolution)].first;
-    new_h = m_resolutions[jcombobox_get_selected_index(resolution)].second;
-    new_depth = m_colordepths[jcombobox_get_selected_index(color_depth)];
-    new_scaling = m_pixelscale[jcombobox_get_selected_index(pixel_scale)];
-    new_card = jwidget_is_selected(fullscreen) ? GFX_AUTODETECT_FULLSCREEN:
-						 GFX_AUTODETECT_WINDOWED;
+    m_newMode.setWidth(m_resolutions[jcombobox_get_selected_index(resolution)].first);
+    m_newMode.setHeight(m_resolutions[jcombobox_get_selected_index(resolution)].second);
+    m_newMode.setDepth(m_colordepths[jcombobox_get_selected_index(color_depth)]);
+    m_newMode.setScaling(m_pixelscale[jcombobox_get_selected_index(pixel_scale)]);
+    m_newMode.setCard(jwidget_is_selected(fullscreen) ? GFX_AUTODETECT_FULLSCREEN:
+							GFX_AUTODETECT_WINDOWED);
 
-    /* setup graphics mode */
-    if (try_new_gfx_mode(context)) {
+    // Setup graphics mode
+    if (currentGfxModeGuard.tryGfxMode(m_newMode)) {
       FramePtr alert_window(jalert_new("Confirm Screen"
 				       "<<Do you want to keep this screen resolution?"
 				       "<<In 10 seconds the screen will be restored."
@@ -136,19 +116,13 @@ void ConfigureScreen::show_dialog(Context* context)
 
       if (alert_window->get_killer() != NULL &&
 	  ustrcmp(alert_window->get_killer()->getName(), "button-1") == 0) {
-	/* do nothing */
-      }
-      else {
-	new_card = old_card;
-	new_w = old_w;
-	new_h = old_h;
-	new_depth = old_depth;
-	new_scaling = old_scaling;
-
-	try_new_gfx_mode(context);
+	// Keep the current graphics mode
+	currentGfxModeGuard.keep();
       }
     }
   }
+
+  // "currentGfxModeGuard" destruction keeps the new graphics mode or restores the old one
 }
 
 void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale)
@@ -197,7 +171,7 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	    sprintf(buf, "%dx%d", w, h);
 
 	  jcombobox_add_string(resolution, buf, NULL);
-	  if (old_w == w && old_h == h) {
+	  if (m_newMode.getWidth() == w && m_newMode.getHeight() == h) {
 	    old_res_selected = true;
 	    jcombobox_select_index(resolution, jcombobox_get_count(resolution)-1);
 	  }
@@ -211,7 +185,7 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	  m_colordepths.push_back(bpp);
 
 	  jcombobox_add_string(color_depth, label, NULL);
-	  if (old_depth == bpp)
+	  if (m_newMode.getDepth() == bpp)
 	    jcombobox_select_index(color_depth, jcombobox_get_count(color_depth)-1);
 	}
       }
@@ -223,7 +197,7 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	  m_pixelscale.push_back(factor);
 
 	  jcombobox_add_string(pixel_scale, label, NULL);
-	  if (old_scaling == factor)
+	  if (m_newMode.getScaling() == factor)
 	    jcombobox_select_index(pixel_scale, jcombobox_get_count(pixel_scale)-1);
 	}
       }
@@ -236,73 +210,12 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 
   // Current screen size
   if (!old_res_selected) {
-    m_resolutions.insert(m_resolutions.begin(), std::make_pair(old_w, old_h));
+    m_resolutions.insert(m_resolutions.begin(), std::make_pair(m_newMode.getWidth(), m_newMode.getHeight()));
 
     sprintf(buf, "%dx%d (Current)", m_resolutions[0].first, m_resolutions[0].second);
     jcombobox_insert_string(resolution, 0, buf, NULL);
     jcombobox_select_index(resolution, 0);
   }
-}
-
-static bool try_new_gfx_mode(Context* context)
-{
-  /* try change the new graphics mode */
-  set_color_depth(new_depth);
-  set_screen_scaling(new_scaling);
-  if (set_gfx_mode(new_card, new_w, new_h, 0, 0) < 0) {
-    /* error!, well, we need to return to the old graphics mode */
-    set_color_depth(old_depth);
-    set_screen_scaling(old_scaling);
-    if (set_gfx_mode(old_card, old_w, old_h, 0, 0) < 0) {
-      /* oh no! more errors!, we can't restore the old graphics mode! */
-      set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      user_printf(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
-      exit(1);
-    }
-    /* only print a message of the old error */
-    else {
-      gui_setup_screen(true);
-
-      /* set to a black palette */
-      set_black_palette();
-
-      /* restore palette all screen stuff */
-      {
-	const CurrentSpriteReader sprite(context);
-	app_refresh_screen(sprite);
-      }
-
-      Console console;
-      console.printf(_("Error setting graphics mode: %dx%d %d bpp\n"),
-		     new_w, new_h, new_depth);
-
-      return false;
-    }
-  }
-  /* the new graphics mode is working */
-  else {
-    gui_setup_screen(true);
-
-    /* set to a black palette */
-    set_black_palette();
-
-    // restore palette all screen stuff
-    {
-      const CurrentSpriteReader sprite(context);
-      app_refresh_screen(sprite);
-    }
-  }
-  
-  /* setup mouse */
-  _setup_mouse_speed();
-
-  /* redraw top window */
-  if (app_get_top_window()) {
-    app_get_top_window()->remap_window();
-    jmanager_refresh_screen();
-  }
-
-  return true;
 }
 
 static bool alert_msg_proc(JWidget widget, JMessage msg)
