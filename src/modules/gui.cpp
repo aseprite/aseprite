@@ -44,6 +44,7 @@
 #include "core/drop_files.h"
 #include "dialogs/options.h"
 #include "intl/msgids.h"
+#include "gfxmode.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -86,6 +87,8 @@ static struct
 			{    0,   0, 0 } };
 
 static int try_depths[] = { 32, 24, 16, 15 };
+
+static GfxMode lastWorkingGfxMode;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -514,7 +517,7 @@ void gui_feedback()
 
 void gui_flip_screen()
 {
-  /* double buffering? */
+  // Double buffering?
   if (double_buffering && ji_screen && screen) {
     jmouse_draw_cursor();
 
@@ -532,6 +535,17 @@ void gui_flip_screen()
       }
     }
   }
+  // This is a strange Allegro bug where the "screen" pointer is lost,
+  // so we have to reconstruct it changing the gfx mode again
+  else if (screen == NULL) {
+    if (!lastWorkingGfxMode.setGfxMode()) {
+      set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+      user_printf(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
+      exit(1);
+    }
+  }
+  else
+    lastWorkingGfxMode.updateWithCurrentMode();
 }
 
 /**
