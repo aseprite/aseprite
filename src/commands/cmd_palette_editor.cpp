@@ -266,7 +266,6 @@ void PaletteEditorCommand::execute(Context* context)
 
   // Show the specified target color
   {
-    int imgtype = app_get_current_image_type();
     color_t color =
       (m_background ? context->getSettings()->getBgColor():
   		      context->getSettings()->getFgColor());
@@ -611,7 +610,6 @@ static void update_sliders_from_color(color_t color)
 
 static bool palette_editor_change_hook(JWidget widget, void *data)
 {
-  int imgtype = app_get_current_image_type();
   color_t color = color_index(palette_editor->get2ndColor());
 
   // colorviewer_set_color(colorviewer, color);
@@ -705,7 +703,6 @@ static void on_color_changed(color_t color)
   if (disable_colorbar_signals)
     return;
 
-  int imgtype = app_get_current_image_type();
   int index = color_get_index(color);
   palette_editor->selectColor(index);
 
