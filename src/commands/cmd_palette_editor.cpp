@@ -703,14 +703,16 @@ static void on_color_changed(color_t color)
   if (disable_colorbar_signals)
     return;
 
-  int index = color_get_index(color);
-  palette_editor->selectColor(index);
+  if (color_type(color) == COLOR_TYPE_INDEX) {
+    int index = color_get_index(color);
+    palette_editor->selectColor(index);
 
-  update_sliders_from_color(color); // Update sliders
-  update_entries_from_sliders();    // Update entries
-  update_hex_entry();		    // Update hex field
+    update_sliders_from_color(color); // Update sliders
+    update_entries_from_sliders();    // Update entries
+    update_hex_entry();		    // Update hex field
 
-  jwidget_flush_redraw(window);
+    jwidget_flush_redraw(window);
+  }
 }
 
 static void set_new_palette(Palette* palette)
