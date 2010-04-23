@@ -134,6 +134,8 @@ void Context::execute_command(Command* command, Params* params)
 
   assert(command != NULL);
 
+  PRINTF("Executing '%s' command.\n", command->short_name());
+
   try {
     if (params)
       command->load_params(params);
@@ -142,13 +144,22 @@ void Context::execute_command(Command* command, Params* params)
       command->execute(this);
   }
   catch (ase_exception& e) {
+    PRINTF("ase_exception caught executing '%s' command\n%s\n",
+	   command->short_name(), e.what());
+
     e.show();
   }
   catch (std::exception& e) {
+    PRINTF("std::exception caught executing '%s' command\n%s\n",
+	   command->short_name(), e.what());
+
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
 #ifndef DEBUGMODE
   catch (...) {
+    PRINTF("unknown exception executing '%s' command\n",
+	   command->short_name());
+
     console.printf("An unknown error ocurred executing the command.\n"
   		   "Please save your work, close the program, try it\n"
 		   "again, and report this bug.\n\n"
