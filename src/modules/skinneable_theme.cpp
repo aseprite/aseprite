@@ -133,6 +133,34 @@ SkinneableTheme::SkinneableTheme()
   sheet_mapping["colorbar_border_fg"] = PART_COLORBAR_BORDER_FG_NW;
   sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
 
+  reload_skin();
+}
+
+SkinneableTheme::~SkinneableTheme()
+{
+  for (int c=0; c<JI_CURSORS; ++c)
+    if (m_cursors[c])
+      destroy_bitmap(m_cursors[c]);
+
+  for (int c=0; c<PARTS; ++c)
+    destroy_bitmap(m_part[c]);
+
+  for (std::map<std::string, BITMAP*>::iterator
+	 it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
+    destroy_bitmap(it->second);
+  }
+
+  destroy_bitmap(m_sheet_bmp);
+}
+
+// Call ji_regen_theme after this
+void SkinneableTheme::reload_skin()
+{
+  if (m_sheet_bmp) {
+    destroy_bitmap(m_sheet_bmp);
+    m_sheet_bmp = NULL;
+  }
+
   // Load the skin sheet
   std::string sheet_filename = ("skins/" + m_selected_skin + "/sheet.png");
   {
@@ -153,23 +181,6 @@ SkinneableTheme::SkinneableTheme()
   }
   if (!m_sheet_bmp)
     throw ase_exception("Error loading %s file", sheet_filename.c_str());
-}
-
-SkinneableTheme::~SkinneableTheme()
-{
-  for (int c=0; c<JI_CURSORS; ++c)
-    if (m_cursors[c])
-      destroy_bitmap(m_cursors[c]);
-
-  for (int c=0; c<PARTS; ++c)
-    destroy_bitmap(m_part[c]);
-
-  for (std::map<std::string, BITMAP*>::iterator
-	 it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
-    destroy_bitmap(it->second);
-  }
-
-  destroy_bitmap(m_sheet_bmp);
 }
 
 std::string SkinneableTheme::get_font_filename() const

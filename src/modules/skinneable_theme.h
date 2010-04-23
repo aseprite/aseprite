@@ -25,6 +25,9 @@
 #include "jinete/jtheme.h"
 #include "jinete/jrect.h"
 #include "Vaca/Property.h"
+#include "Vaca/Rect.h"
+
+using Vaca::Rect;
 
 class SkinProperty : public Vaca::Property
 {
@@ -419,6 +422,8 @@ class SkinneableTheme : public jtheme
 public:
   SkinneableTheme();
   ~SkinneableTheme();
+
+  void reload_skin();
 
   std::string get_font_filename() const;
 

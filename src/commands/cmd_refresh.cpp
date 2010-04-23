@@ -25,10 +25,12 @@
 #include <psapi.h>
 #endif
 
+#include "jinete/jtheme.h"
 #include "jinete/jsystem.h"
 
-#include "commands/command.h"
 #include "app.h"
+#include "commands/command.h"
+#include "modules/skinneable_theme.h"
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 
@@ -58,12 +60,19 @@ void RefreshCommand::execute(Context* context)
   clear_to_color(screen, makecol(0, 0, 0));
   jmouse_show();
 
+  // Reload skin
+  {
+    SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
+    theme->reload_skin();
+    ji_regen_theme();
+  }
+
   {
     const CurrentSpriteReader sprite(context);
     app_refresh_screen(sprite);
   }
 
-  /* print memory information */
+  // Print memory information
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE
   {
     PROCESS_MEMORY_COUNTERS pmc;
