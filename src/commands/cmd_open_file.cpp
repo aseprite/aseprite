@@ -185,23 +185,20 @@ void OpenFileCommand::execute(Context* context)
 	  jthread_join(data->thread);
 
 	  // Show any error
-	  if (fop->error) {
+	  if (fop->error)
 	    console.printf(fop->error);
+
+	  Sprite *sprite = fop->sprite;
+	  if (sprite) {
+	    UIContext* context = UIContext::instance();
+
+	    RecentFiles::addRecentFile(fop->filename);
+	    context->add_sprite(sprite);
+
+	    set_sprite_in_more_reliable_editor(sprite);
+	  }
+	  else if (!fop_is_stop(fop))
 	    unrecent = true;
-	  }
-	  else {
-	    Sprite *sprite = fop->sprite;
-	    if (sprite) {
-	      UIContext* context = UIContext::instance();
-
-	      RecentFiles::addRecentFile(fop->filename);
-	      context->add_sprite(sprite);
-
-	      set_sprite_in_more_reliable_editor(sprite);
-	    }
-	    else if (!fop_is_stop(fop))
-	      unrecent = true;
-	  }
 
 	  delete data->progress;
 	  jwidget_free(data->alert_window);
