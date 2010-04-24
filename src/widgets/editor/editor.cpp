@@ -898,11 +898,12 @@ bool Editor::msg_proc(JMessage msg)
 
 	  editor_setcursor(msg->mouse.x, msg->mouse.y);
 	}
-	/* move frames position */
-	else if (m_ctrl_pressed) {
+	// Move frames position
+	else if (m_ctrl_pressed ||
+		 current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
 	  if ((m_sprite->getCurrentLayer()) &&
 	      (m_sprite->getCurrentLayer()->type == GFXOBJ_LAYER_IMAGE)) {
-	    /* TODO you can move the `Background' with tiled mode */
+	    // TODO you can move the `Background' with tiled mode
 	    if (m_sprite->getCurrentLayer()->is_background()) {
 	      jalert(_(PACKAGE
 		       "<<You can't move the `Background' layer."

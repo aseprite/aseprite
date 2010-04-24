@@ -119,12 +119,16 @@ public:
 class MoveInk : public ToolInk
 {
 public:
+  bool isCelMovement() const { return true; }
+
   void prepareInk(IToolLoop* loop)
   {
+    // Do nothing
   }
 
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
   {
+    // Do nothing
   }
 };
 
