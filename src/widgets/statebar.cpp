@@ -342,16 +342,17 @@ bool StatusBar::msg_proc(JMessage msg)
 	x += (32+4)*jguiscale();
 
 	// Draw color description
-	char buf[256];		// TODO warning buffer overflow
+	char buf[512];		// TODO warning buffer overflow
 	color_to_formalstring(app_get_current_image_type(),
 			      m_color, buf, sizeof(buf), true);
+	if (m_alpha < 255)
+	  usprintf(buf+ustrlen(buf), ", Alpha %d", m_alpha);
 
 	textout_ex(doublebuffer, this->getFont(), buf,
 		   x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
 		   text_color, -1);
 
 	x += ji_font_text_len(this->getFont(), buf) + 4*jguiscale();
-	
       }
 
       // Status bar text
