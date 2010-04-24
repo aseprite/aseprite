@@ -18,8 +18,6 @@
 
 #include "app.h"		// TODO avoid to include this file
 #include "raster/undo.h"
-#include "commands/commands.h"
-#include "commands/params.h"
 
 #include "tools/ink_processing.h"
 
@@ -93,13 +91,7 @@ public:
 
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
   {
-    Command* eyedropper_cmd = 
-      CommandsModule::instance()->get_command_by_name(CommandId::eyedropper);
-
-    Params params;
-    params.set("target", m_target == Bg ? "background": "foreground");
-
-    loop->getContext()->execute_command(eyedropper_cmd, &params);
+    // Do nothing
   }
 
 };

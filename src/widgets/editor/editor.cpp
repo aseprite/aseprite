@@ -628,11 +628,14 @@ void Editor::hide_drawing_cursor()
 
 void Editor::editor_update_statusbar_for_standby()
 {
+  UIContext* context = UIContext::instance();
+  Tool* current_tool = context->getSettings()->getCurrentTool();
   int x, y;
   screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 
   // For eye-dropper
-  if (m_alt_pressed) {
+  if (m_alt_pressed ||
+      current_tool->getInk(0)->isEyedropper()) {
     int imgtype = m_sprite->getImgType();
     ase_uint32 pixel = m_sprite->getPixel(x, y);
     color_t color = color_from_image(imgtype, pixel);
@@ -648,6 +651,7 @@ void Editor::editor_update_statusbar_for_standby()
 
     app_get_statusbar()->showColor(0, buf, color, alpha);
   }
+  // For other tools
   else {
     app_get_statusbar()->setStatusText
       (0, "Pos %d %d, Size %d %d, Frame %d",
@@ -878,8 +882,9 @@ bool Editor::msg_proc(JMessage msg)
 	set_current_editor(this);
 	context->set_current_sprite(m_sprite);
 
-	/* move the scroll */
-	if (msg->mouse.middle || m_space_pressed ||
+	// Move the scroll
+	if (msg->mouse.middle ||
+	    m_space_pressed ||
 	    current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
 	  m_state = EDITOR_STATE_MOVING_SCROLL;
 
@@ -910,7 +915,8 @@ bool Editor::msg_proc(JMessage msg)
 	  }
 	}
 	// Call the eyedropper command
-	else if (m_alt_pressed) {
+	else if (m_alt_pressed ||
+		 current_tool->getInk(msg->mouse.right ? 1: 0)->isEyedropper()) {
 	  Command* eyedropper_cmd = 
 	    CommandsModule::instance()->get_command_by_name(CommandId::eyedropper);
 
@@ -1110,7 +1116,7 @@ bool Editor::msg_proc(JMessage msg)
       if (jwidget_has_mouse(this)) {
 	switch (msg->key.scancode) {
 	  
-	  /* eye-dropper is activated with ALT key */
+	  // Eye-dropper is activated with ALT key
 	  case KEY_ALT:
 	    m_alt_pressed = true;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
@@ -1138,7 +1144,7 @@ bool Editor::msg_proc(JMessage msg)
     case JM_KEYRELEASED:
       switch (msg->key.scancode) {
 
-	/* eye-dropper is deactivated with ALT key */
+	// Eye-dropper is deactivated with ALT key
 	case KEY_ALT:
 	  if (m_alt_pressed) {
 	    m_alt_pressed = false;
