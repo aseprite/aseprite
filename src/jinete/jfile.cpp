@@ -358,14 +358,17 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     if (childspacing)
       widget->child_spacing = ustrtol(childspacing, NULL, 10);
 
-    if (width || minwidth || maxwidth ||
-	height || minheight || maxheight) {
+    if (width || minwidth ||
+	height || minheight) {
       int w = (width || minwidth) ? ustrtol(width ? width: minwidth, NULL, 10): 0;
       int h = (height || minheight) ? ustrtol(height ? height: minheight, NULL, 10): 0;
       jwidget_set_min_size(widget, w*jguiscale(), h*jguiscale());
+    }
 
-      w = (width || maxwidth) ? strtol(width ? width: maxwidth, NULL, 10): INT_MAX;
-      h = (height || maxheight) ? strtol(height ? height: maxheight, NULL, 10): INT_MAX;
+    if (width || maxwidth ||
+	height || maxheight) {
+      int w = (width || maxwidth) ? strtol(width ? width: maxwidth, NULL, 10): INT_MAX;
+      int h = (height || maxheight) ? strtol(height ? height: maxheight, NULL, 10): INT_MAX;
       jwidget_set_max_size(widget, w*jguiscale(), h*jguiscale());
     }
 
