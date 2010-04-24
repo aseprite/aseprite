@@ -62,10 +62,13 @@ void AboutCommand::execute(Context* context)
 
   label3 = jlabel_new(COPYRIGHT);
   label4 = jlabel_new(WEBSITE);
-  textbox = jtextbox_new("Authors:\n"
-			 "  David Capello - Main developer\n"
-			 "  Ilija Melentijevic - Graphics\n"
-			 "  Trent Gamblin - Mac OS X packager", 0);
+  textbox = jtextbox_new("Authors:\n\n"
+			 "  David Capello\n"
+			 "   - Project leader and developer\n\n"
+			 "  Ilija Melentijevic\n"
+			 "   - ASE skin and pixel art expert\n\n"
+			 "  Trent Gamblin\n"
+			 "   - Mac OS X builds\n", 0);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL);
   box4 = jbox_new(JI_HORIZONTAL);
