@@ -26,6 +26,7 @@
 
 class Frame;
 class StatusBar;
+class Tool;
 
 class Progress
 {
@@ -52,6 +53,7 @@ public:
   bool setStatusText(int msecs, const char *format, ...);
   void showTip(int msecs, const char *format, ...);
   void showColor(int msecs, const char* text, color_t color, int alpha);
+  void showTool(int msecs, Tool* tool);
   
   Progress* addProgress();
   void removeProgress(Progress* progress);
@@ -63,10 +65,13 @@ private:
   void onCurrentToolChange();
   void updateFromLayer();
 
-  enum State { SHOW_TEXT, SHOW_COLOR };
+  enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
   int m_timeout;
   State m_state;
+
+  // Showing a tool
+  Tool* m_tool;
 
   // Showing a color
   color_t m_color;

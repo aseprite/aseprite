@@ -146,9 +146,10 @@ void StatusBar::onCurrentToolChange()
 {
   if (jwidget_is_visible(this)) {
     Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
-    if (currentTool)
-      this->setStatusText(500, "%s selected",
-			  currentTool->getText().c_str());
+    if (currentTool) {
+      this->showTool(500, currentTool);
+      this->setTextf("%s Selected", currentTool->getText().c_str());
+    }
   }
 }
 
@@ -220,6 +221,30 @@ void StatusBar::showColor(int msecs, const char* text, color_t color, int alpha)
     m_state = SHOW_COLOR;
     m_color = color;
     m_alpha = alpha;
+  }
+}
+
+void StatusBar::showTool(int msecs, Tool* tool)
+{
+  assert(tool != NULL);
+
+  // Tool name
+  std::string text = tool->getText();
+
+  // Tool shortcut
+  JAccel accel = get_accel_to_change_tool(tool);
+  if (accel) {
+    char buf[512];		// TODO possible buffer overflow
+    jaccel_to_string(accel, buf);
+    text += ", Shortcut: ";
+    text += buf;
+  }
+
+  // Set text
+  if (setStatusText(msecs, text.c_str())) {
+    // Show tool
+    m_state = SHOW_TOOL;
+    m_tool = tool;
   }
 }
 
@@ -353,6 +378,19 @@ bool StatusBar::msg_proc(JMessage msg)
 		   text_color, -1);
 
 	x += ji_font_text_len(this->getFont(), buf) + 4*jguiscale();
+      }
+
+      // Show tool
+      if (m_state == SHOW_TOOL) {
+	// Draw eyedropper icon
+	BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
+	if (icon) {
+	  set_alpha_blender();
+	  draw_trans_sprite(doublebuffer, icon,
+			    x, (rc->y1+rc->y2)/2-icon->h/2);
+	}
+
+	x += icon->w + 4*jguiscale();
       }
 
       // Status bar text

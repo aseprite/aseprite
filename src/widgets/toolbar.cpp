@@ -28,14 +28,15 @@
 #include "Vaca/Size.h"
 
 #include "app.h"
-#include "ui_context.h"
-#include "commands/commands.h"
 #include "commands/command.h"
+#include "commands/commands.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/skinneable_theme.h"
 #include "tools/toolbox.h"
+#include "ui_context.h"
 #include "widgets/groupbut.h"
+#include "widgets/statebar.h"
 #include "widgets/toolbar.h"
 
 using Vaca::Size;
@@ -326,6 +327,9 @@ bool ToolBar::msg_proc(JMessage msg)
 	  openTipWindow(tip_index, m_hot_tool);
 	else
 	  closeTipWindow();
+
+	if (m_hot_tool)
+	  app_get_statusbar()->showTool(0, m_hot_tool);
       }
       break;
     }
@@ -667,6 +671,9 @@ bool ToolStrip::msg_proc(JMessage msg)
 	  m_toolbar->openTipWindow(m_group, m_hot_tool);
 	else
 	  m_toolbar->closeTipWindow();
+
+	if (m_hot_tool)
+	  app_get_statusbar()->showTool(0, m_hot_tool);
       }
       break;
     }
