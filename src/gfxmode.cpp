@@ -94,7 +94,7 @@ bool GfxMode::setGfxMode() const
 CurrentGfxModeGuard::CurrentGfxModeGuard()
 {
   m_oldMode.updateWithCurrentMode();
-  m_keep = false;
+  m_keep = true;
 }
 
 CurrentGfxModeGuard::~CurrentGfxModeGuard()
@@ -105,6 +105,8 @@ CurrentGfxModeGuard::~CurrentGfxModeGuard()
 
 bool CurrentGfxModeGuard::tryGfxMode(const GfxMode& newMode)
 {
+  m_keep = false;
+
   // Try to set the new graphics mode
   if (!newMode.setGfxMode()) {
     // Error!, well, we need to return to the old graphics mode
