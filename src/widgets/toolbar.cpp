@@ -92,10 +92,13 @@ class ToolStrip : public Widget
   ToolGroup* m_group;
   Tool* m_hot_tool;
   ToolBar* m_toolbar;
+  BITMAP* m_overlapped;
 
 public:
   ToolStrip(ToolGroup* group, ToolBar* toolbar);
   ~ToolStrip();
+
+  void saveOverlappedArea(const Rect& bounds);
 
   Vaca::Signal1<void, Tool*> ToolSelected;
 
@@ -299,7 +302,7 @@ bool ToolBar::msg_proc(JMessage msg)
 	if (msg->mouse.y >= toolrc.y && msg->mouse.y < toolrc.y+toolrc.h) {
 	  hot_tool = tool;
 
-	  if (m_open_on_hot)
+	  if ((m_open_on_hot) && (m_hot_tool != hot_tool))
 	    openPopupWindow(c, tool_group);
 
 	  tip_index = c;
@@ -376,6 +379,9 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     m_popup_window = NULL;
   }
 
+  // Close tip window
+  closeTipWindow();
+
   // If this group contains only one tool, do not show the popup
   ToolBox* toolbox = App::instance()->get_toolbox();
   int count = 0;
@@ -392,8 +398,8 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   m_popup_window = new PopupWindow(NULL, false);
   m_popup_window->Close.connect(Vaca::Bind<void>(&ToolBar::onClosePopup, this));
 
-  ToolStrip* groupbox = new ToolStrip(tool_group, this);
-  jwidget_add_child(m_popup_window, groupbox);
+  ToolStrip* toolstrip = new ToolStrip(tool_group, this);
+  jwidget_add_child(m_popup_window, toolstrip);
 
   Rect rc = getToolGroupBounds(group_index);
   int w = 0;
@@ -407,6 +413,20 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rc.x -= w;
   rc.w = w;
 
+  // Redraw the overlapped area and save it to use it in the ToolStrip::msg_proc(JM_DRAW)
+  {
+    JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
+    jwidget_invalidate_rect(ji_get_default_manager(),  rcTemp);
+    jrect_free(rcTemp);
+
+    // Flush JM_DRAW messages and send them
+    jwidget_flush_redraw(ji_get_default_manager());
+    jmanager_dispatch_messages(ji_get_default_manager());
+
+    // Save the area
+    toolstrip->saveOverlappedArea(rc);
+  }
+
   // Set hotregion of popup window
   {
     jrect rc2 = { rc.x, rc.y, this->rc->x2, rc.y+rc.h };
@@ -416,10 +436,10 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   m_popup_window->set_autoremap(false);
   m_popup_window->setBounds(rc);
-  groupbox->setBounds(rc);
+  toolstrip->setBounds(rc);
   m_popup_window->open_window();
 
-  groupbox->setBounds(rc);
+  toolstrip->setBounds(rc);
 }
 
 Rect ToolBar::getToolGroupBounds(int group_index)
@@ -524,10 +544,25 @@ ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   m_group = group;
   m_hot_tool = NULL;
   m_toolbar = toolbar;
+  m_overlapped = NULL;
 }
 
 ToolStrip::~ToolStrip()
 {
+  if (m_overlapped)
+    destroy_bitmap(m_overlapped);
+}
+
+void ToolStrip::saveOverlappedArea(const Rect& bounds)
+{
+  if (m_overlapped)
+    destroy_bitmap(m_overlapped);
+
+  m_overlapped = create_bitmap(bounds.w, bounds.h);
+
+  blit(ji_screen, m_overlapped,
+       bounds.x, bounds.y, 0, 0,
+       bounds.w, bounds.h);
 }
 
 bool ToolStrip::msg_proc(JMessage msg)
@@ -559,7 +594,12 @@ bool ToolStrip::msg_proc(JMessage msg)
       Rect toolrc;
       int index = 0;
 
-      clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
+      // Get the chunk of screen where we will draw
+      blit(m_overlapped, doublebuffer,
+	   this->rc->x1 - msg->draw.rect.x1,
+	   this->rc->y1 - msg->draw.rect.y1, 0, 0,
+	   doublebuffer->w,
+	   doublebuffer->h);
 
       for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
 	Tool* tool = *it;
