@@ -661,7 +661,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
   rectfill(ji_screen, x1, y1, x2, y2, BGCOLOR);
 
   // draw borders
-  draw_bounds(x1, y1, x2, y2, part_nw, bg);
+  draw_bounds_nw(ji_screen, x1, y1, x2, y2, part_nw, bg);
 
   // text
   crect = jwidget_get_child_rect(widget);
@@ -729,10 +729,11 @@ void SkinneableTheme::draw_check(JWidget widget, JRect clip)
 
   // draw focus
   if (jwidget_has_focus(widget)) {
-    draw_bounds(widget->rc->x1,
-		widget->rc->y1,
-		widget->rc->x2-1,
-		widget->rc->y2-1, PART_CHECK_FOCUS_NW, -1);
+    draw_bounds_nw(ji_screen,
+		   widget->rc->x1,
+		   widget->rc->y1,
+		   widget->rc->x2-1,
+		   widget->rc->y2-1, PART_CHECK_FOCUS_NW, -1);
   }
 }
 
@@ -760,9 +761,10 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
 
   bg = COLOR_BACKGROUND;
 
-  draw_bounds(x1, y1, x2, y2,
-	      jwidget_has_focus(widget) ? PART_SUNKEN_FOCUSED_NW:
-					  PART_SUNKEN_NORMAL_NW, bg);
+  draw_bounds_nw(ji_screen,
+		 x1, y1, x2, y2,
+		 jwidget_has_focus(widget) ? PART_SUNKEN_FOCUSED_NW:
+					     PART_SUNKEN_NORMAL_NW, bg);
 
   /* draw the text */
   x = widget->rc->x1 + widget->border_width.l;
@@ -1021,10 +1023,11 @@ void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
 
   // draw focus
   if (jwidget_has_focus(widget)) {
-    draw_bounds(widget->rc->x1,
-		widget->rc->y1,
-		widget->rc->x2-1,
-		widget->rc->y2-1, PART_RADIO_FOCUS_NW, -1);
+    draw_bounds_nw(ji_screen,
+		   widget->rc->x1,
+		   widget->rc->y1,
+		   widget->rc->x2-1,
+		   widget->rc->y2-1, PART_RADIO_FOCUS_NW, -1);
   }
 }
 
@@ -1042,10 +1045,11 @@ void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, BGCOLOR);
 
   if (widget->getAlign() & JI_HORIZONTAL) {
-    draw_hline(widget->rc->x1,
-	       widget->rc->y1,
-	       widget->rc->x2-1,
-	       widget->rc->y2-1, PART_SEPARATOR);
+    draw_part_as_hline(ji_screen,
+		       widget->rc->x1,
+		       widget->rc->y1,
+		       widget->rc->x2-1,
+		       widget->rc->y2-1, PART_SEPARATOR);
   }
 
   // text
@@ -1117,14 +1121,15 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
   }
 
   if (value == min)
-    draw_bounds(x1, y1, x2, y2, empty_part_nw, get_slider_empty_face_color());
+    draw_bounds_nw(ji_screen, x1, y1, x2, y2, empty_part_nw, get_slider_empty_face_color());
   else if (value == max)
-    draw_bounds(x1, y1, x2, y2, full_part_nw, get_slider_full_face_color());
+    draw_bounds_nw(ji_screen, x1, y1, x2, y2, full_part_nw, get_slider_full_face_color());
   else
-    draw_bounds2(x1, y1, x2, y2, x,
-		 full_part_nw, empty_part_nw,
-		 get_slider_full_face_color(),
-		 get_slider_empty_face_color());
+    draw_bounds_nw2(ji_screen,
+		    x1, y1, x2, y2, x,
+		    full_part_nw, empty_part_nw,
+		    get_slider_full_face_color(),
+		    get_slider_empty_face_color());
 
   /* text */
   {
@@ -1177,9 +1182,10 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
 
   bg = COLOR_BACKGROUND;
 
-  draw_bounds(x1, y1, x2, y2,
-	      jwidget_has_focus(widget) ? PART_SUNKEN2_FOCUSED_NW:
-					  PART_SUNKEN2_NORMAL_NW, bg);
+  draw_bounds_nw(ji_screen,
+		 x1, y1, x2, y2,
+		 jwidget_has_focus(widget) ? PART_SUNKEN2_FOCUSED_NW:
+					     PART_SUNKEN2_NORMAL_NW, bg);
 
   /* draw the text */
   x = widget->rc->x1 + widget->border_width.l;
@@ -1260,7 +1266,7 @@ void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
   rectfill(ji_screen, x1, y1, x2, y2, BGCOLOR);
 
   // draw borders
-  draw_bounds(x1, y1, x2, y2, part_nw, bg);
+  draw_bounds_nw(ji_screen, x1, y1, x2, y2, part_nw, bg);
 
   // icon
   icon.x1 = (x1+x2)/2 - icon_bmp->w/2;
@@ -1286,13 +1292,14 @@ void SkinneableTheme::draw_textbox(JWidget widget, JRect clip)
 
 void SkinneableTheme::draw_view(JWidget widget, JRect clip)
 {
-  draw_bounds(widget->rc->x1,
-	      widget->rc->y1,
-	      widget->rc->x2-1,
-	      widget->rc->y2-1,
-	      jwidget_has_focus(widget) ? PART_SUNKEN_FOCUSED_NW:
-					  PART_SUNKEN_NORMAL_NW,
-	      COLOR_BACKGROUND);
+  draw_bounds_nw(ji_screen,
+		 widget->rc->x1,
+		 widget->rc->y1,
+		 widget->rc->x2-1,
+		 widget->rc->y2-1,
+		 jwidget_has_focus(widget) ? PART_SUNKEN_FOCUSED_NW:
+					     PART_SUNKEN_NORMAL_NW,
+		 COLOR_BACKGROUND);
 }
 
 void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
@@ -1363,11 +1370,12 @@ void SkinneableTheme::draw_frame(Frame* window, JRect clip)
   if (!window->is_desktop()) {
     // window frame
     if (window->hasText()) {
-      draw_bounds(pos->x1,
-		  pos->y1,
-		  pos->x2-1,
-		  pos->y2-1, PART_WINDOW_NW,
-		  get_window_face_color());
+      draw_bounds_nw(ji_screen,
+		     pos->x1,
+		     pos->y1,
+		     pos->x2-1,
+		     pos->y2-1, PART_WINDOW_NW,
+		     get_window_face_color());
 
       pos->y2 = cpos->y1;
 
@@ -1379,11 +1387,12 @@ void SkinneableTheme::draw_frame(Frame* window, JRect clip)
     }
     // menubox
     else {
-      draw_bounds(pos->x1,
-		  pos->y1,
-		  pos->x2-1,
-		  pos->y2-1, PART_MENU_NW,
-		  get_window_face_color());
+      draw_bounds_nw(ji_screen,
+		     pos->x1,
+		     pos->y1,
+		     pos->x2-1,
+		     pos->y2-1, PART_MENU_NW,
+		     get_window_face_color());
     }
   }
   // desktop
@@ -1506,67 +1515,67 @@ BITMAP* SkinneableTheme::get_toolicon(const char* tool_id) const
     return NULL;
 }
 
-#define draw_bounds_template(_nw, _n, _ne, _e, _se, _s, _sw, _w, draw_func) \
+#define draw_bounds_template(_bmp, _nw, _n, _ne, _e, _se, _s, _sw, _w, draw_func) \
   {									\
     int x, y;								\
     int cx1, cy1, cx2, cy2;						\
-    get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);			\
+    get_clip_rect(_bmp, &cx1, &cy1, &cx2, &cy2);			\
 									\
     /* top */								\
 									\
-    draw_func(ji_screen, m_part[_nw], x1, y1);				\
+    draw_func(_bmp, m_part[_nw], x1, y1);				\
 									\
-    if (my_add_clip_rect(ji_screen,					\
+    if (my_add_clip_rect(_bmp,						\
 			 x1+m_part[_nw]->w, y1,				\
 			 x2-m_part[_ne]->w, y2)) {			\
       for (x = x1+m_part[_nw]->w;					\
 	   x <= x2-m_part[_ne]->w;					\
 	   x += m_part[_n]->w) {					\
-	draw_func(ji_screen, m_part[_n], x, y1);			\
+	draw_func(_bmp, m_part[_n], x, y1);				\
       }									\
     }									\
-    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);			\
+    set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
 									\
-    draw_func(ji_screen, m_part[_ne], x2-m_part[_ne]->w+1, y1);		\
+    draw_func(_bmp, m_part[_ne], x2-m_part[_ne]->w+1, y1);		\
 									\
     /* bottom */							\
 									\
-    draw_func(ji_screen, m_part[_sw], x1, y2-m_part[_sw]->h+1);		\
+    draw_func(_bmp, m_part[_sw], x1, y2-m_part[_sw]->h+1);		\
 									\
-    if (my_add_clip_rect(ji_screen,					\
+    if (my_add_clip_rect(_bmp,						\
 			 x1+m_part[_sw]->w, y1,				\
 			 x2-m_part[_se]->w, y2)) {			\
       for (x = x1+m_part[_sw]->w;					\
 	   x <= x2-m_part[_se]->w;					\
 	   x += m_part[_s]->w) {					\
-	draw_func(ji_screen, m_part[_s], x, y2-m_part[_s]->h+1);	\
+	draw_func(_bmp, m_part[_s], x, y2-m_part[_s]->h+1);		\
       }									\
     }									\
-    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);			\
+    set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
 									\
-    draw_func(ji_screen, m_part[_se], x2-m_part[_se]->w+1, y2-m_part[_se]->h+1); \
+    draw_func(_bmp, m_part[_se], x2-m_part[_se]->w+1, y2-m_part[_se]->h+1); \
 									\
-    if (my_add_clip_rect(ji_screen,					\
+    if (my_add_clip_rect(_bmp,						\
 			 x1, y1+m_part[_nw]->h,				\
 			 x2, y2-m_part[_sw]->h)) {			\
       /* left */							\
       for (y = y1+m_part[_nw]->h;					\
 	   y <= y2-m_part[_sw]->h;					\
 	   y += m_part[_w]->h) {					\
-	draw_func(ji_screen, m_part[_w], x1, y);			\
+	draw_func(_bmp, m_part[_w], x1, y);				\
       }									\
 									\
       /* right */							\
       for (y = y1+m_part[_ne]->h;					\
 	   y <= y2-m_part[_se]->h;					\
 	   y += m_part[_e]->h) {					\
-	draw_func(ji_screen, m_part[_e], x2-m_part[_e]->w+1, y);	\
+	draw_func(_bmp, m_part[_e], x2-m_part[_e]->w+1, y);		\
       }									\
     }									\
-    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);			\
+    set_clip_rect(_bmp, cx1, cy1, cx2, cy2);				\
   }
 
-void SkinneableTheme::draw_bounds0(int x1, int y1, int x2, int y2, int parts[8])
+void SkinneableTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8])
 {
   int nw = parts[0];
   int n  = parts[1];
@@ -1578,27 +1587,16 @@ void SkinneableTheme::draw_bounds0(int x1, int y1, int x2, int y2, int parts[8])
   int w  = parts[7];
 
   set_alpha_blender();
-  draw_bounds_template(nw, n, ne, e, se, s, sw, w, draw_trans_sprite);
+  draw_bounds_template(bmp,
+		       nw, n, ne, e,
+		       se, s, sw, w, draw_trans_sprite);
 }
 
-void SkinneableTheme::draw_trans_bounds0(int x1, int y1, int x2, int y2, int parts[8])
-{
-  int nw = parts[0];
-  int n  = parts[1];
-  int ne = parts[2];
-  int e  = parts[3];
-  int se = parts[4];
-  int s  = parts[5];
-  int sw = parts[6];
-  int w  = parts[7];
-
-  draw_bounds_template(nw, n, ne, e, se, s, sw, w, draw_trans_sprite);
-}
-
-void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg)
+void SkinneableTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg)
 {
   set_alpha_blender();
-  draw_bounds_template(nw+0, nw+1, nw+2, nw+3,
+  draw_bounds_template(bmp,
+		       nw+0, nw+1, nw+2, nw+3,
 		       nw+4, nw+5, nw+6, nw+7, draw_trans_sprite);
 
   // Center 
@@ -1608,33 +1606,27 @@ void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg
     x2 -= m_part[nw+3]->w;
     y2 -= m_part[nw+5]->h;
 
-    rectfill(ji_screen, x1, y1, x2, y2, bg);
+    rectfill(bmp, x1, y1, x2, y2, bg);
   }
 }
 
-void SkinneableTheme::draw_trans_bounds(int x1, int y1, int x2, int y2, int nw)
-{
-  draw_bounds_template(nw+0, nw+1, nw+2, nw+3,
-		       nw+4, nw+5, nw+6, nw+7, draw_trans_sprite);
-}
-
-void SkinneableTheme::draw_bounds2(int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2)
+void SkinneableTheme::draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2)
 {
   int cx1, cy1, cx2, cy2;
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+  get_clip_rect(bmp, &cx1, &cy1, &cx2, &cy2);
 
-  if (my_add_clip_rect(ji_screen, x1, y1, x_mid, y2))
-    draw_bounds(x1, y1, x2, y2, nw1, bg1);
+  if (my_add_clip_rect(bmp, x1, y1, x_mid, y2))
+    draw_bounds_nw(bmp, x1, y1, x2, y2, nw1, bg1);
 
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(bmp, cx1, cy1, cx2, cy2);
 
-  if (my_add_clip_rect(ji_screen, x_mid+1, y1, x2, y2))
-    draw_bounds(x1, y1, x2, y2, nw2, bg2);
+  if (my_add_clip_rect(bmp, x_mid+1, y1, x2, y2))
+    draw_bounds_nw(bmp, x1, y1, x2, y2, nw2, bg2);
 
-  set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+  set_clip_rect(bmp, cx1, cy1, cx2, cy2);
 }
 
-void SkinneableTheme::draw_hline(int x1, int y1, int x2, int y2, int part)
+void SkinneableTheme::draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part)
 {
   int x;
 
@@ -1643,17 +1635,17 @@ void SkinneableTheme::draw_hline(int x1, int y1, int x2, int y2, int part)
   for (x = x1;
        x <= x2-m_part[part]->w;
        x += m_part[part]->w) {
-    draw_trans_sprite(ji_screen, m_part[part], x, y1);
+    draw_trans_sprite(bmp, m_part[part], x, y1);
   }
 
   if (x <= x2) {
     int cx1, cy1, cx2, cy2;
-    get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+    get_clip_rect(bmp, &cx1, &cy1, &cx2, &cy2);
 
-    if (my_add_clip_rect(ji_screen, x, y1, x2, y1+m_part[part]->h-1))
-      draw_trans_sprite(ji_screen, m_part[part], x, y1);
+    if (my_add_clip_rect(bmp, x, y1, x2, y1+m_part[part]->h-1))
+      draw_trans_sprite(bmp, m_part[part], x, y1);
 
-    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+    set_clip_rect(bmp, cx1, cy1, cx2, cy2);
   }
 }
 

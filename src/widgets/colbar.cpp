@@ -218,22 +218,18 @@ bool ColorBar::msg_proc(JMessage msg)
 			   m_hot_drag != m_hot_drop));
 	
 	if (color_equals(m_bgcolor, color)) {
-	  BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-	  ji_screen = doublebuffer;
-	  theme->draw_bounds(entryBounds.x, entryBounds.y,
-			     entryBounds.x+entryBounds.w-1,
-			     entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
-			     PART_COLORBAR_BORDER_BG_NW, -1);
-	  ji_screen = old_ji_screen;
+	  theme->draw_bounds_nw(doublebuffer,
+				entryBounds.x, entryBounds.y,
+				entryBounds.x+entryBounds.w-1,
+				entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
+				PART_COLORBAR_BORDER_BG_NW, -1);
 	}
 	if (color_equals(m_fgcolor, color)) {
-	  BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-	  ji_screen = doublebuffer;
-	  theme->draw_bounds(entryBounds.x, entryBounds.y,
-			     entryBounds.x+entryBounds.w-1,
-			     entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
-			     PART_COLORBAR_BORDER_FG_NW, -1);
-	  ji_screen = old_ji_screen;
+	  theme->draw_bounds_nw(doublebuffer,
+				entryBounds.x, entryBounds.y,
+				entryBounds.x+entryBounds.w-1,
+				entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
+				PART_COLORBAR_BORDER_FG_NW, -1);
 	}
       }
 

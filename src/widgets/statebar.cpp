@@ -359,16 +359,12 @@ bool StatusBar::msg_proc(JMessage msg)
 	      bool hot = (*it == sprite->getCurrentLayer())
 		|| (c == m_hot_layer);
 
-	      {
-		BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-		ji_screen = doublebuffer;
-		theme->draw_bounds(x1, rc->y1, x2, rc->y2,
-				   hot ? PART_TOOLBUTTON_HOT_NW:
-					 PART_TOOLBUTTON_NORMAL_NW,
-				   hot ? theme->get_button_hot_face_color():
-					 theme->get_button_normal_face_color());
-		ji_screen = old_ji_screen;
-	      }
+	      theme->draw_bounds_nw(doublebuffer,
+				    x1, rc->y1, x2, rc->y2,
+				    hot ? PART_TOOLBUTTON_HOT_NW:
+					  PART_TOOLBUTTON_NORMAL_NW,
+				    hot ? theme->get_button_hot_face_color():
+					  theme->get_button_normal_face_color());
 
 	      if (count == 1)
 		uszprintf(buf, sizeof(buf), "%s", (*it)->get_name().c_str());
@@ -386,14 +382,10 @@ bool StatusBar::msg_proc(JMessage msg)
 	    int x1 = rc->x2-width;
 	    int x2 = rc->x2;
 
-	    {
-	      BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-	      ji_screen = doublebuffer;
-	      theme->draw_bounds(x1, rc->y1, x2, rc->y2,
-				 PART_TOOLBUTTON_NORMAL_NW,
-				 theme->get_button_normal_face_color());
-	      ji_screen = old_ji_screen;
-	    }
+	    theme->draw_bounds_nw(doublebuffer,
+				  x1, rc->y1, x2, rc->y2,
+				  PART_TOOLBUTTON_NORMAL_NW,
+				  theme->get_button_normal_face_color());
 
 	    textout_centre_ex(doublebuffer, this->getFont(), "No Sprite",
 			      (x1+x2)/2,

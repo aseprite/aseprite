@@ -717,10 +717,11 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 	JRect pos = jwidget_get_rect(widget);
 	SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
 
-	theme->draw_bounds(pos->x1, pos->y1,
-			   pos->x2-1, pos->y2-1,
-			   (child == current_editor) ? PART_EDITOR_SELECTED_NW:
-						       PART_EDITOR_NORMAL_NW, false);
+	theme->draw_bounds_nw(ji_screen,
+			      pos->x1, pos->y1,
+			      pos->x2-1, pos->y2-1,
+			      (child == current_editor) ? PART_EDITOR_SELECTED_NW:
+							  PART_EDITOR_NORMAL_NW, false);
 
 	jrect_free(pos);
       }

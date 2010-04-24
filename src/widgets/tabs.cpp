@@ -237,8 +237,8 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 			    rect->y1+theme->get_part(PART_TAB_FILLER)->h);
       JLink link;
 
-      theme->draw_hline(box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
-      theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+      theme->draw_part_as_hline(ji_screen, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
+      theme->draw_part_as_hline(ji_screen, box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 
       box->x1 = box->x2;
 
@@ -264,16 +264,21 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	    face_color = theme->get_tab_normal_face_color();
 	  }
 
-	  theme->draw_bounds(box->x1, box->y1, box->x2-1, box->y2-1,
-			     (tabs->selected == tab) ? PART_TAB_SELECTED_NW:
-						       PART_TAB_NORMAL_NW, face_color);
+	  theme->draw_bounds_nw(ji_screen,
+				box->x1, box->y1, box->x2-1, box->y2-1,
+				(tabs->selected == tab) ? PART_TAB_SELECTED_NW:
+							  PART_TAB_NORMAL_NW, face_color);
 
-	  if (tabs->selected == tab)
-	    theme->draw_bounds(box->x1, box->y2, box->x2-1, rect->y2-1,
-			       PART_TAB_BOTTOM_SELECTED_NW,
-			       theme->get_tab_selected_face_color());
-	  else
-	    theme->draw_hline(box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+	  if (tabs->selected == tab) {
+	    theme->draw_bounds_nw(ji_screen,
+				  box->x1, box->y2, box->x2-1, rect->y2-1,
+				  PART_TAB_BOTTOM_SELECTED_NW,
+				  theme->get_tab_selected_face_color());
+	  }
+	  else {
+	    theme->draw_part_as_hline(ji_screen,
+				      box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+	  }
 	  
 	  jdraw_text(widget->getFont(), tab->text.c_str(),
 		     box->x1+4*jguiscale(),
@@ -286,8 +291,8 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
       /* fill the gap to the right-side */
       if (box->x1 < rect->x2) {
-	theme->draw_hline(box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
-	theme->draw_hline(box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+	theme->draw_part_as_hline(ji_screen, box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
+	theme->draw_part_as_hline(ji_screen, box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
       }
 
       jrect_free(rect);

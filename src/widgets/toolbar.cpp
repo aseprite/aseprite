@@ -182,8 +182,6 @@ bool ToolBar::msg_proc(JMessage msg)
     }
 
     case JM_DRAW: {
-      BITMAP* old_ji_screen = ji_screen; // TODO switching ji_screen is an horrible hack,
-                                         // JM_DRAW must be changed to onPaint event as in Vaca library
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
@@ -192,7 +190,6 @@ bool ToolBar::msg_proc(JMessage msg)
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
-      ji_screen = doublebuffer;
       clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
 
       for (int c=0; c<groups; ++c, ++it) {
@@ -213,7 +210,7 @@ bool ToolBar::msg_proc(JMessage msg)
 
 	toolrc = getToolGroupBounds(c);
 	toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
-	theme->draw_bounds(toolrc, nw, face);
+	theme->draw_bounds_nw(doublebuffer, toolrc, nw, face);
 
 	// Draw the tool icon
 	BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
@@ -227,11 +224,12 @@ bool ToolBar::msg_proc(JMessage msg)
 
       toolrc = getToolGroupBounds(-1);
       toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
-      theme->draw_bounds(toolrc,
-			 m_hot_conf ? PART_TOOLBUTTON_HOT_NW:
-				      PART_TOOLBUTTON_LAST_NW,
-			 m_hot_conf ? theme->get_button_hot_face_color():
-				      theme->get_button_normal_face_color());
+      theme->draw_bounds_nw(doublebuffer,
+			    toolrc,
+			    m_hot_conf ? PART_TOOLBUTTON_HOT_NW:
+					 PART_TOOLBUTTON_LAST_NW,
+			    m_hot_conf ? theme->get_button_hot_face_color():
+					 theme->get_button_normal_face_color());
 
       // Draw the tool icon
       BITMAP* icon = theme->get_toolicon("configuration");
@@ -241,8 +239,6 @@ bool ToolBar::msg_proc(JMessage msg)
 			  toolrc.x+toolrc.w/2-icon->w/2,
 			  toolrc.y+toolrc.h/2-icon->h/2);
       }
-
-      ji_screen = old_ji_screen;
 
       blit(doublebuffer, ji_screen, 0, 0,
 	   msg->draw.rect.x1,
@@ -543,8 +539,6 @@ bool ToolStrip::msg_proc(JMessage msg)
     }
 
     case JM_DRAW: {
-      BITMAP* old_ji_screen = ji_screen; // TODO switching ji_screen is an horrible hack,
-                                         // JM_DRAW must be changed to onPaint event as in Vaca library
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
@@ -552,7 +546,6 @@ bool ToolStrip::msg_proc(JMessage msg)
       Rect toolrc;
       int index = 0;
 
-      ji_screen = doublebuffer;
       clear_to_color(doublebuffer, theme->get_tab_selected_face_color());
 
       for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
@@ -572,7 +565,7 @@ bool ToolStrip::msg_proc(JMessage msg)
 
 	  toolrc = getToolBounds(index++);
 	  toolrc.offset(-msg->draw.rect.x1, -msg->draw.rect.y1);
-	  theme->draw_bounds(toolrc, nw, face);
+	  theme->draw_bounds_nw(doublebuffer, toolrc, nw, face);
 
 	  // Draw the tool icon
 	  BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
@@ -584,8 +577,6 @@ bool ToolStrip::msg_proc(JMessage msg)
 	  }
 	}
       }
-
-      ji_screen = old_ji_screen;
 
       blit(doublebuffer, ji_screen, 0, 0,
 	   msg->draw.rect.x1,

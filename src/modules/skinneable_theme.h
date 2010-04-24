@@ -485,17 +485,15 @@ public:
   BITMAP* get_part(int part_i) const { return m_part[part_i]; }
   BITMAP* get_toolicon(const char* tool_id) const;
 
-  // helper functions to draw parts
-  void draw_bounds0(int x1, int y1, int x2, int y2, int parts[8]);
-  void draw_trans_bounds0(int x1, int y1, int x2, int y2, int parts[8]);
-  void draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg);
-  void draw_trans_bounds(int x1, int y1, int x2, int y2, int nw);
-  void draw_bounds2(int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2);
-  void draw_hline(int x1, int y1, int x2, int y2, int part);
+  // helper functions to draw bounds/hlines with sheet parts
+  void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);
+  void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg = -1);
+  void draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2);
+  void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
 
   // Wrapper to use the new "Rect" class (x, y, w, h)
-  void draw_bounds(const Rect& rc, int nw, int bg) {
-    draw_bounds(rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
+  void draw_bounds_nw(BITMAP* bmp, const Rect& rc, int nw, int bg) {
+    draw_bounds_nw(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
   }
 
 private:

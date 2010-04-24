@@ -507,21 +507,16 @@ void draw_color_button(BITMAP* bmp,
       outer_sw ? PART_COLORBAR_2_SW: (outer_s ? PART_COLORBAR_3_SW: PART_COLORBAR_1_SW),
       outer_w  ? PART_COLORBAR_0_W : PART_COLORBAR_1_W,
     };
-    BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-    ji_screen = bmp;
-    theme->draw_bounds0(rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, parts);
-    ji_screen = old_ji_screen;
+    theme->draw_bounds_array(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, parts);
   }
 
   // Draw hot
   if (hot) {
-    BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-    ji_screen = bmp;
-    theme->draw_trans_bounds(rc.x, rc.y,
-			     rc.x+rc.w-1,
-			     rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
-			     PART_COLORBAR_BORDER_HOTFG_NW);
-    ji_screen = old_ji_screen;
+    theme->draw_bounds_nw(bmp,
+			  rc.x, rc.y,
+			  rc.x+rc.w-1,
+			  rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
+			  PART_COLORBAR_BORDER_HOTFG_NW);
   }
 }
 
