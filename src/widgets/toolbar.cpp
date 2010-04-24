@@ -369,11 +369,25 @@ int ToolBar::getToolGroupIndex(ToolGroup* group)
 
 void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 {
+  // Close the current popup window
   if (m_popup_window) {
     m_popup_window->closeWindow(NULL);
     delete m_popup_window;
+    m_popup_window = NULL;
   }
 
+  // If this group contains only one tool, do not show the popup
+  ToolBox* toolbox = App::instance()->get_toolbox();
+  int count = 0;
+  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+    Tool* tool = *it;
+    if (tool->getGroup() == tool_group)
+      ++count;
+  }
+  if (count <= 1)
+    return;
+
+  // In case this tool contains more than just one tool, show the popup window
   m_open_on_hot = true;
   m_popup_window = new PopupWindow(NULL, false);
   m_popup_window->Close.connect(Vaca::Bind<void>(&ToolBar::onClosePopup, this));
@@ -384,7 +398,6 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   Rect rc = getToolGroupBounds(group_index);
   int w = 0;
 
-  ToolBox* toolbox = App::instance()->get_toolbox();
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (tool->getGroup() == tool_group)
