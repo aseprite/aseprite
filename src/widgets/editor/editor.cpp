@@ -523,8 +523,8 @@ void Editor::flashCurrentLayer()
   int x, y;
   const Image* src_image = m_sprite->getCurrentImage(&x, &y);
   if (src_image) {
-    m_sprite->prepareExtra();
-    Image* flash_image = m_sprite->getExtras();
+    m_sprite->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), 255);
+    Image* flash_image = m_sprite->getExtraCelImage();
     int u, v;
 
     image_clear(flash_image, flash_image->mask_color);

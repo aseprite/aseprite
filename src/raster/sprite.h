@@ -206,12 +206,13 @@ public:
   const _BoundSeg* getBoundariesSegments() const;
 
   ////////////////////////////////////////
-  // Extras
+  // Extra Cel (it is used to draw pen preview, pixels in movement,
+  // etc.)
 
-  void prepareExtra();
-  Image* getExtras();
-  int getExtrasOpacity() const;
-  void setExtrasOpacity(int opacity);
+  void prepareExtraCel(int x, int y, int w, int h, int opacity);
+  void destroyExtraCel();
+  Cel* getExtraCel() const;
+  Image* getExtraCelImage() const;
 
 private:
   Sprite();

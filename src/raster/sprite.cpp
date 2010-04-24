@@ -368,10 +368,10 @@ public:
     return m_bound.seg;
   }
 
-  void prepareExtra();
-  Image* getExtras() { return m_extras; }
-  int getExtrasOpacity() const { return m_extras_opacity; }
-  void setExtrasOpacity(int opacity) { m_extras_opacity = opacity; }
+  void prepareExtraCel(int x, int y, int w, int h, int opacity);
+  void destroyExtraCel();
+  Cel* getExtraCel() const;
+  Image* getExtraCelImage() const;
 
 private:
   Sprite* m_self;			 // pointer to the Sprite
@@ -403,8 +403,8 @@ private:
 
   PreferredEditorSettings m_preferred;
 
-  Image* m_extras;		// Image with the sprite size to draw some extra stuff (e.g. editor's cursor)
-  int m_extras_opacity;		// Opacity to be used to draw the extra image
+  Cel* m_extraCel;        // Extra cel used to draw extra stuff (e.g. editor's pen preview, pixels in movement, etc.)
+  Image* m_extraImage;	  // Image of the extra cel 
 
   // Mutex to modify the 'locked' flag.
   Vaca::Mutex* m_mutex;
@@ -444,7 +444,8 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_undo = undo_new(m_self);
   m_repository.paths = jlist_new();
   m_repository.masks = jlist_new();
-  m_extras = NULL;
+  m_extraCel = NULL;
+  m_extraImage = NULL;
 
   // Boundary stuff
   m_bound.nseg = 0;
@@ -628,7 +629,8 @@ SpriteImpl::~SpriteImpl()
   // Destroy undo, mask, etc.
   delete m_undo;
   delete m_mask;
-  delete m_extras;	// image
+  delete m_extraCel;
+  delete m_extraImage;
   if (m_bound.seg) jfree(m_bound.seg);
   delete m_mutex;
 
@@ -921,16 +923,42 @@ void SpriteImpl::deletePalette(Palette* pal)
   jlist_delete_link(m_palettes, link);
 }
 
-void SpriteImpl::prepareExtra()
+void SpriteImpl::destroyExtraCel()
 {
-  if (!m_extras ||
-      m_extras->imgtype != m_imgtype ||
-      m_extras->w != m_width ||
-      m_extras->h != m_height) {
-    delete m_extras;		// image
-    m_extras = image_new(m_imgtype, m_width, m_height);
-    image_clear(m_extras, m_extras->mask_color = 0);
+  delete m_extraCel;
+  delete m_extraImage;
+
+  m_extraCel = NULL;
+  m_extraImage = NULL;
+}
+
+void SpriteImpl::prepareExtraCel(int x, int y, int w, int h, int opacity)
+{
+  if (!m_extraCel)
+    m_extraCel = new Cel(0, 0);	// Ignored fields for this cell (frame, and image index)
+  m_extraCel->x = x;
+  m_extraCel->y = y;
+  m_extraCel->opacity = opacity; 
+
+  if (!m_extraImage ||
+      m_extraImage->imgtype != m_imgtype ||
+      m_extraImage->w != w ||
+      m_extraImage->h != h) {
+    delete m_extraImage;		// image
+    m_extraImage = image_new(m_imgtype, w, h);
+    image_clear(m_extraImage,
+		m_extraImage->mask_color = 0);
   }
+}
+
+Cel* SpriteImpl::getExtraCel() const
+{
+  return m_extraCel;
+}
+
+Image* SpriteImpl::getExtraCelImage() const
+{
+  return m_extraImage;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1484,24 +1512,24 @@ const _BoundSeg* Sprite::getBoundariesSegments() const
 //////////////////////////////////////////////////////////////////////
 // Extras
 
-void Sprite::prepareExtra()
+void Sprite::prepareExtraCel(int x, int y, int w, int h, int opacity)
 {
-  m_impl->prepareExtra();
+  m_impl->prepareExtraCel(x, y, w, h, opacity);
 }
 
-Image* Sprite::getExtras()
+void Sprite::destroyExtraCel()
 {
-  return m_impl->getExtras();
+  m_impl->destroyExtraCel();
 }
 
-int Sprite::getExtrasOpacity() const
+Cel* Sprite::getExtraCel() const
 {
-  return m_impl->getExtrasOpacity();
+  return m_impl->getExtraCel();
 }
 
-void Sprite::setExtrasOpacity(int opacity)
+Image* Sprite::getExtraCelImage() const
 {
-  m_impl->setExtrasOpacity(opacity);
+  return m_impl->getExtraCelImage();
 }
 
 static Layer* index2layer(const Layer* layer, int index, int* index_count)

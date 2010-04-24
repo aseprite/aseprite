@@ -106,9 +106,7 @@ void ChangeImageTypeCommand::execute(Context* context)
     undoable.set_imgtype(m_imgtype, m_dithering);
 
     // Regenerate extras
-    sprite->prepareExtra();
-    image_clear(sprite->getExtras(),
-		sprite->getExtras()->mask_color);
+    sprite->destroyExtraCel();
 
     undoable.commit();
   }

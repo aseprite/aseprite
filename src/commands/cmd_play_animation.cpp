@@ -97,9 +97,7 @@ void PlayAnimationCommand::execute(Context* context)
   clear_bitmap(ji_screen);
 
   // Clear extras (e.g. pen preview)
-  sprite->prepareExtra();
-  image_clear(sprite->getExtras(),
-	      sprite->getExtras()->mask_color);
+  sprite->destroyExtraCel();
 
   /* do animation */
   oldpal = NULL;

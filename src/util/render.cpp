@@ -473,20 +473,21 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
   }
 
   // Draw extras
-  if (layer == sprite->getCurrentLayer() && sprite->getExtras() != NULL) {
-    int opacity = sprite->getExtrasOpacity();
-    if (opacity > 0) {
+  if (layer == sprite->getCurrentLayer() && sprite->getExtraCel() != NULL) {
+    Cel* extraCel = sprite->getExtraCel();
+    if (extraCel->opacity > 0) {
+      Image* extraImage = sprite->getExtraCelImage();
       if (zoom == 0) {
-	image_merge(image, sprite->getExtras(),
-		    -source_x,
-		    -source_y,
-		    opacity, BLEND_MODE_NORMAL);
+	image_merge(image, extraImage,
+		    extraCel->x - source_x,
+		    extraCel->y - source_y,
+		    extraCel->opacity, BLEND_MODE_NORMAL);
       }
       else {
-	(*zoomed_func)(image, sprite->getExtras(),
-		       -source_x,
-		       -source_y,
-		       opacity, BLEND_MODE_NORMAL, zoom);
+	(*zoomed_func)(image, extraImage,
+		       (extraCel->x << zoom) - source_x,
+		       (extraCel->y << zoom) - source_y,
+		       extraCel->opacity, BLEND_MODE_NORMAL, zoom);
       }
     }
   }
