@@ -24,7 +24,7 @@
         <box horizontal="true">
 	  <grid columns="2" childspacing="0" expansive="true">
             <label text="Size:" />
-            <slider min="1" max="32" name="brush_size" minwidth="128" cell_align="horizontal" />
+            <slider min="1" max="32" name="brush_size" minwidth="32" cell_align="horizontal" />
             <label text="Angle:" />
             <slider min="0" max="180" name="brush_angle" cell_align="horizontal" />
             <label text="Opacity:" />
