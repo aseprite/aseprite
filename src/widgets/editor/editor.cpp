@@ -730,6 +730,14 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 /**********************************************************************/
 /* message handler for the editor */
 
+enum WHEEL_ACTION { WHEEL_NONE,
+		    WHEEL_ZOOM,
+		    WHEEL_VSCROLL,
+		    WHEEL_HSCROLL,
+		    WHEEL_FG,
+		    WHEEL_BG,
+		    WHEEL_FRAME };
+
 bool Editor::msg_proc(JMessage msg)
 {
   assert((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||
@@ -1178,82 +1186,144 @@ bool Editor::msg_proc(JMessage msg)
     case JM_WHEEL:
       if (m_state == EDITOR_STATE_STANDBY ||
 	  m_state == EDITOR_STATE_DRAWING) {
-	/* there are and sprite in the editor, there is the mouse inside*/
-	if (m_sprite &&
-	    jwidget_has_mouse(this)) {
+	// There are and sprite in the editor, there is the mouse inside
+	if (m_sprite && jwidget_has_mouse(this)) {
 	  int dz = jmouse_z(1) - jmouse_z(0);
+	  WHEEL_ACTION wheelAction = WHEEL_NONE;
+	  bool scrollBigSteps = false;
 
 	  // Without modifiers
-	  if (!(msg->any.shifts & (KB_SHIFT_FLAG |
-				   KB_ALT_FLAG |
-				   KB_CTRL_FLAG))) {
-	    JWidget view = jwidget_get_view(this);
-	    JRect vp = jview_get_viewport_position(view);
-	    int x, y, zoom;
-
-	    x = 0;
-	    y = 0;
-	    zoom = MID(MIN_ZOOM, m_zoom-dz, MAX_ZOOM);
-
-	    /* zoom */
-	    if (m_zoom != zoom) {
-	      /* TODO: este pedazo de código es igual que el de la
-		 rutina: editor_keys_toset_zoom, tengo que intentar
-		 unir ambos, alguna función como:
-		 editor_set_zoom_and_center_in_mouse */
-	      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
-
-	      x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
-	      y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
-
-	      if ((m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
-		  (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
-		int use_refresh_region = (m_zoom == zoom) ? true: false;
-
-		m_zoom = zoom;
-
-		editor_update();
-		editor_set_scroll(x, y, use_refresh_region);
-
-		jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
-	      }
-	    }
-
-	    jrect_free(vp);
+	  if (!(msg->any.shifts & (KB_SHIFT_FLAG | KB_ALT_FLAG | KB_CTRL_FLAG))) {
+	    wheelAction = WHEEL_ZOOM;
 	  }
 	  else {
-	    JWidget view = jwidget_get_view(this);
-	    JRect vp = jview_get_viewport_position(view);
-	    int scroll_x, scroll_y;
-	    int dx = 0;
-	    int dy = 0;
-	    int thick = m_cursor_thick;
-
+#if 1				// TODO make it configurable
+	    if (has_shifts(msg, KB_ALT_FLAG)) {
+	      if (has_shifts(msg, KB_SHIFT_FLAG))
+		wheelAction = WHEEL_BG;
+	      else
+		wheelAction = WHEEL_FG;
+	    }
+	    else if (has_shifts(msg, KB_CTRL_FLAG)) {
+	      wheelAction = WHEEL_FRAME;
+	    }
+#else
 	    if (has_shifts(msg, KB_CTRL_FLAG))
-	      dx = dz * jrect_w(vp);
+	      wheelAction = WHEEL_HSCROLL;
 	    else
-	      dy = dz * jrect_h(vp);
+	      wheelAction = WHEEL_VSCROLL;
 
-	    if (has_shifts(msg, KB_SHIFT_FLAG)) {
-	      dx /= 2;
-	      dy /= 2;
+	    if (has_shifts(msg, KB_SHIFT_FLAG))
+	      scrollBigSteps = true;
+#endif
+	  }
+
+	  switch (wheelAction) {
+
+	    case WHEEL_FG: {
+	      int newIndex = 0;
+	      if (color_type(app_get_colorbar()->getFgColor()) == COLOR_TYPE_INDEX) {
+		newIndex = color_get_index(app_get_colorbar()->getFgColor()) + dz;
+		newIndex = MID(0, newIndex, 255);
+	      }
+	      app_get_colorbar()->setFgColor(color_index(newIndex));
+	      break;
 	    }
-	    else {
-	      dx /= 10;
-	      dy /= 10;
+
+	    case WHEEL_BG: {
+	      int newIndex = 0;
+	      if (color_type(app_get_colorbar()->getBgColor()) == COLOR_TYPE_INDEX) {
+		newIndex = color_get_index(app_get_colorbar()->getBgColor()) + dz;
+		newIndex = MID(0, newIndex, 255);
+	      }
+	      app_get_colorbar()->setBgColor(color_index(newIndex));
+	      break;
 	    }
+
+	    case WHEEL_FRAME: {
+	      Command* command = CommandsModule::instance()->get_command_by_name
+		((dz < 0) ? CommandId::goto_next_frame: CommandId::goto_previous_frame);
+	      if (command)
+		UIContext::instance()->execute_command(command, NULL);
+	      break;
+	    }
+
+	    case WHEEL_ZOOM: {
+	      JWidget view = jwidget_get_view(this);
+	      JRect vp = jview_get_viewport_position(view);
+	      int x, y, zoom;
+
+	      x = 0;
+	      y = 0;
+	      zoom = MID(MIN_ZOOM, m_zoom-dz, MAX_ZOOM);
+
+	      /* zoom */
+	      if (m_zoom != zoom) {
+		/* TODO: este pedazo de código es igual que el de la
+		   rutina: editor_keys_toset_zoom, tengo que intentar
+		   unir ambos, alguna función como:
+		   editor_set_zoom_and_center_in_mouse */
+		screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+
+		x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
+		y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
+
+		if ((m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
+		    (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
+		  int use_refresh_region = (m_zoom == zoom) ? true: false;
+
+		  m_zoom = zoom;
+
+		  editor_update();
+		  editor_set_scroll(x, y, use_refresh_region);
+
+		  jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
+		}
+	      }
+
+	      jrect_free(vp);
+	      break;
+	    }
+
+	    case WHEEL_HSCROLL:
+	    case WHEEL_VSCROLL: {
+	      JWidget view = jwidget_get_view(this);
+	      JRect vp = jview_get_viewport_position(view);
+	      int scroll_x, scroll_y;
+	      int dx = 0;
+	      int dy = 0;
+	      int thick = m_cursor_thick;
+
+	      if (wheelAction == WHEEL_HSCROLL) {
+		dx = dz * jrect_w(vp);
+	      }
+	      else {
+		dy = dz * jrect_h(vp);
+	      }
+
+	      if (scrollBigSteps) {
+		dx /= 2;
+		dy /= 2;
+	      }
+	      else {
+		dx /= 10;
+		dy /= 10;
+	      }
 		
-	    jview_get_scroll(view, &scroll_x, &scroll_y);
+	      jview_get_scroll(view, &scroll_x, &scroll_y);
 
-	    jmouse_hide();
-	    if (thick)
-	      editor_clean_cursor();
-	    editor_set_scroll(scroll_x+dx, scroll_y+dy, true);
-	    if (thick)
-	      editor_draw_cursor(jmouse_x(0), jmouse_y(0));
-	    jmouse_show();
+	      jmouse_hide();
+	      if (thick)
+		editor_clean_cursor();
+	      editor_set_scroll(scroll_x+dx, scroll_y+dy, true);
+	      if (thick)
+		editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+	      jmouse_show();
 
-	    jrect_free(vp);
+	      jrect_free(vp);
+	      break;
+	    }
+
 	  }
 	}
       }
