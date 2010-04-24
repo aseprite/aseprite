@@ -217,10 +217,12 @@ bool ToolBar::msg_proc(JMessage msg)
 
 	// Draw the tool icon
 	BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
-	if (icon)
-	  draw_sprite(doublebuffer, icon,
-		      toolrc.x+toolrc.w/2-icon->w/2,
-		      toolrc.y+toolrc.h/2-icon->h/2);
+	if (icon) {
+	  set_alpha_blender();
+	  draw_trans_sprite(doublebuffer, icon,
+			    toolrc.x+toolrc.w/2-icon->w/2,
+			    toolrc.y+toolrc.h/2-icon->h/2);
+	}
       }
 
       toolrc = getToolGroupBounds(-1);
@@ -234,9 +236,10 @@ bool ToolBar::msg_proc(JMessage msg)
       // Draw the tool icon
       BITMAP* icon = theme->get_toolicon("configuration");
       if (icon) {
-	draw_sprite(doublebuffer, icon,
-		    toolrc.x+toolrc.w/2-icon->w/2,
-		    toolrc.y+toolrc.h/2-icon->h/2);
+	set_alpha_blender();
+	draw_trans_sprite(doublebuffer, icon,
+			  toolrc.x+toolrc.w/2-icon->w/2,
+			  toolrc.y+toolrc.h/2-icon->h/2);
       }
 
       ji_screen = old_ji_screen;
@@ -573,10 +576,12 @@ bool ToolStrip::msg_proc(JMessage msg)
 
 	  // Draw the tool icon
 	  BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
-	  if (icon)
-	    draw_sprite(doublebuffer, icon,
-			toolrc.x+toolrc.w/2-icon->w/2,
-			toolrc.y+toolrc.h/2-icon->h/2);
+	  if (icon) {
+	    set_alpha_blender();
+	    draw_trans_sprite(doublebuffer, icon,
+			      toolrc.x+toolrc.w/2-icon->w/2,
+			      toolrc.y+toolrc.h/2-icon->h/2);
+	  }
 	}
       }
 

@@ -126,12 +126,9 @@ SkinneableTheme::SkinneableTheme()
   sheet_mapping["colorbar_1"] = PART_COLORBAR_1_NW;
   sheet_mapping["colorbar_2"] = PART_COLORBAR_2_NW;
   sheet_mapping["colorbar_3"] = PART_COLORBAR_3_NW;
-  sheet_mapping["colorbar_border_0"] = PART_COLORBAR_BORDER_0_NW;
-  sheet_mapping["colorbar_border_1"] = PART_COLORBAR_BORDER_1_NW;
-  sheet_mapping["colorbar_border_2"] = PART_COLORBAR_BORDER_2_NW;
-  sheet_mapping["colorbar_border_3"] = PART_COLORBAR_BORDER_3_NW;
   sheet_mapping["colorbar_border_fg"] = PART_COLORBAR_BORDER_FG_NW;
   sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
+  sheet_mapping["colorbar_border_hotfg"] = PART_COLORBAR_BORDER_HOTFG_NW;
 
   reload_skin();
 }
@@ -234,7 +231,7 @@ void SkinneableTheme::regen()
 	  cursors_info[c].focusx = focusx;
 	  cursors_info[c].focusy = focusy;
 
-	  m_cursors[c] = cropPartFromSheet(m_cursors[c], x, y, w, h);
+	  m_cursors[c] = cropPartFromSheet(m_cursors[c], x, y, w, h, true);
 	  break;
 	}
 
@@ -314,24 +311,31 @@ void SkinneableTheme::regen()
   dirs_free(dirs);
 }
 
-BITMAP* SkinneableTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h)
+BITMAP* SkinneableTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor)
 {
+  int colordepth = (cursor ? bitmap_color_depth(screen): 32);
+
   if (bmp &&
       (bmp->w != w ||
        bmp->h != h ||
-       bitmap_color_depth(bmp) != bitmap_color_depth(screen))) {
+       bitmap_color_depth(bmp) != colordepth)) {
     destroy_bitmap(bmp);
     bmp = NULL;
   }
 
   if (!bmp)
-    bmp = create_bitmap(w, h);
+    bmp = create_bitmap_ex(colordepth, w, h);
 
-  clear_to_color(bmp, bitmap_mask_color(bmp));
+  if (cursor) {
+    clear_to_color(bmp, bitmap_mask_color(bmp));
 
-  set_alpha_blender();
-  draw_trans_sprite(bmp, m_sheet_bmp, -x, -y);
-  set_trans_blender(0, 0, 0, 0);
+    set_alpha_blender();
+    draw_trans_sprite(bmp, m_sheet_bmp, -x, -y);
+    set_trans_blender(0, 0, 0, 0);
+  }
+  else {
+    blit(m_sheet_bmp, bmp, x, y, 0, 0, w, h);
+  }
 
   return ji_apply_guiscale(bmp);
 }
@@ -717,10 +721,11 @@ void SkinneableTheme::draw_check(JWidget widget, JRect clip)
   draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
   /* icon */
-  draw_sprite(ji_screen,
-	      jwidget_is_selected(widget) ? m_part[PART_CHECK_SELECTED]:
-					    m_part[PART_CHECK_NORMAL],
-	      icon.x1, icon.y1);
+  set_alpha_blender();
+  draw_trans_sprite(ji_screen,
+		    jwidget_is_selected(widget) ? m_part[PART_CHECK_SELECTED]:
+						  m_part[PART_CHECK_NORMAL],
+		    icon.x1, icon.y1);
 
   // draw focus
   if (jwidget_has_focus(widget)) {
@@ -915,7 +920,8 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
     int x = widget->rc->x1+4-icon->w/2;
     int y = (widget->rc->y1+widget->rc->y2)/2-icon->h/2;
 
-    draw_sprite(ji_screen, icon, x, y);
+    set_alpha_blender();
+    draw_trans_sprite(ji_screen, icon, x, y);
   }
 
   /* text */
@@ -1007,10 +1013,11 @@ void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
   draw_textstring(NULL, -1, bg, false, widget, &text, 0);
 
   /* icon */
-  draw_sprite(ji_screen,
-	      jwidget_is_selected(widget) ? m_part[PART_RADIO_SELECTED]:
-					    m_part[PART_RADIO_NORMAL],
-	      icon.x1, icon.y1);
+  set_alpha_blender();
+  draw_trans_sprite(ji_screen,
+		    jwidget_is_selected(widget) ? m_part[PART_RADIO_SELECTED]:
+						  m_part[PART_RADIO_NORMAL],
+		    icon.x1, icon.y1);
 
   // draw focus
   if (jwidget_has_focus(widget)) {
@@ -1266,7 +1273,8 @@ void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
 		   get_button_selected_offset(),
 		   get_button_selected_offset());
 
-  draw_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
+  set_alpha_blender();
+  draw_trans_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
 }
 
 void SkinneableTheme::draw_textbox(JWidget widget, JRect clip)
@@ -1398,7 +1406,8 @@ void SkinneableTheme::draw_frame_button(JWidget widget, JRect clip)
   else
     part = PART_WINDOW_CLOSE_BUTTON_NORMAL;
 
-  draw_sprite(ji_screen, m_part[part], widget->rc->x1, widget->rc->y1);
+  set_alpha_blender();
+  draw_trans_sprite(ji_screen, m_part[part], widget->rc->x1, widget->rc->y1);
 }
 
 int SkinneableTheme::get_bg_color(JWidget widget)
@@ -1568,7 +1577,8 @@ void SkinneableTheme::draw_bounds0(int x1, int y1, int x2, int y2, int parts[8])
   int sw = parts[6];
   int w  = parts[7];
 
-  draw_bounds_template(nw, n, ne, e, se, s, sw, w, draw_sprite);
+  set_alpha_blender();
+  draw_bounds_template(nw, n, ne, e, se, s, sw, w, draw_trans_sprite);
 }
 
 void SkinneableTheme::draw_trans_bounds0(int x1, int y1, int x2, int y2, int parts[8])
@@ -1587,10 +1597,11 @@ void SkinneableTheme::draw_trans_bounds0(int x1, int y1, int x2, int y2, int par
 
 void SkinneableTheme::draw_bounds(int x1, int y1, int x2, int y2, int nw, int bg)
 {
+  set_alpha_blender();
   draw_bounds_template(nw+0, nw+1, nw+2, nw+3,
-		       nw+4, nw+5, nw+6, nw+7, draw_sprite);
+		       nw+4, nw+5, nw+6, nw+7, draw_trans_sprite);
 
-  // Background 
+  // Center 
   if (bg >= 0) {
     x1 += m_part[nw+7]->w;
     y1 += m_part[nw+1]->h;
@@ -1627,14 +1638,23 @@ void SkinneableTheme::draw_hline(int x1, int y1, int x2, int y2, int part)
 {
   int x;
 
+  set_alpha_blender();
+
   for (x = x1;
        x <= x2-m_part[part]->w;
        x += m_part[part]->w) {
-    draw_sprite(ji_screen, m_part[part], x, y1);
+    draw_trans_sprite(ji_screen, m_part[part], x, y1);
   }
 
-  if (x <= x2)
-    blit(m_part[part], ji_screen, 0, 0, x, y1, x2-x+1, m_part[part]->h);
+  if (x <= x2) {
+    int cx1, cy1, cx2, cy2;
+    get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+
+    if (my_add_clip_rect(ji_screen, x, y1, x2, y1+m_part[part]->h-1))
+      draw_trans_sprite(ji_screen, m_part[part], x, y1);
+
+    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
+  }
 }
 
 void SkinneableTheme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)

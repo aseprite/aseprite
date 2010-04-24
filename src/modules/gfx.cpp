@@ -513,38 +513,15 @@ void draw_color_button(BITMAP* bmp,
     ji_screen = old_ji_screen;
   }
 
-  // Draw transparent border
-  set_trans_blender(0, 0, 0, 128);
-  {
-    SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
-    int parts[8] = {
-      outer_nw ? PART_COLORBAR_BORDER_0_NW: PART_COLORBAR_BORDER_3_NW,
-      outer_n  ? PART_COLORBAR_BORDER_0_N : PART_COLORBAR_BORDER_2_N,
-      outer_ne ? PART_COLORBAR_BORDER_1_NE: (outer_e ? PART_COLORBAR_BORDER_3_NE: PART_COLORBAR_BORDER_2_NE),
-      outer_e  ? PART_COLORBAR_BORDER_1_E : PART_COLORBAR_BORDER_0_E,
-      outer_se ? PART_COLORBAR_BORDER_3_SE: (outer_s ? PART_COLORBAR_BORDER_2_SE: (outer_e ? PART_COLORBAR_BORDER_1_SE: PART_COLORBAR_BORDER_0_SE)),
-      outer_s  ? PART_COLORBAR_BORDER_2_S : PART_COLORBAR_BORDER_0_S,
-      outer_sw ? PART_COLORBAR_BORDER_2_SW: (outer_s ? PART_COLORBAR_BORDER_3_SW: PART_COLORBAR_BORDER_1_SW),
-      outer_w  ? PART_COLORBAR_BORDER_0_W : PART_COLORBAR_BORDER_1_W,
-    };
-    BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
-    ji_screen = bmp;
-    theme->draw_trans_bounds0(rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, parts);
-    ji_screen = old_ji_screen;
-  }
-  set_trans_blender(0, 0, 0, 0);
-
   // Draw hot
   if (hot) {
-    set_trans_blender(0, 0, 0, 128);
     BITMAP* old_ji_screen = ji_screen; // TODO fix this ugly hack
     ji_screen = bmp;
     theme->draw_trans_bounds(rc.x, rc.y,
 			     rc.x+rc.w-1,
 			     rc.y+rc.h-1 - (outer_s ? 1*scale: 0),
-			     PART_COLORBAR_BORDER_FG_NW);
+			     PART_COLORBAR_BORDER_HOTFG_NW);
     ji_screen = old_ji_screen;
-    set_trans_blender(0, 0, 0, 0);
   }
 }
 
