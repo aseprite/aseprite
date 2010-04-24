@@ -51,7 +51,7 @@ protected:
   virtual bool msg_proc(JMessage msg);
 
 private:
-  int getEntriesCount() const { return m_columns*m_colorsPerColum; }
+  int getEntriesCount() const { return m_columns*m_colorsPerColumn; }
   color_t getEntryColor(size_t i) const { return color_index(i+m_firstIndex); }
 
   color_t getHotColor(hotcolor_t hot);
@@ -64,7 +64,7 @@ private:
 
   size_t m_firstIndex;
   size_t m_columns;
-  size_t m_colorsPerColum;
+  size_t m_colorsPerColumn;
   int m_entrySize;
   color_t m_fgcolor;
   color_t m_bgcolor;

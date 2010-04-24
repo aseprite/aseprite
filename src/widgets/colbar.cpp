@@ -52,6 +52,8 @@ using Vaca::Point;
 using Vaca::Rect;
 
 #define COLORBAR_MAX_COLORS	256
+#define ENTRYSIZE_MIN		12
+#define ENTRYSIZE_MAX		64
 
 // Pixels
 #define FGBUTTON_SIZE		(16*jguiscale())
@@ -74,7 +76,7 @@ ColorBar::ColorBar(int align)
   m_entrySize = 16;
   m_firstIndex = 0;
   m_columns = 2;
-  m_colorsPerColum = 12;
+  m_colorsPerColumn = 12;
   m_fgcolor = color_index(15);
   m_bgcolor = color_index(0);
   m_hot = HOTCOLOR_NONE;
@@ -99,7 +101,7 @@ ColorBar::ColorBar(int align)
   m_columns = MID(1, m_columns, 4);
 
   m_entrySize = get_config_int("ColorBar", "EntrySize", m_entrySize);
-  m_entrySize = MID(12, m_entrySize, 256);
+  m_entrySize = MID(ENTRYSIZE_MIN, m_entrySize, ENTRYSIZE_MAX);
 }
 
 ColorBar::~ColorBar()
@@ -161,16 +163,16 @@ bool ColorBar::msg_proc(JMessage msg)
     case JM_DRAW: {
       // Update the number of colors per column
       {
-      	m_colorsPerColum = getColumnBounds(1).h / (m_entrySize*jguiscale());
-      	m_colorsPerColum = MAX(1, m_colorsPerColum);
+      	m_colorsPerColumn = getColumnBounds(1).h / (m_entrySize*jguiscale());
+      	m_colorsPerColumn = MAX(1, m_colorsPerColumn);
 	
-      	if (m_colorsPerColum*m_columns > 256) {
-      	  m_colorsPerColum = 256 / m_columns;
-      	  if (m_colorsPerColum*m_columns > 256)
-      	    m_colorsPerColum--;
+      	if (m_colorsPerColumn*m_columns > 256) {
+      	  m_colorsPerColumn = 256 / m_columns;
+      	  if (m_colorsPerColumn*m_columns > 256)
+      	    m_colorsPerColumn--;
       	}
 
-      	assert(m_colorsPerColum*m_columns <= 256);
+      	assert(m_colorsPerColumn*m_columns <= 256);
       }
 
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
@@ -195,8 +197,8 @@ bool ColorBar::msg_proc(JMessage msg)
 	entryBounds.offset(-msg->draw.rect.x1,
 			   -msg->draw.rect.y1);
 
-	int col = (i / m_colorsPerColum);
-	int row = (i % m_colorsPerColum);
+	int col = (i / m_colorsPerColumn);
+	int row = (i % m_colorsPerColumn);
 	color_t color = color_index(m_firstIndex + i);
 
 	draw_color_button(doublebuffer, entryBounds,
@@ -204,9 +206,9 @@ bool ColorBar::msg_proc(JMessage msg)
 			  row == 0,				// n
 			  row == 0 && col == m_columns-1,	// ne
 			  col == m_columns-1,			// e
-			  row == m_colorsPerColum-1 && col == m_columns-1, // se
-			  row == m_colorsPerColum-1,		// s
-			  row == m_colorsPerColum-1 && col == 0, // sw
+			  row == m_colorsPerColumn-1 && col == m_columns-1, // se
+			  row == m_colorsPerColumn-1,		// s
+			  row == m_colorsPerColumn-1 && col == 0, // sw
 			  col == 0,				 // w
 			  imgtype,
 			  color,
@@ -220,7 +222,7 @@ bool ColorBar::msg_proc(JMessage msg)
 	  ji_screen = doublebuffer;
 	  theme->draw_bounds(entryBounds.x, entryBounds.y,
 			     entryBounds.x+entryBounds.w-1,
-			     entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColum-1 ? jguiscale(): 0),
+			     entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
 			     PART_COLORBAR_BORDER_BG_NW, -1);
 	  ji_screen = old_ji_screen;
 	}
@@ -229,7 +231,7 @@ bool ColorBar::msg_proc(JMessage msg)
 	  ji_screen = doublebuffer;
 	  theme->draw_bounds(entryBounds.x, entryBounds.y,
 			     entryBounds.x+entryBounds.w-1,
-			     entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColum-1 ? jguiscale(): 0),
+			     entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
 			     PART_COLORBAR_BORDER_FG_NW, -1);
 	  ji_screen = old_ji_screen;
 	}
@@ -346,7 +348,7 @@ bool ColorBar::msg_proc(JMessage msg)
 	if (!(msg->any.shifts & (KB_ALT_FLAG |
 				 KB_CTRL_FLAG))) {
 	  if (msg->any.shifts & KB_SHIFT_FLAG)
-	    delta *= m_colorsPerColum;
+	    delta *= m_colorsPerColumn;
 
 	  if (((int)m_firstIndex)+delta < 0)
 	    m_firstIndex = 0;
@@ -360,12 +362,18 @@ bool ColorBar::msg_proc(JMessage msg)
 	if ((msg->any.shifts & (KB_ALT_FLAG |
 				KB_CTRL_FLAG |
 				KB_SHIFT_FLAG)) == KB_CTRL_FLAG) {
-	  if (((int)m_entrySize)+delta < 12)
-	    m_entrySize = 12;
-	  else if (m_entrySize+delta > 256)
-	    m_entrySize = 256;
-	  else
+	  int newColorsPerColumn = m_colorsPerColumn;
+
+	  while (((int)m_entrySize) >= ENTRYSIZE_MIN &&
+		 ((int)m_entrySize) <= ENTRYSIZE_MAX &&
+		 newColorsPerColumn == m_colorsPerColumn) {
+	    // Increment or decrement m_entrySize until m_colorsPerColumnn changes
 	    m_entrySize += delta;
+	    newColorsPerColumn = getColumnBounds(1).h / (m_entrySize*jguiscale());
+	  }
+
+	  // Limit "m_entrySize" value
+	  m_entrySize = MID(ENTRYSIZE_MIN, m_entrySize, ENTRYSIZE_MAX);
 	}
 
 	// With Alt only
@@ -524,16 +532,16 @@ Rect ColorBar::getColumnBounds(size_t column) const
 
 Rect ColorBar::getEntryBounds(size_t index) const
 {
-  size_t row = (index % m_colorsPerColum);
-  size_t col = (index / m_colorsPerColum);
+  size_t row = (index % m_colorsPerColumn);
+  size_t col = (index / m_colorsPerColumn);
   Rect rc = getColumnBounds(col);
 
   rc.h -= 2*jguiscale();
 
-  rc.y += row * rc.h / m_colorsPerColum;
-  rc.h = ((row+1) * rc.h / m_colorsPerColum) - (row * rc.h / m_colorsPerColum);
+  rc.y += row * rc.h / m_colorsPerColumn;
+  rc.h = ((row+1) * rc.h / m_colorsPerColumn) - (row * rc.h / m_colorsPerColumn);
 
-  if (row == m_colorsPerColum-1)
+  if (row == m_colorsPerColumn-1)
     rc.h += 2*jguiscale();
 
   return rc;
