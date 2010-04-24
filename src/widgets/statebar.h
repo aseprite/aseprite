@@ -49,9 +49,9 @@ public:
   StatusBar();
   ~StatusBar();
 
-  void setStatusText(int msecs, const char *format, ...);
+  bool setStatusText(int msecs, const char *format, ...);
   void showTip(int msecs, const char *format, ...);
-  void showColor(int msecs, int imgtype, color_t color);
+  void showColor(int msecs, const char* text, color_t color, int alpha);
   
   Progress* addProgress();
   void removeProgress(Progress* progress);
@@ -63,7 +63,14 @@ private:
   void onCurrentToolChange();
   void updateFromLayer();
 
+  enum State { SHOW_TEXT, SHOW_COLOR };
+
   int m_timeout;
+  State m_state;
+
+  // Showing a color
+  color_t m_color;
+  int m_alpha;
 
   // Progress bar
   JList m_progress;

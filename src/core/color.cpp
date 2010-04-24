@@ -677,17 +677,15 @@ void color_to_formalstring(int imgtype, color_t color,
       case COLOR_TYPE_RGB:
 	data = GET_COLOR_DATA_RGB(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "%s %d",
-		    _("Gray"),
+	  uszprintf(buf, size, "Gray %d",
 		    _graya_getv(get_color_for_image(imgtype, color)));
 	}
 	else {
-	  uszprintf(buf, size, "%s %d %d %d",
-		    _("RGB"),
+	  uszprintf(buf, size, "RGB %d %d %d",
 		    GET_DATA_C1(data),
 		    GET_DATA_C2(data),
 		    GET_DATA_C3(data));
-  
+	  
 	  if (imgtype == IMAGE_INDEXED)
 	    uszprintf(buf+ustrlen(buf), size, " %s %d",
 		      _("Index"), get_color_for_image(imgtype, color));
@@ -697,34 +695,32 @@ void color_to_formalstring(int imgtype, color_t color,
       case COLOR_TYPE_HSV:
 	data = GET_COLOR_DATA_HSV(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "%s %d",
-		    _("Gray"), GET_DATA_C3(data));
+	  uszprintf(buf, size, "Gray %d",
+		    GET_DATA_C3(data));
 	}
 	else {
-	  uszprintf(buf, size, "%s %d %d %d",
-		    _("HSV"),
+	  uszprintf(buf, size, "HSV %d %d %d",
 		    GET_DATA_C1(data),
 		    GET_DATA_C2(data),
 		    GET_DATA_C3(data));
   
 	  if (imgtype == IMAGE_INDEXED)
-	    uszprintf(buf+ustrlen(buf), size, " %s %d",
-		      _("Index"), get_color_for_image(imgtype, color));
+	    uszprintf(buf+ustrlen(buf), size, " Index %d",
+		      get_color_for_image(imgtype, color));
 	}
 	break;
 	
       case COLOR_TYPE_GRAY:
 	data = GET_COLOR_DATA_GRAY(color);
-	uszprintf(buf, size, "%s %d",
-		  _("Gray"), data);
+	uszprintf(buf, size, "Gray %d",
+		  data);
 	break;
 
       case COLOR_TYPE_INDEX: {
 	ase_uint32 _c;
 	data = GET_COLOR_DATA_INDEX(color);
 	_c = get_current_palette()->getEntry(data & 0xff);
-	uszprintf(buf, size, "%s %d (RGB %d %d %d)",
-		  _("Index"),
+	uszprintf(buf, size, "Index %d (RGB %d %d %d)",
 		  data & 0xff,
 		  _rgba_getr(_c),
 		  _rgba_getg(_c),

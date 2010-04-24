@@ -562,5 +562,5 @@ Rect ColorBar::getBgBounds() const
 void ColorBar::updateStatusBar(color_t color, int msecs)
 {
   app_get_statusbar()
-    ->showColor(msecs, app_get_current_image_type(), color);
+    ->showColor(msecs, "", color, 255);
 }

@@ -628,42 +628,34 @@ void Editor::hide_drawing_cursor()
 
 void Editor::editor_update_statusbar_for_standby()
 {
-  char buf[256];
   int x, y;
-
   screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 
-  /* for eye-dropper */
+  // For eye-dropper
   if (m_alt_pressed) {
-    color_t color = color_from_image(m_sprite->getImgType(),
-				     m_sprite->getPixel(x, y));
-    if (color_type(color) != COLOR_TYPE_MASK) {
-      usprintf(buf, "%s ", _("Color"));
-      color_to_formalstring(m_sprite->getImgType(),
-			    color,
-			    buf+ustrlen(buf),
-			    sizeof(buf)-ustrlen(buf), true);
+    int imgtype = m_sprite->getImgType();
+    ase_uint32 pixel = m_sprite->getPixel(x, y);
+    color_t color = color_from_image(imgtype, pixel);
+
+    int alpha = 255;
+    switch (imgtype) {
+      case IMAGE_RGB: alpha = _rgba_geta(pixel); break;
+      case IMAGE_GRAYSCALE: alpha = _graya_geta(pixel); break;
     }
-    else {
-      usprintf(buf, "%s", _("Transparent"));
-    }
+
+    char buf[256];
+    usprintf(buf, "- Pos %d %d", x, y);
+
+    app_get_statusbar()->showColor(0, buf, color, alpha);
   }
   else {
-    ustrcpy(buf, empty_string);
+    app_get_statusbar()->setStatusText
+      (0, "Pos %d %d, Size %d %d, Frame %d",
+       x, y,
+       ((m_sprite->getMask()->bitmap)? m_sprite->getMask()->w: m_sprite->getWidth()),
+       ((m_sprite->getMask()->bitmap)? m_sprite->getMask()->h: m_sprite->getHeight()),
+       m_sprite->getCurrentFrame()+1);
   }
-
-  app_get_statusbar()->setStatusText
-    (0, "%s %3d %3d (%s %3d %3d) [%s %d] %s",
-     _("Pos"), x, y,
-     _("Size"),
-     ((m_sprite->getMask()->bitmap)?
-      m_sprite->getMask()->w:
-      m_sprite->getWidth()),
-     ((m_sprite->getMask()->bitmap)?
-      m_sprite->getMask()->h:
-      m_sprite->getHeight()),
-     _("Frame"), m_sprite->getCurrentFrame()+1,
-     buf);
 }
 
 void Editor::editor_refresh_region()

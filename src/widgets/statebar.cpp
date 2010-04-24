@@ -87,6 +87,7 @@ StatusBar::StatusBar()
   jwidget_focusrest(this, true);
 
   m_timeout = 0;
+  m_state = SHOW_TEXT;
   m_progress = jlist_new();
   m_tipwindow = NULL;
   m_hot_layer = -1;
@@ -151,7 +152,7 @@ void StatusBar::onCurrentToolChange()
   }
 }
 
-void StatusBar::setStatusText(int msecs, const char *format, ...)
+bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
   if ((ji_clock > m_timeout) || (msecs > 0)) {
     char buf[256];		// TODO warning buffer overflow
@@ -162,9 +163,15 @@ void StatusBar::setStatusText(int msecs, const char *format, ...)
     va_end(ap);
 
     m_timeout = ji_clock + msecs;
+    m_state = SHOW_TEXT;
+
     this->setText(buf);
     this->dirty();
+
+    return true;
   }
+  else
+    return false;
 }
 
 void StatusBar::showTip(int msecs, const char *format, ...)
@@ -207,11 +214,13 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   this->dirty();
 }
 
-void StatusBar::showColor(int msecs, int imgtype, color_t color)
+void StatusBar::showColor(int msecs, const char* text, color_t color, int alpha)
 {
-  char buf[128];		// TODO warning buffer overflow
-  color_to_formalstring(imgtype, color, buf, sizeof(buf), true);
-  setStatusText(msecs, "%s %s", _("Color"), buf);
+  if (setStatusText(msecs, text)) {
+    m_state = SHOW_COLOR;
+    m_color = color;
+    m_alpha = alpha;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -309,12 +318,50 @@ bool StatusBar::msg_proc(JMessage msg)
       rc->x2 -= 2*jguiscale();
       rc->y2 -= 2*jguiscale();
 
+      int x = rc->x1+4*jguiscale();
+
+      // Color
+      if (m_state == SHOW_COLOR) {
+	// Draw eyedropper icon
+	BITMAP* icon = theme->get_toolicon("eyedropper");
+	if (icon) {
+	  set_alpha_blender();
+	  draw_trans_sprite(doublebuffer, icon,
+			    x, (rc->y1+rc->y2)/2-icon->h/2);
+	  
+	  x += icon->w + 4*jguiscale();
+	}
+
+	// Draw color
+	draw_color_button(doublebuffer, Rect(x, rc->y1, 32*jguiscale(), rc->y2-rc->y1),
+			  true, true, true, true,
+			  true, true, true, true,
+			  app_get_current_image_type(), m_color,
+			  false, false);
+
+	x += (32+4)*jguiscale();
+
+	// Draw color description
+	char buf[256];		// TODO warning buffer overflow
+	color_to_formalstring(app_get_current_image_type(),
+			      m_color, buf, sizeof(buf), true);
+
+	textout_ex(doublebuffer, this->getFont(), buf,
+		   x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
+		   text_color, -1);
+
+	x += ji_font_text_len(this->getFont(), buf) + 4*jguiscale();
+	
+      }
+
       // Status bar text
-      if (this->getText()) {
+      if (this->getTextSize() > 0) {
 	textout_ex(doublebuffer, this->getFont(), this->getText(),
-		   rc->x1+4*jguiscale(),
+		   x,
 		   (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
 		   text_color, -1);
+
+	x += ji_font_text_len(this->getFont(), this->getText()) + 4*jguiscale();
       }
 
       // Draw progress bar
