@@ -45,11 +45,7 @@
  *
  * In beta releases it starts with MODE_VERBOSE value.
  */
-#ifdef ASE_BETA
-  int ase_mode = MODE_VERBOSE;
-#else
-  int ase_mode = 0;
-#endif
+int ase_mode = 0;
 
 #ifdef NEED_LOG
 /* log file info */
