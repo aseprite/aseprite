@@ -1221,33 +1221,36 @@ bool Editor::msg_proc(JMessage msg)
 
 	  switch (wheelAction) {
 
-	    case WHEEL_FG: {
-	      int newIndex = 0;
-	      if (color_type(app_get_colorbar()->getFgColor()) == COLOR_TYPE_INDEX) {
-		newIndex = color_get_index(app_get_colorbar()->getFgColor()) + dz;
-		newIndex = MID(0, newIndex, 255);
+	    case WHEEL_FG:
+	      if (m_state == EDITOR_STATE_STANDBY) {
+		int newIndex = 0;
+		if (color_type(app_get_colorbar()->getFgColor()) == COLOR_TYPE_INDEX) {
+		  newIndex = color_get_index(app_get_colorbar()->getFgColor()) + dz;
+		  newIndex = MID(0, newIndex, 255);
+		}
+		app_get_colorbar()->setFgColor(color_index(newIndex));
 	      }
-	      app_get_colorbar()->setFgColor(color_index(newIndex));
 	      break;
-	    }
 
-	    case WHEEL_BG: {
-	      int newIndex = 0;
-	      if (color_type(app_get_colorbar()->getBgColor()) == COLOR_TYPE_INDEX) {
-		newIndex = color_get_index(app_get_colorbar()->getBgColor()) + dz;
-		newIndex = MID(0, newIndex, 255);
+	    case WHEEL_BG:
+	      if (m_state == EDITOR_STATE_STANDBY) {
+		int newIndex = 0;
+		if (color_type(app_get_colorbar()->getBgColor()) == COLOR_TYPE_INDEX) {
+		  newIndex = color_get_index(app_get_colorbar()->getBgColor()) + dz;
+		  newIndex = MID(0, newIndex, 255);
+		}
+		app_get_colorbar()->setBgColor(color_index(newIndex));
 	      }
-	      app_get_colorbar()->setBgColor(color_index(newIndex));
 	      break;
-	    }
 
-	    case WHEEL_FRAME: {
-	      Command* command = CommandsModule::instance()->get_command_by_name
-		((dz < 0) ? CommandId::goto_next_frame: CommandId::goto_previous_frame);
-	      if (command)
-		UIContext::instance()->execute_command(command, NULL);
+	    case WHEEL_FRAME:
+	      if (m_state == EDITOR_STATE_STANDBY) {
+		Command* command = CommandsModule::instance()->get_command_by_name
+		  ((dz < 0) ? CommandId::goto_next_frame: CommandId::goto_previous_frame);
+		if (command)
+		  UIContext::instance()->execute_command(command, NULL);
+	      }
 	      break;
-	    }
 
 	    case WHEEL_ZOOM: {
 	      JWidget view = jwidget_get_view(this);
