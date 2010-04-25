@@ -110,7 +110,8 @@ SkinneableTheme::SkinneableTheme()
   sheet_mapping["mini_slider_empty"] = PART_MINI_SLIDER_EMPTY_NW;
   sheet_mapping["mini_slider_full_focused"] = PART_MINI_SLIDER_FULL_FOCUSED_NW;
   sheet_mapping["mini_slider_empty_focused"] = PART_MINI_SLIDER_EMPTY_FOCUSED_NW;
-  sheet_mapping["separator"] = PART_SEPARATOR;
+  sheet_mapping["separator_horz"] = PART_SEPARATOR_HORZ;
+  sheet_mapping["separator_vert"] = PART_SEPARATOR_VERT;
   sheet_mapping["combobox_arrow"] = PART_COMBOBOX_ARROW;
   sheet_mapping["toolbutton_normal"] = PART_TOOLBUTTON_NORMAL_NW;
   sheet_mapping["toolbutton_hot"] = PART_TOOLBUTTON_HOT_NW;
@@ -1049,7 +1050,15 @@ void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
 		       widget->rc->x1,
 		       widget->rc->y1,
 		       widget->rc->x2-1,
-		       widget->rc->y2-1, PART_SEPARATOR);
+		       widget->rc->y2-1, PART_SEPARATOR_HORZ);
+  }
+
+  if (widget->getAlign() & JI_VERTICAL) {
+    draw_part_as_vline(ji_screen,
+		       widget->rc->x1,
+		       widget->rc->y1,
+		       widget->rc->x2-1,
+		       widget->rc->y2-1, PART_SEPARATOR_VERT);
   }
 
   // text
@@ -1644,6 +1653,29 @@ void SkinneableTheme::draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, in
 
     if (my_add_clip_rect(bmp, x, y1, x2, y1+m_part[part]->h-1))
       draw_trans_sprite(bmp, m_part[part], x, y1);
+
+    set_clip_rect(bmp, cx1, cy1, cx2, cy2);
+  }
+}
+
+void SkinneableTheme::draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part)
+{
+  int y;
+
+  set_alpha_blender();
+
+  for (y = y1;
+       y <= y2-m_part[part]->h;
+       y += m_part[part]->h) {
+    draw_trans_sprite(bmp, m_part[part], x1, y);
+  }
+
+  if (y <= y2) {
+    int cx1, cy1, cx2, cy2;
+    get_clip_rect(bmp, &cx1, &cy1, &cx2, &cy2);
+
+    if (my_add_clip_rect(bmp, x1, y, x1+m_part[part]->w-1, y2))
+      draw_trans_sprite(bmp, m_part[part], x1, y);
 
     set_clip_rect(bmp, cx1, cy1, cx2, cy2);
   }

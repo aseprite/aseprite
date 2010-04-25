@@ -87,7 +87,8 @@
     <part id="mini_slider_empty"		x="48" y="144" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="mini_slider_full_focused"		x="32" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="mini_slider_empty_focused"	x="48" y="160" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
-    <part id="separator"			x="32" y="80" w="9" h="5" />
+    <part id="separator_horz"			x="32" y="80" w="9" h="5" />
+    <part id="separator_vert"			x="32" y="96" w="5" h="9" />
     <part id="combobox_arrow"			x="96" y="32" w="16" h="16" />
     <part id="toolbutton_normal"		x="96" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_hot"			x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />

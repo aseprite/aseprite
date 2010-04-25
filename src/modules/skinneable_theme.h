@@ -238,7 +238,8 @@ enum {
   PART_MINI_SLIDER_EMPTY_FOCUSED_SW,
   PART_MINI_SLIDER_EMPTY_FOCUSED_W,
 
-  PART_SEPARATOR,
+  PART_SEPARATOR_HORZ,
+  PART_SEPARATOR_VERT,
 
   PART_COMBOBOX_ARROW,
 
@@ -490,6 +491,7 @@ public:
   void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, int bg = -1);
   void draw_bounds_nw2(BITMAP* bmp, int x1, int y1, int x2, int y2, int x_mid, int nw1, int nw2, int bg1, int bg2);
   void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
+  void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
 
   // Wrapper to use the new "Rect" class (x, y, w, h)
   void draw_bounds_nw(BITMAP* bmp, const Rect& rc, int nw, int bg) {
