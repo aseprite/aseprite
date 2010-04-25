@@ -23,23 +23,24 @@
 #include "jinete/jinete.h"
 #include "Vaca/Bind.h"
 
-#include "commands/command.h"
 #include "app.h"
+#include "commands/command.h"
+#include "commands/commands.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
-#include "raster/pen.h"
 #include "raster/image.h"
 #include "raster/mask.h"
+#include "raster/pen.h"
 #include "raster/sprite.h"
+#include "settings/settings.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "widgets/colbut.h"
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
-#include "settings/settings.h"
 
 static Frame* window = NULL;
 
@@ -463,16 +464,15 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
 	refresh_all_editors();
     }
     else {
-      jalert(_("Error"
-	       "<<You have to select a sprite with mask."
-	       "<<The boundaries of the mask will be used"
-	       "<<to specify the grid area.||&OK"));
+      Command* grid_settings_cmd = 
+	CommandsModule::instance()->get_command_by_name(CommandId::grid_settings);
+  
+      UIContext::instance()->execute_command(grid_settings_cmd, NULL);
     }
   }
   catch (locked_sprite_exception& e) {
     e.show();
   }
-
   return true;
 }
 

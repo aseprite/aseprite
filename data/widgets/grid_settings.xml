@@ -1,0 +1,27 @@
+<!-- ASE - Allegro Sprite Editor -->
+<!-- Copyright (C) 2001-2010 by David Capello -->
+<jinete>
+<window text="Grid Settings" name="grid_settings">
+  <grid columns="4">
+
+    <label text="X:" />
+    <entry name="grid_x" text="" maxsize="4" magnetic="true" />
+
+    <label text="Y:" />
+    <entry name="grid_y" text="" maxsize="4" />
+
+    <label text="Width:" />
+    <entry name="grid_w" text="" maxsize="4" />
+
+    <label text="Height:" />
+    <entry name="grid_h" text="" maxsize="4" />
+
+    <separator horizontal="true" cell_hspan="4" />
+
+    <box horizontal="true" homogeneous="true" cell_hspan="4" cell_align="right">
+      <button text="&amp;OK" name="ok" magnetic="true" minwidth="60" />
+      <button text="&amp;Cancel" />
+    </box>
+  </grid>
+</window>
+</jinete>

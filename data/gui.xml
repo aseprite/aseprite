@@ -275,6 +275,8 @@
 	</menu>
 	<separator />
 	<menu text="&amp;Grid">
+	  <item command="grid_settings" text="Grid Se&amp;ttings" />
+	  <separator />
 	  <item command="show_grid" text="Show &amp;Grid" />
 	  <item command="snap_to_grid" text="&amp;Snap to Grid" />
 	</menu>
