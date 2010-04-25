@@ -5,7 +5,6 @@
   <box vertical="true" childspacing="0">
     <box horizontal="true" expansive="true">
       <box vertical="true" childspacing="2">
-        <separator text="General:" horizontal="true" left="true" />
 	<box horizontal="true" childspacing="0">
             <check text="Tiled" name="tiled" />
             <check text="x" name="tiled_x" />
@@ -19,21 +18,27 @@
         <separator text="Cursor:" horizontal="true" left="true" />
 	<box name="cursor_color_box" /><!-- custom widget -->
       </box>
+      <separator vertical="true" />
       <box vertical="true" expansive="true" childspacing="2">
-        <separator text="Pen:" horizontal="true" left="true" />
         <box horizontal="true">
 	  <grid columns="2" childspacing="0" expansive="true">
+
+	    <label text="Pen:" />
+	    <box vertical="true" childspacing="0">
+	      <box name="brush_type_box" /><!-- custom widget -->
+	      <box name="brush_mode_box" /><!-- custom widget -->
+	    </box>
+
             <label text="Size:" />
             <slider min="1" max="32" name="brush_size" minwidth="32" cell_align="horizontal" />
+
             <label text="Angle:" />
             <slider min="0" max="180" name="brush_angle" cell_align="horizontal" />
+
             <label text="Opacity:" />
 	    <slider min="0" max="255" name="opacity" cell_align="horizontal" />
+
 	  </grid>
-          <box vertical="true" childspacing="0">
-	    <box name="brush_type_box" /><!-- custom widget -->
-	    <box name="brush_mode_box" /><!-- custom widget -->
-          </box>
 	  <box name="brush_preview_box" /><!-- custom widget -->
         </box>
         <separator text="Spray:" horizontal="true" left="true" />
