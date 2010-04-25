@@ -46,6 +46,7 @@
 #include "util/render.h"
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
+#include "widgets/editor/pixels_movement.h"
 #include "widgets/statebar.h"
 
 #define has_shifts(msg,shift)			\
@@ -101,6 +102,7 @@ Editor::Editor()
 
   m_refresh_region = NULL;
   m_toolLoopManager = NULL;
+  m_pixelsMovement = NULL;
 
   jwidget_focusrest(this, true);
 }
@@ -926,7 +928,7 @@ bool Editor::msg_proc(JMessage msg)
 	  jwidget_release_mouse(this);
 	}
       }
-      else {
+      else if (!jwidget_has_capture(this)) {
 	UIContext* context = UIContext::instance();
 	Tool* current_tool = context->getSettings()->getCurrentTool();
 
@@ -964,6 +966,36 @@ bool Editor::msg_proc(JMessage msg)
 				     TRUE, NULL);
 	    }
 	    return true;
+	  }
+	}
+	// Move selected pixels
+	else if (m_insideSelection &&
+		 current_tool->getInk(0)->isSelection() &&
+		 msg->mouse.left) {
+	  int x, y, opacity;
+	  Image* image = m_sprite->getCurrentImage(&x, &y, &opacity);
+	  if (image) {
+	    if (!m_sprite->getCurrentLayer()->is_writable()) {
+	      jalert(_(PACKAGE
+		       "<<The layer is locked."
+		       "||&Close"));
+	      return true;
+	    }
+
+	    // Change editor's state
+	    m_state = EDITOR_STATE_MOVING_PIXELS;
+
+	    // Copy the mask to the extra cel image
+	    Image* tmpImage = NewImageFromMask(m_sprite);
+	    x = m_sprite->getMask()->x;
+	    y = m_sprite->getMask()->y;
+	    m_pixelsMovement = new PixelsMovement(m_sprite, tmpImage, x, y, opacity);
+	    delete tmpImage;
+
+	    m_pixelsMovement->cutMask();
+
+	    screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	    m_pixelsMovement->catchImage(x, y);
 	  }
 	}
 	// Call the eyedropper command
@@ -1026,6 +1058,28 @@ bool Editor::msg_proc(JMessage msg)
 
 	jmouse_control_infinite_scroll(vp);
 	jrect_free(vp);
+      }
+      // Moving pixels
+      else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
+	// Infinite scroll
+	controlInfiniteScroll(msg);
+
+	// Get the position of the mouse in the sprite 
+	int x, y;
+	screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+
+	// Drag the image to that position
+	Rect bounds = m_pixelsMovement->moveImage(x, y);
+
+	// If "bounds" is empty is because the cel was not moved
+	if (!bounds.isEmpty()) {
+	  // Redraw the extra cel in the new position
+	  jmouse_hide();
+	  editor_draw_sprite(bounds.x, bounds.y,
+			     bounds.x+bounds.w-1,
+			     bounds.y+bounds.h-1);
+	  jmouse_show();
+	}
       }
       // In tool-loop
       else if (m_state == EDITOR_STATE_DRAWING) {
@@ -1112,6 +1166,16 @@ bool Editor::msg_proc(JMessage msg)
 
 	clear_keybuf();
       }
+      // Moving pixels
+      else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
+	m_pixelsMovement->dropImage();
+	delete m_pixelsMovement;
+	m_pixelsMovement = NULL;
+
+	m_sprite->destroyExtraCel();
+
+	m_state = EDITOR_STATE_STANDBY;
+      }
       else {
 	assert(m_toolLoopManager == NULL);
 	m_state = EDITOR_STATE_STANDBY;
@@ -1152,7 +1216,8 @@ bool Editor::msg_proc(JMessage msg)
       }
 
       // When we are drawing, we "eat" all pressed keys
-      if (m_state == EDITOR_STATE_DRAWING)
+      if (m_state == EDITOR_STATE_DRAWING ||
+	  m_state == EDITOR_STATE_MOVING_PIXELS)
 	return true;
 
       break;
@@ -1193,7 +1258,8 @@ bool Editor::msg_proc(JMessage msg)
 
     case JM_WHEEL:
       if (m_state == EDITOR_STATE_STANDBY ||
-	  m_state == EDITOR_STATE_DRAWING) {
+	  m_state == EDITOR_STATE_DRAWING ||
+	  m_state == EDITOR_STATE_MOVING_PIXELS) {
 	// There are and sprite in the editor, there is the mouse inside
 	if (m_sprite && jwidget_has_mouse(this)) {
 	  int dz = jmouse_z(1) - jmouse_z(0);

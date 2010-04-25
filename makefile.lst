@@ -219,6 +219,7 @@ COMMON_SOURCES =					\
 	src/widgets/editor/cursor.cpp			\
 	src/widgets/editor/editor.cpp			\
 	src/widgets/editor/keys.cpp			\
+	src/widgets/editor/pixels_movement.cpp		\
 	src/widgets/fileview.cpp			\
 	src/widgets/groupbut.cpp			\
 	src/widgets/menuitem.cpp			\

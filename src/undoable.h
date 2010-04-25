@@ -98,6 +98,7 @@ public:
   void clear_mask(int bgcolor);
   void flip_image(Image* image, int x1, int y1, int x2, int y2,
 		  bool flip_horizontal, bool flip_vertical);
+  void paste_image(const Image* src_image, int x, int y, int opacity);
 
   // for mask
   void copy_to_current_mask(Mask* mask);

@@ -1017,6 +1017,25 @@ void Undoable::flip_image(Image* image, int x1, int y1, int x2, int y2,
   image_free(area);
 }
 
+void Undoable::paste_image(const Image* src_image, int x, int y, int opacity)
+{
+  const Layer* layer = m_sprite->getCurrentLayer();
+
+  assert(layer);
+  assert(layer->is_image());
+  assert(layer->is_readable());
+  assert(layer->is_writable());
+
+  Cel* cel = ((LayerImage*)layer)->get_cel(m_sprite->getCurrentFrame());
+  assert(cel);
+
+  Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
+  Image* cel_image2 = image_new_copy(cel_image);
+  image_merge(cel_image2, src_image, x, y, opacity, BLEND_MODE_NORMAL);
+
+  replace_stock_image(cel->image, cel_image2); // TODO fix this, improve, avoid replacing the whole image
+}
+
 void Undoable::copy_to_current_mask(Mask* mask)
 {
   assert(m_sprite->getMask());

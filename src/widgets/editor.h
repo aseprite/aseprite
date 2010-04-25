@@ -31,6 +31,7 @@ class Context;
 class Sprite;
 class IToolLoop;
 class ToolLoopManager;
+class PixelsMovement;
 class Tool;
 
 class Editor : public Widget
@@ -68,6 +69,7 @@ class Editor : public Widget
   enum {
     EDITOR_STATE_STANDBY,
     EDITOR_STATE_MOVING_SCROLL,
+    EDITOR_STATE_MOVING_PIXELS,
     EDITOR_STATE_DRAWING,
   };
 
@@ -108,6 +110,9 @@ class Editor : public Widget
 
   // Decorators
   std::vector<Decorator*> m_decorators;
+
+  // Helper class to move selection
+  PixelsMovement* m_pixelsMovement;
 
 public:
   // in editor.c
