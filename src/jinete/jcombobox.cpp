@@ -382,7 +382,7 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONPRESSED:
       if (combobox->window != NULL) {
-	if (!jwidget_has_mouse(jwidget_get_view(combobox->listbox))) {
+	if (!jwidget_get_view(combobox->listbox)->hasMouse()) {
 	  combobox_close_window(widget);
 	  return true;
 	}
@@ -401,7 +401,7 @@ static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus(widget)) {
+      if (widget->hasFocus()) {
 	if (!jcombobox_is_editable(combo_widget)) {
 	  if (msg->key.scancode == KEY_SPACE ||
 	      msg->key.scancode == KEY_ENTER ||
@@ -498,7 +498,7 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
 /*     } */
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus(widget)) {
+      if (widget->hasFocus()) {
 	if (msg->key.scancode == KEY_SPACE ||
 	    msg->key.scancode == KEY_ENTER ||
 	    msg->key.scancode == KEY_ENTER_PAD) {

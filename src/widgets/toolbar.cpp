@@ -530,7 +530,7 @@ void ToolBar::onClosePopup()
 {
   closeTipWindow();
 
-  if (!jwidget_has_mouse(this))
+  if (!hasMouse())
     m_tipOpened = false;
 
   m_open_on_hot = false;

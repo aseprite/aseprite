@@ -134,21 +134,19 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
 	colorbutton_close_tooltip(widget);
-	jwidget_hard_capture_mouse(widget);
+	widget->captureMouse();
 	return true;
       }
       break;
 
     case JM_BUTTONPRESSED:
-      if (jwidget_has_capture(widget) &&
-	  widget->flags & JI_HARDCAPTURE) {
+      if (widget->hasCapture()) {
 	return true;
       }
       break;
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget) &&
-	  widget->flags & JI_HARDCAPTURE) {
+      if (widget->hasCapture()) {
 	JWidget picked = jwidget_pick(ji_get_default_manager(),
 				      msg->mouse.x,
 				      msg->mouse.y);
@@ -194,15 +192,12 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget) &&
-	  widget->flags & JI_HARDCAPTURE) {
-	jwidget_release_mouse(widget);
-      }
+      if (widget->hasCapture())
+	widget->releaseMouse();
       break;
 
     case JM_SETCURSOR:
-      if (jwidget_has_capture(widget) &&
-	  widget->flags & JI_HARDCAPTURE) {
+      if (widget->hasCapture()) {
 	jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	return true;
       }
@@ -230,7 +225,7 @@ static void colorbutton_draw(JWidget widget)
      true, true, true, true,
      colorbutton->imgtype,
      colorbutton->color,
-     jwidget_has_mouse(widget), false);
+     widget->hasMouseOver(), false);
 
   /* draw text */
   color_to_formalstring(colorbutton->imgtype,

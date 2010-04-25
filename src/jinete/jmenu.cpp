@@ -607,7 +607,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 #endif
 
 	/* highlight movement with keyboard */
-	if (jwidget_has_focus(widget)) {
+	if (widget->hasFocus()) {
 	  JWidget highlight = get_highlight(menu);
 	  JWidget child;
 	  JWidget child_with_submenu_opened = NULL;

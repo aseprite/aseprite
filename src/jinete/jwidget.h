@@ -96,12 +96,6 @@ bool jwidget_is_disabled(JWidget widget);
 bool jwidget_is_selected(JWidget widget);
 bool jwidget_is_deselected(JWidget widget);
 
-/* properties with manager */
-
-bool jwidget_has_focus(JWidget widget);
-bool jwidget_has_mouse(JWidget widget);
-bool jwidget_has_capture(JWidget widget);
-
 /* children handle */
 
 void jwidget_add_child(JWidget widget, JWidget child);
@@ -163,9 +157,6 @@ bool jwidget_emit_signal(JWidget widget, int signal_num);
 
 bool jwidget_send_message(JWidget widget, JMessage msg);
 void jwidget_close_window(JWidget widget);
-void jwidget_capture_mouse(JWidget widget);
-void jwidget_hard_capture_mouse(JWidget widget);
-void jwidget_release_mouse(JWidget widget);
 
 /* miscellaneous */
 
@@ -316,9 +307,19 @@ public:
 
   bool sendMessage(JMessage msg);
   void closeWindow();
+
+  // ===============================================================
+  // FOCUS & MOUSE
+  // ===============================================================
+
+  void requestFocus();
+  void releaseFocus();
   void captureMouse();
-  void hardCaptureMouse();
   void releaseMouse();
+  bool hasFocus();
+  bool hasMouse();
+  bool hasMouseOver();
+  bool hasCapture();
 
 protected:
   virtual bool msg_proc(JMessage msg);

@@ -561,13 +561,13 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 	return ret;
 
       jwidget_select(widget);
-      jwidget_hard_capture_mouse(widget);
+      widget->captureMouse();
 
       // continue to JM_MOTION handler...
     }
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	View* view = reinterpret_cast<View*>(jwidget_get_data(widget->parent, JI_VIEW));
 	int pos, len, bar_size, viewport_size;
 	int old_pos;
@@ -601,7 +601,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONRELEASED:
       jwidget_deselect(widget);
-      jwidget_release_mouse(widget);
+      widget->releaseMouse();
       break;
 
     case JM_MOUSEENTER:

@@ -132,8 +132,8 @@ int editor_type()
 
 void Editor::editor_set_sprite(Sprite* sprite)
 {
-  if (jwidget_has_mouse(this))
-    jmanager_free_mouse();
+  if (this->hasMouse())
+    jmanager_free_mouse();	// TODO Why is this here? Review this code
 
   m_sprite = sprite;
   if (m_sprite) {
@@ -925,10 +925,10 @@ bool Editor::msg_proc(JMessage msg)
 
 	  editor_setcursor(msg->mouse.x, msg->mouse.y);
 
-	  jwidget_release_mouse(this);
+	  releaseMouse();
 	}
       }
-      else if (!jwidget_has_capture(this)) {
+      else if (!hasCapture()) {
 	UIContext* context = UIContext::instance();
 	Tool* current_tool = context->getSettings()->getCurrentTool();
 
@@ -1038,7 +1038,7 @@ bool Editor::msg_proc(JMessage msg)
 	}
 
 	// Capture the mouse
-	jwidget_hard_capture_mouse(this);
+	captureMouse();
       }
       return true;
 
@@ -1182,7 +1182,7 @@ bool Editor::msg_proc(JMessage msg)
       }
 
       editor_setcursor(msg->mouse.x, msg->mouse.y);
-      jwidget_release_mouse(this);
+      releaseMouse();
       return true;
 
     case JM_KEYPRESSED:
@@ -1193,7 +1193,7 @@ bool Editor::msg_proc(JMessage msg)
 	  return true;
       }
 
-      if (jwidget_has_mouse(this)) {
+      if (this->hasMouse()) {
 	switch (msg->key.scancode) {
 	  
 	  // Eye-dropper is activated with ALT key
@@ -1260,8 +1260,8 @@ bool Editor::msg_proc(JMessage msg)
       if (m_state == EDITOR_STATE_STANDBY ||
 	  m_state == EDITOR_STATE_DRAWING ||
 	  m_state == EDITOR_STATE_MOVING_PIXELS) {
-	// There are and sprite in the editor, there is the mouse inside
-	if (m_sprite && jwidget_has_mouse(this)) {
+	// There are and sprite in the editor and the mouse is inside
+	if (m_sprite && this->hasMouse()) {
 	  int dz = jmouse_z(1) - jmouse_z(0);
 	  WHEEL_ACTION wheelAction = WHEEL_NONE;
 	  bool scrollBigSteps = false;

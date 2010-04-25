@@ -280,7 +280,7 @@ bool Frame::msg_proc(JMessage msg)
 	else
 	  jrect_copy(click_pos, this->rc);
 
-	jwidget_hard_capture_mouse(this);
+	captureMouse();
 	return true;
       }
       else
@@ -288,8 +288,8 @@ bool Frame::msg_proc(JMessage msg)
     }
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(this)) {
-	jwidget_release_mouse(this);
+      if (hasCapture()) {
+	releaseMouse();
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
 
 	if (click_pos != NULL) {
@@ -307,7 +307,7 @@ bool Frame::msg_proc(JMessage msg)
 	break;
 
       /* does it have the mouse captured? */
-      if (jwidget_has_capture(this)) {
+      if (hasCapture()) {
 	/* reposition/resize */
 	if (window_action == WINDOW_MOVE) {
 	  int x = click_pos->x1 + (msg->mouse.x - press_x);

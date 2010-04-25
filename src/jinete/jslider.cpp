@@ -141,7 +141,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 	return true;
 
       jwidget_select(widget);
-      jwidget_hard_capture_mouse(widget);
+      widget->captureMouse();
 
       slider_press_x = msg->mouse.x;
       slider_press_value = slider->value;
@@ -152,7 +152,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       /* continue to JM_MOTION */
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	int value, accuracy, range;
 	JRect rc = jwidget_get_child_rect(widget);
 
@@ -201,9 +201,9 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	jwidget_deselect(widget);
-	jwidget_release_mouse(widget);
+	widget->releaseMouse();
 	slider_setcursor(widget);
       }
       break;
@@ -227,7 +227,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus (widget)) {
+      if (widget->hasFocus()) {
 	int min = slider->min;
 	int max = slider->max;
 	int value = slider->value;
@@ -295,7 +295,7 @@ static void slider_request_size(JWidget widget, int *w, int *h)
 
 static void slider_setcursor(JWidget widget)
 {
-  if (jwidget_has_capture(widget)) {
+  if (widget->hasCapture()) {
     if (slider_press_left)
       jmouse_set_cursor(JI_CURSOR_NORMAL);
     else

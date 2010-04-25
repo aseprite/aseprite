@@ -492,11 +492,11 @@ bool PalEdit::msg_proc(JMessage msg)
     }
 
     case JM_BUTTONPRESSED:
-      jwidget_hard_capture_mouse(this);
+      captureMouse();
       /* continue... */
 
     case JM_MOTION:
-      if (jwidget_has_capture(this)) {
+      if (hasCapture()) {
 	JRect cpos = jwidget_get_child_rect(this);
 	div_t d = div(256, m_columns);
 	int cols = m_columns;
@@ -554,7 +554,7 @@ bool PalEdit::msg_proc(JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      jwidget_release_mouse(this);
+      releaseMouse();
       return true;
   }
 

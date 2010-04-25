@@ -139,14 +139,14 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
 	if (!click_bar)
 	  break;
 
-	jwidget_hard_capture_mouse(widget);
+	widget->captureMouse();
 	/* Continue with motion message...  */
       }
       else
 	break;
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	Panel* panel = reinterpret_cast<Panel*>(jwidget_get_data(widget, JI_PANEL));
 
 	if (widget->getAlign() & JI_HORIZONTAL) {
@@ -167,8 +167,8 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (widget->hasCapture()) {
+	widget->releaseMouse();
 	return true;
       }
       break;

@@ -100,9 +100,8 @@ class  Frame;
 #define JI_MAGNETIC	0x0080 /* attract the focus */
 #define JI_EXPANSIVE	0x0100 /* is expansive (want more space) */
 #define JI_DECORATIVE	0x0200 /* to decorate windows */
-#define JI_HARDCAPTURE	0x0400 /* only windows use hard capture */
-#define JI_INITIALIZED	0x0800 /* the widget was already initialized by a theme */
-#define JI_NOTEXT	0x1000 /* the widget does not have text */
+#define JI_INITIALIZED	0x0400 /* the widget was already initialized by a theme */
+#define JI_NOTEXT	0x0800 /* the widget does not have text */
 
 /* widget types */
 enum {

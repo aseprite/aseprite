@@ -82,7 +82,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus(widget)) {
+      if (widget->hasFocus()) {
 	JWidget view = jwidget_get_view(widget);
 	if (view) {
 	  JRect vp = jview_get_viewport_position(view);
@@ -141,7 +141,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
     case JM_BUTTONPRESSED: {
       JWidget view = jwidget_get_view(widget);
       if (view) {
-	jwidget_hard_capture_mouse(widget);
+	widget->captureMouse();
 	jmouse_set_cursor(JI_CURSOR_SCROLL);
 	return true;
       }
@@ -150,7 +150,7 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOTION: {
       JWidget view = jwidget_get_view(widget);
-      if (view && jwidget_has_capture(widget)) {
+      if (view && widget->hasCapture()) {
 	JRect vp = jview_get_viewport_position(view);
 	int scroll_x, scroll_y;
 
@@ -167,8 +167,8 @@ static bool textbox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONRELEASED: {
       JWidget view = jwidget_get_view(widget);
-      if (view && jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (view && widget->hasCapture()) {
+	widget->releaseMouse();
 	jmouse_set_cursor(JI_CURSOR_NORMAL);
 	return true;
       }

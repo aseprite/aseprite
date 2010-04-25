@@ -302,7 +302,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONPRESSED:
       if (msg->mouse.middle || anieditor->space_pressed) {
-	jwidget_hard_capture_mouse(widget);
+	widget->captureMouse();
 	anieditor->state = STATE_SCROLLING;
 	return true;
       }
@@ -317,7 +317,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  /* do nothing */
 	  break;
 	case A_PART_SEPARATOR:
-	  jwidget_hard_capture_mouse(widget);
+	  widget->captureMouse();
 	  anieditor->state = STATE_MOVING_SEPARATOR;
 	  break;
 	case A_PART_HEADER_LAYER:
@@ -330,7 +330,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	    sprite_writer->setCurrentFrame(anieditor->clk_frame);
 	  }
 	  jwidget_dirty(widget); /* TODO replace this by redrawing old current frame and new current frame */
-	  jwidget_hard_capture_mouse(widget);
+	  widget->captureMouse();
 	  anieditor->state = STATE_MOVING_FRAME;
 	  break;
 	case A_PART_LAYER: {
@@ -356,15 +356,15 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 
 	  /* change the scroll to show the new selected cel */
 	  anieditor_show_cel(widget, anieditor->clk_layer, sprite->getCurrentFrame());
-	  jwidget_hard_capture_mouse(widget);
+	  widget->captureMouse();
 	  anieditor->state = STATE_MOVING_LAYER;
 	  break;
 	}
 	case A_PART_LAYER_EYE_ICON:
-	  jwidget_hard_capture_mouse(widget);
+	  widget->captureMouse();
 	  break;
 	case A_PART_LAYER_LOCK_ICON:
-	  jwidget_hard_capture_mouse(widget);
+	  widget->captureMouse();
 	  break;
 	case A_PART_CEL: {
 	  const SpriteReader sprite((Sprite*)anieditor->sprite);
@@ -397,7 +397,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 	  anieditor_show_cel(widget, anieditor->clk_layer, sprite->getCurrentFrame());
 
 	  /* capture the mouse (to move the cel) */
-	  jwidget_hard_capture_mouse(widget);
+	  widget->captureMouse();
 	  anieditor->state = STATE_MOVING_CEL;
 	  break;
 	}
@@ -419,7 +419,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       int mx = msg->mouse.x - widget->rc->x1;
       int my = msg->mouse.y - widget->rc->y1;
 
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	if (anieditor->state == STATE_SCROLLING) {
 	  anieditor_set_scroll(widget,
 			       anieditor->scroll_x+jmouse_x(1)-jmouse_x(0),
@@ -504,8 +504,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (widget->hasCapture()) {
+	widget->releaseMouse();
 
 	if (anieditor->state == STATE_SCROLLING) {
 	  anieditor->state = STATE_STANDBY;

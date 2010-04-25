@@ -189,10 +189,10 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED:
-      jwidget_capture_mouse(widget);
+      widget->captureMouse();
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	int select = jlistbox_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);
 	bool pick_item = true;
@@ -235,7 +235,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      jwidget_release_mouse(widget);
+      widget->releaseMouse();
       break;
 
     case JM_WHEEL: {
@@ -254,7 +254,7 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus(widget) && !jlist_empty(widget->children)) {
+      if (widget->hasFocus() && !jlist_empty(widget->children)) {
 	int select = jlistbox_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);
 	int bottom = MAX(0, jlist_length(widget->children)-1);

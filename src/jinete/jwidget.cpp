@@ -541,30 +541,6 @@ bool jwidget_is_deselected(JWidget widget)
 }
 
 /**********************************************************************/
-/* properties with manager */
-
-bool jwidget_has_focus(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return (widget->flags & JI_HASFOCUS) ? true: false;
-}
-
-bool jwidget_has_mouse(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return (widget->flags & JI_HASMOUSE) ? true: false;
-}
-
-bool jwidget_has_capture(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return (widget->flags & JI_HASCAPTURE) ? true: false;
-}
-
-/**********************************************************************/
 /* children handle */
 
 void jwidget_add_child(JWidget widget, JWidget child)
@@ -1350,15 +1326,6 @@ bool jwidget_send_message(JWidget widget, JMessage msg)
 void jwidget_close_window(JWidget widget)
 { widget->closeWindow(); }
 
-void jwidget_capture_mouse(JWidget widget)
-{ widget->captureMouse(); }
-
-void jwidget_hard_capture_mouse(JWidget widget)
-{ widget->hardCaptureMouse(); }
-
-void jwidget_release_mouse(JWidget widget)
-{ widget->releaseMouse(); }
-
 bool Widget::sendMessage(JMessage msg)
 {
   bool done = false;
@@ -1388,40 +1355,33 @@ void Widget::closeWindow()
     frame->closeWindow(this);
 }
 
+// ===============================================================
+// FOCUS & MOUSE
+// ===============================================================
+
+void Widget::requestFocus()
+{
+  jmanager_set_focus(this);
+}
+
+void Widget::releaseFocus()
+{
+  if (hasFocus())
+    jmanager_free_focus();
+}
+
 /**
- * Captures the mouse to send the future JM_BUTTONRELEASED messsage to
- * the specified widget. There are messages like JM_MOTION and
- * JM_SETCURSOR that are sent normally to the widget with the mouse
- * (and not with the "soft" capture).
- *
- * @see jwidget_hard_capture_mouse
+ * Captures the mouse to send all the future mouse messsages to the
+ * specified widget (included the JM_MOTION and JM_SETCURSOR).
  */
 void Widget::captureMouse()
 {
   if (!jmanager_get_capture()) {
     jmanager_set_capture(this);
 
-    if (jmanager_get_capture() == this)
-      this->flags &= ~JI_HARDCAPTURE;
-  }
-}
-
-/**
- * Captures the mouse to send all the future mouse messsages to the
- * specified widget (included the JM_MOTION and JM_SETCURSOR).
- * 
- * @see jwidget_capture_mouse
- */
-void Widget::hardCaptureMouse()
-{
-  if (!jmanager_get_capture()) {
-    jmanager_set_capture(this);
 #ifdef ALLEGRO_WINDOWS
     SetCapture(win_get_window());
 #endif
-
-    if (jmanager_get_capture() == this)
-      this->flags |= JI_HARDCAPTURE;
   }
 }
 
@@ -1432,12 +1392,31 @@ void Widget::releaseMouse()
 {
   if (jmanager_get_capture() == this) {
     jmanager_free_capture();
+
 #ifdef ALLEGRO_WINDOWS
     ::ReleaseCapture();		// Win32 API
 #endif
-
-    this->flags &= ~JI_HARDCAPTURE;
   }
+}
+
+bool Widget::hasFocus()
+{
+  return (this->flags & JI_HASFOCUS) ? true: false;
+}
+
+bool Widget::hasMouse()
+{
+  return (this->flags & JI_HASMOUSE) ? true: false;
+}
+
+bool Widget::hasMouseOver()
+{
+  return (this == this->pick(jmouse_x(0), jmouse_y(0)));
+}
+
+bool Widget::hasCapture()
+{
+  return (this->flags & JI_HASCAPTURE) ? true: false;
 }
 
 /**********************************************************************/

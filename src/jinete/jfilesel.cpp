@@ -377,7 +377,7 @@ static bool filesel_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYPRESSED:
-      if ((jwidget_has_focus (widget)) &&
+      if ((widget->hasFocus()) &&
 	  ((msg->key.scancode == KEY_ENTER) ||
 	   (msg->key.scancode == KEY_ENTER_PAD))) {
 	if (enter_to_path_in_entry()) {

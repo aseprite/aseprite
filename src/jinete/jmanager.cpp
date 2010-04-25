@@ -305,7 +305,7 @@ bool jmanager_generate_messages(JWidget manager)
       /* 1) get the magnetic widget */
       magnet = find_magnetic_widget(window->getRoot());
       /* 2) if magnetic widget exists and it doesn't have the focus */
-      if (magnet && !jwidget_has_focus(magnet))
+      if (magnet && !magnet->hasFocus())
 	jmanager_set_focus(magnet);
       /* 3) if not, put the focus in the first child */
       else
@@ -349,7 +349,7 @@ bool jmanager_generate_messages(JWidget manager)
       /* reset double click status */
       double_click_level = DOUBLE_CLICK_NONE;
 
-      if (capture_widget && capture_widget->flags & JI_HARDCAPTURE)
+      if (capture_widget)
 	dst = capture_widget;
       else
 	dst = mouse_widget;
@@ -756,7 +756,7 @@ void jmanager_set_focus(JWidget widget)
 	    break;
 	}
 
-	if (jwidget_has_focus(reinterpret_cast<JWidget>(link->data))) {
+	if (reinterpret_cast<JWidget>(link->data)->hasFocus()) {
 	  ((JWidget)link->data)->flags &= ~JI_HASFOCUS;
 	  jmessage_add_dest(msg, reinterpret_cast<JWidget>(link->data));
 	}
@@ -797,8 +797,7 @@ void jmanager_set_focus(JWidget widget)
 
 void jmanager_set_mouse(JWidget widget)
 {
-  if ((mouse_widget != widget)
-      && (!capture_widget || !(capture_widget->flags & JI_HARDCAPTURE))) {
+  if ((mouse_widget != widget) && (!capture_widget)) {
     JList widget_parents = NULL;
     JWidget common_parent = NULL;
     JLink link, link2;
@@ -827,7 +826,7 @@ void jmanager_set_mouse(JWidget widget)
 	    break;
 	}
 
-	if (jwidget_has_mouse(reinterpret_cast<JWidget>(link->data))) {
+	if (reinterpret_cast<JWidget>(link->data)->hasMouse()) {
 	  ((JWidget)link->data)->flags &= ~JI_HASMOUSE;
 	  jmessage_add_dest(msg, reinterpret_cast<JWidget>(link->data));
 	}
@@ -875,7 +874,7 @@ void jmanager_attract_focus(JWidget widget)
   JWidget magnet = find_magnetic_widget(widget->getRoot());
 
   /* if magnetic widget exists and it doesn't have the focus */
-  if (magnet && !jwidget_has_focus(magnet))
+  if (magnet && !magnet->hasFocus())
     jmanager_set_focus(magnet);
 }
 
@@ -910,13 +909,13 @@ void jmanager_free_capture()
 void jmanager_free_widget(JWidget widget)
 {
   /* break any relationship with the GUI manager */
-  if (jwidget_has_capture(widget))
+  if (widget->hasCapture())
     jmanager_free_capture();
 
-  if (jwidget_has_mouse(widget))
+  if (widget->hasMouse())
     jmanager_free_mouse();
 
-  if (jwidget_has_focus(widget) || (widget == focus_widget))
+  if (widget->hasFocus() || (widget == focus_widget))
     jmanager_free_focus();
 }
 
@@ -1357,8 +1356,7 @@ static void generate_setcursor_message()
   JWidget dst;
   JMessage msg;
   
-  if (capture_widget &&
-      capture_widget->flags & JI_HARDCAPTURE)
+  if (capture_widget)
     dst = capture_widget;
   else
     dst = mouse_widget;

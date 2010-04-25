@@ -58,6 +58,7 @@ typedef struct ButtonCommand
 typedef struct Button
 {
   /* generic */
+  bool pressed_status;
   int draw_type;
   BITMAP *icon;
   int icon_align;
@@ -251,10 +252,11 @@ void jradio_deselect_group(JWidget widget)
 
 static bool button_msg_proc(JWidget widget, JMessage msg)
 {
+  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
+
   switch (msg->type) {
 
     case JM_DESTROY: {
-      Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
       JLink link;
 
       JI_LIST_FOR_EACH(button->commands, link)
@@ -270,7 +272,6 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW: {
-      Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
       switch (button->draw_type) {
 	case JI_BUTTON: widget->theme->draw_button(widget, &msg->draw.rect); break;
 	case JI_CHECK:  widget->theme->draw_check(widget, &msg->draw.rect); break;
@@ -312,7 +313,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	/* for JI_BUTTON */
 	if (widget->type == JI_BUTTON) {
 	  /* has focus and press enter/space */
-	  if (jwidget_has_focus(widget)) {
+	  if (widget->hasFocus()) {
 	    if ((msg->key.scancode == KEY_ENTER) ||
 		(msg->key.scancode == KEY_ENTER_PAD) ||
 		(msg->key.scancode == KEY_SPACE)) {
@@ -344,7 +345,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	else {
 	  /* if the widget has the focus and the user press space or
 	     if the user press Alt+the underscored letter of the button */
-	  if ((jwidget_has_focus(widget) &&
+	  if ((widget->hasFocus() &&
 	       (msg->key.scancode == KEY_SPACE)) ||
 	      ((msg->any.shifts & KB_ALT_FLAG) &&
 	       (jwidget_check_underscored(widget, msg->key.scancode)))) {
@@ -388,7 +389,9 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	case JI_BUTTON:
 	  if (jwidget_is_enabled(widget)) {
 	    jwidget_select(widget);
-	    jwidget_capture_mouse(widget);
+
+	    button->pressed_status = jwidget_is_selected(widget);
+	    widget->captureMouse();
 	  }
 	  return true;
 
@@ -399,7 +402,8 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	    else
 	      jwidget_select(widget);
 
-	    jwidget_capture_mouse(widget);
+	    button->pressed_status = jwidget_is_selected(widget);
+	    widget->captureMouse();
 	  }
 	  return true;
 
@@ -410,7 +414,8 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	      jwidget_select(widget);
 	      jwidget_signal_on(widget);
 
-	      jwidget_capture_mouse(widget);
+	      button->pressed_status = jwidget_is_selected(widget);
+	      widget->captureMouse();
 	    }
 	  }
 	  return true;
@@ -418,10 +423,10 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (widget->hasCapture()) {
+	widget->releaseMouse();
 
-	if (jwidget_has_mouse(widget)) {
+	if (widget->hasMouseOver()) {
 	  switch (widget->type) {
 
 	    case JI_BUTTON:
@@ -444,20 +449,30 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
+    case JM_MOTION:
+      if (jwidget_is_enabled(widget) && widget->hasCapture()) {
+	bool hasMouse = widget->hasMouseOver();
+
+    	// Switch state when the mouse go out
+    	if (( hasMouse && jwidget_is_selected(widget) != button->pressed_status) ||
+    	    (!hasMouse && jwidget_is_selected(widget) == button->pressed_status)) {
+    	  jwidget_signal_off(widget);
+
+    	  if (hasMouse) {
+    	    jwidget_set_selected(widget, button->pressed_status);
+    	  }
+    	  else {
+    	    jwidget_set_selected(widget, !button->pressed_status);
+    	  }
+
+    	  jwidget_signal_on(widget);
+    	}
+      }
+      break;
+
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
-      if (jwidget_is_enabled(widget) && jwidget_has_capture(widget)) {
-	jwidget_signal_off(widget);
-
-	if (jwidget_is_selected(widget))
-	  jwidget_deselect(widget);
-	else
-	  jwidget_select(widget);
-
-	jwidget_signal_on(widget);
-      }
-
-      /* TODO theme stuff */
+      // TODO theme stuff
       if (jwidget_is_enabled(widget))
 	jwidget_dirty(widget);
       break;

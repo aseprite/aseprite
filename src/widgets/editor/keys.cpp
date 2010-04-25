@@ -39,7 +39,7 @@
 bool Editor::editor_keys_toset_zoom(int scancode)
 {
   if ((m_sprite) &&
-      (jwidget_has_mouse(this)) &&
+      (this->hasMouse()) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
     JWidget view = jwidget_get_view(this);
     JRect vp = jview_get_viewport_position(view);
@@ -97,7 +97,7 @@ bool Editor::editor_keys_toset_pensize(int scancode)
   IPenSettings* pen = tool_settings->getPen();
 
   if ((m_sprite) &&
-      (jwidget_has_mouse(this)) &&
+      (this->hasMouse()) &&
       !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
     if (scancode == KEY_MINUS_PAD) { // TODO configurable keys
       if (pen->getSize() > 1) {

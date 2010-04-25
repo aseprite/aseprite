@@ -125,8 +125,8 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
 
       jrect_shrink(rect, 1);
       jdraw_rect(rect,
-		 jwidget_has_focus(widget) ? makecol(0, 0, 0):
-					     makecol(192, 192, 192));
+		 widget->hasFocus() ? makecol(0, 0, 0):
+				      makecol(192, 192, 192));
 
       /* draw color background */
       jrect_shrink(rect, 1);

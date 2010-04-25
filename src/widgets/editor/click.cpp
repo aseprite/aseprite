@@ -62,7 +62,7 @@ void Editor::editor_click_start(int mode, int *x, int *y, int *b)
   screen_to_editor(click_start_x, click_start_y, x, y);
   *b = click_start_b;
 
-  jwidget_capture_mouse(this);
+  captureMouse();
 }
 
 void Editor::editor_click_continue(int mode, int *x, int *y)
@@ -79,7 +79,7 @@ void Editor::editor_click_continue(int mode, int *x, int *y)
 
 void Editor::editor_click_done()
 {
-  jwidget_release_mouse(this);
+  releaseMouse();
   clear_keybuf();
 }
 

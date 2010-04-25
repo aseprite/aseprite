@@ -306,11 +306,11 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
 	jmouse_set_cursor(JI_CURSOR_HAND);
       }
 
-      jwidget_capture_mouse(widget);
+      widget->captureMouse();
       /* continue in motion message... */
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	switch (curve_editor->status) {
 
 	  case STATUS_SCROLLING: {
@@ -391,8 +391,8 @@ static bool curve_editor_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (widget->hasCapture()) {
+	widget->releaseMouse();
 
 	switch (curve_editor->status) {
 

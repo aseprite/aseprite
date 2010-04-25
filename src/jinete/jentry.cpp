@@ -269,7 +269,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_TIMER:
-      if (jwidget_has_focus(widget) &&
+      if (widget->hasFocus() &&
 	  msg->timer.timer_id == entry->timer_id) {
 	// blinking cursor
 	entry->state = entry->state ? false: true;
@@ -297,7 +297,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus(widget) && !jentry_is_readonly(widget)) {
+      if (widget->hasFocus() && !jentry_is_readonly(widget)) {
 	// Command to execute
 	EntryCmd::Type cmd = EntryCmd::NoOp;
 
@@ -371,10 +371,10 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED:
-      jwidget_capture_mouse(widget);
+      widget->captureMouse();
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	const char *text = widget->getText();
 	bool move, dirty;
 	int c, x;
@@ -443,8 +443,8 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget))
-	jwidget_release_mouse(widget);
+      if (widget->hasCapture())
+	widget->releaseMouse();
       return true;
 
     case JM_DOUBLECLICK:

@@ -632,7 +632,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
 			   PART_BUTTON_SELECTED_NW;
   }
   // with mouse
-  else if (jwidget_is_enabled(widget) && jwidget_has_mouse(widget)) {
+  else if (jwidget_is_enabled(widget) && widget->hasMouseOver()) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
     part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
@@ -643,7 +643,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
     fg = get_button_normal_text_color();
     bg = get_button_normal_face_color();
 
-    if (jwidget_has_focus(widget))
+    if (widget->hasFocus())
       part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
 			     PART_BUTTON_FOCUSED_NW;
     else
@@ -711,9 +711,9 @@ void SkinneableTheme::draw_check(JWidget widget, JRect clip)
 
   // mouse
   if (jwidget_is_enabled(widget)) {
-    if (jwidget_has_mouse(widget))
+    if (widget->hasMouseOver())
       jdraw_rectfill(widget->rc, bg = get_check_hot_face_color());
-    else if (jwidget_has_focus(widget))
+    else if (widget->hasFocus())
       jdraw_rectfill(widget->rc, bg = get_check_focus_face_color());
   }
 
@@ -728,7 +728,7 @@ void SkinneableTheme::draw_check(JWidget widget, JRect clip)
 		    icon.x1, icon.y1);
 
   // draw focus
-  if (jwidget_has_focus(widget)) {
+  if (widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
 		   widget->rc->x1,
 		   widget->rc->y1,
@@ -763,8 +763,8 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
 
   draw_bounds_nw(ji_screen,
 		 x1, y1, x2, y2,
-		 jwidget_has_focus(widget) ? PART_SUNKEN_FOCUSED_NW:
-					     PART_SUNKEN_NORMAL_NW, bg);
+		 widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
+				      PART_SUNKEN_NORMAL_NW, bg);
 
   /* draw the text */
   x = widget->rc->x1 + widget->border_width.l;
@@ -779,7 +779,7 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
 
     /* selected */
     if ((c >= selbeg) && (c <= selend)) {
-      if (jwidget_has_focus(widget))
+      if (widget->hasFocus())
 	bg = COLOR_SELECTED;
       else
 	bg = COLOR_DISABLED;
@@ -803,13 +803,13 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
     x += w;
 
     /* cursor */
-    if ((c == cursor) && (state) && (jwidget_has_focus (widget)))
+    if ((c == cursor) && (state) && (widget->hasFocus()))
       draw_entry_cursor(widget, cursor_x, y);
   }
 
   /* draw the cursor if it is next of the last character */
   if ((c == cursor) && (state) &&
-      (jwidget_has_focus(widget)) &&
+      (widget->hasFocus()) &&
       (jwidget_is_enabled(widget)))
     draw_entry_cursor(widget, x, y);
 }
@@ -895,7 +895,7 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
       fg = get_menuitem_highlight_text_color();
       bg = get_menuitem_highlight_face_color();
     }
-    else if (jwidget_has_mouse(widget)) {
+    else if (widget->hasMouseOver()) {
       fg = get_menuitem_hot_text_color();
       bg = get_menuitem_hot_face_color();
     }
@@ -1005,9 +1005,9 @@ void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
 
   /* mouse */
   if (jwidget_is_enabled(widget)) {
-    if (jwidget_has_mouse(widget))
+    if (widget->hasMouseOver())
       jdraw_rectfill(widget->rc, bg = get_radio_hot_face_color());
-    else if (jwidget_has_focus(widget))
+    else if (widget->hasFocus())
       jdraw_rectfill(widget->rc, bg = get_radio_focus_face_color());
   }
 
@@ -1022,7 +1022,7 @@ void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
 		    icon.x1, icon.y1);
 
   // draw focus
-  if (jwidget_has_focus(widget)) {
+  if (widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
 		   widget->rc->x1,
 		   widget->rc->y1,
@@ -1108,16 +1108,16 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
   int empty_part_nw;
 
   if (isMiniLook) {
-    full_part_nw = jwidget_has_mouse(widget) ? PART_MINI_SLIDER_FULL_FOCUSED_NW:
-					       PART_MINI_SLIDER_FULL_NW;
-    empty_part_nw = jwidget_has_mouse(widget) ? PART_MINI_SLIDER_EMPTY_FOCUSED_NW:
-						PART_MINI_SLIDER_EMPTY_NW;
+    full_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_FULL_FOCUSED_NW:
+					     PART_MINI_SLIDER_FULL_NW;
+    empty_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_EMPTY_FOCUSED_NW:
+					      PART_MINI_SLIDER_EMPTY_NW;
   }
   else {
-    full_part_nw = jwidget_has_focus(widget) ? PART_SLIDER_FULL_FOCUSED_NW:
-					       PART_SLIDER_FULL_NW;
-    empty_part_nw = jwidget_has_focus(widget) ? PART_SLIDER_EMPTY_FOCUSED_NW:
-						PART_SLIDER_EMPTY_NW;
+    full_part_nw = widget->hasFocus() ? PART_SLIDER_FULL_FOCUSED_NW:
+					PART_SLIDER_FULL_NW;
+    empty_part_nw = widget->hasFocus() ? PART_SLIDER_EMPTY_FOCUSED_NW:
+					 PART_SLIDER_EMPTY_NW;
   }
 
   if (value == min)
@@ -1184,8 +1184,8 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
 
   draw_bounds_nw(ji_screen,
 		 x1, y1, x2, y2,
-		 jwidget_has_focus(widget) ? PART_SUNKEN2_FOCUSED_NW:
-					     PART_SUNKEN2_NORMAL_NW, bg);
+		 widget->hasFocus() ? PART_SUNKEN2_FOCUSED_NW:
+				      PART_SUNKEN2_NORMAL_NW, bg);
 
   /* draw the text */
   x = widget->rc->x1 + widget->border_width.l;
@@ -1200,7 +1200,7 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
 
     /* selected */
     if ((c >= selbeg) && (c <= selend)) {
-      if (jwidget_has_focus(widget))
+      if (widget->hasFocus())
 	bg = COLOR_SELECTED;
       else
 	bg = COLOR_DISABLED;
@@ -1224,13 +1224,13 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
     x += w;
 
     /* cursor */
-    if ((c == cursor) && (state) && (jwidget_has_focus (widget)))
+    if ((c == cursor) && (state) && (widget->hasFocus()))
       draw_entry_cursor(widget, cursor_x, y);
   }
 
   /* draw the cursor if it is next of the last character */
   if ((c == cursor) && (state) &&
-      (jwidget_has_focus(widget)) &&
+      (widget->hasFocus()) &&
       (jwidget_is_enabled(widget)))
     draw_entry_cursor(widget, x, y);
 }
@@ -1244,7 +1244,7 @@ void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
 
   /* with mouse */
   if (jwidget_is_selected(widget) ||
-      (jwidget_is_enabled(widget) && jwidget_has_mouse(widget))) {
+      (jwidget_is_enabled(widget) && widget->hasMouseOver())) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
     part_nw = PART_TOOLBUTTON_HOT_NW;
@@ -1297,8 +1297,8 @@ void SkinneableTheme::draw_view(JWidget widget, JRect clip)
 		 widget->rc->y1,
 		 widget->rc->x2-1,
 		 widget->rc->y2-1,
-		 jwidget_has_focus(widget) ? PART_SUNKEN_FOCUSED_NW:
-					     PART_SUNKEN_NORMAL_NW,
+		 widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
+				      PART_SUNKEN_NORMAL_NW,
 		 COLOR_BACKGROUND);
 }
 
@@ -1351,7 +1351,7 @@ void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
 
   /* bar-block background */
   u1++, v1++, u2--, v2--;
-  if (jwidget_is_enabled(widget) && jwidget_has_mouse(widget))
+  if (jwidget_is_enabled(widget) && widget->hasMouseOver())
     rectfill(ji_screen, u1, v1, u2, v2, COLOR_HOTFACE);
   else
     rectfill(ji_screen, u1, v1, u2, v2, BGCOLOR);
@@ -1410,7 +1410,7 @@ void SkinneableTheme::draw_frame_button(JWidget widget, JRect clip)
 
   if (widget->isSelected())
     part = PART_WINDOW_CLOSE_BUTTON_SELECTED;
-  else if (jwidget_has_mouse(widget))
+  else if (widget->hasMouseOver())
     part = PART_WINDOW_CLOSE_BUTTON_HOT;
   else
     part = PART_WINDOW_CLOSE_BUTTON_NORMAL;

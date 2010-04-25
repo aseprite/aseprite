@@ -267,7 +267,7 @@ bool ColorBar::msg_proc(JMessage msg)
     }
 
     case JM_BUTTONPRESSED:
-      jwidget_capture_mouse(this);
+      captureMouse();
 
       m_hot_drag = m_hot;
       m_hot_drop = m_hot;
@@ -401,7 +401,7 @@ bool ColorBar::msg_proc(JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(this)) {
+      if (hasCapture()) {
 	/* drag and drop a color */
 	if (m_hot_drag != m_hot_drop) {
 	  if (m_hot_drop != HOTCOLOR_NONE) {
@@ -440,7 +440,7 @@ bool ColorBar::msg_proc(JMessage msg)
 	m_hot_drag = HOTCOLOR_NONE;
 	m_hot_drop = HOTCOLOR_NONE;
 
-	jwidget_release_mouse(this);
+	releaseMouse();
       }
       break;
 

@@ -378,10 +378,10 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     }
 
     case JM_BUTTONPRESSED:
-      jwidget_hard_capture_mouse(widget);
+      widget->captureMouse();
 
     case JM_MOTION:
-      if (jwidget_has_capture(widget)) {
+      if (widget->hasCapture()) {
 	int iw, ih;
 	int th = jwidget_get_text_height(widget);
 	int y = widget->rc->y1;
@@ -416,13 +416,13 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_has_capture(widget)) {
-	jwidget_release_mouse(widget);
+      if (widget->hasCapture()) {
+	widget->releaseMouse();
       }
       break;
 
     case JM_KEYPRESSED:
-      if (jwidget_has_focus(widget)) {
+      if (widget->hasFocus()) {
 	int select = fileview_get_selected_index(widget);
 	JWidget view = jwidget_get_view(widget);
 	int bottom = fileview->list.size();
