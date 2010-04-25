@@ -18,10 +18,18 @@
 
 #include "config.h"
 
-#include "jinete/jbase.h"
+#include <allegro.h>
+
+#include "jinete/jinete.h"
 
 #include "commands/command.h"
-#include "dialogs/options.h"
+#include "core/cfg.h"
+#include "modules/editors.h"
+#include "modules/gui.h"
+
+static JWidget slider_x, slider_y, check_lockmouse;
+
+static bool slider_mouse_hook(JWidget widget, void *data);
 
 //////////////////////////////////////////////////////////////////////
 // options
@@ -45,7 +53,47 @@ OptionsCommand::OptionsCommand()
 
 void OptionsCommand::execute(Context* context)
 {
-  dialogs_options();
+  JWidget check_smooth;
+  JWidget button_ok;
+  JWidget move_click2, draw_click2, killer;
+  JWidget undo_size_limit;
+
+  /* load the window widget */
+  FramePtr window(load_widget("options.xml", "options"));
+  get_widgets(window,
+	      "smooth", &check_smooth,
+	      "move_click2", &move_click2,
+	      "draw_click2", &draw_click2,
+	      "undo_size_limit", &undo_size_limit,
+	      "button_ok", &button_ok, NULL);
+
+  if (get_config_bool("Options", "MoveClick2", false))
+    jwidget_select(move_click2);
+  if (get_config_bool("Options", "DrawClick2", false))
+    jwidget_select(draw_click2);
+
+  if (get_config_bool("Options", "MoveSmooth", true))
+    jwidget_select(check_smooth);
+
+  undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
+
+  window->open_window_fg();
+  killer = window->get_killer();
+
+  if (killer == button_ok) {
+    int undo_size_limit_value;
+    
+    set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
+    set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
+    set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
+
+    undo_size_limit_value = undo_size_limit->getTextInt();
+    undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
+    set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
+
+    /* save configuration */
+    flush_config_file();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

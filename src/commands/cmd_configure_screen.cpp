@@ -30,7 +30,6 @@
 #include "core/dirs.h"
 #include "gfxmode.h"
 #include "intl/intl.h"
-#include "dialogs/options.h"
 #include "modules/gui.h"
 #include "sprite_wrappers.h"
 #include "modules/palettes.h"

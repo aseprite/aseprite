@@ -26,7 +26,6 @@
 #include "app.h"
 #include "gfxmode.h"
 #include "console.h"
-#include "dialogs/options.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "sprite_wrappers.h"
@@ -75,9 +74,6 @@ bool GfxMode::setGfxMode() const
     const CurrentSpriteReader sprite(UIContext::instance());
     app_refresh_screen(sprite);
   }
-  
-  // Setup mouse
-  _setup_mouse_speed();
 
   // Redraw top window
   if (app_get_top_window()) {

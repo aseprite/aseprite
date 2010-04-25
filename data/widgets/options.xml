@@ -5,21 +5,6 @@
   <box vertical="true">
     <box vertical="true">
 
-      <label text="Mouse Speed:" />
-      <box horizontal="true">
-	<box vertical="true" homogeneous="true">
-          <label text="X:" />
-          <label text="Y:" />
-	</box>
-	<box vertical="true" homogeneous="true" expansive="true">
-          <slider min="-8" max="8" name="mouse_x" />
-          <slider min="-8" max="8" name="mouse_y" />
-	</box>
-      </box>
-      <check text="Lock X/Y" name="lock_axis" />
-
-      <separator horizontal="true" />
-
       <check text="Smooth auto-scroll" name="smooth" />
       <check text="2 Click Movement" name="move_click2" />
       <check text="2 Click Drawing" name="draw_click2" />

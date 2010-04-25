@@ -44,7 +44,6 @@
 #include "core/drop_files.h"
 #include "core/file_system.h"
 #include "core/modules.h"
-#include "dialogs/options.h"
 #include "file/file.h"
 #include "intl/intl.h"
 #include "modules/editors.h"
@@ -268,7 +267,7 @@ int App::run()
   // Run the GUI
   else if (ase_mode & MODE_GUI) {
     // Select language
-    dialogs_select_language(false);
+    intl_set_lang("en");
 
     // support to drop files from Windows explorer
     install_drop_files();

@@ -98,7 +98,6 @@ COMMON_SOURCES =					\
 	src/dialogs/drawtext.cpp			\
 	src/dialogs/filesel.cpp				\
 	src/dialogs/maskcol.cpp				\
-	src/dialogs/options.cpp				\
 	src/dialogs/playfli.cpp				\
 	src/dialogs/repo.cpp				\
 	src/dialogs/vectmap.cpp				\

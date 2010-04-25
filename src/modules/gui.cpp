@@ -42,7 +42,6 @@
 #include "core/core.h"
 #include "core/dirs.h"
 #include "core/drop_files.h"
-#include "dialogs/options.h"
 #include "intl/msgids.h"
 #include "gfxmode.h"
 #include "modules/editors.h"
@@ -332,9 +331,6 @@ int init_module_gui()
 
   /* icon buttons */
   icon_buttons = jlist_new();
-
-  /* setup mouse */
-  _setup_mouse_speed();
 
   return 0;
 }
