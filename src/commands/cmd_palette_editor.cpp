@@ -45,6 +45,7 @@
 #include "widgets/colview.h"
 #include "widgets/editor.h"
 #include "widgets/paledit.h"
+#include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 
@@ -275,9 +276,13 @@ void PaletteEditorCommand::execute(Context* context)
 
   if (m_switch || m_open) {
     if (!jwidget_is_visible(window)) {
-      // Default position
+      // Default bounds
       window->remap_window();
-      window->center_window();
+
+      int width = MAX(jrect_w(window->rc), JI_SCREEN_W/2);
+      window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(app_get_toolbar()->rc),
+			     JI_SCREEN_H - jrect_h(window->rc) - jrect_h(app_get_statusbar()->rc),
+			     width, jrect_h(window->rc)));
 
       // Load window configuration
       load_window_pos(window, "PaletteEditor");
