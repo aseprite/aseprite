@@ -908,11 +908,12 @@ void jmanager_free_capture()
 
 void jmanager_free_widget(JWidget widget)
 {
-  /* break any relationship with the GUI manager */
-  if (widget->hasCapture())
+  // Break any relationship with the GUI manager
+
+  if (widget->hasCapture() || (widget == capture_widget))
     jmanager_free_capture();
 
-  if (widget->hasMouse())
+  if (widget->hasMouse() || (widget == mouse_widget))
     jmanager_free_mouse();
 
   if (widget->hasFocus() || (widget == focus_widget))
