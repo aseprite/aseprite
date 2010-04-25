@@ -191,6 +191,7 @@ protected:
 private:
   void drawGrid();
   void turnOnSelectionModifiers();
+  void controlInfiniteScroll(JMessage msg);
 
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);

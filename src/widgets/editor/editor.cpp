@@ -578,6 +578,49 @@ void Editor::turnOnSelectionModifiers()
   m_decorators.push_back(new Decorator(Decorator::SELECTION_W,  Rect(x1-8,        (y1+y2)/2-4, 8, 8)));
 }
 
+/**
+   Control scroll when cursor goes out of the editor
+   
+   @param msg A mouse message received in Editor::msg_proc()
+*/
+void Editor::controlInfiniteScroll(JMessage msg)
+{
+  JWidget view = jwidget_get_view(this);
+  JRect vp = jview_get_viewport_position(view);
+
+  if (jmouse_control_infinite_scroll(vp)) {
+    int scroll_x, scroll_y;
+    int old_x = msg->mouse.x;
+    int old_y = msg->mouse.y;
+
+    msg->mouse.x = jmouse_x(0);
+    msg->mouse.y = jmouse_y(0);
+
+    // Smooth scroll movement
+    if (get_config_bool("Options", "MoveSmooth", TRUE)) {
+      jmouse_set_position(MID(vp->x1+1, old_x, vp->x2-2),
+			  MID(vp->y1+1, old_y, vp->y2-2));
+    }
+    // This is better for high resolutions: scroll movement by big steps
+    else {
+      jmouse_set_position((old_x != msg->mouse.x) ?
+			  (old_x + (vp->x1+vp->x2)/2)/2: msg->mouse.x,
+
+			  (old_y != msg->mouse.y) ?
+			  (old_y + (vp->y1+vp->y2)/2)/2: msg->mouse.y);
+    }
+
+    msg->mouse.x = jmouse_x(0);
+    msg->mouse.y = jmouse_y(0);
+
+    jview_get_scroll(view, &scroll_x, &scroll_y);
+    editor_set_scroll(scroll_x+old_x-msg->mouse.x,
+		      scroll_y+old_y-msg->mouse.y, true);
+  }
+
+  jrect_free(vp);
+}
+
 void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
 {
   JWidget view = jwidget_get_view(this);
@@ -990,53 +1033,16 @@ bool Editor::msg_proc(JMessage msg)
 
 	assert(m_toolLoopManager != NULL);
 
-	// clean the area occupied by the cursor in the screen
+	// Clean the area occupied by the cursor in the screen
 	if (m_cursor_thick)
 	  editor_clean_cursor();
 
 	assert(m_toolLoopManager != NULL);
 
-	// control scroll (when cursor goes out of the editor)
-	{
-	  JWidget view = jwidget_get_view(this);
-	  JRect vp = jview_get_viewport_position(view);
+	// Infinite scroll
+	controlInfiniteScroll(msg);
 
-	  if (jmouse_control_infinite_scroll(vp)) {
-	    int scroll_x, scroll_y;
-	    int old_x = msg->mouse.x;
-	    int old_y = msg->mouse.y;
-
-	    msg->mouse.x = jmouse_x(0);
-	    msg->mouse.y = jmouse_y(0);
-
-	    /* smooth scroll movement */
-	    if (get_config_bool("Options", "MoveSmooth", TRUE)) {
-	      jmouse_set_position(MID(vp->x1+1, old_x, vp->x2-2),
-				  MID(vp->y1+1, old_y, vp->y2-2));
-	    }
-	    /* this is better for high resolutions: scroll movement by big steps */
-	    else {
-	      jmouse_set_position((old_x != msg->mouse.x) ?
-				  (old_x + (vp->x1+vp->x2)/2)/2: msg->mouse.x,
-
-				  (old_y != msg->mouse.y) ?
-				  (old_y + (vp->y1+vp->y2)/2)/2: msg->mouse.y);
-	    }
-
-	    msg->mouse.x = jmouse_x(0);
-	    msg->mouse.y = jmouse_y(0);
-
-	    jview_get_scroll(view, &scroll_x, &scroll_y);
-	    assert(m_toolLoopManager != NULL);
-	    editor_set_scroll(scroll_x+old_x-msg->mouse.x,
-	    		      scroll_y+old_y-msg->mouse.y, true);
-	    assert(m_toolLoopManager != NULL);
-	  }
-
-	  jrect_free(vp);
-	}
-
-	// clean the area occupied by the cursor in the screen
+	// Clean the area occupied by the cursor in the screen
 	int thick = m_cursor_thick; 
 	if (thick)
 	  editor_clean_cursor();
@@ -1088,6 +1094,7 @@ bool Editor::msg_proc(JMessage msg)
       if (!m_sprite)
 	break;
 
+      // Drawing
       if (m_state == EDITOR_STATE_DRAWING) {
 	assert(m_toolLoopManager != NULL);
 
