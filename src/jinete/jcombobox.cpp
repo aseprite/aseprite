@@ -331,13 +331,13 @@ static bool combobox_msg_proc(JWidget widget, JMessage msg)
 
       jwidget_request_size(combobox->entry, &w, &h);
 
-      /* get the text-length of every item and put in 'w' the maximum value */
+      // Get the text-length of every item and put in 'w' the maximum value
       JI_LIST_FOR_EACH(combobox->items, link) {
 	int item_w =
 	  2*jguiscale()+
 	  text_length(widget->getFont(),
 		      ((ComboItem *)link->data)->text)+
-	  2*jguiscale();
+	  10*jguiscale();
 
 	w = MAX(w, item_w);
       }
