@@ -123,20 +123,31 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
       return true;
     }
 
-    case JM_MOUSEENTER:
-      colorbutton_open_tooltip(widget);
-      break;
-
     case JM_DRAW:
       colorbutton_draw(widget);
       return true;
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-	colorbutton_close_tooltip(widget);
-	widget->captureMouse();
+	// If the popup window was not created or shown yet..
+	if (colorbutton->tooltip_window == NULL ||
+	    !jwidget_is_visible(colorbutton->tooltip_window)) {
+	  // Open it
+	  colorbutton_open_tooltip(widget);
+	}
+	else {
+	  // If it is visible, close it
+	  colorbutton_close_tooltip(widget);
+	}
+	// widget->captureMouse();
 	return true;
       }
+      break;
+
+#if 0		    // Old behavior (MOUSEENTER popups color selector)
+
+    case JM_MOUSEENTER:
+      colorbutton_open_tooltip(widget);
       break;
 
     case JM_BUTTONPRESSED:
@@ -202,6 +213,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	return true;
       }
       break;
+#endif
 
   }
 
