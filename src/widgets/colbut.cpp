@@ -271,10 +271,9 @@ static void colorbutton_open_tooltip(JWidget widget)
   int x, y;
 
   if (colorbutton->tooltip_window == NULL) {
-    window = colorselector_new(false);
+    window = colorselector_new();
     window->user_data[0] = widget;
     jwidget_add_hook(window, -1, tooltip_window_msg_proc, NULL);
-    window->setText("Select color");
 
     colorbutton->tooltip_window = window;
   }
@@ -306,7 +305,7 @@ static void colorbutton_open_tooltip(JWidget widget)
     JRegion rgn = jregion_new(rc, 1);
     jrect_free(rc);
 
-    static_cast<TipWindow*>(window)->set_hotregion(rgn);
+    static_cast<PopupWindow*>(window)->setHotRegion(rgn);
   }
 }
 
