@@ -12,6 +12,10 @@
       <check text="Smooth auto-scroll" name="smooth" />
       <check text="2 Click Movement" name="move_click2" />
       <check text="2 Click Drawing" name="draw_click2" />
+      <box horizontal="true">
+	<label text="Cursor:" />
+	<box name="cursor_color_box" /><!-- custom widget -->
+      </box>
 
       <!-- Undo -->
 

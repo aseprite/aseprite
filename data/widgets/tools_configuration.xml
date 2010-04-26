@@ -15,8 +15,6 @@
         <check text="Snap to Grid" name="snap_to_grid" />
         <check text="View Grid" name="view_grid" />
         <button text="Set &amp;Grid" name="set_grid" />
-        <separator text="Cursor:" horizontal="true" left="true" />
-	<box name="cursor_color_box" /><!-- custom widget -->
       </box>
       <separator vertical="true" />
       <box vertical="true" expansive="true" childspacing="2">

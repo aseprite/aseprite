@@ -58,7 +58,6 @@ static bool tiled_xy_check_change_hook(JWidget widget, void *data);
 static bool snap_to_grid_check_change_hook(JWidget widget, void *data);
 static bool view_grid_check_change_hook(JWidget widget, void *data);
 static bool set_grid_button_select_hook(JWidget widget, void *data);
-static bool cursor_button_change_hook(JWidget widget, void *data);
 static bool onionskin_check_change_hook(JWidget widget, void *data);
 
 // Slot for App::Exit signal 
@@ -141,7 +140,6 @@ void ConfigureTools::execute(Context* context)
   JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, set_grid;
   JWidget brush_size, brush_angle, opacity;
   JWidget spray_width, air_speed;
-  JWidget cursor_color, cursor_color_box;
   JWidget brush_preview_box;
   JWidget brush_type_box, brush_type;
   JWidget check_onionskin;
@@ -171,7 +169,6 @@ void ConfigureTools::execute(Context* context)
 		"opacity", &opacity,
 		"spray_width", &spray_width,
 		"air_speed", &air_speed,
-		"cursor_color_box", &cursor_color_box,
 		"brush_preview_box", &brush_preview_box,
 		"brush_type_box", &brush_type_box,
 		"onionskin", &check_onionskin, NULL);
@@ -180,15 +177,6 @@ void ConfigureTools::execute(Context* context)
     jwidget_free(window);
     window = NULL;
     throw;
-  }
-
-  /* cursor-color */
-  if (first_time) {
-    cursor_color = colorbutton_new(Editor::get_cursor_color(), IMAGE_INDEXED);
-    cursor_color->setName("cursor_color");
-  }
-  else {
-    cursor_color = jwidget_find_name(window, "cursor_color");
   }
 
   /* brush-preview */
@@ -237,7 +225,6 @@ void ConfigureTools::execute(Context* context)
 
   if (first_time) {
     // Append children
-    jwidget_add_child(cursor_color_box, cursor_color);
     jwidget_add_child(brush_preview_box, brush_preview);
     jwidget_add_child(brush_type_box, brush_type);
 
@@ -255,7 +242,6 @@ void ConfigureTools::execute(Context* context)
     HOOK(opacity, JI_SIGNAL_SLIDER_CHANGE, opacity_slider_change_hook, 0);
     HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
-    HOOK(cursor_color, SIGNAL_COLORBUTTON_CHANGE, cursor_button_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
 
     App::instance()->Exit.connect(&on_exit_delete_this_widget);
@@ -473,12 +459,6 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
   catch (locked_sprite_exception& e) {
     e.show();
   }
-  return true;
-}
-
-static bool cursor_button_change_hook(JWidget widget, void *data)
-{
-  Editor::set_cursor_color(colorbutton_get_color(widget));
   return true;
 }
 

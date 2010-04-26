@@ -30,6 +30,7 @@
 #include "raster/image.h"
 #include "util/render.h"
 #include "widgets/colbut.h"
+#include "widgets/editor.h"
 
 //////////////////////////////////////////////////////////////////////
 // options
@@ -61,6 +62,7 @@ OptionsCommand::OptionsCommand()
 void OptionsCommand::execute(Context* context)
 {
   JWidget check_smooth;
+  JWidget cursor_color, cursor_color_box;
   JWidget button_ok;
   JWidget move_click2, draw_click2;
   JWidget checked_bg_reset;
@@ -73,6 +75,7 @@ void OptionsCommand::execute(Context* context)
 	      "smooth", &check_smooth,
 	      "move_click2", &move_click2,
 	      "draw_click2", &draw_click2,
+	      "cursor_color_box", &cursor_color_box,
 	      "checked_bg_size", &checked_bg,
 	      "checked_bg_zoom", &checked_bg_zoom,
 	      "checked_bg_color1_box", &checked_bg_color1_box,
@@ -80,6 +83,11 @@ void OptionsCommand::execute(Context* context)
 	      "checked_bg_reset", &checked_bg_reset,
 	      "undo_size_limit", &undo_size_limit,
 	      "button_ok", &button_ok, NULL);
+
+  // Cursor color
+  cursor_color = colorbutton_new(Editor::get_cursor_color(), IMAGE_INDEXED);
+  cursor_color->setName("cursor_color");
+  jwidget_add_child(cursor_color_box, cursor_color);
 
   if (get_config_bool("Options", "MoveClick2", false))
     jwidget_select(move_click2);
@@ -119,7 +127,9 @@ void OptionsCommand::execute(Context* context)
 
   if (window->get_killer() == button_ok) {
     int undo_size_limit_value;
-    
+
+    Editor::set_cursor_color(colorbutton_get_color(cursor_color));
+
     set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
     set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
     set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
