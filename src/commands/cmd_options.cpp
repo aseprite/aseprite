@@ -27,6 +27,7 @@
 #include "core/cfg.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "raster/image.h"
 #include "util/render.h"
 #include "widgets/colbut.h"
 
@@ -101,8 +102,8 @@ void OptionsCommand::execute(Context* context)
     jwidget_select(checked_bg_zoom);
 
   // Checked background colors
-  checked_bg_color1 = colorbutton_new(RenderEngine::getCheckedBgColor1(), app_get_current_image_type());
-  checked_bg_color2 = colorbutton_new(RenderEngine::getCheckedBgColor2(), app_get_current_image_type());
+  checked_bg_color1 = colorbutton_new(RenderEngine::getCheckedBgColor1(), IMAGE_RGB);
+  checked_bg_color2 = colorbutton_new(RenderEngine::getCheckedBgColor2(), IMAGE_RGB);
 
   jwidget_add_child(checked_bg_color1_box, checked_bg_color1);
   jwidget_add_child(checked_bg_color2_box, checked_bg_color2);
