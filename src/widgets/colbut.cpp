@@ -230,26 +230,38 @@ static void colorbutton_draw(JWidget widget)
 
   jdraw_rectfill(widget->rc, ji_color_face());
 
+  color_t color;
+  // When the button is pushed, show the negative
+  if (jwidget_is_selected(widget)) {
+    color = color_rgb(255-color_get_red(colorbutton->color),
+		      255-color_get_green(colorbutton->color),
+		      255-color_get_blue(colorbutton->color));
+  }
+  // When the button is not pressed, show the real color
+  else
+    color = colorbutton->color;
+
   draw_color_button
     (ji_screen,
      widget->getBounds(),
      true, true, true, true,
      true, true, true, true,
      colorbutton->imgtype,
-     colorbutton->color,
+     color,
      widget->hasMouseOver(), false);
 
-  /* draw text */
+  // Draw text
   color_to_formalstring(colorbutton->imgtype,
 			colorbutton->color, buf, sizeof(buf), false);
 
   widget->setTextQuiet(buf);
   jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
-
-  rectfill(ji_screen, text.x1, text.y1, text.x2-1, text.y2-1, makecol(0, 0, 0));
+  
+  int textcolor = blackandwhite_neg(color_get_red(color),
+				    color_get_green(color),
+				    color_get_blue(color));
   jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
-	     makecol(255, 255, 255),
-	     makecol(0, 0, 0), false, jguiscale());
+	     textcolor, -1, false, jguiscale());
 }
 
 static void colorbutton_open_tooltip(JWidget widget)
