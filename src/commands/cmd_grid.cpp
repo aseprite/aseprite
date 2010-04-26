@@ -154,6 +154,8 @@ void GridSettingsCommand::execute(Context* context)
     bounds.y = grid_y->getTextInt();
     bounds.w = grid_w->getTextInt();
     bounds.h = grid_h->getTextInt();
+    bounds.w = MAX(bounds.w, 1);
+    bounds.h = MAX(bounds.h, 1);
 
     UIContext::instance()->getSettings()->setGridBounds(bounds);
 
