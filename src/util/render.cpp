@@ -16,15 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* TODO modificable option: scalable-tiles */
-#define SCALABLE_TILES
-
 #include "config.h"
 
 #include <assert.h>
 
 #include "jinete/jlist.h"
 
+#include "core/cfg.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/raster.h"
@@ -151,7 +149,7 @@ static void merge_zoomed_image(Image *dst, Image *src,
 
   bottom = dst_y+dst_h-1;
 
-  // the scanline variable is used to 
+  // the scanline variable is used to blend src/dst pixels one time for each pixel
   scanline = new typename Traits::pixel_t[src_w];
 
   // for each line to draw of the source image...
@@ -255,9 +253,69 @@ done_with_blit:;
 //////////////////////////////////////////////////////////////////////
 // Render Engine
 
+static RenderEngine::CheckedBgType checked_bg_type;
+static bool checked_bg_zoom;
+static color_t checked_bg_color1;
+static color_t checked_bg_color2;
+
 static int global_opacity = 255;
 static Layer *selected_layer = NULL;
 static Image *rastering_image = NULL;
+
+void RenderEngine::loadConfig()
+{
+  checked_bg_type = (CheckedBgType)get_config_int("Options", "CheckedBgType",
+						  (int)RenderEngine::CHECKED_BG_16X16);
+  checked_bg_zoom = get_config_bool("Options", "CheckedBgZoom", true);
+  checked_bg_color1 = get_config_color("Options", "CheckedBgColor1", color_rgb(128, 128, 128));
+  checked_bg_color2 = get_config_color("Options", "CheckedBgColor2", color_rgb(192, 192, 192));
+}
+
+RenderEngine::CheckedBgType RenderEngine::getCheckedBgType()
+{
+  return checked_bg_type;
+}
+
+void RenderEngine::setCheckedBgType(CheckedBgType type)
+{
+  checked_bg_type = type;
+  set_config_int("Options", "CheckedBgType", (int)type);
+}
+
+bool RenderEngine::getCheckedBgZoom()
+{
+  return checked_bg_zoom;
+}
+
+void RenderEngine::setCheckedBgZoom(bool state)
+{
+  checked_bg_zoom = state;
+  set_config_int("Options", "CheckedBgZoom", state);
+}
+
+color_t RenderEngine::getCheckedBgColor1()
+{
+  return checked_bg_color1;
+}
+
+void RenderEngine::setCheckedBgColor1(color_t color)
+{
+  checked_bg_color1 = color;
+  set_config_color("Options", "CheckedBgColor1", color);
+}
+
+color_t RenderEngine::getCheckedBgColor2()
+{
+  return checked_bg_color2;
+}
+
+void RenderEngine::setCheckedBgColor2(color_t color)
+{
+  checked_bg_color2 = color;
+  set_config_color("Options", "CheckedBgColor2", color);
+}
+
+//////////////////////////////////////////////////////////////////////
 
 void RenderEngine::setPreviewImage(Layer *layer, Image *image)
 {
@@ -266,11 +324,11 @@ void RenderEngine::setPreviewImage(Layer *layer, Image *image)
 }
 
 /**
- * Draws the @a frame animation frame of the @a source image in the
- * return image, all positions must have the zoom applied
- * (sorce_x<<zoom, dest_x<<zoom, width<<zoom, etc.)
- *
- * This routine is used to render the sprite 
+   Draws the @a frame of animation of the specified @a sprite
+   in a new image and return it.
+
+   Positions source_x, source_y, width and height must have the
+   zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
 Image* RenderEngine::renderSprite(Sprite* sprite,
 				  int source_x, int source_y,
@@ -279,7 +337,7 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
 {
   void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
   LayerImage* background = sprite->getBackgroundLayer();
-  bool need_grid = (background != NULL ? !background->is_readable(): true);
+  bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
   int depth;
   Image *image;
 
@@ -309,56 +367,86 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
   if (!image)
     return NULL;
 
-  /* draw the background */
-  if (need_grid) {
+  // Draw checked background
+  if (need_checked_bg) {
     int x, y, u, v, c1, c2;
+    int tile_x = 0;
+    int tile_y = 0;
+    int tile_w = 16;
+    int tile_h = 16;
 
     switch (image->imgtype) {
       case IMAGE_RGB:
-	c1 = _rgba(128, 128, 128, 255); /* TODO configurable grid color */
-	c2 = _rgba(192, 192, 192, 255);
+	c1 = get_color_for_image(image->imgtype, checked_bg_color1);
+	c2 = get_color_for_image(image->imgtype, checked_bg_color2);
         break;
       case IMAGE_GRAYSCALE:
-	c1 = _graya(128, 255);
-	c2 = _graya(192, 255);
+	c1 = get_color_for_image(image->imgtype, checked_bg_color1);
+	c2 = get_color_for_image(image->imgtype, checked_bg_color2);
         break;
-	/* TODO remove this */
-      /* case IMAGE_INDEXED: */
-      /* 	c1 = rgb_map->data[16][16][16]; */
-      /*   c2 = rgb_map->data[24][24][24]; */
-      /*   break; */
+      // case IMAGE_INDEXED:
+      // 	c1 = get_color_for_image(image->imgtype, checked_bg_color1);
+      // 	c2 = get_color_for_image(image->imgtype, checked_bg_color2);
+      //   break;
       default:
 	c1 = c2 = 0;
 	break;
     }
 
-#ifdef SCALABLE_TILES
-    u = (-source_x / (16<<zoom)) * (16<<zoom);
-    v = (-source_y / (16<<zoom)) * (16<<zoom);
-    for (y=-source_y; y<height+(16<<zoom); y+=(16<<zoom)) {
-      for (x=-source_x; x<width+(16<<zoom); x+=(16<<zoom))
-        image_rectfill(image,
-		       x,
-		       y,
-		       x+(16<<zoom)-1,
-		       y+(16<<zoom)-1,
-		       ((u++)&1)? c1: c2);
-      u = (++v);
+    switch (checked_bg_type) {
+
+      case CHECKED_BG_16X16:
+	tile_w = 16;
+	tile_h = 16;
+	break;
+
+      case CHECKED_BG_8X8:
+	tile_w = 8;
+	tile_h = 8;
+	break;
+
+      case CHECKED_BG_4X4:
+	tile_w = 4;
+	tile_h = 4;
+	break;
+
+      case CHECKED_BG_2X2:
+	tile_w = 2;
+	tile_h = 2;
+	break;
+
     }
-#else
-    u = (-source_x / (16<<zoom)) * 16;
-    v = (-source_y / (16<<zoom)) * 16;
-    for (y=-source_y; y<height+16; y+=16) {
-      for (x=-source_x; x<width+16; x+=16)
-        image_rectfill(image,
-		       x,
-		       y,
-		       x+16-1,
-		       y+16-1,
-		       ((u++)&1)? c1: c2);
-      u = (++v);
+
+    if (checked_bg_zoom) {
+      tile_w <<= zoom;
+      tile_h <<= zoom;
     }
-#endif
+
+    // Tile size
+    if (tile_w < (1<<zoom)) tile_w = (1<<zoom);
+    if (tile_h < (1<<zoom)) tile_h = (1<<zoom);
+
+    // Tile position (u,v) is the number of tile we start in (source_x,source_y) coordinate
+    // u = ((source_x>>zoom) - (source_x%(1<<zoom))) / tile_w;
+    // v = ((source_y>>zoom) - (source_y%(1<<zoom))) / tile_h;
+    u = source_x / tile_w;
+    v = source_y / tile_h;
+
+    // Position where we start drawing the first tile in "image"
+    int x_start = -(source_x % tile_w);
+    int y_start = -(source_y % tile_h);
+
+    // Draw checked background (tile by tile)
+    int u_start = u;
+    for (y=y_start; y<height+tile_h; y+=tile_h) {
+      for (x=x_start; x<width+tile_w; x+=tile_w) {
+	image_rectfill(image, x, y, x+tile_w-1, y+tile_h-1,
+		       (((u+v))&1)? c1: c2);
+	++u;
+      }
+      u = u_start;
+      ++v;
+    }
   }
   else
     image_clear(image, 0);

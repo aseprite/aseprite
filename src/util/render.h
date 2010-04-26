@@ -19,6 +19,8 @@
 #ifndef UTIL_RENDER_H_INCLUDED
 #define UTIL_RENDER_H_INCLUDED
 
+#include "core/color.h"
+
 class Image;
 class Layer;
 class Sprite;
@@ -26,7 +28,32 @@ class Sprite;
 class RenderEngine
 {
 public:
+
+  //////////////////////////////////////////////////////////////////////
+  // Checked background configuration
+
+  enum CheckedBgType { CHECKED_BG_16X16, 
+		       CHECKED_BG_8X8,
+		       CHECKED_BG_4X4, 
+		       CHECKED_BG_2X2 };
+  
+  static void loadConfig();
+  static CheckedBgType getCheckedBgType();
+  static void setCheckedBgType(CheckedBgType type);
+  static bool getCheckedBgZoom();
+  static void setCheckedBgZoom(bool state);
+  static color_t getCheckedBgColor1();
+  static void setCheckedBgColor1(color_t color);
+  static color_t getCheckedBgColor2();
+  static void setCheckedBgColor2(color_t color);
+
+  //////////////////////////////////////////////////////////////////////
+  // Preview image
+
   static void setPreviewImage(Layer* layer, Image* drawable);
+
+  //////////////////////////////////////////////////////////////////////
+  // Main function used by sprite-editors to render the sprite
 
   static Image* renderSprite(Sprite* sprite,
 			     int source_x, int source_y,

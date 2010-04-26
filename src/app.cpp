@@ -60,6 +60,7 @@
 #include "ui_context.h"
 #include "util/boundary.h"
 #include "util/recscr.h"
+#include "util/render.h"
 #include "widgets/colbar.h"
 #include "widgets/editor.h"
 #include "widgets/menuitem.h"
@@ -123,6 +124,9 @@ App::App()
  
   // init editor cursor
   Editor::editor_cursor_init();
+
+  // Load RenderEngine configuration
+  RenderEngine::loadConfig();
 
   /* custom default palette? */
   if (palette_filename) {
