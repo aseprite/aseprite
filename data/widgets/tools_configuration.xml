@@ -22,10 +22,7 @@
 	  <grid columns="2" childspacing="0" expansive="true">
 
 	    <label text="Pen:" />
-	    <box vertical="true" childspacing="0">
-	      <box name="brush_type_box" /><!-- custom widget -->
-	      <box name="brush_mode_box" /><!-- custom widget -->
-	    </box>
+	    <box horizontal="true" childspacing="0" name="brush_type_box" /><!-- custom widget -->
 
             <label text="Size:" />
             <slider min="1" max="32" name="brush_size" minwidth="32" cell_align="horizontal" />
