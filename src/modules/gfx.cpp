@@ -430,7 +430,6 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
   BITMAP* graph;
 
   if (type == COLOR_TYPE_INDEX) {
-    data = color_get_index(color);
     rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
 	     get_color_for_allegro(bitmap_color_depth(bmp), color));
     return;
