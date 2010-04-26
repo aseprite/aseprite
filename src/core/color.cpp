@@ -666,7 +666,7 @@ void color_to_formalstring(int imgtype, color_t color,
 {
   int data;
 
-  /* long format */
+  // Long format
   if (long_format) {
     switch (GET_COLOR_TYPE(color)) {
 
@@ -733,7 +733,7 @@ void color_to_formalstring(int imgtype, color_t color,
 	break;
     }
   }
-  /* short format */
+  // Short format
   else {
     switch (GET_COLOR_TYPE(color)) {
 
@@ -744,8 +744,7 @@ void color_to_formalstring(int imgtype, color_t color,
       case COLOR_TYPE_RGB:
 	data = GET_COLOR_DATA_RGB(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "V %02x(%d)",
-		    _graya_getv(get_color_for_image(imgtype, color)),
+	  uszprintf(buf, size, "V %d",
 		    _graya_getv(get_color_for_image(imgtype, color)));
 	}
 	else {
@@ -763,8 +762,7 @@ void color_to_formalstring(int imgtype, color_t color,
       case COLOR_TYPE_HSV:
 	data = GET_COLOR_DATA_HSV(color);
 	if (imgtype == IMAGE_GRAYSCALE) {
-	  uszprintf(buf, size, "V %02x(%d)",
-		    GET_DATA_C3(data),
+	  uszprintf(buf, size, "V %d",
 		    GET_DATA_C3(data));
 	}
 	else {
@@ -781,12 +779,12 @@ void color_to_formalstring(int imgtype, color_t color,
 
       case COLOR_TYPE_GRAY:
 	data = GET_COLOR_DATA_GRAY(color);
-	uszprintf(buf, size, "I %02x (%d)", data, data);
+	uszprintf(buf, size, "V %d", data);
 	break;
 
       case COLOR_TYPE_INDEX:
 	data = GET_COLOR_DATA_INDEX(color);
-	uszprintf(buf, size, "I %02x (%d)", data, data);
+	uszprintf(buf, size, "I %d", data);
 	break;
 
       default:
