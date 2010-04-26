@@ -143,10 +143,12 @@ bool PopupWindow::msg_proc(JMessage msg)
 	this->border_width.t = 3 * jguiscale();
 	this->border_width.r = 3 * jguiscale();
 	this->border_width.b = 3 * jguiscale();
+	
+	if (hasText()) {
+	  _ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
 
-	_ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
-
-	this->border_width.t = h - 3 * jguiscale();
+	  this->border_width.t = h - 3 * jguiscale();
+	}
 
 	/* setup the background color */
 	jwidget_set_bg_color(this, makecol(255, 255, 200));
