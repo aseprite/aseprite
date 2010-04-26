@@ -149,9 +149,6 @@ bool PopupWindow::msg_proc(JMessage msg)
 
 	  this->border_width.t = h - 3 * jguiscale();
 	}
-
-	/* setup the background color */
-	jwidget_set_bg_color(this, makecol(255, 255, 200));
 	return true;
       }
       break;
