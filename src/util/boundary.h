@@ -17,7 +17,7 @@
  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- * Adapted to ASE by David Capello (2003-2009)
+ * Adapted to ASE by David Capello (2003-2010)
  * See "LICENSE.txt" for more information.
  */
 

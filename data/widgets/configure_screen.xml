@@ -1,5 +1,5 @@
 <!-- ASE - Allegro Sprite Editor -->
-<!-- Copyright (C) 2001-2009 by David Capello -->
+<!-- Copyright (C) 2001-2010 by David Capello -->
 <jinete>
 <window text="Configure Screen" name="configure_screen">
   <box vertical="true">
