@@ -333,9 +333,20 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 
   jrect_free(vp);
 
+  // Draw grids
+  ISettings* settings = UIContext::instance()->getSettings();
+
+  // Draw the pixel grid
+  if (settings->getPixelGridVisible()) {
+    if (m_zoom > 1)
+      this->drawGrid(Rect(0, 0, 1, 1),
+		     settings->getPixelGridColor());
+  }
+
   // Draw the grid
-  if (UIContext::instance()->getSettings()->getGridVisible())
-    this->drawGrid();
+  if (settings->getGridVisible())
+    this->drawGrid(settings->getGridBounds(),
+		   settings->getGridColor());
 }
 
 /**
@@ -464,14 +475,13 @@ void Editor::editor_draw_mask_safe()
   }
 }
 
-void Editor::drawGrid()
+void Editor::drawGrid(const Rect& gridBounds, color_t color)
 {
-  Rect grid = UIContext::instance()->getSettings()->getGridBounds();
+  Rect grid(gridBounds);
   if (grid.w < 1 || grid.h < 1)
     return;
 
-  int grid_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
-					 UIContext::instance()->getSettings()->getGridColor());
+  int grid_color = get_color_for_allegro(bitmap_color_depth(ji_screen), color);
   JWidget view = jwidget_get_view(this);
   JRect vp = jview_get_viewport_position(view);
   int scroll_x, scroll_y;
@@ -505,12 +515,14 @@ void Editor::drawGrid()
   grid.w <<= m_zoom;
   grid.h <<= m_zoom;
 
+  // Horizontal lines
   x1 = scroll_x+grid.x+u1*grid.w;
   x2 = scroll_x+grid.x+u2*grid.w;
 
   for (c=v1; c<=v2; c++)
     hline(ji_screen, x1, scroll_y+grid.y+c*grid.h, x2, grid_color);
 
+  // Vertical lines
   y1 = scroll_y+grid.y+v1*grid.h;
   y2 = scroll_y+grid.y+v2*grid.h;
 
@@ -1887,7 +1899,10 @@ public:
     int y1 = dirty_area.y-m_offset.y;
     int x2 = dirty_area.x-m_offset.x+dirty_area.w-1;
     int y2 = dirty_area.y-m_offset.y+dirty_area.h-1;
+
+    acquire_bitmap(ji_screen);
     editors_draw_sprite_tiled(m_sprite, x1, y1, x2, y2);
+    release_bitmap(ji_screen);
   }
 
   void updateStatusBar(const char* text)

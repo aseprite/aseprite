@@ -194,7 +194,7 @@ protected:
   virtual bool msg_proc(JMessage msg);
 
 private:
-  void drawGrid();
+  void drawGrid(const Rect& gridBounds, color_t color);
   void turnOnSelectionModifiers();
   void controlInfiniteScroll(JMessage msg);
 
