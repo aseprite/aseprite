@@ -25,15 +25,6 @@
 
 class UISettingsImpl : public ISettings
 {
-  TiledMode m_tiledMode;
-  Tool* m_currentTool;
-  bool m_use_onionskin;
-  bool m_snapToGrid;
-  bool m_gridVisible;
-  Rect m_gridBounds;
-  color_t m_gridColor;
-  std::map<std::string, IToolSettings*> m_toolSettings;
-
 public:
   UISettingsImpl();
   ~UISettingsImpl();
@@ -62,6 +53,14 @@ public:
   void setGridBounds(Rect rect);
   void setGridColor(color_t color);
 
+  // Pixel grid
+
+  bool getPixelGridVisible();
+  color_t getPixelGridColor();
+
+  void setPixelGridVisible(bool state);
+  void setPixelGridColor(color_t color);
+
   // Onionskin settings
 
   bool getUseOnionskin();
@@ -75,7 +74,18 @@ public:
   // Tools settings
 
   IToolSettings* getToolSettings(Tool* tool);
-  
+
+private:
+  TiledMode m_tiledMode;
+  Tool* m_currentTool;
+  bool m_use_onionskin;
+  bool m_snapToGrid;
+  bool m_gridVisible;
+  Rect m_gridBounds;
+  color_t m_gridColor;
+  bool m_pixelGridVisible;
+  color_t m_pixelGridColor;
+  std::map<std::string, IToolSettings*> m_toolSettings;
 };
 
 #endif

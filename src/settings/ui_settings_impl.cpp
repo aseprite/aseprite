@@ -43,6 +43,8 @@ UISettingsImpl::UISettingsImpl()
   m_gridVisible   = get_config_bool("Grid", "Visible", false);
   m_gridColor     = get_config_color("Grid", "Color", color_rgb(0, 0, 255));
   m_gridBounds    = get_config_rect("Grid", "Bounds", m_gridBounds);
+  m_pixelGridVisible = get_config_bool("PixelGrid", "Visible", false);
+  m_pixelGridColor   = get_config_color("PixelGrid", "Color", color_rgb(200, 200, 200));
 }
 
 UISettingsImpl::~UISettingsImpl()
@@ -53,6 +55,8 @@ UISettingsImpl::~UISettingsImpl()
   set_config_bool("Grid", "Visible", m_gridVisible);
   set_config_rect("Grid", "Bounds", m_gridBounds);
   set_config_color("Grid", "Color", m_gridColor);
+  set_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
+  set_config_color("PixelGrid", "Color", m_pixelGridColor);
 
   // delete all tool settings
   std::map<std::string, IToolSettings*>::iterator it;
@@ -156,6 +160,29 @@ void UISettingsImpl::setGridBounds(Rect rect)
 void UISettingsImpl::setGridColor(color_t color)
 {
   m_gridColor = color;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Pixel grid
+
+bool UISettingsImpl::getPixelGridVisible()
+{
+  return m_pixelGridVisible;
+}
+
+color_t UISettingsImpl::getPixelGridColor()
+{
+  return m_pixelGridColor;
+}
+
+void UISettingsImpl::setPixelGridVisible(bool state)
+{
+  m_pixelGridVisible = state;
+}
+
+void UISettingsImpl::setPixelGridColor(color_t color)
+{
+  m_pixelGridColor = color;
 }
 
 //////////////////////////////////////////////////////////////////////

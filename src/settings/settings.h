@@ -60,6 +60,14 @@ public:
   virtual void setGridBounds(Rect rect) = 0;
   virtual void setGridColor(color_t color) = 0;
 
+  // Pixel grid
+
+  virtual bool getPixelGridVisible() = 0;
+  virtual color_t getPixelGridColor() = 0;
+
+  virtual void setPixelGridVisible(bool state) = 0;
+  virtual void setPixelGridColor(color_t color) = 0;
+
   // Onionskin settings
 
   virtual bool getUseOnionskin() = 0;
