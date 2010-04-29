@@ -24,6 +24,7 @@
 
 #include "app.h"
 #include "commands/command.h"
+#include "context.h"
 #include "core/cfg.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -63,6 +64,8 @@ void OptionsCommand::execute(Context* context)
 {
   JWidget check_smooth;
   JWidget cursor_color, cursor_color_box;
+  JWidget grid_color, grid_color_box;
+  JWidget pixel_grid_color, pixel_grid_color_box;
   JWidget button_ok;
   JWidget move_click2, draw_click2;
   JWidget checked_bg_reset;
@@ -76,6 +79,8 @@ void OptionsCommand::execute(Context* context)
 	      "move_click2", &move_click2,
 	      "draw_click2", &draw_click2,
 	      "cursor_color_box", &cursor_color_box,
+	      "grid_color_box", &grid_color_box,
+	      "pixel_grid_color_box", &pixel_grid_color_box,
 	      "checked_bg_size", &checked_bg,
 	      "checked_bg_zoom", &checked_bg_zoom,
 	      "checked_bg_color1_box", &checked_bg_color1_box,
@@ -85,10 +90,21 @@ void OptionsCommand::execute(Context* context)
 	      "button_ok", &button_ok, NULL);
 
   // Cursor color
-  cursor_color = colorbutton_new(Editor::get_cursor_color(), IMAGE_INDEXED);
+  cursor_color = colorbutton_new(Editor::get_cursor_color(), IMAGE_RGB);
   cursor_color->setName("cursor_color");
   jwidget_add_child(cursor_color_box, cursor_color);
 
+  // Grid color
+  grid_color = colorbutton_new(context->getSettings()->getGridColor(), IMAGE_RGB);
+  grid_color->setName("grid_color");
+  jwidget_add_child(grid_color_box, grid_color);
+
+  // Pixel grid color
+  pixel_grid_color = colorbutton_new(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
+  pixel_grid_color->setName("pixel_grid_color");
+  jwidget_add_child(pixel_grid_color_box, pixel_grid_color);
+
+  // Others
   if (get_config_bool("Options", "MoveClick2", false))
     jwidget_select(move_click2);
 
@@ -129,6 +145,8 @@ void OptionsCommand::execute(Context* context)
     int undo_size_limit_value;
 
     Editor::set_cursor_color(colorbutton_get_color(cursor_color));
+    context->getSettings()->setGridColor(colorbutton_get_color(grid_color));
+    context->getSettings()->setPixelGridColor(colorbutton_get_color(pixel_grid_color));
 
     set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
     set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));

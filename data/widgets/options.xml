@@ -12,10 +12,16 @@
       <check text="Smooth auto-scroll" name="smooth" />
       <check text="2 Click Movement" name="move_click2" />
       <check text="2 Click Drawing" name="draw_click2" />
-      <box horizontal="true">
+      <grid columns="2">
 	<label text="Cursor:" />
 	<box name="cursor_color_box" /><!-- custom widget -->
-      </box>
+
+	<label text="Grid Color:" />
+	<box name="grid_color_box" /><!-- custom widget -->
+
+	<label text="Pixel Grid:" />
+	<box name="pixel_grid_color_box" /><!-- custom widget -->
+      </grid>
 
       <!-- Undo -->
 
