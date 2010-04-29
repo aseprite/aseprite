@@ -14,6 +14,7 @@
         <separator text="Grid:" horizontal="true" left="true" />
         <check text="Snap to Grid" name="snap_to_grid" />
         <check text="View Grid" name="view_grid" />
+        <check text="Pixel Grid" name="pixel_grid" />
         <button text="Set &amp;Grid" name="set_grid" />
       </box>
       <separator vertical="true" />

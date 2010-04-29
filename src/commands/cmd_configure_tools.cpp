@@ -57,6 +57,7 @@ static bool tiled_check_change_hook(JWidget widget, void *data);
 static bool tiled_xy_check_change_hook(JWidget widget, void *data);
 static bool snap_to_grid_check_change_hook(JWidget widget, void *data);
 static bool view_grid_check_change_hook(JWidget widget, void *data);
+static bool pixel_grid_check_change_hook(JWidget widget, void *data);
 static bool set_grid_button_select_hook(JWidget widget, void *data);
 static bool onionskin_check_change_hook(JWidget widget, void *data);
 
@@ -137,7 +138,7 @@ ConfigureTools::ConfigureTools()
 
 void ConfigureTools::execute(Context* context)
 {
-  JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, set_grid;
+  JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, pixel_grid, set_grid;
   JWidget brush_size, brush_angle, opacity;
   JWidget spray_width, air_speed;
   JWidget brush_preview_box;
@@ -163,6 +164,7 @@ void ConfigureTools::execute(Context* context)
 		"tiled_y", &tiled_y,
 		"snap_to_grid", &snap_to_grid,
 		"view_grid", &view_grid,
+		"pixel_grid", &pixel_grid,
 		"set_grid", &set_grid,
 		"brush_size", &brush_size,
 		"brush_angle", &brush_angle,
@@ -221,6 +223,7 @@ void ConfigureTools::execute(Context* context)
       
   if (settings->getSnapToGrid()) jwidget_select(snap_to_grid);
   if (settings->getGridVisible()) jwidget_select(view_grid);
+  if (settings->getPixelGridVisible()) jwidget_select(pixel_grid);
   if (settings->getUseOnionskin()) jwidget_select(check_onionskin);
 
   if (first_time) {
@@ -235,6 +238,7 @@ void ConfigureTools::execute(Context* context)
     HOOK(tiled_y, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_Y_AXIS);
     HOOK(snap_to_grid, JI_SIGNAL_CHECK_CHANGE, snap_to_grid_check_change_hook, 0);
     HOOK(view_grid, JI_SIGNAL_CHECK_CHANGE, view_grid_check_change_hook, 0);
+    HOOK(pixel_grid, JI_SIGNAL_CHECK_CHANGE, pixel_grid_check_change_hook, 0);
     HOOK(set_grid, JI_SIGNAL_BUTTON_SELECT, set_grid_button_select_hook, 0);
     HOOK(brush_size, JI_SIGNAL_SLIDER_CHANGE, brush_size_slider_change_hook, brush_preview);
     HOOK(brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
@@ -430,6 +434,13 @@ static bool snap_to_grid_check_change_hook(JWidget widget, void *data)
 static bool view_grid_check_change_hook(JWidget widget, void *data)
 {
   UIContext::instance()->getSettings()->setGridVisible(jwidget_is_selected(widget));
+  refresh_all_editors();
+  return false;
+}
+
+static bool pixel_grid_check_change_hook(JWidget widget, void *data)
+{
+  UIContext::instance()->getSettings()->setPixelGridVisible(jwidget_is_selected(widget));
   refresh_all_editors();
   return false;
 }
