@@ -107,6 +107,24 @@ JMessage jmessage_new_copy(const JMessage msg)
   return copy;
 }
 
+JMessage jmessage_new_copy_without_dests(const JMessage msg)
+{
+  JMessage copy;
+
+  assert(msg != NULL);
+
+  copy = jnew(union jmessage, 1);
+  if (!copy)
+    return NULL;
+
+  memcpy(copy, msg, sizeof(union jmessage));
+
+  copy->any.widgets = jlist_new();
+  copy->any.used = false;
+
+  return copy;
+}
+
 void jmessage_free(JMessage msg)
 {
   assert(msg != NULL);

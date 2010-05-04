@@ -146,6 +146,7 @@ int ji_register_message_type();
 JMessage jmessage_new(int type);
 JMessage jmessage_new_key_related(int type, int readkey_value);
 JMessage jmessage_new_copy(const JMessage msg);
+JMessage jmessage_new_copy_without_dests(const JMessage msg);
 void jmessage_free(JMessage msg);
 
 void jmessage_add_dest(JMessage msg, JWidget widget);
