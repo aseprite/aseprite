@@ -960,11 +960,13 @@ void Undoable::clear_mask(int bgcolor)
     }
   }
   else {
+    int offset_x = m_sprite->getMask()->x-cel->x;
+    int offset_y = m_sprite->getMask()->y-cel->y;
     int u, v, putx, puty;
-    int x1 = MAX(0, m_sprite->getMask()->x);
-    int y1 = MAX(0, m_sprite->getMask()->y);
-    int x2 = MIN(image->w-1, m_sprite->getMask()->x+m_sprite->getMask()->w-1);
-    int y2 = MIN(image->h-1, m_sprite->getMask()->y+m_sprite->getMask()->h-1);
+    int x1 = MAX(0, offset_x);
+    int y1 = MAX(0, offset_y);
+    int x2 = MIN(image->w-1, offset_x+m_sprite->getMask()->w-1);
+    int y2 = MIN(image->h-1, offset_y+m_sprite->getMask()->h-1);
 
     // do nothing
     if (x1 > x2 || y1 > y2)
@@ -980,8 +982,8 @@ void Undoable::clear_mask(int bgcolor)
 
       for (u=0; u<m_sprite->getMask()->w; u++) {
 	if ((*address & (1<<d.rem))) {
-	  putx = u + m_sprite->getMask()->x - cel->x;
-	  puty = v + m_sprite->getMask()->y - cel->y;
+	  putx = u + offset_x;
+	  puty = v + offset_y;
 	  image_putpixel(image, putx, puty, bgcolor);
 	}
 
@@ -1031,7 +1033,7 @@ void Undoable::paste_image(const Image* src_image, int x, int y, int opacity)
 
   Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
   Image* cel_image2 = image_new_copy(cel_image);
-  image_merge(cel_image2, src_image, x, y, opacity, BLEND_MODE_NORMAL);
+  image_merge(cel_image2, src_image, x-cel->x, y-cel->y, opacity, BLEND_MODE_NORMAL);
 
   replace_stock_image(cel->image, cel_image2); // TODO fix this, improve, avoid replacing the whole image
 }
