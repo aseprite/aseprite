@@ -37,8 +37,11 @@ public:
 
   void cutMask();
   void catchImage(int x, int y);
+  void catchImageAgain(int x, int y);
   Rect moveImage(int x, int y);
+  void dropImageTemporarily();
   void dropImage();
+  bool isCatched();
 
 private:
   class PixelsMovementImpl* m_impl;

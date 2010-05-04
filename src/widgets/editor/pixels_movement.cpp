@@ -34,19 +34,22 @@ class PixelsMovementImpl
   Undoable m_undoable;
   int m_initial_x, m_initial_y;
   int m_catch_x, m_catch_y;
+  bool m_firstDrop;
+  bool m_isCatched;
 
 public:
-  PixelsMovementImpl(Sprite* sprite, const Image* moveThis, int x, int y, int opacity)
+  PixelsMovementImpl(Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
     : m_sprite_writer(sprite)
     , m_undoable(m_sprite_writer, "Pixels Movement")
+    , m_initial_x(initial_x)
+    , m_initial_y(initial_y)
+    , m_firstDrop(true)
+    , m_isCatched(false)
   {
-    m_sprite_writer->prepareExtraCel(x, y, moveThis->w, moveThis->h, opacity);
+    m_sprite_writer->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
 
     Image* extraImage = m_sprite_writer->getExtraCelImage();
     image_copy(extraImage, moveThis, 0, 0);
-
-    m_initial_x = x;
-    m_initial_y = y;
   }
 
   ~PixelsMovementImpl()
@@ -69,6 +72,26 @@ public:
   {
     m_catch_x = x;
     m_catch_y = y;
+    m_isCatched = true;
+  }
+
+  void catchImageAgain(int x, int y)
+  {
+    // Create a new Undoable to move the pixels to other position
+    Cel* cel = m_sprite_writer->getExtraCel();
+    m_initial_x = cel->x;
+    m_initial_y = cel->y;
+    m_isCatched = true;
+
+    m_catch_x = x;
+    m_catch_y = y;
+
+    // Hide the mask (do not deselect it, it will be moved them using m_undoable.set_mask_position)
+    Mask* empty_mask = new Mask();
+    m_sprite_writer->generateMaskBoundaries(empty_mask);
+    delete empty_mask;
+
+    update_screen_for_sprite(m_sprite_writer);
   }
 
   Rect moveImage(int x, int y)
@@ -103,17 +126,40 @@ public:
 		MAX(y2, v2) - MIN(y1, v1) + 1);
   }
 
+  void dropImageTemporarily()
+  {
+    m_isCatched = false;
+
+    Cel* cel = m_sprite_writer->getExtraCel();
+
+    // Show the mask again in the new position
+    if (m_firstDrop) {
+      m_firstDrop = false;
+      m_undoable.set_mask_position(cel->x, cel->y);
+    }
+    else {
+      m_sprite_writer->getMask()->x = cel->x;
+      m_sprite_writer->getMask()->y = cel->y;
+    }
+    m_sprite_writer->generateMaskBoundaries();
+
+    update_screen_for_sprite(m_sprite_writer);
+  }
+
   void dropImage()
   {
+    m_isCatched = false;
+
     Cel* cel = m_sprite_writer->getExtraCel();
     Image* image = m_sprite_writer->getExtraCelImage();
 
     m_undoable.paste_image(image, cel->x, cel->y, cel->opacity);
-    m_undoable.set_mask_position(cel->x, cel->y);
     m_undoable.commit();
+  }
 
-    m_sprite_writer->generateMaskBoundaries();
-    update_screen_for_sprite(m_sprite_writer);
+  bool isCatched()
+  {
+    return m_isCatched;
   }
 
 };
@@ -141,12 +187,27 @@ void PixelsMovement::catchImage(int x, int y)
   m_impl->catchImage(x, y);
 }
 
+void PixelsMovement::catchImageAgain(int x, int y)
+{
+  return m_impl->catchImageAgain(x, y);
+}
+
 Rect PixelsMovement::moveImage(int x, int y)
 {
   return m_impl->moveImage(x, y);
 }
 
+void PixelsMovement::dropImageTemporarily()
+{
+  return m_impl->dropImageTemporarily();
+}
+
 void PixelsMovement::dropImage()
 {
   m_impl->dropImage();
+}
+
+bool PixelsMovement::isCatched()
+{
+  return m_impl->isCatched();
 }

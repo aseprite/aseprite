@@ -635,6 +635,22 @@ void Editor::controlInfiniteScroll(JMessage msg)
   jrect_free(vp);
 }
 
+void Editor::dropPixels()
+{
+  if (m_pixelsMovement->isCatched())
+    m_pixelsMovement->dropImageTemporarily();
+
+  // Drop pixels if the user press a button outside the selection
+  m_pixelsMovement->dropImage();
+  delete m_pixelsMovement;
+  m_pixelsMovement = NULL;
+
+  m_sprite->destroyExtraCel();
+
+  m_state = EDITOR_STATE_STANDBY;
+  releaseMouse();
+}
+
 void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
 {
   JWidget view = jwidget_get_view(this);
@@ -917,6 +933,7 @@ bool Editor::msg_proc(JMessage msg)
       if (!m_sprite)
 	break;
 
+      // Drawing loop
       if (m_state == EDITOR_STATE_DRAWING) {
 	assert(m_toolLoopManager != NULL);
 
@@ -938,9 +955,24 @@ bool Editor::msg_proc(JMessage msg)
 	  editor_setcursor(msg->mouse.x, msg->mouse.y);
 
 	  releaseMouse();
+	  return true;
 	}
       }
-      else if (!hasCapture()) {
+      // Moving pixels loop
+      else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
+	if (m_insideSelection) {
+	  // Re-catch the image
+	  int x, y;
+	  screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	  m_pixelsMovement->catchImageAgain(x, y);
+	  return true;
+	}
+	else {
+	  dropPixels();
+	}
+      }
+
+      if (!hasCapture()) {
 	UIContext* context = UIContext::instance();
 	Tool* current_tool = context->getSettings()->getCurrentTool();
 
@@ -1070,27 +1102,57 @@ bool Editor::msg_proc(JMessage msg)
 
 	jmouse_control_infinite_scroll(vp);
 	jrect_free(vp);
+
+	{
+	  int x, y;
+	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+	  app_get_statusbar()->setStatusText
+	    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
+	     m_sprite->getWidth(), m_sprite->getHeight());
+	}
       }
       // Moving pixels
       else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
-	// Infinite scroll
-	controlInfiniteScroll(msg);
+	// If there is a button pressed
+	if (m_pixelsMovement->isCatched()) {
+	  // Infinite scroll
+	  controlInfiniteScroll(msg);
 
-	// Get the position of the mouse in the sprite 
-	int x, y;
-	screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	  // Get the position of the mouse in the sprite 
+	  int x, y;
+	  screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
 
-	// Drag the image to that position
-	Rect bounds = m_pixelsMovement->moveImage(x, y);
+	  // Drag the image to that position
+	  Rect bounds = m_pixelsMovement->moveImage(x, y);
 
-	// If "bounds" is empty is because the cel was not moved
-	if (!bounds.isEmpty()) {
-	  // Redraw the extra cel in the new position
-	  jmouse_hide();
-	  editor_draw_sprite(bounds.x, bounds.y,
-			     bounds.x+bounds.w-1,
-			     bounds.y+bounds.h-1);
-	  jmouse_show();
+	  // If "bounds" is empty is because the cel was not moved
+	  if (!bounds.isEmpty()) {
+	    // Redraw the extra cel in the new position
+	    jmouse_hide();
+	    editor_draw_sprite(bounds.x, bounds.y,
+			       bounds.x+bounds.w-1,
+			       bounds.y+bounds.h-1);
+	    jmouse_show();
+	  }
+	}
+	else {
+	  // Draw cursor
+	  if (m_cursor_thick) {
+	    int x, y;
+
+	    x = msg->mouse.x;
+	    y = msg->mouse.y;
+
+	    // Redraw it only when the mouse change to other pixel (not
+	    // when the mouse moves only).
+	    if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
+	      jmouse_hide();
+	      editor_move_cursor(x, y);
+	      jmouse_show();
+	    }
+	  }
+
+	  editor_update_statusbar_for_standby();
 	}
       }
       // In tool-loop
@@ -1123,18 +1185,16 @@ bool Editor::msg_proc(JMessage msg)
 
 	release_bitmap(ji_screen);
       }
-      else {
-	/* Draw cursor */
+      else if (m_state == EDITOR_STATE_STANDBY) {
+	// Draw cursor
 	if (m_cursor_thick) {
 	  int x, y;
-
-	  /* jmouse_set_cursor(JI_CURSOR_NULL); */
 
 	  x = msg->mouse.x;
 	  y = msg->mouse.y;
 
-	  /* Redraw it only when the mouse change to other pixel (not
-	     when the mouse moves only).  */
+	  // Redraw it only when the mouse change to other pixel (not
+	  // when the mouse moves only).
 	  if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
 	    jmouse_hide();
 	    editor_move_cursor(x, y);
@@ -1142,17 +1202,7 @@ bool Editor::msg_proc(JMessage msg)
 	  }
 	}
 
-	/* status bar text */
-	if (m_state == EDITOR_STATE_STANDBY) {
-	  editor_update_statusbar_for_standby();
-	}
-	else if (m_state == EDITOR_STATE_MOVING_SCROLL) {
-	  int x, y;
-	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
-	  app_get_statusbar()->setStatusText
-	    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
-	     m_sprite->getWidth(), m_sprite->getHeight());
-	}
+	editor_update_statusbar_for_standby();
       }
       return true;
 
@@ -1180,13 +1230,9 @@ bool Editor::msg_proc(JMessage msg)
       }
       // Moving pixels
       else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
-	m_pixelsMovement->dropImage();
-	delete m_pixelsMovement;
-	m_pixelsMovement = NULL;
-
-	m_sprite->destroyExtraCel();
-
-	m_state = EDITOR_STATE_STANDBY;
+	// Drop the image temporarily in this location (where the user releases the mouse)
+	m_pixelsMovement->dropImageTemporarily();
+	return true;
       }
       else {
 	assert(m_toolLoopManager == NULL);
@@ -1228,9 +1274,22 @@ bool Editor::msg_proc(JMessage msg)
       }
 
       // When we are drawing, we "eat" all pressed keys
-      if (m_state == EDITOR_STATE_DRAWING ||
-	  m_state == EDITOR_STATE_MOVING_PIXELS)
+      if (m_state == EDITOR_STATE_DRAWING)
 	return true;
+
+      if (m_state == EDITOR_STATE_MOVING_PIXELS) {
+	dropPixels();
+
+	// Resend the key/message to the manager
+	{
+	  JMessage newmsg = jmessage_new_copy_without_dests(msg);
+	  jmessage_add_dest(newmsg, ji_get_default_manager());
+	  jmanager_enqueue_message(newmsg);
+	}
+
+	// Used
+	return true;
+      }
 
       break;
 
@@ -1460,6 +1519,40 @@ void Editor::editor_setcursor(int x, int y)
     case EDITOR_STATE_MOVING_SCROLL:
       hide_drawing_cursor();
       jmouse_set_cursor(JI_CURSOR_SCROLL);
+      break;
+
+    case EDITOR_STATE_MOVING_PIXELS:
+      {
+	UIContext* context = UIContext::instance();
+	Tool* current_tool = context->getSettings()->getCurrentTool();
+
+	int x, y;
+	screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+	    
+	// Move selection
+	if (m_sprite->getMask()->contains_point(x, y)) {
+	  hide_drawing_cursor();
+	  jmouse_set_cursor(JI_CURSOR_MOVE);
+
+	  if (!m_insideSelection)
+	    m_insideSelection = true;
+	  return;
+	}
+
+	if (m_insideSelection)
+	  m_insideSelection = false;
+
+	// Draw
+	if (m_cursor_candraw) {
+	  jmouse_set_cursor(JI_CURSOR_NULL);
+	  show_drawing_cursor();
+	}
+	// Forbidden
+	else {
+	  hide_drawing_cursor();
+	  jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+	}
+      }
       break;
 
     case EDITOR_STATE_DRAWING:

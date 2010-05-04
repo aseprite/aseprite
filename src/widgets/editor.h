@@ -197,6 +197,7 @@ private:
   void drawGrid(const Rect& gridBounds, color_t color);
   void turnOnSelectionModifiers();
   void controlInfiniteScroll(JMessage msg);
+  void dropPixels();
 
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);

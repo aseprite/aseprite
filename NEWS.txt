@@ -10,6 +10,8 @@ NEWS
   - Now you zoom using the mouse wheel without pressing Alt key.
   - Now tools are grouped.
   - Color-bar is completely redesigned.
+  - Improved selection tools: Now you can move selected pixels
+    dragging the selected area (like MS Paint).
 + New tools: Lasso, Polygonal Lasso, Magic Wand, Eyedropper (as
   an independet tool, Alt+click is available too), Hand, Move,
   (Filled) Countour, and (Filled) Polygon.
