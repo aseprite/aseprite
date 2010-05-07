@@ -1398,39 +1398,9 @@ bool Editor::msg_proc(JMessage msg)
 	      break;
 
 	    case WHEEL_ZOOM: {
-	      JWidget view = jwidget_get_view(this);
-	      JRect vp = jview_get_viewport_position(view);
-	      int x, y, zoom;
-
-	      x = 0;
-	      y = 0;
-	      zoom = MID(MIN_ZOOM, m_zoom-dz, MAX_ZOOM);
-
-	      /* zoom */
-	      if (m_zoom != zoom) {
-		/* TODO: este pedazo de código es igual que el de la
-		   rutina: editor_keys_toset_zoom, tengo que intentar
-		   unir ambos, alguna función como:
-		   editor_set_zoom_and_center_in_mouse */
-		screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
-
-		x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
-		y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
-
-		if ((m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
-		    (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
-		  int use_refresh_region = (m_zoom == zoom) ? true: false;
-
-		  m_zoom = zoom;
-
-		  editor_update();
-		  editor_set_scroll(x, y, use_refresh_region);
-
-		  jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
-		}
-	      }
-
-	      jrect_free(vp);
+	      int zoom = MID(MIN_ZOOM, m_zoom-dz, MAX_ZOOM);
+	      if (m_zoom != zoom)
+		editor_set_zoom_and_center_in_mouse(zoom, msg->mouse.x, msg->mouse.y);
 	      break;
 	    }
 
@@ -1656,6 +1626,34 @@ void Editor::editor_update_candraw()
      m_sprite->getCurrentLayer()->is_writable() /* && */
      /* layer_get_cel(m_sprite->layer, m_sprite->frame) != NULL */
      );
+}
+
+void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mouse_y)
+{
+  JWidget view = jwidget_get_view(this);
+  JRect vp = jview_get_viewport_position(view);
+  int x, y;
+
+  hide_drawing_cursor();
+  screen_to_editor(mouse_x, mouse_y, &x, &y);
+
+  x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
+  y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
+
+  if ((m_zoom != zoom) ||
+      (m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
+      (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
+    int use_refresh_region = (m_zoom == zoom) ? true: false;
+
+    m_zoom = zoom;
+
+    editor_update();
+    editor_set_scroll(x, y, use_refresh_region);
+
+    jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
+  }
+  show_drawing_cursor();
+  jrect_free(vp);
 }
 
 //////////////////////////////////////////////////////////////////////

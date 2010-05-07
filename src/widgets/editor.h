@@ -202,6 +202,8 @@ private:
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);
   void editor_update_candraw();
+  void editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mouse_y);
+
   IToolLoop* createToolLoopImpl(Context* context, JMessage msg);
 
   void for_each_pixel_of_pen(int screen_x, int screen_y,

@@ -49,7 +49,7 @@ bool Editor::editor_keys_toset_zoom(int scancode)
     y = 0;
     zoom = -1;
 
-    switch (scancode) { /* TODO make these keys configurable */
+    switch (scancode) { // TODO make these keys configurable
       case KEY_1: zoom = 0; break;
       case KEY_2: zoom = 1; break;
       case KEY_3: zoom = 2; break;
@@ -58,30 +58,10 @@ bool Editor::editor_keys_toset_zoom(int scancode)
       case KEY_6: zoom = 5; break;
     }
 
-    /* zoom */
+    // Change zoom
     if (zoom >= 0) {
-      hide_drawing_cursor();
-      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
-
-      x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
-      y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
-
-      if ((m_zoom != zoom) ||
-	  (m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
-	  (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
-	int use_refresh_region = (m_zoom == zoom) ? true: false;
-
-	m_zoom = zoom;
-
-	editor_update();
-	editor_set_scroll(x, y, use_refresh_region);
-
-	jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
-	jrect_free(vp);
-
-	show_drawing_cursor();
-	return true;
-      }
+      editor_set_zoom_and_center_in_mouse(zoom, jmouse_x(0), jmouse_y(0));
+      return true;
     }
 
     jrect_free(vp);
