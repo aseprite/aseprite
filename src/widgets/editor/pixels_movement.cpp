@@ -35,7 +35,7 @@ class PixelsMovementImpl
   int m_initial_x, m_initial_y;
   int m_catch_x, m_catch_y;
   bool m_firstDrop;
-  bool m_isCatched;
+  bool m_isDragging;
 
 public:
   PixelsMovementImpl(Sprite* sprite, const Image* moveThis, int initial_x, int initial_y, int opacity)
@@ -44,7 +44,7 @@ public:
     , m_initial_x(initial_x)
     , m_initial_y(initial_y)
     , m_firstDrop(true)
-    , m_isCatched(false)
+    , m_isDragging(false)
   {
     m_sprite_writer->prepareExtraCel(initial_x, initial_y, moveThis->w, moveThis->h, opacity);
 
@@ -72,7 +72,7 @@ public:
   {
     m_catch_x = x;
     m_catch_y = y;
-    m_isCatched = true;
+    m_isDragging = true;
   }
 
   void catchImageAgain(int x, int y)
@@ -81,7 +81,7 @@ public:
     Cel* cel = m_sprite_writer->getExtraCel();
     m_initial_x = cel->x;
     m_initial_y = cel->y;
-    m_isCatched = true;
+    m_isDragging = true;
 
     m_catch_x = x;
     m_catch_y = y;
@@ -128,7 +128,7 @@ public:
 
   void dropImageTemporarily()
   {
-    m_isCatched = false;
+    m_isDragging = false;
 
     Cel* cel = m_sprite_writer->getExtraCel();
 
@@ -148,7 +148,7 @@ public:
 
   void dropImage()
   {
-    m_isCatched = false;
+    m_isDragging = false;
 
     Cel* cel = m_sprite_writer->getExtraCel();
     Image* image = m_sprite_writer->getExtraCelImage();
@@ -157,9 +157,9 @@ public:
     m_undoable.commit();
   }
 
-  bool isCatched()
+  bool isDragging()
   {
-    return m_isCatched;
+    return m_isDragging;
   }
 
 };
@@ -207,7 +207,7 @@ void PixelsMovement::dropImage()
   m_impl->dropImage();
 }
 
-bool PixelsMovement::isCatched()
+bool PixelsMovement::isDragging()
 {
-  return m_impl->isCatched();
+  return m_impl->isDragging();
 }

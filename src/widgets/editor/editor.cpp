@@ -637,7 +637,7 @@ void Editor::controlInfiniteScroll(JMessage msg)
 
 void Editor::dropPixels()
 {
-  if (m_pixelsMovement->isCatched())
+  if (m_pixelsMovement->isDragging())
     m_pixelsMovement->dropImageTemporarily();
 
   // Drop pixels if the user press a button outside the selection
@@ -1114,7 +1114,7 @@ bool Editor::msg_proc(JMessage msg)
       // Moving pixels
       else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
 	// If there is a button pressed
-	if (m_pixelsMovement->isCatched()) {
+	if (m_pixelsMovement->isDragging()) {
 	  // Infinite scroll
 	  controlInfiniteScroll(msg);
 

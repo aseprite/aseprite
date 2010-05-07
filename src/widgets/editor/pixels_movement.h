@@ -41,7 +41,7 @@ public:
   Rect moveImage(int x, int y);
   void dropImageTemporarily();
   void dropImage();
-  bool isCatched();
+  bool isDragging();
 
 private:
   class PixelsMovementImpl* m_impl;
