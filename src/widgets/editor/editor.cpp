@@ -1129,9 +1129,10 @@ bool Editor::msg_proc(JMessage msg)
 	  if (!bounds.isEmpty()) {
 	    // Redraw the extra cel in the new position
 	    jmouse_hide();
-	    editor_draw_sprite(bounds.x, bounds.y,
-			       bounds.x+bounds.w-1,
-			       bounds.y+bounds.h-1);
+	    editors_draw_sprite_tiled(m_sprite,
+				      bounds.x, bounds.y,
+				      bounds.x+bounds.w-1,
+				      bounds.y+bounds.h-1);
 	    jmouse_show();
 	  }
 	}
