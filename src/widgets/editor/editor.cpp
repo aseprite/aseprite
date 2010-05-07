@@ -1118,11 +1118,11 @@ bool Editor::msg_proc(JMessage msg)
       }
       // Moving pixels
       else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
+	// Infinite scroll
+	controlInfiniteScroll(msg);
+
 	// If there is a button pressed
 	if (m_pixelsMovement->isDragging()) {
-	  // Infinite scroll
-	  controlInfiniteScroll(msg);
-
 	  // Get the position of the mouse in the sprite 
 	  int x, y;
 	  screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
