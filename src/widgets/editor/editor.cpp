@@ -1531,7 +1531,8 @@ void Editor::editor_setcursor(int x, int y)
 	screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 	    
 	// Move selection
-	if (m_sprite->getMask()->contains_point(x, y)) {
+	if (m_pixelsMovement->isDragging() ||
+	    m_sprite->getMask()->contains_point(x, y)) {
 	  hide_drawing_cursor();
 	  jmouse_set_cursor(JI_CURSOR_MOVE);
 
