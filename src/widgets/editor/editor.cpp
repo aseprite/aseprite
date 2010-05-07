@@ -116,10 +116,7 @@ Editor::~Editor()
   delete m_toolLoopManager;
 
   // Destroy all decorators
-  for (std::vector<Decorator*>::iterator
-	 it=m_decorators.begin(); it!=m_decorators.end(); ++it) {
-    delete *it;
-  }
+  deleteDecorators();
 }
 
 int editor_type()
@@ -567,13 +564,22 @@ void Editor::flashCurrentLayer()
   }
 }
 
-void Editor::turnOnSelectionModifiers()
+void Editor::deleteDecorators()
 {
-  // TODO deleteDecorators()
   for (std::vector<Decorator*>::iterator
 	 it=m_decorators.begin(); it!=m_decorators.end(); ++it)
     delete *it;
   m_decorators.clear();
+}
+
+void Editor::addDecorator(Decorator* decorator)
+{
+  m_decorators.push_back(decorator);
+}
+
+void Editor::turnOnSelectionModifiers()
+{
+  deleteDecorators();
 
   int x1, y1, x2, y2;
 
@@ -581,15 +587,14 @@ void Editor::turnOnSelectionModifiers()
   editor_to_screen(m_sprite->getMask()->x+m_sprite->getMask()->w-1,
 		   m_sprite->getMask()->y+m_sprite->getMask()->h-1, &x2, &y2);
 
-  // TODO addDecorator
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_NW, Rect(x1-8,        y1-8, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_N,  Rect((x1+x2)/2-4, y1-8, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_NE, Rect(x2,          y1-8, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_E,  Rect(x2,          (y1+y2)/2-4, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_SE, Rect(x2,          y2, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_S,  Rect((x1+x2)/2-4, y2, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_SW, Rect(x1-8,        y2, 8, 8)));
-  m_decorators.push_back(new Decorator(Decorator::SELECTION_W,  Rect(x1-8,        (y1+y2)/2-4, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_NW, Rect(x1-8,        y1-8, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_N,  Rect((x1+x2)/2-4, y1-8, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_NE, Rect(x2,          y1-8, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_E,  Rect(x2,          (y1+y2)/2-4, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_SE, Rect(x2,          y2, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_S,  Rect((x1+x2)/2-4, y2, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_SW, Rect(x1-8,        y2, 8, 8)));
+  addDecorator(new Decorator(Decorator::SELECTION_W,  Rect(x1-8,        (y1+y2)/2-4, 8, 8)));
 }
 
 /**
@@ -1574,7 +1579,7 @@ void Editor::editor_setcursor(int x, int y)
 
 		if (!m_insideSelection) {
 		  m_insideSelection = true;
-		  // turnOnSelectionModifiers();
+		  //turnOnSelectionModifiers();
 		}
 		return;
 	      }
@@ -1591,8 +1596,10 @@ void Editor::editor_setcursor(int x, int y)
 	    }
 	  }
 
-	  if (m_insideSelection)
+	  if (m_insideSelection) {
 	    m_insideSelection = false;
+	    //deleteDecorators();
+	  }
 
 	  // Draw
 	  if (m_cursor_candraw) {

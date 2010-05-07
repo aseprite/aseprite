@@ -195,6 +195,9 @@ protected:
 
 private:
   void drawGrid(const Rect& gridBounds, color_t color);
+
+  void addDecorator(Decorator* decorator);
+  void deleteDecorators();
   void turnOnSelectionModifiers();
   void controlInfiniteScroll(JMessage msg);
   void dropPixels();
