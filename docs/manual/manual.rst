@@ -229,8 +229,11 @@ Current Editor
  Tools
 -------
 
+Selection Tools
+===============
+
 Rectangular Marquee Tool
-========================
+------------------------
 
 With this tool you can select rectangular regions in the sprite. You
 select a rectangular portion of sprite pressing left mouse button,
@@ -249,7 +252,7 @@ Using the right mouse button you can substract rectangles from selection.
     **Right button**: Subtracts rectangles from selection.
 
 Lasso Tool
-==========
+----------
 
 With this tool you can select free hand drawn contours. You
 press the mouse button, move it to draw a contour, and then
@@ -266,7 +269,7 @@ selected (if you used the left mouse button) or deselected
     **Right button**: Subtracts contours from selection.
 
 Polygonal Lasso Tool
-====================
+--------------------
 
   .. admonition:: Summary
 
@@ -276,7 +279,7 @@ Polygonal Lasso Tool
     **Right button**: Subtracts polygons from selection.
 
 Magic Wand Tool
-===============
+---------------
 
 With this tool you can select a continuous area filled with the same
 color.
@@ -284,6 +287,7 @@ color.
   .. admonition:: Summary
 
     **Left button**: Select the adjacent region of clicked color.
+
 
 Pencil Tool
 ===========
