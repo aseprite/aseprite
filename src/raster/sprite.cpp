@@ -465,6 +465,7 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
     case IMAGE_RGB:
     case IMAGE_INDEXED:
       get_default_palette()->copyColorsTo(&pal);
+      pal.resize(ncolors);
       break;
 
     // For black and white images
