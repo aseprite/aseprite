@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include <assert.h>
+#include <cassert>
 #include <allegro.h>
 
 #include "jinete/jbase.h"
@@ -199,8 +199,12 @@ int color_get_red(color_t color)
     case COLOR_TYPE_GRAY:
       return GET_COLOR_DATA_GRAY(color);
 
-    case COLOR_TYPE_INDEX:
-      return _rgba_getr(get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color)));
+    case COLOR_TYPE_INDEX: {
+      int i = GET_COLOR_DATA_INDEX(color);
+      assert(i >= 0 && i < get_current_palette()->size());
+
+      return _rgba_getr(get_current_palette()->getEntry(i));
+    }
 
   }
 
@@ -230,8 +234,12 @@ int color_get_green(color_t color)
     case COLOR_TYPE_GRAY:
       return GET_COLOR_DATA_GRAY(color);
 
-    case COLOR_TYPE_INDEX:
-      return _rgba_getg(get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color)));
+    case COLOR_TYPE_INDEX: {
+      int i = GET_COLOR_DATA_INDEX(color);
+      assert(i >= 0 && i < get_current_palette()->size());
+
+      return _rgba_getg(get_current_palette()->getEntry(i));
+    }
 
   }
 
@@ -261,8 +269,12 @@ int color_get_blue(color_t color)
     case COLOR_TYPE_GRAY:
       return GET_COLOR_DATA_GRAY(color);
 
-    case COLOR_TYPE_INDEX:
-      return _rgba_getb(get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color)));
+    case COLOR_TYPE_INDEX: {
+      int i = GET_COLOR_DATA_INDEX(color);
+      assert(i >= 0 && i < get_current_palette()->size());
+
+      return _rgba_getb(get_current_palette()->getEntry(i));
+    }
 
   }
 
@@ -293,7 +305,10 @@ int color_get_hue(color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      ase_uint32 c = get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color));
+      int i = GET_COLOR_DATA_INDEX(color);
+      assert(i >= 0 && i < get_current_palette()->size());
+
+      ase_uint32 c = get_current_palette()->getEntry(i);
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -330,7 +345,10 @@ int color_get_saturation(color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      ase_uint32 c = get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color));
+      int i = GET_COLOR_DATA_INDEX(color);
+      assert(i >= 0 && i < get_current_palette()->size());
+
+      ase_uint32 c = get_current_palette()->getEntry(i);
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -367,7 +385,10 @@ int color_get_value(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      ase_uint32 c = get_current_palette()->getEntry(GET_COLOR_DATA_INDEX(color));
+      int i = GET_COLOR_DATA_INDEX(color);
+      assert(i >= 0 && i < get_current_palette()->size());
+
+      ase_uint32 c = get_current_palette()->getEntry(i);
       int r = _rgba_getr(c);
       int g = _rgba_getg(c);
       int b = _rgba_getb(c);
@@ -493,6 +514,8 @@ int get_color_for_allegro(int depth, color_t color)
     case COLOR_TYPE_INDEX:
       c = GET_COLOR_DATA_INDEX(color);
       if (depth != 8) {
+	assert(c >= 0 && c < get_current_palette()->size());
+
 	ase_uint32 _c = get_current_palette()->getEntry(c);
 	c = makeacol_depth(depth,
 			   _rgba_getr(_c),
