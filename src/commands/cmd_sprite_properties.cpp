@@ -28,6 +28,7 @@
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "raster/palette.h"
 #include "widgets/colbut.h"
 #include "sprite_wrappers.h"
 
@@ -88,9 +89,11 @@ void SpritePropertiesCommand::execute(Context* context)
       imgtype_text = "Grayscale";
       break;
     case IMAGE_INDEXED:
-      imgtype_text = "Indexed";
+      sprintf(buf, "Indexed (%d colors)", sprite->getPalette(0)->size());
+      imgtype_text = buf;
       break;
     default:
+      assert(false);
       imgtype_text = "Unknown";
       break;
   }
