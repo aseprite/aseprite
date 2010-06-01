@@ -1,51 +1,51 @@
 <!-- ASE - Allegro Sprite Editor -->
 <!-- Copyright (C) 2001-2010 by David Capello -->
 <jinete>
-<window text="New Sprite" name="new_sprite">
-  <box vertical="true">
-    <box horizontal="true">
+  <window text="New Sprite" name="new_sprite">
+    <box vertical="true">
+
       <box vertical="true" expansive="true">
-        <separator text="Size:" left="true" horizontal="true" />
-        <box vertical="true" expansive="true">
-          <box horizontal="true">
-            <box vertical="true" homogeneous="true">
-              <label text="Width:" />
-              <label text="Height:" />
-            </box>
-            <box vertical="true" homogeneous="true" expansive="true">
-              <entry expansive="true" name="width" maxsize="8" magnetic="true" tooltip="Width of the new sprite (in pixels)" />
-              <entry expansive="true" name="height" maxsize="8" tooltip="Height of the new sprite (in pixels)" />
-            </box>
-          </box>
-        </box>
-      </box>
-      <box vertical="true">
-        <separator text="Color Mode:" left="true" horizontal="true" />
-        <box vertical="true" homogeneous="true">
-          <radio name="radio1" text="&amp;RGB Color" group="1" tooltip="RGBA color mode&#10;(32 bits per pixel)" />
-	  <radio name="radio2" text="&amp;Grayscale" group="1" tooltip="Value and Alpha&#10;(16 bits per pixel)" />
-	  <radio name="radio3" text="&amp;Indexed" group="1" tooltip="Using a palette of 256 colors&#10;(8 bits per pixel)" />
+	<separator text="Size:" left="true" horizontal="true" />
+	<box vertical="true" expansive="true">
+	  <grid columns="2">
+	    <label text="Width:" />
+	    <entry name="width" maxsize="8" magnetic="true" cell_align="horizontal" tooltip="Width of the new sprite&#10;(in pixels)" />
+	    <label text="Height:" />
+	    <entry name="height" maxsize="8" cell_align="horizontal" tooltip="Height of the new sprite&#10;(in pixels)" />
+	  </grid>
 	</box>
       </box>
-    </box>
-    <separator text="Background:" left="true" horizontal="true" />
-    <view maxsize="true" expansive="true">
-      <listbox name="bg_box">
-        <listitem text="Transparent" />
-        <listitem text="Black" />
-        <listitem text="White" />
-        <listitem text="Magenta" />
-        <listitem text="Background Color" />
-      </listbox>
-    </view>
 
-    <box horizontal="true">
-      <box horizontal="true" expansive="true" />
-      <box horizontal="true" homogeneous="true">
-	<button text="&amp;OK" name="ok_button" magnetic="true" width="60" />
-	<button text="&amp;Cancel" />
+      <separator text="Color Mode:" left="true" horizontal="true" />
+      <box vertical="true" homogeneous="true" childspacing="0">
+	<box horizontal="true">
+	  <radio name="radio3" text="&amp;Indexed with " group="1" tooltip="Using a palette of 256 colors&#10;(8 bits per pixel)" />
+	  <entry name="colors" maxsize="8" tooltip="Maximum number of colors&#10;(only for Indexed images)" />
+	  <label text="Colors" />
+	</box>
+	<radio name="radio1" text="&amp;RGB Color" group="1" tooltip="RGBA color mode&#10;(32 bits per pixel)" />
+	<radio name="radio2" text="&amp;Grayscale" group="1" tooltip="Value and Alpha&#10;(16 bits per pixel)" />
       </box>
+
+      <separator text="Background:" left="true" horizontal="true" />
+      <view maxsize="true">
+	<listbox name="bg_box">
+	  <listitem text="Transparent" />
+	  <listitem text="Black" />
+	  <listitem text="White" />
+	  <listitem text="Magenta" />
+	  <listitem text="Background Color" />
+	</listbox>
+      </view>
+
+      <box horizontal="true">
+	<box horizontal="true" expansive="true" />
+	<box horizontal="true" homogeneous="true">
+	  <button text="&amp;OK" name="ok_button" magnetic="true" width="60" />
+	  <button text="&amp;Cancel" />
+	</box>
+      </box>
+
     </box>
-  </box>
-</window>
+  </window>
 </jinete>

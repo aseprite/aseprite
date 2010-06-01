@@ -68,8 +68,8 @@ NewFileCommand::NewFileCommand()
  */
 void NewFileCommand::execute(Context* context)
 {
-  JWidget width, height, radio1, radio2, radio3, ok, bg_box;
-  int imgtype, w, h, bg;
+  JWidget width, height, radio1, radio2, radio3, colors, ok, bg_box;
+  int imgtype, w, h, bg, ncolors;
   char buf[1024];
   Sprite *sprite;
   color_t color;
@@ -80,18 +80,18 @@ void NewFileCommand::execute(Context* context)
     color_rgb(255, 0, 255),
     app_get_colorbar()->getBgColor()
   };
-  int ncolors = 256;
 
   // Load the window widget
   FramePtr window(load_widget("new_sprite.xml", "new_sprite"));
-
-  width = jwidget_find_name(window, "width");
-  height = jwidget_find_name(window, "height");
-  radio1 = jwidget_find_name(window, "radio1");
-  radio2 = jwidget_find_name(window, "radio2");
-  radio3 = jwidget_find_name(window, "radio3");
-  ok = jwidget_find_name(window, "ok_button");
-  bg_box = jwidget_find_name(window, "bg_box");
+  get_widgets(window,
+	      "width", &width,
+	      "height", &height,
+	      "radio1", &radio1,
+	      "radio2", &radio2,
+	      "radio3", &radio3,
+	      "colors", &colors,
+	      "ok_button", &ok,
+	      "bg_box", &bg_box, NULL);
 
   // Default values: Indexed, 320x240, Background color
   imgtype = get_config_int("NewSprite", "Type", IMAGE_INDEXED);
@@ -99,9 +99,11 @@ void NewFileCommand::execute(Context* context)
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 240);
   bg = get_config_int("NewSprite", "Background", 4); // Default = Background color
+  ncolors = get_config_int("NewSprite", "Colors", 256);
 
-  width->setTextf("%d", w);
-  height->setTextf("%d", h);
+  width->setTextf("%d", MAX(1, w));
+  height->setTextf("%d", MAX(1, h));
+  colors->setTextf("%d", MID(2, ncolors, 256));
 
   // Select image-type
   switch (imgtype) {
@@ -126,10 +128,12 @@ void NewFileCommand::execute(Context* context)
 
     w = width->getTextInt();
     h = height->getTextInt();
+    ncolors = colors->getTextInt();
     bg = jlistbox_get_selected_index(bg_box);
 
     w = MID(1, w, 9999);
     h = MID(1, h, 9999);
+    ncolors = MID(2, ncolors, 256);
 
     // Select the color
     color = color_mask();
@@ -147,7 +151,8 @@ void NewFileCommand::execute(Context* context)
       set_config_int("NewSprite", "Background", bg);
 
       // Create the new sprite
-      sprite = new_sprite(UIContext::instance(), imgtype, w, h, ncolors);
+      sprite = new_sprite(UIContext::instance(), imgtype, w, h,
+			  imgtype == IMAGE_INDEXED ? ncolors: 256);
       if (!sprite) {
 	Console console;
 	console.printf("Not enough memory to allocate the sprite\n");
