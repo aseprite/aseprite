@@ -216,7 +216,7 @@ int color_get_red(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      int i = GET_COLOR_DATA_INDEX(color);
+      size_t i = GET_COLOR_DATA_INDEX(color);
       assert(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getr(get_current_palette()->getEntry(i));
@@ -251,7 +251,7 @@ int color_get_green(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      int i = GET_COLOR_DATA_INDEX(color);
+      size_t i = GET_COLOR_DATA_INDEX(color);
       assert(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getg(get_current_palette()->getEntry(i));
@@ -286,7 +286,7 @@ int color_get_blue(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      int i = GET_COLOR_DATA_INDEX(color);
+      size_t i = GET_COLOR_DATA_INDEX(color);
       assert(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getb(get_current_palette()->getEntry(i));
@@ -321,7 +321,7 @@ int color_get_hue(color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      int i = GET_COLOR_DATA_INDEX(color);
+      size_t i = GET_COLOR_DATA_INDEX(color);
       assert(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
@@ -361,7 +361,7 @@ int color_get_saturation(color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      int i = GET_COLOR_DATA_INDEX(color);
+      size_t i = GET_COLOR_DATA_INDEX(color);
       assert(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
@@ -401,7 +401,7 @@ int color_get_value(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      int i = GET_COLOR_DATA_INDEX(color);
+      size_t i = GET_COLOR_DATA_INDEX(color);
       assert(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
@@ -530,7 +530,7 @@ int get_color_for_allegro(int depth, color_t color)
     case COLOR_TYPE_INDEX:
       c = GET_COLOR_DATA_INDEX(color);
       if (depth != 8) {
-	assert(c >= 0 && c < get_current_palette()->size());
+	assert(c >= 0 && c < (int)get_current_palette()->size());
 
 	ase_uint32 _c = get_current_palette()->getEntry(c);
 	c = makeacol_depth(depth,
