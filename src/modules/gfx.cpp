@@ -39,6 +39,7 @@
 #include "modules/skinneable_theme.h"
 #include "raster/blend.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "widgets/editor.h"
 
 using Vaca::Rect;
@@ -430,8 +431,18 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
   BITMAP* graph;
 
   if (type == COLOR_TYPE_INDEX) {
-    rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	     get_color_for_allegro(bitmap_color_depth(bmp), color));
+    int index = color_get_index(color);
+
+    if (index >= 0 && index < get_current_palette()->size()) {
+      rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
+	       get_color_for_allegro(bitmap_color_depth(bmp), color));
+    }
+    else {
+      rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, makecol(0, 0, 0));
+
+      // Empty-set symbol
+      draw_emptyset_symbol(bmp, rc, makecol(255, 255, 255));
+    }
     return;
   }
 
