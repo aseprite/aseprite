@@ -755,17 +755,20 @@ void color_to_formalstring(int imgtype, color_t color,
 		  data);
 	break;
 
-      case COLOR_TYPE_INDEX: {
-	ase_uint32 _c;
+      case COLOR_TYPE_INDEX:
 	data = GET_COLOR_DATA_INDEX(color);
-	_c = get_current_palette()->getEntry(data & 0xff);
-	uszprintf(buf, size, "Index %d (RGB %d %d %d)",
-		  data & 0xff,
-		  _rgba_getr(_c),
-		  _rgba_getg(_c),
-		  _rgba_getb(_c));
+	if (data >= 0 && data < (int)get_current_palette()->size()) {
+	  ase_uint32 _c = get_current_palette()->getEntry(data);
+	  uszprintf(buf, size, "Index %d (RGB %d %d %d)",
+		    data,
+		    _rgba_getr(_c),
+		    _rgba_getg(_c),
+		    _rgba_getb(_c));
+	}
+	else {
+	  uszprintf(buf, size, "Index %d (out of range)", data);
+	}
 	break;
-      }
 
       default:
 	assert(false);
