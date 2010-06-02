@@ -39,6 +39,7 @@ char *color_to_string(color_t color, char *buf, int size);
 color_t string_to_color(const char *str);
 
 int color_type(color_t color);
+bool color_is_valid(color_t color);
 bool color_equals(color_t c1, color_t c2);
 
 color_t color_mask();

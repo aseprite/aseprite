@@ -139,6 +139,22 @@ int color_type(color_t color)
   return GET_COLOR_TYPE(color);
 }
 
+// Returns false only if the color is a index and it is outside the
+// valid range (outside the maximum number of colors in the current
+// palette)
+bool color_is_valid(color_t color)
+{
+  switch (GET_COLOR_TYPE(color)) {
+
+    case COLOR_TYPE_INDEX: {
+      size_t i = GET_COLOR_DATA_INDEX(color);
+      return (i >= 0 && i < get_current_palette()->size());
+    }
+
+  }
+  return true;
+}
+
 bool color_equals(color_t c1, color_t c2)
 {
   return
