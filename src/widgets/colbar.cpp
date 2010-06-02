@@ -427,11 +427,15 @@ bool ColorBar::msg_proc(JMessage msg)
 
 	    default:
 	      color_t color = getHotColor(m_hot);
-	      if (msg->mouse.left) {
-		this->setFgColor(color);
-	      }
-	      if (msg->mouse.right) {
-		this->setBgColor(color);
+
+	      // Check if the color is invalid (e.g. index out of range)
+	      if (color_is_valid(color)) {
+		if (msg->mouse.left) {
+		  this->setFgColor(color);
+		}
+		if (msg->mouse.right) {
+		  this->setBgColor(color);
+		}
 	      }
 	      break;
 	  }
