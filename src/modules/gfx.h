@@ -114,7 +114,7 @@ void bevel_box(BITMAP* bmp, int x1, int y1, int x2, int y2, int c1, int c2, int 
 void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg);
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
-void draw_emptyset_symbol(const Rect& rc, int color);
+void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color);
 void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color);
 void draw_color_button(BITMAP* bmp,
 		       const Rect& rc,

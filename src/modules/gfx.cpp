@@ -411,14 +411,14 @@ void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h)
 /**********************************************************************/
 /* Specials */
 
-void draw_emptyset_symbol(const Rect& rc, int color)
+void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color)
 {
   Point center = rc.getCenter();
   int size = MIN(rc.w, rc.h) - 8;
   size = MID(4, size, 64);
 
-  circle(ji_screen, center.x, center.y, size*4/10, color);
-  line(ji_screen,
+  circle(bmp, center.x, center.y, size*4/10, color);
+  line(bmp,
        center.x-size/2, center.y+size/2,
        center.x+size/2, center.y-size/2, color);
 }

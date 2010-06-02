@@ -1206,7 +1206,7 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
       stock_get_image(anieditor->sprite->getStock(),
 		      cel->image) == NULL) { /* TODO why a cel can't have an associated image? */
     jdraw_rectfill(thumbnail_rect, bg);
-    draw_emptyset_symbol(thumbnail_rect, ji_color_disabled());
+    draw_emptyset_symbol(ji_screen, thumbnail_rect, ji_color_disabled());
   }
   else {
     thumbnail = generate_thumbnail(layer, cel, anieditor->sprite);

@@ -370,7 +370,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
       // is the current folder empty?
       if (fileview->list.empty())
-	draw_emptyset_symbol(Rect(vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)),
+	draw_emptyset_symbol(ji_screen,
+			     Rect(vp->x1, vp->y1, jrect_w(vp), jrect_h(vp)),
 			     makecol(194, 194, 194));
 
       jrect_free(vp);
