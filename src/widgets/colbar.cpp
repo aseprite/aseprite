@@ -331,9 +331,8 @@ bool ColorBar::msg_proc(JMessage msg)
       if (m_hot != HOTCOLOR_NONE) {
 	m_hot = HOTCOLOR_NONE;
 	dirty();
-
-	app_get_statusbar()->setStatusText(0, "");
       }
+      app_get_statusbar()->clearText();
       break;
 
     case JM_WHEEL:

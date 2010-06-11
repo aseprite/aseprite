@@ -343,6 +343,8 @@ bool ToolBar::msg_proc(JMessage msg)
       m_hot_tool = NULL;
       m_hot_conf = false;
       dirty();
+
+      app_get_statusbar()->clearText();
       break;
 
     case JM_TIMER:

@@ -934,6 +934,8 @@ bool Editor::msg_proc(JMessage msg)
       if (m_alt_pressed) m_alt_pressed = false;
       if (m_ctrl_pressed) m_ctrl_pressed = false;
       if (m_space_pressed) m_space_pressed = false;
+
+      app_get_statusbar()->clearText();
       break;
 
     case JM_BUTTONPRESSED:
