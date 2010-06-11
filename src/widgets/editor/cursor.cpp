@@ -91,6 +91,8 @@ static void cleanpixel(BITMAP *bmp, int x, int y, int color);
 
 static int point_inside_region(int x, int y, JRegion region);
 
+static int get_pen_color(Sprite *sprite);
+
 //////////////////////////////////////////////////////////////////////
 // CURSOR COLOR
 //////////////////////////////////////////////////////////////////////
@@ -269,7 +271,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       ->getSettings()
       ->getToolSettings(current_tool);
 
-    int pen_color = app_get_fg_color(m_sprite);
+    int pen_color = get_pen_color(m_sprite);
     int new_mask_color;
     Pen* pen = editor_get_current_pen();
 
@@ -657,4 +659,19 @@ static int point_inside_region(int x, int y, JRegion region)
 {
   struct jrect box;
   return jregion_point_in(region, x, y, &box);
+}
+
+static int get_pen_color(Sprite *sprite)
+{
+  color_t c = UIContext::instance()->getSettings()->getFgColor();
+  assert(sprite != NULL);
+
+  // Avoid using invalid colors
+  if (!color_is_valid(c))
+    return 0;
+
+  if (sprite->getCurrentLayer() != NULL)
+    return get_color_for_layer(sprite->getCurrentLayer(), c);
+  else
+    return get_color_for_image(sprite->getImgType(), c);
 }

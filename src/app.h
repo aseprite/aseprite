@@ -77,8 +77,6 @@ Widget* app_get_tabsbar();
 
 void app_default_statusbar_message();
 
-int app_get_fg_color(Sprite* sprite);
-int app_get_bg_color(Sprite* sprite);
 int app_get_color_to_clear_layer(Layer* layer);
 
 #endif
