@@ -50,6 +50,8 @@ public:
   StatusBar();
   ~StatusBar();
 
+  void clearText();
+
   bool setStatusText(int msecs, const char *format, ...);
   void showTip(int msecs, const char *format, ...);
   void showColor(int msecs, const char* text, color_t color, int alpha);

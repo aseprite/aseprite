@@ -153,6 +153,11 @@ void StatusBar::onCurrentToolChange()
   }
 }
 
+void StatusBar::clearText()
+{
+  setStatusText(1, "");
+}
+
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
   if ((ji_clock > m_timeout) || (msecs > 0)) {
