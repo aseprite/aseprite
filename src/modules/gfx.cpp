@@ -439,9 +439,7 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
     }
     else {
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, makecol(0, 0, 0));
-
-      // Empty-set symbol
-      draw_emptyset_symbol(bmp, rc, makecol(255, 255, 255));
+      line(bmp, rc.x+rc.w-2, rc.y+1, rc.x+1, rc.y+rc.h-2, makecol(255, 255, 255));
     }
     return;
   }
