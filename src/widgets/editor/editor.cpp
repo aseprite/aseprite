@@ -2052,6 +2052,14 @@ IToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
   color_t fg = colorbar->getFgColor();
   color_t bg = colorbar->getBgColor();
 
+  if (!color_is_valid(fg) || !color_is_valid(bg)) {
+    jalert(PACKAGE
+	   "<<The current selected foreground and/or background color"
+	   "<<is out of range. Select valid colors in the color-bar."
+	   "||&Close");
+    return NULL;
+  }
+
   // Create the new tool loop
   ToolLoopImpl* tool_loop = new ToolLoopImpl(this,
 					     context,
