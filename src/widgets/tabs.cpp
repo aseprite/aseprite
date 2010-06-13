@@ -34,158 +34,9 @@
 
 #define ARROW_W		(12*jguiscale())
 
-#define HAS_ARROWS ((jwidget_get_parent(tabs->button_left) == widget))
+#define HAS_ARROWS(tabs) ((jwidget_get_parent(m_button_left) == (tabs)))
 
-struct Tab
-{
-  std::string text;
-  void *data;
-  int width;
-
-  Tab(const char* text, void* data)
-  {
-    this->text = text;
-    this->data = data;
-    this->width = 0;
-  }
-};
-
-typedef struct Tabs
-{
-  JList list_of_tabs;
-  Tab *hot;
-  Tab *selected;
-  void (*select_callback)(JWidget tabs, void *data, int button);
-  int timer_id;
-  int scroll_x;
-/*   int hot_arrow; */
-  JWidget button_left;
-  JWidget button_right;
-} Tabs;
-
-static int tabs_type();
-static bool tabs_msg_proc(JWidget widget, JMessage msg);
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg);
-
-static Tab *get_tab_by_data(JWidget widget, void *data);
-static int get_max_scroll_x(JWidget widget);
-static void make_tab_visible(JWidget widget, Tab *tab);
-static void set_scroll_x(JWidget widget, int scroll_x);
-static void calculate_hot(JWidget widget);
-
-/**************************************************************/
-/* Tabs                                                       */
-/**************************************************************/
-
-JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button))
-{
-  Widget* widget = new Widget(tabs_type());
-  Tabs *tabs = jnew0(Tabs, 1);
-
-  tabs->list_of_tabs = jlist_new();
-  tabs->hot = NULL;
-  tabs->selected = NULL;
-  tabs->select_callback = select_callback;
-  tabs->timer_id = jmanager_add_timer(widget, 1000/60);
-  tabs->scroll_x = 0;
-/*   tabs->hot_arrow = 0; */
-
-  tabs->button_left = jbutton_new(NULL);
-  tabs->button_right = jbutton_new(NULL);
-
-  setup_mini_look(tabs->button_left);
-  setup_mini_look(tabs->button_right);
-
-  jbutton_set_bevel(tabs->button_left, 0, 0, 0, 0);
-  jbutton_set_bevel(tabs->button_right, 0, 0, 0, 0);
-
-  jwidget_focusrest(tabs->button_left, false);
-  jwidget_focusrest(tabs->button_right, false);
-  
-  add_gfxicon_to_button(tabs->button_left, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
-  add_gfxicon_to_button(tabs->button_right, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
-
-  jwidget_add_hook(widget, tabs_type(), tabs_msg_proc, tabs);
-  jwidget_add_hook(tabs->button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
-  jwidget_add_hook(tabs->button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
-
-  jwidget_init_theme(widget);
-
-  return widget;
-}
-
-void tabs_append_tab(JWidget widget, const char *text, void *data)
-{
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  Tab *tab = new Tab(text, data);
-  tab->width = CALC_TAB_WIDTH(widget, tab);
-
-  jlist_append(tabs->list_of_tabs, tab);
-
-  /* update scroll (in the same position if we can */
-  set_scroll_x(widget, tabs->scroll_x);
-  
-  jwidget_dirty(widget);
-}
-
-void tabs_remove_tab(JWidget widget, void *data)
-{
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  Tab *tab = get_tab_by_data(widget, data);
-
-  if (tab) {
-    if (tabs->hot == tab) tabs->hot = NULL;
-    if (tabs->selected == tab) tabs->selected = NULL;
-
-    jlist_remove(tabs->list_of_tabs, tab);
-    delete tab;
-
-    /* update scroll (in the same position if we can */
-    set_scroll_x(widget, tabs->scroll_x);
-
-    jwidget_dirty(widget);
-  }
-}
-
-void tabs_set_text_for_tab(JWidget widget, const char *text, void *data)
-{
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  Tab *tab = get_tab_by_data(widget, data);
-
-  if (tab) {
-    /* change text of the tab */
-    tab->text = text;
-    tab->width = CALC_TAB_WIDTH(widget, tab);
-
-    /* make it visible (if it's the selected) */
-    if (tabs->selected == tab)
-      make_tab_visible(widget, tab);
-    
-    jwidget_dirty(widget);
-  }
-}
-
-void tabs_select_tab(JWidget widget, void *data)
-{
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  Tab *tab = get_tab_by_data(widget, data);
-
-  if (tab != NULL) {
-    tabs->selected = tab;
-    make_tab_visible(widget, tab);
-    jwidget_dirty(widget);
-  }
-}
-
-void* tabs_get_selected_tab(JWidget widget)
-{
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-
-  if (tabs->selected != NULL)
-    return tabs->selected->data;
-  else
-    return NULL;
-}
 
 static int tabs_type()
 {
@@ -195,28 +46,127 @@ static int tabs_type()
   return type;
 }
 
-static bool tabs_msg_proc(JWidget widget, JMessage msg)
+Tabs::Tabs(ITabsHandler* handler)
+  : Widget(tabs_type())
+  , m_handler(handler)
 {
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  SkinneableTheme* theme = static_cast<SkinneableTheme*>(widget->theme);
+  m_hot = NULL;
+  m_selected = NULL;
+  m_timer_id = jmanager_add_timer(this, 1000/60);
+  m_scroll_x = 0;
+
+  m_button_left = jbutton_new(NULL);
+  m_button_right = jbutton_new(NULL);
+
+  setup_mini_look(m_button_left);
+  setup_mini_look(m_button_right);
+
+  jbutton_set_bevel(m_button_left, 0, 0, 0, 0);
+  jbutton_set_bevel(m_button_right, 0, 0, 0, 0);
+
+  jwidget_focusrest(m_button_left, false);
+  jwidget_focusrest(m_button_right, false);
+  
+  add_gfxicon_to_button(m_button_left, GFX_ARROW_LEFT, JI_CENTER | JI_MIDDLE);
+  add_gfxicon_to_button(m_button_right, GFX_ARROW_RIGHT, JI_CENTER | JI_MIDDLE);
+
+  jwidget_add_hook(m_button_left, tabs_type(), tabs_button_msg_proc, (void *)-1);
+  jwidget_add_hook(m_button_right, tabs_type(), tabs_button_msg_proc, (void *)+1);
+
+  jwidget_init_theme(this);
+}
+
+Tabs::~Tabs()
+{
+  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+
+  for (it = m_list_of_tabs.begin(); it != end; ++it)
+    delete *it; // tab
+  m_list_of_tabs.clear();
+
+  delete m_button_left;		// widget
+  delete m_button_right;	// widget
+
+  jmanager_remove_timer(m_timer_id);
+}
+
+void Tabs::addTab(const char* text, void* data)
+{
+  Tab *tab = new Tab(text, data);
+  tab->width = CALC_TAB_WIDTH(this, tab);
+
+  m_list_of_tabs.push_back(tab);
+
+  // Update scroll (in the same position if we can
+  setScrollX(m_scroll_x);
+  
+  jwidget_dirty(this);
+}
+
+void Tabs::removeTab(void* data)
+{
+  Tab *tab = getTabByData(data);
+
+  if (tab) {
+    if (m_hot == tab) m_hot = NULL;
+    if (m_selected == tab) m_selected = NULL;
+
+    Vaca::remove_from_container(m_list_of_tabs, tab);
+    delete tab;
+
+    // Update scroll (in the same position if we can
+    setScrollX(m_scroll_x);
+
+    jwidget_dirty(this);
+  }
+}
+
+void Tabs::setTabText(const char* text, void* data)
+{
+  Tab *tab = getTabByData(data);
+
+  if (tab) {
+    // Change text of the tab
+    tab->text = text;
+    tab->width = CALC_TAB_WIDTH(this, tab);
+
+    // Make it visible (if it's the selected)
+    if (m_selected == tab)
+      makeTabVisible(tab);
+    
+    jwidget_dirty(this);
+  }
+}
+
+void Tabs::selectTab(void* data)
+{
+  Tab *tab = getTabByData(data);
+
+  if (tab != NULL) {
+    m_selected = tab;
+    makeTabVisible(tab);
+    jwidget_dirty(this);
+  }
+}
+
+void* Tabs::getSelectedTab()
+{
+  if (m_selected != NULL)
+    return m_selected->data;
+  else
+    return NULL;
+}
+
+int Tabs::getTimerId()
+{
+  return m_timer_id;
+}
+
+bool Tabs::msg_proc(JMessage msg)
+{
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
 
   switch (msg->type) {
-
-    case JM_DESTROY: {
-      JLink link;
-
-      JI_LIST_FOR_EACH(tabs->list_of_tabs, link)
-	delete reinterpret_cast<Tab*>(link->data); // tab
-
-      jwidget_free(tabs->button_left);
-      jwidget_free(tabs->button_right);
-      
-      jlist_free(tabs->list_of_tabs);
-
-      jmanager_remove_timer(tabs->timer_id);
-      jfree(tabs);
-      break;
-    }
 
     case JM_REQSIZE:
       msg->reqsize.w = 0; // msg->reqsize.h = 4 + jwidget_get_text_height(widget) + 5;
@@ -226,25 +176,26 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_SETPOS:
-      jrect_copy(widget->rc, &msg->setpos.rect);
-      set_scroll_x(widget, tabs->scroll_x);
+      jrect_copy(this->rc, &msg->setpos.rect);
+      setScrollX(m_scroll_x);
       return true;
 
     case JM_DRAW: {
-      JRect rect = jwidget_get_rect(widget);
-      JRect box = jrect_new(rect->x1-tabs->scroll_x, rect->y1,
-			    rect->x1-tabs->scroll_x+2*jguiscale(),
+      JRect rect = jwidget_get_rect(this);
+      JRect box = jrect_new(rect->x1-m_scroll_x, rect->y1,
+			    rect->x1-m_scroll_x+2*jguiscale(),
 			    rect->y1+theme->get_part(PART_TAB_FILLER)->h);
-      JLink link;
 
       theme->draw_part_as_hline(ji_screen, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
       theme->draw_part_as_hline(ji_screen, box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 
       box->x1 = box->x2;
 
-      /* for each tab */
-      JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
-	Tab* tab = reinterpret_cast<Tab*>(link->data);
+      // For each tab...
+      std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+
+      for (it = m_list_of_tabs.begin(); it != end; ++it) {
+	Tab* tab = *it;
 
 	box->x2 = box->x1 + tab->width;
 
@@ -254,7 +205,7 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 	  int face_color;
 
 	  /* selected */
-	  if (tabs->selected == tab) {
+	  if (m_selected == tab) {
 	    text_color = theme->get_tab_selected_text_color();
 	    face_color = theme->get_tab_selected_face_color();
 	  }
@@ -266,10 +217,10 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
 	  theme->draw_bounds_nw(ji_screen,
 				box->x1, box->y1, box->x2-1, box->y2-1,
-				(tabs->selected == tab) ? PART_TAB_SELECTED_NW:
+				(m_selected == tab) ? PART_TAB_SELECTED_NW:
 							  PART_TAB_NORMAL_NW, face_color);
 
-	  if (tabs->selected == tab) {
+	  if (m_selected == tab) {
 	    theme->draw_bounds_nw(ji_screen,
 				  box->x1, box->y2, box->x2-1, rect->y2-1,
 				  PART_TAB_BOTTOM_SELECTED_NW,
@@ -280,9 +231,9 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 				      box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 	  }
 	  
-	  jdraw_text(widget->getFont(), tab->text.c_str(),
+	  jdraw_text(this->getFont(), tab->text.c_str(),
 		     box->x1+4*jguiscale(),
-		     (box->y1+box->y2)/2-text_height(widget->getFont())/2+1,
+		     (box->y1+box->y2)/2-text_height(this->getFont())/2+1,
 		     text_color, face_color, false, jguiscale());
 	}
 
@@ -302,110 +253,68 @@ static bool tabs_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
     case JM_MOTION:
-      calculate_hot(widget);
+      calculateHot();
       return true;
 
     case JM_MOUSELEAVE:
-      if (tabs->hot != NULL) {
-	tabs->hot = NULL;
-	jwidget_dirty(widget);
+      if (m_hot != NULL) {
+	m_hot = NULL;
+	jwidget_dirty(this);
       }
       return true;
 
     case JM_BUTTONPRESSED:
-      if (tabs->hot != NULL) {
-	if (tabs->selected != tabs->hot) {
-	  tabs->selected = tabs->hot;
-	  jwidget_dirty(widget);
+      if (m_hot != NULL) {
+	if (m_selected != m_hot) {
+	  m_selected = m_hot;
+	  jwidget_dirty(this);
 	}
 
-	if (tabs->selected && tabs->select_callback)
-	  (*tabs->select_callback)(widget,
-				   tabs->selected->data,
-				   msg->mouse.flags);
+	if (m_selected && m_handler)
+	  m_handler->clickTab(this,
+			      m_selected->data,
+			      msg->mouse.flags);
       }
       return true;
 
     case JM_WHEEL: {
-      int dx = (jmouse_z(1) - jmouse_z(0)) * jrect_w(widget->rc)/6;
-      set_scroll_x(widget, tabs->scroll_x+dx);
+      int dx = (jmouse_z(1) - jmouse_z(0)) * jrect_w(this->rc)/6;
+      setScrollX(m_scroll_x+dx);
       return true;
     }
 
     case JM_TIMER: {
-      int dir = jmanager_get_capture() == tabs->button_left ? -1: 1;
-      set_scroll_x(widget, tabs->scroll_x + dir*8*msg->timer.count);
+      int dir = jmanager_get_capture() == m_button_left ? -1: 1;
+      setScrollX(m_scroll_x + dir*8*msg->timer.count);
       break;
     }
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_SET_FONT) {
-	JLink link;
+	std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
-	JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
-	  Tab* tab = reinterpret_cast<Tab*>(link->data);
-	  tab->width = CALC_TAB_WIDTH(widget, tab);
+	for (it = m_list_of_tabs.begin(); it != end; ++it) {
+	  Tab* tab = *it;
+	  tab->width = CALC_TAB_WIDTH(this, tab);
 	}
       }
       else if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
 	/* setup the background color */
-	jwidget_set_bg_color(widget, ji_color_face());
+	jwidget_set_bg_color(this, ji_color_face());
       }
       break;
 
   }
 
-  return false;
+  return Widget::msg_proc(msg);
 }
 
-static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
+Tabs::Tab* Tabs::getTabByData(void* data)
 {
-  JWidget parent;
-  Tabs *tabs = NULL;
+  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
-  parent = jwidget_get_parent(widget);
-  if (parent)
-    tabs = reinterpret_cast<Tabs*>(jwidget_get_data(parent, tabs_type()));
-
-  switch (msg->type) {
-
-    case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
-	return true;
-      }
-      else if (msg->signal.num == JI_SIGNAL_DISABLE) {
-	assert(tabs != NULL);
-
-	if (jwidget_is_selected(widget)) {
-	  jmanager_stop_timer(tabs->timer_id);
-	  jwidget_deselect(widget);
-	}
-	return true;
-      }
-      break;
-
-    case JM_BUTTONPRESSED:
-      assert(tabs != NULL);
-      jmanager_start_timer(tabs->timer_id);
-      break;
-
-    case JM_BUTTONRELEASED:
-      assert(tabs != NULL);
-      jmanager_stop_timer(tabs->timer_id);
-      break;
-
-  }
-
-  return false;
-}
-
-static Tab *get_tab_by_data(JWidget widget, void *data)
-{
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  JLink link;
-
-  JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
-    Tab* tab = reinterpret_cast<Tab*>(link->data);
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
     if (tab->data == data)
       return tab;
   }
@@ -413,18 +322,17 @@ static Tab *get_tab_by_data(JWidget widget, void *data)
   return NULL;
 }
 
-static int get_max_scroll_x(JWidget widget)
+int Tabs::getMaxScrollX()
 {
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  JLink link;
+  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
   int x = 0;
 
-  JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
-    Tab* tab = reinterpret_cast<Tab*>(link->data);
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
     x += tab->width;
   }
 
-  x -= jrect_w(widget->rc);
+  x -= jrect_w(this->rc);
 
   if (x < 0)
     return 0;
@@ -432,22 +340,21 @@ static int get_max_scroll_x(JWidget widget)
     return x + ARROW_W*2;
 }
 
-static void make_tab_visible(JWidget widget, Tab *make_visible_this_tab)
+void Tabs::makeTabVisible(Tab* make_visible_this_tab)
 {
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  JLink link;
   int x = 0;
-  int extra_x = get_max_scroll_x(widget) > 0 ? ARROW_W*2: 0;
+  int extra_x = getMaxScrollX() > 0 ? ARROW_W*2: 0;
+  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
-  JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
-    Tab* tab = reinterpret_cast<Tab*>(link->data);
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
 
     if (tab == make_visible_this_tab) {
-      if (x - tabs->scroll_x < 0) {
-	set_scroll_x(widget, x);
+      if (x - m_scroll_x < 0) {
+	setScrollX(x);
       }
-      else if (x + tab->width - tabs->scroll_x > jrect_w(widget->rc) - extra_x) {
-	set_scroll_x(widget, x + tab->width - jrect_w(widget->rc) + extra_x);
+      else if (x + tab->width - m_scroll_x > jrect_w(this->rc) - extra_x) {
+	setScrollX(x + tab->width - jrect_w(this->rc) + extra_x);
       }
       break;
     }
@@ -456,71 +363,69 @@ static void make_tab_visible(JWidget widget, Tab *make_visible_this_tab)
   }
 }
 
-static void set_scroll_x(JWidget widget, int scroll_x)
+void Tabs::setScrollX(int scroll_x)
 {
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  int max_x = get_max_scroll_x(widget);
+  int max_x = getMaxScrollX();
 
   scroll_x = MID(0, scroll_x, max_x);
-  if (tabs->scroll_x != scroll_x) {
-    tabs->scroll_x = scroll_x;
-    calculate_hot(widget);
-    jwidget_dirty(widget);
+  if (m_scroll_x != scroll_x) {
+    m_scroll_x = scroll_x;
+    calculateHot();
+    jwidget_dirty(this);
   }
 
-  /* we need scroll buttons? */
+  // We need scroll buttons?
   if (max_x > 0) {
-    /* add childs */
-    if (!HAS_ARROWS) {
-      jwidget_add_child(widget, tabs->button_left);
-      jwidget_add_child(widget, tabs->button_right);
-      jwidget_dirty(widget);
+    // Add childs
+    if (!HAS_ARROWS(this)) {
+      jwidget_add_child(this, m_button_left);
+      jwidget_add_child(this, m_button_right);
+      jwidget_dirty(this);
     }
 
     /* disable/enable buttons */
-    if (tabs->scroll_x > 0)
-      jwidget_enable(tabs->button_left);
+    if (m_scroll_x > 0)
+      jwidget_enable(m_button_left);
     else
-      jwidget_disable(tabs->button_left);
+      jwidget_disable(m_button_left);
 
-    if (tabs->scroll_x < max_x)
-      jwidget_enable(tabs->button_right);
+    if (m_scroll_x < max_x)
+      jwidget_enable(m_button_right);
     else
-      jwidget_disable(tabs->button_right);
+      jwidget_disable(m_button_right);
 
     /* setup the position of each button */
     {
-      JRect rect = jwidget_get_rect(widget);
+      JRect rect = jwidget_get_rect(this);
       JRect box = jrect_new(rect->x2-ARROW_W*2, rect->y1,
 			    rect->x2-ARROW_W, rect->y2-2);
-      jwidget_set_rect(tabs->button_left, box);
+      jwidget_set_rect(m_button_left, box);
 
       jrect_moveto(box, box->x1+ARROW_W, box->y1);
-      jwidget_set_rect(tabs->button_right, box);
+      jwidget_set_rect(m_button_right, box);
 
       jrect_free(box);
       jrect_free(rect);
     }
   }
-  /* remove buttons */
-  else if (HAS_ARROWS) {
-    jwidget_remove_child(widget, tabs->button_left);
-    jwidget_remove_child(widget, tabs->button_right);
-    jwidget_dirty(widget);
+  // Remove buttons
+  else if (HAS_ARROWS(this)) {
+    jwidget_remove_child(this, m_button_left);
+    jwidget_remove_child(this, m_button_right);
+    jwidget_dirty(this);
   }
 }
 
-static void calculate_hot(JWidget widget)
+void Tabs::calculateHot()
 {
-  Tabs* tabs = reinterpret_cast<Tabs*>(jwidget_get_data(widget, tabs_type()));
-  JRect rect = jwidget_get_rect(widget);
-  JRect box = jrect_new(rect->x1-tabs->scroll_x, rect->y1, 0, rect->y2-1);
-  JLink link;
+  JRect rect = jwidget_get_rect(this);
+  JRect box = jrect_new(rect->x1-m_scroll_x, rect->y1, 0, rect->y2-1);
   Tab *hot = NULL;
+  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
-  /* for each tab */
-  JI_LIST_FOR_EACH(tabs->list_of_tabs, link) {
-    Tab* tab = reinterpret_cast<Tab*>(link->data);
+  // For each tab
+  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+    Tab* tab = *it;
 
     box->x2 = box->x1 + tab->width;
 
@@ -532,11 +437,57 @@ static void calculate_hot(JWidget widget)
     box->x1 = box->x2;
   }
 
-  if (tabs->hot != hot) {
-    tabs->hot = hot;
-    jwidget_dirty(widget);
+  if (m_hot != hot) {
+    m_hot = hot;
+
+    if (m_handler)
+      m_handler->mouseOverTab(this, m_hot ? m_hot->data: NULL);
+
+    jwidget_dirty(this);
   }
 
   jrect_free(rect);
   jrect_free(box);
 }
+
+static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
+{
+  JWidget parent;
+  Tabs* tabs = NULL;
+
+  parent = jwidget_get_parent(widget);
+  if (parent)
+    tabs = dynamic_cast<Tabs*>(parent);
+
+  switch (msg->type) {
+
+    case JM_SIGNAL:
+      if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
+	return true;
+      }
+      else if (msg->signal.num == JI_SIGNAL_DISABLE) {
+	assert(tabs != NULL);
+
+	if (jwidget_is_selected(widget)) {
+	  jmanager_stop_timer(tabs->getTimerId());
+	  jwidget_deselect(widget);
+	}
+	return true;
+      }
+      break;
+
+    case JM_BUTTONPRESSED:
+      assert(tabs != NULL);
+      jmanager_start_timer(tabs->getTimerId());
+      break;
+
+    case JM_BUTTONRELEASED:
+      assert(tabs != NULL);
+      jmanager_stop_timer(tabs->getTimerId());
+      break;
+
+  }
+
+  return false;
+}
+

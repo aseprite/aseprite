@@ -26,6 +26,7 @@
 #include "modules/gui.h"
 #include "widgets/colbar.h"
 #include "widgets/statebar.h"
+#include "widgets/tabs.h"
 
 class AdvancedModeCommand : public Command
 {

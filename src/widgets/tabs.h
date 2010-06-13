@@ -19,16 +19,90 @@
 #ifndef WIDGETS_TABS_H_INCLUDED
 #define WIDGETS_TABS_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "jinete/jwidget.h"
+#include <vector>
 
-JWidget tabs_new(void (*select_callback)(JWidget tabs, void *data, int button));
+class Tabs;
+class Widget;
 
-void tabs_append_tab(JWidget widget, const char *text, void *data);
-void tabs_remove_tab(JWidget widget, void *data);
+/**
+   Interface used to control notifications from the Tabs widget.
+ */
+class ITabsHandler
+{
+public:
+  virtual ~ITabsHandler() { }
 
-void tabs_set_text_for_tab(JWidget widget, const char *text, void *data);
+  // Called when the user presses a mouse button over a tab
+  // button & 1  => left click
+  // button & 2  => right click
+  // button & 4  => middle click
+  virtual void clickTab(Tabs* tabs, void* data, int button) = 0;
 
-void tabs_select_tab(JWidget widget, void *data);
-void *tabs_get_selected_tab(JWidget widget);
+  // Called when the mouse is over a tab (the data can be null if the
+  // mouse just leave all tabs)
+  virtual void mouseOverTab(Tabs* tabs, void* data) = 0;
+};
+
+/**
+   Tabs control.
+
+   Used in ASE to show opened files/sprites.
+ */
+class Tabs : public Widget
+{
+  struct Tab
+  {
+    std::string text;		// Label in the tab
+    void* data;			// Opaque pointer to user data
+    int width;			// Width of the tab
+
+    Tab(const char* text, void* data)
+    {
+      this->text = text;
+      this->data = data;
+      this->width = 0;
+    }
+  };
+
+public:
+  Tabs(ITabsHandler* handler);
+  ~Tabs();
+
+  void addTab(const char* text, void* data);
+  void removeTab(void* data);
+
+  void setTabText(const char* text, void* data);
+
+  void selectTab(void* data);
+  void* getSelectedTab();
+
+  // Returns the ID of the timer used to scroll tabs when buttons are pressed
+  int getTimerId();
+
+protected:
+  bool msg_proc(JMessage msg);
+
+private:
+
+  Tab* getTabByData(void* data);
+  int getMaxScrollX();
+  void makeTabVisible(Tab* tab);
+  void setScrollX(int scroll_x);
+  void calculateHot();
+
+  std::vector<Tab*> m_list_of_tabs;
+  Tab *m_hot;
+  Tab *m_selected;
+  int m_timer_id;
+  int m_scroll_x;
+
+  // Buttons to scroll tabs (useful when there are more tabs than visible area)
+  Widget* m_button_left;
+  Widget* m_button_right;
+
+  // Handler to send notifications
+  ITabsHandler* m_handler;
+};
 
 #endif

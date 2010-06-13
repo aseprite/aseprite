@@ -49,8 +49,7 @@ void UIContext::on_add_sprite(Sprite* sprite)
   Context::on_add_sprite(sprite);
 
   // add the tab for this sprite
-  tabs_append_tab(app_get_tabsbar(),
-		  get_filename(sprite->getFilename()), sprite);
+  app_get_tabsbar()->addTab(get_filename(sprite->getFilename()), sprite);
 
   // rebuild the menu list of sprites
   app_realloc_sprite_list();
@@ -62,7 +61,7 @@ void UIContext::on_remove_sprite(Sprite* sprite)
   Context::on_remove_sprite(sprite);
 
   // remove this sprite from tabs
-  tabs_remove_tab(app_get_tabsbar(), sprite);
+  app_get_tabsbar()->removeTab(sprite);
 
   // rebuild the menu list of sprites
   app_realloc_sprite_list();
@@ -77,5 +76,5 @@ void UIContext::on_set_current_sprite(Sprite* sprite)
   Context::on_set_current_sprite(sprite);
 
   // select the sprite in the tabs
-  tabs_select_tab(app_get_tabsbar(), sprite);
+  app_get_tabsbar()->selectTab(sprite);
 }

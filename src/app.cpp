@@ -91,6 +91,13 @@ public:
   RecentFiles m_recent_files_module;
 };
 
+class TabsBarHandler : public ITabsHandler
+{
+public:
+  void clickTab(Tabs* tabs, void* data, int button);
+  void mouseOverTab(Tabs* tabs, void* data);
+};
+
 App* App::m_instance = NULL;
 
 static Frame* top_window = NULL;      /* top level window (the desktop) */
@@ -103,11 +110,11 @@ static Widget* menubar = NULL;	      /* the menu bar widget */
 static StatusBar* statusbar = NULL;   /* the status bar widget */
 static ColorBar* colorbar = NULL;     /* the color bar widget */
 static Widget* toolbar = NULL;	      /* the tool bar widget */
-static Widget* tabsbar = NULL;	      /* the tabs bar widget */
+static Tabs* tabsbar = NULL;	      // The tabs bar widget
 
 static char *palette_filename = NULL;
 
-static void tabsbar_select_callback(Widget* tabs, void *data, int button);
+static TabsBarHandler* tabsHandler = NULL;
 
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
@@ -173,7 +180,7 @@ int App::run()
     statusbar = new StatusBar();
     colorbar = new ColorBar(box_colorbar->getAlign());
     toolbar = toolbar_new();
-    tabsbar = tabs_new(tabsbar_select_callback);
+    tabsbar = new Tabs(tabsHandler = new TabsBarHandler());
     view = editor_view_new();
     editor = create_new_editor();
 
@@ -312,6 +319,7 @@ App::~App()
     Editor::editor_cursor_exit();
     boundary_exit();
 
+    delete tabsHandler;
     delete m_legacy;
     delete m_modules;
   
@@ -354,11 +362,11 @@ void app_realloc_sprite_list()
   UIContext* context = UIContext::instance();
   const SpriteList& list = context->get_sprite_list();
 
-  /* insert all other sprites */
+  // Insert all other sprites
   for (SpriteList::const_iterator
 	 it = list.begin(); it != list.end(); ++it) {
     Sprite* sprite = *it;
-    tabs_set_text_for_tab(tabsbar, get_filename(sprite->getFilename()), sprite);
+    tabsbar->setTabText(get_filename(sprite->getFilename()), sprite);
   }
 }
 
@@ -435,7 +443,7 @@ Widget* app_get_menubar() { return menubar; }
 StatusBar* app_get_statusbar() { return statusbar; }
 ColorBar* app_get_colorbar() { return colorbar; }
 Widget* app_get_toolbar() { return toolbar; }
-Widget* app_get_tabsbar() { return tabsbar; }
+Tabs* app_get_tabsbar() { return tabsbar; }
 
 void app_default_statusbar_message()
 {
@@ -455,9 +463,11 @@ int app_get_color_to_clear_layer(Layer *layer)
   return get_color_for_layer(layer, color);
 }
 
-static void tabsbar_select_callback(Widget* tabs, void *data, int button)
+//////////////////////////////////////////////////////////////////////
+// TabsBarHandler
+
+void TabsBarHandler::clickTab(Tabs* tabs, void* data, int button)
 {
-  // Note: data can be NULL (the "Nothing" tab)
   Sprite* sprite = (Sprite*)data;
 
   // put as current sprite
@@ -471,3 +481,18 @@ static void tabsbar_select_callback(Widget* tabs, void *data, int button)
     UIContext::instance()->execute_command(close_file_cmd, NULL);
   }
 }
+
+void TabsBarHandler::mouseOverTab(Tabs* tabs, void* data)
+{
+  // Note: data can be NULL
+  Sprite* sprite = (Sprite*)data;
+
+  if (data) {
+    app_get_statusbar()->setStatusText(250, "%s",
+				       static_cast<const char*>(sprite->getFilename()));
+  }
+  else {
+    app_get_statusbar()->clearText();
+  }
+}
+

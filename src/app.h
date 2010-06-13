@@ -32,6 +32,7 @@ class Sprite;
 class ToolBox;
 class ColorBar;
 class StatusBar;
+class Tabs;
 
 class App
 {
@@ -73,7 +74,7 @@ Widget* app_get_menubar();
 StatusBar* app_get_statusbar();
 ColorBar* app_get_colorbar();
 Widget* app_get_toolbar();
-Widget* app_get_tabsbar();
+Tabs* app_get_tabsbar();
 
 void app_default_statusbar_message();
 
