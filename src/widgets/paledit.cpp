@@ -39,7 +39,6 @@
 #include "raster/palette.h"
 #include "widgets/paledit.h"
 
-/* #define COLOR_SIZE	6 */
 #define COLOR_SIZE	(m_boxsize)
 
 static int paledit_type()
