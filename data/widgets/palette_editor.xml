@@ -12,7 +12,7 @@
 	  <radio group="1" text="RGB" name="select_rgb" looklike="button" selected="true" />
 	  <radio group="1" text="HSV" name="select_hsv" looklike="button" />
 	  <box horizontal="true" expansive="true" />
-	  <button text="+" name="make_bigger" tooltip="More options" />
+	  <button text="+" name="expand" tooltip="More options" />
 	</box>
 
 	<grid columns="3" childspacing="0">
@@ -79,6 +79,9 @@
     <!-- 	<button text="&amp;Cancel" /> -->
     <!--   </box> -->
     <!-- </box> -->
+    <box vertical="true" name="more_options">
+      <label text="more options" />
+    </box>
   </box>
 </window>
 </jinete>

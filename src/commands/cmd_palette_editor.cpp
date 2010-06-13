@@ -94,6 +94,7 @@ static Widget *R_entry, *G_entry, *B_entry;
 static Widget *H_entry, *S_entry, *V_entry;
 static Widget *hex_entry;
 static PalEdit* palette_editor;
+static Widget* more_options = NULL;
 static bool disable_colorbar_signals = false;
 
 static bool window_msg_proc(JWidget widget, JMessage msg);
@@ -116,6 +117,7 @@ static void update_colorbar();
 static bool palette_editor_change_hook(JWidget widget, void *data);
 static bool select_rgb_hook(JWidget widget, void *data);
 static bool select_hsv_hook(JWidget widget, void *data);
+static bool expand_button_select_hook(JWidget widget, void *data);
 static void modify_all_selected_entries_in_palette(int r, int g, int b);
 static void on_color_changed(color_t color);
 
@@ -156,6 +158,7 @@ void PaletteEditorCommand::execute(Context* context)
   Widget* palette_editor_view;
   Widget* select_rgb;
   Widget* select_hsv;
+  Widget* expand_button;
   bool first_time = false;
 
   // If the window was never loaded yet, load it
@@ -207,6 +210,8 @@ void PaletteEditorCommand::execute(Context* context)
 	      "hex_entry", &hex_entry,
 	      "select_rgb", &select_rgb,
 	      "select_hsv", &select_hsv,
+	      "expand", &expand_button,
+	      "more_options", &more_options,
 	      // "load", &button_load,
 	      // "save", &button_save,
 	      // "ramp", &button_ramp,
@@ -253,9 +258,12 @@ void PaletteEditorCommand::execute(Context* context)
     HOOK(palette_editor, SIGNAL_PALETTE_EDITOR_CHANGE, palette_editor_change_hook, 0);
     HOOK(select_rgb, JI_SIGNAL_RADIO_CHANGE, select_rgb_hook, 0);
     HOOK(select_hsv, JI_SIGNAL_RADIO_CHANGE, select_hsv_hook, 0);
-
+    HOOK(expand_button, JI_SIGNAL_BUTTON_SELECT, expand_button_select_hook, 0);
+    
     setup_mini_look(select_rgb);
     setup_mini_look(select_hsv);
+
+    jwidget_hide(more_options);
 
     // jbutton_add_command(button_load, load_command);
     // jbutton_add_command(button_save, save_command);
@@ -689,6 +697,52 @@ static bool select_hsv_hook(JWidget widget, void *data)
   window->setBounds(window->getBounds());
   window->dirty();
 
+  return true;
+}
+
+static bool expand_button_select_hook(JWidget widget, void *data)
+{
+  int req_w, req_h;
+
+  if (jwidget_is_visible(more_options)) {
+    jwidget_hide(more_options);
+
+    // Get the required size of the "More options" panel
+    jwidget_request_size(more_options, &req_w, &req_h);
+    req_h += 4;
+
+    // Remove the space occupied by the "More options" panel
+    {
+      JRect rect = jrect_new(window->rc->x1, window->rc->y1,
+			     window->rc->x2, window->rc->y2 - req_h);
+      window->move_window(rect);
+      jrect_free(rect);
+    }
+  }
+  else {
+    jwidget_show(more_options);
+
+    // Get the required size of the whole window
+    jwidget_request_size(window, &req_w, &req_h);
+
+    // Add space for the "more_options" panel
+    if (jrect_h(window->rc) < req_h) {
+      JRect rect = jrect_new(window->rc->x1, window->rc->y1,
+			     window->rc->x2, window->rc->y1 + req_h);
+
+      // Show the expanded area inside the screen
+      if (rect->y2 > JI_SCREEN_H)
+	jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
+      
+      window->move_window(rect);
+      jrect_free(rect);
+    }
+    else
+      window->setBounds(window->getBounds()); // TODO layout() method is missing
+  }
+
+  // Redraw the window
+  window->dirty();
   return true;
 }
 
