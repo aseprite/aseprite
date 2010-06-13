@@ -221,7 +221,7 @@ void PaletteEditorCommand::execute(Context* context)
   if (first_time) {
     // colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
     palette_editor = new PalEdit(true);
-    palette_editor->setBoxSize(4);
+    palette_editor->setBoxSize(4*jguiscale());
 
     // jwidget_expansive(colorviewer, true);
     // jwidget_add_child(colorviewer_box, colorviewer);
