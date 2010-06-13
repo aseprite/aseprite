@@ -47,40 +47,18 @@
 	  </box>
 
 	</grid>
-
-	<!-- <box name="colorviewer_box" expansive="true" /> <\!-- custom-widget -\-> -->
-	<!-- <button text="Select &amp;All" name="select_all" /> -->
-	<!-- <box vertical="true"> -->
-	<!--   <box horizontal="true" homogeneous="true"> -->
-	<!--     <button text="&amp;Undo" name="undo" /> -->
-	<!--     <button text="&amp;Redo" name="redo" /> -->
-	<!--   </box> -->
-	<!--   <box horizontal="true" homogeneous="true"> -->
-	<!--     <button text="&amp;Load" name="load" /> -->
-	<!--     <button text="&amp;Save" name="save" /> -->
-	<!--   </box> -->
-	<!--   <box horizontal="true" homogeneous="true"> -->
-	<!--     <button text="&amp;Ramp" name="ramp" /> -->
-	<!--     <button text="&amp;Quantize" name="quantize" /> -->
-	<!--   </box> -->
-	<!-- </box> -->
       </box>
     </box>
-    <!-- <box horizontal="true"> -->
-      <!-- <label text="Frame:" /> -->
-      <!-- <slider min="0" max="1" name="frame" expansive="true" /> -->
-    <!-- </box> -->
-
-    <!-- <box horizontal="true"> -->
-    <!--   <\!-- <check name="all_frames" text="All frames the same palette" /> -\-> -->
-    <!--   <box horizontal="true" expansive="true" /> -->
-    <!--   <box horizontal="true" homogeneous="true"> -->
-    <!-- 	<button text="&amp;OK" name="button_ok" magnetic="true" width="60" /> -->
-    <!-- 	<button text="&amp;Cancel" /> -->
-    <!--   </box> -->
-    <!-- </box> -->
-    <box vertical="true" name="more_options">
-      <label text="more options" />
+    <box horizontal="true" name="more_options">
+      <button text="&amp;Ramp" name="ramp" />
+      <box horizontal="true" name="more_options" childspacing="0">
+	<button text="&amp;Sort" name="sort" />
+	<button text="&amp;Quantize" name="quantize" />
+      </box>
+      <box horizontal="true" name="more_options" childspacing="0">
+	<button text="&amp;Load" name="load" />
+	<button text="&amp;Save" name="save" />
+      </box>
     </box>
   </box>
 </window>

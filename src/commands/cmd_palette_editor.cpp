@@ -102,6 +102,7 @@ static bool window_close_hook(JWidget widget, void *data);
 static void load_command(JWidget widget);
 static void save_command(JWidget widget);
 static void ramp_command(JWidget widget);
+static void sort_command(JWidget widget);
 static void quantize_command(JWidget widget);
 
 static bool sliderRGB_change_hook(JWidget widget, void *data);
@@ -159,6 +160,11 @@ void PaletteEditorCommand::execute(Context* context)
   Widget* select_rgb;
   Widget* select_hsv;
   Widget* expand_button;
+  Widget* button_load;
+  Widget* button_save;
+  Widget* button_ramp;
+  Widget* button_sort;
+  Widget* button_quantize;
   bool first_time = false;
 
   // If the window was never loaded yet, load it
@@ -212,27 +218,17 @@ void PaletteEditorCommand::execute(Context* context)
 	      "select_hsv", &select_hsv,
 	      "expand", &expand_button,
 	      "more_options", &more_options,
-	      // "load", &button_load,
-	      // "save", &button_save,
-	      // "ramp", &button_ramp,
-	      // "quantize", &button_quantize,
-	      // "button_ok", &button_ok,
-	      // "colorviewer_box", &colorviewer_box,
+	      "load", &button_load,
+	      "save", &button_save,
+	      "ramp", &button_ramp,
+	      "sort", &button_sort,
+	      "quantize", &button_quantize,
 	      "palette_editor", &palette_editor_view, NULL);
-
-  // window->user_data[0] = (void*)&sprite;
       
   // Custom widgets
   if (first_time) {
-    // colorviewer = colorviewer_new(color_index(0), IMAGE_INDEXED);
     palette_editor = new PalEdit(true);
     palette_editor->setBoxSize(4*jguiscale());
-
-    // jwidget_expansive(colorviewer, true);
-    // jwidget_add_child(colorviewer_box, colorviewer);
-
-    // jwidget_disable(button_undo);
-    // jwidget_disable(button_redo);
 
     jview_attach(palette_editor_view, palette_editor);
     jview_maxsize(palette_editor_view);
@@ -265,10 +261,11 @@ void PaletteEditorCommand::execute(Context* context)
 
     jwidget_hide(more_options);
 
-    // jbutton_add_command(button_load, load_command);
-    // jbutton_add_command(button_save, save_command);
-    // jbutton_add_command(button_ramp, ramp_command);
-    // jbutton_add_command(button_quantize, quantize_command);
+    jbutton_add_command(button_load, load_command);
+    jbutton_add_command(button_save, save_command);
+    jbutton_add_command(button_ramp, ramp_command);
+    jbutton_add_command(button_sort, sort_command);
+    jbutton_add_command(button_quantize, quantize_command);
 
     select_rgb_hook(NULL, NULL);
   }
@@ -371,63 +368,66 @@ static void save_command(JWidget widget)
 	return;
     }
 
-    // TODO
-    // if (!palette_editor->getPalette()->save(filename.c_str())) {
-    //   jalert(_("Error<<Saving palette file||&Close"));
-    // }
+    Palette* palette = get_current_palette();
+    if (!palette->save(filename.c_str())) {
+      jalert(_("Error<<Saving palette file||&Close"));
+    }
   }
 }
 
 static void ramp_command(JWidget widget)
 {
-#if 0
   int range_type = palette_editor->getRangeType();
   int i1 = palette_editor->get1stColor();
   int i2 = palette_editor->get2ndColor();
-  Palette* palette = new Palette(0, 256);
+  Palette* src_palette = get_current_palette();
+  Palette* dst_palette = new Palette(0, 256);
   bool array[256];
 
   palette_editor->getSelectedEntries(array);
-  palette_editor->getPalette()->copyColorsTo(palette);
+  src_palette->copyColorsTo(dst_palette);
 
   if ((i1 >= 0) && (i2 >= 0)) {
-    /* make the ramp */
+    // Make the ramp
     if (range_type == PALETTE_EDITOR_RANGE_LINEAL) {
-      /* lineal ramp */
-      palette->makeHorzRamp(i1, i2);
+      // Lineal ramp
+      dst_palette->makeHorzRamp(i1, i2);
     }
     else if (range_type == PALETTE_EDITOR_RANGE_RECTANGULAR) {
-      /* rectangular ramp */
-      palette->makeRectRamp(i1, i2, paledit_get_columns(palette_editor));
+      // Rectangular ramp
+      dst_palette->makeRectRamp(i1, i2, palette_editor->getColumns());
     }
   }
 
-  set_new_palette(palette);
-  delete palette;
-#endif
+  set_new_palette(dst_palette);
+  delete dst_palette;
+}
+
+static void sort_command(JWidget widget)
+{
 }
 
 static void quantize_command(JWidget widget)
 {
-  // const SpriteReader& sprite = get_sprite(widget);
-  // assert(sprite != NULL);
+  const CurrentSpriteReader& sprite(UIContext::instance());
 
-  // Palette* palette = new Palette(0, 256);
-  // bool array[256];
+  if (sprite == NULL) {
+    jalert(_("Error<<There is no sprite selected to quantize.||&OK"));
+    return;
+  }
 
-  // paledit_get_selected_entries(palette_editor, array);
-  // paledit_get_palette(palette_editor)->copyColorsTo(palette);
+  if (sprite->getImgType() != IMAGE_RGB) {
+    jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
+    return;
+  }
 
-  // if (sprite->getImgType() == IMAGE_RGB) {
-  //   SpriteWriter sprite_writer(sprite);
-  //   sprite_quantize_ex(sprite_writer, palette);
-  // }
-  // else {
-  //   jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
-  // }
-
-  // set_new_palette(palette);
-  // delete palette;
+  Palette* palette = new Palette(0, 256);
+  {
+    SpriteWriter sprite_writer(sprite);
+    sprite_quantize_ex(sprite_writer, palette);
+    set_new_palette(palette);
+  }
+  delete palette;
 }
 
 static bool sliderRGB_change_hook(JWidget widget, void *data)
@@ -781,6 +781,9 @@ static void set_new_palette(Palette* palette)
 
   // Set the palette calling the hooks
   set_current_palette(palette, false);
+
+  // Update the sprite palette
+  update_current_sprite_palette();
 
   // Redraw the entire screen
   jmanager_refresh_screen();
