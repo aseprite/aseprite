@@ -142,11 +142,8 @@ void Palette::makeHorzRamp(int from, int to)
   assert(from >= 0 && from <= 255);
   assert(to >= 0 && to <= 255);
 
-  if (from > to) {
-    i    = from;
-    from = to;
-    to   = i;
-  }
+  if (from > to)
+    std::swap(from, to);
 
   n = to - from;
   if (n < 2)
@@ -182,11 +179,8 @@ void Palette::makeVertRamp(int from, int to, int columns)
   /* both indices have to be in the same column */
   assert((from % columns) == (to % columns));
 
-  if (from > to) {
-    y    = from;
-    from = to;
-    to   = y;
-  }
+  if (from > to)
+    std::swap(from, to);
 
   ybeg = from/columns;
   yend = to/columns;
@@ -219,6 +213,9 @@ void Palette::makeRectRamp(int from, int to, int columns)
   assert(from >= 0 && from <= 255);
   assert(to >= 0 && to <= 255);
   assert(columns >= 1 && columns <= 256);
+
+  if (from > to)
+    std::swap(from, to);
   
   x1 = from % columns;
   y1 = from / columns;
