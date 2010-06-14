@@ -37,10 +37,6 @@
 JWidget jlistbox_new();
 JWidget jlistitem_new(const char *text);
 
-void jlistbox_add_string(JWidget listbox, const char *text);
-void jlistbox_delete_string(JWidget listbox, int index);
-int jlistbox_find_string(JWidget listbox, const char *text);
-
 JWidget jlistbox_get_selected_child(JWidget listbox);
 int jlistbox_get_selected_index(JWidget listbox);
 void jlistbox_select_child(JWidget listbox, JWidget listitem);
