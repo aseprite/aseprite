@@ -62,4 +62,49 @@
     </box>
   </box>
 </window>
+
+<window text="Sort Criteria" name="sort_criteria">
+  <box vertical="true">
+    <box horizontal="true">
+
+      <box vertical="true" expansive="true">
+	<separator text="Available:" left="true" horizontal="true" />
+	<view maxsize="true">
+	  <listbox name="available_criteria">
+	    <listitem text="RGB Red" />
+	    <listitem text="RGB Green" />
+	    <listitem text="RGB Blue" />
+	    <listitem text="HSV Hue" />
+	    <listitem text="HSV Saturation" />
+	    <listitem text="HSV Value" />
+	  </listbox>
+	</view>
+	<separator text="Direction:" left="true" horizontal="true" />
+	<radio name="asc" text="Ascending" group="1" />
+	<radio name="des" text="Descending" group="1" />
+      </box>
+      <box vertical="true">
+	<button name="insert_criteria" text="&gt;&gt;" />
+	<button name="remove_criteria" text="&lt;&lt;" />
+      </box>
+      <box vertical="true" expansive="true" minwidth="150">
+	<separator text="Sort by:" left="true" horizontal="true" />
+	<view maxsize="true" expansive="true">
+	  <listbox name="selected_criteria" />
+	</view>
+      </box>
+    </box>
+
+    <separator horizontal="true" />
+
+    <box horizontal="true">
+      <box horizontal="true" expansive="true" />
+      <box horizontal="true" homogeneous="true">
+	<button text="&amp;OK" name="ok_button" magnetic="true" width="60" />
+	<button text="&amp;Cancel" />
+      </box>
+    </box>
+  </box>
+</window>
+
 </jinete>

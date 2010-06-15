@@ -232,6 +232,114 @@ void Palette::makeRectRamp(int from, int to, int columns)
 
 }
 
+//////////////////////////////////////////////////////////////////////
+// Sort
+
+SortPalette::SortPalette(Channel channel, bool ascending)
+{
+  m_channel = channel;
+  m_ascending = ascending;
+  m_chain = NULL;
+}
+
+SortPalette::~SortPalette()
+{
+  delete m_chain;
+}
+
+void SortPalette::addChain(SortPalette* chain)
+{
+  if (m_chain)
+    m_chain->addChain(chain);
+  else
+    m_chain = chain;
+}
+
+bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
+{
+  int value1 = 0, value2 = 0;
+
+  switch (m_channel) {
+
+    case SortPalette::RGB_Red:
+      value1 = _rgba_getr(c1);
+      value2 = _rgba_getr(c2);
+      break;
+
+    case SortPalette::RGB_Green:
+      value1 = _rgba_getg(c1);
+      value2 = _rgba_getg(c2);
+      break;
+
+    case SortPalette::RGB_Blue:
+      value1 = _rgba_getb(c1);
+      value2 = _rgba_getb(c2);
+      break;
+
+    case SortPalette::HSV_Hue:
+    case SortPalette::HSV_Saturation:
+    case SortPalette::HSV_Value: {
+      int h1, s1, v1;
+      int h2, s2, v2;
+      h1 = _rgba_getr(c1);
+      s1 = _rgba_getg(c1);
+      v1 = _rgba_getb(c1);
+      h2 = _rgba_getr(c2);
+      s2 = _rgba_getg(c2);
+      v2 = _rgba_getb(c2);
+      rgb_to_hsv_int(&h1, &s1, &v1);
+      rgb_to_hsv_int(&h2, &s2, &v2);
+
+      switch (m_channel) {
+	case SortPalette::HSV_Hue:
+	  value1 = h1;
+	  value2 = h2;
+	  break;
+	case SortPalette::HSV_Saturation:
+	  value1 = s1;
+	  value2 = s2;
+	  break;
+	case SortPalette::HSV_Value:
+	  value1 = v1;
+	  value2 = v2;
+	  break;
+      }
+      break;
+    }
+
+  }
+
+  if (!m_ascending)
+    std::swap(value1, value2);
+
+  if (value1 < value2) {
+    return true;
+  }
+  else if (value1 == value2) {
+    if (m_chain)
+      return m_chain->operator()(c1, c2);
+  }
+
+  return false;
+}
+
+template<class T, class Ptr>
+struct ptr_wrapper {
+  Ptr* ptr;
+  ptr_wrapper(Ptr* ptr) : ptr(ptr) { }
+
+  bool operator()(T a, T b) {
+    return ptr->operator()(a, b);
+  }
+};
+
+void Palette::sort(int from, int to, SortPalette* sort_palette)
+{
+  std::sort(m_colors.begin() + from,
+	    m_colors.begin() + to + 1,
+	    ptr_wrapper<ase_uint32, SortPalette>(sort_palette));
+}
+
 /**
  * @param pal The ASE color palette to copy.
  * @param rgb An Allegro's PALETTE.

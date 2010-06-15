@@ -24,6 +24,31 @@
 #include <vector>
 #include <cassert>
 
+class SortPalette
+{
+public:
+  enum Channel {
+    RGB_Red,
+    RGB_Green,
+    RGB_Blue,
+    HSV_Hue,
+    HSV_Saturation,
+    HSV_Value,
+  };
+
+  SortPalette(Channel channel, bool ascending);
+  ~SortPalette();
+
+  void addChain(SortPalette* chain);
+
+  bool operator()(ase_uint32 c1, ase_uint32 c2);
+
+private:
+  Channel m_channel;
+  bool m_ascending;
+  SortPalette* m_chain;
+};
+
 class Palette : public GfxObj
 {
 public:
@@ -56,6 +81,7 @@ public:
   void makeHorzRamp(int from, int to);
   void makeVertRamp(int from, int to, int columns);
   void makeRectRamp(int from, int to, int columns);
+  void sort(int from, int to, SortPalette* sort_palette);
 
   void toAllegro(RGB* rgb) const;
   void fromAllegro(const RGB* rgb);

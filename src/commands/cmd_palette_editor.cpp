@@ -403,9 +403,197 @@ static void ramp_command(JWidget widget)
   delete dst_palette;
 }
 
+//////////////////////////////////////////////////////////////////////
+// Sort Options Begin
+
+struct SortDlgData
+{
+  Widget* available_criteria;
+  Widget* selected_criteria;
+  Widget* insert_criteria;
+  Widget* remove_criteria;
+  Widget* asc;
+  Widget* des;
+  Widget* ok_button;
+};
+
+static bool insert_criteria_hook(Widget* widget, void* data);
+static bool remove_criteria_hook(Widget* widget, void* data);
+static bool sort_by_criteria(Palette* palette, JList selected_listitems);
+
 static void sort_command(JWidget widget)
 {
+  SortDlgData data;
+
+  try {
+    // Load the sort criteria window
+    FramePtr dlg(load_widget("palette_editor.xml", "sort_criteria"));
+
+    get_widgets(dlg,
+		"available_criteria", &data.available_criteria,
+		"selected_criteria", &data.selected_criteria,
+		"insert_criteria", &data.insert_criteria,
+		"remove_criteria", &data.remove_criteria,
+		"asc", &data.asc,
+		"des",  &data.des,
+		"ok_button", &data.ok_button, NULL);
+
+    // Selected Ascending by default
+    data.asc->setSelected(true);
+
+    HOOK(data.insert_criteria, JI_SIGNAL_BUTTON_SELECT, insert_criteria_hook, &data);
+    HOOK(data.remove_criteria, JI_SIGNAL_BUTTON_SELECT, remove_criteria_hook, &data);
+
+    // Select "Value" and insert it as default selected criteria
+    jlistbox_select_index(data.available_criteria, 5);
+    insert_criteria_hook(data.insert_criteria, (void*)&data);
+
+    // Open the window
+    dlg->open_window_fg();
+
+    if (dlg->get_killer() == data.ok_button) {
+      Palette* palette = new Palette(*get_current_palette());
+
+      sort_by_criteria(palette, data.selected_criteria->children);
+      set_new_palette(palette);
+
+      delete palette;
+    }
+  }
+  catch (ase_exception& e) {
+    e.show();
+  }
 }
+
+static bool insert_criteria_hook(Widget* widget, void* _data)
+{
+  SortDlgData* data = (SortDlgData*)_data;
+
+  // Move the selected item to the 
+  Widget* item = jlistbox_get_selected_child(data->available_criteria);
+  if (item) {
+    std::string new_criteria(item->getText());
+    new_criteria += " - ";
+    new_criteria += (data->asc->isSelected() ? data->asc->getText():
+					       data->des->getText());
+
+    // Remove the criteria
+    int removed_index = jlistbox_get_selected_index(data->available_criteria);
+    jwidget_remove_child(data->available_criteria, item);
+
+    int count = jlistbox_get_items_count(data->available_criteria);
+    if (count > 0) {
+      jlistbox_select_index(data->available_criteria,
+			    removed_index < count ? removed_index: count-1);
+    }
+
+    // Add to the selected criteria
+    item->setText(new_criteria.c_str());
+    jwidget_add_child(data->selected_criteria, item);
+    jlistbox_select_child(data->selected_criteria, item);
+
+    // Relayout
+    data->available_criteria->setBounds(data->available_criteria->getBounds()); // TODO layout()
+    data->selected_criteria->setBounds(data->selected_criteria->getBounds()); // TODO layout()
+    data->available_criteria->dirty();
+    data->selected_criteria->dirty();
+  }
+
+  return true;
+}
+
+static bool remove_criteria_hook(Widget* widget, void* _data)
+{
+  SortDlgData* data = (SortDlgData*)_data;
+
+  // Move the selected item to the 
+  Widget* item = jlistbox_get_selected_child(data->selected_criteria);
+  if (item) {
+    std::string criteria_text(item->getText());
+    int index = criteria_text.find('-');
+    criteria_text = criteria_text.substr(0, index-1);
+
+    // Remove from the selected criteria
+    int removed_index = jlistbox_get_selected_index(data->selected_criteria);
+    jwidget_remove_child(data->selected_criteria, item);
+
+    int count = jlistbox_get_items_count(data->selected_criteria);
+    if (count > 0) {
+      jlistbox_select_index(data->selected_criteria,
+			    removed_index < count ? removed_index: count-1);
+    }
+
+    // Add to the available criteria
+    item->setText(criteria_text.c_str());
+    jwidget_add_child(data->available_criteria, item);
+    jlistbox_select_child(data->available_criteria, item);
+
+    // Relayout
+    data->available_criteria->setBounds(data->available_criteria->getBounds()); // TODO layout()
+    data->selected_criteria->setBounds(data->selected_criteria->getBounds()); // TODO layout()
+    data->available_criteria->dirty();
+    data->selected_criteria->dirty();
+  }
+
+  return true;
+}
+
+static bool sort_by_criteria(Palette* palette, JList selected_listitems)
+{
+  SortPalette* sort_palette = NULL;
+  JLink link;
+
+  JI_LIST_FOR_EACH(selected_listitems, link) {
+    Widget* item = (Widget*)link->data;
+    std::string item_text = item->getText();
+    SortPalette::Channel channel = SortPalette::HSV_Value;
+    bool ascending = false;
+
+    if (item_text.find("RGB") != std::string::npos) {
+      if (item_text.find("Red") != std::string::npos) {
+	channel = SortPalette::RGB_Red;
+      }
+      else if (item_text.find("Green") != std::string::npos) {
+	channel = SortPalette::RGB_Green;
+      }
+      else if (item_text.find("Blue") != std::string::npos) {
+	channel = SortPalette::RGB_Blue;
+      }
+    }
+    else if (item_text.find("HSV") != std::string::npos) {
+      if (item_text.find("Hue") != std::string::npos) {
+	channel = SortPalette::HSV_Hue;
+      }
+      else if (item_text.find("Saturation") != std::string::npos) {
+	channel = SortPalette::HSV_Saturation;
+      }
+      else if (item_text.find("Value") != std::string::npos) {
+	channel = SortPalette::HSV_Value;
+      }
+    }
+
+    if (item_text.find("Ascending") != std::string::npos)
+      ascending = true;
+    else
+      ascending = false;
+
+    SortPalette* chain = new SortPalette(channel, ascending);
+    if (sort_palette)
+      sort_palette->addChain(chain);
+    else
+      sort_palette = chain;
+  }
+
+  if (sort_palette) {
+    palette->sort(0, palette->size()-1, sort_palette);
+    delete sort_palette;
+  }
+
+  return false;
+}
+
+// Sort Options End
+//////////////////////////////////////////////////////////////////////
 
 static void quantize_command(JWidget widget)
 {
