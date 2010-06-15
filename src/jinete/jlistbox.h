@@ -42,6 +42,8 @@ int jlistbox_get_selected_index(JWidget listbox);
 void jlistbox_select_child(JWidget listbox, JWidget listitem);
 void jlistbox_select_index(JWidget listbox, int index);
 
+int jlistbox_get_items_count(JWidget listbox);
+
 void jlistbox_center_scroll(JWidget listbox);
 
 #endif

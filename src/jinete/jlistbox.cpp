@@ -145,6 +145,11 @@ void jlistbox_select_index(JWidget widget, int index)
     jlistbox_select_child(widget, child);
 }
 
+int jlistbox_get_items_count(JWidget widget)
+{
+  return jlist_length(widget->children);
+}
+
 /* setup the scroll to center the selected item in the viewport */
 void jlistbox_center_scroll(JWidget widget)
 {
