@@ -259,7 +259,11 @@ void PaletteEditorCommand::execute(Context* context)
     setup_mini_look(select_rgb);
     setup_mini_look(select_hsv);
 
-    jwidget_hide(more_options);
+    // Hide (or show) the "More Options" depending the saved value in .cfg file
+    if (get_config_bool("PaletteEditor", "ShowMoreOptions", false))
+      jwidget_show(more_options);
+    else
+      jwidget_hide(more_options);
 
     jbutton_add_command(button_load, load_command);
     jbutton_add_command(button_save, save_command);
@@ -894,6 +898,7 @@ static bool expand_button_select_hook(JWidget widget, void *data)
   int req_w, req_h;
 
   if (jwidget_is_visible(more_options)) {
+    set_config_bool("PaletteEditor", "ShowMoreOptions", false);
     jwidget_hide(more_options);
 
     // Get the required size of the "More options" panel
@@ -909,6 +914,7 @@ static bool expand_button_select_hook(JWidget widget, void *data)
     }
   }
   else {
+    set_config_bool("PaletteEditor", "ShowMoreOptions", true);
     jwidget_show(more_options);
 
     // Get the required size of the whole window
