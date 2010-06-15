@@ -204,8 +204,8 @@ DIRS *cfg_filename_dirs()
 
 #endif
 
-  /* $BINDIR/aseprite.cfg */
-  dirs_cat_dirs(dirs, filename_in_bindir("aseprite.cfg"));
+  /* $BINDIR/aseprite.ini */
+  dirs_cat_dirs(dirs, filename_in_bindir("aseprite.ini"));
 
   return dirs;
 }
