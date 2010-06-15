@@ -240,7 +240,7 @@ void Palette::makeRectRamp(int from, int to, int columns)
  */
 void Palette::toAllegro(RGB *rgb) const
 {
-  int i;
+  size_t i;
   for (i=0; i<size(); ++i) {
     rgb[i].r = _rgba_getr(m_colors[i]) / 4;
     rgb[i].g = _rgba_getg(m_colors[i]) / 4;
