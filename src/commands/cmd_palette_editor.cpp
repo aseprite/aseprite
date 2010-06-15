@@ -444,9 +444,10 @@ static void sort_command(JWidget widget)
     HOOK(data.insert_criteria, JI_SIGNAL_BUTTON_SELECT, insert_criteria_hook, &data);
     HOOK(data.remove_criteria, JI_SIGNAL_BUTTON_SELECT, remove_criteria_hook, &data);
 
-    // Select "Value" and insert it as default selected criteria
-    jlistbox_select_index(data.available_criteria, 5);
-    insert_criteria_hook(data.insert_criteria, (void*)&data);
+    // If there is a selected <listitem> in available criteria
+    // <listbox>, insert it as default criteria to sort colors
+    if (jlistbox_get_selected_child(data.available_criteria))
+      insert_criteria_hook(data.insert_criteria, (void*)&data);
 
     // Open the window
     dlg->open_window_fg();
