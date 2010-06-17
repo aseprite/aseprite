@@ -52,6 +52,8 @@ In this dialog you select:
     a color palette (with a maximum of 256 colors), in this way each
     pixel has a palette entry associated, if you change the palette
     color, all pixels associated to that color will change their aspect.
+    You can choose the number of color for the sprite palette (from 2 to
+    256).
 
     For `pixel art <http://en.wikipedia.org/wiki/Pixel_art>`__ your selection
     should be Indexed.
