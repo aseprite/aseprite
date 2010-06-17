@@ -430,6 +430,9 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
 
 static void sort_command(JWidget widget)
 {
+  if (jalert("ASE Beta<<Sort command is not available in this beta version.||&OK")) // TODO remove this
+    return;
+
   SortDlgData data;
 
   try {
