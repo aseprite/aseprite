@@ -307,6 +307,20 @@ bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
       break;
     }
 
+    case SortPalette::HSL_Lightness: {
+      value1 = (std::max(_rgba_getr(c1), std::max(_rgba_getg(c1), _rgba_getb(c1))) +
+		std::min(_rgba_getr(c1), std::min(_rgba_getg(c1), _rgba_getb(c1)))) / 2;
+      value2 = (std::max(_rgba_getr(c2), std::max(_rgba_getg(c2), _rgba_getb(c2))) +
+		std::min(_rgba_getr(c2), std::min(_rgba_getg(c2), _rgba_getb(c2)))) / 2;
+      break;
+    }
+
+    case SortPalette::YUV_Luma: {
+      value1 = (_rgba_getr(c1)*299 + _rgba_getg(c1)*587 + _rgba_getb(c1)*114); // do not /1000 (so we get more precission)
+      value2 = (_rgba_getr(c2)*299 + _rgba_getg(c2)*587 + _rgba_getb(c2)*114);
+      break;
+    }
+
   }
 
   if (!m_ascending)

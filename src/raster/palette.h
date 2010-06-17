@@ -34,6 +34,8 @@ public:
     HSV_Hue,
     HSV_Saturation,
     HSV_Value,
+    HSL_Lightness,
+    YUV_Luma,
   };
 
   SortPalette(Channel channel, bool ascending);

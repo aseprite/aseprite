@@ -551,7 +551,7 @@ static bool sort_by_criteria(Palette* palette, JList selected_listitems)
   JI_LIST_FOR_EACH(selected_listitems, link) {
     Widget* item = (Widget*)link->data;
     std::string item_text = item->getText();
-    SortPalette::Channel channel = SortPalette::HSV_Value;
+    SortPalette::Channel channel = SortPalette::YUV_Luma;
     bool ascending = false;
 
     if (item_text.find("RGB") != std::string::npos) {
@@ -564,6 +564,8 @@ static bool sort_by_criteria(Palette* palette, JList selected_listitems)
       else if (item_text.find("Blue") != std::string::npos) {
 	channel = SortPalette::RGB_Blue;
       }
+      else
+	assert(false);
     }
     else if (item_text.find("HSV") != std::string::npos) {
       if (item_text.find("Hue") != std::string::npos) {
@@ -575,12 +577,32 @@ static bool sort_by_criteria(Palette* palette, JList selected_listitems)
       else if (item_text.find("Value") != std::string::npos) {
 	channel = SortPalette::HSV_Value;
       }
+      else
+	assert(false);
     }
+    else if (item_text.find("HSL") != std::string::npos) {
+      if (item_text.find("Lightness") != std::string::npos) {
+	channel = SortPalette::HSL_Lightness;
+      }
+      else
+	assert(false);
+    }
+    else if (item_text.find("YUV") != std::string::npos) {
+      if (item_text.find("Luma") != std::string::npos) {
+	channel = SortPalette::YUV_Luma;
+      }
+      else
+	assert(false);
+    }
+    else
+      assert(false);
 
     if (item_text.find("Ascending") != std::string::npos)
       ascending = true;
-    else
+    else if (item_text.find("Descending") != std::string::npos)
       ascending = false;
+    else
+      assert(false);
 
     SortPalette* chain = new SortPalette(channel, ascending);
     if (sort_palette)

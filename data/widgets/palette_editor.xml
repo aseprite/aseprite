@@ -76,7 +76,9 @@
 	    <listitem text="RGB Blue" />
 	    <listitem text="HSV Hue" />
 	    <listitem text="HSV Saturation" />
-	    <listitem text="HSV Value" selected="true" />
+	    <listitem text="HSV Value" />
+	    <listitem text="HSL Lightness" />
+	    <listitem text="YUV Luma" selected="true" />
 	  </listbox>
 	</view>
 	<separator text="Direction:" left="true" horizontal="true" />
