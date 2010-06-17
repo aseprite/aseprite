@@ -76,6 +76,7 @@ enum {
   // palette management
   UNDO_TYPE_ADD_PALETTE,
   UNDO_TYPE_REMOVE_PALETTE,
+  UNDO_TYPE_REMAP_PALETTE,
 
   /* misc */
   UNDO_TYPE_SET_MASK,
@@ -108,6 +109,7 @@ struct UndoChunkSetSize;
 struct UndoChunkSetFrame;
 struct UndoChunkSetFrames;
 struct UndoChunkSetFrlen;
+struct UndoChunkRemapPalette;
 
 struct UndoChunk
 {
@@ -191,6 +193,9 @@ static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *ch
 static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette);
 static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk, int state);
 
+static void chunk_remap_palette_new(UndoStream* stream, Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping);
+static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette *chunk, int state);
+
 static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite);
 static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, int state);
 
@@ -232,6 +237,7 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(set_layer),
   DECL_UNDO_ACTION(add_palette),
   DECL_UNDO_ACTION(remove_palette),
+  DECL_UNDO_ACTION(remap_palette),
   DECL_UNDO_ACTION(set_mask),
   DECL_UNDO_ACTION(set_imgtype),
   DECL_UNDO_ACTION(set_size),
@@ -1457,6 +1463,66 @@ static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalet
   sprite->setPalette(palette, true);
 
   delete palette;
+}
+
+/***********************************************************************
+
+  "remap_palette"
+
+     DWORD		sprite ID
+     DWORD		first frame in range
+     DWORD		last frame in range
+     BYTE[256]		mapping table
+
+***********************************************************************/
+
+struct UndoChunkRemapPalette
+{
+  UndoChunk head;
+  ase_uint32 sprite_id;
+  ase_uint32 frame_from;
+  ase_uint32 frame_to;
+  ase_uint8 mapping[256];
+};
+
+void undo_remap_palette(Undo* undo, Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping)
+{
+  chunk_remap_palette_new(undo->undo_stream, sprite, frame_from, frame_to, mapping);
+  update_undo(undo);
+}
+
+static void chunk_remap_palette_new(UndoStream* stream, Sprite *sprite, int frame_from, int frame_to, const std::vector<int>& mapping)
+{
+  UndoChunkRemapPalette* chunk = (UndoChunkRemapPalette*)
+    undo_chunk_new(stream,
+		   UNDO_TYPE_REMAP_PALETTE,
+		   sizeof(UndoChunkRemapPalette));
+
+  chunk->sprite_id = sprite->id;
+  chunk->frame_from = frame_from;
+  chunk->frame_to = frame_to;
+
+  assert(mapping.size() == 256 && "Mapping tables must have 256 entries");
+
+  for (size_t c=0; c<256; c++)
+    chunk->mapping[c] = mapping[c];
+}
+
+static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette* chunk, int state)
+{
+  Sprite *sprite = (Sprite *)gfxobj_find(chunk->sprite_id);
+  if (sprite == NULL)
+    throw undo_exception("chunk_remap_palette_invert");
+
+  // Inverse mapping
+  std::vector<int> inverse_mapping(256);
+  for (size_t c=0; c<256; ++c)
+    inverse_mapping[chunk->mapping[c]] = c;
+
+  chunk_remap_palette_new(stream, sprite, chunk->frame_from, chunk->frame_to, inverse_mapping);
+
+  // Remap in inverse order
+  sprite->remapImages(chunk->frame_from, chunk->frame_to, inverse_mapping);
 }
 
 /***********************************************************************

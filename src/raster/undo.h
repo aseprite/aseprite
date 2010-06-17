@@ -20,6 +20,7 @@
 #define RASTER_UNDO_H_INCLUDED
 
 #include <string.h>		/* for strlen */
+#include <vector>
 
 #include "raster/gfxobj.h"
 #include "ase_exception.h"
@@ -98,6 +99,8 @@ void undo_move_layer(Undo* undo, Layer *layer);
 void undo_set_layer(Undo* undo, Sprite* sprite);
 void undo_add_palette(Undo* undo, Sprite* sprite, Palette* palette);
 void undo_remove_palette(Undo* undo, Sprite* sprite, Palette* palette);
+void undo_remap_palette(Undo* undo, Sprite* sprite, int frame_from, int frame_to,
+			const std::vector<int>& mapping);
 void undo_set_mask(Undo* undo, Sprite* sprite);
 void undo_set_imgtype(Undo* undo, Sprite* sprite);
 void undo_set_size(Undo* undo, Sprite* sprite);
