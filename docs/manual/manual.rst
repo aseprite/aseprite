@@ -104,8 +104,7 @@ click`` you choose the background color.
 
 In some platforms (Linux or MacOS) you can have some problems
 using the ``Alt`` key together with mouse clicks, so you can
-use ``I key`` to pick background or ``Shift+I key`` to pick
-foreground color.
+use ``I key`` to use the `Eyedropper Tool`_.
 
 Drawing
 =======
