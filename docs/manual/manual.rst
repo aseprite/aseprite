@@ -120,11 +120,11 @@ You have created a new sprite, now you want to draw. You need to know two things
    tool, color, pen, and other configuration that modifies how you draw (e.g. snap to grid,
    tiled mode, fill or not the shape, etc.).
 
-You will notice that a sprite is not just one image, it can have
-frames and layers, so in next sections, the first point ("Where you
-draw") will take more importance when you want to manage various
-sprites, with frames, and layers at the same time. Right now let's
-keep it simple, just one sprite with just one image.
+You will notice that a sprite is not just one plain image. It can have
+frames and layers. So in next sections, the current editor will take
+more importance when you want to manage various sprites, with frames,
+and layers at the same time. Right now let's keep it simple, just one
+sprite with one image.
 
 To draw you can use one of the tools at the right of the screen:
 
