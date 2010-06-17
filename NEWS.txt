@@ -20,8 +20,6 @@ NEWS
 + Added compression to .ase/.aseprite format.
 + Added support to zoom when you are drawing (e.g. you can use the
   wheel mouse when you are drawing a polygon or a long line).
-+ Added support to resize and maximize the main window (only in
-  Windows platform).
 
 0.7.2
 -----
