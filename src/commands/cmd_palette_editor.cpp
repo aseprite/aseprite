@@ -40,6 +40,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "raster/undo.h"
 #include "util/quantize.h"
 #include "widgets/colbar.h"
 #include "widgets/colview.h"
@@ -483,6 +484,62 @@ static void sort_command(JWidget widget)
 
       std::vector<int> mapping;
       sort_by_criteria(palette, from, to, data.selected_criteria->children, mapping);
+
+      if (UIContext::instance()->get_current_sprite()) {
+	// Remap all colors
+	if (mapping.size() > 0) {
+	  CurrentSpriteWriter sprite(UIContext::instance());
+	  Palette* frame_palette = sprite->getCurrentPalette();
+	  int frame_begin = 0;
+	  int frame_end = 0;
+	  int frame = 0;
+	  while (frame < sprite->getTotalFrames()) {
+	    if (sprite->getPalette(frame) == frame_palette) {
+	      frame_begin = frame;
+	      break;
+	    }
+	    ++frame;
+	  }
+	  while (frame < sprite->getTotalFrames()) {
+	    if (sprite->getPalette(frame) != frame_palette)
+	      break;
+	    ++frame;
+	  }
+	  frame_end = frame;
+
+	  //////////////////////////////////////////////////////////////////////
+	  // TODO The following code is unreadable, move this to Undoable class
+
+	  if (undo_is_enabled(sprite->getUndo())) {
+	    undo_set_label(sprite->getUndo(), "Sort Palette");
+	    undo_open(sprite->getUndo());
+
+	    // Remove the current palette in the current frame
+	    undo_remove_palette(sprite->getUndo(), sprite, frame_palette);
+	  }
+
+	  // Delete the current palette
+	  sprite->deletePalette(frame_palette);
+
+	  // Setup the new palette in the sprite
+	  palette->setFrame(frame_begin);
+	  sprite->setPalette(palette, true);
+
+	  if (undo_is_enabled(sprite->getUndo())) {
+	    // Add undo information about the new added palette
+	    undo_add_palette(sprite->getUndo(), sprite, sprite->getPalette(frame_begin));
+
+	    // Add undo information about image remapping
+	    undo_remap_palette(sprite->getUndo(), sprite, frame_begin, frame_end-1, mapping);
+	    undo_close(sprite->getUndo());
+	  }
+
+	  // Remap images (to the new palette indexes)
+	  sprite->remapImages(frame_begin, frame_end-1, mapping);
+	}
+      }
+
+      // Set the new palette in the sprite
       set_new_palette(palette);
 
       delete palette;
