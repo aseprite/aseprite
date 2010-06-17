@@ -418,12 +418,14 @@ struct SortDlgData
   Widget* remove_criteria;
   Widget* asc;
   Widget* des;
+  Widget* first;
+  Widget* last;
   Widget* ok_button;
 };
 
 static bool insert_criteria_hook(Widget* widget, void* data);
 static bool remove_criteria_hook(Widget* widget, void* data);
-static bool sort_by_criteria(Palette* palette, JList selected_listitems);
+static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems);
 
 static void sort_command(JWidget widget)
 {
@@ -440,10 +442,25 @@ static void sort_command(JWidget widget)
 		"remove_criteria", &data.remove_criteria,
 		"asc", &data.asc,
 		"des",  &data.des,
+		"first", &data.first,
+		"last",  &data.last,
 		"ok_button", &data.ok_button, NULL);
 
     // Selected Ascending by default
     data.asc->setSelected(true);
+
+    // Range to sort
+    int i1 = palette_editor->get1stColor();
+    int i2 = palette_editor->get2ndColor();
+    if (i1 == i2) {		// Sort all palette entries
+      i1 = 0;
+      i2 = get_current_palette()->size()-1;
+    }
+    else if (i1 > i2) {
+      std::swap(i1, i2);
+    }
+    data.first->setTextf("%d", i1);
+    data.last->setTextf("%d", i2);
 
     HOOK(data.insert_criteria, JI_SIGNAL_BUTTON_SELECT, insert_criteria_hook, &data);
     HOOK(data.remove_criteria, JI_SIGNAL_BUTTON_SELECT, remove_criteria_hook, &data);
@@ -458,8 +475,13 @@ static void sort_command(JWidget widget)
 
     if (dlg->get_killer() == data.ok_button) {
       Palette* palette = new Palette(*get_current_palette());
+      int from = data.first->getTextInt();
+      int to = data.last->getTextInt();
 
-      sort_by_criteria(palette, data.selected_criteria->children);
+      from = MID(0, from, palette->size()-1);
+      to = MID(from, to, palette->size()-1);
+
+      sort_by_criteria(palette, from, to, data.selected_criteria->children);
       set_new_palette(palette);
 
       delete palette;
@@ -543,7 +565,7 @@ static bool remove_criteria_hook(Widget* widget, void* _data)
   return true;
 }
 
-static bool sort_by_criteria(Palette* palette, JList selected_listitems)
+static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems)
 {
   SortPalette* sort_palette = NULL;
   JLink link;
@@ -612,7 +634,7 @@ static bool sort_by_criteria(Palette* palette, JList selected_listitems)
   }
 
   if (sort_palette) {
-    palette->sort(0, palette->size()-1, sort_palette);
+    palette->sort(from, to, sort_palette);
     delete sort_palette;
   }
 

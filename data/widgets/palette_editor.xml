@@ -94,6 +94,13 @@
 	<view maxsize="true" expansive="true">
 	  <listbox name="selected_criteria" />
 	</view>
+	<separator text="Range to Sort:" left="true" horizontal="true" />
+	<box horizontal="true">
+	  <label text="First" />
+	  <entry name="first" maxsize="3" text="" expansive="true" />
+	  <label text="Last" />
+	  <entry name="last" maxsize="3" text="" expansive="true" />
+	</box>
       </box>
     </box>
 
