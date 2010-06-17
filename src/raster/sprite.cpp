@@ -272,6 +272,30 @@ public:
     getFolder()->get_cels(cels);
   }
 
+  void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping) {
+    assert(m_imgtype == IMAGE_INDEXED);
+    assert(mapping.size() == 256);
+
+    CelList cels;
+    getCels(cels);
+
+    for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
+      Cel* cel = *it;
+
+      // Remap this Cel because is inside the specified range
+      if (cel->frame >= frame_from && 
+	  cel->frame <= frame_to) {
+	Image* image = stock_get_image(getStock(), cel->image);
+
+	for (int y=0; y<image->h; ++y) {
+	  IndexedTraits::address_t ptr = image_address_fast<IndexedTraits>(image, 0, y);
+	  for (int x=0; x<image->w; ++x, ++ptr)
+	    *ptr = mapping[*ptr];
+	}
+      }
+    }
+  }
+
   const Undo* getUndo() const {
     return m_undo;
   }
@@ -1356,6 +1380,11 @@ Image* Sprite::getCurrentImage(int* x, int* y, int* opacity)
 void Sprite::getCels(CelList& cels)
 {
   m_impl->getCels(cels);
+}
+
+void Sprite::remapImages(int frame_from, int frame_to, const std::vector<int>& mapping)
+{
+  m_impl->remapImages(frame_from, frame_to, mapping);
 }
 
 //////////////////////////////////////////////////////////////////////

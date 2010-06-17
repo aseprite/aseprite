@@ -21,6 +21,7 @@
 
 #include "jinete/jbase.h"
 #include "raster/gfxobj.h"
+#include <vector>
 
 struct FormatOptions;
 class Image;
@@ -151,6 +152,8 @@ public:
   Image* getCurrentImage(int* x = NULL, int* y = NULL, int* opacity = NULL);
 
   void getCels(CelList& cels);
+
+  void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping);
 
   ////////////////////////////////////////
   // Undo
