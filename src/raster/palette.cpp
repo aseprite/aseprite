@@ -337,22 +337,49 @@ bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
   return false;
 }
 
-template<class T, class Ptr>
-struct ptr_wrapper {
-  Ptr* ptr;
-  ptr_wrapper(Ptr* ptr) : ptr(ptr) { }
+struct PalEntryWithIndex {
+  int index;
+  ase_uint32 color;
+};
 
-  bool operator()(T a, T b) {
-    return ptr->operator()(a, b);
+struct PalEntryWithIndexPredicate {
+  SortPalette* sort_palette;
+  PalEntryWithIndexPredicate(SortPalette* sort_palette)
+    : sort_palette(sort_palette) { }
+
+  bool operator()(PalEntryWithIndex& a, PalEntryWithIndex& b) {
+    return sort_palette->operator()(a.color, b.color);
   }
 };
 
-void Palette::sort(int from, int to, SortPalette* sort_palette)
+void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping)
 {
-  std::sort(m_colors.begin() + from,
-	    m_colors.begin() + to + 1,
-	    ptr_wrapper<ase_uint32, SortPalette>(sort_palette));
+  if (from == to)		// Just do nothing
+    return;
+
+  assert(from < to);
+
+  std::vector<PalEntryWithIndex> temp(to-from+1);
+  for (size_t i=0; i<temp.size(); ++i) {
+    temp[i].index = from+i;
+    temp[i].color = m_colors[from+i];
+  }
+
+  std::sort(temp.begin(), temp.end(), PalEntryWithIndexPredicate(sort_palette));
+
+  // Default mapping table (no-mapping)
+  mapping.resize(256);
+  for (size_t i=0; i<256; ++i)
+    mapping[i] = i;
+
+  for (size_t i=0; i<temp.size(); ++i) {
+    m_colors[from+i] = temp[i].color;
+    mapping[from+i] = temp[i].index;
+  }
 }
+
+// End of Sort stuff
+//////////////////////////////////////////////////////////////////////
 
 /**
  * @param pal The ASE color palette to copy.

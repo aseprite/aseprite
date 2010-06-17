@@ -83,7 +83,7 @@ public:
   void makeHorzRamp(int from, int to);
   void makeVertRamp(int from, int to, int columns);
   void makeRectRamp(int from, int to, int columns);
-  void sort(int from, int to, SortPalette* sort_palette);
+  void sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping);
 
   void toAllegro(RGB* rgb) const;
   void fromAllegro(const RGB* rgb);

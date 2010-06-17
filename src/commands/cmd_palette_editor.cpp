@@ -425,7 +425,7 @@ struct SortDlgData
 
 static bool insert_criteria_hook(Widget* widget, void* data);
 static bool remove_criteria_hook(Widget* widget, void* data);
-static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems);
+static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems, std::vector<int>& mapping);
 
 static void sort_command(JWidget widget)
 {
@@ -481,7 +481,8 @@ static void sort_command(JWidget widget)
       from = MID(0, from, palette->size()-1);
       to = MID(from, to, palette->size()-1);
 
-      sort_by_criteria(palette, from, to, data.selected_criteria->children);
+      std::vector<int> mapping;
+      sort_by_criteria(palette, from, to, data.selected_criteria->children, mapping);
       set_new_palette(palette);
 
       delete palette;
@@ -565,7 +566,7 @@ static bool remove_criteria_hook(Widget* widget, void* _data)
   return true;
 }
 
-static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems)
+static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_listitems, std::vector<int>& mapping)
 {
   SortPalette* sort_palette = NULL;
   JLink link;
@@ -634,7 +635,7 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
   }
 
   if (sort_palette) {
-    palette->sort(from, to, sort_palette);
+    palette->sort(from, to, sort_palette, mapping);
     delete sort_palette;
   }
 
