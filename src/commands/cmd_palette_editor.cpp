@@ -1062,7 +1062,7 @@ static void on_color_changed(color_t color)
   if (disable_colorbar_signals)
     return;
 
-  if (color_type(color) == COLOR_TYPE_INDEX) {
+  if (color_is_valid(color) && color_type(color) == COLOR_TYPE_INDEX) {
     int index = color_get_index(color);
     palette_editor->selectColor(index);
 
