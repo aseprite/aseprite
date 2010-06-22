@@ -411,32 +411,36 @@ bool ColorBar::msg_proc(JMessage msg)
 	}
 	/* pick the color */
 	else if (m_hot != HOTCOLOR_NONE) {
-	  switch (m_hot) {
+	  color_t color = getHotColor(m_hot);
 
-	    case HOTCOLOR_FGCOLOR:
-	    case HOTCOLOR_BGCOLOR: {
-	      Command* paledit_cmd = CommandsModule::instance()->get_command_by_name(CommandId::palette_editor);
-	      Params params;
-	      params.set("target", (m_hot == HOTCOLOR_FGCOLOR ? "foreground": "background"));
-	      params.set("open", "true");
+	  // Check if the color is invalid (e.g. index out of range)
+	  if (color_is_valid(color)) {
 
-	      UIContext::instance()->execute_command(paledit_cmd, &params);
-	      break;
-	    }
+	    switch (m_hot) {
 
-	    default:
-	      color_t color = getHotColor(m_hot);
+	      case HOTCOLOR_FGCOLOR:
+	      case HOTCOLOR_BGCOLOR: {
+		Command* paledit_cmd = CommandsModule::instance()->get_command_by_name(CommandId::palette_editor);
+		Params params;
+		params.set("target", (m_hot == HOTCOLOR_FGCOLOR ? "foreground": "background"));
+		params.set("open", "true");
 
-	      // Check if the color is invalid (e.g. index out of range)
-	      if (color_is_valid(color)) {
+		UIContext::instance()->execute_command(paledit_cmd, &params);
+		break;
+	      }
+
+	      default: {
+		color_t color = getHotColor(m_hot);
+
 		if (msg->mouse.left) {
 		  this->setFgColor(color);
 		}
 		if (msg->mouse.right) {
 		  this->setBgColor(color);
 		}
+		break;
 	      }
-	      break;
+	    }
 	  }
 	}
 
