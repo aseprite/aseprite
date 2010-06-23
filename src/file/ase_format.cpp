@@ -560,8 +560,8 @@ static void ase_file_write_close_chunk(FILE *f)
 static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
 {
   int i, c, r, g, b, packets, skip, size;
-  Palette* pal = new Palette(frame, 256);
-  sprite->getPalette(frame)->copyColorsTo(pal);
+  Palette* pal = new Palette(*sprite->getPalette(frame));
+  pal->setFrame(frame);
 
   packets = fgetw(f);	// Number of packets
   skip = 0;
@@ -588,13 +588,13 @@ static Palette *ase_file_read_color_chunk(FILE *f, Sprite *sprite, int frame)
 static Palette *ase_file_read_color2_chunk(FILE *f, Sprite *sprite, int frame)
 {
   int i, c, r, g, b, packets, skip, size;
-  Palette* pal = new Palette(frame, 256);
-  sprite->getPalette(frame)->copyColorsTo(pal);
+  Palette* pal = new Palette(*sprite->getPalette(frame));
+  pal->setFrame(frame);
 
-  packets = fgetw(f);	/* number of packets */
+  packets = fgetw(f);	// Number of packets
   skip = 0;
 
-  /* read all packets */
+  // Read all packets
   for (i=0; i<packets; i++) {
     skip += fgetc(f);
     size = fgetc(f);
@@ -618,10 +618,12 @@ static void ase_file_write_color2_chunk(FILE *f, Palette *pal)
 
   ase_file_write_start_chunk(f, ASE_FILE_CHUNK_FLI_COLOR2);
 
-  fputw(1, f);
-  fputc(0, f);
-  fputc(0, f);
-  for (c=0; c<256; c++) {
+  fputw(1, f);			// number of packets
+
+  // First packet
+  fputc(0, f);					 // skip 0 colors
+  fputc(pal->size() == 256 ? 0: pal->size(), f); // number of colors
+  for (c=0; c<pal->size(); c++) {
     color = pal->getEntry(c);
 
     fputc(_rgba_getr(color), f);
