@@ -49,6 +49,15 @@ public:
     PALETTE allegPal;
     palette->toAllegro(allegPal);
     create_rgb_table(m_allegMap, allegPal, NULL);
+
+    for (int r=0; r<32; ++r)
+      for (int g=0; g<32; ++g)
+	for (int b=0; b<32; ++b) {
+	  if (m_allegMap->data[r][g][b] >= palette->size())
+	    m_allegMap->data[r][g][b] = palette->findBestfit(_rgb_scale_5[r],
+							     _rgb_scale_5[g],
+							     _rgb_scale_5[b]);
+	}
   }
 
   int mapColor(int r, int g, int b) const {
