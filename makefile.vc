@@ -45,11 +45,11 @@ ifdef DEBUGMODE
   ifdef STATIC_ALLEG_LINK
     CFLAGS += -Zi -MTd -DDEBUGMODE -DALLEGRO_STATICLINK
     LFLAGS += -DEBUG
-    LIBS += alld_s_crt.lib psapi.lib
+    LIBS += alleg-debug.lib psapi.lib
   else
     CFLAGS += -Zi -MDd -DDEBUGMODE
     LFLAGS += -DEBUG
-    LIBS += Alld.lib psapi.lib
+    LIBS += alleg44-debug.lib psapi.lib
   endif
 else
   ifdef RELEASE
@@ -58,20 +58,20 @@ else
 
     ifdef STATIC_ALLEG_LINK
       CFLAGS += -MT -DALLEGRO_STATICLINK
-      LIBS += Alleg_s_crt.lib 
+      LIBS += alleg.lib 
     else
       CFLAGS += -MD
-      LIBS += Alleg.lib
+      LIBS += alleg44.lib
     endif
   else
     # Release with debug info
     CFLAGS += -Zi -O2 -MD -DNDEBUG
     LFLAGS += -DEBUG
-    LIBS += Alleg.lib
-    LIBS += psapi.lib
+    LIBS += alleg44.lib psapi.lib
   endif
 endif
 
+# Using static version of Allegro? Include DirectX libs
 ifdef STATIC_ALLEG_LINK
   LIBS += dinput8.lib ddraw.lib dxguid.lib dsound.lib
 endif
