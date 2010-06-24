@@ -121,7 +121,7 @@
       <key tool="paint_bucket" shortcut="G" />
 
       <key tool="line" shortcut="L" />
-      <key tool="curve" shortcut="P" />
+      <key tool="curve" shortcut="Y" />
 
       <key tool="rectangle" shortcut="U" />
       <key tool="filled_rectangle" shortcut="U" />
