@@ -192,7 +192,6 @@ $1/README.html							     \
 $1/COPYING							     \
 $1/data/convmatr.def						     \
 $1/data/*.xml						     	     \
-$1/docs/*.pdf							     \
 $1/docs/files/*.txt						     \
 $1/docs/licenses/*.txt						     \
 $1/data/widgets/*.xml"
@@ -201,6 +200,8 @@ $1/data/widgets/*.xml"
 $1/data/aseicon.*						     \
 $1/data/fonts/*.pcx						     \
 $1/data/palettes/*.col						     \
+$1/data/icons/ase*.ico						     \
+$1/data/icons/ase*.png						     \
 $1/data/skins/*/*.pcx						     \
 $1/data/skins/*/*.png						     \
 $1/data/skins/*/*.xml						     \
