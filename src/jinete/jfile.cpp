@@ -326,6 +326,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     const char *name      = elem->Attribute("name");
     const char *tooltip   = elem->Attribute("tooltip");
     bool selected         = bool_attr_is_true(elem, "selected");
+    bool disabled         = bool_attr_is_true(elem, "disabled");
     bool expansive        = bool_attr_is_true(elem, "expansive");
     bool magnetic         = bool_attr_is_true(elem, "magnetic");
     bool noborders        = bool_attr_is_true(elem, "noborders");
@@ -345,6 +346,9 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
 
     if (selected)
       jwidget_set_selected(widget, selected);
+
+    if (disabled)
+      jwidget_disable(widget);
 
     if (expansive)
       jwidget_expansive(widget, true);
