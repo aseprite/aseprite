@@ -382,6 +382,24 @@ enum {
   PART_COLORBAR_BORDER_HOTFG_SW,
   PART_COLORBAR_BORDER_HOTFG_W,
 
+  PART_SCROLLBAR_BG_NW,
+  PART_SCROLLBAR_BG_N,
+  PART_SCROLLBAR_BG_NE,
+  PART_SCROLLBAR_BG_E,
+  PART_SCROLLBAR_BG_SE,
+  PART_SCROLLBAR_BG_S,
+  PART_SCROLLBAR_BG_SW,
+  PART_SCROLLBAR_BG_W,
+
+  PART_SCROLLBAR_THUMB_NW,
+  PART_SCROLLBAR_THUMB_N,
+  PART_SCROLLBAR_THUMB_NE,
+  PART_SCROLLBAR_THUMB_E,
+  PART_SCROLLBAR_THUMB_SE,
+  PART_SCROLLBAR_THUMB_S,
+  PART_SCROLLBAR_THUMB_SW,
+  PART_SCROLLBAR_THUMB_W,
+
   PARTS
 };
 
@@ -482,6 +500,9 @@ public:
   int get_tab_normal_face_color() const { return makecol(199, 199, 199); }
 
   int get_panel_face_color() const { return makecol(125, 146, 158); }
+
+  int get_scrollbar_bg_face_color() const { return makecol(125, 146, 158); }
+  int get_scrollbar_thumb_face_color() const { return makecol(199, 199, 199); }
 
   BITMAP* get_part(int part_i) const { return m_part[part_i]; }
   BITMAP* get_toolicon(const char* tool_id) const;

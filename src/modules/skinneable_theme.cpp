@@ -130,6 +130,8 @@ SkinneableTheme::SkinneableTheme()
   sheet_mapping["colorbar_border_fg"] = PART_COLORBAR_BORDER_FG_NW;
   sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
   sheet_mapping["colorbar_border_hotfg"] = PART_COLORBAR_BORDER_HOTFG_NW;
+  sheet_mapping["scrollbar_bg"] = PART_SCROLLBAR_BG_NW;
+  sheet_mapping["scrollbar_thumb"] = PART_SCROLLBAR_THUMB_NW;
 
   reload_skin();
 }
@@ -1324,20 +1326,19 @@ void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
   x2 = widget->rc->x2-1;
   y2 = widget->rc->y2-1;
 
-  /* border */
-  rect(ji_screen, x1, y1, x2, y2, BGCOLOR);
+  draw_bounds_nw(ji_screen,
+		 x1, y1, x2, y2,
+		 PART_SCROLLBAR_BG_NW,
+		 get_scrollbar_bg_face_color());
 
-  /* draw the content */
-  x1++, y1++, x2--, y2--;
-
-  /* horizontal bar */
+  // Horizontal bar
   if (widget->getAlign() & JI_HORIZONTAL) {
     u1 = x1+pos;
     v1 = y1;
     u2 = x1+pos+len-1;
     v2 = y2;
   }
-  /* vertical bar */
+  // Vertical bar
   else {
     u1 = x1;
     v1 = y1+pos;
@@ -1345,25 +1346,10 @@ void SkinneableTheme::draw_view_scrollbar(JWidget widget, JRect clip)
     v2 = y1+pos+len-1;
   }
 
-  /* background */
-  jrectexclude(ji_screen,
-	       x1, y1, x2, y2,
-	       u1, v1, u2, v2, BGCOLOR);
-
-  /* 1st border */
-  if (jwidget_is_selected(widget))
-    jrectedge(ji_screen, u1, v1, u2, v2,
-	      COLOR_DISABLED, COLOR_BACKGROUND);
-  else
-    jrectedge(ji_screen, u1, v1, u2, v2,
-	      COLOR_BACKGROUND, COLOR_DISABLED);
-
-  /* bar-block background */
-  u1++, v1++, u2--, v2--;
-  if (jwidget_is_enabled(widget) && widget->hasMouseOver())
-    rectfill(ji_screen, u1, v1, u2, v2, COLOR_HOTFACE);
-  else
-    rectfill(ji_screen, u1, v1, u2, v2, BGCOLOR);
+  draw_bounds_nw(ji_screen,
+		 u1, v1, u2, v2,
+		 PART_SCROLLBAR_THUMB_NW,
+		 get_scrollbar_thumb_face_color());
 }
 
 void SkinneableTheme::draw_view_viewport(JWidget widget, JRect clip)
