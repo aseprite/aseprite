@@ -127,7 +127,7 @@ try_again:;
       int ret = jalert("%s<<%s<<%s||%s||%s||%s",
 		       _("Warning"), _("Saving changes in:"),
 		       get_filename(sprite->getFilename()),
-		       _("&Save"), _("&Discard"), _("&Cancel"));
+		       _("&Save"), _("Do&n't Save"), _("&Cancel"));
 
       if (ret == 1) {
 	// "save": save the changes
