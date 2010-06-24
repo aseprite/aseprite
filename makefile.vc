@@ -53,7 +53,8 @@ ifdef DEBUGMODE
   endif
 else
   ifdef RELEASE
-    CFLAGS += -O2 -DNDEBUG
+    # Release with debug info
+    CFLAGS += -Zi -O2 -DNDEBUG
     LFLAGS += -RELEASE
 
     ifdef STATIC_ALLEG_LINK
