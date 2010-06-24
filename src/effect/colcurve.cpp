@@ -355,8 +355,9 @@ void apply_color_curve1(Effect *effect)
 
     c = *(src_address++);
 
-    if (effect->target & TARGET_INDEX_CHANNEL)
+    if (effect->target & TARGET_INDEX_CHANNEL) {
       c = data.cmap[c];
+    }
     else {
       r = _rgba_getr(pal->getEntry(c));
       g = _rgba_getg(pal->getEntry(c));
@@ -369,6 +370,6 @@ void apply_color_curve1(Effect *effect)
       c = rgbmap->mapColor(r, g, b);
     }
 
-    *(dst_address++) = MID(0, c, 255);
+    *(dst_address++) = MID(0, c, pal->size()-1);
   }
 }
