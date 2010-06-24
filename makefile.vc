@@ -39,7 +39,7 @@ LFLAGS = -NOLOGO -SUBSYSTEM:WINDOWS -MACHINE:X86
 
 LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
        Msimg32.lib WinMM.lib AdvAPI32.lib Ole32.lib ShLwApi.lib Vfw32.Lib   \
-       wininet.lib ddraw.lib dxguid.lib dsound.lib dinput8.lib
+       wininet.lib
 
 ifdef DEBUGMODE
   ifdef STATIC_ALLEG_LINK
@@ -59,7 +59,6 @@ else
     ifdef STATIC_ALLEG_LINK
       CFLAGS += -MT -DALLEGRO_STATICLINK
       LIBS += Alleg_s_crt.lib 
-      LIBS += dinput8.lib ddraw.lib dxguid.lib dsound.lib
     else
       CFLAGS += -MD
       LIBS += Alleg.lib
@@ -71,6 +70,10 @@ else
     LIBS += Alleg.lib
     LIBS += psapi.lib
   endif
+endif
+
+ifdef STATIC_ALLEG_LINK
+  LIBS += dinput8.lib ddraw.lib dxguid.lib dsound.lib
 endif
 
 ifdef MEMLEAK
