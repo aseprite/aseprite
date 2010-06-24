@@ -56,6 +56,9 @@ libpng_files="third_party/libpng/*.[ch]		\
 	      third_party/libpng/TODO		\
 	      third_party/libpng/Y2KINFO"
 
+loadpng_files="third_party/loadpng/*.[ch]	\
+	       third_party/loadpng/*.txt"
+
 tinyxml_files="third_party/tinyxml/*.txt	\
 	       third_party/tinyxml/*.cpp	\
 	       third_party/tinyxml/*.h"
@@ -166,6 +169,7 @@ cp --parents					\
     $jpeg_files					\
     $libart_files				\
     $libpng_files				\
+    $loadpng_files				\
     $tinyxml_files				\
     $vaca_files					\
     $zlib_files					\
