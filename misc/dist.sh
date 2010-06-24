@@ -1,8 +1,10 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=0.8.0
+version=0.8.0-beta
 distdir=ase-$version
+zip="zip -9"
+zip_recursive_flag="-r"
 
 freetype_files="third_party/freetype/ChangeLog				\
 		third_party/freetype/descrip.mms			\
@@ -81,10 +83,11 @@ ase_files="config.h				\
 	   makefile.vc				\
 	   *.txt				\
 	   *.html				\
-	   data/aseicon.*			\
 	   data/convmatr.def			\
 	   data/*.xml				\
 	   data/fonts/*.pcx			\
+	   data/icons/ase*.ico			\
+	   data/icons/ase*.png			\
 	   data/palettes/*.col			\
 	   data/skins/*/*.pcx			\
 	   data/skins/*/*.png			\
@@ -146,6 +149,7 @@ ase_files="config.h				\
 	   src/widgets/*.cpp			\
 	   src/widgets/*.h			\
 	   src/widgets/editor/*.cpp		\
+	   src/widgets/editor/*.h		\
 	   src/widgets/editor/*.txt		\
 	   third_party/*.txt"
 
@@ -172,7 +176,7 @@ cd "$dir"
 
 # tar vczf $distdir.tar.gz $distdir
 # tar vcjf $distdir.tar.bz2 $distdir
-zip -r -9 $distdir.zip $distdir
+$zip $zip_recursive_flag $distdir.zip $distdir
 rm -fr $distdir
 
 fi
@@ -213,13 +217,27 @@ cd "$dir/.."
 #make -f makefile.vc CONFIGURED=1 RELEASE=1 STATIC_ALLEG_LINK=1
 def_common_files .
 mkdir "$dir/$distdir-win32"
+
+# For Allegro dll / C Runtime dll
+#cp -r --parents $txt_files $bin_files aseprite.exe alleg44.dll msvcr90.dll "$dir/$distdir-win32"
+
+# For Allegro static / static C runtime dll (use /MT to compile Allegro)
 cp -r --parents $txt_files $bin_files aseprite.exe "$dir/$distdir-win32"
 
 cd "$dir"
 def_common_files $distdir-win32
-zip -9 $distdir-win32.zip $txt_files
-zip -9 $distdir-win32.zip $bin_files		\
+$zip $distdir-win32.zip $txt_files
+
+# Dynamic version of DLLs
+#$zip $distdir-win32.zip $bin_files		\
+#    $distdir-win32/aseprite.exe \
+#    $distdir-win32/alleg44.dll \
+#    $distdir-win32/msvcr90.dll
+
+# Static version
+$zip $distdir-win32.zip $bin_files \
     $distdir-win32/aseprite.exe
+
 rm -fr $distdir-win32
 
 fi
