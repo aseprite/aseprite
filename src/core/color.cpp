@@ -647,7 +647,7 @@ int get_color_for_image(int imgtype, color_t color)
 	  c = _graya(data & 0xff, 255);
 	  break;
 	case IMAGE_INDEXED:
-	  c = data & 0xff;
+	  c = MID(0, (data & 0xff), get_current_palette()->size()-1);
 	  break;
       }
       break;
