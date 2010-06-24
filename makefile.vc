@@ -232,9 +232,16 @@ $(OBJ_DIR)/icon.res: src/icon.rc
 	$(RC) $<
 	mv src/icon.res $@
 
+ifdef STATIC_ALLEG_LINK
+
 $(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
 	link $(LFLAGS) $^ $(LIBS) -OUT:$@
 
-# To embed the manifest file uncomment the following lines:
-#	mt -nologo -manifest $@.manifest -outputresource:$@;#2
-#	rm $@.manifest
+else
+
+$(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
+	link $(LFLAGS) $^ $(LIBS) -OUT:$@
+	mt -nologo -manifest $@.manifest -outputresource:$@;#2
+	rm $@.manifest
+
+endif
