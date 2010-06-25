@@ -84,15 +84,13 @@ void EyedropperCommand::execute(Context* context)
   color_t color = color_from_image(sprite->getImgType(),
 				   sprite->getPixel(x, y));
 
-  if (color_type(color) != COLOR_TYPE_MASK) {
-    // TODO replace the color in the "context", not directly from the color-bar
+  // TODO replace the color in the "context", not directly from the color-bar
 
-    // set the color of the color-bar
-    if (m_background)
-      app_get_colorbar()->setBgColor(color);
-    else
-      app_get_colorbar()->setFgColor(color);
-  }
+  // set the color of the color-bar
+  if (m_background)
+    app_get_colorbar()->setBgColor(color);
+  else
+    app_get_colorbar()->setFgColor(color);
 }
 
 //////////////////////////////////////////////////////////////////////

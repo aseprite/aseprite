@@ -33,6 +33,7 @@
 #include "core/color.h"
 #include "modules/editors.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/pen.h"
 #include "raster/sprite.h"
 #include "tools/tool.h"
@@ -230,6 +231,7 @@ void Editor::editor_cursor_exit()
 void Editor::editor_draw_cursor(int x, int y, bool refresh)
 {
   assert(m_cursor_thick == 0);
+  assert(m_sprite != NULL);
 
   /* get drawable region */
   clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
@@ -254,11 +256,17 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   if (current_tool->getInk(0)->isSelection()) {
     cursor_type = CURSOR_CROSS_ONE;
   }
-  else if (current_tool->getInk(0)->isEffect()) {
+  else if (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
+	   current_tool->getInk(0)->isEffect() ||
+	   // or when the FG color is mask and we are not in the background layer
+	   (color_type(UIContext::instance()->getSettings()->getFgColor()) == COLOR_TYPE_MASK &&
+	    (m_sprite->getCurrentLayer() != NULL &&
+	     !m_sprite->getCurrentLayer()->is_background()))) {
     cursor_type = CURSOR_BOUNDS;
   }
-  else
+  else {
     cursor_type = CURSOR_PENCIL;
+  }
 
   // For cursor type 'bounds' we have to generate cursor boundaries
   if (cursor_type & CURSOR_BOUNDS)

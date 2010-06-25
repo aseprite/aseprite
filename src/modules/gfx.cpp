@@ -430,7 +430,11 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
   int data;
   BITMAP* graph;
 
-  if (type == COLOR_TYPE_INDEX) {
+  if (type == COLOR_TYPE_MASK) {
+    rectgrid(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, rc.w/4, rc.h/2);
+    return;
+  }
+  else if (type == COLOR_TYPE_INDEX) {
     int index = color_get_index(color);
 
     if (index >= 0 && index < get_current_palette()->size()) {
