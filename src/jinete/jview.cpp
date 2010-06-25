@@ -655,7 +655,7 @@ static void scrollbar_info(JWidget widget, int *_pos, int *_len,
   }
   else {
     len = bar_size - (max-viewport_size);
-    len = MID(BAR_SIZE-border_width, len, bar_size);
+    len = MID(BAR_SIZE*2-border_width, len, bar_size);
     pos = (bar_size-len) * scroll / (max-viewport_size);
     pos = MID(0, pos, bar_size-len);
   }
