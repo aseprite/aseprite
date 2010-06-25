@@ -422,7 +422,10 @@ void SkinneableTheme::init_widget(JWidget widget)
 
     case JI_COMBOBOX:
       {
-	JWidget button = jcombobox_get_button_widget(widget);
+	ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
+	assert(combobox != NULL);
+
+	Widget* button = combobox->getButtonWidget();
 
 	button->border_width.l = 0;
 	button->border_width.t = 0;

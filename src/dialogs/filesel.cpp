@@ -88,7 +88,7 @@ jstring ase_file_selector(const jstring& message,
   static Frame* window = NULL;
   Widget* fileview;
   Widget* filename_entry;
-  Widget* filetype;
+  ComboBox* filetype;
   jstring result;
 
   file_system_refresh();
@@ -146,7 +146,7 @@ jstring ase_file_selector(const jstring& message,
     JWidget goforward = jwidget_find_name(window, "goforward");
     JWidget goup = jwidget_find_name(window, "goup");
     JWidget location = jwidget_find_name(window, "location");
-    filetype = jwidget_find_name(window, "filetype");
+    filetype = (ComboBox*)jwidget_find_name(window, "filetype");
     filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_focusrest(goback, false);
@@ -186,7 +186,7 @@ jstring ase_file_selector(const jstring& message,
   }
   else {
     fileview = jwidget_find_name(window, "fileview");
-    filetype = jwidget_find_name(window, "filetype");
+    filetype = (ComboBox*)jwidget_find_name(window, "filetype");
     filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_signal_off(fileview);
@@ -203,14 +203,14 @@ jstring ase_file_selector(const jstring& message,
   update_navigation_buttons(window);
 
   // fill file-type combo-box
-  jcombobox_clear(filetype);
+  filetype->removeAllItems();
 
   std::vector<jstring> tokens;
   std::vector<jstring>::iterator tok;
 
   exts.split(',', tokens);
   for (tok=tokens.begin(); tok!=tokens.end(); ++tok)
-    jcombobox_add_string(filetype, tok->c_str(), NULL);
+    filetype->addItem(tok->c_str());
 
   // file name entry field
   filename_entry->setText(init_path.filename().c_str());
@@ -333,7 +333,7 @@ again:
     // selected in the filetype combo-box
     if (buf.extension().empty()) {
       buf += '.';
-      buf += jcombobox_get_selected_string(filetype);
+      buf += filetype->getItemText(filetype->getSelectedItem());
     }
 
     // duplicate the buffer to return a new string
@@ -358,7 +358,7 @@ again:
 static void update_location(JWidget window)
 {
   JWidget fileview = jwidget_find_name(window, "fileview");
-  JWidget location = jwidget_find_name(window, "location");
+  ComboBox* location = (ComboBox*)jwidget_find_name(window, "location");
   FileItem* current_folder = fileview_get_current_folder(fileview);
   FileItem* fileitem = current_folder;
   JList locations = jlist_new();
@@ -371,7 +371,7 @@ static void update_location(JWidget window)
   }
 
   /* clear all the items from the combo-box */
-  jcombobox_clear(location);
+  location->removeAllItems();
 
   /* add item by item (from root to the specific current folder) */
   int level = 0;
@@ -387,7 +387,8 @@ static void update_location(JWidget window)
     buf += fileitem_get_displayname(fileitem);
 
     // add the new location to the combo-box
-    jcombobox_add_string(location, buf.c_str(), fileitem);
+    int newItem = location->addItem(buf.c_str());
+    location->setItemData(newItem, fileitem);
 
     if (fileitem == current_folder)
       selected_index = level;
@@ -396,10 +397,9 @@ static void update_location(JWidget window)
   }
 
   jwidget_signal_off(location);
-  jcombobox_select_index(location, selected_index);
-  jcombobox_get_entry_widget(location)
-    ->setText(fileitem_get_displayname(current_folder).c_str());
-  jentry_deselect_text(jcombobox_get_entry_widget(location));
+  location->setSelectedItem(selected_index);
+  location->getEntryWidget()->setText(fileitem_get_displayname(current_folder).c_str());
+  jentry_deselect_text(location->getEntryWidget());
   jwidget_signal_on(location);
 
   jlist_free(locations);
@@ -475,7 +475,7 @@ static void add_in_navigation_history(FileItem *folder)
 static void select_filetype_from_filename(JWidget window)
 {
   JWidget entry = jwidget_find_name(window, "filename");
-  JWidget filetype = jwidget_find_name(window, "filetype");
+  ComboBox* filetype = (ComboBox*)jwidget_find_name(window, "filetype");
   const char *filename = entry->getText();
   char *p = get_extension(filename);
   char buf[MAX_PATH];
@@ -483,7 +483,7 @@ static void select_filetype_from_filename(JWidget window)
   if (p && *p != 0) {
     ustrcpy(buf, get_extension(filename));
     ustrlwr(buf);
-    jcombobox_select_string(filetype, buf);
+    filetype->setSelectedItem(filetype->findItemIndex(buf));
   }
 }
 
@@ -577,22 +577,24 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 static bool location_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
+    ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
+    assert(combobox != NULL);
+
     switch (msg->signal.num) {
 
-      /* when the user change the location we have to set the
-	 current-folder in the 'fileview' widget */
+      // When the user change the location we have to set the
+      // current-folder in the 'fileview' widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
 	FileItem* fileitem = reinterpret_cast<FileItem*>
-	  (jcombobox_get_data(widget,
-			      jcombobox_get_selected_index(widget)));
+	  (combobox->getItemData(combobox->getSelectedItem()));
 
 	if (fileitem) {
 	  Widget* fileview = widget->findSibling("fileview");
 
 	  fileview_set_current_folder(fileview, fileitem);
 
-	  /* refocus the 'fileview' (the focus in that widget is more
-	     useful for the user) */
+	  // Refocus the 'fileview' (the focus in that widget is more
+	  // useful for the user)
 	  jmanager_set_focus(fileview);
 	}
 	break;
@@ -602,25 +604,28 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-/* hook for the 'filetype' combo-box */
+// Hook for the 'filetype' combo-box
 static bool filetype_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
+    ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
+    assert(combobox != NULL);
+
     switch (msg->signal.num) {
 
-      /* when the user select a new file-type (extension), we have to
-	 change the file-extension in the 'filename' entry widget */
+      // When the user select a new file-type (extension), we have to
+      // change the file-extension in the 'filename' entry widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
-	const char *ext = jcombobox_get_selected_string(widget);
-	Frame* window = static_cast<Frame*>(widget->getRoot());
+	std::string ext = combobox->getItemText(combobox->getSelectedItem());
+	Frame* window = static_cast<Frame*>(combobox->getRoot());
 	Widget* entry = window->findChild("filename");
 	char buf[MAX_PATH];
-	char *p;
+	char* p;
 
 	ustrcpy(buf, entry->getText());
 	p = get_extension(buf);
 	if (p && *p != 0) {
-	  ustrcpy(p, ext);
+	  ustrcpy(p, ext.c_str());
 	  entry->setText(buf);
 	  jentry_select_text(entry, 0, -1);
 	}
@@ -635,18 +640,18 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 static bool filename_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_KEYRELEASED && msg->key.ascii >= 32) {
-    // check if all keys are released
+    // Check if all keys are released
     for (int c=0; c<KEY_MAX; ++c) {
       if (key[c])
 	return false;
     }
 
-    // string to be autocompleted
+    // String to be autocompleted
     jstring left_part = widget->getText();
     if (left_part.empty())
       return false;
 
-    // first we'll need the fileview widget
+    // First we'll need the fileview widget
     Widget* fileview = widget->findSibling("fileview");
 
     const FileItemList& children = fileview_get_filelist(fileview);
@@ -665,7 +670,7 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
 	  break;
       }
 
-      // is the pattern (left_part) in the child_name's beginning?
+      // Is the pattern (left_part) in the child_name's beginning?
       if (it2 == left_part.end()) {
 	widget->setText(child_name.c_str());
 	jentry_select_text(widget,

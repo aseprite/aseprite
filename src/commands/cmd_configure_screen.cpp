@@ -53,7 +53,7 @@ protected:
   void execute(Context* context);
 
 private:
-  void load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale);
+  void load_resolutions(ComboBox* resolution, ComboBox* color_depth, ComboBox* pixel_scale);
 
   GfxMode m_newMode;
   std::vector<std::pair<int, int> > m_resolutions;
@@ -73,7 +73,8 @@ void ConfigureScreen::execute(Context* context)
   CurrentGfxModeGuard currentGfxModeGuard;
   m_newMode = currentGfxModeGuard.getOriginal(); // Default values
 
-  JWidget resolution, color_depth, pixel_scale, fullscreen;
+  ComboBox* resolution, *color_depth, *pixel_scale;
+  Widget* fullscreen;
   FramePtr window(load_widget("configure_screen.xml", "configure_screen"));
   get_widgets(window,
 	      "resolution", &resolution,
@@ -91,10 +92,10 @@ void ConfigureScreen::execute(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == jwidget_find_name(window, "ok")) {
-    m_newMode.setWidth(m_resolutions[jcombobox_get_selected_index(resolution)].first);
-    m_newMode.setHeight(m_resolutions[jcombobox_get_selected_index(resolution)].second);
-    m_newMode.setDepth(m_colordepths[jcombobox_get_selected_index(color_depth)]);
-    m_newMode.setScaling(m_pixelscale[jcombobox_get_selected_index(pixel_scale)]);
+    m_newMode.setWidth(m_resolutions[resolution->getSelectedItem()].first);
+    m_newMode.setHeight(m_resolutions[resolution->getSelectedItem()].second);
+    m_newMode.setDepth(m_colordepths[color_depth->getSelectedItem()]);
+    m_newMode.setScaling(m_pixelscale[pixel_scale->getSelectedItem()]);
     m_newMode.setCard(jwidget_is_selected(fullscreen) ? GFX_AUTODETECT_FULLSCREEN:
 							GFX_AUTODETECT_WINDOWED);
 
@@ -124,10 +125,11 @@ void ConfigureScreen::execute(Context* context)
   // "currentGfxModeGuard" destruction keeps the new graphics mode or restores the old one
 }
 
-void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, JWidget pixel_scale)
+void ConfigureScreen::load_resolutions(ComboBox* resolution, ComboBox* color_depth, ComboBox* pixel_scale)
 {
   char buf[512];
   bool old_res_selected = false;
+  int newItem;
 
   m_resolutions.clear();
   m_colordepths.clear();
@@ -169,10 +171,10 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	  else
 	    sprintf(buf, "%dx%d", w, h);
 
-	  jcombobox_add_string(resolution, buf, NULL);
+	  newItem = resolution->addItem(buf);
 	  if (m_newMode.getWidth() == w && m_newMode.getHeight() == h) {
 	    old_res_selected = true;
-	    jcombobox_select_index(resolution, jcombobox_get_count(resolution)-1);
+	    resolution->setSelectedItem(newItem);
 	  }
 	}
       }
@@ -183,9 +185,9 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	if (bpp > 0 && label) {
 	  m_colordepths.push_back(bpp);
 
-	  jcombobox_add_string(color_depth, label, NULL);
+	  newItem = color_depth->addItem(label);
 	  if (m_newMode.getDepth() == bpp)
-	    jcombobox_select_index(color_depth, jcombobox_get_count(color_depth)-1);
+	    color_depth->setSelectedItem(newItem);
 	}
       }
       else if (strcmp(xmlElement->Value(), "pixelscale") == 0) {
@@ -195,9 +197,9 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
 	if (factor > 0 && label) {
 	  m_pixelscale.push_back(factor);
 
-	  jcombobox_add_string(pixel_scale, label, NULL);
+	  newItem = pixel_scale->addItem(label);
 	  if (m_newMode.getScaling() == factor)
-	    jcombobox_select_index(pixel_scale, jcombobox_get_count(pixel_scale)-1);
+	    pixel_scale->setSelectedItem(newItem);
 	}
       }
 
@@ -212,8 +214,8 @@ void ConfigureScreen::load_resolutions(JWidget resolution, JWidget color_depth, 
     m_resolutions.insert(m_resolutions.begin(), std::make_pair(m_newMode.getWidth(), m_newMode.getHeight()));
 
     sprintf(buf, "%dx%d (Current)", m_resolutions[0].first, m_resolutions[0].second);
-    jcombobox_insert_string(resolution, 0, buf, NULL);
-    jcombobox_select_index(resolution, 0);
+    resolution->insertItem(0, buf);
+    resolution->setSelectedItem(0);
   }
 }
 

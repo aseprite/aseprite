@@ -182,7 +182,8 @@ bool SpriteSizeCommand::enabled(Context* context)
 
 void SpriteSizeCommand::execute(Context* context)
 {
-  JWidget width_px, height_px, width_perc, height_perc, lock_ratio, method, ok;
+  JWidget width_px, height_px, width_perc, height_perc, lock_ratio, ok;
+  ComboBox* method;
   const CurrentSpriteReader sprite(context);
 
   // load the window widget
@@ -205,9 +206,9 @@ void SpriteSizeCommand::execute(Context* context)
   HOOK(width_perc, JI_SIGNAL_ENTRY_CHANGE, width_perc_change_hook, 0);
   HOOK(height_perc, JI_SIGNAL_ENTRY_CHANGE, height_perc_change_hook, 0);
 
-  jcombobox_add_string(method, "Nearest-neighbor", NULL);
-  jcombobox_add_string(method, "Bilinear", NULL);
-  jcombobox_select_index(method, get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
+  method->addItem("Nearest-neighbor");
+  method->addItem("Bilinear");
+  method->setSelectedItem(get_config_int("SpriteSize", "Method", RESIZE_METHOD_NEAREST_NEIGHBOR));
 
   window->remap_window();
   window->center_window();
@@ -221,7 +222,7 @@ void SpriteSizeCommand::execute(Context* context)
     int new_width = width_px->getTextInt();
     int new_height = height_px->getTextInt();
     ResizeMethod resize_method =
-      (ResizeMethod)jcombobox_get_selected_index(method);
+      (ResizeMethod)method->getSelectedItem();
 
     set_config_int("SpriteSize", "Method", resize_method);
 

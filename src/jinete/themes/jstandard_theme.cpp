@@ -315,8 +315,11 @@ void jstandard_theme::init_widget(JWidget widget)
       break;
 
     case JI_COMBOBOX: {
-      JWidget button = jcombobox_get_button_widget(widget);
-      ji_generic_button_set_icon(button, icons_bitmap[ICON_COMBOBOX]);
+      ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
+      if (combobox != NULL) {
+	Widget* button = combobox->getButtonWidget();
+	ji_generic_button_set_icon(button, icons_bitmap[ICON_COMBOBOX]);
+      }
       break;
     }
 

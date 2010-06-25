@@ -175,7 +175,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
   }
   /* combobox */
   else if (ustrcmp(elem_name, "combobox") == 0) {
-    widget = jcombobox_new();
+    widget = new ComboBox();
   }
   /* entry */
   else if (ustrcmp(elem_name, "entry") == 0) {

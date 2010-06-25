@@ -32,35 +32,66 @@
 #ifndef JINETE_JCOMBOBOX_H_INCLUDED
 #define JINETE_JCOMBOBOX_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "jinete/jwidget.h"
+#include <vector>
+#include <string>
 
-JWidget jcombobox_new();
+class Frame;
 
-void jcombobox_editable(JWidget combobox, bool state);
-void jcombobox_clickopen(JWidget combobox, bool state);
-void jcombobox_casesensitive(JWidget combobox, bool state);
+class ComboBox : public Widget
+{
+public:
+  ComboBox();
+  ~ComboBox();
 
-bool jcombobox_is_editable(JWidget combobox);
-bool jcombobox_is_clickopen(JWidget combobox);
-bool jcombobox_is_casesensitive(JWidget combobox);
+  void setEditable(bool state);
+  void setClickOpen(bool state);
+  void setCaseSensitive(bool state);
 
-void jcombobox_add_string(JWidget combobox, const char *string, void *data);
-void jcombobox_insert_string(JWidget combobox, int index, const char *string, void *data);
-void jcombobox_del_string(JWidget combobox, const char *string);
-void jcombobox_del_index(JWidget combobox, int index);
-void jcombobox_clear(JWidget combobox);
+  bool isEditable();
+  bool isClickOpen();
+  bool isCaseSensitive();
 
-void jcombobox_select_index(JWidget combobox, int index);
-void jcombobox_select_string(JWidget combobox, const char *string);
-int jcombobox_get_selected_index(JWidget combobox);
-const char *jcombobox_get_selected_string(JWidget combobox);
+  int addItem(const std::string& text);
+  void insertItem(int itemIndex, const std::string& text);
+  void removeItem(int itemIndex);
+  void removeAllItems();
 
-const char *jcombobox_get_string(JWidget combobox, int index);
-void *jcombobox_get_data(JWidget combobox, int index);
-int jcombobox_get_index(JWidget combobox, const char *string);
-int jcombobox_get_count(JWidget combobox);
+  int getItemCount();
 
-JWidget jcombobox_get_entry_widget(JWidget combobox);
-JWidget jcombobox_get_button_widget(JWidget combobox);
+  std::string getItemText(int itemIndex);
+  void setItemText(int itemIndex, const std::string& text);
+  int findItemIndex(const std::string& text);
+
+  int getSelectedItem();
+  void setSelectedItem(int itemIndex);
+
+  void* getItemData(int itemIndex);
+  void setItemData(int itemIndex, void* data);
+
+  Widget* getEntryWidget();
+  Widget* getButtonWidget();
+
+  void openListBox();
+  void closeListBox();
+  void switchListBox();
+  JRect getListBoxPos();
+
+protected:
+  virtual bool msg_proc(JMessage msg);
+
+private:
+  struct Item;
+
+  Widget* m_entry;
+  Widget* m_button;
+  Frame* m_window;
+  Widget* m_listbox;
+  std::vector<Item*> m_items;
+  int m_selected;
+  bool m_editable : 1;
+  bool m_clickopen : 1;
+  bool m_casesensitive : 1;
+};
 
 #endif
