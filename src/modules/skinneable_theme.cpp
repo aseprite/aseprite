@@ -1067,7 +1067,7 @@ void SkinneableTheme::draw_separator(JWidget widget, JRect clip)
   if (widget->hasText()) {
     int h = jwidget_get_text_height(widget);
     struct jrect r = { x1+h/2, y1-h/2, x2+1-h, y2+1+h };
-    draw_textstring(NULL, -1, BGCOLOR, false, widget, &r, 0);
+    draw_textstring(NULL, COLOR_SELECTED, BGCOLOR, false, widget, &r, 0);
   }
 }
 
