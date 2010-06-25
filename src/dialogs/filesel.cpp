@@ -20,6 +20,8 @@
 
 #include <cassert>
 #include <vector>
+#include <string>
+#include <set>
 #include <algorithm>
 #include <iterator>
 #include <cctype>
@@ -37,6 +39,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "widgets/fileview.h"
+#include "recent_files.h"
 
 #if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
 #  define HAVE_DRIVES
@@ -364,30 +367,31 @@ static void update_location(JWidget window)
   JList locations = jlist_new();
   JLink link;
   int selected_index = -1;
+  int newItem;
 
   while (fileitem != NULL) {
     jlist_prepend(locations, fileitem);
     fileitem = fileitem_get_parent(fileitem);
   }
 
-  /* clear all the items from the combo-box */
+  // Clear all the items from the combo-box
   location->removeAllItems();
 
-  /* add item by item (from root to the specific current folder) */
+  // Add item by item (from root to the specific current folder)
   int level = 0;
   JI_LIST_FOR_EACH(locations, link) {
     fileitem = reinterpret_cast<FileItem*>(link->data);
 
-    // indentation
+    // Indentation
     jstring buf;
     for (int c=0; c<level; ++c)
       buf += "  ";
 
-    // location name
+    // Location name
     buf += fileitem_get_displayname(fileitem);
 
-    // add the new location to the combo-box
-    int newItem = location->addItem(buf.c_str());
+    // Add the new location to the combo-box
+    newItem = location->addItem(buf.c_str());
     location->setItemData(newItem, fileitem);
 
     if (fileitem == current_folder)
@@ -396,11 +400,36 @@ static void update_location(JWidget window)
     level++;
   }
 
-  jwidget_signal_off(location);
-  location->setSelectedItem(selected_index);
-  location->getEntryWidget()->setText(fileitem_get_displayname(current_folder).c_str());
-  jentry_deselect_text(location->getEntryWidget());
-  jwidget_signal_on(location);
+  // Add paths from recent files list
+  {
+    newItem = location->addItem("");
+    newItem = location->addItem("-------- Recent Paths --------");
+
+    std::set<std::string> included;
+
+    // For each recent file...
+    RecentFiles::const_iterator it;
+    for (it = RecentFiles::begin(); it != RecentFiles::end(); ++it) {
+      // Get the path of the recent file
+      std::string path = jstring(*it).filepath();
+
+      // Check if the path was not already included in the list
+      if (included.find(path) == included.end()) {
+	included.insert(path);
+
+	location->addItem(path);
+      }
+    }
+  }
+
+  // Select the location
+  {
+    jwidget_signal_off(location);
+    location->setSelectedItem(selected_index);
+    location->getEntryWidget()->setText(fileitem_get_displayname(current_folder).c_str());
+    jentry_deselect_text(location->getEntryWidget());
+    jwidget_signal_on(location);
+  }
 
   jlist_free(locations);
 }
@@ -585,10 +614,17 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
       // When the user change the location we have to set the
       // current-folder in the 'fileview' widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
-	FileItem* fileitem = reinterpret_cast<FileItem*>
-	  (combobox->getItemData(combobox->getSelectedItem()));
+	int itemIndex = combobox->getSelectedItem();
+	FileItem* fileitem = reinterpret_cast<FileItem*>(combobox->getItemData(itemIndex));
 
-	if (fileitem) {
+	// Maybe the user selected a recent file path
+	if (fileitem == NULL) {
+	  jstring path = combobox->getItemText(itemIndex);
+	  if (!path.empty())
+	    fileitem = get_fileitem_from_path(path);
+	}
+
+	if (fileitem != NULL) {
 	  Widget* fileview = widget->findSibling("fileview");
 
 	  fileview_set_current_folder(fileview, fileitem);
