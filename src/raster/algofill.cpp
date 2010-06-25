@@ -48,6 +48,21 @@ static int flood_count;          /* number of flooded segments */
 
 #define FLOOD_LINE(c)            (((FLOODED_LINE *)_scratch_mem) + c)
 
+static inline bool color_equal_32(ase_uint32 c1, ase_uint32 c2)
+{
+  return (c1 == c2) || (_rgba_geta(c1) == 0 && _rgba_geta(c2) == 0);
+}
+
+static inline bool color_equal_16(ase_uint16 c1, ase_uint16 c2)
+{
+  return (c1 == c2) || (_graya_geta(c1) == 0 && _graya_geta(c2) == 0);
+}
+
+static inline bool color_equal_8(ase_uint8 c1, ase_uint8 c2)
+{
+  return (c1 == c2);
+}
+
 
 
 /* flooder:
@@ -69,18 +84,18 @@ static int flooder (Image *image, int x, int y,
         ase_uint32 *address = ((ase_uint32 **)image->line)[y];
 
         /* check start pixel */
-        if ((int)*(address+x) != src_color)
+        if (!color_equal_32((int)*(address+x), src_color))
           return x+1;
 
         /* work left from starting point */
         for (left=x-1; left>=0; left--) {
-          if ((int)*(address+left) != src_color)
+          if (!color_equal_32((int)*(address+left), src_color))
             break;
         }
 
         /* work right from starting point */
         for (right=x+1; right<image->w; right++) {
-          if ((int)*(address+right) != src_color)
+          if (!color_equal_32((int)*(address+right), src_color))
             break;
         }
       }
@@ -91,18 +106,18 @@ static int flooder (Image *image, int x, int y,
         ase_uint16 *address = ((ase_uint16 **)image->line)[y];
 
         /* check start pixel */
-        if ((int)*(address+x) != src_color)
+        if (!color_equal_16((int)*(address+x), src_color))
           return x+1;
 
         /* work left from starting point */
         for (left=x-1; left>=0; left--) {
-          if ((int)*(address+left) != src_color)
+          if (!color_equal_16((int)*(address+left), src_color))
             break;
         }
 
         /* work right from starting point */
         for (right=x+1; right<image->w; right++) {
-          if ((int)*(address+right) != src_color)
+          if (!color_equal_16((int)*(address+right), src_color))
             break;
         }
       }
@@ -113,18 +128,18 @@ static int flooder (Image *image, int x, int y,
         ase_uint8 *address = ((ase_uint8 **)image->line)[y];
 
         /* check start pixel */
-        if ((int)*(address+x) != src_color)
+        if (!color_equal_8((int)*(address+x), src_color))
           return x+1;
 
         /* work left from starting point */
         for (left=x-1; left>=0; left--) {
-          if ((int)*(address+left) != src_color)
+          if (!color_equal_8((int)*(address+left), src_color))
             break;
         }
 
         /* work right from starting point */
         for (right=x+1; right<image->w; right++) {
-          if ((int)*(address+right) != src_color)
+          if (!color_equal_8((int)*(address+right), src_color))
             break;
         }
       }
