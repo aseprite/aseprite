@@ -29,6 +29,7 @@
 
 #include "app.h"
 #include "commands/commands.h"
+#include "commands/params.h"
 #include "core/core.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -472,16 +473,20 @@ bool StatusBar::msg_proc(JMessage msg)
 	  else {
 	    int x1 = rc->x2-width;
 	    int x2 = rc->x2;
+	    bool hot = (0 == m_hot_layer);
 
 	    theme->draw_bounds_nw(doublebuffer,
 				  x1, rc->y1, x2, rc->y2,
-				  PART_TOOLBUTTON_NORMAL_NW,
-				  theme->get_button_normal_face_color());
+				  hot ? PART_TOOLBUTTON_HOT_NW:
+					PART_TOOLBUTTON_NORMAL_NW,
+				  hot ? theme->get_button_hot_face_color():
+					theme->get_button_normal_face_color());
 
-	    textout_centre_ex(doublebuffer, this->getFont(), "No Sprite",
+	    textout_centre_ex(doublebuffer, this->getFont(), "Donate",
 			      (x1+x2)/2,
 			      (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
-			      theme->get_button_normal_text_color(), -1);
+			      hot ? theme->get_button_hot_text_color():
+				    theme->get_button_normal_text_color(), -1);
 	  }
 	}
 	catch (locked_sprite_exception&) {
@@ -500,10 +505,10 @@ bool StatusBar::msg_proc(JMessage msg)
       return true;
     }
 
-    case JM_MOUSEENTER:
-      if (!jwidget_has_child(this, m_commands_box)) {
-	bool state = (UIContext::instance()->get_current_sprite() != NULL);
+    case JM_MOUSEENTER: {
+      bool state = (UIContext::instance()->get_current_sprite() != NULL);
 
+      if (!jwidget_has_child(this, m_commands_box) && state) {
 	m_b_first->setEnabled(state);
 	m_b_prev->setEnabled(state);
 	m_b_play->setEnabled(state);
@@ -515,7 +520,13 @@ bool StatusBar::msg_proc(JMessage msg)
 	jwidget_add_child(this, m_commands_box);
 	jwidget_dirty(this);
       }
+      else {
+	// Status text for donations
+	app_get_statusbar()
+	  ->setStatusText(0, "Click the \"Donate\" button to support ASE development");
+      }
       break;
+    }
 
     case JM_MOTION: {
       JRect rc = jwidget_get_rect(this);
@@ -532,13 +543,15 @@ bool StatusBar::msg_proc(JMessage msg)
       try {
 	--rc->y2;
 
+	int hot_layer = -1;
+
 	const CurrentSpriteReader sprite(UIContext::instance());
+	// Check which sprite's layer has the mouse over
 	if (sprite) {
 	  const LayerFolder* folder = sprite->getFolder();
 	  LayerConstIterator it = folder->get_layer_begin();
 	  LayerConstIterator end = folder->get_layer_end();
 	  int count = folder->get_layers_count();
-	  int hot_layer = -1;
 
 	  for (int c=0; it != end; ++it, ++c) {
 	    int x1 = rc->x2-width + c*width/count;
@@ -551,11 +564,22 @@ bool StatusBar::msg_proc(JMessage msg)
 	      break;
 	    }
 	  }
+	}
+	// Check if the "Donate" button has the mouse over
+	else {
+	  int x1 = rc->x2-width;
+	  int x2 = rc->x2;
 
-	  if (m_hot_layer != hot_layer) {
-	    m_hot_layer = hot_layer;
-	    dirty();
+	  if (Rect(Point(x1, rc->y1),
+		   Point(x2, rc->y2)).contains(Point(msg->mouse.x,
+						     msg->mouse.y))) {
+	    hot_layer = 0;
 	  }
+	}
+
+	if (m_hot_layer != hot_layer) {
+	  m_hot_layer = hot_layer;
+	  dirty();
 	}
       }
       catch (locked_sprite_exception&) {
@@ -583,6 +607,14 @@ bool StatusBar::msg_proc(JMessage msg)
 	      // Redraw the status-bar
 	      dirty();
 	    }
+	  }
+	  else {
+	    // Call "Donate" command
+	    Command* donate = CommandsModule::instance()
+	      ->get_command_by_name(CommandId::donate);
+
+	    Params params;
+	    UIContext::instance()->execute_command(donate, &params);
 	  }
 	}
 	catch (locked_sprite_exception&) {

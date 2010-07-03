@@ -309,6 +309,8 @@
       <menu text="&amp;Help">
 	<item command="quick_reference" text="Quick &amp;Reference" />
 	<separator />
+	<item command="donate" text="&amp;Donate" />
+	<separator />
 	<item command="about" text="&amp;About" />
       </menu>
     </menu>

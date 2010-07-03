@@ -31,6 +31,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_crop.cpp			\
 	src/commands/cmd_cut.cpp			\
 	src/commands/cmd_deselect_mask.cpp		\
+	src/commands/cmd_donate.cpp			\
 	src/commands/cmd_duplicate_layer.cpp		\
 	src/commands/cmd_duplicate_sprite.cpp		\
 	src/commands/cmd_exit.cpp			\
