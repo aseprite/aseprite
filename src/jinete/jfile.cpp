@@ -206,7 +206,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
   else if (ustrcmp(elem_name, "label") == 0) {
     const char *text = elem->Attribute("text");
 
-    widget = jlabel_new(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new Label(text ? TRANSLATE_ATTR(text): NULL);
     if (widget) {
       bool center = bool_attr_is_true(elem, "center");
       bool right  = bool_attr_is_true(elem, "right");

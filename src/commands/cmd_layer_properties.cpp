@@ -69,13 +69,13 @@ void LayerPropertiesCommand::execute(Context* context)
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
-  label_name = jlabel_new(_("Name:"));
+  label_name = new Label(_("Name:"));
   entry_name = jentry_new(256, layer->get_name().c_str());
   button_ok = jbutton_new(_("&OK"));
   button_cancel = jbutton_new(_("&Cancel"));
 
   if (with_blend_modes) {
-    label_bm = jlabel_new(_("Blend mode:"));
+    label_bm = new Label(_("Blend mode:"));
     view_bm = jview_new();
     list_bm = jlistbox_new();
 

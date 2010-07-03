@@ -31,44 +31,38 @@
 
 #include "config.h"
 
+#include "jinete/jlabel.h"
 #include "jinete/jmessage.h"
 #include "jinete/jtheme.h"
-#include "jinete/jwidget.h"
 
-static bool label_msg_proc(JWidget widget, JMessage msg);
-
-JWidget jlabel_new(const char *text)
+Label::Label(const char *text)
+  : Widget(JI_LABEL)
 {
-  JWidget widget = new Widget(JI_LABEL);
-
-  jwidget_add_hook(widget, JI_LABEL, label_msg_proc, NULL);
-  widget->setAlign(JI_LEFT | JI_MIDDLE);
-  widget->setText(text);
-  jwidget_init_theme(widget);
-
-  return widget;
+  this->setAlign(JI_LEFT | JI_MIDDLE);
+  this->setText(text);
+  jwidget_init_theme(this);
 }
 
-static bool label_msg_proc(JWidget widget, JMessage msg)
+bool Label::msg_proc(JMessage msg)
 {
   switch (msg->type) {
 
     case JM_REQSIZE:
-      if (widget->hasText()) {
-	msg->reqsize.w = jwidget_get_text_length(widget);
-	msg->reqsize.h = jwidget_get_text_height(widget);
+      if (this->hasText()) {
+	msg->reqsize.w = jwidget_get_text_length(this);
+	msg->reqsize.h = jwidget_get_text_height(this);
       }
       else
 	msg->reqsize.w = msg->reqsize.h = 0;
 
-      msg->reqsize.w += widget->border_width.l + widget->border_width.r;
-      msg->reqsize.h += widget->border_width.t + widget->border_width.b;
+      msg->reqsize.w += this->border_width.l + this->border_width.r;
+      msg->reqsize.h += this->border_width.t + this->border_width.b;
       return true;
 
     case JM_DRAW:
-      widget->theme->draw_label(widget, &msg->draw.rect);
+      this->theme->draw_label(this, &msg->draw.rect);
       return true;
   }
 
-  return false;
+  return Widget::msg_proc(msg);
 }

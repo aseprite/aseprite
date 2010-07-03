@@ -174,7 +174,7 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 	  window = new Frame(false, beg);
 	}
 	else if (label) {
-	  JWidget label = jlabel_new(beg);
+	  Label* label = new Label(beg);
 	  label->setAlign(align);
 	  jlist_append(*labels, label);
 	}

@@ -71,14 +71,14 @@ void dialogs_mask_color(Sprite* sprite)
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL);
   box4 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-  label_color = jlabel_new(_("Color:"));
+  label_color = new Label(_("Color:"));
   button_color = colorbutton_new
    (get_config_color("MaskColor", "Color",
 		     app_get_colorbar()->getFgColor()),
     sprite->getImgType());
   button_1 = jbutton_new("1");
   button_2 = jbutton_new("2");
-  label_fuzziness = jlabel_new(_("Fuzziness:"));
+  label_fuzziness = new Label(_("Fuzziness:"));
   slider_fuzziness =
     jslider_new(0, 255, get_config_int("MaskColor", "Fuzziness", 0));
   check_preview = jcheck_new(_("&Preview"));

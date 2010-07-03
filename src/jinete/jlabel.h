@@ -32,8 +32,16 @@
 #ifndef JINETE_JLABEL_H_INCLUDED
 #define JINETE_JLABEL_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "jinete/jwidget.h"
 
-JWidget jlabel_new(const char *text);
+class Label : public Widget
+{
+public:
+  Label(const char *text);
+
+protected:
+  virtual bool msg_proc(JMessage msg);
+
+};
 
 #endif

@@ -56,12 +56,12 @@ void AboutCommand::execute(Context* context)
   FramePtr window(new Frame(false, _("About " PACKAGE)));
 
   box1 = jbox_new(JI_VERTICAL);
-  label1 = jlabel_new(PACKAGE " | Allegro Sprite Editor v" VERSION);
-  label2 = jlabel_new(_("A pixel art program"));
+  label1 = new Label(PACKAGE " | Allegro Sprite Editor v" VERSION);
+  label2 = new Label(_("A pixel art program"));
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
 
-  label3 = jlabel_new(COPYRIGHT);
-  label4 = jlabel_new(WEBSITE);
+  label3 = new Label(COPYRIGHT);
+  label4 = new Label(WEBSITE);
   textbox = jtextbox_new("Authors:\n\n"
 			 "  David Capello\n"
 			 "   - Project leader and developer\n\n"

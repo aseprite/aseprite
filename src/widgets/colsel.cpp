@@ -46,20 +46,20 @@ typedef struct Model
   const char *text;
   int model;
   int color_type;
-  JWidget (*create)();
+  Widget* (*create)();
 } Model;
 
 struct ColorSelector
 {
   color_t color;
   Model* selected_model;
-  std::vector<JWidget> model_buttons;
+  std::vector<Widget*> model_buttons;
 };
 
-static JWidget create_rgb_container();
-static JWidget create_hsv_container();
-static JWidget create_gray_container();
-static JWidget create_mask_container();
+static Widget* create_rgb_container();
+static Widget* create_hsv_container();
+static Widget* create_gray_container();
+static Widget* create_mask_container();
 
 static int colorselector_type();
 static ColorSelector* colorselector_data(JWidget widget);
@@ -86,12 +86,12 @@ static Model models[] = {
 Frame* colorselector_new()
 {
   Frame* window = new PopupWindow(NULL, false);
-  JWidget grid1 = jgrid_new(2, false);
-  JWidget grid2 = jgrid_new(5, false);
-  JWidget models_box = jbox_new(JI_HORIZONTAL);
+  Widget* grid1 = jgrid_new(2, false);
+  Widget* grid2 = jgrid_new(5, false);
+  Widget* models_box = jbox_new(JI_HORIZONTAL);
   PalEdit* pal = new PalEdit(false);
-  JWidget idx = jlabel_new("None");
-  JWidget child;
+  Label* idx = new Label("None");
+  Widget* child;
   ColorSelector* colorselector = new ColorSelector;
   Model* m;
 
@@ -165,15 +165,15 @@ JWidget colorselector_get_paledit(JWidget widget)
   return jwidget_find_name(widget, "pal");
 }
 
-static JWidget create_rgb_container()
+static Widget* create_rgb_container()
 {
-  JWidget grid = jgrid_new(2, false);
-  JWidget rlabel = jlabel_new("R");
-  JWidget glabel = jlabel_new("G");
-  JWidget blabel = jlabel_new("B");
-  JWidget rslider = jslider_new(0, 255, 0);
-  JWidget gslider = jslider_new(0, 255, 0);
-  JWidget bslider = jslider_new(0, 255, 0);
+  Widget* grid = jgrid_new(2, false);
+  Label* rlabel = new Label("R");
+  Label* glabel = new Label("G");
+  Label* blabel = new Label("B");
+  Widget* rslider = jslider_new(0, 255, 0);
+  Widget* gslider = jslider_new(0, 255, 0);
+  Widget* bslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, rlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, rslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, glabel, 1, 1, JI_RIGHT);
@@ -192,15 +192,15 @@ static JWidget create_rgb_container()
   return grid;
 }
 
-static JWidget create_hsv_container()
+static Widget* create_hsv_container()
 {
-  JWidget grid = jgrid_new(2, false);
-  JWidget hlabel = jlabel_new("H");
-  JWidget slabel = jlabel_new("S");
-  JWidget vlabel = jlabel_new("V");
-  JWidget hslider = jslider_new(0, 255, 0);
-  JWidget sslider = jslider_new(0, 255, 0);
-  JWidget vslider = jslider_new(0, 255, 0);
+  Widget* grid = jgrid_new(2, false);
+  Label* hlabel = new Label("H");
+  Label* slabel = new Label("S");
+  Label* vlabel = new Label("V");
+  Widget* hslider = jslider_new(0, 255, 0);
+  Widget* sslider = jslider_new(0, 255, 0);
+  Widget* vslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, hlabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, hslider, 1, 1, JI_HORIZONTAL);
   jgrid_add_child(grid, slabel, 1, 1, JI_RIGHT);
@@ -219,11 +219,11 @@ static JWidget create_hsv_container()
   return grid;
 }
 
-static JWidget create_gray_container()
+static Widget* create_gray_container()
 {
-  JWidget grid = jgrid_new(2, false);
-  JWidget klabel = jlabel_new("V");
-  JWidget vslider = jslider_new(0, 255, 0);
+  Widget* grid = jgrid_new(2, false);
+  Label* klabel = new Label("V");
+  Widget* vslider = jslider_new(0, 255, 0);
   jgrid_add_child(grid, klabel, 1, 1, JI_RIGHT);
   jgrid_add_child(grid, vslider, 1, 1, JI_HORIZONTAL);
 
@@ -234,9 +234,9 @@ static JWidget create_gray_container()
   return grid;
 }
 
-static JWidget create_mask_container()
+static Widget* create_mask_container()
 {
-  return jlabel_new("Mask color selected");
+  return new Label("Mask color selected");
 }
 
 static int colorselector_type()

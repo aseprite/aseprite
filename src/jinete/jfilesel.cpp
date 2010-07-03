@@ -200,7 +200,7 @@ char *ji_file_select_ex(const char *message,
     jwidget_add_child(box2, subbox1);
     jwidget_add_child(subbox1, panel);
     jwidget_add_child(subbox1, subbox2);
-    jwidget_add_child(subbox2, jlabel_new(ji_translate_string("File name:")));
+    jwidget_add_child(subbox2, new Label(ji_translate_string("File name:")));
     jwidget_add_child(subbox2, entry_name);
   }
   if (widget_extension && (tmp = jwidget_find_name(widget_extension, "right")))
