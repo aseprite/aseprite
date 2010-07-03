@@ -286,7 +286,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	  jradio_deselect_group(widget);
 
 	  jwidget_signal_off(widget);
-	  jwidget_select(widget);
+	  widget->setSelected(true);
 	  jwidget_signal_on(widget);
 	}
       }
@@ -298,8 +298,8 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	if (widget->type == JI_BUTTON) {
 	  /* deselect the widget (maybe the user press the key, but
 	     before release it, changes the focus) */
-	  if (jwidget_is_selected(widget))
-	    jwidget_deselect(widget);
+	  if (widget->isSelected())
+	    widget->setSelected(false);
 	}
 
 	/* TODO theme specific stuff */
@@ -317,14 +317,14 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	    if ((msg->key.scancode == KEY_ENTER) ||
 		(msg->key.scancode == KEY_ENTER_PAD) ||
 		(msg->key.scancode == KEY_SPACE)) {
-	      jwidget_select(widget);
+	      widget->setSelected(true);
 	      return true;
 	    }
 	  }
 	  /* the underscored letter with Alt */
 	  if ((msg->any.shifts & KB_ALT_FLAG) &&
 	      (jwidget_check_underscored(widget, msg->key.scancode))) {
-	    jwidget_select(widget);
+	    widget->setSelected(true);
 	    return true;
 	  }
 	  /* magnetic */
@@ -337,7 +337,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	       process them) */
 	    jmanager_dispatch_messages(ji_get_default_manager());
 
-	    jwidget_select(widget);
+	    widget->setSelected(true);
 	    return true;
 	  }
 	}
@@ -350,19 +350,16 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	      ((msg->any.shifts & KB_ALT_FLAG) &&
 	       (jwidget_check_underscored(widget, msg->key.scancode)))) {
 	    if (widget->type == JI_CHECK) {
-	      /* swap the select status */
-	      if (jwidget_is_selected(widget))
-		jwidget_deselect(widget);
-	      else
-		jwidget_select(widget);
+	      // Swap the select status
+	      widget->setSelected(!widget->isSelected());
 	      
-	      /* signal */
+	      // Signal
 	      jwidget_emit_signal(widget, JI_SIGNAL_CHECK_CHANGE);
 	      jwidget_dirty(widget);
 	    }
 	    else if (widget->type == JI_RADIO) {
-	      if (jwidget_is_deselected(widget)) {
-		jwidget_select(widget);
+	      if (!widget->isSelected()) {
+		widget->setSelected(true);
 		jwidget_emit_signal(widget, JI_SIGNAL_RADIO_CHANGE);
 	      }
 	    }
@@ -375,7 +372,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
     case JM_KEYRELEASED:
       if (jwidget_is_enabled(widget)) {
 	if (widget->type == JI_BUTTON) {
-	  if (jwidget_is_selected(widget)) {
+	  if (widget->isSelected()) {
 	    button_selected_signal(widget);
 	    return true;
 	  }
@@ -388,33 +385,30 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
 	case JI_BUTTON:
 	  if (jwidget_is_enabled(widget)) {
-	    jwidget_select(widget);
+	    widget->setSelected(true);
 
-	    button->pressed_status = jwidget_is_selected(widget);
+	    button->pressed_status = widget->isSelected();
 	    widget->captureMouse();
 	  }
 	  return true;
 
 	case JI_CHECK:
 	  if (jwidget_is_enabled(widget)) {
-	    if (jwidget_is_selected(widget))
-	      jwidget_deselect(widget);
-	    else
-	      jwidget_select(widget);
+	    widget->setSelected(!widget->isSelected());
 
-	    button->pressed_status = jwidget_is_selected(widget);
+	    button->pressed_status = widget->isSelected();
 	    widget->captureMouse();
 	  }
 	  return true;
 
 	case JI_RADIO:
 	  if (jwidget_is_enabled(widget)) {
-	    if (jwidget_is_deselected(widget)) {
+	    if (!widget->isSelected()) {
 	      jwidget_signal_off(widget);
-	      jwidget_select(widget);
+	      widget->setSelected(true);
 	      jwidget_signal_on(widget);
 
-	      button->pressed_status = jwidget_is_selected(widget);
+	      button->pressed_status = widget->isSelected();
 	      widget->captureMouse();
 	    }
 	  }
@@ -439,8 +433,8 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	      break;
 
 	    case JI_RADIO:
-	      jwidget_deselect(widget);
-	      jwidget_select(widget);
+	      widget->setSelected(false);
+	      widget->setSelected(true);
 	      jwidget_emit_signal(widget, JI_SIGNAL_RADIO_CHANGE);
 	      break;
 	  }
@@ -454,15 +448,15 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	bool hasMouse = widget->hasMouseOver();
 
     	// Switch state when the mouse go out
-    	if (( hasMouse && jwidget_is_selected(widget) != button->pressed_status) ||
-    	    (!hasMouse && jwidget_is_selected(widget) == button->pressed_status)) {
+    	if (( hasMouse && widget->isSelected() != button->pressed_status) ||
+    	    (!hasMouse && widget->isSelected() == button->pressed_status)) {
     	  jwidget_signal_off(widget);
 
     	  if (hasMouse) {
-    	    jwidget_set_selected(widget, button->pressed_status);
+    	    widget->setSelected(button->pressed_status);
     	  }
     	  else {
-    	    jwidget_set_selected(widget, !button->pressed_status);
+    	    widget->setSelected(!button->pressed_status);
     	  }
 
     	  jwidget_signal_on(widget);
@@ -518,7 +512,7 @@ static void button_request_size(JWidget widget, int *w, int *h)
 static void button_selected_signal(JWidget widget)
 {
   // deselect
-  jwidget_deselect(widget);
+  widget->setSelected(false);
 
   // emit the signal
   bool used = jwidget_emit_signal(widget, JI_SIGNAL_BUTTON_SELECT);
@@ -558,6 +552,6 @@ static void button_deselect_group(JWidget widget, int radio_group)
 
   if (widget->type == JI_RADIO) {
     if (jradio_get_group(widget) == radio_group)
-      jwidget_deselect(widget);
+      widget->setSelected(false);
   }
 }

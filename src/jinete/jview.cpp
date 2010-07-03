@@ -560,7 +560,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       if (ret)
 	return ret;
 
-      jwidget_select(widget);
+      widget->setSelected(true);
       widget->captureMouse();
 
       // continue to JM_MOTION handler...
@@ -600,7 +600,7 @@ static bool scrollbar_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      jwidget_deselect(widget);
+      widget->setSelected(false);
       widget->releaseMouse();
       break;
 

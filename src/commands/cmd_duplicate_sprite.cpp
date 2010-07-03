@@ -77,18 +77,17 @@ void DuplicateSpriteCommand::execute(Context* context)
   dst_name->setText(buf);
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
-    jwidget_select(flatten);
+    flatten->setSelected(true);
 
   /* open the window */
   window->open_window_fg();
 
   if (window->get_killer() == jwidget_find_name(window, "ok")) {
-    set_config_bool("DuplicateSprite", "Flatten",
-		    jwidget_is_selected(flatten));
+    set_config_bool("DuplicateSprite", "Flatten", flatten->isSelected());
 
     // make a copy of the current sprite
     Sprite *sprite_copy;
-    if (jwidget_is_selected(flatten))
+    if (flatten->isSelected())
       sprite_copy = Sprite::createFlattenCopy(*sprite);
     else
       sprite_copy = new Sprite(*sprite);

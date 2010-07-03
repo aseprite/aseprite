@@ -140,7 +140,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       if (jwidget_is_disabled(widget))
 	return true;
 
-      jwidget_select(widget);
+      widget->setSelected(true);
       widget->captureMouse();
 
       slider_press_x = msg->mouse.x;
@@ -202,7 +202,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONRELEASED:
       if (widget->hasCapture()) {
-	jwidget_deselect(widget);
+	widget->setSelected(false);
 	widget->releaseMouse();
 	slider_setcursor(widget);
       }

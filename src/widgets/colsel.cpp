@@ -338,7 +338,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 
   // // Select the RGB button
   // jwidget_select(colorselector->rgb_button);
-  jwidget_select(colorselector->model_buttons[m->model]);
+  colorselector->model_buttons[m->model]->setSelected(true);
 
   // Call the hook
   select_model_hook(widget, (void*)m);

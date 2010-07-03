@@ -345,7 +345,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       jwidget_add_tooltip_text(widget, tooltip);
 
     if (selected)
-      jwidget_set_selected(widget, selected);
+      widget->setSelected(selected);
 
     if (disabled)
       jwidget_disable(widget);

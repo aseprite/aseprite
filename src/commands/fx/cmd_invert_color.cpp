@@ -97,7 +97,7 @@ void InvertColorCommand::execute(Context* context)
   target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("InvertColor", "Preview", true))
-    jwidget_select(check_preview);
+    check_preview->setSelected(true);
 
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
@@ -138,14 +138,14 @@ static bool target_change_hook(JWidget widget, void *data)
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
-  set_config_bool("InvertColor", "Preview", jwidget_is_selected(widget));
+  set_config_bool("InvertColor", "Preview", widget->isSelected());
   make_preview();
   return false;
 }
 
 static void make_preview()
 {
-  if (jwidget_is_selected(check_preview))
+  if (check_preview->isSelected())
     preview_restart(preview);
 }
 

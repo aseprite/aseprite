@@ -92,8 +92,7 @@ void AdvancedModeCommand::execute(Context* context)
 
       window->open_window_fg();
 
-      set_config_bool("AdvancedMode", "Warning",
-		      !jwidget_is_selected(donot_show));
+      set_config_bool("AdvancedMode", "Warning", !donot_show->isSelected());
     }
   }
 }

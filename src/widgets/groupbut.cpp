@@ -77,7 +77,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       HOOK(radio, JI_SIGNAL_RADIO_CHANGE, radio_change_hook, vbox);
 
       if (c == first_selected)
-	jwidget_select(radio);
+	radio->setSelected(true);
 
       if (hbox)
 	jwidget_add_child(hbox, radio);
@@ -111,7 +111,7 @@ void group_button_select(JWidget group, int index)
   JWidget sel = find_selected(group);
 
   if (!sel || (size_t)sel->user_data[1] != index) {
-    jwidget_deselect(sel);
+    sel->setSelected(false);
     select_button(group, index);
   }
 }
@@ -121,7 +121,7 @@ static JWidget find_selected(JWidget widget)
   JWidget sel;
   JLink link;
 
-  if (jwidget_is_selected(widget))
+  if (widget->isSelected())
     return widget;
   else {
     JI_LIST_FOR_EACH(widget->children, link)
@@ -138,7 +138,7 @@ static int select_button(JWidget widget, int index)
 
   if (widget->type == JI_RADIO) {
     if ((size_t)widget->user_data[1] == index) {
-      jwidget_select(widget);
+      widget->setSelected(true);
       return true;
     }
   }

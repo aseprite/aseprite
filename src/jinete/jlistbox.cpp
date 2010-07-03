@@ -77,7 +77,7 @@ JWidget jlistbox_get_selected_child(JWidget widget)
 {
   JLink link;
   JI_LIST_FOR_EACH(widget->children, link) {
-    if (jwidget_is_selected((JWidget)link->data))
+    if (((JWidget)link->data)->isSelected())
       return (JWidget)link->data;
   }
   return 0;
@@ -89,7 +89,7 @@ int jlistbox_get_selected_index(JWidget widget)
   int i = 0;
 
   JI_LIST_FOR_EACH(widget->children, link) {
-    if (jwidget_is_selected((JWidget)link->data))
+    if (((JWidget)link->data)->isSelected())
       return i;
     i++;
   }
@@ -105,18 +105,18 @@ void jlistbox_select_child(JWidget widget, JWidget listitem)
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
 
-    if (jwidget_is_selected(child)) {
+    if (child->isSelected()) {
       if ((listitem) && (child == listitem))
 	return;
 
-      jwidget_deselect(child);
+      child->setSelected(false);
     }
   }
 
   if (listitem) {
     JWidget view = jwidget_get_view(widget);
 
-    jwidget_select(listitem);
+    listitem->setSelected(true);
 
     if (view) {
       JRect vp = jview_get_viewport_position(view);

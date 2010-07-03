@@ -114,7 +114,7 @@ void ColorCurveCommand::execute(Context* context)
   target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("ColorCurve", "Preview", true))
-    jwidget_select(check_preview);
+    check_preview->setSelected(true);
 
   jview_attach(view_curve, curve_editor);
   jwidget_set_min_size(view_curve, 128, 64);
@@ -165,7 +165,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 
       case JI_SIGNAL_CHECK_CHANGE:
 	set_config_bool("ColorCurve", "Preview",
-			jwidget_is_selected(msg->signal.from));
+			msg->signal.from->isSelected());
 	make_preview();
 	break;
     }
@@ -175,7 +175,7 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 
 static void make_preview()
 {
-  if (jwidget_is_selected(check_preview))
+  if (check_preview->isSelected())
     preview_restart(preview);
 }
 

@@ -108,13 +108,13 @@ void OptionsCommand::execute(Context* context)
 
   // Others
   if (get_config_bool("Options", "MoveClick2", false))
-    jwidget_select(move_click2);
+    move_click2->setSelected(true);
 
   if (get_config_bool("Options", "DrawClick2", false))
-    jwidget_select(draw_click2);
+    draw_click2->setSelected(true);
 
   if (get_config_bool("Options", "MoveSmooth", true))
-    jwidget_select(check_smooth);
+    check_smooth->setSelected(true);
 
   // Checked background size
   checked_bg->addItem("16x16");
@@ -125,7 +125,7 @@ void OptionsCommand::execute(Context* context)
 
   // Zoom checked background
   if (RenderEngine::getCheckedBgZoom())
-    jwidget_select(checked_bg_zoom);
+    checked_bg_zoom->setSelected(true);
 
   // Checked background colors
   checked_bg_color1 = colorbutton_new(RenderEngine::getCheckedBgColor1(), IMAGE_RGB);
@@ -150,12 +150,12 @@ void OptionsCommand::execute(Context* context)
     context->getSettings()->setGridColor(colorbutton_get_color(grid_color));
     context->getSettings()->setPixelGridColor(colorbutton_get_color(pixel_grid_color));
 
-    set_config_bool("Options", "MoveSmooth", jwidget_is_selected(check_smooth));
-    set_config_bool("Options", "MoveClick2", jwidget_is_selected(move_click2));
-    set_config_bool("Options", "DrawClick2", jwidget_is_selected(draw_click2));
+    set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
+    set_config_bool("Options", "MoveClick2", move_click2->isSelected());
+    set_config_bool("Options", "DrawClick2", draw_click2->isSelected());
 
     RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)checked_bg->getSelectedItem());
-    RenderEngine::setCheckedBgZoom(jwidget_is_selected(checked_bg_zoom));
+    RenderEngine::setCheckedBgZoom(checked_bg_zoom->isSelected());
     RenderEngine::setCheckedBgColor1(colorbutton_get_color(checked_bg_color1));
     RenderEngine::setCheckedBgColor2(colorbutton_get_color(checked_bg_color2));
 
@@ -175,7 +175,7 @@ static bool checked_bg_reset_hook(JWidget widget, void *data)
 {
   // Default values
   checked_bg->setSelectedItem((int)RenderEngine::CHECKED_BG_16X16);
-  jwidget_select(checked_bg_zoom);
+  checked_bg_zoom->setSelected(true);
   colorbutton_set_color(checked_bg_color1, color_rgb(128, 128, 128));
   colorbutton_set_color(checked_bg_color2, color_rgb(192, 192, 192));
   return true;

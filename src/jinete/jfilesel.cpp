@@ -450,7 +450,7 @@ static bool enter_to_path_in_entry()
 	{
 	  JWidget listitem = jlistbox_get_selected_child(listbox1);
 	  if (listitem)
-	    jwidget_deselect(listitem);
+	    listitem->setSelected(false);
 	  jlistbox_select_child(listbox1, reinterpret_cast<JWidget>(link->data));
 	  jlistbox_center_scroll(listbox1);
 	  break;

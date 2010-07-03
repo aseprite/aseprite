@@ -122,10 +122,10 @@ void ConvolutionMatrixCommand::execute(Context* context)
   target_button_set_target(target_button, effect.target);
 
   if (get_config_bool("ConvolutionMatrix", "Preview", true))
-    jwidget_select(check_preview);
+    check_preview->setSelected(true);
 
   if (context->getSettings()->getTiledMode() != TILED_NONE)
-    jwidget_select(check_tiled);
+    check_tiled->setSelected(true);
 
   jview_attach(view_convmatr, list_convmatr);
   jwidget_set_min_size(view_convmatr, 128, 64);
@@ -200,7 +200,7 @@ static void listbox_select_current_convmatr(JWidget listbox)
   }
 
   if (select_this) {
-    jwidget_select(select_this);
+    select_this->setSelected(true);
     list_change_hook(listbox, 0);
   }
 }
@@ -316,16 +316,15 @@ static bool target_change_hook(JWidget widget, void *data)
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
-  set_config_bool("ConvolutionMatrix", "Preview",
-		  jwidget_is_selected(widget));
+  set_config_bool("ConvolutionMatrix", "Preview", widget->isSelected());
   make_preview();
   return false;
 }
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
-  TiledMode tiled = jwidget_is_selected(widget) ? TILED_BOTH:
-						  TILED_NONE;
+  TiledMode tiled = widget->isSelected() ? TILED_BOTH:
+					   TILED_NONE;
 
   // TODO avoid UIContext::instance, hold the context in some place
   UIContext::instance()->getSettings()->setTiledMode(tiled);
@@ -336,7 +335,7 @@ static bool tiled_change_hook(JWidget widget, void *data)
 
 static void make_preview()
 {
-  if (jwidget_is_selected(check_preview))
+  if (check_preview->isSelected())
     preview_restart(preview);
 }
 

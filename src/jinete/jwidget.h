@@ -85,16 +85,11 @@ void jwidget_show(JWidget widget);
 void jwidget_hide(JWidget widget);
 void jwidget_enable(JWidget widget);
 void jwidget_disable(JWidget widget);
-void jwidget_select(JWidget widget);
-void jwidget_deselect(JWidget widget);
-void jwidget_set_selected(JWidget widget, bool state);
 
 bool jwidget_is_visible(JWidget widget);
 bool jwidget_is_hidden(JWidget widget);
 bool jwidget_is_enabled(JWidget widget);
 bool jwidget_is_disabled(JWidget widget);
-bool jwidget_is_selected(JWidget widget);
-bool jwidget_is_deselected(JWidget widget);
 
 /* children handle */
 
@@ -252,8 +247,8 @@ public:
 
   // selected
 
-  bool isSelected() { return jwidget_is_selected(this); }
-  void setSelected(bool state) { jwidget_set_selected(this, state); }
+  bool isSelected() const;
+  void setSelected(bool state);
 
   // font
 

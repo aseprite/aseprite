@@ -452,36 +452,24 @@ void jwidget_disable(JWidget widget)
   }
 }
 
-void jwidget_select(JWidget widget)
+void Widget::setSelected(bool state)
 {
-  assert_valid_widget(widget);
+  if (state) {
+    if (!(this->flags & JI_SELECTED)) {
+      this->flags |= JI_SELECTED;
+      jwidget_dirty(this);
 
-  if (!(widget->flags & JI_SELECTED)) {
-    widget->flags |= JI_SELECTED;
-    jwidget_dirty(widget);
-
-    jwidget_emit_signal(widget, JI_SIGNAL_SELECT);
+      jwidget_emit_signal(this, JI_SIGNAL_SELECT);
+    }
   }
-}
+  else {
+    if (this->flags & JI_SELECTED) {
+      this->flags &= ~JI_SELECTED;
+      jwidget_dirty(this);
 
-void jwidget_deselect(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  if (widget->flags & JI_SELECTED) {
-    widget->flags &= ~JI_SELECTED;
-    jwidget_dirty(widget);
-
-    jwidget_emit_signal(widget, JI_SIGNAL_DESELECT);
+      jwidget_emit_signal(this, JI_SIGNAL_DESELECT);
+    }
   }
-}
-
-void jwidget_set_selected(JWidget widget, bool state)
-{
-  if (state)
-    jwidget_select(widget);
-  else
-    jwidget_deselect(widget);
 }
 
 bool jwidget_is_visible(JWidget widget)
@@ -526,18 +514,9 @@ bool jwidget_is_disabled(JWidget widget)
   return false;
 }
 
-bool jwidget_is_selected(JWidget widget)
+bool Widget::isSelected() const
 {
-  assert_valid_widget(widget);
-
-  return (widget->flags & JI_SELECTED) ? true: false;
-}
-
-bool jwidget_is_deselected(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  return !(jwidget_is_selected(widget));
+  return (this->flags & JI_SELECTED) ? true: false;
 }
 
 /**********************************************************************/

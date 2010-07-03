@@ -110,10 +110,10 @@ void DespeckleCommand::execute(Context* context)
   entry_height->setTextf("%d", get_config_int("Median", "Height", 3));
 
   if (get_config_bool("Median", "Preview", true))
-    jwidget_select(check_preview);
+    check_preview->setSelected(true);
 
   if (context->getSettings()->getTiledMode() != TILED_NONE)
-    jwidget_select(check_tiled);
+    check_tiled->setSelected(true);
 
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
@@ -171,15 +171,15 @@ static bool target_change_hook(JWidget widget, void *data)
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
-  set_config_bool("Median", "Preview", jwidget_is_selected(widget));
+  set_config_bool("Median", "Preview", widget->isSelected());
   make_preview();
   return false;
 }
 
 static bool tiled_change_hook(JWidget widget, void *data)
 {
-  TiledMode tiled = jwidget_is_selected(widget) ? TILED_BOTH:
-							  TILED_NONE;
+  TiledMode tiled = widget->isSelected() ? TILED_BOTH:
+					   TILED_NONE;
 
   // TODO save context in some place, don't use UIContext directly
   UIContext::instance()->getSettings()->setTiledMode(tiled);
@@ -198,7 +198,7 @@ static void make_preview()
   set_median_size(UIContext::instance()->getSettings()->getTiledMode(),
 		  MID(1, w, 32), MID(1, h, 32));
 
-  if (jwidget_is_selected (check_preview))
+  if (check_preview->isSelected())
     preview_restart(preview);
 }
 

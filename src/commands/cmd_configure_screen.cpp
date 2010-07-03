@@ -84,10 +84,7 @@ void ConfigureScreen::execute(Context* context)
 
   load_resolutions(resolution, color_depth, pixel_scale);
 
-  if (is_windowed_mode())
-    jwidget_deselect(fullscreen);
-  else
-    jwidget_select(fullscreen);
+  fullscreen->setSelected(!is_windowed_mode());
 
   window->open_window_fg();
 
@@ -96,8 +93,8 @@ void ConfigureScreen::execute(Context* context)
     m_newMode.setHeight(m_resolutions[resolution->getSelectedItem()].second);
     m_newMode.setDepth(m_colordepths[color_depth->getSelectedItem()]);
     m_newMode.setScaling(m_pixelscale[pixel_scale->getSelectedItem()]);
-    m_newMode.setCard(jwidget_is_selected(fullscreen) ? GFX_AUTODETECT_FULLSCREEN:
-							GFX_AUTODETECT_WINDOWED);
+    m_newMode.setCard(fullscreen->isSelected() ? GFX_AUTODETECT_FULLSCREEN:
+						 GFX_AUTODETECT_WINDOWED);
 
     // Setup graphics mode
     if (currentGfxModeGuard.tryGfxMode(m_newMode)) {

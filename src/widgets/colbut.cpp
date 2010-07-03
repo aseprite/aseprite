@@ -232,7 +232,7 @@ static void colorbutton_draw(JWidget widget)
 
   color_t color;
   // When the button is pushed, show the negative
-  if (jwidget_is_selected(widget)) {
+  if (widget->isSelected()) {
     color = color_rgb(255-color_get_red(colorbutton->color),
 		      255-color_get_green(colorbutton->color),
 		      255-color_get_blue(colorbutton->color));

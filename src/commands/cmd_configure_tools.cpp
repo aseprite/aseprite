@@ -216,15 +216,15 @@ void ConfigureTools::execute(Context* context)
   }
 
   if (settings->getTiledMode() != TILED_NONE) {
-    jwidget_select(tiled);
-    if (settings->getTiledMode() & TILED_X_AXIS) jwidget_select(tiled_x);
-    if (settings->getTiledMode() & TILED_Y_AXIS) jwidget_select(tiled_y);
+    tiled->setSelected(true);
+    if (settings->getTiledMode() & TILED_X_AXIS) tiled_x->setSelected(true);
+    if (settings->getTiledMode() & TILED_Y_AXIS) tiled_y->setSelected(true);
   }
       
-  if (settings->getSnapToGrid()) jwidget_select(snap_to_grid);
-  if (settings->getGridVisible()) jwidget_select(view_grid);
-  if (settings->getPixelGridVisible()) jwidget_select(pixel_grid);
-  if (settings->getUseOnionskin()) jwidget_select(check_onionskin);
+  if (settings->getSnapToGrid()) snap_to_grid->setSelected(true);
+  if (settings->getGridVisible()) view_grid->setSelected(true);
+  if (settings->getPixelGridVisible()) pixel_grid->setSelected(true);
+  if (settings->getUseOnionskin()) check_onionskin->setSelected(true);
 
   if (first_time) {
     // Append children
@@ -400,7 +400,7 @@ static bool air_speed_slider_change_hook(JWidget widget, void *data)
 
 static bool tiled_check_change_hook(JWidget widget, void *data)
 {
-  bool flag = jwidget_is_selected(widget);
+  bool flag = widget->isSelected();
 
   UIContext::instance()->getSettings()->setTiledMode(flag ? TILED_BOTH: TILED_NONE);
 
@@ -414,7 +414,7 @@ static bool tiled_xy_check_change_hook(JWidget widget, void *data)
   int tiled_axis = (int)((size_t)data);
   int tiled_mode = UIContext::instance()->getSettings()->getTiledMode();
 
-  if (jwidget_is_selected(widget))
+  if (widget->isSelected())
     tiled_mode |= tiled_axis;
   else
     tiled_mode &= ~tiled_axis;
@@ -427,20 +427,20 @@ static bool tiled_xy_check_change_hook(JWidget widget, void *data)
 
 static bool snap_to_grid_check_change_hook(JWidget widget, void *data)
 {
-  UIContext::instance()->getSettings()->setSnapToGrid(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setSnapToGrid(widget->isSelected());
   return false;
 }
 
 static bool view_grid_check_change_hook(JWidget widget, void *data)
 {
-  UIContext::instance()->getSettings()->setGridVisible(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setGridVisible(widget->isSelected());
   refresh_all_editors();
   return false;
 }
 
 static bool pixel_grid_check_change_hook(JWidget widget, void *data)
 {
-  UIContext::instance()->getSettings()->setPixelGridVisible(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setPixelGridVisible(widget->isSelected());
   refresh_all_editors();
   return false;
 }
@@ -475,7 +475,7 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
 
 static bool onionskin_check_change_hook(JWidget widget, void *data)
 {
-  UIContext::instance()->getSettings()->setUseOnionskin(jwidget_is_selected(widget));
+  UIContext::instance()->getSettings()->setUseOnionskin(widget->isSelected());
   refresh_all_editors();
   return false;
 }

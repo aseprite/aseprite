@@ -86,7 +86,7 @@ void dialogs_mask_color(Sprite* sprite)
   button_cancel = jbutton_new(_("&Cancel"));
 
   if (get_config_bool("MaskColor", "Preview", true))
-    jwidget_select(check_preview);
+    check_preview->setSelected(true);
 
   button_1->user_data[1] = sprite;
   button_2->user_data[1] = sprite;
@@ -143,7 +143,7 @@ void dialogs_mask_color(Sprite* sprite)
 		   jslider_get_value(slider_fuzziness));
 
     set_config_bool("MaskColor", "Preview",
-		    jwidget_is_selected(check_preview));
+		    check_preview->isSelected());
   }
 
   /* update boundaries and editors */
@@ -203,7 +203,7 @@ static Mask *gen_mask(const Sprite* sprite)
 
 static void mask_preview(Sprite* sprite)
 {
-  if (jwidget_is_selected(check_preview)) {
+  if (check_preview->isSelected()) {
     Mask* mask = gen_mask(sprite);
 
     sprite->generateMaskBoundaries(mask);

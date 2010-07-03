@@ -468,9 +468,9 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
       else if (msg->signal.num == JI_SIGNAL_DISABLE) {
 	assert(tabs != NULL);
 
-	if (jwidget_is_selected(widget)) {
+	if (widget->isSelected()) {
 	  jmanager_stop_timer(tabs->getTimerId());
-	  jwidget_deselect(widget);
+	  widget->setSelected(false);
 	}
 	return true;
       }

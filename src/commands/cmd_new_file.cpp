@@ -107,9 +107,9 @@ void NewFileCommand::execute(Context* context)
 
   // Select image-type
   switch (imgtype) {
-    case IMAGE_RGB:       jwidget_select(radio1); break;
-    case IMAGE_GRAYSCALE: jwidget_select(radio2); break;
-    case IMAGE_INDEXED:   jwidget_select(radio3); break;
+    case IMAGE_RGB:       radio1->setSelected(true); break;
+    case IMAGE_GRAYSCALE: radio2->setSelected(true); break;
+    case IMAGE_INDEXED:   radio3->setSelected(true); break;
   }
 
   // Select background color
@@ -122,9 +122,9 @@ void NewFileCommand::execute(Context* context)
     bool ok = false;
 
     // Get the options
-    if (jwidget_is_selected(radio1))      imgtype = IMAGE_RGB;
-    else if (jwidget_is_selected(radio2)) imgtype = IMAGE_GRAYSCALE;
-    else if (jwidget_is_selected(radio3)) imgtype = IMAGE_INDEXED;
+    if (radio1->isSelected())      imgtype = IMAGE_RGB;
+    else if (radio2->isSelected()) imgtype = IMAGE_GRAYSCALE;
+    else if (radio3->isSelected()) imgtype = IMAGE_INDEXED;
 
     w = width->getTextInt();
     h = height->getTextInt();

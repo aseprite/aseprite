@@ -138,10 +138,7 @@ void target_button_set_target(JWidget widget, int target)
 #define ACTIVATE_TARGET(name, TARGET)					\
   w = jwidget_find_name(widget, name);					\
   if (w != NULL) {							\
-    if ((target & TARGET) == TARGET)					\
-      jwidget_select(w);						\
-    else								\
-      jwidget_deselect(w);						\
+    w->setSelected((target & TARGET) == TARGET);			\
   }
 
   ACTIVATE_TARGET("r", TARGET_RED_CHANNEL);
@@ -171,7 +168,7 @@ static bool channel_change_hook(JWidget widget, void *data)
       return true;
   }
 
-  if (jwidget_is_selected(widget))
+  if (widget->isSelected())
     target |= flag;
   else
     target &= ~flag;

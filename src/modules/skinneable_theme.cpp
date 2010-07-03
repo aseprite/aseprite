@@ -631,7 +631,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
     isMiniLook = skinPropery->isMiniLook();
 
   // selected
-  if (jwidget_is_selected(widget)) {
+  if (widget->isSelected()) {
     fg = get_button_selected_text_color();
     bg = get_button_selected_face_color();
     part_nw = isMiniLook ? PART_TOOLBUTTON_NORMAL_NW:
@@ -676,7 +676,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
 
   // icon
   if (icon_bmp) {
-    if (jwidget_is_selected(widget))
+    if (widget->isSelected())
       jrect_displace(&icon,
 		     get_button_selected_offset(),
 		     get_button_selected_offset());
@@ -684,7 +684,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
     // enabled
     if (jwidget_is_enabled(widget)) {
       // selected
-      if (jwidget_is_selected(widget)) {
+      if (widget->isSelected()) {
 	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
       }
       // non-selected
@@ -729,8 +729,8 @@ void SkinneableTheme::draw_check(JWidget widget, JRect clip)
   /* icon */
   set_alpha_blender();
   draw_trans_sprite(ji_screen,
-		    jwidget_is_selected(widget) ? m_part[PART_CHECK_SELECTED]:
-						  m_part[PART_CHECK_NORMAL],
+		    widget->isSelected() ? m_part[PART_CHECK_SELECTED]:
+					   m_part[PART_CHECK_NORMAL],
 		    icon.x1, icon.y1);
 
   // draw focus
@@ -860,7 +860,7 @@ void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
     bg = COLOR_FACE;
     fg = COLOR_DISABLED;
   }
-  else if (jwidget_is_selected(widget)) {
+  else if (widget->isSelected()) {
     fg = get_listitem_selected_text_color();
     bg = get_listitem_selected_face_color();
   }
@@ -938,7 +938,7 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
   rectfill(ji_screen, x1, y1, x2, y2, bg);
 
   /* draw an indicator for selected items */
-  if (jwidget_is_selected(widget)) {
+  if (widget->isSelected()) {
     BITMAP* icon = m_part[jwidget_is_enabled(widget) ? PART_CHECK_SELECTED:
 						       PART_CHECK_DISABLED];
 
@@ -1040,8 +1040,8 @@ void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
   /* icon */
   set_alpha_blender();
   draw_trans_sprite(ji_screen,
-		    jwidget_is_selected(widget) ? m_part[PART_RADIO_SELECTED]:
-						  m_part[PART_RADIO_NORMAL],
+		    widget->isSelected() ? m_part[PART_RADIO_SELECTED]:
+					   m_part[PART_RADIO_NORMAL],
 		    icon.x1, icon.y1);
 
   // draw focus
@@ -1274,7 +1274,7 @@ void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
   int fg, bg, part_nw;
 
   /* with mouse */
-  if (jwidget_is_selected(widget) ||
+  if (widget->isSelected() ||
       (jwidget_is_enabled(widget) && widget->hasMouseOver())) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
@@ -1305,7 +1305,7 @@ void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
   icon.x2 = icon.x1 + icon_bmp->w;
   icon.y2 = icon.y1 + icon_bmp->h;
 
-  if (jwidget_is_selected(widget))
+  if (widget->isSelected())
     jrect_displace(&icon,
 		   get_button_selected_offset(),
 		   get_button_selected_offset());
@@ -1478,7 +1478,7 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
     else
       y = rect->y1;
 
-    if (jwidget_is_selected (widget)) {
+    if (widget->isSelected()) {
       x += selected_offset;
       y += selected_offset;
     }
@@ -1725,15 +1725,15 @@ bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_KEYPRESSED:
       if (msg->key.scancode == KEY_ESC) {
-	jwidget_select(widget);
+	widget->setSelected(true);
 	return true;
       }
       break;
 
     case JM_KEYRELEASED:
       if (msg->key.scancode == KEY_ESC) {
-	if (jwidget_is_selected(widget)) {
-	  jwidget_deselect(widget);
+	if (widget->isSelected()) {
+	  widget->setSelected(false);
 	  jwidget_close_window(widget);
 	  return true;
 	}

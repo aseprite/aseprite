@@ -117,7 +117,7 @@ void ReplaceColorCommand::execute(Context* context)
   jslider_set_value(slider_fuzziness,
 		    get_config_int("ReplaceColor", "Fuzziness", 0));
   if (get_config_bool("ReplaceColor", "Preview", true))
-    jwidget_select(check_preview);
+    check_preview->setSelected(true);
 
   jwidget_add_child(color_buttons_box, button_color1);
   jwidget_add_child(color_buttons_box, button_color2);
@@ -181,7 +181,7 @@ static bool slider_change_hook(JWidget widget, void *data)
 
 static bool preview_change_hook(JWidget widget, void *data)
 {
-  set_config_bool("ReplaceColor", "Preview", jwidget_is_selected(widget));
+  set_config_bool("ReplaceColor", "Preview", widget->isSelected());
   make_preview();
   return false;
 }
@@ -200,7 +200,7 @@ static void make_preview()
 		     get_color_for_layer(sprite->getCurrentLayer(), to),
 		     MID(0, fuzziness, 255));
 
-  if (jwidget_is_selected(check_preview))
+  if (check_preview->isSelected())
     preview_restart(preview);
 }
 

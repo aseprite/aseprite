@@ -509,7 +509,7 @@ void jstandard_theme::draw_button(JWidget widget, JRect clip)
     bg = COLOR_FACE;
 
   /* selected */
-  if (jwidget_is_selected(widget)) {
+  if (widget->isSelected()) {
     fg = COLOR_BACKGROUND;
     bg = COLOR_SELECTED;
 
@@ -575,13 +575,13 @@ void jstandard_theme::draw_button(JWidget widget, JRect clip)
 
   /* icon */
   if (icon_bmp) {
-    if (jwidget_is_selected(widget))
+    if (widget->isSelected())
       jrect_displace(&icon, 1, 1);
 
     /* enabled */
     if (jwidget_is_enabled(widget)) {
       /* selected */
-      if (jwidget_is_selected(widget)) {
+      if (widget->isSelected()) {
 	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
       }
       /* non-selected */
@@ -763,7 +763,7 @@ void jstandard_theme::draw_listitem(JWidget widget, JRect clip)
     bg = COLOR_FACE;
     fg = COLOR_DISABLED;
   }
-  else if (jwidget_is_selected(widget)) {
+  else if (widget->isSelected()) {
     bg = COLOR_SELECTED;
     fg = COLOR_BACKGROUND;
   }
@@ -840,8 +840,8 @@ void jstandard_theme::draw_menuitem(JWidget widget, JRect clip)
   /* background */
   rectfill(ji_screen, x1, y1, x2, y2, bg);
 
-  /* draw an indicator for selected items */
-  if (jwidget_is_selected (widget)) {
+  // Draw an indicator for selected items
+  if (widget->isSelected()) {
     BITMAP *icon = icons_bitmap[ICON_MENU_MARK];
     int x = widget->rc->x1+4-icon->w/2;
     int y = (widget->rc->y1+widget->rc->y2)/2-icon->h/2;
@@ -1095,7 +1095,7 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
     rect(ji_screen, x1, y1, x2, y2, bg);
 
   /* 3rd border */
-  if (!jwidget_is_selected (widget)) {
+  if (!widget->isSelected()) {
     c1 = COLOR_BACKGROUND;
     c2 = COLOR_DISABLED;
   }
@@ -1242,7 +1242,7 @@ void jstandard_theme::draw_view_scrollbar(JWidget widget, JRect clip)
 	       u1, v1, u2, v2, get_bg_color(widget));
 
   /* 1st border */
-  if (jwidget_is_selected(widget))
+  if (widget->isSelected())
     jrectedge(ji_screen, u1, v1, u2, v2,
 	      COLOR_DISABLED, COLOR_BACKGROUND);
   else
@@ -1347,7 +1347,7 @@ void jstandard_theme::draw_textstring(const char *t, int fg_color, int bg_color,
     else
       y = rect->y1;
 
-    if (jwidget_is_selected (widget)) {
+    if (widget->isSelected()) {
       x += selected_offset;
       y += selected_offset;
     }
@@ -1394,7 +1394,7 @@ void jstandard_theme::draw_icons(int x, int y, JWidget widget, int edge_icon)
 {
   draw_sprite(ji_screen, icons_bitmap[edge_icon], x, y);
 
-  if (jwidget_is_selected(widget))
+  if (widget->isSelected())
     draw_sprite(ji_screen, icons_bitmap[edge_icon+1], x, y);
 }
 
@@ -1428,15 +1428,15 @@ static bool theme_button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_KEYPRESSED:
       if (msg->key.scancode == KEY_ESC) {
-	jwidget_select(widget);
+	widget->setSelected(true);
 	return true;
       }
       break;
 
     case JM_KEYRELEASED:
       if (msg->key.scancode == KEY_ESC) {
-	if (jwidget_is_selected(widget)) {
-	  jwidget_deselect(widget);
+	if (widget->isSelected()) {
+	  widget->setSelected(false);
 	  jwidget_close_window(widget);
 	  return true;
 	}
