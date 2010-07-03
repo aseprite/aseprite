@@ -44,13 +44,46 @@
 
 using namespace Vaca;
 
-String Vaca::format_string(const Char* fmt, ...)
+std::string Vaca::format_string(const char* fmt, ...)
 {
-  std::auto_ptr<Char> buf;
+  std::auto_ptr<char> buf;
   int size = 512;
 
   while (true) {
-    buf = std::auto_ptr<Char>(new Char[size <<= 1]);
+    buf = std::auto_ptr<char>(new char[size <<= 1]);
+
+    va_list ap;
+    va_start(ap, fmt);
+    #if defined(VACA_ON_WINDOWS)
+      int written = _vsnprintf(buf.get(), size, fmt, ap);
+    #elif defined(VACA_ON_UNIXLIKE)
+      int written = vsprintf(buf.get(), size, fmt, ap);
+    #else
+      #error Implement this in your platform
+    #endif
+    va_end(ap);
+
+    if (written == size) {
+      if (buf.get()[size] == 0)
+	break;
+    }
+    else if (written >= 0 && written < size) {
+      assert(buf.get()[written] == 0);
+      break;
+    }
+    // else continue growing the buffer...
+  }
+
+  return std::string(buf.get());
+}
+
+std::wstring Vaca::format_string(const wchar_t* fmt, ...)
+{
+  std::auto_ptr<wchar_t> buf;
+  int size = 512;
+
+  while (true) {
+    buf = std::auto_ptr<wchar_t>(new wchar_t[size <<= 1]);
 
     va_list ap;
     va_start(ap, fmt);
@@ -74,7 +107,7 @@ String Vaca::format_string(const Char* fmt, ...)
     // else continue growing the buffer...
   }
 
-  return String(buf.get());
+  return std::wstring(buf.get());
 }
 
 String Vaca::trim_string(const String& str)

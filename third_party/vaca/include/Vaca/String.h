@@ -46,7 +46,8 @@ namespace Vaca {
   // UTILITARY
   // ============================================================
 
-  VACA_DLL String format_string(const Char* fmt, ...);
+  VACA_DLL std::string format_string(const char* fmt, ...);
+  VACA_DLL std::wstring format_string(const wchar_t* fmt, ...);
 
   VACA_DLL String trim_string(const String& str);
   VACA_DLL String trim_string(const Char* str);
