@@ -11,6 +11,7 @@ COMMON_SOURCES =					\
 	src/console.cpp					\
 	src/context.cpp					\
 	src/gfxmode.cpp					\
+	src/launcher.cpp				\
 	src/recent_files.cpp				\
 	src/ui_context.cpp				\
 	src/undoable.cpp				\
@@ -59,6 +60,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_paste.cpp			\
 	src/commands/cmd_play_animation.cpp		\
 	src/commands/cmd_preview.cpp			\
+	src/commands/cmd_quick_reference.cpp		\
 	src/commands/cmd_record_screen.cpp		\
 	src/commands/cmd_redo.cpp			\
 	src/commands/cmd_refresh.cpp			\

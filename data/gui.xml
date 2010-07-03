@@ -307,6 +307,8 @@
 	<item command="options" text="&amp;Options" />
       </menu>
       <menu text="&amp;Help">
+	<item command="quick_reference" text="Quick &amp;Reference" />
+	<separator />
 	<item command="about" text="&amp;About" />
       </menu>
     </menu>
