@@ -82,7 +82,10 @@ namespace Vaca {
     return convert_to<std::string, const Char*>(from);
   }
 
-  // Convert to String
+  // Convert to std::string
+  template<> VACA_DLL std::string convert_to(const int& from);
+
+  // Convert to std::wstring
   template<> VACA_DLL String convert_to(const std::string& from);
   template<> VACA_DLL String convert_to(const int& from);
   template<> VACA_DLL String convert_to(const long& from);

@@ -195,7 +195,12 @@ template<> double Vaca::convert_to(const String& from)
   return std::wcstod(from.c_str(), NULL);
 }
 
-template<> String Vaca::convert_to(const int& from)
+template<> std::string Vaca::convert_to(const int& from)
+{
+  return format_string("%d", from);
+}
+
+template<> std::wstring Vaca::convert_to(const int& from)
 {
   return format_string(L"%d", from);
 }
