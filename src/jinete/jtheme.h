@@ -72,6 +72,7 @@ public:
   virtual void draw_entry(JWidget widget, JRect clip) = 0;
   virtual void draw_grid(JWidget widget, JRect clip) = 0;
   virtual void draw_label(JWidget widget, JRect clip) = 0;
+  virtual void draw_link_label(JWidget widget, JRect clip) = 0;
   virtual void draw_listbox(JWidget widget, JRect clip) = 0;
   virtual void draw_listitem(JWidget widget, JRect clip) = 0;
   virtual void draw_menu(JWidget widget, JRect clip) = 0;

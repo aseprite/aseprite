@@ -829,6 +829,23 @@ void SkinneableTheme::draw_label(JWidget widget, JRect clip)
   draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
 }
 
+void SkinneableTheme::draw_link_label(JWidget widget, JRect clip)
+{
+  int bg = BGCOLOR;
+
+  jdraw_rectfill(widget->rc, bg);
+
+  draw_textstring(NULL, makecol(0, 0, 255), bg, false, widget, widget->rc, 0);
+
+  if (widget->hasMouseOver()) {
+    int w = jwidget_get_text_length(widget);
+    int h = jwidget_get_text_height(widget);
+
+    hline(ji_screen,
+	  widget->rc->x1, widget->rc->y2-1, widget->rc->x1+w-1, makecol(0, 0, 255));
+  }
+}
+
 void SkinneableTheme::draw_listbox(JWidget widget, JRect clip)
 {
   jdraw_rectfill(widget->rc, COLOR_BACKGROUND);

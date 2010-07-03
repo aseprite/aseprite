@@ -29,49 +29,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_JINETE_H_INCLUDED
-#define JINETE_JINETE_H_INCLUDED
+#ifndef JINETE_JCUSTOM_LABEL_H_INCLUDED
+#define JINETE_JCUSTOM_LABEL_H_INCLUDED
 
-#include "jinete/jaccel.h"
-#include "jinete/jalert.h"
-#include "jinete/jbase.h"
-#include "jinete/jbox.h"
-#include "jinete/jbutton.h"
-#include "jinete/jclipboard.h"
-#include "jinete/jcombobox.h"
-#include "jinete/jcustom_label.h"
-#include "jinete/jdraw.h"
-#include "jinete/jentry.h"
-#include "jinete/jexception.h"
-#include "jinete/jfile.h"
-#include "jinete/jfilesel.h"
-#include "jinete/jfont.h"
-#include "jinete/jgrid.h"
-#include "jinete/jhook.h"
-#include "jinete/jimage.h"
 #include "jinete/jlabel.h"
-#include "jinete/jlink_label.h"
-#include "jinete/jlist.h"
-#include "jinete/jlistbox.h"
-#include "jinete/jmanager.h"
-#include "jinete/jmenu.h"
-#include "jinete/jmessage.h"
-#include "jinete/jpanel.h"
-#include "jinete/jpopup_window.h"
-#include "jinete/jquickmenu.h"
-#include "jinete/jrect.h"
-#include "jinete/jregion.h"
-#include "jinete/jsep.h"
-#include "jinete/jslider.h"
-#include "jinete/jstream.h"
-#include "jinete/jstring.h"
-#include "jinete/jsystem.h"
-#include "jinete/jtextbox.h"
-#include "jinete/jtheme.h"
-#include "jinete/jthread.h"
-#include "jinete/jtooltips.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
+
+class CustomLabel : public Label
+{
+public:
+  CustomLabel(const char *text);
+
+protected:
+  virtual bool msg_proc(JMessage msg);
+
+};
 
 #endif

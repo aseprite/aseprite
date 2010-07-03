@@ -132,6 +132,7 @@ COMMON_SOURCES =					\
 	src/jinete/jbutton.cpp				\
 	src/jinete/jclipboard.cpp			\
 	src/jinete/jcombobox.cpp			\
+	src/jinete/jcustom_label.cpp			\
 	src/jinete/jdraw.cpp				\
 	src/jinete/jentry.cpp				\
 	src/jinete/jexception.cpp			\
@@ -145,6 +146,7 @@ COMMON_SOURCES =					\
 	src/jinete/jinete.cpp				\
 	src/jinete/jintern.cpp				\
 	src/jinete/jlabel.cpp				\
+	src/jinete/jlink_label.cpp			\
 	src/jinete/jlist.cpp				\
 	src/jinete/jlistbox.cpp				\
 	src/jinete/jmanager.cpp				\

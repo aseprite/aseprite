@@ -61,7 +61,7 @@ void AboutCommand::execute(Context* context)
   separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
 
   label3 = new Label(COPYRIGHT);
-  label4 = new Label(WEBSITE);
+  label4 = new LinkLabel(WEBSITE);
   textbox = jtextbox_new("Authors:\n\n"
 			 "  David Capello\n"
 			 "   - Project leader and developer\n\n"

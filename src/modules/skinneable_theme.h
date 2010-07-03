@@ -438,6 +438,7 @@ public:
   void draw_entry(JWidget widget, JRect clip);
   void draw_grid(JWidget widget, JRect clip);
   void draw_label(JWidget widget, JRect clip);
+  void draw_link_label(JWidget widget, JRect clip);
   void draw_listbox(JWidget widget, JRect clip);
   void draw_listitem(JWidget widget, JRect clip);
   void draw_menu(JWidget widget, JRect clip);

@@ -117,6 +117,7 @@ public:
   void draw_entry(JWidget widget, JRect clip);
   void draw_grid(JWidget widget, JRect clip);
   void draw_label(JWidget widget, JRect clip);
+  void draw_link_label(JWidget widget, JRect clip);
   void draw_listbox(JWidget widget, JRect clip);
   void draw_listitem(JWidget widget, JRect clip);
   void draw_menu(JWidget widget, JRect clip);
@@ -722,6 +723,23 @@ void jstandard_theme::draw_label(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, bg);
 
   draw_textstring(NULL, -1, bg, false, widget, widget->rc, 0);
+}
+
+void jstandard_theme::draw_link_label(JWidget widget, JRect clip)
+{
+  int bg = get_bg_color(widget);
+
+  jdraw_rectfill(widget->rc, bg);
+
+  draw_textstring(NULL, makecol(0, 0, 255), bg, false, widget, widget->rc, 0);
+
+  if (widget->hasMouseOver()) {
+    int w = jwidget_get_text_length(widget);
+    int h = jwidget_get_text_height(widget);
+
+    hline(ji_screen,
+	  widget->rc->x1, widget->rc->y2-1, widget->rc->x1+w-1, makecol(0, 0, 255));
+  }
 }
 
 void jstandard_theme::draw_listbox(JWidget widget, JRect clip)

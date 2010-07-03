@@ -29,49 +29,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JINETE_JINETE_H_INCLUDED
-#define JINETE_JINETE_H_INCLUDED
 
-#include "jinete/jaccel.h"
-#include "jinete/jalert.h"
-#include "jinete/jbase.h"
-#include "jinete/jbox.h"
-#include "jinete/jbutton.h"
-#include "jinete/jclipboard.h"
-#include "jinete/jcombobox.h"
-#include "jinete/jcustom_label.h"
-#include "jinete/jdraw.h"
-#include "jinete/jentry.h"
-#include "jinete/jexception.h"
-#include "jinete/jfile.h"
-#include "jinete/jfilesel.h"
-#include "jinete/jfont.h"
-#include "jinete/jgrid.h"
-#include "jinete/jhook.h"
-#include "jinete/jimage.h"
-#include "jinete/jlabel.h"
+#include "config.h"
+
 #include "jinete/jlink_label.h"
-#include "jinete/jlist.h"
-#include "jinete/jlistbox.h"
-#include "jinete/jmanager.h"
-#include "jinete/jmenu.h"
 #include "jinete/jmessage.h"
-#include "jinete/jpanel.h"
-#include "jinete/jpopup_window.h"
-#include "jinete/jquickmenu.h"
-#include "jinete/jrect.h"
-#include "jinete/jregion.h"
-#include "jinete/jsep.h"
-#include "jinete/jslider.h"
-#include "jinete/jstream.h"
-#include "jinete/jstring.h"
-#include "jinete/jsystem.h"
-#include "jinete/jtextbox.h"
 #include "jinete/jtheme.h"
-#include "jinete/jthread.h"
-#include "jinete/jtooltips.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
+#include "jinete/jsystem.h"
+#include "launcher.h"
 
-#endif
+LinkLabel::LinkLabel(const char* urlOrText)
+  : CustomLabel(urlOrText)
+  , m_url(urlOrText)
+{
+}
+
+LinkLabel::LinkLabel(const char* url, const char* text)
+  : CustomLabel(text)
+  , m_url(url)
+{
+}
+
+bool LinkLabel::msg_proc(JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_SETCURSOR:
+      // TODO theme stuff
+      if (jwidget_is_enabled(this)) {
+	jmouse_set_cursor(JI_CURSOR_HAND);
+	return true;
+      }
+      break;
+
+    case JM_MOUSEENTER:
+    case JM_MOUSELEAVE:
+      // TODO theme stuff
+      if (jwidget_is_enabled(this))
+	jwidget_dirty(this);
+      break;
+
+    case JM_DRAW:
+      this->theme->draw_link_label(this, &msg->draw.rect);
+      return true;
+
+    case JM_BUTTONRELEASED:
+      if (jwidget_is_enabled(this)) {
+	if (!m_url.empty())
+	  Launcher::openUrl(m_url);
+	Click();
+      }
+      break;
+  }
+
+  return CustomLabel::msg_proc(msg);
+}
