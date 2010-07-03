@@ -122,7 +122,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_CLOSE:
       // disable the menu (the keyboard shortcuts are processed by "manager_msg_proc")
-      jwidget_disable(widget);
+      widget->setEnabled(false);
       break;
 
     case JM_SIGNAL:

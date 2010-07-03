@@ -56,7 +56,7 @@ bool LinkLabel::msg_proc(JMessage msg)
 
     case JM_SETCURSOR:
       // TODO theme stuff
-      if (jwidget_is_enabled(this)) {
+      if (isEnabled()) {
 	jmouse_set_cursor(JI_CURSOR_HAND);
 	return true;
       }
@@ -65,7 +65,7 @@ bool LinkLabel::msg_proc(JMessage msg)
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       // TODO theme stuff
-      if (jwidget_is_enabled(this))
+      if (isEnabled())
 	jwidget_dirty(this);
       break;
 
@@ -74,7 +74,7 @@ bool LinkLabel::msg_proc(JMessage msg)
       return true;
 
     case JM_BUTTONRELEASED:
-      if (jwidget_is_enabled(this)) {
+      if (isEnabled()) {
 	if (!m_url.empty())
 	  Launcher::openUrl(m_url);
 	Click();

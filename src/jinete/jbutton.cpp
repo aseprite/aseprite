@@ -294,7 +294,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	if (widget->type == JI_BUTTON) {
 	  /* deselect the widget (maybe the user press the key, but
 	     before release it, changes the focus) */
@@ -309,7 +309,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_KEYPRESSED:
       /* if the button is enabled */
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	/* for JI_BUTTON */
 	if (widget->type == JI_BUTTON) {
 	  /* has focus and press enter/space */
@@ -370,7 +370,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYRELEASED:
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	if (widget->type == JI_BUTTON) {
 	  if (widget->isSelected()) {
 	    button_selected_signal(widget);
@@ -384,7 +384,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       switch (widget->type) {
 
 	case JI_BUTTON:
-	  if (jwidget_is_enabled(widget)) {
+	  if (widget->isEnabled()) {
 	    widget->setSelected(true);
 
 	    button->pressed_status = widget->isSelected();
@@ -393,7 +393,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	  return true;
 
 	case JI_CHECK:
-	  if (jwidget_is_enabled(widget)) {
+	  if (widget->isEnabled()) {
 	    widget->setSelected(!widget->isSelected());
 
 	    button->pressed_status = widget->isSelected();
@@ -402,7 +402,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	  return true;
 
 	case JI_RADIO:
-	  if (jwidget_is_enabled(widget)) {
+	  if (widget->isEnabled()) {
 	    if (!widget->isSelected()) {
 	      jwidget_signal_off(widget);
 	      widget->setSelected(true);
@@ -444,7 +444,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOTION:
-      if (jwidget_is_enabled(widget) && widget->hasCapture()) {
+      if (widget->isEnabled() && widget->hasCapture()) {
 	bool hasMouse = widget->hasMouseOver();
 
     	// Switch state when the mouse go out
@@ -467,7 +467,7 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       // TODO theme stuff
-      if (jwidget_is_enabled(widget))
+      if (widget->isEnabled())
 	jwidget_dirty(widget);
       break;
   }

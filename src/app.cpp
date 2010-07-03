@@ -416,7 +416,7 @@ bool app_realloc_recent_list()
     }
     else {
       menuitem = menuitem_new(_("Nothing"), NULL, NULL);
-      jwidget_disable(menuitem);
+      menuitem->setEnabled(false);
       jwidget_add_child(submenu, menuitem);
     }
   }

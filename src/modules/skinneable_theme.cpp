@@ -638,7 +638,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
 			   PART_BUTTON_SELECTED_NW;
   }
   // with mouse
-  else if (jwidget_is_enabled(widget) && widget->hasMouseOver()) {
+  else if (widget->isEnabled() && widget->hasMouseOver()) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
     part_nw = isMiniLook ? PART_TOOLBUTTON_HOT_NW:
@@ -682,7 +682,7 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
 		     get_button_selected_offset());
 
     // enabled
-    if (jwidget_is_enabled(widget)) {
+    if (widget->isEnabled()) {
       // selected
       if (widget->isSelected()) {
 	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
@@ -716,7 +716,7 @@ void SkinneableTheme::draw_check(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, bg = BGCOLOR);
 
   // mouse
-  if (jwidget_is_enabled(widget)) {
+  if (widget->isEnabled()) {
     if (widget->hasMouseOver())
       jdraw_rectfill(widget->rc, bg = get_check_hot_face_color());
     else if (widget->hasFocus())
@@ -793,7 +793,7 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
     }
 
     /* disabled */
-    if (jwidget_is_disabled (widget)) {
+    if (!widget->isEnabled()) {
       bg = -1;
       fg = COLOR_DISABLED;
     }
@@ -816,7 +816,7 @@ void SkinneableTheme::draw_entry(JWidget widget, JRect clip)
   /* draw the cursor if it is next of the last character */
   if ((c == cursor) && (state) &&
       (widget->hasFocus()) &&
-      (jwidget_is_enabled(widget)))
+      (widget->isEnabled()))
     draw_entry_cursor(widget, x, y);
 }
 
@@ -856,7 +856,7 @@ void SkinneableTheme::draw_listitem(JWidget widget, JRect clip)
   int fg, bg;
   int x, y;
 
-  if (jwidget_is_disabled(widget)) {
+  if (!widget->isEnabled()) {
     bg = COLOR_FACE;
     fg = COLOR_DISABLED;
   }
@@ -909,7 +909,7 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
   bar = (widget->parent->parent->type == JI_MENUBAR);
 
   /* colors */
-  if (jwidget_is_disabled(widget)) {
+  if (!widget->isEnabled()) {
     fg = -1;
     bg = get_menuitem_normal_face_color();
   }
@@ -939,8 +939,8 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
 
   /* draw an indicator for selected items */
   if (widget->isSelected()) {
-    BITMAP* icon = m_part[jwidget_is_enabled(widget) ? PART_CHECK_SELECTED:
-						       PART_CHECK_DISABLED];
+    BITMAP* icon = m_part[widget->isEnabled() ? PART_CHECK_SELECTED:
+						PART_CHECK_DISABLED];
 
     int x = widget->rc->x1+4-icon->w/2;
     int y = (widget->rc->y1+widget->rc->y2)/2-icon->h/2;
@@ -968,7 +968,7 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
       int scale = jguiscale();
 
       /* enabled */
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	for (c=0; c<3*scale; c++)
 	  vline(ji_screen,
 		widget->rc->x2-3*scale-c,
@@ -1027,7 +1027,7 @@ void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, bg);
 
   /* mouse */
-  if (jwidget_is_enabled(widget)) {
+  if (widget->isEnabled()) {
     if (widget->hasMouseOver())
       jdraw_rectfill(widget->rc, bg = get_radio_hot_face_color());
     else if (widget->hasFocus())
@@ -1238,8 +1238,8 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
       fg = COLOR_BACKGROUND;
     }
 
-    /* disabled */
-    if (jwidget_is_disabled (widget)) {
+    // Disabled
+    if (!widget->isEnabled()) {
       bg = -1;
       fg = COLOR_DISABLED;
     }
@@ -1262,7 +1262,7 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
   /* draw the cursor if it is next of the last character */
   if ((c == cursor) && (state) &&
       (widget->hasFocus()) &&
-      (jwidget_is_enabled(widget)))
+      (widget->isEnabled()))
     draw_entry_cursor(widget, x, y);
 }
 
@@ -1275,7 +1275,7 @@ void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
 
   /* with mouse */
   if (widget->isSelected() ||
-      (jwidget_is_enabled(widget) && widget->hasMouseOver())) {
+      (widget->isEnabled() && widget->hasMouseOver())) {
     fg = get_button_hot_text_color();
     bg = get_button_hot_face_color();
     part_nw = PART_TOOLBUTTON_HOT_NW;
@@ -1485,14 +1485,14 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
 
     /* background */
     if (bg_color >= 0) {
-      if (jwidget_is_disabled (widget))
+      if (!widget->isEnabled())
 	rectfill(ji_screen, x, y, x+w, y+h, bg_color);
       else
 	rectfill(ji_screen, x, y, x+w-1, y+h-1, bg_color);
     }
 
     /* text */
-    if (jwidget_is_disabled (widget)) {
+    if (!widget->isEnabled()) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
 	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg, jguiscale());
@@ -1506,7 +1506,7 @@ void SkinneableTheme::draw_textstring(const char *t, int fg_color, int bg_color,
     }
 
     jdraw_text(widget->getFont(), t, x, y,
-	       jwidget_is_disabled(widget) ?
+	       !widget->isEnabled() ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),
 	       bg_color, fill_bg, jguiscale());

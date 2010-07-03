@@ -132,12 +132,12 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      if (jwidget_is_enabled(widget))
+      if (widget->isEnabled())
 	jwidget_dirty(widget);
       break;
 
     case JM_BUTTONPRESSED:
-      if (jwidget_is_disabled(widget))
+      if (!widget->isEnabled())
 	return true;
 
       widget->setSelected(true);
@@ -222,7 +222,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
 /*       } */
 
       /* TODO theme stuff */
-      if (jwidget_is_enabled(widget))
+      if (widget->isEnabled())
 	jwidget_dirty(widget);
       break;
 
@@ -253,7 +253,7 @@ static bool slider_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_WHEEL:
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	int value = slider->value + jmouse_z(0) - jmouse_z(1);
 
 	value = MID(slider->min, value, slider->max);

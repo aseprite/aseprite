@@ -118,7 +118,7 @@ void CelPropertiesCommand::execute(Context* context)
     /* opacity */
     jslider_set_value(slider_opacity, cel->opacity);
     if (layer->is_background()) {
-      jwidget_disable(slider_opacity);
+      slider_opacity->setEnabled(false);
       jwidget_add_tooltip_text(slider_opacity, "The `Background' layer is opaque,\n"
 					       "you can't change its opacity.");
     }
@@ -127,7 +127,7 @@ void CelPropertiesCommand::execute(Context* context)
     label_pos->setText("None");
     label_size->setText("Empty (0 bytes)");
     jslider_set_value(slider_opacity, 0);
-    jwidget_disable(slider_opacity);
+    slider_opacity->setEnabled(false);
   }
 
   window->open_window_fg();

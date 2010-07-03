@@ -457,7 +457,7 @@ static bool entry_msg_proc(JWidget widget, JMessage msg)
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       /* TODO theme stuff */
-      if (jwidget_is_enabled(widget))
+      if (widget->isEnabled())
 	jwidget_dirty(widget);
       break;
   }

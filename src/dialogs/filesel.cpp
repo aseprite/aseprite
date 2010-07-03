@@ -445,33 +445,20 @@ static void update_navigation_buttons(JWidget window)
   /* update the state of the go back button: if the navigation-history
      has two elements and the navigation-position isn't the first
      one */
-  if (jlist_length(navigation_history) > 1 &&
-      (!navigation_position ||
-       navigation_position != jlist_first(navigation_history))) {
-    jwidget_enable(goback);
-  }
-  else {
-    jwidget_disable(goback);
-  }
+  goback->setEnabled(jlist_length(navigation_history) > 1 &&
+		     (!navigation_position ||
+		      navigation_position != jlist_first(navigation_history)));
 
   /* update the state of the go forward button: if the
      navigation-history has two elements and the navigation-position
      isn't the last one */
-  if (jlist_length(navigation_history) > 1 &&
-      (!navigation_position ||
-       navigation_position != jlist_last(navigation_history))) {
-    jwidget_enable(goforward);
-  }
-  else {
-    jwidget_disable(goforward);
-  }
+  goforward->setEnabled(jlist_length(navigation_history) > 1 &&
+			(!navigation_position ||
+			 navigation_position != jlist_last(navigation_history)));
 
   /* update the state of the go up button: if the current-folder isn't
      the root-item */
-  if (current_folder != get_root_fileitem())
-    jwidget_enable(goup);
-  else
-    jwidget_disable(goup);
+  goup->setEnabled(current_folder != get_root_fileitem());
 }
 
 static void add_in_navigation_history(FileItem *folder)

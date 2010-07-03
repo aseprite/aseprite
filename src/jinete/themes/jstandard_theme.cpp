@@ -502,7 +502,7 @@ void jstandard_theme::draw_button(JWidget widget, JRect clip)
 			      icon_bmp ? icon_bmp->h : 0);
 
   /* with mouse */
-  if (jwidget_is_enabled(widget) && widget->hasMouseOver())
+  if (widget->isEnabled() && widget->hasMouseOver())
     bg = COLOR_HOTFACE;
   /* without mouse */
   else
@@ -579,7 +579,7 @@ void jstandard_theme::draw_button(JWidget widget, JRect clip)
       jrect_displace(&icon, 1, 1);
 
     /* enabled */
-    if (jwidget_is_enabled(widget)) {
+    if (widget->isEnabled()) {
       /* selected */
       if (widget->isSelected()) {
 	jdraw_inverted_sprite(ji_screen, icon_bmp, icon.x1, icon.y1);
@@ -613,7 +613,7 @@ void jstandard_theme::draw_check(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, bg = get_bg_color(widget));
 
   /* mouse */
-  if (jwidget_is_enabled(widget) && widget->hasMouseOver())
+  if (widget->isEnabled() && widget->hasMouseOver())
     jdraw_rectfill(&box, bg = COLOR_HOTFACE);
 
   /* focus */
@@ -689,7 +689,7 @@ void jstandard_theme::draw_entry(JWidget widget, JRect clip)
     }
 
     /* disabled */
-    if (jwidget_is_disabled (widget)) {
+    if (!widget->isEnabled()) {
       bg = -1;
       fg = COLOR_DISABLED;
     }
@@ -712,7 +712,7 @@ void jstandard_theme::draw_entry(JWidget widget, JRect clip)
   /* draw the cursor if it is next of the last character */
   if ((c == cursor) && (state) &&
       (widget->hasFocus()) &&
-      (jwidget_is_enabled(widget)))
+      (widget->isEnabled()))
     draw_entry_cursor(widget, x, y);
 }
 
@@ -746,7 +746,7 @@ void jstandard_theme::draw_listbox(JWidget widget, JRect clip)
 {
   int bg;
 
-  if (jwidget_is_disabled(widget))
+  if (!widget->isEnabled())
     bg = COLOR_FACE;
   else
     bg = COLOR_BACKGROUND;
@@ -759,7 +759,7 @@ void jstandard_theme::draw_listitem(JWidget widget, JRect clip)
   int fg, bg;
   int x, y;
 
-  if (jwidget_is_disabled(widget)) {
+  if (!widget->isEnabled()) {
     bg = COLOR_FACE;
     fg = COLOR_DISABLED;
   }
@@ -812,7 +812,7 @@ void jstandard_theme::draw_menuitem(JWidget widget, JRect clip)
   bar = (widget->parent->parent->type == JI_MENUBAR);
 
   /* colors */
-  if (jwidget_is_disabled(widget)) {
+  if (!widget->isEnabled()) {
     bg = get_bg_color(widget);
     fg = -1;
   }
@@ -846,7 +846,7 @@ void jstandard_theme::draw_menuitem(JWidget widget, JRect clip)
     int x = widget->rc->x1+4-icon->w/2;
     int y = (widget->rc->y1+widget->rc->y2)/2-icon->h/2;
 
-    if (jwidget_is_enabled(widget))
+    if (widget->isEnabled())
       draw_character(ji_screen, icon, x, y, fg);
     else {
       draw_character(ji_screen, icon, x+1, y+1, COLOR_BACKGROUND);
@@ -871,7 +871,7 @@ void jstandard_theme::draw_menuitem(JWidget widget, JRect clip)
     /* draw the arrown (to indicate which this menu has a sub-menu) */
     if (jmenuitem_get_submenu(widget)) {
       /* enabled */
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	for (c=0; c<3; c++)
 	  vline(ji_screen,
 		widget->rc->x2-3-c,
@@ -981,7 +981,7 @@ void jstandard_theme::draw_radio(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, bg);
 
   /* mouse */
-  if (jwidget_is_enabled(widget) && widget->hasMouse())
+  if (widget->isEnabled() && widget->hasMouse())
     jdraw_rectfill(&box, bg = COLOR_HOTFACE);
 
   /* focus */
@@ -1077,7 +1077,7 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
   y2 = widget->rc->y2 - 1;
 
   /* with mouse */
-  if (jwidget_is_enabled(widget) && widget->hasMouse())
+  if (widget->isEnabled() && widget->hasMouse())
     bg = COLOR_HOTFACE;
   /* without mouse */
   else
@@ -1120,8 +1120,7 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
   }
   else {
     rectfill(ji_screen, x1, y1, x, y2,
-	     (jwidget_is_disabled(widget)) ?
-	     bg: COLOR_SELECTED);
+	     (!widget->isEnabled()) ? bg: COLOR_SELECTED);
 
     if (x < x2)
       rectfill(ji_screen, x+1, y1, x2, y2, bg);
@@ -1142,7 +1141,7 @@ void jstandard_theme::draw_slider(JWidget widget, JRect clip)
 
     if (my_add_clip_rect(ji_screen, x1, y1, x, y2))
       draw_textstring(NULL, COLOR_BACKGROUND,
-		      jwidget_is_disabled(widget) ?
+		      !widget->isEnabled() ?
 		      bg: COLOR_SELECTED, false, widget, r, 0);
 
     set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
@@ -1251,7 +1250,7 @@ void jstandard_theme::draw_view_scrollbar(JWidget widget, JRect clip)
 
   /* bar-block background */
   u1++, v1++, u2--, v2--;
-  if (jwidget_is_enabled(widget) && widget->hasMouse())
+  if (widget->isEnabled() && widget->hasMouse())
     rectfill(ji_screen, u1, v1, u2, v2, COLOR_HOTFACE);
   else
     rectfill(ji_screen, u1, v1, u2, v2, get_bg_color(widget));
@@ -1354,14 +1353,14 @@ void jstandard_theme::draw_textstring(const char *t, int fg_color, int bg_color,
 
     /* background */
     if (bg_color >= 0) {
-      if (jwidget_is_disabled (widget))
+      if (!widget->isEnabled())
 	rectfill(ji_screen, x, y, x+w, y+h, bg_color);
       else
 	rectfill(ji_screen, x, y, x+w-1, y+h-1, bg_color);
     }
 
     /* text */
-    if (jwidget_is_disabled (widget)) {
+    if (!widget->isEnabled()) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
 	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg);
@@ -1375,7 +1374,7 @@ void jstandard_theme::draw_textstring(const char *t, int fg_color, int bg_color,
     }
 
     jdraw_text(widget->getFont(), t, x, y,
-	       jwidget_is_disabled(widget) ?
+	       !widget->isEnabled() ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),
 	       bg_color, fill_bg);

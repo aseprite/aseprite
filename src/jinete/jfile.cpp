@@ -348,7 +348,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       widget->setSelected(selected);
 
     if (disabled)
-      jwidget_disable(widget);
+      widget->setEnabled(false);
 
     if (expansive)
       jwidget_expansive(widget, true);

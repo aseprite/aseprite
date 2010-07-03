@@ -426,29 +426,25 @@ void jwidget_hide(JWidget widget)
   }
 }
 
-void jwidget_enable(JWidget widget)
+void Widget::setEnabled(bool state)
 {
-  assert_valid_widget(widget);
+  if (state) {
+    if (this->flags & JI_DISABLED) {
+      this->flags &= ~JI_DISABLED;
+      jwidget_dirty(this);
 
-  if (widget->flags & JI_DISABLED) {
-    widget->flags &= ~JI_DISABLED;
-    jwidget_dirty(widget);
-
-    jwidget_emit_signal(widget, JI_SIGNAL_ENABLE);
+      jwidget_emit_signal(this, JI_SIGNAL_ENABLE);
+    }
   }
-}
+  else {
+    if (!(this->flags & JI_DISABLED)) {
+      jmanager_free_widget(this); // Free from the manager
 
-void jwidget_disable(JWidget widget)
-{
-  assert_valid_widget(widget);
+      this->flags |= JI_DISABLED;
+      jwidget_dirty(this);
 
-  if (!(widget->flags & JI_DISABLED)) {
-    jmanager_free_widget(widget); /* free from the manager */
-
-    widget->flags |= JI_DISABLED;
-    jwidget_dirty(widget);
-
-    jwidget_emit_signal(widget, JI_SIGNAL_DISABLE);
+      jwidget_emit_signal(this, JI_SIGNAL_DISABLE);
+    }
   }
 }
 
@@ -493,25 +489,18 @@ bool jwidget_is_hidden(JWidget widget)
   return false;
 }
 
-bool jwidget_is_enabled(JWidget widget)
+bool Widget::isEnabled() const
 {
-  assert_valid_widget(widget);
-
-  return !(jwidget_is_disabled(widget));
-}
-
-bool jwidget_is_disabled(JWidget widget)
-{
-  assert_valid_widget(widget);
+  const Widget* widget = this;
 
   do {
     if (widget->flags & JI_DISABLED)
-      return true;
+      return false;
 
     widget = widget->parent;
   } while (widget);
 
-  return false;
+  return true;
 }
 
 bool Widget::isSelected() const

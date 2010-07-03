@@ -140,8 +140,8 @@ void ConvolutionMatrixCommand::execute(Context* context)
   HOOK(reload, JI_SIGNAL_BUTTON_SELECT, reload_select_hook, list_convmatr);
   HOOK(generate, JI_SIGNAL_BUTTON_SELECT, generate_select_hook, 0);
 
-  /* TODO enable this someday */
-  jwidget_disable(generate);
+  // TODO enable this someday
+  generate->setEnabled(false);
 
   /* default position */
   window->remap_window();

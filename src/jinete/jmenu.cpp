@@ -927,7 +927,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	    if (child->type != JI_MENUITEM)
 	      continue;
 
-	    if (jwidget_is_enabled(child)) {
+	    if (child->isEnabled()) {
 	      first_child = child;
 	      break;
 	    }
@@ -1367,7 +1367,7 @@ static JWidget check_for_accel(JWidget menu, JMessage msg)
         return menuitem;
     }
     else if (MITEM(menuitem)->accel) {
-      if ((jwidget_is_enabled(menuitem)) &&
+      if ((menuitem->isEnabled()) &&
 	  (jaccel_check(MITEM(menuitem)->accel,
 			  msg->any.shifts,
 			  msg->key.ascii,
@@ -1393,7 +1393,7 @@ static JWidget find_nextitem(JWidget menu, JWidget menuitem)
 
   for (; link != menu->children->end; link=link->next) {
     nextitem = (JWidget)link->data;
-    if ((nextitem->type == JI_MENUITEM) && jwidget_is_enabled(nextitem))
+    if ((nextitem->type == JI_MENUITEM) && nextitem->isEnabled())
       return nextitem;
   }
 
@@ -1415,7 +1415,7 @@ static JWidget find_previtem(JWidget menu, JWidget menuitem)
 
   for (; link != menu->children->end; link=link->prev) {
     nextitem = (JWidget)link->data;
-    if ((nextitem->type == JI_MENUITEM) && jwidget_is_enabled(nextitem))
+    if ((nextitem->type == JI_MENUITEM) && nextitem->isEnabled())
       return nextitem;
   }
 

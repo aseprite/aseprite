@@ -70,8 +70,8 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
 
   /* no items? */
   if (jlistbox_get_selected_index(repo_dlg->listbox) != 0) {
-    jwidget_disable(repo_dlg->button_use);
-    jwidget_disable(repo_dlg->button_delete);
+    repo_dlg->button_use->setEnabled(false);
+    repo_dlg->button_delete->setEnabled(false);
   }
 
   /* hierarchy */
@@ -163,8 +163,8 @@ static bool repo_listbox_msg_proc(JWidget widget, JMessage msg)
 	case JI_SIGNAL_LISTBOX_CHANGE:
 	  repo_dlg->listitem = jlistbox_get_selected_child(widget);
 
-	  jwidget_enable(repo_dlg->button_use);
-	  jwidget_enable(repo_dlg->button_delete);
+	  repo_dlg->button_use->setEnabled(true);
+	  repo_dlg->button_delete->setEnabled(true);
 	  break;
 
 	case JI_SIGNAL_LISTBOX_SELECT:
@@ -234,8 +234,8 @@ static void delete_command(JWidget widget, void *data)
 
       /* disable buttons */
       if (!repo_dlg->listbox->children) {
-	jwidget_disable(repo_dlg->button_use);
-	jwidget_disable(repo_dlg->button_delete);
+	repo_dlg->button_use->setEnabled(false);
+	repo_dlg->button_delete->setEnabled(false);
       }
       /* select other item */
       else {

@@ -83,13 +83,9 @@ bool jwidget_is_focusrest(JWidget widget);
 void jwidget_dirty(JWidget widget);
 void jwidget_show(JWidget widget);
 void jwidget_hide(JWidget widget);
-void jwidget_enable(JWidget widget);
-void jwidget_disable(JWidget widget);
 
 bool jwidget_is_visible(JWidget widget);
 bool jwidget_is_hidden(JWidget widget);
-bool jwidget_is_enabled(JWidget widget);
-bool jwidget_is_disabled(JWidget widget);
 
 /* children handle */
 
@@ -237,13 +233,8 @@ public:
 
   // enable/disable
 
-  bool isEnabled() { return jwidget_is_enabled(this); }
-  void setEnabled(bool state) {
-    if (state)
-      jwidget_enable(this);
-    else
-      jwidget_disable(this);
-  }
+  bool isEnabled() const;
+  void setEnabled(bool state);
 
   // selected
 

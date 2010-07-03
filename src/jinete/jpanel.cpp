@@ -102,7 +102,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_BUTTONPRESSED: 
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	JWidget c1, c2;
 	int x1, y1, x2, y2;
 	int bar, click_bar;
@@ -174,7 +174,7 @@ static bool panel_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_SETCURSOR:
-      if (jwidget_is_enabled(widget)) {
+      if (widget->isEnabled()) {
 	JWidget c1, c2;
 	JLink link;
 	int x1, y1, x2, y2;

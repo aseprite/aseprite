@@ -717,15 +717,15 @@ void StatusBar::updateFromLayer()
 	!sprite->getCurrentLayer()->is_background() &&
 	(cel = ((LayerImage*)sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame()))) {
       jslider_set_value(m_slider, MID(0, cel->opacity, 255));
-      jwidget_enable(m_slider);
+      m_slider->setEnabled(true);
     }
     else {
       jslider_set_value(m_slider, 255);
-      jwidget_disable(m_slider);
+      m_slider->setEnabled(false);
     }
   }
   catch (locked_sprite_exception&) {
     // disable all
-    jwidget_disable(m_slider);
+    m_slider->setEnabled(false);
   }
 }

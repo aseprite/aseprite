@@ -384,15 +384,8 @@ void Tabs::setScrollX(int scroll_x)
     }
 
     /* disable/enable buttons */
-    if (m_scroll_x > 0)
-      jwidget_enable(m_button_left);
-    else
-      jwidget_disable(m_button_left);
-
-    if (m_scroll_x < max_x)
-      jwidget_enable(m_button_right);
-    else
-      jwidget_disable(m_button_right);
+    m_button_left->setEnabled(m_scroll_x > 0);
+    m_button_right->setEnabled(m_scroll_x < max_x);
 
     /* setup the position of each button */
     {
