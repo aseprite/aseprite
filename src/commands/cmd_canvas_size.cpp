@@ -83,7 +83,7 @@ void CanvasSizeCommand::execute(Context* context)
     bottom->setTextf("%d", m_bottom);
 
     load_window_pos(window, "CanvasSize");
-    jwidget_show(window);
+    window->setVisible(true);
     window->open_window_fg();
     save_window_pos(window, "CanvasSize");
 

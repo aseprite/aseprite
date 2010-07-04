@@ -81,11 +81,6 @@ bool jwidget_is_focusrest(JWidget widget);
 /* status properties */
 
 void jwidget_dirty(JWidget widget);
-void jwidget_show(JWidget widget);
-void jwidget_hide(JWidget widget);
-
-bool jwidget_is_visible(JWidget widget);
-bool jwidget_is_hidden(JWidget widget);
 
 /* children handle */
 
@@ -231,12 +226,15 @@ public:
   void setTextf(const char* text, ...);
   void setTextQuiet(const char* text);
 
-  // enable/disable
+  // ===============================================================
+  // COMMON PROPERTIES
+  // ===============================================================
+
+  bool isVisible() const;
+  void setVisible(bool state);
 
   bool isEnabled() const;
   void setEnabled(bool state);
-
-  // selected
 
   bool isSelected() const;
   void setSelected(bool state);

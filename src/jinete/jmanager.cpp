@@ -196,7 +196,7 @@ JWidget jmanager_new()
   jwidget_add_hook(widget, JI_MANAGER, manager_msg_proc, NULL);
 
   jrect_replace(widget->rc, 0, 0, JI_SCREEN_W, JI_SCREEN_H);
-  jwidget_show(widget);
+  widget->setVisible(true);
 
   /* default manager is the first one (and is ever visible) */
   if (!default_manager)
@@ -299,7 +299,7 @@ bool jmanager_generate_messages(JWidget manager)
 
       /* dirty the entire window and show it */
       jwidget_dirty(window);
-      jwidget_show(window);
+      window->setVisible(true);
 
       /* attract the focus to the magnetic widget... */
       /* 1) get the magnetic widget */
@@ -1048,7 +1048,7 @@ void _jmanager_close_window(JWidget manager, Frame* window, bool redraw_backgrou
     jmanager_free_focus();
 
   /* hide window */
-  jwidget_hide(window);
+  window->setVisible(false);
 
   /* close message */
   msg = jmessage_new(JM_CLOSE);

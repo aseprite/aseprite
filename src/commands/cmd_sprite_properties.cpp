@@ -120,7 +120,7 @@ void SpritePropertiesCommand::execute(Context* context)
 
   for (;;) {
     load_window_pos(window, "SpriteProperties");
-    jwidget_show(window);
+    window->setVisible(true);
     window->open_window_fg();
     save_window_pos(window, "SpriteProperties");
 

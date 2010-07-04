@@ -152,7 +152,7 @@ void ConfigureTools::execute(Context* context)
     first_time = true;
   }
   /* if the window is opened, close it */
-  else if (jwidget_is_visible(window)) {
+  else if (window->isVisible()) {
     window->closeWindow(NULL);
     return;
   }

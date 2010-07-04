@@ -402,27 +402,23 @@ void jwidget_dirty(JWidget widget)
   jwidget_invalidate(widget);
 }
 
-void jwidget_show(JWidget widget)
+void Widget::setVisible(bool state)
 {
-  assert_valid_widget(widget);
+  if (state) {
+    if (this->flags & JI_HIDDEN) {
+      this->flags &= ~JI_HIDDEN;
 
-  if (widget->flags & JI_HIDDEN) {
-    widget->flags &= ~JI_HIDDEN;
-
-    jwidget_dirty(widget);
-    jwidget_emit_signal(widget, JI_SIGNAL_SHOW);
+      jwidget_dirty(this);
+      jwidget_emit_signal(this, JI_SIGNAL_SHOW);
+    }
   }
-}
+  else {
+    if (!(this->flags & JI_HIDDEN)) {
+      jmanager_free_widget(this); // Free from manager
 
-void jwidget_hide(JWidget widget)
-{
-  assert_valid_widget(widget);
-
-  if (!(widget->flags & JI_HIDDEN)) {
-    jmanager_free_widget(widget); /* free from mananger */
-
-    widget->flags |= JI_HIDDEN;
-    jwidget_emit_signal(widget, JI_SIGNAL_HIDE);
+      this->flags |= JI_HIDDEN;
+      jwidget_emit_signal(this, JI_SIGNAL_HIDE);
+    }
   }
 }
 
@@ -468,25 +464,18 @@ void Widget::setSelected(bool state)
   }
 }
 
-bool jwidget_is_visible(JWidget widget)
+bool Widget::isVisible() const
 {
-  assert_valid_widget(widget);
-
-  return !(jwidget_is_hidden(widget));
-}
-
-bool jwidget_is_hidden(JWidget widget)
-{
-  assert_valid_widget(widget);
+  const Widget* widget = this;
 
   do {
     if (widget->flags & JI_HIDDEN)
-      return true;
+      return false;
 
     widget = widget->parent;
   } while (widget);
 
-  return false;
+  return true;
 }
 
 bool Widget::isEnabled() const
@@ -817,7 +806,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
     reg2 = jregion_new(cpos, 1);
     JI_LIST_FOR_EACH(widget->children, link) {
       child = reinterpret_cast<JWidget>(link->data);
-      if (jwidget_is_visible(child)) {
+      if (child->isVisible()) {
 	reg3 = jwidget_get_region(child);
 	if (child->flags & JI_DECORATIVE) {
 	  jregion_reset(reg1, widget->rc);
@@ -1123,7 +1112,8 @@ void jwidget_flush_redraw(JWidget widget)
 
     assert_valid_widget(widget);
 
-    if (jwidget_is_hidden(widget))
+    // If the widget is hidden
+    if (!widget->isVisible())
       continue;
 
     JI_LIST_FOR_EACH(widget->children, link)
@@ -1162,7 +1152,7 @@ void jwidget_invalidate(JWidget widget)
 {
   assert_valid_widget(widget);
 
-  if (jwidget_is_visible(widget)) {
+  if (widget->isVisible()) {
     JRegion reg1 = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
     JLink link;
 
@@ -1178,7 +1168,7 @@ void jwidget_invalidate_rect(JWidget widget, const JRect rect)
 {
   assert_valid_widget(widget);
 
-  if (jwidget_is_visible(widget)) {
+  if (widget->isVisible()) {
     JRegion reg1 = jregion_new(rect, 1);
     jwidget_invalidate_region(widget, reg1);
     jregion_free(reg1);
@@ -1189,7 +1179,7 @@ void jwidget_invalidate_region(JWidget widget, const JRegion region)
 {
   assert_valid_widget(widget);
 
-  if (jwidget_is_visible(widget) &&
+  if (widget->isVisible() &&
       jregion_rect_in(region, widget->rc) != JI_RGNOUT) {
     JRegion reg1 = jregion_new(NULL, 0);
     JRegion reg2 = jwidget_get_drawable_region(widget,

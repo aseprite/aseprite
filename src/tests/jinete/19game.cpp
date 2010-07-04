@@ -129,7 +129,7 @@ bool update_gui()
   if (jmanager_generate_messages(manager))
     jmanager_dispatch_messages(manager);
 
-  return jwidget_is_visible(window);
+  return window->isVisible();
 }
 
 void draw_gui()

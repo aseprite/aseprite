@@ -65,7 +65,7 @@ Console::Console()
     jgrid_add_child(grid, button, 1, 1, JI_CENTER);
     jwidget_add_child(window, grid);
 
-    jwidget_hide(view);
+    view->setVisible(false);
     jwidget_magnetic(button, true);
     jwidget_expansive(view, true);
 
@@ -88,7 +88,7 @@ Console::~Console()
   if ((wid_console) && (console_counter == 0)) {
     if (console_locked
 	&& !want_close_flag
-	&& jwidget_is_visible(wid_console)) {
+	&& wid_console->isVisible()) {
       /* open in foreground */
       wid_console->open_window_fg();
     }
@@ -112,8 +112,8 @@ void Console::printf(const char *format, ...)
     const char* text;
     char* final;
 
-    /* open the window */
-    if (jwidget_is_hidden(wid_console)) {
+    // Open the window
+    if (!wid_console->isVisible()) {
       wid_console->open_window();
       jmanager_refresh_screen();
     }
@@ -123,7 +123,7 @@ void Console::printf(const char *format, ...)
       JRect rect = jrect_new(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10);
       console_locked = true;
       
-      jwidget_show(wid_view);
+      wid_view->setVisible(true);
 
       wid_console->remap_window();
       jwidget_set_rect(wid_console, rect);

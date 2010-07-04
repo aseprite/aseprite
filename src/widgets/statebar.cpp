@@ -145,7 +145,7 @@ StatusBar::~StatusBar()
 
 void StatusBar::onCurrentToolChange()
 {
-  if (jwidget_is_visible(this)) {
+  if (isVisible()) {
     Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
     if (currentTool) {
       this->showTool(500, currentTool);
@@ -203,7 +203,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
     jmanager_set_timer_interval((size_t)m_tipwindow->user_data[0], msecs);
   }
 
-  if (jwidget_is_visible(m_tipwindow))
+  if (m_tipwindow->isVisible())
     m_tipwindow->closeWindow(NULL);
 
   m_tipwindow->open_window();

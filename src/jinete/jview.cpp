@@ -201,10 +201,10 @@ void jview_set_size(JWidget widget, int w, int h)
       jwidget_set_rect(view->scrollbar_h, rect);
       jrect_free(rect);
 
-      jwidget_show(view->scrollbar_h);
+      view->scrollbar_h->setVisible(true);
     }
     else
-      jwidget_hide(view->scrollbar_h);
+      view->scrollbar_h->setVisible(false);
 
     if (jwidget_has_child(widget, view->scrollbar_v)) {
       rect = jrect_new(pos->x2, pos->y1,
@@ -212,10 +212,10 @@ void jview_set_size(JWidget widget, int w, int h)
       jwidget_set_rect(view->scrollbar_v, rect);
       jrect_free(rect);
 
-      jwidget_show(view->scrollbar_v);
+      view->scrollbar_v->setVisible(true);
     }
     else
-      jwidget_hide(view->scrollbar_v);
+      view->scrollbar_v->setVisible(false);
   }
 
   /* setup viewport */

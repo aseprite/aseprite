@@ -405,13 +405,13 @@ static bool select_model_hook(JWidget widget, void* data)
 
     if (m == selected_model) {
       if (child->flags & JI_HIDDEN) {
-	jwidget_show(child);
+	child->setVisible(true);
 	something_change = true;
       }
     }
     else {
       if (!(child->flags & JI_HIDDEN)) {
-	jwidget_hide(child);
+	child->setVisible(false);
 	something_change = true;
       }
     }

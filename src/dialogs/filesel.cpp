@@ -312,7 +312,7 @@ again:
     }
     else {
       // show the window again
-      jwidget_show(window);
+      window->setVisible(true);
       goto again;
     }
 
@@ -327,7 +327,7 @@ again:
       filename_entry->setText("");
 
       // show the window again
-      jwidget_show(window);
+      window->setVisible(true);
       goto again;
     }
     // else file-name specified in the entry is really a file to open...

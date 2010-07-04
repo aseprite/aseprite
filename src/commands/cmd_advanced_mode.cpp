@@ -54,20 +54,11 @@ void AdvancedModeCommand::execute(Context* context)
 {
   advanced_mode = !advanced_mode;
 
-  if (advanced_mode) {
-    jwidget_hide(app_get_toolbar());
-    jwidget_hide(app_get_menubar());
-    jwidget_hide(app_get_statusbar());
-    jwidget_hide(app_get_colorbar());
-    jwidget_hide(app_get_tabsbar());
-  }
-  else {
-    jwidget_show(app_get_toolbar());
-    jwidget_show(app_get_menubar());
-    jwidget_show(app_get_statusbar());
-    jwidget_show(app_get_colorbar());
-    jwidget_show(app_get_tabsbar());
-  }
+  app_get_toolbar()->setVisible(!advanced_mode);
+  app_get_menubar()->setVisible(!advanced_mode);
+  app_get_statusbar()->setVisible(!advanced_mode);
+  app_get_colorbar()->setVisible(!advanced_mode);
+  app_get_tabsbar()->setVisible(!advanced_mode);
 
   app_get_top_window()->remap_window();
   app_get_top_window()->dirty();

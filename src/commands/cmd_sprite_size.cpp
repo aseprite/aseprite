@@ -214,7 +214,7 @@ void SpriteSizeCommand::execute(Context* context)
   window->center_window();
 
   load_window_pos(window, "SpriteSize");
-  jwidget_show(window);
+  window->setVisible(true);
   window->open_window_fg();
   save_window_pos(window, "SpriteSize");
 

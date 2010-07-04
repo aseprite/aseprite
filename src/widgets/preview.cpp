@@ -49,7 +49,7 @@ JWidget preview_new(Effect *effect)
   preview->timer_id = -1;
 
   jwidget_add_hook(widget, preview_type(), preview_msg_proc, preview);
-  jwidget_hide(widget);
+  widget->setVisible(false);
 
   return widget;
 }

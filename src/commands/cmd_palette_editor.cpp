@@ -190,7 +190,7 @@ void PaletteEditorCommand::execute(Context* context)
     App::instance()->Exit.connect(&on_exit_delete_this_widget);
   }
   // If the window is opened, close it (only in "switch" mode)
-  else if (jwidget_is_visible(window) && (m_switch || m_close)) {
+  else if (window->isVisible() && (m_switch || m_close)) {
     window->closeWindow(NULL);
     return;
   }
@@ -261,10 +261,7 @@ void PaletteEditorCommand::execute(Context* context)
     setup_mini_look(select_hsv);
 
     // Hide (or show) the "More Options" depending the saved value in .cfg file
-    if (get_config_bool("PaletteEditor", "ShowMoreOptions", false))
-      jwidget_show(more_options);
-    else
-      jwidget_hide(more_options);
+    more_options->setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));
 
     jbutton_add_command(button_load, load_command);
     jbutton_add_command(button_save, save_command);
@@ -285,7 +282,7 @@ void PaletteEditorCommand::execute(Context* context)
   }
 
   if (m_switch || m_open) {
-    if (!jwidget_is_visible(window)) {
+    if (!window->isVisible()) {
       // Default bounds
       window->remap_window();
 
@@ -944,25 +941,25 @@ static bool palette_editor_change_hook(JWidget widget, void *data)
 
 static bool select_rgb_hook(JWidget widget, void *data)
 {
-  jwidget_show(R_label);
-  jwidget_show(R_slider);
-  jwidget_show(R_entry);
-  jwidget_show(G_label);
-  jwidget_show(G_slider);
-  jwidget_show(G_entry);
-  jwidget_show(B_label);
-  jwidget_show(B_slider);
-  jwidget_show(B_entry);
+  R_label->setVisible(true);
+  R_slider->setVisible(true);
+  R_entry->setVisible(true);
+  G_label->setVisible(true);
+  G_slider->setVisible(true);
+  G_entry->setVisible(true);
+  B_label->setVisible(true);
+  B_slider->setVisible(true);
+  B_entry->setVisible(true);
 
-  jwidget_hide(H_label);
-  jwidget_hide(H_slider);
-  jwidget_hide(H_entry);
-  jwidget_hide(S_label);
-  jwidget_hide(S_slider);
-  jwidget_hide(S_entry);
-  jwidget_hide(V_label);
-  jwidget_hide(V_slider);
-  jwidget_hide(V_entry);
+  H_label->setVisible(false);
+  H_slider->setVisible(false);
+  H_entry->setVisible(false);
+  S_label->setVisible(false);
+  S_slider->setVisible(false);
+  S_entry->setVisible(false);
+  V_label->setVisible(false);
+  V_slider->setVisible(false);
+  V_entry->setVisible(false);
 
   window->setBounds(window->getBounds());
   window->dirty();
@@ -972,25 +969,25 @@ static bool select_rgb_hook(JWidget widget, void *data)
 
 static bool select_hsv_hook(JWidget widget, void *data)
 {
-  jwidget_hide(R_label);
-  jwidget_hide(R_slider);
-  jwidget_hide(R_entry);
-  jwidget_hide(G_label);
-  jwidget_hide(G_slider);
-  jwidget_hide(G_entry);
-  jwidget_hide(B_label);
-  jwidget_hide(B_slider);
-  jwidget_hide(B_entry);
+  R_label->setVisible(false);
+  R_slider->setVisible(false);
+  R_entry->setVisible(false);
+  G_label->setVisible(false);
+  G_slider->setVisible(false);
+  G_entry->setVisible(false);
+  B_label->setVisible(false);
+  B_slider->setVisible(false);
+  B_entry->setVisible(false);
 
-  jwidget_show(H_label);
-  jwidget_show(H_slider);
-  jwidget_show(H_entry);
-  jwidget_show(S_label);
-  jwidget_show(S_slider);
-  jwidget_show(S_entry);
-  jwidget_show(V_label);
-  jwidget_show(V_slider);
-  jwidget_show(V_entry);
+  H_label->setVisible(true);
+  H_slider->setVisible(true);
+  H_entry->setVisible(true);
+  S_label->setVisible(true);
+  S_slider->setVisible(true);
+  S_entry->setVisible(true);
+  V_label->setVisible(true);
+  V_slider->setVisible(true);
+  V_entry->setVisible(true);
 
   window->setBounds(window->getBounds());
   window->dirty();
@@ -1002,9 +999,9 @@ static bool expand_button_select_hook(JWidget widget, void *data)
 {
   int req_w, req_h;
 
-  if (jwidget_is_visible(more_options)) {
+  if (more_options->isVisible()) {
     set_config_bool("PaletteEditor", "ShowMoreOptions", false);
-    jwidget_hide(more_options);
+    more_options->setVisible(false);
 
     // Get the required size of the "More options" panel
     jwidget_request_size(more_options, &req_w, &req_h);
@@ -1020,7 +1017,7 @@ static bool expand_button_select_hook(JWidget widget, void *data)
   }
   else {
     set_config_bool("PaletteEditor", "ShowMoreOptions", true);
-    jwidget_show(more_options);
+    more_options->setVisible(true);
 
     // Get the required size of the whole window
     jwidget_request_size(window, &req_w, &req_h);

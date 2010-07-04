@@ -71,9 +71,9 @@ Frame::Frame(bool desktop, const char* text)
   m_is_foreground = false;
   m_is_autoremap = true;
 
-  jwidget_hide(this);
-  this->setText(text);
-  this->setAlign(JI_LEFT | JI_MIDDLE);
+  setVisible(false);
+  setText(text);
+  setAlign(JI_LEFT | JI_MIDDLE);
 
   jwidget_init_theme(this);
 }
@@ -120,7 +120,7 @@ void Frame::remap_window()
 
   if (m_is_autoremap) {
     m_is_autoremap = false;
-    jwidget_show(this);
+    this->setVisible(true);
   }
 
   jwidget_request_size(this, &req_w, &req_h);

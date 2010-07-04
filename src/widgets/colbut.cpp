@@ -131,7 +131,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
       if (msg->signal.num == JI_SIGNAL_BUTTON_SELECT) {
 	// If the popup window was not created or shown yet..
 	if (colorbutton->tooltip_window == NULL ||
-	    !jwidget_is_visible(colorbutton->tooltip_window)) {
+	    !colorbutton->tooltip_window->isVisible()) {
 	  // Open it
 	  colorbutton_open_tooltip(widget);
 	}
