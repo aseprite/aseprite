@@ -310,6 +310,7 @@
 	<item command="quick_reference" text="Quick &amp;Reference" />
 	<separator />
 	<item command="donate" text="&amp;Donate" />
+	<item command="check_updates" text="&amp;Check for New Version" />
 	<separator />
 	<item command="about" text="&amp;About" />
       </menu>
