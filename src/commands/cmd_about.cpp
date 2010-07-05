@@ -49,61 +49,56 @@ AboutCommand::AboutCommand()
 
 void AboutCommand::execute(Context* context)
 {
-  JWidget box1, label1, label2, separator1;
-  JWidget textbox, view, separator2;
-  JWidget label3, label4, box2, box3, box4, button1;
+  FramePtr frame(new Frame(false, _("About " PACKAGE)));
+  Widget* box1 = jbox_new(JI_VERTICAL);
+  Widget* grid = jgrid_new(2, false);
+  Label* title = new Label(PACKAGE " | Allegro Sprite Editor v" VERSION);
+  Label* subtitle = new Label(_("A pixel art program"));
+  Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
+  Widget* authors_separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
+  Label* author1 = new LinkLabel("http://www.davidcapello.com.ar/", "David Capello");
+  Label* author1_desc = new Label("| Programming");
+  Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
+  Label* author2_desc = new Label("| Skin and Graphics");
+  Label* author3 = new Label("Trent Gamblin");
+  Label* author3_desc = new Label("| MAC OS X builds");
+  Widget* bottom_box1 = jbox_new(JI_HORIZONTAL);
+  Widget* bottom_box2 = jbox_new(JI_HORIZONTAL);
+  Widget* bottom_box3 = jbox_new(JI_HORIZONTAL);
+  Label* copyright = new Label(COPYRIGHT);
+  Label* website = new LinkLabel(WEBSITE);
+  Widget* close_button = jbutton_new(_("&Close"));
 
-  FramePtr window(new Frame(false, _("About " PACKAGE)));
-
-  box1 = jbox_new(JI_VERTICAL);
-  label1 = new Label(PACKAGE " | Allegro Sprite Editor v" VERSION);
-  label2 = new Label(_("A pixel art program"));
-  separator1 = ji_separator_new(NULL, JI_HORIZONTAL);
-
-  label3 = new Label(COPYRIGHT);
-  label4 = new LinkLabel(WEBSITE);
-  textbox = jtextbox_new("Authors:\n\n"
-			 "  David Capello\n"
-			 "   - Project leader and developer\n\n"
-			 "  Ilija Melentijevic\n"
-			 "   - ASE skin and pixel art expert\n\n"
-			 "  Trent Gamblin\n"
-			 "   - Mac OS X builds\n", 0);
-  box2 = jbox_new(JI_HORIZONTAL);
-  box3 = jbox_new(JI_HORIZONTAL);
-  box4 = jbox_new(JI_HORIZONTAL);
-  button1 = jbutton_new(_("&Close"));
+  jgrid_add_child(grid, title, 2, 1, 0);
+  jgrid_add_child(grid, subtitle, 2, 1, 0);
+  jgrid_add_child(grid, authors_separator1, 2, 1, 0);
+  jgrid_add_child(grid, author1, 1, 1, 0);
+  jgrid_add_child(grid, author1_desc, 1, 1, 0);
+  jgrid_add_child(grid, author2, 1, 1, 0);
+  jgrid_add_child(grid, author2_desc, 1, 1, 0);
+  jgrid_add_child(grid, author3, 1, 1, 0);
+  jgrid_add_child(grid, author3_desc, 1, 1, 0);
+  jgrid_add_child(grid, authors_separator2, 2, 1, 0);
+  jgrid_add_child(grid, copyright, 2, 1, 0);
+  jgrid_add_child(grid, website, 2, 1, 0);
+  jgrid_add_child(grid, bottom_box1, 2, 1, 0);
   
-  jwidget_magnetic(button1, true);
+  jwidget_magnetic(close_button, true);
 
-  jwidget_set_border(box1, 4 * jguiscale());
-  jwidget_add_children(box1, label1, label2, separator1, NULL);
+  jwidget_expansive(bottom_box2, true);
+  jwidget_expansive(bottom_box3, true);
 
-  if (textbox) {
-    view = jview_new();
-    separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
+  jwidget_add_children(bottom_box1, bottom_box2, close_button, bottom_box3, NULL);
+  jwidget_add_child(box1, grid);
+  jwidget_add_child(frame, box1);
 
-    jview_attach(view, textbox);
-    jview_maxsize(view);
-    jwidget_expansive(view, true);
-    jwidget_add_children(box1, view, separator2, NULL);
-  }
+  jwidget_set_border(close_button,
+  		     close_button->border_width.l + 16*jguiscale(),
+  		     close_button->border_width.t,
+  		     close_button->border_width.r + 16*jguiscale(),
+  		     close_button->border_width.b);
 
-  jwidget_expansive(box3, true);
-  jwidget_expansive(box4, true);
-  jwidget_add_children(box2, box3, button1, box4, NULL);
-
-  jwidget_add_children(box1, label3, label4, NULL);
-  jwidget_add_child(box1, box2);
-  jwidget_add_child(window, box1);
-
-  jwidget_set_border(button1,
-		     button1->border_width.l + 16*jguiscale(),
-		     button1->border_width.t,
-		     button1->border_width.r + 16*jguiscale(),
-		     button1->border_width.b);
-
-  window->open_window_fg();
+  frame->open_window_fg();
 }
 
 //////////////////////////////////////////////////////////////////////
