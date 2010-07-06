@@ -34,7 +34,7 @@ OBJ = .o
 EXE = .exe
 LIB_EXT = .a
 OBJ_DIR = obj/mingw32
-SUBMAKEFILE = makefile.mgw
+SUBMAKEFILE = makefile.mingw
 
 ifndef CROSSCOMPILE
   DLLWRAP = dllwrap

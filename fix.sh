@@ -78,7 +78,7 @@ if [ X"$ans" != X"y" ] ; then exit ; fi
 case "$platform" in
   "unix"    ) makefile_name="makefile.linux" ;;
   "djgpp"   ) makefile_name="makefile.dj" ;;
-  "mingw32" ) makefile_name="makefile.mgw" ;;
+  "mingw32" ) makefile_name="makefile.mingw" ;;
   "*"       ) exit ;;
 esac
 

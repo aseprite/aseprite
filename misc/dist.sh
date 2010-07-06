@@ -82,7 +82,7 @@ ase_files="config.h				\
 	   makefile.gcc				\
 	   makefile.linux			\
 	   makefile.lst				\
-	   makefile.mgw				\
+	   makefile.mingw			\
 	   makefile.vc				\
 	   *.txt				\
 	   *.html				\
