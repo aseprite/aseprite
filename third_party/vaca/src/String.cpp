@@ -57,7 +57,7 @@ std::string Vaca::format_string(const char* fmt, ...)
     #if defined(VACA_ON_WINDOWS)
       int written = _vsnprintf(buf.get(), size, fmt, ap);
     #elif defined(VACA_ON_UNIXLIKE)
-      int written = vsprintf(buf.get(), size, fmt, ap);
+      int written = vsnprintf(buf.get(), size, fmt, ap);
     #else
       #error Implement this in your platform
     #endif
