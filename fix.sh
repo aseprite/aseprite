@@ -10,7 +10,7 @@ readln()
 ######################################################################
 # platform
 
-readln "What platform (unix/djgpp/mingw32)?" "unix"
+readln "What platform (linux/mingw)?" "linux"
 platform=$ans
 
 ######################################################################
@@ -34,7 +34,7 @@ memleak=$ans
 ######################################################################
 # prefix
 
-if [ X"$platform" = X"unix" ] ; then
+if [ X"$platform" = X"linux" ] ; then
   readln "Where do you want install ASE by default?" "/usr/local"
   prefix=$ans
 else
@@ -45,9 +45,8 @@ fi
 # show information
 
 case "$platform" in
-  "unix"    ) platform_name="Unix" ;;
-  "djgpp"   ) platform_name="DOS (djgpp)" ;;
-  "mingw32" ) platform_name="Windows (Mingw32)" ;;
+  "linux"   ) platform_name="Linux" ;;
+  "mingw"   ) platform_name="Windows (Mingw32)" ;;
   "*"       ) exit ;;
 esac
 
@@ -76,9 +75,8 @@ if [ X"$ans" != X"y" ] ; then exit ; fi
 # generate the makefile
 
 case "$platform" in
-  "unix"    ) makefile_name="makefile.linux" ;;
-  "djgpp"   ) makefile_name="makefile.dj" ;;
-  "mingw32" ) makefile_name="makefile.mingw" ;;
+  "linux"   ) makefile_name="makefile.linux" ;;
+  "mingw"   ) makefile_name="makefile.mingw" ;;
   "*"       ) exit ;;
 esac
 
