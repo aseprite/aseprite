@@ -347,7 +347,7 @@ struct PalEntryWithIndexPredicate {
   PalEntryWithIndexPredicate(SortPalette* sort_palette)
     : sort_palette(sort_palette) { }
 
-  bool operator()(PalEntryWithIndex& a, PalEntryWithIndex& b) {
+  bool operator()(const PalEntryWithIndex& a, const PalEntryWithIndex& b) {
     return sort_palette->operator()(a.color, b.color);
   }
 };
