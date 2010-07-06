@@ -31,7 +31,7 @@ OBJ = .o
 EXE =
 LIB_EXT = .a
 OBJ_DIR = obj/unix
-SUBMAKEFILE = makefile.lnx
+SUBMAKEFILE = makefile.linux
 
 include makefile.lst
 include makefile.gcc

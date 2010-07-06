@@ -80,7 +80,7 @@ ase_files="config.h				\
 	   fix.sh				\
 	   makefile.cfg				\
 	   makefile.gcc				\
-	   makefile.lnx				\
+	   makefile.linux			\
 	   makefile.lst				\
 	   makefile.mgw				\
 	   makefile.vc				\

@@ -76,7 +76,7 @@ if [ X"$ans" != X"y" ] ; then exit ; fi
 # generate the makefile
 
 case "$platform" in
-  "unix"    ) makefile_name="makefile.lnx" ;;
+  "unix"    ) makefile_name="makefile.linux" ;;
   "djgpp"   ) makefile_name="makefile.dj" ;;
   "mingw32" ) makefile_name="makefile.mgw" ;;
   "*"       ) exit ;;
