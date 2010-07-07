@@ -37,7 +37,7 @@ void Launcher::openFile(const std::string& file)
 
 #elif defined ALLEGRO_MACOSX
 
-  system(("open " + file).c_str());
+  system(("open \"" + file + "\"").c_str());
 
 #else  // Linux
 
