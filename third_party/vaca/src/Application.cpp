@@ -33,6 +33,10 @@
 #include <vector>
 #include <cassert>
 
+#ifdef VACA_ON_WINDOWS
+#include <windows.h>
+#endif
+
 using namespace Vaca;
 
 Application* Application::m_instance = NULL;
@@ -40,6 +44,9 @@ std::vector<String> Application::m_args;
 
 Application::Application()
 {
+#ifdef VACA_ON_WINDOWS
+  CoInitialize(NULL);
+#endif
 }
 
 Application::~Application()

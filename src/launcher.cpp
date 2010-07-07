@@ -20,6 +20,10 @@
 
 #include "launcher.h"
 
+#if defined ALLEGRO_WINDOWS
+#include <windows.h>
+#endif
+
 void Launcher::openUrl(const std::string& url)
 {
   openFile(url);
@@ -29,7 +33,7 @@ void Launcher::openFile(const std::string& file)
 {
 #if defined ALLEGRO_WINDOWS
 
-  system(("start " + file).c_str());
+  ShellExecute(NULL, "open", file.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
 #elif defined ALLEGRO_MACOSX
 
