@@ -10,7 +10,7 @@ readln()
 ######################################################################
 # platform
 
-readln "What platform (linux/mingw)?" "linux"
+readln "What platform (linux/macosx/mingw)?" "linux"
 platform=$ans
 
 ######################################################################
@@ -46,6 +46,7 @@ fi
 
 case "$platform" in
   "linux"   ) platform_name="Linux" ;;
+  "macosx"  ) platform_name="Mac OS X" ;;
   "mingw"   ) platform_name="Windows (Mingw32)" ;;
   "*"       ) exit ;;
 esac
@@ -76,6 +77,7 @@ if [ X"$ans" != X"y" ] ; then exit ; fi
 
 case "$platform" in
   "linux"   ) makefile_name="makefile.linux" ;;
+  "macosx"  ) makefile_name="makefile.macosx" ;;
   "mingw"   ) makefile_name="makefile.mingw" ;;
   "*"       ) exit ;;
 esac

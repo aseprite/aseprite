@@ -1,0 +1,64 @@
+# Copyright (C) 2001-2010 by David Capello		-*-Makefile-*-
+
+ifndef CONFIGURED
+include makefile.cfg
+endif
+
+.PHONY = cfgtest
+
+ifndef CONFIGURED
+cfgtest:
+	@echo You must configure ASE: edit \"makefile.cfg\" or run \"fix.sh\" script
+endif
+
+######################################################################
+# Flags for GCC in GNU/Linux system
+
+ifdef DEBUGMODE
+CFLAGS = -arch i386 `allegro-config --cflags debug`
+LFLAGS = -arch i386 `allegro-config --libs debug`
+else
+CFLAGS = -arch i386 `allegro-config --cflags`
+LFLAGS = -arch i386 `allegro-config --libs`
+endif
+
+######################################################################
+# GCC stuff
+
+CC = gcc
+CPP = g++
+OBJ = .o
+EXE =
+LIB_EXT = .a
+OBJ_DIR = obj/unix
+SUBMAKEFILE = makefile.macosx
+
+include makefile.lst
+include makefile.gcc
+
+######################################################################
+# General rules
+
+.PHONY = default all clean distclean install uninstall
+
+default: all
+
+all: $(ASE)
+
+clean:
+	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS)
+
+distclean: clean
+	-rm -f $(ASE)
+
+install:
+	cp aseprite $(DEFAULT_PREFIX)/bin
+	cp -r data $(DEFAULT_PREFIX)/share/ase
+	cp -r docs $(DEFAULT_PREFIX)/share/ase
+	cp README.html $(DEFAULT_PREFIX)/share/ase
+
+uninstall:
+	-rm  -vf $(DEFAULT_PREFIX)/bin/aseprite
+	-rm -rvf $(DEFAULT_PREFIX)/share/ase
+
+-include makefile.dep
