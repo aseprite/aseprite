@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <Vaca/String.h>
 
 #include "commands/command.h"
 #include "launcher.h"
@@ -49,6 +50,49 @@ void CheckUpdatesCommand::execute(Context* context)
   url += WEBSITE;
   url += "update/?v=";
   url += VERSION;		// ASE version
+
+  // Operating system
+  std::string os;
+  switch (os_type) {
+    case OSTYPE_WIN3: os = "win3"; break;
+    case OSTYPE_WIN95: os = "win95"; break;
+    case OSTYPE_WIN98: os = "win98"; break;
+    case OSTYPE_WINME: os = "winme"; break;
+    case OSTYPE_WINNT: os = "winnt"; break;
+    case OSTYPE_WIN2000: os = "win2000"; break;
+    case OSTYPE_WINXP: os = "winxp"; break;
+    case OSTYPE_WIN2003: os = "win2003"; break;
+    case OSTYPE_WINVISTA: os = "winvista"; break;
+    case OSTYPE_OS2: os = "os2"; break;
+    case OSTYPE_WARP: os = "warp"; break;
+    case OSTYPE_DOSEMU: os = "dosemu"; break;
+    case OSTYPE_OPENDOS: os = "opendos"; break;
+    case OSTYPE_LINUX: os = "linux"; break;
+    case OSTYPE_SUNOS: os = "sunos"; break;
+    case OSTYPE_FREEBSD: os = "freebsd"; break;
+    case OSTYPE_NETBSD: os = "netbsd"; break;
+    case OSTYPE_IRIX: os = "irix"; break;
+    case OSTYPE_DARWIN: os = "darwin"; break;
+    case OSTYPE_QNX: os = "qnx"; break;
+    case OSTYPE_UNIX: os = "unix"; break;
+    case OSTYPE_BEOS: os = "beos"; break;
+    case OSTYPE_MACOS: os = "macos"; break;
+    case OSTYPE_MACOSX: os = "macosx"; break;
+    default:
+      os = "unknown";
+      break;
+  }
+  url += "&os=" + os;
+
+  // Version of the operating system
+  if (os_version >= 0) {
+    url += "&osver=";
+    url += Vaca::convert_to<std::string>(os_version);
+  }
+  if (os_revision >= 0) {
+    url += "&osrev=";
+    url += Vaca::convert_to<std::string>(os_revision);
+  }
 
   Launcher::openUrl(url);
 }
