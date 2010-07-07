@@ -41,7 +41,7 @@ void Launcher::openFile(const std::string& file)
 
 #else  // Linux
 
-  system(("todo " + file).c_str());
+  system(("xdg-open \"" + file + "\"").c_str());
 
 #endif
 }
