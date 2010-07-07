@@ -18,7 +18,10 @@
 
 #include "config.h"
 
+#include <allegro.h>
+
 #include "commands/command.h"
+#include "core/dirs.h"
 #include "launcher.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -43,9 +46,17 @@ QuickReferenceCommand::QuickReferenceCommand()
 
 void QuickReferenceCommand::execute(Context* context)
 {
-  std::string path = "docs/quickref.pdf";
+  DIRS* dirs = filename_in_docsdir("quickref.pdf");
 
-  Launcher::openFile(path);
+  for (DIRS* dir=dirs; dir; dir=dir->next) {
+    if (!exists(dir->path))
+      continue;
+
+    Launcher::openFile(dir->path);
+    break;
+  }
+
+  dirs_free(dirs);
 }
 
 //////////////////////////////////////////////////////////////////////

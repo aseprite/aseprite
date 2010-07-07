@@ -34,6 +34,7 @@ void dirs_cat_dirs(DIRS *dirs, DIRS *more);
 
 DIRS *filename_in_bindir(const char *filename);
 DIRS *filename_in_datadir(const char *filename);
+DIRS *filename_in_docsdir(const char *filename);
 DIRS *filename_in_homedir(const char *filename);
 DIRS *filename_in_homedir(const char *filename);
 DIRS *cfg_filename_dirs();

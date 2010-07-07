@@ -145,8 +145,47 @@ DIRS *filename_in_datadir(const char *filename)
   sprintf(buf, ".ase/%s", filename);
   dirs_cat_dirs(dirs, filename_in_homedir(buf));
 
-  /* $BINDIR/data/filename */
+  /* $BINDIR/aseprite.app/Contents/Resources/data/filename */
   sprintf(buf, "aseprite.app/Contents/Resources/data/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_bindir(buf));
+
+#else
+
+  /* filename */
+  dirs_add_path(dirs, filename);
+
+#endif
+
+  return dirs;
+}
+
+DIRS *filename_in_docsdir(const char *filename)
+{
+  DIRS *dirs = dirs_new();
+  char buf[1024];
+
+#if defined ALLEGRO_UNIX
+
+  /* $BINDIR/docs/filename */
+  sprintf(buf, "docs/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_bindir(buf));
+  
+  #ifdef DEFAULT_PREFIX
+    /* $PREFIX/ase/docs/filename */
+    sprintf(buf, "%s/share/ase/docs/%s", DEFAULT_PREFIX, filename);
+    dirs_add_path(dirs, buf);
+  #endif
+
+#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
+
+  /* $BINDIR/docs/filename */
+  sprintf(buf, "docs/%s", filename);
+  dirs_cat_dirs(dirs, filename_in_bindir(buf));
+
+#elif defined ALLEGRO_MACOSX
+
+  /* $BINDIR/aseprite.app/Contents/Resources/docs/filename */
+  sprintf(buf, "aseprite.app/Contents/Resources/docs/%s", filename);
   dirs_cat_dirs(dirs, filename_in_bindir(buf));
 
 #else

@@ -54,6 +54,7 @@ distclean: clean
 install:
 	cp aseprite $(DEFAULT_PREFIX)/bin
 	cp -r data $(DEFAULT_PREFIX)/share/ase
+	cp -r docs $(DEFAULT_PREFIX)/share/ase
 	cp README.html $(DEFAULT_PREFIX)/share/ase
 
 uninstall:
