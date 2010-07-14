@@ -15,13 +15,22 @@ endif
 # Flags for MinGW
 
 # CFLAGS = -D_WIN32_WINNT=0x0500
-CFLAGS =
-LFLAGS = -mwindows -lshlwapi
+CFLAGS = 
+LFLAGS = -mwindows
 ifdef DEBUGMODE
-  LFLAGS_LAST = -lalld -lpsapi -lwininet
+  LFLAGS_LAST = -lalld -lpsapi
 else
-  LFLAGS_LAST = -lalleg -lwininet
+  ifdef STATIC_ALLEG_LINK
+    CFLAGS += -DALLEGRO_STATICLINK
+    LFLAGS_LAST = -lalleg -ldinput8 -lddraw -ldxguid -ldsound
+  else
+    LFLAGS_LAST = -lalleg44.dll
+  endif
 endif
+
+LFLAGS_LAST += -lUser32 -lShell32 -lComCtl32 -lComDlg32 -lGdi32	    	\
+	       -lMsimg32 -lWinMM -lAdvAPI32 -lOle32 -lShLwApi -lVfw32   \
+               -lwininet
 
 WITHICON = 1
 
