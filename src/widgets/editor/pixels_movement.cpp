@@ -162,6 +162,13 @@ public:
     return m_isDragging;
   }
 
+  Rect getImageBounds()
+  {
+    Cel* cel = m_sprite_writer->getExtraCel();
+    Image* image = m_sprite_writer->getExtraCelImage();
+    return Rect(cel->x, cel->y, image->w, image->h);
+  }
+
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -210,4 +217,9 @@ void PixelsMovement::dropImage()
 bool PixelsMovement::isDragging()
 {
   return m_impl->isDragging();
+}
+
+Rect PixelsMovement::getImageBounds()
+{
+  return m_impl->getImageBounds();
 }

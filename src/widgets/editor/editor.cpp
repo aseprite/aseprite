@@ -1161,8 +1161,16 @@ bool Editor::msg_proc(JMessage msg)
 	      jmouse_show();
 	    }
 	  }
+	}
 
-	  editor_update_statusbar_for_standby();
+	// Update status bar for when the user is dragging pixels
+	{
+	  // int x, y;
+	  // screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	  Rect bounds = m_pixelsMovement->getImageBounds();
+	  app_get_statusbar()->setStatusText
+	    (0, "Pos %d %d, Size %d %d [Press Ctrl+D to deselect]",
+	     bounds.x, bounds.y, bounds.w, bounds.h);
 	}
       }
       // In tool-loop

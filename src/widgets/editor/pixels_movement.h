@@ -43,6 +43,8 @@ public:
   void dropImage();
   bool isDragging();
 
+  Rect getImageBounds();
+
 private:
   class PixelsMovementImpl* m_impl;
 };
