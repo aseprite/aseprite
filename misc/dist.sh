@@ -76,16 +76,18 @@ zlib_files="third_party/zlib/*.[ch]		\
 
 ase_files="config.h				\
 	   COPYING				\
+	   NEWS.txt				\
+	   README.html				\
+	   TODO.txt				\
 	   fix.bat				\
 	   fix.sh				\
 	   makefile.cfg				\
 	   makefile.gcc				\
 	   makefile.linux			\
 	   makefile.lst				\
+	   makefile.macosx			\
 	   makefile.mingw			\
 	   makefile.vc				\
-	   *.txt				\
-	   *.html				\
 	   data/convmatr.def			\
 	   data/*.xml				\
 	   data/fonts/*.pcx			\
@@ -99,6 +101,9 @@ ase_files="config.h				\
 	   docs/*.pdf				\
 	   docs/files/*.txt			\
 	   docs/licenses/*.txt			\
+	   misc/deps.sh				\
+	   misc/dist.sh				\
+	   misc/etags.sh			\
 	   obj/*.txt				\
 	   obj/mingw32/*.txt			\
 	   obj/msvc/*.txt			\
@@ -202,7 +207,6 @@ $1/data/widgets/*.xml"
 
   bin_files="							     \
 $1/data/aseicon.*						     \
-$1/data/fonts/*.pcx						     \
 $1/data/palettes/*.col						     \
 $1/data/icons/ase*.ico						     \
 $1/data/icons/ase*.png						     \
