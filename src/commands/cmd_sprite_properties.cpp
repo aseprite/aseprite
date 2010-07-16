@@ -23,14 +23,14 @@
 #include "jinete/jinete.h"
 
 #include "commands/command.h"
-#include "core/core.h"
 #include "core/color.h"
+#include "mem_utils.h"
 #include "modules/gui.h"
 #include "raster/image.h"
-#include "raster/sprite.h"
 #include "raster/palette.h"
-#include "widgets/colbut.h"
+#include "raster/sprite.h"
 #include "sprite_wrappers.h"
+#include "widgets/colbut.h"
 
 /* TODO remove this */
 void dialogs_frame_length(const SpriteReader& sprite, int sprite_frpos);
@@ -106,9 +106,9 @@ void SpritePropertiesCommand::execute(Context* context)
 
   /* sprite size (width and height) */
   usprintf(buf, "%dx%d (", sprite->getWidth(), sprite->getHeight());
-  get_pretty_memsize(sprite->getMemSize(),
- 		     buf+ustrsize(buf),
-		     sizeof(buf)-ustrsize(buf));
+  get_pretty_memory_size(sprite->getMemSize(),
+			 buf+ustrsize(buf),
+			 sizeof(buf)-ustrsize(buf));
   ustrcat(buf, ")");
   size->setText(buf);
 

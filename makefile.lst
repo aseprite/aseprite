@@ -12,6 +12,7 @@ COMMON_SOURCES =					\
 	src/context.cpp					\
 	src/gfxmode.cpp					\
 	src/launcher.cpp				\
+	src/mem_utils.cpp				\
 	src/recent_files.cpp				\
 	src/ui_context.cpp				\
 	src/undoable.cpp				\

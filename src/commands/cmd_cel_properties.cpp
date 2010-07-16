@@ -22,10 +22,9 @@
 
 #include "jinete/jinete.h"
 
-#include "commands/command.h"
-#include "sprite_wrappers.h"
 #include "app.h"
-#include "core/core.h"
+#include "commands/command.h"
+#include "mem_utils.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -33,6 +32,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
 
 class CelPropertiesCommand : public Command
 {
@@ -108,9 +108,9 @@ void CelPropertiesCommand::execute(Context* context)
     usprintf(buf, "%dx%d (",
 	     sprite->getStock()->image[cel->image]->w,
 	     sprite->getStock()->image[cel->image]->h);
-    get_pretty_memsize(memsize,
-		       buf+ustrsize(buf),
-		       sizeof(buf)-ustrsize(buf));
+    get_pretty_memory_size(memsize,
+			   buf+ustrsize(buf),
+			   sizeof(buf)-ustrsize(buf));
     ustrcat(buf, ")");
 
     label_size->setText(buf);

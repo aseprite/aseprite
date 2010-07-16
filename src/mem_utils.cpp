@@ -16,29 +16,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_CORE_H_INCLUDED
-#define CORE_CORE_H_INCLUDED
+#include "config.h"
 
-#include "jinete/jbase.h"
+#include <allegro/unicode.h>
 
-enum {
-  MODE_VERBOSE		= 1,	/* verbose mode status */
-  MODE_BATCH		= 2,	/* batch mode */
-  MODE_GUI		= 4,	/* graphics user interface */
-};
-
-extern int ase_mode;
-
-class LoggerModule
+char *get_pretty_memory_size(unsigned int memsize, char *buf, unsigned int bufsize)
 {
-public:
-  LoggerModule();
-  ~LoggerModule();
-};
+  if (memsize < 1000)
+    uszprintf(buf, bufsize, "%d bytes", memsize);
+  else if (memsize < 1000*1000)
+    uszprintf(buf, bufsize, "%0.1fK", memsize/1024.0f);
+  else
+    uszprintf(buf, bufsize, "%0.1fM", memsize/(1024.0f*1024.0f));
 
-void verbose_printf(const char *format, ...);
-bool is_interactive();
-
-char *get_errno_string(int errnum, char *buf, int size);
-
-#endif
+  return buf;
+}

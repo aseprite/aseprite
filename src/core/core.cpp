@@ -118,18 +118,6 @@ bool is_interactive()
   return ase_mode & MODE_GUI ? true: false;
 }
 
-char *get_pretty_memsize(unsigned int memsize, char *buf, unsigned int bufsize)
-{
-  if (memsize < 1000)
-    uszprintf(buf, bufsize, "%d bytes", memsize);
-  else if (memsize < 1000*1000)
-    uszprintf(buf, bufsize, "%0.1fK", memsize/1024.0f);
-  else
-    uszprintf(buf, bufsize, "%0.1fM", memsize/(1024.0f*1024.0f));
-
-  return buf;
-}
-
 /**
  * Like 'strerror' but thread-safe.
  *
