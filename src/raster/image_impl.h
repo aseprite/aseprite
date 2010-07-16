@@ -234,8 +234,6 @@ void ImageImpl<IndexedTraits>::clear(int color)
   memset(raw_pixels(), color, w*h);
 }
 
-/* if "color_map" is not NULL, it's used by the routine to merge the
-   source and the destionation pixels */
 template<>
 void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode)
 {
@@ -300,12 +298,8 @@ void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity
       dst_address = ((ImageImpl<IndexedTraits>*)dst)->line_address(ydst)+xbeg;
 
       for (xdst=xbeg; xdst<=xend; xdst++) {
-	if (*src_address != mask_color) {
-	  if (color_map)
-	    *dst_address = color_map->data[*src_address][*dst_address];
-	  else
-	    *dst_address = (*src_address);
-	}
+	if (*src_address != mask_color)
+	  *dst_address = (*src_address);
 
 	dst_address++;
 	src_address++;
