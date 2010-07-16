@@ -448,26 +448,37 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
     image_clear(image, 0);
 
   // Onion-skin feature: draw the previous frame
-  if (UIContext::instance()->getSettings()->getUseOnionskin() && (frame > 0)) {
+  ISettings* settings = UIContext::instance()->getSettings();
+  if (settings->getUseOnionskin()) {
     // Draw background layer of the current frame with opacity=255
     global_opacity = 255;
-
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, true, false);
 
-    // Draw transparent layers of the previous frame with opacity=128
-    global_opacity = 128;
+    // Draw transparent layers of the previous/next frames with different opacity (<255) (it is the onion-skinning)
+    {
+      int prevs = settings->getOnionskinPrevFrames();
+      int nexts = settings->getOnionskinNextFrames();
 
-    renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
-		frame-1, zoom, zoomed_func, false, true);
+      for (int f=frame-prevs; f <= frame+nexts; ++f) {
+	if (f == frame)
+	  continue;
+	else if (f < frame)
+	  global_opacity = 64 + 128 - 128 * (frame - f) / prevs;
+	else
+	  global_opacity = 64 + 128 - 128 * (f - frame) / nexts;
+   
+	renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
+		    f, zoom, zoomed_func, false, true);
+      }
+    }
 
     // Draw transparent layers of the current frame with opacity=255
     global_opacity = 255;
-
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, false, true);
   }
-  // Just draw the current frame
+  // Onion-skin is disabled: just draw the current frame
   else {
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, true, true);
