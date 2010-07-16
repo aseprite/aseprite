@@ -73,10 +73,14 @@ public:
   virtual bool getUseOnionskin() = 0;
   virtual int getOnionskinPrevFrames() = 0;
   virtual int getOnionskinNextFrames() = 0;
+  virtual int getOnionskinOpacityBase() = 0;
+  virtual int getOnionskinOpacityStep() = 0;
 
   virtual void setUseOnionskin(bool state) = 0;
   virtual void setOnionskinPrevFrames(int frames) = 0;
   virtual void setOnionskinNextFrames(int frames) = 0;
+  virtual void setOnionskinOpacityBase(int base) = 0;
+  virtual void setOnionskinOpacityStep(int step) = 0;
 
   // Tools settings
 

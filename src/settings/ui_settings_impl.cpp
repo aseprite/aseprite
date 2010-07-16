@@ -48,6 +48,8 @@ UISettingsImpl::UISettingsImpl()
   m_use_onionskin = get_config_bool("Onionskin", "Enabled", false);
   m_prev_frames_onionskin = get_config_int("Onionskin", "PrevFrames", 1);
   m_next_frames_onionskin = get_config_int("Onionskin", "NextFrames", 0);
+  m_onionskin_opacity_base = get_config_int("Onionskin", "OpacityBase", 128);
+  m_onionskin_opacity_step = get_config_int("Onionskin", "OpacityStep", 32);
 }
 
 UISettingsImpl::~UISettingsImpl()
@@ -63,6 +65,8 @@ UISettingsImpl::~UISettingsImpl()
   set_config_bool("Onionskin", "Enabled", m_use_onionskin);
   set_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
   set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
+  set_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
+  set_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
 
   // delete all tool settings
   std::map<std::string, IToolSettings*>::iterator it;
@@ -209,6 +213,16 @@ int UISettingsImpl::getOnionskinNextFrames()
   return m_next_frames_onionskin;
 }
 
+int UISettingsImpl::getOnionskinOpacityBase()
+{
+  return m_onionskin_opacity_base;
+}
+
+int UISettingsImpl::getOnionskinOpacityStep()
+{
+  return m_onionskin_opacity_step;
+}
+
 void UISettingsImpl::setUseOnionskin(bool state)
 {
   m_use_onionskin = state;
@@ -222,6 +236,16 @@ void UISettingsImpl::setOnionskinPrevFrames(int frames)
 void UISettingsImpl::setOnionskinNextFrames(int frames)
 {
   m_next_frames_onionskin = frames;
+}
+
+void UISettingsImpl::setOnionskinOpacityBase(int base)
+{
+  m_onionskin_opacity_base = base;
+}
+
+void UISettingsImpl::setOnionskinOpacityStep(int step)
+{
+  m_onionskin_opacity_step = step;
 }
 
 //////////////////////////////////////////////////////////////////////

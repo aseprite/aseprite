@@ -66,10 +66,14 @@ public:
   bool getUseOnionskin();
   int getOnionskinPrevFrames();
   int getOnionskinNextFrames();
+  int getOnionskinOpacityBase();
+  int getOnionskinOpacityStep();
 
   void setUseOnionskin(bool state);
   void setOnionskinPrevFrames(int frames);
   void setOnionskinNextFrames(int frames);
+  void setOnionskinOpacityBase(int base);
+  void setOnionskinOpacityStep(int step);
 
   // Tools settings
 
@@ -81,6 +85,8 @@ private:
   bool m_use_onionskin;
   int m_prev_frames_onionskin;
   int m_next_frames_onionskin;
+  int m_onionskin_opacity_base;
+  int m_onionskin_opacity_step;
   bool m_snapToGrid;
   bool m_gridVisible;
   Rect m_gridBounds;

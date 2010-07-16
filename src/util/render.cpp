@@ -459,17 +459,20 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
     {
       int prevs = settings->getOnionskinPrevFrames();
       int nexts = settings->getOnionskinNextFrames();
+      int opacity_base = settings->getOnionskinOpacityBase();
+      int opacity_step = settings->getOnionskinOpacityStep();
 
       for (int f=frame-prevs; f <= frame+nexts; ++f) {
 	if (f == frame)
 	  continue;
 	else if (f < frame)
-	  global_opacity = 64 + 128 - 128 * (frame - f) / prevs;
+	  global_opacity = opacity_base - opacity_step * ((frame - f)-1);
 	else
-	  global_opacity = 64 + 128 - 128 * (f - frame) / nexts;
-   
-	renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
-		    f, zoom, zoomed_func, false, true);
+	  global_opacity = opacity_base - opacity_step * ((f - frame)-1);
+
+	if (global_opacity > 0)
+	  renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
+		      f, zoom, zoomed_func, false, true);
       }
     }
 
