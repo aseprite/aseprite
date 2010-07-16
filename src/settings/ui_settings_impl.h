@@ -79,6 +79,8 @@ private:
   TiledMode m_tiledMode;
   Tool* m_currentTool;
   bool m_use_onionskin;
+  int m_prev_frames_onionskin;
+  int m_next_frames_onionskin;
   bool m_snapToGrid;
   bool m_gridVisible;
   Rect m_gridBounds;

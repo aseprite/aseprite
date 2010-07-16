@@ -38,25 +38,31 @@ UISettingsImpl::UISettingsImpl()
   m_currentTool = NULL;
   m_tiledMode     = (TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE);
   m_tiledMode     = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
-  m_use_onionskin = get_config_bool("Tools", "Onionskin", false);
   m_snapToGrid    = get_config_bool("Grid", "SnapTo", false);
   m_gridVisible   = get_config_bool("Grid", "Visible", false);
   m_gridColor     = get_config_color("Grid", "Color", color_rgb(0, 0, 255));
   m_gridBounds    = get_config_rect("Grid", "Bounds", m_gridBounds);
   m_pixelGridVisible = get_config_bool("PixelGrid", "Visible", false);
   m_pixelGridColor   = get_config_color("PixelGrid", "Color", color_rgb(200, 200, 200));
+
+  m_use_onionskin = get_config_bool("Onionskin", "Enabled", false);
+  m_prev_frames_onionskin = get_config_int("Onionskin", "PrevFrames", 1);
+  m_next_frames_onionskin = get_config_int("Onionskin", "NextFrames", 0);
 }
 
 UISettingsImpl::~UISettingsImpl()
 {
   set_config_int("Tools", "Tiled", m_tiledMode);
-  set_config_bool("Tools", "Onionskin", m_use_onionskin);
   set_config_bool("Grid", "SnapTo", m_snapToGrid);
   set_config_bool("Grid", "Visible", m_gridVisible);
   set_config_rect("Grid", "Bounds", m_gridBounds);
   set_config_color("Grid", "Color", m_gridColor);
   set_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
   set_config_color("PixelGrid", "Color", m_pixelGridColor);
+
+  set_config_bool("Onionskin", "Enabled", m_use_onionskin);
+  set_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
+  set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
 
   // delete all tool settings
   std::map<std::string, IToolSettings*>::iterator it;
@@ -195,24 +201,27 @@ bool UISettingsImpl::getUseOnionskin()
 
 int UISettingsImpl::getOnionskinPrevFrames()
 {
-  return 1;
+  return m_prev_frames_onionskin;
 }
 
 int UISettingsImpl::getOnionskinNextFrames()
 {
-  return 0;
+  return m_next_frames_onionskin;
 }
 
 void UISettingsImpl::setUseOnionskin(bool state)
 {
+  m_use_onionskin = state;
 }
 
 void UISettingsImpl::setOnionskinPrevFrames(int frames)
 {
+  m_prev_frames_onionskin = frames;
 }
 
 void UISettingsImpl::setOnionskinNextFrames(int frames)
 {
+  m_next_frames_onionskin = frames;
 }
 
 //////////////////////////////////////////////////////////////////////
