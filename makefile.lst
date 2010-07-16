@@ -183,7 +183,6 @@ COMMON_SOURCES =					\
 	src/raster/algofill.cpp				\
 	src/raster/algo_polygon.cpp			\
 	src/raster/blend.cpp				\
-	src/raster/pen.cpp				\
 	src/raster/cel.cpp				\
 	src/raster/dirty.cpp				\
 	src/raster/gfxobj.cpp				\
@@ -192,6 +191,7 @@ COMMON_SOURCES =					\
 	src/raster/mask.cpp				\
 	src/raster/palette.cpp				\
 	src/raster/path.cpp				\
+	src/raster/pen.cpp				\
 	src/raster/quant.cpp				\
 	src/raster/rgbmap.cpp				\
 	src/raster/rotate.cpp				\
