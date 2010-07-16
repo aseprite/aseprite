@@ -297,10 +297,10 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
     height = (m_sprite->getHeight() << m_zoom) - source_y;
   }
 
-  /* draw the sprite */
+  // Draw the sprite
 
   if ((width > 0) && (height > 0)) {
-    /* generate the rendered image */
+    // Generate the rendered image
     Image* rendered = RenderEngine::renderSprite(m_sprite,
 						 source_x, source_y,
 						 width, height,
