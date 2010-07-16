@@ -24,7 +24,6 @@
 
 #include "commands/command.h"
 #include "core/core.h"
-#include "core/dirs.h"
 #include "modules/gui.h"
 
 //////////////////////////////////////////////////////////////////////

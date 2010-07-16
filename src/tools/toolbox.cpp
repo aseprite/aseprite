@@ -23,21 +23,21 @@
 #include <allegro/fixed.h>
 #include <allegro/fmaths.h>
 
-#include "core/dirs.h"
+#include "ase_exception.h"
 #include "raster/algo.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/pen.h"
 #include "raster/sprite.h"
+#include "resource_finder.h"
 #include "tools/toolbox.h"
-#include "ase_exception.h"
 
 #include "tinyxml.h"
 
-#include "tools/inks.h"
 #include "tools/controllers.h"
-#include "tools/point_shapes.h"
+#include "tools/inks.h"
 #include "tools/intertwiners.h"
+#include "tools/point_shapes.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -120,18 +120,19 @@ void ToolBox::loadTools()
 {
   PRINTF("Loading ASE tools\n");
 
-  DIRS* dirs = filename_in_datadir("gui.xml");
+  ResourceFinder rf;
+  rf.findInDataDir("gui.xml");
 
-  for (DIRS* dir=dirs; dir; dir=dir->next) {
-    PRINTF("Trying to load tools from \"%s\"...\n", dir->path);
+  while (const char* path = rf.next()) {
+    PRINTF("Trying to load tools from \"%s\"...\n", path);
 
-    if (!exists(dir->path))
+    if (!exists(path))
       continue;
 
-    PRINTF(" - \"%s\" found\n", dir->path);
+    PRINTF(" - \"%s\" found\n", path);
 
     TiXmlDocument doc;
-    if (!doc.LoadFile(dir->path))
+    if (!doc.LoadFile(path))
       throw ase_exception(&doc);
 
     // For each group
@@ -174,8 +175,6 @@ void ToolBox::loadTools()
       xmlGroup = xmlGroup->NextSiblingElement();
     }
   }
-
-  dirs_free(dirs);
 }
 
 void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, const std::string& suffix)

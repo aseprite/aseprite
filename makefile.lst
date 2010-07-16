@@ -14,6 +14,7 @@ COMMON_SOURCES =					\
 	src/launcher.cpp				\
 	src/mem_utils.cpp				\
 	src/recent_files.cpp				\
+	src/resource_finder.cpp				\
 	src/ui_context.cpp				\
 	src/undoable.cpp				\
 	src/commands/cmd_about.cpp			\
@@ -94,7 +95,6 @@ COMMON_SOURCES =					\
 	src/core/color.cpp				\
 	src/core/config.cpp				\
 	src/core/core.cpp				\
-	src/core/dirs.cpp				\
 	src/core/drop_files.cpp				\
 	src/core/file_system.cpp			\
 	src/core/job.cpp				\

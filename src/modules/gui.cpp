@@ -29,21 +29,20 @@
 #include <winalleg.h>
 #endif
 
+#include "Vaca/SharedPtr.h"
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
-#include "Vaca/SharedPtr.h"
 
+#include "app.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "app.h"
 #include "core/cfg.h"
 #include "core/core.h"
-#include "core/dirs.h"
 #include "core/drop_files.h"
-#include "intl/msgids.h"
 #include "gfxmode.h"
+#include "intl/msgids.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -51,13 +50,14 @@
 #include "modules/rootmenu.h"
 #include "modules/skinneable_theme.h"
 #include "raster/sprite.h"
+#include "resource_finder.h"
 #include "sprite_wrappers.h"
+#include "tools/toolbox.h"
 #include "ui_context.h"
 #include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
-#include "tools/toolbox.h"
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
@@ -613,7 +613,6 @@ static void reload_default_font()
   JTheme theme = ji_get_theme();
   SkinneableTheme* skinneable_theme = static_cast<SkinneableTheme*>(theme);
   const char *user_font;
-  DIRS *dirs, *dir;
 
   // No font for now
   if (theme->default_font && theme->default_font != font)
@@ -622,26 +621,24 @@ static void reload_default_font()
   theme->default_font = NULL;
 
   // Directories
-  dirs = dirs_new();
+  ResourceFinder rf;
 
   user_font = get_config_string("Options", "UserFont", "");
   if ((user_font) && (*user_font))
-    dirs_add_path(dirs, user_font);
+    rf.addPath(user_font);
 
   // TODO This should be in SkinneableTheme class
-  dirs_cat_dirs(dirs, filename_in_datadir(skinneable_theme->get_font_filename().c_str()));
+  rf.findInDataDir(skinneable_theme->get_font_filename().c_str());
 
   // Try to load the font
-  for (dir=dirs; dir; dir=dir->next) {
-    theme->default_font = ji_font_load(dir->path);
+  while (const char* path = rf.next()) {
+    theme->default_font = ji_font_load(path);
     if (theme->default_font) {
       if (ji_font_is_scalable(theme->default_font))
 	ji_font_set_size(theme->default_font, 8*jguiscale());
       break;
     }
   }
-
-  dirs_free(dirs);
 
   // default font: the Allegro one
   if (!theme->default_font)
@@ -677,26 +674,23 @@ void save_window_pos(JWidget window, const char *section)
 JWidget load_widget(const char *filename, const char *name)
 {
   JWidget widget;
-  DIRS *it, *dirs;
   char buf[512];
   bool found = false;
 
-  dirs = dirs_new();
+  ResourceFinder rf;
+
+  rf.addPath(filename);
 
   usprintf(buf, "widgets/%s", filename);
+  rf.findInDataDir(buf);
 
-  dirs_add_path(dirs, filename);
-  dirs_cat_dirs(dirs, filename_in_datadir(buf));
-
-  for (it=dirs; it; it=it->next) {
-    if (exists(it->path)) {
-      ustrcpy(buf, it->path);
+  while (const char* path = rf.next()) {
+    if (exists(path)) {
+      ustrcpy(buf, path);
       found = true;
       break;
     }
   }
-
-  dirs_free(dirs);
 
   if (!found)
     throw widget_file_not_found(filename);

@@ -28,7 +28,7 @@
 #include "jinete/jbase.h"
 
 #include "core/core.h"
-#include "core/dirs.h"
+#include "resource_finder.h"
 
 /* DOS and Windows needs "log" files (because their poor stderr support) */
 #if defined ALLEGRO_DOS || defined ALLEGRO_WINDOWS
@@ -58,9 +58,9 @@ LoggerModule::LoggerModule()
   PRINTF("Logger module: starting\n");
 
 #ifdef NEED_LOG
-  DIRS* dirs = filename_in_bindir("aseprite.log");
-  log_filename = dirs->path;
-  dirs_free(dirs);
+  ResourceFinder rf;
+  rf.findInBinDir("aseprite.log");
+  log_filename = rf.first();
 #endif
 
   PRINTF("Logger module: started\n");

@@ -22,18 +22,18 @@
 
 #include "jinete/jinete.h"
 
-#include "console.h"
 #include "app.h"
+#include "console.h"
 #include "core/cfg.h"
 #include "core/color.h"
 #include "core/core.h"
-#include "core/dirs.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "resource_finder.h"
 #include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/colbar.h"
@@ -234,36 +234,33 @@ static Image* render_text(Sprite* sprite, FONT *f, const char *text, int color)
 
 static FONT *my_load_font(const char *filename)
 {
-  DIRS *dirs, *dir;
   FONT *f = NULL;
   char buf[256];
 
-  /* directories to search */
-  dirs = dirs_new();
+  // Directories to search
+  ResourceFinder rf;
 
-  dirs_add_path(dirs, filename);
+  rf.addPath(filename);
 
   usprintf(buf, "fonts/%s", filename);
-  dirs_cat_dirs(dirs, filename_in_datadir(buf));
+  rf.findInDataDir(buf);
 
   usprintf(buf, "fonts/%s", get_filename(filename));
-  dirs_cat_dirs(dirs, filename_in_datadir(buf));
+  rf.findInDataDir(buf);
 
-  /* search the font */
-  for (dir=dirs; dir; dir=dir->next) {
-    /* load the font */
-    f = ji_font_load(dir->path);
+  // Search the font
+  while (const char* path = rf.next()) {
+    // Load the font
+    f = ji_font_load(path);
     if (f)
       break;
     else {
-      if (exists(dir->path))
-	PRINTF("Unknown font format \"%s\"\n", dir->path);
+      if (exists(path))
+	PRINTF("Unknown font format \"%s\"\n", path);
     }
   }
 
-  dirs_free(dirs);
-
-  /* error loading font */
+  // Error loading font
   if (!f) {
     Console console;
     console.printf(_("Error loading font.\n"));

@@ -16,28 +16,37 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_DIRS_H_INCLUDED
-#define CORE_DIRS_H_INCLUDED
+#ifndef RESOURCE_FINDER_H_INCLUDED
+#define RESOURCE_FINDER_H_INCLUDED
 
-typedef struct DIRS DIRS;
+#include <string>
+#include <vector>
 
-struct DIRS
+class ResourceFinder
 {
-  char *path;
-  struct DIRS *next;
+public:
+  ResourceFinder();
+
+  const char* first();
+  const char* next();
+
+  void addPath(std::string path);
+
+  void findInBinDir(const char* filename);
+  void findInDataDir(const char* filename);
+  void findInDocsDir(const char* filename);
+  void findInHomeDir(const char* filename);
+  void findConfigurationFile();
+
+private:
+  // Disable copy 
+  ResourceFinder(const ResourceFinder&);
+  ResourceFinder& operator==(const ResourceFinder&);
+
+  // Members
+  std::vector<std::string> m_paths;
+  int m_current;
 };
-
-DIRS *dirs_new();
-void dirs_free(DIRS *dirs);
-void dirs_add_path(DIRS *dirs, const char *path);
-void dirs_cat_dirs(DIRS *dirs, DIRS *more);
-
-DIRS *filename_in_bindir(const char *filename);
-DIRS *filename_in_datadir(const char *filename);
-DIRS *filename_in_docsdir(const char *filename);
-DIRS *filename_in_homedir(const char *filename);
-DIRS *filename_in_homedir(const char *filename);
-DIRS *cfg_filename_dirs();
 
 #endif
 

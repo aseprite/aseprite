@@ -18,13 +18,13 @@
 
 #include "config.h"
 
-#include <cassert>
-#include <vector>
-#include <string>
-#include <set>
 #include <algorithm>
-#include <iterator>
+#include <cassert>
 #include <cctype>
+#include <iterator>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -34,12 +34,11 @@
 
 #include "app.h"
 #include "core/cfg.h"
-#include "core/dirs.h"
 #include "file/file.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "widgets/fileview.h"
 #include "recent_files.h"
+#include "widgets/fileview.h"
 
 #if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
 #  define HAVE_DRIVES

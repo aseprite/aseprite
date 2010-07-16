@@ -25,13 +25,13 @@
 #include "jinete/jlist.h"
 
 #include "core/cfg.h"
-#include "core/dirs.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/rgbmap.h"
+#include "resource_finder.h"
 #include "util/filetoks.h"
 
 /* TODO warning: this number could be dangerous for big filters */
@@ -159,7 +159,6 @@ void reload_matrices_stock()
 			  "convmatr.def", NULL };
   char *s, buf[256], leavings[4096];
   int i, c, w, h, div, bias;
-  DIRS *dirs, *dir;
   ConvMatr *convmatr;
   FILE *f;
   char *name;
@@ -167,11 +166,12 @@ void reload_matrices_stock()
   clean_matrices_stock();
 
   for (i=0; names[i]; i++) {
-    dirs = filename_in_datadir(names[i]);
+    ResourceFinder rf;
+    rf.findInDataDir(names[i]);
 
-    for (dir=dirs; dir; dir=dir->next) {
-      /* open matrices stock file */
-      f = fopen(dir->path, "r");
+    while (const char* path = rf.next()) {
+      // Open matrices stock file
+      f = fopen(path, "r");
       if (!f)
 	continue;
 
@@ -285,11 +285,9 @@ void reload_matrices_stock()
       if (convmatr)
 	convmatr_free(convmatr);
 
-      /* close the file */
+      // Close the file
       fclose(f);
     }
-
-    dirs_free(dirs);
   }
 }
 

@@ -18,23 +18,23 @@
 
 #include "config.h"
 
+#include <allegro/file.h>
+#include <allegro/unicode.h>
 #include <stdio.h>
 #include <string.h>
-#include <allegro/unicode.h>
-#include <allegro/file.h>
 
 #include "jinete/jinete.h"
 
-#include "commands/commands.h"
+#include "app.h"
 #include "commands/command.h"
+#include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "app.h"
 #include "core/core.h"
-#include "core/dirs.h"
 #include "intl/intl.h"
-#include "modules/rootmenu.h"
 #include "modules/gui.h"
+#include "modules/rootmenu.h"
+#include "resource_finder.h"
 #include "tools/toolbox.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
@@ -100,19 +100,20 @@ static int load_root_menu()
   cel_popup_menu = NULL;
   cel_movement_popup_menu = NULL;
 
-  DIRS* dirs = filename_in_datadir("gui.xml");
+  ResourceFinder rf;
+  rf.findInDataDir("gui.xml");
 
-  for (DIRS* dir=dirs; dir; dir=dir->next) {
-    PRINTF("Trying to load GUI definition file from \"%s\"...\n", dir->path);
+  while (const char* path = rf.next()) {
+    PRINTF("Trying to load GUI definition file from \"%s\"...\n", path);
 
-    if (!exists(dir->path))
+    if (!exists(path))
       continue;
 
-    PRINTF(" - \"%s\" found\n", dir->path);
+    PRINTF(" - \"%s\" found\n", path);
   
     /* open the XML menu definition file */
     TiXmlDocument doc;
-    if (!doc.LoadFile(dir->path))
+    if (!doc.LoadFile(path))
       throw ase_exception(&doc);
 
     TiXmlHandle handle(&doc);
@@ -121,12 +122,12 @@ static int load_root_menu()
     /* load menus                                     */
     /**************************************************/
 
-    PRINTF(" - Loading menus from \"%s\"...\n", dir->path);
+    PRINTF(" - Loading menus from \"%s\"...\n", path);
 
     root_menu = load_menu_by_id(handle, "main_menu");
     if (!root_menu)
       throw ase_exception("Error loading main menu from file:\n%s\nReinstall the application.",
-			  static_cast<const char*>(dir->path));
+			  static_cast<const char*>(path));
 
     layer_popup_menu = load_menu_by_id(handle, "layer_popup");
     frame_popup_menu = load_menu_by_id(handle, "frame_popup");
@@ -137,7 +138,7 @@ static int load_root_menu()
     /* load keyboard shortcuts for commands           */
     /**************************************************/
 
-    PRINTF(" - Loading commands keyboard shortcuts from \"%s\"...\n", dir->path);
+    PRINTF(" - Loading commands keyboard shortcuts from \"%s\"...\n", path);
 
     // <gui><keyboard><commands><key>
     TiXmlElement* xmlKey = handle
@@ -190,7 +191,7 @@ static int load_root_menu()
     /* load keyboard shortcuts for tools              */
     /**************************************************/
 
-    PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", dir->path);
+    PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
 
     // <gui><keyboard><tools><key>
     xmlKey = handle
@@ -220,13 +221,11 @@ static int load_root_menu()
     }
   }
 
-  dirs_free(dirs);
-
-  // no menus
+  // No menus
   if (!root_menu)
     throw ase_exception("Error loading main menu\n");
 
-  /* sets the "menu" of the "menu-bar" to the new "root-menu" */
+  // Sets the "menu" of the "menu-bar" to the new "root-menu"
   if (app_get_menubar()) {
     jmenubar_set_menu(app_get_menubar(), root_menu);
     app_get_top_window()->remap_window();

@@ -26,28 +26,29 @@
 
 #include "core/cfg.h"
 #include "core/core.h"
-#include "core/dirs.h"
+#include "resource_finder.h"
 
 static char config_filename[512];
 
 ConfigModule::ConfigModule()
 {
-  DIRS *dir, *dirs = cfg_filename_dirs();
+  ResourceFinder rf;
+  rf.findConfigurationFile();
 
-  /* search the configuration file from first to last path */
-  for (dir=dirs; dir; dir=dir->next) {
-    if ((dir->path) && exists(dir->path)) {
-      ustrcpy(config_filename, dir->path);
+  config_filename[0] = 0;
+
+  // Search the configuration file from first to last path
+  while (const char* path = rf.next()) {
+    if (exists(path)) {
+      ustrcpy(config_filename, path);
       break;
     }
   }
 
-  /* if the file wasn't found, we will create configuration file
-     in the first path */
-  if (!dir)
-    ustrcpy(config_filename, dirs->path);
-
-  dirs_free(dirs);
+  // If the file wasn't found, we will create configuration file
+  // in the first path
+  if (config_filename[0] == 0 && rf.first())
+    ustrcpy(config_filename, rf.first());
 
   override_config_file(config_filename);
 }

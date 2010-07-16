@@ -21,15 +21,15 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
+#include "Vaca/SharedPtr.h"
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
-#include "Vaca/SharedPtr.h"
 
-#include "core/dirs.h"
-#include "loadpng.h"
 #include "ase_exception.h"
-#include "modules/skinneable_theme.h"
+#include "loadpng.h"
 #include "modules/gui.h"
+#include "modules/skinneable_theme.h"
+#include "resource_finder.h"
 
 #include "tinyxml.h"
 
@@ -164,20 +164,21 @@ void SkinneableTheme::reload_skin()
   // Load the skin sheet
   std::string sheet_filename = ("skins/" + m_selected_skin + "/sheet.png");
   {
-    DIRS* dirs = filename_in_datadir(sheet_filename.c_str());
-    for (DIRS* dir=dirs; dir; dir=dir->next) {
-      if ((dir->path) && exists(dir->path)) {
+    ResourceFinder rf;
+    rf.findInDataDir(sheet_filename.c_str());
+
+    while (const char* path = rf.next()) {
+      if (exists(path)) {
 	int old_color_conv = _color_conv;
 	set_color_conversion(COLORCONV_NONE);
 
 	PALETTE pal;
-	m_sheet_bmp = load_png(dir->path, pal);
+	m_sheet_bmp = load_png(path, pal);
 
 	set_color_conversion(old_color_conv);
 	break;
       }
     }
-    dirs_free(dirs);
   }
   if (!m_sheet_bmp)
     throw ase_exception("Error loading %s file", sheet_filename.c_str());
@@ -200,13 +201,15 @@ void SkinneableTheme::regen()
 
   // Load the skin XML
   std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
-  DIRS* dirs = filename_in_datadir(xml_filename.c_str());
-  for (DIRS* dir=dirs; dir; dir=dir->next) {
-    if (!dir->path || !exists(dir->path))
+  ResourceFinder rf;
+  rf.findInDataDir(xml_filename.c_str());
+
+  while (const char* path = rf.next()) {
+    if (!exists(path))
       continue;
 
     TiXmlDocument doc;
-    if (!doc.LoadFile(dir->path))
+    if (!doc.LoadFile(path))
       throw ase_exception(&doc);
 
     TiXmlHandle handle(&doc);
@@ -311,7 +314,6 @@ void SkinneableTheme::regen()
 
     break;
   }
-  dirs_free(dirs);
 }
 
 BITMAP* SkinneableTheme::cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h, bool cursor)

@@ -21,8 +21,8 @@
 #include <allegro.h>
 
 #include "commands/command.h"
-#include "core/dirs.h"
 #include "launcher.h"
+#include "resource_finder.h"
 
 //////////////////////////////////////////////////////////////////////
 // about
@@ -46,17 +46,16 @@ QuickReferenceCommand::QuickReferenceCommand()
 
 void QuickReferenceCommand::execute(Context* context)
 {
-  DIRS* dirs = filename_in_docsdir("quickref.pdf");
+  ResourceFinder rf;
+  rf.findInDocsDir("quickref.pdf");
 
-  for (DIRS* dir=dirs; dir; dir=dir->next) {
-    if (!exists(dir->path))
+  while (const char* path = rf.next()) {
+    if (!exists(path))
       continue;
 
-    Launcher::openFile(dir->path);
+    Launcher::openFile(path);
     break;
   }
-
-  dirs_free(dirs);
 }
 
 //////////////////////////////////////////////////////////////////////

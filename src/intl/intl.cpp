@@ -24,10 +24,10 @@
 #include <string.h>
 
 #include "core/cfg.h"
-#include "core/dirs.h"
 #include "intl/intl.h"
 #include "intl/msgids.h"
 #include "modules/gui.h"
+#include "resource_finder.h"
 
 IntlModule::IntlModule()
 {
@@ -51,22 +51,20 @@ IntlModule::~IntlModule()
 void intl_load_lang()
 {
   const char *lang = intl_get_lang();
-  DIRS *dirs, *dir;
   char buf[512];
 
   sprintf(buf, "po/%s.po", lang);
-  dirs = filename_in_datadir(buf);
+  ResourceFinder rf;
+  rf.findInDataDir(buf);
 
-  for (dir=dirs; dir; dir=dir->next) {
-    if ((dir->path) && exists (dir->path)) {
-      if (msgids_load (dir->path) < 0) {
-	/* TODO error loading language file... doesn't matter */
+  while (const char* path = rf.next()) {
+    if (exists(path)) {
+      if (msgids_load(path) < 0) {
+	// TODO error loading language file... doesn't matter
       }
       break;
     }
   }
-
-  dirs_free(dirs);
 }
 
 const char *intl_get_lang()

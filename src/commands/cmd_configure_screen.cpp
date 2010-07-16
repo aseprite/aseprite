@@ -19,20 +19,20 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "jinete/jinete.h"
 
+#include "app.h"
 #include "commands/command.h"
 #include "console.h"
-#include "app.h"
-#include "core/dirs.h"
 #include "gfxmode.h"
 #include "intl/intl.h"
 #include "modules/gui.h"
-#include "sprite_wrappers.h"
 #include "modules/palettes.h"
+#include "resource_finder.h"
+#include "sprite_wrappers.h"
 
 #include "tinyxml.h"
 
@@ -133,18 +133,19 @@ void ConfigureScreen::load_resolutions(ComboBox* resolution, ComboBox* color_dep
   m_pixelscale.clear();
 
   // Read from gui.xml
-  DIRS* dirs = filename_in_datadir("gui.xml");
+  ResourceFinder rf;
+  rf.findInDataDir("gui.xml");
 
-  for (DIRS* dir=dirs; dir; dir=dir->next) {
-    PRINTF("Trying to load screen resolutions file from \"%s\"...\n", dir->path);
+  while (const char* path = rf.next()) {
+    PRINTF("Trying to load screen resolutions file from \"%s\"...\n", path);
 
-    if (!exists(dir->path))
+    if (!exists(path))
       continue;
 
-    PRINTF(" - \"%s\" found\n", dir->path);
+    PRINTF(" - \"%s\" found\n", path);
 
     TiXmlDocument doc;
-    if (!doc.LoadFile(dir->path))
+    if (!doc.LoadFile(path))
       throw ase_exception(&doc);
 
     TiXmlHandle handle(&doc);
@@ -203,8 +204,6 @@ void ConfigureScreen::load_resolutions(ComboBox* resolution, ComboBox* color_dep
       xmlElement = xmlElement->NextSiblingElement();
     }
   }
-
-  dirs_free(dirs);
 
   // Current screen size
   if (!old_res_selected) {

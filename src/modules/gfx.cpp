@@ -22,17 +22,16 @@
 #include <allegro/internal/aintern.h>
 
 #include "jinete/jintern.h"
+#include "jinete/jrect.h"
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
-#include "jinete/jrect.h"
 
-#include "Vaca/Rect.h"
 #include "Vaca/Point.h"
+#include "Vaca/Rect.h"
 
-#include "console.h"
 #include "app.h"
+#include "console.h"
 #include "core/cfg.h"
-#include "core/dirs.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
