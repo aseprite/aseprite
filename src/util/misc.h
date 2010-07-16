@@ -28,8 +28,6 @@ class Layer;
 class Sprite;
 class Undo;
 
-void LoadPalette(Sprite* sprite, const char* filename);
-
 Image* NewImageFromMask(const Sprite* src);
 
 int interactive_move_layer(int mode, bool use_undo, int (*callback)());

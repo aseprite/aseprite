@@ -30,7 +30,6 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "core/color.h"
-#include "core/dirs.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -38,40 +37,6 @@
 #include "util/misc.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-void LoadPalette(Sprite* sprite, const char *filename)
-{
-  assert(sprite != NULL);
-
-  DIRS *dir, *dirs;
-  char buf[512];
-
-  dirs = dirs_new();
-  dirs_add_path(dirs, filename);
-
-  usprintf(buf, "palettes/%s", filename);
-  dirs_cat_dirs(dirs, filename_in_datadir (buf));
-
-  for (dir=dirs; dir; dir=dir->next) {
-    if (exists(dir->path)) {
-      Palette *pal = Palette::load(dir->path);
-      if (pal != NULL) {
-	/* set the palette calling the hooks */
-	set_current_palette(pal, false);
-
-	/* just one palette */
-	sprite->resetPalettes();
-	sprite->setPalette(pal, 0);
-
-	/* redraw the entire screen */
-	jmanager_refresh_screen();
-      }
-      break;
-    }
-  }
-
-  dirs_free(dirs);
-}
 
 Image* NewImageFromMask(const Sprite* src_sprite)
 {
