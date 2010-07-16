@@ -8,6 +8,7 @@ ASE = aseprite$(EXE)
 COMMON_SOURCES =					\
 	src/app.cpp					\
 	src/ase_exception.cpp				\
+	src/check_args.cpp				\
 	src/console.cpp					\
 	src/context.cpp					\
 	src/gfxmode.cpp					\
@@ -91,7 +92,6 @@ COMMON_SOURCES =					\
 	src/commands/fx/cmd_replace_color.cpp		\
 	src/commands/fx/effectbg.cpp			\
 	src/core/cfg.cpp				\
-	src/core/check_args.cpp				\
 	src/core/color.cpp				\
 	src/core/config.cpp				\
 	src/core/core.cpp				\

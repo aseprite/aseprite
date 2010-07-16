@@ -21,10 +21,10 @@
 #include "Vaca/Application.h"
 #include "Vaca/String.h"
 
-#include "core/core.h"
-#include "core/check_args.h"
-#include "core/cfg.h"
+#include "check_args.h"
 #include "console.h"
+#include "core/cfg.h"
+#include "core/core.h"
 
 using namespace Vaca;
   
@@ -141,7 +141,7 @@ void CheckArgs::usage(bool showHelp)
   if (showHelp) {
     // copyright
     console.printf
-      ("%s v%s | animated sprite editor\n%s\n\n",
+      ("%s v%s | Allegro Sprite Editor | A pixel art program\n%s\n\n",
        PACKAGE, VERSION, COPYRIGHT);
 
     // usage

@@ -21,12 +21,12 @@
 #include <allegro.h>
 #include <assert.h>
 /* #include <allegro/internal/aintern.h> */
+#include <memory>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <memory>
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
@@ -35,11 +35,11 @@
 
 #include "app.h"
 #include "ase_exception.h"
+#include "check_args.h"
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/check_args.h"
 #include "core/core.h"
 #include "core/drop_files.h"
 #include "core/file_system.h"

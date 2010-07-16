@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_CHECK_ARGS_H_INCLUDED
-#define CORE_CHECK_ARGS_H_INCLUDED
+#ifndef CHECK_ARGS_H_INCLUDED
+#define CHECK_ARGS_H_INCLUDED
 
 #include "Vaca/String.h"
 #include <vector>
