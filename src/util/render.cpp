@@ -31,29 +31,47 @@
 #include "ui_context.h"
 
 //////////////////////////////////////////////////////////////////////
-// zoomed merge
+// Zoomed merge
 
-template<class Traits>
+template<class DstTraits, class SrcTraits>
 class BlenderHelper
 {
   BLEND_COLOR m_blend_color;
 public:
   BlenderHelper(int blend_mode, Image* src)
   {
-    m_blend_color = Traits::get_blender(blend_mode);
+    m_blend_color = SrcTraits::get_blender(blend_mode);
   }
-
-  inline void operator()(typename Traits::address_t& scanline_address,
-			 typename Traits::address_t& dst_address,
-			 typename Traits::address_t& src_address,
-			 int& opacity)
+  inline void operator()(typename DstTraits::address_t& scanline_address,
+			 typename DstTraits::address_t& dst_address,
+			 typename SrcTraits::address_t& src_address,
+			 int opacity)
   {
     *scanline_address = (*m_blend_color)(*dst_address, *src_address, opacity);
   }
 };
 
 template<>
-class BlenderHelper<IndexedTraits>
+class BlenderHelper<RgbTraits, GrayscaleTraits>
+{
+  BLEND_COLOR m_blend_color;
+public:
+  BlenderHelper(int blend_mode, Image* src)
+  {
+    m_blend_color = RgbTraits::get_blender(blend_mode);
+  }
+  inline void operator()(RgbTraits::address_t& scanline_address,
+			 RgbTraits::address_t& dst_address,
+			 GrayscaleTraits::address_t& src_address,
+			 int opacity)
+  {
+    int v = _graya_getv(*src_address);
+    *scanline_address = (*m_blend_color)(*dst_address, _rgba(v, v, v, _graya_geta(*src_address)), opacity);
+  }
+};
+
+template<>
+class BlenderHelper<RgbTraits, IndexedTraits>
 {
   int m_blend_mode;
   int m_mask_color;
@@ -63,21 +81,19 @@ public:
     m_blend_mode = blend_mode;
     m_mask_color = src->mask_color;
   }
-
-  inline void operator()(IndexedTraits::address_t& scanline_address,
-			 IndexedTraits::address_t& dst_address,
+  inline void operator()(RgbTraits::address_t& scanline_address,
+			 RgbTraits::address_t& dst_address,
 			 IndexedTraits::address_t& src_address,
-			 int& opacity)
+			 int opacity)
   {
     if (m_blend_mode == BLEND_MODE_COPY) {
-      *scanline_address = *src_address;
+      const Palette *pal = get_current_palette();
+      *scanline_address = pal->getEntry(*src_address);
     }
     else {
       if (*src_address != m_mask_color) {
-	if (color_map)
-	  *scanline_address = color_map->data[*src_address][*dst_address];
-	else
-	  *scanline_address = *src_address;
+	const Palette *pal = get_current_palette();
+	*scanline_address = _rgba_blend_normal(*dst_address, pal->getEntry(*src_address), opacity);
       }
       else
 	*scanline_address = *dst_address;
@@ -85,15 +101,15 @@ public:
   }
 };
 
-template<class Traits>
-static void merge_zoomed_image(Image *dst, Image *src,
+template<class DstTraits, class SrcTraits>
+static void merge_zoomed_image(Image* dst, Image* src,
 			       int x, int y, int opacity,
 			       int blend_mode, int zoom)
 {
-  BlenderHelper<Traits> blender(blend_mode, src);
-  typename Traits::address_t src_address;
-  typename Traits::address_t dst_address, dst_address_end;
-  typename Traits::address_t scanline, scanline_address;
+  BlenderHelper<DstTraits, SrcTraits> blender(blend_mode, src);
+  typename SrcTraits::address_t src_address;
+  typename DstTraits::address_t dst_address, dst_address_end;
+  typename DstTraits::address_t scanline, scanline_address;
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
@@ -150,7 +166,7 @@ static void merge_zoomed_image(Image *dst, Image *src,
   bottom = dst_y+dst_h-1;
 
   // the scanline variable is used to blend src/dst pixels one time for each pixel
-  scanline = new typename Traits::pixel_t[src_w];
+  scanline = new typename DstTraits::pixel_t[src_w];
 
   // for each line to draw of the source image...
   for (y=0; y<src_h; y++) {
@@ -158,8 +174,8 @@ static void merge_zoomed_image(Image *dst, Image *src,
     assert(dst_x >= 0 && dst_x < dst->w);
 
     // get addresses to each line (beginning of 'src', 'dst', etc.)
-    src_address = image_address_fast<Traits>(src, src_x, src_y);
-    dst_address = image_address_fast<Traits>(dst, dst_x, dst_y);
+    src_address = image_address_fast<SrcTraits>(src, src_x, src_y);
+    dst_address = image_address_fast<DstTraits>(dst, dst_x, dst_y);
     dst_address_end = dst_address + dst_w;
     scanline_address = scanline;
 
@@ -168,10 +184,10 @@ static void merge_zoomed_image(Image *dst, Image *src,
       assert(scanline_address >= scanline);
       assert(scanline_address <  scanline + src_w);
 
-      assert(src_address >= image_address_fast<Traits>(src, src_x, src_y));
-      assert(src_address <= image_address_fast<Traits>(src, src_x+src_w-1, src_y));
-      assert(dst_address >= image_address_fast<Traits>(dst, dst_x, dst_y));
-      assert(dst_address <= image_address_fast<Traits>(dst, dst_x+dst_w-1, dst_y));
+      assert(src_address >= image_address_fast<SrcTraits>(src, src_x, src_y));
+      assert(src_address <= image_address_fast<SrcTraits>(src, src_x+src_w-1, src_y));
+      assert(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+      assert(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
       assert(dst_address <  dst_address_end);
 
       blender(scanline_address, dst_address, src_address, opacity);
@@ -195,7 +211,7 @@ static void merge_zoomed_image(Image *dst, Image *src,
 
     // draw the line in `dst'
     for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = image_address_fast<Traits>(dst, dst_x, dst_y);
+      dst_address = image_address_fast<DstTraits>(dst, dst_x, dst_y);
       dst_address_end = dst_address + dst_w;
       scanline_address = scanline;
 
@@ -206,8 +222,8 @@ static void merge_zoomed_image(Image *dst, Image *src,
         for (box_x=0; box_x<offsetx; box_x++) {
 	  assert(scanline_address >= scanline);
 	  assert(scanline_address <  scanline + src_w);
-	  assert(dst_address >= image_address_fast<Traits>(dst, dst_x, dst_y));
-	  assert(dst_address <= image_address_fast<Traits>(dst, dst_x+dst_w-1, dst_y));
+	  assert(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+	  assert(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
 	  assert(dst_address <  dst_address_end);
 
 	  (*dst_address++) = (*scanline_address);
@@ -223,8 +239,8 @@ static void merge_zoomed_image(Image *dst, Image *src,
       // the rest of the line
       for (; x<src_w; x++) {
         for (box_x=0; box_x<box_w; box_x++) {
-	  assert(dst_address >= image_address_fast<Traits>(dst, dst_x, dst_y));
-	  assert(dst_address <= image_address_fast<Traits>(dst, dst_x+dst_w-1, dst_y));
+	  assert(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+	  assert(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
 	  assert(dst_address <  dst_address_end);
 
 	  (*dst_address++) = (*scanline_address);
@@ -335,63 +351,43 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
 				  int width, int height,
 				  int frame, int zoom)
 {
-  void (*zoomed_func)(Image *, Image *, int, int, int, int, int);
+  void (*zoomed_func)(Image*, Image*, int, int, int, int, int);
   LayerImage* background = sprite->getBackgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
-  int depth;
   Image *image;
 
   switch (sprite->getImgType()) {
 
     case IMAGE_RGB:
-      depth = 32;
-      zoomed_func = merge_zoomed_image<RgbTraits>;
+      zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;
       break;
 
     case IMAGE_GRAYSCALE:
-      depth = 8;
-      zoomed_func = merge_zoomed_image<GrayscaleTraits>;
+      zoomed_func = merge_zoomed_image<RgbTraits, GrayscaleTraits>;
       break;
 
     case IMAGE_INDEXED:
-      depth = 8;
-      zoomed_func = merge_zoomed_image<IndexedTraits>;
+      zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
       break;
 
     default:
       return NULL;
   }
 
-  /* create a temporary bitmap to draw all to it */
-  image = image_new(sprite->getImgType(), width, height);
+  // Create a temporary RGB bitmap to draw all to it
+  image = image_new(IMAGE_RGB, width, height);
   if (!image)
     return NULL;
 
   // Draw checked background
   if (need_checked_bg) {
-    int x, y, u, v, c1, c2;
+    int x, y, u, v;
     int tile_x = 0;
     int tile_y = 0;
     int tile_w = 16;
     int tile_h = 16;
-
-    switch (image->imgtype) {
-      case IMAGE_RGB:
-	c1 = get_color_for_image(image->imgtype, checked_bg_color1);
-	c2 = get_color_for_image(image->imgtype, checked_bg_color2);
-        break;
-      case IMAGE_GRAYSCALE:
-	c1 = get_color_for_image(image->imgtype, checked_bg_color1);
-	c2 = get_color_for_image(image->imgtype, checked_bg_color2);
-        break;
-      // case IMAGE_INDEXED:
-      // 	c1 = get_color_for_image(image->imgtype, checked_bg_color1);
-      // 	c2 = get_color_for_image(image->imgtype, checked_bg_color2);
-      //   break;
-      default:
-	c1 = c2 = 0;
-	break;
-    }
+    int c1 = get_color_for_image(image->imgtype, checked_bg_color1);
+    int c2 = get_color_for_image(image->imgtype, checked_bg_color2);
 
     switch (checked_bg_type) {
 
@@ -451,26 +447,21 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
   else
     image_clear(image, 0);
 
-  color_map = NULL;
-
   // Onion-skin feature: draw the previous frame
   if (UIContext::instance()->getSettings()->getUseOnionskin() && (frame > 0)) {
     // Draw background layer of the current frame with opacity=255
-    color_map = NULL;
     global_opacity = 255;
 
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame, zoom, zoomed_func, true, false);
 
     // Draw transparent layers of the previous frame with opacity=128
-    //color_map = orig_trans_map;
     global_opacity = 128;
 
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
 		frame-1, zoom, zoomed_func, false, true);
 
     // Draw transparent layers of the current frame with opacity=255
-    //color_map = NULL;
     global_opacity = 255;
 
     renderLayer(sprite, sprite->getFolder(), image, source_x, source_y,
@@ -527,18 +518,10 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
 	  output_opacity = MID(0, cel->opacity, 255);
 	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-	  if (zoom == 0) {
-	    image_merge(image, src_image,
-			cel->x - source_x,
-			cel->y - source_y,
-			output_opacity, static_cast<LayerImage*>(layer)->get_blend_mode());
-	  }
-	  else {
-	    (*zoomed_func)(image, src_image,
-			   (cel->x << zoom) - source_x,
-			   (cel->y << zoom) - source_y,
-			   output_opacity, static_cast<LayerImage*>(layer)->get_blend_mode(), zoom);
-	  }
+	  (*zoomed_func)(image, src_image,
+			 (cel->x << zoom) - source_x,
+			 (cel->y << zoom) - source_y,
+			 output_opacity, static_cast<LayerImage*>(layer)->get_blend_mode(), zoom);
 	}
       }
       break;
@@ -565,18 +548,10 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
     Cel* extraCel = sprite->getExtraCel();
     if (extraCel->opacity > 0) {
       Image* extraImage = sprite->getExtraCelImage();
-      if (zoom == 0) {
-	image_merge(image, extraImage,
-		    extraCel->x - source_x,
-		    extraCel->y - source_y,
-		    extraCel->opacity, BLEND_MODE_NORMAL);
-      }
-      else {
-	(*zoomed_func)(image, extraImage,
-		       (extraCel->x << zoom) - source_x,
-		       (extraCel->y << zoom) - source_y,
-		       extraCel->opacity, BLEND_MODE_NORMAL, zoom);
-      }
+      (*zoomed_func)(image, extraImage,
+		     (extraCel->x << zoom) - source_x,
+		     (extraCel->y << zoom) - source_y,
+		     extraCel->opacity, BLEND_MODE_NORMAL, zoom);
     }
   }
 }
