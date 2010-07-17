@@ -99,7 +99,7 @@ void PlayAnimationCommand::execute(Context* context)
   // Clear extras (e.g. pen preview)
   sprite->destroyExtraCel();
 
-  /* do animation */
+  // Do animation
   oldpal = NULL;
   speed_timer = 0;
   while (!done) {

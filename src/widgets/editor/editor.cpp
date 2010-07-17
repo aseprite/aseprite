@@ -209,11 +209,10 @@ void Editor::editor_update()
 }
 
 /**
- * Draws the sprite of the editor in the screen using
- * the @ref render_sprite routine.
+ * Draws the specified portion of sprite in the editor.
  *
- * @warning You should setup the clip of the @ref ji_screen before to
- *          call this routine.
+ * @warning You should setup the clip of the @ref ji_screen before
+ *          calling this routine.
  */
 void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 {
@@ -222,11 +221,11 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
   int source_x, source_y, dest_x, dest_y, width, height;
   int scroll_x, scroll_y;
 
-  /* get scroll */
+  // Get scroll
 
   jview_get_scroll(view, &scroll_x, &scroll_y);
 
-  /* output information */
+  // Output information
 
   source_x = x1 << m_zoom;
   source_y = y1 << m_zoom;
@@ -235,7 +234,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
   width    = (x2 - x1 + 1) << m_zoom;
   height   = (y2 - y1 + 1) << m_zoom;
 
-  /* clip from viewport */
+  // Clip from viewport
 
   if (dest_x < vp->x1) {
     source_x += vp->x1 - dest_x;
@@ -255,7 +254,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
   if (dest_y+height-1 > vp->y2-1)
     height = vp->y2-dest_y;
 
-  /* clip from screen */
+  // Clip from screen
 
   if (dest_x < ji_screen->cl) {
     source_x += ji_screen->cl - dest_x;
@@ -275,7 +274,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
   if (dest_y+height-1 >= ji_screen->cb)
     height = ji_screen->cb-dest_y;
 
-  /* clip from sprite */
+  // Clip from sprite
 
   if (source_x < 0) {
     width += source_x;
