@@ -59,9 +59,7 @@
       <key command="split_editor_vertically" shortcut="Ctrl+2" />
       <key command="split_editor_horizontally" shortcut="Ctrl+3" />
       <key command="close_editor" shortcut="Ctrl+4" />
-      <key command="preview_fit_to_screen" shortcut="F6" />
-      <key command="preview_normal" shortcut="F7" />
-      <key command="preview_tiled" shortcut="F8" />
+      <key command="preview" shortcut="F8" />
       <key command="show_grid" shortcut="Shift+G" />
       <key command="snap_to_grid" shortcut="Shift+S" />
       <!-- tools -->
@@ -280,11 +278,7 @@
 	  <item command="show_grid" text="Show &amp;Grid" />
 	  <item command="snap_to_grid" text="&amp;Snap to Grid" />
 	</menu>
-	<menu text="&amp;Preview">
-	  <item command="preview_fit_to_screen" text="&amp;Fit to screen" />
-	  <item command="preview_normal" text="&amp;Normal" />
-	  <item command="preview_tiled" text="&amp;Tiled" />
-	</menu>
+	<item command="preview" text="&amp;Preview" />
 	<separator />
 	<item command="refresh" text="&amp;Refresh" />
 	<item command="configure_screen" text="Configure &amp;Screen" />

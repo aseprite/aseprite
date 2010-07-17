@@ -38,7 +38,7 @@ class BlenderHelper
 {
   BLEND_COLOR m_blend_color;
 public:
-  BlenderHelper(int blend_mode, Image* src)
+  BlenderHelper(int blend_mode, const Image* src)
   {
     m_blend_color = SrcTraits::get_blender(blend_mode);
   }
@@ -56,7 +56,7 @@ class BlenderHelper<RgbTraits, GrayscaleTraits>
 {
   BLEND_COLOR m_blend_color;
 public:
-  BlenderHelper(int blend_mode, Image* src)
+  BlenderHelper(int blend_mode, const Image* src)
   {
     m_blend_color = RgbTraits::get_blender(blend_mode);
   }
@@ -76,7 +76,7 @@ class BlenderHelper<RgbTraits, IndexedTraits>
   int m_blend_mode;
   int m_mask_color;
 public:
-  BlenderHelper(int blend_mode, Image* src)
+  BlenderHelper(int blend_mode, const Image* src)
   {
     m_blend_mode = blend_mode;
     m_mask_color = src->mask_color;
@@ -102,7 +102,7 @@ public:
 };
 
 template<class DstTraits, class SrcTraits>
-static void merge_zoomed_image(Image* dst, Image* src,
+static void merge_zoomed_image(Image* dst, const Image* src,
 			       int x, int y, int opacity,
 			       int blend_mode, int zoom)
 {
@@ -346,13 +346,14 @@ void RenderEngine::setPreviewImage(Layer *layer, Image *image)
    Positions source_x, source_y, width and height must have the
    zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
-Image* RenderEngine::renderSprite(Sprite* sprite,
+Image* RenderEngine::renderSprite(const Sprite* sprite,
 				  int source_x, int source_y,
 				  int width, int height,
-				  int frame, int zoom)
+				  int frame, int zoom,
+				  bool draw_tiled_bg)
 {
-  void (*zoomed_func)(Image*, Image*, int, int, int, int, int);
-  LayerImage* background = sprite->getBackgroundLayer();
+  void (*zoomed_func)(Image*, const Image*, int, int, int, int, int);
+  const LayerImage* background = sprite->getBackgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
   Image *image;
 
@@ -380,70 +381,8 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
     return NULL;
 
   // Draw checked background
-  if (need_checked_bg) {
-    int x, y, u, v;
-    int tile_x = 0;
-    int tile_y = 0;
-    int tile_w = 16;
-    int tile_h = 16;
-    int c1 = get_color_for_image(image->imgtype, checked_bg_color1);
-    int c2 = get_color_for_image(image->imgtype, checked_bg_color2);
-
-    switch (checked_bg_type) {
-
-      case CHECKED_BG_16X16:
-	tile_w = 16;
-	tile_h = 16;
-	break;
-
-      case CHECKED_BG_8X8:
-	tile_w = 8;
-	tile_h = 8;
-	break;
-
-      case CHECKED_BG_4X4:
-	tile_w = 4;
-	tile_h = 4;
-	break;
-
-      case CHECKED_BG_2X2:
-	tile_w = 2;
-	tile_h = 2;
-	break;
-
-    }
-
-    if (checked_bg_zoom) {
-      tile_w <<= zoom;
-      tile_h <<= zoom;
-    }
-
-    // Tile size
-    if (tile_w < (1<<zoom)) tile_w = (1<<zoom);
-    if (tile_h < (1<<zoom)) tile_h = (1<<zoom);
-
-    // Tile position (u,v) is the number of tile we start in (source_x,source_y) coordinate
-    // u = ((source_x>>zoom) - (source_x%(1<<zoom))) / tile_w;
-    // v = ((source_y>>zoom) - (source_y%(1<<zoom))) / tile_h;
-    u = source_x / tile_w;
-    v = source_y / tile_h;
-
-    // Position where we start drawing the first tile in "image"
-    int x_start = -(source_x % tile_w);
-    int y_start = -(source_y % tile_h);
-
-    // Draw checked background (tile by tile)
-    int u_start = u;
-    for (y=y_start; y<height+tile_h; y+=tile_h) {
-      for (x=x_start; x<width+tile_w; x+=tile_w) {
-	image_rectfill(image, x, y, x+tile_w-1, y+tile_h-1,
-		       (((u+v))&1)? c1: c2);
-	++u;
-      }
-      u = u_start;
-      ++v;
-    }
-  }
+  if (need_checked_bg && draw_tiled_bg)
+    renderCheckedBackground(image, source_x, source_y, zoom);
   else
     image_clear(image, 0);
 
@@ -490,10 +429,106 @@ Image* RenderEngine::renderSprite(Sprite* sprite,
   return image;
 }
 
-void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
+void RenderEngine::renderCheckedBackground(Image* image,
+					   int source_x, int source_y,
+					   int zoom)
+{
+  int x, y, u, v;
+  int tile_x = 0;
+  int tile_y = 0;
+  int tile_w = 16;
+  int tile_h = 16;
+  int c1 = get_color_for_image(image->imgtype, checked_bg_color1);
+  int c2 = get_color_for_image(image->imgtype, checked_bg_color2);
+
+  switch (checked_bg_type) {
+
+    case CHECKED_BG_16X16:
+      tile_w = 16;
+      tile_h = 16;
+      break;
+
+    case CHECKED_BG_8X8:
+      tile_w = 8;
+      tile_h = 8;
+      break;
+
+    case CHECKED_BG_4X4:
+      tile_w = 4;
+      tile_h = 4;
+      break;
+
+    case CHECKED_BG_2X2:
+      tile_w = 2;
+      tile_h = 2;
+      break;
+
+  }
+
+  if (checked_bg_zoom) {
+    tile_w <<= zoom;
+    tile_h <<= zoom;
+  }
+
+  // Tile size
+  if (tile_w < (1<<zoom)) tile_w = (1<<zoom);
+  if (tile_h < (1<<zoom)) tile_h = (1<<zoom);
+
+  // Tile position (u,v) is the number of tile we start in (source_x,source_y) coordinate
+  u = (source_x / tile_w);
+  v = (source_y / tile_h);
+
+  // Position where we start drawing the first tile in "image"
+  int x_start = -(source_x % tile_w);
+  int y_start = -(source_y % tile_h);
+
+  // Draw checked background (tile by tile)
+  int u_start = u;
+  for (y=y_start-tile_h; y<image->h+tile_h; y+=tile_h) {
+    for (x=x_start-tile_w; x<image->w+tile_w; x+=tile_w) {
+      image_rectfill(image, x, y, x+tile_w-1, y+tile_h-1,
+		     (((u+v))&1)? c1: c2);
+      ++u;
+    }
+    u = u_start;
+    ++v;
+  }
+}
+
+void RenderEngine::renderImage(Image* rgb_image, Image* src_image,
+			       int x, int y, int zoom)
+{
+  void (*zoomed_func)(Image*, const Image*, int, int, int, int, int);
+
+  assert(rgb_image->imgtype == IMAGE_RGB && "renderImage accepts RGB destination images only");
+
+  switch (src_image->imgtype) {
+
+    case IMAGE_RGB:
+      zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;
+      break;
+
+    case IMAGE_GRAYSCALE:
+      zoomed_func = merge_zoomed_image<RgbTraits, GrayscaleTraits>;
+      break;
+
+    case IMAGE_INDEXED:
+      zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
+      break;
+
+    default:
+      return;
+  }
+
+  (*zoomed_func)(rgb_image, src_image, x, y, 255, BLEND_MODE_NORMAL, zoom);
+}
+
+void RenderEngine::renderLayer(const Sprite *sprite,
+			       const Layer *layer,
+			       Image *image,
 			       int source_x, int source_y,
 			       int frame, int zoom,
-			       void (*zoomed_func)(Image *, Image *, int, int, int, int, int),
+			       void (*zoomed_func)(Image*, const Image*, int, int, int, int, int),
 			       bool render_background,
 			       bool render_transparent)
 {
@@ -508,9 +543,9 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
 	  (!render_transparent && !layer->is_background()))
 	break;
 
-      Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);      
+      const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(frame);
       if (cel != NULL) {
-	Image* src_image;
+	const Image* src_image;
 
 	/* is the 'rastering_image' setted to be used with this layer? */
 	if ((frame == sprite->getCurrentFrame()) &&
@@ -535,15 +570,16 @@ void RenderEngine::renderLayer(Sprite *sprite, Layer *layer, Image *image,
 	  (*zoomed_func)(image, src_image,
 			 (cel->x << zoom) - source_x,
 			 (cel->y << zoom) - source_y,
-			 output_opacity, static_cast<LayerImage*>(layer)->get_blend_mode(), zoom);
+			 output_opacity,
+			 static_cast<const LayerImage*>(layer)->get_blend_mode(), zoom);
 	}
       }
       break;
     }
 
     case GFXOBJ_LAYER_FOLDER: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->get_layer_end();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->get_layer_end();
 
       for (; it != end; ++it) {
 	renderLayer(sprite, *it, image,

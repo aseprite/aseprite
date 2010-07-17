@@ -30,6 +30,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "util/render.h"
 #include "widgets/editor.h"
@@ -45,18 +46,17 @@
 class PreviewCommand : public Command
 {
 public:
-  PreviewCommand(const char* short_name, const char* friendly_name);
+  PreviewCommand();
   Command* clone() { return new PreviewCommand(*this); }
 
 protected:
   bool enabled(Context* context);
-
-  void preview_sprite(Context* context, int flags);
+  void execute(Context* context);
 };
 
-PreviewCommand::PreviewCommand(const char* short_name, const char* friendly_name)
-  : Command(short_name, 
-	    friendly_name, 
+PreviewCommand::PreviewCommand()
+  : Command("preview",
+	    "Preview",
 	    CmdUIOnlyFlag)
 {
 }
@@ -72,326 +72,177 @@ bool PreviewCommand::enabled(Context* context)
 /**
  * Shows the sprite using the complete screen.
  */
-void PreviewCommand::preview_sprite(Context* context, int flags)
+void PreviewCommand::execute(Context* context)
 {
   Editor* editor = current_editor;
 
-  if (editor && editor->getSprite()) {
-    Sprite *sprite = editor->getSprite();
-    JWidget view = jwidget_get_view(editor);
-    int old_mouse_x, old_mouse_y;
-    int scroll_x, scroll_y;
-    int u, v, x, y, w, h;
-    int shiftx, shifty;
-    Image *image;
-    BITMAP *bmp;
-    int redraw;
-    JRect vp;
-    int bg_color, index_bg_color = -1;
-    TiledMode tiled;
+  // Cancel operation if current editor does not have a sprite 
+  if (!editor || !editor->getSprite())
+    return;
 
-    if (flags & PREVIEW_TILED) {
-      tiled = context->getSettings()->getTiledMode();
-      if (tiled == TILED_NONE)
-	tiled = TILED_BOTH;
-    }
-    else
-      tiled = TILED_NONE;
+  SpriteWriter sprite(editor->getSprite());
+  const Palette* pal = sprite->getCurrentPalette();
+  JWidget view = jwidget_get_view(editor);
+  int scroll_x, scroll_y;
+  int u, v, x, y;
+  int index_bg_color = -1;
+  TiledMode tiled = context->getSettings()->getTiledMode();
 
-    jmanager_free_mouse();
+  // Free mouse
+  jmanager_free_mouse();
 
-    vp = jview_get_viewport_position(view);
-    jview_get_scroll(view, &scroll_x, &scroll_y);
+  // Clear extras (e.g. pen preview)
+  sprite->destroyExtraCel();
 
-    old_mouse_x = jmouse_x(0);
-    old_mouse_y = jmouse_y(0);
+  JRect vp = jview_get_viewport_position(view);
+  jview_get_scroll(view, &scroll_x, &scroll_y);
 
-    bmp = create_bitmap(sprite->getWidth(), sprite->getHeight());
-    if (bmp) {
-      /* print a informative text */
-      app_get_statusbar()->setStatusText(1, _("Rendering..."));
-      jwidget_flush_redraw(app_get_statusbar());
-      jmanager_dispatch_messages(ji_get_default_manager());
+  int old_mouse_x = jmouse_x(0);
+  int old_mouse_y = jmouse_y(0);
 
-      jmouse_set_cursor(JI_CURSOR_NULL);
+  jmouse_set_cursor(JI_CURSOR_NULL);
+  jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
+
+  int pos_x = - scroll_x + vp->x1 + editor->editor_get_offset_x();
+  int pos_y = - scroll_y + vp->y1 + editor->editor_get_offset_y();
+  int delta_x = 0;
+  int delta_y = 0;
+
+  int zoom = editor->editor_get_zoom();
+  int w = sprite->getWidth() << zoom;
+  int h = sprite->getHeight() << zoom;
+
+  bool redraw = true;
+
+  // Render the sprite
+  Image* render = NULL;
+  Image* doublebuf = image_new(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H);
+
+  do {
+    // Update scroll
+    if (jmouse_poll()) {
+      delta_x += (jmouse_x(0) - JI_SCREEN_W/2);
+      delta_y += (jmouse_y(0) - JI_SCREEN_H/2);
       jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
-
-      /* render the sprite in the bitmap */
-      image = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
-					 sprite->getCurrentFrame(), 0);
-      if (image) {
-	image_to_allegro(image, bmp, 0, 0, sprite->getCurrentPalette());
-	image_free(image);
-      }
-
-      if (!(flags & PREVIEW_TILED))
-	bg_color = palette_color[index_bg_color=0];
-      else
-	bg_color = makecol(128, 128, 128);
-
-      shiftx = - scroll_x + vp->x1 + editor->editor_get_offset_x();
-      shifty = - scroll_y + vp->y1 + editor->editor_get_offset_y();
-
-      w = sprite->getWidth() << editor->editor_get_zoom();
-      h = sprite->getHeight() << editor->editor_get_zoom();
+      jmouse_poll();
 
       redraw = true;
-      do {
-	/* update scroll */
-	if (jmouse_poll()) {
-	  shiftx += jmouse_x(0) - JI_SCREEN_W/2;
-	  shifty += jmouse_y(0) - JI_SCREEN_H/2;
-	  jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
-	  jmouse_poll();
-
-	  redraw = true;
-	}
-
-	if (redraw) {
-	  redraw = false;
-
-	  /* fit on screen */
-	  if (flags & PREVIEW_FIT_ON_SCREEN) {
-	    double sx, sy, scale, outw, outh;
-
-	    sx = (double)JI_SCREEN_W / (double)bmp->w;
-	    sy = (double)JI_SCREEN_H / (double)bmp->h;
-	    scale = MIN(sx, sy);
-
-	    outw = (double)bmp->w * (double)scale;
-	    outh = (double)bmp->h * (double)scale;
-
-	    stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, 0, 0, outw, outh);
-	    jrectexclude(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1,
-			 0, 0, outw-1, outh-1, bg_color);
-	  }
-	  /* draw in normal size */
-	  else {
-	    if (tiled & TILED_X_AXIS)
-	      x = SGN(shiftx) * (ABS(shiftx)%w);
-	    else
-	      x = shiftx;
-
-	    if (tiled & TILED_Y_AXIS)
-	      y = SGN(shifty) * (ABS(shifty)%h);
-	    else
-	      y = shifty;
-
-	    if (tiled != TILED_BOTH) {
-/* 	      rectfill_exclude(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1, */
-/* 			       x, y, x+w-1, y+h-1, bg_color); */
-	      clear_to_color(ji_screen, bg_color);
-	    }
-
-	    if (!editor->editor_get_zoom()) {
-	      /* in the center */
-	      if (!(flags & PREVIEW_TILED))
-		draw_sprite(ji_screen, bmp, x, y);
-	      /* tiled */
-	      else {
-		switch (tiled) {
-		  case TILED_X_AXIS:
-		    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-		      blit(bmp, ji_screen, 0, 0, u, y, w, h);
-		    break;
-		  case TILED_Y_AXIS:
-		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-		      blit(bmp, ji_screen, 0, 0, x, v, w, h);
-		    break;
-		  case TILED_BOTH:
-		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-		      for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-			blit(bmp, ji_screen, 0, 0, u, v, w, h);
-		    break;
-		  case TILED_NONE:
-		    assert(false);
-		    break;
-		}
-	      }
-	    }
-	    else {
-	      /* in the center */
-	      if (!(flags & PREVIEW_TILED))
-		masked_stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, x, y, w, h);
-	      /* tiled */
-	      else {
-		switch (tiled) {
-		  case TILED_X_AXIS:
-		    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-		      stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, u, y, w, h);
-		    break;
-		  case TILED_Y_AXIS:
-		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-		      stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, x, v, w, h);
-		    break;
-		  case TILED_BOTH:
-		    for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-		      for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-			stretch_blit(bmp, ji_screen, 0, 0, bmp->w, bmp->h, u, v, w, h);
-		    break;
-		  case TILED_NONE:
-		    assert(false);
-		    break;
-		}
-	      }
-	    }
-	  }
-	}
-
-	gui_feedback();
-
-	if (keypressed()) {
-	  int readkey_value = readkey();
-	  JMessage msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
-	  Command* command = get_command_from_key_message(msg);
-	  jmessage_free(msg);
-
-	  /* change frame */
-	  if (command != NULL &&
-	      (strcmp(command->short_name(), CommandId::goto_first_frame) == 0 ||
-	       strcmp(command->short_name(), CommandId::goto_previous_frame) == 0 ||
-	       strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
-	       strcmp(command->short_name(), CommandId::goto_last_frame) == 0)) {
-	    /* execute the command */
-	    context->execute_command(command);
-
-	    /* redraw */
-	    redraw = true;
-
-	    /* render the sprite in the bitmap */
-	    image = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
-					       sprite->getCurrentFrame(), 0);
-	    if (image) {
-	      image_to_allegro(image, bmp, 0, 0, sprite->getCurrentPalette());
-	      image_free(image);
-	    }
-	  }
-	  /* play the animation */
-	  else if (command != NULL &&
-		   strcmp(command->short_name(), CommandId::play_animation) == 0) {
-	    /* TODO */
-	  }
-	  /* change background color */
-	  else if ((readkey_value>>8) == KEY_PLUS_PAD) {
-	    if (index_bg_color < 255) {
-	      bg_color = palette_color[++index_bg_color];
-	      redraw = true;
-	    }
-	  }
-	  else if ((readkey_value>>8) == KEY_MINUS_PAD) {
-	    if (index_bg_color > 0) {
-	      bg_color = palette_color[--index_bg_color];
-	      redraw = true;
-	    }
-	  }
-	  else
-	    break;
-	}
-      } while (!jmouse_b(0));
-
-      destroy_bitmap(bmp);
     }
 
-    do {
-      jmouse_poll();
-      gui_feedback();
-    } while (jmouse_b(0));
-    clear_keybuf();
+    // Render sprite and leave the result in 'render' variable
+    if (render == NULL)
+      render = RenderEngine::renderSprite(sprite, 0, 0, sprite->getWidth(), sprite->getHeight(),
+					  sprite->getCurrentFrame(), 0, false);
 
-    jmouse_set_position(old_mouse_x, old_mouse_y);
-    jmouse_set_cursor(JI_CURSOR_NORMAL);
+    // Redraw the screen
+    if (redraw) {
+      redraw = false;
 
-    jmanager_refresh_screen();
-    jrect_free(vp);
-  }
-}
+      x = pos_x + ((delta_x >> zoom) << zoom);
+      y = pos_y + ((delta_y >> zoom) << zoom);
 
-//////////////////////////////////////////////////////////////////////
-// preview_fit_to_screen
+      if (tiled & TILED_X_AXIS) x = SGN(x) * (ABS(x)%w);
+      if (tiled & TILED_Y_AXIS) y = SGN(y) * (ABS(y)%h);
 
-class PreviewFitToScreenCommand : public PreviewCommand
-{
-public:
-  PreviewFitToScreenCommand();
-  Command* clone() { return new PreviewFitToScreenCommand(*this); }
+      if (index_bg_color == -1)
+	RenderEngine::renderCheckedBackground(doublebuf, -pos_x, -pos_y, zoom);
+      else
+	image_clear(doublebuf, pal->getEntry(index_bg_color));
 
-protected:
-  void execute(Context* context);
-};
+      switch (tiled) {
+	case TILED_NONE:
+	  RenderEngine::renderImage(doublebuf, render, x, y, zoom);
+	  break;
+	case TILED_X_AXIS:
+	  for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+	    RenderEngine::renderImage(doublebuf, render, u, y, zoom);
+	  break;
+	case TILED_Y_AXIS:
+	  for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+	    RenderEngine::renderImage(doublebuf, render, x, v, zoom);
+	  break;
+	case TILED_BOTH:
+	  for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+	    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+	      RenderEngine::renderImage(doublebuf, render, u, v, zoom);
+	  break;
+      }
 
-PreviewFitToScreenCommand::PreviewFitToScreenCommand()
-  : PreviewCommand("preview_fit_to_screen",
-		   "Preview Fit to Screen")
-{
-}
+      image_to_allegro(doublebuf, ji_screen, 0, 0, pal);
+    }
 
-void PreviewFitToScreenCommand::execute(Context* context)
-{
-  preview_sprite(context, PREVIEW_FIT_ON_SCREEN);
-}
+    // It is necessary in case ji_screen is double-bufferred
+    gui_feedback();
 
-//////////////////////////////////////////////////////////////////////
-// preview_normal
+    if (keypressed()) {
+      int readkey_value = readkey();
+      JMessage msg = jmessage_new_key_related(JM_KEYPRESSED, readkey_value);
+      Command* command = get_command_from_key_message(msg);
+      jmessage_free(msg);
 
-class PreviewNormalCommand : public PreviewCommand
-{
-public:
-  PreviewNormalCommand();
-  Command* clone() { return new PreviewNormalCommand(*this); }
+      // Change frame
+      if (command != NULL &&
+	  (strcmp(command->short_name(), CommandId::goto_first_frame) == 0 ||
+	   strcmp(command->short_name(), CommandId::goto_previous_frame) == 0 ||
+	   strcmp(command->short_name(), CommandId::goto_next_frame) == 0 ||
+	   strcmp(command->short_name(), CommandId::goto_last_frame) == 0)) {
+	// Execute the command
+	context->execute_command(command);
 
-protected:
-  void execute(Context* context);
-};
+	// Redraw
+	redraw = true;
 
-PreviewNormalCommand::PreviewNormalCommand()
-  : PreviewCommand("preview_normal",
-		   "Preview Normal")
-{
-}
+	// Re-render
+	if (render)
+	  image_free(render);
+	render = NULL;
+      }
+      // Play the animation
+      else if (command != NULL &&
+	       strcmp(command->short_name(), CommandId::play_animation) == 0) {
+	// TODO
+      }
+      // Change background color
+      else if ((readkey_value>>8) == KEY_PLUS_PAD ||
+	       (readkey_value&0xff) == '+') {
+	if (index_bg_color == -1 ||
+	    index_bg_color < pal->size()-1) {
+	  ++index_bg_color;
+	  redraw = true;
+	}
+      }
+      else if ((readkey_value>>8) == KEY_MINUS_PAD ||
+	       (readkey_value&0xff) == '-') {
+	if (index_bg_color >= 0) {
+	  --index_bg_color;	// can be -1 which is the checked background
+	  redraw = true;
+	}
+      }
+      else
+	break;
+    }
+  } while (!jmouse_b(0));
 
-void PreviewNormalCommand::execute(Context* context)
-{
-  preview_sprite(context, 0);
-}
+  if (render) image_free(render);
+  if (doublebuf) image_free(doublebuf);
 
-//////////////////////////////////////////////////////////////////////
-// preview_tiled
+  do {
+    jmouse_poll();
+    gui_feedback();
+  } while (jmouse_b(0));
+  clear_keybuf();
 
-class PreviewTiledCommand : public PreviewCommand
-{
-public:
-  PreviewTiledCommand();
-  Command* clone() { return new PreviewTiledCommand(*this); }
+  jmouse_set_position(old_mouse_x, old_mouse_y);
+  jmouse_set_cursor(JI_CURSOR_NORMAL);
 
-protected:
-  void execute(Context* context);
-};
-
-PreviewTiledCommand::PreviewTiledCommand()
-  : PreviewCommand("preview_tiled",
-		   "Preview Tiled")
-{
-}
-
-void PreviewTiledCommand::execute(Context* context)
-{
-  preview_sprite(context, PREVIEW_TILED);
+  jmanager_refresh_screen();
+  jrect_free(vp);
 }
 
 //////////////////////////////////////////////////////////////////////
 // CommandFactory
 
-Command* CommandFactory::create_preview_fit_to_screen_command()
+Command* CommandFactory::create_preview_command()
 {
-  return new PreviewFitToScreenCommand;
-}
-
-Command* CommandFactory::create_preview_normal_command()
-{
-  return new PreviewNormalCommand;
-}
-
-Command* CommandFactory::create_preview_tiled_command()
-{
-  return new PreviewTiledCommand;
+  return new PreviewCommand;
 }

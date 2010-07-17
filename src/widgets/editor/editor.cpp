@@ -304,7 +304,7 @@ void Editor::editor_draw_sprite(int x1, int y1, int x2, int y2)
 						 source_x, source_y,
 						 width, height,
 						 m_sprite->getCurrentFrame(),
-						 m_zoom);
+						 m_zoom, true);
 
     if (rendered) {
 #ifdef DRAWSPRITE_DOUBLEBUFFERED
