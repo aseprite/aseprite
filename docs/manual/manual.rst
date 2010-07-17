@@ -168,11 +168,14 @@ You can zoom while you are drawing too.
 Scrolling
 =========
 
-To scroll the image you can press the ``Space bar`` key (and keep it pressed) and
-then drag the image with the mouse button.
+To scroll the image you can keep the ``mouse wheel`` pressed and move the mouse.
+Also you can press the ``Space bar`` key (and keep it pressed) and then drag
+the image with any mouse button.
 
 When you are drawing you will notice that moving the mouse outside the
-bounds of the editor will scroll the image to continue.
+bounds of the editor will scroll the image automatically. You can change
+how much to scroll when the mouse touch the bounds of the editor using
+the options dialog...
 ``TODO configuration about smooth/big step scroll``
 
 Selecting
