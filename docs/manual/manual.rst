@@ -741,8 +741,66 @@ Save to MSK file
 View
 ====
 
+Editor
+------
+
+Make Unique
+'''''''''''
+
+Split Vertically
+''''''''''''''''
+
+Split Horizontally
+''''''''''''''''''
+
+Close
+'''''
+
+Grid
+----
+
+Grid Settings
+'''''''''''''
+
+Show Grid
+'''''''''
+
+Snap to Grid
+''''''''''''
+
+Preview
+-------
+
+.. admonition:: Keyboard shortcut:
+
+   F8
+
+Using this command you can see the whole sprite with a checked background.
+If tiled mode is activated, the sprite will be drawn as a pattern.
+It is useful to check alpha channel and border joints (when the sprite is a tile).
+When you are inside the Preview mode, you can use the following keys:
+
+ - ESC or F8: Returns to the editor (exits from Preview mode).
+ - Plus/Minus key: Select a palette color as background (instead of the checked background).
+ - Left/Right: Move through frames.
+
+Refresh
+-------
+
+Configure Screen
+----------------
+
 Tools
 =====
+
+Configuration
+-------------
+
+Animation Editor
+----------------
+
+Palette Editor
+--------------
 
 Help
 ====
