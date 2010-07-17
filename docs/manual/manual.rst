@@ -23,7 +23,7 @@ Sprites
 You can start creating a `sprite <http://en.wikipedia.org/wiki/Sprite_(computer_graphics)>`__
 with ``File > New`` option.
 
-``TODO new sprite screenshot``
+.. image:: images/new_sprite.png
 
 In this dialog you select:
 
@@ -80,7 +80,7 @@ In next sections you will see how to split the current editor in
 various other editors, so you will take care of current editor
 significance.
 
-  ``TODO screenshot of new sprite created``
+.. image:: images/main_screen.png
 
 Colors
 ======
@@ -93,7 +93,7 @@ right mouse button. E.g. when you cut or clear a portion of image
 (``Edit > Cut``, or ``Edit > Clear``) the selected pixels are cleared with
 the background color.
 
-``TODO screenshot of color bar``
+.. image:: images/color_bar.png
 
 Picking Colors
 --------------
@@ -114,7 +114,8 @@ You have created a new sprite, now you want to draw. You need to know two things
  - Where you draw: the current editor shows the selected sprite
    in tabs.
 
-   ``TODO screenshot a selected tab and the editor showing the sprite``
+   .. image:: images/selected_tab.png
+
 
  - With what you draw: there are various elements that are used when you draw in the sprite:
    tool, color, pen, and other configuration that modifies how you draw (e.g. snap to grid,
@@ -128,7 +129,7 @@ sprite with one image.
 
 To draw you can use one of the tools at the right of the screen:
 
-``TODO screenshot of tool bar``
+.. image:: images/tools_bar.png
 
 By default the `Pencil Tool`_ is selected (if it is not selected, you
 can press the |pencil icon| icon to select it). The pencil is one of the most
@@ -136,7 +137,7 @@ basic tools: You press the left mouse button, hold it, drag the mouse
 and then release the same button. This will draw a freehanded trace
 using the selected foreground color.
 
-.. |pencil icon| image:: pencil_icon.png
+.. |pencil icon| image:: images/pencil_icon.png
 
 Canceling trace
 ---------------
@@ -295,6 +296,8 @@ color.
 
 Pencil Tool
 ===========
+
+  .. image:: images/pencil_icon.png
 
   .. admonition:: Summary
 
