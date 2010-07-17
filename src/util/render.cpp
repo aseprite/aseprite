@@ -73,11 +73,13 @@ public:
 template<>
 class BlenderHelper<RgbTraits, IndexedTraits>
 {
+  const Palette* m_pal;
   int m_blend_mode;
   int m_mask_color;
 public:
   BlenderHelper(int blend_mode, const Image* src)
   {
+    m_pal = get_current_palette();
     m_blend_mode = blend_mode;
     m_mask_color = src->mask_color;
   }
@@ -87,13 +89,11 @@ public:
 			 int opacity)
   {
     if (m_blend_mode == BLEND_MODE_COPY) {
-      const Palette *pal = get_current_palette();
-      *scanline_address = pal->getEntry(*src_address);
+      *scanline_address = m_pal->getEntry(*src_address);
     }
     else {
       if (*src_address != m_mask_color) {
-	const Palette *pal = get_current_palette();
-	*scanline_address = _rgba_blend_normal(*dst_address, pal->getEntry(*src_address), opacity);
+	*scanline_address = _rgba_blend_normal(*dst_address, m_pal->getEntry(*src_address), opacity);
       }
       else
 	*scanline_address = *dst_address;
