@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/* #define DRAWSPRITE_DOUBLEBUFFERED */
+// #define DRAWSPRITE_DOUBLEBUFFERED
 
 #include "config.h"
 
@@ -150,7 +150,7 @@ void Editor::editor_set_sprite(Sprite* sprite)
   dirty();
 }
 
-/* sets the scroll position of the editor */
+// Sets the scroll position of the editor
 void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
 {
   JWidget view = jwidget_get_view(this);
@@ -183,7 +183,7 @@ void Editor::editor_set_scroll(int x, int y, int use_refresh_region)
 
     jview_get_scroll(view, &new_scroll_x, &new_scroll_y);
 
-    /* move screen with blits */
+    // Move screen with blits
     jwidget_scroll(this, region,
 		   old_scroll_x - new_scroll_x,
 		   old_scroll_y - new_scroll_y);
@@ -461,7 +461,7 @@ void Editor::editor_draw_mask_safe()
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jregion_free(region);
 
-    /* draw the cursor */
+    // Draw the cursor
     if (thick)
       editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
     else
@@ -749,7 +749,7 @@ void Editor::editor_refresh_region()
     else
       jmouse_hide();
 
-    /* TODO check if this work!!!! */
+    // TODO check if this work!!!!
 /*     jwidget_redraw_region */
 /*       (jwindow_get_manager (jwidget_get_window (widget)), */
 /*        m_refresh_region); */
@@ -769,15 +769,15 @@ void Editor::editor_refresh_region()
   }
 }
 
-/**********************************************************************/
-/* message handler for the a view widget that contains an editor */
+//////////////////////////////////////////////////////////////////////
+// Message handler for the a view widget that contains an editor
 
 static bool editor_view_msg_proc(JWidget widget, JMessage msg)
 {
   switch (msg->type) {
 
     case JM_SETPOS:
-      /* this avoid the displacement of the widgets in the viewport */
+      // This avoid the displacement of the widgets in the viewport
 
       jrect_copy(widget->rc, &msg->setpos.rect);
       jview_update(widget);
@@ -804,8 +804,8 @@ static bool editor_view_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-/**********************************************************************/
-/* message handler for the editor */
+//////////////////////////////////////////////////////////////////////
+// Message handler for the editor
 
 enum WHEEL_ACTION { WHEEL_NONE,
 		    WHEEL_ZOOM,
@@ -841,7 +841,7 @@ bool Editor::msg_proc(JMessage msg)
       if (m_cursor_thick)
       	editor_clean_cursor();
 
-      /* without sprite */
+      // Editor without sprite
       if (!m_sprite) {
 	JWidget view = jwidget_get_view(this);
 	JRect vp = jview_get_viewport_position(view);
@@ -853,11 +853,11 @@ bool Editor::msg_proc(JMessage msg)
 
 	jrect_free(vp);
       }
-      /* draw the sprite */
+      // Editor with sprite
       else {
 	int x1, y1, x2, y2;
 
-	/* draw the background outside of image */
+	// Draw the background outside of sprite's bounds
 	x1 = this->rc->x1 + m_offset_x;
 	y1 = this->rc->y1 + m_offset_y;
 	x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
@@ -868,7 +868,7 @@ bool Editor::msg_proc(JMessage msg)
 		     this->rc->x2-1, this->rc->y2-1,
 		     x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
 
-	/* draw the sprite in the editor */
+	// Draw the sprite in the editor
 	editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
 
 	// Draw the sprite boundary
@@ -907,7 +907,7 @@ bool Editor::msg_proc(JMessage msg)
 	if (m_sprite) {
 	  editor_draw_mask_safe();
 
-	  /* set offset to make selection-movement effect */
+	  // Set offset to make selection-movement effect
 	  if (m_offset_count < 7)
 	    m_offset_count++;
 	  else
@@ -917,9 +917,9 @@ bool Editor::msg_proc(JMessage msg)
       break;
 
     case JM_MOUSEENTER:
-      /* when the mouse enter to the editor, we can calculate the
-	 'cursor_candraw' field to avoid a heavy if-condition in the
-	 'editor_setcursor' routine */
+      // When the mouse enter to the editor, we can calculate the
+      // 'cursor_candraw' field to avoid a heavy if-condition in the
+      // 'editor_setcursor' routine
       editor_update_candraw();
 
       if (msg->any.shifts & KB_ALT_FLAG) m_alt_pressed = true;
@@ -1333,7 +1333,7 @@ bool Editor::msg_proc(JMessage msg)
 
 	case KEY_SPACE:
 	  if (m_space_pressed) {
-	    /* we have to clear all the KEY_SPACE in buffer */
+	    // We have to clear all the KEY_SPACE in buffer
 	    clear_keybuf();
 
 	    m_space_pressed = false;
