@@ -235,7 +235,8 @@
 	<item command="flatten_layers" text="&amp;Flatten" />
       </menu>
       <menu text="F&amp;rame">
-	<item command="frame_properties" text="&amp;Properties..." />
+	<item command="frame_properties" text="Frame &amp;Properties..." />
+	<item command="cel_properties" text="&amp;Cel Properties..." />
 	<separator />
 	<item command="new_frame" text="&amp;New Frame" />
 	<item command="remove_frame" text="&amp;Remove Frame" />
@@ -247,9 +248,6 @@
 	  <item command="goto_last_frame" text="&amp;Last Frame" />
 	</menu>
 	<item command="play_animation" text="&amp;Play Animation" />
-      </menu>
-      <menu text="&amp;Cel">
-	<item command="cel_properties" text="&amp;Properties..." />
       </menu>
       <menu text="&amp;Mask">
 	<item command="mask_all" text="&amp;All" />
