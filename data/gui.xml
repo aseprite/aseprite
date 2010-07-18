@@ -351,7 +351,10 @@
     <screensize width="640" height="480" aspect="4:3" />
     <screensize width="800" height="600" aspect="4:3" />
     <screensize width="1024" height="768" aspect="4:3" />
+    <screensize width="1280" height="720" aspect="16:9" />
+    <screensize width="1280" height="768" aspect="-" />
     <screensize width="1280" height="800" aspect="16:10" />
+    <screensize width="1360" height="768" aspect="-" />
     <screensize width="1600" height="900" aspect="16:9" />
     <screensize width="1600" height="1200" aspect="4:3" />
     <screensize width="1680" height="1050" aspect="16:10" />
