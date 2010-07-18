@@ -175,6 +175,12 @@
 	<separator />
 	<item command="replace_color" text="R&amp;eplace Color..." />
 	<item command="invert_color" text="&amp;Invert" />
+	<menu text="F&amp;X" id="fx_popup">
+	  <item command="convolution_matrix" text="Convolution &amp;Matrix" />
+	  <item command="color_curve" text="&amp;Color Curve" />
+	  <separator />
+	  <item command="despeckle" text="&amp;Despeckle (median filter)" />
+	</menu>
       </menu>
       <menu text="&amp;Sprite">
 	<item command="sprite_properties" text="&amp;Properties..." />
@@ -249,7 +255,7 @@
 	</menu>
 	<item command="play_animation" text="&amp;Play Animation" />
       </menu>
-      <menu text="&amp;Mask">
+      <menu text="Selec&amp;t">
 	<item command="mask_all" text="&amp;All" />
 	<item command="deselect_mask" text="&amp;Deselect" />
 	<item command="reselect_mask" text="&amp;Reselect" />
@@ -261,7 +267,7 @@
 	<item command="save_mask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
-	<menu text="&amp;Editor">
+	<menu text="Sprite &amp;Editor">
 	  <item command="make_unique_editor" text="Make &amp;Unique" />
 	  <separator />
 	  <item command="split_editor_vertically" text="Split &amp;Vertically" />
@@ -270,33 +276,20 @@
 	  <item command="close_editor" text="&amp;Close" />
 	</menu>
 	<separator />
-	<menu text="&amp;Grid">
-	  <item command="grid_settings" text="Grid Se&amp;ttings" />
-	  <separator />
-	  <item command="show_grid" text="Show &amp;Grid" />
-	  <item command="snap_to_grid" text="&amp;Snap to Grid" />
-	</menu>
-	<item command="preview" text="&amp;Preview" />
-	<separator />
-	<item command="refresh" text="&amp;Refresh" />
-	<item command="configure_screen" text="Configure &amp;Screen" />
-      </menu>
-      <menu text="&amp;Tools">
-	<item command="configure_tools" text="&amp;Configure" />
+	<item command="configure_tools" text="&amp;Tools Configuration" />
+	<item command="show_grid" text="Show &amp;Grid" />
+	<item command="snap_to_grid" text="&amp;Snap to Grid" />
+	<item command="grid_settings" text="Gri&amp;d Settings" />
 	<separator />
 	<item command="film_editor" text="&amp;Animation Editor" />
 	<item command="palette_editor" text="&amp;Palette Editor">
 	  <param name="switch" value="true" />
 	</item>
-	<separator />
-	<menu text="F&amp;X" id="fx_popup">
-	  <item command="convolution_matrix" text="Convolution &amp;Matrix" />
-	  <item command="color_curve" text="&amp;Color Curve" />
-	  <separator />
-	  <item command="despeckle" text="&amp;Despeckle (median filter)" />
-	</menu>
+	<item command="preview" text="Previe&amp;w" />
 	<separator />
 	<item command="options" text="&amp;Options" />
+	<item command="configure_screen" text="Configure Scree&amp;n" />
+	<item command="refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>
       <menu text="&amp;Help">
 	<item command="quick_reference" text="Quick &amp;Reference" />
