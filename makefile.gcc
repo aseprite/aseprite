@@ -189,8 +189,8 @@ else
 $(OBJ_DIR)/%.res: src/%.rc
 	$(WINDRES) -O coff -o $@ -i $<
 
-$(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
-	$(CPP) -o $@ $(ASE_OBJS) $(OBJ_DIR)/icon.res $(LFLAGS) $(LFLAGS_LAST)
+$(ASE): $(ASE_DEPS) $(OBJ_DIR)/resources_win32.res
+	$(CPP) -o $@ $(ASE_OBJS) $(OBJ_DIR)/resources_win32.res $(LFLAGS) $(LFLAGS_LAST)
 endif
 
 ######################################################################

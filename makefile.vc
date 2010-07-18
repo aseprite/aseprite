@@ -96,7 +96,7 @@ default: all
 all: $(ASE)
 
 clean:
-	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS) $(OBJ_DIR)/icon.res
+	-rm -f $(ALL_OBJS) $(THIRD_PARTY_LIBS) $(OBJ_DIR)/resources_win32.res
 
 distclean: clean
 	-rm -f $(ASE)
@@ -229,18 +229,18 @@ $(OBJ_DIR)/vaca.%$(OBJ): %.cpp
 ######################################################################
 # Application
 
-$(OBJ_DIR)/icon.res: src/icon.rc
+$(OBJ_DIR)/resources_win32.res: src/resources_win32.rc
 	$(RC) $<
-	mv src/icon.res $@
+	mv src/resources_win32.res $@
 
 ifdef STATIC_ALLEG_LINK
 
-$(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
+$(ASE): $(ASE_DEPS) $(OBJ_DIR)/resources_win32.res
 	link $(LFLAGS) $^ $(LIBS) -OUT:$@
 
 else
 
-$(ASE): $(ASE_DEPS) $(OBJ_DIR)/icon.res
+$(ASE): $(ASE_DEPS) $(OBJ_DIR)/resources_win32.res
 	link $(LFLAGS) $^ $(LIBS) -OUT:$@
 	mt -nologo -manifest $@.manifest -outputresource:$@;#2
 	rm $@.manifest
