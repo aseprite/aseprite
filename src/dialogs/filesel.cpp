@@ -148,7 +148,8 @@ jstring ase_file_selector(const jstring& message,
     JWidget goforward = jwidget_find_name(window, "goforward");
     JWidget goup = jwidget_find_name(window, "goup");
     JWidget location = jwidget_find_name(window, "location");
-    filetype = (ComboBox*)jwidget_find_name(window, "filetype");
+    filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
+    assert(filetype != NULL);
     filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_focusrest(goback, false);
@@ -188,7 +189,8 @@ jstring ase_file_selector(const jstring& message,
   }
   else {
     fileview = jwidget_find_name(window, "fileview");
-    filetype = (ComboBox*)jwidget_find_name(window, "filetype");
+    filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
+    assert(filetype != NULL);
     filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_signal_off(fileview);
@@ -360,7 +362,9 @@ again:
 static void update_location(JWidget window)
 {
   JWidget fileview = jwidget_find_name(window, "fileview");
-  ComboBox* location = (ComboBox*)jwidget_find_name(window, "location");
+  ComboBox* location = dynamic_cast<ComboBox*>(jwidget_find_name(window, "location"));
+  assert(location != NULL);
+
   FileItem* current_folder = fileview_get_current_folder(fileview);
   FileItem* fileitem = current_folder;
   JList locations = jlist_new();
@@ -490,7 +494,9 @@ static void add_in_navigation_history(FileItem *folder)
 static void select_filetype_from_filename(JWidget window)
 {
   JWidget entry = jwidget_find_name(window, "filename");
-  ComboBox* filetype = (ComboBox*)jwidget_find_name(window, "filetype");
+  ComboBox* filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
+  assert(filetype != NULL);
+
   const char *filename = entry->getText();
   char *p = get_extension(filename);
   char buf[MAX_PATH];
@@ -588,7 +594,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-/* hook for the 'location' combo-box */
+// Hook for the 'location' combo-box
 static bool location_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {

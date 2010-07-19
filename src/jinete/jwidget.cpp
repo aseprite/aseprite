@@ -508,7 +508,6 @@ void jwidget_add_child(JWidget widget, JWidget child)
   jlist_append(widget->children, child);
   child->parent = widget;
 
-  jwidget_emit_signal(child, JI_SIGNAL_NEW_PARENT);
   jwidget_emit_signal(widget, JI_SIGNAL_ADD_CHILD);
 }
 
@@ -534,9 +533,6 @@ void jwidget_remove_child(JWidget widget, JWidget child)
 
   jlist_remove(widget->children, child);
   child->parent = NULL;
-
-  jwidget_emit_signal(child, JI_SIGNAL_NEW_PARENT);
-  jwidget_emit_signal(widget, JI_SIGNAL_REMOVE_CHILD);
 }
 
 void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
@@ -557,7 +553,6 @@ void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
   jlist_insert_before(widget->children, before, new_child);
   new_child->parent = widget;
 
-  jwidget_emit_signal(new_child, JI_SIGNAL_NEW_PARENT);
   jwidget_emit_signal(widget, JI_SIGNAL_ADD_CHILD);
 }
 
