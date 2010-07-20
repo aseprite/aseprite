@@ -65,6 +65,12 @@ class Tabs : public Widget
     }
   };
 
+  enum Ani { ANI_NONE,
+	     ANI_ADDING_TAB,
+	     ANI_REMOVING_TAB,
+	     ANI_SCROLL,
+	     ANI_SMOOTH_SCROLL };
+
 public:
   Tabs(ITabsHandler* handler);
   ~Tabs();
@@ -77,13 +83,16 @@ public:
   void selectTab(void* data);
   void* getSelectedTab();
 
-  // Returns the ID of the timer used to scroll tabs when buttons are pressed
-  int getTimerId();
+  void startScrolling();
+  void stopScrolling();
 
 protected:
   bool msg_proc(JMessage msg);
 
 private:
+  void startAni(Ani ani);
+  void stopAni();
+
   Tab* getTabByData(void* data);
   int getMaxScrollX();
   void makeTabVisible(Tab* tab);
@@ -94,8 +103,16 @@ private:
   std::vector<Tab*> m_list_of_tabs;
   Tab *m_hot;
   Tab *m_selected;
-  int m_timer_id;
-  int m_scroll_x;
+  int m_scrollX;
+
+  // Variables for animation purposes
+  int m_timerId;
+  int m_begScrollX;		// Initial X position of scroll in the animation when you scroll with mouse wheel
+  int m_endScrollX;		// Final X position of scroll in the animation when you scroll with mouse wheel
+  Ani m_ani;			// Current animation
+  int m_ani_t;			// Number of ticks from the beginning of the animation
+  int m_removedTabWidth;
+  Tab* m_nextTabOfTheRemovedOne;
 
   // Buttons to scroll tabs (useful when there are more tabs than visible area)
   Widget* m_button_left;

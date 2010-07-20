@@ -19,7 +19,9 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
+#include <algorithm>
+#include <cassert>
+#include <cmath>
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
@@ -30,6 +32,10 @@
 #include "widgets/tabs.h"
 
 #define ARROW_W		(12*jguiscale())
+
+#define ANI_ADDING_TAB_TICKS      5
+#define ANI_REMOVING_TAB_TICKS    10
+#define ANI_SMOOTH_SCROLL_TICKS   20
 
 #define HAS_ARROWS(tabs) ((jwidget_get_parent(m_button_left) == (tabs)))
 
@@ -49,8 +55,9 @@ Tabs::Tabs(ITabsHandler* handler)
 {
   m_hot = NULL;
   m_selected = NULL;
-  m_timer_id = jmanager_add_timer(this, 1000/60);
-  m_scroll_x = 0;
+  m_timerId = jmanager_add_timer(this, 1000/60);
+  m_scrollX = 0;
+  m_ani = ANI_NONE;
 
   m_button_left = jbutton_new(NULL);
   m_button_right = jbutton_new(NULL);
@@ -75,8 +82,11 @@ Tabs::Tabs(ITabsHandler* handler)
 
 Tabs::~Tabs()
 {
-  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
+  // Stop animation
+  stopAni();
 
+  // Remove all tabs
+  std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
   for (it = m_list_of_tabs.begin(); it != end; ++it)
     delete *it; // tab
   m_list_of_tabs.clear();
@@ -84,7 +94,7 @@ Tabs::~Tabs()
   delete m_button_left;		// widget
   delete m_button_right;	// widget
 
-  jmanager_remove_timer(m_timer_id);
+  jmanager_remove_timer(m_timerId);
 }
 
 void Tabs::addTab(const char* text, void* data)
@@ -95,9 +105,10 @@ void Tabs::addTab(const char* text, void* data)
   m_list_of_tabs.push_back(tab);
 
   // Update scroll (in the same position if we can
-  setScrollX(m_scroll_x);
-  
-  jwidget_dirty(this);
+  setScrollX(m_scrollX);
+
+  startAni(ANI_ADDING_TAB);
+  //jwidget_dirty(this);
 }
 
 void Tabs::removeTab(void* data)
@@ -108,13 +119,29 @@ void Tabs::removeTab(void* data)
     if (m_hot == tab) m_hot = NULL;
     if (m_selected == tab) m_selected = NULL;
 
-    Vaca::remove_from_container(m_list_of_tabs, tab);
+    std::vector<Tab*>::iterator it =
+      std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);
+
+    assert(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
+
+    it = m_list_of_tabs.erase(it);
+
+    // Width of the removed tab
+    m_removedTabWidth = tab->width;
+
+    // Destroy the tab
     delete tab;
 
-    // Update scroll (in the same position if we can
-    setScrollX(m_scroll_x);
+    // Next tab in the list
+    if (it != m_list_of_tabs.end())
+      m_nextTabOfTheRemovedOne = *it;
+    else
+      m_nextTabOfTheRemovedOne = NULL;
 
-    jwidget_dirty(this);
+    // Update scroll (in the same position if we can)
+    setScrollX(m_scrollX);
+
+    startAni(ANI_REMOVING_TAB);
   }
 }
 
@@ -154,11 +181,6 @@ void* Tabs::getSelectedTab()
     return NULL;
 }
 
-int Tabs::getTimerId()
-{
-  return m_timer_id;
-}
-
 bool Tabs::msg_proc(JMessage msg)
 {
   SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
@@ -174,13 +196,13 @@ bool Tabs::msg_proc(JMessage msg)
 
     case JM_SETPOS:
       jrect_copy(this->rc, &msg->setpos.rect);
-      setScrollX(m_scroll_x);
+      setScrollX(m_scrollX);
       return true;
 
     case JM_DRAW: {
       JRect rect = jwidget_get_rect(this);
-      JRect box = jrect_new(rect->x1-m_scroll_x, rect->y1,
-			    rect->x1-m_scroll_x+2*jguiscale(),
+      JRect box = jrect_new(rect->x1-m_scrollX, rect->y1,
+			    rect->x1-m_scrollX+2*jguiscale(),
 			    rect->y1+theme->get_part(PART_TAB_FILLER)->h);
 
       theme->draw_part_as_hline(ji_screen, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
@@ -195,6 +217,25 @@ bool Tabs::msg_proc(JMessage msg)
 	Tab* tab = *it;
 
 	box->x2 = box->x1 + tab->width;
+
+	int x_delta = 0;
+	int y_delta = 0;
+
+	// Y-delta for animating tabs (intros and outros)
+	if (m_selected == tab && m_ani == ANI_ADDING_TAB) {
+	  y_delta = (box->y2 - box->y1) * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
+	}
+	else if (m_nextTabOfTheRemovedOne == tab && m_ani == ANI_REMOVING_TAB) {
+	  // Lineal
+	  //x_delta += m_removedTabWidth * (ANI_REMOVING_TAB_TICKS - m_ani_t) / ANI_REMOVING_TAB_TICKS;
+
+	  // Exponential
+	  x_delta += m_removedTabWidth - m_removedTabWidth*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+	  x_delta = MID(0, x_delta, m_removedTabWidth);
+	}
+
+	box->x1 += x_delta;
+	box->x2 += x_delta;
 
 	// Is the tab inside the bounds of the widget?
 	if (box->x1 < rect->x2 && box->x2 > rect->x1) {
@@ -213,9 +254,9 @@ bool Tabs::msg_proc(JMessage msg)
 	  }
 
 	  theme->draw_bounds_nw(ji_screen,
-				box->x1, box->y1, box->x2-1, box->y2-1,
+				box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
 				(m_selected == tab) ? PART_TAB_SELECTED_NW:
-							  PART_TAB_NORMAL_NW, face_color);
+						      PART_TAB_NORMAL_NW, face_color);
 
 	  if (m_selected == tab) {
 	    theme->draw_bounds_nw(ji_screen,
@@ -225,12 +266,13 @@ bool Tabs::msg_proc(JMessage msg)
 	  }
 	  else {
 	    theme->draw_part_as_hline(ji_screen,
-				      box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+				      box->x1, box->y2, box->x2-1, rect->y2-1,
+				      PART_TAB_BOTTOM_NORMAL);
 	  }
-	  
+
 	  jdraw_text(this->getFont(), tab->text.c_str(),
 		     box->x1+4*jguiscale(),
-		     (box->y1+box->y2)/2-text_height(this->getFont())/2+1,
+		     (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
 		     text_color, face_color, false, jguiscale());
 
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
@@ -284,13 +326,60 @@ bool Tabs::msg_proc(JMessage msg)
 
     case JM_WHEEL: {
       int dx = (jmouse_z(1) - jmouse_z(0)) * jrect_w(this->rc)/6;
-      setScrollX(m_scroll_x+dx);
+      // setScrollX(m_scrollX+dx);
+
+      m_begScrollX = m_scrollX;
+      if (m_ani != ANI_SMOOTH_SCROLL)
+	m_endScrollX = m_scrollX + dx;
+      else
+	m_endScrollX += dx;
+
+      // Limit endScrollX position (to improve animation ending to the correct position)
+      {
+	int max_x = getMaxScrollX();
+	m_endScrollX = MID(0, m_endScrollX, max_x);
+      }
+
+      startAni(ANI_SMOOTH_SCROLL);
       return true;
     }
 
     case JM_TIMER: {
-      int dir = jmanager_get_capture() == m_button_left ? -1: 1;
-      setScrollX(m_scroll_x + dir*8*msg->timer.count);
+      switch (m_ani) {
+	case ANI_SCROLL: {
+	  int dir = jmanager_get_capture() == m_button_left ? -1: 1;
+	  setScrollX(m_scrollX + dir*8*msg->timer.count);
+	  break;
+	}
+	case ANI_SMOOTH_SCROLL: {
+	  if (m_ani_t == ANI_SMOOTH_SCROLL_TICKS) {
+	    stopAni();
+	    setScrollX(m_endScrollX);
+	  }
+	  else {
+	    // Lineal
+	    //setScrollX(m_begScrollX + m_endScrollX - m_begScrollX) * m_ani_t / 10);
+
+	    // Exponential
+	    setScrollX(m_begScrollX +
+		       (m_endScrollX - m_begScrollX) * (1.0-std::exp(-10.0 * m_ani_t / (double)ANI_SMOOTH_SCROLL_TICKS)));
+	  }
+	  break;
+	}
+	case ANI_ADDING_TAB: {
+	  if (m_ani_t == ANI_ADDING_TAB_TICKS)
+	    stopAni();
+	  dirty();
+	  break;
+	}
+	case ANI_REMOVING_TAB: {
+	  if (m_ani_t == ANI_REMOVING_TAB_TICKS)
+	    stopAni();
+	  dirty();
+	  break;
+	}
+      }
+      ++m_ani_t;
       break;
     }
 
@@ -355,10 +444,10 @@ void Tabs::makeTabVisible(Tab* make_visible_this_tab)
     Tab* tab = *it;
 
     if (tab == make_visible_this_tab) {
-      if (x - m_scroll_x < 0) {
+      if (x - m_scrollX < 0) {
 	setScrollX(x);
       }
-      else if (x + tab->width - m_scroll_x > jrect_w(this->rc) - extra_x) {
+      else if (x + tab->width - m_scrollX > jrect_w(this->rc) - extra_x) {
 	setScrollX(x + tab->width - jrect_w(this->rc) + extra_x);
       }
       break;
@@ -373,8 +462,8 @@ void Tabs::setScrollX(int scroll_x)
   int max_x = getMaxScrollX();
 
   scroll_x = MID(0, scroll_x, max_x);
-  if (m_scroll_x != scroll_x) {
-    m_scroll_x = scroll_x;
+  if (m_scrollX != scroll_x) {
+    m_scrollX = scroll_x;
     calculateHot();
     jwidget_dirty(this);
   }
@@ -389,8 +478,8 @@ void Tabs::setScrollX(int scroll_x)
     }
 
     /* disable/enable buttons */
-    m_button_left->setEnabled(m_scroll_x > 0);
-    m_button_right->setEnabled(m_scroll_x < max_x);
+    m_button_left->setEnabled(m_scrollX > 0);
+    m_button_right->setEnabled(m_scrollX < max_x);
 
     /* setup the position of each button */
     {
@@ -417,7 +506,7 @@ void Tabs::setScrollX(int scroll_x)
 void Tabs::calculateHot()
 {
   JRect rect = jwidget_get_rect(this);
-  JRect box = jrect_new(rect->x1-m_scroll_x, rect->y1, 0, rect->y2-1);
+  JRect box = jrect_new(rect->x1-m_scrollX, rect->y1, 0, rect->y2-1);
   Tab *hot = NULL;
   std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
@@ -460,6 +549,33 @@ int Tabs::calcTabWidth(Tab* tab)
 #endif
 }
 
+void Tabs::startScrolling()
+{
+  startAni(ANI_SCROLL);
+}
+
+void Tabs::stopScrolling()
+{
+  stopAni();
+}
+
+void Tabs::startAni(Ani ani)
+{
+  // Stop previous animation
+  if (m_ani != ANI_NONE)
+    stopAni();
+
+  m_ani = ani;
+  m_ani_t = 0;
+  jmanager_start_timer(m_timerId);
+}
+
+void Tabs::stopAni()
+{
+  m_ani = ANI_NONE;
+  jmanager_stop_timer(m_timerId);
+}
+
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 {
   JWidget parent;
@@ -479,7 +595,7 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 	assert(tabs != NULL);
 
 	if (widget->isSelected()) {
-	  jmanager_stop_timer(tabs->getTimerId());
+	  tabs->stopScrolling();
 	  widget->setSelected(false);
 	}
 	return true;
@@ -488,12 +604,12 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 
     case JM_BUTTONPRESSED:
       assert(tabs != NULL);
-      jmanager_start_timer(tabs->getTimerId());
+      tabs->startScrolling();
       break;
 
     case JM_BUTTONRELEASED:
       assert(tabs != NULL);
-      jmanager_stop_timer(tabs->getTimerId());
+      tabs->stopScrolling();
       break;
 
   }
