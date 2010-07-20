@@ -29,9 +29,6 @@
 #include "modules/skinneable_theme.h"
 #include "widgets/tabs.h"
 
-#define CALC_TAB_WIDTH(widget, tab)				\
-  (4*jguiscale() + text_length(widget->getFont(), tab->text.c_str()) + 4*jguiscale())
-
 #define ARROW_W		(12*jguiscale())
 
 #define HAS_ARROWS(tabs) ((jwidget_get_parent(m_button_left) == (tabs)))
@@ -93,7 +90,7 @@ Tabs::~Tabs()
 void Tabs::addTab(const char* text, void* data)
 {
   Tab *tab = new Tab(text, data);
-  tab->width = CALC_TAB_WIDTH(this, tab);
+  tab->width = calcTabWidth(tab);
 
   m_list_of_tabs.push_back(tab);
 
@@ -128,7 +125,7 @@ void Tabs::setTabText(const char* text, void* data)
   if (tab) {
     // Change text of the tab
     tab->text = text;
-    tab->width = CALC_TAB_WIDTH(this, tab);
+    tab->width = calcTabWidth(tab);
 
     // Make it visible (if it's the selected)
     if (m_selected == tab)
@@ -199,17 +196,17 @@ bool Tabs::msg_proc(JMessage msg)
 
 	box->x2 = box->x1 + tab->width;
 
-	/* is the tab inside the bounds of the widget? */
+	// Is the tab inside the bounds of the widget?
 	if (box->x1 < rect->x2 && box->x2 > rect->x1) {
 	  int text_color;
 	  int face_color;
 
-	  /* selected */
+	  // Selected
 	  if (m_selected == tab) {
 	    text_color = theme->get_tab_selected_text_color();
 	    face_color = theme->get_tab_selected_face_color();
 	  }
-	  /* non-selected */
+	  // Non-selected
 	  else {
 	    text_color = theme->get_tab_normal_text_color();
 	    face_color = theme->get_tab_normal_face_color();
@@ -235,6 +232,14 @@ bool Tabs::msg_proc(JMessage msg)
 		     box->x1+4*jguiscale(),
 		     (box->y1+box->y2)/2-text_height(this->getFont())/2+1,
 		     text_color, face_color, false, jguiscale());
+
+#ifdef CLOSE_BUTTON_IN_EACH_TAB
+	  BITMAP* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+	  set_alpha_blender();
+	  draw_trans_sprite(ji_screen, close_icon,
+			    box->x2-4*jguiscale()-close_icon->w,
+			    (box->y1+box->y2)/2-close_icon->h/2+1*jguiscale());
+#endif
 	}
 
 	box->x1 = box->x2;
@@ -295,7 +300,7 @@ bool Tabs::msg_proc(JMessage msg)
 
 	for (it = m_list_of_tabs.begin(); it != end; ++it) {
 	  Tab* tab = *it;
-	  tab->width = CALC_TAB_WIDTH(this, tab);
+	  tab->width = calcTabWidth(tab);
 	}
       }
       else if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
@@ -441,6 +446,18 @@ void Tabs::calculateHot()
 
   jrect_free(rect);
   jrect_free(box);
+}
+
+int Tabs::calcTabWidth(Tab* tab)
+{
+  int border = 4*jguiscale();
+#ifdef CLOSE_BUTTON_IN_EACH_TAB
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+  int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->w;
+  return (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
+#else
+  return (border + text_length(getFont(), tab->text.c_str()) + border);
+#endif
 }
 
 static bool tabs_button_msg_proc(JWidget widget, JMessage msg)

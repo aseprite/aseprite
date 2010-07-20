@@ -84,12 +84,12 @@ protected:
   bool msg_proc(JMessage msg);
 
 private:
-
   Tab* getTabByData(void* data);
   int getMaxScrollX();
   void makeTabVisible(Tab* tab);
   void setScrollX(int scroll_x);
   void calculateHot();
+  int calcTabWidth(Tab* tab);
 
   std::vector<Tab*> m_list_of_tabs;
   Tab *m_hot;
