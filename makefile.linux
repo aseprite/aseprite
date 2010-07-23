@@ -52,13 +52,13 @@ distclean: clean
 	-rm -f $(ASE)
 
 install:
-	cp aseprite $(DEFAULT_PREFIX)/bin
-	cp -r data $(DEFAULT_PREFIX)/share/ase
-	cp -r docs $(DEFAULT_PREFIX)/share/ase
-	cp README.html $(DEFAULT_PREFIX)/share/ase
+	cp aseprite $(DESTDIR)$(DEFAULT_PREFIX)/bin
+	cp -r data $(DESTDIR)$(DEFAULT_PREFIX)/share/ase
+	cp -r docs $(DESTDIR)$(DEFAULT_PREFIX)/share/ase
+	cp README.html $(DESTDIR)$(DEFAULT_PREFIX)/share/ase
 
 uninstall:
-	-rm  -vf $(DEFAULT_PREFIX)/bin/aseprite
-	-rm -rvf $(DEFAULT_PREFIX)/share/ase
+	-rm  -vf $(DESTDIR)$(DEFAULT_PREFIX)/bin/aseprite
+	-rm -rvf $(DESTDIR)$(DEFAULT_PREFIX)/share/ase
 
 -include makefile.dep
