@@ -24,7 +24,6 @@
 #include <cstring>
 #include <cassert>
 
-#include "Vaca/Bind.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
@@ -127,7 +126,7 @@ StatusBar::StatusBar()
 
   m_commands_box = box1;
 
-  App::instance()->CurrentToolChange.connect(Vaca::Bind<void>(&StatusBar::onCurrentToolChange, this));
+  App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
 }
 
 StatusBar::~StatusBar()

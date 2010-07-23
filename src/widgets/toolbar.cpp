@@ -402,7 +402,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   // In case this tool contains more than just one tool, show the popup window
   m_open_on_hot = true;
   m_popup_window = new PopupWindow(NULL, false);
-  m_popup_window->Close.connect(Vaca::Bind<void>(&ToolBar::onClosePopup, this));
+  m_popup_window->Close.connect(Vaca::Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);
   jwidget_add_child(m_popup_window, toolstrip);
