@@ -124,9 +124,8 @@
   <pre>aseprite.ini          Program configuration
 data/gui.xml          Menus, shortcuts, and tools
 data/convmatr.def     Convolutions matrices
-data/fonts/*.pcx      Fonts to be used in the GUI
-data/jids/*.jid       XML files with dialogs
-data/skins/*.*        ASE skins</pre>
+data/skins/*.*        ASE skins
+data/widgets/*.xml    XML files with dialogs</pre>
 </p>
 <p>
   In GNU/Linux, the configuration file is ~/.asepriterc, and
@@ -136,33 +135,54 @@ data/skins/*.*        ASE skins</pre>
 <p>
   <pre>$HOME/.aseprite/
 /usr/local/share/aseprite/
-data/</pre>
+./data/</pre>
 </p>
 
 <a name="developers"></a><h1>DEVELOPERS</h1>
 <a name="compilation"></a><h2>COMPILATION</h2>
 <p>
-  Before compile, you have to configure how to compile ASE, what
-  libraries are available, release-debug-profile mode, etc.  You can
-  run the "fix.sh" script, answer some questions and done: the main
-  makefile is created, just do
+  To compile ASE you have to configure what libraries are available,
+  release-debug-profile mode, etc. On Linux or Mac OS X, you can run
+  the "fix.sh" script, answer the questions and done: the main "makefile"
+  is created, then you can run "make". E.g.
 </p>
 <p>
-  <pre>make</pre>
+  <pre>bash fix.sh
+make</pre>
 </p>
 <p>
   Or you could edit the "makefile.cfg", uncomment CONFIGURED=1 and
   uncomment the necessary options, and then run
 </p>
 <p>
-  <pre>makefile -f makefile.linux</pre>
+  <pre>make -f makefile.linux</pre>
 </p>
 <p>
+  For MinGW, edit the "makefile.cfg" file and then
+</p>
+<p>
+  <pre>make -f makefile.mingw</pre>
+</p>
+<p>
+  With Visual C++, you
+  need <a href="http://gnuwin32.sourceforge.net/packages/make.htm">GNU
+  make for Windows</a> to run the following command:
+</p>
+<p>
+  <pre>make -f makefile.vc</pre>
+</p>
+<p>
+  Next versions of ASE will
+  use <a href="http://www.cmake.org/">CMake</a> as build system. Sorry
+  for this inconvenient.
+</p>
 
-  For MinGW, edit the "makefile.cfg" file, and then
-</p>
 <p>
-  <pre>makefile -f makefile.mingw</pre>
+  Note (MinGW and VC++): There are big chances to get link problems
+  because the Allegro library is not found. It is because there are a
+  lot of Allegro versions out there and each one with different ways
+  to name the library. If this is your case, you will need to modify
+  makefile.mingw or makefile.vc files by hand.
 </p>
 
 <a name="installation"></a><h2>INSTALLATION</h2>
