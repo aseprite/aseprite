@@ -125,7 +125,7 @@ protected:
     // rotate mask
     if (m_sprite->getMask()->bitmap) {
       Mask* new_mask = mask_new();
-      int x, y;
+      int x = 0, y = 0;
 
       switch (m_angle) {
 	case 180:
