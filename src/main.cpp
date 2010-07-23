@@ -72,7 +72,7 @@ int vaca_main()
     e.show();
   }
   catch (std::exception& e) {
-    allegro_message(e.what());
+    allegro_message("%s", e.what());
   }
 #ifndef DEBUGMODE
   catch (...) {

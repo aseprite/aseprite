@@ -162,5 +162,5 @@ void user_printf(const char *format, ...)
   uvsprintf(buf, format, ap);
   va_end(ap);
 
-  allegro_message(buf);
+  allegro_message("%s", buf);
 }

@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <cstdio>
 
 #include "resource_finder.h"
 
