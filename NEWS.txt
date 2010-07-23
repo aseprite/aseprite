@@ -19,7 +19,7 @@ NEWS
   idea, like Animator Pro).
 + Added compression to .ase/.aseprite format.
 + Added support to zoom when you are drawing (e.g. you can use the
-  wheel mouse when you are drawing a polygon or a long line).
+  mouse wheel when you are drawing a polygon or a long line).
 
 0.7.2
 -----
