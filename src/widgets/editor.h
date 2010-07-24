@@ -164,6 +164,8 @@ public:
 
 private:
 
+  void editor_update_statusbar_for_pixel_movement();
+
   void editor_draw_cursor(int x, int y, bool refresh = true);
   void editor_move_cursor(int x, int y, bool refresh = true);
   void editor_clean_cursor(bool refresh = true);

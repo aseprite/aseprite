@@ -60,6 +60,11 @@ public:
   {
     m_undoable.clear_mask(app_get_color_to_clear_layer(m_sprite_writer->getCurrentLayer()));
 
+    copyMask();
+  }
+
+  void copyMask()
+  {
     // Hide the mask (do not deselect it, it will be moved them using m_undoable.set_mask_position)
     Mask* empty_mask = new Mask();
     m_sprite_writer->generateMaskBoundaries(empty_mask);
@@ -187,6 +192,11 @@ PixelsMovement::~PixelsMovement()
 void PixelsMovement::cutMask()
 {
   m_impl->cutMask();
+}
+
+void PixelsMovement::copyMask()
+{
+  m_impl->copyMask();
 }
 
 void PixelsMovement::catchImage(int x, int y)

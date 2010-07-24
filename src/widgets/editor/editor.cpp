@@ -653,6 +653,8 @@ void Editor::dropPixels()
 
   m_state = EDITOR_STATE_STANDBY;
   releaseMouse();
+
+  editor_update_statusbar_for_standby();
 }
 
 void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
@@ -737,6 +739,15 @@ void Editor::editor_update_statusbar_for_standby()
        ((m_sprite->getMask()->bitmap)? m_sprite->getMask()->h: m_sprite->getHeight()),
        m_sprite->getCurrentFrame()+1);
   }
+}
+
+// Update status bar for when the user is dragging pixels
+void Editor::editor_update_statusbar_for_pixel_movement()
+{
+  Rect bounds = m_pixelsMovement->getImageBounds();
+  app_get_statusbar()->setStatusText
+    (100, "Pos %d %d, Size %d %d [Press ENTER to drop]",
+     bounds.x, bounds.y, bounds.w, bounds.h);
 }
 
 void Editor::editor_refresh_region()
@@ -996,7 +1007,8 @@ bool Editor::msg_proc(JMessage msg)
 	  editor_setcursor(msg->mouse.x, msg->mouse.y);
 	}
 	// Move frames position
-	else if (m_ctrl_pressed ||
+	else if ((m_ctrl_pressed &&
+		  !current_tool->getInk(msg->mouse.right ? 1: 0)->isSelection()) ||
 		 current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
 	  if ((m_sprite->getCurrentLayer()) &&
 	      (m_sprite->getCurrentLayer()->type == GFXOBJ_LAYER_IMAGE)) {
@@ -1044,10 +1056,16 @@ bool Editor::msg_proc(JMessage msg)
 	    m_pixelsMovement = new PixelsMovement(m_sprite, tmpImage, x, y, opacity);
 	    delete tmpImage;
 
-	    m_pixelsMovement->cutMask();
+	    // If the CTRL key is pressed start dragging a copy of the selection
+	    if (m_ctrl_pressed)
+	      m_pixelsMovement->copyMask();
+	    else
+	      m_pixelsMovement->cutMask();
 
 	    screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
 	    m_pixelsMovement->catchImage(x, y);
+
+	    editor_update_statusbar_for_pixel_movement();
 	  }
 	}
 	// Call the eyedropper command
@@ -1162,15 +1180,7 @@ bool Editor::msg_proc(JMessage msg)
 	  }
 	}
 
-	// Update status bar for when the user is dragging pixels
-	{
-	  // int x, y;
-	  // screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
-	  Rect bounds = m_pixelsMovement->getImageBounds();
-	  app_get_statusbar()->setStatusText
-	    (0, "Pos %d %d, Size %d %d [Press Ctrl+D to deselect]",
-	     bounds.x, bounds.y, bounds.w, bounds.h);
-	}
+	editor_update_statusbar_for_pixel_movement();
       }
       // In tool-loop
       else if (m_state == EDITOR_STATE_DRAWING) {
@@ -1257,6 +1267,7 @@ bool Editor::msg_proc(JMessage msg)
       }
 
       editor_setcursor(msg->mouse.x, msg->mouse.y);
+      editor_update_statusbar_for_standby();
       releaseMouse();
       return true;
 
@@ -1279,6 +1290,11 @@ bool Editor::msg_proc(JMessage msg)
 
 	  case KEY_LCONTROL:
 	  case KEY_RCONTROL:
+	    // If the user press the CTRL key when he is dragging pixels (but not pressing the mouse buttons)...
+	    if (!m_ctrl_pressed && !jmouse_b(0) && m_state == EDITOR_STATE_MOVING_PIXELS) {
+	      // Drop pixels (sure the user will press the mouse button to start dragging a copy)
+	      dropPixels();
+	    }
 	    m_ctrl_pressed = true;
 	    editor_setcursor(jmouse_x(0), jmouse_y(0));
 	    return true;
@@ -1298,7 +1314,8 @@ bool Editor::msg_proc(JMessage msg)
 	dropPixels();
 
 	// Resend the key/message to the manager
-	{
+	if (msg->key.scancode != KEY_ENTER &&
+	    msg->key.scancode != KEY_ENTER_PAD) {
 	  JMessage newmsg = jmessage_new_copy_without_dests(msg);
 	  jmessage_add_dest(newmsg, ji_get_default_manager());
 	  jmanager_enqueue_message(newmsg);
@@ -1307,7 +1324,6 @@ bool Editor::msg_proc(JMessage msg)
 	// Used
 	return true;
       }
-
       break;
 
     case JM_KEYRELEASED:
@@ -1557,6 +1573,9 @@ void Editor::editor_setcursor(int x, int y)
 
     case EDITOR_STATE_STANDBY:
       if (m_sprite) {
+	UIContext* context = UIContext::instance();
+	Tool* current_tool = context->getSettings()->getCurrentTool();
+
 	editor_update_candraw(); // TODO remove this
 
 	// Eyedropper
@@ -1565,7 +1584,9 @@ void Editor::editor_setcursor(int x, int y)
 	  jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	}
 	// Move layer
-	else if (m_ctrl_pressed) {
+	else if (m_ctrl_pressed &&
+		 (!current_tool ||
+		  !current_tool->getInk(0)->isSelection())) {
 	  hide_drawing_cursor();
 	  jmouse_set_cursor(JI_CURSOR_MOVE);
 	}
@@ -1575,18 +1596,19 @@ void Editor::editor_setcursor(int x, int y)
 	  jmouse_set_cursor(JI_CURSOR_SCROLL);
 	}
 	else {
-	  UIContext* context = UIContext::instance();
-	  Tool* current_tool = context->getSettings()->getCurrentTool();
-
 	  if (current_tool) {
+	    // If the current tool change selection (e.g. rectangular marquee, etc.)
 	    if (current_tool->getInk(0)->isSelection()) {
 	      int x, y;
 	      screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 	    
-	      // Move selection
+	      // Move pixels
 	      if (m_sprite->getMask()->contains_point(x, y)) {
 		hide_drawing_cursor();
-		jmouse_set_cursor(JI_CURSOR_MOVE);
+		if (m_ctrl_pressed)
+		  jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
+		else
+		  jmouse_set_cursor(JI_CURSOR_MOVE);
 
 		if (!m_insideSelection) {
 		  m_insideSelection = true;

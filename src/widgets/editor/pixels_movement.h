@@ -36,6 +36,7 @@ public:
   ~PixelsMovement();
 
   void cutMask();
+  void copyMask();
   void catchImage(int x, int y);
   void catchImageAgain(int x, int y);
   Rect moveImage(int x, int y);
