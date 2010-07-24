@@ -10,8 +10,8 @@
 
       <separator text="Editor:" horizontal="true" />
       <check text="Smooth auto-scroll" name="smooth" />
-      <check text="2 Click Movement" name="move_click2" />
-      <check text="2 Click Drawing" name="draw_click2" />
+      <check text="2 Click Movement" name="move_click2" disabled="true" />
+      <check text="2 Click Drawing" name="draw_click2" disabled="true" />
       <grid columns="2">
 	<label text="Cursor:" />
 	<box name="cursor_color_box" /><!-- custom widget -->
