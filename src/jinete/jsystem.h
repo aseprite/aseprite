@@ -39,13 +39,15 @@ struct BITMAP;
 /***********************************************************************/
 /* screen related */
 
-#define JI_SCREEN_W ((ji_screen == screen) ? SCREEN_W: ji_screen->w)
-#define JI_SCREEN_H ((ji_screen == screen) ? SCREEN_H: ji_screen->h)
+#define JI_SCREEN_W ji_screen_w
+#define JI_SCREEN_H ji_screen_h
 
 extern struct BITMAP *ji_screen;
 extern JRegion ji_dirty_region;
+extern int ji_screen_w;
+extern int ji_screen_h;
 
-void ji_set_screen(struct BITMAP *bmp);
+void ji_set_screen(BITMAP *bmp, int width, int height);
 
 void ji_add_dirty_rect(JRect rect);
 void ji_add_dirty_region(JRegion region);

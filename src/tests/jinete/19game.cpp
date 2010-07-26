@@ -211,7 +211,7 @@ void play_game()
   bmp2 = create_bitmap(SCREEN_W, SCREEN_H);
 
   /* set Jinete output screen bitmap */
-  ji_set_screen(bmp);
+  ji_set_screen(bmp, bmp->w, bmp->h);
   show_mouse(NULL);
 
   /* init game state */
@@ -236,7 +236,7 @@ void play_game()
     if (jwidget_pick(manager, mouse_x, mouse_y) == manager) {
       if (!trans_mode) {
 	trans_mode = true;
-	ji_set_screen(bmp2);
+	ji_set_screen(bmp2, bmp2->w, bmp2->h);
 	show_mouse(NULL);
       }
     }
@@ -264,7 +264,7 @@ void play_game()
     show_mouse(NULL);
   }
 
-  ji_set_screen(screen);
+  ji_set_screen(screen, SCREEN_W, SCREEN_H);
   destroy_bitmap(bmp);
   destroy_bitmap(bmp2);
 }

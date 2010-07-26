@@ -359,7 +359,7 @@ void exit_module_gui()
 
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
-    ji_set_screen(screen);
+    ji_set_screen(screen, SCREEN_W, SCREEN_H);
 
     if (ji_screen_created)
       destroy_bitmap(old_bmp);
@@ -526,7 +526,7 @@ void gui_flip_screen()
       }
       else {
 	stretch_blit(ji_screen, screen,
-		     0, 0, ji_screen->w, ji_screen->h,
+		     0, 0, JI_SCREEN_W, JI_SCREEN_H,
 		     0, 0, SCREEN_W, SCREEN_H);
       }
     }
@@ -566,15 +566,19 @@ void gui_setup_screen(bool reload_font)
   // Is double buffering active?
   if (double_buffering) {
     BITMAP *old_bmp = ji_screen;
-    ji_set_screen(create_bitmap(SCREEN_W / screen_scaling,
-				SCREEN_H / screen_scaling));
+    int new_w = SCREEN_W / screen_scaling;
+    int new_h = SCREEN_H / screen_scaling;
+    BITMAP *new_bmp = create_bitmap(new_w, new_h);
+
+    ji_set_screen(new_bmp, new_w, new_h);
+
     if (ji_screen_created)
       destroy_bitmap(old_bmp);
 
     ji_screen_created = true;
   }
   else {
-    ji_set_screen(screen);
+    ji_set_screen(screen, SCREEN_W, SCREEN_H);
     ji_screen_created = false;
   }
 

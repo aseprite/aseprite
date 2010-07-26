@@ -49,6 +49,8 @@
 
 BITMAP *ji_screen = NULL;
 JRegion ji_dirty_region = NULL;
+int ji_screen_w = 0;
+int ji_screen_h = 0;
 
 /* Global timer.  */
 
@@ -108,7 +110,7 @@ static void set_cursor(BITMAP *bmp, int x, int y)
 int _ji_system_init()
 {
   /* Update screen pointer.  */
-  ji_set_screen(screen);
+  ji_set_screen(screen, SCREEN_W, SCREEN_H);
 
   /* Install timer related stuff.  */
   LOCK_VARIABLE(ji_clock);
@@ -129,17 +131,19 @@ int _ji_system_init()
 
 void _ji_system_exit()
 {
-  ji_set_screen(NULL);
+  ji_set_screen(NULL, 0, 0);
 
   remove_int(clock_inc);
 }
 
-void ji_set_screen(BITMAP *bmp)
+void ji_set_screen(BITMAP *bmp, int width, int height)
 {
   int cursor = jmouse_get_cursor(); /* get mouse cursor */
 
   jmouse_set_cursor(JI_CURSOR_NULL);
   ji_screen = bmp;
+  ji_screen_w = width;
+  ji_screen_h = height;
 
   if (ji_screen != NULL) {
     JWidget manager = ji_get_default_manager();

@@ -157,7 +157,7 @@ JWidget jmanager_new()
 
   if (!default_manager) {
     if (!ji_screen)
-      ji_set_screen(screen);
+      ji_set_screen(screen, SCREEN_W, SCREEN_H);
 
     /* hook the window close message */
     want_close_stage = STAGE_NORMAL;
