@@ -18,7 +18,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "http://www.aseprite.org/"
-            VALUE "FileDescription", "A pixel art program"
+            VALUE "FileDescription", "Allegro Sprite Editor"
             VALUE "FileVersion", "0, 8, 0, 0"
             VALUE "InternalName", "aseprite"
             VALUE "LegalCopyright", "Copyright (C) 2001-2010 by David Capello"
