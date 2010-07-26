@@ -270,7 +270,7 @@ bool Tabs::msg_proc(JMessage msg)
 				      PART_TAB_BOTTOM_NORMAL);
 	  }
 
-	  jdraw_text(this->getFont(), tab->text.c_str(),
+	  jdraw_text(ji_screen, this->getFont(), tab->text.c_str(),
 		     box->x1+4*jguiscale(),
 		     (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
 		     text_color, face_color, false, jguiscale());

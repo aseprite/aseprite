@@ -982,7 +982,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     else
       x = x2 - 3 - text_length(widget->getFont(), line1);
       
-    jdraw_text(widget->getFont(), line1, x, y1+3,
+    jdraw_text(ji_screen, widget->getFont(), line1, x, y1+3,
 	       fg, face, true, jguiscale());
   }
 
@@ -994,7 +994,7 @@ static void anieditor_draw_header_part(JWidget widget, JRect clip, int x1, int y
     else
       x = x2 - 3 - text_length(widget->getFont(), line2);
     
-    jdraw_text(widget->getFont(), line2,
+    jdraw_text(ji_screen, widget->getFont(), line2,
 	       x, y1+3+ji_font_get_size(widget->getFont())+3,
 	       fg, face, true, jguiscale());
   }
@@ -1100,7 +1100,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   /* draw the layer's name */
-  jdraw_text(widget->getFont(), layer->get_name().c_str(),
+  jdraw_text(ji_screen, widget->getFont(), layer->get_name().c_str(),
 	     u, y_mid - ji_font_get_size(widget->getFont())/2,
 	     fg, bg, true, jguiscale());
 

@@ -777,7 +777,7 @@ void jstandard_theme::draw_listitem(JWidget widget, JRect clip)
 
   if (widget->hasText()) {
     /* text */
-    jdraw_text(widget->getFont(), widget->getText(), x, y, fg, bg, true);
+    jdraw_text(ji_screen, widget->getFont(), widget->getText(), x, y, fg, bg, true);
 
     /* background */
     jrectexclude
@@ -1287,7 +1287,7 @@ void jstandard_theme::draw_frame(Frame* frame, JRect clip)
       jrect_stretch(pos, 1);
       jdraw_rectedge(cpos, COLOR_DISABLED, COLOR_BACKGROUND);
 
-      jdraw_text(frame->getFont(), frame->getText(),
+      jdraw_text(ji_screen, frame->getFont(), frame->getText(),
 		 cpos->x1,
 		 pos->y1+jrect_h(pos)/2-text_height(frame->getFont())/2,
 		 COLOR_BACKGROUND, bg, false);
@@ -1363,17 +1363,17 @@ void jstandard_theme::draw_textstring(const char *t, int fg_color, int bg_color,
     if (!widget->isEnabled()) {
       /* TODO avoid this */
       if (fill_bg)		/* only to draw the background */
-	jdraw_text(widget->getFont(), t, x, y, 0, bg_color, fill_bg);
+	jdraw_text(ji_screen, widget->getFont(), t, x, y, 0, bg_color, fill_bg);
 
       /* draw white part */
-      jdraw_text(widget->getFont(), t, x+1, y+1,
+      jdraw_text(ji_screen, widget->getFont(), t, x+1, y+1,
 		 COLOR_BACKGROUND, bg_color, fill_bg);
 
       if (fill_bg)
 	fill_bg = false;
     }
 
-    jdraw_text(widget->getFont(), t, x, y,
+    jdraw_text(ji_screen, widget->getFont(), t, x, y,
 	       !widget->isEnabled() ?
 	       COLOR_DISABLED: (fg_color >= 0 ? fg_color :
 						COLOR_FOREGROUND),

@@ -270,7 +270,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	  int icon_w = ji_font_text_len(widget->getFont(), "[+]");
 	  int icon_h = ji_font_get_size(widget->getFont());
 
-	  jdraw_text(widget->getFont(),
+	  jdraw_text(ji_screen, widget->getFont(),
 		     "[+]", x, y+2,
 		     fgcolor, bgcolor, true, jguiscale());
 
@@ -297,7 +297,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	}
 
 	// item name
-	jdraw_text(widget->getFont(),
+	jdraw_text(ji_screen, widget->getFont(),
 		   fileitem_get_displayname(fi).c_str(), x, y+2,
 		   fgcolor, bgcolor, true, jguiscale());
 

@@ -142,7 +142,7 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
       jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
       jdraw_rectfill(&text, makecol(0, 0, 0));
-      jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
+      jdraw_text(ji_screen, widget->getFont(), widget->getText(), text.x1, text.y1,
 		 makecol(255, 255, 255), makecol(0, 0, 0), false, jguiscale());
 
       jrect_free(rect);

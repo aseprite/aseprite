@@ -342,9 +342,9 @@ static void theme_draw_button(JWidget widget, JRect clip)
     if (jwidget_is_selected(widget))
       jrect_displace(&text, 1, 1);
 
-    jdraw_text(widget->text_font, widget->text, text.x1+1, text.y1+1,
+    jdraw_text(ji_screen, widget->text_font, widget->text, text.x1+1, text.y1+1,
 	       makecol(255, 255, 255), bg, false);
-    jdraw_text(widget->text_font, widget->text,
+    jdraw_text(ji_screen, widget->text_font, widget->text,
 	       text.x1, text.y1, fg, bg, false);
   }
 
@@ -439,9 +439,9 @@ static void theme_draw_label(JWidget widget, JRect clip)
 
     jwidget_get_texticon_info(widget, NULL, &text, NULL, 0, 0, 0);
 
-    jdraw_text(widget->text_font, widget->text, text.x1+1, text.y1+1,
+    jdraw_text(ji_screen, widget->text_font, widget->text, text.x1+1, text.y1+1,
 	       makecol(0, 0, 0), makecol(196, 128, 0), false);
-    jdraw_text(widget->text_font, widget->text, text.x1, text.y1,
+    jdraw_text(ji_screen, widget->text_font, widget->text, text.x1, text.y1,
 	       makecol(255, 255, 255), makecol(196, 128, 0), false);
   }
 }
@@ -467,9 +467,9 @@ static void theme_draw_window(JWidget widget, JRect clip)
   /* title bar */
   pos->x1 += 8;
   pos->y1 += 6;
-  jdraw_text(widget->text_font, widget->text, pos->x1+1, pos->y1+1,
+  jdraw_text(ji_screen, widget->text_font, widget->text, pos->x1+1, pos->y1+1,
 	     makecol(0, 0, 0), makecol(0, 127, 255), false);
-  jdraw_text(widget->text_font, widget->text, pos->x1, pos->y1,
+  jdraw_text(ji_screen, widget->text_font, widget->text, pos->x1, pos->y1,
 	     makecol(255, 255, 255), makecol(0, 127, 255), false);
 
   /* border to client area */

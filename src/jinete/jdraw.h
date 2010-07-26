@@ -65,7 +65,7 @@ void jdraw_rectshade(const JRect rect, int c1, int c2, int align);
 void jdraw_rectexclude(const JRect rc, const JRect exclude, int color);
 
 void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg);
-void jdraw_text(FONT* f, const char* text, int x, int y, int fg, int bg, bool fill_bg, int underline_height = 1);
+void jdraw_text(BITMAP* bmp, FONT* f, const char* text, int x, int y, int fg, int bg, bool fill_bg, int underline_height = 1);
 
 void jdraw_inverted_sprite(struct BITMAP *bmp, struct BITMAP *sprite, int x, int y);
 

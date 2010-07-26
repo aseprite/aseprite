@@ -260,7 +260,7 @@ static void colorbutton_draw(JWidget widget)
   int textcolor = blackandwhite_neg(color_get_red(color),
 				    color_get_green(color),
 				    color_get_blue(color));
-  jdraw_text(widget->getFont(), widget->getText(), text.x1, text.y1,
+  jdraw_text(ji_screen, widget->getFont(), widget->getText(), text.x1, text.y1,
 	     textcolor, -1, false, jguiscale());
 }
 

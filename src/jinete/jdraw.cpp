@@ -169,7 +169,7 @@ void jdraw_char(FONT* f, int chr, int x, int y, int fg, int bg, bool fill_bg)
   f->vtable->render_char(f, chr, fg, fill_bg ? bg: -1, ji_screen, x, y);
 }
 
-void jdraw_text(FONT* font, const char *s, int x, int y,
+void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
 		int fg_color, int bg_color, bool fill_bg, int underline_height)
 {
   // original code from allegro/src/guiproc.c
@@ -204,7 +204,7 @@ void jdraw_text(FONT* font, const char *s, int x, int y,
   SETUP_ANTIALISING(font, bg_color, fill_bg);
 
   text_mode(fill_bg ? bg_color: -1);
-  textout(ji_screen, font, tmp, x, y, fg_color);
+  textout(bmp, font, tmp, x, y, fg_color);
 
   if (hline_pos >= 0) {
     c = ugetat(tmp, hline_pos);
@@ -214,7 +214,7 @@ void jdraw_text(FONT* font, const char *s, int x, int y,
     usetc(tmp+c, 0);
     c = text_length(font, tmp);
 
-    rectfill(ji_screen, x+hline_pos,
+    rectfill(bmp, x+hline_pos,
 	     y+text_height(font),
 	     x+hline_pos+c-1,
 	     y+text_height(font)+underline_height-1, fg_color);
