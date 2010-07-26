@@ -93,6 +93,7 @@ private:
   void startAni(Ani ani);
   void stopAni();
 
+  void drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected);
   Tab* getTabByData(void* data);
   int getMaxScrollX();
   void makeTabVisible(Tab* tab);
@@ -111,7 +112,7 @@ private:
   int m_endScrollX;		// Final X position of scroll in the animation when you scroll with mouse wheel
   Ani m_ani;			// Current animation
   int m_ani_t;			// Number of ticks from the beginning of the animation
-  int m_removedTabWidth;
+  Tab* m_removedTab;
   Tab* m_nextTabOfTheRemovedOne;
 
   // Buttons to scroll tabs (useful when there are more tabs than visible area)

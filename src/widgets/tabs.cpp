@@ -58,6 +58,7 @@ Tabs::Tabs(ITabsHandler* handler)
   m_timerId = jmanager_add_timer(this, 1000/60);
   m_scrollX = 0;
   m_ani = ANI_NONE;
+  m_removedTab = NULL;
 
   m_button_left = jbutton_new(NULL);
   m_button_right = jbutton_new(NULL);
@@ -82,6 +83,11 @@ Tabs::Tabs(ITabsHandler* handler)
 
 Tabs::~Tabs()
 {
+  if (m_removedTab) {
+    delete m_removedTab;
+    m_removedTab = NULL;
+  }
+
   // Stop animation
   stopAni();
 
@@ -127,10 +133,11 @@ void Tabs::removeTab(void* data)
     it = m_list_of_tabs.erase(it);
 
     // Width of the removed tab
-    m_removedTabWidth = tab->width;
-
-    // Destroy the tab
-    delete tab;
+    if (m_removedTab) {
+      delete m_removedTab;
+      m_removedTab = NULL;
+    }
+    m_removedTab = tab;
 
     // Next tab in the list
     if (it != m_list_of_tabs.end())
@@ -200,13 +207,20 @@ bool Tabs::msg_proc(JMessage msg)
       return true;
 
     case JM_DRAW: {
+      BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
+					   jrect_h(&msg->draw.rect));
       JRect rect = jwidget_get_rect(this);
-      JRect box = jrect_new(rect->x1-m_scrollX, rect->y1,
+      jrect_displace(rect, -msg->draw.rect.x1, -msg->draw.rect.y1);
+	
+      JRect box = jrect_new(rect->x1-m_scrollX,
+			    rect->y1,
 			    rect->x1-m_scrollX+2*jguiscale(),
 			    rect->y1+theme->get_part(PART_TAB_FILLER)->h);
 
-      theme->draw_part_as_hline(ji_screen, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
-      theme->draw_part_as_hline(ji_screen, box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+      clear_to_color(doublebuffer, theme->get_window_face_color());
+
+      theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, box->x2-1, box->y2-1, PART_TAB_FILLER);
+      theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, box->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
 
       box->x1 = box->x2;
 
@@ -215,86 +229,66 @@ bool Tabs::msg_proc(JMessage msg)
 
       for (it = m_list_of_tabs.begin(); it != end; ++it) {
 	Tab* tab = *it;
-
+	
 	box->x2 = box->x1 + tab->width;
 
 	int x_delta = 0;
 	int y_delta = 0;
 
 	// Y-delta for animating tabs (intros and outros)
-	if (m_selected == tab && m_ani == ANI_ADDING_TAB) {
+	if (m_ani == ANI_ADDING_TAB && m_selected == tab) {
 	  y_delta = (box->y2 - box->y1) * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
 	}
-	else if (m_nextTabOfTheRemovedOne == tab && m_ani == ANI_REMOVING_TAB) {
-	  // Lineal
-	  //x_delta += m_removedTabWidth * (ANI_REMOVING_TAB_TICKS - m_ani_t) / ANI_REMOVING_TAB_TICKS;
+	else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
+	  x_delta += m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+	  x_delta = MID(0, x_delta, m_removedTab->width);
 
-	  // Exponential
-	  x_delta += m_removedTabWidth - m_removedTabWidth*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
-	  x_delta = MID(0, x_delta, m_removedTabWidth);
+	  // Draw deleted tab
+	  if (m_removedTab) {
+	    JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
+	    drawTab(doublebuffer, box2, m_removedTab, 0, false);
+	    jrect_free(box2);
+	  }
 	}
 
 	box->x1 += x_delta;
 	box->x2 += x_delta;
-
-	// Is the tab inside the bounds of the widget?
-	if (box->x1 < rect->x2 && box->x2 > rect->x1) {
-	  int text_color;
-	  int face_color;
-
-	  // Selected
-	  if (m_selected == tab) {
-	    text_color = theme->get_tab_selected_text_color();
-	    face_color = theme->get_tab_selected_face_color();
-	  }
-	  // Non-selected
-	  else {
-	    text_color = theme->get_tab_normal_text_color();
-	    face_color = theme->get_tab_normal_face_color();
-	  }
-
-	  theme->draw_bounds_nw(ji_screen,
-				box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
-				(m_selected == tab) ? PART_TAB_SELECTED_NW:
-						      PART_TAB_NORMAL_NW, face_color);
-
-	  if (m_selected == tab) {
-	    theme->draw_bounds_nw(ji_screen,
-				  box->x1, box->y2, box->x2-1, rect->y2-1,
-				  PART_TAB_BOTTOM_SELECTED_NW,
-				  theme->get_tab_selected_face_color());
-	  }
-	  else {
-	    theme->draw_part_as_hline(ji_screen,
-				      box->x1, box->y2, box->x2-1, rect->y2-1,
-				      PART_TAB_BOTTOM_NORMAL);
-	  }
-
-	  jdraw_text(ji_screen, this->getFont(), tab->text.c_str(),
-		     box->x1+4*jguiscale(),
-		     (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
-		     text_color, face_color, false, jguiscale());
-
-#ifdef CLOSE_BUTTON_IN_EACH_TAB
-	  BITMAP* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
-	  set_alpha_blender();
-	  draw_trans_sprite(ji_screen, close_icon,
-			    box->x2-4*jguiscale()-close_icon->w,
-			    (box->y1+box->y2)/2-close_icon->h/2+1*jguiscale());
-#endif
-	}
+	
+	drawTab(doublebuffer, box, tab, y_delta, (tab == m_selected));
 
 	box->x1 = box->x2;
       }
 
+      if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
+	// Draw deleted tab
+	if (m_removedTab) {
+	  int x_delta = m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+	  x_delta = MID(0, x_delta, m_removedTab->width);
+
+	  JRect box2 = jrect_new(box->x1, box->y1, box->x1+x_delta, box->y2);
+	  drawTab(doublebuffer, box2, m_removedTab, 0, false);
+	  jrect_free(box2);
+
+	  box->x1 += x_delta;
+	  box->x2 = box->x1;
+	}
+      }
+
       /* fill the gap to the right-side */
       if (box->x1 < rect->x2) {
-	theme->draw_part_as_hline(ji_screen, box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
-	theme->draw_part_as_hline(ji_screen, box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
+	theme->draw_part_as_hline(doublebuffer, box->x1, box->y1, rect->x2-1, box->y2-1, PART_TAB_FILLER);
+	theme->draw_part_as_hline(doublebuffer, box->x1, box->y2, rect->x2-1, rect->y2-1, PART_TAB_BOTTOM_NORMAL);
       }
 
       jrect_free(rect);
       jrect_free(box);
+
+      blit(doublebuffer, ji_screen, 0, 0,
+	   msg->draw.rect.x1,
+	   msg->draw.rect.y1,
+	   doublebuffer->w,
+	   doublebuffer->h);
+      destroy_bitmap(doublebuffer);
       return true;
     }
 
@@ -401,6 +395,59 @@ bool Tabs::msg_proc(JMessage msg)
   }
 
   return Widget::msg_proc(msg);
+}
+
+void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)
+{
+  // Is the tab outside the bounds of the widget?
+  if (box->x1 >= this->rc->x2 || box->x2 <= this->rc->x1)
+    return;
+
+  SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
+  int text_color;
+  int face_color;
+
+  // Selected
+  if (selected) {
+    text_color = theme->get_tab_selected_text_color();
+    face_color = theme->get_tab_selected_face_color();
+  }
+  // Non-selected
+  else {
+    text_color = theme->get_tab_normal_text_color();
+    face_color = theme->get_tab_normal_face_color();
+  }
+
+  if (jrect_w(box) > 2) {
+    theme->draw_bounds_nw(bmp,
+			  box->x1, box->y1+y_delta, box->x2-1, box->y2-1,
+			  (selected) ? PART_TAB_SELECTED_NW:
+				       PART_TAB_NORMAL_NW, face_color);
+    jdraw_text(bmp, this->getFont(), tab->text.c_str(),
+	       box->x1+4*jguiscale(),
+	       (box->y1+box->y2)/2-text_height(this->getFont())/2+1 + y_delta,
+	       text_color, face_color, false, jguiscale());
+  }
+
+  if (selected) {
+    theme->draw_bounds_nw(bmp,
+			  box->x1, box->y2, box->x2-1, this->rc->y2-1,
+			  PART_TAB_BOTTOM_SELECTED_NW,
+			  theme->get_tab_selected_face_color());
+  }
+  else {
+    theme->draw_part_as_hline(bmp,
+			      box->x1, box->y2, box->x2-1, this->rc->y2-1,
+			      PART_TAB_BOTTOM_NORMAL);
+  }
+
+#ifdef CLOSE_BUTTON_IN_EACH_TAB
+  BITMAP* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+  set_alpha_blender();
+  draw_trans_sprite(doublebuffer, close_icon,
+		    box->x2-4*jguiscale()-close_icon->w,
+		    (box->y1+box->y2)/2-close_icon->h/2+1*jguiscale());
+#endif
 }
 
 Tabs::Tab* Tabs::getTabByData(void* data)
