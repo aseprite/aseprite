@@ -34,7 +34,7 @@ public:
   Command* clone() const { return new CheckUpdatesCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 CheckUpdatesCommand::CheckUpdatesCommand()
@@ -44,7 +44,7 @@ CheckUpdatesCommand::CheckUpdatesCommand()
 {
 }
 
-void CheckUpdatesCommand::execute(Context* context)
+void CheckUpdatesCommand::onExecute(Context* context)
 {
   std::string url;
   url += WEBSITE;

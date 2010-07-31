@@ -45,8 +45,8 @@ public:
   Command* clone() { return new SpritePropertiesCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 SpritePropertiesCommand::SpritePropertiesCommand()
@@ -56,14 +56,14 @@ SpritePropertiesCommand::SpritePropertiesCommand()
 {
 }
 
-bool SpritePropertiesCommand::enabled(Context* context)
+bool SpritePropertiesCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void SpritePropertiesCommand::execute(Context* context)
+void SpritePropertiesCommand::onExecute(Context* context)
 {
   JWidget killer, name, type, size, frames, speed, ok;
   const CurrentSpriteReader sprite(context);

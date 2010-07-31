@@ -40,10 +40,10 @@ public:
   Command* clone() const { return new ChangeImageTypeCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  bool enabled(Context* context);
-  bool checked(Context* context);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  bool onEnabled(Context* context);
+  bool onChecked(Context* context);
+  void onExecute(Context* context);
 };
 
 ChangeImageTypeCommand::ChangeImageTypeCommand()
@@ -55,7 +55,7 @@ ChangeImageTypeCommand::ChangeImageTypeCommand()
   m_dithering = DITHERING_NONE;
 }
 
-void ChangeImageTypeCommand::load_params(Params* params)
+void ChangeImageTypeCommand::onLoadParams(Params* params)
 {
   std::string imgtype = params->get("imgtype");
   if (imgtype == "rgb") m_imgtype = IMAGE_RGB;
@@ -69,7 +69,7 @@ void ChangeImageTypeCommand::load_params(Params* params)
     m_dithering = DITHERING_NONE;
 }
 
-bool ChangeImageTypeCommand::enabled(Context* context)
+bool ChangeImageTypeCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
 
@@ -83,7 +83,7 @@ bool ChangeImageTypeCommand::enabled(Context* context)
     sprite != NULL;
 }
 
-bool ChangeImageTypeCommand::checked(Context* context)
+bool ChangeImageTypeCommand::onChecked(Context* context)
 {
   const CurrentSpriteReader sprite(context);
 
@@ -98,7 +98,7 @@ bool ChangeImageTypeCommand::checked(Context* context)
     sprite->getImgType() == m_imgtype;
 }
 
-void ChangeImageTypeCommand::execute(Context* context)
+void ChangeImageTypeCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {

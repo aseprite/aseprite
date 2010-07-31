@@ -35,8 +35,8 @@ public:
   Command* clone() const { return new CopyCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 CopyCommand::CopyCommand()
@@ -46,7 +46,7 @@ CopyCommand::CopyCommand()
 {
 }
 
-bool CopyCommand::enabled(Context* context)
+bool CopyCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
 
@@ -61,7 +61,7 @@ bool CopyCommand::enabled(Context* context)
     return false;
 }
 
-void CopyCommand::execute(Context* context)
+void CopyCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   clipboard::copy(sprite);

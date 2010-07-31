@@ -162,8 +162,8 @@ public:
   Command* clone() { return new SpriteSizeCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 SpriteSizeCommand::SpriteSizeCommand()
@@ -173,14 +173,14 @@ SpriteSizeCommand::SpriteSizeCommand()
 {
 }
 
-bool SpriteSizeCommand::enabled(Context* context)
+bool SpriteSizeCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void SpriteSizeCommand::execute(Context* context)
+void SpriteSizeCommand::onExecute(Context* context)
 {
   JWidget width_px, height_px, width_perc, height_perc, lock_ratio, ok;
   ComboBox* method;

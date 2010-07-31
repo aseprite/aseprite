@@ -38,8 +38,8 @@ public:
   Command* clone() { return new LayerPropertiesCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()
@@ -49,7 +49,7 @@ LayerPropertiesCommand::LayerPropertiesCommand()
 {
 }
 
-bool LayerPropertiesCommand::enabled(Context* context)
+bool LayerPropertiesCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -57,7 +57,7 @@ bool LayerPropertiesCommand::enabled(Context* context)
     sprite->getCurrentLayer() != NULL;
 }
 
-void LayerPropertiesCommand::execute(Context* context)
+void LayerPropertiesCommand::onExecute(Context* context)
 {
   JWidget box1, box2, box3, label_name, entry_name;
   JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;

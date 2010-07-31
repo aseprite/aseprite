@@ -34,8 +34,8 @@ public:
   Command* clone() { return new MaskByColorCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 MaskByColorCommand::MaskByColorCommand()
@@ -45,14 +45,14 @@ MaskByColorCommand::MaskByColorCommand()
 {
 }
 
-bool MaskByColorCommand::enabled(Context* context)
+bool MaskByColorCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void MaskByColorCommand::execute(Context* context)
+void MaskByColorCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   dialogs_mask_color(sprite);

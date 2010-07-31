@@ -48,8 +48,8 @@ public:
   Command* clone() { return new OpenFileCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  void onExecute(Context* context);
 };
 
 struct OpenFileData
@@ -127,7 +127,7 @@ OpenFileCommand::OpenFileCommand()
   m_filename = "";
 }
 
-void OpenFileCommand::load_params(Params* params)
+void OpenFileCommand::onLoadParams(Params* params)
 {
   m_filename = params->get("filename");
 }
@@ -137,7 +137,7 @@ void OpenFileCommand::load_params(Params* params)
  *
  * [main thread]
  */
-void OpenFileCommand::execute(Context* context)
+void OpenFileCommand::onExecute(Context* context)
 {
   Console console;
 

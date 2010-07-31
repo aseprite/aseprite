@@ -49,7 +49,7 @@ public:
   Command* clone() { return new NewFileCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 static int _sprite_counter = 0;
@@ -66,7 +66,7 @@ NewFileCommand::NewFileCommand()
 /**
  * Shows the "New Sprite" dialog.
  */
-void NewFileCommand::execute(Context* context)
+void NewFileCommand::onExecute(Context* context)
 {
   JWidget width, height, radio1, radio2, radio3, colors, ok, bg_box;
   int imgtype, w, h, bg, ncolors;

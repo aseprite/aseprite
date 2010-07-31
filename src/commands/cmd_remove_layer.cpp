@@ -40,8 +40,8 @@ public:
   Command* clone() { return new RemoveLayerCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 RemoveLayerCommand::RemoveLayerCommand()
@@ -51,7 +51,7 @@ RemoveLayerCommand::RemoveLayerCommand()
 {
 }
 
-bool RemoveLayerCommand::enabled(Context* context)
+bool RemoveLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -59,7 +59,7 @@ bool RemoveLayerCommand::enabled(Context* context)
     sprite->getCurrentLayer() != NULL;
 }
 
-void RemoveLayerCommand::execute(Context* context)
+void RemoveLayerCommand::onExecute(Context* context)
 {
   std::string layer_name;
   CurrentSpriteWriter sprite(context);

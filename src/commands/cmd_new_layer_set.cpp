@@ -37,8 +37,8 @@ public:
   Command* clone() { return new NewLayerSetCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 NewLayerSetCommand::NewLayerSetCommand()
@@ -48,14 +48,14 @@ NewLayerSetCommand::NewLayerSetCommand()
 {
 }
 
-bool NewLayerSetCommand::enabled(Context* context)
+bool NewLayerSetCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void NewLayerSetCommand::execute(Context* context)
+void NewLayerSetCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

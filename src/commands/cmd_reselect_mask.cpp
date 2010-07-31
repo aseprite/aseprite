@@ -35,8 +35,8 @@ public:
   Command* clone() { return new ReselectMaskCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 ReselectMaskCommand::ReselectMaskCommand()
@@ -46,7 +46,7 @@ ReselectMaskCommand::ReselectMaskCommand()
 {
 }
 
-bool ReselectMaskCommand::enabled(Context* context)
+bool ReselectMaskCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -54,7 +54,7 @@ bool ReselectMaskCommand::enabled(Context* context)
     sprite->requestMask("*deselected*") != NULL;
 }
 
-void ReselectMaskCommand::execute(Context* context)
+void ReselectMaskCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   Mask *mask;

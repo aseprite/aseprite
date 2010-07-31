@@ -50,13 +50,13 @@ public:
 
 protected:
 
-  bool enabled(Context* context)
+  bool onEnabled(Context* context)
   {
     const CurrentSpriteReader sprite(context);
     return sprite != NULL;
   }
 
-  void execute(Context* context)
+  void onExecute(Context* context)
   {
     close_current_sprite(context);
   }
@@ -82,12 +82,12 @@ public:
 
 protected:
 
-  bool enabled(Context* context)
+  bool onEnabled(Context* context)
   {
     return !context->get_sprite_list().empty();
   }
 
-  void execute(Context* context)
+  void onExecute(Context* context)
   {
     if (!context->get_current_sprite())
       set_sprite_in_more_reliable_editor(context->get_first_sprite());

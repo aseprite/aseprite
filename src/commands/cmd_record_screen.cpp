@@ -36,8 +36,8 @@ public:
   Command* clone() { return new RecordScreenCommand(*this); }
 
 protected:
-  bool checked(Context* context);
-  void execute(Context* context);
+  bool onChecked(Context* context);
+  void onExecute(Context* context);
 };
 
 RecordScreenCommand::RecordScreenCommand()
@@ -47,12 +47,12 @@ RecordScreenCommand::RecordScreenCommand()
 {
 }
 
-bool RecordScreenCommand::checked(Context* context)
+bool RecordScreenCommand::onChecked(Context* context)
 {
   return is_rec_screen();
 }
 
-void RecordScreenCommand::execute(Context* context)
+void RecordScreenCommand::onExecute(Context* context)
 {
   if (is_rec_screen())
     rec_screen_off();

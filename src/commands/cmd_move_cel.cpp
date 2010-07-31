@@ -32,8 +32,8 @@ public:
   Command* clone() const { return new MoveCelCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 MoveCelCommand::MoveCelCommand()
@@ -43,12 +43,12 @@ MoveCelCommand::MoveCelCommand()
 {
 }
 
-bool MoveCelCommand::enabled(Context* context)
+bool MoveCelCommand::onEnabled(Context* context)
 {
   return animation_editor_is_movingcel();
 }
 
-void MoveCelCommand::execute(Context* context)
+void MoveCelCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   move_cel(sprite);

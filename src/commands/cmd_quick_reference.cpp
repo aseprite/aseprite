@@ -34,7 +34,7 @@ public:
   Command* clone() const { return new QuickReferenceCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 QuickReferenceCommand::QuickReferenceCommand()
@@ -44,7 +44,7 @@ QuickReferenceCommand::QuickReferenceCommand()
 {
 }
 
-void QuickReferenceCommand::execute(Context* context)
+void QuickReferenceCommand::onExecute(Context* context)
 {
   ResourceFinder rf;
   rf.findInDocsDir("quickref.pdf");

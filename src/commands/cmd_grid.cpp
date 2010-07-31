@@ -47,14 +47,14 @@ public:
   Command* clone() const { return new ShowGridCommand(*this); }
 
 protected:
-  bool checked(Context* context)
+  bool onChecked(Context* context)
   {
     ISettings* settings = context->getSettings();
 
     return settings->getGridVisible();
   }
   
-  void execute(Context* context)
+  void onExecute(Context* context)
   {
     ISettings* settings = context->getSettings();
 
@@ -79,14 +79,14 @@ public:
   Command* clone() const { return new SnapToGridCommand(*this); }
 
 protected:
-  bool checked(Context* context)
+  bool onChecked(Context* context)
   {
     ISettings* settings = context->getSettings();
 
     return settings->getSnapToGrid();
   }
   
-  void execute(Context* context)
+  void onExecute(Context* context)
   {
     ISettings* settings = context->getSettings();
     char buf[512];
@@ -112,8 +112,8 @@ public:
   Command* clone() const { return new GridSettingsCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GridSettingsCommand::GridSettingsCommand()
@@ -123,12 +123,12 @@ GridSettingsCommand::GridSettingsCommand()
 {
 }
 
-bool GridSettingsCommand::enabled(Context* context)
+bool GridSettingsCommand::onEnabled(Context* context)
 {
   return true;
 }
 
-void GridSettingsCommand::execute(Context* context)
+void GridSettingsCommand::onExecute(Context* context)
 {
   JWidget grid_x, grid_y, grid_w, grid_h, button_ok;
 

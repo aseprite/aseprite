@@ -38,7 +38,7 @@ public:
   Command* clone() { return new ScreenShotCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 ScreenShotCommand::ScreenShotCommand()
@@ -48,7 +48,7 @@ ScreenShotCommand::ScreenShotCommand()
 {
 }
 
-void ScreenShotCommand::execute(Context* context)
+void ScreenShotCommand::onExecute(Context* context)
 {
   int c, old_flag;
   char buf[512];

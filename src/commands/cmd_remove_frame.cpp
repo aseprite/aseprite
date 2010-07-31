@@ -36,8 +36,8 @@ public:
   Command* clone() { return new RemoveFrameCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 RemoveFrameCommand::RemoveFrameCommand()
@@ -47,7 +47,7 @@ RemoveFrameCommand::RemoveFrameCommand()
 {
 }
 
-bool RemoveFrameCommand::enabled(Context* context)
+bool RemoveFrameCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -55,7 +55,7 @@ bool RemoveFrameCommand::enabled(Context* context)
     sprite->getTotalFrames() > 1;
 }
 
-void RemoveFrameCommand::execute(Context* context)
+void RemoveFrameCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {

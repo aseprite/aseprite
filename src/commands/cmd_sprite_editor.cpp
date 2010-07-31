@@ -31,7 +31,7 @@ public:
   Command* clone() { return new CloseEditorCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 CloseEditorCommand::CloseEditorCommand()
@@ -41,7 +41,7 @@ CloseEditorCommand::CloseEditorCommand()
 {
 }
 
-void CloseEditorCommand::execute(Context* context)
+void CloseEditorCommand::onExecute(Context* context)
 {
   close_editor(current_editor);
 }
@@ -56,7 +56,7 @@ public:
   Command* clone() { return new MakeUniqueEditorCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 MakeUniqueEditorCommand::MakeUniqueEditorCommand()
@@ -66,7 +66,7 @@ MakeUniqueEditorCommand::MakeUniqueEditorCommand()
 {
 }
 
-void MakeUniqueEditorCommand::execute(Context* context)
+void MakeUniqueEditorCommand::onExecute(Context* context)
 {
   make_unique_editor(current_editor);
 }
@@ -81,7 +81,7 @@ public:
   Command* clone() { return new SplitEditorHorizontallyCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
@@ -91,7 +91,7 @@ SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
 {
 }
 
-void SplitEditorHorizontallyCommand::execute(Context* context)
+void SplitEditorHorizontallyCommand::onExecute(Context* context)
 {
   split_editor(current_editor, JI_HORIZONTAL);
 }
@@ -106,7 +106,7 @@ public:
   Command* clone() { return new SplitEditorVerticallyCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
@@ -116,7 +116,7 @@ SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
 {
 }
 
-void SplitEditorVerticallyCommand::execute(Context* context)
+void SplitEditorVerticallyCommand::onExecute(Context* context)
 {
   split_editor(current_editor, JI_VERTICAL);
 }

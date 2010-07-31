@@ -37,8 +37,8 @@ public:
   Command* clone() { return new InvertMaskCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 InvertMaskCommand::InvertMaskCommand()
@@ -48,13 +48,13 @@ InvertMaskCommand::InvertMaskCommand()
 {
 }
 
-bool InvertMaskCommand::enabled(Context* context)
+bool InvertMaskCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void InvertMaskCommand::execute(Context* context)
+void InvertMaskCommand::onExecute(Context* context)
 {
   bool has_mask = false;
   {

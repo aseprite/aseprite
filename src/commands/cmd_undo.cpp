@@ -33,8 +33,8 @@ public:
   Command* clone() { return new UndoCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 UndoCommand::UndoCommand()
@@ -44,7 +44,7 @@ UndoCommand::UndoCommand()
 {
 }
 
-bool UndoCommand::enabled(Context* context)
+bool UndoCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -52,7 +52,7 @@ bool UndoCommand::enabled(Context* context)
     undo_can_undo(sprite->getUndo());
 }
 
-void UndoCommand::execute(Context* context)
+void UndoCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

@@ -31,7 +31,7 @@ public:
   Command* clone() const { return new DonateCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 DonateCommand::DonateCommand()
@@ -41,7 +41,7 @@ DonateCommand::DonateCommand()
 {
 }
 
-void DonateCommand::execute(Context* context)
+void DonateCommand::onExecute(Context* context)
 {
   std::string url;
   url += WEBSITE;

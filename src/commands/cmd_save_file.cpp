@@ -202,8 +202,8 @@ public:
   Command* clone() { return new SaveFileCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 SaveFileCommand::SaveFileCommand()
@@ -218,7 +218,7 @@ SaveFileCommand::SaveFileCommand()
  *
  * [main thread]
  */
-bool SaveFileCommand::enabled(Context* context)
+bool SaveFileCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -230,7 +230,7 @@ bool SaveFileCommand::enabled(Context* context)
  * 
  * [main thread]
  */
-void SaveFileCommand::execute(Context* context)
+void SaveFileCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 
@@ -257,8 +257,8 @@ public:
   Command* clone() { return new SaveFileAsCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
@@ -268,14 +268,14 @@ SaveFileAsCommand::SaveFileAsCommand()
 {
 }
 
-bool SaveFileAsCommand::enabled(Context* context)
+bool SaveFileAsCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void SaveFileAsCommand::execute(Context* context)
+void SaveFileAsCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   save_as_dialog(sprite, _("Save Sprite As"), true);
@@ -291,8 +291,8 @@ public:
   Command* clone() { return new SaveFileCopyAsCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
@@ -302,14 +302,14 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 {
 }
 
-bool SaveFileCopyAsCommand::enabled(Context* context)
+bool SaveFileCopyAsCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void SaveFileCopyAsCommand::execute(Context* context)
+void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   jstring old_filename = sprite->getFilename();

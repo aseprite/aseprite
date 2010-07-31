@@ -76,8 +76,8 @@ public:
   Command* clone() const { return new ConvolutionMatrixCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()
@@ -87,14 +87,14 @@ ConvolutionMatrixCommand::ConvolutionMatrixCommand()
 {
 }
 
-bool ConvolutionMatrixCommand::enabled(Context* context)
+bool ConvolutionMatrixCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void ConvolutionMatrixCommand::execute(Context* context)
+void ConvolutionMatrixCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget button_ok;

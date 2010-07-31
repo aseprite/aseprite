@@ -126,7 +126,7 @@ public:
   Command* clone() const { return new ConfigureTools(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 ConfigureTools::ConfigureTools()
@@ -136,7 +136,7 @@ ConfigureTools::ConfigureTools()
 {
 }
 
-void ConfigureTools::execute(Context* context)
+void ConfigureTools::onExecute(Context* context)
 {
   JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, pixel_grid, set_grid;
   JWidget brush_size, brush_angle, opacity;
@@ -448,7 +448,7 @@ static bool pixel_grid_check_change_hook(JWidget widget, void *data)
 static bool set_grid_button_select_hook(JWidget widget, void *data)
 {
   try {
-    // TODO use the same context as in ConfigureTools::execute
+    // TODO use the same context as in ConfigureTools::onExecute
     const CurrentSpriteReader sprite(UIContext::instance());
 
     if (sprite && sprite->getMask() && sprite->getMask()->bitmap) {

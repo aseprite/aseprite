@@ -32,7 +32,7 @@ public:
   SwitchColorsCommand();
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 SwitchColorsCommand::SwitchColorsCommand()
@@ -42,7 +42,7 @@ SwitchColorsCommand::SwitchColorsCommand()
 {
 }
 
-void SwitchColorsCommand::execute(Context* context)
+void SwitchColorsCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = app_get_colorbar();
   color_t fg = colorbar->getFgColor();

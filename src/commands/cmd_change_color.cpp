@@ -44,8 +44,8 @@ public:
   ChangeColorCommand();
 
 protected:
-  void load_params(Params* params);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  void onExecute(Context* context);
 };
 
 ChangeColorCommand::ChangeColorCommand()
@@ -57,7 +57,7 @@ ChangeColorCommand::ChangeColorCommand()
   m_change = None;
 }
 
-void ChangeColorCommand::load_params(Params* params)
+void ChangeColorCommand::onLoadParams(Params* params)
 {
   std::string target = params->get("target");
   if (target == "foreground") m_background = false;
@@ -68,7 +68,7 @@ void ChangeColorCommand::load_params(Params* params)
   else if (change == "decrement-index") m_change = DecrementIndex;
 }
 
-void ChangeColorCommand::execute(Context* context)
+void ChangeColorCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = app_get_colorbar();
   color_t color = m_background ? colorbar->getBgColor():

@@ -44,10 +44,10 @@ public:
   Command* clone() { return new SelectFileCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  bool enabled(Context* context);
-  bool checked(Context* context);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  bool onEnabled(Context* context);
+  bool onChecked(Context* context);
+  void onExecute(Context* context);
 };
 
 SelectFileCommand::SelectFileCommand()
@@ -58,14 +58,14 @@ SelectFileCommand::SelectFileCommand()
   m_sprite_id = 0;
 }
 
-void SelectFileCommand::load_params(Params* params)
+void SelectFileCommand::onLoadParams(Params* params)
 {
   if (params->has_param("sprite_id")) {
     m_sprite_id = ustrtol(params->get("sprite_id").c_str(), NULL, 10);
   }
 }
 
-bool SelectFileCommand::enabled(Context* context)
+bool SelectFileCommand::onEnabled(Context* context)
 {
   /* m_sprite_id != 0, the ID specifies a GfxObj */
   if (m_sprite_id > 0) {
@@ -77,7 +77,7 @@ bool SelectFileCommand::enabled(Context* context)
     return true;
 }
 
-bool SelectFileCommand::checked(Context* context)
+bool SelectFileCommand::onChecked(Context* context)
 {
   const CurrentSpriteReader sprite(context);
 
@@ -91,7 +91,7 @@ bool SelectFileCommand::checked(Context* context)
     return sprite == NULL;
 }
 
-void SelectFileCommand::execute(Context* context)
+void SelectFileCommand::onExecute(Context* context)
 {
   if (m_sprite_id > 0) {
     GfxObj* gfxobj = gfxobj_find(m_sprite_id);

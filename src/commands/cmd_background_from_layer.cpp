@@ -33,8 +33,8 @@ public:
   Command* clone() const { return new BackgroundFromLayerCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 BackgroundFromLayerCommand::BackgroundFromLayerCommand()
@@ -44,7 +44,7 @@ BackgroundFromLayerCommand::BackgroundFromLayerCommand()
 {
 }
 
-bool BackgroundFromLayerCommand::enabled(Context* context)
+bool BackgroundFromLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -56,7 +56,7 @@ bool BackgroundFromLayerCommand::enabled(Context* context)
     sprite->getCurrentLayer()->is_writable();
 }
 
-void BackgroundFromLayerCommand::execute(Context* context)
+void BackgroundFromLayerCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

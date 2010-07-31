@@ -41,8 +41,8 @@ public:
   Command* clone() const { return new CropSpriteCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 CropSpriteCommand::CropSpriteCommand()
@@ -52,7 +52,7 @@ CropSpriteCommand::CropSpriteCommand()
 {
 }
 
-bool CropSpriteCommand::enabled(Context* context)
+bool CropSpriteCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -61,7 +61,7 @@ bool CropSpriteCommand::enabled(Context* context)
     sprite->getMask()->bitmap != NULL;
 }
 
-void CropSpriteCommand::execute(Context* context)
+void CropSpriteCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {
@@ -89,8 +89,8 @@ public:
   Command* clone() const { return new AutocropSpriteCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()
@@ -100,13 +100,13 @@ AutocropSpriteCommand::AutocropSpriteCommand()
 {
 }
 
-bool AutocropSpriteCommand::enabled(Context* context)
+bool AutocropSpriteCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void AutocropSpriteCommand::execute(Context* context)
+void AutocropSpriteCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {

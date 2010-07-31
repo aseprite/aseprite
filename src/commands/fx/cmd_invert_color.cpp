@@ -58,8 +58,8 @@ public:
   Command* clone() const { return new InvertColorCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 InvertColorCommand::InvertColorCommand()
@@ -69,14 +69,14 @@ InvertColorCommand::InvertColorCommand()
 {
 }
 
-bool InvertColorCommand::enabled(Context* context)
+bool InvertColorCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void InvertColorCommand::execute(Context* context)
+void InvertColorCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;

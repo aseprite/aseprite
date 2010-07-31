@@ -61,8 +61,8 @@ public:
   Command* clone() const { return new ReplaceColorCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 ReplaceColorCommand::ReplaceColorCommand()
@@ -72,14 +72,14 @@ ReplaceColorCommand::ReplaceColorCommand()
 {
 }
 
-bool ReplaceColorCommand::enabled(Context* context)
+bool ReplaceColorCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void ReplaceColorCommand::execute(Context* context)
+void ReplaceColorCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget color_buttons_box;

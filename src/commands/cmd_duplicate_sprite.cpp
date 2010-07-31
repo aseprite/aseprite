@@ -41,8 +41,8 @@ public:
   Command* clone() { return new DuplicateSpriteCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 DuplicateSpriteCommand::DuplicateSpriteCommand()
@@ -52,13 +52,13 @@ DuplicateSpriteCommand::DuplicateSpriteCommand()
 {
 }
 
-bool DuplicateSpriteCommand::enabled(Context* context)
+bool DuplicateSpriteCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void DuplicateSpriteCommand::execute(Context* context)
+void DuplicateSpriteCommand::onExecute(Context* context)
 {
   JWidget src_name, dst_name, flatten;
   const CurrentSpriteReader sprite(context);

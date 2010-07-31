@@ -138,9 +138,9 @@ void Context::execute_command(Command* command, Params* params)
 
   try {
     if (params)
-      command->load_params(params);
+      command->loadParams(params);
 
-    if (command->enabled(this))
+    if (command->isEnabled(this))
       command->execute(this);
   }
   catch (ase_exception& e) {

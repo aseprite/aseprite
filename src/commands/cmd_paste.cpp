@@ -34,8 +34,8 @@ public:
   Command* clone() { return new PasteCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 PasteCommand::PasteCommand()
@@ -45,7 +45,7 @@ PasteCommand::PasteCommand()
 {
 }
 
-bool PasteCommand::enabled(Context* context)
+bool PasteCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -53,7 +53,7 @@ bool PasteCommand::enabled(Context* context)
     clipboard::can_paste();
 }
 
-void PasteCommand::execute(Context* context)
+void PasteCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

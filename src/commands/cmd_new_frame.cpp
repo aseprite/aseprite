@@ -46,8 +46,8 @@ public:
   Command* clone() { return new NewFrameCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 NewFrameCommand::NewFrameCommand()
@@ -57,7 +57,7 @@ NewFrameCommand::NewFrameCommand()
 {
 }
 
-bool NewFrameCommand::enabled(Context* context)
+bool NewFrameCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -68,7 +68,7 @@ bool NewFrameCommand::enabled(Context* context)
     sprite->getCurrentLayer()->is_image();
 }
 
-void NewFrameCommand::execute(Context* context)
+void NewFrameCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {

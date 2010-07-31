@@ -35,8 +35,8 @@ public:
   Command* clone() { return new MaskAllCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 MaskAllCommand::MaskAllCommand()
@@ -46,13 +46,13 @@ MaskAllCommand::MaskAllCommand()
 {
 }
 
-bool MaskAllCommand::enabled(Context* context)
+bool MaskAllCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
   
-void MaskAllCommand::execute(Context* context)
+void MaskAllCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

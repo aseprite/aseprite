@@ -50,8 +50,8 @@ public:
   Command* clone() { return new PreviewCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 PreviewCommand::PreviewCommand()
@@ -61,7 +61,7 @@ PreviewCommand::PreviewCommand()
 {
 }
 
-bool PreviewCommand::enabled(Context* context)
+bool PreviewCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -72,7 +72,7 @@ bool PreviewCommand::enabled(Context* context)
 /**
  * Shows the sprite using the complete screen.
  */
-void PreviewCommand::execute(Context* context)
+void PreviewCommand::onExecute(Context* context)
 {
   Editor* editor = current_editor;
 

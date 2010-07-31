@@ -112,10 +112,10 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
       if (menuitem->m_command) {
 	if (menuitem->m_params)
-	  menuitem->m_command->load_params(menuitem->m_params);
+	  menuitem->m_command->loadParams(menuitem->m_params);
 
-	widget->setEnabled(menuitem->m_command->enabled(context));
-	widget->setSelected(menuitem->m_command->checked(context));
+	widget->setEnabled(menuitem->m_command->isEnabled(context));
+	widget->setSelected(menuitem->m_command->isChecked(context));
       }
       break;
     }
@@ -132,9 +132,9 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 	if (menuitem->m_command) {
 	  if (menuitem->m_params)
-	    menuitem->m_command->load_params(menuitem->m_params);
+	    menuitem->m_command->loadParams(menuitem->m_params);
 
-	  if (menuitem->m_command->enabled(context)) {
+	  if (menuitem->m_command->isEnabled(context)) {
 	    context->execute_command(menuitem->m_command);
 	    return true;
 	  }

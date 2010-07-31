@@ -35,8 +35,8 @@ public:
   Command* clone() const { return new DeselectMaskCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 DeselectMaskCommand::DeselectMaskCommand()
@@ -46,13 +46,13 @@ DeselectMaskCommand::DeselectMaskCommand()
 {
 }
 
-bool DeselectMaskCommand::enabled(Context* context)
+bool DeselectMaskCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite && !sprite->getMask()->is_empty();
 }
 
-void DeselectMaskCommand::execute(Context* context)
+void DeselectMaskCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {

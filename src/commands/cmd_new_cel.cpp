@@ -41,11 +41,11 @@ public:
   Command* clone() { return new NewCelCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
-bool NewCelCommand::enabled(Context* context)
+bool NewCelCommand::onEnabled(Context* context)
 {
   return
     current_sprite &&
@@ -56,7 +56,7 @@ bool NewCelCommand::enabled(Context* context)
     !layer_get_cel(current_sprite->layer, current_sprite->frame);
 }
 
-void NewCelCommand::execute(Context* context)
+void NewCelCommand::onExecute(Context* context)
 {
   int image_index;
   Image *image;

@@ -35,8 +35,8 @@ public:
   Command* clone() const { return new CutCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 CutCommand::CutCommand()
@@ -46,7 +46,7 @@ CutCommand::CutCommand()
 {
 }
 
-bool CutCommand::enabled(Context* context)
+bool CutCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   if ((sprite) &&
@@ -60,7 +60,7 @@ bool CutCommand::enabled(Context* context)
     return false;
 }
 
-void CutCommand::execute(Context* context)
+void CutCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   clipboard::cut(sprite);

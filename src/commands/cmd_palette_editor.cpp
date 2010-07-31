@@ -75,8 +75,8 @@ public:
   Command* clone() { return new PaletteEditorCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  void onExecute(Context* context);
 
 private:
   bool m_open;
@@ -136,7 +136,7 @@ PaletteEditorCommand::PaletteEditorCommand()
   m_background = false;
 }
 
-void PaletteEditorCommand::load_params(Params* params)
+void PaletteEditorCommand::onLoadParams(Params* params)
 {
   std::string target = params->get("target");
   if (target == "foreground") m_background = false;
@@ -155,7 +155,7 @@ void PaletteEditorCommand::load_params(Params* params)
   else m_switch = false;
 }
 
-void PaletteEditorCommand::execute(Context* context)
+void PaletteEditorCommand::onExecute(Context* context)
 {
   Widget* palette_editor_view;
   Widget* select_rgb;

@@ -36,8 +36,8 @@ public:
   Command* clone() { return new FlattenLayersCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 FlattenLayersCommand::FlattenLayersCommand()
@@ -47,13 +47,13 @@ FlattenLayersCommand::FlattenLayersCommand()
 {
 }
 
-bool FlattenLayersCommand::enabled(Context* context)
+bool FlattenLayersCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void FlattenLayersCommand::execute(Context* context)
+void FlattenLayersCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int bgcolor = get_color_for_image(sprite->getImgType(),

@@ -32,8 +32,8 @@ public:
   Command* clone() const { return new CopyCelCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 CopyCelCommand::CopyCelCommand()
@@ -43,12 +43,12 @@ CopyCelCommand::CopyCelCommand()
 {
 }
 
-bool CopyCelCommand::enabled(Context* context)
+bool CopyCelCommand::onEnabled(Context* context)
 {
   return animation_editor_is_movingcel();
 }
 
-void CopyCelCommand::execute(Context* context)
+void CopyCelCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   copy_cel(sprite);

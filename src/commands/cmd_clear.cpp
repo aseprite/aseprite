@@ -39,8 +39,8 @@ public:
   Command* clone() const { return new ClearCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 ClearCommand::ClearCommand()
@@ -50,7 +50,7 @@ ClearCommand::ClearCommand()
 {
 }
 
-bool ClearCommand::enabled(Context* context)
+bool ClearCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -61,7 +61,7 @@ bool ClearCommand::enabled(Context* context)
     sprite->getCurrentLayer()->is_writable();
 }
 
-void ClearCommand::execute(Context* context)
+void ClearCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   bool empty_mask = sprite->getMask()->is_empty();

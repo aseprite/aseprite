@@ -47,9 +47,9 @@ public:
   Command* clone() const { return new FlipCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  bool enabled(Context* context);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 
 private:
   static char* read_authors_txt(const char *filename);
@@ -65,7 +65,7 @@ FlipCommand::FlipCommand()
   m_flip_vertical = false;
 }
 
-void FlipCommand::load_params(Params* params)
+void FlipCommand::onLoadParams(Params* params)
 {
   std::string target = params->get("target");
   m_flip_mask = (target == "mask");
@@ -75,14 +75,14 @@ void FlipCommand::load_params(Params* params)
   m_flip_vertical = (orientation == "vertical");
 }
 
-bool FlipCommand::enabled(Context* context)
+bool FlipCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void FlipCommand::execute(Context* context)
+void FlipCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

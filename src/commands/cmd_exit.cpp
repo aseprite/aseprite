@@ -35,7 +35,7 @@ public:
   Command* clone() { return new ExitCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 ExitCommand::ExitCommand()
@@ -45,7 +45,7 @@ ExitCommand::ExitCommand()
 {
 }
 
-void ExitCommand::execute(Context* context)
+void ExitCommand::onExecute(Context* context)
 {
   Sprite *sprite = context->get_first_sprite();
 

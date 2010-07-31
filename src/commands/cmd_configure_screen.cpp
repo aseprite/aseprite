@@ -50,7 +50,7 @@ public:
   Command* clone() const { return new ConfigureScreen(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 
 private:
   void load_resolutions(ComboBox* resolution, ComboBox* color_depth, ComboBox* pixel_scale);
@@ -68,7 +68,7 @@ ConfigureScreen::ConfigureScreen()
 {
 }
 
-void ConfigureScreen::execute(Context* context)
+void ConfigureScreen::onExecute(Context* context)
 {
   CurrentGfxModeGuard currentGfxModeGuard;
   m_newMode = currentGfxModeGuard.getOriginal(); // Default values

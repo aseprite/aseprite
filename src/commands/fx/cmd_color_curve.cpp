@@ -60,8 +60,8 @@ public:
   Command* clone() const { return new ColorCurveCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 ColorCurveCommand::ColorCurveCommand()
@@ -71,14 +71,14 @@ ColorCurveCommand::ColorCurveCommand()
 {
 }
 
-bool ColorCurveCommand::enabled(Context* context)
+bool ColorCurveCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void ColorCurveCommand::execute(Context* context)
+void ColorCurveCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget button_ok;

@@ -40,8 +40,8 @@ public:
   Command* clone() const { return new CanvasSizeCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 CanvasSizeCommand::CanvasSizeCommand()
@@ -52,13 +52,13 @@ CanvasSizeCommand::CanvasSizeCommand()
   m_left = m_right = m_top = m_bottom = 0;
 }
 
-bool CanvasSizeCommand::enabled(Context* context)
+bool CanvasSizeCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void CanvasSizeCommand::execute(Context* context)
+void CanvasSizeCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

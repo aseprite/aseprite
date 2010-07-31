@@ -40,9 +40,9 @@ public:
   Command* clone() { return new NewLayerCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  bool enabled(Context* context);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 
 private:
   bool m_ask;
@@ -61,7 +61,7 @@ NewLayerCommand::NewLayerCommand()
   m_name = "";
 }
 
-void NewLayerCommand::load_params(Params* params)
+void NewLayerCommand::onLoadParams(Params* params)
 {
   std::string ask = params->get("ask");
   if (ask == "true") m_ask = true;
@@ -69,14 +69,14 @@ void NewLayerCommand::load_params(Params* params)
   m_name = params->get("name");
 }
 
-bool NewLayerCommand::enabled(Context* context)
+bool NewLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void NewLayerCommand::execute(Context* context)
+void NewLayerCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   std::string name;

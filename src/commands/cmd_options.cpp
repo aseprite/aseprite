@@ -52,7 +52,7 @@ public:
   Command* clone() { return new OptionsCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 OptionsCommand::OptionsCommand()
@@ -62,7 +62,7 @@ OptionsCommand::OptionsCommand()
 {
 }
 
-void OptionsCommand::execute(Context* context)
+void OptionsCommand::onExecute(Context* context)
 {
   JWidget check_smooth;
   JWidget cursor_color, cursor_color_box;

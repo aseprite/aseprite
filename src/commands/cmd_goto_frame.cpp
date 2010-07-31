@@ -35,8 +35,8 @@ public:
   Command* clone() { return new GotoFirstFrameCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GotoFirstFrameCommand::GotoFirstFrameCommand()
@@ -46,13 +46,13 @@ GotoFirstFrameCommand::GotoFirstFrameCommand()
 {
 }
 
-bool GotoFirstFrameCommand::enabled(Context* context)
+bool GotoFirstFrameCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void GotoFirstFrameCommand::execute(Context* context)
+void GotoFirstFrameCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   sprite->setCurrentFrame(0);
@@ -72,8 +72,8 @@ public:
   Command* clone() { return new GotoPreviousFrameCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GotoPreviousFrameCommand::GotoPreviousFrameCommand()
@@ -83,14 +83,14 @@ GotoPreviousFrameCommand::GotoPreviousFrameCommand()
 {
 }
 
-bool GotoPreviousFrameCommand::enabled(Context* context)
+bool GotoPreviousFrameCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void GotoPreviousFrameCommand::execute(Context* context)
+void GotoPreviousFrameCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int frame = sprite->getCurrentFrame();
@@ -115,8 +115,8 @@ public:
   Command* clone() { return new GotoNextFrameCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GotoNextFrameCommand::GotoNextFrameCommand()
@@ -126,14 +126,14 @@ GotoNextFrameCommand::GotoNextFrameCommand()
 {
 }
 
-bool GotoNextFrameCommand::enabled(Context* context)
+bool GotoNextFrameCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void GotoNextFrameCommand::execute(Context* context)
+void GotoNextFrameCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int frame = sprite->getCurrentFrame();
@@ -158,8 +158,8 @@ public:
   Command* clone() { return new GotoLastFrameCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GotoLastFrameCommand::GotoLastFrameCommand()
@@ -169,14 +169,14 @@ GotoLastFrameCommand::GotoLastFrameCommand()
 {
 }
 
-bool GotoLastFrameCommand::enabled(Context* context)
+bool GotoLastFrameCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void GotoLastFrameCommand::execute(Context* context)
+void GotoLastFrameCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   sprite->setCurrentFrame(sprite->getTotalFrames()-1);

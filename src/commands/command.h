@@ -46,12 +46,16 @@ public:
   const char* short_name() const { return m_short_name; }
   const char* friendly_name() const { return m_friendly_name; }
 
-  virtual void load_params(Params* params);
+  void loadParams(Params* params);
+  bool isEnabled(Context* context);
+  bool isChecked(Context* context);
+  void execute(Context* context);
 
-  virtual bool enabled(Context* context);
-  virtual bool checked(Context* context);
-  virtual void execute(Context* context);
-
+protected:
+  virtual void onLoadParams(Params* params);
+  virtual bool onEnabled(Context* context);
+  virtual bool onChecked(Context* context);
+  virtual void onExecute(Context* context);
 };
 
 //////////////////////////////////////////////////////////////////////

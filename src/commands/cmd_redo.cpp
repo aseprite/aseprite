@@ -33,8 +33,8 @@ public:
   Command* clone() { return new RedoCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 RedoCommand::RedoCommand()
@@ -44,7 +44,7 @@ RedoCommand::RedoCommand()
 {
 }
 
-bool RedoCommand::enabled(Context* context)
+bool RedoCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -52,7 +52,7 @@ bool RedoCommand::enabled(Context* context)
     undo_can_redo(sprite->getUndo());
 }
 
-void RedoCommand::execute(Context* context)
+void RedoCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

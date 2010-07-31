@@ -64,8 +64,8 @@ public:
   Command* clone() const { return new DespeckleCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 DespeckleCommand::DespeckleCommand()
@@ -75,14 +75,14 @@ DespeckleCommand::DespeckleCommand()
 {
 }
 
-bool DespeckleCommand::enabled(Context* context)
+bool DespeckleCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void DespeckleCommand::execute(Context* context)
+void DespeckleCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   JWidget box_target, target_button, button_ok;

@@ -41,8 +41,8 @@ public:
   Command* clone() const { return new CelPropertiesCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 CelPropertiesCommand::CelPropertiesCommand()
@@ -52,7 +52,7 @@ CelPropertiesCommand::CelPropertiesCommand()
 {
 }
 
-bool CelPropertiesCommand::enabled(Context* context)
+bool CelPropertiesCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -61,7 +61,7 @@ bool CelPropertiesCommand::enabled(Context* context)
     sprite->getCurrentLayer()->is_image();
 }
 
-void CelPropertiesCommand::execute(Context* context)
+void CelPropertiesCommand::onExecute(Context* context)
 {
   JWidget label_frame, label_pos, label_size;
   JWidget slider_opacity, button_ok;

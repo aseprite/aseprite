@@ -36,8 +36,8 @@ public:
   Command* clone() { return new FramePropertiesCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 class SpriteReader;
@@ -50,14 +50,14 @@ FramePropertiesCommand::FramePropertiesCommand()
 {
 }
 
-bool FramePropertiesCommand::enabled(Context* context)
+bool FramePropertiesCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void FramePropertiesCommand::execute(Context* context)
+void FramePropertiesCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   dialogs_frame_length(sprite, sprite->getCurrentFrame());

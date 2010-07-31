@@ -36,8 +36,8 @@ public:
   Command* clone() { return new RemoveCelCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 RemoveCelCommand::RemoveCelCommand()
@@ -47,7 +47,7 @@ RemoveCelCommand::RemoveCelCommand()
 {
 }
 
-bool RemoveCelCommand::enabled(Context* context)
+bool RemoveCelCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
@@ -59,7 +59,7 @@ bool RemoveCelCommand::enabled(Context* context)
     static_cast<const LayerImage*>(sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
 }
 
-void RemoveCelCommand::execute(Context* context)
+void RemoveCelCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());

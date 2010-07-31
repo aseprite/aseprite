@@ -39,8 +39,8 @@ public:
   Command* clone() { return new SaveMaskCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 SaveMaskCommand::SaveMaskCommand()
@@ -50,7 +50,7 @@ SaveMaskCommand::SaveMaskCommand()
 {
 }
 
-bool SaveMaskCommand::enabled(Context* context)
+bool SaveMaskCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   if (!sprite)
@@ -60,7 +60,7 @@ bool SaveMaskCommand::enabled(Context* context)
 	    sprite->getMask()->bitmap) ? true: false;
 }
 
-void SaveMaskCommand::execute(Context* context)
+void SaveMaskCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   jstring filename = "default.msk";

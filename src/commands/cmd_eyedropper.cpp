@@ -46,8 +46,8 @@ public:
   Command* clone() const { return new EyedropperCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  void onExecute(Context* context);
 };
 
 EyedropperCommand::EyedropperCommand()
@@ -58,14 +58,14 @@ EyedropperCommand::EyedropperCommand()
   m_background = false;
 }
 
-void EyedropperCommand::load_params(Params* params)
+void EyedropperCommand::onLoadParams(Params* params)
 {
   std::string target = params->get("target");
   if (target == "foreground") m_background = false;
   else if (target == "background") m_background = true;
 }
 
-void EyedropperCommand::execute(Context* context)
+void EyedropperCommand::onExecute(Context* context)
 {
   JWidget widget = jmanager_get_mouse();
   if (!widget || widget->type != editor_type())

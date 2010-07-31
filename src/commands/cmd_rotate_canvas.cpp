@@ -48,9 +48,9 @@ public:
   Command* clone() { return new RotateCanvasCommand(*this); }
 
 protected:
-  void load_params(Params* params);
-  bool enabled(Context* context);
-  void execute(Context* context);
+  void onLoadParams(Params* params);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 class RotateCanvasJob : public Job
@@ -174,20 +174,20 @@ RotateCanvasCommand::RotateCanvasCommand()
   m_angle = 0;
 }
 
-void RotateCanvasCommand::load_params(Params* params)
+void RotateCanvasCommand::onLoadParams(Params* params)
 {
   if (params->has_param("angle")) {
     m_angle = ustrtol(params->get("angle").c_str(), NULL, 10);
   }
 }
 
-bool RotateCanvasCommand::enabled(Context* context)
+bool RotateCanvasCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void RotateCanvasCommand::execute(Context* context)
+void RotateCanvasCommand::onExecute(Context* context)
 {
   CurrentSpriteReader sprite(context);
   {

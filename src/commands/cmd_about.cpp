@@ -36,7 +36,7 @@ public:
   Command* clone() const { return new AboutCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 AboutCommand::AboutCommand()
@@ -46,7 +46,7 @@ AboutCommand::AboutCommand()
 {
 }
 
-void AboutCommand::execute(Context* context)
+void AboutCommand::onExecute(Context* context)
 {
   FramePtr frame(new Frame(false, _("About " PACKAGE)));
   Widget* box1 = jbox_new(JI_VERTICAL);

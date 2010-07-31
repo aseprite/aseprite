@@ -41,8 +41,8 @@ public:
   Command* clone() { return new MergeDownLayerCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 MergeDownLayerCommand::MergeDownLayerCommand()
@@ -52,7 +52,7 @@ MergeDownLayerCommand::MergeDownLayerCommand()
 {
 }
 
-bool MergeDownLayerCommand::enabled(Context* context)
+bool MergeDownLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   if (!sprite)
@@ -69,7 +69,7 @@ bool MergeDownLayerCommand::enabled(Context* context)
   return true;
 }
 
-void MergeDownLayerCommand::execute(Context* context)
+void MergeDownLayerCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   Layer *src_layer, *dst_layer;

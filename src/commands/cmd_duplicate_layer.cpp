@@ -41,8 +41,8 @@ public:
   Command* clone() const { return new DuplicateLayerCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 DuplicateLayerCommand::DuplicateLayerCommand()
@@ -52,13 +52,13 @@ DuplicateLayerCommand::DuplicateLayerCommand()
 {
 }
 
-bool DuplicateLayerCommand::enabled(Context* context)
+bool DuplicateLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite && sprite->getCurrentLayer();
 }
 
-void DuplicateLayerCommand::execute(Context* context)
+void DuplicateLayerCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   if (duplicate_layer(sprite) != NULL)

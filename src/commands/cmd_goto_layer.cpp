@@ -38,8 +38,8 @@ public:
   Command* clone() { return new GotoPreviousLayerCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GotoPreviousLayerCommand::GotoPreviousLayerCommand()
@@ -49,14 +49,14 @@ GotoPreviousLayerCommand::GotoPreviousLayerCommand()
 {
 }
 
-bool GotoPreviousLayerCommand::enabled(Context* context)
+bool GotoPreviousLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void GotoPreviousLayerCommand::execute(Context* context)
+void GotoPreviousLayerCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int i = sprite->layerToIndex(sprite->getCurrentLayer());
@@ -87,8 +87,8 @@ public:
   Command* clone() { return new GotoNextLayerCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 GotoNextLayerCommand::GotoNextLayerCommand()
@@ -98,14 +98,14 @@ GotoNextLayerCommand::GotoNextLayerCommand()
 {
 }
 
-bool GotoNextLayerCommand::enabled(Context* context)
+bool GotoNextLayerCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void GotoNextLayerCommand::execute(Context* context)
+void GotoNextLayerCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int i = sprite->layerToIndex(sprite->getCurrentLayer());

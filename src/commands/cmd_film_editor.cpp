@@ -34,8 +34,8 @@ public:
   Command* clone() { return new FilmEditorCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 FilmEditorCommand::FilmEditorCommand()
@@ -45,13 +45,13 @@ FilmEditorCommand::FilmEditorCommand()
 {
 }
 
-bool FilmEditorCommand::enabled(Context* context)
+bool FilmEditorCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void FilmEditorCommand::execute(Context* context)
+void FilmEditorCommand::onExecute(Context* context)
 {
   switch_between_animation_and_sprite_editor();
 }

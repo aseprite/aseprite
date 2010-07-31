@@ -35,7 +35,7 @@ public:
   Command* clone() const { return new AdvancedModeCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 
 private:
   static bool advanced_mode;
@@ -50,7 +50,7 @@ AdvancedModeCommand::AdvancedModeCommand()
 {
 }
 
-void AdvancedModeCommand::execute(Context* context)
+void AdvancedModeCommand::onExecute(Context* context)
 {
   advanced_mode = !advanced_mode;
 

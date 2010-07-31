@@ -42,8 +42,8 @@ public:
   Command* clone() { return new PlayAnimationCommand(*this); }
 
 protected:
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 static int speed_timer;
@@ -62,14 +62,14 @@ PlayAnimationCommand::PlayAnimationCommand()
 {
 }
 
-bool PlayAnimationCommand::enabled(Context* context)
+bool PlayAnimationCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL;
 }
 
-void PlayAnimationCommand::execute(Context* context)
+void PlayAnimationCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   int old_frame, msecs;

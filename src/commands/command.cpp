@@ -33,10 +33,42 @@ Command::~Command()
 {
 }
 
+void Command::loadParams(Params* params)
+{
+  onLoadParams(params);
+}
+
+bool Command::isEnabled(Context* context)
+{
+  try {
+    return onEnabled(context);
+  }
+  catch (...) {
+    // TODO add a status-bar item
+    return false;
+  }
+}
+
+bool Command::isChecked(Context* context)
+{
+  try {
+    return onChecked(context);
+  }
+  catch (...) {
+    // TODO add a status-bar item...
+    return false;
+  }
+}
+
+void Command::execute(Context* context)
+{
+  onExecute(context);
+}
+
 /**
  * Converts specified parameters to class members.
  */
-void Command::load_params(Params* params)
+void Command::onLoadParams(Params* params)
 {
   // do nothing
 }
@@ -44,7 +76,7 @@ void Command::load_params(Params* params)
 /**
  * Preconditions to execute the command
  */
-bool Command::enabled(Context* context)
+bool Command::onEnabled(Context* context)
 {
   return true;
 }
@@ -52,7 +84,7 @@ bool Command::enabled(Context* context)
 /**
  * Should the menu-item be checked?
  */
-bool Command::checked(Context* context)
+bool Command::onChecked(Context* context)
 {
   return false;
 }
@@ -60,7 +92,7 @@ bool Command::checked(Context* context)
 /**
  * Execute the command (after checking the preconditions).
  */
-void Command::execute(Context* context)
+void Command::onExecute(Context* context)
 {
-  // do nothing
+  // Do nothing
 }

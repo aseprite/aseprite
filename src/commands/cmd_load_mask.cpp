@@ -39,10 +39,10 @@ public:
   Command* clone() const { return new LoadMaskCommand(*this); }
 
 protected:
-  void load_params(Params* params);
+  void onLoadParams(Params* params);
 
-  bool enabled(Context* context);
-  void execute(Context* context);
+  bool onEnabled(Context* context);
+  void onExecute(Context* context);
 };
 
 LoadMaskCommand::LoadMaskCommand()
@@ -53,18 +53,18 @@ LoadMaskCommand::LoadMaskCommand()
   m_filename = "";
 }
 
-void LoadMaskCommand::load_params(Params* params)
+void LoadMaskCommand::onLoadParams(Params* params)
 {
   m_filename = params->get("filename");
 }
 
-bool LoadMaskCommand::enabled(Context* context)
+bool LoadMaskCommand::onEnabled(Context* context)
 {
   const CurrentSpriteReader sprite(context);
   return sprite != NULL;
 }
 
-void LoadMaskCommand::execute(Context* context)
+void LoadMaskCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 

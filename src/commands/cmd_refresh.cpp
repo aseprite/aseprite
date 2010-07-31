@@ -44,7 +44,7 @@ public:
   Command* clone() { return new RefreshCommand(*this); }
 
 protected:
-  void execute(Context* context);
+  void onExecute(Context* context);
 };
 
 RefreshCommand::RefreshCommand()
@@ -54,7 +54,7 @@ RefreshCommand::RefreshCommand()
 {
 }
 
-void RefreshCommand::execute(Context* context)
+void RefreshCommand::onExecute(Context* context)
 {
   jmouse_hide();
   clear_to_color(screen, makecol(0, 0, 0));
