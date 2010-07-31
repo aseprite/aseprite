@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "jinete/jalert.h"
 #include "launcher.h"
 
 #if defined ALLEGRO_WINDOWS
@@ -31,17 +32,23 @@ void Launcher::openUrl(const std::string& url)
 
 void Launcher::openFile(const std::string& file)
 {
+  int ret = -1;
+
 #if defined ALLEGRO_WINDOWS
 
   ShellExecute(NULL, "open", file.c_str(), NULL, NULL, SW_SHOWNORMAL);
+  ret = 0;	   // TODO Use ShellExecuteEx to know the return value
 
 #elif defined ALLEGRO_MACOSX
 
-  system(("open \"" + file + "\"").c_str());
+  ret = system(("open \"" + file + "\"").c_str());
 
 #else  // Linux
 
-  system(("xdg-open \"" + file + "\"").c_str());
+  ret = system(("xdg-open \"" + file + "\"").c_str());
 
 #endif
+
+  if (ret != 0)
+    jalert(_("Problem<<Cannot open:<<%s||&Close"), file.c_str());
 }
