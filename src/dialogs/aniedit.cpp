@@ -592,7 +592,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    /* select the new layer */
 		    sprite_writer->setCurrentLayer(anieditor->layers[anieditor->clk_layer]);
 		  }
-		  catch (locked_sprite_exception& e) {
+		  catch (LockedSpriteException& e) {
 		    e.show();
 		  }
 

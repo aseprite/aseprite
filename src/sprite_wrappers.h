@@ -25,10 +25,10 @@
 #include "context.h"
 #include "raster/sprite.h"
 
-class locked_sprite_exception : public ase_exception
+class LockedSpriteException : public ase_exception
 {
 public:
-  locked_sprite_exception() throw()
+  LockedSpriteException() throw()
   : ase_exception("Cannot read/write the sprite.\n"
 		  "The sprite is locked by a background task.\n"
 		  "Try again later.") { }
@@ -88,14 +88,14 @@ public:
     : SpriteWrapper(sprite)
   {
     if (m_sprite && !m_sprite->lock(false))
-      throw locked_sprite_exception();
+      throw LockedSpriteException();
   }
 
   explicit SpriteReader(const SpriteReader& copy)
     : SpriteWrapper(copy)
   {
     if (m_sprite && !m_sprite->lock(false))
-      throw locked_sprite_exception();
+      throw LockedSpriteException();
   }
 
   SpriteReader& operator=(const SpriteReader& copy)
@@ -108,7 +108,7 @@ public:
 
     // relock the sprite
     if (m_sprite && !m_sprite->lock(false))
-      throw locked_sprite_exception();
+      throw LockedSpriteException();
 
     return *this;
   }
@@ -149,7 +149,7 @@ public:
   {
     if (m_sprite) {
       if (!m_sprite->lock(true))
-	throw locked_sprite_exception();
+	throw LockedSpriteException();
 
       m_locked = true;
     }
@@ -162,7 +162,7 @@ public:
   {
     if (m_sprite) {
       if (!m_sprite->lockToWrite())
-	throw locked_sprite_exception();
+	throw LockedSpriteException();
 
       m_locked = true;
     }
@@ -184,7 +184,7 @@ public:
       m_from_reader = true;
 
       if (!m_sprite->lockToWrite())
-	throw locked_sprite_exception();
+	throw LockedSpriteException();
 
       m_locked = true;
     }

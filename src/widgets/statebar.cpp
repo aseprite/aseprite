@@ -488,7 +488,7 @@ bool StatusBar::msg_proc(JMessage msg)
 				    theme->get_button_normal_text_color(), -1);
 	  }
 	}
-	catch (locked_sprite_exception&) {
+	catch (LockedSpriteException&) {
 	  // Do nothing...
 	}
       }
@@ -581,7 +581,7 @@ bool StatusBar::msg_proc(JMessage msg)
 	  dirty();
 	}
       }
-      catch (locked_sprite_exception&) {
+      catch (LockedSpriteException&) {
 	// Do nothing...
       }
       break;
@@ -616,7 +616,7 @@ bool StatusBar::msg_proc(JMessage msg)
 	    UIContext::instance()->execute_command(donate, &params);
 	  }
 	}
-	catch (locked_sprite_exception&) {
+	catch (LockedSpriteException&) {
 	  // Do nothing...
 	}
       }
@@ -680,7 +680,7 @@ static bool slider_change_hook(JWidget widget, void *data)
       }
     }
   }
-  catch (locked_sprite_exception&) {
+  catch (LockedSpriteException&) {
     // do nothing
   }
   return false;
@@ -723,7 +723,7 @@ void StatusBar::updateFromLayer()
       m_slider->setEnabled(false);
     }
   }
-  catch (locked_sprite_exception&) {
+  catch (LockedSpriteException&) {
     // disable all
     m_slider->setEnabled(false);
   }

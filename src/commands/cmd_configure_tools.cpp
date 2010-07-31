@@ -467,7 +467,7 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
       UIContext::instance()->execute_command(grid_settings_cmd, NULL);
     }
   }
-  catch (locked_sprite_exception& e) {
+  catch (LockedSpriteException& e) {
     e.show();
   }
   return true;
