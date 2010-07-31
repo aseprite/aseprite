@@ -148,10 +148,6 @@
 	<item command="close_file" text="&amp;Close" />
 	<item command="close_all_files" text="Close All" />
 	<separator />
-	<menu text="Ca&amp;pture">
-	  <item command="screen_shot" text="Screen Shot" />
-	</menu>
-	<separator />
 	<item command="exit" text="E&amp;xit" />
       </menu>
       <menu text="&amp;Edit">
@@ -180,6 +176,9 @@
 	  <separator />
 	  <item command="despeckle" text="&amp;Despeckle (median filter)" />
 	</menu>
+	<separator />
+	<item command="configure_tools" text="Tool&amp;s" />
+	<item command="options" text="&amp;Options" />
       </menu>
       <menu text="&amp;Sprite">
 	<item command="sprite_properties" text="&amp;Properties..." />
@@ -275,7 +274,6 @@
 	  <item command="close_editor" text="&amp;Close" />
 	</menu>
 	<separator />
-	<item command="configure_tools" text="&amp;Tools Configuration" />
 	<item command="show_grid" text="Show &amp;Grid" />
 	<item command="snap_to_grid" text="&amp;Snap to Grid" />
 	<item command="grid_settings" text="Gri&amp;d Settings" />
@@ -286,9 +284,12 @@
 	</item>
 	<item command="preview" text="Previe&amp;w" />
 	<separator />
-	<item command="options" text="&amp;Options" />
-	<item command="configure_screen" text="Configure Scree&amp;n" />
-	<item command="refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
+	<menu text="Scree&amp;n">
+	  <item command="configure_screen" text="&amp;Configure Screen" />
+	  <separator />
+	  <item command="refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
+	  <item command="screen_shot" text="&amp;Screen Shot" />
+	</menu>
       </menu>
       <menu text="&amp;Help">
 	<item command="quick_reference" text="Quick &amp;Reference" />
