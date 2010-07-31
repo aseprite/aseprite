@@ -187,7 +187,7 @@ template<> unsigned long Vaca::convert_to(const String& from)
 
 template<> float Vaca::convert_to(const String& from)
 {
-  return std::wcstod(from.c_str(), NULL);
+  return static_cast<float>(std::wcstod(from.c_str(), NULL));
 }
 
 template<> double Vaca::convert_to(const String& from)
