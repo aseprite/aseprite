@@ -90,7 +90,7 @@ jexception::~jexception() throw()
 
 void jexception::show()
 {
-  allegro_message("An error occurred.\n\nDetails:\n%s", what());
+  allegro_message("A problem has occurred.\n\nDetails:\n%s", what());
 }
 
 const char* jexception::what() const throw()

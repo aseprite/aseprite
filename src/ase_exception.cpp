@@ -49,5 +49,5 @@ ase_exception::ase_exception(const char* msg, ...) throw()
 void ase_exception::show()
 {
   Console console;
-  console.printf("An error occurred.\n\nDetails:\n%s", what());
+  console.printf("A problem has occurred.\n\nDetails:\n%s", what());
 }
