@@ -66,19 +66,19 @@ class Editor : public Widget
   };
 
   // editor states
-  enum {
+  enum State {
     EDITOR_STATE_STANDBY,
     EDITOR_STATE_MOVING_SCROLL,
     EDITOR_STATE_MOVING_PIXELS,
     EDITOR_STATE_DRAWING,
   };
 
-  /* main stuff */
-  int m_state;
-  Sprite* m_sprite;
-  int m_zoom;
+  // Main properties
+  State m_state;		// Editor main state
+  Sprite* m_sprite;		// Current sprite in the editor
+  int m_zoom;			// Current zoom in the editor
 
-  /* drawing cursor */
+  // Drawing cursor
   int m_cursor_thick;
   int m_cursor_screen_x; /* position in the screen (view) */
   int m_cursor_screen_y;
@@ -111,7 +111,8 @@ class Editor : public Widget
   // Decorators
   std::vector<Decorator*> m_decorators;
 
-  // Helper class to move selection
+  // Helper member to move selection. If this member is NULL it means the
+  // user is not moving pixels.
   PixelsMovement* m_pixelsMovement;
 
 public:
