@@ -150,7 +150,6 @@
 	<separator />
 	<menu text="Ca&amp;pture">
 	  <item command="screen_shot" text="Screen Shot" />
-	  <item command="record_screen" text="Record Screen" />
 	</menu>
 	<separator />
 	<item command="exit" text="E&amp;xit" />

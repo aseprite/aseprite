@@ -66,7 +66,6 @@ COMMON_SOURCES =					\
 	src/commands/cmd_play_animation.cpp		\
 	src/commands/cmd_preview.cpp			\
 	src/commands/cmd_quick_reference.cpp		\
-	src/commands/cmd_record_screen.cpp		\
 	src/commands/cmd_redo.cpp			\
 	src/commands/cmd_refresh.cpp			\
 	src/commands/cmd_remove_cel.cpp			\
