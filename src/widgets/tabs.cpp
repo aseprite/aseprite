@@ -378,7 +378,11 @@ bool Tabs::msg_proc(JMessage msg)
     }
 
     case JM_SIGNAL:
-      if (msg->signal.num == JI_SIGNAL_SET_FONT) {
+      if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
+	m_button_left->setBgColor(theme->get_tab_selected_face_color());
+	m_button_right->setBgColor(theme->get_tab_selected_face_color());
+      }
+      else if (msg->signal.num == JI_SIGNAL_SET_FONT) {
 	std::vector<Tab*>::iterator it, end = m_list_of_tabs.end();
 
 	for (it = m_list_of_tabs.begin(); it != end; ++it) {
