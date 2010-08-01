@@ -109,6 +109,7 @@ StatusBar::StatusBar()
   HOOK(m_slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
+  jwidget_set_border(this, 1*jguiscale(), 0, 0, 0);
   jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
   jwidget_noborders(box2);
   jwidget_noborders(box3);
@@ -342,6 +343,9 @@ bool StatusBar::msg_proc(JMessage msg)
 		     -msg->draw.rect.y1);
 
       clear_to_color(doublebuffer, face_color);
+
+      putpixel(doublebuffer, rc->x1, rc->y1, theme->get_tab_selected_face_color());
+      putpixel(doublebuffer, rc->x2-1, rc->y1, theme->get_tab_selected_face_color());
 
       rc->x1 += 2*jguiscale();
       rc->y1 += 1*jguiscale();
