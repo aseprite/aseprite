@@ -151,20 +151,20 @@ void PreviewCommand::onExecute(Context* context)
 
       switch (tiled) {
 	case TILED_NONE:
-	  RenderEngine::renderImage(doublebuf, render, x, y, zoom);
+	  RenderEngine::renderImage(doublebuf, render, pal, x, y, zoom);
 	  break;
 	case TILED_X_AXIS:
 	  for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-	    RenderEngine::renderImage(doublebuf, render, u, y, zoom);
+	    RenderEngine::renderImage(doublebuf, render, pal, u, y, zoom);
 	  break;
 	case TILED_Y_AXIS:
 	  for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-	    RenderEngine::renderImage(doublebuf, render, x, v, zoom);
+	    RenderEngine::renderImage(doublebuf, render, pal, x, v, zoom);
 	  break;
 	case TILED_BOTH:
 	  for (v=y-h; v<JI_SCREEN_H+h; v+=h)
 	    for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-	      RenderEngine::renderImage(doublebuf, render, u, v, zoom);
+	      RenderEngine::renderImage(doublebuf, render, pal, u, v, zoom);
 	  break;
       }
 

@@ -24,6 +24,7 @@
 class Image;
 class Layer;
 class Sprite;
+class Palette;
 
 class RenderEngine
 {
@@ -68,7 +69,7 @@ public:
 				      int source_x, int source_y,
 				      int zoom);
 
-  static void renderImage(Image* rgb_image, Image* src_image,
+  static void renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
 			  int x, int y, int zoom);
 
 private:
@@ -77,7 +78,7 @@ private:
 			  Image* image,
 			  int source_x, int source_y,
 			  int frame, int zoom,
-			  void (*zoomed_func)(Image*, const Image*, int, int, int, int, int),
+			  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
 			  bool render_background,
 			  bool render_transparent);
 };

@@ -23,7 +23,6 @@
 #include "jinete/jlist.h"
 
 #include "core/cfg.h"
-#include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/raster.h"
 #include "util/render.h"
@@ -38,7 +37,7 @@ class BlenderHelper
 {
   BLEND_COLOR m_blend_color;
 public:
-  BlenderHelper(int blend_mode, const Image* src)
+  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = SrcTraits::get_blender(blend_mode);
   }
@@ -56,7 +55,7 @@ class BlenderHelper<RgbTraits, GrayscaleTraits>
 {
   BLEND_COLOR m_blend_color;
 public:
-  BlenderHelper(int blend_mode, const Image* src)
+  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = RgbTraits::get_blender(blend_mode);
   }
@@ -77,11 +76,11 @@ class BlenderHelper<RgbTraits, IndexedTraits>
   int m_blend_mode;
   int m_mask_color;
 public:
-  BlenderHelper(int blend_mode, const Image* src)
+  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
-    m_pal = get_current_palette();
     m_blend_mode = blend_mode;
     m_mask_color = src->mask_color;
+    m_pal = pal;
   }
   inline void operator()(RgbTraits::address_t& scanline_address,
 			 RgbTraits::address_t& dst_address,
@@ -102,11 +101,11 @@ public:
 };
 
 template<class DstTraits, class SrcTraits>
-static void merge_zoomed_image(Image* dst, const Image* src,
+static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 			       int x, int y, int opacity,
 			       int blend_mode, int zoom)
 {
-  BlenderHelper<DstTraits, SrcTraits> blender(blend_mode, src);
+  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   typename SrcTraits::address_t src_address;
   typename DstTraits::address_t dst_address, dst_address_end;
   typename DstTraits::address_t scanline, scanline_address;
@@ -352,7 +351,7 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
 				  int frame, int zoom,
 				  bool draw_tiled_bg)
 {
-  void (*zoomed_func)(Image*, const Image*, int, int, int, int, int);
+  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = sprite->getBackgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
   Image *image;
@@ -495,10 +494,10 @@ void RenderEngine::renderCheckedBackground(Image* image,
   }
 }
 
-void RenderEngine::renderImage(Image* rgb_image, Image* src_image,
+void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
 			       int x, int y, int zoom)
 {
-  void (*zoomed_func)(Image*, const Image*, int, int, int, int, int);
+  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
 
   assert(rgb_image->imgtype == IMAGE_RGB && "renderImage accepts RGB destination images only");
 
@@ -520,7 +519,7 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image,
       return;
   }
 
-  (*zoomed_func)(rgb_image, src_image, x, y, 255, BLEND_MODE_NORMAL, zoom);
+  (*zoomed_func)(rgb_image, src_image, pal, x, y, 255, BLEND_MODE_NORMAL, zoom);
 }
 
 void RenderEngine::renderLayer(const Sprite *sprite,
@@ -528,7 +527,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
 			       Image *image,
 			       int source_x, int source_y,
 			       int frame, int zoom,
-			       void (*zoomed_func)(Image*, const Image*, int, int, int, int, int),
+			       void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
 			       bool render_background,
 			       bool render_transparent)
 {
@@ -567,7 +566,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
 	  output_opacity = MID(0, cel->opacity, 255);
 	  output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-	  (*zoomed_func)(image, src_image,
+	  (*zoomed_func)(image, src_image, sprite->getPalette(frame),
 			 (cel->x << zoom) - source_x,
 			 (cel->y << zoom) - source_y,
 			 output_opacity,
@@ -598,7 +597,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
     Cel* extraCel = sprite->getExtraCel();
     if (extraCel->opacity > 0) {
       Image* extraImage = sprite->getExtraCelImage();
-      (*zoomed_func)(image, extraImage,
+      (*zoomed_func)(image, extraImage, sprite->getPalette(frame),
 		     (extraCel->x << zoom) - source_x,
 		     (extraCel->y << zoom) - source_y,
 		     extraCel->opacity, BLEND_MODE_NORMAL, zoom);
