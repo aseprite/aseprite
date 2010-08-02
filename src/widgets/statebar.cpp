@@ -464,7 +464,12 @@ bool StatusBar::msg_proc(JMessage msg)
 	      if (count == 1)
 		uszprintf(buf, sizeof(buf), "%s", (*it)->get_name().c_str());
 	      else
-		usprintf(buf, "%d", c);
+		{
+		  if (c+'A' <= 'Z')
+		    usprintf(buf, "%c", c+'A');
+		  else
+		    usprintf(buf, "%d", c-('Z'-'A'));
+		}
 
 	      textout_centre_ex(doublebuffer, this->getFont(), buf,
 				(x1+x2)/2,
