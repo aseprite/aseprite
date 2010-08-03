@@ -36,6 +36,8 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
+#include "Vaca/Size.h"
+#include "Vaca/PreferredSizeEvent.h"
 
 PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   : Frame(false, text)
@@ -103,37 +105,6 @@ bool PopupWindow::onProcessMessage(JMessage msg)
 	jmanager_remove_msg_filter(JM_KEYPRESSED, this);
       }
       break;
-
-    case JM_REQSIZE: {
-      int w = 0, h = 0;
-
-      _ji_theme_textbox_draw(NULL, this, &w, &h, 0, 0);
-
-      msg->reqsize.w = w;
-      msg->reqsize.h = this->border_width.t + this->border_width.b;
-
-      if (!jlist_empty(this->children)) {
-	int max_w, max_h;
-	int req_w, req_h;
-	JWidget child;
-	JLink link;
-
-	max_w = max_h = 0;
-	JI_LIST_FOR_EACH(this->children, link) {
-	  child = (JWidget)link->data;
-
-	  jwidget_request_size(child, &req_w, &req_h);
-
-	  max_w = MAX(max_w, req_w);
-	  max_h = MAX(max_h, req_h);
-	}
-
-	msg->reqsize.w = MAX(msg->reqsize.w,
-			     this->border_width.l + max_w + this->border_width.r);
-	msg->reqsize.h += max_h;
-      }
-      return true;
-    }
 
     case JM_SIGNAL:
       if (msg->signal.num == JI_SIGNAL_INIT_THEME) {
@@ -215,4 +186,33 @@ bool PopupWindow::onProcessMessage(JMessage msg)
   }
 
   return Frame::onProcessMessage(msg);
+}
+
+void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size resultSize(0, 0);
+
+  _ji_theme_textbox_draw(NULL, this, &resultSize.w, &resultSize.h, 0, 0);
+  resultSize.h = this->border_width.t + this->border_width.b;
+
+  if (!jlist_empty(this->children)) {
+    Size maxSize(0, 0);
+    Size reqSize;
+    JWidget child;
+    JLink link;
+
+    JI_LIST_FOR_EACH(this->children, link) {
+      child = (JWidget)link->data;
+
+      reqSize = child->getPreferredSize();
+
+      maxSize.w = MAX(maxSize.w, reqSize.w);
+      maxSize.h = MAX(maxSize.h, reqSize.h);
+    }
+
+    resultSize.w = MAX(resultSize.w, this->border_width.l + maxSize.w + this->border_width.r);
+    resultSize.h += maxSize.h;
+  }
+
+  ev.setPreferredSize(resultSize);
 }

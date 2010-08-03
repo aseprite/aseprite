@@ -41,6 +41,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
+#include "Vaca/Size.h"
 
 static bool listbox_msg_proc(JWidget widget, JMessage msg);
 static void listbox_request_size(JWidget widget, int *w, int *h);
@@ -326,16 +327,16 @@ static bool listbox_msg_proc(JWidget widget, JMessage msg)
 
 static void listbox_request_size(JWidget widget, int *w, int *h)
 {
-  int req_w, req_h;
+  Size reqSize;
   JLink link;
 
   *w = *h = 0;
 
   JI_LIST_FOR_EACH(widget->children, link) {
-    jwidget_request_size(reinterpret_cast<JWidget>(link->data), &req_w, &req_h);
+    reqSize = reinterpret_cast<Widget*>(link->data)->getPreferredSize();
 
-    *w = MAX(*w, req_w);
-    *h += req_h + ((link->next)? widget->child_spacing: 0);
+    *w = MAX(*w, reqSize.w);
+    *h += reqSize.h + ((link->next)? widget->child_spacing: 0);
   }
 
   *w += widget->border_width.l + widget->border_width.r;
@@ -344,7 +345,7 @@ static void listbox_request_size(JWidget widget, int *w, int *h)
 
 static void listbox_set_position(JWidget widget, JRect rect)
 {
-  int req_w, req_h;
+  Size reqSize;
   JWidget child;
   JRect cpos;
   JLink link;
@@ -355,9 +356,9 @@ static void listbox_set_position(JWidget widget, JRect rect)
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
 
-    jwidget_request_size(child, &req_w, &req_h);
+    reqSize = child->getPreferredSize();
 
-    cpos->y2 = cpos->y1+req_h;
+    cpos->y2 = cpos->y1+reqSize.h;
     jwidget_set_rect(child, cpos);
 
     cpos->y1 += jrect_h(child->rc) + widget->child_spacing;
@@ -427,24 +428,24 @@ static bool listitem_msg_proc(JWidget widget, JMessage msg)
 
 static void listitem_request_size(JWidget widget, int *w, int *h)
 {
-  int max_w, max_h;
-  int req_w, req_h;
+  Size maxSize;
+  Size reqSize;
   JLink link;
 
   if (widget->hasText()) {
-    max_w = jwidget_get_text_length(widget);
-    max_h = jwidget_get_text_height(widget);
+    maxSize.w = jwidget_get_text_length(widget);
+    maxSize.h = jwidget_get_text_height(widget);
   }
   else
-    max_w = max_h = 0;
+    maxSize.w = maxSize.h = 0;
 
   JI_LIST_FOR_EACH(widget->children, link) {
-    jwidget_request_size(reinterpret_cast<JWidget>(link->data), &req_w, &req_h);
+    reqSize = reinterpret_cast<Widget*>(link->data)->getPreferredSize();
 
-    max_w = MAX(max_w, req_w);
-    max_h = MAX(max_h, req_h);
+    maxSize.w = MAX(maxSize.w, reqSize.w);
+    maxSize.h = MAX(maxSize.h, reqSize.h);
   }
 
-  *w = widget->border_width.l + max_w + widget->border_width.r;
-  *h = widget->border_width.t + max_h + widget->border_width.b;
+  *w = widget->border_width.l + maxSize.w + widget->border_width.r;
+  *h = widget->border_width.t + maxSize.h + widget->border_width.b;
 }

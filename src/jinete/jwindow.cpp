@@ -38,6 +38,8 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
+#include "Vaca/Size.h"
+#include "Vaca/PreferredSizeEvent.h"
 
 enum {
   WINDOW_NONE = 0,
@@ -115,7 +117,7 @@ void Frame::set_wantfocus(bool state)
 
 void Frame::remap_window()
 {
-  int req_w, req_h;
+  Size reqSize;
   JRect rect;
 
   if (m_is_autoremap) {
@@ -123,11 +125,11 @@ void Frame::remap_window()
     this->setVisible(true);
   }
 
-  jwidget_request_size(this, &req_w, &req_h);
+  reqSize = this->getPreferredSize();
 
   rect = jrect_new(this->rc->x1, this->rc->y1,
-		   this->rc->x1+req_w,
-		   this->rc->y1+req_h);
+		   this->rc->x1+reqSize.w,
+		   this->rc->y1+reqSize.h);
   jwidget_set_rect(this, rect);
   jrect_free(rect);
 
@@ -241,10 +243,6 @@ bool Frame::is_wantfocus() const
 bool Frame::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
-
-    case JM_REQSIZE:
-      this->window_request_size(&msg->reqsize.w, &msg->reqsize.h);
-      return true;
 
     case JM_SETPOS:
       this->window_set_position(&msg->setpos.rect);
@@ -412,39 +410,38 @@ bool Frame::onProcessMessage(JMessage msg)
   return Widget::onProcessMessage(msg);
 }
 
-void Frame::window_request_size(int *w, int *h)
+void Frame::onPreferredSize(PreferredSizeEvent& ev)
 {
   JWidget manager = getManager();
 
   if (m_is_desktop) {
     JRect cpos = jwidget_get_child_rect(manager);
-    *w = jrect_w(cpos);
-    *h = jrect_h(cpos);
+    ev.setPreferredSize(jrect_w(cpos),
+			jrect_h(cpos));
     jrect_free(cpos);
   }
   else {
-    int max_w, max_h;
-    int req_w, req_h;
+    Size maxSize(0, 0);
+    Size reqSize;
     JWidget child;
     JLink link;
 
-    max_w = max_h = 0;
     JI_LIST_FOR_EACH(this->children, link) {
       child = (JWidget)link->data;
 
       if (!jwidget_is_decorative(child)) {
-	jwidget_request_size(child, &req_w, &req_h);
+	reqSize = child->getPreferredSize();
 
-	max_w = MAX(max_w, req_w);
-	max_h = MAX(max_h, req_h);
+	maxSize.w = MAX(maxSize.w, reqSize.w);
+	maxSize.h = MAX(maxSize.h, reqSize.h);
       }
     }
 
     if (this->hasText())
-      max_w = MAX(max_w, jwidget_get_text_length(this));
+      maxSize.w = MAX(maxSize.w, jwidget_get_text_length(this));
 
-    *w = this->border_width.l + max_w + this->border_width.r;
-    *h = this->border_width.t + max_h + this->border_width.b;
+    ev.setPreferredSize(this->border_width.l + maxSize.w + this->border_width.r,
+			this->border_width.t + maxSize.h + this->border_width.b);
   }
 }
 
@@ -546,10 +543,6 @@ int Frame::get_action(int x, int y)
 
 void Frame::limit_size(int *w, int *h)
 {
-  int req_w, req_h;
-
-  jwidget_request_size(this, &req_w, &req_h);
-
   *w = MAX(*w, this->border_width.l+this->border_width.r);
   *h = MAX(*h, this->border_width.t+this->border_width.b);
 }

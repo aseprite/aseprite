@@ -510,9 +510,11 @@ VACA_SOURCES =					\
 	$(VACA_DIR)/src/Application.cpp		\
 	$(VACA_DIR)/src/Component.cpp		\
 	$(VACA_DIR)/src/Debug.cpp		\
+	$(VACA_DIR)/src/Event.cpp		\
 	$(VACA_DIR)/src/Exception.cpp		\
 	$(VACA_DIR)/src/Mutex.cpp		\
 	$(VACA_DIR)/src/Point.cpp		\
+	$(VACA_DIR)/src/PreferredSizeEvent.cpp	\
 	$(VACA_DIR)/src/Property.cpp		\
 	$(VACA_DIR)/src/Rect.cpp		\
 	$(VACA_DIR)/src/Referenceable.cpp	\

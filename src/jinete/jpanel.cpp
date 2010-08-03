@@ -37,6 +37,7 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
+#include "Vaca/Size.h"
 
 typedef struct Panel
 {
@@ -227,8 +228,8 @@ static void panel_request_size(JWidget widget, int *w, int *h)
 {
 #define GET_CHILD_SIZE(w, h)			\
   do {						\
-    *w = MAX(*w, req_##w);			\
-    *h = MAX(*h, req_##h);			\
+    *w = MAX(*w, reqSize.w);			\
+    *h = MAX(*h, reqSize.h);			\
   } while(0)
 
 #define FINAL_SIZE(w)					\
@@ -238,7 +239,7 @@ static void panel_request_size(JWidget widget, int *w, int *h)
   } while(0)
 
   int nvis_children;
-  int req_w, req_h;
+  Size reqSize;
   JWidget child;
   JLink link;
 
@@ -257,7 +258,7 @@ static void panel_request_size(JWidget widget, int *w, int *h)
     if (child->flags & JI_HIDDEN)
       continue;
 
-    jwidget_request_size(child, &req_w, &req_h);
+    reqSize = child->getPreferredSize();
 
     if (widget->getAlign() & JI_HORIZONTAL)
       GET_CHILD_SIZE(w, h);
@@ -286,7 +287,7 @@ static void panel_set_position(JWidget widget, JRect rect)
     pos->y##1 = widget->rc->y##1;					\
     pos->x##2 = pos->x##1 + avail*panel->pos/100;			\
     /* TODO uncomment this to make a restricted panel */		\
-    /* pos->w = MID(req1_##w, pos->w, avail-req2_##w); */		\
+    /* pos->w = MID(reqSize1.w, pos->w, avail-reqSize2.w); */		\
     pos->y##2 = pos->y##1 + jrect_##h(widget->rc);			\
 									\
     jwidget_set_rect(child1, pos);					\
@@ -309,11 +310,8 @@ static void panel_set_position(JWidget widget, JRect rect)
   if (jlist_length(widget->children) == 2) {
     JWidget child1 = reinterpret_cast<JWidget>(jlist_first(widget->children)->data);
     JWidget child2 = reinterpret_cast<JWidget>(jlist_first(widget->children)->next->data);
-    int req1_w, req1_h;
-    int req2_w, req2_h;
-
-    jwidget_request_size(child1, &req1_w, &req1_h);
-    jwidget_request_size(child2, &req2_w, &req2_h);
+    //Size reqSize1 = child1->getPreferredSize();
+    //Size reqSize2 = child2->getPreferredSize();
 
     if (widget->getAlign() & JI_HORIZONTAL)
       FIXUP(x, y, w, h, l, t, r, b);

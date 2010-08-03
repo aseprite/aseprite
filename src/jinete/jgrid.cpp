@@ -41,6 +41,7 @@
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
 #include "jinete/jtheme.h"
+#include "Vaca/Size.h"
 
 struct Cell
 {
@@ -214,7 +215,7 @@ static void grid_set_position(JWidget widget, JRect rect)
   Grid* grid = reinterpret_cast<Grid*>(jwidget_get_data(widget, JI_GRID));
   JRect cpos = jrect_new(0, 0, 0, 0);
   int pos_x, pos_y;
-  int req_w, req_h;
+  Size reqSize;
   int x, y, w, h;
   int col, row;
   int i, j;
@@ -251,30 +252,30 @@ static void grid_set_position(JWidget widget, JRect rect)
 	CALCULATE_CELL_SIZE(col, hspan, colstrip, w);
 	CALCULATE_CELL_SIZE(row, vspan, rowstrip, h);
 
-	jwidget_request_size(cell->child, &req_w, &req_h);
+	reqSize = cell->child->getPreferredSize();
 
 	if (cell->align & JI_LEFT) {
-	  w = req_w;
+	  w = reqSize.w;
 	}
 	else if (cell->align & JI_CENTER) {
-	  x += w/2 - req_w/2;
-	  w = req_w;
+	  x += w/2 - reqSize.w/2;
+	  w = reqSize.w;
 	}
 	else if (cell->align & JI_RIGHT) {
-	  x += w - req_w;
-	  w = req_w;
+	  x += w - reqSize.w;
+	  w = reqSize.w;
 	}
 
 	if (cell->align & JI_TOP) {
-	  h = req_h;
+	  h = reqSize.h;
 	}
 	else if (cell->align & JI_MIDDLE) {
-	  y += h/2 - req_h/2;
-	  h = req_h;
+	  y += h/2 - reqSize.h/2;
+	  h = reqSize.h;
 	}
 	else if (cell->align & JI_BOTTOM) {
-	  y += h - req_h;
-	  h = req_h;
+	  y += h - reqSize.h;
+	  h = reqSize.h;
 	}
 
 	jrect_replace(cpos, x, y, x+w, y+h);
@@ -299,7 +300,7 @@ static void grid_calculate_size(JWidget widget)
 {
   Grid* grid = reinterpret_cast<Grid*>(jwidget_get_data(widget, JI_GRID));
   int row, col, size;
-  int req_w, req_h;
+  Size reqSize;
   int i, expand;
   int expand_count;
   int last_expand;
@@ -320,15 +321,15 @@ static void grid_calculate_size(JWidget widget)
     for (p_row=0; p_row<grid->p_rows; ++p_row) {			\
       /* for each cell */						\
       cell = grid->cells[row]+col;					\
-      req_w = req_h = 0;						\
+      reqSize.w = reqSize.h = 0;					\
 									\
       if (cell->child != NULL) {					\
 	if (cell->parent == NULL) {					\
 	  /* if the widget isn't hidden then we can request its size */ \
 	  if (!(cell->child->flags & JI_HIDDEN)) {			\
-	    jwidget_request_size(cell->child, &req_w, &req_h);		\
-	    cell->w = req_w - (cell->hspan-1) * widget->child_spacing;	\
-	    cell->h = req_h - (cell->vspan-1) * widget->child_spacing;	\
+	    reqSize = cell->child->getPreferredSize();			\
+	    cell->w = reqSize.w - (cell->hspan-1) * widget->child_spacing;	\
+	    cell->h = reqSize.h - (cell->vspan-1) * widget->child_spacing;	\
 	    if ((cell->align & p_align) == p_align)			\
 	      ++expand_count;						\
 	  }								\
@@ -397,8 +398,8 @@ static void grid_calculate_size(JWidget widget)
     ++current_span;							\
   } while (more_span);
   
-  CALCULATE_STRIPS(col, cols, row, rows, vspan, req_w, colstrip, JI_HORIZONTAL);
-  CALCULATE_STRIPS(row, rows, col, cols, hspan, req_h, rowstrip, JI_VERTICAL);
+  CALCULATE_STRIPS(col, cols, row, rows, vspan, reqSize.w, colstrip, JI_HORIZONTAL);
+  CALCULATE_STRIPS(row, rows, col, cols, hspan, reqSize.h, rowstrip, JI_VERTICAL);
   EXPAND_STRIPS(col, cols, row, rows, hspan, w, colstrip, grid_inc_col_size);
   EXPAND_STRIPS(row, rows, col, cols, vspan, h, rowstrip, grid_inc_row_size);
 

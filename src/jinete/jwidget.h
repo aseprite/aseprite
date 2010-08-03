@@ -39,6 +39,8 @@
 #include "Vaca/Rect.h"
 #include "Vaca/Widget.h"
 
+namespace Vaca { class PreferredSizeEvent; }
+
 #ifndef NDEBUG
 #include "jinete/jintern.h"
 #define assert_valid_widget(widget) assert((widget) != NULL &&		\
@@ -48,6 +50,8 @@
 #endif
 
 using Vaca::Rect;
+using Vaca::Size;
+using Vaca::PreferredSizeEvent;
 
 struct FONT;
 struct BITMAP;
@@ -101,7 +105,6 @@ bool jwidget_has_child(JWidget widget, JWidget child);
 
 /* position and geometry */
 
-void jwidget_request_size(JWidget widget, int *w, int *h);
 void jwidget_relayout(JWidget widget);
 JRect jwidget_get_rect(JWidget widget);
 JRect jwidget_get_child_rect(JWidget widget);
@@ -293,6 +296,15 @@ public:
   void closeWindow();
 
   // ===============================================================
+  // SIZE & POSITION
+  // ===============================================================
+
+  Size getPreferredSize();
+  Size getPreferredSize(const Size& fitIn);
+  void setPreferredSize(const Size& fixedSize);
+  void setPreferredSize(int fixedWidth, int fixedHeight);
+
+  // ===============================================================
   // FOCUS & MOUSE
   // ===============================================================
 
@@ -306,8 +318,21 @@ public:
   bool hasCapture();
 
 protected:
+
+  // ===============================================================
+  // MESSAGE PROCESSING
+  // ===============================================================
+
   virtual bool onProcessMessage(JMessage msg);
 
+  // ===============================================================
+  // EVENTS
+  // ===============================================================
+
+  virtual void onPreferredSize(PreferredSizeEvent& ev);
+
+private:
+  Size* m_preferredSize;
 };
 
 #endif

@@ -34,6 +34,8 @@
 #include <allegro.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Size.h"
+#include "Vaca/PreferredSizeEvent.h"
 
 struct ComboBox::Item
 {
@@ -267,47 +269,16 @@ bool ComboBox::onProcessMessage(JMessage msg)
       closeListBox();
       break;
 
-    case JM_REQSIZE: {
-      int w, h;
-
-      msg->reqsize.w = 0;
-      msg->reqsize.h = 0;
-
-      jwidget_request_size(m_entry, &w, &h);
-
-      // Get the text-length of every item and put in 'w' the maximum value
-      std::vector<Item*>::iterator it, end = m_items.end();
-      for (it = m_items.begin(); it != end; ++it) {
-	int item_w =
-	  2*jguiscale()+
-	  text_length(this->getFont(), (*it)->text.c_str())+
-	  10*jguiscale();
-
-	w = MAX(w, item_w);
-      }
-
-      msg->reqsize.w += w;
-      msg->reqsize.h += h;
-
-      jwidget_request_size(m_button, &w, &h);
-      msg->reqsize.w += w;
-      msg->reqsize.h = MAX(msg->reqsize.h, h);
-
-      return true;
-    }
-
     case JM_SETPOS: {
       JRect cbox = jrect_new_copy(&msg->setpos.rect);
-      int w, h;
-
       jrect_copy(this->rc, cbox);
 
-      /* button */
-      jwidget_request_size(m_button, &w, &h);
-      cbox->x1 = msg->setpos.rect.x2 - w;
+      // Button
+      Size buttonSize = m_button->getPreferredSize();
+      cbox->x1 = msg->setpos.rect.x2 - buttonSize.w;
       jwidget_set_rect(m_button, cbox);
 
-      /* entry */
+      // Entry
       cbox->x2 = cbox->x1;
       cbox->x1 = msg->setpos.rect.x1;
       jwidget_set_rect(m_entry, cbox);
@@ -336,6 +307,31 @@ bool ComboBox::onProcessMessage(JMessage msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
+{
+  Size reqSize(0, 0);
+  Size entrySize = m_entry->getPreferredSize();
+
+  // Get the text-length of every item and put in 'w' the maximum value
+  std::vector<Item*>::iterator it, end = m_items.end();
+  for (it = m_items.begin(); it != end; ++it) {
+    int item_w =
+      2*jguiscale()+
+      text_length(this->getFont(), (*it)->text.c_str())+
+      10*jguiscale();
+
+    reqSize.w = MAX(reqSize.w, item_w);
+  }
+
+  reqSize.w += entrySize.w;
+  reqSize.h += entrySize.h;
+
+  Size buttonSize = m_button->getPreferredSize();
+  reqSize.w += buttonSize.w;
+  reqSize.h = MAX(reqSize.h, buttonSize.h);
+  ev.setPreferredSize(reqSize);
 }
 
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)

@@ -49,6 +49,7 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
+#include "Vaca/PreferredSizeEvent.h"
 
 int ji_register_widget_type()
 {
@@ -95,6 +96,8 @@ Widget::Widget(int type)
   this->user_data[1] = NULL;
   this->user_data[2] = NULL;
   this->user_data[3] = NULL;
+
+  m_preferredSize = NULL;
 }
 
 void jwidget_free(JWidget widget)
@@ -143,6 +146,9 @@ Widget::~Widget()
   JI_LIST_FOR_EACH(this->hooks, link)
     jhook_free(reinterpret_cast<JHook>(link->data));
   jlist_free(this->hooks);
+
+  // Delete the preferred size
+  delete m_preferredSize;
 
   /* low level free */
   _ji_remove_widget(this);
@@ -702,19 +708,6 @@ void Widget::setBounds(const Rect& rc)
 {
   jrect jrc = { rc.x, rc.y, rc.x+rc.w, rc.y+rc.h };
   jwidget_set_rect(this, &jrc);
-}
-
-void jwidget_request_size(JWidget widget, int *w, int *h)
-{
-  JMessage msg;
-
-  assert_valid_widget(widget);
-
-  msg = jmessage_new(JM_REQSIZE);
-  jwidget_send_message(widget, msg);
-  *w = MID(widget->min_w, msg->reqsize.w, widget->max_w);
-  *h = MID(widget->min_h, msg->reqsize.h, widget->max_h);
-  jmessage_free(msg);
 }
 
 void jwidget_relayout(JWidget widget)
@@ -1309,6 +1302,76 @@ void Widget::closeWindow()
 }
 
 // ===============================================================
+// SIZE & POSITION
+// ===============================================================
+
+/**
+   Returns the preferred size of the Widget.
+
+   It checks if the preferred size is static (it means when it was
+   set through #setPreferredSize before) or if it is dynamic (this is
+   the default and is when the #onPreferredSize is used to determined
+   the preferred size).
+
+   In another words, if you do not use #setPreferredSize to set a
+   <em>static preferred size</em> for the widget then #onPreferredSize
+   will be used to calculate it.
+
+   @see setPreferredSize, onPreferredSize, #getPreferredSize(const Size &)
+*/
+Size Widget::getPreferredSize()
+{
+  if (m_preferredSize != NULL)
+    return *m_preferredSize;
+  else {
+    PreferredSizeEvent ev(this, Size(0, 0));
+    onPreferredSize(ev);
+    return ev.getPreferredSize();
+  }
+}
+
+/**
+   Returns the preferred size trying to fit in the specified size.
+   Remember that if you use #setPreferredSize this routine will
+   return the static size which you specified manually.
+
+   @param fitIn
+       This can have both attributes (width and height) in
+       zero, which means that it'll behave same as #getPreferredSize().
+       If the width is great than zero the #onPreferredSize will try to
+       fit in that width (this is useful to fit @link Vaca::Label Label@endlink
+       or @link Vaca::Edit Edit@endlink controls in a specified width and
+       calculate the height it could occupy).
+
+   @see getPreferredSize
+*/
+Size Widget::getPreferredSize(const Size& fitIn)
+{
+  if (m_preferredSize != NULL)
+    return *m_preferredSize;
+  else {
+    PreferredSizeEvent ev(this, fitIn);
+    onPreferredSize(ev);
+    return ev.getPreferredSize();
+  }
+}
+
+/**
+   Sets a fixed preferred size specified by the user.
+   Widget::getPreferredSize() will return this value if it's setted.
+*/
+void Widget::setPreferredSize(const Size& fixedSize)
+{
+  delete m_preferredSize;
+  m_preferredSize = new Size(fixedSize);
+}
+
+void Widget::setPreferredSize(int fixedWidth, int fixedHeight)
+{
+  setPreferredSize(Size(fixedWidth, fixedHeight));
+}
+
+// ===============================================================
 // FOCUS & MOUSE
 // ===============================================================
 
@@ -1502,4 +1565,30 @@ bool Widget::onProcessMessage(JMessage msg)
   }
 
   return false;
+}
+
+// ===============================================================
+// EVENTS
+// ===============================================================
+
+/**
+   Calculates the preferred size for the widget.
+
+   The default implementation get the preferred size of the current
+   layout manager. Also, if there exists layout-free widgets inside
+   this parent (like a StatusBar), they preferred-sizes are
+   accumulated.
+
+   @see Layout#getPreferredSize,
+*/
+void Widget::onPreferredSize(PreferredSizeEvent& ev)
+{
+  JMessage msg = jmessage_new(JM_REQSIZE);
+  jwidget_send_message(this, msg);
+  Size sz(msg->reqsize.w, msg->reqsize.h);
+  sz.w = MID(this->min_w, sz.w, this->max_w);
+  sz.h = MID(this->min_h, sz.h, this->max_h);
+  jmessage_free(msg);
+
+  ev.setPreferredSize(sz);
 }

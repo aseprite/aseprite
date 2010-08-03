@@ -83,9 +83,9 @@ public:
 
 protected:
   bool onProcessMessage(JMessage msg);
+  void onPreferredSize(PreferredSizeEvent& ev);
 
 private:
-  void window_request_size(int* w, int* h);
   void window_set_position(JRect rect);
   int get_action(int x, int y);
   void limit_size(int* w, int* h);

@@ -38,6 +38,7 @@
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
 #include "jinete/jtheme.h"
+#include "Vaca/Size.h"
 
 static bool box_msg_proc(JWidget widget, JMessage msg);
 static void box_request_size(JWidget widget, int *w, int *h);
@@ -80,11 +81,11 @@ static void box_request_size(JWidget widget, int *w, int *h)
 #define GET_CHILD_SIZE(w, h)			\
   {						\
     if (widget->getAlign() & JI_HOMOGENEOUS)	\
-      *w = MAX(*w, req_##w);			\
+      *w = MAX(*w, reqSize.w);			\
     else					\
-      *w += req_##w;				\
+      *w += reqSize.w;				\
 						\
-    *h = MAX(*h, req_##h);			\
+    *h = MAX(*h, reqSize.h);			\
   }
 
 #define FINAL_SIZE(w)					\
@@ -96,7 +97,6 @@ static void box_request_size(JWidget widget, int *w, int *h)
   }
 
   int nvis_children;
-  int req_w, req_h;
   JWidget child;
   JLink link;
 
@@ -115,7 +115,7 @@ static void box_request_size(JWidget widget, int *w, int *h)
     if (child->flags & JI_HIDDEN)
       continue;
 
-    jwidget_request_size(child, &req_w, &req_h);
+    Size reqSize = child->getPreferredSize();
 
     if (widget->getAlign() & JI_HORIZONTAL) {
       GET_CHILD_SIZE(w, h);
@@ -151,7 +151,7 @@ static void box_set_position(JWidget widget, JRect rect)
 	extra = width / nvis_children;					\
       }									\
       else if (nexpand_children > 0) {					\
-	width = jrect_##w(widget->rc) - req_##w;			\
+	width = jrect_##w(widget->rc) - reqSize.w;			\
 	extra = width / nexpand_children;				\
       }									\
       else {								\
@@ -179,9 +179,9 @@ static void box_set_position(JWidget widget, JRect rect)
 	    width -= extra;						\
 	  }								\
 	  else {							\
-	    jwidget_request_size(child, &req_w, &req_h);		\
+	    reqSize = child->getPreferredSize();			\
 									\
-	    child_width = req_##w;					\
+	    child_width = reqSize.w;					\
 									\
 	    if (jwidget_is_expansive(child)) {				\
 	      if (nexpand_children == 1)				\
@@ -213,7 +213,6 @@ static void box_set_position(JWidget widget, JRect rect)
   JWidget child;
   int nvis_children = 0;
   int nexpand_children = 0;
-  int req_w, req_h;
   int child_width;
   JLink link;
   int width;
@@ -232,7 +231,7 @@ static void box_set_position(JWidget widget, JRect rect)
     }
   }
 
-  jwidget_request_size(widget, &req_w, &req_h);
+  Size reqSize = widget->getPreferredSize();
 
   if (widget->getAlign() & JI_HORIZONTAL) {
     FIXUP(x, y, w, h, l, t, r, b);

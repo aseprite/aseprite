@@ -40,6 +40,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
+#include "Vaca/Size.h"
 
 #define BAR_SIZE widget->theme->scrollbar_size
 
@@ -353,9 +354,9 @@ static bool view_msg_proc(JWidget widget, JMessage msg)
     case JM_REQSIZE: {
       View* view = reinterpret_cast<View*>(jwidget_get_data(widget, JI_VIEW));
 
-      jwidget_request_size(view->viewport,
-			   &msg->reqsize.w,
-			   &msg->reqsize.h);
+      Size viewSize = view->viewport->getPreferredSize();
+      msg->reqsize.w = viewSize.w;
+      msg->reqsize.h = viewSize.h;
 
       msg->reqsize.w += widget->border_width.l + widget->border_width.r;
       msg->reqsize.h += widget->border_width.t + widget->border_width.b;
@@ -426,23 +427,23 @@ static bool viewport_msg_proc(JWidget widget, JMessage msg)
 
 static void viewport_needed_size(JWidget widget, int *w, int *h)
 {
-  int req_h, req_w;
+  Size reqSize;
   JLink link;
 
   *w = *h = 0;
 
   JI_LIST_FOR_EACH(widget->children, link) {
-    jwidget_request_size((JWidget)link->data, &req_w, &req_h);
+    reqSize = ((Widget*)link->data)->getPreferredSize();
 
-    *w = MAX(*w, req_w);
-    *h = MAX(*h, req_h);
+    *w = MAX(*w, reqSize.w);
+    *h = MAX(*h, reqSize.h);
   }
 }
 
 static void viewport_set_position(JWidget widget, JRect rect)
 {
   int scroll_x, scroll_y;
-  int req_h, req_w;
+  Size reqSize;
   JWidget child;
   JRect cpos;
   JLink link;
@@ -457,16 +458,15 @@ static void viewport_set_position(JWidget widget, JRect rect)
 
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
+    reqSize = child->getPreferredSize();
 
-    jwidget_request_size(child, &req_w, &req_h);
+    cpos->x2 = cpos->x1 + MAX(reqSize.w, jrect_w(widget->rc)
+					 - widget->border_width.l
+					 - widget->border_width.r);
 
-    cpos->x2 = cpos->x1 + MAX(req_w, jrect_w(widget->rc)
-				     - widget->border_width.l
-				     - widget->border_width.r);
-
-    cpos->y2 = cpos->y1 + MAX(req_h, jrect_h(widget->rc)
-				     - widget->border_width.t
-				     - widget->border_width.b);
+    cpos->y2 = cpos->y1 + MAX(reqSize.h, jrect_h(widget->rc)
+					 - widget->border_width.t
+					 - widget->border_width.b);
 
     jwidget_set_rect(child, cpos);
   }

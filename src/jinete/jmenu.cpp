@@ -38,6 +38,7 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
+#include "Vaca/Size.h"
 
 /**********************************************************************/
 /* Internal messages: to move between menus */
@@ -405,23 +406,23 @@ static bool menu_msg_proc(JWidget widget, JMessage msg)
 
 static void menu_request_size(JWidget widget, int *w, int *h)
 {
-  int req_w, req_h;
+  Size reqSize;
   JLink link;
 
   *w = *h = 0;
 
   JI_LIST_FOR_EACH(widget->children, link) {
-    jwidget_request_size((JWidget)link->data, &req_w, &req_h);
+    reqSize = ((Widget*)link->data)->getPreferredSize();
 
     if (widget->parent->type == JI_MENUBAR) {
-      *w += req_w + ((link->next != widget->children->end) ?
-		     widget->child_spacing: 0);
-      *h = MAX(*h, req_h);
+      *w += reqSize.w + ((link->next != widget->children->end) ?
+			 widget->child_spacing: 0);
+      *h = MAX(*h, reqSize.h);
     }
     else {
-      *w = MAX(*w, req_w);
-      *h += req_h + ((link->next != widget->children->end) ?
-		     widget->child_spacing: 0);
+      *w = MAX(*w, reqSize.w);
+      *h += reqSize.h + ((link->next != widget->children->end) ?
+			 widget->child_spacing: 0);
     }
   }
 
@@ -431,7 +432,7 @@ static void menu_request_size(JWidget widget, int *w, int *h)
 
 static void menu_set_position(JWidget widget, JRect rect)
 {
-  int req_w, req_h;
+  Size reqSize;
   JWidget child;
   JRect cpos;
   JLink link;
@@ -442,12 +443,12 @@ static void menu_set_position(JWidget widget, JRect rect)
   JI_LIST_FOR_EACH(widget->children, link) {
     child = (JWidget)link->data;
 
-    jwidget_request_size(child, &req_w, &req_h);
+    reqSize = child->getPreferredSize();
 
     if (widget->parent->type == JI_MENUBAR)
-      cpos->x2 = cpos->x1+req_w;
+      cpos->x2 = cpos->x1+reqSize.w;
     else
-      cpos->y2 = cpos->y1+req_h;
+      cpos->y2 = cpos->y1+reqSize.h;
 
     jwidget_set_rect(child, cpos);
 
@@ -780,8 +781,11 @@ static void menubox_request_size(JWidget widget, int *w, int *h)
 {
   JWidget menu = jmenubox_get_menu(widget);
 
-  if (menu)
-    jwidget_request_size(menu, w, h);
+  if (menu) {
+    Size reqSize = menu->getPreferredSize();
+    *w = reqSize.w;
+    *h = reqSize.h;
+  }
   else
     *w = *h = 0;
 

@@ -36,6 +36,7 @@
 #include "jinete/jrect.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
+#include "Vaca/Size.h"
 
 static bool separator_msg_proc(JWidget widget, JMessage msg);
 
@@ -56,25 +57,24 @@ static bool separator_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_REQSIZE: {
-      int max_w, max_h;
-      int req_w, req_h;
+      Size maxSize(0, 0);
+      Size reqSize;
       JWidget child;
       JLink link;
 
-      max_w = max_h = 0;
       JI_LIST_FOR_EACH(widget->children, link) {
 	child = (JWidget)link->data;
 
-	jwidget_request_size(child, &req_w, &req_h);
-	max_w = MAX(max_w, req_w);
-	max_h = MAX(max_h, req_h);
+	reqSize = child->getPreferredSize();
+	maxSize.w = MAX(maxSize.w, reqSize.w);
+	maxSize.h = MAX(maxSize.h, reqSize.h);
       }
 
       if (widget->hasText())
-	max_w = MAX(max_w, jwidget_get_text_length(widget));
+	maxSize.w = MAX(maxSize.w, jwidget_get_text_length(widget));
 
-      msg->reqsize.w = widget->border_width.l + max_w + widget->border_width.r;
-      msg->reqsize.h = widget->border_width.t + max_h + widget->border_width.b;
+      msg->reqsize.w = widget->border_width.l + maxSize.w + widget->border_width.r;
+      msg->reqsize.h = widget->border_width.t + maxSize.h + widget->border_width.b;
       return true;
     }
 

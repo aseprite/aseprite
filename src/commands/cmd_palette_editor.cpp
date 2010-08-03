@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "Vaca/Bind.h"
+#include "Vaca/Size.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
@@ -49,6 +50,8 @@
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
+
+using Vaca::Size;
 
 static Frame* window = NULL;
 static int redraw_timer_id = -1;
@@ -997,20 +1000,20 @@ static bool select_hsv_hook(JWidget widget, void *data)
 
 static bool expand_button_select_hook(JWidget widget, void *data)
 {
-  int req_w, req_h;
+  Size reqSize;
 
   if (more_options->isVisible()) {
     set_config_bool("PaletteEditor", "ShowMoreOptions", false);
     more_options->setVisible(false);
 
     // Get the required size of the "More options" panel
-    jwidget_request_size(more_options, &req_w, &req_h);
-    req_h += 4;
+    reqSize = more_options->getPreferredSize();
+    reqSize.h += 4;
 
     // Remove the space occupied by the "More options" panel
     {
       JRect rect = jrect_new(window->rc->x1, window->rc->y1,
-			     window->rc->x2, window->rc->y2 - req_h);
+			     window->rc->x2, window->rc->y2 - reqSize.h);
       window->move_window(rect);
       jrect_free(rect);
     }
@@ -1020,12 +1023,12 @@ static bool expand_button_select_hook(JWidget widget, void *data)
     more_options->setVisible(true);
 
     // Get the required size of the whole window
-    jwidget_request_size(window, &req_w, &req_h);
+    reqSize = window->getPreferredSize();
 
     // Add space for the "more_options" panel
-    if (jrect_h(window->rc) < req_h) {
+    if (jrect_h(window->rc) < reqSize.h) {
       JRect rect = jrect_new(window->rc->x1, window->rc->y1,
-			     window->rc->x2, window->rc->y1 + req_h);
+			     window->rc->x2, window->rc->y1 + reqSize.h);
 
       // Show the expanded area inside the screen
       if (rect->y2 > JI_SCREEN_H)

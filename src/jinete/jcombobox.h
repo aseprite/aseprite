@@ -79,6 +79,7 @@ public:
 
 protected:
   bool onProcessMessage(JMessage msg);
+  void onPreferredSize(PreferredSizeEvent& ev);
 
 private:
   struct Item;
