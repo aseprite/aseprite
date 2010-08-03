@@ -47,7 +47,7 @@ public:
   void setHotRegion(JRegion region);
 
 protected:
-  bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 };
 
 #endif

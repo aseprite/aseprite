@@ -259,7 +259,7 @@ Widget* ComboBox::getButtonWidget()
   return m_button;
 }
 
-bool ComboBox::msg_proc(JMessage msg)
+bool ComboBox::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -335,7 +335,7 @@ bool ComboBox::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg)

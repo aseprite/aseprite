@@ -48,7 +48,7 @@ public:
   void set_hotregion(JRegion region);
 
 protected:
-  bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 };
 
 void jwidget_add_tooltip_text(Widget* widget, const char *text);

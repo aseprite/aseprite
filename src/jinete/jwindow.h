@@ -82,7 +82,7 @@ public:
   Vaca::Signal1<void, Vaca::CloseEvent&> Close;
 
 protected:
-  bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   void window_request_size(int* w, int* h);

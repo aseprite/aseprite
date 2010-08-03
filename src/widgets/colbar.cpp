@@ -148,7 +148,7 @@ color_t ColorBar::getColorByPosition(int x, int y)
   return color_mask();
 }
 
-bool ColorBar::msg_proc(JMessage msg)
+bool ColorBar::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -465,7 +465,7 @@ bool ColorBar::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 color_t ColorBar::getHotColor(hotcolor_t hot)

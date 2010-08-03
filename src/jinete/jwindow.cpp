@@ -238,7 +238,7 @@ bool Frame::is_wantfocus() const
   return m_is_wantfocus;
 }
 
-bool Frame::msg_proc(JMessage msg)
+bool Frame::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -409,7 +409,7 @@ bool Frame::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 void Frame::window_request_size(int *w, int *h)

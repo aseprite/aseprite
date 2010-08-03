@@ -48,7 +48,7 @@ public:
   Vaca::Signal1<void, color_t> BgColorChange;
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   int getEntriesCount() const { return m_columns*m_colorsPerColumn; }

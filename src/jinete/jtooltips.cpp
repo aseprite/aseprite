@@ -197,7 +197,7 @@ void TipWindow::set_hotregion(JRegion region)
   m_hot_region = region;
 }
 
-bool TipWindow::msg_proc(JMessage msg)
+bool TipWindow::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -323,5 +323,5 @@ bool TipWindow::msg_proc(JMessage msg)
 
   }
 
-  return Frame::msg_proc(msg);
+  return Frame::onProcessMessage(msg);
 }

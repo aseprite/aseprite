@@ -40,7 +40,7 @@ public:
   Label(const char *text);
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 };
 

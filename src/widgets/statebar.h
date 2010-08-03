@@ -61,7 +61,7 @@ public:
   void removeProgress(Progress* progress);
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   void onCurrentToolChange();

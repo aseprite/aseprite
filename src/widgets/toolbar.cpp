@@ -76,7 +76,7 @@ public:
   void closeTipWindow();
 
 protected:
-  bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   int getToolGroupIndex(ToolGroup* group);
@@ -104,7 +104,7 @@ public:
   Vaca::Signal1<void, Tool*> ToolSelected;
 
 protected:
-  bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   Rect getToolBounds(int index);
@@ -174,7 +174,7 @@ bool ToolBar::isToolVisible(Tool* tool)
   return (m_selected_in_group[tool->getGroup()] == tool);
 }
 
-bool ToolBar::msg_proc(JMessage msg)
+bool ToolBar::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -359,7 +359,7 @@ bool ToolBar::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 int ToolBar::getToolGroupIndex(ToolGroup* group)
@@ -419,7 +419,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rc.x -= w;
   rc.w = w;
 
-  // Redraw the overlapped area and save it to use it in the ToolStrip::msg_proc(JM_DRAW)
+  // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(JM_DRAW)
   {
     JRect rcTemp = jrect_new(rc.x, rc.y, rc.x+rc.w, rc.y+rc.h);
     jwidget_invalidate_rect(ji_get_default_manager(),  rcTemp);
@@ -571,7 +571,7 @@ void ToolStrip::saveOverlappedArea(const Rect& bounds)
        bounds.w, bounds.h);
 }
 
-bool ToolStrip::msg_proc(JMessage msg)
+bool ToolStrip::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -688,7 +688,7 @@ bool ToolStrip::msg_proc(JMessage msg)
       break;
 
   }
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 Rect ToolStrip::getToolBounds(int index)

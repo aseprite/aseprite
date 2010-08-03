@@ -303,7 +303,7 @@ float Progress::getPos() const
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
 
-bool StatusBar::msg_proc(JMessage msg)
+bool StatusBar::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -652,7 +652,7 @@ bool StatusBar::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg)

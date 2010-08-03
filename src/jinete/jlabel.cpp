@@ -43,7 +43,7 @@ Label::Label(const char *text)
   jwidget_init_theme(this);
 }
 
-bool Label::msg_proc(JMessage msg)
+bool Label::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -64,5 +64,5 @@ bool Label::msg_proc(JMessage msg)
       return true;
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }

@@ -78,7 +78,7 @@ public:
   JRect getListBoxPos();
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   struct Item;

@@ -53,7 +53,7 @@ public:
   void getSelectedEntries(bool array[256]);
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   void request_size(int* w, int* h);

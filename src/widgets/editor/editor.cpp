@@ -599,7 +599,7 @@ void Editor::turnOnSelectionModifiers()
 /**
    Control scroll when cursor goes out of the editor
    
-   @param msg A mouse message received in Editor::msg_proc()
+   @param msg A mouse message received in Editor::onProcessMessage()
 */
 void Editor::controlInfiniteScroll(JMessage msg)
 {
@@ -826,7 +826,7 @@ enum WHEEL_ACTION { WHEEL_NONE,
 		    WHEEL_BG,
 		    WHEEL_FRAME };
 
-bool Editor::msg_proc(JMessage msg)
+bool Editor::onProcessMessage(JMessage msg)
 {
   assert((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||
 	 (m_state != EDITOR_STATE_DRAWING && m_toolLoopManager == NULL));
@@ -1486,7 +1486,7 @@ bool Editor::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 /**

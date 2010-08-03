@@ -39,7 +39,7 @@ CustomLabel::CustomLabel(const char *text)
 {
 }
 
-bool CustomLabel::msg_proc(JMessage msg)
+bool CustomLabel::onProcessMessage(JMessage msg)
 {
-  return Label::msg_proc(msg);
+  return Label::onProcessMessage(msg);
 }

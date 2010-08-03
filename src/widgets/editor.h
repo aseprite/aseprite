@@ -194,7 +194,7 @@ public:
   int editor_click_cancel();
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   void drawGrid(const Rect& gridBounds, color_t color);

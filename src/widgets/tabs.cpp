@@ -188,7 +188,7 @@ void* Tabs::getSelectedTab()
     return NULL;
 }
 
-bool Tabs::msg_proc(JMessage msg)
+bool Tabs::onProcessMessage(JMessage msg)
 {
   SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
 
@@ -398,7 +398,7 @@ bool Tabs::msg_proc(JMessage msg)
 
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 void Tabs::drawTab(BITMAP* bmp, JRect box, Tab* tab, int y_delta, bool selected)

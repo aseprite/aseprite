@@ -306,7 +306,7 @@ public:
   bool hasCapture();
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  virtual bool onProcessMessage(JMessage msg);
 
 };
 

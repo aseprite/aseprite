@@ -1297,7 +1297,7 @@ bool Widget::sendMessage(JMessage msg)
   }
 
   if (!done)
-    done = this->msg_proc(msg);
+    done = this->onProcessMessage(msg);
 
   return done;
 }
@@ -1410,7 +1410,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 /**********************************************************************/
 /* widget message procedure */
 
-bool Widget::msg_proc(JMessage msg)
+bool Widget::onProcessMessage(JMessage msg)
 {
   JWidget widget = this;
 

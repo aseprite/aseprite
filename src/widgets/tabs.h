@@ -87,7 +87,7 @@ public:
   void stopScrolling();
 
 protected:
-  bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 private:
   void startAni(Ani ani);

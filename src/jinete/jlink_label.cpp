@@ -50,7 +50,7 @@ LinkLabel::LinkLabel(const char* url, const char* text)
 {
 }
 
-bool LinkLabel::msg_proc(JMessage msg)
+bool LinkLabel::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -82,5 +82,5 @@ bool LinkLabel::msg_proc(JMessage msg)
       break;
   }
 
-  return CustomLabel::msg_proc(msg);
+  return CustomLabel::onProcessMessage(msg);
 }

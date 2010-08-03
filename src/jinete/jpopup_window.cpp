@@ -91,7 +91,7 @@ void PopupWindow::setHotRegion(JRegion region)
   m_hot_region = region;
 }
 
-bool PopupWindow::msg_proc(JMessage msg)
+bool PopupWindow::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -214,5 +214,5 @@ bool PopupWindow::msg_proc(JMessage msg)
 
   }
 
-  return Frame::msg_proc(msg);
+  return Frame::onProcessMessage(msg);
 }

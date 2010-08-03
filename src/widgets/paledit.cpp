@@ -328,7 +328,7 @@ void PalEdit::getSelectedEntries(bool array[256])
   }
 }
 
-bool PalEdit::msg_proc(JMessage msg)
+bool PalEdit::onProcessMessage(JMessage msg)
 {
   switch (msg->type) {
 
@@ -557,7 +557,7 @@ bool PalEdit::msg_proc(JMessage msg)
       return true;
   }
 
-  return Widget::msg_proc(msg);
+  return Widget::onProcessMessage(msg);
 }
 
 void PalEdit::request_size(int* w, int* h)

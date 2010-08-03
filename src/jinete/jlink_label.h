@@ -47,7 +47,7 @@ public:
   Vaca::Signal0<void> Click;
 
 protected:
-  virtual bool msg_proc(JMessage msg);
+  bool onProcessMessage(JMessage msg);
 
 };
 
