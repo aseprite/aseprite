@@ -426,7 +426,6 @@ void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color)
 void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
 {
   int type = color_type(color);
-  int data;
   BITMAP* graph;
 
   if (type == COLOR_TYPE_MASK) {
