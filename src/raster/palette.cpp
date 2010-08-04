@@ -28,7 +28,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-Palette::Palette(int frame, size_t ncolors)
+Palette::Palette(int frame, int ncolors)
   : GfxObj(GFXOBJ_PALETTE)
 {
   assert(ncolors >= 1 && ncolors <= 256);
@@ -60,14 +60,14 @@ Palette* Palette::createGrayscale()
   return graypal;
 }
 
-void Palette::resize(size_t ncolors)
+void Palette::resize(int ncolors)
 {
   assert(ncolors >= 1 && ncolors <= 256);
 
-  size_t old_size = m_colors.size();
+  int old_size = m_colors.size();
   m_colors.resize(ncolors);
 
-  if (m_colors.size() > old_size) {
+  if ((int)m_colors.size() > old_size) {
     // Fill new colors with black
     std::fill(m_colors.begin()+old_size,
 	      m_colors.begin()+m_colors.size(),
@@ -84,7 +84,7 @@ void Palette::setFrame(int frame)
   m_frame = frame;
 }
 
-void Palette::setEntry(size_t i, ase_uint32 color)
+void Palette::setEntry(int i, ase_uint32 color)
 {
   assert(i >= 0 && i < size());
   assert(_rgba_geta(color) == 255);
@@ -360,7 +360,7 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
   assert(from < to);
 
   std::vector<PalEntryWithIndex> temp(to-from+1);
-  for (size_t i=0; i<temp.size(); ++i) {
+  for (int i=0; i<(int)temp.size(); ++i) {
     temp[i].index = from+i;
     temp[i].color = m_colors[from+i];
   }
@@ -369,10 +369,10 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
 
   // Default mapping table (no-mapping)
   mapping.resize(256);
-  for (size_t i=0; i<256; ++i)
+  for (int i=0; i<256; ++i)
     mapping[i] = i;
 
-  for (size_t i=0; i<temp.size(); ++i) {
+  for (int i=0; i<(int)temp.size(); ++i) {
     m_colors[from+i] = temp[i].color;
     mapping[from+i] = temp[i].index;
   }
@@ -389,7 +389,7 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
  */
 void Palette::toAllegro(RGB *rgb) const
 {
-  size_t i;
+  int i;
   for (i=0; i<size(); ++i) {
     rgb[i].r = _rgba_getr(m_colors[i]) / 4;
     rgb[i].g = _rgba_getg(m_colors[i]) / 4;
@@ -500,8 +500,7 @@ int Palette::findBestfit(int r, int g, int b) const
 #else
   register int bestfit;
 #endif
-  int coldiff, lowest;
-  size_t i;
+  int i, coldiff, lowest;
 
   assert(r >= 0 && r <= 255);
   assert(g >= 0 && g <= 255);

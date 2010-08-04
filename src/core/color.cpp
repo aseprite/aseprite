@@ -147,7 +147,7 @@ bool color_is_valid(color_t color)
   switch (GET_COLOR_TYPE(color)) {
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       return (i >= 0 && i < get_current_palette()->size());
     }
 

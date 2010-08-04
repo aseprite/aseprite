@@ -54,26 +54,26 @@ private:
 class Palette : public GfxObj
 {
 public:
-  Palette(int frame, size_t ncolors);
+  Palette(int frame, int ncolors);
   Palette(const Palette& palette);
   ~Palette();
 
   static Palette* createGrayscale();
 
-  size_t size() const { return m_colors.size(); }
-  void resize(size_t ncolors);
+  int size() const { return m_colors.size(); }
+  void resize(int ncolors);
 
-  size_t getModifications() const { return m_modifications; }
+  int getModifications() const { return m_modifications; }
 
   int getFrame() const { return m_frame; }
   void setFrame(int frame);
 
-  ase_uint32 getEntry(size_t i) const {
+  ase_uint32 getEntry(int i) const {
     assert(i >= 0 && i < size());
     return m_colors[i];
   }
 
-  void setEntry(size_t i, ase_uint32 color);
+  void setEntry(int i, ase_uint32 color);
 
   void copyColorsTo(Palette* dst) const;
 
@@ -96,7 +96,7 @@ public:
 private:
   int m_frame;
   std::vector<ase_uint32> m_colors;
-  size_t m_modifications;
+  int m_modifications;
 };
 
 #endif

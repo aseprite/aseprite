@@ -128,7 +128,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
     case IMAGE_INDEXED: {
       Palette* palette = get_current_palette();
       RGBQUAD* rgbquad = (RGBQUAD*)(((ase_uint8*)bi)+bi->bV5Size);
-      for (size_t i=0; i<palette->size(); ++i) {
+      for (int i=0; i<palette->size(); ++i) {
 	rgbquad->rgbRed   = _rgba_getr(palette->getEntry(i));
 	rgbquad->rgbGreen = _rgba_getg(palette->getEntry(i));
 	rgbquad->rgbBlue  = _rgba_getb(palette->getEntry(i));
