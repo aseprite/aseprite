@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 #include <stdio.h>
 #include <string.h>
@@ -55,7 +54,7 @@ void rec_screen_on()
 /*       || (rec_file)) */
 /*     return; */
 
-  assert(rec_file == NULL);
+  ASSERT(rec_file == NULL);
 
   /* get a file name for the record */
   for (c=0; c<10000; c++) {

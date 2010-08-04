@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 #ifdef ALLEGRO_WINDOWS
 #include <winalleg.h>
@@ -167,7 +166,7 @@ void ji_add_dirty_rect(JRect rect)
 {
   JRegion reg1;
 
-  assert(ji_dirty_region != NULL);
+  ASSERT(ji_dirty_region != NULL);
 
   reg1 = jregion_new(rect, 1);
   jregion_union(ji_dirty_region, ji_dirty_region, reg1);
@@ -176,7 +175,7 @@ void ji_add_dirty_rect(JRect rect)
 
 void ji_add_dirty_region(JRegion region)
 {
-  assert(ji_dirty_region != NULL);
+  ASSERT(ji_dirty_region != NULL);
 
   jregion_union(ji_dirty_region, ji_dirty_region, region);
 }
@@ -186,7 +185,7 @@ void ji_flip_dirty_region()
   int c, nrects;
   JRect rc;
 
-  assert(ji_dirty_region != NULL);
+  ASSERT(ji_dirty_region != NULL);
 
   nrects = JI_REGION_NUM_RECTS(ji_dirty_region);
 
@@ -206,7 +205,7 @@ void ji_flip_dirty_region()
 
 void ji_flip_rect(JRect rect)
 {
-  assert(ji_screen != screen);
+  ASSERT(ji_screen != screen);
 
   if (JI_SCREEN_W == SCREEN_W && JI_SCREEN_H == SCREEN_H) {
     blit(ji_screen, screen,
@@ -325,7 +324,7 @@ void jmouse_draw_cursor()
 
 void jmouse_hide()
 {
-  assert(mouse_scares >= 0);
+  ASSERT(mouse_scares >= 0);
 
   if (ji_screen == screen)
     scare_mouse();
@@ -337,7 +336,7 @@ void jmouse_hide()
 
 void jmouse_show()
 {
-  assert(mouse_scares > 0);
+  ASSERT(mouse_scares > 0);
   mouse_scares--;
 
   if (ji_screen == screen)
@@ -346,13 +345,13 @@ void jmouse_show()
 
 bool jmouse_is_hidden()
 {
-  assert(mouse_scares >= 0);
+  ASSERT(mouse_scares >= 0);
   return mouse_scares > 0;
 }
 
 bool jmouse_is_shown()
 {
-  assert(mouse_scares >= 0);
+  ASSERT(mouse_scares >= 0);
   return mouse_scares == 0;
 }
 
@@ -493,7 +492,7 @@ static void update_mouse_position()
 static void capture_covered_area()
 {
   if (sprite_cursor != NULL && mouse_scares == 0) {
-    assert(covered_area == NULL);
+    ASSERT(covered_area == NULL);
 
     covered_area = create_bitmap(sprite_cursor->w, sprite_cursor->h);
     covered_area_x = m_x[0]-focus_x;

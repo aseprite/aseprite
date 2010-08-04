@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -301,7 +300,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     /* TODO add translatable support */
     /* TODO here we need jxmlelem_get_text(elem) */
     /* widget = jtextbox_new(tag->text, wordwrap ? JI_WORDWRAP: 0); */
-    assert(false);
+    ASSERT(false);
   }
   /* view */
   else if (ustrcmp(elem_name, "view") == 0) {

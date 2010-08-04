@@ -22,7 +22,6 @@
 #include "raster/gfxobj.h"
 #include <allegro/color.h>
 #include <vector>
-#include <cassert>
 
 class SortPalette
 {
@@ -69,7 +68,7 @@ public:
   void setFrame(int frame);
 
   ase_uint32 getEntry(int i) const {
-    assert(i >= 0 && i < size());
+    ASSERT(i >= 0 && i < size());
     return m_colors[i];
   }
 

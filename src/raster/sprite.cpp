@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <cstring>
 #include <vector>
 
@@ -75,8 +74,8 @@ public:
   }
 
   void setSize(int width, int height) {
-    assert(width > 0);
-    assert(height > 0);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
 
     m_width = width;
     m_height = height;
@@ -233,7 +232,7 @@ public:
 	getCurrentLayer()->is_image()) {
       const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->get_cel(getCurrentFrame());
       if (cel) {
-	assert((cel->image >= 0) &&
+	ASSERT((cel->image >= 0) &&
 	       (cel->image < getStock()->nimage));
 
 	image = getStock()->image[cel->image];
@@ -254,7 +253,7 @@ public:
 	getCurrentLayer()->is_image()) {
       Cel* cel = static_cast<LayerImage*>(getCurrentLayer())->get_cel(getCurrentFrame());
       if (cel) {
-	assert((cel->image >= 0) &&
+	ASSERT((cel->image >= 0) &&
 	       (cel->image < getStock()->nimage));
 
 	image = getStock()->image[cel->image];
@@ -273,8 +272,8 @@ public:
   }
 
   void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping) {
-    assert(m_imgtype == IMAGE_INDEXED);
-    assert(mapping.size() == 256);
+    ASSERT(m_imgtype == IMAGE_INDEXED);
+    ASSERT(mapping.size() == 256);
 
     CelList cels;
     getCels(cels);
@@ -453,7 +452,7 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   , m_height(height)
   , m_filename("Sprite")
 {
-  assert(width > 0 && height > 0);
+  ASSERT(width > 0 && height > 0);
 
   m_associated_to_file = false;
   m_frames = 1;
@@ -595,7 +594,7 @@ SpriteImpl* SpriteImpl::copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src
     dst_sprite->m_folder = NULL;
   }
 
-  assert(src_sprite->getFolder() != NULL);
+  ASSERT(src_sprite->getFolder() != NULL);
 
   undo_disable(dst_sprite->getUndo());
   dst_sprite->m_folder = src_sprite->getFolder()->duplicate_for(dst_sprite->m_self);
@@ -707,7 +706,7 @@ bool SpriteImpl::lockToWrite()
 
   // this only is possible if there are just one reader
   if (m_read_locks == 1) {
-    assert(!m_write_lock);
+    ASSERT(!m_write_lock);
     m_read_locks = 0;
     m_write_lock = true;
     return true;
@@ -724,8 +723,8 @@ void SpriteImpl::unlockToRead()
 {
   ScopedLock lock(*m_mutex);
 
-  assert(m_read_locks == 0);
-  assert(m_write_lock);
+  ASSERT(m_read_locks == 0);
+  ASSERT(m_write_lock);
 
   m_write_lock = false;
   m_read_locks = 1;
@@ -742,7 +741,7 @@ void SpriteImpl::unlock()
     --m_read_locks;
   }
   else {
-    assert(false);
+    ASSERT(false);
   }
 }
 
@@ -824,7 +823,7 @@ void SpriteImpl::generateMaskBoundaries(Mask* mask)
     m_bound.nseg = 0;
   }
 
-  assert(mask != NULL);
+  ASSERT(mask != NULL);
 
   if (mask->bitmap) {
     m_bound.seg = find_mask_boundary(mask->bitmap,
@@ -860,7 +859,7 @@ const Palette* SpriteImpl::getPalette(int frame) const
   const Palette* pal;
   JLink link;
 
-  assert(frame >= 0);
+  ASSERT(frame >= 0);
 
   JI_LIST_FOR_EACH(m_palettes, link) {
     pal = reinterpret_cast<const Palette*>(link->data);
@@ -872,7 +871,7 @@ const Palette* SpriteImpl::getPalette(int frame) const
       break;
   }
 
-  assert(found != NULL);
+  ASSERT(found != NULL);
   return found;
 }
 
@@ -882,7 +881,7 @@ Palette* SpriteImpl::getPalette(int frame)
   Palette* pal;
   JLink link;
 
-  assert(frame >= 0);
+  ASSERT(frame >= 0);
 
   JI_LIST_FOR_EACH(m_palettes, link) {
     pal = reinterpret_cast<Palette*>(link->data);
@@ -894,13 +893,13 @@ Palette* SpriteImpl::getPalette(int frame)
       break;
   }
 
-  assert(found != NULL);
+  ASSERT(found != NULL);
   return found;
 }
 
 void SpriteImpl::setPalette(Palette* pal, bool truncate)
 {
-  assert(pal != NULL);
+  ASSERT(pal != NULL);
 
   if (!truncate) {
     Palette* sprite_pal = getPalette(pal->getFrame());
@@ -939,10 +938,10 @@ void SpriteImpl::resetPalettes()
 
 void SpriteImpl::deletePalette(Palette* pal)
 {
-  assert(pal != NULL);
+  ASSERT(pal != NULL);
 
   JLink link = jlist_find(m_palettes, pal);
-  assert(link != NULL);
+  ASSERT(link != NULL);
 
   delete pal;
   jlist_delete_link(m_palettes, link);
@@ -1020,7 +1019,7 @@ Sprite* Sprite::createFlattenCopy(const Sprite& src_sprite)
   dst_sprite->m_impl = dst_sprite_impl;
 
   // Flatten layers
-  assert(src_sprite.getFolder() != NULL);
+  ASSERT(src_sprite.getFolder() != NULL);
 
   Layer* flat_layer;
   try {

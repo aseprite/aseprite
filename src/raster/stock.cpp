@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <string.h>
-#include <assert.h>
 
 #include "raster/image.h"
 #include "raster/stock.h"
@@ -54,7 +53,7 @@ Stock::Stock(const Stock& stock)
     }
   }
 
-  assert(this->nimage == stock.nimage);
+  ASSERT(this->nimage == stock.nimage);
 }
 
 Stock::~Stock()
@@ -84,7 +83,7 @@ Stock* stock_new(int imgtype)
  */
 Stock* stock_new_copy(const Stock* stock)
 {
-  assert(stock);
+  ASSERT(stock);
   return new Stock(*stock);
 }
 
@@ -93,7 +92,7 @@ Stock* stock_new_copy(const Stock* stock)
  */
 void stock_free(Stock* stock)
 {
-  assert(stock);
+  ASSERT(stock);
   delete stock;
 }
 

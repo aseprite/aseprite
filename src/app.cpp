@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
 /* #include <allegro/internal/aintern.h> */
 #include <memory>
 #include <stdarg.h>
@@ -122,7 +121,7 @@ App::App()
   : m_modules(NULL)
   , m_legacy(NULL)
 {
-  assert(m_instance == NULL);
+  ASSERT(m_instance == NULL);
   m_instance = this;
 
   // create private implementation data
@@ -307,7 +306,7 @@ int App::run()
 App::~App()
 {
   try {
-    assert(m_instance == this);
+    ASSERT(m_instance == this);
 
     // Remove ASE handlers
     PRINTF("ASE: Uninstalling\n");
@@ -334,7 +333,7 @@ App::~App()
 
 ToolBox* App::get_toolbox()
 {
-  assert(m_modules != NULL);
+  ASSERT(m_modules != NULL);
   return &m_modules->m_toolbox;
 }
 
@@ -343,7 +342,7 @@ ToolBox* App::get_toolbox()
  */
 void app_refresh_screen(const Sprite* sprite)
 {
-  assert(screen != NULL);
+  ASSERT(screen != NULL);
 
   if (sprite)
     set_current_palette(sprite->getCurrentPalette(), false);
@@ -427,7 +426,7 @@ bool app_realloc_recent_list()
 int app_get_current_image_type()
 {
   Context* context = UIContext::instance();
-  assert(context != NULL);
+  ASSERT(context != NULL);
 
   Sprite* sprite = context->get_current_sprite();
   if (sprite != NULL)

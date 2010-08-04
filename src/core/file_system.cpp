@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <cstdio>
 #include <vector>
 #include <map>
@@ -259,7 +258,7 @@ FileItem* get_root_fileitem()
 
     if (SHGetSpecialFolderLocation(NULL, CSIDL_DESKTOP, &pidl) != S_OK) {
       // TODO do something better
-      assert(false);
+      ASSERT(false);
       exit(1);
     }
     fileitem->pidl = pidl;
@@ -341,15 +340,15 @@ FileItem* get_fileitem_from_path(const jstring& path)
 
 bool fileitem_is_folder(FileItem* fileitem)
 {
-  assert(fileitem);
+  ASSERT(fileitem);
 
   return IS_FOLDER(fileitem);
 }
 
 bool fileitem_is_browsable(FileItem* fileitem)
 {
-  assert(fileitem);
-  assert(fileitem->filename != NOTINITIALIZED);
+  ASSERT(fileitem);
+  ASSERT(fileitem->filename != NOTINITIALIZED);
 
 #ifdef USE_PIDLS
   return IS_FOLDER(fileitem)
@@ -363,43 +362,43 @@ bool fileitem_is_browsable(FileItem* fileitem)
 
 jstring fileitem_get_keyname(FileItem* fileitem)
 {
-  assert(fileitem);
-  assert(fileitem->keyname != NOTINITIALIZED);
+  ASSERT(fileitem);
+  ASSERT(fileitem->keyname != NOTINITIALIZED);
 
   return fileitem->keyname;
 }
 
 jstring fileitem_get_filename(FileItem* fileitem)
 {
-  assert(fileitem);
-  assert(fileitem->filename != NOTINITIALIZED);
+  ASSERT(fileitem);
+  ASSERT(fileitem->filename != NOTINITIALIZED);
 
   return fileitem->filename;
 }
 
 jstring fileitem_get_displayname(FileItem* fileitem)
 {
-  assert(fileitem);
-  assert(fileitem->displayname != NOTINITIALIZED);
+  ASSERT(fileitem);
+  ASSERT(fileitem->displayname != NOTINITIALIZED);
 
   return fileitem->displayname;
 }
 
 FileItem* fileitem_get_parent(FileItem* fileitem)
 {
-  assert(fileitem);
+  ASSERT(fileitem);
 
   if (fileitem == rootitem)
     return NULL;
   else {
-    assert(fileitem->parent);
+    ASSERT(fileitem->parent);
     return fileitem->parent;
   }
 }
 
 const FileItemList& fileitem_get_children(FileItem* fileitem)
 {
-  assert(fileitem);
+  ASSERT(fileitem);
 
   /* is the file-item a folder? */
   if (IS_FOLDER(fileitem) &&
@@ -473,7 +472,7 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 		put_fileitem(child);
 	      }
 	      else {
-		assert(child->parent == fileitem);
+		ASSERT(child->parent == fileitem);
 		free_pidl(fullpidl);
 		free_pidl(itempidl[c]);
 	      }
@@ -534,15 +533,15 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 
 bool fileitem_has_extension(FileItem* fileitem, const jstring& csv_extensions)
 {
-  assert(fileitem);
-  assert(fileitem->filename != NOTINITIALIZED);
+  ASSERT(fileitem);
+  ASSERT(fileitem->filename != NOTINITIALIZED);
 
   return fileitem->filename.has_extension(csv_extensions);
 }
 
 BITMAP* fileitem_get_thumbnail(FileItem* fileitem)
 {
-  assert(fileitem);
+  ASSERT(fileitem);
 
   ThumbnailMap::iterator it = thumbnail_map->find(fileitem->filename);
   if (it != thumbnail_map->end())
@@ -553,7 +552,7 @@ BITMAP* fileitem_get_thumbnail(FileItem* fileitem)
 
 void fileitem_set_thumbnail(FileItem* fileitem, BITMAP* thumbnail)
 {
-  assert(fileitem);
+  ASSERT(fileitem);
 
   // destroy the current thumbnail of the file (if exists)
   ThumbnailMap::iterator it = thumbnail_map->find(fileitem->filename);
@@ -695,7 +694,7 @@ static void update_by_pidl(FileItem* fileitem)
   if (fileitem == rootitem)
     pFolder = shl_idesktop;
   else {
-    assert(fileitem->parent);
+    ASSERT(fileitem->parent);
     shl_idesktop->BindToObject(fileitem->parent->fullpidl,
 			       NULL,
 			       IID_IShellFolder,
@@ -751,8 +750,8 @@ static LPITEMIDLIST concat_pidl(LPITEMIDLIST pidlHead, LPITEMIDLIST pidlTail)
   LPITEMIDLIST pidlNew;
   UINT cb1, cb2;
 
-  assert(pidlHead);
-  assert(pidlTail);
+  ASSERT(pidlHead);
+  ASSERT(pidlTail);
 
   cb1 = get_pidl_size(pidlHead) - sizeof(pidlHead->mkid.cb);
   cb2 = get_pidl_size(pidlTail);
@@ -943,12 +942,12 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
  */
 static void put_fileitem(FileItem* fileitem)
 {
-  assert(fileitem->filename != NOTINITIALIZED);
-  assert(fileitem->keyname == NOTINITIALIZED);
+  ASSERT(fileitem->filename != NOTINITIALIZED);
+  ASSERT(fileitem->keyname == NOTINITIALIZED);
 
   fileitem->keyname = get_key_for_pidl(fileitem->fullpidl);
 
-  assert(fileitem->keyname != NOTINITIALIZED);
+  ASSERT(fileitem->keyname != NOTINITIALIZED);
 
   // insert this file-item in the hash-table
   fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));
@@ -1015,7 +1014,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
 
   child = get_fileitem_by_path(filename, false);
   if (!child) {
-    assert(fileitem != NULL);
+    ASSERT(fileitem != NULL);
     child = new FileItem(fileitem);
 
     child->filename = filename;
@@ -1025,7 +1024,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
     put_fileitem(child);
   }
   else {
-    assert(child->parent == fileitem);
+    ASSERT(child->parent == fileitem);
   }
 
   fileitem->insert_child_sorted(child);
@@ -1066,12 +1065,12 @@ static jstring get_key_for_filename(const jstring& filename)
 
 static void put_fileitem(FileItem* fileitem)
 {
-  assert(fileitem->filename != NOTINITIALIZED);
-  assert(fileitem->keyname == NOTINITIALIZED);
+  ASSERT(fileitem->filename != NOTINITIALIZED);
+  ASSERT(fileitem->keyname == NOTINITIALIZED);
 
   fileitem->keyname = get_key_for_filename(fileitem->filename);
 
-  assert(fileitem->keyname != NOTINITIALIZED);
+  ASSERT(fileitem->keyname != NOTINITIALIZED);
 
   // insert this file-item in the hash-table
   fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));

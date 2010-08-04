@@ -64,7 +64,7 @@ static bool onionskin_check_change_hook(JWidget widget, void *data);
 // Slot for App::Exit signal 
 static void on_exit_delete_this_widget()
 {
-  assert(window != NULL);
+  ASSERT(window != NULL);
   jwidget_free(window);
 }
 
@@ -283,7 +283,7 @@ static bool brush_preview_msg_proc(JWidget widget, JMessage msg)
 	->getToolSettings(current_tool)
 	->getPen();
 
-      assert(pen_settings != NULL);
+      ASSERT(pen_settings != NULL);
 
       Pen* pen = new Pen(pen_settings->getType(),
 			 pen_settings->getSize(),

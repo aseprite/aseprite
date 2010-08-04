@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -85,7 +84,7 @@ JWidget jgrid_new(int columns, bool same_width_columns)
   Grid *grid = jnew(Grid, 1);
   int col;
 
-  assert(columns > 0);
+  ASSERT(columns > 0);
 
   grid->same_width_columns = same_width_columns;
   grid->cols = columns;
@@ -133,8 +132,8 @@ void jgrid_add_child(JWidget widget, JWidget child,
 {
   Grid* grid = reinterpret_cast<Grid*>(jwidget_get_data(widget, JI_GRID));
 
-  assert(hspan > 0);
-  assert(vspan > 0);
+  ASSERT(hspan > 0);
+  ASSERT(vspan > 0);
 
   jwidget_add_child(widget, child);
 
@@ -360,7 +359,7 @@ static void grid_calculate_size(JWidget widget)
 									\
 	if (cell->child != NULL && cell->parent == NULL &&		\
 	    cell->p_size > 0) {						\
-	  assert(cell->p_span > 0);					\
+	  ASSERT(cell->p_span > 0);					\
 									\
 	  if (cell->p_span == current_span) {				\
 	    expand = 0;							\
@@ -467,7 +466,7 @@ static void grid_distribute_size(JWidget widget, JRect rect)
       for (i=0; i<grid->p_cols; ++i) {					\
 	if (grid->p_colstrip[i].expand_count == expand_count ||		\
 	    p_same_width) {						\
-	  assert(wantmore_count > 0);					\
+	  ASSERT(wantmore_count > 0);					\
 									\
 	  grid->p_colstrip[i].size += extra_foreach;			\
 	  extra_total -= extra_foreach;					\
@@ -478,8 +477,8 @@ static void grid_distribute_size(JWidget widget, JRect rect)
 	  }								\
 	}								\
       }									\
-      assert(wantmore_count == 0);					\
-      assert(extra_total == 0);						\
+      ASSERT(wantmore_count == 0);					\
+      ASSERT(extra_total == 0);						\
     }									\
   }
 
@@ -513,8 +512,8 @@ static bool grid_put_widget_in_cell(JWidget widget, JWidget child, int hspan, in
 	  /* if these asserts fails, it's really possible that you
 	     specified bad values for hspan or vspan (they are
 	     overlapping with other cells) */
-	  assert(cell->parent == NULL);
-	  assert(cell->child == NULL);
+	  ASSERT(cell->parent == NULL);
+	  ASSERT(cell->child == NULL);
 
 	  cell->parent = parentcell;
 	  cell->child = child;
@@ -526,8 +525,8 @@ static bool grid_put_widget_in_cell(JWidget widget, JWidget child, int hspan, in
 	  for (col=colbeg; col<colend; ++col) {
 	    cell = grid->cells[row]+col;
 
-	    assert(cell->parent == NULL);
-	    assert(cell->child == NULL);
+	    ASSERT(cell->parent == NULL);
+	    ASSERT(cell->child == NULL);
 
 	    cell->parent = parentcell;
 	    cell->child = child;

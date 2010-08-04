@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro/config.h>
 #include <allegro/unicode.h>
 
@@ -164,7 +163,7 @@ void NewFileCommand::onExecute(Context* context)
 	// If the background color isn't transparent, we have to
 	// convert the `Layer 1' in a `Background'
 	if (color_type(color) != COLOR_TYPE_MASK) {
-	  assert(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
+	  ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
 
 	  static_cast<LayerImage*>(sprite->getCurrentLayer())->configure_as_background();
 	  image_clear(sprite->getCurrentImage(), get_color_for_image(imgtype, color));
@@ -188,9 +187,9 @@ void NewFileCommand::onExecute(Context* context)
  */
 static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolors)
 {
-  assert(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
-  assert(w >= 1 && w <= 9999);
-  assert(h >= 1 && h <= 9999);
+  ASSERT(imgtype == IMAGE_RGB || imgtype == IMAGE_GRAYSCALE || imgtype == IMAGE_INDEXED);
+  ASSERT(w >= 1 && w <= 9999);
+  ASSERT(h >= 1 && h <= 9999);
 
   return Sprite::createWithLayer(imgtype, w, h, ncolors);
 }

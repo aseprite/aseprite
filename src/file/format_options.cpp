@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
-
 #include "jinete/jbase.h"
 
 #include "file/format_options.h"
@@ -28,7 +26,7 @@ FormatOptions* format_options_new(int type, int size)
 {
   FormatOptions* format_options;
 
-  assert(size >= (int)sizeof(FormatOptions));
+  ASSERT(size >= (int)sizeof(FormatOptions));
 
   format_options = (FormatOptions*)jmalloc0(size);
   if (format_options == NULL)
@@ -42,7 +40,7 @@ FormatOptions* format_options_new(int type, int size)
 
 void format_options_free(FormatOptions* format_options)
 {
-  assert(format_options != NULL);
+  ASSERT(format_options != NULL);
   jfree(format_options);
 }
 

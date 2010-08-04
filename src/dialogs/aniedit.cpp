@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
 
 #include "jinete/jinete.h"
 
@@ -611,7 +610,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		anieditor->hot_layer >= 0 &&
 		anieditor->hot_layer < anieditor->nlayers) {
 	      Layer* layer = anieditor->layers[anieditor->clk_layer];
-	      assert(layer != NULL);
+	      ASSERT(layer != NULL);
 	      layer->set_readable(!layer->is_readable());
 	    }
 	    break;
@@ -621,7 +620,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		anieditor->hot_layer >= 0 &&
 		anieditor->hot_layer < anieditor->nlayers) {
 	      Layer* layer = anieditor->layers[anieditor->clk_layer];
-	      assert(layer != NULL);
+	      ASSERT(layer != NULL);
 	      layer->set_writable(!layer->is_writable());
 	    }
 	    break;

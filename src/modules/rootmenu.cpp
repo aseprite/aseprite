@@ -237,7 +237,7 @@ static int load_root_menu()
 
 static JWidget load_menu_by_id(TiXmlHandle& handle, const char* id)
 {
-  assert(id != NULL);
+  ASSERT(id != NULL);
 
   //PRINTF("load_menu_by_id(%s)\n", id);
 

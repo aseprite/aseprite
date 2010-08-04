@@ -353,7 +353,7 @@ BITMAP* SkinneableTheme::set_cursor(int type, int* focus_x, int* focus_y)
     return NULL;
   }
   else {
-    assert(type >= 0 && type < JI_CURSORS);
+    ASSERT(type >= 0 && type < JI_CURSORS);
 
     *focus_x = cursors_info[type].focusx*jguiscale();
     *focus_y = cursors_info[type].focusy*jguiscale();
@@ -425,7 +425,7 @@ void SkinneableTheme::init_widget(JWidget widget)
     case JI_COMBOBOX:
       {
 	ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
-	assert(combobox != NULL);
+	ASSERT(combobox != NULL);
 
 	Widget* button = combobox->getButtonWidget();
 
@@ -904,7 +904,7 @@ void SkinneableTheme::draw_menuitem(JWidget widget, JRect clip)
   int x1, y1, x2, y2;
   JRect pos;
 
-  /* TODO assert? */
+  /* TODO ASSERT? */
   if (!widget->parent->parent)
     return;
 

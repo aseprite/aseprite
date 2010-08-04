@@ -73,7 +73,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       palette_entries = palette->size();
       break;
   }
-  assert(scanline > 0 && color_depth > 0);
+  ASSERT(scanline > 0 && color_depth > 0);
 
   // create the BITMAPV5HEADER structure
   HGLOBAL hmem = GlobalAlloc(GHND,

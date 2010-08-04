@@ -158,7 +158,7 @@ void ComboBox::insertItem(int itemIndex, const std::string& text)
 
 void ComboBox::removeItem(int itemIndex)
 {
-  assert(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
+  ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
   Item* item = m_items[itemIndex];
 
@@ -192,7 +192,7 @@ std::string ComboBox::getItemText(int itemIndex)
 
 void ComboBox::setItemText(int itemIndex, const std::string& text)
 {
-  assert(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
+  ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
   Item* item = m_items[itemIndex];
   item->text = text;
@@ -245,7 +245,7 @@ void* ComboBox::getItemData(int itemIndex)
 
 void ComboBox::setItemData(int itemIndex, void* data)
 {
-  assert(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
+  ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
   Item* item = m_items[itemIndex];
   item->data = data;

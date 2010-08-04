@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#include <cassert>
 #include <list>
 #include <vector>
 
@@ -338,7 +337,7 @@ int init_module_gui()
 void exit_module_gui()
 {
   // destroy shortcuts
-  assert(shortcuts != NULL);
+  ASSERT(shortcuts != NULL);
   for (std::vector<Shortcut*>::iterator
 	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
     Shortcut* shortcut = *it;
@@ -348,7 +347,7 @@ void exit_module_gui()
   shortcuts = NULL;
 
   // destroy monitors
-  assert(monitors != NULL);
+  ASSERT(monitors != NULL);
   for (MonitorList::iterator
   	 it2 = monitors->begin(); it2 != monitors->end(); ++it2) {
     Monitor* monitor = *it2;
@@ -1042,7 +1041,7 @@ void remove_gui_monitor(Monitor* monitor)
   MonitorList::iterator it =
     std::find(monitors->begin(), monitors->end(), monitor);
 
-  assert(it != monitors->end());
+  ASSERT(it != monitors->end());
 
   if (!monitor->lock)
     delete monitor;

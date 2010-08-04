@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include "jinete/jinete.h"
 
 #include "commands/command.h"

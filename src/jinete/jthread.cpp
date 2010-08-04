@@ -32,7 +32,6 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
 
 #include "jinete/jthread.h"
 

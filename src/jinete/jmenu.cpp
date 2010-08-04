@@ -32,7 +32,6 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 
@@ -211,7 +210,7 @@ JWidget jmenuitem_new(const char *text)
 
 JWidget jmenubox_get_menu(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (jlist_empty(widget->children))
     return NULL;
@@ -221,7 +220,7 @@ JWidget jmenubox_get_menu(JWidget widget)
 
 JWidget jmenubar_get_menu(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return jmenubox_get_menu(widget);
 }
@@ -230,7 +229,7 @@ JWidget jmenuitem_get_submenu(JWidget widget)
 {
   MenuItem *menuitem;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   menuitem = MITEM(widget);
 
@@ -239,14 +238,14 @@ JWidget jmenuitem_get_submenu(JWidget widget)
 
 JAccel jmenuitem_get_accel(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return MITEM(widget)->accel;
 }
 
 bool jmenuitem_has_submenu_opened(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return MITEM(widget)->submenu_menubox != NULL;
 }
@@ -255,21 +254,21 @@ void jmenubox_set_menu(JWidget widget, JWidget widget_menu)
 {
   JWidget old_menu;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   old_menu = jmenubox_get_menu(widget);
   if (old_menu)
     jwidget_remove_child(widget, old_menu);
 
   if (widget_menu) {
-    assert_valid_widget(widget_menu);
+    ASSERT_VALID_WIDGET(widget_menu);
     jwidget_add_child(widget, widget_menu);
   }
 }
 
 void jmenubar_set_menu(JWidget widget, JWidget widget_menu)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   jmenubox_set_menu(widget, widget_menu);
 }
@@ -278,7 +277,7 @@ void jmenuitem_set_submenu(JWidget widget, JWidget widget_menu)
 {
   MenuItem *menuitem;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   menuitem = MITEM(widget);
 
@@ -288,7 +287,7 @@ void jmenuitem_set_submenu(JWidget widget, JWidget widget_menu)
   menuitem->submenu = widget_menu;
 
   if (menuitem->submenu) {
-    assert_valid_widget(widget_menu);
+    ASSERT_VALID_WIDGET(widget_menu);
     MENU(menuitem->submenu)->menuitem = widget; 
   }
 }
@@ -304,7 +303,7 @@ void jmenuitem_set_accel(JWidget widget, JAccel accel)
 {
   MenuItem *menuitem;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   menuitem = MITEM(widget);
   if (menuitem->accel)
@@ -315,7 +314,7 @@ void jmenuitem_set_accel(JWidget widget, JAccel accel)
 
 int jmenuitem_is_highlight(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return MITEM(widget)->highlight;
 }
@@ -372,14 +371,14 @@ static bool menu_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DESTROY: {
       Menu *menu = MENU(widget);
-      assert(menu != NULL);
+      ASSERT(menu != NULL);
 
       if (menu->menuitem) {
 	if (MITEM(menu->menuitem)->submenu == widget) {
 	  MITEM(menu->menuitem)->submenu = NULL;
 	}
 	else {
-	  assert(MITEM(menu->menuitem)->submenu == NULL);
+	  ASSERT(MITEM(menu->menuitem)->submenu == NULL);
 	}
       }
 
@@ -469,7 +468,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DESTROY: {
       MenuBox* menubox = reinterpret_cast<MenuBox*>(jwidget_get_data(widget, JI_MENUBOX));
-      assert(menubox != NULL);
+      ASSERT(menubox != NULL);
 
       if (menubox->base != NULL &&
 	  menubox->base->is_filtering) {
@@ -813,7 +812,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DESTROY:
-      assert(menuitem != NULL);
+      ASSERT(menuitem != NULL);
 
       if (menuitem->accel)
 	jaccel_free(menuitem->accel);
@@ -846,9 +845,9 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	JRect pos, old_pos;
 	bool select_first = msg->user.a ? true: false;
 
-	assert(base != NULL);
-	assert(base->is_processing);
-	assert(HAS_SUBMENU(widget));
+	ASSERT(base != NULL);
+	ASSERT(base->is_processing);
+	ASSERT(HAS_SUBMENU(widget));
 
 	old_pos = jwidget_get_rect(widget->parent->parent);
 
@@ -959,16 +958,16 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	Widget* menubox;
 	bool last_of_close_chain = msg->user.a ? true: false;
 
-	assert(base != NULL);
-	assert(base->is_processing);
+	ASSERT(base != NULL);
+	ASSERT(base->is_processing);
 
 	menubox = menuitem->submenu_menubox;
 	menuitem->submenu_menubox = NULL;
 
-	assert(menubox != NULL);
+	ASSERT(menubox != NULL);
 
 	window = (Frame*)menubox->parent;
-	assert(window && window->type == JI_FRAME);
+	ASSERT(window && window->type == JI_FRAME);
 
 	/* fetch the "menu" to avoid free it with 'jwidget_free()' */
 	jmenubox_set_menu(menubox, NULL);
@@ -1039,7 +1038,7 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
 static JWidget get_base_menubox(JWidget widget)
 {
   while (widget != NULL) {
-    assert_valid_widget(widget);
+    ASSERT_VALID_WIDGET(widget);
 
     /* we are in a menubox */
     if (widget->type == JI_MENUBOX || widget->type == JI_MENUBAR) {
@@ -1049,23 +1048,23 @@ static JWidget get_base_menubox(JWidget widget)
       else {
 	JWidget menu = jmenubox_get_menu(widget);
 	
-	assert(menu != NULL);
-	assert(MENU(menu)->menuitem != NULL);
+	ASSERT(menu != NULL);
+	ASSERT(MENU(menu)->menuitem != NULL);
 
 	widget = MENU(menu)->menuitem;
       }
     }
     /* we are in a menuitem */
     else {
-      assert(widget->type == JI_MENUITEM);
-      assert(widget->parent != NULL);
-      assert(widget->parent->type == JI_MENU);
+      ASSERT(widget->type == JI_MENUITEM);
+      ASSERT(widget->parent != NULL);
+      ASSERT(widget->parent->type == JI_MENU);
 
       widget = widget->parent->parent;
     }
   }
 
-  assert(false);
+  ASSERT(false);
   return NULL;
 }
 
@@ -1172,15 +1171,15 @@ static void open_menuitem(JWidget menuitem, bool select_first)
   JLink link;
   Base *base;
 
-  assert_valid_widget(menuitem);
-  assert(HAS_SUBMENU(menuitem));
+  ASSERT_VALID_WIDGET(menuitem);
+  ASSERT(HAS_SUBMENU(menuitem));
 
   menu = menuitem->parent;
 
   /* the menu item is already opened? */
-  assert(MITEM(menuitem)->submenu_menubox == NULL);
+  ASSERT(MITEM(menuitem)->submenu_menubox == NULL);
 
-  assert_valid_widget(menu);
+  ASSERT_VALID_WIDGET(menu);
 
   /* close all siblings of 'menuitem' */
   if (menu->parent) {
@@ -1203,7 +1202,7 @@ static void open_menuitem(JWidget menuitem, bool select_first)
 
   /* get the 'base' */
   base = get_base(menuitem);
-  assert(base != NULL);
+  ASSERT(base != NULL);
 
   /* reset flags */
   base->close_all = false;
@@ -1226,12 +1225,12 @@ static void close_menuitem(JWidget menuitem, bool last_of_close_chain)
   JLink link;
   Base *base;
 
-  assert_valid_widget(menuitem);
-  assert(MITEM(menuitem)->submenu_menubox != NULL);
+  ASSERT_VALID_WIDGET(menuitem);
+  ASSERT(MITEM(menuitem)->submenu_menubox != NULL);
 
   /* first: recursively close the children */
   menu = jmenubox_get_menu(MITEM(menuitem)->submenu_menubox);
-  assert(menu != NULL);
+  ASSERT(menu != NULL);
 
   JI_LIST_FOR_EACH(menu->children, link) {
     child = reinterpret_cast<JWidget>(link->data);
@@ -1252,7 +1251,7 @@ static void close_menuitem(JWidget menuitem, bool last_of_close_chain)
 
   /* get the 'base' */
   base = get_base(menuitem);
-  assert(base != NULL);
+  ASSERT(base != NULL);
 
   /* start processing */
   base->is_processing = true;
@@ -1272,7 +1271,7 @@ static void close_all(JWidget menu)
   JLink link;
   Base *base;
 
-  assert(menu != NULL);
+  ASSERT(menu != NULL);
 
   while (MENU(menu)->menuitem != NULL) {
     menuitem = MENU(menu)->menuitem;

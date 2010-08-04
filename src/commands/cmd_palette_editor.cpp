@@ -21,7 +21,6 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 #include <vector>
 
 #include "Vaca/Bind.h"
@@ -60,7 +59,7 @@ static bool redraw_all = false;
 // Slot for App::Exit signal 
 static void on_exit_delete_this_widget()
 {
-  assert(window != NULL);
+  ASSERT(window != NULL);
 
   jmanager_remove_timer(redraw_timer_id);
   redraw_timer_id = -1;
@@ -648,7 +647,7 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
 	channel = SortPalette::RGB_Blue;
       }
       else
-	assert(false);
+	ASSERT(false);
     }
     else if (item_text.find("HSV") != std::string::npos) {
       if (item_text.find("Hue") != std::string::npos) {
@@ -661,31 +660,31 @@ static bool sort_by_criteria(Palette* palette, int from, int to, JList selected_
 	channel = SortPalette::HSV_Value;
       }
       else
-	assert(false);
+	ASSERT(false);
     }
     else if (item_text.find("HSL") != std::string::npos) {
       if (item_text.find("Lightness") != std::string::npos) {
 	channel = SortPalette::HSL_Lightness;
       }
       else
-	assert(false);
+	ASSERT(false);
     }
     else if (item_text.find("YUV") != std::string::npos) {
       if (item_text.find("Luma") != std::string::npos) {
 	channel = SortPalette::YUV_Luma;
       }
       else
-	assert(false);
+	ASSERT(false);
     }
     else
-      assert(false);
+      ASSERT(false);
 
     if (item_text.find("Ascending") != std::string::npos)
       ascending = true;
     else if (item_text.find("Descending") != std::string::npos)
       ascending = false;
     else
-      assert(false);
+      ASSERT(false);
 
     SortPalette* chain = new SortPalette(channel, ascending);
     if (sort_palette)

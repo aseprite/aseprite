@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -42,7 +41,7 @@ void jwidget_add_tooltip_text(JWidget widget, const char *text)
 {
   TipData* tip = reinterpret_cast<TipData*>(jwidget_get_data(widget, tip_type()));
 
-  assert(text != NULL);
+  ASSERT(text != NULL);
 
   if (tip == NULL) {
     tip = jnew(TipData, 1);
@@ -185,7 +184,7 @@ TipWindow::~TipWindow()
  */
 void TipWindow::set_hotregion(JRegion region)
 {
-  assert(region != NULL);
+  ASSERT(region != NULL);
 
   if (m_hot_region != NULL)
     jregion_free(m_hot_region);

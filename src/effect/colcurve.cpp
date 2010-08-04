@@ -146,7 +146,7 @@ spline_eval(int n, float x[], float y[], float y2[], float val)
 
   h = x[k_hi] - x[k_lo];
   /* TODO */
-  /* assert(h > 0.0); */
+  /* ASSERT(h > 0.0); */
 
   a = (x[k_hi] - val) / h;
   b = (val - x[k_lo]) / h;

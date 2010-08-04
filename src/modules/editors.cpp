@@ -76,7 +76,7 @@ void remove_editor(Editor* editor)
 {
   EditorList::iterator it = std::find(editors.begin(), editors.end(), editor);
 
-  assert(it != editors.end());
+  ASSERT(it != editors.end());
 
   editors.erase(it);
 }
@@ -340,7 +340,7 @@ void close_editor(Editor* editor)
   if (!current_editor) {
     JWidget next_editor = find_next_editor(other_widget);
     if (next_editor) {
-      assert(next_editor->type == editor_type());
+      ASSERT(next_editor->type == editor_type());
 
       set_current_editor(static_cast<Editor*>(next_editor));
     }

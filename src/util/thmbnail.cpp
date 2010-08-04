@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro/color.h>
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
@@ -124,7 +123,7 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
   int w, h, x1, y1;
   double sx, sy, scale;
 
-  assert(image != NULL);
+  ASSERT(image != NULL);
 
   sx = (double)image->w / (double)bmp->w;
   sy = (double)image->h / (double)bmp->h;
@@ -177,7 +176,7 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 	    if (c != 0) {
-	      assert(c >= 0 && (size_t)c < palette->size());
+	      ASSERT(c >= 0 && (size_t)c < palette->size());
 
 	      c = palette->getEntry(MID(0, (size_t)c, palette->size()-1));
 	      putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
@@ -217,7 +216,7 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 
-	    assert(c >= 0 && (size_t)c < palette->size());
+	    ASSERT(c >= 0 && (size_t)c < palette->size());
 
 	    c = palette->getEntry(MID(0, (size_t)c, palette->size()-1));
 	    putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),

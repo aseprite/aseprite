@@ -1,4 +1,5 @@
-#include <assert.h>
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,7 +66,7 @@ read_palette (FILE * file, GIF_PALETTE *palette)
 static int lzw_read_pixel (int pos, unsigned char *data)
 {
     unsigned char *bitmap = data;
-    assert(pos >= 0);
+    ASSERT(pos >= 0);
     return bitmap[pos];
 }
 
@@ -74,8 +75,8 @@ static int lzw_read_pixel (int pos, unsigned char *data)
 static void lzw_write_pixel (int pos, int c, unsigned char *data)
 {
     unsigned char *bitmap = data;
-    assert(pos >= 0);
-    assert(c >= 0 && c <= 255);
+    ASSERT(pos >= 0);
+    ASSERT(c >= 0 && c <= 255);
     bitmap[pos] = c;
 }
 

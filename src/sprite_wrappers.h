@@ -61,13 +61,13 @@ public:
 
   Sprite* operator->() 
   {
-    assert(m_sprite != NULL);
+    ASSERT(m_sprite != NULL);
     return m_sprite;
   }
 
   const Sprite* operator->() const 
   {
-    assert(m_sprite != NULL);
+    ASSERT(m_sprite != NULL);
     return m_sprite;
   }
 
@@ -239,7 +239,7 @@ public:
 
   void destroy()
   {
-    assert(m_sprite != NULL);
+    ASSERT(m_sprite != NULL);
 
     m_context->remove_sprite(m_sprite);
     unlock_writer();

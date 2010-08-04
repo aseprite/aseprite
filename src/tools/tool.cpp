@@ -287,7 +287,7 @@ void ToolLoopManager::calculateDirtyArea(IToolLoop* loop, const std::vector<Poin
 
 void ToolLoopManager::calculateMinMax(const std::vector<Point>& points, Point& minpt, Point& maxpt)
 {
-  assert(points.size() > 0);
+  ASSERT(points.size() > 0);
 
   minpt.x = points[0].x;
   minpt.y = points[0].y;

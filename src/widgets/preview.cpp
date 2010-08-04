@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
-
 #include "jinete/jmanager.h"
 #include "jinete/jmessage.h"
 #include "jinete/jwidget.h"
@@ -64,7 +62,7 @@ int preview_type()
 
 void preview_restart(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   Preview* preview = reinterpret_cast<Preview*>(jwidget_get_data(widget, preview_type()));
 
@@ -77,7 +75,7 @@ void preview_restart(JWidget widget)
 
 Effect *preview_get_effect(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   Preview* preview = reinterpret_cast<Preview*>(jwidget_get_data(widget, preview_type()));
   return preview->effect;

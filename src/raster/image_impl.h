@@ -19,8 +19,6 @@
 #ifndef RASTER_IMAGE_IMPL_H_INCLUDED
 #define RASTER_IMAGE_IMPL_H_INCLUDED
 
-#include <cassert>
-
 #include "raster/image.h"
 #include "raster/palette.h"
 
@@ -41,12 +39,12 @@ public:				// raw access to pixel-data
   }
 
   inline address_t line_address(int y) {
-    assert(y >= 0 && y < h);
+    ASSERT(y >= 0 && y < h);
     return ((address_t*)line)[y];
   }
 
   inline const_address_t line_address(int y) const {
-    assert(y >= 0 && y < h);
+    ASSERT(y >= 0 && y < h);
     return ((const_address_t*)line)[y];
   }
   

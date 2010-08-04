@@ -383,7 +383,7 @@ private:
 
 IToolSettings* UISettingsImpl::getToolSettings(Tool* tool)
 {
-  assert(tool != NULL);
+  ASSERT(tool != NULL);
 
   std::map<std::string, IToolSettings*>::iterator
     it = m_toolSettings.find(tool->getId());

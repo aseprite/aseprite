@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <memory>
 
 #include "jinete/jlist.h"
@@ -45,7 +44,7 @@
  */
 Undoable::Undoable(SpriteWriter& sprite, const char* label)
 {
-  assert(label != NULL);
+  ASSERT(label != NULL);
 
   m_sprite = sprite;
   m_committed = false;
@@ -89,7 +88,7 @@ void Undoable::commit()
 
 void Undoable::set_number_of_frames(int frames)
 {
-  assert(frames >= 1);
+  ASSERT(frames >= 1);
 
   // Save in undo the current totalFrames property
   if (is_enabled())
@@ -101,7 +100,7 @@ void Undoable::set_number_of_frames(int frames)
 
 void Undoable::set_current_frame(int frame)
 {
-  assert(frame >= 0);
+  ASSERT(frame >= 0);
 
   if (is_enabled())
     undo_set_frame(m_sprite->getUndo(), m_sprite);
@@ -125,8 +124,8 @@ void Undoable::set_current_layer(Layer* layer)
 
 void Undoable::set_sprite_size(int w, int h)
 {
-  assert(w > 0);
-  assert(h > 0);
+  ASSERT(w > 0);
+  ASSERT(h > 0);
 
   if (is_enabled())
     undo_set_size(m_sprite->getUndo(), m_sprite);
@@ -259,7 +258,7 @@ void Undoable::set_imgtype(int new_imgtype, int dithering_method)
  */
 int Undoable::add_image_in_stock(Image* image)
 {
-  assert(image);
+  ASSERT(image);
 
   // add the image in the stock
   int image_index = stock_add_image(m_sprite->getStock(), image);
@@ -275,10 +274,10 @@ int Undoable::add_image_in_stock(Image* image)
  */
 void Undoable::remove_image_from_stock(int image_index)
 {
-  assert(image_index >= 0);
+  ASSERT(image_index >= 0);
 
   Image* image = stock_get_image(m_sprite->getStock(), image_index);
-  assert(image);
+  ASSERT(image);
 
   if (is_enabled())
     undo_remove_image(m_sprite->getUndo(), m_sprite->getStock(), image_index);
@@ -291,7 +290,7 @@ void Undoable::replace_stock_image(int image_index, Image* new_image)
 {
   // get the current image in the 'image_index' position
   Image* old_image = stock_get_image(m_sprite->getStock(), image_index);
-  assert(old_image);
+  ASSERT(old_image);
 
   // replace the image in the stock
   if (is_enabled())
@@ -331,7 +330,7 @@ Layer* Undoable::new_layer()
  */
 void Undoable::remove_layer(Layer* layer)
 {
-  assert(layer);
+  ASSERT(layer);
 
   LayerFolder* parent = layer->get_parent();
 
@@ -414,12 +413,12 @@ void Undoable::displace_layers(Layer* layer, int dx, int dy)
 
 void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
 {
-  assert(layer);
-  assert(layer->is_image());
-  assert(layer->is_readable());
-  assert(layer->is_writable());
-  assert(layer->getSprite() == m_sprite);
-  assert(m_sprite->getBackgroundLayer() == NULL);
+  ASSERT(layer);
+  ASSERT(layer->is_image());
+  ASSERT(layer->is_readable());
+  ASSERT(layer->is_writable());
+  ASSERT(layer->getSprite() == m_sprite);
+  ASSERT(m_sprite->getBackgroundLayer() == NULL);
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
@@ -433,12 +432,12 @@ void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    assert((cel->image > 0) &&
+    ASSERT((cel->image > 0) &&
 	   (cel->image < m_sprite->getStock()->nimage));
 
     // get the image from the sprite's stock of images
     Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
-    assert(cel_image);
+    ASSERT(cel_image);
 
     image_clear(bg_image, bgcolor);
     image_merge(bg_image, cel_image,
@@ -484,12 +483,12 @@ void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
 
 void Undoable::layer_from_background()
 {
-  assert(m_sprite->getBackgroundLayer() != NULL);
-  assert(m_sprite->getCurrentLayer() != NULL);
-  assert(m_sprite->getCurrentLayer()->is_image());
-  assert(m_sprite->getCurrentLayer()->is_readable());
-  assert(m_sprite->getCurrentLayer()->is_writable());
-  assert(m_sprite->getCurrentLayer()->is_background());
+  ASSERT(m_sprite->getBackgroundLayer() != NULL);
+  ASSERT(m_sprite->getCurrentLayer() != NULL);
+  ASSERT(m_sprite->getCurrentLayer()->is_image());
+  ASSERT(m_sprite->getCurrentLayer()->is_readable());
+  ASSERT(m_sprite->getCurrentLayer()->is_writable());
+  ASSERT(m_sprite->getCurrentLayer()->is_background());
 
   if (is_enabled()) {
     undo_data(m_sprite->getUndo(),
@@ -543,7 +542,7 @@ void Undoable::flatten_layers(int bgcolor)
     cel = background->get_cel(frame);
     if (cel) {
       cel_image = m_sprite->getStock()->image[cel->image];
-      assert(cel_image != NULL);
+      ASSERT(cel_image != NULL);
 
       /* we have to save the current state of `cel_image' in the undo */
       if (is_enabled()) {
@@ -624,8 +623,8 @@ void Undoable::new_frame()
 
 void Undoable::new_frame_for_layer(Layer* layer, int frame)
 {
-  assert(layer);
-  assert(frame >= 0);
+  ASSERT(layer);
+  ASSERT(frame >= 0);
 
   switch (layer->type) {
 
@@ -654,7 +653,7 @@ void Undoable::new_frame_for_layer(Layer* layer, int frame)
 
 void Undoable::remove_frame(int frame)
 {
-  assert(frame >= 0);
+  ASSERT(frame >= 0);
 
   // Remove cels from this frame (and displace one position backward
   // all next frames)
@@ -673,8 +672,8 @@ void Undoable::remove_frame(int frame)
 
 void Undoable::remove_frame_of_layer(Layer* layer, int frame)
 {
-  assert(layer);
-  assert(frame >= 0);
+  ASSERT(layer);
+  ASSERT(frame >= 0);
 
   switch (layer->type) {
 
@@ -704,8 +703,8 @@ void Undoable::remove_frame_of_layer(Layer* layer, int frame)
  */
 void Undoable::copy_previous_frame(Layer* layer, int frame)
 {
-  assert(layer);
-  assert(frame > 0);
+  ASSERT(layer);
+  ASSERT(frame > 0);
 
   // create a copy of the previous cel
   Cel* src_cel = static_cast<LayerImage*>(layer)->get_cel(frame-1);
@@ -734,8 +733,8 @@ void Undoable::copy_previous_frame(Layer* layer, int frame)
 
 void Undoable::add_cel(LayerImage* layer, Cel* cel)
 {
-  assert(layer);
-  assert(cel);
+  ASSERT(layer);
+  ASSERT(cel);
 
   if (is_enabled())
     undo_add_cel(m_sprite->getUndo(), layer, cel);
@@ -745,8 +744,8 @@ void Undoable::add_cel(LayerImage* layer, Cel* cel)
 
 void Undoable::remove_cel(LayerImage* layer, Cel* cel)
 {
-  assert(layer);
-  assert(cel);
+  ASSERT(layer);
+  ASSERT(cel);
 
   // find if the image that use the cel to remove, is used by
   // another cels
@@ -776,8 +775,8 @@ void Undoable::remove_cel(LayerImage* layer, Cel* cel)
 
 void Undoable::set_cel_frame_position(Cel* cel, int frame)
 {
-  assert(cel);
-  assert(frame >= 0);
+  ASSERT(cel);
+  ASSERT(frame >= 0);
 
   if (is_enabled())
     undo_int(m_sprite->getUndo(), cel, &cel->frame);
@@ -787,7 +786,7 @@ void Undoable::set_cel_frame_position(Cel* cel, int frame)
 
 void Undoable::set_cel_position(Cel* cel, int x, int y)
 {
-  assert(cel);
+  ASSERT(cel);
 
   if (is_enabled()) {
     undo_int(m_sprite->getUndo(), cel, &cel->x);
@@ -849,7 +848,7 @@ void Undoable::move_frame_before(int frame, int before_frame)
 
 void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame)
 {
-  assert(layer);
+  ASSERT(layer);
 
   switch (layer->type) {
 
@@ -911,7 +910,7 @@ Cel* Undoable::get_current_cel()
 void Undoable::crop_cel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 {
   Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
-  assert(cel_image);
+  ASSERT(cel_image);
     
   // create the new image through a crop
   Image* new_image = image_crop(cel_image, x-cel->x, y-cel->y, w, h, bgcolor);
@@ -1023,13 +1022,13 @@ void Undoable::paste_image(const Image* src_image, int x, int y, int opacity)
 {
   const Layer* layer = m_sprite->getCurrentLayer();
 
-  assert(layer);
-  assert(layer->is_image());
-  assert(layer->is_readable());
-  assert(layer->is_writable());
+  ASSERT(layer);
+  ASSERT(layer->is_image());
+  ASSERT(layer->is_readable());
+  ASSERT(layer->is_writable());
 
   Cel* cel = ((LayerImage*)layer)->get_cel(m_sprite->getCurrentFrame());
-  assert(cel);
+  ASSERT(cel);
 
   Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
   Image* cel_image2 = image_new_copy(cel_image);
@@ -1040,8 +1039,8 @@ void Undoable::paste_image(const Image* src_image, int x, int y, int opacity)
 
 void Undoable::copy_to_current_mask(Mask* mask)
 {
-  assert(m_sprite->getMask());
-  assert(mask);
+  ASSERT(m_sprite->getMask());
+  ASSERT(mask);
 
   if (is_enabled())
     undo_set_mask(m_sprite->getUndo(), m_sprite);
@@ -1051,7 +1050,7 @@ void Undoable::copy_to_current_mask(Mask* mask)
 
 void Undoable::set_mask_position(int x, int y)
 {
-  assert(m_sprite->getMask());
+  ASSERT(m_sprite->getMask());
 
   if (is_enabled()) {
     undo_int(m_sprite->getUndo(), m_sprite->getMask(), &m_sprite->getMask()->x);

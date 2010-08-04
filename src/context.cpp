@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <algorithm>
 
 #include "console.h"
@@ -59,7 +58,7 @@ Sprite* Context::get_first_sprite() const
 
 Sprite* Context::get_next_sprite(Sprite* sprite) const
 {
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
 
   SpriteList::const_iterator it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
 
@@ -76,7 +75,7 @@ Sprite* Context::get_next_sprite(Sprite* sprite) const
  */
 void Context::add_sprite(Sprite* sprite)
 {
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
 
   m_sprites.push_front(sprite);
 
@@ -86,10 +85,10 @@ void Context::add_sprite(Sprite* sprite)
 
 void Context::remove_sprite(Sprite* sprite)
 {
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
 
   SpriteList::iterator it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
-  assert(it != m_sprites.end());
+  ASSERT(it != m_sprites.end());
 
   // remove the item from the sprites list
   m_sprites.erase(it);
@@ -104,10 +103,10 @@ void Context::remove_sprite(Sprite* sprite)
 
 void Context::send_sprite_to_top(Sprite* sprite)
 {
-  assert(sprite);
+  ASSERT(sprite);
 
   SpriteList::iterator it = std::find(m_sprites.begin(), m_sprites.end(), sprite);
-  assert(it != m_sprites.end());
+  ASSERT(it != m_sprites.end());
 
   // remove the item from the sprites list
   m_sprites.erase(it);
@@ -132,7 +131,7 @@ void Context::execute_command(Command* command, Params* params)
 {
   Console console;
 
-  assert(command != NULL);
+  ASSERT(command != NULL);
 
   PRINTF("Executing '%s' command.\n", command->short_name());
 

@@ -27,7 +27,7 @@ static void run_thread(void *data)
 {
   errno = 0;
   trace("[second thread] errno: %d\n", errno);
-  assert(errno == 0);
+  ASSERT(errno == 0);
 }
 
 int main(int argc, char *argv[])
@@ -36,13 +36,13 @@ int main(int argc, char *argv[])
 
   errno = 33;
   trace("[main thread] errno: %d\n", errno);
-  assert(errno == 33);
+  ASSERT(errno == 33);
 
   thread = jthread_new(run_thread, NULL);
   jthread_join(thread);
 
   trace("[main thread] errno: %d\n", errno);
-  assert(errno == 33);
+  ASSERT(errno == 33);
 
   trace("errno is thread safe\n");
 

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
-
 #include "jinete/jlist.h"
 
 #include "core/cfg.h"
@@ -169,8 +167,8 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 
   // for each line to draw of the source image...
   for (y=0; y<src_h; y++) {
-    assert(src_x >= 0 && src_x < src->w);
-    assert(dst_x >= 0 && dst_x < dst->w);
+    ASSERT(src_x >= 0 && src_x < src->w);
+    ASSERT(dst_x >= 0 && dst_x < dst->w);
 
     // get addresses to each line (beginning of 'src', 'dst', etc.)
     src_address = image_address_fast<SrcTraits>(src, src_x, src_y);
@@ -180,14 +178,14 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 
     // read 'src' and 'dst' and blend them, put the result in `scanline'
     for (x=0; x<src_w; x++) {
-      assert(scanline_address >= scanline);
-      assert(scanline_address <  scanline + src_w);
+      ASSERT(scanline_address >= scanline);
+      ASSERT(scanline_address <  scanline + src_w);
 
-      assert(src_address >= image_address_fast<SrcTraits>(src, src_x, src_y));
-      assert(src_address <= image_address_fast<SrcTraits>(src, src_x+src_w-1, src_y));
-      assert(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-      assert(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-      assert(dst_address <  dst_address_end);
+      ASSERT(src_address >= image_address_fast<SrcTraits>(src, src_x, src_y));
+      ASSERT(src_address <= image_address_fast<SrcTraits>(src, src_x+src_w-1, src_y));
+      ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+      ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
+      ASSERT(dst_address <  dst_address_end);
 
       blender(scanline_address, dst_address, src_address, opacity);
 
@@ -219,11 +217,11 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
       // first pixel
       if (offsetx > 0) {
         for (box_x=0; box_x<offsetx; box_x++) {
-	  assert(scanline_address >= scanline);
-	  assert(scanline_address <  scanline + src_w);
-	  assert(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-	  assert(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-	  assert(dst_address <  dst_address_end);
+	  ASSERT(scanline_address >= scanline);
+	  ASSERT(scanline_address <  scanline + src_w);
+	  ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+	  ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
+	  ASSERT(dst_address <  dst_address_end);
 
 	  (*dst_address++) = (*scanline_address);
 
@@ -238,9 +236,9 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
       // the rest of the line
       for (; x<src_w; x++) {
         for (box_x=0; box_x<box_w; box_x++) {
-	  assert(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-	  assert(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-	  assert(dst_address <  dst_address_end);
+	  ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
+	  ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
+	  ASSERT(dst_address <  dst_address_end);
 
 	  (*dst_address++) = (*scanline_address);
 
@@ -499,7 +497,7 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
 
-  assert(rgb_image->imgtype == IMAGE_RGB && "renderImage accepts RGB destination images only");
+  ASSERT(rgb_image->imgtype == IMAGE_RGB && "renderImage accepts RGB destination images only");
 
   switch (src_image->imgtype) {
 

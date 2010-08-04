@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 #include <vector>
 
@@ -333,7 +332,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
       m = models+MODEL_GRAY;
       break;
     default:
-      assert(false);
+      ASSERT(false);
   }
 
   // // Select the RGB button

@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <allegro.h>
 #include <algorithm>
 
@@ -144,8 +143,8 @@ void fileview_set_current_folder(JWidget widget, FileItem *folder)
 {
   FileView* fileview = fileview_data(widget);
 
-  assert(folder != NULL);
-  assert(fileitem_is_browsable(folder));
+  ASSERT(folder != NULL);
+  ASSERT(fileitem_is_browsable(folder));
 
   fileview->current_folder = folder;
   fileview->req_valid = false;
@@ -199,7 +198,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       fileview_stop_threads(fileview);
 
       // at this point, can't be threads running in background
-      assert(fileview->monitors.empty());
+      ASSERT(fileview->monitors.empty());
 
       jmanager_remove_timer(fileview->timer_id);
       delete fileview;
@@ -869,7 +868,7 @@ static void monitor_free_thumbnail_generation(void *_data)
   MonitorList& monitors(fileview_data(data->fileview)->monitors);
   MonitorList::iterator it =
     std::find(monitors.begin(), monitors.end(), data->monitor);
-  assert(it != monitors.end());
+  ASSERT(it != monitors.end());
   monitors.erase(it);
 
   // destroy the thumbnail

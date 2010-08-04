@@ -40,14 +40,12 @@ const char* msgids_get(const char* id); // src/intl/msgids.[ch]
 
 #define _(msgid) (msgids_get(msgid))
 
-// Asserts
-#include <cassert>
-
 #include <math.h>
 #undef PI
 #define PI 3.14159265358979323846
 
 #include <allegro/base.h>
+#include <allegro/debug.h>	// ASSERT
 
 typedef uint8_t		ase_uint8;
 typedef uint16_t	ase_uint16;

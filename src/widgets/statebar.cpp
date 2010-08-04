@@ -22,7 +22,6 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
-#include <cassert>
 
 #include "jinete/jinete.h"
 
@@ -232,7 +231,7 @@ void StatusBar::showColor(int msecs, const char* text, color_t color, int alpha)
 
 void StatusBar::showTool(int msecs, Tool* tool)
 {
-  assert(tool != NULL);
+  ASSERT(tool != NULL);
 
   // Tool name
   std::string text = tool->getText();
@@ -267,7 +266,7 @@ Progress* StatusBar::addProgress()
 
 void StatusBar::removeProgress(Progress* progress)
 {
-  assert(progress->m_statusbar == this);
+  ASSERT(progress->m_statusbar == this);
 
   jlist_remove(m_progress, progress);
   jwidget_dirty(this);
@@ -609,7 +608,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 		sprite->setCurrentLayer(layer);
 
 	      // Flash the current layer
-	      assert(current_editor != NULL); // Cannot be null when we have a current sprite
+	      ASSERT(current_editor != NULL); // Cannot be null when we have a current sprite
 	      current_editor->flashCurrentLayer();
 
 	      // Redraw the status-bar

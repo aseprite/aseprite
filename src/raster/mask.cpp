@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,7 +41,7 @@ Mask::Mask(const Mask& mask)
 
 Mask::~Mask()
 {
-  assert(m_freeze_count == 0);
+  ASSERT(m_freeze_count == 0);
 
   if (this->name)
     jfree(this->name);
@@ -64,13 +63,13 @@ void Mask::initialize()
 
 void Mask::freeze()
 {
-  assert(m_freeze_count >= 0);
+  ASSERT(m_freeze_count >= 0);
   m_freeze_count++;
 }
 
 void Mask::unfreeze()
 {
-  assert(m_freeze_count > 0);
+  ASSERT(m_freeze_count > 0);
   m_freeze_count--;
 
   // Shrink just in case
@@ -87,13 +86,13 @@ Mask* mask_new()
 
 Mask* mask_new_copy(const Mask* mask)
 {
-  assert(mask);
+  ASSERT(mask);
   return new Mask(*mask);
 }
 
 void mask_free(Mask* mask)
 {
-  assert(mask);
+  ASSERT(mask);
   delete mask;
 }
 
@@ -394,7 +393,7 @@ void mask_crop(Mask* mask, const Image *image)
 
 void Mask::reserve(int x, int y, int w, int h)
 {
-  assert(w > 0 && h > 0);
+  ASSERT(w > 0 && h > 0);
 
   if (!this->bitmap) {
     this->x = x;

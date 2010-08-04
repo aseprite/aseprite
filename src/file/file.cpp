@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <string.h>
 #include <allegro.h>
 
@@ -451,8 +450,8 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
  */
 void fop_operate(FileOp *fop)
 {
-  assert(fop != NULL);
-  assert(!fop_is_done(fop));
+  ASSERT(fop != NULL);
+  ASSERT(!fop_is_done(fop));
 
   /* load ***********************************************************/
   if (fop->type == FileOpLoad &&
@@ -608,7 +607,7 @@ void fop_operate(FileOp *fop)
 	   fop->format->save != NULL) {
     /* save a sequence */
     if (fop->seq.filename_list != NULL) {
-      assert(fop->format->flags & FILE_SUPPORT_SEQUENCES);
+      ASSERT(fop->format->flags & FILE_SUPPORT_SEQUENCES);
 
       /* create a temporary bitmap */
       fop->seq.image = image_new(fop->sprite->getImgType(),
@@ -717,7 +716,7 @@ void fop_free(FileOp *fop)
 
 void fop_sequence_set_format_options(FileOp *fop, FormatOptions *format_options)
 {
-  assert(fop->seq.format_options == NULL);
+  ASSERT(fop->seq.format_options == NULL);
   fop->seq.format_options = format_options;
 }
 

@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro/debug.h>
 #include <allegro/unicode.h>
 
@@ -95,7 +94,7 @@ void SelectFileCommand::onExecute(Context* context)
 {
   if (m_sprite_id > 0) {
     GfxObj* gfxobj = gfxobj_find(m_sprite_id);
-    assert(gfxobj != NULL);
+    ASSERT(gfxobj != NULL);
 
     set_sprite_in_more_reliable_editor((Sprite*)gfxobj);
   }

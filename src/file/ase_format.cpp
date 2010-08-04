@@ -885,7 +885,7 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
 
     if (ftell(f)+compressed.size() > chunk_end) {
       input_bytes = chunk_end - ftell(f); // Remaining bytes
-      assert(input_bytes < compressed.size());
+      ASSERT(input_bytes < compressed.size());
 
       if (input_bytes == 0)
 	break;			// Done, we consumed all chunk

@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
-
 #include "raster/cel.h"
 #include "raster/layer.h"
 
@@ -58,13 +56,13 @@ Cel* cel_new(int frame, int image)
 
 Cel* cel_new_copy(const Cel* cel)
 {
-  assert(cel);
+  ASSERT(cel);
   return new Cel(*cel);
 }
 
 void cel_free(Cel* cel)
 {
-  assert(cel);
+  ASSERT(cel);
   delete cel;
 }
 

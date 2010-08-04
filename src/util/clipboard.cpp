@@ -20,7 +20,6 @@
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#include <cassert>
 
 #include "jinete/jinete.h"
 
@@ -134,7 +133,7 @@ static void set_clipboard(Image* image, Palette* palette, bool set_system_clipbo
 
 static bool copy_from_sprite(const Sprite* sprite)
 {
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
   Image* image = NewImageFromMask(sprite);
   if (!image)
     return false;
@@ -164,8 +163,8 @@ bool clipboard::can_paste()
 
 void clipboard::cut(SpriteWriter& sprite)
 {
-  assert(sprite != NULL);
-  assert(sprite->getCurrentLayer() != NULL);
+  ASSERT(sprite != NULL);
+  ASSERT(sprite->getCurrentLayer() != NULL);
 
   if (!copy_from_sprite(sprite)) {
     Console console;
@@ -185,7 +184,7 @@ void clipboard::cut(SpriteWriter& sprite)
 
 void clipboard::copy(const SpriteReader& sprite)
 {
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
 
   if (!copy_from_sprite(sprite)) {
     Console console;
@@ -219,7 +218,7 @@ void clipboard::paste(SpriteWriter& sprite)
   if (clipboard_image == NULL)
     return;
 
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
 
   // destination image (where to put this image)
   dst_image = sprite->getCurrentImage(&dst_x, &dst_y);

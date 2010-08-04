@@ -69,7 +69,7 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
   sprite->setCurrentLayer(sprite->indexToLayer(i));
 
   // Flash the current layer
-  assert(current_editor != NULL); // Cannot be null when we have a current sprite
+  ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
   current_editor->flashCurrentLayer();
 
   app_get_statusbar()
@@ -118,7 +118,7 @@ void GotoNextLayerCommand::onExecute(Context* context)
   sprite->setCurrentLayer(sprite->indexToLayer(i));
 
   // Flash the current layer
-  assert(current_editor != NULL); // Cannot be null when we have a current sprite
+  ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
   current_editor->flashCurrentLayer();
 
   app_get_statusbar()

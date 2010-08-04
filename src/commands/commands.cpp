@@ -39,7 +39,7 @@ CommandsModule* CommandsModule::m_instance = NULL;
 
 CommandsModule::CommandsModule()
 {
-  assert(m_instance == NULL);
+  ASSERT(m_instance == NULL);
   m_instance = this;
 
   #undef FOR_EACH_COMMAND
@@ -52,7 +52,7 @@ CommandsModule::CommandsModule()
 
 CommandsModule::~CommandsModule()
 {
-  assert(m_instance == this);
+  ASSERT(m_instance == this);
 
   for (CommandsList::iterator
 	 it = m_commands.begin(); it != m_commands.end(); ++it) {
@@ -65,7 +65,7 @@ CommandsModule::~CommandsModule()
 
 CommandsModule* CommandsModule::instance()
 {
-  assert(m_instance != NULL);
+  ASSERT(m_instance != NULL);
   return m_instance;
 }
 

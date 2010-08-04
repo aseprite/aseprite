@@ -520,7 +520,7 @@ void ToolBar::closeTipWindow()
 
 void ToolBar::selectTool(Tool* tool)
 {
-  assert(tool != NULL);
+  ASSERT(tool != NULL);
 
   m_selected_in_group[tool->getGroup()] = tool;
 

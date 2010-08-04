@@ -18,8 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
-
 #include "jinete/jlist.h"
 
 #include "effect/effect.h"
@@ -60,7 +58,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
       last_image = images;			\
     }						\
     else {					\
-      assert(last_image != NULL);		\
+      ASSERT(last_image != NULL);		\
       last_image->next = images;		\
     }						\
 						\

@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <allegro/file.h>
-#include <cassert>
 
 #include "app.h"
 #include "modules/editors.h"
@@ -33,13 +32,13 @@ UIContext* UIContext::m_instance = NULL;
 UIContext::UIContext()
   : Context(new UISettingsImpl)
 {
-  assert(m_instance == NULL);
+  ASSERT(m_instance == NULL);
   m_instance = this;
 }
 
 UIContext::~UIContext()
 {
-  assert(m_instance == this);
+  ASSERT(m_instance == this);
   m_instance = NULL;
 }
 

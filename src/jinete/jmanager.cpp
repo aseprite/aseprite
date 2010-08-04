@@ -38,7 +38,6 @@
 #include <stdio.h>
 #endif
 
-#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -210,7 +209,7 @@ void jmanager_free(JWidget widget)
   JLink link;
   int c;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   /* there are some messages in queue? */
   jmanager_dispatch_messages(widget);
@@ -571,7 +570,7 @@ void jmanager_dispatch_messages(JWidget manager)
 {
   JMessage msg;
 
-  assert(manager != NULL);
+  ASSERT(manager != NULL);
   
   /* add the "Queue Processing" message for the manager */
   msg = new_mouse_msg(JM_QUEUEPROCESSING, manager);
@@ -590,7 +589,7 @@ int jmanager_add_timer(JWidget widget, int interval)
   Timer *timer;
   int c, new_id = -1;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   for (c=0; c<n_timers; ++c) {
     /* there are an empty slot */
@@ -619,8 +618,8 @@ void jmanager_remove_timer(int timer_id)
   JMessage message;
   JLink link, next;
 
-  assert(timer_id >= 0 && timer_id < n_timers);
-  assert(timers[timer_id] != NULL);
+  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timers[timer_id] != NULL);
 
   jfree(timers[timer_id]);
   timers[timer_id] = NULL;
@@ -640,32 +639,32 @@ void jmanager_remove_timer(int timer_id)
 
 void jmanager_start_timer(int timer_id)
 {
-  assert(timer_id >= 0 && timer_id < n_timers);
-  assert(timers[timer_id] != NULL);
+  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timers[timer_id] != NULL);
 
   timers[timer_id]->last_time = ji_clock;
 }
 
 void jmanager_stop_timer(int timer_id)
 {
-  assert(timer_id >= 0 && timer_id < n_timers);
-  assert(timers[timer_id] != NULL);
+  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timers[timer_id] != NULL);
 
   timers[timer_id]->last_time = -1;
 }
 
 void jmanager_set_timer_interval(int timer_id, int interval)
 {
-  assert(timer_id >= 0 && timer_id < n_timers);
-  assert(timers[timer_id] != NULL);
+  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timers[timer_id] != NULL);
 
   timers[timer_id]->interval = interval;
 }
 
 bool jmanager_timer_is_running(int timer_id)
 {
-  assert(timer_id >= 0 && timer_id < n_timers);
-  assert(timers[timer_id] != NULL);
+  ASSERT(timer_id >= 0 && timer_id < n_timers);
+  ASSERT(timers[timer_id] != NULL);
 
   return (timers[timer_id]->last_time >= 0);
 }
@@ -679,8 +678,8 @@ void jmanager_enqueue_message(JMessage msg)
 {
   int c;
 
-  assert(msg_queue != NULL);
-  assert(msg != NULL);
+  ASSERT(msg_queue != NULL);
+  ASSERT(msg != NULL);
 
   /* check if this message must be filtered by some widget before */
   c = msg->type;
@@ -1082,8 +1081,8 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DEFERREDFREE:
-      assert_valid_widget(msg->deffree.widget_to_free);
-      assert(msg->deffree.widget_to_free != widget);
+      ASSERT_VALID_WIDGET(msg->deffree.widget_to_free);
+      ASSERT(msg->deffree.widget_to_free != widget);
 
       jwidget_free(msg->deffree.widget_to_free);
       return true;
@@ -1194,7 +1193,7 @@ static void manager_pump_queue(JWidget widget_manager)
 
   /* TODO get the msg_queue from 'widget_manager' */
 
-  assert(msg_queue != NULL);
+  ASSERT(msg_queue != NULL);
 
   link = jlist_first(msg_queue);
   while (link != msg_queue->end) {
@@ -1268,7 +1267,7 @@ static void manager_pump_queue(JWidget widget_manager)
 	acquire_bitmap(ji_screen);
 
 	/* set clip */
-	assert(get_clip_state(ji_screen));
+	ASSERT(get_clip_state(ji_screen));
 	set_clip_rect(ji_screen,
 		      msg->draw.rect.x1, msg->draw.rect.y1,
 		      msg->draw.rect.x2-1, msg->draw.rect.y2-1);

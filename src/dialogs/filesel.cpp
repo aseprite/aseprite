@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <iterator>
 #include <set>
@@ -149,7 +148,7 @@ jstring ase_file_selector(const jstring& message,
     JWidget goup = jwidget_find_name(window, "goup");
     JWidget location = jwidget_find_name(window, "location");
     filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
-    assert(filetype != NULL);
+    ASSERT(filetype != NULL);
     filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_focusrest(goback, false);
@@ -190,7 +189,7 @@ jstring ase_file_selector(const jstring& message,
   else {
     fileview = jwidget_find_name(window, "fileview");
     filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
-    assert(filetype != NULL);
+    ASSERT(filetype != NULL);
     filename_entry = jwidget_find_name(window, "filename");
 
     jwidget_signal_off(fileview);
@@ -237,7 +236,7 @@ again:
       window->get_killer() == fileview) {
     // open the selected file
     FileItem *folder = fileview_get_current_folder(fileview);
-    assert(folder);
+    ASSERT(folder);
 
     jstring fn = filename_entry->getText();
     jstring buf;
@@ -363,7 +362,7 @@ static void update_location(JWidget window)
 {
   JWidget fileview = jwidget_find_name(window, "fileview");
   ComboBox* location = dynamic_cast<ComboBox*>(jwidget_find_name(window, "location"));
-  assert(location != NULL);
+  ASSERT(location != NULL);
 
   FileItem* current_folder = fileview_get_current_folder(fileview);
   FileItem* fileitem = current_folder;
@@ -466,7 +465,7 @@ static void update_navigation_buttons(JWidget window)
 
 static void add_in_navigation_history(FileItem *folder)
 {
-  assert(fileitem_is_folder(folder));
+  ASSERT(fileitem_is_folder(folder));
 
   /* remove the history from the current position */
   if (navigation_position) {
@@ -495,7 +494,7 @@ static void select_filetype_from_filename(JWidget window)
 {
   JWidget entry = jwidget_find_name(window, "filename");
   ComboBox* filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
-  assert(filetype != NULL);
+  ASSERT(filetype != NULL);
 
   const char *filename = entry->getText();
   char *p = get_extension(filename);
@@ -599,7 +598,7 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
-    assert(combobox != NULL);
+    ASSERT(combobox != NULL);
 
     switch (msg->signal.num) {
 
@@ -637,7 +636,7 @@ static bool filetype_msg_proc(JWidget widget, JMessage msg)
 {
   if (msg->type == JM_SIGNAL) {
     ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
-    assert(combobox != NULL);
+    ASSERT(combobox != NULL);
 
     switch (msg->signal.num) {
 

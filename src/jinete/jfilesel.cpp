@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 #include <errno.h>
@@ -625,7 +624,7 @@ static bool check_extension(const char *filename_ext)
   JLink link;
   int len;
 
-  assert(extensions != NULL);
+  ASSERT(extensions != NULL);
 
   if (jlist_empty(extensions))
     return true;		/* all extensions */

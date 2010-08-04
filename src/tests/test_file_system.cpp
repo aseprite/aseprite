@@ -54,12 +54,12 @@ static void display_fileitem(FileItem *fi, int level, int deep)
 int main(int argc, char *argv[])
 {
   test_init();
-  assert(file_system_init());
+  ASSERT(file_system_init());
 
   trace("*** Listing root of the file-system (deep = 2)...\n");
   {
     FileItem *root = get_root_fileitem();
-    assert(root != NULL);
+    ASSERT(root != NULL);
     display_fileitem(root, 0, 2);
   }
 
@@ -71,18 +71,18 @@ int main(int argc, char *argv[])
 
     trace("*** Getting 'C:\\' using 'get_fileitem_from_path'...\n");
     c_drive = get_fileitem_from_path("C:\\");
-    assert(c_drive != NULL);
+    ASSERT(c_drive != NULL);
 
     trace("*** Getting 'C:\\' again\n");
     c_drive2 = get_fileitem_from_path("C:\\");
-    assert(c_drive == c_drive2);
+    ASSERT(c_drive == c_drive2);
 
     trace("*** Displaying 'C:\\'...\n");
     display_fileitem(c_drive, 0, 0);
 
     trace("*** Getting 'My PC' (using 'fileitem_get_parent')...\n");
     my_pc = fileitem_get_parent(c_drive);
-    assert(my_pc != NULL);
+    ASSERT(my_pc != NULL);
 
     trace("*** Listing 'My PC'...\n");
     display_fileitem(my_pc, 0, 1);
@@ -91,14 +91,14 @@ int main(int argc, char *argv[])
 
   trace("*** Testing 'filename_has_extension'...\n");
   {
-    assert(filename_has_extension("hi.png", "png"));
-    assert(!filename_has_extension("hi.png", "pngg"));
-    assert(!filename_has_extension("hi.png", "ppng"));
-    assert(filename_has_extension("hi.jpeg", "jpg,jpeg"));
-    assert(filename_has_extension("hi.jpg", "jpg,jpeg"));
-    assert(!filename_has_extension("hi.ase", "jpg,jpeg"));
-    assert(filename_has_extension("hi.ase", "jpg,jpeg,ase"));
-    assert(filename_has_extension("hi.ase", "ase,jpg,jpeg"));
+    ASSERT(filename_has_extension("hi.png", "png"));
+    ASSERT(!filename_has_extension("hi.png", "pngg"));
+    ASSERT(!filename_has_extension("hi.png", "ppng"));
+    ASSERT(filename_has_extension("hi.jpeg", "jpg,jpeg"));
+    ASSERT(filename_has_extension("hi.jpg", "jpg,jpeg"));
+    ASSERT(!filename_has_extension("hi.ase", "jpg,jpeg"));
+    ASSERT(filename_has_extension("hi.ase", "jpg,jpeg,ase"));
+    ASSERT(filename_has_extension("hi.ase", "ase,jpg,jpeg"));
   }
 
   file_system_exit();

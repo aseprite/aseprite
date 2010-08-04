@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <cstring>
 #include <allegro.h>
 
@@ -172,7 +171,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
       	    m_colorsPerColumn--;
       	}
 
-      	assert(m_colorsPerColumn*m_columns <= 256);
+      	ASSERT(m_colorsPerColumn*m_columns <= 256);
       }
 
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
@@ -475,7 +474,7 @@ color_t ColorBar::getHotColor(hotcolor_t hot)
     case HOTCOLOR_FGCOLOR:  return m_fgcolor;
     case HOTCOLOR_BGCOLOR:  return m_bgcolor;
     default:
-      assert(hot >= 0 && hot < getEntriesCount());
+      ASSERT(hot >= 0 && hot < getEntriesCount());
       return getEntryColor(hot);
   }
 }
@@ -484,7 +483,7 @@ void ColorBar::setHotColor(hotcolor_t hot, color_t color)
 {
   switch (hot) {
     case HOTCOLOR_NONE:
-      assert(false);
+      ASSERT(false);
       break;
     case HOTCOLOR_FGCOLOR:
       setFgColor(color);
@@ -493,7 +492,7 @@ void ColorBar::setHotColor(hotcolor_t hot, color_t color)
       setBgColor(color);
       break;
     default:
-      assert(hot >= 0 && hot < getEntriesCount());
+      ASSERT(hot >= 0 && hot < getEntriesCount());
 #if 0
       m_color[hot] = color;
 

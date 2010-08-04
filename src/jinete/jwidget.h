@@ -43,10 +43,10 @@ namespace Vaca { class PreferredSizeEvent; }
 
 #ifndef NDEBUG
 #include "jinete/jintern.h"
-#define assert_valid_widget(widget) assert((widget) != NULL &&		\
+#define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL &&		\
 					   _ji_is_valid_widget((widget)))
 #else
-#define assert_valid_widget(widget) ((void)0)
+#define ASSERT_VALID_WIDGET(widget) ((void)0)
 #endif
 
 using Vaca::Rect;

@@ -19,7 +19,6 @@
 #ifndef MODULES_GUI_H_INCLUDED
 #define MODULES_GUI_H_INCLUDED
 
-#include <cassert>
 #include <string>
 #include <list>
 #include "ase_exception.h"
@@ -160,7 +159,7 @@ public:
   }
 
   T* operator->() {
-    assert(m_ptr != NULL);
+    ASSERT(m_ptr != NULL);
     return m_ptr;
   }
 

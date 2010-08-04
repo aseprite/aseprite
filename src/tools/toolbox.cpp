@@ -112,7 +112,7 @@ Tool* ToolBox::getToolById(const std::string& id)
       return tool;
   }
   // PRINTF("Error get_tool_by_name() with '%s'\n", name.c_str());
-  // assert(false);
+  // ASSERT(false);
   return NULL;
 }
 

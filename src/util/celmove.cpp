@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <jinete/jlist.h>
 
 #include "sprite_wrappers.h"
@@ -58,10 +57,10 @@ void move_cel(SpriteWriter& sprite)
 {
   Cel *src_cel, *dst_cel;
 
-  assert(src_layer != NULL);
-  assert(dst_layer != NULL);
-  assert(src_frame >= 0 && src_frame < sprite->getTotalFrames());
-  assert(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
+  ASSERT(src_layer != NULL);
+  ASSERT(dst_layer != NULL);
+  ASSERT(src_frame >= 0 && src_frame < sprite->getTotalFrames());
+  ASSERT(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
   if (src_layer->is_background()) {
     copy_cel(sprite);
@@ -150,10 +149,10 @@ void copy_cel(SpriteWriter& sprite)
 {
   Cel *src_cel, *dst_cel;
 
-  assert(src_layer != NULL);
-  assert(dst_layer != NULL);
-  assert(src_frame >= 0 && src_frame < sprite->getTotalFrames());
-  assert(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
+  ASSERT(src_layer != NULL);
+  ASSERT(dst_layer != NULL);
+  ASSERT(src_frame >= 0 && src_frame < sprite->getTotalFrames());
+  ASSERT(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
   src_cel = static_cast<LayerImage*>(src_layer)->get_cel(src_frame);
   dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(dst_frame);

@@ -19,8 +19,6 @@
 #ifndef RASTER_IMAGE_TRAITS_H_INCLUDED
 #define RASTER_IMAGE_TRAITS_H_INCLUDED
 
-#include <cassert>
-
 //////////////////////////////////////////////////////////////////////
 // RGBA
 
@@ -79,7 +77,7 @@ struct RgbTraits
 
   static inline BLEND_COLOR get_blender(int blend_mode)
   {
-    assert(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
+    ASSERT(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
     return _rgba_blenders[blend_mode];
   }
 };
@@ -128,7 +126,7 @@ struct GrayscaleTraits
 
   static inline BLEND_COLOR get_blender(int blend_mode)
   {
-    assert(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
+    ASSERT(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
     return _graya_blenders[blend_mode];
   }
 };
@@ -194,8 +192,8 @@ struct BitmapTraits
 template<class Traits>
 inline typename Traits::address_t image_address_fast(const Image* image, int x, int y)
 {
-  assert(x >= 0 && x < image->w);
-  assert(y >= 0 && y < image->h);
+  ASSERT(x >= 0 && x < image->w);
+  ASSERT(y >= 0 && y < image->h);
 
   return ((((typename Traits::pixel_t**)image->line)[y])+x);
 }
@@ -203,8 +201,8 @@ inline typename Traits::address_t image_address_fast(const Image* image, int x, 
 template<class Traits>
 inline typename Traits::pixel_t image_getpixel_fast(const Image* image, int x, int y)
 {
-  assert(x >= 0 && x < image->w);
-  assert(y >= 0 && y < image->h);
+  ASSERT(x >= 0 && x < image->w);
+  ASSERT(y >= 0 && y < image->h);
 
   return *((((typename Traits::pixel_t**)image->line)[y])+x);
 }
@@ -212,8 +210,8 @@ inline typename Traits::pixel_t image_getpixel_fast(const Image* image, int x, i
 template<class Traits>
 inline void image_putpixel_fast(Image* image, int x, int y, typename Traits::pixel_t color)
 {
-  assert(x >= 0 && x < image->w);
-  assert(y >= 0 && y < image->h);
+  ASSERT(x >= 0 && x < image->w);
+  ASSERT(y >= 0 && y < image->h);
 
   *((((typename Traits::pixel_t**)image->line)[y])+x) = color;
 }
@@ -221,8 +219,8 @@ inline void image_putpixel_fast(Image* image, int x, int y, typename Traits::pix
 template<>
 inline BitmapTraits::pixel_t image_getpixel_fast<BitmapTraits>(const Image* image, int x, int y)
 {
-  assert(x >= 0 && x < image->w);
-  assert(y >= 0 && y < image->h);
+  ASSERT(x >= 0 && x < image->w);
+  ASSERT(y >= 0 && y < image->h);
 
   div_t d = div(x, 8);
   return ((*(((BitmapTraits::pixel_t**)image->line)[y]+d.quot)) & (1<<d.rem)) ? 1: 0;
@@ -231,8 +229,8 @@ inline BitmapTraits::pixel_t image_getpixel_fast<BitmapTraits>(const Image* imag
 template<>
 inline void image_putpixel_fast<BitmapTraits>(Image* image, int x, int y, BitmapTraits::pixel_t color)
 {
-  assert(x >= 0 && x < image->w);
-  assert(y >= 0 && y < image->h);
+  ASSERT(x >= 0 && x < image->w);
+  ASSERT(y >= 0 && y < image->h);
 
   div_t d = div(x, 8);
   if (color)

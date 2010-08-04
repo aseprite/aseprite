@@ -20,7 +20,6 @@
 
 #include <allegro.h>
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 
 #include "jinete/jinete.h"
@@ -128,7 +127,7 @@ void Tabs::removeTab(void* data)
     std::vector<Tab*>::iterator it =
       std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);
 
-    assert(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
+    ASSERT(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
 
     it = m_list_of_tabs.erase(it);
 
@@ -643,7 +642,7 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
 	return true;
       }
       else if (msg->signal.num == JI_SIGNAL_DISABLE) {
-	assert(tabs != NULL);
+	ASSERT(tabs != NULL);
 
 	if (widget->isSelected()) {
 	  tabs->stopScrolling();
@@ -654,12 +653,12 @@ static bool tabs_button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED:
-      assert(tabs != NULL);
+      ASSERT(tabs != NULL);
       tabs->startScrolling();
       break;
 
     case JM_BUTTONRELEASED:
-      assert(tabs != NULL);
+      ASSERT(tabs != NULL);
       tabs->stopScrolling();
       break;
 

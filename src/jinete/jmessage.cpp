@@ -33,7 +33,6 @@
 
 #include <allegro/keyboard.h>
 #include <string.h>
-#include <assert.h>
 
 #include "jinete/jlist.h"
 #include "jinete/jmanager.h"
@@ -93,7 +92,7 @@ JMessage jmessage_new_copy(const JMessage msg)
 {
   JMessage copy;
 
-  assert(msg != NULL);
+  ASSERT(msg != NULL);
 
   copy = jnew(union jmessage, 1);
   if (!copy)
@@ -111,7 +110,7 @@ JMessage jmessage_new_copy_without_dests(const JMessage msg)
 {
   JMessage copy;
 
-  assert(msg != NULL);
+  ASSERT(msg != NULL);
 
   copy = jnew(union jmessage, 1);
   if (!copy)
@@ -127,7 +126,7 @@ JMessage jmessage_new_copy_without_dests(const JMessage msg)
 
 void jmessage_free(JMessage msg)
 {
-  assert(msg != NULL);
+  ASSERT(msg != NULL);
 
   jlist_free(msg->any.widgets);
   jfree(msg);
@@ -135,16 +134,16 @@ void jmessage_free(JMessage msg)
 
 void jmessage_add_dest(JMessage msg, JWidget widget)
 {
-  assert(msg != NULL);
-  assert_valid_widget(widget);
+  ASSERT(msg != NULL);
+  ASSERT_VALID_WIDGET(widget);
 
   jlist_append(msg->any.widgets, widget);
 }
 
 void jmessage_add_pre_dest(JMessage msg, JWidget widget)
 {
-  assert(msg != NULL);
-  assert_valid_widget(widget);
+  ASSERT(msg != NULL);
+  ASSERT_VALID_WIDGET(widget);
 
   jlist_prepend(msg->any.widgets, widget);
 }
@@ -153,8 +152,8 @@ void jmessage_broadcast_to_children(JMessage msg, JWidget widget)
 {
   JLink link;
 
-  assert(msg != NULL);
-  assert_valid_widget(widget);
+  ASSERT(msg != NULL);
+  ASSERT_VALID_WIDGET(widget);
 
   JI_LIST_FOR_EACH(widget->children, link)
     jmessage_broadcast_to_children(msg, reinterpret_cast<JWidget>(link->data));
@@ -164,8 +163,8 @@ void jmessage_broadcast_to_children(JMessage msg, JWidget widget)
 
 void jmessage_broadcast_to_parents(JMessage msg, JWidget widget)
 {
-  assert(msg != NULL);
-  assert_valid_widget(widget);
+  ASSERT(msg != NULL);
+  ASSERT_VALID_WIDGET(widget);
 
   if (widget && widget->type != JI_MANAGER) {
     jmessage_add_dest(msg, widget);

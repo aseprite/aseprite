@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <allegro.h>
 #include <algorithm>
 
@@ -31,7 +30,7 @@
 Palette::Palette(int frame, int ncolors)
   : GfxObj(GFXOBJ_PALETTE)
 {
-  assert(ncolors >= 1 && ncolors <= 256);
+  ASSERT(ncolors >= 1 && ncolors <= 256);
 
   m_frame = frame;
   m_colors.resize(ncolors);
@@ -62,7 +61,7 @@ Palette* Palette::createGrayscale()
 
 void Palette::resize(int ncolors)
 {
-  assert(ncolors >= 1 && ncolors <= 256);
+  ASSERT(ncolors >= 1 && ncolors <= 256);
 
   int old_size = m_colors.size();
   m_colors.resize(ncolors);
@@ -79,15 +78,15 @@ void Palette::resize(int ncolors)
 
 void Palette::setFrame(int frame)
 {
-  assert(frame >= 0);
+  ASSERT(frame >= 0);
 
   m_frame = frame;
 }
 
 void Palette::setEntry(int i, ase_uint32 color)
 {
-  assert(i >= 0 && i < size());
-  assert(_rgba_geta(color) == 255);
+  ASSERT(i >= 0 && i < size());
+  ASSERT(_rgba_geta(color) == 255);
 
   m_colors[i] = color;
   ++m_modifications;
@@ -139,8 +138,8 @@ void Palette::makeHorzRamp(int from, int to)
   int r2, g2, b2;
   int i, n;
 
-  assert(from >= 0 && from <= 255);
-  assert(to >= 0 && to <= 255);
+  ASSERT(from >= 0 && from <= 255);
+  ASSERT(to >= 0 && to <= 255);
 
   if (from > to)
     std::swap(from, to);
@@ -172,12 +171,12 @@ void Palette::makeVertRamp(int from, int to, int columns)
   int y, ybeg, yend, n;
   int offset;
 
-  assert(from >= 0 && from <= 255);
-  assert(to >= 0 && to <= 255);
-  assert(columns >= 1 && columns <= 256);
+  ASSERT(from >= 0 && from <= 255);
+  ASSERT(to >= 0 && to <= 255);
+  ASSERT(columns >= 1 && columns <= 256);
 
   /* both indices have to be in the same column */
-  assert((from % columns) == (to % columns));
+  ASSERT((from % columns) == (to % columns));
 
   if (from > to)
     std::swap(from, to);
@@ -210,9 +209,9 @@ void Palette::makeRectRamp(int from, int to, int columns)
 {
   int x1, y1, x2, y2, y;
 
-  assert(from >= 0 && from <= 255);
-  assert(to >= 0 && to <= 255);
-  assert(columns >= 1 && columns <= 256);
+  ASSERT(from >= 0 && from <= 255);
+  ASSERT(to >= 0 && to <= 255);
+  ASSERT(columns >= 1 && columns <= 256);
 
   if (from > to)
     std::swap(from, to);
@@ -357,7 +356,7 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
   if (from == to)		// Just do nothing
     return;
 
-  assert(from < to);
+  ASSERT(from < to);
 
   std::vector<PalEntryWithIndex> temp(to-from+1);
   for (int i=0; i<(int)temp.size(); ++i) {
@@ -502,9 +501,9 @@ int Palette::findBestfit(int r, int g, int b) const
 #endif
   int i, coldiff, lowest;
 
-  assert(r >= 0 && r <= 255);
-  assert(g >= 0 && g <= 255);
-  assert(b >= 0 && b <= 255);
+  ASSERT(r >= 0 && r <= 255);
+  ASSERT(g >= 0 && g <= 255);
+  ASSERT(b >= 0 && b <= 255);
 
   if (col_diff[1] == 0)
     bestfit_init();

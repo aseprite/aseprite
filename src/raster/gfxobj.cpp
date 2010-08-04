@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <cstring>
 #include <map>
 #include <utility>
@@ -46,7 +45,7 @@ RasterModule::RasterModule()
 
 RasterModule::~RasterModule()
 {
-  assert(objects_map->empty());
+  ASSERT(objects_map->empty());
   delete objects_map;
   delete objects_mutex;
 }
@@ -104,8 +103,8 @@ GfxObj* gfxobj_find(gfxobj_id id)
 
 void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id)
 {
-  assert(gfxobj_find(gfxobj->id) == gfxobj);
-  assert(gfxobj_find(id) == NULL);
+  ASSERT(gfxobj_find(gfxobj->id) == gfxobj);
+  ASSERT(gfxobj_find(id) == NULL);
 
   ScopedLock lock(*objects_mutex);
 
@@ -126,7 +125,7 @@ static void erase_gfxobj(GfxObj* gfxobj)
   std::map<gfxobj_id, GfxObj*>::iterator
     it = objects_map->find(gfxobj->id);
   
-  assert(it != objects_map->end());
+  ASSERT(it != objects_map->end());
 
   objects_map->erase(it);
 }

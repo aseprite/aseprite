@@ -93,7 +93,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       imgtype_text = buf;
       break;
     default:
-      assert(false);
+      ASSERT(false);
       imgtype_text = "Unknown";
       break;
   }

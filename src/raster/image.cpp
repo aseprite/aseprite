@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 #include <string.h>
 #include <stdexcept>
@@ -65,13 +64,13 @@ Image* image_new(int imgtype, int w, int h)
 
 Image* image_new_copy(const Image* image)
 {
-  assert(image);
+  ASSERT(image);
   return image_crop(image, 0, 0, image->w, image->h, 0);
 }
 
 void image_free(Image* image)
 {
-  assert(image);
+  ASSERT(image);
   delete image;
 }
 
@@ -158,8 +157,8 @@ void image_rotate(const Image* src, Image* dst, int angle)
   switch (angle) {
 
     case 180:
-      assert(dst->w == src->w);
-      assert(dst->h == src->h);
+      ASSERT(dst->w == src->w);
+      ASSERT(dst->h == src->h);
 
       for (y=0; y<src->h; ++y)
 	for (x=0; x<src->w; ++x)
@@ -168,8 +167,8 @@ void image_rotate(const Image* src, Image* dst, int angle)
       break;
 
     case 90:
-      assert(dst->w == src->h);
-      assert(dst->h == src->w);
+      ASSERT(dst->w == src->h);
+      ASSERT(dst->h == src->w);
 
       for (y=0; y<src->h; ++y)
 	for (x=0; x<src->w; ++x)
@@ -177,8 +176,8 @@ void image_rotate(const Image* src, Image* dst, int angle)
       break;
 
     case -90:
-      assert(dst->w == src->h);
-      assert(dst->h == src->w);
+      ASSERT(dst->w == src->h);
+      ASSERT(dst->h == src->w);
 
       for (y=0; y<src->h; ++y)
 	for (x=0; x<src->w; ++x)

@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -80,7 +79,7 @@ void PalEdit::setColumns(int columns)
 {
   int old_columns = m_columns;
 
-  assert(columns >= 1 && columns <= 256);
+  ASSERT(columns >= 1 && columns <= 256);
   m_columns = columns;
 
   if (m_columns != old_columns) {
@@ -99,7 +98,7 @@ void PalEdit::setBoxSize(int boxsize)
 
 void PalEdit::selectColor(int index)
 {
-  assert(index >= 0 && index <= 255);
+  ASSERT(index >= 0 && index <= 255);
 
   if ((m_color[0] != index) ||
       (m_color[1] != index) ||
@@ -117,8 +116,8 @@ void PalEdit::selectColor(int index)
 
 void PalEdit::selectRange(int begin, int end, int range_type)
 {
-/*   assert(begin >= 0 && begin <= 255); */
-/*   assert(end >= 0 && end <= 255); */
+/*   ASSERT(begin >= 0 && begin <= 255); */
+/*   ASSERT(end >= 0 && end <= 255); */
 
   m_color[0] = begin;
   m_color[1] = end;

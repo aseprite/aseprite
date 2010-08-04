@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,31 +47,31 @@
 
 void *jmalloc(unsigned long n_bytes)
 {
-  assert(n_bytes != 0);
+  ASSERT(n_bytes != 0);
   return malloc(n_bytes);
 }
 
 void *jmalloc0(unsigned long n_bytes)
 {
-  assert(n_bytes != 0);
+  ASSERT(n_bytes != 0);
   return calloc(1, n_bytes);
 }
 
 void *jrealloc(void *mem, unsigned long n_bytes)
 {
-  assert(n_bytes != 0);
+  ASSERT(n_bytes != 0);
   return realloc(mem, n_bytes);
 }
 
 void jfree(void *mem)
 {
-  assert(mem != NULL);
+  ASSERT(mem != NULL);
   free(mem);
 }
 
 char *jstrdup(const char *string)
 {
-  assert(string != NULL);
+  ASSERT(string != NULL);
   return ustrdup(string);
 }
 
@@ -142,7 +141,7 @@ static Mutex mutex;
 
 void _jmemleak_init()
 {
-  assert(!memleak_status);
+  ASSERT(!memleak_status);
 
   headslot = NULL;
   mutex = new Mutex();
@@ -152,7 +151,7 @@ void _jmemleak_init()
 
 void _jmemleak_exit()
 {
-  assert(memleak_status);
+  ASSERT(memleak_status);
   memleak_status = false;
 
   FILE* f = fopen("_ase_memlog.txt", "wt");
@@ -221,8 +220,8 @@ static void addslot(void *ptr, unsigned long size)
 
   slot_t* p = reinterpret_cast<slot_t*>(malloc(sizeof(slot_t)));
 
-  assert(ptr != NULL);
-  assert(size != 0);
+  ASSERT(ptr != NULL);
+  ASSERT(size != 0);
 
   // __builtin_return_address is a GCC extension
 #if defined(__GNUC__)
@@ -250,7 +249,7 @@ static void delslot(void *ptr)
 
   slot_t *it, *prev = NULL;
 
-  assert(ptr != NULL);
+  ASSERT(ptr != NULL);
 
   ScopedLock lock(mutex);
 
@@ -271,7 +270,7 @@ void *jmalloc(unsigned long n_bytes)
 {
   void *mem;
 
-  assert(n_bytes != 0);
+  ASSERT(n_bytes != 0);
 
   mem = malloc(n_bytes);
   if (mem != NULL) {
@@ -286,7 +285,7 @@ void *jmalloc0(unsigned long n_bytes)
 {
   void *mem;
 
-  assert(n_bytes != 0);
+  ASSERT(n_bytes != 0);
 
   mem = calloc(1, n_bytes);
   if (mem != NULL) {
@@ -301,7 +300,7 @@ void *jrealloc(void *mem, unsigned long n_bytes)
 {
   void *newmem;
 
-  assert(n_bytes != 0);
+  ASSERT(n_bytes != 0);
 
   newmem = realloc(mem, n_bytes);
   if (newmem != NULL) {
@@ -317,7 +316,7 @@ void *jrealloc(void *mem, unsigned long n_bytes)
 
 void jfree(void *mem)
 {
-  assert(mem != NULL);
+  ASSERT(mem != NULL);
   delslot(mem);
   free(mem);
 }
@@ -326,7 +325,7 @@ char* jstrdup(const char *string)
 {
   char* mem;
 
-  assert(string != NULL);
+  ASSERT(string != NULL);
 
   mem = ustrdup(string);
   if (mem != NULL)

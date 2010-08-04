@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <allegro.h>
 
 #include "raster/palette.h"
@@ -61,9 +60,9 @@ public:
   }
 
   int mapColor(int r, int g, int b) const {
-    assert(r >= 0 && r < 256);
-    assert(g >= 0 && g < 256);
-    assert(b >= 0 && b < 256);
+    ASSERT(r >= 0 && r < 256);
+    ASSERT(g >= 0 && g < 256);
+    ASSERT(b >= 0 && b < 256);
     return m_allegMap->data[r>>3][g>>3][b>>3];
   }
 

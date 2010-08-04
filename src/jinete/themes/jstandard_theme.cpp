@@ -805,7 +805,7 @@ void jstandard_theme::draw_menuitem(JWidget widget, JRect clip)
   int x1, y1, x2, y2;
   JRect pos;
 
-  /* TODO assert? */
+  /* TODO ASSERT? */
   if (!widget->parent->parent)
     return;
 

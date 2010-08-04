@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <vector>
-#include <assert.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -315,13 +314,13 @@ Undo* undo_new(Sprite *sprite)
 
 void undo_free(Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   delete undo;
 }
 
 int undo_get_memsize(const Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   return
     undo->undo_stream->size +
     undo->redo_stream->size;
@@ -329,55 +328,55 @@ int undo_get_memsize(const Undo* undo)
 
 void undo_enable(Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   undo->enabled = true;
 }
 
 void undo_disable(Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   undo->enabled = false;
 }
 
 bool undo_is_enabled(const Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   return undo->enabled ? true: false;
 }
 
 bool undo_is_disabled(const Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   return !undo_is_enabled(undo);
 }
 
 bool undo_can_undo(const Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   return !jlist_empty(undo->undo_stream->chunks);
 }
 
 bool undo_can_redo(const Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   return !jlist_empty(undo->redo_stream->chunks);
 }
 
 void undo_do_undo(Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   run_undo(undo, DO_UNDO);
 }
 
 void undo_do_redo(Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   run_undo(undo, DO_REDO);
 }
 
 void undo_clear_redo(Undo* undo)
 {
-  assert(undo);
+  ASSERT(undo);
   if (!jlist_empty(undo->redo_stream->chunks)) {
     undo_stream_free(undo->redo_stream);
     undo->redo_stream = undo_stream_new(undo);
@@ -393,7 +392,7 @@ const char *undo_get_next_undo_label(const Undo* undo)
 {
   UndoChunk* chunk;
 
-  assert(undo_can_undo(undo));
+  ASSERT(undo_can_undo(undo));
 
   chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(undo->undo_stream->chunks));
   return chunk->label;
@@ -403,7 +402,7 @@ const char *undo_get_next_redo_label(const Undo* undo)
 {
   UndoChunk* chunk;
 
-  assert(undo_can_redo(undo));
+  ASSERT(undo_can_redo(undo));
 
   chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(undo->redo_stream->chunks));
   return chunk->label;
@@ -626,7 +625,7 @@ static void chunk_data_new(UndoStream* stream, GfxObj *gfxobj, void *data, int s
   ase_uint32 offset = (unsigned int)(((ase_uint8* )data) -
 				     ((ase_uint8* )gfxobj));
 
-  assert(size >= 1);
+  ASSERT(size >= 1);
 
   chunk = (UndoChunkData *)
     undo_chunk_new(stream,
@@ -694,8 +693,8 @@ static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int 
   ase_uint8* ptr;
   int v, size;
 
-  assert(w >= 1 && h >= 1);
-  assert(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
+  ASSERT(w >= 1 && h >= 1);
+  ASSERT(x >= 0 && y >= 0 && x+w <= image->w && y+h <= image->h);
   
   size = image_line_size(image, w);
 
@@ -957,7 +956,7 @@ static void chunk_remove_image_invert(UndoStream* stream, UndoChunkRemoveImage* 
   if (stock) {
     Image* image = read_raw_image(chunk->data);
 
-    /* assert(image != NULL); */
+    /* ASSERT(image != NULL); */
 
     stock_replace_image(stock, image_index, image);
     chunk_add_image_new(stream, stock, image_index);
@@ -1111,7 +1110,7 @@ static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chun
   if (layer) {
     Cel* cel = read_raw_cel(chunk->data);
 
-    /* assert(cel != NULL); */
+    /* ASSERT(cel != NULL); */
 
     chunk_add_cel_new(stream, layer, cel);
     layer->add_cel(cel);
@@ -1268,7 +1267,7 @@ static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* 
   if (folder) {
     Layer* layer = read_raw_layer(chunk->data);
 
-    /* assert(layer != NULL); */
+    /* ASSERT(layer != NULL); */
 
     chunk_add_layer_new(stream, folder, layer);
     folder->add_layer(layer);
@@ -1502,7 +1501,7 @@ static void chunk_remap_palette_new(UndoStream* stream, Sprite *sprite, int fram
   chunk->frame_from = frame_from;
   chunk->frame_to = frame_to;
 
-  assert(mapping.size() == 256 && "Mapping tables must have 256 entries");
+  ASSERT(mapping.size() == 256 && "Mapping tables must have 256 entries");
 
   for (size_t c=0; c<256; c++)
     chunk->mapping[c] = mapping[c];
@@ -1777,7 +1776,7 @@ void undo_set_frlen(Undo* undo, Sprite *sprite, int frame)
 
 static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame)
 {
-  assert(frame >= 0 && frame < sprite->getTotalFrames());
+  ASSERT(frame >= 0 && frame < sprite->getTotalFrames());
 
   UndoChunkSetFrlen *chunk = (UndoChunkSetFrlen *)
     undo_chunk_new(stream,
@@ -1809,7 +1808,7 @@ static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size)
 {
   UndoChunk* chunk;
 
-  assert(size >= sizeof(UndoChunk));
+  ASSERT(size >= sizeof(UndoChunk));
 
   chunk = (UndoChunk* )jmalloc0(size);
   if (!chunk)
@@ -2089,7 +2088,7 @@ static ase_uint8* write_raw_image(ase_uint8* raw_data, Image* image)
 
 static int get_raw_image_size(Image* image)
 {
-  assert(image != NULL);
+  ASSERT(image != NULL);
   return 4+1+2+2+image_line_size(image, image->w) * image->h;
 }
 
@@ -2285,7 +2284,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 	raw_data = write_raw_cel(raw_data, cel);
 
 	Image* image = layer->getSprite()->getStock()->image[cel->image];
-	assert(image != NULL);
+	ASSERT(image != NULL);
 
 	write_raw_uint8(1);
 	raw_data = write_raw_image(raw_data, image);

@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <string.h>
-#include <cassert>
 
 #include "raster/blend.h"
 #include "raster/image.h"
@@ -81,13 +80,13 @@ Path* path_new(const char* name)
 
 Path* path_new_copy(const Path* path)
 {
-  assert(path);
+  ASSERT(path);
   return new Path(*path);
 }
 
 void path_free(Path* path)
 {
-  assert(path);
+  ASSERT(path);
   delete path;
 }
 

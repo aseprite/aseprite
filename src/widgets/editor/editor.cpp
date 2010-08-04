@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <stdio.h>
 #include <allegro.h>
 
@@ -687,7 +686,7 @@ void Editor::editor_to_screen(int xin, int yin, int *xout, int *yout)
 
 void Editor::show_drawing_cursor()
 {
-  assert(m_sprite != NULL);
+  ASSERT(m_sprite != NULL);
 
   if (!m_cursor_thick && m_cursor_candraw) {
     jmouse_hide();
@@ -828,7 +827,7 @@ enum WHEEL_ACTION { WHEEL_NONE,
 
 bool Editor::onProcessMessage(JMessage msg)
 {
-  assert((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||
+  ASSERT((m_state == EDITOR_STATE_DRAWING && m_toolLoopManager != NULL) ||
 	 (m_state != EDITOR_STATE_DRAWING && m_toolLoopManager == NULL));
 
   switch (msg->type) {
@@ -954,7 +953,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
       // Drawing loop
       if (m_state == EDITOR_STATE_DRAWING) {
-	assert(m_toolLoopManager != NULL);
+	ASSERT(m_toolLoopManager != NULL);
 
 	m_toolLoopManager->pressButton(msg);
 
@@ -1082,7 +1081,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	}
 	// Start the Tool-Loop
 	else if (m_sprite->getCurrentLayer()) {
-	  assert(m_toolLoopManager == NULL);
+	  ASSERT(m_toolLoopManager == NULL);
 
 	  IToolLoop* toolLoop = createToolLoopImpl(UIContext::instance(), msg);
 	  if (!toolLoop)
@@ -1186,13 +1185,13 @@ bool Editor::onProcessMessage(JMessage msg)
       else if (m_state == EDITOR_STATE_DRAWING) {
 	acquire_bitmap(ji_screen);
 
-	assert(m_toolLoopManager != NULL);
+	ASSERT(m_toolLoopManager != NULL);
 
 	// Clean the area occupied by the cursor in the screen
 	if (m_cursor_thick)
 	  editor_clean_cursor();
 
-	assert(m_toolLoopManager != NULL);
+	ASSERT(m_toolLoopManager != NULL);
 
 	// Infinite scroll
 	controlInfiniteScroll(msg);
@@ -1203,7 +1202,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  editor_clean_cursor();
 
 	// notify mouse movement to the tool
-	assert(m_toolLoopManager != NULL);
+	ASSERT(m_toolLoopManager != NULL);
 	m_toolLoopManager->movement(msg);
 
 	// draw the cursor again
@@ -1239,7 +1238,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
       // Drawing
       if (m_state == EDITOR_STATE_DRAWING) {
-	assert(m_toolLoopManager != NULL);
+	ASSERT(m_toolLoopManager != NULL);
 
 	if (m_toolLoopManager->releaseButton(msg))
 	  return true;
@@ -1262,7 +1261,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	return true;
       }
       else {
-	assert(m_toolLoopManager == NULL);
+	ASSERT(m_toolLoopManager == NULL);
 	m_state = EDITOR_STATE_STANDBY;
       }
 
@@ -1800,7 +1799,7 @@ public:
 
     // Create the pen
     IPenSettings* pen_settings = settings->getToolSettings(m_tool)->getPen();
-    assert(pen_settings != NULL);
+    ASSERT(pen_settings != NULL);
 
     m_pen = new Pen(pen_settings->getType(),
 		    pen_settings->getSize(),

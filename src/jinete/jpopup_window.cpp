@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jinete.h"
@@ -79,7 +78,7 @@ PopupWindow::~PopupWindow()
  */
 void PopupWindow::setHotRegion(JRegion region)
 {
-  assert(region != NULL);
+  ASSERT(region != NULL);
 
   if (m_hot_region != NULL)
     jregion_free(m_hot_region);

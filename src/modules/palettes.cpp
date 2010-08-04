@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 #include <string.h>
 
@@ -117,10 +116,10 @@ void set_current_color(int index, int r, int g, int b)
 {
   register int c;
 
-  assert(index >= 0 && index <= 255);
-  assert(r >= 0 && r <= 255);
-  assert(g >= 0 && g <= 255);
-  assert(b >= 0 && b <= 255);
+  ASSERT(index >= 0 && index <= 255);
+  ASSERT(r >= 0 && r <= 255);
+  ASSERT(g >= 0 && g <= 255);
+  ASSERT(b >= 0 && b <= 255);
 
   c = ase_current_palette->getEntry(index);
 

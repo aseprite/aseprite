@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <algorithm>
-#include <assert.h>
 #include <string.h>
 #include <allegro/unicode.h>
 
@@ -41,7 +40,7 @@ static bool has_cels(const Layer* layer, int frame);
 Layer::Layer(int type, Sprite* sprite)
   : GfxObj(type)
 {
-  assert(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_FOLDER);
+  ASSERT(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_FOLDER);
 
   set_name("Layer");
 
@@ -127,11 +126,11 @@ LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
       const Cel* cel = *it;
       Cel* cel_copy = cel_new_copy(cel);
 
-      assert((cel->image >= 0) &&
+      ASSERT((cel->image >= 0) &&
 	     (cel->image < src_layer->getSprite()->getStock()->nimage));
 
       Image* image = src_layer->getSprite()->getStock()->image[cel->image];
-      assert(image != NULL);
+      ASSERT(image != NULL);
 
       Image* image_copy = image_new_copy(image);
 
@@ -162,7 +161,7 @@ void LayerImage::destroy_all_cels()
     Cel* cel = *it;
     Image* image = getSprite()->getStock()->image[cel->image];
 
-    assert(image != NULL);
+    ASSERT(image != NULL);
 
     stock_remove_image(getSprite()->getStock(), image);
     image_free(image);
@@ -208,7 +207,7 @@ void LayerImage::remove_cel(Cel *cel)
 {
   CelIterator it = std::find(m_cels.begin(), m_cels.end(), cel);
 
-  assert(it != m_cels.end());
+  ASSERT(it != m_cels.end());
 
   m_cels.erase(it);
 }
@@ -250,8 +249,8 @@ Cel* LayerImage::get_cel(int frame)
  */
 void LayerImage::configure_as_background()
 {
-  assert(getSprite() != NULL);
-  assert(getSprite()->getBackgroundLayer() == NULL);
+  ASSERT(getSprite() != NULL);
+  ASSERT(getSprite()->getBackgroundLayer() == NULL);
 
   *flags_addr() |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
   set_name("Background");
@@ -324,7 +323,7 @@ void LayerFolder::add_layer(Layer* layer)
 void LayerFolder::remove_layer(Layer* layer)
 {
   LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
-  assert(it != m_layers.end());
+  ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
   layer->set_parent(NULL);
@@ -333,12 +332,12 @@ void LayerFolder::remove_layer(Layer* layer)
 void LayerFolder::move_layer(Layer* layer, Layer* after)
 {
   LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
-  assert(it != m_layers.end());
+  ASSERT(it != m_layers.end());
   m_layers.erase(it);
 
   if (after) {
     LayerIterator after_it = std::find(m_layers.begin(), m_layers.end(), after);
-    assert(after_it != m_layers.end());
+    ASSERT(after_it != m_layers.end());
     after_it++;
     m_layers.insert(after_it, layer);
   }
@@ -415,11 +414,11 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
       Image* src_image;
 
       if (cel) {
-	assert((cel->image >= 0) &&
+	ASSERT((cel->image >= 0) &&
 	       (cel->image < layer->getSprite()->getStock()->nimage));
 
 	src_image = layer->getSprite()->getStock()->image[cel->image];
-	assert(src_image != NULL);
+	ASSERT(src_image != NULL);
 
 	image_merge(image, src_image,
 		    cel->x + x,

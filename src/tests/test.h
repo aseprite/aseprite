@@ -23,7 +23,6 @@
 #error You should compile the tests with the NDEBUG flag activated
 #endif
 
-#include <assert.h>
 #include <stdio.h>
 #include <allegro.h>
 

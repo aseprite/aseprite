@@ -43,6 +43,7 @@
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
 #include "jinete/jregion.h"
+
 #define Bool			bool
 #define BoxRec			struct jrect
 #define RegDataRec		struct jregion_data
@@ -128,6 +129,9 @@ struct ji_point { int x, y; };
 #define miRegionNotEmpty	jregion_notempty
 #define miRegionEmpty		jregion_empty
 #define miRegionExtents		jregion_extents
+
+#undef assert
+#define assert			ASSERT
 
 #include "miregion.cpp"
 

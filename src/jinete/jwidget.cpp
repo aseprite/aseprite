@@ -33,7 +33,6 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <cctype>
 #include <climits>
 #include <cstdarg>
@@ -102,7 +101,7 @@ Widget::Widget(int type)
 
 void jwidget_free(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
   delete widget;
 }
 
@@ -158,7 +157,7 @@ void jwidget_free_deferred(JWidget widget)
 {
   JMessage msg;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   msg = jmessage_new(JM_DEFERREDFREE);
   msg->deffree.widget_to_free = widget;
@@ -169,7 +168,7 @@ void jwidget_free_deferred(JWidget widget)
 
 void jwidget_init_theme(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (widget->theme) {
     widget->theme->init_widget(widget);
@@ -194,7 +193,7 @@ void jwidget_add_hook(JWidget widget, int type,
 {
   JHook hook;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   hook = jhook_new();
   hook->type = type;
@@ -210,7 +209,7 @@ void jwidget_add_hook(JWidget widget, int type,
 JHook jwidget_get_hook(JWidget widget, int type)
 {
   JLink link;
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   JI_LIST_FOR_EACH(widget->hooks, link) {
     if (((JHook)link->data)->type == type)
@@ -225,7 +224,7 @@ JHook jwidget_get_hook(JWidget widget, int type)
 void *jwidget_get_data(JWidget widget, int type)
 {
   register JLink link;
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   JI_LIST_FOR_EACH(widget->hooks, link) {
     if (((JHook)link->data)->type == type)
@@ -333,7 +332,7 @@ void Widget::setFont(FONT* f)
 
 void jwidget_magnetic(JWidget widget, bool state)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (state)
     widget->flags |= JI_MAGNETIC;
@@ -343,7 +342,7 @@ void jwidget_magnetic(JWidget widget, bool state)
 
 void jwidget_expansive(JWidget widget, bool state)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (state)
     widget->flags |= JI_EXPANSIVE;
@@ -353,7 +352,7 @@ void jwidget_expansive(JWidget widget, bool state)
 
 void jwidget_decorative(JWidget widget, bool state)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (state)
     widget->flags |= JI_DECORATIVE;
@@ -363,7 +362,7 @@ void jwidget_decorative(JWidget widget, bool state)
 
 void jwidget_focusrest(JWidget widget, bool state)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (state)
     widget->flags |= JI_FOCUSREST;
@@ -373,28 +372,28 @@ void jwidget_focusrest(JWidget widget, bool state)
 
 bool jwidget_is_magnetic(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return (widget->flags & JI_MAGNETIC) ? true: false;
 }
 
 bool jwidget_is_expansive(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return (widget->flags & JI_EXPANSIVE) ? true: false;
 }
 
 bool jwidget_is_decorative(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return (widget->flags & JI_DECORATIVE) ? true: false;
 }
 
 bool jwidget_is_focusrest(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return (widget->flags & JI_FOCUSREST) ? true: false;
 }
@@ -404,7 +403,7 @@ bool jwidget_is_focusrest(JWidget widget)
 
 void jwidget_dirty(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
   jwidget_invalidate(widget);
 }
 
@@ -508,8 +507,8 @@ bool Widget::isSelected() const
 
 void jwidget_add_child(JWidget widget, JWidget child)
 {
-  assert_valid_widget(widget);
-  assert_valid_widget(child);
+  ASSERT_VALID_WIDGET(widget);
+  ASSERT_VALID_WIDGET(child);
 
   jlist_append(widget->children, child);
   child->parent = widget;
@@ -522,7 +521,7 @@ void jwidget_add_children(JWidget widget, ...)
   JWidget child;
   va_list ap;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   va_start(ap, widget);
 
@@ -534,8 +533,8 @@ void jwidget_add_children(JWidget widget, ...)
 
 void jwidget_remove_child(JWidget widget, JWidget child)
 {
-  assert_valid_widget(widget);
-  assert_valid_widget(child);
+  ASSERT_VALID_WIDGET(widget);
+  ASSERT_VALID_WIDGET(child);
 
   jlist_remove(widget->children, child);
   child->parent = NULL;
@@ -545,9 +544,9 @@ void jwidget_replace_child(JWidget widget, JWidget old_child, JWidget new_child)
 {
   JLink before;
 
-  assert_valid_widget(widget);
-  assert_valid_widget(old_child);
-  assert_valid_widget(new_child);
+  ASSERT_VALID_WIDGET(widget);
+  ASSERT_VALID_WIDGET(old_child);
+  ASSERT_VALID_WIDGET(new_child);
 
   before = jlist_find(widget->children, old_child);
   if (!before)
@@ -664,7 +663,7 @@ Widget* Widget::pick(int x, int y)
 
 bool Widget::hasChild(Widget* child)
 {
-  assert_valid_widget(child);
+  ASSERT_VALID_WIDGET(child);
 
   return jlist_find(this->children, child) != this->children->end ? true: false;
 }
@@ -719,7 +718,7 @@ void jwidget_relayout(JWidget widget)
 /* gets the position of the widget */
 JRect jwidget_get_rect(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return jrect_new_copy(widget->rc);
 }
@@ -727,7 +726,7 @@ JRect jwidget_get_rect(JWidget widget)
 /* gets the position for children of the widget */
 JRect jwidget_get_child_rect(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return jrect_new(widget->rc->x1 + widget->border_width.l,
 		   widget->rc->y1 + widget->border_width.t,
@@ -739,7 +738,7 @@ JRegion jwidget_get_region(JWidget widget)
 {
   JRegion region;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (widget->type == JI_FRAME)
     region = widget->theme->get_window_mask(widget);
@@ -758,7 +757,7 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
   JLink link;
   JRect cpos;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   region = jwidget_get_region(widget);
 
@@ -871,14 +870,14 @@ JRegion jwidget_get_drawable_region(JWidget widget, int flags)
 
 int jwidget_get_bg_color(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return widget->getBgColor();
 }
 
 JTheme jwidget_get_theme(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return widget->theme;
 }
@@ -894,7 +893,7 @@ int jwidget_get_text_length(JWidget widget)
 
 int jwidget_get_text_height(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   return text_height(widget->getFont());
 }
@@ -914,7 +913,7 @@ void jwidget_get_texticon_info(JWidget widget,
   int box_x, box_y, box_w, box_h, icon_x, icon_y;
   int text_x, text_y, text_w, text_h;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   text_x = text_y = 0;
 
@@ -1015,7 +1014,7 @@ void jwidget_noborders(JWidget widget)
 
 void jwidget_set_border(JWidget widget, int value)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->border_width.l = value;
   widget->border_width.t = value;
@@ -1027,7 +1026,7 @@ void jwidget_set_border(JWidget widget, int value)
 
 void jwidget_set_border(JWidget widget, int l, int t, int r, int b)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->border_width.l = l;
   widget->border_width.t = t;
@@ -1041,7 +1040,7 @@ void jwidget_set_rect(JWidget widget, JRect rect)
 {
   JMessage msg;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   msg = jmessage_new(JM_SETPOS);
   jrect_copy(&msg->setpos.rect, rect);
@@ -1051,7 +1050,7 @@ void jwidget_set_rect(JWidget widget, JRect rect)
 
 void jwidget_set_min_size(JWidget widget, int w, int h)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->min_w = w;
   widget->min_h = h;
@@ -1059,7 +1058,7 @@ void jwidget_set_min_size(JWidget widget, int w, int h)
 
 void jwidget_set_max_size(JWidget widget, int w, int h)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->max_w = w;
   widget->max_h = h;
@@ -1067,14 +1066,14 @@ void jwidget_set_max_size(JWidget widget, int w, int h)
 
 void jwidget_set_bg_color(JWidget widget, int color)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->setBgColor(color);
 }
 
 void jwidget_set_theme(JWidget widget, JTheme theme)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->theme = theme;
   /* TODO mmhhh... maybe some JStyle in JWidget should be great */
@@ -1098,7 +1097,7 @@ void jwidget_flush_redraw(JWidget widget)
     widget = processing.front();
     processing.pop();
 
-    assert_valid_widget(widget);
+    ASSERT_VALID_WIDGET(widget);
 
     // If the widget is hidden
     if (!widget->isVisible())
@@ -1138,7 +1137,7 @@ void jwidget_flush_redraw(JWidget widget)
 
 void jwidget_invalidate(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (widget->isVisible()) {
     JRegion reg1 = jwidget_get_drawable_region(widget, JI_GDR_CUTTOPWINDOWS);
@@ -1154,7 +1153,7 @@ void jwidget_invalidate(JWidget widget)
 
 void jwidget_invalidate_rect(JWidget widget, const JRect rect)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (widget->isVisible()) {
     JRegion reg1 = jregion_new(rect, 1);
@@ -1165,7 +1164,7 @@ void jwidget_invalidate_rect(JWidget widget, const JRect rect)
 
 void jwidget_invalidate_region(JWidget widget, const JRegion region)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (widget->isVisible() &&
       jregion_rect_in(region, widget->rc) != JI_RGNOUT) {
@@ -1219,21 +1218,21 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
 
 void jwidget_signal_on(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->emit_signals--;
 }
 
 void jwidget_signal_off(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   widget->emit_signals++;
 }
 
 bool jwidget_emit_signal(JWidget widget, int signal_num)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   if (!widget->emit_signals) {
     JMessage msg;
@@ -1278,7 +1277,7 @@ bool Widget::sendMessage(JMessage msg)
   JHook hook;
   JLink link;
 
-  assert(msg != NULL);
+  ASSERT(msg != NULL);
 
   JI_LIST_FOR_EACH(this->hooks, link) {
     hook = reinterpret_cast<JHook>(link->data);
@@ -1440,7 +1439,7 @@ bool Widget::hasCapture()
 
 JWidget jwidget_find_name(JWidget widget, const char *name)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
   return widget->findChild(name);
 }
 
@@ -1448,7 +1447,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode)
 {
   int c, ascii;
 
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   ascii = 0;
   if (scancode >= KEY_0 && scancode <= KEY_9)
@@ -1477,8 +1476,8 @@ bool Widget::onProcessMessage(JMessage msg)
 {
   JWidget widget = this;
 
-  assert(msg != NULL);
-  assert_valid_widget(widget);
+  ASSERT(msg != NULL);
+  ASSERT_VALID_WIDGET(widget);
 
   switch (msg->type) {
 

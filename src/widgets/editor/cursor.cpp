@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <allegro.h>
 
 #include "jinete/jbase.h"
@@ -148,7 +147,7 @@ static void on_palette_change_update_cursor_color()
 
 static void on_pen_size_before_change()
 {
-  assert(current_editor != NULL);
+  ASSERT(current_editor != NULL);
 
   pen_size_thick = current_editor->editor_get_cursor_thick();
   if (pen_size_thick)
@@ -157,7 +156,7 @@ static void on_pen_size_before_change()
 
 static void on_pen_size_after_change()
 {
-  assert(current_editor != NULL);
+  ASSERT(current_editor != NULL);
 
   // Show drawing cursor
   if (current_editor->getSprite() && pen_size_thick > 0)
@@ -176,7 +175,7 @@ static Pen* editor_get_current_pen()
     ->getToolSettings(current_tool)
     ->getPen();
 
-  assert(pen_settings != NULL);
+  ASSERT(pen_settings != NULL);
 
   if (!current_pen ||
       current_pen->get_type() != pen_settings->getType() ||
@@ -230,8 +229,8 @@ void Editor::editor_cursor_exit()
  */
 void Editor::editor_draw_cursor(int x, int y, bool refresh)
 {
-  assert(m_cursor_thick == 0);
-  assert(m_sprite != NULL);
+  ASSERT(m_cursor_thick == 0);
+  ASSERT(m_sprite != NULL);
 
   /* get drawable region */
   clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
@@ -394,7 +393,7 @@ void Editor::editor_clean_cursor(bool refresh)
 {
   int x, y;
 
-  assert(m_cursor_thick != 0);
+  ASSERT(m_cursor_thick != 0);
 
   clipping_region = jwidget_get_drawable_region(this, JI_GDR_CUTTOPWINDOWS);
 
@@ -480,7 +479,7 @@ static void generate_cursor_boundaries()
     if (current_tool) {
       IPenSettings* pen_settings = context->getSettings()
 	->getToolSettings(current_tool)->getPen();
-      assert(pen_settings != NULL);
+      ASSERT(pen_settings != NULL);
       pen = new Pen(pen_settings->getType(),
 		    pen_settings->getSize(),
 		    pen_settings->getAngle());
@@ -672,7 +671,7 @@ static int point_inside_region(int x, int y, JRegion region)
 static int get_pen_color(Sprite *sprite)
 {
   color_t c = UIContext::instance()->getSettings()->getFgColor();
-  assert(sprite != NULL);
+  ASSERT(sprite != NULL);
 
   // Avoid using invalid colors
   if (!color_is_valid(c))

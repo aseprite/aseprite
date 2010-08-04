@@ -19,7 +19,6 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <assert.h>
 #include <string.h>
 
 #include "jinete/jlist.h"
@@ -46,10 +45,10 @@ Image* NewImageFromMask(const Sprite* src_sprite)
   const Image *src = src_sprite->getCurrentImage(&x, &y);
   div_t d;
 
-  assert(src_sprite);
-  assert(src_sprite->getMask());
-  assert(src_sprite->getMask()->bitmap);
-  assert(src);
+  ASSERT(src_sprite);
+  ASSERT(src_sprite->getMask());
+  ASSERT(src_sprite->getMask()->bitmap);
+  ASSERT(src);
 
   dst = image_new(src_sprite->getImgType(),
 		  src_sprite->getMask()->w,
@@ -89,7 +88,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   Editor* editor = current_editor;
   Sprite* sprite = editor->getSprite();
 
-  assert(sprite->getCurrentLayer()->is_image());
+  ASSERT(sprite->getCurrentLayer()->is_image());
 
   LayerImage* layer = static_cast<LayerImage*>(sprite->getCurrentLayer());
   Cel *cel = layer->get_cel(sprite->getCurrentFrame());

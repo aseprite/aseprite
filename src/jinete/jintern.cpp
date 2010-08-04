@@ -31,7 +31,6 @@
 
 #include "config.h"
 
-#include <assert.h>
 #include <vector>
 
 #include "jinete/jmanager.h"
@@ -54,7 +53,7 @@ void _ji_widgets_exit()
 
 JWidget _ji_get_widget_by_id(JID widget_id)
 {
-  assert((widget_id >= 0) && (widget_id < widgets->size()));
+  ASSERT((widget_id >= 0) && (widget_id < widgets->size()));
 
   return (*widgets)[widget_id];
 }
@@ -99,7 +98,7 @@ void _ji_add_widget(JWidget widget)
 
 void _ji_remove_widget(JWidget widget)
 {
-  assert_valid_widget(widget);
+  ASSERT_VALID_WIDGET(widget);
 
   (*widgets)[widget->id] = NULL;
 }

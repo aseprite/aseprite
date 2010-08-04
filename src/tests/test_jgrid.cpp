@@ -37,23 +37,23 @@ static void test_grid_2x1()
 
   /* test request-size */
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 20 && req_h == 10);
+  ASSERT(req_w == 20 && req_h == 10);
 
   /* test child-spacing */
   grid->child_spacing = 2;
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 22 && req_h == 10);
+  ASSERT(req_w == 22 && req_h == 10);
 
   /* test borders */
   grid->border_width.l = 3;
   grid->border_width.b = 3;
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 25 && req_h == 13);
+  ASSERT(req_w == 25 && req_h == 13);
 
   grid->border_width.r = 5;
   grid->border_width.t = 2;
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 30 && req_h == 15);
+  ASSERT(req_w == 30 && req_h == 15);
 
   jwidget_free(grid);
 }
@@ -74,22 +74,22 @@ static void test_grid_2x1_expand2nd()
 
   /* test request size */
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 30 && req_h == 20);
+  ASSERT(req_w == 30 && req_h == 20);
 
   /* test layout */
   rect = jrect_new(0, 0, 40, 20);
   jwidget_set_rect(grid, rect);
   jrect_free(rect);
 
-  assert(w1->rc->x1 == 0);
-  assert(w1->rc->y1 == 0);
-  assert(jrect_w(w1->rc) == 20);
-  assert(jrect_h(w1->rc) == 20);
+  ASSERT(w1->rc->x1 == 0);
+  ASSERT(w1->rc->y1 == 0);
+  ASSERT(jrect_w(w1->rc) == 20);
+  ASSERT(jrect_h(w1->rc) == 20);
 
-  assert(w2->rc->x1 == 20);
-  assert(w2->rc->y1 == 0);
-  assert(jrect_w(w2->rc) == 20);
-  assert(jrect_h(w2->rc) == 10);
+  ASSERT(w2->rc->x1 == 20);
+  ASSERT(w2->rc->y1 == 0);
+  ASSERT(jrect_w(w2->rc) == 20);
+  ASSERT(jrect_h(w2->rc) == 10);
 
   jwidget_free(grid);
 }
@@ -110,17 +110,17 @@ static void test_grid_2x1_samewidth()
 
   /* test request size */
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 40 && req_h == 20);
+  ASSERT(req_w == 40 && req_h == 20);
 
   /* test layout */
   rect = jrect_new(0, 0, 60, 20);
   jwidget_set_rect(grid, rect);
   jrect_free(rect);
 
-  assert(w1->rc->x1 == 0);
-  assert(w2->rc->x1 == 30);
-  assert(jrect_w(w1->rc) == 30);
-  assert(jrect_w(w2->rc) == 30);
+  ASSERT(w1->rc->x1 == 0);
+  ASSERT(w2->rc->x1 == 30);
+  ASSERT(jrect_w(w1->rc) == 30);
+  ASSERT(jrect_w(w2->rc) == 30);
 
   jwidget_free(grid);
 }
@@ -186,22 +186,22 @@ static void test_grid_3x3_intrincate()
   /* test request size */
   grid->child_spacing = 2;
   jwidget_request_size(grid, &req_w, &req_h);
-  assert(req_w == 22 && req_h == 22);
+  ASSERT(req_w == 22 && req_h == 22);
 
   /* test layout */
   rect = jrect_new(0, 0, 100, 100);
   jwidget_set_rect(grid, rect);
   jrect_free(rect);
 
-  assert(w1->rc->x1 == 0  && w1->rc->y1 == 0);
-  assert(w2->rc->x1 == 12 && w2->rc->y1 == 0);
-  assert(w3->rc->x1 == 0  && w3->rc->y1 == 12);
-  assert(w4->rc->x1 == 90 && w4->rc->y1 == 12);
+  ASSERT(w1->rc->x1 == 0  && w1->rc->y1 == 0);
+  ASSERT(w2->rc->x1 == 12 && w2->rc->y1 == 0);
+  ASSERT(w3->rc->x1 == 0  && w3->rc->y1 == 12);
+  ASSERT(w4->rc->x1 == 90 && w4->rc->y1 == 12);
 
-  assert(jrect_w(w1->rc) == 10 && jrect_h(w1->rc) == 10);
-  assert(jrect_w(w2->rc) == 88 && jrect_h(w2->rc) == 10);
-  assert(jrect_w(w3->rc) == 88 && jrect_h(w3->rc) == 88);
-  assert(jrect_w(w4->rc) == 10 && jrect_h(w4->rc) == 88);
+  ASSERT(jrect_w(w1->rc) == 10 && jrect_h(w1->rc) == 10);
+  ASSERT(jrect_w(w2->rc) == 88 && jrect_h(w2->rc) == 10);
+  ASSERT(jrect_w(w3->rc) == 88 && jrect_h(w3->rc) == 88);
+  ASSERT(jrect_w(w4->rc) == 10 && jrect_h(w4->rc) == 88);
 
   jwidget_free(grid);
 }
