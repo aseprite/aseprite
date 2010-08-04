@@ -573,7 +573,7 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
 	entry_forward_word(widget);
       }
       // forward char
-      else if (entry->cursor < text.size()) {
+      else if (entry->cursor < (int)text.size()) {
 	entry->cursor++;
       }
       break;
@@ -619,7 +619,7 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
       }
       // delete the next character
       else {
-	if (entry->cursor < text.size())
+	if (entry->cursor < (int)text.size())
 	  text.erase(entry->cursor, 1);
       }
 
