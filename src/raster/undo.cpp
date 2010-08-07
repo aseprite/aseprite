@@ -2392,7 +2392,7 @@ static ase_uint8* write_raw_palette(ase_uint8* raw_data, Palette* palette)
   write_raw_uint16(palette->getFrame()); // frame
   write_raw_uint16(palette->size());	 // number of colors
 
-  for (size_t c=0; c<palette->size(); c++) {
+  for (int c=0; c<palette->size(); c++) {
     color = palette->getEntry(c);
     write_raw_uint32(color);
   }

@@ -176,9 +176,9 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 	    if (c != 0) {
-	      ASSERT(c >= 0 && (size_t)c < palette->size());
+	      ASSERT(c >= 0 && c < palette->size());
 
-	      c = palette->getEntry(MID(0, (size_t)c, palette->size()-1));
+	      c = palette->getEntry(MID(0, c, palette->size()-1));
 	      putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
 						_rgba_getg(c),
 						_rgba_getb(c)));
@@ -216,9 +216,9 @@ static void thumbnail_render(BITMAP* bmp, const Image* image, bool has_alpha, co
 	  for (x=0; x<w; x++) {
 	    c = image_getpixel(image, x*scale, y*scale);
 
-	    ASSERT(c >= 0 && (size_t)c < palette->size());
+	    ASSERT(c >= 0 && c < palette->size());
 
-	    c = palette->getEntry(MID(0, (size_t)c, palette->size()-1));
+	    c = palette->getEntry(MID(0, c, palette->size()-1));
 	    putpixel(bmp, x1+x, y1+y, makecol(_rgba_getr(c),
 					      _rgba_getg(c),
 					      _rgba_getb(c)));

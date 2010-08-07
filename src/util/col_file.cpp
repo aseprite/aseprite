@@ -40,8 +40,7 @@ Palette *load_col_file(const char *filename)
   int pro = (size == 768)? false: true;	/* is Animator Pro format? */
   div_t d = div(size-8, 3);
   Palette *pal = NULL;
-  int r, g, b;
-  size_t c;
+  int c, r, g, b;
   FILE *f;
 
   if (!(size) || (pro && d.rem)) /* invalid format */

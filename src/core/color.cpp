@@ -215,7 +215,7 @@ int color_get_red(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getr(get_current_palette()->getEntry(i));
@@ -250,7 +250,7 @@ int color_get_green(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getg(get_current_palette()->getEntry(i));
@@ -285,7 +285,7 @@ int color_get_blue(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       return _rgba_getb(get_current_palette()->getEntry(i));
@@ -320,7 +320,7 @@ int color_get_hue(color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
@@ -360,7 +360,7 @@ int color_get_saturation(color_t color)
       return 0;
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
@@ -400,7 +400,7 @@ int color_get_value(color_t color)
       return GET_COLOR_DATA_GRAY(color);
 
     case COLOR_TYPE_INDEX: {
-      size_t i = GET_COLOR_DATA_INDEX(color);
+      int i = GET_COLOR_DATA_INDEX(color);
       ASSERT(i >= 0 && i < get_current_palette()->size());
 
       ase_uint32 c = get_current_palette()->getEntry(i);
