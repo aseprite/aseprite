@@ -25,36 +25,46 @@
 #include <vector>
 
 struct BITMAP;
-class FileItem;
+class IFileItem;
 
-typedef std::vector<FileItem*> FileItemList;
+typedef std::vector<IFileItem*> FileItemList;
 
 class FileSystemModule
 {
+  static FileSystemModule* m_instance;
+
 public:
   FileSystemModule();
   ~FileSystemModule();
+
+  static FileSystemModule* instance();
+
+  void refresh();
+
+  IFileItem* getRootFileItem();
+  IFileItem* getFileItemFromPath(const jstring& path);
 };
 
-void file_system_refresh();
+class IFileItem
+{
+public:
+  virtual ~IFileItem() { }
 
-FileItem* get_root_fileitem();
-FileItem* get_fileitem_from_path(const jstring& path);
+  virtual bool isFolder() const = 0;
+  virtual bool isBrowsable() const = 0;
 
-bool fileitem_is_folder(FileItem* fileitem);
-bool fileitem_is_browsable(FileItem* fileitem);
+  virtual jstring getKeyName() const = 0;
+  virtual jstring getFileName() const = 0;
+  virtual jstring getDisplayName() const = 0;
 
-jstring fileitem_get_keyname(FileItem* fileitem);
-jstring fileitem_get_filename(FileItem* fileitem);
-jstring fileitem_get_displayname(FileItem* fileitem);
+  virtual IFileItem* getParent() const = 0;
+  virtual const FileItemList& getChildren() = 0;
 
-FileItem* fileitem_get_parent(FileItem* fileitem);
-const FileItemList& fileitem_get_children(FileItem* fileitem);
+  virtual bool hasExtension(const jstring& csv_extensions) = 0;
 
-bool fileitem_has_extension(FileItem* fileitem, const jstring& csv_extensions);
-
-BITMAP *fileitem_get_thumbnail(FileItem* fileitem);
-void fileitem_set_thumbnail(FileItem* fileitem, BITMAP *thumbnail);
+  virtual BITMAP* getThumbnail() = 0;
+  virtual void setThumbnail(BITMAP* thumbnail) = 0;
+};
 
 #endif
 

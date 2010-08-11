@@ -57,7 +57,7 @@ static bool navigation_locked = false;	/* if true the navigation_history isn't
 
 static void update_location(JWidget window);
 static void update_navigation_buttons(JWidget window);
-static void add_in_navigation_history(FileItem *folder);
+static void add_in_navigation_history(IFileItem* folder);
 static void select_filetype_from_filename(JWidget window);
 
 static void goback_command(JWidget widget);
@@ -92,7 +92,7 @@ jstring ase_file_selector(const jstring& message,
   ComboBox* filetype;
   jstring result;
 
-  file_system_refresh();
+  FileSystemModule::instance()->refresh();
 
   if (!navigation_history) {
     navigation_history = jlist_new();
@@ -101,13 +101,13 @@ jstring ase_file_selector(const jstring& message,
 
   // we have to find where the user should begin to browse files (start_folder)
   jstring start_folder_path;
-  FileItem *start_folder = NULL;
+  IFileItem* start_folder = NULL;
 
   // if init_path doesn't contain a path...
   if (init_path.filepath().empty()) {
     // get the saved `path' in the configuration file
     jstring path = get_config_string("FileSelect", "CurrentDirectory", "");
-    start_folder = get_fileitem_from_path(path);
+    start_folder = FileSystemModule::instance()->getFileItemFromPath(path);
 
     // is the folder find?
     if (!start_folder) {
@@ -134,7 +134,7 @@ jstring ase_file_selector(const jstring& message,
   start_folder_path.fix_separators();
 
   if (!start_folder)
-    start_folder = get_fileitem_from_path(start_folder_path);
+    start_folder = FileSystemModule::instance()->getFileItemFromPath(start_folder_path);
 
   PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
@@ -235,16 +235,16 @@ again:
   if (window->get_killer() == ok ||
       window->get_killer() == fileview) {
     // open the selected file
-    FileItem *folder = fileview_get_current_folder(fileview);
+    IFileItem *folder = fileview_get_current_folder(fileview);
     ASSERT(folder);
 
     jstring fn = filename_entry->getText();
     jstring buf;
-    FileItem* enter_folder = NULL;
+    IFileItem* enter_folder = NULL;
 
     // up a level?
     if (fn == "..") {
-      enter_folder = fileitem_get_parent(folder);
+      enter_folder = folder->getParent();
       if (!enter_folder)
 	enter_folder = folder;
     }
@@ -259,15 +259,15 @@ again:
 
       for (FileItemList::const_iterator
 	     it=children.begin(); it!=children.end(); ++it) {
-	FileItem* child = *it;
-	jstring child_name = fileitem_get_displayname(child);
+	IFileItem* child = *it;
+	jstring child_name = child->getDisplayName();
 
 #ifdef ALLEGRO_WINDOWS
 	child_name.tolower();
 #endif
 	if (child_name == fn2) {
 	  enter_folder = *it;
-	  buf = fileitem_get_filename(enter_folder);
+	  buf = enter_folder->getFileName();
 	  break;
 	}
       }
@@ -277,7 +277,7 @@ again:
 	if (jstring::is_separator(fn.front())) { // absolute path (UNIX style)
 #ifdef ALLEGRO_WINDOWS
 	  // get the drive of the current folder
-	  jstring drive = fileitem_get_filename(folder);
+	  jstring drive = folder->getFileName();
 	  if (drive.size() >= 2 && drive[1] == ':') {
 	    buf += drive[0];
 	    buf += ':';
@@ -301,13 +301,13 @@ again:
 	}
 #endif
 	else {
-	  buf = fileitem_get_filename(folder);
+	  buf = folder->getFileName();
 	  buf /= fn;
 	}
 	buf.fix_separators();
 
 	// we can check if 'buf' is a folder, so we have to enter in it
-	enter_folder = get_fileitem_from_path(buf);
+	enter_folder = FileSystemModule::instance()->getFileItemFromPath(buf);
       }
     }
     else {
@@ -318,8 +318,8 @@ again:
 
     // did we find a folder to enter?
     if (enter_folder &&
-	fileitem_is_folder(enter_folder) &&
-	fileitem_is_browsable(enter_folder)) {
+	enter_folder->isFolder() &&
+	enter_folder->isBrowsable()) {
       // enter in the folder that was specified in the 'filename_entry'
       fileview_set_current_folder(fileview, enter_folder);
 
@@ -343,7 +343,7 @@ again:
     result = buf;
 
     // save the path in the configuration file
-    jstring lastpath = fileitem_get_keyname(folder);
+    jstring lastpath = folder->getKeyName();
     set_config_string("FileSelect", "CurrentDirectory",
 		      lastpath.c_str());
   }
@@ -364,8 +364,8 @@ static void update_location(JWidget window)
   ComboBox* location = dynamic_cast<ComboBox*>(jwidget_find_name(window, "location"));
   ASSERT(location != NULL);
 
-  FileItem* current_folder = fileview_get_current_folder(fileview);
-  FileItem* fileitem = current_folder;
+  IFileItem* current_folder = fileview_get_current_folder(fileview);
+  IFileItem* fileitem = current_folder;
   JList locations = jlist_new();
   JLink link;
   int selected_index = -1;
@@ -373,7 +373,7 @@ static void update_location(JWidget window)
 
   while (fileitem != NULL) {
     jlist_prepend(locations, fileitem);
-    fileitem = fileitem_get_parent(fileitem);
+    fileitem = fileitem->getParent();
   }
 
   // Clear all the items from the combo-box
@@ -382,7 +382,7 @@ static void update_location(JWidget window)
   // Add item by item (from root to the specific current folder)
   int level = 0;
   JI_LIST_FOR_EACH(locations, link) {
-    fileitem = reinterpret_cast<FileItem*>(link->data);
+    fileitem = reinterpret_cast<IFileItem*>(link->data);
 
     // Indentation
     jstring buf;
@@ -390,7 +390,7 @@ static void update_location(JWidget window)
       buf += "  ";
 
     // Location name
-    buf += fileitem_get_displayname(fileitem);
+    buf += fileitem->getDisplayName();
 
     // Add the new location to the combo-box
     newItem = location->addItem(buf.c_str());
@@ -428,7 +428,7 @@ static void update_location(JWidget window)
   {
     jwidget_signal_off(location);
     location->setSelectedItem(selected_index);
-    location->getEntryWidget()->setText(fileitem_get_displayname(current_folder).c_str());
+    location->getEntryWidget()->setText(current_folder->getDisplayName().c_str());
     jentry_deselect_text(location->getEntryWidget());
     jwidget_signal_on(location);
   }
@@ -442,7 +442,7 @@ static void update_navigation_buttons(JWidget window)
   JWidget goback = jwidget_find_name(window, "goback");
   JWidget goforward = jwidget_find_name(window, "goforward");
   JWidget goup = jwidget_find_name(window, "goup");
-  FileItem *current_folder = fileview_get_current_folder(fileview);
+  IFileItem* current_folder = fileview_get_current_folder(fileview);
 
   /* update the state of the go back button: if the navigation-history
      has two elements and the navigation-position isn't the first
@@ -460,12 +460,13 @@ static void update_navigation_buttons(JWidget window)
 
   /* update the state of the go up button: if the current-folder isn't
      the root-item */
-  goup->setEnabled(current_folder != get_root_fileitem());
+  goup->setEnabled(current_folder != FileSystemModule::instance()->getRootFileItem());
 }
 
-static void add_in_navigation_history(FileItem *folder)
+static void add_in_navigation_history(IFileItem* folder)
 {
-  ASSERT(fileitem_is_folder(folder));
+  ASSERT(folder != NULL);
+  ASSERT(folder->isFolder());
 
   /* remove the history from the current position */
   if (navigation_position) {
@@ -520,7 +521,7 @@ static void goback_command(JWidget widget)
 
       navigation_locked = true;
       fileview_set_current_folder(fileview,
-				  reinterpret_cast<FileItem*>(navigation_position->data));
+				  reinterpret_cast<IFileItem*>(navigation_position->data));
       navigation_locked = false;
     }
   }
@@ -539,7 +540,7 @@ static void goforward_command(JWidget widget)
 
       navigation_locked = true;
       fileview_set_current_folder(fileview,
-				  reinterpret_cast<FileItem*>(navigation_position->data));
+				  reinterpret_cast<IFileItem*>(navigation_position->data));
       navigation_locked = false;
     }
   }
@@ -558,12 +559,12 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     switch (msg->signal.num) {
     
       case SIGNAL_FILEVIEW_FILE_SELECTED: {
-	FileItem* fileitem = fileview_get_selected(widget);
+	IFileItem* fileitem = fileview_get_selected(widget);
 
-	if (!fileitem_is_folder(fileitem)) {
+	if (!fileitem->isFolder()) {
 	  Frame* window = static_cast<Frame*>(widget->getRoot());
 	  Widget* entry = window->findChild("filename");
-	  jstring filename = fileitem_get_filename(fileitem).filename();
+	  jstring filename = fileitem->getFileName().filename();
 
 	  entry->setText(filename.c_str());
 	  select_filetype_from_filename(window);
@@ -606,13 +607,13 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
       // current-folder in the 'fileview' widget
       case JI_SIGNAL_COMBOBOX_SELECT: {
 	int itemIndex = combobox->getSelectedItem();
-	FileItem* fileitem = reinterpret_cast<FileItem*>(combobox->getItemData(itemIndex));
+	IFileItem* fileitem = reinterpret_cast<IFileItem*>(combobox->getItemData(itemIndex));
 
 	// Maybe the user selected a recent file path
 	if (fileitem == NULL) {
 	  jstring path = combobox->getItemText(itemIndex);
 	  if (!path.empty())
-	    fileitem = get_fileitem_from_path(path);
+	    fileitem = FileSystemModule::instance()->getFileItemFromPath(path);
 	}
 
 	if (fileitem != NULL) {
@@ -685,8 +686,8 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
 
     for (FileItemList::const_iterator
 	   it=children.begin(); it!=children.end(); ++it) {
-      FileItem* child = *it;
-      jstring child_name = fileitem_get_displayname(child);
+      IFileItem* child = *it;
+      jstring child_name = child->getDisplayName();
 
       jstring::iterator it1, it2;
 

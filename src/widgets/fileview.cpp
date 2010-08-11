@@ -44,11 +44,11 @@
 
 typedef struct FileView
 {
-  FileItem* current_folder;
+  IFileItem* current_folder;
   FileItemList list;
   bool req_valid;
   int req_w, req_h;
-  FileItem* selected;
+  IFileItem* selected;
   jstring exts;
 
   /* incremental-search */
@@ -56,7 +56,7 @@ typedef struct FileView
   int isearch_clock;
 
   /* thumbnail generation process */
-  FileItem *item_to_generate_thumbnail;
+  IFileItem* item_to_generate_thumbnail;
   int timer_id;
   MonitorList monitors; // list of monitors watching threads
 } FileView;
@@ -65,7 +65,7 @@ typedef struct ThumbnailData
 {
   Monitor* monitor;
   FileOp* fop;
-  FileItem* fileitem;
+  IFileItem* fileitem;
   JWidget fileview;
   Image* thumbnail;
   JThread thread;
@@ -74,30 +74,30 @@ typedef struct ThumbnailData
 
 static FileView* fileview_data(JWidget widget);
 static bool fileview_msg_proc(JWidget widget, JMessage msg);
-static void fileview_get_fileitem_size(JWidget widget, FileItem *fi, int *w, int *h);
+static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, int *h);
 static void fileview_make_selected_fileitem_visible(JWidget widget);
 static void fileview_regenerate_list(JWidget widget);
 static int fileview_get_selected_index(JWidget widget);
 static void fileview_select_index(JWidget widget, int index);
 static void fileview_generate_preview_of_selected_item(JWidget widget);
-static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem);
+static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem);
 static void fileview_stop_threads(FileView* fileview);
 
 static void openfile_bg(void *data);
 static void monitor_thumbnail_generation(void *data);
 static void monitor_free_thumbnail_generation(void *data);
 
-JWidget fileview_new(FileItem *start_folder, const jstring& exts)
+JWidget fileview_new(IFileItem* start_folder, const jstring& exts)
 {
   Widget* widget = new Widget(fileview_type());
   FileView* fileview = new FileView;
 
   if (!start_folder)
-    start_folder = get_root_fileitem();
+    start_folder = FileSystemModule::instance()->getRootFileItem();
   else {
-    while (!fileitem_is_folder(start_folder) &&
-	   fileitem_get_parent(start_folder) != NULL) {
-      start_folder = fileitem_get_parent(start_folder);
+    while (!start_folder->isFolder() &&
+	   start_folder->getParent() != NULL) {
+      start_folder = start_folder->getParent();
     }
   }
 
@@ -129,22 +129,22 @@ int fileview_type()
   return type;
 }
 
-FileItem *fileview_get_current_folder(JWidget widget)
+IFileItem* fileview_get_current_folder(JWidget widget)
 {
   return fileview_data(widget)->current_folder;
 }
 
-FileItem *fileview_get_selected(JWidget widget)
+IFileItem* fileview_get_selected(JWidget widget)
 {
   return fileview_data(widget)->selected;
 }
 
-void fileview_set_current_folder(JWidget widget, FileItem *folder)
+void fileview_set_current_folder(JWidget widget, IFileItem* folder)
 {
   FileView* fileview = fileview_data(widget);
 
   ASSERT(folder != NULL);
-  ASSERT(fileitem_is_browsable(folder));
+  ASSERT(folder->isBrowsable());
 
   fileview->current_folder = folder;
   fileview->req_valid = false;
@@ -153,7 +153,7 @@ void fileview_set_current_folder(JWidget widget, FileItem *folder)
   fileview_regenerate_list(widget);
 
   // select first folder
-  if (!fileview->list.empty() && fileitem_is_browsable(fileview->list.front()))
+  if (!fileview->list.empty() && fileview->list.front()->isBrowsable())
     fileview_select_index(widget, 0);
 
   jwidget_emit_signal(widget, SIGNAL_FILEVIEW_CURRENT_FOLDER_CHANGED);
@@ -172,8 +172,8 @@ const FileItemList& fileview_get_filelist(JWidget widget)
 void fileview_goup(JWidget widget)
 {
   FileView* fileview = fileview_data(widget);
-  FileItem *folder = fileview->current_folder;
-  FileItem *parent = fileitem_get_parent(folder);
+  IFileItem* folder = fileview->current_folder;
+  IFileItem* parent = folder->getParent();
   if (parent) {
     fileview_set_current_folder(widget, parent);
     fileview->selected = folder;
@@ -215,7 +215,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	for (FileItemList::iterator
 	       it=fileview->list.begin();
 	     it!=fileview->list.end(); ++it) {
-	  FileItem* fi = *it;
+	  IFileItem* fi = *it;
 	  fileview_get_fileitem_size(widget, fi, &iw, &ih);
 	  w = MAX(w, iw);
 	  h += ih;
@@ -246,7 +246,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
       for (FileItemList::iterator
 	     it=fileview->list.begin();
 	   it!=fileview->list.end(); ++it) {
-	FileItem* fi = *it;
+	IFileItem* fi = *it;
 	fileview_get_fileitem_size(widget, fi, &iw, &ih);
 	
 	if (fi == fileview->selected) {
@@ -258,14 +258,14 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 			  ji_color_background();
 
 	  fgcolor =
-	    fileitem_is_folder(fi) &&
-	    !fileitem_is_browsable(fi) ? makecol(255, 200, 200):
-					 ji_color_foreground();
+	    fi->isFolder() &&
+	    !fi->isBrowsable() ? makecol(255, 200, 200):
+				 ji_color_foreground();
 	}
 
 	x = widget->rc->x1+2;
 
-	if (fileitem_is_folder(fi)) {
+	if (fi->isFolder()) {
 	  int icon_w = ji_font_text_len(widget->getFont(), "[+]");
 	  int icon_h = ji_font_get_size(widget->getFont());
 
@@ -297,7 +297,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	// item name
 	jdraw_text(ji_screen, widget->getFont(),
-		   fileitem_get_displayname(fi).c_str(), x, y+2,
+		   fi->getDisplayName().c_str(), x, y+2,
 		   fgcolor, bgcolor, true, jguiscale());
 
 	// background for the item name
@@ -308,7 +308,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		     /* exclude where is the text located */
 		     x, y+2,
 		     x+ji_font_text_len(widget->getFont(),
-					fileitem_get_displayname(fi).c_str())-1,
+					fi->getDisplayName().c_str())-1,
 		     y+2+ji_font_get_size(widget->getFont())-1,
 		     /* fill with the background color */
 		     bgcolor);
@@ -340,7 +340,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
 	// thumbnail position
 	if (fi == fileview->selected) {
-	  thumbnail = fileitem_get_thumbnail(fi);
+	  thumbnail = fi->getThumbnail();
 	  if (thumbnail)
 	    thumbnail_y = y + ih/2;
 	}
@@ -385,14 +385,14 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	int iw, ih;
 	int th = jwidget_get_text_height(widget);
 	int y = widget->rc->y1;
-	FileItem *old_selected = fileview->selected;
+	IFileItem* old_selected = fileview->selected;
 	fileview->selected = NULL;
 
 	// rows
 	for (FileItemList::iterator
 	       it=fileview->list.begin();
 	     it!=fileview->list.end(); ++it) {
-	  FileItem* fi = *it;
+	  IFileItem* fi = *it;
 	  fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
 	  if (((msg->mouse.y >= y) && (msg->mouse.y < y+2+th+2)) ||
@@ -470,11 +470,11 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	    break;
 	  case KEY_ENTER:
 	    if (fileview->selected) {
-	      if (fileitem_is_browsable(fileview->selected)) {
+	      if (fileview->selected->isBrowsable()) {
 		fileview_set_current_folder(widget, fileview->selected);
 		return true;
 	      }
-	      if (fileitem_is_folder(fileview->selected)) {
+	      if (fileview->selected->isFolder()) {
 		// do nothing (is a folder but not browseable
 		return true;
 	      }
@@ -507,8 +507,8 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 		  link = fileview->list.begin() + ((select >= 0) ? select: 0);
 
 		for (i=MAX(select, 0); i<bottom; ++i, ++link) {
-		  FileItem *fi = *link;
-		  if (ustrnicmp(fileitem_get_displayname(fi).c_str(),
+		  IFileItem* fi = *link;
+		  if (ustrnicmp(fi->getDisplayName().c_str(),
 				fileview->isearch,
 				chrs) == 0) {
 		    select = i;
@@ -546,7 +546,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 
     case JM_DOUBLECLICK:
       if (fileview->selected) {
-	if (fileitem_is_browsable(fileview->selected)) {
+	if (fileview->selected->isBrowsable()) {
 	  fileview_set_current_folder(widget, fileview->selected);
 	  return true;
 	}
@@ -560,7 +560,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
     case JM_TIMER:
       /* is time to generate the thumbnail? */
       if (msg->timer.timer_id == fileview->timer_id) {
-	FileItem *fileitem;
+	IFileItem* fileitem;
 
 	jmanager_stop_timer(fileview->timer_id);
 
@@ -574,17 +574,17 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-static void fileview_get_fileitem_size(JWidget widget, FileItem *fi, int *w, int *h)
+static void fileview_get_fileitem_size(JWidget widget, IFileItem* fi, int *w, int *h)
 {
 /*   char buf[512]; */
   int len = 0;
 
-  if (fileitem_is_folder(fi)) {
+  if (fi->isFolder()) {
     len += ji_font_text_len(widget->getFont(), "[+]")+2;
   }
 
   len += ji_font_text_len(widget->getFont(),
-			  fileitem_get_displayname(fi).c_str());
+			  fi->getDisplayName().c_str());
 
 /*   if (!fileitem_is_folder(fi)) { */
 /*     len += 2+ji_font_text_len(widget->text_font, buf); */
@@ -610,7 +610,7 @@ static void fileview_make_selected_fileitem_visible(JWidget widget)
   for (FileItemList::iterator
 	 it=fileview->list.begin();
        it!=fileview->list.end(); ++it) {
-    FileItem* fi = *it;
+    IFileItem* fi = *it;
     fileview_get_fileitem_size(widget, fi, &iw, &ih);
 
     if (fi == fileview->selected) {
@@ -633,16 +633,16 @@ static void fileview_regenerate_list(JWidget widget)
   FileView* fileview = fileview_data(widget);
 
   // get the children of the current folder
-  fileview->list = fileitem_get_children(fileview->current_folder);
+  fileview->list = fileview->current_folder->getChildren();
 
   // filter the list by the available extensions
   if (!fileview->exts.empty()) {
     for (FileItemList::iterator
 	   it=fileview->list.begin();
 	 it!=fileview->list.end(); ) {
-      FileItem* fileitem = *it;
-      if (!fileitem_is_folder(fileitem) &&
-	  !fileitem_has_extension(fileitem, fileview->exts.c_str())) {
+      IFileItem* fileitem = *it;
+      if (!fileitem->isFolder() &&
+	  !fileitem->hasExtension(fileview->exts.c_str())) {
 	it = fileview->list.erase(it);
       }
       else
@@ -668,7 +668,7 @@ static int fileview_get_selected_index(JWidget widget)
 static void fileview_select_index(JWidget widget, int index)
 {
   FileView* fileview = fileview_data(widget);
-  FileItem* old_selected = fileview->selected;
+  IFileItem* old_selected = fileview->selected;
 
   fileview->selected = fileview->list.at(index);
   if (old_selected != fileview->selected) {
@@ -690,8 +690,8 @@ static void fileview_generate_preview_of_selected_item(JWidget widget)
   FileView* fileview = fileview_data(widget);
 
   if (fileview->selected &&
-      !fileitem_is_folder(fileview->selected) &&
-      !fileitem_get_thumbnail(fileview->selected))
+      !fileview->selected->isFolder() &&
+      !fileview->selected->getThumbnail())
     {
       fileview->item_to_generate_thumbnail = fileview->selected;
       jmanager_start_timer(fileview->timer_id);
@@ -699,14 +699,14 @@ static void fileview_generate_preview_of_selected_item(JWidget widget)
 }
 
 /* returns true if it does some hard work like access to the disk */
-static bool fileview_generate_thumbnail(JWidget widget, FileItem *fileitem)
+static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
 {
-  if (fileitem_is_browsable(fileitem) ||
-      fileitem_get_thumbnail(fileitem) != NULL)
+  if (fileitem->isBrowsable() ||
+      fileitem->getThumbnail() != NULL)
     return false;
 
   FileOp* fop =
-    fop_to_load_sprite(fileitem_get_filename(fileitem).c_str(),
+    fop_to_load_sprite(fileitem->getFileName().c_str(),
 		       FILE_LOAD_SEQUENCE_NONE |
 		       FILE_LOAD_ONE_FRAME);
   if (!fop)
@@ -837,7 +837,7 @@ static void monitor_thumbnail_generation(void *_data)
       data->thumbnail = NULL;
       data->palette = NULL;
 
-      fileitem_set_thumbnail(data->fileitem, bmp);
+      data->fileitem->setThumbnail(bmp);
 
       /* is the selected file-item the one that now has a thumbnail? */
       if (fileview_get_selected(data->fileview) == data->fileitem) {

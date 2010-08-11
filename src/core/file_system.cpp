@@ -98,7 +98,7 @@
 #define NOTINITIALIZED	"{__not_initialized_path__}"
 
 // a position in the file-system
-class FileItem
+class FileItem : public IFileItem
 {
 public:
   jstring keyname;
@@ -121,13 +121,31 @@ public:
   FileItem(FileItem* parent);
   ~FileItem();
 
-  void insert_child_sorted(FileItem* child);
+  void insertChildSorted(FileItem* child);
   int compare(const FileItem& that) const;
 
   bool operator<(const FileItem& that) const { return compare(that) < 0; }
   bool operator>(const FileItem& that) const { return compare(that) > 0; }
   bool operator==(const FileItem& that) const { return compare(that) == 0; }
   bool operator!=(const FileItem& that) const { return compare(that) != 0; }
+
+  // IFileItem interface
+
+  bool isFolder() const;
+  bool isBrowsable() const;
+
+  jstring getKeyName() const;
+  jstring getFileName() const;
+  jstring getDisplayName() const;
+
+  IFileItem* getParent() const;
+  const FileItemList& getChildren();
+
+  bool hasExtension(const jstring& csv_extensions);
+
+  BITMAP* getThumbnail();
+  void setThumbnail(BITMAP* thumbnail);
+
 };
 
 typedef std::map<jstring, FileItem*> FileItemMap;
@@ -170,11 +188,16 @@ static unsigned int current_file_system_version = 0;
   static void put_fileitem(FileItem* fileitem);
 #endif
 
+FileSystemModule* FileSystemModule::m_instance = NULL;
+
 /**
  * Initializes the file-system module to navigate the file-system.
  */
 FileSystemModule::FileSystemModule()
 {
+  ASSERT(m_instance == NULL);
+  m_instance = this;
+
   fileitems_map = new FileItemMap;
   thumbnail_map = new ThumbnailMap;
 
@@ -191,7 +214,7 @@ FileSystemModule::FileSystemModule()
 
   // get the root element of the file system (this will create
   // the 'rootitem' FileItem)
-  get_root_fileitem();
+  getRootFileItem();
 
   PRINTF("File system module installed\n");
 }
@@ -202,6 +225,7 @@ FileSystemModule::FileSystemModule()
 FileSystemModule::~FileSystemModule()
 {
   PRINTF("File system module: uninstalling\n");
+  ASSERT(m_instance == this);
 
   for (FileItemMap::iterator
 	 it=fileitems_map->begin(); it!=fileitems_map->end(); ++it) {
@@ -228,20 +252,26 @@ FileSystemModule::~FileSystemModule()
   delete thumbnail_map;
 
   PRINTF("File system module: uninstalled\n");
+  m_instance = NULL;
+}
+
+FileSystemModule* FileSystemModule::instance()
+{
+  return m_instance;
 }
 
 /**
  * Marks all FileItems as deprecated to be refresh the next time they
- * are queried through @ref fileitem_get_children.
+ * are queried through @ref FileItem#getChildren.
  *
- * @see fileitem_get_children
+ * @see FileItem#getChildren
  */
-void file_system_refresh()
+void FileSystemModule::refresh()
 {
   ++current_file_system_version;
 }
 
-FileItem* get_root_fileitem()
+IFileItem* FileSystemModule::getRootFileItem()
 {
   FileItem* fileitem;
 
@@ -296,9 +326,9 @@ FileItem* get_root_fileitem()
  * 
  * @warning You have to call path.fix_separators() before.
  */
-FileItem* get_fileitem_from_path(const jstring& path)
+IFileItem* FileSystemModule::getFileItemFromPath(const jstring& path)
 {
-  FileItem* fileitem = NULL;
+  IFileItem* fileitem = NULL;
 
   //PRINTF("FS: get_fileitem_from_path(%s)\n", path.c_str());
 
@@ -310,7 +340,7 @@ FileItem* get_fileitem_from_path(const jstring& path)
     SFGAOF attrib = SFGAO_FOLDER;
 
     if (path.empty()) {
-      fileitem = get_root_fileitem();
+      fileitem = getRootFileItem();
       //PRINTF("FS: > %p (root)\n", fileitem);
       return fileitem;
     }
@@ -340,82 +370,76 @@ FileItem* get_fileitem_from_path(const jstring& path)
   return fileitem;
 }
 
-bool fileitem_is_folder(FileItem* fileitem)
-{
-  ASSERT(fileitem);
+// ======================================================================
+// FileItem class (IFileItem implementation)
+// ======================================================================
 
-  return IS_FOLDER(fileitem);
+bool FileItem::isFolder() const
+{
+  return IS_FOLDER(this);
 }
 
-bool fileitem_is_browsable(FileItem* fileitem)
+bool FileItem::isBrowsable() const
 {
-  ASSERT(fileitem);
-  ASSERT(fileitem->filename != NOTINITIALIZED);
+  ASSERT(this->filename != NOTINITIALIZED);
 
 #ifdef USE_PIDLS
-  return IS_FOLDER(fileitem)
-    && (fileitem->filename.extension() != "zip")
-    && ((!fileitem->filename.empty() && fileitem->filename.front() != ':') ||
-	(fileitem->filename == MYPC_CSLID));
+  return IS_FOLDER(this)
+    && (this->filename.extension() != "zip")
+    && ((!this->filename.empty() && this->filename.front() != ':') ||
+	(this->filename == MYPC_CSLID));
 #else
-  return IS_FOLDER(fileitem);
+  return IS_FOLDER(this);
 #endif
 }
 
-jstring fileitem_get_keyname(FileItem* fileitem)
+jstring FileItem::getKeyName() const
 {
-  ASSERT(fileitem);
-  ASSERT(fileitem->keyname != NOTINITIALIZED);
+  ASSERT(this->keyname != NOTINITIALIZED);
 
-  return fileitem->keyname;
+  return this->keyname;
 }
 
-jstring fileitem_get_filename(FileItem* fileitem)
+jstring FileItem::getFileName() const
 {
-  ASSERT(fileitem);
-  ASSERT(fileitem->filename != NOTINITIALIZED);
+  ASSERT(this->filename != NOTINITIALIZED);
 
-  return fileitem->filename;
+  return this->filename;
 }
 
-jstring fileitem_get_displayname(FileItem* fileitem)
+jstring FileItem::getDisplayName() const
 {
-  ASSERT(fileitem);
-  ASSERT(fileitem->displayname != NOTINITIALIZED);
+  ASSERT(this->displayname != NOTINITIALIZED);
 
-  return fileitem->displayname;
+  return this->displayname;
 }
 
-FileItem* fileitem_get_parent(FileItem* fileitem)
+IFileItem* FileItem::getParent() const
 {
-  ASSERT(fileitem);
-
-  if (fileitem == rootitem)
+  if (this == rootitem)
     return NULL;
   else {
-    ASSERT(fileitem->parent);
-    return fileitem->parent;
+    ASSERT(this->parent);
+    return this->parent;
   }
 }
 
-const FileItemList& fileitem_get_children(FileItem* fileitem)
+const FileItemList& FileItem::getChildren()
 {
-  ASSERT(fileitem);
-
   /* is the file-item a folder? */
-  if (IS_FOLDER(fileitem) &&
+  if (IS_FOLDER(this) &&
       // if the children list is empty, or the file-system version
-      // change (it's like to say: the current fileitem->children list
+      // change (it's like to say: the current this->children list
       // is outdated)...
-      (fileitem->children.empty() ||
-       current_file_system_version > fileitem->version)) {
+      (this->children.empty() ||
+       current_file_system_version > this->version)) {
     FileItemList::iterator it;
     FileItem* child;
 
     // we have to mark current items as deprecated
-    for (it=fileitem->children.begin();
-	 it!=fileitem->children.end(); ++it) {
-      child = *it;
+    for (it=this->children.begin();
+	 it!=this->children.end(); ++it) {
+      child = static_cast<FileItem*>(*it);
       child->removed = true;
     }
 
@@ -424,10 +448,10 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
     {
       IShellFolder* pFolder = NULL;
 
-      if (fileitem == rootitem)
+      if (this == rootitem)
 	pFolder = shl_idesktop;
       else
-	shl_idesktop->BindToObject(fileitem->fullpidl,
+	shl_idesktop->BindToObject(this->fullpidl,
 				   NULL,
 				   IID_IShellFolder,
 				   (LPVOID *)&pFolder);
@@ -459,12 +483,12 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 
 	    /* generate the FileItems */
 	    for (c=0; c<fetched; ++c) {
-	      LPITEMIDLIST fullpidl = concat_pidl(fileitem->fullpidl,
+	      LPITEMIDLIST fullpidl = concat_pidl(this->fullpidl,
 						  itempidl[c]);
 
 	      child = get_fileitem_by_fullpidl(fullpidl, false);
 	      if (!child) {
-		child = new FileItem(fileitem);
+		child = new FileItem(this);
 
 		child->pidl = itempidl[c];
 		child->fullpidl = fullpidl;
@@ -474,12 +498,12 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 		put_fileitem(child);
 	      }
 	      else {
-		ASSERT(child->parent == fileitem);
+		ASSERT(child->parent == this);
 		free_pidl(fullpidl);
 		free_pidl(itempidl[c]);
 	      }
 
-	      fileitem->insert_child_sorted(child);
+	      this->insertChildSorted(child);
 	    }
 	  }
 
@@ -494,7 +518,7 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
     {
       char buf[MAX_PATH], path[MAX_PATH], tmp[32];
 
-      ustrcpy(path, fileitem->filename.c_str());
+      ustrcpy(path, this->filename.c_str());
       put_backslash(path);
 
       replace_filename(buf,
@@ -504,22 +528,22 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
 
 #ifdef WORKAROUND_64BITS_SUPPORT
       // we cannot use the for_each_file's 'param' to wrap a 64-bits pointer
-      for_each_child_callback_param = fileitem;
+      for_each_child_callback_param = this;
       for_each_file(buf, FA_TO_SHOW, for_each_child_callback, 0);
 #else
       for_each_file(buf, FA_TO_SHOW,
 		    for_each_child_callback,
-		    (int)fileitem);
+		    (int)this);
 #endif
   }
 #endif
 
     // check old file-items (maybe removed directories or file-items)
-    for (it=fileitem->children.begin();
-	 it!=fileitem->children.end(); ) {
-      child = *it;
+    for (it=this->children.begin();
+	 it!=this->children.end(); ) {
+      child = static_cast<FileItem*>(*it);
       if (child->removed) {
-	it = fileitem->children.erase(it);
+	it = this->children.erase(it);
 	delete child;
       }
       else
@@ -527,44 +551,39 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
     }
 
     // now this file-item is updated
-    fileitem->version = current_file_system_version;
+    this->version = current_file_system_version;
   }
 
-  return fileitem->children;
+  return this->children;
 }
 
-bool fileitem_has_extension(FileItem* fileitem, const jstring& csv_extensions)
+bool FileItem::hasExtension(const jstring& csv_extensions)
 {
-  ASSERT(fileitem);
-  ASSERT(fileitem->filename != NOTINITIALIZED);
+  ASSERT(this->filename != NOTINITIALIZED);
 
-  return fileitem->filename.has_extension(csv_extensions);
+  return this->filename.has_extension(csv_extensions);
 }
 
-BITMAP* fileitem_get_thumbnail(FileItem* fileitem)
+BITMAP* FileItem::getThumbnail()
 {
-  ASSERT(fileitem);
-
-  ThumbnailMap::iterator it = thumbnail_map->find(fileitem->filename);
+  ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
   if (it != thumbnail_map->end())
     return it->second;
   else
     return NULL;
 }
 
-void fileitem_set_thumbnail(FileItem* fileitem, BITMAP* thumbnail)
+void FileItem::setThumbnail(BITMAP* thumbnail)
 {
-  ASSERT(fileitem);
-
   // destroy the current thumbnail of the file (if exists)
-  ThumbnailMap::iterator it = thumbnail_map->find(fileitem->filename);
+  ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
   if (it != thumbnail_map->end()) {
     destroy_bitmap(it->second);
     thumbnail_map->erase(it);
   }
 
   // insert the new one in the map
-  thumbnail_map->insert(std::make_pair(fileitem->filename, thumbnail));
+  thumbnail_map->insert(std::make_pair(this->filename, thumbnail));
 }
 
 FileItem::FileItem(FileItem* parent)
@@ -603,7 +622,7 @@ FileItem::~FileItem()
 #endif
 }
 
-void FileItem::insert_child_sorted(FileItem* child)
+void FileItem::insertChildSorted(FileItem* child)
 {
   // this file-item wasn't removed from the last lookup
   child->removed = false;
@@ -616,7 +635,7 @@ void FileItem::insert_child_sorted(FileItem* child)
 
   for (FileItemList::iterator
 	 it=children.begin(); it!=children.end(); ++it) {
-    if (*(*it) > *child) {
+    if (*static_cast<FileItem*>(*it) > *child) {
       children.insert(it, child);
       inserted = true;
       break;
