@@ -251,6 +251,8 @@ FileItem* get_root_fileitem()
   fileitem = new FileItem(NULL);
   rootitem = fileitem;
 
+  //PRINTF("FS: Creating root fileitem %p\n", rootitem);
+
 #ifdef USE_PIDLS
   {
     // get the desktop PIDL
@@ -298,7 +300,7 @@ FileItem* get_fileitem_from_path(const jstring& path)
 {
   FileItem* fileitem = NULL;
 
-  PRINTF("get_fileitem_from_path(%s)\n", path.c_str());
+  //PRINTF("FS: get_fileitem_from_path(%s)\n", path.c_str());
 
 #ifdef USE_PIDLS
   {
@@ -309,7 +311,7 @@ FileItem* get_fileitem_from_path(const jstring& path)
 
     if (path.empty()) {
       fileitem = get_root_fileitem();
-      PRINTF("  > %p (root)\n", fileitem);
+      //PRINTF("FS: > %p (root)\n", fileitem);
       return fileitem;
     }
 
@@ -319,7 +321,7 @@ FileItem* get_fileitem_from_path(const jstring& path)
 				       wStr, &cbEaten,
 				       &fullpidl,
 				       &attrib) != S_OK) {
-      PRINTF("  > (null)\n");
+      //PRINTF("FS: > (null)\n");
       return NULL;
     }
 
@@ -333,7 +335,7 @@ FileItem* get_fileitem_from_path(const jstring& path)
   }
 #endif
 
-  PRINTF("  > fileitem = %p\n", fileitem);
+  //PRINTF("FS: get_fileitem_from_path(%s) -> %p\n", path.c_str(), fileitem);
 
   return fileitem;
 }
@@ -417,7 +419,7 @@ const FileItemList& fileitem_get_children(FileItem* fileitem)
       child->removed = true;
     }
 
-    /* printf("Loading files for %p (%s)\n", fileitem, fileitem->displayname); fflush(stdout); */
+    //PRINTF("FS: Loading files for %p (%s)\n", fileitem, fileitem->displayname);
 #ifdef USE_PIDLS
     {
       IShellFolder* pFolder = NULL;
@@ -567,6 +569,8 @@ void fileitem_set_thumbnail(FileItem* fileitem, BITMAP* thumbnail)
 
 FileItem::FileItem(FileItem* parent)
 {
+  //PRINTF("FS: Creating %p fileitem with parent %p\n", this, parent);
+
   this->keyname = NOTINITIALIZED;
   this->filename = NOTINITIALIZED;
   this->displayname = NOTINITIALIZED;
@@ -584,6 +588,8 @@ FileItem::FileItem(FileItem* parent)
 
 FileItem::~FileItem()
 {
+  PRINTF("FS: Destroying FileItem() with parent %p\n", parent);
+
 #ifdef USE_PIDLS
   if (this->fullpidl && this->fullpidl != this->pidl) {
     free_pidl(this->fullpidl);
@@ -868,8 +874,8 @@ static jstring get_key_for_pidl(LPITEMIDLIST pidl)
 
   ustrcpy(key, empty_string);
 
-  /* go pidl by pidl from the fullpidl to the root (desktop) */
-/*   printf("***\n"); fflush(stdout); */
+  // Go pidl by pidl from the fullpidl to the root (desktop)
+  //PRINTF("FS: ***\n");
   pidl = clone_pidl(pidl);
   while (pidl->mkid.cb > 0) {
     if (shl_idesktop->GetDisplayNameOf(pidl,
@@ -877,7 +883,7 @@ static jstring get_key_for_pidl(LPITEMIDLIST pidl)
 				       &strret) == S_OK) {
       StrRetToBuf(&strret, pidl, pszName, MAX_PATH);
 
-/*       printf("+ %s\n", pszName); fflush(stdout); */
+      //PRINTF("FS: + %s\n", pszName);
 
       len = ustrlen(pszName);
       if (len > 0 && ustrncmp(key, pszName, len) != 0) {
@@ -899,7 +905,7 @@ static jstring get_key_for_pidl(LPITEMIDLIST pidl)
   }
   free_pidl(pidl);
 
-  // printf("=%s\n***\n", key); fflush(stdout);
+  //PRINTF("FS: =%s\n***\n", key);
   return key;
 #endif
 }
@@ -933,6 +939,8 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
 
   update_by_pidl(fileitem);
   put_fileitem(fileitem);
+
+  //PRINTF("FS: fileitem %p created %s with parent %p\n", fileitem, fileitem->keyname.c_str(), fileitem->parent);
 
   return fileitem;
 }
