@@ -1325,7 +1325,11 @@ Size Widget::getPreferredSize()
   else {
     PreferredSizeEvent ev(this, Size(0, 0));
     onPreferredSize(ev);
-    return ev.getPreferredSize();
+
+    Size sz(ev.getPreferredSize());
+    sz.w = MID(this->min_w, sz.w, this->max_w);
+    sz.h = MID(this->min_h, sz.h, this->max_h);
+    return sz;
   }
 }
 
@@ -1351,7 +1355,11 @@ Size Widget::getPreferredSize(const Size& fitIn)
   else {
     PreferredSizeEvent ev(this, fitIn);
     onPreferredSize(ev);
-    return ev.getPreferredSize();
+
+    Size sz(ev.getPreferredSize());
+    sz.w = MID(this->min_w, sz.w, this->max_w);
+    sz.h = MID(this->min_h, sz.h, this->max_h);
+    return sz;
   }
 }
 
@@ -1585,8 +1593,6 @@ void Widget::onPreferredSize(PreferredSizeEvent& ev)
   JMessage msg = jmessage_new(JM_REQSIZE);
   jwidget_send_message(this, msg);
   Size sz(msg->reqsize.w, msg->reqsize.h);
-  sz.w = MID(this->min_w, sz.w, this->max_w);
-  sz.h = MID(this->min_h, sz.h, this->max_h);
   jmessage_free(msg);
 
   ev.setPreferredSize(sz);
