@@ -240,10 +240,12 @@ public:
   void inkHline(int x1, int y, int x2, IToolLoop* loop)
   {
     if (m_modify_selection) {
+      Point offset = loop->getOffset();
+
       if (loop->getMouseButton() == 0)
-	loop->getMask()->add(x1, y, x2-x1+1, 1);
+	loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
       else if (loop->getMouseButton() == 1)
-	mask_subtract(loop->getMask(), x1, y, x2-x1+1, 1);
+	mask_subtract(loop->getMask(), x1-offset.x, y-offset.y, x2-x1+1, 1);
     }
     else
       image_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
