@@ -886,7 +886,7 @@ static jstring get_key_for_pidl(LPITEMIDLIST pidl)
       //PRINTF("FS: + %s\n", pszName);
 
       len = ustrlen(pszName);
-      if (len > 0 && ustrncmp(key, pszName, len) != 0) {
+      if (len > 0) {
 	if (*key) {
 	  if (pszName[len-1] != '\\') {
 	    memmove(key+len+1, key, ustrlen(key)+1);
