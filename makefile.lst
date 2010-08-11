@@ -108,6 +108,7 @@ COMMON_SOURCES =					\
 	src/effect/colcurve.cpp				\
 	src/effect/convmatr.cpp				\
 	src/effect/effect.cpp				\
+	src/effect/images_ref.cpp			\
 	src/effect/invrtcol.cpp				\
 	src/effect/median.cpp				\
 	src/effect/replcol.cpp				\
@@ -207,7 +208,6 @@ COMMON_SOURCES =					\
 	src/util/col_file.cpp				\
 	src/util/filetoks.cpp				\
 	src/util/hash.cpp				\
-	src/util/images_ref.cpp				\
 	src/util/misc.cpp				\
 	src/util/msk_file.cpp				\
 	src/util/pic_file.cpp				\
