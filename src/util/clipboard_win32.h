@@ -26,6 +26,15 @@
 #define CF_DIBV5            17
 #endif
 
+static ase_uint32 get_shift_from_mask(ase_uint32 mask)
+{
+  ase_uint32 shift = 0;
+  for (shift=0; shift<32; ++shift)
+    if (mask & (1 << shift))
+      return shift;
+  return shift;
+}
+
 /**
  * Returns true if the Windows clipboard contains a bitmap (CF_DIB
  * format).
