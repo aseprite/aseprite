@@ -709,7 +709,7 @@ void color_to_formalstring(int imgtype, color_t color,
     switch (GET_COLOR_TYPE(color)) {
 
       case COLOR_TYPE_MASK:
-	uszprintf(buf, size, _("Mask"));
+	ustrncpy(buf, _("Mask"), size);
 	break;
 
       case COLOR_TYPE_RGB:

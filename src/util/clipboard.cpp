@@ -48,7 +48,7 @@
 #include "widgets/colbar.h"
 #include "widgets/statebar.h"
 
-static ase_uint32 get_shift_from_mask(ase_uint32 mask);
+//static ase_uint32 get_shift_from_mask(ase_uint32 mask);
 
 #if defined ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -143,14 +143,14 @@ static bool copy_from_sprite(const Sprite* sprite)
   return true;
 }
 
-static ase_uint32 get_shift_from_mask(ase_uint32 mask)
-{
-  ase_uint32 shift = 0;
-  for (shift=0; shift<32; ++shift)
-    if (mask & (1 << shift))
-      return shift;
-  return shift;
-}
+// static ase_uint32 get_shift_from_mask(ase_uint32 mask)
+// {
+//   ase_uint32 shift = 0;
+//   for (shift=0; shift<32; ++shift)
+//     if (mask & (1 << shift))
+//       return shift;
+//   return shift;
+// }
 
 bool clipboard::can_paste()
 {

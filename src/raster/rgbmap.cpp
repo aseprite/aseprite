@@ -69,7 +69,7 @@ public:
 private:
   RGB_MAP* m_allegMap;
   gfxobj_id m_palette_id;
-  size_t m_modifications;
+  int m_modifications;
 };
 
 //////////////////////////////////////////////////////////////////////

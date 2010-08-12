@@ -309,8 +309,8 @@ static void ink_hline8_blur(int x1, int y, int x2, IToolLoop* loop)
 
 static void ink_hline32_replace(int x1, int y, int x2, IToolLoop* loop)
 {
-  int color1 = loop->getPrimaryColor();
-  int color2 = loop->getSecondaryColor();
+  ase_uint32 color1 = loop->getPrimaryColor();
+  ase_uint32 color2 = loop->getSecondaryColor();
   int opacity = loop->getOpacity();
 
   DEFINE_INK_PROCESSING_SRCDST

@@ -735,7 +735,7 @@ void jstandard_theme::draw_link_label(JWidget widget, JRect clip)
 
   if (widget->hasMouseOver()) {
     int w = jwidget_get_text_length(widget);
-    int h = jwidget_get_text_height(widget);
+    //int h = jwidget_get_text_height(widget);
 
     hline(ji_screen,
 	  widget->rc->x1, widget->rc->y2-1, widget->rc->x1+w-1, makecol(0, 0, 255));

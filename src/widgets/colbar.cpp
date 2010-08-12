@@ -358,8 +358,8 @@ bool ColorBar::onProcessMessage(JMessage msg)
 				KB_SHIFT_FLAG)) == KB_CTRL_FLAG) {
 	  int newColorsPerColumn = m_colorsPerColumn;
 
-	  while (((int)m_entrySize) >= ENTRYSIZE_MIN &&
-		 ((int)m_entrySize) <= ENTRYSIZE_MAX &&
+	  while (m_entrySize >= ENTRYSIZE_MIN &&
+		 m_entrySize <= ENTRYSIZE_MAX &&
 		 newColorsPerColumn == m_colorsPerColumn) {
 	    // Increment or decrement m_entrySize until m_colorsPerColumnn changes
 	    m_entrySize += delta;
@@ -376,7 +376,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 				KB_SHIFT_FLAG)) == KB_ALT_FLAG) {
 	  int old_columns = m_columns;
 
-	  if (((int)m_columns)+delta < 1)
+	  if (m_columns+delta < 1)
 	    m_columns = 1;
 	  else if (m_columns+delta > 4)
 	    m_columns = 4;
@@ -520,7 +520,7 @@ void ColorBar::setHotColor(hotcolor_t hot, color_t color)
   }
 }
 
-Rect ColorBar::getColumnBounds(size_t column) const
+Rect ColorBar::getColumnBounds(int column) const
 {
   Rect rc = getBounds().shrink(jguiscale());
   Rect fgRc = getFgBounds();
@@ -532,10 +532,10 @@ Rect ColorBar::getColumnBounds(size_t column) const
   return rc;
 }
 
-Rect ColorBar::getEntryBounds(size_t index) const
+Rect ColorBar::getEntryBounds(int index) const
 {
-  size_t row = (index % m_colorsPerColumn);
-  size_t col = (index / m_colorsPerColumn);
+  int row = (index % m_colorsPerColumn);
+  int col = (index / m_colorsPerColumn);
   Rect rc = getColumnBounds(col);
 
   rc.h -= 2*jguiscale();

@@ -81,7 +81,7 @@ static int stream_string_tell(JStream stream);
 
 JStream jstream_new(int size)
 {
-  JStream stream = (JStream)jmalloc0(MAX(size, sizeof(struct jstream)));
+  JStream stream = (JStream)jmalloc0(MAX(size, (int)sizeof(struct jstream)));
   if (!stream)
     return NULL;
 

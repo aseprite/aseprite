@@ -968,7 +968,7 @@ static void write_compressed_image(FILE* f, Image* image)
 
       int output_bytes = compressed.size() - zstream.avail_out;
       if (output_bytes > 0) {
-	if ((fwrite(&compressed[0], 1, output_bytes, f) != output_bytes)
+	if ((fwrite(&compressed[0], 1, output_bytes, f) != (size_t)output_bytes)
 	    || ferror(f))
 	  throw ase_exception("Error writing compressed image pixels.\n");
       }

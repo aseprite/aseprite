@@ -1808,7 +1808,7 @@ static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size)
 {
   UndoChunk* chunk;
 
-  ASSERT(size >= sizeof(UndoChunk));
+  ASSERT(size >= (int)sizeof(UndoChunk));
 
   chunk = (UndoChunk* )jmalloc0(size);
   if (!chunk)

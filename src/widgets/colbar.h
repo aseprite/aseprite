@@ -52,19 +52,19 @@ protected:
 
 private:
   int getEntriesCount() const { return m_columns*m_colorsPerColumn; }
-  color_t getEntryColor(size_t i) const { return color_index(i+m_firstIndex); }
+  color_t getEntryColor(int i) const { return color_index(i+m_firstIndex); }
 
   color_t getHotColor(hotcolor_t hot);
   void setHotColor(hotcolor_t hot, color_t color);
-  Rect getColumnBounds(size_t column) const;
-  Rect getEntryBounds(size_t index) const;
+  Rect getColumnBounds(int column) const;
+  Rect getEntryBounds(int index) const;
   Rect getFgBounds() const;
   Rect getBgBounds() const;
   void updateStatusBar(color_t color, int msecs);
 
-  size_t m_firstIndex;
-  size_t m_columns;
-  size_t m_colorsPerColumn;
+  int m_firstIndex;
+  int m_columns;
+  int m_colorsPerColumn;
   int m_entrySize;
   color_t m_fgcolor;
   color_t m_bgcolor;

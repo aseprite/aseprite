@@ -523,6 +523,9 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
 
   switch (cmd) {
 
+    case EntryCmd::NoOp:
+      break;
+
     case EntryCmd::InsertChar:
       // delete the entire selection
       if (selbeg >= 0) {

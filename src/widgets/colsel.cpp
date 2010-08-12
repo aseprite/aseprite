@@ -286,7 +286,6 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 				     Model* exclude_this_model)
 {
   ColorSelector* colorselector = colorselector_data(widget);
-  int imgtype = app_get_current_image_type();
   Model* m = colorselector->selected_model;
   JWidget rgb_rslider = jwidget_find_name(widget, "rgb_r");
   JWidget rgb_gslider = jwidget_find_name(widget, "rgb_g");
@@ -367,7 +366,6 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 
 static void colorselector_set_paledit_index(JWidget widget, int index, bool select_index_entry)
 {
-  ColorSelector* colorselector = colorselector_data(widget);
   PalEdit* pal = static_cast<PalEdit*>(widget->findChild("pal"));
   Widget* idx = widget->findChild("idx");
   char buf[256];
@@ -433,7 +431,6 @@ static bool slider_change_hook(JWidget widget, void* data)
 {
   Frame* window = static_cast<Frame*>(widget->getRoot());
   ColorSelector* colorselector = colorselector_data(window);
-  PalEdit* pal = static_cast<PalEdit*>(window->findChild("pal"));
   Model* m = colorselector->selected_model;
   color_t color = colorselector->color;
   int i, r, g, b;

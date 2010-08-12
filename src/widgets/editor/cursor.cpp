@@ -279,7 +279,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       ->getToolSettings(current_tool);
 
     int pen_color = get_pen_color(m_sprite);
-    int new_mask_color;
+    ase_uint32 new_mask_color;
     Pen* pen = editor_get_current_pen();
 
     // Create the extra cel to show the pen preview

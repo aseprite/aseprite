@@ -38,7 +38,7 @@ const char* ResourceFinder::first()
 
 const char* ResourceFinder::next()
 {
-  if (m_current == m_paths.size())
+  if (m_current == (int)m_paths.size())
     return NULL;
 
   return m_paths[m_current++].c_str();

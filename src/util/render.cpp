@@ -442,8 +442,6 @@ void RenderEngine::renderCheckedBackground(Image* image,
 					   int zoom)
 {
   int x, y, u, v;
-  int tile_x = 0;
-  int tile_y = 0;
   int tile_w = 16;
   int tile_h = 16;
   int c1 = get_color_for_image(image->imgtype, checked_bg_color1);

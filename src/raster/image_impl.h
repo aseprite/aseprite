@@ -144,7 +144,7 @@ public:
   virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode)
   {
     BLEND_COLOR blender = Traits::get_blender(blend_mode);
-    register int mask_color = src->mask_color;
+    register ase_uint32 mask_color = src->mask_color;
     Image* dst = this;
     address_t src_address;
     address_t dst_address;

@@ -86,7 +86,7 @@ void RecentFiles::addRecentFile(const char* filename)
   // If the filename does not exist...
 
   // Does the list is full?
-  if (recent_files.size() == recent_files_limit) {
+  if ((int)recent_files.size() == recent_files_limit) {
     // Remove the last entry
     recent_files.erase(--recent_files.end());
   }

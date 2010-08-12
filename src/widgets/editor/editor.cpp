@@ -1413,6 +1413,10 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	  switch (wheelAction) {
 
+	    case WHEEL_NONE:
+	      // Do nothing
+	      break;
+
 	    case WHEEL_FG:
 	      if (m_state == EDITOR_STATE_STANDBY) {
 		int newIndex = 0;

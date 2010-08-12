@@ -302,6 +302,9 @@ bool SortPalette::operator()(ase_uint32 c1, ase_uint32 c2)
 	  value1 = v1;
 	  value2 = v2;
 	  break;
+	default:
+	  ASSERT(false);
+	  break;
       }
       break;
     }

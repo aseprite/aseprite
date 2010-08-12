@@ -729,7 +729,6 @@ static void quantize_command(JWidget widget)
 
 static bool sliderRGB_change_hook(JWidget widget, void *data)
 {
-  Palette* palette = get_current_palette();
   int r = jslider_get_value(R_slider);
   int g = jslider_get_value(G_slider);
   int b = jslider_get_value(B_slider);
@@ -750,7 +749,6 @@ static bool sliderRGB_change_hook(JWidget widget, void *data)
 
 static bool sliderHSV_change_hook(JWidget widget, void *data)
 {
-  Palette* palette = get_current_palette();
   int h = jslider_get_value(H_slider);
   int s = jslider_get_value(S_slider);
   int v = jslider_get_value(V_slider);
@@ -795,7 +793,6 @@ static bool entryRGB_change_hook(JWidget widget, void *data)
 
 static bool entryHSV_change_hook(JWidget widget, void *data)
 {
-  Palette* palette = get_current_palette();
   int h = H_entry->getTextInt();
   int s = S_entry->getTextInt();
   int v = V_entry->getTextInt();
