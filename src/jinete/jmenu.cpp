@@ -39,8 +39,8 @@
 #include "jinete/jintern.h"
 #include "Vaca/Size.h"
 
-/**********************************************************************/
-/* Internal messages: to move between menus */
+//////////////////////////////////////////////////////////////////////
+// Internal messages: to move between menus
 
 JM_MESSAGE(open_menuitem);
 JM_MESSAGE(close_menuitem);
@@ -61,8 +61,8 @@ JM_MESSAGE(exe_menuitem);
 
 #define JM_EXE_MENUITEM   jm_exe_menuitem()
 
-/**********************************************************************/
-/* Some auxiliar matros */
+//////////////////////////////////////////////////////////////////////
+// Some auxiliar matros
 
 #define MOUSE_IN(pos)						\
   ((jmouse_x(0) >= pos->x1) && (jmouse_x(0) < pos->x2) &&	\
@@ -81,43 +81,42 @@ JM_MESSAGE(exe_menuitem);
   ((MITEM(menuitem)->submenu) &&				\
    (!jlist_empty(MITEM(menuitem)->submenu->children)))
 
-/* data for the main jmenubar or the first popuped-jmenubox */
+// Data for the main jmenubar or the first popuped-jmenubox
 typedef struct Base
 {
-  /* true when the menu-items must be opened with the cursor
-     movement */
+  // True when the menu-items must be opened with the cursor movement
   bool was_clicked : 1;
 
-  /* true when there's JM_OPEN/CLOSE_MENUITEM messages in queue, to
-     avoid start processing another menuitem-request when we're
-     already working in one */
+  // True when there's JM_OPEN/CLOSE_MENUITEM messages in queue, to
+  // avoid start processing another menuitem-request when we're
+  // already working in one
   bool is_processing : 1;
 
-  /* true when the JM_BUTTONPRESSED is being filtered */
+  // True when the JM_BUTTONPRESSED is being filtered
   bool is_filtering : 1;
 
   bool close_all : 1;
 } Base;
 
-/* data for a jmenu */
+// Data for a jmenu
 typedef struct Menu
 {
-  JWidget menuitem;		/* from where the menu was open */
+  JWidget menuitem;		// From where the menu was open
 } Menu;
 
-/* data for a jmenubox */
+// Data for a jmenubox
 typedef struct MenuBox
 {
   Base *base;
 } MenuBox;
 
-/* data for a jmenuitem */
+// Data for a jmenuitem
 typedef struct MenuItem
 {
-  JAccel accel;			/* hot-key */
-  bool highlight : 1;		/* is highlighted? */
-  JWidget submenu;		/* the sub-menu */
-  JWidget submenu_menubox;	/* the opened menubox for this menu-item */
+  JAccel accel;			// Hot-key
+  bool highlight : 1;		// Is it highlighted?
+  JWidget submenu;		// The sub-menu
+  JWidget submenu_menubox;	// The opened menubox for this menu-item
 } MenuItem;
 
 static bool menu_msg_proc(JWidget widget, JMessage msg);
@@ -327,7 +326,7 @@ void jmenu_popup(JWidget menu, int x, int y)
     jmouse_poll();
   } while (jmouse_b(0));
 
-  // new window and new menu-box
+  // New window and new menu-box
   Frame* window = new Frame(false, NULL);
   Widget* menubox = jmenubox_new();
 
@@ -336,32 +335,32 @@ void jmenu_popup(JWidget menu, int x, int y)
   base->is_filtering = true;
   jmanager_add_msg_filter(JM_BUTTONPRESSED, menubox);
 
-  window->set_moveable(false);	 /* can't move the window */
+  window->set_moveable(false);	 // Can't move the window
 
-  /* set children */
+  // Set children
   jmenubox_set_menu(menubox, menu);
   jwidget_add_child(window, menubox);
 
   window->remap_window();
 
-  /* menubox position */
+  // Menubox position
   window->position_window(MID(0, x, JI_SCREEN_W-jrect_w(window->rc)),
 			  MID(0, y, JI_SCREEN_H-jrect_h(window->rc)));
 
-  /* set the focus to the new menubox */
+  // Set the focus to the new menubox
   jmanager_set_focus(menubox);
   jwidget_magnetic(menubox, true);
 
-  /* open the window */
+  // Open the window
   window->open_window_fg();
 
-  /* free the keyboard focus */
+  // Free the keyboard focus
   jmanager_free_focus();
 
-  /* fetch the "menu" so it isn't destroyed */
+  // Fetch the "menu" so it isn't destroyed
   jmenubox_set_menu(menubox, NULL);
 
-  /* destroy the window */
+  // Destroy the window
   jwidget_free(window);
 }
 
@@ -496,7 +495,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
       if (!msg->mouse.flags && !get_base(widget)->was_clicked)
 	break;
 
-      /* fall though */
+      // Fall though
 
     case JM_BUTTONPRESSED:
       if (menu) {
@@ -504,34 +503,35 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 
 	if (get_base(widget)->is_processing)
 	  break;
-	
-	/* here we catch the filtered messages (menu-bar or the popuped
-	   menu-box) to detect if the user press outside of the widget */
+
+	// Here we catch the filtered messages (menu-bar or the
+	// popuped menu-box) to detect if the user press outside of
+	// the widget
 	if (msg->type == JM_BUTTONPRESSED
 	    && MBOX(widget)->base != NULL) {
 	  JWidget picked = jwidget_pick(ji_get_default_manager(),
 					msg->mouse.x, msg->mouse.y);
 
-	  /* if one of these conditions are accomplished we have to
-	     close all menus (back to menu-bar or close the popuped menubox),
-	     this is the place where we control if */
-	  if (picked == NULL ||  /* if the button was clicked nowhere */
-	      picked == widget ||	/* if the button was clicked in this menubox */
-	      /* the picked widget isn't menu-related */
+	  // If one of these conditions are accomplished we have to
+	  // close all menus (back to menu-bar or close the popuped
+	  // menubox), this is the place where we control if...
+	  if (picked == NULL ||		// If the button was clicked nowhere
+	      picked == widget ||	// If the button was clicked in this menubox
+	      // The picked widget isn't menu-related
 	      (picked->type != JI_MENUBOX &&
 	       picked->type != JI_MENUBAR &&
 	       picked->type != JI_MENUITEM) ||
-	      /* the picked widget (that is menu-related) isn't from the
-		 same tree of menus */
+	      // The picked widget (that is menu-related) isn't from
+	      // the same tree of menus
 	      (get_base_menubox(picked) != widget)) {
 
-	    /* the user click outside all the menu-box/menu-items, close all */
+	    // The user click outside all the menu-box/menu-items, close all
 	    close_all(menu);
 	    return true;
 	  }
 	}
 
-	/* get the widget below the mouse cursor  */
+	// Get the widget below the mouse cursor 
 	picked = jwidget_pick(menu, msg->mouse.x, msg->mouse.y);
 	if (picked) {
 	  if ((picked->type == JI_MENUITEM) &&
@@ -566,7 +566,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	if (get_base(widget)->is_processing)
 	  break;
 
-	/* the item is highlighted and not opened */
+	// The item is highlighted and not opened
 	if ((highlight) && (!MITEM(highlight)->submenu_menubox)) {
 	  close_all(menu);
 	  exe_menuitem(highlight);
@@ -583,7 +583,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 
 	get_base(widget)->was_clicked = false;
 
-	/* check for ALT+some letter in menubar and some letter in menuboxes */
+	// Check for ALT+some letter in menubar and some letter in menuboxes
 	if (((widget->type == JI_MENUBOX) && (!msg->any.shifts)) ||
 	    ((widget->type == JI_MENUBAR) && (msg->any.shifts & KB_ALT_FLAG))) {
 	  selected = check_for_letter(menu, scancode_to_ascii(msg->key.scancode));
@@ -593,10 +593,10 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	  }
 	}
 
-#if 0				/* TODO check this for jinete-tests */
-	/* only in menu-bars... */
+#if 0				// TODO check this for jinete-tests
+	// Only in menu-bars...
 	if (widget->type == JI_MENUBAR) {
-	  /* ...check for accelerators */
+	  // ...check for accelerators
 	  selected = check_for_accel(menubox->menu, msg);
 	  if (selected) {
 	    close_all(menu);
@@ -606,7 +606,7 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	}
 #endif
 
-	/* highlight movement with keyboard */
+	// Highlight movement with keyboard
 	if (widget->hasFocus()) {
 	  JWidget highlight = get_highlight(menu);
 	  JWidget child;
@@ -833,7 +833,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
-      /* TODO theme specific!! */
+      // TODO theme specific!!
       jwidget_dirty(widget);
       break;
 
@@ -851,7 +851,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 	old_pos = jwidget_get_rect(widget->parent->parent);
 
-	/* new window and new menu-box */
+	// New window and new menu-box
 	window = new Frame(false, NULL);
 	jwidget_add_hook(window, -1, window_msg_proc, NULL);
 
@@ -859,15 +859,15 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 
 	menuitem->submenu_menubox = menubox;
 
-	window->set_moveable(false); // can't move the window
+	window->set_moveable(false); // Can't move the window
 
-	/* set children */
+	// Set children
 	jmenubox_set_menu(menubox, menuitem->submenu);
 	jwidget_add_child(window, menubox);
 
 	window->remap_window();
 
-	/* menubox position */
+	// Menubox position
 	pos = jwidget_get_rect(window);
 
 	if (widget->parent->parent->type == JI_MENUBAR) {
@@ -892,22 +892,18 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	  r2.x2 = r2.x1+jrect_w(pos);
 	  r2.y2 = r2.y1+jrect_h(pos);
 
-	  /* calculate both intersections */
+	  // Calculate both intersections
 	  s1 = jrect_intersect(&r1, old_pos);
 	  s2 = jrect_intersect(&r2, old_pos);
 
 	  if (!s2)
-	    x = x_right;		/* use the right because there aren't
-					   intersection with it */
+	    x = x_right;		// Use the right because there aren't intersection with it
 	  else if (!s1)
-	    x = x_left;		/* use the left because there are not
-				   intersection */
+	    x = x_left;		// Use the left because there are not intersection
 	  else if (jrect_w(&r2)*jrect_h(&r2) <= jrect_w(&r1)*jrect_h(&r1))
-	    x = x_right;	        /* use the right because there are less
-					   intersection area */
+	    x = x_right;	        // Use the right because there are less intersection area
 	  else
-	    x = x_left;		/* use the left because there are less
-				   intersection area */
+	    x = x_left;		// Use the left because there are less intersection area
 
 	  jrect_moveto(pos, x, y);
 	}
@@ -915,12 +911,12 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	window->position_window(pos->x1, pos->y1);
 	jrect_free(pos);
 
-	/* set the focus to the new menubox */
+	// Set the focus to the new menubox
 	jwidget_magnetic(menubox, true);
 
-	/* setup the highlight of the new menubox */
+	// Setup the highlight of the new menubox
 	if (select_first) {
-	  /* select the first child */
+	  // Select the first child
 	  JWidget child, first_child = NULL;
 	  JLink link;
 
@@ -944,7 +940,7 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	else
 	  unhighlight(menuitem->submenu);
 
-	/* run in background */
+	// Run in background
 	window->open_window_bg();
 
 	base->is_processing = false;
@@ -969,22 +965,21 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	window = (Frame*)menubox->parent;
 	ASSERT(window && window->type == JI_FRAME);
 
-	/* fetch the "menu" to avoid free it with 'jwidget_free()' */
+	// Fetch the "menu" to avoid free it with 'jwidget_free()'
 	jmenubox_set_menu(menubox, NULL);
 
-	/* destroy the window */
+	// Destroy the window
 	window->closeWindow(NULL);
 
-	/* set the focus to this menu-box of this menu-item */
+	// Set the focus to this menu-box of this menu-item
 	if (base->close_all)
 	  jmanager_free_focus();
 	else
 	  jmanager_set_focus(widget->parent->parent);
 
-	/* is not necessary to free this window because it's
-	   automatically destroyed by the manager
-	   ... jwidget_free(window);
-	*/
+	// Is not necessary to free this window because it's
+	// automatically destroyed by the manager
+	// ... jwidget_free(window);
 
 	if (last_of_close_chain) {
 	  base->close_all = false;
@@ -1032,15 +1027,13 @@ static void menuitem_request_size(JWidget widget, int *w, int *h)
   }
 }
 
-/**
- * Clims the hierarchy of menus to get the most-top menubox.
- */
+// Clims the hierarchy of menus to get the most-top menubox.
 static JWidget get_base_menubox(JWidget widget)
 {
   while (widget != NULL) {
     ASSERT_VALID_WIDGET(widget);
 
-    /* we are in a menubox */
+    // We are in a menubox
     if (widget->type == JI_MENUBOX || widget->type == JI_MENUBAR) {
       if (MBOX(widget)->base != NULL) {
 	return widget;
@@ -1054,7 +1047,7 @@ static JWidget get_base_menubox(JWidget widget)
 	widget = MENU(menu)->menuitem;
       }
     }
-    /* we are in a menuitem */
+    // We are in a menuitem
     else {
       ASSERT(widget->type == JI_MENUITEM);
       ASSERT(widget->parent != NULL);
@@ -1111,7 +1104,7 @@ static void set_highlight(JWidget menu, JWidget menuitem, bool click, bool open_
   JWidget child;
   JLink link;
 
-  /* find the menuitem with the highlight */
+  // Find the menuitem with the highlight
   JI_LIST_FOR_EACH(menu->children, link) {
     child = (JWidget)link->data;
 
@@ -1119,7 +1112,7 @@ static void set_highlight(JWidget menu, JWidget menuitem, bool click, bool open_
       continue;
 
     if (child != menuitem) {
-      /* is it? */
+      // Is it?
       if (MITEM(child)->highlight) {
 	MITEM(child)->highlight = false;
 	jwidget_dirty(child);
@@ -1133,24 +1126,24 @@ static void set_highlight(JWidget menu, JWidget menuitem, bool click, bool open_
       jwidget_dirty(menuitem);
     }
 
-    /* highlight parents */
+    // Highlight parents
     if (MENU(menu)->menuitem != NULL) {
       set_highlight(MENU(menu)->menuitem->parent,
 		    MENU(menu)->menuitem, false, false, false);
     }
 
-    /* open submenu of the menitem */
+    // Open submenu of the menitem
     if (HAS_SUBMENU(menuitem)) {
       if (open_submenu) {
-	/* if the submenu is closed, open it */
+	// If the submenu is closed, open it
 	if (MITEM(menuitem)->submenu_menubox == NULL)
 	  open_menuitem(menuitem, select_first_child);
 
-	/* the mouse was clicked */
+	// The mouse was clicked
 	get_base(menuitem)->was_clicked = true;
       }
     }
-    /* execute menuitem action */
+    // Execute menuitem action
     else if (click) {
       close_all(menu);
       exe_menuitem(menuitem);
@@ -1176,12 +1169,12 @@ static void open_menuitem(JWidget menuitem, bool select_first)
 
   menu = menuitem->parent;
 
-  /* the menu item is already opened? */
+  // The menu item is already opened?
   ASSERT(MITEM(menuitem)->submenu_menubox == NULL);
 
   ASSERT_VALID_WIDGET(menu);
 
-  /* close all siblings of 'menuitem' */
+  // Close all siblings of 'menuitem'
   if (menu->parent) {
     JI_LIST_FOR_EACH(menu->children, link) {
       child = reinterpret_cast<JWidget>(link->data);
@@ -1200,18 +1193,18 @@ static void open_menuitem(JWidget menuitem, bool select_first)
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
 
-  /* get the 'base' */
+  // Get the 'base'
   base = get_base(menuitem);
   ASSERT(base != NULL);
 
-  /* reset flags */
+  // Reset flags
   base->close_all = false;
   base->is_processing = true;  
 
-  /* we need to add a filter of the JM_BUTTONPRESSED to intercept
-     clicks outside the menu (and close all the hierarchy in that
-     case); the widget to intercept messages is the base menu-bar or
-     popuped menu-box  */
+  // We need to add a filter of the JM_BUTTONPRESSED to intercept
+  // clicks outside the menu (and close all the hierarchy in that
+  // case); the widget to intercept messages is the base menu-bar or
+  // popuped menu-box
   if (!base->is_filtering) {
     base->is_filtering = true;
     jmanager_add_msg_filter(JM_BUTTONPRESSED, get_base_menubox(menuitem));
@@ -1228,7 +1221,7 @@ static void close_menuitem(JWidget menuitem, bool last_of_close_chain)
   ASSERT_VALID_WIDGET(menuitem);
   ASSERT(MITEM(menuitem)->submenu_menubox != NULL);
 
-  /* first: recursively close the children */
+  // First: recursively close the children
   menu = jmenubox_get_menu(MITEM(menuitem)->submenu_menubox);
   ASSERT(menu != NULL);
 
@@ -1243,17 +1236,17 @@ static void close_menuitem(JWidget menuitem, bool last_of_close_chain)
     }
   }
 
-  /* second: now we can close the 'menuitem' */
+  // Second: now we can close the 'menuitem'
   msg = jmessage_new(JM_CLOSE_MENUITEM);
   msg->user.a = last_of_close_chain;
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
 
-  /* get the 'base' */
+  // Get the 'base'
   base = get_base(menuitem);
   ASSERT(base != NULL);
 
-  /* start processing */
+  // Start processing
   base->is_processing = true;
 }
 
@@ -1305,7 +1298,7 @@ static void close_all(JWidget menu)
     }
   }
 
-  /* for popuped menus */
+  // For popuped menus
   if (base_menubox->type == JI_MENUBOX) {
     close_popup(base_menubox);
   }
@@ -1313,7 +1306,7 @@ static void close_all(JWidget menu)
 
 static void exe_menuitem(JWidget menuitem)
 {
-  /* send the message */
+  // Send the message
   JMessage msg = jmessage_new(JM_EXE_MENUITEM);
   jmessage_add_dest(msg, menuitem);
   jmanager_enqueue_message(msg);
@@ -1382,8 +1375,8 @@ static JWidget check_for_accel(JWidget menu, JMessage msg)
   return NULL;
 }
 
-/* finds the next item of `menuitem', if `menuitem' is NULL searchs
-   from the first item in `menu' */
+// Finds the next item of `menuitem', if `menuitem' is NULL searchs
+// from the first item in `menu'
 static JWidget find_nextitem(JWidget menu, JWidget menuitem)
 {
   JWidget nextitem;
