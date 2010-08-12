@@ -56,7 +56,8 @@ public:
   void showTip(int msecs, const char *format, ...);
   void showColor(int msecs, const char* text, color_t color, int alpha);
   void showTool(int msecs, Tool* tool);
-  
+
+  // Methods to add and remove progress bars
   Progress* addProgress();
   void removeProgress(Progress* progress);
 

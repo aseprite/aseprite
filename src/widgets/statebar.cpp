@@ -632,11 +632,11 @@ bool StatusBar::onProcessMessage(JMessage msg)
 
     case JM_MOUSELEAVE:
       if (jwidget_has_child(this, m_commands_box)) {
-	/* if we want restore the state-bar and the slider doesn't have
-	   the capture... */
+	// If we want restore the state-bar and the slider doesn't have
+	// the capture...
 	if (jmanager_get_capture() != m_slider) {
-	  /* exit from command mode */
-	  jmanager_free_focus();
+	  // ...exit from command mode
+	  jmanager_free_focus();		// TODO Review this code
 
 	  jwidget_remove_child(this, m_commands_box);
 	  jwidget_dirty(this);
@@ -679,10 +679,10 @@ static bool slider_change_hook(JWidget widget, void *data)
 	  (sprite->getCurrentLayer()->is_image())) {
 	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
 	if (cel) {
-	  // update the opacity
+	  // Update the opacity
 	  cel->opacity = jslider_get_value(widget);
 
-	  // update the editors
+	  // Update the editors
 	  update_screen_for_sprite(sprite);
 	}
       }
@@ -717,7 +717,7 @@ void StatusBar::updateFromLayer()
     const CurrentSpriteReader sprite(UIContext::instance());
     Cel *cel;
 
-    /* opacity layer */
+    // Opacity layer
     if (sprite &&
 	sprite->getCurrentLayer() &&
 	sprite->getCurrentLayer()->is_image() &&
@@ -732,7 +732,7 @@ void StatusBar::updateFromLayer()
     }
   }
   catch (LockedSpriteException&) {
-    // disable all
+    // Disable all
     m_slider->setEnabled(false);
   }
 }
