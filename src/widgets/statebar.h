@@ -84,7 +84,7 @@ private:
   JList m_progress;
 
   // Box of main commands
-  Widget* m_commands_box;
+  Widget* m_commandsBox;
   Widget* m_slider;			// Opacity slider
   Widget* m_b_first;			// Go to first frame
   Widget* m_b_prev;			// Go to previous frame

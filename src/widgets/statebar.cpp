@@ -124,7 +124,7 @@ StatusBar::StatusBar()
   jwidget_add_child(box1, box2);
   jwidget_add_child(box1, m_slider);
 
-  m_commands_box = box1;
+  m_commandsBox = box1;
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
 }
@@ -318,15 +318,15 @@ bool StatusBar::onProcessMessage(JMessage msg)
       {
 	JRect rc = jrect_new_copy(this->rc);
 	rc->x2 -= jrect_w(rc)/4 + 4*jguiscale();
-	jwidget_set_rect(m_commands_box, rc);
+	jwidget_set_rect(m_commandsBox, rc);
 	jrect_free(rc);
       }
       return true;
 
     case JM_CLOSE:
-      if (!jwidget_has_child(this, m_commands_box)) {
+      if (!jwidget_has_child(this, m_commandsBox)) {
 	/* append the "commands_box" to destroy it in the jwidget_free */
-	jwidget_add_child(this, m_commands_box);
+	jwidget_add_child(this, m_commandsBox);
       }
       break;
 
@@ -515,7 +515,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
     case JM_MOUSEENTER: {
       bool state = (UIContext::instance()->get_current_sprite() != NULL);
 
-      if (!jwidget_has_child(this, m_commands_box) && state) {
+      if (!jwidget_has_child(this, m_commandsBox) && state) {
 	m_b_first->setEnabled(state);
 	m_b_prev->setEnabled(state);
 	m_b_play->setEnabled(state);
@@ -524,7 +524,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 
 	updateFromLayer();
 
-	jwidget_add_child(this, m_commands_box);
+	jwidget_add_child(this, m_commandsBox);
 	jwidget_dirty(this);
       }
       else {
@@ -631,14 +631,14 @@ bool StatusBar::onProcessMessage(JMessage msg)
       break;
 
     case JM_MOUSELEAVE:
-      if (jwidget_has_child(this, m_commands_box)) {
+      if (jwidget_has_child(this, m_commandsBox)) {
 	// If we want restore the state-bar and the slider doesn't have
 	// the capture...
 	if (jmanager_get_capture() != m_slider) {
 	  // ...exit from command mode
 	  jmanager_free_focus();		// TODO Review this code
 
-	  jwidget_remove_child(this, m_commands_box);
+	  jwidget_remove_child(this, m_commandsBox);
 	  jwidget_dirty(this);
 	}
 
