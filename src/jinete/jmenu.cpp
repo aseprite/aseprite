@@ -39,6 +39,8 @@
 #include "jinete/jintern.h"
 #include "Vaca/Size.h"
 
+#define TIMEOUT_TO_OPEN_SUBMENU 250
+
 //////////////////////////////////////////////////////////////////////
 // Internal messages: to move between menus
 
@@ -117,6 +119,7 @@ typedef struct MenuItem
   bool highlight : 1;		// Is it highlighted?
   JWidget submenu;		// The sub-menu
   JWidget submenu_menubox;	// The opened menubox for this menu-item
+  int submenu_timer;		// Timer to open the submenu
 } MenuItem;
 
 static bool menu_msg_proc(JWidget widget, JMessage msg);
@@ -199,6 +202,7 @@ JWidget jmenuitem_new(const char *text)
   menuitem->highlight = false;
   menuitem->submenu = NULL;
   menuitem->submenu_menubox = NULL;
+  menuitem->submenu_timer = -1;
 
   jwidget_add_hook(widget, JI_MENUITEM, menuitem_msg_proc, menuitem);
   widget->setText(text);
@@ -535,9 +539,33 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	picked = jwidget_pick(menu, msg->mouse.x, msg->mouse.y);
 	if (picked) {
 	  if ((picked->type == JI_MENUITEM) &&
-	      !(picked->flags & JI_DISABLED) &&
-	      !MITEM(picked)->highlight) {
-	    set_highlight(menu, picked, false, true, false);
+	      !(picked->flags & JI_DISABLED)) {
+
+	    // If the picked menu-item is not highlighted...
+	    if (!MITEM(picked)->highlight) {
+	      // In menu-bar always open the submenu, in other popup-menus
+	      // open the submenu only if the user does click
+	      bool open_submenu =
+		(widget->type == JI_MENUBAR) ||
+		(msg->type == JM_BUTTONPRESSED);
+	      
+	      set_highlight(menu, picked, false, open_submenu, false);
+	    }
+	    // If the user pressed in a highlighted menu-item (maybe
+	    // the user was waiting for the timer to open the
+	    // submenu...)
+	    else if (msg->type == JM_BUTTONPRESSED &&
+		     HAS_SUBMENU(picked)) {
+	      // Stop timer to open the popup
+	      if (MITEM(picked)->submenu_timer >= 0) {
+		jmanager_remove_timer(MITEM(picked)->submenu_timer);
+		MITEM(picked)->submenu_timer = -1;
+	      }
+
+	      // If the submenu is closed, open it
+	      if (MITEM(picked)->submenu_menubox == NULL)
+		open_menuitem(picked, false);
+	    }
 	  }
 	  else if (!get_base(widget)->was_clicked) {
 	    unhighlight(menu);
@@ -566,8 +594,10 @@ static bool menubox_msg_proc(JWidget widget, JMessage msg)
 	if (get_base(widget)->is_processing)
 	  break;
 
-	// The item is highlighted and not opened
-	if ((highlight) && (!MITEM(highlight)->submenu_menubox)) {
+	// The item is highlighted and not opened (and the timer to open the submenu is stopped)
+	if ((highlight) &&
+	    (!MITEM(highlight)->submenu_menubox) &&
+	    (MITEM(highlight)->submenu_timer < 0)) {
 	  close_all(menu);
 	  exe_menuitem(highlight);
 	}
@@ -820,6 +850,12 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
       if (menuitem->submenu)
 	jwidget_free(menuitem->submenu);
 
+      // Stop timer to open the popup
+      if (menuitem->submenu_timer >= 0) {
+	jmanager_remove_timer(menuitem->submenu_timer);
+	menuitem->submenu_timer = -1;
+      }
+
       jfree(menuitem);
       break;
 
@@ -832,9 +868,27 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_MOUSEENTER:
+      // TODO theme specific!!
+      jwidget_dirty(widget);
+
+      // When a menu item receives the mouse, start a timer to open the submenu...
+      if (widget->isEnabled() && HAS_SUBMENU(widget)) {
+	// Start the timer to open the submenu...
+	if (menuitem->submenu_timer < 0)
+	  menuitem->submenu_timer = jmanager_add_timer(widget, TIMEOUT_TO_OPEN_SUBMENU);
+	jmanager_start_timer(menuitem->submenu_timer);
+      }
+      break;
+
     case JM_MOUSELEAVE:
       // TODO theme specific!!
       jwidget_dirty(widget);
+
+      // Stop timer to open the popup
+      if (menuitem->submenu_timer >= 0) {
+	jmanager_remove_timer(menuitem->submenu_timer);
+	menuitem->submenu_timer = -1;
+      }
       break;
 
     default:
@@ -986,6 +1040,12 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
 	  base->is_processing = false;
 	}
 
+      // Stop timer to open the popup
+	if (menuitem->submenu_timer >= 0) {
+	  jmanager_remove_timer(menuitem->submenu_timer);
+	  menuitem->submenu_timer = -1;
+	}
+
 	return true;
       }
       else if (msg->type == JM_EXE_MENUITEM) {
@@ -994,6 +1054,20 @@ static bool menuitem_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
+    case JM_TIMER:
+      if (msg->timer.timer_id == menuitem->submenu_timer) {
+	ASSERT(HAS_SUBMENU(widget));
+
+	// Stop timer to open the popup
+	jmanager_remove_timer(menuitem->submenu_timer);
+	menuitem->submenu_timer = -1;
+
+	// If the submenu is closed, open it
+	if (menuitem->submenu_menubox == NULL)
+	  open_menuitem(widget, false);
+      }
+      break;
+  
   }
 
   return false;
