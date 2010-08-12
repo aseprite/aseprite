@@ -195,6 +195,7 @@ public:
 
 protected:
   bool onProcessMessage(JMessage msg);
+  void onCurrentToolChange();
 
 private:
   void drawGrid(const Rect& gridBounds, color_t color);

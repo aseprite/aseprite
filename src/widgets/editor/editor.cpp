@@ -104,6 +104,8 @@ Editor::Editor()
   m_pixelsMovement = NULL;
 
   jwidget_focusrest(this, true);
+
+  App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
 }
 
 Editor::~Editor()
@@ -1506,6 +1508,22 @@ bool Editor::onProcessMessage(JMessage msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+// When the current tool is changed
+void Editor::onCurrentToolChange()
+{
+  UIContext* context = UIContext::instance();
+  Tool* current_tool = context->getSettings()->getCurrentTool();
+
+  // If the user changed the tool when he/she is moving pixels,
+  // we have to drop the pixels only if the new tool is not selection...
+  if (m_pixelsMovement &&
+      (!current_tool->getInk(0)->isSelection() ||
+       !current_tool->getInk(1)->isSelection())) {
+    // We have to drop pixels
+    dropPixels();
+  }
 }
 
 /**
