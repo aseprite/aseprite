@@ -7,7 +7,7 @@ Refactoring
   3) file-io
   4) undo (uses sprite-core)
   5) aseprite (the application)
-- editors_ -> Editors class widget
+- editors_ -> MultiEditors class widget
 - rename core/cfg.h to cfg_file.h
 - convert all widgets to classes:
   + match Jinete design with Vaca library (Vaca Fusion)
@@ -66,7 +66,6 @@ Wish-list
     - "raster/Undoable" is the beginning
   + the dependencies should be:
     commands/ -> ase/ -> raster/ -> jinete/
-  + consistent error handling (now I'm using exception).
 - manuq wish-list:
   + layer-with-constant-cel
 - Mateusz Czaplinski ideas:
@@ -78,7 +77,7 @@ Wish-list
 Low priority stuff
 ------------------
 
-- add more unit-tests.
+- add unit-tests for "raster" and file formats.
 - test routines: load/save_pic_file, load/save_msk_file,
   load/save_col_file.
 - fix the fli reader (both Allegro and Gfli): when a frame hasn't
@@ -91,6 +90,7 @@ Low priority stuff
 - optimize the *_to_allegro image methods (I profiled ASE, and these
   are the more slow routines in all the program);
 - remove the jfilesel.c & jquickmenu.c
+- move src/jinete/jfile.cpp to src/xml_widgets.cc (jfile is specific to ASE, not Jinete)
 - fix Jinete examples:
   + 05fsel
   + 09lists
