@@ -68,8 +68,7 @@ class Editor : public Widget
   // editor states
   enum State {
     EDITOR_STATE_STANDBY,
-    EDITOR_STATE_MOVING_SCROLL,
-    EDITOR_STATE_MOVING_PIXELS,
+    EDITOR_STATE_SCROLLING,
     EDITOR_STATE_DRAWING,
   };
 
@@ -142,6 +141,7 @@ public:
   void editor_draw_mask_safe();
 
   void flashCurrentLayer();
+  void setMaskColorForPixelsMovement(color_t color);
 
   void screen_to_editor(int xin, int yin, int *xout, int *yout);
   void editor_to_screen(int xin, int yin, int *xout, int *yout);

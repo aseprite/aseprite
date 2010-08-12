@@ -24,6 +24,7 @@
 #include <cstring>
 
 #include "jinete/jinete.h"
+#include "Vaca/Size.h"
 
 #include "app.h"
 #include "commands/commands.h"
@@ -35,6 +36,7 @@
 #include "modules/palettes.h"
 #include "modules/skinneable_theme.h"
 #include "raster/cel.h"
+#include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
@@ -42,6 +44,7 @@
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "util/misc.h"
+#include "widgets/colbut.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
@@ -55,6 +58,7 @@ enum {
 
 static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
+static bool transparent_color_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
 static void button_command(JWidget widget, void *data);
 
@@ -91,40 +95,62 @@ StatusBar::StatusBar()
   m_tipwindow = NULL;
   m_hot_layer = -1;
 
+  // The extra pixel in left and right borders are necessary so
+  // m_commandsBox and m_movePixelsBox do not overlap the upper-left
+  // and upper-right pixels drawn in JM_DRAW message (see putpixels)
+  jwidget_set_border(this, 1*jguiscale(), 0, 1*jguiscale(), 0);
+
   // Construct the commands box
-  Widget* box1 = jbox_new(JI_HORIZONTAL);
-  Widget* box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-  Widget* box3 = jbox_new(JI_HORIZONTAL);
-  m_slider = jslider_new(0, 255, 255);
+  {
+    Widget* box1 = jbox_new(JI_HORIZONTAL);
+    Widget* box2 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
+    Widget* box3 = jbox_new(JI_HORIZONTAL);
+    m_slider = jslider_new(0, 255, 255);
 
-  setup_mini_look(m_slider);
+    setup_mini_look(m_slider);
 
-  ICON_NEW(m_b_first, GFX_ANI_FIRST, ACTION_FIRST);
-  ICON_NEW(m_b_prev, GFX_ANI_PREV, ACTION_PREV);
-  ICON_NEW(m_b_play, GFX_ANI_PLAY, ACTION_PLAY);
-  ICON_NEW(m_b_next, GFX_ANI_NEXT, ACTION_NEXT);
-  ICON_NEW(m_b_last, GFX_ANI_LAST, ACTION_LAST);
+    ICON_NEW(m_b_first, GFX_ANI_FIRST, ACTION_FIRST);
+    ICON_NEW(m_b_prev, GFX_ANI_PREV, ACTION_PREV);
+    ICON_NEW(m_b_play, GFX_ANI_PLAY, ACTION_PLAY);
+    ICON_NEW(m_b_next, GFX_ANI_NEXT, ACTION_NEXT);
+    ICON_NEW(m_b_last, GFX_ANI_LAST, ACTION_LAST);
 
-  HOOK(m_slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
+    HOOK(m_slider, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+    jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
-  jwidget_set_border(this, 1*jguiscale(), 0, 0, 0);
-  jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-  jwidget_noborders(box2);
-  jwidget_noborders(box3);
-  jwidget_expansive(box3, true);
+    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
+    jwidget_noborders(box2);
+    jwidget_noborders(box3);
+    jwidget_expansive(box3, true);
 
-  jwidget_add_child(box2, m_b_first);
-  jwidget_add_child(box2, m_b_prev);
-  jwidget_add_child(box2, m_b_play);
-  jwidget_add_child(box2, m_b_next);
-  jwidget_add_child(box2, m_b_last);
+    jwidget_add_child(box2, m_b_first);
+    jwidget_add_child(box2, m_b_prev);
+    jwidget_add_child(box2, m_b_play);
+    jwidget_add_child(box2, m_b_next);
+    jwidget_add_child(box2, m_b_last);
 
-  jwidget_add_child(box1, box3);
-  jwidget_add_child(box1, box2);
-  jwidget_add_child(box1, m_slider);
+    jwidget_add_child(box1, box3);
+    jwidget_add_child(box1, box2);
+    jwidget_add_child(box1, m_slider);
 
-  m_commandsBox = box1;
+    m_commandsBox = box1;
+  }
+
+  // Construct move-pixels box
+  {
+    Widget* filler = jbox_new(JI_HORIZONTAL);
+    jwidget_expansive(filler, true);
+
+    m_movePixelsBox = jbox_new(JI_HORIZONTAL);
+    m_transparentLabel = new Label("Transparent Color:");
+    m_transparentColor = colorbutton_new(color_mask(), IMAGE_RGB);
+
+    jwidget_add_child(m_movePixelsBox, filler);
+    jwidget_add_child(m_movePixelsBox, m_transparentLabel);
+    jwidget_add_child(m_movePixelsBox, m_transparentColor);
+
+    HOOK(m_transparentColor, SIGNAL_COLORBUTTON_CHANGE, transparent_color_change_hook, 1);
+  }
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
 }
@@ -253,6 +279,27 @@ void StatusBar::showTool(int msecs, Tool* tool)
   }
 }
 
+void StatusBar::showMovePixelsOptions()
+{
+  if (!jwidget_has_child(this, m_movePixelsBox)) {
+    jwidget_add_child(this, m_movePixelsBox);
+    jwidget_dirty(this);
+  }
+}
+
+void StatusBar::hideMovePixelsOptions()
+{
+  if (jwidget_has_child(this, m_movePixelsBox)) {
+    jwidget_remove_child(this, m_movePixelsBox);
+    jwidget_dirty(this);
+  }
+}
+
+color_t StatusBar::getTransparentColor()
+{
+  return colorbutton_get_color(m_transparentColor);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Progress bars stuff
 
@@ -321,12 +368,24 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	jwidget_set_rect(m_commandsBox, rc);
 	jrect_free(rc);
       }
+      {
+	JRect rc = jrect_new_copy(this->rc);
+	Vaca::Size reqSize = m_movePixelsBox->getPreferredSize();
+	rc->x1 = rc->x2 - reqSize.w;
+	rc->x2 -= this->border_width.r;
+	jwidget_set_rect(m_movePixelsBox, rc);
+	jrect_free(rc);
+      }
       return true;
 
     case JM_CLOSE:
       if (!jwidget_has_child(this, m_commandsBox)) {
-	/* append the "commands_box" to destroy it in the jwidget_free */
+	// Append the "m_commandsBox" so it is destroyed in StatusBar dtor.
 	jwidget_add_child(this, m_commandsBox);
+      }
+      if (!jwidget_has_child(this, m_movePixelsBox)) {
+	// Append the "m_movePixelsBox" so it is destroyed in StatusBar dtor.
+	jwidget_add_child(this, m_movePixelsBox);
       }
       break;
 
@@ -515,21 +574,23 @@ bool StatusBar::onProcessMessage(JMessage msg)
     case JM_MOUSEENTER: {
       bool state = (UIContext::instance()->get_current_sprite() != NULL);
 
-      if (!jwidget_has_child(this, m_commandsBox) && state) {
-	m_b_first->setEnabled(state);
-	m_b_prev->setEnabled(state);
-	m_b_play->setEnabled(state);
-	m_b_next->setEnabled(state);
-	m_b_last->setEnabled(state);
+      if (!jwidget_has_child(this, m_movePixelsBox)) {
+	if (!jwidget_has_child(this, m_commandsBox) && state) {
+	  m_b_first->setEnabled(state);
+	  m_b_prev->setEnabled(state);
+	  m_b_play->setEnabled(state);
+	  m_b_next->setEnabled(state);
+	  m_b_last->setEnabled(state);
 
-	updateFromLayer();
+	  updateFromLayer();
 
-	jwidget_add_child(this, m_commandsBox);
-	jwidget_dirty(this);
-      }
-      else {
-	// Status text for donations
-	setStatusText(0, "Click the \"Donate\" button to support ASE development");
+	  jwidget_add_child(this, m_commandsBox);
+	  jwidget_dirty(this);
+	}
+	else {
+	  // Status text for donations
+	  setStatusText(0, "Click the \"Donate\" button to support ASE development");
+	}
       }
       break;
     }
@@ -667,6 +728,13 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg)
   }
 
   return false;
+}
+
+static bool transparent_color_change_hook(JWidget widget, void *data)
+{
+  if (current_editor)
+    current_editor->setMaskColorForPixelsMovement(app_get_statusbar()->getTransparentColor());
+  return true;
 }
 
 static bool slider_change_hook(JWidget widget, void *data)

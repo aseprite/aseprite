@@ -57,6 +57,11 @@ public:
   void showColor(int msecs, const char* text, color_t color, int alpha);
   void showTool(int msecs, Tool* tool);
 
+  void showMovePixelsOptions();
+  void hideMovePixelsOptions();
+
+  color_t getTransparentColor();
+
   // Methods to add and remove progress bars
   Progress* addProgress();
   void removeProgress(Progress* progress);
@@ -91,6 +96,11 @@ private:
   Widget* m_b_play;			// Play animation
   Widget* m_b_next;			// Go to next frame
   Widget* m_b_last;			// Go to last frame
+
+  // Box with move-pixels commands (when the user drag-and-drop selected pixels using the editor)
+  Widget* m_movePixelsBox;
+  Widget* m_transparentLabel;
+  Widget* m_transparentColor;
 
   // Tip window
   Frame* m_tipwindow;

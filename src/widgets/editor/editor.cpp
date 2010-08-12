@@ -131,9 +131,16 @@ void Editor::editor_set_sprite(Sprite* sprite)
   if (this->hasMouse())
     jmanager_free_mouse();	// TODO Why is this here? Review this code
 
+  // The editor must be stand-by state
+  ASSERT(m_state == EDITOR_STATE_STANDBY);
+
+  // Change the sprite
   m_sprite = sprite;
   if (m_sprite) {
+    // Get the preferred sprite's settings to edit it
     PreferredEditorSettings preferred = m_sprite->getPreferredEditorSettings();
+
+    // Change the editor's configuration using the retrieved sprite's settings
     m_zoom = preferred.zoom;
 
     editor_update();
@@ -141,11 +148,13 @@ void Editor::editor_set_sprite(Sprite* sprite)
 		      m_offset_y + preferred.scroll_y,
 		      false);
   }
+  // In this case sprite is NULL
   else {
     editor_update();
-    editor_set_scroll(0, 0, false);
+    editor_set_scroll(0, 0, false); // No scroll
   }
 
+  // Redraw the entire editor (because we have a new sprite to draw)
   dirty();
 }
 
@@ -562,6 +571,15 @@ void Editor::flashCurrentLayer()
   }
 }
 
+void Editor::setMaskColorForPixelsMovement(color_t color)
+{
+  ASSERT(m_sprite != NULL);
+  ASSERT(m_pixelsMovement != NULL);
+  
+  int imgtype = m_sprite->getImgType();
+  m_pixelsMovement->setMaskColor(get_color_for_image(imgtype, color));
+}
+
 void Editor::deleteDecorators()
 {
   for (std::vector<Decorator*>::iterator
@@ -653,6 +671,7 @@ void Editor::dropPixels()
   m_state = EDITOR_STATE_STANDBY;
   releaseMouse();
 
+  app_get_statusbar()->hideMovePixelsOptions();
   editor_update_statusbar_for_standby();
 }
 
@@ -745,7 +764,7 @@ void Editor::editor_update_statusbar_for_pixel_movement()
 {
   Rect bounds = m_pixelsMovement->getImageBounds();
   app_get_statusbar()->setStatusText
-    (100, "Pos %d %d, Size %d %d [Press ENTER to drop]",
+    (100, "Pos %d %d, Size %d %d",
      bounds.x, bounds.y, bounds.w, bounds.h);
 }
 
@@ -976,19 +995,6 @@ bool Editor::onProcessMessage(JMessage msg)
 	  return true;
 	}
       }
-      // Moving pixels loop
-      else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
-	if (m_insideSelection) {
-	  // Re-catch the image
-	  int x, y;
-	  screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
-	  m_pixelsMovement->catchImageAgain(x, y);
-	  return true;
-	}
-	else {
-	  dropPixels();
-	}
-      }
 
       if (!hasCapture()) {
 	UIContext* context = UIContext::instance();
@@ -997,18 +1003,39 @@ bool Editor::onProcessMessage(JMessage msg)
 	set_current_editor(this);
 	context->set_current_sprite(m_sprite);
 
-	// Move the scroll
+	// Start scroll loop
 	if (msg->mouse.middle ||
 	    m_space_pressed ||
 	    current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
-	  m_state = EDITOR_STATE_MOVING_SCROLL;
+	  m_state = EDITOR_STATE_SCROLLING;
 
 	  editor_setcursor(msg->mouse.x, msg->mouse.y);
+	  captureMouse();
+	  return true;
 	}
+
+	if (m_pixelsMovement) {
+	  // Start "moving pixels" loop
+	  if (m_insideSelection) {
+	    // Re-catch the image
+	    int x, y;
+	    screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
+	    m_pixelsMovement->catchImageAgain(x, y);
+
+	    captureMouse();
+	    return true;
+	  }
+	  // End "moving pixels" loop
+	  else {
+	    // Drop pixels (e.g. to start drawing)
+	    dropPixels();
+	  }
+	}
+
 	// Move frames position
-	else if ((m_ctrl_pressed &&
-		  !current_tool->getInk(msg->mouse.right ? 1: 0)->isSelection()) ||
-		 current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
+	if ((m_ctrl_pressed &&
+	     !current_tool->getInk(msg->mouse.right ? 1: 0)->isSelection()) ||
+	    current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
 	  if ((m_sprite->getCurrentLayer()) &&
 	      (m_sprite->getCurrentLayer()->type == GFXOBJ_LAYER_IMAGE)) {
 	    // TODO you can move the `Background' with tiled mode
@@ -1026,9 +1053,8 @@ bool Editor::onProcessMessage(JMessage msg)
 	      bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
 	      interactive_move_layer(click2 ? MODE_CLICKANDCLICK:
 					      MODE_CLICKANDRELEASE,
-				     TRUE, NULL);
+				     TRUE, NULL); // TODO remove this routine
 	    }
-	    return true;
 	  }
 	}
 	// Move selected pixels
@@ -1044,9 +1070,6 @@ bool Editor::onProcessMessage(JMessage msg)
 		       "||&Close"));
 	      return true;
 	    }
-
-	    // Change editor's state
-	    m_state = EDITOR_STATE_MOVING_PIXELS;
 
 	    // Copy the mask to the extra cel image
 	    Image* tmpImage = NewImageFromMask(m_sprite);
@@ -1064,8 +1087,14 @@ bool Editor::onProcessMessage(JMessage msg)
 	    screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
 	    m_pixelsMovement->catchImage(x, y);
 
+	    // Setup mask color
+	    setMaskColorForPixelsMovement(app_get_statusbar()->getTransparentColor());
+
+	    // Update status bar
 	    editor_update_statusbar_for_pixel_movement();
+	    app_get_statusbar()->showMovePixelsOptions();
 	  }
+	  captureMouse();
 	}
 	// Call the eyedropper command
 	else if (m_alt_pressed ||
@@ -1104,10 +1133,9 @@ bool Editor::onProcessMessage(JMessage msg)
 	  // Redraw it (without pen preview)
 	  if (thick)
 	    editor_draw_cursor(msg->mouse.x, msg->mouse.y);
-	}
 
-	// Capture the mouse
-	captureMouse();
+	  captureMouse();
+	}
       }
       return true;
 
@@ -1116,7 +1144,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	break;
 
       // Move the scroll
-      if (m_state == EDITOR_STATE_MOVING_SCROLL) {
+      if (m_state == EDITOR_STATE_SCROLLING) {
 	JWidget view = jwidget_get_view(this);
 	JRect vp = jview_get_viewport_position(view);
 	int scroll_x, scroll_y;
@@ -1137,12 +1165,12 @@ bool Editor::onProcessMessage(JMessage msg)
 	}
       }
       // Moving pixels
-      else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
-	// Infinite scroll
-	controlInfiniteScroll(msg);
-
+      else if (m_pixelsMovement) {
 	// If there is a button pressed
 	if (m_pixelsMovement->isDragging()) {
+	  // Infinite scroll
+	  controlInfiniteScroll(msg);
+
 	  // Get the position of the mouse in the sprite 
 	  int x, y;
 	  screen_to_editor(msg->mouse.x, msg->mouse.y, &x, &y);
@@ -1254,15 +1282,14 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	clear_keybuf();
       }
-      // Moving pixels
-      else if (m_state == EDITOR_STATE_MOVING_PIXELS) {
-	// Drop the image temporarily in this location (where the user releases the mouse)
-	m_pixelsMovement->dropImageTemporarily();
-	return true;
-      }
-      else {
+      else if (m_state != EDITOR_STATE_STANDBY) {
 	ASSERT(m_toolLoopManager == NULL);
 	m_state = EDITOR_STATE_STANDBY;
+      }
+      // Moving pixels
+      else if (m_pixelsMovement) {
+	// Drop the image temporarily in this location (where the user releases the mouse)
+	m_pixelsMovement->dropImageTemporarily();
       }
 
       editor_setcursor(msg->mouse.x, msg->mouse.y);
@@ -1290,7 +1317,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  case KEY_LCONTROL:
 	  case KEY_RCONTROL:
 	    // If the user press the CTRL key when he is dragging pixels (but not pressing the mouse buttons)...
-	    if (!m_ctrl_pressed && !jmouse_b(0) && m_state == EDITOR_STATE_MOVING_PIXELS) {
+	    if (!m_ctrl_pressed && !jmouse_b(0) && m_pixelsMovement) {
 	      // Drop pixels (sure the user will press the mouse button to start dragging a copy)
 	      dropPixels();
 	    }
@@ -1309,20 +1336,6 @@ bool Editor::onProcessMessage(JMessage msg)
       if (m_state == EDITOR_STATE_DRAWING)
 	return true;
 
-      if (m_state == EDITOR_STATE_MOVING_PIXELS) {
-	dropPixels();
-
-	// Resend the key/message to the manager
-	if (msg->key.scancode != KEY_ENTER &&
-	    msg->key.scancode != KEY_ENTER_PAD) {
-	  JMessage newmsg = jmessage_new_copy_without_dests(msg);
-	  jmessage_add_dest(newmsg, ji_get_default_manager());
-	  jmanager_enqueue_message(newmsg);
-	}
-
-	// Used
-	return true;
-      }
       break;
 
     case JM_KEYRELEASED:
@@ -1361,8 +1374,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
     case JM_WHEEL:
       if (m_state == EDITOR_STATE_STANDBY ||
-	  m_state == EDITOR_STATE_DRAWING ||
-	  m_state == EDITOR_STATE_MOVING_PIXELS) {
+	  m_state == EDITOR_STATE_DRAWING) {
 	// There are and sprite in the editor and the mouse is inside
 	if (m_sprite && this->hasMouse()) {
 	  int dz = jmouse_z(1) - jmouse_z(0);
@@ -1518,44 +1530,9 @@ void Editor::editor_setcursor(int x, int y)
 
   switch (m_state) {
 
-    case EDITOR_STATE_MOVING_SCROLL:
+    case EDITOR_STATE_SCROLLING:
       hide_drawing_cursor();
       jmouse_set_cursor(JI_CURSOR_SCROLL);
-      break;
-
-    case EDITOR_STATE_MOVING_PIXELS:
-      {
-	UIContext* context = UIContext::instance();
-	Tool* current_tool = context->getSettings()->getCurrentTool();
-
-	int x, y;
-	screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
-	    
-	// Move selection
-	if (m_pixelsMovement->isDragging() ||
-	    m_sprite->getMask()->contains_point(x, y)) {
-	  hide_drawing_cursor();
-	  jmouse_set_cursor(JI_CURSOR_MOVE);
-
-	  if (!m_insideSelection)
-	    m_insideSelection = true;
-	  return;
-	}
-
-	if (m_insideSelection)
-	  m_insideSelection = false;
-
-	// Draw
-	if (m_cursor_candraw) {
-	  jmouse_set_cursor(JI_CURSOR_NULL);
-	  show_drawing_cursor();
-	}
-	// Forbidden
-	else {
-	  hide_drawing_cursor();
-	  jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
-	}
-      }
       break;
 
     case EDITOR_STATE_DRAWING:
@@ -1577,8 +1554,38 @@ void Editor::editor_setcursor(int x, int y)
 
 	editor_update_candraw(); // TODO remove this
 
+	// Pixels movement
+	if (m_pixelsMovement) {
+	  int x, y;
+	  screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
+	    
+	  // Move selection
+	  if (m_pixelsMovement->isDragging() ||
+	      m_sprite->getMask()->contains_point(x, y)) {
+	    hide_drawing_cursor();
+	    jmouse_set_cursor(JI_CURSOR_MOVE);
+
+	    if (!m_insideSelection)
+	      m_insideSelection = true;
+	    return;
+	  }
+
+	  if (m_insideSelection)
+	    m_insideSelection = false;
+
+	  // Draw
+	  if (m_cursor_candraw) {
+	    jmouse_set_cursor(JI_CURSOR_NULL);
+	    show_drawing_cursor();
+	  }
+	  // Forbidden
+	  else {
+	    hide_drawing_cursor();
+	    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
+	  }
+	}
 	// Eyedropper
-	if (m_alt_pressed) {
+	else if (m_alt_pressed) {
 	  hide_drawing_cursor();
 	  jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
 	}
