@@ -69,29 +69,3 @@ bool Editor::editor_keys_toset_zoom(int scancode)
 
   return false;
 }
-
-bool Editor::editor_keys_toset_pensize(int scancode)
-{
-  Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
-  IToolSettings* tool_settings = UIContext::instance()->getSettings()->getToolSettings(current_tool);
-  IPenSettings* pen = tool_settings->getPen();
-
-  if ((m_sprite) &&
-      (this->hasMouse()) &&
-      !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
-    if (scancode == KEY_MINUS_PAD) { // TODO configurable keys
-      if (pen->getSize() > 1) {
-	pen->setSize(pen->getSize()-1);
-      }
-      return true;
-    }
-    else if (scancode == KEY_PLUS_PAD) {
-      if (pen->getSize() < 32) {
-	pen->setSize(pen->getSize()+1);
-      }
-      return true;
-    }
-  }
-
-  return false;
-}

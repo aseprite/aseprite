@@ -25,6 +25,7 @@ COMMON_SOURCES =					\
 	src/commands/cmd_cel_properties.cpp		\
 	src/commands/cmd_change_color.cpp		\
 	src/commands/cmd_change_image_type.cpp		\
+	src/commands/cmd_change_pen.cpp			\
 	src/commands/cmd_check_updates.cpp		\
 	src/commands/cmd_clear.cpp			\
 	src/commands/cmd_close_file.cpp			\

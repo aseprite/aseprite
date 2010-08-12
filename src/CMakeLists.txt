@@ -47,6 +47,7 @@ add_executable(aseprite WIN32
   commands/cmd_cel_properties.cpp
   commands/cmd_change_color.cpp
   commands/cmd_change_image_type.cpp
+  commands/cmd_change_pen.cpp
   commands/cmd_check_updates.cpp
   commands/cmd_clear.cpp
   commands/cmd_close_file.cpp

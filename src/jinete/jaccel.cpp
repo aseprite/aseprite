@@ -111,46 +111,42 @@ void jaccel_add_key(JAccel accel, int shifts, int ascii, int scancode)
   jlist_append(accel->key_list, key);
 }
 
-static void proc_one_word(JAccel accel, char *word)
+static void proc_one_word(JAccel accel, char* word)
 {
   int shifts = 0;
   int ascii = 0;
   int scancode = 0;
-  char *tok;
+  char* tok;
+
+  // Special case: plus sign
+  if (word[0] == '+' && word[1] == 0) {
+    jaccel_add_key(accel, 0, '+', 0);
+    return;
+  }
 
   for (tok=ustrtok(word, "+"); tok;
        tok=ustrtok(NULL, "+")) {
-    /************************************************************************/
-    /* key_shifts */
+    // key_shifts
 
-    if (ustricmp (tok, "Shift") == 0)
+    if (ustricmp (tok, "Shift") == 0) {
       shifts |= KB_SHIFT_FLAG;
-    else if (ustricmp (tok, "Ctrl") == 0)
+    }
+    else if (ustricmp (tok, "Ctrl") == 0) {
       shifts |= KB_CTRL_FLAG;
+    }
 
-    /************************************************************************/
-    /* scancode */
+    // scancode
 
-    /* word with one character */
+    // word with one character
     else if (tok[1] == 0) {
-#if 1
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z'))) {
-/* 	if (shifts & KB_CTRL_FLAG) */
-/* 	  ascii = tolower(*tok) - 'a' + 1; */
-/* 	else */
 	ascii = tolower(*tok);
       }
-/*       else if ((*tok >= '0') && (*tok <= '9')) { */
-/* 	if (shifts & KB_CTRL_FLAG) */
-/* 	  scancode = KEY_0 + *tok - '0'; */
-/* 	else */
-/* 	  ascii = *tok; */
-/*       } */
       else {
 	ascii = *tok;
       }
-#else
+
       if (((*tok >= 'a') && (*tok <= 'z')) ||
           ((*tok >= 'A') && (*tok <= 'Z')))
         scancode = KEY_A + tolower(*tok) - 'a';
@@ -169,9 +165,9 @@ static void proc_one_word(JAccel accel, char *word)
 	  case ',': scancode = KEY_COMMA; break;
 	  case '.': scancode = KEY_STOP; break;
 	  case '/': scancode = KEY_SLASH; break;
+	  case '*': scancode = KEY_ASTERISK; break;
 	}
       }
-#endif
     }
     /* other ones */
     else {
@@ -181,7 +177,8 @@ static void proc_one_word(JAccel accel, char *word)
 	if ((num >= 1) && (num <= 12))
 	  scancode = KEY_F1 + num - 1;
       }
-      else if (ustricmp(tok, "Esc") == 0)
+      else if ((ustricmp(tok, "Escape") == 0) ||
+	       (ustricmp(tok, "Esc") == 0))
 	scancode = KEY_ESC;
       else if (ustricmp(tok, "Backspace") == 0)
 	scancode = KEY_BACKSPACE;
@@ -201,9 +198,11 @@ static void proc_one_word(JAccel accel, char *word)
 	scancode = KEY_HOME;
       else if (ustricmp(tok, "End") == 0)
 	scancode = KEY_END;
-      else if (ustricmp(tok, "PgUp") == 0)
+      else if ((ustricmp(tok, "Page Up") == 0) ||
+	       (ustricmp(tok, "PgUp") == 0))
 	scancode = KEY_PGUP;
-      else if (ustricmp(tok, "PgDn") == 0)
+      else if ((ustricmp(tok, "Page Down") == 0) ||
+	       (ustricmp(tok, "PgDn") == 0))
 	scancode = KEY_PGDN;
       else if (ustricmp(tok, "Left") == 0)
 	scancode = KEY_LEFT;
@@ -213,8 +212,36 @@ static void proc_one_word(JAccel accel, char *word)
 	scancode = KEY_UP;
       else if (ustricmp(tok, "Down") == 0)
 	scancode = KEY_DOWN;
-
-      /* TODO all "Pad" stuff and "PrtScr" and "Pause" */
+      else if (ustricmp(tok, "0 Pad") == 0)
+	scancode = KEY_0_PAD;
+      else if (ustricmp(tok, "1 Pad") == 0)
+	scancode = KEY_1_PAD;
+      else if (ustricmp(tok, "2 Pad") == 0)
+	scancode = KEY_2_PAD;
+      else if (ustricmp(tok, "3 Pad") == 0)
+	scancode = KEY_3_PAD;
+      else if (ustricmp(tok, "4 Pad") == 0)
+	scancode = KEY_4_PAD;
+      else if (ustricmp(tok, "5 Pad") == 0)
+	scancode = KEY_5_PAD;
+      else if (ustricmp(tok, "6 Pad") == 0)
+	scancode = KEY_6_PAD;
+      else if (ustricmp(tok, "7 Pad") == 0)
+	scancode = KEY_7_PAD;
+      else if (ustricmp(tok, "8 Pad") == 0)
+	scancode = KEY_8_PAD;
+      else if (ustricmp(tok, "9 Pad") == 0)
+	scancode = KEY_9_PAD;
+      else if (ustricmp(tok, "Slash Pad") == 0)
+	scancode = KEY_SLASH_PAD;
+      else if (ustricmp(tok, "Asterisk") == 0)
+	scancode = KEY_ASTERISK;
+      else if (ustricmp(tok, "Minus Pad") == 0)
+	scancode = KEY_MINUS_PAD;
+      else if (ustricmp(tok, "Plus Pad") == 0)
+	scancode = KEY_PLUS_PAD;
+      else if (ustricmp(tok, "Del Pad") == 0)
+	scancode = KEY_DEL_PAD;
       else if (ustricmp(tok, "Enter Pad") == 0)
 	scancode = KEY_ENTER_PAD;
     }

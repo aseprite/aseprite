@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ASE menus, tools and keyboard shortcuts -->
 <gui>
-  <!-- keyboard shortcuts -->
+  <!-- Keyboard shortcuts -->
   <keyboard>
+
+    <!-- Keyboard shortcuts for commands (menu options) -->
     <commands>
-      <!-- file -->
+      <!-- File -->
       <key command="new_file" shortcut="Ctrl+N" />
       <key command="open_file" shortcut="Ctrl+O" />
       <key command="save_file" shortcut="Ctrl+S" />
@@ -15,7 +17,7 @@
       <key command="screen_shot" shortcut="F12" />
       <key command="exit" shortcut="Ctrl+Q" />
       <key command="exit" shortcut="Esc" />
-      <!-- edit -->
+      <!-- Edit -->
       <key command="undo" shortcut="Ctrl+Z" /> <key command="undo" shortcut="Ctrl+U" />
       <key command="redo" shortcut="Ctrl+R" />
       <key command="redo" shortcut="Ctrl+Shift+Z" />
@@ -33,14 +35,19 @@
       </key>
       <key command="replace_color" shortcut="Shift+R" />
       <key command="invert_color" shortcut="Ctrl+I" />
-      <!-- sprite -->
+      <key command="convolution_matrix" shortcut="F9" />
+      <key command="color_curve" shortcut="Ctrl+M" />
+      <key command="color_curve" shortcut="F10" />
+      <key command="configure_tools" shortcut="C" />
+      <key command="options" shortcut="Ctrl+Shift+O" />
+      <!-- Sprite -->
       <key command="sprite_properties" shortcut="Ctrl+P" />
-      <!-- layer -->
+      <!-- Layer -->
       <key command="layer_properties" shortcut="Shift+P" />
       <key command="new_layer" shortcut="Shift+N" />
       <key command="goto_previous_layer" shortcut="Down" />
       <key command="goto_next_layer" shortcut="Up" />
-      <!-- frame -->
+      <!-- Frame -->
       <key command="new_frame" shortcut="N" />
       <key command="frame_properties" shortcut="P" />
       <key command="goto_first_frame" shortcut="Home" />
@@ -48,12 +55,12 @@
       <key command="goto_next_frame" shortcut="Right" />
       <key command="goto_last_frame" shortcut="End" />
       <key command="play_animation" shortcut="Enter" />
-      <!-- mask -->
+      <!-- Select -->
       <key command="mask_all" shortcut="Ctrl+A" />
       <key command="deselect_mask" shortcut="Ctrl+D" />
       <key command="reselect_mask" shortcut="Ctrl+Shift+D" />
       <key command="invert_mask" shortcut="Ctrl+Shift+I" />
-      <!-- view -->
+      <!-- View -->
       <key command="refresh" shortcut="F5" />
       <key command="make_unique_editor" shortcut="Ctrl+1" />
       <key command="split_editor_vertically" shortcut="Ctrl+2" />
@@ -62,18 +69,11 @@
       <key command="preview" shortcut="F8" />
       <key command="show_grid" shortcut="Shift+G" />
       <key command="snap_to_grid" shortcut="Shift+S" />
-      <!-- tools -->
-      <key command="configure_tools" shortcut="C" />
       <key command="film_editor" shortcut="Tab" />
       <key command="palette_editor" shortcut="F4">
 	<param name="switch" value="true" />
       </key>
-      <key command="convolution_matrix" shortcut="F9" />
-      <key command="color_curve" shortcut="Ctrl+M" />
-      <key command="color_curve" shortcut="F10" />
-      <key command="options" shortcut="Ctrl+Shift+O" />
-      
-      <!-- others -->
+      <!-- Others -->
       <key command="switch_colors" shortcut="X" />
       <key command="change_color" shortcut="9">
 	<param name="target" value="foreground" />
@@ -99,7 +99,23 @@
 	<param name="target" value="background" />
 	<param name="change" value="increment-index" />
       </key>
+
+      <!-- Modify pen size with +/- signs -->
+      <key command="change_pen" shortcut="+">
+	<param name="change" value="increment-size" />
+      </key>
+      <key command="change_pen" shortcut="-">
+	<param name="change" value="decrement-size" />
+      </key>
+      <key command="change_pen" shortcut="Plus Pad">
+	<param name="change" value="increment-size" />
+      </key>
+      <key command="change_pen" shortcut="Minus Pad">
+	<param name="change" value="decrement-size" />
+      </key>
     </commands>
+
+    <!-- Keyboard shortcuts to select tools -->
     <tools>
       <key tool="rectangular_marquee" shortcut="M" />
       <key tool="elliptical_marquee" shortcut="M" />
