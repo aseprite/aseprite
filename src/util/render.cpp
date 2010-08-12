@@ -34,17 +34,22 @@ template<class DstTraits, class SrcTraits>
 class BlenderHelper
 {
   BLEND_COLOR m_blend_color;
+  ase_uint32 m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = SrcTraits::get_blender(blend_mode);
+    m_mask_color = src->mask_color;
   }
   inline void operator()(typename DstTraits::address_t& scanline_address,
 			 typename DstTraits::address_t& dst_address,
 			 typename SrcTraits::address_t& src_address,
 			 int opacity)
   {
-    *scanline_address = (*m_blend_color)(*dst_address, *src_address, opacity);
+    if (*src_address != m_mask_color)
+      *scanline_address = (*m_blend_color)(*dst_address, *src_address, opacity);
+    else
+      *scanline_address = *dst_address;
   }
 };
 
@@ -52,18 +57,24 @@ template<>
 class BlenderHelper<RgbTraits, GrayscaleTraits>
 {
   BLEND_COLOR m_blend_color;
+  ase_uint32 m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = RgbTraits::get_blender(blend_mode);
+    m_mask_color = src->mask_color;
   }
   inline void operator()(RgbTraits::address_t& scanline_address,
 			 RgbTraits::address_t& dst_address,
 			 GrayscaleTraits::address_t& src_address,
 			 int opacity)
   {
-    int v = _graya_getv(*src_address);
-    *scanline_address = (*m_blend_color)(*dst_address, _rgba(v, v, v, _graya_geta(*src_address)), opacity);
+    if (*src_address != m_mask_color) {
+      int v = _graya_getv(*src_address);
+      *scanline_address = (*m_blend_color)(*dst_address, _rgba(v, v, v, _graya_geta(*src_address)), opacity);
+    }
+    else
+      *scanline_address = *dst_address;
   }
 };
 
@@ -72,7 +83,7 @@ class BlenderHelper<RgbTraits, IndexedTraits>
 {
   const Palette* m_pal;
   int m_blend_mode;
-  int m_mask_color;
+  ase_uint32 m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {

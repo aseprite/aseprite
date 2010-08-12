@@ -144,6 +144,7 @@ public:
   virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode)
   {
     BLEND_COLOR blender = Traits::get_blender(blend_mode);
+    register int mask_color = src->mask_color;
     Image* dst = this;
     address_t src_address;
     address_t dst_address;
@@ -191,7 +192,8 @@ public:
       dst_address = ((ImageImpl<Traits>*)dst)->line_address(ydst)+xbeg;
 
       for (xdst=xbeg; xdst<=xend; xdst++) {
-	*dst_address = (*blender)(*dst_address, *src_address, opacity);
+	if (*src_address != mask_color)
+	  *dst_address = (*blender)(*dst_address, *src_address, opacity);
 
 	dst_address++;
 	src_address++;
