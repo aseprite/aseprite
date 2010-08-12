@@ -131,8 +131,12 @@ void Editor::editor_set_sprite(Sprite* sprite)
   if (this->hasMouse())
     jmanager_free_mouse();	// TODO Why is this here? Review this code
 
-  // The editor must be stand-by state
-  ASSERT(m_state == EDITOR_STATE_STANDBY);
+  // Do we need to drop files?
+  if (m_pixelsMovement)
+    dropPixels();
+
+  ASSERT(m_pixelsMovement == NULL && "You cannot change the current sprite while you are moving pixels");
+  ASSERT(m_state == EDITOR_STATE_STANDBY && "You can change the current sprite only in stand-by state");
 
   // Change the sprite
   m_sprite = sprite;
