@@ -410,7 +410,7 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
       int opacity_step = settings->getOnionskinOpacityStep();
 
       for (int f=frame-prevs; f <= frame+nexts; ++f) {
-	if (f == frame)
+	if (f == frame || f < 0 || f >= sprite->getTotalFrames())
 	  continue;
 	else if (f < frame)
 	  global_opacity = opacity_base - opacity_step * ((frame - f)-1);
