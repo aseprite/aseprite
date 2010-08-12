@@ -1054,7 +1054,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
     ASSERT(child->parent == fileitem);
   }
 
-  fileitem->insert_child_sorted(child);
+  fileitem->insertChildSorted(child);
 }
 
 static jstring remove_backslash_if_needed(const jstring& filename)
