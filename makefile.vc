@@ -43,18 +43,18 @@ LIBS = User32.lib Shell32.lib ComCtl32.lib ComDlg32.lib Gdi32.lib	    \
 
 ifdef DEBUGMODE
   ifdef STATIC_ALLEG_LINK
-    CFLAGS += -Zi -MTd -DDEBUGMODE -DALLEGRO_STATICLINK
+    CFLAGS += -Zi -Od -MTd -DDEBUGMODE -DALLEGRO_STATICLINK
     LFLAGS += -DEBUG
     LIBS += alleg-debug.lib psapi.lib
   else
-    CFLAGS += -Zi -MDd -DDEBUGMODE
+    CFLAGS += -Zi -Od -MDd -DDEBUGMODE
     LFLAGS += -DEBUG
     LIBS += alleg44-debug.lib psapi.lib
   endif
 else
   ifdef RELEASE
-    # Release with debug info
-    CFLAGS += -Zi -O2 -DNDEBUG
+    # Release without debug info
+    CFLAGS += -O2 -DNDEBUG
     LFLAGS += -RELEASE
 
     ifdef STATIC_ALLEG_LINK
