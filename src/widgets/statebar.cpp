@@ -529,8 +529,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
       }
       else {
 	// Status text for donations
-	app_get_statusbar()
-	  ->setStatusText(0, "Click the \"Donate\" button to support ASE development");
+	setStatusText(0, "Click the \"Donate\" button to support ASE development");
       }
       break;
     }
