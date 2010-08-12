@@ -139,19 +139,6 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	  // If it is visible, close it
 	  colorbutton_close_tooltip(widget);
 	}
-	// widget->captureMouse();
-	return true;
-      }
-      break;
-
-#if 0		    // Old behavior (MOUSEENTER popups color selector)
-
-    case JM_MOUSEENTER:
-      colorbutton_open_tooltip(widget);
-      break;
-
-    case JM_BUTTONPRESSED:
-      if (widget->hasCapture()) {
 	return true;
       }
       break;
@@ -163,7 +150,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 				      msg->mouse.y);
 	color_t color = colorbutton->color;
 
-	if (picked) {
+	if (picked && picked != widget) {
 	  /* pick a color from another color-button */
 	  if (picked->type == colorbutton_type()) {
 	    color = colorbutton_data(picked)->color;
@@ -177,17 +164,13 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	    Editor* editor = static_cast<Editor*>(picked);
 	    Sprite* sprite = editor->getSprite();
 	    int x, y, imgcolor;
-	    color_t tmp;
 
 	    if (sprite) {
 	      x = msg->mouse.x;
 	      y = msg->mouse.y;
 	      editor->screen_to_editor(x, y, &x, &y);
 	      imgcolor = sprite->getPixel(x, y);
-	      tmp = color_from_image(sprite->getImgType(), imgcolor);
-
-	      if (color_type(tmp) != COLOR_TYPE_MASK)
-		color = tmp;
+	      color = color_from_image(sprite->getImgType(), imgcolor);
 	    }
 	  }
 	}
@@ -197,14 +180,7 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	  colorbutton_set_color(widget, color);
 	  jwidget_emit_signal(widget, SIGNAL_COLORBUTTON_CHANGE);
 	}
-
-	return true;
       }
-      break;
-
-    case JM_BUTTONRELEASED:
-      if (widget->hasCapture())
-	widget->releaseMouse();
       break;
 
     case JM_SETCURSOR:
@@ -213,7 +189,6 @@ static bool colorbutton_msg_proc(JWidget widget, JMessage msg)
 	return true;
       }
       break;
-#endif
 
   }
 
