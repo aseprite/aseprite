@@ -46,6 +46,8 @@ public:
 
   Rect getImageBounds();
 
+  void setMaskColor(ase_uint32 mask_color);
+
 private:
   class PixelsMovementImpl* m_impl;
 };

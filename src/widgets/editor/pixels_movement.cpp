@@ -171,7 +171,22 @@ public:
   {
     Cel* cel = m_sprite_writer->getExtraCel();
     Image* image = m_sprite_writer->getExtraCelImage();
+
+    ASSERT(cel != NULL);
+    ASSERT(image != NULL);
+
     return Rect(cel->x, cel->y, image->w, image->h);
+  }
+
+  void setMaskColor(ase_uint32 mask_color)
+  {
+    Image* image = m_sprite_writer->getExtraCelImage();
+
+    ASSERT(image != NULL);
+
+    image->mask_color = mask_color;
+
+    update_screen_for_sprite(m_sprite_writer);
   }
 
 };
@@ -232,4 +247,9 @@ bool PixelsMovement::isDragging()
 Rect PixelsMovement::getImageBounds()
 {
   return m_impl->getImageBounds();
+}
+
+void PixelsMovement::setMaskColor(ase_uint32 mask_color)
+{
+  m_impl->setMaskColor(mask_color);
 }
