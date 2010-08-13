@@ -42,7 +42,7 @@
 #include "widgets/target.h"
 
 static JWidget button_color1, button_color2;
-static JWidget slider_fuzziness, check_preview;
+static JWidget slider_tolerance, check_preview;
 static JWidget preview;
 
 static bool color_change_hook(JWidget widget, void *data);
@@ -90,7 +90,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   get_widgets(window,
 	      "color_buttons_box", &color_buttons_box,
 	      "preview", &check_preview,
-	      "fuzziness", &slider_fuzziness,
+	      "tolerance", &slider_tolerance,
 	      "target", &box_target,
 	      "button_ok", &button_ok, NULL);
 
@@ -114,8 +114,8 @@ void ReplaceColorCommand::onExecute(Context* context)
   target_button = target_button_new(sprite->getImgType(), false);
   target_button_set_target(target_button, effect.target);
 
-  jslider_set_value(slider_fuzziness,
-		    get_config_int("ReplaceColor", "Fuzziness", 0));
+  jslider_set_value(slider_tolerance,
+		    get_config_int("ReplaceColor", "Tolerance", 0));
   if (get_config_bool("ReplaceColor", "Preview", true))
     check_preview->setSelected(true);
 
@@ -127,7 +127,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   HOOK(button_color1, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 1);
   HOOK(button_color2, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 2);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
+  HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
   HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
 
   /* default position */
@@ -174,7 +174,7 @@ static bool target_change_hook(JWidget widget, void *data)
 
 static bool slider_change_hook(JWidget widget, void *data)
 {
-  set_config_int("ReplaceColor", "Fuzziness", jslider_get_value(widget));
+  set_config_int("ReplaceColor", "Tolerance", jslider_get_value(widget));
   make_preview();
   return false;
 }
@@ -190,15 +190,15 @@ static void make_preview()
 {
   Sprite* sprite = preview_get_effect(preview)->sprite;
   color_t from, to;
-  int fuzziness;
+  int tolerance;
 
   from = get_config_color("ReplaceColor", "Color1", color_mask());
   to = get_config_color("ReplaceColor", "Color2", color_mask());
-  fuzziness = get_config_int("ReplaceColor", "Fuzziness", 0);
+  tolerance = get_config_int("ReplaceColor", "Tolerance", 0);
 
   set_replace_colors(get_color_for_layer(sprite->getCurrentLayer(), from),
 		     get_color_for_layer(sprite->getCurrentLayer(), to),
-		     MID(0, fuzziness, 255));
+		     MID(0, tolerance, 255));
 
   if (check_preview->isSelected())
     preview_restart(preview);

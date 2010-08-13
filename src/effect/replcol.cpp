@@ -24,14 +24,14 @@
 
 static struct {
   int from, to;
-  int fuzziness;
+  int tolerance;
 } data;
 
-void set_replace_colors(int from, int to, int fuzziness)
+void set_replace_colors(int from, int to, int tolerance)
 {
   data.from = from;
   data.to = to;
-  data.fuzziness = MID(0, fuzziness, 255);
+  data.tolerance = MID(0, tolerance, 255);
 }
 
 void apply_replace_color4(Effect *effect)
@@ -69,10 +69,10 @@ void apply_replace_color4(Effect *effect)
     src_b = _rgba_getb(c);
     src_a = _rgba_geta(c);
 
-    if ((src_r >= dst_r-data.fuzziness) && (src_r <= dst_r+data.fuzziness) &&
-        (src_g >= dst_g-data.fuzziness) && (src_g <= dst_g+data.fuzziness) &&
-        (src_b >= dst_b-data.fuzziness) && (src_b <= dst_b+data.fuzziness) &&
-        (src_a >= dst_a-data.fuzziness) && (src_a <= dst_a+data.fuzziness))
+    if ((ABS(src_r-dst_r) <= data.tolerance) &&
+        (ABS(src_g-dst_g) <= data.tolerance) &&
+        (ABS(src_b-dst_b) <= data.tolerance) &&
+        (ABS(src_a-dst_a) <= data.tolerance))
       *(dst_address++) = data.to;
     else
       *(dst_address++) = c;
@@ -110,8 +110,8 @@ void apply_replace_color2(Effect *effect)
     src_k = _graya_getv(c);
     src_a = _graya_geta(c);
 
-    if ((src_k >= dst_k-data.fuzziness) && (src_k <= dst_k+data.fuzziness) &&
-        (src_a >= dst_a-data.fuzziness) && (src_a <= dst_a+data.fuzziness))
+    if ((ABS(src_k-dst_k) <= data.tolerance) &&
+        (ABS(src_a-dst_a) <= data.tolerance))
       *(dst_address++) = data.to;
     else
       *(dst_address++) = c;
@@ -141,7 +141,7 @@ void apply_replace_color1(Effect *effect)
 
     c = *(src_address++);
 
-    if ((c >= data.from-data.fuzziness) && (c <= data.from+data.fuzziness))
+    if (ABS(c-data.from) <= data.tolerance)
       *(dst_address++) = data.to;
     else
       *(dst_address++) = c;

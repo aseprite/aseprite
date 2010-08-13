@@ -11,8 +11,8 @@
         </box>
         <box vertical="true" homogeneous="true" expansive="true" name="color_buttons_box" />
       </box>
-      <label text="Fuzziness:" />
-      <slider min="0" max="255" name="fuzziness" />
+      <label text="Tolerance:" />
+      <slider min="0" max="255" name="tolerance" />
     </box>
     <box vertical="true">
       <button text="&amp;OK" name="button_ok" magnetic="true" />

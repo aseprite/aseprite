@@ -21,7 +21,7 @@
 
 struct Effect;
 
-void set_replace_colors(int from, int to, int fuzziness);
+void set_replace_colors(int from, int to, int tolerance);
 
 void apply_replace_color4(struct Effect *effect);
 void apply_replace_color2(struct Effect *effect);
