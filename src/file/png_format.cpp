@@ -209,7 +209,7 @@ static bool load_PNG(FileOp *fop)
   for (pass = 0; pass < number_passes; pass++) {
     for (y = 0; y < height; y++) {
       /* read the line */
-      png_read_row(png_ptr, row_pointer, png_bytepp_NULL);
+      png_read_row(png_ptr, row_pointer, (png_byte*)NULL);
 
       /* RGB_ALPHA */
       if (info_ptr->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
