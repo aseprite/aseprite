@@ -72,6 +72,8 @@ public:
 class FloodFillPointShape : public ToolPointShape
 {
 public:
+  bool isFloodFill() { return true; }
+
   void transformPoint(IToolLoop* loop, int x, int y)
   {
     algo_floodfill(loop->getSrcImage(), x, y, loop->getTolerance(), loop, (AlgoHLine)doInkHline);

@@ -122,6 +122,7 @@ class ToolPointShape
   // none, pixel, pen, floodfill, spray
 public:
   virtual ~ToolPointShape() { }
+  virtual bool isFloodFill() { return false; }
   virtual bool isSpray() { return false; }
   virtual void transformPoint(IToolLoop* loop, int x, int y) = 0;
   virtual void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area) = 0;

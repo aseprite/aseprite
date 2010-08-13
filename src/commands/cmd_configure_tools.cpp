@@ -98,7 +98,9 @@ static void on_current_tool_change()
   Widget* brush_angle = window->findChild("brush_angle");
   Widget* brush_type = window->findChild("brush_type");
   Widget* brush_preview = window->findChild("brush_preview");
+  Widget* opacity_label = window->findChild("opacity_label");
   Widget* opacity = window->findChild("opacity");
+  Widget* tolerance_label = window->findChild("tolerance_label");
   Widget* tolerance = window->findChild("tolerance");
   Widget* spray_box = window->findChild("spray_box");
   Widget* spray_width = window->findChild("spray_width");
@@ -125,18 +127,30 @@ static void on_current_tool_change()
   // Regenerate the preview
   brush_preview->dirty();
 
+  // True if the current tool needs opacity options
+  bool hasOpacity = (current_tool->getInk(0)->isPaint() ||
+		     current_tool->getInk(0)->isEffect() ||
+		     current_tool->getInk(1)->isPaint() ||
+		     current_tool->getInk(1)->isEffect());
+
+  // True if the current tool needs tolerance options
+  bool hasTolerance = (current_tool->getPointShape(0)->isFloodFill() ||
+		       current_tool->getPointShape(1)->isFloodFill());
+
   // True if the current tool needs spray options
   bool hasSprayOptions = (current_tool->getPointShape(0)->isSpray() ||
 			  current_tool->getPointShape(1)->isSpray());
 
-  // Show/Hide spray settings
+  // Show/Hide parameters
+  opacity_label->setVisible(hasOpacity);
+  opacity->setVisible(hasOpacity);
+  tolerance_label->setVisible(hasTolerance);
+  tolerance->setVisible(hasTolerance);
   spray_box->setVisible(hasSprayOptions);
 
   // Get the required size of the whole window
   Size reqSize = window->getPreferredSize();
-
-  // Set the window height
-  if (jrect_h(window->rc) != reqSize.h) {
+  if (jrect_h(window->rc) != reqSize.h) { // Setup the correct window height
     JRect rect = jrect_new(window->rc->x1, window->rc->y1,
 			   window->rc->x2, window->rc->y1 + reqSize.h);
 
