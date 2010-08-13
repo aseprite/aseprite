@@ -378,7 +378,8 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
 
     case IMAGE_INDEXED:
       zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
-      bg_color = sprite->getPalette(frame)->getEntry(0);
+      if (!need_checked_bg)
+	bg_color = sprite->getPalette(frame)->getEntry(0);
       break;
 
     default:
