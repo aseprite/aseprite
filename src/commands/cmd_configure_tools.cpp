@@ -150,9 +150,12 @@ static void on_current_tool_change()
 
   // Get the required size of the whole window
   Size reqSize = window->getPreferredSize();
-  if (jrect_h(window->rc) != reqSize.h) { // Setup the correct window height
+  if (jrect_w(window->rc) < reqSize.w ||
+      jrect_h(window->rc) != reqSize.h) {
     JRect rect = jrect_new(window->rc->x1, window->rc->y1,
-			   window->rc->x2, window->rc->y1 + reqSize.h);
+			   (jrect_w(window->rc) < reqSize.w) ? window->rc->x1 + reqSize.w: 
+							       window->rc->x2,
+			   window->rc->y1 + reqSize.h);
 
     // Show the expanded area inside the screen
     if (rect->y2 > JI_SCREEN_H)
