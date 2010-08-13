@@ -363,6 +363,7 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = sprite->getBackgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->is_readable(): true);
+  ase_uint32 bg_color = 0;
   Image *image;
 
   switch (sprite->getImgType()) {
@@ -377,6 +378,7 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
 
     case IMAGE_INDEXED:
       zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
+      bg_color = sprite->getPalette(frame)->getEntry(0);
       break;
 
     default:
@@ -392,7 +394,7 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
   if (need_checked_bg && draw_tiled_bg)
     renderCheckedBackground(image, source_x, source_y, zoom);
   else
-    image_clear(image, 0);
+    image_clear(image, bg_color);
 
   // Onion-skin feature: draw the previous frame
   ISettings* settings = UIContext::instance()->getSettings();
