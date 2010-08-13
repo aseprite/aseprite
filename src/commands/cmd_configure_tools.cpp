@@ -22,6 +22,7 @@
 
 #include "jinete/jinete.h"
 #include "Vaca/Bind.h"
+#include "Vaca/Size.h"
 
 #include "app.h"
 #include "commands/command.h"
@@ -37,10 +38,13 @@
 #include "settings/settings.h"
 #include "sprite_wrappers.h"
 #include "ui_context.h"
+#include "tools/tool.h"
 #include "widgets/colbut.h"
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
+
+using Vaca::Size;
 
 static Frame* window = NULL;
 
@@ -96,6 +100,7 @@ static void on_current_tool_change()
   Widget* brush_preview = window->findChild("brush_preview");
   Widget* opacity = window->findChild("opacity");
   Widget* tolerance = window->findChild("tolerance");
+  Widget* spray_box = window->findChild("spray_box");
   Widget* spray_width = window->findChild("spray_width");
   Widget* air_speed = window->findChild("air_speed");
 
@@ -114,10 +119,39 @@ static void on_current_tool_change()
   jslider_set_value(spray_width, tool_settings->getSprayWidth());
   jslider_set_value(air_speed, tool_settings->getSpraySpeed());
 
+  // Select the brush type
   group_button_select(brush_type, tool_settings->getPen()->getType());
 
   // Regenerate the preview
   brush_preview->dirty();
+
+  // True if the current tool needs spray options
+  bool hasSprayOptions = (current_tool->getPointShape(0)->isSpray() ||
+			  current_tool->getPointShape(1)->isSpray());
+
+  // Show/Hide spray settings
+  spray_box->setVisible(hasSprayOptions);
+
+  // Get the required size of the whole window
+  Size reqSize = window->getPreferredSize();
+
+  // Set the window height
+  if (jrect_h(window->rc) != reqSize.h) {
+    JRect rect = jrect_new(window->rc->x1, window->rc->y1,
+			   window->rc->x2, window->rc->y1 + reqSize.h);
+
+    // Show the expanded area inside the screen
+    if (rect->y2 > JI_SCREEN_H)
+      jrect_displace(rect, 0, JI_SCREEN_H - rect->y2);
+      
+    window->move_window(rect);
+    jrect_free(rect);
+  }
+  else
+    window->setBounds(window->getBounds()); // TODO layout() method is missing
+
+  // Redraw the window
+  window->dirty();
 }
 
 //////////////////////////////////////////////////////////////////////

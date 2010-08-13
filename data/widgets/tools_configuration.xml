@@ -40,15 +40,17 @@
 	  </grid>
 	  <box name="brush_preview_box" /><!-- custom widget -->
         </box>
-        <separator text="Spray:" horizontal="true" left="true" />
-	<box horizontal="true">
-	  <box vertical="true" homogeneous="true" childspacing="0">
-	    <label text="Spray Width:" />
-	    <label text="Air Speed:" />
-	  </box>
-	  <box vertical="true" homogeneous="true" expansive="true" childspacing="0">
-	    <slider min="1" max="32" name="spray_width" />
-	    <slider min="1" max="100" name="air_speed" />
+	<box vertical="true" name="spray_box">
+	  <separator text="Spray:" horizontal="true" left="true" />
+	  <box horizontal="true">
+	    <box vertical="true" homogeneous="true" childspacing="0">
+	      <label text="Spray Width:" />
+	      <label text="Air Speed:" />
+	    </box>
+	    <box vertical="true" homogeneous="true" expansive="true" childspacing="0">
+	      <slider min="1" max="32" name="spray_width" />
+	      <slider min="1" max="100" name="air_speed" />
+	    </box>
 	  </box>
 	</box>
       </box>
