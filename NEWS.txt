@@ -2,6 +2,16 @@
 NEWS
 ===================================
 
+0.8.1 beta
+----------
+
++ Improved "Tools Configuration" dialog to show only necessary options
+  for the current tool.
++ Added "Tolerance" parameter to Magic Wand and Paint Bucket (Trent
+  Gamblin idea).
++ Critical problem rendering indexed images with a non-black color in
+  palette entry 0.
+
 0.8.0 beta
 ----------
 
