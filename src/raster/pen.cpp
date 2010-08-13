@@ -135,7 +135,7 @@ void Pen::regenerate_pen()
       image_line(m_image, r+x3, r+y3, r+x4, r+y4, 1);
       image_line(m_image, r+x4, r+y4, r+x1, r+y1, 1);
 
-      algo_floodfill(m_image, r, r, m_image, algo_hline);
+      algo_floodfill(m_image, r, r, 0, m_image, algo_hline);
       break;
     }
 

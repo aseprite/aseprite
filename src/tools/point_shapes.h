@@ -74,7 +74,7 @@ class FloodFillPointShape : public ToolPointShape
 public:
   void transformPoint(IToolLoop* loop, int x, int y)
   {
-    algo_floodfill(loop->getSrcImage(), x, y, loop, (AlgoHLine)doInkHline);
+    algo_floodfill(loop->getSrcImage(), x, y, loop->getTolerance(), loop, (AlgoHLine)doInkHline);
   }
   void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area)
   {

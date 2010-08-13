@@ -1784,6 +1784,7 @@ class ToolLoopImpl : public IToolLoop
   Mask* m_mask;
   Point m_maskOrigin;
   int m_opacity;
+  int m_tolerance;
   Point m_offset;
   Point m_speed;
   bool m_canceled;
@@ -1888,6 +1889,7 @@ public:
 					  Point(0, 0));
 
     m_opacity = settings->getToolSettings(m_tool)->getOpacity();
+    m_tolerance = settings->getToolSettings(m_tool)->getTolerance();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -2032,6 +2034,7 @@ public:
   int getSecondaryColor() { return m_secondary_color; }
   void setSecondaryColor(int color) { m_secondary_color = color; }
   int getOpacity() { return m_opacity; }
+  int getTolerance() { return m_tolerance; }
   TiledMode getTiledMode() { return m_tiled_mode; }
   bool getFilled() { return m_filled; }
   bool getPreviewFilled() { return m_previewFilled; }

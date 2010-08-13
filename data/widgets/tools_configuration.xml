@@ -31,8 +31,11 @@
             <label text="Angle:" />
             <slider min="0" max="180" name="brush_angle" cell_align="horizontal" />
 
-            <label text="Opacity:" />
+            <label text="Opacity:" name="opacity_label" />
 	    <slider min="0" max="255" name="opacity" cell_align="horizontal" />
+
+            <label text="Tolerance:" name="tolerance_label" />
+	    <slider min="0" max="255" name="tolerance" cell_align="horizontal" />
 
 	  </grid>
 	  <box name="brush_preview_box" /><!-- custom widget -->

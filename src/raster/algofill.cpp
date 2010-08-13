@@ -48,19 +48,54 @@ static int flood_count;          /* number of flooded segments */
 
 #define FLOOD_LINE(c)            (((FLOODED_LINE *)_scratch_mem) + c)
 
-static inline bool color_equal_32(ase_uint32 c1, ase_uint32 c2)
+static inline bool color_equal_32(ase_uint32 c1, ase_uint32 c2, int tolerance)
 {
-  return (c1 == c2) || (_rgba_geta(c1) == 0 && _rgba_geta(c2) == 0);
+  if (tolerance == 0)
+    return (c1 == c2) || (_rgba_geta(c1) == 0 && _rgba_geta(c2) == 0);
+  else {
+    int r1 = _rgba_getr(c1);
+    int g1 = _rgba_getg(c1);
+    int b1 = _rgba_getb(c1);
+    int a1 = _rgba_geta(c1);
+    int r2 = _rgba_getr(c2);
+    int g2 = _rgba_getg(c2);
+    int b2 = _rgba_getb(c2);
+    int a2 = _rgba_geta(c2);
+
+    if (a1 == 0 && a2 == 0)
+      return true;
+
+    return ((ABS(r1-r2) <= tolerance) &&
+	    (ABS(g1-g2) <= tolerance) &&
+	    (ABS(b1-b2) <= tolerance) &&
+	    (ABS(a1-a2) <= tolerance));
+  }
 }
 
-static inline bool color_equal_16(ase_uint16 c1, ase_uint16 c2)
+static inline bool color_equal_16(ase_uint16 c1, ase_uint16 c2, int tolerance)
 {
-  return (c1 == c2) || (_graya_geta(c1) == 0 && _graya_geta(c2) == 0);
+  if (tolerance == 0)
+    return (c1 == c2) || (_graya_geta(c1) == 0 && _graya_geta(c2) == 0);
+  else {
+    int k1 = _graya_getv(c1);
+    int a1 = _graya_geta(c1);
+    int k2 = _graya_getv(c2);
+    int a2 = _graya_geta(c2);
+
+    if (a1 == 0 && a2 == 0)
+      return true;
+
+    return ((ABS(k1-k2) <= tolerance) &&
+	    (ABS(a1-a2) <= tolerance));
+  }
 }
 
-static inline bool color_equal_8(ase_uint8 c1, ase_uint8 c2)
+static inline bool color_equal_8(ase_uint8 c1, ase_uint8 c2, int tolerance)
 {
-  return (c1 == c2);
+  if (tolerance == 0)
+    return (c1 == c2);
+  else
+    return ABS(c1-c2) <= tolerance;
 }
 
 
@@ -71,7 +106,7 @@ static inline bool color_equal_8(ase_uint8 c1, ase_uint8 c2)
  *  the part of the line which it has dealt with.
  */
 static int flooder (Image *image, int x, int y,
-		    int src_color, void *data, AlgoHLine proc)
+		    int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   FLOODED_LINE *p;
   int left = 0, right = 0;
@@ -84,18 +119,18 @@ static int flooder (Image *image, int x, int y,
         ase_uint32 *address = ((ase_uint32 **)image->line)[y];
 
         /* check start pixel */
-        if (!color_equal_32((int)*(address+x), src_color))
+        if (!color_equal_32((int)*(address+x), src_color, tolerance))
           return x+1;
 
         /* work left from starting point */
         for (left=x-1; left>=0; left--) {
-          if (!color_equal_32((int)*(address+left), src_color))
+          if (!color_equal_32((int)*(address+left), src_color, tolerance))
             break;
         }
 
         /* work right from starting point */
         for (right=x+1; right<image->w; right++) {
-          if (!color_equal_32((int)*(address+right), src_color))
+          if (!color_equal_32((int)*(address+right), src_color, tolerance))
             break;
         }
       }
@@ -106,18 +141,18 @@ static int flooder (Image *image, int x, int y,
         ase_uint16 *address = ((ase_uint16 **)image->line)[y];
 
         /* check start pixel */
-        if (!color_equal_16((int)*(address+x), src_color))
+        if (!color_equal_16((int)*(address+x), src_color, tolerance))
           return x+1;
 
         /* work left from starting point */
         for (left=x-1; left>=0; left--) {
-          if (!color_equal_16((int)*(address+left), src_color))
+          if (!color_equal_16((int)*(address+left), src_color, tolerance))
             break;
         }
 
         /* work right from starting point */
         for (right=x+1; right<image->w; right++) {
-          if (!color_equal_16((int)*(address+right), src_color))
+          if (!color_equal_16((int)*(address+right), src_color, tolerance))
             break;
         }
       }
@@ -128,18 +163,18 @@ static int flooder (Image *image, int x, int y,
         ase_uint8 *address = ((ase_uint8 **)image->line)[y];
 
         /* check start pixel */
-        if (!color_equal_8((int)*(address+x), src_color))
+        if (!color_equal_8((int)*(address+x), src_color, tolerance))
           return x+1;
 
         /* work left from starting point */
         for (left=x-1; left>=0; left--) {
-          if (!color_equal_8((int)*(address+left), src_color))
+          if (!color_equal_8((int)*(address+left), src_color, tolerance))
             break;
         }
 
         /* work right from starting point */
         for (right=x+1; right<image->w; right++) {
-          if (!color_equal_8((int)*(address+right), src_color))
+          if (!color_equal_8((int)*(address+right), src_color, tolerance))
             break;
         }
       }
@@ -207,8 +242,8 @@ static int flooder (Image *image, int x, int y,
  *  segments which have already been drawn in order to minimise the required
  *  number of tests.
  */
-static int check_flood_line(Image *image, int y, int left, int right,
-			    int src_color, void *data, AlgoHLine proc)
+static int check_flood_line(Image* image, int y, int left, int right,
+			    int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   int c;
   FLOODED_LINE *p;
@@ -228,7 +263,7 @@ static int check_flood_line(Image *image, int y, int left, int right,
       c = p->next;
 
       if (!c) {
-        left = flooder (image, left, y, src_color, data, proc);
+        left = flooder (image, left, y, src_color, tolerance, data, proc);
         ret = true;
         break;
       }
@@ -243,7 +278,7 @@ static int check_flood_line(Image *image, int y, int left, int right,
 /* floodfill:
  *  Fills an enclosed area (starting at point x, y) with the specified color.
  */
-void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
+void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoHLine proc)
 {
   int src_color;
   int c, done;
@@ -270,7 +305,7 @@ void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
   }
 
   /* start up the flood algorithm */
-  flooder(image, x, y, src_color, data, proc);
+  flooder(image, x, y, src_color, tolerance, data, proc);
 
   /* continue as long as there are some segments still to test */
   do {
@@ -285,7 +320,7 @@ void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
       if (p->flags & FLOOD_TODO_BELOW) {
         p->flags &= ~FLOOD_TODO_BELOW;
         if (check_flood_line(image, p->y+1, p->lpos, p->rpos,
-			     src_color, data, proc)) {
+			     src_color, tolerance, data, proc)) {
           done = false;
           p = FLOOD_LINE(c);
         }
@@ -295,7 +330,7 @@ void algo_floodfill(Image *image, int x, int y, void *data, AlgoHLine proc)
       if (p->flags & FLOOD_TODO_ABOVE) {
         p->flags &= ~FLOOD_TODO_ABOVE;
         if (check_flood_line(image, p->y-1, p->lpos, p->rpos,
-			     src_color, data, proc)) {
+			     src_color, tolerance, data, proc)) {
           done = false;
           /* special case shortcut for going backwards */
           if ((c < image->h) && (c > 0))

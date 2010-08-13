@@ -311,6 +311,7 @@ class UIToolSettingsImpl : public IToolSettings
   Tool* m_tool;
   UIPenSettingsImpl m_pen;
   int m_opacity;
+  int m_tolerance;
   bool m_filled;
   bool m_previewFilled;
   int m_spray_width;
@@ -325,6 +326,8 @@ public:
 
     m_opacity = get_config_int(cfg_section.c_str(), "Opacity", 255);
     m_opacity = MID(0, m_opacity, 255);
+    m_tolerance = get_config_int(cfg_section.c_str(), "Tolerance", 0);
+    m_tolerance = MID(0, m_tolerance, 255);
     m_filled = false;
     m_previewFilled = get_config_bool(cfg_section.c_str(), "PreviewFilled", false);
     m_spray_width = 16;
@@ -348,6 +351,7 @@ public:
     std::string cfg_section(getCfgSection());
 
     set_config_int(cfg_section.c_str(), "Opacity", m_opacity);
+    set_config_int(cfg_section.c_str(), "Tolerance", m_tolerance);
     set_config_int(cfg_section.c_str(), "PenType", m_pen.getType());
     set_config_int(cfg_section.c_str(), "PenSize", m_pen.getSize());
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
@@ -364,12 +368,14 @@ public:
   IPenSettings* getPen() { return &m_pen; }
 
   int getOpacity() { return m_opacity; }
+  int getTolerance() { return m_tolerance; }
   bool getFilled() { return m_filled; }
   bool getPreviewFilled() { return m_previewFilled; }
   int getSprayWidth() { return m_spray_width; }
   int getSpraySpeed() { return m_spray_speed; }
 
   void setOpacity(int opacity) { m_opacity = opacity; }
+  void setTolerance(int tolerance) { m_tolerance = tolerance; }
   void setFilled(bool state) { m_filled = state; }
   void setPreviewFilled(bool state) { m_previewFilled = state; }
   void setSprayWidth(int width) { m_spray_width = width; }

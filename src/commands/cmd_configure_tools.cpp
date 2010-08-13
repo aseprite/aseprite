@@ -51,6 +51,7 @@ static bool brush_size_slider_change_hook(JWidget widget, void *data);
 static bool brush_angle_slider_change_hook(JWidget widget, void *data);
 static bool brush_type_change_hook(JWidget widget, void *data);
 static bool opacity_slider_change_hook(JWidget widget, void *data);
+static bool tolerance_slider_change_hook(JWidget widget, void *data);
 static bool spray_width_slider_change_hook(JWidget widget, void *data);
 static bool air_speed_slider_change_hook(JWidget widget, void *data);
 static bool tiled_check_change_hook(JWidget widget, void *data);
@@ -94,6 +95,7 @@ static void on_current_tool_change()
   Widget* brush_type = window->findChild("brush_type");
   Widget* brush_preview = window->findChild("brush_preview");
   Widget* opacity = window->findChild("opacity");
+  Widget* tolerance = window->findChild("tolerance");
   Widget* spray_width = window->findChild("spray_width");
   Widget* air_speed = window->findChild("air_speed");
 
@@ -106,6 +108,7 @@ static void on_current_tool_change()
     ->getToolSettings(current_tool);
 
   jslider_set_value(opacity, tool_settings->getOpacity());
+  jslider_set_value(tolerance, tool_settings->getTolerance());
   jslider_set_value(brush_size, tool_settings->getPen()->getSize());
   jslider_set_value(brush_angle, tool_settings->getPen()->getAngle());
   jslider_set_value(spray_width, tool_settings->getSprayWidth());
@@ -139,7 +142,7 @@ ConfigureTools::ConfigureTools()
 void ConfigureTools::onExecute(Context* context)
 {
   JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, pixel_grid, set_grid;
-  JWidget brush_size, brush_angle, opacity;
+  JWidget brush_size, brush_angle, opacity, tolerance;
   JWidget spray_width, air_speed;
   JWidget brush_preview_box;
   JWidget brush_type_box, brush_type;
@@ -169,6 +172,7 @@ void ConfigureTools::onExecute(Context* context)
 		"brush_size", &brush_size,
 		"brush_angle", &brush_angle,
 		"opacity", &opacity,
+		"tolerance", &tolerance,
 		"spray_width", &spray_width,
 		"air_speed", &air_speed,
 		"brush_preview_box", &brush_preview_box,
@@ -244,6 +248,7 @@ void ConfigureTools::onExecute(Context* context)
     HOOK(brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
     HOOK(brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
     HOOK(opacity, JI_SIGNAL_SLIDER_CHANGE, opacity_slider_change_hook, 0);
+    HOOK(tolerance, JI_SIGNAL_SLIDER_CHANGE, tolerance_slider_change_hook, 0);
     HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
     HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
@@ -379,6 +384,14 @@ static bool opacity_slider_change_hook(JWidget widget, void *data)
   ISettings* settings = UIContext::instance()->getSettings();
   Tool* current_tool = settings->getCurrentTool();
   settings->getToolSettings(current_tool)->setOpacity(jslider_get_value(widget));
+  return false;
+}
+
+static bool tolerance_slider_change_hook(JWidget widget, void *data)
+{
+  ISettings* settings = UIContext::instance()->getSettings();
+  Tool* current_tool = settings->getCurrentTool();
+  settings->getToolSettings(current_tool)->setTolerance(jslider_get_value(widget));
   return false;
 }
 

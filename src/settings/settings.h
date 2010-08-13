@@ -97,12 +97,14 @@ public:
   virtual IPenSettings* getPen() = 0;
 
   virtual int getOpacity() = 0;
+  virtual int getTolerance() = 0;
   virtual bool getFilled() = 0;
   virtual bool getPreviewFilled() = 0;
   virtual int getSprayWidth() = 0;
   virtual int getSpraySpeed() = 0;
 
   virtual void setOpacity(int opacity) = 0;
+  virtual void setTolerance(int tolerance) = 0;
   virtual void setFilled(bool state) = 0;
   virtual void setSprayWidth(int width) = 0;
   virtual void setSpraySpeed(int speed) = 0;

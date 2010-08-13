@@ -42,7 +42,7 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
 			   double x2, double y2, double x3, double y3,
 			   double in_x);
 
-void algo_floodfill(Image* image, int x, int y, void* data, AlgoHLine proc);
+void algo_floodfill(Image* image, int x, int y, int tolerance, void* data, AlgoHLine proc);
 
 void algo_polygon(int vertices, const int* points, void* data, AlgoHLine proc);
 
