@@ -664,6 +664,8 @@ void Editor::controlInfiniteScroll(JMessage msg)
 
 void Editor::dropPixels()
 {
+  ASSERT(m_pixelsMovement != NULL);
+
   if (m_pixelsMovement->isDragging())
     m_pixelsMovement->dropImageTemporarily();
 
@@ -768,6 +770,8 @@ void Editor::editor_update_statusbar_for_standby()
 // Update status bar for when the user is dragging pixels
 void Editor::editor_update_statusbar_for_pixel_movement()
 {
+  ASSERT(m_pixelsMovement != NULL);
+
   Rect bounds = m_pixelsMovement->getImageBounds();
   app_get_statusbar()->setStatusText
     (100, "Pos %d %d, Size %d %d",
