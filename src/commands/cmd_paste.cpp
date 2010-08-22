@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "commands/command.h"
+#include "raster/layer.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/clipboard.h"
@@ -50,16 +51,15 @@ bool PasteCommand::onEnabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
+    sprite->getCurrentLayer() &&
+    sprite->getCurrentLayer()->is_image() &&
+    sprite->getCurrentLayer()->is_writable() &&
     clipboard::can_paste();
 }
 
 void PasteCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-
-  if (undo_is_enabled(sprite->getUndo()))
-    undo_set_label(sprite->getUndo(), "Paste");
-
   clipboard::paste(sprite);
 }
 

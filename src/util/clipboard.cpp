@@ -189,6 +189,7 @@ void clipboard::copy_image(Image* image, Palette* pal)
 
 void clipboard::paste(SpriteWriter& sprite)
 {
+  Undoable undoable(sprite, "Paste");
   int xout[4], yout[4];
   int dst_x, dst_y;
   Image *src_image;
@@ -209,15 +210,36 @@ void clipboard::paste(SpriteWriter& sprite)
 
   ASSERT(sprite != NULL);
 
-  // destination image (where to put this image)
+  // Destination image (where to put this image)
   dst_image = sprite->getCurrentImage(&dst_x, &dst_y);
   if (!dst_image) {
-    Console console;
-    console.printf(_("Error: no destination image\n"));
-    return;
+    // We don't have an image to paste the clipboard content,
+    // here we create the cel/image to draw on it
+
+    LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getCurrentLayer());
+    ASSERT(layer != NULL);
+
+    // Create the image for the cel (of a size equal to the entire sprite size)
+    dst_image = image_new(sprite->getImgType(), sprite->getWidth(), sprite->getHeight());
+    image_clear(dst_image, 0);
+
+    // Add the new image in the stock
+    int dst_image_index = stock_add_image(sprite->getStock(), dst_image);
+    if (undo_is_enabled(sprite->getUndo()))
+      undo_add_image(sprite->getUndo(), sprite->getStock(), dst_image_index);
+
+    // Create the new cel in the current frame with the recently
+    // created image
+    Cel* cel = cel_new(sprite->getCurrentFrame(), dst_image_index);
+
+    // Add the cel to the layer
+    undoable.add_cel(layer, cel);
+
+    // Default destination position
+    dst_x = dst_y = 0;
   }
 
-  // source image (clipboard or a converted copy to the destination 'imgtype')
+  // Source image (clipboard or a converted copy to the destination 'imgtype')
   if (clipboard_image->imgtype == sprite->getImgType())
     src_image = clipboard_image;
   else {
@@ -226,7 +248,7 @@ void clipboard::paste(SpriteWriter& sprite)
 				  rgbmap, sprite->getPalette(sprite->getCurrentFrame()));
   }
 
-  // do the interactive-transform loop (where the user can move the floating image)
+  // Do the interactive-transform loop (where the user can move the floating image)
   {
     JWidget view = jwidget_get_view(current_editor);
     JRect vp = jview_get_viewport_position(view);
@@ -271,6 +293,9 @@ void clipboard::paste(SpriteWriter& sprite)
 			  xout[0], yout[0], xout[1], yout[1],
 			  xout[2], yout[2], xout[3], yout[3]);
     }
+
+    // Commit the "paste" operation
+    undoable.commit();
   }
 
   if (src_image != clipboard_image)
