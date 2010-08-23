@@ -44,7 +44,6 @@
 #include "jinete/jentry.h"
 #include "jinete/jexception.h"
 #include "jinete/jfile.h"
-#include "jinete/jfilesel.h"
 #include "jinete/jfont.h"
 #include "jinete/jgrid.h"
 #include "jinete/jhook.h"

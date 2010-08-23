@@ -140,7 +140,6 @@ COMMON_SOURCES =					\
 	src/jinete/jentry.cpp				\
 	src/jinete/jexception.cpp			\
 	src/jinete/jfile.cpp				\
-	src/jinete/jfilesel.cpp				\
 	src/jinete/jfont.cpp				\
 	src/jinete/jfontbmp.cpp				\
 	src/jinete/jgrid.cpp				\

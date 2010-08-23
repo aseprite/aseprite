@@ -89,7 +89,7 @@ Low priority stuff
   various sizes have errors).
 - optimize the *_to_allegro image methods (I profiled ASE, and these
   are the more slow routines in all the program);
-- remove the jfilesel.c & jquickmenu.c
+- remove the jquickmenu.c
 - move src/jinete/jfile.cpp to src/xml_widgets.cc (jfile is specific to ASE, not Jinete)
 - fix Jinete examples:
   + 05fsel

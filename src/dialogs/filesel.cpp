@@ -75,6 +75,22 @@ static void on_exit_delete_navigation_history()
   jlist_free(navigation_history);
 }
 
+static bool dir_exists(const char *filename)
+{
+  struct al_ffblk info;
+  char buf[1024];
+  int ret;
+
+  ustrcpy(buf, filename);
+  put_backslash(buf);
+  ustrcat(buf, "*.*");
+
+  ret = al_findfirst(buf, &info, FA_ALL);
+  al_findclose(&info);
+
+  return (ret == 0);
+}
+
 /**
  * Shows the dialog to select a file in ASE.
  * 
@@ -112,7 +128,7 @@ jstring ase_file_selector(const jstring& message,
     // is the folder find?
     if (!start_folder) {
       // if the `path' doesn't exist...
-      if (path.empty() || (!ji_dir_exists(path.c_str()))) {
+      if (path.empty() || (!dir_exists(path.c_str()))) {
 	// we can get the current `path' from the system
 #ifdef HAVE_DRIVES
 	int drive = _al_getdrive();

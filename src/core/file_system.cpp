@@ -55,7 +55,6 @@
   #include <shlwapi.h>
 #endif
 
-#include "jinete/jfilesel.h"
 #include "jinete/jstring.h"
 
 #include "core/file_system.h"

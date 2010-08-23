@@ -162,7 +162,6 @@ add_executable(aseprite WIN32
   jinete/jentry.cpp
   jinete/jexception.cpp
   jinete/jfile.cpp
-  jinete/jfilesel.cpp
   jinete/jfont.cpp
   jinete/jfontbmp.cpp
   jinete/jgrid.cpp
