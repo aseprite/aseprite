@@ -31,7 +31,7 @@
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "widgets/colsel.h"
+#include "widgets/color_selector.h"
 #include "widgets/paledit.h"
 
 enum {

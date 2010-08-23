@@ -217,7 +217,7 @@ COMMON_SOURCES =					\
 	src/util/thmbnail.cpp				\
 	src/widgets/color_bar.cpp			\
 	src/widgets/colbut.cpp				\
-	src/widgets/colsel.cpp				\
+	src/widgets/color_selector.cpp			\
 	src/widgets/colview.cpp				\
 	src/widgets/curvedit.cpp			\
 	src/widgets/editor/click.cpp			\

@@ -29,7 +29,7 @@
 #include "raster/sprite.h"
 #include "widgets/color_bar.h"
 #include "widgets/colbut.h"
-#include "widgets/colsel.h"
+#include "widgets/color_selector.h"
 #include "widgets/editor.h"
 
 static bool tooltip_window_msg_proc(JWidget widget, JMessage msg);

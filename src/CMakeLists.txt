@@ -239,7 +239,7 @@ add_executable(aseprite WIN32
   util/thmbnail.cpp
   widgets/color_bar.cpp
   widgets/colbut.cpp
-  widgets/colsel.cpp
+  widgets/color_selector.cpp
   widgets/colview.cpp
   widgets/curvedit.cpp
   widgets/editor/click.cpp

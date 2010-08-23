@@ -40,7 +40,7 @@
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "widgets/color_bar.h"
-#include "widgets/colsel.h"
+#include "widgets/color_selector.h"
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"
 #include "sprite_wrappers.h"
