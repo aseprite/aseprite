@@ -250,7 +250,7 @@
 	<item command="background_from_layer" text="&amp;Background from Layer" />
 	<item command="layer_from_background" text="&amp;Layer from Background" />
 	<separator />
-	<item command="duplicate_layer" text="&amp;Duplicate..." />
+	<item command="duplicate_layer" text="&amp;Duplicate" />
 	<item command="merge_down_layer" text="&amp;Merge Down" />
 	<item command="flatten_layers" text="&amp;Flatten" />
       </menu>
