@@ -18,6 +18,7 @@ COMMON_SOURCES =					\
 	src/resource_finder.cpp				\
 	src/ui_context.cpp				\
 	src/undoable.cpp				\
+	src/xml_widgets.cpp				\
 	src/commands/cmd_about.cpp			\
 	src/commands/cmd_advanced_mode.cpp		\
 	src/commands/cmd_background_from_layer.cpp	\
@@ -139,7 +140,6 @@ COMMON_SOURCES =					\
 	src/jinete/jdraw.cpp				\
 	src/jinete/jentry.cpp				\
 	src/jinete/jexception.cpp			\
-	src/jinete/jfile.cpp				\
 	src/jinete/jfont.cpp				\
 	src/jinete/jfontbmp.cpp				\
 	src/jinete/jgrid.cpp				\

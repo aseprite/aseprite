@@ -57,6 +57,7 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
+#include "xml_widgets.h"
 
 #define REBUILD_RECENT_LIST	2
 #define REFRESH_FULL_SCREEN	4
@@ -674,7 +675,7 @@ void save_window_pos(JWidget window, const char *section)
   set_config_rect(section, "WindowPos", window->getBounds());
 }
 
-JWidget load_widget(const char *filename, const char *name)
+JWidget load_widget(const char* filename, const char* name)
 {
   JWidget widget;
   char buf[512];
@@ -698,7 +699,7 @@ JWidget load_widget(const char *filename, const char *name)
   if (!found)
     throw widget_file_not_found(filename);
 
-  widget = ji_load_widget(buf, name);
+  widget = load_widget_from_xmlfile(buf, name);
   if (!widget)
     throw widget_not_found(name);
 

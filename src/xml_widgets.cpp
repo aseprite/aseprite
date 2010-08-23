@@ -1,32 +1,19 @@
-/* Jinete - a GUI library
- * Copyright (C) 2003-2010 David Capello.
- * All rights reserved.
+/* ASE - Allegro Sprite Editor
+ * Copyright (C) 2001-2010  David Capello
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *   * Neither the name of the author nor the names of its contributors may
- *     be used to endorse or promote products derived from this software
- *     without specific prior written permission.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "config.h"
@@ -39,7 +26,7 @@
 
 #include "Vaca/Bind.h"
 #include "jinete/jinete.h"
-#include "modules/gui.h" // TODO jfile.cpp must be outside Jinete/Vaca stuff (it is specific to ASE)
+#include "modules/gui.h"
 
 #include "tinyxml.h"
 
@@ -60,12 +47,12 @@ static bool bool_attr_is_true(TiXmlElement* elem, const char* attribute_name);
 static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root);
 static int convert_align_value_to_flags(const char *value);
 
-JWidget ji_load_widget(const char *filename, const char *name)
+Widget* load_widget_from_xmlfile(const char* xmlFilename, const char* widgetName)
 {
-  JWidget widget = NULL;
+  Widget* widget = NULL;
 
   TiXmlDocument doc;
-  if (!doc.LoadFile(filename))
+  if (!doc.LoadFile(xmlFilename))
     throw jexception(&doc);
 
   // search the requested widget
@@ -77,7 +64,7 @@ JWidget ji_load_widget(const char *filename, const char *name)
   while (xmlElement) {
     const char* nodename = xmlElement->Attribute("name");
 
-    if (nodename && ustrcmp(nodename, name) == 0) {
+    if (nodename && ustrcmp(nodename, widgetName) == 0) {
       widget = convert_xmlelement_to_widget(xmlElement, NULL);
       break;
     }

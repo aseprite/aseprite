@@ -40,6 +40,7 @@ add_executable(aseprite WIN32
   resource_finder.cpp
   ui_context.cpp
   undoable.cpp
+  xml_widgets.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
   commands/cmd_background_from_layer.cpp
@@ -161,7 +162,6 @@ add_executable(aseprite WIN32
   jinete/jdraw.cpp
   jinete/jentry.cpp
   jinete/jexception.cpp
-  jinete/jfile.cpp
   jinete/jfont.cpp
   jinete/jfontbmp.cpp
   jinete/jgrid.cpp
