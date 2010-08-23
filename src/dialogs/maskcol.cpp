@@ -25,6 +25,7 @@
 #include "jinete/jslider.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
+#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "core/cfg.h"
@@ -40,13 +41,15 @@
 #include "widgets/colbar.h"
 #include "widgets/colbut.h"
 
-static JWidget button_color, slider_fuzziness, check_preview;
+static ColorButton* button_color;
+static CheckBox* check_preview;
+static Widget* slider_fuzziness; // TODO rename to tolerance
 
 static void button_1_command(JWidget widget);
 static void button_2_command(JWidget widget);
 static bool color_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
-static bool preview_change_hook(JWidget widget, void *data);
+static void preview_change_hook(Sprite* data);
 
 static Mask *gen_mask(const Sprite* sprite);
 static void mask_preview(Sprite* sprite);
@@ -54,9 +57,12 @@ static void mask_preview(Sprite* sprite);
 void dialogs_mask_color(Sprite* sprite)
 {
   JWidget box1, box2, box3, box4;
-  JWidget label_color, button_1, button_2;
+  Widget* label_color;
+  Button* button_1;
+  Button* button_2;
   JWidget label_fuzziness;
-  JWidget button_ok, button_cancel;
+  Button* button_ok;
+  Button* button_cancel;
   Image *image;
 
   if (!is_interactive () || !sprite)
@@ -72,18 +78,17 @@ void dialogs_mask_color(Sprite* sprite)
   box3 = jbox_new(JI_HORIZONTAL);
   box4 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
   label_color = new Label(_("Color:"));
-  button_color = colorbutton_new
+  button_color = new ColorButton
    (get_config_color("MaskColor", "Color",
 		     app_get_colorbar()->getFgColor()),
     sprite->getImgType());
-  button_1 = jbutton_new("1");
-  button_2 = jbutton_new("2");
+  button_1 = new Button("1");
+  button_2 = new Button("2");
   label_fuzziness = new Label(_("Fuzziness:"));
-  slider_fuzziness =
-    jslider_new(0, 255, get_config_int("MaskColor", "Fuzziness", 0));
-  check_preview = jcheck_new(_("&Preview"));
-  button_ok = jbutton_new(_("&OK"));
-  button_cancel = jbutton_new(_("&Cancel"));
+  slider_fuzziness = jslider_new(0, 255, get_config_int("MaskColor", "Fuzziness", 0));
+  check_preview = new CheckBox(_("&Preview"));
+  button_ok = new Button(_("&OK"));
+  button_cancel = new Button(_("&Cancel"));
 
   if (get_config_bool("MaskColor", "Preview", true))
     check_preview->setSelected(true);
@@ -91,12 +96,14 @@ void dialogs_mask_color(Sprite* sprite)
   button_1->user_data[1] = sprite;
   button_2->user_data[1] = sprite;
 
-  jbutton_add_command(button_1, button_1_command);
-  jbutton_add_command(button_2, button_2_command);
+  button_1->Click.connect(Vaca::Bind<void>(&button_1_command, button_1));
+  button_2->Click.connect(Vaca::Bind<void>(&button_2_command, button_2));
+  button_ok->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_ok));
+  button_cancel->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, sprite);
   HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
-  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, sprite);
+  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, sprite));
 
   jwidget_magnetic(button_ok, true);
   jwidget_expansive(button_color, true);
@@ -136,14 +143,10 @@ void dialogs_mask_color(Sprite* sprite)
     sprite->setMask(mask);
     mask_free(mask);
 
-    set_config_color("MaskColor", "Color",
-		     colorbutton_get_color(button_color));
-
+    set_config_color("MaskColor", "Color", button_color->getColor());
     set_config_int("MaskColor", "Fuzziness",
 		   jslider_get_value(slider_fuzziness));
-
-    set_config_bool("MaskColor", "Preview",
-		    check_preview->isSelected());
+    set_config_bool("MaskColor", "Preview", check_preview->isSelected());
   }
 
   /* update boundaries and editors */
@@ -156,13 +159,13 @@ void dialogs_mask_color(Sprite* sprite)
 
 static void button_1_command(JWidget widget)
 {
-  colorbutton_set_color(button_color, app_get_colorbar()->getFgColor());
+  button_color->setColor(app_get_colorbar()->getFgColor());
   mask_preview((Sprite*)widget->user_data[1]);
 }
 
 static void button_2_command(JWidget widget)
 {
-  colorbutton_set_color(button_color, app_get_colorbar()->getBgColor());
+  button_color->setColor(app_get_colorbar()->getBgColor());
   mask_preview((Sprite*)widget->user_data[1]);
 }
 
@@ -178,10 +181,9 @@ static bool slider_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool preview_change_hook(JWidget widget, void *data)
+static void preview_change_hook(Sprite* sprite)
 {
-  mask_preview((Sprite*)data);
-  return false;
+  mask_preview(sprite);
 }
 
 static Mask *gen_mask(const Sprite* sprite)
@@ -190,8 +192,7 @@ static Mask *gen_mask(const Sprite* sprite)
 
   const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
 
-  color = get_color_for_image(sprite->getImgType(),
-			      colorbutton_get_color(button_color));
+  color = get_color_for_image(sprite->getImgType(), button_color->getColor());
   fuzziness = jslider_get_value(slider_fuzziness);
 
   Mask* mask = mask_new();

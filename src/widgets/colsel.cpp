@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "core/color.h"
@@ -70,7 +71,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
 static void colorselector_set_paledit_index(JWidget widget, int index,
 					    bool select_index_entry);
 
-static bool select_model_hook(JWidget widget, void* data);
+static bool select_model_hook(Frame* frame, Model* selected_model);
 static bool slider_change_hook(JWidget widget, void* data);
 static bool paledit_change_hook(JWidget widget, void* data);
 
@@ -115,13 +116,11 @@ Frame* colorselector_new()
   // Append one button for each color-model
   for (m=models; m->text!=NULL; ++m) {
     // Create the color-model button to select it
-    JWidget model_button = ji_generic_button_new(_(m->text), JI_RADIO, JI_BUTTON);
+    RadioButton* model_button = new RadioButton(_(m->text), 1, JI_BUTTON);
     colorselector->model_buttons.push_back(model_button);
     setup_mini_look(model_button);
-    HOOK(model_button, JI_SIGNAL_RADIO_CHANGE, select_model_hook, (void*)m);
+    model_button->Click.connect(Vaca::Bind<bool>(&select_model_hook, window, m));
     jwidget_add_child(models_box, model_button);
-
-    jradio_set_group(model_button, 1);
     
     // Create the color-model container
     child = (*m->create)();
@@ -339,7 +338,7 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   colorselector->model_buttons[m->model]->setSelected(true);
 
   // Call the hook
-  select_model_hook(widget, (void*)m);
+  select_model_hook(dynamic_cast<Frame*>(widget->getRoot()), m);
 
   if (update_index_entry) {
     switch (color_type(color)) {
@@ -386,11 +385,11 @@ static void colorselector_set_paledit_index(JWidget widget, int index, bool sele
   idx->setText(buf);
 }
 
-static bool select_model_hook(JWidget widget, void* data)
+static bool select_model_hook(Frame* frame, Model* selected_model)
 {
-  Frame* window = static_cast<Frame*>(widget->getRoot());
-  ColorSelector* colorselector = colorselector_data(window);
-  Model* selected_model = (Model*)data;
+  ASSERT(frame != NULL);
+
+  ColorSelector* colorselector = colorselector_data(frame);
   JWidget child;
   Model* m;
   bool something_change = false;
@@ -398,7 +397,7 @@ static bool select_model_hook(JWidget widget, void* data)
   colorselector->selected_model = selected_model;
   
   for (m=models; m->text!=NULL; ++m) {
-    child = jwidget_find_name(window, m->text);
+    child = jwidget_find_name(frame, m->text);
 
     if (m == selected_model) {
       if (child->flags & JI_HIDDEN) {
@@ -417,11 +416,11 @@ static bool select_model_hook(JWidget widget, void* data)
   if (something_change) {
     // Select the mask color
     if (selected_model->model == MODEL_MASK) {
-      colorselector_set_color2(window, color_mask(), false, false, NULL);
-      jwidget_emit_signal(window, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
+      colorselector_set_color2(frame, color_mask(), false, false, NULL);
+      jwidget_emit_signal(frame, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
     }
 
-    jwidget_relayout(window);
+    jwidget_relayout(frame);
   }
 
   return true;

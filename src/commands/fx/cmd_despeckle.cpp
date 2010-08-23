@@ -26,6 +26,7 @@
 #include "jinete/jhook.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
@@ -44,13 +45,14 @@
 #include "widgets/target.h"
 
 static JWidget entry_width, entry_height;
-static JWidget check_preview, preview;
-static JWidget check_tiled;
+static JWidget preview;
+static CheckBox* check_preview;
+static CheckBox* check_tiled;
 
 static bool width_change_hook(JWidget widget, void *data);
 static bool height_change_hook(JWidget widget, void *data);
 static bool target_change_hook(JWidget widget, void *data);
-static bool preview_change_hook(JWidget widget, void *data);
+static void preview_change_hook(JWidget widget);
 static bool tiled_change_hook(JWidget widget, void *data);
 static void make_preview();
 
@@ -121,8 +123,9 @@ void DespeckleCommand::onExecute(Context* context)
   HOOK(entry_width, JI_SIGNAL_ENTRY_CHANGE, width_change_hook, 0);
   HOOK(entry_height, JI_SIGNAL_ENTRY_CHANGE, height_change_hook, 0);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
   HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
+
+  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
   
   /* default position */
   window->remap_window();
@@ -169,11 +172,10 @@ static bool target_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool preview_change_hook(JWidget widget, void *data)
+static void preview_change_hook(JWidget widget)
 {
   set_config_bool("Median", "Preview", widget->isSelected());
   make_preview();
-  return false;
 }
 
 static bool tiled_change_hook(JWidget widget, void *data)

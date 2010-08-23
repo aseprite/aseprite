@@ -19,8 +19,8 @@
     <separator horizontal="true" cell_hspan="4" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="4" cell_align="right">
-      <button text="&amp;OK" name="ok" magnetic="true" minwidth="60" />
-      <button text="&amp;Cancel" />
+      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" minwidth="60" />
+      <button text="&amp;Cancel" closewindow="true" />
     </box>
   </grid>
 </window>

@@ -32,48 +32,90 @@
 #ifndef JINETE_JBUTTON_H_INCLUDED
 #define JINETE_JBUTTON_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "jinete/jwidget.h"
+#include "Vaca/Signal.h"
+#include "Vaca/NonCopyable.h"
+#include <vector>
+
+namespace Vaca { class Event; }
+using Vaca::Event;
 
 struct BITMAP;
 
-/******************/
-/* generic button */
+// Generic button
+class ButtonBase : public Widget
+{
+public:
+  ButtonBase(const char* text,
+	     int type,
+	     int behaviorType,
+	     int drawType);
+  virtual ~ButtonBase();
 
-JWidget ji_generic_button_new(const char *text,
-			      int behavior_type,
-			      int draw_type);
+  void setButtonIcon(BITMAP* icon);
+  void setButtonIconAlign(int iconAlign);
 
-void ji_generic_button_set_icon(JWidget button, struct BITMAP *icon);
-void ji_generic_button_set_icon_align(JWidget button, int icon_align);
+  BITMAP* getButtonIcon();
+  int getButtonIconAlign();
 
-struct BITMAP *ji_generic_button_get_icon(JWidget button);
-int ji_generic_button_get_icon_align(JWidget button);
+  int getBehaviorType() const;
+  int getDrawType() const;
 
-/*****************/
-/* normal button */
+  // Signals
+  Vaca::Signal1<void, Event&> Click; ///< @see onClick
 
-JWidget jbutton_new(const char *text);
+protected:
+  // Events
+  bool onProcessMessage(JMessage msg);
+  void onPreferredSize(PreferredSizeEvent& ev);
 
-void jbutton_set_bevel(JWidget button, int b0, int b1, int b2, int b3);
-void jbutton_get_bevel(JWidget button, int *b4);
+  // New events
+  virtual void onClick(Event& ev);
 
-void jbutton_add_command(JWidget button, void (*command)(JWidget button));
-void jbutton_add_command_data(JWidget button,
-			      void (*command)(JWidget button, void *data),
-			      void *data);
+private:
+  void generateButtonSelectSignal();
 
-/****************/
-/* check button */
+  bool m_pressedStatus;
+  int m_behaviorType;
+  int m_drawType;
+  BITMAP* m_icon;
+  int m_iconAlign;
+};
 
-JWidget jcheck_new(const char *text);
+// Pushable button to execute commands
+class Button : public ButtonBase
+{
+public:
+  Button(const char* text);
+};
 
-/****************/
-/* radio button */
+// Check boxes
+class CheckBox : public ButtonBase
+{
+public:
+  CheckBox(const char* text, int drawType = JI_CHECK);
+};
 
-JWidget jradio_new(const char *text, int radio_group);
+//////////////////////////////////////////////////////////////////////
+// Radio buttons
 
-void jradio_set_group(JWidget radio, int radio_group);
-int jradio_get_group(JWidget radio);
-void jradio_deselect_group(JWidget radio);
+// Radio button
+class RadioButton : public ButtonBase
+{
+public:
+  RadioButton(const char* text, int radioGroup, int drawType = JI_RADIO);
+
+  int getRadioGroup() const;
+  void setRadioGroup(int radioGroup);
+
+  void deselectRadioGroup();
+
+protected:
+  // Events
+  bool onProcessMessage(JMessage msg);
+
+private:
+  int m_radioGroup;
+};
 
 #endif

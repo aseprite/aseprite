@@ -59,14 +59,13 @@ Tabs::Tabs(ITabsHandler* handler)
   m_ani = ANI_NONE;
   m_removedTab = NULL;
 
-  m_button_left = jbutton_new(NULL);
-  m_button_right = jbutton_new(NULL);
+  m_button_left = new Button(NULL);
+  m_button_right = new Button(NULL);
 
   setup_mini_look(m_button_left);
   setup_mini_look(m_button_right);
-
-  jbutton_set_bevel(m_button_left, 0, 0, 0, 0);
-  jbutton_set_bevel(m_button_right, 0, 0, 0, 0);
+  setup_bevels(m_button_left, 2, 0, 2, 0);
+  setup_bevels(m_button_right, 0, 2, 0, 2);
 
   jwidget_focusrest(m_button_left, false);
   jwidget_focusrest(m_button_right, false);

@@ -162,12 +162,12 @@ void PaletteEditorCommand::onExecute(Context* context)
   Widget* palette_editor_view;
   Widget* select_rgb;
   Widget* select_hsv;
-  Widget* expand_button;
-  Widget* button_load;
-  Widget* button_save;
-  Widget* button_ramp;
-  Widget* button_sort;
-  Widget* button_quantize;
+  Button* expand_button;
+  Button* button_load;
+  Button* button_save;
+  Button* button_ramp;
+  Button* button_sort;
+  Button* button_quantize;
   bool first_time = false;
 
   // If the window was never loaded yet, load it
@@ -265,11 +265,11 @@ void PaletteEditorCommand::onExecute(Context* context)
     // Hide (or show) the "More Options" depending the saved value in .cfg file
     more_options->setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));
 
-    jbutton_add_command(button_load, load_command);
-    jbutton_add_command(button_save, save_command);
-    jbutton_add_command(button_ramp, ramp_command);
-    jbutton_add_command(button_sort, sort_command);
-    jbutton_add_command(button_quantize, quantize_command);
+    button_load->Click.connect(Vaca::Bind<void>(&load_command, button_load));
+    button_save->Click.connect(Vaca::Bind<void>(&save_command, button_save));
+    button_ramp->Click.connect(Vaca::Bind<void>(&ramp_command, button_ramp));
+    button_sort->Click.connect(Vaca::Bind<void>(&sort_command, button_sort));
+    button_quantize->Click.connect(Vaca::Bind<void>(&quantize_command, button_quantize));
 
     select_rgb_hook(NULL, NULL);
   }

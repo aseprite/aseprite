@@ -181,7 +181,7 @@ enum {
 
 /* signals */
 enum {
-  /* generic signals */
+  // Generic signals
   JI_SIGNAL_ENABLE,
   JI_SIGNAL_DISABLE,
   JI_SIGNAL_SELECT,
@@ -193,7 +193,7 @@ enum {
   JI_SIGNAL_SET_FONT,
   JI_SIGNAL_INIT_THEME,
 
-  /* special widget signals */
+  // Special widget signals
   JI_SIGNAL_BUTTON_SELECT,
   JI_SIGNAL_CHECK_CHANGE,
   JI_SIGNAL_RADIO_CHANGE,

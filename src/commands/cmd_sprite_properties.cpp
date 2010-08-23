@@ -21,6 +21,7 @@
 #include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "core/color.h"
@@ -65,12 +66,12 @@ bool SpritePropertiesCommand::onEnabled(Context* context)
 
 void SpritePropertiesCommand::onExecute(Context* context)
 {
-  JWidget killer, name, type, size, frames, speed, ok;
-  const CurrentSpriteReader sprite(context);
+  JWidget name, type, size, frames, ok;
+  Button* speed;
   jstring imgtype_text;
   char buf[256];
 
-  /* load the window widget */
+  // Load the window widget
   FramePtr window(load_widget("sprite_properties.xml", "sprite_properties"));
   get_widgets(window,
 	      "name", &name,
@@ -80,59 +81,56 @@ void SpritePropertiesCommand::onExecute(Context* context)
 	      "speed", &speed,
 	      "ok", &ok, NULL);
 
-  /* update widgets values */
-  switch (sprite->getImgType()) {
-    case IMAGE_RGB:
-      imgtype_text = "RGB";
-      break;
-    case IMAGE_GRAYSCALE:
-      imgtype_text = "Grayscale";
-      break;
-    case IMAGE_INDEXED:
-      sprintf(buf, "Indexed (%d colors)", sprite->getPalette(0)->size());
-      imgtype_text = buf;
-      break;
-    default:
-      ASSERT(false);
-      imgtype_text = "Unknown";
-      break;
+  // Get sprite properties and fill frame fields
+  {
+    const CurrentSpriteReader sprite(context);
+
+    // Update widgets values
+    switch (sprite->getImgType()) {
+      case IMAGE_RGB:
+	imgtype_text = "RGB";
+	break;
+      case IMAGE_GRAYSCALE:
+	imgtype_text = "Grayscale";
+	break;
+      case IMAGE_INDEXED:
+	sprintf(buf, "Indexed (%d colors)", sprite->getPalette(0)->size());
+	imgtype_text = buf;
+	break;
+      default:
+	ASSERT(false);
+	imgtype_text = "Unknown";
+	break;
+    }
+
+    // Filename
+    name->setText(sprite->getFilename());
+
+    // Color mode
+    type->setText(imgtype_text.c_str());
+
+    // Sprite size (width and height)
+    usprintf(buf, "%dx%d (", sprite->getWidth(), sprite->getHeight());
+    get_pretty_memory_size(sprite->getMemSize(),
+			   buf+ustrsize(buf),
+			   sizeof(buf)-ustrsize(buf));
+    ustrcat(buf, ")");
+    size->setText(buf);
+
+    // How many frames
+    frames->setTextf("%d", sprite->getTotalFrames());
+
+    // Speed button
+    speed->Click.connect(Vaca::Bind<void>(&dialogs_frame_length, sprite, -1));
   }
-
-  /* filename */
-  name->setText(sprite->getFilename());
-
-  /* color mode */
-  type->setText(imgtype_text.c_str());
-
-  /* sprite size (width and height) */
-  usprintf(buf, "%dx%d (", sprite->getWidth(), sprite->getHeight());
-  get_pretty_memory_size(sprite->getMemSize(),
-			 buf+ustrsize(buf),
-			 sizeof(buf)-ustrsize(buf));
-  ustrcat(buf, ")");
-  size->setText(buf);
-
-  /* how many frames */
-  frames->setTextf("%d", sprite->getTotalFrames());
 
   window->remap_window();
   window->center_window();
 
-  for (;;) {
-    load_window_pos(window, "SpriteProperties");
-    window->setVisible(true);
-    window->open_window_fg();
-    save_window_pos(window, "SpriteProperties");
-
-    killer = window->get_killer();
-    if (killer == ok)
-      break;
-    else if (killer == speed) {
-      dialogs_frame_length(sprite, -1);
-    }
-    else
-      break;
-  }
+  load_window_pos(window, "SpriteProperties");
+  window->setVisible(true);
+  window->open_window_fg();
+  save_window_pos(window, "SpriteProperties");
 }
 
 //////////////////////////////////////////////////////////////////////

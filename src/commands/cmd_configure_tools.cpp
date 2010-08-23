@@ -58,13 +58,6 @@ static bool opacity_slider_change_hook(JWidget widget, void *data);
 static bool tolerance_slider_change_hook(JWidget widget, void *data);
 static bool spray_width_slider_change_hook(JWidget widget, void *data);
 static bool air_speed_slider_change_hook(JWidget widget, void *data);
-static bool tiled_check_change_hook(JWidget widget, void *data);
-static bool tiled_xy_check_change_hook(JWidget widget, void *data);
-static bool snap_to_grid_check_change_hook(JWidget widget, void *data);
-static bool view_grid_check_change_hook(JWidget widget, void *data);
-static bool pixel_grid_check_change_hook(JWidget widget, void *data);
-static bool set_grid_button_select_hook(JWidget widget, void *data);
-static bool onionskin_check_change_hook(JWidget widget, void *data);
 
 // Slot for App::Exit signal 
 static void on_exit_delete_this_widget()
@@ -181,6 +174,23 @@ public:
 
 protected:
   void onExecute(Context* context);
+
+private:
+  CheckBox* m_tiled;
+  CheckBox* m_tiledX;
+  CheckBox* m_tiledY;
+  CheckBox* m_pixelGrid;
+  CheckBox* m_snapToGrid;
+  CheckBox* m_onionSkin;
+  CheckBox* m_viewGrid;
+
+  void onTiledClick();
+  void onTiledXYClick(int tiled_axis, CheckBox* checkbox);
+  void onViewGridClick();
+  void onPixelGridClick();
+  void onSetGridClick();
+  void onSnapToGridClick();
+  void onOnionSkinClick();
 };
 
 ConfigureTools::ConfigureTools()
@@ -192,12 +202,11 @@ ConfigureTools::ConfigureTools()
 
 void ConfigureTools::onExecute(Context* context)
 {
-  JWidget tiled, tiled_x, tiled_y, snap_to_grid, view_grid, pixel_grid, set_grid;
+  Button* set_grid;
   JWidget brush_size, brush_angle, opacity, tolerance;
   JWidget spray_width, air_speed;
   JWidget brush_preview_box;
   JWidget brush_type_box, brush_type;
-  JWidget check_onionskin;
   JWidget brush_preview;
   bool first_time = false;
 
@@ -213,12 +222,12 @@ void ConfigureTools::onExecute(Context* context)
 
   try {
     get_widgets(window,
-		"tiled", &tiled,
-		"tiled_x", &tiled_x,
-		"tiled_y", &tiled_y,
-		"snap_to_grid", &snap_to_grid,
-		"view_grid", &view_grid,
-		"pixel_grid", &pixel_grid,
+		"tiled", &m_tiled,
+		"tiled_x", &m_tiledX,
+		"tiled_y", &m_tiledY,
+		"snap_to_grid", &m_snapToGrid,
+		"view_grid", &m_viewGrid,
+		"pixel_grid", &m_pixelGrid,
 		"set_grid", &set_grid,
 		"brush_size", &brush_size,
 		"brush_angle", &brush_angle,
@@ -228,7 +237,7 @@ void ConfigureTools::onExecute(Context* context)
 		"air_speed", &air_speed,
 		"brush_preview_box", &brush_preview_box,
 		"brush_type_box", &brush_type_box,
-		"onionskin", &check_onionskin, NULL);
+		"onionskin", &m_onionSkin, NULL);
   }
   catch (...) {
     jwidget_free(window);
@@ -271,30 +280,37 @@ void ConfigureTools::onExecute(Context* context)
   }
 
   if (settings->getTiledMode() != TILED_NONE) {
-    tiled->setSelected(true);
-    if (settings->getTiledMode() & TILED_X_AXIS) tiled_x->setSelected(true);
-    if (settings->getTiledMode() & TILED_Y_AXIS) tiled_y->setSelected(true);
+    m_tiled->setSelected(true);
+    if (settings->getTiledMode() & TILED_X_AXIS) m_tiledX->setSelected(true);
+    if (settings->getTiledMode() & TILED_Y_AXIS) m_tiledY->setSelected(true);
   }
       
-  if (settings->getSnapToGrid()) snap_to_grid->setSelected(true);
-  if (settings->getGridVisible()) view_grid->setSelected(true);
-  if (settings->getPixelGridVisible()) pixel_grid->setSelected(true);
-  if (settings->getUseOnionskin()) check_onionskin->setSelected(true);
+  if (settings->getSnapToGrid()) m_snapToGrid->setSelected(true);
+  if (settings->getGridVisible()) m_viewGrid->setSelected(true);
+  if (settings->getPixelGridVisible()) m_pixelGrid->setSelected(true);
+  if (settings->getUseOnionskin()) m_onionSkin->setSelected(true);
 
   if (first_time) {
     // Append children
     jwidget_add_child(brush_preview_box, brush_preview);
     jwidget_add_child(brush_type_box, brush_type);
 
-    // Append hooks
+    // Slots
     window->Close.connect(Vaca::Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
-    HOOK(tiled, JI_SIGNAL_CHECK_CHANGE, tiled_check_change_hook, 0);
-    HOOK(tiled_x, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_X_AXIS);
-    HOOK(tiled_y, JI_SIGNAL_CHECK_CHANGE, tiled_xy_check_change_hook, (void*)TILED_Y_AXIS);
-    HOOK(snap_to_grid, JI_SIGNAL_CHECK_CHANGE, snap_to_grid_check_change_hook, 0);
-    HOOK(view_grid, JI_SIGNAL_CHECK_CHANGE, view_grid_check_change_hook, 0);
-    HOOK(pixel_grid, JI_SIGNAL_CHECK_CHANGE, pixel_grid_check_change_hook, 0);
-    HOOK(set_grid, JI_SIGNAL_BUTTON_SELECT, set_grid_button_select_hook, 0);
+    m_tiled->Click.connect(Vaca::Bind<void>(&ConfigureTools::onTiledClick, this));
+    m_tiledX->Click.connect(Vaca::Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_X_AXIS, m_tiledX));
+    m_tiledY->Click.connect(Vaca::Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_Y_AXIS, m_tiledY));
+    m_viewGrid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onViewGridClick, this));
+    m_pixelGrid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onPixelGridClick, this));
+    set_grid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onSetGridClick, this));
+    m_snapToGrid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onSnapToGridClick, this));
+    m_onionSkin->Click.connect(Vaca::Bind<void>(&ConfigureTools::onOnionSkinClick, this));
+
+    App::instance()->Exit.connect(&on_exit_delete_this_widget);
+    App::instance()->PenSizeAfterChange.connect(&on_pen_size_after_change);
+    App::instance()->CurrentToolChange.connect(&on_current_tool_change);
+
+    // Append hooks
     HOOK(brush_size, JI_SIGNAL_SLIDER_CHANGE, brush_size_slider_change_hook, brush_preview);
     HOOK(brush_angle, JI_SIGNAL_SLIDER_CHANGE, brush_angle_slider_change_hook, brush_preview);
     HOOK(brush_type, SIGNAL_GROUP_BUTTON_CHANGE, brush_type_change_hook, brush_preview);
@@ -302,11 +318,6 @@ void ConfigureTools::onExecute(Context* context)
     HOOK(tolerance, JI_SIGNAL_SLIDER_CHANGE, tolerance_slider_change_hook, 0);
     HOOK(air_speed, JI_SIGNAL_SLIDER_CHANGE, air_speed_slider_change_hook, 0);
     HOOK(spray_width, JI_SIGNAL_SLIDER_CHANGE, spray_width_slider_change_hook, 0);
-    HOOK(check_onionskin, JI_SIGNAL_CHECK_CHANGE, onionskin_check_change_hook, 0);
-
-    App::instance()->Exit.connect(&on_exit_delete_this_widget);
-    App::instance()->PenSizeAfterChange.connect(&on_pen_size_after_change);
-    App::instance()->CurrentToolChange.connect(&on_current_tool_change);
   }
 
   // Update current pen properties
@@ -462,54 +473,48 @@ static bool air_speed_slider_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool tiled_check_change_hook(JWidget widget, void *data)
+void ConfigureTools::onTiledClick()
 {
-  bool flag = widget->isSelected();
+  bool flag = m_tiled->isSelected();
 
   UIContext::instance()->getSettings()->setTiledMode(flag ? TILED_BOTH: TILED_NONE);
 
-  widget->findSibling("tiled_x")->setSelected(flag);
-  widget->findSibling("tiled_y")->setSelected(flag);
-  return false;
+  m_tiledX->setSelected(flag);
+  m_tiledY->setSelected(flag);
 }
 
-static bool tiled_xy_check_change_hook(JWidget widget, void *data)
+void ConfigureTools::onTiledXYClick(int tiled_axis, CheckBox* checkbox)
 {
-  int tiled_axis = (int)((size_t)data);
   int tiled_mode = UIContext::instance()->getSettings()->getTiledMode();
 
-  if (widget->isSelected())
+  if (checkbox->isSelected())
     tiled_mode |= tiled_axis;
   else
     tiled_mode &= ~tiled_axis;
 
-  widget->findSibling("tiled")->setSelected(tiled_mode != TILED_NONE);
+  checkbox->findSibling("tiled")->setSelected(tiled_mode != TILED_NONE);
 
   UIContext::instance()->getSettings()->setTiledMode((TiledMode)tiled_mode);
-  return false;
 }
 
-static bool snap_to_grid_check_change_hook(JWidget widget, void *data)
+void ConfigureTools::onSnapToGridClick()
 {
-  UIContext::instance()->getSettings()->setSnapToGrid(widget->isSelected());
-  return false;
+  UIContext::instance()->getSettings()->setSnapToGrid(m_snapToGrid->isSelected());
 }
 
-static bool view_grid_check_change_hook(JWidget widget, void *data)
+void ConfigureTools::onViewGridClick()
 {
-  UIContext::instance()->getSettings()->setGridVisible(widget->isSelected());
+  UIContext::instance()->getSettings()->setGridVisible(m_viewGrid->isSelected());
   refresh_all_editors();
-  return false;
 }
 
-static bool pixel_grid_check_change_hook(JWidget widget, void *data)
+void ConfigureTools::onPixelGridClick()
 {
-  UIContext::instance()->getSettings()->setPixelGridVisible(widget->isSelected());
+  UIContext::instance()->getSettings()->setPixelGridVisible(m_pixelGrid->isSelected());
   refresh_all_editors();
-  return false;
 }
 
-static bool set_grid_button_select_hook(JWidget widget, void *data)
+void ConfigureTools::onSetGridClick()
 {
   try {
     // TODO use the same context as in ConfigureTools::onExecute
@@ -534,14 +539,12 @@ static bool set_grid_button_select_hook(JWidget widget, void *data)
   catch (LockedSpriteException& e) {
     e.show();
   }
-  return true;
 }
 
-static bool onionskin_check_change_hook(JWidget widget, void *data)
+void ConfigureTools::onOnionSkinClick()
 {
-  UIContext::instance()->getSettings()->setUseOnionskin(widget->isSelected());
+  UIContext::instance()->getSettings()->setUseOnionskin(m_onionSkin->isSelected());
   refresh_all_editors();
-  return false;
 }
 
 //////////////////////////////////////////////////////////////////////

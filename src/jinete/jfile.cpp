@@ -37,7 +37,9 @@
 #include <limits.h>
 #include <allegro/unicode.h>
 
+#include "Vaca/Bind.h"
 #include "jinete/jinete.h"
+#include "modules/gui.h" // TODO jfile.cpp must be outside Jinete/Vaca stuff (it is specific to ASE)
 
 #include "tinyxml.h"
 
@@ -55,7 +57,7 @@
 #define TRANSLATE_ATTR(a) a
 
 static bool bool_attr_is_true(TiXmlElement* elem, const char* attribute_name);
-static JWidget convert_xmlelement_to_widget(TiXmlElement* elem);
+static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root);
 static int convert_align_value_to_flags(const char *value);
 
 JWidget ji_load_widget(const char *filename, const char *name)
@@ -76,7 +78,7 @@ JWidget ji_load_widget(const char *filename, const char *name)
     const char* nodename = xmlElement->Attribute("name");
 
     if (nodename && ustrcmp(nodename, name) == 0) {
-      widget = convert_xmlelement_to_widget(xmlElement);
+      widget = convert_xmlelement_to_widget(xmlElement, NULL);
       break;
     }
 
@@ -93,7 +95,7 @@ static bool bool_attr_is_true(TiXmlElement* elem, const char* attribute_name)
   return (value != NULL) && (strcmp(value, "true") == 0);
 }
 
-static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
+static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
 {
   const char *elem_name = elem->Value();
   JWidget widget = NULL;
@@ -115,12 +117,13 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
   else if (ustrcmp(elem_name, "button") == 0) {
     const char *text = elem->Attribute("text");
 
-    widget = jbutton_new(text ? TRANSLATE_ATTR(text): NULL);
+    widget = new Button(text ? TRANSLATE_ATTR(text): NULL);
     if (widget) {
       bool left   = bool_attr_is_true(elem, "left");
       bool right  = bool_attr_is_true(elem, "right");
       bool top    = bool_attr_is_true(elem, "top");
       bool bottom = bool_attr_is_true(elem, "bottom");
+      bool closewindow = bool_attr_is_true(elem, "closewindow");
       const char *_bevel = elem->Attribute("bevel");
 
       widget->setAlign((left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
@@ -142,7 +145,14 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
 	}
 	jfree(bevel);
 
-	jbutton_set_bevel(widget, b[0], b[1], b[2], b[3]);
+	setup_bevels(widget, b[0], b[1], b[2], b[3]);
+      }
+
+      if (closewindow && root) {
+	if (Frame* frame = dynamic_cast<Frame*>(root)) {
+	  static_cast<Button*>(widget)->
+	    Click.connect(Vaca::Bind<void>(&Frame::closeWindow, frame, widget));
+	}
       }
     }
   }
@@ -154,10 +164,10 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     text = (text ? TRANSLATE_ATTR(text): NULL);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = ji_generic_button_new(text, JI_CHECK, JI_BUTTON);
+      widget = new CheckBox(text, JI_BUTTON);
     }
     else {
-      widget = jcheck_new(text);
+      widget = new CheckBox(text);
     }
 
     if (widget) {
@@ -246,12 +256,10 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     int radio_group = (group ? ustrtol(group, NULL, 10): 1);
     
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = ji_generic_button_new(text, JI_RADIO, JI_BUTTON);
-      if (widget)
-	jradio_set_group(widget, radio_group);
+      widget = new RadioButton(text, radio_group, JI_BUTTON);
     }
     else {
-      widget = jradio_new(text, radio_group);
+      widget = new RadioButton(text, radio_group);
     }
 
     if (widget) {
@@ -320,7 +328,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
     }
   }
 
-  /* the widget was created? */
+  // Was the widget created?
   if (widget) {
     const char *name      = elem->Attribute("name");
     const char *tooltip   = elem->Attribute("tooltip");
@@ -375,17 +383,20 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
       jwidget_set_max_size(widget, w*jguiscale(), h*jguiscale());
     }
 
-    /* children */
+    if (!root)
+      root = widget;
+
+    // Children
     TiXmlElement* child_elem = elem->FirstChildElement();
     while (child_elem) {
-      child = convert_xmlelement_to_widget(child_elem);
+      child = convert_xmlelement_to_widget(child_elem, root);
       if (child) {
-	/* attach the child in the view */
+	// Attach the child in the view
 	if (widget->type == JI_VIEW) {
 	  jview_attach(widget, child);
 	  break;
 	}
-	/* add the child in the grid */
+	// Add the child in the grid
 	else if (widget->type == JI_GRID) {
 	  const char* cell_hspan = child_elem->Attribute("cell_hspan");
 	  const char* cell_vspan = child_elem->Attribute("cell_vspan");
@@ -396,7 +407,7 @@ static JWidget convert_xmlelement_to_widget(TiXmlElement* elem)
 
 	  jgrid_add_child(widget, child, hspan, vspan, align);
 	}
-	/* just add the child in any other kind of widget */
+	// Just add the child in any other kind of widget
 	else
 	  jwidget_add_child(widget, child);
       }

@@ -23,6 +23,7 @@
 #include <stdarg.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "console.h"
 #include "app.h"
@@ -52,10 +53,13 @@ Console::Console()
     Widget* grid = jgrid_new(1, false);
     Widget* view = jview_new();
     Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
-    Widget* button = jbutton_new(_("&Cancel"));
+    Button* button = new Button(_("&Cancel"));
 
     if (!grid || !textbox || !button)
       return;
+
+    // The "button" closes the console
+    button->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window, button));
 
     jview_attach(view, textbox);
 

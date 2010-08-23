@@ -37,6 +37,7 @@
 #include <string>
 
 class Frame;
+class Button;
 
 class ComboBox : public Widget
 {
@@ -70,7 +71,7 @@ public:
   void setItemData(int itemIndex, void* data);
 
   Widget* getEntryWidget();
-  Widget* getButtonWidget();
+  Button* getButtonWidget();
 
   void openListBox();
   void closeListBox();
@@ -82,10 +83,12 @@ protected:
   void onPreferredSize(PreferredSizeEvent& ev);
 
 private:
+  void onButtonClick(Event& ev);
+
   struct Item;
 
   Widget* m_entry;
-  Widget* m_button;
+  Button* m_button;
   Frame* m_window;
   Widget* m_listbox;
   std::vector<Item*> m_items;

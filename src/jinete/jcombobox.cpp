@@ -51,13 +51,12 @@ struct ComboBox::Item
 static bool combobox_entry_msg_proc(JWidget widget, JMessage msg);
 static bool combobox_button_msg_proc(JWidget widget, JMessage msg);
 static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg);
-static void combobox_button_cmd(JWidget widget, void *data);
 
 ComboBox::ComboBox()
   : Widget(JI_COMBOBOX)
 {
   m_entry = jentry_new(256, "");
-  m_button = jbutton_new("");
+  m_button = new Button("");
   m_window = NULL;
   m_selected = 0;
   m_editable = false;
@@ -75,8 +74,9 @@ ComboBox::ComboBox()
   jwidget_add_hook(m_button, JI_WIDGET, combobox_button_msg_proc, NULL);
 
   jwidget_expansive(m_entry, true);
-  jbutton_set_bevel(m_button, 0, 2, 0, 2);
-  jbutton_add_command_data(m_button, combobox_button_cmd, this);
+
+  // When the "m_button" is clicked ("Click" signal) call onButtonClick() method
+  m_button->Click.connect(&ComboBox::onButtonClick, this);
 
   jwidget_add_child(this, m_entry);
   jwidget_add_child(this, m_button);
@@ -256,7 +256,7 @@ Widget* ComboBox::getEntryWidget()
   return m_entry;
 }
 
-Widget* ComboBox::getButtonWidget()
+Button* ComboBox::getButtonWidget()
 {
   return m_button;
 }
@@ -385,7 +385,7 @@ static bool combobox_button_msg_proc(JWidget widget, JMessage msg)
   switch (msg->type) {
 
     case JM_DRAW:
-      widget->theme->draw_combobox_button(widget, &msg->draw.rect);
+      widget->theme->draw_combobox_button((ButtonBase*)widget, &msg->draw.rect);
       return true;
 
   }
@@ -451,10 +451,10 @@ static bool combobox_listbox_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-static void combobox_button_cmd(JWidget widget, void *data)
+// When the mouse is clicked we switch the visibility-status of the list-box
+void ComboBox::onButtonClick(Event& ev)
 {
-  ComboBox* combobox = reinterpret_cast<ComboBox*>(data);
-  combobox->switchListBox();
+  switchListBox();
 }
 
 void ComboBox::openListBox()

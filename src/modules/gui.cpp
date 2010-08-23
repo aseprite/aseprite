@@ -808,8 +808,29 @@ void get_widgets(JWidget window, ...)
 
 void setup_mini_look(Widget* widget)
 {
-  Vaca::SharedPtr<SkinProperty> skinProp(new SkinProperty);
+  Vaca::SharedPtr<SkinProperty> skinProp;
+
+  skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinProp == NULL)
+    skinProp.reset(new SkinProperty);
+
   skinProp->setMiniLook(true);
+  widget->setProperty(skinProp);
+}
+
+void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
+{
+  Vaca::SharedPtr<SkinProperty> skinProp;
+
+  skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
+  if (skinProp == NULL)
+    skinProp.reset(new SkinProperty);
+
+  skinProp->setUpperLeft(b1);
+  skinProp->setUpperRight(b2);
+  skinProp->setLowerLeft(b3);
+  skinProp->setLowerRight(b4);
+
   widget->setProperty(skinProp);
 }
 
@@ -822,23 +843,23 @@ void setup_mini_look(Widget* widget)
    "modules/gfx.c"), also this routine adds a hook to
    JI_SIGNAL_DESTROY to remove the button from the "icon_buttons"
    list when the widget is free */
-void add_gfxicon_to_button(JWidget button, int gfx_id, int icon_align)
+void add_gfxicon_to_button(ButtonBase* button, int gfx_id, int icon_align)
 {
-  button->user_data[3] = (void *)gfx_id;
+  button->user_data[3] = (void*)gfx_id;
 
   jwidget_add_hook(button, JI_WIDGET, button_with_icon_msg_proc, NULL);
 
-  ji_generic_button_set_icon(button, get_gfx(gfx_id));
-  ji_generic_button_set_icon_align(button, icon_align);
+  button->setButtonIcon(get_gfx(gfx_id));
+  button->setButtonIconAlign(icon_align);
 
   jlist_append(icon_buttons, button);
 }
 
-void set_gfxicon_in_button(JWidget button, int gfx_id)
+void set_gfxicon_in_button(ButtonBase* button, int gfx_id)
 {
-  button->user_data[3] = (void *)gfx_id;
+  button->user_data[3] = (void*)gfx_id;
 
-  ji_generic_button_set_icon(button, get_gfx(gfx_id));
+  button->setButtonIcon(get_gfx(gfx_id));
 
   jwidget_dirty(button);
 }
@@ -854,24 +875,27 @@ static bool button_with_icon_msg_proc(JWidget widget, JMessage msg)
 /* Button style (convert radio or check buttons and draw it like
    normal buttons) */
 
-JWidget radio_button_new(int radio_group, int b1, int b2, int b3, int b4)
+RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4)
 {
-  JWidget widget = ji_generic_button_new(NULL, JI_RADIO, JI_BUTTON);
-  if (widget) {
-    jradio_set_group(widget, radio_group);
-    jbutton_set_bevel(widget, b1, b2, b3, b4);
-    setup_mini_look(widget);
-  }
+  RadioButton* widget = new RadioButton(NULL, radio_group, JI_BUTTON);
+
+  widget->setRadioGroup(radio_group);
+  widget->setAlign(JI_CENTER | JI_MIDDLE);
+
+  setup_mini_look(widget);
+  setup_bevels(widget, b1, b2, b3, b4);
+
   return widget;
 }
 
-JWidget check_button_new(const char *text, int b1, int b2, int b3, int b4)
+CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 {
-  JWidget widget = ji_generic_button_new(text, JI_CHECK, JI_BUTTON);
-  if (widget) {
-    jbutton_set_bevel(widget, b1, b2, b3, b4);
-    setup_mini_look(widget);
-  }
+  CheckBox* widget = new CheckBox(text, JI_BUTTON);
+
+  widget->setAlign(JI_CENTER | JI_MIDDLE);
+
+  setup_mini_look(widget);
+  setup_bevels(widget, b1, b2, b3, b4);
   return widget;
 }
 
@@ -1192,15 +1216,13 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 // Slot for App::PaletteChange to regenerate graphics when the App palette is changed
 static void on_palette_change_signal()
 {
-  JWidget button;
-  JLink link;
-
   // Regenerate the theme
   ji_regen_theme();
 
   // Fixup the icons
+  JLink link;
   JI_LIST_FOR_EACH(icon_buttons, link) {
-    button = reinterpret_cast<JWidget>(link->data);
-    ji_generic_button_set_icon(button, get_gfx((size_t)button->user_data[3]));
+    ButtonBase* button = reinterpret_cast<ButtonBase*>(link->data);
+    button->setButtonIcon(get_gfx((size_t)button->user_data[3]));
   }
 }

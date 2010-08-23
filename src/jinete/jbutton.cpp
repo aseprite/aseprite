@@ -35,6 +35,7 @@
 #include <allegro/keyboard.h>
 #include <allegro/timer.h>
 #include <string.h>
+#include <queue>
 
 #include "jinete/jbutton.h"
 #include "jinete/jlist.h"
@@ -44,300 +45,127 @@
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
+#include "Vaca/PreferredSizeEvent.h"
 
-typedef void (*command_t)(JWidget widget);
-typedef void (*command_data_t)(JWidget widget, void *data);
-
-typedef struct ButtonCommand
+ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
+  : Widget(type)
 {
-  bool use_data;
-  void *proc;
-  void *data;
-} ButtonCommand;
+  m_behaviorType = behaviorType;
+  m_drawType = drawType;
+  m_icon = NULL;
+  m_iconAlign = JI_LEFT | JI_MIDDLE;
 
-typedef struct Button
-{
-  /* generic */
-  bool pressed_status;
-  int draw_type;
-  BITMAP *icon;
-  int icon_align;
-  /* button */
-    JList commands;
-    int bevel[4];
-  /* check */
-    /* ...nothing... */
-  /* radio */
-    int group;
-} Button;
+  this->setAlign(JI_CENTER | JI_MIDDLE);
+  this->setText(text);
+  jwidget_focusrest(this, true);
 
-static bool button_msg_proc(JWidget widget, JMessage msg);
-static void button_request_size(JWidget widget, int *w, int *h);
-static void button_selected_signal(JWidget widget);
-static void button_deselect_group(JWidget widget, int radio_group);
-
-JWidget ji_generic_button_new(const char *text,
-			      int behavior_type,
-			      int draw_type)
-{
-  Widget* widget = new Widget(behavior_type);
-  Button *button = jnew(Button, 1);
-
-  button->draw_type = draw_type;
-  button->icon = NULL;
-  button->icon_align = JI_LEFT | JI_MIDDLE;
-  button->commands = jlist_new();
-  button->bevel[0] = 2;
-  button->bevel[1] = 2;
-  button->bevel[2] = 2;
-  button->bevel[3] = 2;
-  button->group = 0;
-
-  jwidget_add_hook(widget, behavior_type, button_msg_proc, button);
-  widget->setAlign(JI_CENTER | JI_MIDDLE);
-  widget->setText(text);
-  jwidget_focusrest(widget, true);
-
-  // initialize theme
-  widget->type = button->draw_type;
-  jwidget_init_theme(widget);
-  widget->type = behavior_type;
-
-  return widget;
+  // Initialize theme
+  this->type = m_drawType;	// TODO Remove this nasty trick
+  jwidget_init_theme(this);
+  this->type = type;
 }
 
-void ji_generic_button_set_icon(JWidget widget, struct BITMAP *icon)
+ButtonBase::~ButtonBase()
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  button->icon = icon;
-
-  jwidget_dirty(widget);
 }
 
-void ji_generic_button_set_icon_align(JWidget widget, int icon_align)
+void ButtonBase::setButtonIcon(BITMAP* icon)
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  button->icon_align = icon_align;
-
-  jwidget_dirty(widget);
+  m_icon = icon;
+  dirty();
 }
 
-BITMAP *ji_generic_button_get_icon(JWidget widget)
+void ButtonBase::setButtonIconAlign(int iconAlign)
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  return button->icon;
+  m_iconAlign = iconAlign;
+  dirty();
 }
 
-int ji_generic_button_get_icon_align(JWidget widget)
+BITMAP* ButtonBase::getButtonIcon()
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  return button->icon_align;
+  return m_icon;
 }
 
-/**********************************************************************/
-/* button */
-
-JWidget jbutton_new(const char *text)
+int ButtonBase::getButtonIconAlign()
 {
-  JWidget widget = ji_generic_button_new(text, JI_BUTTON, JI_BUTTON);
-  if (widget)
-    widget->setAlign(JI_CENTER | JI_MIDDLE);
-  return widget;
+  return m_iconAlign;
 }
 
-void jbutton_set_bevel(JWidget widget, int b0, int b1, int b2, int b3)
+int ButtonBase::getBehaviorType() const
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  button->bevel[0] = b0;
-  button->bevel[1] = b1;
-  button->bevel[2] = b2;
-  button->bevel[3] = b3;
-
-  jwidget_dirty(widget);
+  return m_behaviorType;
 }
 
-void jbutton_get_bevel(JWidget widget, int *b4)
+int ButtonBase::getDrawType() const
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  b4[0] = button->bevel[0];
-  b4[1] = button->bevel[1];
-  b4[2] = button->bevel[2];
-  b4[3] = button->bevel[3];
+  return m_drawType;
 }
 
-void jbutton_add_command(JWidget widget,
-			 void (*command_proc)(JWidget widget))
+void ButtonBase::onClick(Event& ev)
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-  ButtonCommand* command = (ButtonCommand*)jnew(ButtonCommand, 1);
-
-  command->use_data = false;
-  command->proc = (void *)command_proc;
-  command->data = NULL;
-
-  jlist_prepend(button->commands, command);
+  // Fire Click() signal
+  Click(ev);
 }
 
-void jbutton_add_command_data(JWidget widget,
-			      void (*command_proc)(JWidget widget,
-						   void *data),
-			      void *data)
+bool ButtonBase::onProcessMessage(JMessage msg)
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-  ButtonCommand* command = jnew(ButtonCommand, 1);
-
-  command->use_data = true;
-  command->proc = (void *)command_proc;
-  command->data = data;
-
-  jlist_prepend(button->commands, command);
-}
-
-/**********************************************************************/
-/* check */
-
-JWidget jcheck_new(const char *text)
-{
-  JWidget widget = ji_generic_button_new(text, JI_CHECK, JI_CHECK);
-  if (widget) {
-    widget->setAlign(JI_LEFT | JI_MIDDLE);
-  }
-  return widget;
-}
-
-/**********************************************************************/
-/* radio */
-
-JWidget jradio_new(const char *text, int radio_group)
-{
-  JWidget widget = ji_generic_button_new(text, JI_RADIO, JI_RADIO);
-  if (widget) {
-    widget->setAlign(JI_LEFT | JI_MIDDLE);
-    jradio_set_group(widget, radio_group);
-  }
-  return widget;
-}
-
-void jradio_set_group(JWidget widget, int radio_group)
-{
-  Button* radio = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  radio->group = radio_group;
-
-  /* TODO: update old and new groups */
-}
-
-int jradio_get_group(JWidget widget)
-{
-  Button* radio = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
-  return radio->group;
-}
-
-void jradio_deselect_group(JWidget widget)
-{
-  Frame* window = static_cast<Frame*>(widget->getRoot());
-  if (window)
-    button_deselect_group(window, jradio_get_group(widget));
-}
-
-/**********************************************************************/
-/* procedures */
-
-static bool button_msg_proc(JWidget widget, JMessage msg)
-{
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
-
   switch (msg->type) {
 
-    case JM_DESTROY: {
-      JLink link;
-
-      JI_LIST_FOR_EACH(button->commands, link)
-	jfree(link->data);
-
-      jlist_free(button->commands);
-      jfree(button);
-      break;
-    }
-
-    case JM_REQSIZE:
-      button_request_size(widget, &msg->reqsize.w, &msg->reqsize.h);
-      return true;
-
     case JM_DRAW: {
-      switch (button->draw_type) {
-	case JI_BUTTON: widget->theme->draw_button(widget, &msg->draw.rect); break;
-	case JI_CHECK:  widget->theme->draw_check(widget, &msg->draw.rect); break;
-	case JI_RADIO:  widget->theme->draw_radio(widget, &msg->draw.rect); break;
+      switch (m_drawType) {
+      	case JI_BUTTON: this->theme->draw_button(this, &msg->draw.rect); break;
+      	case JI_CHECK:  this->theme->draw_check(this, &msg->draw.rect); break;
+      	case JI_RADIO:  this->theme->draw_radio(this, &msg->draw.rect); break;
       }
       return true;
     }
-
-    case JM_SIGNAL:
-      if (widget->type == JI_RADIO) {
-	if (msg->signal.num == JI_SIGNAL_SELECT) {
-	  jradio_deselect_group(widget);
-
-	  jwidget_signal_off(widget);
-	  widget->setSelected(true);
-	  jwidget_signal_on(widget);
-	}
-      }
-      break;
 
     case JM_FOCUSENTER:
     case JM_FOCUSLEAVE:
-      if (widget->isEnabled()) {
-	if (widget->type == JI_BUTTON) {
+      if (this->isEnabled()) {
+	if (m_behaviorType == JI_BUTTON) {
 	  /* deselect the widget (maybe the user press the key, but
 	     before release it, changes the focus) */
-	  if (widget->isSelected())
-	    widget->setSelected(false);
+	  if (this->isSelected())
+	    this->setSelected(false);
 	}
 
 	/* TODO theme specific stuff */
-	jwidget_dirty(widget);
+	dirty();
       }
       break;
 
     case JM_KEYPRESSED:
       /* if the button is enabled */
-      if (widget->isEnabled()) {
+      if (this->isEnabled()) {
 	/* for JI_BUTTON */
-	if (widget->type == JI_BUTTON) {
+	if (m_behaviorType == JI_BUTTON) {
 	  /* has focus and press enter/space */
-	  if (widget->hasFocus()) {
+	  if (this->hasFocus()) {
 	    if ((msg->key.scancode == KEY_ENTER) ||
 		(msg->key.scancode == KEY_ENTER_PAD) ||
 		(msg->key.scancode == KEY_SPACE)) {
-	      widget->setSelected(true);
+	      this->setSelected(true);
 	      return true;
 	    }
 	  }
 	  /* the underscored letter with Alt */
 	  if ((msg->any.shifts & KB_ALT_FLAG) &&
-	      (jwidget_check_underscored(widget, msg->key.scancode))) {
-	    widget->setSelected(true);
+	      (jwidget_check_underscored(this, msg->key.scancode))) {
+	    this->setSelected(true);
 	    return true;
 	  }
 	  /* magnetic */
-	  else if (jwidget_is_magnetic(widget) &&
+	  else if (jwidget_is_magnetic(this) &&
 		   ((msg->key.scancode == KEY_ENTER) ||
 		    (msg->key.scancode == KEY_ENTER_PAD))) {
-	    jmanager_set_focus(widget);
+	    jmanager_set_focus(this);
 
 	    /* dispatch focus movement messages (because the buttons
 	       process them) */
 	    jmanager_dispatch_messages(ji_get_default_manager());
 
-	    widget->setSelected(true);
+	    this->setSelected(true);
 	    return true;
 	  }
 	}
@@ -345,22 +173,22 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
 	else {
 	  /* if the widget has the focus and the user press space or
 	     if the user press Alt+the underscored letter of the button */
-	  if ((widget->hasFocus() &&
+	  if ((this->hasFocus() &&
 	       (msg->key.scancode == KEY_SPACE)) ||
 	      ((msg->any.shifts & KB_ALT_FLAG) &&
-	       (jwidget_check_underscored(widget, msg->key.scancode)))) {
-	    if (widget->type == JI_CHECK) {
+	       (jwidget_check_underscored(this, msg->key.scancode)))) {
+	    if (m_behaviorType == JI_CHECK) {
 	      // Swap the select status
-	      widget->setSelected(!widget->isSelected());
+	      this->setSelected(!this->isSelected());
 	      
 	      // Signal
-	      jwidget_emit_signal(widget, JI_SIGNAL_CHECK_CHANGE);
-	      jwidget_dirty(widget);
+	      jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
+	      dirty();
 	    }
-	    else if (widget->type == JI_RADIO) {
-	      if (!widget->isSelected()) {
-		widget->setSelected(true);
-		jwidget_emit_signal(widget, JI_SIGNAL_RADIO_CHANGE);
+	    else if (m_behaviorType == JI_RADIO) {
+	      if (!this->isSelected()) {
+		this->setSelected(true);
+		jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
 	      }
 	    }
 	    return true;
@@ -370,10 +198,10 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_KEYRELEASED:
-      if (widget->isEnabled()) {
-	if (widget->type == JI_BUTTON) {
-	  if (widget->isSelected()) {
-	    button_selected_signal(widget);
+      if (this->isEnabled()) {
+	if (m_behaviorType == JI_BUTTON) {
+	  if (this->isSelected()) {
+	    generateButtonSelectSignal();
 	    return true;
 	  }
 	}
@@ -381,35 +209,35 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONPRESSED:
-      switch (widget->type) {
+      switch (m_behaviorType) {
 
 	case JI_BUTTON:
-	  if (widget->isEnabled()) {
-	    widget->setSelected(true);
+	  if (this->isEnabled()) {
+	    this->setSelected(true);
 
-	    button->pressed_status = widget->isSelected();
-	    widget->captureMouse();
+	    m_pressedStatus = this->isSelected();
+	    this->captureMouse();
 	  }
 	  return true;
 
 	case JI_CHECK:
-	  if (widget->isEnabled()) {
-	    widget->setSelected(!widget->isSelected());
+	  if (this->isEnabled()) {
+	    this->setSelected(!this->isSelected());
 
-	    button->pressed_status = widget->isSelected();
-	    widget->captureMouse();
+	    m_pressedStatus = this->isSelected();
+	    this->captureMouse();
 	  }
 	  return true;
 
 	case JI_RADIO:
-	  if (widget->isEnabled()) {
-	    if (!widget->isSelected()) {
-	      jwidget_signal_off(widget);
-	      widget->setSelected(true);
-	      jwidget_signal_on(widget);
+	  if (this->isEnabled()) {
+	    if (!this->isSelected()) {
+	      jwidget_signal_off(this);
+	      this->setSelected(true);
+	      jwidget_signal_on(this);
 
-	      button->pressed_status = widget->isSelected();
-	      widget->captureMouse();
+	      m_pressedStatus = this->isSelected();
+	      this->captureMouse();
 	    }
 	  }
 	  return true;
@@ -417,25 +245,39 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_BUTTONRELEASED:
-      if (widget->hasCapture()) {
-	widget->releaseMouse();
+      if (this->hasCapture()) {
+	this->releaseMouse();
 
-	if (widget->hasMouseOver()) {
-	  switch (widget->type) {
+	if (this->hasMouseOver()) {
+	  switch (m_behaviorType) {
 
 	    case JI_BUTTON:
-	      button_selected_signal(widget);
+	      generateButtonSelectSignal();
 	      break;
 
 	    case JI_CHECK:
-	      jwidget_emit_signal(widget, JI_SIGNAL_CHECK_CHANGE);
-	      jwidget_dirty(widget);
+	      {
+		jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
+
+		// Fire onClick() event
+		Vaca::Event ev(this);
+		onClick(ev);
+
+		dirty();
+	      }
 	      break;
 
 	    case JI_RADIO:
-	      widget->setSelected(false);
-	      widget->setSelected(true);
-	      jwidget_emit_signal(widget, JI_SIGNAL_RADIO_CHANGE);
+	      {
+		this->setSelected(false);
+		this->setSelected(true);
+
+		jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
+
+		// Fire onClick() event
+		Vaca::Event ev(this);
+		onClick(ev);
+	      }
 	      break;
 	  }
 	}
@@ -444,22 +286,22 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
       break;
 
     case JM_MOTION:
-      if (widget->isEnabled() && widget->hasCapture()) {
-	bool hasMouse = widget->hasMouseOver();
+      if (this->isEnabled() && this->hasCapture()) {
+	bool hasMouse = this->hasMouseOver();
 
     	// Switch state when the mouse go out
-    	if (( hasMouse && widget->isSelected() != button->pressed_status) ||
-    	    (!hasMouse && widget->isSelected() == button->pressed_status)) {
-    	  jwidget_signal_off(widget);
+    	if (( hasMouse && this->isSelected() != m_pressedStatus) ||
+    	    (!hasMouse && this->isSelected() == m_pressedStatus)) {
+    	  jwidget_signal_off(this);
 
     	  if (hasMouse) {
-    	    widget->setSelected(button->pressed_status);
+    	    this->setSelected(m_pressedStatus);
     	  }
     	  else {
-    	    widget->setSelected(!button->pressed_status);
+    	    this->setSelected(!m_pressedStatus);
     	  }
 
-    	  jwidget_signal_on(widget);
+    	  jwidget_signal_on(this);
     	}
       }
       break;
@@ -467,91 +309,143 @@ static bool button_msg_proc(JWidget widget, JMessage msg)
     case JM_MOUSEENTER:
     case JM_MOUSELEAVE:
       // TODO theme stuff
-      if (widget->isEnabled())
-	jwidget_dirty(widget);
+      if (this->isEnabled())
+	dirty();
       break;
   }
 
-  return false;
+  return Widget::onProcessMessage(msg);
 }
 
-static void button_request_size(JWidget widget, int *w, int *h)
+void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 {
-  Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
   struct jrect box, text, icon;
   int icon_w = 0;
   int icon_h = 0;
 
-  switch (button->draw_type) {
+  if (m_icon) {
+    icon_w = m_icon->w;
+    icon_h = m_icon->h;
+  }
+  else {
+    switch (m_drawType) {
 
-    case JI_BUTTON:
-      if (button->icon) {
-	icon_w = button->icon->w;
-	icon_h = button->icon->h;
-      }
-      break;
+      case JI_CHECK:
+	icon_w = this->theme->check_icon_size;
+	icon_h = this->theme->check_icon_size;
+	break;
 
-    case JI_CHECK:
-      icon_w = widget->theme->check_icon_size;
-      icon_h = widget->theme->check_icon_size;
-      break;
-
-    case JI_RADIO:
-      icon_w = widget->theme->radio_icon_size;
-      icon_h = widget->theme->radio_icon_size;
-      break;
+      case JI_RADIO:
+	icon_w = this->theme->radio_icon_size;
+	icon_h = this->theme->radio_icon_size;
+	break;
+    }
   }
 
-  jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    button->icon_align, icon_w, icon_h);
+  jwidget_get_texticon_info(this, &box, &text, &icon,
+			    m_iconAlign, icon_w, icon_h);
 
-  *w = widget->border_width.l + jrect_w(&box) + widget->border_width.r;
-  *h = widget->border_width.t + jrect_h(&box) + widget->border_width.b;
+  ev.setPreferredSize(this->border_width.l + jrect_w(&box) + this->border_width.r,
+		      this->border_width.t + jrect_h(&box) + this->border_width.b);
 }
 
-static void button_selected_signal(JWidget widget)
+void ButtonBase::generateButtonSelectSignal()
 {
-  // deselect
-  widget->setSelected(false);
+  // Deselect
+  this->setSelected(false);
 
-  // emit the signal
-  bool used = jwidget_emit_signal(widget, JI_SIGNAL_BUTTON_SELECT);
+  // Emit JI_SIGNAL_BUTTON_SELECT signal
+  jwidget_emit_signal(this, JI_SIGNAL_BUTTON_SELECT);
 
-  // not used?
-  if (!used) {
-    Button* button = reinterpret_cast<Button*>(jwidget_get_data(widget, widget->type));
+  // Fire onClick() event
+  Vaca::Event ev(this);
+  onClick(ev);
+}
 
-    /* call commands */
-    if (!jlist_empty(button->commands)) {
-      ButtonCommand* command;
-      JLink link;
+// ======================================================================
+// Button class
+// ======================================================================
 
-      JI_LIST_FOR_EACH(button->commands, link) {
-	command = reinterpret_cast<ButtonCommand*>(link->data);
+Button::Button(const char *text)
+  : ButtonBase(text, JI_BUTTON, JI_BUTTON, JI_BUTTON)
+{
+  setAlign(JI_CENTER | JI_MIDDLE);
+}
 
-	if (command->proc) {
-	  if (command->use_data)
-	    (*(command_data_t)command->proc)(widget, command->data);
-	  else
-	    (*(command_t)command->proc)(widget);
+// ======================================================================
+// CheckBox class
+// ======================================================================
+
+CheckBox::CheckBox(const char *text, int drawType)
+  : ButtonBase(text, JI_CHECK, JI_CHECK, drawType)
+{
+  setAlign(JI_LEFT | JI_MIDDLE);
+}
+
+// ======================================================================
+// RadioButton class
+// ======================================================================
+
+RadioButton::RadioButton(const char *text, int radioGroup, int drawType)
+  : ButtonBase(text, JI_RADIO, JI_RADIO, drawType)
+{
+  setAlign(JI_LEFT | JI_MIDDLE);
+  setRadioGroup(radioGroup);
+}
+
+void RadioButton::setRadioGroup(int radioGroup)
+{
+  m_radioGroup = radioGroup;
+
+  // TODO: Update old and new groups
+}
+
+int RadioButton::getRadioGroup() const
+{
+  return m_radioGroup;
+}
+
+void RadioButton::deselectRadioGroup()
+{
+  Widget* widget = getRoot();
+  if (!widget)
+    return;
+
+  std::queue<Widget*> allChildrens;
+  allChildrens.push(widget);
+
+  while (!allChildrens.empty()) {
+    widget = allChildrens.front();
+    allChildrens.pop();
+
+    if (RadioButton* radioButton = dynamic_cast<RadioButton*>(widget)) {
+      if (radioButton->getRadioGroup() == m_radioGroup)
+	radioButton->setSelected(false);
+    }
+
+    JLink link;
+    JI_LIST_FOR_EACH(widget->children, link) {
+      allChildrens.push((Widget*)link->data);
+    }
+  }
+}
+
+bool RadioButton::onProcessMessage(JMessage msg)
+{
+  switch (msg->type) {
+
+    case JM_SIGNAL:
+      if (getBehaviorType() == JI_RADIO) {
+	if (msg->signal.num == JI_SIGNAL_SELECT) {
+	  deselectRadioGroup();
+
+	  jwidget_signal_off(this);
+	  this->setSelected(true);
+	  jwidget_signal_on(this);
 	}
       }
-    }
-    /* default action: close the window */
-    else
-      jwidget_close_window(widget);
+      break;
   }
-}
 
-static void button_deselect_group(JWidget widget, int radio_group)
-{
-  JLink link;
-
-  JI_LIST_FOR_EACH(widget->children, link)
-    button_deselect_group(reinterpret_cast<JWidget>(link->data), radio_group);
-
-  if (widget->type == JI_RADIO) {
-    if (jradio_get_group(widget) == radio_group)
-      widget->setSelected(false);
-  }
+  return ButtonBase::onProcessMessage(msg);
 }

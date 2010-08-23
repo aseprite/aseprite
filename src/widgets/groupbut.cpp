@@ -28,6 +28,7 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
+#include "Vaca/Bind.h"
 
 #include "modules/gui.h"
 #include "widgets/groupbut.h"
@@ -35,13 +36,13 @@
 static JWidget find_selected(JWidget widget);
 static int select_button(JWidget widget, int index);
 
-static bool radio_change_hook(JWidget widget, void *data);
+static bool radio_change_hook(JWidget vbox);
 
 JWidget group_button_new(int w, int h, int first_selected, ...)
 {
-  JWidget vbox = jbox_new (JI_VERTICAL | JI_HOMOGENEOUS);
+  JWidget vbox = jbox_new(JI_VERTICAL | JI_HOMOGENEOUS);
   JWidget hbox = NULL;
-  JWidget radio;
+  RadioButton* radio;
   int x, y, icon;
   va_list ap;
   int c = 0;
@@ -74,7 +75,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       if (icon >= 0)
 	add_gfxicon_to_button(radio, icon, JI_CENTER | JI_MIDDLE);
 
-      HOOK(radio, JI_SIGNAL_RADIO_CHANGE, radio_change_hook, vbox);
+      radio->Click.connect(Vaca::Bind<bool>(&radio_change_hook, vbox));
 
       if (c == first_selected)
 	radio->setSelected(true);
@@ -151,8 +152,8 @@ static int select_button(JWidget widget, int index)
   return false;
 }
 
-static bool radio_change_hook(JWidget widget, void *data)
+static bool radio_change_hook(JWidget vbox)
 {
-  jwidget_emit_signal((JWidget)data, SIGNAL_GROUP_BUTTON_CHANGE);
+  jwidget_emit_signal(vbox, SIGNAL_GROUP_BUTTON_CHANGE);
   return true;
 }

@@ -20,8 +20,8 @@
     <box horizontal="true">
       <box horizontal="true" expansive="true" />
       <box horizontal="true" homogeneous="true">
-	<button text="&amp;OK" name="ok" magnetic="true" width="60" />
-	<button text="&amp;Cancel" name="cancel" />
+	<button text="&amp;OK" closewindow="true" name="ok" magnetic="true" width="60" />
+	<button text="&amp;Cancel" closewindow="true" name="cancel" />
       </box>
     </box>
   </box>

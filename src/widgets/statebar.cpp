@@ -25,6 +25,7 @@
 
 #include "jinete/jinete.h"
 #include "Vaca/Size.h"
+#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "commands/commands.h"
@@ -48,7 +49,7 @@
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 
-enum {
+enum AniAction {
   ACTION_FIRST,
   ACTION_PREV,
   ACTION_PLAY,
@@ -60,7 +61,7 @@ static bool tipwindow_msg_proc(JWidget widget, JMessage msg);
 
 static bool transparent_color_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
-static void button_command(JWidget widget, void *data);
+static void ani_button_command(Button* widget, AniAction action);
 
 static int statusbar_type()
 {
@@ -73,12 +74,12 @@ static int statusbar_type()
 StatusBar::StatusBar()
   : Widget(statusbar_type())
 {
-#define BUTTON_NEW(name, text, data)					\
+#define BUTTON_NEW(name, text, action)					\
   {									\
-    (name) = jbutton_new(text);						\
+    (name) = new Button(text);						\
     (name)->user_data[0] = this;					\
     setup_mini_look(name);						\
-    jbutton_add_command_data((name), button_command, (void *)(data));	\
+    (name)->Click.connect(Vaca::Bind<void>(&ani_button_command, (name), action)); \
   }
 
 #define ICON_NEW(name, icon, action)					\
@@ -143,7 +144,7 @@ StatusBar::StatusBar()
 
     m_movePixelsBox = jbox_new(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
-    m_transparentColor = colorbutton_new(color_mask(), IMAGE_RGB);
+    m_transparentColor = new ColorButton(color_mask(), IMAGE_RGB);
 
     jwidget_add_child(m_movePixelsBox, filler);
     jwidget_add_child(m_movePixelsBox, m_transparentLabel);
@@ -297,7 +298,7 @@ void StatusBar::hideMovePixelsOptions()
 
 color_t StatusBar::getTransparentColor()
 {
-  return colorbutton_get_color(m_transparentColor);
+  return m_transparentColor->getColor();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -761,11 +762,11 @@ static bool slider_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static void button_command(JWidget widget, void *data)
+static void ani_button_command(Button* widget, AniAction action)
 {
   Command* cmd = NULL;
 
-  switch ((size_t)data) {
+  switch (action) {
     //case ACTION_LAYER: cmd = CommandsModule::instance()->get_command_by_name(CommandId::layer_properties); break;
     case ACTION_FIRST: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_first_frame); break;
     case ACTION_PREV: cmd = CommandsModule::instance()->get_command_by_name(CommandId::goto_previous_frame); break;

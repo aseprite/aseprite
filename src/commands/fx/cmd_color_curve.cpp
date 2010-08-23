@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
@@ -39,9 +40,11 @@
 #include "widgets/target.h"
 
 static Curve* the_curve = NULL;
-static JWidget check_preview, preview;
+static JWidget preview;
+static CheckBox* check_preview;
 
 static bool window_msg_proc(JWidget widget, JMessage msg);
+static void preview_change_hook(Widget* widget);
 static void make_preview();
 
 // Slot for App::Exit signal 
@@ -122,6 +125,7 @@ void ColorCurveCommand::onExecute(Context* context)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
+  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
   jwidget_add_hook(window, -1, window_msg_proc, NULL);
   
   /* default position */
@@ -162,15 +166,15 @@ static bool window_msg_proc(JWidget widget, JMessage msg)
 			  target_button_get_target(msg->signal.from));
 	make_preview();
 	break;
-
-      case JI_SIGNAL_CHECK_CHANGE:
-	set_config_bool("ColorCurve", "Preview",
-			msg->signal.from->isSelected());
-	make_preview();
-	break;
     }
   }
   return false;
+}
+
+static void preview_change_hook(Widget* widget)
+{
+  set_config_bool("ColorCurve", "Preview", widget->isSelected());
+  make_preview();
 }
 
 static void make_preview()

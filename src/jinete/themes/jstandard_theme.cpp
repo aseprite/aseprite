@@ -112,8 +112,8 @@ public:
   int color_background();
 
   void draw_box(JWidget widget, JRect clip);
-  void draw_button(JWidget widget, JRect clip);
-  void draw_check(JWidget widget, JRect clip);
+  void draw_button(ButtonBase* widget, JRect clip);
+  void draw_check(ButtonBase* widget, JRect clip);
   void draw_entry(JWidget widget, JRect clip);
   void draw_grid(JWidget widget, JRect clip);
   void draw_label(JWidget widget, JRect clip);
@@ -123,11 +123,11 @@ public:
   void draw_menu(JWidget widget, JRect clip);
   void draw_menuitem(JWidget widget, JRect clip);
   void draw_panel(JWidget widget, JRect clip);
-  void draw_radio(JWidget widget, JRect clip);
+  void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
   void draw_slider(JWidget widget, JRect clip);
   void draw_combobox_entry(JWidget widget, JRect clip);
-  void draw_combobox_button(JWidget widget, JRect clip);
+  void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
@@ -142,8 +142,7 @@ private:
 		       int selected_offset);
   void draw_entry_cursor(JWidget widget, int x, int y);
   void draw_icons(int x, int y, JWidget widget, int edge_icon);
-  void draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel);
-  void less_bevel(int *bevel);
+  void draw_edges(int x1, int y1, int x2, int y2, int c1, int c2);
 
 };
 
@@ -318,8 +317,8 @@ void jstandard_theme::init_widget(JWidget widget)
     case JI_COMBOBOX: {
       ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
       if (combobox != NULL) {
-	Widget* button = combobox->getButtonWidget();
-	ji_generic_button_set_icon(button, icons_bitmap[ICON_COMBOBOX]);
+	Button* button = combobox->getButtonWidget();
+	button->setButtonIcon(icons_bitmap[ICON_COMBOBOX]);
       }
       break;
     }
@@ -402,10 +401,8 @@ void jstandard_theme::init_widget(JWidget widget)
 	  BORDER4(6, 4+jwidget_get_text_height(widget)+6, 6, 6);
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
-	    JWidget button = jbutton_new("x");
-	    jbutton_set_bevel(button, 0, 0, 0, 0);
-	    jwidget_add_hook(button, JI_WIDGET,
-			     theme_button_msg_proc, NULL);
+	    Button* button = new Button("x");
+	    jwidget_add_hook(button, JI_WIDGET, theme_button_msg_proc, NULL);
 	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
 	    button->setName("theme_close_button");
@@ -486,14 +483,13 @@ void jstandard_theme::draw_box(JWidget widget, JRect clip)
   jdraw_rectfill(clip, get_bg_color(widget));
 }
 
-void jstandard_theme::draw_button(JWidget widget, JRect clip)
+void jstandard_theme::draw_button(ButtonBase* widget, JRect clip)
 {
-  BITMAP *icon_bmp = ji_generic_button_get_icon(widget);
-  int icon_align = ji_generic_button_get_icon_align(widget);
+  BITMAP* icon_bmp = widget->getButtonIcon();
+  int icon_align = widget->getButtonIconAlign();
   struct jrect box, text, icon;
   int x1, y1, x2, y2;
   int fg, bg, c1, c2;
-  int bevel[4];
   JRect crect;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
@@ -533,36 +529,18 @@ void jstandard_theme::draw_button(JWidget widget, JRect clip)
   /* extern background */
   rectfill(ji_screen, x1, y1, x2, y2, get_bg_color(widget));
 
-  /* get bevel info */
-  jbutton_get_bevel(widget, bevel);
-
   /* 1st border */
   if (widget->hasFocus())
-    draw_bevel_box(x1, y1, x2, y2,
-		   COLOR_FOREGROUND, COLOR_FOREGROUND, bevel);
-  else {
-    less_bevel(bevel);
-    draw_bevel_box(x1, y1, x2, y2, c1, c2, bevel);
-  }
-
-  less_bevel(bevel);
+    draw_edges(x1, y1, x2, y2, COLOR_FOREGROUND, COLOR_FOREGROUND);
+  else
+    draw_edges(x1, y1, x2, y2, c1, c2);
 
   /* 2nd border */
   x1++, y1++, x2--, y2--;
   if (widget->hasFocus())
-    draw_bevel_box(x1, y1, x2, y2, c1, c2, bevel);
+    draw_edges(x1, y1, x2, y2, c1, c2);
   else
-    draw_bevel_box(x1, y1, x2, y2, bg, bg, bevel);
-
-  less_bevel(bevel);
-
-  /* more borders */
-  while ((bevel[0] > 0) || (bevel[1] > 0) ||
-	 (bevel[2] > 0) || (bevel[3] > 0)) {
-    x1++, y1++, x2--, y2--;
-    draw_bevel_box(x1, y1, x2, y2, bg, bg, bevel);
-    less_bevel(bevel);
-  }
+    draw_edges(x1, y1, x2, y2, bg, bg);
 
   /* background */
   x1++, y1++, x2--, y2--;
@@ -599,15 +577,15 @@ void jstandard_theme::draw_button(JWidget widget, JRect clip)
   }
 }
 
-void jstandard_theme::draw_check(JWidget widget, JRect clip)
+void jstandard_theme::draw_check(ButtonBase* widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			      ji_generic_button_get_icon_align(widget),
-			      widget->theme->check_icon_size,
-			      widget->theme->check_icon_size);
+			    widget->getButtonIconAlign(),
+			    widget->theme->check_icon_size,
+			    widget->theme->check_icon_size);
 
   /* background */
   jdraw_rectfill(widget->rc, bg = get_bg_color(widget));
@@ -967,13 +945,13 @@ void jstandard_theme::draw_panel(JWidget widget, JRect clip)
   }
 }
 
-void jstandard_theme::draw_radio(JWidget widget, JRect clip)
+void jstandard_theme::draw_radio(ButtonBase* widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg = get_bg_color(widget);
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    ji_generic_button_get_icon_align(widget),
+			    widget->getButtonIconAlign(),
 			    widget->theme->radio_icon_size,
 			    widget->theme->radio_icon_size);
 
@@ -1161,7 +1139,7 @@ void jstandard_theme::draw_combobox_entry(JWidget widget, JRect clip)
   draw_entry(widget, clip);
 }
 
-void jstandard_theme::draw_combobox_button(JWidget widget, JRect clip)
+void jstandard_theme::draw_combobox_button(ButtonBase* widget, JRect clip)
 {
   draw_button(widget, clip);
 }
@@ -1397,27 +1375,19 @@ void jstandard_theme::draw_icons(int x, int y, JWidget widget, int edge_icon)
     draw_sprite(ji_screen, icons_bitmap[edge_icon+1], x, y);
 }
 
-void jstandard_theme::draw_bevel_box(int x1, int y1, int x2, int y2, int c1, int c2, int *bevel)
+void jstandard_theme::draw_edges(int x1, int y1, int x2, int y2, int c1, int c2)
 {
-  hline(ji_screen, x1+bevel[0], y1, x2-bevel[1], c1); /* top */
-  hline(ji_screen, x1+bevel[2], y2, x2-bevel[3], c2); /* bottom */
+  hline(ji_screen, x1, y1, x2, c1); /* top */
+  hline(ji_screen, x1, y2, x2, c2); /* bottom */
 
-  vline(ji_screen, x1, y1+bevel[0], y2-bevel[2], c1); /* left */
-  vline(ji_screen, x2, y1+bevel[1], y2-bevel[3], c2); /* right */
+  vline(ji_screen, x1, y1, y2, c1); /* left */
+  vline(ji_screen, x2, y1, y2, c2); /* right */
 
-  line(ji_screen, x1, y1+bevel[0], x1+bevel[0], y1, c1); /* top-left */
-  line(ji_screen, x1, y2-bevel[2], x1+bevel[2], y2, c2); /* bottom-left */
+  line(ji_screen, x1, y1, x1, y1, c1); /* top-left */
+  line(ji_screen, x1, y2, x1, y2, c2); /* bottom-left */
 
-  line(ji_screen, x2-bevel[1], y1, x2, y1+bevel[1], c2); /* top-right */
-  line(ji_screen, x2-bevel[3], y2, x2, y2-bevel[3], c2); /* bottom-right */
-}
-
-void jstandard_theme::less_bevel(int *bevel)
-{
-  if (bevel[0] > 0) --bevel[0];
-  if (bevel[1] > 0) --bevel[1];
-  if (bevel[2] > 0) --bevel[2];
-  if (bevel[3] > 0) --bevel[3];
+  line(ji_screen, x2, y1, x2, y1, c2); /* top-right */
+  line(ji_screen, x2, y2, x2, y2, c2); /* bottom-right */
 }
 
 /* controls the "X" button in a window to close it */

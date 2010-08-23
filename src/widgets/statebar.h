@@ -27,6 +27,8 @@
 class Frame;
 class StatusBar;
 class Tool;
+class Button;
+class ColorButton;
 
 class Progress
 {
@@ -91,16 +93,16 @@ private:
   // Box of main commands
   Widget* m_commandsBox;
   Widget* m_slider;			// Opacity slider
-  Widget* m_b_first;			// Go to first frame
-  Widget* m_b_prev;			// Go to previous frame
-  Widget* m_b_play;			// Play animation
-  Widget* m_b_next;			// Go to next frame
-  Widget* m_b_last;			// Go to last frame
+  Button* m_b_first;			// Go to first frame
+  Button* m_b_prev;			// Go to previous frame
+  Button* m_b_play;			// Play animation
+  Button* m_b_next;			// Go to next frame
+  Button* m_b_last;			// Go to last frame
 
   // Box with move-pixels commands (when the user drag-and-drop selected pixels using the editor)
   Widget* m_movePixelsBox;
   Widget* m_transparentLabel;
-  Widget* m_transparentColor;
+  ColorButton* m_transparentColor;
 
   // Tip window
   Frame* m_tipwindow;

@@ -22,6 +22,7 @@
 #include <allegro/internal/aintern.h>
 
 #include "Vaca/SharedPtr.h"
+#include "Vaca/Bind.h"
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
@@ -427,18 +428,15 @@ void SkinneableTheme::init_widget(JWidget widget)
 	ComboBox* combobox = dynamic_cast<ComboBox*>(widget);
 	ASSERT(combobox != NULL);
 
-	Widget* button = combobox->getButtonWidget();
+	Button* button = combobox->getButtonWidget();
 
 	button->border_width.l = 0;
 	button->border_width.t = 0;
 	button->border_width.r = 0;
 	button->border_width.b = 0;
 	button->child_spacing = 0;
-
-	if (!(widget->flags & JI_INITIALIZED)) {
-	  jwidget_add_hook(button, JI_WIDGET,
-			   &SkinneableTheme::theme_combobox_button_msg_proc, NULL);
-	}
+	button->min_w = 15 * jguiscale();
+	button->min_h = 16 * jguiscale();
       }
       break;
 
@@ -527,13 +525,14 @@ void SkinneableTheme::init_widget(JWidget widget)
 
 #if 1				/* add close button */
 	  if (!(widget->flags & JI_INITIALIZED)) {
-	    JWidget button = jbutton_new("");
-	    jbutton_set_bevel(button, 0, 0, 0, 0);
+	    Button* button = new Button("");
+	    setup_bevels(button, 0, 0, 0, 0);
 	    jwidget_add_hook(button, JI_WIDGET,
 			     &SkinneableTheme::theme_frame_button_msg_proc, NULL);
 	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
 	    button->setName("theme_close_button");
+	    button->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, (Frame*)widget, button));
 	  }
 #endif
 	}
@@ -612,10 +611,10 @@ void SkinneableTheme::draw_box(JWidget widget, JRect clip)
   jdraw_rectfill(clip, BGCOLOR);
 }
 
-void SkinneableTheme::draw_button(JWidget widget, JRect clip)
+void SkinneableTheme::draw_button(ButtonBase* widget, JRect clip)
 {
-  BITMAP *icon_bmp = ji_generic_button_get_icon(widget);
-  int icon_align = ji_generic_button_get_icon_align(widget);
+  BITMAP* icon_bmp = widget->getButtonIcon();
+  int icon_align = widget->getButtonIconAlign();
   struct jrect box, text, icon;
   int x1, y1, x2, y2;
   int fg, bg, part_nw;
@@ -704,13 +703,13 @@ void SkinneableTheme::draw_button(JWidget widget, JRect clip)
   }
 }
 
-void SkinneableTheme::draw_check(JWidget widget, JRect clip)
+void SkinneableTheme::draw_check(ButtonBase* widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    ji_generic_button_get_icon_align(widget),
+			    widget->getButtonIconAlign(),
 			    widget->theme->check_icon_size,
 			    widget->theme->check_icon_size);
 
@@ -1015,13 +1014,13 @@ void SkinneableTheme::draw_panel(JWidget widget, JRect clip)
   jdraw_rectfill(widget->rc, get_panel_face_color());
 }
 
-void SkinneableTheme::draw_radio(JWidget widget, JRect clip)
+void SkinneableTheme::draw_radio(ButtonBase* widget, JRect clip)
 {
   struct jrect box, text, icon;
   int bg = BGCOLOR;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
-			    ji_generic_button_get_icon_align(widget),
+			    widget->getButtonIconAlign(),
 			    widget->theme->radio_icon_size,
 			    widget->theme->radio_icon_size);
 
@@ -1268,7 +1267,7 @@ void SkinneableTheme::draw_combobox_entry(JWidget widget, JRect clip)
     draw_entry_cursor(widget, x, y);
 }
 
-void SkinneableTheme::draw_combobox_button(JWidget widget, JRect clip)
+void SkinneableTheme::draw_combobox_button(ButtonBase* widget, JRect clip)
 {
   BITMAP* icon_bmp = m_part[PART_COMBOBOX_ARROW];
   struct jrect icon;
@@ -1421,7 +1420,7 @@ void SkinneableTheme::draw_frame(Frame* window, JRect clip)
   jrect_free(cpos);
 }
 
-void SkinneableTheme::draw_frame_button(JWidget widget, JRect clip)
+void SkinneableTheme::draw_frame_button(ButtonBase* widget, JRect clip)
 {
   int part;
 
@@ -1722,7 +1721,12 @@ bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
       return true;
 
     case JM_DRAW:
-      ((SkinneableTheme*)widget->theme)->draw_frame_button(widget, &msg->draw.rect);
+      {
+	ButtonBase* button = dynamic_cast<ButtonBase*>(widget);
+	ASSERT(button && "theme_frame_button_msg_proc() must be hooked in a ButtonBase widget");
+
+	((SkinneableTheme*)widget->theme)->draw_frame_button(button, &msg->draw.rect);
+      }
       return true;
 
     case JM_KEYPRESSED:
@@ -1746,20 +1750,6 @@ bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-bool SkinneableTheme::theme_combobox_button_msg_proc(JWidget widget, JMessage msg)
-{
-  switch (msg->type) {
-
-    case JM_REQSIZE:
-      msg->reqsize.w = 15 * jguiscale();
-      msg->reqsize.h = 16 * jguiscale();
-      return true;
-
-  }
-
-  return false;
-}
-
 //////////////////////////////////////////////////////////////////////
 
 const Vaca::Char* SkinProperty::SkinPropertyName = L"SkinProperty";
@@ -1768,6 +1758,10 @@ SkinProperty::SkinProperty()
   : Property(SkinPropertyName)
 {
   m_isMiniLook = false;
+  m_upperLeft = 0;
+  m_upperRight = 0;
+  m_lowerLeft = 0;
+  m_lowerRight = 0;
 }
 
 SkinProperty::~SkinProperty()
@@ -1782,4 +1776,44 @@ bool SkinProperty::isMiniLook() const
 void SkinProperty::setMiniLook(bool state)
 {
   m_isMiniLook = state;
+}
+
+int SkinProperty::getUpperLeft() const
+{
+  return m_upperLeft;
+}
+
+int SkinProperty::getUpperRight() const
+{
+  return m_upperRight;
+}
+
+int SkinProperty::getLowerLeft() const
+{
+  return m_lowerLeft;
+}
+
+int SkinProperty::getLowerRight() const
+{
+  return m_lowerRight;
+}
+
+void SkinProperty::setUpperLeft(int value)
+{
+  m_upperLeft = value;
+}
+
+void SkinProperty::setUpperRight(int value)
+{
+  m_upperRight = value;
+}
+
+void SkinProperty::setLowerLeft(int value)
+{
+  m_lowerLeft = value;
+}
+
+void SkinProperty::setLowerRight(int value)
+{
+  m_lowerRight = value;
 }

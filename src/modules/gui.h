@@ -30,6 +30,9 @@ class Params;
 class Tool;
 class Widget;
 class Frame;
+class ButtonBase;
+class RadioButton;
+class CheckBox;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -89,13 +92,13 @@ void hook_signal(Widget* widget,
 void get_widgets(Widget* window, ...);
 
 void setup_mini_look(Widget* widget);
+void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4);
 
-void add_gfxicon_to_button(Widget* button, int gfx_id, int icon_align);
-void set_gfxicon_in_button(Widget* button, int gfx_id);
+void add_gfxicon_to_button(ButtonBase* button, int gfx_id, int icon_align);
+void set_gfxicon_in_button(ButtonBase* button, int gfx_id);
 
-Widget* radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
-Widget* check_button_new(const char *text, int b1, int b2, int b3, int b4);
-/* void change_to_button_style(Widget* widget, int b1, int b2, int b3, int b4); */
+RadioButton* radio_button_new(int radio_group, int b1, int b2, int b3, int b4);
+CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
 
 //////////////////////////////////////////////////////////////////////
 // Keyboard shortcuts
@@ -155,6 +158,14 @@ public:
   }
 
   operator T*() {
+    return m_ptr;
+  }
+
+  T* get() {
+    return m_ptr;
+  }
+
+  const T* get() const {
     return m_ptr;
   }
 

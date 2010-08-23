@@ -26,6 +26,7 @@
 #include "jinete/jhook.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
+#include "Vaca/Bind.h"
 
 #include "core/cfg.h"
 #include "effect/effect.h"
@@ -34,8 +35,8 @@
 #include "raster/image.h"
 #include "widgets/target.h"
 
-static bool channel_change_hook(JWidget widget, void *data);
-static bool images_change_hook(JWidget widget, void *data);
+static bool channel_change_hook(ButtonBase* widget, Widget* data);
+static bool images_change_hook(ButtonBase* widget, Widget* data);
 static int get_target_image_gfx(int target);
 
 /**
@@ -50,14 +51,18 @@ JWidget target_button_new(int imgtype, bool with_channels)
   if (widget) {								\
     jwidget_set_border(widget, 2 * jguiscale());			\
     jwidget_add_child(box, widget);					\
-    HOOK(widget,							\
-	 widget->type == JI_BUTTON ?					\
-	 JI_SIGNAL_BUTTON_SELECT: JI_SIGNAL_CHECK_CHANGE, hook, vbox);	\
+    widget->Click.connect(Vaca::Bind<bool>(&hook, widget, vbox));	\
   }
 
   int default_targets = 0;
   JWidget vbox, hbox;
-  JWidget r=NULL, g=NULL, b=NULL, k=NULL, a=NULL, index=NULL, images=NULL;
+  CheckBox* r = NULL;
+  CheckBox* g = NULL;
+  CheckBox* b = NULL;
+  CheckBox* k = NULL;
+  CheckBox* a = NULL;
+  CheckBox* index = NULL;
+  Button* images = NULL;
 
   vbox = jbox_new(JI_VERTICAL);
   hbox = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
@@ -99,10 +104,10 @@ JWidget target_button_new(int imgtype, bool with_channels)
   }
 
   /* create the button to select "image" target */
-  images = jbutton_new(NULL);
-  jbutton_set_bevel(images,
-		    with_channels ? 0: 2,
-		    with_channels ? 0: 2, 2, 2);
+  images = new Button(NULL);
+  setup_bevels(images,
+	       with_channels ? 0: 2,
+	       with_channels ? 0: 2, 2, 2);
   setup_mini_look(images);
   add_gfxicon_to_button(images, get_target_image_gfx(default_targets),
 			JI_CENTER | JI_MIDDLE);
@@ -151,9 +156,8 @@ void target_button_set_target(JWidget widget, int target)
   widget->user_data[0] = (void *)target;
 }
 
-static bool channel_change_hook(JWidget widget, void *data)
+static bool channel_change_hook(ButtonBase* widget, Widget* target_button)
 {
-  JWidget target_button = (JWidget)data;
   int target = (size_t)target_button->user_data[0];
   int flag = 0;
   
@@ -179,9 +183,8 @@ static bool channel_change_hook(JWidget widget, void *data)
   return true;
 }
 
-static bool images_change_hook(JWidget widget, void *data)
+static bool images_change_hook(ButtonBase* widget, Widget* target_button)
 {
-  JWidget target_button = (JWidget)data;
   int target = (size_t)target_button->user_data[0];
 
   /* rotate target */

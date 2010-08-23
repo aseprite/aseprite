@@ -25,6 +25,7 @@
 #include "jinete/jslider.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
@@ -42,10 +43,11 @@
 #include "widgets/preview.h"
 #include "widgets/target.h"
 
-static JWidget check_preview, preview;
+static CheckBox* check_preview;
+static JWidget preview;
 
 static bool target_change_hook(JWidget widget, void *data);
-static bool preview_change_hook(JWidget widget, void *data);
+static void preview_change_hook(Widget* widget);
 static void make_preview();
 
 //////////////////////////////////////////////////////////////////////
@@ -103,7 +105,7 @@ void InvertColorCommand::onExecute(Context* context)
   jwidget_add_child(window, preview);
 
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
+  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
   
   /* default position */
   window->remap_window();
@@ -136,11 +138,10 @@ static bool target_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool preview_change_hook(JWidget widget, void *data)
+static void preview_change_hook(Widget* widget)
 {
   set_config_bool("InvertColor", "Preview", widget->isSelected());
   make_preview();
-  return false;
 }
 
 static void make_preview()

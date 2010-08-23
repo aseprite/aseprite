@@ -21,6 +21,8 @@
 
 #include "jinete/jbase.h"
 
+class Button;
+
 typedef struct RepoDlg {	/* a window to shows repositories
 				   (used for mask/paths repositories,
 				   and the bookmarks) */
@@ -55,9 +57,9 @@ typedef struct RepoDlg {	/* a window to shows repositories
 
   JWidget listbox;		/* list box */
   JWidget listitem;		/* selected list item */
-  JWidget button_use;		/* button for usage the selected item */
-  JWidget button_add;		/* "Add" button */
-  JWidget button_delete;	/* "Delete" button */
+  Button* button_use;		/* button for usage the selected item */
+  Button* button_add;		/* "Add" button */
+  Button* button_delete;	/* "Delete" button */
 } RepoDlg;
 
 void ji_show_repo_dlg(RepoDlg *repo_dlg);

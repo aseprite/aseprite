@@ -60,6 +60,7 @@
 #include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 static Frame* create_alert(char *buf, JList *labels, JList *buttons);
 
@@ -183,12 +184,13 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 	}
 	else if (button) {
 	  char button_name[256];
-	  JWidget button_widget = jbutton_new(beg);
+	  Button* button_widget = new Button(beg);
 	  jwidget_set_min_size(button_widget, 60*jguiscale(), 0);
 	  jlist_append(*buttons, button_widget);
 
 	  usprintf(button_name, "button-%d", jlist_length(*buttons));
 	  button_widget->setName(button_name);
+	  button_widget->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window, button_widget));
 	}
 
 	buf[c] = chr;

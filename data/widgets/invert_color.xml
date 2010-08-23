@@ -6,8 +6,8 @@
     <box vertical="true" expansive="true" name="target" />
     <check text="&amp;Preview" name="preview" />
     <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" name="button_ok" magnetic="true" />
-      <button text="&amp;Cancel" />
+      <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
+      <button text="&amp;Cancel" closewindow="true" />
     </box>
   </box>
 </window>

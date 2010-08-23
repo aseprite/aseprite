@@ -21,6 +21,7 @@
 #include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "core/cfg.h"
 #include "core/job.h"
@@ -145,14 +146,13 @@ protected:
 
 };
 
-static bool lock_ratio_change_hook(JWidget widget, void *data);
+//////////////////////////////////////////////////////////////////////
+// sprite_size
+
 static bool width_px_change_hook(JWidget widget, void *data);
 static bool height_px_change_hook(JWidget widget, void *data);
 static bool width_perc_change_hook(JWidget widget, void *data);
 static bool height_perc_change_hook(JWidget widget, void *data);
-
-//////////////////////////////////////////////////////////////////////
-// sprite_size
 
 class SpriteSizeCommand : public Command
 
@@ -164,6 +164,11 @@ public:
 protected:
   bool onEnabled(Context* context);
   void onExecute(Context* context);
+
+private:
+  void onLockRatioClick();
+
+  CheckBox* m_lockRatio;
 };
 
 SpriteSizeCommand::SpriteSizeCommand()
@@ -182,7 +187,7 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
-  JWidget width_px, height_px, width_perc, height_perc, lock_ratio, ok;
+  JWidget width_px, height_px, width_perc, height_perc, ok;
   ComboBox* method;
   const CurrentSpriteReader sprite(context);
 
@@ -193,14 +198,15 @@ void SpriteSizeCommand::onExecute(Context* context)
 	      "height_px", &height_px,
 	      "width_perc", &width_perc,
 	      "height_perc", &height_perc,
-	      "lock_ratio", &lock_ratio,
+	      "lock_ratio", &m_lockRatio,
 	      "method", &method,
 	      "ok", &ok, NULL);
 
   width_px->setTextf("%d", sprite->getWidth());
   height_px->setTextf("%d", sprite->getHeight());
 
-  HOOK(lock_ratio, JI_SIGNAL_CHECK_CHANGE, lock_ratio_change_hook, 0);
+  m_lockRatio->Click.connect(Vaca::Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
+
   HOOK(width_px, JI_SIGNAL_ENTRY_CHANGE, width_px_change_hook, 0);
   HOOK(height_px, JI_SIGNAL_ENTRY_CHANGE, height_px_change_hook, 0);
   HOOK(width_perc, JI_SIGNAL_ENTRY_CHANGE, width_perc_change_hook, 0);
@@ -235,14 +241,12 @@ void SpriteSizeCommand::onExecute(Context* context)
   }
 }
 
-static bool lock_ratio_change_hook(JWidget widget, void *data)
+void SpriteSizeCommand::onLockRatioClick()
 {
   const CurrentSpriteReader sprite(UIContext::instance()); // TODO use the context in sprite size command
 
-  if (widget->isSelected())
-    width_px_change_hook(widget->findSibling("width_px"), NULL);
-
-  return true;
+  if (m_lockRatio->isSelected())
+    width_px_change_hook(m_lockRatio->findSibling("width_px"), NULL);
 }
 
 static bool width_px_change_hook(JWidget widget, void *data)

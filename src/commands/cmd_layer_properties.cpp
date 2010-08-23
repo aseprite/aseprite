@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "app.h"
@@ -59,20 +60,22 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 
 void LayerPropertiesCommand::onExecute(Context* context)
 {
-  JWidget box1, box2, box3, label_name, entry_name;
-  JWidget button_ok, button_cancel, label_bm, view_bm, list_bm;
+  JWidget label_bm, view_bm, list_bm;
   CurrentSpriteWriter sprite(context);
   Layer* layer = sprite->getCurrentLayer();
   bool with_blend_modes = (layer->is_image() && sprite->getImgType() != IMAGE_INDEXED);
 
   FramePtr window(new Frame(false, _("Layer Properties")));
-  box1 = jbox_new(JI_VERTICAL);
-  box2 = jbox_new(JI_HORIZONTAL);
-  box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
-  label_name = new Label(_("Name:"));
-  entry_name = jentry_new(256, layer->get_name().c_str());
-  button_ok = jbutton_new(_("&OK"));
-  button_cancel = jbutton_new(_("&Cancel"));
+  Widget* box1 = jbox_new(JI_VERTICAL);
+  Widget* box2 = jbox_new(JI_HORIZONTAL);
+  Widget* box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
+  Widget* label_name = new Label(_("Name:"));
+  Widget* entry_name = jentry_new(256, layer->get_name().c_str());
+  Button* button_ok = new Button(_("&OK"));
+  Button* button_cancel = new Button(_("&Cancel"));
+
+  button_ok->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_ok));
+  button_cancel->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   if (with_blend_modes) {
     label_bm = new Label(_("Blend mode:"));

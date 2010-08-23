@@ -20,16 +20,37 @@
 #define WIDGETS_COLBUT_H_INCLUDED
 
 #include "core/color.h"
+#include "jinete/jbutton.h"
+
+class Frame;
 
 /* TODO use some JI_SIGNAL_USER */
 #define SIGNAL_COLORBUTTON_CHANGE   0x10001
 
-JWidget colorbutton_new(color_t color, int imgtype);
-int colorbutton_type();
+class ColorButton : public ButtonBase
+{
+public:
+  ColorButton(color_t color, int imgtype);
+  ~ColorButton();
 
-int colorbutton_get_imgtype(JWidget widget);
+  int getImgType();
 
-color_t colorbutton_get_color(JWidget widget);
-void colorbutton_set_color(JWidget widget, color_t color);
+  color_t getColor();
+  void setColor(color_t color);
+
+protected:
+  // Events
+  bool onProcessMessage(JMessage msg);
+  void onPreferredSize(PreferredSizeEvent& ev);
+
+private:
+  void draw();
+  void openSelectorDialog();
+  void closeSelectorDialog();
+
+  color_t m_color;
+  int m_imgtype;
+  Frame* m_tooltip_window;
+};
 
 #endif

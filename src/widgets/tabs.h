@@ -23,7 +23,7 @@
 #include <vector>
 
 class Tabs;
-class Widget;
+class Button;
 
 /**
    Interface used to control notifications from the Tabs widget.
@@ -116,8 +116,8 @@ private:
   Tab* m_nextTabOfTheRemovedOne;
 
   // Buttons to scroll tabs (useful when there are more tabs than visible area)
-  Widget* m_button_left;
-  Widget* m_button_right;
+  Button* m_button_left;
+  Button* m_button_right;
 
   // Handler to send notifications
   ITabsHandler* m_handler;

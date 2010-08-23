@@ -30,6 +30,7 @@
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
@@ -50,20 +51,20 @@
 #include "widgets/preview.h"
 #include "widgets/target.h"
 
-static JWidget check_preview, preview;
-static JWidget check_tiled;
+static CheckBox* check_preview, *check_tiled;
+static JWidget preview;
 static JWidget target_button;
 
 static void listbox_fill_convmatg(JWidget listbox);
 static void listbox_select_current_convmatr(JWidget listbox);
 
-static bool reload_select_hook(JWidget widget, void *data);
-static bool generate_select_hook(JWidget widget, void *data);
+static bool reload_select_hook(Widget* listbox);
+static bool generate_select_hook();
 
 static bool list_change_hook(JWidget widget, void *data);
 static bool target_change_hook(JWidget widget, void *data);
-static bool preview_change_hook(JWidget widget, void *data);
-static bool tiled_change_hook(JWidget widget, void *data);
+static void preview_change_hook(Widget* widget);
+static void tiled_change_hook(Widget* widget);
 static void make_preview();
 
 //////////////////////////////////////////////////////////////////////
@@ -97,10 +98,10 @@ bool ConvolutionMatrixCommand::onEnabled(Context* context)
 void ConvolutionMatrixCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  JWidget button_ok;
-  JWidget view_convmatr, list_convmatr;
-  JWidget box_target;
-  JWidget reload, generate;
+  Widget* button_ok;
+  Widget* view_convmatr, *list_convmatr;
+  Widget* box_target;
+  Button* reload, *generate;
 
   FramePtr window(load_widget("convolution_matrix.xml", "convolution_matrix"));
   get_widgets(window,
@@ -135,10 +136,10 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 
   HOOK(list_convmatr, JI_SIGNAL_LISTBOX_CHANGE, list_change_hook, 0);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
-  HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
-  HOOK(reload, JI_SIGNAL_BUTTON_SELECT, reload_select_hook, list_convmatr);
-  HOOK(generate, JI_SIGNAL_BUTTON_SELECT, generate_select_hook, 0);
+  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
+  check_tiled->Click.connect(Vaca::Bind<void>(&tiled_change_hook, check_tiled));
+  reload->Click.connect(Vaca::Bind<bool>(&reload_select_hook, list_convmatr));
+  generate->Click.connect(Vaca::Bind<void>(&generate_select_hook));
 
   // TODO enable this someday
   generate->setEnabled(false);
@@ -205,9 +206,8 @@ static void listbox_select_current_convmatr(JWidget listbox)
   }
 }
 
-static bool reload_select_hook(JWidget widget, void *data)
+static bool reload_select_hook(Widget* listbox)
 {
-  JWidget listbox = (JWidget)data;
   JWidget listitem;
   JLink link, next;
 
@@ -229,7 +229,7 @@ static bool reload_select_hook(JWidget widget, void *data)
   return true;			/* do not close */
 }
 
-static bool generate_select_hook(JWidget widget, void *data)
+static bool generate_select_hook()
 {
 #if 0
   JWidget view_x;
@@ -314,14 +314,13 @@ static bool target_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool preview_change_hook(JWidget widget, void *data)
+static void preview_change_hook(Widget* widget)
 {
   set_config_bool("ConvolutionMatrix", "Preview", widget->isSelected());
   make_preview();
-  return false;
 }
 
-static bool tiled_change_hook(JWidget widget, void *data)
+static void tiled_change_hook(Widget* widget)
 {
   TiledMode tiled = widget->isSelected() ? TILED_BOTH:
 					   TILED_NONE;
@@ -330,7 +329,6 @@ static bool tiled_change_hook(JWidget widget, void *data)
   UIContext::instance()->getSettings()->setTiledMode(tiled);
 
   make_preview();
-  return false;
 }
 
 static void make_preview()

@@ -23,10 +23,7 @@
     <box horizontal="true">
       <button text="Constant Frame-Rate Speed" name="speed" />
       <box horizontal="true" expansive="true" />
-      <box horizontal="true" homogeneous="true">
-	<button text="&amp;OK" name="ok" magnetic="true" width="60" />
-	<button text="&amp;Cancel" />
-      </box>
+      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" width="60" />
     </box>
   </box>
 </window>

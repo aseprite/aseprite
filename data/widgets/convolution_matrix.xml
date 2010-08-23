@@ -6,8 +6,8 @@
     <box horizontal="true" expansive="true">
       <view expansive="true" name="view" /><!-- custom widget -->
       <box vertical="true">
-        <button text="&amp;OK" name="button_ok" magnetic="true" />
-        <button text="&amp;Cancel" />
+        <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
+        <button text="&amp;Cancel" closewindow="true" />
         <box name="target" />
         <check text="&amp;Preview" name="preview" />
         <check text="&amp;Tiled" name="tiled" />
@@ -56,8 +56,8 @@
       </box>
     </box>
     <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" name="button_ok" magnetic="true" />
-      <button text="&amp;Cancel" />
+      <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
+      <button text="&amp;Cancel" closewindow="true" />
     </box>
   </box>
 </window>

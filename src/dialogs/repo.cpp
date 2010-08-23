@@ -22,6 +22,7 @@
 #include <allegro/unicode.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "core/cfg.h"
 #include "dialogs/repo.h"
@@ -33,30 +34,29 @@ static void kill_listbox(RepoDlg *repo_dlg);
 static int repo_listbox_type();
 static bool repo_listbox_msg_proc(JWidget widget, JMessage msg);
 
-static void use_command(JWidget widget, void *data);
-static void add_command(JWidget widget, void *data);
-static void delete_command(JWidget widget, void *data);
+static void use_command(Button* widget, RepoDlg* repo_dlg);
+static void add_command(Button* widget, RepoDlg* repo_dlg);
+static void delete_command(Button* widget, RepoDlg* repo_dlg);
 
 void ji_show_repo_dlg(RepoDlg *repo_dlg)
 {
-  JWidget box1, box2, view, button_close;
-
   Frame* window = new Frame(false, repo_dlg->title);
-  box1 = jbox_new(JI_HORIZONTAL);
-  box2 = jbox_new(JI_VERTICAL);
-  view = jview_new();
+  Widget* box1 = jbox_new(JI_HORIZONTAL);
+  Widget* box2 = jbox_new(JI_VERTICAL);
+  Widget* view = jview_new();
   repo_dlg->listbox = jlistbox_new();
-  repo_dlg->button_use = jbutton_new(repo_dlg->use_text);
-  repo_dlg->button_add = jbutton_new(_("&Add"));
-  repo_dlg->button_delete = jbutton_new(_("&Delete"));
-  button_close = jbutton_new(_("&Close"));
+  repo_dlg->button_use = new Button(repo_dlg->use_text);
+  repo_dlg->button_add = new Button(_("&Add"));
+  repo_dlg->button_delete = new Button(_("&Delete"));
+  Button* button_close = new Button(_("&Close"));
 
   jwidget_add_hook(repo_dlg->listbox, repo_listbox_type(),
 		   repo_listbox_msg_proc, repo_dlg);
 
-  jbutton_add_command_data(repo_dlg->button_use, use_command, repo_dlg);
-  jbutton_add_command_data(repo_dlg->button_add, add_command, repo_dlg);
-  jbutton_add_command_data(repo_dlg->button_delete, delete_command, repo_dlg);
+  repo_dlg->button_use->Click.connect(Vaca::Bind<void>(&use_command, repo_dlg->button_use, repo_dlg));
+  repo_dlg->button_add->Click.connect(Vaca::Bind<void>(&add_command, repo_dlg->button_add, repo_dlg));
+  repo_dlg->button_delete->Click.connect(Vaca::Bind<void>(&delete_command, repo_dlg->button_delete, repo_dlg));
+  button_close->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window, button_close));
 
   jwidget_magnetic(repo_dlg->button_use, true);
 
@@ -179,19 +179,16 @@ static bool repo_listbox_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-static void use_command(JWidget widget, void *data)
+static void use_command(Button* widget, RepoDlg* repo_dlg)
 {
-  RepoDlg *repo_dlg = (RepoDlg *)data;
-
   if (repo_dlg->use_listitem) {
     if (!(*repo_dlg->use_listitem)(repo_dlg))
       jwidget_close_window(widget);
   }
 }
 
-static void add_command(JWidget widget, void *data)
+static void add_command(Button* widget, RepoDlg* repo_dlg)
 {
-  RepoDlg *repo_dlg = (RepoDlg *)data;
   int ret, added;
 
   if (repo_dlg->add_listitem) {
@@ -212,9 +209,8 @@ static void add_command(JWidget widget, void *data)
   }
 }
 
-static void delete_command(JWidget widget, void *data)
+static void delete_command(Button* widget, RepoDlg* repo_dlg)
 {
-  RepoDlg *repo_dlg = (RepoDlg *)data;
   int ret, kill, index, last;
 
   if (repo_dlg->delete_listitem) {

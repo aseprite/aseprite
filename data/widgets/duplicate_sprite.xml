@@ -15,8 +15,8 @@
     </box>
     <check text="Duplicate merged layers only" name="flatten" />
     <box horizontal="true" homogeneous="true">
-      <button text="&amp;OK" name="ok" magnetic="true" />
-      <button text="&amp;Cancel" />
+      <button text="&amp;OK" closewindow="true" name="ok" magnetic="true" />
+      <button text="&amp;Cancel" closewindow="true" />
     </box>
   </box>
 </window>

@@ -29,6 +29,7 @@
 
 using Vaca::Rect;
 
+// Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
 class SkinProperty : public Vaca::Property
 {
 public:
@@ -40,10 +41,25 @@ public:
   bool isMiniLook() const;
   void setMiniLook(bool state);
 
+  int getUpperLeft() const;
+  int getUpperRight() const;
+  int getLowerLeft() const;
+  int getLowerRight() const;
+
+  void setUpperLeft(int value);
+  void setUpperRight(int value);
+  void setLowerLeft(int value);
+  void setLowerRight(int value);
+
 private:
   bool m_isMiniLook;
+  int m_upperLeft;
+  int m_upperRight;
+  int m_lowerLeft;
+  int m_lowerRight;
 };
 
+// Available parts in the skin sheet
 enum {
 
   PART_RADIO_NORMAL,
@@ -433,8 +449,8 @@ public:
   int color_background();
 
   void draw_box(JWidget widget, JRect clip);
-  void draw_button(JWidget widget, JRect clip);
-  void draw_check(JWidget widget, JRect clip);
+  void draw_button(ButtonBase* widget, JRect clip);
+  void draw_check(ButtonBase* widget, JRect clip);
   void draw_entry(JWidget widget, JRect clip);
   void draw_grid(JWidget widget, JRect clip);
   void draw_label(JWidget widget, JRect clip);
@@ -444,17 +460,17 @@ public:
   void draw_menu(JWidget widget, JRect clip);
   void draw_menuitem(JWidget widget, JRect clip);
   void draw_panel(JWidget widget, JRect clip);
-  void draw_radio(JWidget widget, JRect clip);
+  void draw_radio(ButtonBase* widget, JRect clip);
   void draw_separator(JWidget widget, JRect clip);
   void draw_slider(JWidget widget, JRect clip);
   void draw_combobox_entry(JWidget widget, JRect clip);
-  void draw_combobox_button(JWidget widget, JRect clip);
+  void draw_combobox_button(ButtonBase* widget, JRect clip);
   void draw_textbox(JWidget widget, JRect clip);
   void draw_view(JWidget widget, JRect clip);
   void draw_view_scrollbar(JWidget widget, JRect clip);
   void draw_view_viewport(JWidget widget, JRect clip);
   void draw_frame(Frame* frame, JRect clip);
-  void draw_frame_button(JWidget widget, JRect clip);
+  void draw_frame_button(ButtonBase* widget, JRect clip);
 
   int get_button_normal_text_color() const { return makecol(0, 0, 0); }
   int get_button_normal_face_color() const { return makecol(198, 198, 198); }

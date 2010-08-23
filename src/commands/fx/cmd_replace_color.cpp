@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
@@ -41,14 +42,16 @@
 #include "widgets/preview.h"
 #include "widgets/target.h"
 
-static JWidget button_color1, button_color2;
-static JWidget slider_tolerance, check_preview;
+static ColorButton* button_color1;
+static ColorButton* button_color2;
+static JWidget slider_tolerance;
 static JWidget preview;
+static CheckBox* check_preview;
 
 static bool color_change_hook(JWidget widget, void *data);
 static bool target_change_hook(JWidget widget, void *data);
 static bool slider_change_hook(JWidget widget, void *data);
-static bool preview_change_hook(JWidget widget, void *data);
+static void preview_change_hook(Widget* widget);
 static void make_preview();
 
 //////////////////////////////////////////////////////////////////////
@@ -101,12 +104,12 @@ void ReplaceColorCommand::onExecute(Context* context)
 			     TARGET_ALPHA_CHANNEL);
   preview = preview_new(&effect);
 
-  button_color1 = colorbutton_new
+  button_color1 = new ColorButton
     (get_config_color("ReplaceColor", "Color1",
 		      app_get_colorbar()->getFgColor()),
      sprite->getImgType());
 
-  button_color2 = colorbutton_new
+  button_color2 = new ColorButton
     (get_config_color("ReplaceColor", "Color2",
 		      app_get_colorbar()->getBgColor()),
      sprite->getImgType());
@@ -128,7 +131,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   HOOK(button_color2, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 2);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  HOOK(check_preview, JI_SIGNAL_CHECK_CHANGE, preview_change_hook, 0);
+  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
 
   /* default position */
   window->remap_window();
@@ -158,7 +161,7 @@ static bool color_change_hook(JWidget widget, void *data)
   char buf[64];
 
   sprintf(buf, "Color%u", (size_t)data);
-  set_config_color("ReplaceColor", buf, colorbutton_get_color(widget));
+  set_config_color("ReplaceColor", buf, static_cast<ColorButton*>(widget)->getColor());
 
   make_preview();
   return false;
@@ -179,11 +182,10 @@ static bool slider_change_hook(JWidget widget, void *data)
   return false;
 }
 
-static bool preview_change_hook(JWidget widget, void *data)
+static void preview_change_hook(Widget* widget)
 {
   set_config_bool("ReplaceColor", "Preview", widget->isSelected());
   make_preview();
-  return false;
 }
 
 static void make_preview()

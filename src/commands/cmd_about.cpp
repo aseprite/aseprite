@@ -21,6 +21,7 @@
 #include <allegro.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "core/core.h"
@@ -66,7 +67,7 @@ void AboutCommand::onExecute(Context* context)
   Widget* bottom_box3 = jbox_new(JI_HORIZONTAL);
   Label* copyright = new Label(COPYRIGHT);
   Label* website = new LinkLabel(WEBSITE);
-  Widget* close_button = jbutton_new(_("&Close"));
+  Button* close_button = new Button(_("&Close"));
 
   jgrid_add_child(grid, title, 2, 1, 0);
   jgrid_add_child(grid, subtitle, 2, 1, 0);
@@ -96,6 +97,8 @@ void AboutCommand::onExecute(Context* context)
   		     close_button->border_width.t,
   		     close_button->border_width.r + 16*jguiscale(),
   		     close_button->border_width.b);
+
+  close_button->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, frame.get(), close_button));
 
   frame->open_window_fg();
 }

@@ -36,6 +36,7 @@
 
 struct FONT;
 struct BITMAP;
+class ButtonBase;
 
 class jtheme
 {
@@ -67,8 +68,8 @@ public:
   virtual int color_background() = 0;
 
   virtual void draw_box(JWidget widget, JRect clip) = 0;
-  virtual void draw_button(JWidget widget, JRect clip) = 0;
-  virtual void draw_check(JWidget widget, JRect clip) = 0;
+  virtual void draw_button(ButtonBase* widget, JRect clip) = 0;
+  virtual void draw_check(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_entry(JWidget widget, JRect clip) = 0;
   virtual void draw_grid(JWidget widget, JRect clip) = 0;
   virtual void draw_label(JWidget widget, JRect clip) = 0;
@@ -78,11 +79,11 @@ public:
   virtual void draw_menu(JWidget widget, JRect clip) = 0;
   virtual void draw_menuitem(JWidget widget, JRect clip) = 0;
   virtual void draw_panel(JWidget widget, JRect clip) = 0;
-  virtual void draw_radio(JWidget widget, JRect clip) = 0;
+  virtual void draw_radio(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_separator(JWidget widget, JRect clip) = 0;
   virtual void draw_slider(JWidget widget, JRect clip) = 0;
   virtual void draw_combobox_entry(JWidget widget, JRect clip) = 0;
-  virtual void draw_combobox_button(JWidget widget, JRect clip) = 0;
+  virtual void draw_combobox_button(ButtonBase* widget, JRect clip) = 0;
   virtual void draw_textbox(JWidget widget, JRect clip) = 0;
   virtual void draw_view(JWidget widget, JRect clip) = 0;
   virtual void draw_view_scrollbar(JWidget widget, JRect clip) = 0;

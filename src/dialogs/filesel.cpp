@@ -30,6 +30,7 @@
 #include <errno.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "core/cfg.h"
@@ -159,9 +160,9 @@ jstring ase_file_selector(const jstring& message,
     window = static_cast<Frame*>(load_widget("file_selector.xml", "file_selector"));
 
     JWidget box = jwidget_find_name(window, "box");
-    JWidget goback = jwidget_find_name(window, "goback");
-    JWidget goforward = jwidget_find_name(window, "goforward");
-    JWidget goup = jwidget_find_name(window, "goup");
+    Button* goback = dynamic_cast<Button*>(jwidget_find_name(window, "goback"));
+    Button* goforward = dynamic_cast<Button*>(jwidget_find_name(window, "goforward"));
+    Button* goup = dynamic_cast<Button*>(jwidget_find_name(window, "goup"));
     JWidget location = jwidget_find_name(window, "location");
     filetype = dynamic_cast<ComboBox*>(jwidget_find_name(window, "filetype"));
     ASSERT(filetype != NULL);
@@ -179,9 +180,9 @@ jstring ase_file_selector(const jstring& message,
     setup_mini_look(goforward);
     setup_mini_look(goup);
 
-    jbutton_add_command(goback, goback_command);
-    jbutton_add_command(goforward, goforward_command);
-    jbutton_add_command(goup, goup_command);
+    goback->Click.connect(Vaca::Bind<void>(&goback_command, goback));
+    goforward->Click.connect(Vaca::Bind<void>(&goforward_command, goforward));
+    goup->Click.connect(Vaca::Bind<void>(&goup_command, goup));
 
     JWidget view = jview_new();
     fileview = fileview_new(start_folder, exts);

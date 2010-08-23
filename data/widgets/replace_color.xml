@@ -15,8 +15,8 @@
       <slider min="0" max="255" name="tolerance" />
     </box>
     <box vertical="true">
-      <button text="&amp;OK" name="button_ok" magnetic="true" />
-      <button text="&amp;Cancel" />
+      <button text="&amp;OK" closewindow="true" name="button_ok" magnetic="true" />
+      <button text="&amp;Cancel" closewindow="true" />
       <box name="target" />
       <check text="&amp;Preview" name="preview" />
     </box>

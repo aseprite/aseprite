@@ -21,6 +21,7 @@
 #include <allegro.h>
 
 #include "jinete/jinete.h"
+#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "commands/command.h"
@@ -36,15 +37,6 @@
 //////////////////////////////////////////////////////////////////////
 // options
 
-// TODO make these variables member of OptionsCommand
-static ComboBox* checked_bg;
-static Widget* checked_bg_zoom;
-static Widget* checked_bg_color1;
-static Widget* checked_bg_color2;
-
-// TODO make this a member of OptionsCommand when button signal is converted to Vaca::Signal
-static bool checked_bg_reset_hook(JWidget widget, void *data);
-
 class OptionsCommand : public Command
 {
 public:
@@ -53,6 +45,14 @@ public:
 
 protected:
   void onExecute(Context* context);
+
+private:
+  void onResetCheckedBg();
+
+  ComboBox* m_checked_bg;
+  Widget* m_checked_bg_zoom;
+  ColorButton* m_checked_bg_color1;
+  ColorButton* m_checked_bg_color2;
 };
 
 OptionsCommand::OptionsCommand()
@@ -65,12 +65,15 @@ OptionsCommand::OptionsCommand()
 void OptionsCommand::onExecute(Context* context)
 {
   JWidget check_smooth;
-  JWidget cursor_color, cursor_color_box;
-  JWidget grid_color, grid_color_box;
-  JWidget pixel_grid_color, pixel_grid_color_box;
-  JWidget button_ok;
-  JWidget move_click2, draw_click2;
-  JWidget checked_bg_reset;
+  ColorButton* cursor_color;
+  ColorButton* grid_color;
+  ColorButton* pixel_grid_color;
+  Widget* cursor_color_box;
+  Widget* grid_color_box;
+  Widget* pixel_grid_color_box;
+  Button* button_ok;
+  Widget* move_click2, *draw_click2;
+  Button* checked_bg_reset;
   JWidget checked_bg_color1_box, checked_bg_color2_box;
   JWidget undo_size_limit;
 
@@ -83,8 +86,8 @@ void OptionsCommand::onExecute(Context* context)
 	      "cursor_color_box", &cursor_color_box,
 	      "grid_color_box", &grid_color_box,
 	      "pixel_grid_color_box", &pixel_grid_color_box,
-	      "checked_bg_size", &checked_bg,
-	      "checked_bg_zoom", &checked_bg_zoom,
+	      "checked_bg_size", &m_checked_bg,
+	      "checked_bg_zoom", &m_checked_bg_zoom,
 	      "checked_bg_color1_box", &checked_bg_color1_box,
 	      "checked_bg_color2_box", &checked_bg_color2_box,
 	      "checked_bg_reset", &checked_bg_reset,
@@ -92,17 +95,17 @@ void OptionsCommand::onExecute(Context* context)
 	      "button_ok", &button_ok, NULL);
 
   // Cursor color
-  cursor_color = colorbutton_new(Editor::get_cursor_color(), IMAGE_RGB);
+  cursor_color = new ColorButton(Editor::get_cursor_color(), IMAGE_RGB);
   cursor_color->setName("cursor_color");
   jwidget_add_child(cursor_color_box, cursor_color);
 
   // Grid color
-  grid_color = colorbutton_new(context->getSettings()->getGridColor(), IMAGE_RGB);
+  grid_color = new ColorButton(context->getSettings()->getGridColor(), IMAGE_RGB);
   grid_color->setName("grid_color");
   jwidget_add_child(grid_color_box, grid_color);
 
   // Pixel grid color
-  pixel_grid_color = colorbutton_new(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
+  pixel_grid_color = new ColorButton(context->getSettings()->getPixelGridColor(), IMAGE_RGB);
   pixel_grid_color->setName("pixel_grid_color");
   jwidget_add_child(pixel_grid_color_box, pixel_grid_color);
 
@@ -117,25 +120,25 @@ void OptionsCommand::onExecute(Context* context)
     check_smooth->setSelected(true);
 
   // Checked background size
-  checked_bg->addItem("16x16");
-  checked_bg->addItem("8x8");
-  checked_bg->addItem("4x4");
-  checked_bg->addItem("2x2");
-  checked_bg->setSelectedItem((int)RenderEngine::getCheckedBgType());
+  m_checked_bg->addItem("16x16");
+  m_checked_bg->addItem("8x8");
+  m_checked_bg->addItem("4x4");
+  m_checked_bg->addItem("2x2");
+  m_checked_bg->setSelectedItem((int)RenderEngine::getCheckedBgType());
 
   // Zoom checked background
   if (RenderEngine::getCheckedBgZoom())
-    checked_bg_zoom->setSelected(true);
+    m_checked_bg_zoom->setSelected(true);
 
   // Checked background colors
-  checked_bg_color1 = colorbutton_new(RenderEngine::getCheckedBgColor1(), IMAGE_RGB);
-  checked_bg_color2 = colorbutton_new(RenderEngine::getCheckedBgColor2(), IMAGE_RGB);
+  m_checked_bg_color1 = new ColorButton(RenderEngine::getCheckedBgColor1(), IMAGE_RGB);
+  m_checked_bg_color2 = new ColorButton(RenderEngine::getCheckedBgColor2(), IMAGE_RGB);
 
-  jwidget_add_child(checked_bg_color1_box, checked_bg_color1);
-  jwidget_add_child(checked_bg_color2_box, checked_bg_color2);
+  jwidget_add_child(checked_bg_color1_box, m_checked_bg_color1);
+  jwidget_add_child(checked_bg_color2_box, m_checked_bg_color2);
 
   // Reset button
-  HOOK(checked_bg_reset, JI_SIGNAL_BUTTON_SELECT, checked_bg_reset_hook, 0);
+  checked_bg_reset->Click.connect(Vaca::Bind<void>(&OptionsCommand::onResetCheckedBg, this));
 
   // Undo limit
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
@@ -146,18 +149,18 @@ void OptionsCommand::onExecute(Context* context)
   if (window->get_killer() == button_ok) {
     int undo_size_limit_value;
 
-    Editor::set_cursor_color(colorbutton_get_color(cursor_color));
-    context->getSettings()->setGridColor(colorbutton_get_color(grid_color));
-    context->getSettings()->setPixelGridColor(colorbutton_get_color(pixel_grid_color));
+    Editor::set_cursor_color(cursor_color->getColor());
+    context->getSettings()->setGridColor(grid_color->getColor());
+    context->getSettings()->setPixelGridColor(pixel_grid_color->getColor());
 
     set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
     set_config_bool("Options", "MoveClick2", move_click2->isSelected());
     set_config_bool("Options", "DrawClick2", draw_click2->isSelected());
 
-    RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)checked_bg->getSelectedItem());
-    RenderEngine::setCheckedBgZoom(checked_bg_zoom->isSelected());
-    RenderEngine::setCheckedBgColor1(colorbutton_get_color(checked_bg_color1));
-    RenderEngine::setCheckedBgColor2(colorbutton_get_color(checked_bg_color2));
+    RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)m_checked_bg->getSelectedItem());
+    RenderEngine::setCheckedBgZoom(m_checked_bg_zoom->isSelected());
+    RenderEngine::setCheckedBgColor1(m_checked_bg_color1->getColor());
+    RenderEngine::setCheckedBgColor2(m_checked_bg_color2->getColor());
 
     undo_size_limit_value = undo_size_limit->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
@@ -171,14 +174,13 @@ void OptionsCommand::onExecute(Context* context)
   }
 }
 
-static bool checked_bg_reset_hook(JWidget widget, void *data)
+void OptionsCommand::onResetCheckedBg()
 {
   // Default values
-  checked_bg->setSelectedItem((int)RenderEngine::CHECKED_BG_16X16);
-  checked_bg_zoom->setSelected(true);
-  colorbutton_set_color(checked_bg_color1, color_rgb(128, 128, 128));
-  colorbutton_set_color(checked_bg_color2, color_rgb(192, 192, 192));
-  return true;
+  m_checked_bg->setSelectedItem((int)RenderEngine::CHECKED_BG_16X16);
+  m_checked_bg_zoom->setSelected(true);
+  m_checked_bg_color1->setColor(color_rgb(128, 128, 128));
+  m_checked_bg_color2->setColor(color_rgb(192, 192, 192));
 }
 
 //////////////////////////////////////////////////////////////////////
