@@ -27,7 +27,7 @@
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "widgets/colbut.h"
 #include "widgets/colsel.h"
 #include "widgets/editor.h"

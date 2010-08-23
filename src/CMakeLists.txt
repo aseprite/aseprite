@@ -237,7 +237,7 @@ add_executable(aseprite WIN32
   util/recscr.cpp
   util/render.cpp
   util/thmbnail.cpp
-  widgets/colbar.cpp
+  widgets/color_bar.cpp
   widgets/colbut.cpp
   widgets/colsel.cpp
   widgets/colview.cpp

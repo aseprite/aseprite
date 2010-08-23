@@ -42,7 +42,7 @@
 #include "raster/stock.h"
 #include "raster/undo.h"
 #include "util/quantize.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "widgets/colview.h"
 #include "widgets/editor.h"
 #include "widgets/paledit.h"

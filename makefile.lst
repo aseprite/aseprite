@@ -215,7 +215,7 @@ COMMON_SOURCES =					\
 	src/util/recscr.cpp				\
 	src/util/render.cpp				\
 	src/util/thmbnail.cpp				\
-	src/widgets/colbar.cpp				\
+	src/widgets/color_bar.cpp			\
 	src/widgets/colbut.cpp				\
 	src/widgets/colsel.cpp				\
 	src/widgets/colview.cpp				\

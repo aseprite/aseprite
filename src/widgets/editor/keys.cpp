@@ -33,7 +33,7 @@
 #include "raster/sprite.h"
 #include "settings/settings.h"
 #include "ui_context.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "widgets/editor.h"
 
 bool Editor::editor_keys_toset_zoom(int scancode)

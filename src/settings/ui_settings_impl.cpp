@@ -27,7 +27,7 @@
 #include "ui_context.h"
 #include "tools/tool.h"
 #include "tools/toolbox.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 
 //////////////////////////////////////////////////////////////////////
 // UISettingsImpl

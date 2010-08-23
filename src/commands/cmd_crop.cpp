@@ -26,7 +26,7 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "util/autocrop.h"
 #include "util/misc.h"
 #include "sprite_wrappers.h"

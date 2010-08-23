@@ -29,7 +29,7 @@
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"
 #include "undoable.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 
 class CanvasSizeCommand : public Command
 {

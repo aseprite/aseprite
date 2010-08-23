@@ -39,7 +39,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "widgets/colsel.h"
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"

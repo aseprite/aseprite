@@ -32,7 +32,7 @@
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 
 /* #define GET_COLOR_TYPE(color)	((ase_uint32)((color).coltype)) */
 /* #define GET_COLOR_DATA(color)	((ase_uint32)((color).imgcolor)) */

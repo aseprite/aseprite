@@ -24,7 +24,7 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "modules/gui.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "widgets/statebar.h"
 #include "widgets/tabs.h"
 

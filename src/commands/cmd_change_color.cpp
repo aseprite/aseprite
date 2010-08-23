@@ -23,7 +23,7 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "app.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 
 class ChangeColorCommand : public Command
 {

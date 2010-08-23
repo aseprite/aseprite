@@ -33,7 +33,7 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "undoable.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "sprite_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////

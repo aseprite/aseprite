@@ -23,7 +23,7 @@
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "undoable.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "sprite_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@
 
 #include "commands/command.h"
 #include "app.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 
 class SwitchColorsCommand : public Command
 {

@@ -43,7 +43,7 @@
 #include "util/misc.h"
 #include "util/recscr.h"
 #include "util/render.h"
-#include "widgets/colbar.h"
+#include "widgets/color_bar.h"
 #include "widgets/editor.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/statebar.h"
