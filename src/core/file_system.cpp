@@ -975,6 +975,11 @@ static void put_fileitem(FileItem* fileitem)
 
   ASSERT(fileitem->keyname != NOTINITIALIZED);
 
+#ifdef DEBUGMODE
+  FileItemMap::iterator it = fileitems_map->find(get_key_for_pidl(fileitem->fullpidl));
+  ASSERT(it == fileitems_map->end());
+#endif
+
   // insert this file-item in the hash-table
   fileitems_map->insert(std::make_pair(fileitem->keyname, fileitem));
 }
