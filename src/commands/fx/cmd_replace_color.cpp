@@ -38,7 +38,7 @@
 #include "raster/sprite.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
 

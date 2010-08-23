@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WIDGETS_COLBUT_H_INCLUDED
-#define WIDGETS_COLBUT_H_INCLUDED
+#ifndef WIDGETS_COLOR_BUTTON_H_INCLUDED
+#define WIDGETS_COLOR_BUTTON_H_INCLUDED
 
 #include "core/color.h"
 #include "jinete/jbutton.h"

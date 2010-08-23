@@ -31,7 +31,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "sprite_wrappers.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 
 /* TODO remove this */
 void dialogs_frame_length(const SpriteReader& sprite, int sprite_frpos);

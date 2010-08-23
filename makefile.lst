@@ -216,7 +216,7 @@ COMMON_SOURCES =					\
 	src/util/render.cpp				\
 	src/util/thmbnail.cpp				\
 	src/widgets/color_bar.cpp			\
-	src/widgets/colbut.cpp				\
+	src/widgets/color_button.cpp			\
 	src/widgets/color_selector.cpp			\
 	src/widgets/colview.cpp				\
 	src/widgets/curvedit.cpp			\

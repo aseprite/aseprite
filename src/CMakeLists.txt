@@ -238,7 +238,7 @@ add_executable(aseprite WIN32
   util/render.cpp
   util/thmbnail.cpp
   widgets/color_bar.cpp
-  widgets/colbut.cpp
+  widgets/color_button.cpp
   widgets/color_selector.cpp
   widgets/colview.cpp
   widgets/curvedit.cpp

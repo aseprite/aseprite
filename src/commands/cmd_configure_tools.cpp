@@ -39,7 +39,7 @@
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 #include "tools/tool.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"

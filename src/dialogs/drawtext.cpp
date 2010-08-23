@@ -37,7 +37,7 @@
 #include "util/clipboard.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 
 static JWidget font_button;
 

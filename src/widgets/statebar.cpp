@@ -45,7 +45,7 @@
 #include "tools/tool.h"
 #include "ui_context.h"
 #include "util/misc.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 

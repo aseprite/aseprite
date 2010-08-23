@@ -31,7 +31,7 @@
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "util/render.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 #include "widgets/editor.h"
 
 //////////////////////////////////////////////////////////////////////

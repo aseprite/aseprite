@@ -28,7 +28,7 @@
 #include "modules/gui.h"
 #include "raster/sprite.h"
 #include "widgets/color_bar.h"
-#include "widgets/colbut.h"
+#include "widgets/color_button.h"
 #include "widgets/color_selector.h"
 #include "widgets/editor.h"
 
