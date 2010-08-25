@@ -19,65 +19,36 @@
 #ifndef TESTS_TEST_H_INCLUDED
 #define TESTS_TEST_H_INCLUDED
 
-#ifdef NDEBUG
-  #error You must compile tests with the NDEBUG flag disabled
-#endif
-
-#include <stdio.h>
-#include <allegro.h>
-
 #include "config.h"
 
-#ifdef TEST_GUI
-  #include "jinete/jinete.h"
-#endif
+#include <gtest/gtest.h>
+#include <allegro.h>
 
-void trace(const char *format, ...)
+// Allegro-friendly main() routine
+int main(int argc, char* argv[])
 {
-  char buf[4096];
-  va_list ap;
-
-  va_start(ap, format);
-  uvszprintf(buf, sizeof(buf), format, ap);
-  va_end(ap);
-
-  fputs(buf, stdout);
-  fflush(stdout);
-}
-
-#ifndef TEST_GUI
-
-void test_init()
-{
+  ::testing::InitGoogleTest(&argc, argv);
   allegro_init();
-}
 
-int test_exit()
-{
+  #ifdef TEST_GUI
+    set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
+    install_timer();
+    install_keyboard();
+    install_mouse();
+
+    Widget* manager = jmanager_new();
+  #endif
+
+  int exitcode = RUN_ALL_TESTS();
+
+  #ifdef TEST_GUI
+    jmanager_free(manager);
+  #endif
+
   allegro_exit();
-  return 0;
+  return exitcode;
 }
 
-#else
-
-JWidget test_init_gui()
-{
-  allegro_init();
-  set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
-  install_timer();
-  install_keyboard();
-  install_mouse();
-
-  return jmanager_new();
-}
-
-int test_exit_gui(JWidget manager)
-{
-  jmanager_free(manager);
-  allegro_exit();
-  return 0;
-}
-
-#endif
+END_OF_MAIN();
 
 #endif
