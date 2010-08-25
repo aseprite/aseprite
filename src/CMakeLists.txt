@@ -290,4 +290,12 @@ foreach(testsourcefile ${tests})
   # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
   set_target_properties(${testname} PROPERTIES
     COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/third_party/gtest/include")
+
+  add_custom_target(run_${testname}
+    COMMAND ${testname})
+
+  set(all_runs ${all_runs} run_${testname})
 endforeach()
+
+# To run tests
+add_custom_target(run_all_unittests DEPENDS ${all_runs})
