@@ -26,27 +26,19 @@ static JThread thread;
 static void run_thread(void *data)
 {
   errno = 0;
-  trace("[second thread] errno: %d\n", errno);
-  ASSERT(errno == 0);
+  EXPECT_EQ(0, errno);
 }
 
-int main(int argc, char *argv[])
+TEST(Errno, ThreadSafe)
 {
-  test_init();
-
   errno = 33;
-  trace("[main thread] errno: %d\n", errno);
-  ASSERT(errno == 33);
+  EXPECT_EQ(33, errno);
 
+  // Run another thread that will be modify the errno variable, and
+  // wait it (join).
   thread = jthread_new(run_thread, NULL);
   jthread_join(thread);
 
-  trace("[main thread] errno: %d\n", errno);
-  ASSERT(errno == 33);
-
-  trace("errno is thread safe\n");
-
-  return test_exit();
+  // See if errno was not modified in this thread.
+  EXPECT_EQ(33, errno);
 }
-
-END_OF_MAIN();
