@@ -246,3 +246,22 @@ $(ASE): $(ASE_DEPS) $(OBJ_DIR)/resources_win32.res
 	rm $@.manifest
 
 endif
+
+######################################################################
+# Rules to make tests
+
+src/tests/%$(EXE): src/tests/%.cpp $(COMMON_OBJS) $(THIRD_PARTY_LIBS)
+	$(CC) $(CFLAGS) -Foobj/msvc/test.obj -c $<
+	link $(LFLAGS) obj/msvc/test.obj $(COMMON_OBJS) $(THIRD_PARTY_LIBS) $(LIBS) -OUT:$@
+
+tests: $(TESTS)
+
+runtests: $(AUTOTESTS)
+	@-$(foreach TEST, $(AUTOTESTS), \
+		echo Running ./$(TEST) ... ; \
+		if ./$(TEST) ; then \
+			echo " - OK" ; \
+		else \
+			echo " - *FAIL*" ; \
+		fi ; \
+	   )
