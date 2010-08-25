@@ -24,7 +24,7 @@
 #include "Vaca/Bind.h"
 
 #include "commands/command.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "mem_utils.h"
 #include "modules/gui.h"
 #include "raster/image.h"

@@ -25,7 +25,7 @@
 #include "Vaca/Bind.h"
 
 #include "app.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/gui.h"
 #include "modules/gfx.h"
 #include "modules/palettes.h"
@@ -41,17 +41,16 @@ enum {
   MODEL_MASK
 };
 
-typedef struct Model
+struct Model
 {
   const char *text;
   int model;
-  int color_type;
   Widget* (*create)();
-} Model;
+};
 
 struct ColorSelector
 {
-  color_t color;
+  Color color;
   Model* selected_model;
   std::vector<Widget*> model_buttons;
 };
@@ -64,7 +63,7 @@ static Widget* create_mask_container();
 static int colorselector_type();
 static ColorSelector* colorselector_data(JWidget widget);
 static bool colorselector_msg_proc(JWidget widget, JMessage msg);
-static void colorselector_set_color2(JWidget widget, color_t color,
+static void colorselector_set_color2(JWidget widget, const Color& color,
 				     bool update_index_entry,
 				     bool select_index_entry,
 				     Model* exclude_this_model);
@@ -76,11 +75,11 @@ static bool slider_change_hook(JWidget widget, void* data);
 static bool paledit_change_hook(JWidget widget, void* data);
 
 static Model models[] = {
-  { "RGB",	MODEL_RGB,	COLOR_TYPE_RGB,		create_rgb_container },
-  { "HSV",	MODEL_HSV,	COLOR_TYPE_RGB,		create_hsv_container },
-  { "Gray",	MODEL_GRAY,	COLOR_TYPE_GRAY,	create_gray_container },
-  { "Mask",	MODEL_MASK,	COLOR_TYPE_MASK,	create_mask_container },
-  { NULL,	0,		0,			NULL }
+  { "RGB",	MODEL_RGB,	create_rgb_container },
+  { "HSV",	MODEL_HSV,	create_hsv_container },
+  { "Gray",	MODEL_GRAY,	create_gray_container },
+  { "Mask",	MODEL_MASK,	create_mask_container },
+  { NULL,	0,		NULL }
 };
 
 Frame* colorselector_new()
@@ -100,7 +99,7 @@ Frame* colorselector_new()
   grid2->setName("grid2");
 
   /* color selector */
-  colorselector->color = color_mask();
+  colorselector->color = Color::fromMask();
   colorselector->selected_model = &models[0];
 
   /* palette */
@@ -146,12 +145,12 @@ Frame* colorselector_new()
   return window;
 }
 
-void colorselector_set_color(JWidget widget, color_t color)
+void colorselector_set_color(JWidget widget, const Color& color)
 {
   colorselector_set_color2(widget, color, true, true, NULL);
 }
 
-color_t colorselector_get_color(JWidget widget)
+Color colorselector_get_color(JWidget widget)
 {
   ColorSelector* colorselector = colorselector_data(widget);
 
@@ -279,7 +278,7 @@ static bool colorselector_msg_proc(JWidget widget, JMessage msg)
   return false;
 }
 
-static void colorselector_set_color2(JWidget widget, color_t color,
+static void colorselector_set_color2(JWidget widget, const Color& color,
 				     bool update_index_entry,
 				     bool select_index_entry,
 				     Model* exclude_this_model)
@@ -297,36 +296,36 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   colorselector->color = color;
 
   if (exclude_this_model != models+MODEL_RGB) {
-    jslider_set_value(rgb_rslider, color_get_red(color));
-    jslider_set_value(rgb_gslider, color_get_green(color));
-    jslider_set_value(rgb_bslider, color_get_blue(color));
+    jslider_set_value(rgb_rslider, color.getRed());
+    jslider_set_value(rgb_gslider, color.getGreen());
+    jslider_set_value(rgb_bslider, color.getBlue());
   }
   if (exclude_this_model != models+MODEL_HSV) {
-    jslider_set_value(hsv_hslider, color_get_hue(color));
-    jslider_set_value(hsv_sslider, color_get_saturation(color));
-    jslider_set_value(hsv_vslider, color_get_value(color));
+    jslider_set_value(hsv_hslider, color.getHue());
+    jslider_set_value(hsv_sslider, color.getSaturation());
+    jslider_set_value(hsv_vslider, color.getValue());
   }
   if (exclude_this_model != models+MODEL_GRAY) {
-    jslider_set_value(gray_vslider, color_get_value(color));
+    jslider_set_value(gray_vslider, color.getValue());
   }
   
-  switch (color_type(color)) {
-    case COLOR_TYPE_MASK:
+  switch (color.getType()) {
+    case Color::MaskType:
       m = models+MODEL_MASK;
       break;
-    case COLOR_TYPE_RGB:
+    case Color::RgbType:
       m = models+MODEL_RGB;
       break;
-    case COLOR_TYPE_INDEX:
+    case Color::IndexType:
       if (m != models+MODEL_RGB &&
 	  m != models+MODEL_HSV) {
 	m = models+MODEL_RGB;
       }
       break;
-    case COLOR_TYPE_HSV:
+    case Color::HsvType:
       m = models+MODEL_HSV;
       break;
-    case COLOR_TYPE_GRAY:
+    case Color::GrayType:
       m = models+MODEL_GRAY;
       break;
     default:
@@ -341,17 +340,17 @@ static void colorselector_set_color2(JWidget widget, color_t color,
   select_model_hook(dynamic_cast<Frame*>(widget->getRoot()), m);
 
   if (update_index_entry) {
-    switch (color_type(color)) {
-      case COLOR_TYPE_INDEX:
-	colorselector_set_paledit_index(widget, color_get_index(color), select_index_entry);
+    switch (color.getType()) {
+      case Color::IndexType:
+	colorselector_set_paledit_index(widget, color.getIndex(), select_index_entry);
 	break;
-      case COLOR_TYPE_MASK:
+      case Color::MaskType:
 	colorselector_set_paledit_index(widget, 0, true);
 	break;
       default: {
-	int r = color_get_red  (color);
-	int g = color_get_green(color);
-	int b = color_get_blue (color);
+	int r = color.getRed();
+	int g = color.getGreen();
+	int b = color.getBlue();
 	int i = get_current_palette()->findBestfit(r, g, b);
 	if (i >= 0 && i < 256)
 	  colorselector_set_paledit_index(widget, i, true);
@@ -416,7 +415,7 @@ static bool select_model_hook(Frame* frame, Model* selected_model)
   if (something_change) {
     // Select the mask color
     if (selected_model->model == MODEL_MASK) {
-      colorselector_set_color2(frame, color_mask(), false, false, NULL);
+      colorselector_set_color2(frame, Color::fromMask(), false, false, NULL);
       jwidget_emit_signal(frame, SIGNAL_COLORSELECTOR_COLOR_CHANGED);
     }
 
@@ -431,7 +430,7 @@ static bool slider_change_hook(JWidget widget, void* data)
   Frame* window = static_cast<Frame*>(widget->getRoot());
   ColorSelector* colorselector = colorselector_data(window);
   Model* m = colorselector->selected_model;
-  color_t color = colorselector->color;
+  Color color = colorselector->color;
   int i, r, g, b;
   
   switch (m->model) {
@@ -442,7 +441,7 @@ static bool slider_change_hook(JWidget widget, void* data)
       int r = jslider_get_value(rslider);
       int g = jslider_get_value(gslider);
       int b = jslider_get_value(bslider);
-      color = color_rgb(r, g, b);
+      color = Color::fromRgb(r, g, b);
       break;
     }
     case MODEL_HSV: {
@@ -452,20 +451,20 @@ static bool slider_change_hook(JWidget widget, void* data)
       int h = jslider_get_value(hslider);
       int s = jslider_get_value(sslider);
       int v = jslider_get_value(vslider);
-      color = color_hsv(h, s, v);
+      color = Color::fromHsv(h, s, v);
       break;
     }
     case MODEL_GRAY: {
       JWidget vslider = jwidget_find_name(window, "gray_v");
       int v = jslider_get_value(vslider);
-      color = color_gray(v);
+      color = Color::fromGray(v);
       break;
     }
   }
 
-  r = color_get_red  (color);
-  g = color_get_green(color);
-  b = color_get_blue (color);
+  r = color.getRed();
+  g = color.getGreen();
+  b = color.getBlue();
   
   // Search for the closest color to the RGB values
   i = get_current_palette()->findBestfit(r, g, b);
@@ -482,13 +481,13 @@ static bool paledit_change_hook(Widget* widget, void* data)
   Frame* window = static_cast<Frame*>(widget->getRoot());
   PalEdit* paledit = static_cast<PalEdit*>(widget);
   bool array[256];
-  color_t color = colorselector_get_color(window);
+  Color color = colorselector_get_color(window);
   int i;
 
   paledit->getSelectedEntries(array);
   for (i=0; i<256; ++i)
     if (array[i]) {
-      color = color_index(i);
+      color = Color::fromIndex(i);
       break;
     }
 

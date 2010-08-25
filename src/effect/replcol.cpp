@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "core/color.h"
+#include "app/color.h"
 #include "effect/effect.h"
 #include "raster/image.h"
 

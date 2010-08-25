@@ -71,30 +71,30 @@ void ChangeColorCommand::onLoadParams(Params* params)
 void ChangeColorCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = app_get_colorbar();
-  color_t color = m_background ? colorbar->getBgColor():
-				 colorbar->getFgColor();
+  Color color = m_background ? colorbar->getBgColor():
+			       colorbar->getFgColor();
 
   switch (m_change) {
     case None:
       // do nothing
       break;
     case IncrementIndex:
-      if (color_type(color) == COLOR_TYPE_INDEX) {
-	int index = color_get_index(color);
+      if (color.getType() == Color::IndexType) {
+	int index = color.getIndex();
 	if (index < 255)	// TODO use sprite palette limit
-	  color = color_index(index+1);
+	  color = Color::fromIndex(index+1);
       }
       else
-	color = color_index(0);
+	color = Color::fromIndex(0);
       break;
     case DecrementIndex:
-      if (color_type(color) == COLOR_TYPE_INDEX) {
-	int index = color_get_index(color);
+      if (color.getType() == Color::IndexType) {
+	int index = color.getIndex();
 	if (index > 0)
-	  color = color_index(index-1);
+	  color = Color::fromIndex(index-1);
       }
       else
-	color = color_index(0);
+	color = Color::fromIndex(0);
       break;
   }
 

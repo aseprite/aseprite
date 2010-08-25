@@ -31,7 +31,7 @@
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "core/core.h"
 #include "effect/effect.h"
 #include "modules/gui.h"

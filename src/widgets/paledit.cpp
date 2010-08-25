@@ -30,7 +30,7 @@
 #include "jinete/jwidget.h"
 #include "jinete/jtheme.h"
 
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"

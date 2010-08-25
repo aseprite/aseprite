@@ -30,6 +30,7 @@
 #include "util/autocrop.h"
 #include "util/misc.h"
 #include "sprite_wrappers.h"
+#include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
 // crop_sprite
@@ -66,8 +67,8 @@ void CropSpriteCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Sprite Crop");
-    int bgcolor = get_color_for_image(sprite->getImgType(),
-				      app_get_colorbar()->getBgColor());
+    int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
+
     undoable.crop_sprite(sprite->getMask()->x,
 			 sprite->getMask()->y,
 			 sprite->getMask()->w,
@@ -110,8 +111,10 @@ void AutocropSpriteCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
   {
+    int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
+
     Undoable undoable(sprite, "Sprite Autocrop");
-    undoable.autocrop_sprite(app_get_colorbar()->getBgColor());
+    undoable.autocrop_sprite(bgcolor);
     undoable.commit();
   }
   sprite->generateMaskBoundaries();

@@ -40,6 +40,7 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "widgets/editor.h"
+#include "app/color_utils.h"
 
 using Vaca::Rect;
 using Vaca::Point;
@@ -423,21 +424,21 @@ void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color)
        center.x+size/2, center.y-size/2, color);
 }
 
-void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
+void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color)
 {
-  int type = color_type(color);
+  Color::Type type = color.getType();
   BITMAP* graph;
 
-  if (type == COLOR_TYPE_MASK) {
+  if (type == Color::MaskType) {
     rectgrid(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, rc.w/4, rc.h/2);
     return;
   }
-  else if (type == COLOR_TYPE_INDEX) {
-    int index = color_get_index(color);
+  else if (type == Color::IndexType) {
+    int index = color.getIndex();
 
     if (index >= 0 && index < get_current_palette()->size()) {
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	       get_color_for_allegro(bitmap_color_depth(bmp), color));
+	       color_utils::color_for_allegro(color, bitmap_color_depth(bmp)));
     }
     else {
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, makecol(0, 0, 0));
@@ -450,7 +451,8 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
 
     case IMAGE_INDEXED:
       rectfill(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1,
-	       get_color_for_allegro(imgtype, color_index(get_color_for_image(imgtype, color))));
+	       color_utils::color_for_allegro(Color::fromIndex(color_utils::color_for_image(color, imgtype)),
+					      bitmap_color_depth(bmp)));
       break;
 
     case IMAGE_RGB:
@@ -459,11 +461,12 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
         return;
 
       {
-        int rgb_bitmap_color = get_color_for_image(imgtype, color);
-        color_t color2 = color_rgb(_rgba_getr(rgb_bitmap_color),
-				   _rgba_getg(rgb_bitmap_color),
-				   _rgba_getb(rgb_bitmap_color));
-        rectfill(graph, 0, 0, rc.w-1, rc.h-1, get_color_for_allegro(32, color2));
+        int rgb_bitmap_color = color_utils::color_for_image(color, imgtype);
+        Color color2 = Color::fromRgb(_rgba_getr(rgb_bitmap_color),
+				      _rgba_getg(rgb_bitmap_color),
+				      _rgba_getb(rgb_bitmap_color));
+        rectfill(graph, 0, 0, rc.w-1, rc.h-1,
+		 color_utils::color_for_allegro(color2, 32));
       }
 
       blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
@@ -477,9 +480,10 @@ void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color)
         return;
 
       {
-        int gray_bitmap_color = get_color_for_image(imgtype, color);
-	color_t color2 = color_gray(_graya_getv(gray_bitmap_color));
-        rectfill(graph, 0, 0, rc.w-1, rc.h-1, get_color_for_allegro(32, color2));
+	int gray_bitmap_color = color_utils::color_for_image(color, imgtype);
+	Color color2 = Color::fromGray(_graya_getv(gray_bitmap_color));
+        rectfill(graph, 0, 0, rc.w-1, rc.h-1,
+		 color_utils::color_for_allegro(color2, 32));
       }
 
       blit(graph, bmp, 0, 0, rc.x, rc.y, rc.w, rc.h);
@@ -493,7 +497,7 @@ void draw_color_button(BITMAP* bmp,
 		       const Rect& rc,
 		       bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
 		       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-		       int imgtype, color_t color, bool hot, bool drag)
+		       int imgtype, const Color& color, bool hot, bool drag)
 {
   SkinneableTheme* theme = (SkinneableTheme*)ji_get_theme();
   int scale = jguiscale();

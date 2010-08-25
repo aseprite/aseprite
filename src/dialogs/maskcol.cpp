@@ -29,7 +29,7 @@
 
 #include "app.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "core/core.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
@@ -40,6 +40,7 @@
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
+#include "app/color_utils.h"
 
 static ColorButton* button_color;
 static CheckBox* check_preview;
@@ -192,7 +193,7 @@ static Mask *gen_mask(const Sprite* sprite)
 
   const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
 
-  color = get_color_for_image(sprite->getImgType(), button_color->getColor());
+  color = color_utils::color_for_image(button_color->getColor(), sprite->getImgType());
   fuzziness = jslider_get_value(slider_fuzziness);
 
   Mask* mask = mask_new();

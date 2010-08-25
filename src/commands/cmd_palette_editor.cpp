@@ -31,7 +31,7 @@
 #include "commands/command.h"
 #include "commands/params.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
 #include "modules/editors.h"
@@ -123,7 +123,7 @@ static bool select_rgb_hook(JWidget widget, void *data);
 static bool select_hsv_hook(JWidget widget, void *data);
 static bool expand_button_select_hook(JWidget widget, void *data);
 static void modify_all_selected_entries_in_palette(int r, int g, int b);
-static void on_color_changed(color_t color);
+static void on_color_changed(const Color& color);
 
 static void set_new_palette(Palette *palette);
 
@@ -276,7 +276,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 
   // Show the specified target color
   {
-    color_t color =
+    Color color =
       (m_background ? context->getSettings()->getBgColor():
   		      context->getSettings()->getFgColor());
 
@@ -732,11 +732,11 @@ static bool sliderRGB_change_hook(JWidget widget, void *data)
   int r = jslider_get_value(R_slider);
   int g = jslider_get_value(G_slider);
   int b = jslider_get_value(B_slider);
-  color_t color = color_rgb(r, g, b);
+  Color color = Color::fromRgb(r, g, b);
 
-  jslider_set_value(H_slider, color_get_hue(color));
-  jslider_set_value(V_slider, color_get_value(color));
-  jslider_set_value(S_slider, color_get_saturation(color));
+  jslider_set_value(H_slider, color.getHue());
+  jslider_set_value(V_slider, color.getValue());
+  jslider_set_value(S_slider, color.getSaturation());
 
   modify_all_selected_entries_in_palette(r, g, b);
 
@@ -752,12 +752,12 @@ static bool sliderHSV_change_hook(JWidget widget, void *data)
   int h = jslider_get_value(H_slider);
   int s = jslider_get_value(S_slider);
   int v = jslider_get_value(V_slider);
-  color_t color = color_hsv(h, s, v);
+  Color color = Color::fromHsv(h, s, v);
   int r, g, b;
 
-  jslider_set_value(R_slider, r = color_get_red(color));
-  jslider_set_value(G_slider, g = color_get_green(color));
-  jslider_set_value(B_slider, b = color_get_blue(color));
+  jslider_set_value(R_slider, r = color.getRed());
+  jslider_set_value(G_slider, g = color.getGreen());
+  jslider_set_value(B_slider, b = color.getBlue());
 
   modify_all_selected_entries_in_palette(r, g, b);
 
@@ -776,11 +776,11 @@ static bool entryRGB_change_hook(JWidget widget, void *data)
   r = MID(0, r, 255);
   g = MID(0, g, 255);
   b = MID(0, b, 255);
-  color_t color = color_rgb(r, g, b);
+  Color color = Color::fromRgb(r, g, b);
 
-  H_entry->setTextf("%d", color_get_hue(color));
-  V_entry->setTextf("%d", color_get_value(color));
-  S_entry->setTextf("%d", color_get_saturation(color));
+  H_entry->setTextf("%d", color.getHue());
+  V_entry->setTextf("%d", color.getValue());
+  S_entry->setTextf("%d", color.getSaturation());
 
   modify_all_selected_entries_in_palette(r, g, b);
 
@@ -796,12 +796,12 @@ static bool entryHSV_change_hook(JWidget widget, void *data)
   int h = H_entry->getTextInt();
   int s = S_entry->getTextInt();
   int v = V_entry->getTextInt();
-  color_t color = color_hsv(h, s, v);
+  Color color = Color::fromHsv(h, s, v);
   int r, g, b;
 
-  R_entry->setTextf("%d", r = color_get_red(color));
-  G_entry->setTextf("%d", g = color_get_green(color));
-  B_entry->setTextf("%d", b = color_get_blue(color));
+  R_entry->setTextf("%d", r = color.getRed());
+  G_entry->setTextf("%d", g = color.getGreen());
+  B_entry->setTextf("%d", b = color.getBlue());
 
   modify_all_selected_entries_in_palette(r, g, b);
 
@@ -905,19 +905,19 @@ static void update_colorbar()
   app_get_colorbar()->dirty();
 }
 
-static void update_sliders_from_color(color_t color)
+static void update_sliders_from_color(const Color& color)
 {
-  jslider_set_value(R_slider, color_get_red(color));
-  jslider_set_value(G_slider, color_get_green(color));
-  jslider_set_value(B_slider, color_get_blue(color));
-  jslider_set_value(H_slider, color_get_hue(color));
-  jslider_set_value(S_slider, color_get_saturation(color));
-  jslider_set_value(V_slider, color_get_value(color));
+  jslider_set_value(R_slider, color.getRed());
+  jslider_set_value(G_slider, color.getGreen());
+  jslider_set_value(B_slider, color.getBlue());
+  jslider_set_value(H_slider, color.getHue());
+  jslider_set_value(S_slider, color.getSaturation());
+  jslider_set_value(V_slider, color.getValue());
 }
 
 static bool palette_editor_change_hook(JWidget widget, void *data)
 {
-  color_t color = color_index(palette_editor->get2ndColor());
+  Color color = Color::fromIndex(palette_editor->get2ndColor());
 
   // colorviewer_set_color(colorviewer, color);
 
@@ -1053,13 +1053,13 @@ static void modify_all_selected_entries_in_palette(int r, int g, int b)
       palette->setEntry(c, _rgba(r, g, b, 255));
 }
 
-static void on_color_changed(color_t color)
+static void on_color_changed(const Color& color)
 {
   if (disable_colorbar_signals)
     return;
 
-  if (color_is_valid(color) && color_type(color) == COLOR_TYPE_INDEX) {
-    int index = color_get_index(color);
+  if (color.isValid() && color.getType() == Color::IndexType) {
+    int index = color.getIndex();
     palette_editor->selectColor(index);
 
     update_sliders_from_color(color); // Update sliders

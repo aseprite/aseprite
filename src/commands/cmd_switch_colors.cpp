@@ -45,8 +45,8 @@ SwitchColorsCommand::SwitchColorsCommand()
 void SwitchColorsCommand::onExecute(Context* context)
 {
   ColorBar* colorbar = app_get_colorbar();
-  color_t fg = colorbar->getFgColor();
-  color_t bg = colorbar->getBgColor();
+  Color fg = colorbar->getFgColor();
+  Color bg = colorbar->getBgColor();
 
   colorbar->setFgColor(bg);
   colorbar->setBgColor(fg);

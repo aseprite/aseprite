@@ -30,6 +30,7 @@
 #include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
+#include "app/color_utils.h"
 
 class CanvasSizeCommand : public Command
 {
@@ -108,9 +109,8 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   {
     Undoable undoable(sprite, "Canvas Size");
-    int bgcolor = get_color_for_image(sprite->getImgType(),
-				      context->getSettings()->getBgColor());
-    bgcolor = fixup_color_for_background(sprite->getImgType(), bgcolor);
+    int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
+    bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
     undoable.crop_sprite(x1, y1, x2-x1, y2-y1, bgcolor);
     undoable.commit();

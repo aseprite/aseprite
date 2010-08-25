@@ -25,6 +25,7 @@
 #include "undoable.h"
 #include "widgets/color_bar.h"
 #include "sprite_wrappers.h"
+#include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
 // flatten_layers
@@ -56,8 +57,7 @@ bool FlattenLayersCommand::onEnabled(Context* context)
 void FlattenLayersCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  int bgcolor = get_color_for_image(sprite->getImgType(),
-				    app_get_colorbar()->getBgColor());
+  int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
   {
     Undoable undoable(sprite, "Flatten Layers");
     undoable.flatten_layers(bgcolor);

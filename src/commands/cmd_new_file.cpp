@@ -28,7 +28,7 @@
 #include "console.h"
 #include "app.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -37,6 +37,7 @@
 #include "raster/undo.h"
 #include "util/misc.h"
 #include "widgets/color_bar.h"
+#include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
 // new_file
@@ -71,12 +72,11 @@ void NewFileCommand::onExecute(Context* context)
   int imgtype, w, h, bg, ncolors;
   char buf[1024];
   Sprite *sprite;
-  color_t color;
-  color_t bg_table[] = {
-    color_mask(),
-    color_rgb(0, 0, 0),
-    color_rgb(255, 255, 255),
-    color_rgb(255, 0, 255),
+  Color bg_table[] = {
+    Color::fromMask(),
+    Color::fromRgb(0, 0, 0),
+    Color::fromRgb(255, 255, 255),
+    Color::fromRgb(255, 0, 255),
     app_get_colorbar()->getBgColor()
   };
 
@@ -135,7 +135,7 @@ void NewFileCommand::onExecute(Context* context)
     ncolors = MID(2, ncolors, 256);
 
     // Select the color
-    color = color_mask();
+    Color color = Color::fromMask();
 
     if (bg >= 0 && bg <= 4) {
       color = bg_table[bg];
@@ -162,11 +162,11 @@ void NewFileCommand::onExecute(Context* context)
 
 	// If the background color isn't transparent, we have to
 	// convert the `Layer 1' in a `Background'
-	if (color_type(color) != COLOR_TYPE_MASK) {
+	if (color.getType() != Color::MaskType) {
 	  ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
 
 	  static_cast<LayerImage*>(sprite->getCurrentLayer())->configure_as_background();
-	  image_clear(sprite->getCurrentImage(), get_color_for_image(imgtype, color));
+	  image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
 	}
 
 	// Show the sprite to the user

@@ -16,21 +16,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef UTIL_MISC_H_INCLUDED
-#define UTIL_MISC_H_INCLUDED
+#ifndef APP_COLOR_UTILS_H_INCLUDED
+#define APP_COLOR_UTILS_H_INCLUDED
 
 #include "app/color.h"
-#include "widgets/editor.h"	/* for movement modes */
 
-class Frame;
-class Image;
 class Layer;
-class Sprite;
-class Undo;
 
-Image* NewImageFromMask(const Sprite* src);
+namespace color_utils {
 
-int interactive_move_layer(int mode, bool use_undo, int (*callback)());
+int blackandwhite(int r, int g, int b);
+int blackandwhite_neg(int r, int g, int b);
+
+int color_for_allegro(const Color& color, int depth);
+int color_for_image(const Color& color, int imgtype);
+int color_for_layer(const Color& color, Layer* layer);
+
+int fixup_color_for_layer(Layer* layer, int color);
+int fixup_color_for_background(int imgtype, int color);
+
+}
 
 #endif
 

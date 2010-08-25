@@ -25,6 +25,7 @@
 #include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
+#include "app/color_utils.h"
 
 class BackgroundFromLayerCommand : public Command
 {
@@ -62,9 +63,8 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
 
   // each frame of the layer to be converted as `Background' must be
   // cleared using the selected background color in the color-bar
-  int bgcolor = get_color_for_image(sprite->getImgType(),
-				    context->getSettings()->getBgColor());
-  bgcolor = fixup_color_for_background(sprite->getImgType(), bgcolor);
+  int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
+  bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
   {
     Undoable undoable(sprite, "Background from Layer");

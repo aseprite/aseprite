@@ -25,7 +25,7 @@
 #include "app.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "core/core.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
@@ -97,7 +97,7 @@ void dialogs_draw_text(Sprite* sprite)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
-    color_t color_with_type = colorbutton_get_color(color_but);
+    Color color_with_type = colorbutton_get_color(color_but);
     const char *text = jwidget_get_text(entry_text);
     const char *size_str = jwidget_get_text(entry_size);
     const char *font_str = get_config_string("DrawText", "Font",
@@ -123,8 +123,7 @@ void dialogs_draw_text(Sprite* sprite)
       ji_font_set_size(f, size);
 
       /* setup color */
-      color = get_color_for_image(sprite->imgtype,
-				  color_with_type);
+      color = color_utils::color_for_image(color_with_type, sprite->imgtype);
 
       /* update configuration */
       set_config_color("DrawText", "Color", color_with_type);

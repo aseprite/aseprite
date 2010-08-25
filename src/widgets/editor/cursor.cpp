@@ -28,8 +28,9 @@
 #include "jinete/jwidget.h"
 
 #include "app.h"
+#include "app/color_utils.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/editors.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -97,19 +98,18 @@ static int get_pen_color(Sprite *sprite);
 // CURSOR COLOR
 //////////////////////////////////////////////////////////////////////
 
-static color_t cursor_color;
+static Color cursor_color;
 static int _cursor_color;
 static bool _cursor_mask;
 
 static void update_cursor_color()
 {
   if (ji_screen)
-    _cursor_color = get_color_for_allegro(bitmap_color_depth(ji_screen),
-					  cursor_color);
+    _cursor_color = color_utils::color_for_allegro(cursor_color, bitmap_color_depth(ji_screen));
   else
     _cursor_color = 0;
 
-  _cursor_mask = (color_type(cursor_color) == COLOR_TYPE_MASK);
+  _cursor_mask = (cursor_color.getType() == Color::MaskType);
 }
 
 int Editor::get_raw_cursor_color()
@@ -122,12 +122,12 @@ bool Editor::is_cursor_mask()
   return _cursor_mask;
 }
 
-color_t Editor::get_cursor_color()
+Color Editor::get_cursor_color()
 {
   return cursor_color;
 }
 
-void Editor::set_cursor_color(color_t color)
+void Editor::set_cursor_color(const Color& color)
 {
   cursor_color = color;
   update_cursor_color();
@@ -197,7 +197,7 @@ static Pen* editor_get_current_pen()
 void Editor::editor_cursor_init()
 {
   /* cursor color */
-  set_cursor_color(get_config_color("Tools", "CursorColor", color_mask()));
+  set_cursor_color(get_config_color("Tools", "CursorColor", Color::fromMask()));
 
   App::instance()->PaletteChange.connect(&on_palette_change_update_cursor_color);
   App::instance()->PenSizeBeforeChange.connect(&on_pen_size_before_change);
@@ -258,7 +258,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   else if (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
 	   current_tool->getInk(0)->isEffect() ||
 	   // or when the FG color is mask and we are not in the background layer
-	   (color_type(UIContext::instance()->getSettings()->getFgColor()) == COLOR_TYPE_MASK &&
+	   (UIContext::instance()->getSettings()->getFgColor().getType() == Color::MaskType &&
 	    (m_sprite->getCurrentLayer() != NULL &&
 	     !m_sprite->getCurrentLayer()->is_background()))) {
     cursor_type = CURSOR_BOUNDS;
@@ -643,7 +643,7 @@ static void drawpixel(BITMAP *bmp, int x, int y, int color)
       g = getg(c);
       b = getb(c);
 
-      putpixel(bmp, x, y, blackandwhite_neg(r, g, b));
+      putpixel(bmp, x, y, color_utils::blackandwhite_neg(r, g, b));
     }
     else {
       putpixel(bmp, x, y, color);
@@ -670,15 +670,15 @@ static int point_inside_region(int x, int y, JRegion region)
 
 static int get_pen_color(Sprite *sprite)
 {
-  color_t c = UIContext::instance()->getSettings()->getFgColor();
+  Color c = UIContext::instance()->getSettings()->getFgColor();
   ASSERT(sprite != NULL);
 
   // Avoid using invalid colors
-  if (!color_is_valid(c))
+  if (!c.isValid())
     return 0;
 
   if (sprite->getCurrentLayer() != NULL)
-    return get_color_for_layer(sprite->getCurrentLayer(), c);
+    return color_utils::color_for_layer(c, sprite->getCurrentLayer());
   else
-    return get_color_for_image(sprite->getImgType(), c);
+    return color_utils::color_for_image(c, sprite->getImgType());
 }

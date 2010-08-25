@@ -41,6 +41,8 @@ add_executable(aseprite WIN32
   ui_context.cpp
   undoable.cpp
   xml_widgets.cpp
+  app/color.cpp
+  app/color_utils.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
   commands/cmd_background_from_layer.cpp
@@ -115,7 +117,6 @@ add_executable(aseprite WIN32
   commands/fx/cmd_replace_color.cpp
   commands/fx/effectbg.cpp
   core/cfg.cpp
-  core/color.cpp
   core/config.cpp
   core/core.cpp
   core/drop_files.cpp

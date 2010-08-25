@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 
-#include "core/color.h"
+#include "app/color.h"
 
 class Frame;
 
@@ -30,9 +30,9 @@ class Frame;
 
 Frame* colorselector_new();
 
-void colorselector_set_color(JWidget widget, color_t color);
-color_t colorselector_get_color(JWidget widget);
+void colorselector_set_color(Widget* widget, const Color& color);
+Color colorselector_get_color(Widget* widget);
 
-JWidget colorselector_get_paledit(JWidget widget);
+Widget* colorselector_get_paledit(Widget* widget);
 
 #endif

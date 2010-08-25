@@ -22,7 +22,7 @@
 #include "jinete/jbase.h"
 #include "jinete/jwidget.h"
 
-#include "core/color.h"
+#include "app/color.h"
 
 class Frame;
 class StatusBar;
@@ -56,13 +56,13 @@ public:
 
   bool setStatusText(int msecs, const char *format, ...);
   void showTip(int msecs, const char *format, ...);
-  void showColor(int msecs, const char* text, color_t color, int alpha);
+  void showColor(int msecs, const char* text, const Color& color, int alpha);
   void showTool(int msecs, Tool* tool);
 
   void showMovePixelsOptions();
   void hideMovePixelsOptions();
 
-  color_t getTransparentColor();
+  Color getTransparentColor();
 
   // Methods to add and remove progress bars
   Progress* addProgress();
@@ -84,7 +84,7 @@ private:
   Tool* m_tool;
 
   // Showing a color
-  color_t m_color;
+  Color m_color;
   int m_alpha;
 
   // Progress bar

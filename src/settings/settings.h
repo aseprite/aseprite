@@ -20,7 +20,7 @@
 #define SETTINGS_SETTINGS_H_INCLUDED
 
 #include "Vaca/Rect.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "tiled_mode.h"
 #include "pen_type.h"
 
@@ -38,13 +38,13 @@ public:
 
   // General settings
 
-  virtual color_t getFgColor() = 0;
-  virtual color_t getBgColor() = 0;
+  virtual Color getFgColor() = 0;
+  virtual Color getBgColor() = 0;
   virtual Tool* getCurrentTool() = 0;
   virtual TiledMode getTiledMode() = 0;
 
-  virtual void setFgColor(color_t color) = 0;
-  virtual void setBgColor(color_t color) = 0;
+  virtual void setFgColor(const Color& color) = 0;
+  virtual void setBgColor(const Color& color) = 0;
   virtual void setCurrentTool(Tool* tool) = 0;
   virtual void setTiledMode(TiledMode mode) = 0;
 
@@ -53,20 +53,20 @@ public:
   virtual bool getSnapToGrid() = 0;
   virtual bool getGridVisible() = 0;
   virtual Rect getGridBounds() = 0;
-  virtual color_t getGridColor() = 0;
+  virtual Color getGridColor() = 0;
 
   virtual void setSnapToGrid(bool state) = 0;
   virtual void setGridVisible(bool state) = 0;
   virtual void setGridBounds(Rect rect) = 0;
-  virtual void setGridColor(color_t color) = 0;
+  virtual void setGridColor(const Color& color) = 0;
 
   // Pixel grid
 
   virtual bool getPixelGridVisible() = 0;
-  virtual color_t getPixelGridColor() = 0;
+  virtual Color getPixelGridColor() = 0;
 
   virtual void setPixelGridVisible(bool state) = 0;
-  virtual void setPixelGridColor(color_t color) = 0;
+  virtual void setPixelGridColor(const Color& color) = 0;
 
   // Onionskin settings
 

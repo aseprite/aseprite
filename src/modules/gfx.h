@@ -19,7 +19,7 @@
 #ifndef MODULES_GFX_H_INCLUDED
 #define MODULES_GFX_H_INCLUDED
 
-#include "core/color.h"
+#include "app/color.h"
 #include "jinete/jbase.h"
 
 namespace Vaca { class Rect; }
@@ -94,12 +94,12 @@ void rectdotted(BITMAP* bmp, int x1, int y1, int x2, int y2, int fg, int bg);
 void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
 
 void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, int color);
-void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, color_t color);
+void draw_color(BITMAP* bmp, const Rect& rc, int imgtype, const Color& color);
 void draw_color_button(BITMAP* bmp,
 		       const Rect& rc,
 		       bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
 		       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-		       int imgtype, color_t color,
+		       int imgtype, const Color& color,
 		       bool hot, bool drag);
 void draw_progress_bar(BITMAP* bmp,
 		       int x1, int y1, int x2, int y2,

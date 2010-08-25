@@ -29,7 +29,7 @@
 #include "commands/params.h"
 #include "app.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -71,13 +71,13 @@ int colorbar_type()
 
 ColorBar::ColorBar(int align)
   : Widget(colorbar_type())
+  , m_fgcolor(Color::fromIndex(15))
+  , m_bgcolor(Color::fromIndex(0))
 {
   m_entrySize = 16;
   m_firstIndex = 0;
   m_columns = 2;
   m_colorsPerColumn = 12;
-  m_fgcolor = color_index(15);
-  m_bgcolor = color_index(0);
   m_hot = HOTCOLOR_NONE;
   m_hot_editing = HOTCOLOR_NONE;
   m_hot_drag = HOTCOLOR_NONE;
@@ -111,7 +111,7 @@ ColorBar::~ColorBar()
   set_config_int("ColorBar", "EntrySize", m_entrySize);
 }
 
-void ColorBar::setFgColor(color_t color)
+void ColorBar::setFgColor(const Color& color)
 {
   m_fgcolor = color;
   dirty();
@@ -120,7 +120,7 @@ void ColorBar::setFgColor(color_t color)
   FgColorChange(m_fgcolor);
 }
 
-void ColorBar::setBgColor(color_t color)
+void ColorBar::setBgColor(const Color& color)
 {
   m_bgcolor = color;
   dirty();
@@ -129,7 +129,7 @@ void ColorBar::setBgColor(color_t color)
   BgColorChange(m_bgcolor);
 }
 
-color_t ColorBar::getColorByPosition(int x, int y)
+Color ColorBar::getColorByPosition(int x, int y)
 {
   for (int i=0; i<getEntriesCount(); ++i) {
     if (getEntryBounds(i).contains(Point(x, y)))
@@ -144,7 +144,7 @@ color_t ColorBar::getColorByPosition(int x, int y)
   if (getBgBounds().contains(Point(x, y)))
     return m_bgcolor;
 
-  return color_mask();
+  return Color::fromMask();
 }
 
 bool ColorBar::onProcessMessage(JMessage msg)
@@ -198,7 +198,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 
 	int col = (i / m_colorsPerColumn);
 	int row = (i % m_colorsPerColumn);
-	color_t color = color_index(m_firstIndex + i);
+	Color color = Color::fromIndex(m_firstIndex + i);
 
 	draw_color_button(doublebuffer, entryBounds,
 			  row == 0 && col == 0,			 // nw
@@ -216,14 +216,14 @@ bool ColorBar::onProcessMessage(JMessage msg)
 			  (m_hot_drag == i &&
 			   m_hot_drag != m_hot_drop));
 	
-	if (color_equals(m_bgcolor, color)) {
+	if (m_bgcolor == color) {
 	  theme->draw_bounds_nw(doublebuffer,
 				entryBounds.x, entryBounds.y,
 				entryBounds.x+entryBounds.w-1,
 				entryBounds.y+entryBounds.h-1 - (row == m_colorsPerColumn-1 ? jguiscale(): 0),
 				PART_COLORBAR_BORDER_BG_NW, -1);
 	}
-	if (color_equals(m_fgcolor, color)) {
+	if (m_fgcolor == color) {
 	  theme->draw_bounds_nw(doublebuffer,
 				entryBounds.x, entryBounds.y,
 				entryBounds.x+entryBounds.w-1,
@@ -317,7 +317,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 	// Open the new hot-color to be edited
 	if ((m_hot != HOTCOLOR_NONE) &&
 	    (m_hot_drag == m_hot_drop)) {
-	  color_t color = getHotColor(m_hot);
+	  Color color = getHotColor(m_hot);
 
 	  updateStatusBar(color, 0);
 	}
@@ -403,17 +403,17 @@ bool ColorBar::onProcessMessage(JMessage msg)
 	/* drag and drop a color */
 	if (m_hot_drag != m_hot_drop) {
 	  if (m_hot_drop != HOTCOLOR_NONE) {
-	    color_t color = getHotColor(m_hot_drag);
+	    Color color = getHotColor(m_hot_drag);
 	    setHotColor(m_hot_drop, color);
 	  }
 	  dirty();
 	}
 	/* pick the color */
 	else if (m_hot != HOTCOLOR_NONE) {
-	  color_t color = getHotColor(m_hot);
+	  Color color = getHotColor(m_hot);
 
 	  // Check if the color is invalid (e.g. index out of range)
-	  if (color_is_valid(color)) {
+	  if (color.isValid()) {
 
 	    switch (m_hot) {
 
@@ -429,7 +429,7 @@ bool ColorBar::onProcessMessage(JMessage msg)
 	      }
 
 	      default: {
-		color_t color = getHotColor(m_hot);
+		Color color = getHotColor(m_hot);
 
 		if (msg->mouse.left) {
 		  this->setFgColor(color);
@@ -467,10 +467,10 @@ bool ColorBar::onProcessMessage(JMessage msg)
   return Widget::onProcessMessage(msg);
 }
 
-color_t ColorBar::getHotColor(hotcolor_t hot)
+Color ColorBar::getHotColor(hotcolor_t hot)
 {
   switch (hot) {
-    case HOTCOLOR_NONE:     return color_mask();
+    case HOTCOLOR_NONE:     return Color::fromMask();
     case HOTCOLOR_FGCOLOR:  return m_fgcolor;
     case HOTCOLOR_BGCOLOR:  return m_bgcolor;
     default:
@@ -479,7 +479,7 @@ color_t ColorBar::getHotColor(hotcolor_t hot)
   }
 }
 
-void ColorBar::setHotColor(hotcolor_t hot, color_t color)
+void ColorBar::setHotColor(hotcolor_t hot, const Color& color)
 {
   switch (hot) {
     case HOTCOLOR_NONE:
@@ -497,22 +497,21 @@ void ColorBar::setHotColor(hotcolor_t hot, color_t color)
       m_color[hot] = color;
 
       if (hot == 0 || hot == m_ncolor-1) {
-	int imgtype = app_get_current_image_type();
 	color_t c1 = m_color[0];
 	color_t c2 = m_color[m_ncolor-1];
-	int r1 = color_get_red(imgtype, c1);
-	int g1 = color_get_green(imgtype, c1);
-	int b1 = color_get_blue(imgtype, c1);
-	int r2 = color_get_red(imgtype, c2);
-	int g2 = color_get_green(imgtype, c2);
-	int b2 = color_get_blue(imgtype, c2);
+	int r1 = c1.getRed();
+	int g1 = c1.getGreen();
+	int b1 = c1.getBlue();
+	int r2 = c2.getRed();
+	int g2 = c2.getGreen();
+	int b2 = c2.getBlue();
 	int c, r, g, b;
 
 	for (c=1; c<m_ncolor-1; ++c) {
 	  r = r1 + (r2-r1) * c / m_ncolor;
 	  g = g1 + (g2-g1) * c / m_ncolor;
 	  b = b1 + (b2-b1) * c / m_ncolor;
-	  m_color[c] = color_rgb(r, g, b);
+	  m_color[c] = Color::fromRgb(r, g, b);
 	}
       }
 #endif
@@ -565,9 +564,9 @@ Rect ColorBar::getBgBounds() const
 	      rc.w, BGBUTTON_SIZE);
 }
 
-void ColorBar::updateStatusBar(color_t color, int msecs)
+void ColorBar::updateStatusBar(const Color& color, int msecs)
 {
-  if (color_is_valid(color)) {
+  if (color.isValid()) {
     app_get_statusbar()
       ->showColor(msecs, "", color, 255);
   }

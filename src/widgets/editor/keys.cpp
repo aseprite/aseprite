@@ -26,7 +26,7 @@
 #include "jinete/jwidget.h"
 
 #include "app.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"

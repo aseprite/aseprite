@@ -21,7 +21,7 @@
 
 #include <allegro/config.h>
 #include "Vaca/Rect.h"
-#include "core/color.h"
+#include "app/color.h"
 
 using Vaca::Rect;
 
@@ -38,7 +38,7 @@ void set_config_bool(const char *section, const char *name, bool value);
 Rect get_config_rect(const char *section, const char *name, const Rect& rect);
 void set_config_rect(const char *section, const char *name, const Rect& rect);
 
-color_t get_config_color(const char *section, const char *name, color_t value);
-void set_config_color(const char *section, const char *name, color_t value);
+Color get_config_color(const char *section, const char *name, const Color& value);
+void set_config_color(const char *section, const char *name, const Color& value);
 
 #endif

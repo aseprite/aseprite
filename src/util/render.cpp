@@ -26,6 +26,7 @@
 #include "util/render.h"
 #include "settings/settings.h"
 #include "ui_context.h"
+#include "app/color_utils.h"
 
 //////////////////////////////////////////////////////////////////////
 // Zoomed merge
@@ -279,61 +280,70 @@ done_with_blit:;
 
 static RenderEngine::CheckedBgType checked_bg_type;
 static bool checked_bg_zoom;
-static color_t checked_bg_color1;
-static color_t checked_bg_color2;
+static Color checked_bg_color1;
+static Color checked_bg_color2;
 
 static int global_opacity = 255;
 static Layer *selected_layer = NULL;
 static Image *rastering_image = NULL;
 
+// static
 void RenderEngine::loadConfig()
 {
   checked_bg_type = (CheckedBgType)get_config_int("Options", "CheckedBgType",
 						  (int)RenderEngine::CHECKED_BG_16X16);
   checked_bg_zoom = get_config_bool("Options", "CheckedBgZoom", true);
-  checked_bg_color1 = get_config_color("Options", "CheckedBgColor1", color_rgb(128, 128, 128));
-  checked_bg_color2 = get_config_color("Options", "CheckedBgColor2", color_rgb(192, 192, 192));
+  checked_bg_color1 = get_config_color("Options", "CheckedBgColor1", Color::fromRgb(128, 128, 128));
+  checked_bg_color2 = get_config_color("Options", "CheckedBgColor2", Color::fromRgb(192, 192, 192));
 }
 
+// static
 RenderEngine::CheckedBgType RenderEngine::getCheckedBgType()
 {
   return checked_bg_type;
 }
 
+// static
 void RenderEngine::setCheckedBgType(CheckedBgType type)
 {
   checked_bg_type = type;
   set_config_int("Options", "CheckedBgType", (int)type);
 }
 
+// static
 bool RenderEngine::getCheckedBgZoom()
 {
   return checked_bg_zoom;
 }
 
+// static
 void RenderEngine::setCheckedBgZoom(bool state)
 {
   checked_bg_zoom = state;
   set_config_int("Options", "CheckedBgZoom", state);
 }
 
-color_t RenderEngine::getCheckedBgColor1()
+// static
+Color RenderEngine::getCheckedBgColor1()
 {
   return checked_bg_color1;
 }
 
-void RenderEngine::setCheckedBgColor1(color_t color)
+// static
+void RenderEngine::setCheckedBgColor1(const Color& color)
 {
   checked_bg_color1 = color;
   set_config_color("Options", "CheckedBgColor1", color);
 }
 
-color_t RenderEngine::getCheckedBgColor2()
+// static
+Color RenderEngine::getCheckedBgColor2()
 {
   return checked_bg_color2;
 }
 
-void RenderEngine::setCheckedBgColor2(color_t color)
+// static
+void RenderEngine::setCheckedBgColor2(const Color& color)
 {
   checked_bg_color2 = color;
   set_config_color("Options", "CheckedBgColor2", color);
@@ -341,6 +351,7 @@ void RenderEngine::setCheckedBgColor2(color_t color)
 
 //////////////////////////////////////////////////////////////////////
 
+// static
 void RenderEngine::setPreviewImage(Layer *layer, Image *image)
 {
   selected_layer = layer;
@@ -354,6 +365,7 @@ void RenderEngine::setPreviewImage(Layer *layer, Image *image)
    Positions source_x, source_y, width and height must have the
    zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
+// static
 Image* RenderEngine::renderSprite(const Sprite* sprite,
 				  int source_x, int source_y,
 				  int width, int height,
@@ -440,6 +452,7 @@ Image* RenderEngine::renderSprite(const Sprite* sprite,
   return image;
 }
 
+// static
 void RenderEngine::renderCheckedBackground(Image* image,
 					   int source_x, int source_y,
 					   int zoom)
@@ -447,8 +460,8 @@ void RenderEngine::renderCheckedBackground(Image* image,
   int x, y, u, v;
   int tile_w = 16;
   int tile_h = 16;
-  int c1 = get_color_for_image(image->imgtype, checked_bg_color1);
-  int c2 = get_color_for_image(image->imgtype, checked_bg_color2);
+  int c1 = color_utils::color_for_image(checked_bg_color1, image->imgtype);
+  int c2 = color_utils::color_for_image(checked_bg_color2, image->imgtype);
 
   switch (checked_bg_type) {
 
@@ -504,6 +517,7 @@ void RenderEngine::renderCheckedBackground(Image* image,
   }
 }
 
+// static
 void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
 			       int x, int y, int zoom)
 {
@@ -532,6 +546,7 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
   (*zoomed_func)(rgb_image, src_image, pal, x, y, 255, BLEND_MODE_NORMAL, zoom);
 }
 
+// static
 void RenderEngine::renderLayer(const Sprite *sprite,
 			       const Layer *layer,
 			       Image *image,

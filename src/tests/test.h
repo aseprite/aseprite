@@ -20,7 +20,7 @@
 #define TESTS_TEST_H_INCLUDED
 
 #ifdef NDEBUG
-#error You should compile the tests with the NDEBUG flag activated
+  #error You must compile tests with the NDEBUG flag disabled
 #endif
 
 #include <stdio.h>

@@ -17,6 +17,7 @@
  */
 
 #include "app.h"		// TODO avoid to include this file
+#include "app/color_utils.h"
 #include "raster/undo.h"
 
 #include "tools/ink_processing.h"
@@ -49,10 +50,10 @@ public:
       case WithFg:
       case WithBg:
 	{
-	  int color = get_color_for_layer(loop->getLayer(),
-					  m_type == WithFg ? 
-					    loop->getContext()->getSettings()->getFgColor():
-					    loop->getContext()->getSettings()->getBgColor());
+	  int color = color_utils::color_for_layer(m_type == WithFg ? 
+						     loop->getContext()->getSettings()->getFgColor():
+						     loop->getContext()->getSettings()->getBgColor(),
+						   loop->getLayer());
 	  loop->setPrimaryColor(color);
 	  loop->setSecondaryColor(color);
 	}
@@ -163,19 +164,19 @@ public:
       case ReplaceFgWithBg:
 	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
 
-	loop->setPrimaryColor(get_color_for_layer(loop->getLayer(),
-						  loop->getContext()->getSettings()->getFgColor()));
-	loop->setSecondaryColor(get_color_for_layer(loop->getLayer(),
-						    loop->getContext()->getSettings()->getBgColor()));
+	loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
+							   loop->getLayer()));
+	loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
+							     loop->getLayer()));
 	break;
 
       case ReplaceBgWithFg:
 	m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getImgType(), 2)];
 
-	loop->setPrimaryColor(get_color_for_layer(loop->getLayer(),
-						  loop->getContext()->getSettings()->getBgColor()));
-	loop->setSecondaryColor(get_color_for_layer(loop->getLayer(),
-						    loop->getContext()->getSettings()->getFgColor()));
+	loop->setPrimaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getBgColor(),
+							   loop->getLayer()));
+	loop->setSecondaryColor(color_utils::color_for_layer(loop->getContext()->getSettings()->getFgColor(),
+							     loop->getLayer()));
 	break;
     }
   }

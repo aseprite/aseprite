@@ -21,7 +21,7 @@
 
 #include "jinete/jbase.h"
 #include "jinete/jwidget.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "Vaca/Signal.h"
 
 #define MIN_ZOOM 0
@@ -141,7 +141,7 @@ public:
   void editor_draw_mask_safe();
 
   void flashCurrentLayer();
-  void setMaskColorForPixelsMovement(color_t color);
+  void setMaskColorForPixelsMovement(const Color& color);
 
   void screen_to_editor(int xin, int yin, int *xout, int *yout);
   void editor_to_screen(int xin, int yin, int *xout, int *yout);
@@ -157,8 +157,8 @@ public:
 
   static int get_raw_cursor_color();
   static bool is_cursor_mask();
-  static color_t get_cursor_color();
-  static void set_cursor_color(color_t color);
+  static Color get_cursor_color();
+  static void set_cursor_color(const Color& color);
 
   static void editor_cursor_init();
   static void editor_cursor_exit();
@@ -197,7 +197,7 @@ protected:
   void onCurrentToolChange();
 
 private:
-  void drawGrid(const Rect& gridBounds, color_t color);
+  void drawGrid(const Rect& gridBounds, const Color& color);
 
   void addDecorator(Decorator* decorator);
   void deleteDecorators();

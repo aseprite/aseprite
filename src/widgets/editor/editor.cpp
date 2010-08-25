@@ -29,8 +29,9 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "app.h"
+#include "app/color_utils.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -485,13 +486,13 @@ void Editor::editor_draw_mask_safe()
   }
 }
 
-void Editor::drawGrid(const Rect& gridBounds, color_t color)
+void Editor::drawGrid(const Rect& gridBounds, const Color& color)
 {
   Rect grid(gridBounds);
   if (grid.w < 1 || grid.h < 1)
     return;
 
-  int grid_color = get_color_for_allegro(bitmap_color_depth(ji_screen), color);
+  int grid_color = color_utils::color_for_allegro(color, bitmap_color_depth(ji_screen));
   JWidget view = jwidget_get_view(this);
   JRect vp = jview_get_viewport_position(view);
   int scroll_x, scroll_y;
@@ -558,9 +559,9 @@ void Editor::flashCurrentLayer()
 	    v-y >= 0 && v-y < src_image->h) {
 	  ase_uint32 color = image_getpixel(src_image, u-x, v-y);
 	  if (color != src_image->mask_color) {
-	    color_t ccc = color_rgb(255, 255, 255);
+	    Color ccc = Color::fromRgb(255, 255, 255);
 	    image_putpixel(flash_image, u, v,
-			   get_color_for_image(flash_image->imgtype, ccc));
+			   color_utils::color_for_image(ccc, flash_image->imgtype));
 	  }
 	}
       }
@@ -577,13 +578,13 @@ void Editor::flashCurrentLayer()
   }
 }
 
-void Editor::setMaskColorForPixelsMovement(color_t color)
+void Editor::setMaskColorForPixelsMovement(const Color& color)
 {
   ASSERT(m_sprite != NULL);
   ASSERT(m_pixelsMovement != NULL);
   
   int imgtype = m_sprite->getImgType();
-  m_pixelsMovement->setMaskColor(get_color_for_image(imgtype, color));
+  m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, imgtype));
 }
 
 void Editor::deleteDecorators()
@@ -743,7 +744,7 @@ void Editor::editor_update_statusbar_for_standby()
       current_tool->getInk(0)->isEyedropper()) {
     int imgtype = m_sprite->getImgType();
     ase_uint32 pixel = m_sprite->getPixel(x, y);
-    color_t color = color_from_image(imgtype, pixel);
+    Color color = Color::fromImage(imgtype, pixel);
 
     int alpha = 255;
     switch (imgtype) {
@@ -1425,22 +1426,22 @@ bool Editor::onProcessMessage(JMessage msg)
 	    case WHEEL_FG:
 	      if (m_state == EDITOR_STATE_STANDBY) {
 		int newIndex = 0;
-		if (color_type(app_get_colorbar()->getFgColor()) == COLOR_TYPE_INDEX) {
-		  newIndex = color_get_index(app_get_colorbar()->getFgColor()) + dz;
+		if (app_get_colorbar()->getFgColor().getType() == Color::IndexType) {
+		  newIndex = app_get_colorbar()->getFgColor().getIndex() + dz;
 		  newIndex = MID(0, newIndex, 255);
 		}
-		app_get_colorbar()->setFgColor(color_index(newIndex));
+		app_get_colorbar()->setFgColor(Color::fromIndex(newIndex));
 	      }
 	      break;
 
 	    case WHEEL_BG:
 	      if (m_state == EDITOR_STATE_STANDBY) {
 		int newIndex = 0;
-		if (color_type(app_get_colorbar()->getBgColor()) == COLOR_TYPE_INDEX) {
-		  newIndex = color_get_index(app_get_colorbar()->getBgColor()) + dz;
+		if (app_get_colorbar()->getBgColor().getType() == Color::IndexType) {
+		  newIndex = app_get_colorbar()->getBgColor().getIndex() + dz;
 		  newIndex = MID(0, newIndex, 255);
 		}
-		app_get_colorbar()->setBgColor(color_index(newIndex));
+		app_get_colorbar()->setBgColor(Color::fromIndex(newIndex));
 	      }
 	      break;
 
@@ -1798,7 +1799,7 @@ class ToolLoopImpl : public IToolLoop
 
 public:
   ToolLoopImpl(Editor* editor, Context* context, Tool* tool, Sprite* sprite, Layer* layer,
-	       int button, color_t primary_color, color_t secondary_color)
+	       int button, const Color& primary_color, const Color& secondary_color)
   {
     m_editor = editor;
     m_context = context;
@@ -1810,8 +1811,8 @@ public:
     m_cel_created = false;
     m_canceled = false;
     m_button = button;
-    m_primary_color = get_color_for_layer(layer, primary_color);
-    m_secondary_color = get_color_for_layer(layer, secondary_color);
+    m_primary_color = color_utils::color_for_layer(primary_color, layer);
+    m_secondary_color = color_utils::color_for_layer(secondary_color, layer);
 
     // Settings
     ISettings* settings = m_context->getSettings();
@@ -2118,10 +2119,10 @@ IToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
 
   // Get fg/bg colors
   ColorBar* colorbar = app_get_colorbar();
-  color_t fg = colorbar->getFgColor();
-  color_t bg = colorbar->getBgColor();
+  Color fg = colorbar->getFgColor();
+  Color bg = colorbar->getBgColor();
 
-  if (!color_is_valid(fg) || !color_is_valid(bg)) {
+  if (!fg.isValid() || !bg.isValid()) {
     jalert(PACKAGE
 	   "<<The current selected foreground and/or background color"
 	   "<<is out of range. Select valid colors in the color-bar."

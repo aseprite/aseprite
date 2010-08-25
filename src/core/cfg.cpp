@@ -99,16 +99,12 @@ void set_config_rect(const char *section, const char *name, const Rect& rect)
   set_config_string(section, name, buf);
 }
 
-color_t get_config_color(const char *section, const char *name, color_t value)
+Color get_config_color(const char *section, const char *name, const Color& value)
 {
-  char buf[128];
-  color_to_string(value, buf, sizeof(buf));
-  return string_to_color(get_config_string(section, name, buf));
+  return Color::fromString(get_config_string(section, name, value.toString().c_str()));
 }
 
-void set_config_color(const char *section, const char *name, color_t value)
+void set_config_color(const char *section, const char *name, const Color& value)
 {
-  char buf[128];
-  color_to_string(value, buf, sizeof(buf));
-  set_config_string(section, name, buf);
+  set_config_string(section, name, value.toString().c_str());
 }

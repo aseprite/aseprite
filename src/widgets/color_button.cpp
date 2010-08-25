@@ -23,7 +23,8 @@
 #include "jinete/jinete.h"
 #include "Vaca/PreferredSizeEvent.h"
 
-#include "core/color.h"
+#include "app/color_utils.h"
+#include "app/color.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
@@ -42,13 +43,12 @@ static int colorbutton_type()
   return type;
 }
 
-ColorButton::ColorButton(color_t color, int imgtype)
+ColorButton::ColorButton(const Color& color, int imgtype)
   : ButtonBase("", colorbutton_type(), JI_BUTTON, JI_BUTTON)
+  , m_color(color)
+  , m_imgtype(imgtype)
+  , m_tooltip_window(NULL)
 {
-  m_color = color;
-  m_imgtype = imgtype;
-  m_tooltip_window = NULL;
-
   jwidget_focusrest(this, true);
 }
 
@@ -58,17 +58,17 @@ ColorButton::~ColorButton()
     delete m_tooltip_window;	// widget, frame
 }
 
-int ColorButton::getImgType()
+int ColorButton::getImgType() const
 {
   return m_imgtype;
 }
 
-color_t ColorButton::getColor()
+Color ColorButton::getColor() const
 {
   return m_color;
 }
 
-void ColorButton::setColor(color_t color)
+void ColorButton::setColor(const Color& color)
 {
   m_color = color;
   dirty();
@@ -103,7 +103,7 @@ bool ColorButton::onProcessMessage(JMessage msg)
 	JWidget picked = jwidget_pick(ji_get_default_manager(),
 				      msg->mouse.x,
 				      msg->mouse.y);
-	color_t color = this->m_color;
+	Color color = this->m_color;
 
 	if (picked && picked != this) {
 	  // Pick a color from another color-button
@@ -125,13 +125,13 @@ bool ColorButton::onProcessMessage(JMessage msg)
 	      y = msg->mouse.y;
 	      editor->screen_to_editor(x, y, &x, &y);
 	      imgcolor = sprite->getPixel(x, y);
-	      color = color_from_image(sprite->getImgType(), imgcolor);
+	      color = Color::fromImage(sprite->getImgType(), imgcolor);
 	    }
 	  }
 	}
 
-	/* does the color change? */
-	if (!color_equals(color, this->m_color)) {
+	// Did the color change?
+	if (color != this->m_color) {
 	  this->setColor(color);
 	  jwidget_emit_signal(this, SIGNAL_COLORBUTTON_CHANGE);
 	}
@@ -165,19 +165,18 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 void ColorButton::draw()
 {
   struct jrect box, text, icon;
-  char buf[256];
 
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
 
   jdraw_rectfill(this->rc, ji_color_face());
 
-  color_t color;
+  Color color;
 
   // When the button is pushed, show the negative
   if (this->isSelected()) {
-    color = color_rgb(255-color_get_red(this->m_color),
-		      255-color_get_green(this->m_color),
-		      255-color_get_blue(this->m_color));
+    color = Color::fromRgb(255-m_color.getRed(),
+			   255-m_color.getGreen(),
+			   255-m_color.getBlue());
   }
   // When the button is not pressed, show the real color
   else
@@ -193,15 +192,15 @@ void ColorButton::draw()
      this->hasMouseOver(), false);
 
   // Draw text
-  color_to_formalstring(this->m_imgtype,
-			this->m_color, buf, sizeof(buf), false);
+  std::string str =
+    this->m_color.toFormalString(this->m_imgtype, false);
 
-  this->setTextQuiet(buf);
+  this->setTextQuiet(str.c_str());
   jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
   
-  int textcolor = blackandwhite_neg(color_get_red(color),
-				    color_get_green(color),
-				    color_get_blue(color));
+  int textcolor = color_utils::blackandwhite_neg(color.getRed(),
+						 color.getGreen(),
+						 color.getBlue());
   jdraw_text(ji_screen, this->getFont(), this->getText(), text.x1, text.y1,
 	     textcolor, -1, false, jguiscale());
 }
@@ -263,7 +262,7 @@ static bool tooltip_window_msg_proc(JWidget widget, JMessage msg)
     case JM_SIGNAL:
       if (msg->signal.num == SIGNAL_COLORSELECTOR_COLOR_CHANGED) {
 	ColorButton* colorbutton_widget = (ColorButton*)widget->user_data[0];
-	color_t color = colorselector_get_color(widget);
+	Color color = colorselector_get_color(widget);
 
 	colorbutton_widget->setColor(color);
 	jwidget_emit_signal(colorbutton_widget, SIGNAL_COLORBUTTON_CHANGE);

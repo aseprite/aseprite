@@ -28,7 +28,7 @@
 #include "console.h"
 #include "app.h"
 #include "core/cfg.h"
-#include "core/color.h"
+#include "app/color.h"
 #include "core/core.h"
 #include "effect/effect.h"
 #include "effect/replcol.h"
@@ -41,6 +41,7 @@
 #include "widgets/color_button.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
+#include "app/color_utils.h"
 
 static ColorButton* button_color1;
 static ColorButton* button_color2;
@@ -191,15 +192,14 @@ static void preview_change_hook(Widget* widget)
 static void make_preview()
 {
   Sprite* sprite = preview_get_effect(preview)->sprite;
-  color_t from, to;
   int tolerance;
 
-  from = get_config_color("ReplaceColor", "Color1", color_mask());
-  to = get_config_color("ReplaceColor", "Color2", color_mask());
+  Color from = get_config_color("ReplaceColor", "Color1", Color::fromMask());
+  Color to = get_config_color("ReplaceColor", "Color2", Color::fromMask());
   tolerance = get_config_int("ReplaceColor", "Tolerance", 0);
 
-  set_replace_colors(get_color_for_layer(sprite->getCurrentLayer(), from),
-		     get_color_for_layer(sprite->getCurrentLayer(), to),
+  set_replace_colors(color_utils::color_for_layer(from, sprite->getCurrentLayer()),
+		     color_utils::color_for_layer(to, sprite->getCurrentLayer()),
 		     MID(0, tolerance, 255));
 
   if (check_preview->isSelected())

@@ -33,23 +33,21 @@
 // UISettingsImpl
 
 UISettingsImpl::UISettingsImpl()
-  : m_gridBounds(0, 0, 16, 16)
+  : m_currentTool(NULL)
+  , m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
+  , m_use_onionskin(get_config_bool("Onionskin", "Enabled", false))
+  , m_prev_frames_onionskin(get_config_int("Onionskin", "PrevFrames", 1))
+  , m_next_frames_onionskin(get_config_int("Onionskin", "NextFrames", 0))
+  , m_onionskin_opacity_base(get_config_int("Onionskin", "OpacityBase", 128))
+  , m_onionskin_opacity_step(get_config_int("Onionskin", "OpacityStep", 32))
+  , m_snapToGrid(get_config_bool("Grid", "SnapTo", false))
+  , m_gridVisible(get_config_bool("Grid", "Visible", false))
+  , m_gridBounds(get_config_rect("Grid", "Bounds", Rect(0, 0, 16, 16)))
+  , m_gridColor(get_config_color("Grid", "Color", Color::fromRgb(0, 0, 255)))
+  , m_pixelGridColor(get_config_color("PixelGrid", "Color", Color::fromRgb(200, 200, 200)))
+  , m_pixelGridVisible(get_config_bool("PixelGrid", "Visible", false))
 {
-  m_currentTool = NULL;
-  m_tiledMode     = (TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE);
-  m_tiledMode     = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
-  m_snapToGrid    = get_config_bool("Grid", "SnapTo", false);
-  m_gridVisible   = get_config_bool("Grid", "Visible", false);
-  m_gridColor     = get_config_color("Grid", "Color", color_rgb(0, 0, 255));
-  m_gridBounds    = get_config_rect("Grid", "Bounds", m_gridBounds);
-  m_pixelGridVisible = get_config_bool("PixelGrid", "Visible", false);
-  m_pixelGridColor   = get_config_color("PixelGrid", "Color", color_rgb(200, 200, 200));
-
-  m_use_onionskin = get_config_bool("Onionskin", "Enabled", false);
-  m_prev_frames_onionskin = get_config_int("Onionskin", "PrevFrames", 1);
-  m_next_frames_onionskin = get_config_int("Onionskin", "NextFrames", 0);
-  m_onionskin_opacity_base = get_config_int("Onionskin", "OpacityBase", 128);
-  m_onionskin_opacity_step = get_config_int("Onionskin", "OpacityStep", 32);
+  m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
 }
 
 UISettingsImpl::~UISettingsImpl()
@@ -77,12 +75,12 @@ UISettingsImpl::~UISettingsImpl()
 //////////////////////////////////////////////////////////////////////
 // General settings
 
-color_t UISettingsImpl::getFgColor()
+Color UISettingsImpl::getFgColor()
 {
   return app_get_colorbar()->getFgColor();
 }
 
-color_t UISettingsImpl::getBgColor()
+Color UISettingsImpl::getBgColor()
 {
   return app_get_colorbar()->getBgColor();
 }
@@ -100,12 +98,12 @@ TiledMode UISettingsImpl::getTiledMode()
   return m_tiledMode;
 }
 
-void UISettingsImpl::setFgColor(color_t color)
+void UISettingsImpl::setFgColor(const Color& color)
 {
   app_get_colorbar()->setFgColor(color);
 }
 
-void UISettingsImpl::setBgColor(color_t color)
+void UISettingsImpl::setBgColor(const Color& color)
 {
   app_get_colorbar()->setFgColor(color);
 }
@@ -147,7 +145,7 @@ Rect UISettingsImpl::getGridBounds()
   return m_gridBounds;
 }
 
-color_t UISettingsImpl::getGridColor()
+Color UISettingsImpl::getGridColor()
 {
   return m_gridColor;
 }
@@ -167,7 +165,7 @@ void UISettingsImpl::setGridBounds(Rect rect)
   m_gridBounds = rect;
 }
 
-void UISettingsImpl::setGridColor(color_t color)
+void UISettingsImpl::setGridColor(const Color& color)
 {
   m_gridColor = color;
 }
@@ -180,7 +178,7 @@ bool UISettingsImpl::getPixelGridVisible()
   return m_pixelGridVisible;
 }
 
-color_t UISettingsImpl::getPixelGridColor()
+Color UISettingsImpl::getPixelGridColor()
 {
   return m_pixelGridColor;
 }
@@ -190,7 +188,7 @@ void UISettingsImpl::setPixelGridVisible(bool state)
   m_pixelGridVisible = state;
 }
 
-void UISettingsImpl::setPixelGridColor(color_t color)
+void UISettingsImpl::setPixelGridColor(const Color& color)
 {
   m_pixelGridColor = color;
 }

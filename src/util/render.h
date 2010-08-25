@@ -19,7 +19,7 @@
 #ifndef UTIL_RENDER_H_INCLUDED
 #define UTIL_RENDER_H_INCLUDED
 
-#include "core/color.h"
+#include "app/color.h"
 
 class Image;
 class Layer;
@@ -43,10 +43,10 @@ public:
   static void setCheckedBgType(CheckedBgType type);
   static bool getCheckedBgZoom();
   static void setCheckedBgZoom(bool state);
-  static color_t getCheckedBgColor1();
-  static void setCheckedBgColor1(color_t color);
-  static color_t getCheckedBgColor2();
-  static void setCheckedBgColor2(color_t color);
+  static Color getCheckedBgColor1();
+  static void setCheckedBgColor1(const Color& color);
+  static Color getCheckedBgColor2();
+  static void setCheckedBgColor2(const Color& color);
 
   //////////////////////////////////////////////////////////////////////
   // Preview image

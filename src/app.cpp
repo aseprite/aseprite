@@ -33,6 +33,7 @@
 #include "Vaca/String.h"
 
 #include "app.h"
+#include "app/color_utils.h"
 #include "ase_exception.h"
 #include "check_args.h"
 #include "commands/commands.h"
@@ -450,16 +451,16 @@ void app_default_statusbar_message()
     ->setStatusText(250, "%s %s | %s", PACKAGE, VERSION, COPYRIGHT);
 }
 
-int app_get_color_to_clear_layer(Layer *layer)
+int app_get_color_to_clear_layer(Layer* layer)
 {
   /* all transparent layers are cleared with the mask color */
-  color_t color = color_mask();
+  Color color = Color::fromMask();
   
   /* the `Background' is erased with the `Background Color' */
   if (layer != NULL && layer->is_background())
     color = colorbar->getBgColor();
 
-  return get_color_for_layer(layer, color);
+  return color_utils::color_for_layer(color, layer);
 }
 
 //////////////////////////////////////////////////////////////////////

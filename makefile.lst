@@ -19,6 +19,8 @@ COMMON_SOURCES =					\
 	src/ui_context.cpp				\
 	src/undoable.cpp				\
 	src/xml_widgets.cpp				\
+	src/app/color.cpp				\
+	src/app/color_utils.cpp				\
 	src/commands/cmd_about.cpp			\
 	src/commands/cmd_advanced_mode.cpp		\
 	src/commands/cmd_background_from_layer.cpp	\
@@ -93,7 +95,6 @@ COMMON_SOURCES =					\
 	src/commands/fx/cmd_replace_color.cpp		\
 	src/commands/fx/effectbg.cpp			\
 	src/core/cfg.cpp				\
-	src/core/color.cpp				\
 	src/core/config.cpp				\
 	src/core/core.cpp				\
 	src/core/drop_files.cpp				\

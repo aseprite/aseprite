@@ -146,7 +146,7 @@ $(VACA_LIB): $(VACA_OBJS)
 # Rules to build objects and the application
 
 VPATH = src					\
-	src/ase					\
+	src/app					\
 	src/commands				\
 	src/commands/fx				\
 	src/console				\

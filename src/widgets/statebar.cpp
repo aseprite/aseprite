@@ -73,6 +73,7 @@ static int statusbar_type()
 
 StatusBar::StatusBar()
   : Widget(statusbar_type())
+  , m_color(Color::fromMask())
 {
 #define BUTTON_NEW(name, text, action)					\
   {									\
@@ -144,7 +145,7 @@ StatusBar::StatusBar()
 
     m_movePixelsBox = jbox_new(JI_HORIZONTAL);
     m_transparentLabel = new Label("Transparent Color:");
-    m_transparentColor = new ColorButton(color_mask(), IMAGE_RGB);
+    m_transparentColor = new ColorButton(Color::fromMask(), IMAGE_RGB);
 
     jwidget_add_child(m_movePixelsBox, filler);
     jwidget_add_child(m_movePixelsBox, m_transparentLabel);
@@ -247,7 +248,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   this->dirty();
 }
 
-void StatusBar::showColor(int msecs, const char* text, color_t color, int alpha)
+void StatusBar::showColor(int msecs, const char* text, const Color& color, int alpha)
 {
   if (setStatusText(msecs, text)) {
     m_state = SHOW_COLOR;
@@ -296,7 +297,7 @@ void StatusBar::hideMovePixelsOptions()
   }
 }
 
-color_t StatusBar::getTransparentColor()
+Color StatusBar::getTransparentColor()
 {
   return m_transparentColor->getColor();
 }
@@ -435,17 +436,18 @@ bool StatusBar::onProcessMessage(JMessage msg)
 	x += (32+4)*jguiscale();
 
 	// Draw color description
-	char buf[512];		// TODO warning buffer overflow
-	color_to_formalstring(app_get_current_image_type(),
-			      m_color, buf, sizeof(buf), true);
-	if (m_alpha < 255)
-	  usprintf(buf+ustrlen(buf), ", Alpha %d", m_alpha);
+	std::string str = m_color.toFormalString(app_get_current_image_type(), true);
+	if (m_alpha < 255) {
+	  char buf[512];
+	  usprintf(buf, ", Alpha %d", m_alpha);
+	  str += buf;
+	}
 
-	textout_ex(doublebuffer, this->getFont(), buf,
+	textout_ex(doublebuffer, this->getFont(), str.c_str(),
 		   x, (rc->y1+rc->y2)/2-text_height(this->getFont())/2,
 		   text_color, -1);
 
-	x += ji_font_text_len(this->getFont(), buf) + 4*jguiscale();
+	x += ji_font_text_len(this->getFont(), str.c_str()) + 4*jguiscale();
       }
 
       // Show tool

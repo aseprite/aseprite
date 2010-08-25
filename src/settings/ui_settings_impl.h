@@ -31,13 +31,13 @@ public:
 
   // General settings
 
-  color_t getFgColor();
-  color_t getBgColor();
+  Color getFgColor();
+  Color getBgColor();
   Tool* getCurrentTool();
   TiledMode getTiledMode();
 
-  void setFgColor(color_t color);
-  void setBgColor(color_t color);
+  void setFgColor(const Color& color);
+  void setBgColor(const Color& color);
   void setCurrentTool(Tool* tool);
   void setTiledMode(TiledMode mode);
 
@@ -46,20 +46,20 @@ public:
   bool getSnapToGrid();
   bool getGridVisible();
   Rect getGridBounds();
-  color_t getGridColor();
+  Color getGridColor();
 
   void setSnapToGrid(bool state);
   void setGridVisible(bool state);
   void setGridBounds(Rect rect);
-  void setGridColor(color_t color);
+  void setGridColor(const Color& color);
 
   // Pixel grid
 
   bool getPixelGridVisible();
-  color_t getPixelGridColor();
+  Color getPixelGridColor();
 
   void setPixelGridVisible(bool state);
-  void setPixelGridColor(color_t color);
+  void setPixelGridColor(const Color& color);
 
   // Onionskin settings
 
@@ -80,8 +80,8 @@ public:
   IToolSettings* getToolSettings(Tool* tool);
 
 private:
-  TiledMode m_tiledMode;
   Tool* m_currentTool;
+  TiledMode m_tiledMode;
   bool m_use_onionskin;
   int m_prev_frames_onionskin;
   int m_next_frames_onionskin;
@@ -90,9 +90,9 @@ private:
   bool m_snapToGrid;
   bool m_gridVisible;
   Rect m_gridBounds;
-  color_t m_gridColor;
+  Color m_gridColor;
   bool m_pixelGridVisible;
-  color_t m_pixelGridColor;
+  Color m_pixelGridColor;
   std::map<std::string, IToolSettings*> m_toolSettings;
 };
 

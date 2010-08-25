@@ -22,7 +22,7 @@
 #include "Vaca/Signal.h"
 #include "jinete/jwidget.h"
 
-#include "core/color.h"
+#include "app/color.h"
 
 class ColorBar : public Widget
 {
@@ -36,38 +36,43 @@ public:
   ColorBar(int align);
   ~ColorBar();
 
-  color_t getFgColor() const { return m_fgcolor; }
-  color_t getBgColor() const { return m_bgcolor; }
-  void setFgColor(color_t color);
-  void setBgColor(color_t color);
+  Color getFgColor() const { return m_fgcolor; }
+  Color getBgColor() const { return m_bgcolor; }
+  void setFgColor(const Color& color);
+  void setBgColor(const Color& color);
 
-  color_t getColorByPosition(int x, int y);
+  Color getColorByPosition(int x, int y);
 
   // Signals
-  Vaca::Signal1<void, color_t> FgColorChange;
-  Vaca::Signal1<void, color_t> BgColorChange;
+  Vaca::Signal1<void, const Color&> FgColorChange;
+  Vaca::Signal1<void, const Color&> BgColorChange;
 
 protected:
   bool onProcessMessage(JMessage msg);
 
 private:
-  int getEntriesCount() const { return m_columns*m_colorsPerColumn; }
-  color_t getEntryColor(int i) const { return color_index(i+m_firstIndex); }
+  int getEntriesCount() const {
+    return m_columns*m_colorsPerColumn;
+  }
 
-  color_t getHotColor(hotcolor_t hot);
-  void setHotColor(hotcolor_t hot, color_t color);
+  Color getEntryColor(int i) const {
+    return Color::fromIndex(i+m_firstIndex);
+  }
+
+  Color getHotColor(hotcolor_t hot);
+  void setHotColor(hotcolor_t hot, const Color& color);
   Rect getColumnBounds(int column) const;
   Rect getEntryBounds(int index) const;
   Rect getFgBounds() const;
   Rect getBgBounds() const;
-  void updateStatusBar(color_t color, int msecs);
+  void updateStatusBar(const Color& color, int msecs);
 
   int m_firstIndex;
   int m_columns;
   int m_colorsPerColumn;
   int m_entrySize;
-  color_t m_fgcolor;
-  color_t m_bgcolor;
+  Color m_fgcolor;
+  Color m_bgcolor;
   hotcolor_t m_hot;
   hotcolor_t m_hot_editing;
 

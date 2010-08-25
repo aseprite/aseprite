@@ -19,7 +19,7 @@
 #ifndef WIDGETS_COLOR_BUTTON_H_INCLUDED
 #define WIDGETS_COLOR_BUTTON_H_INCLUDED
 
-#include "core/color.h"
+#include "app/color.h"
 #include "jinete/jbutton.h"
 
 class Frame;
@@ -30,13 +30,13 @@ class Frame;
 class ColorButton : public ButtonBase
 {
 public:
-  ColorButton(color_t color, int imgtype);
+  ColorButton(const Color& color, int imgtype);
   ~ColorButton();
 
-  int getImgType();
+  int getImgType() const;
 
-  color_t getColor();
-  void setColor(color_t color);
+  Color getColor() const;
+  void setColor(const Color& color);
 
 protected:
   // Events
@@ -48,7 +48,7 @@ private:
   void openSelectorDialog();
   void closeSelectorDialog();
 
-  color_t m_color;
+  Color m_color;
   int m_imgtype;
   Frame* m_tooltip_window;
 };

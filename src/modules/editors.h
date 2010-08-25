@@ -20,7 +20,7 @@
 #define MODULES_EDITORS_H_INCLUDED
 
 #include "jinete/jbase.h"
-#include "core/color.h"
+#include "app/color.h"
 
 class Editor;
 

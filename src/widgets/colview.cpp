@@ -35,14 +35,14 @@
 
 typedef struct ColorViewer
 {
-  color_t color;
+  Color color;
   int imgtype;
 } ColorViewer;
 
 static ColorViewer *colorviewer_data(JWidget widget);
 static bool colorviewer_msg_proc(JWidget widget, JMessage msg);
 
-JWidget colorviewer_new(color_t color, int imgtype)
+JWidget colorviewer_new(const Color& color, int imgtype)
 {
   Widget* widget = new Widget(colorviewer_type());
   ColorViewer *colorviewer = jnew(ColorViewer, 1);
@@ -74,14 +74,14 @@ int colorviewer_get_imgtype(JWidget widget)
   return colorviewer->imgtype;
 }
 
-color_t colorviewer_get_color(JWidget widget)
+Color colorviewer_get_color(JWidget widget)
 {
   ColorViewer *colorviewer = colorviewer_data(widget);
 
   return colorviewer->color;
 }
 
-void colorviewer_set_color(JWidget widget, color_t color)
+void colorviewer_set_color(JWidget widget, const Color& color)
 {
   ColorViewer *colorviewer = colorviewer_data(widget);
 
@@ -117,7 +117,6 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
     case JM_DRAW: {
       struct jrect box, text, icon;
       JRect rect = jwidget_get_rect(widget);
-      char buf[256];
 
       jdraw_rectedge(rect,
 		     makecol(128, 128, 128),
@@ -134,11 +133,11 @@ static bool colorviewer_msg_proc(JWidget widget, JMessage msg)
 		 colorviewer->imgtype,
 		 colorviewer->color);
 
-      /* draw text */
-      color_to_formalstring(colorviewer->imgtype,
-			    colorviewer->color, buf, sizeof(buf), false);
+      // Draw text
+      std::string str =
+	colorviewer->color.toFormalString(colorviewer->imgtype, false);
 
-      widget->setTextQuiet(buf);
+      widget->setTextQuiet(str.c_str());
       jwidget_get_texticon_info(widget, &box, &text, &icon, 0, 0, 0);
 
       jdraw_rectfill(&text, makecol(0, 0, 0));
