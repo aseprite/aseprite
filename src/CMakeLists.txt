@@ -9,12 +9,22 @@ if(WIN32)
     DDraw DxGuid DSound DInput8)
 endif(WIN32)
 
+if(MSVC)
+  # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
+  if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
+  endif()
+endif(MSVC)
+
 # Third-party libraries
-set(libs freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
+set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
+
+# All libraries for .exe files
+set(all_libs aseprite-library alleg ${libs3rdparty} ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
-  .. . ../third_party
+  . .. ../third_party
   ${LIBFREETYPE_DIR}/include
   ${LIBJPEG_DIR}
   ${LIBPNG_DIR}
@@ -24,9 +34,9 @@ include_directories(
   ${VACA_DIR}/include)
 
 ######################################################################
-# aseprite application
+# aseprite library
 
-add_executable(aseprite WIN32
+add_library(aseprite-library
   app.cpp
   ase_exception.cpp
   check_args.cpp
@@ -34,7 +44,6 @@ add_executable(aseprite WIN32
   context.cpp
   gfxmode.cpp
   launcher.cpp
-  main.cpp
   mem_utils.cpp
   recent_files.cpp
   resource_finder.cpp
@@ -258,12 +267,11 @@ add_executable(aseprite WIN32
   widgets/target.cpp
   widgets/toolbar.cpp)
 
-target_link_libraries(aseprite alleg ${libs} ${sys_libs})
+######################################################################
+# aseprite application
 
-# Avoid MSVCRT.lib when we use Debug mode
-if(MSVC)
-  if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
-  endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-endif(MSVC)
+add_executable(aseprite WIN32 main.cpp)
+
+target_link_libraries(aseprite ${aseprite-library} ${all_libs})
+
 
