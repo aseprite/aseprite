@@ -34,8 +34,7 @@ include_directories(
   ${VACA_DIR}/include)
 
 # Files
-file(GLOB tests
-  app/*_unittest.cpp)
+file(GLOB_RECURSE tests *_unittest.cpp)
 
 ######################################################################
 # aseprite library
