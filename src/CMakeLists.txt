@@ -33,6 +33,10 @@ include_directories(
   ${TINYXML_DIR}
   ${VACA_DIR}/include)
 
+# Files
+file(GLOB tests
+  app/*_unittest.cpp)
+
 ######################################################################
 # aseprite library
 
@@ -274,4 +278,17 @@ add_executable(aseprite WIN32 main.cpp)
 
 target_link_libraries(aseprite ${aseprite-library} ${all_libs})
 
+######################################################################
+# Unit tests
 
+foreach(testsourcefile ${tests})
+  get_filename_component(testname ${testsourcefile} NAME_WE)
+
+  add_executable(${testname} WIN32 ${testsourcefile})
+
+  target_link_libraries(${testname} gtest ${all_libs})
+
+  # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
+  set_target_properties(${testname} PROPERTIES
+    COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/third_party/gtest/include")
+endforeach()
