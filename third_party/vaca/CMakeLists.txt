@@ -18,6 +18,3 @@ add_library(vaca
   src/Size.cpp
   src/String.cpp
   src/Vaca.cpp)
-
-set_target_properties(vaca PROPERTIES
-  COMPILE_FLAGS "-DVACA_ALLEGRO -DDEBUGMODE -DALLEGRO_STATICLINK")
