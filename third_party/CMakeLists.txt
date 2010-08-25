@@ -3,6 +3,10 @@
 
 include_directories(. libpng zlib)
 
+if(MSVC)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 add_subdirectory(freetype)
 add_subdirectory(jpeg)
 add_subdirectory(libart_lgpl)
