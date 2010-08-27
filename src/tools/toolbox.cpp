@@ -174,6 +174,9 @@ void ToolBox::loadTools()
       m_groups.push_back(tool_group);
       xmlGroup = xmlGroup->NextSiblingElement();
     }
+
+    // We just load the first gui.xml found
+    break;
   }
 }
 
