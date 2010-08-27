@@ -31,22 +31,27 @@
 // Allegro-friendly main() routine
 int main(int argc, char* argv[])
 {
+  int exitcode;
+
   ::testing::InitGoogleTest(&argc, argv);
   allegro_init();
 
   #ifdef TEST_GUI
+    set_color_depth(desktop_color_depth());
     set_gfx_mode(GFX_AUTODETECT_WINDOWED, 256, 256, 0, 0);
     install_timer();
     install_keyboard();
     install_mouse();
-
-    Widget* manager = jmanager_new();
+    {
+      Jinete jinete;
+      Widget* manager = jmanager_new();
   #endif
 
-  int exitcode = RUN_ALL_TESTS();
+      exitcode = RUN_ALL_TESTS();
 
   #ifdef TEST_GUI
-    jmanager_free(manager);
+      jmanager_free(manager);
+    }
   #endif
 
   allegro_exit();
