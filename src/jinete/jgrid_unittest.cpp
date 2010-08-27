@@ -18,16 +18,18 @@
 
 #define TEST_GUI
 #include "tests/test.h"
+#include "Vaca/Size.h"
+
+using Vaca::Size;
 
 /**
  * Tests two widgets in a row, each one of 10x10 pixels.
  */
-static void test_grid_2x1()
+TEST(JGrid, Simple2x1Grid)
 {
   JWidget grid = jgrid_new(2, false);
-  JWidget w1 = jwidget_new(JI_WIDGET);
-  JWidget w2 = jwidget_new(JI_WIDGET);
-  int req_w, req_h;
+  JWidget w1 = new Widget(JI_WIDGET);
+  JWidget w2 = new Widget(JI_WIDGET);
 
   jwidget_set_min_size(w1, 10, 10);
   jwidget_set_min_size(w2, 10, 10);
@@ -35,36 +37,39 @@ static void test_grid_2x1()
   jgrid_add_child(grid, w1, 1, 1, 0);
   jgrid_add_child(grid, w2, 1, 1, 0);
 
-  /* test request-size */
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 20 && req_h == 10);
+  // Test request-size
+  Size reqSize = grid->getPreferredSize();
+  EXPECT_EQ(20, reqSize.w);
+  EXPECT_EQ(10, reqSize.h);
 
-  /* test child-spacing */
+  // Test child-spacing
   grid->child_spacing = 2;
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 22 && req_h == 10);
+  reqSize = grid->getPreferredSize();
+  EXPECT_EQ(22, reqSize.w);
+  EXPECT_EQ(10, reqSize.h);
 
-  /* test borders */
+  // Test borders
   grid->border_width.l = 3;
   grid->border_width.b = 3;
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 25 && req_h == 13);
+  reqSize = grid->getPreferredSize();
+  EXPECT_EQ(25, reqSize.w);
+  EXPECT_EQ(13, reqSize.h);
 
   grid->border_width.r = 5;
   grid->border_width.t = 2;
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 30 && req_h == 15);
+  reqSize = grid->getPreferredSize();
+  EXPECT_EQ(30, reqSize.w);
+  EXPECT_EQ(15, reqSize.h);
 
-  jwidget_free(grid);
+  delete grid;
 }
 
-static void test_grid_2x1_expand2nd()
+TEST(JGrid, Expand2ndWidget)
 {
-  JWidget grid = jgrid_new(2, false);
-  JWidget w1 = jwidget_new(JI_WIDGET);
-  JWidget w2 = jwidget_new(JI_WIDGET);
+  Widget* grid = jgrid_new(2, false);
+  Widget* w1 = new Widget(JI_WIDGET);
+  Widget* w2 = new Widget(JI_WIDGET);
   JRect rect;
-  int req_w, req_h;
 
   jwidget_set_min_size(w1, 20, 20);
   jwidget_set_min_size(w2, 10, 10);
@@ -72,35 +77,35 @@ static void test_grid_2x1_expand2nd()
   jgrid_add_child(grid, w1, 1, 1, 0);
   jgrid_add_child(grid, w2, 1, 1, JI_HORIZONTAL | JI_TOP);
 
-  /* test request size */
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 30 && req_h == 20);
+  // Test request size
+  Size reqSize = grid->getPreferredSize();
+  EXPECT_EQ(30, reqSize.w);
+  EXPECT_EQ(20, reqSize.h);
 
-  /* test layout */
+  // Test layout
   rect = jrect_new(0, 0, 40, 20);
   jwidget_set_rect(grid, rect);
   jrect_free(rect);
 
-  ASSERT(w1->rc->x1 == 0);
-  ASSERT(w1->rc->y1 == 0);
-  ASSERT(jrect_w(w1->rc) == 20);
-  ASSERT(jrect_h(w1->rc) == 20);
+  EXPECT_EQ(0, w1->rc->x1);
+  EXPECT_EQ(0, w1->rc->y1);
+  EXPECT_EQ(20, jrect_w(w1->rc));
+  EXPECT_EQ(20, jrect_h(w1->rc));
 
-  ASSERT(w2->rc->x1 == 20);
-  ASSERT(w2->rc->y1 == 0);
-  ASSERT(jrect_w(w2->rc) == 20);
-  ASSERT(jrect_h(w2->rc) == 10);
+  EXPECT_EQ(20, w2->rc->x1);
+  EXPECT_EQ(0, w2->rc->y1);
+  EXPECT_EQ(20, jrect_w(w2->rc));
+  EXPECT_EQ(10, jrect_h(w2->rc));
 
-  jwidget_free(grid);
+  delete grid;
 }
 
-static void test_grid_2x1_samewidth()
+TEST(JGrid, SameWidth2x1Grid)
 {
   JWidget grid = jgrid_new(2, true);
-  JWidget w1 = jwidget_new(JI_WIDGET);
-  JWidget w2 = jwidget_new(JI_WIDGET);
+  JWidget w1 = new Widget(JI_WIDGET);
+  JWidget w2 = new Widget(JI_WIDGET);
   JRect rect;
-  int req_w, req_h;
 
   jwidget_set_min_size(w1, 20, 20);
   jwidget_set_min_size(w2, 10, 10);
@@ -108,21 +113,22 @@ static void test_grid_2x1_samewidth()
   jgrid_add_child(grid, w1, 1, 1, 0);
   jgrid_add_child(grid, w2, 1, 1, 0);
 
-  /* test request size */
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 40 && req_h == 20);
+  // Test request size
+  Size reqSize = grid->getPreferredSize();
+  EXPECT_EQ(40, reqSize.w);
+  EXPECT_EQ(20, reqSize.h);
 
-  /* test layout */
+  // Test layout
   rect = jrect_new(0, 0, 60, 20);
   jwidget_set_rect(grid, rect);
   jrect_free(rect);
 
-  ASSERT(w1->rc->x1 == 0);
-  ASSERT(w2->rc->x1 == 30);
-  ASSERT(jrect_w(w1->rc) == 30);
-  ASSERT(jrect_w(w2->rc) == 30);
+  EXPECT_EQ(0, w1->rc->x1);
+  EXPECT_EQ(30, w2->rc->x1);
+  EXPECT_EQ(30, jrect_w(w1->rc));
+  EXPECT_EQ(30, jrect_w(w2->rc));
 
-  jwidget_free(grid);
+  delete grid;
 }
 
 /**
@@ -163,15 +169,14 @@ static void test_grid_2x1_samewidth()
  *  +----------------------------+---+
  * </pre>
  */
-static void test_grid_3x3_intrincate()
+TEST(JGrid, Intrincate3x3Grid)
 {
-  JWidget grid = jgrid_new(3, false);
-  JWidget w1 = jwidget_new(JI_WIDGET);
-  JWidget w2 = jwidget_new(JI_WIDGET);
-  JWidget w3 = jwidget_new(JI_WIDGET);
-  JWidget w4 = jwidget_new(JI_WIDGET);
+  Widget* grid = jgrid_new(3, false);
+  Widget* w1 = new Widget(JI_WIDGET);
+  Widget* w2 = new Widget(JI_WIDGET);
+  Widget* w3 = new Widget(JI_WIDGET);
+  Widget* w4 = new Widget(JI_WIDGET);
   JRect rect;
-  int req_w, req_h;
 
   jwidget_set_min_size(w1, 10, 10);
   jwidget_set_min_size(w2, 10, 10);
@@ -183,39 +188,34 @@ static void test_grid_3x3_intrincate()
   jgrid_add_child(grid, w3, 2, 2, JI_HORIZONTAL | JI_VERTICAL);
   jgrid_add_child(grid, w4, 1, 2, JI_VERTICAL);
 
-  /* test request size */
+  // Test request size
   grid->child_spacing = 2;
-  jwidget_request_size(grid, &req_w, &req_h);
-  ASSERT(req_w == 22 && req_h == 22);
+  Size reqSize = grid->getPreferredSize();
+  EXPECT_EQ(22, reqSize.w);
+  EXPECT_EQ(22, reqSize.h);
 
-  /* test layout */
+  // Test layout
   rect = jrect_new(0, 0, 100, 100);
   jwidget_set_rect(grid, rect);
   jrect_free(rect);
 
-  ASSERT(w1->rc->x1 == 0  && w1->rc->y1 == 0);
-  ASSERT(w2->rc->x1 == 12 && w2->rc->y1 == 0);
-  ASSERT(w3->rc->x1 == 0  && w3->rc->y1 == 12);
-  ASSERT(w4->rc->x1 == 90 && w4->rc->y1 == 12);
+  EXPECT_EQ(0, w1->rc->x1);
+  EXPECT_EQ(0, w1->rc->y1);
+  EXPECT_EQ(12, w2->rc->x1);
+  EXPECT_EQ(0, w2->rc->y1);
+  EXPECT_EQ(0, w3->rc->x1);
+  EXPECT_EQ(12, w3->rc->y1);
+  EXPECT_EQ(90, w4->rc->x1);
+  EXPECT_EQ(12, w4->rc->y1);
 
-  ASSERT(jrect_w(w1->rc) == 10 && jrect_h(w1->rc) == 10);
-  ASSERT(jrect_w(w2->rc) == 88 && jrect_h(w2->rc) == 10);
-  ASSERT(jrect_w(w3->rc) == 88 && jrect_h(w3->rc) == 88);
-  ASSERT(jrect_w(w4->rc) == 10 && jrect_h(w4->rc) == 88);
+  EXPECT_EQ(10, jrect_w(w1->rc));
+  EXPECT_EQ(10, jrect_h(w1->rc));
+  EXPECT_EQ(88, jrect_w(w2->rc));
+  EXPECT_EQ(10, jrect_h(w2->rc));
+  EXPECT_EQ(88, jrect_w(w3->rc));
+  EXPECT_EQ(88, jrect_h(w3->rc));
+  EXPECT_EQ(10, jrect_w(w4->rc));
+  EXPECT_EQ(88, jrect_h(w4->rc));
 
-  jwidget_free(grid);
+  delete grid;
 }
-
-int main(int argc, char *argv[])
-{
-  JWidget manager = test_init_gui();
-
-  test_grid_2x1();
-  test_grid_2x1_expand2nd();
-  test_grid_2x1_samewidth();
-  test_grid_3x3_intrincate();
-
-  return test_exit_gui(manager);
-}
-
-END_OF_MAIN();
