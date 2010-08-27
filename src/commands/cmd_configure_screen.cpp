@@ -203,6 +203,9 @@ void ConfigureScreen::load_resolutions(ComboBox* resolution, ComboBox* color_dep
 
       xmlElement = xmlElement->NextSiblingElement();
     }
+
+    // We just load the first gui.xml found
+    break;
   }
 
   // Current screen size
