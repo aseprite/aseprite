@@ -33,9 +33,6 @@ include_directories(
   ${TINYXML_DIR}
   ${VACA_DIR}/include)
 
-# Files
-file(GLOB_RECURSE tests *_unittest.cpp)
-
 ######################################################################
 # aseprite library
 
@@ -279,6 +276,8 @@ target_link_libraries(aseprite ${aseprite-library} ${all_libs})
 
 ######################################################################
 # Unit tests
+
+file(GLOB_RECURSE tests *_unittest.cpp)
 
 foreach(testsourcefile ${tests})
   get_filename_component(testname ${testsourcefile} NAME_WE)
