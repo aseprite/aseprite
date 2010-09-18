@@ -112,18 +112,7 @@
   row->col[u].data = jrealloc(row->col[u].data,				\
 			      dirty_line_size(dirty, row->col[u].w));
 
-typedef struct AlgoData
-{
-  Dirty* dirty;
-  Pen* pen;
-  int thickness;
-} AlgoData;
-
 typedef void (*HLineSwapper)(void*,void*,int,int);
-
-static void algo_putpixel(int x, int y, AlgoData *data);
-/* static void algo_putthick(int x, int y, AlgoData *data); */
-static void algo_putpen(int x, int y, AlgoData *data);
 
 static HLineSwapper swap_hline(Image* image);
 static void swap_hline32(void* image, void* data, int x1, int x2);
@@ -236,106 +225,6 @@ void dirty_free(Dirty* dirty)
     jfree(dirty->row);
   }
   jfree(dirty);
-}
-
-void dirty_putpixel(Dirty* dirty, int x, int y)
-{
-  DirtyRow* row;		/* row=dirty->row+v */
-  DirtyCol* col;		/* col=row->col+u */
-  int u, v;
-
-  /* clip */
-  if (dirty->tiled) {
-    if (x < 0)
-      x = dirty->image->w - (-(x+1) % dirty->image->w) - 1;
-    else
-      x = x % dirty->image->w;
-
-    if (y < 0)
-      y = dirty->image->h - (-(y+1) % dirty->image->h) - 1;
-    else
-      y = y % dirty->image->h;
-  }
-  else {
-    if ((x < dirty->x1) || (x > dirty->x2) ||
-        (y < dirty->y1) || (y > dirty->y2))
-      return;
-  }
-
-  if (dirty->mask) {
-    if ((x < dirty->mask->x) || (x >= dirty->mask->x+dirty->mask->w) ||
-	(y < dirty->mask->y) || (y >= dirty->mask->y+dirty->mask->h))
-      return;
-
-    if ((dirty->mask->bitmap) &&
-	!(dirty->mask->bitmap->getpixel(x-dirty->mask->x,
-					y-dirty->mask->y)))
-      return;
-  }
-
-  /* check if the row exists */
-  row = NULL;
-
-  for (v=0; v<dirty->rows; ++v)
-    if (dirty->row[v].y == y) {
-      row = dirty->row+v;
-      break;
-    }
-    else if (dirty->row[v].y > y)
-      break;
-
-  /* we must add a new row? */
-  if (!row) {
-    ADD_ROW(dirty, row, v);
-
-    row->y = y;
-    row->cols = 0;
-    row->col = NULL;
-  }
-
-  /* go column by column */
-  col = row->col;
-  for (u=0; u<row->cols; ++u, ++col) {
-    /* inside a existent column */
-    if ((x >= col->x) && (x <= col->x+col->w-1))
-      return;
-    /* the pixel is to right of the column */
-    else if (x == col->x+col->w) {
-      RESTORE_IMAGE(col);
-
-      ++col->w;
-
-      /* there is a left column? */
-      if (u < row->cols-1 && x+1 == (col+1)->x)
-	JOIN_WITH_NEXT(row, col, u);
-
-      col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
-      return;
-    }
-    /* the pixel is to left of the column */
-    else if (x+1 == col->x) {
-      RESTORE_IMAGE(col);
-
-      --col->x;
-      ++col->w;
-      col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
-
-      col->ptr = image_address(dirty->image, x, y);
-      return;
-    }
-    /* the next column is more too far */
-    else if (x < col->x)
-      break;
-  }
-
-  /* add a new column */
-  ADD_COLUMN(row, col, u);
-
-  col->x = x;
-  col->w = 1;
-  col->flags = 0;
-  col->data = jmalloc(dirty_line_size(dirty, 1));
-  col->ptr = image_address(dirty->image, x, y);
 }
 
 void dirty_hline(Dirty* dirty, int x1, int y, int x2)
@@ -581,64 +470,6 @@ void dirty_hline(Dirty* dirty, int x1, int y, int x2)
   }
 }
 
-void dirty_vline(Dirty* dirty, int x, int y1, int y2)
-{
-  dirty_line(dirty, x, y1, x, y2);
-}
-
-void dirty_line(Dirty* dirty, int x1, int y1, int x2, int y2)
-{
-  AlgoData data = { dirty, NULL, 0 };
-  algo_line(x1, y1, x2, y2, &data, (AlgoPixel)algo_putpixel);
-}
-
-void dirty_rect(Dirty* dirty, int x1, int y1, int x2, int y2)
-{
-  dirty_hline(dirty, x1, y1, x2);
-  dirty_hline(dirty, x1, y2, x2);
-  dirty_vline(dirty, x1, y1, y2);
-  dirty_vline(dirty, x2, y1, y2);
-}
-
-void dirty_rectfill(Dirty* dirty, int x1, int y1, int x2, int y2)
-{
-  int y;
-
-  for (y=y1; y<=y2; ++y)
-    dirty_hline(dirty, x1, y, x2);
-}
-
-void dirty_putpixel_pen(Dirty* dirty, Pen* pen, int x, int y)
-{
-  AlgoData data = { dirty, pen, 0 };
-  if (pen->get_size() == 1)
-    algo_putpixel(x, y, &data);
-  else
-    algo_putpen(x, y, &data);
-}
-
-void dirty_hline_pen(Dirty* dirty, Pen* pen, int x1, int y, int x2)
-{
-  AlgoData data = { dirty, pen, 0 };
-  int x;
-
-  if (pen->get_size() == 1)
-    for (x=x1; x<=x2; ++x)
-      algo_putpixel(x, y, &data);
-  else
-    for (x=x1; x<=x2; ++x)
-      algo_putpen(x, y, &data);
-}
-
-void dirty_line_pen(Dirty* dirty, Pen* pen, int x1, int y1, int x2, int y2)
-{
-  AlgoData data = { dirty, pen, 0 };
-  algo_line(x1, y1, x2, y2, &data,
-	    (pen->get_size() == 1)?
-	    (AlgoPixel)algo_putpixel:
-	    (AlgoPixel)algo_putpen);
-}
-
 void dirty_save_image_data(Dirty* dirty)
 {
   register int v, u, shift = image_shift(dirty->image);
@@ -654,29 +485,6 @@ void dirty_save_image_data(Dirty* dirty)
 	dirty->row[v].col[u].flags |= DIRTY_MUSTBE_UPDATED;
       }
     }
-}
-
-void dirty_restore_image_data(Dirty* dirty)
-{
-  register DirtyRow* row;
-  register DirtyCol* col;
-  DirtyRow* rowend;
-  DirtyCol* colend;
-  int shift = image_shift(dirty->image);
-
-  row = dirty->row;
-  rowend = row+dirty->rows;
-  for (; row<rowend; ++row) {
-    col = row->col;
-    colend = col+row->cols;
-    for (; col<colend; ++col) {
-      if (col->flags & DIRTY_VALID_COLUMN) {
-	memcpy(col->ptr,
-	       col->data,
-	       col->w<<shift);
-      }
-    }
-  }
 }
 
 void dirty_swap(Dirty* dirty)
@@ -702,27 +510,6 @@ void dirty_swap(Dirty* dirty)
 		col->x+col->w-1);
       }
     }
-  }
-}
-
-
-static void algo_putpixel(int x, int y, AlgoData *data)
-{
-  dirty_putpixel(data->dirty, x, y);
-}
-
-static void algo_putpen(int x, int y, AlgoData *data)
-{
-  register PenScanline* scanline = data->pen->get_scanline();
-  register int c = data->pen->get_size()/2;
-
-  x -= c;
-  y -= c;
-
-  for (c=0; c<data->pen->get_size(); ++c) {
-    if (scanline->state)
-      dirty_hline(data->dirty, x+scanline->x1, y+c, x+scanline->x2);
-    ++scanline;
   }
 }
 

@@ -59,19 +59,9 @@ Dirty* dirty_new_copy(Dirty* src);
 Dirty* dirty_new_from_differences(Image* image, Image* image_diff);
 void dirty_free(Dirty* dirty);
 
-void dirty_putpixel(Dirty* dirty, int x, int y);
 void dirty_hline(Dirty* dirty, int x1, int y, int x2);
-void dirty_vline(Dirty* dirty, int x, int y1, int y2);
-void dirty_line(Dirty* dirty, int x1, int y1, int x2, int y2);
-void dirty_rect(Dirty* dirty, int x1, int y1, int x2, int y2);
-void dirty_rectfill(Dirty* dirty, int x1, int y1, int x2, int y2);
-
-void dirty_putpixel_pen(Dirty* dirty, Pen* pen, int x, int y);
-void dirty_hline_pen(Dirty* dirty, Pen* pen, int x1, int y, int x2);
-void dirty_line_pen(Dirty* dirty, Pen* pen, int x1, int y1, int x2, int y2);
 
 void dirty_save_image_data(Dirty* dirty);
-void dirty_restore_image_data(Dirty* dirty);
 void dirty_swap(Dirty* dirty);
 
 inline int dirty_line_size(Dirty* dirty, int width)
