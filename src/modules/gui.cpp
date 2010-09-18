@@ -1124,7 +1124,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	    case Shortcut_ChangeTool: {
 	      Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
 	      Tool* select_this_tool = shortcut->tool;
-	      ToolBox* toolbox = App::instance()->get_toolbox();
+	      ToolBox* toolbox = App::instance()->getToolBox();
 	      std::vector<Tool*> possibles;
 
 	      // Iterate over all tools

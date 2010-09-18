@@ -154,7 +154,7 @@ ToolBar::ToolBar()
   m_tipTimerId = jmanager_add_timer(this, 300);
   m_tipOpened = false;
   
-  ToolBox* toolbox = App::instance()->get_toolbox();
+  ToolBox* toolbox = App::instance()->getToolBox();
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (m_selected_in_group.find(tool->getGroup()) == m_selected_in_group.end())
@@ -189,7 +189,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
-      ToolBox* toolbox = App::instance()->get_toolbox();
+      ToolBox* toolbox = App::instance()->getToolBox();
       ToolGroupList::iterator it = toolbox->begin_group();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
@@ -254,7 +254,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
     }
       
     case JM_BUTTONPRESSED: {
-      ToolBox* toolbox = App::instance()->get_toolbox();
+      ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
@@ -286,7 +286,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
     }
 
     case JM_MOTION: {
-      ToolBox* toolbox = App::instance()->get_toolbox();
+      ToolBox* toolbox = App::instance()->getToolBox();
       int groups = toolbox->getGroupsCount();
       Tool* hot_tool = NULL;
       bool hot_conf = false;
@@ -364,7 +364,7 @@ bool ToolBar::onProcessMessage(JMessage msg)
 
 int ToolBar::getToolGroupIndex(ToolGroup* group)
 {
-  ToolBox* toolbox = App::instance()->get_toolbox();
+  ToolBox* toolbox = App::instance()->getToolBox();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
 
@@ -389,7 +389,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   closeTipWindow();
 
   // If this group contains only one tool, do not show the popup
-  ToolBox* toolbox = App::instance()->get_toolbox();
+  ToolBox* toolbox = App::instance()->getToolBox();
   int count = 0;
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
@@ -450,7 +450,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
 Rect ToolBar::getToolGroupBounds(int group_index)
 {
-  ToolBox* toolbox = App::instance()->get_toolbox();
+  ToolBox* toolbox = App::instance()->getToolBox();
   int groups = toolbox->getGroupsCount();
   Size iconsize = getToolIconSize(this);
 
@@ -576,7 +576,7 @@ bool ToolStrip::onProcessMessage(JMessage msg)
   switch (msg->type) {
 
     case JM_REQSIZE: {
-      ToolBox* toolbox = App::instance()->get_toolbox();
+      ToolBox* toolbox = App::instance()->getToolBox();
       int c = 0;
 
       for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
@@ -596,7 +596,7 @@ bool ToolStrip::onProcessMessage(JMessage msg)
       BITMAP *doublebuffer = create_bitmap(jrect_w(&msg->draw.rect),
 					   jrect_h(&msg->draw.rect));
       SkinneableTheme* theme = static_cast<SkinneableTheme*>(this->theme);
-      ToolBox* toolbox = App::instance()->get_toolbox();
+      ToolBox* toolbox = App::instance()->getToolBox();
       Rect toolrc;
       int index = 0;
 
@@ -647,7 +647,7 @@ bool ToolStrip::onProcessMessage(JMessage msg)
     }
 
     case JM_MOTION: {
-      ToolBox* toolbox = App::instance()->get_toolbox();
+      ToolBox* toolbox = App::instance()->getToolBox();
       Tool* hot_tool = NULL;
       Rect toolrc;
       int index = 0;

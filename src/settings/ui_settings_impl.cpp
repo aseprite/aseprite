@@ -88,7 +88,7 @@ Color UISettingsImpl::getBgColor()
 Tool* UISettingsImpl::getCurrentTool()
 {
   if (!m_currentTool)
-    m_currentTool = App::instance()->get_toolbox()->getToolById("pencil");
+    m_currentTool = App::instance()->getToolBox()->getToolById("pencil");
 
   return m_currentTool;
 }

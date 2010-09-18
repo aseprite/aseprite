@@ -203,7 +203,7 @@ static int load_root_menu()
       const char* tool_key = xmlKey->Attribute("shortcut");
 
       if (tool_id && tool_key) {
-	Tool* tool = App::instance()->get_toolbox()->getToolById(tool_id);
+	Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
 	if (tool) {
 	  /* add the keyboard shortcut to the tool */
 	  PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);

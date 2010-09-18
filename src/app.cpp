@@ -335,7 +335,7 @@ LoggerModule* App::getLogger() const
   return m_loggerModule;
 }
 
-ToolBox* App::get_toolbox() const
+ToolBox* App::getToolBox() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_toolbox;

@@ -54,7 +54,7 @@ public:
   int run();
 
   LoggerModule* getLogger() const;
-  ToolBox* get_toolbox() const;
+  ToolBox* getToolBox() const;
   RecentFiles* getRecentFiles() const;
 
   // App Signals
