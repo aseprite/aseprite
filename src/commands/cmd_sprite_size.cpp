@@ -65,7 +65,7 @@ protected:
   /**
    * [working thread]
    */
-  virtual void on_job()
+  virtual void onJob()
   {
     Undoable undoable(m_sprite, "Sprite Size");
 
@@ -99,10 +99,10 @@ protected:
 
       undoable.replace_stock_image(cel->image, new_image);
 
-      job_progress((float)progress / cels.size());
+      jobProgress((float)progress / cels.size());
 
       // cancel all the operation?
-      if (is_canceled())
+      if (isCanceled())
 	return;	       // Undoable destructor will undo all operations
     }
 
@@ -234,7 +234,7 @@ void SpriteSizeCommand::onExecute(Context* context)
 
     {
       SpriteSizeJob job(sprite, new_width, new_height, resize_method);
-      job.do_job();
+      job.startJob();
     }
 
     update_screen_for_sprite(sprite);

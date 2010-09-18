@@ -72,7 +72,7 @@ protected:
   /**
    * [working thread]
    */
-  virtual void on_job()
+  virtual void onJob()
   {
     Undoable undoable(m_sprite, "Rotate Canvas");
 
@@ -115,10 +115,10 @@ protected:
 
       undoable.replace_stock_image(i, new_image);
 
-      job_progress((float)i / m_sprite->getStock()->nimage);
+      jobProgress((float)i / m_sprite->getStock()->nimage);
 
       // cancel all the operation?
-      if (is_canceled())
+      if (isCanceled())
 	return;	       // Undoable destructor will undo all operations
     }
 
@@ -192,7 +192,7 @@ void RotateCanvasCommand::onExecute(Context* context)
   CurrentSpriteReader sprite(context);
   {
     RotateCanvasJob job(sprite, m_angle);
-    job.do_job();
+    job.startJob();
   }
   sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);

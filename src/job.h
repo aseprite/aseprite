@@ -29,6 +29,45 @@ class Progress;
 
 class Job
 {
+public:
+  Job(const char* job_name);
+  virtual ~Job();
+
+  // Starts the job calling onJob() event in another thread and
+  // monitoring the progress with onMonitorTick() event.
+  void startJob();
+
+  // The onJob() can use this function to report progress of the
+  // background job being done. 1.0 is completed.
+  void jobProgress(float f);
+
+  // Returns true if the job was canceled by the user (in case he
+  // pressed a "Cancel" button in the GUI). The onJob() thread should
+  // check this variable periodically to stop working.
+  bool isCanceled();
+
+protected:
+
+  // This member function is called from another dedicated thread
+  // outside the GUI one, so you can do some image processing here.
+  // Remember that you cannot use any GUI element in this handler.
+  virtual void onJob();
+
+  // Called each 1000 msecs by the GUI queue processing.
+  // It is executed from the main GUI thread.
+  virtual void onMonitorTick();
+
+  // Called when the monitor is destroyed. It is executed from the
+  // main GUI thread.
+  virtual void onMonitorDestroyed();
+
+private:
+  void done();
+
+  static void thread_proc(void* data);
+  static void monitor_proc(void* data);
+  static void monitor_free(void* data);
+
   JThread m_thread;
   Monitor* m_monitor;
   Progress* m_progress;
@@ -42,29 +81,6 @@ class Job
   Job();
   Job(const Job&);
   Job& operator==(const Job&);
-  
-public:
-
-  Job(const char* job_name);
-  virtual ~Job();
-
-  void do_job();
-  void job_progress(float f);
-  bool is_canceled();
-
-protected:
-
-  virtual void on_job();
-  virtual void on_monitor_tick();
-  virtual void on_monitor_destroyed();
-
-private:
-
-  void done();
-
-  static void thread_proc(void* data);
-  static void monitor_proc(void* data);
-  static void monitor_free(void* data);
 
 };
 

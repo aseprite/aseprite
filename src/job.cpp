@@ -79,40 +79,30 @@ Job::~Job()
     jwidget_free(m_alert_window);
 }
 
-void Job::do_job()
+void Job::startJob()
 {
   m_thread = jthread_new(&Job::thread_proc, (void*)this);
   m_alert_window->open_window_fg();
 }
 
-void Job::job_progress(float f)
+void Job::jobProgress(float f)
 {
   ScopedLock hold(*m_mutex);
   m_last_progress = f;
 }
 
-bool Job::is_canceled()
+bool Job::isCanceled()
 {
   ScopedLock hold(*m_mutex);
   return m_canceled_flag;
 }
 
-/**
- * Called from another thread to do the hard work (image processing).
- * 
- * [working thread]
- */
-void Job::on_job()
+void Job::onJob()
 {
   // do nothing
 }
 
-/**
- * Called each 1000 msecs by the GUI queue processing.
- * 
- * [main thread]
- */
-void Job::on_monitor_tick()
+void Job::onMonitorTick()
 {
   ScopedLock hold(*m_mutex);
 
@@ -124,12 +114,7 @@ void Job::on_monitor_tick()
     remove_gui_monitor(m_monitor);
 }
 
-/**
- * Called when the monitor is destroyed.
- *
- * [main thread]
- */
-void Job::on_monitor_destroyed()
+void Job::onMonitorDestroyed()
 {
   if (m_alert_window != NULL) {
     m_monitor = NULL;
@@ -155,7 +140,7 @@ void Job::thread_proc(void* data)
 {
   Job* self = (Job*)data;
   try {
-    self->on_job();
+    self->onJob();
   }
   catch (...) {
     // TODO handle this exception
@@ -172,7 +157,7 @@ void Job::thread_proc(void* data)
 void Job::monitor_proc(void* data)
 {
   Job* self = (Job*)data;
-  self->on_monitor_tick();
+  self->onMonitorTick();
 }
 
 /**
@@ -183,5 +168,5 @@ void Job::monitor_proc(void* data)
 void Job::monitor_free(void* data)
 {
   Job* self = (Job*)data;
-  self->on_monitor_destroyed();
+  self->onMonitorDestroyed();
 }
