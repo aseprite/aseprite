@@ -43,6 +43,7 @@ add_library(aseprite-library
   console.cpp
   context.cpp
   gfxmode.cpp
+  job.cpp
   launcher.cpp
   recent_files.cpp
   resource_finder.cpp
@@ -130,7 +131,6 @@ add_library(aseprite-library
   core/core.cpp
   core/drop_files.cpp
   core/file_system.cpp
-  core/job.cpp
   core/modules.cpp
   dialogs/aniedit.cpp
   dialogs/drawtext.cpp

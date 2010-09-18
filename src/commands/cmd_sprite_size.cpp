@@ -23,9 +23,9 @@
 #include "jinete/jinete.h"
 #include "Vaca/Bind.h"
 
-#include "core/cfg.h"
-#include "core/job.h"
 #include "commands/command.h"
+#include "core/cfg.h"
+#include "job.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/cel.h"
@@ -33,9 +33,9 @@
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-#include "undoable.h"
-#include "ui_context.h"
 #include "sprite_wrappers.h"
+#include "ui_context.h"
+#include "undoable.h"
 
 #define PERC_FORMAT	"%.1f%%"
 

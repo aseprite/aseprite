@@ -22,19 +22,19 @@
 
 #include "jinete/jinete.h"
 
+#include "app.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "app.h"
-#include "core/job.h"
+#include "job.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+#include "sprite_wrappers.h"
 #include "undoable.h"
 #include "widgets/color_bar.h"
-#include "sprite_wrappers.h"
 
 //////////////////////////////////////////////////////////////////////
 // rotate_canvas

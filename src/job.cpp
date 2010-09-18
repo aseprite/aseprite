@@ -26,7 +26,7 @@
 #include "Vaca/ScopedLock.h"
 
 #include "app.h"
-#include "core/job.h"
+#include "job.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
