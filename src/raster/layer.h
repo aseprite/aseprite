@@ -46,7 +46,7 @@ class Layer : public GfxObj
   unsigned short m_flags;
 
 protected:
-  Layer(int type, Sprite* sprite);
+  Layer(GfxObjType type, Sprite* sprite);
   Layer(Sprite* sprite);
   Layer(const Layer* src_layer, Sprite* dst_sprite);
 
@@ -62,8 +62,8 @@ public:
   Layer* get_prev() const;
   Layer* get_next() const;
 
-  bool is_image() const { return type == GFXOBJ_LAYER_IMAGE; }
-  bool is_folder() const { return type == GFXOBJ_LAYER_FOLDER; }
+  bool is_image() const { return getType() == GFXOBJ_LAYER_IMAGE; }
+  bool is_folder() const { return getType() == GFXOBJ_LAYER_FOLDER; }
   bool is_background() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
   bool is_moveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
   bool is_readable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }

@@ -88,7 +88,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   if (write && !layer->is_writable())
     return NULL;
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
       if (target & TARGET_ALL_FRAMES) {

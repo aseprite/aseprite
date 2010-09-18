@@ -36,7 +36,7 @@
 
 class SelectFileCommand : public Command
 {
-  gfxobj_id m_sprite_id;
+  GfxObjId m_sprite_id;
 
 public:
   SelectFileCommand();
@@ -68,8 +68,8 @@ bool SelectFileCommand::onEnabled(Context* context)
 {
   /* m_sprite_id != 0, the ID specifies a GfxObj */
   if (m_sprite_id > 0) {
-    GfxObj *gfxobj = gfxobj_find(m_sprite_id);
-    return gfxobj && gfxobj->type == GFXOBJ_SPRITE;
+    GfxObj* gfxobj = GfxObj::find(m_sprite_id);
+    return gfxobj && gfxobj->getType() == GFXOBJ_SPRITE;
   }
   /* m_sprite_id=0, means the select "Nothing" option  */
   else
@@ -81,9 +81,9 @@ bool SelectFileCommand::onChecked(Context* context)
   const CurrentSpriteReader sprite(context);
 
   if (m_sprite_id > 0) {
-    GfxObj *gfxobj = gfxobj_find(m_sprite_id);
+    GfxObj* gfxobj = GfxObj::find(m_sprite_id);
     return
-      gfxobj && gfxobj->type == GFXOBJ_SPRITE &&
+      gfxobj && gfxobj->getType() == GFXOBJ_SPRITE &&
       sprite == (Sprite *)gfxobj;
   }
   else
@@ -93,7 +93,7 @@ bool SelectFileCommand::onChecked(Context* context)
 void SelectFileCommand::onExecute(Context* context)
 {
   if (m_sprite_id > 0) {
-    GfxObj* gfxobj = gfxobj_find(m_sprite_id);
+    GfxObj* gfxobj = GfxObj::find(m_sprite_id);
     ASSERT(gfxobj != NULL);
 
     set_sprite_in_more_reliable_editor((Sprite*)gfxobj);

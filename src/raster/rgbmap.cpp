@@ -37,12 +37,12 @@ public:
   }
 
   bool match(const Palette* palette) const {
-    return (m_palette_id == palette->id &&
+    return (m_palette_id == palette->getId() &&
 	    m_modifications == palette->getModifications());
   }
 
   void regenerate(const Palette* palette) {
-    m_palette_id = palette->id;
+    m_palette_id = palette->getId();
     m_modifications = palette->getModifications();
 
     PALETTE allegPal;
@@ -68,7 +68,7 @@ public:
 
 private:
   RGB_MAP* m_allegMap;
-  gfxobj_id m_palette_id;
+  GfxObjId m_palette_id;
   int m_modifications;
 };
 

@@ -37,7 +37,7 @@ static bool has_cels(const Layer* layer, int frame);
 //////////////////////////////////////////////////////////////////////
 // Layer class
 
-Layer::Layer(int type, Sprite* sprite)
+Layer::Layer(GfxObjType type, Sprite* sprite)
   : GfxObj(type)
 {
   ASSERT(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_FOLDER);
@@ -52,7 +52,7 @@ Layer::Layer(int type, Sprite* sprite)
 }
 
 Layer::Layer(const Layer* src_layer, Sprite* dst_sprite)
-  : GfxObj(src_layer->type)
+  : GfxObj(src_layer->getType())
 {
   m_sprite = dst_sprite;
   m_parent = NULL;
@@ -407,7 +407,7 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
   if (!layer->is_readable())
     return;
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
       const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(frame);
@@ -451,7 +451,7 @@ static bool has_cels(const Layer* layer, int frame)
   if (!layer->is_readable())
     return false;
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE:
       return static_cast<const LayerImage*>(layer)->get_cel(frame) ? true: false;

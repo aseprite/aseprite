@@ -31,15 +31,15 @@ using Vaca::Mutex;
 using Vaca::ScopedLock;
 
 static Mutex* objects_mutex;
-static gfxobj_id object_id = 0;		          // last object ID created
-static std::map<gfxobj_id, GfxObj*>* objects_map; // graphics objects map
+static GfxObjId object_id = 0;		         // Last object ID created
+static std::map<GfxObjId, GfxObj*>* objects_map; // Graphics objects map
 
 static void insert_gfxobj(GfxObj* gfxobj);
 static void erase_gfxobj(GfxObj* gfxobj);
 
 RasterModule::RasterModule()
 {
-  objects_map = new std::map<gfxobj_id, GfxObj*>;
+  objects_map = new std::map<GfxObjId, GfxObj*>;
   objects_mutex = new Mutex();
 }
 
@@ -53,15 +53,15 @@ RasterModule::~RasterModule()
 //////////////////////////////////////////////////////////////////////
 // GfxObj class
 
-GfxObj::GfxObj(int type)
+GfxObj::GfxObj(GfxObjType type)
 {
-  this->type = type;
+  m_type = type;
   assign_id();
 }
 
 GfxObj::GfxObj(const GfxObj& gfxobj)
 {
-  this->type = gfxobj.type;
+  m_type = gfxobj.m_type;
   assign_id();
 }
 
@@ -78,21 +78,20 @@ void GfxObj::assign_id()
   ScopedLock lock(*objects_mutex);
 
   // we have to assign an ID for this object
-  this->id = ++object_id;
+  m_id = ++object_id;
 
   // and here we add the object in the map of graphics-objects
   insert_gfxobj(this);
 }
 
-//////////////////////////////////////////////////////////////////////
-
-GfxObj* gfxobj_find(gfxobj_id id)
+// static
+GfxObj* GfxObj::find(GfxObjId id)
 {
   GfxObj* ret = NULL;
   {
     ScopedLock lock(*objects_mutex);
 
-    std::map<gfxobj_id, GfxObj*>::iterator
+    std::map<GfxObjId, GfxObj*>::iterator
       it = objects_map->find(id);
 
     if (it != objects_map->end())
@@ -101,29 +100,28 @@ GfxObj* gfxobj_find(gfxobj_id id)
   return ret;
 }
 
-void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id)
+// static
+void GfxObj::_setGfxObjId(GfxObjId id)
 {
-  ASSERT(gfxobj_find(gfxobj->id) == gfxobj);
-  ASSERT(gfxobj_find(id) == NULL);
+  ASSERT(find(m_id) == this);
+  ASSERT(find(id) == NULL);
 
   ScopedLock lock(*objects_mutex);
 
-  erase_gfxobj(gfxobj);	// remove the object
-  gfxobj->id = id;		// change the ID
-  insert_gfxobj(gfxobj);	// insert the object again in the map
+  erase_gfxobj(this);		// Remove the object from the map
+  m_id = id;			// Change the ID
+  insert_gfxobj(this);		// Insert the object again in the map
 }
-
-//////////////////////////////////////////////////////////////////////
 
 static void insert_gfxobj(GfxObj* gfxobj)
 {
-  objects_map->insert(std::make_pair(gfxobj->id, gfxobj));
+  objects_map->insert(std::make_pair(gfxobj->getId(), gfxobj));
 }
 
 static void erase_gfxobj(GfxObj* gfxobj)
 {
-  std::map<gfxobj_id, GfxObj*>::iterator
-    it = objects_map->find(gfxobj->id);
+  std::map<GfxObjId, GfxObj*>::iterator it
+    = objects_map->find(gfxobj->getId());
   
   ASSERT(it != objects_map->end());
 

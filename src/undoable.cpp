@@ -388,7 +388,7 @@ void Undoable::crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor)
  */
 void Undoable::displace_layers(Layer* layer, int dx, int dy)
 {
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
       CelIterator it = ((LayerImage*)layer)->get_cel_begin();
@@ -626,7 +626,7 @@ void Undoable::new_frame_for_layer(Layer* layer, int frame)
   ASSERT(layer);
   ASSERT(frame >= 0);
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE:
       // displace all cels in '>=frame' to the next frame
@@ -675,7 +675,7 @@ void Undoable::remove_frame_of_layer(Layer* layer, int frame)
   ASSERT(layer);
   ASSERT(frame >= 0);
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE:
       if (Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame))
@@ -850,7 +850,7 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
 {
   ASSERT(layer);
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
       CelIterator it = ((LayerImage*)layer)->get_cel_begin();

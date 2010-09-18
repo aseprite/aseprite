@@ -22,7 +22,7 @@
 #include "jinete/jbase.h"
 #include <list>
 
-enum {
+enum GfxObjType {
   GFXOBJ_CEL,
   GFXOBJ_IMAGE,
   GFXOBJ_LAYER_IMAGE,
@@ -36,7 +36,7 @@ enum {
   GFXOBJ_RGBMAP,
 };
 
-typedef unsigned int gfxobj_id;
+typedef unsigned int GfxObjId;
 
 class Cel;
 class Layer;
@@ -52,15 +52,28 @@ typedef std::list<Layer*>::const_iterator LayerConstIterator;
 class GfxObj
 {
 public:
-  int type;
-  gfxobj_id id;
-
-  GfxObj(int type);
+  GfxObj(GfxObjType type);
   GfxObj(const GfxObj& gfxobj);
   virtual ~GfxObj();
 
+  GfxObjId getId() const { return m_id; }
+  GfxObjType getType() const { return m_type; }
+
+  // Returns a GfxObj by its ID. If it is not found, returns NULL.
+  static GfxObj* find(GfxObjId id);
+
+  // Changes the ID of an existent GfxObj. This function is used by
+  // Undo to change the ID of objects that were back to life (and
+  // should not be used in other places).
+  void _setGfxObjId(GfxObjId id);
+
 private:
   void assign_id();
+
+  GfxObjType m_type;
+  GfxObjId m_id;
+
+  GfxObj& operator=(const GfxObj&);
 };
 
 class RasterModule
@@ -69,9 +82,5 @@ public:
   RasterModule();
   ~RasterModule();
 };
-
-GfxObj* gfxobj_find(gfxobj_id id);
-
-void _gfxobj_set_id(GfxObj* gfxobj, gfxobj_id id);
 
 #endif

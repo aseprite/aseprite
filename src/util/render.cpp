@@ -560,7 +560,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
   if (!layer->is_readable())
     return;
 
-  switch (layer->type) {
+  switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
       if ((!render_background  &&  layer->is_background()) ||

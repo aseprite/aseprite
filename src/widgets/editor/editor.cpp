@@ -1047,7 +1047,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	     !current_tool->getInk(msg->mouse.right ? 1: 0)->isSelection()) ||
 	    current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
 	  if ((m_sprite->getCurrentLayer()) &&
-	      (m_sprite->getCurrentLayer()->type == GFXOBJ_LAYER_IMAGE)) {
+	      (m_sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
 	    // TODO you can move the `Background' with tiled mode
 	    if (m_sprite->getCurrentLayer()->is_background()) {
 	      jalert(_(PACKAGE
