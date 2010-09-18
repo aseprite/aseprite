@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MEM_UTILS_H_INCLUDED
-#define MEM_UTILS_H_INCLUDED
+#ifndef BASE_MEM_UTILS_H_INCLUDED
+#define BASE_MEM_UTILS_H_INCLUDED
 
 char* get_pretty_memory_size(unsigned int memsize, char* buf, unsigned int bufsize);
 
