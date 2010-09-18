@@ -24,11 +24,12 @@
 #include "check_args.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/core.h"
 
 using namespace Vaca;
   
 CheckArgs::CheckArgs()
+  : m_consoleOnly(false)
+  , m_verbose(false)
 {
   const std::vector<String>& args(Application::getArgs());
 
@@ -88,7 +89,7 @@ CheckArgs::CheckArgs()
       }
       // Verbose mode
       else if (option == L"verbose") {
-	ase_mode |= MODE_VERBOSE;
+	m_verbose = true;
       }
       // Show help
       else if (option == L"help") {
@@ -96,8 +97,7 @@ CheckArgs::CheckArgs()
       }
       // Show version
       else if (option == L"version") {
-	ase_mode |= MODE_BATCH;
-
+	m_consoleOnly = true;
 	console.printf("%s %s\n", PACKAGE, VERSION);
       }
       // Invalid argument
@@ -110,10 +110,6 @@ CheckArgs::CheckArgs()
       m_options.push_back(new Option(Option::OpenSprite, args[i]));
     }
   }
-
-  // GUI is the default mode
-  if (!(ase_mode & MODE_BATCH))
-    ase_mode |= MODE_GUI;
 }
 
 CheckArgs::~CheckArgs()
@@ -135,42 +131,37 @@ void CheckArgs::usage(bool showHelp)
 {
   Console console;
 
-  ase_mode |= MODE_BATCH;
+  // Activate this flag so the GUI is not initialized by the App::run().
+  m_consoleOnly = true;
 
-  // show options
+  // Show options
   if (showHelp) {
-    // copyright
+    // Copyright
     console.printf
       ("%s v%s | Allegro Sprite Editor | A pixel art program\n%s\n\n",
        PACKAGE, VERSION, COPYRIGHT);
 
-    // usage
+    // Usage
     console.printf
       ("%s\n  %s [%s] [%s]...\n\n",
        _("Usage:"), m_exeName.c_str(), _("OPTION"), _("FILE"));
 
-    /* options */
+    // Available Options
     console.printf
-      ("%s:\n"
-       "  -palette GFX-FILE        %s\n"
-       "  -resolution WxH[xBPP]    %s\n"
-       "  -verbose                 %s\n"
-       "  -help                    %s\n"
-       "  -version                 %s\n"
-       "\n",
-       _("Options"),
-       _("Use a specific palette by default"),
-       _("Change the resolution to use"),
-       _("Explain what is being done (in stderr or a log file)"),
-       _("Display this help and exits"),
-       _("Output version information and exit"));
+      ("Options:\n"
+       "  -palette GFX-FILE        Use a specific palette by default\n"
+       "  -resolution WxH[xBPP]    Change the resolution to use\n"
+       "  -verbose                 Explain what is being done (in stderr or a log file)\n"
+       "  -help                    Display this help and exits\n"
+       "  -version                 Output version information and exit\n"
+       "\n");
 
-    /* web-site */
+    // Web-site
     console.printf
       ("Find more information in %s web site: %s\n\n",
        PACKAGE, WEBSITE);
   }
-  /* how to show options */
+  // How to show options
   else {
     console.printf(_("Try \"%s --help\" for more information.\n"), 
 		   m_exeName.c_str());

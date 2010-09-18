@@ -18,7 +18,6 @@
 
 #include "config.h"
 
-#include "core/core.h"
 #include "core/modules.h"
 #include "effect/effect.h"
 #include "modules/editors.h"

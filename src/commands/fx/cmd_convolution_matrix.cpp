@@ -37,7 +37,6 @@
 #include "console.h"
 #include "core/cfg.h"
 #include "app/color.h"
-#include "core/core.h"
 #include "effect/colcurve.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"

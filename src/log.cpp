@@ -27,7 +27,7 @@
 
 #include "jinete/jbase.h"
 
-#include "core/core.h"
+#include "app.h"
 #include "log.h"
 #include "resource_finder.h"
 
@@ -47,17 +47,14 @@ static std::string log_filename;
 static FILE *log_fileptr = NULL;
 #endif
 
-LoggerModule::LoggerModule()
+LoggerModule::LoggerModule(bool verbose)
+  : m_verbose(verbose)
 {
-  PRINTF("Logger module: starting\n");
-
 #ifdef NEED_LOG
   ResourceFinder rf;
   rf.findInBinDir("aseprite.log");
   log_filename = rf.first();
 #endif
-
-  PRINTF("Logger module: started\n");
 }
 
 LoggerModule::~LoggerModule()
@@ -72,9 +69,11 @@ LoggerModule::~LoggerModule()
 #endif
 }
 
+//////////////////////////////////////////////////////////////////////
+
 void verbose_printf(const char *format, ...)
 {
-  if (!(ase_mode & MODE_VERBOSE))
+  if (!App::instance()->getLogger()->isVerbose())
     return;
 
 #ifdef NEED_LOG

@@ -32,7 +32,6 @@
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/core.h"
 #include "effect/effect.h"
 #include "effect/median.h"
 #include "modules/gui.h"

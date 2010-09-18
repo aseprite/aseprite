@@ -23,7 +23,6 @@
 
 #include "app.h"
 #include "core/cfg.h"
-#include "core/core.h"
 #include "file/file.h"
 #include "raster/raster.h"
 

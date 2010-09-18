@@ -24,15 +24,12 @@
 
 using Vaca::String;
 
-/**
- * Looks the input arguments in the command line.
- */
+// Parses the input arguments in the command line.
 class CheckArgs
 {
 public:
-  /**
-   * Option specified in the parameters.
-   */
+  // Represents one specifial option specified in the parameters that
+  // need some special operation by the application class.
   class Option
   {
     int m_type;
@@ -49,13 +46,8 @@ public:
     const String& data() const { return m_data; }
   };
 
-private:
-  std::vector<Option*> m_options;
-  String m_paletteFilename;
-  String m_exeName;
-
-public:
-  typedef std::vector<Option*>::iterator iterator;
+  typedef std::vector<Option*> Options;
+  typedef Options::iterator iterator;
   
   CheckArgs();
   ~CheckArgs();
@@ -67,9 +59,17 @@ public:
 
   String getPaletteFilename() const { return m_paletteFilename; }
 
+  bool isConsoleOnly() const { return m_consoleOnly; }
+  bool isVerbose() const { return m_verbose; }
+
 private:
   void usage(bool showHelp);
 
+  Options m_options;
+  String m_paletteFilename;
+  String m_exeName;
+  bool m_consoleOnly;
+  bool m_verbose;
 };
 
 #endif

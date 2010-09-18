@@ -26,7 +26,6 @@
 #include "console.h"
 #include "core/cfg.h"
 #include "app/color.h"
-#include "core/core.h"
 #include "dialogs/filesel.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -55,7 +54,7 @@ void dialogs_draw_text(Sprite* sprite)
   JWidget entry_size, entry_text;
   char buf[256];
 
-  if (!is_interactive() || !sprite)
+  if (!App::instance()->isGui() || !sprite)
     return;
 
   dest_image = GetImage(sprite);

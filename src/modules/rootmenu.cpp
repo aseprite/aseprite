@@ -30,7 +30,6 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
-#include "core/core.h"
 #include "intl/intl.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"

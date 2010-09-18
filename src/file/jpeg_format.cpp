@@ -26,7 +26,6 @@
 
 #include "app.h"
 #include "core/cfg.h"
-#include "core/core.h"
 #include "file/file.h"
 #include "file/format_options.h"
 #include "modules/gui.h"
@@ -350,13 +349,13 @@ static bool save_JPEG(FileOp *fop)
  */
 static FormatOptions *get_options_JPEG(FileOp *fop)
 {
-  JpegOptions *jpeg_options = jpeg_options_new();
+  JpegOptions* jpeg_options = jpeg_options_new();
   try {
-    /* configuration parameters */
+    // Configuration parameters
     jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
 
-    /* interactive mode */
-    if (!is_interactive())
+    // Interactive mode
+    if (!App::instance()->isGui())
       return (FormatOptions*)jpeg_options;
 
     /* widgets */

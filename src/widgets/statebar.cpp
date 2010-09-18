@@ -30,7 +30,6 @@
 #include "app.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "core/core.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

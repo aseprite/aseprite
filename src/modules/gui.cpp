@@ -38,7 +38,6 @@
 #include "commands/params.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/core.h"
 #include "core/drop_files.h"
 #include "gfxmode.h"
 #include "intl/msgids.h"
@@ -443,9 +442,6 @@ void set_screen_scaling(int scaling)
 
 void update_screen_for_sprite(const Sprite* sprite)
 {
-  if (!(ase_mode & MODE_GUI))
-    return;
-
   /* without sprite */
   if (!sprite) {
     /* well, change to the default palette */

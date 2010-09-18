@@ -25,7 +25,7 @@
 #include "jinete/jmanager.h"
 #include "jinete/jsystem.h"
 
-#include "core/core.h"
+#include "app.h"
 #include "file/fli/fli.h"
 #include "modules/gui.h"
 
@@ -35,7 +35,7 @@ static void my_play_fli(const char *filename, bool loop, bool fullscreen,
 
 void play_fli_animation(const char *filename, bool loop, bool fullscreen)
 {
-  if (is_interactive()) {
+  if (App::instance()->isGui()) {
     PALETTE backup;
 
     jmanager_free_mouse();

@@ -32,7 +32,6 @@
 #include "console.h"
 #include "core/cfg.h"
 #include "app/color.h"
-#include "core/core.h"
 #include "effect/effect.h"
 #include "modules/gui.h"
 #include "raster/image.h"

@@ -40,7 +40,6 @@
 #include "commands/params.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "core/core.h"
 #include "core/drop_files.h"
 #include "core/file_system.h"
 #include "core/modules.h"
@@ -79,9 +78,6 @@ class App::Modules
 {
 public:
   // ASE Modules
-  ConfigModule m_config_module;
-  CheckArgs m_checkArgs;
-  LoggerModule m_logger_module;
   IntlModule m_intl_module;
   FileSystemModule m_file_system_module;
   ToolBox m_toolbox;
@@ -119,15 +115,22 @@ static TabsBarHandler* tabsHandler = NULL;
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
 App::App()
-  : m_modules(NULL)
+  : m_configModule(NULL)
+  , m_checkArgs(NULL)
+  , m_loggerModule(NULL)
+  , m_modules(NULL)
   , m_legacy(NULL)
+  , m_isGui(false)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
 
-  // create private implementation data
+  m_configModule = new ConfigModule();
+  m_checkArgs = new CheckArgs();
+  m_loggerModule = new LoggerModule(m_checkArgs->isVerbose());
   m_modules = new Modules();
-  m_legacy = new LegacyModules(ase_mode & MODE_GUI ? REQUIRE_INTERFACE: 0);
+  m_isGui = !(m_checkArgs->isConsoleOnly());
+  m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
  
   // init editor cursor
   Editor::editor_cursor_init();
@@ -151,22 +154,20 @@ App::App()
   set_current_palette(NULL, true);
 }
 
-// Runs the ASE application. In GUI mode it's the top-level window, in
-// console/scripting it just runs the specified scripts.
 int App::run()
 {
-  /* initialize GUI interface */
-  if (ase_mode & MODE_GUI) {
+  // Initialize GUI interface
+  if (isGui()) {
     Widget* view;
     Editor* editor;
 
     PRINTF("GUI mode\n");
 
-    /* setup the GUI screen */
+    // Setup the GUI screen
     jmouse_set_cursor(JI_CURSOR_NORMAL);
     jmanager_refresh_screen();
 
-    // load main window
+    // Load main window
     top_window = static_cast<Frame*>(load_widget("main_window.xml", "main_window"));
 
     box_menubar = jwidget_find_name(top_window, "menubar");
@@ -234,11 +235,12 @@ int App::run()
     // procress options
   PRINTF("Processing options...\n");
   
+  ASSERT(m_checkArgs != NULL);
   {
     Console console;
     for (CheckArgs::iterator
-	   it  = m_modules->m_checkArgs.begin();
-         it != m_modules->m_checkArgs.end(); ++it) {
+	   it  = m_checkArgs->begin();
+         it != m_checkArgs->end(); ++it) {
       CheckArgs::Option* option = *it;
 
       switch (option->type()) {
@@ -247,17 +249,17 @@ int App::run()
 	  /* load the sprite */
 	  Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
 	  if (!sprite) {
-	    if (!(ase_mode & MODE_GUI))
+	    if (!isGui())
 	      user_printf(_("Error loading file \"%s\"\n"), option->data().c_str());
 	  }
 	  else {
-	    /* mount and select the sprite */
+	    // Mount and select the sprite
 	    UIContext* context = UIContext::instance();
 	    context->add_sprite(sprite);
 	    context->set_current_sprite(sprite);
 
-	    if (ase_mode & MODE_GUI) {
-	      /* show it */
+	    if (isGui()) {
+	      // Show it
 	      set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
 	      // Recent file
@@ -268,30 +270,27 @@ int App::run()
 	}
       }
     }
-    m_modules->m_checkArgs.clear();
+    delete m_checkArgs;
+    m_checkArgs = NULL;
   }
 
-  /* just batch mode */
-  if (ase_mode & MODE_BATCH) {
-    PRINTF("Batch mode\n");
-  }
   // Run the GUI
-  else if (ase_mode & MODE_GUI) {
+  if (isGui()) {
     // Select language
     intl_set_lang("en");
 
-    // support to drop files from Windows explorer
+    // Support to drop files from Windows explorer
     install_drop_files();
 
     gui_run();
 
     uninstall_drop_files();
 
-    /* remove the root-menu from the menu-bar (because the rootmenu
-       module should destroy it) */
+    // Remove the root-menu from the menu-bar (because the rootmenu
+    // module should destroy it).
     jmenubar_set_menu(menubar, NULL);
 
-    // destroy the top-window
+    // Destroy the top-window
     jwidget_free(top_window);
     top_window = NULL;
   }
@@ -318,6 +317,8 @@ App::~App()
     delete tabsHandler;
     delete m_legacy;
     delete m_modules;
+    delete m_loggerModule;
+    delete m_configModule;
   
     m_instance = NULL;
   }
@@ -326,6 +327,12 @@ App::~App()
 
     // no re-throw
   }
+}
+
+LoggerModule* App::getLogger() const
+{
+  ASSERT(m_loggerModule != NULL);
+  return m_loggerModule;
 }
 
 ToolBox* App::get_toolbox() const

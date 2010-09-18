@@ -24,34 +24,36 @@
 
 #include <vector>
 
+class CheckArgs;
+class ColorBar;
+class ConfigModule;
 class Frame;
 class Layer;
 class LegacyModules;
+class LoggerModule;
 class Params;
+class RecentFiles;
 class Sprite;
-class ToolBox;
-class ColorBar;
 class StatusBar;
 class Tabs;
-class RecentFiles;
+class ToolBox;
 
 class App
 {
-  class Modules;
-
-  static App* m_instance;
-
-  Modules* m_modules;
-  LegacyModules* m_legacy;
-
 public:
   App();
   ~App();
 
   static App* instance() { return m_instance; }
 
+  // Returns true if ASE is running with GUI available.
+  bool isGui() const { return m_isGui; }
+
+  // Runs the ASE application. In GUI mode it's the top-level window,
+  // in console/scripting it just runs the specified scripts.
   int run();
 
+  LoggerModule* getLogger() const;
   ToolBox* get_toolbox() const;
   RecentFiles* getRecentFiles() const;
 
@@ -61,7 +63,18 @@ public:
   Vaca::Signal0<void> PenSizeBeforeChange;
   Vaca::Signal0<void> PenSizeAfterChange;
   Vaca::Signal0<void> CurrentToolChange;
-  
+
+private:
+  class Modules;
+
+  static App* m_instance;
+
+  ConfigModule* m_configModule;
+  CheckArgs* m_checkArgs;
+  LoggerModule* m_loggerModule;
+  Modules* m_modules;
+  LegacyModules* m_legacy;
+  bool m_isGui;
 };
 
 void app_refresh_screen(const Sprite* sprite);

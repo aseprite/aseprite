@@ -28,7 +28,6 @@
 
 #include "console.h"
 #include "app.h"
-#include "core/core.h"
 #include "file/file.h"
 #include "file/format_options.h"
 #include "modules/gui.h"
@@ -214,7 +213,7 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
 
       /* TODO add a better dialog to edit file-names */
       if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
-	  is_interactive()) {
+	  App::instance()->isGui()) {
 	/* really want load all files? */
 	if ((jlist_length(fop->seq.filename_list) > 1) &&
 	    (jalert(_("Notice"
@@ -363,7 +362,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   /* show the confirmation alert */
   if (ugetc(buf)) {
     /* interative */
-    if (is_interactive()) {
+    if (App::instance()->isGui()) {
       int ret;
 
       if (fatal)

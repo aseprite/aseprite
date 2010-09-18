@@ -22,10 +22,13 @@
 class LoggerModule
 {
 public:
-  LoggerModule();
+  LoggerModule(bool verbose);
   ~LoggerModule();
-};
 
-void verbose_printf(const char* format, ...);
+  bool isVerbose() const { return m_verbose; }
+
+private:
+  bool m_verbose;
+};
 
 #endif

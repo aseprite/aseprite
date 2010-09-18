@@ -27,7 +27,6 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "app/color.h"
-#include "core/core.h"
 #include "effect/colcurve.h"
 #include "effect/effect.h"
 #include "modules/gui.h"

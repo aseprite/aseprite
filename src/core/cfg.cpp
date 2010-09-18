@@ -25,7 +25,6 @@
 #include "jinete/jrect.h"
 
 #include "core/cfg.h"
-#include "core/core.h"
 #include "resource_finder.h"
 
 static char config_filename[512];

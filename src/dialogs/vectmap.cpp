@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <cmath>
 
-#include "core/core.h"
+#include "app.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
@@ -130,7 +130,7 @@ void dialogs_vector_map(Sprite* sprite)
   double u, v, dmax;
   int c, x, y;
 
-  if (!is_interactive () || !sprite)
+  if (!App::instance()->isGui() || !sprite)
     return;
 
   image = sprite->getCurrentImage();

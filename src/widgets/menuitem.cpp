@@ -30,7 +30,6 @@
 #include "ui_context.h"
 #include "commands/command.h"
 #include "commands/params.h"
-#include "core/core.h"
 #include "modules/gui.h"
 
 struct MenuItem

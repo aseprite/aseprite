@@ -27,7 +27,6 @@
 
 #include "console.h"
 #include "app.h"
-#include "core/core.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
@@ -44,7 +43,7 @@ Console::Console()
   console_counter++;
 
   if (!ji_screen ||
-      !is_interactive() ||
+      !App::instance()->isGui() ||
       wid_console ||
       console_counter > 1)
     return;

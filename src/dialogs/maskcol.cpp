@@ -30,7 +30,6 @@
 #include "app.h"
 #include "core/cfg.h"
 #include "app/color.h"
-#include "core/core.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -66,7 +65,7 @@ void dialogs_mask_color(Sprite* sprite)
   Button* button_cancel;
   Image *image;
 
-  if (!is_interactive () || !sprite)
+  if (!App::instance()->isGui() || !sprite)
     return;
 
   image = sprite->getCurrentImage();

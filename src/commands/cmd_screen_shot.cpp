@@ -23,7 +23,6 @@
 #include "jinete/jsystem.h"
 
 #include "commands/command.h"
-#include "core/core.h"
 #include "file/file.h"
 #include "raster/raster.h"
 #include "util/misc.h"

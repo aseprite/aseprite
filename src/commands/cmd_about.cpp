@@ -24,7 +24,6 @@
 #include "Vaca/Bind.h"
 
 #include "commands/command.h"
-#include "core/core.h"
 #include "modules/gui.h"
 
 //////////////////////////////////////////////////////////////////////

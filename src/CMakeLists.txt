@@ -130,7 +130,6 @@ add_library(aseprite-library
   commands/fx/effectbg.cpp
   core/cfg.cpp
   core/config.cpp
-  core/core.cpp
   core/drop_files.cpp
   core/file_system.cpp
   core/modules.cpp
