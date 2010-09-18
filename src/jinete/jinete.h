@@ -42,7 +42,6 @@
 #include "jinete/jcustom_label.h"
 #include "jinete/jdraw.h"
 #include "jinete/jentry.h"
-#include "jinete/jexception.h"
 #include "jinete/jfont.h"
 #include "jinete/jgrid.h"
 #include "jinete/jhook.h"

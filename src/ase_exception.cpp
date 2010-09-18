@@ -23,6 +23,7 @@
 
 #include "ase_exception.h"
 #include "console.h"
+#include "tinyxml.h"
 
 ase_exception::ase_exception(const char* msg, ...) throw()
 {
@@ -46,8 +47,42 @@ ase_exception::ase_exception(const char* msg, ...) throw()
   }
 }
 
+ase_exception::ase_exception(const std::string& msg) throw()
+{
+  try {
+    m_msg = msg;
+  }
+  catch (...) {
+    // no throw
+  }
+}
+
+ase_exception::ase_exception(TiXmlDocument* doc) throw()
+{
+  try {
+    char buf[1024];
+    usprintf(buf, "Error in XML file '%s' (line %d, column %d)\nError %d: %s",
+	     doc->Value(), doc->ErrorRow(), doc->ErrorCol(),
+	     doc->ErrorId(), doc->ErrorDesc());
+
+    m_msg = buf;
+  }
+  catch (...) {
+    // no throw
+  }
+}
+
+ase_exception::~ase_exception() throw()
+{
+}
+
 void ase_exception::show()
 {
   Console console;
   console.printf("A problem has occurred.\n\nDetails:\n%s", what());
+}
+
+const char* ase_exception::what() const throw()
+{
+  return m_msg.c_str();
 }

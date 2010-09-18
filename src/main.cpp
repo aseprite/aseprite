@@ -68,7 +68,7 @@ int vaca_main()
 
     status = app.run();
   }
-  catch (jexception& e) {
+  catch (ase_exception& e) {
     e.show();
   }
   catch (std::exception& e) {

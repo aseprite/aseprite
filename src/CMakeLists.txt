@@ -171,7 +171,6 @@ add_library(aseprite-library
   jinete/jcustom_label.cpp
   jinete/jdraw.cpp
   jinete/jentry.cpp
-  jinete/jexception.cpp
   jinete/jfont.cpp
   jinete/jfontbmp.cpp
   jinete/jgrid.cpp

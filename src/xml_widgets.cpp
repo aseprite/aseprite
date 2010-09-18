@@ -26,6 +26,7 @@
 
 #include "Vaca/Bind.h"
 #include "jinete/jinete.h"
+#include "ase_exception.h"
 #include "modules/gui.h"
 
 #include "tinyxml.h"
@@ -53,7 +54,7 @@ Widget* load_widget_from_xmlfile(const char* xmlFilename, const char* widgetName
 
   TiXmlDocument doc;
   if (!doc.LoadFile(xmlFilename))
-    throw jexception(&doc);
+    throw ase_exception(&doc);
 
   // search the requested widget
   TiXmlHandle handle(&doc);

@@ -19,20 +19,26 @@
 #ifndef ASE_EXCEPTION_H_INCLUDED
 #define ASE_EXCEPTION_H_INCLUDED
 
-#include "jinete/jexception.h"
+#include <exception>
+#include <string>
+#include "jinete/jbase.h"
 
-class ase_exception : public jexception
+class TiXmlDocument;
+
+class ase_exception : public std::exception
 {
 public:
-
-  ase_exception() throw() { }
+  ase_exception() throw();
   ase_exception(const char* msg, ...) throw();
-  ase_exception(const std::string& msg) throw() : jexception(msg) { }
-  ase_exception(TiXmlDocument* doc) throw() : jexception(doc) { }
-  ~ase_exception() throw() { }
+  ase_exception(const std::string& msg) throw();
+  ase_exception(TiXmlDocument* doc) throw();
+  virtual ~ase_exception() throw();
 
   virtual void show();
+  const char* what() const throw();
 
+private:
+  std::string m_msg;
 };
 
 #endif
