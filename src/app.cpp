@@ -60,7 +60,6 @@
 #include "tools/toolbox.h"
 #include "ui_context.h"
 #include "util/boundary.h"
-#include "util/recscr.h"
 #include "util/render.h"
 #include "widgets/color_bar.h"
 #include "widgets/editor.h"
@@ -287,10 +286,6 @@ int App::run()
     gui_run();
 
     uninstall_drop_files();
-
-    /* stop recording */
-    if (is_rec_screen())
-      rec_screen_off();
 
     /* remove the root-menu from the menu-bar (because the rootmenu
        module should destroy it) */

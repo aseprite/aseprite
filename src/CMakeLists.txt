@@ -245,7 +245,6 @@ add_library(aseprite-library
   util/msk_file.cpp
   util/pic_file.cpp
   util/quantize.cpp
-  util/recscr.cpp
   util/render.cpp
   util/thmbnail.cpp
   widgets/color_bar.cpp

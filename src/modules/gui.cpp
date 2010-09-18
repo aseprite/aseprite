@@ -53,7 +53,6 @@
 #include "sprite_wrappers.h"
 #include "tools/toolbox.h"
 #include "ui_context.h"
-#include "util/recscr.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
 #include "widgets/toolbar.h"
@@ -504,9 +503,6 @@ void gui_feedback()
       // do nothing
     }
   }
-
-  /* record file if is necessary */
-  rec_screen_poll();
 
   gui_flip_screen();
 }
