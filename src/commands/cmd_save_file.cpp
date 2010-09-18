@@ -128,7 +128,7 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
       }
       /* no error? */
       else {
-	RecentFiles::addRecentFile(sprite->getFilename());
+	App::instance()->getRecentFiles()->addRecentFile(sprite->getFilename());
 	if (mark_as_saved)
 	  sprite->markAsSaved();
 

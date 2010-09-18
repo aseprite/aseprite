@@ -33,6 +33,7 @@ class ToolBox;
 class ColorBar;
 class StatusBar;
 class Tabs;
+class RecentFiles;
 
 class App
 {
@@ -51,7 +52,8 @@ public:
 
   int run();
 
-  ToolBox* get_toolbox();
+  ToolBox* get_toolbox() const;
+  RecentFiles* getRecentFiles() const;
 
   // App Signals
   Vaca::Signal0<void> Exit;

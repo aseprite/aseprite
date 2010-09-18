@@ -29,14 +29,18 @@ public:
   typedef FilesList::iterator iterator;
   typedef FilesList::const_iterator const_iterator;
 
-  static const_iterator begin();
-  static const_iterator end();
+  const_iterator begin();
+  const_iterator end();
 
   RecentFiles();
   ~RecentFiles();
 
-  static void addRecentFile(const char* filename);
-  static void removeRecentFile(const char* filename);
+  void addRecentFile(const char* filename);
+  void removeRecentFile(const char* filename);
+
+private:
+  RecentFiles::FilesList m_files;
+  int m_limit;
 };
 
 #endif

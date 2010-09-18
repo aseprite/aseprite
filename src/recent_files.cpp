@@ -27,16 +27,14 @@
 #include "modules/gui.h"
 #include "recent_files.h"
 
-static RecentFiles::FilesList recent_files;
-static int recent_files_limit = 16;
-
 RecentFiles::RecentFiles()
+  : m_limit(16)
 {
-  const char *filename;
+  const char* filename;
   char buf[512];
   int c;
 
-  for (c=recent_files_limit-1; c>=0; c--) {
+  for (c=m_limit-1; c>=0; c--) {
     sprintf(buf, "Filename%02d", c);
 
     filename = get_config_string("RecentFiles", buf, NULL);
@@ -57,28 +55,28 @@ RecentFiles::~RecentFiles()
     c++;
   }
 
-  recent_files.clear();
+  m_files.clear();
 }
 
 RecentFiles::const_iterator RecentFiles::begin()
 {
-  return recent_files.begin();
+  return m_files.begin();
 }
 
 RecentFiles::const_iterator RecentFiles::end()
 {
-  return recent_files.end();
+  return m_files.end();
 }
 
 void RecentFiles::addRecentFile(const char* filename)
 {
-  iterator it = std::find(recent_files.begin(), recent_files.end(), filename);
+  iterator it = std::find(m_files.begin(), m_files.end(), filename);
 
   // If the filename already exist in the list...
-  if (it != recent_files.end()) {
+  if (it != m_files.end()) {
     // Move it to the first position
-    recent_files.erase(it);
-    recent_files.insert(recent_files.begin(), filename);
+    m_files.erase(it);
+    m_files.insert(m_files.begin(), filename);
     schedule_rebuild_recent_list();
     return;
   }
@@ -86,21 +84,21 @@ void RecentFiles::addRecentFile(const char* filename)
   // If the filename does not exist...
 
   // Does the list is full?
-  if ((int)recent_files.size() == recent_files_limit) {
+  if ((int)m_files.size() == m_limit) {
     // Remove the last entry
-    recent_files.erase(--recent_files.end());
+    m_files.erase(--m_files.end());
   }
 
-  recent_files.insert(recent_files.begin(), filename);
+  m_files.insert(m_files.begin(), filename);
   schedule_rebuild_recent_list();
 }
 
 void RecentFiles::removeRecentFile(const char* filename)
 {
-  iterator it = std::find(recent_files.begin(), recent_files.end(), filename);
+  iterator it = std::find(m_files.begin(), m_files.end(), filename);
 
-  if (it != recent_files.end()) {
-    recent_files.erase(it);
+  if (it != m_files.end()) {
+    m_files.erase(it);
 
     schedule_rebuild_recent_list();
   }

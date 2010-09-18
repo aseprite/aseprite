@@ -192,7 +192,7 @@ void OpenFileCommand::onExecute(Context* context)
 	  if (sprite) {
 	    UIContext* context = UIContext::instance();
 
-	    RecentFiles::addRecentFile(fop->filename);
+	    App::instance()->getRecentFiles()->addRecentFile(fop->filename);
 	    context->add_sprite(sprite);
 
 	    set_sprite_in_more_reliable_editor(sprite);
@@ -214,7 +214,7 @@ void OpenFileCommand::onExecute(Context* context)
       // The file was not found or was loaded loaded with errors,
       // so we can remove it from the recent-file list
       if (unrecent) {
-	RecentFiles::removeRecentFile(m_filename.c_str());
+	App::instance()->getRecentFiles()->removeRecentFile(m_filename.c_str());
       }
     }
     else {

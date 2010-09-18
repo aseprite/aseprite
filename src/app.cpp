@@ -88,7 +88,7 @@ public:
   RasterModule m_raster;
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
-  RecentFiles m_recent_files_module;
+  RecentFiles m_recent_files;
 };
 
 class TabsBarHandler : public ITabsHandler
@@ -261,7 +261,7 @@ int App::run()
 	      set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
 	      // Recent file
-	      RecentFiles::addRecentFile(Vaca::convert_to<std::string>(option->data()).c_str());
+	      getRecentFiles()->addRecentFile(Vaca::convert_to<std::string>(option->data()).c_str());
 	    }
 	  }
 	  break;
@@ -332,10 +332,16 @@ App::~App()
   }
 }
 
-ToolBox* App::get_toolbox()
+ToolBox* App::get_toolbox() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_toolbox;
+}
+
+RecentFiles* App::getRecentFiles() const
+{
+  ASSERT(m_modules != NULL);
+  return &m_modules->m_recent_files;
 }
 
 /**
@@ -399,8 +405,8 @@ bool app_realloc_recent_list()
     submenu = jmenu_new();
     jmenuitem_set_submenu(list_menuitem, submenu);
 
-    RecentFiles::const_iterator it = RecentFiles::begin();
-    RecentFiles::const_iterator end = RecentFiles::end();
+    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->begin();
+    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->end();
 
     if (it != end) {
       Params params;

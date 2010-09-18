@@ -427,8 +427,9 @@ static void update_location(JWidget window)
     std::set<std::string> included;
 
     // For each recent file...
-    RecentFiles::const_iterator it;
-    for (it = RecentFiles::begin(); it != RecentFiles::end(); ++it) {
+    RecentFiles::const_iterator it = App::instance()->getRecentFiles()->begin();
+    RecentFiles::const_iterator end = App::instance()->getRecentFiles()->end();
+    for (; it != end; ++it) {
       // Get the path of the recent file
       std::string path = jstring(*it).filepath();
 
