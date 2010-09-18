@@ -32,7 +32,7 @@
 
 #define PRINTF			verbose_printf
 
-// Defined in src/core/core.c
+// Defined in src/log.cpp
 void verbose_printf(const char* format, ...);
 
 // Strings
