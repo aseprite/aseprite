@@ -52,6 +52,7 @@ add_library(aseprite-library
   xml_widgets.cpp
   app/color.cpp
   app/color_utils.cpp
+  base/errno_string.cpp
   base/mem_utils.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp

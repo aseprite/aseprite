@@ -16,27 +16,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CORE_CORE_H_INCLUDED
-#define CORE_CORE_H_INCLUDED
+#ifndef BASE_ERRNO_STRING_H_INCLUDED
+#define BASE_ERRNO_STRING_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include <string>
 
-enum {
-  MODE_VERBOSE		= 1,	/* verbose mode status */
-  MODE_BATCH		= 2,	/* batch mode */
-  MODE_GUI		= 4,	/* graphics user interface */
-};
-
-extern int ase_mode;
-
-class LoggerModule
-{
-public:
-  LoggerModule();
-  ~LoggerModule();
-};
-
-void verbose_printf(const char *format, ...);
-bool is_interactive();
+std::string get_errno_string(int errnum);
 
 #endif
