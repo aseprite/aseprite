@@ -24,7 +24,7 @@
 
 #include "app.h"
 #include "commands/command.h"
-#include "mem_utils.h"
+#include "base/mem_utils.h"
 #include "modules/gui.h"
 #include "raster/cel.h"
 #include "raster/image.h"

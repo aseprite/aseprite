@@ -44,7 +44,6 @@ add_library(aseprite-library
   context.cpp
   gfxmode.cpp
   launcher.cpp
-  mem_utils.cpp
   recent_files.cpp
   resource_finder.cpp
   ui_context.cpp
@@ -52,6 +51,7 @@ add_library(aseprite-library
   xml_widgets.cpp
   app/color.cpp
   app/color_utils.cpp
+  base/mem_utils.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
   commands/cmd_background_from_layer.cpp

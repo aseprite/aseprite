@@ -25,7 +25,7 @@
 
 #include "commands/command.h"
 #include "app/color.h"
-#include "mem_utils.h"
+#include "base/mem_utils.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/palette.h"
