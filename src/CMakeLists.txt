@@ -45,6 +45,7 @@ add_library(aseprite-library
   gfxmode.cpp
   job.cpp
   launcher.cpp
+  log.cpp
   recent_files.cpp
   resource_finder.cpp
   ui_context.cpp

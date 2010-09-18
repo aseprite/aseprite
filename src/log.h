@@ -16,23 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "config.h"
+#ifndef LOG_H_INCLUDED
+#define LOG_H_INCLUDED
 
-#include "core/core.h"
-
-/**
- * Current running mode of ASE.
- *
- * In beta releases it starts with MODE_VERBOSE value.
- */
-int ase_mode = 0;
-
-/**
- * Returns true if the application is running in interactive mode (GUI).
- *
- * Now that the application doesn't support scripting, this always returns true.
- */
-bool is_interactive()
+class LoggerModule
 {
-  return ase_mode & MODE_GUI ? true: false;
-}
+public:
+  LoggerModule();
+  ~LoggerModule();
+};
+
+void verbose_printf(const char* format, ...);
+
+#endif

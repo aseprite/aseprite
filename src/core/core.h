@@ -19,8 +19,6 @@
 #ifndef CORE_CORE_H_INCLUDED
 #define CORE_CORE_H_INCLUDED
 
-#include "jinete/jbase.h"
-
 enum {
   MODE_VERBOSE		= 1,	/* verbose mode status */
   MODE_BATCH		= 2,	/* batch mode */
@@ -29,14 +27,6 @@ enum {
 
 extern int ase_mode;
 
-class LoggerModule
-{
-public:
-  LoggerModule();
-  ~LoggerModule();
-};
-
-void verbose_printf(const char *format, ...);
 bool is_interactive();
 
 #endif

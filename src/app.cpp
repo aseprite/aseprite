@@ -46,6 +46,7 @@
 #include "core/modules.h"
 #include "file/file.h"
 #include "intl/intl.h"
+#include "log.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
