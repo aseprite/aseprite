@@ -43,7 +43,7 @@
 
 static ColorButton* button_color;
 static CheckBox* check_preview;
-static Widget* slider_fuzziness; // TODO rename to tolerance
+static Widget* slider_tolerance;
 
 static void button_1_command(JWidget widget);
 static void button_2_command(JWidget widget);
@@ -60,7 +60,7 @@ void dialogs_mask_color(Sprite* sprite)
   Widget* label_color;
   Button* button_1;
   Button* button_2;
-  JWidget label_fuzziness;
+  JWidget label_tolerance;
   Button* button_ok;
   Button* button_cancel;
   Image *image;
@@ -84,8 +84,8 @@ void dialogs_mask_color(Sprite* sprite)
     sprite->getImgType());
   button_1 = new Button("1");
   button_2 = new Button("2");
-  label_fuzziness = new Label("Fuzziness:");
-  slider_fuzziness = jslider_new(0, 255, get_config_int("MaskColor", "Fuzziness", 0));
+  label_tolerance = new Label("Tolerance:");
+  slider_tolerance = jslider_new(0, 255, get_config_int("MaskColor", "Tolerance", 0));
   check_preview = new CheckBox("&Preview");
   button_ok = new Button("&OK");
   button_cancel = new Button("&Cancel");
@@ -102,18 +102,18 @@ void dialogs_mask_color(Sprite* sprite)
   button_cancel->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, sprite);
-  HOOK(slider_fuzziness, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
+  HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
   check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, sprite));
 
   jwidget_magnetic(button_ok, true);
   jwidget_expansive(button_color, true);
-  jwidget_expansive(slider_fuzziness, true);
+  jwidget_expansive(slider_tolerance, true);
   jwidget_expansive(box2, true);
 
   jwidget_add_child(window, box1);
   jwidget_add_children(box1, box2, box3, check_preview, box4, NULL);
   jwidget_add_children(box2, label_color, button_color, button_1, button_2, NULL);
-  jwidget_add_children(box3, label_fuzziness, slider_fuzziness, NULL);
+  jwidget_add_children(box3, label_tolerance, slider_tolerance, NULL);
   jwidget_add_children(box4, button_ok, button_cancel, NULL);
 
   /* default position */
@@ -144,8 +144,8 @@ void dialogs_mask_color(Sprite* sprite)
     mask_free(mask);
 
     set_config_color("MaskColor", "Color", button_color->getColor());
-    set_config_int("MaskColor", "Fuzziness",
-		   jslider_get_value(slider_fuzziness));
+    set_config_int("MaskColor", "Tolerance",
+		   jslider_get_value(slider_tolerance));
     set_config_bool("MaskColor", "Preview", check_preview->isSelected());
   }
 
@@ -188,15 +188,15 @@ static void preview_change_hook(Sprite* sprite)
 
 static Mask *gen_mask(const Sprite* sprite)
 {
-  int xpos, ypos, color, fuzziness;
+  int xpos, ypos, color, tolerance;
 
   const Image* image = sprite->getCurrentImage(&xpos, &ypos, NULL);
 
   color = color_utils::color_for_image(button_color->getColor(), sprite->getImgType());
-  fuzziness = jslider_get_value(slider_fuzziness);
+  tolerance = jslider_get_value(slider_tolerance);
 
   Mask* mask = mask_new();
-  mask_by_color(mask, image, color, fuzziness);
+  mask_by_color(mask, image, color, tolerance);
   mask_move(mask, xpos, ypos);
 
   return mask;
