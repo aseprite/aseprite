@@ -1902,7 +1902,7 @@ public:
 
     // Set undo label for any kind of undo used in the whole loop
     if (m_sprite->getUndo()->isEnabled())
-      undo_set_label(m_sprite->getUndo(), m_tool->getText().c_str());
+      m_sprite->getUndo()->setLabel(m_tool->getText().c_str());
   }
 
   ~ToolLoopImpl()

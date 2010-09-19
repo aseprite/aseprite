@@ -81,7 +81,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   dst_layer = sprite->getCurrentLayer()->get_prev();
 
   if (sprite->getUndo()->isEnabled()) {
-    undo_set_label(sprite->getUndo(), "Merge Down Layer");
+    sprite->getUndo()->setLabel("Merge Down Layer");
     undo_open(sprite->getUndo());
   }
 

@@ -69,7 +69,7 @@ static Layer* duplicate_layer(Sprite* sprite)
 {
   /* open undo */
   if (sprite->getUndo()->isEnabled()) {
-    undo_set_label(sprite->getUndo(), "Layer Duplication");
+    sprite->getUndo()->setLabel("Layer Duplication");
     undo_open(sprite->getUndo());
   }
 

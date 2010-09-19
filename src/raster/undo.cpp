@@ -324,9 +324,6 @@ bool Undo::canRedo() const
   return !jlist_empty(this->redo_stream->chunks);
 }
 
-//////////////////////////////////////////////////////////////////////
-// General undo routines
-
 void Undo::doUndo()
 {
   run_undo(this, DO_UNDO);
@@ -337,39 +334,41 @@ void Undo::doRedo()
   run_undo(this, DO_REDO);
 }
 
-void undo_clear_redo(Undo* undo)
+void Undo::clearRedo()
 {
-  ASSERT(undo);
-  if (!jlist_empty(undo->redo_stream->chunks)) {
-    undo_stream_free(undo->redo_stream);
-    undo->redo_stream = undo_stream_new(undo);
+  if (!jlist_empty(this->redo_stream->chunks)) {
+    undo_stream_free(this->redo_stream);
+    this->redo_stream = undo_stream_new(this);
   }
 }
 
-void undo_set_label(Undo* undo, const char *label)
+void Undo::setLabel(const char* label)
 {
-  undo->label = label;
+  this->label = label;
 }
 
-const char *undo_get_next_undo_label(const Undo* undo)
-{
-  UndoChunk* chunk;
-
-  ASSERT(undo->canUndo());
-
-  chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(undo->undo_stream->chunks));
-  return chunk->label;
-}
-
-const char *undo_get_next_redo_label(const Undo* undo)
+const char* Undo::getNextUndoLabel() const
 {
   UndoChunk* chunk;
 
-  ASSERT(undo->canRedo());
+  ASSERT(this->canUndo());
 
-  chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(undo->redo_stream->chunks));
+  chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(this->undo_stream->chunks));
   return chunk->label;
 }
+
+const char* Undo::getNextRedoLabel() const
+{
+  UndoChunk* chunk;
+
+  ASSERT(this->canRedo());
+
+  chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(this->redo_stream->chunks));
+  return chunk->label;
+}
+
+//////////////////////////////////////////////////////////////////////
+// General undo routines
 
 static void run_undo(Undo* undo, int state)
 {
@@ -385,7 +384,7 @@ static void run_undo(Undo* undo, int state)
     if (!chunk)
       break;
 
-    undo_set_label(undo, chunk->label);
+    undo->setLabel(chunk->label);
     (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
 
     if (chunk->type == UNDO_TYPE_OPEN)
@@ -483,7 +482,7 @@ static void update_undo(Undo* undo)
   undo->diff_count++;
 
   /* reset the "redo" stream */
-  undo_clear_redo(undo);
+  undo->clearRedo();
 
   if (out_of_group(undo->undo_stream)) {
     int groups = count_undo_groups(undo->undo_stream);

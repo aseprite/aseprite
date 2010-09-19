@@ -58,7 +58,7 @@ void RedoCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, "Redid %s",
-	      undo_get_next_redo_label(sprite->getUndo()));
+	      sprite->getUndo()->getNextRedoLabel());
 
   sprite->getUndo()->doRedo();
   sprite->generateMaskBoundaries();

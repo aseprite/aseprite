@@ -58,7 +58,7 @@ void UndoCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->showTip(1000, "Undid %s",
-	      undo_get_next_undo_label(sprite->getUndo()));
+	      sprite->getUndo()->getNextUndoLabel());
 
   sprite->getUndo()->doUndo();
   sprite->generateMaskBoundaries();

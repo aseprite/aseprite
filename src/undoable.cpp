@@ -51,7 +51,7 @@ Undoable::Undoable(SpriteWriter& sprite, const char* label)
   m_enabledFlag = m_sprite->getUndo()->isEnabled();
 
   if (isEnabled()) {
-    undo_set_label(m_sprite->getUndo(), label);
+    m_sprite->getUndo()->setLabel(label);
     undo_open(m_sprite->getUndo());
   }
 }
@@ -69,7 +69,7 @@ Undoable::~Undoable()
 
       // clear the redo (sorry to the user, here we lost the old redo
       // information)
-      undo_clear_redo(m_sprite->getUndo());
+      m_sprite->getUndo()->clearRedo();
     }
   }
 }

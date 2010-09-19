@@ -66,13 +66,13 @@ public:
   void doUndo();
   void doRedo();
 
+  void clearRedo();
+
+  void setLabel(const char* label);
+  const char* getNextUndoLabel() const;
+  const char* getNextRedoLabel() const;
+
 };
-
-void undo_clear_redo(Undo* undo);
-
-void undo_set_label(Undo* undo, const char *label);
-const char* undo_get_next_undo_label(const Undo* undo);
-const char* undo_get_next_redo_label(const Undo* undo);
 
 void undo_open(Undo* undo);
 void undo_close(Undo* undo);

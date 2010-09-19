@@ -70,7 +70,7 @@ void move_cel(SpriteWriter& sprite)
   dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
   if (sprite->getUndo()->isEnabled()) {
-    undo_set_label(sprite->getUndo(), "Move Cel");
+    sprite->getUndo()->setLabel("Move Cel");
     undo_open(sprite->getUndo());
 
     undo_set_layer(sprite->getUndo(), sprite);
@@ -157,7 +157,7 @@ void copy_cel(SpriteWriter& sprite)
   dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
   if (sprite->getUndo()->isEnabled()) {
-    undo_set_label(sprite->getUndo(), "Move Cel");
+    sprite->getUndo()->setLabel("Move Cel");
     undo_open(sprite->getUndo());
 
     undo_set_layer(sprite->getUndo(), sprite);

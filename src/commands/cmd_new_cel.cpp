@@ -78,7 +78,7 @@ void NewCelCommand::onExecute(Context* context)
   image_index = stock_add_image(current_sprite->stock, image);
 
   if (undo_is_enabled(current_sprite->undo)) {
-    undo_set_label(current_sprite->undo, "New Cel");
+    current_sprite->undo->setLabel("New Cel");
     undo_open(current_sprite->undo);
     undo_add_image(current_sprite->undo,
 		   current_sprite->stock, image_index);

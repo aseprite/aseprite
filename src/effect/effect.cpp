@@ -250,8 +250,7 @@ void effect_apply(Effect* effect)
   if (!cancelled) {
     // Undo stuff
     if (effect->sprite->getUndo()->isEnabled()) {
-      undo_set_label(effect->sprite->getUndo(),
-		     effect->effect_data->label);
+      effect->sprite->getUndo()->setLabel(effect->effect_data->label);
       undo_image(effect->sprite->getUndo(), effect->src,
 		 effect->x, effect->y, effect->w, effect->h);
     }

@@ -510,7 +510,7 @@ static void sort_command(JWidget widget)
 	  // TODO The following code is unreadable, move this to Undoable class
 
 	  if (sprite->getUndo()->isEnabled()) {
-	    undo_set_label(sprite->getUndo(), "Sort Palette");
+	    sprite->getUndo()->setLabel("Sort Palette");
 	    undo_open(sprite->getUndo());
 
 	    // Remove the current palette in the current frame

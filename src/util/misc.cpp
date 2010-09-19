@@ -153,7 +153,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   /* the position was changed */
   if (!editor->editor_click_cancel()) {
     if (use_undo && sprite->getUndo()->isEnabled()) {
-      undo_set_label(sprite->getUndo(), "Cel Movement");
+      sprite->getUndo()->setLabel("Cel Movement");
       undo_open(sprite->getUndo());
       undo_int(sprite->getUndo(), (GfxObj *)cel, &cel->x);
       undo_int(sprite->getUndo(), (GfxObj *)cel, &cel->y);
