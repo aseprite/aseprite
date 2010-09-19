@@ -63,10 +63,10 @@ public:
   bool canUndo() const;
   bool canRedo() const;
 
-};
+  void doUndo();
+  void doRedo();
 
-void undo_do_undo(Undo* undo);
-void undo_do_redo(Undo* undo);
+};
 
 void undo_clear_redo(Undo* undo);
 

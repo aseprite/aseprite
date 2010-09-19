@@ -60,7 +60,7 @@ void RedoCommand::onExecute(Context* context)
     ->showTip(1000, "Redid %s",
 	      undo_get_next_redo_label(sprite->getUndo()));
 
-  undo_do_redo(sprite->getUndo());
+  sprite->getUndo()->doRedo();
   sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }

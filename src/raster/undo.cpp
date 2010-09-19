@@ -327,16 +327,14 @@ bool Undo::canRedo() const
 //////////////////////////////////////////////////////////////////////
 // General undo routines
 
-void undo_do_undo(Undo* undo)
+void Undo::doUndo()
 {
-  ASSERT(undo);
-  run_undo(undo, DO_UNDO);
+  run_undo(this, DO_UNDO);
 }
 
-void undo_do_redo(Undo* undo)
+void Undo::doRedo()
 {
-  ASSERT(undo);
-  run_undo(undo, DO_REDO);
+  run_undo(this, DO_REDO);
 }
 
 void undo_clear_redo(Undo* undo)

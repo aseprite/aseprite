@@ -60,7 +60,7 @@ void UndoCommand::onExecute(Context* context)
     ->showTip(1000, "Undid %s",
 	      undo_get_next_undo_label(sprite->getUndo()));
 
-  undo_do_undo(sprite->getUndo());
+  sprite->getUndo()->doUndo();
   sprite->generateMaskBoundaries();
   update_screen_for_sprite(sprite);
 }

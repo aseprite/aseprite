@@ -65,7 +65,7 @@ Undoable::~Undoable()
     // if it isn't committed, we have to rollback all changes
     if (!m_committed) {
       // undo the group of operations
-      undo_do_undo(m_sprite->getUndo());
+      m_sprite->getUndo()->doUndo();
 
       // clear the redo (sorry to the user, here we lost the old redo
       // information)
