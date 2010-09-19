@@ -530,7 +530,7 @@ void Undoable::flatten_layers(int bgcolor)
     if (is_enabled())
       undo_move_layer(m_sprite->getUndo(), background);
     
-    background->configure_as_background();
+    background->configureAsBackground();
   }
 
   /* copy all frames to the background */
@@ -605,7 +605,7 @@ void Undoable::configure_layer_as_background(LayerImage* layer)
     undo_move_layer(m_sprite->getUndo(), layer);
   }
 
-  layer->configure_as_background();
+  layer->configureAsBackground();
 }
 
 void Undoable::new_frame()

@@ -247,7 +247,7 @@ Cel* LayerImage::get_cel(int frame)
  * You can't use this routine if the sprite already has a background
  * layer.
  */
-void LayerImage::configure_as_background()
+void LayerImage::configureAsBackground()
 {
   ASSERT(getSprite() != NULL);
   ASSERT(getSprite()->getBackgroundLayer() == NULL);

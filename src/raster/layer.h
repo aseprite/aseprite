@@ -102,7 +102,7 @@ public:
 
   void getCels(CelList& cels);
 
-  void configure_as_background();
+  void configureAsBackground();
 
   CelIterator getCelBegin() { return m_cels.begin(); }
   CelIterator getCelEnd() { return m_cels.end(); }

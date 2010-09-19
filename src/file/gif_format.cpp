@@ -118,7 +118,7 @@ static bool load_GIF(FileOp *fop)
   }
 
   sprite->getFolder()->add_layer(layer);
-  layer->configure_as_background();
+  layer->configureAsBackground();
 
   image_clear(current_image, gif->background_index);
   image_clear(current_image_old, gif->background_index);

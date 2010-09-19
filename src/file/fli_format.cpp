@@ -106,7 +106,7 @@ static bool load_FLI(FileOp *fop)
   sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
   layer = new LayerImage(sprite);
   sprite->getFolder()->add_layer(layer);
-  layer->configure_as_background();
+  layer->configureAsBackground();
 
   // Set frames and speed
   sprite->setTotalFrames(fli_header.frames);

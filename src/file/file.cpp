@@ -563,7 +563,7 @@ void fop_operate(FileOp *fop)
       if (fop->sprite != NULL) {
 	// Configure the layer as the 'Background'
 	if (!fop->seq.has_alpha)
-	  fop->seq.layer->configure_as_background();
+	  fop->seq.layer->configureAsBackground();
 
 	// Set the frames range
 	fop->sprite->setTotalFrames(frame);

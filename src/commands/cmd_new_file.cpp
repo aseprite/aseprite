@@ -165,7 +165,7 @@ void NewFileCommand::onExecute(Context* context)
 	if (color.getType() != Color::MaskType) {
 	  ASSERT(sprite->getCurrentLayer() && sprite->getCurrentLayer()->is_image());
 
-	  static_cast<LayerImage*>(sprite->getCurrentLayer())->configure_as_background();
+	  static_cast<LayerImage*>(sprite->getCurrentLayer())->configureAsBackground();
 	  image_clear(sprite->getCurrentImage(), color_utils::color_for_image(color, imgtype));
 	}
 
