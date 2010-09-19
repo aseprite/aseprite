@@ -132,7 +132,7 @@ static bool load_ICO(FileOp *fop)
   Image* image = image_new(imgtype, width, height);
   int image_index = stock_add_image(sprite->getStock(), image);
   Cel* cel = cel_new(0, image_index);
-  layer->add_cel(cel);
+  layer->addCel(cel);
 
   // Go to the entry start in the file
   fseek(f, entry.image_offset, SEEK_SET);

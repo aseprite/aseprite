@@ -72,7 +72,7 @@ void CelPropertiesCommand::onExecute(Context* context)
   const Layer* layer = sprite->getCurrentLayer();
 
   // Get current cel (can be NULL)
-  const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(sprite->getCurrentFrame());
+  const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(sprite->getCurrentFrame());
 
   FramePtr window(load_widget("cel_properties.xml", "cel_properties"));
   get_widgets(window,
@@ -135,7 +135,7 @@ void CelPropertiesCommand::onExecute(Context* context)
   if (window->get_killer() == button_ok) {
     SpriteWriter sprite_writer(sprite);
     Layer* layer_writer = sprite_writer->getCurrentLayer();
-    Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->get_cel(sprite->getCurrentFrame());
+    Cel* cel_writer = static_cast<LayerImage*>(layer_writer)->getCel(sprite->getCurrentFrame());
 
     int new_opacity = jslider_get_value(slider_opacity);
 

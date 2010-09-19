@@ -473,7 +473,7 @@ void fop_operate(FileOp *fop)
 				      fop->seq.image);			\
 									\
 	fop->seq.last_cel->image = image_index;				\
-	fop->seq.layer->add_cel(fop->seq.last_cel);			\
+	fop->seq.layer->addCel(fop->seq.last_cel);			\
 									\
 	if (fop->sprite->getPalette(frame)				\
 	      ->countDiff(fop->seq.palette, NULL, NULL) > 0) {		\

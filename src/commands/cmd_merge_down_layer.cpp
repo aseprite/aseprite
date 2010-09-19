@@ -87,8 +87,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
   for (frpos=0; frpos<sprite->getTotalFrames(); ++frpos) {
     /* get frames */
-    src_cel = static_cast<LayerImage*>(src_layer)->get_cel(frpos);
-    dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(frpos);
+    src_cel = static_cast<LayerImage*>(src_layer)->getCel(frpos);
+    dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(frpos);
 
     /* get images */
     if (src_cel != NULL)
@@ -123,7 +123,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 	if (undo_is_enabled(sprite->getUndo()))
 	  undo_add_cel(sprite->getUndo(), dst_layer, dst_cel);
 
-	static_cast<LayerImage*>(dst_layer)->add_cel(dst_cel);
+	static_cast<LayerImage*>(dst_layer)->addCel(dst_cel);
       }
       /* with destination */
       else {

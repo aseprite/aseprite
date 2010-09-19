@@ -196,7 +196,7 @@ static bool load_GIF(FileOp *fop)
 #endif
 	       );
     cel->image = stock_add_image(sprite->getStock(), image);
-    layer->add_cel(cel);
+    layer->addCel(cel);
 
 #ifdef LOAD_GIF_STRUCTURE
     /* when load the GIF structure, the disposal method is ever

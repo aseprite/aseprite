@@ -151,7 +151,7 @@ static bool load_FLI(FileOp *fop)
 	fop_error(fop, "Not enough memory\n");
 	break;
       }
-      layer->add_cel(cel);
+      layer->addCel(cel);
 
       /* first frame or the palette changes */
       if ((frpos_in == 0) || (memcmp(omap, cmap, 768) != 0))

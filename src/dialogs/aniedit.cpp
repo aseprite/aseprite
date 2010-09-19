@@ -1198,7 +1198,7 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
   hline(ji_screen, x1, y2, x2, ji_color_foreground());
 
   /* get the cel of this layer in this frame */
-  cel = layer->is_image() ? static_cast<LayerImage*>(layer)->get_cel(frame): NULL;
+  cel = layer->is_image() ? static_cast<LayerImage*>(layer)->getCel(frame): NULL;
 
   /* empty cel? */
   if (cel == NULL ||

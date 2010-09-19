@@ -1841,7 +1841,7 @@ public:
     // Get cel and image where we can draw
 
     if (m_layer->is_image()) {
-      m_cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
+      m_cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
       if (m_cel)
 	m_cel_image = sprite->getStock()->image[m_cel->image];
     }
@@ -1853,7 +1853,7 @@ public:
 
       // create the cel
       m_cel = cel_new(sprite->getCurrentFrame(), 0);
-      static_cast<LayerImage*>(sprite->getCurrentLayer())->add_cel(m_cel);
+      static_cast<LayerImage*>(sprite->getCurrentLayer())->addCel(m_cel);
 
       m_cel_created = true;
     }
@@ -1929,7 +1929,7 @@ public:
 	    /* is the undo enabled? */
 	    if (undo_is_enabled(m_sprite->getUndo())) {
 	      /* we can temporary remove the cel */
-	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->remove_cel(m_cel);
+	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->removeCel(m_cel);
 
 	      /* we create the undo information (for the new cel_image
 		 in the stock and the new cel in the layer)... */
@@ -1939,7 +1939,7 @@ public:
 	      undo_close(m_sprite->getUndo());
 
 	      /* and finally we add the cel again in the layer */
-	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->add_cel(m_cel);
+	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
 	    }
 	  }
 	  else {
@@ -2007,7 +2007,7 @@ public:
       m_cel->y = m_old_cel_y;
 
       if (m_cel_created) {
-	static_cast<LayerImage*>(m_layer)->remove_cel(m_cel);
+	static_cast<LayerImage*>(m_layer)->removeCel(m_cel);
 	delete m_cel;
 	delete m_cel_image;
       }

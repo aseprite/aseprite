@@ -1064,7 +1064,7 @@ static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk, int
   if (layer && cel) {
     chunk_remove_cel_new(stream, layer, cel);
 
-    layer->remove_cel(cel);
+    layer->removeCel(cel);
     cel_free(cel);
   }
 }
@@ -1113,7 +1113,7 @@ static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chun
     /* ASSERT(cel != NULL); */
 
     chunk_add_cel_new(stream, layer, cel);
-    layer->add_cel(cel);
+    layer->addCel(cel);
   }
 }
 
@@ -2204,7 +2204,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 	raw_data += get_raw_cel_size(cel);
 
 	/* add the cel in the layer */
-	static_cast<LayerImage*>(layer)->add_cel(cel);
+	static_cast<LayerImage*>(layer)->addCel(cel);
 
 	/* read the image */
 	read_raw_uint8(has_image);

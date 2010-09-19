@@ -483,7 +483,7 @@ static void ase_file_write_layers(FILE *f, Layer *layer)
 static void ase_file_write_cels(FILE *f, Sprite *sprite, Layer *layer, int frame)
 {
   if (layer->is_image()) {
-    Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);
+    Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
     if (cel) {
 /*       fop_error(fop, "New cel in frame %d, in layer %d\n", */
 /* 		     frame, sprite_layer2index(sprite, layer)); */
@@ -1053,7 +1053,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
     case ASE_FILE_LINK_CEL: {
       // Read link position
       int link_frame = fgetw(f);
-      Cel* link = static_cast<LayerImage*>(layer)->get_cel(link_frame);
+      Cel* link = static_cast<LayerImage*>(layer)->getCel(link_frame);
 
       if (link) {
 	// Create a copy of the linked cel (avoid using links cel)
@@ -1104,7 +1104,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
   }
 
-  static_cast<LayerImage*>(layer)->add_cel(cel);
+  static_cast<LayerImage*>(layer)->addCel(cel);
   return cel;
 }
 

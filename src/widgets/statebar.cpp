@@ -746,7 +746,7 @@ static bool slider_change_hook(JWidget widget, void *data)
     if (sprite) {
       if ((sprite->getCurrentLayer()) &&
 	  (sprite->getCurrentLayer()->is_image())) {
-	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
+	Cel* cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
 	if (cel) {
 	  // Update the opacity
 	  cel->opacity = jslider_get_value(widget);
@@ -791,7 +791,7 @@ void StatusBar::updateFromLayer()
 	sprite->getCurrentLayer() &&
 	sprite->getCurrentLayer()->is_image() &&
 	!sprite->getCurrentLayer()->is_background() &&
-	(cel = ((LayerImage*)sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame()))) {
+	(cel = ((LayerImage*)sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame()))) {
       jslider_set_value(m_slider, MID(0, cel->opacity, 255));
       m_slider->setEnabled(true);
     }

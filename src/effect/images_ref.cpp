@@ -93,13 +93,13 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
     case GFXOBJ_LAYER_IMAGE: {
       if (target & TARGET_ALL_FRAMES) {
 	for (frame=0; frame<sprite->getTotalFrames(); frame++) {
-	  Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);
+	  Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
 	  if (cel != NULL)
 	    NEW_IMAGE(layer, cel);
 	}
       }
       else {
-	Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame);
+	Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
 	if (cel != NULL)
 	  NEW_IMAGE(layer, cel);
       }

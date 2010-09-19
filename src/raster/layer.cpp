@@ -138,7 +138,7 @@ LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
       if (undo_is_enabled(dst_sprite->getUndo()))
 	undo_add_image(dst_sprite->getUndo(), dst_sprite->getStock(), cel_copy->image);
 
-      add_cel(cel_copy);
+      addCel(cel_copy);
     }
   }
   catch (...) {
@@ -184,7 +184,7 @@ void LayerImage::getCels(CelList& cels)
     cels.push_back(*it);
 }
 
-void LayerImage::add_cel(Cel *cel)
+void LayerImage::addCel(Cel *cel)
 {
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();
@@ -203,7 +203,7 @@ void LayerImage::add_cel(Cel *cel)
  * It doesn't destroy the cel, you have to delete it after calling
  * this routine.
  */
-void LayerImage::remove_cel(Cel *cel)
+void LayerImage::removeCel(Cel *cel)
 {
   CelIterator it = std::find(m_cels.begin(), m_cels.end(), cel);
 
@@ -212,7 +212,7 @@ void LayerImage::remove_cel(Cel *cel)
   m_cels.erase(it);
 }
 
-const Cel* LayerImage::get_cel(int frame) const
+const Cel* LayerImage::getCel(int frame) const
 {
   CelConstIterator it = getCelBegin();
   CelConstIterator end = getCelEnd();
@@ -226,7 +226,7 @@ const Cel* LayerImage::get_cel(int frame) const
   return NULL;
 }
 
-Cel* LayerImage::get_cel(int frame)
+Cel* LayerImage::getCel(int frame)
 {
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();
@@ -385,7 +385,7 @@ Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
 	  /* clear the image and render this frame */
 	  image_clear(image, 0);
 	  layer_render(src_layer, image, -x, -y, frame);
-	  flat_layer->add_cel(cel);
+	  flat_layer->addCel(cel);
 	}
 	catch (...) {
 	  delete image;
@@ -410,7 +410,7 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(frame);
+      const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
       Image* src_image;
 
       if (cel) {
@@ -454,7 +454,7 @@ static bool has_cels(const Layer* layer, int frame)
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE:
-      return static_cast<const LayerImage*>(layer)->get_cel(frame) ? true: false;
+      return static_cast<const LayerImage*>(layer)->getCel(frame) ? true: false;
 
     case GFXOBJ_LAYER_FOLDER: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->get_layer_begin();

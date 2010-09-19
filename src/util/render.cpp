@@ -567,7 +567,7 @@ void RenderEngine::renderLayer(const Sprite *sprite,
 	  (!render_transparent && !layer->is_background()))
 	break;
 
-      const Cel* cel = static_cast<const LayerImage*>(layer)->get_cel(frame);
+      const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
       if (cel != NULL) {
 	const Image* src_image;
 

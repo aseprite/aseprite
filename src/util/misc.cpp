@@ -91,7 +91,7 @@ int interactive_move_layer(int mode, bool use_undo, int (*callback)())
   ASSERT(sprite->getCurrentLayer()->is_image());
 
   LayerImage* layer = static_cast<LayerImage*>(sprite->getCurrentLayer());
-  Cel *cel = layer->get_cel(sprite->getCurrentFrame());
+  Cel *cel = layer->getCel(sprite->getCurrentFrame());
   int start_x, new_x;
   int start_y, new_y;
   int start_b;

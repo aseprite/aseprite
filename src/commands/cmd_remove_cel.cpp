@@ -56,13 +56,13 @@ bool RemoveCelCommand::onEnabled(Context* context)
     sprite->getCurrentLayer()->is_readable() &&
     sprite->getCurrentLayer()->is_writable() &&
     sprite->getCurrentLayer()->is_image() &&
-    static_cast<const LayerImage*>(sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
+    static_cast<const LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
 }
 
 void RemoveCelCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->get_cel(sprite->getCurrentFrame());
+  Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
   {
     Undoable undoable(sprite, "Remove Cel");
     undoable.remove_cel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);

@@ -66,8 +66,8 @@ void move_cel(SpriteWriter& sprite)
     return;
   }
 
-  src_cel = static_cast<LayerImage*>(src_layer)->get_cel(src_frame);
-  dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(dst_frame);
+  src_cel = static_cast<LayerImage*>(src_layer)->getCel(src_frame);
+  dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
   if (undo_is_enabled(sprite->getUndo())) {
     undo_set_label(sprite->getUndo(), "Move Cel");
@@ -97,7 +97,7 @@ void move_cel(SpriteWriter& sprite)
     else {
       if (undo_is_enabled(sprite->getUndo()))
 	undo_remove_cel(sprite->getUndo(), src_layer, src_cel);
-      static_cast<LayerImage*>(src_layer)->remove_cel(src_cel);
+      static_cast<LayerImage*>(src_layer)->removeCel(src_cel);
 
       src_cel->frame = dst_frame;
 
@@ -134,7 +134,7 @@ void move_cel(SpriteWriter& sprite)
       if (undo_is_enabled(sprite->getUndo()))
 	undo_add_cel(sprite->getUndo(), dst_layer, src_cel);
 
-      static_cast<LayerImage*>(dst_layer)->add_cel(src_cel);
+      static_cast<LayerImage*>(dst_layer)->addCel(src_cel);
     }
   }
 
@@ -153,8 +153,8 @@ void copy_cel(SpriteWriter& sprite)
   ASSERT(src_frame >= 0 && src_frame < sprite->getTotalFrames());
   ASSERT(dst_frame >= 0 && dst_frame < sprite->getTotalFrames());
 
-  src_cel = static_cast<LayerImage*>(src_layer)->get_cel(src_frame);
-  dst_cel = static_cast<LayerImage*>(dst_layer)->get_cel(dst_frame);
+  src_cel = static_cast<LayerImage*>(src_layer)->getCel(src_frame);
+  dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(dst_frame);
 
   if (undo_is_enabled(sprite->getUndo())) {
     undo_set_label(sprite->getUndo(), "Move Cel");
@@ -219,7 +219,7 @@ void copy_cel(SpriteWriter& sprite)
     if (undo_is_enabled(sprite->getUndo()))
       undo_add_cel(sprite->getUndo(), dst_layer, dst_cel);
 
-    static_cast<LayerImage*>(dst_layer)->add_cel(dst_cel);
+    static_cast<LayerImage*>(dst_layer)->addCel(dst_cel);
   }
 
   if (undo_is_enabled(sprite->getUndo()))
@@ -240,7 +240,7 @@ static void remove_cel(Sprite* sprite, LayerImage *layer, Cel *cel)
        another cels */
     used = false;
     for (frame=0; frame<sprite->getTotalFrames(); ++frame) {
-      it = layer->get_cel(frame);
+      it = layer->getCel(frame);
       if (it != NULL && it != cel && it->image == cel->image) {
 	used = true;
 	break;
@@ -267,8 +267,8 @@ static void remove_cel(Sprite* sprite, LayerImage *layer, Cel *cel)
       undo_close(sprite->getUndo());
     }
 
-    /* remove the cel */
-    layer->remove_cel(cel);
+    // Remove the cel
+    layer->removeCel(cel);
     cel_free(cel);
   }
 }

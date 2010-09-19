@@ -230,7 +230,7 @@ public:
 
     if (getCurrentLayer() != NULL &&
 	getCurrentLayer()->is_image()) {
-      const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->get_cel(getCurrentFrame());
+      const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
       if (cel) {
 	ASSERT((cel->image >= 0) &&
 	       (cel->image < getStock()->nimage));
@@ -251,7 +251,7 @@ public:
 
     if (getCurrentLayer() != NULL &&
 	getCurrentLayer()->is_image()) {
-      Cel* cel = static_cast<LayerImage*>(getCurrentLayer())->get_cel(getCurrentFrame());
+      Cel* cel = static_cast<LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
       if (cel) {
 	ASSERT((cel->image >= 0) &&
 	       (cel->image < getStock()->nimage));
@@ -1067,7 +1067,7 @@ Sprite* Sprite::createWithLayer(int imgtype, int width, int height, int ncolors)
     cel_set_position(cel, 0, 0);
 
     /* add the cel in the layer */
-    layer->add_cel(cel);
+    layer->addCel(cel);
 
     /* add the layer in the sprite */
     sprite->getFolder()->add_layer(layer);

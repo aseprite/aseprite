@@ -464,7 +464,7 @@ void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
 
   // Fill all empty cels with a flat-image filled with bgcolor
   for (int frame=0; frame<m_sprite->getTotalFrames(); frame++) {
-    Cel* cel = layer->get_cel(frame);
+    Cel* cel = layer->getCel(frame);
     if (!cel) {
       Image* cel_image = image_new(m_sprite->getImgType(), m_sprite->getWidth(), m_sprite->getHeight());
       image_clear(cel_image, bgcolor);
@@ -539,7 +539,7 @@ void Undoable::flatten_layers(int bgcolor)
     image_clear(image, bgcolor);
     layer_render(m_sprite->getFolder(), image, 0, 0, frame);
 
-    cel = background->get_cel(frame);
+    cel = background->getCel(frame);
     if (cel) {
       cel_image = m_sprite->getStock()->image[cel->image];
       ASSERT(cel_image != NULL);
@@ -562,7 +562,7 @@ void Undoable::flatten_layers(int bgcolor)
       /* TODO error handling: if (!cel) { ... } */
 
       /* and finally we add the cel in the background */
-      background->add_cel(cel);
+      background->addCel(cel);
     }
 
     image_copy(cel_image, image, 0, 0);
@@ -631,7 +631,7 @@ void Undoable::new_frame_for_layer(Layer* layer, int frame)
     case GFXOBJ_LAYER_IMAGE:
       // displace all cels in '>=frame' to the next frame
       for (int c=m_sprite->getTotalFrames()-1; c>=frame; --c) {
-	Cel* cel = static_cast<LayerImage*>(layer)->get_cel(c);
+	Cel* cel = static_cast<LayerImage*>(layer)->getCel(c);
 	if (cel)
 	  set_cel_frame_position(cel, cel->frame+1);
       }
@@ -678,11 +678,11 @@ void Undoable::remove_frame_of_layer(Layer* layer, int frame)
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE:
-      if (Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame))
+      if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
 	remove_cel(static_cast<LayerImage*>(layer), cel);
 
       for (++frame; frame<m_sprite->getTotalFrames(); ++frame)
-	if (Cel* cel = static_cast<LayerImage*>(layer)->get_cel(frame))
+	if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
 	  set_cel_frame_position(cel, cel->frame-1);
       break;
 
@@ -707,7 +707,7 @@ void Undoable::copy_previous_frame(Layer* layer, int frame)
   ASSERT(frame > 0);
 
   // create a copy of the previous cel
-  Cel* src_cel = static_cast<LayerImage*>(layer)->get_cel(frame-1);
+  Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame-1);
   Image* src_image = src_cel ? stock_get_image(m_sprite->getStock(),
 					       src_cel->image):
 			       NULL;
@@ -739,7 +739,7 @@ void Undoable::add_cel(LayerImage* layer, Cel* cel)
   if (is_enabled())
     undo_add_cel(m_sprite->getUndo(), layer, cel);
 
-  layer->add_cel(cel);
+  layer->addCel(cel);
 }
 
 void Undoable::remove_cel(LayerImage* layer, Cel* cel)
@@ -751,7 +751,7 @@ void Undoable::remove_cel(LayerImage* layer, Cel* cel)
   // another cels
   bool used = false;
   for (int frame=0; frame<m_sprite->getTotalFrames(); ++frame) {
-    Cel* it = layer->get_cel(frame);
+    Cel* it = layer->getCel(frame);
     if (it && it != cel && it->image == cel->image) {
       used = true;
       break;
@@ -767,7 +767,7 @@ void Undoable::remove_cel(LayerImage* layer, Cel* cel)
     undo_remove_cel(m_sprite->getUndo(), layer, cel);
 
   // remove the cel from the layer
-  layer->remove_cel(cel);
+  layer->removeCel(cel);
 
   // and here we destroy the cel
   cel_free(cel);
@@ -902,7 +902,7 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
 Cel* Undoable::get_current_cel()
 {
   if (m_sprite->getCurrentLayer() && m_sprite->getCurrentLayer()->is_image())
-    return static_cast<LayerImage*>(m_sprite->getCurrentLayer())->get_cel(m_sprite->getCurrentFrame());
+    return static_cast<LayerImage*>(m_sprite->getCurrentLayer())->getCel(m_sprite->getCurrentFrame());
   else
     return NULL;
 }
@@ -1027,7 +1027,7 @@ void Undoable::paste_image(const Image* src_image, int x, int y, int opacity)
   ASSERT(layer->is_readable());
   ASSERT(layer->is_writable());
 
-  Cel* cel = ((LayerImage*)layer)->get_cel(m_sprite->getCurrentFrame());
+  Cel* cel = ((LayerImage*)layer)->getCel(m_sprite->getCurrentFrame());
   ASSERT(cel);
 
   Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);

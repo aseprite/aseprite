@@ -95,10 +95,10 @@ public:
   int get_blend_mode() const { return m_blend_mode; }
   void set_blend_mode(int blend_mode);
 
-  void add_cel(Cel *cel);
-  void remove_cel(Cel *cel);
-  const Cel* get_cel(int frame) const;
-  Cel* get_cel(int frame);
+  void addCel(Cel *cel);
+  void removeCel(Cel *cel);
+  const Cel* getCel(int frame) const;
+  Cel* getCel(int frame);
 
   void getCels(CelList& cels);
 
