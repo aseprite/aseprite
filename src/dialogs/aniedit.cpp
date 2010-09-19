@@ -700,7 +700,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* undo */
       if (command && strcmp(command->short_name(), CommandId::undo) == 0) {
 	const SpriteReader sprite((Sprite*)anieditor->sprite);
-	if (undo_can_undo(sprite->getUndo())) {
+	if (sprite->getUndo()->canUndo()) {
 	  SpriteWriter sprite_writer(sprite);
 	  undo_do_undo(sprite_writer->getUndo());
 
@@ -715,7 +715,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
       /* redo */
       if (command && strcmp(command->short_name(), CommandId::redo) == 0) {
 	const SpriteReader sprite((Sprite*)anieditor->sprite);
-	if (undo_can_redo(sprite->getUndo())) {
+	if (sprite->getUndo()->canRedo()) {
 	  SpriteWriter sprite_writer(sprite);
 	  undo_do_redo(sprite_writer->getUndo());
 

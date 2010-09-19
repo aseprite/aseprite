@@ -314,28 +314,18 @@ void Undo::setEnabled(bool state)
   this->enabled = state;
 }
 
+bool Undo::canUndo() const
+{
+  return !jlist_empty(this->undo_stream->chunks);
+}
+
+bool Undo::canRedo() const
+{
+  return !jlist_empty(this->redo_stream->chunks);
+}
+
 //////////////////////////////////////////////////////////////////////
 // General undo routines
-
-int undo_get_memsize(const Undo* undo)
-{
-  ASSERT(undo);
-  return
-    undo->undo_stream->size +
-    undo->redo_stream->size;
-}
-
-bool undo_can_undo(const Undo* undo)
-{
-  ASSERT(undo);
-  return !jlist_empty(undo->undo_stream->chunks);
-}
-
-bool undo_can_redo(const Undo* undo)
-{
-  ASSERT(undo);
-  return !jlist_empty(undo->redo_stream->chunks);
-}
 
 void undo_do_undo(Undo* undo)
 {
@@ -367,7 +357,7 @@ const char *undo_get_next_undo_label(const Undo* undo)
 {
   UndoChunk* chunk;
 
-  ASSERT(undo_can_undo(undo));
+  ASSERT(undo->canUndo());
 
   chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(undo->undo_stream->chunks));
   return chunk->label;
@@ -377,7 +367,7 @@ const char *undo_get_next_redo_label(const Undo* undo)
 {
   UndoChunk* chunk;
 
-  ASSERT(undo_can_redo(undo));
+  ASSERT(undo->canRedo());
 
   chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(undo->redo_stream->chunks));
   return chunk->label;

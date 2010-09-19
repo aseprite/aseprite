@@ -60,12 +60,10 @@ public:
   bool isEnabled() const;
   void setEnabled(bool state);
 
+  bool canUndo() const;
+  bool canRedo() const;
+
 };
-
-int undo_get_memsize(const Undo* undo);
-
-bool undo_can_undo(const Undo* undo);
-bool undo_can_redo(const Undo* undo);
 
 void undo_do_undo(Undo* undo);
 void undo_do_redo(Undo* undo);

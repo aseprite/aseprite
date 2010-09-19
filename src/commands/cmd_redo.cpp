@@ -49,7 +49,7 @@ bool RedoCommand::onEnabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    undo_can_redo(sprite->getUndo());
+    sprite->getUndo()->canRedo();
 }
 
 void RedoCommand::onExecute(Context* context)

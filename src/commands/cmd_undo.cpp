@@ -49,7 +49,7 @@ bool UndoCommand::onEnabled(Context* context)
   const CurrentSpriteReader sprite(context);
   return
     sprite != NULL &&
-    undo_can_undo(sprite->getUndo());
+    sprite->getUndo()->canUndo();
 }
 
 void UndoCommand::onExecute(Context* context)
