@@ -57,18 +57,12 @@ public:
   Undo(Sprite* sprite);
   virtual ~Undo();
 
+  bool isEnabled() const;
+  void setEnabled(bool state);
+
 };
 
-Undo* undo_new(Sprite* sprite);
-void undo_free(Undo* undo);
-
 int undo_get_memsize(const Undo* undo);
-
-void undo_enable(Undo* undo);
-void undo_disable(Undo* undo);
-
-bool undo_is_enabled(const Undo* undo);
-bool undo_is_disabled(const Undo* undo);
 
 bool undo_can_undo(const Undo* undo);
 bool undo_can_redo(const Undo* undo);

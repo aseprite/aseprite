@@ -57,7 +57,7 @@ void MaskAllCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
 
   /* undo */
-  if (undo_is_enabled(sprite->getUndo())) {
+  if (sprite->getUndo()->isEnabled()) {
     undo_set_label(sprite->getUndo(), "Mask All");
     undo_set_mask(sprite->getUndo(), sprite);
   }

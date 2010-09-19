@@ -80,7 +80,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   src_layer = sprite->getCurrentLayer();
   dst_layer = sprite->getCurrentLayer()->get_prev();
 
-  if (undo_is_enabled(sprite->getUndo())) {
+  if (sprite->getUndo()->isEnabled()) {
     undo_set_label(sprite->getUndo(), "Merge Down Layer");
     undo_open(sprite->getUndo());
   }
@@ -112,7 +112,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
 	/* adding it in the stock of images */
 	index = stock_add_image(sprite->getStock(), dst_image);
-	if (undo_is_enabled(sprite->getUndo()))
+	if (sprite->getUndo()->isEnabled())
 	  undo_add_image(sprite->getUndo(), sprite->getStock(), index);
 
 	/* creating a copy of the cell */
@@ -120,7 +120,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 	cel_set_position(dst_cel, src_cel->x, src_cel->y);
 	cel_set_opacity(dst_cel, src_cel->opacity);
 
-	if (undo_is_enabled(sprite->getUndo()))
+	if (sprite->getUndo()->isEnabled())
 	  undo_add_cel(sprite->getUndo(), dst_layer, dst_cel);
 
 	static_cast<LayerImage*>(dst_layer)->addCel(dst_cel);
@@ -159,14 +159,14 @@ void MergeDownLayerCommand::onExecute(Context* context)
 		    src_cel->opacity,
 		    static_cast<LayerImage*>(src_layer)->get_blend_mode());
 
-	if (undo_is_enabled(sprite->getUndo())) {
+	if (sprite->getUndo()->isEnabled()) {
 	  undo_int(sprite->getUndo(), (GfxObj *)dst_cel, &dst_cel->x);
 	  undo_int(sprite->getUndo(), (GfxObj *)dst_cel, &dst_cel->y);
 	}
 
 	cel_set_position(dst_cel, x1, y1);
 
-	if (undo_is_enabled(sprite->getUndo()))
+	if (sprite->getUndo()->isEnabled())
 	  undo_replace_image(sprite->getUndo(), sprite->getStock(), dst_cel->image);
 	stock_replace_image(sprite->getStock(), dst_cel->image, new_image);
 
@@ -175,7 +175,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
     }
   }
 
-  if (undo_is_enabled(sprite->getUndo())) {
+  if (sprite->getUndo()->isEnabled()) {
     undo_set_layer(sprite->getUndo(), sprite);
     undo_remove_layer(sprite->getUndo(), src_layer);
     undo_close(sprite->getUndo());

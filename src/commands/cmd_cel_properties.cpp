@@ -142,7 +142,7 @@ void CelPropertiesCommand::onExecute(Context* context)
     /* the opacity was changed? */
     if (cel_writer != NULL &&
 	cel_writer->opacity != new_opacity) {
-      if (undo_is_enabled(sprite_writer->getUndo())) {
+      if (sprite_writer->getUndo()->isEnabled()) {
 	undo_set_label(sprite_writer->getUndo(), "Cel Opacity Change");
 	undo_int(sprite_writer->getUndo(), (GfxObj *)cel_writer, &cel_writer->opacity);
       }

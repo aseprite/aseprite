@@ -509,7 +509,7 @@ static void sort_command(JWidget widget)
 	  //////////////////////////////////////////////////////////////////////
 	  // TODO The following code is unreadable, move this to Undoable class
 
-	  if (undo_is_enabled(sprite->getUndo())) {
+	  if (sprite->getUndo()->isEnabled()) {
 	    undo_set_label(sprite->getUndo(), "Sort Palette");
 	    undo_open(sprite->getUndo());
 
@@ -524,7 +524,7 @@ static void sort_command(JWidget widget)
 	  palette->setFrame(frame_begin);
 	  sprite->setPalette(palette, true);
 
-	  if (undo_is_enabled(sprite->getUndo())) {
+	  if (sprite->getUndo()->isEnabled()) {
 	    // Add undo information about the new added palette
 	    undo_add_palette(sprite->getUndo(), sprite, sprite->getPalette(frame_begin));
 

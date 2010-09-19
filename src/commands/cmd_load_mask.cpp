@@ -84,7 +84,7 @@ void LoadMaskCommand::onExecute(Context* context)
 			static_cast<const char*>(m_filename.c_str()));
 
   // undo
-  if (undo_is_enabled(sprite->getUndo())) {
+  if (sprite->getUndo()->isEnabled()) {
     undo_set_label(sprite->getUndo(), "Mask Load");
     undo_set_mask(sprite->getUndo(), sprite);
   }

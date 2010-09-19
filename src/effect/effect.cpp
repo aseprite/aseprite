@@ -249,7 +249,7 @@ void effect_apply(Effect* effect)
 
   if (!cancelled) {
     // Undo stuff
-    if (undo_is_enabled(effect->sprite->getUndo())) {
+    if (effect->sprite->getUndo()->isEnabled()) {
       undo_set_label(effect->sprite->getUndo(),
 		     effect->effect_data->label);
       undo_image(effect->sprite->getUndo(), effect->src,
@@ -309,7 +309,7 @@ void effect_apply_to_target(Effect *effect)
 
   /* open undo group of operations */
   if (nimages > 1) {
-    if (undo_is_enabled(effect->sprite->getUndo()))
+    if (effect->sprite->getUndo()->isEnabled())
       undo_open(effect->sprite->getUndo());
   }
   
@@ -330,7 +330,7 @@ void effect_apply_to_target(Effect *effect)
 
   /* close undo group of operations */
   if (nimages > 1) {
-    if (undo_is_enabled(effect->sprite->getUndo()))
+    if (effect->sprite->getUndo()->isEnabled())
       undo_close(effect->sprite->getUndo());
   }
 

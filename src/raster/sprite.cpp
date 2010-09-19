@@ -463,7 +463,7 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_layer = NULL;
   m_path = NULL;
   m_mask = mask_new();
-  m_undo = undo_new(m_self);
+  m_undo = new Undo(m_self);
   m_repository.paths = jlist_new();
   m_repository.masks = jlist_new();
   m_extraCel = NULL;
@@ -594,9 +594,10 @@ SpriteImpl* SpriteImpl::copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src
 
   ASSERT(src_sprite->getFolder() != NULL);
 
-  undo_disable(dst_sprite->getUndo());
+  // Disable undo temporarily
+  dst_sprite->getUndo()->setEnabled(false);
   dst_sprite->m_folder = src_sprite->getFolder()->duplicate_for(dst_sprite->m_self);
-  undo_enable(dst_sprite->getUndo());
+  dst_sprite->getUndo()->setEnabled(true);
 
   if (dst_sprite->m_folder == NULL) {
     delete dst_sprite;

@@ -1901,7 +1901,7 @@ public:
     m_offset.y = -y1;
 
     // Set undo label for any kind of undo used in the whole loop
-    if (undo_is_enabled(m_sprite->getUndo()))
+    if (m_sprite->getUndo()->isEnabled())
       undo_set_label(m_sprite->getUndo(), m_tool->getText().c_str());
   }
 
@@ -1927,7 +1927,7 @@ public:
 	    m_cel->image = stock_add_image(m_sprite->getStock(), m_cel_image);
 
 	    /* is the undo enabled? */
-	    if (undo_is_enabled(m_sprite->getUndo())) {
+	    if (m_sprite->getUndo()->isEnabled()) {
 	      /* we can temporary remove the cel */
 	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->removeCel(m_cel);
 
@@ -1944,7 +1944,7 @@ public:
 	  }
 	  else {
 	    /* undo the dirty region */
-	    if (undo_is_enabled(m_sprite->getUndo())) {
+	    if (m_sprite->getUndo()->isEnabled()) {
 	      Dirty* dirty = dirty_new_from_differences(m_cel_image,
 							m_dst_image);
 	      // TODO error handling
@@ -1963,7 +1963,7 @@ public:
 	/* if the size of both images are different, we have to replace
 	   the entire image */
 	else {
-	  if (undo_is_enabled(m_sprite->getUndo())) {
+	  if (m_sprite->getUndo()->isEnabled()) {
 	    undo_open(m_sprite->getUndo());
 
 	    if (m_cel->x != m_old_cel_x) {

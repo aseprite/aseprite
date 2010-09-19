@@ -304,19 +304,18 @@ Undo::~Undo()
   undo_stream_free(this->redo_stream);
 }
 
+bool Undo::isEnabled() const
+{
+  return this->enabled ? true: false;
+}
+
+void Undo::setEnabled(bool state)
+{
+  this->enabled = state;
+}
+
 //////////////////////////////////////////////////////////////////////
-/* General undo routines */
-
-Undo* undo_new(Sprite *sprite)
-{
-  return new Undo(sprite);
-}
-
-void undo_free(Undo* undo)
-{
-  ASSERT(undo);
-  delete undo;
-}
+// General undo routines
 
 int undo_get_memsize(const Undo* undo)
 {
@@ -324,30 +323,6 @@ int undo_get_memsize(const Undo* undo)
   return
     undo->undo_stream->size +
     undo->redo_stream->size;
-}
-
-void undo_enable(Undo* undo)
-{
-  ASSERT(undo);
-  undo->enabled = true;
-}
-
-void undo_disable(Undo* undo)
-{
-  ASSERT(undo);
-  undo->enabled = false;
-}
-
-bool undo_is_enabled(const Undo* undo)
-{
-  ASSERT(undo);
-  return undo->enabled ? true: false;
-}
-
-bool undo_is_disabled(const Undo* undo)
-{
-  ASSERT(undo);
-  return !undo_is_enabled(undo);
 }
 
 bool undo_can_undo(const Undo* undo)

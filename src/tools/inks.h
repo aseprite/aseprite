@@ -257,7 +257,7 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      if (undo_is_enabled(loop->getSprite()->getUndo()))
+      if (loop->getSprite()->getUndo()->isEnabled())
 	undo_set_mask(loop->getSprite()->getUndo(), loop->getSprite());
 
       loop->getMask()->freeze();

@@ -48,7 +48,7 @@ Undoable::Undoable(SpriteWriter& sprite, const char* label)
 
   m_sprite = sprite;
   m_committed = false;
-  m_enabledFlag = undo_is_enabled(m_sprite->getUndo());
+  m_enabledFlag = m_sprite->getUndo()->isEnabled();
 
   if (isEnabled()) {
     undo_set_label(m_sprite->getUndo(), label);
@@ -1075,7 +1075,7 @@ void Undoable::deselectMask()
   mask_set_name(mask, "*deselected*");
   m_sprite->addMask(mask);
 
-  if (undo_is_enabled(m_sprite->getUndo()))
+  if (isEnabled())
     undo_set_mask(m_sprite->getUndo(), m_sprite);
 
   /// Deselect the mask

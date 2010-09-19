@@ -68,14 +68,14 @@ void DuplicateLayerCommand::onExecute(Context* context)
 static Layer* duplicate_layer(Sprite* sprite)
 {
   /* open undo */
-  if (undo_is_enabled(sprite->getUndo())) {
+  if (sprite->getUndo()->isEnabled()) {
     undo_set_label(sprite->getUndo(), "Layer Duplication");
     undo_open(sprite->getUndo());
   }
 
   Layer* layer_copy = sprite->getCurrentLayer()->duplicate_for(sprite);
   if (!layer_copy) {
-    if (undo_is_enabled(sprite->getUndo()))
+    if (sprite->getUndo()->isEnabled())
       undo_close(sprite->getUndo());
 
     Console console;
@@ -88,12 +88,12 @@ static Layer* duplicate_layer(Sprite* sprite)
   layer_copy->setName(layer_copy->getName() + " Copy");
 
   /* add the new layer in the sprite */
-  if (undo_is_enabled(sprite->getUndo()))
+  if (sprite->getUndo()->isEnabled())
     undo_add_layer(sprite->getUndo(), sprite->getCurrentLayer()->get_parent(), layer_copy);
 
   sprite->getCurrentLayer()->get_parent()->add_layer(layer_copy);
 
-  if (undo_is_enabled(sprite->getUndo())) {
+  if (sprite->getUndo()->isEnabled()) {
     undo_move_layer(sprite->getUndo(), layer_copy);
     undo_set_layer(sprite->getUndo(), sprite);
     undo_close(sprite->getUndo());
