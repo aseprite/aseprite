@@ -67,17 +67,15 @@ void SaveMaskCommand::onExecute(Context* context)
   int ret;
 
   for (;;) {
-    filename = ase_file_selector(_("Save .msk File"), filename, "msk");
+    filename = ase_file_selector("Save .msk File", filename, "msk");
     if (filename.empty())
       return;
 
     /* does the file exist? */
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
-      ret = jalert("%s<<%s<<%s||%s||%s||%s",
-		   _("Warning"), _("File exists, overwrite it?"),
-		   get_filename(filename.c_str()),
-		   _("&Yes"), _("&No"), _("&Cancel"));
+      ret = jalert("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+		   get_filename(filename.c_str()));
     }
     else
       break;
@@ -93,9 +91,7 @@ void SaveMaskCommand::onExecute(Context* context)
   }
 
   if (save_msk_file(sprite->getMask(), filename.c_str()) != 0)
-    jalert("%s<<%s<<%s||%s",
-	   _("Error"), _("Error saving .msk file"),
-	   filename.c_str(), _("&Close"));
+    jalert("Error<<Error saving .msk file<<%s||&Close", filename.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

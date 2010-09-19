@@ -234,7 +234,7 @@ static bool save_JPEG(FileOp *fop)
   /* Open the file for write in it.  */
   file = fopen(fop->filename, "wb");
   if (!file) {
-    fop_error(fop, _("Error creating file.\n"));
+    fop_error(fop, "Error creating file.\n");
     return false;
   }
 
@@ -271,7 +271,7 @@ static bool save_JPEG(FileOp *fop)
   buffer_height = 1;
   buffer = (JSAMPARRAY)jmalloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
-    fop_error(fop, _("Not enough memory for the buffer.\n"));
+    fop_error(fop, "Not enough memory for the buffer.\n");
     jpeg_destroy_compress(&cinfo);
     fclose(file);
     return false;
@@ -281,7 +281,7 @@ static bool save_JPEG(FileOp *fop)
     buffer[c] = (JSAMPROW)jmalloc(sizeof(JSAMPLE) *
 				  cinfo.image_width * cinfo.num_components);
     if (!buffer[c]) {
-      fop_error(fop, _("Not enough memory for buffer scanlines.\n"));
+      fop_error(fop, "Not enough memory for buffer scanlines.\n");
       for (c--; c>=0; c--)
         jfree(buffer[c]);
       jfree(buffer);

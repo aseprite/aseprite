@@ -109,13 +109,13 @@ bool CurrentGfxModeGuard::tryGfxMode(const GfxMode& newMode)
     if (!m_oldMode.setGfxMode()) {
       // Oh no! more errors!, we can't restore the old graphics mode!
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      allegro_message(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
+      allegro_message("FATAL ERROR: Unable to restore the old graphics mode!\n");
       exit(1);
     }
     // Only print a message of the old error
     else {
       Console console;
-      console.printf(_("Error setting graphics mode: %dx%d %d bpp\n"),
+      console.printf("Error setting graphics mode: %dx%d %d bpp\n",
 		     newMode.getWidth(), newMode.getHeight(), newMode.getDepth());
       return false;
     }

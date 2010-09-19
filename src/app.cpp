@@ -44,7 +44,6 @@
 #include "core/file_system.h"
 #include "core/modules.h"
 #include "file/file.h"
-#include "intl/intl.h"
 #include "log.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
@@ -78,7 +77,6 @@ class App::Modules
 {
 public:
   // ASE Modules
-  IntlModule m_intl_module;
   FileSystemModule m_file_system_module;
   ToolBox m_toolbox;
   RasterModule m_raster;
@@ -250,7 +248,7 @@ int App::run()
 	  Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
 	  if (!sprite) {
 	    if (!isGui())
-	      console.printf(_("Error loading file \"%s\"\n"), option->data().c_str());
+	      console.printf("Error loading file \"%s\"\n", option->data().c_str());
 	  }
 	  else {
 	    // Mount and select the sprite
@@ -276,9 +274,6 @@ int App::run()
 
   // Run the GUI
   if (isGui()) {
-    // Select language
-    intl_set_lang("en");
-
     // Support to drop files from Windows explorer
     install_drop_files();
 
@@ -424,7 +419,7 @@ bool app_realloc_recent_list()
       }
     }
     else {
-      menuitem = menuitem_new(_("Nothing"), NULL, NULL);
+      menuitem = menuitem_new("Nothing", NULL, NULL);
       menuitem->setEnabled(false);
       jwidget_add_child(submenu, menuitem);
     }

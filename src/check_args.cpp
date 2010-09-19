@@ -82,7 +82,7 @@ CheckArgs::CheckArgs()
 	  }
 	}
 	else {
-	  console.printf(_("%s: option \"res\" requires an argument\n"), 
+	  console.printf("%s: option \"res\" requires an argument\n", 
 			 m_exeName.c_str());
 	  usage(false);
 	}
@@ -142,9 +142,7 @@ void CheckArgs::usage(bool showHelp)
        PACKAGE, VERSION, COPYRIGHT);
 
     // Usage
-    console.printf
-      ("%s\n  %s [%s] [%s]...\n\n",
-       _("Usage:"), m_exeName.c_str(), _("OPTION"), _("FILE"));
+    console.printf("Usage\n  %s [OPTION] [FILE]...\n\n", m_exeName.c_str());
 
     // Available Options
     console.printf
@@ -163,7 +161,7 @@ void CheckArgs::usage(bool showHelp)
   }
   // How to show options
   else {
-    console.printf(_("Try \"%s --help\" for more information.\n"), 
+    console.printf("Try \"%s --help\" for more information.\n", 
 		   m_exeName.c_str());
   }
 }

@@ -74,7 +74,7 @@ static void openfile_bg(void *fop_data)
     fop_operate(fop);
   }
   catch (const std::exception& e) {
-    fop_error(fop, _("Error loading file:\n%s"), e.what());
+    fop_error(fop, "Error loading file:\n%s", e.what());
   }
 
   if (fop_is_stop(fop) && fop->sprite) {
@@ -206,7 +206,7 @@ void OpenFileCommand::onExecute(Context* context)
 	  delete data;
 	}
 	else {
-	  console.printf(_("Error creating thread to load the sprite"));
+	  console.printf("Error creating thread to load the sprite");
 	  fop_free(fop);
 	}
       }

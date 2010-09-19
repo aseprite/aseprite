@@ -35,11 +35,6 @@
 // Defined in src/log.cpp
 void verbose_printf(const char* format, ...);
 
-// Strings
-const char* msgids_get(const char* id); // src/intl/msgids.[ch]
-
-#define _(msgid) (msgids_get(msgid))
-
 #include <math.h>
 #undef PI
 #define PI 3.14159265358979323846

@@ -338,11 +338,11 @@ static bool window_close_hook(JWidget widget, void *data)
 static void load_command(JWidget widget)
 {
   Palette *palette;
-  jstring filename = ase_file_selector(_("Load Palette"), "", "png,pcx,bmp,tga,lbm,col");
+  jstring filename = ase_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
   if (!filename.empty()) {
     palette = Palette::load(filename.c_str());
     if (!palette) {
-      jalert(_("Error<<Loading palette file||&Close"));
+      jalert("Error<<Loading palette file||&Close");
     }
     else {
       set_new_palette(palette);
@@ -357,14 +357,11 @@ static void save_command(JWidget widget)
   int ret;
 
  again:
-  filename = ase_file_selector(_("Save Palette"), "", "png,pcx,bmp,tga,col");
+  filename = ase_file_selector("Save Palette", "", "png,pcx,bmp,tga,col");
   if (!filename.empty()) {
     if (exists(filename.c_str())) {
-      ret = jalert("%s<<%s<<%s||%s",
-		   _("Warning"),
-		   _("File exists, overwrite it?"),
-		   get_filename(filename.c_str()),
-		   _("&Yes||&No||&Cancel"));
+      ret = jalert("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+		   get_filename(filename.c_str()));
 
       if (ret == 2)
 	goto again;
@@ -374,7 +371,7 @@ static void save_command(JWidget widget)
 
     Palette* palette = get_current_palette();
     if (!palette->save(filename.c_str())) {
-      jalert(_("Error<<Saving palette file||&Close"));
+      jalert("Error<<Saving palette file||&Close");
     }
   }
 }
@@ -709,12 +706,12 @@ static void quantize_command(JWidget widget)
   const CurrentSpriteReader& sprite(UIContext::instance());
 
   if (sprite == NULL) {
-    jalert(_("Error<<There is no sprite selected to quantize.||&OK"));
+    jalert("Error<<There is no sprite selected to quantize.||&OK");
     return;
   }
 
   if (sprite->getImgType() != IMAGE_RGB) {
-    jalert(_("Error<<You can use this command only for RGB sprites||&OK"));
+    jalert("Error<<You can use this command only for RGB sprites||&OK");
     return;
   }
 

@@ -660,20 +660,20 @@ static bool load_BMP(FileOp *fop)
     case BI_BITFIELDS:
       if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask) < 0) {
 	image_free(image);
-	fop_error(fop, _("Unsupported bitfields in the BMP file.\n"));
+	fop_error(fop, "Unsupported bitfields in the BMP file.\n");
 	fclose(f);
 	return false;
       }
       break;
 
     default:
-      fop_error(fop, _("Unsupported BMP compression.\n"));
+      fop_error(fop, "Unsupported BMP compression.\n");
       fclose(f);
       return false;
   }
 
   if (ferror(f)) {
-    fop_error(fop, _("Error reading file.\n"));
+    fop_error(fop, "Error reading file.\n");
     fclose(f);
     return false;
   }
@@ -719,7 +719,7 @@ static bool save_BMP(FileOp *fop)
 
   f = fopen(fop->filename, "wb");
   if (!f) {
-    fop_error(fop, _("Error creating file.\n"));
+    fop_error(fop, "Error creating file.\n");
     return false;
   }
 
@@ -787,7 +787,7 @@ static bool save_BMP(FileOp *fop)
   }
 
   if (ferror(f)) {
-    fop_error(fop, _("Error writing file.\n"));
+    fop_error(fop, "Error writing file.\n");
     fclose(f);
     return false;
   }

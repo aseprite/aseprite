@@ -50,5 +50,5 @@ void Launcher::openFile(const std::string& file)
 #endif
 
   if (ret != 0)
-    jalert(_("Problem<<Cannot open:<<%s||&Close"), file.c_str());
+    jalert("Problem<<Cannot open:<<%s||&Close", file.c_str());
 }

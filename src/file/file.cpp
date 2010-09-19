@@ -165,7 +165,7 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
 
   /* does file exist? */
   if (!file_exists(filename, FA_ALL, NULL)) {
-    fop_error(fop, _("File not found: \"%s\"\n"), filename);
+    fop_error(fop, "File not found: \"%s\"\n", filename);
     goto done;
   }
 
@@ -173,7 +173,7 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
   fop->format = get_fileformat(extension);
   if (!fop->format ||
       !fop->format->load) {
-    fop_error(fop, _("ASE can't load \"%s\" files\n"), extension);
+    fop_error(fop, "ASE can't load \"%s\" files\n", extension);
     goto done;
   }
 
@@ -216,11 +216,11 @@ FileOp *fop_to_load_sprite(const char *filename, int flags)
 	  App::instance()->isGui()) {
 	/* really want load all files? */
 	if ((jlist_length(fop->seq.filename_list) > 1) &&
-	    (jalert(_("Notice"
-		      "<<Possible animation with:"
-		      "<<%s"
-		      "<<Load the sequence of bitmaps?"
-		      "||&Agree||&Skip"),
+	    (jalert("Notice"
+		    "<<Possible animation with:"
+		    "<<%s"
+		    "<<Load the sequence of bitmaps?"
+		    "||&Agree||&Skip",
 		    get_filename(filename)) != 1)) {
 	  /* if the user replies "Skip", we need just one file name (the
 	     first one) */
@@ -268,7 +268,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   fop->format = get_fileformat(extension);
   if (!fop->format ||
       !fop->format->save) {
-    fop_error(fop, _("ASE can't save \"%s\" files\n"), extension);
+    fop_error(fop, "ASE can't save \"%s\" files\n", extension);
     return fop;
   }
 
@@ -281,29 +281,29 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
 
     case IMAGE_RGB:
       if (!(fop->format->flags & FILE_SUPPORT_RGB)) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("RGB format"));
+	usprintf(buf+ustrlen(buf), "<<- %s", "RGB format");
 	fatal = true;
       }
       if (!(fop->format->flags & FILE_SUPPORT_RGBA) &&
 	  fop->sprite->needAlpha()) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
+	usprintf(buf+ustrlen(buf), "<<- %s", "Alpha channel");
       }
       break;
 
     case IMAGE_GRAYSCALE:
       if (!(fop->format->flags & FILE_SUPPORT_GRAY)) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Grayscale format"));
+	usprintf(buf+ustrlen(buf), "<<- Grayscale format");
 	fatal = true;
       }
       if (!(fop->format->flags & FILE_SUPPORT_GRAYA) &&
 	  fop->sprite->needAlpha()) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Alpha channel"));
+	usprintf(buf+ustrlen(buf), "<<- Alpha channel");
       }
       break;
 
     case IMAGE_INDEXED:
       if (!(fop->format->flags & FILE_SUPPORT_INDEXED)) {
-	usprintf(buf+ustrlen(buf), "<<- %s", _("Indexed format"));
+	usprintf(buf+ustrlen(buf), "<<- Indexed format");
 	fatal = true;
       }
       break;
@@ -313,13 +313,13 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   if (!(fop->format->flags & (FILE_SUPPORT_FRAMES |
 			      FILE_SUPPORT_SEQUENCES))) {
     if (fop->sprite->getTotalFrames() > 1)
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Frames"));
+      usprintf(buf+ustrlen(buf), "<<- Frames");
   }
 
   // layers support
   if (fop->sprite->getFolder()->get_layers_count() > 1) {
     if (!(fop->format->flags & FILE_SUPPORT_LAYERS)) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Layers"));
+      usprintf(buf+ustrlen(buf), "<<- Layers");
     }
   }
 
@@ -327,7 +327,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   if (jlist_length(fop->sprite->getPalettes()) > 1) {
     if (!(fop->format->flags & (FILE_SUPPORT_PALETTES |
 				FILE_SUPPORT_SEQUENCES))) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Palette changes between frames"));
+      usprintf(buf+ustrlen(buf), "<<- Palette changes between frames");
     }
   }
 
@@ -349,13 +349,13 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
 
     if ((count > 0) && !(fop->format->flags & FILE_SUPPORT_MASKS_REPOSITORY)) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Mask Repository"));
+      usprintf(buf+ustrlen(buf), "<<- Mask Repository");
     }
   }
 
   if (!jlist_empty(fop->sprite->getPathsRepository())) {
     if (!(fop->format->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
-      usprintf(buf+ustrlen(buf), "<<- %s", _("Path Repository"));
+      usprintf(buf+ustrlen(buf), "<<- Path Repository");
     }
   }
 
@@ -366,13 +366,13 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
       int ret;
 
       if (fatal)
-	ret = jalert(_("Error<<File format \"%s\" doesn't support:%s"
-		       "||&Close"),
+	ret = jalert("Error<<File format \"%s\" doesn't support:%s"
+		     "||&Close",
 		     fop->format->name, buf);
       else
-	ret = jalert(_("Warning<<File format \"%s\" doesn't support:%s"
-		       "<<Do you want continue?"
-		       "||&Yes||&No"),
+	ret = jalert("Warning<<File format \"%s\" doesn't support:%s"
+		     "<<Do you want continue?"
+		     "||&Yes||&No",
 		     fop->format->name, buf);
 
       /* operation can't be done (by fatal error) or the user cancel
@@ -501,7 +501,7 @@ void fop_operate(FileOp *fop)
 	/* call the "load" procedure to read the first bitmap */
 	loadres = (*fop->format->load)(fop);
 	if (!loadres) {
-	  fop_error(fop, _("Error loading frame %d from file \"%s\"\n"),
+	  fop_error(fop, "Error loading frame %d from file \"%s\"\n",
 		    frame+1, fop->filename);
 	}
 
@@ -576,7 +576,7 @@ void fop_operate(FileOp *fop)
     else {
       /* call the "load" procedure */
       if (!(*fop->format->load)(fop))
-	fop_error(fop, _("Error loading sprite from file \"%s\"\n"),
+	fop_error(fop, "Error loading sprite from file \"%s\"\n",
 		  fop->filename);
     }
 
@@ -637,7 +637,7 @@ void fop_operate(FileOp *fop)
 
 	  /* call the "save" procedure... did it fail? */
 	  if (!(*fop->format->save)(fop)) {
-	    fop_error(fop, _("Error saving frame %d in the file \"%s\"\n"),
+	    fop_error(fop, "Error saving frame %d in the file \"%s\"\n",
 		      fop->sprite->getCurrentFrame()+1, fop->filename);
 	    break;
 	  }
@@ -653,14 +653,14 @@ void fop_operate(FileOp *fop)
 	fop->sprite->setCurrentFrame(old_frame);
       }
       else {
-	fop_error(fop, _("Not enough memory for the temporary bitmap.\n"));
+	fop_error(fop, "Not enough memory for the temporary bitmap.\n");
       }
     }
     /* direct save to a file */
     else {
       /* call the "save" procedure */
       if (!(*fop->format->save)(fop))
-	fop_error(fop, _("Error saving the sprite in the file \"%s\"\n"),
+	fop_error(fop, "Error saving the sprite in the file \"%s\"\n",
 		  fop->filename);
     }
   }
@@ -765,13 +765,13 @@ Image *fop_sequence_image(FileOp *fop, int imgtype, int w, int h)
   // Create a bitmap
 
   if (fop->seq.last_cel) {
-    fop_error(fop, _("Error: called two times \"fop_sequence_image()\".\n"));
+    fop_error(fop, "Error: called two times \"fop_sequence_image()\".\n");
     return NULL;
   }
 
   Image* image = image_new(imgtype, w, h);
   if (!image) {
-    fop_error(fop, _("Not enough memory to allocate a bitmap.\n"));
+    fop_error(fop, "Not enough memory to allocate a bitmap.\n");
     return NULL;
   }
 

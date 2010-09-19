@@ -87,13 +87,13 @@ static bool load_ICO(FileOp *fop)
   header.entries  = fgetw(f);			// Number of icons
 
   if (header.type != 1) {
-    fop_error(fop, _("Invalid ICO file type.\n"));
+    fop_error(fop, "Invalid ICO file type.\n");
     fclose(f);
     return false;
   }
 
   if (header.entries < 1) {
-    fop_error(fop, _("This ICO files does not contain images.\n"));
+    fop_error(fop, "This ICO files does not contain images.\n");
     fclose(f);
     return false;
   }

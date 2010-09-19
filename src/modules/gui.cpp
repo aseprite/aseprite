@@ -40,7 +40,6 @@
 #include "core/cfg.h"
 #include "core/drop_files.h"
 #include "gfxmode.h"
-#include "intl/msgids.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -290,10 +289,7 @@ gfx_done:;
 
   /* setup the standard jinete theme for widgets */
   ji_set_theme(ase_theme = new SkinneableTheme());
-
-  /* set hook to translate strings */
-  ji_set_translation_hook(msgids_get);
-
+  
 #ifdef HAVE_RESIZE_PATCH
   set_resize_callback(resize_callback);
 
@@ -523,7 +519,7 @@ void gui_flip_screen()
     if (!lastWorkingGfxMode.setGfxMode()) {
       PRINTF("Fatal error\n");
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      allegro_message(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
+      allegro_message("FATAL ERROR: Unable to restore the old graphics mode!\n");
       exit(1);
     }
 

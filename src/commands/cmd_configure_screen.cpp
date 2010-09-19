@@ -28,7 +28,6 @@
 #include "commands/command.h"
 #include "console.h"
 #include "gfxmode.h"
-#include "intl/intl.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "resource_finder.h"

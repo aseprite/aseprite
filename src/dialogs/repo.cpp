@@ -46,9 +46,9 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   Widget* view = jview_new();
   repo_dlg->listbox = jlistbox_new();
   repo_dlg->button_use = new Button(repo_dlg->use_text);
-  repo_dlg->button_add = new Button(_("&Add"));
-  repo_dlg->button_delete = new Button(_("&Delete"));
-  Button* button_close = new Button(_("&Close"));
+  repo_dlg->button_add = new Button("&Add");
+  repo_dlg->button_delete = new Button("&Delete");
+  Button* button_close = new Button("&Close");
 
   jwidget_add_hook(repo_dlg->listbox, repo_listbox_type(),
 		   repo_listbox_msg_proc, repo_dlg);

@@ -80,7 +80,7 @@ static bool load_FLI(FileOp *fop)
   fseek(f, 128, SEEK_SET);
 
   if (fli_header.magic == NO_HEADER) {
-    fop_error(fop, _("The file doesn't have a FLIC header\n"));
+    fop_error(fop, "The file doesn't have a FLIC header\n");
     fclose(f);
     return false;
   }
@@ -94,7 +94,7 @@ static bool load_FLI(FileOp *fop)
   old = image_new(IMAGE_INDEXED, w, h);
   pal = new Palette(0, 256);
   if (!bmp || !old || !pal) {
-    fop_error(fop, _("Not enough memory.\n"));
+    fop_error(fop, "Not enough memory.\n");
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     if (pal) delete pal;
@@ -135,20 +135,20 @@ static bool load_FLI(FileOp *fop)
       /* add the new frame */
       image = image_new_copy(bmp);
       if (!image) {
-	fop_error(fop, _("Not enough memory\n"));
+	fop_error(fop, "Not enough memory\n");
 	break;
       }
 
       index = stock_add_image(sprite->getStock(), image);
       if (index < 0) {
 	image_free(image);
-	fop_error(fop, _("Not enough memory\n"));
+	fop_error(fop, "Not enough memory\n");
 	break;
       }
 
       cel = cel_new(frpos_out, index);
       if (!cel) {
-	fop_error(fop, _("Not enough memory\n"));
+	fop_error(fop, "Not enough memory\n");
 	break;
       }
       layer->add_cel(cel);
@@ -251,7 +251,7 @@ static bool save_FLI(FileOp *fop)
   bmp = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
   old = image_new(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight());
   if ((!bmp) || (!old)) {
-    fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
+    fop_error(fop, "Not enough memory for temporary bitmaps.\n");
     if (bmp) image_free(bmp);
     if (old) image_free(old);
     fclose(f);

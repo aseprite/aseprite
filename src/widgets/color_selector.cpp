@@ -103,7 +103,7 @@ Frame* colorselector_new()
   colorselector->selected_model = &models[0];
 
   /* palette */
-  jwidget_add_tooltip_text(pal, _("Use SHIFT or CTRL to select ranges"));
+  jwidget_add_tooltip_text(pal, "Use SHIFT or CTRL to select ranges");
 
   /* data for a better layout */
   grid1->child_spacing = 0;
@@ -115,7 +115,7 @@ Frame* colorselector_new()
   // Append one button for each color-model
   for (m=models; m->text!=NULL; ++m) {
     // Create the color-model button to select it
-    RadioButton* model_button = new RadioButton(_(m->text), 1, JI_BUTTON);
+    RadioButton* model_button = new RadioButton(m->text, 1, JI_BUTTON);
     colorselector->model_buttons.push_back(model_button);
     setup_mini_look(model_button);
     model_button->Click.connect(Vaca::Bind<bool>(&select_model_hook, window, m));

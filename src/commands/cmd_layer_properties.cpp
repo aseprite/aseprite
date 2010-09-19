@@ -65,40 +65,40 @@ void LayerPropertiesCommand::onExecute(Context* context)
   Layer* layer = sprite->getCurrentLayer();
   bool with_blend_modes = (layer->is_image() && sprite->getImgType() != IMAGE_INDEXED);
 
-  FramePtr window(new Frame(false, _("Layer Properties")));
+  FramePtr window(new Frame(false, "Layer Properties"));
   Widget* box1 = jbox_new(JI_VERTICAL);
   Widget* box2 = jbox_new(JI_HORIZONTAL);
   Widget* box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
-  Widget* label_name = new Label(_("Name:"));
+  Widget* label_name = new Label("Name:");
   Widget* entry_name = jentry_new(256, layer->get_name().c_str());
-  Button* button_ok = new Button(_("&OK"));
-  Button* button_cancel = new Button(_("&Cancel"));
+  Button* button_ok = new Button("&OK");
+  Button* button_cancel = new Button("&Cancel");
 
   button_ok->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   if (with_blend_modes) {
-    label_bm = new Label(_("Blend mode:"));
+    label_bm = new Label("Blend mode:");
     view_bm = jview_new();
     list_bm = jlistbox_new();
 
-    jwidget_add_child(list_bm, jlistitem_new(_("Normal")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Dissolve")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Multiply")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Screen")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Overlay")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Hard Light")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Dodge")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Burn")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Darken")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Lighten")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Addition")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Subtract")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Difference")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Hue")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Saturation")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Color")));
-    jwidget_add_child(list_bm, jlistitem_new(_("Luminosity")));
+    jwidget_add_child(list_bm, jlistitem_new("Normal"));
+    jwidget_add_child(list_bm, jlistitem_new("Dissolve"));
+    jwidget_add_child(list_bm, jlistitem_new("Multiply"));
+    jwidget_add_child(list_bm, jlistitem_new("Screen"));
+    jwidget_add_child(list_bm, jlistitem_new("Overlay"));
+    jwidget_add_child(list_bm, jlistitem_new("Hard Light"));
+    jwidget_add_child(list_bm, jlistitem_new("Dodge"));
+    jwidget_add_child(list_bm, jlistitem_new("Burn"));
+    jwidget_add_child(list_bm, jlistitem_new("Darken"));
+    jwidget_add_child(list_bm, jlistitem_new("Lighten"));
+    jwidget_add_child(list_bm, jlistitem_new("Addition"));
+    jwidget_add_child(list_bm, jlistitem_new("Subtract"));
+    jwidget_add_child(list_bm, jlistitem_new("Difference"));
+    jwidget_add_child(list_bm, jlistitem_new("Hue"));
+    jwidget_add_child(list_bm, jlistitem_new("Saturation"));
+    jwidget_add_child(list_bm, jlistitem_new("Color"));
+    jwidget_add_child(list_bm, jlistitem_new("Luminosity"));
 
     jlistbox_select_index(list_bm, static_cast<LayerImage*>(layer)->get_blend_mode());
 

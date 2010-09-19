@@ -55,12 +55,6 @@ void ji_flip_dirty_region();
 void ji_flip_rect(JRect rect);
 
 /***********************************************************************/
-/* strings related */
-
-void ji_set_translation_hook(const char *(*gettext) (const char *msgid));
-const char *ji_translate_string(const char *msgid);
-
-/***********************************************************************/
 /* timer related */
 
 extern int volatile ji_clock;	/* in milliseconds */

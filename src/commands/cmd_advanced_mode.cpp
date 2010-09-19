@@ -75,7 +75,7 @@ void AdvancedModeCommand::onExecute(Context* context)
       Widget* warning_label = find_widget(window, "warning_label");
       Widget* donot_show = find_widget(window, "donot_show");
 
-      strcpy(warning, _("You can back pressing the \"%s\" key."));
+      strcpy(warning, "You can back pressing the \"%s\" key.");
       jaccel_to_string(accel, key);
       sprintf(buf, warning, key);
 

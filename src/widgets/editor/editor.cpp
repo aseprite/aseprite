@@ -1050,14 +1050,12 @@ bool Editor::onProcessMessage(JMessage msg)
 	      (m_sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
 	    // TODO you can move the `Background' with tiled mode
 	    if (m_sprite->getCurrentLayer()->is_background()) {
-	      jalert(_(PACKAGE
-		       "<<You can't move the `Background' layer."
-		       "||&Close"));
+	      jalert(PACKAGE
+		     "<<You can't move the `Background' layer."
+		     "||&Close");
 	    }
 	    else if (!m_sprite->getCurrentLayer()->is_moveable()) {
-	      jalert(_(PACKAGE
-		       "<<The layer movement is locked."
-		       "||&Close"));
+	      jalert(PACKAGE "<<The layer movement is locked.||&Close");
 	    }
 	    else {
 	      bool click2 = get_config_bool("Options", "MoveClick2", FALSE);
@@ -1075,9 +1073,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  Image* image = m_sprite->getCurrentImage(&x, &y, &opacity);
 	  if (image) {
 	    if (!m_sprite->getCurrentLayer()->is_writable()) {
-	      jalert(_(PACKAGE
-		       "<<The layer is locked."
-		       "||&Close"));
+	      jalert(PACKAGE "<<The layer is locked.||&Close");
 	      return true;
 	    }
 
@@ -2093,26 +2089,24 @@ IToolLoop* Editor::createToolLoopImpl(Context* context, JMessage msg)
   Layer* layer = sprite->getCurrentLayer();
 
   if (!layer) {
-    jalert(_(PACKAGE
-	     "<<The current sprite does not have any layer."
-	     "||&Close"));
+    jalert(PACKAGE "<<The current sprite does not have any layer.||&Close");
     return NULL;
   }
 
   // if the active layer is not visible
   if (!layer->is_readable()) {
-    jalert(_(PACKAGE
-	     "<<The current layer is hidden,"
-	     "<<make it visible and try again"
-	     "||&Close"));
+    jalert(PACKAGE
+	   "<<The current layer is hidden,"
+	   "<<make it visible and try again"
+	   "||&Close");
     return NULL;
   }
   // if the active layer is read-only
   else if (!layer->is_writable()) {
-    jalert(_(PACKAGE
-	     "<<The current layer is locked,"
-	     "<<unlock it and try again"
-	     "||&Close"));
+    jalert(PACKAGE
+	   "<<The current layer is locked,"
+	   "<<unlock it and try again"
+	   "||&Close");
     return NULL;
   }
 

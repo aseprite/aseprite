@@ -48,11 +48,11 @@ Console::Console()
       console_counter > 1)
     return;
   else {
-    Frame* window = new Frame(false, _("Errors Console"));
+    Frame* window = new Frame(false, "Errors Console");
     Widget* grid = jgrid_new(1, false);
     Widget* view = jview_new();
     Widget* textbox = jtextbox_new(NULL, JI_WORDWRAP);
-    Button* button = new Button(_("&Cancel"));
+    Button* button = new Button("&Cancel");
 
     if (!grid || !textbox || !button)
       return;

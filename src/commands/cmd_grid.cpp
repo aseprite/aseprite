@@ -94,9 +94,8 @@ protected:
     settings->setSnapToGrid(settings->getSnapToGrid() ? false: true);
     refresh_all_editors();
 
-    usprintf(buf, _("Snap to grid: %s"),
-	     settings->getSnapToGrid() ? _("On"):
-					 _("Off"));
+    usprintf(buf, "Snap to grid: %s",
+	     (settings->getSnapToGrid() ? "On": "Off"));
 
     app_get_statusbar()->setStatusText(250, buf);
   }

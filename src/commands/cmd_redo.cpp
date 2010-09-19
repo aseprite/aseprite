@@ -57,7 +57,7 @@ void RedoCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
 
   app_get_statusbar()
-    ->showTip(1000, _("Redid %s"),
+    ->showTip(1000, "Redid %s",
 	      undo_get_next_redo_label(sprite->getUndo()));
 
   undo_do_redo(sprite->getUndo());

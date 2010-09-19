@@ -87,7 +87,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 
   /* if the layer isn't writable */
   if (!layer->is_writable()) {
-    button_ok->setText(_("Locked"));
+    button_ok->setText("Locked");
     button_ok->setEnabled(false);
   }
 

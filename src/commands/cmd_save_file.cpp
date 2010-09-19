@@ -54,7 +54,7 @@ static void savefile_bg(void *fop_data)
     fop_operate(fop);
   }
   catch (const std::exception& e) {
-    fop_error(fop, _("Error saving file:\n%s"), e.what());
+    fop_error(fop, "Error saving file:\n%s", e.what());
   }
   fop_done(fop);
 }
@@ -167,11 +167,8 @@ static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_s
     /* does the file exist? */
     if (exists(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
-      ret = jalert("%s<<%s<<%s||%s||%s||%s",
-		   _("Warning"),
-		   _("File exists, overwrite it?"),
-		   get_filename(filename.c_str()),
-		   _("&Yes"), _("&No"), _("&Cancel"));
+      ret = jalert("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+		   get_filename(filename.c_str()));
     }
     else
       break;
@@ -243,7 +240,7 @@ void SaveFileCommand::onExecute(Context* context)
      save-as dialog to the user to select for first time the file-name
      for this sprite */
   else {
-    save_as_dialog(sprite, _("Save Sprite"), true);
+    save_as_dialog(sprite, "Save Sprite", true);
   }
 }
 
@@ -278,7 +275,7 @@ bool SaveFileAsCommand::onEnabled(Context* context)
 void SaveFileAsCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  save_as_dialog(sprite, _("Save Sprite As"), true);
+  save_as_dialog(sprite, "Save Sprite As", true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -315,7 +312,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   jstring old_filename = sprite->getFilename();
 
   // show "Save As" dialog
-  save_as_dialog(sprite, _("Save Sprite Copy As"), false);
+  save_as_dialog(sprite, "Save Sprite Copy As", false);
 
   // restore the file name
   sprite->setFilename(old_filename.c_str());

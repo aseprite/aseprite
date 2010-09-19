@@ -72,23 +72,23 @@ void dialogs_mask_color(Sprite* sprite)
   if (!image)
     return;
 
-  FramePtr window(new Frame(false, _("Mask by Color")));
+  FramePtr window(new Frame(false, "Mask by Color"));
   box1 = jbox_new(JI_VERTICAL);
   box2 = jbox_new(JI_HORIZONTAL);
   box3 = jbox_new(JI_HORIZONTAL);
   box4 = jbox_new(JI_HORIZONTAL | JI_HOMOGENEOUS);
-  label_color = new Label(_("Color:"));
+  label_color = new Label("Color:");
   button_color = new ColorButton
    (get_config_color("MaskColor", "Color",
 		     app_get_colorbar()->getFgColor()),
     sprite->getImgType());
   button_1 = new Button("1");
   button_2 = new Button("2");
-  label_fuzziness = new Label(_("Fuzziness:"));
+  label_fuzziness = new Label("Fuzziness:");
   slider_fuzziness = jslider_new(0, 255, get_config_int("MaskColor", "Fuzziness", 0));
-  check_preview = new CheckBox(_("&Preview"));
-  button_ok = new Button(_("&OK"));
-  button_cancel = new Button(_("&Cancel"));
+  check_preview = new CheckBox("&Preview");
+  button_ok = new Button("&OK");
+  button_cancel = new Button("&Cancel");
 
   if (get_config_bool("MaskColor", "Preview", true))
     check_preview->setSelected(true);

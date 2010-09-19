@@ -382,7 +382,7 @@ static bool load_TGA(FileOp *fop)
   }
 
   if (ferror(f)) {
-    fop_error(fop, _("Error reading file.\n"));
+    fop_error(fop, "Error reading file.\n");
     fclose(f);
     return false;
   }
@@ -407,7 +407,7 @@ static bool save_TGA(FileOp *fop)
 
   f = fopen(fop->filename, "wb");
   if (!f) {
-    fop_error(fop, _("Error creating file.\n"));
+    fop_error(fop, "Error creating file.\n");
     return false;
   }
 
@@ -475,7 +475,7 @@ static bool save_TGA(FileOp *fop)
   }
 
   if (ferror(f)) {
-    fop_error(fop, _("Error writing file.\n"));
+    fop_error(fop, "Error writing file.\n");
     fclose(f);
     return false;
   }

@@ -37,11 +37,6 @@
 		     ((c) == '\n') ||	\
 		     ((c) == '\r'))
 
-/* TODO */
-/* #define TRANSLATE_ATTR(a)				\ */
-/*   (((a) != NULL && (a)[0] == '_') ?			\ */
-/*    ji_translate_string((a)+1): (a)+1) */
-
 #define TRANSLATE_ATTR(a) a
 
 static bool bool_attr_is_true(TiXmlElement* elem, const char* attribute_name);

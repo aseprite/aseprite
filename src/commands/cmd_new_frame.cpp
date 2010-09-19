@@ -77,7 +77,7 @@ void NewFrameCommand::onExecute(Context* context)
   }
   update_screen_for_sprite(sprite);
   app_get_statusbar()
-    ->showTip(1000, _("New frame %d/%d"),
+    ->showTip(1000, "New frame %d/%d",
 	      sprite->getCurrentFrame()+1,
 	      sprite->getTotalFrames());
 }

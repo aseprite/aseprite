@@ -55,10 +55,6 @@ int ji_screen_h = 0;
 
 volatile int ji_clock = 0;
 
-/* Hook to translate strings.  */
-
-static const char *(*strings_hook)(const char *msgid) = NULL;
-
 /* Current mouse cursor type.  */
 
 static int m_cursor;
@@ -225,19 +221,6 @@ void ji_flip_rect(JRect rect)
 		 jrect_w(rect) * SCREEN_W / JI_SCREEN_W,
 		 jrect_h(rect) * SCREEN_H / JI_SCREEN_H);
   }
-}
-
-void ji_set_translation_hook(const char *(*gettext)(const char *msgid))
-{
-  strings_hook = gettext;
-}
-
-const char *ji_translate_string(const char *msgid)
-{
-  if (strings_hook)
-    return (*strings_hook)(msgid);
-  else
-    return msgid;
 }
 
 int jmouse_get_cursor()

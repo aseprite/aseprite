@@ -90,7 +90,7 @@ static bool load_GIF(FileOp *fop)
   gif = gif_load_animation(fop->filename,
 			   reinterpret_cast<void(*)(void*,float)>(fop_progress), fop);
   if (!gif) {
-    fop_error(fop, _("Error loading GIF file.\n"));
+    fop_error(fop, "Error loading GIF file.\n");
     goto error;
   }
 
@@ -99,13 +99,13 @@ static bool load_GIF(FileOp *fop)
   opal = new Palette(0, 256);
   npal = new Palette(0, 256);
   if (!current_image || !current_image_old || !opal || !npal) {
-    fop_error(fop, _("Error creating temporary image.\n"));
+    fop_error(fop, "Error creating temporary image.\n");
     goto error;
   }
 
   sprite = new Sprite(IMAGE_INDEXED, gif->width, gif->height, 256);
   if (!sprite) {
-    fop_error(fop, _("Error creating sprite.\n"));
+    fop_error(fop, "Error creating sprite.\n");
     goto error;
   }
 
@@ -113,7 +113,7 @@ static bool load_GIF(FileOp *fop)
 
   layer = new LayerImage(sprite);
   if (!layer) {
-    fop_error(fop, _("Error creating main layer.\n"));
+    fop_error(fop, "Error creating main layer.\n");
     goto error;
   }
 
@@ -168,7 +168,7 @@ static bool load_GIF(FileOp *fop)
     if (!cel || !image) {
       if (cel) cel_free(cel);
       if (image) image_free(image);
-      fop_error(fop, _("Error creating cel %d.\n"), i);
+      fop_error(fop, "Error creating cel %d.\n", i);
       break;
     }
 
@@ -296,7 +296,7 @@ static bool save_GIF(FileOp *fop)
   if (!bmp || !old) {
     if (bmp) image_free(bmp);
     if (old) image_free(old);
-    fop_error(fop, _("Not enough memory for temporary bitmaps.\n"));
+    fop_error(fop, "Not enough memory for temporary bitmaps.\n");
     return false;
   }
 
@@ -304,7 +304,7 @@ static bool save_GIF(FileOp *fop)
   if (!gif) {
     image_free(bmp);
     image_free(old);
-    fop_error(fop, _("Error creating GIF structure.\n"));
+    fop_error(fop, "Error creating GIF structure.\n");
     return false;
   }
 

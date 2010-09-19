@@ -48,11 +48,11 @@ AboutCommand::AboutCommand()
 
 void AboutCommand::onExecute(Context* context)
 {
-  FramePtr frame(new Frame(false, _("About " PACKAGE)));
+  FramePtr frame(new Frame(false, "About " PACKAGE));
   Widget* box1 = jbox_new(JI_VERTICAL);
   Widget* grid = jgrid_new(2, false);
   Label* title = new Label(PACKAGE " | Allegro Sprite Editor v" VERSION);
-  Label* subtitle = new Label(_("A pixel art program"));
+  Label* subtitle = new Label("A pixel art program");
   Widget* authors_separator1 = ji_separator_new("Authors:", JI_HORIZONTAL | JI_TOP);
   Widget* authors_separator2 = ji_separator_new(NULL, JI_HORIZONTAL);
   Label* author1 = new LinkLabel("http://www.davidcapello.com.ar/", "David Capello");
@@ -66,7 +66,7 @@ void AboutCommand::onExecute(Context* context)
   Widget* bottom_box3 = jbox_new(JI_HORIZONTAL);
   Label* copyright = new Label(COPYRIGHT);
   Label* website = new LinkLabel(WEBSITE);
-  Button* close_button = new Button(_("&Close"));
+  Button* close_button = new Button("&Close");
 
   jgrid_add_child(grid, title, 2, 1, 0);
   jgrid_add_child(grid, subtitle, 2, 1, 0);

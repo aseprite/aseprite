@@ -196,7 +196,7 @@ std::string Color::toFormalString(int imgtype, bool long_format) const
     switch (getType()) {
 
       case Color::MaskType:
-	result << _("Mask");
+	result << "Mask";
 	break;
 
       case Color::RgbType:

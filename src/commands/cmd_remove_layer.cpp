@@ -75,7 +75,7 @@ void RemoveLayerCommand::onExecute(Context* context)
 
   app_get_statusbar()->dirty();
   app_get_statusbar()
-    ->showTip(1000, _("Layer `%s' removed"),
+    ->showTip(1000, "Layer `%s' removed",
 	      layer_name.c_str());
 }
 

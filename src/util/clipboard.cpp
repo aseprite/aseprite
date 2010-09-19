@@ -176,7 +176,7 @@ void clipboard::copy(const SpriteReader& sprite)
 
   if (!copy_from_sprite(sprite)) {
     Console console;
-    console.printf(_("Can't copying an image portion from the current layer\n"));
+    console.printf("Can't copying an image portion from the current layer\n");
   }
 }
 

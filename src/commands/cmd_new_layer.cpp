@@ -113,7 +113,7 @@ void NewLayerCommand::onExecute(Context* context)
   update_screen_for_sprite(sprite);
 
   app_get_statusbar()->dirty();
-  app_get_statusbar()->showTip(1000, _("Layer `%s' created"), name.c_str());
+  app_get_statusbar()->showTip(1000, "Layer `%s' created", name.c_str());
 }
 
 static std::string get_unique_layer_name(Sprite* sprite)

@@ -71,7 +71,7 @@ void LoadMaskCommand::onExecute(Context* context)
   jstring filename = m_filename;
 
   if (context->is_ui_available()) {
-    filename = ase_file_selector(_("Load .msk File"), filename, "msk");
+    filename = ase_file_selector("Load .msk File", filename, "msk");
     if (filename.empty())
       return;
 

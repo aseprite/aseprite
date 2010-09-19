@@ -161,8 +161,6 @@ add_library(aseprite-library
   file/pcx_format.cpp
   file/png_format.cpp
   file/tga_format.cpp
-  intl/intl.cpp
-  intl/msgids.cpp
   jinete/jaccel.cpp
   jinete/jalert.cpp
   jinete/jbox.cpp

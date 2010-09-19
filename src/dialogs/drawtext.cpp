@@ -261,7 +261,7 @@ static FONT *my_load_font(const char *filename)
   // Error loading font
   if (!f) {
     Console console;
-    console.printf(_("Error loading font.\n"));
+    console.printf("Error loading font.\n");
   }
 
   return f;
@@ -270,7 +270,7 @@ static FONT *my_load_font(const char *filename)
 static void button_font_command(JWidget widget)
 {
   jstring filename =
-    ase_file_selector(_("Open Font (TTF or Allegro bitmap format)"),
+    ase_file_selector("Open Font (TTF or Allegro bitmap format)",
 		      get_config_string ("DrawText", "Font", ""),
 		      "pcx,bmp,tga,lbm,ttf");
 

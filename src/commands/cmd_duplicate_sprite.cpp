@@ -73,7 +73,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
 
   src_name->setText(get_filename(sprite->getFilename()));
 
-  sprintf(buf, "%s %s", sprite->getFilename(), _("Copy"));
+  sprintf(buf, "%s Copy", sprite->getFilename());
   dst_name->setText(buf);
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))

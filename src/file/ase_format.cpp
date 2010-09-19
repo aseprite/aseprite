@@ -140,7 +140,7 @@ static bool load_ASE(FileOp *fop)
     return false;
 
   if (!ase_file_read_header(f, &header)) {
-    fop_error(fop, _("Error reading header\n"));
+    fop_error(fop, "Error reading header\n");
     fclose(f);
     return false;
   }
@@ -150,7 +150,7 @@ static bool load_ASE(FileOp *fop)
 		      header.depth == 16 ? IMAGE_GRAYSCALE: IMAGE_INDEXED,
 		      header.width, header.height, header.ncolors);
   if (!sprite) {
-    fop_error(fop, _("Error creating sprite with file spec\n"));
+    fop_error(fop, "Error creating sprite with file spec\n");
     fclose(f);
     return false;
   }
@@ -209,7 +209,7 @@ static bool load_ASE(FileOp *fop)
 	      delete pal;
 	    }
 	    else
-	      fop_error(fop, _("Warning: was found a color chunk in non-8bpp file\n"));
+	      fop_error(fop, "Warning: was found a color chunk in non-8bpp file\n");
 	    break;
 
 	  case ASE_FILE_CHUNK_LAYER: {
@@ -239,7 +239,7 @@ static bool load_ASE(FileOp *fop)
 	    if (mask)
 	      sprite->addMask(mask);
 	    else
-	      fop_error(fop, _("Warning: error loading a mask chunk\n"));
+	      fop_error(fop, "Warning: error loading a mask chunk\n");
 
 	    break;
 	  }
@@ -249,7 +249,7 @@ static bool load_ASE(FileOp *fop)
 	    break;
 
 	  default:
-	    fop_error(fop, _("Warning: Unsupported chunk type %d (skipping)\n"), chunk_type);
+	    fop_error(fop, "Warning: Unsupported chunk type %d (skipping)\n", chunk_type);
 	    break;
 	}
 
@@ -272,7 +272,7 @@ static bool load_ASE(FileOp *fop)
   fop->sprite = sprite;
 
   if (ferror(f)) {
-    fop_error(fop, _("Error reading file.\n"));
+    fop_error(fop, "Error reading file.\n");
     fclose(f);
     return false;
   }
@@ -344,7 +344,7 @@ static bool save_ASE(FileOp *fop)
   ase_file_write_header(f, &header);
 
   if (ferror(f)) {
-    fop_error(fop, _("Error writing file.\n"));
+    fop_error(fop, "Error writing file.\n");
     fclose(f);
     return false;
   }
@@ -999,12 +999,12 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
   layer = sprite->indexToLayer(layer_index);
   if (!layer) {
-    fop_error(fop, _("Frame %d didn't found layer with index %d\n"),
+    fop_error(fop, "Frame %d didn't found layer with index %d\n",
 	      frame, layer_index);
     return NULL;
   }
   if (!layer->is_image()) {
-    fop_error(fop, _("Invalid ASE file (frame %d in layer %d which does not contain images\n"),
+    fop_error(fop, "Invalid ASE file (frame %d in layer %d which does not contain images\n",
 	      frame, layer_index);
     return NULL;
   }
