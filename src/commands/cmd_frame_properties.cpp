@@ -93,14 +93,14 @@ void dialogs_frame_length(const SpriteReader& sprite, int sprite_frame)
 		 "||&Yes||&No") == 1) {
 	SpriteWriter sprite_writer(sprite);
 	Undoable undoable(sprite_writer, "Constant Frame-Rate");
-	undoable.set_constant_frame_rate(num);
+	undoable.setConstantFrameRate(num);
 	undoable.commit();
       }
     }
     else {
       SpriteWriter sprite_writer(sprite);
       Undoable undoable(sprite_writer, "Frame Duration");
-      undoable.set_frame_duration(sprite_frame, num);
+      undoable.setFrameDuration(sprite_frame, num);
       undoable.commit();
     }
   }

@@ -67,9 +67,9 @@ void ClearCommand::onExecute(Context* context)
   bool empty_mask = sprite->getMask()->is_empty();
   {
     Undoable undoable(sprite, "Clear");
-    undoable.clear_mask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
+    undoable.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
     if (!empty_mask)
-      undoable.deselect_mask();
+      undoable.deselectMask();
     undoable.commit();
   }
   if (!empty_mask)

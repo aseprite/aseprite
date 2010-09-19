@@ -103,7 +103,7 @@ void ChangeImageTypeCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Color Mode Change");
-    undoable.set_imgtype(m_imgtype, m_dithering);
+    undoable.setImgType(m_imgtype, m_dithering);
 
     // Regenerate extras
     sprite->destroyExtraCel();

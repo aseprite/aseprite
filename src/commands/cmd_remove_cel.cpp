@@ -65,7 +65,7 @@ void RemoveCelCommand::onExecute(Context* context)
   Cel* cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
   {
     Undoable undoable(sprite, "Remove Cel");
-    undoable.remove_cel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);
+    undoable.removeCel(static_cast<LayerImage*>(sprite->getCurrentLayer()), cel);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

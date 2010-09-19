@@ -64,7 +64,7 @@ void LayerFromBackgroundCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Layer from Background");
-    undoable.layer_from_background();
+    undoable.layerFromBackground();
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

@@ -79,7 +79,7 @@ protected:
       Cel* cel = *it;
 
       // Change its location
-      undoable.set_cel_position(cel, scale_x(cel->x), scale_y(cel->y));
+      undoable.setCelPosition(cel, scale_x(cel->x), scale_y(cel->y));
 
       // Get cel's image
       Image* image = stock_get_image(m_sprite->getStock(), cel->image);
@@ -97,7 +97,7 @@ protected:
 		   m_sprite->getPalette(cel->frame),
 		   m_sprite->getRgbMap(cel->frame));
 
-      undoable.replace_stock_image(cel->image, new_image);
+      undoable.replaceStockImage(cel->image, new_image);
 
       jobProgress((float)progress / cels.size());
 
@@ -130,7 +130,7 @@ protected:
 		     new_mask->w, new_mask->h);
 
       // copy new mask
-      undoable.copy_to_current_mask(new_mask);
+      undoable.copyToCurrentMask(new_mask);
       mask_free(new_mask);
 
       // regenerate mask
@@ -138,7 +138,7 @@ protected:
     }
 
     // resize sprite
-    undoable.set_sprite_size(m_new_width, m_new_height);
+    undoable.setSpriteSize(m_new_width, m_new_height);
 
     // commit changes
     undoable.commit();

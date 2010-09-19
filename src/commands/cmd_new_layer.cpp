@@ -106,7 +106,7 @@ void NewLayerCommand::onExecute(Context* context)
   Layer* layer;
   {
     Undoable undoable(sprite, "New Layer");
-    layer = undoable.new_layer();
+    layer = undoable.newLayer();
     undoable.commit();
   }
   layer->setName(name);

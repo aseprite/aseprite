@@ -550,7 +550,7 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		  {
 		    SpriteWriter sprite_writer(sprite);
 		    Undoable undoable(sprite_writer, "Move Frame");
-		    undoable.move_frame_before(anieditor->clk_frame, anieditor->hot_frame);
+		    undoable.moveFrameBefore(anieditor->clk_frame, anieditor->hot_frame);
 		    undoable.commit();
 		  }
 		  jwidget_dirty(widget);
@@ -584,8 +584,8 @@ static bool anieditor_msg_proc(JWidget widget, JMessage msg)
 		    const SpriteReader sprite((Sprite*)anieditor->sprite);
 		    SpriteWriter sprite_writer(sprite);
 		    Undoable undoable(sprite_writer, "Move Layer");
-		    undoable.move_layer_after(anieditor->layers[anieditor->clk_layer],
-					      anieditor->layers[anieditor->hot_layer]);
+		    undoable.moveLayerAfter(anieditor->layers[anieditor->clk_layer],
+					    anieditor->layers[anieditor->hot_layer]);
 		    undoable.commit();
 
 		    /* select the new layer */

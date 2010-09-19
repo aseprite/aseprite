@@ -68,7 +68,7 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
 
   {
     Undoable undoable(sprite, "Background from Layer");
-    undoable.background_from_layer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
+    undoable.backgroundFromLayer(static_cast<LayerImage*>(sprite->getCurrentLayer()), bgcolor);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

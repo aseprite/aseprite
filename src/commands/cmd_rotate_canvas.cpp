@@ -88,15 +88,15 @@ protected:
       // change it location
       switch (m_angle) {
 	case 180:
-	  undoable.set_cel_position(cel,
-				    m_sprite->getWidth() - cel->x - image->w,
-				    m_sprite->getHeight() - cel->y - image->h);
+	  undoable.setCelPosition(cel,
+				  m_sprite->getWidth() - cel->x - image->w,
+				  m_sprite->getHeight() - cel->y - image->h);
 	  break;
 	case 90:
-	  undoable.set_cel_position(cel, m_sprite->getHeight() - cel->y - image->h, cel->x);
+	  undoable.setCelPosition(cel, m_sprite->getHeight() - cel->y - image->h, cel->x);
 	  break;
 	case -90:
-	  undoable.set_cel_position(cel, cel->y, m_sprite->getWidth() - cel->x - image->w);
+	  undoable.setCelPosition(cel, cel->y, m_sprite->getWidth() - cel->x - image->w);
 	  break;
       }
     }
@@ -113,7 +113,7 @@ protected:
 				   m_angle == 180 ? image->h: image->w);
       image_rotate(image, new_image, m_angle);
 
-      undoable.replace_stock_image(i, new_image);
+      undoable.replaceStockImage(i, new_image);
 
       jobProgress((float)i / m_sprite->getStock()->nimage);
 
@@ -149,7 +149,7 @@ protected:
       image_rotate(m_sprite->getMask()->bitmap, new_mask->bitmap, m_angle);
 
       // copy new mask
-      undoable.copy_to_current_mask(new_mask);
+      undoable.copyToCurrentMask(new_mask);
       mask_free(new_mask);
 
       // regenerate mask
@@ -158,7 +158,7 @@ protected:
 
     // change the sprite's size
     if (m_angle != 180)
-      undoable.set_sprite_size(m_sprite->getHeight(), m_sprite->getWidth());
+      undoable.setSpriteSize(m_sprite->getHeight(), m_sprite->getWidth());
 
     // commit changes
     undoable.commit();

@@ -72,7 +72,7 @@ void NewFrameCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "New Frame");
-    undoable.new_frame();
+    undoable.newFrame();
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

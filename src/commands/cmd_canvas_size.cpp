@@ -112,7 +112,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getImgType());
     bgcolor = color_utils::fixup_color_for_background(sprite->getImgType(), bgcolor);
 
-    undoable.crop_sprite(x1, y1, x2-x1, y2-y1, bgcolor);
+    undoable.cropSprite(x1, y1, x2-x1, y2-y1, bgcolor);
     undoable.commit();
   }
   sprite->generateMaskBoundaries();

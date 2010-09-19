@@ -60,7 +60,7 @@ void FlattenLayersCommand::onExecute(Context* context)
   int bgcolor = color_utils::color_for_image(app_get_colorbar()->getBgColor(), sprite->getImgType());
   {
     Undoable undoable(sprite, "Flatten Layers");
-    undoable.flatten_layers(bgcolor);
+    undoable.flattenLayers(bgcolor);
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

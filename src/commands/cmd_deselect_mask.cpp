@@ -57,7 +57,7 @@ void DeselectMaskCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Mask Deselection");
-    undoable.deselect_mask();
+    undoable.deselectMask();
     undoable.commit();
   }
   sprite->generateMaskBoundaries();

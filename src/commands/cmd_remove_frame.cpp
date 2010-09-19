@@ -60,7 +60,7 @@ void RemoveFrameCommand::onExecute(Context* context)
   CurrentSpriteWriter sprite(context);
   {
     Undoable undoable(sprite, "Remove Frame");
-    undoable.remove_frame(sprite->getCurrentFrame());
+    undoable.removeFrame(sprite->getCurrentFrame());
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

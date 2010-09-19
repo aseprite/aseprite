@@ -58,14 +58,14 @@ public:
 
   void cutMask()
   {
-    m_undoable.clear_mask(app_get_color_to_clear_layer(m_sprite_writer->getCurrentLayer()));
+    m_undoable.clearMask(app_get_color_to_clear_layer(m_sprite_writer->getCurrentLayer()));
 
     copyMask();
   }
 
   void copyMask()
   {
-    // Hide the mask (do not deselect it, it will be moved them using m_undoable.set_mask_position)
+    // Hide the mask (do not deselect it, it will be moved them using m_undoable.setMaskPosition)
     Mask* empty_mask = new Mask();
     m_sprite_writer->generateMaskBoundaries(empty_mask);
     delete empty_mask;
@@ -91,7 +91,7 @@ public:
     m_catch_x = x;
     m_catch_y = y;
 
-    // Hide the mask (do not deselect it, it will be moved them using m_undoable.set_mask_position)
+    // Hide the mask (do not deselect it, it will be moved them using m_undoable.setMaskPosition)
     Mask* empty_mask = new Mask();
     m_sprite_writer->generateMaskBoundaries(empty_mask);
     delete empty_mask;
@@ -140,7 +140,7 @@ public:
     // Show the mask again in the new position
     if (m_firstDrop) {
       m_firstDrop = false;
-      m_undoable.set_mask_position(cel->x, cel->y);
+      m_undoable.setMaskPosition(cel->x, cel->y);
     }
     else {
       m_sprite_writer->getMask()->x = cel->x;
@@ -158,7 +158,7 @@ public:
     Cel* cel = m_sprite_writer->getExtraCel();
     Image* image = m_sprite_writer->getExtraCelImage();
 
-    m_undoable.paste_image(image, cel->x, cel->y, cel->opacity);
+    m_undoable.pasteImage(image, cel->x, cel->y, cel->opacity);
     m_undoable.commit();
   }
 

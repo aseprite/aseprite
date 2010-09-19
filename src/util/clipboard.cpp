@@ -161,8 +161,8 @@ void clipboard::cut(SpriteWriter& sprite)
   else {
     {
       Undoable undoable(sprite, "Cut");
-      undoable.clear_mask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
-      undoable.deselect_mask();
+      undoable.clearMask(app_get_color_to_clear_layer(sprite->getCurrentLayer()));
+      undoable.deselectMask();
       undoable.commit();
     }
     sprite->generateMaskBoundaries();
@@ -232,7 +232,7 @@ void clipboard::paste(SpriteWriter& sprite)
     Cel* cel = cel_new(sprite->getCurrentFrame(), dst_image_index);
 
     // Add the cel to the layer
-    undoable.add_cel(layer, cel);
+    undoable.addCel(layer, cel);
 
     // Default destination position
     dst_x = dst_y = 0;

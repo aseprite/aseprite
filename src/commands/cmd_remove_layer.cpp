@@ -68,7 +68,7 @@ void RemoveLayerCommand::onExecute(Context* context)
 
     layer_name = sprite->getCurrentLayer()->getName();
 
-    undoable.remove_layer(sprite->getCurrentLayer());
+    undoable.removeLayer(sprite->getCurrentLayer());
     undoable.commit();
   }
   update_screen_for_sprite(sprite);

@@ -123,8 +123,8 @@ void FlipCommand::onExecute(Context* context)
 	y2 = MID(0, y2, image->h-1);
       }
 
-      undoable.flip_image(image, x1, y1, x2, y2, 
-			  m_flip_horizontal, m_flip_vertical);
+      undoable.flipImage(image, x1, y1, x2, y2, 
+			 m_flip_horizontal, m_flip_vertical);
     }
     else {
       // get all sprite cels
@@ -136,12 +136,12 @@ void FlipCommand::onExecute(Context* context)
 	Cel* cel = *it;
 	Image* image = stock_get_image(sprite->getStock(), cel->image);
 
-	undoable.set_cel_position(cel,
-				  m_flip_horizontal ? sprite->getWidth() - image->w - cel->x: cel->x,
-				  m_flip_vertical ? sprite->getHeight() - image->h - cel->y: cel->y);
+	undoable.setCelPosition(cel,
+				m_flip_horizontal ? sprite->getWidth() - image->w - cel->x: cel->x,
+				m_flip_vertical ? sprite->getHeight() - image->h - cel->y: cel->y);
 
-	undoable.flip_image(image, 0, 0, image->w-1, image->h-1,
-			    m_flip_horizontal, m_flip_vertical);
+	undoable.flipImage(image, 0, 0, image->w-1, image->h-1,
+			   m_flip_horizontal, m_flip_vertical);
       }
     }
 

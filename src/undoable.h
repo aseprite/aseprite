@@ -34,77 +34,77 @@ class SpriteWriter;
  */
 class Undoable
 {
-  Sprite* m_sprite;
-  bool m_committed;
-  bool m_enabled_flag;
-
 public:
   Undoable(SpriteWriter& sprite, const char* label);
   virtual ~Undoable();
 
   inline Sprite* getSprite() const { return m_sprite;  }
-  inline bool is_enabled() const { return m_enabled_flag; }
+  inline bool isEnabled() const { return m_enabledFlag; }
 
   void commit();
 
   // for sprite
-  void set_number_of_frames(int frames);
-  void set_current_frame(int frame);
-  void set_current_layer(Layer* layer);
-  void set_sprite_size(int w, int h);
-  void crop_sprite(int x, int y, int w, int h, int bgcolor);
-  void autocrop_sprite(int bgcolor);
-  void set_imgtype(int new_imgtype, int dithering_method);
+  void setNumberOfFrames(int frames);
+  void setCurrentFrame(int frame);
+  void setCurrentLayer(Layer* layer);
+  void setSpriteSize(int w, int h);
+  void cropSprite(int x, int y, int w, int h, int bgcolor);
+  void autocropSprite(int bgcolor);
+  void setImgType(int new_imgtype, int dithering_method);
 
   // for images in stock
-  int add_image_in_stock(Image* image);
-  void remove_image_from_stock(int image_index);
-  void replace_stock_image(int image_index, Image* new_image);
+  int addImageInStock(Image* image);
+  void removeImageFromStock(int image_index);
+  void replaceStockImage(int image_index, Image* new_image);
 
   // for layers
-  Layer* new_layer();
-  void remove_layer(Layer* layer);
-  void move_layer_after(Layer *layer, Layer *after_this);
-  void crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor);
-  void displace_layers(Layer* layer, int dx, int dy);
-  void background_from_layer(LayerImage* layer, int bgcolor);
-  void layer_from_background();
-  void flatten_layers(int bgcolor);
+  Layer* newLayer();
+  void removeLayer(Layer* layer);
+  void moveLayerAfter(Layer *layer, Layer *after_this);
+  void cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor);
+  void displaceLayers(Layer* layer, int dx, int dy);
+  void backgroundFromLayer(LayerImage* layer, int bgcolor);
+  void layerFromBackground();
+  void flattenLayers(int bgcolor);
 private:
-  void configure_layer_as_background(LayerImage* layer);
+  void configureLayerAsBackground(LayerImage* layer);
 
 public:
   // for frames
-  void new_frame();
-  void new_frame_for_layer(Layer* layer, int frame);
-  void remove_frame(int frame);
-  void remove_frame_of_layer(Layer* layer, int frame);
-  void copy_previous_frame(Layer* layer, int frame);
-  void set_frame_duration(int frame, int msecs);
-  void set_constant_frame_rate(int msecs);
-  void move_frame_before(int frame, int before_frame);
-  void move_frame_before_layer(Layer* layer, int frame, int before_frame);
+  void newFrame();
+  void newFrameForLayer(Layer* layer, int frame);
+  void removeFrame(int frame);
+  void removeFrameOfLayer(Layer* layer, int frame);
+  void copyPreviousFrame(Layer* layer, int frame);
+  void setFrameDuration(int frame, int msecs);
+  void setConstantFrameRate(int msecs);
+  void moveFrameBefore(int frame, int before_frame);
+  void moveFrameBeforeLayer(Layer* layer, int frame, int before_frame);
 
   // for cels
-  void add_cel(LayerImage* layer, Cel* cel);
-  void remove_cel(LayerImage* layer, Cel* cel);
-  void set_cel_frame_position(Cel* cel, int frame);
-  void set_cel_position(Cel* cel, int x, int y);
-  Cel* get_current_cel();
-  void crop_cel(Cel* cel, int x, int y, int w, int h, int bgcolor);
+  void addCel(LayerImage* layer, Cel* cel);
+  void removeCel(LayerImage* layer, Cel* cel);
+  void setCelFramePosition(Cel* cel, int frame);
+  void setCelPosition(Cel* cel, int x, int y);
+  Cel* getCurrentCel();
+  void cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor);
 
   // for image
-  Image* get_cel_image(Cel* cel);
-  void clear_mask(int bgcolor);
-  void flip_image(Image* image, int x1, int y1, int x2, int y2,
-		  bool flip_horizontal, bool flip_vertical);
-  void paste_image(const Image* src_image, int x, int y, int opacity);
+  Image* getCelImage(Cel* cel);
+  void clearMask(int bgcolor);
+  void flipImage(Image* image, int x1, int y1, int x2, int y2,
+		 bool flip_horizontal, bool flip_vertical);
+  void pasteImage(const Image* src_image, int x, int y, int opacity);
 
   // for mask
-  void copy_to_current_mask(Mask* mask);
-  void set_mask_position(int x, int y);
-  void deselect_mask();
+  void copyToCurrentMask(Mask* mask);
+  void setMaskPosition(int x, int y);
+  void deselectMask();
 
+private:
+  Sprite* m_sprite;
+  bool m_committed;
+  bool m_enabledFlag;
 };
 
 #endif
