@@ -31,8 +31,10 @@
 #include "app/color.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/layer.h"
+#include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
 #include "util/misc.h"
@@ -191,7 +193,9 @@ static Sprite* new_sprite(Context* context, int imgtype, int w, int h, int ncolo
   ASSERT(w >= 1 && w <= 9999);
   ASSERT(h >= 1 && h <= 9999);
 
-  return Sprite::createWithLayer(imgtype, w, h, ncolors);
+  Sprite* sprite = Sprite::createWithLayer(imgtype, w, h, ncolors);
+  get_default_palette()->copyColorsTo(sprite->getCurrentPalette());
+  return sprite;
 }
 
 //////////////////////////////////////////////////////////////////////

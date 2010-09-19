@@ -26,7 +26,6 @@
 #include "Vaca/ScopedLock.h"
 
 #include "file/format_options.h"
-#include "modules/palettes.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
 
@@ -487,7 +486,6 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
     // For colored images
     case IMAGE_RGB:
     case IMAGE_INDEXED:
-      get_default_palette()->copyColorsTo(&pal);
       pal.resize(ncolors);
       break;
 
