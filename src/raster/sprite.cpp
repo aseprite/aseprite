@@ -268,7 +268,7 @@ public:
   }
 
   void getCels(CelList& cels) {
-    getFolder()->get_cels(cels);
+    getFolder()->getCels(cels);
   }
 
   void remapImages(int frame_from, int frame_to, const std::vector<int>& mapping) {

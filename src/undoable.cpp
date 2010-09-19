@@ -377,8 +377,8 @@ void Undoable::crop_layer(Layer* layer, int x, int y, int w, int h, int bgcolor)
   if (!layer->is_background())
     bgcolor = 0;
 
-  CelIterator it = ((LayerImage*)layer)->get_cel_begin();
-  CelIterator end = ((LayerImage*)layer)->get_cel_end();
+  CelIterator it = ((LayerImage*)layer)->getCelBegin();
+  CelIterator end = ((LayerImage*)layer)->getCelEnd();
   for (; it != end; ++it)
     crop_cel(*it, x, y, w, h, bgcolor);
 }
@@ -391,8 +391,8 @@ void Undoable::displace_layers(Layer* layer, int dx, int dy)
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      CelIterator it = ((LayerImage*)layer)->get_cel_begin();
-      CelIterator end = ((LayerImage*)layer)->get_cel_end();
+      CelIterator it = ((LayerImage*)layer)->getCelBegin();
+      CelIterator end = ((LayerImage*)layer)->getCelEnd();
       for (; it != end; ++it) {
 	Cel* cel = *it;
 	set_cel_position(cel, cel->x+dx, cel->y+dy);
@@ -427,8 +427,8 @@ void Undoable::background_from_layer(LayerImage* layer, int bgcolor)
 					       m_sprite->getHeight()));
   Image* bg_image = bg_image_wrap.get();
 
-  CelIterator it = layer->get_cel_begin();
-  CelIterator end = layer->get_cel_end();
+  CelIterator it = layer->getCelBegin();
+  CelIterator end = layer->getCelEnd();
 
   for (; it != end; ++it) {
     Cel* cel = *it;
@@ -853,8 +853,8 @@ void Undoable::move_frame_before_layer(Layer* layer, int frame, int before_frame
   switch (layer->getType()) {
 
     case GFXOBJ_LAYER_IMAGE: {
-      CelIterator it = ((LayerImage*)layer)->get_cel_begin();
-      CelIterator end = ((LayerImage*)layer)->get_cel_end();
+      CelIterator it = ((LayerImage*)layer)->getCelBegin();
+      CelIterator end = ((LayerImage*)layer)->getCelEnd();
 
       for (; it != end; ++it) {
 	Cel* cel = *it;

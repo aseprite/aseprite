@@ -2274,10 +2274,10 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
       write_raw_uint8(static_cast<LayerImage*>(layer)->get_blend_mode());
 
       // cels
-      write_raw_uint16(static_cast<LayerImage*>(layer)->get_cels_count());
+      write_raw_uint16(static_cast<LayerImage*>(layer)->getCelsCount());
 
-      CelIterator it = static_cast<LayerImage*>(layer)->get_cel_begin();
-      CelIterator end = static_cast<LayerImage*>(layer)->get_cel_end();
+      CelIterator it = static_cast<LayerImage*>(layer)->getCelBegin();
+      CelIterator end = static_cast<LayerImage*>(layer)->getCelEnd();
 
       for (; it != end; ++it) {
 	Cel* cel = *it;
@@ -2319,8 +2319,8 @@ static int get_raw_layer_size(Layer* layer)
       size += 1;		// blend mode
       size += 2;		// num of cels
 
-      CelIterator it = static_cast<LayerImage*>(layer)->get_cel_begin();
-      CelIterator end = static_cast<LayerImage*>(layer)->get_cel_end();
+      CelIterator it = static_cast<LayerImage*>(layer)->getCelBegin();
+      CelIterator end = static_cast<LayerImage*>(layer)->getCelEnd();
 
       for (; it != end; ++it) {
 	Cel* cel = *it;

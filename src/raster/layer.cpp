@@ -119,8 +119,8 @@ LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
 
   try {
     // copy cels
-    CelConstIterator it = src_layer->get_cel_begin();
-    CelConstIterator end = src_layer->get_cel_end();
+    CelConstIterator it = src_layer->getCelBegin();
+    CelConstIterator end = src_layer->getCelEnd();
 
     for (; it != end; ++it) {
       const Cel* cel = *it;
@@ -154,8 +154,8 @@ LayerImage::~LayerImage()
 
 void LayerImage::destroy_all_cels()
 {
-  CelIterator it = get_cel_begin();
-  CelIterator end = get_cel_end();
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
 
   for (; it != end; ++it) {
     Cel* cel = *it;
@@ -175,10 +175,10 @@ void LayerImage::set_blend_mode(int blend_mode)
   m_blend_mode = blend_mode;
 }
 
-void LayerImage::get_cels(CelList& cels)
+void LayerImage::getCels(CelList& cels)
 {
-  CelIterator it = get_cel_begin();
-  CelIterator end = get_cel_end();
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
 
   for (; it != end; ++it)
     cels.push_back(*it);
@@ -186,8 +186,8 @@ void LayerImage::get_cels(CelList& cels)
 
 void LayerImage::add_cel(Cel *cel)
 {
-  CelIterator it = get_cel_begin();
-  CelIterator end = get_cel_end();
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
 
   for (; it != end; ++it) {
     if ((*it)->frame > cel->frame)
@@ -214,8 +214,8 @@ void LayerImage::remove_cel(Cel *cel)
 
 const Cel* LayerImage::get_cel(int frame) const
 {
-  CelConstIterator it = get_cel_begin();
-  CelConstIterator end = get_cel_end();
+  CelConstIterator it = getCelBegin();
+  CelConstIterator end = getCelEnd();
 
   for (; it != end; ++it) {
     const Cel* cel = *it;
@@ -228,8 +228,8 @@ const Cel* LayerImage::get_cel(int frame) const
 
 Cel* LayerImage::get_cel(int frame)
 {
-  CelIterator it = get_cel_begin();
-  CelIterator end = get_cel_end();
+  CelIterator it = getCelBegin();
+  CelIterator end = getCelEnd();
 
   for (; it != end; ++it) {
     Cel* cel = *it;
@@ -283,17 +283,17 @@ LayerFolder::LayerFolder(const LayerFolder* src_layer, Sprite* dst_sprite)
     }
   }
   catch (...) {
-    destroy_all_layers();
+    destroyAllLayers();
     throw;
   }
 }
 
 LayerFolder::~LayerFolder()
 {
-  destroy_all_layers();
+  destroyAllLayers();
 }
 
-void LayerFolder::destroy_all_layers()
+void LayerFolder::destroyAllLayers()
 {
   LayerIterator it = get_layer_begin();
   LayerIterator end = get_layer_end();
@@ -305,13 +305,13 @@ void LayerFolder::destroy_all_layers()
   m_layers.clear();
 }
 
-void LayerFolder::get_cels(CelList& cels)
+void LayerFolder::getCels(CelList& cels)
 {
   LayerIterator it = get_layer_begin();
   LayerIterator end = get_layer_end();
 
   for (; it != end; ++it)
-    (*it)->get_cels(cels);
+    (*it)->getCels(cels);
 }
 
 void LayerFolder::add_layer(Layer* layer)

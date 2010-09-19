@@ -40,11 +40,6 @@ class LayerFolder;
 
 class Layer : public GfxObj
 {
-  std::string m_name;		// layer name
-  Sprite* m_sprite;		// owner of the layer
-  LayerFolder* m_parent;	// parent layer
-  unsigned short m_flags;
-
 protected:
   Layer(GfxObjType type, Sprite* sprite);
   Layer(Sprite* sprite);
@@ -74,12 +69,17 @@ public:
   void set_readable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
   void set_writable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
 
-  virtual void get_cels(CelList& cels) = 0;
+  virtual void getCels(CelList& cels) = 0;
   virtual Layer* duplicate_for(Sprite* sprite) const = 0;
 
   // TODO remove these methods (from C backward-compatibility)
   unsigned short* flags_addr() { return &m_flags; }
-  
+
+private:
+  std::string m_name;		// layer name
+  Sprite* m_sprite;		// owner of the layer
+  LayerFolder* m_parent;	// parent layer
+  unsigned short m_flags;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -87,9 +87,6 @@ public:
 
 class LayerImage : public Layer
 {
-  int m_blend_mode;		// constant blend mode
-  CelList m_cels;		// list of cels
-
 public:
   LayerImage(Sprite* sprite);
   LayerImage(const LayerImage* copy, Sprite* sprite);
@@ -103,20 +100,23 @@ public:
   const Cel* get_cel(int frame) const;
   Cel* get_cel(int frame);
 
-  void get_cels(CelList& cels);
+  void getCels(CelList& cels);
 
   void configure_as_background();
 
-  CelIterator get_cel_begin() { return m_cels.begin(); }
-  CelIterator get_cel_end() { return m_cels.end(); }
-  CelConstIterator get_cel_begin() const { return m_cels.begin(); }
-  CelConstIterator get_cel_end() const { return m_cels.end(); }
-  int get_cels_count() const { return m_cels.size(); }
+  CelIterator getCelBegin() { return m_cels.begin(); }
+  CelIterator getCelEnd() { return m_cels.end(); }
+  CelConstIterator getCelBegin() const { return m_cels.begin(); }
+  CelConstIterator getCelEnd() const { return m_cels.end(); }
+  int getCelsCount() const { return m_cels.size(); }
 
   LayerImage* duplicate_for(Sprite* sprite) const { return new LayerImage(this, sprite); }
 
 private:
   void destroy_all_cels();
+
+  int m_blend_mode; // It indicates how this layer is merged in the final render.
+  CelList m_cels;   // List of all cels inside this layer used by frames.
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -124,8 +124,6 @@ private:
 
 class LayerFolder : public Layer
 {
-  LayerList m_layers;
-
 public:
   LayerFolder(Sprite* sprite);
   LayerFolder(const LayerFolder* copy, Sprite* sprite);
@@ -142,12 +140,14 @@ public:
   void remove_layer(Layer* layer);
   void move_layer(Layer* layer, Layer* after);
 
-  void get_cels(CelList& cels);
+  void getCels(CelList& cels);
 
   LayerFolder* duplicate_for(Sprite* sprite) const { return new LayerFolder(this, sprite); }
 
 private:
-  void destroy_all_layers();
+  void destroyAllLayers();
+
+  LayerList m_layers;
 };
 
 Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
