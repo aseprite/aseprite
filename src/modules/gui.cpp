@@ -189,16 +189,12 @@ int init_module_gui()
   shortcuts = new std::vector<Shortcut*>;
 
   /* install the mouse */
-  if (install_mouse() < 0) {
-    user_printf(_("Error installing mouse handler\n"));
-    return -1;
-  }
+  if (install_mouse() < 0)
+    throw ase_exception("Error installing mouse handler");
 
   /* install the keyboard */
-  if (install_keyboard() < 0) {
-    user_printf(_("Error installing keyboard handler\n"));
-    return -1;
-  }
+  if (install_keyboard() < 0)
+    throw ase_exception("Error installing keyboard handler");
 
   /* disable Ctrl+Shift+End in non-DOS */
 #if !defined(ALLEGRO_DOS)
@@ -254,10 +250,8 @@ int init_module_gui()
   }
 
   for (;;) {
-    if (bpp == 8) {
-      allegro_message("You cannot use ASE in 8 bits per pixel\n");
-      return -1;
-    }
+    if (bpp == 8)
+      throw ase_exception("You cannot use ASE in 8 bits per pixel");
 
     // Original
     set_color_depth(bpp);
@@ -273,21 +267,19 @@ int init_module_gui()
       }
     }
 
-    if (bpp == 15) {
-      user_printf(_("Error setting graphics mode\n%s\n"
-		    "Try \"ase -res WIDTHxHEIGHTxBPP\"\n"), allegro_error);
-      return -1;
-    }
-    else {
-      for (c=0; try_depths[c]; ++c) {
-	if (bpp == try_depths[c]) {
-	  bpp = try_depths[c+1];
-	  break;
-	}
+    if (bpp == 15)
+      throw ase_exception("Error setting graphics mode\n%s\n"
+			  "Try \"ase -res WIDTHxHEIGHTxBPP\"\n", allegro_error);
+
+    for (c=0; try_depths[c]; ++c) {
+      if (bpp == try_depths[c]) {
+	bpp = try_depths[c+1];
+	break;
       }
     }
   }
- gfx_done:;
+
+gfx_done:;
 
   /* window title */
   set_window_title(PACKAGE " v" VERSION);
@@ -531,7 +523,7 @@ void gui_flip_screen()
     if (!lastWorkingGfxMode.setGfxMode()) {
       PRINTF("Fatal error\n");
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      user_printf(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
+      allegro_message(_("FATAL ERROR: Unable to restore the old graphics mode!\n"));
       exit(1);
     }
 

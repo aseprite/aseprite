@@ -28,6 +28,4 @@ public:
   void printf(const char *format, ...);
 };
 
-void user_printf(const char *format, ...);
-
 #endif

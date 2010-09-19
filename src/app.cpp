@@ -250,7 +250,7 @@ int App::run()
 	  Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
 	  if (!sprite) {
 	    if (!isGui())
-	      user_printf(_("Error loading file \"%s\"\n"), option->data().c_str());
+	      console.printf(_("Error loading file \"%s\"\n"), option->data().c_str());
 	  }
 	  else {
 	    // Mount and select the sprite

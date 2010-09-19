@@ -155,15 +155,3 @@ void Console::printf(const char *format, ...)
     fflush(stdout);
   }
 }
-
-void user_printf(const char *format, ...)
-{
-  char buf[1024];		// TODO warning buffer overflow
-  va_list ap;
-
-  va_start(ap, format);
-  uvsprintf(buf, format, ap);
-  va_end(ap);
-
-  allegro_message("%s", buf);
-}
