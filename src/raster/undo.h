@@ -29,6 +29,7 @@ class Cel;
 class Image;
 class Layer;
 class Mask;
+class Palette;
 class Sprite;
 class Stock;
 
