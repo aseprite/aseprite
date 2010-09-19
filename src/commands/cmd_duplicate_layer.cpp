@@ -85,7 +85,7 @@ static Layer* duplicate_layer(Sprite* sprite)
 
   layer_copy->set_background(false);
   layer_copy->set_moveable(true);
-  layer_copy->set_name(layer_copy->get_name() + " Copy");
+  layer_copy->setName(layer_copy->getName() + " Copy");
 
   /* add the new layer in the sprite */
   if (undo_is_enabled(sprite->getUndo()))

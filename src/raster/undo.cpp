@@ -1143,7 +1143,7 @@ void undo_set_layer_name(Undo* undo, Layer* layer)
 
 static void chunk_set_layer_name_new(UndoStream* stream, Layer *layer)
 {
-  std::string layer_name = layer->get_name();
+  std::string layer_name = layer->getName();
 
   UndoChunkSetLayerName* chunk = (UndoChunkSetLayerName*)
     undo_chunk_new(stream,
@@ -1170,7 +1170,7 @@ static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerNam
     for (int c=0; c<chunk->name_length; c++)
       layer_name.push_back(chunk->name_text[c]);
 
-    layer->set_name(layer_name.c_str());
+    layer->setName(layer_name.c_str());
   }
 }
 
@@ -2242,7 +2242,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
   }
 
   if (layer != NULL) {
-    layer->set_name(&name[0]);
+    layer->setName(&name[0]);
     *layer->flags_addr() = flags;
 
     layer->_setGfxObjId(layer_id);
@@ -2255,7 +2255,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 {
   ase_uint32 dword;
   ase_uint16 word;
-  std::string name = layer->get_name();
+  std::string name = layer->getName();
 
   write_raw_uint32(layer->getId());		    /* ID */
 
@@ -2311,7 +2311,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 
 static int get_raw_layer_size(Layer* layer)
 {
-  int size = 4+2+layer->get_name().size()+1+2+4;
+  int size = 4+2+layer->getName().size()+1+2+4;
 
   switch (layer->getType()) {
 

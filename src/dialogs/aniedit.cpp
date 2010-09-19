@@ -1099,7 +1099,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
   u += ICONBORDER+icon2->w+ICONBORDER+ICONSEP;
 
   /* draw the layer's name */
-  jdraw_text(ji_screen, widget->getFont(), layer->get_name().c_str(),
+  jdraw_text(ji_screen, widget->getFont(), layer->getName().c_str(),
 	     u, y_mid - ji_font_get_size(widget->getFont())/2,
 	     fg, bg, true, jguiscale());
 
@@ -1108,7 +1108,7 @@ static void anieditor_draw_layer(JWidget widget, JRect clip, int layer_index)
     hline(ji_screen,
 	  u,
 	  y_mid - ji_font_get_size(widget->getFont())/2 + ji_font_get_size(widget->getFont()) + 1,
-	  u + text_length(widget->getFont(), layer->get_name().c_str()),
+	  u + text_length(widget->getFont(), layer->getName().c_str()),
 	  fg);
   }
 

@@ -109,7 +109,7 @@ void NewLayerCommand::onExecute(Context* context)
     layer = undoable.new_layer();
     undoable.commit();
   }
-  layer->set_name(name);
+  layer->setName(name);
   update_screen_for_sprite(sprite);
 
   app_get_statusbar()->dirty();
@@ -127,8 +127,8 @@ static int get_max_layer_num(Layer* layer)
 {
   int max = 0;
 
-  if (strncmp(layer->get_name().c_str(), "Layer ", 6) == 0)
-    max = strtol(layer->get_name().c_str()+6, NULL, 10);
+  if (strncmp(layer->getName().c_str(), "Layer ", 6) == 0)
+    max = strtol(layer->getName().c_str()+6, NULL, 10);
 
   if (layer->is_folder()) {
     LayerIterator it = static_cast<LayerFolder*>(layer)->get_layer_begin();

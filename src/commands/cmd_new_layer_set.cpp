@@ -68,7 +68,7 @@ void NewLayerSetCommand::onExecute(Context* context)
     const char *name = jwidget_find_name(window, "name")->getText();
     Layer* layer = new LayerFolder(sprite);
 
-    layer->set_name(name);
+    layer->setName(name);
     sprite->getFolder()->add_layer(layer);
     sprite->setCurrentLayer(layer);
 

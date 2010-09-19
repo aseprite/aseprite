@@ -522,7 +522,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
 					  theme->get_button_normal_face_color());
 
 	      if (count == 1)
-		uszprintf(buf, sizeof(buf), "%s", (*it)->get_name().c_str());
+		uszprintf(buf, sizeof(buf), "%s", (*it)->getName().c_str());
 	      else
 		{
 		  if (c+'A' <= 'Z')

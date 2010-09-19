@@ -501,7 +501,7 @@ void Undoable::layer_from_background()
 
   m_sprite->getCurrentLayer()->set_background(false);
   m_sprite->getCurrentLayer()->set_moveable(true);
-  m_sprite->getCurrentLayer()->set_name("Layer 0");
+  m_sprite->getCurrentLayer()->setName("Layer 0");
 }
 
 void Undoable::flatten_layers(int bgcolor)

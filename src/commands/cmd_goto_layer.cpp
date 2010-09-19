@@ -74,7 +74,7 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->setStatusText(1000, "Layer `%s' selected",
-		    sprite->getCurrentLayer()->get_name().c_str());
+		    sprite->getCurrentLayer()->getName().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ void GotoNextLayerCommand::onExecute(Context* context)
 
   app_get_statusbar()
     ->setStatusText(1000, "Layer `%s' selected",
-		    sprite->getCurrentLayer()->get_name().c_str());
+		    sprite->getCurrentLayer()->getName().c_str());
 }
 
 //////////////////////////////////////////////////////////////////////

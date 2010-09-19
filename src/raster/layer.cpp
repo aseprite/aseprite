@@ -42,7 +42,7 @@ Layer::Layer(GfxObjType type, Sprite* sprite)
 {
   ASSERT(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_FOLDER);
 
-  set_name("Layer");
+  setName("Layer");
 
   m_sprite = sprite;
   m_parent = NULL;
@@ -60,7 +60,7 @@ Layer::Layer(const Layer* src_layer, Sprite* dst_sprite)
     LAYER_IS_READABLE |
     LAYER_IS_WRITABLE;
 
-  set_name(src_layer->get_name());
+  setName(src_layer->getName());
   m_flags = src_layer->m_flags;
 }
 
@@ -253,7 +253,7 @@ void LayerImage::configure_as_background()
   ASSERT(getSprite()->getBackgroundLayer() == NULL);
 
   *flags_addr() |= LAYER_IS_LOCKMOVE | LAYER_IS_BACKGROUND;
-  set_name("Background");
+  setName("Background");
 
   getSprite()->getFolder()->move_layer(this, NULL);
 }
@@ -264,7 +264,7 @@ void LayerImage::configure_as_background()
 LayerFolder::LayerFolder(Sprite* sprite)
   : Layer(GFXOBJ_LAYER_FOLDER, sprite)
 {
-  set_name("Layer Set");
+  setName("Layer Set");
 }
 
 LayerFolder::LayerFolder(const LayerFolder* src_layer, Sprite* dst_sprite)

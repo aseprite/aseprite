@@ -70,7 +70,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   Widget* box2 = jbox_new(JI_HORIZONTAL);
   Widget* box3 = jbox_new(JI_HORIZONTAL + JI_HOMOGENEOUS);
   Widget* label_name = new Label("Name:");
-  Widget* entry_name = jentry_new(256, layer->get_name().c_str());
+  Widget* entry_name = jentry_new(256, layer->getName().c_str());
   Button* button_ok = new Button("&OK");
   Button* button_cancel = new Button("&Cancel");
 
@@ -128,7 +128,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   window->open_window_fg();
 
   if (window->get_killer() == button_ok) {
-    layer->set_name(entry_name->getText());
+    layer->setName(entry_name->getText());
 
     if (with_blend_modes)
       static_cast<LayerImage*>(layer)->set_blend_mode(jlistbox_get_selected_index(list_bm));

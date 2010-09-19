@@ -669,7 +669,7 @@ static Layer *ase_file_read_layer_chunk(FILE *f, Sprite *sprite, Layer **previou
     *layer->flags_addr() = flags;
 
     // name
-    layer->set_name(name.c_str());
+    layer->setName(name.c_str());
 
     // child level...
     if (child_level == *current_level)
@@ -714,7 +714,7 @@ static void ase_file_write_layer_chunk(FILE *f, Layer *layer)
   ase_file_write_padding(f, 4);
 
   /* layer name */
-  ase_file_write_string(f, layer->get_name());
+  ase_file_write_string(f, layer->getName());
 
   ase_file_write_close_chunk(f);
 

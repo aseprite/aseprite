@@ -53,8 +53,8 @@ protected:
 public:
   virtual ~Layer();
 
-  std::string get_name() const { return m_name; }
-  void set_name(const std::string& name) { m_name = name; }
+  std::string getName() const { return m_name; }
+  void setName(const std::string& name) { m_name = name; }
 
   Sprite* getSprite() const { return m_sprite; }
   LayerFolder* get_parent() const { return m_parent; }
