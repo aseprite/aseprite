@@ -385,14 +385,6 @@ static void run_undo(Undo* undo, int state)
     if (!chunk)
       break;
 
-    { int c;
-      for (c=0; c<ABS(level); c++)
-	PRINTF("  ");
-      PRINTF("%s: %s (Label: %s)\n",
-	     (state == DO_UNDO) ? "Undo": "Redo",
-	     undo_actions[chunk->type].name,
-	     chunk->label); }
-
     undo_set_label(undo, chunk->label);
     (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
 
