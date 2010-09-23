@@ -20,7 +20,7 @@ endif(MSVC)
 set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
 
 # All libraries for .exe files
-set(all_libs aseprite-library alleg ${libs3rdparty} ${sys_libs})
+set(all_libs base-lib aseprite-library alleg ${libs3rdparty} ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -32,6 +32,11 @@ include_directories(
   ${LOADPNG_DIR}
   ${TINYXML_DIR}
   ${VACA_DIR}/include)
+
+######################################################################
+# Sub-libraries
+
+add_subdirectory(base)
 
 ######################################################################
 # aseprite library
@@ -53,8 +58,6 @@ add_library(aseprite-library
   xml_widgets.cpp
   app/color.cpp
   app/color_utils.cpp
-  base/errno_string.cpp
-  base/mem_utils.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
   commands/cmd_background_from_layer.cpp
