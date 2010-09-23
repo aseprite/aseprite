@@ -105,13 +105,10 @@ void CelPropertiesCommand::onExecute(Context* context)
 		      sprite->getStock()->image[cel->image]->w)*
       sprite->getStock()->image[cel->image]->h;
 
-    usprintf(buf, "%dx%d (",
+    usprintf(buf, "%dx%d (%s)",
 	     sprite->getStock()->image[cel->image]->w,
-	     sprite->getStock()->image[cel->image]->h);
-    get_pretty_memory_size(memsize,
-			   buf+ustrsize(buf),
-			   sizeof(buf)-ustrsize(buf));
-    ustrcat(buf, ")");
+	     sprite->getStock()->image[cel->image]->h,
+	     get_pretty_memory_size(memsize).c_str());
 
     label_size->setText(buf);
 

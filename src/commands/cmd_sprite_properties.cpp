@@ -110,11 +110,11 @@ void SpritePropertiesCommand::onExecute(Context* context)
     type->setText(imgtype_text.c_str());
 
     // Sprite size (width and height)
-    usprintf(buf, "%dx%d (", sprite->getWidth(), sprite->getHeight());
-    get_pretty_memory_size(sprite->getMemSize(),
-			   buf+ustrsize(buf),
-			   sizeof(buf)-ustrsize(buf));
-    ustrcat(buf, ")");
+    usprintf(buf, "%dx%d (%s)",
+	     sprite->getWidth(),
+	     sprite->getHeight(),
+	     get_pretty_memory_size(sprite->getMemSize()));
+
     size->setText(buf);
 
     // How many frames

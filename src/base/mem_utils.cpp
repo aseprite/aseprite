@@ -6,16 +6,24 @@
 
 #include "config.h"
 
-#include <allegro/unicode.h>
+#include <string>
+#include <cstring>
 
-char *get_pretty_memory_size(unsigned int memsize, char *buf, unsigned int bufsize)
+using namespace std;
+
+string get_pretty_memory_size(size_t memsize)
 {
-  if (memsize < 1000)
-    uszprintf(buf, bufsize, "%d bytes", memsize);
-  else if (memsize < 1000*1000)
-    uszprintf(buf, bufsize, "%0.1fK", memsize/1024.0f);
-  else
-    uszprintf(buf, bufsize, "%0.1fM", memsize/(1024.0f*1024.0f));
+  char buf[256];
+
+  if (memsize < 1000) {
+    sprintf(buf, "%d bytes", memsize);
+  }
+  else if (memsize < 1000*1000) {
+    sprintf(buf, "%0.1fK", memsize/1024.0f);
+  }
+  else {
+    sprintf(buf, "%0.1fM", memsize/(1024.0f*1024.0f));
+  }
 
   return buf;
 }

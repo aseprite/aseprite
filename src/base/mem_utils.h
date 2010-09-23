@@ -7,7 +7,9 @@
 #ifndef BASE_MEM_UTILS_H_INCLUDED
 #define BASE_MEM_UTILS_H_INCLUDED
 
-char* get_pretty_memory_size(unsigned int memsize, char* buf, unsigned int bufsize);
+#include <string>
+
+std::string get_pretty_memory_size(size_t memsize);
 
 #endif
 
