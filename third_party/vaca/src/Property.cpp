@@ -30,7 +30,6 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Vaca/Property.h"
-#include "Vaca/Debug.h"
 
 using namespace Vaca;
 

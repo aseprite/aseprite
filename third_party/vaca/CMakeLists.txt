@@ -6,7 +6,6 @@ include_directories(include)
 add_library(vaca
   src/Application.cpp
   src/Component.cpp
-  src/Debug.cpp
   src/Event.cpp
   src/Exception.cpp
   src/Mutex.cpp

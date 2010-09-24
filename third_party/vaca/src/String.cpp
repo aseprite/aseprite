@@ -30,8 +30,8 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Vaca/String.h"
-#include "Vaca/Debug.h"
 #include "Vaca/Exception.h"
+#include <cassert>
 #include <cstdio>
 #include <cwchar>
 #include <cstdarg>

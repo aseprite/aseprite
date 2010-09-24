@@ -30,7 +30,6 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Vaca/Referenceable.h"
-#include "Vaca/Debug.h"
 
 #ifndef NDEBUG
   #include "Vaca/Mutex.h"
@@ -42,6 +41,9 @@
     #include <windows.h>
   #endif
 #endif
+
+#include <cassert>
+#include <iostream>
 
 using namespace Vaca;
 
@@ -59,7 +61,6 @@ Referenceable::Referenceable()
 #ifndef NDEBUG
   {
     ScopedLock hold(s_mutex);
-    VACA_TRACE("new Referenceable (%d, %p)\n", s_list.size()+1, this);
     s_list.push_back(this);
   }
 #endif
@@ -76,7 +77,6 @@ Referenceable::~Referenceable()
 #ifndef NDEBUG
   {
     ScopedLock hold(s_mutex);
-    VACA_TRACE("delete Referenceable (%d, %p)\n", s_list.size()-1, this);
     remove_from_container(s_list, this);
   }
 #endif
@@ -140,7 +140,7 @@ void Referenceable::showLeaks()
 
   for (std::vector<Referenceable*>::iterator
 	 it=s_list.begin(); it!=s_list.end(); ++it) {
-    VACA_TRACE("leak Referenceable %p\n", *it);
+    std::clog << "leak Referenceable " << (*it) << "\n";
   }
 }
 #endif

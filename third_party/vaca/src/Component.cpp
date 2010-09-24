@@ -32,7 +32,6 @@
 #include "Vaca/Component.h"
 #include "Vaca/SharedPtr.h"
 #include "Vaca/Property.h"
-#include "Vaca/Debug.h"
 
 using namespace Vaca;
 
@@ -45,7 +44,6 @@ using namespace Vaca;
 */
 Component::Component()
 {
-  VACA_TRACE("new Component (%p)\n", this);
 }
 
 /**
@@ -57,7 +55,6 @@ Component::Component()
 */
 Component::~Component()
 {
-  VACA_TRACE("delete Component (%p)\n", this);
 }
 
 PropertyPtr Component::getProperty(const String& name)
