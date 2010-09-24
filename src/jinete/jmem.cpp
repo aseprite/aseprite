@@ -36,8 +36,8 @@
 #include <string.h>
 #include <allegro/unicode.h>
 
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
 
 #if !defined MEMLEAK
 
@@ -131,9 +131,6 @@ typedef struct slot_t
   unsigned long size;
   struct slot_t* next;
 } slot_t;
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 static bool memleak_status = false;
 static slot_t* headslot;

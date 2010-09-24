@@ -39,12 +39,11 @@
 #define FILE_LOAD_SEQUENCE_YES		(1<<2)
 #define FILE_LOAD_ONE_FRAME		(1<<3)
 
-namespace Vaca { class Mutex; }
-
 class Cel;
 class Image;
 class Layer;
 class LayerImage;
+class Mutex;
 class Palette;
 class Sprite;
 
@@ -81,7 +80,7 @@ struct FileOp
   char* filename;		/* file-name to load/save */
 
   /* shared fields between threads */
-  Vaca::Mutex* mutex;		/* mutex to access to the next two fields */
+  Mutex* mutex;			/* mutex to access to the next two fields */
   float progress;		/* progress (1.0 is ready) */
   char* error;			/* error string */
   bool done : 1;		/* true if the operation finished */

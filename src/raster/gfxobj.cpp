@@ -22,13 +22,9 @@
 #include <map>
 #include <utility>
 
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
-
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
 #include "raster/gfxobj.h"
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 static Mutex* objects_mutex;
 static GfxObjId object_id = 0;		         // Last object ID created

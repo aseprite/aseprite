@@ -23,12 +23,12 @@
 
 #include "jinete/jstring.h"
 #include "jinete/jwindow.h"
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
 
+#include "app.h"
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "app.h"
 #include "ui_context.h"
 
 #ifdef ALLEGRO_WINDOWS
@@ -36,9 +36,6 @@
 #endif
 
 #ifdef ALLEGRO_WINDOWS
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 static WNDPROC base_wnd_proc = NULL;
 static std::vector<jstring>* dropped_files;

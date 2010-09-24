@@ -22,10 +22,10 @@
 #include <string.h>
 
 #include "jinete/jinete.h"
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
 
 #include "app.h"
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
 #include "core/cfg.h"
 #include "effect/effect.h"
 #include "modules/editors.h"
@@ -33,9 +33,6 @@
 #include "raster/sprite.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 /**********************************************************************
  Apply effect in two threads: bg-thread to modify the sprite, and the

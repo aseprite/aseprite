@@ -22,16 +22,13 @@
 #include "jinete/jthread.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
 
 #include "app.h"
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 Job::Job(const char* job_name)
 {

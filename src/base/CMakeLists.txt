@@ -3,4 +3,5 @@
 
 add_library(base-lib
   errno_string.cpp
-  mem_utils.cpp)
+  mem_utils.cpp
+  mutex.cpp)

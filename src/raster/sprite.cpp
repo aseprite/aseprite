@@ -22,9 +22,9 @@
 #include <vector>
 
 #include "jinete/jlist.h"
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
 
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
 #include "util/boundary.h"
@@ -32,9 +32,6 @@
 #ifdef _MSC_VER
   #pragma warning(disable: 4355)
 #endif
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 static Layer* index2layer(const Layer* layer, int index, int* index_count);
 static int layer2index(const Layer* layer, const Layer* find_layer, int* index_count);
@@ -429,7 +426,7 @@ private:
   Image* m_extraImage;	  // Image of the extra cel 
 
   // Mutex to modify the 'locked' flag.
-  Vaca::Mutex* m_mutex;
+  Mutex* m_mutex;
 
   // True if some thread is writing the sprite.
   bool m_write_lock;

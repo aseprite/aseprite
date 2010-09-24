@@ -32,8 +32,8 @@
 #include "Vaca/Referenceable.h"
 
 #ifndef NDEBUG
-  #include "Vaca/Mutex.h"
-  #include "Vaca/ScopedLock.h"
+  #include "base/mutex.h"
+  #include "base/scoped_lock.h"
   #include <vector>
   #include <typeinfo>
   #ifdef VACA_ON_WINDOWS

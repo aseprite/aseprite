@@ -18,16 +18,16 @@
 
 #include "config.h"
 
-#include <string.h>
 #include <allegro.h>
+#include <string.h>
 
 #include "jinete/jalert.h"
 #include "jinete/jlist.h"
-#include "Vaca/Mutex.h"
-#include "Vaca/ScopedLock.h"
 
-#include "console.h"
 #include "app.h"
+#include "base/mutex.h"
+#include "base/scoped_lock.h"
+#include "console.h"
 #include "file/file.h"
 #include "file/format_options.h"
 #include "modules/gui.h"
@@ -35,9 +35,6 @@
 #include "raster/raster.h"
 #include "util/quantize.h"
 #include "widgets/statebar.h"
-
-using Vaca::Mutex;
-using Vaca::ScopedLock;
 
 extern FileFormat format_ase;
 extern FileFormat format_bmp;
