@@ -19,8 +19,8 @@
 #ifndef APP_H_INCLUDED
 #define APP_H_INCLUDED
 
+#include "base/signal.h"
 #include "jinete/jbase.h"
-#include "Vaca/Signal.h"
 
 #include <vector>
 
@@ -58,11 +58,11 @@ public:
   RecentFiles* getRecentFiles() const;
 
   // App Signals
-  Vaca::Signal0<void> Exit;
-  Vaca::Signal0<void> PaletteChange;
-  Vaca::Signal0<void> PenSizeBeforeChange;
-  Vaca::Signal0<void> PenSizeAfterChange;
-  Vaca::Signal0<void> CurrentToolChange;
+  Signal0<void> Exit;
+  Signal0<void> PaletteChange;
+  Signal0<void> PenSizeBeforeChange;
+  Signal0<void> PenSizeAfterChange;
+  Signal0<void> CurrentToolChange;
 
 private:
   class Modules;

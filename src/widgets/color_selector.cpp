@@ -21,13 +21,13 @@
 #include <allegro.h>
 #include <vector>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "app/color.h"
-#include "modules/gui.h"
 #include "modules/gfx.h"
+#include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -118,7 +118,7 @@ Frame* colorselector_new()
     RadioButton* model_button = new RadioButton(m->text, 1, JI_BUTTON);
     colorselector->model_buttons.push_back(model_button);
     setup_mini_look(model_button);
-    model_button->Click.connect(Vaca::Bind<bool>(&select_model_hook, window, m));
+    model_button->Click.connect(Bind<bool>(&select_model_hook, window, m));
     jwidget_add_child(models_box, model_button);
     
     // Create the color-model container

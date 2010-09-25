@@ -20,12 +20,12 @@
 
 #include <allegro/unicode.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
-#include "commands/command.h"
 #include "app/color.h"
 #include "base/mem_utils.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -121,7 +121,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     frames->setTextf("%d", sprite->getTotalFrames());
 
     // Speed button
-    speed->Click.connect(Vaca::Bind<void>(&dialogs_frame_length, sprite, -1));
+    speed->Click.connect(Bind<void>(&dialogs_frame_length, sprite, -1));
   }
 
   window->remap_window();

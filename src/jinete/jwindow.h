@@ -32,8 +32,8 @@
 #ifndef JINETE_JWINDOW_H_INCLUDED
 #define JINETE_JWINDOW_H_INCLUDED
 
+#include "base/signal.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Signal.h"
 
 namespace Vaca {
   class CloseEvent { };		// TODO
@@ -79,7 +79,7 @@ public:
   bool is_wantfocus() const;
 
   // Signals
-  Vaca::Signal1<void, Vaca::CloseEvent&> Close;
+  Signal1<void, Vaca::CloseEvent&> Close;
 
 protected:
   bool onProcessMessage(JMessage msg);

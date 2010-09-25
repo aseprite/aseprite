@@ -18,15 +18,15 @@
 
 #include "config.h"
 
+#include <allegro/unicode.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include <allegro/unicode.h>
 
-#include "Vaca/Bind.h"
-#include "jinete/jinete.h"
 #include "ase_exception.h"
+#include "base/bind.h"
+#include "jinete/jinete.h"
 #include "modules/gui.h"
 
 #include "tinyxml.h"
@@ -134,7 +134,7 @@ static Widget* convert_xmlelement_to_widget(TiXmlElement* elem, Widget* root)
       if (closewindow && root) {
 	if (Frame* frame = dynamic_cast<Frame*>(root)) {
 	  static_cast<Button*>(widget)->
-	    Click.connect(Vaca::Bind<void>(&Frame::closeWindow, frame, widget));
+	    Click.connect(Bind<void>(&Frame::closeWindow, frame, widget));
 	}
       }
     }

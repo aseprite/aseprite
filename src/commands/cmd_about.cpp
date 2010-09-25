@@ -20,8 +20,8 @@
 
 #include <allegro.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "modules/gui.h"
@@ -97,7 +97,7 @@ void AboutCommand::onExecute(Context* context)
   		     close_button->border_width.r + 16*jguiscale(),
   		     close_button->border_width.b);
 
-  close_button->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, frame.get(), close_button));
+  close_button->Click.connect(Bind<void>(&Frame::closeWindow, frame.get(), close_button));
 
   frame->open_window_fg();
 }

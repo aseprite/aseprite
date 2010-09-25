@@ -19,7 +19,7 @@
 #ifndef WIDGETS_COLOR_BAR_H_INCLUDED
 #define WIDGETS_COLOR_BAR_H_INCLUDED
 
-#include "Vaca/Signal.h"
+#include "base/signal.h"
 #include "jinete/jwidget.h"
 
 #include "app/color.h"
@@ -44,8 +44,8 @@ public:
   Color getColorByPosition(int x, int y);
 
   // Signals
-  Vaca::Signal1<void, const Color&> FgColorChange;
-  Vaca::Signal1<void, const Color&> BgColorChange;
+  Signal1<void, const Color&> FgColorChange;
+  Signal1<void, const Color&> BgColorChange;
 
 protected:
   bool onProcessMessage(JMessage msg);

@@ -20,8 +20,8 @@
 
 #include <allegro.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "commands/command.h"
@@ -138,7 +138,7 @@ void OptionsCommand::onExecute(Context* context)
   jwidget_add_child(checked_bg_color2_box, m_checked_bg_color2);
 
   // Reset button
-  checked_bg_reset->Click.connect(Vaca::Bind<void>(&OptionsCommand::onResetCheckedBg, this));
+  checked_bg_reset->Click.connect(Bind<void>(&OptionsCommand::onResetCheckedBg, this));
 
   // Undo limit
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));

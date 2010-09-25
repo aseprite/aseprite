@@ -20,13 +20,13 @@
 
 #include <stdio.h>
 
+#include "base/bind.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jentry.h"
 #include "jinete/jhook.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
-#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
@@ -124,7 +124,7 @@ void DespeckleCommand::onExecute(Context* context)
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK(check_tiled, JI_SIGNAL_CHECK_CHANGE, tiled_change_hook, 0);
 
-  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
+  check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
   
   /* default position */
   window->remap_window();

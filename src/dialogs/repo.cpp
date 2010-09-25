@@ -21,8 +21,8 @@
 #include <allegro/gfx.h>
 #include <allegro/unicode.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 #include "core/cfg.h"
 #include "dialogs/repo.h"
@@ -53,10 +53,10 @@ void ji_show_repo_dlg(RepoDlg *repo_dlg)
   jwidget_add_hook(repo_dlg->listbox, repo_listbox_type(),
 		   repo_listbox_msg_proc, repo_dlg);
 
-  repo_dlg->button_use->Click.connect(Vaca::Bind<void>(&use_command, repo_dlg->button_use, repo_dlg));
-  repo_dlg->button_add->Click.connect(Vaca::Bind<void>(&add_command, repo_dlg->button_add, repo_dlg));
-  repo_dlg->button_delete->Click.connect(Vaca::Bind<void>(&delete_command, repo_dlg->button_delete, repo_dlg));
-  button_close->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window, button_close));
+  repo_dlg->button_use->Click.connect(Bind<void>(&use_command, repo_dlg->button_use, repo_dlg));
+  repo_dlg->button_add->Click.connect(Bind<void>(&add_command, repo_dlg->button_add, repo_dlg));
+  repo_dlg->button_delete->Click.connect(Bind<void>(&delete_command, repo_dlg->button_delete, repo_dlg));
+  button_close->Click.connect(Bind<void>(&Frame::closeWindow, window, button_close));
 
   jwidget_magnetic(repo_dlg->button_use, true);
 

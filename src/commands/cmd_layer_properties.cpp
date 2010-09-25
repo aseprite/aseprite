@@ -18,11 +18,11 @@
 
 #include "config.h"
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
-#include "commands/command.h"
 #include "app.h"
+#include "commands/command.h"
 #include "modules/gui.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -74,8 +74,8 @@ void LayerPropertiesCommand::onExecute(Context* context)
   Button* button_ok = new Button("&OK");
   Button* button_cancel = new Button("&Cancel");
 
-  button_ok->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_ok));
-  button_cancel->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
+  button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
+  button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   if (with_blend_modes) {
     label_bm = new Label("Blend mode:");

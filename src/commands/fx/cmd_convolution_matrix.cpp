@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "base/bind.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -30,13 +31,12 @@
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
-#include "Vaca/Bind.h"
 
+#include "app/color.h"
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "app/color.h"
 #include "effect/colcurve.h"
 #include "effect/convmatr.h"
 #include "effect/effect.h"
@@ -135,10 +135,10 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 
   HOOK(list_convmatr, JI_SIGNAL_LISTBOX_CHANGE, list_change_hook, 0);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
-  check_tiled->Click.connect(Vaca::Bind<void>(&tiled_change_hook, check_tiled));
-  reload->Click.connect(Vaca::Bind<bool>(&reload_select_hook, list_convmatr));
-  generate->Click.connect(Vaca::Bind<void>(&generate_select_hook));
+  check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
+  check_tiled->Click.connect(Bind<void>(&tiled_change_hook, check_tiled));
+  reload->Click.connect(Bind<bool>(&reload_select_hook, list_convmatr));
+  generate->Click.connect(Bind<void>(&generate_select_hook));
 
   // TODO enable this someday
   generate->setEnabled(false);

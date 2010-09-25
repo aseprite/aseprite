@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "base/bind.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -25,13 +26,12 @@
 #include "jinete/jslider.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
-#include "Vaca/Bind.h"
 
+#include "app/color.h"
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
 #include "core/cfg.h"
-#include "app/color.h"
 #include "effect/effect.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -104,7 +104,7 @@ void InvertColorCommand::onExecute(Context* context)
   jwidget_add_child(window, preview);
 
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
-  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
+  check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
   
   /* default position */
   window->remap_window();

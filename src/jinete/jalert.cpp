@@ -55,12 +55,12 @@
 
 #include "config.h"
 
+#include <allegro/unicode.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <allegro/unicode.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 static Frame* create_alert(char *buf, JList *labels, JList *buttons);
 
@@ -190,7 +190,7 @@ static Frame* create_alert(char *buf, JList *labels, JList *buttons)
 
 	  usprintf(button_name, "button-%d", jlist_length(*buttons));
 	  button_widget->setName(button_name);
-	  button_widget->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window, button_widget));
+	  button_widget->Click.connect(Bind<void>(&Frame::closeWindow, window, button_widget));
 	}
 
 	buf[c] = chr;

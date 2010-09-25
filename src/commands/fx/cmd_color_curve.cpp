@@ -18,15 +18,15 @@
 
 #include "config.h"
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
+#include "app.h"
+#include "app/color.h"
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
-#include "app.h"
 #include "core/cfg.h"
-#include "app/color.h"
 #include "effect/colcurve.h"
 #include "effect/effect.h"
 #include "modules/gui.h"
@@ -124,7 +124,7 @@ void ColorCurveCommand::onExecute(Context* context)
   jwidget_add_child(box_target, target_button);
   jwidget_add_child(window, preview);
 
-  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
+  check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
   jwidget_add_hook(window, -1, window_msg_proc, NULL);
   
   /* default position */

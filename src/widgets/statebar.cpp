@@ -23,9 +23,9 @@
 #include <cstdio>
 #include <cstring>
 
-#include "jinete/jinete.h"
+#include "base/bind.h"
 #include "gfx/size.h"
-#include "Vaca/Bind.h"
+#include "jinete/jinete.h"
 
 #include "app.h"
 #include "commands/commands.h"
@@ -81,7 +81,7 @@ StatusBar::StatusBar()
     (name) = new Button(text);						\
     (name)->user_data[0] = this;					\
     setup_mini_look(name);						\
-    (name)->Click.connect(Vaca::Bind<void>(&ani_button_command, (name), action)); \
+    (name)->Click.connect(Bind<void>(&ani_button_command, (name), action)); \
   }
 
 #define ICON_NEW(name, icon, action)					\

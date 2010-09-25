@@ -1,49 +1,13 @@
-// Vaca - Visual Application Components Abstraction
-// Copyright (c) 2005-2009 David Capello
-// All rights reserved.
+// ASE base library
+// Copyright (C) 2001-2010  David Capello
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions
-// are met:
-//
-// * Redistributions of source code must retain the above copyright
-//   notice, this list of conditions and the following disclaimer.
-// * Redistributions in binary form must reproduce the above copyright
-//   notice, this list of conditions and the following disclaimer in
-//   the documentation and/or other materials provided with the
-//   distribution.
-// * Neither the name of the author nor the names of its contributors
-//   may be used to endorse or promote products derived from this
-//   software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-// COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
+// This source file is ditributed under a BSD-like license, please
+// read LICENSE.txt for more information.
 
-#ifndef VACA_SLOT_H
-#define VACA_SLOT_H
+#ifndef BASE_SLOT_H_INCLUDED
+#define BASE_SLOT_H_INCLUDED
 
-#include "Vaca/base.h"
-
-namespace Vaca {
-
-/**
-   @defgroup slot_group Slot Classes
-   @{
- */
-
-// ======================================================================
-// Slot0
-
+// Slot0 - Base class for delegates of zero arguments.
 template<typename R>
 class Slot0
 {
@@ -55,9 +19,7 @@ public:
   virtual Slot0* clone() const = 0;
 };
 
-// ======================================================================
 // Slot0_fun - hold a F instance and use the function call operator
-
 template<typename R, typename F>
 class Slot0_fun : public Slot0<R>
 {
@@ -82,9 +44,7 @@ public:
   Slot0_fun* clone() const { return new Slot0_fun(*this); }
 };
   
-// ======================================================================
 // Slot0_mem - pointer to a member function of the T class
-
 template<typename R, class T>
 class Slot0_mem : public Slot0<R>
 {
@@ -111,9 +71,7 @@ public:
   Slot0_mem* clone() const { return new Slot0_mem(*this); }
 };
 
-// ======================================================================
-// Slot1
-
+// Slot1 - Base class for delegates of one argument.
 template<typename R, typename A1>
 class Slot1
 {
@@ -125,9 +83,7 @@ public:
   virtual Slot1* clone() const = 0;
 };
 
-// ======================================================================
 // Slot1_fun - hold a F instance and use the function call operator
-
 template<typename R, typename F, typename A1>
 class Slot1_fun : public Slot1<R, A1>
 {
@@ -152,9 +108,7 @@ public:
   Slot1_fun* clone() const { return new Slot1_fun(*this); }
 };
   
-// ======================================================================
 // Slot1_mem - pointer to a member function of the T class
-
 template<typename R, class T, typename A1>
 class Slot1_mem : public Slot1<R, A1>
 {
@@ -181,9 +135,7 @@ public:
   Slot1_mem* clone() const { return new Slot1_mem(*this); }
 };
 
-// ======================================================================
-// Slot2
-
+// Slot2 - Base class for delegates of two arguments.
 template<typename R, typename A1, typename A2>
 class Slot2
 {
@@ -195,9 +147,7 @@ public:
   virtual Slot2* clone() const = 0;
 };
 
-// ======================================================================
 // Slot2_fun - hold a F instance and use the function call operator
-
 template<typename R, typename F, typename A1, typename A2>
 class Slot2_fun : public Slot2<R, A1, A2>
 {
@@ -222,9 +172,7 @@ public:
   Slot2_fun* clone() const { return new Slot2_fun(*this); }
 };
 
-// ======================================================================
 // Slot2_mem - pointer to a member function of the T class
-
 template<typename R, class T, typename A1, typename A2>
 class Slot2_mem : public Slot2<R, A1, A2>
 {
@@ -251,10 +199,4 @@ public:
   Slot2_mem* clone() const { return new Slot2_mem(*this); }
 };
 
-// ======================================================================
-
-/** @} */
-
-} // namespace Vaca
-
-#endif // VACA_SLOT_H
+#endif

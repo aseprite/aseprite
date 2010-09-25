@@ -29,8 +29,8 @@
 #include <allegro/internal/aintern.h>
 #include <errno.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 #include "app.h"
 #include "core/cfg.h"
@@ -180,9 +180,9 @@ jstring ase_file_selector(const jstring& message,
     setup_mini_look(goforward);
     setup_mini_look(goup);
 
-    goback->Click.connect(Vaca::Bind<void>(&goback_command, goback));
-    goforward->Click.connect(Vaca::Bind<void>(&goforward_command, goforward));
-    goup->Click.connect(Vaca::Bind<void>(&goup_command, goup));
+    goback->Click.connect(Bind<void>(&goback_command, goback));
+    goforward->Click.connect(Bind<void>(&goforward_command, goforward));
+    goup->Click.connect(Bind<void>(&goup_command, goup));
 
     JWidget view = jview_new();
     fileview = fileview_new(start_folder, exts);

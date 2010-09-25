@@ -20,15 +20,16 @@
 
 #include <stdio.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
+#include "app.h"
+#include "app/color.h"
+#include "app/color_utils.h"
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"
 #include "console.h"
-#include "app.h"
 #include "core/cfg.h"
-#include "app/color.h"
 #include "effect/effect.h"
 #include "effect/replcol.h"
 #include "modules/gui.h"
@@ -40,7 +41,6 @@
 #include "widgets/color_button.h"
 #include "widgets/preview.h"
 #include "widgets/target.h"
-#include "app/color_utils.h"
 
 static ColorButton* button_color1;
 static ColorButton* button_color2;
@@ -131,7 +131,7 @@ void ReplaceColorCommand::onExecute(Context* context)
   HOOK(button_color2, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, 2);
   HOOK(target_button, SIGNAL_TARGET_BUTTON_CHANGE, target_change_hook, 0);
   HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, 0);
-  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, check_preview));
+  check_preview->Click.connect(Bind<void>(&preview_change_hook, check_preview));
 
   /* default position */
   window->remap_window();

@@ -20,8 +20,8 @@
 
 #include <allegro/unicode.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
 #include "commands/command.h"
 #include "core/cfg.h"
@@ -205,7 +205,7 @@ void SpriteSizeCommand::onExecute(Context* context)
   width_px->setTextf("%d", sprite->getWidth());
   height_px->setTextf("%d", sprite->getHeight());
 
-  m_lockRatio->Click.connect(Vaca::Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
+  m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
 
   HOOK(width_px, JI_SIGNAL_ENTRY_CHANGE, width_px_change_hook, 0);
   HOOK(height_px, JI_SIGNAL_ENTRY_CHANGE, height_px_change_hook, 0);

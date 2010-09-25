@@ -32,7 +32,7 @@
 #ifndef JINETE_JLINK_LABEL_H_INCLUDED
 #define JINETE_JLINK_LABEL_H_INCLUDED
 
-#include "Vaca/Signal.h"
+#include "base/signal.h"
 #include "jinete/jcustom_label.h"
 #include <string>
 
@@ -44,7 +44,7 @@ public:
   LinkLabel(const char* urlOrText);
   LinkLabel(const char* url, const char* text);
 
-  Vaca::Signal0<void> Click;
+  Signal0<void> Click;
 
 protected:
   bool onProcessMessage(JMessage msg);

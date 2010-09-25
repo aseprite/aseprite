@@ -18,6 +18,7 @@
 
 #include "config.h"
 
+#include "base/bind.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -25,11 +26,11 @@
 #include "jinete/jslider.h"
 #include "jinete/jwidget.h"
 #include "jinete/jwindow.h"
-#include "Vaca/Bind.h"
 
 #include "app.h"
-#include "core/cfg.h"
 #include "app/color.h"
+#include "app/color_utils.h"
+#include "core/cfg.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"
@@ -39,7 +40,6 @@
 #include "util/misc.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_button.h"
-#include "app/color_utils.h"
 
 static ColorButton* button_color;
 static CheckBox* check_preview;
@@ -96,14 +96,14 @@ void dialogs_mask_color(Sprite* sprite)
   button_1->user_data[1] = sprite;
   button_2->user_data[1] = sprite;
 
-  button_1->Click.connect(Vaca::Bind<void>(&button_1_command, button_1));
-  button_2->Click.connect(Vaca::Bind<void>(&button_2_command, button_2));
-  button_ok->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_ok));
-  button_cancel->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
+  button_1->Click.connect(Bind<void>(&button_1_command, button_1));
+  button_2->Click.connect(Bind<void>(&button_2_command, button_2));
+  button_ok->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_ok));
+  button_cancel->Click.connect(Bind<void>(&Frame::closeWindow, window.get(), button_cancel));
 
   HOOK(button_color, SIGNAL_COLORBUTTON_CHANGE, color_change_hook, sprite);
   HOOK(slider_tolerance, JI_SIGNAL_SLIDER_CHANGE, slider_change_hook, sprite);
-  check_preview->Click.connect(Vaca::Bind<void>(&preview_change_hook, sprite));
+  check_preview->Click.connect(Bind<void>(&preview_change_hook, sprite));
 
   jwidget_magnetic(button_ok, true);
   jwidget_expansive(button_color, true);

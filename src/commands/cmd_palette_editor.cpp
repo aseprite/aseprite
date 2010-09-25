@@ -23,7 +23,7 @@
 #include <string.h>
 #include <vector>
 
-#include "Vaca/Bind.h"
+#include "base/bind.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
@@ -182,7 +182,7 @@ void PaletteEditorCommand::onExecute(Context* context)
     first_time = true;
 
     // Append hooks
-    window->Close.connect(Vaca::Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
+    window->Close.connect(Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
 
     // Hook fg/bg color changes (by eyedropper mainly)
     app_get_colorbar()->FgColorChange.connect(&on_color_changed);
@@ -265,11 +265,11 @@ void PaletteEditorCommand::onExecute(Context* context)
     // Hide (or show) the "More Options" depending the saved value in .cfg file
     more_options->setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));
 
-    button_load->Click.connect(Vaca::Bind<void>(&load_command, button_load));
-    button_save->Click.connect(Vaca::Bind<void>(&save_command, button_save));
-    button_ramp->Click.connect(Vaca::Bind<void>(&ramp_command, button_ramp));
-    button_sort->Click.connect(Vaca::Bind<void>(&sort_command, button_sort));
-    button_quantize->Click.connect(Vaca::Bind<void>(&quantize_command, button_quantize));
+    button_load->Click.connect(Bind<void>(&load_command, button_load));
+    button_save->Click.connect(Bind<void>(&save_command, button_save));
+    button_ramp->Click.connect(Bind<void>(&ramp_command, button_ramp));
+    button_sort->Click.connect(Bind<void>(&sort_command, button_sort));
+    button_quantize->Click.connect(Bind<void>(&quantize_command, button_quantize));
 
     select_rgb_hook(NULL, NULL);
   }

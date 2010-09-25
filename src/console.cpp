@@ -19,14 +19,14 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
+#include "base/bind.h"
 #include "jinete/jinete.h"
-#include "Vaca/Bind.h"
 
-#include "console.h"
 #include "app.h"
+#include "console.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
 
@@ -58,7 +58,7 @@ Console::Console()
       return;
 
     // The "button" closes the console
-    button->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, window, button));
+    button->Click.connect(Bind<void>(&Frame::closeWindow, window, button));
 
     jview_attach(view, textbox);
 

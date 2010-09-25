@@ -20,7 +20,7 @@
 
 #include <allegro.h>
 
-#include "Vaca/Bind.h"
+#include "base/bind.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
@@ -296,15 +296,15 @@ void ConfigureTools::onExecute(Context* context)
     jwidget_add_child(brush_type_box, brush_type);
 
     // Slots
-    window->Close.connect(Vaca::Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
-    m_tiled->Click.connect(Vaca::Bind<void>(&ConfigureTools::onTiledClick, this));
-    m_tiledX->Click.connect(Vaca::Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_X_AXIS, m_tiledX));
-    m_tiledY->Click.connect(Vaca::Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_Y_AXIS, m_tiledY));
-    m_viewGrid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onViewGridClick, this));
-    m_pixelGrid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onPixelGridClick, this));
-    set_grid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onSetGridClick, this));
-    m_snapToGrid->Click.connect(Vaca::Bind<void>(&ConfigureTools::onSnapToGridClick, this));
-    m_onionSkin->Click.connect(Vaca::Bind<void>(&ConfigureTools::onOnionSkinClick, this));
+    window->Close.connect(Bind<bool>(&window_close_hook, (JWidget)window, (void*)0));
+    m_tiled->Click.connect(Bind<void>(&ConfigureTools::onTiledClick, this));
+    m_tiledX->Click.connect(Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_X_AXIS, m_tiledX));
+    m_tiledY->Click.connect(Bind<void>(&ConfigureTools::onTiledXYClick, this, TILED_Y_AXIS, m_tiledY));
+    m_viewGrid->Click.connect(Bind<void>(&ConfigureTools::onViewGridClick, this));
+    m_pixelGrid->Click.connect(Bind<void>(&ConfigureTools::onPixelGridClick, this));
+    set_grid->Click.connect(Bind<void>(&ConfigureTools::onSetGridClick, this));
+    m_snapToGrid->Click.connect(Bind<void>(&ConfigureTools::onSnapToGridClick, this));
+    m_onionSkin->Click.connect(Bind<void>(&ConfigureTools::onOnionSkinClick, this));
 
     App::instance()->Exit.connect(&on_exit_delete_this_widget);
     App::instance()->PenSizeAfterChange.connect(&on_pen_size_after_change);

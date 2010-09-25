@@ -19,10 +19,10 @@
 #ifndef WIDGETS_EDITOR_H_INCLUDED
 #define WIDGETS_EDITOR_H_INCLUDED
 
+#include "app/color.h"
+#include "base/signal.h"
 #include "jinete/jbase.h"
 #include "jinete/jwidget.h"
-#include "app/color.h"
-#include "Vaca/Signal.h"
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
@@ -62,7 +62,7 @@ class Editor : public Widget
     void drawDecorator(Editor*editor, BITMAP* bmp);
     bool isInsideDecorator(int x, int y);
 
-    Vaca::Signal0<void> Click;
+    Signal0<void> Click;
   };
 
   // editor states

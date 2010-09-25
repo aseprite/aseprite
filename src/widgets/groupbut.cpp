@@ -18,9 +18,10 @@
 
 #include "config.h"
 
-#include <stdarg.h>
 #include <allegro/unicode.h>
+#include <stdarg.h>
 
+#include "base/bind.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
@@ -28,7 +29,6 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Bind.h"
 
 #include "modules/gui.h"
 #include "widgets/groupbut.h"
@@ -75,7 +75,7 @@ JWidget group_button_new(int w, int h, int first_selected, ...)
       if (icon >= 0)
 	add_gfxicon_to_button(radio, icon, JI_CENTER | JI_MIDDLE);
 
-      radio->Click.connect(Vaca::Bind<bool>(&radio_change_hook, vbox));
+      radio->Click.connect(Bind<bool>(&radio_change_hook, vbox));
 
       if (c == first_selected)
 	radio->setSelected(true);

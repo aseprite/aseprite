@@ -32,8 +32,8 @@
 #ifndef JINETE_JBUTTON_H_INCLUDED
 #define JINETE_JBUTTON_H_INCLUDED
 
+#include "base/signal.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Signal.h"
 #include "Vaca/NonCopyable.h"
 #include <vector>
 
@@ -62,7 +62,7 @@ public:
   int getDrawType() const;
 
   // Signals
-  Vaca::Signal1<void, Event&> Click; ///< @see onClick
+  Signal1<void, Event&> Click;
 
 protected:
   // Events

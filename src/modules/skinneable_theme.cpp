@@ -22,7 +22,7 @@
 #include <allegro/internal/aintern.h>
 
 #include "Vaca/SharedPtr.h"
-#include "Vaca/Bind.h"
+#include "base/bind.h"
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
 
@@ -532,7 +532,7 @@ void SkinneableTheme::init_widget(JWidget widget)
 	    jwidget_decorative(button, true);
 	    jwidget_add_child(widget, button);
 	    button->setName("theme_close_button");
-	    button->Click.connect(Vaca::Bind<void>(&Frame::closeWindow, (Frame*)widget, button));
+	    button->Click.connect(Bind<void>(&Frame::closeWindow, (Frame*)widget, button));
 	  }
 #endif
 	}

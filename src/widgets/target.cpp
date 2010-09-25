@@ -21,12 +21,12 @@
 #include <allegro.h>
 #include <string.h>
 
+#include "base/bind.h"
 #include "jinete/jbox.h"
 #include "jinete/jbutton.h"
 #include "jinete/jhook.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Bind.h"
 
 #include "core/cfg.h"
 #include "effect/effect.h"
@@ -51,7 +51,7 @@ JWidget target_button_new(int imgtype, bool with_channels)
   if (widget) {								\
     jwidget_set_border(widget, 2 * jguiscale());			\
     jwidget_add_child(box, widget);					\
-    widget->Click.connect(Vaca::Bind<bool>(&hook, widget, vbox));	\
+    widget->Click.connect(Bind<bool>(&hook, widget, vbox));	\
   }
 
   int default_targets = 0;
