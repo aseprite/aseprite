@@ -241,7 +241,6 @@ add_library(aseprite-library
   util/clipboard.cpp
   util/col_file.cpp
   util/filetoks.cpp
-  util/hash.cpp
   util/misc.cpp
   util/msk_file.cpp
   util/pic_file.cpp
