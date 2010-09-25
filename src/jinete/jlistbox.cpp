@@ -41,7 +41,9 @@
 #include "jinete/jtheme.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
+
+using namespace gfx;
 
 static bool listbox_msg_proc(JWidget widget, JMessage msg);
 static void listbox_request_size(JWidget widget, int *w, int *h);

@@ -26,12 +26,12 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 
-#include "Vaca/Point.h"
-#include "Vaca/Rect.h"
-
 #include "app.h"
+#include "app/color_utils.h"
 #include "console.h"
 #include "core/cfg.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
@@ -40,14 +40,12 @@
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "widgets/editor.h"
-#include "app/color_utils.h"
-
-using Vaca::Rect;
-using Vaca::Point;
 
 static BITMAP* gfx_bmps[GFX_BITMAP_COUNT];
 
 #include "modules/gfxdata.cpp"
+
+using namespace gfx;
 
 static void convert_data_to_bitmap(DATA *data, BITMAP** bmp)
 {

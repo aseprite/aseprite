@@ -61,10 +61,10 @@ private:
 
   Color getHotColor(hotcolor_t hot);
   void setHotColor(hotcolor_t hot, const Color& color);
-  Rect getColumnBounds(int column) const;
-  Rect getEntryBounds(int index) const;
-  Rect getFgBounds() const;
-  Rect getBgBounds() const;
+  gfx::Rect getColumnBounds(int column) const;
+  gfx::Rect getEntryBounds(int index) const;
+  gfx::Rect getFgBounds() const;
+  gfx::Rect getBgBounds() const;
   void updateStatusBar(const Color& color, int msecs);
 
   int m_firstIndex;

@@ -31,6 +31,8 @@
 #include "widgets/statebar.h"
 #include "ui_context.h"
 
+using namespace gfx;
+
 //////////////////////////////////////////////////////////////////////
 // show_grid
 

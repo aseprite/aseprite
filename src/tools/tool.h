@@ -23,15 +23,12 @@
 #include <list>
 #include <vector>
 
-#include "Vaca/Point.h"
-#include "Vaca/Rect.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "jinete/jmessage.h"
 #include "jinete/jrect.h"
 
 #include "tiled_mode.h"
-
-using Vaca::Point;
-using Vaca::Rect;
 
 class Context;
 class Sprite;
@@ -109,11 +106,11 @@ class ToolController
 public:
   virtual ~ToolController() { }
   virtual bool canSnapToGrid() { return true; }
-  virtual void pressButton(std::vector<Point>& points, const Point& point) = 0;
-  virtual bool releaseButton(std::vector<Point>& points, const Point& point) = 0;
-  virtual void movement(IToolLoop* loop, std::vector<Point>& points, const Point& point) = 0;
-  virtual void getPointsToInterwine(const std::vector<Point>& input, std::vector<Point>& output) = 0;
-  virtual void getStatusBarText(const std::vector<Point>& points, std::string& text) = 0;
+  virtual void pressButton(std::vector<gfx::Point>& points, const gfx::Point& point) = 0;
+  virtual bool releaseButton(std::vector<gfx::Point>& points, const gfx::Point& point) = 0;
+  virtual void movement(IToolLoop* loop, std::vector<gfx::Point>& points, const gfx::Point& point) = 0;
+  virtual void getPointsToInterwine(const std::vector<gfx::Point>& input, std::vector<gfx::Point>& output) = 0;
+  virtual void getStatusBarText(const std::vector<gfx::Point>& points, std::string& text) = 0;
 };
 
 // Converts a point to a shape to be drawn
@@ -125,7 +122,7 @@ public:
   virtual bool isFloodFill() { return false; }
   virtual bool isSpray() { return false; }
   virtual void transformPoint(IToolLoop* loop, int x, int y) = 0;
-  virtual void getModifiedArea(IToolLoop* loop, int x, int y, Rect& area) = 0;
+  virtual void getModifiedArea(IToolLoop* loop, int x, int y, gfx::Rect& area) = 0;
 
 protected:
   // Calls loop->getInk()->inkHline() function for each horizontal-scanline
@@ -139,8 +136,8 @@ class ToolIntertwine
 public:
   virtual ~ToolIntertwine() { }
   virtual bool snapByAngle() { return false; }
-  virtual void joinPoints(IToolLoop* loop, const std::vector<Point>& points) = 0;
-  virtual void fillPoints(IToolLoop* loop, const std::vector<Point>& points) = 0;
+  virtual void joinPoints(IToolLoop* loop, const std::vector<gfx::Point>& points) = 0;
+  virtual void fillPoints(IToolLoop* loop, const std::vector<gfx::Point>& points) = 0;
 
 protected:
   static void doPointshapePoint(int x, int y, IToolLoop* loop);
@@ -254,7 +251,7 @@ public:
   virtual Mask* getMask() = 0;
 
   // Gets mask X,Y origin coordinates
-  virtual Point getMaskOrigin() = 0;
+  virtual gfx::Point getMaskOrigin() = 0;
 
   // Return the mouse button which start the tool-loop (0 = left
   // button, 1 = right button). It can be used by some tools that
@@ -302,11 +299,11 @@ public:
   virtual int getSpraySpeed() = 0;
 
   // Offset for each point
-  virtual Point getOffset() = 0;
+  virtual gfx::Point getOffset() = 0;
 
   // Velocity vector of the mouse
-  virtual void setSpeed(const Point& speed) = 0;
-  virtual Point getSpeed() = 0;
+  virtual void setSpeed(const gfx::Point& speed) = 0;
+  virtual gfx::Point getSpeed() = 0;
 
   // Returns the ink to use with the tool. Each tool has an associated
   // ink, but it could be modified for this specific loop, so
@@ -326,10 +323,10 @@ public:
   virtual bool isCanceled() = 0;
 
   // Converts a coordinate in the screen to the sprite.
-  virtual Point screenToSprite(const Point& screenPoint) = 0;
+  virtual gfx::Point screenToSprite(const gfx::Point& screenPoint) = 0;
 
   // Redraws in the screen the specified are of sprite.
-  virtual void updateArea(const Rect& dirty_area) = 0;
+  virtual void updateArea(const gfx::Rect& dirty_area) = 0;
 
   virtual void updateStatusBar(const char* text) = 0;
 
@@ -354,8 +351,8 @@ public:
 class ToolLoopManager
 {
   IToolLoop* m_toolLoop;
-  std::vector<Point> m_points;
-  Point m_oldPoint;
+  std::vector<gfx::Point> m_points;
+  gfx::Point m_oldPoint;
   
 public:
 
@@ -385,10 +382,15 @@ public:
 
 private:
   void doLoopStep(bool last_step);
-  void snapToGrid(bool flexible, Point& point);
+  void snapToGrid(bool flexible, gfx::Point& point);
 
-  static void calculateDirtyArea(IToolLoop* loop, const std::vector<Point>& points, Rect& dirty_area);
-  static void calculateMinMax(const std::vector<Point>& points, Point& minpt, Point& maxpt);
+  static void calculateDirtyArea(IToolLoop* loop,
+				 const std::vector<gfx::Point>& points,
+				 gfx::Rect& dirty_area);
+
+  static void calculateMinMax(const std::vector<gfx::Point>& points,
+			      gfx::Point& minpt,
+			      gfx::Point& maxpt);
 };
 
 #endif

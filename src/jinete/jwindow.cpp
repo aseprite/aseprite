@@ -38,8 +38,10 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 #include "Vaca/PreferredSizeEvent.h"
+
+using namespace gfx;
 
 enum {
   WINDOW_NONE = 0,

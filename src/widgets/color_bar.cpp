@@ -18,18 +18,19 @@
 
 #include "config.h"
 
-#include <cstring>
 #include <allegro.h>
+#include <cstring>
 
 #include "jinete/jinete.h"
-#include "Vaca/Point.h"
-#include "Vaca/Rect.h"
 
+#include "app.h"
+#include "app/color.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "app.h"
+#include "console.h"
 #include "core/cfg.h"
-#include "app/color.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -39,16 +40,12 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 #include "widgets/color_bar.h"
 #include "widgets/color_selector.h"
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
-#include "ui_context.h"
-#include "console.h"
-
-using Vaca::Point;
-using Vaca::Rect;
 
 #define COLORBAR_MAX_COLORS	256
 #define ENTRYSIZE_MIN		12
@@ -57,6 +54,8 @@ using Vaca::Rect;
 // Pixels
 #define FGBUTTON_SIZE		(16*jguiscale())
 #define BGBUTTON_SIZE	        (18*jguiscale())
+
+using namespace gfx;
 
 int colorbar_type()
 {

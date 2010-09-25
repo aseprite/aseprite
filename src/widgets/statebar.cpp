@@ -24,7 +24,7 @@
 #include <cstring>
 
 #include "jinete/jinete.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 #include "Vaca/Bind.h"
 
 #include "app.h"
@@ -47,6 +47,8 @@
 #include "widgets/color_button.h"
 #include "widgets/editor.h"
 #include "widgets/statebar.h"
+
+using namespace gfx;
 
 enum AniAction {
   ACTION_FIRST,
@@ -371,7 +373,7 @@ bool StatusBar::onProcessMessage(JMessage msg)
       }
       {
 	JRect rc = jrect_new_copy(this->rc);
-	Vaca::Size reqSize = m_movePixelsBox->getPreferredSize();
+	Size reqSize = m_movePixelsBox->getPreferredSize();
 	rc->x1 = rc->x2 - reqSize.w;
 	rc->x2 -= this->border_width.r;
 	jwidget_set_rect(m_movePixelsBox, rc);

@@ -20,10 +20,8 @@
 #define CORE_CFG_H_INCLUDED
 
 #include <allegro/config.h>
-#include "Vaca/Rect.h"
+#include "gfx/rect.h"
 #include "app/color.h"
-
-using Vaca::Rect;
 
 class ConfigModule
 {
@@ -35,8 +33,8 @@ public:
 bool get_config_bool(const char *section, const char *name, bool value);
 void set_config_bool(const char *section, const char *name, bool value);
 
-Rect get_config_rect(const char *section, const char *name, const Rect& rect);
-void set_config_rect(const char *section, const char *name, const Rect& rect);
+gfx::Rect get_config_rect(const char *section, const char *name, const gfx::Rect& rect);
+void set_config_rect(const char *section, const char *name, const gfx::Rect& rect);
 
 Color get_config_color(const char *section, const char *name, const Color& value);
 void set_config_color(const char *section, const char *name, const Color& value);

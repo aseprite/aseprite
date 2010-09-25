@@ -56,6 +56,8 @@
 		         KB_ALT_FLAG |		\
 		         KB_CTRL_FLAG)) == (shift))
 
+using namespace gfx;
+
 static bool editor_view_msg_proc(JWidget widget, JMessage msg);
 
 JWidget editor_view_new()

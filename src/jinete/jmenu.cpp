@@ -37,9 +37,11 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 
 #define TIMEOUT_TO_OPEN_SUBMENU 250
+
+using namespace gfx;
 
 //////////////////////////////////////////////////////////////////////
 // Internal messages: to move between menus

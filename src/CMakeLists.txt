@@ -20,7 +20,7 @@ endif(MSVC)
 set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
 
 # All libraries for .exe files
-set(all_libs base-lib aseprite-library alleg ${libs3rdparty} ${sys_libs})
+set(all_libs base-lib gfx-lib aseprite-library alleg ${libs3rdparty} ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -37,6 +37,7 @@ include_directories(
 # Sub-libraries
 
 add_subdirectory(base)
+add_subdirectory(gfx)
 
 ######################################################################
 # aseprite library

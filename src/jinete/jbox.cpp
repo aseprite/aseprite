@@ -38,7 +38,9 @@
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
 #include "jinete/jtheme.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
+
+using namespace gfx;
 
 static bool box_msg_proc(JWidget widget, JMessage msg);
 static void box_request_size(JWidget widget, int *w, int *h);

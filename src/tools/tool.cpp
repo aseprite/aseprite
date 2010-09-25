@@ -24,6 +24,8 @@
 #include "util/render.h"
 #include "context.h"
 
+using namespace gfx;
+
 //////////////////////////////////////////////////////////////////////
 // ToolPointShape class
 

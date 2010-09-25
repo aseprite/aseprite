@@ -36,7 +36,9 @@
 #include "jinete/jrect.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
+
+using namespace gfx;
 
 static bool separator_msg_proc(JWidget widget, JMessage msg);
 

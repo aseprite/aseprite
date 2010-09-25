@@ -34,26 +34,26 @@
 
 #include "Vaca/base.h"
 #include "Vaca/Event.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 
 namespace Vaca {
 
 class VACA_DLL PreferredSizeEvent : public Event
 {
-  Size m_fitIn;
-  Size m_preferredSize;
+  gfx::Size m_fitIn;
+  gfx::Size m_preferredSize;
 
 public:
 
-  PreferredSizeEvent(Widget* source, const Size& fitIn);
+  PreferredSizeEvent(Widget* source, const gfx::Size& fitIn);
   virtual ~PreferredSizeEvent();
 
-  Size fitInSize() const;
+  gfx::Size fitInSize() const;
   int fitInWidth() const;
   int fitInHeight() const;
 
-  Size getPreferredSize() const;
-  void setPreferredSize(const Size& preferredSize);
+  gfx::Size getPreferredSize() const;
+  void setPreferredSize(const gfx::Size& preferredSize);
   void setPreferredSize(int w, int h);
 
 };

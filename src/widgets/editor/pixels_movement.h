@@ -19,10 +19,6 @@
 #ifndef WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 #define WIDGETS_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 
-#include "Vaca/Rect.h"
-
-using Vaca::Rect;
-
 class Sprite;
 class Image;
 
@@ -39,12 +35,12 @@ public:
   void copyMask();
   void catchImage(int x, int y);
   void catchImageAgain(int x, int y);
-  Rect moveImage(int x, int y);
+  gfx::Rect moveImage(int x, int y);
   void dropImageTemporarily();
   void dropImage();
   bool isDragging();
 
-  Rect getImageBounds();
+  gfx::Rect getImageBounds();
 
   void setMaskColor(ase_uint32 mask_color);
 

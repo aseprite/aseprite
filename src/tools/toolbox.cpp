@@ -34,6 +34,8 @@
 
 #include "tinyxml.h"
 
+using namespace gfx;
+
 #include "tools/controllers.h"
 #include "tools/inks.h"
 #include "tools/intertwiners.h"

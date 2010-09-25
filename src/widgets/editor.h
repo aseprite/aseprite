@@ -54,9 +54,9 @@ class Editor : public Widget
     };
   private:
     Type m_type;
-    Rect m_bounds;
+    gfx::Rect m_bounds;
   public:
-    Decorator(Type type, const Rect& bounds);
+    Decorator(Type type, const gfx::Rect& bounds);
     ~Decorator();
 
     void drawDecorator(Editor*editor, BITMAP* bmp);
@@ -197,7 +197,7 @@ protected:
   void onCurrentToolChange();
 
 private:
-  void drawGrid(const Rect& gridBounds, const Color& color);
+  void drawGrid(const gfx::Rect& gridBounds, const Color& color);
 
   void addDecorator(Decorator* decorator);
   void deleteDecorators();

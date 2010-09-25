@@ -40,9 +40,11 @@
 #include "jinete/jtheme.h"
 #include "jinete/jview.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 
 #define BAR_SIZE widget->theme->scrollbar_size
+
+using namespace gfx;
 
 typedef struct View
 {

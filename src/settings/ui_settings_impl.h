@@ -45,12 +45,12 @@ public:
 
   bool getSnapToGrid();
   bool getGridVisible();
-  Rect getGridBounds();
+  gfx::Rect getGridBounds();
   Color getGridColor();
 
   void setSnapToGrid(bool state);
   void setGridVisible(bool state);
-  void setGridBounds(Rect rect);
+  void setGridBounds(const gfx::Rect& rect);
   void setGridColor(const Color& color);
 
   // Pixel grid
@@ -89,7 +89,7 @@ private:
   int m_onionskin_opacity_step;
   bool m_snapToGrid;
   bool m_gridVisible;
-  Rect m_gridBounds;
+  gfx::Rect m_gridBounds;
   Color m_gridColor;
   bool m_pixelGridVisible;
   Color m_pixelGridColor;

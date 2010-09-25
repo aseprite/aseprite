@@ -29,6 +29,8 @@
 #include "tools/toolbox.h"
 #include "widgets/color_bar.h"
 
+using namespace gfx;
+
 //////////////////////////////////////////////////////////////////////
 // UISettingsImpl
 
@@ -160,7 +162,7 @@ void UISettingsImpl::setGridVisible(bool state)
   m_gridVisible = state;
 }
 
-void UISettingsImpl::setGridBounds(Rect rect)
+void UISettingsImpl::setGridBounds(const Rect& rect)
 {
   m_gridBounds = rect;
 }

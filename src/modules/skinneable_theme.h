@@ -25,9 +25,7 @@
 #include "jinete/jtheme.h"
 #include "jinete/jrect.h"
 #include "Vaca/Property.h"
-#include "Vaca/Rect.h"
-
-using Vaca::Rect;
+#include "gfx/rect.h"
 
 // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
 class SkinProperty : public Vaca::Property
@@ -532,7 +530,7 @@ public:
   void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
 
   // Wrapper to use the new "Rect" class (x, y, w, h)
-  void draw_bounds_nw(BITMAP* bmp, const Rect& rc, int nw, int bg) {
+  void draw_bounds_nw(BITMAP* bmp, const gfx::Rect& rc, int nw, int bg) {
     draw_bounds_nw(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
   }
 

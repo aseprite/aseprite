@@ -43,6 +43,8 @@
 #include "jinete/jsystem.h"
 #include "jinete/jwidget.h"
 
+using namespace gfx;
+
 /* TODO optional anti-aliased textout */
 #define SETUP_ANTIALISING(f, bg, fill_bg)				\
   ji_font_set_aa_mode(f, fill_bg ||					\

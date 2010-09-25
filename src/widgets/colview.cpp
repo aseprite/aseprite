@@ -33,6 +33,8 @@
 #include "modules/gui.h"
 #include "widgets/colview.h"
 
+using namespace gfx;
+
 typedef struct ColorViewer
 {
   Color color;

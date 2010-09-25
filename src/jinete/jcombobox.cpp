@@ -34,8 +34,10 @@
 #include <allegro.h>
 
 #include "jinete/jinete.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 #include "Vaca/PreferredSizeEvent.h"
+
+using namespace gfx;
 
 struct ComboBox::Item
 {

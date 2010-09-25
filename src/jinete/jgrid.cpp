@@ -40,7 +40,9 @@
 #include "jinete/jrect.h"
 #include "jinete/jwidget.h"
 #include "jinete/jtheme.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
+
+using namespace gfx;
 
 struct Cell
 {

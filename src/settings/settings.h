@@ -19,12 +19,10 @@
 #ifndef SETTINGS_SETTINGS_H_INCLUDED
 #define SETTINGS_SETTINGS_H_INCLUDED
 
-#include "Vaca/Rect.h"
+#include "gfx/rect.h"
 #include "app/color.h"
 #include "tiled_mode.h"
 #include "pen_type.h"
-
-using Vaca::Rect;
 
 class IToolSettings;
 class IPenSettings;
@@ -52,12 +50,12 @@ public:
 
   virtual bool getSnapToGrid() = 0;
   virtual bool getGridVisible() = 0;
-  virtual Rect getGridBounds() = 0;
+  virtual gfx::Rect getGridBounds() = 0;
   virtual Color getGridColor() = 0;
 
   virtual void setSnapToGrid(bool state) = 0;
   virtual void setGridVisible(bool state) = 0;
-  virtual void setGridBounds(Rect rect) = 0;
+  virtual void setGridBounds(const gfx::Rect& rect) = 0;
   virtual void setGridColor(const Color& color) = 0;
 
   // Pixel grid

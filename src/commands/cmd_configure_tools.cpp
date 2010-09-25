@@ -20,13 +20,13 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
 #include "Vaca/Bind.h"
-#include "Vaca/Size.h"
+#include "jinete/jinete.h"
 
 #include "app.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "gfx/size.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -37,14 +37,14 @@
 #include "raster/sprite.h"
 #include "settings/settings.h"
 #include "sprite_wrappers.h"
-#include "ui_context.h"
 #include "tools/tool.h"
+#include "ui_context.h"
 #include "widgets/color_button.h"
 #include "widgets/editor.h"
 #include "widgets/groupbut.h"
 #include "widgets/statebar.h"
 
-using Vaca::Size;
+using namespace gfx;
 
 static Frame* window = NULL;
 

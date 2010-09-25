@@ -70,6 +70,8 @@
 #  define DEF_SCALE 1
 #endif
 
+using namespace gfx;
+
 static struct
 {
   int width;

@@ -37,12 +37,14 @@
 #include "jinete/jsystem.h"
 #include "jinete/jtheme.h"
 #include "jinete/jwidget.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 
 typedef struct Panel
 {
   double pos;
 } Panel;
+
+using namespace gfx;
 
 static bool panel_msg_proc(JWidget widget, JMessage msg);
 static void panel_request_size(JWidget widget, int *w, int *h);

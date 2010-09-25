@@ -50,6 +50,8 @@
 #include "jinete/jintern.h"
 #include "Vaca/PreferredSizeEvent.h"
 
+using namespace gfx;
+
 int ji_register_widget_type()
 {
   static int type = JI_USER_WIDGET;

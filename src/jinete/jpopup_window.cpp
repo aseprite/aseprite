@@ -35,8 +35,10 @@
 
 #include "jinete/jinete.h"
 #include "jinete/jintern.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 #include "Vaca/PreferredSizeEvent.h"
+
+using namespace gfx;
 
 PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
   : Frame(false, text)

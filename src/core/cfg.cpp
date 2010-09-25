@@ -27,6 +27,8 @@
 #include "core/cfg.h"
 #include "resource_finder.h"
 
+using namespace gfx;
+
 static char config_filename[512];
 
 ConfigModule::ConfigModule()

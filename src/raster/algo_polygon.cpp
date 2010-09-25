@@ -19,11 +19,11 @@
 #include "config.h"
 
 #include <vector>
-#include "Vaca/Point.h"
 
+#include "gfx/point.h"
 #include "raster/algo.h"
 
-using Vaca::Point;
+using namespace gfx;
 
 // algo_polygon is an adaptation from Matthieu Haller code of GD library
 

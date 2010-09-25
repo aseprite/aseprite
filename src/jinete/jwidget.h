@@ -36,7 +36,7 @@
 
 #include "jinete/jbase.h"
 #include "jinete/jrect.h"
-#include "Vaca/Rect.h"
+#include "gfx/rect.h"
 #include "Vaca/Widget.h"
 
 namespace Vaca { class PreferredSizeEvent; }
@@ -49,8 +49,6 @@ namespace Vaca { class PreferredSizeEvent; }
 #define ASSERT_VALID_WIDGET(widget) ((void)0)
 #endif
 
-using Vaca::Rect;
-using Vaca::Size;
 using Vaca::PreferredSizeEvent;
 
 struct FONT;
@@ -286,8 +284,8 @@ public:
   //////////////////////////////////////////////////////////////////////
   // position and geometry
 
-  Rect getBounds() const;
-  void setBounds(const Rect& rc);
+  gfx::Rect getBounds() const;
+  void setBounds(const gfx::Rect& rc);
 
   //////////////////////////////////////////////////////////////////////
   // manager handler
@@ -299,9 +297,9 @@ public:
   // SIZE & POSITION
   // ===============================================================
 
-  Size getPreferredSize();
-  Size getPreferredSize(const Size& fitIn);
-  void setPreferredSize(const Size& fixedSize);
+  gfx::Size getPreferredSize();
+  gfx::Size getPreferredSize(const gfx::Size& fitIn);
+  void setPreferredSize(const gfx::Size& fixedSize);
   void setPreferredSize(int fixedWidth, int fixedHeight);
 
   // ===============================================================
@@ -332,7 +330,7 @@ protected:
   virtual void onPreferredSize(PreferredSizeEvent& ev);
 
 private:
-  Size* m_preferredSize;
+  gfx::Size* m_preferredSize;
 };
 
 #endif

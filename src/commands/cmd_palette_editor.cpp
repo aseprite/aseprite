@@ -24,33 +24,33 @@
 #include <vector>
 
 #include "Vaca/Bind.h"
-#include "Vaca/Size.h"
 #include "jinete/jinete.h"
 
 #include "app.h"
+#include "app/color.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "core/cfg.h"
-#include "app/color.h"
 #include "dialogs/filesel.h"
-#include "modules/gui.h"
+#include "gfx/size.h"
 #include "modules/editors.h"
+#include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "raster/undo.h"
+#include "sprite_wrappers.h"
+#include "ui_context.h"
 #include "util/quantize.h"
 #include "widgets/color_bar.h"
 #include "widgets/colview.h"
 #include "widgets/editor.h"
 #include "widgets/paledit.h"
 #include "widgets/statebar.h"
-#include "sprite_wrappers.h"
-#include "ui_context.h"
 
-using Vaca::Size;
+using namespace gfx;
 
 static Frame* window = NULL;
 static int redraw_timer_id = -1;

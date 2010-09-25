@@ -18,9 +18,9 @@
 
 #define TEST_GUI
 #include "tests/test.h"
-#include "Vaca/Size.h"
+#include "gfx/size.h"
 
-using Vaca::Size;
+using namespace gfx;
 
 /**
  * Tests two widgets in a row, each one of 10x10 pixels.

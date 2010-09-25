@@ -28,6 +28,8 @@
 #include "undoable.h"
 #include "widgets/editor/pixels_movement.h"
 
+using namespace gfx;
+
 class PixelsMovementImpl
 {
   SpriteWriter m_sprite_writer;

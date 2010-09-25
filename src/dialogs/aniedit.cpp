@@ -22,8 +22,8 @@
 
 #include "jinete/jinete.h"
 
-#include "Vaca/Rect.h"
-#include "Vaca/Point.h"
+#include "gfx/rect.h"
+#include "gfx/point.h"
 
 #include "commands/commands.h"
 #include "commands/command.h"
@@ -38,8 +38,7 @@
 #include "sprite_wrappers.h"
 #include "ui_context.h"
 
-using Vaca::Rect;
-using Vaca::Point;
+using namespace gfx;
 
 /*
    Animator Editor

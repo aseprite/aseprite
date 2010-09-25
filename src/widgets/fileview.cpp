@@ -42,6 +42,8 @@
 #define MAX_THUMBNAIL_SIZE		128
 #define ISEARCH_KEYPRESS_INTERVAL_MSECS	500
 
+using namespace gfx;
+
 typedef struct FileView
 {
   IFileItem* current_folder;

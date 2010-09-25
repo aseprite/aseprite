@@ -32,6 +32,7 @@
 #include "Vaca/PreferredSizeEvent.h"
 #include "Vaca/Widget.h"
 
+using namespace gfx;
 using namespace Vaca;
 
 /**

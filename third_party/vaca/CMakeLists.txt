@@ -8,11 +8,8 @@ add_library(vaca
   src/Component.cpp
   src/Event.cpp
   src/Exception.cpp
-  src/Point.cpp
   src/PreferredSizeEvent.cpp
   src/Property.cpp
-  src/Rect.cpp
   src/Referenceable.cpp
-  src/Size.cpp
   src/String.cpp
   src/Vaca.cpp)
