@@ -12,7 +12,7 @@ project(aseprite)
 # Options (these can be specified in cmake command line or modifying CMakeCache.txt)
 
 option(USE_STATIC_LIBC "Use static version of C and C++ runtimes" off)
-option(USE_STATIC_ALLEGRO "Use static version of Allegro library" on)
+option(USE_STATIC_ALLEGRO "Use static version of Allegro library" off)
 
 ######################################################################
 # Directories of third-party libraries
