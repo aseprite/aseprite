@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <math.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "raster/algo.h"
 #include "raster/image.h"

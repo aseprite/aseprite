@@ -21,14 +21,13 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/jdraw.h"
-#include "jinete/jfont.h"
-#include "jinete/jmessage.h"
-#include "jinete/jrect.h"
-#include "jinete/jsystem.h"
-#include "jinete/jtheme.h"
-#include "jinete/jwidget.h"
-
+#include "gui/jdraw.h"
+#include "gui/jfont.h"
+#include "gui/jmessage.h"
+#include "gui/jrect.h"
+#include "gui/jsystem.h"
+#include "gui/jtheme.h"
+#include "gui/jwidget.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "widgets/colview.h"

@@ -19,9 +19,8 @@
 #ifndef WIDGETS_COLVIEW_H_INCLUDED
 #define WIDGETS_COLVIEW_H_INCLUDED
 
-#include "jinete/jbase.h"
-
 #include "app/color.h"
+#include "gui/jbase.h"
 
 // TODO use some JI_SIGNAL_USER
 #define SIGNAL_COLORVIEWER_SELECT   0x10002

@@ -20,8 +20,8 @@
 
 #include <allegro.h>
 
-#include "jinete/jmanager.h"
-#include "jinete/jwindow.h"
+#include "gui/jmanager.h"
+#include "gui/jwindow.h"
 
 #include "app.h"
 #include "gfxmode.h"

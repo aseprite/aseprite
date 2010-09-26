@@ -20,7 +20,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jsystem.h"
+#include "gui/jsystem.h"
 
 #include "commands/command.h"
 #include "file/file.h"

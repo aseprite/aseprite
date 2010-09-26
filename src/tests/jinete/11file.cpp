@@ -31,7 +31,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 static void poll_button (JWidget widget);
 

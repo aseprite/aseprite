@@ -19,8 +19,8 @@
 #ifndef CORE_FILE_SYSTEM_H_INCLUDED
 #define CORE_FILE_SYSTEM_H_INCLUDED
 
-#include "jinete/jbase.h"
-#include "jinete/jstring.h"
+#include "gui/jbase.h"
+#include "gui/jstring.h"
 
 #include <vector>
 

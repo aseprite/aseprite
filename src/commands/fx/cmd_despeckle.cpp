@@ -21,12 +21,12 @@
 #include <stdio.h>
 
 #include "base/bind.h"
-#include "jinete/jbox.h"
-#include "jinete/jbutton.h"
-#include "jinete/jentry.h"
-#include "jinete/jhook.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
+#include "gui/jbox.h"
+#include "gui/jbutton.h"
+#include "gui/jentry.h"
+#include "gui/jhook.h"
+#include "gui/jwidget.h"
+#include "gui/jwindow.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"

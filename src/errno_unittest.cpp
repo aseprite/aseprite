@@ -19,7 +19,7 @@
 #include "tests/test.h"
 
 #include <errno.h>
-#include "jinete/jthread.h"
+#include "gui/jthread.h"
 
 static JThread thread;
 

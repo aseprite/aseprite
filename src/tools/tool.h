@@ -25,8 +25,8 @@
 
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "jinete/jmessage.h"
-#include "jinete/jrect.h"
+#include "gui/jmessage.h"
+#include "gui/jrect.h"
 
 #include "tiled_mode.h"
 

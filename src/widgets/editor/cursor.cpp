@@ -20,17 +20,16 @@
 
 #include <allegro.h>
 
-#include "jinete/jbase.h"
-#include "jinete/jlist.h"
-#include "jinete/jrect.h"
-#include "jinete/jregion.h"
-#include "jinete/jsystem.h"
-#include "jinete/jwidget.h"
-
 #include "app.h"
+#include "app/color.h"
 #include "app/color_utils.h"
 #include "core/cfg.h"
-#include "app/color.h"
+#include "gui/jbase.h"
+#include "gui/jlist.h"
+#include "gui/jrect.h"
+#include "gui/jregion.h"
+#include "gui/jsystem.h"
+#include "gui/jwidget.h"
 #include "modules/editors.h"
 #include "raster/image.h"
 #include "raster/layer.h"

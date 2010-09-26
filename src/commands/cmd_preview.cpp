@@ -21,7 +21,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "commands/command.h"
 #include "commands/commands.h"

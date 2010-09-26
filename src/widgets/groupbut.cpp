@@ -22,14 +22,13 @@
 #include <stdarg.h>
 
 #include "base/bind.h"
-#include "jinete/jbox.h"
-#include "jinete/jbutton.h"
-#include "jinete/jhook.h"
-#include "jinete/jlist.h"
-#include "jinete/jsystem.h"
-#include "jinete/jtheme.h"
-#include "jinete/jwidget.h"
-
+#include "gui/jbox.h"
+#include "gui/jbutton.h"
+#include "gui/jhook.h"
+#include "gui/jlist.h"
+#include "gui/jsystem.h"
+#include "gui/jtheme.h"
+#include "gui/jwidget.h"
 #include "modules/gui.h"
 #include "widgets/groupbut.h"
 

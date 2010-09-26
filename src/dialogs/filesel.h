@@ -19,7 +19,7 @@
 #ifndef DIALOGS_FILESEL_H_INCLUDED
 #define DIALOGS_FILESEL_H_INCLUDED
 
-#include "jinete/jstring.h"
+#include "gui/jstring.h"
 
 jstring ase_file_selector(const jstring& message,
 			  const jstring& init_path,

@@ -19,7 +19,7 @@
 #ifndef WIDGETS_TABS_H_INCLUDED
 #define WIDGETS_TABS_H_INCLUDED
 
-#include "jinete/jwidget.h"
+#include "gui/jwidget.h"
 #include <vector>
 
 class Tabs;

@@ -21,8 +21,6 @@
 #include <allegro.h>
 #include <cstring>
 
-#include "jinete/jinete.h"
-
 #include "app.h"
 #include "app/color.h"
 #include "commands/commands.h"
@@ -31,6 +29,7 @@
 #include "core/cfg.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

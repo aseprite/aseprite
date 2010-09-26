@@ -18,16 +18,15 @@
 
 #include "config.h"
 
-#include <allegro.h>
 #include <algorithm>
+#include <allegro.h>
 
-#include "jinete/jinete.h"
-
+#include "app.h"
 #include "commands/commands.h"
 #include "console.h"
-#include "app.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

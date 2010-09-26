@@ -21,14 +21,13 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/jlist.h"
-#include "jinete/jmanager.h"
-#include "jinete/jsystem.h"
-#include "jinete/jwidget.h"
-
 #include "app.h"
-#include "core/cfg.h"
 #include "app/color.h"
+#include "core/cfg.h"
+#include "gui/jlist.h"
+#include "gui/jmanager.h"
+#include "gui/jsystem.h"
+#include "gui/jwidget.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

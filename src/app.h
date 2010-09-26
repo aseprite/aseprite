@@ -20,7 +20,7 @@
 #define APP_H_INCLUDED
 
 #include "base/signal.h"
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 #include <vector>
 

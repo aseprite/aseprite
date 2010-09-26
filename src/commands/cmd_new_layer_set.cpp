@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "commands/command.h"
 #include "app.h"

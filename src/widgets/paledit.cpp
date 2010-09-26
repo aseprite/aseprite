@@ -22,15 +22,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "jinete/jmanager.h"
-#include "jinete/jmessage.h"
-#include "jinete/jrect.h"
-#include "jinete/jsystem.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-#include "jinete/jtheme.h"
-
 #include "app/color.h"
+#include "gui/jmanager.h"
+#include "gui/jmessage.h"
+#include "gui/jrect.h"
+#include "gui/jsystem.h"
+#include "gui/jtheme.h"
+#include "gui/jview.h"
+#include "gui/jwidget.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"

@@ -19,7 +19,7 @@
 #ifndef FILE_FILE_H_INCLUDED
 #define FILE_FILE_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 #include <stdio.h>
 
 #define FILE_SUPPORT_RGB		(1<<0)

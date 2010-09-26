@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "app.h"
 #include "base/mutex.h"

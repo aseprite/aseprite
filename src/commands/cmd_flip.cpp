@@ -20,7 +20,7 @@
 
 #include <allegro/unicode.h>
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "commands/command.h"
 #include "commands/params.h"

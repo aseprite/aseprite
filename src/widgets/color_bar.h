@@ -19,10 +19,9 @@
 #ifndef WIDGETS_COLOR_BAR_H_INCLUDED
 #define WIDGETS_COLOR_BAR_H_INCLUDED
 
-#include "base/signal.h"
-#include "jinete/jwidget.h"
-
 #include "app/color.h"
+#include "base/signal.h"
+#include "gui/jwidget.h"
 
 class ColorBar : public Widget
 {

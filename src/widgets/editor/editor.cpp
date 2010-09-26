@@ -20,26 +20,25 @@
 
 #include "config.h"
 
-#include <stdio.h>
 #include <allegro.h>
+#include <stdio.h>
 
-#include "jinete/jinete.h"
-
-#include "ui_context.h"
+#include "app.h"
+#include "app/color.h"
+#include "app/color_utils.h"
 #include "commands/commands.h"
 #include "commands/params.h"
-#include "app.h"
-#include "app/color_utils.h"
 #include "core/cfg.h"
-#include "app/color.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
-#include "modules/skinneable_theme.h"
 #include "modules/palettes.h"
+#include "modules/skinneable_theme.h"
 #include "raster/raster.h"
-#include "tools/tool.h"
 #include "settings/settings.h"
+#include "tools/tool.h"
+#include "ui_context.h"
 #include "util/boundary.h"
 #include "util/misc.h"
 #include "util/render.h"

@@ -19,7 +19,7 @@
 #ifndef RASTER_GFXOBJ_H_INCLUDED
 #define RASTER_GFXOBJ_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 #include <list>
 
 enum GfxObjType {

@@ -18,13 +18,12 @@
 
 #include "config.h"
 
-#include <allegro.h>
 #include <algorithm>
+#include <allegro.h>
 #include <cmath>
 
-#include "jinete/jinete.h"
-#include "jinete/jintern.h"
-
+#include "gui/jinete.h"
+#include "gui/jintern.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/skinneable_theme.h"

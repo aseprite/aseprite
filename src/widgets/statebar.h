@@ -19,10 +19,9 @@
 #ifndef WIDGETS_STATEBAR_H_INCLUDED
 #define WIDGETS_STATEBAR_H_INCLUDED
 
-#include "jinete/jbase.h"
-#include "jinete/jwidget.h"
-
 #include "app/color.h"
+#include "gui/jbase.h"
+#include "gui/jwidget.h"
 
 class Frame;
 class StatusBar;

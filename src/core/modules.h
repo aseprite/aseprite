@@ -19,7 +19,7 @@
 #ifndef CORE_MODULES_H_INCLUDED
 #define CORE_MODULES_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 #define REQUIRE_INTERFACE    1
 

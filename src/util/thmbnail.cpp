@@ -22,8 +22,7 @@
 #include <allegro/draw.h>
 #include <allegro/gfx.h>
 
-#include "jinete/jlist.h"
-
+#include "gui/jlist.h"
 #include "modules/gfx.h"
 #include "raster/blend.h"
 #include "raster/cel.h"

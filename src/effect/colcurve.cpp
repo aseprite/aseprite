@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "effect/colcurve.h"
 #include "effect/effect.h"

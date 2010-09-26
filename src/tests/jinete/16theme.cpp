@@ -31,7 +31,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 void set_my_palette();
 JTheme my_theme_new();

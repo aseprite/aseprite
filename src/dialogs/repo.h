@@ -19,7 +19,7 @@
 #ifndef DIALOGS_REPO_H_INCLUDED
 #define DIALOGS_REPO_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 class Button;
 

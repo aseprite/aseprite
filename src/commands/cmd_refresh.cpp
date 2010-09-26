@@ -25,8 +25,8 @@
 #include <psapi.h>
 #endif
 
-#include "jinete/jtheme.h"
-#include "jinete/jsystem.h"
+#include "gui/jtheme.h"
+#include "gui/jsystem.h"
 
 #include "app.h"
 #include "commands/command.h"

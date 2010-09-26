@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "sprite_wrappers.h"
 #include "raster/blend.h"

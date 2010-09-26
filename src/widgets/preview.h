@@ -19,7 +19,7 @@
 #ifndef WIDGETS_PREVIEW_H_INCLUDED
 #define WIDGETS_PREVIEW_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 struct Effect;
 

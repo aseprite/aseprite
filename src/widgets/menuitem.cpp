@@ -22,15 +22,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/jhook.h"
-#include "jinete/jmenu.h"
-#include "jinete/jmessage.h"
-#include "jinete/jwidget.h"
-
-#include "ui_context.h"
 #include "commands/command.h"
 #include "commands/params.h"
+#include "gui/jhook.h"
+#include "gui/jmenu.h"
+#include "gui/jmessage.h"
+#include "gui/jwidget.h"
 #include "modules/gui.h"
+#include "ui_context.h"
 
 struct MenuItem
 {

@@ -27,11 +27,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "jinete/jinete.h"
-#include "jinete/jintern.h"
-
 #include "Vaca/String.h"
-
 #include "app.h"
 #include "app/color_utils.h"
 #include "ase_exception.h"
@@ -44,6 +40,8 @@
 #include "core/file_system.h"
 #include "core/modules.h"
 #include "file/file.h"
+#include "gui/jinete.h"
+#include "gui/jintern.h"
 #include "log.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"

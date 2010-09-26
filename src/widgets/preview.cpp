@@ -18,11 +18,10 @@
 
 #include "config.h"
 
-#include "jinete/jmanager.h"
-#include "jinete/jmessage.h"
-#include "jinete/jwidget.h"
-
 #include "effect/effect.h"
+#include "gui/jmanager.h"
+#include "gui/jmessage.h"
+#include "gui/jwidget.h"
 #include "raster/sprite.h"
 #include "util/render.h"
 #include "widgets/preview.h"

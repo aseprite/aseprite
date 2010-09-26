@@ -31,7 +31,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 JRect test1();
 void test2(JRect pos);

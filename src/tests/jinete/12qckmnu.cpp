@@ -32,7 +32,7 @@
 #include <allegro.h>
 #include <stdio.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 static void handle_menuitem_selected (JWidget widget, int user_data);
 

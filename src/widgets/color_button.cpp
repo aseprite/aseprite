@@ -20,11 +20,10 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
 #include "Vaca/PreferredSizeEvent.h"
-
-#include "app/color_utils.h"
 #include "app/color.h"
+#include "app/color_utils.h"
+#include "gui/jinete.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"

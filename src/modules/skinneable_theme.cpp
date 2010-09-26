@@ -23,8 +23,8 @@
 
 #include "Vaca/SharedPtr.h"
 #include "base/bind.h"
-#include "jinete/jinete.h"
-#include "jinete/jintern.h"
+#include "gui/jinete.h"
+#include "gui/jintern.h"
 
 #include "ase_exception.h"
 #include "loadpng.h"

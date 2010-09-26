@@ -23,7 +23,7 @@
 
 #include <allegro/color.h>
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 #include "file/file.h"
 #include "raster/raster.h"

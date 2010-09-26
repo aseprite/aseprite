@@ -22,8 +22,8 @@
 #include <map>
 #include <string>
 #include <allegro/color.h>
-#include "jinete/jtheme.h"
-#include "jinete/jrect.h"
+#include "gui/jtheme.h"
+#include "gui/jrect.h"
 #include "Vaca/Property.h"
 #include "gfx/rect.h"
 

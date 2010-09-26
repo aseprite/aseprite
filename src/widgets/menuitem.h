@@ -19,7 +19,7 @@
 #ifndef WIDGETS_MENUITEM_H_INCLUDED
 #define WIDGETS_MENUITEM_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 class Command;
 class Params;

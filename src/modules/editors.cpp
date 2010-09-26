@@ -21,7 +21,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "sprite_wrappers.h"
 #include "ui_context.h"

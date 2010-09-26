@@ -21,7 +21,7 @@
 #include <cstring>
 #include <vector>
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "base/mutex.h"
 #include "base/scoped_lock.h"

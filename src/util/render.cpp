@@ -18,15 +18,14 @@
 
 #include "config.h"
 
-#include "jinete/jlist.h"
-
+#include "app/color_utils.h"
 #include "core/cfg.h"
+#include "gui/jlist.h"
 #include "raster/image.h"
 #include "raster/raster.h"
-#include "util/render.h"
 #include "settings/settings.h"
 #include "ui_context.h"
-#include "app/color_utils.h"
+#include "util/render.h"
 
 //////////////////////////////////////////////////////////////////////
 // Zoomed merge

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <allegro/config.h>
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "raster/cel.h"
 #include "raster/dirty.h"

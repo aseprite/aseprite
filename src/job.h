@@ -19,7 +19,7 @@
 #ifndef CORE_JOB_H_INCLUDED
 #define CORE_JOB_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 class Frame;
 class Mutex;

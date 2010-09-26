@@ -21,7 +21,7 @@
 #include <allegro/config.h>
 #include <allegro/unicode.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "ui_context.h"
 #include "commands/command.h"

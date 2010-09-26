@@ -19,7 +19,7 @@
 #ifndef DIALOGS_PLAYFLI_H_INCLUDED
 #define DIALOGS_PLAYFLI_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 void play_fli_animation(const char *filename, bool loop, bool fullscreen);
 

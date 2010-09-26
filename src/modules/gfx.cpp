@@ -21,10 +21,10 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "jinete/jintern.h"
-#include "jinete/jrect.h"
-#include "jinete/jsystem.h"
-#include "jinete/jtheme.h"
+#include "gui/jintern.h"
+#include "gui/jrect.h"
+#include "gui/jsystem.h"
+#include "gui/jtheme.h"
 
 #include "app.h"
 #include "app/color_utils.h"

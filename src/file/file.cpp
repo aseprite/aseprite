@@ -21,8 +21,8 @@
 #include <allegro.h>
 #include <string.h>
 
-#include "jinete/jalert.h"
-#include "jinete/jlist.h"
+#include "gui/jalert.h"
+#include "gui/jlist.h"
 
 #include "app.h"
 #include "base/mutex.h"

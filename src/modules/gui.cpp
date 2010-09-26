@@ -29,8 +29,8 @@
 #endif
 
 #include "Vaca/SharedPtr.h"
-#include "jinete/jinete.h"
-#include "jinete/jintern.h"
+#include "gui/jinete.h"
+#include "gui/jintern.h"
 
 #include "app.h"
 #include "commands/command.h"

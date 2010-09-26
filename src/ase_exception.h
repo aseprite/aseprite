@@ -21,7 +21,7 @@
 
 #include <exception>
 #include <string>
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 class TiXmlDocument;
 

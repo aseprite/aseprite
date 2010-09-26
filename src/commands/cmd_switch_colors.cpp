@@ -20,7 +20,7 @@
 
 #include <allegro/unicode.h>
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 #include "commands/command.h"
 #include "app.h"

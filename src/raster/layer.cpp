@@ -22,7 +22,7 @@
 #include <string.h>
 #include <allegro/unicode.h>
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "raster/blend.h"
 #include "raster/cel.h"

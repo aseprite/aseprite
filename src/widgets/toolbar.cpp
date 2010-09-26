@@ -22,14 +22,13 @@
 #include <map>
 #include <string>
 
+#include "app.h"
 #include "base/bind.h"
 #include "base/signal.h"
-#include "gfx/size.h"
-#include "jinete/jinete.h"
-
-#include "app.h"
 #include "commands/command.h"
 #include "commands/commands.h"
+#include "gfx/size.h"
+#include "gui/jinete.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/skinneable_theme.h"

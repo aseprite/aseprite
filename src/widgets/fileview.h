@@ -19,9 +19,8 @@
 #ifndef WIDGETS_FILEVIEW_H_INCLUDED
 #define WIDGETS_FILEVIEW_H_INCLUDED
 
-#include "jinete/jbase.h"
-#include "jinete/jstring.h"
-
+#include "gui/jbase.h"
+#include "gui/jstring.h"
 #include "core/file_system.h"
 
 /* TODO use some JI_SIGNAL_USER */

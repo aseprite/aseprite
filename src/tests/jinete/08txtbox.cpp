@@ -31,7 +31,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 void do_text(const char *title, int align)
 {

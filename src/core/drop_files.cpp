@@ -21,8 +21,8 @@
 #include <allegro.h>
 #include <vector>
 
-#include "jinete/jstring.h"
-#include "jinete/jwindow.h"
+#include "gui/jstring.h"
+#include "gui/jwindow.h"
 
 #include "app.h"
 #include "base/mutex.h"

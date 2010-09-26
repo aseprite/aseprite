@@ -21,7 +21,7 @@
 #include <allegro/base.h>
 #include <math.h>
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 #include "raster/algo.h"
 #include "raster/pen.h"

@@ -21,7 +21,7 @@
 #include <allegro/unicode.h>
 
 #include "base/bind.h"
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "app/color.h"
 #include "base/mem_utils.h"

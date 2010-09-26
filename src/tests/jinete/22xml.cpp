@@ -31,7 +31,7 @@
 
 #include <allegro.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 static const char *xml_src =
   "<root>"				"\n"

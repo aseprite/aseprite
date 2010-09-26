@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 #include "file/format_options.h"
 

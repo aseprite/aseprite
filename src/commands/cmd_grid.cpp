@@ -20,7 +20,7 @@
 
 #include <allegro/unicode.h>
 
-#include "jinete/jwindow.h"
+#include "gui/jwindow.h"
 
 #include "commands/command.h"
 #include "context.h"

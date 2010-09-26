@@ -23,18 +23,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "jinete/jalert.h"
-#include "jinete/jentry.h"
-#include "jinete/jlist.h"
-#include "jinete/jmanager.h"
-#include "jinete/jmessage.h"
-#include "jinete/jrect.h"
-#include "jinete/jsystem.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
-
 #include "effect/colcurve.h"
+#include "gui/jalert.h"
+#include "gui/jentry.h"
+#include "gui/jlist.h"
+#include "gui/jmanager.h"
+#include "gui/jmessage.h"
+#include "gui/jrect.h"
+#include "gui/jsystem.h"
+#include "gui/jview.h"
+#include "gui/jwidget.h"
+#include "gui/jwindow.h"
 #include "modules/gui.h"
 #include "widgets/curvedit.h"
 

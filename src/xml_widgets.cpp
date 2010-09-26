@@ -26,7 +26,7 @@
 
 #include "ase_exception.h"
 #include "base/bind.h"
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 #include "modules/gui.h"
 
 #include "tinyxml.h"

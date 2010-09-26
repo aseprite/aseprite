@@ -19,9 +19,8 @@
 #ifndef WIDGETS_COLOR_SELECTOR_H_INCLUDED
 #define WIDGETS_COLOR_SELECTOR_H_INCLUDED
 
-#include "jinete/jbase.h"
-
 #include "app/color.h"
+#include "gui/jbase.h"
 
 class Frame;
 

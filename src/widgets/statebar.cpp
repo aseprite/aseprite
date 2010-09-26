@@ -23,13 +23,12 @@
 #include <cstdio>
 #include <cstring>
 
-#include "base/bind.h"
-#include "gfx/size.h"
-#include "jinete/jinete.h"
-
 #include "app.h"
+#include "base/bind.h"
 #include "commands/commands.h"
 #include "commands/params.h"
+#include "gfx/size.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"

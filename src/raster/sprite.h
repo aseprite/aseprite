@@ -19,7 +19,7 @@
 #ifndef RASTER_SPRITE_H_INCLUDED
 #define RASTER_SPRITE_H_INCLUDED
 
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 #include "raster/gfxobj.h"
 #include <vector>
 

@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "jinete/jwidget.h"
+#include "gui/jwidget.h"
 
 #include "app.h"
 #include "commands/command.h"

@@ -25,7 +25,7 @@
 #include <allegro.h>
 
 #ifdef TEST_GUI
-  #include "jinete/jinete.h"
+  #include "gui/jinete.h"
 #endif
 
 // Allegro-friendly main() routine

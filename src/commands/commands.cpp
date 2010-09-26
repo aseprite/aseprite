@@ -23,7 +23,7 @@
 #include <allegro/unicode.h>
 #include <exception>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "console.h"
 #include "commands/command.h"

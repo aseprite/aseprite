@@ -20,14 +20,12 @@
 
 #include <allegro/keyboard.h>
 
-#include "jinete/jrect.h"
-
-#include "jinete/jmanager.h"
-#include "jinete/jsystem.h"
-#include "jinete/jview.h"
-#include "jinete/jwidget.h"
-
 #include "core/cfg.h"
+#include "gui/jmanager.h"
+#include "gui/jrect.h"
+#include "gui/jsystem.h"
+#include "gui/jview.h"
+#include "gui/jwidget.h"
 #include "modules/gui.h"
 #include "widgets/editor.h"
 

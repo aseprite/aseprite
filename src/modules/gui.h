@@ -22,8 +22,8 @@
 #include <string>
 #include <list>
 #include "ase_exception.h"
-#include "jinete/jbase.h"
-#include "jinete/jaccel.h"
+#include "gui/jbase.h"
+#include "gui/jaccel.h"
 
 class Command;
 class Params;

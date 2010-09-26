@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "jinete/jalert.h"
+#include "gui/jalert.h"
 
 #include "commands/command.h"
 #include "commands/params.h"

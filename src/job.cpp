@@ -18,10 +18,10 @@
 
 #include "config.h"
 
-#include "jinete/jalert.h"
-#include "jinete/jthread.h"
-#include "jinete/jwidget.h"
-#include "jinete/jwindow.h"
+#include "gui/jalert.h"
+#include "gui/jthread.h"
+#include "gui/jwidget.h"
+#include "gui/jwindow.h"
 
 #include "app.h"
 #include "base/mutex.h"

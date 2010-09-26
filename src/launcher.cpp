@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "jinete/jalert.h"
+#include "gui/jalert.h"
 #include "launcher.h"
 
 #if defined ALLEGRO_WINDOWS

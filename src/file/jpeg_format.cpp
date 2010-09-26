@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "jinete/jinete.h"
+#include "gui/jinete.h"
 
 #include "app.h"
 #include "core/cfg.h"

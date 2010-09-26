@@ -21,11 +21,10 @@
 #include <allegro.h>
 #include <vector>
 
-#include "base/bind.h"
-#include "jinete/jinete.h"
-
 #include "app.h"
 #include "app/color.h"
+#include "base/bind.h"
+#include "gui/jinete.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

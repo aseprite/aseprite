@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "jinete/jlist.h"
+#include "gui/jlist.h"
 
 #include "core/cfg.h"
 #include "effect/convmatr.h"
