@@ -43,6 +43,9 @@ public:
 
   IFileItem* getRootFileItem();
   IFileItem* getFileItemFromPath(const jstring& path);
+
+  bool dirExists(const jstring& path);
+
 };
 
 class IFileItem

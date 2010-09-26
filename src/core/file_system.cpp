@@ -369,6 +369,18 @@ IFileItem* FileSystemModule::getFileItemFromPath(const jstring& path)
   return fileitem;
 }
 
+bool FileSystemModule::dirExists(const jstring& path)
+{
+  struct al_ffblk info;
+  int ret;
+  jstring path2 = path / "*.*";
+
+  ret = al_findfirst(path2.c_str(), &info, FA_ALL);
+  al_findclose(&info);
+
+  return (ret == 0);
+}
+
 // ======================================================================
 // FileItem class (IFileItem implementation)
 // ======================================================================
@@ -1005,7 +1017,7 @@ static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
   // get the attributes of the file
   int attrib = 0;
   if (!file_exists(path.c_str(), FA_ALL, &attrib)) {
-    if (!ji_dir_exists(path.c_str()))
+    if (!FileSystemModule::instance()->dirExists(path))
       return NULL;
     attrib = FA_DIREC;
   }
