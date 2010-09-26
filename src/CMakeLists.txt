@@ -3,11 +3,31 @@
 
 # System libraries on Windows
 if(WIN32)
+  set(alleg_lib alleg)
   set(sys_libs
     User32 Shell32 ComCtl32 ComDlg32 Gdi32 Msimg32
     WinMM AdvAPI32 Ole32 ShLwApi Vfw32 WinInet PsApi
     DDraw DxGuid DSound DInput8)
-endif(WIN32)
+else()
+  find_program(allegro_config "allegro-config")
+
+  execute_process(COMMAND ${allegro_config} --cflags
+        OUTPUT_VARIABLE allegro_c_flags
+	OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ret EQUAL 0)
+    message("Error running allegro-config")
+  endif()
+
+  if(USE_STATIC_ALLEGRO)
+    execute_process(COMMAND ${allegro_config} --libs --static
+      OUTPUT_VARIABLE allegro_link_flags
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  else()
+    execute_process(COMMAND ${allegro_config} --libs
+      OUTPUT_VARIABLE allegro_link_flags
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  endif()
+endif()
 
 if(MSVC)
   # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
@@ -20,7 +40,7 @@ endif(MSVC)
 set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
 
 # All libraries for .exe files
-set(all_libs base-lib gfx-lib aseprite-library alleg ${libs3rdparty} ${sys_libs})
+set(all_libs aseprite-library gfx-lib base-lib ${alleg_lib} ${libs3rdparty} ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -275,6 +295,22 @@ add_executable(aseprite WIN32 main.cpp)
 target_link_libraries(aseprite ${aseprite-library} ${all_libs})
 
 ######################################################################
+# Flags
+
+set_target_properties(aseprite PROPERTIES
+  COMPILE_FLAGS "${allegro_c_flags}"
+  LINK_FLAGS "${allegro_link_flags}")
+
+set_target_properties(aseprite-library PROPERTIES
+  COMPILE_FLAGS "${allegro_c_flags}")
+
+set_target_properties(base-lib PROPERTIES
+  COMPILE_FLAGS "${allegro_c_flags}")
+
+set_target_properties(gfx-lib PROPERTIES
+  COMPILE_FLAGS "${allegro_c_flags}")
+
+######################################################################
 # Unit tests
 
 file(GLOB_RECURSE tests *_unittest.cpp)
@@ -288,7 +324,8 @@ foreach(testsourcefile ${tests})
 
   # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
   set_target_properties(${testname} PROPERTIES
-    COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/third_party/gtest/include")
+    COMPILE_FLAGS "${allegro_c_flags} -I${CMAKE_SOURCE_DIR}/third_party/gtest/include"
+    LINK_FLAGS "${allegro_link_flags}")
 
   add_custom_target(run_${testname}
     COMMAND ${testname})
