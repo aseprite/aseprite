@@ -1,0 +1,46 @@
+# ASE - Allegro Sprite Editor
+# Copyright (C) 2001-2010  David Capello
+
+add_library(gui-lib
+  jaccel.cpp
+  jalert.cpp
+  jbox.cpp
+  jbutton.cpp
+  jclipboard.cpp
+  jcombobox.cpp
+  jcustom_label.cpp
+  jdraw.cpp
+  jentry.cpp
+  jfont.cpp
+  jfontbmp.cpp
+  jgrid.cpp
+  jhook.cpp
+  jimage.cpp
+  jinete.cpp
+  jintern.cpp
+  jlabel.cpp
+  jlink_label.cpp
+  jlist.cpp
+  jlistbox.cpp
+  jmanager.cpp
+  jmem.cpp
+  jmenu.cpp
+  jmessage.cpp
+  jpanel.cpp
+  jpopup_window.cpp
+  jquickmenu.cpp
+  jrect.cpp
+  jregion.cpp
+  jsep.cpp
+  jslider.cpp
+  jstream.cpp
+  jstring.cpp
+  jsystem.cpp
+  jtextbox.cpp
+  jtheme.cpp
+  jthread.cpp
+  jtooltips.cpp
+  jview.cpp
+  jwidget.cpp
+  jwindow.cpp
+  themes/jstandard_theme.cpp)

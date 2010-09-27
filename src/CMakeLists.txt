@@ -40,7 +40,7 @@ endif(MSVC)
 set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
 
 # All libraries for .exe files
-set(all_libs aseprite-library gfx-lib base-lib ${alleg_lib} ${libs3rdparty} ${sys_libs})
+set(all_libs aseprite-library gui-lib gfx-lib base-lib ${alleg_lib} ${libs3rdparty} ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -58,6 +58,7 @@ include_directories(
 
 add_subdirectory(base)
 add_subdirectory(gfx)
+add_subdirectory(gui)
 
 ######################################################################
 # aseprite library
@@ -185,48 +186,6 @@ add_library(aseprite-library
   file/pcx_format.cpp
   file/png_format.cpp
   file/tga_format.cpp
-  gui/jaccel.cpp
-  gui/jalert.cpp
-  gui/jbox.cpp
-  gui/jbutton.cpp
-  gui/jclipboard.cpp
-  gui/jcombobox.cpp
-  gui/jcustom_label.cpp
-  gui/jdraw.cpp
-  gui/jentry.cpp
-  gui/jfont.cpp
-  gui/jfontbmp.cpp
-  gui/jgrid.cpp
-  gui/jhook.cpp
-  gui/jimage.cpp
-  gui/jinete.cpp
-  gui/jintern.cpp
-  gui/jlabel.cpp
-  gui/jlink_label.cpp
-  gui/jlist.cpp
-  gui/jlistbox.cpp
-  gui/jmanager.cpp
-  gui/jmem.cpp
-  gui/jmenu.cpp
-  gui/jmessage.cpp
-  gui/jpanel.cpp
-  gui/jpopup_window.cpp
-  gui/jquickmenu.cpp
-  gui/jrect.cpp
-  gui/jregion.cpp
-  gui/jsep.cpp
-  gui/jslider.cpp
-  gui/jstream.cpp
-  gui/jstring.cpp
-  gui/jsystem.cpp
-  gui/jtextbox.cpp
-  gui/jtheme.cpp
-  gui/jthread.cpp
-  gui/jtooltips.cpp
-  gui/jview.cpp
-  gui/jwidget.cpp
-  gui/jwindow.cpp
-  gui/themes/jstandard_theme.cpp
   modules/editors.cpp
   modules/gfx.cpp
   modules/gui.cpp
@@ -308,6 +267,9 @@ set_target_properties(base-lib PROPERTIES
   COMPILE_FLAGS "${allegro_c_flags}")
 
 set_target_properties(gfx-lib PROPERTIES
+  COMPILE_FLAGS "${allegro_c_flags}")
+
+set_target_properties(gui-lib PROPERTIES
   COMPILE_FLAGS "${allegro_c_flags}")
 
 ######################################################################

@@ -1,9 +1,8 @@
-/* Jinete - a GUI library
- * Copyright (C) 2003-2010 David Capello.
- * All rights reserved.
- *
- * Read "LICENSE.txt" for more information.
- */
+// ASE gui library
+// Copyright (C) 2001-2010  David Capello
+//
+// This source file is ditributed under a BSD-like license, please
+// read LICENSE.txt for more information.
 
 #ifdef PCX2DATA
 
