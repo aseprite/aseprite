@@ -18,21 +18,17 @@
 
 #include "config.h"
 
-#include "Vaca/Application.h"
-#include "Vaca/String.h"
-
+#include "base/convert_to.h"
+#include "base/split_string.h"
+#include "base/string.h"
 #include "check_args.h"
 #include "console.h"
 #include "core/cfg.h"
 
-using namespace Vaca;
-  
-CheckArgs::CheckArgs()
+CheckArgs::CheckArgs(const std::vector<base::string>& args)
   : m_consoleOnly(false)
   , m_verbose(false)
 {
-  const std::vector<String>& args(Application::getArgs());
-
   // Exe name
   m_exeName = args[0];
 
@@ -41,40 +37,40 @@ CheckArgs::CheckArgs()
   size_t i, n, len;
 
   for (i=1; i<args.size(); i++) {
-    const String& arg(args[i]);
+    const base::string& arg(args[i]);
 
     for (n=0; arg[n] == '-'; n++);
     len = arg.size()-n;
 
     // Option
     if ((n > 0) && (len > 0)) {
-      String option = arg.substr(n);
+      base::string option = arg.substr(n);
       
       // Use other palette file
-      if (option == L"palette") {
+      if (option == "palette") {
 	if (++i < args.size())
 	  m_paletteFilename = args[i];
 	else
 	  usage(false);
       }
       // Video resolution
-      else if (option == L"resolution") {
+      else if (option == "resolution") {
 	if (++i < args.size()) {
 	  // The following argument should indicate the resolution
 	  // in a format like: 320x240[x8]
-	  std::vector<String> parts;
-	  split_string(args[i], parts, L"x");
+	  std::vector<base::string> parts;
+	  base::split_string<base::string>(args[i], parts, "x");
 
 	  switch (parts.size()) {
 	    case 1:
-	      set_config_int("GfxMode", "Depth", convert_to<double>(parts[0]));
+	      set_config_int("GfxMode", "Depth", base::convert_to<int>(parts[0]));
 	      break;
 	    case 2:
 	    case 3:
-	      set_config_int("GfxMode", "Width", convert_to<double>(parts[0]));
-	      set_config_int("GfxMode", "Height", convert_to<double>(parts[1]));
+	      set_config_int("GfxMode", "Width", base::convert_to<int>(parts[0]));
+	      set_config_int("GfxMode", "Height", base::convert_to<int>(parts[1]));
 	      if (parts.size() == 3)
-		set_config_int("GfxMode", "Depth", convert_to<double>(parts[2]));
+		set_config_int("GfxMode", "Depth", base::convert_to<int>(parts[2]));
 	      break;
 	    default:
 	      usage(false);
@@ -88,15 +84,15 @@ CheckArgs::CheckArgs()
 	}
       }
       // Verbose mode
-      else if (option == L"verbose") {
+      else if (option == "verbose") {
 	m_verbose = true;
       }
       // Show help
-      else if (option == L"help") {
+      else if (option == "help") {
 	usage(true);
       }
       // Show version
-      else if (option == L"version") {
+      else if (option == "version") {
 	m_consoleOnly = true;
 	console.printf("%s %s\n", PACKAGE, VERSION);
       }

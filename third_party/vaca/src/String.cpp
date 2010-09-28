@@ -128,43 +128,6 @@ String Vaca::trim_string(const Char* str)
   return res;
 }
 
-namespace {
-  struct is_separator
-  {
-    const String* separators;
-    is_separator(const String* separators) : separators(separators) { }
-    bool operator()(Char chr)
-    {
-      for (String::const_iterator
-	     it = separators->begin(),
-	     end = separators->end(); it != end; ++it) {
-	if (chr == *it)
-	  return true;
-      }
-      return false;
-    }
-  };
-}
-
-void Vaca::split_string(const String& string, std::vector<String>& parts, const String& separators)
-{
-  size_t elements = 1 + std::count_if(string.begin(), string.end(), is_separator(&separators));
-  parts.resize(elements);
-
-  size_t beg = 0, end;
-  while (true) {
-    end = string.find_first_of(separators);
-    if (end != String::npos) {
-      parts.push_back(string.substr(beg, end - beg));
-      beg = end+1;
-    }
-    else {
-      parts.push_back(string.substr(beg));
-      break;
-    }
-  }
-}
-
 template<> int Vaca::convert_to(const String& from)
 {
   return (int)std::wcstol(from.c_str(), NULL, 10);

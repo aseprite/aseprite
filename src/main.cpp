@@ -25,6 +25,10 @@
 #include "app.h"
 #include "loadpng.h"
 
+#ifdef WIN32
+#include <winalleg.h>
+#endif
+
 //////////////////////////////////////////////////////////////////////
 // Information for "ident".
 
@@ -56,15 +60,19 @@ public:
   }
 };
 
-// ASE entry point (this function is called from Vaca library)
-int vaca_main()
+// ASE entry point
+int main(int argc, char* argv[])
 {
+#ifdef WIN32
+  CoInitialize(NULL);
+#endif
+
   int status = 1;		// 1 = error
   Allegro allegro;
 
   try {
     Jinete jinete;
-    App app;
+    App app(argc, argv);
 
     status = app.run();
   }
@@ -83,4 +91,5 @@ int vaca_main()
   return status;
 }
 
-#include "Vaca/main.h"
+END_OF_MAIN();
+

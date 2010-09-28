@@ -20,6 +20,7 @@
 #define APP_H_INCLUDED
 
 #include "base/signal.h"
+#include "base/string.h"
 #include "gui/jbase.h"
 
 #include <vector>
@@ -41,10 +42,15 @@ class ToolBox;
 class App
 {
 public:
-  App();
+  App(int argc, char* argv[]);
   ~App();
 
   static App* instance() { return m_instance; }
+
+  // Functions to get the arguments specified in the command line.
+  int getArgc() const { return m_args.size(); }
+  const base::string& getArgv(int i) { return m_args[i]; }
+  const std::vector<base::string>& getArgs() const { return m_args; }
 
   // Returns true if ASE is running with GUI available.
   bool isGui() const { return m_isGui; }
@@ -75,6 +81,7 @@ private:
   Modules* m_modules;
   LegacyModules* m_legacy;
   bool m_isGui;
+  std::vector<base::string> m_args;
 };
 
 void app_refresh_screen(const Sprite* sprite);

@@ -110,7 +110,7 @@ static TabsBarHandler* tabsHandler = NULL;
 
 // Initializes the application loading the modules, setting the
 // graphics mode, loading the configuration and resources, etc.
-App::App()
+App::App(int argc, char* argv[])
   : m_configModule(NULL)
   , m_checkArgs(NULL)
   , m_loggerModule(NULL)
@@ -121,8 +121,11 @@ App::App()
   ASSERT(m_instance == NULL);
   m_instance = this;
 
+  for (int i = 0; i < argc; ++i)
+    m_args.push_back(argv[i]);
+
   m_configModule = new ConfigModule();
-  m_checkArgs = new CheckArgs();
+  m_checkArgs = new CheckArgs(m_args);
   m_loggerModule = new LoggerModule(m_checkArgs->isVerbose());
   m_modules = new Modules();
   m_isGui = !(m_checkArgs->isConsoleOnly());
@@ -243,7 +246,7 @@ int App::run()
 
 	case CheckArgs::Option::OpenSprite: {
 	  /* load the sprite */
-	  Sprite* sprite = sprite_load(Vaca::convert_to<std::string>(option->data()).c_str());
+	  Sprite* sprite = sprite_load(option->data().c_str());
 	  if (!sprite) {
 	    if (!isGui())
 	      console.printf("Error loading file \"%s\"\n", option->data().c_str());
@@ -259,7 +262,7 @@ int App::run()
 	      set_sprite_in_more_reliable_editor(context->get_first_sprite());
 
 	      // Recent file
-	      getRecentFiles()->addRecentFile(Vaca::convert_to<std::string>(option->data()).c_str());
+	      getRecentFiles()->addRecentFile(option->data().c_str());
 	    }
 	  }
 	  break;

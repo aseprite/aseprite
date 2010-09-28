@@ -19,10 +19,8 @@
 #ifndef CHECK_ARGS_H_INCLUDED
 #define CHECK_ARGS_H_INCLUDED
 
-#include "Vaca/String.h"
 #include <vector>
-
-using Vaca::String;
+#include "base/string.h"
 
 // Parses the input arguments in the command line.
 class CheckArgs
@@ -33,23 +31,23 @@ public:
   class Option
   {
     int m_type;
-    String m_data;
+    base::string m_data;
 
   public:
     enum {
       OpenSprite,
     };
 
-    Option(int type, const String& data) : m_type(type), m_data(data) { }
+    Option(int type, const base::string& data) : m_type(type), m_data(data) { }
 
     int type() const { return m_type; }
-    const String& data() const { return m_data; }
+    const base::string& data() const { return m_data; }
   };
 
   typedef std::vector<Option*> Options;
   typedef Options::iterator iterator;
   
-  CheckArgs();
+  CheckArgs(const std::vector<base::string>& args);
   ~CheckArgs();
 
   void clear();
@@ -57,7 +55,7 @@ public:
   iterator begin() { return m_options.begin(); }
   iterator end() { return m_options.end(); }
 
-  String getPaletteFilename() const { return m_paletteFilename; }
+  base::string getPaletteFilename() const { return m_paletteFilename; }
 
   bool isConsoleOnly() const { return m_consoleOnly; }
   bool isVerbose() const { return m_verbose; }
@@ -66,8 +64,8 @@ private:
   void usage(bool showHelp);
 
   Options m_options;
-  String m_paletteFilename;
-  String m_exeName;
+  base::string m_paletteFilename;
+  base::string m_exeName;
   bool m_consoleOnly;
   bool m_verbose;
 };

@@ -19,8 +19,9 @@
 #include "config.h"
 
 #include <allegro.h>
-#include <Vaca/String.h>
 
+#include "base/convert_to.h"
+#include "base/string.h"
 #include "commands/command.h"
 #include "launcher.h"
 
@@ -87,11 +88,11 @@ void CheckUpdatesCommand::onExecute(Context* context)
   // Version of the operating system
   if (os_version >= 0) {
     url += "&osver=";
-    url += Vaca::convert_to<std::string>(os_version);
+    url += base::convert_to<base::string>(os_version);
   }
   if (os_revision >= 0) {
     url += "&osrev=";
-    url += Vaca::convert_to<std::string>(os_revision);
+    url += base::convert_to<base::string>(os_revision);
   }
 
   Launcher::openUrl(url);
