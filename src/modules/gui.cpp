@@ -28,11 +28,8 @@
 #include <winalleg.h>
 #endif
 
-#include "Vaca/SharedPtr.h"
-#include "gui/jinete.h"
-#include "gui/jintern.h"
-
 #include "app.h"
+#include "base/shared_ptr.h"
 #include "commands/command.h"
 #include "commands/commands.h"
 #include "commands/params.h"
@@ -40,6 +37,8 @@
 #include "core/cfg.h"
 #include "core/drop_files.h"
 #include "gfxmode.h"
+#include "gui/jinete.h"
+#include "gui/jintern.h"
 #include "modules/editors.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
@@ -791,7 +790,7 @@ void get_widgets(JWidget window, ...)
 
 void setup_mini_look(Widget* widget)
 {
-  Vaca::SharedPtr<SkinProperty> skinProp;
+  SharedPtr<SkinProperty> skinProp;
 
   skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinProp == NULL)
@@ -803,7 +802,7 @@ void setup_mini_look(Widget* widget)
 
 void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
 {
-  Vaca::SharedPtr<SkinProperty> skinProp;
+  SharedPtr<SkinProperty> skinProp;
 
   skinProp = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinProp == NULL)

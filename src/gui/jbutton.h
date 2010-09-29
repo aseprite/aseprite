@@ -9,13 +9,11 @@
 
 #include "base/signal.h"
 #include "gui/jwidget.h"
-#include "Vaca/NonCopyable.h"
 #include <vector>
 
-namespace Vaca { class Event; }
-using Vaca::Event;
-
 struct BITMAP;
+
+class Event;
 
 // Generic button
 class ButtonBase : public Widget

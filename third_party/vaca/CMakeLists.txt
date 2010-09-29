@@ -4,9 +4,4 @@
 include_directories(include ../../src)
 
 add_library(vaca
-  src/Component.cpp
-  src/Event.cpp
-  src/Exception.cpp
-  src/PreferredSizeEvent.cpp
-  src/Property.cpp
-  src/Referenceable.cpp)
+  src/Exception.cpp)

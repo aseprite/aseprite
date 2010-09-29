@@ -21,12 +21,11 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "Vaca/SharedPtr.h"
+#include "ase_exception.h"
 #include "base/bind.h"
+#include "base/shared_ptr.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
-
-#include "ase_exception.h"
 #include "loadpng.h"
 #include "modules/gui.h"
 #include "modules/skinneable_theme.h"
@@ -627,7 +626,7 @@ void SkinneableTheme::draw_button(ButtonBase* widget, JRect clip)
 
   // Tool buttons are smaller
   bool isMiniLook = false;
-  Vaca::SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinPropery != NULL)
     isMiniLook = skinPropery->isMiniLook();
 
@@ -1117,7 +1116,7 @@ void SkinneableTheme::draw_slider(JWidget widget, JRect clip)
 
   // Tool buttons are smaller
   bool isMiniLook = false;
-  Vaca::SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
   if (skinPropery != NULL)
     isMiniLook = skinPropery->isMiniLook();
 
@@ -1752,7 +1751,7 @@ bool SkinneableTheme::theme_frame_button_msg_proc(JWidget widget, JMessage msg)
 
 //////////////////////////////////////////////////////////////////////
 
-const Vaca::Char* SkinProperty::SkinPropertyName = L"SkinProperty";
+const char* SkinProperty::SkinPropertyName = "SkinProperty";
 
 SkinProperty::SkinProperty()
   : Property(SkinPropertyName)

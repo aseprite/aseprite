@@ -2,6 +2,8 @@
 # Copyright (C) 2001-2010  David Capello
 
 add_library(gui-lib
+  component.cpp
+  event.cpp
   jaccel.cpp
   jalert.cpp
   jbox.cpp
@@ -43,4 +45,6 @@ add_library(gui-lib
   jview.cpp
   jwidget.cpp
   jwindow.cpp
+  preferred_size_event.cpp
+  property.cpp
   themes/jstandard_theme.cpp)

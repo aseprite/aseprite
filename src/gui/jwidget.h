@@ -9,12 +9,12 @@
 
 #include <string>
 
+#include "gfx/rect.h"
+#include "gui/component.h"
 #include "gui/jbase.h"
 #include "gui/jrect.h"
-#include "gfx/rect.h"
-#include "Vaca/Widget.h"
 
-namespace Vaca { class PreferredSizeEvent; }
+class PreferredSizeEvent;
 
 #ifndef NDEBUG
 #include "gui/jintern.h"
@@ -23,8 +23,6 @@ namespace Vaca { class PreferredSizeEvent; }
 #else
 #define ASSERT_VALID_WIDGET(widget) ((void)0)
 #endif
-
-using Vaca::PreferredSizeEvent;
 
 struct FONT;
 struct BITMAP;
@@ -127,7 +125,7 @@ bool jwidget_check_underscored(JWidget widget, int scancode);
 
 //////////////////////////////////////////////////////////////////////
 
-class Widget : public Vaca::Widget
+class Widget : public Component
 {
 public:
   JID id;			/* identify code */

@@ -8,9 +8,9 @@
 
 #include <allegro.h>
 
-#include "gui/jinete.h"
 #include "gfx/size.h"
-#include "Vaca/PreferredSizeEvent.h"
+#include "gui/jinete.h"
+#include "gui/preferred_size_event.h"
 
 using namespace gfx;
 

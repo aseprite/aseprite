@@ -19,19 +19,20 @@
 #ifndef MODULES_SKINNEABLE_THEME_H_INCLUDED
 #define MODULES_SKINNEABLE_THEME_H_INCLUDED
 
+#include <allegro/color.h>
 #include <map>
 #include <string>
-#include <allegro/color.h>
-#include "gui/jtheme.h"
-#include "gui/jrect.h"
-#include "Vaca/Property.h"
+
 #include "gfx/rect.h"
+#include "gui/jrect.h"
+#include "gui/jtheme.h"
+#include "gui/property.h"
 
 // Property to show widgets with a special look (e.g.: buttons or sliders with mini-borders)
-class SkinProperty : public Vaca::Property
+class SkinProperty : public Property
 {
 public:
-  static const Vaca::Char* SkinPropertyName;
+  static const char* SkinPropertyName;
 
   SkinProperty();
   ~SkinProperty();

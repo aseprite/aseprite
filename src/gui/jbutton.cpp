@@ -20,7 +20,7 @@
 #include "gui/jtheme.h"
 #include "gui/jwidget.h"
 #include "gui/jwindow.h"
-#include "Vaca/PreferredSizeEvent.h"
+#include "gui/preferred_size_event.h"
 
 ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)
   : Widget(type)
@@ -235,7 +235,7 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 		jwidget_emit_signal(this, JI_SIGNAL_CHECK_CHANGE);
 
 		// Fire onClick() event
-		Vaca::Event ev(this);
+		Event ev(this);
 		onClick(ev);
 
 		dirty();
@@ -250,7 +250,7 @@ bool ButtonBase::onProcessMessage(JMessage msg)
 		jwidget_emit_signal(this, JI_SIGNAL_RADIO_CHANGE);
 
 		// Fire onClick() event
-		Vaca::Event ev(this);
+		Event ev(this);
 		onClick(ev);
 	      }
 	      break;
@@ -333,7 +333,7 @@ void ButtonBase::generateButtonSelectSignal()
   jwidget_emit_signal(this, JI_SIGNAL_BUTTON_SELECT);
 
   // Fire onClick() event
-  Vaca::Event ev(this);
+  Event ev(this);
   onClick(ev);
 }
 

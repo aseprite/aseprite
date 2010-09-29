@@ -11,10 +11,10 @@
 
 #include <allegro.h>
 
+#include "gfx/size.h"
 #include "gui/jinete.h"
 #include "gui/jintern.h"
-#include "gfx/size.h"
-#include "Vaca/PreferredSizeEvent.h"
+#include "gui/preferred_size_event.h"
 
 using namespace gfx;
 
