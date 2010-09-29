@@ -23,8 +23,6 @@
 #include <sstream>
 #include <iomanip>
 
-#include "Vaca/String.h"
-
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "raster/image.h"

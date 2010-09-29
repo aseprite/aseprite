@@ -19,13 +19,12 @@
 #ifndef RASTER_RGBMAP_H_INCLUDED
 #define RASTER_RGBMAP_H_INCLUDED
 
-#include "Vaca/NonCopyable.h"
+#include "base/disable_copying.h"
 #include "raster/gfxobj.h"
 
 class Palette;
 
 class RgbMap : public GfxObj
-	     , Vaca::NonCopyable
 {
 public:
   RgbMap();
@@ -38,6 +37,8 @@ public:
 
 private:
   class RgbMapImpl* m_impl;
+
+  DISABLE_COPYING(RgbMap);
 };
 
 #endif

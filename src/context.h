@@ -20,8 +20,8 @@
 #define CONTEXT_H_INCLUDED
 
 #include <list>
-#include "Vaca/NonCopyable.h"
 #include "ase_exception.h"
+#include "base/disable_copying.h"
 #include "settings/settings.h"
 
 class Sprite;
@@ -38,7 +38,7 @@ public:
   : ase_exception("Cannot execute the command because its pre-conditions are false.") { }
 };
 
-class Context : Vaca::NonCopyable
+class Context
 {
 public:
   virtual ~Context();
@@ -85,6 +85,8 @@ private:
 
   // Settings in this context.
   ISettings* m_settings;
+
+  DISABLE_COPYING(Context);
 
 };
 

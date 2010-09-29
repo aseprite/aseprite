@@ -37,7 +37,7 @@ if(MSVC)
 endif(MSVC)
 
 # Third-party libraries
-set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml vaca zlib)
+set(libs3rdparty freetype jpeg libart_lgpl libpng loadpng tinyxml zlib)
 
 # All libraries for .exe files
 set(all_libs aseprite-library gui-lib gfx-lib base-lib ${alleg_lib} ${libs3rdparty} ${sys_libs})
@@ -50,8 +50,7 @@ include_directories(
   ${LIBPNG_DIR}
   ${ZLIB_DIR}
   ${LOADPNG_DIR}
-  ${TINYXML_DIR}
-  ${VACA_DIR}/include)
+  ${TINYXML_DIR})
 
 ######################################################################
 # Sub-libraries

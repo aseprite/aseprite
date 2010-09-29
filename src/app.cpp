@@ -27,7 +27,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "Vaca/String.h"
 #include "app.h"
 #include "app/color_utils.h"
 #include "ase_exception.h"

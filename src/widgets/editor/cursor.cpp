@@ -19,6 +19,7 @@
 #include "config.h"
 
 #include <allegro.h>
+#include <algorithm>
 
 #include "app.h"
 #include "app/color.h"
@@ -39,6 +40,11 @@
 #include "ui_context.h"
 #include "util/boundary.h"
 #include "widgets/editor.h"
+
+#ifdef WIN32
+#undef max
+#undef min
+#endif
 
 /**********************************************************************/
 /* drawing-cursor routines */
@@ -358,10 +364,10 @@ void Editor::editor_move_cursor(int x, int y, bool refresh)
 	m_state != EDITOR_STATE_DRAWING) {
       Pen* pen = editor_get_current_pen();
       editors_draw_sprite(m_sprite,
-			  Vaca::min_value(new_x, old_x)-pen->get_size()/2,
-			  Vaca::min_value(new_y, old_y)-pen->get_size()/2,
-			  Vaca::max_value(new_x, old_x)+pen->get_size()/2,
-			  Vaca::max_value(new_y, old_y)+pen->get_size()/2);
+			  std::min(new_x, old_x)-pen->get_size()/2,
+			  std::min(new_y, old_y)-pen->get_size()/2,
+			  std::max(new_x, old_x)+pen->get_size()/2,
+			  std::max(new_y, old_y)+pen->get_size()/2);
     }
 
     /* save area and draw the cursor */
