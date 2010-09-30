@@ -11,8 +11,11 @@ project(aseprite)
 ######################################################################
 # Options (these can be specified in cmake command line or modifying CMakeCache.txt)
 
-option(USE_STATIC_LIBC "Use static version of C and C++ runtimes" off)
+option(USE_STATIC_LIBC    "Use static version of C and C++ runtimes" off)
 option(USE_STATIC_ALLEGRO "Use static version of Allegro library" off)
+option(USE_SHARED_JPEGLIB "Use your installed copy of jpeglib" off)
+option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
+option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
 
 ######################################################################
 # Directories of third-party libraries
