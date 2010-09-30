@@ -37,17 +37,18 @@ TEST(SharedPtr, RefCount)
   EXPECT_EQ(1, b.getRefCount());
 }
 
+
+class DeleteIsCalled
+{
+public:
+  DeleteIsCalled(bool& flag) : m_flag(flag) { }
+  ~DeleteIsCalled() { m_flag = true; }
+private:
+  bool& m_flag;
+};
+
 TEST(SharedPtr, DeleteIsCalled)
 {
-  class DeleteIsCalled
-  {
-  public:
-    DeleteIsCalled(bool& flag) : m_flag(flag) { }
-    ~DeleteIsCalled() { m_flag = true; }
-  private:
-    bool& m_flag;
-  };
-
   bool flag = false;
   {
     SharedPtr<DeleteIsCalled> a(new DeleteIsCalled(flag));
@@ -55,16 +56,19 @@ TEST(SharedPtr, DeleteIsCalled)
   EXPECT_EQ(true, flag);
 }
 
+
+class A { };
+class B : public A { };
+
 TEST(SharedPtr, Hierarchy)
 {
-  class A { };
-  class B : public A { };
   SharedPtr<A> a(new B);
   SharedPtr<B> b = a;
   SharedPtr<A> c = a;
   SharedPtr<A> d = b;
   EXPECT_EQ(4, a.getRefCount());
 }
+
 
 TEST(SharedPtr, Compare)
 {
