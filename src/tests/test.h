@@ -28,7 +28,10 @@
   #include "gui/jinete.h"
 #endif
 
-// Allegro-friendly main() routine
+#ifdef main
+  #undef main
+#endif
+
 int main(int argc, char* argv[])
 {
   int exitcode;
@@ -57,7 +60,5 @@ int main(int argc, char* argv[])
   allegro_exit();
   return exitcode;
 }
-
-END_OF_MAIN();
 
 #endif

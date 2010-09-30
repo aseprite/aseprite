@@ -279,7 +279,7 @@ file(GLOB_RECURSE tests *_unittest.cpp)
 foreach(testsourcefile ${tests})
   get_filename_component(testname ${testsourcefile} NAME_WE)
 
-  add_executable(${testname} WIN32 ${testsourcefile})
+  add_executable(${testname} ${testsourcefile})
 
   target_link_libraries(${testname} gtest ${all_libs})
 
