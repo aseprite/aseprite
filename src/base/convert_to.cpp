@@ -6,7 +6,8 @@
 
 #include "config.h"
 
-#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 
 #include "base/convert_to.h"
 
