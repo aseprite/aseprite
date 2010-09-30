@@ -13,7 +13,8 @@ else()
 
   execute_process(COMMAND ${allegro_config} --cflags
         OUTPUT_VARIABLE allegro_c_flags
-	OUTPUT_STRIP_TRAILING_WHITESPACE)
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+	RESULT_VARIABLE ret)
   if(NOT ret EQUAL 0)
     message("Error running allegro-config")
   endif()
