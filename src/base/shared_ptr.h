@@ -13,8 +13,6 @@
 template<class T>
 class SharedPtr
 {
-  friend class SharedPtr;
-
 public:
 
   SharedPtr()
@@ -105,6 +103,8 @@ private:
   
   T* m_ptr;			// The pointee object.
   int* m_refCount;		// Number of references.
+
+  template<class T2> friend class SharedPtr;
 };
 
 // Compares if two shared-pointers points to the same place (object,
