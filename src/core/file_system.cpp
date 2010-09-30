@@ -1025,12 +1025,12 @@ static FileItem* get_fileitem_by_path(const base::string& path, bool create_if_n
   FileItem* fileitem = new FileItem(NULL);
 
   fileitem->filename = path;
-  fileitem->displayname = path.filename();
+  fileitem->displayname = base::get_file_name(path);
   fileitem->attrib = attrib;
 
   // get the parent
   {
-    base::string parent_path = remove_backslash_if_needed(path.filepath() / "");
+    base::string parent_path = remove_backslash_if_needed(base::join_path(base::get_file_path(path), ""));
     fileitem->parent = get_fileitem_by_path(parent_path, true);
   }
 
@@ -1074,7 +1074,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
 
 static base::string remove_backslash_if_needed(const base::string& filename)
 {
-  if (!filename.empty() && base::string::is_separator(filename.back())) {
+  if (!filename.empty() && base::is_path_separator(*(filename.end()-1))) {
     int len = filename.size();
 #ifdef HAVE_DRIVES
     // if the name is C:\ or something like that, the backslash isn't
@@ -1086,9 +1086,7 @@ static base::string remove_backslash_if_needed(const base::string& filename)
     if (len == 1)
       return filename;
 #endif
-    base::string tmp(filename);
-    tmp.remove_separator();
-    return tmp;
+    return base::remove_path_separator(filename);
   }
   return filename;
 }
@@ -1100,7 +1098,7 @@ static base::string get_key_for_filename(const base::string& filename)
 #if !defined CASE_SENSITIVE
   buf.tolower();
 #endif
-  buf.fix_separators();
+  buf = base::fix_path_separators(buf);
 
   return buf;
 }
