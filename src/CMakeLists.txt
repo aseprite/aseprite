@@ -1,14 +1,17 @@
 # ASE - Allegro Sprite Editor
 # Copyright (C) 2001-2010  David Capello
 
-# System libraries on Windows
 if(WIN32)
+  # Allegro library on Windows
   set(alleg_lib alleg)
+
+  # System libraries on Windows
   set(sys_libs
     User32 Shell32 ComCtl32 ComDlg32 Gdi32 Msimg32
     WinMM AdvAPI32 Ole32 ShLwApi Vfw32 WinInet PsApi
     DDraw DxGuid DSound DInput8)
 else()
+  # Allegro library on Unix like systems
   find_program(allegro_config "allegro-config")
 
   execute_process(COMMAND ${allegro_config} --cflags
