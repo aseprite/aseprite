@@ -52,7 +52,7 @@ typedef uint32_t	ase_uint32;
 #if defined __cplusplus && defined MEMLEAK
 
 #include <new>
-#include "jinete/jbase.h"
+#include "gui/jbase.h"
 
 inline void* operator new(std::size_t size)
 {
