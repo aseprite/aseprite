@@ -269,7 +269,7 @@ static FONT *my_load_font(const char *filename)
 
 static void button_font_command(JWidget widget)
 {
-  jstring filename =
+  base::string filename =
     ase_file_selector("Open Font (TTF or Allegro bitmap format)",
 		      get_config_string ("DrawText", "Font", ""),
 		      "pcx,bmp,tga,lbm,ttf");

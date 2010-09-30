@@ -21,7 +21,6 @@
 #include <allegro.h>
 #include <vector>
 
-#include "gui/jstring.h"
 #include "gui/jwindow.h"
 
 #include "app.h"
@@ -38,7 +37,7 @@
 #ifdef ALLEGRO_WINDOWS
 
 static WNDPROC base_wnd_proc = NULL;
-static std::vector<jstring>* dropped_files;
+static std::vector<base::string>* dropped_files;
 static Mutex* dropped_files_mutex = NULL;
 
 static void subclass_hwnd();
@@ -47,7 +46,7 @@ static LRESULT ase_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 void install_drop_files()
 {
-  dropped_files = new std::vector<jstring>();
+  dropped_files = new std::vector<base::string>();
   dropped_files_mutex = new Mutex();
 
   subclass_hwnd();
@@ -73,7 +72,7 @@ void check_for_dropped_files()
 
   ScopedLock lock(*dropped_files_mutex);
   if (!dropped_files->empty()) {
-    std::vector<jstring> files = *dropped_files;
+    std::vector<base::string> files = *dropped_files;
     dropped_files->clear();
 
     // open all files
@@ -82,7 +81,7 @@ void check_for_dropped_files()
       CommandsModule::instance()->get_command_by_name(CommandId::open_file);
     Params params;
 
-    for (std::vector<jstring>::iterator
+    for (std::vector<base::string>::iterator
 	   it = files.begin(); it != files.end(); ++it) {
       params.set("filename", it->c_str());
       UIContext::instance()->execute_command(cmd_open_file, &params);

@@ -19,10 +19,10 @@
 #ifndef DIALOGS_FILESEL_H_INCLUDED
 #define DIALOGS_FILESEL_H_INCLUDED
 
-#include "gui/jstring.h"
+#include "base/string.h"
 
-jstring ase_file_selector(const jstring& message,
-			  const jstring& init_path,
-			  const jstring& exts);
+base::string ase_file_selector(const base::string& message,
+			       const base::string& init_path,
+			       const base::string& exts);
 
 #endif

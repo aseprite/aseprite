@@ -36,7 +36,6 @@
 #include "gui/jsep.h"
 #include "gui/jslider.h"
 #include "gui/jstream.h"
-#include "gui/jstring.h"
 #include "gui/jsystem.h"
 #include "gui/jtextbox.h"
 #include "gui/jtheme.h"

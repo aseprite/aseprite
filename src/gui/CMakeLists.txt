@@ -36,7 +36,6 @@ add_library(gui-lib
   jsep.cpp
   jslider.cpp
   jstream.cpp
-  jstring.cpp
   jsystem.cpp
   jtextbox.cpp
   jtheme.cpp

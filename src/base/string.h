@@ -11,7 +11,10 @@
 
 namespace base {
 
-typedef std::string string;
+  typedef std::string string;
+
+  string string_to_lower(const string& original);
+  string string_to_upper(const string& original);
 
 }
 

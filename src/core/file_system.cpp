@@ -55,8 +55,7 @@
   #include <shlwapi.h>
 #endif
 
-#include "gui/jstring.h"
-
+#include "base/path.h"
 #include "core/file_system.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -100,9 +99,9 @@
 class FileItem : public IFileItem
 {
 public:
-  jstring keyname;
-  jstring filename;
-  jstring displayname;
+  base::string keyname;
+  base::string filename;
+  base::string displayname;
   FileItem* parent;
   FileItemList children;
   unsigned int version;
@@ -133,22 +132,22 @@ public:
   bool isFolder() const;
   bool isBrowsable() const;
 
-  jstring getKeyName() const;
-  jstring getFileName() const;
-  jstring getDisplayName() const;
+  base::string getKeyName() const;
+  base::string getFileName() const;
+  base::string getDisplayName() const;
 
   IFileItem* getParent() const;
   const FileItemList& getChildren();
 
-  bool hasExtension(const jstring& csv_extensions);
+  bool hasExtension(const base::string& csv_extensions);
 
   BITMAP* getThumbnail();
   void setThumbnail(BITMAP* thumbnail);
 
 };
 
-typedef std::map<jstring, FileItem*> FileItemMap;
-typedef std::map<jstring, BITMAP*> ThumbnailMap;
+typedef std::map<base::string, FileItem*> FileItemMap;
+typedef std::map<base::string, BITMAP*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
@@ -175,15 +174,15 @@ static unsigned int current_file_system_version = 0;
   static LPITEMIDLIST clone_pidl(LPITEMIDLIST pidl);
   static LPITEMIDLIST remove_last_pidl(LPITEMIDLIST pidl);
   static void free_pidl(LPITEMIDLIST pidl);
-  static jstring get_key_for_pidl(LPITEMIDLIST pidl);
+  static base::string get_key_for_pidl(LPITEMIDLIST pidl);
 
   static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST pidl, bool create_if_not);
   static void put_fileitem(FileItem* fileitem);
 #else
-  static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not);
+  static FileItem* get_fileitem_by_path(const base::string& path, bool create_if_not);
   static void for_each_child_callback(const char *filename, int attrib, int param);
-  static jstring remove_backslash_if_needed(const jstring& filename);
-  static jstring get_key_for_filename(const jstring& filename);
+  static base::string remove_backslash_if_needed(const base::string& filename);
+  static base::string get_key_for_filename(const base::string& filename);
   static void put_fileitem(FileItem* fileitem);
 #endif
 
@@ -325,7 +324,7 @@ IFileItem* FileSystemModule::getRootFileItem()
  * 
  * @warning You have to call path.fix_separators() before.
  */
-IFileItem* FileSystemModule::getFileItemFromPath(const jstring& path)
+IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
 {
   IFileItem* fileitem = NULL;
 
@@ -359,7 +358,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const jstring& path)
   }
 #else
   {
-    jstring buf = remove_backslash_if_needed(path);
+    base::string buf = remove_backslash_if_needed(path);
     fileitem = get_fileitem_by_path(buf, true);
   }
 #endif
@@ -369,11 +368,11 @@ IFileItem* FileSystemModule::getFileItemFromPath(const jstring& path)
   return fileitem;
 }
 
-bool FileSystemModule::dirExists(const jstring& path)
+bool FileSystemModule::dirExists(const base::string& path)
 {
   struct al_ffblk info;
   int ret;
-  jstring path2 = path / "*.*";
+  base::string path2 = base::join_path(path, "*.*");
 
   ret = al_findfirst(path2.c_str(), &info, FA_ALL);
   al_findclose(&info);
@@ -396,29 +395,29 @@ bool FileItem::isBrowsable() const
 
 #ifdef USE_PIDLS
   return IS_FOLDER(this)
-    && (this->filename.extension() != "zip")
-    && ((!this->filename.empty() && this->filename.front() != ':') ||
+    && (base::get_file_extension(this->filename) != "zip")
+    && ((!this->filename.empty() && (*this->filename.begin()) != ':') ||
 	(this->filename == MYPC_CSLID));
 #else
   return IS_FOLDER(this);
 #endif
 }
 
-jstring FileItem::getKeyName() const
+base::string FileItem::getKeyName() const
 {
   ASSERT(this->keyname != NOTINITIALIZED);
 
   return this->keyname;
 }
 
-jstring FileItem::getFileName() const
+base::string FileItem::getFileName() const
 {
   ASSERT(this->filename != NOTINITIALIZED);
 
   return this->filename;
 }
 
-jstring FileItem::getDisplayName() const
+base::string FileItem::getDisplayName() const
 {
   ASSERT(this->displayname != NOTINITIALIZED);
 
@@ -568,11 +567,11 @@ const FileItemList& FileItem::getChildren()
   return this->children;
 }
 
-bool FileItem::hasExtension(const jstring& csv_extensions)
+bool FileItem::hasExtension(const base::string& csv_extensions)
 {
   ASSERT(this->filename != NOTINITIALIZED);
 
-  return this->filename.has_extension(csv_extensions);
+  return base::has_file_extension(this->filename, csv_extensions);
 }
 
 BITMAP* FileItem::getThumbnail()
@@ -878,7 +877,7 @@ static void free_pidl(LPITEMIDLIST pidl)
   shl_imalloc->Free(pidl);
 }
 
-static jstring get_key_for_pidl(LPITEMIDLIST pidl)
+static base::string get_key_for_pidl(LPITEMIDLIST pidl)
 {
 #if 0
   char *key = jmalloc(get_pidl_size(pidl)+1);
@@ -1002,7 +1001,7 @@ static void put_fileitem(FileItem* fileitem)
 // Allegro for_each_file: Portable
 //////////////////////////////////////////////////////////////////////
 
-static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
+static FileItem* get_fileitem_by_path(const base::string& path, bool create_if_not)
 {
   if (path.empty())
     return rootitem;
@@ -1031,7 +1030,7 @@ static FileItem* get_fileitem_by_path(const jstring& path, bool create_if_not)
 
   // get the parent
   {
-    jstring parent_path = remove_backslash_if_needed(path.filepath() / "");
+    base::string parent_path = remove_backslash_if_needed(path.filepath() / "");
     fileitem->parent = get_fileitem_by_path(parent_path, true);
   }
 
@@ -1073,9 +1072,9 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
   fileitem->insertChildSorted(child);
 }
 
-static jstring remove_backslash_if_needed(const jstring& filename)
+static base::string remove_backslash_if_needed(const base::string& filename)
 {
-  if (!filename.empty() && jstring::is_separator(filename.back())) {
+  if (!filename.empty() && base::string::is_separator(filename.back())) {
     int len = filename.size();
 #ifdef HAVE_DRIVES
     // if the name is C:\ or something like that, the backslash isn't
@@ -1087,16 +1086,16 @@ static jstring remove_backslash_if_needed(const jstring& filename)
     if (len == 1)
       return filename;
 #endif
-    jstring tmp(filename);
+    base::string tmp(filename);
     tmp.remove_separator();
     return tmp;
   }
   return filename;
 }
 
-static jstring get_key_for_filename(const jstring& filename)
+static base::string get_key_for_filename(const base::string& filename)
 {
-  jstring buf(filename);
+  base::string buf(filename);
 
 #if !defined CASE_SENSITIVE
   buf.tolower();

@@ -68,7 +68,7 @@ void LoadMaskCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
 
-  jstring filename = m_filename;
+  base::string filename = m_filename;
 
   if (context->is_ui_available()) {
     filename = ase_file_selector("Load .msk File", filename, "msk");

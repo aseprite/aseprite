@@ -29,12 +29,13 @@
 #include <allegro/internal/aintern.h>
 #include <errno.h>
 
-#include "base/bind.h"
-#include "gui/jinete.h"
-
 #include "app.h"
+#include "base/bind.h"
+#include "base/path.h"
+#include "base/split_string.h"
 #include "core/cfg.h"
 #include "file/file.h"
+#include "gui/jinete.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "recent_files.h"
@@ -83,15 +84,15 @@ static void on_exit_delete_navigation_history()
  * - the 'core/file_system' routines.
  * - the 'widgets/fileview' widget.
  */
-jstring ase_file_selector(const jstring& message,
-			  const jstring& init_path,
-			  const jstring& exts)
+base::string ase_file_selector(const base::string& message,
+			       const base::string& init_path,
+			       const base::string& exts)
 {
   static Frame* window = NULL;
   Widget* fileview;
   Widget* filename_entry;
   ComboBox* filetype;
-  jstring result;
+  base::string result;
 
   FileSystemModule::instance()->refresh();
 
@@ -101,13 +102,13 @@ jstring ase_file_selector(const jstring& message,
   }
 
   // we have to find where the user should begin to browse files (start_folder)
-  jstring start_folder_path;
+  base::string start_folder_path;
   IFileItem* start_folder = NULL;
 
   // if init_path doesn't contain a path...
-  if (init_path.filepath().empty()) {
+  if (base::get_file_path(init_path).empty()) {
     // get the saved `path' in the configuration file
-    jstring path = get_config_string("FileSelect", "CurrentDirectory", "");
+    base::string path = get_config_string("FileSelect", "CurrentDirectory", "");
     start_folder = FileSystemModule::instance()->getFileItemFromPath(path);
 
     // is the folder find?
@@ -125,14 +126,14 @@ jstring ase_file_selector(const jstring& message,
 	path = tmp;
       }
 
-      start_folder_path = path / init_path;
+      start_folder_path = base::join_path(path, init_path);
     }
   }
   else {
     // remove the filename
-    start_folder_path = init_path.filepath() / "";
+    start_folder_path = base::join_path(base::get_file_path(init_path), "");
   }
-  start_folder_path.fix_separators();
+  start_folder_path = base::fix_path_separators(start_folder_path);
 
   if (!start_folder)
     start_folder = FileSystemModule::instance()->getFileItemFromPath(start_folder_path);
@@ -209,15 +210,15 @@ jstring ase_file_selector(const jstring& message,
   // fill file-type combo-box
   filetype->removeAllItems();
 
-  std::vector<jstring> tokens;
-  std::vector<jstring>::iterator tok;
+  std::vector<base::string> tokens;
+  std::vector<base::string>::iterator tok;
 
-  exts.split(',', tokens);
+  base::split_string(exts, tokens, ",");
   for (tok=tokens.begin(); tok!=tokens.end(); ++tok)
     filetype->addItem(tok->c_str());
 
   // file name entry field
-  filename_entry->setText(init_path.filename().c_str());
+  filename_entry->setText(base::get_file_name(init_path).c_str());
   select_filetype_from_filename(window);
   jentry_select_text(filename_entry, 0, -1);
 
@@ -239,8 +240,8 @@ again:
     IFileItem *folder = fileview_get_current_folder(fileview);
     ASSERT(folder);
 
-    jstring fn = filename_entry->getText();
-    jstring buf;
+    base::string fn = filename_entry->getText();
+    base::string buf;
     IFileItem* enter_folder = NULL;
 
     // up a level?
@@ -253,18 +254,18 @@ again:
       // check if the user specified in "fn" a item of "fileview"
       const FileItemList& children = fileview_get_filelist(fileview);
 
-      jstring fn2 = fn;
-#ifdef ALLEGRO_WINDOWS
-      fn2.tolower();
+      base::string fn2 = fn;
+#ifdef WIN32
+      fn2 = base::string_to_lower(fn2);
 #endif
 
       for (FileItemList::const_iterator
 	     it=children.begin(); it!=children.end(); ++it) {
 	IFileItem* child = *it;
-	jstring child_name = child->getDisplayName();
+	base::string child_name = child->getDisplayName();
 
-#ifdef ALLEGRO_WINDOWS
-	child_name.tolower();
+#ifdef WIN32
+	child_name = base::string_to_lower(child_name);
 #endif
 	if (child_name == fn2) {
 	  enter_folder = *it;
@@ -275,26 +276,26 @@ again:
 
       if (!enter_folder) {
 	// does the file-name entry have separators?
-	if (jstring::is_separator(fn.front())) { // absolute path (UNIX style)
-#ifdef ALLEGRO_WINDOWS
+	if (base::is_path_separator(*fn.begin())) { // absolute path (UNIX style)
+#ifdef WIN32
 	  // get the drive of the current folder
-	  jstring drive = folder->getFileName();
+	  base::string drive = folder->getFileName();
 	  if (drive.size() >= 2 && drive[1] == ':') {
 	    buf += drive[0];
 	    buf += ':';
 	    buf += fn;
 	  }
 	  else
-	    buf = jstring("C:") / fn;
+	    buf = base::join_path("C:", fn);
 #else
 	  buf = fn;
 #endif
 	}
-#ifdef ALLEGRO_WINDOWS
+#ifdef WIN32
 	// does the file-name entry have colon?
-	else if (fn.find(':') != jstring::npos) { // absolute path on Windows
+	else if (fn.find(':') != base::string::npos) { // absolute path on Windows
 	  if (fn.size() == 2 && fn[1] == ':') {
-	    buf = fn / "";
+	    buf = base::join_path(fn, "");
 	  }
 	  else {
 	    buf = fn;
@@ -303,9 +304,9 @@ again:
 #endif
 	else {
 	  buf = folder->getFileName();
-	  buf /= fn;
+	  buf = base::join_path(buf, fn);
 	}
-	buf.fix_separators();
+	buf = base::fix_path_separators(buf);
 
 	// we can check if 'buf' is a folder, so we have to enter in it
 	enter_folder = FileSystemModule::instance()->getFileItemFromPath(buf);
@@ -335,7 +336,7 @@ again:
 
     // does it not have extension? ...we should add the extension
     // selected in the filetype combo-box
-    if (buf.extension().empty()) {
+    if (base::get_file_extension(buf).empty()) {
       buf += '.';
       buf += filetype->getItemText(filetype->getSelectedItem());
     }
@@ -344,7 +345,7 @@ again:
     result = buf;
 
     // save the path in the configuration file
-    jstring lastpath = folder->getKeyName();
+    base::string lastpath = folder->getKeyName();
     set_config_string("FileSelect", "CurrentDirectory",
 		      lastpath.c_str());
   }
@@ -386,7 +387,7 @@ static void update_location(JWidget window)
     fileitem = reinterpret_cast<IFileItem*>(link->data);
 
     // Indentation
-    jstring buf;
+    base::string buf;
     for (int c=0; c<level; ++c)
       buf += "  ";
 
@@ -415,7 +416,7 @@ static void update_location(JWidget window)
     RecentFiles::const_iterator end = App::instance()->getRecentFiles()->end();
     for (; it != end; ++it) {
       // Get the path of the recent file
-      std::string path = jstring(*it).filepath();
+      base::string path = base::get_file_path(*it);
 
       // Check if the path was not already included in the list
       if (included.find(path) == included.end()) {
@@ -566,7 +567,7 @@ static bool fileview_msg_proc(JWidget widget, JMessage msg)
 	if (!fileitem->isFolder()) {
 	  Frame* window = static_cast<Frame*>(widget->getRoot());
 	  Widget* entry = window->findChild("filename");
-	  jstring filename = fileitem->getFileName().filename();
+	  base::string filename = base::get_file_name(fileitem->getFileName());
 
 	  entry->setText(filename.c_str());
 	  select_filetype_from_filename(window);
@@ -613,7 +614,7 @@ static bool location_msg_proc(JWidget widget, JMessage msg)
 
 	// Maybe the user selected a recent file path
 	if (fileitem == NULL) {
-	  jstring path = combobox->getItemText(itemIndex);
+	  base::string path = combobox->getItemText(itemIndex);
 	  if (!path.empty())
 	    fileitem = FileSystemModule::instance()->getFileItemFromPath(path);
 	}
@@ -677,7 +678,7 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
     }
 
     // String to be autocompleted
-    jstring left_part = widget->getText();
+    base::string left_part = widget->getText();
     if (left_part.empty())
       return false;
 
@@ -689,9 +690,9 @@ static bool filename_msg_proc(JWidget widget, JMessage msg)
     for (FileItemList::const_iterator
 	   it=children.begin(); it!=children.end(); ++it) {
       IFileItem* child = *it;
-      jstring child_name = child->getDisplayName();
+      base::string child_name = child->getDisplayName();
 
-      jstring::iterator it1, it2;
+      base::string::iterator it1, it2;
 
       for (it1 = child_name.begin(), it2 = left_part.begin();
 	   it1!=child_name.end() && it2!=left_part.end();

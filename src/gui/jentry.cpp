@@ -17,7 +17,6 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
-#include "gui/jstring.h"
 #include "gui/jtheme.h"
 #include "gui/jwidget.h"
 
@@ -586,7 +585,7 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
       if (selbeg >= 0) {
 	// *cut* text!
 	if (cmd == EntryCmd::Cut) {
-	  jstring buf = text.substr(selbeg, selend - selbeg + 1);
+	  base::string buf = text.substr(selbeg, selend - selbeg + 1);
 	  jclipboard_set_text(buf.c_str());
 	}
 
@@ -630,7 +629,7 @@ static void entry_execute_cmd(JWidget widget, EntryCmd::Type cmd,
 
     case EntryCmd::Copy:
       if (selbeg >= 0) {
-	jstring buf = text.substr(selbeg, selend - selbeg + 1);
+	base::string buf = text.substr(selbeg, selend - selbeg + 1);
 	jclipboard_set_text(buf.c_str());
       }
       break;

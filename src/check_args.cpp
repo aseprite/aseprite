@@ -59,7 +59,7 @@ CheckArgs::CheckArgs(const std::vector<base::string>& args)
 	  // The following argument should indicate the resolution
 	  // in a format like: 320x240[x8]
 	  std::vector<base::string> parts;
-	  base::split_string<base::string>(args[i], parts, "x");
+	  base::split_string(args[i], parts, "x");
 
 	  switch (parts.size()) {
 	    case 1:

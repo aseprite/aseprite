@@ -338,7 +338,7 @@ static bool window_close_hook(JWidget widget, void *data)
 static void load_command(JWidget widget)
 {
   Palette *palette;
-  jstring filename = ase_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
+  base::string filename = ase_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col");
   if (!filename.empty()) {
     palette = Palette::load(filename.c_str());
     if (!palette) {
@@ -353,7 +353,7 @@ static void load_command(JWidget widget)
 
 static void save_command(JWidget widget)
 {
-  jstring filename;
+  base::string filename;
   int ret;
 
  again:

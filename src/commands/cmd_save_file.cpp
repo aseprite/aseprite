@@ -150,8 +150,8 @@ static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 static void save_as_dialog(Sprite* sprite, const char* dlg_title, bool mark_as_saved)
 {
   char exts[4096];
-  jstring filename;
-  jstring newfilename;
+  base::string filename;
+  base::string newfilename;
   int ret;
 
   filename = sprite->getFilename();
@@ -309,7 +309,7 @@ bool SaveFileCopyAsCommand::onEnabled(Context* context)
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   CurrentSpriteWriter sprite(context);
-  jstring old_filename = sprite->getFilename();
+  base::string old_filename = sprite->getFilename();
 
   // show "Save As" dialog
   save_as_dialog(sprite, "Save Sprite Copy As", false);

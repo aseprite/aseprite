@@ -63,7 +63,7 @@ bool SaveMaskCommand::onEnabled(Context* context)
 void SaveMaskCommand::onExecute(Context* context)
 {
   const CurrentSpriteReader sprite(context);
-  jstring filename = "default.msk";
+  base::string filename = "default.msk";
   int ret;
 
   for (;;) {

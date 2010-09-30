@@ -5,4 +5,7 @@ add_library(base-lib
   convert_to.cpp
   errno_string.cpp
   mem_utils.cpp
-  mutex.cpp)
+  mutex.cpp
+  path.cpp
+  split_string.cpp
+  string.cpp)

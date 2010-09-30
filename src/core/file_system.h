@@ -19,8 +19,7 @@
 #ifndef CORE_FILE_SYSTEM_H_INCLUDED
 #define CORE_FILE_SYSTEM_H_INCLUDED
 
-#include "gui/jbase.h"
-#include "gui/jstring.h"
+#include "base/string.h"
 
 #include <vector>
 
@@ -42,9 +41,9 @@ public:
   void refresh();
 
   IFileItem* getRootFileItem();
-  IFileItem* getFileItemFromPath(const jstring& path);
+  IFileItem* getFileItemFromPath(const base::string& path);
 
-  bool dirExists(const jstring& path);
+  bool dirExists(const base::string& path);
 
 };
 
@@ -56,14 +55,14 @@ public:
   virtual bool isFolder() const = 0;
   virtual bool isBrowsable() const = 0;
 
-  virtual jstring getKeyName() const = 0;
-  virtual jstring getFileName() const = 0;
-  virtual jstring getDisplayName() const = 0;
+  virtual base::string getKeyName() const = 0;
+  virtual base::string getFileName() const = 0;
+  virtual base::string getDisplayName() const = 0;
 
   virtual IFileItem* getParent() const = 0;
   virtual const FileItemList& getChildren() = 0;
 
-  virtual bool hasExtension(const jstring& csv_extensions) = 0;
+  virtual bool hasExtension(const base::string& csv_extensions) = 0;
 
   virtual BITMAP* getThumbnail() = 0;
   virtual void setThumbnail(BITMAP* thumbnail) = 0;

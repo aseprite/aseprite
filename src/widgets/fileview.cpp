@@ -50,7 +50,7 @@ typedef struct FileView
   bool req_valid;
   int req_w, req_h;
   IFileItem* selected;
-  jstring exts;
+  base::string exts;
 
   /* incremental-search */
   char isearch[256];
@@ -88,7 +88,7 @@ static void openfile_bg(void *data);
 static void monitor_thumbnail_generation(void *data);
 static void monitor_free_thumbnail_generation(void *data);
 
-JWidget fileview_new(IFileItem* start_folder, const jstring& exts)
+JWidget fileview_new(IFileItem* start_folder, const base::string& exts)
 {
   Widget* widget = new Widget(fileview_type());
   FileView* fileview = new FileView;

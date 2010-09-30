@@ -68,7 +68,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
 {
   JWidget name, type, size, frames, ok;
   Button* speed;
-  jstring imgtype_text;
+  base::string imgtype_text;
   char buf[256];
 
   // Load the window widget
