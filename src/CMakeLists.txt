@@ -31,6 +31,9 @@ else()
       OUTPUT_VARIABLE allegro_link_flags
       OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
+
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${allegro_c_flags}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${allegro_link_flags}")
 endif()
 
 if(MSVC)
@@ -288,25 +291,6 @@ add_executable(aseprite WIN32 main.cpp)
 target_link_libraries(aseprite ${aseprite-library} ${all_libs})
 
 ######################################################################
-# Flags
-
-set_target_properties(aseprite PROPERTIES
-  COMPILE_FLAGS "${allegro_c_flags}"
-  LINK_FLAGS "${allegro_link_flags}")
-
-set_target_properties(aseprite-library PROPERTIES
-  COMPILE_FLAGS "${allegro_c_flags}")
-
-set_target_properties(base-lib PROPERTIES
-  COMPILE_FLAGS "${allegro_c_flags}")
-
-set_target_properties(gfx-lib PROPERTIES
-  COMPILE_FLAGS "${allegro_c_flags}")
-
-set_target_properties(gui-lib PROPERTIES
-  COMPILE_FLAGS "${allegro_c_flags}")
-
-######################################################################
 # Unit tests
 
 file(GLOB_RECURSE tests *_unittest.cpp)
@@ -320,8 +304,7 @@ foreach(testsourcefile ${tests})
 
   # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
   set_target_properties(${testname} PROPERTIES
-    COMPILE_FLAGS "${allegro_c_flags} -I${CMAKE_SOURCE_DIR}/third_party/gtest/include"
-    LINK_FLAGS "${allegro_link_flags}")
+    COMPILE_FLAGS "-I${CMAKE_SOURCE_DIR}/third_party/gtest/include")
 
   add_custom_target(run_${testname}
     COMMAND ${testname})
