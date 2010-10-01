@@ -225,7 +225,7 @@ void clipboard::paste(SpriteWriter& sprite)
     // Add the new image in the stock
     int dst_image_index = sprite->getStock()->addImage(dst_image);
     if (sprite->getUndo()->isEnabled())
-      undo_add_image(sprite->getUndo(), sprite->getStock(), dst_image_index);
+      sprite->getUndo()->undo_add_image(sprite->getStock(), dst_image_index);
 
     // Create the new cel in the current frame with the recently
     // created image
@@ -285,7 +285,7 @@ void clipboard::paste(SpriteWriter& sprite)
     if (w >= 1 && h >= 1) {
       /* undo region */
       if (sprite->getUndo()->isEnabled())
-	undo_image(sprite->getUndo(), dst_image, u1, v1, w, h);
+	sprite->getUndo()->undo_image(dst_image, u1, v1, w, h);
 
       /* draw the transformed image */
       image_parallelogram(dst_image, src_image,

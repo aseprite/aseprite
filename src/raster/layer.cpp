@@ -134,7 +134,7 @@ LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
 
       cel_copy->image = dst_sprite->getStock()->addImage(image_copy);
       if (dst_sprite->getUndo()->isEnabled())
-	undo_add_image(dst_sprite->getUndo(), dst_sprite->getStock(), cel_copy->image);
+	dst_sprite->getUndo()->undo_add_image(dst_sprite->getStock(), cel_copy->image);
 
       addCel(cel_copy);
     }

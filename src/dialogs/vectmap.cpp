@@ -143,7 +143,7 @@ void dialogs_vector_map(Sprite* sprite)
 
   /* undo stuff */
   if (sprite->getUndo()->isEnabled())
-    undo_image(sprite->getUndo(), image, 0, 0, image->w, image->h);
+    sprite->getUndo()->undo_image(image, 0, 0, image->w, image->h);
 
   dmax = std::sqrt(static_cast<double>(image->w/2*image->w/2 + image->h/2*image->h/2));
   for (y=0; y<image->h; y++) {

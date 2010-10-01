@@ -149,11 +149,8 @@ struct UndoAction
   void (*invert)(UndoStream* stream, UndoChunk* chunk, int state);
 };
 
-static void run_undo(Undo* undo, int state);
-static void discard_undo_tail(Undo* undo);
 static int count_undo_groups(UndoStream* undo_stream);
 static bool out_of_group(UndoStream* undo_stream);
-static void update_undo(Undo* undo);
 
 /* Undo actions */
 
@@ -300,71 +297,76 @@ static void undo_stream_push_chunk(UndoStream* stream, UndoChunk* chunk);
 Undo::Undo(Sprite* sprite)
   : GfxObj(GFXOBJ_UNDO)
 {
-  this->sprite = sprite;
-  this->undo_stream = new UndoStream(this); // TODO try/catch
-  this->redo_stream = new UndoStream(this);
-  this->diff_count = 0;
-  this->diff_saved = 0;
-  this->enabled = true;
-  this->label = NULL;
+  m_sprite = sprite;
+  m_undoStream = new UndoStream(this); // TODO try/catch
+  m_redoStream = new UndoStream(this);
+  m_diffCount = 0;
+  m_diffSaved = 0;
+  m_enabled = true;
+  m_label = NULL;
 }
 
 Undo::~Undo()
 {
-  delete this->undo_stream;
-  delete this->redo_stream;
+  delete m_undoStream;
+  delete m_redoStream;
 }
 
 bool Undo::isEnabled() const
 {
-  return this->enabled ? true: false;
+  return m_enabled ? true: false;
 }
 
 void Undo::setEnabled(bool state)
 {
-  this->enabled = state;
+  m_enabled = state;
 }
 
 bool Undo::canUndo() const
 {
-  return !this->undo_stream->chunks.empty();
+  return !m_undoStream->chunks.empty();
 }
 
 bool Undo::canRedo() const
 {
-  return !this->redo_stream->chunks.empty();
+  return !m_redoStream->chunks.empty();
 }
 
 void Undo::doUndo()
 {
-  run_undo(this, DO_UNDO);
+  runUndo(DO_UNDO);
 }
 
 void Undo::doRedo()
 {
-  run_undo(this, DO_REDO);
+  runUndo(DO_REDO);
 }
 
 void Undo::clearRedo()
 {
-  if (!this->redo_stream->chunks.empty()) {
-    delete this->redo_stream;
-    this->redo_stream = new UndoStream(this);
+  if (!m_redoStream->chunks.empty()) {
+    delete m_redoStream;
+    m_redoStream = new UndoStream(this);
   }
+}
+
+const char* Undo::getLabel()
+{
+  return m_label;
 }
 
 void Undo::setLabel(const char* label)
 {
-  this->label = label;
+  m_label = label;
 }
 
 const char* Undo::getNextUndoLabel() const
 {
   UndoChunk* chunk;
 
-  ASSERT(this->canUndo());
+  ASSERT(canUndo());
 
-  chunk = *this->undo_stream->chunks.begin();
+  chunk = *m_undoStream->chunks.begin();
   return chunk->label;
 }
 
@@ -372,21 +374,28 @@ const char* Undo::getNextRedoLabel() const
 {
   UndoChunk* chunk;
 
-  ASSERT(this->canRedo());
+  ASSERT(canRedo());
 
-  chunk = *this->redo_stream->chunks.begin();
+  chunk = *m_redoStream->chunks.begin();
   return chunk->label;
 }
 
-//////////////////////////////////////////////////////////////////////
-// General undo routines
-
-static void run_undo(Undo* undo, int state)
+bool Undo::isSavedState() const
 {
-  UndoStream* undo_stream = ((state == DO_UNDO)? undo->undo_stream:
-						 undo->redo_stream);
-  UndoStream* redo_stream = ((state == DO_REDO)? undo->undo_stream:
-						 undo->redo_stream);
+  return (m_diffCount == m_diffSaved);
+}
+
+void Undo::markSavedState()
+{
+  m_diffSaved = m_diffCount;
+}
+
+void Undo::runUndo(int state)
+{
+  UndoStream* undo_stream = ((state == DO_UNDO)? m_undoStream:
+						 m_redoStream);
+  UndoStream* redo_stream = ((state == DO_REDO)? m_undoStream:
+						 m_redoStream);
   UndoChunk* chunk;
   int level = 0;
 
@@ -395,7 +404,7 @@ static void run_undo(Undo* undo, int state)
     if (!chunk)
       break;
 
-    undo->setLabel(chunk->label);
+    setLabel(chunk->label);
     (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
 
     if (chunk->type == UNDO_TYPE_OPEN)
@@ -406,15 +415,15 @@ static void run_undo(Undo* undo, int state)
     undo_chunk_free(chunk);
 
     if (state == DO_UNDO)
-      undo->diff_count--;
+      m_diffCount--;
     else if (state == DO_REDO)
-      undo->diff_count++;
+      m_diffCount++;
   } while (level);
 }
 
-static void discard_undo_tail(Undo* undo)
+void Undo::discardTail()
 {
-  UndoStream* undo_stream = undo->undo_stream;
+  UndoStream* undo_stream = m_undoStream;
   UndoChunk* chunk;
   int level = 0;
 
@@ -482,23 +491,23 @@ static bool out_of_group(UndoStream* undo_stream)
   return level == 0;
 }
 
-/* called every time a new undo is added */
-static void update_undo(Undo* undo)
+// Called every time a new undo is added.
+void Undo::updateUndo()
 {
   int undo_size_limit = get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 
-  /* more diff */
-  undo->diff_count++;
+  // More differences.
+  m_diffCount++;
 
-  /* reset the "redo" stream */
-  undo->clearRedo();
+  // Reset the "redo" stream.
+  clearRedo();
 
-  if (out_of_group(undo->undo_stream)) {
-    int groups = count_undo_groups(undo->undo_stream);
+  if (out_of_group(m_undoStream)) {
+    int groups = count_undo_groups(m_undoStream);
 
-    /* "undo" is too big? */
-    while (groups > 1 && undo->undo_stream->size > undo_size_limit) {
-      discard_undo_tail(undo);
+    // "undo" is too big?
+    while (groups > 1 && m_undoStream->size > undo_size_limit) {
+      discardTail();
       groups--;
     }
   }
@@ -512,10 +521,10 @@ static void update_undo(Undo* undo)
 
 ***********************************************************************/
 
-void undo_open(Undo* undo)
+void Undo::undo_open()
 {
-  chunk_open_new(undo->undo_stream);
-  update_undo(undo);
+  chunk_open_new(m_undoStream);
+  updateUndo();
 }
 
 static void chunk_open_new(UndoStream* stream)
@@ -538,10 +547,10 @@ static void chunk_open_invert(UndoStream* stream, UndoChunk* chunk, int state)
 
 ***********************************************************************/
 
-void undo_close(Undo* undo)
+void Undo::undo_close()
 {
-  chunk_close_new(undo->undo_stream);
-  update_undo(undo);
+  chunk_close_new(m_undoStream);
+  updateUndo();
 }
 
 static void chunk_close_new(UndoStream* stream)
@@ -576,10 +585,10 @@ struct UndoChunkData
   ase_uint8 data[0];
 };
 
-void undo_data(Undo* undo, GfxObj *gfxobj, void *data, int size)
+void Undo::undo_data(GfxObj *gfxobj, void *data, int size)
 {
-  chunk_data_new(undo->undo_stream, gfxobj, data, size);
-  update_undo(undo);
+  chunk_data_new(m_undoStream, gfxobj, data, size);
+  updateUndo();
 }
 
 static void chunk_data_new(UndoStream* stream, GfxObj *gfxobj, void *data, int size)
@@ -644,10 +653,10 @@ struct UndoChunkImage
   ase_uint8 data[0];
 };
 
-void undo_image(Undo* undo, Image* image, int x, int y, int w, int h)
+void Undo::undo_image(Image* image, int x, int y, int w, int h)
 {
-  chunk_image_new(undo->undo_stream, image, x, y, w, h);
-  update_undo(undo);
+  chunk_image_new(m_undoStream, image, x, y, w, h);
+  updateUndo();
 }
 
 static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int w, int h)
@@ -731,10 +740,10 @@ struct UndoChunkFlip
   ase_uint8 horz;
 };
 
-void undo_flip(Undo* undo, Image* image, int x1, int y1, int x2, int y2, bool horz)
+void Undo::undo_flip(Image* image, int x1, int y1, int x2, int y2, bool horz)
 {
-  chunk_flip_new(undo->undo_stream, image, x1, y1, x2, y2, horz);
-  update_undo(undo);
+  chunk_flip_new(m_undoStream, image, x1, y1, x2, y2, horz);
+  updateUndo();
 }
 
 static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, bool horz)
@@ -796,10 +805,10 @@ struct UndoChunkDirty
   ase_uint8 data[0];
 };
 
-void undo_dirty(Undo* undo, Dirty *dirty)
+void Undo::undo_dirty(Dirty *dirty)
 {
-  chunk_dirty_new(undo->undo_stream, dirty);
-  update_undo(undo);
+  chunk_dirty_new(m_undoStream, dirty);
+  updateUndo();
 }
 
 static void chunk_dirty_new(UndoStream* stream, Dirty *dirty)
@@ -839,10 +848,10 @@ struct UndoChunkAddImage
   ase_uint32 image_index;
 };
 
-void undo_add_image(Undo* undo, Stock *stock, int image_index)
+void Undo::undo_add_image(Stock *stock, int image_index)
 {
-  chunk_add_image_new(undo->undo_stream, stock, image_index);
-  update_undo(undo);
+  chunk_add_image_new(m_undoStream, stock, image_index);
+  updateUndo();
 }
 
 static void chunk_add_image_new(UndoStream* stream, Stock *stock, int image_index)
@@ -890,10 +899,10 @@ struct UndoChunkRemoveImage
   ase_uint8 data[0];
 };
 
-void undo_remove_image(Undo* undo, Stock *stock, int image_index)
+void Undo::undo_remove_image(Stock *stock, int image_index)
 {
-  chunk_remove_image_new(undo->undo_stream, stock, image_index);
-  update_undo(undo);
+  chunk_remove_image_new(m_undoStream, stock, image_index);
+  updateUndo();
 }
 
 static void chunk_remove_image_new(UndoStream* stream, Stock *stock, int image_index)
@@ -944,10 +953,10 @@ struct UndoChunkReplaceImage
   ase_uint8 data[0];
 };
 
-void undo_replace_image(Undo* undo, Stock *stock, int image_index)
+void Undo::undo_replace_image(Stock *stock, int image_index)
 {
-  chunk_replace_image_new(undo->undo_stream, stock, image_index);
-  update_undo(undo);
+  chunk_replace_image_new(m_undoStream, stock, image_index);
+  updateUndo();
 }
 
 static void chunk_replace_image_new(UndoStream* stream, Stock *stock, int image_index)
@@ -1002,10 +1011,10 @@ struct UndoChunkAddCel
   ase_uint32 cel_id;
 };
 
-void undo_add_cel(Undo* undo, Layer* layer, Cel* cel)
+void Undo::undo_add_cel(Layer* layer, Cel* cel)
 {
-  chunk_add_cel_new(undo->undo_stream, layer, cel);
-  update_undo(undo);
+  chunk_add_cel_new(m_undoStream, layer, cel);
+  updateUndo();
 }
 
 static void chunk_add_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
@@ -1048,10 +1057,10 @@ struct UndoChunkRemoveCel
   ase_uint8 data[0];
 };
 
-void undo_remove_cel(Undo* undo, Layer* layer, Cel* cel)
+void Undo::undo_remove_cel(Layer* layer, Cel* cel)
 {
-  chunk_remove_cel_new(undo->undo_stream, layer, cel);
-  update_undo(undo);
+  chunk_remove_cel_new(m_undoStream, layer, cel);
+  updateUndo();
 }
 
 static void chunk_remove_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
@@ -1098,10 +1107,10 @@ struct UndoChunkSetLayerName
   ase_uint8 name_text[0];
 };
 
-void undo_set_layer_name(Undo* undo, Layer* layer)
+void Undo::undo_set_layer_name(Layer* layer)
 {
-  chunk_set_layer_name_new(undo->undo_stream, layer);
-  update_undo(undo);
+  chunk_set_layer_name_new(m_undoStream, layer);
+  updateUndo();
 }
 
 static void chunk_set_layer_name_new(UndoStream* stream, Layer *layer)
@@ -1153,10 +1162,10 @@ struct UndoChunkAddLayer
   ase_uint32 layer_id;
 };
 
-void undo_add_layer(Undo* undo, Layer* folder, Layer* layer)
+void Undo::undo_add_layer(Layer* folder, Layer* layer)
 {
-  chunk_add_layer_new(undo->undo_stream, folder, layer);
-  update_undo(undo);
+  chunk_add_layer_new(m_undoStream, folder, layer);
+  updateUndo();
 }
 
 static void chunk_add_layer_new(UndoStream* stream, Layer* folder, Layer* layer)
@@ -1201,10 +1210,10 @@ struct UndoChunkRemoveLayer
   ase_uint8 data[0];
 };
 
-void undo_remove_layer(Undo* undo, Layer* layer)
+void Undo::undo_remove_layer(Layer* layer)
 {
-  chunk_remove_layer_new(undo->undo_stream, layer);
-  update_undo(undo);
+  chunk_remove_layer_new(m_undoStream, layer);
+  updateUndo();
 }
 
 static void chunk_remove_layer_new(UndoStream* stream, Layer* layer)
@@ -1256,10 +1265,10 @@ struct UndoChunkMoveLayer
   ase_uint32 after_id;
 };
 
-void undo_move_layer(Undo* undo, Layer* layer)
+void Undo::undo_move_layer(Layer* layer)
 {
-  chunk_move_layer_new(undo->undo_stream, layer);
-  update_undo(undo);
+  chunk_move_layer_new(m_undoStream, layer);
+  updateUndo();
 }
 
 static void chunk_move_layer_new(UndoStream* stream, Layer* layer)
@@ -1305,10 +1314,10 @@ struct UndoChunkSetLayer
   ase_uint32 layer_id;
 };
 
-void undo_set_layer(Undo* undo, Sprite *sprite)
+void Undo::undo_set_layer(Sprite *sprite)
 {
-  chunk_set_layer_new(undo->undo_stream, sprite);
-  update_undo(undo);
+  chunk_set_layer_new(m_undoStream, sprite);
+  updateUndo();
 }
 
 static void chunk_set_layer_new(UndoStream* stream, Sprite *sprite)
@@ -1351,10 +1360,10 @@ struct UndoChunkAddPalette
   ase_uint32 palette_id;
 };
 
-void undo_add_palette(Undo* undo, Sprite *sprite, Palette* palette)
+void Undo::undo_add_palette(Sprite *sprite, Palette* palette)
 {
-  chunk_add_palette_new(undo->undo_stream, sprite, palette);
-  update_undo(undo);
+  chunk_add_palette_new(m_undoStream, sprite, palette);
+  updateUndo();
 }
 
 static void chunk_add_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette)
@@ -1396,10 +1405,10 @@ struct UndoChunkRemovePalette
   ase_uint8 data[0];
 };
 
-void undo_remove_palette(Undo* undo, Sprite *sprite, Palette* palette)
+void Undo::undo_remove_palette(Sprite *sprite, Palette* palette)
 {
-  chunk_remove_palette_new(undo->undo_stream, sprite, palette);
-  update_undo(undo);
+  chunk_remove_palette_new(m_undoStream, sprite, palette);
+  updateUndo();
 }
 
 static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette)
@@ -1447,10 +1456,10 @@ struct UndoChunkRemapPalette
   ase_uint8 mapping[256];
 };
 
-void undo_remap_palette(Undo* undo, Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping)
+void Undo::undo_remap_palette(Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping)
 {
-  chunk_remap_palette_new(undo->undo_stream, sprite, frame_from, frame_to, mapping);
-  update_undo(undo);
+  chunk_remap_palette_new(m_undoStream, sprite, frame_from, frame_to, mapping);
+  updateUndo();
 }
 
 static void chunk_remap_palette_new(UndoStream* stream, Sprite *sprite, int frame_from, int frame_to, const std::vector<int>& mapping)
@@ -1503,10 +1512,10 @@ struct UndoChunkSetMask
   ase_uint8 data[0];
 };
 
-void undo_set_mask(Undo* undo, Sprite *sprite)
+void Undo::undo_set_mask(Sprite *sprite)
 {
-  chunk_set_mask_new(undo->undo_stream, sprite);
-  update_undo(undo);
+  chunk_set_mask_new(m_undoStream, sprite);
+  updateUndo();
 }
 
 static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite)
@@ -1550,10 +1559,10 @@ struct UndoChunkSetImgType
   ase_uint32 imgtype;
 };
 
-void undo_set_imgtype(Undo* undo, Sprite* sprite)
+void Undo::undo_set_imgtype(Sprite* sprite)
 {
-  chunk_set_imgtype_new(undo->undo_stream, sprite);
-  update_undo(undo);
+  chunk_set_imgtype_new(m_undoStream, sprite);
+  updateUndo();
 }
 
 static void chunk_set_imgtype_new(UndoStream* stream, Sprite* sprite)
@@ -1599,10 +1608,10 @@ struct UndoChunkSetSize
   ase_uint32 height;
 };
 
-void undo_set_size(Undo* undo, Sprite* sprite)
+void Undo::undo_set_size(Sprite* sprite)
 {
-  chunk_set_size_new(undo->undo_stream, sprite);
-  update_undo(undo);
+  chunk_set_size_new(m_undoStream, sprite);
+  updateUndo();
 }
 
 static void chunk_set_size_new(UndoStream* stream, Sprite* sprite)
@@ -1643,10 +1652,10 @@ struct UndoChunkSetFrame
   ase_uint32 frame;
 };
 
-void undo_set_frame(Undo* undo, Sprite* sprite)
+void Undo::undo_set_frame(Sprite* sprite)
 {
-  chunk_set_frame_new(undo->undo_stream, sprite);
-  update_undo(undo);
+  chunk_set_frame_new(m_undoStream, sprite);
+  updateUndo();
 }
 
 static void chunk_set_frame_new(UndoStream* stream, Sprite* sprite)
@@ -1686,10 +1695,10 @@ struct UndoChunkSetFrames
   ase_uint32 frames;
 };
 
-void undo_set_frames(Undo* undo, Sprite *sprite)
+void Undo::undo_set_frames(Sprite *sprite)
 {
-  chunk_set_frames_new(undo->undo_stream, sprite);
-  update_undo(undo);
+  chunk_set_frames_new(m_undoStream, sprite);
+  updateUndo();
 }
 
 static void chunk_set_frames_new(UndoStream* stream, Sprite *sprite)
@@ -1731,10 +1740,10 @@ struct UndoChunkSetFrlen
   ase_uint32 duration;
 };
 
-void undo_set_frlen(Undo* undo, Sprite *sprite, int frame)
+void Undo::undo_set_frlen(Sprite *sprite, int frame)
 {
-  chunk_set_frlen_new(undo->undo_stream, sprite, frame);
-  update_undo(undo);
+  chunk_set_frlen_new(m_undoStream, sprite, frame);
+  updateUndo();
 }
 
 static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame)
@@ -1779,8 +1788,8 @@ static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size)
 
   chunk->type = type;
   chunk->size = size;
-  chunk->label = stream->undo->label ?
-    stream->undo->label:
+  chunk->label = stream->undo->getLabel() ?
+    stream->undo->getLabel():
     undo_actions[chunk->type].name;
 
   undo_stream_push_chunk(stream, chunk);

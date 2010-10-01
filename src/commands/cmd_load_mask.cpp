@@ -86,7 +86,7 @@ void LoadMaskCommand::onExecute(Context* context)
   // undo
   if (sprite->getUndo()->isEnabled()) {
     sprite->getUndo()->setLabel("Mask Load");
-    undo_set_mask(sprite->getUndo(), sprite);
+    sprite->getUndo()->undo_set_mask(sprite);
   }
 
   sprite->setMask(mask);

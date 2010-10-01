@@ -258,7 +258,7 @@ public:
 
     if (state) {
       if (loop->getSprite()->getUndo()->isEnabled())
-	undo_set_mask(loop->getSprite()->getUndo(), loop->getSprite());
+	loop->getSprite()->getUndo()->undo_set_mask(loop->getSprite());
 
       loop->getMask()->freeze();
       loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());

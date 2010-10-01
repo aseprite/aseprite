@@ -251,8 +251,8 @@ void effect_apply(Effect* effect)
     // Undo stuff
     if (effect->sprite->getUndo()->isEnabled()) {
       effect->sprite->getUndo()->setLabel(effect->effect_data->label);
-      undo_image(effect->sprite->getUndo(), effect->src,
-		 effect->x, effect->y, effect->w, effect->h);
+      effect->sprite->getUndo()
+	->undo_image(effect->src, effect->x, effect->y, effect->w, effect->h);
     }
 
     // Copy "dst" to "src"
@@ -309,7 +309,7 @@ void effect_apply_to_target(Effect *effect)
   /* open undo group of operations */
   if (nimages > 1) {
     if (effect->sprite->getUndo()->isEnabled())
-      undo_open(effect->sprite->getUndo());
+      effect->sprite->getUndo()->undo_open();
   }
   
   effect->progress_base = 0.0f;
@@ -330,7 +330,7 @@ void effect_apply_to_target(Effect *effect)
   /* close undo group of operations */
   if (nimages > 1) {
     if (effect->sprite->getUndo()->isEnabled())
-      undo_close(effect->sprite->getUndo());
+      effect->sprite->getUndo()->undo_close();
   }
 
   /* free all ImageRefs */

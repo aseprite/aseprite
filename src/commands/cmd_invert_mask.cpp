@@ -77,7 +77,7 @@ void InvertMaskCommand::onExecute(Context* context)
     /* undo */
     if (sprite->getUndo()->isEnabled()) {
       sprite->getUndo()->setLabel("Mask Invert");
-      undo_set_mask(sprite->getUndo(), sprite);
+      sprite->getUndo()->undo_set_mask(sprite);
     }
 
     /* create a new mask */

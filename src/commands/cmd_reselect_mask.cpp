@@ -65,7 +65,7 @@ void ReselectMaskCommand::onExecute(Context* context)
   /* undo */
   if (sprite->getUndo()->isEnabled()) {
     sprite->getUndo()->setLabel("Mask Reselection");
-    undo_set_mask(sprite->getUndo(), sprite);
+    sprite->getUndo()->undo_set_mask(sprite);
   }
 
   /* set the mask */

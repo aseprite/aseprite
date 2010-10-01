@@ -1934,10 +1934,10 @@ public:
 
 	      /* we create the undo information (for the new cel_image
 		 in the stock and the new cel in the layer)... */
-	      undo_open(m_sprite->getUndo());
-	      undo_add_image(m_sprite->getUndo(), m_sprite->getStock(), m_cel->image);
-	      undo_add_cel(m_sprite->getUndo(), m_sprite->getCurrentLayer(), m_cel);
-	      undo_close(m_sprite->getUndo());
+	      m_sprite->getUndo()->undo_open();
+	      m_sprite->getUndo()->undo_add_image(m_sprite->getStock(), m_cel->image);
+	      m_sprite->getUndo()->undo_add_cel(m_sprite->getCurrentLayer(), m_cel);
+	      m_sprite->getUndo()->undo_close();
 
 	      /* and finally we add the cel again in the layer */
 	      static_cast<LayerImage*>(m_sprite->getCurrentLayer())->addCel(m_cel);
@@ -1952,7 +1952,7 @@ public:
 
 	      dirty_save_image_data(dirty);
 	      if (dirty != NULL)
-		undo_dirty(m_sprite->getUndo(), dirty);
+		m_sprite->getUndo()->undo_dirty(dirty);
 
 	      dirty_free(dirty);
 	    }
@@ -1965,23 +1965,23 @@ public:
 	   the entire image */
 	else {
 	  if (m_sprite->getUndo()->isEnabled()) {
-	    undo_open(m_sprite->getUndo());
+	    m_sprite->getUndo()->undo_open();
 
 	    if (m_cel->x != m_old_cel_x) {
 	      int x = m_cel->x;
 	      m_cel->x = m_old_cel_x;
-	      undo_int(m_sprite->getUndo(), (GfxObj*)m_cel, &m_cel->x);
+	      m_sprite->getUndo()->undo_int(m_cel, &m_cel->x);
 	      m_cel->x = x;
 	    }
 	    if (m_cel->y != m_old_cel_y) {
 	      int y = m_cel->y;
 	      m_cel->y = m_old_cel_y;
-	      undo_int(m_sprite->getUndo(), (GfxObj*)m_cel, &m_cel->y);
+	      m_sprite->getUndo()->undo_int(m_cel, &m_cel->y);
 	      m_cel->y = y;
 	    }
 
-	    undo_replace_image(m_sprite->getUndo(), m_sprite->getStock(), m_cel->image);
-	    undo_close(m_sprite->getUndo());
+	    m_sprite->getUndo()->undo_replace_image(m_sprite->getStock(), m_cel->image);
+	    m_sprite->getUndo()->undo_close();
 	  }
 
 	  /* replace the image in the stock */

@@ -70,13 +70,13 @@ static Layer* duplicate_layer(Sprite* sprite)
   /* open undo */
   if (sprite->getUndo()->isEnabled()) {
     sprite->getUndo()->setLabel("Layer Duplication");
-    undo_open(sprite->getUndo());
+    sprite->getUndo()->undo_open();
   }
 
   Layer* layer_copy = sprite->getCurrentLayer()->duplicate_for(sprite);
   if (!layer_copy) {
     if (sprite->getUndo()->isEnabled())
-      undo_close(sprite->getUndo());
+      sprite->getUndo()->undo_close();
 
     Console console;
     console.printf("Not enough memory");
@@ -89,14 +89,14 @@ static Layer* duplicate_layer(Sprite* sprite)
 
   /* add the new layer in the sprite */
   if (sprite->getUndo()->isEnabled())
-    undo_add_layer(sprite->getUndo(), sprite->getCurrentLayer()->get_parent(), layer_copy);
+    sprite->getUndo()->undo_add_layer(sprite->getCurrentLayer()->get_parent(), layer_copy);
 
   sprite->getCurrentLayer()->get_parent()->add_layer(layer_copy);
 
   if (sprite->getUndo()->isEnabled()) {
-    undo_move_layer(sprite->getUndo(), layer_copy);
-    undo_set_layer(sprite->getUndo(), sprite);
-    undo_close(sprite->getUndo());
+    sprite->getUndo()->undo_move_layer(layer_copy);
+    sprite->getUndo()->undo_set_layer(sprite);
+    sprite->getUndo()->undo_close();
   }
 
   sprite->getCurrentLayer()->get_parent()->move_layer(layer_copy, sprite->getCurrentLayer());

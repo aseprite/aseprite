@@ -511,10 +511,10 @@ static void sort_command(JWidget widget)
 
 	  if (sprite->getUndo()->isEnabled()) {
 	    sprite->getUndo()->setLabel("Sort Palette");
-	    undo_open(sprite->getUndo());
+	    sprite->getUndo()->undo_open();
 
 	    // Remove the current palette in the current frame
-	    undo_remove_palette(sprite->getUndo(), sprite, frame_palette);
+	    sprite->getUndo()->undo_remove_palette(sprite, frame_palette);
 	  }
 
 	  // Delete the current palette
@@ -526,11 +526,11 @@ static void sort_command(JWidget widget)
 
 	  if (sprite->getUndo()->isEnabled()) {
 	    // Add undo information about the new added palette
-	    undo_add_palette(sprite->getUndo(), sprite, sprite->getPalette(frame_begin));
+	    sprite->getUndo()->undo_add_palette(sprite, sprite->getPalette(frame_begin));
 
 	    // Add undo information about image remapping
-	    undo_remap_palette(sprite->getUndo(), sprite, frame_begin, frame_end-1, mapping);
-	    undo_close(sprite->getUndo());
+	    sprite->getUndo()->undo_remap_palette(sprite, frame_begin, frame_end-1, mapping);
+	    sprite->getUndo()->undo_close();
 	  }
 
 	  // Remap images (to the new palette indexes)

@@ -85,8 +85,7 @@ public:
   }
 
   bool isModified() const {
-    return (m_undo->diff_count ==
-	    m_undo->diff_saved) ? false: true;
+    return !m_undo->isSavedState();
   }
 
   bool isAssociatedToFile() const {
@@ -94,7 +93,7 @@ public:
   }
 
   void markAsSaved() {
-    m_undo->diff_saved = m_undo->diff_count;
+    m_undo->markSavedState();
     m_associated_to_file = true;
   }
 

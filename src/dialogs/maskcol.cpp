@@ -135,7 +135,7 @@ void dialogs_mask_color(Sprite* sprite)
     /* undo */
     if (sprite->getUndo()->isEnabled()) {
       sprite->getUndo()->setLabel("Mask by Color");
-      undo_set_mask(sprite->getUndo(), sprite);
+      sprite->getUndo()->undo_set_mask(sprite);
     }
 
     /* change the mask */
