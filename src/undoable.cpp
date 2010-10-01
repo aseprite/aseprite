@@ -233,12 +233,10 @@ void Undoable::setImgType(int new_imgtype, int dithering_method)
   // change "sprite.palette"
   if (new_imgtype == IMAGE_GRAYSCALE) {
     if (isEnabled()) {
-      Palette* palette;
-      JLink link;
-
       // Save all palettes
-      JI_LIST_FOR_EACH(m_sprite->getPalettes(), link) {
-	palette = reinterpret_cast<Palette*>(link->data);
+      PalettesList palettes = m_sprite->getPalettes();
+      for (PalettesList::iterator it = palettes.begin(); it != palettes.end(); ++it) {
+	Palette* palette = *it;
 	undo_remove_palette(m_sprite->getUndo(), m_sprite, palette);
       }
     }

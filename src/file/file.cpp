@@ -320,8 +320,8 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
   }
 
-  /* palettes support */
-  if (jlist_length(fop->sprite->getPalettes()) > 1) {
+  // Palettes support.
+  if (fop->sprite->getPalettes().size() > 1) {
     if (!(fop->format->flags & (FILE_SUPPORT_PALETTES |
 				FILE_SUPPORT_SEQUENCES))) {
       usprintf(buf+ustrlen(buf), "<<- Palette changes between frames");
@@ -329,14 +329,12 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
   }
 
   /* repositories */
-  JList masks = fop->sprite->getMasksRepository();
-  if (!jlist_empty(masks)) {
-    Mask *mask;
-    JLink link;
+  MasksList masks = fop->sprite->getMasksRepository();
+  if (!masks.empty()) {
     int count = 0;
 
-    JI_LIST_FOR_EACH(masks, link) {
-      mask = reinterpret_cast<Mask*>(link->data);
+    for (MasksList::iterator it = masks.begin(); it != masks.end(); ++it) {
+      Mask* mask = *it;
 
       // Names starting with '*' are ignored
       if (mask->name && *mask->name == '*')
@@ -350,7 +348,7 @@ FileOp *fop_to_save_sprite(Sprite *sprite)
     }
   }
 
-  if (!jlist_empty(fop->sprite->getPathsRepository())) {
+  if (!fop->sprite->getPathsRepository().empty()) {
     if (!(fop->format->flags & FILE_SUPPORT_PATHS_REPOSITORY)) {
       usprintf(buf+ustrlen(buf), "<<- Path Repository");
     }

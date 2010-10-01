@@ -19,7 +19,6 @@
 #ifndef RASTER_SPRITE_H_INCLUDED
 #define RASTER_SPRITE_H_INCLUDED
 
-#include "gui/jbase.h"
 #include "raster/gfxobj.h"
 #include <vector>
 
@@ -43,6 +42,10 @@ struct PreferredEditorSettings
   int scroll_y;
   int zoom;
 };
+
+typedef std::vector<Palette*> PalettesList;
+typedef std::vector<Mask*> MasksList;
+typedef std::vector<Path*> PathsList;
 
 /**
  * The main structure used in the whole program to handle a sprite.
@@ -115,9 +118,8 @@ public:
   ////////////////////////////////////////
   // Palettes
 
-  const Palette* getPalette(int frame) const;
-  Palette* getPalette(int frame);
-  JList getPalettes();
+  Palette* getPalette(int frame) const;
+  PalettesList getPalettes() const;
 
   void setPalette(Palette* pal, bool truncate);
   void resetPalettes();
@@ -174,7 +176,7 @@ public:
 
   void generateMaskBoundaries(Mask* mask = NULL);
 
-  JList getMasksRepository();
+  MasksList getMasksRepository();
 
   ////////////////////////////////////////
   // Path
@@ -183,7 +185,7 @@ public:
   void removePath(Path* path);
   void setPath(const Path* path);
 
-  JList getPathsRepository();
+  PathsList getPathsRepository();
 
   ////////////////////////////////////////
   // Loaded options from file

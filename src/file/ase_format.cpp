@@ -287,7 +287,6 @@ static bool save_ASE(FileOp *fop)
   Sprite *sprite = fop->sprite;
   ASE_Header header;
   ASE_FrameHeader frame_header;
-  JLink link;
   int frame;
   FILE *f;
 
@@ -323,10 +322,10 @@ static bool save_ASE(FileOp *fop)
       for (; it != end; ++it)
 	ase_file_write_layers(f, *it);
 
-      /* write masks */
-      JList masks = sprite->getMasksRepository();
-      JI_LIST_FOR_EACH(masks, link)
-	ase_file_write_mask_chunk(f, reinterpret_cast<Mask*>(link->data));
+      // Write all masks.
+      MasksList masks = sprite->getMasksRepository();
+      for (MasksList::iterator it = masks.begin(); it != masks.end(); ++it)
+	ase_file_write_mask_chunk(f, *it);
     }
 
     /* write cel chunks */

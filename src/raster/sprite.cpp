@@ -21,9 +21,8 @@
 #include <cstring>
 #include <vector>
 
-#include "gui/jlist.h"
-
 #include "base/mutex.h"
+#include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
 #include "file/format_options.h"
 #include "raster/raster.h"
@@ -152,11 +151,9 @@ public:
     return layer2index(getFolder(), layer, &index_count);
   }
 
-  const Palette* getPalette(int frame) const;
+  Palette* getPalette(int frame) const;
 
-  Palette* getPalette(int frame);
-
-  JList getPalettes() {
+  PalettesList getPalettes() const {
     return m_palettes;
   }
 
@@ -322,28 +319,28 @@ public:
       return;
 
     // And add the new mask
-    jlist_append(m_repository.masks, mask);
+    m_repository.masks.push_back(mask);
   }
 
   void removeMask(Mask* mask) {
     // Remove the mask from the repository
-    jlist_remove(m_repository.masks, mask);
+    base::remove_from_container(m_repository.masks, mask);
   }
 
   Mask* requestMask(const char* name) const;
 
   void generateMaskBoundaries(Mask* mask = NULL);
 
-  JList getMasksRepository() {
+  MasksList getMasksRepository() {
     return m_repository.masks;
   }
 
   void addPath(Path* path) {
-    jlist_append(m_repository.paths, path);
+    m_repository.paths.push_back(path);
   }
 
   void removePath(Path* path) {
-    jlist_remove(m_repository.paths, path);
+    base::remove_from_container(m_repository.paths, path);
   }
 
   void setPath(const Path* path) {
@@ -353,7 +350,7 @@ public:
     m_path = path_new_copy(path);
   }
 
-  JList getPathsRepository() {
+  PathsList getPathsRepository() {
     return m_repository.paths;
   }
 
@@ -402,7 +399,7 @@ private:
   int m_frames;				 // how many frames has this sprite
   std::vector<int> m_frlens;		 // duration per frame
   int m_frame;				 // current frame, range [0,frames)
-  JList m_palettes;			 // list of palettes
+  PalettesList m_palettes;		 // list of palettes
   Stock* m_stock;			 // stock to get images
   LayerFolder* m_folder;		 // main folder of layers
   Layer* m_layer;			 // current layer
@@ -410,8 +407,8 @@ private:
   Mask* m_mask;				 // selected mask region
   Undo* m_undo;				 // undo stack
   struct {
-    JList paths;				// paths
-    JList masks;				// masks
+    PathsList paths;			// paths
+    MasksList masks;			// masks
   } m_repository;
 
   // Selected mask region boundaries
@@ -454,15 +451,12 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_frames = 1;
   m_frlens.push_back(100);	// First frame with 100 msecs of duration
   m_frame = 0;
-  m_palettes = jlist_new();
   m_stock = stock_new(imgtype);
   m_folder = new LayerFolder(m_self);
   m_layer = NULL;
   m_path = NULL;
   m_mask = mask_new();
   m_undo = new Undo(m_self);
-  m_repository.paths = jlist_new();
-  m_repository.masks = jlist_new();
   m_extraCel = NULL;
   m_extraImage = NULL;
 
@@ -516,7 +510,6 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
  */
 SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprite)
 {
-  JLink link;
   SpriteImpl* dst_sprite = new SpriteImpl(new_sprite,
 					  src_sprite->m_imgtype,
 					  src_sprite->m_width, src_sprite->m_height,
@@ -539,9 +532,13 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
 	    dst_sprite->m_frlens.begin());
 
   // Copy color palettes
-  JI_LIST_FOR_EACH(src_sprite->m_palettes, link) {
-    Palette* pal = reinterpret_cast<Palette*>(link->data);
-    dst_sprite->setPalette(pal, true);
+  {
+    PalettesList::const_iterator end = src_sprite->m_palettes.end();
+    PalettesList::const_iterator it = src_sprite->m_palettes.begin();
+    for (; it != end; ++it) {
+      Palette* pal = *it;
+      dst_sprite->setPalette(pal, true);
+    }
   }
 
   // Copy path
@@ -563,16 +560,24 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
     dst_sprite->m_mask = mask_new_copy(src_sprite->m_mask);
 
   /* copy repositories */
-  JI_LIST_FOR_EACH(src_sprite->m_repository.paths, link) {
-    Path* path_copy = path_new_copy(reinterpret_cast<Path*>(link->data));
-    if (path_copy)
-      dst_sprite->addPath(path_copy);
+  {
+    PathsList::const_iterator end = src_sprite->m_repository.paths.end();
+    PathsList::const_iterator it = src_sprite->m_repository.paths.begin();
+    for (; it != end; ++it) {
+      Path* path_copy = path_new_copy(*it);
+      if (path_copy)
+	dst_sprite->addPath(path_copy);
+    }
   }
 
-  JI_LIST_FOR_EACH(src_sprite->m_repository.masks, link) {
-    Mask* mask_copy = mask_new_copy(reinterpret_cast<Mask*>(link->data));
-    if (mask_copy)
-      dst_sprite->addMask(mask_copy);
+  {
+    MasksList::const_iterator end = src_sprite->m_repository.masks.end();
+    MasksList::const_iterator it = src_sprite->m_repository.masks.begin();
+    for (; it != end; ++it) {
+      Mask* mask_copy = mask_new_copy(*it);
+      if (mask_copy)
+	dst_sprite->addMask(mask_copy);
+    }
   }
 
   // Copy preferred edition options
@@ -613,8 +618,6 @@ SpriteImpl* SpriteImpl::copyLayers(SpriteImpl* dst_sprite, const SpriteImpl* src
 
 SpriteImpl::~SpriteImpl()
 {
-  JLink link;
-
   // Destroy layers
   delete m_folder;
 
@@ -623,27 +626,27 @@ SpriteImpl::~SpriteImpl()
     stock_free(m_stock);
 
   // Destroy paths
-  if (m_repository.paths) {
-    JI_LIST_FOR_EACH(m_repository.paths, link)
-      path_free(reinterpret_cast<Path*>(link->data));
-
-    jlist_free(m_repository.paths);
+  {
+    PathsList::iterator end = m_repository.paths.end();
+    PathsList::iterator it = m_repository.paths.begin();
+    for (; it != end; ++it)
+      path_free(*it);
   }
 
   // Destroy masks
-  if (m_repository.masks) {
-    JI_LIST_FOR_EACH(m_repository.masks, link)
-      mask_free(reinterpret_cast<Mask*>(link->data));
-
-    jlist_free(m_repository.masks);
+  {
+    MasksList::iterator end = m_repository.masks.end();
+    MasksList::iterator it = m_repository.masks.begin();
+    for (; it != end; ++it)
+      mask_free(*it);
   }
 
   // Destroy palettes
-  if (m_palettes) {
-    JI_LIST_FOR_EACH(m_palettes, link)
-      delete reinterpret_cast<Palette*>(link->data);
-
-    jlist_free(m_palettes);
+  {
+    PalettesList::iterator end = m_palettes.end();
+    PalettesList::iterator it = m_palettes.begin();
+    for (; it != end; ++it)
+      delete *it;		// palette
   }
 
   // Destroy undo, mask, etc.
@@ -794,11 +797,11 @@ void SpriteImpl::setTotalFrames(int frames)
 
 Mask *SpriteImpl::requestMask(const char *name) const
 {
-  Mask *mask;
-  JLink link;
+  MasksList::const_iterator end = m_repository.masks.end();
+  MasksList::const_iterator it = m_repository.masks.begin();
 
-  JI_LIST_FOR_EACH(m_repository.masks, link) {
-    mask = reinterpret_cast<Mask*>(link->data);
+  for (; it != end; ++it) {
+    Mask* mask = *it;
     if (strcmp(mask->name, name) == 0)
       return mask;
   }
@@ -849,38 +852,16 @@ int SpriteImpl::getPixel(int x, int y) const
   return color;
 }
 
-const Palette* SpriteImpl::getPalette(int frame) const
+Palette* SpriteImpl::getPalette(int frame) const
 {
-  const Palette* found = NULL;
-  const Palette* pal;
-  JLink link;
-
   ASSERT(frame >= 0);
 
-  JI_LIST_FOR_EACH(m_palettes, link) {
-    pal = reinterpret_cast<const Palette*>(link->data);
-    if (frame < pal->getFrame())
-      break;
-
-    found = pal;
-    if (frame == pal->getFrame())
-      break;
-  }
-
-  ASSERT(found != NULL);
-  return found;
-}
-
-Palette* SpriteImpl::getPalette(int frame)
-{
   Palette* found = NULL;
-  Palette* pal;
-  JLink link;
 
-  ASSERT(frame >= 0);
-
-  JI_LIST_FOR_EACH(m_palettes, link) {
-    pal = reinterpret_cast<Palette*>(link->data);
+  PalettesList::const_iterator end = m_palettes.end();
+  PalettesList::const_iterator it = m_palettes.begin();
+  for (; it != end; ++it) {
+    Palette* pal = *it;
     if (frame < pal->getFrame())
       break;
 
@@ -902,11 +883,12 @@ void SpriteImpl::setPalette(Palette* pal, bool truncate)
     pal->copyColorsTo(sprite_pal);
   }
   else {
-    JLink link = NULL;
     Palette* other;
 
-    JI_LIST_FOR_EACH(m_palettes, link) {
-      other = reinterpret_cast<Palette*>(link->data);
+    PalettesList::iterator end = m_palettes.end();
+    PalettesList::iterator it = m_palettes.begin();
+    for (; it != end; ++it) {
+      other = *it;
 
       if (pal->getFrame() == other->getFrame()) {
 	pal->copyColorsTo(other);
@@ -916,31 +898,26 @@ void SpriteImpl::setPalette(Palette* pal, bool truncate)
 	break;
     }
 
-    jlist_insert_before(m_palettes, link, new Palette(*pal));
+    m_palettes.insert(it, new Palette(*pal));
   }
 }
 
 void SpriteImpl::resetPalettes()
 {
-  JLink link, next;
+  PalettesList::iterator end = m_palettes.end();
+  PalettesList::iterator it = m_palettes.begin();
+  for (; it != end; ++it)
+    delete *it;			// palette
 
-  JI_LIST_FOR_EACH_SAFE(m_palettes, link, next) {
-    if (jlist_first(m_palettes) != link) {
-      delete reinterpret_cast<Palette*>(link->data);
-      jlist_delete_link(m_palettes, link);
-    }
-  }
+  m_palettes.clear();
 }
 
 void SpriteImpl::deletePalette(Palette* pal)
 {
   ASSERT(pal != NULL);
 
-  JLink link = jlist_find(m_palettes, pal);
-  ASSERT(link != NULL);
-
-  delete pal;
-  jlist_delete_link(m_palettes, link);
+  base::remove_from_container(m_palettes, pal);
+  delete pal;			// palette
 }
 
 void SpriteImpl::destroyExtraCel()
@@ -1252,17 +1229,12 @@ int Sprite::layerToIndex(const Layer* layer) const
 //////////////////////////////////////////////////////////////////////
 // Palettes
 
-const Palette* Sprite::getPalette(int frame) const
+Palette* Sprite::getPalette(int frame) const
 {
   return m_impl->getPalette(frame);
 }
 
-Palette* Sprite::getPalette(int frame)
-{
-  return m_impl->getPalette(frame);
-}
-
-JList Sprite::getPalettes()
+PalettesList Sprite::getPalettes() const
 {
   return m_impl->getPalettes();
 }
@@ -1445,7 +1417,7 @@ void Sprite::generateMaskBoundaries(Mask* mask)
   m_impl->generateMaskBoundaries(mask);
 }
 
-JList Sprite::getMasksRepository()
+MasksList Sprite::getMasksRepository()
 {
   return m_impl->getMasksRepository();
 }
@@ -1477,7 +1449,7 @@ void Sprite::setPath(const Path* path)
   m_impl->setPath(path);
 }
 
-JList Sprite::getPathsRepository()
+PathsList Sprite::getPathsRepository()
 {
   return m_impl->getPathsRepository();
 }
