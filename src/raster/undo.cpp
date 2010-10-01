@@ -19,12 +19,11 @@
 #include "config.h"
 
 #include <vector>
+#include <list>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <allegro/config.h>
-
-#include "gui/jlist.h"
 
 #include "raster/cel.h"
 #include "raster/dirty.h"
@@ -117,11 +116,31 @@ struct UndoChunk
   const char *label;
 };
 
+static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size);
+static void undo_chunk_free(UndoChunk* chunk);
+
+typedef std::list<UndoChunk*> ChunksList;
+
 struct UndoStream
 {
   Undo* undo;
-  JList chunks;
+  ChunksList chunks;
   int size;
+
+  UndoStream(Undo* undo)
+  {
+    this->undo = undo;
+    this->size = 0;
+  }
+
+  ~UndoStream()
+  {
+    ChunksList::iterator it = this->chunks.begin();
+    ChunksList::iterator end = this->chunks.end();
+    for (; it != end; ++it)
+      undo_chunk_free(*it);
+  }
+
 };
 
 struct UndoAction
@@ -245,11 +264,6 @@ static UndoAction undo_actions[] = {
   DECL_UNDO_ACTION(set_frlen),
 };
 
-/* UndoChunk */
-
-static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size);
-static void undo_chunk_free(UndoChunk* chunk);
-
 /* Raw data */
 
 static Dirty *read_raw_dirty(ase_uint8* raw_data);
@@ -278,9 +292,6 @@ static int get_raw_mask_size(Mask* mask);
 
 /* UndoStream */
 
-static UndoStream* undo_stream_new(Undo* undo);
-static void undo_stream_free(UndoStream* stream);
-
 static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail);
 static void undo_stream_push_chunk(UndoStream* stream, UndoChunk* chunk);
 
@@ -290,8 +301,8 @@ Undo::Undo(Sprite* sprite)
   : GfxObj(GFXOBJ_UNDO)
 {
   this->sprite = sprite;
-  this->undo_stream = undo_stream_new(this); // TODO try/catch
-  this->redo_stream = undo_stream_new(this);
+  this->undo_stream = new UndoStream(this); // TODO try/catch
+  this->redo_stream = new UndoStream(this);
   this->diff_count = 0;
   this->diff_saved = 0;
   this->enabled = true;
@@ -300,8 +311,8 @@ Undo::Undo(Sprite* sprite)
 
 Undo::~Undo()
 {
-  undo_stream_free(this->undo_stream);
-  undo_stream_free(this->redo_stream);
+  delete this->undo_stream;
+  delete this->redo_stream;
 }
 
 bool Undo::isEnabled() const
@@ -316,12 +327,12 @@ void Undo::setEnabled(bool state)
 
 bool Undo::canUndo() const
 {
-  return !jlist_empty(this->undo_stream->chunks);
+  return !this->undo_stream->chunks.empty();
 }
 
 bool Undo::canRedo() const
 {
-  return !jlist_empty(this->redo_stream->chunks);
+  return !this->redo_stream->chunks.empty();
 }
 
 void Undo::doUndo()
@@ -336,9 +347,9 @@ void Undo::doRedo()
 
 void Undo::clearRedo()
 {
-  if (!jlist_empty(this->redo_stream->chunks)) {
-    undo_stream_free(this->redo_stream);
-    this->redo_stream = undo_stream_new(this);
+  if (!this->redo_stream->chunks.empty()) {
+    delete this->redo_stream;
+    this->redo_stream = new UndoStream(this);
   }
 }
 
@@ -353,7 +364,7 @@ const char* Undo::getNextUndoLabel() const
 
   ASSERT(this->canUndo());
 
-  chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(this->undo_stream->chunks));
+  chunk = *this->undo_stream->chunks.begin();
   return chunk->label;
 }
 
@@ -363,7 +374,7 @@ const char* Undo::getNextRedoLabel() const
 
   ASSERT(this->canRedo());
 
-  chunk = reinterpret_cast<UndoChunk*>(jlist_first_data(this->redo_stream->chunks));
+  chunk = *this->redo_stream->chunks.begin();
   return chunk->label;
 }
 
@@ -426,21 +437,20 @@ static int count_undo_groups(UndoStream* undo_stream)
   UndoChunk* chunk;
   int groups = 0;
   int level;
-  JLink link;
 
-  link = jlist_first(undo_stream->chunks);
-  while (link != undo_stream->chunks->end) {
+  ChunksList::iterator it = undo_stream->chunks.begin();
+  while (it != undo_stream->chunks.end()) {
     level = 0;
 
     do {
-      chunk = reinterpret_cast<UndoChunk*>(link->data);
-      link = link->next;
+      chunk = *it;
+      ++it;
 
       if (chunk->type == UNDO_TYPE_OPEN)
 	level++;
       else if (chunk->type == UNDO_TYPE_CLOSE)
 	level--;
-    } while (level && (link != undo_stream->chunks->end));
+    } while (level && (it != undo_stream->chunks.end()));
 
     if (level == 0)
       groups++;
@@ -453,21 +463,20 @@ static bool out_of_group(UndoStream* undo_stream)
 {
   UndoChunk* chunk;
   int level = 0;
-  JLink link;
 
-  link = jlist_first(undo_stream->chunks);
-  while (link != undo_stream->chunks->end) {
+  ChunksList::iterator it = undo_stream->chunks.begin();
+  while (it != undo_stream->chunks.end()) {
     level = 0;
 
     do {
-      chunk = reinterpret_cast<UndoChunk*>(link->data);
-      link = link->next;
+      chunk = *it;
+      ++it;
 
       if (chunk->type == UNDO_TYPE_OPEN)
 	level++;
       else if (chunk->type == UNDO_TYPE_CLOSE)
 	level--;
-    } while (level && (link != undo_stream->chunks->end));
+    } while (level && (it != undo_stream->chunks.end()));
   }
 
   return level == 0;
@@ -2429,45 +2438,19 @@ static int get_raw_mask_size(Mask* mask)
 
 ***********************************************************************/
 
-static UndoStream* undo_stream_new(Undo* undo)
-{
-  UndoStream* stream;
-
-  stream = jnew(UndoStream, 1);
-  if (!stream)
-    return NULL;
-
-  stream->undo = undo;
-  stream->chunks = jlist_new();
-  stream->size = 0;
-
-  return stream;
-}
-
-static void undo_stream_free(UndoStream* stream)
-{
-  JLink link;
-
-  JI_LIST_FOR_EACH(stream->chunks, link)
-    undo_chunk_free(reinterpret_cast<UndoChunk*>(link->data));
-
-  jlist_free(stream->chunks);
-  jfree(stream);
-}
-
 static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail)
 {
   UndoChunk* chunk;
-  JLink link;
+  ChunksList::iterator it;
 
-  if (!jlist_empty(stream->chunks)) {
+  if (!stream->chunks.empty()) {
     if (!tail)
-      link = jlist_first(stream->chunks);
+      it = stream->chunks.begin();
     else
-      link = jlist_last(stream->chunks);
+      it = --stream->chunks.end();
 
-    chunk = reinterpret_cast<UndoChunk*>(link->data);
-    jlist_delete_link(stream->chunks, link);
+    chunk = *it;
+    stream->chunks.erase(it);
     stream->size -= chunk->size;
   }
   else
@@ -2478,6 +2461,6 @@ static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail)
 
 static void undo_stream_push_chunk(UndoStream* stream, UndoChunk* chunk)
 {
-  jlist_prepend(stream->chunks, chunk);
+  stream->chunks.insert(stream->chunks.begin(), chunk);
   stream->size += chunk->size;
 }
