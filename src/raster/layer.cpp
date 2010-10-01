@@ -22,8 +22,6 @@
 #include <string.h>
 #include <allegro/unicode.h>
 
-#include "gui/jlist.h"
-
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -127,14 +125,14 @@ LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
       Cel* cel_copy = cel_new_copy(cel);
 
       ASSERT((cel->image >= 0) &&
-	     (cel->image < src_layer->getSprite()->getStock()->nimage));
+	     (cel->image < src_layer->getSprite()->getStock()->size()));
 
-      Image* image = src_layer->getSprite()->getStock()->image[cel->image];
+      Image* image = src_layer->getSprite()->getStock()->getImage(cel->image);
       ASSERT(image != NULL);
 
       Image* image_copy = image_new_copy(image);
 
-      cel_copy->image = stock_add_image(dst_sprite->getStock(), image_copy);
+      cel_copy->image = dst_sprite->getStock()->addImage(image_copy);
       if (dst_sprite->getUndo()->isEnabled())
 	undo_add_image(dst_sprite->getUndo(), dst_sprite->getStock(), cel_copy->image);
 
@@ -159,11 +157,11 @@ void LayerImage::destroy_all_cels()
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    Image* image = getSprite()->getStock()->image[cel->image];
+    Image* image = getSprite()->getStock()->getImage(cel->image);
 
     ASSERT(image != NULL);
 
-    stock_remove_image(getSprite()->getStock(), image);
+    getSprite()->getStock()->removeImage(image);
     image_free(image);
     cel_free(cel);
   }
@@ -379,7 +377,7 @@ Layer* layer_new_flatten_copy(Sprite* dst_sprite, const Layer* src_layer,
 	try {
 	  /* create the new cel for the output layer (add the image to
 	     stock too) */
-	  Cel* cel = cel_new(frame, stock_add_image(flat_layer->getSprite()->getStock(), image));
+	  Cel* cel = cel_new(frame, flat_layer->getSprite()->getStock()->addImage(image));
 	  cel_set_position(cel, x, y);
 
 	  /* clear the image and render this frame */
@@ -415,9 +413,9 @@ void layer_render(const Layer* layer, Image* image, int x, int y, int frame)
 
       if (cel) {
 	ASSERT((cel->image >= 0) &&
-	       (cel->image < layer->getSprite()->getStock()->nimage));
+	       (cel->image < layer->getSprite()->getStock()->size()));
 
-	src_image = layer->getSprite()->getStock()->image[cel->image];
+	src_image = layer->getSprite()->getStock()->getImage(cel->image);
 	ASSERT(src_image != NULL);
 
 	image_merge(image, src_image,

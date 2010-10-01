@@ -223,7 +223,7 @@ void clipboard::paste(SpriteWriter& sprite)
     image_clear(dst_image, 0);
 
     // Add the new image in the stock
-    int dst_image_index = stock_add_image(sprite->getStock(), dst_image);
+    int dst_image_index = sprite->getStock()->addImage(dst_image);
     if (sprite->getUndo()->isEnabled())
       undo_add_image(sprite->getUndo(), sprite->getStock(), dst_image_index);
 

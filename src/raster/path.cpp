@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "gui/jbase.h"		// TODO remove this reference
+
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/path.h"

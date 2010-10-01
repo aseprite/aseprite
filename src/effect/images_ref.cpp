@@ -70,7 +70,7 @@ static ImageRef* images_ref_get_from_layer(Sprite* sprite, Layer* layer, int tar
   {								\
     ImageRef* image_ref = jnew(ImageRef, 1);			\
 								\
-    image_ref->image = layer->getSprite()->getStock()->image[cel->image]; \
+    image_ref->image = layer->getSprite()->getStock()->getImage(cel->image); \
     image_ref->layer = layer;					\
     image_ref->cel = cel;					\
     image_ref->next = NULL;					\

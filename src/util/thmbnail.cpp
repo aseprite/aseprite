@@ -82,7 +82,7 @@ BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite *spr
     return NULL;
 
   thumbnail_render(bmp,
-		   stock_get_image(sprite->getStock(), cel->image),
+		   sprite->getStock()->getImage(cel->image),
 		   !layer->is_background(),
 		   sprite->getPalette(cel->frame));
 

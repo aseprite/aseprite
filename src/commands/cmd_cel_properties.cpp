@@ -101,13 +101,13 @@ void CelPropertiesCommand::onExecute(Context* context)
 
     /* dimension (and memory size) */
     memsize =
-      image_line_size(sprite->getStock()->image[cel->image],
-		      sprite->getStock()->image[cel->image]->w)*
-      sprite->getStock()->image[cel->image]->h;
+      image_line_size(sprite->getStock()->getImage(cel->image),
+		      sprite->getStock()->getImage(cel->image)->w)*
+      sprite->getStock()->getImage(cel->image)->h;
 
     usprintf(buf, "%dx%d (%s)",
-	     sprite->getStock()->image[cel->image]->w,
-	     sprite->getStock()->image[cel->image]->h,
+	     sprite->getStock()->getImage(cel->image)->w,
+	     sprite->getStock()->getImage(cel->image)->h,
 	     get_pretty_memory_size(memsize).c_str());
 
     label_size->setText(buf);

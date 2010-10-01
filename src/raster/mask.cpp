@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gui/jbase.h"		// TODO remove this reference
+
 #include "raster/image.h"
 #include "raster/mask.h"
 

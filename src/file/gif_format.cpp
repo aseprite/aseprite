@@ -195,7 +195,7 @@ static bool load_GIF(FileOp *fop)
 	       0, 0
 #endif
 	       );
-    cel->image = stock_add_image(sprite->getStock(), image);
+    cel->image = sprite->getStock()->addImage(image);
     layer->addCel(cel);
 
 #ifdef LOAD_GIF_STRUCTURE

@@ -23,136 +23,87 @@
 #include "raster/image.h"
 #include "raster/stock.h"
 
-//////////////////////////////////////////////////////////////////////
-
-
 Stock::Stock(int imgtype)
   : GfxObj(GFXOBJ_STOCK)
 {
-  this->imgtype = imgtype;
-  this->nimage = 0;
-  this->image = NULL;
+  m_imgtype = imgtype;
 
-  stock_add_image(this, NULL); /* image 0 is NULL */
+  // Image with index=0 is always NULL.
+  m_image.push_back(NULL);
 }
 
 Stock::Stock(const Stock& stock)
   : GfxObj(stock)
 {
-  this->imgtype = stock.imgtype;
-  this->nimage = 0;
-  this->image = NULL;
+  m_imgtype = stock.getImgType();
 
-  for (int c=0; c<stock.nimage; ++c) {
-    if (!stock.image[c])
-      stock_add_image(this, NULL);
-    else {
-      Image* image_copy = image_new_copy(stock.image[c]);
-      // TODO try/catch remove created images
-      stock_add_image(this, image_copy);
+  try {
+    for (int i=0; i<stock.size(); ++i) {
+      if (!stock.getImage(i))
+	addImage(NULL);
+      else {
+	Image* image_copy = image_new_copy(stock.getImage(i));
+	addImage(image_copy);
+      }
     }
   }
+  catch (...) {
+    for (int i=0; i<size(); ++i) {
+      if (getImage(i))
+	delete getImage(i);
+    }
+    throw;
+  }
 
-  ASSERT(this->nimage == stock.nimage);
+  ASSERT(size() == stock.size());
 }
 
 Stock::~Stock()
 {
-  for (int i=0; i<this->nimage; i++) {
-    if (this->image[i])
-      image_free(this->image[i]);
+  for (int i=0; i<size(); ++i) {
+    if (getImage(i))
+      delete getImage(i);
   }
-  jfree(this->image);
 }
 
-//////////////////////////////////////////////////////////////////////
-
-
-/**
- * Creates a new stock, the "imgtype" argument indicates that this
- * stock will contain images of that type.
- */
-Stock* stock_new(int imgtype)
+int Stock::getImgType() const
 {
-  return new Stock(imgtype);
+  return m_imgtype;
 }
 
-/**
- * Creates a new copy of "stock"; the new copy will have copies of all
- * images.
- */
-Stock* stock_new_copy(const Stock* stock)
+void Stock::setImgType(int imgtype)
 {
-  ASSERT(stock);
-  return new Stock(*stock);
+  m_imgtype = imgtype;
 }
 
-/**
- * Destroys the stock.
- */
-void stock_free(Stock* stock)
+Image* Stock::getImage(int index) const
 {
-  ASSERT(stock);
-  delete stock;
+  ASSERT((index >= 0) && (index < size()));
+
+  return m_image[index];
 }
 
-/**
- * Adds a new image in the stock resizing the images-array.
- */
-int stock_add_image(Stock* stock, Image* image)
+int Stock::addImage(Image* image)
 {
-  int i = stock->nimage++;
-
-  stock->image = (Image**)jrealloc(stock->image, sizeof(Image*) * stock->nimage);
-  if (!stock->image)
-    return -1;
-
-  stock->image[i] = image;
+  int i = m_image.size();
+  m_image.resize(m_image.size()+1);
+  m_image[i] = image;
   return i;
 }
 
-/* removes a image from the stock, it doesn't resize the stock */
-void stock_remove_image(Stock* stock, Image* image)
+void Stock::removeImage(Image* image)
 {
-  int i;
-
-  for (i=0; i<stock->nimage; i++)
-    if (stock->image[i] == image) {
-      stock->image[i] = NULL;
-      break;
+  for (int i=0; i<size(); i++)
+    if (m_image[i] == image) {
+      m_image[i] = NULL;
+      return;
     }
+
+  ASSERT(false && "The specified image was not found");
 }
 
-/**
- * Replaces the image in the stock in the "index" position with the
- * new "image"; you must free the old image before, e.g:
- * @code
- *   Image* old_image = stock_get_image(stock, index);
- *   if (old_image)
- *     image_free(old_image);
- *   stock_replace_image(stock, index, new_image);
- * @endcode
- */
-void stock_replace_image(Stock* stock, int index, Image* image)
+void Stock::replaceImage(int index, Image* image)
 {
-  /* the zero index can't be changed */
-  if ((index > 0) && (index < stock->nimage))
-    stock->image[index] = image;
+  ASSERT((index > 0) && (index < size()));
+  m_image[index] = image;
 }
-
-/**
- * Returns the image in the "index" position
- */
-Image* stock_get_image(Stock* stock, int index)
-{
-  return ((index >= 0) && (index < stock->nimage)) ? stock->image[index]: NULL;
-}
-
-/**
- * Returns the image in the "index" position
- */
-const Image* stock_get_image(const Stock* stock, int index)
-{
-  return ((index >= 0) && (index < stock->nimage)) ? stock->image[index]: NULL;
-}
-

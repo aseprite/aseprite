@@ -21,7 +21,7 @@
 #include <allegro/base.h>
 #include <math.h>
 
-#include "gui/jbase.h"
+#include "gui/jbase.h"		// TODO remove this reference
 
 #include "raster/algo.h"
 #include "raster/pen.h"

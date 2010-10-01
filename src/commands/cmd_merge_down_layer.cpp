@@ -92,12 +92,12 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
     /* get images */
     if (src_cel != NULL)
-      src_image = stock_get_image(sprite->getStock(), src_cel->image);
+      src_image = sprite->getStock()->getImage(src_cel->image);
     else
       src_image = NULL;
 
     if (dst_cel != NULL)
-      dst_image = stock_get_image(sprite->getStock(), dst_cel->image);
+      dst_image = sprite->getStock()->getImage(dst_cel->image);
     else
       dst_image = NULL;
 
@@ -111,7 +111,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 	dst_image = image_new_copy(src_image);
 
 	/* adding it in the stock of images */
-	index = stock_add_image(sprite->getStock(), dst_image);
+	index = sprite->getStock()->addImage(dst_image);
 	if (sprite->getUndo()->isEnabled())
 	  undo_add_image(sprite->getUndo(), sprite->getStock(), index);
 
@@ -168,7 +168,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
 	if (sprite->getUndo()->isEnabled())
 	  undo_replace_image(sprite->getUndo(), sprite->getStock(), dst_cel->image);
-	stock_replace_image(sprite->getStock(), dst_cel->image, new_image);
+	sprite->getStock()->replaceImage(dst_cel->image, new_image);
 
 	image_free(dst_image);
       }

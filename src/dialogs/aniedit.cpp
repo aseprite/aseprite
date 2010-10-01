@@ -1201,8 +1201,9 @@ static void anieditor_draw_cel(JWidget widget, JRect clip, int layer_index, int 
 
   /* empty cel? */
   if (cel == NULL ||
-      stock_get_image(anieditor->sprite->getStock(),
-		      cel->image) == NULL) { /* TODO why a cel can't have an associated image? */
+      // TODO why a cel can't have an associated image?
+      anieditor->sprite->getStock()->getImage(cel->image) == NULL) {
+
     jdraw_rectfill(thumbnail_rect, bg);
     draw_emptyset_symbol(ji_screen, thumbnail_rect, ji_color_disabled());
   }

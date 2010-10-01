@@ -198,15 +198,15 @@ void Undoable::setImgType(int new_imgtype, int dithering_method)
 
   /* change imgtype of the stock of images */
   if (isEnabled())
-    undo_int(m_sprite->getUndo(), m_sprite->getStock(), &m_sprite->getStock()->imgtype);
+    undo_int(m_sprite->getUndo(), m_sprite->getStock(), &m_sprite->getStock()->m_imgtype);
 
-  m_sprite->getStock()->imgtype = new_imgtype;
+  m_sprite->getStock()->setImgType(new_imgtype);
 
   // Use the rgbmap for the specified sprite
   const RgbMap* rgbmap = m_sprite->getRgbMap();
 
-  for (c=0; c<m_sprite->getStock()->nimage; c++) {
-    old_image = stock_get_image(m_sprite->getStock(), c);
+  for (c=0; c<m_sprite->getStock()->size(); c++) {
+    old_image = m_sprite->getStock()->getImage(c);
     if (!old_image)
       continue;
 
@@ -221,7 +221,7 @@ void Undoable::setImgType(int new_imgtype, int dithering_method)
       undo_replace_image(m_sprite->getUndo(), m_sprite->getStock(), c);
 
     image_free(old_image);
-    stock_replace_image(m_sprite->getStock(), c, new_image);
+    m_sprite->getStock()->replaceImage(c, new_image);
   }
 
   /* change "sprite.imgtype" field */
@@ -259,7 +259,7 @@ int Undoable::addImageInStock(Image* image)
   ASSERT(image);
 
   // add the image in the stock
-  int image_index = stock_add_image(m_sprite->getStock(), image);
+  int image_index = m_sprite->getStock()->addImage(image);
 
   if (isEnabled())
     undo_add_image(m_sprite->getUndo(), m_sprite->getStock(), image_index);
@@ -274,27 +274,27 @@ void Undoable::removeImageFromStock(int image_index)
 {
   ASSERT(image_index >= 0);
 
-  Image* image = stock_get_image(m_sprite->getStock(), image_index);
+  Image* image = m_sprite->getStock()->getImage(image_index);
   ASSERT(image);
 
   if (isEnabled())
     undo_remove_image(m_sprite->getUndo(), m_sprite->getStock(), image_index);
 
-  stock_remove_image(m_sprite->getStock(), image);
+  m_sprite->getStock()->removeImage(image);
   image_free(image);
 }
 
 void Undoable::replaceStockImage(int image_index, Image* new_image)
 {
   // get the current image in the 'image_index' position
-  Image* old_image = stock_get_image(m_sprite->getStock(), image_index);
+  Image* old_image = m_sprite->getStock()->getImage(image_index);
   ASSERT(old_image);
 
   // replace the image in the stock
   if (isEnabled())
     undo_replace_image(m_sprite->getUndo(), m_sprite->getStock(), image_index);
 
-  stock_replace_image(m_sprite->getStock(), image_index, new_image);
+  m_sprite->getStock()->replaceImage(image_index, new_image);
 
   // destroy the old image
   image_free(old_image);
@@ -431,10 +431,10 @@ void Undoable::backgroundFromLayer(LayerImage* layer, int bgcolor)
   for (; it != end; ++it) {
     Cel* cel = *it;
     ASSERT((cel->image > 0) &&
-	   (cel->image < m_sprite->getStock()->nimage));
+	   (cel->image < m_sprite->getStock()->size()));
 
     // get the image from the sprite's stock of images
-    Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
+    Image* cel_image = m_sprite->getStock()->getImage(cel->image);
     ASSERT(cel_image);
 
     image_clear(bg_image, bgcolor);
@@ -539,7 +539,7 @@ void Undoable::flattenLayers(int bgcolor)
 
     cel = background->getCel(frame);
     if (cel) {
-      cel_image = m_sprite->getStock()->image[cel->image];
+      cel_image = m_sprite->getStock()->getImage(cel->image);
       ASSERT(cel_image != NULL);
 
       /* we have to save the current state of `cel_image' in the undo */
@@ -556,7 +556,7 @@ void Undoable::flattenLayers(int bgcolor)
       /* TODO error handling: if (!cel_image) { ... } */
 
       /* here we create the new cel (with the new image `cel_image') */
-      cel = cel_new(frame, stock_add_image(m_sprite->getStock(), cel_image));
+      cel = cel_new(frame, m_sprite->getStock()->addImage(cel_image));
       /* TODO error handling: if (!cel) { ... } */
 
       /* and finally we add the cel in the background */
@@ -706,8 +706,7 @@ void Undoable::copyPreviousFrame(Layer* layer, int frame)
 
   // create a copy of the previous cel
   Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame-1);
-  Image* src_image = src_cel ? stock_get_image(m_sprite->getStock(),
-					       src_cel->image):
+  Image* src_image = src_cel ? m_sprite->getStock()->getImage(src_cel->image):
 			       NULL;
 
   // nothing to copy, it will be a transparent cel
@@ -907,7 +906,7 @@ Cel* Undoable::getCurrentCel()
 
 void Undoable::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 {
-  Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
+  Image* cel_image = m_sprite->getStock()->getImage(cel->image);
   ASSERT(cel_image);
     
   // create the new image through a crop
@@ -922,8 +921,8 @@ void Undoable::cropCel(Cel* cel, int x, int y, int w, int h, int bgcolor)
 
 Image* Undoable::getCelImage(Cel* cel)
 {
-  if (cel && cel->image >= 0 && cel->image < m_sprite->getStock()->nimage)
-    return m_sprite->getStock()->image[cel->image];
+  if (cel && cel->image >= 0 && cel->image < m_sprite->getStock()->size())
+    return m_sprite->getStock()->getImage(cel->image);
   else
     return NULL;
 }
@@ -1028,7 +1027,7 @@ void Undoable::pasteImage(const Image* src_image, int x, int y, int opacity)
   Cel* cel = ((LayerImage*)layer)->getCel(m_sprite->getCurrentFrame());
   ASSERT(cel);
 
-  Image* cel_image = stock_get_image(m_sprite->getStock(), cel->image);
+  Image* cel_image = m_sprite->getStock()->getImage(cel->image);
   Image* cel_image2 = image_new_copy(cel_image);
   image_merge(cel_image2, src_image, x-cel->x, y-cel->y, opacity, BLEND_MODE_NORMAL);
 

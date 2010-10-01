@@ -578,8 +578,8 @@ void RenderEngine::renderLayer(const Sprite *sprite,
 	}
 	/* if not, we use the original cel-image from the images' stock */
 	else if ((cel->image >= 0) &&
-		 (cel->image < layer->getSprite()->getStock()->nimage))
-	  src_image = layer->getSprite()->getStock()->image[cel->image];
+		 (cel->image < layer->getSprite()->getStock()->size()))
+	  src_image = layer->getSprite()->getStock()->getImage(cel->image);
 	else
 	  src_image = NULL;
 

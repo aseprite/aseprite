@@ -139,7 +139,7 @@ static bool load_FLI(FileOp *fop)
 	break;
       }
 
-      index = stock_add_image(sprite->getStock(), image);
+      index = sprite->getStock()->addImage(image);
       if (index < 0) {
 	image_free(image);
 	fop_error(fop, "Not enough memory\n");

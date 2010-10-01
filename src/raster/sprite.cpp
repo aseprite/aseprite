@@ -226,9 +226,9 @@ public:
       const Cel* cel = static_cast<const LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
       if (cel) {
 	ASSERT((cel->image >= 0) &&
-	       (cel->image < getStock()->nimage));
+	       (cel->image < getStock()->size()));
 
-	image = getStock()->image[cel->image];
+	image = getStock()->getImage(cel->image);
 
 	if (x) *x = cel->x;
 	if (y) *y = cel->y;
@@ -247,9 +247,9 @@ public:
       Cel* cel = static_cast<LayerImage*>(getCurrentLayer())->getCel(getCurrentFrame());
       if (cel) {
 	ASSERT((cel->image >= 0) &&
-	       (cel->image < getStock()->nimage));
+	       (cel->image < getStock()->size()));
 
-	image = getStock()->image[cel->image];
+	image = getStock()->getImage(cel->image);
 
 	if (x) *x = cel->x;
 	if (y) *y = cel->y;
@@ -277,7 +277,7 @@ public:
       // Remap this Cel because is inside the specified range
       if (cel->frame >= frame_from && 
 	  cel->frame <= frame_to) {
-	Image* image = stock_get_image(getStock(), cel->image);
+	Image* image = getStock()->getImage(cel->image);
 
 	for (int y=0; y<image->h; ++y) {
 	  IndexedTraits::address_t ptr = image_address_fast<IndexedTraits>(image, 0, y);
@@ -451,7 +451,7 @@ SpriteImpl::SpriteImpl(Sprite* sprite, int imgtype, int width, int height, int n
   m_frames = 1;
   m_frlens.push_back(100);	// First frame with 100 msecs of duration
   m_frame = 0;
-  m_stock = stock_new(imgtype);
+  m_stock = new Stock(imgtype);
   m_folder = new LayerFolder(m_self);
   m_layer = NULL;
   m_path = NULL;
@@ -516,13 +516,11 @@ SpriteImpl* SpriteImpl::copyBase(Sprite* new_sprite, const SpriteImpl* src_sprit
 					  src_sprite->getPalette(0)->size());
 
 
-  // Copy stock
-  stock_free(dst_sprite->m_stock);
-  dst_sprite->m_stock = stock_new_copy(src_sprite->m_stock);
-  if (!dst_sprite->m_stock) {
-    delete dst_sprite;
-    return NULL;
-  }
+  // Delete the original empty stock from the dst_sprite
+  delete dst_sprite->m_stock;
+
+  // Clone the src_sprite stock
+  dst_sprite->m_stock = new Stock(*src_sprite->m_stock);
 
   // Copy general properties
   dst_sprite->m_filename = src_sprite->m_filename;
@@ -623,7 +621,7 @@ SpriteImpl::~SpriteImpl()
 
   // Destroy images' stock
   if (m_stock)
-    stock_free(m_stock);
+    delete m_stock;
 
   // Destroy paths
   {
@@ -749,9 +747,8 @@ int SpriteImpl::getMemSize() const
   Image *image;
   int i, size = 0;
 
-  for (i=0; i<m_stock->nimage; i++) {
-    image = m_stock->image[i];
-
+  for (i=0; i<m_stock->size(); i++) {
+    image = m_stock->getImage(i);
     if (image != NULL)
       size += image_line_size(image, image->w) * image->h;
   }
@@ -1033,7 +1030,7 @@ Sprite* Sprite::createWithLayer(int imgtype, int width, int height, int ncolors)
     layer->set_blend_mode(BLEND_MODE_NORMAL);
 
     /* add image in the layer stock */
-    int index = stock_add_image(sprite->getStock(), image);
+    int index = sprite->getStock()->addImage(image);
 
     /* create the cel */
     cel = cel_new(0, index);

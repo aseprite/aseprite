@@ -106,7 +106,7 @@ void move_cel(SpriteWriter& sprite)
 	 image */
       if (!src_layer->is_background() &&
 	  dst_layer->is_background()) {
-	Image *src_image = stock_get_image(sprite->getStock(), src_cel->image);
+	Image *src_image = sprite->getStock()->getImage(src_cel->image);
 	Image *dst_image = image_crop(src_image,
 				      -src_cel->x,
 				      -src_cel->y,
@@ -127,7 +127,7 @@ void move_cel(SpriteWriter& sprite)
 	src_cel->y = 0;
 	src_cel->opacity = 255;
 
-	stock_replace_image(sprite->getStock(), src_cel->image, dst_image);
+	sprite->getStock()->replaceImage(src_cel->image, dst_image);
 	image_free(src_image);
       }
       
@@ -174,7 +174,7 @@ void copy_cel(SpriteWriter& sprite)
 
   /* move the cel in the same layer */
   if (src_cel != NULL) {
-    Image *src_image = stock_get_image(sprite->getStock(), src_cel->image);
+    Image *src_image = sprite->getStock()->getImage(src_cel->image);
     Image *dst_image;
     int image_index;
     int dst_cel_x;
@@ -207,7 +207,7 @@ void copy_cel(SpriteWriter& sprite)
     }
 
     /* add the image in the stock */
-    image_index = stock_add_image(sprite->getStock(), dst_image);
+    image_index = sprite->getStock()->addImage(dst_image);
     if (sprite->getUndo()->isEnabled())
       undo_add_image(sprite->getUndo(), sprite->getStock(), image_index);
 
@@ -253,12 +253,12 @@ static void remove_cel(Sprite* sprite, LayerImage *layer, Cel *cel)
     if (!used) {
       /* if the image is only used by this cel, we can remove the
 	 image from the stock */
-      image = stock_get_image(sprite->getStock(), cel->image);
+      image = sprite->getStock()->getImage(cel->image);
 
       if (sprite->getUndo()->isEnabled())
 	undo_remove_image(sprite->getUndo(), sprite->getStock(), cel->image);
 
-      stock_remove_image(sprite->getStock(), image);
+      sprite->getStock()->removeImage(image);
       image_free(image);
     }
 

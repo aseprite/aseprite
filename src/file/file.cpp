@@ -464,8 +464,7 @@ void fop_operate(FileOp *fop)
        /* TODO set_palette for each frame??? */
 #define SEQUENCE_IMAGE()						\
       do {								\
-	image_index = stock_add_image(fop->sprite->getStock(),		\
-				      fop->seq.image);			\
+	image_index = fop->sprite->getStock()->addImage(fop->seq.image); \
 									\
 	fop->seq.last_cel->image = image_index;				\
 	fop->seq.layer->addCel(fop->seq.last_cel);			\

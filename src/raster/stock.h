@@ -20,31 +20,51 @@
 #define RASTER_STOCK_H_INCLUDED
 
 #include "raster/gfxobj.h"
+#include <vector>
 
 class Image;
+
+typedef std::vector<Image*> ImagesList;
 
 class Stock : public GfxObj
 {
 public:
-  int imgtype;		/* type of images (all images in the stock
-			   must be of this type) */
-  int nimage;		/* how many images have this stock */
-  Image** image;	/* the images-array where the images are */
-
   Stock(int imgtype);
   Stock(const Stock& stock);
   virtual ~Stock();
+
+  int getImgType() const;
+  void setImgType(int imgtype);
+
+  // Returns the number of image in the stock.
+  int size() const {
+    return m_image.size();
+  }
+
+  // Returns the image in the "index" position
+  Image* getImage(int index) const;
+
+  // Adds a new image in the stock resizing the images-array. Returns
+  // the index/position in the stock (this index can be used with the
+  // Stock::getImage() function).
+  int addImage(Image* image);
+
+  // Removes a image from the stock, it doesn't resize the stock.
+  void removeImage(Image* image);
+
+  // Replaces the image in the stock in the "index" position with the
+  // new "image"; you must delete the old image before, e.g:
+  //
+  //   Image* old_image = stock->getImage(index);
+  //   if (old_image)
+  //     delete old_image;
+  //   stock->replaceImage(index, new_image);
+  //
+  void replaceImage(int index, Image* image);
+
+//private: TODO uncomment this line
+  int m_imgtype;	// Type of images (all images in the stock must be of this type).
+  ImagesList m_image;	// The images-array where the images are.
 };
-
-Stock* stock_new(int imgtype);
-Stock* stock_new_copy(const Stock* stock);
-void stock_free(Stock* stock);
-
-int stock_add_image(Stock* stock, Image* image);
-void stock_remove_image(Stock* stock, Image* image);
-void stock_replace_image(Stock* stock, int index, Image* image);
-
-Image* stock_get_image(Stock* stock, int index);
-const Image* stock_get_image(const Stock* stock, int index);
 
 #endif

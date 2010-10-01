@@ -863,10 +863,10 @@ static void chunk_add_image_invert(UndoStream* stream, UndoChunkAddImage* chunk,
   Stock *stock = (Stock *)GfxObj::find(stock_id);
 
   if (stock) {
-    Image* image = stock_get_image(stock, image_index);
+    Image* image = stock->getImage(image_index);
     if (image != NULL) {
       chunk_remove_image_new(stream, stock, image_index);
-      stock_remove_image(stock, image);
+      stock->removeImage(image);
       image_free(image);
     }
   }
@@ -898,8 +898,8 @@ void undo_remove_image(Undo* undo, Stock *stock, int image_index)
 
 static void chunk_remove_image_new(UndoStream* stream, Stock *stock, int image_index)
 {
-  Image* image = stock->image[image_index];
-  UndoChunkRemoveImage* chunk = (UndoChunkRemoveImage* )
+  Image* image = stock->getImage(image_index);
+  UndoChunkRemoveImage* chunk = (UndoChunkRemoveImage*)
     undo_chunk_new(stream,
 		   UNDO_TYPE_REMOVE_IMAGE,
 		   sizeof(UndoChunkRemoveImage)+get_raw_image_size(image));
@@ -921,7 +921,7 @@ static void chunk_remove_image_invert(UndoStream* stream, UndoChunkRemoveImage* 
 
     /* ASSERT(image != NULL); */
 
-    stock_replace_image(stock, image_index, image);
+    stock->replaceImage(image_index, image);
     chunk_add_image_new(stream, stock, image_index);
   }
 }
@@ -952,7 +952,7 @@ void undo_replace_image(Undo* undo, Stock *stock, int image_index)
 
 static void chunk_replace_image_new(UndoStream* stream, Stock *stock, int image_index)
 {
-  Image* image = stock_get_image(stock, image_index);
+  Image* image = stock->getImage(image_index);
   UndoChunkReplaceImage* chunk = (UndoChunkReplaceImage* )
     undo_chunk_new(stream,
 		   UNDO_TYPE_REPLACE_IMAGE,
@@ -976,10 +976,10 @@ static void chunk_replace_image_invert(UndoStream* stream, UndoChunkReplaceImage
 
     // save the current image in the (redo) stream
     chunk_replace_image_new(stream, stock, image_index);
-    Image* old_image = stock_get_image(stock, image_index);
+    Image* old_image = stock->getImage(image_index);
 
     // replace the image in the stock
-    stock_replace_image(stock, image_index, image);
+    stock->replaceImage(image_index, image);
 
     // destroy the old image
     image_free(old_image);
@@ -2175,7 +2175,7 @@ static Layer* read_raw_layer(ase_uint8* raw_data)
 	  Image* image = read_raw_image(raw_data);
 	  raw_data += get_raw_image_size(image);
 
-	  stock_replace_image(layer->getSprite()->getStock(), cel->image, image);
+	  layer->getSprite()->getStock()->replaceImage(cel->image, image);
 	}
       }
       break;
@@ -2246,7 +2246,7 @@ static ase_uint8* write_raw_layer(ase_uint8* raw_data, Layer* layer)
 	Cel* cel = *it;
 	raw_data = write_raw_cel(raw_data, cel);
 
-	Image* image = layer->getSprite()->getStock()->image[cel->image];
+	Image* image = layer->getSprite()->getStock()->getImage(cel->image);
 	ASSERT(image != NULL);
 
 	write_raw_uint8(1);
@@ -2290,7 +2290,7 @@ static int get_raw_layer_size(Layer* layer)
 	size += get_raw_cel_size(cel);
 	size++;			// has image?
 
-	Image* image = layer->getSprite()->getStock()->image[cel->image];
+	Image* image = layer->getSprite()->getStock()->getImage(cel->image);
 	size += get_raw_image_size(image);
       }
       break;

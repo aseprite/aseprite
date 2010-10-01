@@ -82,7 +82,7 @@ protected:
       undoable.setCelPosition(cel, scale_x(cel->x), scale_y(cel->y));
 
       // Get cel's image
-      Image* image = stock_get_image(m_sprite->getStock(), cel->image);
+      Image* image = m_sprite->getStock()->getImage(cel->image);
       if (!image)
 	continue;
 

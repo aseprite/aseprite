@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "gui/jbase.h"		// TODO remove this reference
+
 #include "raster/algo.h"
 #include "raster/pen.h"
 #include "raster/dirty.h"
@@ -121,11 +123,7 @@ static void swap_hline8(void* image, void* data, int x1, int x2);
 
 Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled)
 {
-  Dirty* dirty;
-
-  dirty = (Dirty*)jnew(Dirty, 1);
-  if (!dirty)
-    return NULL;
+  Dirty* dirty = new Dirty;
 
   dirty->image = image;
   dirty->x1 = MID(0, x1, image->w-1);
@@ -142,12 +140,8 @@ Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled)
 
 Dirty* dirty_new_copy(Dirty* src)
 {
+  Dirty* dst = dirty_new(src->image, src->x1, src->y1, src->x2, src->y2, src->tiled);
   int u, v, size;
-  Dirty* dst;
-
-  dst = dirty_new(src->image, src->x1, src->y1, src->x2, src->y2, src->tiled);
-  if (!dst)
-    return NULL;
 
   dst->rows = src->rows;
   dst->row = (DirtyRow*)jmalloc(sizeof(DirtyRow) * src->rows);

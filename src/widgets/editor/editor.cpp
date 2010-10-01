@@ -1844,7 +1844,7 @@ public:
     if (m_layer->is_image()) {
       m_cel = static_cast<LayerImage*>(sprite->getCurrentLayer())->getCel(sprite->getCurrentFrame());
       if (m_cel)
-	m_cel_image = sprite->getStock()->image[m_cel->image];
+	m_cel_image = sprite->getStock()->getImage(m_cel->image);
     }
 
     if (m_cel == NULL) {
@@ -1925,7 +1925,7 @@ public:
 	    image_copy(m_cel_image, m_dst_image, 0, 0);
 
 	    /* add the 'cel_image' in the images' stock of the sprite */
-	    m_cel->image = stock_add_image(m_sprite->getStock(), m_cel_image);
+	    m_cel->image = m_sprite->getStock()->addImage(m_cel_image);
 
 	    /* is the undo enabled? */
 	    if (m_sprite->getUndo()->isEnabled()) {
@@ -1985,7 +1985,7 @@ public:
 	  }
 
 	  /* replace the image in the stock */
-	  stock_replace_image(m_sprite->getStock(), m_cel->image, m_dst_image);
+	  m_sprite->getStock()->replaceImage(m_cel->image, m_dst_image);
 
 	  /* destroy the old cel image */
 	  image_free(m_cel_image);

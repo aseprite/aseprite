@@ -20,7 +20,6 @@
 #define RASTER_LAYER_H_INCLUDED
 
 #include <string>
-#include "gui/jbase.h"
 #include "raster/gfxobj.h"
 
 class Cel;

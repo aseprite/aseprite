@@ -130,7 +130,7 @@ static bool load_ICO(FileOp *fop)
 
   // Create the first image/cel
   Image* image = image_new(imgtype, width, height);
-  int image_index = stock_add_image(sprite->getStock(), image);
+  int image_index = sprite->getStock()->addImage(image);
   Cel* cel = cel_new(0, image_index);
   layer->addCel(cel);
 

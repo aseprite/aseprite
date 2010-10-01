@@ -1044,7 +1044,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	    break;
 	}
 
-	cel->image = stock_add_image(sprite->getStock(), image);
+	cel->image = sprite->getStock()->addImage(image);
       }
       break;
     }
@@ -1056,8 +1056,8 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 
       if (link) {
 	// Create a copy of the linked cel (avoid using links cel)
-	Image* image = image_new_copy(stock_get_image(sprite->getStock(), link->image));
-	cel->image = stock_add_image(sprite->getStock(), image);
+	Image* image = image_new_copy(sprite->getStock()->getImage(link->image));
+	cel->image = sprite->getStock()->addImage(image);
       }
       else {
 	cel_free(cel);
@@ -1096,7 +1096,7 @@ static Cel *ase_file_read_cel_chunk(FILE *f, Sprite *sprite, int frame, int imgt
 	    break;
 	}
 
-	cel->image = stock_add_image(sprite->getStock(), image);
+	cel->image = sprite->getStock()->addImage(image);
       }
       break;
     }
@@ -1124,7 +1124,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
   switch (cel_type) {
 
     case ASE_FILE_RAW_CEL: {
-      Image* image = stock_get_image(sprite->getStock(), cel->image);
+      Image* image = sprite->getStock()->getImage(cel->image);
 
       if (image) {
 	// Width and height
@@ -1162,7 +1162,7 @@ static void ase_file_write_cel_chunk(FILE *f, Cel *cel, LayerImage *layer, Sprit
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
-      Image* image = stock_get_image(sprite->getStock(), cel->image);
+      Image* image = sprite->getStock()->getImage(cel->image);
 
       if (image) {
 	// Width and height

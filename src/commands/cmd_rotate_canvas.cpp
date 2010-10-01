@@ -83,7 +83,7 @@ protected:
     // for each cel...
     for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
       Cel* cel = *it;
-      Image* image = stock_get_image(m_sprite->getStock(), cel->image);
+      Image* image = m_sprite->getStock()->getImage(cel->image);
 
       // change it location
       switch (m_angle) {
@@ -102,8 +102,8 @@ protected:
     }
 
     // for each stock's image
-    for (int i=0; i<m_sprite->getStock()->nimage; ++i) {
-      Image* image = stock_get_image(m_sprite->getStock(), i);
+    for (int i=0; i<m_sprite->getStock()->size(); ++i) {
+      Image* image = m_sprite->getStock()->getImage(i);
       if (!image)
 	continue;
 
@@ -115,7 +115,7 @@ protected:
 
       undoable.replaceStockImage(i, new_image);
 
-      jobProgress((float)i / m_sprite->getStock()->nimage);
+      jobProgress((float)i / m_sprite->getStock()->size());
 
       // cancel all the operation?
       if (isCanceled())

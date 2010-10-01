@@ -82,7 +82,7 @@ void test ()
 	}
 
 	/* add the new image in the stock */
-	image_index = stock_add_image(sprite->stock, image);
+	image_index = sprite->stock->addImage(image);
 
 	/* cel properties */
 	cel = cel_new(i, image_index);
