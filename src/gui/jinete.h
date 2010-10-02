@@ -21,7 +21,7 @@
 #include "gui/jgrid.h"
 #include "gui/jhook.h"
 #include "gui/jimage.h"
-#include "gui/jlabel.h"
+#include "gui/label.h"
 #include "gui/jlink_label.h"
 #include "gui/jlist.h"
 #include "gui/jlistbox.h"

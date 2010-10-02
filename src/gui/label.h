@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JLABEL_H_INCLUDED
-#define GUI_JLABEL_H_INCLUDED
+#ifndef GUI_LABEL_H_INCLUDED
+#define GUI_LABEL_H_INCLUDED
 
 #include "gui/jwidget.h"
 

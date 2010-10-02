@@ -21,7 +21,6 @@ add_library(gui-lib
   jimage.cpp
   jinete.cpp
   jintern.cpp
-  jlabel.cpp
   jlink_label.cpp
   jlist.cpp
   jlistbox.cpp
@@ -44,6 +43,7 @@ add_library(gui-lib
   jtooltips.cpp
   jview.cpp
   jwidget.cpp
+  label.cpp
   preferred_size_event.cpp
   property.cpp
   themes/jstandard_theme.cpp)

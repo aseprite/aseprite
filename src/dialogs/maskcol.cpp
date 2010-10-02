@@ -22,7 +22,7 @@
 #include "gui/jbox.h"
 #include "gui/button.h"
 #include "gui/jhook.h"
-#include "gui/jlabel.h"
+#include "gui/label.h"
 #include "gui/jslider.h"
 #include "gui/jwidget.h"
 #include "gui/frame.h"

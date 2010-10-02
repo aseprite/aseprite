@@ -7,7 +7,7 @@
 #ifndef GUI_JCUSTOM_LABEL_H_INCLUDED
 #define GUI_JCUSTOM_LABEL_H_INCLUDED
 
-#include "gui/jlabel.h"
+#include "gui/label.h"
 
 class CustomLabel : public Label
 {
