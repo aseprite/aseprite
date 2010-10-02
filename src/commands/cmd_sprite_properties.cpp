@@ -113,7 +113,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     usprintf(buf, "%dx%d (%s)",
 	     sprite->getWidth(),
 	     sprite->getHeight(),
-	     get_pretty_memory_size(sprite->getMemSize()));
+	     get_pretty_memory_size(sprite->getMemSize()).c_str());
 
     size->setText(buf);
 
