@@ -78,7 +78,7 @@ else()
 endif()
 
 # All libraries for .exe files
-set(all_libs aseprite-library gui-lib gfx-lib base-lib ${alleg_lib} ${libs3rdparty} ${sys_libs})
+set(all_libs aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} ${alleg_lib} ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
