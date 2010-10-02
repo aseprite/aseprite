@@ -28,7 +28,7 @@ namespace base {		// Based on C++0x threads lib
       bool operator> (const id& y) const { return m_native_id >  y.m_native_id; }
       bool operator>=(const id& y) const { return m_native_id >= y.m_native_id; }
 
-      id& operator=(const id& y) { m_native_id = y.m_native_id; }
+      id& operator=(const id& y) { m_native_id = y.m_native_id; return *this; }
     };
 
     typedef void* native_handle_type;
