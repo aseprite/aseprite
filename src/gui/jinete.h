@@ -43,6 +43,6 @@
 #include "gui/jtooltips.h"
 #include "gui/jview.h"
 #include "gui/jwidget.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #endif

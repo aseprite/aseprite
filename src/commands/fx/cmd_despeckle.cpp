@@ -26,7 +26,7 @@
 #include "gui/jentry.h"
 #include "gui/jhook.h"
 #include "gui/jwidget.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #include "commands/command.h"
 #include "commands/fx/effectbg.h"

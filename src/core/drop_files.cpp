@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <vector>
 
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #include "app.h"
 #include "base/mutex.h"

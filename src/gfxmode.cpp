@@ -21,7 +21,7 @@
 #include <allegro.h>
 
 #include "gui/jmanager.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #include "app.h"
 #include "gfxmode.h"

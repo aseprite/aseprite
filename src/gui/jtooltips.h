@@ -8,7 +8,7 @@
 #define GUI_JTOOLTIPS_H_INCLUDED
 
 #include "gui/jbase.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 class TipWindow : public Frame
 {

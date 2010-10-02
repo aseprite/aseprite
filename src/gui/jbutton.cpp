@@ -19,7 +19,7 @@
 #include "gui/jrect.h"
 #include "gui/jtheme.h"
 #include "gui/jwidget.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 #include "gui/preferred_size_event.h"
 
 ButtonBase::ButtonBase(const char* text, int type, int behaviorType, int drawType)

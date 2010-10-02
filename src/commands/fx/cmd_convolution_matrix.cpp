@@ -30,7 +30,7 @@
 #include "gui/jslider.h"
 #include "gui/jview.h"
 #include "gui/jwidget.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #include "app/color.h"
 #include "commands/command.h"

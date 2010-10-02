@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JWINDOW_H_INCLUDED
-#define GUI_JWINDOW_H_INCLUDED
+#ifndef GUI_FRAME_H_INCLUDED
+#define GUI_FRAME_H_INCLUDED
 
 #include "base/signal.h"
 #include "gui/jwidget.h"

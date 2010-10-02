@@ -25,7 +25,7 @@
 #include "gui/jlabel.h"
 #include "gui/jslider.h"
 #include "gui/jwidget.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #include "app.h"
 #include "app/color.h"

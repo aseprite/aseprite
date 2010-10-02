@@ -7,7 +7,7 @@
 #ifndef GUI_JPOPUP_WINDOW_H_INCLUDED
 #define GUI_JPOPUP_WINDOW_H_INCLUDED
 
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 class PopupWindow : public Frame
 {

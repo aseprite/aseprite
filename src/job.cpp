@@ -21,7 +21,7 @@
 #include "gui/jalert.h"
 #include "gui/jthread.h"
 #include "gui/jwidget.h"
-#include "gui/jwindow.h"
+#include "gui/frame.h"
 
 #include "app.h"
 #include "base/mutex.h"
