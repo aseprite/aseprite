@@ -17,7 +17,7 @@
 #include "gui/jregion.h"
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 /* Global output bitmap.  */
 

@@ -8,7 +8,7 @@
 #define GUI_BUTTON_H_INCLUDED
 
 #include "base/signal.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include <vector>
 
 struct BITMAP;

@@ -29,7 +29,7 @@
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
 #include "raster/blend.h"

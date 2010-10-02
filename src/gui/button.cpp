@@ -18,7 +18,7 @@
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
 #include "gui/jtheme.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "gui/frame.h"
 #include "gui/preferred_size_event.h"
 

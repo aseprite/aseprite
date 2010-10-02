@@ -21,7 +21,7 @@
 
 #include <allegro/color.h>
 
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 // TODO use some JI_SIGNAL_USER
 #define SIGNAL_PALETTE_EDITOR_CHANGE   0x10005

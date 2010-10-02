@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JWIDGET_H_INCLUDED
-#define GUI_JWIDGET_H_INCLUDED
+#ifndef GUI_WIDGET_H_INCLUDED
+#define GUI_WIDGET_H_INCLUDED
 
 #include <string>
 

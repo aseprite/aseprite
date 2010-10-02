@@ -7,7 +7,7 @@
 #ifndef GUI_LABEL_H_INCLUDED
 #define GUI_LABEL_H_INCLUDED
 
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 class Label : public Widget
 {

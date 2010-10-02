@@ -7,7 +7,7 @@
 #ifndef GUI_JCOMBOBOX_H_INCLUDED
 #define GUI_JCOMBOBOX_H_INCLUDED
 
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include <vector>
 #include <string>
 

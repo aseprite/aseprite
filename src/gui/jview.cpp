@@ -14,7 +14,7 @@
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "gfx/size.h"
 
 #define BAR_SIZE widget->theme->scrollbar_size

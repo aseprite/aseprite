@@ -21,7 +21,7 @@
 
 #include "app/color.h"
 #include "gui/jbase.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 class Frame;
 class StatusBar;

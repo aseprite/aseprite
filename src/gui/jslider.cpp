@@ -14,7 +14,7 @@
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 typedef struct Slider
 {

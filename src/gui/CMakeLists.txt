@@ -42,8 +42,8 @@ add_library(gui-lib
   jthread.cpp
   jtooltips.cpp
   jview.cpp
-  jwidget.cpp
   label.cpp
   preferred_size_event.cpp
   property.cpp
-  themes/jstandard_theme.cpp)
+  themes/jstandard_theme.cpp
+  widget.cpp)

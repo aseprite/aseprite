@@ -25,7 +25,7 @@
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/image.h"

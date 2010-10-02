@@ -8,7 +8,7 @@
 #define GUI_FRAME_H_INCLUDED
 
 #include "base/signal.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 namespace Vaca {
   class CloseEvent { };		// TODO

@@ -13,7 +13,7 @@
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 static int registered_messages = JM_REGISTERED_MESSAGES;
 

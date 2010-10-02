@@ -10,7 +10,7 @@
 
 #include "gui/jmanager.h"
 #include "gui/jtheme.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "gui/frame.h"
 
 static std::vector<JWidget>* widgets;

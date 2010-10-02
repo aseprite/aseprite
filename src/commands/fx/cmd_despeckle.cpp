@@ -25,7 +25,7 @@
 #include "gui/button.h"
 #include "gui/jentry.h"
 #include "gui/jhook.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "gui/frame.h"
 
 #include "commands/command.h"

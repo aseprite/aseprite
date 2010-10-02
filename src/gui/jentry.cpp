@@ -18,7 +18,7 @@
 #include "gui/jrect.h"
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 #define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
 

@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 #include "app.h"
 #include "commands/command.h"

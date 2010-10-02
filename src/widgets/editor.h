@@ -22,7 +22,7 @@
 #include "app/color.h"
 #include "base/signal.h"
 #include "gui/jbase.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5

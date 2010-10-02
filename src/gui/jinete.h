@@ -42,7 +42,7 @@
 #include "gui/jthread.h"
 #include "gui/jtooltips.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "gui/frame.h"
 
 #endif

@@ -16,7 +16,7 @@
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 static JTheme ji_current_theme = NULL;
 static JTheme ji_standard_theme = NULL;

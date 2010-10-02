@@ -25,7 +25,7 @@
 #include "gui/jrect.h"
 #include "gui/jregion.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 #include "console.h"
 #include "core/cfg.h"

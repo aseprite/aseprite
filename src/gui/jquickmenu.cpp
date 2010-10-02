@@ -12,7 +12,7 @@
 #include "gui/jmessage.h"
 #include "gui/jquickmenu.h"
 #include "gui/jsep.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 typedef struct QuickData
 {

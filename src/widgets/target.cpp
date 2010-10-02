@@ -28,7 +28,7 @@
 #include "gui/button.h"
 #include "gui/jhook.h"
 #include "gui/jtheme.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "modules/gfx.h"
 #include "modules/gui.h"
 #include "raster/image.h"

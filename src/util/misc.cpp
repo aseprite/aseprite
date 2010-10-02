@@ -27,7 +27,7 @@
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jsystem.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"

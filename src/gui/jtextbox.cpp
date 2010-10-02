@@ -17,7 +17,7 @@
 #include "gui/jsystem.h"
 #include "gui/jtheme.h"
 #include "gui/jview.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 static bool textbox_msg_proc(JWidget widget, JMessage msg);
 static void textbox_request_size(JWidget widget, int *w, int *h);

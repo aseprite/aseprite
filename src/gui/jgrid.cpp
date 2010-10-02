@@ -13,7 +13,7 @@
 #include "gui/jlist.h"
 #include "gui/jmessage.h"
 #include "gui/jrect.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "gui/jtheme.h"
 #include "gfx/size.h"
 

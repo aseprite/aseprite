@@ -21,7 +21,7 @@
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 class ColorBar : public Widget
 {

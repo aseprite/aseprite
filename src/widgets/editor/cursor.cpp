@@ -30,7 +30,7 @@
 #include "gui/jrect.h"
 #include "gui/jregion.h"
 #include "gui/jsystem.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "modules/editors.h"
 #include "raster/image.h"
 #include "raster/layer.h"

@@ -5,7 +5,7 @@
 // read LICENSE.txt for more information.
 
 #include "gui/preferred_size_event.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 
 using namespace gfx;
 

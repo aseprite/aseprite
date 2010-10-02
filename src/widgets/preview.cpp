@@ -21,7 +21,7 @@
 #include "effect/effect.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"
-#include "gui/jwidget.h"
+#include "gui/widget.h"
 #include "raster/sprite.h"
 #include "util/render.h"
 #include "widgets/preview.h"
