@@ -39,7 +39,6 @@ add_library(gui-lib
   jsystem.cpp
   jtextbox.cpp
   jtheme.cpp
-  jthread.cpp
   jtooltips.cpp
   jview.cpp
   label.cpp

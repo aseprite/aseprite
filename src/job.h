@@ -19,7 +19,7 @@
 #ifndef CORE_JOB_H_INCLUDED
 #define CORE_JOB_H_INCLUDED
 
-#include "gui/jbase.h"
+namespace base { class thread; }
 
 class Frame;
 class Mutex;
@@ -63,11 +63,11 @@ protected:
 private:
   void done();
 
-  static void thread_proc(void* data);
+  static void thread_proc(Job* self);
   static void monitor_proc(void* data);
   static void monitor_free(void* data);
 
-  JThread m_thread;
+  base::thread* m_thread;
   Monitor* m_monitor;
   Progress* m_progress;
   Mutex* m_mutex;

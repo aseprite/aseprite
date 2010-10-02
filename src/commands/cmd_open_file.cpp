@@ -18,22 +18,22 @@
 
 #include "config.h"
 
-#include <stdio.h>
 #include <allegro.h>
+#include <stdio.h>
 
-#include "gui/jinete.h"
-
-#include "ui_context.h"
+#include "app.h"
+#include "base/thread.h"
 #include "commands/command.h"
 #include "commands/params.h"
 #include "console.h"
-#include "app.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
-#include "raster/sprite.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
+#include "raster/sprite.h"
 #include "recent_files.h"
+#include "ui_context.h"
 #include "widgets/statebar.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -57,7 +57,6 @@ struct OpenFileData
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
-  JThread thread;
   Frame* alert_window;
 };
 
@@ -66,10 +65,8 @@ struct OpenFileData
  *
  * [loading thread]
  */
-static void openfile_bg(void *fop_data)
+static void openfile_bg(FileOp* fop)
 {
-  FileOp* fop = (FileOp*)fop_data;
-
   try {
     fop_operate(fop);
   }
@@ -160,55 +157,48 @@ void OpenFileCommand::onExecute(Context* context)
 	unrecent = true;
       }
       else {
-	JThread thread = jthread_new(openfile_bg, fop);
-	if (thread) {
-	  OpenFileData* data = new OpenFileData;
+	base::thread thread(&openfile_bg, fop);
+	OpenFileData* data = new OpenFileData;
 
-	  data->fop = fop;
-	  data->progress = app_get_statusbar()->addProgress();
-	  data->thread = thread;
-	  data->alert_window = jalert_new(PACKAGE
-					  "<<Loading file:<<%s||&Cancel",
-					  get_filename(m_filename.c_str()));
+	data->fop = fop;
+	data->progress = app_get_statusbar()->addProgress();
+	data->alert_window = jalert_new(PACKAGE
+					"<<Loading file:<<%s||&Cancel",
+					get_filename(m_filename.c_str()));
 
-	  // Add a monitor to check the loading (FileOp) progress
-	  data->monitor = add_gui_monitor(monitor_openfile_bg,
-					  monitor_free, data);
+	// Add a monitor to check the loading (FileOp) progress
+	data->monitor = add_gui_monitor(monitor_openfile_bg,
+					monitor_free, data);
 
-	  data->alert_window->open_window_fg();
+	data->alert_window->open_window_fg();
 
-	  if (data->monitor != NULL)
-	    remove_gui_monitor(data->monitor);
+	if (data->monitor != NULL)
+	  remove_gui_monitor(data->monitor);
 
-	  // Stop the file-operation and wait the thread to exit
-	  fop_stop(data->fop);
-	  jthread_join(data->thread);
+	// Stop the file-operation and wait the thread to exit
+	fop_stop(data->fop);
+	thread.join();
 
-	  // Show any error
-	  if (fop->error)
-	    console.printf(fop->error);
+	// Show any error
+	if (fop->error)
+	  console.printf(fop->error);
 
-	  Sprite *sprite = fop->sprite;
-	  if (sprite) {
-	    UIContext* context = UIContext::instance();
+	Sprite *sprite = fop->sprite;
+	if (sprite) {
+	  UIContext* context = UIContext::instance();
 
-	    App::instance()->getRecentFiles()->addRecentFile(fop->filename);
-	    context->add_sprite(sprite);
+	  App::instance()->getRecentFiles()->addRecentFile(fop->filename);
+	  context->add_sprite(sprite);
 
-	    set_sprite_in_more_reliable_editor(sprite);
-	  }
-	  else if (!fop_is_stop(fop))
-	    unrecent = true;
-
-	  delete data->progress;
-	  jwidget_free(data->alert_window);
-	  fop_free(fop);
-	  delete data;
+	  set_sprite_in_more_reliable_editor(sprite);
 	}
-	else {
-	  console.printf("Error creating thread to load the sprite");
-	  fop_free(fop);
-	}
+	else if (!fop_is_stop(fop))
+	  unrecent = true;
+
+	delete data->progress;
+	jwidget_free(data->alert_window);
+	fop_free(fop);
+	delete data;
       }
 
       // The file was not found or was loaded loaded with errors,

@@ -18,14 +18,13 @@
 
 #include "config.h"
 
-#include "gui/jalert.h"
-#include "gui/jthread.h"
-#include "gui/widget.h"
-#include "gui/frame.h"
-
 #include "app.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
+#include "base/thread.h"
+#include "gui/frame.h"
+#include "gui/jalert.h"
+#include "gui/widget.h"
 #include "job.h"
 #include "modules/gui.h"
 #include "widgets/statebar.h"
@@ -63,8 +62,10 @@ Job::~Job()
     m_monitor = NULL;
   }
 
-  if (m_thread)
-    jthread_join(m_thread);
+  if (m_thread) {
+    m_thread->join();
+    delete m_thread;
+  }
 
   if (m_progress)
     delete m_progress;
@@ -78,7 +79,7 @@ Job::~Job()
 
 void Job::startJob()
 {
-  m_thread = jthread_new(&Job::thread_proc, (void*)this);
+  m_thread = new base::thread(&Job::thread_proc, this);
   m_alert_window->open_window_fg();
 }
 
@@ -133,9 +134,8 @@ void Job::done()
  *
  * [worker thread]
  */
-void Job::thread_proc(void* data)
+void Job::thread_proc(Job* self)
 {
-  Job* self = (Job*)data;
   try {
     self->onJob();
   }

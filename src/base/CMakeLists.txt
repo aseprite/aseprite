@@ -8,4 +8,5 @@ add_library(base-lib
   mutex.cpp
   path.cpp
   split_string.cpp
-  string.cpp)
+  string.cpp
+  thread.cpp)

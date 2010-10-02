@@ -22,6 +22,7 @@
 #include <allegro.h>
 
 #include "app.h"
+#include "base/thread.h"
 #include "commands/commands.h"
 #include "console.h"
 #include "dialogs/filesel.h"
@@ -69,7 +70,7 @@ typedef struct ThumbnailData
   IFileItem* fileitem;
   JWidget fileview;
   Image* thumbnail;
-  JThread thread;
+  base::thread* thread;
   Palette* palette;
 } ThumbnailData;
 
@@ -84,7 +85,7 @@ static void fileview_generate_preview_of_selected_item(JWidget widget);
 static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem);
 static void fileview_stop_threads(FileView* fileview);
 
-static void openfile_bg(void *data);
+static void openfile_bg(ThumbnailData* data);
 static void monitor_thumbnail_generation(void *data);
 static void monitor_free_thumbnail_generation(void *data);
 
@@ -724,7 +725,7 @@ static bool fileview_generate_thumbnail(JWidget widget, IFileItem* fileitem)
     data->fileview = widget;
     data->thumbnail = NULL;
 
-    data->thread = jthread_new(openfile_bg, data);
+    data->thread = new base::thread(&openfile_bg, data);
     if (data->thread) {
       // add a monitor to check the loading (FileOp) progress
       data->monitor = add_gui_monitor(monitor_thumbnail_generation,
@@ -766,10 +767,9 @@ static void fileview_stop_threads(FileView* fileview)
  *
  * [loading thread]
  */
-static void openfile_bg(void *_data)
+static void openfile_bg(ThumbnailData* data)
 {
-  ThumbnailData *data = (ThumbnailData *)_data;
-  FileOp *fop = (FileOp *)data->fop;
+  FileOp *fop = (FileOp*)data->fop;
   Sprite *sprite;
   int thumb_w, thumb_h;
   Image *image;
@@ -820,8 +820,8 @@ static void openfile_bg(void *_data)
  */
 static void monitor_thumbnail_generation(void *_data)
 {
-  ThumbnailData *data = (ThumbnailData *)_data;
-  FileOp *fop = (FileOp *)data->fop;
+  ThumbnailData* data = (ThumbnailData*)_data;
+  FileOp* fop = data->fop;
 
   /* is done? ...ok, now the thumbnail is in the main thread only... */
   if (fop_is_done(fop)) {
@@ -859,11 +859,12 @@ static void monitor_thumbnail_generation(void *_data)
  */
 static void monitor_free_thumbnail_generation(void *_data)
 {
-  ThumbnailData *data = (ThumbnailData *)_data;
-  FileOp *fop = (FileOp *)data->fop;
+  ThumbnailData *data = (ThumbnailData*)_data;
+  FileOp *fop = data->fop;
 
   fop_stop(fop);
-  jthread_join(data->thread);
+  data->thread->join();
+  delete data->thread;
 
   // remove the monitor from the list
   MonitorList& monitors(fileview_data(data->fileview)->monitors);

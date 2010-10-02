@@ -39,7 +39,6 @@
 #include "gui/jsystem.h"
 #include "gui/jtextbox.h"
 #include "gui/jtheme.h"
-#include "gui/jthread.h"
 #include "gui/jtooltips.h"
 #include "gui/jview.h"
 #include "gui/widget.h"

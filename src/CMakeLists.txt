@@ -11,6 +11,10 @@ if(WIN32)
     WinMM AdvAPI32 Ole32 ShLwApi Vfw32 WinInet PsApi
     DDraw DxGuid DSound DInput8)
 else()
+  # Pthreads
+  set(sys_libs ${sys_libs}
+    pthread)
+
   # Allegro library on Unix like systems
   find_program(allegro_config "allegro-config")
 

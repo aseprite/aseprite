@@ -19,11 +19,9 @@
 #include "tests/test.h"
 
 #include <errno.h>
-#include "gui/jthread.h"
+#include "base/thread.h"
 
-static JThread thread;
-
-static void run_thread(void *data)
+static void run_thread()
 {
   errno = 0;
   EXPECT_EQ(0, errno);
@@ -36,8 +34,8 @@ TEST(Errno, ThreadSafe)
 
   // Run another thread that will be modify the errno variable, and
   // wait it (join).
-  thread = jthread_new(run_thread, NULL);
-  jthread_join(thread);
+  base::thread thr(&run_thread);
+  thr.join();
 
   // See if errno was not modified in this thread.
   EXPECT_EQ(33, errno);

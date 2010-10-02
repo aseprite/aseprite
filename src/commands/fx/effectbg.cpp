@@ -21,13 +21,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gui/jinete.h"
-
 #include "app.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
+#include "base/thread.h"
 #include "core/cfg.h"
 #include "effect/effect.h"
+#include "gui/jinete.h"
 #include "modules/editors.h"
 #include "modules/gui.h"
 #include "raster/sprite.h"
@@ -48,9 +48,8 @@ struct ThreadData
   float pos;			/* current progress position */
   bool done : 1;		/* was the effect completelly applied? */
   bool cancelled : 1;		/* was the effect cancelled by the user?  */
-  Monitor *monitor;		/* monitor to update the progress-bar */
-  Progress *progress;		/* the progress-bar */
-  JThread thread;		/* thread to apply the effect in background */
+  Monitor* monitor;		/* monitor to update the progress-bar */
+  Progress* progress;		/* the progress-bar */
   Frame* alert_window;		/* alert for the user to cancel the
 				   effect-progress if he wants */
 };
@@ -91,10 +90,8 @@ static bool effect_is_cancelled_hook(void *_data)
  * 
  * [effect thread]
  */
-static void effect_bg(void *_data)
+static void effect_bg(ThreadData* data)
 {
-  ThreadData *data = (ThreadData *)_data;
-
   /* apply the effect */
   effect_apply_to_target(data->effect);
 
@@ -160,14 +157,15 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
   data->done = false;
   data->cancelled = false;
   data->progress = app_get_statusbar()->addProgress();
-  data->thread = jthread_new(effect_bg, data);
   data->alert_window = jalert_new(PACKAGE
 				  "<<Applying effect...||&Cancel");
   data->monitor = add_gui_monitor(monitor_effect_bg,
 				  monitor_free, data);
 
-  /* TODO error handling */
+  // Launch the thread to apply the effect in background
+  base::thread thread(&effect_bg, data);
 
+  // Open the alert window in foreground (this is modal, locks the main thread)
   data->alert_window->open_window_fg();
 
   {
@@ -178,8 +176,8 @@ void effect_apply_to_target_with_progressbar(Effect* effect)
     }
   }
 
-  /* wait the `effect_bg' thread */
-  jthread_join(data->thread);
+  // Wait the `effect_bg' thread
+  thread.join();
 
   delete data->progress;
   jwidget_free(data->alert_window);

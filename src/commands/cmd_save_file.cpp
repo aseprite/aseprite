@@ -20,25 +20,24 @@
 
 #include <allegro.h>
 
-#include "gui/jinete.h"
-
-#include "commands/command.h"
 #include "app.h"
+#include "base/thread.h"
+#include "commands/command.h"
 #include "console.h"
 #include "dialogs/filesel.h"
 #include "file/file.h"
+#include "gui/jinete.h"
 #include "modules/gui.h"
-#include "recent_files.h"
 #include "raster/sprite.h"
-#include "widgets/statebar.h"
+#include "recent_files.h"
 #include "sprite_wrappers.h"
+#include "widgets/statebar.h"
 
 typedef struct SaveFileData
 {
   Monitor *monitor;
   FileOp *fop;
   Progress *progress;
-  JThread thread;
   Frame* alert_window;
 } SaveFileData;
 
@@ -95,54 +94,52 @@ static void monitor_free(void *_data)
 static void save_sprite_in_background(Sprite* sprite, bool mark_as_saved)
 {
   FileOp *fop = fop_to_save_sprite(sprite);
-  if (fop) {
-    JThread thread = jthread_new(savefile_bg, fop);
-    if (thread) {
-      SaveFileData* data = new SaveFileData;
+  if (!fop)
+    return;
 
-      data->fop = fop;
-      data->progress = app_get_statusbar()->addProgress();
-      data->thread = thread;
-      data->alert_window = jalert_new(PACKAGE
-				      "<<Saving file:<<%s||&Cancel",
-				      get_filename(sprite->getFilename()));
+  base::thread thread(&savefile_bg, fop);
+  SaveFileData* data = new SaveFileData;
 
-      /* add a monitor to check the saving (FileOp) progress */
-      data->monitor = add_gui_monitor(monitor_savefile_bg,
-				      monitor_free, data);
+  data->fop = fop;
+  data->progress = app_get_statusbar()->addProgress();
+  data->alert_window = jalert_new(PACKAGE
+				  "<<Saving file:<<%s||&Cancel",
+				  get_filename(sprite->getFilename()));
 
-      /* TODO error handling */
+  /* add a monitor to check the saving (FileOp) progress */
+  data->monitor = add_gui_monitor(monitor_savefile_bg,
+				  monitor_free, data);
 
-      data->alert_window->open_window_fg();
+  /* TODO error handling */
 
-      if (data->monitor != NULL)
-	remove_gui_monitor(data->monitor);
+  data->alert_window->open_window_fg();
 
-      /* wait the `savefile_bg' thread */
-      jthread_join(data->thread);
+  if (data->monitor != NULL)
+    remove_gui_monitor(data->monitor);
 
-      /* show any error */
-      if (fop->error) {
-	Console console;
-	console.printf(fop->error);
-      }
-      /* no error? */
-      else {
-	App::instance()->getRecentFiles()->addRecentFile(sprite->getFilename());
-	if (mark_as_saved)
-	  sprite->markAsSaved();
+  /* wait the `savefile_bg' thread */
+  thread.join();
 
-	app_get_statusbar()
-	  ->setStatusText(2000, "File %s, saved.",
-			  get_filename(sprite->getFilename()));
-      }
-
-      delete data->progress;
-      jwidget_free(data->alert_window);
-      fop_free(fop);
-      delete data;
-    }
+  /* show any error */
+  if (fop->error) {
+    Console console;
+    console.printf(fop->error);
   }
+  /* no error? */
+  else {
+    App::instance()->getRecentFiles()->addRecentFile(sprite->getFilename());
+    if (mark_as_saved)
+      sprite->markAsSaved();
+
+    app_get_statusbar()
+      ->setStatusText(2000, "File %s, saved.",
+		      get_filename(sprite->getFilename()));
+  }
+
+  delete data->progress;
+  jwidget_free(data->alert_window);
+  fop_free(fop);
+  delete data;
 }
 
 /*********************************************************************/
