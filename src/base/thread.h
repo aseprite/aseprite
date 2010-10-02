@@ -28,8 +28,7 @@ namespace base {		// Based on C++0x threads lib
       bool operator> (const id& y) const { return m_native_id >  y.m_native_id; }
       bool operator>=(const id& y) const { return m_native_id >= y.m_native_id; }
 
-      // TODO should we replace this with support for iostreams?
-      //unsigned get_native_id() { return m_native_id; }
+      id& operator=(const id& y) { m_native_id = y.m_native_id; }
     };
 
     typedef void* native_handle_type;
@@ -63,13 +62,8 @@ namespace base {		// Based on C++0x threads lib
     void join();
     void detach();
 
-    id get_id() const {
-      return m_id;
-    }
-
-    native_handle_type native_handle() {
-      return m_native_handle;
-    }
+    id get_id() const;
+    native_handle_type native_handle();
 
     class details {
     public:

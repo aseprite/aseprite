@@ -8,23 +8,37 @@
 
 #include "base/thread.h"
 
-#include <iostream>
-
-using std::cout;
 using namespace base;
 
-static bool flag = false;
+void nothing() { }
 
-static void func0() {
+TEST(Thread, NotJoinable)
+{
+  thread t;
+  EXPECT_FALSE(t.joinable());
+}
+
+TEST(Thread, Joinable)
+{
+  thread t(&nothing);
+  EXPECT_TRUE(t.joinable());
+  t.join();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool flag = false;
+
+void func0() {
   flag = true;
 }
 
-static void func1(int x) {
+void func1(int x) {
   flag = true;
   EXPECT_EQ(2, x);
 }
 
-static void func2(int x, int y) {
+void func2(int x, int y) {
   flag = true;
   EXPECT_EQ(2, x);
   EXPECT_EQ(4, y);

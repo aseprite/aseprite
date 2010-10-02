@@ -39,7 +39,7 @@ namespace {
 
 base::thread::thread()
   : m_native_handle(NULL)
-  , m_id()
+  , m_id(this_thread::get_id())
 {
 }
 
@@ -47,15 +47,11 @@ base::thread::~thread()
 {
   if (joinable())
     detach();
-
-#ifdef USE_PTHREADS
-  delete (pthread_t*)m_native_handle;
-#endif
 }
 
 bool base::thread::joinable() const
 {
-  return (m_id != this_thread::get_id());
+  return (m_id != 0 && m_id != this_thread::get_id());
 }
 
 void base::thread::join()
@@ -64,7 +60,7 @@ void base::thread::join()
 #ifdef WIN32
     ::WaitForSingleObject(m_native_handle, INFINITE);
 #else
-    ::pthread_join(*(pthread_t*)m_native_handle, NULL);
+    ::pthread_join(m_id.m_native_id, NULL);
 #endif
     detach();
   }
@@ -75,32 +71,47 @@ void base::thread::detach()
   if (joinable()) {
 #ifdef WIN32
     ::CloseHandle(m_native_handle);
-#else
-    ::pthread_detach(*(pthread_t*)m_native_handle);
-    delete (pthread_t*)m_native_handle;
-#endif
     m_native_handle = NULL;
+#else
+    ::pthread_detach(m_id.m_native_id);
+#endif
     m_id = id();
   }
 }
 
+base::thread::id base::thread::get_id() const
+{
+  return m_id;
+}
+
+base::thread::native_handle_type base::thread::native_handle()
+{
+#ifdef WIN32
+  return (native_handle_type)m_native_handle;
+#else
+  return (native_handle_type)m_id.m_native_id;
+#endif
+}
+
 void base::thread::launch_thread(func_wrapper* f)
 {
+  m_native_handle = NULL;
+  m_id = id();
+
 #ifdef WIN32
 
   DWORD native_id;
   m_native_handle = ::CreateThread(NULL, 0, win32_thread_proxy, (LPVOID)f,
 				   CREATE_SUSPENDED, &native_id);
-  m_id.m_native_id = native_id;
+  m_id = id((unsigned int)native_id);
+
   ResumeThread(m_native_handle);
 
 #else
 
   pthread_t thread;
-  if (::pthread_create(&thread, NULL, pthread_thread_proxy, f))
-    m_native_handle = new pthread_t(thread);
-  else
-    m_native_handle = NULL;
+  if (::pthread_create(&thread, NULL, pthread_thread_proxy, f) == 0)
+    m_id = id((unsigned int)thread);
 
 #endif
 }
