@@ -2,13 +2,13 @@
 # Copyright (C) 2001-2010  David Capello
 
 add_library(gui-lib
+  button.cpp
   component.cpp
   event.cpp
   frame.cpp
   jaccel.cpp
   jalert.cpp
   jbox.cpp
-  jbutton.cpp
   jclipboard.cpp
   jcombobox.cpp
   jcustom_label.cpp

@@ -23,7 +23,7 @@
 
 #include "base/bind.h"
 #include "gui/jbox.h"
-#include "gui/jbutton.h"
+#include "gui/button.h"
 #include "gui/jhook.h"
 #include "gui/jlist.h"
 #include "gui/jsystem.h"

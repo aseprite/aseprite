@@ -12,7 +12,7 @@
 #include <string.h>
 #include <queue>
 
-#include "gui/jbutton.h"
+#include "gui/button.h"
 #include "gui/jlist.h"
 #include "gui/jmanager.h"
 #include "gui/jmessage.h"

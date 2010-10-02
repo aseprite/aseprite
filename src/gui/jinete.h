@@ -11,7 +11,7 @@
 #include "gui/jalert.h"
 #include "gui/jbase.h"
 #include "gui/jbox.h"
-#include "gui/jbutton.h"
+#include "gui/button.h"
 #include "gui/jclipboard.h"
 #include "gui/jcombobox.h"
 #include "gui/jcustom_label.h"

@@ -20,7 +20,7 @@
 #define WIDGETS_COLOR_BUTTON_H_INCLUDED
 
 #include "app/color.h"
-#include "gui/jbutton.h"
+#include "gui/button.h"
 
 class Frame;
 

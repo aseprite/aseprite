@@ -4,8 +4,8 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef GUI_JBUTTON_H_INCLUDED
-#define GUI_JBUTTON_H_INCLUDED
+#ifndef GUI_BUTTON_H_INCLUDED
+#define GUI_BUTTON_H_INCLUDED
 
 #include "base/signal.h"
 #include "gui/jwidget.h"

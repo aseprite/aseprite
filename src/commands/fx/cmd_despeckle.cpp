@@ -22,7 +22,7 @@
 
 #include "base/bind.h"
 #include "gui/jbox.h"
-#include "gui/jbutton.h"
+#include "gui/button.h"
 #include "gui/jentry.h"
 #include "gui/jhook.h"
 #include "gui/jwidget.h"
