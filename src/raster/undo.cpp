@@ -126,7 +126,7 @@ typedef std::list<UndoChunk*> ChunksList;
 struct UndoAction
 {
   const char *name;
-  void (*invert)(UndoStream* stream, UndoChunk* chunk, int state);
+  void (*invert)(UndoStream* stream, UndoChunk* chunk);
 };
 
 static int count_undo_groups(UndoStream* undo_stream);
@@ -135,82 +135,82 @@ static bool out_of_group(UndoStream* undo_stream);
 /* Undo actions */
 
 static void chunk_open_new(UndoStream* stream);
-static void chunk_open_invert(UndoStream* stream, UndoChunk* chunk, int state);
+static void chunk_open_invert(UndoStream* stream, UndoChunk* chunk);
 
 static void chunk_close_new(UndoStream* stream);
-static void chunk_close_invert(UndoStream* stream, UndoChunk* chunk, int state);
+static void chunk_close_invert(UndoStream* stream, UndoChunk* chunk);
 
 static void chunk_data_new(UndoStream* stream, GfxObj *gfxobj, void *data, int size);
-static void chunk_data_invert(UndoStream* stream, UndoChunkData *chunk, int state);
+static void chunk_data_invert(UndoStream* stream, UndoChunkData *chunk);
 
 static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int w, int h);
-static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk, int state);
+static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk);
 
 static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, bool horz);
-static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip *chunk, int state);
+static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip *chunk);
 
 static void chunk_dirty_new(UndoStream* stream, Dirty *dirty);
-static void chunk_dirty_invert(UndoStream* stream, UndoChunkDirty *chunk, int state);
+static void chunk_dirty_invert(UndoStream* stream, UndoChunkDirty *chunk);
 
 static void chunk_add_image_new(UndoStream* stream, Stock *stock, int image_index);
-static void chunk_add_image_invert(UndoStream* stream, UndoChunkAddImage* chunk, int state);
+static void chunk_add_image_invert(UndoStream* stream, UndoChunkAddImage* chunk);
 
 static void chunk_remove_image_new(UndoStream* stream, Stock *stock, int image_index);
-static void chunk_remove_image_invert(UndoStream* stream, UndoChunkRemoveImage* chunk, int state);
+static void chunk_remove_image_invert(UndoStream* stream, UndoChunkRemoveImage* chunk);
 
 static void chunk_replace_image_new(UndoStream* stream, Stock *stock, int image_index);
-static void chunk_replace_image_invert(UndoStream* stream, UndoChunkReplaceImage* chunk, int state);
+static void chunk_replace_image_invert(UndoStream* stream, UndoChunkReplaceImage* chunk);
 
 static void chunk_add_cel_new(UndoStream* stream, Layer* layer, Cel* cel);
-static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk, int state);
+static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk);
 
 static void chunk_remove_cel_new(UndoStream* stream, Layer* layer, Cel* cel);
-static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chunk, int state);
+static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chunk);
 
 static void chunk_set_layer_name_new(UndoStream* stream, Layer *layer);
-static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerName* chunk, int state);
+static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerName* chunk);
 
 static void chunk_add_layer_new(UndoStream* stream, Layer* set, Layer* layer);
-static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk, int state);
+static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk);
 
 static void chunk_remove_layer_new(UndoStream* stream, Layer* layer);
-static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* chunk, int state);
+static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* chunk);
 
 static void chunk_move_layer_new(UndoStream* stream, Layer* layer);
-static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chunk, int state);
+static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chunk);
 
 static void chunk_set_layer_new(UndoStream* stream, Sprite *sprite);
-static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk, int state);
+static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk);
 
 static void chunk_add_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette);
-static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *chunk, int state);
+static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *chunk);
 
 static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette* palette);
-static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk, int state);
+static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk);
 
 static void chunk_remap_palette_new(UndoStream* stream, Sprite* sprite, int frame_from, int frame_to, const std::vector<int>& mapping);
-static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette *chunk, int state);
+static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette *chunk);
 
 static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite);
-static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, int state);
+static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk);
 
 static void chunk_set_imgtype_new(UndoStream* stream, Sprite *sprite);
-static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk, int state);
+static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk);
 
 static void chunk_set_size_new(UndoStream* stream, Sprite *sprite);
-static void chunk_set_size_invert(UndoStream* stream, UndoChunkSetSize *chunk, int state);
+static void chunk_set_size_invert(UndoStream* stream, UndoChunkSetSize *chunk);
 
 static void chunk_set_frame_new(UndoStream* stream, Sprite *sprite);
-static void chunk_set_frame_invert(UndoStream* stream, UndoChunkSetFrame *chunk, int state);
+static void chunk_set_frame_invert(UndoStream* stream, UndoChunkSetFrame *chunk);
 
 static void chunk_set_frames_new(UndoStream* stream, Sprite *sprite);
-static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chunk, int state);
+static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chunk);
 
 static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame);
-static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk, int state);
+static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk);
 
 #define DECL_UNDO_ACTION(name) \
-  { #name, (void (*)(UndoStream* , UndoChunk* , int))chunk_##name##_invert }
+  { #name, (void (*)(UndoStream* , UndoChunk*))chunk_##name##_invert }
 
 /* warning: in the same order as in UNDO_TYPEs */
 static UndoAction undo_actions[] = {
@@ -385,7 +385,7 @@ void Undo::runUndo(int state)
       break;
 
     setLabel(chunk->label);
-    (undo_actions[chunk->type].invert)(redo_stream, chunk, state);
+    (undo_actions[chunk->type].invert)(redo_stream, chunk);
 
     if (chunk->type == UNDO_TYPE_OPEN)
       level++;
@@ -514,7 +514,7 @@ static void chunk_open_new(UndoStream* stream)
 		 sizeof(UndoChunk));
 }
 
-static void chunk_open_invert(UndoStream* stream, UndoChunk* chunk, int state)
+static void chunk_open_invert(UndoStream* stream, UndoChunk* chunk)
 {
   chunk_close_new(stream);
 }
@@ -540,7 +540,7 @@ static void chunk_close_new(UndoStream* stream)
 		 sizeof(UndoChunk));
 }
 
-static void chunk_close_invert(UndoStream* stream, UndoChunk* chunk, int state)
+static void chunk_close_invert(UndoStream* stream, UndoChunk* chunk)
 {
   chunk_open_new(stream);
 }
@@ -591,7 +591,7 @@ static void chunk_data_new(UndoStream* stream, GfxObj *gfxobj, void *data, int s
   memcpy(chunk->data, data, size);
 }
 
-static void chunk_data_invert(UndoStream* stream, UndoChunkData *chunk, int state)
+static void chunk_data_invert(UndoStream* stream, UndoChunkData *chunk)
 {
   unsigned int id = chunk->gfxobj_id;
   unsigned int offset = chunk->dataoffset;
@@ -669,7 +669,7 @@ static void chunk_image_new(UndoStream* stream, Image* image, int x, int y, int 
   }
 }
 
-static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk, int state)
+static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk)
 {
   unsigned int id = chunk->image_id;
   int imgtype = chunk->imgtype;
@@ -742,7 +742,7 @@ static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int
   chunk->horz = horz ? 1: 0;
 }
 
-static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk, int state)
+static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk)
 {
   Image* image = (Image*)GfxObj::find(chunk->image_id);
 
@@ -801,7 +801,7 @@ static void chunk_dirty_new(UndoStream* stream, Dirty *dirty)
   write_raw_dirty(chunk->data, dirty);
 }
 
-static void chunk_dirty_invert(UndoStream* stream, UndoChunkDirty *chunk, int state)
+static void chunk_dirty_invert(UndoStream* stream, UndoChunkDirty *chunk)
 {
   Dirty *dirty = read_raw_dirty(chunk->data);
 
@@ -845,7 +845,7 @@ static void chunk_add_image_new(UndoStream* stream, Stock *stock, int image_inde
   chunk->image_index = image_index;
 }
 
-static void chunk_add_image_invert(UndoStream* stream, UndoChunkAddImage* chunk, int state)
+static void chunk_add_image_invert(UndoStream* stream, UndoChunkAddImage* chunk)
 {
   unsigned int stock_id = chunk->stock_id;
   unsigned int image_index = chunk->image_index;
@@ -899,7 +899,7 @@ static void chunk_remove_image_new(UndoStream* stream, Stock *stock, int image_i
   write_raw_image(chunk->data, image);
 }
 
-static void chunk_remove_image_invert(UndoStream* stream, UndoChunkRemoveImage* chunk, int state)
+static void chunk_remove_image_invert(UndoStream* stream, UndoChunkRemoveImage* chunk)
 {
   unsigned int stock_id = chunk->stock_id;
   unsigned int image_index = chunk->image_index;
@@ -953,7 +953,7 @@ static void chunk_replace_image_new(UndoStream* stream, Stock *stock, int image_
   write_raw_image(chunk->data, image);
 }
 
-static void chunk_replace_image_invert(UndoStream* stream, UndoChunkReplaceImage* chunk, int state)
+static void chunk_replace_image_invert(UndoStream* stream, UndoChunkReplaceImage* chunk)
 {
   unsigned long stock_id = chunk->stock_id;
   unsigned long image_index = chunk->image_index;
@@ -1008,7 +1008,7 @@ static void chunk_add_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
   chunk->cel_id = cel->getId();
 }
 
-static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk, int state)
+static void chunk_add_cel_invert(UndoStream* stream, UndoChunkAddCel* chunk)
 {
   LayerImage* layer = (LayerImage*)GfxObj::find(chunk->layer_id);
   Cel* cel = (Cel*)GfxObj::find(chunk->cel_id);
@@ -1054,7 +1054,7 @@ static void chunk_remove_cel_new(UndoStream* stream, Layer* layer, Cel* cel)
   write_raw_cel(chunk->data, cel);
 }
 
-static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chunk, int state)
+static void chunk_remove_cel_invert(UndoStream* stream, UndoChunkRemoveCel* chunk)
 {
   unsigned int layer_id = chunk->layer_id;
   LayerImage* layer = (LayerImage*)GfxObj::find(layer_id);
@@ -1109,7 +1109,7 @@ static void chunk_set_layer_name_new(UndoStream* stream, Layer *layer)
     chunk->name_text[c] = layer_name[c];
 }
 
-static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerName* chunk, int state)
+static void chunk_set_layer_name_invert(UndoStream* stream, UndoChunkSetLayerName* chunk)
 {
   Layer* layer = (Layer*)GfxObj::find(chunk->layer_id);
 
@@ -1159,7 +1159,7 @@ static void chunk_add_layer_new(UndoStream* stream, Layer* folder, Layer* layer)
   chunk->layer_id = layer->getId();
 }
 
-static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk, int state)
+static void chunk_add_layer_invert(UndoStream* stream, UndoChunkAddLayer* chunk)
 {
   LayerFolder* folder = (LayerFolder*)GfxObj::find(chunk->folder_id);
   Layer* layer = (Layer*)GfxObj::find(chunk->layer_id);
@@ -1211,7 +1211,7 @@ static void chunk_remove_layer_new(UndoStream* stream, Layer* layer)
   write_raw_layer(chunk->data, layer);
 }
 
-static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* chunk, int state)
+static void chunk_remove_layer_invert(UndoStream* stream, UndoChunkRemoveLayer* chunk)
 {
   LayerFolder* folder = (LayerFolder*)GfxObj::find(chunk->folder_id);
   Layer* after = (Layer*)GfxObj::find(chunk->after_id);
@@ -1265,7 +1265,7 @@ static void chunk_move_layer_new(UndoStream* stream, Layer* layer)
   chunk->after_id = (after ? after->getId(): 0);
 }
 
-static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chunk, int state)
+static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chunk)
 {
   LayerFolder* folder = (LayerFolder*)GfxObj::find(chunk->folder_id);
   Layer* layer = (Layer*)GfxObj::find(chunk->layer_id);
@@ -1311,7 +1311,7 @@ static void chunk_set_layer_new(UndoStream* stream, Sprite *sprite)
   chunk->layer_id = sprite->getCurrentLayer() ? sprite->getCurrentLayer()->getId(): 0;
 }
 
-static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk, int state)
+static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
   Layer* layer = (Layer* )GfxObj::find(chunk->layer_id);
@@ -1357,7 +1357,7 @@ static void chunk_add_palette_new(UndoStream* stream, Sprite *sprite, Palette* p
   chunk->palette_id = palette->getId();
 }
 
-static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *chunk, int state)
+static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *chunk)
 {
   Sprite* sprite = (Sprite*)GfxObj::find(chunk->sprite_id);
   Palette* palette = (Palette*)GfxObj::find(chunk->palette_id);
@@ -1402,7 +1402,7 @@ static void chunk_remove_palette_new(UndoStream* stream, Sprite *sprite, Palette
   write_raw_palette(chunk->data, palette);
 }
 
-static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk, int state)
+static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalette *chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
   if (sprite == NULL)
@@ -1459,7 +1459,7 @@ static void chunk_remap_palette_new(UndoStream* stream, Sprite *sprite, int fram
     chunk->mapping[c] = mapping[c];
 }
 
-static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette* chunk, int state)
+static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette* chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
   if (sprite == NULL)
@@ -1509,7 +1509,7 @@ static void chunk_set_mask_new(UndoStream* stream, Sprite *sprite)
   write_raw_mask(chunk->data, sprite->getMask());
 }
 
-static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk, int state)
+static void chunk_set_mask_invert(UndoStream* stream, UndoChunkSetMask* chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
 
@@ -1556,7 +1556,7 @@ static void chunk_set_imgtype_new(UndoStream* stream, Sprite* sprite)
   chunk->imgtype = sprite->getImgType();
 }
 
-static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk, int state)
+static void chunk_set_imgtype_invert(UndoStream* stream, UndoChunkSetImgType *chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
 
@@ -1606,7 +1606,7 @@ static void chunk_set_size_new(UndoStream* stream, Sprite* sprite)
   chunk->height = sprite->getHeight();
 }
 
-static void chunk_set_size_invert(UndoStream* stream, UndoChunkSetSize *chunk, int state)
+static void chunk_set_size_invert(UndoStream* stream, UndoChunkSetSize *chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
 
@@ -1649,7 +1649,7 @@ static void chunk_set_frame_new(UndoStream* stream, Sprite* sprite)
   chunk->frame = sprite->getCurrentFrame();
 }
 
-static void chunk_set_frame_invert(UndoStream* stream, UndoChunkSetFrame *chunk, int state)
+static void chunk_set_frame_invert(UndoStream* stream, UndoChunkSetFrame *chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
 
@@ -1692,7 +1692,7 @@ static void chunk_set_frames_new(UndoStream* stream, Sprite *sprite)
   chunk->frames = sprite->getTotalFrames();
 }
 
-static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chunk, int state)
+static void chunk_set_frames_invert(UndoStream* stream, UndoChunkSetFrames *chunk)
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
 
@@ -1740,7 +1740,7 @@ static void chunk_set_frlen_new(UndoStream* stream, Sprite *sprite, int frame)
   chunk->duration = sprite->getFrameDuration(frame);
 }
 
-static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk, int state)
+static void chunk_set_frlen_invert(UndoStream* stream, UndoChunkSetFrlen *chunk)
 {
   Sprite *sprite = (Sprite*)GfxObj::find(chunk->sprite_id);
 
