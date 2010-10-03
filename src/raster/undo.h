@@ -36,10 +36,10 @@ class Stock;
 struct Dirty;
 struct UndoStream;
 
-class undo_exception : public ase_exception
+class UndoException : public ase_exception
 {
 public:
-  undo_exception(const char* msg) throw() : ase_exception(msg) { }
+  UndoException(const char* msg) throw() : ase_exception(msg) { }
 };
 
 class Undo : public GfxObj

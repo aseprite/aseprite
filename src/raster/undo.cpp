@@ -1292,7 +1292,7 @@ static void chunk_move_layer_invert(UndoStream* stream, UndoChunkMoveLayer* chun
   Layer* after = (Layer*)GfxObj::find(chunk->after_id);
 
   if (folder == NULL || layer == NULL)
-    throw undo_exception("chunk_move_layer_invert");
+    throw UndoException("chunk_move_layer_invert");
 
   chunk_move_layer_new(stream, layer);
   folder->move_layer(layer, after);
@@ -1337,7 +1337,7 @@ static void chunk_set_layer_invert(UndoStream* stream, UndoChunkSetLayer* chunk,
   Layer* layer = (Layer* )GfxObj::find(chunk->layer_id);
 
   if (sprite == NULL)
-    throw undo_exception("chunk_set_layer_invert");
+    throw UndoException("chunk_set_layer_invert");
 
   chunk_set_layer_new(stream, sprite);
 
@@ -1383,7 +1383,7 @@ static void chunk_add_palette_invert(UndoStream* stream, UndoChunkAddPalette *ch
   Palette* palette = (Palette*)GfxObj::find(chunk->palette_id);
 
   if (sprite == NULL || palette == NULL)
-    throw undo_exception("chunk_add_palette_invert");
+    throw UndoException("chunk_add_palette_invert");
 
   chunk_remove_palette_new(stream, sprite, palette);
   sprite->deletePalette(palette);
@@ -1426,7 +1426,7 @@ static void chunk_remove_palette_invert(UndoStream* stream, UndoChunkRemovePalet
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
   if (sprite == NULL)
-    throw undo_exception("chunk_remove_palette_invert");
+    throw UndoException("chunk_remove_palette_invert");
 
   Palette* palette = read_raw_palette(chunk->data);
 
@@ -1483,7 +1483,7 @@ static void chunk_remap_palette_invert(UndoStream* stream, UndoChunkRemapPalette
 {
   Sprite *sprite = (Sprite *)GfxObj::find(chunk->sprite_id);
   if (sprite == NULL)
-    throw undo_exception("chunk_remap_palette_invert");
+    throw UndoException("chunk_remap_palette_invert");
 
   // Inverse mapping
   std::vector<int> inverse_mapping(256);
