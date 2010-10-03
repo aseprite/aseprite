@@ -474,6 +474,12 @@ static bool out_of_group(UndoStream* undo_stream)
 // Called every time a new undo is added.
 void Undo::updateUndo()
 {
+  // TODO replace this with the following implementation:
+  // * Add the undo limit to Undo class as a normal member (non-static).
+  // * Add a new AseSprite (wrapper of a generic Sprite).
+  // * Add ASE delegates to listen changes in ASE configuration
+  // * AseSprite should implement a delegate to listen changes to the undo limit, 
+  // * When a change is produced, AseSprite updates the wrappedSprite->getUndo()->setUndoLimit().
   int undo_size_limit = get_config_int("Options", "UndoSizeLimit", 8)*1024*1024;
 
   // More differences.
