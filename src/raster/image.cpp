@@ -49,6 +49,18 @@ Image::~Image()
   if (this->line) delete[] this->line;
 }
 
+int Image::getMemSize() const
+{
+  int scanline_size = 0;
+
+  if (imgtype == IMAGE_BITMAP)
+    scanline_size = BitmapTraits::scanline_size(this->w);
+  else
+    scanline_size = image_line_size(this, this->w);
+
+  return sizeof(Image) + scanline_size*this->h;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 Image* image_new(int imgtype, int w, int h)

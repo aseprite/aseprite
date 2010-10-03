@@ -54,6 +54,8 @@ public:
   Image(int imgtype, int w, int h);
   virtual ~Image();
 
+  int getMemSize() const;
+
   virtual int getpixel(int x, int y) const = 0;
   virtual void putpixel(int x, int y, int color) = 0;
   virtual void clear(int color) = 0;
@@ -98,13 +100,13 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
 
-inline int image_shift(Image* image)
+inline int image_shift(const Image* image)
 {
   return ((image->imgtype == IMAGE_RGB)?       2:
 	  (image->imgtype == IMAGE_GRAYSCALE)? 1: 0);
 }
 
-inline int image_line_size(Image* image, int width)
+inline int image_line_size(const Image* image, int width)
 {
   return (width << image_shift(image));
 }

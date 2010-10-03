@@ -36,6 +36,8 @@ public:
   Mask(const Mask& mask);
   virtual ~Mask();
 
+  int getMemSize() const;
+
   // Returns true if the mask is completely empty (i.e. nothing
   // selected)
   bool is_empty() const {

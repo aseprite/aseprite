@@ -34,6 +34,9 @@ public:
   Cel(int frame, int image);
   Cel(const Cel& cel);
   virtual ~Cel();
+
+  int getMemSize() const;
+
 };
 
 Cel* cel_new(int frame, int image);

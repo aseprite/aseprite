@@ -58,6 +58,10 @@ public:
   GfxObjId getId() const { return m_id; }
   GfxObjType getType() const { return m_type; }
 
+  // Returns the approximate amount of memory (in bytes) which this
+  // object use.
+  virtual int getMemSize() const;
+
   // Returns a GfxObj by its ID. If it is not found, returns NULL.
   static GfxObj* find(GfxObjId id);
 

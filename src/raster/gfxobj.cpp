@@ -69,6 +69,11 @@ GfxObj::~GfxObj()
   erase_gfxobj(this);
 }
 
+int GfxObj::getMemSize() const
+{
+  return sizeof(GfxObj);
+}
+
 void GfxObj::assign_id()
 {
   ScopedLock lock(*objects_mutex);

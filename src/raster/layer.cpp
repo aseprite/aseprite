@@ -66,6 +66,11 @@ Layer::~Layer()
 {
 }
 
+int Layer::getMemSize() const
+{
+  return sizeof(Layer);
+}
+
 /**
  * Gets the previous layer of "layer" that are in the parent set.
  */
@@ -148,6 +153,23 @@ LayerImage::LayerImage(const LayerImage* src_layer, Sprite* dst_sprite)
 LayerImage::~LayerImage()
 {
   destroy_all_cels();
+}
+
+int LayerImage::getMemSize() const
+{
+  int size = sizeof(LayerImage);
+  CelConstIterator it = getCelBegin();
+  CelConstIterator end = getCelEnd();
+
+  for (; it != end; ++it) {
+    const Cel* cel = *it;
+    size += cel->getMemSize();
+
+    const Image* image = getSprite()->getStock()->getImage(cel->image);
+    size += image->getMemSize();
+  }
+
+  return size;
 }
 
 void LayerImage::destroy_all_cels()
@@ -301,6 +323,20 @@ void LayerFolder::destroyAllLayers()
     delete layer;
   }
   m_layers.clear();
+}
+
+int LayerFolder::getMemSize() const
+{
+  int size = sizeof(LayerFolder);
+  LayerConstIterator it = get_layer_begin();
+  LayerConstIterator end = get_layer_end();
+
+  for (; it != end; ++it) {
+    const Layer* layer = *it;
+    size += layer->getMemSize();
+  }
+
+  return size;
 }
 
 void LayerFolder::getCels(CelList& cels)

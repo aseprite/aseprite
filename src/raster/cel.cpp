@@ -47,6 +47,11 @@ Cel::~Cel()
 {
 }
 
+int Cel::getMemSize() const
+{
+  return sizeof(Cel);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 Cel* cel_new(int frame, int image)

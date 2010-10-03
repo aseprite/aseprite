@@ -63,6 +63,11 @@ void Mask::initialize()
   this->bitmap = NULL;
 }
 
+int Mask::getMemSize() const
+{
+  return sizeof(Mask) + (this->bitmap ? this->bitmap->getMemSize(): 0);
+}
+
 void Mask::freeze()
 {
   ASSERT(m_freeze_count >= 0);

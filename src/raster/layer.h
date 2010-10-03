@@ -47,6 +47,8 @@ protected:
 public:
   virtual ~Layer();
 
+  int getMemSize() const;
+
   std::string getName() const { return m_name; }
   void setName(const std::string& name) { m_name = name; }
 
@@ -91,6 +93,8 @@ public:
   LayerImage(const LayerImage* copy, Sprite* sprite);
   virtual ~LayerImage();
 
+  int getMemSize() const;
+
   int get_blend_mode() const { return m_blend_mode; }
   void set_blend_mode(int blend_mode);
 
@@ -127,6 +131,8 @@ public:
   LayerFolder(Sprite* sprite);
   LayerFolder(const LayerFolder* copy, Sprite* sprite);
   virtual ~LayerFolder();
+
+  int getMemSize() const;
 
   LayerList get_layers_list() { return m_layers; }
   LayerIterator get_layer_begin() { return m_layers.begin(); }
