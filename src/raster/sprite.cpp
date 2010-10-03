@@ -902,10 +902,14 @@ void SpriteImpl::resetPalettes()
 {
   PalettesList::iterator end = m_palettes.end();
   PalettesList::iterator it = m_palettes.begin();
-  for (; it != end; ++it)
-    delete *it;			// palette
 
-  m_palettes.clear();
+  if (it != end) {
+    ++it;			// Leave the first palette only.
+    while (it != end) {
+      delete *it;		// palette
+      it = m_palettes.erase(it);
+    }
+  }
 }
 
 void SpriteImpl::deletePalette(Palette* pal)
