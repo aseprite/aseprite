@@ -121,27 +121,7 @@ static void undo_chunk_free(UndoChunk* chunk);
 
 typedef std::list<UndoChunk*> ChunksList;
 
-struct UndoStream
-{
-  Undo* undo;
-  ChunksList chunks;
-  int size;
-
-  UndoStream(Undo* undo)
-  {
-    this->undo = undo;
-    this->size = 0;
-  }
-
-  ~UndoStream()
-  {
-    ChunksList::iterator it = this->chunks.begin();
-    ChunksList::iterator end = this->chunks.end();
-    for (; it != end; ++it)
-      undo_chunk_free(*it);
-  }
-
-};
+#include "undo_stream.h"
 
 struct UndoAction
 {
@@ -287,23 +267,25 @@ static Mask* read_raw_mask(ase_uint8* raw_data);
 static ase_uint8* write_raw_mask(ase_uint8* raw_data, Mask* mask);
 static int get_raw_mask_size(Mask* mask);
 
-/* UndoStream */
-
-static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail);
-static void undo_stream_push_chunk(UndoStream* stream, UndoChunk* chunk);
-
 //////////////////////////////////////////////////////////////////////
 
 Undo::Undo(Sprite* sprite)
   : GfxObj(GFXOBJ_UNDO)
 {
   m_sprite = sprite;
-  m_undoStream = new UndoStream(this); // TODO try/catch
-  m_redoStream = new UndoStream(this);
   m_diffCount = 0;
   m_diffSaved = 0;
   m_enabled = true;
   m_label = NULL;
+
+  m_undoStream = new UndoStream(this);
+  try {
+    m_redoStream = new UndoStream(this);
+  }
+  catch (...) {
+    delete m_undoStream;
+    throw;
+  }
 }
 
 Undo::~Undo()
@@ -324,12 +306,12 @@ void Undo::setEnabled(bool state)
 
 bool Undo::canUndo() const
 {
-  return !m_undoStream->chunks.empty();
+  return !m_undoStream->empty();
 }
 
 bool Undo::canRedo() const
 {
-  return !m_redoStream->chunks.empty();
+  return !m_redoStream->empty();
 }
 
 void Undo::doUndo()
@@ -344,10 +326,8 @@ void Undo::doRedo()
 
 void Undo::clearRedo()
 {
-  if (!m_redoStream->chunks.empty()) {
-    delete m_redoStream;
-    m_redoStream = new UndoStream(this);
-  }
+  if (!m_redoStream->empty())
+    m_redoStream->clear();
 }
 
 const char* Undo::getLabel()
@@ -366,7 +346,7 @@ const char* Undo::getNextUndoLabel() const
 
   ASSERT(canUndo());
 
-  chunk = *m_undoStream->chunks.begin();
+  chunk = *m_undoStream->begin();
   return chunk->label;
 }
 
@@ -376,7 +356,7 @@ const char* Undo::getNextRedoLabel() const
 
   ASSERT(canRedo());
 
-  chunk = *m_redoStream->chunks.begin();
+  chunk = *m_redoStream->begin();
   return chunk->label;
 }
 
@@ -400,7 +380,7 @@ void Undo::runUndo(int state)
   int level = 0;
 
   do {
-    chunk = undo_stream_pop_chunk(undo_stream, false); // read from head
+    chunk = undo_stream->popChunk(false); // read from head
     if (!chunk)
       break;
 
@@ -428,7 +408,7 @@ void Undo::discardTail()
   int level = 0;
 
   do {
-    chunk = undo_stream_pop_chunk(undo_stream, true); // read from tail
+    chunk = undo_stream->popChunk(true); // read from tail
     if (!chunk)
       break;
 
@@ -447,8 +427,8 @@ static int count_undo_groups(UndoStream* undo_stream)
   int groups = 0;
   int level;
 
-  ChunksList::iterator it = undo_stream->chunks.begin();
-  while (it != undo_stream->chunks.end()) {
+  ChunksList::iterator it = undo_stream->begin();
+  while (it != undo_stream->end()) {
     level = 0;
 
     do {
@@ -459,7 +439,7 @@ static int count_undo_groups(UndoStream* undo_stream)
 	level++;
       else if (chunk->type == UNDO_TYPE_CLOSE)
 	level--;
-    } while (level && (it != undo_stream->chunks.end()));
+    } while (level && (it != undo_stream->end()));
 
     if (level == 0)
       groups++;
@@ -473,8 +453,8 @@ static bool out_of_group(UndoStream* undo_stream)
   UndoChunk* chunk;
   int level = 0;
 
-  ChunksList::iterator it = undo_stream->chunks.begin();
-  while (it != undo_stream->chunks.end()) {
+  ChunksList::iterator it = undo_stream->begin();
+  while (it != undo_stream->end()) {
     level = 0;
 
     do {
@@ -485,7 +465,7 @@ static bool out_of_group(UndoStream* undo_stream)
 	level++;
       else if (chunk->type == UNDO_TYPE_CLOSE)
 	level--;
-    } while (level && (it != undo_stream->chunks.end()));
+    } while (level && (it != undo_stream->end()));
   }
 
   return level == 0;
@@ -506,7 +486,7 @@ void Undo::updateUndo()
     int groups = count_undo_groups(m_undoStream);
 
     // "undo" is too big?
-    while (groups > 1 && m_undoStream->size > undo_size_limit) {
+    while (groups > 1 && m_undoStream->getMemSize() > undo_size_limit) {
       discardTail();
       groups--;
     }
@@ -1788,11 +1768,11 @@ static UndoChunk* undo_chunk_new(UndoStream* stream, int type, int size)
 
   chunk->type = type;
   chunk->size = size;
-  chunk->label = stream->undo->getLabel() ?
-    stream->undo->getLabel():
+  chunk->label = stream->getUndo()->getLabel() ?
+    stream->getUndo()->getLabel():
     undo_actions[chunk->type].name;
 
-  undo_stream_push_chunk(stream, chunk);
+  stream->pushChunk(chunk);
   return chunk;
 }
 
@@ -2439,37 +2419,4 @@ static int get_raw_mask_size(Mask* mask)
   int size = (mask->w+7)/8;
 
   return 2*4 + (mask->bitmap ? mask->h*size: 0);
-}
-
-/***********************************************************************
-
-  Helper routines for UndoStream (a serie of UndoChunks)
-
-***********************************************************************/
-
-static UndoChunk* undo_stream_pop_chunk(UndoStream* stream, bool tail)
-{
-  UndoChunk* chunk;
-  ChunksList::iterator it;
-
-  if (!stream->chunks.empty()) {
-    if (!tail)
-      it = stream->chunks.begin();
-    else
-      it = --stream->chunks.end();
-
-    chunk = *it;
-    stream->chunks.erase(it);
-    stream->size -= chunk->size;
-  }
-  else
-    chunk = NULL;
-
-  return chunk;
-}
-
-static void undo_stream_push_chunk(UndoStream* stream, UndoChunk* chunk)
-{
-  stream->chunks.insert(stream->chunks.begin(), chunk);
-  stream->size += chunk->size;
 }

@@ -34,7 +34,7 @@ class Sprite;
 class Stock;
 
 struct Dirty;
-struct UndoStream;
+class UndoStream;
 
 class UndoException : public ase_exception
 {
