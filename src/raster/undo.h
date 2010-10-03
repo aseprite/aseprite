@@ -19,7 +19,6 @@
 #ifndef RASTER_UNDO_H_INCLUDED
 #define RASTER_UNDO_H_INCLUDED
 
-#include <string.h>		/* for strlen */
 #include <vector>
 
 #include "raster/gfxobj.h"
