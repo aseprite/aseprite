@@ -704,7 +704,7 @@ void fop_free(FileOp *fop)
   if (fop->mutex)
     delete fop->mutex;
 
-  jfree(fop);
+  delete fop;
 }
 
 void fop_sequence_set_format_options(FileOp *fop, FormatOptions *format_options)
@@ -853,9 +853,7 @@ bool fop_is_stop(FileOp *fop)
 
 static FileOp *fop_new(FileOpType type)
 {
-  FileOp *fop = jnew(FileOp, 1);
-  if (!fop)
-    return NULL;
+  FileOp *fop = new FileOp;
 
   fop->type = type;
   fop->format = NULL;
