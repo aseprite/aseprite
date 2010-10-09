@@ -52,6 +52,8 @@ struct Dirty
   int rows;
   DirtyRow* row;
   Mask* mask;
+
+  int getMemSize() const;
 };
 
 Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled);

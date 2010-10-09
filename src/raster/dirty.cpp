@@ -221,6 +221,21 @@ void dirty_free(Dirty* dirty)
   jfree(dirty);
 }
 
+int Dirty::getMemSize() const
+{
+  int u, v, size = 4+1+2*4+2;	/* DWORD+BYTE+WORD[4]+WORD */
+
+  for (v=0; v<this->rows; v++) {
+    size += 4;			/* y, cols (WORD[2]) */
+    for (u=0; u<this->row[v].cols; u++) {
+      size += 4;		/* x, w (WORD[2]) */
+      size += image_line_size(this->image, this->row[v].col[u].w);
+    }
+  }
+
+  return size;
+}
+
 void dirty_hline(Dirty* dirty, int x1, int y, int x2)
 {
   DirtyRow* row;		/* row=dirty->row+v */
