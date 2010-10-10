@@ -132,7 +132,7 @@ void _jmemleak_exit()
 #ifdef _MSC_VER
     struct SYMBOL_INFO_EX {
       SYMBOL_INFO header;
-      char filename[512];
+      char filename[MAX_SYM_NAME];
     } si;
     si.header.SizeOfStruct = sizeof(SYMBOL_INFO_EX);
 
@@ -140,10 +140,11 @@ void _jmemleak_exit()
     line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
 
     HANDLE hproc = ::GetCurrentProcess();
-    ::SymInitialize(hproc, NULL, false);
+    if (!::SymInitialize(hproc, NULL, false))
+      fprintf(f, "Error initializing SymInitialize()\nGetLastError = %d\n", ::GetLastError());
 
     char filename[MAX_PATH];
-    ::GetModuleFileName(NULL, filename, sizeof filename);
+    ::GetModuleFileName(NULL, filename, sizeof(filename));
     ::SymLoadModule(hproc, NULL, filename, NULL, 0, 0);
 
     char path[MAX_PATH];
@@ -162,8 +163,12 @@ void _jmemleak_exit()
       for (int c=0; c<BACKTRACE_LEVELS; ++c) {
 #ifdef _MSC_VER
 	DWORD displacement;
-	if (::SymGetLineFromAddr(hproc, (DWORD)it->backtrace[c], &displacement, &line) &&
-	    ::SymFromAddr(hproc, (DWORD)it->backtrace[c], NULL, &si.header)) {
+
+	if (::SymGetLineFromAddr(hproc, (DWORD)it->backtrace[c], &displacement, &line)) {
+	  si.header.Name[0] = 0;
+
+	  ::SymFromAddr(hproc, (DWORD)it->backtrace[c], NULL, &si.header);
+
 	  fprintf(f, "%p : %s(%lu) [%s]\n",
 		  it->backtrace[c],
 		  line.FileName, line.LineNumber,
