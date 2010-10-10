@@ -46,6 +46,7 @@
 #include "widgets/editor.h"
 #include "widgets/editor/pixels_movement.h"
 #include "widgets/statebar.h"
+#include "sprite_wrappers.h"
 
 #define has_shifts(msg,shift)			\
   (((msg)->any.shifts & (shift)) == (shift))
@@ -895,47 +896,59 @@ bool Editor::onProcessMessage(JMessage msg)
       }
       // Editor with sprite
       else {
-	int x1, y1, x2, y2;
+	try {
+	  SpriteReader spriteReader(m_sprite);
+	  int x1, y1, x2, y2;
 
-	// Draw the background outside of sprite's bounds
-	x1 = this->rc->x1 + m_offset_x;
-	y1 = this->rc->y1 + m_offset_y;
-	x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
-	y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
+	  // Draw the background outside of sprite's bounds
+	  x1 = this->rc->x1 + m_offset_x;
+	  y1 = this->rc->y1 + m_offset_y;
+	  x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
+	  y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
 
-	jrectexclude(ji_screen,
-		     this->rc->x1, this->rc->y1,
-		     this->rc->x2-1, this->rc->y2-1,
-		     x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
+	  jrectexclude(ji_screen,
+		       this->rc->x1, this->rc->y1,
+		       this->rc->x2-1, this->rc->y2-1,
+		       x1-1, y1-1, x2+1, y2+2, theme->get_editor_face_color());
 
-	// Draw the sprite in the editor
-	editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+	  // Draw the sprite in the editor
+	  editor_draw_sprite(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
 
-	// Draw the sprite boundary
-	rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
-	hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
+	  // Draw the sprite boundary
+	  rect(ji_screen, x1-1, y1-1, x2+1, y2+1, theme->get_editor_sprite_border());
+	  hline(ji_screen, x1-1, y2+2, x2+1, theme->get_editor_sprite_bottom_edge());
 
-	// Draw the mask boundaries
-	if (m_sprite->getBoundariesSegments()) {
-	  editor_draw_mask();
-	  jmanager_start_timer(m_mask_timer_id);
+	  // Draw the mask boundaries
+	  if (m_sprite->getBoundariesSegments()) {
+	    editor_draw_mask();
+	    jmanager_start_timer(m_mask_timer_id);
+	  }
+	  else {
+	    jmanager_stop_timer(m_mask_timer_id);
+	  }
+
+	  // Draw decorators
+	  for (std::vector<Decorator*>::iterator
+		 it=m_decorators.begin(); it!=m_decorators.end(); ++it) {
+	    (*it)->drawDecorator(this, ji_screen);
+	  }
+
+	  if (msg->draw.count == 0
+	      && m_old_cursor_thick != 0) {
+	    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+	  }
 	}
-	else {
-	  jmanager_stop_timer(m_mask_timer_id);
-	}
+	catch (const LockedSpriteException&) {
+	  // The sprite is locked to be read... we can draw an opaque
+	  // background only.
 
-	// Draw decorators
-	for (std::vector<Decorator*>::iterator
-	       it=m_decorators.begin(); it!=m_decorators.end(); ++it) {
-	  (*it)->drawDecorator(this, ji_screen);
-	}
-
-	if (msg->draw.count == 0
-	    && m_old_cursor_thick != 0) {
-	  editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+	  JWidget view = jwidget_get_view(this);
+	  JRect vp = jview_get_viewport_position(view);
+	  jdraw_rectfill(vp, theme->get_editor_face_color());
+	  jrect_free(vp);
 	}
       }
-
+      
       if (msg->draw.count == 0)
       	m_old_cursor_thick = 0;
 
