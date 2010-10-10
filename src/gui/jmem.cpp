@@ -204,9 +204,9 @@ static void addslot(void *ptr, unsigned long size)
 
   p->ptr = ptr;
   p->size = size;
-  p->next = headslot;
 
   ScopedLock lock(*mutex);
+  p->next = headslot;
   headslot = p;
 }
 
