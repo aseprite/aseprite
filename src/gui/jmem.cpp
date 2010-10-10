@@ -55,13 +55,9 @@ char *jstrdup(const char *string)
 //////////////////////////////////////////////////////////////////////
 // With leak detection
 
-#if defined(__GNUC__)
-  #define BACKTRACE_LEVELS 4
-#else
-  #define BACKTRACE_LEVELS 16
-#endif
+#define BACKTRACE_LEVELS 16
 
-#if defined _MSC_VER
+#ifdef _MSC_VER
 
 #include <windows.h>
 #include <dbghelp.h>
@@ -109,7 +105,7 @@ typedef struct slot_t
 
 static bool memleak_status = false;
 static slot_t* headslot;
-static Mutex mutex;
+static Mutex* mutex = NULL;
 
 void _jmemleak_init()
 {
@@ -210,7 +206,7 @@ static void addslot(void *ptr, unsigned long size)
   p->size = size;
   p->next = headslot;
 
-  ScopedLock lock(mutex);
+  ScopedLock lock(*mutex);
   headslot = p;
 }
 
@@ -223,7 +219,7 @@ static void delslot(void *ptr)
 
   ASSERT(ptr != NULL);
 
-  ScopedLock lock(mutex);
+  ScopedLock lock(*mutex);
 
   for (it=headslot; it!=NULL; prev=it, it=it->next) {
     if (it->ptr == ptr) {
