@@ -20,6 +20,7 @@
 #define RASTER_GFXOBJ_H_INCLUDED
 
 #include <list>
+#include "raster/gfxobj_id.h"
 
 enum GfxObjType {
   GFXOBJ_CEL,
@@ -34,8 +35,6 @@ enum GfxObjType {
   GFXOBJ_UNDO,
   GFXOBJ_RGBMAP,
 };
-
-typedef unsigned int GfxObjId;
 
 class Cel;
 class Layer;
