@@ -217,11 +217,7 @@ void Undoable::setImgType(int new_imgtype, int dithering_method)
       return;		/* TODO error handling: not enough memory!
 			   we should undo all work done */
 
-    if (isEnabled())
-      m_sprite->getUndo()->undo_replace_image(m_sprite->getStock(), c);
-
-    image_free(old_image);
-    m_sprite->getStock()->replaceImage(c, new_image);
+    this->replaceStockImage(c, new_image);
   }
 
   /* change "sprite.imgtype" field */
