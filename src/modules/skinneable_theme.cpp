@@ -151,6 +151,7 @@ SkinneableTheme::~SkinneableTheme()
   }
 
   destroy_bitmap(m_sheet_bmp);
+  sheet_mapping.clear();
 }
 
 // Call ji_regen_theme after this
