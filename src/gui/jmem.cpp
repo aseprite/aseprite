@@ -76,17 +76,20 @@ __declspec (naked) void* __builtin_return_address(int level)
        push ebx
 
        mov eax, ebp
-       mov ebx, DWORD PTR [esp + 8] // level
+       mov ebx, DWORD PTR[esp+8]
 __next:
        test ebx, ebx
        je  __break
        dec ebx
-       mov eax, DWORD PTR [eax]
-       test eax, eax
-       je  __done
+       mov eax, DWORD PTR[eax]
+       cmp eax, 0xffff
+       jbe __outofstack
        jmp __next
+__outofstack:
+       mov eax, 0
+       jmp __done
 __break:
-       mov eax, DWORD PTR [eax + 4]
+       mov eax, DWORD PTR[eax+4]
 __done:
        pop ebx
        ret
