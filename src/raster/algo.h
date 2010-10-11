@@ -19,14 +19,11 @@
 #ifndef RASTER_ALGO_H_INCLUDED
 #define RASTER_ALGO_H_INCLUDED
 
-struct Dirty;
 class Image;
 
 typedef void (*AlgoPixel)(int x, int y, void *data);
 typedef void (*AlgoHLine)(int x1, int y, int x2, void *data);
 typedef void (*AlgoLine)(int x1, int y1, int x2, int y2, void *data);
-
-void algo_dirty(Dirty* dirty, void *data, AlgoHLine proc);
 
 void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);
 void algo_ellipse(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc);

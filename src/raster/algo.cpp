@@ -24,30 +24,6 @@
 #include "raster/algo.h"
 #include "raster/dirty.h"
 
-void algo_dirty(Dirty *dirty, void *data, AlgoHLine proc)
-{
-  register DirtyRow* row;
-  register DirtyCol* col;
-  DirtyRow* rowend;
-  DirtyCol* colend;
-
-  row = dirty->row;
-  rowend = row+dirty->rows;
-  for (; row<rowend; ++row) {
-    col = row->col;
-    colend = col+row->cols;
-    for (; col<colend; ++col) {
-      if (col->flags & DIRTY_MUSTBE_UPDATED) {
-	(*proc)(col->x,
-		row->y,
-		col->x+col->w-1, data);
-
-	col->flags ^= DIRTY_MUSTBE_UPDATED;
-      }
-    }
-  }
-}
-
 /* Algorightm from Allegro (allegro/src/gfx.c)
    Adapted for ASE by David A. Capello. */
 void algo_line(int x1, int y1, int x2, int y2, void *data, AlgoPixel proc)
