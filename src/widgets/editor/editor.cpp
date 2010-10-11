@@ -1959,15 +1959,14 @@ public:
 	  else {
 	    /* undo the dirty region */
 	    if (m_sprite->getUndo()->isEnabled()) {
-	      Dirty* dirty = dirty_new_from_differences(m_cel_image,
-							m_dst_image);
+	      Dirty* dirty = new Dirty(m_cel_image, m_dst_image);
 	      // TODO error handling
 
-	      dirty_save_image_data(dirty);
+	      dirty->saveImagePixels(m_cel_image);
 	      if (dirty != NULL)
-		m_sprite->getUndo()->undo_dirty(dirty);
+		m_sprite->getUndo()->undo_dirty(m_cel_image, dirty);
 
-	      dirty_free(dirty);
+	      delete dirty;
 	    }
 
 	    /* copy the 'dst_image' to the cel_image */

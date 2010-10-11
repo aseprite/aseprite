@@ -18,548 +18,141 @@
 
 #include "config.h"
 
-#include <string.h>
+#include <algorithm>
 
-#include "gui/jbase.h"		// TODO remove this reference
-
-#include "raster/algo.h"
-#include "raster/pen.h"
 #include "raster/dirty.h"
 #include "raster/image.h"
-#include "raster/mask.h"
 
-#define ADD_COLUMN(row, col, u)						\
-  ++row->cols;								\
-  row->col = (DirtyCol*)jrealloc(row->col,				\
-				 sizeof(DirtyCol) * row->cols);		\
-  col = row->col+u;							\
-  if (u < row->cols-1)							\
-    memmove(col+1,							\
-	    col,							\
-	    sizeof(DirtyCol) * (row->cols-1-u));
-
-#define ADD_ROW(dirty, row, v)						\
-  ++dirty->rows;							\
-  dirty->row = (DirtyRow*)jrealloc(dirty->row,				\
-				   sizeof(DirtyRow) * dirty->rows);	\
-  row = dirty->row+v;							\
-  if (v < dirty->rows-1)						\
-    memmove(row+1,							\
-	    row,							\
-	    sizeof(DirtyRow) * (dirty->rows-1-v));
-
-#define RESTORE_IMAGE(col)			\
-  if ((col)->flags & DIRTY_VALID_COLUMN) {	\
-    (col)->flags ^= DIRTY_VALID_COLUMN;		\
-						\
-    memcpy((col)->ptr,				\
-	   (col)->data,				\
-	   dirty_line_size(dirty, (col)->w));	\
-  }
-
-#define JOIN_WITH_NEXT(row, col, u)					\
-  {									\
-    RESTORE_IMAGE(col+1);						\
-									\
-    col->w += (col+1)->w;						\
-									\
-    if ((col+1)->data)							\
-      jfree((col+1)->data);						\
-									\
-    if (u+1 < row->cols-1)						\
-      memmove(row->col+u+1,						\
-	      row->col+u+2,						\
-	      sizeof(DirtyCol) * (row->cols-2-u));			\
-									\
-    row->cols--;							\
-    row->col = (DirtyCol*)jrealloc(row->col,				\
-				   sizeof(DirtyCol) * row->cols);	\
-    col = row->col+u;							\
-  }
-
-#define EAT_COLUMNS()							\
-  to_x2 = x2;								\
-									\
-  /* "eat" columns in range */						\
-  for (u2=u+1; u2<row->cols; ++u2) {					\
-    /* done (next column too far) */					\
-    if (x2 < row->col[u2].x-1)						\
-      break;								\
-  }									\
-									\
-  u2--;									\
-									\
-  /* "eat" columns */							\
-  if (u2 > u) {								\
-    for (u3=u+1; u3<=u2; ++u3) {					\
-      RESTORE_IMAGE(row->col+u3);					\
-      if (row->col[u3].data)						\
-	jfree(row->col[u3].data);					\
-    }									\
-									\
-    to_x2 = MAX(to_x2, row->col[u2].x+row->col[u2].w-1);		\
-									\
-    if (u2 < row->cols-1)						\
-      memmove(row->col+u+1,						\
-	      row->col+u2+1,						\
-	      sizeof(DirtyCol) * (row->cols-u2-1));			\
-									\
-    row->cols -= u2 - u;						\
-    row->col = (DirtyCol*)jrealloc(row->col,				\
-				   sizeof(DirtyCol) * row->cols);	\
-    col = row->col+u;							\
-  }									\
-									\
-  row->col[u].w = to_x2 - row->col[u].x + 1;				\
-  row->col[u].data = jrealloc(row->col[u].data,				\
-			      dirty_line_size(dirty, row->col[u].w));
-
-typedef void (*HLineSwapper)(void*,void*,int,int);
-
-static HLineSwapper swap_hline(Image* image);
-static void swap_hline32(void* image, void* data, int x1, int x2);
-static void swap_hline16(void* image, void* data, int x1, int x2);
-static void swap_hline8(void* image, void* data, int x1, int x2);
-
-Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled)
+Dirty::Dirty(int imgtype, int x1, int y1, int x2, int y2)
+  : m_imgtype(imgtype)
+  , m_x1(x1), m_y1(y1)
+  , m_x2(x2), m_y2(y2)
 {
-  Dirty* dirty = new Dirty;
-
-  dirty->image = image;
-  dirty->x1 = MID(0, x1, image->w-1);
-  dirty->y1 = MID(0, y1, image->h-1);
-  dirty->x2 = MID(x1, x2, image->w-1);
-  dirty->y2 = MID(y1, y2, image->h-1);
-  dirty->tiled = tiled;
-  dirty->rows = 0;
-  dirty->row = NULL;
-  dirty->mask = NULL;
-
-  return dirty;
 }
 
-Dirty* dirty_new_copy(Dirty* src)
+Dirty::Dirty(const Dirty& src)
+  : m_imgtype(src.m_imgtype)
+  , m_x1(src.m_x1), m_y1(src.m_y1)
+  , m_x2(src.m_x2), m_y2(src.m_y2)
 {
-  Dirty* dst = dirty_new(src->image, src->x1, src->y1, src->x2, src->y2, src->tiled);
-  int u, v, size;
+  m_rows.resize(src.m_rows.size());
 
-  dst->rows = src->rows;
-  dst->row = (DirtyRow*)jmalloc(sizeof(DirtyRow) * src->rows);
+  for (size_t v=0; v<m_rows.size(); ++v) {
+    const Row& srcRow = src.getRow(v);
+    Row* row = new Row(srcRow.y);
 
-  for (v=0; v<dst->rows; ++v) {
-    dst->row[v].y = src->row[v].y;
-    dst->row[v].cols = src->row[v].cols;
-    dst->row[v].col = (DirtyCol*)jmalloc(sizeof(DirtyCol) * dst->row[v].cols);
+    row->cols.resize(srcRow.cols.size());
 
-    for (u=0; u<dst->row[v].cols; ++u) {
-      dst->row[v].col[u].x = src->row[v].col[u].x;
-      dst->row[v].col[u].w = src->row[v].col[u].w;
-      dst->row[v].col[u].flags = src->row[v].col[u].flags;
-      dst->row[v].col[u].ptr = src->row[v].col[u].ptr;
-
-      size = dst->row[v].col[u].w << image_shift(dst->image);
-
-      dst->row[v].col[u].data = jmalloc(size);
-
-      memcpy(dst->row[v].col[u].data, src->row[v].col[u].data, size);
+    for (size_t u=0; u<row->cols.size(); ++u) {
+      Col* col = new Col(*srcRow.cols[u]);
+      row->cols[u] = col;
     }
-  }
 
-  return dst;
+    m_rows[v] = row;
+  }
 }
 
-Dirty* dirty_new_from_differences(Image* image, Image* image_diff)
+Dirty::Dirty(Image* image, Image* image_diff)
+  : m_imgtype(image->imgtype)
+  , m_x1(0), m_y1(0)
+  , m_x2(image->w-1), m_y2(image->h-1)
 {
-  Dirty* dirty = dirty_new(image, 0, 0, image->w, image->h, false);
   int x, y, x1, x2;
 
   for (y=0; y<image->h; y++) {
-    x1 = x2 = -1;
-
+    x1 = -1;
     for (x=0; x<image->w; x++) {
       if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
 	x1 = x;
 	break;
       }
     }
+    if (x1 < 0)
+      continue;
 
-    for (x=image->w-1; x>=0; x--) {
-      if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
-	x2 = x;
+    for (x2=image->w-1; x2>x1; x2--) {
+      if (image_getpixel(image, x2, y) != image_getpixel(image_diff, x2, y))
 	break;
-      }
     }
 
-    if (x1 >= 0 && x2 >= 0)
-      dirty_hline(dirty, x1, y, x2);
-  }
+    Col* col = new Col(x1, x2-x1+1);
+    col->data.resize(getLineSize(col->w));
 
-  return dirty;
+    Row* row = new Row(y);
+    row->cols.push_back(col);
+
+    m_rows.push_back(row);
+  }
 }
 
-void dirty_free(Dirty* dirty)
+Dirty::~Dirty()
 {
-  register DirtyRow* row;
-  register DirtyCol* col;
-  DirtyRow* rowend;
-  DirtyCol* colend;
+  RowsList::iterator row_it = m_rows.begin();
+  RowsList::iterator row_end = m_rows.end();
 
-  if (dirty->row) {
-    row = dirty->row;
-    rowend = row+dirty->rows;
-    for (; row<rowend; ++row) {
-      col = row->col;
-      colend = col+row->cols;
-      for (; col<colend; ++col)
-	jfree(col->data);
+  for (; row_it != row_end; ++row_it) {
+    ColsList::iterator col_it = (*row_it)->cols.begin();
+    ColsList::iterator col_end = (*row_it)->cols.end();
 
-      jfree(row->col);
-    }
+    for (; col_it != col_end; ++col_it)
+      delete *col_it;
 
-    jfree(dirty->row);
+    delete *row_it;
   }
-  jfree(dirty);
 }
 
 int Dirty::getMemSize() const
 {
-  int u, v, size = 4+1+2*4+2;	/* DWORD+BYTE+WORD[4]+WORD */
+  int size = 4+1+2*4+2;		// DWORD+BYTE+WORD[4]+WORD
 
-  for (v=0; v<this->rows; v++) {
-    size += 4;			/* y, cols (WORD[2]) */
-    for (u=0; u<this->row[v].cols; u++) {
-      size += 4;		/* x, w (WORD[2]) */
-      size += image_line_size(this->image, this->row[v].col[u].w);
+  RowsList::const_iterator row_it = m_rows.begin();
+  RowsList::const_iterator row_end = m_rows.end();
+  for (; row_it != row_end; ++row_it) {
+    size += 4;			// y, cols (WORD[2])
+
+    ColsList::const_iterator col_it = (*row_it)->cols.begin();
+    ColsList::const_iterator col_end = (*row_it)->cols.end();
+    for (; col_it != col_end; ++col_it) {
+      size += 4;		// x, w (WORD[2])
+      size += getLineSize((*col_it)->w);
     }
   }
 
   return size;
 }
 
-void dirty_hline(Dirty* dirty, int x1, int y, int x2)
+void Dirty::saveImagePixels(Image* image)
 {
-  DirtyRow* row;		/* row=dirty->row+v */
-  DirtyCol* col;		/* col=row->col+u */
-  int x, u, v, w;
-  int u2, u3, to_x2;
+  RowsList::iterator row_it = m_rows.begin();
+  RowsList::iterator row_end = m_rows.end();
+  for (; row_it != row_end; ++row_it) {
+    Row* row = *row_it;
 
-  if (dirty->tiled) {
-    if (x1 > x2)
-      return;
+    ColsList::iterator col_it = (*row_it)->cols.begin();
+    ColsList::iterator col_end = (*row_it)->cols.end();
+    for (; col_it != col_end; ++col_it) {
+      Col* col = *col_it;
 
-    dirty->tiled = false;
-
-    if (y < 0)
-      y = dirty->image->h - (-(y+1) % dirty->image->h) - 1;
-    else
-      y = y % dirty->image->h;
-
-    w = x2-x1+1;
-    if (w >= dirty->image->w)
-      dirty_hline(dirty, 0, y, dirty->image->w-1);
-    else {
-      x = x1;
-      if (x < 0)
-	x = dirty->image->w - (-(x+1) % dirty->image->w) - 1;
-      else
-	x = x % dirty->image->w;
-
-      if (x+w-1 <= dirty->image->w-1)
-	dirty_hline(dirty, x, y, x+w-1);
-      else {
-        dirty_hline(dirty, x, y, dirty->image->w-1);
-        dirty_hline(dirty, 0, y, w-(dirty->image->w-x)-1);
-      }
-    }
-
-    dirty->tiled = true;
-    return;
-  }
-
-  /* clip */
-  if ((y < dirty->y1) || (y > dirty->y2))
-    return;
-
-  if (x1 < dirty->x1)
-    x1 = dirty->x1;
-
-  if (x2 > dirty->x2)
-    x2 = dirty->x2;
-
-  if (x1 > x2)
-    return;
-
-  /* mask clip */
-  if (dirty->mask) {
-    if ((y < dirty->mask->y) || (y >= dirty->mask->y+dirty->mask->h))
-      return;
-
-    if (x1 < dirty->mask->x)
-      x1 = dirty->mask->x;
-
-    if (x2 > dirty->mask->x+dirty->mask->w-1)
-      x2 = dirty->mask->x+dirty->mask->w-1;
-
-    if (dirty->mask->bitmap) {
-      for (; x1<=x2; ++x1)
-	if (dirty->mask->bitmap->getpixel(x1-dirty->mask->x,
-					  y-dirty->mask->y))
-	  break;
-
-      for (; x2>=x1; x2--)
-	if (dirty->mask->bitmap->getpixel(x2-dirty->mask->x,
-					  y-dirty->mask->y))
-	  break;
-    }
-
-    if (x1 > x2)
-      return;
-  }
-
-  /* check if the row exists */
-  row = NULL;
-
-  for (v=0; v<dirty->rows; ++v)
-    if (dirty->row[v].y == y) {
-      row = dirty->row+v;
-      break;
-    }
-    else if (dirty->row[v].y > y)
-      break;
-
-  /* we must add a new row? */
-  if (!row) {
-    ADD_ROW(dirty, row, v);
-
-    row->y = y;
-    row->cols = 0;
-    row->col = NULL;
-  }
-
-  /**********************************************************************/
-  /* HLINE for Dirty with mask */
-  
-  if (dirty->mask && dirty->mask->bitmap) {
-    for (x=x1; x<=x2; ++x) {
-      if (!dirty->mask->bitmap->getpixel(x-dirty->mask->x,
-					 y-dirty->mask->y)) {
-	continue;
-      }
-
-      /* check if the pixel is inside some column */
-      col = row->col;
-      for (u=0; u<row->cols; ++u, ++col) {
-	/* inside a existent column */
-	if ((x >= col->x) && (x <= col->x+col->w-1))
-	  goto done;
-	/* the pixel is in the right of the column */
-	else if (x == col->x+col->w) {
-	  RESTORE_IMAGE(col);
-
-	  ++col->w;
-
-	  /* there is a left column? */
-	  if (u < row->cols-1 && x == (col+1)->x-1) {
-	    if ((col+1)->flags & DIRTY_VALID_COLUMN) {
-	      (col+1)->flags ^= DIRTY_VALID_COLUMN;
-
-	      memcpy((col+1)->ptr,
-		     (col+1)->data,
-		     dirty_line_size(dirty, (col+1)->w));
-	    }
-
-	    col->w += (col+1)->w;
-
-	    /* remove the col[u+1] */
-	    if ((col+1)->data)
-	      jfree((col+1)->data);
-
-	    if (u+1 < row->cols-1)
-	      memmove(col+1, col+2,
-		      sizeof(DirtyCol) * (row->cols-2-u));
-
-	    row->cols--;
-	    row->col = (DirtyCol*)jrealloc(row->col, sizeof(DirtyCol) * row->cols);
-	    col = row->col+u;
-	  }
-
-	  col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
-	  goto done;
-	}
-	/* the pixel is in the left of the column */
-	else if (x == col->x-1) {
-	  if (col->flags & DIRTY_VALID_COLUMN) {
-	    col->flags ^= DIRTY_VALID_COLUMN;
-
-	    memcpy(col->ptr,
-		   col->data,
-		   dirty_line_size(dirty, col->w));
-	  }
-
-	  --col->x;
-	  ++col->w;
-	  col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
-	  col->ptr = image_address(dirty->image, x, y);
-	  goto done;
-	}
-	else if (x < col->x)
-	  break;
-      }
-
-      /* add a new column */
-      ++row->cols;
-      row->col = (DirtyCol*)jrealloc(row->col, sizeof(DirtyCol) * row->cols);
-      col = row->col+u;
-
-      if (u < row->cols-1)
-	memmove(col+1, col, sizeof(DirtyCol) * (row->cols-1-u));
-
-      col->x = x;
-      col->w = 1;
-      col->flags = 0;
-      col->data = jmalloc(dirty_line_size(dirty, 1));
-      col->ptr = image_address(dirty->image, x, y);
-
-    done:;
-    }
-  }
-
-  /**********************************************************************/
-  /* HLINE for Dirty without mask */
-
-  else {
-    /* go column by column */
-    col = row->col;
-    for (u=0; u<row->cols; ++u, ++col) {
-      /* the hline is to right of the column */
-      if ((x1 >= col->x) && (x1 <= col->x+col->w)) {
-	/* inside the column */
-	if (x2 <= col->x+col->w-1)
-	  return;
-	/* extend this column to "x2" */
-	else {
-	  RESTORE_IMAGE(col);
-	  EAT_COLUMNS();
-	  return;
-	}
-      }
-      /* the hline is to left of the column */
-      else if ((x1 < col->x) && (x2 >= col->x-1)) {
-	RESTORE_IMAGE(col);
-
-	/* extend to left */
-	col->w += col->x - x1;
-	col->x = x1;
-	col->ptr = image_address(dirty->image, x1, y);
-
-	/* inside the column */
-	if (x2 <= col->x+col->w-1) {
-	  col->data = jrealloc(col->data, dirty_line_size(dirty, col->w));
-	  return;
-	}
-	/* extend this column to "x2" */
-	else {
-	  EAT_COLUMNS();
-	  return;
-	}
-      }
-      /* the next column is more too far */
-      else if (x2 < col->x-1)
-	break;
-    }
-
-    /* add a new column */
-    ADD_COLUMN(row, col, u);
-
-    col->x = x1;
-    col->w = x2-x1+1;
-    col->flags = 0;
-    col->data = jmalloc(dirty_line_size(dirty, col->w));
-    col->ptr = image_address(dirty->image, x1, y);
-  }
-}
-
-void dirty_save_image_data(Dirty* dirty)
-{
-  register int v, u, shift = image_shift(dirty->image);
-
-  for (v=0; v<dirty->rows; ++v)
-    for (u=0; u<dirty->row[v].cols; ++u) {
-      if (!(dirty->row[v].col[u].flags & DIRTY_VALID_COLUMN)) {
-	memcpy(dirty->row[v].col[u].data,
-	       dirty->row[v].col[u].ptr,
-	       dirty->row[v].col[u].w<<shift);
-
-	dirty->row[v].col[u].flags |= DIRTY_VALID_COLUMN;
-	dirty->row[v].col[u].flags |= DIRTY_MUSTBE_UPDATED;
-      }
-    }
-}
-
-void dirty_swap(Dirty* dirty)
-{
-  register DirtyRow* row;
-  register DirtyCol* col;
-  DirtyRow* rowend;
-  DirtyCol* colend;
-  HLineSwapper proc;
-
-  proc = swap_hline(dirty->image);
-
-  row = dirty->row;
-  rowend = row+dirty->rows;
-  for (; row<rowend; ++row) {
-    col = row->col;
-    colend = col+row->cols;
-    for (; col<colend; ++col) {
-      if (col->flags & DIRTY_VALID_COLUMN) {
-	(*proc)(col->ptr,
-		col->data,
-		col->x,
-		col->x+col->w-1);
-      }
+      ase_uint8* address = (ase_uint8*)image_address(image, col->x, row->y);
+      std::copy(address, address+col->w, col->data.begin());
     }
   }
 }
 
-static HLineSwapper swap_hline(Image* image)
+void Dirty::swapImagePixels(Image* image)
 {
-  register HLineSwapper proc;
-  switch (image->imgtype) {
-    case IMAGE_RGB:       proc = swap_hline32; break;
-    case IMAGE_GRAYSCALE: proc = swap_hline16; break;
-    case IMAGE_INDEXED:   proc = swap_hline8; break;
-    default:
-      proc = NULL;
+  RowsList::iterator row_it = m_rows.begin();
+  RowsList::iterator row_end = m_rows.end();
+  for (; row_it != row_end; ++row_it) {
+    Row* row = *row_it;
+
+    ColsList::iterator col_it = (*row_it)->cols.begin();
+    ColsList::iterator col_end = (*row_it)->cols.end();
+    for (; col_it != col_end; ++col_it) {
+      Col* col = *col_it;
+
+      ase_uint8* address = (ase_uint8*)image_address(image, col->x, row->y);
+      std::swap_ranges(address, address+col->w, col->data.begin());
+    }
   }
-  return proc;
-}
-
-#define SWAP_HLINE(type)			\
-  register type* address1 = (type*)image;	\
-  register type* address2 = (type*)data;	\
-  register int c;				\
-  int x;					\
-						\
-  for (x=x1; x<=x2; ++x) {			\
-    c = *address1;				\
-    *address1 = *address2;			\
-    *address2 = c;				\
-    ++address1;					\
-    ++address2;					\
-  }
-
-static void swap_hline32(void* image, void* data, int x1, int x2)
-{
-  SWAP_HLINE(ase_uint32);
-}
-
-static void swap_hline16(void* image, void* data, int x1, int x2)
-{
-  SWAP_HLINE(ase_uint16);
-}
-
-static void swap_hline8(void* image, void* data, int x1, int x2)
-{
-  SWAP_HLINE(ase_uint8);
 }

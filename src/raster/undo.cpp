@@ -149,7 +149,7 @@ static void chunk_image_invert(UndoStream* stream, UndoChunkImage* chunk);
 static void chunk_flip_new(UndoStream* stream, Image* image, int x1, int y1, int x2, int y2, bool horz);
 static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip *chunk);
 
-static void chunk_dirty_new(UndoStream* stream, Dirty *dirty);
+static void chunk_dirty_new(UndoStream* stream, Image* image, Dirty *dirty);
 static void chunk_dirty_invert(UndoStream* stream, UndoChunkDirty *chunk);
 
 static void chunk_add_image_new(UndoStream* stream, Stock *stock, int image_index);
@@ -244,7 +244,7 @@ static UndoAction undo_actions[] = {
 /* Raw data */
 
 static Dirty *read_raw_dirty(ase_uint8* raw_data);
-static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty *dirty);
+static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty* dirty);
 static int get_raw_dirty_size(Dirty *dirty);
 
 static Image* read_raw_image(ase_uint8* raw_data);
@@ -781,6 +781,7 @@ static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk)
 
   "dirty"
 
+     DWORD		image ID
      DIRTY_DATA		see read/write_raw_dirty
 
 ***********************************************************************/
@@ -788,33 +789,40 @@ static void chunk_flip_invert(UndoStream* stream, UndoChunkFlip* chunk)
 struct UndoChunkDirty
 {
   UndoChunk head;
+  ase_uint32 image_id;
   ase_uint8 data[0];
 };
 
-void Undo::undo_dirty(Dirty *dirty)
+void Undo::undo_dirty(Image* image, Dirty* dirty)
 {
-  chunk_dirty_new(m_undoStream, dirty);
+  chunk_dirty_new(m_undoStream, image, dirty);
   updateUndo();
 }
 
-static void chunk_dirty_new(UndoStream* stream, Dirty *dirty)
+static void chunk_dirty_new(UndoStream* stream, Image* image, Dirty *dirty)
 {
   UndoChunkDirty *chunk = (UndoChunkDirty *)
     undo_chunk_new(stream,
 		   UNDO_TYPE_DIRTY,
 		   sizeof(UndoChunkDirty)+get_raw_dirty_size(dirty));
 
+  chunk->image_id = image->getId();
   write_raw_dirty(chunk->data, dirty);
 }
 
 static void chunk_dirty_invert(UndoStream* stream, UndoChunkDirty *chunk)
 {
-  Dirty *dirty = read_raw_dirty(chunk->data);
+  Image* image = (Image*)GfxObj::find(chunk->image_id);
 
-  if (dirty != NULL) {
-    dirty_swap(dirty);
-    chunk_dirty_new(stream, dirty);
-    dirty_free(dirty);
+  if ((image) &&
+      (image->getType() == GFXOBJ_IMAGE)) {
+    Dirty* dirty = read_raw_dirty(chunk->data);
+
+    if (dirty != NULL) {
+      dirty->swapImagePixels(image);
+      chunk_dirty_new(stream, image, dirty);
+      delete dirty;
+    }
   }
 }
 
@@ -1863,7 +1871,6 @@ static void undo_chunk_free(UndoChunk* chunk)
 
   Raw dirty data
 
-     DWORD		image ID
      BYTE		image type
      WORD[4]		x1, y1, x2, y2
      WORD		rows
@@ -1880,102 +1887,97 @@ static void undo_chunk_free(UndoChunk* chunk)
 
 static Dirty *read_raw_dirty(ase_uint8* raw_data)
 {
-  ase_uint32 dword;
   ase_uint16 word;
   int x1, y1, x2, y2, size;
-  unsigned int image_id;
-  int u, v, x, y;
+  int u, v, x, y, w;
   int imgtype;
-  Image* image;
   Dirty *dirty = NULL;
 
-  read_raw_uint32(image_id);
   read_raw_uint8(imgtype);
+  read_raw_uint16(x1);
+  read_raw_uint16(y1);
+  read_raw_uint16(x2);
+  read_raw_uint16(y2);
 
-  image = (Image*)GfxObj::find(image_id);
+  dirty = new Dirty(imgtype, x1, y1, x2, y2);
 
-  if ((image) &&
-      (image->getType() == GFXOBJ_IMAGE) &&
-      (image->imgtype == imgtype)) {
+  int noRows = 0;
+  read_raw_uint16(noRows);
+  if (noRows > 0) {
+    dirty->m_rows.resize(noRows);
 
-    read_raw_uint16(x1);
-    read_raw_uint16(y1);
-    read_raw_uint16(x2);
-    read_raw_uint16(y2);
+    for (v=0; v<dirty->getRowsCount(); v++) {
+      y = 0;
+      read_raw_uint16(y);
 
-    dirty = dirty_new(image, x1, y1, x2, y2, false);
-    read_raw_uint16(dirty->rows);
+      Dirty::Row* row = new Dirty::Row(y);
 
-    if (dirty->rows > 0) {
-      dirty->row = (DirtyRow*)jmalloc(sizeof(DirtyRow) * dirty->rows);
+      int noCols = 0;
+      read_raw_uint16(noCols);
+      row->cols.resize(noCols);
 
-      for (v=0; v<dirty->rows; v++) {
-	read_raw_uint16(dirty->row[v].y);
-	read_raw_uint16(dirty->row[v].cols);
+      for (u=0; u<noCols; u++) {
+	read_raw_uint16(x);
+	read_raw_uint16(w);
 
-	y = dirty->row[v].y;
-	
-	dirty->row[v].col = (DirtyCol*)jmalloc(sizeof(DirtyCol) * dirty->row[v].cols);
-	for (u=0; u<dirty->row[v].cols; u++) {
-	  read_raw_uint16(dirty->row[v].col[u].x);
-	  read_raw_uint16(dirty->row[v].col[u].w);
+	Dirty::Col* col = new Dirty::Col(x, w);
 
-	  x = dirty->row[v].col[u].x;
+	size = dirty->getLineSize(col->w);
+	ASSERT(size > 0);
 
-	  size = image_line_size(dirty->image, dirty->row[v].col[u].w);
+	col->data.resize(size);
+	read_raw_data(&col->data[0], size);
 
-	  dirty->row[v].col[u].flags = DIRTY_VALID_COLUMN;
-	  dirty->row[v].col[u].data = jmalloc(size);
-	  dirty->row[v].col[u].ptr = image_address(dirty->image, x, y);
-
-	  read_raw_data(dirty->row[v].col[u].data, size);
-	}
+	row->cols[u] = col;
       }
+
+      dirty->m_rows[v] = row;
     }
   }
 
   return dirty;
 }
 
-static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty *dirty)
+static ase_uint8* write_raw_dirty(ase_uint8* raw_data, Dirty* dirty)
 {
-  ase_uint32 dword;
   ase_uint16 word;
-  int u, v, size;
 
-  write_raw_uint32(dirty->image->getId());
-  write_raw_uint8(dirty->image->imgtype);
-  write_raw_uint16(dirty->x1);
-  write_raw_uint16(dirty->y1);
-  write_raw_uint16(dirty->x2);
-  write_raw_uint16(dirty->y2);
-  write_raw_uint16(dirty->rows);
+  write_raw_uint8(dirty->getImgType());
+  write_raw_uint16(dirty->x1());
+  write_raw_uint16(dirty->y1());
+  write_raw_uint16(dirty->x2());
+  write_raw_uint16(dirty->y2());
+  write_raw_uint16(dirty->getRowsCount());
 
-  for (v=0; v<dirty->rows; v++) {
-    write_raw_uint16(dirty->row[v].y);
-    write_raw_uint16(dirty->row[v].cols);
+  for (int v=0; v<dirty->getRowsCount(); v++) {
+    const Dirty::Row& row = dirty->getRow(v);
 
-    for (u=0; u<dirty->row[v].cols; u++) {
-      write_raw_uint16(dirty->row[v].col[u].x);
-      write_raw_uint16(dirty->row[v].col[u].w);
+    write_raw_uint16(row.y);
+    write_raw_uint16(row.cols.size());
 
-      size = image_line_size(dirty->image, dirty->row[v].col[u].w);
-      write_raw_data(dirty->row[v].col[u].data, size);
+    for (size_t u=0; u<row.cols.size(); u++) {
+      write_raw_uint16(row.cols[u]->x);
+      write_raw_uint16(row.cols[u]->w);
+
+      size_t size = dirty->getLineSize(row.cols[u]->w);
+      write_raw_data(&row.cols[u]->data[0], size);
     }
   }
 
   return raw_data;
 }
 
-static int get_raw_dirty_size(Dirty *dirty)
+static int get_raw_dirty_size(Dirty* dirty)
 {
-  int u, v, size = 4+1+2*4+2;	/* DWORD+BYTE+WORD[4]+WORD */
+  int size = 1+2*4+2;	// BYTE+WORD[4]+WORD
 
-  for (v=0; v<dirty->rows; v++) {
-    size += 4;			/* y, cols (WORD[2]) */
-    for (u=0; u<dirty->row[v].cols; u++) {
-      size += 4;		/* x, w (WORD[2]) */
-      size += image_line_size(dirty->image, dirty->row[v].col[u].w);
+  for (int v=0; v<dirty->getRowsCount(); v++) {
+    const Dirty::Row& row = dirty->getRow(v);
+
+    size += 4;			// y, cols (WORD[2])
+    for (size_t u=0; u<row.cols.size(); u++) {
+      size += 4;		// x, w (WORD[2])
+      size += dirty->getLineSize(row.cols[u]->w);
     }
   }
 

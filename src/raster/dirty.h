@@ -21,6 +21,8 @@
 
 #include "raster/image.h"
 
+#include <vector>
+
 class Pen;
 class Image;
 class Mask;
@@ -28,48 +30,68 @@ class Mask;
 #define DIRTY_VALID_COLUMN	1
 #define DIRTY_MUSTBE_UPDATED	2
 
-struct DirtyCol
-{
-  int x, w;
-  char flags;
-  void* data;
-  void* ptr;
-};
+class Dirty {
+public:
+  struct Col;
+  struct Row;
 
-struct DirtyRow
-{
-  int y;
-  int cols;
-  DirtyCol* col;
-};
+  typedef std::vector<Col*> ColsList;
+  typedef std::vector<Row*> RowsList;
 
-struct Dirty
-{
-  Image* image;
-  int x1, y1;
-  int x2, y2;
-  bool tiled;
-  int rows;
-  DirtyRow* row;
-  Mask* mask;
+  struct Col {
+    int x, w;
+    std::vector<ase_uint8> data;
+
+    Col(int x, int w) : x(x), w(w) { }
+  };
+
+  struct Row {
+    int y;
+    ColsList cols;
+
+    Row(int y) : y(y) { }
+  };
+
+  Dirty(int imgtype, int x1, int y1, int x2, int y2);
+  Dirty(const Dirty& src);
+  Dirty(Image* image1, Image* image2);
+  ~Dirty();
 
   int getMemSize() const;
+
+  int getImgType() const { return m_imgtype; }
+  int x1() const { return m_x1; }
+  int y1() const { return m_y1; }
+  int x2() const { return m_x2; }
+  int y2() const { return m_y2; }
+
+  int getRowsCount() const { return m_rows.size(); }
+  const Row& getRow(int i) const { return *m_rows[i]; }
+
+  inline int getLineSize(int width) const {
+    return imgtype_line_size(m_imgtype, width);
+  }
+
+  void saveImagePixels(Image* image);
+  void swapImagePixels(Image* image);
+
+  Dirty* clone() const { return new Dirty(*this); }
+
+private:
+  // Disable copying through operator=
+  Dirty& operator=(const Dirty&);
+
+//private: // TODO these fields are public because Undo creates
+public:    // a Dirty instance from a deserialization process,
+           // remember to "privatize" these members when the
+           // new Undo implementation is finished.
+
+  int m_imgtype;
+  int m_x1, m_y1;
+  int m_x2, m_y2;
+  RowsList m_rows;
+  
 };
-
-Dirty* dirty_new(Image* image, int x1, int y1, int x2, int y2, bool tiled);
-Dirty* dirty_new_copy(Dirty* src);
-Dirty* dirty_new_from_differences(Image* image, Image* image_diff);
-void dirty_free(Dirty* dirty);
-
-void dirty_hline(Dirty* dirty, int x1, int y, int x2);
-
-void dirty_save_image_data(Dirty* dirty);
-void dirty_swap(Dirty* dirty);
-
-inline int dirty_line_size(Dirty* dirty, int width)
-{
-  return image_line_size(dirty->image, width);
-}
 
 #endif
 

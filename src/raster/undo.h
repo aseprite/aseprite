@@ -25,14 +25,13 @@
 #include "ase_exception.h"
 
 class Cel;
+class Dirty;
 class Image;
 class Layer;
 class Mask;
 class Palette;
 class Sprite;
 class Stock;
-
-struct Dirty;
 class UndoStream;
 
 class UndoException : public ase_exception
@@ -72,7 +71,7 @@ public:
   void undo_data(GfxObj *gfxobj, void *data, int size);
   void undo_image(Image *image, int x, int y, int w, int h);
   void undo_flip(Image *image, int x1, int y1, int x2, int y2, bool horz);
-  void undo_dirty(Dirty *dirty);
+  void undo_dirty(Image* image, Dirty *dirty);
   void undo_add_image(Stock *stock, int image_index);
   void undo_remove_image(Stock *stock, int image_index);
   void undo_replace_image(Stock *stock, int image_index);

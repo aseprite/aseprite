@@ -540,9 +540,10 @@ void Undoable::flattenLayers(int bgcolor)
 
       /* we have to save the current state of `cel_image' in the undo */
       if (isEnabled()) {
-	Dirty* dirty = dirty_new_from_differences(cel_image, image);
-	dirty_save_image_data(dirty);
-	m_sprite->getUndo()->undo_dirty(dirty);
+	Dirty* dirty = new Dirty(cel_image, image);
+	dirty->saveImagePixels(cel_image);
+	m_sprite->getUndo()->undo_dirty(cel_image, dirty);
+	delete dirty;
       }
     }
     else {
