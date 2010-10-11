@@ -100,10 +100,20 @@ void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palet
 int image_count_diff(const Image* i1, const Image* i2);
 bool image_shrink_rect(Image *image, int *x1, int *y1, int *x2, int *y2, int refpixel);
 
+inline int imgtype_shift(int imgtype)
+{
+  return ((imgtype == IMAGE_RGB)?       2:
+	  (imgtype == IMAGE_GRAYSCALE)? 1: 0);
+}
+
 inline int image_shift(const Image* image)
 {
-  return ((image->imgtype == IMAGE_RGB)?       2:
-	  (image->imgtype == IMAGE_GRAYSCALE)? 1: 0);
+  return imgtype_shift(image->imgtype);
+}
+
+inline int imgtype_line_size(int imgtype, int width)
+{
+  return (width << imgtype_shift(imgtype));
 }
 
 inline int image_line_size(const Image* image, int width)
