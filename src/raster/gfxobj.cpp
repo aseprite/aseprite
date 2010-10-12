@@ -41,7 +41,10 @@ RasterModule::RasterModule()
 
 RasterModule::~RasterModule()
 {
+#ifndef MEMLEAK
   ASSERT(objects_map->empty());
+#endif
+
   delete objects_map;
   delete objects_mutex;
 }
@@ -101,7 +104,6 @@ GfxObj* GfxObj::find(GfxObjId id)
   return ret;
 }
 
-// static
 void GfxObj::_setGfxObjId(GfxObjId id)
 {
   ASSERT(find(m_id) == this);
