@@ -897,7 +897,7 @@ bool Editor::onProcessMessage(JMessage msg)
       // Editor with sprite
       else {
 	try {
-	  SpriteReader spriteReader(m_sprite);
+	  //SpriteReader spriteReader(m_sprite);
 	  int x1, y1, x2, y2;
 
 	  // Draw the background outside of sprite's bounds
