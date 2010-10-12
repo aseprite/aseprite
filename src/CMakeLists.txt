@@ -300,7 +300,7 @@ endif(WIN32)
 
 add_executable(aseprite WIN32 main.cpp ${win32_resources})
 
-target_link_libraries(aseprite ${aseprite-library} ${all_libs})
+target_link_libraries(aseprite ${all_libs})
 
 ######################################################################
 # Unit tests
