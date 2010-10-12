@@ -1718,16 +1718,27 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
   JWidget view = jwidget_get_view(this);
   JRect vp = jview_get_viewport_position(view);
   int x, y;
+  bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", false);
+  int mx, my;
 
   hide_drawing_cursor();
   screen_to_editor(mouse_x, mouse_y, &x, &y);
 
-  x = m_offset_x - jrect_w(vp)/2 + ((1<<zoom)>>1) + (x << zoom);
-  y = m_offset_y - jrect_h(vp)/2 + ((1<<zoom)>>1) + (y << zoom);
+  if (centerMouse) {
+    mx = (vp->x1+vp->x2)/2;
+    my = (vp->y1+vp->y2)/2;
+  }
+  else {
+    mx = mouse_x;
+    my = mouse_y;
+  }
+
+  x = m_offset_x - (mx - vp->x1) + ((1<<zoom)>>1) + (x << zoom);
+  y = m_offset_y - (my - vp->y1) + ((1<<zoom)>>1) + (y << zoom);
 
   if ((m_zoom != zoom) ||
-      (m_cursor_editor_x != (vp->x1+vp->x2)/2) ||
-      (m_cursor_editor_y != (vp->y1+vp->y2)/2)) {
+      (m_cursor_editor_x != mx) ||
+      (m_cursor_editor_y != my)) {
     int use_refresh_region = (m_zoom == zoom) ? true: false;
 
     m_zoom = zoom;
@@ -1735,7 +1746,8 @@ void Editor::editor_set_zoom_and_center_in_mouse(int zoom, int mouse_x, int mous
     editor_update();
     editor_set_scroll(x, y, use_refresh_region);
 
-    jmouse_set_position((vp->x1+vp->x2)/2, (vp->y1+vp->y2)/2);
+    if (centerMouse)
+      jmouse_set_position(mx, my);
   }
   show_drawing_cursor();
   jrect_free(vp);
