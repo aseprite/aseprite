@@ -65,19 +65,17 @@ void ResourceFinder::findInDataDir(const char* filename)
 
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
-  // $HOME/.ase/filename
-  sprintf(buf, ".ase/%s", filename);
+  // $HOME/.aseprite/filename
+  sprintf(buf, ".aseprite/%s", filename);
   findInHomeDir(buf);
 
   // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
   findInBinDir(buf);
-  
-  #ifdef DEFAULT_PREFIX
-    // $PREFIX/ase/filename
-    sprintf(buf, "%s/share/ase/%s", DEFAULT_PREFIX, filename);
-    addPath(buf);
-  #endif
+
+  // $BINDIR/../share/aseprite/data/filename
+  sprintf(buf, "../share/aseprite/data/%s", filename);
+  findInBinDir(buf);
 
   #ifdef ALLEGRO_MACOSX
     // $BINDIR/aseprite.app/Contents/Resources/data/filename
@@ -109,13 +107,11 @@ void ResourceFinder::findInDocsDir(const char* filename)
   // $BINDIR/docs/filename
   sprintf(buf, "docs/%s", filename);
   findInBinDir(buf);
-  
-  #ifdef DEFAULT_PREFIX
-    // $PREFIX/ase/docs/filename
-    sprintf(buf, "%s/share/ase/docs/%s", DEFAULT_PREFIX, filename);
-    addPath(buf);
-  #endif
 
+  // $BINDIR/../share/aseprite/docs/filename
+  sprintf(buf, "../share/aseprite/docs/%s", filename);
+  findInBinDir(buf);
+  
   #ifdef ALLEGRO_MACOSX
     // $BINDIR/aseprite.app/Contents/Resources/docs/filename
     sprintf(buf, "aseprite.app/Contents/Resources/docs/%s", filename);
