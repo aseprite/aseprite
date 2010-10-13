@@ -163,7 +163,7 @@ void SkinneableTheme::reload_skin()
   }
 
   // Load the skin sheet
-  std::string sheet_filename = ("skins/" + m_selected_skin + "/sheet.png");
+  std::string sheet_filename("skins/" + m_selected_skin + "/sheet.png");
   {
     ResourceFinder rf;
     rf.findInDataDir(sheet_filename.c_str());
