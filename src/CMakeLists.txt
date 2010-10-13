@@ -302,6 +302,17 @@ add_executable(aseprite WIN32 main.cpp ${win32_resources})
 
 target_link_libraries(aseprite ${all_libs})
 
+INSTALL(TARGETS aseprite
+  RUNTIME DESTINATION bin)
+
+INSTALL(DIRECTORY ../data
+  DESTINATION share/aseprite)
+
+if(EXISTS ../docs/quickref.pdf)
+  INSTALL(FILES ../docs/quickref.pdf
+    DESTINATION share/aseprite/docs/quickref.pdf)
+endif()
+
 ######################################################################
 # Unit tests
 
