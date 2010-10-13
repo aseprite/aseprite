@@ -39,12 +39,6 @@
   <a href="#introduction">Introduction</a><br/>
   <a href="#features">Features</a><br/>
   <a href="#configuration_files">Configuration Files</a><br/>
-  <a href="#developers">Developers</a><br/>
-  <a style="margin-left:32px;" href="#compilation">Compilation</a><br/>
-  <a style="margin-left:32px;" href="#installation">Installation</a><br/>
-  <a style="margin-left:32px;" href="#uninstallation">Uninstallation</a><br/>
-  <a style="margin-left:32px;" href="#sourcecode">Source Code</a><br/>
-  <a style="margin-left:32px;" href="#design">Design</a><br/>
   <a href="#contact_information">Contact Information</a><br/>
   <a href="#license">License</a><br/>
   <a style="margin-left:32px;" href="#legal_issues">Legal Issues</a><br/>
@@ -136,113 +130,6 @@ data/widgets/*.xml    XML files with dialogs</pre>
   <pre>$HOME/.aseprite/
 /usr/local/share/aseprite/
 ./data/</pre>
-</p>
-
-<a name="developers"></a><h1>DEVELOPERS</h1>
-<a name="compilation"></a><h2>COMPILATION</h2>
-<p>
-  To compile ASE you have to configure what libraries are available,
-  release-debug-profile mode, etc. On Linux or Mac OS X, you can run
-  the "fix.sh" script, answer the questions and done: the main "makefile"
-  is created, then you can run "make". E.g.
-</p>
-<p>
-  <pre>bash fix.sh
-make</pre>
-</p>
-<p>
-  Or you could edit the "makefile.cfg", uncomment CONFIGURED=1 and
-  uncomment the necessary options, and then run
-</p>
-<p>
-  <pre>make -f makefile.linux</pre>
-</p>
-<p>
-  For MinGW, edit the "makefile.cfg" file and then
-</p>
-<p>
-  <pre>make -f makefile.mingw</pre>
-</p>
-<p>
-  With Visual C++, you
-  need <a href="http://gnuwin32.sourceforge.net/packages/make.htm">GNU
-  make for Windows</a> to run the following command:
-</p>
-<p>
-  <pre>make -f makefile.vc</pre>
-</p>
-<p>
-  Next versions of ASE will
-  use <a href="http://www.cmake.org/">CMake</a> as build system. Sorry
-  for this inconvenient.
-</p>
-
-<p>
-  Note (MinGW and VC++): There are big chances to get link problems
-  because the Allegro library is not found. It is because there are a
-  lot of Allegro versions out there and each one with different ways
-  to name the library. If this is your case, you will need to modify
-  makefile.mingw or makefile.vc files by hand.
-</p>
-
-<a name="installation"></a><h2>INSTALLATION</h2>
-<p>
-  After compilation, you have two options:
-</p>
-<p>
-  <ol>
-	<li>
-	  <p>
-		Running ASE from its source directory.
-	  </p>
-	</li>
-	<li>
-	  <p>
-		Install ASE in the directory that you specified in the "fix.sh" question:
-		"Where do you want install ASE by default?" (generally "/usr/local")
-		(in the "makefile.cfg", it's the DEFAULT_PREFIX variable)
-	  </p>
-	  <p>
-		Run "make install" (it only works in Unix like systems)
-	  </p>
-	</li>
-  </ol>
-</p>
-<a name="uninstallation"></a><h2>UNINSTALLATION</h2>
-<p>
-  Run "make uninstall".
-</p>
-<a name="sourcecode"></a><h2>SOURCE CODE</h2>
-<p>
-  If you downloaded ASE from Git repository, after
-  updating I recommend you to do:
-</p>
-<p>
-  <pre>~/aseprite-src/$ make clean
-~/aseprite-src/$ ./fix.sh
-~/aseprite-src/$ make</pre>
-</p>
-<p>
-  Also, you can make dependencies of the files (if you are trying to
-  modify ASE source code):
-</p>
-<p>
-  <pre>~/aseprite-src/$ sh misc/deps.sh</pre>
-</p>
-
-<a name="design"></a><h2>DESIGN</h2>
-<p>
-  I started ASE development about 10 years ago. It was originally
-  programmed in C language. Recently I changed it to C++ and started
-  to refactor some code. Anyway there are big parts of source code
-  which does not follow "good design" practices, and maybe those parts
-  will stay just like they are for a long time.
-</p>
-<p>
-  Refactoring code to improve the design of the application is
-  something I love to do, but users do not appreciate it so much.
-  "New features" and "fixing bugs" are the main goal, then refactoring
-  (and avoid incorporating new bugs) should be second priority.
 </p>
 
 <a name="contact_information"></a><h1>CONTACT INFORMATION</h1>
