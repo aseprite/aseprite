@@ -79,15 +79,6 @@ ase_files="config.h				\
 	   NEWS.txt				\
 	   README.html				\
 	   TODO.txt				\
-	   fix.bat				\
-	   fix.sh				\
-	   makefile.cfg				\
-	   makefile.gcc				\
-	   makefile.linux			\
-	   makefile.lst				\
-	   makefile.macosx			\
-	   makefile.mingw			\
-	   makefile.vc				\
 	   data/convmatr.def			\
 	   data/*.xml				\
 	   data/fonts/*.pcx			\
