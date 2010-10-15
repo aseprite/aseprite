@@ -531,14 +531,14 @@ bool jmanager_generate_messages(JWidget manager)
   /* generate redraw events */
   jwidget_flush_redraw(manager);
 
+  /* make some OSes happy */
+  yield_timeslice();
+  rest(1);
+
   if (!jlist_empty(msg_queue))
     return true;
-  else {
-    /* make some OSes happy */
-    yield_timeslice();
-    rest(1);
+  else
     return false;
-  }
 }
 
 void jmanager_dispatch_messages(JWidget manager)
