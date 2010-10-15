@@ -27,6 +27,15 @@
 
 using namespace gfx;
 
+static inline void mark_dirty_flag(Widget* widget)
+{
+  while (widget && ((widget->flags & JI_DIRTY) == 0)) {
+    widget->flags |= JI_DIRTY;
+    widget = widget->parent;
+  }
+}
+  
+
 int ji_register_widget_type()
 {
   static int type = JI_USER_WIDGET;
@@ -1068,7 +1077,10 @@ void jwidget_flush_redraw(JWidget widget)
   JLink link;
   JRect rc;
 
-  processing.push(widget);
+  if (widget->flags & JI_DIRTY) {
+    widget->flags ^= JI_DIRTY;
+    processing.push(widget);
+  }
 
   while (!processing.empty()) {
     widget = processing.front();
@@ -1080,8 +1092,13 @@ void jwidget_flush_redraw(JWidget widget)
     if (!widget->isVisible())
       continue;
 
-    JI_LIST_FOR_EACH(widget->children, link)
-      processing.push((Widget*)link->data);
+    JI_LIST_FOR_EACH(widget->children, link) {
+      Widget* child = (Widget*)link->data;
+      if (child->flags & JI_DIRTY) {
+	child->flags ^= JI_DIRTY;
+	processing.push(child);
+      }
+    }
 
     nrects = JI_REGION_NUM_RECTS(widget->update_region);
     if (nrects > 0) {
@@ -1123,6 +1140,8 @@ void jwidget_invalidate(JWidget widget)
     jregion_copy(widget->update_region, reg1);
     jregion_free(reg1);
 
+    mark_dirty_flag(widget);
+
     JI_LIST_FOR_EACH(widget->children, link)
       jwidget_invalidate(reinterpret_cast<JWidget>(link->data));
   }
@@ -1156,6 +1175,8 @@ void jwidget_invalidate_region(JWidget widget, const JRegion region)
 
     jregion_subtract(reg1, region, widget->update_region);
 
+    mark_dirty_flag(widget);
+
     JI_LIST_FOR_EACH(widget->children, link)
       jwidget_invalidate_region(reinterpret_cast<JWidget>(link->data), reg1);
 
@@ -1182,6 +1203,8 @@ void jwidget_scroll(JWidget widget, JRegion region, int dx, int dy)
 
     jregion_union(widget->update_region, widget->update_region, region);
     jregion_subtract(widget->update_region, widget->update_region, reg2);
+
+    mark_dirty_flag(widget);
 
     // Generate the JM_DRAW messages for the widget's update_region
     jwidget_flush_redraw(widget);

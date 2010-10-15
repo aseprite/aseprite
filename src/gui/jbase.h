@@ -77,6 +77,7 @@ class  Frame;
 #define JI_DECORATIVE	0x0200 /* to decorate windows */
 #define JI_INITIALIZED	0x0400 /* the widget was already initialized by a theme */
 #define JI_NOTEXT	0x0800 /* the widget does not have text */
+#define JI_DIRTY	0x1000 /* the widget (or one child) is dirty (update_region != empty) */
 
 /* widget types */
 enum {
