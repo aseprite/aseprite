@@ -1,0 +1,6 @@
+{
+	FilesToMacroExpand = (
+		"main.c",
+	);
+	Description = "This project builds a Cocoa application written in C using the Allegro game programming library.";
+}

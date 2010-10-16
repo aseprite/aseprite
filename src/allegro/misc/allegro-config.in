@@ -1,0 +1,211 @@
+#!/bin/sh
+#
+#  Note: allegro-config is generated from allegro-config.in, by autoconf.
+#
+#  This script returns suitable commandline options for compiling programs
+#  using the Allegro library, for example:
+#
+#     gcc myprog.c -o myprog `allegro-config --libs`
+#
+#  Undocumented feature for internal use:
+#  If --addon switch is passed, the output is more suitable for addon building.
+#
+#  This is heavily based on a similar script from GTK.
+
+version=4.4.2
+
+prefix=@prefix@
+exec_prefix=$prefix
+exec_prefix_set=no
+include_prefix=@INCLUDE_PREFIX@
+include_path=${prefix}/include
+lib_path=${exec_prefix}/lib@LIB_SUFFIX@
+bin_path=${exec_prefix}/bin
+
+static_libs=@LINK_WITH_STATIC_LIBS@
+lib_type=@LIB_TO_LINK@
+
+accepts_frameworks=@ACCEPT_FRAMEWORKS@
+
+allegro_ldflags="@LDFLAGS@"
+allegro_libs="@LIBS@"
+allegro_frameworks="@FRAMEWORKS@"
+allegro_cflags=""
+allegro_cppflags=""
+
+usage()
+{
+   cat <<EOF
+
+Usage: allegro-config [OPTIONS] [LIBRARIES]
+
+Options:
+	--prefix[=DIR]
+	--exec-prefix[=DIR]
+	--version[=VERSION]
+	--cflags
+	--cppflags
+	--libs
+	--static
+	--shared
+EOF
+   if test "$accepts_frameworks" = "yes"; then
+      echo "	--frameworks"
+   fi
+   cat <<EOF
+	--env
+
+Libraries:
+	release
+	debug
+	profile
+EOF
+   exit $1
+}
+
+if test $# -eq 0; then
+   usage 1 1>&2
+fi
+
+while test $# -gt 0; do
+   case "$1" in
+   -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+   *) optarg= ;;
+   esac
+
+   case $1 in
+
+      --prefix=*)
+	 prefix=$optarg
+	 if test $exec_prefix_set = no; then
+	    exec_prefix=$optarg
+	 fi
+      ;;
+
+      --prefix)
+	 echo_prefix=yes
+      ;;
+
+      --exec-prefix=*)
+	 exec_prefix=$optarg
+	 exec_prefix_set=yes
+      ;;
+
+      --exec-prefix)
+	 echo_exec_prefix=yes
+      ;;
+
+      --version=*)
+	 version=$optarg
+      ;;
+
+      --version)
+	 echo $version
+      ;;
+
+      --cflags)
+	 echo_cflags=yes
+      ;;
+
+      --cppflags)
+	 echo_cppflags=yes
+      ;;
+
+      --libs)
+	 echo_libs=yes
+      ;;
+
+      --static)
+	 static_libs=yes
+	 echo_libs=yes
+      ;;
+
+      --shared)
+	 static_libs=no
+	 echo_libs=yes
+      ;;
+
+      --frameworks)
+	 if test "$accepts_frameworks" = "yes"; then
+	    echo_frameworks=yes
+	 else
+	    usage 1 1>&2
+	 fi
+      ;;
+
+      --env)
+	 echo_env=yes
+      ;;
+
+      --addon)
+	 addon_form=yes
+      ;;
+
+      release)
+	 lib_type=alleg
+      ;;
+
+      debug)
+	 allegro_cflags=-DDEBUGMODE $allegro_cflags
+	 allegro_cppflags=-DDEBUGMODE $allegro_cppflags
+	 lib_type=alleg-debug
+      ;;
+
+      profile)
+	 lib_type=alleg-profile
+      ;;
+
+      *)
+	 usage 1 1>&2
+      ;;
+
+   esac
+   shift
+done
+
+if test "$echo_prefix" = "yes"; then
+   echo $prefix
+fi
+
+if test "$echo_exec_prefix" = "yes"; then
+   echo $exec_prefix
+fi
+
+if test "$echo_cflags" = "yes"; then
+   if test -n "$include_prefix" -a -z "$addon_form"; then
+      echo -I${include_path} $allegro_cflags
+   else
+      echo $allegro_cflags
+   fi
+fi
+
+if test "$echo_cppflags" = "yes"; then
+   if test -n "$include_prefix" -a -z "$addon_form"; then
+      echo -I${include_path} $allegro_cppflags
+   else
+      echo $allegro_cppflags
+   fi
+fi
+
+if test "$echo_libs" = "yes"; then
+   test -z "$addon_form" && libdirs=-L${lib_path}
+   if test "$static_libs" = "yes"; then
+      echo $libdirs $allegro_ldflags -l${lib_type} $allegro_libs
+   else
+      echo $libdirs $allegro_ldflags -l${lib_type}
+   fi
+fi
+
+if test "$echo_frameworks" = "yes"; then
+   echo $allegro_frameworks
+fi
+
+if test "$echo_env" = "yes"; then
+   echo "export PATH=\$PATH:$bin_path"
+   echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$lib_path"
+   echo "export LIBRARY_PATH=\$LIBRARY_PATH:$lib_path"
+   echo "export C_INCLUDE_PATH=\$C_INCLUDE_PATH:$include_path"
+   echo "export CPLUS_INCLUDE_PATH=\$CPLUS_INCLUDE_PATH:$include_path"
+   echo "export OBJC_INCLUDE_PATH=\$OBJC_INCLUDE_PATH:$include_path"
+fi
+

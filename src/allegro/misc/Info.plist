@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- This is the Property List file for the Allegro framework -->
+<plist version="1.0">
+<dict>
+        <key>CFBundleIdentifier</key>
+        <string>net.sourceforge.alleg.Lib</string>
+        <key>CFBundleName</key>
+        <string>@NAME@</string>
+        <key>CFBundleShortVersionString</key>
+        <string>Allegro @VERSION@</string>
+</dict>
+</plist>

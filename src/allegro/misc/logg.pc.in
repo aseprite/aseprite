@@ -1,0 +1,14 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=@libdir@
+includedir=@includedir@
+version=@ALLEGRO_VERSION@
+suffix=@lib_type@@lib_linkage@
+
+Name: logg
+Description: Ogg Vorbis addon for Allegro game programming library
+Version: ${version}
+# always statically linked
+Libs: -L${libdir} -llogg${suffix} @link_with@
+Requires: allegro${suffix} >= ${version}
+Cflags: -I${includedir}

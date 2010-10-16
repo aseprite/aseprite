@@ -1,0 +1,71 @@
+Wrapping up Allegro How-TO for 4.4 branch
+----------------------------------------------------------------------
+
+Here are a list of steps when making a release.  It's expected you're
+running on Linux with the necessary software installed.  Some of the sample
+commands use git to access the SVN repository but svn would work as well.
+
+*  Look over the SVN change log and update docs/changes._txt and
+   docs/thanks._txt.  Commit the updates to the SVN repository.
+
+   git log tags/OLDVER.. | less
+
+*  In the allegro root directory, run `python misc/genexamp.py'. If the
+   output looks good, apply the output adding ` | patch -p0' to the
+   previous command and commit docs/src/allegro._tx.
+
+*  Set the version number and commit.
+
+    misc/fixver.sh 4 4 1
+
+*  Tag SVN repository:
+
+    git svn tag 4.4.1
+    git svn dcommit
+
+    or
+
+    svn cp https://alleg.svn.sourceforge.net/svnroot/alleg/allegro/branches/4.4 https://alleg.svn.sourceforge.net/svnroot/alleg/allegro/tags/4.4.1
+
+NOTE: svn doesn't retain timestamps when you use svn up or svn co.  IMHO it's
+best for files to keep the timestamp of the last change that was made in
+SVN -- a little bit of history.  You might want to do the next step
+from an `svn export'ed directory, which does preserve timestamps.
+
+So from here I have a script that does:
+
+    - svn checkout from a local copy of the SF repository
+    - svn update (to get more recent changes)
+    - svn export to a fresh directory
+    - run zipup.sh
+
+*   Make .zip distro. Have the previous archive in parent directory.
+    You will need to have the dat tool in your path.
+
+    misc/zipup.sh all441.zip all440.zip
+
+    The generated archives will be in the .dist subdirectory.
+
+*   Upload all packages to Sourceforge.
+
+    lftp sftp://${USER},alleg@frs.sourceforge.net:/home/frs/project/a/al/alleg
+
+*   Announce the new release to the Allegro mailinglist:
+    <alleg-main@lists.sourceforge.net>, make sure you add URLs to both the
+    Allegro homepage and the Allegro sourceforge download page.
+    Also include the release notes and anything else you wish to add.
+
+*   Announce on Allegro.cc.
+
+*   Bump version number, and commit changed files.
+
+    misc/fixver.sh 4 4 2 SVN
+    git commit -a -m "Bumped version to 4.4.2 (SVN)"
+    git svn dcommit
+
+*   Update the web site.
+
+----------------------------------------------------------------------
+By: Henrik Stokseth, October, 2001.  E-mail:hstokset@tiscali.no
+Modified by: Eric Botcazou, April 2003.  E-mail:ebotcazou@libertysurf.fr
+Posterior modifications in CVS log, file allegro/misc/release.txt
