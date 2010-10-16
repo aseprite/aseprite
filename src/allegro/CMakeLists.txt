@@ -15,26 +15,6 @@
 # Set the project name.
 project(ALLEGRO C CXX)
 
-if(WIN32)
-    if(MINGW)
-        # As of CMake 2.6.2, support for building .rc files with mingw seems to
-        # be broken (uses wrong command line syntax) so we have to set this
-        # variable manually.
-        set(CMAKE_RC_COMPILE_OBJECT
-            "<CMAKE_RC_COMPILER> <FLAGS> -O coff -o <OBJECT> -i <SOURCE>")
-        if(NOT CMAKE_RC_COMPILER OR "${CMAKE_RC_COMPILER}" STREQUAL "")
-            string(REGEX REPLACE "gcc(.exe)?$" "windres"
-                GUESS_RC_COMPILER ${CMAKE_C_COMPILER})
-            find_program(CMAKE_RC_COMPILER ${GUESS_RC_COMPILER})
-        endif()
-    endif(MINGW)
-    enable_language(RC OPTIONAL)
-    message(STATUS "CMAKE_RC_COMPILER: ${CMAKE_RC_COMPILER}")
-    if(NOT CMAKE_RC_COMPILER)
-        message(FATAL_ERROR "Please set CMAKE_RC_COMPILER manually, e.g. *-windres.")
-    endif()
-endif(WIN32)
-
 set(ALLEGRO_VERSION 4.4.2)
 string(REGEX MATCH "^[0-9]+[.][0-9]+" ALLEGRO_SOVERSION ${ALLEGRO_VERSION})
 
