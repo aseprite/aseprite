@@ -2,9 +2,6 @@
 # Copyright (C) 2001-2010  David Capello
 
 if(WIN32)
-  # Allegro library on Windows
-  set(alleg_lib alleg)
-
   # System libraries on Windows
   set(sys_libs
     User32 Shell32 ComCtl32 ComDlg32 Gdi32 Msimg32
@@ -18,30 +15,6 @@ if(WIN32)
 else()
   # Pthreads
   set(sys_libs ${sys_libs} pthread)
-
-  # Allegro library on Unix like systems
-  find_program(allegro_config "allegro-config")
-
-  execute_process(COMMAND ${allegro_config} --cflags
-        OUTPUT_VARIABLE allegro_c_flags
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-	RESULT_VARIABLE ret)
-  if(NOT ret EQUAL 0)
-    message("Error running allegro-config")
-  endif()
-
-  if(USE_STATIC_ALLEGRO)
-    execute_process(COMMAND ${allegro_config} --libs --static
-      OUTPUT_VARIABLE allegro_link_flags
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-  else()
-    execute_process(COMMAND ${allegro_config} --libs
-      OUTPUT_VARIABLE allegro_link_flags
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-  endif()
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${allegro_c_flags}")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${allegro_link_flags}")
 endif()
 
 if(MSVC)
@@ -86,7 +59,7 @@ else()
 endif()
 
 # All libraries for .exe files
-set(all_libs aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} ${alleg_lib} ${sys_libs})
+set(all_libs aseprite-library gui-lib gfx-lib base-lib ${libs3rdparty} allegro ${sys_libs})
 
 # Directories where .h files can be found
 include_directories(
@@ -101,6 +74,7 @@ include_directories(
 ######################################################################
 # Sub-libraries
 
+add_subdirectory(allegro)
 add_subdirectory(base)
 add_subdirectory(gfx)
 add_subdirectory(gui)

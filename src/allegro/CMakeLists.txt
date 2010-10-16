@@ -75,10 +75,10 @@ set(COMPAT_VERSION 4.4.0)
 set(ALLEGRO_DLL_SHORTVER 44)
 
 # Search in the `cmake' directory for additional CMake modules.
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Search for C header files in these directories.
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${CMAKE_BINARY_DIR}/include)
 
 # Put libraries into `lib'.
@@ -95,7 +95,7 @@ include(Common)
 # Build options
 #
 
-option(SHARED "Build shared library for main Allegro library" on)
+option(SHARED "Build shared library for main Allegro library" off)
 set(BUILD_SHARED_LIBS ${SHARED})    # actual CMake variable
 
 # On some 64-bit platforms, libraries should be installed into `lib64'
@@ -369,7 +369,7 @@ if(WANT_MODULES AND ALLEGRO_UNIX)
     set(ALLEGRO_WITH_MODULES 1)
     set(ALLEGRO_MODULES_PATH
         ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/allegro/${ALLEGRO_VERSION})
-    install(FILES ${CMAKE_SOURCE_DIR}/modules.lst
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/modules.lst
             DESTINATION "${ALLEGRO_MODULES_PATH}"
             )
 endif(WANT_MODULES AND ALLEGRO_UNIX)
@@ -687,7 +687,7 @@ macro(add_headers location)
 endmacro(add_headers)
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/include/allegro/platform/alplatf.h.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/allegro/platform/alplatf.h.cmake
     ${CMAKE_BINARY_DIR}/include/allegro/platform/alplatf.h
     @ONLY
     )
@@ -697,7 +697,7 @@ add_headers(allegro/platform
 
 if(UNIX)
     configure_file(
-        ${CMAKE_SOURCE_DIR}/include/allegro/platform/alunixac.h.cmake
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/allegro/platform/alunixac.h.cmake
         ${CMAKE_BINARY_DIR}/include/allegro/platform/alunixac.h
         )
     add_headers(allegro/platform
@@ -880,7 +880,7 @@ if(UNIX) # including MACOSX
     endif()
 
     configure_file(
-        ${CMAKE_SOURCE_DIR}/misc/allegro-config.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/misc/allegro-config.in
         ${CMAKE_BINARY_DIR}/allegro-config
         @ONLY
         )
@@ -891,119 +891,3 @@ if(UNIX) # including MACOSX
 endif(UNIX)
 
 #-----------------------------------------------------------------------------#
-#
-# Addons
-#
-
-option(WANT_ALLEGROGL "Enable AllegroGL" on)
-option(WANT_LOADPNG "Enable loadpng" on)
-option(WANT_LOGG "Enable logg" on)
-option(WANT_JPGALLEG "Enable JPGAlleg" on)
-
-if(WANT_FRAMEWORKS)
-    set(ADDON_LINKAGE SHARED)
-else()
-    set(ADDON_LINKAGE STATIC)
-endif()
-
-if(WANT_ALLEGROGL)
-    add_subdirectory(addons/allegrogl)
-endif()
-if(WANT_LOADPNG)
-    add_subdirectory(addons/loadpng)
-endif()
-if(WANT_LOGG)
-    add_subdirectory(addons/logg)
-endif()
-if(WANT_JPGALLEG)
-    add_subdirectory(addons/jpgalleg)
-endif()
-
-#-----------------------------------------------------------------------------#
-#
-# pkg-config files - after addons to get properties
-#
-
-set(PKG_CONFIG_FILES
-    allegro
-    allegrogl
-    jpgalleg
-    loadpng
-    logg
-    )
-
-if(UNIX)
-    set(prefix "${CMAKE_INSTALL_PREFIX}")
-    set(INCLUDE_PREFIX "\${prefix}")
-    set(bindir "\${exec_prefix}/bin")
-    set(includedir "\${prefix}/include")
-    set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
-    set(lib_type "${BUILD_TYPE_SUFFIX}")
-    # We only use -static suffixes on Windows, for the main library.
-    set(lib_linkage "")
-
-    foreach(name ${PKG_CONFIG_FILES})
-        set(target ${name})
-
-        # For static linking: get extra libraries to link with.
-        get_target_property(link_with ${target} static_link_with)
-
-        configure_file(
-            misc/${name}.pc.in
-            ${LIBRARY_OUTPUT_PATH}/pkgconfig/${name}${lib_type}.pc
-            @ONLY
-            )
-        install(FILES ${LIBRARY_OUTPUT_PATH}/pkgconfig/${name}${lib_type}.pc
-                DESTINATION "lib${LIB_SUFFIX}/pkgconfig"
-                )
-    endforeach(name)
-endif(UNIX)
-
-#-----------------------------------------------------------------------------#
-#
-# Documentation
-#
-
-add_subdirectory(docs)
-
-#-----------------------------------------------------------------------------#
-#
-# Samples - after addons because skater can use AllegroGL
-#
-
-option(WANT_EXAMPLES "Build example programs" on)
-
-if(WANT_EXAMPLES)
-    add_subdirectory(examples)
-    add_subdirectory(demos/shooter)
-    add_subdirectory(demos/skater)
-endif(WANT_EXAMPLES)
-
-#-----------------------------------------------------------------------------#
-#
-# Tools - after addons because of grabber plugins
-#
-
-option(WANT_TOOLS "Build tool programs" on)
-
-if(WANT_TOOLS)
-    add_subdirectory(tools)
-
-    # Note to packagers: setup is mostly a historical footnote on modern
-    # operating systems.  Do not feel the need to package it.
-    add_subdirectory(setup)
-endif(WANT_TOOLS)
-
-#-----------------------------------------------------------------------------#
-#
-# Tests
-#
-
-option(WANT_TESTS "Build test programs" on)
-
-if(WANT_TESTS)
-    add_subdirectory(tests)
-endif(WANT_TESTS)
-
-#-----------------------------------------------------------------------------#
-# vim: set sts=4 sw=4 et:
