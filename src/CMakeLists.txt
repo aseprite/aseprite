@@ -1,22 +1,6 @@
 # ASE - Allegro Sprite Editor
 # Copyright (C) 2001-2010  David Capello
 
-if(WIN32)
-  # System libraries on Windows
-  set(sys_libs
-    User32 Shell32 ComCtl32 ComDlg32 Gdi32 Msimg32
-    WinMM AdvAPI32 Ole32 ShLwApi Vfw32 WinInet PsApi
-    DDraw DxGuid DSound DInput8)
-
-  if(MSVC AND ENABLE_MEMLEAK)
-    set(sys_libs ${sys_libs} dbghelp)
-  endif()
-
-else()
-  # Pthreads
-  set(sys_libs ${sys_libs} pthread)
-endif()
-
 if(MSVC)
   # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)

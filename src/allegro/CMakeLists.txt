@@ -1,13 +1,3 @@
-# XXX build chm files
-# XXX build devhelp files
-# XXX resources (keyboard/language) - pretty useless except on DOS
-# XXX install grabber.txt?
-# XXX png plugin for grabber
-# XXX what is fixbundle?
-# XXX applehelp bundle?
-# XXX projectbuilder application template?
-# XXX allegro.m4?
-
 # Ports that used to work which aren't supported yet:
 #   Haiku/BeOS port
 #   djgpp port
@@ -16,26 +6,6 @@
 #   Watcom
 #   DMC
 #   PSP port?
-
-#-----------------------------------------------------------------------------#
-#
-# CMake setup
-#
-
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-      "Choose the type of build, options are:
-        None Debug Release RelWithDebInfo MinSizeRel Profile."
-      FORCE)
-endif()
-# Restrict configuration types to the selected build type.
-# Note: This needs to be done before the project command
-set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 
 #-----------------------------------------------------------------------------#
 #
@@ -77,13 +47,6 @@ set(ALLEGRO_DLL_SHORTVER 44)
 # Search in the `cmake' directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# Search for C header files in these directories.
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${CMAKE_BINARY_DIR}/include)
-
-# Put libraries into `lib'.
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-
 # Lists of all the source files.
 include(FileList)
 
@@ -94,9 +57,6 @@ include(Common)
 #
 # Build options
 #
-
-option(SHARED "Build shared library for main Allegro library" off)
-set(BUILD_SHARED_LIBS ${SHARED})    # actual CMake variable
 
 # On some 64-bit platforms, libraries should be installed into `lib64'
 # instead of `lib'.  Set this to 64 to do that.
@@ -315,36 +275,8 @@ endif(PSP)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WFLAGS} ${WFLAGS_C_ONLY}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WFLAGS}")
 
-if(NOT BUILD_SHARED_LIBS)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DALLEGRO_STATICLINK")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DALLEGRO_STATICLINK")
-endif()
-
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUGMODE=1")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUGMODE=1")
-
-list(APPEND CMAKE_BUILD_TYPES Profile)
-mark_as_advanced(
-    CMAKE_C_FLAGS_PROFILE
-    CMAKE_CXX_FLAGS_PROFILE
-    CMAKE_EXE_LINKER_FLAGS_PROFILE
-    )
-if(COMPILER_GCC)
-    set(CMAKE_C_FLAGS_PROFILE "-pg"
-        CACHE STRING "profiling flags")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_C_FLAGS_PROFILE}"
-        CACHE STRING "profiling flags")
-    set(CMAKE_EXE_LINKER_FLAGS_PROFILE "-pg"
-        CACHE STRING "profiling flags")
-endif(COMPILER_GCC)
-if(COMPILER_MSVC)
-    set(CMAKE_C_FLAGS_PROFILE "-Gd -Ox"
-        CACHE STRING "profiling flags")
-    set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_C_FLAGS_PROFILE}"
-        CACHE STRING "profiling flags")
-    set(CMAKE_EXE_LINKER_FLAGS_PROFILE "-profile"
-        CACHE STRING "profiling flags")
-endif(COMPILER_MSVC)
 
 #-----------------------------------------------------------------------------#
 
@@ -360,314 +292,80 @@ set(ALLEGRO_NO_ASM 1)
 
 #-----------------------------------------------------------------------------#
 #
-# Unix modules
-#
-
-option(WANT_MODULES "Use modules for drivers (Unix)" on)
-
-if(WANT_MODULES AND ALLEGRO_UNIX)
-    set(ALLEGRO_WITH_MODULES 1)
-    set(ALLEGRO_MODULES_PATH
-        ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/allegro/${ALLEGRO_VERSION})
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/modules.lst
-            DESTINATION "${ALLEGRO_MODULES_PATH}"
-            )
-endif(WANT_MODULES AND ALLEGRO_UNIX)
-
-function(add_our_module nm files)
-    if(ALLEGRO_WITH_MODULES)
-        add_library(${nm} MODULE ${files})
-        set_target_properties(${nm}
-            PROPERTIES
-            PREFIX ""
-            COMPILE_FLAGS -DALLEGRO_MODULE
-            )
-        target_link_libraries(${nm} ${ARGN})
-        install(TARGETS ${nm}
-                DESTINATION "${ALLEGRO_MODULES_PATH}"
-                )
-    endif(ALLEGRO_WITH_MODULES)
-endfunction(add_our_module)
-
-#-----------------------------------------------------------------------------#
-#
 # Platform drivers
 #
 
 set(PLATFORM_SOURCES)
-set(PLATFORM_LIBS)              # always link with these libraries
-set(PLATFORM_LIBS_NON_MODULES)  # only link with these if modules disabled
-set(PLATFORM_LIBS_MODULES)      # only link with these if modules enabled
 
 # -- Unix --
 
-option(WANT_OSS "Build OSS support" on)
-option(WANT_ALSA "Build ALSA support" on)
-option(WANT_JACK "Build JACK support" on)
-option(WANT_SGIAUDIO "Build SGI audio support" on)
-
 if(ALLEGRO_UNIX) # not MACOSX
-    find_package(Threads)
-    if(NOT CMAKE_USE_PTHREADS_INIT)
-        message(FATAL_ERROR "Unix port requires pthreads support.")
-    endif()
     set(ALLEGRO_HAVE_LIBPTHREAD 1)
-    list(APPEND PLATFORM_LIBS m ${CMAKE_THREAD_LIBS_INIT})
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_UNIX_FILES})
-
-    find_library(DLOPEN_LIBRARY dl)
-    mark_as_advanced(DLOPEN_LIBRARY)
-    if(DLOPEN_LIBRARY)
-        list(APPEND PLATFORM_LIBS_MODULES ${DLOPEN_LIBRARY})
-    endif()
 
     if(ALLEGRO_HAVE_POSIX_MONOTONIC_CLOCK)
         list(APPEND PLATFORM_LIBS ${RT_LIBRARY})
     endif(ALLEGRO_HAVE_POSIX_MONOTONIC_CLOCK)
-
-    if(WANT_OSS)
-        include(AllegroFindOSS)
-        if(OSS_FOUND)
-            set(ALLEGRO_WITH_OSSDIGI 1)
-            set(ALLEGRO_WITH_OSSMIDI 1)
-            include_directories(SYSTEM ${OSS_INCLUDE_DIR})
-        endif(OSS_FOUND)
-    endif(WANT_OSS)
-
-    if(WANT_ALSA)
-        pkg_check_modules(ALSA alsa)
-        if(ALSA_FOUND)
-            # ALSA 0.5 is beyond obsolete.
-            set(ALLEGRO_ALSA_VERSION 9)
-            set(ALLEGRO_WITH_ALSADIGI 1)
-            set(ALLEGRO_WITH_ALSAMIDI 1)
-            include_directories(SYSTEM ${ALSA_INCLUDE_DIRS})
-            list(APPEND PLATFORM_LIBS_NON_MODULES ${ALSA_LIBRARIES})
-            add_our_module(alleg-alsadigi src/unix/alsa9.c ${ALSA_LIBRARIES})
-            add_our_module(alleg-alsamidi src/unix/alsamidi.c ${ALSA_LIBRARIES})
-        endif(ALSA_FOUND)
-    endif(WANT_ALSA)
-
-    if(WANT_JACK)
-        pkg_check_modules(JACK jack)
-        if(JACK_FOUND)
-            set(ALLEGRO_WITH_JACKDIGI 1)
-            include_directories(SYSTEM ${JACK_INCLUDE_DIRS})
-            list(APPEND PLATFORM_LIBS_NON_MODULES ${JACK_LIBRARIES})
-            add_our_module(alleg-jack src/unix/jack.c ${JACK_LIBRARIES})
-        endif(JACK_FOUND)
-    endif(WANT_JACK)
-
-    # This is untested.
-    if(WANT_SGIAUDIO)
-        check_library_exists(audio alOpenPort "" SGIAUDIO_FOUND)
-        if(SGIAUDIO_FOUND)
-            set(ALLEGRO_WITH_SGIALDIGI 1)
-            list(APPEND PLATFORM_LIBS_NON_MODULES audio)
-            add_our_module(alleg-sgialdigi src/unix/sgial.c audio)
-        endif(SGIAUDIO_FOUND)
-    endif(WANT_SGIAUDIO)
-
-    # aRts is obsolete
-    # esd is obsolete
 endif(ALLEGRO_UNIX)
 
 # -- X11 --
 
-option(WANT_X11 "Want X11 support (Unix)" on)
-
-if(ALLEGRO_UNIX AND WANT_X11)
-    find_package(X11)
-    if(X11_FOUND)
-        set(ALLEGRO_WITH_XWINDOWS 1)
-    endif()
+if(ALLEGRO_UNIX AND X11_FOUND)
+  set(ALLEGRO_WITH_XWINDOWS 1)
 endif()
 
 if(ALLEGRO_WITH_XWINDOWS)
-    include_directories(SYSTEM ${X11_INCLUDE_DIR})
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_X_FILES})
-    list(APPEND PLATFORM_LIBS ${X11_LIBRARIES})
 
     if(X11_XShm_FOUND)
         set(ALLEGRO_XWINDOWS_WITH_SHM 1)
-        list(APPEND PLATFORM_LIBS ${X11_Xext_LIB})
     endif()
 
     if(X11_Xcursor_FOUND)
         set(ALLEGRO_XWINDOWS_WITH_XCURSOR 1)
-        list(APPEND PLATFORM_LIBS ${X11_Xcursor_LIB})
-    endif()
-
-    if(X11_Xcursor_FOUND)
-        set(ALLEGRO_XWINDOWS_WITH_XCURSOR 1)
-        list(APPEND PLATFORM_LIBS ${X11_Xcursor_LIB})
     endif()
 
     if(X11_Xpm_FOUND)
         set(ALLEGRO_XWINDOWS_WITH_XPM 1)
-        list(APPEND PLATFORM_LIBS ${X11_Xpm_LIB})
     endif()
 
-    find_library(X11_Xxf86vm_LIB Xxf86vm ${X11_LIB_SEARCH_PATH})
-    mark_as_advanced(X11_Xxf86vm_LIB)
     if(X11_xf86vmode_FOUND)
         set(ALLEGRO_XWINDOWS_WITH_XF86VIDMODE 1)
         list(APPEND PLATFORM_LIBS ${X11_Xxf86vm_LIB})
     endif()
 
-    check_library_exists(X11 XOpenIM "${X11_LIB_SEARCH_PATH}" XIM_FOUND)
     if(XIM_FOUND)
         set(ALLEGRO_XWINDOWS_WITH_XIM 1)
     endif(XIM_FOUND)
 
-    check_library_exists(Xxf86dga XDGAQueryExtension
-        "${X11_LIB_SEARCH_PATH}" XDGA_FOUND)
     if(XDGA_FOUND)
         set(ALLEGRO_XWINDOWS_WITH_XF86DGA2 1)
-        list(APPEND PLATFORM_LIBS_NON_MODULES Xxf86dga ${X11_LIBRARIES})
-        add_our_module(alleg-dga2 src/x/xdga2.c Xxf86dga ${X11_LIBRARIES})
     endif()
 endif(ALLEGRO_WITH_XWINDOWS)
-
-# -- Linux console --
-
-option(WANT_LINUX_CONSOLE "Want Linux console support (Linux)" off)
-option(WANT_LINUX_VGA "Want Linux console VGA driver (Linux)" on)
-option(WANT_LINUX_FBCON "Want Linux console fbcon driver (Linux)" on)
-option(WANT_LINUX_SVGALIB "Want Linux console SVGAlib driver (Linux)" on)
-
-if(WANT_LINUX_CONSOLE AND CMAKE_SYSTEM_NAME STREQUAL Linux)
-    set(ALLEGRO_LINUX 1)
-    list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_LINUX_FILES})
-
-    if(WANT_LINUX_VGA)
-        set(ALLEGRO_LINUX_VGA 1)
-        add_our_module(alleg-vga src/misc/vga.c)
-    endif()
-
-    if(WANT_LINUX_FBCON)
-        check_c_source_compiles("
-            #include <linux/fb.h>
-            int main(void) {
-                int x = FB_SYNC_ON_GREEN;
-                return 0;
-            }"
-            CAN_FBCON)
-        if(CAN_FBCON)
-            set(ALLEGRO_LINUX_FBCON 1)
-            add_our_module(alleg-fbcon src/linux/fbcon.c)
-        endif()
-    endif()
-
-    if(WANT_LINUX_SVGALIB)
-        find_package(Svgalib)
-        if(SVGALIB_FOUND)
-            set(ALLEGRO_LINUX_SVGALIB 1)
-            include_directories(SYSTEM ${SVGALIB_INCLUDE_DIR})
-
-            set(CMAKE_REQUIRED_LIBRARIES ${SVGALIB_LIBRARY})
-            check_c_source_compiles("
-                #include <vga.h>
-                int main(void) {
-                    int x = vga_version;
-                    return 0;
-                }"
-                ALLEGRO_LINUX_SVGALIB_HAVE_VGA_VERSION)
-
-            list(APPEND PLATFORM_LIBS_NON_MODULES ${SVGALIB_LIBRARY})
-            add_our_module(alleg-svgalib src/linux/svgalib.c
-                ${SVGALIB_LIBRARY})
-        endif()
-    endif()
-endif(WANT_LINUX_CONSOLE AND CMAKE_SYSTEM_NAME STREQUAL Linux)
 
 # -- Windows --
 
 if(WIN32)
-    find_package(DDraw)
-    find_package(DInput)
-    find_package(DSound)
-    find_package(DXGuid)
-
-    if(NOT DDRAW_FOUND OR NOT DINPUT_FOUND OR NOT DSOUND_FOUND OR NOT DXGUID_FOUND)
-        if(MSVC)
-            message(FATAL_ERROR
-                "DirectX required for Windows port. You might need to add DirectX include and lib directories to your INCLUDE and LIB environment variables.
-    ")
-        elseif(MINGW)
-            message(FATAL_ERROR
-                "DirectX required for Windows port. Get it from the Allegro web site (dx80_mgw.zip).")
-        else()
-            message(FATAL_ERROR "DirectX required for Windows port.")
-        endif()
-    endif()
-
-    include_directories(SYSTEM
-        ${DDRAW_INCLUDE_DIR}
-        ${DINPUT_INCLUDE_DIR}
-        ${DSOUND_INCLUDE_DIR}
-        ${DXGUID_INCLUDE_DIR}
-        )
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_WIN_FILES})
-    list(APPEND PLATFORM_LIBS
-        kernel32
-        user32
-        gdi32
-        comdlg32
-        ole32
-        ${DINPUT_LIBRARIES}
-        ${DDRAW_LIBRARIES}
-        ${DXGUID_LIBRARIES}
-        winmm
-        ${DSOUND_LIBRARIES}
-        )
 endif(WIN32)
 
 # -- Haiku/BeOS --
 
 if(BEOS)
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_BEOS_FILES})
-    list(APPEND PLATFORM_LIBS game midi device)
 endif(BEOS)
 
 # -- Mac OS X --
 
 if(ALLEGRO_MACOSX)
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_MACOSX_FILES})
-    if(NOT SHARED)
-	list(APPEND PLATFORM_SOURCES src/macosx/main.m)
-    endif(NOT SHARED)
-
-    find_library(COCOA_LIBRARY Cocoa)
-    find_library(CARBON_LIBRARY Carbon)
-    find_library(IOKIT_LIBRARY IOKit)
-    find_library(COREAUDIO_LIBRARY CoreAudio)
-    find_library(AUDIOUNIT_LIBRARY AudioUnit)
-    find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
-    find_package(QuickTime)
-    mark_as_advanced(COCOA_LIBRARY CARBON_LIBRARY IOKIT_LIBRARY)
-    mark_as_advanced(COREAUDIO_LIBRARY AUDIOUNIT_LIBRARY AUDIOTOOLBOX_LIBRARY)
-    mark_as_advanced(QUICKTIME_INCLUDE_DIR QUICKTIME_LIBRARY)
-
-    list(APPEND PLATFORM_LIBS
-	${COCOA_LIBRARY}
-	${CARBON_LIBRARY}
-	${IOKIT_LIBRARY}
-	${COREAUDIO_LIBRARY}
-	${AUDIOUNIT_LIBRARY}
-	${AUDIOTOOLBOX_LIBRARY}
-	${QUICKTIME_LIBRARY}
-	)
+    list(APPEND PLATFORM_SOURCES src/macosx/main.m)
 endif(ALLEGRO_MACOSX)
 
 # -- PSP --
 
 if(PSP)
-    include_directories(SYSTEM ${PSPSDK_PATH}/include)
-    link_directories(${PSPSDK_PATH}/lib)
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_PSP_FILES})
-    list(APPEND PLATFORM_LIBS
-    m pspaudio pspgu psprtc pspdebug pspdisplay pspge pspctrl pspsdk c pspnet pspnet_inet pspnet_resolver psputility pspuser pspkernel)
 endif(PSP)
 
 #-----------------------------------------------------------------------------#
@@ -742,11 +440,6 @@ else()
     set(BUILD_TYPE_SUFFIX "")
 endif()
 
-if(ALLEGRO_MODULES_PATH)
-    set(ALLEGRO_MODULES_PATH_FLAG
-        "-DALLEGRO_MODULES_PATH='\"${ALLEGRO_MODULES_PATH}\"'")
-endif(ALLEGRO_MODULES_PATH)
-
 if(APPLE)
     # CMake 2.6.2 onwards passes these flags automatically.
     if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} STREQUAL 2.6 AND
@@ -763,15 +456,11 @@ add_our_library(allegro
     ${ALLEGRO_PUBLIC_HEADERS}
     )
 
-if(WIN32 AND SHARED)
-    set(allegro_OUTPUT_NAME alleg${ALLEGRO_DLL_SHORTVER})
-else()
-    set(allegro_OUTPUT_NAME alleg)
-endif()
+set(allegro_OUTPUT_NAME alleg)
 
 set_target_properties(allegro
     PROPERTIES
-    COMPILE_FLAGS "-DALLEGRO_SRC ${ALLEGRO_MODULES_PATH_FLAG}"
+    COMPILE_FLAGS "-DALLEGRO_SRC"
     LINK_FLAGS "${ALLEGRO_LINK_FLAGS}"
     OUTPUT_NAME ${allegro_OUTPUT_NAME}
     VERSION ${ALLEGRO_VERSION}
@@ -779,32 +468,19 @@ set_target_properties(allegro
     )
 
 if(WIN32)
-    if(SHARED)
-        # Make mingw not add lib prefix to DLL, to match MSVC.
-        set_target_properties(allegro
-            PROPERTIES
-            PREFIX ""
-            )
-    else(SHARED)
-        # Add a -static postfix on the main library for Windows.
-        # In earlier versions of Allegro this was "_s".
-        set_target_properties(allegro
-            PROPERTIES
-            POSTFIX "-static"
-            DEBUG_POSTFIX "-debug-static"
-            PROFILE_POSTFIX "-profile-static"
-            )
-    endif(SHARED)
+  # Add a -static postfix on the main library for Windows.
+  # In earlier versions of Allegro this was "_s".
+  set_target_properties(allegro
+    PROPERTIES
+    POSTFIX "-static"
+    DEBUG_POSTFIX "-debug-static"
+    PROFILE_POSTFIX "-profile-static"
+    )
 endif(WIN32)
 
 set_our_framework_properties(allegro Allegro)
 
 set(link_with ${PLATFORM_LIBS})
-if(ALLEGRO_WITH_MODULES)
-    list(APPEND link_with ${PLATFORM_LIBS_MODULES})
-else()
-    list(APPEND link_with ${PLATFORM_LIBS_NON_MODULES})
-endif()
 target_link_libraries(allegro ${link_with})
 
 sanitize_cmake_link_flags(static_link_with ${link_with})
@@ -813,12 +489,7 @@ set_target_properties(allegro
     static_link_with "${static_link_with}"
     )
 
-install_our_library(allegro)
-if(NOT WANT_FRAMEWORKS)
-    install_our_headers(${ALLEGRO_PUBLIC_HEADERS})
-endif(NOT WANT_FRAMEWORKS)
-
-if(APPLE AND SHARED OR WANT_FRAMEWORKS)
+if(WANT_FRAMEWORKS)
     add_our_library(alleg-main STATIC
 	src/macosx/main.m
 	)
@@ -828,8 +499,7 @@ if(APPLE AND SHARED OR WANT_FRAMEWORKS)
 	COMPILE_FLAGS -DALLEGRO_SRC
 	)
     target_link_libraries(allegro alleg-main)
-    install_our_library(alleg-main)
-endif(APPLE AND SHARED OR WANT_FRAMEWORKS)
+endif(WANT_FRAMEWORKS)
 
 if(PSP)
     add_our_library(alleg-main STATIC
@@ -842,52 +512,6 @@ if(PSP)
 	)
     target_link_libraries(alleg-main pspuser pspkernel)
     target_link_libraries(allegro alleg-main)
-    install_our_library(alleg-main)
 endif(PSP)
-
-#-----------------------------------------------------------------------------#
-#
-# allegro-config script
-#
-
-if(UNIX) # including MACOSX
-    set(prefix "${CMAKE_INSTALL_PREFIX}")
-    set(INCLUDE_PREFIX "${CMAKE_INSTALL_PREFIX}") # not sure what this is
-    if(BUILD_SHARED_LIBS)
-        set(LINK_WITH_STATIC_LIBS no)
-    else()
-        set(LINK_WITH_STATIC_LIBS yes)
-    endif()
-    set(LIB_TO_LINK alleg${BUILD_TYPE_SUFFIX})
-    if(APPLE)
-	set(LDFLAGS "-framework Cocoa -lalleg-main")
-    else(APPLE)
-	set(LDFLAGS "")
-    endif(APPLE)
-    sanitize_cmake_link_flags(LIBS
-        ${PLATFORM_LIBS}
-        ${PLATFORM_LIBS_NON_MODULES}
-        ${PLATFORM_LIBS_MODULES}
-        )
-
-    if(APPLE)
-        # XXX untested
-        set(ACCEPT_FRAMEWORKS yes)
-        set(FRAMEWORKS "-framework Cocoa -framework Allegro -lalleg-main${BUILD_TYPE_SUFFIX}")
-    else()
-        set(ACCEPT_FRAMEWORKS no)
-        set(FRAMEWORKS "")
-    endif()
-
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/misc/allegro-config.in
-        ${CMAKE_BINARY_DIR}/allegro-config
-        @ONLY
-        )
-
-    install(PROGRAMS ${CMAKE_BINARY_DIR}/allegro-config
-            DESTINATION bin
-            )
-endif(UNIX)
 
 #-----------------------------------------------------------------------------#
