@@ -32,8 +32,6 @@ set(ZLIB_DIR		${CMAKE_SOURCE_DIR}/third_party/zlib)
 ######################################################################
 # Common definitions to compile all sources
 
-# Vaca is compiled with Allegro
-add_definitions(-DVACA_ALLEGRO)
 
 # Do not use MMX optimizations in PNG code
 add_definitions(-DPNG_NO_MMX_CODE)
