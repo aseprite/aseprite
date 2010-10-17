@@ -227,21 +227,6 @@ if(APPLE)
     )
 endif(APPLE)
 
-# -- Haiku/BeOS -- (not officially supported)
-
-if(BEOS)
-  list(APPEND PLATFORM_LIBS game midi device)
-endif(BEOS)
-
-# -- PSP -- (not officially supported)
-
-if(PSP)
-  include_directories(SYSTEM ${PSPSDK_PATH}/include)
-  link_directories(${PSPSDK_PATH}/lib)
-  list(APPEND PLATFORM_LIBS
-    m pspaudio pspgu psprtc pspdebug pspdisplay pspge pspctrl pspsdk c pspnet pspnet_inet pspnet_resolver psputility pspuser pspkernel)
-endif(PSP)
-
 ######################################################################
 # Main ASE targets
 
