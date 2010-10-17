@@ -1,4 +1,16 @@
 ========================================
+ What platforms are supported?
+========================================
+
+ You should be able to compile ASE successfully on the following
+ platforms:
+
+ - Windows + MSVC 2008 Express + DirectX SDK
+ - Linux + GCC
+ - Mac OS X
+
+
+========================================
  How can I compile ASE?
 ========================================
 
@@ -20,12 +32,6 @@ have the source code in a directory called "ase-source-dir"):
 
      C:\...\ase-source-dir>cd build
 
-   If you have MinGW+MSYS:
-     C:\...\ase-source-dir\build>cmake .. -G "MSYS Makefiles"
-
-   If you have MinGW+mingw-make:
-     C:\...\ase-source-dir\build>cmake .. -G "MinGW Makefiles"
-
    If you have nmake (MSVC compilers):
      C:\...\ase-source-dir\build>cmake .. -G "NMake Makefiles"
 
@@ -36,6 +42,12 @@ have the source code in a directory called "ase-source-dir"):
 
    If you are on Linux:
      /.../ase-source-dir/build$ cmake .. -G "Unix Makefiles"
+
+   If you have MinGW+MSYS:
+     C:\...\ase-source-dir\build>cmake .. -G "MSYS Makefiles"
+
+   If you have MinGW+mingw-make:
+     C:\...\ase-source-dir\build>cmake .. -G "MinGW Makefiles"
 
    For more information see:
      http://www.vtk.org/Wiki/CMake_Generator_Specific_Information
