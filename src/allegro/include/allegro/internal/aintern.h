@@ -253,22 +253,6 @@ AL_VAR(int, _joy_type);
 AL_VAR(int, _joystick_installed);
 
 
-/* some GUI innards that other people need to use */
-AL_FUNC(int, _gui_shadow_box_proc, (int msg, DIALOG *d, int c));
-AL_FUNC(int, _gui_ctext_proc, (int msg, DIALOG *d, int c));
-AL_FUNC(int, _gui_button_proc, (int msg, DIALOG *d, int c));
-AL_FUNC(int, _gui_edit_proc, (int msg, DIALOG *d, int c));
-AL_FUNC(int, _gui_list_proc, (int msg, DIALOG *d, int c));
-AL_FUNC(int, _gui_text_list_proc, (int msg, DIALOG *d, int c));
-
-AL_FUNC(void, _handle_scrollable_scroll_click, (DIALOG *d, int listsize, int *offset, int height));
-AL_FUNC(void, _handle_scrollable_scroll, (DIALOG *d, int listsize, int *idx, int *offset));
-AL_FUNC(void, _handle_listbox_click, (DIALOG *d));
-AL_FUNC(void, _draw_scrollable_frame, (DIALOG *d, int listsize, int offset, int height, int fg_color, int bg));
-AL_FUNC(void, _draw_listbox, (DIALOG *d));
-AL_FUNC(void, _draw_textbox, (char *thetext, int *listsize, int draw, int offset, int wword, int tabsize, int x, int y, int w, int h, int disabled, int fore, int deselect, int disable));
-
-
 /* text- and font-related stuff */
 typedef struct FONT_VTABLE
 {

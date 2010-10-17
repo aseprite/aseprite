@@ -22,13 +22,10 @@ set(ALLEGRO_SRC_FILES
         src/fontdat.c
         src/fontgrx.c
         src/fonttxt.c
-        src/fsel.c
         src/gfx.c
         src/glyph.c
         src/graphics.c
         src/gsprite.c
-        src/gui.c
-        src/guiproc.c
         src/inline.c
         src/joystick.c
         src/keyboard.c
@@ -39,7 +36,6 @@ set(ALLEGRO_SRC_FILES
         src/math3d.c
         src/midi.c
         src/mixer.c
-        src/modesel.c
         src/mouse.c
         src/pcx.c
         src/poly3d.c
@@ -258,7 +254,6 @@ set(ALLEGRO_INCLUDE_ALLEGRO_FILES
         include/allegro/font.h
         include/allegro/gfx.h
         include/allegro/graphics.h
-        include/allegro/gui.h
         include/allegro/joystick.h
         include/allegro/keyboard.h
         include/allegro/lzss.h

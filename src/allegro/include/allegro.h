@@ -45,7 +45,6 @@
 
 #include "allegro/fli.h"
 #include "allegro/config.h"
-#include "allegro/gui.h"
 
 #include "allegro/sound.h"
 

@@ -825,17 +825,6 @@ static int _set_gfx_mode(int card, int w, int h, int v_w, int v_h, int allow_con
 
    set_palette(default_palette);
 
-   if (_color_depth == 8) {
-      gui_fg_color = 255;
-      gui_mg_color = 8;
-      gui_bg_color = 0;
-   }
-   else {
-      gui_fg_color = makecol(0, 0, 0);
-      gui_mg_color = makecol(128, 128, 128);
-      gui_bg_color = makecol(255, 255, 255);
-   }
-
    if (_al_linker_mouse)
       _al_linker_mouse->set_mouse_etc();
 
