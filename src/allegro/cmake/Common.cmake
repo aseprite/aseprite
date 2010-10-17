@@ -51,9 +51,6 @@ endfunction(install_our_headers)
 function(add_our_executable nm)
     add_executable(${nm} ${ARGN})
     target_link_libraries(${nm} allegro)
-    if(PSP)
-        add_psp_executable(${nm})
-    endif(PSP)
 endfunction()
 
 # Oh my. CMake really is bad for this - but I couldn't find a better
