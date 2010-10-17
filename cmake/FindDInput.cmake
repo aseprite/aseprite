@@ -10,20 +10,13 @@ if(DINPUT_INCLUDE_DIR)
     set(DINPUT_FIND_QUIETLY TRUE)
 endif(DINPUT_INCLUDE_DIR)
 
-# Makes my life easier.
-if(MSVC)
-    set(HINT_INCLUDE "C:/Program Files/Microsoft DirectX SDK (August 2008)/Include")
-    set(HINT_LIB "C:/Program Files/Microsoft DirectX SDK (August 2008)/Lib")
-endif(MSVC)
-
 find_path(DINPUT_INCLUDE_DIR dinput.h
-    PATH ${HINT_INCLUDE}
+    PATH $ENV{DXSDK_DIR}/Include
     )
 
 find_library(DINPUT_LIBRARY
-    NAMES dinput dinput8
-    PATHS ${HINT_LIB}
-    PATH_SUFFIXES x86 x64
+    NAMES dinput8
+    PATHS "$ENV{DXSDK_DIR}/Lib/$ENV{PROCESSOR_ARCHITECTURE}"
     )
 
 # Handle the QUIETLY and REQUIRED arguments and set DINPUT_FOUND to TRUE if

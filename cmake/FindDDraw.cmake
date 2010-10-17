@@ -10,20 +10,13 @@ if(DDRAW_INCLUDE_DIR)
     set(DDRAW_FIND_QUIETLY TRUE)
 endif(DDRAW_INCLUDE_DIR)
 
-# Makes my life easier.
-if(MSVC)
-    set(HINT_INCLUDE "C:/Program Files/Microsoft DirectX SDK (August 2008)/Include")
-    set(HINT_LIB "C:/Program Files/Microsoft DirectX SDK (August 2008)/Lib")
-endif(MSVC)
-
 find_path(DDRAW_INCLUDE_DIR ddraw.h
-    PATH ${HINT_INCLUDE}
+    PATH $ENV{DXSDK_DIR}/Include
     )
 
 find_library(DDRAW_LIBRARY
     NAMES ddraw
-    PATHS ${HINT_LIB}
-    PATH_SUFFIXES x86 x64
+    PATHS "$ENV{DXSDK_DIR}/Lib/$ENV{PROCESSOR_ARCHITECTURE}"
     )
 
 # Handle the QUIETLY and REQUIRED arguments and set DDRAW_FOUND to TRUE if
