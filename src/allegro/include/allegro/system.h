@@ -234,7 +234,6 @@ typedef struct SYSTEM_DRIVER
    AL_METHOD(_DRIVER_INFO *, midi_drivers, (void));
    AL_METHOD(_DRIVER_INFO *, keyboard_drivers, (void));
    AL_METHOD(_DRIVER_INFO *, mouse_drivers, (void));
-   AL_METHOD(_DRIVER_INFO *, joystick_drivers, (void));
    AL_METHOD(_DRIVER_INFO *, timer_drivers, (void));
 } SYSTEM_DRIVER;
 

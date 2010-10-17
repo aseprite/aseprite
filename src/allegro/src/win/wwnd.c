@@ -76,8 +76,6 @@ static UINT msg_suicide = 0;
 struct WINDOW_MODULES {
    int keyboard;
    int mouse;
-   int joystick;
-   int joy_type;
    int sound;
    int digi_card;
    int midi_card;
@@ -109,9 +107,6 @@ static int init_window_modules(struct WINDOW_MODULES *wm)
    if (wm->mouse)
       install_mouse();
 
-   if (wm->joystick)
-      install_joystick(wm->joy_type);
-
    if (wm->sound)
       install_sound(wm->digi_card, wm->midi_card, NULL);
 
@@ -127,7 +122,6 @@ static int init_window_modules(struct WINDOW_MODULES *wm)
  *  Removes the modules that depend upon the main window:
  *   - keyboard (DirectInput),
  *   - mouse (DirectInput),
- *   - joystick (DirectInput),
  *   - sound (DirectSound),
  *   - sound input (DirectSoundCapture).
  *  If WM is not NULL, record which modules are really removed.
@@ -149,15 +143,6 @@ static void exit_window_modules(struct WINDOW_MODULES *wm)
          wm->mouse = TRUE;
 
       remove_mouse();
-   }
-
-   if (_joystick_installed) {
-      if (wm) {
-         wm->joystick = TRUE;
-         wm->joy_type = _joy_type;
-      }
-
-      remove_joystick();
    }
 
    if (_sound_installed) {
@@ -784,5 +769,4 @@ void win_grab_input(void)
 {
    wnd_schedule_proc(key_dinput_acquire);
    wnd_schedule_proc(mouse_dinput_grab);
-   wnd_schedule_proc(joystick_dinput_acquire);
 }

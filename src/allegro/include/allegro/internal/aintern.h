@@ -247,12 +247,6 @@ AL_VAR(char *, _keyboard_layout);
 #endif
 
 
-/* various bits of joystick stuff */
-AL_VAR(int, _joy_type);
-
-AL_VAR(int, _joystick_installed);
-
-
 /* text- and font-related stuff */
 typedef struct FONT_VTABLE
 {

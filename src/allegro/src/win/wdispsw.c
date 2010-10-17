@@ -115,7 +115,6 @@ void _win_switch_in(void)
 
    key_dinput_acquire();
    mouse_dinput_acquire();
-   joystick_dinput_acquire();
 
    if (win_gfx_driver && win_gfx_driver->switch_in)
       win_gfx_driver->switch_in();
@@ -149,7 +148,6 @@ void _win_switch_out(void)
 
    key_dinput_unacquire();
    mouse_dinput_unacquire();
-   joystick_dinput_unacquire();
 
    midi_switch_out();
 

@@ -181,8 +181,6 @@ extern struct bg_manager _bg_man_sigalrm;
 
 extern struct bg_manager *_unix_bg_man;
 
-extern _DRIVER_INFO _linux_joystick_driver_list[]; /* also in aintlnx.h */
-
 
 #ifdef __cplusplus
 }

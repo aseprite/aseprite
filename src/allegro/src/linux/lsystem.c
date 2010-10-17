@@ -55,7 +55,6 @@ static void sys_linux_message (AL_CONST char *msg);
 	make_getter (_linux, keyboard)
 	make_getter (_linux, mouse)
 	make_getter (_linux, timer)
-	make_getter (_linux, joystick)
 #undef make_getter
 
 
@@ -111,7 +110,6 @@ SYSTEM_DRIVER system_linux =
    get_midi_driver_list,
    get_keyboard_driver_list,
    get_mouse_driver_list,
-   get_joystick_driver_list,
    get_timer_driver_list
 };
 

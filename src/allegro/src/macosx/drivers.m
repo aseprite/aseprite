@@ -62,8 +62,3 @@ BEGIN_MIDI_DRIVER_LIST
 {   MIDI_CORE_AUDIO,          &midi_core_audio,         TRUE  },
 {   MIDI_QUICKTIME,           &midi_quicktime,          TRUE  },
 END_MIDI_DRIVER_LIST
-
-
-BEGIN_JOYSTICK_DRIVER_LIST
-{   JOYSTICK_HID,             &joystick_hid,            TRUE  },
-END_JOYSTICK_DRIVER_LIST

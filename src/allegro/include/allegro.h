@@ -32,7 +32,6 @@
 #include "allegro/mouse.h"
 #include "allegro/timer.h"
 #include "allegro/keyboard.h"
-#include "allegro/joystick.h"
 
 #include "allegro/palette.h"
 #include "allegro/gfx.h"

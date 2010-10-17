@@ -134,32 +134,6 @@ AL_FUNC(int, mouse_set_syscursor, (void));
 AL_FUNC(int, mouse_set_sysmenu, (int state));
 
 
-/* joystick routines */
-#define WINDOWS_MAX_AXES   6
-
-#define WINDOWS_JOYSTICK_INFO_MEMBERS        \
-   int caps;                                 \
-   int num_axes;                             \
-   int axis[WINDOWS_MAX_AXES];               \
-   char *axis_name[WINDOWS_MAX_AXES];        \
-   int hat;                                  \
-   char *hat_name;                           \
-   int num_buttons;                          \
-   int button[MAX_JOYSTICK_BUTTONS];         \
-   char *button_name[MAX_JOYSTICK_BUTTONS];
-
-typedef struct WINDOWS_JOYSTICK_INFO {
-   WINDOWS_JOYSTICK_INFO_MEMBERS
-} WINDOWS_JOYSTICK_INFO;
-
-AL_FUNC(int, win_add_joystick, (WINDOWS_JOYSTICK_INFO *win_joy));
-AL_FUNC(void, win_remove_all_joysticks, (void));
-AL_FUNC(int, win_update_joystick_status, (int n, WINDOWS_JOYSTICK_INFO *win_joy));
-
-AL_FUNC(int, joystick_dinput_acquire, (void));
-AL_FUNC(int, joystick_dinput_unacquire, (void));
-
-
 /* thread routines */
 AL_FUNC(void, _win_thread_init, (void));
 AL_FUNC(void, _win_thread_exit, (void));

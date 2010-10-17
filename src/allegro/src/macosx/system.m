@@ -125,7 +125,6 @@ SYSTEM_DRIVER system_macosx =
    NULL,  /* AL_METHOD(_DRIVER_INFO *, midi_drivers, (void)); */
    NULL,  /* AL_METHOD(_DRIVER_INFO *, keyboard_drivers, (void)); */
    NULL,  /* AL_METHOD(_DRIVER_INFO *, mouse_drivers, (void)); */
-   NULL,  /* AL_METHOD(_DRIVER_INFO *, joystick_drivers, (void)); */
    NULL,  /* AL_METHOD(_DRIVER_INFO *, timer_drivers, (void)); */
 };
 

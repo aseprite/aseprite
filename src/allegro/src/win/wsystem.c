@@ -95,7 +95,6 @@ SYSTEM_DRIVER system_directx =
    _get_win_midi_driver_list,   /* AL_METHOD(_DRIVER_INFO *, midi_drivers, (void)); */
    NULL,                        /* AL_METHOD(_DRIVER_INFO *, keyboard_drivers, (void)); */
    NULL,                        /* AL_METHOD(_DRIVER_INFO *, mouse_drivers, (void)); */
-   NULL,                        /* AL_METHOD(_DRIVER_INFO *, joystick_drivers, (void)); */
    NULL                         /* AL_METHOD(_DRIVER_INFO *, timer_drivers, (void)); */
 };
 
@@ -359,7 +358,6 @@ static void sys_directx_restore_console_state(void)
    /* unacquire input devices */
    wnd_schedule_proc(key_dinput_unacquire);
    wnd_schedule_proc(mouse_dinput_unacquire);
-   wnd_schedule_proc(joystick_dinput_unacquire);
 
    /* reset switch mode */
    _win_reset_switch_mode();

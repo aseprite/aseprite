@@ -107,9 +107,5 @@ AL_VAR(DIGI_DRIVER, digi_sound_manager);
 AL_VAR(MIDI_DRIVER, midi_core_audio);
 AL_VAR(MIDI_DRIVER, midi_quicktime);
 
-/* Joystick drivers */
-#define JOYSTICK_HID            AL_ID('H','I','D','J')
-AL_VAR(JOYSTICK_DRIVER, joystick_hid);
-
 
 #endif

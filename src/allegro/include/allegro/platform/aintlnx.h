@@ -31,7 +31,6 @@ extern _DRIVER_INFO _linux_gfx_driver_list[];
 extern _DRIVER_INFO _linux_keyboard_driver_list[];
 extern _DRIVER_INFO _linux_mouse_driver_list[];
 extern _DRIVER_INFO _linux_timer_driver_list[];
-/* _linux_joystick_driver_list is in aintunix.h */
 
 
 /****************************************/

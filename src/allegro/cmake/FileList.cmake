@@ -27,7 +27,6 @@ set(ALLEGRO_SRC_FILES
         src/graphics.c
         src/gsprite.c
         src/inline.c
-        src/joystick.c
         src/keyboard.c
         src/lbm.c
         src/libc.c
@@ -119,10 +118,6 @@ set(ALLEGRO_SRC_WIN_FILES
         src/win/wgdi.c
         src/win/wgfxdrv.c
         src/win/winput.c
-        src/win/wjoydrv.c
-        src/win/wjoydx.c
-        src/win/wjoyhelp.c
-        src/win/wjoyw32.c
         src/win/wkeybd.c
         src/win/wmidi.c
         src/win/wmouse.c
@@ -138,8 +133,6 @@ set(ALLEGRO_SRC_LINUX_FILES
         src/linux/fbcon.c
         src/linux/lconsole.c
         src/linux/lgfxdrv.c
-        # Listed with UNIX files.
-        # src/linux/ljoy.c
         src/linux/lkeybd.c
         src/linux/lmemory.c
         src/linux/lmouse.c
@@ -160,8 +153,6 @@ set(ALLEGRO_SRC_LINUX_FILES
         src/misc/vbeafs.s
         src/misc/vgaregs.c
         src/misc/vga.c
-        # src/misc/modex.c
-        # src/misc/modexgfx.s
         )
 
 set(ALLEGRO_SRC_UNIX_FILES
@@ -176,7 +167,6 @@ set(ALLEGRO_SRC_UNIX_FILES
         src/unix/uesd.c
         src/unix/ufile.c
         src/unix/ugfxdrv.c
-        src/unix/ujoydrv.c
         src/unix/ukeybd.c
         src/unix/umain.c
         src/unix/umodules.c
@@ -190,10 +180,6 @@ set(ALLEGRO_SRC_UNIX_FILES
         src/unix/usystem.c
         src/unix/uthreads.c
         src/unix/utimer.c
-        # src/misc/modexsms.c
-
-        # May be used without enabling the entire Linux console port.
-        src/linux/ljoy.c
         )
 
 set(ALLEGRO_SRC_X_FILES
@@ -214,7 +200,6 @@ set(ALLEGRO_SRC_MACOSX_FILES
         src/macosx/cadigi.m
         src/macosx/camidi.m
         src/macosx/drivers.m
-        src/macosx/hidjoy.m
         src/macosx/hidman.m
         src/macosx/keybd.m
         src/macosx/pcpu.m
@@ -254,7 +239,6 @@ set(ALLEGRO_INCLUDE_ALLEGRO_FILES
         include/allegro/font.h
         include/allegro/gfx.h
         include/allegro/graphics.h
-        include/allegro/joystick.h
         include/allegro/keyboard.h
         include/allegro/lzss.h
         include/allegro/matrix.h

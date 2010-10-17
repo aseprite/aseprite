@@ -49,9 +49,6 @@ static _DRIVER_INFO *_xwin_sysdrv_digi_drivers(void);
 static _DRIVER_INFO *_xwin_sysdrv_midi_drivers(void);
 static _DRIVER_INFO *_xwin_sysdrv_keyboard_drivers(void);
 static _DRIVER_INFO *_xwin_sysdrv_mouse_drivers(void);
-#ifdef ALLEGRO_HAVE_LINUX_JOYSTICK_H
-static _DRIVER_INFO *_xwin_sysdrv_joystick_drivers(void);
-#endif
 static _DRIVER_INFO *_xwin_sysdrv_timer_drivers(void);
 
 
@@ -102,11 +99,6 @@ SYSTEM_DRIVER system_xwin =
    _xwin_sysdrv_midi_drivers,
    _xwin_sysdrv_keyboard_drivers,
    _xwin_sysdrv_mouse_drivers,
-#ifdef ALLEGRO_HAVE_LINUX_JOYSTICK_H
-   _xwin_sysdrv_joystick_drivers,
-#else
-   NULL, /* joystick_driver_list */
-#endif
    _xwin_sysdrv_timer_drivers
 };
 
@@ -388,18 +380,6 @@ static _DRIVER_INFO *_xwin_sysdrv_mouse_drivers(void)
 {
    return _xwin_mouse_driver_list;
 }
-
-
-
-#ifdef ALLEGRO_HAVE_LINUX_JOYSTICK_H
-/* _xwin_sysdrv_joystick_drivers:
- *  Get the list of joystick drivers.
- */
-static _DRIVER_INFO *_xwin_sysdrv_joystick_drivers(void)
-{
-   return _linux_joystick_driver_list;
-}
-#endif
 
 
 
