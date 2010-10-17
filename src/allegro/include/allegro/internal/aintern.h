@@ -190,46 +190,6 @@ AL_ARRAY(volatile char, _key);
 AL_VAR(volatile int, _key_shifts);
 
 
-#if (defined ALLEGRO_DOS) || (defined ALLEGRO_DJGPP) || (defined ALLEGRO_WATCOM) || \
-    (defined ALLEGRO_QNX) || (defined ALLEGRO_BEOS)  || (defined ALLEGRO_HAIKU)
-
-AL_ARRAY(char *, _pckeys_names);
-
-AL_FUNC(void, _pckeys_init, (void));
-AL_FUNC(void, _handle_pckey, (int code));
-AL_FUNC(int,  _pckey_scancode_to_ascii, (int scancode));
-AL_FUNC(AL_CONST char *, _pckey_scancode_to_name, (int scancode));
-
-AL_VAR(unsigned short *, _key_ascii_table);
-AL_VAR(unsigned short *, _key_capslock_table);
-AL_VAR(unsigned short *, _key_shift_table);
-AL_VAR(unsigned short *, _key_control_table);
-AL_VAR(unsigned short *, _key_altgr_lower_table);
-AL_VAR(unsigned short *, _key_altgr_upper_table);
-AL_VAR(unsigned short *, _key_accent1_lower_table);
-AL_VAR(unsigned short *, _key_accent1_upper_table);
-AL_VAR(unsigned short *, _key_accent2_lower_table);
-AL_VAR(unsigned short *, _key_accent2_upper_table);
-AL_VAR(unsigned short *, _key_accent3_lower_table);
-AL_VAR(unsigned short *, _key_accent3_upper_table);
-AL_VAR(unsigned short *, _key_accent4_lower_table);
-AL_VAR(unsigned short *, _key_accent4_upper_table);
-
-AL_VAR(int, _key_accent1);
-AL_VAR(int, _key_accent2);
-AL_VAR(int, _key_accent3);
-AL_VAR(int, _key_accent4);
-AL_VAR(int, _key_accent1_flag);
-AL_VAR(int, _key_accent2_flag);
-AL_VAR(int, _key_accent3_flag);
-AL_VAR(int, _key_accent4_flag);
-
-AL_VAR(int, _key_standard_kb);
-
-AL_VAR(char *, _keyboard_layout);
-
-#endif
-
 #if (defined ALLEGRO_WINDOWS)
 
    AL_FUNC(int, _al_win_open, (const char *filename, int mode, int perm));
