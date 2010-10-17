@@ -48,12 +48,7 @@ static int _xdga2_scroll_screen(int x, int y);
 static void _xdga2_set_palette_range(AL_CONST PALETTE p, int from, int to, int vsync);
 static void _xdga2_acquire(BITMAP *bmp);
 static GFX_MODE_LIST *_xdga2_fetch_mode_list(void);
-
-#ifdef ALLEGRO_NO_ASM
 uintptr_t _xdga2_write_line(BITMAP *bmp, int line);
-#else
-uintptr_t _xdga2_write_line_asm(BITMAP *bmp, int line);
-#endif
 
 
 static void (*_orig_hline) (BITMAP *bmp, int x1, int y, int x2, int color);
@@ -559,13 +554,8 @@ static BITMAP *_xdga2_private_gfxdrv_init_drv(GFX_DRIVER *drv, int w, int h, int
       /* Hardware acceleration has been requested */
       
       /* Updates line switcher to accommodate framebuffer synchronization */
-#ifdef ALLEGRO_NO_ASM
       bmp->write_bank = _xdga2_write_line;
       bmp->read_bank = _xdga2_write_line;
-#else
-      bmp->write_bank = _xdga2_write_line_asm;
-      bmp->read_bank = _xdga2_write_line_asm;
-#endif
 
       _screen_vtable.acquire = _xdga2_acquire;
 
@@ -816,7 +806,6 @@ static void _xdga2_acquire(BITMAP *bmp)
 }
 
 
-#ifdef ALLEGRO_NO_ASM
 
 /* _xdga2_write_line:
  *  Returns new line and synchronizes framebuffer if needed.
@@ -829,7 +818,6 @@ uintptr_t _xdga2_write_line(BITMAP *bmp, int line)
    return (uintptr_t)(bmp->line[line]);
 }
 
-#endif
 
 
 /* _xaccel_hline:

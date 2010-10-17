@@ -96,7 +96,6 @@ set(ALLEGRO_SRC_C_FILES
         )
 
 set(ALLEGRO_SRC_WIN_FILES
-        src/win/asmlock.s
         src/win/dllver.rc
         src/win/gdi.c
         src/win/wddaccel.c
@@ -147,10 +146,8 @@ set(ALLEGRO_SRC_LINUX_FILES
         src/linux/lvga.c
         src/linux/lvgahelp.c
         src/linux/svgalib.c
-        src/linux/svgalibs.s
         src/linux/vtswitch.c
         src/misc/vbeaf.c
-        src/misc/vbeafs.s
         src/misc/vgaregs.c
         src/misc/vga.c
         )
@@ -191,8 +188,6 @@ set(ALLEGRO_SRC_X_FILES
         src/x/xvtable.c
         src/x/xwin.c
         src/x/xdga2.c
-        src/x/xdga2s.s
-        src/x/xwins.s
         src/misc/colconv.c
         )
 

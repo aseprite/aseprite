@@ -21,7 +21,6 @@
 
 
 
-#ifdef ALLEGRO_NO_ASM
 /* Empty bank switch routines.  Should be used with C calling convention. */
 
 uintptr_t _stub_bank_switch(BITMAP *bmp, int y)
@@ -37,16 +36,6 @@ void _stub_bank_switch_end(void)
 {
 }
 
-#else
-
-/*
- * For ASM calling convention:
- *   Unix version uses bank switch routines from src/i386/imisc.s.
- *   DOS version uses bank switch routines from -#- or src/c/cmiscs.s.
- */
-
-#endif
-
 
 
 /* apply_matrix_f:
@@ -61,4 +50,3 @@ void apply_matrix_f(AL_CONST MATRIX_f *m, float x, float y, float z,
    *zout = CALC_ROW(2);
 #undef CALC_ROW
 }
-

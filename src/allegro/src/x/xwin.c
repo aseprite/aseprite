@@ -272,10 +272,6 @@ static void _xvidmode_private_unset_fullscreen(void);
 
 uintptr_t _xwin_write_line(BITMAP *bmp, int line);
 void _xwin_unwrite_line(BITMAP *bmp);
-#ifndef ALLEGRO_NO_ASM
-uintptr_t _xwin_write_line_asm(BITMAP *bmp, int line);
-void _xwin_unwrite_line_asm(BITMAP *bmp);
-#endif
 
 
 
@@ -1047,13 +1043,8 @@ static BITMAP *_xwin_private_create_screen_bitmap(GFX_DRIVER *drv,
    drv->vid_mem = _xwin.virtual_width * _xwin.virtual_height * BYTES_PER_PIXEL(_xwin.screen_depth);
 
    /* Need some magic for updating frame buffer.  */
-#ifndef ALLEGRO_NO_ASM
-   bmp->write_bank = _xwin_write_line_asm;
-   bmp->vtable->unwrite_bank = _xwin_unwrite_line_asm;
-#else
    bmp->write_bank = _xwin_write_line;
    bmp->vtable->unwrite_bank = _xwin_unwrite_line;
-#endif
 
    /* Replace entries in vtable with magical wrappers.  */
    _xwin_replace_vtable(bmp->vtable);

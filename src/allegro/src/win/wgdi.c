@@ -40,13 +40,6 @@ char *gdi_dirty_lines = NULL; /* used in WRITE_BANK() */
 
 
 
-/* If custom (asm) calling conversions are used, then the code in asmlock.s is
- * used instead.
- */
-#if defined(ALLEGRO_NO_ASM)
-
-
-
 uintptr_t gfx_gdi_write_bank(BITMAP *bmp, int line)
 {
    gdi_dirty_lines[bmp->y_ofs +line] = 1;
@@ -67,23 +60,6 @@ void gfx_gdi_unwrite_bank(BITMAP *bmp)
    gfx_gdi_unlock(bmp);
    bmp->id &= ~ BMP_ID_AUTOLOCK;
 }
-
-
-
-#else /* !defined(ALLEGRO_NO_ASM) */
-
-
-
-/* asmlock.s requires these two variables */
-void (*ptr_gfx_gdi_autolock)(struct BITMAP* bmp) = gfx_gdi_autolock;
-void (*ptr_gfx_gdi_unlock)(struct BITMAP* bmp) = gfx_gdi_unlock;
-
-/* wddraw.h, despite its name, includes the exports from asmlock.s */
-#include "wddraw.h"
-
-
-
-#endif /* !defined(ALLEGRO_NO_ASM) */
 
 
 

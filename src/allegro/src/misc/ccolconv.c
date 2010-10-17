@@ -26,8 +26,6 @@ extern int *_colorconv_rgb_scale_5x35;     /* for conversion from 15/16-bit */
 extern unsigned char *_colorconv_rgb_map;  /* for conversion from 8/12-bit to 8-bit */
 
 
-#ifdef ALLEGRO_NO_ASM
-
 #ifdef ALLEGRO_COLOR8
 
 
@@ -1000,7 +998,5 @@ void _colorcopy_blit_32_to_32(struct GRAPHICS_RECT *src_rect, struct GRAPHICS_RE
    colorcopy(src_rect, dest_rect, 4);
 }
 
-
-#endif
 
 #endif

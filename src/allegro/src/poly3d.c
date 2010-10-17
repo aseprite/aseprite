@@ -28,10 +28,6 @@
 #include "allegro.h"
 #include "allegro/internal/aintern.h"
 
-#if defined ALLEGRO_ASMCAPA_HEADER && !defined ALLEGRO_NO_ASM
-   #include ALLEGRO_ASMCAPA_HEADER
-#endif
-
 #ifdef ALLEGRO_MMX
 
 /* for use by iscan.s */

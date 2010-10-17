@@ -27,27 +27,9 @@
 
 struct BITMAP;
 
-#if (defined ALLEGRO_I386) && (!defined ALLEGRO_NO_ASM)
-
-/* compiled sprite structure */
-typedef struct COMPILED_SPRITE
-{
-   short planar;                    /* set if it's a planar (mode-X) sprite */
-   short color_depth;               /* color depth of the image */
-   short w, h;                      /* size of the sprite */
-   struct {
-      void *draw;                   /* routines to draw the image */
-      int len;                      /* length of the drawing functions */
-   } proc[4];
-} COMPILED_SPRITE;
-
-#else
-
 /* emulate compiled sprites using RLE on other platforms */
 struct RLE_SPRITE;
 typedef struct RLE_SPRITE COMPILED_SPRITE;
-
-#endif
 
 AL_FUNC(COMPILED_SPRITE *, get_compiled_sprite, (struct BITMAP *bitmap, int planar));
 AL_FUNC(void, destroy_compiled_sprite, (COMPILED_SPRITE *sprite));

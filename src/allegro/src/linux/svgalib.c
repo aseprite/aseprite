@@ -46,12 +46,6 @@ static void svga_save(void);
 static void svga_restore(void);
 /* static GFX_MODE_LIST *svga_fetch_mode_list(void); */
 
-#ifndef ALLEGRO_NO_ASM
-unsigned long _svgalib_read_line_asm(BITMAP *bmp, int line);
-unsigned long _svgalib_write_line_asm(BITMAP *bmp, int line);
-void _svgalib_unwrite_line_asm(BITMAP *bmp);
-#endif
-
 
 
 GFX_DRIVER gfx_svgalib = 
@@ -436,15 +430,9 @@ static BITMAP *do_set_mode(int w, int h, int v_w, int v_h, int color_depth)
 			 &gfx_svgalib, color_depth, bytes_per_line);
       if (bmp) {
 	 /* Set bank switching routines.  */
-#ifndef ALLEGRO_NO_ASM
-	 bmp->read_bank = _svgalib_read_line_asm;
-	 bmp->write_bank = _svgalib_write_line_asm;
-	 bmp->vtable->unwrite_bank = _svgalib_unwrite_line_asm;
-#else
 	 bmp->read_bank = _svgalib_read_line;
 	 bmp->write_bank = _svgalib_write_line;
 	 bmp->vtable->unwrite_bank = _svgalib_unwrite_line;
-#endif
       }
 
       return bmp;

@@ -42,11 +42,6 @@ unsigned long _blender_black(unsigned long x, unsigned long y, unsigned long n)
 #if (defined ALLEGRO_COLOR24) || (defined ALLEGRO_COLOR32)
 
 
-
-#if (defined ALLEGRO_NO_ASM) || (!defined ALLEGRO_I386) 
-				    /* i386 asm version is in imisc.s */
-
-
 /* _blender_trans24:
  *  24 bit trans blender function.
  */
@@ -67,9 +62,6 @@ unsigned long _blender_trans24(unsigned long x, unsigned long y, unsigned long n
 
    return res | g;
 }
-
-
-#endif      /* C version */
 
 
 

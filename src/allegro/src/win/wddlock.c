@@ -24,11 +24,6 @@
 
 
 
-/* If custom (asm) calling conversions are used, then the code in asmlock.s is
- * used instead.
- */
-#if defined(ALLEGRO_NO_ASM)
-
 static void update_dirty_lines(BITMAP *bmp)
 {
    RECT rect;
@@ -113,20 +108,6 @@ void gfx_directx_unlock_win(BITMAP *bmp)
    if (!(gfx_directx_forefront_bitmap->id & BMP_ID_LOCKED))
       update_dirty_lines(gfx_directx_forefront_bitmap);
 }
-
-
-
-#else /* !defined(ALLEGRO_NO_ASM) */
-
-
-
-/* asmlock.s requires these two variables */
-void (*ptr_gfx_directx_autolock) (BITMAP* bmp) = gfx_directx_autolock;
-void (*ptr_gfx_directx_unlock) (BITMAP* bmp) = gfx_directx_unlock;
-
-
-
-#endif /* !defined(ALLEGRO_NO_ASM) */
 
 
 
