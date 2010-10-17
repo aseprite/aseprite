@@ -11,29 +11,7 @@ namespace base {		// Based on C++0x threads lib
 
   class thread {
   public:
-    class details;
-    class id
-    {
-      friend class thread;
-      friend class details;
-
-      unsigned int m_native_id;
-      id(unsigned int id) : m_native_id(id) { }
-    public:
-      id() : m_native_id(0) { }
-      bool operator==(const id& y) const { return m_native_id == y.m_native_id; }
-      bool operator!=(const id& y) const { return m_native_id != y.m_native_id; }
-      bool operator< (const id& y) const { return m_native_id <  y.m_native_id; }
-      bool operator<=(const id& y) const { return m_native_id <= y.m_native_id; }
-      bool operator> (const id& y) const { return m_native_id >  y.m_native_id; }
-      bool operator>=(const id& y) const { return m_native_id >= y.m_native_id; }
-
-      id& operator=(const id& y) { m_native_id = y.m_native_id; return *this; }
-    };
-
     typedef void* native_handle_type;
-
-  public:
 
     // Create an instance to represent the current thread
     thread();
@@ -62,18 +40,15 @@ namespace base {		// Based on C++0x threads lib
     void join();
     void detach();
 
-    id get_id() const;
     native_handle_type native_handle();
 
     class details {
     public:
       static void thread_proxy(void* data);
-      static id get_current_thread_id();
     };
 
   private:
     native_handle_type m_native_handle;
-    id m_id;
 
     class func_wrapper {
     public:
@@ -113,7 +88,6 @@ namespace base {		// Based on C++0x threads lib
 
   namespace this_thread
   {
-    thread::id get_id();
     void yield();
     void sleep_for(int milliseconds);
   }

@@ -38,8 +38,7 @@ namespace {
 }
 
 base::thread::thread()
-  : m_native_handle(NULL)
-  , m_id(this_thread::get_id())
+  : m_native_handle((native_handle_type)0)
 {
 }
 
@@ -51,7 +50,7 @@ base::thread::~thread()
 
 bool base::thread::joinable() const
 {
-  return (m_id != 0 && m_id != this_thread::get_id());
+  return m_native_handle != (native_handle_type)0;
 }
 
 void base::thread::join()
@@ -60,7 +59,7 @@ void base::thread::join()
 #ifdef WIN32
     ::WaitForSingleObject(m_native_handle, INFINITE);
 #else
-    ::pthread_join(m_id.m_native_id, NULL);
+    ::pthread_join((pthread_t)m_native_handle, NULL);
 #endif
     detach();
   }
@@ -71,47 +70,34 @@ void base::thread::detach()
   if (joinable()) {
 #ifdef WIN32
     ::CloseHandle(m_native_handle);
-    m_native_handle = NULL;
+    m_native_handle = (native_handle_type)0;
 #else
-    ::pthread_detach(m_id.m_native_id);
+    ::pthread_detach((pthread_t)m_native_handle);
 #endif
-    m_id = id();
   }
-}
-
-base::thread::id base::thread::get_id() const
-{
-  return m_id;
 }
 
 base::thread::native_handle_type base::thread::native_handle()
 {
-#ifdef WIN32
-  return (native_handle_type)m_native_handle;
-#else
-  return (native_handle_type)m_id.m_native_id;
-#endif
+  return m_native_handle;
 }
 
 void base::thread::launch_thread(func_wrapper* f)
 {
-  m_native_handle = NULL;
-  m_id = id();
+  m_native_handle = (native_handle_type)0;
 
 #ifdef WIN32
 
   DWORD native_id;
   m_native_handle = ::CreateThread(NULL, 0, win32_thread_proxy, (LPVOID)f,
 				   CREATE_SUSPENDED, &native_id);
-  m_id = id((unsigned int)native_id);
-
   ResumeThread(m_native_handle);
 
 #else
 
   pthread_t thread;
   if (::pthread_create(&thread, NULL, pthread_thread_proxy, f) == 0)
-    m_id = id((unsigned int)thread);
+    m_native_handle = (void*)thread;
 
 #endif
 }
@@ -125,20 +111,6 @@ void base::thread::details::thread_proxy(void* data)
 
   // Delete the data (it was created in the thread() ctor).
   delete f;
-}
-
-base::thread::id base::thread::details::get_current_thread_id()
-{
-#ifdef WIN32
-  return id(::GetCurrentThreadId());
-#else
-  return id((unsigned int)::pthread_self());
-#endif
-}
-
-base::thread::id base::this_thread::get_id()
-{
-  return thread::details::get_current_thread_id();
 }
 
 void base::this_thread::yield()
