@@ -25,7 +25,6 @@
 
 
 
-static void unload_midi(MIDI *m);
 static void initialise_datafile(DATAFILE *data);
 
 
@@ -561,115 +560,6 @@ static RGB *read_palette(PACKFILE *f, int size)
 
 
 
-/* read_sample:
- *  Reads a sample from a file.
- */
-static SAMPLE *read_sample(PACKFILE *f)
-{
-   signed short bits;
-   SAMPLE *s;
-
-   s = _AL_MALLOC(sizeof(SAMPLE));
-   if (!s) {
-      *allegro_errno = ENOMEM;
-      return NULL;
-   }
-
-   bits = pack_mgetw(f);
-
-   if (bits < 0) {
-      s->bits = -bits;
-      s->stereo = TRUE;
-   }
-   else {
-      s->bits = bits;
-      s->stereo = FALSE;
-   }
-
-   s->freq = pack_mgetw(f);
-   s->len = pack_mgetl(f);
-   s->priority = 128;
-   s->loop_start = 0;
-   s->loop_end = s->len;
-   s->param = 0;
-
-   if (s->bits == 8) {
-      s->data = read_block(f, s->len * ((s->stereo) ? 2 : 1), 0);
-   }
-   else {
-      s->data = _AL_MALLOC_ATOMIC(s->len * sizeof(short) * ((s->stereo) ? 2 : 1));
-      if (s->data) {
-	 int i;
-
-	 for (i=0; i < (int)s->len * ((s->stereo) ? 2 : 1); i++) {
-	    ((unsigned short *)s->data)[i] = pack_igetw(f);
-	 }
-
-	 if (pack_ferror(f)) {
-	    _AL_FREE(s->data);
-	    s->data = NULL;
-	 }
-      }
-   }
-   if (!s->data) {
-      _AL_FREE(s);
-      return NULL;
-   }
-
-   LOCK_DATA(s, sizeof(SAMPLE));
-   LOCK_DATA(s->data, s->len * ((s->bits==8) ? 1 : sizeof(short)) * ((s->stereo) ? 2 : 1));
-
-   return s;
-}
-
-
-
-/* read_midi:
- *  Reads MIDI data from a datafile (this is not the same thing as the 
- *  standard midi file format).
- */
-static MIDI *read_midi(PACKFILE *f)
-{
-   MIDI *m;
-   int c;
-
-   m = _AL_MALLOC(sizeof(MIDI));
-   if (!m) {
-      *allegro_errno = ENOMEM;
-      return NULL;
-   }
-
-   for (c=0; c<MIDI_TRACKS; c++) {
-      m->track[c].len = 0;
-      m->track[c].data = NULL;
-   }
-
-   m->divisions = pack_mgetw(f);
-
-   for (c=0; c<MIDI_TRACKS; c++) {
-      m->track[c].len = pack_mgetl(f);
-      if (m->track[c].len > 0) {
-	 m->track[c].data = read_block(f, m->track[c].len, 0);
-	 if (!m->track[c].data) {
-	    unload_midi(m);
-	    return NULL;
-	 }
-      }
-   }
-
-   LOCK_DATA(m, sizeof(MIDI));
-
-   for (c=0; c<MIDI_TRACKS; c++) {
-      if (m->track[c].data) {
-	 LOCK_DATA(m->track[c].data, m->track[c].len);
-      }
-   }
-
-   return m;
-}
-
-
-
 /* read_rle_sprite:
  *  Reads an RLE compressed sprite from a file, allocating memory for it. 
  */
@@ -953,18 +843,6 @@ static DATAFILE *read_old_datafile(PACKFILE *f, void (*callback)(DATAFILE *))
 	    dat[c].size = 0;
 	    break;
 
-	 case V1_DAT_SAMPLE:
-	    dat[c].type = DAT_SAMPLE;
-	    dat[c].dat = read_sample(f);
-	    dat[c].size = 0;
-	    break;
-
-	 case V1_DAT_MIDI:
-	    dat[c].type = DAT_MIDI;
-	    dat[c].dat = read_midi(f);
-	    dat[c].size = 0;
-	    break;
-
 	 case V1_DAT_RLE_SPRITE:
 	    dat[c].type = DAT_RLE_SPRITE;
 	    dat[c].dat = read_rle_sprite(f, 8);
@@ -1040,26 +918,6 @@ static void *load_font_object(PACKFILE *f, long size)
 
 
 
-/* load_sample_object:
- *  Loads a sample object from a datafile.
- */
-static void *load_sample_object(PACKFILE *f, long size)
-{
-   return read_sample(f);
-}
-
-
-
-/* load_midi_object:
- *  Loads a midifile object from a datafile.
- */
-static void *load_midi_object(PACKFILE *f, long size)
-{
-   return read_midi(f);
-}
-
-
-
 /* load_bitmap_object:
  *  Loads a bitmap object from a datafile.
  */
@@ -1104,46 +962,6 @@ static void *load_xcompiled_sprite_object(PACKFILE *f, long size)
    short bits = pack_mgetw(f);
 
    return read_compiled_sprite(f, TRUE, bits);
-}
-
-
-
-/* unload_sample: 
- *  Destroys a sample object.
- */
-static void unload_sample(SAMPLE *s)
-{
-   if (s) {
-      if (s->data) {
-	 UNLOCK_DATA(s->data, s->len * ((s->bits==8) ? 1 : sizeof(short)) * ((s->stereo) ? 2 : 1));
-	 _AL_FREE(s->data);
-      }
-
-      UNLOCK_DATA(s, sizeof(SAMPLE));
-      _AL_FREE(s);
-   }
-}
-
-
-
-/* unload_midi: 
- *  Destroys a MIDI object.
- */
-static void unload_midi(MIDI *m)
-{
-   int c;
-
-   if (m) {
-      for (c=0; c<MIDI_TRACKS; c++) {
-	 if (m->track[c].data) {
-	    UNLOCK_DATA(m->track[c].data, m->track[c].len);
-	    _AL_FREE(m->track[c].data);
-	 }
-      }
-
-      UNLOCK_DATA(m, sizeof(MIDI));
-      _AL_FREE(m);
-   }
 }
 
 
@@ -2148,8 +1966,6 @@ static void initialise_datafile(DATAFILE *data)
 {
    int c, c2, color_flag;
    FONT *f;
-   SAMPLE *s;
-   MIDI *m;
 
    for (c=0; data[c].type != DAT_END; c++) {
 
@@ -2177,22 +1993,6 @@ static void initialise_datafile(DATAFILE *data)
 	    }
 	    else {
 	       f->vtable = font_vtable_mono;
-	    }
-	    break;
-
-	 case DAT_SAMPLE:
-	    s = data[c].dat;
-	    LOCK_DATA(s, sizeof(SAMPLE));
-	    LOCK_DATA(s->data, s->len * ((s->bits==8) ? 1 : sizeof(short)) * ((s->stereo) ? 2 : 1));
-	    break;
-
-	 case DAT_MIDI:
-	    m = data[c].dat;
-	    LOCK_DATA(m, sizeof(MIDI));
-	    for (c2=0; c2<MIDI_TRACKS; c2++) {
-	       if (m->track[c2].data) {
-		  LOCK_DATA(m->track[c2].data, m->track[c2].len);
-	       }
 	    }
 	    break;
       }
@@ -2225,8 +2025,6 @@ void _initialize_datafile_types(void)
 {
    register_datafile_object(DAT_FILE,         load_file_object,             (void (*)(void *data))unload_datafile        );
    register_datafile_object(DAT_FONT,         load_font_object,             (void (*)(void *data))destroy_font           );
-   register_datafile_object(DAT_SAMPLE,       load_sample_object,           (void (*)(void *data))unload_sample          );
-   register_datafile_object(DAT_MIDI,         load_midi_object,             (void (*)(void *data))unload_midi            );
    register_datafile_object(DAT_BITMAP,       load_bitmap_object,           (void (*)(void *data))destroy_bitmap         );
    register_datafile_object(DAT_RLE_SPRITE,   load_rle_sprite_object,       (void (*)(void *data))destroy_rle_sprite     );
    register_datafile_object(DAT_C_SPRITE,     load_compiled_sprite_object,  (void (*)(void *data))destroy_compiled_sprite);

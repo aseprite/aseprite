@@ -91,8 +91,6 @@ SYSTEM_DRIVER system_directx =
    sys_directx_lock_mutex,
    sys_directx_unlock_mutex,
    NULL,                        /* AL_METHOD(_DRIVER_INFO *, gfx_drivers, (void)); */
-   _get_win_digi_driver_list,   /* AL_METHOD(_DRIVER_INFO *, digi_drivers, (void)); */
-   _get_win_midi_driver_list,   /* AL_METHOD(_DRIVER_INFO *, midi_drivers, (void)); */
    NULL,                        /* AL_METHOD(_DRIVER_INFO *, keyboard_drivers, (void)); */
    NULL,                        /* AL_METHOD(_DRIVER_INFO *, mouse_drivers, (void)); */
    NULL                         /* AL_METHOD(_DRIVER_INFO *, timer_drivers, (void)); */
@@ -214,10 +212,6 @@ static int sys_directx_init(void)
  */
 static void sys_directx_exit(void)
 {
-   /* free allocated resources */
-   _free_win_digi_driver_list();
-   _free_win_midi_driver_list();
-
    /* unhook or close window */
    exit_directx_window();
 

@@ -1005,96 +1005,6 @@ AL_FUNC(void, _poly_zbuf_ptex_mask_trans32, (uintptr_t addr, int w, POLYGON_SEGM
 #endif
 
 
-/* sound lib stuff */
-AL_VAR(MIDI_DRIVER, _midi_none);
-AL_VAR(int, _digi_volume);
-AL_VAR(int, _midi_volume);
-AL_VAR(int, _sound_flip_pan); 
-AL_VAR(int, _sound_hq);
-AL_VAR(int, _sound_stereo);
-AL_VAR(int, _sound_bits);
-AL_VAR(int, _sound_freq);
-AL_VAR(int, _sound_port);
-AL_VAR(int, _sound_dma);
-AL_VAR(int, _sound_irq);
-
-AL_VAR(int, _sound_installed);
-AL_VAR(int, _sound_input_installed);
-
-AL_FUNC(int, _midi_allocate_voice, (int min, int max));
-
-AL_VAR(volatile long, _midi_tick);
-
-AL_FUNC(int, _digmid_find_patches, (char *dir, int dir_size, char *file, int size_of_file));
-
-#define VIRTUAL_VOICES  256
-
-
-typedef struct          /* a virtual (as seen by the user) soundcard voice */
-{
-   AL_CONST SAMPLE *sample;      /* which sample are we playing? (NULL = free) */
-   int num;             /* physical voice number (-1 = been killed off) */
-   int autokill;        /* set to free the voice when the sample finishes */
-   long time;           /* when we were started (for voice allocation) */
-   int priority;        /* how important are we? */
-} VOICE;
-
-
-typedef struct          /* a physical (as used by hardware) soundcard voice */
-{
-   int num;             /* the virtual voice currently using me (-1 = free) */
-   int playmode;        /* are we looping? */
-   int vol;             /* current volume (fixed point .12) */
-   int dvol;            /* volume delta, for ramping */
-   int target_vol;      /* target volume, for ramping */
-   int pan;             /* current pan (fixed point .12) */
-   int dpan;            /* pan delta, for sweeps */
-   int target_pan;      /* target pan, for sweeps */
-   int freq;            /* current frequency (fixed point .12) */
-   int dfreq;           /* frequency delta, for sweeps */
-   int target_freq;     /* target frequency, for sweeps */
-} PHYS_VOICE;
-
-AL_ARRAY(PHYS_VOICE, _phys_voice);
-
-
-#define MIXER_DEF_SFX               8
-#define MIXER_MAX_SFX               64
-
-AL_FUNC(int,  _mixer_init, (int bufsize, int freq, int stereo, int is16bit, int *voices));
-AL_FUNC(void, _mixer_exit, (void));
-AL_FUNC(void, _mix_some_samples, (uintptr_t buf, unsigned short seg, int issigned));
-AL_FUNC(void, _mixer_init_voice, (int voice, AL_CONST SAMPLE *sample));
-AL_FUNC(void, _mixer_release_voice, (int voice));
-AL_FUNC(void, _mixer_start_voice, (int voice));
-AL_FUNC(void, _mixer_stop_voice, (int voice));
-AL_FUNC(void, _mixer_loop_voice, (int voice, int loopmode));
-AL_FUNC(int,  _mixer_get_position, (int voice));
-AL_FUNC(void, _mixer_set_position, (int voice, int position));
-AL_FUNC(int,  _mixer_get_volume, (int voice));
-AL_FUNC(void, _mixer_set_volume, (int voice, int volume));
-AL_FUNC(void, _mixer_ramp_volume, (int voice, int tyme, int endvol));
-AL_FUNC(void, _mixer_stop_volume_ramp, (int voice));
-AL_FUNC(int,  _mixer_get_frequency, (int voice));
-AL_FUNC(void, _mixer_set_frequency, (int voice, int frequency));
-AL_FUNC(void, _mixer_sweep_frequency, (int voice, int tyme, int endfreq));
-AL_FUNC(void, _mixer_stop_frequency_sweep, (int voice));
-AL_FUNC(int,  _mixer_get_pan, (int voice));
-AL_FUNC(void, _mixer_set_pan, (int voice, int pan));
-AL_FUNC(void, _mixer_sweep_pan, (int voice, int tyme, int endpan));
-AL_FUNC(void, _mixer_stop_pan_sweep, (int voice));
-AL_FUNC(void, _mixer_set_echo, (int voice, int strength, int delay));
-AL_FUNC(void, _mixer_set_tremolo, (int voice, int rate, int depth));
-AL_FUNC(void, _mixer_set_vibrato, (int voice, int rate, int depth));
-
-AL_FUNC(void, _dummy_noop1, (int p));
-AL_FUNC(void, _dummy_noop2, (int p1, int p2));
-AL_FUNC(void, _dummy_noop3, (int p1, int p2, int p3));
-AL_FUNC(int,  _dummy_load_patches, (AL_CONST char *patches, AL_CONST char *drums));
-AL_FUNC(void, _dummy_adjust_patches, (AL_CONST char *patches, AL_CONST char *drums));
-AL_FUNC(void, _dummy_key_on, (int inst, int note, int bend, int vol, int pan));
-
-
 /* datafile ID's for compatibility with the old datafile format */
 #define V1_DAT_MAGIC             0x616C6C2EL
 
@@ -1110,8 +1020,6 @@ AL_FUNC(void, _dummy_key_on, (int inst, int note, int bend, int vol, int pan));
 #define V1_DAT_FONT_PROP         9
 #define V1_DAT_BITMAP            10
 #define V1_DAT_PALETTE           11
-#define V1_DAT_SAMPLE            12
-#define V1_DAT_MIDI              13
 #define V1_DAT_RLE_SPRITE        14
 #define V1_DAT_FLI               15
 #define V1_DAT_C_SPRITE          16
@@ -1146,22 +1054,11 @@ AL_FUNC(void, _construct_datafile, (DATAFILE *data));
 /* for readbmp.c */
 AL_FUNC(void, _register_bitmap_file_type_init, (void));
 
-/* for readsmp.c */
-AL_FUNC(void, _register_sample_file_type_init, (void));
-
 /* for readfont.c */
 AL_FUNC(void, _register_font_file_type_init, (void));
 
 
 /* for module linking system; see comment in allegro.c */
-struct _AL_LINKER_MIDI
-{
-   AL_METHOD(int, init, (void));
-   AL_METHOD(void, exit, (void));
-};
-
-AL_VAR(struct _AL_LINKER_MIDI *, _al_linker_midi);
-
 struct _AL_LINKER_MOUSE
 {
    AL_METHOD(void, set_mouse_etc, (void));

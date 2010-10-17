@@ -66,13 +66,9 @@ extern "C" {
 
    /* Dynamic driver lists, for modules */
    AL_VAR(_DRIVER_INFO *, _unix_gfx_driver_list);
-   AL_VAR(_DRIVER_INFO *, _unix_digi_driver_list);
-   AL_VAR(_DRIVER_INFO *, _unix_midi_driver_list);
    AL_FUNC(void, _unix_driver_lists_init, (void));
    AL_FUNC(void, _unix_driver_lists_shutdown, (void));
    AL_FUNC(void, _unix_register_gfx_driver, (int id, GFX_DRIVER *driver, int autodetect, int priority));
-   AL_FUNC(void, _unix_register_digi_driver, (int id, DIGI_DRIVER *driver, int autodetect, int priority));
-   AL_FUNC(void, _unix_register_midi_driver, (int id, MIDI_DRIVER *driver, int autodetect, int priority));
 
    /* Get size of a memory page in bytes */
    AL_FUNC(size_t, _unix_get_page_size, (void));
@@ -135,12 +131,6 @@ extern "C" {
 
 #endif
 
-
-#ifdef ALLEGRO_WITH_OSSDIGI
-   /* So the setup program can read what we detected */
-   AL_VAR(int, _oss_fragsize);
-   AL_VAR(int, _oss_numfrags);
-#endif
 
 
 #ifdef __cplusplus

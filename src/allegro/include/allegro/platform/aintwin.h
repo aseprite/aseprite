@@ -146,32 +146,6 @@ AL_FUNC(void, sys_directx_lock_mutex, (void *handle));
 AL_FUNC(void, sys_directx_unlock_mutex, (void *handle));
 
 
-/* sound routines */
-AL_FUNC(_DRIVER_INFO *, _get_win_digi_driver_list, (void));
-AL_FUNC(void, _free_win_digi_driver_list, (void));
-
-AL_FUNC(DIGI_DRIVER *, _get_dsalmix_driver, (char *name, LPGUID guid, int num));
-AL_FUNC(void, _free_win_dsalmix_name_list, (void));
-AL_FUNC(DIGI_DRIVER *, _get_woalmix_driver, (int num));
-
-AL_FUNC(int, digi_directsound_capture_init, (LPGUID guid));
-AL_FUNC(void, digi_directsound_capture_exit, (void));
-AL_FUNC(int, digi_directsound_capture_detect, (LPGUID guid));
-AL_FUNC(int, digi_directsound_rec_cap_rate, (int bits, int stereo));
-AL_FUNC(int, digi_directsound_rec_cap_param, (int rate, int bits, int stereo));
-AL_FUNC(int, digi_directsound_rec_source, (int source));
-AL_FUNC(int, digi_directsound_rec_start, (int rate, int bits, int stereo));
-AL_FUNC(void, digi_directsound_rec_stop, (void));
-AL_FUNC(int, digi_directsound_rec_read, (void *buf));
-
-
-/* midi routines */
-AL_FUNC(_DRIVER_INFO *, _get_win_midi_driver_list, (void));
-AL_FUNC(void, _free_win_midi_driver_list, (void));
-
-AL_FUNC(void, midi_switch_out, (void));
-
-
 /* file routines */
 AL_VAR(int, _al_win_unicode_filenames);
 

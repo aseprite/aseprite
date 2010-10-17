@@ -116,17 +116,3 @@ AL_VAR(GFX_DRIVER, gfx_gdi);
    {  GFX_DIRECTX_WIN,     &gfx_directx_win,       TRUE  },             \
    {  GFX_DIRECTX_OVL,     &gfx_directx_ovl,       TRUE  },             \
    {  GFX_GDI,             &gfx_gdi,               FALSE },
-
-
-
-/********************************************/
-/*************** sound drivers **************/
-/********************************************/
-#define DIGI_DIRECTX(n)          AL_ID('D','X','A'+(n),' ')
-#define DIGI_DIRECTAMX(n)        AL_ID('A','X','A'+(n),' ')
-#define DIGI_WAVOUTID(n)         AL_ID('W','O','A'+(n),' ')
-#define MIDI_WIN32MAPPER         AL_ID('W','3','2','M')
-#define MIDI_WIN32(n)            AL_ID('W','3','2','A'+(n))
-#define MIDI_WIN32_IN(n)         AL_ID('W','3','2','A'+(n))
-
-

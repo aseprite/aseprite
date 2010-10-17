@@ -45,8 +45,6 @@ static int _xwin_sysdrv_desktop_color_depth(void);
 static int _xwin_sysdrv_get_desktop_resolution(int *width, int *height);
 static void _xwin_sysdrv_get_gfx_safe_mode(int *driver, struct GFX_MODE *mode);
 static _DRIVER_INFO *_xwin_sysdrv_gfx_drivers(void);
-static _DRIVER_INFO *_xwin_sysdrv_digi_drivers(void);
-static _DRIVER_INFO *_xwin_sysdrv_midi_drivers(void);
 static _DRIVER_INFO *_xwin_sysdrv_keyboard_drivers(void);
 static _DRIVER_INFO *_xwin_sysdrv_mouse_drivers(void);
 static _DRIVER_INFO *_xwin_sysdrv_timer_drivers(void);
@@ -95,8 +93,6 @@ SYSTEM_DRIVER system_xwin =
    NULL, /* unlock_mutex */
 #endif
    _xwin_sysdrv_gfx_drivers,
-   _xwin_sysdrv_digi_drivers,
-   _xwin_sysdrv_midi_drivers,
    _xwin_sysdrv_keyboard_drivers,
    _xwin_sysdrv_mouse_drivers,
    _xwin_sysdrv_timer_drivers
@@ -339,26 +335,6 @@ static void _xwin_sysdrv_message(AL_CONST char *msg)
 static _DRIVER_INFO *_xwin_sysdrv_gfx_drivers(void)
 {
    return _unix_gfx_driver_list;
-}
-
-
-
-/* _xwin_sysdrv_digi_drivers:
- *  Get the list of digital sound drivers.
- */
-static _DRIVER_INFO *_xwin_sysdrv_digi_drivers(void)
-{
-   return _unix_digi_driver_list;
-}
-
-
-
-/* _xwin_sysdrv_midi_drivers:
- *  Get the list of MIDI drivers.
- */
-static _DRIVER_INFO *_xwin_sysdrv_midi_drivers(void)
-{
-   return _unix_midi_driver_list;
 }
 
 

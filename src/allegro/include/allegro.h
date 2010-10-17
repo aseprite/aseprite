@@ -45,8 +45,6 @@
 #include "allegro/fli.h"
 #include "allegro/config.h"
 
-#include "allegro/sound.h"
-
 #include "allegro/file.h"
 #include "allegro/lzss.h"
 #include "allegro/datafile.h"

@@ -95,17 +95,5 @@ AL_VAR(MOUSE_DRIVER, mouse_macosx);
 AL_VAR(GFX_DRIVER, gfx_quartz_window);
 AL_VAR(GFX_DRIVER, gfx_quartz_full);
 
-/* Digital sound drivers */
-#define DIGI_CORE_AUDIO         AL_ID('D','C','A',' ')
-#define DIGI_SOUND_MANAGER      AL_ID('S','N','D','M')
-AL_VAR(DIGI_DRIVER, digi_core_audio);
-AL_VAR(DIGI_DRIVER, digi_sound_manager);
-
-/* MIDI music drivers */
-#define MIDI_CORE_AUDIO         AL_ID('M','C','A',' ')
-#define MIDI_QUICKTIME          AL_ID('Q','T','M',' ')
-AL_VAR(MIDI_DRIVER, midi_core_audio);
-AL_VAR(MIDI_DRIVER, midi_quicktime);
-
 
 #endif

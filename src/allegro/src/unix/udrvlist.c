@@ -23,8 +23,6 @@
 
 
 _DRIVER_INFO *_unix_gfx_driver_list = 0;
-_DRIVER_INFO *_unix_digi_driver_list = 0;
-_DRIVER_INFO *_unix_midi_driver_list = 0;
 
 
 
@@ -36,14 +34,6 @@ void _unix_driver_lists_init(void)
    _unix_gfx_driver_list = _create_driver_list();
    if (_unix_gfx_driver_list)
       _driver_list_append_list(&_unix_gfx_driver_list, _gfx_driver_list);
-    
-   _unix_digi_driver_list = _create_driver_list();
-   if (_unix_digi_driver_list)
-      _driver_list_append_list(&_unix_digi_driver_list, _digi_driver_list);
-   
-   _unix_midi_driver_list = _create_driver_list();
-   if (_unix_midi_driver_list)
-      _driver_list_append_list(&_unix_midi_driver_list, _midi_driver_list);
 }
 
 
@@ -56,16 +46,6 @@ void _unix_driver_lists_shutdown(void)
    if (_unix_gfx_driver_list) {
       _destroy_driver_list(_unix_gfx_driver_list);
       _unix_gfx_driver_list = 0;
-   }
-
-   if (_unix_digi_driver_list) {
-      _destroy_driver_list(_unix_digi_driver_list);
-      _unix_digi_driver_list = 0;
-   }
-
-   if (_unix_midi_driver_list) {
-      _destroy_driver_list(_unix_midi_driver_list);
-      _unix_midi_driver_list = 0;
    }
 }
 
@@ -81,30 +61,3 @@ void _unix_register_gfx_driver(int id, GFX_DRIVER *driver, int autodetect, int p
    else
       _driver_list_append_driver(&_unix_gfx_driver_list, id, driver, autodetect);
 }
-
-
-
-/* _unix_register_digi_driver:
- *  Used by modules to register digital sound drivers.
- */
-void _unix_register_digi_driver(int id, DIGI_DRIVER *driver, int autodetect, int priority)
-{
-   if (priority)
-      _driver_list_prepend_driver(&_unix_digi_driver_list, id, driver, autodetect);
-   else
-      _driver_list_append_driver(&_unix_digi_driver_list, id, driver, autodetect);
-}
-
-
-
-/* _unix_register_midi_driver:
- *  Used by modules to register MIDI drivers.
- */
-void _unix_register_midi_driver(int id, MIDI_DRIVER *driver, int autodetect, int priority)
-{
-   if (priority)
-      _driver_list_prepend_driver(&_unix_midi_driver_list, id, driver, autodetect);
-   else
-      _driver_list_append_driver(&_unix_midi_driver_list, id, driver, autodetect);
-}
-

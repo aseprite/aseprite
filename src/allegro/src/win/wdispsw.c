@@ -149,8 +149,6 @@ void _win_switch_out(void)
    key_dinput_unacquire();
    mouse_dinput_unacquire();
 
-   midi_switch_out();
-
    if (win_gfx_driver && win_gfx_driver->switch_out)
       win_gfx_driver->switch_out();
 

@@ -35,8 +35,6 @@ struct RGB;
 #define DAT_FILE           DAT_ID('F','I','L','E')
 #define DAT_DATA           DAT_ID('D','A','T','A')
 #define DAT_FONT           DAT_ID('F','O','N','T')
-#define DAT_SAMPLE         DAT_ID('S','A','M','P')
-#define DAT_MIDI           DAT_ID('M','I','D','I')
 #define DAT_PATCH          DAT_ID('P','A','T',' ')
 #define DAT_FLI            DAT_ID('F','L','I','C')
 #define DAT_BITMAP         DAT_ID('B','M','P',' ')

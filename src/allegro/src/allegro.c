@@ -221,7 +221,6 @@ int (*_al_trace_handler)(AL_CONST char *msg) = NULL;
  * linked in, then the structure pointers will be null, so we don't need
  * to bother with that bit of code elsewhere.
  */
-struct _AL_LINKER_MIDI *_al_linker_midi = NULL;
 struct _AL_LINKER_MOUSE *_al_linker_mouse = NULL;
 
 
@@ -308,14 +307,11 @@ static int _install_allegro(int system_id, int *errno_ptr, int (*atexit_ptr)(voi
    #ifndef ALLEGRO_USE_CONSTRUCTOR
       /* call constructor functions manually */
       extern void _initialize_datafile_types();
-      extern void _midi_constructor();
       extern void _mouse_constructor();
 
       _initialize_datafile_types();
-      _midi_constructor();
       _mouse_constructor();
       _register_bitmap_file_type_init();
-      _register_sample_file_type_init();
       _register_font_file_type_init();
    #endif
 
@@ -758,7 +754,6 @@ SYSTEM_DRIVER system_none =
    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-   sys_no_driver, sys_no_driver, sys_no_driver,
-   sys_no_driver, sys_no_driver, sys_no_driver
+   sys_no_driver, sys_no_driver, sys_no_driver, sys_no_driver
 };
 

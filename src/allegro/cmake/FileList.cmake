@@ -9,7 +9,6 @@ set(ALLEGRO_SRC_FILES
         src/config.c
         src/datafile.c
         src/dataregi.c
-        src/digmid.c
         src/dither.c
         src/dispsw.c
         src/drvlist.c
@@ -33,8 +32,6 @@ set(ALLEGRO_SRC_FILES
         src/lzss.c
         src/math.c
         src/math3d.c
-        src/midi.c
-        src/mixer.c
         src/mouse.c
         src/pcx.c
         src/poly3d.c
@@ -43,14 +40,11 @@ set(ALLEGRO_SRC_FILES
         src/quat.c
         src/readbmp.c
         src/readfont.c
-        src/readsmp.c
         src/rle.c
         src/rotate.c
         src/rsfb.c
         src/scene3d.c
-        src/sound.c
         src/spline.c
-        src/stream.c
         src/text.c
         src/tga.c
         src/timer.c
@@ -107,10 +101,6 @@ set(ALLEGRO_SRC_WIN_FILES
         src/win/wddmode.c
         src/win/wddovl.c
         src/win/wddwin.c
-        src/win/wdsinput.c
-        src/win/wdsndmix.c
-        src/win/wdsound.c
-        src/win/wsndwo.c
         src/win/wdxver.c
         src/win/wdispsw.c
         src/win/wfile.c
@@ -118,9 +108,7 @@ set(ALLEGRO_SRC_WIN_FILES
         src/win/wgfxdrv.c
         src/win/winput.c
         src/win/wkeybd.c
-        src/win/wmidi.c
         src/win/wmouse.c
-        src/win/wsnddrv.c
         src/win/wsystem.c
         src/win/wthread.c
         src/win/wtimer.c
@@ -153,26 +141,17 @@ set(ALLEGRO_SRC_LINUX_FILES
         )
 
 set(ALLEGRO_SRC_UNIX_FILES
-        src/unix/alsa9.c
-        src/unix/alsamidi.c
-        src/unix/arts.c
-        src/unix/sgial.c
-        src/unix/jack.c
         src/unix/udjgpp.c
         src/unix/udrvlist.c
         src/unix/udummy.c
-        src/unix/uesd.c
         src/unix/ufile.c
         src/unix/ugfxdrv.c
         src/unix/ukeybd.c
         src/unix/umain.c
         src/unix/umodules.c
         src/unix/umouse.c
-        src/unix/uoss.c
-        src/unix/uossmidi.c
         src/unix/uptimer.c
         src/unix/usigalrm.c
-        src/unix/usnddrv.c
         src/unix/ustimer.c
         src/unix/usystem.c
         src/unix/uthreads.c
@@ -192,18 +171,14 @@ set(ALLEGRO_SRC_X_FILES
         )
 
 set(ALLEGRO_SRC_MACOSX_FILES
-        src/macosx/cadigi.m
-        src/macosx/camidi.m
         src/macosx/drivers.m
         src/macosx/hidman.m
         src/macosx/keybd.m
         src/macosx/pcpu.m
-        src/macosx/qtmidi.m
         src/macosx/quartz.m
         src/macosx/qzfull.m
         src/macosx/qzmouse.m
         src/macosx/qzwindow.m
-        src/macosx/soundman.m
         src/macosx/system.m
         src/unix/ufile.c
         src/unix/utimer.c
@@ -224,7 +199,6 @@ set(ALLEGRO_INCLUDE_ALLEGRO_FILES
         include/allegro/config.h
         include/allegro/datafile.h
         include/allegro/debug.h
-        include/allegro/digi.h
         include/allegro/draw.h
         include/allegro/file.h
         include/allegro/fix.h
@@ -237,13 +211,10 @@ set(ALLEGRO_INCLUDE_ALLEGRO_FILES
         include/allegro/keyboard.h
         include/allegro/lzss.h
         include/allegro/matrix.h
-        include/allegro/midi.h
         include/allegro/mouse.h
         include/allegro/palette.h
         include/allegro/quat.h
         include/allegro/rle.h
-        include/allegro/sound.h
-        include/allegro/stream.h
         include/allegro/system.h
         include/allegro/text.h
         include/allegro/timer.h

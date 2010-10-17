@@ -76,12 +76,6 @@ static UINT msg_suicide = 0;
 struct WINDOW_MODULES {
    int keyboard;
    int mouse;
-   int sound;
-   int digi_card;
-   int midi_card;
-   int sound_input;
-   int digi_input_card;
-   int midi_input_card;
 };
 
 /* Used in adjust_window(). */
@@ -107,12 +101,6 @@ static int init_window_modules(struct WINDOW_MODULES *wm)
    if (wm->mouse)
       install_mouse();
 
-   if (wm->sound)
-      install_sound(wm->digi_card, wm->midi_card, NULL);
-
-   if (wm->sound_input)
-      install_sound_input(wm->digi_input_card, wm->midi_input_card);
-
    return 0;
 }
 
@@ -122,8 +110,6 @@ static int init_window_modules(struct WINDOW_MODULES *wm)
  *  Removes the modules that depend upon the main window:
  *   - keyboard (DirectInput),
  *   - mouse (DirectInput),
- *   - sound (DirectSound),
- *   - sound input (DirectSoundCapture).
  *  If WM is not NULL, record which modules are really removed.
  */
 static void exit_window_modules(struct WINDOW_MODULES *wm)
@@ -143,26 +129,6 @@ static void exit_window_modules(struct WINDOW_MODULES *wm)
          wm->mouse = TRUE;
 
       remove_mouse();
-   }
-
-   if (_sound_installed) {
-      if (wm) {
-         wm->sound = TRUE;
-         wm->digi_card = digi_card;
-         wm->midi_card = midi_card;
-      }
-
-      remove_sound();
-   }
-
-   if (_sound_input_installed) {
-      if (wm) {
-         wm->sound_input = TRUE;
-         wm->digi_input_card = digi_input_card;
-         wm->midi_input_card = midi_input_card;
-      }
-
-      remove_sound_input();
    }
 }
 
