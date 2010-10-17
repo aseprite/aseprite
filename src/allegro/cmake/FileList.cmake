@@ -100,56 +100,6 @@ set(ALLEGRO_SRC_C_FILES
         src/misc/ccolconv.c
         )
 
-set(ALLEGRO_SRC_DOS_FILES
-        src/dos/adlib.c
-        src/dos/awedata.c
-        src/dos/dfile.c
-        src/dos/dgfxdrv.c
-        src/dos/djoydrv.c
-        src/dos/dkeybd.c
-        src/dos/dma.c
-        src/dos/dmouse.c
-        src/dos/dpmi.c
-        src/dos/dsnddrv.c
-        src/dos/dsystem.c
-        src/dos/dtimer.c
-        src/dos/emu8k.c
-        src/dos/emu8kmid.c
-        src/dos/essaudio.c
-        src/dos/gpro.c
-        src/dos/grip.c
-        src/dos/gripjoy.c
-        src/dos/gripfnc.s
-        src/dos/ifsega.c
-        src/dos/ifsega2f.c
-        src/dos/ifsega2p.c
-        src/dos/joystd.c
-        src/dos/mpu.c
-        src/dos/multijoy.c
-        src/dos/n64pad.c
-        src/dos/pic.c
-        src/dos/psxpad.c
-        src/dos/sb.c
-        src/dos/sndscape.c
-        src/dos/snespad.c
-        src/dos/sw.c
-        src/dos/swpp.c
-        src/dos/swpps.s
-        src/dos/vesa.c
-        src/dos/vesas.s
-        src/dos/wss.c
-        src/dos/ww.c
-        src/misc/modex.c
-        src/misc/modexgfx.s
-        src/misc/modexsms.c
-        src/misc/pckeys.c
-        src/misc/vbeaf.c
-        src/misc/vbeafs.s
-        src/misc/vbeafex.c
-        src/misc/vga.c
-        src/misc/vgaregs.c
-        )
-
 set(ALLEGRO_SRC_WIN_FILES
         src/win/asmlock.s
         src/win/dllver.rc
@@ -186,43 +136,6 @@ set(ALLEGRO_SRC_WIN_FILES
         src/win/wtimer.c
         src/win/wwnd.c
         src/misc/colconv.c
-        )
-
-set(ALLEGRO_SRC_BEOS_FILES
-        src/beos/baccel.cpp
-        src/beos/bdispsw.cpp
-        src/beos/bdwindow.cpp
-        src/beos/bgfx.c
-        src/beos/bgfxapi.cpp
-        src/beos/bgfxdrv.c
-        src/beos/bjoy.c
-        src/beos/bjoydrv.c
-        src/beos/bjoyapi.cpp
-        src/beos/bkey.c
-        src/beos/bkeyapi.cpp
-        src/beos/bkeydrv.c
-        src/beos/bmidi.c
-        src/beos/bmidiapi.cpp
-        src/beos/bmididrv.c
-        src/beos/bmousapi.cpp
-        src/beos/bmousdrv.c
-        src/beos/bmouse.c
-        src/beos/boverlay.cpp
-        src/beos/bsnd.c
-        src/beos/bsndapi.cpp
-        src/beos/bsnddrv.c
-        src/beos/bswitch.s
-        src/beos/bsysapi.cpp
-        src/beos/bsysdrv.c
-        src/beos/bsystem.c
-        src/beos/btimeapi.cpp
-        src/beos/btimedrv.c
-        src/beos/btimer.c
-        src/beos/bwindow.cpp
-        src/beos/bwscreen.cpp
-        src/unix/ufile.c
-        src/misc/colconv.c
-        src/misc/pckeys.c
         )
 
 set(ALLEGRO_SRC_LINUX_FILES
@@ -324,21 +237,6 @@ set(ALLEGRO_SRC_MACOSX_FILES
         src/misc/colconv.c
         )
 
-set(ALLEGRO_SRC_PSP_FILES
-        src/psp/pdrivers.c
-        src/psp/pfile.c
-        src/psp/pgfx.c
-        src/psp/pjoy.c
-        src/psp/pkey.c
-        src/psp/pmouse.c
-        src/psp/psound.c
-        src/psp/psystem.c
-        src/psp/ptimer.c
-        src/psp/pvram.c
-        src/psp/pvtable8.c
-        src/misc/colconv.c
-        )
-
 set(ALLEGRO_INCLUDE_ALLEGRO_FILES
         include/allegro/3d.h
         include/allegro/3dmaths.h
@@ -398,43 +296,23 @@ set(ALLEGRO_INCLUDE_ALLEGRO_INTERNAL_FILES
         )
 
 set(ALLEGRO_INCLUDE_ALLEGRO_PLATFORM_FILES
-        include/allegro/platform/aintbeos.h
-        include/allegro/platform/aintdos.h
         include/allegro/platform/aintlnx.h
-        include/allegro/platform/aintmac.h
         include/allegro/platform/aintosx.h
-        include/allegro/platform/aintpsp.h
-        include/allegro/platform/aintqnx.h
         include/allegro/platform/aintunix.h
         include/allegro/platform/aintwin.h
         include/allegro/platform/al386gcc.h
         include/allegro/platform/al386vc.h
-        include/allegro/platform/al386wat.h
-        include/allegro/platform/albcc32.h
-        include/allegro/platform/albecfg.h
-        include/allegro/platform/albeos.h
-        include/allegro/platform/aldjgpp.h
-        include/allegro/platform/aldmc.h
-        include/allegro/platform/aldos.h
-        include/allegro/platform/almac.h
-        include/allegro/platform/almaccfg.h
         include/allegro/platform/almngw32.h
         include/allegro/platform/almsvc.h
         include/allegro/platform/alosx.h
         include/allegro/platform/alosxcfg.h
         # include/allegro/platform/alplatf.h.cmake
-        include/allegro/platform/alpsp.h
-        include/allegro/platform/alpspcfg.h
-        include/allegro/platform/alqnx.h
-        include/allegro/platform/alqnxcfg.h
         include/allegro/platform/alucfg.h
         include/allegro/platform/alunix.h
         # include/allegro/platform/alunixac.h.cmake
         # include/allegro/platform/alunixac.hin
-        include/allegro/platform/alwatcom.h
         include/allegro/platform/alwin.h
         include/allegro/platform/astdint.h
-        include/allegro/platform/macdef.h
         )
 
 #-----------------------------------------------------------------------------#

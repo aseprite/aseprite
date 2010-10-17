@@ -1,12 +1,3 @@
-# Ports that used to work which aren't supported yet:
-#   Haiku/BeOS port
-#   djgpp port
-#   QNX port
-#   BCC32
-#   Watcom
-#   DMC
-#   PSP port?
-
 #-----------------------------------------------------------------------------#
 #
 # Build options
@@ -231,26 +222,9 @@ if(APPLE)
     endif(COMPILER_GCC)
 endif(APPLE)
 
-if(BEOS)
-    if(CMAKE_SYSTEM_NAME STREQUAL Haiku)
-        set(ALLEGRO_HAIKU 1)
-    else(CMAKE_SYSTEM_NAME STREQUAL Haiku)
-        set(ALLEGRO_BEOS 1)
-    endif(CMAKE_SYSTEM_NAME STREQUAL Haiku)
-    set(WFLAGS "-W -Wall -Wno-unused -Wno-multichar -Wno-ctor-dtor-privacy")
-    set(WFLAGS_C_ONLY "")
-endif(BEOS)
-
-if(UNIX AND NOT APPLE AND NOT BEOS)
+if(UNIX AND NOT APPLE)
     set(ALLEGRO_UNIX 1)
 endif()
-
-if(PSP)
-    set(ALLEGRO_PSP 1)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -G0")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -G0 -fno-exceptions -fno-rtti")
-    set(CMAKE_INSTALL_PREFIX ${PSP_PREFIX})
-endif(PSP)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WFLAGS} ${WFLAGS_C_ONLY}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WFLAGS}")
@@ -329,24 +303,12 @@ if(WIN32)
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_WIN_FILES})
 endif(WIN32)
 
-# -- Haiku/BeOS --
-
-if(BEOS)
-    list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_BEOS_FILES})
-endif(BEOS)
-
 # -- Mac OS X --
 
 if(ALLEGRO_MACOSX)
     list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_MACOSX_FILES})
     list(APPEND PLATFORM_SOURCES src/macosx/main.m)
 endif(ALLEGRO_MACOSX)
-
-# -- PSP --
-
-if(PSP)
-    list(APPEND PLATFORM_SOURCES ${ALLEGRO_SRC_PSP_FILES})
-endif(PSP)
 
 #-----------------------------------------------------------------------------#
 #
@@ -402,9 +364,6 @@ endif(WIN32)
 if(ALLEGRO_WITH_XWINDOWS)
     add_headers("" include/xalleg.h)
 endif(ALLEGRO_WITH_XWINDOWS)
-if(BEOS)
-    add_headers("" include/bealleg.h)
-endif(BEOS)
 
 #-----------------------------------------------------------------------------#
 #
@@ -480,18 +439,5 @@ if(WANT_FRAMEWORKS)
 	)
     target_link_libraries(allegro alleg-main)
 endif(WANT_FRAMEWORKS)
-
-if(PSP)
-    add_our_library(alleg-main STATIC
-	src/psp/pmain.c
-	)
-    set_target_properties(alleg-main
-	PROPERTIES
-	OUTPUT_NAME alleg-main${BUILD_TYPE_SUFFIX}
-	COMPILE_FLAGS -DALLEGRO_SRC
-	)
-    target_link_libraries(alleg-main pspuser pspkernel)
-    target_link_libraries(allegro alleg-main)
-endif(PSP)
 
 #-----------------------------------------------------------------------------#
