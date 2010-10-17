@@ -351,7 +351,6 @@ static void sys_directx_restore_console_state(void)
    HWND allegro_wnd = win_get_window();
    /* unacquire input devices */
    wnd_schedule_proc(key_dinput_unacquire);
-   wnd_schedule_proc(mouse_dinput_unacquire);
 
    /* reset switch mode */
    _win_reset_switch_mode();

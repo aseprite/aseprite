@@ -20,11 +20,12 @@
 #include "allegro/internal/aintern.h"
 #include "allegro/platform/aintwin.h"
 
-#ifndef SCAN_DEPEND
-   #include <string.h>
-   #include <process.h>
-   #include <time.h>
-#endif
+#include <windows.h>
+#include <windowsx.h>
+
+#include <string.h>
+#include <process.h>
+#include <time.h>
 
 #ifndef ALLEGRO_WINDOWS
    #error something is wrong with the makefile
@@ -87,6 +88,12 @@ typedef struct {
    DWORD rgstate[CCHILDREN_TITLEBAR + 1];
 } TITLEBARINFO, *PTITLEBARINFO, *LPTITLEBARINFO;
 #endif /* ifndef CCHILDREN_TITLEBAR */
+
+
+/* In wmouse.c */
+void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y, BOOL abs);
+void _al_win_mouse_handle_wheel(HWND hwnd, int z, BOOL abs);
+void _al_win_mouse_handle_move(HWND hwnd, int x, int y);
 
 
 
@@ -211,8 +218,11 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_SETCURSOR:
          if (!user_wnd_proc || _mouse_installed) {
-            mouse_set_syscursor();
-            return 1;  /* not TRUE */
+	    int hittest = LOWORD(lparam);
+	    if (hittest == HTCLIENT) {
+	       mouse_set_syscursor();
+	       return 1;  /* not TRUE */
+	    }
          }
          break;
 
@@ -306,7 +316,6 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_INITMENUPOPUP:
          wnd_sysmenu = TRUE;
-         mouse_set_sysmenu(TRUE);
 
          if (win_gfx_driver && win_gfx_driver->enter_sysmode)
             win_gfx_driver->enter_sysmode();
@@ -315,7 +324,6 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
       case WM_MENUSELECT:
          if ((HIWORD(wparam) == 0xFFFF) && (!lparam)) {
             wnd_sysmenu = FALSE;
-            mouse_set_sysmenu(FALSE);
 
             if (win_gfx_driver && win_gfx_driver->exit_sysmode)
                win_gfx_driver->exit_sysmode();
@@ -332,6 +340,59 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
             return 0;
          }
          break;
+
+      case WM_LBUTTONDOWN:
+      case WM_LBUTTONUP: {
+         int mx = GET_X_LPARAM(lparam);
+         int my = GET_Y_LPARAM(lparam);
+         BOOL down = (message == WM_LBUTTONDOWN);
+         _al_win_mouse_handle_button(wnd, 1, down, mx, my, TRUE);
+         break;
+      }
+
+      case WM_MBUTTONDOWN:
+      case WM_MBUTTONUP: {
+         int mx = GET_X_LPARAM(lparam);
+         int my = GET_Y_LPARAM(lparam);
+         BOOL down = (message == WM_MBUTTONDOWN);
+         _al_win_mouse_handle_button(wnd, 3, down, mx, my, TRUE);
+         break;
+      }
+
+      case WM_RBUTTONDOWN:
+      case WM_RBUTTONUP: {
+         int mx = GET_X_LPARAM(lparam);
+         int my = GET_Y_LPARAM(lparam);
+         BOOL down = (message == WM_RBUTTONDOWN);
+         _al_win_mouse_handle_button(wnd, 2, down, mx, my, TRUE);
+         break;
+      }
+
+      case WM_XBUTTONDOWN:
+      case WM_XBUTTONUP: {
+         int mx = GET_X_LPARAM(lparam);
+         int my = GET_Y_LPARAM(lparam);
+         int button = HIWORD(wparam);
+         BOOL down = (message == WM_XBUTTONDOWN);
+         if (button == XBUTTON1)
+            _al_win_mouse_handle_button(wnd, 4, down, mx, my, TRUE);
+         else if (button == XBUTTON2)
+	    _al_win_mouse_handle_button(wnd, 5, down, mx, my, TRUE);
+         return TRUE;
+      }
+
+      case WM_MOUSEWHEEL: {
+         int d = GET_WHEEL_DELTA_WPARAM(wparam);
+         _al_win_mouse_handle_wheel(wnd, d / WHEEL_DELTA, FALSE);
+         return TRUE;
+      }
+
+      case WM_MOUSEMOVE: {
+	 POINTS p = MAKEPOINTS(lparam);
+         _al_win_mouse_handle_move(wnd, p.x, p.y);
+         break;
+      }
+
    }
 
    /* pass message to default window proc */
@@ -734,5 +795,4 @@ void win_set_wnd_create_proc(HWND (*proc)(WNDPROC))
 void win_grab_input(void)
 {
    wnd_schedule_proc(key_dinput_acquire);
-   wnd_schedule_proc(mouse_dinput_grab);
 }

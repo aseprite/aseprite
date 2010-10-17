@@ -127,11 +127,7 @@ AL_FUNC(int, key_dinput_unacquire, (void));
 
 /* mouse routines */
 AL_VAR(HCURSOR, _win_hcursor);
-AL_FUNC(int, mouse_dinput_acquire, (void));
-AL_FUNC(int, mouse_dinput_unacquire, (void));
-AL_FUNC(int, mouse_dinput_grab, (void));
 AL_FUNC(int, mouse_set_syscursor, (void));
-AL_FUNC(int, mouse_set_sysmenu, (int state));
 
 
 /* thread routines */
