@@ -120,10 +120,6 @@ AL_FUNC(int, _win_input_register_event, (HANDLE event_id, void (*event_handler)(
 AL_FUNC(void, _win_input_unregister_event, (HANDLE event_id));
 
 
-/* keyboard routines */
-AL_FUNC(int, key_dinput_acquire, (void));
-AL_FUNC(int, key_dinput_unacquire, (void));
-
 
 /* mouse routines */
 AL_VAR(HCURSOR, _win_hcursor);

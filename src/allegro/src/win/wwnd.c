@@ -95,6 +95,9 @@ void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y,
 void _al_win_mouse_handle_wheel(HWND hwnd, int z, BOOL abs);
 void _al_win_mouse_handle_move(HWND hwnd, int x, int y);
 
+/* In wkeybd.c */
+void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated);
+void _al_win_kbd_handle_key_release(int vcode);
 
 
 /* init_window_modules:
@@ -183,18 +186,6 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
       int retval = 0;
       if (wnd_msg_pre_proc(wnd, message, wparam, lparam, &retval) == 0)
          return retval;
-   }
-
-   /* See get_reverse_mapping() in wkeybd.c to see what this is for. */
-   if (FALSE && (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)) {
-      static char name[256];
-      TCHAR str[256];
-      WCHAR wstr[256];
-
-      GetKeyNameText(lparam, str, sizeof str);
-      MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, str, -1, wstr, sizeof wstr);
-      uconvert((char *)wstr, U_UNICODE, name, U_CURRENT, sizeof name);
-      _TRACE(PREFIX_I" key[%s] = 0x%08lx;\n", name, lparam & 0x1ff0000);
    }
 
    switch (message) {
@@ -294,17 +285,6 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          }
          break;
 
-      case WM_KEYDOWN:
-      case WM_KEYUP:
-      case WM_SYSKEYDOWN:
-      case WM_SYSKEYUP:
-         /* Disable the default message-based key handler
-          * in order to prevent conflicts on NT kernels.
-          */
-         if (!user_wnd_proc || _keyboard_installed)
-            return 0;
-         break;
-
       case WM_SYSCOMMAND:
          if (wparam == SC_MONITORPOWER || wparam == SC_SCREENSAVE) {
             if (_screensaver_policy == ALWAYS_DISABLED
@@ -391,6 +371,30 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 	 POINTS p = MAKEPOINTS(lparam);
          _al_win_mouse_handle_move(wnd, p.x, p.y);
          break;
+      }
+
+      case WM_SYSKEYDOWN: {
+         int vcode = wparam; 
+         BOOL repeated  = (lparam >> 30) & 0x1;
+         _al_win_kbd_handle_key_press(0, vcode, repeated);
+         return 0;
+      }
+
+      case WM_KEYDOWN: {
+         int vcode = wparam; 
+         int scode = (lparam >> 16) & 0xff;
+         BOOL repeated  = (lparam >> 30) & 0x1;
+         /* We can't use TranslateMessage() because we don't know if it will
+            produce a WM_CHAR or not. */
+         _al_win_kbd_handle_key_press(scode, vcode, repeated);
+         return 0;
+      }
+
+      case WM_SYSKEYUP:
+      case WM_KEYUP: {
+         int vcode = wparam;
+         _al_win_kbd_handle_key_release(vcode);
+         return 0;
       }
 
    }
@@ -785,14 +789,4 @@ void win_set_msg_pre_proc(int (*proc)(HWND, UINT, WPARAM, LPARAM, int *))
 void win_set_wnd_create_proc(HWND (*proc)(WNDPROC))
 {
    wnd_create_proc = proc;
-}
-
-
-
-/* win_grab_input:
- *  Grabs the input devices.
- */
-void win_grab_input(void)
-{
-   wnd_schedule_proc(key_dinput_acquire);
 }

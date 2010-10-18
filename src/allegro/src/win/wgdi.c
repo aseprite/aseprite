@@ -513,9 +513,6 @@ static struct BITMAP *gfx_gdi_init(int w, int h, int v_w, int v_h, int color_dep
    /* set the default switching policy */
    set_display_switch_mode(SWITCH_PAUSE);
 
-   /* grab input devices */
-   win_grab_input();
-
    _exit_critical();
 
    return gdi_screen;

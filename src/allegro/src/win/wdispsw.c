@@ -113,8 +113,6 @@ void _win_switch_in(void)
 
    _win_app_foreground = TRUE;
 
-   key_dinput_acquire();
-
    if (win_gfx_driver && win_gfx_driver->switch_in)
       win_gfx_driver->switch_in();
 
@@ -144,8 +142,6 @@ void _win_switch_out(void)
    _TRACE(PREFIX_I "switch out\n");
 
    _win_app_foreground = FALSE;
-
-   key_dinput_unacquire();
 
    if (win_gfx_driver && win_gfx_driver->switch_out)
       win_gfx_driver->switch_out();

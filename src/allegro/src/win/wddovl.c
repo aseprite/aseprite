@@ -404,9 +404,6 @@ static struct BITMAP *init_directx_ovl(int w, int h, int v_w, int v_h, int color
    /* set default switching policy */
    set_display_switch_mode(SWITCH_PAUSE);
 
-   /* grab input devices */
-   win_grab_input();
-
    _exit_critical();
 
    return gfx_directx_forefront_bitmap;

@@ -4,3 +4,5 @@ patched for ASE by David Capello.
 Changes:
 - Mouse driver for Windows was modified to use WM_MOUSEMOVE instead of
   DirectInput (like in Allegro 5).
+- Keyboard driver for Windows was modified to use WM_KEYDOWN/UP messages
+  instead of DirectInput (like in Allegro 5).

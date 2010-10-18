@@ -237,9 +237,6 @@ static void finalize_fullscreen_init(void)
 
    /* set the default switching policy */
    set_display_switch_mode(SWITCH_AMNESIA);
-
-   /* grab input devices */
-   win_grab_input();
 }
 
 

@@ -82,8 +82,6 @@ typedef struct WIN_GFX_DRIVER {
 
 AL_VAR(WIN_GFX_DRIVER *, win_gfx_driver);
 
-AL_FUNC(void, win_grab_input, (void));
-
 
 /* external window support */
 AL_FUNC(HWND, win_get_window, (void));
