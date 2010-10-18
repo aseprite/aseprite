@@ -106,7 +106,6 @@ set(ALLEGRO_SRC_WIN_FILES
         src/win/wfile.c
         src/win/wgdi.c
         src/win/wgfxdrv.c
-        src/win/winput.c
         src/win/wkeybd.c
         src/win/wmouse.c
         src/win/wsystem.c

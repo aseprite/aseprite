@@ -109,18 +109,6 @@ AL_FUNC(int, wnd_call_proc, (int (*proc)(void)));
 AL_FUNC(void, wnd_schedule_proc, (int (*proc)(void)));
 
 
-/* input routines */
-AL_VAR(int, _win_input_events);
-AL_ARRAY(HANDLE, _win_input_event_id);
-AL_FUNCPTRARRAY(void, _win_input_event_handler, (void));
-
-AL_FUNC(void, _win_input_init, (int need_thread));
-AL_FUNC(void, _win_input_exit, (void));
-AL_FUNC(int, _win_input_register_event, (HANDLE event_id, void (*event_handler)(void)));
-AL_FUNC(void, _win_input_unregister_event, (HANDLE event_id));
-
-
-
 /* mouse routines */
 AL_VAR(HCURSOR, _win_hcursor);
 AL_FUNC(int, mouse_set_syscursor, (void));

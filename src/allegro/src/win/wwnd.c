@@ -472,7 +472,6 @@ static HWND create_directx_window(void)
  */
 static void wnd_thread_proc(HANDLE setup_event)
 {
-   int result;
    MSG msg;
 
    _win_thread_init();
@@ -491,24 +490,8 @@ static void wnd_thread_proc(HANDLE setup_event)
    SetEvent(setup_event);
 
    /* message loop */
-   while (TRUE) {
-      result = MsgWaitForMultipleObjects(_win_input_events, _win_input_event_id, FALSE, INFINITE, QS_ALLINPUT);
-      if ((result >= WAIT_OBJECT_0) && (result < WAIT_OBJECT_0 + _win_input_events)) {
-         /* one of the registered events is in signaled state */
-         (*_win_input_event_handler[result - WAIT_OBJECT_0])();
-      }
-      else if (result == WAIT_OBJECT_0 + _win_input_events) {
-         /* messages are waiting in the queue */
-         while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-            if (GetMessage(&msg, NULL, 0, 0)) {
-               DispatchMessage(&msg);
-            }
-            else {
-               goto End;
-            }
-         }
-      }
-   }
+   while (GetMessage(&msg, NULL, 0, 0))
+     DispatchMessage(&msg);
 
  End:
    _TRACE(PREFIX_I "window thread exits\n");
@@ -535,9 +518,6 @@ int init_directx_window(void)
    msg_suicide = RegisterWindowMessage("Allegro window suicide");
 
    if (user_wnd) {
-      /* initializes input module and requests dedicated thread */
-      _win_input_init(TRUE);
-
       /* hook the user window */
       user_wnd_proc = (WNDPROC) SetWindowLong(user_wnd, GWL_WNDPROC, (long)directx_wnd_proc);
       if (!user_wnd_proc)
@@ -555,9 +535,6 @@ int init_directx_window(void)
       wnd_height = win_rect.r.bottom - win_rect.r.top;
    }
    else {
-      /* initializes input module without dedicated thread */
-      _win_input_init(FALSE);
-
       /* create window thread */
       events[0] = CreateEvent(NULL, FALSE, FALSE, NULL);        /* acknowledges that thread is up */
       events[1] = (HANDLE) _beginthread(wnd_thread_proc, 0, events[0]);
@@ -613,8 +590,6 @@ void exit_directx_window(void)
 
    DeleteCriticalSection(&gfx_crit_sect);
 
-   _win_input_exit();
-   
    window_is_initialized = FALSE;
 }
 
