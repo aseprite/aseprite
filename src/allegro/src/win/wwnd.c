@@ -90,15 +90,6 @@ typedef struct {
 #endif /* ifndef CCHILDREN_TITLEBAR */
 
 
-/* In wmouse.c */
-void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y, BOOL abs);
-void _al_win_mouse_handle_wheel(HWND hwnd, int z, BOOL abs);
-void _al_win_mouse_handle_move(HWND hwnd, int x, int y);
-
-/* In wkeybd.c */
-void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated);
-void _al_win_kbd_handle_key_release(int vcode);
-
 
 /* init_window_modules:
  *  Initialises the modules that are specified by the WM argument.

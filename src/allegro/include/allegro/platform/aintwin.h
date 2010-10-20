@@ -109,9 +109,17 @@ AL_FUNC(int, wnd_call_proc, (int (*proc)(void)));
 AL_FUNC(void, wnd_schedule_proc, (int (*proc)(void)));
 
 
+/* keyboard routines */
+AL_FUNC(void, _al_win_kbd_handle_key_press, (int scode, int vcode, BOOL repeated));
+AL_FUNC(void, _al_win_kbd_handle_key_release, (int vcode));
+
+
 /* mouse routines */
 AL_VAR(HCURSOR, _win_hcursor);
 AL_FUNC(int, mouse_set_syscursor, (void));
+AL_FUNC(void, _al_win_mouse_handle_button, (HWND hwnd, int button, BOOL down, int x, int y, BOOL abs));
+AL_FUNC(void, _al_win_mouse_handle_wheel, (HWND hwnd, int z, BOOL abs));
+AL_FUNC(void, _al_win_mouse_handle_move, (HWND hwnd, int x, int y));
 
 
 /* thread routines */
