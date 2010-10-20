@@ -101,10 +101,13 @@ static void proc_one_word(JAccel accel, char* word)
 
   for (tok=ustrtok(word, "+"); tok;
        tok=ustrtok(NULL, "+")) {
-    // key_shifts
+    // modifiers
 
     if (ustricmp (tok, "Shift") == 0) {
       shifts |= KB_SHIFT_FLAG;
+    }
+    else if (ustricmp (tok, "Alt") == 0) {
+      shifts |= KB_ALT_FLAG;
     }
     else if (ustricmp (tok, "Ctrl") == 0) {
       shifts |= KB_CTRL_FLAG;
