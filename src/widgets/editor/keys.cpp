@@ -39,7 +39,11 @@ bool Editor::editor_keys_toset_zoom(int scancode)
 {
   if ((m_sprite) &&
       (this->hasMouse()) &&
-      !(key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG))) {
+      !key[KEY_LSHIFT] &&
+      !key[KEY_RSHIFT] &&
+      !key[KEY_LCONTROL] &&
+      !key[KEY_RCONTROL] &&
+      !key[KEY_ALT]) {
     JWidget view = jwidget_get_view(this);
     JRect vp = jview_get_viewport_position(view);
     int x, y, zoom;

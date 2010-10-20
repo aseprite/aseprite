@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
       if (!mask)
 	mask = mask_new ();
 
-      if (key_shifts & KB_ALT_FLAG) {
+      if (key[KEY_ALT]) {
 	if (first & 1)
 	  mask_replace (mask,
 			MIN (xbeg, xend),

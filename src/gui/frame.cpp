@@ -463,7 +463,7 @@ int Frame::get_action(int x, int y)
 	   (x < cpos->x2) &&
 	   (y >= pos->y1+this->border_width.b) &&
 	   (y < cpos->y1))
-	  || (key_shifts & KB_ALT_FLAG))) {
+	  || (key[KEY_ALT]))) {
     action = WINDOW_MOVE;
   }
   /* resize */

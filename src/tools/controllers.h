@@ -17,7 +17,7 @@
  */
 
 #include <cmath>
-#include <allegro.h>		// TODO avoid to include this for key_shifts
+#include <allegro.h>		// TODO avoid to include this for key[]
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846
@@ -81,7 +81,7 @@ public:
     points[1] = point;
 
     // Square aspect
-    if (key_shifts & KB_SHIFT_FLAG) { // TODO avoid direct access to key_shifts
+    if (key[KEY_LSHIFT] || key[KEY_RSHIFT]) {
       int dx = points[1].x - m_center.x;
       int dy = points[1].y - m_center.y;
       int minsize = MIN(ABS(dx), ABS(dy));
@@ -125,7 +125,7 @@ public:
     }
 
     // Center
-    if (key_shifts & KB_CTRL_FLAG) { // TODO avoid direct access to key_shifts
+    if (key[KEY_LCONTROL] || key[KEY_RCONTROL]) {
       int rx = points[1].x - m_center.x;
       int ry = points[1].y - m_center.y;
       points[0].x = m_center.x - rx;

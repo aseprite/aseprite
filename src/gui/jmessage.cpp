@@ -32,16 +32,17 @@ JMessage jmessage_new(int type)
 
   msg->type = type;
   msg->any.widgets = jlist_new();
-  msg->any.shifts = key_shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG);
+  msg->any.shifts =
+    (key[KEY_LSHIFT] || key[KEY_RSHIFT] ? KB_SHIFT_FLAG: 0) |
+    (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? KB_CTRL_FLAG: 0) |
+    (key[KEY_ALT] ? KB_ALT_FLAG: 0);
 
-/*   printf("type=%02d ", type); */
-/*   if (key_shifts & KB_SHIFT_FLAG) */
-/*     printf("KB_SHIFT_FLAG "); */
-/*   if (key_shifts & KB_CTRL_FLAG) */
-/*     printf("KB_CTRL_FLAG "); */
-/*   if (key_shifts & KB_ALT_FLAG) */
-/*     printf("KB_ALT_FLAG "); */
-/*   printf("\n"); */
+  // printf("type=%02d ", type);
+  // if (msg->any.shifts & KB_SHIFT_FLAG) printf("KB_SHIFT_FLAG ");
+  // if (msg->any.shifts & KB_CTRL_FLAG) printf("KB_CTRL_FLAG ");
+  // if (msg->any.shifts & KB_ALT_FLAG) printf("KB_ALT_FLAG ");
+  // printf("\n");
+  // fflush(stdout);
 
   return msg;
 }

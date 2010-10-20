@@ -481,7 +481,7 @@ static bool interactive_transform(Editor* editor,
     /* button pressed */
     if (jmouse_b(0)) {
       /* left button+shift || middle button = scroll movement */
-      if ((jmouse_b(0) == 1 && (key_shifts & KB_SHIFT_FLAG)) ||
+      if ((jmouse_b(0) == 1 && (key[KEY_LSHIFT] || key[KEY_RSHIFT])) ||
 	  (jmouse_b(0) == 4)) {
 	JWidget view = jwidget_get_view(editor);
 	int scroll_x, scroll_y;
