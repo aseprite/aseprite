@@ -171,8 +171,6 @@ void wnd_schedule_proc(int (*proc) (void))
  */
 static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
-   PAINTSTRUCT ps;
-
    if (message == msg_call_proc)
       return ((int (*)(void))wparam) ();
 
@@ -277,6 +275,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
 
       case WM_PAINT:
          if (!user_wnd_proc || win_gfx_driver) {
+	    PAINTSTRUCT ps;
             BeginPaint(wnd, &ps);
             if (win_gfx_driver && win_gfx_driver->paint)
                 win_gfx_driver->paint(&ps.rcPaint);
