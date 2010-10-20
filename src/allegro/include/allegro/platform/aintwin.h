@@ -110,6 +110,7 @@ AL_FUNC(void, wnd_schedule_proc, (int (*proc)(void)));
 
 
 /* keyboard routines */
+AL_FUNC(void, _al_win_kbd_update_shifts, (void));
 AL_FUNC(void, _al_win_kbd_handle_key_press, (int scode, int vcode, BOOL repeated));
 AL_FUNC(void, _al_win_kbd_handle_key_release, (int vcode));
 

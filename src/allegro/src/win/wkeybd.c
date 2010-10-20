@@ -98,27 +98,23 @@ static const unsigned char hw_to_mycode[256] =
 
 /* Update the key_shifts.
  */
-static void update_shifts(BYTE* keystate)
+void _al_win_kbd_update_shifts(void)
 {
-   /* TODO: There must be a more efficient way to maintain key_modifiers? */
-   /* Can't we just deprecate key_shifts, now that pckeys.c is gone? EP */
-   unsigned int modifiers = 0;
+#define HANDLE_KEY(mycode, vk)			\
+   if (GetAsyncKeyState(vk) & 0x8000) {		\
+      if (!key[mycode])				\
+	 _handle_key_press(0, mycode);		\
+   }						\
+   else {					\
+      if (key[mycode])				\
+	 _handle_key_release(mycode);		\
+   }
 
-   if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-       modifiers |= KB_SHIFT_FLAG;
-   if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
-       modifiers |= KB_CTRL_FLAG;
-   if (GetAsyncKeyState(VK_MENU) & 0x8000)
-       modifiers |= KB_ALT_FLAG;
-
-   if (keystate[VK_SCROLL] & 1)
-      modifiers |= KB_SCROLOCK_FLAG;
-   if (keystate[VK_NUMLOCK] & 1)
-      modifiers |= KB_NUMLOCK_FLAG;
-   if (keystate[VK_CAPITAL] & 1)
-      modifiers |= KB_CAPSLOCK_FLAG;
-
-   _key_shifts = modifiers;
+   HANDLE_KEY(KEY_ALT, VK_MENU);
+   HANDLE_KEY(KEY_LSHIFT, VK_LSHIFT);
+   HANDLE_KEY(KEY_RSHIFT, VK_RSHIFT);
+   HANDLE_KEY(KEY_LCONTROL, VK_LCONTROL);
+   HANDLE_KEY(KEY_RCONTROL, VK_RCONTROL);
 }
 
 
@@ -128,14 +124,12 @@ static void update_shifts(BYTE* keystate)
  */
 void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated)
 {
-   int my_code;
+   int mycode;
    int ccode;
    BYTE ks[256];
    WCHAR buf[8];
 
-   if (!GetKeyboardState(&ks[0]))
-      ccode = 0; /* shound't really happen */
-   else if (ToUnicode(vcode, scode, ks, buf, 8, 0) == 1)
+   if (ToUnicode(vcode, scode, ks, buf, 8, 0) == 1)
       ccode = buf[0];
    else
       ccode = 0;
@@ -146,30 +140,16 @@ void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated)
       pressed. We check the last known state of the modifier in question
       and if it is not down we know that is the key that was pressed. */
    if (vcode == VK_SHIFT || vcode == VK_CONTROL || vcode == VK_MENU) {
-      if ((ks[VK_LCONTROL] & 0x80) && !key[KEY_LCONTROL])
-         vcode = VK_LCONTROL;
-      else if ((ks[VK_RCONTROL] & 0x80) && !key[KEY_RCONTROL])
-         vcode = VK_RCONTROL;
-      else if ((ks[VK_LSHIFT] & 0x80) && !key[KEY_LSHIFT])
-         vcode = VK_LSHIFT;
-      else if ((ks[VK_RSHIFT] & 0x80) && !key[KEY_RSHIFT])
-         vcode = VK_RSHIFT;
-      else if ((ks[VK_LMENU] & 0x80) && !key[KEY_ALT])
-         vcode = VK_LMENU;
-      else if ((ks[VK_RMENU] & 0x80) && !key[KEY_ALTGR])
-         vcode = VK_RMENU;
-      else
-         return;
+     _al_win_kbd_update_shifts();
+     return;
    }
 
    /* Ignore repeats for Caps Lock */
    if (vcode == VK_CAPITAL && repeated && key[KEY_CAPSLOCK])
       return;
 
-   my_code = hw_to_mycode[vcode];
-   update_shifts(ks);
-
-   _handle_key_press(ccode, my_code);
+   mycode = hw_to_mycode[vcode];
+   _handle_key_press(ccode, mycode);
 }
 
 
@@ -180,50 +160,22 @@ void _al_win_kbd_handle_key_press(int scode, int vcode, BOOL repeated)
  */
 void _al_win_kbd_handle_key_release(int vcode)
 {
-   int my_code;
-   BYTE ks[256];
+   int mycode;
 
-   /* We need to read the latest key states so we can tell which
-      modifier was released. */
-   GetKeyboardState(&ks[0]);
+   if (vcode == VK_SHIFT || vcode == VK_CONTROL || vcode == VK_MENU) {
+     _al_win_kbd_update_shifts();
+     return;
+   }
 
-   if (vcode == VK_SHIFT && key[KEY_LSHIFT] && !(ks[VK_LSHIFT] & 0x80))
-      vcode = VK_LSHIFT;
-   else if (vcode == VK_SHIFT && key[KEY_RSHIFT] && !(ks[VK_RSHIFT] & 0x80))
-      vcode = VK_RSHIFT;
-   else if (vcode == VK_CONTROL && key[KEY_LCONTROL] && !(ks[VK_LCONTROL] & 0x80))
-      vcode = VK_LCONTROL;
-   else if (vcode == VK_CONTROL && key[KEY_RCONTROL] && !(ks[VK_RCONTROL] & 0x80))
-      vcode = VK_RCONTROL;
-   else if (vcode == VK_MENU && key[KEY_ALT] && !(ks[VK_LMENU] & 0x80))
-      vcode = VK_LMENU;
-   else if (vcode == VK_MENU && key[KEY_ALTGR] && !(ks[VK_RMENU] & 0x80))
-      vcode = VK_RMENU;
-   else if(vcode == VK_MENU)
-      return;
-
-   my_code = hw_to_mycode[vcode];
-   update_shifts(ks);
-
-   _handle_key_release(my_code);
-
-   /* Windows only sends a WM_KEYUP message for the Shift keys when
-      both have been released. If one of the Shift keys is still reported
-      as down, we need to release it as well. */
-   if (my_code == KEY_LSHIFT && key[KEY_RSHIFT])
-      _al_win_kbd_handle_key_release(VK_RSHIFT);
-   else if (my_code == KEY_RSHIFT && key[KEY_LSHIFT])
-      _al_win_kbd_handle_key_release(VK_LSHIFT);
+   mycode = hw_to_mycode[vcode];
+   _handle_key_release(mycode);
 }
 
 
 
 static int key_winapi_init(void)
 {
-   BYTE ks[256];
-   GetKeyboardState(&ks[0]);
-   update_shifts(ks);
-
+   _al_win_kbd_update_shifts();
    return 0;
 }
 

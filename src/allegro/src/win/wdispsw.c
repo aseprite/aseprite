@@ -113,6 +113,9 @@ void _win_switch_in(void)
 
    _win_app_foreground = TRUE;
 
+   /* update keyboard modifiers  */
+   _al_win_kbd_update_shifts();
+
    if (win_gfx_driver && win_gfx_driver->switch_in)
       win_gfx_driver->switch_in();
 
