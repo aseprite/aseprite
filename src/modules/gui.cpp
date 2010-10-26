@@ -147,6 +147,7 @@ static JList icon_buttons;
 static bool double_buffering;
 static int screen_scaling;
 
+static void destroy_default_font();
 static void reload_default_font();
 
 /* load & save graphics configuration */
@@ -357,6 +358,11 @@ void exit_module_gui()
   icon_buttons = NULL;
 
   jmanager_free(manager);
+
+  // Destroy the default font of the current theme
+  destroy_default_font();
+
+  // Now we can destroy theme
   ji_set_theme(NULL);
   delete ase_theme;
 
@@ -593,17 +599,24 @@ void gui_setup_screen(bool reload_font)
   save_gui_config();
 }
 
-static void reload_default_font()
+static void destroy_default_font()
 {
   JTheme theme = ji_get_theme();
-  SkinneableTheme* skinneable_theme = static_cast<SkinneableTheme*>(theme);
-  const char *user_font;
 
   // No font for now
   if (theme->default_font && theme->default_font != font)
     destroy_font(theme->default_font);
 
   theme->default_font = NULL;
+}
+
+static void reload_default_font()
+{
+  JTheme theme = ji_get_theme();
+  SkinneableTheme* skinneable_theme = static_cast<SkinneableTheme*>(theme);
+  const char *user_font;
+
+  destroy_default_font();
 
   // Directories
   ResourceFinder rf;
