@@ -7,8 +7,10 @@
 #include "config.h"
 
 #include <allegro.h>
-#ifdef ALLEGRO_WINDOWS
-#include <winalleg.h>
+#if defined(ALLEGRO_WINDOWS)
+  #include <winalleg.h>
+#elif defined(ALLEGRO_UNIX)
+  #include <xalleg.h>
 #endif
 
 #include "gui/jintern.h"
@@ -362,6 +364,35 @@ void jmouse_set_position(int x, int y)
   }
 }
 
+void jmouse_capture()
+{
+#if defined(ALLEGRO_WINDOWS)
+
+  SetCapture(win_get_window());
+
+#elif defined(ALLEGRO_UNIX)
+
+  XGrabPointer(_xwin.display, _xwin.window, False,
+	       PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+	       GrabModeAsync, GrabModeAsync,
+	       None, None, CurrentTime);
+
+#endif
+}
+
+void jmouse_release()
+{
+#if defined(ALLEGRO_WINDOWS)
+
+  ::ReleaseCapture();
+
+#elif defined(ALLEGRO_UNIX)
+
+  XUngrabPointer(_xwin.display, CurrentTime);
+
+#endif
+}
+
 int jmouse_x(int antique) { return m_x[antique & 1]; }
 int jmouse_y(int antique) { return m_y[antique & 1]; }
 int jmouse_z(int antique) { return m_z[antique & 1]; }
@@ -407,10 +438,10 @@ static void update_mouse_position()
     m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
   }
 
+  if (is_windowed_mode()) {
 #ifdef ALLEGRO_WINDOWS
   /* this help us (in windows) to get mouse feedback when we capture
      the mouse but we are outside the Allegro window */
-  if (is_windowed_mode()) {
     POINT pt;
     RECT rc;
 
@@ -443,8 +474,8 @@ static void update_mouse_position()
 	}
       }
     }
-  }
 #endif
+  }
 }
 
 static void capture_covered_area()

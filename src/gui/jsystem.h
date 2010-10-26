@@ -70,6 +70,9 @@ bool jmouse_is_shown();
 bool jmouse_poll();
 void jmouse_set_position(int x, int y);
 
+void jmouse_capture();
+void jmouse_release();
+
 int jmouse_b(int antique);
 int jmouse_x(int antique);
 int jmouse_y(int antique);

@@ -17,9 +17,6 @@
 #  include <cstdio>
 #endif
 #include <allegro.h>
-#ifdef ALLEGRO_WINDOWS
-#include <winalleg.h>
-#endif
 
 #include "gui/jinete.h"
 #include "gui/jintern.h"
@@ -1401,10 +1398,7 @@ void Widget::captureMouse()
 {
   if (!jmanager_get_capture()) {
     jmanager_set_capture(this);
-
-#ifdef ALLEGRO_WINDOWS
-    SetCapture(win_get_window());
-#endif
+    jmouse_capture();
   }
 }
 
@@ -1415,10 +1409,7 @@ void Widget::releaseMouse()
 {
   if (jmanager_get_capture() == this) {
     jmanager_free_capture();
-
-#ifdef ALLEGRO_WINDOWS
-    ::ReleaseCapture();		// Win32 API
-#endif
+    jmouse_release();
   }
 }
 
