@@ -652,6 +652,8 @@ bool StatusBar::onProcessMessage(JMessage msg)
       catch (LockedSpriteException&) {
 	// Do nothing...
       }
+
+      jrect_free(rc);
       break;
     }
       
