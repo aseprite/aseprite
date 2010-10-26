@@ -60,6 +60,8 @@ JWidget jview_new()
   view->hasbars = true;
   view->wherepos = 0;
   view->whereclick = 0;
+  view->scroll_x = 0;
+  view->scroll_y = 0;
 
   jwidget_add_hook(widget, JI_VIEW, view_msg_proc, view);
   jwidget_focusrest(widget, true);
@@ -67,9 +69,6 @@ JWidget jview_new()
   jview_set_size(widget, 0, 0);
 
   jwidget_init_theme(widget);
-
-  view->scroll_x = -1;
-  view->scroll_y = -1;
 
   return widget;
 }
