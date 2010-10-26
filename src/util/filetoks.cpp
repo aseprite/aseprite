@@ -109,14 +109,16 @@ char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
 
 /* returns the readed line or NULL if EOF (the line will not have the
    "\n" character) */
-static char *tok_fgets (char *buf, int size, FILE *file)
+static char* tok_fgets(char* buf, int size, FILE* file)
 {
-  char *s, *ret = fgets (buf, size, file);
+  char* ret = fgets(buf, size, file);
 
   if (ret && *ret) {
-    s = ret + strlen (ret) - 1;
-    while (*s && (*s == '\n' || *s == '\r'))
+    // Remove trailing \r\n
+    char* s = ret + strlen(ret);
+    do {
       *(s--) = 0;
+    } while (s >= ret && *s && (*s == '\n' || *s == '\r'));
   }
 
   return ret;
