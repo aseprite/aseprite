@@ -23,32 +23,32 @@
 
 static int line_num;
 
-static char *tok_fgets (char *buf, int size, FILE *file);
+static char* tok_fgets(char* buf, int size, FILE* file);
 
-void tok_reset_line_num ()
+void tok_reset_line_num()
 {
   line_num = 0;
 }
 
-int tok_line_num ()
+int tok_line_num()
 {
   return line_num;
 }
 
-char *tok_read (FILE *f, char *buf, char *leavings, int sizeof_leavings)
+char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings)
 {
   int ch, len = 0;
-  char *s;
+  char* s;
 
   *buf = 0;
 
-  if (feof (f))
+  if (feof(f))
     return NULL;
 
   while (!*buf) {
     if (!*leavings) {
       line_num++;
-      if (!tok_fgets (leavings, sizeof_leavings, f))
+      if (!tok_fgets(leavings, sizeof_leavings, f))
         return NULL;
     }
 
@@ -59,7 +59,7 @@ char *tok_read (FILE *f, char *buf, char *leavings, int sizeof_leavings)
 	s++;
       }
       else if (ch == '#') {
-	s += strlen (s);
+	s += strlen(s);
 	break;
       }
       else if (ch == '\"') {
@@ -68,7 +68,7 @@ char *tok_read (FILE *f, char *buf, char *leavings, int sizeof_leavings)
 	for (ch=*s; ; ch=*s) {
 	  if (!ch) {
 	    line_num++;
-	    if (!tok_fgets (leavings, sizeof_leavings, f))
+	    if (!tok_fgets(leavings, sizeof_leavings, f))
 	      break;
 	    else {
 	      s = leavings;
@@ -100,7 +100,7 @@ char *tok_read (FILE *f, char *buf, char *leavings, int sizeof_leavings)
       }
     }
 
-    memmove (leavings, s, strlen (s)+1);
+    memmove(leavings, s, strlen(s)+1);
   }
 
   buf[len] = 0;

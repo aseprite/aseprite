@@ -182,7 +182,7 @@ void reload_matrices_stock()
       strcpy(leavings, "");
 
       /* read the matrix name */
-      while (tok_read (f, buf, leavings, sizeof (leavings))) {
+      while (tok_read(f, buf, leavings, sizeof(leavings))) {
 	/* name of the matrix */
 	name = jstrdup(buf);
 

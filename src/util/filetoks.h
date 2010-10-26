@@ -21,9 +21,9 @@
 
 #include <stdio.h>
 
-void tok_reset_line_num ();
-int tok_line_num ();
+void tok_reset_line_num();
+int tok_line_num();
 
-char *tok_read (FILE *f, char *buf, char *leavings, int sizeof_leavings);
+char* tok_read(FILE* f, char* buf, char* leavings, int sizeof_leavings);
 
 #endif
