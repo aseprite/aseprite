@@ -134,7 +134,7 @@ void Dirty::saveImagePixels(Image* image)
       Col* col = *col_it;
 
       ase_uint8* address = (ase_uint8*)image_address(image, col->x, row->y);
-      std::copy(address, address+col->w, col->data.begin());
+      std::copy(address, address+getLineSize(col->w), col->data.begin());
     }
   }
 }
@@ -152,7 +152,7 @@ void Dirty::swapImagePixels(Image* image)
       Col* col = *col_it;
 
       ase_uint8* address = (ase_uint8*)image_address(image, col->x, row->y);
-      std::swap_ranges(address, address+col->w, col->data.begin());
+      std::swap_ranges(address, address+getLineSize(col->w), col->data.begin());
     }
   }
 }
