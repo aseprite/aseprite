@@ -24,15 +24,13 @@
 #include <allegro/fmaths.h>
 
 #include "ase_exception.h"
+#include "gui_xml.h"
 #include "raster/algo.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/pen.h"
 #include "raster/sprite.h"
-#include "resource_finder.h"
 #include "tools/toolbox.h"
-
-#include "tinyxml.h"
 
 using namespace gfx;
 
@@ -122,63 +120,46 @@ void ToolBox::loadTools()
 {
   PRINTF("Loading ASE tools\n");
 
-  ResourceFinder rf;
-  rf.findInDataDir("gui.xml");
+  TiXmlDocument& doc(GuiXml::instance()->doc());
+  TiXmlHandle handle(&doc);
 
-  while (const char* path = rf.next()) {
-    PRINTF("Trying to load tools from \"%s\"...\n", path);
+  // For each group
+  TiXmlElement* xmlGroup = handle.FirstChild("gui").FirstChild("tools").FirstChild("group").ToElement();
+  while (xmlGroup) {
+    const char* group_id = xmlGroup->Attribute("id");
+    const char* group_text = xmlGroup->Attribute("text");
 
-    if (!exists(path))
-      continue;
+    PRINTF(" - New group '%s'\n", group_id);
 
-    PRINTF(" - \"%s\" found\n", path);
+    if (!group_id || !group_text)
+      throw ase_exception("The configuration file has a <group> without 'id' or 'text' attributes.");
 
-    TiXmlDocument doc;
-    if (!doc.LoadFile(path))
-      throw ase_exception(&doc);
-
-    // For each group
-    TiXmlHandle handle(&doc);
-    TiXmlElement* xmlGroup = handle.FirstChild("gui").FirstChild("tools").FirstChild("group").ToElement();
-    while (xmlGroup) {
-      const char* group_id = xmlGroup->Attribute("id");
-      const char* group_text = xmlGroup->Attribute("text");
-
-      PRINTF(" - New group '%s'\n", group_id);
-
-      if (!group_id || !group_text)
-	throw ase_exception("The configuration file has a <group> without 'id' or 'text' attributes.");
-
-      ToolGroup* tool_group = new ToolGroup(group_id, group_text);
+    ToolGroup* tool_group = new ToolGroup(group_id, group_text);
 	
-      // For each tool
-      TiXmlNode* xmlToolNode = xmlGroup->FirstChild("tool");
-      TiXmlElement* xmlTool = xmlToolNode ? xmlToolNode->ToElement(): NULL;
-      while (xmlTool) {
-	const char* tool_id = xmlTool->Attribute("id");
-	const char* tool_text = xmlTool->Attribute("text");
-	const char* tool_tips = xmlTool->FirstChild("tooltip") ? ((TiXmlElement*)xmlTool->FirstChild("tooltip"))->GetText(): "";
-	const char* default_pen_size = xmlTool->Attribute("default_pen_size");
+    // For each tool
+    TiXmlNode* xmlToolNode = xmlGroup->FirstChild("tool");
+    TiXmlElement* xmlTool = xmlToolNode ? xmlToolNode->ToElement(): NULL;
+    while (xmlTool) {
+      const char* tool_id = xmlTool->Attribute("id");
+      const char* tool_text = xmlTool->Attribute("text");
+      const char* tool_tips = xmlTool->FirstChild("tooltip") ? ((TiXmlElement*)xmlTool->FirstChild("tooltip"))->GetText(): "";
+      const char* default_pen_size = xmlTool->Attribute("default_pen_size");
 
-	Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
-			      default_pen_size ? strtol(default_pen_size, NULL, 10): 1);
+      Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
+			    default_pen_size ? strtol(default_pen_size, NULL, 10): 1);
 
-	PRINTF(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
+      PRINTF(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
 
-	loadToolProperties(xmlTool, tool, 0, "left");
-	loadToolProperties(xmlTool, tool, 1, "right");
+      loadToolProperties(xmlTool, tool, 0, "left");
+      loadToolProperties(xmlTool, tool, 1, "right");
 
-	m_tools.push_back(tool);
+      m_tools.push_back(tool);
 
-	xmlTool = xmlTool->NextSiblingElement();
-      }
-
-      m_groups.push_back(tool_group);
-      xmlGroup = xmlGroup->NextSiblingElement();
+      xmlTool = xmlTool->NextSiblingElement();
     }
 
-    // We just load the first gui.xml found
-    break;
+    m_groups.push_back(tool_group);
+    xmlGroup = xmlGroup->NextSiblingElement();
   }
 }
 

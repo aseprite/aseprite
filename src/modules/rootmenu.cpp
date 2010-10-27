@@ -30,9 +30,9 @@
 #include "commands/commands.h"
 #include "commands/params.h"
 #include "console.h"
+#include "gui_xml.h"
 #include "modules/gui.h"
 #include "modules/rootmenu.h"
-#include "resource_finder.h"
 #include "tools/toolbox.h"
 #include "util/filetoks.h"
 #include "widgets/menuitem.h"
@@ -97,131 +97,107 @@ static int load_root_menu()
   frame_popup_menu = NULL;
   cel_popup_menu = NULL;
   cel_movement_popup_menu = NULL;
-
-  ResourceFinder rf;
-  rf.findInDataDir("gui.xml");
-
-  while (const char* path = rf.next()) {
-    PRINTF("Trying to load GUI definition file from \"%s\"...\n", path);
-
-    if (!exists(path))
-      continue;
-
-    PRINTF(" - \"%s\" found\n", path);
   
-    /* open the XML menu definition file */
-    TiXmlDocument doc;
-    if (!doc.LoadFile(path))
-      throw ase_exception(&doc);
+  TiXmlDocument& doc(GuiXml::instance()->doc());
+  TiXmlHandle handle(&doc);
+  const char* path = GuiXml::instance()->filename();
 
-    TiXmlHandle handle(&doc);
+  /**************************************************/
+  /* load menus                                     */
+  /**************************************************/
 
-    /**************************************************/
-    /* load menus                                     */
-    /**************************************************/
+  PRINTF(" - Loading menus from \"%s\"...\n", path);
 
-    PRINTF(" - Loading menus from \"%s\"...\n", path);
+  root_menu = load_menu_by_id(handle, "main_menu");
+  if (!root_menu)
+    throw ase_exception("Error loading main menu from file:\n%s\nReinstall the application.",
+			static_cast<const char*>(path));
 
-    root_menu = load_menu_by_id(handle, "main_menu");
-    if (!root_menu)
-      throw ase_exception("Error loading main menu from file:\n%s\nReinstall the application.",
-			  static_cast<const char*>(path));
+  layer_popup_menu = load_menu_by_id(handle, "layer_popup");
+  frame_popup_menu = load_menu_by_id(handle, "frame_popup");
+  cel_popup_menu = load_menu_by_id(handle, "cel_popup");
+  cel_movement_popup_menu = load_menu_by_id(handle, "cel_movement_popup");
 
-    layer_popup_menu = load_menu_by_id(handle, "layer_popup");
-    frame_popup_menu = load_menu_by_id(handle, "frame_popup");
-    cel_popup_menu = load_menu_by_id(handle, "cel_popup");
-    cel_movement_popup_menu = load_menu_by_id(handle, "cel_movement_popup");
+  /**************************************************/
+  /* load keyboard shortcuts for commands           */
+  /**************************************************/
 
-    /**************************************************/
-    /* load keyboard shortcuts for commands           */
-    /**************************************************/
+  PRINTF(" - Loading commands keyboard shortcuts from \"%s\"...\n", path);
 
-    PRINTF(" - Loading commands keyboard shortcuts from \"%s\"...\n", path);
+  // <gui><keyboard><commands><key>
+  TiXmlElement* xmlKey = handle
+    .FirstChild("gui")
+    .FirstChild("keyboard")
+    .FirstChild("commands")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* command_name = xmlKey->Attribute("command");
+    const char* command_key = xmlKey->Attribute("shortcut");
 
-    // <gui><keyboard><commands><key>
-    TiXmlElement* xmlKey = handle
-      .FirstChild("gui")
-      .FirstChild("keyboard")
-      .FirstChild("commands")
-      .FirstChild("key").ToElement();
-    while (xmlKey) {
-      const char* command_name = xmlKey->Attribute("command");
-      const char* command_key = xmlKey->Attribute("shortcut");
+    if (command_name && command_key) {
+      Command *command = CommandsModule::instance()->get_command_by_name(command_name);
+      if (command) {
+	// Read params
+	Params params;
 
-      if (command_name && command_key) {
-	Command *command = CommandsModule::instance()->get_command_by_name(command_name);
-	if (command) {
-	  // Read params
-	  Params params;
+	TiXmlElement* xmlParam = xmlKey->FirstChildElement("param");
+	while (xmlParam) {
+	  const char* param_name = xmlParam->Attribute("name");
+	  const char* param_value = xmlParam->Attribute("value");
 
-	  TiXmlElement* xmlParam = xmlKey->FirstChildElement("param");
-	  while (xmlParam) {
-	    const char* param_name = xmlParam->Attribute("name");
-	    const char* param_value = xmlParam->Attribute("value");
+	  if (param_name && param_value)
+	    params.set(param_name, param_value);
 
-	    if (param_name && param_value)
-	      params.set(param_name, param_value);
+	  xmlParam = xmlParam->NextSiblingElement();
+	}
 
-	    xmlParam = xmlParam->NextSiblingElement();
- 	  }
+	bool first_shortcut =
+	  (get_accel_to_execute_command(command_name, &params) == NULL);
 
-	  bool first_shortcut =
-	    (get_accel_to_execute_command(command_name, &params) == NULL);
-
-	  PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
+	PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
 		  
-	  // add the keyboard shortcut to the command
-	  JAccel accel =
-	    add_keyboard_shortcut_to_execute_command(command_key, command_name, &params);
+	// add the keyboard shortcut to the command
+	JAccel accel =
+	  add_keyboard_shortcut_to_execute_command(command_key, command_name, &params);
 
-	  // add the shortcut to the menuitems with this
-	  // command (this is only visual, the "manager_msg_proc"
-	  // is the only one that process keyboard shortcuts)
-	  if (first_shortcut)
-	    apply_shortcut_to_menuitems_with_command(root_menu, command, &params, accel);
-	}
+	// add the shortcut to the menuitems with this
+	// command (this is only visual, the "manager_msg_proc"
+	// is the only one that process keyboard shortcuts)
+	if (first_shortcut)
+	  apply_shortcut_to_menuitems_with_command(root_menu, command, &params, accel);
       }
-
-      xmlKey = xmlKey->NextSiblingElement();
     }
 
-    /**************************************************/
-    /* load keyboard shortcuts for tools              */
-    /**************************************************/
-
-    PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
-
-    // <gui><keyboard><tools><key>
-    xmlKey = handle
-      .FirstChild("gui")
-      .FirstChild("keyboard")
-      .FirstChild("tools")
-      .FirstChild("key").ToElement();
-    while (xmlKey) {
-      const char* tool_id = xmlKey->Attribute("tool");
-      const char* tool_key = xmlKey->Attribute("shortcut");
-
-      if (tool_id && tool_key) {
-	Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
-	if (tool) {
-	  /* add the keyboard shortcut to the tool */
-	  PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
-	  add_keyboard_shortcut_to_change_tool(tool_key, tool);
-	}
-      }
-
-      xmlKey = xmlKey->NextSiblingElement();
-    }
-
-    if (root_menu) {
-      PRINTF("Main menu loaded.\n");
-      break;
-    }
+    xmlKey = xmlKey->NextSiblingElement();
   }
 
-  // No menus
-  if (!root_menu)
-    throw ase_exception("Error loading main menu\n");
+  /**************************************************/
+  /* load keyboard shortcuts for tools              */
+  /**************************************************/
+
+  PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
+
+  // <gui><keyboard><tools><key>
+  xmlKey = handle
+    .FirstChild("gui")
+    .FirstChild("keyboard")
+    .FirstChild("tools")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* tool_id = xmlKey->Attribute("tool");
+    const char* tool_key = xmlKey->Attribute("shortcut");
+
+    if (tool_id && tool_key) {
+      Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
+      if (tool) {
+	/* add the keyboard shortcut to the tool */
+	PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
+	add_keyboard_shortcut_to_change_tool(tool_key, tool);
+      }
+    }
+
+    xmlKey = xmlKey->NextSiblingElement();
+  }
 
   // Sets the "menu" of the "menu-bar" to the new "root-menu"
   if (app_get_menubar()) {

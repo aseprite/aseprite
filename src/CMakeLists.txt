@@ -73,6 +73,7 @@ add_library(aseprite-library
   console.cpp
   context.cpp
   gfxmode.cpp
+  gui_xml.cpp
   job.cpp
   launcher.cpp
   log.cpp

@@ -28,12 +28,10 @@
 #include "commands/command.h"
 #include "console.h"
 #include "gfxmode.h"
+#include "gui_xml.h"
 #include "modules/gui.h"
 #include "modules/palettes.h"
-#include "resource_finder.h"
 #include "sprite_wrappers.h"
-
-#include "tinyxml.h"
 
 static int timer_to_accept;
 static int seconds_to_accept;
@@ -131,80 +129,61 @@ void ConfigureScreen::load_resolutions(ComboBox* resolution, ComboBox* color_dep
   m_colordepths.clear();
   m_pixelscale.clear();
 
-  // Read from gui.xml
-  ResourceFinder rf;
-  rf.findInDataDir("gui.xml");
+  TiXmlDocument& doc(GuiXml::instance()->doc());
+  TiXmlHandle handle(&doc);
 
-  while (const char* path = rf.next()) {
-    PRINTF("Trying to load screen resolutions file from \"%s\"...\n", path);
+  TiXmlElement* xmlElement = handle
+    .FirstChild("gui")
+    .FirstChild("resolutions")
+    .FirstChildElement().ToElement();
 
-    if (!exists(path))
-      continue;
+  while (xmlElement) {
+    if (strcmp(xmlElement->Value(), "screensize") == 0) {
+      int w = ustrtol(xmlElement->Attribute("width"), NULL, 10);
+      int h = ustrtol(xmlElement->Attribute("height"), NULL, 10);
+      const char* aspect = xmlElement->Attribute("aspect");
 
-    PRINTF(" - \"%s\" found\n", path);
+      if (w > 0 && h > 0) {
+	m_resolutions.push_back(std::make_pair(w, h));
 
-    TiXmlDocument doc;
-    if (!doc.LoadFile(path))
-      throw ase_exception(&doc);
+	if (aspect)
+	  sprintf(buf, "%dx%d (%s)", w, h, aspect);
+	else
+	  sprintf(buf, "%dx%d", w, h);
 
-    TiXmlHandle handle(&doc);
-
-    TiXmlElement* xmlElement = handle
-      .FirstChild("gui")
-      .FirstChild("resolutions")
-      .FirstChildElement().ToElement();
-
-    while (xmlElement) {
-      if (strcmp(xmlElement->Value(), "screensize") == 0) {
-	int w = ustrtol(xmlElement->Attribute("width"), NULL, 10);
-	int h = ustrtol(xmlElement->Attribute("height"), NULL, 10);
-	const char* aspect = xmlElement->Attribute("aspect");
-
-	if (w > 0 && h > 0) {
-	  m_resolutions.push_back(std::make_pair(w, h));
-
-	  if (aspect)
-	    sprintf(buf, "%dx%d (%s)", w, h, aspect);
-	  else
-	    sprintf(buf, "%dx%d", w, h);
-
-	  newItem = resolution->addItem(buf);
-	  if (m_newMode.getWidth() == w && m_newMode.getHeight() == h) {
-	    old_res_selected = true;
-	    resolution->setSelectedItem(newItem);
-	  }
+	newItem = resolution->addItem(buf);
+	if (m_newMode.getWidth() == w && m_newMode.getHeight() == h) {
+	  old_res_selected = true;
+	  resolution->setSelectedItem(newItem);
 	}
       }
-      else if (strcmp(xmlElement->Value(), "colordepth") == 0) {
-	int bpp = ustrtol(xmlElement->Attribute("bpp"), NULL, 10);
-	const char* label = xmlElement->Attribute("label");
+    }
+    else if (strcmp(xmlElement->Value(), "colordepth") == 0) {
+      int bpp = ustrtol(xmlElement->Attribute("bpp"), NULL, 10);
+      const char* label = xmlElement->Attribute("label");
 
-	if (bpp > 0 && label) {
-	  m_colordepths.push_back(bpp);
+      if (bpp > 0 && label) {
+	m_colordepths.push_back(bpp);
 
-	  newItem = color_depth->addItem(label);
-	  if (m_newMode.getDepth() == bpp)
-	    color_depth->setSelectedItem(newItem);
-	}
+	newItem = color_depth->addItem(label);
+	if (m_newMode.getDepth() == bpp)
+	  color_depth->setSelectedItem(newItem);
       }
-      else if (strcmp(xmlElement->Value(), "pixelscale") == 0) {
-	int factor = ustrtol(xmlElement->Attribute("factor"), NULL, 10);
-	const char* label = xmlElement->Attribute("label");
+    }
+    else if (strcmp(xmlElement->Value(), "pixelscale") == 0) {
+      int factor = ustrtol(xmlElement->Attribute("factor"), NULL, 10);
+      const char* label = xmlElement->Attribute("label");
 
-	if (factor > 0 && label) {
-	  m_pixelscale.push_back(factor);
+      if (factor > 0 && label) {
+	m_pixelscale.push_back(factor);
 
-	  newItem = pixel_scale->addItem(label);
-	  if (m_newMode.getScaling() == factor)
-	    pixel_scale->setSelectedItem(newItem);
-	}
+	newItem = pixel_scale->addItem(label);
+	if (m_newMode.getScaling() == factor)
+	  pixel_scale->setSelectedItem(newItem);
       }
-
-      xmlElement = xmlElement->NextSiblingElement();
     }
 
-    // We just load the first gui.xml found
-    break;
+    xmlElement = xmlElement->NextSiblingElement();
   }
 
   // Current screen size
