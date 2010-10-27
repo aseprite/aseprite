@@ -205,6 +205,8 @@ private:
   void controlInfiniteScroll(JMessage msg);
   void dropPixels();
 
+  Tool* getCurrentEditorTool();
+
   void editor_request_size(int *w, int *h);
   void editor_setcursor(int x, int y);
   void editor_update_candraw();

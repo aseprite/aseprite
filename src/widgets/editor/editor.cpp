@@ -685,6 +685,14 @@ void Editor::dropPixels()
   editor_update_statusbar_for_standby();
 }
 
+Tool* Editor::getCurrentEditorTool()
+{
+  UIContext* context = UIContext::instance();
+  Tool* current_tool = context->getSettings()->getCurrentTool();
+
+  return current_tool;
+}
+
 void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
 {
   JWidget view = jwidget_get_view(this);
@@ -735,8 +743,7 @@ void Editor::hide_drawing_cursor()
 
 void Editor::editor_update_statusbar_for_standby()
 {
-  UIContext* context = UIContext::instance();
-  Tool* current_tool = context->getSettings()->getCurrentTool();
+  Tool* current_tool = getCurrentEditorTool();
   int x, y;
   screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 
@@ -1022,7 +1029,7 @@ bool Editor::onProcessMessage(JMessage msg)
 
       if (!hasCapture()) {
 	UIContext* context = UIContext::instance();
-	Tool* current_tool = context->getSettings()->getCurrentTool();
+	Tool* current_tool = getCurrentEditorTool();
 
 	set_current_editor(this);
 	context->set_current_sprite(m_sprite);
@@ -1526,8 +1533,7 @@ bool Editor::onProcessMessage(JMessage msg)
 // When the current tool is changed
 void Editor::onCurrentToolChange()
 {
-  UIContext* context = UIContext::instance();
-  Tool* current_tool = context->getSettings()->getCurrentTool();
+  Tool* current_tool = getCurrentEditorTool();
 
   // If the user changed the tool when he/she is moving pixels,
   // we have to drop the pixels only if the new tool is not selection...
@@ -1564,8 +1570,7 @@ void Editor::editor_request_size(int *w, int *h)
 
 void Editor::editor_setcursor(int x, int y)
 {
-  UIContext* context = UIContext::instance();
-  Tool* current_tool = context->getSettings()->getCurrentTool();
+  Tool* current_tool = getCurrentEditorTool();
 
   switch (m_state) {
 
@@ -1588,8 +1593,7 @@ void Editor::editor_setcursor(int x, int y)
 
     case EDITOR_STATE_STANDBY:
       if (m_sprite) {
-	UIContext* context = UIContext::instance();
-	Tool* current_tool = context->getSettings()->getCurrentTool();
+	Tool* current_tool = getCurrentEditorTool();
 
 	editor_update_candraw(); // TODO remove this
 
