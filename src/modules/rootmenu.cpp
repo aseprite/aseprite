@@ -113,6 +113,8 @@ static int load_root_menu()
     throw ase_exception("Error loading main menu from file:\n%s\nReinstall the application.",
 			static_cast<const char*>(path));
 
+  PRINTF("Main menu loaded.\n");
+
   layer_popup_menu = load_menu_by_id(handle, "layer_popup");
   frame_popup_menu = load_menu_by_id(handle, "frame_popup");
   cel_popup_menu = load_menu_by_id(handle, "cel_popup");
@@ -190,9 +192,35 @@ static int load_root_menu()
     if (tool_id && tool_key) {
       Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-	/* add the keyboard shortcut to the tool */
 	PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
 	add_keyboard_shortcut_to_change_tool(tool_key, tool);
+      }
+    }
+
+    xmlKey = xmlKey->NextSiblingElement();
+  }
+
+  /**************************************************/
+  /* load keyboard shortcuts for quicktools         */
+  /**************************************************/
+
+  PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
+
+  // <gui><keyboard><quicktools><key>
+  xmlKey = handle
+    .FirstChild("gui")
+    .FirstChild("keyboard")
+    .FirstChild("quicktools")
+    .FirstChild("key").ToElement();
+  while (xmlKey) {
+    const char* tool_id = xmlKey->Attribute("tool");
+    const char* tool_key = xmlKey->Attribute("shortcut");
+
+    if (tool_id && tool_key) {
+      Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
+      if (tool) {
+	PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
+	add_keyboard_shortcut_to_quicktool(tool_key, tool);
       }
     }
 

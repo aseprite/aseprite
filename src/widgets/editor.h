@@ -89,9 +89,9 @@ class Editor : public Widget
   // True if the cursor is inside the mask/selection
   bool m_insideSelection : 1;
 
-  bool m_alt_pressed : 1;
-  bool m_ctrl_pressed : 1;
-  bool m_space_pressed : 1;
+  // Current selected quicktool (this genererally should be NULL if
+  // the user is not pressing any keyboard key).
+  Tool* m_quicktool;
 
   /* offset for the sprite */
   int m_offset_x;
@@ -166,6 +166,7 @@ public:
 private:
 
   void editor_update_statusbar_for_pixel_movement();
+  void editor_update_quicktool();
 
   void editor_draw_cursor(int x, int y, bool refresh = true);
   void editor_move_cursor(int x, int y, bool refresh = true);

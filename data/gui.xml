@@ -148,6 +148,15 @@
       <key tool="blur" shortcut="R" />
       <key tool="jumble" shortcut="R" />
     </tools>
+
+    <!-- Editor Quicktools: these are modifiers to select quickly a
+         tool without changing the current one -->
+    <quicktools>
+      <key tool="eyedropper" shortcut="Alt" />
+      <key tool="move" shortcut="Ctrl" />
+      <key tool="hand" shortcut="Space" />
+    </quicktools>
+
   </keyboard>
   
   <menus>

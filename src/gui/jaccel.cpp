@@ -225,8 +225,7 @@ static void proc_one_word(JAccel accel, char* word)
     }
   }
 
-  if (ascii || scancode)
-    jaccel_add_key(accel, shifts, ascii, scancode);
+  jaccel_add_key(accel, shifts, ascii, scancode);
 }
 
 /* process strings like "<Ctrl+Q> <ESC>" */
@@ -467,17 +466,21 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
 
   JI_LIST_FOR_EACH(accel->key_list, link) {
     key = (KeyCombo *)link->data;
+
 #ifdef REPORT_KEYS
     keycombo_get_string(key, buf);
     printf("%3d==%3d %3d==%3d %s==%s ",
 	   key->scancode, scancode, key->ascii, ascii, buf, buf2);
 #endif
+
     if (((key->scancode && key->scancode == scancode)
 	 || (key->ascii && key->ascii == ascii))
-	&& (key->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG)))) {
+	&& (key->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+
 #ifdef REPORT_KEYS
       printf("true\n");
 #endif
+
       return true;
     }
 #ifdef REPORT_KEYS
@@ -485,5 +488,27 @@ bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode)
 #endif
   }
 
+  return false;
+}
+
+bool jaccel_check_from_key(JAccel accel)
+{
+  int shifts = 0;
+
+  if (key[KEY_LSHIFT]) shifts |= KB_SHIFT_FLAG;
+  if (key[KEY_RSHIFT]) shifts |= KB_SHIFT_FLAG;
+  if (key[KEY_LCONTROL]) shifts |= KB_CTRL_FLAG;
+  if (key[KEY_RCONTROL]) shifts |= KB_CTRL_FLAG;
+  if (key[KEY_ALT]) shifts |= KB_ALT_FLAG;
+
+  JLink link;
+  JI_LIST_FOR_EACH(accel->key_list, link) {
+    KeyCombo* keyCombo = (KeyCombo*)link->data;
+
+    if ((keyCombo->scancode == 0 || key[keyCombo->scancode]) &&
+	(keyCombo->shifts == (shifts & (KB_SHIFT_FLAG | KB_CTRL_FLAG | KB_ALT_FLAG)))) {
+      return true;
+    }
+  }
   return false;
 }

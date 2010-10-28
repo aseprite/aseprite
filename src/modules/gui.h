@@ -105,10 +105,12 @@ CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
 
 JAccel add_keyboard_shortcut_to_execute_command(const char* shortcut, const char* command_name, Params* params);
 JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut, Tool* tool);
+JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut, Tool* tool);
 
 Command* get_command_from_key_message(JMessage msg);
 JAccel get_accel_to_execute_command(const char* command, Params* params = NULL);
 JAccel get_accel_to_change_tool(Tool* tool);
+Tool* get_selected_quicktool();
 
 //////////////////////////////////////////////////////////////////////
 // Monitors

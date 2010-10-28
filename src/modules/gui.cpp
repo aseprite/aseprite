@@ -90,7 +90,8 @@ static GfxMode lastWorkingGfxMode;
 //////////////////////////////////////////////////////////////////////
 
 enum ShortcutType { Shortcut_ExecuteCommand,
-		    Shortcut_ChangeTool };
+		    Shortcut_ChangeTool,
+		    Shortcut_EditorQuicktool };
 
 struct Shortcut
 {
@@ -106,12 +107,14 @@ struct Shortcut
   ~Shortcut();
 
   void add_shortcut(const char* shortcut_string);
-  bool is_key_pressed(JMessage msg);
+  bool is_pressed(JMessage msg);
+  bool is_pressed_from_key_array();
 
 };
 
 static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params);
 static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool);
+static Shortcut* get_keyboard_shortcut_for_quicktool(Tool* tool);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -929,6 +932,21 @@ JAccel add_keyboard_shortcut_to_change_tool(const char* shortcut_string, Tool* t
   return shortcut->accel;
 }
 
+JAccel add_keyboard_shortcut_to_quicktool(const char* shortcut_string, Tool* tool)
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(tool);
+
+  if (!shortcut) {
+    shortcut = new Shortcut(Shortcut_EditorQuicktool);
+    shortcut->tool = tool;
+
+    shortcuts->push_back(shortcut);
+  }
+
+  shortcut->add_shortcut(shortcut_string);
+  return shortcut->accel;
+}
+
 Command* get_command_from_key_message(JMessage msg)
 {
   for (std::vector<Shortcut*>::iterator
@@ -938,7 +956,7 @@ Command* get_command_from_key_message(JMessage msg)
     if (shortcut->type == Shortcut_ExecuteCommand &&
 	// TODO why?
 	// shortcut->argument.empty() &&
-	shortcut->is_key_pressed(msg)) {
+	shortcut->is_pressed(msg)) {
       return shortcut->command;
     }
   }
@@ -963,6 +981,23 @@ JAccel get_accel_to_change_tool(Tool* tool)
     return NULL;
 }
 
+Tool* get_selected_quicktool()
+{
+  ToolBox* toolbox = App::instance()->getToolBox();
+
+  // Iterate over all tools
+  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+    Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(*it);
+
+    // Collect all tools with the pressed keyboard-shortcut
+    if (shortcut && shortcut->is_pressed_from_key_array()) {
+      return *it;
+    }
+  }
+
+  return NULL;
+}
+
 Shortcut::Shortcut(ShortcutType type)
 {
   this->type = type;
@@ -985,13 +1020,21 @@ void Shortcut::add_shortcut(const char* shortcut_string)
   jaccel_add_keys_from_string(this->accel, buf);
 }
 
-bool Shortcut::is_key_pressed(JMessage msg)
+bool Shortcut::is_pressed(JMessage msg)
 {
   if (accel) {
     return jaccel_check(accel,
 			msg->any.shifts,
 			msg->key.ascii,
 			msg->key.scancode);
+  }
+  return false;
+}
+
+bool Shortcut::is_pressed_from_key_array()
+{
+  if (accel) {
+    return jaccel_check_from_key(accel);
   }
   return false;
 }
@@ -1024,6 +1067,21 @@ static Shortcut* get_keyboard_shortcut_for_tool(Tool* tool)
     Shortcut* shortcut = *it;
 
     if (shortcut->type == Shortcut_ChangeTool &&
+	shortcut->tool == tool) {
+      return shortcut;
+    }
+  }
+
+  return NULL;
+}
+
+static Shortcut* get_keyboard_shortcut_for_quicktool(Tool* tool)
+{
+  for (std::vector<Shortcut*>::iterator
+	 it = shortcuts->begin(); it != shortcuts->end(); ++it) {
+    Shortcut* shortcut = *it;
+
+    if (shortcut->type == Shortcut_EditorQuicktool &&
 	shortcut->tool == tool) {
       return shortcut;
     }
@@ -1120,7 +1178,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	     it = shortcuts->begin(); it != shortcuts->end(); ++it) {
 	Shortcut* shortcut = *it;
 
-	if (shortcut->is_key_pressed(msg)) {
+	if (shortcut->is_pressed(msg)) {
 	  switch (shortcut->type) {
 
 	    case Shortcut_ChangeTool: {
@@ -1134,7 +1192,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 		Shortcut* shortcut = get_keyboard_shortcut_for_tool(*it);
 
 		// Collect all tools with the pressed keyboard-shortcut
-		if (shortcut && shortcut->is_key_pressed(msg))
+		if (shortcut && shortcut->is_pressed(msg))
 		  possibles.push_back(*it);
 	      }
 
@@ -1194,6 +1252,12 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 		  }
 		}
 	      }
+	      break;
+	    }
+
+	    case Shortcut_EditorQuicktool: {
+	      // Do nothing, it is used in the editor through the
+	      // get_selected_quicktool() function.
 	      break;
 	    }
 

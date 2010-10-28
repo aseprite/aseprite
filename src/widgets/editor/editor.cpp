@@ -92,9 +92,8 @@ Editor::Editor()
 
   m_cursor_candraw = false;
   m_insideSelection = false;
-  m_alt_pressed = false;
-  m_ctrl_pressed = false;
-  m_space_pressed = false;
+
+  m_quicktool = NULL;
 
   m_offset_x = 0;
   m_offset_y = 0;
@@ -687,10 +686,12 @@ void Editor::dropPixels()
 
 Tool* Editor::getCurrentEditorTool()
 {
-  UIContext* context = UIContext::instance();
-  Tool* current_tool = context->getSettings()->getCurrentTool();
-
-  return current_tool;
+  if (m_quicktool)
+    return m_quicktool;
+  else {
+    UIContext* context = UIContext::instance();
+    return context->getSettings()->getCurrentTool();
+  }
 }
 
 void Editor::screen_to_editor(int xin, int yin, int *xout, int *yout)
@@ -747,9 +748,11 @@ void Editor::editor_update_statusbar_for_standby()
   int x, y;
   screen_to_editor(jmouse_x(0), jmouse_y(0), &x, &y);
 
+  if (!m_sprite) {
+    app_get_statusbar()->clearText();
+  }
   // For eye-dropper
-  if (m_alt_pressed ||
-      current_tool->getInk(0)->isEyedropper()) {
+  else if (current_tool->getInk(0)->isEyedropper()) {
     int imgtype = m_sprite->getImgType();
     ase_uint32 pixel = m_sprite->getPixel(x, y);
     Color color = Color::fromImage(imgtype, pixel);
@@ -767,11 +770,13 @@ void Editor::editor_update_statusbar_for_standby()
   }
   // For other tools
   else {
+    Mask* mask = m_sprite->getMask();
+
     app_get_statusbar()->setStatusText
       (0, "Pos %d %d, Size %d %d, Frame %d",
        x, y,
-       ((m_sprite->getMask()->bitmap)? m_sprite->getMask()->w: m_sprite->getWidth()),
-       ((m_sprite->getMask()->bitmap)? m_sprite->getMask()->h: m_sprite->getHeight()),
+       ((mask && mask->bitmap)? mask->w: m_sprite->getWidth()),
+       ((mask && mask->bitmap)? mask->h: m_sprite->getHeight()),
        m_sprite->getCurrentFrame()+1);
   }
 }
@@ -785,6 +790,18 @@ void Editor::editor_update_statusbar_for_pixel_movement()
   app_get_statusbar()->setStatusText
     (100, "Pos %d %d, Size %d %d",
      bounds.x, bounds.y, bounds.w, bounds.h);
+}
+
+void Editor::editor_update_quicktool()
+{
+  Tool* old_quicktool = m_quicktool;
+
+  m_quicktool = get_selected_quicktool();
+
+  // If the tool has changed, we must to update the status bar because
+  // the new tool can display something different in the status bar (e.g. Eyedropper)
+  if (old_quicktool != m_quicktool)
+    editor_update_statusbar_for_standby();
 }
 
 void Editor::editor_refresh_region()
@@ -981,19 +998,11 @@ bool Editor::onProcessMessage(JMessage msg)
       // 'cursor_candraw' field to avoid a heavy if-condition in the
       // 'editor_setcursor' routine
       editor_update_candraw();
-
-      if (msg->any.shifts & KB_ALT_FLAG) m_alt_pressed = true;
-      if (msg->any.shifts & KB_CTRL_FLAG) m_ctrl_pressed = true;
-      if (key[KEY_SPACE]) m_space_pressed = true;
+      editor_update_quicktool();
       break;
 
     case JM_MOUSELEAVE:
       hide_drawing_cursor();
-
-      if (m_alt_pressed) m_alt_pressed = false;
-      if (m_ctrl_pressed) m_ctrl_pressed = false;
-      if (m_space_pressed) m_space_pressed = false;
-
       app_get_statusbar()->clearText();
       break;
 
@@ -1036,7 +1045,6 @@ bool Editor::onProcessMessage(JMessage msg)
 
 	// Start scroll loop
 	if (msg->mouse.middle ||
-	    m_space_pressed ||
 	    current_tool->getInk(msg->mouse.right ? 1: 0)->isScrollMovement()) {
 	  m_state = EDITOR_STATE_SCROLLING;
 
@@ -1064,9 +1072,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	}
 
 	// Move frames position
-	if ((m_ctrl_pressed &&
-	     !current_tool->getInk(msg->mouse.right ? 1: 0)->isSelection()) ||
-	    current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
+	if (current_tool->getInk(msg->mouse.right ? 1: 0)->isCelMovement()) {
 	  if ((m_sprite->getCurrentLayer()) &&
 	      (m_sprite->getCurrentLayer()->getType() == GFXOBJ_LAYER_IMAGE)) {
 	    // TODO you can move the `Background' with tiled mode
@@ -1106,7 +1112,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	    delete tmpImage;
 
 	    // If the CTRL key is pressed start dragging a copy of the selection
-	    if (m_ctrl_pressed)
+	    if (key[KEY_LCONTROL] || key[KEY_RCONTROL]) // TODO configurable
 	      m_pixelsMovement->copyMask();
 	    else
 	      m_pixelsMovement->cutMask();
@@ -1124,8 +1130,7 @@ bool Editor::onProcessMessage(JMessage msg)
 	  captureMouse();
 	}
 	// Call the eyedropper command
-	else if (m_alt_pressed ||
-		 current_tool->getInk(msg->mouse.right ? 1: 0)->isEyedropper()) {
+	else if (current_tool->getInk(msg->mouse.right ? 1: 0)->isEyedropper()) {
 	  Command* eyedropper_cmd = 
 	    CommandsModule::instance()->get_command_by_name(CommandId::eyedropper);
 
@@ -1332,30 +1337,18 @@ bool Editor::onProcessMessage(JMessage msg)
       }
 
       if (this->hasMouse()) {
-	switch (msg->key.scancode) {
-	  
-	  // Eye-dropper is activated with ALT key
-	  case KEY_ALT:
-	    m_alt_pressed = true;
-	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return true;
+	editor_update_quicktool();
 
-	  case KEY_LCONTROL:
-	  case KEY_RCONTROL:
-	    // If the user press the CTRL key when he is dragging pixels (but not pressing the mouse buttons)...
-	    if (!m_ctrl_pressed && !jmouse_b(0) && m_pixelsMovement) {
-	      // Drop pixels (sure the user will press the mouse button to start dragging a copy)
-	      dropPixels();
-	    }
-	    m_ctrl_pressed = true;
-	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return true;
-
-	  case KEY_SPACE:
-	    m_space_pressed = true;
-	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return true;
+	if (msg->key.scancode == KEY_LCONTROL || // TODO configurable
+	    msg->key.scancode == KEY_RCONTROL) {
+	  // If the user press the CTRL key when he is dragging pixels (but not pressing the mouse buttons)...
+	  if (!jmouse_b(0) && m_pixelsMovement) {
+	    // Drop pixels (sure the user will press the mouse button to start dragging a copy)
+	    dropPixels();
+	  }
 	}
+
+	editor_setcursor(jmouse_x(0), jmouse_y(0));
       }
 
       // When we are drawing, we "eat" all pressed keys
@@ -1365,37 +1358,14 @@ bool Editor::onProcessMessage(JMessage msg)
       break;
 
     case JM_KEYRELEASED:
-      switch (msg->key.scancode) {
+      editor_update_quicktool();
+      editor_setcursor(jmouse_x(0), jmouse_y(0));
+      break;
 
-	// Eye-dropper is deactivated with ALT key
-	case KEY_ALT:
-	  if (m_alt_pressed) {
-	    m_alt_pressed = false;
-	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return true;
-	  }
-	  break;
-
-	  case KEY_LCONTROL:
-	  case KEY_RCONTROL:
-	    if (m_ctrl_pressed) {
-	      m_ctrl_pressed = false;
-	      editor_setcursor(jmouse_x(0), jmouse_y(0));
-	      return true;
-	    }
-	    break;
-
-	case KEY_SPACE:
-	  if (m_space_pressed) {
-	    // We have to clear all the KEY_SPACE in buffer
-	    clear_keybuf();
-
-	    m_space_pressed = false;
-	    editor_setcursor(jmouse_x(0), jmouse_y(0));
-	    return true;
-	  }
-	  break;
-      }
+    case JM_FOCUSLEAVE:
+      // As we use keys like Space-bar as modifier, we can clear the
+      // keyboard buffer when we lost the focus.
+      clear_keybuf();
       break;
 
     case JM_WHEEL:
@@ -1627,23 +1597,6 @@ void Editor::editor_setcursor(int x, int y)
 	    jmouse_set_cursor(JI_CURSOR_FORBIDDEN);
 	  }
 	}
-	// Eyedropper
-	else if (m_alt_pressed) {
-	  hide_drawing_cursor();
-	  jmouse_set_cursor(JI_CURSOR_EYEDROPPER);
-	}
-	// Move layer
-	else if (m_ctrl_pressed &&
-		 (!current_tool ||
-		  !current_tool->getInk(0)->isSelection())) {
-	  hide_drawing_cursor();
-	  jmouse_set_cursor(JI_CURSOR_MOVE);
-	}
-	// Scroll
-	else if (m_space_pressed) {
-	  hide_drawing_cursor();
-	  jmouse_set_cursor(JI_CURSOR_SCROLL);
-	}
 	else {
 	  if (current_tool) {
 	    // If the current tool change selection (e.g. rectangular marquee, etc.)
@@ -1654,7 +1607,8 @@ void Editor::editor_setcursor(int x, int y)
 	      // Move pixels
 	      if (m_sprite->getMask()->contains_point(x, y)) {
 		hide_drawing_cursor();
-		if (m_ctrl_pressed)
+		if (key[KEY_LCONTROL] ||
+		    key[KEY_RCONTROL]) // TODO configurable keys
 		  jmouse_set_cursor(JI_CURSOR_NORMAL_ADD);
 		else
 		  jmouse_set_cursor(JI_CURSOR_MOVE);
@@ -1674,6 +1628,11 @@ void Editor::editor_setcursor(int x, int y)
 	    else if (current_tool->getInk(0)->isScrollMovement()) {
 	      hide_drawing_cursor();
 	      jmouse_set_cursor(JI_CURSOR_SCROLL);
+	      return;
+	    }
+	    else if (current_tool->getInk(0)->isCelMovement()) {
+	      hide_drawing_cursor();
+	      jmouse_set_cursor(JI_CURSOR_MOVE);
 	      return;
 	    }
 	  }

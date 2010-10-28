@@ -20,5 +20,6 @@ bool jaccel_is_empty(JAccel accel);
 void jaccel_to_string(JAccel accel, char *buf);
 
 bool jaccel_check(JAccel accel, int shifts, int ascii, int scancode);
+bool jaccel_check_from_key(JAccel accel);
 
 #endif
