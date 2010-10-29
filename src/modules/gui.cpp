@@ -1173,7 +1173,17 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
       }
       break;
 
-    case JM_KEYPRESSED:
+    case JM_KEYPRESSED: {
+      Frame* toplevel_frame = dynamic_cast<Frame*>(jmanager_get_top_window());
+
+      // If there is a foreground window as top level...
+      if (toplevel_frame &&
+	  toplevel_frame != app_get_top_window() &&
+	  toplevel_frame->is_foreground()) {
+	// We just do not process keyboard shortcuts for menus and tools
+	break;
+      }
+
       for (std::vector<Shortcut*>::iterator
 	     it = shortcuts->begin(); it != shortcuts->end(); ++it) {
 	Shortcut* shortcut = *it;
@@ -1266,6 +1276,7 @@ static bool manager_msg_proc(JWidget widget, JMessage msg)
 	}
       }
       break;
+    }
 
   }
 

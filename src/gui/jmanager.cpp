@@ -679,6 +679,14 @@ void jmanager_enqueue_message(JMessage msg)
     jmessage_free(msg);
 }
 
+JWidget jmanager_get_top_window()
+{
+  if (default_manager)
+    return TOPWND(default_manager);
+  else
+    return NULL;
+}
+
 JWidget jmanager_get_focus()
 {
   return focus_widget;
