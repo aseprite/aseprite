@@ -312,80 +312,94 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          break;
 
       case WM_LBUTTONDOWN:
-      case WM_LBUTTONUP: {
-         int mx = GET_X_LPARAM(lparam);
-         int my = GET_Y_LPARAM(lparam);
-         BOOL down = (message == WM_LBUTTONDOWN);
-         _al_win_mouse_handle_button(wnd, 1, down, mx, my, TRUE);
-         break;
-      }
+      case WM_LBUTTONUP:
+         if (_mouse_installed) {
+	    int mx = GET_X_LPARAM(lparam);
+	    int my = GET_Y_LPARAM(lparam);
+	    BOOL down = (message == WM_LBUTTONDOWN);
+	    _al_win_mouse_handle_button(wnd, 1, down, mx, my, TRUE);
+	 }
+	 break;
 
       case WM_MBUTTONDOWN:
-      case WM_MBUTTONUP: {
-         int mx = GET_X_LPARAM(lparam);
-         int my = GET_Y_LPARAM(lparam);
-         BOOL down = (message == WM_MBUTTONDOWN);
-         _al_win_mouse_handle_button(wnd, 3, down, mx, my, TRUE);
-         break;
-      }
+      case WM_MBUTTONUP:
+         if (_mouse_installed) {
+	    int mx = GET_X_LPARAM(lparam);
+	    int my = GET_Y_LPARAM(lparam);
+	    BOOL down = (message == WM_MBUTTONDOWN);
+	    _al_win_mouse_handle_button(wnd, 3, down, mx, my, TRUE);
+	 }
+	 break;
 
       case WM_RBUTTONDOWN:
-      case WM_RBUTTONUP: {
-         int mx = GET_X_LPARAM(lparam);
-         int my = GET_Y_LPARAM(lparam);
-         BOOL down = (message == WM_RBUTTONDOWN);
-         _al_win_mouse_handle_button(wnd, 2, down, mx, my, TRUE);
-         break;
-      }
+      case WM_RBUTTONUP:
+         if (_mouse_installed) {
+	    int mx = GET_X_LPARAM(lparam);
+	    int my = GET_Y_LPARAM(lparam);
+	    BOOL down = (message == WM_RBUTTONDOWN);
+	    _al_win_mouse_handle_button(wnd, 2, down, mx, my, TRUE);
+	 }
+	 break;
 
       case WM_XBUTTONDOWN:
-      case WM_XBUTTONUP: {
-         int mx = GET_X_LPARAM(lparam);
-         int my = GET_Y_LPARAM(lparam);
-         int button = HIWORD(wparam);
-         BOOL down = (message == WM_XBUTTONDOWN);
-         if (button == XBUTTON1)
-            _al_win_mouse_handle_button(wnd, 4, down, mx, my, TRUE);
-         else if (button == XBUTTON2)
-	    _al_win_mouse_handle_button(wnd, 5, down, mx, my, TRUE);
-         return TRUE;
-      }
+      case WM_XBUTTONUP:
+         if (_mouse_installed) {
+	    int mx = GET_X_LPARAM(lparam);
+	    int my = GET_Y_LPARAM(lparam);
+	    int button = HIWORD(wparam);
+	    BOOL down = (message == WM_XBUTTONDOWN);
+	    if (button == XBUTTON1)
+	       _al_win_mouse_handle_button(wnd, 4, down, mx, my, TRUE);
+	    else if (button == XBUTTON2)
+	       _al_win_mouse_handle_button(wnd, 5, down, mx, my, TRUE);
+	    return TRUE;
+	 }
+	 break;
 
-      case WM_MOUSEWHEEL: {
-         int d = GET_WHEEL_DELTA_WPARAM(wparam);
-         _al_win_mouse_handle_wheel(wnd, d / WHEEL_DELTA, FALSE);
-         return TRUE;
-      }
+      case WM_MOUSEWHEEL:
+         if (_mouse_installed) {
+	    int d = GET_WHEEL_DELTA_WPARAM(wparam);
+	    _al_win_mouse_handle_wheel(wnd, d / WHEEL_DELTA, FALSE);
+	    return TRUE;
+	 }
+	 break;
 
-      case WM_MOUSEMOVE: {
-	 POINTS p = MAKEPOINTS(lparam);
-         _al_win_mouse_handle_move(wnd, p.x, p.y);
+      case WM_MOUSEMOVE:
+         if (_mouse_installed) {
+	    POINTS p = MAKEPOINTS(lparam);
+	    _al_win_mouse_handle_move(wnd, p.x, p.y);
+	 }
          break;
-      }
 
-      case WM_SYSKEYDOWN: {
-         int vcode = wparam; 
-         BOOL repeated  = (lparam >> 30) & 0x1;
-         _al_win_kbd_handle_key_press(0, vcode, repeated);
-         return 0;
-      }
+      case WM_SYSKEYDOWN:
+	 if (_keyboard_installed) {
+	    int vcode = wparam; 
+	    BOOL repeated  = (lparam >> 30) & 0x1;
+	    _al_win_kbd_handle_key_press(0, vcode, repeated);
+	    return 0;
+	 }
+	 break;
 
-      case WM_KEYDOWN: {
-         int vcode = wparam; 
-         int scode = (lparam >> 16) & 0xff;
-         BOOL repeated  = (lparam >> 30) & 0x1;
-         /* We can't use TranslateMessage() because we don't know if it will
-            produce a WM_CHAR or not. */
-         _al_win_kbd_handle_key_press(scode, vcode, repeated);
-         return 0;
-      }
+      case WM_KEYDOWN:
+	 if (_keyboard_installed) {
+	    int vcode = wparam; 
+	    int scode = (lparam >> 16) & 0xff;
+	    BOOL repeated  = (lparam >> 30) & 0x1;
+	    /* We can't use TranslateMessage() because we don't know if it will
+	       produce a WM_CHAR or not. */
+	    _al_win_kbd_handle_key_press(scode, vcode, repeated);
+	    return 0;
+	 }
+	 break;
 
       case WM_SYSKEYUP:
-      case WM_KEYUP: {
-         int vcode = wparam;
-         _al_win_kbd_handle_key_release(vcode);
-         return 0;
-      }
+      case WM_KEYUP:
+	 if (_keyboard_installed) {
+	    int vcode = wparam;
+	    _al_win_kbd_handle_key_release(vcode);
+	    return 0;
+	 }
+	 break;
 
    }
 
