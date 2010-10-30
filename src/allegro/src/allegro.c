@@ -380,6 +380,9 @@ static int _install_allegro(int system_id, int *errno_ptr, int (*atexit_ptr)(voi
    /* disable close button */
    set_close_button_callback(NULL);
 
+   /* disable resize */
+   set_resize_callback(NULL);
+
    /* detect CPU type */
    check_cpu();
 
@@ -535,6 +538,22 @@ int set_close_button_callback(void (*proc)(void))
 
    if (system_driver->set_close_button_callback)
       return system_driver->set_close_button_callback(proc);
+
+   return -1;
+}
+
+
+
+/* set_resize_callback:
+ *  Installs a callback function to be called when the window is
+ *  resized.
+ */
+int set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev))
+{
+   ASSERT(system_driver);
+
+   if (system_driver->set_resize_callback)
+      return system_driver->set_resize_callback(proc);
 
    return -1;
 }
@@ -753,7 +772,7 @@ SYSTEM_DRIVER system_none =
    sys_none_exit,
    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+   NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
    sys_no_driver, sys_no_driver, sys_no_driver, sys_no_driver
 };
 

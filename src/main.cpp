@@ -42,11 +42,6 @@ const char ase_ident[] =
 class Allegro {
 public:
   Allegro() {
-#ifdef HAVE_RESIZE_PATCH
-    // resize window ability
-    allegro_resizable_window_flag = true;
-#endif
-
     allegro_init();
     set_uformat(U_ASCII);
     install_timer();

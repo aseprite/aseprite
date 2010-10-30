@@ -88,6 +88,7 @@ GFX_DRIVER gfx_quartz_window =
    NULL,                         /* AL_METHOD(void, restore_video_state, (void)); */
    NULL,                         /* AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a)); */
    NULL,                         /* AL_METHOD(int, fetch_mode_list, (void)); */
+   NULL,                         /* acknowledge_resize */
    0, 0,                         /* physical (not virtual!) screen size */
    TRUE,                         /* true if video memory is linear */
    0,                            /* bank size, in bytes */

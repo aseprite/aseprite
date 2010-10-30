@@ -72,6 +72,11 @@ static int  gfx_gdi_set_mouse_sprite(struct BITMAP *sprite, int xfocus, int yfoc
 static int  gfx_gdi_show_mouse(struct BITMAP *bmp, int x, int y);
 static void gfx_gdi_hide_mouse(void);
 static void gfx_gdi_move_mouse(int x, int y);
+static BITMAP *gfx_gdi_acknowledge_resize(void);
+
+static BITMAP *_create_gdi_screen(int w, int h, int color_depth);
+static void _destroy_gdi_screen(void);
+
 
 
 GFX_DRIVER gfx_gdi =
@@ -98,6 +103,7 @@ GFX_DRIVER gfx_gdi =
    NULL,                        // AL_METHOD(void, restore_video_state, (void*));
    NULL,                        // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    NULL,                        // AL_METHOD(int, fetch_mode_list, (void));
+   gfx_gdi_acknowledge_resize,
    0, 0,                        // int w, h;
    TRUE,                        // int linear;
    0,                           // long bank_size;
@@ -489,19 +495,7 @@ static struct BITMAP *gfx_gdi_init(int w, int h, int v_w, int v_h, int color_dep
       goto Error;
    }
 
-   /* the last flag serves as an end of loop delimiter */
-   gdi_dirty_lines = _AL_MALLOC_ATOMIC((h+1) * sizeof(char));
-   ASSERT(gdi_dirty_lines);
-   memset(gdi_dirty_lines, 0, (h+1) * sizeof(char));
-   gdi_dirty_lines[h] = 1;
-
-   /* create the screen surface */
-   screen_surf = _AL_MALLOC_ATOMIC(w * h * BYTES_PER_PIXEL(color_depth));
-   gdi_screen = _make_bitmap(w, h, (unsigned long)screen_surf, &gfx_gdi, color_depth, w * BYTES_PER_PIXEL(color_depth));
-   gdi_screen->write_bank = gfx_gdi_write_bank; 
-   _screen_vtable.acquire = gfx_gdi_lock;
-   _screen_vtable.release = gfx_gdi_unlock;
-   _screen_vtable.unwrite_bank = gfx_gdi_unwrite_bank; 
+   _create_gdi_screen(w, h, color_depth);
 
    /* create render timer */
    vsync_event = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -547,13 +541,7 @@ static void gfx_gdi_exit(struct BITMAP *bmp)
    /* disconnect from the system driver */
    win_gfx_driver = NULL;
 
-   /* destroy dirty lines array */   
-   _AL_FREE(gdi_dirty_lines);
-   gdi_dirty_lines = NULL;   
-
-   /* destroy screen surface */
-   _AL_FREE(screen_surf);
-   gdi_screen = NULL;
+   _destroy_gdi_screen();
 
    /* destroy mouse bitmaps */
    if (wgdi_mouse_sprite) {
@@ -601,4 +589,68 @@ static void gfx_gdi_set_palette(AL_CONST struct RGB *p, int from, int to, int vs
 static void gfx_gdi_vsync(void)
 {
    WaitForSingleObject(vsync_event, INFINITE);
+}
+
+
+
+static BITMAP *gfx_gdi_acknowledge_resize(void)
+{
+   HWND allegro_wnd = win_get_window();
+   int color_depth = bitmap_color_depth(screen);
+   int w, h;
+   RECT rc;
+   BITMAP *new_screen;
+
+   GetClientRect(allegro_wnd, &rc);
+   w = rc.right;
+   h = rc.bottom;
+   if (w % 4)
+      w -= (w % 4);
+
+   _enter_gfx_critical();
+   
+   /* Re-create the screen */
+   _destroy_gdi_screen();
+   new_screen = _create_gdi_screen(w, h, color_depth);
+
+   _exit_gfx_critical();
+
+   return new_screen;
+}
+
+
+
+static BITMAP *_create_gdi_screen(int w, int h, int color_depth)
+{
+   gfx_gdi.w = w;
+   gfx_gdi.h = h;
+
+   /* the last flag serves as an end of loop delimiter */
+   gdi_dirty_lines = _AL_MALLOC_ATOMIC((h+1) * sizeof(char));
+   ASSERT(gdi_dirty_lines);
+   memset(gdi_dirty_lines, 0, (h+1) * sizeof(char));
+   gdi_dirty_lines[h] = 1;
+
+   /* create the screen surface */
+   screen_surf = _AL_MALLOC_ATOMIC(w * h * BYTES_PER_PIXEL(color_depth));
+   gdi_screen = _make_bitmap(w, h, (unsigned long)screen_surf, &gfx_gdi, color_depth, w * BYTES_PER_PIXEL(color_depth));
+   gdi_screen->write_bank = gfx_gdi_write_bank; 
+   _screen_vtable.acquire = gfx_gdi_lock;
+   _screen_vtable.release = gfx_gdi_unlock;
+   _screen_vtable.unwrite_bank = gfx_gdi_unwrite_bank; 
+
+   return gdi_screen;
+}
+
+
+
+static void _destroy_gdi_screen(void)
+{
+   /* destroy dirty lines array */   
+   _AL_FREE(gdi_dirty_lines);
+   gdi_dirty_lines = NULL;   
+
+   /* destroy screen surface */
+   _AL_FREE(screen_surf);
+   gdi_screen = NULL;
 }

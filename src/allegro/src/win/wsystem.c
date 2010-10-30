@@ -44,6 +44,7 @@ static void sys_directx_exit(void);
 static void sys_directx_get_executable_name(char *output, int size);
 static void sys_directx_set_window_title(AL_CONST char *name);
 static int sys_directx_set_close_button_callback(void (*proc)(void));
+static int sys_directx_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev));
 static void sys_directx_message(AL_CONST char *msg);
 static void sys_directx_assert(AL_CONST char *msg);
 static void sys_directx_save_console_state(void);
@@ -68,6 +69,7 @@ SYSTEM_DRIVER system_directx =
    NULL,                        /* AL_METHOD(int, find_resource, (char *dest, char *resource, int size)); */
    sys_directx_set_window_title,
    sys_directx_set_close_button_callback,
+   sys_directx_set_resize_callback,
    sys_directx_message,
    sys_directx_assert,
    sys_directx_save_console_state,
@@ -294,6 +296,13 @@ static int sys_directx_set_close_button_callback(void (*proc)(void))
     */
    RedrawWindow(allegro_wnd, NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
 
+   return 0;
+}
+
+
+static int sys_directx_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev))
+{
+   user_resize_proc = proc;
    return 0;
 }
 

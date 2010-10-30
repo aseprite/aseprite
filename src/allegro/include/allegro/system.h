@@ -32,6 +32,14 @@ struct BITMAP;
 struct GFX_VTABLE;
 struct GFX_MODE;
 
+typedef struct RESIZE_DISPLAY_EVENT
+{
+   int old_w, old_h;
+   int new_w, new_h;
+   int is_maximized : 1; /* 1 if this event is because the user maximized the window */
+   int is_restored : 1;  /* 1 if this event is because the user restored the window */
+} RESIZE_DISPLAY_EVENT;
+
 #define ALLEGRO_ERROR_SIZE 256
 
 AL_ARRAY(char, allegro_id);
@@ -95,7 +103,7 @@ AL_FUNC(void, allegro_exit, (void));
 AL_PRINTFUNC(void, allegro_message, (AL_CONST char *msg, ...), 1, 2);
 AL_FUNC(void, get_executable_name, (char *output, int size));
 AL_FUNC(int, set_close_button_callback, (AL_METHOD(void, proc, (void))));
-
+AL_FUNC(int, set_resize_callback, (AL_METHOD(void, proc, (RESIZE_DISPLAY_EVENT *ev))));
 
 AL_FUNC(void, check_cpu, (void));
 
@@ -207,6 +215,7 @@ typedef struct SYSTEM_DRIVER
    AL_METHOD(int, find_resource, (char *dest, AL_CONST char *resource, int size));
    AL_METHOD(void, set_window_title, (AL_CONST char *name));
    AL_METHOD(int, set_close_button_callback, (AL_METHOD(void, proc, (void))));
+   AL_METHOD(int, set_resize_callback, (AL_METHOD(void, proc, (RESIZE_DISPLAY_EVENT *ev))));
    AL_METHOD(void, message, (AL_CONST char *msg));
    AL_METHOD(void, assert, (AL_CONST char *msg));
    AL_METHOD(void, save_console_state, (void));

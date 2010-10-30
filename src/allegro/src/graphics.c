@@ -613,6 +613,35 @@ int set_gfx_mode(int card, int w, int h, int v_w, int v_h)
 
 
 
+int acknowledge_resize(void)
+{
+   ASSERT(system_driver);
+   ASSERT(gfx_driver);
+
+   TRACE(PREFIX_I "acknowledge_resize init.\n");
+
+   if (gfx_driver->acknowledge_resize) {
+      BITMAP *new_screen = gfx_driver->acknowledge_resize();
+      if (!new_screen) {
+	 TRACE(PREFIX_I "acknowledge_resize failed.\n");
+	 return -1;
+      }
+
+      TRACE(PREFIX_I "acknowledge_resize succeeded.\n");
+
+      screen = new_screen;
+
+      if (_al_linker_mouse)
+	_al_linker_mouse->set_mouse_etc();
+
+      return 0;
+   }
+
+   return 0;
+}
+
+
+
 /* _set_gfx_mode:
  *  Called by set_gfx_mode(). Separated to make a clear difference between
  *  the virtual GFX_SAFE driver and the rest. The allow_config parameter,

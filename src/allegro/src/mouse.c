@@ -1014,7 +1014,9 @@ static void set_mouse_etc(void)
 
    set_mouse_range(0, 0, SCREEN_W-1, SCREEN_H-1);
    set_mouse_speed(2, 2);
-   position_mouse(SCREEN_W/2, SCREEN_H/2);
+
+   /* As now we support window resizing, it's not recommended to change the mouse position. */
+   /*position_mouse(SCREEN_W/2, SCREEN_H/2);*/
 }
 
 

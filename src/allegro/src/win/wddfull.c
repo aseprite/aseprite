@@ -56,6 +56,7 @@ GFX_DRIVER gfx_directx_accel =
    NULL,                         // AL_METHOD(void, restore_video_state, (void*));
    NULL,                         // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    gfx_directx_fetch_mode_list,
+   NULL,			 /* acknowledge_resize */
    0, 0,                         // physical (not virtual!) screen size
    TRUE,                         // true if video memory is linear
    0,                            // bank size, in bytes
@@ -95,6 +96,7 @@ GFX_DRIVER gfx_directx_soft =
    NULL,                        // AL_METHOD(void, restore_video_state, (void*));
    NULL,                        // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    gfx_directx_fetch_mode_list,
+   NULL,			/* acknowledge_resize */
    0, 0,                        // physical (not virtual!) screen size
    TRUE,                        // true if video memory is linear
    0,                           // bank size, in bytes
@@ -129,6 +131,7 @@ GFX_DRIVER gfx_directx_safe =
    NULL,                        // AL_METHOD(void, restore_video_state, (void*));
    NULL,                        // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    gfx_directx_fetch_mode_list,
+   NULL,			/* acknowledge_resize */
    0, 0,                        // physical (not virtual!) screen size
    TRUE,                        // true if video memory is linear
    0,                           // bank size, in bytes

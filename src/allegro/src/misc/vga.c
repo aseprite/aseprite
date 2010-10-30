@@ -63,6 +63,7 @@ GFX_DRIVER gfx_vga =
    _restore_vga_mode,
    NULL,                         /* AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a)); */
    vga_fetch_mode_list,
+   NULL,			/* acknowledge_resize */
    320, 200,
    TRUE,
    0, 0,

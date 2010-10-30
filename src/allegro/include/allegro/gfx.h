@@ -106,6 +106,7 @@ typedef struct GFX_DRIVER        /* creates and manages the screen bitmap */
    AL_METHOD(void, restore_video_state, (void));
    AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    AL_METHOD(GFX_MODE_LIST *, fetch_mode_list, (void));
+   AL_METHOD(struct BITMAP *, acknowledge_resize, (void));
    int w, h;                     /* physical (not virtual!) screen size */
    int linear;                   /* true if video memory is linear */
    long bank_size;               /* bank size, in bytes */
@@ -410,6 +411,7 @@ AL_FUNC(int, get_color_conversion, (void));
 AL_FUNC(void, request_refresh_rate, (int rate));
 AL_FUNC(int, get_refresh_rate, (void));
 AL_FUNC(int, set_gfx_mode, (int card, int w, int h, int v_w, int v_h));
+AL_FUNC(int, acknowledge_resize, (void));
 AL_FUNC(int, scroll_screen, (int x, int y));
 AL_FUNC(int, request_scroll, (int x, int y));
 AL_FUNC(int, poll_scroll, (void));

@@ -144,6 +144,10 @@ static std::vector<Shortcut*>* shortcuts = NULL;
 static bool ji_screen_created = false;
 
 static volatile int next_idle_flags = 0;
+
+static volatile int restored_width = 0;
+static volatile int restored_height = 0;
+
 static JList icon_buttons;
 
 /* default GUI screen configuration */
@@ -172,12 +176,15 @@ static void display_switch_in_callback()
 
 END_OF_STATIC_FUNCTION(display_switch_in_callback);
 
-#ifdef HAVE_RESIZE_PATCH
-static void resize_callback(void)
+// Called when the window is resized
+static void resize_callback(RESIZE_DISPLAY_EVENT *ev)
 {
-  next_idle_flags |= SYSTEM_WINDOW_RESIZE;
+   if (ev->is_maximized) {
+      restored_width = ev->old_w;
+      restored_height = ev->old_h;
+   }
+   next_idle_flags |= SYSTEM_WINDOW_RESIZE;
 }
-#endif
 
 /**
  * Initializes GUI.
@@ -294,8 +301,8 @@ gfx_done:;
 
   /* setup the standard jinete theme for widgets */
   ji_set_theme(ase_theme = new SkinneableTheme());
-  
-#ifdef HAVE_RESIZE_PATCH
+
+  // Setup the handler for window-resize events
   set_resize_callback(resize_callback);
 
   #ifdef ALLEGRO_WINDOWS
@@ -303,7 +310,6 @@ gfx_done:;
     ShowWindow(win_get_window(), SW_MAXIMIZE);
   }
   #endif
-#endif
 
   /* configure ji_screen */
   gui_setup_screen(true);
@@ -397,12 +403,7 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
   fullscreen = get_config_bool("GfxMode", "FullScreen", false);
   screen_scaling = get_config_int("GfxMode", "Scale", 1);
   screen_scaling = MID(1, screen_scaling, 4);
-
-#if defined HAVE_RESIZE_PATCH && defined ALLEGRO_WINDOWS
   maximized = get_config_bool("GfxMode", "Maximized", false);
-#else
-  maximized = false;
-#endif
 
   // Avoid 8 bpp
   if (bpp == 8)
@@ -411,9 +412,17 @@ static void load_gui_config(int& w, int& h, int& bpp, bool& fullscreen, bool& ma
 
 static void save_gui_config()
 {
+  bool is_maximized = false;
+
+#ifdef WIN32
+  is_maximized = (GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
+#endif
+
+  set_config_bool("GfxMode", "Maximized", is_maximized);
+
   if (screen) {
-    set_config_int("GfxMode", "Width", SCREEN_W);
-    set_config_int("GfxMode", "Height", SCREEN_H);
+    set_config_int("GfxMode", "Width", is_maximized ? restored_width: SCREEN_W);
+    set_config_int("GfxMode", "Height", is_maximized ? restored_height: SCREEN_H);
     set_config_int("GfxMode", "Depth", bitmap_color_depth(screen));
   }
 
@@ -421,11 +430,6 @@ static void save_gui_config()
     set_config_bool("GfxMode", "FullScreen", gfx_driver->windowed ? false: true);
 
   set_config_int("GfxMode", "Scale", screen_scaling);
-
-#if defined HAVE_RESIZE_PATCH && defined ALLEGRO_WINDOWS
-  set_config_bool("GfxMode", "Maximized",
-		  GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
-#endif
 }
 
 int get_screen_scaling()
@@ -469,16 +473,16 @@ void gui_run()
 
 void gui_feedback()
 {
-#ifdef HAVE_RESIZE_PATCH
   if (next_idle_flags & SYSTEM_WINDOW_RESIZE) {
     next_idle_flags ^= SYSTEM_WINDOW_RESIZE;
 
-    resize_screen();
+    if (acknowledge_resize() < 0)
+      set_gfx_mode(GFX_AUTODETECT_WINDOWED, 320, 240, 0, 0);
+
     gui_setup_screen(false);
     app_get_top_window()->remap_window();
     jmanager_refresh_screen();
   }
-#endif
 
   /* menu stuff */
   if (next_idle_flags & REBUILD_RECENT_LIST) {

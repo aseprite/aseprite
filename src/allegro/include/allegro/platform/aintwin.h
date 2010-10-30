@@ -77,6 +77,7 @@ AL_VAR(int, wnd_height);
 AL_VAR(int, wnd_sysmenu);
 
 AL_FUNCPTR(void, user_close_proc, (void));
+AL_FUNCPTR(void, user_resize_proc, (RESIZE_DISPLAY_EVENT *ev));
 
 
 /* gfx synchronization */

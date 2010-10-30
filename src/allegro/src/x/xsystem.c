@@ -63,6 +63,7 @@ SYSTEM_DRIVER system_xwin =
    _unix_find_resource,
    _xwin_sysdrv_set_window_title,
    _xwin_sysdrv_set_close_button_callback,
+   NULL, /* set_resize_callback */
    _xwin_sysdrv_message,
    NULL, /* assert */
    NULL, /* save_console_state */

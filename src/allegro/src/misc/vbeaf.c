@@ -160,6 +160,7 @@ GFX_DRIVER gfx_vbeaf =
    vbeaf_restore,
    NULL,                         /* AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a)); */
    vbeaf_fetch_mode_list,        /* fetch mode hook */
+   NULL,			 /* acknowledge_resize */
    0, 0, FALSE, 0, 0, 0, 0, FALSE
 };
 

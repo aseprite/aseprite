@@ -90,6 +90,7 @@ GFX_DRIVER gfx_xdga2 =
    NULL, NULL,
    NULL,
    _xdga2_fetch_mode_list,
+   NULL,			/* acknowledge_resize */
    640, 480,
    TRUE,
    0, 0,
@@ -122,6 +123,7 @@ GFX_DRIVER gfx_xdga2_soft =
    NULL, NULL,
    NULL,
    _xdga2_fetch_mode_list,
+   NULL,			/* acknowledge_resize */
    640, 480,
    TRUE,
    0, 0,

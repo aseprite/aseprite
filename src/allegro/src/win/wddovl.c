@@ -58,6 +58,7 @@ GFX_DRIVER gfx_directx_ovl =
    NULL,                        // AL_METHOD(void, restore_video_state, (void*));
    NULL,                        // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    NULL,                        // AL_METHOD(int, fetch_mode_list, (void));
+   NULL,			/* acknowledge_resize */
    0, 0,                        // int w, h;                     /* physical (not virtual!) screen size */
    TRUE,                        // int linear;                   /* true if video memory is linear */
    0,                           // long bank_size;               /* bank size, in bytes */

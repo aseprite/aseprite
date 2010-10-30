@@ -33,8 +33,12 @@ static void gfx_directx_set_palette_win(AL_CONST struct RGB *p, int from, int to
 static BITMAP *gfx_directx_create_video_bitmap_win(int width, int height);
 static void gfx_directx_destroy_video_bitmap_win(BITMAP *bmp);
 static int gfx_directx_show_video_bitmap_win(struct BITMAP *bmp);
-static BITMAP *init_directx_win(int w, int h, int v_w, int v_h, int color_depth);
+static BITMAP *gfx_directx_win_init(int w, int h, int v_w, int v_h, int color_depth);
 static void gfx_directx_win_exit(struct BITMAP *bmp);
+static BITMAP *gfx_directx_acknowledge_resize(void);
+
+static BITMAP *_create_directx_forefront_bitmap(int w, int h, int color_depth);
+static void _destroy_directx_forefront_bitmap(void);
 
 
 GFX_DRIVER gfx_directx_win =
@@ -43,7 +47,7 @@ GFX_DRIVER gfx_directx_win =
    empty_string,
    empty_string,
    "DirectDraw window",
-   init_directx_win,
+   gfx_directx_win_init,
    gfx_directx_win_exit,
    NULL,                        // AL_METHOD(int, scroll, (int x, int y)); 
    gfx_directx_sync,
@@ -66,6 +70,7 @@ GFX_DRIVER gfx_directx_win =
    NULL,                        // AL_METHOD(void, restore_video_state, (void*));
    NULL,                        // AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a));
    NULL,                        // AL_METHOD(int, fetch_mode_list, (void));
+   gfx_directx_acknowledge_resize,
    0, 0,                        // int w, h;
    TRUE,                        // int linear;
    0,                           // long bank_size;
@@ -649,14 +654,12 @@ static void gfx_directx_setup_driver_desc(void)
 
 
 
-/* init_directx_win:
+/* gfx_directx_win_init:
  *  Initializes the driver.
  */
-static struct BITMAP *init_directx_win(int w, int h, int v_w, int v_h, int color_depth)
+static struct BITMAP *gfx_directx_win_init(int w, int h, int v_w, int v_h, int color_depth)
 {
-   unsigned char *cmap;
    HRESULT hr;
-   int i;
    HWND allegro_wnd = win_get_window();
 
    /* flipping is impossible in windowed mode */
@@ -704,6 +707,95 @@ static struct BITMAP *init_directx_win(int w, int h, int v_w, int v_h, int color
    hr = IDirectDrawSurface_SetClipper(gfx_directx_primary_surface->id, ddclipper);
    if (FAILED(hr))
       goto Error;
+
+   /* create forefront bitmap */
+   if (!_create_directx_forefront_bitmap(w, h, color_depth))
+      goto Error;
+
+   /* connect to the system driver */
+   win_gfx_driver = &win_gfx_driver_windowed;
+
+   /* set default switching policy */
+   set_display_switch_mode(SWITCH_PAUSE);
+
+   _exit_critical();
+
+   return gfx_directx_forefront_bitmap;
+
+ Error:
+   _exit_critical();
+
+   /* release the DirectDraw object */
+   gfx_directx_win_exit(NULL);
+
+   return NULL;
+}
+
+
+
+/* gfx_directx_win_exit:
+ *  Shuts down the driver.
+ */
+static void gfx_directx_win_exit(struct BITMAP *bmp)
+{ 
+   _enter_gfx_critical();
+
+   if (bmp) {
+      save_window_pos();
+      clear_bitmap(bmp);
+   }
+
+   /* disconnect from the system driver */
+   win_gfx_driver = NULL;
+
+   _destroy_directx_forefront_bitmap();
+
+   /* release the color conversion blitter */
+   if (colorconv_blit) {
+      _release_colorconv_blitter(colorconv_blit);
+      colorconv_blit = NULL;
+   }
+   
+   _destroy_directx_forefront_bitmap();
+
+   gfx_directx_exit(NULL);
+
+   _exit_gfx_critical();
+}
+
+
+
+static BITMAP *gfx_directx_acknowledge_resize(void)
+{
+   HWND allegro_wnd = win_get_window();
+   int color_depth = bitmap_color_depth(screen);
+   int w, h;
+   RECT rc;
+   BITMAP *new_screen;
+
+   GetClientRect(allegro_wnd, &rc);
+   w = rc.right;
+   h = rc.bottom;
+   if (w % 4)
+      w -= (w % 4);
+
+   _enter_gfx_critical();
+   
+   /* Re-create the screen */
+   _destroy_directx_forefront_bitmap();
+   new_screen = _create_directx_forefront_bitmap(w, h, color_depth);
+
+   _exit_gfx_critical();
+
+   return new_screen;
+}
+
+
+
+static BITMAP *_create_directx_forefront_bitmap(int w, int h, int color_depth)
+{
+   unsigned char *cmap;
+   int i;
 
    /* create offscreen backbuffer */
    if (create_offscreen(w, h, color_depth) != 0) {
@@ -766,42 +858,16 @@ static struct BITMAP *init_directx_win(int w, int h, int v_w, int v_h, int color
    ASSERT(_al_wd_dirty_lines);
    memset(_al_wd_dirty_lines, 0, (h+1) * sizeof(char));
 
-   /* connect to the system driver */
-   win_gfx_driver = &win_gfx_driver_windowed;
-
-   /* set default switching policy */
-   set_display_switch_mode(SWITCH_PAUSE);
-
-   _exit_critical();
-
    return gfx_directx_forefront_bitmap;
 
- Error:
-   _exit_critical();
-
-   /* release the DirectDraw object */
-   gfx_directx_win_exit(NULL);
-
+Error:
    return NULL;
 }
 
 
 
-/* gfx_directx_win_exit:
- *  Shuts down the driver.
- */
-static void gfx_directx_win_exit(struct BITMAP *bmp)
-{ 
-   _enter_gfx_critical();
-
-   if (bmp) {
-      save_window_pos();
-      clear_bitmap(bmp);
-   }
-
-   /* disconnect from the system driver */
-   win_gfx_driver = NULL;
-
+static void _destroy_directx_forefront_bitmap(void)
+{
    /* destroy dirty lines array */
    if (_al_wd_dirty_lines) {
       _AL_FREE(_al_wd_dirty_lines);
@@ -815,15 +881,4 @@ static void gfx_directx_win_exit(struct BITMAP *bmp)
       reused_offscreen_surface = FALSE;
       gfx_directx_forefront_bitmap = NULL;
    }
-
-   /* release the color conversion blitter */
-   if (colorconv_blit) {
-      _release_colorconv_blitter(colorconv_blit);
-      colorconv_blit = NULL;
-   }
-   
-   gfx_directx_exit(NULL);
-
-   _exit_gfx_critical();
 }
-

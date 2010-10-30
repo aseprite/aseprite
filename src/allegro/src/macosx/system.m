@@ -98,6 +98,7 @@ SYSTEM_DRIVER system_macosx =
    osx_sys_find_resource,
    osx_sys_set_window_title,
    osx_sys_set_close_button_callback,
+   NULL,  /* set_resize_callback */
    osx_sys_message,
    NULL,  /* AL_METHOD(void, assert, (AL_CONST char *msg)); */
    NULL,  /* AL_METHOD(void, save_console_state, (void)); */
