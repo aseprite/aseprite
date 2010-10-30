@@ -135,7 +135,7 @@ JWidget jmanager_new()
 
     /* hook the window close message */
     want_close_stage = STAGE_NORMAL;
-    set_window_close_hook(allegro_window_close_hook);
+    set_close_button_callback(allegro_window_close_hook);
 
     /* empty lists */
     msg_queue = jlist_new();
