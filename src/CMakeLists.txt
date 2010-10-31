@@ -158,7 +158,6 @@ add_library(aseprite-library
   commands/fx/cmd_replace_color.cpp
   commands/fx/effectbg.cpp
   core/cfg.cpp
-  core/config.cpp
   core/drop_files.cpp
   core/file_system.cpp
   core/modules.cpp
