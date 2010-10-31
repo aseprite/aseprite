@@ -50,6 +50,7 @@ static void osx_sys_get_executable_name(char *, int);
 static int osx_sys_find_resource(char *, AL_CONST char *, int);
 static void osx_sys_set_window_title(AL_CONST char *);
 static int osx_sys_set_close_button_callback(void (*proc)(void));
+static int osx_sys_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev));
 static int osx_sys_set_display_switch_mode(int mode);
 static void osx_sys_get_gfx_safe_mode(int *driver, struct GFX_MODE *mode);
 static int osx_sys_desktop_color_depth(void);
@@ -66,6 +67,7 @@ NSCursor *osx_blank_cursor = NULL;
 AllegroWindow *osx_window = NULL;
 char osx_window_title[ALLEGRO_MESSAGE_SIZE];
 void (*osx_window_close_hook)(void) = NULL;
+void (*osx_resize_callback)(RESIZE_DISPLAY_EVENT *ev) = NULL;
 int osx_gfx_mode = OSX_GFX_NONE;
 int osx_emulate_mouse_buttons = FALSE;
 int osx_window_first_expose = FALSE;
@@ -98,7 +100,7 @@ SYSTEM_DRIVER system_macosx =
    osx_sys_find_resource,
    osx_sys_set_window_title,
    osx_sys_set_close_button_callback,
-   NULL,  /* set_resize_callback */
+   osx_sys_set_resize_callback,
    osx_sys_message,
    NULL,  /* AL_METHOD(void, assert, (AL_CONST char *msg)); */
    NULL,  /* AL_METHOD(void, save_console_state, (void)); */
@@ -572,6 +574,14 @@ static int osx_sys_set_close_button_callback(void (*proc)(void))
 {
    osx_window_close_hook = proc;
    return 0;
+}
+
+
+
+static int osx_sys_set_resize_callback(void (*proc)(RESIZE_DISPLAY_EVENT *ev))
+{
+  osx_resize_callback = proc;
+  return 0;
 }
 
 

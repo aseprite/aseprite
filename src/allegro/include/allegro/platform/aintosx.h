@@ -79,6 +79,9 @@
 @interface AllegroWindowDelegate : NSObject
 - (BOOL)windowShouldClose: (id)sender;
 - (void)windowDidDeminiaturize: (NSNotification *)aNotification;
+- (void)windowDidResize: (NSNotification *)aNotification;
+- (void)windowDidBecomeKey:(NSNotification *)notification;
+- (void)windowDidResignKey:(NSNotification *)notification;
 @end
 
 
@@ -180,6 +183,7 @@ AL_VAR(int, osx_skip_mouse_move);
 AL_VAR(int, osx_emulate_mouse_buttons);
 AL_VAR(NSTrackingRectTag, osx_mouse_tracking_rect);
 extern AL_METHOD(void, osx_window_close_hook, (void));
+extern AL_METHOD(void, osx_resize_callback, (RESIZE_DISPLAY_EVENT *ev));
 
 
 #endif

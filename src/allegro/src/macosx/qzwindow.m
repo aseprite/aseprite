@@ -34,6 +34,10 @@ static BITMAP* osx_create_video_bitmap(int w, int h);
 static int osx_show_video_bitmap(BITMAP*);
 static void osx_destroy_video_bitmap(BITMAP*);
 static BITMAP* create_video_page(unsigned char*);
+static BITMAP* osx_qz_window_acknowledge_resize(void);
+
+static BITMAP *private_osx_create_screen_data(int w, int h, int color_depth);
+static void private_osx_destroy_screen_data(void);
 
 static pthread_mutex_t vsync_mutex;
 static pthread_cond_t vsync_cond;
@@ -88,7 +92,7 @@ GFX_DRIVER gfx_quartz_window =
    NULL,                         /* AL_METHOD(void, restore_video_state, (void)); */
    NULL,                         /* AL_METHOD(void, set_blender_mode, (int mode, int r, int g, int b, int a)); */
    NULL,                         /* AL_METHOD(int, fetch_mode_list, (void)); */
-   NULL,                         /* acknowledge_resize */
+   osx_qz_window_acknowledge_resize,
    0, 0,                         /* physical (not virtual!) screen size */
    TRUE,                         /* true if video memory is linear */
    0,                            /* bank size, in bytes */
@@ -194,6 +198,32 @@ static void prepare_window_for_animation(int refresh_view)
    _unix_lock_mutex(osx_window_mutex);
    memset(dirty_lines, 1, gfx_quartz_window.h);
    _unix_unlock_mutex(osx_window_mutex);
+}
+
+
+
+- (void)windowDidResize: (NSNotification *)notification
+{
+   NSWindow *window = [notification object];
+   NSSize sz = [window contentRectForFrameRect: [window frame]].size;
+   int old_width = gfx_quartz_window.w;
+   int old_height = gfx_quartz_window.h;
+   int new_width = sz.width;
+   int new_height = sz.height;
+
+   if (osx_resize_callback &&
+       ((old_width != new_width) ||
+        (old_height != new_height))) {
+      RESIZE_DISPLAY_EVENT ev;
+      ev.old_w = old_width;
+      ev.old_h = old_height;
+      ev.new_w = new_width;
+      ev.new_h = new_height;
+      ev.is_maximized = 0;
+      ev.is_restored = 0;
+
+      osx_resize_callback(&ev);
+   }
 }
 
 
@@ -477,9 +507,10 @@ static BITMAP *private_osx_qz_window_init(int w, int h, int v_w, int v_h, int co
 	}
 	
 	osx_window = [[AllegroWindow alloc] initWithContentRect: rect
-												  styleMask: NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask
-													backing: NSBackingStoreBuffered
-													  defer: NO];
+                                                      styleMask: (NSTitledWindowMask | NSClosableWindowMask |
+                                                                  NSMiniaturizableWindowMask | NSResizableWindowMask)
+                                                        backing: NSBackingStoreBuffered
+                                                          defer: NO];
 	
 	window_delegate = [[[AllegroWindowDelegate alloc] init] autorelease];
 	[osx_window setDelegate: window_delegate];
@@ -499,17 +530,10 @@ static BITMAP *private_osx_qz_window_init(int w, int h, int v_w, int v_h, int co
 	
 	set_window_title(osx_window_title);
 	[osx_window makeKeyAndOrderFront: nil];
-	
-	/* the last flag serves as an end of loop delimiter */
-	dirty_lines = calloc(h + 1, sizeof(char));
-	/* Mark all the window as dirty */
-	memset(dirty_lines, 1, h + 1);
-	
+
 	setup_direct_shifts();
-	
-	gfx_quartz_window.w = w;
-	gfx_quartz_window.h = h;
-	gfx_quartz_window.vid_mem = w * h * BYTES_PER_PIXEL(color_depth);
+
+        private_osx_create_screen_data(w, h, color_depth);
 	
 	requested_color_depth = color_depth;
 	colorconv_blitter=NULL;   
@@ -517,35 +541,13 @@ static BITMAP *private_osx_qz_window_init(int w, int h, int v_w, int v_h, int co
 	CFNumberGetValue(CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel), kCFNumberSInt32Type, &desktop_depth);
 	CFNumberGetValue(CFDictionaryGetValue(mode, kCGDisplayRefreshRate), kCFNumberSInt32Type, &refresh_rate);
 	_set_current_refresh_rate(refresh_rate);
-	
-	pseudo_screen_pitch = w * BYTES_PER_PIXEL(color_depth);
-	pseudo_screen_addr = _AL_MALLOC(h * pseudo_screen_pitch);
-	pseudo_screen = _make_bitmap(w, h, (unsigned long) pseudo_screen_addr, &gfx_quartz_window, color_depth, pseudo_screen_pitch);
-	if (!pseudo_screen) {
-		return NULL;
-	}
-	current_video_page = pseudo_screen;
-	first_page = NULL;
-	/* create a new special vtable for the pseudo screen */
-	memcpy(&_special_vtable, &_screen_vtable, sizeof(GFX_VTABLE));
-	_special_vtable.acquire = osx_qz_acquire_win;
-	_special_vtable.release = osx_qz_release_win;
-	_special_vtable.unwrite_bank = osx_qz_unwrite_line_win;
-	memcpy(&_unspecial_vtable, _get_vtable(color_depth), sizeof(GFX_VTABLE));
-	pseudo_screen->read_bank = osx_qz_write_line_win;
-	pseudo_screen->write_bank = osx_qz_write_line_win;
-	pseudo_screen->vtable = &_special_vtable;
+
 	uszprintf(driver_desc, sizeof(driver_desc), uconvert_ascii("Cocoa window using QuickDraw view, %d bpp %s", tmp1),
 			  color_depth, uconvert_ascii(color_depth == desktop_depth ? "in matching" : "in fast emulation", tmp2));
 	gfx_quartz_window.desc = driver_desc;
 	
 	update_region = NewRgn();
 	temp_region = NewRgn();
-	
-	osx_mouse_tracking_rect = [qd_view addTrackingRect: rect
-												 owner: NSApp
-											  userData: nil
-										  assumeInside: YES];
 	
 	osx_keyboard_focused(FALSE, 0);
 	clear_keybuf();
@@ -589,18 +591,9 @@ static void osx_qz_window_exit(BITMAP *bmp)
       [osx_window close];
       osx_window = NULL;
    }
-   
-   if (pseudo_screen_addr) {
-      free(pseudo_screen_addr);
-      pseudo_screen_addr = NULL;
-   }
-   
- 
-   if (dirty_lines) {
-      free(dirty_lines);
-      dirty_lines = NULL;
-   }
-   
+
+   private_osx_destroy_screen_data();
+
    if (colorconv_blitter) {
       _release_colorconv_blitter(colorconv_blitter);
       colorconv_blitter = NULL;
@@ -811,6 +804,86 @@ static void osx_destroy_video_bitmap(BITMAP* bm)
 	}
 	// Otherwise it wasn't a video page
 }
+
+
+
+static BITMAP* osx_qz_window_acknowledge_resize(void)
+{
+   int color_depth = bitmap_color_depth(screen);
+   int w = [osx_window contentRectForFrameRect: [osx_window frame]].size.width;
+   int h = [osx_window contentRectForFrameRect: [osx_window frame]].size.height;
+   BITMAP* new_screen;
+
+   _unix_lock_mutex(osx_window_mutex);
+
+   /* destroy the screen */
+   private_osx_destroy_screen_data();
+
+   /* change the size of the view */
+   [qd_view setFrameSize: NSMakeSize(w, h)];
+
+   /* re-create the screen */
+   new_screen = private_osx_create_screen_data(w, h, color_depth);
+
+   _unix_unlock_mutex(osx_window_mutex);
+   return new_screen;
+}
+
+
+
+static BITMAP *private_osx_create_screen_data(int w, int h, int color_depth)
+{
+   /* the last flag serves as an end of loop delimiter */
+   dirty_lines = calloc(h + 1, sizeof(char));
+   /* Mark all the window as dirty */
+   memset(dirty_lines, 1, h + 1);
+
+   gfx_quartz_window.w = w;
+   gfx_quartz_window.h = h;
+   gfx_quartz_window.vid_mem = w * h * BYTES_PER_PIXEL(color_depth);
+
+   pseudo_screen_pitch = w * BYTES_PER_PIXEL(color_depth);
+   pseudo_screen_addr = _AL_MALLOC(h * pseudo_screen_pitch);
+   pseudo_screen = _make_bitmap(w, h, (unsigned long) pseudo_screen_addr, &gfx_quartz_window, color_depth, pseudo_screen_pitch);
+   if (!pseudo_screen) {
+      return NULL;
+   }
+   current_video_page = pseudo_screen;
+   first_page = NULL;
+   /* create a new special vtable for the pseudo screen */
+   memcpy(&_special_vtable, &_screen_vtable, sizeof(GFX_VTABLE));
+   _special_vtable.acquire = osx_qz_acquire_win;
+   _special_vtable.release = osx_qz_release_win;
+   _special_vtable.unwrite_bank = osx_qz_unwrite_line_win;
+   memcpy(&_unspecial_vtable, _get_vtable(color_depth), sizeof(GFX_VTABLE));
+   pseudo_screen->read_bank = osx_qz_write_line_win;
+   pseudo_screen->write_bank = osx_qz_write_line_win;
+   pseudo_screen->vtable = &_special_vtable;
+
+   osx_mouse_tracking_rect = [qd_view addTrackingRect: NSMakeRect(0, 0, w, h)
+                                                owner: NSApp
+                                             userData: nil
+                                         assumeInside: YES];
+
+   return pseudo_screen;
+}
+
+
+
+static void private_osx_destroy_screen_data(void)
+{
+   if (pseudo_screen_addr) {
+      free(pseudo_screen_addr);
+      pseudo_screen_addr = NULL;
+   }
+
+   if (dirty_lines) {
+      free(dirty_lines);
+      dirty_lines = NULL;
+   }
+}
+
+
 /* Local variables:       */
 /* c-basic-offset: 3      */
 /* indent-tabs-mode: nil  */
