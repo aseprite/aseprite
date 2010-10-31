@@ -219,6 +219,19 @@ if(APPLE)
     ${AUDIOTOOLBOX_LIBRARY}
     ${QUICKTIME_LIBRARY}
     )
+
+    # Hack to deal with Mac OS X 10.6.  NSQuickDrawView is not defined by
+    # NSQuickDrawView.h when compiling in 64-bit mode, and 64-bit mode is the
+    # default when compiling on Snow Leopard.
+    if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL i386)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -arch i386")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -arch i386")
+    endif()
+
+    # The Mac port simply uses too many deprecated things.
+    if(COMPILER_GCC)
+        set(WFLAGS "${WFLAGS} -Wno-deprecated-declarations")
+    endif(COMPILER_GCC)
 endif(APPLE)
 
 ######################################################################
