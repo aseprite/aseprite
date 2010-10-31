@@ -16,6 +16,8 @@
  *
  *      X icon selection by Evert Glebbeek
  *
+ *      Added resize support by David Capello.
+ *
  *      See readme.txt for copyright information.
  */
 

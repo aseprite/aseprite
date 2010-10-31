@@ -14,6 +14,8 @@
  *
  *      General overhaul by Eric Botcazou.
  *
+ *      Added resize support by David Capello.
+ *
  *      See readme.txt for copyright information.
  */
 

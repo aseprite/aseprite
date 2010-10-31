@@ -1,5 +1,5 @@
 /*
-  Mouse driver for ASE
+  Keyboard driver for ASE
   by David Capello
 
   Based on code of Stefan Schimanski, Peter Wang, Elias Pschernig,

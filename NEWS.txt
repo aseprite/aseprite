@@ -5,6 +5,9 @@ NEWS
 0.8.2 beta
 ----------
 
++ Added support to resize the window in X11, Mac OS X, and Windows
+  platforms.
+
 0.8.1 beta
 ----------
 
